@@ -4,8 +4,8 @@
 
 void __cdecl
 phys_collide_do_gjk_collide_and_contact_manifold
-          (phys_collision_pair *param_1,phys_gjk_info *param_2,
-          phys_contact_manifold_process *param_3)
+          (phys_collision_pair *pcp,phys_gjk_info *gjk_info,
+          phys_contact_manifold_process *cman_process)
 
 {
   float fVar1;
@@ -13,8 +13,8 @@ phys_collide_do_gjk_collide_and_contact_manifold
   bool bVar3;
   phys_gjk_input local_60;
   
-  fVar1 = param_1->m_hit_time;
-  if ((NAN(fVar1) || 0.0 < fVar1 == (fVar1 == 0.0)) || (1.0 < param_1->m_hit_time)) {
+  fVar1 = pcp->m_hit_time;
+  if ((NAN(fVar1) || 0.0 < fVar1 == (fVar1 == 0.0)) || (1.0 < pcp->m_hit_time)) {
     bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_collision.h"
                       ,0x1d,"pcp->m_hit_time >= 0.0f && pcp->m_hit_time <= 1.0f","");
     if (bVar3) {
@@ -23,13 +23,13 @@ phys_collide_do_gjk_collide_and_contact_manifold
       return;
     }
   }
-  setup_gjk_input_from_pcp(&local_60,param_1);
+  setup_gjk_input_from_pcp(&local_60,pcp);
   local_60.m_sep_thresh = 1.02;
   local_60.m_intersection_test_only = false;
   local_60.m_continuous_collision = true;
-  bVar3 = phys_gjk_info::phys_collide_do_gjk_collide(param_2,&local_60);
+  bVar3 = phys_gjk_info::phys_collide_do_gjk_collide(gjk_info,&local_60);
   if (bVar3) {
-    phys_contact_manifold_process::process(param_3,param_1,param_2);
+    phys_contact_manifold_process::process(cman_process,pcp,gjk_info);
   }
   return;
 }
@@ -38,7 +38,7 @@ phys_collide_do_gjk_collide_and_contact_manifold
 // 00A2C990  set_buffer  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:32)
 
 void __thiscall
-phys_memory_heap::set_buffer(phys_memory_heap *this,void *param_1,int param_2,int param_3)
+phys_memory_heap::set_buffer(phys_memory_heap *this,void *start,int size,int alignment)
 
 {
   code *pcVar1;
@@ -71,7 +71,7 @@ phys_memory_heap::set_buffer(phys_memory_heap *this,void *param_1,int param_2,in
       return;
     }
   }
-  if (param_2 < 1) {
+  if (size < 1) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x24,
                       "size > 0","");
     if (bVar2) {
@@ -80,7 +80,7 @@ phys_memory_heap::set_buffer(phys_memory_heap *this,void *param_1,int param_2,in
       return;
     }
   }
-  if ((uint)param_1 % (uint)param_3 != 0) {
+  if ((uint)start % (uint)alignment != 0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x25,
                       "((size_t)start) % alignment == 0","");
     if (bVar2) {
@@ -89,10 +89,10 @@ phys_memory_heap::set_buffer(phys_memory_heap *this,void *param_1,int param_2,in
       return;
     }
   }
-  this->m_buffer_start = param_1;
-  this->m_buffer_cur = param_1;
-  this->m_user_start = param_1;
-  this->m_buffer_end = (char *)((int)param_1 + param_2);
+  this->m_buffer_start = start;
+  this->m_buffer_cur = start;
+  this->m_user_start = start;
+  this->m_buffer_end = (char *)((int)start + size);
   return;
 }
 
@@ -103,63 +103,63 @@ phys_memory_heap::set_buffer(phys_memory_heap *this,void *param_1,int param_2,in
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *param_1)
+int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *pBatch)
 
 {
   undefined4 *puVar1;
   int *piVar2;
-  phys_collision_pair *ppVar3;
-  contact_point_info *pcVar4;
-  code *pcVar5;
-  bool bVar6;
-  phys_collision_pair *ppVar7;
-  contact_point_info *pcVar8;
-  int iVar9;
+  phys_collision_pair *pcp;
+  contact_point_info *pcVar3;
+  code *pcVar4;
+  bool bVar5;
+  phys_collision_pair *ppVar6;
+  contact_point_info *pcVar7;
+  int iVar8;
   phys_gjk_info local_4550;
   phys_contact_manifold_process local_41a0;
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  puVar1 = param_1->Input;
+  puVar1 = pBatch->Input;
   phys_contact_manifold_process::phys_contact_manifold_process(&local_41a0);
   local_41a0.m_cpi_allocator = contact_point_info::get_cpi_allocator();
   local_41a0.m_rbc_contact_search_tree_root = (rigid_body_constraint_contact *)puVar1[1];
   piVar2 = (int *)puVar1[2];
-  ppVar3 = (phys_collision_pair *)*piVar2;
-  while (ppVar3 != (phys_collision_pair *)0x0) {
+  pcp = (phys_collision_pair *)*piVar2;
+  while (pcp != (phys_collision_pair *)0x0) {
     LOCK();
-    ppVar7 = (phys_collision_pair *)*piVar2;
-    if (ppVar3 == ppVar7) {
-      *piVar2 = ppVar3->_padding_;
-      ppVar7 = ppVar3;
+    ppVar6 = (phys_collision_pair *)*piVar2;
+    if (pcp == ppVar6) {
+      *piVar2 = pcp->_padding_;
+      ppVar6 = pcp;
     }
     UNLOCK();
-    if (ppVar7 == ppVar3) {
-      phys_collide_do_gjk_collide_and_contact_manifold(ppVar3,&local_4550,&local_41a0);
+    if (ppVar6 == pcp) {
+      phys_collide_do_gjk_collide_and_contact_manifold(pcp,&local_4550,&local_41a0);
     }
     piVar2 = (int *)puVar1[2];
-    ppVar3 = (phys_collision_pair *)*piVar2;
+    pcp = (phys_collision_pair *)*piVar2;
   }
   if (local_41a0.m_list_cpi.m_first != (contact_point_info *)0x0) {
     do {
       piVar2 = (int *)*puVar1;
-      pcVar4 = (contact_point_info *)*piVar2;
+      pcVar3 = (contact_point_info *)*piVar2;
       LOCK();
-      pcVar8 = (contact_point_info *)*piVar2;
-      if (pcVar4 == pcVar8) {
+      pcVar7 = (contact_point_info *)*piVar2;
+      if (pcVar3 == pcVar7) {
         *piVar2 = (int)local_41a0.m_list_cpi.m_first;
-        pcVar8 = pcVar4;
+        pcVar7 = pcVar3;
       }
       UNLOCK();
-    } while (pcVar8 != pcVar4);
+    } while (pcVar7 != pcVar3);
     if ((local_41a0.m_list_cpi.m_last_next_ptr == (contact_point_info **)0x0) &&
-       (bVar6 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x107,
-                          "m_last_next_ptr",""), bVar6)) {
-      pcVar5 = (code *)swi(3);
-      iVar9 = (*pcVar5)();
-      return iVar9;
+       (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x107,
+                          "m_last_next_ptr",""), bVar5)) {
+      pcVar4 = (code *)swi(3);
+      iVar8 = (*pcVar4)();
+      return iVar8;
     }
-    *local_41a0.m_list_cpi.m_last_next_ptr = pcVar4;
+    *local_41a0.m_list_cpi.m_last_next_ptr = pcVar3;
   }
   return 0;
 }
@@ -167,37 +167,37 @@ int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *param_1)
 
 // 00A2CC70  process_cpi  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_collision_multithreaded.cpp:73)
 
-void __cdecl process_cpi(contact_point_info *param_1)
+void __cdecl process_cpi(contact_point_info *cpi)
 
 {
-  rigid_body *prVar1;
-  rigid_body *prVar2;
-  code *pcVar3;
-  contact_point_info *pcVar4;
-  bool bVar5;
+  rigid_body *b1;
+  rigid_body *b2;
+  code *pcVar1;
+  contact_point_info *cpi_00;
+  bool bVar2;
   rigid_body_constraint_contact *this;
   
   while( true ) {
-    pcVar4 = param_1;
-    if (pcVar4 == (contact_point_info *)0x0) {
+    cpi_00 = cpi;
+    if (cpi_00 == (contact_point_info *)0x0) {
       return;
     }
-    param_1 = pcVar4->m_next_link;
-    if ((pcVar4->m_pcp == (phys_collision_pair *)0x0) &&
-       (bVar5 = _tlAssert("source/phys_collision_multithreaded.cpp",0x4e,"cpi->m_pcp",""), bVar5))
+    cpi = cpi_00->m_next_link;
+    if ((cpi_00->m_pcp == (phys_collision_pair *)0x0) &&
+       (bVar2 = _tlAssert("source/phys_collision_multithreaded.cpp",0x4e,"cpi->m_pcp",""), bVar2))
     break;
-    this = pcVar4->m_rbc_contact;
-    prVar1 = pcVar4->m_pcp->m_bpi1->m_rb;
-    prVar2 = pcVar4->m_pcp->m_bpi2->m_rb;
+    this = cpi_00->m_rbc_contact;
+    b1 = cpi_00->m_pcp->m_bpi1->m_rb;
+    b2 = cpi_00->m_pcp->m_bpi2->m_rb;
     if ((this != (rigid_body_constraint_contact *)0x0) ||
-       (this = phys_sys::create_rbc_contact(prVar1,prVar2,pcVar4->m_flags & 8),
+       (this = phys_sys::create_rbc_contact(b1,b2,cpi_00->m_flags & 8),
        this != (rigid_body_constraint_contact *)0x0)) {
-      this->m_solver_priority = pcVar4->m_flags & 7;
-      rigid_body_constraint_contact::add_cpi_simple(this,pcVar4,prVar1,prVar2);
+      this->m_solver_priority = cpi_00->m_flags & 7;
+      rigid_body_constraint_contact::add_cpi_simple(this,cpi_00,b1,b2);
     }
   }
-  pcVar3 = (code *)swi(3);
-  (*pcVar3)();
+  pcVar1 = (code *)swi(3);
+  (*pcVar1)();
   return;
 }
 
@@ -207,22 +207,22 @@ void __cdecl process_cpi(contact_point_info *param_1)
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl
-process_list_do_gjk_collide_and_contact_manifold(phys_link_list<phys_collision_pair> *param_1)
+process_list_do_gjk_collide_and_contact_manifold(phys_link_list<phys_collision_pair> *list_pcd)
 
 {
   phys_transient_allocator *this;
-  undefined4 *puVar1;
+  undefined4 *input;
   
-  if (0 < param_1->m_alloc_count) {
-    g_list_pcp_iterator = param_1->m_first;
+  if (0 < list_pcd->m_alloc_count) {
+    g_list_pcp_iterator = list_pcd->m_first;
     g_list_output_cpi = (contact_point_info *)0x0;
     this = contact_point_info::get_cpi_allocator();
-    puVar1 = phys_transient_allocator::allocate
-                       (this,0xc,4,0,"phys_transient_allocator out of memory.");
-    puVar1[2] = &g_list_pcp_iterator;
-    puVar1[1] = (g_physics_system->m_search_tree_rbc_contact).m_tree_root;
-    *puVar1 = &g_list_output_cpi;
-    phys_task_manager_process(&phys_gjk_collide_jqModule,puVar1,param_1->m_alloc_count);
+    input = phys_transient_allocator::allocate
+                      (this,0xc,4,0,"phys_transient_allocator out of memory.");
+    input[2] = &g_list_pcp_iterator;
+    input[1] = (g_physics_system->m_search_tree_rbc_contact).m_tree_root;
+    *input = &g_list_output_cpi;
+    phys_task_manager_process(&phys_gjk_collide_jqModule,input,list_pcd->m_alloc_count);
     phys_task_manager_flush();
     process_cpi(g_list_output_cpi);
   }
@@ -244,14 +244,14 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 void __thiscall
 rigid_body_constraint_contact::add_cpi_simple
-          (rigid_body_constraint_contact *this,contact_point_info *param_1,rigid_body *param_2,
-          rigid_body *param_3)
+          (rigid_body_constraint_contact *this,contact_point_info *cpi,rigid_body *b1_,
+          rigid_body *b2_)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (contact_point_info *)0x0) {
+  if (cpi == (contact_point_info *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rbc_defs\\rbc_def_contact.h"
                       ,0x16c,"cpi","");
     if (bVar2) {
@@ -260,7 +260,7 @@ rigid_body_constraint_contact::add_cpi_simple
       return;
     }
   }
-  if (param_1->m_list_b1_r_loc == (phys_vec3 *)0x0) {
+  if (cpi->m_list_b1_r_loc == (phys_vec3 *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rbc_defs\\rbc_def_contact.h"
                       ,0x16d,"cpi->m_list_b1_r_loc","");
     if (bVar2) {
@@ -269,7 +269,7 @@ rigid_body_constraint_contact::add_cpi_simple
       return;
     }
   }
-  if (param_1->m_list_b2_r_loc == (phys_vec3 *)0x0) {
+  if (cpi->m_list_b2_r_loc == (phys_vec3 *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rbc_defs\\rbc_def_contact.h"
                       ,0x16e,"cpi->m_list_b2_r_loc","");
     if (bVar2) {
@@ -278,7 +278,7 @@ rigid_body_constraint_contact::add_cpi_simple
       return;
     }
   }
-  if (param_1->m_list_pulse_sum_cache_info == (pulse_sum_cache_info *)0x0) {
+  if (cpi->m_list_pulse_sum_cache_info == (pulse_sum_cache_info *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rbc_defs\\rbc_def_contact.h"
                       ,0x16f,"cpi->m_list_pulse_sum_cache_info","");
     if (bVar2) {
@@ -287,7 +287,7 @@ rigid_body_constraint_contact::add_cpi_simple
       return;
     }
   }
-  if (param_1->m_point_pair_count < 1) {
+  if (cpi->m_point_pair_count < 1) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rbc_defs\\rbc_def_contact.h"
                       ,0x170,"cpi->m_point_pair_count > 0","");
     if (bVar2) {
@@ -296,9 +296,9 @@ rigid_body_constraint_contact::add_cpi_simple
       return;
     }
   }
-  verify_constraint(this,param_2,param_3);
-  param_1->m_next_link = (this->m_list_contact_point_info_buffer_1).m_first;
-  (this->m_list_contact_point_info_buffer_1).m_first = param_1;
+  verify_constraint(this,b1_,b2_);
+  cpi->m_next_link = (this->m_list_contact_point_info_buffer_1).m_first;
+  (this->m_list_contact_point_info_buffer_1).m_first = cpi;
   return;
 }
 

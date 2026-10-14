@@ -2,13 +2,14 @@
 
 // 00987DC0  LiveStorage_WriteChecksumToBuffer  (live/live_storage_win.cpp:277)
 
-void __cdecl LiveStorage_WriteChecksumToBuffer(uchar *param_1,int param_2)
+void __cdecl LiveStorage_WriteChecksumToBuffer(uchar *buffer_2,int len_2)
 
 {
   uint uVar1;
+  uint checksum_2;
   
-  uVar1 = LiveStats_ChecksumGamerStats(param_1 + 4,param_2 + -4);
-  *(uint *)param_1 = uVar1;
+  uVar1 = LiveStats_ChecksumGamerStats(buffer_2 + 4,len_2 + -4);
+  *(uint *)buffer_2 = uVar1;
   return;
 }
 
@@ -18,24 +19,25 @@ void __cdecl LiveStorage_WriteChecksumToBuffer(uchar *param_1,int param_2)
 int __cdecl SystemTimeToInt(void)
 
 {
-  _SYSTEMTIME local_18;
+  _SYSTEMTIME systemTime;
+  int intTime;
   
-  GetSystemTime(&local_18);
-  return (uint)local_18.wDay | (uint)local_18.wMonth << 8 | (uint)local_18.wYear << 0x10;
+  GetSystemTime(&systemTime);
+  return (uint)systemTime.wDay | (uint)systemTime.wMonth << 8 | (uint)systemTime.wYear << 0x10;
 }
 
 
 // 00987CC0  LiveStorage_ResetStats  (live/live_storage_win.cpp:382)
 
-void __cdecl LiveStorage_ResetStats(uchar *param_1)
+void __cdecl LiveStorage_ResetStats(uchar *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uchar *puVar4;
+  uchar *buffer_00;
   
-  if (param_1 == (uchar *)0x0) {
+  if (buffer == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x180,0
                              ,"%s");
     if (!bVar2) {
@@ -47,21 +49,21 @@ void __cdecl LiveStorage_ResetStats(uchar *param_1)
   if ((stat_version->current).integer == 0) {
     Com_Error(ERR_DROP,"stat_version is zero\n");
   }
-  if (param_1 != (uchar *)0x0) {
+  if (buffer != (uchar *)0x0) {
     Com_Printf(0x10,"LiveStorage_ResetStats: resetstats called - writing statversion %i to buffer\n"
               );
-    memset(param_1,'\0',0x9ce8);
-    DDL_AssociateBuffer((char *)param_1,0x9ce8,g_statsDDL);
-    LiveStorage_WriteChecksumToBuffer(param_1,0x9ce8);
+    memset(buffer,'\0',0x9ce8);
+    DDL_AssociateBuffer((char *)buffer,0x9ce8,g_statsDDL);
+    LiveStorage_WriteChecksumToBuffer(buffer,0x9ce8);
     LiveStats_SetPlayerStatByKey
               ("PlayerStatsList",MP_PLAYERSTATSKEY_STATS_VERSION,(stat_version->current).unsignedInt
-               ,param_1);
-    puVar4 = param_1;
+               ,buffer);
+    buffer_00 = buffer;
     uVar3 = SV_GetTime();
-    LiveStats_SetPlayerStatByKey("PlayerStatsList",MP_PLAYERSTATSKEY_WEEKLYTIMESTAMP,uVar3,puVar4);
+    LiveStats_SetPlayerStatByKey
+              ("PlayerStatsList",MP_PLAYERSTATSKEY_WEEKLYTIMESTAMP,uVar3,buffer_00);
     uVar3 = SV_GetTime();
-    LiveStats_SetPlayerStatByKey("PlayerStatsList",MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP,uVar3,param_1)
-    ;
+    LiveStats_SetPlayerStatByKey("PlayerStatsList",MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP,uVar3,buffer);
   }
   return;
 }
@@ -69,14 +71,15 @@ void __cdecl LiveStorage_ResetStats(uchar *param_1)
 
 // 00987EE0  SetDvarFromLocString  (live/live_storage_win.cpp:411)
 
-void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
+void __cdecl SetDvarFromLocString(int controllerIndex,char *dvarName,char *preLocalizedText)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *string;
+  char *localizedText;
   
-  bVar2 = Dvar_IsValidName(param_2);
+  bVar2 = Dvar_IsValidName(dvarName);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x19e,0
                              ,"%s");
@@ -86,12 +89,12 @@ void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
       return;
     }
   }
-  pcVar3 = SEH_LocalizeTextMessage(param_3,"dvar string",LOCMSG_NOERR);
-  if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) {
-    Dvar_SetCommand(param_2,param_3);
+  string = SEH_LocalizeTextMessage(preLocalizedText,"dvar string",LOCMSG_NOERR);
+  if ((string == (char *)0x0) || (*string == '\0')) {
+    Dvar_SetCommand(dvarName,preLocalizedText);
   }
   else {
-    Dvar_SetCommand(param_2,pcVar3);
+    Dvar_SetCommand(dvarName,string);
   }
   return;
 }
@@ -99,19 +102,19 @@ void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
 
 // 00987DF0  ResetCreateAClassNames  (live/live_storage_win.cpp:424)
 
-void __cdecl ResetCreateAClassNames(int param_1)
+void __cdecl ResetCreateAClassNames(int controllerIndex)
 
 {
-  SetDvarFromLocString(param_1,"customclass1","CLASS_SLOT1_CAPS");
-  SetDvarFromLocString(param_1,"customclass2","CLASS_SLOT2_CAPS");
-  SetDvarFromLocString(param_1,"customclass3","CLASS_SLOT3_CAPS");
-  SetDvarFromLocString(param_1,"customclass4","CLASS_SLOT4_CAPS");
-  SetDvarFromLocString(param_1,"customclass5","CLASS_SLOT5_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass1","CLASS_PRESTIGE1");
-  SetDvarFromLocString(param_1,"prestigeclass2","CLASS_PRESTIGE2");
-  SetDvarFromLocString(param_1,"prestigeclass3","CLASS_PRESTIGE3");
-  SetDvarFromLocString(param_1,"prestigeclass4","CLASS_PRESTIGE4");
-  SetDvarFromLocString(param_1,"prestigeclass5","CLASS_PRESTIGE5");
+  SetDvarFromLocString(controllerIndex,"customclass1","CLASS_SLOT1_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass2","CLASS_SLOT2_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass3","CLASS_SLOT3_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass4","CLASS_SLOT4_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass5","CLASS_SLOT5_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass1","CLASS_PRESTIGE1");
+  SetDvarFromLocString(controllerIndex,"prestigeclass2","CLASS_PRESTIGE2");
+  SetDvarFromLocString(controllerIndex,"prestigeclass3","CLASS_PRESTIGE3");
+  SetDvarFromLocString(controllerIndex,"prestigeclass4","CLASS_PRESTIGE4");
+  SetDvarFromLocString(controllerIndex,"prestigeclass5","CLASS_PRESTIGE5");
   return;
 }
 
@@ -127,18 +130,19 @@ void __cdecl LiveStorage_InitCustomClassesNames(void)
   code *pcVar1;
   bool bVar2;
   bool bVar3;
-  int local_8;
+  int allUnitialized;
+  int i;
   
   bVar2 = true;
-  local_8 = 0;
+  i = 0;
   do {
-    if (9 < local_8) {
+    if (9 < i) {
       if (bVar2) {
         ResetCreateAClassNames(0);
       }
       return;
     }
-    if (customclass[local_8] == (dvar_s *)0x0) {
+    if (customclass[i] == (dvar_s *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x1c5
                                ,0,"%s");
       if (!bVar3) {
@@ -147,10 +151,10 @@ void __cdecl LiveStorage_InitCustomClassesNames(void)
         return;
       }
     }
-    if (*(customclass[local_8]->current).string != '\0') {
+    if (*(customclass[i]->current).string != '\0') {
       bVar2 = false;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -159,11 +163,11 @@ void __cdecl LiveStorage_InitCustomClassesNames(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_ReadStats(int param_1,bool param_2,bool param_3)
+void __cdecl LiveStorage_ReadStats(int __formal,bool validate,bool silent)
 
 {
   if ((live_service->current).enabled != false) {
-    LiveStorage_ReadBasicTrainingStats(0,param_2,param_3);
+    LiveStorage_ReadBasicTrainingStats(0,validate,silent);
     LiveStorage_ReadPlayerGlobalBlob();
     LiveStorage_InitCustomClassesNames();
   }
@@ -173,7 +177,7 @@ void __cdecl LiveStorage_ReadStats(int param_1,bool param_2,bool param_3)
 
 // 00988070  LiveStorage_ReadStatsIfDirChanged  (live/live_storage_win.cpp:481)
 
-void __cdecl LiveStorage_ReadStatsIfDirChanged(int param_1)
+void __cdecl LiveStorage_ReadStatsIfDirChanged(int __formal)
 
 {
   bool bVar1;
@@ -212,7 +216,7 @@ void __cdecl LiveStorage_UploadStats(void)
 
 // 009880F0  LiveStorage_UploadStatsForController  (live/live_storage_win.cpp:800)
 
-void __cdecl LiveStorage_UploadStatsForController(int param_1)
+void __cdecl LiveStorage_UploadStatsForController(int controllerIndex)
 
 {
   LiveStorage_UploadStats();
@@ -245,10 +249,12 @@ void __cdecl _dynamic_initializer_for__fileops__(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_ResetFileOp(void *param_1)
+void __cdecl SV_ResetFileOp(void *data)
 
 {
-  LiveStorage_ResetFileInfo(param_1);
+  dwFileOperationInfo *fileInfo;
+  
+  LiveStorage_ResetFileInfo(data);
   return;
 }
 
@@ -263,15 +269,15 @@ dwFileOperationInfo * __cdecl SV_GetFreeFileOp(void)
   code *pcVar1;
   bool bVar2;
   dwFileOperationInfo *pdVar3;
-  int local_c;
-  dwFileOperationInfo *local_8;
+  int i;
+  dwFileOperationInfo *retp;
   
-  local_8 = (dwFileOperationInfo *)0x0;
-  local_c = 0;
+  retp = (dwFileOperationInfo *)0x0;
+  i = 0;
   do {
-    if (0x1f < local_c) {
+    if (0x1f < i) {
 LAB_00988180:
-      if (local_8 == (dwFileOperationInfo *)0x0) {
+      if (retp == (dwFileOperationInfo *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",
                                  0x345,0,"%s");
         if (!bVar2) {
@@ -280,14 +286,14 @@ LAB_00988180:
           return pdVar3;
         }
       }
-      return local_8;
+      return retp;
     }
-    if (fileops[local_c].fileBuffer == (uchar *)0x0) {
-      local_8 = fileops + local_c;
+    if (fileops[i].fileBuffer == (uchar *)0x0) {
+      retp = fileops + i;
       Com_Printf(0,"returned fileop %i\n");
       goto LAB_00988180;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -299,10 +305,10 @@ LAB_00988180:
 void __cdecl SV_DumpFileOps(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if (fileops[local_8].fileBuffer != (uchar *)0x0) {
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (fileops[i].fileBuffer != (uchar *)0x0) {
       Com_Printf(0,"%i\n");
     }
   }
@@ -318,6 +324,7 @@ void __cdecl SV_UseFileOp(void)
 
 {
   dwFileOperationInfo *pdVar1;
+  dwFileOperationInfo *fo;
   
   pdVar1 = SV_GetFreeFileOp();
   pdVar1->fileBuffer = &DAT_00000001;
@@ -332,12 +339,13 @@ void __cdecl SV_UseFileOp(void)
 void __cdecl SV_FreeFileOp(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  int slot;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  SV_ResetFileOp(fileops + iVar2);
+  nptr = Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  SV_ResetFileOp(fileops + iVar1);
   return;
 }
 
@@ -347,16 +355,18 @@ void __cdecl SV_FreeFileOp(void)
 void __cdecl CL_GetXP_f(void)
 
 {
-  int local_8;
+  int xp;
   
-  local_8 = 0;
-  LiveStats_GetIntPlayerStatByKey(0,&local_8,MP_PLAYERSTATSKEY_RANKXP);
+  xp = 0;
+  LiveStats_GetIntPlayerStatByKey(0,&xp,MP_PLAYERSTATSKEY_RANKXP);
   Com_Printf(0xe,"clientside xp is %i\n");
   return;
 }
 
 
 // 009882B0  LiveStorage_Init_Platform  (live/live_storage_win.cpp:872)
+
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl LiveStorage_Init_Platform(void)
 
@@ -396,15 +406,16 @@ void __cdecl _dynamic_initializer_for__s_fetchPlaylistsFileTask__(void)
 
 // 009883B0  LiveStorage_FetchPlaylistsLocal  (live/live_storage_win.cpp:911)
 
-void __cdecl LiveStorage_FetchPlaylistsLocal(int param_1)
+void __cdecl LiveStorage_FetchPlaylistsLocal(int controllerIndex)
 
 {
   bool bVar1;
+  bool playlistsFetched;
   
   bVar1 = Playlist_ReadFromDisk();
   if (bVar1) {
     LiveStorage_SetHavePlaylists(true);
-    Live_SetPlaylistVersion(param_1);
+    Live_SetPlaylistVersion(controllerIndex);
     Playlist_ValidatePlaylistNum();
   }
   return;
@@ -482,30 +493,34 @@ void __cdecl _dynamic_initializer_for__g_playerStats__(void)
 
 void __cdecl
 LiveStorage_SendStatsBufferToClient
-          (ulong64 param_1,uchar *param_2,int param_3,blobtype_t param_4,bool param_5)
+          (ulong64 uid,uchar *buffer,int buffersize,blobtype_t blobtype,bool sendOK)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  undefined1 local_9d04;
+  uint *cacsize;
+  uint *checksum;
+  uchar *bufptr;
+  int newStatsSize;
+  undefined1 compressedBuffer;
   byte local_9d03;
   uint local_9d02;
   uint local_9cfe;
   uchar local_9cfa [40174];
   uint local_c;
-  uchar *local_8;
+  uchar *compressedbufferstart;
   
-  local_8 = (uchar *)0x98b41d;
+  compressedbufferstart = (uchar *)0x98b41d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_9d04 = 0;
+  compressedBuffer = 0;
   memset(&local_9d03,'\0',0x9cf1);
-  local_8 = local_9cfa;
-  if (param_4 == BLOB_TYPE_CAC) {
-    local_9d04 = 8;
+  compressedbufferstart = local_9cfa;
+  if (blobtype == BLOB_TYPE_CAC) {
+    compressedBuffer = 8;
   }
   else {
-    if (param_4 != BLOB_TYPE_GLOBAL) {
+    if (blobtype != BLOB_TYPE_GLOBAL) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x513
                                ,0,"Invalid blob type!\n");
       if (bVar2) {
@@ -515,18 +530,18 @@ LiveStorage_SendStatsBufferToClient
       (*pcVar1)();
       return;
     }
-    local_9d04 = 7;
+    compressedBuffer = 7;
   }
-  local_9d03 = -param_5 & 5;
-  local_9d02 = MSG_CompressWithZLib(param_2,0x9ce8,local_8,0x9ce8);
+  local_9d03 = -sendOK & 5;
+  local_9d02 = MSG_CompressWithZLib(buffer,0x9ce8,compressedbufferstart,0x9ce8);
   if ((int)local_9d02 < 1) {
     Com_DPrintf(0xf,"Couldn\'t compress stats! :(\n");
     SV_SysLog_LogMessage(0,"Couldn\'t compress stats! :(\n");
   }
   else {
-    local_9cfe = Com_BlockChecksumKey32(local_8,local_9d02,0);
+    local_9cfe = Com_BlockChecksumKey32(compressedbufferstart,local_9d02,0);
     if (local_9d02 + 10 < 0x4001) {
-      dwMessaging_SendDeferredInstantMessage(param_1,&local_9d04,local_9d02 + 10);
+      dwMessaging_SendDeferredInstantMessage(uid,&compressedBuffer,local_9d02 + 10);
     }
     else {
       pcVar3 = va("Attempted to send blob of size %u to %llu, but max size is %u\n");
@@ -541,7 +556,7 @@ LiveStorage_SendStatsBufferToClient
 
 // 00988FA0  SV_GetClientDDLStat  (live/live_storage_win.cpp:1329)
 
-bool __cdecl SV_GetClientDDLStat(int param_1,char *param_2,int *param_3)
+bool __cdecl SV_GetClientDDLStat(int clientnum,char *stat,int *outInt)
 
 {
   code *pcVar1;
@@ -550,17 +565,17 @@ bool __cdecl SV_GetClientDDLStat(int param_1,char *param_2,int *param_3)
   ddlState_t *pdVar4;
   int iVar5;
   uint uVar6;
-  ddlState_t local_18;
-  undefined1 local_5;
+  ddlState_t searchState;
+  bool retval;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((stat == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x532
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_1 < 0) || (0x20 < param_1)) &&
+  if (((clientnum < 0) || (0x20 < clientnum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x533
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -568,43 +583,43 @@ bool __cdecl SV_GetClientDDLStat(int param_1,char *param_2,int *param_3)
     return (bool)uVar3;
   }
   pdVar4 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar4->absoluteOffset;
-  local_18.arrayIndex = pdVar4->arrayIndex;
-  local_18.member = pdVar4->member;
-  local_18.ddl = pdVar4->ddl;
-  local_5 = 0;
-  if (param_2 == (char *)0x0) {
+  searchState.absoluteOffset = pdVar4->absoluteOffset;
+  searchState.arrayIndex = pdVar4->arrayIndex;
+  searchState.member = pdVar4->member;
+  searchState.ddl = pdVar4->ddl;
+  retval = false;
+  if (stat == (char *)0x0) {
     Com_Printf(0xf,"SV_GetClientDDLStat called with null stat, you\'re doing it wrong. Ask Ewan\n");
   }
   else {
-    iVar5 = DDL_MoveToName(&local_18,&local_18,"PlayerStatsList");
+    iVar5 = DDL_MoveToName(&searchState,&searchState,"PlayerStatsList");
     if (iVar5 == 0) {
       Com_PrintWarning(0xf,"getdstat: Could not find member name.");
-      local_5 = 0;
+      retval = false;
     }
     else {
-      iVar5 = DDL_MoveToName(&local_18,&local_18,param_2);
+      iVar5 = DDL_MoveToName(&searchState,&searchState,stat);
       if (iVar5 == 0) {
         Com_PrintWarning(0xf,"getdstat: Could not find member name.");
-        local_5 = 0;
+        retval = false;
       }
-      else if ((local_18.member)->type == 2) {
-        uVar6 = SV_GetClientDIntStat(param_1,&local_18);
-        *param_3 = uVar6;
-        local_5 = 1;
+      else if ((searchState.member)->type == 2) {
+        uVar6 = SV_GetClientDIntStat(clientnum,&searchState);
+        *outInt = uVar6;
+        retval = true;
       }
       else {
         Com_PrintWarning(0xf,"called SV_GetClientDDLStat and got a non-int stat. Ask Ewan");
       }
     }
   }
-  return (bool)local_5;
+  return retval;
 }
 
 
 // 00988400  SV_GetStatFromBlob  (live/live_storage_win.cpp:1372)
 
-bool __cdecl SV_GetStatFromBlob(char *param_1,char *param_2,int *param_3)
+bool __cdecl SV_GetStatFromBlob(char *buffer,char *stat,int *outInt)
 
 {
   code *pcVar1;
@@ -613,17 +628,17 @@ bool __cdecl SV_GetStatFromBlob(char *param_1,char *param_2,int *param_3)
   ddlState_t *pdVar4;
   int iVar5;
   uint uVar6;
-  ddlState_t local_18;
-  undefined1 local_5;
+  ddlState_t searchState;
+  bool retval;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((stat == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x55d
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x55e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -631,96 +646,96 @@ bool __cdecl SV_GetStatFromBlob(char *param_1,char *param_2,int *param_3)
     return (bool)uVar3;
   }
   pdVar4 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar4->absoluteOffset;
-  local_18.arrayIndex = pdVar4->arrayIndex;
-  local_18.member = pdVar4->member;
-  local_18.ddl = pdVar4->ddl;
-  local_5 = 0;
-  if (param_2 == (char *)0x0) {
+  searchState.absoluteOffset = pdVar4->absoluteOffset;
+  searchState.arrayIndex = pdVar4->arrayIndex;
+  searchState.member = pdVar4->member;
+  searchState.ddl = pdVar4->ddl;
+  retval = false;
+  if (stat == (char *)0x0) {
     Com_Printf(0xf,"SV_GetClientDDLStat called with null stat, you\'re doing it wrong. Ask Ewan\n");
   }
   else {
-    iVar5 = DDL_MoveToName(&local_18,&local_18,"PlayerStatsList");
+    iVar5 = DDL_MoveToName(&searchState,&searchState,"PlayerStatsList");
     if (iVar5 == 0) {
       Com_PrintWarning(0xf,"getdstat: Could not find member name.");
-      local_5 = 0;
+      retval = false;
     }
     else {
-      iVar5 = DDL_MoveToName(&local_18,&local_18,param_2);
+      iVar5 = DDL_MoveToName(&searchState,&searchState,stat);
       if (iVar5 == 0) {
         Com_PrintWarning(0xf,"getdstat: Could not find member name.");
-        local_5 = 0;
+        retval = false;
       }
-      else if ((local_18.member)->type == 2) {
-        uVar6 = DDL_GetInt(&local_18,param_1);
-        *param_3 = uVar6;
-        local_5 = 1;
+      else if ((searchState.member)->type == 2) {
+        uVar6 = DDL_GetInt(&searchState,buffer);
+        *outInt = uVar6;
+        retval = true;
       }
       else {
         Com_PrintWarning(0xf,"called SV_GetClientDDLStat and got a non-int stat. Ask Ewan");
       }
     }
   }
-  return (bool)local_5;
+  return retval;
 }
 
 
 // 00988540  SV_GetIntClientStatByGameMode  (live/live_storage_win.cpp:1415)
 
-bool __cdecl SV_GetIntClientStatByGameMode(int param_1,int *param_2,char *param_3,char *param_4)
+bool __cdecl SV_GetIntClientStatByGameMode(int clientNum,int *outInt,char *gameMode,char *statName)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ddlState_t *pdVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  char **ppcVar8;
-  char *local_24;
+  ddlState_t *searchState_00;
+  uint uVar4;
+  ddlState_t *resultState;
+  int iVar5;
+  char **ddlPath;
+  char *path;
   char *local_20;
   char *local_1c;
-  ddlState_t local_18;
-  bool local_5;
+  ddlState_t searchState;
+  bool retval;
   
-  if (((param_1 < 0) || (0x1f < param_1)) &&
+  if (((clientNum < 0) || (0x1f < clientNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x588
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((param_2 == (int *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (char *)0x0)) &&
+  if ((((outInt == (int *)0x0) || (gameMode == (char *)0x0)) || (statName == (char *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x589
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_5 = false;
-  if (((-1 < param_1) && (param_2 != (int *)0x0)) &&
-     ((param_3 != (char *)0x0 && (param_4 != (char *)0x0)))) {
-    local_24 = "PlayerStatsByGameMode";
-    local_20 = param_3;
-    local_1c = param_4;
-    ppcVar8 = &local_24;
-    iVar7 = 3;
-    pdVar6 = &local_18;
-    pdVar4 = LiveStats_GetRootDDLState();
-    iVar7 = DDL_MoveToPath(pdVar4,pdVar6,iVar7,ppcVar8);
-    if (iVar7 == 0) {
+  retval = false;
+  if (((-1 < clientNum) && (outInt != (int *)0x0)) &&
+     ((gameMode != (char *)0x0 && (statName != (char *)0x0)))) {
+    path = "PlayerStatsByGameMode";
+    local_20 = gameMode;
+    local_1c = statName;
+    ddlPath = &path;
+    iVar5 = 3;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar5 = DDL_MoveToPath(searchState_00,resultState,iVar5,ddlPath);
+    if (iVar5 == 0) {
       Com_PrintError(0xf,"DDL:Error getting player stat value for %s.\n");
-      local_5 = false;
+      retval = false;
     }
     else {
       Com_DPrintf(0xf,"Attempting to get stat %s|%s for clientnum %i\n");
-      uVar5 = SV_GetClientDIntStat(param_1,&local_18);
-      *param_2 = uVar5;
-      local_5 = true;
+      uVar4 = SV_GetClientDIntStat(clientNum,&searchState);
+      *outInt = uVar4;
+      retval = true;
     }
   }
-  return local_5;
+  return retval;
 }
 
 
@@ -729,14 +744,14 @@ bool __cdecl SV_GetIntClientStatByGameMode(int param_1,int *param_2,char *param_
 void __cdecl SV_DWInitStats(void)
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    *(undefined4 *)&g_playerStats[local_8].userID = 0;
-    *(undefined4 *)((int)&g_playerStats[local_8].userID + 4) = 0;
-    for (local_c = 0; local_c < 0x13; local_c = local_c + 1) {
-      g_playerStats[local_8].values[local_c] = 0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    *(undefined4 *)&g_playerStats[i].userID = 0;
+    *(undefined4 *)((int)&g_playerStats[i].userID + 4) = 0;
+    for (j = 0; j < 0x13; j = j + 1) {
+      g_playerStats[i].values[j] = 0;
     }
   }
   return;
@@ -745,13 +760,14 @@ void __cdecl SV_DWInitStats(void)
 
 // 009894D0  SV_SetClientLBStat  (live/live_storage_win.cpp:1463)
 
-void __cdecl SV_SetClientLBStat(int param_1,int param_2,int param_3)
+void __cdecl SV_SetClientLBStat(int clientNum,int statId,int value)
 
 {
   code *pcVar1;
   bool bVar2;
+  LbPlayerStat *stat;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((clientNum < 0) || (0x1f < clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5b8,0
                              ,"%s");
     if (!bVar2) {
@@ -760,7 +776,7 @@ void __cdecl SV_SetClientLBStat(int param_1,int param_2,int param_3)
       return;
     }
   }
-  g_playerStats[param_1].values[param_2] = param_3;
+  g_playerStats[clientNum].values[statId] = value;
   Com_DPrintf(0x16,"setting stats (%i) stat %i => %i\n");
   return;
 }
@@ -775,93 +791,99 @@ void __cdecl SV_SetClientLBStat(int param_1,int param_2,int param_3)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-SV_MakeClientLBRow(int param_1,LbPlayerStat *param_2,int param_3,int param_4,
-                  LeaderBoardRow<10> *param_5,bool param_6)
+SV_MakeClientLBRow(int clientNum,LbPlayerStat *stats,int type,int lbIndex,LeaderBoardRow<10> *row,
+                  bool statWriteTypeAdd)
 
 {
   uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  client_t *pcVar4;
-  bool bVar5;
-  undefined1 uVar6;
+  LbStatEnum LVar2;
+  int iVar3;
+  code *pcVar4;
+  client_t *pcVar5;
+  bool bVar6;
+  undefined1 uVar7;
   bool local_28;
-  uint local_20;
-  uint local_18;
-  int local_10;
+  LbStatEnum statType;
+  uint i_2;
+  uint numColumsInLb;
+  uint i;
+  uint numLbs;
+  LbStructure *structure;
+  client_t *cl;
+  bool ok;
   
-  if (param_5 == (LeaderBoardRow<10> *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5cb,0
+  if (row == (LeaderBoardRow<10> *)0x0) {
+    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5cb,0
                              ,"%s");
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      uVar6 = (*pcVar3)();
-      return (bool)uVar6;
+    if (!bVar6) {
+      pcVar4 = (code *)swi(3);
+      uVar7 = (*pcVar4)();
+      return (bool)uVar7;
     }
   }
-  if (param_2 == (LbPlayerStat *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5cc,0
+  if (stats == (LbPlayerStat *)0x0) {
+    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5cc,0
                              ,"%s");
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      uVar6 = (*pcVar3)();
-      return (bool)uVar6;
+    if (!bVar6) {
+      pcVar4 = (code *)swi(3);
+      uVar7 = (*pcVar4)();
+      return (bool)uVar7;
     }
   }
   uVar1 = g_LbLookup.numLbs;
-  local_10 = 0;
-  if (param_6) {
-    param_5->_padding_ = 1;
+  structure = (LbStructure *)0x0;
+  if (statWriteTypeAdd) {
+    row->_padding_ = 1;
   }
   else {
-    param_5->_padding_ = 0;
+    row->_padding_ = 0;
   }
-  if ((param_1 < 0) || ((com_maxclients->current).integer < param_1)) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5d7,0
+  if ((clientNum < 0) || ((com_maxclients->current).integer < clientNum)) {
+    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5d7,0
                              ,
                              "clientNum not in [0, com_maxclients->current.integer]\n\t%i not in [%i, %i]"
                             );
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      uVar6 = (*pcVar3)();
-      return (bool)uVar6;
+    if (!bVar6) {
+      pcVar4 = (code *)swi(3);
+      uVar7 = (*pcVar4)();
+      return (bool)uVar7;
     }
   }
-  pcVar4 = svs.clients;
-  for (local_18 = 0; (local_10 == 0 && (local_18 < uVar1)); local_18 = local_18 + 1) {
-    if (g_LbLookup.structures[local_18].type == param_3) {
-      local_10 = local_18 * 0x50 + 0xa4e3d6c;
+  pcVar5 = svs.clients;
+  for (i = 0; (structure == (LbStructure *)0x0 && (i < uVar1)); i = i + 1) {
+    if (g_LbLookup.structures[i].type == type) {
+      structure = g_LbLookup.structures + i;
     }
   }
-  if ((local_10 == 0) || (param_5 == (LeaderBoardRow<10> *)0x0)) {
+  if ((structure == (LbStructure *)0x0) || (row == (LeaderBoardRow<10> *)0x0)) {
     local_28 = false;
   }
   else {
     local_28 = true;
   }
   if (local_28 != false) {
-    uVar1 = *(uint *)(local_10 + 0x48);
+    uVar1 = structure->numColums;
     if (10 < uVar1) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5e9
+      bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x5e9
                                ,0,"%s");
-      if (!bVar5) {
-        pcVar3 = (code *)swi(3);
-        uVar6 = (*pcVar3)();
-        return (bool)uVar6;
+      if (!bVar6) {
+        pcVar4 = (code *)swi(3);
+        uVar7 = (*pcVar4)();
+        return (bool)uVar7;
       }
     }
-    for (local_20 = 0; local_20 < uVar1; local_20 = local_20 + 1) {
-      iVar2 = *(int *)(local_10 + 4 + local_20 * 4);
-      param_5->m_columns[local_20] = param_2->values[iVar2];
-      if (*(uint *)(local_10 + 0x4c) == local_20) {
-        iVar2 = param_2->values[iVar2];
-        param_5->_padding_ = iVar2;
-        param_5->_padding_ = iVar2 >> 0x1f;
+    for (i_2 = 0; i_2 < uVar1; i_2 = i_2 + 1) {
+      LVar2 = structure->columns[i_2];
+      row->m_columns[i_2] = stats->values[LVar2];
+      if (structure->ratingCol == i_2) {
+        iVar3 = stats->values[LVar2];
+        row->_padding_ = iVar3;
+        row->_padding_ = iVar3 >> 0x1f;
       }
     }
-    param_5->_padding_ = *(int *)((int)pcVar4 + param_1 * 0x84d00 + 0x84cf0);
-    param_5->_padding_ = *(int *)((int)pcVar4 + param_1 * 0x84d00 + 0x84cf4);
-    param_5->_padding_ = lbViewIds[param_4];
+    row->_padding_ = *(int *)((int)pcVar5 + clientNum * 0x84d00 + 0x84cf0);
+    row->_padding_ = *(int *)((int)pcVar5 + clientNum * 0x84d00 + 0x84cf4);
+    row->_padding_ = lbViewIds[lbIndex];
   }
   return local_28;
 }
@@ -871,7 +893,7 @@ SV_MakeClientLBRow(int param_1,LbPlayerStat *param_2,int param_3,int param_4,
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CommitClientLeaderboardsSuccess(TaskRecord *param_1)
+void __cdecl SV_CommitClientLeaderboardsSuccess(TaskRecord *task)
 
 {
   code *pcVar1;
@@ -898,7 +920,7 @@ void __cdecl SV_CommitClientLeaderboardsSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CommitClientLeaderboardsFailure(TaskRecord *param_1)
+void __cdecl SV_CommitClientLeaderboardsFailure(TaskRecord *task)
 
 {
   code *pcVar1;
@@ -923,16 +945,18 @@ void __cdecl SV_CommitClientLeaderboardsFailure(TaskRecord *param_1)
 
 // 009889A0  operator++  (live/live_storage_win.cpp:1575)
 
-day_t * __cdecl operator++(day_t *param_1)
+day_t * __cdecl operator++(day_t *in)
 
 {
-  if (*param_1 == SATURDAY) {
-    *param_1 = SUNDAY;
+  int temp;
+  
+  if (*in == SATURDAY) {
+    *in = SUNDAY;
   }
   else {
-    *param_1 = *param_1 + MONDAY;
+    *in = *in + MONDAY;
   }
-  return param_1;
+  return in;
 }
 
 
@@ -946,8 +970,8 @@ day_t * __cdecl operator++(day_t *param_1)
 
 void __cdecl
 SV_DoTimedStatsForClient
-          (int param_1,char *param_2,LeaderBoardRow<10> *param_3,int param_4,
-          LeaderBoardRow<10> *param_5,int param_6)
+          (int clientnum,char *gameModePrefix,LeaderBoardRow<10> *weeklyRow,int weeklylbIndex,
+          LeaderBoardRow<10> *monthlyRow,int monthlylBIndex)
 
 {
   code *pcVar1;
@@ -959,170 +983,172 @@ SV_DoTimedStatsForClient
   int iVar7;
   int local_8c;
   int local_88;
-  int local_78;
-  int local_74;
-  int local_70;
-  day_t local_6c;
-  tm *local_68;
-  int local_64;
-  int local_60;
-  int local_5c;
-  char local_51;
-  int local_50;
-  int local_4c;
-  char local_45;
-  ddlState_t local_44;
-  uint local_34;
+  int i_3;
+  int i_2;
+  int i;
+  day_t writeday;
+  tm *tm_lastweeklyWrite;
+  day_t currentday;
+  int numDays;
+  client_t *client;
+  int timePlayed;
+  bool resetweekly;
+  int prestige;
+  int elapsedseconds;
+  bool resetmonthly;
+  ddlState_t localState;
+  int currentTime;
   int local_30;
-  tm *local_28;
-  char *local_24;
-  int local_20;
-  int local_1c;
+  tm *tm_currentTime;
+  char *stats;
+  int rankXP;
+  int lastwriteTime;
   int local_18;
-  uint local_14;
-  int local_10;
-  tm *local_c;
-  int local_8;
+  int serverUTC;
+  int lastweekly;
+  tm *tm_lastmonthlyWrite;
+  int lastmonthly;
   
-  local_5c = param_1 * 0x84d00 + (int)svs.clients;
-  if (((local_5c == 0) || (param_2 == (char *)0x0)) &&
+  client = (client_t *)(clientnum * 0x84d00 + (int)svs.clients);
+  if (((client == (client_t *)0x0) || (gameModePrefix == (char *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x64a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_5c != 0) && (*(int *)(local_5c + 0x84cf0) != 0 || *(int *)(local_5c + 0x84cf4) != 0))
-     && ((xblive_basictraining->current).enabled == false)) {
-    local_24 = (char *)(local_5c + 0x6ff11);
-    local_10 = 0;
-    local_8 = 0;
-    bVar2 = SV_GetStatFromBlob(local_24,"WEEKLY_TIMESTAMP",&local_10);
-    if ((bVar2) && (bVar2 = SV_GetStatFromBlob(local_24,"MONTHLY_TIMESTAMP",&local_8), bVar2)) {
-      local_34 = SV_GetTime();
-      local_51 = '\0';
-      local_45 = '\0';
-      local_4c = local_34 - local_10;
-      local_30 = (int)local_34 >> 0x1f;
-      local_14 = local_34;
-      local_28 = _gmtime64((long64 *)&local_34);
-      if (local_4c < 0x93a80) {
-        local_18 = local_10 >> 0x1f;
-        local_1c = local_10;
-        local_68 = _gmtime64((long64 *)&local_1c);
-        local_60 = local_28->tm_wday - local_68->tm_wday;
+  if (((client != (client_t *)0x0) &&
+      (*(int *)(client[1].userinfo + 0x3c8) != 0 || *(int *)(client[1].userinfo + 0x3cc) != 0)) &&
+     ((xblive_basictraining->current).enabled == false)) {
+    stats = (char *)(client->globalStats + 0x380);
+    lastweekly = 0;
+    lastmonthly = 0;
+    bVar2 = SV_GetStatFromBlob(stats,"WEEKLY_TIMESTAMP",&lastweekly);
+    if ((bVar2) && (bVar2 = SV_GetStatFromBlob(stats,"MONTHLY_TIMESTAMP",&lastmonthly), bVar2)) {
+      currentTime = SV_GetTime();
+      resetweekly = false;
+      resetmonthly = false;
+      elapsedseconds = currentTime - lastweekly;
+      local_30 = currentTime >> 0x1f;
+      serverUTC = currentTime;
+      tm_currentTime = _gmtime64((long64 *)&currentTime);
+      if (elapsedseconds < 0x93a80) {
+        local_18 = lastweekly >> 0x1f;
+        lastwriteTime = lastweekly;
+        tm_lastweeklyWrite = _gmtime64((long64 *)&lastwriteTime);
+        numDays = tm_currentTime->tm_wday - tm_lastweeklyWrite->tm_wday;
         Com_DPrintf(0xf,"%i days since last weekly write\n");
-        local_64 = local_28->tm_wday;
-        if ((local_60 == 0) && (local_64 == 1)) {
-          if ((0xb < local_28->tm_hour) && (local_68->tm_hour < 0xb)) {
-            local_51 = '\x01';
+        currentday = tm_currentTime->tm_wday;
+        if ((numDays == 0) && (currentday == MONDAY)) {
+          if ((0xb < tm_currentTime->tm_hour) && (tm_lastweeklyWrite->tm_hour < 0xb)) {
+            resetweekly = true;
           }
         }
         else {
-          local_6c = local_68->tm_wday;
-          while (iVar7 = local_60 + -1, bVar2 = 0 < local_60, local_60 = iVar7, bVar2) {
-            pdVar3 = operator++(&local_6c);
+          writeday = tm_lastweeklyWrite->tm_wday;
+          while (iVar7 = numDays + -1, bVar2 = 0 < numDays, numDays = iVar7, bVar2) {
+            pdVar3 = operator++(&writeday);
             if (*pdVar3 == TUESDAY) {
-              local_51 = '\x01';
+              resetweekly = true;
             }
           }
         }
       }
       else {
-        local_51 = '\x01';
+        resetweekly = true;
       }
-      local_18 = local_8 >> 0x1f;
-      local_1c = local_8;
-      local_c = _gmtime64((long64 *)&local_1c);
-      if (local_c->tm_mon != local_28->tm_mon) {
-        local_45 = '\x01';
+      local_18 = lastmonthly >> 0x1f;
+      lastwriteTime = lastmonthly;
+      tm_lastmonthlyWrite = _gmtime64((long64 *)&lastwriteTime);
+      if (tm_lastmonthlyWrite->tm_mon != tm_currentTime->tm_mon) {
+        resetmonthly = true;
       }
-      if (local_51 != '\0') {
+      if (resetweekly != false) {
         LiveStats_SetPlayerStatByKey
-                  ("PlayerStatsList",MP_PLAYERSTATSKEY_WEEKLYTIMESTAMP,local_14,
-                   (uchar *)(local_5c + 0x6ff11));
-        for (local_70 = 0; local_70 < 10; local_70 = local_70 + 1) {
-          param_3->m_columns[local_70] = 0;
+                  ("PlayerStatsList",MP_PLAYERSTATSKEY_WEEKLYTIMESTAMP,serverUTC,
+                   client->globalStats + 0x380);
+        for (i = 0; i < 10; i = i + 1) {
+          weeklyRow->m_columns[i] = 0;
           va("%d");
           iVar7 = 4;
-          pdVar6 = &local_44;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           iVar7 = DDL_MoveTo(pdVar4,pdVar6,iVar7);
           if (iVar7 != 0) {
-            DDL_SetInt(&local_44,0,local_24);
+            DDL_SetInt(&localState,0,stats);
           }
         }
       }
-      if (local_45 != '\0') {
+      if (resetmonthly != false) {
         LiveStats_SetPlayerStatByKey
-                  ("PlayerStatsList",MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP,local_14,
-                   (uchar *)(local_5c + 0x6ff11));
-        for (local_74 = 0; local_74 < 10; local_74 = local_74 + 1) {
-          param_5->m_columns[local_74] = 0;
+                  ("PlayerStatsList",MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP,serverUTC,
+                   client->globalStats + 0x380);
+        for (i_2 = 0; i_2 < 10; i_2 = i_2 + 1) {
+          monthlyRow->m_columns[i_2] = 0;
           va("%d");
           iVar7 = 4;
-          pdVar6 = &local_44;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           iVar7 = DDL_MoveTo(pdVar4,pdVar6,iVar7);
           if (iVar7 != 0) {
-            DDL_SetInt(&local_44,0,local_24);
+            DDL_SetInt(&localState,0,stats);
           }
         }
       }
-      local_20 = 0;
-      local_50 = 0;
-      for (local_78 = 0; local_78 < 10; local_78 = local_78 + 1) {
+      rankXP = 0;
+      prestige = 0;
+      for (i_3 = 0; i_3 < 10; i_3 = i_3 + 1) {
         va("%d");
         iVar7 = 4;
-        pdVar6 = &local_44;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         iVar7 = DDL_MoveTo(pdVar4,pdVar6,iVar7);
         if (iVar7 != 0) {
-          uVar5 = DDL_GetInt(&local_44,local_24);
-          param_3->m_columns[local_78] = uVar5 + param_3->m_columns[local_78];
-          DDL_SetInt(&local_44,param_3->m_columns[local_78],local_24);
+          uVar5 = DDL_GetInt(&localState,stats);
+          weeklyRow->m_columns[i_3] = uVar5 + weeklyRow->m_columns[i_3];
+          DDL_SetInt(&localState,weeklyRow->m_columns[i_3],stats);
         }
         va("%d");
         iVar7 = 4;
-        pdVar6 = &local_44;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         iVar7 = DDL_MoveTo(pdVar4,pdVar6,iVar7);
         if (iVar7 != 0) {
-          uVar5 = DDL_GetInt(&local_44,local_24);
-          param_5->m_columns[local_78] = uVar5 + param_5->m_columns[local_78];
-          DDL_SetInt(&local_44,param_5->m_columns[local_78],local_24);
+          uVar5 = DDL_GetInt(&localState,stats);
+          monthlyRow->m_columns[i_3] = uVar5 + monthlyRow->m_columns[i_3];
+          DDL_SetInt(&localState,monthlyRow->m_columns[i_3],stats);
         }
       }
-      SV_GetClientDDLStat(param_1,"RANKXP",&local_20);
-      SV_GetClientDDLStat(param_1,"PLEVEL",&local_50);
-      local_88 = param_3->m_columns[2] / 0x3c;
+      SV_GetClientDDLStat(clientnum,"RANKXP",&rankXP);
+      SV_GetClientDDLStat(clientnum,"PLEVEL",&prestige);
+      local_88 = weeklyRow->m_columns[2] / 0x3c;
       if (local_88 < 2) {
         local_88 = 1;
       }
-      param_3->m_columns[4] = local_20;
-      param_3->m_columns[5] = local_50;
-      param_3->m_columns[3] = (int)(((float)param_3->m_columns[1] * 1000.0) / (float)local_88);
-      param_3->_padding_ = *(int *)(local_5c + 0x84cf0);
-      param_3->_padding_ = *(int *)(local_5c + 0x84cf4);
-      param_3->_padding_ = lbViewIds[param_4];
-      param_3->_padding_ = 0;
-      iVar7 = param_3->m_columns[3];
-      param_3->_padding_ = iVar7;
-      param_3->_padding_ = iVar7 >> 0x1f;
-      local_8c = param_5->m_columns[2] / 0x3c;
+      weeklyRow->m_columns[4] = rankXP;
+      weeklyRow->m_columns[5] = prestige;
+      weeklyRow->m_columns[3] = (int)(((float)weeklyRow->m_columns[1] * 1000.0) / (float)local_88);
+      weeklyRow->_padding_ = *(int *)(client[1].userinfo + 0x3c8);
+      weeklyRow->_padding_ = *(int *)(client[1].userinfo + 0x3cc);
+      weeklyRow->_padding_ = lbViewIds[weeklylbIndex];
+      weeklyRow->_padding_ = 0;
+      iVar7 = weeklyRow->m_columns[3];
+      weeklyRow->_padding_ = iVar7;
+      weeklyRow->_padding_ = iVar7 >> 0x1f;
+      local_8c = monthlyRow->m_columns[2] / 0x3c;
       if (local_8c < 2) {
         local_8c = 1;
       }
-      param_5->m_columns[4] = local_20;
-      param_5->m_columns[5] = local_50;
-      param_5->m_columns[3] = (int)(((float)param_3->m_columns[1] * 1000.0) / (float)local_8c);
-      param_5->_padding_ = *(int *)(local_5c + 0x84cf0);
-      param_5->_padding_ = *(int *)(local_5c + 0x84cf4);
-      param_5->_padding_ = lbViewIds[param_6];
-      param_5->_padding_ = 0;
-      iVar7 = param_5->m_columns[3];
-      param_5->_padding_ = iVar7;
-      param_5->_padding_ = iVar7 >> 0x1f;
+      monthlyRow->m_columns[4] = rankXP;
+      monthlyRow->m_columns[5] = prestige;
+      monthlyRow->m_columns[3] = (int)(((float)weeklyRow->m_columns[1] * 1000.0) / (float)local_8c);
+      monthlyRow->_padding_ = *(int *)(client[1].userinfo + 0x3c8);
+      monthlyRow->_padding_ = *(int *)(client[1].userinfo + 0x3cc);
+      monthlyRow->_padding_ = lbViewIds[monthlylBIndex];
+      monthlyRow->_padding_ = 0;
+      iVar7 = monthlyRow->m_columns[3];
+      monthlyRow->_padding_ = iVar7;
+      monthlyRow->_padding_ = iVar7 >> 0x1f;
     }
   }
   return;
@@ -1133,46 +1159,46 @@ SV_DoTimedStatsForClient
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LiveStorage_GetMatchesPlayed(char *param_1,int param_2)
+int __cdecl LiveStorage_GetMatchesPlayed(char *gameModePrefix,int resetPeriod)
 
 {
-  ddlState_t *pdVar1;
-  uchar *puVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_28;
-  uint local_18;
-  char local_14 [12];
+  ddlState_t *searchState;
+  uchar *buffer;
+  ddlState_t *resultState;
+  int iVar1;
+  ddlState_t localState;
+  int retval;
+  char period [12];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = 0;
-  local_14[0] = '\0';
-  local_14[1] = '\0';
-  local_14[2] = '\0';
-  local_14[3] = '\0';
-  local_14[4] = '\0';
-  local_14[5] = '\0';
-  local_14[6] = '\0';
-  local_14[7] = '\0';
-  local_14[8] = '\0';
-  local_14[9] = 0;
-  if (param_2 == 1) {
-    I_strncpyz(local_14,"lbWeekly",10);
+  retval = 0;
+  period[0] = '\0';
+  period[1] = '\0';
+  period[2] = '\0';
+  period[3] = '\0';
+  period[4] = '\0';
+  period[5] = '\0';
+  period[6] = '\0';
+  period[7] = '\0';
+  period[8] = '\0';
+  period[9] = 0;
+  if (resetPeriod == 1) {
+    I_strncpyz(period,"lbWeekly",10);
   }
   else {
-    I_strncpyz(local_14,"lbMonthly",10);
+    I_strncpyz(period,"lbMonthly",10);
   }
   va("%d");
-  iVar4 = 4;
-  pdVar3 = &local_28;
-  pdVar1 = LiveStats_GetRootDDLState();
-  iVar4 = DDL_MoveTo(pdVar1,pdVar3,iVar4);
-  if (iVar4 != 0) {
-    puVar2 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
-    local_18 = DDL_GetInt(&local_28,(char *)puVar2);
+  iVar1 = 4;
+  resultState = &localState;
+  searchState = LiveStats_GetRootDDLState();
+  iVar1 = DDL_MoveTo(searchState,resultState,iVar1);
+  if (iVar1 != 0) {
+    buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    retval = DDL_GetInt(&localState,(char *)buffer);
   }
-  return local_18;
+  return retval;
 }
 
 
@@ -1185,22 +1211,25 @@ int __cdecl LiveStorage_GetMatchesPlayed(char *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-SV_GetIntClientStatMatchDeltaByGameMode(int param_1,int *param_2,char *param_3,char *param_4)
+SV_GetIntClientStatMatchDeltaByGameMode(int clientNum,int *outInt,char *gameMode,char *statName)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int local_c;
-  int local_8;
+  char *base;
+  client_t *client;
+  char *liveStatsBuffer;
+  char *oldStatsBuffer;
+  int valueBeforeMatch;
+  int valueAfterMatch;
   
-  pcVar2 = (char *)((int)svs.clients + param_1 * 0x84d00 + 0x6ff11);
+  base = (char *)((int)svs.clients + clientNum * 0x84d00 + 0x6ff11);
   bVar1 = LiveStats_GetIntPlayerStatByGameModeFromBase
-                    (0,&local_c,param_3,param_4,
-                     (char *)((int)svs.clients + param_1 * 0x84d00 + 0x79bf9));
+                    (0,&valueBeforeMatch,gameMode,statName,
+                     (char *)((int)svs.clients + clientNum * 0x84d00 + 0x79bf9));
   if ((bVar1) &&
-     (bVar1 = LiveStats_GetIntPlayerStatByGameModeFromBase(0,&local_8,param_3,param_4,pcVar2), bVar1
-     )) {
-    *param_2 = local_8 - local_c;
+     (bVar1 = LiveStats_GetIntPlayerStatByGameModeFromBase
+                        (0,&valueAfterMatch,gameMode,statName,base), bVar1)) {
+    *outInt = valueAfterMatch - valueBeforeMatch;
     return true;
   }
   DDL_PrintError("DDL:Error getting player stat value for %s.\n");
@@ -1210,79 +1239,87 @@ SV_GetIntClientStatMatchDeltaByGameMode(int param_1,int *param_2,char *param_3,c
 
 // 00989240  SV_GetTotalMatchesPlayedByGameModeForClient  (live/live_storage_win.cpp:1797)
 
-int __cdecl SV_GetTotalMatchesPlayedByGameModeForClient(int param_1,char *param_2)
+int __cdecl SV_GetTotalMatchesPlayedByGameModeForClient(int clientNum,char *gameModePrefix)
 
 {
-  int local_10;
-  int local_c;
-  int local_8;
+  int losses;
+  int wins;
+  int ties;
   
-  SV_GetIntClientStatByGameMode(param_1,&local_c,param_2,"WINS");
-  SV_GetIntClientStatByGameMode(param_1,&local_10,param_2,"LOSSES");
-  SV_GetIntClientStatByGameMode(param_1,&local_8,param_2,"TIES");
-  return local_c + local_10 + local_8;
+  SV_GetIntClientStatByGameMode(clientNum,&wins,gameModePrefix,"WINS");
+  SV_GetIntClientStatByGameMode(clientNum,&losses,gameModePrefix,"LOSSES");
+  SV_GetIntClientStatByGameMode(clientNum,&ties,gameModePrefix,"TIES");
+  return wins + losses + ties;
 }
 
 
 // 0098A040  SV_SetClientStatsForRow  (live/live_storage_win.cpp:1806)
 
-void __cdecl SV_SetClientStatsForRow(int param_1,char *param_2,bool param_3)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl SV_SetClientStatsForRow(int clientNum,char *gameModePrefix,bool delta)
 
 {
   bool bVar1;
   int local_28;
   int local_24;
-  int local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int timePlayed;
+  int totalScore;
+  int statValue;
+  char *currentStatName;
+  int statId;
   
-  for (local_8 = 0; local_8 < 0x11; local_8 = local_8 + 1) {
-    local_c = *(char **)(&lbStatStrings + local_8 * 4);
-    local_10 = 0;
-    local_14 = 0;
-    local_18 = 0;
-    if (((param_2 == (char *)0x0) || (local_8 == 4)) || (local_8 == 5)) {
-      bVar1 = SV_GetClientDDLStat(param_1,local_c,&local_10);
+  for (statId = 0; statId < 0x11; statId = statId + 1) {
+    currentStatName = *(char **)(&lbStatStrings + statId * 4);
+    statValue = 0;
+    totalScore = 0;
+    timePlayed = 0;
+    if (((gameModePrefix == (char *)0x0) || (statId == 4)) || (statId == 5)) {
+      bVar1 = SV_GetClientDDLStat(clientNum,currentStatName,&statValue);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    else if (local_8 == 0) {
-      if (param_3) {
+    else if (statId == 0) {
+      if (delta) {
         local_24 = 1;
       }
       else {
-        local_24 = SV_GetTotalMatchesPlayedByGameModeForClient(param_1,param_2);
+        local_24 = SV_GetTotalMatchesPlayedByGameModeForClient(clientNum,gameModePrefix);
       }
-      local_10 = local_24;
+      statValue = local_24;
     }
-    else if (local_8 == 3) {
-      if (!param_3) {
-        SV_GetIntClientStatByGameMode(param_1,&local_14,param_2,"SCORE");
-        SV_GetIntClientStatByGameMode(param_1,&local_18,param_2,"TIME_PLAYED_TOTAL");
-        local_28 = local_18 / 0x3c;
+    else if (statId == 3) {
+      if (!delta) {
+        SV_GetIntClientStatByGameMode(clientNum,&totalScore,gameModePrefix,"SCORE");
+        SV_GetIntClientStatByGameMode(clientNum,&timePlayed,gameModePrefix,"TIME_PLAYED_TOTAL");
+        local_28 = timePlayed / 0x3c;
         if (local_28 < 2) {
           local_28 = 1;
         }
-        local_18 = local_28;
-        local_10 = (int)(((float)local_14 * 1000.0) / (float)local_28);
+        timePlayed = local_28;
+        statValue = (int)(((float)totalScore * 1000.0) / (float)local_28);
       }
     }
-    else if (param_3) {
-      bVar1 = SV_GetIntClientStatMatchDeltaByGameMode(param_1,&local_10,param_2,local_c);
+    else if (delta) {
+      bVar1 = SV_GetIntClientStatMatchDeltaByGameMode
+                        (clientNum,&statValue,gameModePrefix,currentStatName);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
     else {
-      bVar1 = SV_GetIntClientStatMatchDeltaByGameMode(param_1,&local_10,param_2,local_c);
+      bVar1 = SV_GetIntClientStatMatchDeltaByGameMode
+                        (clientNum,&statValue,gameModePrefix,currentStatName);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    SV_SetClientLBStat(param_1,local_8,local_10);
+    SV_SetClientLBStat(clientNum,statId,statValue);
   }
   return;
 }
@@ -1295,23 +1332,28 @@ void __cdecl SV_SetClientStatsForRow(int param_1,char *param_2,bool param_3)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl SV_ArePrestigeLBsEnabledForClient(client_t *param_1)
+bool __cdecl SV_ArePrestigeLBsEnabledForClient(client_t *client)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int local_8;
+  int rank;
+  int itemIndex;
+  int pLevel;
+  int clientPrestige;
+  int clientXP;
   
-  local_8 = 0;
-  LiveStats_GetIntPlayerStatFromBase(&local_8,"RANKXP",(char *)(param_1->globalStats + 0x380));
-  LiveStats_GetIntPlayerStatFromBase(&local_8,"PLEVEL",(char *)(param_1->globalStats + 0x380));
-  iVar2 = CL_GetRankForXp(local_8);
-  iVar4 = 0;
-  iVar3 = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_LB");
-  bVar1 = SV_CacValidate_IsItemPurchased(param_1->stats,iVar3,iVar4,iVar2);
+  clientXP = 0;
+  LiveStats_GetIntPlayerStatFromBase(&clientXP,"RANKXP",(char *)(client->globalStats + 0x380));
+  LiveStats_GetIntPlayerStatFromBase(&clientXP,"PLEVEL",(char *)(client->globalStats + 0x380));
+  rank = CL_GetRankForXp(clientXP);
+  pLevel = 0;
+  itemIndex = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_LB");
+  bVar1 = SV_CacValidate_IsItemPurchased(client->stats,itemIndex,pLevel,rank);
   return bVar1;
 }
 
@@ -1324,63 +1366,63 @@ bool __cdecl SV_ArePrestigeLBsEnabledForClient(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetGlobalLBsForClient(int param_1)
+void __cdecl SV_SetGlobalLBsForClient(int clientNum)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  int local_38;
-  int local_34;
-  int local_30;
-  ddlState_t local_2c;
-  int local_1c;
-  int local_18;
-  uint local_14;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar2;
+  int totalCodPointsSpent;
+  int totalCodPoints;
+  int toalCodPointsEarned;
+  ddlState_t searchState;
+  int timePlayed;
+  int totalScore;
+  int statValue;
+  char *currentStatName;
+  int statId;
+  char *stats;
   
-  local_8 = (char *)((int)svs.clients + param_1 * 0x84d00 + 0x6ff11);
-  for (local_c = 0; local_c < 0x13; local_c = local_c + 1) {
-    local_10 = *(char **)(&GlobalLbStatStrings + local_c * 4);
-    local_14 = 0;
-    if (local_c == 0) {
-      local_18 = 0;
-      local_1c = 0;
-      SV_GetStatFromBlob(local_8,"SCORE",&local_18);
-      SV_GetStatFromBlob(local_8,"TIME_PLAYED_TOTAL",&local_1c);
-      local_1c = local_1c / 0x3c;
-      if (local_1c == 0) {
-        local_1c = 1;
+  stats = (char *)((int)svs.clients + clientNum * 0x84d00 + 0x6ff11);
+  for (statId = 0; statId < 0x13; statId = statId + 1) {
+    currentStatName = *(char **)(&GlobalLbStatStrings + statId * 4);
+    statValue = 0;
+    if (statId == 0) {
+      totalScore = 0;
+      timePlayed = 0;
+      SV_GetStatFromBlob(stats,"SCORE",&totalScore);
+      SV_GetStatFromBlob(stats,"TIME_PLAYED_TOTAL",&timePlayed);
+      timePlayed = timePlayed / 0x3c;
+      if (timePlayed == 0) {
+        timePlayed = 1;
       }
-      local_14 = (uint)(((float)local_18 * 1000.0) / (float)local_1c);
+      statValue = (int)(((float)totalScore * 1000.0) / (float)timePlayed);
     }
-    else if ((local_c == 0x11) || (local_c == 0x12)) {
-      iVar4 = 2;
-      pdVar3 = &local_2c;
-      pdVar2 = LiveStats_GetRootDDLState();
-      iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-      if (iVar4 != 0) {
-        local_14 = DDL_GetInt(&local_2c,local_8);
+    else if ((statId == 0x11) || (statId == 0x12)) {
+      iVar2 = 2;
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+      if (iVar2 != 0) {
+        statValue = DDL_GetInt(&searchState,stats);
       }
     }
-    else if (local_c == 0xe) {
-      local_34 = 0;
-      local_38 = 0;
-      local_30 = 0;
-      SV_GetStatFromBlob(local_8,"CODPOINTS",&local_34);
-      SV_GetStatFromBlob(local_8,"CURRENCYSPENT",&local_38);
-      local_30 = local_34 - local_38;
+    else if (statId == 0xe) {
+      totalCodPoints = 0;
+      totalCodPointsSpent = 0;
+      toalCodPointsEarned = 0;
+      SV_GetStatFromBlob(stats,"CODPOINTS",&totalCodPoints);
+      SV_GetStatFromBlob(stats,"CURRENCYSPENT",&totalCodPointsSpent);
+      toalCodPointsEarned = totalCodPoints - totalCodPointsSpent;
     }
     else {
-      bVar1 = SV_GetStatFromBlob(local_8,local_10,(int *)&local_14);
+      bVar1 = SV_GetStatFromBlob(stats,currentStatName,&statValue);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    SV_SetClientLBStat(param_1,local_c,local_14);
+    SV_SetClientLBStat(clientNum,statId,statValue);
   }
   return;
 }
@@ -1395,76 +1437,82 @@ void __cdecl SV_SetGlobalLBsForClient(int param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-SV_MakeClientGlobalLBRow(int param_1,LbPlayerStat *param_2,int param_3,LeaderBoardRow<10> *param_4)
+SV_MakeClientGlobalLBRow(int clientNum,LbPlayerStat *stats,int lbIndex,LeaderBoardRow<10> *row)
 
 {
   uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  client_t *pcVar4;
-  bool bVar5;
-  undefined1 uVar6;
+  GlobalLbStatEnum GVar2;
+  int iVar3;
+  code *pcVar4;
+  client_t *pcVar5;
+  bool bVar6;
+  undefined1 uVar7;
   bool local_28;
-  uint local_20;
-  uint local_18;
-  int local_c;
+  GlobalLbStatEnum statType;
+  uint i_2;
+  uint numColumsInLb;
+  uint i;
+  client_t *client;
+  uint numLbs;
+  LbGlobalStructure *structure;
+  bool ok;
   
-  if (param_4 == (LeaderBoardRow<10> *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x792,0
+  if (row == (LeaderBoardRow<10> *)0x0) {
+    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x792,0
                              ,"%s");
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      uVar6 = (*pcVar3)();
-      return (bool)uVar6;
+    if (!bVar6) {
+      pcVar4 = (code *)swi(3);
+      uVar7 = (*pcVar4)();
+      return (bool)uVar7;
     }
   }
-  if (param_2 == (LbPlayerStat *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x793,0
+  if (stats == (LbPlayerStat *)0x0) {
+    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x793,0
                              ,"%s");
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      uVar6 = (*pcVar3)();
-      return (bool)uVar6;
+    if (!bVar6) {
+      pcVar4 = (code *)swi(3);
+      uVar7 = (*pcVar4)();
+      return (bool)uVar7;
     }
   }
   uVar1 = g_LbLookup.numGlobalLbs;
-  pcVar4 = svs.clients;
-  local_c = 0;
-  param_4->_padding_ = 0;
-  for (local_18 = 0; (local_c == 0 && (local_18 < uVar1)); local_18 = local_18 + 1) {
-    if (g_LbLookup.globalStructures[local_18].lbIndex == param_3) {
-      local_c = local_18 * 0x58 + 0xa4e4270;
+  pcVar5 = svs.clients;
+  structure = (LbGlobalStructure *)0x0;
+  row->_padding_ = 0;
+  for (i = 0; (structure == (LbGlobalStructure *)0x0 && (i < uVar1)); i = i + 1) {
+    if (g_LbLookup.globalStructures[i].lbIndex == lbIndex) {
+      structure = g_LbLookup.globalStructures + i;
     }
   }
-  if ((local_c == 0) || (param_4 == (LeaderBoardRow<10> *)0x0)) {
+  if ((structure == (LbGlobalStructure *)0x0) || (row == (LeaderBoardRow<10> *)0x0)) {
     local_28 = false;
   }
   else {
     local_28 = true;
   }
   if (local_28 != false) {
-    uVar1 = *(uint *)(local_c + 0x50);
+    uVar1 = structure->numColums;
     if (10 < uVar1) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x7a9
+      bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0x7a9
                                ,0,"%s");
-      if (!bVar5) {
-        pcVar3 = (code *)swi(3);
-        uVar6 = (*pcVar3)();
-        return (bool)uVar6;
+      if (!bVar6) {
+        pcVar4 = (code *)swi(3);
+        uVar7 = (*pcVar4)();
+        return (bool)uVar7;
       }
     }
-    for (local_20 = 0; local_20 < uVar1; local_20 = local_20 + 1) {
-      iVar2 = *(int *)(local_c + 4 + local_20 * 4);
-      param_4->m_columns[local_20] = param_2->values[iVar2];
-      if (local_20 == *(uint *)(local_c + 0x54)) {
-        iVar2 = param_2->values[iVar2];
-        param_4->_padding_ = iVar2;
-        param_4->_padding_ = iVar2 >> 0x1f;
+    for (i_2 = 0; i_2 < uVar1; i_2 = i_2 + 1) {
+      GVar2 = structure->columns[i_2];
+      row->m_columns[i_2] = stats->values[GVar2];
+      if (i_2 == structure->ratingCol) {
+        iVar3 = stats->values[GVar2];
+        row->_padding_ = iVar3;
+        row->_padding_ = iVar3 >> 0x1f;
       }
     }
-    param_4->_padding_ = *(int *)((int)pcVar4 + param_1 * 0x84d00 + 0x84cf0);
-    param_4->_padding_ = *(int *)((int)pcVar4 + param_1 * 0x84d00 + 0x84cf4);
-    param_4->_padding_ = GlobalLbViewIds[param_3];
+    row->_padding_ = *(int *)((int)pcVar5 + clientNum * 0x84d00 + 0x84cf0);
+    row->_padding_ = *(int *)((int)pcVar5 + clientNum * 0x84d00 + 0x84cf4);
+    row->_padding_ = GlobalLbViewIds[lbIndex];
   }
   return local_28;
 }
@@ -1474,13 +1522,13 @@ SV_MakeClientGlobalLBRow(int param_1,LbPlayerStat *param_2,int param_3,LeaderBoa
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "LbType": Some values do not have unique names */
 
 void __cdecl SV_CommitClientLeaderboards(void)
 
@@ -1488,33 +1536,33 @@ void __cdecl SV_CommitClientLeaderboards(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  bdReference<bdRemoteTask> bVar4;
-  bdStatus bVar5;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar4;
   int iStack_15f84;
   bdStatsInfo *pbStack_15f80;
   int iStack_15f5c;
   LeaderBoardRow<10> *pLStack_15f58;
   bdReference<bdByteBuffer> bStack_15f54;
-  int iStack_15f50;
-  int iStack_15f4c;
+  int i_2;
+  int i;
   bdStats *pbStack_15f48;
-  int iStack_15f44;
-  char cStack_15f3d;
-  int iStack_15f3c;
-  LeaderBoardRow<10> *pLStack_15f38;
-  int iStack_15f34;
-  int iStack_15f30;
-  LeaderBoardRow<10> *pLStack_15f2c;
-  int iStack_15f28;
-  int iStack_15f24;
-  LbType LStack_15f20;
-  int iStack_15f1c;
-  char *pcStack_15f18;
+  int index;
+  bool writeStatsToLb;
+  int weeklylbIndex;
+  LeaderBoardRow<10> *weeklyrow;
+  int lbIndex;
+  int monthlylbIndex;
+  LeaderBoardRow<10> *monthlyrow;
+  uint viewIndex;
+  int clientnum;
+  LbType lbType;
+  int currentLbType;
+  char *gameModePrefix;
   LeaderBoardRow<10> aLStack_15f14 [576];
   bdStatsInfo abStack_914 [20];
-  int local_8;
+  int dirtylbCount;
   
-  local_8 = 0x98970d;
+  dirtylbCount = 0x98970d;
   bVar2 = Com_CanWriteLeaderboards();
   if (bVar2) {
     if ((lbRemoteTask.m_ptr != (bdRemoteTask *)0x0) &&
@@ -1550,121 +1598,119 @@ void __cdecl SV_CommitClientLeaderboards(void)
           pLStack_15f58->m_columns[9] = 0;
           pLStack_15f58 = pLStack_15f58 + 1;
         }
-        pcStack_15f18 = (char *)0x0;
+        gameModePrefix = (char *)0x0;
         LB_SetGametypeDvar();
-        pcStack_15f18 = lbTypeEnum[(lb_type->current).integer];
-        if ((pcStack_15f18 == (char *)0x0) &&
+        gameModePrefix = lbTypeEnum[(lb_type->current).integer];
+        if ((gameModePrefix == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp"
                                      ,0x7d8,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        LStack_15f20 = (lb_type->current).unsignedInt;
-        iStack_15f1c = (lb_type->current).integer;
-        if (7 < iStack_15f1c) {
-          iStack_15f1c = iStack_15f1c + -8;
+        lbType = (lb_type->current).unsignedInt;
+        currentLbType = (lb_type->current).integer;
+        if (7 < currentLbType) {
+          currentLbType = currentLbType + -8;
         }
-        local_8 = 0;
-        for (iStack_15f24 = 0; iStack_15f24 < (com_maxclients->current).integer;
-            iStack_15f24 = iStack_15f24 + 1) {
-          if ((((2 < *(int *)((int)svs.clients + iStack_15f24 * 0x84d00)) &&
-               (*(int *)((int)svs.clients + iStack_15f24 * 0x84d00 + 0x20) != 0)) &&
-              (*(int *)((int)svs.clients + iStack_15f24 * 0x84d00 + 0x84c90) != 0)) &&
-             (*(int *)((int)svs.clients + iStack_15f24 * 0x84d00 + 4) != 0)) {
-            SV_DWWriteClientStats((client_t *)(iStack_15f24 * 0x84d00 + (int)svs.clients));
-            SV_SetClientStatsForRow(iStack_15f24,pcStack_15f18,false);
-            iStack_15f28 = 0;
-            cStack_15f3d = '\0';
-            iStack_15f34 = 0;
-            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(iStack_15f24,pcStack_15f18);
+        dirtylbCount = 0;
+        for (clientnum = 0; clientnum < (com_maxclients->current).integer; clientnum = clientnum + 1
+            ) {
+          if ((((2 < *(int *)((int)svs.clients + clientnum * 0x84d00)) &&
+               (*(int *)((int)svs.clients + clientnum * 0x84d00 + 0x20) != 0)) &&
+              (*(int *)((int)svs.clients + clientnum * 0x84d00 + 0x84c90) != 0)) &&
+             (*(int *)((int)svs.clients + clientnum * 0x84d00 + 4) != 0)) {
+            SV_DWWriteClientStats((client_t *)(clientnum * 0x84d00 + (int)svs.clients));
+            SV_SetClientStatsForRow(clientnum,gameModePrefix,false);
+            viewIndex = 0;
+            writeStatsToLb = false;
+            lbIndex = 0;
+            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(clientnum,gameModePrefix);
             if (0x31 < iVar3) {
-              cStack_15f3d = '\x01';
+              writeStatsToLb = true;
             }
-            if (cStack_15f3d != '\0') {
-              iStack_15f34 = LB_GetLbIndex(LStack_15f20,LB_RESETPERIOD_ALL_TIME,false,false);
-              SV_MakeClientLBRow(iStack_15f24,g_playerStats + iStack_15f24,iStack_15f1c,iStack_15f34
-                                 ,aLStack_15f14 + iStack_15f24 * 0x12 + iStack_15f28,false);
-              iVar3 = iStack_15f24 * 0x12 + iStack_15f28;
-              iStack_15f28 = iStack_15f28 + 1;
-              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + local_8 * 4 + -0x20) =
+            if (writeStatsToLb != false) {
+              lbIndex = LB_GetLbIndex(lbType,LB_RESETPERIOD_ALL_TIME,false,false);
+              SV_MakeClientLBRow(clientnum,g_playerStats + clientnum,currentLbType,lbIndex,
+                                 aLStack_15f14 + clientnum * 0x12 + viewIndex,false);
+              iVar3 = clientnum * 0x12 + viewIndex;
+              viewIndex = viewIndex + 1;
+              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + dirtylbCount * 4 + -0x20) =
                    aLStack_15f14 + iVar3;
-              local_8 = local_8 + 1;
+              dirtylbCount = dirtylbCount + 1;
             }
-            if ((cStack_15f3d != '\0') &&
+            if ((writeStatsToLb != false) &&
                (bVar2 = SV_ArePrestigeLBsEnabledForClient
-                                  ((client_t *)(iStack_15f24 * 0x84d00 + (int)svs.clients)), bVar2))
-            {
-              iStack_15f34 = LB_GetLbIndex(LStack_15f20,LB_RESETPERIOD_ALL_TIME,true,false);
-              SV_MakeClientLBRow(iStack_15f24,g_playerStats + iStack_15f24,iStack_15f1c,iStack_15f34
-                                 ,aLStack_15f14 + iStack_15f24 * 0x12 + iStack_15f28,false);
-              iVar3 = iStack_15f24 * 0x12 + iStack_15f28;
-              iStack_15f28 = iStack_15f28 + 1;
-              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + local_8 * 4 + -0x20) =
+                                  ((client_t *)(clientnum * 0x84d00 + (int)svs.clients)), bVar2)) {
+              lbIndex = LB_GetLbIndex(lbType,LB_RESETPERIOD_ALL_TIME,true,false);
+              SV_MakeClientLBRow(clientnum,g_playerStats + clientnum,currentLbType,lbIndex,
+                                 aLStack_15f14 + clientnum * 0x12 + viewIndex,false);
+              iVar3 = clientnum * 0x12 + viewIndex;
+              viewIndex = viewIndex + 1;
+              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + dirtylbCount * 4 + -0x20) =
                    aLStack_15f14 + iVar3;
-              local_8 = local_8 + 1;
+              dirtylbCount = dirtylbCount + 1;
             }
-            iStack_15f3c = LB_GetLbIndex(LStack_15f20,LB_RESETPERIOD_WEEKLY,false,false);
-            iStack_15f30 = LB_GetLbIndex(LStack_15f20,LB_RESETPERIOD_MONTHLY,false,false);
-            SV_SetClientStatsForRow(iStack_15f24,pcStack_15f18,true);
-            pLStack_15f38 = aLStack_15f14 + iStack_15f24 * 0x12 + iStack_15f28;
-            pLStack_15f2c = aLStack_15f14 + iStack_15f24 * 0x12 + iStack_15f28 + 1;
-            iStack_15f28 = iStack_15f28 + 2;
-            SV_MakeClientLBRow(iStack_15f24,g_playerStats + iStack_15f24,iStack_15f1c,iStack_15f3c,
-                               pLStack_15f38,true);
-            SV_MakeClientLBRow(iStack_15f24,g_playerStats + iStack_15f24,iStack_15f1c,iStack_15f30,
-                               pLStack_15f2c,true);
+            weeklylbIndex = LB_GetLbIndex(lbType,LB_RESETPERIOD_WEEKLY,false,false);
+            monthlylbIndex = LB_GetLbIndex(lbType,LB_RESETPERIOD_MONTHLY,false,false);
+            SV_SetClientStatsForRow(clientnum,gameModePrefix,true);
+            weeklyrow = aLStack_15f14 + clientnum * 0x12 + viewIndex;
+            monthlyrow = aLStack_15f14 + clientnum * 0x12 + viewIndex + 1;
+            viewIndex = viewIndex + 2;
+            SV_MakeClientLBRow(clientnum,g_playerStats + clientnum,currentLbType,weeklylbIndex,
+                               weeklyrow,true);
+            SV_MakeClientLBRow(clientnum,g_playerStats + clientnum,currentLbType,monthlylbIndex,
+                               monthlyrow,true);
             SV_DoTimedStatsForClient
-                      (iStack_15f24,pcStack_15f18,pLStack_15f38,iStack_15f3c,pLStack_15f2c,
-                       iStack_15f30);
-            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(iStack_15f24,pcStack_15f18);
+                      (clientnum,gameModePrefix,weeklyrow,weeklylbIndex,monthlyrow,monthlylbIndex);
+            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(clientnum,gameModePrefix);
             if (4 < iVar3) {
-              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + local_8 * 4 + -0x20) =
-                   pLStack_15f38;
-              local_8 = local_8 + 1;
+              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + dirtylbCount * 4 + -0x20) =
+                   weeklyrow;
+              dirtylbCount = dirtylbCount + 1;
             }
-            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(iStack_15f24,pcStack_15f18);
+            iVar3 = SV_GetTotalMatchesPlayedByGameModeForClient(clientnum,gameModePrefix);
             if (0x18 < iVar3) {
-              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + local_8 * 4 + -0x20) =
-                   pLStack_15f2c;
-              local_8 = local_8 + 1;
+              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + dirtylbCount * 4 + -0x20) =
+                   monthlyrow;
+              dirtylbCount = dirtylbCount + 1;
             }
-            SV_SetGlobalLBsForClient(iStack_15f24);
-            for (iStack_15f44 = 0; iStack_15f44 < 4; iStack_15f44 = iStack_15f44 + 1) {
+            SV_SetGlobalLBsForClient(clientnum);
+            for (index = 0; index < 4; index = index + 1) {
               SV_MakeClientGlobalLBRow
-                        (iStack_15f24,g_playerStats + iStack_15f24,iStack_15f44,
-                         aLStack_15f14 + iStack_15f24 * 0x12 + iStack_15f28);
-              iVar3 = iStack_15f24 * 0x12 + iStack_15f28;
-              iStack_15f28 = iStack_15f28 + 1;
-              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + local_8 * 4 + -0x20) =
+                        (clientnum,g_playerStats + clientnum,index,
+                         aLStack_15f14 + clientnum * 0x12 + viewIndex);
+              iVar3 = clientnum * 0x12 + viewIndex;
+              viewIndex = viewIndex + 1;
+              *(LeaderBoardRow<10> **)(abStack_914[0].m_entityName + dirtylbCount * 4 + -0x20) =
                    aLStack_15f14 + iVar3;
-              local_8 = local_8 + 1;
+              dirtylbCount = dirtylbCount + 1;
             }
           }
         }
-        if (local_8 != 0) {
+        if (dirtylbCount != 0) {
           Com_DPrintf(0x16,"DirtyLBnum\tLeaderboardID\tEntityID\n");
-          for (iStack_15f4c = 0; iStack_15f4c < local_8; iStack_15f4c = iStack_15f4c + 1) {
+          for (i = 0; i < dirtylbCount; i = i + 1) {
             Com_DPrintf(0x16,"%i\t%u\t%llu\n");
           }
           Com_DPrintf(0xf,"Starting write for %i leaderboards\n");
           pbStack_15f48 = dwGetStats(0);
           if (pbStack_15f48 != (bdStats *)0x0) {
             Com_DPrintf(0x16,"Writing leaderboards: ");
-            for (iStack_15f50 = 0; iStack_15f50 < local_8; iStack_15f50 = iStack_15f50 + 1) {
+            for (i_2 = 0; i_2 < dirtylbCount; i_2 = i_2 + 1) {
               Com_DPrintf(0x16,"%u ");
             }
             Com_DPrintf(0x16,"\n");
             dwEnterDeferredCritsec();
-            bVar4 = bdStats::writeStats(pbStack_15f48,(bdStatsInfo **)&bStack_15f54,
-                                        (uint)&abStack_914[0].m_entityID);
+            other_3 = bdStats::writeStats(pbStack_15f48,(bdStatsInfo **)&bStack_15f54,
+                                          (uint)&abStack_914[0].m_entityID);
             bdReference<bdAddrHandle>::operator=
                       ((bdReference<bdAddrHandle> *)&lbRemoteTask,
-                       (bdReference<bdAddrHandle> *)bVar4.m_ptr);
+                       (bdReference<bdAddrHandle> *)other_3.m_ptr);
             bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&bStack_15f54);
             dwLeaveDeferredCritsec();
             if ((lbRemoteTask.m_ptr != (bdRemoteTask *)0x0) &&
-               (bVar5 = bdRemoteTask::getStatus(lbRemoteTask.m_ptr), bVar5 == BD_PENDING)) {
+               (bVar4 = bdRemoteTask::getStatus(lbRemoteTask.m_ptr), bVar4 == BD_PENDING)) {
               TaskManager2_DeferTaskToMainThread
                         (lbRemoteTask.m_ptr,task_writeclientleaderboards,(void *)0x0);
             }
@@ -1691,23 +1737,25 @@ void __cdecl SV_CommitClientLeaderboards(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl SV_IsStatsBlobOK(void *param_1)
+bool __cdecl SV_IsStatsBlobOK(void *data)
 
 {
   int iVar1;
-  char local_9cfc [40172];
+  char backupBuffer [40172];
   uint local_10;
-  char *local_c;
+  char *statsBlob;
   undefined4 uStack_8;
+  bool retval;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   uStack_8 = 0x98aa5d;
-  local_c = param_1;
-  iVar1 = DDL_AssociateBuffer(param_1,0x9ce8,g_statsDDL);
+  statsBlob = data;
+  iVar1 = DDL_AssociateBuffer(data,0x9ce8,g_statsDDL);
   if (iVar1 == 0) {
-    iVar1 = DDL_FixBufferVersion(local_c,g_statsDDL,"ddl_mp/stats.ddl",local_9cfc,0x9ce8);
+    iVar1 = DDL_FixBufferVersion(statsBlob,g_statsDDL,"ddl_mp/stats.ddl",backupBuffer,0x9ce8);
     if (iVar1 == 0) {
-      iVar1 = DDL_FixBufferVersion(local_c,g_statsDDL,"ddl_mp/stats_archive.ddl",local_9cfc,0x9ce8);
+      iVar1 = DDL_FixBufferVersion
+                        (statsBlob,g_statsDDL,"ddl_mp/stats_archive.ddl",backupBuffer,0x9ce8);
       if (iVar1 != 0) {
         DDL_NoCheckPrintWarning("DDL: Stats buffer updated to version %d\n");
         uStack_8 = 0x1000000;
@@ -1721,7 +1769,7 @@ bool __cdecl SV_IsStatsBlobOK(void *param_1)
   else {
     uStack_8 = 0x1000000;
   }
-  return (bool)uStack_8._3_1_;
+  return retval;
 }
 
 
@@ -1733,93 +1781,95 @@ bool __cdecl SV_IsStatsBlobOK(void *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DWReadClientGlobalStatsSuccess(int param_1,void *param_2)
+void __cdecl SV_DWReadClientGlobalStatsSuccess(int controllerIndex,void *data)
 
 {
   uint uVar1;
   int iVar2;
   bool bVar3;
-  int local_10;
-  int local_c;
-  client_t *local_8;
+  dwFileOperationInfo *fileinfo;
+  int clientxp;
+  int clientnum;
+  client_t *client;
   
-  local_8 = (client_t *)0x98a83d;
-  local_8 = SV_GetClientFromFileInfo(param_2);
-  if (local_8 == (client_t *)0x0) {
+  client = (client_t *)0x98a83d;
+  client = SV_GetClientFromFileInfo(data);
+  if (client == (client_t *)0x0) {
     Com_PrintWarning(0xf,
                      "Got successful globalstats for user %llu, but no matching user on server found!\n"
                     );
   }
   else {
     Com_Printf(0xf,"Successfully read stats for user %s\n");
-    bVar3 = SV_IsStatsBlobOK(local_8->globalStats + 0x380);
+    bVar3 = SV_IsStatsBlobOK(client->globalStats + 0x380);
     if (bVar3) {
-      local_8[1].userinfo[0x368] = '\x01';
-      local_8[1].userinfo[0x369] = '\0';
-      local_8[1].userinfo[0x36a] = '\0';
-      local_8[1].userinfo[0x36b] = '\0';
-      memcpy(local_8->globalStatsStable + 0x700,local_8->globalStats + 0x380,0x9ce8);
-      uVar1 = *(uint *)(local_8[1].userinfo + 0x360);
-      iVar2 = *(int *)(local_8[1].userinfo + 0x364);
-      *(uint *)(local_8[1].userinfo + 0x360) = uVar1 + 1;
-      *(uint *)(local_8[1].userinfo + 0x364) = iVar2 + (uint)(0xfffffffe < uVar1);
-      if ((*(int *)(local_8[1].userinfo + 0x360) == 2) &&
-         (*(int *)(local_8[1].userinfo + 0x364) == 0)) {
-        local_8->globalStats[0x360] = '\0';
-        local_8->globalStats[0x361] = '\0';
-        local_8->globalStats[0x362] = '\0';
-        local_8->globalStats[0x363] = '\0';
-        local_8->globalStats[0x364] = '\0';
-        local_8->globalStats[0x365] = '\0';
-        local_8->globalStats[0x366] = '\0';
-        local_8->globalStats[0x367] = '\0';
-        local_8->globalStats[0x368] = '\0';
-        local_8->globalStats[0x369] = '\0';
-        local_8->globalStats[0x36a] = '\0';
-        local_8->globalStats[0x36b] = '\0';
-        local_8->globalStats[0x36c] = '\0';
-        local_8->globalStats[0x36d] = '\0';
-        local_8->globalStats[0x36e] = '\0';
-        local_8->globalStats[0x36f] = '\0';
-        local_8->globalStats[0x370] = '\0';
-        local_8->globalStats[0x371] = '\0';
-        local_8->globalStats[0x372] = '\0';
-        local_8->globalStats[0x373] = '\0';
-        local_8->globalStats[0x374] = '\0';
-        local_8->globalStats[0x375] = '\0';
-        local_8->globalStats[0x376] = '\0';
-        local_8->globalStats[0x377] = '\0';
-        local_8->globalStats[0x378] = '\0';
-        local_8->globalStats[0x379] = '\0';
-        local_8->globalStats[0x37a] = '\0';
-        local_8->globalStats[0x37b] = '\0';
-        local_8->globalStats[0x37c] = '\0';
-        local_8->globalStats[0x37d] = '\0';
-        local_8->globalStats[0x37e] = '\0';
-        local_8->globalStats[0x37f] = '\0';
-        BG_UnlockablesSetPurchasedBits(local_8->stats,local_8->globalStats + 0x360);
-        local_8[1].userinfo[0x360] = -1;
-        local_8[1].userinfo[0x361] = -1;
-        local_8[1].userinfo[0x362] = -1;
-        local_8[1].userinfo[0x363] = -1;
-        local_8[1].userinfo[0x364] = '\a';
-        local_8[1].userinfo[0x365] = '\0';
-        local_8[1].userinfo[0x366] = '\0';
-        local_8[1].userinfo[0x367] = '\0';
-        NET_OutOfBandPrint(NS_MAXCLIENTS,(local_8->header).netchan.remoteAddress,"statsOK\n");
+      client[1].userinfo[0x368] = '\x01';
+      client[1].userinfo[0x369] = '\0';
+      client[1].userinfo[0x36a] = '\0';
+      client[1].userinfo[0x36b] = '\0';
+      memcpy(client->globalStatsStable + 0x700,client->globalStats + 0x380,0x9ce8);
+      uVar1 = *(uint *)(client[1].userinfo + 0x360);
+      iVar2 = *(int *)(client[1].userinfo + 0x364);
+      *(uint *)(client[1].userinfo + 0x360) = uVar1 + 1;
+      *(uint *)(client[1].userinfo + 0x364) = iVar2 + (uint)(0xfffffffe < uVar1);
+      if ((*(int *)(client[1].userinfo + 0x360) == 2) && (*(int *)(client[1].userinfo + 0x364) == 0)
+         ) {
+        client->globalStats[0x360] = '\0';
+        client->globalStats[0x361] = '\0';
+        client->globalStats[0x362] = '\0';
+        client->globalStats[0x363] = '\0';
+        client->globalStats[0x364] = '\0';
+        client->globalStats[0x365] = '\0';
+        client->globalStats[0x366] = '\0';
+        client->globalStats[0x367] = '\0';
+        client->globalStats[0x368] = '\0';
+        client->globalStats[0x369] = '\0';
+        client->globalStats[0x36a] = '\0';
+        client->globalStats[0x36b] = '\0';
+        client->globalStats[0x36c] = '\0';
+        client->globalStats[0x36d] = '\0';
+        client->globalStats[0x36e] = '\0';
+        client->globalStats[0x36f] = '\0';
+        client->globalStats[0x370] = '\0';
+        client->globalStats[0x371] = '\0';
+        client->globalStats[0x372] = '\0';
+        client->globalStats[0x373] = '\0';
+        client->globalStats[0x374] = '\0';
+        client->globalStats[0x375] = '\0';
+        client->globalStats[0x376] = '\0';
+        client->globalStats[0x377] = '\0';
+        client->globalStats[0x378] = '\0';
+        client->globalStats[0x379] = '\0';
+        client->globalStats[0x37a] = '\0';
+        client->globalStats[0x37b] = '\0';
+        client->globalStats[0x37c] = '\0';
+        client->globalStats[0x37d] = '\0';
+        client->globalStats[0x37e] = '\0';
+        client->globalStats[0x37f] = '\0';
+        BG_UnlockablesSetPurchasedBits(client->stats,client->globalStats + 0x360);
+        client[1].userinfo[0x360] = -1;
+        client[1].userinfo[0x361] = -1;
+        client[1].userinfo[0x362] = -1;
+        client[1].userinfo[0x363] = -1;
+        client[1].userinfo[0x364] = '\a';
+        client[1].userinfo[0x365] = '\0';
+        client[1].userinfo[0x366] = '\0';
+        client[1].userinfo[0x367] = '\0';
+        NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,"statsOK\n");
       }
-      local_c = SV_GetClientNumForBdOnlineUserID(*(ulong64 *)(local_8[1].userinfo + 0x3c8));
-      local_10 = 0;
-      SV_GetClientDDLStat(local_c,"RANKXP",&local_10);
+      clientnum = SV_GetClientNumForBdOnlineUserID(*(ulong64 *)(client[1].userinfo + 0x3c8));
+      clientxp = 0;
+      SV_GetClientDDLStat(clientnum,"RANKXP",&clientxp);
       Com_Printf(0xf,"Client has xp of %i\n");
     }
     else {
-      NET_OutOfBandPrint(NS_MAXCLIENTS,(local_8->header).netchan.remoteAddress,
+      NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,
                          "error\nPATCH_BAD_STATS");
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
@@ -1831,15 +1881,17 @@ void __cdecl SV_DWReadClientGlobalStatsSuccess(int param_1,void *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl SV_DWReadClientGlobalStatsFailure(int param_1,void *param_2)
+taskCompleteResults __cdecl SV_DWReadClientGlobalStatsFailure(int controllerIndex,void *data)
 
 {
   uint uVar1;
   int iVar2;
   client_t *pcVar3;
+  client_t *client;
   
-  pcVar3 = SV_GetClientFromFileInfo(param_2);
+  pcVar3 = SV_GetClientFromFileInfo(data);
   if (pcVar3 != (client_t *)0x0) {
     Com_Printf(0xf,"Couldn\'t get stats for user %s!");
     Com_DPrintf(0xf,"DWSTATS - No stats for user %s, giving them fresh stats\n");
@@ -1899,7 +1951,7 @@ taskCompleteResults __cdecl SV_DWReadClientGlobalStatsFailure(int param_1,void *
       NET_OutOfBandPrint(NS_MAXCLIENTS,(pcVar3->header).netchan.remoteAddress,"statsOK\n");
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return TASK_COMPLETE;
 }
 
@@ -1912,16 +1964,18 @@ taskCompleteResults __cdecl SV_DWReadClientGlobalStatsFailure(int param_1,void *
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DWReadClientCACSuccess(int param_1,void *param_2)
+void __cdecl SV_DWReadClientCACSuccess(int controllerIndex,void *data)
 
 {
   uint uVar1;
   int iVar2;
   bool bVar3;
   client_t *pcVar4;
+  client_t *client;
   
-  pcVar4 = SV_GetClientFromFileInfo(param_2);
+  pcVar4 = SV_GetClientFromFileInfo(data);
   if (pcVar4 != (client_t *)0x0) {
     Com_Printf(0xf,"Successfully read stats for user %s\n");
     bVar3 = SV_IsStatsBlobOK(pcVar4->stats);
@@ -1981,7 +2035,7 @@ void __cdecl SV_DWReadClientCACSuccess(int param_1,void *param_2)
                          "error\nPATCH_BAD_STATS");
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
@@ -1993,16 +2047,18 @@ void __cdecl SV_DWReadClientCACSuccess(int param_1,void *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl SV_DWReadClientCACFailure(int param_1,void *param_2)
+taskCompleteResults __cdecl SV_DWReadClientCACFailure(int controllerIndex,void *data)
 
 {
   uint uVar1;
   int iVar2;
   client_t *pcVar3;
   char *pcVar4;
+  client_t *client;
   
-  pcVar3 = SV_GetClientFromFileInfo(param_2);
+  pcVar3 = SV_GetClientFromFileInfo(data);
   if (pcVar3 != (client_t *)0x0) {
     Com_Printf(0xf,"Couldn\'t get CAC for user %s!");
     pcVar4 = va("DWSTATS - No CAC for user %s, giving them fresh CAC\n");
@@ -2060,37 +2116,40 @@ taskCompleteResults __cdecl SV_DWReadClientCACFailure(int param_1,void *param_2)
       NET_OutOfBandPrint(NS_MAXCLIENTS,(pcVar3->header).netchan.remoteAddress,"statsOK\n");
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return TASK_COMPLETE;
 }
 
 
 // 0098B350  SV_DWWriteClientGlobalStatsSuccess  (live/live_storage_win.cpp:2263)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DWWriteClientGlobalStatsSuccess(int param_1,void *param_2)
+void __cdecl SV_DWWriteClientGlobalStatsSuccess(int controllerIndex,void *data)
 
 {
   client_t *pcVar1;
-  ulong64 local_c;
+  client_t *client;
+  dwFileOperationInfo *finfo;
+  ulong64 uid;
   
-  pcVar1 = SV_GetClientFromFileInfo(param_2);
+  pcVar1 = SV_GetClientFromFileInfo(data);
   if (pcVar1 == (client_t *)0x0) {
-    local_c = SV_GetBdUidFromFileInfo(param_2);
+    uid = SV_GetBdUidFromFileInfo(data);
   }
   else {
     Com_Printf(0xf,"Write stats success for user %s\n");
     memcpy(pcVar1->globalStatsStable + 0x700,pcVar1->globalStats + 0x380,0x9ce8);
-    local_c = *(ulong64 *)(pcVar1[1].userinfo + 0x3c8);
+    uid = *(ulong64 *)(pcVar1[1].userinfo + 0x3c8);
   }
   LiveStorage_SendStatsBufferToClient
-            (local_c,*(uchar **)((int)param_2 + 0xf8),0x9ce8,BLOB_TYPE_GLOBAL,false);
-  SV_ResetFileOp(param_2);
+            (uid,*(uchar **)((int)data + 0xf8),0x9ce8,BLOB_TYPE_GLOBAL,false);
+  SV_ResetFileOp(data);
   return;
 }
 
@@ -2104,36 +2163,36 @@ void __cdecl SV_DWWriteClientGlobalStatsSuccess(int param_1,void *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ReadClientFileSuccess(TaskRecord *param_1)
+void __cdecl SV_ReadClientFileSuccess(TaskRecord *task)
 
 {
   code *pcVar1;
-  void *pvVar2;
+  dwFileOperationInfo *pdVar2;
   bool bVar3;
-  uchar *puVar4;
-  client_t *pcVar5;
-  LargeLocal local_10;
-  void *local_8;
+  uchar *dst;
+  client_t *pcVar4;
+  LargeLocal tempCompressedFileBuffer_large_local;
+  dwFileOperationInfo *fileInfo;
   
-  if (param_1->payload != (void *)0x0) {
-    local_8 = param_1->payload;
-    if (*(char *)((int)local_8 + 0xf3) != '\0') {
-      LargeLocal::LargeLocal(&local_10,0x10000);
-      puVar4 = LargeLocal::GetBuf(&local_10);
-      pvVar2 = local_8;
-      if (0x10000 < *(uint *)((int)local_8 + 0x24)) {
+  if (task->payload != (void *)0x0) {
+    fileInfo = task->payload;
+    if (fileInfo->isCompressedFile != false) {
+      LargeLocal::LargeLocal(&tempCompressedFileBuffer_large_local,0x10000);
+      dst = LargeLocal::GetBuf(&tempCompressedFileBuffer_large_local);
+      pdVar2 = fileInfo;
+      if (0x10000 < (fileInfo->fileTask).m_bufferSize) {
         Com_PrintError(0x10,"Insufficient space to decompress file %s");
-        LiveStorage_GetUserFileFailure(param_1);
-        LargeLocal::~LargeLocal(&local_10);
+        LiveStorage_GetUserFileFailure(task);
+        LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
         return;
       }
-      pcVar5 = SV_GetClientFromFileInfo(param_1->payload);
-      if (pcVar5 != (client_t *)0x0) {
-        SV_GetClientFromFileInfo(local_8);
+      pcVar4 = SV_GetClientFromFileInfo(task->payload);
+      if (pcVar4 != (client_t *)0x0) {
+        SV_GetClientFromFileInfo(fileInfo);
         Com_DPrintf(0x10,"Decompressing file %s for user %s\n");
       }
-      memcpy(puVar4,*(uchar **)((int)pvVar2 + 0xd8),*(ulong *)((int)pvVar2 + 0xc));
-      if ((*(int *)((int)pvVar2 + 0xc) == 0) &&
+      memcpy(dst,(pdVar2->fileTask).m_buffer,(pdVar2->fileTask).m_fileData.m_fileSize);
+      if (((pdVar2->fileTask).m_fileData.m_fileSize == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",
                                    0x904,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -2141,12 +2200,12 @@ void __cdecl SV_ReadClientFileSuccess(TaskRecord *param_1)
         return;
       }
       MSG_DecompressWithZLib
-                (puVar4,*(int *)((int)pvVar2 + 0xc),*(uchar **)((int)pvVar2 + 0xd8),
-                 *(int *)((int)pvVar2 + 0x24));
-      LargeLocal::~LargeLocal(&local_10);
+                (dst,(pdVar2->fileTask).m_fileData.m_fileSize,(pdVar2->fileTask).m_buffer,
+                 (pdVar2->fileTask).m_bufferSize);
+      LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
     }
-    if (*(int *)((int)local_8 + 0x100) != 0) {
-      (**(code **)((int)local_8 + 0x100))(0,param_1->payload);
+    if (fileInfo->fileOperationSucessFunction != (_func___cdecl_void_int_void_ptr *)0x0) {
+      (*fileInfo->fileOperationSucessFunction)(0,task->payload);
     }
   }
   return;
@@ -2157,11 +2216,13 @@ void __cdecl SV_ReadClientFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_ReadClientFileFailure(TaskRecord *param_1)
+void __cdecl SV_ReadClientFileFailure(TaskRecord *task_2)
 
 {
-  if ((param_1->payload != (void *)0x0) && (*(int *)((int)param_1->payload + 0x104) != 0)) {
-    (**(code **)((int)param_1->payload + 0x104))(0,param_1->payload);
+  dwFileOperationInfo *fileInfo_2;
+  
+  if ((task_2->payload != (void *)0x0) && (*(int *)((int)task_2->payload + 0x104) != 0)) {
+    (**(code **)((int)task_2->payload + 0x104))(0,task_2->payload);
   }
   return;
 }
@@ -2171,11 +2232,13 @@ void __cdecl SV_ReadClientFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_WriteClientFileSuccess(TaskRecord *param_1)
+void __cdecl SV_WriteClientFileSuccess(TaskRecord *task)
 
 {
-  if ((param_1->payload != (void *)0x0) && (*(int *)((int)param_1->payload + 0x100) != 0)) {
-    (**(code **)((int)param_1->payload + 0x100))(0,param_1->payload);
+  dwFileOperationInfo *fileInfo;
+  
+  if ((task->payload != (void *)0x0) && (*(int *)((int)task->payload + 0x100) != 0)) {
+    (**(code **)((int)task->payload + 0x100))(0,task->payload);
   }
   return;
 }
@@ -2185,44 +2248,44 @@ void __cdecl SV_WriteClientFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_ReadDWFileDeferred(dwFileOperationInfo *param_1)
+void __cdecl SV_ReadDWFileDeferred(dwFileOperationInfo *fileInfo)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdStatus bVar2;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdByteBuffer> local_14;
-  dwFileOperationInfo *local_10;
-  bdRemoteTask *local_c;
-  bdStorage *local_8;
+  dwFileTask *fileTask;
+  bdRemoteTask *task;
+  bdStorage *storage;
   
-  local_8 = dwGetStorage(0);
-  if ((local_8 != (bdStorage *)0x0) && (param_1 != (dwFileOperationInfo *)0x0)) {
-    local_10 = param_1;
-    (param_1->fileTask).m_buffer = param_1->fileBuffer;
-    (param_1->fileTask).m_bufferSize = param_1->bufferSize;
-    (param_1->fileTask).m_fileData.m_fileData = (param_1->fileTask).m_buffer;
-    (param_1->fileTask).m_fileData.m_fileSize = (param_1->fileTask).m_bufferSize;
-    local_c = (bdRemoteTask *)0x0;
+  storage = dwGetStorage(0);
+  if ((storage != (bdStorage *)0x0) && (fileInfo != (dwFileOperationInfo *)0x0)) {
+    fileTask = &fileInfo->fileTask;
+    (fileInfo->fileTask).m_buffer = fileInfo->fileBuffer;
+    (fileInfo->fileTask).m_bufferSize = fileInfo->bufferSize;
+    (fileInfo->fileTask).m_fileData.m_fileData = (fileInfo->fileTask).m_buffer;
+    (fileInfo->fileTask).m_fileData.m_fileSize = (fileInfo->fileTask).m_bufferSize;
+    task = (bdRemoteTask *)0x0;
     dwEnterDeferredCritsec();
-    if (((int)param_1->ownerID == 0) && (*(int *)((int)&param_1->ownerID + 4) == 0)) {
+    if (((int)fileInfo->ownerID == 0) && (*(int *)((int)&fileInfo->ownerID + 4) == 0)) {
       bVar1 = bdStorage::getPublisherFile
-                        (local_8,(char *)&local_18,(bdFileData *)(param_1->fileTask).m_filename);
-      local_c = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
+                        (storage,(char *)&local_18,(bdFileData *)(fileInfo->fileTask).m_filename);
+      task = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
     else {
-      bVar1 = bdStorage::getFile(local_8,(char *)&local_14,
-                                 (bdFileData *)(param_1->fileTask).m_filename,
-                                 CONCAT44((int)param_1->ownerID,&(param_1->fileTask).m_fileData));
-      local_c = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
+      bVar1 = bdStorage::getFile(storage,(char *)&local_14,
+                                 (bdFileData *)(fileInfo->fileTask).m_filename,
+                                 CONCAT44((int)fileInfo->ownerID,&(fileInfo->fileTask).m_fileData));
+      task = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
     dwLeaveDeferredCritsec();
-    if (local_c != (bdRemoteTask *)0x0) {
-      bVar2 = bdRemoteTask::getStatus(local_c);
+    if (task != (bdRemoteTask *)0x0) {
+      bVar2 = bdRemoteTask::getStatus(task);
       if (bVar2 == BD_PENDING) {
-        TaskManager2_DeferTaskToMainThread(local_c,task_svreadclientfile,param_1);
+        TaskManager2_DeferTaskToMainThread(task,task_svreadclientfile,fileInfo);
       }
     }
   }
@@ -2239,7 +2302,7 @@ void __cdecl SV_ReadDWFileDeferred(dwFileOperationInfo *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_WriteClientFileDeferred(client_t *param_1,dwFileOperationInfo *param_2)
+void __cdecl SV_WriteClientFileDeferred(client_t *client,dwFileOperationInfo *fileInfo)
 
 {
   code *pcVar1;
@@ -2247,54 +2310,56 @@ void __cdecl SV_WriteClientFileDeferred(client_t *param_1,dwFileOperationInfo *p
   bdReference<bdRemoteTask> bVar3;
   bdStatus bVar4;
   bdReference<bdByteBuffer> local_24;
-  uchar *local_20;
-  LargeLocal local_1c;
-  bdRemoteTask *local_14;
-  bdVisibility local_10;
-  uchar *local_c;
-  bdStorage *local_8;
+  uchar *tempCompressedFileBuffer;
+  LargeLocal tempCompressedFileBuffer_large_local;
+  bdRemoteTask *task;
+  int fileSize;
+  uchar *fileBuffer;
+  bdStorage *storage;
   
-  local_8 = dwGetStorage(0);
-  if (((local_8 != (bdStorage *)0x0) && (param_1 != (client_t *)0x0)) &&
-     (param_2 != (dwFileOperationInfo *)0x0)) {
-    local_10 = param_2->bufferSize;
-    local_c = param_2->fileBuffer;
-    if (param_2->isCompressedFile != false) {
-      LargeLocal::LargeLocal(&local_1c,0x10000);
-      local_20 = LargeLocal::GetBuf(&local_1c);
-      if ((0x10000 < (uint)param_2->bufferSize) &&
+  storage = dwGetStorage(0);
+  if (((storage != (bdStorage *)0x0) && (client != (client_t *)0x0)) &&
+     (fileInfo != (dwFileOperationInfo *)0x0)) {
+    fileSize = fileInfo->bufferSize;
+    fileBuffer = fileInfo->fileBuffer;
+    if (fileInfo->isCompressedFile != false) {
+      LargeLocal::LargeLocal(&tempCompressedFileBuffer_large_local,0x10000);
+      tempCompressedFileBuffer = LargeLocal::GetBuf(&tempCompressedFileBuffer_large_local);
+      if ((0x10000 < (uint)fileInfo->bufferSize) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",
                                    0x968,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_c = local_20;
-      local_10 = MSG_CompressWithZLib(param_2->fileBuffer,param_2->bufferSize,local_20,0x10000);
-      if (((int)local_10 < 1) &&
+      fileBuffer = tempCompressedFileBuffer;
+      fileSize = MSG_CompressWithZLib
+                           (fileInfo->fileBuffer,fileInfo->bufferSize,tempCompressedFileBuffer,
+                            0x10000);
+      if ((fileSize < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",
                                    0x96d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((int)local_10 < 1) || (param_2->bufferSize < (int)local_10)) {
-        LargeLocal::~LargeLocal(&local_1c);
+      if ((fileSize < 1) || (fileInfo->bufferSize < fileSize)) {
+        LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
         return;
       }
-      LargeLocal::~LargeLocal(&local_1c);
+      LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
     }
     dwEnterDeferredCritsec();
     bVar3 = bdStorage::uploadFile
-                      (local_8,(char *)&local_24,(param_2->fileTask).m_filename,(uint)local_c,
-                       local_10,(ulonglong)(uint)param_2->ownerID << 0x20,
-                       *(bdFileInfo **)((int)&param_2->ownerID + 4));
-    local_14 = (bdRemoteTask *)(bVar3.m_ptr)->_padding_;
+                      (storage,(char *)&local_24,(fileInfo->fileTask).m_filename,(uint)fileBuffer,
+                       fileSize,(ulonglong)(uint)fileInfo->ownerID << 0x20,
+                       *(bdFileInfo **)((int)&fileInfo->ownerID + 4));
+    task = (bdRemoteTask *)(bVar3.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_24);
     dwLeaveDeferredCritsec();
-    if ((local_14 != (bdRemoteTask *)0x0) &&
-       (bVar4 = bdRemoteTask::getStatus(local_14), bVar4 == BD_PENDING)) {
-      TaskManager2_DeferTaskToMainThread(local_14,task_svwriteclientfile,param_2);
+    if ((task != (bdRemoteTask *)0x0) &&
+       (bVar4 = bdRemoteTask::getStatus(task), bVar4 == BD_PENDING)) {
+      TaskManager2_DeferTaskToMainThread(task,task_svwriteclientfile,fileInfo);
     }
   }
   return;
@@ -2303,46 +2368,48 @@ void __cdecl SV_WriteClientFileDeferred(client_t *param_1,dwFileOperationInfo *p
 
 // 0098A700  SV_DWReadClientStats  (live/live_storage_win.cpp:2437)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DWReadClientStats(client_t *param_1)
+void __cdecl SV_DWReadClientStats(client_t *client)
 
 {
   uint uVar1;
   int iVar2;
-  dwFileOperationInfo *pdVar3;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 != (client_t *)0x0) &&
-     (*(int *)(param_1[1].userinfo + 0x3c8) != 0 || *(int *)(param_1[1].userinfo + 0x3cc) != 0)) {
+  if ((client != (client_t *)0x0) &&
+     (*(int *)(client[1].userinfo + 0x3c8) != 0 || *(int *)(client[1].userinfo + 0x3cc) != 0)) {
     if ((xblive_basictraining->current).enabled == false) {
       Com_DPrintf(0xf,"Attempting to get stats for client %s\n");
-      pdVar3 = SV_GetFreeFileOp();
-      if (pdVar3 == (dwFileOperationInfo *)0x0) {
+      fileInfo_00 = SV_GetFreeFileOp();
+      if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
         Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
       }
       else {
-        pdVar3->isUserFile = true;
-        pdVar3->isCompressedFile = true;
-        (pdVar3->fileTask).m_filename = "globalstatsCompressed";
-        pdVar3->fileBuffer = param_1->globalStats + 0x380;
-        pdVar3->bufferSize = 0x9ce8;
-        pdVar3->fileOperationSucessFunction = SV_DWReadClientGlobalStatsSuccess;
-        pdVar3->fileNotFoundFunction = SV_DWReadClientGlobalStatsFailure;
-        *(undefined4 *)&pdVar3->ownerID = *(undefined4 *)(param_1[1].userinfo + 0x3c8);
-        *(undefined4 *)((int)&pdVar3->ownerID + 4) = *(undefined4 *)(param_1[1].userinfo + 0x3cc);
-        SV_ReadDWFileDeferred(pdVar3);
+        fileInfo_00->isUserFile = true;
+        fileInfo_00->isCompressedFile = true;
+        (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+        fileInfo_00->fileBuffer = client->globalStats + 0x380;
+        fileInfo_00->bufferSize = 0x9ce8;
+        fileInfo_00->fileOperationSucessFunction = SV_DWReadClientGlobalStatsSuccess;
+        fileInfo_00->fileNotFoundFunction = SV_DWReadClientGlobalStatsFailure;
+        *(undefined4 *)&fileInfo_00->ownerID = *(undefined4 *)(client[1].userinfo + 0x3c8);
+        *(undefined4 *)((int)&fileInfo_00->ownerID + 4) =
+             *(undefined4 *)(client[1].userinfo + 0x3cc);
+        SV_ReadDWFileDeferred(fileInfo_00);
       }
     }
     else {
-      uVar1 = *(uint *)(param_1[1].userinfo + 0x360);
-      iVar2 = *(int *)(param_1[1].userinfo + 0x364);
-      *(uint *)(param_1[1].userinfo + 0x360) = uVar1 + 1;
-      *(uint *)(param_1[1].userinfo + 0x364) = iVar2 + (uint)(0xfffffffe < uVar1);
+      uVar1 = *(uint *)(client[1].userinfo + 0x360);
+      iVar2 = *(int *)(client[1].userinfo + 0x364);
+      *(uint *)(client[1].userinfo + 0x360) = uVar1 + 1;
+      *(uint *)(client[1].userinfo + 0x364) = iVar2 + (uint)(0xfffffffe < uVar1);
     }
   }
   return;
@@ -2351,43 +2418,44 @@ void __cdecl SV_DWReadClientStats(client_t *param_1)
 
 // 0098ACB0  SV_DWReadClientCAC  (live/live_storage_win.cpp:2478)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DWReadClientCAC(client_t *param_1)
+void __cdecl SV_DWReadClientCAC(client_t *client)
 
 {
-  dwFileOperationInfo *pdVar1;
+  dwFileOperationInfo *fileInfo_00;
   char *local_10;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 != (client_t *)0x0) &&
-     (*(int *)(param_1[1].userinfo + 0x3c8) != 0 || *(int *)(param_1[1].userinfo + 0x3cc) != 0)) {
+  if ((client != (client_t *)0x0) &&
+     (*(int *)(client[1].userinfo + 0x3c8) != 0 || *(int *)(client[1].userinfo + 0x3cc) != 0)) {
     Com_DPrintf(0xf,"Attempting to get CAC for client %s\n");
-    pdVar1 = SV_GetFreeFileOp();
-    if (pdVar1 == (dwFileOperationInfo *)0x0) {
+    fileInfo_00 = SV_GetFreeFileOp();
+    if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
       Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
     }
     else {
-      pdVar1->isUserFile = true;
-      pdVar1->isCompressedFile = true;
+      fileInfo_00->isUserFile = true;
+      fileInfo_00->isCompressedFile = true;
       if ((xblive_basictraining->current).enabled == false) {
         local_10 = "mpstatsCompressed";
       }
       else {
         local_10 = "mpstatsBasicTraining";
       }
-      (pdVar1->fileTask).m_filename = local_10;
-      pdVar1->fileBuffer = param_1->stats;
-      pdVar1->bufferSize = 0x9ce8;
-      pdVar1->fileOperationSucessFunction = SV_DWReadClientCACSuccess;
-      pdVar1->fileNotFoundFunction = SV_DWReadClientCACFailure;
-      *(undefined4 *)&pdVar1->ownerID = *(undefined4 *)(param_1[1].userinfo + 0x3c8);
-      *(undefined4 *)((int)&pdVar1->ownerID + 4) = *(undefined4 *)(param_1[1].userinfo + 0x3cc);
-      SV_ReadDWFileDeferred(pdVar1);
+      (fileInfo_00->fileTask).m_filename = local_10;
+      fileInfo_00->fileBuffer = client->stats;
+      fileInfo_00->bufferSize = 0x9ce8;
+      fileInfo_00->fileOperationSucessFunction = SV_DWReadClientCACSuccess;
+      fileInfo_00->fileNotFoundFunction = SV_DWReadClientCACFailure;
+      *(undefined4 *)&fileInfo_00->ownerID = *(undefined4 *)(client[1].userinfo + 0x3c8);
+      *(undefined4 *)((int)&fileInfo_00->ownerID + 4) = *(undefined4 *)(client[1].userinfo + 0x3cc);
+      SV_ReadDWFileDeferred(fileInfo_00);
     }
   }
   return;
@@ -2403,51 +2471,51 @@ void __cdecl SV_DWReadClientCAC(client_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DWWriteClientStats(client_t *param_1)
+void __cdecl SV_DWWriteClientStats(client_t *client)
 
 {
   bool bVar1;
   uint uVar2;
   char *pcVar3;
-  int local_18;
-  uchar *local_14;
-  int local_10;
-  dwFileOperationInfo *local_c;
-  int local_8;
+  int clientxp;
+  int *checksum;
+  int clientnum;
+  dwFileOperationInfo *fileInfo;
+  int clientStableXP;
   
   bVar1 = Com_CanWriteLeaderboards();
   if (bVar1) {
-    if (((param_1 != (client_t *)0x0) &&
-        (*(int *)(param_1[1].userinfo + 0x3c8) != 0 || *(int *)(param_1[1].userinfo + 0x3cc) != 0))
-       && ((xblive_basictraining->current).enabled == false)) {
-      if ((*(int *)(param_1[1].userinfo + 0x360) == -1) &&
-         (*(int *)(param_1[1].userinfo + 0x364) == 7)) {
+    if (((client != (client_t *)0x0) &&
+        (*(int *)(client[1].userinfo + 0x3c8) != 0 || *(int *)(client[1].userinfo + 0x3cc) != 0)) &&
+       ((xblive_basictraining->current).enabled == false)) {
+      if ((*(int *)(client[1].userinfo + 0x360) == -1) &&
+         (*(int *)(client[1].userinfo + 0x364) == 7)) {
         Com_DPrintf(0xf,"Attempting to write stats for client %s\n");
-        local_c = SV_GetFreeFileOp();
-        if (local_c == (dwFileOperationInfo *)0x0) {
+        fileInfo = SV_GetFreeFileOp();
+        if (fileInfo == (dwFileOperationInfo *)0x0) {
           Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
         }
         else {
-          local_c->isUserFile = true;
-          local_c->isCompressedFile = true;
-          (local_c->fileTask).m_filename = "globalstatsCompressed";
-          local_c->fileBuffer = param_1->globalStats + 0x380;
-          local_c->bufferSize = 0x9ce8;
-          local_c->fileOperationSucessFunction = SV_DWWriteClientGlobalStatsSuccess;
-          *(undefined4 *)&local_c->ownerID = *(undefined4 *)(param_1[1].userinfo + 0x3c8);
-          *(undefined4 *)((int)&local_c->ownerID + 4) = *(undefined4 *)(param_1[1].userinfo + 0x3cc)
+          fileInfo->isUserFile = true;
+          fileInfo->isCompressedFile = true;
+          (fileInfo->fileTask).m_filename = "globalstatsCompressed";
+          fileInfo->fileBuffer = client->globalStats + 0x380;
+          fileInfo->bufferSize = 0x9ce8;
+          fileInfo->fileOperationSucessFunction = SV_DWWriteClientGlobalStatsSuccess;
+          *(undefined4 *)&fileInfo->ownerID = *(undefined4 *)(client[1].userinfo + 0x3c8);
+          *(undefined4 *)((int)&fileInfo->ownerID + 4) = *(undefined4 *)(client[1].userinfo + 0x3cc)
           ;
-          local_14 = param_1->globalStats + 0x380;
-          uVar2 = LiveStats_ChecksumGamerStats(param_1->globalStats + 900,0x9ce4);
-          *(uint *)local_14 = uVar2;
-          local_10 = SV_GetClientNumForBdOnlineUserID(*(ulong64 *)(param_1[1].userinfo + 0x3c8));
-          local_18 = 0;
-          local_8 = 0;
-          bVar1 = SV_GetClientDDLStat(local_10,"RANKXP",&local_18);
+          checksum = (int *)(client->globalStats + 0x380);
+          uVar2 = LiveStats_ChecksumGamerStats(client->globalStats + 900,0x9ce4);
+          *checksum = uVar2;
+          clientnum = SV_GetClientNumForBdOnlineUserID(*(ulong64 *)(client[1].userinfo + 0x3c8));
+          clientxp = 0;
+          clientStableXP = 0;
+          bVar1 = SV_GetClientDDLStat(clientnum,"RANKXP",&clientxp);
           if ((bVar1) &&
-             (bVar1 = SV_GetStatFromBlob((char *)(param_1->globalStatsStable + 0x700),"RANKXP",
-                                         &local_8), bVar1)) {
-            if (local_18 < local_8) {
+             (bVar1 = SV_GetStatFromBlob((char *)(client->globalStatsStable + 0x700),"RANKXP",
+                                         &clientStableXP), bVar1)) {
+            if (clientxp < clientStableXP) {
               pcVar3 = va("Client %s has stableXP of %i, but new XP of %i, aborting write!!\n");
               Com_DPrintf(0xf,pcVar3);
               pcVar3 = va("Client %s has stableXP of %i, but new XP of %i, aborting write!!\n");
@@ -2455,7 +2523,7 @@ void __cdecl SV_DWWriteClientStats(client_t *param_1)
             }
             else {
               Com_Printf(0,"Client we\'re writing stats for has xp of %i\n");
-              SV_WriteClientFileDeferred(param_1,local_c);
+              SV_WriteClientFileDeferred(client,fileInfo);
             }
           }
           else {
@@ -2477,36 +2545,38 @@ void __cdecl SV_DWWriteClientStats(client_t *param_1)
 
 // 0098B640  operator++  (live/live_storage_win.cpp:2593)
 
-sv_cacvalidate_state_t * __cdecl operator++(sv_cacvalidate_state_t *param_1)
+sv_cacvalidate_state_t * __cdecl operator++(sv_cacvalidate_state_t *in)
 
 {
-  if (*param_1 == CAC_WRITETWO) {
+  int temp;
+  
+  if (*in == CAC_WRITETWO) {
     Com_DPrintf(0,
                 "Attempted to overflow sv_cacvalidate_state_t. This is bad. Breakpoint me and show Ewan\n"
                );
-    *param_1 = CAC_IDLE;
+    *in = CAC_IDLE;
   }
   else {
-    *param_1 = *param_1 + CAC_WAITING;
+    *in = *in + CAC_WAITING;
   }
-  return param_1;
+  return in;
 }
 
 
 // 0098B690  SV_CACValidate_SetIntStat  (live/live_storage_win.cpp:2617)
 
-bool __cdecl SV_CACValidate_SetIntStat(uchar *param_1,char *param_2,uint param_3)
+bool __cdecl SV_CACValidate_SetIntStat(uchar *buffer,char *stat,uint value)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ddlState_t *pdVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar4;
+  ddlState_t searchState;
   
-  if ((param_1 == (uchar *)0x0) || (param_2 == (char *)0x0)) {
+  if ((buffer == (uchar *)0x0) || (stat == (char *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xa3a,0
                              ,"%s");
     if (!bVar2) {
@@ -2515,17 +2585,17 @@ bool __cdecl SV_CACValidate_SetIntStat(uchar *param_1,char *param_2,uint param_3
       return (bool)uVar3;
     }
   }
-  iVar6 = 2;
-  pdVar5 = &local_14;
-  pdVar4 = LiveStats_GetRootDDLState();
-  iVar6 = DDL_MoveTo(pdVar4,pdVar5,iVar6);
-  if (iVar6 != 0) {
-    DDL_SetInt(&local_14,param_3,(char *)param_1);
+  iVar4 = 2;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+  if (iVar4 != 0) {
+    DDL_SetInt(&searchState,value,(char *)buffer);
   }
   else {
     DDL_PrintError("DDL: Error could not find item %s\n");
   }
-  return iVar6 != 0;
+  return iVar4 != 0;
 }
 
 
@@ -2536,17 +2606,18 @@ bool __cdecl SV_CACValidate_SetIntStat(uchar *param_1,char *param_2,uint param_3
 
 void __cdecl
 SV_CACValidate_EvaluateStatsBlobs
-          (bool *param_1,bool *param_2,uchar *param_3,uchar *param_4,int param_5,int param_6)
+          (bool *oldcacok,bool *globalok,uchar *oldcacblob,uchar *globalblob,int oldcacsize,
+          int globalsize)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar local_9cf4 [40172];
+  uchar backupBuffer [40172];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (bool *)0x0) || (param_1 == (bool *)0x0)) {
+  if ((globalok == (bool *)0x0) || (oldcacok == (bool *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xa4d,0
                              ,"%s");
     if (!bVar2) {
@@ -2555,54 +2626,56 @@ SV_CACValidate_EvaluateStatsBlobs
       return;
     }
   }
-  *param_2 = false;
-  *param_1 = false;
-  if (0 < param_6) {
-    iVar3 = DDL_AssociateBuffer((char *)param_4,0x9ce8,g_statsDDL);
+  *globalok = false;
+  *oldcacok = false;
+  if (0 < globalsize) {
+    iVar3 = DDL_AssociateBuffer((char *)globalblob,0x9ce8,g_statsDDL);
     if (iVar3 == 0) {
-      memset(local_9cf4,'\0',0x9ce8);
+      memset(backupBuffer,'\0',0x9ce8);
       iVar3 = DDL_FixBufferVersion
-                        ((char *)param_4,g_statsDDL,"ddl_mp/stats.ddl",(char *)local_9cf4,0x9ce8);
+                        ((char *)globalblob,g_statsDDL,"ddl_mp/stats.ddl",(char *)backupBuffer,
+                         0x9ce8);
       if (iVar3 == 0) {
         iVar3 = DDL_FixBufferVersion
-                          ((char *)param_4,g_statsDDL,"ddl_mp/stats_archive.ddl",(char *)local_9cf4,
-                           0x9ce8);
+                          ((char *)globalblob,g_statsDDL,"ddl_mp/stats_archive.ddl",
+                           (char *)backupBuffer,0x9ce8);
         if (iVar3 != 0) {
           DDL_NoCheckPrintWarning("CACValidate: Globalbuffer updated to version %d\n");
-          *param_2 = true;
+          *globalok = true;
         }
       }
       else {
         DDL_NoCheckPrintWarning("CACValidate: Globalbuffer updated to version %d\n");
-        *param_2 = true;
+        *globalok = true;
       }
     }
     else {
-      *param_2 = true;
+      *globalok = true;
     }
   }
-  if (0 < param_5) {
-    iVar3 = DDL_AssociateBuffer((char *)param_3,0x9ce8,g_statsDDL);
+  if (0 < oldcacsize) {
+    iVar3 = DDL_AssociateBuffer((char *)oldcacblob,0x9ce8,g_statsDDL);
     if (iVar3 == 0) {
-      memset(local_9cf4,'\0',0x9ce8);
+      memset(backupBuffer,'\0',0x9ce8);
       iVar3 = DDL_FixBufferVersion
-                        ((char *)param_3,g_statsDDL,"ddl_mp/stats.ddl",(char *)local_9cf4,0x9ce8);
+                        ((char *)oldcacblob,g_statsDDL,"ddl_mp/stats.ddl",(char *)backupBuffer,
+                         0x9ce8);
       if (iVar3 == 0) {
         iVar3 = DDL_FixBufferVersion
-                          ((char *)param_3,g_statsDDL,"ddl_mp/stats_archive.ddl",(char *)local_9cf4,
-                           0x9ce8);
+                          ((char *)oldcacblob,g_statsDDL,"ddl_mp/stats_archive.ddl",
+                           (char *)backupBuffer,0x9ce8);
         if (iVar3 != 0) {
           DDL_NoCheckPrintWarning("CACValidate: Oldcacbuffer updated to version %d\n");
-          *param_1 = true;
+          *oldcacok = true;
         }
       }
       else {
         DDL_NoCheckPrintWarning("CACValidate: Oldcacbuffer updated to version %d\n");
-        *param_1 = true;
+        *oldcacok = true;
       }
     }
     else {
-      *param_1 = true;
+      *oldcacok = true;
     }
   }
   return;
@@ -2611,77 +2684,78 @@ SV_CACValidate_EvaluateStatsBlobs
 
 // 0098B720  SV_PrestigeReset  (live/live_storage_win.cpp:2703)
 
-void __cdecl SV_PrestigeReset(char *param_1)
+void __cdecl SV_PrestigeReset(char *liveStatsBuffer)
 
 {
   bool bVar1;
   ddlState_t *pdVar2;
   ddlState_t *pdVar3;
   int iVar4;
-  ddlState_t local_38;
-  uint local_28;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  ddlState_t searchStateGroupStats;
+  uint itemNumber;
+  ddlState_t searchStateChallenges;
+  ddlState_t searchStateStats;
   
-  for (local_28 = 0; local_28 < 0x100; local_28 = local_28 + 1) {
-    bVar1 = BG_UnlockablesIsItemValidNotNull(local_28);
+  for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemNumber);
     if (bVar1) {
       va("%d");
       iVar4 = 3;
-      pdVar3 = &local_14;
+      pdVar3 = &searchStateStats;
       pdVar2 = LiveStats_GetRootDDLState();
       iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
       if (iVar4 != 0) {
-        iVar4 = DDL_IterateFirst(&local_14,&local_14);
+        iVar4 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
         while (iVar4 != 0) {
-          LiveStats_SetItemStat(&local_14,"challengeTier",param_1,0);
-          LiveStats_SetItemStat(&local_14,"challengeValue",param_1,0);
-          iVar4 = DDL_IterateNext(&local_14,&local_14);
+          LiveStats_SetItemStat(&searchStateStats,"challengeTier",liveStatsBuffer,0);
+          LiveStats_SetItemStat(&searchStateStats,"challengeValue",liveStatsBuffer,0);
+          iVar4 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         }
       }
-      SV_CACValidate_ClearWeaponInfo(param_1,local_28);
+      SV_CACValidate_ClearWeaponInfo(liveStatsBuffer,itemNumber);
     }
   }
   iVar4 = 1;
-  pdVar3 = &local_14;
+  pdVar3 = &searchStateStats;
   pdVar2 = LiveStats_GetRootDDLState();
   iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
   if (iVar4 != 0) {
-    iVar4 = DDL_IterateFirst(&local_14,&local_14);
+    iVar4 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar4 != 0) {
-      iVar4 = DDL_MoveTo(&local_14,&local_38,1);
+      iVar4 = DDL_MoveTo(&searchStateStats,&searchStateGroupStats,1);
       if (iVar4 != 0) {
-        iVar4 = DDL_IterateFirst(&local_38,&local_38);
+        iVar4 = DDL_IterateFirst(&searchStateGroupStats,&searchStateGroupStats);
         while (iVar4 != 0) {
-          LiveStats_SetItemStat(&local_38,"challengeTier",param_1,0);
-          LiveStats_SetItemStat(&local_38,"challengeValue",param_1,0);
-          iVar4 = DDL_IterateNext(&local_38,&local_38);
+          LiveStats_SetItemStat(&searchStateGroupStats,"challengeTier",liveStatsBuffer,0);
+          LiveStats_SetItemStat(&searchStateGroupStats,"challengeValue",liveStatsBuffer,0);
+          iVar4 = DDL_IterateNext(&searchStateGroupStats,&searchStateGroupStats);
         }
       }
-      iVar4 = DDL_IterateNext(&local_14,&local_14);
+      iVar4 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
   iVar4 = 1;
-  pdVar3 = &local_24;
+  pdVar3 = &searchStateChallenges;
   pdVar2 = LiveStats_GetRootDDLState();
   iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
   if (iVar4 != 0) {
     iVar4 = 1;
-    pdVar3 = &local_14;
+    pdVar3 = &searchStateStats;
     pdVar2 = LiveStats_GetRootDDLState();
     iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-    if ((iVar4 != 0) && (iVar4 = DDL_IterateFirst(&local_24,&local_24), iVar4 != 0)) {
-      iVar4 = DDL_IterateFirst(&local_14,&local_14);
+    if ((iVar4 != 0) &&
+       (iVar4 = DDL_IterateFirst(&searchStateChallenges,&searchStateChallenges), iVar4 != 0)) {
+      iVar4 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
       while (iVar4 != 0) {
-        DDL_SetInt(&local_24,0,param_1);
-        DDL_SetInt(&local_14,0,param_1);
-        iVar4 = DDL_IterateNext(&local_14,&local_14);
+        DDL_SetInt(&searchStateChallenges,0,liveStatsBuffer);
+        DDL_SetInt(&searchStateStats,0,liveStatsBuffer);
+        iVar4 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         if (iVar4 == 0) break;
-        iVar4 = DDL_IterateNext(&local_24,&local_24);
+        iVar4 = DDL_IterateNext(&searchStateChallenges,&searchStateChallenges);
       }
     }
   }
-  LiveStats_ResetGamemodeChallenges(param_1);
+  LiveStats_ResetGamemodeChallenges(liveStatsBuffer);
   return;
 }
 
@@ -2689,11 +2763,15 @@ void __cdecl SV_PrestigeReset(char *param_1)
 // 0098B980  SV_ValidateClientCAC  (live/live_storage_win.cpp:2775)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
 SV_ValidateClientCAC
-          (uchar *param_1,int param_2,uchar *param_3,int param_4,uchar *param_5,int param_6,
-          ulong64 param_7)
+          (uchar *oldcacblob,int oldcacblobsize,uchar *newcacblob,int newcacblobsize,
+          uchar *globalblob,int globalblobsize,ulong64 clientUID)
 
 {
   code *pcVar1;
@@ -2702,41 +2780,41 @@ SV_ValidateClientCAC
   int iVar4;
   char *pcVar5;
   int local_a0;
-  uint local_9c;
-  int local_98;
-  int local_94;
-  int local_90;
-  int local_8c;
-  int local_88;
-  int local_84;
-  int local_80;
-  int local_7c;
-  int local_78;
-  int local_74;
-  uint local_70;
-  uint local_6c;
-  int local_68;
-  int local_64;
-  int local_60;
-  int local_5c;
-  int local_58;
-  int local_54;
-  int local_50;
-  int local_4c;
-  uint local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  char local_38 [20];
+  int numpurchased;
+  int contractcost;
+  int contractsIdx;
+  int unlockRank;
+  int cp_spent;
+  int oldindex;
+  int newindex;
+  int i_5;
+  int optionIdx;
+  int attachNum;
+  int weaponoptioncount;
+  uint itemNumber;
+  int i_4;
+  int i_3;
+  int i_2;
+  int i;
+  int maxPrestige;
+  int maxXP;
+  int timeStarted;
+  int startemblem;
+  int endemblem;
+  int newPrestige;
+  int validateTime;
+  int clientRank;
+  int oldbalance;
+  char from [20];
   uint local_24;
-  int local_20;
-  bool local_1a;
-  bool local_19;
-  int local_18;
-  int local_14;
-  undefined1 local_d;
-  uint local_c;
-  uint local_8;
+  int clientPrestige;
+  bool globalok;
+  bool oldcacok;
+  int clientXP;
+  int newmoneyspent;
+  bool ok;
+  int newbalance;
+  int oldmoneyspent;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((g_cacvalidateState != CAC_FETCHTWO) &&
@@ -2746,53 +2824,54 @@ SV_ValidateClientCAC
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_d = 1;
-  local_1a = false;
-  local_19 = false;
-  local_40 = 0;
-  local_20 = 0;
-  local_18 = 0;
-  local_3c = 0;
-  local_c = 0;
-  local_8 = 0;
-  local_14 = 0;
-  local_38[0] = '\0';
-  local_38[1] = '\0';
-  local_38[2] = '\0';
-  local_38[3] = '\0';
-  local_38[4] = '\0';
-  local_38[5] = '\0';
-  local_38[6] = '\0';
-  local_38[7] = '\0';
-  local_38[8] = '\0';
-  local_38[9] = '\0';
-  local_38[10] = '\0';
-  local_38[0xb] = '\0';
-  local_38[0xc] = '\0';
-  local_38[0xd] = '\0';
-  local_38[0xe] = '\0';
-  local_38[0xf] = '\0';
-  local_38[0x10] = '\0';
-  XUIDToString(&param_7,local_38);
-  SV_CACValidate_EvaluateStatsBlobs(&local_19,&local_1a,param_1,param_5,param_2,param_6);
-  if (local_1a != false) {
-    LiveStats_GetIntPlayerStatFromBase(&local_18,"RANKXP",(char *)param_5);
-    LiveStats_GetIntPlayerStatFromBase(&local_20,"PLEVEL",(char *)param_5);
-    local_40 = CL_GetRankForXp(local_18);
-    LiveStats_GetIntPlayerStatFromBase(&local_3c,"CODPOINTS",(char *)param_5);
-    LiveStats_GetIntPlayerStatFromBase((int *)&local_8,"CURRENCYSPENT",(char *)param_5);
+  ok = true;
+  globalok = false;
+  oldcacok = false;
+  clientRank = 0;
+  clientPrestige = 0;
+  clientXP = 0;
+  oldbalance = 0;
+  newbalance = 0;
+  oldmoneyspent = 0;
+  newmoneyspent = 0;
+  from[0] = '\0';
+  from[1] = '\0';
+  from[2] = '\0';
+  from[3] = '\0';
+  from[4] = '\0';
+  from[5] = '\0';
+  from[6] = '\0';
+  from[7] = '\0';
+  from[8] = '\0';
+  from[9] = '\0';
+  from[10] = '\0';
+  from[0xb] = '\0';
+  from[0xc] = '\0';
+  from[0xd] = '\0';
+  from[0xe] = '\0';
+  from[0xf] = '\0';
+  from[0x10] = '\0';
+  XUIDToString(&clientUID,from);
+  SV_CACValidate_EvaluateStatsBlobs
+            (&oldcacok,&globalok,oldcacblob,globalblob,oldcacblobsize,globalblobsize);
+  if (globalok != false) {
+    LiveStats_GetIntPlayerStatFromBase(&clientXP,"RANKXP",(char *)globalblob);
+    LiveStats_GetIntPlayerStatFromBase(&clientPrestige,"PLEVEL",(char *)globalblob);
+    clientRank = CL_GetRankForXp(clientXP);
+    LiveStats_GetIntPlayerStatFromBase(&oldbalance,"CODPOINTS",(char *)globalblob);
+    LiveStats_GetIntPlayerStatFromBase(&oldmoneyspent,"CURRENCYSPENT",(char *)globalblob);
   }
-  iVar4 = DDL_AssociateBuffer((char *)param_3,param_4,g_statsDDL);
+  iVar4 = DDL_AssociateBuffer((char *)newcacblob,newcacblobsize,g_statsDDL);
   if (iVar4 == 0) {
     pcVar5 = va("Rejecting cac from client %s, couldn\'t associate new buffer\n");
     Com_DPrintf(0xf,pcVar5);
     pcVar5 = va("Rejecting cac from client %s, couldn\'t associate new buffer\n");
     SV_SysLog_LogMessage(0,pcVar5);
-    local_d = 0;
+    ok = false;
   }
   else {
-    local_54 = Sys_Milliseconds();
-    bVar2 = SV_CACValidate_CheckIfEquippedItemsArePurchased(param_3,-1,-1);
+    timeStarted = Sys_Milliseconds();
+    bVar2 = SV_CACValidate_CheckIfEquippedItemsArePurchased(newcacblob,-1,-1);
     if (!bVar2) {
       pcVar5 = va("rejected cac from %s, items equipped that are not purchased!\n");
       Com_DPrintf(0xf,pcVar5);
@@ -2800,21 +2879,21 @@ SV_ValidateClientCAC
       SV_SysLog_LogMessage(0,pcVar5);
       return false;
     }
-    local_48 = 0;
-    LiveStats_GetIntPlayerStatFromBase((int *)&local_48,"PLEVEL",(char *)param_3);
-    if (local_20 < (int)local_48) {
-      local_58 = CL_GetMaxXP();
-      local_5c = CL_GetMaxPrestige();
+    newPrestige = 0;
+    LiveStats_GetIntPlayerStatFromBase(&newPrestige,"PLEVEL",(char *)newcacblob);
+    if (clientPrestige < newPrestige) {
+      maxXP = CL_GetMaxXP();
+      maxPrestige = CL_GetMaxPrestige();
       Com_DPrintf(0xf,"Client claims to have gone up in prestige level!\n");
-      if ((((int)(local_48 - local_20) < 2) && (local_58 <= local_18)) &&
-         ((int)local_48 <= local_5c)) {
+      if (((newPrestige - clientPrestige < 2) && (maxXP <= clientXP)) &&
+         (newPrestige <= maxPrestige)) {
         Com_DPrintf(0xf,"Setting client prestige to %i from %i\n");
-        SV_PrestigeReset((char *)param_5);
-        SV_PrestigeReset((char *)param_3);
-        SV_CACValidate_SetIntStat(param_5,"RANKXP",0);
-        SV_CACValidate_SetIntStat(param_5,"RANK",0);
-        SV_CACValidate_SetIntStat(param_5,"CODPOINTS",0);
-        SV_CACValidate_SetIntStat(param_5,"PLEVEL",local_48);
+        SV_PrestigeReset((char *)globalblob);
+        SV_PrestigeReset((char *)newcacblob);
+        SV_CACValidate_SetIntStat(globalblob,"RANKXP",0);
+        SV_CACValidate_SetIntStat(globalblob,"RANK",0);
+        SV_CACValidate_SetIntStat(globalblob,"CODPOINTS",0);
+        SV_CACValidate_SetIntStat(globalblob,"PLEVEL",newPrestige);
         return true;
       }
       Com_DPrintf(0xf,
@@ -2826,176 +2905,183 @@ SV_ValidateClientCAC
                 );
       return false;
     }
-    if (local_19 == false) {
+    if (oldcacok == false) {
       local_a0 = 0;
     }
     else {
-      local_a0 = SV_CACValidate_GetPurchasedEmblemLayers(param_1);
+      local_a0 = SV_CACValidate_GetPurchasedEmblemLayers(oldcacblob);
     }
-    local_50 = local_a0;
-    local_4c = SV_CACValidate_GetPurchasedEmblemLayers(param_3);
-    if (local_50 < local_4c) {
-      for (local_60 = local_50; local_60 < local_4c; local_60 = local_60 + 1) {
-        iVar4 = BG_EmblemsGetLayerCost(local_60);
-        local_14 = iVar4 + local_14;
+    startemblem = local_a0;
+    endemblem = SV_CACValidate_GetPurchasedEmblemLayers(newcacblob);
+    if (startemblem < endemblem) {
+      for (i = startemblem; i < endemblem; i = i + 1) {
+        iVar4 = BG_EmblemsGetLayerCost(i);
+        newmoneyspent = iVar4 + newmoneyspent;
       }
     }
-    local_64 = 0;
-    while (iVar4 = BG_EmblemsGetTotalBackgroundCount(), local_64 < iVar4) {
-      bVar2 = SV_CACValidate_IsBackgroundPurchased(param_3,local_40,(short)local_64);
+    i_2 = 0;
+    while (iVar4 = BG_EmblemsGetTotalBackgroundCount(), i_2 < iVar4) {
+      bVar2 = SV_CACValidate_IsBackgroundPurchased(newcacblob,clientRank,(short)i_2);
       if ((bVar2) &&
-         ((local_19 == false ||
-          (bVar2 = SV_CACValidate_IsBackgroundPurchased(param_1,local_40,(short)local_64), !bVar2)))
+         ((oldcacok == false ||
+          (bVar2 = SV_CACValidate_IsBackgroundPurchased(oldcacblob,clientRank,(short)i_2), !bVar2)))
          ) {
-        iVar4 = BG_EmblemsGetBackgroundCost((short)local_64);
-        local_14 = iVar4 + local_14;
+        iVar4 = BG_EmblemsGetBackgroundCost((short)i_2);
+        newmoneyspent = iVar4 + newmoneyspent;
       }
-      local_64 = local_64 + 1;
+      i_2 = i_2 + 1;
     }
-    local_68 = 0;
-    while (iVar4 = BG_EmblemsGetIconCount(), local_68 < iVar4) {
-      bVar2 = SV_CACValidate_IsIconPurchased(param_3,local_40,(short)local_68);
+    i_3 = 0;
+    while (iVar4 = BG_EmblemsGetIconCount(), i_3 < iVar4) {
+      bVar2 = SV_CACValidate_IsIconPurchased(newcacblob,clientRank,(short)i_3);
       if ((bVar2) &&
-         ((local_19 == false ||
-          (bVar2 = SV_CACValidate_IsIconPurchased(param_1,local_40,(short)local_68), !bVar2)))) {
-        iVar4 = BG_EmblemsGetIconCost((short)local_68);
-        local_14 = iVar4 + local_14;
+         ((oldcacok == false ||
+          (bVar2 = SV_CACValidate_IsIconPurchased(oldcacblob,clientRank,(short)i_3), !bVar2)))) {
+        iVar4 = BG_EmblemsGetIconCost((short)i_3);
+        newmoneyspent = iVar4 + newmoneyspent;
       }
-      local_68 = local_68 + 1;
+      i_3 = i_3 + 1;
     }
-    local_6c = 0;
-    while (iVar4 = BG_UnlockablesGetClanTagFeatureCount(), (int)local_6c < iVar4) {
-      bVar2 = SV_CACValidate_IsClanTagFeaturePurchased(param_3,local_6c,local_20,local_40);
+    i_4 = 0;
+    while (iVar4 = BG_UnlockablesGetClanTagFeatureCount(), i_4 < iVar4) {
+      bVar2 = SV_CACValidate_IsClanTagFeaturePurchased(newcacblob,i_4,clientPrestige,clientRank);
       if ((bVar2) &&
-         ((local_19 == false ||
-          (bVar2 = SV_CACValidate_IsClanTagFeaturePurchased(param_1,local_6c,local_20,local_40),
-          !bVar2)))) {
-        pcVar5 = BG_UnlockablesGetClanTagFeature(local_6c,CLANTAG_COL_COST);
+         ((oldcacok == false ||
+          (bVar2 = SV_CACValidate_IsClanTagFeaturePurchased
+                             (oldcacblob,i_4,clientPrestige,clientRank), !bVar2)))) {
+        pcVar5 = BG_UnlockablesGetClanTagFeature(i_4,CLANTAG_COL_COST);
         iVar4 = atoi(pcVar5);
-        local_14 = iVar4 + local_14;
+        newmoneyspent = iVar4 + newmoneyspent;
       }
-      local_6c = local_6c + 1;
+      i_4 = i_4 + 1;
     }
-    for (local_70 = 0; local_70 < 0x100; local_70 = local_70 + 1) {
-      bVar2 = BG_UnlockablesIsItemValidNotNull(local_70);
+    for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+      bVar2 = BG_UnlockablesIsItemValidNotNull(itemNumber);
       if ((bVar2) &&
-         (bVar2 = SV_CacValidate_IsItemPurchased(param_3,local_70,local_20,local_40), bVar2)) {
-        bVar2 = BG_UnlockablesIsItemLockedForRank(local_20,local_40,local_70);
+         (bVar2 = SV_CacValidate_IsItemPurchased(newcacblob,itemNumber,clientPrestige,clientRank),
+         bVar2)) {
+        bVar2 = BG_UnlockablesIsItemLockedForRank(clientPrestige,clientRank,itemNumber);
         if (bVar2) {
-          BG_UnlockablesGetItemName(local_70);
+          BG_UnlockablesGetItemName(itemNumber);
           pcVar5 = va("Rejecting cac from client %s, item %s is locked for rank %i\n");
           Com_DPrintf(0xf,pcVar5);
-          BG_UnlockablesGetItemName(local_70);
+          BG_UnlockablesGetItemName(itemNumber);
           pcVar5 = va("Rejecting cac from client %s, item %s is locked for rank %i\n");
           SV_SysLog_LogMessage(0,pcVar5);
-          local_d = 0;
+          ok = false;
           break;
         }
-        if ((local_19 == false) ||
-           (bVar2 = SV_CacValidate_IsItemPurchased(param_1,local_70,local_20,local_40), !bVar2)) {
-          BG_UnlockablesGetItemCost(local_70);
-          BG_UnlockablesGetItemName(local_70);
+        if ((oldcacok == false) ||
+           (bVar2 = SV_CacValidate_IsItemPurchased(oldcacblob,itemNumber,clientPrestige,clientRank),
+           !bVar2)) {
+          BG_UnlockablesGetItemCost(itemNumber);
+          BG_UnlockablesGetItemName(itemNumber);
           Com_DPrintf(0xf,"CACValidate: New item bought: %s, cost %i\n");
-          iVar4 = BG_UnlockablesGetItemCost(local_70);
-          local_14 = iVar4 + local_14;
+          iVar4 = BG_UnlockablesGetItemCost(itemNumber);
+          newmoneyspent = iVar4 + newmoneyspent;
         }
-        local_78 = 0;
-        while (iVar4 = DB_SizeofXAsset<DestructibleDef>(), local_78 < iVar4) {
+        attachNum = 0;
+        while (iVar4 = DB_SizeofXAsset<DestructibleDef>(), attachNum < iVar4) {
           bVar2 = SV_CACValidate_IsItemAttachmentPurchased
-                            (param_3,local_70,local_78,local_20,local_40);
+                            (newcacblob,itemNumber,attachNum,clientPrestige,clientRank);
           if ((bVar2) &&
-             ((local_19 == false ||
+             ((oldcacok == false ||
               (bVar2 = SV_CACValidate_IsItemAttachmentPurchased
-                                 (param_1,local_70,local_78,local_20,local_40), !bVar2)))) {
-            iVar4 = BG_UnlockablesGetItemAttachmentCost(local_70,local_78);
-            local_14 = iVar4 + local_14;
+                                 (oldcacblob,itemNumber,attachNum,clientPrestige,clientRank), !bVar2
+              )))) {
+            iVar4 = BG_UnlockablesGetItemAttachmentCost(itemNumber,attachNum);
+            newmoneyspent = iVar4 + newmoneyspent;
           }
-          local_78 = local_78 + 1;
+          attachNum = attachNum + 1;
         }
-        local_74 = BG_GetWeaponOptionCount();
-        for (local_7c = 0; local_7c < local_74; local_7c = local_7c + 1) {
-          bVar2 = SV_CACValidate_IsItemOptionPurchased(param_3,local_70,local_7c,local_20,local_40);
+        weaponoptioncount = BG_GetWeaponOptionCount();
+        for (optionIdx = 0; optionIdx < weaponoptioncount; optionIdx = optionIdx + 1) {
+          bVar2 = SV_CACValidate_IsItemOptionPurchased
+                            (newcacblob,itemNumber,optionIdx,clientPrestige,clientRank);
           if ((bVar2) &&
-             ((local_19 == false ||
+             ((oldcacok == false ||
               (bVar2 = SV_CACValidate_IsItemOptionPurchased
-                                 (param_1,local_70,local_7c,local_20,local_40), !bVar2)))) {
-            iVar4 = BG_GetWeaponOptionCost(local_7c);
-            local_14 = iVar4 + local_14;
+                                 (oldcacblob,itemNumber,optionIdx,clientPrestige,clientRank), !bVar2
+              )))) {
+            iVar4 = BG_GetWeaponOptionCost(optionIdx);
+            newmoneyspent = iVar4 + newmoneyspent;
           }
         }
       }
     }
-    for (local_80 = 0; local_80 < 3; local_80 = local_80 + 1) {
-      local_88 = -1;
-      local_84 = 0xffffffff;
-      if (local_19 != false) {
-        local_88 = SV_CACValidate_GetIndexForActiveContract(param_1,local_80);
+    for (i_5 = 0; i_5 < 3; i_5 = i_5 + 1) {
+      oldindex = -1;
+      newindex = -1;
+      if (oldcacok != false) {
+        oldindex = SV_CACValidate_GetIndexForActiveContract(oldcacblob,i_5);
       }
-      local_84 = SV_CACValidate_GetIndexForActiveContract(param_3,local_80);
-      if ((local_88 != local_84) && (local_84 != -1)) {
-        local_90 = LiveContracts_GetUnlockLevel(local_84);
-        local_94 = BG_UnlockablesGetItemIndexFromName("FEATURE_CONTRACTS");
-        if ((local_40 < local_90) ||
-           (bVar2 = BG_UnlockablesIsItemLockedForRank(local_20,local_40,local_94), bVar2)) {
-          LiveContracts_GetContractName(local_84);
+      newindex = SV_CACValidate_GetIndexForActiveContract(newcacblob,i_5);
+      if ((oldindex != newindex) && (newindex != -1)) {
+        unlockRank = LiveContracts_GetUnlockLevel(newindex);
+        contractsIdx = BG_UnlockablesGetItemIndexFromName("FEATURE_CONTRACTS");
+        if ((clientRank < unlockRank) ||
+           (bVar2 = BG_UnlockablesIsItemLockedForRank(clientPrestige,clientRank,contractsIdx), bVar2
+           )) {
+          LiveContracts_GetContractName(newindex);
           pcVar5 = va(
                      "CACValidate: Rejecting cac from client %s, contract %s is locked for rank %i\n"
                      );
           Com_DPrintf(0xf,pcVar5);
-          LiveContracts_GetContractName(local_84);
+          LiveContracts_GetContractName(newindex);
           pcVar5 = va(
                      "CACValidate: Rejecting cac from client %s, contract %s is locked for rank %i\n"
                      );
           SV_SysLog_LogMessage(0,pcVar5);
-          local_d = 0;
+          ok = false;
           break;
         }
-        local_8c = 0;
-        local_9c = 0;
-        SV_GetStatFromBlob((char *)param_5,"CONTRACTS_CP_SPENT",&local_8c);
-        iVar4 = LiveContracts_GetContractCost(local_84);
-        SV_CACValidate_SetIntStat(param_5,"CONTRACTS_CP_SPENT",iVar4 + local_8c);
-        SV_GetStatFromBlob((char *)param_5,"CONTRACTS_PURCHASED",(int *)&local_9c);
-        local_9c = local_9c + 1;
-        SV_CACValidate_SetIntStat(param_5,"CONTRACTS_PURCHASED",local_9c);
-        LiveContracts_GetContractName(local_84);
+        cp_spent = 0;
+        numpurchased = 0;
+        SV_GetStatFromBlob((char *)globalblob,"CONTRACTS_CP_SPENT",&cp_spent);
+        iVar4 = LiveContracts_GetContractCost(newindex);
+        SV_CACValidate_SetIntStat(globalblob,"CONTRACTS_CP_SPENT",iVar4 + cp_spent);
+        SV_GetStatFromBlob((char *)globalblob,"CONTRACTS_PURCHASED",&numpurchased);
+        numpurchased = numpurchased + 1;
+        SV_CACValidate_SetIntStat(globalblob,"CONTRACTS_PURCHASED",numpurchased);
+        LiveContracts_GetContractName(newindex);
         Com_DPrintf(0xf,"CACValidate: New contract: %s\n");
-        local_98 = LiveContracts_GetContractCost(local_84);
-        local_14 = local_14 + local_98;
+        contractcost = LiveContracts_GetContractCost(newindex);
+        newmoneyspent = newmoneyspent + contractcost;
         Com_DPrintf(0xf,"CACValidate: New contract: cost %i\n");
       }
     }
-    local_44 = Sys_Milliseconds();
-    local_44 = local_44 - local_54;
-    if (10 < local_44) {
+    iVar4 = Sys_Milliseconds();
+    validateTime = iVar4 - timeStarted;
+    if (10 < validateTime) {
       pcVar5 = va("Validate took %ims\n");
       Com_PrintWarning(0xf,pcVar5);
       pcVar5 = va("Validate took %ims\n");
       SV_SysLog_LogMessage(1,pcVar5);
     }
   }
-  if (local_3c < local_14) {
+  if (oldbalance < newmoneyspent) {
     pcVar5 = va("CACValidate: Rejecting cac from client %s, money spent (%i) exceeds balance (%i)\n"
                );
     Com_DPrintf(0xf,pcVar5);
     pcVar5 = va("CACValidate: Rejecting cac from client %s, money spent (%i) exceeds balance (%i)\n"
                );
     SV_SysLog_LogMessage(0,pcVar5);
-    local_d = 0;
+    ok = false;
   }
-  else if (0 < local_14) {
-    local_c = local_3c - local_14;
-    local_8 = local_8 + local_14;
-    bVar2 = SV_CACValidate_SetIntStat(param_5,"CODPOINTS",local_c);
-    if ((!bVar2) || (bVar2 = SV_CACValidate_SetIntStat(param_5,"CURRENCYSPENT",local_8), !bVar2)) {
+  else if (0 < newmoneyspent) {
+    newbalance = oldbalance - newmoneyspent;
+    oldmoneyspent = oldmoneyspent + newmoneyspent;
+    bVar2 = SV_CACValidate_SetIntStat(globalblob,"CODPOINTS",newbalance);
+    if ((!bVar2) ||
+       (bVar2 = SV_CACValidate_SetIntStat(globalblob,"CURRENCYSPENT",oldmoneyspent), !bVar2)) {
       pcVar5 = va("Rejecting cac from client %s, couldn\'t set currency stats\n");
       Com_DPrintf(0xf,pcVar5);
       pcVar5 = va("Rejecting cac from client %s, couldn\'t set currency stats\n");
       SV_SysLog_LogMessage(0,pcVar5);
-      local_d = 0;
+      ok = false;
     }
   }
-  return (bool)local_d;
+  return ok;
 }
 
 
@@ -3003,7 +3089,7 @@ SV_ValidateClientCAC
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateSendClientMsgSuccess(TaskRecord *param_1)
+void __cdecl SV_CACValidateSendClientMsgSuccess(TaskRecord *task)
 
 {
   Com_DPrintf(0xf,"send client success\n");
@@ -3015,7 +3101,7 @@ void __cdecl SV_CACValidateSendClientMsgSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateSendClientMsgFailure(TaskRecord *param_1)
+void __cdecl SV_CACValidateSendClientMsgFailure(TaskRecord *task)
 
 {
   Com_DPrintf(0xf,"send client failure\n");
@@ -3027,15 +3113,17 @@ void __cdecl SV_CACValidateSendClientMsgFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateSendClientMsg(ulong64 param_1,uint param_2)
+void __cdecl SV_CACValidateSendClientMsg(ulong64 uid,uint msg)
 
 {
   TaskRecord *pTVar1;
-  char local_5;
+  TaskRecord *ptask;
+  TaskRecord *childTask;
+  char ackBuf;
   
   Com_DPrintf(0xf,"CACValidate: Sending opcode %u to client %llu\n");
-  local_5 = (char)param_2;
-  pTVar1 = dwMessaging_SendInstantMessage(param_1,&local_5,1);
+  ackBuf = (char)msg;
+  pTVar1 = dwMessaging_SendInstantMessage(uid,&ackBuf,1);
   if (pTVar1 != (TaskRecord *)0x0) {
     pTVar1 = TaskManager2_CreateTask(task_SVCACValidateSendClientMsg,0,pTVar1,0);
     if (pTVar1 != (TaskRecord *)0x0) {
@@ -3048,10 +3136,13 @@ void __cdecl SV_CACValidateSendClientMsg(ulong64 param_1,uint param_2)
 
 // 0098C7C0  SV_CACValidateWriteCACSuccess  (live/live_storage_win.cpp:3069)
 
-void __cdecl SV_CACValidateWriteCACSuccess(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateWriteCACSuccess(int controllerIndex,void *data)
 
 {
   sv_cacvalidate_state_t *psVar1;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"write cac success\n");
   psVar1 = operator++(&g_cacvalidateState);
@@ -3059,19 +3150,22 @@ void __cdecl SV_CACValidateWriteCACSuccess(int param_1,void *param_2)
     g_cacvalidateState = CAC_IDLE;
   }
   LiveStorage_SendStatsBufferToClient
-            (*(ulong64 *)((int)param_2 + 0x110),*(uchar **)((int)param_2 + 0xf8),0x9ce8,
-             BLOB_TYPE_CAC,g_cacvalidateState == CAC_IDLE);
-  SV_ResetFileOp(param_2);
+            (*(ulong64 *)((int)data + 0x110),*(uchar **)((int)data + 0xf8),0x9ce8,BLOB_TYPE_CAC,
+             g_cacvalidateState == CAC_IDLE);
+  SV_ResetFileOp(data);
   return;
 }
 
 
 // 0098CA00  SV_CACValidateWriteGlobalSuccess  (live/live_storage_win.cpp:3082)
 
-void __cdecl SV_CACValidateWriteGlobalSuccess(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateWriteGlobalSuccess(int controllerIndex,void *data)
 
 {
   sv_cacvalidate_state_t *psVar1;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"write global success\n");
   psVar1 = operator++(&g_cacvalidateState);
@@ -3079,35 +3173,43 @@ void __cdecl SV_CACValidateWriteGlobalSuccess(int param_1,void *param_2)
     g_cacvalidateState = CAC_IDLE;
   }
   LiveStorage_SendStatsBufferToClient
-            (*(ulong64 *)((int)param_2 + 0x110),*(uchar **)((int)param_2 + 0xf8),0x9ce8,
-             BLOB_TYPE_GLOBAL,g_cacvalidateState == CAC_IDLE);
-  SV_ResetFileOp(param_2);
+            (*(ulong64 *)((int)data + 0x110),*(uchar **)((int)data + 0xf8),0x9ce8,BLOB_TYPE_GLOBAL,
+             g_cacvalidateState == CAC_IDLE);
+  SV_ResetFileOp(data);
   return;
 }
 
 
 // 0098C840  SV_CACValidateWriteCACFailure  (live/live_storage_win.cpp:3095)
 
-void __cdecl SV_CACValidateWriteCACFailure(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateWriteCACFailure(int controllerIndex,void *data)
 
 {
+  dwFileOperationInfo *fileInfo;
+  
   Com_DPrintf(0xf,"write cac failure\n");
-  SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+  SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
   g_cacvalidateState = CAC_IDLE;
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
 
 // 0098CA80  SV_CACValidateWriteGlobalFailure  (live/live_storage_win.cpp:3105)
 
-void __cdecl SV_CACValidateWriteGlobalFailure(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateWriteGlobalFailure(int controllerIndex,void *data)
 
 {
+  dwFileOperationInfo *fileInfo;
+  
   Com_DPrintf(0xf,"write global failure\n");
-  SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+  SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
   g_cacvalidateState = CAC_IDLE;
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
@@ -3117,29 +3219,31 @@ void __cdecl SV_CACValidateWriteGlobalFailure(int param_1,void *param_2)
 /* WARNING: Removing unreachable block (ram,0x0098c797) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateWriteCAC(ulong64 param_1,uchar *param_2,uint param_3)
+void __cdecl SV_CACValidateWriteCAC(ulong64 client,uchar *cacblob,uint cacsize)
 
 {
-  dwFileOperationInfo *pdVar1;
-  uint uVar2;
+  dwFileOperationInfo *fileInfo_00;
+  uint uVar1;
+  int *checksum;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"CACValidate: Attempting to write cacblob for client %llu\n");
-  pdVar1 = SV_GetFreeFileOp();
-  if (pdVar1 == (dwFileOperationInfo *)0x0) {
+  fileInfo_00 = SV_GetFreeFileOp();
+  if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
     Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
   }
   else {
-    pdVar1->isUserFile = true;
-    pdVar1->isCompressedFile = true;
-    (pdVar1->fileTask).m_filename = "mpstatsCompressed";
-    pdVar1->fileBuffer = param_2;
-    pdVar1->bufferSize = param_3;
-    pdVar1->ownerID = param_1;
-    pdVar1->fileOperationSucessFunction = SV_CACValidateWriteCACSuccess;
-    pdVar1->fileOperationFailureFunction = SV_CACValidateWriteCACFailure;
-    uVar2 = LiveStats_ChecksumGamerStats(param_2 + 4,0x9ce4);
-    *(uint *)param_2 = uVar2;
-    LiveStorage_WriteDWUserFile(0,pdVar1,param_1);
+    fileInfo_00->isUserFile = true;
+    fileInfo_00->isCompressedFile = true;
+    (fileInfo_00->fileTask).m_filename = "mpstatsCompressed";
+    fileInfo_00->fileBuffer = cacblob;
+    fileInfo_00->bufferSize = cacsize;
+    fileInfo_00->ownerID = client;
+    fileInfo_00->fileOperationSucessFunction = SV_CACValidateWriteCACSuccess;
+    fileInfo_00->fileOperationFailureFunction = SV_CACValidateWriteCACFailure;
+    uVar1 = LiveStats_ChecksumGamerStats(cacblob + 4,0x9ce4);
+    *(uint *)cacblob = uVar1;
+    LiveStorage_WriteDWUserFile(0,fileInfo_00,client);
   }
   return;
 }
@@ -3150,23 +3254,25 @@ void __cdecl SV_CACValidateWriteCAC(ulong64 param_1,uchar *param_2,uint param_3)
 /* WARNING: Removing unreachable block (ram,0x0098c9dd) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateWriteGlobal(ulong64 param_1,uchar *param_2,uint param_3)
+void __cdecl SV_CACValidateWriteGlobal(ulong64 client,uchar *globalblob,uint globalsize)
 
 {
   code *pcVar1;
   bool bVar2;
-  dwFileOperationInfo *pdVar3;
-  uint uVar4;
+  dwFileOperationInfo *fileInfo_00;
+  uint uVar3;
+  int *checksum;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"CACValidate: Attempting to write globalblob for client %llu with size %i\n");
-  pdVar3 = SV_GetFreeFileOp();
-  if (pdVar3 == (dwFileOperationInfo *)0x0) {
+  fileInfo_00 = SV_GetFreeFileOp();
+  if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
     Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
   }
   else {
-    if (param_3 == 0) {
-      LiveStorage_ResetStats(param_2);
-      param_3 = 0x9ce8;
+    if (globalsize == 0) {
+      LiveStorage_ResetStats(globalblob);
+      globalsize = 0x9ce8;
     }
     if ((g_newCACBlobSize < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",
@@ -3176,19 +3282,19 @@ void __cdecl SV_CACValidateWriteGlobal(ulong64 param_1,uchar *param_2,uint param
       return;
     }
     if (0 < g_newCACBlobSize) {
-      LiveContracts_SVMergeBuffers(g_newCacBlob,param_2);
+      LiveContracts_SVMergeBuffers(g_newCacBlob,globalblob);
     }
-    pdVar3->isUserFile = true;
-    pdVar3->isCompressedFile = true;
-    (pdVar3->fileTask).m_filename = "globalstatsCompressed";
-    pdVar3->fileBuffer = param_2;
-    pdVar3->bufferSize = param_3;
-    pdVar3->ownerID = param_1;
-    pdVar3->fileOperationSucessFunction = SV_CACValidateWriteGlobalSuccess;
-    pdVar3->fileOperationFailureFunction = SV_CACValidateWriteGlobalFailure;
-    uVar4 = LiveStats_ChecksumGamerStats(param_2 + 4,0x9ce4);
-    *(uint *)param_2 = uVar4;
-    LiveStorage_WriteDWUserFile(0,pdVar3,param_1);
+    fileInfo_00->isUserFile = true;
+    fileInfo_00->isCompressedFile = true;
+    (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+    fileInfo_00->fileBuffer = globalblob;
+    fileInfo_00->bufferSize = globalsize;
+    fileInfo_00->ownerID = client;
+    fileInfo_00->fileOperationSucessFunction = SV_CACValidateWriteGlobalSuccess;
+    fileInfo_00->fileOperationFailureFunction = SV_CACValidateWriteGlobalFailure;
+    uVar3 = LiveStats_ChecksumGamerStats(globalblob + 4,0x9ce4);
+    *(uint *)globalblob = uVar3;
+    LiveStorage_WriteDWUserFile(0,fileInfo_00,client);
   }
   return;
 }
@@ -3196,15 +3302,19 @@ void __cdecl SV_CACValidateWriteGlobal(ulong64 param_1,uchar *param_2,uint param
 
 // 0098CC20  SV_CACValidateReadCACSuccess  (live/live_storage_win.cpp:3196)
 
-void __cdecl SV_CACValidateReadCACSuccess(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateReadCACSuccess(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   sv_cacvalidate_state_t *psVar3;
+  dwFileTask *fileTask;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"cac read success\n");
-  if (*(int *)((int)param_2 + 0x24) == 0) {
+  if (*(int *)((int)data + 0x24) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xc81,0
                              ,"%s");
     if (!bVar2) {
@@ -3213,41 +3323,44 @@ void __cdecl SV_CACValidateReadCACSuccess(int param_1,void *param_2)
       return;
     }
   }
-  g_oldCACBlobSize = *(int *)((int)param_2 + 0x24);
+  g_oldCACBlobSize = *(int *)((int)data + 0x24);
   psVar3 = operator++(&g_cacvalidateState);
   if (*psVar3 == CAC_FETCHTWO) {
     bVar2 = SV_ValidateClientCAC
-                      (g_oldCACBlob,*(int *)((int)param_2 + 0x24),g_newCacBlob,g_newCACBlobSize,
-                       g_cac_globalBlob,g_globalBlobSize,*(ulong64 *)((int)param_2 + 0x110));
+                      (g_oldCACBlob,*(int *)((int)data + 0x24),g_newCacBlob,g_newCACBlobSize,
+                       g_cac_globalBlob,g_globalBlobSize,*(ulong64 *)((int)data + 0x110));
     if (bVar2) {
       SV_CACValidateWriteCAC
-                (*(ulong64 *)((int)param_2 + 0x110),g_newCacBlob,*(uint *)((int)param_2 + 0x24));
-      SV_CACValidateWriteGlobal
-                (*(ulong64 *)((int)param_2 + 0x110),g_cac_globalBlob,g_globalBlobSize);
+                (*(ulong64 *)((int)data + 0x110),g_newCacBlob,*(uint *)((int)data + 0x24));
+      SV_CACValidateWriteGlobal(*(ulong64 *)((int)data + 0x110),g_cac_globalBlob,g_globalBlobSize);
       operator++(&g_cacvalidateState);
     }
     else {
-      SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+      SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
       g_cacvalidateState = CAC_IDLE;
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
 
 // 0098CD70  SV_CACValidateReadCACFailure  (live/live_storage_win.cpp:3222)
 
-taskCompleteResults __cdecl SV_CACValidateReadCACFailure(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl SV_CACValidateReadCACFailure(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
   sv_cacvalidate_state_t *psVar4;
+  dwFileTask *fileTask;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"cac read failure\n");
-  if (*(int *)((int)param_2 + 0x24) == 0) {
+  if (*(int *)((int)data + 0x24) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xc9a,0
                              ,"%s");
     if (!bVar2) {
@@ -3261,20 +3374,19 @@ taskCompleteResults __cdecl SV_CACValidateReadCACFailure(int param_1,void *param
   if (*psVar4 == CAC_FETCHTWO) {
     bVar2 = SV_ValidateClientCAC
                       (g_oldCACBlob,g_oldCACBlobSize,g_newCacBlob,g_newCACBlobSize,g_cac_globalBlob,
-                       g_globalBlobSize,*(ulong64 *)((int)param_2 + 0x110));
+                       g_globalBlobSize,*(ulong64 *)((int)data + 0x110));
     if (bVar2) {
       SV_CACValidateWriteCAC
-                (*(ulong64 *)((int)param_2 + 0x110),g_newCacBlob,*(uint *)((int)param_2 + 0x24));
-      SV_CACValidateWriteGlobal
-                (*(ulong64 *)((int)param_2 + 0x110),g_cac_globalBlob,g_globalBlobSize);
+                (*(ulong64 *)((int)data + 0x110),g_newCacBlob,*(uint *)((int)data + 0x24));
+      SV_CACValidateWriteGlobal(*(ulong64 *)((int)data + 0x110),g_cac_globalBlob,g_globalBlobSize);
       operator++(&g_cacvalidateState);
     }
     else {
-      SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+      SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
       g_cacvalidateState = CAC_IDLE;
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return TASK_COMPLETE;
 }
 
@@ -3284,14 +3396,15 @@ taskCompleteResults __cdecl SV_CACValidateReadCACFailure(int param_1,void *param
 /* WARNING: Removing unreachable block (ram,0x0098cbdd) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl SV_CACValidateReadCAC(ulong64 param_1,uchar *param_2,uint param_3)
+TaskRecord * __cdecl SV_CACValidateReadCAC(ulong64 client,uchar *cacblob,uint cacsize)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  dwFileOperationInfo *pdVar4;
-  TaskRecord *local_8;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
+  TaskRecord *retval;
   
   Com_DPrintf(0xf,"cac read\n");
   if ((g_cacvalidateState != CAC_IDLE) &&
@@ -3301,41 +3414,45 @@ TaskRecord * __cdecl SV_CACValidateReadCAC(ulong64 param_1,uchar *param_2,uint p
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  local_8 = (TaskRecord *)0x0;
+  retval = (TaskRecord *)0x0;
   Com_DPrintf(0xf,"CACValidate: Attempting to read cacblob for client %llu\n");
-  pdVar4 = SV_GetFreeFileOp();
-  if (pdVar4 == (dwFileOperationInfo *)0x0) {
+  fileInfo_00 = SV_GetFreeFileOp();
+  if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
     Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
   }
   else {
-    pdVar4->isUserFile = true;
-    pdVar4->isCompressedFile = true;
-    (pdVar4->fileTask).m_filename = "mpstatsCompressed";
-    pdVar4->fileBuffer = param_2;
-    pdVar4->bufferSize = param_3;
-    pdVar4->ownerID = param_1;
-    pdVar4->fileOperationSucessFunction = SV_CACValidateReadCACSuccess;
-    pdVar4->fileNotFoundFunction = SV_CACValidateReadCACFailure;
-    local_8 = LiveStorage_ReadDWFileByUserID(0,pdVar4,param_1);
+    fileInfo_00->isUserFile = true;
+    fileInfo_00->isCompressedFile = true;
+    (fileInfo_00->fileTask).m_filename = "mpstatsCompressed";
+    fileInfo_00->fileBuffer = cacblob;
+    fileInfo_00->bufferSize = cacsize;
+    fileInfo_00->ownerID = client;
+    fileInfo_00->fileOperationSucessFunction = SV_CACValidateReadCACSuccess;
+    fileInfo_00->fileNotFoundFunction = SV_CACValidateReadCACFailure;
+    retval = LiveStorage_ReadDWFileByUserID(0,fileInfo_00,client);
   }
-  if (local_8 == (TaskRecord *)0x0) {
+  if (retval == (TaskRecord *)0x0) {
     Com_Printf(0xf,"Couldn\'t read old cac immediate for %llu\n");
   }
-  return local_8;
+  return retval;
 }
 
 
 // 0098D000  SV_CACValidateReadGlobalSuccess  (live/live_storage_win.cpp:3290)
 
-void __cdecl SV_CACValidateReadGlobalSuccess(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_CACValidateReadGlobalSuccess(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   sv_cacvalidate_state_t *psVar3;
+  dwFileTask *fileTask;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"global read success\n");
-  if (*(int *)((int)param_2 + 0x24) == 0) {
+  if (*(int *)((int)data + 0x24) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xcde,0
                              ,"%s");
     if (!bVar2) {
@@ -3344,36 +3461,38 @@ void __cdecl SV_CACValidateReadGlobalSuccess(int param_1,void *param_2)
       return;
     }
   }
-  g_globalBlobSize = *(int *)((int)param_2 + 0x24);
+  g_globalBlobSize = *(int *)((int)data + 0x24);
   psVar3 = operator++(&g_cacvalidateState);
   if (*psVar3 == CAC_FETCHTWO) {
     bVar2 = SV_ValidateClientCAC
                       (g_oldCACBlob,g_oldCACBlobSize,g_newCacBlob,g_newCACBlobSize,
-                       *(uchar **)((int)param_2 + 0xd8),*(int *)((int)param_2 + 0x24),
-                       *(ulong64 *)((int)param_2 + 0x110));
+                       *(uchar **)((int)data + 0xd8),*(int *)((int)data + 0x24),
+                       *(ulong64 *)((int)data + 0x110));
     if (bVar2) {
-      SV_CACValidateWriteCAC(*(ulong64 *)((int)param_2 + 0x110),g_newCacBlob,g_newCACBlobSize);
-      SV_CACValidateWriteGlobal
-                (*(ulong64 *)((int)param_2 + 0x110),g_cac_globalBlob,g_globalBlobSize);
+      SV_CACValidateWriteCAC(*(ulong64 *)((int)data + 0x110),g_newCacBlob,g_newCACBlobSize);
+      SV_CACValidateWriteGlobal(*(ulong64 *)((int)data + 0x110),g_cac_globalBlob,g_globalBlobSize);
       operator++(&g_cacvalidateState);
     }
     else {
-      SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+      SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
       g_cacvalidateState = CAC_IDLE;
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
 
 // 0098D150  SV_CACValidateReadGlobalFailure  (live/live_storage_win.cpp:3316)
 
-taskCompleteResults __cdecl SV_CACValidateReadGlobalFailure(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl SV_CACValidateReadGlobalFailure(int controllerIndex,void *data)
 
 {
   bool bVar1;
   sv_cacvalidate_state_t *psVar2;
+  dwFileOperationInfo *fileInfo;
   
   Com_DPrintf(0xf,"global read failure\n");
   g_globalBlobSize = 0;
@@ -3381,19 +3500,18 @@ taskCompleteResults __cdecl SV_CACValidateReadGlobalFailure(int param_1,void *pa
   if (*psVar2 == CAC_FETCHTWO) {
     bVar1 = SV_ValidateClientCAC
                       (g_oldCACBlob,g_oldCACBlobSize,g_newCacBlob,g_newCACBlobSize,g_cac_globalBlob,
-                       g_globalBlobSize,*(ulong64 *)((int)param_2 + 0x110));
+                       g_globalBlobSize,*(ulong64 *)((int)data + 0x110));
     if (bVar1) {
-      SV_CACValidateWriteCAC(*(ulong64 *)((int)param_2 + 0x110),g_newCacBlob,g_newCACBlobSize);
-      SV_CACValidateWriteGlobal
-                (*(ulong64 *)((int)param_2 + 0x110),g_cac_globalBlob,g_globalBlobSize);
+      SV_CACValidateWriteCAC(*(ulong64 *)((int)data + 0x110),g_newCacBlob,g_newCACBlobSize);
+      SV_CACValidateWriteGlobal(*(ulong64 *)((int)data + 0x110),g_cac_globalBlob,g_globalBlobSize);
       operator++(&g_cacvalidateState);
     }
     else {
-      SV_CACValidateSendClientMsg(*(ulong64 *)((int)param_2 + 0x110),6);
+      SV_CACValidateSendClientMsg(*(ulong64 *)((int)data + 0x110),6);
       g_cacvalidateState = CAC_IDLE;
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return TASK_COMPLETE;
 }
 
@@ -3403,16 +3521,17 @@ taskCompleteResults __cdecl SV_CACValidateReadGlobalFailure(int param_1,void *pa
 /* WARNING: Removing unreachable block (ram,0x0098cfbe) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl SV_CACValidateReadGlobal(ulong64 param_1,uchar *param_2,uint param_3)
+TaskRecord * __cdecl SV_CACValidateReadGlobal(ulong64 client,uchar *globalblob,uint globalblobsize)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  dwFileOperationInfo *pdVar4;
-  TaskRecord *local_8;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
+  TaskRecord *retval;
   
-  local_8 = (TaskRecord *)0x0;
+  retval = (TaskRecord *)0x0;
   if ((g_cacvalidateState != CAC_IDLE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xd0f
                                ,0,"%s"), !bVar2)) {
@@ -3421,25 +3540,25 @@ TaskRecord * __cdecl SV_CACValidateReadGlobal(ulong64 param_1,uchar *param_2,uin
     return pTVar3;
   }
   Com_DPrintf(0xf,"CACValidate: Attempting to read cacblob for client %llu\n");
-  pdVar4 = SV_GetFreeFileOp();
-  if (pdVar4 == (dwFileOperationInfo *)0x0) {
+  fileInfo_00 = SV_GetFreeFileOp();
+  if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
     Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
   }
   else {
-    pdVar4->isUserFile = true;
-    pdVar4->isCompressedFile = true;
-    (pdVar4->fileTask).m_filename = "globalstatsCompressed";
-    pdVar4->fileBuffer = param_2;
-    pdVar4->bufferSize = param_3;
-    pdVar4->ownerID = param_1;
-    pdVar4->fileOperationSucessFunction = SV_CACValidateReadGlobalSuccess;
-    pdVar4->fileNotFoundFunction = SV_CACValidateReadGlobalFailure;
-    local_8 = LiveStorage_ReadDWFileByUserID(0,pdVar4,param_1);
+    fileInfo_00->isUserFile = true;
+    fileInfo_00->isCompressedFile = true;
+    (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+    fileInfo_00->fileBuffer = globalblob;
+    fileInfo_00->bufferSize = globalblobsize;
+    fileInfo_00->ownerID = client;
+    fileInfo_00->fileOperationSucessFunction = SV_CACValidateReadGlobalSuccess;
+    fileInfo_00->fileNotFoundFunction = SV_CACValidateReadGlobalFailure;
+    retval = LiveStorage_ReadDWFileByUserID(0,fileInfo_00,client);
   }
-  if (local_8 == (TaskRecord *)0x0) {
+  if (retval == (TaskRecord *)0x0) {
     Com_Printf(0xf,"Couldn\'t read global immediate for %llu\n");
   }
-  return local_8;
+  return retval;
 }
 
 
@@ -3447,15 +3566,16 @@ TaskRecord * __cdecl SV_CACValidateReadGlobal(ulong64 param_1,uchar *param_2,uin
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_CACValidateHandleRequest(ulong64 param_1,uchar *param_2,uint param_3)
+void __cdecl SV_CACValidateHandleRequest(ulong64 clientID,uchar *compressedcac,uint cacsize)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   TaskRecord *pTVar4;
+  bool ok;
   
-  if ((((param_2 == (uchar *)0x0) || (param_3 == 0)) || (param_1 == 0)) &&
+  if ((((compressedcac == (uchar *)0x0) || (cacsize == 0)) || (clientID == 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xd39
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3478,16 +3598,16 @@ void __cdecl SV_CACValidateHandleRequest(ulong64 param_1,uchar *param_2,uint par
       lastrequest = Sys_Milliseconds();
       g_globalBlobSize = 0;
       g_oldCACBlobSize = 0;
-      g_newCACBlobSize = MSG_DecompressWithZLib(param_2,param_3,g_newCacBlob,0x9ce8);
+      g_newCACBlobSize = MSG_DecompressWithZLib(compressedcac,cacsize,g_newCacBlob,0x9ce8);
       if (g_newCACBlobSize < 1) {
         Com_PrintWarning(0,"CACValidate: Couldn\'t decompress stats blob from %llu\n");
         bVar2 = false;
       }
       else {
         Com_DPrintf(0xf,"CACValidate: stats decompressed to %i bytes\n");
-        pTVar4 = SV_CACValidateReadCAC(param_1,g_oldCACBlob,0x9ce8);
+        pTVar4 = SV_CACValidateReadCAC(clientID,g_oldCACBlob,0x9ce8);
         if ((pTVar4 == (TaskRecord *)0x0) ||
-           (pTVar4 = SV_CACValidateReadGlobal(param_1,g_cac_globalBlob,0x9ce8),
+           (pTVar4 = SV_CACValidateReadGlobal(clientID,g_cac_globalBlob,0x9ce8),
            pTVar4 == (TaskRecord *)0x0)) {
           Com_DPrintf(0xf,"Couldn\'t read stats immediate!\n");
           bVar2 = false;
@@ -3501,7 +3621,7 @@ void __cdecl SV_CACValidateHandleRequest(ulong64 param_1,uchar *param_2,uint par
   }
   if (!bVar2) {
     Com_DPrintf(0xf,"immediate NACK\n");
-    SV_CACValidateSendClientMsg(param_1,4);
+    SV_CACValidateSendClientMsg(clientID,4);
   }
   return;
 }
@@ -3512,33 +3632,35 @@ void __cdecl SV_CACValidateHandleRequest(ulong64 param_1,uchar *param_2,uint par
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_OnNewStatsFromServer(uchar *param_1,uint param_2,blobtype_t param_3)
+void __cdecl Live_OnNewStatsFromServer(uchar *compressedblob,uint blobsize,blobtype_t blobtype)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   uchar *puVar4;
-  uchar local_9cf4;
+  uchar *globalbuffer;
+  uchar *cacbuffer;
+  uchar tempStatsBuffer;
   uchar local_9cf3 [40171];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_9cf4 = '\0';
+  tempStatsBuffer = '\0';
   memset(local_9cf3,'\0',0x9ce7);
-  if (param_3 == BLOB_TYPE_CAC) {
+  if (blobtype == BLOB_TYPE_CAC) {
     puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_FORCE_NORMAL,true);
-    MSG_DecompressWithZLib(param_1,param_2,&local_9cf4,0x9ce8);
-    memcpy(puVar3,&local_9cf4,0x9ce8);
+    MSG_DecompressWithZLib(compressedblob,blobsize,&tempStatsBuffer,0x9ce8);
+    memcpy(puVar3,&tempStatsBuffer,0x9ce8);
     LiveStorage_SetStatsWriteNeeded(0,false,STATS_LOCATION_NORMAL);
     puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     puVar4 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_FORCE_NORMAL,true);
     LiveContracts_CLMergeBuffers(puVar4,puVar3);
   }
-  else if (param_3 == BLOB_TYPE_GLOBAL) {
+  else if (blobtype == BLOB_TYPE_GLOBAL) {
     puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
-    MSG_DecompressWithZLib(param_1,param_2,&local_9cf4,0x9ce8);
-    memcpy(puVar3,&local_9cf4,0x9ce8);
+    MSG_DecompressWithZLib(compressedblob,blobsize,&tempStatsBuffer,0x9ce8);
+    memcpy(puVar3,&tempStatsBuffer,0x9ce8);
     LiveStats_ValidateGlobalWithDDL(0);
     LiveStorage_SetStatsWriteNeeded(0,false,STATS_LOCATION_GLOBAL);
     puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
@@ -3568,101 +3690,103 @@ void __cdecl Live_OnNewStatsFromServer(uchar *param_1,uint param_2,blobtype_t pa
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Live_CACValidate_DispatchMessage(ulong64 param_1,void *param_2,uint param_3)
+bool __cdecl Live_CACValidate_DispatchMessage(ulong64 senderID,void *message,uint messageSize)
 
 {
   uint uVar1;
   int iVar2;
-  blobtype_t bStack_13a30;
+  blobtype_t blobtype;
   uchar uStack_13a2c;
   uchar auStack_13a2b [40167];
-  uint local_9d44;
-  char local_9d3d;
-  uint local_9d3c;
-  uint local_9d38;
-  uchar local_9d34;
+  uint clientchecksum_2;
+  uchar ok;
+  uint blobsize;
+  uint serverchecksum_2;
+  uchar compressedcac;
   uchar local_9d33 [40171];
   uint local_48;
-  uint local_44;
-  uint local_40;
-  uint local_3c;
-  msg_t local_38;
-  undefined4 uStack_8;
+  uint serverchecksum;
+  uint cacsize;
+  uint clientchecksum;
+  msg_t in_msg;
+  undefined3 uStack_8;
+  bool retval;
+  uchar messagetype;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uStack_8 = 0xd5dd;
-  MSG_InitReadOnly(&local_38,param_2,param_3);
-  MSG_BeginReading(&local_38);
-  uVar1 = MSG_ReadByte(&local_38);
-  uStack_8 = CONCAT13((char)uVar1,(undefined3)uStack_8);
+  _uStack_8 = 0xd5dd;
+  MSG_InitReadOnly(&in_msg,message,messageSize);
+  MSG_BeginReading(&in_msg);
+  uVar1 = MSG_ReadByte(&in_msg);
+  _uStack_8 = CONCAT13((char)uVar1,uStack_8);
   switch(uVar1 & 0xff) {
   case 3:
-    MSG_ReadByte(&local_38);
-    local_3c = 0;
-    MSG_ReadData(&local_38,&local_40,4);
-    if (local_40 < 0x9ce8) {
-      MSG_ReadData(&local_38,&local_3c,4);
-      local_9d34 = '\0';
+    MSG_ReadByte(&in_msg);
+    clientchecksum = 0;
+    MSG_ReadData(&in_msg,&cacsize,4);
+    if (cacsize < 0x9ce8) {
+      MSG_ReadData(&in_msg,&clientchecksum,4);
+      compressedcac = '\0';
       memset(local_9d33,'\0',0x9ce7);
-      MSG_ReadData(&local_38,&local_9d34,local_40);
-      local_44 = Com_BlockChecksumKey32(&local_9d34,local_40,0);
-      if (local_44 != local_3c) {
+      MSG_ReadData(&in_msg,&compressedcac,cacsize);
+      serverchecksum = Com_BlockChecksumKey32(&compressedcac,cacsize,0);
+      if (serverchecksum != clientchecksum) {
         Com_PrintError(0,
                        "CACValidate: checksum mismatch for client %llu: server checksum %u client checksum %u\n"
                       );
         return true;
       }
-      SV_CACValidateHandleRequest(param_1,&local_9d34,local_40);
-      uStack_8 = 0x10000;
+      SV_CACValidateHandleRequest(senderID,&compressedcac,cacsize);
+      _uStack_8 = 0x10000;
     }
     else {
       Com_PrintWarning(0xf,"MAX_CAC_SIZE exceeded!\n");
     }
     break;
   case 4:
-    CL_CACValidateHandleNACK(param_1);
-    uStack_8 = 0x10000;
+    CL_CACValidateHandleNACK(senderID);
+    _uStack_8 = 0x10000;
     break;
   case 5:
-    uStack_8 = 0x10000;
+    _uStack_8 = 0x10000;
     break;
   case 6:
-    CL_CACValidateHandleBad(param_1);
-    uStack_8 = 0x10000;
+    CL_CACValidateHandleBad(senderID);
+    _uStack_8 = 0x10000;
     break;
   case 7:
   case 8:
-    local_9d3c = 0;
-    local_9d38 = 0;
-    iVar2 = MSG_ReadByte(&local_38);
-    local_9d3d = (char)iVar2;
-    MSG_ReadData(&local_38,&local_9d3c,4);
-    if (param_3 < local_9d3c) {
+    blobsize = 0;
+    serverchecksum_2 = 0;
+    iVar2 = MSG_ReadByte(&in_msg);
+    ok = (uchar)iVar2;
+    MSG_ReadData(&in_msg,&blobsize,4);
+    if (messageSize < blobsize) {
       Com_PrintError(0,"blobsize %u exceeds message size %u!\n, blobsize, messagesize");
       return true;
     }
-    if (local_9d3c < 0x9ce8) {
-      MSG_ReadData(&local_38,&local_9d38,4);
+    if (blobsize < 0x9ce8) {
+      MSG_ReadData(&in_msg,&serverchecksum_2,4);
       uStack_13a2c = '\0';
       memset(auStack_13a2b,'\0',0x9ce7);
-      if (local_9d3d == '\x05') {
-        CL_CACValidateHandleOK(param_1);
+      if (ok == '\x05') {
+        CL_CACValidateHandleOK(senderID);
       }
-      MSG_ReadData(&local_38,&uStack_13a2c,local_9d3c);
-      local_9d44 = Com_BlockChecksumKey32(&uStack_13a2c,local_9d3c,0);
-      if (local_9d38 != local_9d44) {
+      MSG_ReadData(&in_msg,&uStack_13a2c,blobsize);
+      clientchecksum_2 = Com_BlockChecksumKey32(&uStack_13a2c,blobsize,0);
+      if (serverchecksum_2 != clientchecksum_2) {
         Com_PrintError(0,"Server checksum %u doesn\'t match client checksum %u!\n");
         return true;
       }
-      bStack_13a30 = BLOB_TYPE_INVALID;
-      if (uStack_8._3_1_ == '\b') {
-        bStack_13a30 = BLOB_TYPE_CAC;
+      blobtype = BLOB_TYPE_INVALID;
+      if (messagetype == '\b') {
+        blobtype = BLOB_TYPE_CAC;
       }
-      else if (uStack_8._3_1_ == '\a') {
-        bStack_13a30 = BLOB_TYPE_GLOBAL;
+      else if (messagetype == '\a') {
+        blobtype = BLOB_TYPE_GLOBAL;
       }
-      Live_OnNewStatsFromServer(&uStack_13a2c,local_9d3c,bStack_13a30);
-      uStack_8 = 0x10000;
+      Live_OnNewStatsFromServer(&uStack_13a2c,blobsize,blobtype);
+      _uStack_8 = 0x10000;
     }
     else {
       Com_PrintError(0xf,"MAX_CAC_SIZE exceeded!\n");
@@ -3671,7 +3795,7 @@ bool __cdecl Live_CACValidate_DispatchMessage(ulong64 param_1,void *param_2,uint
   default:
     Com_DPrintf(0xf,"No handler found for instant message type %u\n");
   }
-  return (bool)uStack_8._2_1_;
+  return retval;
 }
 
 
@@ -3696,10 +3820,10 @@ int __cdecl SV_GetPlaylistFetchedTime(void)
 
 // 0098D980  SV_SetShouldMapRotate  (live/live_storage_win.cpp:3598)
 
-void __cdecl SV_SetShouldMapRotate(bool param_1)
+void __cdecl SV_SetShouldMapRotate(bool should)
 
 {
-  s_shouldMapRotate = param_1;
+  s_shouldMapRotate = should;
   return;
 }
 
@@ -3741,23 +3865,23 @@ void __cdecl SV_FetchWADDeferred(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_GetGlobalBlobSuccess(int param_1,void *param_2)
+void __cdecl LiveStorage_GetGlobalBlobSuccess(int controllerIndex,void *data)
 
 {
-  ulong uVar1;
-  uchar *puVar2;
-  uchar *puVar3;
+  ulong count;
+  uchar *dst;
+  uchar *src;
   
   LiveStorage_FinishStatsFetch();
-  uVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_GLOBAL,true);
-  puVar3 = s_tempGlobalStatsBuffer;
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-  memcpy(puVar2,puVar3,uVar1);
+  count = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  src = s_tempGlobalStatsBuffer;
+  dst = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  memcpy(dst,src,count);
   LiveStorage_ReadPlayerStats(0,false,false);
-  LiveStats_ValidateGlobalWithDDL(param_1);
-  SV_ResetFileOp(param_2);
+  LiveStats_ValidateGlobalWithDDL(controllerIndex);
+  SV_ResetFileOp(data);
   CL_GetXP_f();
-  LiveStats_MakeStableGlobalStatsBuffer(param_1);
+  LiveStats_MakeStableGlobalStatsBuffer(controllerIndex);
   return;
 }
 
@@ -3766,12 +3890,12 @@ void __cdecl LiveStorage_GetGlobalBlobSuccess(int param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl LiveStorage_GetGlobalBlobFileNotFound(int param_1,void *param_2)
+taskCompleteResults __cdecl LiveStorage_GetGlobalBlobFileNotFound(int controlleridx,void *data)
 
 {
   LiveStorage_ReadPlayerStats(0,false,false);
   LiveStorage_FinishStatsFetch();
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return TASK_COMPLETE;
 }
 
@@ -3784,44 +3908,47 @@ TaskRecord * __cdecl LiveStorage_ReadPlayerGlobalBlob(void)
 
 {
   bool bVar1;
-  dwFileOperationInfo *pdVar2;
-  TaskRecord *pTVar3;
-  TaskRecord *local_10;
+  dwFileOperationInfo *fileInfo_00;
+  TaskRecord *nestedTask_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int idx;
+  dwFileOperationInfo *fileInfo;
   
   bVar1 = TaskManager2_TaskIsInProgressForController(task_FetchGlobalBlob,0);
   if (bVar1) {
-    local_10 = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    pdVar2 = SV_GetFreeFileOp();
-    if (pdVar2 == (dwFileOperationInfo *)0x0) {
+    fileInfo_00 = SV_GetFreeFileOp();
+    if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
       Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
-      local_10 = (TaskRecord *)0x0;
+      task = (TaskRecord *)0x0;
     }
     else {
-      (pdVar2->retryInfo).lastAttemptTime = 0;
-      (pdVar2->retryInfo).lastAttemptInterval = 0;
-      (pdVar2->retryInfo).retryCount = 0;
-      local_10 = (TaskRecord *)0x0;
+      (fileInfo_00->retryInfo).lastAttemptTime = 0;
+      (fileInfo_00->retryInfo).lastAttemptInterval = 0;
+      (fileInfo_00->retryInfo).retryCount = 0;
+      task = (TaskRecord *)0x0;
       LiveStats_GetRootDDLState();
-      pdVar2->isUserFile = true;
-      pdVar2->isCompressedFile = true;
-      (pdVar2->fileTask).m_filename = "globalstatsCompressed";
-      pdVar2->fileBuffer = s_tempGlobalStatsBuffer;
-      pdVar2->bufferSize = 0x9ce8;
-      (pdVar2->fileTask).m_optional = true;
-      pdVar2->fileOperationSucessFunction = LiveStorage_GetGlobalBlobSuccess;
-      pdVar2->fileNotFoundFunction = LiveStorage_GetGlobalBlobFileNotFound;
-      pdVar2->menuDef = "popup_fetchstats";
-      pTVar3 = LiveStorage_ReadDWFile(0,pdVar2);
-      if ((pTVar3 != (TaskRecord *)0x0) &&
-         (local_10 = LiveStorage_SetupNestedTask(task_FetchGlobalBlob,0,pTVar3,pdVar2),
-         local_10 != (TaskRecord *)0x0)) {
+      fileInfo_00->isUserFile = true;
+      fileInfo_00->isCompressedFile = true;
+      (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+      fileInfo_00->fileBuffer = s_tempGlobalStatsBuffer;
+      fileInfo_00->bufferSize = 0x9ce8;
+      (fileInfo_00->fileTask).m_optional = true;
+      fileInfo_00->fileOperationSucessFunction = LiveStorage_GetGlobalBlobSuccess;
+      fileInfo_00->fileNotFoundFunction = LiveStorage_GetGlobalBlobFileNotFound;
+      fileInfo_00->menuDef = "popup_fetchstats";
+      nestedTask_00 = LiveStorage_ReadDWFile(0,fileInfo_00);
+      if ((nestedTask_00 != (TaskRecord *)0x0) &&
+         (task = LiveStorage_SetupNestedTask(task_FetchGlobalBlob,0,nestedTask_00,fileInfo_00),
+         task != (TaskRecord *)0x0)) {
         LiveStorage_BeginStatsFetch();
       }
     }
   }
-  return local_10;
+  return task;
 }
 
 
@@ -3880,7 +4007,7 @@ void __cdecl LiveStorage_FinishStatsFetch(void)
 
 // 0098DC80  LiveStorage_FirstTimeRunning  (live/live_storage_win.cpp:3797)
 
-bool __cdecl LiveStorage_FirstTimeRunning(int param_1)
+bool __cdecl LiveStorage_FirstTimeRunning(int __formal)
 
 {
   return s_firstTimeRunning;
@@ -3889,23 +4016,25 @@ bool __cdecl LiveStorage_FirstTimeRunning(int param_1)
 
 // 0098DC90  LiveStorage_SetFirstTimeRunning  (live/live_storage_win.cpp:3802)
 
-void __cdecl LiveStorage_SetFirstTimeRunning(bool param_1)
+void __cdecl LiveStorage_SetFirstTimeRunning(bool running)
 
 {
-  s_firstTimeRunning = param_1;
+  s_firstTimeRunning = running;
   return;
 }
 
 
 // 0098DCA0  LiveStorage_SaveRecentServersComplete  (live/live_storage_win.cpp:3811)
 
-void __cdecl LiveStorage_SaveRecentServersComplete(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveStorage_SaveRecentServersComplete(int controllerindex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xee4,0
                              ,"%s");
     if (!bVar2) {
@@ -3914,7 +4043,7 @@ void __cdecl LiveStorage_SaveRecentServersComplete(int param_1,void *param_2)
       return;
     }
   }
-  SV_ResetFileOp(param_2);
+  SV_ResetFileOp(data);
   return;
 }
 
@@ -3923,36 +4052,40 @@ void __cdecl LiveStorage_SaveRecentServersComplete(int param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_SaveRecentServers(uchar *param_1,int param_2)
+TaskRecord * __cdecl LiveStorage_SaveRecentServers(uchar *buffer,int buffSize)
 
 {
   bool bVar1;
   TaskRecord *pTVar2;
-  dwFileOperationInfo *pdVar3;
+  dwFileOperationInfo *fileInfo_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int idx;
+  dwFileOperationInfo *fileInfo;
   
   bVar1 = TaskManager2_TaskIsInProgressForController(task_saveRecentServers,0);
   if (bVar1) {
     pTVar2 = (TaskRecord *)0x0;
   }
   else {
-    pdVar3 = SV_GetFreeFileOp();
-    if (pdVar3 == (dwFileOperationInfo *)0x0) {
+    fileInfo_00 = SV_GetFreeFileOp();
+    if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
       Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
       pTVar2 = (TaskRecord *)0x0;
     }
     else {
-      (pdVar3->retryInfo).lastAttemptTime = 0;
-      (pdVar3->retryInfo).lastAttemptInterval = 0;
-      (pdVar3->retryInfo).retryCount = 0;
-      pdVar3->isUserFile = true;
-      pdVar3->isCompressedFile = false;
-      (pdVar3->fileTask).m_filename = "recentservers.dat";
-      pdVar3->fileBuffer = param_1;
-      pdVar3->bufferSize = param_2;
-      (pdVar3->fileTask).m_optional = true;
-      pdVar3->fileOperationSucessFunction = LiveStorage_SaveRecentServersComplete;
-      pTVar2 = LiveStorage_WriteDWUserFile(0,pdVar3,0);
-      pTVar2 = LiveStorage_SetupNestedTask(task_saveRecentServers,0,pTVar2,pdVar3);
+      (fileInfo_00->retryInfo).lastAttemptTime = 0;
+      (fileInfo_00->retryInfo).lastAttemptInterval = 0;
+      (fileInfo_00->retryInfo).retryCount = 0;
+      fileInfo_00->isUserFile = true;
+      fileInfo_00->isCompressedFile = false;
+      (fileInfo_00->fileTask).m_filename = "recentservers.dat";
+      fileInfo_00->fileBuffer = buffer;
+      fileInfo_00->bufferSize = buffSize;
+      (fileInfo_00->fileTask).m_optional = true;
+      fileInfo_00->fileOperationSucessFunction = LiveStorage_SaveRecentServersComplete;
+      pTVar2 = LiveStorage_WriteDWUserFile(0,fileInfo_00,0);
+      pTVar2 = LiveStorage_SetupNestedTask(task_saveRecentServers,0,pTVar2,fileInfo_00);
     }
   }
   return pTVar2;
@@ -3961,10 +4094,14 @@ TaskRecord * __cdecl LiveStorage_SaveRecentServers(uchar *param_1,int param_2)
 
 // 0098DEE0  LiveStorage_ReadRecentServersSuccess  (live/live_storage_win.cpp:3851)
 
-void __cdecl LiveStorage_ReadRecentServersSuccess(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveStorage_ReadRecentServersSuccess(int controllerIndex,void *data)
 
 {
-  Live_PopulateRecentServers(*(uchar **)((int)param_2 + 0xf8),*(int *)((int)param_2 + 0xfc));
+  dwFileOperationInfo *fileop;
+  
+  Live_PopulateRecentServers(*(uchar **)((int)data + 0xf8),*(int *)((int)data + 0xfc));
   return;
 }
 
@@ -3973,36 +4110,40 @@ void __cdecl LiveStorage_ReadRecentServersSuccess(int param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadRecentServers(uchar *param_1,int param_2)
+TaskRecord * __cdecl LiveStorage_ReadRecentServers(uchar *buf,int bufsize)
 
 {
   bool bVar1;
   TaskRecord *pTVar2;
-  dwFileOperationInfo *pdVar3;
+  dwFileOperationInfo *fileInfo_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int idx;
+  dwFileOperationInfo *fileInfo;
   
   bVar1 = TaskManager2_TaskIsInProgressForController(task_readRecentServers,0);
   if (bVar1) {
     pTVar2 = (TaskRecord *)0x0;
   }
   else {
-    pdVar3 = SV_GetFreeFileOp();
-    if (pdVar3 == (dwFileOperationInfo *)0x0) {
+    fileInfo_00 = SV_GetFreeFileOp();
+    if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
       Com_DPrintf(0xf,"Warning: ran out of client fileops. This is bad. Ask Ewan.\n");
       pTVar2 = (TaskRecord *)0x0;
     }
     else {
-      (pdVar3->retryInfo).lastAttemptTime = 0;
-      (pdVar3->retryInfo).lastAttemptInterval = 0;
-      (pdVar3->retryInfo).retryCount = 0;
-      pdVar3->isUserFile = true;
-      pdVar3->isCompressedFile = false;
-      (pdVar3->fileTask).m_filename = "recentservers.dat";
-      pdVar3->fileBuffer = param_1;
-      pdVar3->bufferSize = param_2;
-      (pdVar3->fileTask).m_optional = true;
-      pdVar3->fileOperationSucessFunction = LiveStorage_ReadRecentServersSuccess;
-      pTVar2 = LiveStorage_ReadDWFile(0,pdVar3);
-      pTVar2 = LiveStorage_SetupNestedTask(task_readRecentServers,0,pTVar2,pdVar3);
+      (fileInfo_00->retryInfo).lastAttemptTime = 0;
+      (fileInfo_00->retryInfo).lastAttemptInterval = 0;
+      (fileInfo_00->retryInfo).retryCount = 0;
+      fileInfo_00->isUserFile = true;
+      fileInfo_00->isCompressedFile = false;
+      (fileInfo_00->fileTask).m_filename = "recentservers.dat";
+      fileInfo_00->fileBuffer = buf;
+      fileInfo_00->bufferSize = bufsize;
+      (fileInfo_00->fileTask).m_optional = true;
+      fileInfo_00->fileOperationSucessFunction = LiveStorage_ReadRecentServersSuccess;
+      pTVar2 = LiveStorage_ReadDWFile(0,fileInfo_00);
+      pTVar2 = LiveStorage_SetupNestedTask(task_readRecentServers,0,pTVar2,fileInfo_00);
     }
   }
   return pTVar2;
@@ -4011,7 +4152,7 @@ TaskRecord * __cdecl LiveStorage_ReadRecentServers(uchar *param_1,int param_2)
 
 // 0098DF90  LiveStorage_DeleteGlobalStatsSuccess  (live/live_storage_win.cpp:3894)
 
-void __cdecl LiveStorage_DeleteGlobalStatsSuccess(int param_1,void *param_2)
+void __cdecl LiveStorage_DeleteGlobalStatsSuccess(int controllerIndex,void *data)
 
 {
   LiveStats_ResetStats(0,true,STATSRESET_EXEC_RESET_COMMAND);
@@ -4022,7 +4163,7 @@ void __cdecl LiveStorage_DeleteGlobalStatsSuccess(int param_1,void *param_2)
 
 // 0098DFB0  LiveStorage_DeleteGlobalStatsNotFound  (live/live_storage_win.cpp:3900)
 
-void __cdecl LiveStorage_DeleteGlobalStatsNotFound(int param_1,void *param_2)
+void __cdecl LiveStorage_DeleteGlobalStatsNotFound(int controllerindex,void *data)
 
 {
   LiveStats_ResetStats(0,false,STATSRESET_EXEC_RESET_COMMAND);
@@ -4035,15 +4176,16 @@ void __cdecl LiveStorage_DeleteGlobalStatsNotFound(int param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_DeleteGlobalStats(int param_1)
+void __cdecl LiveStorage_DeleteGlobalStats(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  dwFileOperationInfo *pdVar3;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
   
-  pdVar3 = SV_GetFreeFileOp();
-  if (pdVar3 == (dwFileOperationInfo *)0x0) {
+  fileInfo_00 = SV_GetFreeFileOp();
+  if (fileInfo_00 == (dwFileOperationInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_win.cpp",0xf46,0
                              ,"%s");
     if (!bVar2) {
@@ -4052,11 +4194,11 @@ void __cdecl LiveStorage_DeleteGlobalStats(int param_1)
       return;
     }
   }
-  (pdVar3->fileTask).m_filename = "globalstatsCompressed";
-  pdVar3->isUserFile = true;
-  pdVar3->fileOperationSucessFunction = LiveStorage_DeleteGlobalStatsSuccess;
-  pdVar3->fileOperationFailureFunction = LiveStorage_DeleteGlobalStatsNotFound;
-  LiveStorage_DeleteDWUserFile(param_1,pdVar3);
+  (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+  fileInfo_00->isUserFile = true;
+  fileInfo_00->fileOperationSucessFunction = LiveStorage_DeleteGlobalStatsSuccess;
+  fileInfo_00->fileOperationFailureFunction = LiveStorage_DeleteGlobalStatsNotFound;
+  LiveStorage_DeleteDWUserFile(controllerIndex,fileInfo_00);
   return;
 }
 

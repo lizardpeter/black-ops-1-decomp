@@ -2,6 +2,8 @@
 
 // 007E8460  R_VertexStream2_Init  (gfx_d3d/r_vertexstream2.cpp:100)
 
+/* WARNING: Variable defined which should be unmapped: location */
+
 void __cdecl R_VertexStream2_Init(uint param_1,int param_2)
 
 {
@@ -9,6 +11,7 @@ void __cdecl R_VertexStream2_Init(uint param_1,int param_2)
   ulong in_EAX;
   uint unaff_ESI;
   int unaff_retaddr;
+  int location;
   
   Com_Printf(8,"vertex stream 2: --------------------------\n");
   Com_Printf(8,"vertex stream 2: needs %u bytes\n");

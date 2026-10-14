@@ -16,12 +16,12 @@ void __cdecl TRACK_r_material(void)
 
 // 00A4B550  Material_Alloc  (gfx_d3d/r_material.cpp:658)
 
-void * __cdecl Material_Alloc(int param_1)
+void * __cdecl Material_Alloc(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"Material_Alloc",0x17);
+  pvVar1 = Hunk_Alloc(size,"Material_Alloc",0x17);
   return pvVar1;
 }
 
@@ -29,15 +29,17 @@ void * __cdecl Material_Alloc(int param_1)
 // 00A4B570  Load_CreateMaterialPixelShader  (gfx_d3d/r_material.cpp:762)
 
 void __cdecl
-Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *param_1,MaterialPixelShader *param_2)
+Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *loadDef,MaterialPixelShader *mtlShader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  HRESULT hr;
+  int semaphore;
   
-  if (param_1 != &(param_2->prog).loadDef) {
+  if (loadDef != &(mtlShader->prog).loadDef) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x2fb,0,
                              "%s");
     if (!bVar2) {
@@ -47,14 +49,14 @@ Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *param_1,MaterialPixelShade
     }
   }
   if ((r_loadForRenderer == (dvar_s *)0x0) || ((r_loadForRenderer->current).enabled == false)) {
-    (param_2->prog).ps = (IDirect3DPixelShader9 *)0x0;
+    (mtlShader->prog).ps = (IDirect3DPixelShader9 *)0x0;
   }
   else {
     ProfLoad_Begin("Create pixel shader");
     bVar2 = Sys_IsRenderThread();
     if (bVar2) {
       iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar4 = (**(code **)((int)*dx.device + 0x1a8))(dx.device,param_1->program,&param_2->prog);
+      iVar4 = (**(code **)((int)*dx.device + 0x1a8))(dx.device,loadDef->program,&mtlShader->prog);
       if (iVar4 < 0) {
         g_hr = iVar4;
         mem = (**(code **)((int)*dx.device + 0x10))(dx.device);
@@ -64,7 +66,7 @@ Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *param_1,MaterialPixelShade
       }
     }
     else {
-      RB_Resource_CreatePixelShader(param_1->program,&(param_2->prog).ps);
+      RB_Resource_CreatePixelShader(loadDef->program,&(mtlShader->prog).ps);
       RB_Resource_Flush();
     }
     DB_LoadedExternalData(10000);
@@ -77,16 +79,19 @@ Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *param_1,MaterialPixelShade
 // 00A4B680  Load_CreateMaterialVertexShader  (gfx_d3d/r_material.cpp:807)
 
 void __cdecl
-Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *param_1,MaterialVertexShader *param_2)
+Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef,MaterialVertexShader *mtlShader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
-  if ((param_1 != &(param_2->prog).loadDef) &&
+  if ((loadDef != &(mtlShader->prog).loadDef) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x328,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -95,7 +100,7 @@ Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *param_1,MaterialVertexSh
   }
   if (((r_loadForRenderer == (dvar_s *)0x0) || ((r_loadForRenderer->current).enabled == false)) ||
      (skipShaderCreationHack != false)) {
-    (param_2->prog).vs = (IDirect3DVertexShader9 *)0x0;
+    (mtlShader->prog).vs = (IDirect3DVertexShader9 *)0x0;
   }
   else {
     ProfLoad_Begin("Create vertex shader");
@@ -107,13 +112,13 @@ Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *param_1,MaterialVertexSh
         RB_LogPrint("dx.device->CreateVertexShader( loadDef->program, &mtlShader->prog.vs )\n");
       }
       iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar5 = (**(code **)((int)*dx.device + 0x16c))(dx.device,param_1->program,&param_2->prog);
+      hr_00 = (**(code **)((int)*dx.device + 0x16c))(dx.device,loadDef->program,&mtlShader->prog);
       if (iVar4 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      if (iVar5 < 0) {
+      if (hr_00 < 0) {
         g_disableRendering = g_disableRendering + 1;
-        R_ErrorDescription(iVar5);
+        R_ErrorDescription(hr_00);
         Com_Error(ERR_FATAL,
                   "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp (%i) dx.device->CreateVertexShader( loadDef->program, &mtlShader->prog.vs ) failed: %s\n"
                  );
@@ -123,7 +128,7 @@ Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *param_1,MaterialVertexSh
       }
     }
     else {
-      RB_Resource_CreateVertexShader(param_1->program,&(param_2->prog).vs);
+      RB_Resource_CreateVertexShader(loadDef->program,&(mtlShader->prog).vs);
       RB_Resource_Flush();
     }
     DB_LoadedExternalData(10000);
@@ -136,7 +141,8 @@ Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *param_1,MaterialVertexSh
 // 00A4B8C0  Material_BuildVertexDecl  (gfx_d3d/r_material.cpp:900)
 
 IDirect3DVertexDeclaration9 * __cdecl
-Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_source_info_t *param_3)
+Material_BuildVertexDecl
+          (MaterialStreamRouting *routingData,int streamCount,stream_source_info_t *sourceTable)
 
 {
   undefined4 uVar1;
@@ -151,20 +157,24 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
   stream_source_info_t *psVar10;
   int iVar11;
   int iVar12;
-  int iVar13;
-  int local_824;
-  undefined4 local_81c [2];
-  _D3DVERTEXELEMENT9 local_814 [256];
-  IDirect3DVertexDeclaration9 *local_10;
-  stream_dest_info_t *local_c;
-  int local_8;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
+  int elemIndexInsert;
+  stream_source_info_t *sourceInfo;
+  undefined4 declEnd [2];
+  _D3DVERTEXELEMENT9 elemTable [256];
+  IDirect3DVertexDeclaration9 *decl;
+  stream_dest_info_t *destInfo;
+  int elemIndex;
   
-  local_10 = (IDirect3DVertexDeclaration9 *)0x0;
-  local_81c[0] = 0xff;
-  local_81c[1] = 0x11;
-  local_8 = 0;
-  for (; iVar11 = local_8, param_2 != 0; param_2 = param_2 + -1) {
-    if ((9 < param_1->source) &&
+  decl = (IDirect3DVertexDeclaration9 *)0x0;
+  declEnd[0] = 0xff;
+  declEnd[1] = 0x11;
+  elemIndex = 0;
+  for (; iVar11 = elemIndex, streamCount != 0; streamCount = streamCount + -1) {
+    if ((9 < routingData->source) &&
        (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x396,
                                  0,
                                  "routingData->source doesn\'t index STREAM_SRC_COUNT\n\t%i not in [0, %i)"
@@ -173,45 +183,46 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
       pIVar9 = (IDirect3DVertexDeclaration9 *)(*pcVar2)();
       return pIVar9;
     }
-    psVar10 = param_3 + param_1->source;
+    psVar10 = sourceTable + routingData->source;
     if (psVar10->Stream == 0xff) {
       return (IDirect3DVertexDeclaration9 *)0x0;
     }
-    local_c = s_streamDestInfo + param_1->dest;
-    for (local_824 = local_8;
-        (0 < local_824 && ((ushort)psVar10->Stream < *(ushort *)(local_81c + local_824 * 2)));
-        local_824 = local_824 + -1) {
-      uVar1 = local_81c[local_824 * 2];
-      p_Var3 = local_814 + local_824 + -1;
+    destInfo = s_streamDestInfo + routingData->dest;
+    for (elemIndexInsert = elemIndex;
+        (0 < elemIndexInsert &&
+        ((ushort)psVar10->Stream < *(ushort *)(declEnd + elemIndexInsert * 2)));
+        elemIndexInsert = elemIndexInsert + -1) {
+      uVar1 = declEnd[elemIndexInsert * 2];
+      p_Var3 = elemTable + elemIndexInsert + -1;
       uVar4 = p_Var3->Type;
       uVar5 = p_Var3->Method;
       uVar6 = p_Var3->Usage;
       uVar7 = p_Var3->UsageIndex;
-      local_814[local_824].Stream = (short)uVar1;
-      local_814[local_824].Offset = (short)((uint)uVar1 >> 0x10);
-      p_Var3 = local_814 + local_824;
+      elemTable[elemIndexInsert].Stream = (short)uVar1;
+      elemTable[elemIndexInsert].Offset = (short)((uint)uVar1 >> 0x10);
+      p_Var3 = elemTable + elemIndexInsert;
       p_Var3->Type = uVar4;
       p_Var3->Method = uVar5;
       p_Var3->Usage = uVar6;
       p_Var3->UsageIndex = uVar7;
     }
-    local_814[local_824].Stream = (ushort)psVar10->Stream;
-    local_814[local_824].Offset = (ushort)psVar10->Offset;
-    local_814[local_824].Type = psVar10->Type;
-    local_814[local_824].Method = '\0';
-    local_814[local_824].Usage = local_c->Usage;
-    local_814[local_824].UsageIndex = local_c->UsageIndex;
-    local_8 = local_8 + 1;
-    param_1 = param_1 + 1;
+    elemTable[elemIndexInsert].Stream = (ushort)psVar10->Stream;
+    elemTable[elemIndexInsert].Offset = (ushort)psVar10->Offset;
+    elemTable[elemIndexInsert].Type = psVar10->Type;
+    elemTable[elemIndexInsert].Method = '\0';
+    elemTable[elemIndexInsert].Usage = destInfo->Usage;
+    elemTable[elemIndexInsert].UsageIndex = destInfo->UsageIndex;
+    elemIndex = elemIndex + 1;
+    routingData = routingData + 1;
   }
-  p_Var3 = local_814 + local_8;
-  p_Var3->Stream = (undefined2)local_81c[0];
-  p_Var3->Offset = local_81c[0]._2_2_;
-  p_Var3 = local_814 + iVar11;
-  p_Var3->Type = (undefined1)local_81c[1];
-  p_Var3->Method = local_81c[1]._1_1_;
-  p_Var3->Usage = local_81c[1]._2_1_;
-  p_Var3->UsageIndex = local_81c[1]._3_1_;
+  p_Var3 = elemTable + elemIndex;
+  p_Var3->Stream = (undefined2)declEnd[0];
+  p_Var3->Offset = declEnd[0]._2_2_;
+  p_Var3 = elemTable + iVar11;
+  p_Var3->Type = (undefined1)declEnd[1];
+  p_Var3->Method = declEnd[1]._1_1_;
+  p_Var3->Usage = declEnd[1]._2_1_;
+  p_Var3->UsageIndex = declEnd[1]._3_1_;
   if (dx.device != (IDirect3DDevice9 *)0x0) {
     bVar8 = Sys_IsRenderThread();
     if (bVar8) {
@@ -221,13 +232,13 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
         RB_LogPrint("dx.device->CreateVertexDeclaration( elemTable, &decl )\n");
       }
       iVar12 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar13 = (**(code **)((int)*dx.device + 0x158))(dx.device,local_814,&local_10);
+      hr_00 = (**(code **)((int)*dx.device + 0x158))(dx.device,elemTable,&decl);
       if (iVar12 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      if (iVar13 < 0) {
+      if (hr_00 < 0) {
         g_disableRendering = g_disableRendering + 1;
-        R_ErrorDescription(iVar13);
+        R_ErrorDescription(hr_00);
         Com_Error(ERR_FATAL,
                   "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp (%i) dx.device->CreateVertexDeclaration( elemTable, &decl ) failed: %s\n"
                  );
@@ -237,10 +248,10 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
       }
     }
     else {
-      RB_Resource_CreateVertexDeclaration(local_814,&local_10);
+      RB_Resource_CreateVertexDeclaration(elemTable,&decl);
       RB_Resource_Flush();
     }
-    if ((local_10 == (IDirect3DVertexDeclaration9 *)0x0) &&
+    if ((decl == (IDirect3DVertexDeclaration9 *)0x0) &&
        (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x3bc,
                                  0,"%s"), !bVar8)) {
       pcVar2 = (code *)swi(3);
@@ -248,7 +259,7 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
       return pIVar9;
     }
   }
-  return local_10;
+  return decl;
 }
 
 
@@ -256,10 +267,10 @@ Material_BuildVertexDecl(MaterialStreamRouting *param_1,int param_2,stream_sourc
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveTechniqueSet(XAssetHeader param_1)
+void __cdecl DB_RemoveTechniqueSet(XAssetHeader header_2)
 
 {
-  Material_ReleaseTechniqueSetResources(param_1.techniqueSet);
+  Material_ReleaseTechniqueSetResources(header_2.techniqueSet);
   return;
 }
 
@@ -268,70 +279,71 @@ void __cdecl DB_RemoveTechniqueSet(XAssetHeader param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Load_BuildVertexDecl(MaterialVertexDeclaration **param_1)
+void __cdecl Load_BuildVertexDecl(MaterialVertexDeclaration **mtlVertDecl)
 
 {
   IDirect3DVertexDeclaration9 *pIVar1;
   int iVar2;
   MaterialVertexDeclaration *pMVar3;
   MaterialStreamRouting *pMVar4;
-  MaterialStreamRouting local_2c [16];
+  MaterialStreamRouting data [16];
   uint local_c;
-  int local_8;
+  int vertDeclType;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  pMVar3 = *param_1;
-  pMVar4 = local_2c;
+  pMVar3 = *mtlVertDecl;
+  pMVar4 = data;
   for (iVar2 = 8; pMVar3 = (MaterialVertexDeclaration *)&pMVar3->routing, iVar2 != 0;
       iVar2 = iVar2 + -1) {
     *(undefined4 *)pMVar4 = *(undefined4 *)((MaterialVertexStreamRouting *)pMVar3)->data;
     pMVar4 = pMVar4 + 2;
   }
-  for (local_8 = 0; local_8 < 0x12; local_8 = local_8 + 1) {
+  for (vertDeclType = 0; vertDeclType < 0x12; vertDeclType = vertDeclType + 1) {
     if ((r_loadForRenderer == (dvar_s *)0x0) || ((r_loadForRenderer->current).enabled == false)) {
-      ((*param_1)->routing).decl[local_8] = (IDirect3DVertexDeclaration9 *)0x0;
+      ((*mtlVertDecl)->routing).decl[vertDeclType] = (IDirect3DVertexDeclaration9 *)0x0;
     }
     else {
       pIVar1 = Material_BuildVertexDecl
-                         (local_2c,(uint)(*param_1)->streamCount,s_streamSourceInfo[local_8]);
-      ((*param_1)->routing).decl[local_8] = pIVar1;
+                         (data,(uint)(*mtlVertDecl)->streamCount,s_streamSourceInfo[vertDeclType]);
+      ((*mtlVertDecl)->routing).decl[vertDeclType] = pIVar1;
     }
   }
-  (*param_1)->isLoaded = true;
+  (*mtlVertDecl)->isLoaded = true;
   return;
 }
 
 
 // 00A4BCE0  MaterialTechniqueSet_FindHashLocation  (gfx_d3d/r_material.cpp:1042)
 
-bool __cdecl MaterialTechniqueSet_FindHashLocation(char *param_1,int *param_2)
+bool __cdecl MaterialTechniqueSet_FindHashLocation(char *name,int *foundHashIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int iVar4;
-  uint local_8;
+  uint uVar4;
+  int iVar5;
+  int hashIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x415,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = R_HashAssetName(param_1);
+  uVar4 = R_HashAssetName(name);
   while( true ) {
-    local_8 = local_8 & 0x7ff;
-    if (materialGlobals.techniqueSetHashTable[local_8] == (MaterialTechniqueSet *)0x0) {
-      *param_2 = local_8;
+    hashIndex = uVar4 & 0x7ff;
+    if (materialGlobals.techniqueSetHashTable[hashIndex] == (MaterialTechniqueSet *)0x0) {
+      *foundHashIndex = hashIndex;
       return false;
     }
-    iVar4 = I_stricmp(materialGlobals.techniqueSetHashTable[local_8]->name,param_1);
-    if (iVar4 == 0) break;
-    local_8 = local_8 + 1;
+    iVar5 = I_stricmp(materialGlobals.techniqueSetHashTable[hashIndex]->name,name);
+    if (iVar5 == 0) break;
+    uVar4 = hashIndex + 1;
   }
-  *param_2 = local_8;
+  *foundHashIndex = hashIndex;
   return true;
 }
 
@@ -339,26 +351,27 @@ bool __cdecl MaterialTechniqueSet_FindHashLocation(char *param_1,int *param_2)
 // 00A4BC30  Material_FindTechniqueSet_LoadObj  (gfx_d3d/r_material.cpp:1064)
 
 MaterialTechniqueSet * __cdecl
-Material_FindTechniqueSet_LoadObj(char *param_1,MtlTechSetNotFoundBehavior param_2)
+Material_FindTechniqueSet_LoadObj(char *name,MtlTechSetNotFoundBehavior notFoundBehavior)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialTechniqueSet *pMVar3;
-  int local_8;
+  MaterialTechniqueSet *defaultTechSet;
+  int hashIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x42c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pMVar3 = (MaterialTechniqueSet *)(*pcVar1)();
     return pMVar3;
   }
-  bVar2 = MaterialTechniqueSet_FindHashLocation(param_1,&local_8);
+  bVar2 = MaterialTechniqueSet_FindHashLocation(name,&hashIndex);
   if (bVar2) {
-    pMVar3 = materialGlobals.techniqueSetHashTable[local_8];
+    pMVar3 = materialGlobals.techniqueSetHashTable[hashIndex];
   }
-  else if (param_2 == MTL_TECHSET_NOT_FOUND_RETURN_NULL) {
+  else if (notFoundBehavior == MTL_TECHSET_NOT_FOUND_RETURN_NULL) {
     pMVar3 = (MaterialTechniqueSet *)0x0;
   }
   else {
@@ -377,19 +390,20 @@ Material_FindTechniqueSet_LoadObj(char *param_1,MtlTechSetNotFoundBehavior param
 
 // 00A4BD80  Material_FindTechniqueSet_FastFile  (gfx_d3d/r_material.cpp:1084)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 MaterialTechniqueSet * __cdecl
-Material_FindTechniqueSet_FastFile(char *param_1,MtlTechSetNotFoundBehavior param_2)
+Material_FindTechniqueSet_FastFile(char *name,MtlTechSetNotFoundBehavior notFoundBehavior)
 
 {
   bool bVar1;
   XAssetHeader XVar2;
+  XAssetHeader header;
   
-  XVar2 = DB_FindXAssetHeader(ASSET_TYPE_TECHNIQUE_SET,param_1,true,-1);
-  if ((param_2 == MTL_TECHSET_NOT_FOUND_RETURN_NULL) &&
-     (bVar1 = DB_IsXAssetDefault(ASSET_TYPE_TECHNIQUE_SET,param_1), bVar1)) {
+  XVar2 = DB_FindXAssetHeader(ASSET_TYPE_TECHNIQUE_SET,name,true,-1);
+  if ((notFoundBehavior == MTL_TECHSET_NOT_FOUND_RETURN_NULL) &&
+     (bVar1 = DB_IsXAssetDefault(ASSET_TYPE_TECHNIQUE_SET,name), bVar1)) {
     XVar2.xmodelPieces = (XModelPieces *)0x0;
   }
   return (MaterialTechniqueSet *)XVar2.xmodelPieces;
@@ -398,8 +412,10 @@ Material_FindTechniqueSet_FastFile(char *param_1,MtlTechSetNotFoundBehavior para
 
 // 00A4BBF0  Material_FindTechniqueSet  (gfx_d3d/r_material.cpp:1095)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 MaterialTechniqueSet * __cdecl
-Material_FindTechniqueSet(char *param_1,MtlTechSetNotFoundBehavior param_2)
+Material_FindTechniqueSet(char *name,MtlTechSetNotFoundBehavior notFoundBehavior)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -411,21 +427,21 @@ Material_FindTechniqueSet(char *param_1,MtlTechSetNotFoundBehavior param_2)
   else {
     local_c = Material_FindTechniqueSet_FastFile;
   }
-  pMVar1 = (MaterialTechniqueSet *)(*local_c)(param_1,param_2);
+  pMVar1 = (MaterialTechniqueSet *)(*local_c)(name,notFoundBehavior);
   return pMVar1;
 }
 
 
 // 00A4BE60  Material_SetTechniqueSet  (gfx_d3d/r_material.cpp:1103)
 
-void __cdecl Material_SetTechniqueSet(char *param_1,MaterialTechniqueSet *param_2)
+void __cdecl Material_SetTechniqueSet(char *name,MaterialTechniqueSet *techniqueSet)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int hashIndex;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x452,0,
                              "%s");
     if (!bVar2) {
@@ -434,8 +450,8 @@ void __cdecl Material_SetTechniqueSet(char *param_1,MaterialTechniqueSet *param_
       return;
     }
   }
-  MaterialTechniqueSet_FindHashLocation(param_1,&local_8);
-  if (param_2->name == (char *)0x0) {
+  MaterialTechniqueSet_FindHashLocation(name,&hashIndex);
+  if (techniqueSet->name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x454,0,
                              "%s");
     if (!bVar2) {
@@ -444,17 +460,17 @@ void __cdecl Material_SetTechniqueSet(char *param_1,MaterialTechniqueSet *param_
       return;
     }
   }
-  materialGlobals.techniqueSetHashTable[local_8] = param_2;
+  materialGlobals.techniqueSetHashTable[hashIndex] = techniqueSet;
   return;
 }
 
 
 // 00A4BDD0  Material_SetAlwaysUseDefaultMaterial  (gfx_d3d/r_material.cpp:1118)
 
-void __cdecl Material_SetAlwaysUseDefaultMaterial(bool param_1)
+void __cdecl Material_SetAlwaysUseDefaultMaterial(bool alwaysUseDefaultMaterial)
 
 {
-  g_alwaysUseDefaultMaterial = param_1;
+  g_alwaysUseDefaultMaterial = alwaysUseDefaultMaterial;
   return;
 }
 
@@ -471,30 +487,31 @@ void __cdecl Material_PreventOverrideTechniqueGeneration(void)
 
 // 00A4BDF0  Material_RegisterTechniqueSet  (gfx_d3d/r_material.cpp:1133)
 
-MaterialTechniqueSet * __cdecl Material_RegisterTechniqueSet(char *param_1)
+MaterialTechniqueSet * __cdecl Material_RegisterTechniqueSet(char *name)
 
 {
-  MaterialTechniqueSet *pMVar1;
+  MaterialTechniqueSet *techniqueSet_00;
+  MaterialTechniqueSet *techniqueSet;
   
-  pMVar1 = Material_FindTechniqueSet(param_1,MTL_TECHSET_NOT_FOUND_RETURN_NULL);
-  if (pMVar1 == (MaterialTechniqueSet *)0x0) {
+  techniqueSet_00 = Material_FindTechniqueSet(name,MTL_TECHSET_NOT_FOUND_RETURN_NULL);
+  if (techniqueSet_00 == (MaterialTechniqueSet *)0x0) {
     ProfLoad_Begin("Load technique set");
-    pMVar1 = Material_LoadTechniqueSet(param_1);
+    techniqueSet_00 = Material_LoadTechniqueSet(name);
     ProfLoad_End();
-    if (pMVar1 == (MaterialTechniqueSet *)0x0) {
-      pMVar1 = (MaterialTechniqueSet *)0x0;
+    if (techniqueSet_00 == (MaterialTechniqueSet *)0x0) {
+      techniqueSet_00 = (MaterialTechniqueSet *)0x0;
     }
     else {
-      Material_SetTechniqueSet(param_1,pMVar1);
+      Material_SetTechniqueSet(name,techniqueSet_00);
     }
   }
-  return pMVar1;
+  return techniqueSet_00;
 }
 
 
 // 00A4BF50  Material_ReleasePassResources  (gfx_d3d/r_material.cpp:1160)
 
-void __cdecl Material_ReleasePassResources(MaterialPass *param_1)
+void __cdecl Material_ReleasePassResources(MaterialPass *pass)
 
 {
   IDirect3DTexture9 *pIVar1;
@@ -503,66 +520,69 @@ void __cdecl Material_ReleasePassResources(MaterialPass *param_1)
   IDirect3DVertexShader9 *pIVar4;
   IDirect3DVertexDeclaration9 *pIVar5;
   bool bVar6;
-  int local_8;
+  IDirect3DVertexDeclaration9 *varCopy_3;
+  IDirect3DVertexShader9 *varCopy_2;
+  IDirect3DPixelShader9 *varCopy;
+  int declIndex;
   
   if ((r_loadForRenderer != (dvar_s *)0x0) && ((r_loadForRenderer->current).enabled != false)) {
     bVar6 = Sys_IsRenderThread();
     if (bVar6) {
-      if (((param_1->field2_0x8).pixelShader == (MaterialPixelShader *)0x0) &&
+      if (((pass->field2_0x8).pixelShader == (MaterialPixelShader *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x4b1,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      pIVar3 = (((param_1->field2_0x8).pixelShader)->prog).ps;
+      pIVar3 = (((pass->field2_0x8).pixelShader)->prog).ps;
       while (pIVar3 != (IDirect3DPixelShader9 *)0x0) {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("pass->pixelShader->prog.ps->Release()\n");
         }
-        pIVar1 = (IDirect3DTexture9 *)(((param_1->field2_0x8).pixelShader)->prog).ps;
-        (((param_1->field2_0x8).pixelShader)->prog).ps = (IDirect3DPixelShader9 *)0x0;
+        pIVar1 = (IDirect3DTexture9 *)(((pass->field2_0x8).pixelShader)->prog).ps;
+        (((pass->field2_0x8).pixelShader)->prog).ps = (IDirect3DPixelShader9 *)0x0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
                   (pIVar1,"pass->pixelShader->prog.ps",
                    "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x4b3);
         pIVar3 = (IDirect3DPixelShader9 *)alwaysfails;
       }
-      if ((param_1->vertexShader == (MaterialVertexShader *)0x0) &&
+      if ((pass->vertexShader == (MaterialVertexShader *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x4b5,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      pIVar4 = (param_1->vertexShader->prog).vs;
+      pIVar4 = (pass->vertexShader->prog).vs;
       while (pIVar4 != (IDirect3DVertexShader9 *)0x0) {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("pass->vertexShader->prog.vs->Release()\n");
         }
-        pIVar1 = (IDirect3DTexture9 *)(param_1->vertexShader->prog).vs;
-        (param_1->vertexShader->prog).vs = (IDirect3DVertexShader9 *)0x0;
+        pIVar1 = (IDirect3DTexture9 *)(pass->vertexShader->prog).vs;
+        (pass->vertexShader->prog).vs = (IDirect3DVertexShader9 *)0x0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
                   (pIVar1,"pass->vertexShader->prog.vs",
                    "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x4b7);
         pIVar4 = (IDirect3DVertexShader9 *)alwaysfails;
       }
-      if ((param_1->vertexDecl == (MaterialVertexDeclaration *)0x0) &&
+      if ((pass->vertexDecl == (MaterialVertexDeclaration *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x4b9,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (param_1->vertexDecl->isLoaded != false) {
-        param_1->vertexDecl->isLoaded = false;
-        for (local_8 = 0; local_8 < 0x12; local_8 = local_8 + 1) {
-          pIVar5 = (param_1->vertexDecl->routing).decl[local_8];
+      if (pass->vertexDecl->isLoaded != false) {
+        pass->vertexDecl->isLoaded = false;
+        for (declIndex = 0; declIndex < 0x12; declIndex = declIndex + 1) {
+          pIVar5 = (pass->vertexDecl->routing).decl[declIndex];
           while (pIVar5 != (IDirect3DVertexDeclaration9 *)0x0) {
             if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
               RB_LogPrint("pass->vertexDecl->routing.decl[declIndex]->Release()\n");
             }
-            pIVar1 = (IDirect3DTexture9 *)(param_1->vertexDecl->routing).decl[local_8];
-            (param_1->vertexDecl->routing).decl[local_8] = (IDirect3DVertexDeclaration9 *)0x0;
+            pIVar1 = (IDirect3DTexture9 *)(pass->vertexDecl->routing).decl[declIndex];
+            (pass->vertexDecl->routing).decl[declIndex] = (IDirect3DVertexDeclaration9 *)0x0;
             R_ReleaseAndSetNULL<IDirect3DTexture9>
                       (pIVar1,"pass->vertexDecl->routing.decl[declIndex]",
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x4c0);
@@ -572,41 +592,41 @@ void __cdecl Material_ReleasePassResources(MaterialPass *param_1)
       }
     }
     else {
-      if (((param_1->field2_0x8).pixelShader == (MaterialPixelShader *)0x0) &&
+      if (((pass->field2_0x8).pixelShader == (MaterialPixelShader *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x491,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((param_1->field2_0x8).pixelShader)->prog).ps != (IDirect3DPixelShader9 *)0x0) {
-        RB_Resource_Release((IUnknown *)(((param_1->field2_0x8).pixelShader)->prog).ps);
-        (((param_1->field2_0x8).pixelShader)->prog).ps = (IDirect3DPixelShader9 *)0x0;
+      if ((((pass->field2_0x8).pixelShader)->prog).ps != (IDirect3DPixelShader9 *)0x0) {
+        RB_Resource_Release((IUnknown *)(((pass->field2_0x8).pixelShader)->prog).ps);
+        (((pass->field2_0x8).pixelShader)->prog).ps = (IDirect3DPixelShader9 *)0x0;
       }
-      if ((param_1->vertexShader == (MaterialVertexShader *)0x0) &&
+      if ((pass->vertexShader == (MaterialVertexShader *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x498,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((param_1->vertexShader->prog).vs != (IDirect3DVertexShader9 *)0x0) {
-        RB_Resource_Release((IUnknown *)(param_1->vertexShader->prog).vs);
-        (param_1->vertexShader->prog).vs = (IDirect3DVertexShader9 *)0x0;
+      if ((pass->vertexShader->prog).vs != (IDirect3DVertexShader9 *)0x0) {
+        RB_Resource_Release((IUnknown *)(pass->vertexShader->prog).vs);
+        (pass->vertexShader->prog).vs = (IDirect3DVertexShader9 *)0x0;
       }
-      if ((param_1->vertexDecl == (MaterialVertexDeclaration *)0x0) &&
+      if ((pass->vertexDecl == (MaterialVertexDeclaration *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                                    0x49f,0,"%s"), !bVar6)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (param_1->vertexDecl->isLoaded != false) {
-        param_1->vertexDecl->isLoaded = false;
-        for (local_8 = 0; local_8 < 0x12; local_8 = local_8 + 1) {
-          if ((param_1->vertexDecl->routing).decl[local_8] != (IDirect3DVertexDeclaration9 *)0x0) {
-            RB_Resource_Release((IUnknown *)(param_1->vertexDecl->routing).decl[local_8]);
-            (param_1->vertexDecl->routing).decl[local_8] = (IDirect3DVertexDeclaration9 *)0x0;
+      if (pass->vertexDecl->isLoaded != false) {
+        pass->vertexDecl->isLoaded = false;
+        for (declIndex = 0; declIndex < 0x12; declIndex = declIndex + 1) {
+          if ((pass->vertexDecl->routing).decl[declIndex] != (IDirect3DVertexDeclaration9 *)0x0) {
+            RB_Resource_Release((IUnknown *)(pass->vertexDecl->routing).decl[declIndex]);
+            (pass->vertexDecl->routing).decl[declIndex] = (IDirect3DVertexDeclaration9 *)0x0;
           }
         }
       }
@@ -618,18 +638,19 @@ void __cdecl Material_ReleasePassResources(MaterialPass *param_1)
 
 // 00A4BEE0  Material_ReleaseTechniqueSetResources  (gfx_d3d/r_material.cpp:1248)
 
-void __cdecl Material_ReleaseTechniqueSetResources(MaterialTechniqueSet *param_1)
+void __cdecl Material_ReleaseTechniqueSetResources(MaterialTechniqueSet *techniqueSet)
 
 {
   MaterialTechnique *pMVar1;
-  int local_c;
-  int local_8;
+  MaterialTechnique *technique;
+  int techType;
+  int passIndex;
   
-  for (local_c = 0; local_c < 0x82; local_c = local_c + 1) {
-    pMVar1 = param_1->techniques[local_c];
+  for (techType = 0; techType < 0x82; techType = techType + 1) {
+    pMVar1 = techniqueSet->techniques[techType];
     if (pMVar1 != (MaterialTechnique *)0x0) {
-      for (local_8 = 0; local_8 < (int)(uint)pMVar1->passCount; local_8 = local_8 + 1) {
-        Material_ReleasePassResources(pMVar1->passArray + local_8);
+      for (passIndex = 0; passIndex < (int)(uint)pMVar1->passCount; passIndex = passIndex + 1) {
+        Material_ReleasePassResources(pMVar1->passArray + passIndex);
       }
     }
   }
@@ -665,7 +686,7 @@ void __cdecl Material_DirtySort(void)
 
 // 00A4C590  Material_Add  (gfx_d3d/r_material.cpp:1364)
 
-void __cdecl Material_Add(Material *param_1,ushort param_2)
+void __cdecl Material_Add(Material *material,ushort hashIndex)
 
 {
   uint uVar1;
@@ -674,7 +695,7 @@ void __cdecl Material_Add(Material *param_1,ushort param_2)
   uint extraout_EAX;
   uint extraout_EDX;
   
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x555,0,
                              "%s");
     if (!bVar3) {
@@ -684,7 +705,7 @@ void __cdecl Material_Add(Material *param_1,ushort param_2)
     }
   }
   rgp.needSortMaterials = 1;
-  if (rg.materialHashTable[param_2] != (Material *)0x0) {
+  if (rg.materialHashTable[hashIndex] != (Material *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x559,1,
                              "%s");
     if (!bVar3) {
@@ -693,14 +714,14 @@ void __cdecl Material_Add(Material *param_1,ushort param_2)
       return;
     }
   }
-  (param_1->info).hashIndex = param_2;
+  (material->info).hashIndex = hashIndex;
   _allshl();
-  uVar1 = *(uint *)((int)&(param_1->info).drawSurf + 4);
-  *(uint *)&(param_1->info).drawSurf =
-       *(uint *)&(param_1->info).drawSurf & 0x7fffffff | extraout_EAX;
-  *(uint *)((int)&(param_1->info).drawSurf + 4) = uVar1 & 0xfffff800 | extraout_EDX;
-  rgp.sortedMaterials[rgp.materialCount] = param_1;
-  rg.materialHashTable[param_2] = param_1;
+  uVar1 = *(uint *)((int)&(material->info).drawSurf + 4);
+  *(uint *)&(material->info).drawSurf =
+       *(uint *)&(material->info).drawSurf & 0x7fffffff | extraout_EAX;
+  *(uint *)((int)&(material->info).drawSurf + 4) = uVar1 & 0xfffff800 | extraout_EDX;
+  rgp.sortedMaterials[rgp.materialCount] = material;
+  rg.materialHashTable[hashIndex] = material;
   rgp.materialCount = rgp.materialCount + 1;
   if (rgp.materialCount == 0x1000) {
     Com_Error(ERR_FATAL,"Too many unique materials (%i or more)\n");
@@ -711,7 +732,7 @@ void __cdecl Material_Add(Material *param_1,ushort param_2)
 
 // 00A4C350  Material_Duplicate  (gfx_d3d/r_material.cpp:1381)
 
-Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
+Material * __cdecl Material_Duplicate(Material *mtlCopy,char *name)
 
 {
   char cVar1;
@@ -723,16 +744,20 @@ Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
   MaterialTextureDef *pMVar7;
   MaterialConstantDef *pMVar8;
   int iVar9;
-  ulong uVar10;
+  ulong count;
+  Material *pMVar10;
   Material *pMVar11;
-  Material *pMVar12;
   char *local_28;
-  ushort local_14 [3];
-  bool local_d;
-  ulong local_c;
-  ulong local_8;
+  char *nameBackup;
+  Material *mtlNew;
+  int nameSize;
+  uint constantTableSize;
+  ushort hashIndex;
+  bool exists;
+  uint textureTableSize;
+  uint stateBitsTableSize;
   
-  if (param_1 == (Material *)0x0) {
+  if (mtlCopy == (Material *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x575,0,
                              "%s");
     if (!bVar4) {
@@ -741,7 +766,7 @@ Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
       return pMVar5;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x576,0,
                              "%s");
     if (!bVar4) {
@@ -750,51 +775,50 @@ Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
       return pMVar5;
     }
   }
-  Material_GetHashIndex(param_2,local_14,&local_d);
-  if (local_d == false) {
-    local_28 = param_2;
+  Material_GetHashIndex(name,&hashIndex,&exists);
+  if (exists == false) {
+    local_28 = name;
     do {
       cVar1 = *local_28;
       local_28 = local_28 + 1;
     } while (cVar1 != '\0');
-    pMVar5 = Material_Alloc((int)(local_28 + (0xc1 - (int)(param_2 + 1))));
-    pMVar11 = param_1;
-    pMVar12 = pMVar5;
-    for (iVar9 = 0x30; iVar9 != 0; iVar9 = iVar9 + -1) {
-      (pMVar12->info).name = (pMVar11->info).name;
-      pMVar11 = (Material *)&(pMVar11->info).gameFlags;
-      pMVar12 = (Material *)&(pMVar12->info).gameFlags;
-    }
-    (pMVar5->info).name = (char *)(pMVar5 + 1);
-    memcpy((uchar *)(pMVar5->info).name,(uchar *)param_2,
-           (ulong)(local_28 + (1 - (int)(param_2 + 1))));
-    local_8 = (uint)param_1->stateBitsCount << 3;
-    pGVar6 = Material_Alloc(local_8);
-    pMVar5->stateBitsTable = pGVar6;
-    memcpy((uchar *)pMVar5->stateBitsTable,(uchar *)param_1->stateBitsTable,local_8);
-    if (param_1->textureTable != (MaterialTextureDef *)0x0) {
-      local_c = (uint)param_1->textureCount << 4;
-      pMVar7 = Material_Alloc(local_c);
-      pMVar5->textureTable = pMVar7;
-      memcpy((uchar *)pMVar5->textureTable,(uchar *)param_1->textureTable,local_c);
-    }
-    if ((param_1->field10_0xb8).localConstantTable != (MaterialConstantDef *)0x0) {
-      uVar10 = (uint)param_1->constantCount << 5;
-      pMVar8 = Material_Alloc(uVar10);
-      (pMVar5->field10_0xb8).localConstantTable = pMVar8;
-      memcpy((uchar *)(pMVar5->field10_0xb8).localConstantTable,
-             (uchar *)(param_1->field10_0xb8).localConstantTable,uVar10);
-    }
-    Material_Add(pMVar5,local_14[0]);
-  }
-  else {
-    pMVar5 = rg.materialHashTable[local_14[0]];
-    pcVar2 = (pMVar5->info).name;
+    pMVar5 = Material_Alloc((int)(local_28 + (0xc1 - (int)(name + 1))));
+    pMVar10 = mtlCopy;
     pMVar11 = pMVar5;
     for (iVar9 = 0x30; iVar9 != 0; iVar9 = iVar9 + -1) {
-      (pMVar11->info).name = (param_1->info).name;
-      param_1 = (Material *)&(param_1->info).gameFlags;
+      (pMVar11->info).name = (pMVar10->info).name;
+      pMVar10 = (Material *)&(pMVar10->info).gameFlags;
       pMVar11 = (Material *)&(pMVar11->info).gameFlags;
+    }
+    (pMVar5->info).name = (char *)(pMVar5 + 1);
+    memcpy((uchar *)(pMVar5->info).name,(uchar *)name,(ulong)(local_28 + (1 - (int)(name + 1))));
+    stateBitsTableSize = (uint)mtlCopy->stateBitsCount << 3;
+    pGVar6 = Material_Alloc(stateBitsTableSize);
+    pMVar5->stateBitsTable = pGVar6;
+    memcpy((uchar *)pMVar5->stateBitsTable,(uchar *)mtlCopy->stateBitsTable,stateBitsTableSize);
+    if (mtlCopy->textureTable != (MaterialTextureDef *)0x0) {
+      textureTableSize = (uint)mtlCopy->textureCount << 4;
+      pMVar7 = Material_Alloc(textureTableSize);
+      pMVar5->textureTable = pMVar7;
+      memcpy((uchar *)pMVar5->textureTable,(uchar *)mtlCopy->textureTable,textureTableSize);
+    }
+    if ((mtlCopy->field10_0xb8).localConstantTable != (MaterialConstantDef *)0x0) {
+      count = (uint)mtlCopy->constantCount << 5;
+      pMVar8 = Material_Alloc(count);
+      (pMVar5->field10_0xb8).localConstantTable = pMVar8;
+      memcpy((uchar *)(pMVar5->field10_0xb8).localConstantTable,
+             (uchar *)(mtlCopy->field10_0xb8).localConstantTable,count);
+    }
+    Material_Add(pMVar5,hashIndex);
+  }
+  else {
+    pMVar5 = rg.materialHashTable[hashIndex];
+    pcVar2 = (pMVar5->info).name;
+    pMVar10 = pMVar5;
+    for (iVar9 = 0x30; iVar9 != 0; iVar9 = iVar9 + -1) {
+      (pMVar10->info).name = (mtlCopy->info).name;
+      mtlCopy = (Material *)&(mtlCopy->info).gameFlags;
+      pMVar10 = (Material *)&(pMVar10->info).gameFlags;
     }
     (pMVar5->info).name = pcVar2;
     rgp.needSortMaterials = 1;
@@ -805,7 +829,7 @@ Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
 
 // 00A4CAA0  Material_MakeDefault  (gfx_d3d/r_material.cpp:1444)
 
-Material * __cdecl Material_MakeDefault(char *param_1)
+Material * __cdecl Material_MakeDefault(char *name)
 
 {
   byte bVar1;
@@ -816,7 +840,7 @@ Material * __cdecl Material_MakeDefault(char *param_1)
   byte *local_c;
   byte *local_8;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5a5,0,
                              "%s");
     if (!bVar3) {
@@ -827,7 +851,7 @@ Material * __cdecl Material_MakeDefault(char *param_1)
   }
   if (rgp.defaultMaterial == (Material *)0x0) {
     local_8 = (byte *)0xca2068;
-    local_c = (byte *)param_1;
+    local_c = (byte *)name;
     do {
       bVar1 = *local_c;
       bVar3 = bVar1 < *local_8;
@@ -857,21 +881,21 @@ LAB_00a4cb31:
     Com_Error(ERR_FATAL,"couldn\'t load material \'$default\'");
   }
   Com_PrintWarning(8,"WARNING: Could not find material \'%s\'\n");
-  pMVar4 = Material_Duplicate(rgp.defaultMaterial,param_1);
+  pMVar4 = Material_Duplicate(rgp.defaultMaterial,name);
   return pMVar4;
 }
 
 
 // 00A4C6A0  Material_IsDefault  (gfx_d3d/r_material.cpp:1461)
 
-bool __cdecl Material_IsDefault(Material *param_1)
+bool __cdecl Material_IsDefault(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5b6,0,
                              "%s");
     if (!bVar2) {
@@ -889,13 +913,13 @@ bool __cdecl Material_IsDefault(Material *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->textureTable == (rgp.defaultMaterial)->textureTable) {
-    if (param_1->textureTable->nameHash == (rgp.defaultMaterial)->textureTable->nameHash) {
+  if (material->textureTable == (rgp.defaultMaterial)->textureTable) {
+    if (material->textureTable->nameHash == (rgp.defaultMaterial)->textureTable->nameHash) {
       bVar2 = true;
     }
-    else if ((param_1->field10_0xb8).localConstantTable ==
+    else if ((material->field10_0xb8).localConstantTable ==
              ((rgp.defaultMaterial)->field10_0xb8).localConstantTable) {
-      if ((param_1->field8_0xb0).localTechniqueSet ==
+      if ((material->field8_0xb0).localTechniqueSet ==
           ((rgp.defaultMaterial)->field8_0xb0).localTechniqueSet) {
         bVar2 = true;
       }
@@ -916,7 +940,7 @@ bool __cdecl Material_IsDefault(Material *param_1)
 
 // 00A4C780  Material_GetHashIndex  (gfx_d3d/r_material.cpp:1479)
 
-void __cdecl Material_GetHashIndex(char *param_1,ushort *param_2,bool *param_3)
+void __cdecl Material_GetHashIndex(char *name,ushort *hashIndex,bool *exists)
 
 {
   byte bVar1;
@@ -928,39 +952,42 @@ void __cdecl Material_GetHashIndex(char *param_1,ushort *param_2,bool *param_3)
   int local_20;
   byte *local_18;
   byte *local_14;
+  char *pszParen;
+  int iCompare;
+  ushort beginHashIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5cb,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (ushort *)0x0) &&
+  if ((hashIndex == (ushort *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5cc,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (bool *)0x0) &&
+  if ((exists == (bool *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5cd,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  uVar4 = R_HashAssetName(param_1);
+  uVar4 = R_HashAssetName(name);
   uVar5 = (ushort)((ulonglong)uVar4 % 0xfff);
-  *param_2 = uVar5;
+  *hashIndex = uVar5;
   do {
-    if (rg.materialHashTable[*param_2] == (Material *)0x0) break;
-    strchr((uchar *)(rg.materialHashTable[*param_2]->info).name,'(');
+    if (rg.materialHashTable[*hashIndex] == (Material *)0x0) break;
+    strchr((uchar *)(rg.materialHashTable[*hashIndex]->info).name,'(');
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
     }
-    local_14 = (byte *)param_1;
-    local_18 = (byte *)(rg.materialHashTable[*param_2]->info).name;
+    local_14 = (byte *)name;
+    local_18 = (byte *)(rg.materialHashTable[*hashIndex]->info).name;
     do {
       bVar1 = *local_18;
       bVar3 = bVar1 < *local_14;
@@ -982,28 +1009,29 @@ LAB_00a4c8c7:
       *extraout_EAX = 0x28;
     }
     if (local_20 == 0) {
-      *param_3 = true;
+      *exists = true;
       return;
     }
-    *param_2 = (ushort)((ulonglong)(*param_2 + 1) % 0xfff);
-  } while (*param_2 != uVar5);
-  *param_3 = false;
+    *hashIndex = (ushort)((ulonglong)(*hashIndex + 1) % 0xfff);
+  } while (*hashIndex != uVar5);
+  *exists = false;
   return;
 }
 
 
 // 00A4C970  Material_Register_LoadObj  (gfx_d3d/r_material.cpp:1520)
 
-Material * __cdecl Material_Register_LoadObj(char *param_1,int param_2)
+Material * __cdecl Material_Register_LoadObj(char *name,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
-  bool local_9;
-  ushort local_8 [2];
+  Material *material;
+  bool exists;
+  ushort hashIndex;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5f5,0,
                              "%s");
     if (!bVar2) {
@@ -1012,7 +1040,7 @@ Material * __cdecl Material_Register_LoadObj(char *param_1,int param_2)
       return pMVar3;
     }
   }
-  if (*param_1 == '\0') {
+  if (*name == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x5f6,0,
                              "%s");
     if (!bVar2) {
@@ -1021,17 +1049,17 @@ Material * __cdecl Material_Register_LoadObj(char *param_1,int param_2)
       return pMVar3;
     }
   }
-  Material_GetHashIndex(param_1,local_8,&local_9);
-  if (local_9 == false) {
+  Material_GetHashIndex(name,&hashIndex,&exists);
+  if (exists == false) {
     ProfLoad_Begin("Load material");
-    pMVar3 = Material_Load(param_1,param_2);
+    pMVar3 = Material_Load(name,imageTrack);
     ProfLoad_End();
     if (pMVar3 == (Material *)0x0) {
-      pMVar3 = Material_MakeDefault(param_1);
+      pMVar3 = Material_MakeDefault(name);
     }
     else {
-      Material_GetHashIndex(param_1,local_8,&local_9);
-      if (local_9 != false) {
+      Material_GetHashIndex(name,&hashIndex,&exists);
+      if (exists != false) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x603,
                                  1,"%s");
         if (!bVar2) {
@@ -1040,11 +1068,11 @@ Material * __cdecl Material_Register_LoadObj(char *param_1,int param_2)
           return pMVar3;
         }
       }
-      Material_Add(pMVar3,local_8[0]);
+      Material_Add(pMVar3,hashIndex);
     }
   }
   else {
-    pMVar3 = rg.materialHashTable[local_8[0]];
+    pMVar3 = rg.materialHashTable[hashIndex];
   }
   return pMVar3;
 }
@@ -1055,19 +1083,19 @@ Material * __cdecl Material_Register_LoadObj(char *param_1,int param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-Material * __cdecl Material_Register_FastFile(char *param_1,int param_2)
+Material * __cdecl Material_Register_FastFile(char *name,int imageTrack)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,name,true,-1);
   return (Material *)XVar1.xmodelPieces;
 }
 
 
 // 00A4C930  Material_Register  (gfx_d3d/r_material.cpp:1561)
 
-Material * __cdecl Material_Register(char *param_1,int param_2)
+Material * __cdecl Material_Register(char *name,int imageTrack)
 
 {
   Material *pMVar1;
@@ -1079,28 +1107,29 @@ Material * __cdecl Material_Register(char *param_1,int param_2)
   else {
     local_c = Material_Register_FastFile;
   }
-  pMVar1 = (Material *)(*local_c)(param_1,param_2);
+  pMVar1 = (Material *)(*local_c)(name,imageTrack);
   return pMVar1;
 }
 
 
 // 00A4E330  Material_Find  (gfx_d3d/r_material.cpp:1609)
 
-Material * __cdecl Material_Find(char *param_1)
+Material * __cdecl Material_Find(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
-  ushort local_c [3];
-  bool local_5;
+  Material *material;
+  ushort hashIndex;
+  bool exists;
   
-  Material_GetHashIndex(param_1,local_c,&local_5);
-  if (local_5 == false) {
+  Material_GetHashIndex(name,&hashIndex,&exists);
+  if (exists == false) {
     pMVar3 = (Material *)0x0;
   }
   else {
-    pMVar3 = rg.materialHashTable[local_c[0]];
+    pMVar3 = rg.materialHashTable[hashIndex];
     if ((pMVar3 == (Material *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x654,
                                  1,"%s"), !bVar2)) {
@@ -1115,14 +1144,15 @@ Material * __cdecl Material_Find(char *param_1)
 
 // 00A4CBC0  Material_RegisterHandle  (gfx_d3d/r_material.cpp:1628)
 
-Material * __cdecl Material_RegisterHandle(char *param_1,int param_2)
+Material * __cdecl Material_RegisterHandle(char *name,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
+  Material *material;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x65f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1138,8 +1168,8 @@ Material * __cdecl Material_RegisterHandle(char *param_1,int param_2)
   }
   pMVar3 = rgp.defaultMaterial;
   if (((g_alwaysUseDefaultMaterial == false) || (rgp.defaultMaterial == (Material *)0x0)) &&
-     (*param_1 != '\0')) {
-    pMVar3 = Material_Register(param_1,param_2);
+     (*name != '\0')) {
+    pMVar3 = Material_Register(name,imageTrack);
   }
   return pMVar3;
 }
@@ -1147,15 +1177,15 @@ Material * __cdecl Material_RegisterHandle(char *param_1,int param_2)
 
 // 00A4CF20  R_GetMaterialMemory  (gfx_d3d/r_material.cpp:1670)
 
-int __cdecl R_GetMaterialMemory(Material *param_1)
+int __cdecl R_GetMaterialMemory(Material *material)
 
 {
-  int local_8;
+  int i;
   
   if (rgp.world != (GfxWorld *)0x0) {
-    for (local_8 = 0; local_8 < (rgp.world)->materialMemoryCount; local_8 = local_8 + 1) {
-      if (param_1 == (rgp.world)->materialMemory[local_8].material) {
-        return (rgp.world)->materialMemory[local_8].memory;
+    for (i = 0; i < (rgp.world)->materialMemoryCount; i = i + 1) {
+      if (material == (rgp.world)->materialMemory[i].material) {
+        return (rgp.world)->materialMemory[i].memory;
       }
     }
   }
@@ -1167,27 +1197,30 @@ int __cdecl R_GetMaterialMemory(Material *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_GetMaterialList(XAssetHeader param_1,void *param_2)
+void __cdecl R_GetMaterialList(XAssetHeader header,void *data)
 
 {
   XAssetHeader *pXVar1;
   code *pcVar2;
   bool bVar3;
   XModelPieces *pXVar4;
+  int memory;
+  MaterialMemory *materialMemory;
+  MaterialList *materialList;
   
-  pXVar4 = (XModelPieces *)R_GetMaterialMemory(param_1.material);
+  pXVar4 = (XModelPieces *)R_GetMaterialMemory(header.material);
   if (pXVar4 != (XModelPieces *)0x0) {
-    if ((0xfff < *(uint *)param_2) &&
+    if ((0xfff < *(uint *)data) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x6a1,
                                  0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pXVar1 = (XAssetHeader *)((int)param_2 + *(int *)param_2 * 8 + 4);
-    *pXVar1 = param_1;
+    pXVar1 = (XAssetHeader *)((int)data + *(int *)data * 8 + 4);
+    *pXVar1 = header;
     pXVar1[1].xmodelPieces = pXVar4;
-    *(int *)param_2 = *(int *)param_2 + 1;
+    *(int *)data = *(int *)data + 1;
   }
   return;
 }
@@ -1195,10 +1228,10 @@ void __cdecl R_GetMaterialList(XAssetHeader param_1,void *param_2)
 
 // 00A4CF90  R_MaterialCompare  (gfx_d3d/r_material.cpp:1705)
 
-bool __cdecl R_MaterialCompare(MaterialMemory *param_1,MaterialMemory *param_2)
+bool __cdecl R_MaterialCompare(MaterialMemory *material0,MaterialMemory *material1)
 
 {
-  return param_1->memory < param_2->memory;
+  return material0->memory < material1->memory;
 }
 
 
@@ -1214,23 +1247,26 @@ void __cdecl R_MaterialList_f(void)
   code *pcVar1;
   bool bVar2;
   char *local_8154;
-  uint local_8024;
-  uint local_8014;
+  uint mtlIndex;
+  Material *material;
+  int totalMemUsage;
+  MaterialMemory *materialMemory;
+  uint materialList;
   RagdollSortStruct local_8010 [4097];
-  float local_8;
+  float value;
   
-  local_8 = 1.5134378e-38;
+  value = 1.5134378e-38;
   Com_Printf(8,"-----------------------\n");
-  local_8014 = 0;
-  DB_EnumXAssets(ASSET_TYPE_MATERIAL,R_GetMaterialList,&local_8014,false);
+  materialList = 0;
+  DB_EnumXAssets(ASSET_TYPE_MATERIAL,R_GetMaterialList,&materialList,false);
   std::
   _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-            (local_8010,local_8010 + local_8014,
-             (int)(local_8010 + local_8014) - (int)local_8010 >> 3,R_MaterialCompare);
+            (local_8010,local_8010 + materialList,
+             (int)(local_8010 + materialList) - (int)local_8010 >> 3,R_MaterialCompare);
   Com_Printf(8,"geo KB   name\n");
-  local_8024 = 0;
+  mtlIndex = 0;
   do {
-    if (local_8014 <= local_8024) {
+    if (materialList <= mtlIndex) {
       Com_Printf(8,"-----------------------\n");
       Com_Printf(8,"current total  %5.1f MB\n");
       Com_Printf(8,"%i total geometry materials\n");
@@ -1239,7 +1275,7 @@ void __cdecl R_MaterialList_f(void)
                 );
       return;
     }
-    if (local_8010[local_8024].distSq == 0.0) {
+    if (local_8010[mtlIndex].distSq == 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x6c5,0,
                                "%s");
       if (!bVar2) {
@@ -1248,8 +1284,8 @@ void __cdecl R_MaterialList_f(void)
         return;
       }
     }
-    local_8 = (float)(int)local_8010[local_8024].body / 1024.0;
-    if (10.0 <= local_8) {
+    value = (float)(int)local_8010[mtlIndex].body / 1024.0;
+    if (10.0 <= value) {
       local_8154 = "%6.0f";
     }
     else {
@@ -1257,7 +1293,7 @@ void __cdecl R_MaterialList_f(void)
     }
     Com_Printf(8,local_8154);
     Com_Printf(8,"   %s\n");
-    local_8024 = local_8024 + 1;
+    mtlIndex = mtlIndex + 1;
   } while( true );
 }
 
@@ -1276,51 +1312,50 @@ void __cdecl R_MaterialEdit_f(void)
   char *pcVar4;
   char *local_4c;
   char *local_3c;
-  uchar local_28 [12];
+  uchar name [12];
   undefined1 local_1c;
   uint local_18;
-  MaterialConstantDef *local_14;
-  uchar *local_10;
-  int local_c;
-  int local_8;
+  MaterialConstantDef *ct;
+  char *search;
+  int i;
+  int count;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = "";
+  search = "";
   iVar2 = Cmd_Argc();
   if (1 < iVar2) {
-    local_10 = (uchar *)Cmd_Argv(1);
+    search = Cmd_Argv(1);
   }
   Current_Edit_Material = (Material *)0x0;
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  i = 0;
   do {
-    if (rgp.materialCount <= local_c) {
-      if (local_8 == 0) {
+    if (rgp.materialCount <= i) {
+      if (count == 0) {
         Com_Printf(8,"No materials matching %s were found.\n");
       }
       else {
-        if (local_8 != 1) {
+        if (count != 1) {
           Com_Printf(8,"Selecting %s.\n");
         }
-        for (local_c = 0; local_c < (int)(uint)Current_Edit_Material->constantCount;
-            local_c = local_c + 1) {
-          local_14 = (Current_Edit_Material->field10_0xb8).localConstantTable + local_c;
-          strncpy(local_28,(uchar *)local_14->name,0xc);
+        for (i = 0; i < (int)(uint)Current_Edit_Material->constantCount; i = i + 1) {
+          ct = (Current_Edit_Material->field10_0xb8).localConstantTable + i;
+          strncpy(name,(uchar *)ct->name,0xc);
           local_1c = 0;
           Com_Printf(8,"  %d: %12s = %g %g %g %g\n");
         }
       }
       return;
     }
-    if ((*(rgp.sortedMaterials[local_c]->info).name != '*') &&
-       (strstr((uchar *)(rgp.sortedMaterials[local_c]->info).name,local_10), extraout_EAX != 0)) {
+    if ((*(rgp.sortedMaterials[i]->info).name != '*') &&
+       (strstr((uchar *)(rgp.sortedMaterials[i]->info).name,(uchar *)search), extraout_EAX != 0)) {
       Com_Printf(8,"%s\n");
       if (Current_Edit_Material == (Material *)0x0) {
 LAB_00a4d0d6:
-        Current_Edit_Material = rgp.sortedMaterials[local_c];
+        Current_Edit_Material = rgp.sortedMaterials[i];
       }
       else {
-        local_3c = (rgp.sortedMaterials[local_c]->info).name;
+        local_3c = (rgp.sortedMaterials[i]->info).name;
         pcVar3 = local_3c + 1;
         do {
           cVar1 = *local_3c;
@@ -1335,9 +1370,9 @@ LAB_00a4d0d6:
         if ((uint)((int)local_3c - (int)pcVar3) < (uint)((int)local_4c - (int)pcVar4))
         goto LAB_00a4d0d6;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1352,20 +1387,22 @@ void __cdecl R_MaterialParameterEdit_f(void)
   dvar_s *pdVar1;
   int iVar2;
   uint uVar3;
-  char *pcVar4;
-  MaterialConstantDef *pMVar5;
-  double dVar6;
-  float local_54;
-  float local_50;
-  uchar local_40 [12];
+  char *nptr;
+  MaterialConstantDef *pMVar4;
+  double dVar5;
+  float max;
+  float min;
+  dvar_s *hack;
+  uint hash;
+  uchar name_2 [12];
   undefined1 local_34;
-  MaterialConstantDef *local_30;
-  uchar *local_2c;
-  uchar *local_28;
-  int local_24;
-  int local_20;
-  MaterialConstantDef *local_1c;
-  uchar local_18 [12];
+  MaterialConstantDef *ct;
+  char *param;
+  char *name;
+  int index;
+  int i;
+  MaterialConstantDef *cte;
+  uchar NameBuf [12];
   undefined1 local_c;
   uint local_8;
   
@@ -1377,41 +1414,39 @@ void __cdecl R_MaterialParameterEdit_f(void)
     iVar2 = Cmd_Argc();
     if (iVar2 < 2) {
       Com_Printf(8,"%s:\n");
-      for (local_20 = 0; local_20 < (int)(uint)Current_Edit_Material->constantCount;
-          local_20 = local_20 + 1) {
-        local_30 = (Current_Edit_Material->field10_0xb8).localConstantTable + local_20;
-        strncpy(local_40,(uchar *)local_30->name,0xc);
+      for (i = 0; i < (int)(uint)Current_Edit_Material->constantCount; i = i + 1) {
+        ct = (Current_Edit_Material->field10_0xb8).localConstantTable + i;
+        strncpy(name_2,(uchar *)ct->name,0xc);
         local_34 = 0;
         Com_Printf(8,"  %d: %12s = %g %g %g %g\n");
       }
     }
     else {
-      local_2c = (uchar *)Cmd_Argv(1);
-      local_28 = local_2c;
-      local_24 = atoi((char *)local_2c);
-      if ((local_24 == 0) || ((int)(uint)Current_Edit_Material->constantCount < local_24)) {
-        uVar3 = R_HashString((char *)local_28);
-        for (local_20 = 0; local_20 < (int)(uint)Current_Edit_Material->constantCount;
-            local_20 = local_20 + 1) {
-          pMVar5 = (Current_Edit_Material->field10_0xb8).localConstantTable + local_20;
-          iVar2 = strncmp(pMVar5->name,(char *)local_28,0xc);
-          if ((iVar2 == 0) && (pMVar5->nameHash == uVar3)) {
-            local_24 = local_20 + 1;
+      param = Cmd_Argv(1);
+      name = param;
+      index = atoi(param);
+      if ((index == 0) || ((int)(uint)Current_Edit_Material->constantCount < index)) {
+        uVar3 = R_HashString(name);
+        for (i = 0; i < (int)(uint)Current_Edit_Material->constantCount; i = i + 1) {
+          pMVar4 = (Current_Edit_Material->field10_0xb8).localConstantTable + i;
+          iVar2 = strncmp(pMVar4->name,name,0xc);
+          if ((iVar2 == 0) && (pMVar4->nameHash == uVar3)) {
+            index = i + 1;
             break;
           }
         }
       }
       else {
-        strncpy(local_18,(uchar *)(Current_Edit_Material->field10_0xb8).localConstantTable
-                                  [local_24 + -1].name,0xc);
+        strncpy(NameBuf,(uchar *)(Current_Edit_Material->field10_0xb8).localConstantTable
+                                 [index + -1].name,0xc);
         local_c = 0;
-        local_2c = local_18;
+        param = (char *)NameBuf;
       }
-      if (local_24 == 0) {
+      if (index == 0) {
         Com_Printf(8,"%s is not a parameter of %s.\n");
       }
       else {
-        local_1c = (Current_Edit_Material->field10_0xb8).localConstantTable + local_24 + -1;
+        cte = (Current_Edit_Material->field10_0xb8).localConstantTable + index + -1;
         Com_Printf(8,"%s:\n");
         iVar2 = Cmd_Argc();
         if (iVar2 == 2) {
@@ -1419,59 +1454,58 @@ void __cdecl R_MaterialParameterEdit_f(void)
         }
         else {
           Com_Printf(8,"  Before: %s = %g %g %g %g\n");
-          local_20 = 2;
-          while ((iVar2 = Cmd_Argc(), local_20 < iVar2 && (local_20 < 6))) {
-            pcVar4 = Cmd_Argv(local_20);
-            dVar6 = atof(pcVar4);
-            local_1c->literal[local_20 + -2] = (float)dVar6;
-            local_20 = local_20 + 1;
+          i = 2;
+          while ((iVar2 = Cmd_Argc(), i < iVar2 && (i < 6))) {
+            nptr = Cmd_Argv(i);
+            dVar5 = atof(nptr);
+            cte->literal[i + -2] = (float)dVar5;
+            i = i + 1;
           }
           Com_Printf(8,"  After: %s = %g %g %g %g\n");
         }
         pdVar1 = MaterialParameterDvar;
-        if ((local_1c == MaterialParameterConstantEntry) && (MaterialParameterDvar != (dvar_s *)0x0)
-           ) {
+        if ((cte == MaterialParameterConstantEntry) && (MaterialParameterDvar != (dvar_s *)0x0)) {
           MaterialParameterDvar->modified = false;
-          (pdVar1->current).integer = (int)local_1c->literal[0];
-          (pdVar1->current).vector[1] = local_1c->literal[1];
-          (pdVar1->current).vector[2] = local_1c->literal[2];
-          (pdVar1->current).vector[3] = local_1c->literal[3];
-          (pdVar1->latched).integer = (int)local_1c->literal[0];
-          (pdVar1->latched).vector[1] = local_1c->literal[1];
-          (pdVar1->latched).vector[2] = local_1c->literal[2];
-          (pdVar1->latched).vector[3] = local_1c->literal[3];
-          (pdVar1->reset).integer = (int)local_1c->literal[0];
-          (pdVar1->reset).vector[1] = local_1c->literal[1];
-          (pdVar1->reset).vector[2] = local_1c->literal[2];
-          (pdVar1->reset).vector[3] = local_1c->literal[3];
-          local_50 = (pdVar1->domain).value.min;
-          local_54 = (pdVar1->domain).value.max;
-          if (local_1c->literal[0] <= local_50 && local_50 != local_1c->literal[0]) {
-            local_50 = local_1c->literal[0];
+          (pdVar1->current).integer = (int)cte->literal[0];
+          (pdVar1->current).vector[1] = cte->literal[1];
+          (pdVar1->current).vector[2] = cte->literal[2];
+          (pdVar1->current).vector[3] = cte->literal[3];
+          (pdVar1->latched).integer = (int)cte->literal[0];
+          (pdVar1->latched).vector[1] = cte->literal[1];
+          (pdVar1->latched).vector[2] = cte->literal[2];
+          (pdVar1->latched).vector[3] = cte->literal[3];
+          (pdVar1->reset).integer = (int)cte->literal[0];
+          (pdVar1->reset).vector[1] = cte->literal[1];
+          (pdVar1->reset).vector[2] = cte->literal[2];
+          (pdVar1->reset).vector[3] = cte->literal[3];
+          min = (pdVar1->domain).value.min;
+          max = (pdVar1->domain).value.max;
+          if (cte->literal[0] <= min && min != cte->literal[0]) {
+            min = cte->literal[0];
           }
-          if (local_1c->literal[1] <= local_50 && local_50 != local_1c->literal[1]) {
-            local_50 = local_1c->literal[1];
+          if (cte->literal[1] <= min && min != cte->literal[1]) {
+            min = cte->literal[1];
           }
-          if (local_1c->literal[2] <= local_50 && local_50 != local_1c->literal[2]) {
-            local_50 = local_1c->literal[2];
+          if (cte->literal[2] <= min && min != cte->literal[2]) {
+            min = cte->literal[2];
           }
-          if (local_1c->literal[3] <= local_50 && local_50 != local_1c->literal[3]) {
-            local_50 = local_1c->literal[3];
+          if (cte->literal[3] <= min && min != cte->literal[3]) {
+            min = cte->literal[3];
           }
-          if (local_54 < local_1c->literal[0]) {
-            local_54 = local_1c->literal[0];
+          if (max < cte->literal[0]) {
+            max = cte->literal[0];
           }
-          if (local_54 < local_1c->literal[1]) {
-            local_54 = local_1c->literal[1];
+          if (max < cte->literal[1]) {
+            max = cte->literal[1];
           }
-          if (local_54 < local_1c->literal[2]) {
-            local_54 = local_1c->literal[2];
+          if (max < cte->literal[2]) {
+            max = cte->literal[2];
           }
-          if (local_54 < local_1c->literal[3]) {
-            local_54 = local_1c->literal[3];
+          if (max < cte->literal[3]) {
+            max = cte->literal[3];
           }
-          (pdVar1->domain).value.min = local_50;
-          (pdVar1->domain).value.max = local_54;
+          (pdVar1->domain).value.min = min;
+          (pdVar1->domain).value.max = max;
         }
       }
     }
@@ -1496,17 +1530,21 @@ void __cdecl R_MaterialParameterTweak_f(void)
   double dVar7;
   undefined4 local_64;
   undefined4 local_60;
-  uchar local_48 [12];
+  dvar_s *hack;
+  float val_2;
+  float val;
+  uint hash;
+  uchar name_2 [12];
   undefined1 local_3c;
-  MaterialConstantDef *local_38;
-  float local_34;
-  uchar *local_30;
-  uchar *local_2c;
-  int local_28;
-  float local_24;
-  int local_20;
-  MaterialConstantDef *local_1c;
-  uchar local_18 [12];
+  MaterialConstantDef *ct;
+  float max;
+  char *param;
+  char *name;
+  int index;
+  float min;
+  int i;
+  MaterialConstantDef *cte;
+  uchar NameBuf [12];
   undefined1 local_c;
   uint local_8;
   
@@ -1519,113 +1557,110 @@ void __cdecl R_MaterialParameterTweak_f(void)
     iVar1 = Cmd_Argc();
     if (iVar1 < 2) {
       Com_Printf(8,"%s:\n");
-      for (local_20 = 0; local_20 < (int)(uint)Current_Edit_Material->constantCount;
-          local_20 = local_20 + 1) {
-        local_38 = (Current_Edit_Material->field10_0xb8).localConstantTable + local_20;
-        strncpy(local_48,(uchar *)local_38->name,0xc);
+      for (i = 0; i < (int)(uint)Current_Edit_Material->constantCount; i = i + 1) {
+        ct = (Current_Edit_Material->field10_0xb8).localConstantTable + i;
+        strncpy(name_2,(uchar *)ct->name,0xc);
         local_3c = 0;
         Com_Printf(8,"  %d: %12s = %g %g %g %g\n");
       }
     }
     else {
-      local_30 = (uchar *)Cmd_Argv(1);
-      local_2c = local_30;
-      local_28 = atoi((char *)local_30);
-      if ((local_28 == 0) || ((int)(uint)Current_Edit_Material->constantCount < local_28)) {
-        uVar2 = R_HashString((char *)local_2c);
-        for (local_20 = 0; local_20 < (int)(uint)Current_Edit_Material->constantCount;
-            local_20 = local_20 + 1) {
-          pMVar5 = (Current_Edit_Material->field10_0xb8).localConstantTable + local_20;
-          iVar1 = strncmp(pMVar5->name,(char *)local_2c,0xc);
+      param = Cmd_Argv(1);
+      name = param;
+      index = atoi(param);
+      if ((index == 0) || ((int)(uint)Current_Edit_Material->constantCount < index)) {
+        uVar2 = R_HashString(name);
+        for (i = 0; i < (int)(uint)Current_Edit_Material->constantCount; i = i + 1) {
+          pMVar5 = (Current_Edit_Material->field10_0xb8).localConstantTable + i;
+          iVar1 = strncmp(pMVar5->name,name,0xc);
           if ((iVar1 == 0) && (pMVar5->nameHash == uVar2)) {
-            local_28 = local_20 + 1;
+            index = i + 1;
             break;
           }
         }
       }
       else {
-        strncpy(local_18,(uchar *)(Current_Edit_Material->field10_0xb8).localConstantTable
-                                  [local_28 + -1].name,0xc);
+        strncpy(NameBuf,(uchar *)(Current_Edit_Material->field10_0xb8).localConstantTable
+                                 [index + -1].name,0xc);
         local_c = 0;
-        local_30 = local_18;
+        param = (char *)NameBuf;
       }
-      if (local_28 == 0) {
+      if (index == 0) {
         Com_Printf(8,"%s is not a parameter of %s.\n");
       }
       else {
-        local_1c = (Current_Edit_Material->field10_0xb8).localConstantTable + local_28 + -1;
-        local_24 = local_1c->literal[0];
-        local_34 = local_1c->literal[0];
-        if (local_1c->literal[1] <= local_24 && local_24 != local_1c->literal[1]) {
-          local_24 = local_1c->literal[1];
+        cte = (Current_Edit_Material->field10_0xb8).localConstantTable + index + -1;
+        min = cte->literal[0];
+        max = cte->literal[0];
+        if (cte->literal[1] <= min && min != cte->literal[1]) {
+          min = cte->literal[1];
         }
-        if (local_1c->literal[2] <= local_24 && local_24 != local_1c->literal[2]) {
-          local_24 = local_1c->literal[2];
+        if (cte->literal[2] <= min && min != cte->literal[2]) {
+          min = cte->literal[2];
         }
-        if (local_1c->literal[3] <= local_24 && local_24 != local_1c->literal[3]) {
-          local_24 = local_1c->literal[3];
+        if (cte->literal[3] <= min && min != cte->literal[3]) {
+          min = cte->literal[3];
         }
-        if (local_34 < local_1c->literal[1]) {
-          local_34 = local_1c->literal[1];
+        if (max < cte->literal[1]) {
+          max = cte->literal[1];
         }
-        if (local_34 < local_1c->literal[2]) {
-          local_34 = local_1c->literal[2];
+        if (max < cte->literal[2]) {
+          max = cte->literal[2];
         }
-        if (local_34 < local_1c->literal[3]) {
-          local_34 = local_1c->literal[3];
+        if (max < cte->literal[3]) {
+          max = cte->literal[3];
         }
         iVar1 = Cmd_Argc();
         if (iVar1 < 3) {
-          if (0.0 < local_24) {
-            local_24 = 0.0;
+          if (0.0 < min) {
+            min = 0.0;
           }
         }
         else {
           pcVar3 = Cmd_Argv(2);
           dVar7 = atof(pcVar3);
-          if ((float)dVar7 < local_24) {
-            local_24 = (float)dVar7;
+          if ((float)dVar7 < min) {
+            min = (float)dVar7;
           }
         }
         iVar1 = Cmd_Argc();
         if (iVar1 < 4) {
-          if (local_34 < 1.0) {
-            local_34 = 1.0;
+          if (max < 1.0) {
+            max = 1.0;
           }
         }
         else {
           pcVar3 = Cmd_Argv(3);
           dVar7 = atof(pcVar3);
-          if (local_34 < (float)dVar7) {
-            local_34 = (float)dVar7;
+          if (max < (float)dVar7) {
+            max = (float)dVar7;
           }
         }
-        pdVar4 = _Dvar_RegisterVec4("r_MaterialParameterTweak",local_1c->literal[0],
-                                    local_1c->literal[1],local_1c->literal[2],local_1c->literal[3],
-                                    local_24,local_34,0x280,
+        pdVar4 = _Dvar_RegisterVec4("r_MaterialParameterTweak",cte->literal[0],cte->literal[1],
+                                    cte->literal[2],cte->literal[3],min,max,0x280,
                                     "Modifies currently selected material parameter");
         MaterialParameterDvar = pdVar4;
         pdVar4->modified = false;
-        (pdVar4->current).integer = (int)local_1c->literal[0];
-        (pdVar4->current).vector[1] = local_1c->literal[1];
-        (pdVar4->current).vector[2] = local_1c->literal[2];
-        (pdVar4->current).vector[3] = local_1c->literal[3];
-        (pdVar4->latched).integer = (int)local_1c->literal[0];
-        (pdVar4->latched).vector[1] = local_1c->literal[1];
-        (pdVar4->latched).vector[2] = local_1c->literal[2];
-        (pdVar4->latched).vector[3] = local_1c->literal[3];
-        (pdVar4->reset).integer = (int)local_1c->literal[0];
-        (pdVar4->reset).vector[1] = local_1c->literal[1];
-        (pdVar4->reset).vector[2] = local_1c->literal[2];
-        (pdVar4->reset).vector[3] = local_1c->literal[3];
-        (pdVar4->domain).value.min = local_24;
-        (pdVar4->domain).value.max = local_34;
+        (pdVar4->current).integer = (int)cte->literal[0];
+        (pdVar4->current).vector[1] = cte->literal[1];
+        (pdVar4->current).vector[2] = cte->literal[2];
+        (pdVar4->current).vector[3] = cte->literal[3];
+        (pdVar4->latched).integer = (int)cte->literal[0];
+        (pdVar4->latched).vector[1] = cte->literal[1];
+        (pdVar4->latched).vector[2] = cte->literal[2];
+        (pdVar4->latched).vector[3] = cte->literal[3];
+        (pdVar4->reset).integer = (int)cte->literal[0];
+        (pdVar4->reset).vector[1] = cte->literal[1];
+        (pdVar4->reset).vector[2] = cte->literal[2];
+        (pdVar4->reset).vector[3] = cte->literal[3];
+        (pdVar4->domain).value.min = min;
+        (pdVar4->domain).value.max = max;
         *(undefined4 *)((int)&pdVar4->domain + 8) = local_64;
         *(undefined4 *)((int)&pdVar4->domain + 0xc) = local_60;
         sprintf(desc,"%s . %s parameter tweak");
         pdVar4->description = desc;
-        MaterialParameterConstantEntry = local_1c;
-        pMVar5 = local_1c;
+        MaterialParameterConstantEntry = cte;
+        pMVar5 = cte;
         pMVar6 = &MaterialParameterConstantEntry_save;
         for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
           pMVar6->nameHash = pMVar5->nameHash;
@@ -1668,15 +1703,16 @@ void __cdecl R_MaterialParameterTweakUpdate(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_EnumTechniqueSets(_func___cdecl_void_XAssetHeader_void_ptr *param_1,void *param_2)
+void __cdecl R_EnumTechniqueSets(_func___cdecl_void_XAssetHeader_void_ptr *func,void *data)
 
 {
-  uint local_8;
+  XAssetHeader header;
+  int hashIndex;
   
-  for (local_8 = 0; local_8 < 0x800; local_8 = local_8 + 1) {
-    if ((*(XAssetHeader *)(materialGlobals.techniqueSetHashTable + local_8)).xmodelPieces !=
+  for (hashIndex = 0; (uint)hashIndex < 0x800; hashIndex = hashIndex + 1) {
+    if ((*(XAssetHeader *)(materialGlobals.techniqueSetHashTable + hashIndex)).xmodelPieces !=
         (XModelPieces *)0x0) {
-      (*param_1)(*(XAssetHeader *)(materialGlobals.techniqueSetHashTable + local_8),param_2);
+      (*func)(*(XAssetHeader *)(materialGlobals.techniqueSetHashTable + hashIndex),data);
     }
   }
   return;
@@ -1687,14 +1723,15 @@ void __cdecl R_EnumTechniqueSets(_func___cdecl_void_XAssetHeader_void_ptr *param
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_EnumMaterials(_func___cdecl_void_XAssetHeader_void_ptr *param_1,void *param_2)
+void __cdecl R_EnumMaterials(_func___cdecl_void_XAssetHeader_void_ptr *func,void *data)
 
 {
-  uint local_8;
+  XAssetHeader header;
+  int hashIndex;
   
-  for (local_8 = 0; local_8 < 0x1000; local_8 = local_8 + 1) {
-    if ((*(XAssetHeader *)(rg.materialHashTable + local_8)).xmodelPieces != (XModelPieces *)0x0) {
-      (*param_1)(*(XAssetHeader *)(rg.materialHashTable + local_8),param_2);
+  for (hashIndex = 0; (uint)hashIndex < 0x1000; hashIndex = hashIndex + 1) {
+    if ((*(XAssetHeader *)(rg.materialHashTable + hashIndex)).xmodelPieces != (XModelPieces *)0x0) {
+      (*func)(*(XAssetHeader *)(rg.materialHashTable + hashIndex),data);
     }
   }
   return;
@@ -1703,7 +1740,7 @@ void __cdecl R_EnumMaterials(_func___cdecl_void_XAssetHeader_void_ptr *param_1,v
 
 // 00A4DF20  Material_GetName  (gfx_d3d/r_material.cpp:2050)
 
-char * __cdecl Material_GetName(Material *param_1)
+char * __cdecl Material_GetName(Material *handle)
 
 {
   code *pcVar1;
@@ -1711,7 +1748,7 @@ char * __cdecl Material_GetName(Material *param_1)
   char *pcVar3;
   Material *pMVar4;
   
-  if (param_1 == (Material *)0x0) {
+  if (handle == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x803,0,
                              "%s");
     if (!bVar2) {
@@ -1720,27 +1757,27 @@ char * __cdecl Material_GetName(Material *param_1)
       return pcVar3;
     }
   }
-  pMVar4 = Material_FromHandle(param_1);
+  pMVar4 = Material_FromHandle(handle);
   return (pMVar4->info).name;
 }
 
 
 // 00A4E0A0  Material_LoadBuiltIn  (gfx_d3d/r_material.cpp:2072)
 
-void __cdecl Material_LoadBuiltIn(BuiltInMaterialTable *param_1,int param_2)
+void __cdecl Material_LoadBuiltIn(BuiltInMaterialTable *mtlTable,int mtlTableCount)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
-  int local_8;
+  int builtInMtlIndex;
   
-  local_8 = 0;
+  builtInMtlIndex = 0;
   do {
-    if (param_2 <= local_8) {
+    if (mtlTableCount <= builtInMtlIndex) {
       return;
     }
-    if (*param_1[local_8].material != (Material *)0x0) {
+    if (*mtlTable[builtInMtlIndex].material != (Material *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x81d,0,
                                "%s");
       if (!bVar2) {
@@ -1749,33 +1786,33 @@ void __cdecl Material_LoadBuiltIn(BuiltInMaterialTable *param_1,int param_2)
         return;
       }
     }
-    pMVar3 = Material_Register(param_1[local_8].name,0);
-    *param_1[local_8].material = pMVar3;
-    if (*param_1[local_8].material == (Material *)0x0) {
+    pMVar3 = Material_Register(mtlTable[builtInMtlIndex].name,0);
+    *mtlTable[builtInMtlIndex].material = pMVar3;
+    if (*mtlTable[builtInMtlIndex].material == (Material *)0x0) {
       Com_Error(ERR_FATAL,"Could not find material \'%s\'");
     }
     rgp.dummyMaterial = (Material *)0x0;
-    local_8 = local_8 + 1;
+    builtInMtlIndex = builtInMtlIndex + 1;
   } while( true );
 }
 
 
 // 00A4DF90  Material_LoadPerMap  (gfx_d3d/r_material.cpp:2090)
 
-void __cdecl Material_LoadPerMap(PerMapMaterialTable *param_1,int param_2)
+void __cdecl Material_LoadPerMap(PerMapMaterialTable *mtlTable,int mtlTableCount)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
-  int local_8;
+  int permapMtlIndex;
   
-  local_8 = 0;
+  permapMtlIndex = 0;
   do {
-    if (param_2 <= local_8) {
+    if (mtlTableCount <= permapMtlIndex) {
       return;
     }
-    if (*param_1[local_8].material != (Material *)0x0) {
+    if (*mtlTable[permapMtlIndex].material != (Material *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x82f,0,
                                "%s");
       if (!bVar2) {
@@ -1784,12 +1821,12 @@ void __cdecl Material_LoadPerMap(PerMapMaterialTable *param_1,int param_2)
         return;
       }
     }
-    pMVar3 = Material_Register(param_1[local_8].name,0);
-    *param_1[local_8].material = pMVar3;
-    if (*param_1[local_8].material == (Material *)0x0) {
+    pMVar3 = Material_Register(mtlTable[permapMtlIndex].name,0);
+    *mtlTable[permapMtlIndex].material = pMVar3;
+    if (*mtlTable[permapMtlIndex].material == (Material *)0x0) {
       Com_Error(ERR_FATAL,"Could not find permap material \'%s\'");
     }
-    local_8 = local_8 + 1;
+    permapMtlIndex = permapMtlIndex + 1;
   } while( true );
 }
 
@@ -1837,38 +1874,41 @@ void __cdecl Material_Shutdown(void)
 
 // 00A4E3A0  Material_ReloadTextures  (gfx_d3d/r_material.cpp:2210)
 
-void __cdecl Material_ReloadTextures(Material *param_1)
+void __cdecl Material_ReloadTextures(Material *material)
 
 {
   byte bVar1;
   GfxImage *pGVar2;
   code *pcVar3;
   bool bVar4;
-  GfxImage *local_18;
-  GfxImage *local_14;
-  uint local_10;
+  GfxImage *image;
+  GfxImage *maxConvert;
+  GfxImage *lastConverted;
+  int textureIter;
+  int textureCount;
+  MaterialTextureDef *texture;
   
-  if ((param_1 == (Material *)0x0) &&
+  if ((material == (Material *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x8aa,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  bVar1 = param_1->textureCount;
-  local_14 = (GfxImage *)0x0;
+  bVar1 = material->textureCount;
+  lastConverted = (GfxImage *)0x0;
   while( true ) {
-    local_18 = (GfxImage *)0x0;
-    for (local_10 = 0; local_10 != bVar1; local_10 = local_10 + 1) {
-      if (((param_1->textureTable[local_10].semantic != '\v') &&
-          (pGVar2 = param_1->textureTable[local_10].u.image, local_18 < pGVar2)) &&
-         ((local_14 == (GfxImage *)0x0 || (pGVar2 < local_14)))) {
-        local_18 = pGVar2;
+    maxConvert = (GfxImage *)0x0;
+    for (textureIter = 0; textureIter != (uint)bVar1; textureIter = textureIter + 1) {
+      if (((material->textureTable[textureIter].semantic != '\v') &&
+          (pGVar2 = material->textureTable[textureIter].u.image, maxConvert < pGVar2)) &&
+         ((lastConverted == (GfxImage *)0x0 || (pGVar2 < lastConverted)))) {
+        maxConvert = pGVar2;
       }
     }
-    local_14 = local_18;
-    if (local_18 == (GfxImage *)0x0) break;
-    Image_Reload(local_18);
+    lastConverted = maxConvert;
+    if (maxConvert == (GfxImage *)0x0) break;
+    Image_Reload(maxConvert);
   }
   return;
 }
@@ -1876,21 +1916,21 @@ void __cdecl Material_ReloadTextures(Material *param_1)
 
 // 00A4E220  Material_UpdatePicmipForTexdef  (gfx_d3d/r_material.cpp:2251)
 
-void __cdecl Material_UpdatePicmipForTexdef(MaterialTextureDef *param_1)
+void __cdecl Material_UpdatePicmipForTexdef(MaterialTextureDef *texdef)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (MaterialTextureDef *)0x0) &&
+  if ((texdef == (MaterialTextureDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x8cc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->semantic != '\v') && ((param_1->u).image != (GfxImage *)0x0)) {
-    Image_UpdatePicmip((param_1->u).image);
+  if ((texdef->semantic != '\v') && ((texdef->u).image != (GfxImage *)0x0)) {
+    Image_UpdatePicmip((texdef->u).image);
   }
   return;
 }
@@ -1900,13 +1940,15 @@ void __cdecl Material_UpdatePicmipForTexdef(MaterialTextureDef *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Material_UpdatePicmipSingle(XAssetHeader param_1,void *param_2)
+void __cdecl Material_UpdatePicmipSingle(XAssetHeader header,void *userData)
 
 {
-  int local_8;
+  Material *material;
+  int textureIndex;
   
-  for (local_8 = 0; local_8 < (int)(uint)(param_1.material)->textureCount; local_8 = local_8 + 1) {
-    Material_UpdatePicmipForTexdef((param_1.material)->textureTable + local_8);
+  for (textureIndex = 0; textureIndex < (int)(uint)(header.material)->textureCount;
+      textureIndex = textureIndex + 1) {
+    Material_UpdatePicmipForTexdef((header.material)->textureTable + textureIndex);
   }
   return;
 }
@@ -1936,7 +1978,9 @@ void __cdecl R_Cmd_ReloadMaterialTextures(void)
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  Material *pMVar5;
+  Material *material_00;
+  Material *material;
+  char *name;
   
   iVar3 = Cmd_Argc();
   if (iVar3 == 2) {
@@ -1950,14 +1994,14 @@ void __cdecl R_Cmd_ReloadMaterialTextures(void)
         return;
       }
     }
-    pMVar5 = Material_Find(pcVar4);
-    if (pMVar5 == (Material *)0x0) {
+    material_00 = Material_Find(pcVar4);
+    if (material_00 == (Material *)0x0) {
       pcVar4 = va("ReloadMaterialTextures: Material \'%s\' is not currently loaded.\n");
       Com_Printf(8,pcVar4);
     }
     else {
       RB_BindDefaultImages();
-      Material_ReloadTextures(pMVar5);
+      Material_ReloadTextures(material_00);
     }
   }
   else {
@@ -1971,23 +2015,23 @@ void __cdecl R_Cmd_ReloadMaterialTextures(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Material_LoadFile(char *param_1,int *param_2)
+int __cdecl Material_LoadFile(char *filename,int *file)
 
 {
   int iVar1;
-  char local_4c [68];
+  char fullFilename [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,"materials/%s");
-  iVar1 = FS_FOpenFileReadCurrentThread(local_4c,param_2);
+  Com_sprintf(fullFilename,0x40,"materials/%s");
+  iVar1 = FS_FOpenFileReadCurrentThread(fullFilename,file);
   return iVar1;
 }
 
 
 // 00A4E4D0  IsValidMaterialHandle  (gfx_d3d/r_material.cpp:2406)
 
-bool __cdecl IsValidMaterialHandle(Material *param_1)
+bool __cdecl IsValidMaterialHandle(Material *handle)
 
 {
   code *pcVar1;
@@ -1995,7 +2039,7 @@ bool __cdecl IsValidMaterialHandle(Material *param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if (((uint)param_1 & 3) != 0) {
+  if (((uint)handle & 3) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x967,0,
                              "%s");
     if (!bVar2) {
@@ -2004,8 +2048,8 @@ bool __cdecl IsValidMaterialHandle(Material *param_1)
       return (bool)uVar3;
     }
   }
-  if (((param_1 == (Material *)0x0) || ((param_1->info).name == (char *)0x0)) ||
-     (*(param_1->info).name == '\0')) {
+  if (((handle == (Material *)0x0) || ((handle->info).name == (char *)0x0)) ||
+     (*(handle->info).name == '\0')) {
     local_8 = false;
   }
   else {
@@ -2080,16 +2124,16 @@ ushort __cdecl GetCodeConst_GameTimeParam(void)
 
 // 00A4E5B0  Material_GetTextureCount  (gfx_d3d/r_material.cpp:2500)
 
-int __cdecl Material_GetTextureCount(Material *param_1)
+int __cdecl Material_GetTextureCount(Material *handle)
 
 {
-  return (uint)param_1->textureCount;
+  return (uint)handle->textureCount;
 }
 
 
 // 00A4E5C0  Material_GetTexture  (gfx_d3d/r_material.cpp:2506)
 
-GfxImage * __cdecl Material_GetTexture(Material *param_1,int param_2)
+GfxImage * __cdecl Material_GetTexture(Material *handle,int index)
 
 {
   code *pcVar1;
@@ -2097,8 +2141,8 @@ GfxImage * __cdecl Material_GetTexture(Material *param_1,int param_2)
   int iVar3;
   GfxImage *pGVar4;
   
-  iVar3 = Material_GetTextureCount(param_1);
-  if (iVar3 <= param_2) {
+  iVar3 = Material_GetTextureCount(handle);
+  if (iVar3 <= index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",0x9cb,0,
                              "%s");
     if (!bVar2) {
@@ -2107,6 +2151,6 @@ GfxImage * __cdecl Material_GetTexture(Material *param_1,int param_2)
       return pGVar4;
     }
   }
-  return param_1->textureTable[param_2].u.image;
+  return handle->textureTable[index].u.image;
 }
 

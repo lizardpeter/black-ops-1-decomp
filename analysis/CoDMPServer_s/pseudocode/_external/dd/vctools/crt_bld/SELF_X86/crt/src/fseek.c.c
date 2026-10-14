@@ -5,21 +5,22 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl fseek(_iobuf *param_1,long param_2,int param_3)
+int __cdecl fseek(_iobuf *stream,long offset,int whence)
 
 {
   int *piVar1;
   int iVar2;
+  int retval;
   
-  if ((param_1 == (_iobuf *)0x0) || (((param_3 != 0 && (param_3 != 1)) && (param_3 != 2)))) {
+  if ((stream == (_iobuf *)0x0) || (((whence != 0 && (whence != 1)) && (whence != 2)))) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    _lock_file(param_1);
-    iVar2 = _fseek_nolock(param_1,param_2,param_3);
+    _lock_file(stream);
+    iVar2 = _fseek_nolock(stream,offset,whence);
     FUN_0095d611();
   }
   return iVar2;
@@ -28,7 +29,7 @@ int __cdecl fseek(_iobuf *param_1,long param_2,int param_3)
 
 // 0095D50C  _fseek_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fseek.c:139)
 
-int __cdecl _fseek_nolock(_iobuf *param_1,long param_2,int param_3)
+int __cdecl _fseek_nolock(_iobuf *str,long offset,int whence)
 
 {
   uint uVar1;
@@ -36,28 +37,28 @@ int __cdecl _fseek_nolock(_iobuf *param_1,long param_2,int param_3)
   int iVar3;
   long lVar4;
   
-  if ((param_1->_flag & 0x83U) == 0) {
+  if ((str->_flag & 0x83U) == 0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     iVar3 = -1;
   }
   else {
-    param_1->_flag = param_1->_flag & 0xffffffef;
-    if (param_3 == 1) {
-      lVar4 = _ftell_nolock(param_1);
-      param_2 = param_2 + lVar4;
-      param_3 = 0;
+    str->_flag = str->_flag & 0xffffffef;
+    if (whence == 1) {
+      lVar4 = _ftell_nolock(str);
+      offset = offset + lVar4;
+      whence = 0;
     }
-    _flush(param_1);
-    uVar1 = param_1->_flag;
+    _flush(str);
+    uVar1 = str->_flag;
     if ((char)uVar1 < '\0') {
-      param_1->_flag = uVar1 & 0xfffffffc;
+      str->_flag = uVar1 & 0xfffffffc;
     }
     else if ((((uVar1 & 1) != 0) && ((uVar1 & 8) != 0)) && ((uVar1 & 0x400) == 0)) {
-      param_1->_bufsiz = 0x200;
+      str->_bufsiz = 0x200;
     }
-    iVar3 = _fileno(param_1);
-    lVar4 = _lseek(iVar3,param_2,param_3);
+    iVar3 = _fileno(str);
+    lVar4 = _lseek(iVar3,offset,whence);
     iVar3 = (lVar4 != -1) - 1;
   }
   return iVar3;

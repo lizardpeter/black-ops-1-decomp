@@ -43,7 +43,7 @@ bool __cdecl PCache_IsLocked(void)
 
 // 0096F460  PCache_Hash  (live/live_pcache.cpp:102)
 
-uint __cdecl PCache_Hash(int param_1,ulong64 param_2)
+uint __cdecl PCache_Hash(int controllerIndex,ulong64 param_2)
 
 {
   uint extraout_EAX;
@@ -62,25 +62,25 @@ void __cdecl PCache_GetRank_f(void)
   bool bVar1;
   char *pcVar2;
   long64 lVar3;
-  undefined1 *puVar4;
+  int *piVar4;
   int *piVar5;
   int *in_stack_ffffffe8;
-  undefined1 local_8 [4];
+  int rank;
   
   piVar5 = (int *)0x0;
-  puVar4 = local_8;
+  piVar4 = &rank;
   pcVar2 = Cmd_Argv(1);
   lVar3 = I_atoi64(pcVar2);
-  bVar1 = PCache_GetRank(0,CONCAT44(puVar4,(int)((ulonglong)lVar3 >> 0x20)),piVar5,in_stack_ffffffe8
+  bVar1 = PCache_GetRank(0,CONCAT44(piVar4,(int)((ulonglong)lVar3 >> 0x20)),piVar5,in_stack_ffffffe8
                         );
   if (bVar1) {
     printf("rank: %d\n");
   }
   piVar5 = (int *)0x0;
-  puVar4 = local_8;
+  piVar4 = &rank;
   pcVar2 = Cmd_Argv(2);
   lVar3 = I_atoi64(pcVar2);
-  bVar1 = PCache_GetRank(0,CONCAT44(puVar4,(int)((ulonglong)lVar3 >> 0x20)),piVar5,in_stack_ffffffe8
+  bVar1 = PCache_GetRank(0,CONCAT44(piVar4,(int)((ulonglong)lVar3 >> 0x20)),piVar5,in_stack_ffffffe8
                         );
   if (bVar1) {
     printf("rank: %d\n");
@@ -94,17 +94,17 @@ void __cdecl PCache_GetRank_f(void)
 void __cdecl PCache_Init(void)
 
 {
-  int local_8;
+  int index;
   
   if ((live_service->current).enabled != false) {
     memset((uchar *)s_entries,'\0',0x2000);
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      memset(s_componentPools[local_8].array,'\0',
-             s_componentPools[local_8].count * s_componentPools[local_8].componentSize);
+    for (index = 0; index < 2; index = index + 1) {
+      memset(s_componentPools[index].array,'\0',
+             s_componentPools[index].count * s_componentPools[index].componentSize);
     }
-    for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-      *(undefined4 *)&s_entries[local_8].xuid = 0;
-      *(undefined4 *)((int)&s_entries[local_8].xuid + 4) = 0;
+    for (index = 0; index < 0x100; index = index + 1) {
+      *(undefined4 *)&s_entries[index].xuid = 0;
+      *(undefined4 *)((int)&s_entries[index].xuid + 4) = 0;
     }
     PCache_ProfileInit();
     Cmd_AddCommandInternal("pcacherank",PCache_GetRank_f,(cmd_function_s *)&PCache_GetRank_f_VAR);
@@ -115,7 +115,13 @@ void __cdecl PCache_Init(void)
 
 // 0096F5E0  PCache_Update  (live/live_pcache.cpp:149)
 
-void __cdecl PCache_Update(int param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PCache_Update(int controllerIndex)
 
 {
   code *pcVar1;
@@ -135,8 +141,8 @@ void __cdecl PCache_Update(int param_1)
   if (!bVar2) {
     bVar2 = LiveStorage_DoWeHaveAllStats(0);
     if (bVar2) {
-      PCache_BatchUpdatePublicProfiles(param_1,s_publicProfiles,0x100);
-      PCache_BatchUpdatePlayerEmblems(param_1,s_playerEmblems,0x20);
+      PCache_BatchUpdatePublicProfiles(controllerIndex,s_publicProfiles,0x100);
+      PCache_BatchUpdatePlayerEmblems(controllerIndex,s_playerEmblems,0x20);
     }
   }
   return;
@@ -145,7 +151,7 @@ void __cdecl PCache_Update(int param_1)
 
 // 0096F660  PCache_GetOrphanComponent  (live/live_pcache.cpp:188)
 
-PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,ulong64 param_2,int param_3)
+PCacheComponent * __cdecl PCache_GetOrphanComponent(int controllerIndex,ulong64 param_2,int param_3)
 
 {
   code *pcVar1;
@@ -153,13 +159,16 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,ulong64 param_2,
   PCacheComponent *pPVar3;
   uint uVar4;
   int in_stack_00000008;
-  uint local_1c;
-  uint local_14;
-  int local_10;
-  PCacheComponent *local_8;
+  PCacheComponentPool *pool;
+  uint touchTime;
+  PCacheComponent *component;
+  uint bestTime;
+  int index;
+  uchar *poolMem;
+  PCacheComponent *bestComponent;
   
-  local_8 = (PCacheComponent *)0x0;
-  local_14 = 0xffffffff;
+  bestComponent = (PCacheComponent *)0x0;
+  bestTime = 0xffffffff;
   if ((0x1ffffffff < param_2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0xcb,0,
                                "type doesn\'t index PCACHE_NUM_COMPONENTS\n\t%i not in [0, %i)"),
@@ -176,10 +185,10 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,ulong64 param_2,
     pPVar3 = (PCacheComponent *)(*pcVar1)();
     return pPVar3;
   }
-  local_10 = 0;
+  index = 0;
   while( true ) {
-    if (s_componentPools[param_2._4_4_].count <= local_10) {
-      if ((local_8 == (PCacheComponent *)0x0) &&
+    if (s_componentPools[param_2._4_4_].count <= index) {
+      if ((bestComponent == (PCacheComponent *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0xf0,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -188,39 +197,39 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,ulong64 param_2,
       }
       if (s_componentPools[param_2._4_4_].release != (_func___cdecl_void_PCacheComponent_ptr *)0x0)
       {
-        (*s_componentPools[param_2._4_4_].release)(local_8);
+        (*s_componentPools[param_2._4_4_].release)(bestComponent);
       }
-      memset((uchar *)local_8,'\0',s_componentPools[param_2._4_4_].componentSize);
-      *(int *)&local_8->xuid = in_stack_00000008;
-      *(int *)((int)&local_8->xuid + 4) = (int)param_2;
-      local_8->controllerIndex = param_1;
+      memset((uchar *)bestComponent,'\0',s_componentPools[param_2._4_4_].componentSize);
+      *(int *)&bestComponent->xuid = in_stack_00000008;
+      *(int *)((int)&bestComponent->xuid + 4) = (int)param_2;
+      bestComponent->controllerIndex = controllerIndex;
       uVar4 = PCache_Time();
-      local_8->touchTime = uVar4;
-      local_8->updateTime = 0;
-      local_8->type = param_2._4_4_;
-      return local_8;
+      bestComponent->touchTime = uVar4;
+      bestComponent->updateTime = 0;
+      bestComponent->type = param_2._4_4_;
+      return bestComponent;
     }
     pPVar3 = (PCacheComponent *)
-             (local_10 * s_componentPools[param_2._4_4_].componentSize +
+             (index * s_componentPools[param_2._4_4_].componentSize +
              (int)s_componentPools[param_2._4_4_].array);
-    local_1c = pPVar3->touchTime;
+    touchTime = pPVar3->touchTime;
     if (pPVar3->controllerIndex != -1) {
-      local_1c = local_1c + 1;
+      touchTime = touchTime + 1;
     }
     if ((((int)pPVar3->xuid == in_stack_00000008) &&
-        (*(int *)((int)&pPVar3->xuid + 4) == (int)param_2)) && (pPVar3->controllerIndex == param_1))
-    break;
+        (*(int *)((int)&pPVar3->xuid + 4) == (int)param_2)) &&
+       (pPVar3->controllerIndex == controllerIndex)) break;
     if (((pPVar3->state & 8) == 0) && ((pPVar3->state & 1) == 0)) {
-      if (((int)pPVar3->xuid == 0 && *(int *)((int)&pPVar3->xuid + 4) == 0) && (local_14 != 0)) {
-        local_14 = 0;
-        local_8 = pPVar3;
+      if (((int)pPVar3->xuid == 0 && *(int *)((int)&pPVar3->xuid + 4) == 0) && (bestTime != 0)) {
+        bestTime = 0;
+        bestComponent = pPVar3;
       }
-      else if (local_1c < local_14) {
-        local_14 = local_1c;
-        local_8 = pPVar3;
+      else if (touchTime < bestTime) {
+        bestTime = touchTime;
+        bestComponent = pPVar3;
       }
     }
-    local_10 = local_10 + 1;
+    index = index + 1;
   }
   if (pPVar3->type == param_2._4_4_) {
     return pPVar3;
@@ -237,7 +246,7 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,ulong64 param_2,
 
 // 0096F8A0  PCache_GetEntry  (live/live_pcache.cpp:257)
 
-PCacheEntry * __cdecl PCache_GetEntry(int param_1,ulong64 param_2)
+PCacheEntry * __cdecl PCache_GetEntry(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
@@ -249,10 +258,13 @@ PCacheEntry * __cdecl PCache_GetEntry(int param_1,ulong64 param_2)
   uint uVar7;
   int in_stack_00000008;
   undefined4 in_stack_ffffffd0;
-  int local_18;
-  uint local_14;
-  int local_10;
-  uint local_c;
+  PCacheEntry *entry;
+  uint baseIndex;
+  int bestOffset;
+  uint neighborhood;
+  int offset;
+  uint bestTime;
+  PCacheEntry *baseEntry;
   
   if ((in_stack_00000008 == 0 && (int)param_2 == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x10c,0,
@@ -269,23 +281,23 @@ PCacheEntry * __cdecl PCache_GetEntry(int param_1,ulong64 param_2)
     pPVar3 = (PCacheEntry *)(*pcVar1)();
     return pPVar3;
   }
-  uVar4 = PCache_Hash(param_1,CONCAT44(in_stack_ffffffd0,(int)param_2));
+  uVar4 = PCache_Hash(controllerIndex,CONCAT44(in_stack_ffffffd0,(int)param_2));
   uVar4 = uVar4 % 0x100;
-  local_14 = s_entries[uVar4].neighborhood;
+  neighborhood = s_entries[uVar4].neighborhood;
   while( true ) {
     uVar5 = 0x1f;
-    if (local_14 != 0) {
-      for (; local_14 >> uVar5 == 0; uVar5 = uVar5 - 1) {
+    if (neighborhood != 0) {
+      for (; neighborhood >> uVar5 == 0; uVar5 = uVar5 - 1) {
       }
     }
-    if (local_14 == 0) {
+    if (neighborhood == 0) {
       uVar5 = 0x3f;
     }
     iVar6 = 0x1f - (uVar5 ^ 0x1f);
     if (iVar6 == -1) break;
-    local_14 = ~(1 << ((byte)iVar6 & 0x1f)) & local_14;
+    neighborhood = ~(1 << ((byte)iVar6 & 0x1f)) & neighborhood;
     uVar5 = (uVar4 + iVar6) % 0x100;
-    if (((s_entries[uVar5].controllerIndex == param_1) &&
+    if (((s_entries[uVar5].controllerIndex == controllerIndex) &&
         ((int)s_entries[uVar5].xuid == in_stack_00000008)) &&
        (*(int *)((int)&s_entries[uVar5].xuid + 4) == (int)param_2)) {
       uVar4 = PCache_Time();
@@ -296,36 +308,37 @@ PCacheEntry * __cdecl PCache_GetEntry(int param_1,ulong64 param_2)
       s_entries[uVar4].neighborhood = ~(1 << ((byte)iVar6 & 0x1f)) & s_entries[uVar4].neighborhood;
     }
   }
-  local_18 = -1;
-  local_c = 0xffffffff;
-  local_10 = 0;
+  bestOffset = -1;
+  bestTime = 0xffffffff;
+  offset = 0;
   do {
-    if (0x1f < local_10) {
+    if (0x1f < offset) {
 LAB_0096facf:
-      if ((local_18 == -1) &&
+      if ((bestOffset == -1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x140,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pPVar3 = (PCacheEntry *)(*pcVar1)();
         return pPVar3;
       }
-      uVar7 = (uVar4 + local_18) % 0x100;
+      uVar7 = (uVar4 + bestOffset) % 0x100;
       s_entries[uVar7].neighborhood = s_entries[uVar7].neighborhood & 0xfffffffe;
       s_entries[uVar7].hash = uVar4;
       *(int *)&s_entries[uVar7].xuid = in_stack_00000008;
       *(int *)((int)&s_entries[uVar7].xuid + 4) = (int)param_2;
-      s_entries[uVar7].controllerIndex = param_1;
+      s_entries[uVar7].controllerIndex = controllerIndex;
       uVar5 = PCache_Time();
       s_entries[uVar7].touchTime = uVar5;
       s_entries[uVar7].components[0] = (PCacheComponent *)0x0;
       s_entries[uVar7].components[1] = (PCacheComponent *)0x0;
-      s_entries[uVar4].neighborhood = 1 << ((byte)local_18 & 0x1f) | s_entries[uVar4].neighborhood;
+      s_entries[uVar4].neighborhood = 1 << ((byte)bestOffset & 0x1f) | s_entries[uVar4].neighborhood
+      ;
       return s_entries + uVar7;
     }
-    uVar5 = (uVar4 + local_10) % 0x100;
+    uVar5 = (uVar4 + offset) % 0x100;
     if (((((int)s_entries[uVar5].xuid == in_stack_00000008) &&
          (*(int *)((int)&s_entries[uVar5].xuid + 4) == (int)param_2)) &&
-        (s_entries[uVar5].controllerIndex == param_1)) &&
+        (s_entries[uVar5].controllerIndex == controllerIndex)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x132,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -333,36 +346,37 @@ LAB_0096facf:
       return pPVar3;
     }
     if ((int)s_entries[uVar5].xuid == 0 && *(int *)((int)&s_entries[uVar5].xuid + 4) == 0) {
-      local_18 = local_10;
+      bestOffset = offset;
       goto LAB_0096facf;
     }
-    if (s_entries[uVar5].touchTime < local_c) {
-      local_18 = local_10;
-      local_c = s_entries[uVar5].touchTime;
+    if (s_entries[uVar5].touchTime < bestTime) {
+      bestOffset = offset;
+      bestTime = s_entries[uVar5].touchTime;
     }
-    local_10 = local_10 + 1;
+    offset = offset + 1;
   } while( true );
 }
 
 
 // 0096FB80  PCache_GetEntryComponent  (live/live_pcache.cpp:336)
 
-PCacheComponent * __cdecl PCache_GetEntryComponent(PCacheEntry *param_1,int param_2)
+PCacheComponent * __cdecl PCache_GetEntryComponent(PCacheEntry *entry,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   PCacheComponent *pPVar3;
   PCacheComponent *in_stack_fffffff0;
+  PCacheComponent *component;
   
-  if ((param_1 == (PCacheEntry *)0x0) &&
+  if ((entry == (PCacheEntry *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x151,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PCacheComponent *)(*pcVar1)();
     return pPVar3;
   }
-  if ((1 < (uint)param_2) &&
+  if ((1 < (uint)type) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x152,0,
                                "type doesn\'t index PCACHE_NUM_COMPONENTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -378,24 +392,23 @@ PCacheComponent * __cdecl PCache_GetEntryComponent(PCacheEntry *param_1,int para
     pPVar3 = (PCacheComponent *)(*pcVar1)();
     return pPVar3;
   }
-  pPVar3 = param_1->components[param_2];
+  pPVar3 = entry->components[type];
   if ((((pPVar3 == (PCacheComponent *)0x0) ||
-       (in_stack_fffffff0 = pPVar3, (int)param_1->xuid != (int)pPVar3->xuid)) ||
-      (*(int *)((int)&param_1->xuid + 4) != *(int *)((int)&pPVar3->xuid + 4))) ||
-     (param_1->controllerIndex != pPVar3->controllerIndex)) {
+       (in_stack_fffffff0 = pPVar3, (int)entry->xuid != (int)pPVar3->xuid)) ||
+      (*(int *)((int)&entry->xuid + 4) != *(int *)((int)&pPVar3->xuid + 4))) ||
+     (entry->controllerIndex != pPVar3->controllerIndex)) {
     pPVar3 = PCache_GetOrphanComponent
-                       (param_1->controllerIndex,
-                        CONCAT44(param_2,*(undefined4 *)((int)&param_1->xuid + 4)),
-                        (int)in_stack_fffffff0);
-    param_1->components[param_2] = pPVar3;
-    if ((param_1->components[param_2] == (PCacheComponent *)0x0) &&
+                       (entry->controllerIndex,CONCAT44(type,*(undefined4 *)((int)&entry->xuid + 4))
+                        ,(int)in_stack_fffffff0);
+    entry->components[type] = pPVar3;
+    if ((entry->components[type] == (PCacheComponent *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x160,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pPVar3 = (PCacheComponent *)(*pcVar1)();
       return pPVar3;
     }
-    pPVar3 = param_1->components[param_2];
+    pPVar3 = entry->components[type];
   }
   return pPVar3;
 }
@@ -403,16 +416,18 @@ PCacheComponent * __cdecl PCache_GetEntryComponent(PCacheEntry *param_1,int para
 
 // 0096FCD0  PCache_GetComponent  (live/live_pcache.cpp:358)
 
-PCacheComponent * __cdecl PCache_GetComponent(int param_1,ulong64 param_2,int param_3)
+/* WARNING: Variable defined which should be unmapped: entry */
+
+PCacheComponent * __cdecl PCache_GetComponent(int controllerIndex,ulong64 param_2,int param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   PCacheComponent *pPVar3;
-  PCacheEntry *pPVar4;
+  PCacheEntry *entry_00;
+  undefined4 in_ECX;
   int in_stack_00000008;
-  undefined4 extraout_var;
-  undefined4 uVar5;
+  PCacheEntry *entry;
   
   if (0x1ffffffff < param_2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x169,0,
@@ -433,7 +448,6 @@ PCacheComponent * __cdecl PCache_GetComponent(int param_1,ulong64 param_2,int pa
     }
   }
   bVar2 = PCache_IsLocked();
-  uVar5 = extraout_var;
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x16b,0,"%s"
                             );
@@ -443,8 +457,8 @@ PCacheComponent * __cdecl PCache_GetComponent(int param_1,ulong64 param_2,int pa
       return pPVar3;
     }
   }
-  pPVar4 = PCache_GetEntry(param_1,CONCAT44(uVar5,(int)param_2));
-  if (pPVar4 == (PCacheEntry *)0x0) {
+  entry_00 = PCache_GetEntry(controllerIndex,CONCAT44(in_ECX,(int)param_2));
+  if (entry_00 == (PCacheEntry *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x16e,0,"%s"
                             );
     if (!bVar2) {
@@ -453,14 +467,14 @@ PCacheComponent * __cdecl PCache_GetComponent(int param_1,ulong64 param_2,int pa
       return pPVar3;
     }
   }
-  pPVar3 = PCache_GetEntryComponent(pPVar4,param_2._4_4_);
+  pPVar3 = PCache_GetEntryComponent(entry_00,param_2._4_4_);
   return pPVar3;
 }
 
 
 // 0096FDC0  PCache_TouchComponent  (live/live_pcache.cpp:372)
 
-bool __cdecl PCache_TouchComponent(PCacheComponent *param_1)
+bool __cdecl PCache_TouchComponent(PCacheComponent *component)
 
 {
   code *pcVar1;
@@ -468,7 +482,7 @@ bool __cdecl PCache_TouchComponent(PCacheComponent *param_1)
   undefined1 uVar3;
   uint uVar4;
   
-  if (param_1 == (PCacheComponent *)0x0) {
+  if (component == (PCacheComponent *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x175,0,"%s"
                             );
     if (!bVar2) {
@@ -477,7 +491,7 @@ bool __cdecl PCache_TouchComponent(PCacheComponent *param_1)
       return (bool)uVar3;
     }
   }
-  if (1 < (uint)param_1->type) {
+  if (1 < (uint)component->type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x176,0,
                              "component->type doesn\'t index PCACHE_NUM_COMPONENTS\n\t%i not in [0, %i)"
                             );
@@ -498,25 +512,26 @@ bool __cdecl PCache_TouchComponent(PCacheComponent *param_1)
     }
   }
   uVar4 = PCache_Time();
-  param_1->touchTime = uVar4;
-  param_1->state = param_1->state | 0x10;
-  if (s_componentPools[param_1->type].updateInterval < param_1->touchTime - param_1->updateTime) {
-    param_1->state = param_1->state | 4;
+  component->touchTime = uVar4;
+  component->state = component->state | 0x10;
+  if (s_componentPools[component->type].updateInterval <
+      component->touchTime - component->updateTime) {
+    component->state = component->state | 4;
   }
-  return (param_1->state & 2) != 0;
+  return (component->state & 2) != 0;
 }
 
 
 // 0096FEB0  PCache_InvalidateComponent  (live/live_pcache.cpp:387)
 
-void __cdecl PCache_InvalidateComponent(PCacheComponent *param_1)
+void __cdecl PCache_InvalidateComponent(PCacheComponent *component)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 == (PCacheComponent *)0x0) {
+  if (component == (PCacheComponent *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x184,0,"%s"
                             );
     if (!bVar2) {
@@ -525,7 +540,7 @@ void __cdecl PCache_InvalidateComponent(PCacheComponent *param_1)
       return;
     }
   }
-  if (1 < (uint)param_1->type) {
+  if (1 < (uint)component->type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x185,0,
                              "component->type doesn\'t index PCACHE_NUM_COMPONENTS\n\t%i not in [0, %i)"
                             );
@@ -546,26 +561,28 @@ void __cdecl PCache_InvalidateComponent(PCacheComponent *param_1)
     }
   }
   uVar3 = PCache_Time();
-  param_1->touchTime = uVar3;
-  param_1->state = param_1->state | 4;
+  component->touchTime = uVar3;
+  component->state = component->state | 4;
   return;
 }
 
 
 // 0096FF60  PCache_ReleasePlayerEmblem  (live/live_pcache.cpp:398)
 
-void __cdecl PCache_ReleasePlayerEmblem(PCacheComponent *param_1)
+void __cdecl PCache_ReleasePlayerEmblem(PCacheComponent *comp)
 
 {
-  if ((int)param_1[0xd].xuid != 0) {
-    CL_CompositePushCancel((int)param_1[0xd].xuid);
+  PCachePlayerEmblem *emblem;
+  
+  if ((int)comp[0xd].xuid != 0) {
+    CL_CompositePushCancel((int)comp[0xd].xuid);
   }
-  if (*(int *)((int)&param_1[0xd].xuid + 4) != 0) {
-    CL_CompositeReleaseImage(*(GfxImage **)((int)&param_1[0xd].xuid + 4));
+  if (*(int *)((int)&comp[0xd].xuid + 4) != 0) {
+    CL_CompositeReleaseImage(*(GfxImage **)((int)&comp[0xd].xuid + 4));
   }
-  *(undefined4 *)((int)&param_1[0xd].xuid + 4) = 0;
-  param_1[0xd].type = 0;
-  *(undefined4 *)&param_1[0xd].xuid = 0;
+  *(undefined4 *)((int)&comp[0xd].xuid + 4) = 0;
+  comp[0xd].type = 0;
+  *(undefined4 *)&comp[0xd].xuid = 0;
   return;
 }
 
@@ -574,18 +591,21 @@ void __cdecl PCache_ReleasePlayerEmblem(PCacheComponent *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl PCache_GetClientNumForXuid(int param_1,ulong64 param_2)
+int __cdecl PCache_GetClientNumForXuid(int localClientNum,ulong64 param_2)
 
 {
   clientState_s *pcVar1;
   clientActive_t *pcVar2;
   uint in_stack_00000008;
-  int local_c;
+  clientActive_t *cl;
+  clientState_s *pState;
+  int i;
+  int clientNum;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
   if ((pcVar2->snap).valid != 0) {
-    for (local_c = 0; local_c < (pcVar2->snap).numClients; local_c = local_c + 1) {
-      pcVar1 = pcVar2->parseClients + ((pcVar2->snap).parseClientsNum + local_c & 0x7ff);
+    for (i = 0; i < (pcVar2->snap).numClients; i = i + 1) {
+      pcVar1 = pcVar2->parseClients + ((pcVar2->snap).parseClientsNum + i & 0x7ff);
       if (((pcVar1->field12_0x78).xuid32[0] == in_stack_00000008) &&
          ((pcVar1->field12_0x78).xuid32[1] == (uint)param_2)) {
         return pcVar1->clientIndex;
@@ -603,7 +623,8 @@ int __cdecl PCache_GetClientNumForXuid(int param_1,ulong64 param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PCache_BatchUpdatePlayerEmblems(int param_1,PCachePlayerEmblem *param_2,int param_3)
+void __cdecl
+PCache_BatchUpdatePlayerEmblems(int controllerIndex,PCachePlayerEmblem *emblems,int count)
 
 {
   undefined4 uVar1;
@@ -613,88 +634,92 @@ void __cdecl PCache_BatchUpdatePlayerEmblems(int param_1,PCachePlayerEmblem *par
   int iVar5;
   uint uVar6;
   GfxImage *pGVar7;
-  char *pcVar8;
-  PCachePublicProfile *pPVar9;
-  Material *pMVar10;
-  ulong64 uVar11;
-  short *psVar12;
-  CompositeEmblemLayer *pCVar13;
-  undefined2 uVar14;
-  undefined2 uVar15;
+  char *str;
+  PCachePublicProfile *profile_00;
+  Material *pMVar8;
+  ulong64 uVar9;
+  short *background;
+  CompositeEmblemLayer *layers;
+  undefined2 uVar10;
+  undefined2 uVar11;
   PCachePlayerEmblem *in_stack_ffffffb4;
-  int local_38;
-  int local_2c;
-  bool local_25;
-  int local_24 [2];
-  int local_1c;
-  cg_s *local_18;
-  char local_11;
-  PCachePlayerEmblem *local_10;
-  int local_c;
-  uint local_8;
+  int layer;
+  bool valid;
+  PCachePublicProfile *profile;
+  int i;
+  bool generate;
+  int prestige;
+  PCache_ScopedLock __pcache_lock;
+  int rank;
+  cg_s *cgameGlob;
+  bool forceDefault;
+  PCachePlayerEmblem *emblem;
+  int index;
+  int clientNum;
   
-  local_18 = (cg_s *)0x0;
+  cgameGlob = (cg_s *)0x0;
   if (cgArray != (cg_s *)0x0) {
-    iVar5 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    local_18 = CG_GetLocalClientGlobals(iVar5);
+    iVar5 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    cgameGlob = CG_GetLocalClientGlobals(iVar5);
   }
   PCache_Lock();
   if ((bg_overridePlayerEmblemColor->modified != false) ||
      (bg_overridePlayerEmblemIcon->modified != false)) {
-    uVar14 = 1;
-    uVar15 = 0;
-    uVar11 = Live_GetXuid(param_1);
-    local_10 = (PCachePlayerEmblem *)
-               PCache_GetComponent(param_1,CONCAT26(uVar15,CONCAT24(uVar14,(int)(uVar11 >> 0x20))),
-                                   (int)in_stack_ffffffb4);
-    if ((local_10 == (PCachePlayerEmblem *)0x0) &&
+    uVar10 = 1;
+    uVar11 = 0;
+    uVar9 = Live_GetXuid(controllerIndex);
+    emblem = (PCachePlayerEmblem *)
+             PCache_GetComponent(controllerIndex,
+                                 CONCAT26(uVar11,CONCAT24(uVar10,(int)(uVar9 >> 0x20))),
+                                 (int)in_stack_ffffffb4);
+    if ((emblem == (PCachePlayerEmblem *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x1d7,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    (local_10->c).state = 4;
+    (emblem->c).state = 4;
     uVar6 = PCache_Time();
-    (local_10->c).updateTime = uVar6;
-    CL_CompositePushCancel(local_10->jobID);
-    local_10->jobID = 0;
-    if (local_10->image != (GfxImage *)0x0) {
-      CL_CompositeReleaseImage(local_10->image);
+    (emblem->c).updateTime = uVar6;
+    CL_CompositePushCancel(emblem->jobID);
+    emblem->jobID = 0;
+    if (emblem->image != (GfxImage *)0x0) {
+      CL_CompositeReleaseImage(emblem->image);
     }
-    local_10->image = (GfxImage *)0x0;
-    for (local_2c = 0; local_2c < 0xc; local_2c = local_2c + 1) {
-      CL_CompositeClearLayer(local_10->layers + local_2c);
+    emblem->image = (GfxImage *)0x0;
+    for (i = 0; i < 0xc; i = i + 1) {
+      CL_CompositeClearLayer(emblem->layers + i);
     }
-    local_10->layers[0].icon = *(short *)&bg_overridePlayerEmblemIcon->current;
-    local_10->layers[0].colorIdx = (bg_overridePlayerEmblemColor->current).integer;
+    emblem->layers[0].icon = *(short *)&bg_overridePlayerEmblemIcon->current;
+    emblem->layers[0].colorIdx = (bg_overridePlayerEmblemColor->current).integer;
     Dvar_ClearModified(bg_overridePlayerEmblemIcon);
     Dvar_ClearModified(bg_overridePlayerEmblemColor);
   }
-  local_c = 0;
+  index = 0;
   do {
-    if (param_3 <= local_c) {
+    if (count <= index) {
       PCache_Unlock();
       return;
     }
-    local_10 = param_2 + local_c;
-    local_25 = false;
-    local_11 = '\0';
-    local_1c = 0;
-    if ((((local_10->c).controllerIndex == param_1) || ((local_10->c).controllerIndex == -1)) &&
-       ((int)(local_10->c).xuid != 0 || *(int *)((int)&(local_10->c).xuid + 4) != 0)) {
-      if (local_10->background != (Material *)0x0) {
-        R_StreamTouchMaterial(local_10->background);
+    emblem = emblems + index;
+    generate = false;
+    forceDefault = false;
+    rank = 0;
+    if ((((emblem->c).controllerIndex == controllerIndex) || ((emblem->c).controllerIndex == -1)) &&
+       ((int)(emblem->c).xuid != 0 || *(int *)((int)&(emblem->c).xuid + 4) != 0)) {
+      if (emblem->background != (Material *)0x0) {
+        R_StreamTouchMaterial(emblem->background);
       }
-      if (local_10->jobID == 0) {
-        if ((((local_10->c).state & 4) != 0) ||
-           ((((local_10->c).state & 0x10) != 0 &&
-            (bVar3 = CL_CompositeValidateImage(local_10->image), !bVar3)))) {
-          (local_10->c).state = (local_10->c).state & 0xffffffef;
-          if ((((local_10->c).xuid & 0xffffff00) == 0xffffff00) &&
-             (*(int *)((int)&(local_10->c).xuid + 4) == -1)) {
-            local_8 = (uint)(local_10->c).xuid & 0xff;
-            if ((0x1f < local_8) &&
+      if (emblem->jobID == 0) {
+        if ((((emblem->c).state & 4) != 0) ||
+           ((((emblem->c).state & 0x10) != 0 &&
+            (bVar3 = CL_CompositeValidateImage(emblem->image), !bVar3)))) {
+          (emblem->c).state = (emblem->c).state & 0xffffffef;
+          if ((((emblem->c).xuid & 0xffffff00) == 0xffffff00) &&
+             (*(int *)((int)&(emblem->c).xuid + 4) == -1)) {
+            clientNum = (uint)(emblem->c).xuid & 0xff;
+            if ((0x1f < (uint)clientNum) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",
                                          0x217,0,
                                          "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -703,34 +728,34 @@ void __cdecl PCache_BatchUpdatePlayerEmblems(int param_1,PCachePlayerEmblem *par
               (*pcVar2)();
               return;
             }
-            local_25 = local_18 != (cg_s *)0x0;
-            if (local_25) {
-              local_1c = *(int *)((int)(local_18->bgs).clientinfo + local_8 * 0x5c8 + 0x38);
+            generate = cgameGlob != (cg_s *)0x0;
+            if (generate) {
+              rank = *(int *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8 + 0x38);
             }
-            local_11 = '\x01';
+            forceDefault = true;
             iVar5 = BG_EmblemsGetBackgroundCount();
-            local_10->backgroundID = (short)((int)local_8 % iVar5);
+            emblem->backgroundID = (short)(clientNum % iVar5);
           }
-          else if ((local_10->c).controllerIndex == -1) {
+          else if ((emblem->c).controllerIndex == -1) {
             bVar3 = Demo_IsPlaying();
             if (bVar3) {
-              uVar1 = *(undefined4 *)((int)&(local_10->c).xuid + 4);
-              uVar14 = (undefined2)uVar1;
-              uVar15 = (undefined2)((uint)uVar1 >> 0x10);
-              iVar5 = Com_ControllerIndex_GetLocalClientNum(param_1);
-              local_8 = Demo_GetClientNumForXuid
-                                  (iVar5,CONCAT44(in_stack_ffffffb4,CONCAT22(uVar15,uVar14)));
+              uVar1 = *(undefined4 *)((int)&(emblem->c).xuid + 4);
+              uVar10 = (undefined2)uVar1;
+              uVar11 = (undefined2)((uint)uVar1 >> 0x10);
+              iVar5 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+              clientNum = Demo_GetClientNumForXuid
+                                    (iVar5,CONCAT44(in_stack_ffffffb4,CONCAT22(uVar11,uVar10)));
             }
             else {
-              uVar1 = *(undefined4 *)((int)&(local_10->c).xuid + 4);
-              uVar14 = (undefined2)uVar1;
-              uVar15 = (undefined2)((uint)uVar1 >> 0x10);
-              iVar5 = Com_ControllerIndex_GetLocalClientNum(param_1);
-              local_8 = PCache_GetClientNumForXuid
-                                  (iVar5,CONCAT44(in_stack_ffffffb4,CONCAT22(uVar15,uVar14)));
+              uVar1 = *(undefined4 *)((int)&(emblem->c).xuid + 4);
+              uVar10 = (undefined2)uVar1;
+              uVar11 = (undefined2)((uint)uVar1 >> 0x10);
+              iVar5 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+              clientNum = PCache_GetClientNumForXuid
+                                    (iVar5,CONCAT44(in_stack_ffffffb4,CONCAT22(uVar11,uVar10)));
             }
-            if (-1 < (int)local_8) {
-              if ((0x1f < local_8) &&
+            if (-1 < clientNum) {
+              if ((0x1f < (uint)clientNum) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp"
                                            ,0x231,0,
                                            "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -739,136 +764,139 @@ void __cdecl PCache_BatchUpdatePlayerEmblems(int param_1,PCachePlayerEmblem *par
                 (*pcVar2)();
                 return;
               }
-              uVar14 = 0xc;
-              uVar15 = 0;
-              pCVar13 = local_10->layers;
-              psVar12 = &local_10->backgroundID;
-              pcVar8 = CL_GetConfigString(local_8 + 0x163);
-              local_25 = BG_EmblemsReadString(pcVar8,psVar12,pCVar13,CONCAT22(uVar15,uVar14));
+              uVar10 = 0xc;
+              uVar11 = 0;
+              layers = emblem->layers;
+              background = &emblem->backgroundID;
+              str = CL_GetConfigString(clientNum + 0x163);
+              generate = BG_EmblemsReadString(str,background,layers,CONCAT22(uVar11,uVar10));
               bVar3 = Live_CanConsoleViewContentFromUser
-                                (CONCAT26((short)((uint)*(undefined4 *)
-                                                         ((int)&(local_10->c).xuid + 4) >> 0x10),
-                                          (int6)(local_10->c).xuid));
-              local_11 = '\x01' - bVar3;
-              if ((local_18 == (cg_s *)0x0) &&
+                                (CONCAT26((short)((uint)*(undefined4 *)((int)&(emblem->c).xuid + 4)
+                                                 >> 0x10),(int6)(emblem->c).xuid));
+              forceDefault = (bool)('\x01' - bVar3);
+              if ((cgameGlob == (cg_s *)0x0) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp"
                                            ,0x234,0,"%s"), !bVar3)) {
                 pcVar2 = (code *)swi(3);
                 (*pcVar2)();
                 return;
               }
-              if (local_18 != (cg_s *)0x0) {
-                local_1c = *(int *)((int)(local_18->bgs).clientinfo + local_8 * 0x5c8 + 0x38);
+              if (cgameGlob != (cg_s *)0x0) {
+                rank = *(int *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8 + 0x38);
               }
             }
           }
           else {
-            pPVar9 = (PCachePublicProfile *)
-                     PCache_GetComponent(param_1,(ulonglong)*(uint *)((int)&(local_10->c).xuid + 4),
-                                         (int)in_stack_ffffffb4);
-            if ((pPVar9 == (PCachePublicProfile *)0x0) &&
+            profile_00 = (PCachePublicProfile *)
+                         PCache_GetComponent(controllerIndex,
+                                             (ulonglong)*(uint *)((int)&(emblem->c).xuid + 4),
+                                             (int)in_stack_ffffffb4);
+            if ((profile_00 == (PCachePublicProfile *)0x0) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",
                                          0x23c,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            in_stack_ffffffb4 = local_10;
-            if ((((int)(pPVar9->c).xuid != (int)(local_10->c).xuid) ||
-                (*(int *)((int)&(pPVar9->c).xuid + 4) != *(int *)((int)&(local_10->c).xuid + 4))) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",
-                                         0x23d,0,"%s"), !bVar3)) {
+            in_stack_ffffffb4 = emblem;
+            if ((((int)(profile_00->c).xuid != (int)(emblem->c).xuid) ||
+                (*(int *)((int)&(profile_00->c).xuid + 4) != *(int *)((int)&(emblem->c).xuid + 4)))
+               && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp"
+                                            ,0x23d,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            if (((pPVar9->c).state & 0x20) != 0) {
-              (local_10->c).state = (local_10->c).state | 0x20;
+            if (((profile_00->c).state & 0x20) != 0) {
+              (emblem->c).state = (emblem->c).state | 0x20;
             }
-            bVar3 = PCache_TouchComponent((PCacheComponent *)pPVar9);
+            bVar3 = PCache_TouchComponent((PCacheComponent *)profile_00);
             if (bVar3) {
-              if ((local_10->c).updateTime < (pPVar9->c).updateTime) {
-                PCache_GetProfileEmblem(pPVar9,local_10->layers,0xc,&local_10->backgroundID);
+              if ((emblem->c).updateTime < (profile_00->c).updateTime) {
+                PCache_GetProfileEmblem(profile_00,emblem->layers,0xc,&emblem->backgroundID);
               }
-              PCache_GetRankInternal(pPVar9,&local_1c,local_24);
-              local_25 = true;
+              PCache_GetRankInternal(profile_00,&rank,&prestige);
+              generate = true;
               bVar3 = Live_CanConsoleViewContentFromUser
-                                (CONCAT26((short)((uint)*(undefined4 *)
-                                                         ((int)&(local_10->c).xuid + 4) >> 0x10),
-                                          (int6)(local_10->c).xuid));
-              local_11 = '\x01' - bVar3;
+                                (CONCAT26((short)((uint)*(undefined4 *)((int)&(emblem->c).xuid + 4)
+                                                 >> 0x10),(int6)(emblem->c).xuid));
+              forceDefault = (bool)('\x01' - bVar3);
             }
           }
-          if (local_25 != false) {
+          if (generate != false) {
             bVar3 = false;
-            for (local_38 = 0; local_38 < 0xc; local_38 = local_38 + 1) {
-              bVar4 = CL_CompositeIsLayerEmpty(local_10->layers + local_38);
+            for (layer = 0; layer < 0xc; layer = layer + 1) {
+              bVar4 = CL_CompositeIsLayerEmpty(emblem->layers + layer);
               if (!bVar4) {
                 bVar3 = true;
                 break;
               }
             }
-            if ((!bVar3) || (local_11 != '\0')) {
-              BG_EmblemsGenerateDefault(param_1,local_1c,local_10->layers,0xc);
+            if ((!bVar3) || (forceDefault != false)) {
+              BG_EmblemsGenerateDefault(controllerIndex,rank,emblem->layers,0xc);
             }
-            pMVar10 = BG_EmblemsGetBackgroundMaterial(local_10->backgroundID);
-            local_10->background = pMVar10;
-            if (local_10->background != (Material *)0x0) {
-              R_StreamTouchMaterial(local_10->background);
+            pMVar8 = BG_EmblemsGetBackgroundMaterial(emblem->backgroundID);
+            emblem->background = pMVar8;
+            if (emblem->background != (Material *)0x0) {
+              R_StreamTouchMaterial(emblem->background);
             }
-            iVar5 = CL_CompositePushEmblem(local_10->layers,0xc);
-            local_10->jobID = iVar5;
-            if (local_10->jobID != 0) {
-              (local_10->c).state = (local_10->c).state & 0xfffffffb;
-              (local_10->c).state = (local_10->c).state | 2;
+            iVar5 = CL_CompositePushEmblem(emblem->layers,0xc);
+            emblem->jobID = iVar5;
+            if (emblem->jobID != 0) {
+              (emblem->c).state = (emblem->c).state & 0xfffffffb;
+              (emblem->c).state = (emblem->c).state | 2;
               uVar6 = PCache_Time();
-              (local_10->c).updateTime = uVar6;
+              (emblem->c).updateTime = uVar6;
             }
           }
         }
       }
       else {
-        bVar3 = CL_CompositeIsComplete(local_10->jobID);
+        bVar3 = CL_CompositeIsComplete(emblem->jobID);
         if (bVar3) {
-          if (local_10->image != (GfxImage *)0x0) {
-            CL_CompositeReleaseImage(local_10->image);
+          if (emblem->image != (GfxImage *)0x0) {
+            CL_CompositeReleaseImage(emblem->image);
           }
-          pGVar7 = CL_CompositePopImage(local_10->jobID);
-          local_10->image = pGVar7;
-          if ((local_10->image == (GfxImage *)0x0) &&
+          pGVar7 = CL_CompositePopImage(emblem->jobID);
+          emblem->image = pGVar7;
+          if ((emblem->image == (GfxImage *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",
                                        0x20a,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          local_10->jobID = 0;
+          emblem->jobID = 0;
         }
       }
     }
-    local_c = local_c + 1;
+    index = index + 1;
   } while( true );
 }
 
 
 // 00970770  PCache_InvalidatePlayerEmblem  (live/live_pcache.cpp:633)
 
-void __cdecl PCache_InvalidatePlayerEmblem(int param_1,ulong64 param_2)
+/* WARNING: Variable defined which should be unmapped: __pcache_lock */
+
+void __cdecl PCache_InvalidatePlayerEmblem(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
-  PCacheComponent *pPVar3;
+  PCacheComponent *component;
   int in_stack_00000008;
-  int in_stack_fffffff4;
+  int iStack_c;
+  PCache_ScopedLock __pcache_lock;
+  PCacheComponent *emblem;
   
   PCache_Lock();
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
     PCache_Unlock();
   }
   else {
-    pPVar3 = PCache_GetComponent(param_1,CONCAT44(1,(int)param_2),in_stack_fffffff4);
-    if (pPVar3 == (PCacheComponent *)0x0) {
+    component = PCache_GetComponent(controllerIndex,CONCAT44(1,(int)param_2),iStack_c);
+    if (component == (PCacheComponent *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x282,0,
                                "%s");
       if (!bVar2) {
@@ -877,7 +905,7 @@ void __cdecl PCache_InvalidatePlayerEmblem(int param_1,ulong64 param_2)
         return;
       }
     }
-    PCache_InvalidateComponent(pPVar3);
+    PCache_InvalidateComponent(component);
     PCache_Unlock();
   }
   return;
@@ -886,57 +914,61 @@ void __cdecl PCache_InvalidatePlayerEmblem(int param_1,ulong64 param_2)
 
 // 009707F0  PCache_GetPlayerEmblem  (live/live_pcache.cpp:649)
 
-GfxImage * __cdecl PCache_GetPlayerEmblem(int param_1,ulong64 param_2)
+GfxImage * __cdecl PCache_GetPlayerEmblem(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
-  PCacheComponent *pPVar3;
-  GfxImage *pGVar4;
+  PCacheComponent *component;
+  GfxImage *pGVar3;
   int in_stack_00000008;
   int in_stack_ffffffe8;
+  PCache_ScopedLock __pcache_lock;
+  PCachePlayerEmblem *emblem;
   
   PCache_Lock();
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
     PCache_Unlock();
-    pGVar4 = (GfxImage *)0x0;
+    pGVar3 = (GfxImage *)0x0;
   }
   else {
-    pPVar3 = PCache_GetComponent(param_1,CONCAT44(1,(int)param_2),in_stack_ffffffe8);
-    if (pPVar3 == (PCacheComponent *)0x0) {
+    component = PCache_GetComponent(controllerIndex,CONCAT44(1,(int)param_2),in_stack_ffffffe8);
+    if (component == (PCacheComponent *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x292,0,
                                "%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        pGVar4 = (GfxImage *)(*pcVar1)();
-        return pGVar4;
+        pGVar3 = (GfxImage *)(*pcVar1)();
+        return pGVar3;
       }
     }
-    bVar2 = PCache_TouchComponent(pPVar3);
+    bVar2 = PCache_TouchComponent(component);
     if (bVar2) {
-      pGVar4 = *(GfxImage **)((int)&pPVar3[0xd].xuid + 4);
+      pGVar3 = *(GfxImage **)((int)&component[0xd].xuid + 4);
       PCache_Unlock();
     }
     else {
       PCache_Unlock();
-      pGVar4 = (GfxImage *)0x0;
+      pGVar3 = (GfxImage *)0x0;
     }
   }
-  return pGVar4;
+  return pGVar3;
 }
 
 
 // 009708A0  PCache_GetPlayerEmblemBackgroundID  (live/live_pcache.cpp:667)
 
-short __cdecl PCache_GetPlayerEmblemBackgroundID(int param_1,ulong64 param_2)
+short __cdecl PCache_GetPlayerEmblemBackgroundID(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   short sVar3;
-  PCacheComponent *pPVar4;
+  PCacheComponent *component;
   int in_stack_00000008;
   int in_stack_fffffff0;
+  PCache_ScopedLock __pcache_lock;
+  PCachePlayerEmblem *emblem;
   
   PCache_Lock();
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
@@ -944,8 +976,8 @@ short __cdecl PCache_GetPlayerEmblemBackgroundID(int param_1,ulong64 param_2)
     sVar3 = -1;
   }
   else {
-    pPVar4 = PCache_GetComponent(param_1,CONCAT44(1,(int)param_2),in_stack_fffffff0);
-    if (pPVar4 == (PCacheComponent *)0x0) {
+    component = PCache_GetComponent(controllerIndex,CONCAT44(1,(int)param_2),in_stack_fffffff0);
+    if (component == (PCacheComponent *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache.cpp",0x2a4,0,
                                "%s");
       if (!bVar2) {
@@ -954,9 +986,9 @@ short __cdecl PCache_GetPlayerEmblemBackgroundID(int param_1,ulong64 param_2)
         return sVar3;
       }
     }
-    bVar2 = PCache_TouchComponent(pPVar4);
+    bVar2 = PCache_TouchComponent(component);
     if (bVar2) {
-      sVar3 = (short)pPVar4[0xd].controllerIndex;
+      sVar3 = (short)component[0xd].controllerIndex;
       PCache_Unlock();
     }
     else {

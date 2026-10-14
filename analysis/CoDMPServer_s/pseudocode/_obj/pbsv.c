@@ -8,27 +8,27 @@ int __cdecl PbCopyFile(char *param_1,char *param_2,long param_3)
 
 {
   char *in_EAX;
-  _iobuf *p_Var1;
-  uint uVar2;
-  void *pvVar3;
-  uint uVar4;
+  _iobuf *stream;
+  uint size;
+  void *buffer;
+  uint uVar1;
   int iStack_4;
   
   iStack_4 = 0;
-  p_Var1 = fopen(in_EAX,"wb");
-  if (p_Var1 != (_iobuf *)0x0) {
+  stream = fopen(in_EAX,"wb");
+  if (stream != (_iobuf *)0x0) {
     fseek((_iobuf *)param_1,0,2);
-    uVar2 = ftell((_iobuf *)param_1);
-    if ((0 < (int)uVar2) && (pvVar3 = operator_new(uVar2), pvVar3 != (void *)0x0)) {
+    size = ftell((_iobuf *)param_1);
+    if ((0 < (int)size) && (buffer = operator_new(size), buffer != (void *)0x0)) {
       fseek((_iobuf *)param_1,0,0);
-      uVar4 = fread(pvVar3,1,uVar2,(_iobuf *)param_1);
-      uVar4 = fwrite(pvVar3,1,uVar4,p_Var1);
-      operator_delete(pvVar3);
-      if (uVar4 == uVar2) {
+      uVar1 = fread(buffer,1,size,(_iobuf *)param_1);
+      uVar1 = fwrite(buffer,1,uVar1,stream);
+      operator_delete(buffer);
+      if (uVar1 == size) {
         iStack_4 = 1;
       }
     }
-    fclose(p_Var1);
+    fclose(stream);
   }
   fclose((_iobuf *)param_1);
   return iStack_4;
@@ -288,7 +288,7 @@ char * __thiscall stPbSv::LoadServerDll(stPbSv *this)
 
 {
   char *pcVar1;
-  _iobuf *p_Var2;
+  _iobuf *stream;
   stPbSv *this_00;
   stPbSv *extraout_ECX;
   stPbSv *this_01;
@@ -299,32 +299,32 @@ char * __thiscall stPbSv::LoadServerDll(stPbSv *this)
   stPbSv *extraout_ECX_00;
   stPbSv *this_06;
   stPbSv *this_07;
-  char *pcVar3;
+  char *pcVar2;
   stPbSv asStack_400 [512];
   stPbSv asStack_200 [512];
   
   if (DAT_04a59a80 == (HMODULE)0x0) {
     UnloadServerDll(this);
-    pcVar3 = "rb";
+    pcVar2 = "rb";
     pcVar1 = makefn(this_00,(char *)asStack_400,"pbsvnew.dll");
-    p_Var2 = fopen(pcVar1,pcVar3);
+    stream = fopen(pcVar1,pcVar2);
     this_06 = extraout_ECX;
-    if (p_Var2 != (_iobuf *)0x0) {
-      fclose(p_Var2);
+    if (stream != (_iobuf *)0x0) {
+      fclose(stream);
       pcVar1 = makefn(asStack_400,(char *)asStack_400,"pbsvold.dll");
       _chmod(pcVar1,0x180);
       pcVar1 = makefn(this_01,(char *)asStack_400,"pbsvold.dll");
       ::remove(pcVar1);
       pcVar1 = makefn(this_02,(char *)asStack_200,"pbsvold.dll");
-      pcVar3 = makefn(asStack_400,(char *)asStack_400,"pbsv.dll");
-      rename(pcVar3,pcVar1);
+      pcVar2 = makefn(asStack_400,(char *)asStack_400,"pbsv.dll");
+      rename(pcVar2,pcVar1);
       pcVar1 = makefn(this_03,(char *)asStack_400,"pbsv.dll");
       _chmod(pcVar1,0x180);
       pcVar1 = makefn(this_04,(char *)asStack_400,"pbsv.dll");
       ::remove(pcVar1);
       pcVar1 = makefn(asStack_200,(char *)asStack_200,"pbsv.dll");
-      pcVar3 = makefn(this_05,(char *)asStack_400,"pbsvnew.dll");
-      rename(pcVar3,pcVar1);
+      pcVar2 = makefn(this_05,(char *)asStack_400,"pbsvnew.dll");
+      rename(pcVar2,pcVar1);
       this_06 = extraout_ECX_00;
     }
     pcVar1 = makefn(this_06,(char *)asStack_400,"pbsv.dll");

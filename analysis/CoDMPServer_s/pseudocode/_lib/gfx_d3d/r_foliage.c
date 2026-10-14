@@ -111,6 +111,7 @@ float __cdecl GetFoliageSquashFromHash(uint param_1)
   ModelHashTable<ActiveModelNode,63,128> *in_EDX;
   float10 in_ST0;
   float10 extraout_ST0;
+  float squashAmt;
   
   if (((uint)in_EDX >> 5 < 0x40) &&
      ((g_fullySquashedModelBits[(uint)in_EDX >> 5] >> ((byte)in_EDX & 0x1f) & 1) != 0)) {
@@ -258,7 +259,7 @@ void __cdecl R_FoliageInitModels(GfxWorld *param_1)
 
 // 007E6A10  R_GetWindBestStrength  (gfx_d3d/r_foliage.cpp:421)
 
-float __cdecl R_GetWindBestStrength(GrassWindForce *param_1,uint param_2,float *param_3)
+float __cdecl R_GetWindBestStrength(GrassWindForce *numWindForces,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -274,12 +275,13 @@ float __cdecl R_GetWindBestStrength(GrassWindForce *param_1,uint param_2,float *
   float fVar6;
   double dVar7;
   GrassWindForce *local_18;
-  float local_14;
+  int best;
+  float best_str;
   
   pGVar3 = (GrassWindForce *)0x0;
   local_18 = (GrassWindForce *)0xffffffff;
-  local_14 = 0.0;
-  if (param_1 != (GrassWindForce *)0x0) {
+  best = 0;
+  if (numWindForces != (GrassWindForce *)0x0) {
     fVar1 = in_EAX[1];
     fVar2 = *in_EAX;
     pfVar4 = (float *)(in_ECX + 8);
@@ -291,14 +293,14 @@ float __cdecl R_GetWindBestStrength(GrassWindForce *param_1,uint param_2,float *
         dVar7 = __libm_sse2_sin((double)CONCAT44(unaff_ESI,unaff_EDI));
         in_ST0 = (float10)dVar7;
         fVar6 = (1.0 - (float)dVar5) * pfVar4[1];
-        if ((local_14 < fVar6) || (local_18 == (GrassWindForce *)0xffffffff)) {
+        if (((float)best < fVar6) || (local_18 == (GrassWindForce *)0xffffffff)) {
           local_18 = pGVar3;
-          local_14 = fVar6;
+          best = (int)fVar6;
         }
       }
       pGVar3 = (GrassWindForce *)((int)pGVar3->worldPosition + 1);
       pfVar4 = pfVar4 + 4;
-    } while (pGVar3 < param_1);
+    } while (pGVar3 < numWindForces);
   }
   return (float)in_ST0;
 }
@@ -306,7 +308,8 @@ float __cdecl R_GetWindBestStrength(GrassWindForce *param_1,uint param_2,float *
 
 // 007E6AE0  R_FoliageNotifyBurn  (gfx_d3d/r_foliage.cpp:724)
 
-void __cdecl R_FoliageNotifyBurn(float *param_1,float param_2,int *param_3,int param_4,bool param_5)
+void __cdecl
+R_FoliageNotifyBurn(float *models,float models_count,int *param_3,int param_4,bool param_5)
 
 {
   float fVar1;
@@ -322,35 +325,38 @@ void __cdecl R_FoliageNotifyBurn(float *param_1,float param_2,int *param_3,int p
   float in_XMM0_Da;
   float fVar6;
   float fVar7;
-  ModelHashTable<ActiveModelNode,63,128> *local_42c [2];
+  float *loc;
+  uint maxSModelCount;
+  ModelHashTable<ActiveModelNode,63,128> *n [2];
   undefined4 local_424;
-  undefined2 local_420;
-  float local_41c;
+  undefined2 radSq;
+  float max;
   float local_418;
   float local_414;
-  float local_410;
+  float min;
   float local_40c;
   float local_408;
-  float local_404;
-  float local_400 [256];
+  float smodels;
+  float local_400 [255];
+  bool instant;
   
-  local_42c[0] = (ModelHashTable<ActiveModelNode,63,128> *)((rgp.world)->dpvs).dynamicSModelCount;
-  local_41c = in_XMM0_Da * in_XMM0_Da;
-  if (0x800 < (int)local_42c[0]) {
-    local_42c[0] = (ModelHashTable<ActiveModelNode,63,128> *)0x800;
+  n[0] = (ModelHashTable<ActiveModelNode,63,128> *)((rgp.world)->dpvs).dynamicSModelCount;
+  max = in_XMM0_Da * in_XMM0_Da;
+  if (0x800 < (int)n[0]) {
+    n[0] = (ModelHashTable<ActiveModelNode,63,128> *)0x800;
   }
   iVar5 = 0;
-  if (param_2 == 0.0) {
-    local_418 = *param_1 + in_XMM0_Da;
-    local_414 = param_1[1] + in_XMM0_Da;
-    local_410 = param_1[2] + in_XMM0_Da;
-    local_40c = *param_1 - in_XMM0_Da;
-    local_408 = param_1[1] - in_XMM0_Da;
-    local_404 = param_1[2] - in_XMM0_Da;
-    local_42c[0] = (ModelHashTable<ActiveModelNode,63,128> *)0x0;
-    R_GetStaticModels(local_400,(float *)local_42c,unaff_EDI,(int *)unaff_ESI,unaff_EBP);
+  if (models_count == 0.0) {
+    local_418 = *models + in_XMM0_Da;
+    local_414 = models[1] + in_XMM0_Da;
+    min = models[2] + in_XMM0_Da;
+    local_40c = *models - in_XMM0_Da;
+    local_408 = models[1] - in_XMM0_Da;
+    smodels = models[2] - in_XMM0_Da;
+    n[0] = (ModelHashTable<ActiveModelNode,63,128> *)0x0;
+    R_GetStaticModels(local_400,(float *)n,unaff_EDI,(int *)unaff_ESI,unaff_EBP);
     iVar5 = 0;
-    if (0 < (int)local_42c[0]) {
+    if (0 < (int)n[0]) {
       do {
         pMVar2 = (ModelHashTable<ActiveModelNode,63,128> *)local_400[iVar5];
         if (((0x3f < (uint)pMVar2 >> 5) ||
@@ -358,42 +364,42 @@ void __cdecl R_FoliageNotifyBurn(float *param_1,float param_2,int *param_3,int p
            (pAVar4 = ModelHashTable<ActiveModelNode,63,128>::FindByKey(pMVar2,(ushort)unaff_EDI),
            pAVar4 == (ActiveModelNode *)0x0)) {
           local_424 = 0;
-          local_420 = SUB42(pMVar2,0);
+          radSq = SUB42(pMVar2,0);
           unaff_EDI = (int *)0x7e6d03;
           ModelHashTable<ActiveModelNode,63,128>::Add(this_00,unaff_ESI);
         }
         iVar5 = iVar5 + 1;
-      } while (iVar5 < (int)local_42c[0]);
+      } while (iVar5 < (int)n[0]);
     }
   }
   else if (0 < (int)param_3) {
     do {
-      pMVar2 = *(ModelHashTable<ActiveModelNode,63,128> **)((int)param_2 + iVar5 * 4);
-      if (pMVar2 < local_42c[0]) {
+      pMVar2 = *(ModelHashTable<ActiveModelNode,63,128> **)((int)models_count + iVar5 * 4);
+      if (pMVar2 < n[0]) {
         pGVar3 = ((rgp.world)->dpvs).smodelInsts;
-        fVar1 = *param_1;
+        fVar1 = *models;
         fVar6 = 0.0;
         fVar7 = pGVar3[(int)pMVar2].mins[0];
         if ((fVar1 < fVar7) || (fVar7 = pGVar3[(int)pMVar2].maxs[0], fVar7 < fVar1)) {
           fVar6 = (fVar1 - fVar7) * (fVar1 - fVar7);
         }
-        fVar1 = param_1[1];
+        fVar1 = models[1];
         fVar7 = pGVar3[(int)pMVar2].mins[1];
         if ((fVar1 < fVar7) || (fVar7 = pGVar3[(int)pMVar2].maxs[1], fVar7 < fVar1)) {
           fVar6 = (fVar1 - fVar7) * (fVar1 - fVar7) + fVar6;
         }
-        fVar1 = param_1[2];
+        fVar1 = models[2];
         fVar7 = pGVar3[(int)pMVar2].mins[2];
         if ((fVar1 < fVar7) || (fVar7 = pGVar3[(int)pMVar2].maxs[2], fVar7 < fVar1)) {
           fVar6 = (fVar1 - fVar7) * (fVar1 - fVar7) + fVar6;
         }
-        if ((fVar6 <= local_41c) &&
+        if ((fVar6 <= max) &&
            (((0x3f < (uint)pMVar2 >> 5 ||
              ((g_fullySquashedModelBits[(uint)pMVar2 >> 5] >> ((byte)pMVar2 & 0x1f) & 1) == 0)) &&
             (pAVar4 = ModelHashTable<ActiveModelNode,63,128>::FindByKey(pMVar2,(ushort)unaff_EDI),
             pAVar4 == (ActiveModelNode *)0x0)))) {
           local_424 = 0;
-          local_420 = SUB42(pMVar2,0);
+          radSq = SUB42(pMVar2,0);
           unaff_EDI = (int *)0x7e6c2b;
           ModelHashTable<ActiveModelNode,63,128>::Add(this,unaff_ESI);
         }
@@ -409,7 +415,8 @@ void __cdecl R_FoliageNotifyBurn(float *param_1,float param_2,int *param_3,int p
 // 007E6D20  AddNearMuzzleShakeForce  (gfx_d3d/r_foliage.cpp:871)
 
 void __cdecl
-AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeParams *param_4)
+AddNearMuzzleShakeForce
+          (uint forcePos,float *forwardVector,float *param_3,FoliageShakeParams *param_4)
 
 {
   float fVar1;
@@ -420,13 +427,14 @@ AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeP
   uint *puVar6;
   float *pfVar7;
   float *unaff_EDI;
+  uint id;
   
   pfVar7 = g_foliageInfo[0].clientPlayerPos + 2;
   do {
     if ((*(bool *)(pfVar7 + 1) != false) &&
-       ((*pfVar7 - param_2[2]) * (*pfVar7 - param_2[2]) +
-        (pfVar7[-2] - *param_2) * (pfVar7[-2] - *param_2) +
-        (pfVar7[-1] - param_2[1]) * (pfVar7[-1] - param_2[1]) <=
+       ((*pfVar7 - forwardVector[2]) * (*pfVar7 - forwardVector[2]) +
+        (pfVar7[-2] - *forwardVector) * (pfVar7[-2] - *forwardVector) +
+        (pfVar7[-1] - forwardVector[1]) * (pfVar7[-1] - forwardVector[1]) <=
         (unaff_EDI[1] + 350.0) * (unaff_EDI[1] + 350.0))) {
       pGVar4 = (GrassPersistForce *)0x0;
       bVar3 = false;
@@ -436,7 +444,7 @@ AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeP
         if (*(bool *)(puVar6 + -2) == false) {
           pGVar4 = (GrassPersistForce *)(puVar6 + -0xb);
         }
-        else if (*puVar6 == param_1) {
+        else if (*puVar6 == forcePos) {
           pGVar4 = (GrassPersistForce *)(pfVar7 + uVar5 * 0xf + -0x7a);
           bVar3 = true;
           break;
@@ -457,7 +465,7 @@ AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeP
           }
         }
         else {
-          pGVar4->id = param_1;
+          pGVar4->id = forcePos;
           pGVar4->age = 0.0;
           pGVar4->forceType = NEAR_MUZZLE_SHAKE;
           pGVar4->strength = 0.0;
@@ -471,9 +479,9 @@ AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeP
           pGVar4->maxAge = *unaff_EDI;
         }
         fVar1 = unaff_EDI[4];
-        pGVar4->worldPosition[0] = *param_3 * fVar1 + *param_2;
-        pGVar4->worldPosition[1] = param_3[1] * fVar1 + param_2[1];
-        pGVar4->worldPosition[2] = param_3[2] * fVar1 + param_2[2];
+        pGVar4->worldPosition[0] = *param_3 * fVar1 + *forwardVector;
+        pGVar4->worldPosition[1] = param_3[1] * fVar1 + forwardVector[1];
+        pGVar4->worldPosition[2] = param_3[2] * fVar1 + forwardVector[2];
       }
     }
     pfVar7 = pfVar7 + 0x222;
@@ -485,6 +493,8 @@ AddNearMuzzleShakeForce(uint param_1,float *param_2,float *param_3,FoliageShakeP
 
 
 // 007E6EB0  R_FoliageNotifyGrenadeExplosion  (gfx_d3d/r_foliage.cpp:950)
+
+/* WARNING: Variable defined which should be unmapped: modelsCount */
 
 void __cdecl R_FoliageNotifyGrenadeExplosion(int param_1,float *param_2)
 
@@ -500,6 +510,8 @@ void __cdecl R_FoliageNotifyGrenadeExplosion(int param_1,float *param_2)
   float fVar6;
   float fVar7;
   float fVar8;
+  float *loc;
+  int modelsCount;
   float fStack_42c;
   float fStack_428;
   float fStack_424;
@@ -508,7 +520,8 @@ void __cdecl R_FoliageNotifyGrenadeExplosion(int param_1,float *param_2)
   float fStack_418;
   float fStack_414;
   float afStack_410 [4];
-  float afStack_400 [256];
+  float afStack_400 [255];
+  int localClientNum;
   
   fStack_428 = *(float *)param_1 + 8.0;
   fStack_424 = *(float *)(param_1 + 4) + 8.0;
@@ -561,6 +574,7 @@ void __cdecl R_FoliageSetGrassWindForces(int param_1,float *param_2,float param_
   int in_EAX;
   float *in_EDX;
   float in_XMM0_Da;
+  float radius;
   
   uVar3 = g_mainThreadFoliageInfo;
   if ((r_grassWindForceEnable->current).enabled != false) {
@@ -592,13 +606,14 @@ void __cdecl R_FoliageNotifyVehiclePosition(int param_1,float *param_2)
   GrassForce *in_stack_ffffffd4;
   float local_28;
   float local_24;
-  float local_20;
+  float force;
   float local_1c;
   float local_18;
   float local_14;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
+  int localClientNum;
   
   local_1c = *unaff_ESI;
   local_18 = unaff_ESI[1];
@@ -615,7 +630,7 @@ void __cdecl R_FoliageNotifyVehiclePosition(int param_1,float *param_2)
     local_14 = unaff_ESI[2] + 100.0;
     local_28 = *unaff_ESI - 100.0;
     local_24 = unaff_ESI[1] - 100.0;
-    local_20 = unaff_ESI[2] - 100.0;
+    force = unaff_ESI[2] - 100.0;
     R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_28,pfVar1,in_stack_ffffffd4->worldPosition);
   }
   return;
@@ -662,6 +677,7 @@ int __cdecl dyn_smodel_drawstateCallback(jqBatch *param_1)
 {
   uint *puVar1;
   ForceBoundsInfo *unaff_ESI;
+  jqBatch *batch;
   
   puVar1 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -684,7 +700,7 @@ int __cdecl dyn_smodel_drawstateCallback(jqBatch *param_1)
 
 void __cdecl
 R_DynSModelBuildClientView
-          (DynSModelClient *param_1,DynSModelClientView *param_2,DynSModelGfxState *param_3)
+          (DynSModelClient *clientVis,DynSModelClientView *view,DynSModelGfxState *dynData)
 
 {
   uint *puVar1;
@@ -709,8 +725,9 @@ R_DynSModelBuildClientView
   float fVar18;
   float fVar19;
   uint local_13c;
+  uint visBits;
   undefined4 local_12c;
-  DrawStateWorkerSharedBuffer *local_128;
+  DrawStateWorkerSharedBuffer *cmd;
   uint local_124;
   uint local_120;
   DynSModelClientView *local_11c;
@@ -720,7 +737,7 @@ R_DynSModelBuildClientView
   undefined4 local_10c;
   uint local_108 [65];
   
-  iVar12 = param_1->localClientNum;
+  iVar12 = clientVis->localClientNum;
   jqAssistWithBatches(FUN_0069cb50,&(dyn_smodel_drawstateWorkerCmd.module)->Group,
                       &(dyn_smodel_drawstateWorkerCmd.module)->Group,(jqQueue *)0x0);
   g_drawStateWorkerSharedBuffer.inUse = true;
@@ -733,11 +750,11 @@ R_DynSModelBuildClientView
     pPVar13 = (PerFrameFoliageInfo *)(pPVar13->grassInstantForces[0].worldPosition + 1);
   }
   R_FoliageSetPerFramePersistantForces(unaff_EDI,unaff_ESI);
-  param_2->forceFrequency[0] = 0.0;
-  param_2->grassForceConstants[0][0] = 0.0;
-  param_2->grassForceConstants[0][1] = 0.0;
-  param_2->grassForceConstants[0][2] = 0.0;
-  param_2->grassForceConstants[0][3] = 0.0;
+  view->forceFrequency[0] = 0.0;
+  view->grassForceConstants[0][0] = 0.0;
+  view->grassForceConstants[0][1] = 0.0;
+  view->grassForceConstants[0][2] = 0.0;
+  view->grassForceConstants[0][3] = 0.0;
   g_drawStateWorkerSharedBuffer.forceBounds.persistForceBounds[0][0] = 131072.0;
   g_drawStateWorkerSharedBuffer.forceBounds.persistForceBounds[0][1] = 131072.0;
   g_drawStateWorkerSharedBuffer.forceBounds.persistForceBounds[0][2] = 131072.0;
@@ -746,8 +763,8 @@ R_DynSModelBuildClientView
   g_drawStateWorkerSharedBuffer.forceBounds.persistForceBounds[1][2] = -131072.0;
   if (g_drawStateWorkerSharedBuffer.frameInfo.numGrassPersistantForces != 0) {
     uVar10 = 0;
-    pfVar9 = param_2->forceFrequency;
-    pfVar5 = param_2->grassForceConstants[1] + 2;
+    pfVar9 = view->forceFrequency;
+    pfVar5 = view->grassForceConstants[1] + 2;
     pfVar4 = &g_drawStateWorkerSharedBuffer.frameInfo.grassPersistantForces[0].radius;
     do {
       pfVar9 = pfVar9 + 1;
@@ -797,9 +814,9 @@ R_DynSModelBuildClientView
   g_drawStateWorkerSharedBuffer.forceBounds.instantForceBounds[1][2] = -131072.0;
   if (g_drawStateWorkerSharedBuffer.frameInfo.numGrassInstantForces != 0) {
     uVar10 = 0;
-    pfVar5 = param_2->forceFrequency + 9;
+    pfVar5 = view->forceFrequency + 9;
     pfVar4 = &g_drawStateWorkerSharedBuffer.frameInfo.grassInstantForces[0].radius;
-    pfVar9 = param_2->grassForceConstants[9] + 2;
+    pfVar9 = view->grassForceConstants[9] + 2;
     do {
       (*(float (*) [4])(pfVar9 + -2))[0] = ((GrassForce *)(pfVar4 + -3))->worldPosition[0];
       pfVar9[-1] = pfVar4[-2];
@@ -873,10 +890,10 @@ R_DynSModelBuildClientView
       uVar10 = uVar10 - 1;
     } while (uVar10 != 0);
   }
-  param_3->maxDynSModelIndex = param_1->numDynSModel;
-  param_3->maxDynSModelIndexInMap = param_1->numDynSModelInMap;
-  puVar2 = param_1->visBitsCamera;
-  puVar3 = param_1->visBitsSunShadow;
+  dynData->maxDynSModelIndex = clientVis->numDynSModel;
+  dynData->maxDynSModelIndexInMap = clientVis->numDynSModelInMap;
+  puVar2 = clientVis->visBitsCamera;
+  puVar3 = clientVis->visBitsSunShadow;
   iVar12 = 0x40;
   puVar6 = puVar2;
   do {
@@ -912,7 +929,7 @@ R_DynSModelBuildClientView
     }
     iVar12 = iVar12 + 1;
   } while (iVar12 < 0x40);
-  memset((uchar *)param_2,0xff,0x1000);
+  memset((uchar *)view,0xff,0x1000);
   local_124 = 0;
   if (uVar10 != 0) {
     do {
@@ -922,9 +939,9 @@ R_DynSModelBuildClientView
       }
       uVar7 = iVar12 + local_124;
       local_12c = 0x4f76790;
-      local_128 = &g_drawStateWorkerSharedBuffer;
-      local_11c = param_2;
-      local_118 = param_3;
+      cmd = &g_drawStateWorkerSharedBuffer;
+      local_11c = view;
+      local_118 = dynData;
       local_114 = 1;
       local_110 = 9;
       local_10c = 0x4f76adc;
@@ -944,7 +961,7 @@ R_DynSModelBuildClientView
 
 void __cdecl
 R_FoliageSetStaticModelShaderConstants
-          (GfxCmdBufContext *param_1,uint param_2,DynSModelClientView *param_3,
+          (GfxCmdBufContext *smodelState,uint param_2,DynSModelClientView *param_3,
           DynSModelGfxState *param_4)
 
 {
@@ -966,6 +983,7 @@ R_FoliageSetStaticModelShaderConstants
   uint unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
   float fVar13;
+  GfxCmdBufContext *context;
   
   if (in_EAX < *(uint *)param_2) {
     uVar1 = *(ushort *)(in_ECX + in_EAX * 2);
@@ -982,7 +1000,7 @@ R_FoliageSetStaticModelShaderConstants
       uVar9 = R_UpdateCodeConstantFromVec4(unaff_EDI,unaff_ESI,unaff_EBP);
       uVar10 = R_UpdateCodeConstantFromVec4(unaff_EDI,unaff_ESI,unaff_EBP);
       uVar11 = R_UpdateCodeConstantFromVec4(unaff_EDI,unaff_ESI,unaff_EBP);
-      pGVar2 = (param_1->field0_0x0)._s_0.source;
+      pGVar2 = (smodelState->field0_0x0)._s_0.source;
       fVar13 = *(float *)(param_2 + (uVar1 + 1) * 0xc) * 2.0;
       uVar11 = uVar8 | uVar9 | uVar10 | uVar11;
       if (((((pGVar2->input).consts[0x76][0] != fVar13) || ((pGVar2->input).consts[0x76][1] != 0.0))
@@ -997,7 +1015,7 @@ R_FoliageSetStaticModelShaderConstants
       }
     }
     if (uVar11 != 0) {
-      R_SetupPassVertexShaderArgs((GfxCmdBufContext)(param_1->field0_0x0)._s_0);
+      R_SetupPassVertexShaderArgs();
     }
   }
   else {
@@ -1007,7 +1025,7 @@ R_FoliageSetStaticModelShaderConstants
     iVar6 = R_UpdateCodeConstantFromVec4(unaff_EDI,unaff_ESI,unaff_EBP);
     iVar7 = R_UpdateCodeConstantFromVec4(unaff_EDI,unaff_ESI,unaff_EBP);
     if (iVar7 != 0 || (((iVar3 != 0 || iVar4 != 0) || iVar5 != 0) || iVar6 != 0)) {
-      R_SetupPassVertexShaderArgs((GfxCmdBufContext)(param_1->field0_0x0)._s_0);
+      R_SetupPassVertexShaderArgs();
       return;
     }
   }

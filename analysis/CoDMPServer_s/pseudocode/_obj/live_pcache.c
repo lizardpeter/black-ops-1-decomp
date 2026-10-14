@@ -92,15 +92,15 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,__uint64 param_2
 
 {
   PCacheComponent *pPVar1;
-  PCacheComponent *pPVar2;
-  long64 lVar3;
+  PCacheComponent *dst;
+  long64 lVar2;
   int in_stack_00000008;
   uint local_c;
   uint local_8;
   int local_4;
   
   pPVar1 = (PCacheComponent *)(&PTR_DAT_00ad563c)[param_2._4_4_ * 5];
-  pPVar2 = (PCacheComponent *)0x0;
+  dst = (PCacheComponent *)0x0;
   local_c = 0xffffffff;
   local_4 = 0;
   if (0 < (int)(&DAT_00ad5634)[param_2._4_4_ * 5]) {
@@ -116,11 +116,11 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,__uint64 param_2
       if (((byte)pPVar1[0x18] & 9) == 0) {
         if ((*(int *)pPVar1 == 0 && *(int *)(pPVar1 + 4) == 0) && (local_c != 0)) {
           local_c = 0;
-          pPVar2 = pPVar1;
+          dst = pPVar1;
         }
         else if (local_8 < local_c) {
           local_c = local_8;
-          pPVar2 = pPVar1;
+          dst = pPVar1;
         }
       }
       pPVar1 = pPVar1 + (&DAT_00ad5638)[param_2._4_4_ * 5];
@@ -128,17 +128,17 @@ PCacheComponent * __cdecl PCache_GetOrphanComponent(int param_1,__uint64 param_2
     } while (local_4 < (int)(&DAT_00ad5634)[param_2._4_4_ * 5]);
   }
   if ((code *)(&DAT_00ad5644)[param_2._4_4_ * 5] != (code *)0x0) {
-    (*(code *)(&DAT_00ad5644)[param_2._4_4_ * 5])(pPVar2);
+    (*(code *)(&DAT_00ad5644)[param_2._4_4_ * 5])(dst);
   }
-  memset((uchar *)pPVar2,'\0',(&DAT_00ad5638)[param_2._4_4_ * 5]);
-  *(int *)pPVar2 = in_stack_00000008;
-  *(int *)(pPVar2 + 4) = (int)param_2;
-  *(int *)(pPVar2 + 8) = param_1;
-  lVar3 = _time64((long64 *)0x0);
-  *(int *)(pPVar2 + 0x14) = (int)lVar3;
-  *(int *)(pPVar2 + 0x10) = 0;
-  *(int *)(pPVar2 + 0xc) = param_2._4_4_;
-  return pPVar2;
+  memset((uchar *)dst,'\0',(&DAT_00ad5638)[param_2._4_4_ * 5]);
+  *(int *)dst = in_stack_00000008;
+  *(int *)(dst + 4) = (int)param_2;
+  *(int *)(dst + 8) = param_1;
+  lVar2 = _time64((long64 *)0x0);
+  *(int *)(dst + 0x14) = (int)lVar2;
+  *(int *)(dst + 0x10) = 0;
+  *(int *)(dst + 0xc) = param_2._4_4_;
+  return dst;
 }
 
 

@@ -16,8 +16,10 @@ void __cdecl Unlock_Bink_textures2(IDirect3DDevice9 *param_1,BINKTEXTURESET *par
   uchar *puStack_78;
   uchar *puVar7;
   uchar *puVar8;
-  uchar *puStack_1c;
-  uchar local_c [12];
+  char *dstBits;
+  BINKFRAMEPLANESET *bp_src;
+  uchar local_c [8];
+  IDirect3DDevice9 *d3d_device;
   
   iVar4 = *(int *)(in_EAX + 0x14);
   piVar1 = *(int **)(in_EAX + 200);
@@ -27,13 +29,13 @@ void __cdecl Unlock_Bink_textures2(IDirect3DDevice9 *param_1,BINKTEXTURESET *par
   iVar5 = *(int *)(in_EAX + 8);
   puVar7 = *(uchar **)(iVar4 * 0x30 + in_EAX + 0x1c);
   if (unaff_EBX == uVar2) {
-    memcpy(puStack_1c,puVar7,iVar5 * uVar2);
+    memcpy((uchar *)dstBits,puVar7,iVar5 * uVar2);
   }
   else {
     iVar4 = 0;
     if (0 < iVar5) {
       do {
-        memcpy(puStack_1c + iVar4 * unaff_EBX,puVar7,uVar2);
+        memcpy((uchar *)(dstBits + iVar4 * unaff_EBX),puVar7,uVar2);
         puVar7 = puVar7 + uVar2;
         iVar4 = iVar4 + 1;
       } while (iVar4 < iVar5);
@@ -191,14 +193,15 @@ void __cdecl R_Cinematic_StopPlayback(void)
 
 // 00821520  _UpdateFrameCallback  (gfx_d3d/r_cinematic.cpp:3230)
 
+/* WARNING: Variable defined which should be unmapped: batch */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 int __cdecl _UpdateFrameCallback(jqBatch *param_1)
 
 {
-  bool unaff_retaddr;
+  jqBatch *batch;
   
-  R_Cinematic_UpdateFrame_Core(unaff_retaddr);
+  R_Cinematic_UpdateFrame_Core(batch._0_1_);
   LOCK();
   cineThreadBlock = 0;
   UNLOCK();
@@ -208,6 +211,8 @@ int __cdecl _UpdateFrameCallback(jqBatch *param_1)
 
 // 00821540  R_Cinematic_UpdateFrame  (gfx_d3d/r_cinematic.cpp:3242)
 
+/* WARNING: Variable defined which should be unmapped: force_wait */
+/* WARNING: Variable defined which should be unmapped: cmd */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl R_Cinematic_UpdateFrame(bool param_1)
@@ -215,6 +220,8 @@ void __cdecl R_Cinematic_UpdateFrame(bool param_1)
 {
   long lVar1;
   WorkerCmdConditional *in_ECX;
+  CINE_JQ_CMD cmd;
+  bool force_wait;
   
   lVar1 = cineThreadBlock;
   if (!g_cinematicInitialized) {
@@ -225,19 +232,22 @@ void __cdecl R_Cinematic_UpdateFrame(bool param_1)
   cineThreadBlock = 1;
   UNLOCK();
   if (lVar1 == 0) {
+    _force_wait = in_ECX;
     if (cinematicGlob.activeImageFrame == -1) {
       R_Cinematic_BlackRendererImages();
-      Sys_AddWorkerCmdInternal(&_UpdateFrameWorkerCmd,&stack0xfffffffc,in_ECX);
+      Sys_AddWorkerCmdInternal(&_UpdateFrameWorkerCmd,&force_wait,_force_wait);
       return;
     }
     R_Cinematic_SetRendererImagesToFrame((int)in_ECX);
-    Sys_AddWorkerCmdInternal(&_UpdateFrameWorkerCmd,&stack0xfffffffc,in_ECX);
+    Sys_AddWorkerCmdInternal(&_UpdateFrameWorkerCmd,&force_wait,_force_wait);
   }
   return;
 }
 
 
 // 008215A0  R_Cinematic_GetFilenameAndTimeInMsec  (gfx_d3d/r_cinematic.cpp:3299)
+
+/* WARNING: Variable defined which should be unmapped: outNameSize */
 
 bool __cdecl R_Cinematic_GetFilenameAndTimeInMsec(char *param_1,int param_2,uint *param_3)
 
@@ -247,6 +257,7 @@ bool __cdecl R_Cinematic_GetFilenameAndTimeInMsec(char *param_1,int param_2,uint
   uint *in_ECX;
   int iVar3;
   int unaff_EDI;
+  int outNameSize;
   
   if ((cinematicGlob.cinematicFinished) || (cinematicGlob.currentCinematicName[0] == '\0')) {
     return false;

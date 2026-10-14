@@ -13,17 +13,17 @@ void __cdecl TRACK_scr_compiler(void)
 
 // 0089E2B0  GetFunction  (clientscript/cscr_compiler.cpp:92)
 
-_func___cdecl_void * __cdecl GetFunction(scriptInstance_t param_1,char **param_2,int *param_3)
+_func___cdecl_void * __cdecl GetFunction(scriptInstance_t inst,char **pName,int *type)
 
 {
   undefined3 in_stack_00000005;
   undefined4 local_8;
   
-  if (_param_1 == 0) {
-    local_8 = Scr_GetFunction(param_2,param_3);
+  if (_inst == 0) {
+    local_8 = Scr_GetFunction(pName,type);
   }
   else {
-    local_8 = CScr_GetFunction(param_2,param_3);
+    local_8 = CScr_GetFunction(pName,type);
   }
   return local_8;
 }
@@ -31,18 +31,17 @@ _func___cdecl_void * __cdecl GetFunction(scriptInstance_t param_1,char **param_2
 
 // 0089E2F0  GetMethod  (clientscript/cscr_compiler.cpp:97)
 
-_func___cdecl_void_scr_entref_t * __cdecl
-GetMethod(scriptInstance_t param_1,char **param_2,int *param_3)
+_func___cdecl_void_scr_entref_t * __cdecl GetMethod(scriptInstance_t inst,char **pName,int *type)
 
 {
   undefined3 in_stack_00000005;
   undefined4 local_8;
   
-  if (_param_1 == 0) {
-    local_8 = Scr_GetMethod(param_2,param_3);
+  if (_inst == 0) {
+    local_8 = Scr_GetMethod(pName,type);
   }
   else {
-    local_8 = CScr_GetMethod(param_2,param_3);
+    local_8 = CScr_GetMethod(pName,type);
   }
   return local_8;
 }
@@ -50,23 +49,23 @@ GetMethod(scriptInstance_t param_1,char **param_2,int *param_3)
 
 // 0089F1C0  Scr_CompileRemoveRefToString  (clientscript/cscr_compiler.cpp:103)
 
-void __cdecl Scr_CompileRemoveRefToString(scriptInstance_t param_1,uint param_2)
+void __cdecl Scr_CompileRemoveRefToString(scriptInstance_t inst,uint stringValue)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if ((param_2 == 0) &&
+  if ((stringValue == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x68,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gScrCompileGlob[_param_1].bConstRefCount == false) &&
-     (gScrCompilePub[_param_1].developer_statement != 3)) {
-    SL_RemoveRefToString(param_1,param_2);
+  if ((gScrCompileGlob[_inst].bConstRefCount == false) &&
+     (gScrCompilePub[_inst].developer_statement != 3)) {
+    SL_RemoveRefToString(inst,stringValue);
   }
   return;
 }
@@ -74,7 +73,7 @@ void __cdecl Scr_CompileRemoveRefToString(scriptInstance_t param_1,uint param_2)
 
 // 008A27B0  EmitCanonicalString  (clientscript/cscr_compiler.cpp:117)
 
-void __cdecl EmitCanonicalString(scriptInstance_t param_1,uint param_2)
+void __cdecl EmitCanonicalString(scriptInstance_t inst,uint stringValue)
 
 {
   code *pcVar1;
@@ -84,7 +83,7 @@ void __cdecl EmitCanonicalString(scriptInstance_t param_1,uint param_2)
   uint uVar5;
   undefined3 in_stack_00000005;
   
-  if ((param_2 == 0) &&
+  if ((stringValue == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x76,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -92,30 +91,30 @@ void __cdecl EmitCanonicalString(scriptInstance_t param_1,uint param_2)
     return;
   }
   puVar4 = (uchar *)TempMalloc(2);
-  gScrCompileGlob[_param_1].codePos = puVar4;
-  if (gScrCompilePub[_param_1].developer_statement == 2) {
-    if ((gScrVarPub[_param_1].developer_script != false) &&
+  gScrCompileGlob[_inst].codePos = puVar4;
+  if (gScrCompilePub[_inst].developer_statement == 2) {
+    if ((gScrVarPub[_inst].developer_script != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x7c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Scr_CompileRemoveRefToString(param_1,param_2);
+    Scr_CompileRemoveRefToString(inst,stringValue);
   }
-  else if (gScrCompilePub[_param_1].developer_statement == 3) {
-    uVar3 = Scr_CompileCanonicalString(param_1,param_2);
-    *(ushort *)gScrCompileGlob[_param_1].codePos = uVar3;
-    if (*(short *)gScrCompileGlob[_param_1].codePos == 0) {
-      CompileError(param_1,0,"unknown field");
+  else if (gScrCompilePub[_inst].developer_statement == 3) {
+    uVar3 = Scr_CompileCanonicalString(inst,stringValue);
+    *(ushort *)gScrCompileGlob[_inst].codePos = uVar3;
+    if (*(short *)gScrCompileGlob[_inst].codePos == 0) {
+      CompileError(inst,0,"unknown field");
     }
   }
   else {
-    if (gScrCompileGlob[_param_1].bConstRefCount != false) {
-      SL_AddRefToString(param_2,param_1);
+    if (gScrCompileGlob[_inst].bConstRefCount != false) {
+      SL_AddRefToString(stringValue,inst);
     }
-    uVar5 = SL_TransferToCanonicalString(param_1,param_2);
-    *(short *)gScrCompileGlob[_param_1].codePos = (short)uVar5;
+    uVar5 = SL_TransferToCanonicalString(inst,stringValue);
+    *(short *)gScrCompileGlob[_inst].codePos = (short)uVar5;
   }
   return;
 }
@@ -123,44 +122,45 @@ void __cdecl EmitCanonicalString(scriptInstance_t param_1,uint param_2)
 
 // 008A2B00  EmitCanonicalStringConst  (clientscript/cscr_compiler.cpp:147)
 
-void __cdecl EmitCanonicalStringConst(scriptInstance_t param_1,uint param_2)
+void __cdecl EmitCanonicalStringConst(scriptInstance_t inst,uint stringValue)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
+  bool bConstRefCount;
   
-  bVar1 = gScrCompileGlob[_param_1].bConstRefCount;
-  gScrCompileGlob[_param_1].bConstRefCount = true;
-  EmitCanonicalString(param_1,param_2);
-  gScrCompileGlob[_param_1].bConstRefCount = bVar1;
+  bVar1 = gScrCompileGlob[_inst].bConstRefCount;
+  gScrCompileGlob[_inst].bConstRefCount = true;
+  EmitCanonicalString(inst,stringValue);
+  gScrCompileGlob[_inst].bConstRefCount = bVar1;
   return;
 }
 
 
 // 008A0D50  CompileTransferRefToString  (clientscript/cscr_compiler.cpp:158)
 
-void __cdecl CompileTransferRefToString(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl CompileTransferRefToString(scriptInstance_t inst,uint stringValue,uint user)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if ((param_2 == 0) &&
+  if ((stringValue == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x9f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (gScrCompilePub[_param_1].developer_statement == 2) {
-    Scr_CompileRemoveRefToString(param_1,param_2);
+  if (gScrCompilePub[_inst].developer_statement == 2) {
+    Scr_CompileRemoveRefToString(inst,stringValue);
   }
-  else if (gScrCompilePub[_param_1].developer_statement != 3) {
-    if (gScrCompileGlob[_param_1].bConstRefCount != false) {
-      SL_AddRefToString(param_2,param_1);
+  else if (gScrCompilePub[_inst].developer_statement != 3) {
+    if (gScrCompileGlob[_inst].bConstRefCount != false) {
+      SL_AddRefToString(stringValue,inst);
     }
-    SL_TransferRefToUser(param_1,param_2,param_3);
+    SL_TransferRefToUser(inst,stringValue,user);
   }
   return;
 }
@@ -168,16 +168,15 @@ void __cdecl CompileTransferRefToString(scriptInstance_t param_1,uint param_2,ui
 
 // 008A2530  EmitAssignmentPos  (clientscript/cscr_compiler.cpp:190)
 
-void __cdecl EmitAssignmentPos(scriptInstance_t param_1)
+void __cdecl EmitAssignmentPos(scriptInstance_t inst)
 
 {
-  char *pcVar1;
+  char *codePos;
   undefined3 in_stack_00000005;
   
-  if ((gScrVarPub[_param_1].developer != false) &&
-     (gScrCompilePub[_param_1].developer_statement != 3)) {
-    pcVar1 = TempMalloc(0);
-    Scr_AddAssignmentPos(param_1,pcVar1);
+  if ((gScrVarPub[_inst].developer != false) && (gScrCompilePub[_inst].developer_statement != 3)) {
+    codePos = TempMalloc(0);
+    Scr_AddAssignmentPos(inst,codePos);
   }
   return;
 }
@@ -185,14 +184,13 @@ void __cdecl EmitAssignmentPos(scriptInstance_t param_1)
 
 // 008A0E30  EmitPreAssignmentPos  (clientscript/cscr_compiler.cpp:201)
 
-void __cdecl EmitPreAssignmentPos(scriptInstance_t param_1)
+void __cdecl EmitPreAssignmentPos(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  if ((gScrVarPub[_param_1].developer != false) &&
-     (gScrCompilePub[_param_1].developer_statement != 3)) {
-    Scr_AddAssignmentPos(param_1,(char *)gScrCompilePub[_param_1].opcodePos);
+  if ((gScrVarPub[_inst].developer != false) && (gScrCompilePub[_inst].developer_statement != 3)) {
+    Scr_AddAssignmentPos(inst,(char *)gScrCompilePub[_inst].opcodePos);
   }
   return;
 }
@@ -200,7 +198,7 @@ void __cdecl EmitPreAssignmentPos(scriptInstance_t param_1)
 
 // 008A0E80  EmitOpcode  (clientscript/cscr_compiler.cpp:219)
 
-void __cdecl EmitOpcode(scriptInstance_t param_1,uint param_2,int param_3,int param_4)
+void __cdecl EmitOpcode(scriptInstance_t inst,uint op,int offset,int callType)
 
 {
   int iVar1;
@@ -211,304 +209,306 @@ void __cdecl EmitOpcode(scriptInstance_t param_1,uint param_2,int param_3,int pa
   uint uVar6;
   undefined3 in_stack_00000005;
   bool local_14;
-  int local_10;
+  int valueIndex;
+  int value_count;
+  uint index;
   
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
+  if (gScrCompilePub[_inst].developer_statement == 3) {
     puVar4 = (uchar *)TempMalloc(1);
-    gScrCompileGlob[_param_1].codePos = puVar4;
-    *gScrCompileGlob[_param_1].codePos = (uchar)param_2;
+    gScrCompileGlob[_inst].codePos = puVar4;
+    *gScrCompileGlob[_inst].codePos = (uchar)op;
     return;
   }
-  if (gScrCompilePub[_param_1].value_count != 0) {
-    iVar1 = gScrCompilePub[_param_1].value_count;
-    gScrCompilePub[_param_1].value_count = 0;
-    for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {
-      EmitValue(param_1,(VariableCompileValue *)(_param_1 * 0x1d8 + 0x9d38b50 + local_10 * 0xc));
+  if (gScrCompilePub[_inst].value_count != 0) {
+    iVar1 = gScrCompilePub[_inst].value_count;
+    gScrCompilePub[_inst].value_count = 0;
+    for (valueIndex = 0; valueIndex < iVar1; valueIndex = valueIndex + 1) {
+      EmitValue(inst,(VariableCompileValue *)(_inst * 0x1d8 + 0x9d38b50 + valueIndex * 0xc));
     }
   }
-  if (((gScrCompileGlob[_param_1].cumulOffset == 0) || (param_4 == 2)) || (param_4 == 3)) {
+  if (((gScrCompileGlob[_inst].cumulOffset == 0) || (callType == 2)) || (callType == 3)) {
     local_14 = true;
   }
   else {
     local_14 = false;
   }
-  gScrCompilePub[_param_1].allowedBreakpoint = local_14;
-  gScrCompileGlob[_param_1].cumulOffset = gScrCompileGlob[_param_1].cumulOffset + param_3;
-  if (gScrCompileGlob[_param_1].maxOffset < gScrCompileGlob[_param_1].cumulOffset) {
-    gScrCompileGlob[_param_1].maxOffset = gScrCompileGlob[_param_1].cumulOffset;
+  gScrCompilePub[_inst].allowedBreakpoint = local_14;
+  gScrCompileGlob[_inst].cumulOffset = gScrCompileGlob[_inst].cumulOffset + offset;
+  if (gScrCompileGlob[_inst].maxOffset < gScrCompileGlob[_inst].cumulOffset) {
+    gScrCompileGlob[_inst].maxOffset = gScrCompileGlob[_inst].cumulOffset;
   }
-  if ((param_4 != 0) &&
-     (gScrCompileGlob[_param_1].maxCallOffset < gScrCompileGlob[_param_1].cumulOffset)) {
-    gScrCompileGlob[_param_1].maxCallOffset = gScrCompileGlob[_param_1].cumulOffset;
+  if ((callType != 0) && (gScrCompileGlob[_inst].maxCallOffset < gScrCompileGlob[_inst].cumulOffset)
+     ) {
+    gScrCompileGlob[_inst].maxCallOffset = gScrCompileGlob[_inst].cumulOffset;
   }
-  gScrVarPub[_param_1].checksum = gScrVarPub[_param_1].checksum * 0x1f;
-  gScrVarPub[_param_1].checksum = gScrVarPub[_param_1].checksum + param_2;
-  if (gScrCompilePub[_param_1].opcodePos != (uchar *)0x0) {
-    gScrCompileGlob[_param_1].codePos = gScrCompilePub[_param_1].opcodePos;
-    switch(param_2) {
+  gScrVarPub[_inst].checksum = gScrVarPub[_inst].checksum * 0x1f;
+  gScrVarPub[_inst].checksum = gScrVarPub[_inst].checksum + op;
+  if (gScrCompilePub[_inst].opcodePos != (uchar *)0x0) {
+    gScrCompileGlob[_inst].codePos = gScrCompilePub[_inst].opcodePos;
+    switch(op) {
     case 0x20:
-      if (*gScrCompilePub[_param_1].opcodePos == '\x1e') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '\x1f';
+      if (*gScrCompilePub[_inst].opcodePos == '\x1e') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '\x1f';
         return;
       }
-      uVar6 = *gScrCompilePub[_param_1].opcodePos - 0x18;
+      uVar6 = *gScrCompilePub[_inst].opcodePos - 0x18;
       if (uVar6 < 6) {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '\x1f';
-        EmitByte(param_1,(uchar)uVar6);
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '\x1f';
+        EmitByte(inst,(uchar)uVar6);
         return;
       }
       break;
     case 0x23:
-      if (*gScrCompilePub[_param_1].opcodePos == '7') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '\"';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '7') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '\"';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '6') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '!';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '6') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '!';
+        EmitPreAssignmentPos(inst);
         return;
       }
       break;
     case 0x2a:
-      if (*gScrCompilePub[_param_1].opcodePos == '&') {
-        *gScrCompilePub[_param_1].opcodePos = ')';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '&') {
+        *gScrCompilePub[_inst].opcodePos = ')';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '\r') {
-        *gScrCompilePub[_param_1].opcodePos = '\'';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '\r') {
+        *gScrCompilePub[_inst].opcodePos = '\'';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '\x0e') {
-        *gScrCompilePub[_param_1].opcodePos = '(';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '\x0e') {
+        *gScrCompilePub[_inst].opcodePos = '(';
+        EmitPreAssignmentPos(inst);
         return;
       }
       break;
     case 0x2e:
-      if (*gScrCompilePub[_param_1].opcodePos == '&') {
-        *gScrCompilePub[_param_1].opcodePos = '-';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '&') {
+        *gScrCompilePub[_inst].opcodePos = '-';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '\r') {
-        *gScrCompilePub[_param_1].opcodePos = '+';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '\r') {
+        *gScrCompilePub[_inst].opcodePos = '+';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '\x0e') {
-        *gScrCompilePub[_param_1].opcodePos = ',';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '\x0e') {
+        *gScrCompilePub[_inst].opcodePos = ',';
+        EmitPreAssignmentPos(inst);
         return;
       }
       break;
     case 0x31:
-      if (*gScrCompilePub[_param_1].opcodePos == '\x16') {
-        *gScrCompilePub[_param_1].opcodePos = '0';
+      if (*gScrCompilePub[_inst].opcodePos == '\x16') {
+        *gScrCompilePub[_inst].opcodePos = '0';
         return;
       }
       break;
     case 0x39:
-      if (*gScrCompilePub[_param_1].opcodePos == '7') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '=';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '7') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '=';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '6') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '<';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '6') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '<';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '-') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = ';';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '-') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = ';';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == '+') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '8';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == '+') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '8';
+        EmitPreAssignmentPos(inst);
         return;
       }
-      if (*gScrCompilePub[_param_1].opcodePos == ',') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = ':';
-        EmitPreAssignmentPos(param_1);
+      if (*gScrCompilePub[_inst].opcodePos == ',') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = ':';
+        EmitPreAssignmentPos(inst);
         return;
       }
       break;
     case 0x50:
-      if (*gScrCompilePub[_param_1].opcodePos == 'N') {
-        *gScrCompilePub[_param_1].opcodePos = 'O';
+      if (*gScrCompilePub[_inst].opcodePos == 'N') {
+        *gScrCompilePub[_inst].opcodePos = 'O';
         return;
       }
       break;
     case 0x52:
-      if (*gScrCompilePub[_param_1].opcodePos == '\x0f') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = 'P';
-        if ((gScrCompileGlob[_param_1].prevOpcodePos == (uchar *)0x0) &&
+      if (*gScrCompilePub[_inst].opcodePos == '\x0f') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = 'P';
+        if ((gScrCompileGlob[_inst].prevOpcodePos == (uchar *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,400,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if (*gScrCompileGlob[_param_1].prevOpcodePos != 'N') {
+        if (*gScrCompileGlob[_inst].prevOpcodePos != 'N') {
           return;
         }
         pcVar5 = TempMalloc(0);
-        if ((gScrCompilePub[_param_1].opcodePos != (uchar *)(pcVar5 + -1)) &&
+        if ((gScrCompilePub[_inst].opcodePos != (uchar *)(pcVar5 + -1)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x193,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        TempMemorySetPos((char *)gScrCompilePub[_param_1].opcodePos);
-        gScrCompilePub[_param_1].opcodePos = gScrCompilePub[_param_1].opcodePos + -1;
-        gScrCompileGlob[_param_1].prevOpcodePos = (uchar *)0x0;
-        gScrCompileGlob[_param_1].codePos = gScrCompilePub[_param_1].opcodePos;
-        *gScrCompilePub[_param_1].opcodePos = 'O';
+        TempMemorySetPos((char *)gScrCompilePub[_inst].opcodePos);
+        gScrCompilePub[_inst].opcodePos = gScrCompilePub[_inst].opcodePos + -1;
+        gScrCompileGlob[_inst].prevOpcodePos = (uchar *)0x0;
+        gScrCompileGlob[_inst].codePos = gScrCompilePub[_inst].opcodePos;
+        *gScrCompilePub[_inst].opcodePos = 'O';
         return;
       }
       break;
     case 0x56:
-      if (*gScrCompilePub[_param_1].opcodePos == '\x0f') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = 'T';
+      if (*gScrCompilePub[_inst].opcodePos == '\x0f') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = 'T';
         return;
       }
       break;
     case 0x59:
-      if (*gScrCompilePub[_param_1].opcodePos == '\x1e') {
-        *gScrCompilePub[_param_1].opcodePos = 'Z';
+      if (*gScrCompilePub[_inst].opcodePos == '\x1e') {
+        *gScrCompilePub[_inst].opcodePos = 'Z';
         return;
       }
-      uVar6 = *gScrCompilePub[_param_1].opcodePos - 0x18;
+      uVar6 = *gScrCompilePub[_inst].opcodePos - 0x18;
       if (uVar6 < 6) {
-        *gScrCompilePub[_param_1].opcodePos = 'Z';
-        EmitByte(param_1,(uchar)uVar6);
+        *gScrCompilePub[_inst].opcodePos = 'Z';
+        EmitByte(inst,(uchar)uVar6);
         return;
       }
       break;
     case 0x5e:
-      if (*gScrCompilePub[_param_1].opcodePos == '\\') {
-        RemoveOpcodePos(param_1);
-        *gScrCompilePub[_param_1].opcodePos = '_';
+      if (*gScrCompilePub[_inst].opcodePos == '\\') {
+        RemoveOpcodePos(inst);
+        *gScrCompilePub[_inst].opcodePos = '_';
         return;
       }
     }
   }
-  gScrCompileGlob[_param_1].prevOpcodePos = gScrCompilePub[_param_1].opcodePos;
+  gScrCompileGlob[_inst].prevOpcodePos = gScrCompilePub[_inst].opcodePos;
   puVar4 = (uchar *)TempMalloc(1);
-  gScrCompilePub[_param_1].opcodePos = puVar4;
-  gScrCompileGlob[_param_1].codePos = gScrCompilePub[_param_1].opcodePos;
-  *gScrCompilePub[_param_1].opcodePos = (uchar)param_2;
+  gScrCompilePub[_inst].opcodePos = puVar4;
+  gScrCompileGlob[_inst].codePos = gScrCompilePub[_inst].opcodePos;
+  *gScrCompilePub[_inst].opcodePos = (uchar)op;
   return;
 }
 
 
 // 008A0E00  EmitEnd  (clientscript/cscr_compiler.cpp:458)
 
-void __cdecl EmitEnd(scriptInstance_t param_1)
+void __cdecl EmitEnd(scriptInstance_t inst)
 
 {
-  EmitOpcode(param_1,0,0,0);
-  EmitPreAssignmentPos(param_1);
+  EmitOpcode(inst,0,0,0);
+  EmitPreAssignmentPos(inst);
   return;
 }
 
 
 // 008A5CC0  EmitReturn  (clientscript/cscr_compiler.cpp:464)
 
-void __cdecl EmitReturn(scriptInstance_t param_1)
+void __cdecl EmitReturn(scriptInstance_t inst)
 
 {
-  EmitOpcode(param_1,1,-1,0);
-  EmitPreAssignmentPos(param_1);
+  EmitOpcode(inst,1,-1,0);
+  EmitPreAssignmentPos(inst);
   return;
 }
 
 
 // 008A1B10  EmitInteger  (clientscript/cscr_compiler.cpp:470)
 
-void __cdecl EmitInteger(scriptInstance_t param_1,int param_2)
+void __cdecl EmitInteger(scriptInstance_t inst_2,int pos)
 
 {
   uchar *puVar1;
   undefined3 in_stack_00000005;
   
   puVar1 = (uchar *)TempMalloc(4);
-  gScrCompileGlob[_param_1].codePos = puVar1;
-  *(int *)gScrCompileGlob[_param_1].codePos = param_2;
+  gScrCompileGlob[_inst_2].codePos = puVar1;
+  *(int *)gScrCompileGlob[_inst_2].codePos = pos;
   return;
 }
 
 
 // 008A1C20  EmitUnsignedShort  (clientscript/cscr_compiler.cpp:484)
 
-void __cdecl EmitUnsignedShort(scriptInstance_t param_1,ushort param_2)
+void __cdecl EmitUnsignedShort(scriptInstance_t inst_3,ushort value_3)
 
 {
   uchar *puVar1;
   undefined3 in_stack_00000005;
   
   puVar1 = (uchar *)TempMalloc(2);
-  gScrCompileGlob[_param_1].codePos = puVar1;
-  *(ushort *)gScrCompileGlob[_param_1].codePos = param_2;
+  gScrCompileGlob[_inst_3].codePos = puVar1;
+  *(ushort *)gScrCompileGlob[_inst_3].codePos = value_3;
   return;
 }
 
 
 // 008A1830  EmitByte  (clientscript/cscr_compiler.cpp:491)
 
-void __cdecl EmitByte(scriptInstance_t param_1,uchar param_2)
+void __cdecl EmitByte(scriptInstance_t inst,uchar value)
 
 {
   uchar *puVar1;
   undefined3 in_stack_00000005;
   
   puVar1 = (uchar *)TempMalloc(1);
-  gScrCompileGlob[_param_1].codePos = puVar1;
-  *gScrCompileGlob[_param_1].codePos = param_2;
+  gScrCompileGlob[_inst].codePos = puVar1;
+  *gScrCompileGlob[_inst].codePos = value;
   return;
 }
 
 
 // 008A1B90  EmitFloat  (clientscript/cscr_compiler.cpp:498)
 
-void __cdecl EmitFloat(scriptInstance_t param_1,float param_2)
+void __cdecl EmitFloat(scriptInstance_t inst,float value)
 
 {
   uchar *puVar1;
   undefined3 in_stack_00000005;
   
   puVar1 = (uchar *)TempMalloc(4);
-  gScrCompileGlob[_param_1].codePos = puVar1;
-  *(float *)gScrCompileGlob[_param_1].codePos = param_2;
+  gScrCompileGlob[_inst].codePos = puVar1;
+  *(float *)gScrCompileGlob[_inst].codePos = value;
   return;
 }
 
 
 // 008A0140  EvalUndefined  (clientscript/cscr_compiler.cpp:519)
 
-void __cdecl EvalUndefined(sval_u param_1,VariableCompileValue *param_2)
+void __cdecl EvalUndefined(sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (VariableCompileValue *)0x0) {
+  if (constValue == (VariableCompileValue *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x208,0,"%s");
     if (!bVar2) {
@@ -517,32 +517,32 @@ void __cdecl EvalUndefined(sval_u param_1,VariableCompileValue *param_2)
       return;
     }
   }
-  (param_2->value).type = 0;
-  param_2->sourcePos = param_1;
+  (constValue->value).type = 0;
+  constValue->sourcePos = sourcePos;
   return;
 }
 
 
 // 008A1960  EmitGetUndefined  (clientscript/cscr_compiler.cpp:528)
 
-void __cdecl EmitGetUndefined(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitGetUndefined(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,2,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,2,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A0190  EvalInteger  (clientscript/cscr_compiler.cpp:535)
 
-void __cdecl EvalInteger(int param_1,sval_u param_2,VariableCompileValue *param_3)
+void __cdecl EvalInteger(int value,sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (VariableCompileValue *)0x0) {
+  if (constValue == (VariableCompileValue *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x218,0,"%s");
     if (!bVar2) {
@@ -551,70 +551,70 @@ void __cdecl EvalInteger(int param_1,sval_u param_2,VariableCompileValue *param_
       return;
     }
   }
-  (param_3->value).type = 6;
-  (param_3->value).u.intValue = param_1;
-  param_3->sourcePos = param_2;
+  (constValue->value).type = 6;
+  (constValue->value).u.intValue = value;
+  constValue->sourcePos = sourcePos;
   return;
 }
 
 
 // 008A1990  EmitGetInteger  (clientscript/cscr_compiler.cpp:545)
 
-void __cdecl EmitGetInteger(scriptInstance_t param_1,int param_2,sval_u param_3)
+void __cdecl EmitGetInteger(scriptInstance_t inst,int value,sval_u sourcePos)
 
 {
-  uchar uVar1;
+  uchar value_00;
   
-  uVar1 = (uchar)param_2;
-  if (param_2 < 0) {
-    if (-0x100 < param_2) {
-      EmitOpcode(param_1,5,1,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
-      EmitByte(param_1,-uVar1);
+  value_00 = (uchar)value;
+  if (value < 0) {
+    if (-0x100 < value) {
+      EmitOpcode(inst,5,1,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
+      EmitByte(inst,-value_00);
       return;
     }
-    if (-0x10000 < param_2) {
-      EmitOpcode(param_1,7,1,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
-      EmitUnsignedShort(param_1,-(ushort)param_2);
+    if (-0x10000 < value) {
+      EmitOpcode(inst,7,1,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
+      EmitUnsignedShort(inst,-(ushort)value);
       return;
     }
   }
   else {
-    if (param_2 == 0) {
-      EmitOpcode(param_1,3,1,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
+    if (value == 0) {
+      EmitOpcode(inst,3,1,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
       return;
     }
-    if (param_2 < 0x100) {
-      EmitOpcode(param_1,4,1,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
-      EmitByte(param_1,uVar1);
+    if (value < 0x100) {
+      EmitOpcode(inst,4,1,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
+      EmitByte(inst,value_00);
       return;
     }
-    if (param_2 < 0x10000) {
-      EmitOpcode(param_1,6,1,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
-      EmitUnsignedShort(param_1,(ushort)param_2);
+    if (value < 0x10000) {
+      EmitOpcode(inst,6,1,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
+      EmitUnsignedShort(inst,(ushort)value);
       return;
     }
   }
-  EmitOpcode(param_1,8,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  EmitInteger(param_1,param_2);
+  EmitOpcode(inst,8,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitInteger(inst,value);
   return;
 }
 
 
 // 008A01E0  EvalFloat  (clientscript/cscr_compiler.cpp:597)
 
-void __cdecl EvalFloat(float param_1,sval_u param_2,VariableCompileValue *param_3)
+void __cdecl EvalFloat(float value,sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (VariableCompileValue *)0x0) {
+  if (constValue == (VariableCompileValue *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x256,0,"%s");
     if (!bVar2) {
@@ -623,37 +623,37 @@ void __cdecl EvalFloat(float param_1,sval_u param_2,VariableCompileValue *param_
       return;
     }
   }
-  (param_3->value).type = 5;
-  (param_3->value).u.floatValue = param_1;
-  param_3->sourcePos = param_2;
+  (constValue->value).type = 5;
+  (constValue->value).u.floatValue = value;
+  constValue->sourcePos = sourcePos;
   return;
 }
 
 
 // 008A1B50  EmitGetFloat  (clientscript/cscr_compiler.cpp:607)
 
-void __cdecl EmitGetFloat(scriptInstance_t param_1,float param_2,sval_u param_3)
+void __cdecl EmitGetFloat(scriptInstance_t inst,float value,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,9,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  EmitFloat(param_1,param_2);
+  EmitOpcode(inst,9,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitFloat(inst,value);
   return;
 }
 
 
 // 008A30C0  EmitAnimTree  (clientscript/cscr_compiler.cpp:614)
 
-void __cdecl EmitAnimTree(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitAnimTree(scriptInstance_t inst,sval_u sourcePos)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrAnimPub[_param_1].animTreeIndex == 0) {
-    CompileError(param_1,param_2.stringValue,"#using_animtree was not specified");
+  if (gScrAnimPub[_inst].animTreeIndex == 0) {
+    CompileError(inst,sourcePos.stringValue,"#using_animtree was not specified");
   }
   else {
-    EmitGetInteger(param_1,gScrAnimPub[_param_1].animTreeIndex,param_2);
+    EmitGetInteger(inst,gScrAnimPub[_inst].animTreeIndex,sourcePos);
   }
   return;
 }
@@ -661,32 +661,32 @@ void __cdecl EmitAnimTree(scriptInstance_t param_1,sval_u param_2)
 
 // 008A24F0  EmitSetVariableField  (clientscript/cscr_compiler.cpp:625)
 
-void __cdecl EmitSetVariableField(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitSetVariableField(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x39,-1,0);
-  AddOpcodePos(param_1,param_2.stringValue,0);
-  EmitAssignmentPos(param_1);
+  EmitOpcode(inst,0x39,-1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitAssignmentPos(inst);
   return;
 }
 
 
 // 0089F900  Scr_FindLocalVar  (clientscript/cscr_compiler.cpp:632)
 
-int __cdecl Scr_FindLocalVar(scr_block_s *param_1,int param_2,uint param_3)
+int __cdecl Scr_FindLocalVar(scr_block_s *block,int startIndex,uint name)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = param_2;
+  i = startIndex;
   while( true ) {
-    if (param_1->localVarsCount <= local_8) {
+    if (block->localVarsCount <= i) {
       return -1;
     }
-    if (param_1->localVars[local_8].name == param_3) break;
-    local_8 = local_8 + 1;
+    if (block->localVars[i].name == name) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -694,7 +694,7 @@ int __cdecl Scr_FindLocalVar(scr_block_s *param_1,int param_2,uint param_3)
 
 int __cdecl
 Scr_FindLocalVarIndex
-          (scriptInstance_t param_1,uint param_2,sval_u param_3,bool param_4,scr_block_s *param_5)
+          (scriptInstance_t inst,uint name,sval_u sourcePos,bool create,scr_block_s *block)
 
 {
   code *pcVar1;
@@ -702,76 +702,76 @@ Scr_FindLocalVarIndex
   int iVar3;
   byte bVar4;
   undefined3 in_stack_00000005;
-  int local_8;
+  uchar bit;
+  int i;
   
-  if ((gScrCompilePub[_param_1].developer_statement == 3) &&
+  if ((gScrCompilePub[_inst].developer_statement == 3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x289,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_5 != (scr_block_s *)0x0) {
-    for (local_8 = 0; local_8 < param_5->localVarsCount; local_8 = local_8 + 1) {
-      if (local_8 == param_5->localVarsCreateCount) {
-        param_5->localVarsCreateCount = param_5->localVarsCreateCount + 1;
-        EmitOpcode(param_1,0x16,0,0);
-        EmitCanonicalStringConst(param_1,param_5->localVars[local_8].name);
-        AddOpcodePos(param_1,param_5->localVars[local_8].sourcePos,0);
+  if (block != (scr_block_s *)0x0) {
+    for (i = 0; i < block->localVarsCount; i = i + 1) {
+      if (i == block->localVarsCreateCount) {
+        block->localVarsCreateCount = block->localVarsCreateCount + 1;
+        EmitOpcode(inst,0x16,0,0);
+        EmitCanonicalStringConst(inst,block->localVars[i].name);
+        AddOpcodePos(inst,block->localVars[i].sourcePos,0);
       }
-      if (param_5->localVars[local_8].name == param_2) {
-        Scr_CompileRemoveRefToString(param_1,param_2);
-        bVar4 = (byte)(1 << ((byte)local_8 & 7));
-        iVar3 = local_8 >> 3;
-        if ((param_5->localVarsInitBits[iVar3] & bVar4) == 0) {
-          if ((!param_4) || (gScrCompileGlob[_param_1].forceNotCreate != false)) break;
-          param_5->localVarsInitBits[iVar3] = param_5->localVarsInitBits[iVar3] | bVar4;
+      if (block->localVars[i].name == name) {
+        Scr_CompileRemoveRefToString(inst,name);
+        bVar4 = (byte)(1 << ((byte)i & 7));
+        iVar3 = i >> 3;
+        if ((block->localVarsInitBits[iVar3] & bVar4) == 0) {
+          if ((!create) || (gScrCompileGlob[_inst].forceNotCreate != false)) break;
+          block->localVarsInitBits[iVar3] = block->localVarsInitBits[iVar3] | bVar4;
         }
-        if ((param_5->localVarsCreateCount + -1 < local_8) &&
+        if ((block->localVarsCreateCount + -1 < i) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x2a7,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        return (param_5->localVarsCreateCount + -1) - local_8;
+        return (block->localVarsCreateCount + -1) - i;
       }
     }
-    if ((!param_4) || (gScrCompileGlob[_param_1].forceNotCreate != false)) {
-      SL_ConvertToString(param_2,param_1);
-      CompileError(param_1,param_3.stringValue,"uninitialised variable \'%s\'");
+    if ((!create) || (gScrCompileGlob[_inst].forceNotCreate != false)) {
+      SL_ConvertToString(name,inst);
+      CompileError(inst,sourcePos.stringValue,"uninitialised variable \'%s\'");
       return 0;
     }
   }
-  CompileError(param_1,param_3.stringValue,"unreachable code");
+  CompileError(inst,sourcePos.stringValue,"unreachable code");
   return 0;
 }
 
 
 // 008A6C40  EmitCreateLocalVars  (clientscript/cscr_compiler.cpp:696)
 
-void __cdecl EmitCreateLocalVars(scriptInstance_t param_1,scr_block_s *param_2,sval_u param_3)
+void __cdecl EmitCreateLocalVars(scriptInstance_t inst,scr_block_s *block,sval_u sourcePos)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if ((param_2->localVarsPublicCount < param_2->localVarsCreateCount) &&
+  if ((block->localVarsPublicCount < block->localVarsCreateCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                699,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->localVarsCreateCount != param_2->localVarsPublicCount) {
-    for (local_8 = param_2->localVarsCreateCount; local_8 < param_2->localVarsPublicCount;
-        local_8 = local_8 + 1) {
-      EmitOpcode(param_1,0x16,0,0);
-      EmitCanonicalStringConst(param_1,param_2->localVars[local_8].name);
-      AddOpcodePos(param_1,param_2->localVars[local_8].sourcePos,0);
+  if (block->localVarsCreateCount != block->localVarsPublicCount) {
+    for (i = block->localVarsCreateCount; i < block->localVarsPublicCount; i = i + 1) {
+      EmitOpcode(inst,0x16,0,0);
+      EmitCanonicalStringConst(inst,block->localVars[i].name);
+      AddOpcodePos(inst,block->localVars[i].sourcePos,0);
     }
-    param_2->localVarsCreateCount = param_2->localVarsPublicCount;
+    block->localVarsCreateCount = block->localVarsPublicCount;
   }
   return;
 }
@@ -779,29 +779,30 @@ void __cdecl EmitCreateLocalVars(scriptInstance_t param_1,scr_block_s *param_2,s
 
 // 008A5F90  EmitRemoveLocalVars  (clientscript/cscr_compiler.cpp:717)
 
-void __cdecl EmitRemoveLocalVars(scriptInstance_t param_1,scr_block_s *param_2,scr_block_s *param_3)
+void __cdecl EmitRemoveLocalVars(scriptInstance_t inst,scr_block_s *block,scr_block_s *outerBlock)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int removeCount;
   
-  if (param_2->abortLevel == 0) {
-    if ((param_2->localVarsCreateCount < param_2->localVarsPublicCount) &&
+  if (block->abortLevel == 0) {
+    if ((block->localVarsCreateCount < block->localVarsPublicCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x2d2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2->localVarsPublicCount < param_3->localVarsPublicCount) &&
+    if ((block->localVarsPublicCount < outerBlock->localVarsPublicCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x2d3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar3 = param_2->localVarsCreateCount - param_3->localVarsPublicCount;
+    iVar3 = block->localVarsCreateCount - outerBlock->localVarsPublicCount;
     if ((iVar3 < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x2d5,0,"%s"), !bVar2)) {
@@ -810,9 +811,9 @@ void __cdecl EmitRemoveLocalVars(scriptInstance_t param_1,scr_block_s *param_2,s
       return;
     }
     if (iVar3 != 0) {
-      EmitOpcode(param_1,0x17,0,0);
-      EmitByte(param_1,(uchar)iVar3);
-      param_2->localVarsCreateCount = param_2->localVarsPublicCount;
+      EmitOpcode(inst,0x17,0,0);
+      EmitByte(inst,(uchar)iVar3);
+      block->localVarsCreateCount = block->localVarsPublicCount;
     }
   }
   return;
@@ -821,31 +822,32 @@ void __cdecl EmitRemoveLocalVars(scriptInstance_t param_1,scr_block_s *param_2,s
 
 // 008A5F20  EmitNOP2  (clientscript/cscr_compiler.cpp:735)
 
-void __cdecl EmitNOP2(scriptInstance_t param_1,bool param_2,uint param_3,scr_block_s *param_4)
+void __cdecl EmitNOP2(scriptInstance_t inst,bool lastStatement,uint endSourcePos,scr_block_s *block)
 
 {
   uint uVar1;
   undefined3 in_stack_00000005;
+  int checksum;
   
-  uVar1 = gScrVarPub[_param_1].checksum;
-  if (param_2) {
-    EmitEnd(param_1);
-    AddOpcodePos(param_1,param_3,1);
+  uVar1 = gScrVarPub[_inst].checksum;
+  if (lastStatement) {
+    EmitEnd(inst);
+    AddOpcodePos(inst,endSourcePos,1);
   }
   else {
-    EmitRemoveLocalVars(param_1,param_4,param_4);
+    EmitRemoveLocalVars(inst,block,block);
   }
-  gScrVarPub[_param_1].checksum = uVar1 + 1;
+  gScrVarPub[_inst].checksum = uVar1 + 1;
   return;
 }
 
 
 // 0089FBF0  Scr_CheckMaxSwitchCases  (clientscript/cscr_compiler.cpp:755)
 
-void __cdecl Scr_CheckMaxSwitchCases(int param_1)
+void __cdecl Scr_CheckMaxSwitchCases(int count)
 
 {
-  if (0x1ff < param_1) {
+  if (0x1ff < count) {
     Com_Error(ERR_DROP,"MAX_SWITCH_CASES exceeded");
   }
   return;
@@ -854,10 +856,10 @@ void __cdecl Scr_CheckMaxSwitchCases(int param_1)
 
 // 0089F690  Scr_CheckLocalVarsCount  (clientscript/cscr_compiler.cpp:763)
 
-void __cdecl Scr_CheckLocalVarsCount(int param_1)
+void __cdecl Scr_CheckLocalVarsCount(int localVarsCount)
 
 {
-  if (0x3f < param_1) {
+  if (0x3f < localVarsCount) {
     Com_Error(ERR_DROP,"LOCAL_VAR_STACK_SIZE exceeded");
   }
   return;
@@ -866,21 +868,21 @@ void __cdecl Scr_CheckLocalVarsCount(int param_1)
 
 // 0089F610  Scr_RegisterLocalVar  (clientscript/cscr_compiler.cpp:771)
 
-void __cdecl Scr_RegisterLocalVar(uint param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl Scr_RegisterLocalVar(uint name,sval_u sourcePos,scr_block_s *block)
 
 {
-  int local_8;
+  int i;
   
-  if (param_3->abortLevel == 0) {
-    for (local_8 = 0; local_8 < param_3->localVarsCount; local_8 = local_8 + 1) {
-      if (param_3->localVars[local_8].name == param_1) {
+  if (block->abortLevel == 0) {
+    for (i = 0; i < block->localVarsCount; i = i + 1) {
+      if (block->localVars[i].name == name) {
         return;
       }
     }
-    Scr_CheckLocalVarsCount(param_3->localVarsCount);
-    param_3->localVars[param_3->localVarsCount].name = param_1;
-    param_3->localVars[param_3->localVarsCount].sourcePos = (uint)param_2;
-    param_3->localVarsCount = param_3->localVarsCount + 1;
+    Scr_CheckLocalVarsCount(block->localVarsCount);
+    block->localVars[block->localVarsCount].name = name;
+    block->localVars[block->localVarsCount].sourcePos = (uint)sourcePos;
+    block->localVarsCount = block->localVarsCount + 1;
   }
   return;
 }
@@ -888,30 +890,30 @@ void __cdecl Scr_RegisterLocalVar(uint param_1,sval_u param_2,scr_block_s *param
 
 // 0089F760  Scr_CopyBlock  (clientscript/cscr_compiler.cpp:793)
 
-void __cdecl Scr_CopyBlock(scr_block_s *param_1,scr_block_s **param_2)
+void __cdecl Scr_CopyBlock(scr_block_s *from,scr_block_s **to)
 
 {
   scr_block_s *psVar1;
   int iVar2;
   
-  if (*param_2 == (scr_block_s *)0x0) {
+  if (*to == (scr_block_s *)0x0) {
     psVar1 = Hunk_AllocateTempMemoryHigh(0x218,"Scr_CopyBlock");
-    *param_2 = psVar1;
+    *to = psVar1;
   }
-  psVar1 = *param_2;
+  psVar1 = *to;
   for (iVar2 = 0x86; iVar2 != 0; iVar2 = iVar2 + -1) {
-    psVar1->abortLevel = param_1->abortLevel;
-    param_1 = (scr_block_s *)&param_1->localVarsCreateCount;
+    psVar1->abortLevel = from->abortLevel;
+    from = (scr_block_s *)&from->localVarsCreateCount;
     psVar1 = (scr_block_s *)&psVar1->localVarsCreateCount;
   }
-  (*param_2)->localVarsPublicCount = 0;
+  (*to)->localVarsPublicCount = 0;
   return;
 }
 
 
 // 008A64F0  Scr_InitFromChildBlocks  (clientscript/cscr_compiler.cpp:802)
 
-void __cdecl Scr_InitFromChildBlocks(scr_block_s **param_1,int param_2,scr_block_s *param_3)
+void __cdecl Scr_InitFromChildBlocks(scr_block_s **childBlocks,int childCount,scr_block_s *block)
 
 {
   uint uVar1;
@@ -920,61 +922,63 @@ void __cdecl Scr_InitFromChildBlocks(scr_block_s **param_1,int param_2,scr_block
   byte bVar4;
   bool bVar5;
   int iVar6;
-  int local_14;
-  int local_10;
-  int local_8;
+  scr_block_s *childBlock;
+  int childIndex;
+  int localVarsCreateCount;
+  uint name;
+  int i;
   
-  if (param_2 != 0) {
-    local_10 = (*param_1)->localVarsPublicCount;
-    for (local_14 = 1; local_14 < param_2; local_14 = local_14 + 1) {
-      if (param_1[local_14]->localVarsPublicCount < local_10) {
-        local_10 = param_1[local_14]->localVarsPublicCount;
+  if (childCount != 0) {
+    localVarsCreateCount = (*childBlocks)->localVarsPublicCount;
+    for (childIndex = 1; childIndex < childCount; childIndex = childIndex + 1) {
+      if (childBlocks[childIndex]->localVarsPublicCount < localVarsCreateCount) {
+        localVarsCreateCount = childBlocks[childIndex]->localVarsPublicCount;
       }
     }
-    if ((local_10 < param_3->localVarsCreateCount) &&
+    if ((localVarsCreateCount < block->localVarsCreateCount) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x334,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((param_3->localVarsCount < local_10) &&
+    if ((block->localVarsCount < localVarsCreateCount) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x335,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    param_3->localVarsCreateCount = local_10;
-    for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
-      if ((param_3->localVarsCount <= local_8) &&
+    block->localVarsCreateCount = localVarsCreateCount;
+    for (i = 0; i < localVarsCreateCount; i = i + 1) {
+      if ((block->localVarsCount <= i) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x33a,0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      iVar6 = local_8 >> 3;
-      bVar4 = (byte)local_8;
-      if (((uint)param_3->localVarsInitBits[iVar6] & 1 << (bVar4 & 7)) == 0) {
-        uVar1 = param_3->localVars[local_8].name;
-        for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-          psVar2 = param_1[local_14];
-          if ((psVar2->localVarsPublicCount < local_10) &&
+      iVar6 = i >> 3;
+      bVar4 = (byte)i;
+      if (((uint)block->localVarsInitBits[iVar6] & 1 << (bVar4 & 7)) == 0) {
+        uVar1 = block->localVars[i].name;
+        for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
+          psVar2 = childBlocks[childIndex];
+          if ((psVar2->localVarsPublicCount < localVarsCreateCount) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                        ,0x341,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          if ((psVar2->localVarsPublicCount <= local_8) &&
+          if ((psVar2->localVarsPublicCount <= i) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                        ,0x342,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          if ((psVar2->localVars[local_8].name != uVar1) &&
+          if ((psVar2->localVars[i].name != uVar1) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                        ,0x343,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
@@ -983,8 +987,8 @@ void __cdecl Scr_InitFromChildBlocks(scr_block_s **param_1,int param_2,scr_block
           }
           if (((uint)psVar2->localVarsInitBits[iVar6] & 1 << (bVar4 & 7)) == 0) goto LAB_008a65bc;
         }
-        param_3->localVarsInitBits[iVar6] =
-             param_3->localVarsInitBits[iVar6] | (byte)(1 << (bVar4 & 7));
+        block->localVarsInitBits[iVar6] = block->localVarsInitBits[iVar6] | (byte)(1 << (bVar4 & 7))
+        ;
       }
 LAB_008a65bc:
     }
@@ -995,32 +999,33 @@ LAB_008a65bc:
 
 // 0089FA40  Scr_AppendChildBlocks  (clientscript/cscr_compiler.cpp:847)
 
-void __cdecl Scr_AppendChildBlocks(scr_block_s **param_1,int param_2,scr_block_s *param_3)
+void __cdecl Scr_AppendChildBlocks(scr_block_s **childBlocks,int childCount,scr_block_s *block)
 
 {
+  uint name;
   uint uVar1;
-  uint uVar2;
-  int iVar3;
-  int local_c;
-  int local_8;
+  int iVar2;
+  scr_block_s *childBlock;
+  int childIndex;
+  int i;
   
-  if ((param_2 != 0) && (param_3->abortLevel == 0)) {
-    for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-      param_1[local_c]->abortLevel = 0;
+  if ((childCount != 0) && (block->abortLevel == 0)) {
+    for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
+      childBlocks[childIndex]->abortLevel = 0;
     }
-    for (local_8 = 0; local_8 < (*param_1)->localVarsCount; local_8 = local_8 + 1) {
-      uVar1 = (*param_1)->localVars[local_8].name;
-      uVar2 = (*param_1)->localVars[local_8].sourcePos;
-      iVar3 = Scr_FindLocalVar(param_3,0,uVar1);
-      if (iVar3 < 0) {
-        for (local_c = 1; local_c < param_2; local_c = local_c + 1) {
-          iVar3 = Scr_FindLocalVar(param_1[local_c],0,uVar1);
-          if (iVar3 < 0) goto LAB_0089fa93;
+    for (i = 0; i < (*childBlocks)->localVarsCount; i = i + 1) {
+      name = (*childBlocks)->localVars[i].name;
+      uVar1 = (*childBlocks)->localVars[i].sourcePos;
+      iVar2 = Scr_FindLocalVar(block,0,name);
+      if (iVar2 < 0) {
+        for (childIndex = 1; childIndex < childCount; childIndex = childIndex + 1) {
+          iVar2 = Scr_FindLocalVar(childBlocks[childIndex],0,name);
+          if (iVar2 < 0) goto LAB_0089fa93;
         }
-        iVar3 = param_3->localVarsCount;
-        param_3->localVars[iVar3].name = uVar1;
-        param_3->localVars[iVar3].sourcePos = uVar2;
-        param_3->localVarsCount = param_3->localVarsCount + 1;
+        iVar2 = block->localVarsCount;
+        block->localVars[iVar2].name = name;
+        block->localVars[iVar2].sourcePos = uVar1;
+        block->localVarsCount = block->localVarsCount + 1;
       }
 LAB_0089fa93:
     }
@@ -1031,46 +1036,47 @@ LAB_0089fa93:
 
 // 0089F7B0  Scr_MergeChildBlocks  (clientscript/cscr_compiler.cpp:883)
 
-void __cdecl Scr_MergeChildBlocks(scr_block_s **param_1,int param_2,scr_block_s *param_3)
+void __cdecl Scr_MergeChildBlocks(scr_block_s **childBlocks,int childCount,scr_block_s *block)
 
 {
-  scr_block_s *psVar1;
+  scr_block_s *block_00;
+  uint name;
+  uint uVar1;
   uint uVar2;
-  uint uVar3;
-  uint uVar4;
-  code *pcVar5;
-  bool bVar6;
-  int local_1c;
-  int local_c;
-  int local_8;
+  code *pcVar3;
+  bool bVar4;
+  int j;
+  scr_block_s *childBlock;
+  int childIndex;
+  int i;
   
-  if ((param_2 != 0) && (param_3->abortLevel == 0)) {
-    for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-      psVar1 = param_1[local_c];
-      if ((psVar1->localVarsPublicCount != 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
-                                   ,0x380,0,"%s"), !bVar6)) {
-        pcVar5 = (code *)swi(3);
-        (*pcVar5)();
+  if ((childCount != 0) && (block->abortLevel == 0)) {
+    for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
+      block_00 = childBlocks[childIndex];
+      if ((block_00->localVarsPublicCount != 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
+                                   ,0x380,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      psVar1->localVarsPublicCount = param_3->localVarsCount;
-      for (local_8 = 0; local_8 < param_3->localVarsCount; local_8 = local_8 + 1) {
-        uVar2 = param_3->localVars[local_8].name;
-        uVar3 = param_3->localVars[local_8].sourcePos;
-        local_1c = Scr_FindLocalVar(psVar1,local_8,uVar2);
-        if (local_1c < 0) {
-          local_1c = psVar1->localVarsCount;
-          Scr_CheckLocalVarsCount(psVar1->localVarsCount);
-          psVar1->localVarsCount = psVar1->localVarsCount + 1;
+      block_00->localVarsPublicCount = block->localVarsCount;
+      for (i = 0; i < block->localVarsCount; i = i + 1) {
+        name = block->localVars[i].name;
+        uVar1 = block->localVars[i].sourcePos;
+        j = Scr_FindLocalVar(block_00,i,name);
+        if (j < 0) {
+          j = block_00->localVarsCount;
+          Scr_CheckLocalVarsCount(block_00->localVarsCount);
+          block_00->localVarsCount = block_00->localVarsCount + 1;
         }
-        for (; local_8 < local_1c; local_1c = local_1c + -1) {
-          uVar4 = psVar1->localVars[local_1c + -1].sourcePos;
-          psVar1->localVars[local_1c].name = *(uint *)(psVar1->localVarsInitBits + local_1c * 8);
-          psVar1->localVars[local_1c].sourcePos = uVar4;
+        for (; i < j; j = j + -1) {
+          uVar2 = block_00->localVars[j + -1].sourcePos;
+          block_00->localVars[j].name = *(uint *)(block_00->localVarsInitBits + j * 8);
+          block_00->localVars[j].sourcePos = uVar2;
         }
-        psVar1->localVars[local_8].name = uVar2;
-        psVar1->localVars[local_8].sourcePos = uVar3;
+        block_00->localVars[i].name = name;
+        block_00->localVars[i].sourcePos = uVar1;
       }
     }
   }
@@ -1080,73 +1086,70 @@ void __cdecl Scr_MergeChildBlocks(scr_block_s **param_1,int param_2,scr_block_s 
 
 // 008A6080  Scr_TransferBlock  (clientscript/cscr_compiler.cpp:919)
 
-void __cdecl Scr_TransferBlock(scr_block_s *param_1,scr_block_s *param_2)
+void __cdecl Scr_TransferBlock(scr_block_s *from,scr_block_s *to)
 
 {
+  uint name;
   uint uVar1;
   uint uVar2;
-  uint uVar3;
-  code *pcVar4;
-  bool bVar5;
-  int iVar6;
-  int local_14;
-  int local_8;
+  code *pcVar3;
+  bool bVar4;
+  int iVar5;
+  int j;
+  int i;
   
-  if (param_1->localVarsCount < param_2->localVarsPublicCount) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
+  if (from->localVarsCount < to->localVarsPublicCount) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x39c,0,"%s");
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  for (local_8 = 0;
-      (local_8 < param_2->localVarsPublicCount || (local_8 < param_1->localVarsCreateCount));
-      local_8 = local_8 + 1) {
-    uVar1 = param_1->localVars[local_8].name;
-    uVar2 = param_1->localVars[local_8].sourcePos;
-    local_14 = Scr_FindLocalVar(param_2,local_8,uVar1);
-    if (local_14 < 0) {
-      local_14 = param_2->localVarsCount;
-      Scr_CheckLocalVarsCount(param_2->localVarsCount);
-      param_2->localVarsCount = param_2->localVarsCount + 1;
+  for (i = 0; (i < to->localVarsPublicCount || (i < from->localVarsCreateCount)); i = i + 1) {
+    name = from->localVars[i].name;
+    uVar1 = from->localVars[i].sourcePos;
+    j = Scr_FindLocalVar(to,i,name);
+    if (j < 0) {
+      j = to->localVarsCount;
+      Scr_CheckLocalVarsCount(to->localVarsCount);
+      to->localVarsCount = to->localVarsCount + 1;
     }
-    if ((param_2->localVarsPublicCount <= local_14) &&
-       (param_2->localVarsPublicCount = param_2->localVarsPublicCount + 1,
-       param_1->localVarsCount < param_2->localVarsPublicCount)) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
+    if ((to->localVarsPublicCount <= j) &&
+       (to->localVarsPublicCount = to->localVarsPublicCount + 1,
+       from->localVarsCount < to->localVarsPublicCount)) {
+      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x3ab,0,"%s");
-      if (!bVar5) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+      if (!bVar4) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
     }
-    for (; local_8 < local_14; local_14 = local_14 + -1) {
-      uVar3 = param_2->localVars[local_14 + -1].sourcePos;
-      param_2->localVars[local_14].name = *(uint *)(param_2->localVarsInitBits + local_14 * 8);
-      param_2->localVars[local_14].sourcePos = uVar3;
+    for (; i < j; j = j + -1) {
+      uVar2 = to->localVars[j + -1].sourcePos;
+      to->localVars[j].name = *(uint *)(to->localVarsInitBits + j * 8);
+      to->localVars[j].sourcePos = uVar2;
     }
-    param_2->localVars[local_8].name = uVar1;
-    param_2->localVars[local_8].sourcePos = uVar2;
-    iVar6 = local_8 >> 3;
-    if (((uint)param_1->localVarsInitBits[iVar6] & 1 << ((byte)local_8 & 7)) != 0) {
-      param_2->localVarsInitBits[iVar6] =
-           param_2->localVarsInitBits[iVar6] | (byte)(1 << ((byte)local_8 & 7));
+    to->localVars[i].name = name;
+    to->localVars[i].sourcePos = uVar1;
+    iVar5 = i >> 3;
+    if (((uint)from->localVarsInitBits[iVar5] & 1 << ((byte)i & 7)) != 0) {
+      to->localVarsInitBits[iVar5] = to->localVarsInitBits[iVar5] | (byte)(1 << ((byte)i & 7));
     }
   }
-  if (param_2->localVarsPublicCount < param_1->localVarsCreateCount) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
+  if (to->localVarsPublicCount < from->localVarsCreateCount) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x3b7,0,"%s");
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  param_2->localVarsCreateCount = param_1->localVarsCreateCount;
-  param_2->abortLevel = 0;
+  to->localVarsCreateCount = from->localVarsCreateCount;
+  to->abortLevel = 0;
   return;
 }
 
@@ -1154,20 +1157,20 @@ void __cdecl Scr_TransferBlock(scr_block_s *param_1,scr_block_s *param_2)
 // 008A87C0  EmitSafeSetVariableField  (clientscript/cscr_compiler.cpp:958)
 
 void __cdecl
-EmitSafeSetVariableField
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitSafeSetVariableField(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   int iVar1;
+  int index;
   
-  iVar1 = Scr_FindLocalVarIndex(param_1,param_2.stringValue,param_3,true,param_4);
-  EmitOpcode(param_1,(iVar1 != 0) + 0x31,0,0);
-  EmitPreAssignmentPos(param_1);
+  iVar1 = Scr_FindLocalVarIndex(inst,expr.stringValue,sourcePos,true,block);
+  EmitOpcode(inst,(iVar1 != 0) + 0x31,0,0);
+  EmitPreAssignmentPos(inst);
   if (iVar1 != 0) {
-    EmitByte(param_1,(uchar)iVar1);
+    EmitByte(inst,(uchar)iVar1);
   }
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  EmitAssignmentPos(param_1);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitAssignmentPos(inst);
   return;
 }
 
@@ -1176,30 +1179,31 @@ EmitSafeSetVariableField
 
 void __cdecl
 EmitSafeSetWaittillVariableField
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   int iVar1;
+  int index;
   
-  iVar1 = Scr_FindLocalVarIndex(param_1,param_2.stringValue,param_3,true,param_4);
-  EmitOpcode(param_1,0x33,0,0);
-  EmitPreAssignmentPos(param_1);
-  EmitByte(param_1,(uchar)iVar1);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  EmitAssignmentPos(param_1);
+  iVar1 = Scr_FindLocalVarIndex(inst,expr.stringValue,sourcePos,true,block);
+  EmitOpcode(inst,0x33,0,0);
+  EmitPreAssignmentPos(inst);
+  EmitByte(inst,(uchar)iVar1);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitAssignmentPos(inst);
   return;
 }
 
 
 // 008A0230  EvalString  (clientscript/cscr_compiler.cpp:989)
 
-void __cdecl EvalString(uint param_1,sval_u param_2,VariableCompileValue *param_3)
+void __cdecl EvalString(uint value,sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (VariableCompileValue *)0x0) {
+  if (constValue == (VariableCompileValue *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x3de,0,"%s");
     if (!bVar2) {
@@ -1208,35 +1212,35 @@ void __cdecl EvalString(uint param_1,sval_u param_2,VariableCompileValue *param_
       return;
     }
   }
-  (param_3->value).type = 2;
-  (param_3->value).u.stringValue = param_1;
-  param_3->sourcePos = param_2;
+  (constValue->value).type = 2;
+  (constValue->value).u.stringValue = value;
+  constValue->sourcePos = sourcePos;
   return;
 }
 
 
 // 008A1BD0  EmitGetString  (clientscript/cscr_compiler.cpp:999)
 
-void __cdecl EmitGetString(scriptInstance_t param_1,uint param_2,sval_u param_3)
+void __cdecl EmitGetString(scriptInstance_t inst,uint value,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,10,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  EmitUnsignedShort(param_1,(ushort)param_2);
-  CompileTransferRefToString(param_1,param_2,1);
+  EmitOpcode(inst,10,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitUnsignedShort(inst,(ushort)value);
+  CompileTransferRefToString(inst,value,1);
   return;
 }
 
 
 // 008A0280  EvalIString  (clientscript/cscr_compiler.cpp:1008)
 
-void __cdecl EvalIString(uint param_1,sval_u param_2,VariableCompileValue *param_3)
+void __cdecl EvalIString(uint value,sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (VariableCompileValue *)0x0) {
+  if (constValue == (VariableCompileValue *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x3f1,0,"%s");
     if (!bVar2) {
@@ -1245,66 +1249,66 @@ void __cdecl EvalIString(uint param_1,sval_u param_2,VariableCompileValue *param
       return;
     }
   }
-  (param_3->value).type = 3;
-  (param_3->value).u.stringValue = param_1;
-  param_3->sourcePos = param_2;
+  (constValue->value).type = 3;
+  (constValue->value).u.stringValue = value;
+  constValue->sourcePos = sourcePos;
   return;
 }
 
 
 // 008A1C60  EmitGetIString  (clientscript/cscr_compiler.cpp:1018)
 
-void __cdecl EmitGetIString(scriptInstance_t param_1,uint param_2,sval_u param_3)
+void __cdecl EmitGetIString(scriptInstance_t inst,uint value,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0xb,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  EmitUnsignedShort(param_1,(ushort)param_2);
-  CompileTransferRefToString(param_1,param_2,1);
+  EmitOpcode(inst,0xb,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitUnsignedShort(inst,(ushort)value);
+  CompileTransferRefToString(inst,value,1);
   return;
 }
 
 
 // 008A1CB0  EmitGetVector  (clientscript/cscr_compiler.cpp:1027)
 
-void __cdecl EmitGetVector(scriptInstance_t param_1,float *param_2,sval_u param_3)
+void __cdecl EmitGetVector(scriptInstance_t inst,float *value,sval_u sourcePos)
 
 {
-  int local_8;
+  int i;
   
-  EmitOpcode(param_1,0xc,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    EmitFloat(param_1,param_2[local_8]);
+  EmitOpcode(inst,0xc,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  for (i = 0; i < 3; i = i + 1) {
+    EmitFloat(inst,value[i]);
   }
-  RemoveRefToVector(param_1,param_2);
+  RemoveRefToVector(inst,value);
   return;
 }
 
 
 // 008A1870  EmitValue  (clientscript/cscr_compiler.cpp:1042)
 
-void __cdecl EmitValue(scriptInstance_t param_1,VariableCompileValue *param_2)
+void __cdecl EmitValue(scriptInstance_t inst,VariableCompileValue *constValue)
 
 {
-  switch((param_2->value).type) {
+  switch((constValue->value).type) {
   case 0:
-    EmitGetUndefined(param_1,param_2->sourcePos);
+    EmitGetUndefined(inst,constValue->sourcePos);
     break;
   case 2:
-    EmitGetString(param_1,(param_2->value).u.stringValue,param_2->sourcePos);
+    EmitGetString(inst,(constValue->value).u.stringValue,constValue->sourcePos);
     break;
   case 3:
-    EmitGetIString(param_1,(param_2->value).u.stringValue,param_2->sourcePos);
+    EmitGetIString(inst,(constValue->value).u.stringValue,constValue->sourcePos);
     break;
   case 4:
-    EmitGetVector(param_1,(param_2->value).u.vectorValue,param_2->sourcePos);
+    EmitGetVector(inst,(constValue->value).u.vectorValue,constValue->sourcePos);
     break;
   case 5:
-    EmitGetFloat(param_1,(param_2->value).u.floatValue,param_2->sourcePos);
+    EmitGetFloat(inst,(constValue->value).u.floatValue,constValue->sourcePos);
     break;
   case 6:
-    EmitGetInteger(param_1,(param_2->value).u.intValue,param_2->sourcePos);
+    EmitGetInteger(inst,(constValue->value).u.intValue,constValue->sourcePos);
   }
   return;
 }
@@ -1312,22 +1316,21 @@ void __cdecl EmitValue(scriptInstance_t param_1,VariableCompileValue *param_2)
 
 // 008A4A40  Scr_PushValue  (clientscript/cscr_compiler.cpp:1073)
 
-void __cdecl Scr_PushValue(scriptInstance_t param_1,VariableCompileValue *param_2)
+void __cdecl Scr_PushValue(scriptInstance_t inst,VariableCompileValue *constValue)
 
 {
   VariableUnion *pVVar1;
   undefined3 in_stack_00000005;
   
-  if (gScrCompilePub[_param_1].value_count < 0x20) {
-    pVVar1 = (VariableUnion *)
-             (_param_1 * 0x1d8 + 0x9d38b50 + gScrCompilePub[_param_1].value_count * 0xc);
-    *pVVar1 = (param_2->value).u;
-    pVVar1[1] = (VariableUnion)(param_2->value).type;
-    *(sval_u *)(pVVar1 + 2) = param_2->sourcePos;
-    gScrCompilePub[_param_1].value_count = gScrCompilePub[_param_1].value_count + 1;
+  if (gScrCompilePub[_inst].value_count < 0x20) {
+    pVVar1 = (VariableUnion *)(_inst * 0x1d8 + 0x9d38b50 + gScrCompilePub[_inst].value_count * 0xc);
+    *pVVar1 = (constValue->value).u;
+    pVVar1[1] = (VariableUnion)(constValue->value).type;
+    *(sval_u *)(pVVar1 + 2) = constValue->sourcePos;
+    gScrCompilePub[_inst].value_count = gScrCompilePub[_inst].value_count + 1;
   }
   else {
-    CompileError(param_1,(param_2->sourcePos).stringValue,"VALUE_STACK_SIZE exceeded");
+    CompileError(inst,(constValue->sourcePos).stringValue,"VALUE_STACK_SIZE exceeded");
   }
   return;
 }
@@ -1335,14 +1338,14 @@ void __cdecl Scr_PushValue(scriptInstance_t param_1,VariableCompileValue *param_
 
 // 008A50A0  Scr_PopValue  (clientscript/cscr_compiler.cpp:1088)
 
-void __cdecl Scr_PopValue(scriptInstance_t param_1)
+void __cdecl Scr_PopValue(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (gScrCompilePub[_param_1].value_count == 0) {
+  if (gScrCompilePub[_inst].value_count == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x441,0,"%s");
     if (!bVar2) {
@@ -1351,132 +1354,132 @@ void __cdecl Scr_PopValue(scriptInstance_t param_1)
       return;
     }
   }
-  gScrCompilePub[_param_1].value_count = gScrCompilePub[_param_1].value_count + -1;
+  gScrCompilePub[_inst].value_count = gScrCompilePub[_inst].value_count + -1;
   return;
 }
 
 
 // 008A4E70  EmitCastBool  (clientscript/cscr_compiler.cpp:1096)
 
-void __cdecl EmitCastBool(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitCastBool(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x5b,0,0);
-  AddOpcodePos(param_1,param_2.stringValue,0);
+  EmitOpcode(inst,0x5b,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A4D30  EmitBoolNot  (clientscript/cscr_compiler.cpp:1103)
 
-void __cdecl EmitBoolNot(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitBoolNot(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x5c,0,0);
-  AddOpcodePos(param_1,param_2.stringValue,0);
+  EmitOpcode(inst,0x5c,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A4D60  EmitBoolComplement  (clientscript/cscr_compiler.cpp:1110)
 
-void __cdecl EmitBoolComplement(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitBoolComplement(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x5d,0,0);
-  AddOpcodePos(param_1,param_2.stringValue,0);
+  EmitOpcode(inst,0x5d,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A3110  EmitSize  (clientscript/cscr_compiler.cpp:1117)
 
-void __cdecl EmitSize(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+void __cdecl EmitSize(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
-  EmitPrimitiveExpression(param_1,param_2,param_4);
-  EmitOpcode(param_1,0x76,0,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
+  EmitPrimitiveExpression(inst,expr,block);
+  EmitOpcode(inst,0x76,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A3150  EmitSelf  (clientscript/cscr_compiler.cpp:1125)
 
-void __cdecl EmitSelf(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitSelf(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0xf,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0xf,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A3180  EmitLevel  (clientscript/cscr_compiler.cpp:1132)
 
-void __cdecl EmitLevel(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitLevel(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x10,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x10,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A31B0  EmitGame  (clientscript/cscr_compiler.cpp:1138)
 
-void __cdecl EmitGame(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitGame(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x11,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x11,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A31E0  EmitAnim  (clientscript/cscr_compiler.cpp:1144)
 
-void __cdecl EmitAnim(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitAnim(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x12,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x12,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A56B0  EmitSelfObject  (clientscript/cscr_compiler.cpp:1150)
 
-void __cdecl EmitSelfObject(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitSelfObject(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x26,0,0);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x26,0,0);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A56F0  EmitLevelObject  (clientscript/cscr_compiler.cpp:1157)
 
-void __cdecl EmitLevelObject(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitLevelObject(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0xd,0,0);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0xd,0,0);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A5730  EmitAnimObject  (clientscript/cscr_compiler.cpp:1164)
 
-void __cdecl EmitAnimObject(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitAnimObject(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0xe,0,0);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0xe,0,0);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
@@ -1484,30 +1487,31 @@ void __cdecl EmitAnimObject(scriptInstance_t param_1,sval_u param_2)
 // 008A26F0  EmitLocalVariable  (clientscript/cscr_compiler.cpp:1171)
 
 void __cdecl
-EmitLocalVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitLocalVariable(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   int iVar1;
   undefined3 in_stack_00000005;
-  uint local_8;
+  int index;
+  uint opcode;
   
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    EmitOpcode(param_1,0x83,1,0);
-    EmitCanonicalString(param_1,param_2.stringValue);
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    EmitOpcode(inst,0x83,1,0);
+    EmitCanonicalString(inst,expr.stringValue);
   }
   else {
-    iVar1 = Scr_FindLocalVarIndex(param_1,param_2.stringValue,param_3,false,param_4);
+    iVar1 = Scr_FindLocalVarIndex(inst,expr.stringValue,sourcePos,false,block);
     if (iVar1 < 6) {
-      local_8 = iVar1 + 0x18;
+      opcode = iVar1 + 0x18;
     }
     else {
-      local_8 = 0x1e;
+      opcode = 0x1e;
     }
-    EmitOpcode(param_1,local_8,1,0);
-    if (local_8 == 0x1e) {
-      EmitByte(param_1,(uchar)iVar1);
+    EmitOpcode(inst,opcode,1,0);
+    if (opcode == 0x1e) {
+      EmitByte(inst,(uchar)iVar1);
     }
-    AddOpcodePos(param_1,param_3.stringValue,1);
+    AddOpcodePos(inst,sourcePos.stringValue,1);
   }
   return;
 }
@@ -1516,24 +1520,25 @@ EmitLocalVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_blo
 // 008A5350  EmitLocalVariableRef  (clientscript/cscr_compiler.cpp:1201)
 
 void __cdecl
-EmitLocalVariableRef(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitLocalVariableRef(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   int iVar1;
   undefined3 in_stack_00000005;
+  int index;
   
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    EmitOpcode(param_1,0x84,0,0);
-    EmitCanonicalString(param_1,param_2.stringValue);
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    EmitOpcode(inst,0x84,0,0);
+    EmitCanonicalString(inst,expr.stringValue);
   }
   else {
-    iVar1 = Scr_FindLocalVarIndex(param_1,param_2.stringValue,param_3,true,param_4);
-    EmitOpcode(param_1,(iVar1 != 0) + 0x36,0,0);
-    EmitPreAssignmentPos(param_1);
+    iVar1 = Scr_FindLocalVarIndex(inst,expr.stringValue,sourcePos,true,block);
+    EmitOpcode(inst,(iVar1 != 0) + 0x36,0,0);
+    EmitPreAssignmentPos(inst);
     if (iVar1 != 0) {
-      EmitByte(param_1,(uchar)iVar1);
+      EmitByte(inst,(uchar)iVar1);
     }
-    AddOpcodePos(param_1,param_3.stringValue,1);
+    AddOpcodePos(inst,sourcePos.stringValue,1);
   }
   return;
 }
@@ -1541,89 +1546,90 @@ EmitLocalVariableRef(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_
 
 // 008A08A0  Scr_CalcLocalVarsLocalVariableRef  (clientscript/cscr_compiler.cpp:1222)
 
-void __cdecl Scr_CalcLocalVarsLocalVariableRef(sval_u param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl
+Scr_CalcLocalVarsLocalVariableRef(sval_u expr_2,sval_u sourcePos_2,scr_block_s *block_2)
 
 {
-  Scr_RegisterLocalVar(param_1.stringValue,param_2,param_3);
+  Scr_RegisterLocalVar(expr_2.stringValue,sourcePos_2,block_2);
   return;
 }
 
 
 // 008A5540  EmitGameRef  (clientscript/cscr_compiler.cpp:1227)
 
-void __cdecl EmitGameRef(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitGameRef(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x14,0,0);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x14,0,0);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A2DF0  EmitEvalArray  (clientscript/cscr_compiler.cpp:1234)
 
-void __cdecl EmitEvalArray(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitEvalArray(scriptInstance_t inst,sval_u sourcePos,sval_u indexSourcePos)
 
 {
-  EmitOpcode(param_1,0x20,-1,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x20,-1,0);
+  AddOpcodePos(inst,indexSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A5490  EmitEvalArrayRef  (clientscript/cscr_compiler.cpp:1241)
 
-void __cdecl EmitEvalArrayRef(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitEvalArrayRef(scriptInstance_t inst,sval_u sourcePos,sval_u indexSourcePos)
 
 {
-  EmitOpcode(param_1,0x23,-1,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x23,-1,0);
+  AddOpcodePos(inst,indexSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A5C00  EmitClearArray  (clientscript/cscr_compiler.cpp:1249)
 
-void __cdecl EmitClearArray(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitClearArray(scriptInstance_t inst,sval_u sourcePos,sval_u indexSourcePos)
 
 {
-  EmitOpcode(param_1,0x24,-1,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  AddOpcodePos(param_1,param_2.stringValue,0);
-  EmitAssignmentPos(param_1);
+  EmitOpcode(inst,0x24,-1,0);
+  AddOpcodePos(inst,indexSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitAssignmentPos(inst);
   return;
 }
 
 
 // 008A3210  EmitEmptyArray  (clientscript/cscr_compiler.cpp:1257)
 
-void __cdecl EmitEmptyArray(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitEmptyArray(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x25,1,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitOpcode(inst,0x25,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
 
 // 008A3240  EmitAnimation  (clientscript/cscr_compiler.cpp:1266)
 
-void __cdecl EmitAnimation(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitAnimation(scriptInstance_t inst,sval_u anim,sval_u sourcePos)
 
 {
   undefined3 in_stack_00000005;
   
-  EmitOpcode(param_1,0x13,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,1);
-  EmitInteger(param_1,-1);
-  if (gScrCompilePub[_param_1].developer_statement != 2) {
-    Scr_EmitAnimation(param_1,(char *)gScrCompileGlob[_param_1].codePos,param_2.stringValue,
-                      param_3.stringValue);
+  EmitOpcode(inst,0x13,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitInteger(inst,-1);
+  if (gScrCompilePub[_inst].developer_statement != 2) {
+    Scr_EmitAnimation(inst,(char *)gScrCompileGlob[_inst].codePos,anim.stringValue,
+                      sourcePos.stringValue);
   }
-  Scr_CompileRemoveRefToString(param_1,param_2.stringValue);
+  Scr_CompileRemoveRefToString(inst,anim.stringValue);
   return;
 }
 
@@ -1631,14 +1637,14 @@ void __cdecl EmitAnimation(scriptInstance_t param_1,sval_u param_2,sval_u param_
 // 008A2B50  EmitFieldVariable  (clientscript/cscr_compiler.cpp:1278)
 
 void __cdecl
-EmitFieldVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                 scr_block_s *param_5)
+EmitFieldVariable(scriptInstance_t inst,sval_u expr,sval_u field,sval_u sourcePos,scr_block_s *block
+                 )
 
 {
-  EmitPrimitiveExpressionFieldObject(param_1,param_2,param_4,param_5);
-  EmitOpcode(param_1,0x2a,1,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  EmitCanonicalString(param_1,param_3.stringValue);
+  EmitPrimitiveExpressionFieldObject(inst,expr,sourcePos,block);
+  EmitOpcode(inst,0x2a,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitCanonicalString(inst,field.stringValue);
   return;
 }
 
@@ -1647,13 +1653,12 @@ EmitFieldVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u 
 
 void __cdecl
 EmitFieldVariableRef
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-          scr_block_s *param_5)
+          (scriptInstance_t inst,sval_u expr,sval_u field,sval_u sourcePos,scr_block_s *block)
 
 {
-  EmitPrimitiveExpressionFieldObject(param_1,param_2,param_4,param_5);
-  EmitOpcode(param_1,0x2e,0,0);
-  EmitCanonicalString(param_1,param_3.stringValue);
+  EmitPrimitiveExpressionFieldObject(inst,expr,sourcePos,block);
+  EmitOpcode(inst,0x2e,0,0);
+  EmitCanonicalString(inst,field.stringValue);
   return;
 }
 
@@ -1662,71 +1667,75 @@ EmitFieldVariableRef
 
 void __cdecl
 EmitClearFieldVariable
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr,sval_u field,sval_u sourcePos,sval_u rhsSourcePos,
+          scr_block_s *block)
 
 {
-  EmitPrimitiveExpressionFieldObject(param_1,param_2,param_4,param_6);
-  EmitOpcode(param_1,0x2f,0,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  EmitCanonicalString(param_1,param_3.stringValue);
-  EmitAssignmentPos(param_1);
+  EmitPrimitiveExpressionFieldObject(inst,expr,sourcePos,block);
+  EmitOpcode(inst,0x2f,0,0);
+  AddOpcodePos(inst,rhsSourcePos.stringValue,0);
+  EmitCanonicalString(inst,field.stringValue);
+  EmitAssignmentPos(inst);
   return;
 }
 
 
 // 008A2BB0  EmitObject  (clientscript/cscr_compiler.cpp:1305)
 
-void __cdecl EmitObject(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitObject(scriptInstance_t inst,sval_u expr,sval_u sourcePos)
 
 {
   bool bVar1;
   char *pcVar2;
   uint uVar3;
   int iVar4;
-  int iVar5;
+  int pos;
   undefined3 in_stack_00000005;
-  ushort local_8;
+  int classnum;
+  ushort sIdValue;
+  char *s;
+  int entnum;
+  uint idValue;
   
-  if (gScrCompilePub[_param_1].script_loading == false) {
-    pcVar2 = SL_ConvertToString(param_2.stringValue,param_1);
+  if (gScrCompilePub[_inst].script_loading == false) {
+    pcVar2 = SL_ConvertToString(expr.stringValue,inst);
     if (*pcVar2 == 't') {
       uVar3 = atoi(pcVar2 + 1);
       if ((uVar3 != 0) && (uVar3 < 0x7ffe)) {
-        local_8 = (ushort)uVar3;
-        bVar1 = IsObjectFree(param_1,uVar3 & 0xffff);
-        if (((!bVar1) && (iVar4 = GetObjectType(param_1,uVar3 & 0xffff), 0xc < iVar4)) &&
+        idValue._0_2_ = (ushort)uVar3;
+        bVar1 = IsObjectFree(inst,uVar3 & 0xffff);
+        if (((!bVar1) && (iVar4 = GetObjectType(inst,uVar3 & 0xffff), 0xc < iVar4)) &&
            ((iVar4 < 0x11 || (iVar4 == 0x15)))) {
-          EmitOpcode(param_1,0x82,1,0);
-          EmitUnsignedShort(param_1,local_8);
+          EmitOpcode(inst,0x82,1,0);
+          EmitUnsignedShort(inst,(ushort)idValue);
           return;
         }
       }
-      CompileError(param_1,param_3.stringValue,"bad expression");
+      CompileError(inst,sourcePos.stringValue,"bad expression");
     }
     else if (*pcVar2 == 'a') {
-      CompileError(param_1,param_3.stringValue,"argument expressions not supported in statements");
+      CompileError(inst,sourcePos.stringValue,"argument expressions not supported in statements");
     }
     else {
-      iVar4 = Scr_GetClassnumForCharId(param_1,*pcVar2);
+      iVar4 = Scr_GetClassnumForCharId(inst,*pcVar2);
       if (iVar4 < 0) {
-        CompileError(param_1,param_3.stringValue,"bad expression");
+        CompileError(inst,sourcePos.stringValue,"bad expression");
       }
       else {
-        iVar5 = atoi(pcVar2 + 1);
-        if ((iVar5 == 0) && (pcVar2[1] != '0')) {
-          CompileError(param_1,param_3.stringValue,"bad expression");
+        pos = atoi(pcVar2 + 1);
+        if ((pos == 0) && (pcVar2[1] != '0')) {
+          CompileError(inst,sourcePos.stringValue,"bad expression");
         }
         else {
-          EmitOpcode(param_1,0x81,1,0);
-          EmitInteger(param_1,iVar4);
-          EmitInteger(param_1,iVar5);
+          EmitOpcode(inst,0x81,1,0);
+          EmitInteger(inst,iVar4);
+          EmitInteger(inst,pos);
         }
       }
     }
   }
   else {
-    CompileError(param_1,param_3.stringValue,"$ can only be used in the script debugger");
+    CompileError(inst,sourcePos.stringValue,"$ can only be used in the script debugger");
   }
   return;
 }
@@ -1734,22 +1743,22 @@ void __cdecl EmitObject(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
 
 // 008A3D00  EmitDecTop  (clientscript/cscr_compiler.cpp:1372)
 
-void __cdecl EmitDecTop(scriptInstance_t param_1)
+void __cdecl EmitDecTop(scriptInstance_t inst)
 
 {
-  EmitOpcode(param_1,0x58,-1,0);
+  EmitOpcode(inst,0x58,-1,0);
   return;
 }
 
 
 // 008A5770  EmitCastFieldObject  (clientscript/cscr_compiler.cpp:1377)
 
-void __cdecl EmitCastFieldObject(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitCastFieldObject(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x59,-1,0);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,0);
+  EmitOpcode(inst,0x59,-1,0);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
@@ -1757,13 +1766,13 @@ void __cdecl EmitCastFieldObject(scriptInstance_t param_1,sval_u param_2)
 // 008A2DA0  EmitArrayVariable  (clientscript/cscr_compiler.cpp:1384)
 
 void __cdecl
-EmitArrayVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                 sval_u param_5,scr_block_s *param_6)
+EmitArrayVariable(scriptInstance_t inst,sval_u expr,sval_u index,sval_u sourcePos,
+                 sval_u indexSourcePos,scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_3,param_6);
-  EmitPrimitiveExpression(param_1,param_2,param_6);
-  EmitEvalArray(param_1,param_4,param_5);
+  EmitExpression(inst,index,block);
+  EmitPrimitiveExpression(inst,expr,block);
+  EmitEvalArray(inst,sourcePos,indexSourcePos);
   return;
 }
 
@@ -1772,23 +1781,23 @@ EmitArrayVariable(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u 
 
 void __cdecl
 EmitArrayVariableRef
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr,sval_u index,sval_u sourcePos,sval_u indexSourcePos,
+          scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_3,param_6);
-  EmitArrayPrimitiveExpressionRef(param_1,param_2,param_4,param_6);
-  EmitEvalArrayRef(param_1,param_4,param_5);
+  EmitExpression(inst,index,block);
+  EmitArrayPrimitiveExpressionRef(inst,expr,sourcePos,block);
+  EmitEvalArrayRef(inst,sourcePos,indexSourcePos);
   return;
 }
 
 
 // 0089F6B0  Scr_CalcLocalVarsArrayVariableRef  (clientscript/cscr_compiler.cpp:1398)
 
-void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u expr,scr_block_s *block)
 
 {
-  Scr_CalcLocalVarsArrayPrimitiveExpressionRef(param_1,param_2);
+  Scr_CalcLocalVarsArrayPrimitiveExpressionRef(expr,block);
   return;
 }
 
@@ -1797,53 +1806,53 @@ void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u param_1,scr_block_s *param
 
 void __cdecl
 EmitClearArrayVariable
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr,sval_u index,sval_u sourcePos,sval_u indexSourcePos,
+          scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_3,param_6);
-  EmitArrayPrimitiveExpressionRef(param_1,param_2,param_4,param_6);
-  EmitClearArray(param_1,param_4,param_5);
+  EmitExpression(inst,index,block);
+  EmitArrayPrimitiveExpressionRef(inst,expr,sourcePos,block);
+  EmitClearArray(inst,sourcePos,indexSourcePos);
   return;
 }
 
 
 // 008A2580  EmitVariableExpression  (clientscript/cscr_compiler.cpp:1411)
 
-void __cdecl EmitVariableExpression(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitVariableExpression(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
   char *local_c;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\x05':
-    EmitLocalVariable(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                      (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+    EmitLocalVariable(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                      (sval_u)(expr.block)->localVarsPublicCount,block);
     break;
   case '\x0f':
-    EmitArrayVariable(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                      (sval_u)(param_2.block)->localVarsPublicCount,
-                      (sval_u)(param_2.block)->localVarsCount,
-                      *(sval_u *)(param_2.block)->localVarsInitBits,param_3);
+    EmitArrayVariable(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                      (sval_u)(expr.block)->localVarsPublicCount,
+                      (sval_u)(expr.block)->localVarsCount,
+                      *(sval_u *)(expr.block)->localVarsInitBits,block);
     break;
   case '\x11':
-    EmitFieldVariable(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                      (sval_u)(param_2.block)->localVarsPublicCount,
-                      (sval_u)(param_2.block)->localVarsCount,param_3);
+    EmitFieldVariable(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                      (sval_u)(expr.block)->localVarsPublicCount,
+                      (sval_u)(expr.block)->localVarsCount,block);
     break;
   case '7':
-    if (gScrCompilePub[_param_1].script_loading == false) {
+    if (gScrCompilePub[_inst].script_loading == false) {
       local_c = "self field in assignment expression not currently supported";
     }
     else {
       local_c = "self field can only be used in the script debugger";
     }
-    CompileError(param_1,(param_2.block)->localVarsPublicCount,local_c);
+    CompileError(inst,(expr.block)->localVarsPublicCount,local_c);
     break;
   case 'R':
-    EmitObject(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount);
+    EmitObject(inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount);
   }
   return;
 }
@@ -1851,46 +1860,46 @@ void __cdecl EmitVariableExpression(scriptInstance_t param_1,sval_u param_2,scr_
 
 // 0089E330  GetExpressionCount  (clientscript/cscr_compiler.cpp:1438)
 
-int __cdecl GetExpressionCount(sval_u param_1)
+int __cdecl GetExpressionCount(sval_u exprlist)
 
 {
-  int local_c;
-  int local_8;
+  sval_u *node;
+  int expr_count;
   
-  local_8 = 0;
-  for (local_c = (param_1.block)->abortLevel; local_c != 0; local_c = *(int *)(local_c + 4)) {
-    local_8 = local_8 + 1;
+  expr_count = 0;
+  for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+    expr_count = expr_count + 1;
   }
-  return local_8;
+  return expr_count;
 }
 
 
 // 008A3D20  EmitExpressionList  (clientscript/cscr_compiler.cpp:1450)
 
-int __cdecl EmitExpressionList(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+int __cdecl EmitExpressionList(scriptInstance_t inst,sval_u exprlist,scr_block_s *block)
 
 {
-  undefined4 *local_c;
-  int local_8;
+  sval_u *node;
+  int expr_count;
   
-  local_8 = 0;
-  for (local_c = (undefined4 *)(param_2.block)->abortLevel; local_c != (undefined4 *)0x0;
-      local_c = (undefined4 *)local_c[1]) {
-    EmitExpression(param_1,*(sval_u *)*local_c,param_3);
-    local_8 = local_8 + 1;
+  expr_count = 0;
+  for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+    EmitExpression(inst,*node->node,block);
+    expr_count = expr_count + 1;
   }
-  return local_8;
+  return expr_count;
 }
 
 
 // 008A58B0  GetSingleParameter  (clientscript/cscr_compiler.cpp:1466)
 
-sval_u * __cdecl GetSingleParameter(sval_u param_1)
+sval_u * __cdecl GetSingleParameter(sval_u exprlist)
 
 {
   sval_u *psVar1;
+  sval_u *node;
   
-  psVar1 = (sval_u *)(param_1.block)->abortLevel;
+  psVar1 = (sval_u *)(exprlist.block)->abortLevel;
   if (psVar1 == (sval_u *)0x0) {
     psVar1 = (sval_u *)0x0;
   }
@@ -1903,16 +1912,15 @@ sval_u * __cdecl GetSingleParameter(sval_u param_1)
 
 // 008A3D70  AddExpressionListOpcodePos  (clientscript/cscr_compiler.cpp:1479)
 
-void __cdecl AddExpressionListOpcodePos(scriptInstance_t param_1,sval_u param_2)
+void __cdecl AddExpressionListOpcodePos(scriptInstance_t inst,sval_u exprlist)
 
 {
   undefined3 in_stack_00000005;
-  int *local_8;
+  sval_u *node;
   
-  if (gScrVarPub[_param_1].developer != false) {
-    for (local_8 = (int *)(param_2.block)->abortLevel; local_8 != (int *)0x0;
-        local_8 = (int *)local_8[1]) {
-      AddOpcodePos(param_1,*(uint *)(*local_8 + 4),0);
+  if (gScrVarPub[_inst].developer != false) {
+    for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+      AddOpcodePos(inst,node->block->localVarsCreateCount,0);
     }
   }
   return;
@@ -1922,8 +1930,8 @@ void __cdecl AddExpressionListOpcodePos(scriptInstance_t param_1,sval_u param_2)
 // 008A3850  AddFilePrecache  (clientscript/cscr_compiler.cpp:1491)
 
 void __cdecl
-AddFilePrecache(scriptInstance_t param_1,uint param_2,uint param_3,bool param_4,uint *param_5,
-               uint *param_6)
+AddFilePrecache(scriptInstance_t inst,uint filename,uint sourcePos,bool include,uint *filePosId,
+               uint *fileCountId)
 
 {
   code *pcVar1;
@@ -1931,26 +1939,26 @@ AddFilePrecache(scriptInstance_t param_1,uint param_2,uint param_3,bool param_4,
   uint uVar3;
   undefined3 in_stack_00000005;
   
-  if ((gScrCompileGlob[_param_1].precachescriptList == (PrecacheEntry *)0x0) &&
+  if ((gScrCompileGlob[_inst].precachescriptList == (PrecacheEntry *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x5d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  SL_AddRefToString(param_2,param_1);
-  Scr_CompileRemoveRefToString(param_1,param_2);
-  (gScrCompileGlob[_param_1].precachescriptList)->filename = (ushort)param_2;
-  (gScrCompileGlob[_param_1].precachescriptList)->sourcePos = param_3;
-  (gScrCompileGlob[_param_1].precachescriptList)->include = param_4;
-  gScrCompileGlob[_param_1].precachescriptList = gScrCompileGlob[_param_1].precachescriptList + 1;
-  if (!param_4) {
-    uVar3 = GetVariable(param_1,gScrCompilePub[_param_1].scriptsPos,param_2);
-    uVar3 = GetObject(param_1,uVar3);
-    *param_5 = uVar3;
-    uVar3 = GetVariable(param_1,gScrCompilePub[_param_1].scriptsCount,param_2);
-    uVar3 = GetObject(param_1,uVar3);
-    *param_6 = uVar3;
+  SL_AddRefToString(filename,inst);
+  Scr_CompileRemoveRefToString(inst,filename);
+  (gScrCompileGlob[_inst].precachescriptList)->filename = (ushort)filename;
+  (gScrCompileGlob[_inst].precachescriptList)->sourcePos = sourcePos;
+  (gScrCompileGlob[_inst].precachescriptList)->include = include;
+  gScrCompileGlob[_inst].precachescriptList = gScrCompileGlob[_inst].precachescriptList + 1;
+  if (!include) {
+    uVar3 = GetVariable(inst,gScrCompilePub[_inst].scriptsPos,filename);
+    uVar3 = GetObject(inst,uVar3);
+    *filePosId = uVar3;
+    uVar3 = GetVariable(inst,gScrCompilePub[_inst].scriptsCount,filename);
+    uVar3 = GetObject(inst,uVar3);
+    *fileCountId = uVar3;
   }
   return;
 }
@@ -1958,14 +1966,14 @@ AddFilePrecache(scriptInstance_t param_1,uint param_2,uint param_3,bool param_4,
 
 // 008A3300  EmitFunction  (clientscript/cscr_compiler.cpp:1516)
 
-void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitFunction(scriptInstance_t inst,sval_u func,sval_u sourcePos)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  VariableValue VVar5;
+  char *filename_00;
+  uint uVar3;
+  VariableValue VVar4;
   undefined3 in_stack_00000005;
   VariableUnion local_5c;
   int local_58;
@@ -1973,68 +1981,69 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
   int local_50;
   VariableUnion local_4c;
   int local_48;
-  uint local_34;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  char local_21;
-  int local_20;
-  uint local_1c;
-  uint local_18;
-  VariableUnion local_14;
+  uint threadCountId;
+  uint valueId;
+  uint fileCountId;
+  uint filename;
+  uint posId;
+  uint threadName;
+  bool bExists;
+  int scope;
+  uint countId;
+  uint filePosId;
+  VariableUnion count;
   int local_10;
-  VariableUnion local_c;
+  VariableUnion value;
   int local_8;
   
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    CompileError(param_1,param_3.stringValue,"cannot evaluate in the debugger");
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    CompileError(inst,sourcePos.stringValue,"cannot evaluate in the debugger");
   }
-  else if (gScrCompilePub[_param_1].developer_statement == 2) {
-    Scr_CompileRemoveRefToString(param_1,(param_2.block)->localVarsCreateCount);
-    if (*param_2.codePosValue == '\x17') {
-      Scr_CompileRemoveRefToString(param_1,(param_2.block)->localVarsPublicCount);
-      gScrCompilePub[_param_1].far_function_count = gScrCompilePub[_param_1].far_function_count + -1
-      ;
+  else if (gScrCompilePub[_inst].developer_statement == 2) {
+    Scr_CompileRemoveRefToString(inst,(func.block)->localVarsCreateCount);
+    if (*func.codePosValue == '\x17') {
+      Scr_CompileRemoveRefToString(inst,(func.block)->localVarsPublicCount);
+      gScrCompilePub[_inst].far_function_count = gScrCompilePub[_inst].far_function_count + -1;
     }
   }
   else {
-    if (*param_2.codePosValue == '\x16') {
-      local_20 = 0;
-      local_34 = gScrCompileGlob[_param_1].fileCountId;
-      local_28 = (param_2.block)->localVarsCreateCount;
-      CompileTransferRefToString(param_1,local_28,2);
+    if (*func.codePosValue == '\x16') {
+      scope = 0;
+      fileCountId = gScrCompileGlob[_inst].fileCountId;
+      threadName = (func.block)->localVarsCreateCount;
+      CompileTransferRefToString(inst,threadName,2);
     }
     else {
-      if ((*param_2.codePosValue != '\x17') &&
+      if ((*func.codePosValue != '\x17') &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x61a,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_20 = 1;
-      pcVar3 = SL_ConvertToString((param_2.block)->localVarsCreateCount,param_1);
-      local_30 = Scr_CreateCanonicalFilename(param_1,pcVar3);
-      Scr_CompileRemoveRefToString(param_1,(param_2.block)->localVarsCreateCount);
-      uVar4 = FindVariable(param_1,gScrCompilePub[_param_1].loadedscripts,local_30);
-      VVar5 = Scr_EvalVariable(param_1,uVar4);
-      local_4c = VVar5.u;
-      local_c.intValue = local_4c.intValue;
-      local_48 = VVar5.type;
+      scope = 1;
+      filename_00 = SL_ConvertToString((func.block)->localVarsCreateCount,inst);
+      filename = Scr_CreateCanonicalFilename(inst,filename_00);
+      Scr_CompileRemoveRefToString(inst,(func.block)->localVarsCreateCount);
+      uVar3 = FindVariable(inst,gScrCompilePub[_inst].loadedscripts,filename);
+      VVar4 = Scr_EvalVariable(inst,uVar3);
+      local_4c = VVar4.u;
+      value.intValue = local_4c.intValue;
+      local_48 = VVar4.type;
       local_8 = local_48;
-      local_21 = local_48 != 0;
-      AddFilePrecache(param_1,local_30,param_3.stringValue,false,&local_18,&local_34);
-      local_28 = (param_2.block)->localVarsPublicCount;
-      CompileTransferRefToString(param_1,local_28,2);
-      if (local_21 != '\0') {
-        local_2c = FindVariable(param_1,local_18,local_28);
-        if (local_2c == 0) {
-          CompileError(param_1,param_3.stringValue,"unknown function");
+      bExists = local_48 != 0;
+      AddFilePrecache(inst,filename,sourcePos.stringValue,false,&filePosId,&fileCountId);
+      threadName = (func.block)->localVarsPublicCount;
+      CompileTransferRefToString(inst,threadName,2);
+      if (bExists != false) {
+        posId = FindVariable(inst,filePosId,threadName);
+        if (posId == 0) {
+          CompileError(inst,sourcePos.stringValue,"unknown function");
           return;
         }
-        VVar5 = Scr_EvalVariable(param_1,local_2c);
-        local_54 = VVar5.u;
-        local_50 = VVar5.type;
+        VVar4 = Scr_EvalVariable(inst,posId);
+        local_54 = VVar4.u;
+        local_50 = VVar4.type;
         if (((local_50 != 7) && (local_50 != 0xc)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x631,0,"%s\n\t(pos.type) = %i"), !bVar2)) {
@@ -2050,7 +2059,7 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
           return;
         }
         if (local_50 == 7) {
-          EmitInteger(param_1,local_54.intValue);
+          EmitInteger(inst,local_54.intValue);
           return;
         }
         if ((local_50 != 0xc) &&
@@ -2060,44 +2069,44 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
           (*pcVar1)();
           return;
         }
-        if ((gScrVarPub[_param_1].developer_script == false) &&
+        if ((gScrVarPub[_inst].developer_script == false) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x63c,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if ((gScrCompilePub[_param_1].developer_statement == 2) &&
+        if ((gScrCompilePub[_inst].developer_statement == 2) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x63d,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (gScrCompilePub[_param_1].developer_statement == 0) {
-          CompileError(param_1,param_3.stringValue,
+        if (gScrCompilePub[_inst].developer_statement == 0) {
+          CompileError(inst,sourcePos.stringValue,
                        "normal script cannot reference a function in a /# ... #/ comment");
           return;
         }
-        EmitInteger(param_1,local_54.intValue);
+        EmitInteger(inst,local_54.intValue);
         return;
       }
     }
-    EmitInteger(param_1,local_20);
-    uVar4 = GetVariable(param_1,local_34,local_28);
-    uVar4 = GetObject(param_1,uVar4);
-    if ((uVar4 == 0) &&
+    EmitInteger(inst,scope);
+    uVar3 = GetVariable(inst,fileCountId,threadName);
+    uVar3 = GetObject(inst,uVar3);
+    if ((uVar3 == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x64c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_1c = GetVariable(param_1,uVar4,0);
-    VVar5 = Scr_EvalVariable(param_1,local_1c);
-    local_5c = VVar5.u;
-    local_14.intValue = local_5c.intValue;
-    local_58 = VVar5.type;
+    countId = GetVariable(inst,uVar3,0);
+    VVar4 = Scr_EvalVariable(inst,countId);
+    local_5c = VVar4.u;
+    count.intValue = local_5c.intValue;
+    local_58 = VVar4.type;
     local_10 = local_58;
     if (((local_58 != 0) && (local_58 != 6)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
@@ -2108,15 +2117,15 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
     }
     if (local_10 == 0) {
       local_10 = 6;
-      local_14.intValue = 0;
+      count.intValue = 0;
     }
-    uVar4 = GetNewVariable(param_1,uVar4,local_14.intValue + 1);
-    local_c = *(VariableUnion *)(gScrCompileGlob + _param_1);
-    if (gScrCompilePub[_param_1].developer_statement == 0) {
+    uVar3 = GetNewVariable(inst,uVar3,count.intValue + 1);
+    value = *(VariableUnion *)(gScrCompileGlob + _inst);
+    if (gScrCompilePub[_inst].developer_statement == 0) {
       local_8 = 7;
     }
     else {
-      if ((gScrVarPub[_param_1].developer_script == false) &&
+      if ((gScrVarPub[_inst].developer_script == false) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x65d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2125,10 +2134,10 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
       }
       local_8 = 0xc;
     }
-    SetNewVariableValue(param_1,uVar4,(VariableValue *)&local_c);
-    local_14.vectorValue = (float *)((int)&(local_14.stackValue)->pos + 1);
-    SetVariableValue(param_1,local_1c,(VariableValue *)&local_14);
-    AddOpcodePos(param_1,param_3.stringValue,0);
+    SetNewVariableValue(inst,uVar3,(VariableValue *)&value);
+    count.vectorValue = (float *)((int)&(count.stackValue)->pos + 1);
+    SetVariableValue(inst,countId,(VariableValue *)&count);
+    AddOpcodePos(inst,sourcePos.stringValue,0);
   }
   return;
 }
@@ -2136,47 +2145,46 @@ void __cdecl EmitFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3
 
 // 008A32C0  EmitGetFunction  (clientscript/cscr_compiler.cpp:1647)
 
-void __cdecl EmitGetFunction(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitGetFunction(scriptInstance_t inst,sval_u func,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x15,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,3);
-  EmitFunction(param_1,param_2,param_3);
+  EmitOpcode(inst,0x15,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,3);
+  EmitFunction(inst,func,sourcePos);
   return;
 }
 
 
 // 008A3DC0  AddFunction  (clientscript/cscr_compiler.cpp:1655)
 
-uint __cdecl AddFunction(scriptInstance_t param_1,int param_2,char *param_3)
+uint __cdecl AddFunction(scriptInstance_t inst,int func,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
-  uint local_8;
+  int i;
   
-  for (local_8 = 0; (int)local_8 < gScrCompilePub[_param_1].func_table_size; local_8 = local_8 + 1)
-  {
-    if (*(int *)(_param_1 * 0x21038 + 0x9d16ac0 + local_8 * 4) == param_2) {
-      return local_8;
+  for (i = 0; i < gScrCompilePub[_inst].func_table_size; i = i + 1) {
+    if (*(int *)(_inst * 0x21038 + 0x9d16ac0 + i * 4) == func) {
+      return i;
     }
   }
-  if ((local_8 != gScrCompilePub[_param_1].func_table_size) &&
+  if ((i != gScrCompilePub[_inst].func_table_size) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x680,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (gScrCompilePub[_param_1].func_table_size == 0x400) {
+  if (gScrCompilePub[_inst].func_table_size == 0x400) {
     Com_Error(ERR_DROP,"\x15SCR_FUNC_TABLE_SIZE exceeded");
   }
-  *(int *)(_param_1 * 0x21038 + 0x9d16ac0 + gScrCompilePub[_param_1].func_table_size * 4) = param_2;
-  gScrVmDebugPub[_param_1].func_table[gScrCompilePub[_param_1].func_table_size].breakpointCount = 0;
-  gScrCompilePub[_param_1].func_table_size = gScrCompilePub[_param_1].func_table_size + 1;
-  return local_8;
+  *(int *)(_inst * 0x21038 + 0x9d16ac0 + gScrCompilePub[_inst].func_table_size * 4) = func;
+  gScrVmDebugPub[_inst].func_table[gScrCompilePub[_inst].func_table_size].breakpointCount = 0;
+  gScrCompilePub[_inst].func_table_size = gScrCompilePub[_inst].func_table_size + 1;
+  return i;
 }
 
 
@@ -2184,17 +2192,17 @@ uint __cdecl AddFunction(scriptInstance_t param_1,int param_2,char *param_3)
 
 void __cdecl
 EmitPostScriptFunction
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5)
+          (scriptInstance_t inst,sval_u func,int param_count,bool bMethod,sval_u nameSourcePos)
 
 {
-  if (param_4) {
-    EmitOpcode(param_1,0x52,-1 - param_3,3);
+  if (bMethod) {
+    EmitOpcode(inst,0x52,-1 - param_count,3);
   }
   else {
-    EmitOpcode(param_1,0x50,-param_3,3);
+    EmitOpcode(inst,0x50,-param_count,3);
   }
-  AddOpcodePos(param_1,param_5.stringValue,3);
-  EmitFunction(param_1,param_2,param_5);
+  AddOpcodePos(inst,nameSourcePos.stringValue,3);
+  EmitFunction(inst,func,nameSourcePos);
   return;
 }
 
@@ -2203,19 +2211,19 @@ EmitPostScriptFunction
 
 void __cdecl
 EmitPostScriptFunctionPointer
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5,
-          sval_u param_6,scr_block_s *param_7)
+          (scriptInstance_t inst,sval_u expr,int param_count,bool bMethod,sval_u nameSourcePos,
+          sval_u sourcePos,scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_2,param_7);
-  if (param_4) {
-    EmitOpcode(param_1,0x53,-2 - param_3,3);
+  EmitExpression(inst,expr,block);
+  if (bMethod) {
+    EmitOpcode(inst,0x53,-2 - param_count,3);
   }
   else {
-    EmitOpcode(param_1,0x51,-1 - param_3,3);
+    EmitOpcode(inst,0x51,-1 - param_count,3);
   }
-  AddOpcodePos(param_1,param_6.stringValue,0);
-  AddOpcodePos(param_1,param_5.stringValue,1);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  AddOpcodePos(inst,nameSourcePos.stringValue,1);
   return;
 }
 
@@ -2224,18 +2232,18 @@ EmitPostScriptFunctionPointer
 
 void __cdecl
 EmitPostScriptThread
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5)
+          (scriptInstance_t inst,sval_u func,int param_count,bool bMethod,sval_u sourcePos)
 
 {
-  if (param_4) {
-    EmitOpcode(param_1,0x56,-param_3,2);
+  if (bMethod) {
+    EmitOpcode(inst,0x56,-param_count,2);
   }
   else {
-    EmitOpcode(param_1,0x54,1 - param_3,2);
+    EmitOpcode(inst,0x54,1 - param_count,2);
   }
-  AddOpcodePos(param_1,param_5.stringValue,3);
-  EmitFunction(param_1,param_2,param_5);
-  EmitInteger(param_1,param_3);
+  AddOpcodePos(inst,sourcePos.stringValue,3);
+  EmitFunction(inst,func,sourcePos);
+  EmitInteger(inst,param_count);
   return;
 }
 
@@ -2244,19 +2252,19 @@ EmitPostScriptThread
 
 void __cdecl
 EmitPostScriptThreadPointer
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr,int param_count,bool bMethod,sval_u sourcePos,
+          scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_2,param_6);
-  if (param_4) {
-    EmitOpcode(param_1,0x57,-1 - param_3,2);
+  EmitExpression(inst,expr,block);
+  if (bMethod) {
+    EmitOpcode(inst,0x57,-1 - param_count,2);
   }
   else {
-    EmitOpcode(param_1,0x55,-param_3,2);
+    EmitOpcode(inst,0x55,-param_count,2);
   }
-  AddOpcodePos(param_1,param_5.stringValue,1);
-  EmitInteger(param_1,param_3);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  EmitInteger(inst,param_count);
   return;
 }
 
@@ -2265,18 +2273,19 @@ EmitPostScriptThreadPointer
 
 void __cdecl
 EmitPostScriptFunctionCall
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u func_name,int param_count,bool bMethod,sval_u nameSourcePos,
+          scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x14') {
+  if (*func_name.codePosValue == '\x14') {
     EmitPostScriptFunction
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,param_5);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               nameSourcePos);
   }
-  else if (*param_2.codePosValue == '\x18') {
+  else if (*func_name.codePosValue == '\x18') {
     EmitPostScriptFunctionPointer
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,param_5,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_6);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               nameSourcePos,(sval_u)(func_name.block)->localVarsPublicCount,block);
   }
   return;
 }
@@ -2286,31 +2295,32 @@ EmitPostScriptFunctionCall
 
 void __cdecl
 EmitPostScriptThreadCall
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,sval_u param_5,
-          sval_u param_6,scr_block_s *param_7)
+          (scriptInstance_t inst,sval_u func_name,int param_count,bool bMethod,sval_u sourcePos,
+          sval_u nameSourcePos,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x14') {
+  if (*func_name.codePosValue == '\x14') {
     EmitPostScriptThread
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,param_6);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               nameSourcePos);
   }
-  else if (*param_2.codePosValue == '\x18') {
+  else if (*func_name.codePosValue == '\x18') {
     EmitPostScriptThreadPointer
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_7);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               (sval_u)(func_name.block)->localVarsPublicCount,block);
   }
-  AddOpcodePos(param_1,param_5.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A3EE0  EmitPreFunctionCall  (clientscript/cscr_compiler.cpp:1767)
 
-void __cdecl EmitPreFunctionCall(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitPreFunctionCall(scriptInstance_t inst,sval_u func_name)
 
 {
-  if (*param_2.codePosValue == '\x1c') {
-    EmitOpcode(param_1,0x4e,1,0);
+  if (*func_name.codePosValue == '\x1c') {
+    EmitOpcode(inst,0x4e,1,0);
   }
   return;
 }
@@ -2320,19 +2330,19 @@ void __cdecl EmitPreFunctionCall(scriptInstance_t param_1,sval_u param_2)
 
 void __cdecl
 EmitPostFunctionCall
-          (scriptInstance_t param_1,sval_u param_2,int param_3,bool param_4,scr_block_s *param_5)
+          (scriptInstance_t inst,sval_u func_name,int param_count,bool bMethod,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x1c') {
+  if (*func_name.codePosValue == '\x1c') {
     EmitPostScriptFunctionCall
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_5);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               (sval_u)(func_name.block)->localVarsPublicCount,block);
   }
-  else if (*param_2.codePosValue == ' ') {
+  else if (*func_name.codePosValue == ' ') {
     EmitPostScriptThreadCall
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,param_5);
+              (inst,(sval_u)(func_name.block)->localVarsCreateCount,param_count,bMethod,
+               (sval_u)(func_name.block)->localVarsPublicCount,
+               (sval_u)(func_name.block)->localVarsCount,block);
   }
   return;
 }
@@ -2340,19 +2350,19 @@ EmitPostFunctionCall
 
 // 0089E370  Scr_GetBuiltin  (clientscript/cscr_compiler.cpp:1789)
 
-uint __cdecl Scr_GetBuiltin(scriptInstance_t param_1,sval_u param_2)
+uint __cdecl Scr_GetBuiltin(scriptInstance_t inst,sval_u func_name)
 
 {
   char *pcVar1;
   uint uVar2;
   undefined3 in_stack_00000005;
   
-  if (*param_2.codePosValue == '\x1c') {
-    if (*(char *)(param_2.block)->localVarsCreateCount == '\x14') {
-      pcVar1 = *(char **)((char *)(param_2.block)->localVarsCreateCount + 4);
+  if (*func_name.codePosValue == '\x1c') {
+    if (*(char *)(func_name.block)->localVarsCreateCount == '\x14') {
+      pcVar1 = *(char **)((char *)(func_name.block)->localVarsCreateCount + 4);
       if (*pcVar1 == '\x16') {
-        if ((gScrCompilePub[_param_1].developer_statement != 3) &&
-           (uVar2 = FindVariable(param_1,gScrCompileGlob[_param_1].filePosId,*(uint *)(pcVar1 + 4)),
+        if ((gScrCompilePub[_inst].developer_statement != 3) &&
+           (uVar2 = FindVariable(inst,gScrCompileGlob[_inst].filePosId,*(uint *)(pcVar1 + 4)),
            uVar2 != 0)) {
           return 0;
         }
@@ -2375,25 +2385,25 @@ uint __cdecl Scr_GetBuiltin(scriptInstance_t param_1,sval_u param_2)
 
 // 008A4270  Scr_BeginDevScript  (clientscript/cscr_compiler.cpp:1810)
 
-void __cdecl Scr_BeginDevScript(scriptInstance_t param_1,int *param_2,char **param_3)
+void __cdecl Scr_BeginDevScript(scriptInstance_t inst,int *type,char **savedPos)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000005;
   
-  if (gScrCompilePub[_param_1].developer_statement == 0) {
-    if (gScrVarPub[_param_1].developer_script == false) {
+  if (gScrCompilePub[_inst].developer_statement == 0) {
+    if (gScrVarPub[_inst].developer_script == false) {
       pcVar1 = TempMalloc(0);
-      *param_3 = pcVar1;
-      gScrCompilePub[_param_1].developer_statement = 2;
+      *savedPos = pcVar1;
+      gScrCompilePub[_inst].developer_statement = 2;
     }
     else {
-      gScrCompilePub[_param_1].developer_statement = 1;
+      gScrCompilePub[_inst].developer_statement = 1;
     }
-    *param_2 = 1;
+    *type = 1;
   }
   else {
-    *param_2 = 0;
+    *type = 0;
   }
   return;
 }
@@ -2401,14 +2411,14 @@ void __cdecl Scr_BeginDevScript(scriptInstance_t param_1,int *param_2,char **par
 
 // 008A42F0  Scr_EndDevScript  (clientscript/cscr_compiler.cpp:1832)
 
-void __cdecl Scr_EndDevScript(scriptInstance_t param_1,int param_2,char **param_3)
+void __cdecl Scr_EndDevScript(scriptInstance_t inst,int type,char **savedPos)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (param_2 != 1) {
+  if (type != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x729,0,"%s");
     if (!bVar2) {
@@ -2417,9 +2427,9 @@ void __cdecl Scr_EndDevScript(scriptInstance_t param_1,int param_2,char **param_
       return;
     }
   }
-  gScrCompilePub[_param_1].developer_statement = 0;
-  if (gScrVarPub[_param_1].developer_script == false) {
-    TempMemorySetPos(*param_3);
+  gScrCompilePub[_inst].developer_statement = 0;
+  if (gScrVarPub[_inst].developer_script == false) {
+    TempMemorySetPos(*savedPos);
   }
   return;
 }
@@ -2427,18 +2437,18 @@ void __cdecl Scr_EndDevScript(scriptInstance_t param_1,int param_2,char **param_
 
 // 008A4360  Scr_GetCacheType  (clientscript/cscr_compiler.cpp:1843)
 
-int __cdecl Scr_GetCacheType(int param_1)
+int __cdecl Scr_GetCacheType(int type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == 0) {
+  if (type == 0) {
     iVar3 = 7;
   }
   else {
-    if (param_1 != 1) {
+    if (type != 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x73a,0,"%s");
       if (!bVar2) {
@@ -2455,18 +2465,18 @@ int __cdecl Scr_GetCacheType(int param_1)
 
 // 008A43B0  Scr_GetUncacheType  (clientscript/cscr_compiler.cpp:1857)
 
-int __cdecl Scr_GetUncacheType(int param_1)
+int __cdecl Scr_GetUncacheType(int type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == 7) {
+  if (type == 7) {
     iVar3 = 0;
   }
   else {
-    if (param_1 != 0xc) {
+    if (type != 0xc) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x748,0,"%s");
       if (!bVar2) {
@@ -2483,21 +2493,21 @@ int __cdecl Scr_GetUncacheType(int param_1)
 
 // 008A4400  EmitCallBuiltinOpcode  (clientscript/cscr_compiler.cpp:1871)
 
-void __cdecl EmitCallBuiltinOpcode(scriptInstance_t param_1,int param_2,sval_u param_3)
+void __cdecl EmitCallBuiltinOpcode(scriptInstance_t inst,int param_count,sval_u sourcePos)
 
 {
-  undefined4 local_8;
+  uint opcode;
   
-  if (param_2 < 6) {
-    local_8 = param_2 + 0x3e;
+  if (param_count < 6) {
+    opcode = param_count + 0x3e;
   }
   else {
-    local_8 = 0x44;
+    opcode = 0x44;
   }
-  EmitOpcode(param_1,local_8,1 - param_2,1);
-  AddOpcodePos(param_1,param_3.stringValue,9);
-  if (local_8 == 0x44) {
-    EmitByte(param_1,(uchar)param_2);
+  EmitOpcode(inst,opcode,1 - param_count,1);
+  AddOpcodePos(inst,sourcePos.stringValue,9);
+  if (opcode == 0x44) {
+    EmitByte(inst,(uchar)param_count);
   }
   return;
 }
@@ -2505,22 +2515,22 @@ void __cdecl EmitCallBuiltinOpcode(scriptInstance_t param_1,int param_2,sval_u p
 
 // 008A47C0  EmitCallBuiltinMethodOpcode  (clientscript/cscr_compiler.cpp:1890)
 
-void __cdecl EmitCallBuiltinMethodOpcode(scriptInstance_t param_1,int param_2,sval_u param_3)
+void __cdecl EmitCallBuiltinMethodOpcode(scriptInstance_t inst,int param_count,sval_u sourcePos)
 
 {
-  undefined4 local_8;
+  uint opcode;
   
-  if (param_2 < 6) {
-    local_8 = param_2 + 0x45;
+  if (param_count < 6) {
+    opcode = param_count + 0x45;
   }
   else {
-    local_8 = 0x4b;
+    opcode = 0x4b;
   }
-  EmitOpcode(param_1,local_8,-param_2,1);
-  EmitPreAssignmentPos(param_1);
-  AddOpcodePos(param_1,param_3.stringValue,9);
-  if (local_8 == 0x4b) {
-    EmitByte(param_1,(uchar)param_2);
+  EmitOpcode(inst,opcode,-param_count,1);
+  EmitPreAssignmentPos(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,9);
+  if (opcode == 0x4b) {
+    EmitByte(inst,(uchar)param_count);
   }
   return;
 }
@@ -2529,7 +2539,7 @@ void __cdecl EmitCallBuiltinMethodOpcode(scriptInstance_t param_1,int param_2,sv
 // 008A3A00  EmitCall  (clientscript/cscr_compiler.cpp:1910)
 
 void __cdecl
-EmitCall(scriptInstance_t param_1,sval_u param_2,sval_u param_3,bool param_4,scr_block_s *param_5)
+EmitCall(scriptInstance_t inst,sval_u func_name,sval_u params,bool bStatement,scr_block_s *block)
 
 {
   uint uVar1;
@@ -2537,84 +2547,83 @@ EmitCall(scriptInstance_t param_1,sval_u param_2,sval_u param_3,bool param_4,scr
   undefined3 in_stack_00000005;
   VariableUnion local_34;
   int local_30;
-  VariableUnion local_2c;
-  char *local_28;
-  uint local_24;
-  int local_20;
-  uint local_1c;
-  char *local_18;
-  int local_14;
-  sval_u local_10;
-  VariableUnion local_c;
+  VariableUnion func;
+  char *savedPos;
+  uint funcId;
+  int param_count;
+  uint name;
+  char *pName;
+  int type;
+  sval_u sourcePos;
+  VariableUnion value;
   int local_8;
   
-  local_28 = (char *)0x0;
-  local_1c = Scr_GetBuiltin(param_1,param_2);
-  if (local_1c != 0) {
-    local_18 = SL_ConvertToString(local_1c,param_1);
-    local_10 = (sval_u)(param_2.block)->localVarsPublicCount;
-    if (gScrCompilePub[_param_1].developer_statement == 3) {
-      local_14 = 0;
-      local_2c.codePosValue = (char *)GetFunction(param_1,&local_18,&local_14);
+  savedPos = (char *)0x0;
+  name = Scr_GetBuiltin(inst,func_name);
+  if (name != 0) {
+    pName = SL_ConvertToString(name,inst);
+    sourcePos = (sval_u)(func_name.block)->localVarsPublicCount;
+    if (gScrCompilePub[_inst].developer_statement == 3) {
+      type = 0;
+      func.codePosValue = (char *)GetFunction(inst,&pName,&type);
     }
     else {
-      local_24 = FindVariable(param_1,gScrCompilePub[_param_1].builtinFunc,local_1c);
-      if (local_24 == 0) {
-        local_14 = 0;
-        local_2c.codePosValue = (char *)GetFunction(param_1,&local_18,&local_14);
-        local_24 = GetNewVariable(param_1,gScrCompilePub[_param_1].builtinFunc,local_1c);
-        local_8 = Scr_GetCacheType(local_14);
-        local_c.codePosValue = local_2c.codePosValue;
-        SetVariableValue(param_1,local_24,(VariableValue *)&local_c);
+      funcId = FindVariable(inst,gScrCompilePub[_inst].builtinFunc,name);
+      if (funcId == 0) {
+        type = 0;
+        func.codePosValue = (char *)GetFunction(inst,&pName,&type);
+        funcId = GetNewVariable(inst,gScrCompilePub[_inst].builtinFunc,name);
+        local_8 = Scr_GetCacheType(type);
+        value.codePosValue = func.codePosValue;
+        SetVariableValue(inst,funcId,(VariableValue *)&value);
       }
       else {
-        VVar2 = Scr_EvalVariable(param_1,local_24);
+        VVar2 = Scr_EvalVariable(inst,funcId);
         local_34 = VVar2.u;
-        local_c.intValue = local_34.intValue;
+        value.intValue = local_34.intValue;
         local_30 = VVar2.type;
         local_8 = local_30;
-        local_14 = Scr_GetUncacheType(local_30);
-        local_2c.intValue = local_c.intValue;
+        type = Scr_GetUncacheType(local_30);
+        func.intValue = value.intValue;
       }
     }
-    if ((_func___cdecl_void *)local_2c.intValue != (_func___cdecl_void *)0x0) {
-      if (((local_14 == 1) && (Scr_BeginDevScript(param_1,&local_14,&local_28), local_14 == 1)) &&
-         (!param_4)) {
-        CompileError(param_1,local_10.stringValue,
+    if ((_func___cdecl_void *)func.intValue != (_func___cdecl_void *)0x0) {
+      if (((type == 1) && (Scr_BeginDevScript(inst,&type,&savedPos), type == 1)) && (!bStatement)) {
+        CompileError(inst,sourcePos.stringValue,
                      "return value of developer command can not be accessed if not in a /# ... #/ comment"
                     );
         return;
       }
-      local_20 = EmitExpressionList(param_1,param_3,param_5);
-      if (0xff < local_20) {
-        CompileError(param_1,local_10.stringValue,"parameter count exceeds 256");
+      param_count = EmitExpressionList(inst,params,block);
+      if (0xff < param_count) {
+        CompileError(inst,sourcePos.stringValue,"parameter count exceeds 256");
         return;
       }
-      Scr_CompileRemoveRefToString(param_1,local_1c);
-      EmitCallBuiltinOpcode(param_1,local_20,local_10);
-      uVar1 = AddFunction(param_1,local_2c.intValue,local_18);
-      EmitUnsignedShort(param_1,(ushort)uVar1);
-      AddExpressionListOpcodePos(param_1,param_3);
-      if (param_4) {
-        EmitDecTop(param_1);
+      Scr_CompileRemoveRefToString(inst,name);
+      EmitCallBuiltinOpcode(inst,param_count,sourcePos);
+      uVar1 = AddFunction(inst,func.intValue,pName);
+      EmitUnsignedShort(inst,(ushort)uVar1);
+      AddExpressionListOpcodePos(inst,params);
+      if (bStatement) {
+        EmitDecTop(inst);
       }
-      if (local_14 != 1) {
+      if (type != 1) {
         return;
       }
-      Scr_EndDevScript(param_1,1,&local_28);
+      Scr_EndDevScript(inst,1,&savedPos);
       return;
     }
   }
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    CompileError(param_1,(param_2.block)->localVarsPublicCount,"unknown builtin function");
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    CompileError(inst,(func_name.block)->localVarsPublicCount,"unknown builtin function");
   }
   else {
-    EmitPreFunctionCall(param_1,param_2);
-    local_20 = EmitExpressionList(param_1,param_3,param_5);
-    EmitPostFunctionCall(param_1,param_2,local_20,false,param_5);
-    AddExpressionListOpcodePos(param_1,param_3);
-    if (param_4) {
-      EmitDecTop(param_1);
+    EmitPreFunctionCall(inst,func_name);
+    param_count = EmitExpressionList(inst,params,block);
+    EmitPostFunctionCall(inst,func_name,param_count,false,block);
+    AddExpressionListOpcodePos(inst,params);
+    if (bStatement) {
+      EmitDecTop(inst);
     }
   }
   return;
@@ -2624,8 +2633,8 @@ EmitCall(scriptInstance_t param_1,sval_u param_2,sval_u param_3,bool param_4,scr
 // 008A4470  EmitMethod  (clientscript/cscr_compiler.cpp:2013)
 
 void __cdecl
-EmitMethod(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          bool param_6,scr_block_s *param_7)
+EmitMethod(scriptInstance_t inst,sval_u expr,sval_u func_name,sval_u params,sval_u methodSourcePos,
+          bool bStatement,scr_block_s *block)
 
 {
   uint uVar1;
@@ -2633,90 +2642,89 @@ EmitMethod(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4
   undefined3 in_stack_00000005;
   VariableUnion local_34;
   int local_30;
-  char *local_2c;
-  uint local_28;
-  VariableUnion local_24;
-  int local_20;
-  uint local_1c;
-  char *local_18;
-  int local_14;
-  sval_u local_10;
-  VariableUnion local_c;
+  char *savedPos;
+  uint methId;
+  VariableUnion meth;
+  int param_count;
+  uint name;
+  char *pName;
+  int type;
+  sval_u sourcePos;
+  VariableUnion value;
   int local_8;
   
-  local_2c = (char *)0x0;
-  local_1c = Scr_GetBuiltin(param_1,param_3);
-  if (local_1c != 0) {
-    local_18 = SL_ConvertToString(local_1c,param_1);
-    local_10 = (sval_u)(param_3.block)->localVarsPublicCount;
-    if (gScrCompilePub[_param_1].developer_statement == 3) {
-      local_14 = 0;
-      local_24.codePosValue = (char *)GetMethod(param_1,&local_18,&local_14);
+  savedPos = (char *)0x0;
+  name = Scr_GetBuiltin(inst,func_name);
+  if (name != 0) {
+    pName = SL_ConvertToString(name,inst);
+    sourcePos = (sval_u)(func_name.block)->localVarsPublicCount;
+    if (gScrCompilePub[_inst].developer_statement == 3) {
+      type = 0;
+      meth.codePosValue = (char *)GetMethod(inst,&pName,&type);
     }
     else {
-      local_28 = FindVariable(param_1,gScrCompilePub[_param_1].builtinMeth,local_1c);
-      if (local_28 == 0) {
-        local_14 = 0;
-        local_24.codePosValue = (char *)GetMethod(param_1,&local_18,&local_14);
-        local_28 = GetNewVariable(param_1,gScrCompilePub[_param_1].builtinMeth,local_1c);
-        local_8 = Scr_GetCacheType(local_14);
-        local_c.intValue = local_24.intValue;
-        SetVariableValue(param_1,local_28,(VariableValue *)&local_c);
+      methId = FindVariable(inst,gScrCompilePub[_inst].builtinMeth,name);
+      if (methId == 0) {
+        type = 0;
+        meth.codePosValue = (char *)GetMethod(inst,&pName,&type);
+        methId = GetNewVariable(inst,gScrCompilePub[_inst].builtinMeth,name);
+        local_8 = Scr_GetCacheType(type);
+        value.intValue = meth.intValue;
+        SetVariableValue(inst,methId,(VariableValue *)&value);
       }
       else {
-        VVar2 = Scr_EvalVariable(param_1,local_28);
+        VVar2 = Scr_EvalVariable(inst,methId);
         local_34 = VVar2.u;
-        local_c.intValue = local_34.intValue;
+        value.intValue = local_34.intValue;
         local_30 = VVar2.type;
         local_8 = local_30;
-        local_14 = Scr_GetUncacheType(local_30);
-        local_24.intValue = local_c.intValue;
+        type = Scr_GetUncacheType(local_30);
+        meth.intValue = value.intValue;
       }
     }
-    if ((_func___cdecl_void_scr_entref_t *)local_24.intValue !=
-        (_func___cdecl_void_scr_entref_t *)0x0) {
-      if (((local_14 == 1) && (Scr_BeginDevScript(param_1,&local_14,&local_2c), local_14 == 1)) &&
-         (!param_6)) {
-        CompileError(param_1,local_10.stringValue,
+    if ((_func___cdecl_void_scr_entref_t *)meth.intValue != (_func___cdecl_void_scr_entref_t *)0x0)
+    {
+      if (((type == 1) && (Scr_BeginDevScript(inst,&type,&savedPos), type == 1)) && (!bStatement)) {
+        CompileError(inst,sourcePos.stringValue,
                      "return value of developer command can not be accessed if not in a /# ... #/ comment"
                     );
         return;
       }
-      local_20 = EmitExpressionList(param_1,param_4,param_7);
-      EmitPrimitiveExpression(param_1,param_2,param_7);
-      if (0xff < local_20) {
-        CompileError(param_1,local_10.stringValue,"parameter count exceeds 256");
+      param_count = EmitExpressionList(inst,params,block);
+      EmitPrimitiveExpression(inst,expr,block);
+      if (0xff < param_count) {
+        CompileError(inst,sourcePos.stringValue,"parameter count exceeds 256");
         return;
       }
-      Scr_CompileRemoveRefToString(param_1,local_1c);
-      EmitCallBuiltinMethodOpcode(param_1,local_20,local_10);
-      uVar1 = AddFunction(param_1,local_24.intValue,local_18);
-      EmitUnsignedShort(param_1,(ushort)uVar1);
-      AddOpcodePos(param_1,param_5.stringValue,0);
-      AddExpressionListOpcodePos(param_1,param_4);
-      if (param_6) {
-        EmitDecTop(param_1);
+      Scr_CompileRemoveRefToString(inst,name);
+      EmitCallBuiltinMethodOpcode(inst,param_count,sourcePos);
+      uVar1 = AddFunction(inst,meth.intValue,pName);
+      EmitUnsignedShort(inst,(ushort)uVar1);
+      AddOpcodePos(inst,methodSourcePos.stringValue,0);
+      AddExpressionListOpcodePos(inst,params);
+      if (bStatement) {
+        EmitDecTop(inst);
       }
-      EmitAssignmentPos(param_1);
-      if (local_14 != 1) {
+      EmitAssignmentPos(inst);
+      if (type != 1) {
         return;
       }
-      Scr_EndDevScript(param_1,1,&local_2c);
+      Scr_EndDevScript(inst,1,&savedPos);
       return;
     }
   }
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    CompileError(param_1,(param_3.block)->localVarsPublicCount,"unknown builtin method");
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    CompileError(inst,(func_name.block)->localVarsPublicCount,"unknown builtin method");
   }
   else {
-    EmitPreFunctionCall(param_1,param_3);
-    local_20 = EmitExpressionList(param_1,param_4,param_7);
-    EmitPrimitiveExpression(param_1,param_2,param_7);
-    EmitPostFunctionCall(param_1,param_3,local_20,true,param_7);
-    AddOpcodePos(param_1,param_5.stringValue,0);
-    AddExpressionListOpcodePos(param_1,param_4);
-    if (param_6) {
-      EmitDecTop(param_1);
+    EmitPreFunctionCall(inst,func_name);
+    param_count = EmitExpressionList(inst,params,block);
+    EmitPrimitiveExpression(inst,expr,block);
+    EmitPostFunctionCall(inst,func_name,param_count,true,block);
+    AddOpcodePos(inst,methodSourcePos.stringValue,0);
+    AddExpressionListOpcodePos(inst,params);
+    if (bStatement) {
+      EmitDecTop(inst);
     }
   }
   return;
@@ -2725,7 +2733,8 @@ EmitMethod(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4
 
 // 0089E890  LinkThread  (clientscript/cscr_compiler.cpp:2122)
 
-void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *param_3,bool param_4)
+void __cdecl
+LinkThread(scriptInstance_t inst,uint threadCountId,VariableValue *pos,bool allowFarCall)
 
 {
   code *pcVar1;
@@ -2737,11 +2746,15 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
   undefined3 in_stack_00000005;
   VariableUnion local_28;
   int local_24;
-  int local_14;
+  uint valueId;
+  uint countId;
+  int type;
+  int i;
+  VariableUnion *value;
   
-  uVar3 = FindVariable(param_1,param_2,0);
+  uVar3 = FindVariable(inst,threadCountId,0);
   if (uVar3 != 0) {
-    VVar6 = Scr_EvalVariable(param_1,uVar3);
+    VVar6 = Scr_EvalVariable(inst,uVar3);
     local_28 = VVar6.u;
     local_24 = VVar6.type;
     if ((local_24 != 6) &&
@@ -2751,8 +2764,8 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
       (*pcVar1)();
       return;
     }
-    for (local_14 = 0; local_14 < local_28.intValue; local_14 = local_14 + 1) {
-      uVar3 = FindVariable(param_1,param_2,local_14 + 1);
+    for (i = 0; i < local_28.intValue; i = i + 1) {
+      uVar3 = FindVariable(inst,threadCountId,i + 1);
       if ((uVar3 == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x85d,0,"%s"), !bVar2)) {
@@ -2760,8 +2773,8 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
         (*pcVar1)();
         return;
       }
-      pVVar4 = GetVariableValueAddress(param_1,uVar3);
-      iVar5 = GetValueType(param_1,uVar3);
+      pVVar4 = GetVariableValueAddress(inst,uVar3);
+      iVar5 = GetValueType(inst,uVar3);
       if (((iVar5 != 7) && (iVar5 != 0xc)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x860,0,"%s"), !bVar2)) {
@@ -2769,8 +2782,8 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
         (*pcVar1)();
         return;
       }
-      if (param_3->type == 0xc) {
-        if ((gScrVarPub[_param_1].developer_script == false) &&
+      if (pos->type == 0xc) {
+        if ((gScrVarPub[_inst].developer_script == false) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                      ,0x864,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -2778,23 +2791,23 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
           return;
         }
         if (iVar5 == 7) {
-          CompileError2(param_1,pVVar4->codePosValue,
+          CompileError2(inst,pVVar4->codePosValue,
                         "normal script cannot reference a function in a /# ... #/ comment");
           return;
         }
       }
-      if (param_3->type == 0) {
-        CompileError2(param_1,pVVar4->codePosValue,"unknown function");
+      if (pos->type == 0) {
+        CompileError2(inst,pVVar4->codePosValue,"unknown function");
         return;
       }
-      if ((!param_4) && (pVVar4->stackValue->pos == (char *)0x1)) {
-        CompileError2(param_1,pVVar4->codePosValue,"unknown function");
+      if ((!allowFarCall) && (pVVar4->stackValue->pos == (char *)0x1)) {
+        CompileError2(inst,pVVar4->codePosValue,"unknown function");
         return;
       }
-      *(VariableUnion *)pVVar4->vectorValue = param_3->u;
-      RemoveVariable(param_1,param_2,local_14 + 1);
+      *(VariableUnion *)pVVar4->vectorValue = pos->u;
+      RemoveVariable(inst,threadCountId,i + 1);
     }
-    RemoveVariable(param_1,param_2,0);
+    RemoveVariable(inst,threadCountId,0);
   }
   return;
 }
@@ -2802,33 +2815,34 @@ void __cdecl LinkThread(scriptInstance_t param_1,uint param_2,VariableValue *par
 
 // 0089EAB0  LinkFile  (clientscript/cscr_compiler.cpp:2179)
 
-void __cdecl LinkFile(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl LinkFile(scriptInstance_t inst,uint filePosId,uint fileCountId)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  VariableValue VVar4;
+  uint threadCountId_00;
+  VariableValue VVar3;
   VariableUnion local_2c;
   int local_28;
-  VariableUnion local_20;
+  uint threadCountId;
+  VariableUnion pos;
   int local_1c;
-  uint local_18;
-  uint local_14;
-  VariableUnion local_10;
+  uint threadCountPtr;
+  uint posId;
+  VariableUnion emptyValue;
   undefined4 local_c;
-  uint local_8;
+  uint nameId;
   
   local_c = 0;
-  local_10.intValue = 0;
-  local_18 = FindFirstSibling(param_1,param_3);
+  emptyValue.intValue = 0;
+  threadCountPtr = FindFirstSibling(inst,fileCountId);
   do {
-    if (local_18 == 0) {
-      ClearObject(param_1,param_3);
+    if (threadCountPtr == 0) {
+      ClearObject(inst,fileCountId);
       return;
     }
-    uVar3 = FindObject(param_1,local_18);
-    if (uVar3 == 0) {
+    threadCountId_00 = FindObject(inst,threadCountPtr);
+    if (threadCountId_00 == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x891,0,"%s");
       if (!bVar2) {
@@ -2837,16 +2851,16 @@ void __cdecl LinkFile(scriptInstance_t param_1,uint param_2,uint param_3)
         return;
       }
     }
-    local_8 = GetVariableName(param_1,local_18);
-    local_14 = FindVariable(param_1,param_2,local_8);
-    if (local_14 == 0) {
-      LinkThread(param_1,uVar3,(VariableValue *)&local_10,true);
+    nameId = GetVariableName(inst,threadCountPtr);
+    posId = FindVariable(inst,filePosId,nameId);
+    if (posId == 0) {
+      LinkThread(inst,threadCountId_00,(VariableValue *)&emptyValue,true);
     }
     else {
-      VVar4 = Scr_EvalVariable(param_1,local_14);
-      local_2c = VVar4.u;
-      local_20.intValue = local_2c.intValue;
-      local_28 = VVar4.type;
+      VVar3 = Scr_EvalVariable(inst,posId);
+      local_2c = VVar3.u;
+      pos.intValue = local_2c.intValue;
+      local_28 = VVar3.type;
       local_1c = local_28;
       if ((local_28 != 7) && (local_28 != 0xc)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
@@ -2857,7 +2871,7 @@ void __cdecl LinkFile(scriptInstance_t param_1,uint param_2,uint param_3)
           return;
         }
       }
-      if (local_20.intValue == 0) {
+      if (pos.intValue == 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x89b,0,"%s");
         if (!bVar2) {
@@ -2866,16 +2880,16 @@ void __cdecl LinkFile(scriptInstance_t param_1,uint param_2,uint param_3)
           return;
         }
       }
-      LinkThread(param_1,uVar3,(VariableValue *)&local_20,true);
+      LinkThread(inst,threadCountId_00,(VariableValue *)&pos,true);
     }
-    local_18 = FindNextSibling(param_1,local_18);
+    threadCountPtr = FindNextSibling(inst,threadCountPtr);
   } while( true );
 }
 
 
 // 0089EC30  CheckThreadPosition  (clientscript/cscr_compiler.cpp:2216)
 
-void __cdecl CheckThreadPosition(scriptInstance_t param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl CheckThreadPosition(scriptInstance_t inst,uint posId,uint name,uint sourcePos)
 
 {
   code *pcVar1;
@@ -2884,26 +2898,27 @@ void __cdecl CheckThreadPosition(scriptInstance_t param_1,uint param_2,uint para
   undefined3 in_stack_00000005;
   VariableUnion local_18;
   int local_14;
+  int bufferIndex;
   
-  if ((gScrVarPub[_param_1].evaluate != false) &&
+  if ((gScrVarPub[_inst].evaluate != false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x8ac,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  VVar3 = Scr_EvalVariable(param_1,param_2);
+  VVar3 = Scr_EvalVariable(inst,posId);
   local_18 = VVar3.u;
   local_14 = VVar3.type;
   if (local_14 != 0) {
     if (local_18.intValue == 0) {
-      SL_ConvertToString(param_3,param_1);
-      CompileError(param_1,param_4,"function \'%s\' already defined");
+      SL_ConvertToString(name,inst);
+      CompileError(inst,sourcePos,"function \'%s\' already defined");
     }
     else {
-      Scr_GetSourceBuffer(param_1,local_18.codePosValue);
-      SL_ConvertToString(param_3,param_1);
-      CompileError(param_1,param_4,"function \'%s\' already defined in \'%s\'");
+      Scr_GetSourceBuffer(inst,local_18.codePosValue);
+      SL_ConvertToString(name,inst);
+      CompileError(inst,sourcePos,"function \'%s\' already defined in \'%s\'");
     }
   }
   return;
@@ -2913,30 +2928,30 @@ void __cdecl CheckThreadPosition(scriptInstance_t param_1,uint param_2,uint para
 // 0089EFC0  SpecifyThreadPosition  (clientscript/cscr_compiler.cpp:2239)
 
 uint __cdecl
-SpecifyThreadPosition(scriptInstance_t param_1,uint param_2,uint param_3,uint param_4,int param_5)
+SpecifyThreadPosition(scriptInstance_t inst,uint posId,uint name,uint sourcePos,int type)
 
 {
-  VariableUnion local_c;
+  VariableUnion pos;
   int local_8;
   
-  CheckThreadPosition(param_1,param_2,param_3,param_4);
-  local_8 = param_5;
-  local_c.intValue = 0;
-  SetNewVariableValue(param_1,param_2,(VariableValue *)&local_c);
-  return param_2;
+  CheckThreadPosition(inst,posId,name,sourcePos);
+  local_8 = type;
+  pos.intValue = 0;
+  SetNewVariableValue(inst,posId,(VariableValue *)&pos);
+  return posId;
 }
 
 
 // 008A0BE0  SetThreadPosition  (clientscript/cscr_compiler.cpp:2252)
 
-void __cdecl SetThreadPosition(scriptInstance_t param_1,uint param_2,sval_u param_3)
+void __cdecl SetThreadPosition(scriptInstance_t inst,uint posId,sval_u sourcePos)
 
 {
   char *pcVar1;
   VariableUnion *pVVar2;
   
   pcVar1 = TempMalloc(0);
-  pVVar2 = GetVariableValueAddress(param_1,param_2);
+  pVVar2 = GetVariableValueAddress(inst,posId);
   pVVar2->codePosValue = pcVar1;
   return;
 }
@@ -2945,17 +2960,17 @@ void __cdecl SetThreadPosition(scriptInstance_t param_1,uint param_2,sval_u para
 // 008A3980  EmitCallExpression  (clientscript/cscr_compiler.cpp:2259)
 
 void __cdecl
-EmitCallExpression(scriptInstance_t param_1,sval_u param_2,bool param_3,scr_block_s *param_4)
+EmitCallExpression(scriptInstance_t inst,sval_u expr,bool bStatement,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x19') {
-    EmitCall(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-             (sval_u)(param_2.block)->localVarsPublicCount,param_3,param_4);
+  if (*expr.codePosValue == '\x19') {
+    EmitCall(inst,(sval_u)(expr.block)->localVarsCreateCount,
+             (sval_u)(expr.block)->localVarsPublicCount,bStatement,block);
   }
-  else if (*param_2.codePosValue == '\x1a') {
-    EmitMethod(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_3,param_4);
+  else if (*expr.codePosValue == '\x1a') {
+    EmitMethod(inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,bStatement,block);
   }
   return;
 }
@@ -2963,20 +2978,19 @@ EmitCallExpression(scriptInstance_t param_1,sval_u param_2,bool param_3,scr_bloc
 
 // 008A57B0  EmitCallExpressionFieldObject  (clientscript/cscr_compiler.cpp:2274)
 
-void __cdecl
-EmitCallExpressionFieldObject(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitCallExpressionFieldObject(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x19') {
-    EmitCall(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-             (sval_u)(param_2.block)->localVarsPublicCount,false,param_3);
-    EmitCastFieldObject(param_1,(sval_u)(param_2.block)->localVarsCount);
+  if (*expr.codePosValue == '\x19') {
+    EmitCall(inst,(sval_u)(expr.block)->localVarsCreateCount,
+             (sval_u)(expr.block)->localVarsPublicCount,false,block);
+    EmitCastFieldObject(inst,(sval_u)(expr.block)->localVarsCount);
   }
-  else if (*param_2.codePosValue == '\x1a') {
-    EmitMethod(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,false,param_3);
-    EmitCastFieldObject(param_1,*(sval_u *)((param_2.block)->localVarsInitBits + 4));
+  else if (*expr.codePosValue == '\x1a') {
+    EmitMethod(inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,false,block);
+    EmitCastFieldObject(inst,*(sval_u *)((expr.block)->localVarsInitBits + 4));
   }
   return;
 }
@@ -2984,10 +2998,10 @@ EmitCallExpressionFieldObject(scriptInstance_t param_1,sval_u param_2,scr_block_
 
 // 008A4830  EmitBreakOn  (clientscript/cscr_compiler.cpp:2291)
 
-void __cdecl EmitBreakOn(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4)
+void __cdecl EmitBreakOn(scriptInstance_t inst,sval_u expr,sval_u param,sval_u sourcePos)
 
 {
-  CompileError(param_1,param_4.stringValue,"illegal function name");
+  CompileError(inst,sourcePos.stringValue,"illegal function name");
   return;
 }
 
@@ -2995,34 +3009,35 @@ void __cdecl EmitBreakOn(scriptInstance_t param_1,sval_u param_2,sval_u param_3,
 // 008A03C0  Scr_CreateVector  (clientscript/cscr_compiler.cpp:2297)
 
 void __cdecl
-Scr_CreateVector(scriptInstance_t param_1,VariableCompileValue *param_2,VariableValue *param_3)
+Scr_CreateVector(scriptInstance_t inst,VariableCompileValue *constValue,VariableValue *value)
 
 {
   int iVar1;
   float *pfVar2;
-  int local_14;
-  VariableUnion local_10 [3];
+  int type;
+  int i;
+  VariableUnion vec [3];
   
-  local_14 = 0;
+  i = 0;
   do {
-    if (2 < local_14) {
-      param_3->type = 4;
-      pfVar2 = Scr_AllocVector(param_1,&local_10[0].floatValue);
-      (param_3->u).vectorValue = pfVar2;
+    if (2 < i) {
+      value->type = 4;
+      pfVar2 = Scr_AllocVector(inst,&vec[0].floatValue);
+      (value->u).vectorValue = pfVar2;
       return;
     }
-    iVar1 = param_2[local_14].value.type;
+    iVar1 = constValue[i].value.type;
     if (iVar1 == 5) {
-      local_10[2 - local_14] = param_2[local_14].value.u;
+      vec[2 - i] = constValue[i].value.u;
     }
     else {
       if (iVar1 != 6) {
-        CompileError(param_1,param_2[local_14].sourcePos.stringValue,"type %s is not a float");
+        CompileError(inst,constValue[i].sourcePos.stringValue,"type %s is not a float");
         return;
       }
-      local_10[2 - local_14].floatValue = (float)param_2[local_14].value.u.intValue;
+      vec[2 - i].floatValue = (float)constValue[i].value.u.intValue;
     }
-    local_14 = local_14 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -3031,41 +3046,40 @@ Scr_CreateVector(scriptInstance_t param_1,VariableCompileValue *param_2,Variable
 
 bool __cdecl
 EvalPrimitiveExpressionList
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,VariableCompileValue *param_4)
+          (scriptInstance_t inst,sval_u exprlist,sval_u sourcePos,VariableCompileValue *constValue)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  undefined4 *local_34;
-  VariableCompileValue local_30 [3];
-  int local_c;
-  int local_8;
+  sval_u *node;
+  VariableCompileValue constValue2 [3];
+  int expr_count;
+  int i;
   
-  if ((param_4 == (VariableCompileValue *)0x0) &&
+  if ((constValue == (VariableCompileValue *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x91d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_c = GetExpressionCount(param_2);
-  if (local_c == 1) {
-    bVar2 = EvalExpression(param_1,*(*(*param_2.node).node).node,param_4);
+  expr_count = GetExpressionCount(exprlist);
+  if (expr_count == 1) {
+    bVar2 = EvalExpression(inst,*(*(*exprlist.node).node).node,constValue);
   }
-  else if (local_c == 3) {
-    local_8 = 0;
-    local_c = 3;
-    for (local_34 = (undefined4 *)(param_2.block)->abortLevel; local_34 != (undefined4 *)0x0;
-        local_34 = (undefined4 *)local_34[1]) {
-      bVar2 = EvalExpression(param_1,*(sval_u *)*local_34,local_30 + local_8);
+  else if (expr_count == 3) {
+    i = 0;
+    expr_count = 3;
+    for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+      bVar2 = EvalExpression(inst,*node->node,constValue2 + i);
       if (!bVar2) {
         return false;
       }
-      local_8 = local_8 + 1;
+      i = i + 1;
     }
-    Scr_CreateVector(param_1,local_30,&param_4->value);
-    param_4->sourcePos = param_3;
+    Scr_CreateVector(inst,constValue2,&constValue->value);
+    constValue->sourcePos = sourcePos;
     bVar2 = true;
   }
   else {
@@ -3079,69 +3093,68 @@ EvalPrimitiveExpressionList
 
 bool __cdecl
 EmitOrEvalPrimitiveExpressionList
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,VariableCompileValue *param_4,
-          scr_block_s *param_5)
+          (scriptInstance_t inst,sval_u exprlist,sval_u sourcePos,VariableCompileValue *constValue,
+          scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   undefined3 in_stack_00000005;
-  undefined4 *local_1c;
-  VariableCompileValue local_18;
-  int local_c;
-  char local_5;
+  sval_u *node;
+  VariableCompileValue constValue2;
+  int expr_count;
+  bool success;
   
-  if ((param_4 == (VariableCompileValue *)0x0) &&
+  if ((constValue == (VariableCompileValue *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x941,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_c = GetExpressionCount(param_2);
-  if (local_c == 1) {
-    bVar2 = EmitOrEvalExpression(param_1,*(*(*param_2.node).node).node,param_4,param_5);
+  expr_count = GetExpressionCount(exprlist);
+  if (expr_count == 1) {
+    bVar2 = EmitOrEvalExpression(inst,*(*(*exprlist.node).node).node,constValue,block);
   }
-  else if (local_c == 3) {
-    local_5 = '\x01';
-    local_c = 3;
-    for (local_1c = *(undefined4 **)param_2.codePosValue; local_1c != (undefined4 *)0x0;
-        local_1c = (undefined4 *)local_1c[1]) {
-      if (local_5 == '\0') {
-        EmitExpression(param_1,*(sval_u *)*local_1c,param_5);
+  else if (expr_count == 3) {
+    success = true;
+    expr_count = 3;
+    for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+      if (success == false) {
+        EmitExpression(inst,*node->node,block);
       }
       else {
-        local_5 = EmitOrEvalExpression(param_1,*(sval_u *)*local_1c,&local_18,param_5);
-        if ((bool)local_5) {
-          Scr_PushValue(param_1,&local_18);
+        success = EmitOrEvalExpression(inst,*node->node,&constValue2,block);
+        if (success) {
+          Scr_PushValue(inst,&constValue2);
         }
       }
     }
-    if (local_5 == '\0') {
-      EmitOpcode(param_1,0x7e,-2,0);
-      AddOpcodePos(param_1,param_3.stringValue,1);
-      AddExpressionListOpcodePos(param_1,param_2);
+    if (success == false) {
+      EmitOpcode(inst,0x7e,-2,0);
+      AddOpcodePos(inst,sourcePos.stringValue,1);
+      AddExpressionListOpcodePos(inst,exprlist);
       bVar2 = false;
     }
     else {
-      if ((gScrCompilePub[_param_1].value_count < 3) &&
+      if ((gScrCompilePub[_inst].value_count < 3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                    ,0x95e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      gScrCompilePub[_param_1].value_count = gScrCompilePub[_param_1].value_count + -3;
-      Scr_CreateVector(param_1,(VariableCompileValue *)
-                               (_param_1 * 0x1d8 + 0x9d38b50 +
-                               gScrCompilePub[_param_1].value_count * 0xc),&param_4->value);
-      param_4->sourcePos = param_3;
+      gScrCompilePub[_inst].value_count = gScrCompilePub[_inst].value_count + -3;
+      Scr_CreateVector(inst,(VariableCompileValue *)
+                            (_inst * 0x1d8 + 0x9d38b50 + gScrCompilePub[_inst].value_count * 0xc),
+                       &constValue->value);
+      constValue->sourcePos = sourcePos;
       bVar2 = true;
     }
   }
   else {
-    CompileError(param_1,param_3.stringValue,"expression list must have 1 or 3 parameters");
+    CompileError(inst,sourcePos.stringValue,"expression list must have 1 or 3 parameters");
     bVar2 = false;
   }
   return bVar2;
@@ -3152,18 +3165,18 @@ EmitOrEvalPrimitiveExpressionList
 
 void __cdecl
 EmitExpressionListFieldObject
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u exprlist,sval_u sourcePos,scr_block_s *block)
 
 {
   sval_u *psVar1;
+  sval_u *node;
   
-  psVar1 = GetSingleParameter(param_2);
+  psVar1 = GetSingleParameter(exprlist);
   if (psVar1 == (sval_u *)0x0) {
-    CompileError(param_1,param_3.stringValue,"not an object");
+    CompileError(inst,sourcePos.stringValue,"not an object");
   }
   else {
-    EmitExpressionFieldObject
-              (param_1,*psVar1->node,(sval_u)psVar1->block->localVarsCreateCount,param_4);
+    EmitExpressionFieldObject(inst,*psVar1->node,(sval_u)psVar1->block->localVarsCreateCount,block);
   }
   return;
 }
@@ -3172,60 +3185,60 @@ EmitExpressionListFieldObject
 // 0089FF50  EvalPrimitiveExpression  (clientscript/cscr_compiler.cpp:2432)
 
 bool __cdecl
-EvalPrimitiveExpression(scriptInstance_t param_1,sval_u param_2,VariableCompileValue *param_3)
+EvalPrimitiveExpression(scriptInstance_t inst,sval_u expr,VariableCompileValue *constValue)
 
 {
   bool bVar1;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\t':
-    EvalInteger((param_2.block)->localVarsCreateCount,(sval_u)(param_2.block)->localVarsPublicCount,
-                param_3);
+    EvalInteger((expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+                constValue);
     bVar1 = true;
     break;
   case '\n':
-    EvalFloat((float)(param_2.block)->localVarsCreateCount,
-              (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+    EvalFloat((float)(expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+              constValue);
     bVar1 = true;
     break;
   case '\v':
-    EvalInteger(-(param_2.block)->localVarsCreateCount,(sval_u)(param_2.block)->localVarsPublicCount
-                ,param_3);
+    EvalInteger(-(expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+                constValue);
     bVar1 = true;
     break;
   case '\f':
-    EvalFloat(-(float)(param_2.block)->localVarsCreateCount,
-              (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+    EvalFloat(-(float)(expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+              constValue);
     bVar1 = true;
     break;
   case '\r':
-    EvalString((param_2.block)->localVarsCreateCount,(sval_u)(param_2.block)->localVarsPublicCount,
-               param_3);
+    EvalString((expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+               constValue);
     bVar1 = true;
     break;
   case '\x0e':
-    EvalIString((param_2.block)->localVarsCreateCount,(sval_u)(param_2.block)->localVarsPublicCount,
-                param_3);
+    EvalIString((expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount,
+                constValue);
     bVar1 = true;
     break;
   default:
     bVar1 = false;
     break;
   case '!':
-    EvalUndefined((sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    EvalUndefined((sval_u)(expr.block)->localVarsCreateCount,constValue);
     bVar1 = true;
     break;
   case '0':
     bVar1 = EvalPrimitiveExpressionList
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,
+                       (sval_u)(expr.block)->localVarsPublicCount,constValue);
     break;
   case 'J':
-    EvalInteger(0,(sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    EvalInteger(0,(sval_u)(expr.block)->localVarsCreateCount,constValue);
     bVar1 = true;
     break;
   case 'K':
-    EvalInteger(1,(sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    EvalInteger(1,(sval_u)(expr.block)->localVarsCreateCount,constValue);
     bVar1 = true;
   }
   return bVar1;
@@ -3236,72 +3249,70 @@ EvalPrimitiveExpression(scriptInstance_t param_1,sval_u param_2,VariableCompileV
 
 bool __cdecl
 EmitOrEvalPrimitiveExpression
-          (scriptInstance_t param_1,sval_u param_2,VariableCompileValue *param_3,
-          scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,VariableCompileValue *constValue,scr_block_s *block)
 
 {
   bool bVar1;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\x13':
-    EmitVariableExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
+    EmitVariableExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
     bVar1 = false;
     break;
   case '\x14':
-    EmitGetFunction(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                    (sval_u)(param_2.block)->localVarsPublicCount);
+    EmitGetFunction(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                    (sval_u)(expr.block)->localVarsPublicCount);
     bVar1 = false;
     break;
   case '\x15':
-    EmitCallExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,false,param_4);
+    EmitCallExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,false,block);
     bVar1 = false;
     break;
   default:
-    bVar1 = EvalPrimitiveExpression(param_1,param_2,param_3);
+    bVar1 = EvalPrimitiveExpression(inst,expr,constValue);
     break;
   case '\"':
-    EmitSelf(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitSelf(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case '$':
-    EmitLevel(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitLevel(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case '%':
-    EmitGame(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitGame(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case '&':
-    EmitAnim(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitAnim(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case '0':
     bVar1 = EmitOrEvalPrimitiveExpressionList
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,param_3,param_4);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,
+                       (sval_u)(expr.block)->localVarsPublicCount,constValue,block);
     break;
   case '6':
-    EmitSize(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-             (sval_u)(param_2.block)->localVarsPublicCount,param_4);
+    EmitSize(inst,(sval_u)(expr.block)->localVarsCreateCount,
+             (sval_u)(expr.block)->localVarsPublicCount,block);
     bVar1 = false;
     break;
   case 'D':
-    EmitEmptyArray(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitEmptyArray(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case 'E':
-    EmitAnimation(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                  (sval_u)(param_2.block)->localVarsPublicCount);
+    EmitAnimation(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                  (sval_u)(expr.block)->localVarsPublicCount);
     bVar1 = false;
     break;
   case 'L':
-    EmitAnimTree(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitAnimTree(inst,(sval_u)(expr.block)->localVarsCreateCount);
     bVar1 = false;
     break;
   case 'M':
-    EmitBreakOn(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                (sval_u)(param_2.block)->localVarsPublicCount,
-                (sval_u)(param_2.block)->localVarsCount);
+    EmitBreakOn(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount);
     bVar1 = false;
   }
   return bVar1;
@@ -3310,15 +3321,15 @@ EmitOrEvalPrimitiveExpression
 
 // 008A2E30  EmitPrimitiveExpression  (clientscript/cscr_compiler.cpp:2540)
 
-void __cdecl EmitPrimitiveExpression(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitPrimitiveExpression(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
   bool bVar1;
-  VariableCompileValue local_10;
+  VariableCompileValue constValue;
   
-  bVar1 = EmitOrEvalPrimitiveExpression(param_1,param_2,&local_10,param_3);
+  bVar1 = EmitOrEvalPrimitiveExpression(inst,expr,&constValue,block);
   if (bVar1) {
-    EmitValue(param_1,&local_10);
+    EmitValue(inst,&constValue);
   }
   return;
 }
@@ -3328,8 +3339,8 @@ void __cdecl EmitPrimitiveExpression(scriptInstance_t param_1,sval_u param_2,scr
 
 void __cdecl
 EmitBoolOrExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr1,sval_u expr2,sval_u expr1sourcePos,
+          sval_u expr2sourcePos,scr_block_s *block)
 
 {
   uchar *puVar1;
@@ -3338,16 +3349,18 @@ EmitBoolOrExpression
   char *pcVar4;
   char *pcVar5;
   undefined3 in_stack_00000005;
-  undefined2 local_c;
+  char *pos;
+  uint offset;
+  char *nextPos;
   
-  EmitExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x61,-1,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  EmitUnsignedShort(param_1,0);
-  puVar1 = gScrCompileGlob[_param_1].codePos;
+  EmitExpression(inst,expr1,block);
+  EmitOpcode(inst,0x61,-1,0);
+  AddOpcodePos(inst,expr1sourcePos.stringValue,0);
+  EmitUnsignedShort(inst,0);
+  puVar1 = gScrCompileGlob[_inst].codePos;
   pcVar4 = TempMalloc(0);
-  EmitExpression(param_1,param_3,param_6);
-  EmitCastBool(param_1,param_5);
+  EmitExpression(inst,expr2,block);
+  EmitCastBool(inst,expr2sourcePos);
   pcVar5 = TempMalloc(0);
   if (0xffff < (uint)((int)pcVar5 - (int)pcVar4)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -3358,8 +3371,8 @@ EmitBoolOrExpression
       return;
     }
   }
-  local_c = (undefined2)((int)pcVar5 - (int)pcVar4);
-  *(undefined2 *)puVar1 = local_c;
+  offset._0_2_ = (undefined2)((int)pcVar5 - (int)pcVar4);
+  *(undefined2 *)puVar1 = (undefined2)offset;
   return;
 }
 
@@ -3368,8 +3381,8 @@ EmitBoolOrExpression
 
 void __cdecl
 EmitBoolAndExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u expr1,sval_u expr2,sval_u expr1sourcePos,
+          sval_u expr2sourcePos,scr_block_s *block)
 
 {
   uchar *puVar1;
@@ -3378,16 +3391,18 @@ EmitBoolAndExpression
   char *pcVar4;
   char *pcVar5;
   undefined3 in_stack_00000005;
-  undefined2 local_c;
+  char *pos;
+  uint offset;
+  char *nextPos;
   
-  EmitExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x60,-1,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  EmitUnsignedShort(param_1,0);
-  puVar1 = gScrCompileGlob[_param_1].codePos;
+  EmitExpression(inst,expr1,block);
+  EmitOpcode(inst,0x60,-1,0);
+  AddOpcodePos(inst,expr1sourcePos.stringValue,0);
+  EmitUnsignedShort(inst,0);
+  puVar1 = gScrCompileGlob[_inst].codePos;
   pcVar4 = TempMalloc(0);
-  EmitExpression(param_1,param_3,param_6);
-  EmitCastBool(param_1,param_5);
+  EmitExpression(inst,expr2,block);
+  EmitCastBool(inst,expr2sourcePos);
   pcVar5 = TempMalloc(0);
   if (0xffff < (uint)((int)pcVar5 - (int)pcVar4)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -3398,8 +3413,8 @@ EmitBoolAndExpression
       return;
     }
   }
-  local_c = (undefined2)((int)pcVar5 - (int)pcVar4);
-  *(undefined2 *)puVar1 = local_c;
+  offset._0_2_ = (undefined2)((int)pcVar5 - (int)pcVar4);
+  *(undefined2 *)puVar1 = (undefined2)offset;
   return;
 }
 
@@ -3408,33 +3423,33 @@ EmitBoolAndExpression
 
 bool __cdecl
 EvalBinaryOperatorExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          VariableCompileValue *param_6)
+          (scriptInstance_t inst,sval_u expr1,sval_u expr2,sval_u opcode,sval_u sourcePos,
+          VariableCompileValue *constValue)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
-  VariableUnion local_1c;
+  VariableUnion constValue2;
   int local_18;
-  VariableUnion local_10;
+  VariableUnion constValue1;
   int local_c;
   
-  bVar1 = EvalExpression(param_1,param_2,(VariableCompileValue *)&local_10);
+  bVar1 = EvalExpression(inst,expr1,(VariableCompileValue *)&constValue1);
   if (bVar1) {
-    bVar1 = EvalExpression(param_1,param_3,(VariableCompileValue *)&local_1c);
+    bVar1 = EvalExpression(inst,expr2,(VariableCompileValue *)&constValue2);
     if (bVar1) {
-      AddRefToValue(param_1,local_c,local_10);
-      AddRefToValue(param_1,local_18,local_1c);
+      AddRefToValue(inst,local_c,constValue1);
+      AddRefToValue(inst,local_18,constValue2);
       Scr_EvalBinaryOperator
-                (param_1,param_4.intValue,(VariableValue *)&local_10,(VariableValue *)&local_1c);
-      if (gScrVarPub[_param_1].error_message == (char *)0x0) {
-        (param_6->value).u = local_10;
-        (param_6->value).type = local_c;
-        param_6->sourcePos = param_5;
+                (inst,opcode.intValue,(VariableValue *)&constValue1,(VariableValue *)&constValue2);
+      if (gScrVarPub[_inst].error_message == (char *)0x0) {
+        (constValue->value).u = constValue1;
+        (constValue->value).type = local_c;
+        constValue->sourcePos = sourcePos;
         bVar1 = true;
       }
       else {
-        CompileError(param_1,param_5.stringValue,"%s");
+        CompileError(inst,sourcePos.stringValue,"%s");
         bVar1 = false;
       }
     }
@@ -3453,38 +3468,38 @@ EvalBinaryOperatorExpression
 
 bool __cdecl
 EmitOrEvalBinaryOperatorExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          VariableCompileValue *param_6,scr_block_s *param_7)
+          (scriptInstance_t inst,sval_u expr1,sval_u expr2,sval_u opcode,sval_u sourcePos,
+          VariableCompileValue *constValue,scr_block_s *block)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
-  VariableCompileValue local_1c;
-  VariableUnion local_10;
+  VariableCompileValue constValue2;
+  VariableUnion constValue1;
   int local_c;
   
-  bVar1 = EmitOrEvalExpression(param_1,param_2,(VariableCompileValue *)&local_10,param_7);
+  bVar1 = EmitOrEvalExpression(inst,expr1,(VariableCompileValue *)&constValue1,block);
   if (bVar1) {
-    Scr_PushValue(param_1,(VariableCompileValue *)&local_10);
-    bVar1 = EmitOrEvalExpression(param_1,param_3,&local_1c,param_7);
+    Scr_PushValue(inst,(VariableCompileValue *)&constValue1);
+    bVar1 = EmitOrEvalExpression(inst,expr2,&constValue2,block);
     if (bVar1) {
-      Scr_PopValue(param_1);
-      Scr_EvalBinaryOperator(param_1,param_4.intValue,(VariableValue *)&local_10,&local_1c.value);
-      if (gScrVarPub[_param_1].error_message != (char *)0x0) {
-        CompileError(param_1,param_5.stringValue,"%s");
+      Scr_PopValue(inst);
+      Scr_EvalBinaryOperator(inst,opcode.intValue,(VariableValue *)&constValue1,&constValue2.value);
+      if (gScrVarPub[_inst].error_message != (char *)0x0) {
+        CompileError(inst,sourcePos.stringValue,"%s");
         return false;
       }
-      (param_6->value).u = local_10;
-      (param_6->value).type = local_c;
-      param_6->sourcePos = param_5;
+      (constValue->value).u = constValue1;
+      (constValue->value).type = local_c;
+      constValue->sourcePos = sourcePos;
       return true;
     }
   }
   else {
-    EmitExpression(param_1,param_3,param_7);
+    EmitExpression(inst,expr2,block);
   }
-  EmitOpcode(param_1,SEXT14(param_4.stringValue._0_1_),-1,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
+  EmitOpcode(inst,SEXT14(opcode.stringValue._0_1_),-1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return false;
 }
 
@@ -3493,15 +3508,15 @@ EmitOrEvalBinaryOperatorExpression
 
 void __cdecl
 EmitBinaryEqualsOperatorExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u lhs,sval_u rhs,sval_u opcode,sval_u sourcePos,
+          scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (gScrCompileGlob[_param_1].bConstRefCount != false) {
+  if (gScrCompileGlob[_inst].bConstRefCount != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xa5d,0,"%s");
     if (!bVar2) {
@@ -3510,9 +3525,9 @@ EmitBinaryEqualsOperatorExpression
       return;
     }
   }
-  gScrCompileGlob[_param_1].bConstRefCount = true;
-  EmitVariableExpression(param_1,param_2,param_6);
-  if (gScrCompileGlob[_param_1].bConstRefCount == false) {
+  gScrCompileGlob[_inst].bConstRefCount = true;
+  EmitVariableExpression(inst,lhs,block);
+  if (gScrCompileGlob[_inst].bConstRefCount == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xa60,0,"%s");
     if (!bVar2) {
@@ -3521,42 +3536,42 @@ EmitBinaryEqualsOperatorExpression
       return;
     }
   }
-  gScrCompileGlob[_param_1].bConstRefCount = false;
-  EmitExpression(param_1,param_3,param_6);
-  EmitOpcode(param_1,SEXT14(param_4.stringValue._0_1_),-1,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  EmitVariableExpressionRef(param_1,param_2,param_6);
-  EmitSetVariableField(param_1,param_5);
+  gScrCompileGlob[_inst].bConstRefCount = false;
+  EmitExpression(inst,rhs,block);
+  EmitOpcode(inst,SEXT14(opcode.stringValue._0_1_),-1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitVariableExpressionRef(inst,lhs,block);
+  EmitSetVariableField(inst,sourcePos);
   return;
 }
 
 
 // 0089F5A0  Scr_CalcLocalVarsBinaryEqualsOperatorExpression  (clientscript/cscr_compiler.cpp:2667)
 
-void __cdecl Scr_CalcLocalVarsBinaryEqualsOperatorExpression(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsBinaryEqualsOperatorExpression(sval_u expr,scr_block_s *block_2)
 
 {
-  Scr_CalcLocalVarsVariableExpressionRef(param_1,param_2);
+  Scr_CalcLocalVarsVariableExpressionRef(expr,block_2);
   return;
 }
 
 
 // 0089FEE0  EvalExpression  (clientscript/cscr_compiler.cpp:2673)
 
-bool __cdecl EvalExpression(scriptInstance_t param_1,sval_u param_2,VariableCompileValue *param_3)
+bool __cdecl EvalExpression(scriptInstance_t inst,sval_u expr,VariableCompileValue *constValue)
 
 {
   bool bVar1;
   
-  if (*param_2.codePosValue == '\b') {
-    bVar1 = EvalPrimitiveExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3);
+  if (*expr.codePosValue == '\b') {
+    bVar1 = EvalPrimitiveExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,constValue);
   }
-  else if (*param_2.codePosValue == '3') {
+  else if (*expr.codePosValue == '3') {
     bVar1 = EvalBinaryOperatorExpression
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,
-                       (sval_u)(param_2.block)->localVarsCount,
-                       *(sval_u *)(param_2.block)->localVarsInitBits,param_3);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,
+                       (sval_u)(expr.block)->localVarsPublicCount,
+                       (sval_u)(expr.block)->localVarsCount,
+                       *(sval_u *)(expr.block)->localVarsInitBits,constValue);
   }
   else {
     bVar1 = false;
@@ -3569,8 +3584,7 @@ bool __cdecl EvalExpression(scriptInstance_t param_1,sval_u param_2,VariableComp
 
 bool __cdecl
 EmitOrEvalExpression
-          (scriptInstance_t param_1,sval_u param_2,VariableCompileValue *param_3,
-          scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,VariableCompileValue *constValue,scr_block_s *block)
 
 {
   code *pcVar1;
@@ -3578,64 +3592,64 @@ EmitOrEvalExpression
   bool bVar3;
   bool bVar4;
   undefined3 in_stack_00000005;
+  bool result;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\a':
-    if ((gScrCompileGlob[_param_1].bConstRefCount != false) &&
+    if ((gScrCompileGlob[_inst].bConstRefCount != false) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0xa86,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       uVar2 = (*pcVar1)();
       return (bool)uVar2;
     }
-    gScrCompileGlob[_param_1].bConstRefCount = true;
-    bVar4 = EmitOrEvalExpression
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4);
-    if ((gScrCompileGlob[_param_1].bConstRefCount == false) &&
+    gScrCompileGlob[_inst].bConstRefCount = true;
+    bVar4 = EmitOrEvalExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,constValue,block);
+    if ((gScrCompileGlob[_inst].bConstRefCount == false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0xa89,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar2 = (*pcVar1)();
       return (bool)uVar2;
     }
-    gScrCompileGlob[_param_1].bConstRefCount = false;
+    gScrCompileGlob[_inst].bConstRefCount = false;
     break;
   case '\b':
     bVar4 = EmitOrEvalPrimitiveExpression
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,constValue,block);
     break;
   default:
     bVar4 = false;
     break;
   case '1':
     EmitBoolOrExpression
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_4);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,block);
     bVar4 = false;
     break;
   case '2':
     EmitBoolAndExpression
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_4);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,block);
     bVar4 = false;
     break;
   case '3':
     bVar4 = EmitOrEvalBinaryOperatorExpression
-                      (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,
-                       (sval_u)(param_2.block)->localVarsCount,
-                       *(sval_u *)(param_2.block)->localVarsInitBits,param_3,param_4);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,
+                       (sval_u)(expr.block)->localVarsPublicCount,
+                       (sval_u)(expr.block)->localVarsCount,
+                       *(sval_u *)(expr.block)->localVarsInitBits,constValue,block);
     break;
   case '4':
-    EmitExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
-    EmitBoolNot(param_1,(sval_u)(param_2.block)->localVarsPublicCount);
+    EmitExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
+    EmitBoolNot(inst,(sval_u)(expr.block)->localVarsPublicCount);
     bVar4 = false;
     break;
   case '5':
-    EmitExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
-    EmitBoolComplement(param_1,(sval_u)(param_2.block)->localVarsPublicCount);
+    EmitExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
+    EmitBoolComplement(inst,(sval_u)(expr.block)->localVarsPublicCount);
     bVar4 = false;
   }
   return bVar4;
@@ -3644,15 +3658,15 @@ EmitOrEvalExpression
 
 // 008A5100  EmitExpression  (clientscript/cscr_compiler.cpp:2731)
 
-void __cdecl EmitExpression(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitExpression(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
   bool bVar1;
-  VariableCompileValue local_10;
+  VariableCompileValue constValue;
   
-  bVar1 = EmitOrEvalExpression(param_1,param_2,&local_10,param_3);
+  bVar1 = EmitOrEvalExpression(inst,expr,&constValue,block);
   if (bVar1) {
-    EmitValue(param_1,&local_10);
+    EmitValue(inst,&constValue);
   }
   return;
 }
@@ -3660,7 +3674,7 @@ void __cdecl EmitExpression(scriptInstance_t param_1,sval_u param_2,scr_block_s 
 
 // 008A5140  EmitVariableExpressionRef  (clientscript/cscr_compiler.cpp:2741)
 
-void __cdecl EmitVariableExpressionRef(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitVariableExpressionRef(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
   code *pcVar1;
@@ -3668,52 +3682,52 @@ void __cdecl EmitVariableExpressionRef(scriptInstance_t param_1,sval_u param_2,s
   undefined3 in_stack_00000005;
   char *local_c;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\x04':
-    if ((gScrCompileGlob[_param_1].bConstRefCount != false) &&
+    if ((gScrCompileGlob[_inst].bConstRefCount != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0xab9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    gScrCompileGlob[_param_1].bConstRefCount = true;
-    EmitVariableExpressionRef(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3);
-    if ((gScrCompileGlob[_param_1].bConstRefCount == false) &&
+    gScrCompileGlob[_inst].bConstRefCount = true;
+    EmitVariableExpressionRef(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
+    if ((gScrCompileGlob[_inst].bConstRefCount == false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0xabc,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    gScrCompileGlob[_param_1].bConstRefCount = false;
+    gScrCompileGlob[_inst].bConstRefCount = false;
     break;
   case '\x05':
     EmitLocalVariableRef
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,block);
     break;
   case '\x0f':
     EmitArrayVariableRef
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_3);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,block);
     break;
   case '\x11':
     EmitFieldVariableRef
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,param_3);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,block
+              );
     break;
   case '7':
   case 'R':
-    if (gScrCompilePub[_param_1].script_loading == false) {
+    if (gScrCompilePub[_inst].script_loading == false) {
       local_c = "not an lvalue";
     }
     else {
       local_c = "$ and self field can only be used in the script debugger";
     }
-    CompileError(param_1,(param_2.block)->localVarsPublicCount,local_c);
+    CompileError(inst,(expr.block)->localVarsPublicCount,local_c);
   }
   return;
 }
@@ -3721,16 +3735,16 @@ void __cdecl EmitVariableExpressionRef(scriptInstance_t param_1,sval_u param_2,s
 
 // 0089F5C0  Scr_CalcLocalVarsVariableExpressionRef  (clientscript/cscr_compiler.cpp:2773)
 
-void __cdecl Scr_CalcLocalVarsVariableExpressionRef(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsVariableExpressionRef(sval_u expr,scr_block_s *block)
 
 {
-  if (*param_1.codePosValue == '\x05') {
+  if (*expr.codePosValue == '\x05') {
     Scr_CalcLocalVarsLocalVariableRef
-              ((sval_u)(param_1.block)->localVarsCreateCount,
-               (sval_u)(param_1.block)->localVarsPublicCount,param_2);
+              ((sval_u)(expr.block)->localVarsCreateCount,(sval_u)(expr.block)->localVarsPublicCount
+               ,block);
   }
-  else if (*param_1.codePosValue == '\x0f') {
-    Scr_CalcLocalVarsArrayVariableRef((sval_u)(param_1.block)->localVarsCreateCount,param_2);
+  else if (*expr.codePosValue == '\x0f') {
+    Scr_CalcLocalVarsArrayVariableRef((sval_u)(expr.block)->localVarsCreateCount,block);
   }
   return;
 }
@@ -3740,17 +3754,17 @@ void __cdecl Scr_CalcLocalVarsVariableExpressionRef(sval_u param_1,scr_block_s *
 
 void __cdecl
 EmitArrayPrimitiveExpressionRef
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\x13') {
-    EmitVariableExpressionRef(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
+  if (*expr.codePosValue == '\x13') {
+    EmitVariableExpressionRef(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
   }
-  else if (*param_2.codePosValue == '%') {
-    EmitGameRef(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+  else if (*expr.codePosValue == '%') {
+    EmitGameRef(inst,(sval_u)(expr.block)->localVarsCreateCount);
   }
   else {
-    CompileError(param_1,param_3.stringValue,"not an lvalue");
+    CompileError(inst,sourcePos.stringValue,"not an lvalue");
   }
   return;
 }
@@ -3758,11 +3772,11 @@ EmitArrayPrimitiveExpressionRef
 
 // 0089F6D0  Scr_CalcLocalVarsArrayPrimitiveExpressionRef  (clientscript/cscr_compiler.cpp:2807)
 
-void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u expr,scr_block_s *block)
 
 {
-  if (*param_1.codePosValue == '\x13') {
-    Scr_CalcLocalVarsVariableExpressionRef((sval_u)(param_1.block)->localVarsCreateCount,param_2);
+  if (*expr.codePosValue == '\x13') {
+    Scr_CalcLocalVarsVariableExpressionRef((sval_u)(expr.block)->localVarsCreateCount,block);
   }
   return;
 }
@@ -3772,32 +3786,31 @@ void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u param_1,scr_blo
 
 void __cdecl
 EmitPrimitiveExpressionFieldObject
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\x13':
-    EmitVariableExpression(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
-    EmitCastFieldObject(param_1,(sval_u)(param_2.block)->localVarsPublicCount);
+    EmitVariableExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
+    EmitCastFieldObject(inst,(sval_u)(expr.block)->localVarsPublicCount);
     break;
   default:
-    CompileError(param_1,param_3.stringValue,"not an object");
+    CompileError(inst,sourcePos.stringValue,"not an object");
     break;
   case '\x15':
-    EmitCallExpressionFieldObject(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_4);
+    EmitCallExpressionFieldObject(inst,(sval_u)(expr.block)->localVarsCreateCount,block);
     break;
   case '\"':
-    EmitSelfObject(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitSelfObject(inst,(sval_u)(expr.block)->localVarsCreateCount);
     break;
   case '$':
-    EmitLevelObject(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitLevelObject(inst,(sval_u)(expr.block)->localVarsCreateCount);
     break;
   case '&':
-    EmitAnimObject(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitAnimObject(inst,(sval_u)(expr.block)->localVarsCreateCount);
     break;
   case '0':
-    EmitExpressionListFieldObject
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4);
+    EmitExpressionListFieldObject(inst,(sval_u)(expr.block)->localVarsCreateCount,sourcePos,block);
   }
   return;
 }
@@ -3806,17 +3819,16 @@ EmitPrimitiveExpressionFieldObject
 // 008A58E0  EmitExpressionFieldObject  (clientscript/cscr_compiler.cpp:2854)
 
 void __cdecl
-EmitExpressionFieldObject
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitExpressionFieldObject(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
-  if (*param_2.codePosValue == '\b') {
+  if (*expr.codePosValue == '\b') {
     EmitPrimitiveExpressionFieldObject
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_4);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,block);
   }
   else {
-    CompileError(param_1,param_3.stringValue,"not an object");
+    CompileError(inst,sourcePos.stringValue,"not an object");
   }
   return;
 }
@@ -3824,16 +3836,17 @@ EmitExpressionFieldObject
 
 // 008A6D00  ConnectBreakStatements  (clientscript/cscr_compiler.cpp:2869)
 
-void __cdecl ConnectBreakStatements(scriptInstance_t param_1)
+void __cdecl ConnectBreakStatements(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   undefined3 in_stack_00000005;
-  BreakStatementInfo *local_c;
+  BreakStatementInfo *breakStatement;
+  char *codePos;
   
-  if (gScrCompilePub[_param_1].value_count != 0) {
+  if (gScrCompilePub[_inst].value_count != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xb39,0,"%s");
     if (!bVar2) {
@@ -3843,9 +3856,9 @@ void __cdecl ConnectBreakStatements(scriptInstance_t param_1)
     }
   }
   pcVar3 = TempMalloc(0);
-  for (local_c = gScrCompileGlob[_param_1].currentBreakStatement;
-      local_c != (BreakStatementInfo *)0x0; local_c = local_c->next) {
-    *(int *)local_c->codePos = (int)pcVar3 - (int)local_c->nextCodePos;
+  for (breakStatement = gScrCompileGlob[_inst].currentBreakStatement;
+      breakStatement != (BreakStatementInfo *)0x0; breakStatement = breakStatement->next) {
+    *(int *)breakStatement->codePos = (int)pcVar3 - (int)breakStatement->nextCodePos;
   }
   return;
 }
@@ -3853,17 +3866,19 @@ void __cdecl ConnectBreakStatements(scriptInstance_t param_1)
 
 // 008A6D90  ConnectContinueStatements  (clientscript/cscr_compiler.cpp:2887)
 
-void __cdecl ConnectContinueStatements(scriptInstance_t param_1)
+void __cdecl ConnectContinueStatements(scriptInstance_t inst)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000005;
-  ContinueStatementInfo *local_c;
+  ContinueStatementInfo *continueStatement;
+  char *codePos;
   
   pcVar1 = TempMalloc(0);
-  for (local_c = gScrCompileGlob[_param_1].currentContinueStatement;
-      local_c != (ContinueStatementInfo *)0x0; local_c = local_c->next) {
-    *(int *)local_c->codePos = (int)pcVar1 - (int)local_c->nextCodePos;
+  for (continueStatement = gScrCompileGlob[_inst].currentContinueStatement;
+      continueStatement != (ContinueStatementInfo *)0x0; continueStatement = continueStatement->next
+      ) {
+    *(int *)continueStatement->codePos = (int)pcVar1 - (int)continueStatement->nextCodePos;
   }
   return;
 }
@@ -3871,22 +3886,22 @@ void __cdecl ConnectContinueStatements(scriptInstance_t param_1)
 
 // 008A59F0  IsUndefinedPrimitiveExpression  (clientscript/cscr_compiler.cpp:2903)
 
-bool __cdecl IsUndefinedPrimitiveExpression(sval_u param_1)
+bool __cdecl IsUndefinedPrimitiveExpression(sval_u expr)
 
 {
-  return *param_1.codePosValue == '!';
+  return *expr.codePosValue == '!';
 }
 
 
 // 008A59B0  IsUndefinedExpression  (clientscript/cscr_compiler.cpp:2909)
 
-bool __cdecl IsUndefinedExpression(sval_u param_1)
+bool __cdecl IsUndefinedExpression(sval_u expr)
 
 {
   bool bVar1;
   
-  if (*param_1.codePosValue == '\b') {
-    bVar1 = IsUndefinedPrimitiveExpression((sval_u)(param_1.block)->localVarsCreateCount);
+  if (*expr.codePosValue == '\b') {
+    bVar1 = IsUndefinedPrimitiveExpression((sval_u)(expr.block)->localVarsCreateCount);
   }
   else {
     bVar1 = false;
@@ -3899,36 +3914,36 @@ bool __cdecl IsUndefinedExpression(sval_u param_1)
 
 bool __cdecl
 EmitClearVariableExpression
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+          (scriptInstance_t inst,sval_u expr,sval_u rhsSourcePos,scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
   char *local_c;
   
-  switch(*param_2.codePosValue) {
+  switch(*expr.codePosValue) {
   case '\x05':
     return false;
   case '\x0f':
     EmitClearArrayVariable
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_4);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               *(sval_u *)(expr.block)->localVarsInitBits,block);
     break;
   case '\x11':
     EmitClearFieldVariable
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,param_3,param_4);
+              (inst,(sval_u)(expr.block)->localVarsCreateCount,
+               (sval_u)(expr.block)->localVarsPublicCount,(sval_u)(expr.block)->localVarsCount,
+               rhsSourcePos,block);
     break;
   case '7':
   case 'R':
-    if (gScrCompilePub[_param_1].script_loading == false) {
+    if (gScrCompilePub[_inst].script_loading == false) {
       local_c = "not an lvalue";
     }
     else {
       local_c = "$ and self field can only be used in the script debugger";
     }
-    CompileError(param_1,(param_2.block)->localVarsPublicCount,local_c);
+    CompileError(inst,(expr.block)->localVarsPublicCount,local_c);
   }
   return true;
 }
@@ -3938,17 +3953,17 @@ EmitClearVariableExpression
 
 void __cdecl
 EmitAssignmentStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u lhs,sval_u rhs,sval_u sourcePos,sval_u rhsSourcePos,
+          scr_block_s *block)
 
 {
   bool bVar1;
   
-  bVar1 = IsUndefinedExpression(param_3);
-  if ((!bVar1) || (bVar1 = EmitClearVariableExpression(param_1,param_2,param_5,param_6), !bVar1)) {
-    EmitExpression(param_1,param_3,param_6);
-    EmitVariableExpressionRef(param_1,param_2,param_6);
-    EmitSetVariableField(param_1,param_4);
+  bVar1 = IsUndefinedExpression(rhs);
+  if ((!bVar1) || (bVar1 = EmitClearVariableExpression(inst,lhs,rhsSourcePos,block), !bVar1)) {
+    EmitExpression(inst,rhs,block);
+    EmitVariableExpressionRef(inst,lhs,block);
+    EmitSetVariableField(inst,sourcePos);
   }
   return;
 }
@@ -3956,22 +3971,20 @@ EmitAssignmentStatement
 
 // 0089F700  Scr_CalcLocalVarsAssignmentStatement  (clientscript/cscr_compiler.cpp:2953)
 
-void __cdecl
-Scr_CalcLocalVarsAssignmentStatement(sval_u param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs,sval_u rhs,scr_block_s *block)
 
 {
-  Scr_CalcLocalVarsVariableExpressionRef(param_1,param_3);
+  Scr_CalcLocalVarsVariableExpressionRef(lhs,block);
   return;
 }
 
 
 // 008A5C50  EmitCallExpressionStatement  (clientscript/cscr_compiler.cpp:2959)
 
-void __cdecl
-EmitCallExpressionStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitCallExpressionStatement(scriptInstance_t inst,sval_u expr,scr_block_s *block)
 
 {
-  EmitCallExpression(param_1,param_2,true,param_3);
+  EmitCallExpression(inst,expr,true,block);
   return;
 }
 
@@ -3979,29 +3992,29 @@ EmitCallExpressionStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s 
 // 008A5C70  EmitReturnStatement  (clientscript/cscr_compiler.cpp:2965)
 
 void __cdecl
-EmitReturnStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitReturnStatement(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
-  if (param_4->abortLevel == 0) {
-    param_4->abortLevel = 3;
+  if (block->abortLevel == 0) {
+    block->abortLevel = 3;
   }
-  EmitExpression(param_1,param_2,param_4);
-  EmitReturn(param_1);
-  AddOpcodePos(param_1,param_3.stringValue,0);
+  EmitExpression(inst,expr,block);
+  EmitReturn(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A5CF0  EmitEndStatement  (clientscript/cscr_compiler.cpp:2976)
 
-void __cdecl EmitEndStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitEndStatement(scriptInstance_t inst,sval_u sourcePos,scr_block_s *block)
 
 {
-  if (param_3->abortLevel == 0) {
-    param_3->abortLevel = 3;
+  if (block->abortLevel == 0) {
+    block->abortLevel = 3;
   }
-  EmitEnd(param_1);
-  AddOpcodePos(param_1,param_2.stringValue,1);
+  EmitEnd(inst);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
   return;
 }
 
@@ -4009,27 +4022,27 @@ void __cdecl EmitEndStatement(scriptInstance_t param_1,sval_u param_2,scr_block_
 // 008A5D30  EmitWaitStatement  (clientscript/cscr_compiler.cpp:2986)
 
 void __cdecl
-EmitWaitStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                 scr_block_s *param_5)
+EmitWaitStatement(scriptInstance_t inst,sval_u expr,sval_u sourcePos,sval_u waitSourcePos,
+                 scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_2,param_5);
-  EmitOpcode(param_1,0x4c,-1,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
+  EmitExpression(inst,expr,block);
+  EmitOpcode(inst,0x4c,-1,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A5DA0  EmitWaittillFrameEnd  (clientscript/cscr_compiler.cpp:2996)
 
-void __cdecl EmitWaittillFrameEnd(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitWaittillFrameEnd(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitOpcode(param_1,0x4d,0,0);
-  AddOpcodePos(param_1,param_2.stringValue,1);
-  AddOpcodePos(param_1,param_2.stringValue,0);
+  EmitOpcode(inst,0x4d,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
@@ -4037,8 +4050,8 @@ void __cdecl EmitWaittillFrameEnd(scriptInstance_t param_1,sval_u param_2)
 // 008A5DE0  EmitIfStatement  (clientscript/cscr_compiler.cpp:3004)
 
 void __cdecl
-EmitIfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,bool param_5,
-               uint param_6,scr_block_s *param_7,sval_u *param_8)
+EmitIfStatement(scriptInstance_t inst,sval_u expr,sval_u stmt,sval_u sourcePos,bool lastStatement,
+               uint endSourcePos,scr_block_s *block,sval_u *ifStatBlock)
 
 {
   uchar *puVar1;
@@ -4047,17 +4060,19 @@ EmitIfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u pa
   char *pcVar4;
   char *pcVar5;
   undefined3 in_stack_00000005;
-  undefined2 local_c;
+  char *pos;
+  uint offset;
+  char *nextPos;
   
-  EmitExpression(param_1,param_2,param_7);
-  EmitOpcode(param_1,0x5e,-1,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  EmitUnsignedShort(param_1,0);
-  puVar1 = gScrCompileGlob[_param_1].codePos;
+  EmitExpression(inst,expr,block);
+  EmitOpcode(inst,0x5e,-1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitUnsignedShort(inst,0);
+  puVar1 = gScrCompileGlob[_inst].codePos;
   pcVar4 = TempMalloc(0);
-  Scr_TransferBlock(param_7,param_8->block);
-  EmitStatement(param_1,param_3,param_5,param_6,param_8->block);
-  if (param_8->block->localVarsPublicCount != param_7->localVarsCreateCount) {
+  Scr_TransferBlock(block,ifStatBlock->block);
+  EmitStatement(inst,stmt,lastStatement,endSourcePos,ifStatBlock->block);
+  if (ifStatBlock->block->localVarsPublicCount != block->localVarsCreateCount) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xbc9,0,"%s");
     if (!bVar3) {
@@ -4066,7 +4081,7 @@ EmitIfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u pa
       return;
     }
   }
-  EmitNOP2(param_1,param_5,param_6,param_8->block);
+  EmitNOP2(inst,lastStatement,endSourcePos,ifStatBlock->block);
   pcVar5 = TempMalloc(0);
   if (0xffff < (uint)((int)pcVar5 - (int)pcVar4)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -4077,8 +4092,8 @@ EmitIfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u pa
       return;
     }
   }
-  local_c = (undefined2)((int)pcVar5 - (int)pcVar4);
-  *(undefined2 *)puVar1 = local_c;
+  offset._0_2_ = (undefined2)((int)pcVar5 - (int)pcVar4);
+  *(undefined2 *)puVar1 = (undefined2)offset;
   return;
 }
 
@@ -4087,12 +4102,12 @@ EmitIfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u pa
 
 void __cdecl
 Scr_CalcLocalVarsIfStatement
-          (scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3,sval_u *param_4)
+          (scriptInstance_t inst,sval_u stmt,scr_block_s *block,sval_u *ifStatBlock)
 
 {
-  Scr_CopyBlock(param_3,&param_4->block);
-  Scr_CalcLocalVarsStatement(param_1,param_2,param_4->block);
-  Scr_MergeChildBlocks(&param_4->block,1,param_3);
+  Scr_CopyBlock(block,&ifStatBlock->block);
+  Scr_CalcLocalVarsStatement(inst,stmt,ifStatBlock->block);
+  Scr_MergeChildBlocks(&ifStatBlock->block,1,block);
   return;
 }
 
@@ -4100,9 +4115,9 @@ Scr_CalcLocalVarsIfStatement
 // 008A6270  EmitIfElseStatement  (clientscript/cscr_compiler.cpp:3034)
 
 void __cdecl
-EmitIfElseStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                   sval_u param_5,sval_u param_6,bool param_7,uint param_8,scr_block_s *param_9,
-                   sval_u *param_10,sval_u *param_11)
+EmitIfElseStatement(scriptInstance_t inst,sval_u expr,sval_u stmt1,sval_u stmt2,sval_u sourcePos,
+                   sval_u elseSourcePos,bool lastStatement,uint endSourcePos,scr_block_s *block,
+                   sval_u *ifStatBlock,sval_u *elseStatBlock)
 
 {
   uchar *puVar1;
@@ -4112,42 +4127,45 @@ EmitIfElseStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
   char *pcVar5;
   char *pcVar6;
   undefined3 in_stack_00000005;
-  undefined2 local_24;
-  sval_u local_18 [2];
-  char *local_10;
-  int local_c;
-  int *local_8;
+  int checksum;
+  uint offset;
+  char *nextPos1;
+  char *pos1;
+  sval_u childBlocks [2];
+  char *nextPos2;
+  int childCount;
+  char *pos2;
   
-  local_c = 0;
-  EmitExpression(param_1,param_2,param_9);
-  EmitOpcode(param_1,0x5e,-1,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  EmitUnsignedShort(param_1,0);
-  puVar1 = gScrCompileGlob[_param_1].codePos;
+  childCount = 0;
+  EmitExpression(inst,expr,block);
+  EmitOpcode(inst,0x5e,-1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitUnsignedShort(inst,0);
+  puVar1 = gScrCompileGlob[_inst].codePos;
   pcVar5 = TempMalloc(0);
-  Scr_TransferBlock(param_9,param_10->block);
-  EmitStatement(param_1,param_3,param_7,param_8,param_10->block);
-  EmitRemoveLocalVars(param_1,param_10->block,param_10->block);
-  if (param_10->block->abortLevel == 0) {
-    local_18[local_c] = *param_10;
-    local_c = local_c + 1;
+  Scr_TransferBlock(block,ifStatBlock->block);
+  EmitStatement(inst,stmt1,lastStatement,endSourcePos,ifStatBlock->block);
+  EmitRemoveLocalVars(inst,ifStatBlock->block,ifStatBlock->block);
+  if (ifStatBlock->block->abortLevel == 0) {
+    childBlocks[childCount] = *ifStatBlock;
+    childCount = childCount + 1;
   }
-  uVar2 = gScrVarPub[_param_1].checksum;
-  if (param_7) {
-    EmitEnd(param_1);
-    EmitInteger(param_1,0);
-    AddOpcodePos(param_1,param_8,1);
-    local_8 = (int *)0x0;
-    local_10 = (char *)0x0;
+  uVar2 = gScrVarPub[_inst].checksum;
+  if (lastStatement) {
+    EmitEnd(inst);
+    EmitInteger(inst,0);
+    AddOpcodePos(inst,endSourcePos,1);
+    pos2 = (char *)0x0;
+    nextPos2 = (char *)0x0;
   }
   else {
-    EmitOpcode(param_1,0x62,0,0);
-    AddOpcodePos(param_1,param_6.stringValue,1);
-    EmitInteger(param_1,0);
-    local_8 = (int *)gScrCompileGlob[_param_1].codePos;
-    local_10 = TempMalloc(0);
+    EmitOpcode(inst,0x62,0,0);
+    AddOpcodePos(inst,elseSourcePos.stringValue,1);
+    EmitInteger(inst,0);
+    pos2 = (char *)gScrCompileGlob[_inst].codePos;
+    nextPos2 = TempMalloc(0);
   }
-  gScrVarPub[_param_1].checksum = uVar2 + 1;
+  gScrVarPub[_inst].checksum = uVar2 + 1;
   pcVar6 = TempMalloc(0);
   if (0xffff < (uint)((int)pcVar6 - (int)pcVar5)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -4158,20 +4176,20 @@ EmitIfElseStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
       return;
     }
   }
-  local_24 = (undefined2)((int)pcVar6 - (int)pcVar5);
-  *(undefined2 *)puVar1 = local_24;
-  Scr_TransferBlock(param_9,param_11->block);
-  EmitStatement(param_1,param_4,param_7,param_8,param_11->block);
-  EmitNOP2(param_1,param_7,param_8,param_11->block);
-  if (param_11->block->abortLevel == 0) {
-    local_18[local_c] = *param_11;
-    local_c = local_c + 1;
+  offset._0_2_ = (undefined2)((int)pcVar6 - (int)pcVar5);
+  *(undefined2 *)puVar1 = (undefined2)offset;
+  Scr_TransferBlock(block,elseStatBlock->block);
+  EmitStatement(inst,stmt2,lastStatement,endSourcePos,elseStatBlock->block);
+  EmitNOP2(inst,lastStatement,endSourcePos,elseStatBlock->block);
+  if (elseStatBlock->block->abortLevel == 0) {
+    childBlocks[childCount] = *elseStatBlock;
+    childCount = childCount + 1;
   }
-  if (!param_7) {
+  if (!lastStatement) {
     pcVar5 = TempMalloc(0);
-    *local_8 = (int)pcVar5 - (int)local_10;
+    *(int *)pos2 = (int)pcVar5 - (int)nextPos2;
   }
-  Scr_InitFromChildBlocks(&local_18[0].block,local_c,param_9);
+  Scr_InitFromChildBlocks(&childBlocks[0].block,childCount,block);
   return;
 }
 
@@ -4180,53 +4198,51 @@ EmitIfElseStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
 
 void __cdecl
 Scr_CalcLocalVarsIfElseStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4,
-          sval_u *param_5,sval_u *param_6)
+          (scriptInstance_t inst,sval_u stmt1,sval_u stmt2,scr_block_s *block,sval_u *ifStatBlock,
+          sval_u *elseStatBlock)
 
 {
-  sval_u local_14 [2];
-  int local_c;
-  int local_8;
+  sval_u childBlocks [2];
+  int childCount;
+  int abortLevel;
   
-  local_c = 0;
-  local_8 = 3;
-  Scr_CopyBlock(param_4,&param_5->block);
-  Scr_CalcLocalVarsStatement(param_1,param_2,param_5->block);
-  if ((param_5->block->abortLevel <= local_8) &&
-     (local_8 = param_5->block->abortLevel, local_8 == 0)) {
-    local_14[local_c] = *param_5;
-    local_c = local_c + 1;
+  childCount = 0;
+  abortLevel = 3;
+  Scr_CopyBlock(block,&ifStatBlock->block);
+  Scr_CalcLocalVarsStatement(inst,stmt1,ifStatBlock->block);
+  if ((ifStatBlock->block->abortLevel <= abortLevel) &&
+     (abortLevel = ifStatBlock->block->abortLevel, abortLevel == 0)) {
+    childBlocks[childCount] = *ifStatBlock;
+    childCount = childCount + 1;
   }
-  Scr_CopyBlock(param_4,&param_6->block);
-  Scr_CalcLocalVarsStatement(param_1,param_3,param_6->block);
-  if ((param_6->block->abortLevel <= local_8) &&
-     (local_8 = param_6->block->abortLevel, local_8 == 0)) {
-    local_14[local_c] = *param_6;
-    local_c = local_c + 1;
+  Scr_CopyBlock(block,&elseStatBlock->block);
+  Scr_CalcLocalVarsStatement(inst,stmt2,elseStatBlock->block);
+  if ((elseStatBlock->block->abortLevel <= abortLevel) &&
+     (abortLevel = elseStatBlock->block->abortLevel, abortLevel == 0)) {
+    childBlocks[childCount] = *elseStatBlock;
+    childCount = childCount + 1;
   }
-  if (param_4->abortLevel == 0) {
-    param_4->abortLevel = local_8;
+  if (block->abortLevel == 0) {
+    block->abortLevel = abortLevel;
   }
-  Scr_AppendChildBlocks(&local_14[0].block,local_c,param_4);
-  Scr_MergeChildBlocks(&local_14[0].block,local_c,param_4);
+  Scr_AppendChildBlocks(&childBlocks[0].block,childCount,block);
+  Scr_MergeChildBlocks(&childBlocks[0].block,childCount,block);
   return;
 }
 
 
 // 0089FB50  Scr_AddBreakBlock  (clientscript/cscr_compiler.cpp:3144)
 
-void __cdecl Scr_AddBreakBlock(scriptInstance_t param_1,scr_block_s *param_2)
+void __cdecl Scr_AddBreakBlock(scriptInstance_t inst,scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
   
-  if (((param_2->abortLevel == 0) &&
-      (gScrCompileGlob[_param_1].breakChildBlocks != (scr_block_s **)0x0)) &&
-     (gScrCompilePub[_param_1].developer_statement != 2)) {
-    Scr_CheckMaxSwitchCases(*gScrCompileGlob[_param_1].breakChildCount);
-    gScrCompileGlob[_param_1].breakChildBlocks[*gScrCompileGlob[_param_1].breakChildCount] = param_2
-    ;
-    *gScrCompileGlob[_param_1].breakChildCount = *gScrCompileGlob[_param_1].breakChildCount + 1;
+  if (((block->abortLevel == 0) && (gScrCompileGlob[_inst].breakChildBlocks != (scr_block_s **)0x0))
+     && (gScrCompilePub[_inst].developer_statement != 2)) {
+    Scr_CheckMaxSwitchCases(*gScrCompileGlob[_inst].breakChildCount);
+    gScrCompileGlob[_inst].breakChildBlocks[*gScrCompileGlob[_inst].breakChildCount] = block;
+    *gScrCompileGlob[_inst].breakChildCount = *gScrCompileGlob[_inst].breakChildCount + 1;
   }
   return;
 }
@@ -4234,19 +4250,17 @@ void __cdecl Scr_AddBreakBlock(scriptInstance_t param_1,scr_block_s *param_2)
 
 // 0089FC10  Scr_AddContinueBlock  (clientscript/cscr_compiler.cpp:3158)
 
-void __cdecl Scr_AddContinueBlock(scriptInstance_t param_1,scr_block_s *param_2)
+void __cdecl Scr_AddContinueBlock(scriptInstance_t inst,scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
   
-  if (((param_2->abortLevel == 0) &&
-      (gScrCompileGlob[_param_1].continueChildBlocks != (scr_block_s **)0x0)) &&
-     (gScrCompilePub[_param_1].developer_statement != 2)) {
-    Scr_CheckMaxSwitchCases(*gScrCompileGlob[_param_1].continueChildCount);
-    gScrCompileGlob[_param_1].continueChildBlocks[*gScrCompileGlob[_param_1].continueChildCount] =
-         param_2;
-    *gScrCompileGlob[_param_1].continueChildCount =
-         *gScrCompileGlob[_param_1].continueChildCount + 1;
+  if (((block->abortLevel == 0) &&
+      (gScrCompileGlob[_inst].continueChildBlocks != (scr_block_s **)0x0)) &&
+     (gScrCompilePub[_inst].developer_statement != 2)) {
+    Scr_CheckMaxSwitchCases(*gScrCompileGlob[_inst].continueChildCount);
+    gScrCompileGlob[_inst].continueChildBlocks[*gScrCompileGlob[_inst].continueChildCount] = block;
+    *gScrCompileGlob[_inst].continueChildCount = *gScrCompileGlob[_inst].continueChildCount + 1;
   }
   return;
 }
@@ -4255,8 +4269,8 @@ void __cdecl Scr_AddContinueBlock(scriptInstance_t param_1,scr_block_s *param_2)
 // 008A6750  EmitWhileStatement  (clientscript/cscr_compiler.cpp:3172)
 
 void __cdecl
-EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                  sval_u param_5,scr_block_s *param_6,sval_u *param_7)
+EmitWhileStatement(scriptInstance_t inst,sval_u expr,sval_u stmt,sval_u sourcePos,
+                  sval_u whileSourcePos,scr_block_s *block,sval_u *whileStatBlock)
 
 {
   ContinueStatementInfo *pCVar1;
@@ -4264,33 +4278,34 @@ EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
   bool bVar3;
   char *pcVar4;
   undefined3 in_stack_00000005;
-  int local_48;
-  int *local_44;
-  scr_block_s **local_40;
-  BreakStatementInfo *local_3c;
-  char local_35;
-  uint local_34;
-  bool local_2e;
-  bool local_2d;
-  int *local_2c;
-  VariableUnion local_28;
+  ContinueStatementInfo *oldContinueStatement;
+  int breakChildCount;
+  int *oldBreakChildCount;
+  scr_block_s **breakChildBlocks;
+  BreakStatementInfo *oldBreakStatement;
+  bool constConditional;
+  uint offset;
+  bool bOldCanBreak;
+  bool bOldCanContinue;
+  int *oldContinueChildCount;
+  VariableUnion constValue;
   int local_24;
-  char *local_1c;
-  char *local_18;
-  scr_block_s **local_14;
-  uchar *local_10;
-  scr_block_s **local_c;
-  scr_block_s *local_8;
+  char *pos1;
+  char *nextPos2;
+  scr_block_s **oldBreakChildBlocks;
+  char *pos2;
+  scr_block_s **oldContinueChildBlocks;
+  scr_block_s *oldBreakBlock;
   
-  local_2e = gScrCompileGlob[_param_1].bCanBreak;
-  local_3c = gScrCompileGlob[_param_1].currentBreakStatement;
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  local_2d = gScrCompileGlob[_param_1].bCanContinue;
-  pCVar1 = gScrCompileGlob[_param_1].currentContinueStatement;
-  gScrCompileGlob[_param_1].bCanContinue = false;
-  Scr_TransferBlock(param_6,param_7->block);
-  EmitCreateLocalVars(param_1,param_7->block,param_5);
-  if (param_6->localVarsCount < param_7->block->localVarsCreateCount) {
+  bOldCanBreak = gScrCompileGlob[_inst].bCanBreak;
+  oldBreakStatement = gScrCompileGlob[_inst].currentBreakStatement;
+  gScrCompileGlob[_inst].bCanBreak = false;
+  bOldCanContinue = gScrCompileGlob[_inst].bCanContinue;
+  pCVar1 = gScrCompileGlob[_inst].currentContinueStatement;
+  gScrCompileGlob[_inst].bCanContinue = false;
+  Scr_TransferBlock(block,whileStatBlock->block);
+  EmitCreateLocalVars(inst,whileStatBlock->block,whileSourcePos);
+  if (block->localVarsCount < whileStatBlock->block->localVarsCreateCount) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xc81,0,"%s");
     if (!bVar3) {
@@ -4299,65 +4314,65 @@ EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
       return;
     }
   }
-  param_6->localVarsCreateCount = param_7->block->localVarsCreateCount;
-  local_1c = TempMalloc(0);
-  local_35 = '\0';
-  bVar3 = EmitOrEvalExpression(param_1,param_2,(VariableCompileValue *)&local_28,param_6);
+  block->localVarsCreateCount = whileStatBlock->block->localVarsCreateCount;
+  pos1 = TempMalloc(0);
+  constConditional = false;
+  bVar3 = EmitOrEvalExpression(inst,expr,(VariableCompileValue *)&constValue,block);
   if (bVar3) {
     if ((local_24 == 6) || (local_24 == 5)) {
-      Scr_CastBool(param_1,(VariableValue *)&local_28);
-      if (local_28.intValue == 0) {
-        CompileError(param_1,param_4.stringValue,"conditional expression cannot be always false");
+      Scr_CastBool(inst,(VariableValue *)&constValue);
+      if (constValue.intValue == 0) {
+        CompileError(inst,sourcePos.stringValue,"conditional expression cannot be always false");
       }
-      local_35 = '\x01';
+      constConditional = true;
     }
     else {
-      EmitValue(param_1,(VariableCompileValue *)&local_28);
+      EmitValue(inst,(VariableCompileValue *)&constValue);
     }
   }
-  local_14 = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_44 = gScrCompileGlob[_param_1].breakChildCount;
-  local_8 = gScrCompileGlob[_param_1].breakBlock;
-  local_c = gScrCompileGlob[_param_1].continueChildBlocks;
-  local_2c = gScrCompileGlob[_param_1].continueChildCount;
-  local_48 = 0;
-  gScrCompileGlob[_param_1].continueChildBlocks = (scr_block_s **)0x0;
-  gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)*param_7;
-  if (local_35 == '\0') {
-    EmitOpcode(param_1,0x5e,-1,0);
-    AddOpcodePos(param_1,param_4.stringValue,0);
-    EmitUnsignedShort(param_1,0);
-    local_10 = gScrCompileGlob[_param_1].codePos;
-    local_18 = TempMalloc(0);
-    local_40 = (scr_block_s **)0x0;
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  oldBreakBlock = gScrCompileGlob[_inst].breakBlock;
+  oldContinueChildBlocks = gScrCompileGlob[_inst].continueChildBlocks;
+  oldContinueChildCount = gScrCompileGlob[_inst].continueChildCount;
+  breakChildCount = 0;
+  gScrCompileGlob[_inst].continueChildBlocks = (scr_block_s **)0x0;
+  gScrCompileGlob[_inst].breakBlock = (scr_block_s *)*whileStatBlock;
+  if (constConditional == false) {
+    EmitOpcode(inst,0x5e,-1,0);
+    AddOpcodePos(inst,sourcePos.stringValue,0);
+    EmitUnsignedShort(inst,0);
+    pos2 = (char *)gScrCompileGlob[_inst].codePos;
+    nextPos2 = TempMalloc(0);
+    breakChildBlocks = (scr_block_s **)0x0;
   }
   else {
-    local_10 = (uchar *)0x0;
-    local_18 = (char *)0x0;
-    local_40 = Hunk_AllocateTempMemoryHigh(0x800,"EmitWhileStatement");
-    gScrCompileGlob[_param_1].breakChildCount = &local_48;
+    pos2 = (char *)0x0;
+    nextPos2 = (char *)0x0;
+    breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"EmitWhileStatement");
+    gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_40;
-  gScrCompileGlob[_param_1].bCanBreak = true;
-  gScrCompileGlob[_param_1].currentBreakStatement = (BreakStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].bCanContinue = true;
-  gScrCompileGlob[_param_1].currentContinueStatement = (ContinueStatementInfo *)0x0;
-  EmitStatement(param_1,param_3,false,0,param_7->block);
-  if (param_7->block->abortLevel != 3) {
-    param_7->block->abortLevel = 0;
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  gScrCompileGlob[_inst].bCanBreak = true;
+  gScrCompileGlob[_inst].currentBreakStatement = (BreakStatementInfo *)0x0;
+  gScrCompileGlob[_inst].bCanContinue = true;
+  gScrCompileGlob[_inst].currentContinueStatement = (ContinueStatementInfo *)0x0;
+  EmitStatement(inst,stmt,false,0,whileStatBlock->block);
+  if (whileStatBlock->block->abortLevel != 3) {
+    whileStatBlock->block->abortLevel = 0;
   }
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  gScrCompileGlob[_param_1].bCanContinue = false;
-  ConnectContinueStatements(param_1);
-  EmitOpcode(param_1,99,0,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  if (*param_3.codePosValue == '.') {
-    AddOpcodePos(param_1,(param_3.block)->localVarsCount,1);
+  gScrCompileGlob[_inst].bCanBreak = false;
+  gScrCompileGlob[_inst].bCanContinue = false;
+  ConnectContinueStatements(inst);
+  EmitOpcode(inst,99,0,0);
+  AddOpcodePos(inst,whileSourcePos.stringValue,0);
+  if (*stmt.codePosValue == '.') {
+    AddOpcodePos(inst,(stmt.block)->localVarsCount,1);
   }
-  EmitUnsignedShort(param_1,0);
+  EmitUnsignedShort(inst,0);
   pcVar4 = TempMalloc(0);
-  local_34 = (int)pcVar4 - (int)local_1c;
-  if (0xffff < local_34) {
+  offset = (int)pcVar4 - (int)pos1;
+  if (0xffff < offset) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xcd0,0,"%s");
     if (!bVar3) {
@@ -4366,11 +4381,11 @@ EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
       return;
     }
   }
-  *(undefined2 *)gScrCompileGlob[_param_1].codePos = (undefined2)local_34;
-  if (local_10 != (uchar *)0x0) {
+  *(undefined2 *)gScrCompileGlob[_inst].codePos = (undefined2)offset;
+  if (pos2 != (char *)0x0) {
     pcVar4 = TempMalloc(0);
-    local_34 = (int)pcVar4 - (int)local_18;
-    if (0xffff < local_34) {
+    offset = (int)pcVar4 - (int)nextPos2;
+    if (0xffff < offset) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0xcd5,0,"%s");
       if (!bVar3) {
@@ -4379,21 +4394,21 @@ EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
         return;
       }
     }
-    *(undefined2 *)local_10 = (undefined2)local_34;
+    *(undefined2 *)pos2 = (undefined2)offset;
   }
-  ConnectBreakStatements(param_1);
-  gScrCompileGlob[_param_1].bCanBreak = local_2e;
-  gScrCompileGlob[_param_1].currentBreakStatement = local_3c;
-  gScrCompileGlob[_param_1].bCanContinue = local_2d;
-  gScrCompileGlob[_param_1].currentContinueStatement = pCVar1;
-  if (local_35 != '\0') {
-    Scr_InitFromChildBlocks(local_40,local_48,param_6);
+  ConnectBreakStatements(inst);
+  *(bool *)(_inst * 0x1d8 + 0x9d38b24) = bOldCanBreak;
+  gScrCompileGlob[_inst].currentBreakStatement = oldBreakStatement;
+  *(bool *)(_inst * 0x1d8 + 0x9d38b2c) = bOldCanContinue;
+  gScrCompileGlob[_inst].currentContinueStatement = pCVar1;
+  if (constConditional != false) {
+    Scr_InitFromChildBlocks(breakChildBlocks,breakChildCount,block);
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_14;
-  gScrCompileGlob[_param_1].breakChildCount = local_44;
-  gScrCompileGlob[_param_1].breakBlock = local_8;
-  gScrCompileGlob[_param_1].continueChildBlocks = local_c;
-  gScrCompileGlob[_param_1].continueChildCount = local_2c;
+  gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
+  gScrCompileGlob[_inst].breakBlock = oldBreakBlock;
+  gScrCompileGlob[_inst].continueChildBlocks = oldContinueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = oldContinueChildCount;
   return;
 }
 
@@ -4402,69 +4417,68 @@ EmitWhileStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
 
 void __cdecl
 Scr_CalcLocalVarsWhileStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4,
-          sval_u *param_5)
+          (scriptInstance_t inst,sval_u expr,sval_u stmt,scr_block_s *block,sval_u *whileStatBlock)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
-  int local_3c;
-  int *local_38;
-  scr_block_s **local_34;
-  char local_2d;
-  int local_2c;
-  int *local_28;
-  VariableUnion local_24;
+  int breakChildCount;
+  int *oldBreakChildCount;
+  scr_block_s **breakChildBlocks;
+  bool constConditional;
+  int continueChildCount;
+  int *oldContinueChildCount;
+  VariableUnion constValue;
   int local_20;
-  int local_18;
-  scr_block_s **local_14;
-  scr_block_s **local_10;
-  int local_c;
-  scr_block_s **local_8;
+  int i;
+  scr_block_s **continueChildBlocks;
+  scr_block_s **oldBreakChildBlocks;
+  int abortLevel;
+  scr_block_s **oldContinueChildBlocks;
   
-  local_2d = '\0';
-  bVar1 = EvalExpression(param_1,param_2,(VariableCompileValue *)&local_24);
+  constConditional = false;
+  bVar1 = EvalExpression(inst,expr,(VariableCompileValue *)&constValue);
   if (bVar1) {
     if ((local_20 == 6) || (local_20 == 5)) {
-      Scr_CastBool(param_1,(VariableValue *)&local_24);
-      if (local_24.intValue != 0) {
-        local_2d = '\x01';
+      Scr_CastBool(inst,(VariableValue *)&constValue);
+      if (constValue.intValue != 0) {
+        constConditional = true;
       }
     }
-    RemoveRefToValue(param_1,local_20,local_24);
+    RemoveRefToValue(inst,local_20,constValue);
   }
-  local_10 = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_38 = gScrCompileGlob[_param_1].breakChildCount;
-  local_8 = gScrCompileGlob[_param_1].continueChildBlocks;
-  local_28 = gScrCompileGlob[_param_1].continueChildCount;
-  local_3c = 0;
-  local_2c = 0;
-  local_14 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsWhileStatement");
-  gScrCompileGlob[_param_1].continueChildBlocks = local_14;
-  gScrCompileGlob[_param_1].continueChildCount = &local_2c;
-  local_c = param_4->abortLevel;
-  if (local_2d == '\0') {
-    local_34 = (scr_block_s **)0x0;
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  oldContinueChildBlocks = gScrCompileGlob[_inst].continueChildBlocks;
+  oldContinueChildCount = gScrCompileGlob[_inst].continueChildCount;
+  breakChildCount = 0;
+  continueChildCount = 0;
+  continueChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsWhileStatement");
+  gScrCompileGlob[_inst].continueChildBlocks = continueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = &continueChildCount;
+  abortLevel = block->abortLevel;
+  if (constConditional == false) {
+    breakChildBlocks = (scr_block_s **)0x0;
   }
   else {
-    local_34 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsWhileStatement");
-    gScrCompileGlob[_param_1].breakChildCount = &local_3c;
+    breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsWhileStatement");
+    gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_34;
-  Scr_CopyBlock(param_4,&param_5->block);
-  Scr_CalcLocalVarsStatement(param_1,param_3,param_5->block);
-  Scr_AddContinueBlock(param_1,param_5->block);
-  for (local_18 = 0; local_18 < local_2c; local_18 = local_18 + 1) {
-    Scr_AppendChildBlocks(local_14 + local_18,1,param_4);
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  Scr_CopyBlock(block,&whileStatBlock->block);
+  Scr_CalcLocalVarsStatement(inst,stmt,whileStatBlock->block);
+  Scr_AddContinueBlock(inst,whileStatBlock->block);
+  for (i = 0; i < continueChildCount; i = i + 1) {
+    Scr_AppendChildBlocks(continueChildBlocks + i,1,block);
   }
-  if (local_2d != '\0') {
-    Scr_AppendChildBlocks(local_34,local_3c,param_4);
+  if (constConditional != false) {
+    Scr_AppendChildBlocks(breakChildBlocks,breakChildCount,block);
   }
-  Scr_MergeChildBlocks(&param_5->block,1,param_4);
-  gScrCompileGlob[_param_1].breakChildBlocks = local_10;
-  gScrCompileGlob[_param_1].breakChildCount = local_38;
-  gScrCompileGlob[_param_1].continueChildBlocks = local_8;
-  gScrCompileGlob[_param_1].continueChildCount = local_28;
+  Scr_MergeChildBlocks(&whileStatBlock->block,1,block);
+  gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
+  gScrCompileGlob[_inst].continueChildBlocks = oldContinueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = oldContinueChildCount;
   return;
 }
 
@@ -4472,9 +4486,9 @@ Scr_CalcLocalVarsWhileStatement
 // 008A6DE0  EmitForStatement  (clientscript/cscr_compiler.cpp:3384)
 
 void __cdecl
-EmitForStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                sval_u param_5,sval_u param_6,sval_u param_7,scr_block_s *param_8,sval_u *param_9,
-                sval_u *param_10)
+EmitForStatement(scriptInstance_t inst,sval_u stmt1,sval_u expr,sval_u stmt2,sval_u stmt,
+                sval_u sourcePos,sval_u forSourcePos,scr_block_s *block,sval_u *forStatBlock,
+                sval_u *forStatPostBlock)
 
 {
   ContinueStatementInfo *pCVar1;
@@ -4482,144 +4496,145 @@ EmitForStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u p
   bool bVar3;
   char *pcVar4;
   undefined3 in_stack_00000005;
-  int local_50;
-  int *local_4c;
-  scr_block_s **local_48;
-  BreakStatementInfo *local_44;
-  char local_3d;
-  uint local_3c;
-  bool local_36;
-  bool local_35;
-  int local_34;
-  int *local_30;
-  VariableUnion local_2c;
+  ContinueStatementInfo *oldContinueStatement;
+  int breakChildCount;
+  int *oldBreakChildCount;
+  scr_block_s **breakChildBlocks;
+  BreakStatementInfo *oldBreakStatement;
+  bool constConditional;
+  uint offset;
+  bool bOldCanBreak;
+  bool bOldCanContinue;
+  int continueChildCount;
+  int *oldContinueChildCount;
+  VariableUnion constValue;
   int local_28;
-  char *local_20;
-  char *local_1c;
-  scr_block_s **local_18;
-  scr_block_s **local_14;
-  uchar *local_10;
-  scr_block_s **local_c;
-  scr_block_s *local_8;
+  char *pos1;
+  char *nextPos2;
+  scr_block_s **continueChildBlocks;
+  scr_block_s **oldBreakChildBlocks;
+  char *pos2;
+  scr_block_s **oldContinueChildBlocks;
+  scr_block_s *oldBreakBlock;
   
-  local_36 = gScrCompileGlob[_param_1].bCanBreak;
-  local_44 = gScrCompileGlob[_param_1].currentBreakStatement;
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  local_35 = gScrCompileGlob[_param_1].bCanContinue;
-  pCVar1 = gScrCompileGlob[_param_1].currentContinueStatement;
-  gScrCompileGlob[_param_1].bCanContinue = false;
-  EmitStatement(param_1,param_2,false,0,param_8);
-  Scr_TransferBlock(param_8,param_9->block);
-  EmitCreateLocalVars(param_1,param_9->block,param_7);
-  if ((param_8->localVarsCount < param_9->block->localVarsCreateCount) &&
+  bOldCanBreak = gScrCompileGlob[_inst].bCanBreak;
+  oldBreakStatement = gScrCompileGlob[_inst].currentBreakStatement;
+  gScrCompileGlob[_inst].bCanBreak = false;
+  bOldCanContinue = gScrCompileGlob[_inst].bCanContinue;
+  pCVar1 = gScrCompileGlob[_inst].currentContinueStatement;
+  gScrCompileGlob[_inst].bCanContinue = false;
+  EmitStatement(inst,stmt1,false,0,block);
+  Scr_TransferBlock(block,forStatBlock->block);
+  EmitCreateLocalVars(inst,forStatBlock->block,forSourcePos);
+  if ((block->localVarsCount < forStatBlock->block->localVarsCreateCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0xd59,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_8->localVarsCreateCount = param_9->block->localVarsCreateCount;
-  Scr_TransferBlock(param_8,param_10->block);
-  local_20 = TempMalloc(0);
-  if (*param_3.codePosValue == 'C') {
-    local_3d = '\0';
+  block->localVarsCreateCount = forStatBlock->block->localVarsCreateCount;
+  Scr_TransferBlock(block,forStatPostBlock->block);
+  pos1 = TempMalloc(0);
+  if (*expr.codePosValue == 'C') {
+    constConditional = false;
     bVar3 = EmitOrEvalExpression
-                      (param_1,(sval_u)(param_3.block)->localVarsCreateCount,
-                       (VariableCompileValue *)&local_2c,param_8);
+                      (inst,(sval_u)(expr.block)->localVarsCreateCount,
+                       (VariableCompileValue *)&constValue,block);
     if (bVar3) {
       if ((local_28 == 6) || (local_28 == 5)) {
-        Scr_CastBool(param_1,(VariableValue *)&local_2c);
-        if (local_2c.intValue == 0) {
-          CompileError(param_1,param_6.stringValue,"conditional expression cannot be always false");
+        Scr_CastBool(inst,(VariableValue *)&constValue);
+        if (constValue.intValue == 0) {
+          CompileError(inst,sourcePos.stringValue,"conditional expression cannot be always false");
         }
-        local_3d = '\x01';
+        constConditional = true;
       }
       else {
-        EmitValue(param_1,(VariableCompileValue *)&local_2c);
+        EmitValue(inst,(VariableCompileValue *)&constValue);
       }
     }
   }
   else {
-    local_3d = '\x01';
+    constConditional = true;
   }
-  local_14 = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_4c = gScrCompileGlob[_param_1].breakChildCount;
-  local_8 = gScrCompileGlob[_param_1].breakBlock;
-  local_c = gScrCompileGlob[_param_1].continueChildBlocks;
-  local_30 = gScrCompileGlob[_param_1].continueChildCount;
-  local_50 = 0;
-  local_34 = 0;
-  local_18 = Hunk_AllocateTempMemoryHigh(0x800,"EmitForStatement");
-  gScrCompileGlob[_param_1].continueChildBlocks = local_18;
-  gScrCompileGlob[_param_1].continueChildCount = &local_34;
-  gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)*param_9;
-  if (local_3d == '\0') {
-    EmitOpcode(param_1,0x5e,-1,0);
-    AddOpcodePos(param_1,param_6.stringValue,0);
-    EmitUnsignedShort(param_1,0);
-    local_10 = gScrCompileGlob[_param_1].codePos;
-    local_1c = TempMalloc(0);
-    local_48 = (scr_block_s **)0x0;
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  oldBreakBlock = gScrCompileGlob[_inst].breakBlock;
+  oldContinueChildBlocks = gScrCompileGlob[_inst].continueChildBlocks;
+  oldContinueChildCount = gScrCompileGlob[_inst].continueChildCount;
+  breakChildCount = 0;
+  continueChildCount = 0;
+  continueChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"EmitForStatement");
+  gScrCompileGlob[_inst].continueChildBlocks = continueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = &continueChildCount;
+  gScrCompileGlob[_inst].breakBlock = (scr_block_s *)*forStatBlock;
+  if (constConditional == false) {
+    EmitOpcode(inst,0x5e,-1,0);
+    AddOpcodePos(inst,sourcePos.stringValue,0);
+    EmitUnsignedShort(inst,0);
+    pos2 = (char *)gScrCompileGlob[_inst].codePos;
+    nextPos2 = TempMalloc(0);
+    breakChildBlocks = (scr_block_s **)0x0;
   }
   else {
-    local_10 = (uchar *)0x0;
-    local_1c = (char *)0x0;
-    local_48 = Hunk_AllocateTempMemoryHigh(0x800,"EmitForStatement");
-    gScrCompileGlob[_param_1].breakChildCount = &local_50;
+    pos2 = (char *)0x0;
+    nextPos2 = (char *)0x0;
+    breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"EmitForStatement");
+    gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_48;
-  gScrCompileGlob[_param_1].bCanBreak = true;
-  gScrCompileGlob[_param_1].currentBreakStatement = (BreakStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].bCanContinue = true;
-  gScrCompileGlob[_param_1].currentContinueStatement = (ContinueStatementInfo *)0x0;
-  EmitStatement(param_1,param_5,false,0,param_9->block);
-  Scr_AddContinueBlock(param_1,param_9->block);
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  gScrCompileGlob[_param_1].bCanContinue = false;
-  ConnectContinueStatements(param_1);
-  Scr_InitFromChildBlocks(local_18,local_34,param_10->block);
-  EmitStatement(param_1,param_4,false,0,param_10->block);
-  EmitOpcode(param_1,99,0,0);
-  AddOpcodePos(param_1,param_7.stringValue,0);
-  if (*param_5.codePosValue == '.') {
-    AddOpcodePos(param_1,(param_5.block)->localVarsCount,1);
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  gScrCompileGlob[_inst].bCanBreak = true;
+  gScrCompileGlob[_inst].currentBreakStatement = (BreakStatementInfo *)0x0;
+  gScrCompileGlob[_inst].bCanContinue = true;
+  gScrCompileGlob[_inst].currentContinueStatement = (ContinueStatementInfo *)0x0;
+  EmitStatement(inst,stmt,false,0,forStatBlock->block);
+  Scr_AddContinueBlock(inst,forStatBlock->block);
+  gScrCompileGlob[_inst].bCanBreak = false;
+  gScrCompileGlob[_inst].bCanContinue = false;
+  ConnectContinueStatements(inst);
+  Scr_InitFromChildBlocks(continueChildBlocks,continueChildCount,forStatPostBlock->block);
+  EmitStatement(inst,stmt2,false,0,forStatPostBlock->block);
+  EmitOpcode(inst,99,0,0);
+  AddOpcodePos(inst,forSourcePos.stringValue,0);
+  if (*stmt.codePosValue == '.') {
+    AddOpcodePos(inst,(stmt.block)->localVarsCount,1);
   }
-  EmitUnsignedShort(param_1,0);
+  EmitUnsignedShort(inst,0);
   pcVar4 = TempMalloc(0);
-  local_3c = (int)pcVar4 - (int)local_20;
-  if ((0xffff < local_3c) &&
+  offset = (int)pcVar4 - (int)pos1;
+  if ((0xffff < offset) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0xdb5,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  *(undefined2 *)gScrCompileGlob[_param_1].codePos = (undefined2)local_3c;
-  if (local_10 != (uchar *)0x0) {
+  *(undefined2 *)gScrCompileGlob[_inst].codePos = (undefined2)offset;
+  if (pos2 != (char *)0x0) {
     pcVar4 = TempMalloc(0);
-    local_3c = (int)pcVar4 - (int)local_1c;
-    if ((0xffff < local_3c) &&
+    offset = (int)pcVar4 - (int)nextPos2;
+    if ((0xffff < offset) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0xdba,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    *(undefined2 *)local_10 = (undefined2)local_3c;
+    *(undefined2 *)pos2 = (undefined2)offset;
   }
-  ConnectBreakStatements(param_1);
-  gScrCompileGlob[_param_1].bCanBreak = local_36;
-  gScrCompileGlob[_param_1].currentBreakStatement = local_44;
-  gScrCompileGlob[_param_1].bCanContinue = local_35;
-  gScrCompileGlob[_param_1].currentContinueStatement = pCVar1;
-  if (local_3d != '\0') {
-    Scr_InitFromChildBlocks(local_48,local_50,param_8);
+  ConnectBreakStatements(inst);
+  *(bool *)(_inst * 0x1d8 + 0x9d38b24) = bOldCanBreak;
+  gScrCompileGlob[_inst].currentBreakStatement = oldBreakStatement;
+  *(bool *)(_inst * 0x1d8 + 0x9d38b2c) = bOldCanContinue;
+  gScrCompileGlob[_inst].currentContinueStatement = pCVar1;
+  if (constConditional != false) {
+    Scr_InitFromChildBlocks(breakChildBlocks,breakChildCount,block);
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_14;
-  gScrCompileGlob[_param_1].breakChildCount = local_4c;
-  gScrCompileGlob[_param_1].breakBlock = local_8;
-  gScrCompileGlob[_param_1].continueChildBlocks = local_c;
-  gScrCompileGlob[_param_1].continueChildCount = local_30;
+  gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
+  gScrCompileGlob[_inst].breakBlock = oldBreakBlock;
+  gScrCompileGlob[_inst].continueChildBlocks = oldContinueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = oldContinueChildCount;
   return;
 }
 
@@ -4628,93 +4643,92 @@ EmitForStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u p
 
 void __cdecl
 Scr_CalcLocalVarsForStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6,sval_u *param_7,sval_u *param_8)
+          (scriptInstance_t inst,sval_u stmt1,sval_u expr,sval_u stmt2,sval_u stmt,
+          scr_block_s *block,sval_u *forStatBlock,sval_u *forStatPostBlock)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
-  int local_3c;
-  int *local_38;
-  scr_block_s **local_34;
-  char local_2d;
-  int local_2c;
-  int *local_28;
-  VariableUnion local_24;
+  int breakChildCount;
+  int *oldBreakChildCount;
+  scr_block_s **breakChildBlocks;
+  bool constConditional;
+  int continueChildCount;
+  int *oldContinueChildCount;
+  VariableUnion constValue;
   int local_20;
-  int local_18;
-  scr_block_s **local_14;
-  scr_block_s **local_10;
-  int local_c;
-  scr_block_s **local_8;
+  int i;
+  scr_block_s **continueChildBlocks;
+  scr_block_s **oldBreakChildBlocks;
+  int abortLevel;
+  scr_block_s **oldContinueChildBlocks;
   
-  Scr_CalcLocalVarsStatement(param_1,param_2,param_6);
-  if (*param_3.codePosValue == 'C') {
-    local_2d = '\0';
-    bVar1 = EvalExpression(param_1,(sval_u)(param_3.block)->localVarsCreateCount,
-                           (VariableCompileValue *)&local_24);
+  Scr_CalcLocalVarsStatement(inst,stmt1,block);
+  if (*expr.codePosValue == 'C') {
+    constConditional = false;
+    bVar1 = EvalExpression(inst,(sval_u)(expr.block)->localVarsCreateCount,
+                           (VariableCompileValue *)&constValue);
     if (bVar1) {
       if (((local_20 == 6) || (local_20 == 5)) &&
-         (Scr_CastBool(param_1,(VariableValue *)&local_24), local_24.intValue != 0)) {
-        local_2d = '\x01';
+         (Scr_CastBool(inst,(VariableValue *)&constValue), constValue.intValue != 0)) {
+        constConditional = true;
       }
-      RemoveRefToValue(param_1,local_20,local_24);
+      RemoveRefToValue(inst,local_20,constValue);
     }
   }
   else {
-    local_2d = '\x01';
+    constConditional = true;
   }
-  local_10 = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_38 = gScrCompileGlob[_param_1].breakChildCount;
-  local_8 = gScrCompileGlob[_param_1].continueChildBlocks;
-  local_28 = gScrCompileGlob[_param_1].continueChildCount;
-  local_3c = 0;
-  local_2c = 0;
-  local_14 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsForStatement");
-  gScrCompileGlob[_param_1].continueChildBlocks = local_14;
-  gScrCompileGlob[_param_1].continueChildCount = &local_2c;
-  local_c = param_6->abortLevel;
-  if (local_2d == '\0') {
-    local_34 = (scr_block_s **)0x0;
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  oldContinueChildBlocks = gScrCompileGlob[_inst].continueChildBlocks;
+  oldContinueChildCount = gScrCompileGlob[_inst].continueChildCount;
+  breakChildCount = 0;
+  continueChildCount = 0;
+  continueChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsForStatement");
+  gScrCompileGlob[_inst].continueChildBlocks = continueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = &continueChildCount;
+  abortLevel = block->abortLevel;
+  if (constConditional == false) {
+    breakChildBlocks = (scr_block_s **)0x0;
   }
   else {
-    local_34 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsForStatement");
-    gScrCompileGlob[_param_1].breakChildCount = &local_3c;
+    breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsForStatement");
+    gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_34;
-  Scr_CopyBlock(param_6,&param_7->block);
-  Scr_CopyBlock(param_6,&param_8->block);
-  Scr_CalcLocalVarsStatement(param_1,param_5,param_7->block);
-  Scr_AddContinueBlock(param_1,param_7->block);
-  for (local_18 = 0; local_18 < local_2c; local_18 = local_18 + 1) {
-    Scr_AppendChildBlocks(local_14 + local_18,1,param_6);
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  Scr_CopyBlock(block,&forStatBlock->block);
+  Scr_CopyBlock(block,&forStatPostBlock->block);
+  Scr_CalcLocalVarsStatement(inst,stmt,forStatBlock->block);
+  Scr_AddContinueBlock(inst,forStatBlock->block);
+  for (i = 0; i < continueChildCount; i = i + 1) {
+    Scr_AppendChildBlocks(continueChildBlocks + i,1,block);
   }
-  Scr_CalcLocalVarsStatement(param_1,param_4,param_8->block);
-  Scr_AppendChildBlocks(&param_8->block,1,param_6);
-  Scr_MergeChildBlocks(&param_8->block,1,param_6);
-  if (local_2d != '\0') {
-    Scr_AppendChildBlocks(local_34,local_3c,param_6);
+  Scr_CalcLocalVarsStatement(inst,stmt2,forStatPostBlock->block);
+  Scr_AppendChildBlocks(&forStatPostBlock->block,1,block);
+  Scr_MergeChildBlocks(&forStatPostBlock->block,1,block);
+  if (constConditional != false) {
+    Scr_AppendChildBlocks(breakChildBlocks,breakChildCount,block);
   }
-  Scr_MergeChildBlocks(&param_7->block,1,param_6);
-  gScrCompileGlob[_param_1].breakChildBlocks = local_10;
-  gScrCompileGlob[_param_1].breakChildCount = local_38;
-  gScrCompileGlob[_param_1].continueChildBlocks = local_8;
-  gScrCompileGlob[_param_1].continueChildCount = local_28;
+  Scr_MergeChildBlocks(&forStatBlock->block,1,block);
+  gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
+  gScrCompileGlob[_inst].continueChildBlocks = oldContinueChildBlocks;
+  gScrCompileGlob[_inst].continueChildCount = oldContinueChildCount;
   return;
 }
 
 
 // 008A7370  EmitIncStatement  (clientscript/cscr_compiler.cpp:3628)
 
-void __cdecl
-EmitIncStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+void __cdecl EmitIncStatement(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (gScrCompileGlob[_param_1].forceNotCreate != false) {
+  if (gScrCompileGlob[_inst].forceNotCreate != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe2d,0,"%s");
     if (!bVar2) {
@@ -4723,9 +4737,9 @@ EmitIncStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_bloc
       return;
     }
   }
-  gScrCompileGlob[_param_1].forceNotCreate = true;
-  EmitVariableExpressionRef(param_1,param_2,param_4);
-  if (gScrCompileGlob[_param_1].forceNotCreate == false) {
+  gScrCompileGlob[_inst].forceNotCreate = true;
+  EmitVariableExpressionRef(inst,expr,block);
+  if (gScrCompileGlob[_inst].forceNotCreate == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe30,0,"%s");
     if (!bVar2) {
@@ -4734,25 +4748,24 @@ EmitIncStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_bloc
       return;
     }
   }
-  gScrCompileGlob[_param_1].forceNotCreate = false;
-  EmitOpcode(param_1,100,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  EmitSetVariableField(param_1,param_3);
+  gScrCompileGlob[_inst].forceNotCreate = false;
+  EmitOpcode(inst,100,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitSetVariableField(inst,sourcePos);
   return;
 }
 
 
 // 008A7460  EmitDecStatement  (clientscript/cscr_compiler.cpp:3647)
 
-void __cdecl
-EmitDecStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+void __cdecl EmitDecStatement(scriptInstance_t inst,sval_u expr,sval_u sourcePos,scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (gScrCompileGlob[_param_1].forceNotCreate != false) {
+  if (gScrCompileGlob[_inst].forceNotCreate != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe40,0,"%s");
     if (!bVar2) {
@@ -4761,9 +4774,9 @@ EmitDecStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_bloc
       return;
     }
   }
-  gScrCompileGlob[_param_1].forceNotCreate = true;
-  EmitVariableExpressionRef(param_1,param_2,param_4);
-  if (gScrCompileGlob[_param_1].forceNotCreate == false) {
+  gScrCompileGlob[_inst].forceNotCreate = true;
+  EmitVariableExpressionRef(inst,expr,block);
+  if (gScrCompileGlob[_inst].forceNotCreate == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe43,0,"%s");
     if (!bVar2) {
@@ -4772,23 +4785,21 @@ EmitDecStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_bloc
       return;
     }
   }
-  gScrCompileGlob[_param_1].forceNotCreate = false;
-  EmitOpcode(param_1,0x65,1,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
-  EmitSetVariableField(param_1,param_3);
+  gScrCompileGlob[_inst].forceNotCreate = false;
+  EmitOpcode(inst,0x65,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitSetVariableField(inst,sourcePos);
   return;
 }
 
 
 // 008A8780  EmitFormalParameterListInternal  (clientscript/cscr_compiler.cpp:3660)
 
-void __cdecl
-EmitFormalParameterListInternal(scriptInstance_t param_1,sval_u *param_2,scr_block_s *param_3)
+void __cdecl EmitFormalParameterListInternal(scriptInstance_t inst,sval_u *node,scr_block_s *block)
 
 {
-  while (param_2 = param_2[1].node, param_2 != (sval_u *)0x0) {
-    EmitSafeSetVariableField
-              (param_1,*param_2->node,(sval_u)param_2->block->localVarsCreateCount,param_3);
+  while (node = node[1].node, node != (sval_u *)0x0) {
+    EmitSafeSetVariableField(inst,*node->node,(sval_u)node->block->localVarsCreateCount,block);
   }
   return;
 }
@@ -4796,12 +4807,11 @@ EmitFormalParameterListInternal(scriptInstance_t param_1,sval_u *param_2,scr_blo
 
 // 008A0860  Scr_CalcLocalVarsFormalParameterListInternal  (clientscript/cscr_compiler.cpp:3672)
 
-void __cdecl Scr_CalcLocalVarsFormalParameterListInternal(sval_u *param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsFormalParameterListInternal(sval_u *node,scr_block_s *block)
 
 {
-  while (param_1 = param_1[1].node, param_1 != (sval_u *)0x0) {
-    Scr_CalcLocalVarsLocalVariableRef
-              (*param_1->node,(sval_u)param_1->block->localVarsCreateCount,param_2);
+  while (node = node[1].node, node != (sval_u *)0x0) {
+    Scr_CalcLocalVarsLocalVariableRef(*node->node,(sval_u)node->block->localVarsCreateCount,block);
   }
   return;
 }
@@ -4810,13 +4820,12 @@ void __cdecl Scr_CalcLocalVarsFormalParameterListInternal(sval_u *param_1,scr_bl
 // 008A7640  EmitFormalWaittillParameterListRefInternal  (clientscript/cscr_compiler.cpp:3684)
 
 void __cdecl
-EmitFormalWaittillParameterListRefInternal
-          (scriptInstance_t param_1,sval_u *param_2,scr_block_s *param_3)
+EmitFormalWaittillParameterListRefInternal(scriptInstance_t inst,sval_u *node,scr_block_s *block)
 
 {
-  while (param_2 = param_2[1].node, param_2 != (sval_u *)0x0) {
+  while (node = node[1].node, node != (sval_u *)0x0) {
     EmitSafeSetWaittillVariableField
-              (param_1,*param_2->node,(sval_u)param_2->block->localVarsCreateCount,param_3);
+              (inst,*node->node,(sval_u)node->block->localVarsCreateCount,block);
   }
   return;
 }
@@ -4826,57 +4835,59 @@ EmitFormalWaittillParameterListRefInternal
 
 void __cdecl
 EmitWaittillStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u obj,sval_u exprlist,sval_u sourcePos,sval_u waitSourcePos,
+          scr_block_s *block)
 
 {
-  sval_u *psVar1;
-  code *pcVar2;
-  bool bVar3;
+  sval_u *node_00;
+  code *pcVar1;
+  bool bVar2;
+  sval_u *node;
   
-  psVar1 = *(sval_u **)((param_3.block)->abortLevel + 4);
-  if (psVar1 == (sval_u *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
+  node_00 = *(sval_u **)((exprlist.block)->abortLevel + 4);
+  if (node_00 == (sval_u *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe74,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  EmitExpression(param_1,*psVar1->node,param_6);
-  EmitPrimitiveExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x78,-2,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  AddOpcodePos(param_1,psVar1->block->localVarsCreateCount,0);
-  EmitFormalWaittillParameterListRefInternal(param_1,psVar1,param_6);
-  EmitOpcode(param_1,0x34,0,0);
+  EmitExpression(inst,*node_00->node,block);
+  EmitPrimitiveExpression(inst,obj,block);
+  EmitOpcode(inst,0x78,-2,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  AddOpcodePos(inst,node_00->block->localVarsCreateCount,0);
+  EmitFormalWaittillParameterListRefInternal(inst,node_00,block);
+  EmitOpcode(inst,0x34,0,0);
   return;
 }
 
 
 // 008A0810  Scr_CalcLocalVarsWaittillStatement  (clientscript/cscr_compiler.cpp:3717)
 
-void __cdecl Scr_CalcLocalVarsWaittillStatement(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsWaittillStatement(sval_u exprlist,scr_block_s *block)
 
 {
-  sval_u *psVar1;
-  code *pcVar2;
-  bool bVar3;
+  sval_u *node_00;
+  code *pcVar1;
+  bool bVar2;
+  sval_u *node;
   
-  psVar1 = *(sval_u **)((param_1.block)->abortLevel + 4);
-  if (psVar1 == (sval_u *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
+  node_00 = *(sval_u **)((exprlist.block)->abortLevel + 4);
+  if (node_00 == (sval_u *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe89,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  Scr_CalcLocalVarsFormalParameterListInternal(psVar1,param_2);
+  Scr_CalcLocalVarsFormalParameterListInternal(node_00,block);
   return;
 }
 
@@ -4885,17 +4896,17 @@ void __cdecl Scr_CalcLocalVarsWaittillStatement(sval_u param_1,scr_block_s *para
 
 void __cdecl
 EmitWaittillmatchStatement
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-          scr_block_s *param_6)
+          (scriptInstance_t inst,sval_u obj,sval_u exprlist,sval_u sourcePos,sval_u waitSourcePos,
+          scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
-  int *local_c;
-  int local_8;
+  sval_u *node;
+  int exprCount;
   
-  local_c = *(int **)((param_3.block)->abortLevel + 4);
-  if (local_c == (undefined4 *)0x0) {
+  node = *(sval_u **)((exprlist.block)->abortLevel + 4);
+  if (node == (sval_u *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xe94,0,"%s");
     if (!bVar2) {
@@ -4904,13 +4915,13 @@ EmitWaittillmatchStatement
       return;
     }
   }
-  local_8 = 0;
-  while (local_c = (int *)local_c[1], local_c != (undefined4 *)0x0) {
-    EmitExpression(param_1,*(sval_u *)*local_c,param_6);
-    local_8 = local_8 + 1;
+  exprCount = 0;
+  while (node = node[1].node, node != (sval_u *)0x0) {
+    EmitExpression(inst,*node->node,block);
+    exprCount = exprCount + 1;
   }
-  local_c = *(int **)((param_3.block)->abortLevel + 4);
-  if (local_c == (int *)0x0) {
+  node = *(sval_u **)((exprlist.block)->abortLevel + 4);
+  if (node == (sval_u *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xea2,0,"%s");
     if (!bVar2) {
@@ -4919,17 +4930,17 @@ EmitWaittillmatchStatement
       return;
     }
   }
-  EmitExpression(param_1,*(sval_u *)*local_c,param_6);
-  EmitPrimitiveExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x77,-2 - local_8,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  AddOpcodePos(param_1,*(uint *)(*local_c + 4),0);
-  while (local_c = (int *)local_c[1], local_c != (int *)0x0) {
-    AddOpcodePos(param_1,*(uint *)(*local_c + 4),0);
+  EmitExpression(inst,*node->node,block);
+  EmitPrimitiveExpression(inst,obj,block);
+  EmitOpcode(inst,0x77,-2 - exprCount,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,waitSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  AddOpcodePos(inst,node->block->localVarsCreateCount,0);
+  while (node = node[1].node, node != (sval_u *)0x0) {
+    AddOpcodePos(inst,node->block->localVarsCreateCount,0);
   }
-  if (0xff < local_8) {
+  if (0xff < exprCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xeb5,0,"%s");
     if (!bVar2) {
@@ -4938,8 +4949,8 @@ EmitWaittillmatchStatement
       return;
     }
   }
-  EmitByte(param_1,(uchar)local_8);
-  EmitOpcode(param_1,0x34,0,0);
+  EmitByte(inst,(uchar)exprCount);
+  EmitOpcode(inst,0x34,0,0);
   return;
 }
 
@@ -4947,27 +4958,26 @@ EmitWaittillmatchStatement
 // 008A78D0  EmitNotifyStatement  (clientscript/cscr_compiler.cpp:3773)
 
 void __cdecl
-EmitNotifyStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                   sval_u param_5,scr_block_s *param_6)
+EmitNotifyStatement(scriptInstance_t inst,sval_u obj,sval_u exprlist,sval_u sourcePos,
+                   sval_u notifySourcePos,scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
-  int *local_10;
-  int *local_c;
-  int local_8;
+  sval_u *node;
+  sval_u *start_node;
+  int expr_count;
   
-  EmitOpcode(param_1,0x7b,1,0);
-  AddOpcodePos(param_1,param_4.stringValue,1);
-  local_8 = 0;
-  local_c = (int *)0x0;
-  for (local_10 = *(int **)param_3.codePosValue; local_10 != (int *)0x0;
-      local_10 = (int *)local_10[1]) {
-    local_c = local_10;
-    EmitExpression(param_1,*(sval_u *)*local_10,param_6);
-    local_8 = local_8 + 1;
+  EmitOpcode(inst,0x7b,1,0);
+  AddOpcodePos(inst,sourcePos.stringValue,1);
+  expr_count = 0;
+  start_node = (sval_u *)0x0;
+  for (node = *(sval_u **)exprlist.node; node != (sval_u *)0x0; node = node[1].node) {
+    start_node = node;
+    EmitExpression(inst,*node->node,block);
+    expr_count = expr_count + 1;
   }
-  if (local_c == (int *)0x0) {
+  if (start_node == (sval_u *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0xecf,0,"%s");
     if (!bVar2) {
@@ -4976,11 +4986,11 @@ EmitNotifyStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
       return;
     }
   }
-  EmitPrimitiveExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x79,-2 - local_8,0);
-  AddOpcodePos(param_1,param_5.stringValue,0x10);
-  AddOpcodePos(param_1,*(uint *)(*local_c + 4),0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
+  EmitPrimitiveExpression(inst,obj,block);
+  EmitOpcode(inst,0x79,-2 - expr_count,0);
+  AddOpcodePos(inst,notifySourcePos.stringValue,0x10);
+  AddOpcodePos(inst,start_node->block->localVarsCreateCount,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
@@ -4988,30 +4998,30 @@ EmitNotifyStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
 // 008A79F0  EmitEndOnStatement  (clientscript/cscr_compiler.cpp:3802)
 
 void __cdecl
-EmitEndOnStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                  sval_u param_5,scr_block_s *param_6)
+EmitEndOnStatement(scriptInstance_t inst,sval_u obj,sval_u expr,sval_u sourcePos,
+                  sval_u exprSourcePos,scr_block_s *block)
 
 {
-  EmitExpression(param_1,param_3,param_6);
-  EmitPrimitiveExpression(param_1,param_2,param_6);
-  EmitOpcode(param_1,0x7a,-2,0);
-  AddOpcodePos(param_1,param_5.stringValue,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
+  EmitExpression(inst,expr,block);
+  EmitPrimitiveExpression(inst,obj,block);
+  EmitOpcode(inst,0x7a,-2,0);
+  AddOpcodePos(inst,exprSourcePos.stringValue,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 0089E400  CompareCaseInfo  (clientscript/cscr_compiler.cpp:3813)
 
-int __cdecl CompareCaseInfo(void *param_1,void *param_2)
+int __cdecl CompareCaseInfo(void *elem1,void *elem2)
 
 {
   int iVar1;
   
-  if (*(uint *)param_2 < *(uint *)param_1) {
+  if (*(uint *)elem2 < *(uint *)elem1) {
     iVar1 = -1;
   }
-  else if (*(uint *)param_1 < *(uint *)param_2) {
+  else if (*(uint *)elem1 < *(uint *)elem2) {
     iVar1 = 1;
   }
   else {
@@ -5023,18 +5033,18 @@ int __cdecl CompareCaseInfo(void *param_1,void *param_2)
 
 // 008A1DB0  Scr_IsLastStatement  (clientscript/cscr_compiler.cpp:3823)
 
-bool __cdecl Scr_IsLastStatement(scriptInstance_t param_1,sval_u *param_2)
+bool __cdecl Scr_IsLastStatement(scriptInstance_t inst,sval_u *node)
 
 {
   bool bVar1;
   undefined3 in_stack_00000005;
   
-  if (param_2 == (sval_u *)0x0) {
+  if (node == (sval_u *)0x0) {
     bVar1 = true;
   }
-  else if (gScrVarPub[_param_1].developer_script == false) {
-    for (; param_2 != (sval_u *)0x0; param_2 = param_2[1].node) {
-      if (*param_2->codePosValue != '/') {
+  else if (gScrVarPub[_inst].developer_script == false) {
+    for (; node != (sval_u *)0x0; node = node[1].node) {
+      if (*node->codePosValue != '/') {
         return false;
       }
     }
@@ -5049,41 +5059,41 @@ bool __cdecl Scr_IsLastStatement(scriptInstance_t param_1,sval_u *param_2)
 
 // 008A8140  EmitCaseStatement  (clientscript/cscr_compiler.cpp:3839)
 
-void __cdecl EmitCaseStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitCaseStatement(scriptInstance_t inst,sval_u expr,sval_u sourcePos)
 
 {
   bool bVar1;
-  char *pcVar2;
-  uint local_8;
+  char *msg;
+  uint name;
   
-  if (*param_2.codePosValue == '\t') {
-    bVar1 = IsValidArrayIndex(param_1,(param_2.block)->localVarsCreateCount);
+  if (*expr.codePosValue == '\t') {
+    bVar1 = IsValidArrayIndex(inst,(expr.block)->localVarsCreateCount);
     if (!bVar1) {
-      pcVar2 = va("case index %d out of range");
-      CompileError(param_1,param_3.stringValue,pcVar2);
+      msg = va("case index %d out of range");
+      CompileError(inst,sourcePos.stringValue,msg);
       return;
     }
-    local_8 = GetInternalVariableIndex(param_1,(param_2.block)->localVarsCreateCount);
+    name = GetInternalVariableIndex(inst,(expr.block)->localVarsCreateCount);
   }
   else {
-    if (*param_2.codePosValue != '\r') {
-      CompileError(param_1,param_3.stringValue,"case expression must be an int or string");
+    if (*expr.codePosValue != '\r') {
+      CompileError(inst,sourcePos.stringValue,"case expression must be an int or string");
       return;
     }
-    local_8 = (param_2.block)->localVarsCreateCount;
-    CompileTransferRefToString(param_1,(param_2.block)->localVarsCreateCount,1);
+    name = (expr.block)->localVarsCreateCount;
+    CompileTransferRefToString(inst,(expr.block)->localVarsCreateCount,1);
   }
-  EmitCaseStatementInfo(param_1,local_8,param_3);
+  EmitCaseStatementInfo(inst,name,sourcePos);
   return;
 }
 
 
 // 008A8210  EmitDefaultStatement  (clientscript/cscr_compiler.cpp:3868)
 
-void __cdecl EmitDefaultStatement(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitDefaultStatement(scriptInstance_t inst,sval_u sourcePos)
 
 {
-  EmitCaseStatementInfo(param_1,0,param_2);
+  EmitCaseStatementInfo(inst,0,sourcePos);
   return;
 }
 
@@ -5092,117 +5102,116 @@ void __cdecl EmitDefaultStatement(scriptInstance_t param_1,sval_u param_2)
 
 void __cdecl
 EmitSwitchStatementList
-          (scriptInstance_t param_1,sval_u param_2,bool param_3,uint param_4,scr_block_s *param_5)
+          (scriptInstance_t inst,sval_u val,bool lastStatement,uint endSourcePos,scr_block_s *block)
 
 {
-  sval_u *psVar1;
-  code *pcVar2;
-  bool bVar3;
+  sval_u *node_00;
+  code *pcVar1;
+  bool bVar2;
   undefined3 in_stack_00000005;
   bool local_25;
-  sval_u *local_24;
-  int local_1c;
-  scr_block_s **local_18;
-  int *local_14;
-  char local_d;
-  scr_block_s **local_c;
-  scr_block_s *local_8;
+  sval_u *node;
+  sval_u *nextNode;
+  int breakChildCount;
+  scr_block_s **breakChildBlocks;
+  int *oldBreakChildCount;
+  bool hasDefault;
+  scr_block_s **oldBreakChildBlocks;
+  scr_block_s *oldBreakBlock;
   
-  local_c = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_14 = gScrCompileGlob[_param_1].breakChildCount;
-  local_8 = gScrCompileGlob[_param_1].breakBlock;
-  local_1c = 0;
-  local_18 = Hunk_AllocateTempMemoryHigh(0x800,"EmitSwitchStatementList");
-  gScrCompileGlob[_param_1].breakChildBlocks = local_18;
-  gScrCompileGlob[_param_1].breakChildCount = &local_1c;
-  gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)0x0;
-  local_d = '\0';
-  local_24 = *(sval_u **)((param_2.block)->abortLevel + 4);
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  oldBreakBlock = gScrCompileGlob[_inst].breakBlock;
+  breakChildCount = 0;
+  breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"EmitSwitchStatementList");
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
+  gScrCompileGlob[_inst].breakBlock = (scr_block_s *)0x0;
+  hasDefault = false;
+  node = *(sval_u **)((val.block)->abortLevel + 4);
   while( true ) {
     while( true ) {
-      if (local_24 == (sval_u *)0x0) {
-        if (gScrCompileGlob[_param_1].breakBlock != (scr_block_s *)0x0) {
-          if ((gScrCompileGlob[_param_1].bCanBreak == false) &&
-             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
-                                       ,0xf6a,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+      if (node == (sval_u *)0x0) {
+        if (gScrCompileGlob[_inst].breakBlock != (scr_block_s *)0x0) {
+          if ((gScrCompileGlob[_inst].bCanBreak == false) &&
+             (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
+                                       ,0xf6a,0,"%s"), !bVar2)) {
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          gScrCompileGlob[_param_1].bCanBreak = false;
-          EmitRemoveLocalVars(param_1,gScrCompileGlob[_param_1].breakBlock,
-                              gScrCompileGlob[_param_1].breakBlock);
+          gScrCompileGlob[_inst].bCanBreak = false;
+          EmitRemoveLocalVars(inst,gScrCompileGlob[_inst].breakBlock,
+                              gScrCompileGlob[_inst].breakBlock);
         }
-        if (local_d != '\0') {
-          if (gScrCompileGlob[_param_1].breakBlock != (scr_block_s *)0x0) {
-            Scr_AddBreakBlock(param_1,gScrCompileGlob[_param_1].breakBlock);
+        if (hasDefault != false) {
+          if (gScrCompileGlob[_inst].breakBlock != (scr_block_s *)0x0) {
+            Scr_AddBreakBlock(inst,gScrCompileGlob[_inst].breakBlock);
           }
-          Scr_InitFromChildBlocks(local_18,local_1c,param_5);
+          Scr_InitFromChildBlocks(breakChildBlocks,breakChildCount,block);
         }
-        gScrCompileGlob[_param_1].breakChildBlocks = local_c;
-        gScrCompileGlob[_param_1].breakChildCount = local_14;
-        gScrCompileGlob[_param_1].breakBlock = local_8;
+        gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+        gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
+        gScrCompileGlob[_inst].breakBlock = oldBreakBlock;
         return;
       }
-      psVar1 = local_24[1].node;
-      if ((*local_24->codePosValue == '?') || (*local_24->codePosValue == '@')) break;
-      if (gScrCompileGlob[_param_1].breakBlock == (scr_block_s *)0x0) {
-        CompileError(param_1,param_4,"missing case statement");
+      node_00 = node[1].node;
+      if ((*node->codePosValue == '?') || (*node->codePosValue == '@')) break;
+      if (gScrCompileGlob[_inst].breakBlock == (scr_block_s *)0x0) {
+        CompileError(inst,endSourcePos,"missing case statement");
         return;
       }
-      if ((param_3) && (bVar3 = Scr_IsLastStatement(param_1,psVar1), bVar3)) {
+      if ((lastStatement) && (bVar2 = Scr_IsLastStatement(inst,node_00), bVar2)) {
         local_25 = true;
       }
       else {
         local_25 = false;
       }
-      EmitStatement(param_1,*(scr_block_s **)local_24,local_25,param_4,
-                    gScrCompileGlob[_param_1].breakBlock);
-      local_24 = psVar1;
-      if ((gScrCompileGlob[_param_1].breakBlock != (scr_block_s *)0x0) &&
-         ((gScrCompileGlob[_param_1].breakBlock)->abortLevel != 0)) {
-        gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)0x0;
-        if ((gScrCompileGlob[_param_1].bCanBreak == false) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
-                                     ,0xf64,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      EmitStatement(inst,*node,local_25,endSourcePos,gScrCompileGlob[_inst].breakBlock);
+      node = node_00;
+      if ((gScrCompileGlob[_inst].breakBlock != (scr_block_s *)0x0) &&
+         ((gScrCompileGlob[_inst].breakBlock)->abortLevel != 0)) {
+        gScrCompileGlob[_inst].breakBlock = (scr_block_s *)0x0;
+        if ((gScrCompileGlob[_inst].bCanBreak == false) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
+                                     ,0xf64,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        gScrCompileGlob[_param_1].bCanBreak = false;
+        gScrCompileGlob[_inst].bCanBreak = false;
       }
     }
-    if (gScrCompileGlob[_param_1].breakBlock != (scr_block_s *)0x0) {
-      if ((gScrCompileGlob[_param_1].bCanBreak == false) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
-                                   ,0xf40,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if (gScrCompileGlob[_inst].breakBlock != (scr_block_s *)0x0) {
+      if ((gScrCompileGlob[_inst].bCanBreak == false) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
+                                   ,0xf40,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      gScrCompileGlob[_param_1].bCanBreak = false;
-      EmitRemoveLocalVars(param_1,gScrCompileGlob[_param_1].breakBlock,
-                          gScrCompileGlob[_param_1].breakBlock);
+      gScrCompileGlob[_inst].bCanBreak = false;
+      EmitRemoveLocalVars(inst,gScrCompileGlob[_inst].breakBlock,gScrCompileGlob[_inst].breakBlock);
     }
-    if (*local_24->codePosValue == '?') {
-      gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)local_24->block->localVarsCount;
-      EmitCaseStatement(param_1,(sval_u)local_24->block->localVarsCreateCount,
-                        (sval_u)local_24->block->localVarsPublicCount);
+    if (*node->codePosValue == '?') {
+      gScrCompileGlob[_inst].breakBlock = (scr_block_s *)node->block->localVarsCount;
+      EmitCaseStatement(inst,(sval_u)node->block->localVarsCreateCount,
+                        (sval_u)node->block->localVarsPublicCount);
     }
     else {
-      gScrCompileGlob[_param_1].breakBlock = (scr_block_s *)local_24->block->localVarsPublicCount;
-      local_d = '\x01';
-      EmitDefaultStatement(param_1,(sval_u)local_24->block->localVarsCreateCount);
+      gScrCompileGlob[_inst].breakBlock = (scr_block_s *)node->block->localVarsPublicCount;
+      hasDefault = true;
+      EmitDefaultStatement(inst,(sval_u)node->block->localVarsCreateCount);
     }
-    Scr_TransferBlock(param_5,gScrCompileGlob[_param_1].breakBlock);
-    if ((gScrCompileGlob[_param_1].bCanBreak != false) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
-                                 ,0xf53,0,"%s"), !bVar3)) break;
-    gScrCompileGlob[_param_1].bCanBreak = true;
-    local_24 = psVar1;
+    Scr_TransferBlock(block,gScrCompileGlob[_inst].breakBlock);
+    if ((gScrCompileGlob[_inst].bCanBreak != false) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
+                                 ,0xf53,0,"%s"), !bVar2)) break;
+    gScrCompileGlob[_inst].bCanBreak = true;
+    node = node_00;
   }
-  pcVar2 = (code *)swi(3);
-  (*pcVar2)();
+  pcVar1 = (code *)swi(3);
+  (*pcVar1)();
   return;
 }
 
@@ -5210,76 +5219,75 @@ EmitSwitchStatementList
 // 008A08C0  Scr_CalcLocalVarsSwitchStatement  (clientscript/cscr_compiler.cpp:3966)
 
 void __cdecl
-Scr_CalcLocalVarsSwitchStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+Scr_CalcLocalVarsSwitchStatement(scriptInstance_t inst,sval_u stmtlist,scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
-  int *local_2c;
-  int local_28;
-  scr_block_s **local_24;
-  int *local_20;
-  char local_19;
-  scr_block_s *local_18;
-  scr_block_s **local_14;
-  scr_block_s **local_10;
-  int local_c;
-  int local_8;
+  sval_u *node;
+  int breakChildCount;
+  scr_block_s **breakChildBlocks;
+  int *oldBreakChildCount;
+  bool hasDefault;
+  scr_block_s *currentBlock;
+  scr_block_s **childBlocks;
+  scr_block_s **oldBreakChildBlocks;
+  int childCount;
+  int abortLevel;
   
-  local_8 = 3;
-  local_10 = gScrCompileGlob[_param_1].breakChildBlocks;
-  local_20 = gScrCompileGlob[_param_1].breakChildCount;
-  local_28 = 0;
-  local_24 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsSwitchStatement");
-  gScrCompileGlob[_param_1].breakChildBlocks = local_24;
-  gScrCompileGlob[_param_1].breakChildCount = &local_28;
-  local_c = 0;
-  local_18 = (scr_block_s *)0x0;
-  local_19 = '\0';
-  local_14 = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsSwitchStatement");
-  for (local_2c = *(int **)((param_2.block)->abortLevel + 4); local_2c != (int *)0x0;
-      local_2c = (int *)local_2c[1]) {
-    if ((*(char *)*local_2c == '?') || (*(char *)*local_2c == '@')) {
-      local_18 = (scr_block_s *)0x0;
-      Scr_CopyBlock(param_3,&local_18);
-      if (*(char *)*local_2c == '?') {
-        *(scr_block_s **)(*local_2c + 0xc) = local_18;
+  abortLevel = 3;
+  oldBreakChildBlocks = gScrCompileGlob[_inst].breakChildBlocks;
+  oldBreakChildCount = gScrCompileGlob[_inst].breakChildCount;
+  breakChildCount = 0;
+  breakChildBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsSwitchStatement");
+  gScrCompileGlob[_inst].breakChildBlocks = breakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = &breakChildCount;
+  childCount = 0;
+  currentBlock = (scr_block_s *)0x0;
+  hasDefault = false;
+  childBlocks = Hunk_AllocateTempMemoryHigh(0x800,"Scr_CalcLocalVarsSwitchStatement");
+  for (node = *(sval_u **)((stmtlist.block)->abortLevel + 4); node != (sval_u *)0x0;
+      node = node[1].node) {
+    if ((*node->codePosValue == '?') || (*node->codePosValue == '@')) {
+      currentBlock = (scr_block_s *)0x0;
+      Scr_CopyBlock(block,&currentBlock);
+      if (*node->codePosValue == '?') {
+        node->block->localVarsCount = (int)currentBlock;
       }
       else {
-        *(scr_block_s **)(*local_2c + 8) = local_18;
-        local_19 = '\x01';
+        node->block->localVarsPublicCount = (int)currentBlock;
+        hasDefault = true;
       }
     }
-    else if ((local_18 != (scr_block_s *)0x0) &&
-            (Scr_CalcLocalVarsStatement(param_1,(char *)*local_2c,local_18),
-            local_18->abortLevel != 0)) {
-      if (local_18->abortLevel == 2) {
-        local_18->abortLevel = 0;
-        local_8 = 0;
-        Scr_CheckMaxSwitchCases(local_c);
-        local_14[local_c] = local_18;
-        local_c = local_c + 1;
+    else if ((currentBlock != (scr_block_s *)0x0) &&
+            (Scr_CalcLocalVarsStatement(inst,*node,currentBlock), currentBlock->abortLevel != 0)) {
+      if (currentBlock->abortLevel == 2) {
+        currentBlock->abortLevel = 0;
+        abortLevel = 0;
+        Scr_CheckMaxSwitchCases(childCount);
+        childBlocks[childCount] = currentBlock;
+        childCount = childCount + 1;
       }
-      else if (local_18->abortLevel <= local_8) {
-        local_8 = local_18->abortLevel;
+      else if (currentBlock->abortLevel <= abortLevel) {
+        abortLevel = currentBlock->abortLevel;
       }
-      local_18 = (scr_block_s *)0x0;
+      currentBlock = (scr_block_s *)0x0;
     }
   }
-  if (local_19 != '\0') {
-    if (local_18 != (scr_block_s *)0x0) {
-      Scr_AddBreakBlock(param_1,local_18);
-      Scr_CheckMaxSwitchCases(local_c);
-      local_14[local_c] = local_18;
-      local_c = local_c + 1;
+  if (hasDefault != false) {
+    if (currentBlock != (scr_block_s *)0x0) {
+      Scr_AddBreakBlock(inst,currentBlock);
+      Scr_CheckMaxSwitchCases(childCount);
+      childBlocks[childCount] = currentBlock;
+      childCount = childCount + 1;
     }
-    if (param_3->abortLevel == 0) {
-      param_3->abortLevel = local_8;
+    if (block->abortLevel == 0) {
+      block->abortLevel = abortLevel;
     }
-    Scr_AppendChildBlocks(local_24,local_28,param_3);
-    Scr_MergeChildBlocks(local_14,local_c,param_3);
+    Scr_AppendChildBlocks(breakChildBlocks,breakChildCount,block);
+    Scr_MergeChildBlocks(childBlocks,childCount,block);
   }
-  gScrCompileGlob[_param_1].breakChildBlocks = local_10;
-  gScrCompileGlob[_param_1].breakChildCount = local_20;
+  gScrCompileGlob[_inst].breakChildBlocks = oldBreakChildBlocks;
+  gScrCompileGlob[_inst].breakChildCount = oldBreakChildCount;
   return;
 }
 
@@ -5287,8 +5295,8 @@ Scr_CalcLocalVarsSwitchStatement(scriptInstance_t param_1,sval_u param_2,scr_blo
 // 008A7A60  EmitSwitchStatement  (clientscript/cscr_compiler.cpp:4063)
 
 void __cdecl
-EmitSwitchStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                   bool param_5,uint param_6,scr_block_s *param_7)
+EmitSwitchStatement(scriptInstance_t inst,sval_u expr,sval_u stmtlist,sval_u sourcePos,
+                   bool lastStatement,uint endSourcePos,scr_block_s *block)
 
 {
   bool bVar1;
@@ -5298,63 +5306,69 @@ EmitSwitchStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_
   uchar *puVar5;
   char *pcVar6;
   undefined3 in_stack_00000005;
-  uint *local_24;
-  CaseStatementInfo *local_14;
-  uint local_c;
+  CaseStatementInfo *oldCaseStatement;
+  char *pos3;
+  BreakStatementInfo *oldBreakStatement;
+  bool bOldCanBreak;
+  char *nextPos1;
+  CaseStatementInfo *caseStatement;
+  char *pos1;
+  int num;
+  char *pos2;
   
-  pCVar2 = gScrCompileGlob[_param_1].currentCaseStatement;
-  bVar1 = gScrCompileGlob[_param_1].bCanBreak;
-  pBVar3 = gScrCompileGlob[_param_1].currentBreakStatement;
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  EmitExpression(param_1,param_2,param_7);
-  EmitOpcode(param_1,0x7c,-1,0);
-  EmitInteger(param_1,0);
-  piVar4 = (int *)gScrCompileGlob[_param_1].codePos;
+  pCVar2 = gScrCompileGlob[_inst].currentCaseStatement;
+  bVar1 = gScrCompileGlob[_inst].bCanBreak;
+  pBVar3 = gScrCompileGlob[_inst].currentBreakStatement;
+  gScrCompileGlob[_inst].bCanBreak = false;
+  EmitExpression(inst,expr,block);
+  EmitOpcode(inst,0x7c,-1,0);
+  EmitInteger(inst,0);
+  piVar4 = (int *)gScrCompileGlob[_inst].codePos;
   pcVar6 = TempMalloc(0);
-  gScrCompileGlob[_param_1].currentCaseStatement = (CaseStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].currentBreakStatement = (BreakStatementInfo *)0x0;
-  EmitSwitchStatementList(param_1,param_3,param_5,param_6,param_7);
-  EmitOpcode(param_1,0x7d,0,0);
-  AddOpcodePos(param_1,param_4.stringValue,0);
-  EmitUnsignedShort(param_1,0);
-  puVar5 = gScrCompileGlob[_param_1].codePos;
-  *piVar4 = (int)gScrCompileGlob[_param_1].codePos - (int)pcVar6;
-  local_24 = (uint *)TempMalloc(0);
-  local_c = 0;
-  for (local_14 = gScrCompileGlob[_param_1].currentCaseStatement;
-      local_14 != (CaseStatementInfo *)0x0; local_14 = local_14->next) {
-    EmitInteger(param_1,local_14->name);
-    EmitInteger(param_1,(int)local_14->codePos);
-    local_c = local_c + 1;
+  gScrCompileGlob[_inst].currentCaseStatement = (CaseStatementInfo *)0x0;
+  gScrCompileGlob[_inst].currentBreakStatement = (BreakStatementInfo *)0x0;
+  EmitSwitchStatementList(inst,stmtlist,lastStatement,endSourcePos,block);
+  EmitOpcode(inst,0x7d,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
+  EmitUnsignedShort(inst,0);
+  puVar5 = gScrCompileGlob[_inst].codePos;
+  *piVar4 = (int)gScrCompileGlob[_inst].codePos - (int)pcVar6;
+  pos3 = TempMalloc(0);
+  num = 0;
+  for (caseStatement = gScrCompileGlob[_inst].currentCaseStatement;
+      caseStatement != (CaseStatementInfo *)0x0; caseStatement = caseStatement->next) {
+    EmitInteger(inst,caseStatement->name);
+    EmitInteger(inst,(int)caseStatement->codePos);
+    num = num + 1;
   }
-  *(undefined2 *)puVar5 = (undefined2)local_c;
-  qsort(local_24,local_c,8,CompareCaseInfo);
+  *(undefined2 *)puVar5 = (undefined2)num;
+  qsort(pos3,num,8,CompareCaseInfo);
   do {
-    if ((int)local_c < 2) {
-      ConnectBreakStatements(param_1);
-      gScrCompileGlob[_param_1].currentCaseStatement = pCVar2;
-      gScrCompileGlob[_param_1].bCanBreak = bVar1;
-      gScrCompileGlob[_param_1].currentBreakStatement = pBVar3;
+    if (num < 2) {
+      ConnectBreakStatements(inst);
+      gScrCompileGlob[_inst].currentCaseStatement = pCVar2;
+      gScrCompileGlob[_inst].bCanBreak = bVar1;
+      gScrCompileGlob[_inst].currentBreakStatement = pBVar3;
       return;
     }
-    if (*local_24 == local_24[2]) {
-      for (local_14 = gScrCompileGlob[_param_1].currentCaseStatement;
-          local_14 != (CaseStatementInfo *)0x0; local_14 = local_14->next) {
-        if (local_14->name == *local_24) {
-          CompileError(param_1,local_14->sourcePos,"duplicate case expression");
+    if (*(int *)pos3 == *(int *)(pos3 + 8)) {
+      for (caseStatement = gScrCompileGlob[_inst].currentCaseStatement;
+          caseStatement != (CaseStatementInfo *)0x0; caseStatement = caseStatement->next) {
+        if (caseStatement->name == *(uint *)pos3) {
+          CompileError(inst,caseStatement->sourcePos,"duplicate case expression");
           return;
         }
       }
     }
-    local_c = local_c - 1;
-    local_24 = local_24 + 2;
+    num = num + -1;
+    pos3 = pos3 + 8;
   } while( true );
 }
 
 
 // 008A8230  EmitCaseStatementInfo  (clientscript/cscr_compiler.cpp:4146)
 
-void __cdecl EmitCaseStatementInfo(scriptInstance_t param_1,uint param_2,sval_u param_3)
+void __cdecl EmitCaseStatementInfo(scriptInstance_t inst,uint name,sval_u sourcePos)
 
 {
   code *pcVar1;
@@ -5362,9 +5376,10 @@ void __cdecl EmitCaseStatementInfo(scriptInstance_t param_1,uint param_2,sval_u 
   CaseStatementInfo *pCVar3;
   char *pcVar4;
   undefined3 in_stack_00000005;
+  CaseStatementInfo *newCaseStatement;
   
-  if (gScrCompilePub[_param_1].developer_statement == 2) {
-    if ((gScrVarPub[_param_1].developer_script != false) &&
+  if (gScrCompilePub[_inst].developer_statement == 2) {
+    if ((gScrVarPub[_inst].developer_script != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x1037,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -5374,12 +5389,12 @@ void __cdecl EmitCaseStatementInfo(scriptInstance_t param_1,uint param_2,sval_u 
   }
   else {
     pCVar3 = Hunk_AllocateTempMemoryHigh(0x10,"EmitCaseStatementInfo");
-    pCVar3->name = param_2;
+    pCVar3->name = name;
     pcVar4 = TempMalloc(0);
     pCVar3->codePos = pcVar4;
-    pCVar3->sourcePos = (uint)param_3;
-    pCVar3->next = gScrCompileGlob[_param_1].currentCaseStatement;
-    gScrCompileGlob[_param_1].currentCaseStatement = pCVar3;
+    pCVar3->sourcePos = (uint)sourcePos;
+    pCVar3->next = gScrCompileGlob[_inst].currentCaseStatement;
+    gScrCompileGlob[_inst].currentCaseStatement = pCVar3;
   }
   return;
 }
@@ -5387,7 +5402,7 @@ void __cdecl EmitCaseStatementInfo(scriptInstance_t param_1,uint param_2,sval_u 
 
 // 008A82E0  EmitBreakStatement  (clientscript/cscr_compiler.cpp:4166)
 
-void __cdecl EmitBreakStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitBreakStatement(scriptInstance_t inst,sval_u sourcePos,scr_block_s *block)
 
 {
   code *pcVar1;
@@ -5395,13 +5410,14 @@ void __cdecl EmitBreakStatement(scriptInstance_t param_1,sval_u param_2,scr_bloc
   BreakStatementInfo *pBVar3;
   char *pcVar4;
   undefined3 in_stack_00000005;
+  BreakStatementInfo *newBreakStatement;
   
-  if ((gScrCompileGlob[_param_1].bCanBreak == false) || (param_3->abortLevel != 0)) {
-    CompileError(param_1,param_2.stringValue,"illegal break statement");
+  if ((gScrCompileGlob[_inst].bCanBreak == false) || (block->abortLevel != 0)) {
+    CompileError(inst,sourcePos.stringValue,"illegal break statement");
   }
   else {
-    Scr_AddBreakBlock(param_1,param_3);
-    if (gScrCompileGlob[_param_1].breakBlock == (scr_block_s *)0x0) {
+    Scr_AddBreakBlock(inst,block);
+    if (gScrCompileGlob[_inst].breakBlock == (scr_block_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                                0x1050,0,"%s");
       if (!bVar2) {
@@ -5410,18 +5426,18 @@ void __cdecl EmitBreakStatement(scriptInstance_t param_1,sval_u param_2,scr_bloc
         return;
       }
     }
-    EmitRemoveLocalVars(param_1,param_3,gScrCompileGlob[_param_1].breakBlock);
-    param_3->abortLevel = 2;
-    EmitOpcode(param_1,0x62,0,0);
-    AddOpcodePos(param_1,param_2.stringValue,1);
-    EmitInteger(param_1,0);
-    if (gScrCompilePub[_param_1].developer_statement != 2) {
+    EmitRemoveLocalVars(inst,block,gScrCompileGlob[_inst].breakBlock);
+    block->abortLevel = 2;
+    EmitOpcode(inst,0x62,0,0);
+    AddOpcodePos(inst,sourcePos.stringValue,1);
+    EmitInteger(inst,0);
+    if (gScrCompilePub[_inst].developer_statement != 2) {
       pBVar3 = Hunk_AllocateTempMemoryHigh(0xc,"EmitBreakStatement");
-      pBVar3->codePos = (char *)gScrCompileGlob[_param_1].codePos;
+      pBVar3->codePos = (char *)gScrCompileGlob[_inst].codePos;
       pcVar4 = TempMalloc(0);
       pBVar3->nextCodePos = pcVar4;
-      pBVar3->next = gScrCompileGlob[_param_1].currentBreakStatement;
-      gScrCompileGlob[_param_1].currentBreakStatement = pBVar3;
+      pBVar3->next = gScrCompileGlob[_inst].currentBreakStatement;
+      gScrCompileGlob[_inst].currentBreakStatement = pBVar3;
     }
   }
   return;
@@ -5430,30 +5446,31 @@ void __cdecl EmitBreakStatement(scriptInstance_t param_1,sval_u param_2,scr_bloc
 
 // 008A8430  EmitContinueStatement  (clientscript/cscr_compiler.cpp:4196)
 
-void __cdecl EmitContinueStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl EmitContinueStatement(scriptInstance_t inst,sval_u sourcePos,scr_block_s *block)
 
 {
   ContinueStatementInfo *pCVar1;
   char *pcVar2;
   undefined3 in_stack_00000005;
+  ContinueStatementInfo *newContinueStatement;
   
-  if ((gScrCompileGlob[_param_1].bCanContinue == false) || (param_3->abortLevel != 0)) {
-    CompileError(param_1,param_2.stringValue,"illegal continue statement");
+  if ((gScrCompileGlob[_inst].bCanContinue == false) || (block->abortLevel != 0)) {
+    CompileError(inst,sourcePos.stringValue,"illegal continue statement");
   }
   else {
-    Scr_AddContinueBlock(param_1,param_3);
-    EmitRemoveLocalVars(param_1,param_3,param_3);
-    param_3->abortLevel = 1;
-    EmitOpcode(param_1,0x62,0,0);
-    AddOpcodePos(param_1,param_2.stringValue,1);
-    EmitInteger(param_1,0);
-    if (gScrCompilePub[_param_1].developer_statement != 2) {
+    Scr_AddContinueBlock(inst,block);
+    EmitRemoveLocalVars(inst,block,block);
+    block->abortLevel = 1;
+    EmitOpcode(inst,0x62,0,0);
+    AddOpcodePos(inst,sourcePos.stringValue,1);
+    EmitInteger(inst,0);
+    if (gScrCompilePub[_inst].developer_statement != 2) {
       pCVar1 = Hunk_AllocateTempMemoryHigh(0xc,"EmitContinueStatement");
-      pCVar1->codePos = (char *)gScrCompileGlob[_param_1].codePos;
+      pCVar1->codePos = (char *)gScrCompileGlob[_inst].codePos;
       pcVar2 = TempMalloc(0);
       pCVar1->nextCodePos = pcVar2;
-      pCVar1->next = gScrCompileGlob[_param_1].currentContinueStatement;
-      gScrCompileGlob[_param_1].currentContinueStatement = pCVar1;
+      pCVar1->next = gScrCompileGlob[_inst].currentContinueStatement;
+      gScrCompileGlob[_inst].currentContinueStatement = pCVar1;
     }
   }
   return;
@@ -5462,14 +5479,14 @@ void __cdecl EmitContinueStatement(scriptInstance_t param_1,sval_u param_2,scr_b
 
 // 008A8540  EmitBreakpointStatement  (clientscript/cscr_compiler.cpp:4225)
 
-void __cdecl EmitBreakpointStatement(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitBreakpointStatement(scriptInstance_t inst,sval_u sourcePos)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].developer_script != false) {
-    EmitOpcode(param_1,0x87,0,0);
-    AddOpcodePos(param_1,param_2.stringValue,1);
+  if (gScrVarPub[_inst].developer_script != false) {
+    EmitOpcode(inst,0x87,0,0);
+    AddOpcodePos(inst,sourcePos.stringValue,1);
   }
   return;
 }
@@ -5477,18 +5494,18 @@ void __cdecl EmitBreakpointStatement(scriptInstance_t param_1,sval_u param_2)
 
 // 008A85A0  EmitProfStatement  (clientscript/cscr_compiler.cpp:4237)
 
-void __cdecl EmitProfStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3,uchar param_4)
+void __cdecl EmitProfStatement(scriptInstance_t inst,sval_u profileName,sval_u sourcePos,uchar op)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].developer_script == false) {
-    Scr_CompileRemoveRefToString(param_1,param_2.stringValue);
+  if (gScrVarPub[_inst].developer_script == false) {
+    Scr_CompileRemoveRefToString(inst,profileName.stringValue);
   }
   else {
-    Scr_CompileRemoveRefToString(param_1,param_2.stringValue);
-    EmitOpcode(param_1,(uint)param_4,0,0);
-    EmitByte(param_1,'\0');
+    Scr_CompileRemoveRefToString(inst,profileName.stringValue);
+    EmitOpcode(inst,(uint)op,0,0);
+    EmitByte(inst,'\0');
   }
   return;
 }
@@ -5496,20 +5513,20 @@ void __cdecl EmitProfStatement(scriptInstance_t param_1,sval_u param_2,sval_u pa
 
 // 008A8580  EmitProfBeginStatement  (clientscript/cscr_compiler.cpp:4251)
 
-void __cdecl EmitProfBeginStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitProfBeginStatement(scriptInstance_t inst,sval_u profileName,sval_u sourcePos)
 
 {
-  EmitProfStatement(param_1,param_2,param_3,0x85);
+  EmitProfStatement(inst,profileName,sourcePos,0x85);
   return;
 }
 
 
 // 008A8600  EmitProfEndStatement  (clientscript/cscr_compiler.cpp:4257)
 
-void __cdecl EmitProfEndStatement(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+void __cdecl EmitProfEndStatement(scriptInstance_t inst,sval_u profileName,sval_u sourcePos)
 
 {
-  EmitProfStatement(param_1,param_2,param_3,0x86);
+  EmitProfStatement(inst,profileName,sourcePos,0x86);
   return;
 }
 
@@ -5517,14 +5534,14 @@ void __cdecl EmitProfEndStatement(scriptInstance_t param_1,sval_u param_2,sval_u
 // 008A1E00  EmitStatement  (clientscript/cscr_compiler.cpp:4263)
 
 void __cdecl
-EmitStatement(scriptInstance_t param_1,sval_u param_2,bool param_3,uint param_4,scr_block_s *param_5
-             )
+EmitStatement(scriptInstance_t inst,sval_u val,bool lastStatement,uint endSourcePos,
+             scr_block_s *block)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrCompilePub[_param_1].developer_statement == 3) {
-    switch(*param_2.codePosValue) {
+  if (gScrCompilePub[_inst].developer_statement == 3) {
+    switch(*val.codePosValue) {
     case '\x02':
     case '\x1b':
     case '+':
@@ -5534,144 +5551,140 @@ EmitStatement(scriptInstance_t param_1,sval_u param_2,bool param_3,uint param_4,
     case '<':
       break;
     default:
-      CompileError(param_1,0,"illegal statement in debugger");
+      CompileError(inst,0,"illegal statement in debugger");
       return;
     }
   }
-  switch(*param_2.codePosValue) {
+  switch(*val.codePosValue) {
   case '\x02':
     EmitAssignmentStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               *(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case '\x1b':
-    EmitCallExpressionStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_5);
+    EmitCallExpressionStatement(inst,(sval_u)(val.block)->localVarsCreateCount,block);
     break;
   case '\x1d':
-    EmitReturnStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                        (sval_u)(param_2.block)->localVarsPublicCount,param_5);
+    EmitReturnStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                        (sval_u)(val.block)->localVarsPublicCount,block);
     break;
   case '\x1e':
-    EmitEndStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_5);
+    EmitEndStatement(inst,(sval_u)(val.block)->localVarsCreateCount,block);
     break;
   case '\x1f':
-    EmitWaitStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                      (sval_u)(param_2.block)->localVarsPublicCount,
-                      (sval_u)(param_2.block)->localVarsCount,param_5);
+    EmitWaitStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                      (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+                      block);
     break;
   case '\'':
-    EmitIfStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                    (sval_u)(param_2.block)->localVarsPublicCount,
-                    (sval_u)(param_2.block)->localVarsCount,param_3,param_4,param_5,
-                    (sval_u *)(param_2.block)->localVarsInitBits);
+    EmitIfStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                    (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+                    lastStatement,endSourcePos,block,(sval_u *)(val.block)->localVarsInitBits);
     break;
   case '(':
-    EmitIfElseStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                        (sval_u)(param_2.block)->localVarsPublicCount,
-                        (sval_u)(param_2.block)->localVarsCount,
-                        *(sval_u *)(param_2.block)->localVarsInitBits,
-                        *(sval_u *)((param_2.block)->localVarsInitBits + 4),param_3,param_4,param_5,
-                        (sval_u *)(param_2.block)->localVars,
-                        (sval_u *)&(param_2.block)->localVars[0].sourcePos);
+    EmitIfElseStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                        (sval_u)(val.block)->localVarsPublicCount,
+                        (sval_u)(val.block)->localVarsCount,
+                        *(sval_u *)(val.block)->localVarsInitBits,
+                        *(sval_u *)((val.block)->localVarsInitBits + 4),lastStatement,endSourcePos,
+                        block,(sval_u *)(val.block)->localVars,
+                        (sval_u *)&(val.block)->localVars[0].sourcePos);
     break;
   case ')':
-    EmitWhileStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,
-                       (sval_u)(param_2.block)->localVarsCount,
-                       *(sval_u *)(param_2.block)->localVarsInitBits,param_5,
-                       (sval_u *)((param_2.block)->localVarsInitBits + 4));
+    EmitWhileStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                       (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount
+                       ,*(sval_u *)(val.block)->localVarsInitBits,block,
+                       (sval_u *)((val.block)->localVarsInitBits + 4));
     break;
   case '*':
-    EmitForStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                     (sval_u)(param_2.block)->localVarsPublicCount,
-                     (sval_u)(param_2.block)->localVarsCount,
-                     *(sval_u *)(param_2.block)->localVarsInitBits,
-                     *(sval_u *)((param_2.block)->localVarsInitBits + 4),
-                     (sval_u)(param_2.block)->localVars[0].name,param_5,
-                     (sval_u *)&(param_2.block)->localVars[0].sourcePos,
-                     (sval_u *)((param_2.block)->localVars + 1));
+    EmitForStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                     (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+                     *(sval_u *)(val.block)->localVarsInitBits,
+                     *(sval_u *)((val.block)->localVarsInitBits + 4),
+                     (sval_u)(val.block)->localVars[0].name,block,
+                     (sval_u *)&(val.block)->localVars[0].sourcePos,
+                     (sval_u *)((val.block)->localVars + 1));
     break;
   case '+':
-    EmitIncStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                     (sval_u)(param_2.block)->localVarsPublicCount,param_5);
+    EmitIncStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                     (sval_u)(val.block)->localVarsPublicCount,block);
     break;
   case ',':
-    EmitDecStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                     (sval_u)(param_2.block)->localVarsPublicCount,param_5);
+    EmitDecStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                     (sval_u)(val.block)->localVarsPublicCount,block);
     break;
   case '-':
     EmitBinaryEqualsOperatorExpression
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               *(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case '.':
-    EmitStatementList(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,param_4,param_5)
-    ;
+    EmitStatementList(inst,(sval_u)(val.block)->localVarsCreateCount,lastStatement,endSourcePos,
+                      block);
     break;
   case '/':
     EmitDeveloperStatementList
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_5,
-               (sval_u *)&(param_2.block)->localVarsCount);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,block,
+               (sval_u *)&(val.block)->localVarsCount);
     break;
   case '9':
     EmitWaittillStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               *(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case ':':
     EmitWaittillmatchStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               *(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case ';':
-    EmitWaittillFrameEnd(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitWaittillFrameEnd(inst,(sval_u)(val.block)->localVarsCreateCount);
     break;
   case '<':
-    EmitNotifyStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                        (sval_u)(param_2.block)->localVarsPublicCount,
-                        (sval_u)(param_2.block)->localVarsCount,
-                        *(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+    EmitNotifyStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                        (sval_u)(val.block)->localVarsPublicCount,
+                        (sval_u)(val.block)->localVarsCount,
+                        *(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case '=':
-    EmitEndOnStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                       (sval_u)(param_2.block)->localVarsPublicCount,
-                       (sval_u)(param_2.block)->localVarsCount,
-                       *(sval_u *)(param_2.block)->localVarsInitBits,param_5);
+    EmitEndOnStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                       (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount
+                       ,*(sval_u *)(val.block)->localVarsInitBits,block);
     break;
   case '>':
-    EmitSwitchStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-                        (sval_u)(param_2.block)->localVarsPublicCount,
-                        (sval_u)(param_2.block)->localVarsCount,param_3,param_4,param_5);
+    EmitSwitchStatement(inst,(sval_u)(val.block)->localVarsCreateCount,
+                        (sval_u)(val.block)->localVarsPublicCount,
+                        (sval_u)(val.block)->localVarsCount,lastStatement,endSourcePos,block);
     break;
   case '?':
-    CompileError(param_1,(param_2.block)->localVarsPublicCount,"illegal case statement");
+    CompileError(inst,(val.block)->localVarsPublicCount,"illegal case statement");
     break;
   case '@':
-    CompileError(param_1,(param_2.block)->localVarsCreateCount,"illegal default statement");
+    CompileError(inst,(val.block)->localVarsCreateCount,"illegal default statement");
     break;
   case 'A':
-    EmitBreakStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_5);
+    EmitBreakStatement(inst,(sval_u)(val.block)->localVarsCreateCount,block);
     break;
   case 'B':
-    EmitContinueStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_5);
+    EmitContinueStatement(inst,(sval_u)(val.block)->localVarsCreateCount,block);
     break;
   case 'N':
-    EmitBreakpointStatement(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+    EmitBreakpointStatement(inst,(sval_u)(val.block)->localVarsCreateCount);
     break;
   case 'O':
     EmitProfBeginStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount);
     break;
   case 'P':
     EmitProfEndStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount);
   }
   return;
 }
@@ -5679,80 +5692,79 @@ EmitStatement(scriptInstance_t param_1,sval_u param_2,bool param_3,uint param_4,
 
 // 0089F310  Scr_CalcLocalVarsStatement  (clientscript/cscr_compiler.cpp:4399)
 
-void __cdecl
-Scr_CalcLocalVarsStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl Scr_CalcLocalVarsStatement(scriptInstance_t inst,sval_u val,scr_block_s *block)
 
 {
-  switch(*param_2.codePosValue) {
+  switch(*val.codePosValue) {
   case '\x02':
     Scr_CalcLocalVarsAssignmentStatement
-              ((sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_3);
+              ((sval_u)(val.block)->localVarsCreateCount,(sval_u)(val.block)->localVarsPublicCount,
+               block);
     break;
   case '\x1d':
   case '\x1e':
-    if (param_3->abortLevel == 0) {
-      param_3->abortLevel = 3;
+    if (block->abortLevel == 0) {
+      block->abortLevel = 3;
     }
     break;
   case '\'':
     Scr_CalcLocalVarsIfStatement
-              (param_1,(sval_u)(param_2.block)->localVarsPublicCount,param_3,
-               (sval_u *)(param_2.block)->localVarsInitBits);
+              (inst,(sval_u)(val.block)->localVarsPublicCount,block,
+               (sval_u *)(val.block)->localVarsInitBits);
     break;
   case '(':
     Scr_CalcLocalVarsIfElseStatement
-              (param_1,(sval_u)(param_2.block)->localVarsPublicCount,
-               (sval_u)(param_2.block)->localVarsCount,param_3,(sval_u *)(param_2.block)->localVars,
-               (sval_u *)&(param_2.block)->localVars[0].sourcePos);
+              (inst,(sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               block,(sval_u *)(val.block)->localVars,(sval_u *)&(val.block)->localVars[0].sourcePos
+              );
     break;
   case ')':
     Scr_CalcLocalVarsWhileStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,param_3,
-               (sval_u *)((param_2.block)->localVarsInitBits + 4));
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,block,
+               (sval_u *)((val.block)->localVarsInitBits + 4));
     break;
   case '*':
     Scr_CalcLocalVarsForStatement
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,
-               (sval_u)(param_2.block)->localVarsPublicCount,(sval_u)(param_2.block)->localVarsCount
-               ,*(sval_u *)(param_2.block)->localVarsInitBits,param_3,
-               (sval_u *)&(param_2.block)->localVars[0].sourcePos,
-               (sval_u *)((param_2.block)->localVars + 1));
+              (inst,(sval_u)(val.block)->localVarsCreateCount,
+               (sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               *(sval_u *)(val.block)->localVarsInitBits,block,
+               (sval_u *)&(val.block)->localVars[0].sourcePos,(sval_u *)((val.block)->localVars + 1)
+              );
     break;
   case '+':
   case ',':
-    Scr_CalcLocalVarsBinaryEqualsOperatorExpression
-              ((sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    Scr_CalcLocalVarsBinaryEqualsOperatorExpression((sval_u)(val.block)->localVarsCreateCount,block)
+    ;
     break;
   case '-':
-    Scr_CalcLocalVarsBinaryEqualsOperatorExpression
-              ((sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    Scr_CalcLocalVarsBinaryEqualsOperatorExpression((sval_u)(val.block)->localVarsCreateCount,block)
+    ;
     break;
   case '.':
-    Scr_CalcLocalVarsStatementList(param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3);
+    Scr_CalcLocalVarsStatementList(inst,(sval_u)(val.block)->localVarsCreateCount,block);
     break;
   case '/':
     Scr_CalcLocalVarsDeveloperStatementList
-              (param_1,(sval_u)(param_2.block)->localVarsCreateCount,param_3,
-               (sval_u *)&(param_2.block)->localVarsCount);
+              (inst,(sval_u)(val.block)->localVarsCreateCount,block,
+               (sval_u *)&(val.block)->localVarsCount);
     break;
   case '9':
-    Scr_CalcLocalVarsWaittillStatement((sval_u)(param_2.block)->localVarsPublicCount,param_3);
+    Scr_CalcLocalVarsWaittillStatement((sval_u)(val.block)->localVarsPublicCount,block);
     break;
   case '>':
-    Scr_CalcLocalVarsSwitchStatement(param_1,(sval_u)(param_2.block)->localVarsPublicCount,param_3);
+    Scr_CalcLocalVarsSwitchStatement(inst,(sval_u)(val.block)->localVarsPublicCount,block);
     break;
   case 'A':
-    Scr_AddBreakBlock(param_1,param_3);
-    if (param_3->abortLevel == 0) {
-      param_3->abortLevel = 2;
+    Scr_AddBreakBlock(inst,block);
+    if (block->abortLevel == 0) {
+      block->abortLevel = 2;
     }
     break;
   case 'B':
-    Scr_AddContinueBlock(param_1,param_3);
-    if (param_3->abortLevel == 0) {
-      param_3->abortLevel = 1;
+    Scr_AddContinueBlock(inst,block);
+    if (block->abortLevel == 0) {
+      block->abortLevel = 1;
     }
   }
   return;
@@ -5762,47 +5774,47 @@ Scr_CalcLocalVarsStatement(scriptInstance_t param_1,sval_u param_2,scr_block_s *
 // 008A1D30  EmitStatementList  (clientscript/cscr_compiler.cpp:4469)
 
 void __cdecl
-EmitStatementList(scriptInstance_t param_1,sval_u param_2,bool param_3,uint param_4,
-                 scr_block_s *param_5)
+EmitStatementList(scriptInstance_t inst,sval_u val,bool lastStatement,uint endSourcePos,
+                 scr_block_s *block)
 
 {
-  sval_u *psVar1;
-  bool bVar2;
+  sval_u *node_00;
+  bool bVar1;
   bool local_d;
-  sval_u *local_c;
+  sval_u *node;
+  sval_u *nextNode;
   
-  local_c = *(sval_u **)((param_2.block)->abortLevel + 4);
+  node = *(sval_u **)((val.block)->abortLevel + 4);
   do {
-    if (local_c == (sval_u *)0x0) {
+    if (node == (sval_u *)0x0) {
       return;
     }
-    psVar1 = local_c[1].node;
-    if (param_3) {
-      bVar2 = Scr_IsLastStatement(param_1,psVar1);
-      if (!bVar2) goto LAB_008a1d7d;
+    node_00 = node[1].node;
+    if (lastStatement) {
+      bVar1 = Scr_IsLastStatement(inst,node_00);
+      if (!bVar1) goto LAB_008a1d7d;
       local_d = true;
     }
     else {
 LAB_008a1d7d:
       local_d = false;
     }
-    EmitStatement(param_1,*local_c,local_d,param_4,param_5);
-    local_c = psVar1;
+    EmitStatement(inst,*node,local_d,endSourcePos,block);
+    node = node_00;
   } while( true );
 }
 
 
 // 0089F2D0  Scr_CalcLocalVarsStatementList  (clientscript/cscr_compiler.cpp:4482)
 
-void __cdecl
-Scr_CalcLocalVarsStatementList(scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3)
+void __cdecl Scr_CalcLocalVarsStatementList(scriptInstance_t inst,sval_u val,scr_block_s *block)
 
 {
-  sval_u *local_8;
+  sval_u *node;
   
-  for (local_8 = *(sval_u **)((param_2.block)->abortLevel + 4); local_8 != (sval_u *)0x0;
-      local_8 = local_8[1].node) {
-    Scr_CalcLocalVarsStatement(param_1,*local_8,param_3);
+  for (node = *(sval_u **)((val.block)->abortLevel + 4); node != (sval_u *)0x0; node = node[1].node)
+  {
+    Scr_CalcLocalVarsStatement(inst,*node,block);
   }
   return;
 }
@@ -5812,12 +5824,12 @@ Scr_CalcLocalVarsStatementList(scriptInstance_t param_1,sval_u param_2,scr_block
 
 void __cdecl
 Scr_CalcLocalVarsDeveloperStatementList
-          (scriptInstance_t param_1,sval_u param_2,scr_block_s *param_3,sval_u *param_4)
+          (scriptInstance_t inst,sval_u val,scr_block_s *block,sval_u *devStatBlock)
 
 {
-  Scr_CopyBlock(param_3,&param_4->block);
-  Scr_CalcLocalVarsStatementList(param_1,param_2,param_4->block);
-  Scr_MergeChildBlocks(&param_4->block,1,param_3);
+  Scr_CopyBlock(block,&devStatBlock->block);
+  Scr_CalcLocalVarsStatementList(inst,val,devStatBlock->block);
+  Scr_MergeChildBlocks(&devStatBlock->block,1,block);
   return;
 }
 
@@ -5826,33 +5838,35 @@ Scr_CalcLocalVarsDeveloperStatementList
 
 void __cdecl
 EmitDeveloperStatementList
-          (scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4,
-          sval_u *param_5)
+          (scriptInstance_t inst,sval_u val,sval_u sourcePos,scr_block_s *block,sval_u *devStatBlock
+          )
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *pos;
   undefined3 in_stack_00000005;
+  char *savedPos;
+  uint savedChecksum;
   
-  if (gScrCompilePub[_param_1].developer_statement == 0) {
-    uVar1 = gScrVarPub[_param_1].checksum;
-    Scr_TransferBlock(param_4,param_5->block);
-    if (gScrVarPub[_param_1].developer_script == false) {
-      pcVar2 = TempMalloc(0);
-      gScrCompilePub[_param_1].developer_statement = 2;
-      EmitStatementList(param_1,param_2,false,0,param_5->block);
-      TempMemorySetPos(pcVar2);
+  if (gScrCompilePub[_inst].developer_statement == 0) {
+    uVar1 = gScrVarPub[_inst].checksum;
+    Scr_TransferBlock(block,devStatBlock->block);
+    if (gScrVarPub[_inst].developer_script == false) {
+      pos = TempMalloc(0);
+      gScrCompilePub[_inst].developer_statement = 2;
+      EmitStatementList(inst,val,false,0,devStatBlock->block);
+      TempMemorySetPos(pos);
     }
     else {
-      gScrCompilePub[_param_1].developer_statement = 1;
-      EmitStatementList(param_1,param_2,false,0,param_5->block);
-      EmitRemoveLocalVars(param_1,param_5->block,param_5->block);
+      gScrCompilePub[_inst].developer_statement = 1;
+      EmitStatementList(inst,val,false,0,devStatBlock->block);
+      EmitRemoveLocalVars(inst,devStatBlock->block,devStatBlock->block);
     }
-    gScrCompilePub[_param_1].developer_statement = 0;
-    gScrVarPub[_param_1].checksum = uVar1;
+    gScrCompilePub[_inst].developer_statement = 0;
+    gScrVarPub[_inst].checksum = uVar1;
   }
   else {
-    CompileError(param_1,param_3.stringValue,"cannot recurse /#");
+    CompileError(inst,sourcePos.stringValue,"cannot recurse /#");
   }
   return;
 }
@@ -5861,65 +5875,64 @@ EmitDeveloperStatementList
 // 008A8740  EmitFormalParameterList  (clientscript/cscr_compiler.cpp:4539)
 
 void __cdecl
-EmitFormalParameterList(scriptInstance_t param_1,sval_u param_2,sval_u param_3,scr_block_s *param_4)
+EmitFormalParameterList(scriptInstance_t inst,sval_u exprlist,sval_u sourcePos,scr_block_s *block)
 
 {
-  EmitFormalParameterListInternal(param_1,(*param_2.node).node,param_4);
-  EmitOpcode(param_1,0x35,0,0);
-  AddOpcodePos(param_1,param_3.stringValue,0);
+  EmitFormalParameterListInternal(inst,(*exprlist.node).node,block);
+  EmitOpcode(inst,0x35,0,0);
+  AddOpcodePos(inst,sourcePos.stringValue,0);
   return;
 }
 
 
 // 008A0B40  Scr_CalcLocalVarsFormalParameterList  (clientscript/cscr_compiler.cpp:4547)
 
-void __cdecl Scr_CalcLocalVarsFormalParameterList(sval_u param_1,scr_block_s *param_2)
+void __cdecl Scr_CalcLocalVarsFormalParameterList(sval_u exprlist,scr_block_s *block)
 
 {
-  Scr_CalcLocalVarsFormalParameterListInternal((*param_1.node).node,param_2);
+  Scr_CalcLocalVarsFormalParameterListInternal((*exprlist.node).node,block);
   return;
 }
 
 
 // 0089EE70  SpecifyThread  (clientscript/cscr_compiler.cpp:4553)
 
-void __cdecl SpecifyThread(scriptInstance_t param_1,sval_u param_2)
+void __cdecl SpecifyThread(scriptInstance_t inst,sval_u val)
 
 {
   char cVar1;
-  uint uVar2;
-  int iVar3;
+  uint posId;
+  int type;
   undefined3 in_stack_00000005;
-  uint uVar4;
-  uint uVar5;
+  uint name;
+  uint sourcePos;
   
-  cVar1 = *param_2.codePosValue;
+  cVar1 = *val.codePosValue;
   if (cVar1 == 'F') {
-    if ((gScrCompileGlob[_param_1].in_developer_thread == false) ||
-       (gScrVarPub[_param_1].developer_script != false)) {
-      iVar3 = (-(uint)(gScrCompileGlob[_param_1].in_developer_thread != false) & 5) + 7;
-      uVar5 = *(uint *)(param_2.block)->localVarsInitBits;
-      uVar4 = (param_2.block)->localVarsCreateCount;
-      uVar2 = GetVariable(param_1,gScrCompileGlob[_param_1].filePosId,
-                          (param_2.block)->localVarsCreateCount);
-      SpecifyThreadPosition(param_1,uVar2,uVar4,uVar5,iVar3);
+    if ((gScrCompileGlob[_inst].in_developer_thread == false) ||
+       (gScrVarPub[_inst].developer_script != false)) {
+      type = (-(uint)(gScrCompileGlob[_inst].in_developer_thread != false) & 5) + 7;
+      sourcePos = *(uint *)(val.block)->localVarsInitBits;
+      name = (val.block)->localVarsCreateCount;
+      posId = GetVariable(inst,gScrCompileGlob[_inst].filePosId,(val.block)->localVarsCreateCount);
+      SpecifyThreadPosition(inst,posId,name,sourcePos,type);
     }
   }
   else if (cVar1 == 'G') {
-    if (gScrCompileGlob[_param_1].in_developer_thread == false) {
-      gScrCompileGlob[_param_1].in_developer_thread = true;
-      gScrCompileGlob[_param_1].developer_thread_sourcePos = (param_2.block)->localVarsCreateCount;
+    if (gScrCompileGlob[_inst].in_developer_thread == false) {
+      gScrCompileGlob[_inst].in_developer_thread = true;
+      gScrCompileGlob[_inst].developer_thread_sourcePos = (val.block)->localVarsCreateCount;
     }
     else {
-      CompileError(param_1,(param_2.block)->localVarsCreateCount,"cannot recurse /#");
+      CompileError(inst,(val.block)->localVarsCreateCount,"cannot recurse /#");
     }
   }
   else if (cVar1 == 'H') {
-    if (gScrCompileGlob[_param_1].in_developer_thread == false) {
-      CompileError(param_1,(param_2.block)->localVarsCreateCount,"#/ has no matching /#");
+    if (gScrCompileGlob[_inst].in_developer_thread == false) {
+      CompileError(inst,(val.block)->localVarsCreateCount,"#/ has no matching /#");
     }
     else {
-      gScrCompileGlob[_param_1].in_developer_thread = false;
+      gScrCompileGlob[_inst].in_developer_thread = false;
     }
   }
   return;
@@ -5929,26 +5942,25 @@ void __cdecl SpecifyThread(scriptInstance_t param_1,sval_u param_2)
 // 008A0C10  EmitThreadInternal  (clientscript/cscr_compiler.cpp:4586)
 
 void __cdecl
-EmitThreadInternal(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u param_4,
-                  scr_block_s *param_5)
+EmitThreadInternal(scriptInstance_t inst,sval_u val,sval_u sourcePos,sval_u endSourcePos,
+                  scr_block_s *block)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  AddThreadStartOpcodePos(param_1,param_3.stringValue);
-  gScrCompileGlob[_param_1].cumulOffset = 0;
-  gScrCompileGlob[_param_1].maxOffset = 0;
-  gScrCompileGlob[_param_1].maxCallOffset = 0;
-  CompileTransferRefToString(param_1,(param_2.block)->localVarsCreateCount,2);
-  EmitFormalParameterList(param_1,(sval_u)(param_2.block)->localVarsPublicCount,param_3,param_5);
-  EmitStatementList(param_1,(sval_u)(param_2.block)->localVarsCount,true,param_4.stringValue,param_5
-                   );
-  EmitEnd(param_1);
-  AddOpcodePos(param_1,param_4.stringValue,1);
-  AddOpcodePos(param_1,0xfffffffe,0);
-  if (gScrCompileGlob[_param_1].cumulOffset != 0) {
+  AddThreadStartOpcodePos(inst,sourcePos.stringValue);
+  gScrCompileGlob[_inst].cumulOffset = 0;
+  gScrCompileGlob[_inst].maxOffset = 0;
+  gScrCompileGlob[_inst].maxCallOffset = 0;
+  CompileTransferRefToString(inst,(val.block)->localVarsCreateCount,2);
+  EmitFormalParameterList(inst,(sval_u)(val.block)->localVarsPublicCount,sourcePos,block);
+  EmitStatementList(inst,(sval_u)(val.block)->localVarsCount,true,endSourcePos.stringValue,block);
+  EmitEnd(inst);
+  AddOpcodePos(inst,endSourcePos.stringValue,1);
+  AddOpcodePos(inst,0xfffffffe,0);
+  if (gScrCompileGlob[_inst].cumulOffset != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x11f9,0,"%s");
     if (!bVar2) {
@@ -5957,9 +5969,8 @@ EmitThreadInternal(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
       return;
     }
   }
-  if (0x7ff < gScrCompileGlob[_param_1].maxCallOffset * 0x20 + gScrCompileGlob[_param_1].maxOffset)
-  {
-    CompileError(param_1,param_3.stringValue,"function exceeds operand stack size");
+  if (0x7ff < gScrCompileGlob[_inst].maxCallOffset * 0x20 + gScrCompileGlob[_inst].maxOffset) {
+    CompileError(inst,sourcePos.stringValue,"function exceeds operand stack size");
   }
   return;
 }
@@ -5968,21 +5979,21 @@ EmitThreadInternal(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u
 // 0089F230  Scr_CalcLocalVarsThread  (clientscript/cscr_compiler.cpp:4609)
 
 void __cdecl
-Scr_CalcLocalVarsThread(scriptInstance_t param_1,sval_u param_2,sval_u param_3,sval_u *param_4)
+Scr_CalcLocalVarsThread(scriptInstance_t inst,sval_u exprlist,sval_u stmtlist,sval_u *stmttblock)
 
 {
   scr_block_s *psVar1;
   sval_u *psVar2;
   undefined3 in_stack_00000005;
   
-  gScrCompileGlob[_param_1].forceNotCreate = false;
+  gScrCompileGlob[_inst].forceNotCreate = false;
   psVar2 = Hunk_AllocateTempMemoryHigh(0x218,"Scr_CalcLocalVarsThread");
-  param_4->node = psVar2;
-  param_4->block->abortLevel = 0;
-  param_4->block->localVarsCreateCount = 0;
-  param_4->block->localVarsCount = 0;
-  param_4->block->localVarsPublicCount = 0;
-  psVar1 = param_4->block;
+  stmttblock->node = psVar2;
+  stmttblock->block->abortLevel = 0;
+  stmttblock->block->localVarsCreateCount = 0;
+  stmttblock->block->localVarsCount = 0;
+  stmttblock->block->localVarsPublicCount = 0;
+  psVar1 = stmttblock->block;
   psVar1->localVarsInitBits[0] = '\0';
   psVar1->localVarsInitBits[1] = '\0';
   psVar1->localVarsInitBits[2] = '\0';
@@ -5991,31 +6002,31 @@ Scr_CalcLocalVarsThread(scriptInstance_t param_1,sval_u param_2,sval_u param_3,s
   psVar1->localVarsInitBits[5] = '\0';
   psVar1->localVarsInitBits[6] = '\0';
   psVar1->localVarsInitBits[7] = '\0';
-  Scr_CalcLocalVarsFormalParameterList(param_2,param_4->block);
-  Scr_CalcLocalVarsStatementList(param_1,param_3,param_4->block);
+  Scr_CalcLocalVarsFormalParameterList(exprlist,stmttblock->block);
+  Scr_CalcLocalVarsStatementList(inst,stmtlist,stmttblock->block);
   return;
 }
 
 
 // 008A8850  InitThread  (clientscript/cscr_compiler.cpp:4624)
 
-void __cdecl InitThread(scriptInstance_t param_1,int param_2)
+void __cdecl InitThread(scriptInstance_t inst,int type)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrCompileGlob[_param_1].currentCaseStatement = (CaseStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].bCanBreak = false;
-  gScrCompileGlob[_param_1].currentBreakStatement = (BreakStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].bCanContinue = false;
-  gScrCompileGlob[_param_1].currentContinueStatement = (ContinueStatementInfo *)0x0;
-  gScrCompileGlob[_param_1].breakChildBlocks = (scr_block_s **)0x0;
-  gScrCompileGlob[_param_1].continueChildBlocks = (scr_block_s **)0x0;
-  if (*(char *)(_param_1 * 0x1d8 + 0x9d38b1c + param_2) != '\0') {
-    *(undefined1 *)(_param_1 * 0x1d8 + 0x9d38b1c + param_2) = 0;
-    EmitEnd(param_1);
-    AddOpcodePos(param_1,0,0);
-    AddOpcodePos(param_1,0xfffffffe,0);
+  gScrCompileGlob[_inst].currentCaseStatement = (CaseStatementInfo *)0x0;
+  gScrCompileGlob[_inst].bCanBreak = false;
+  gScrCompileGlob[_inst].currentBreakStatement = (BreakStatementInfo *)0x0;
+  gScrCompileGlob[_inst].bCanContinue = false;
+  gScrCompileGlob[_inst].currentContinueStatement = (ContinueStatementInfo *)0x0;
+  gScrCompileGlob[_inst].breakChildBlocks = (scr_block_s **)0x0;
+  gScrCompileGlob[_inst].continueChildBlocks = (scr_block_s **)0x0;
+  if (*(char *)(_inst * 0x1d8 + 0x9d38b1c + type) != '\0') {
+    *(undefined1 *)(_inst * 0x1d8 + 0x9d38b1c + type) = 0;
+    EmitEnd(inst);
+    AddOpcodePos(inst,0,0);
+    AddOpcodePos(inst,0xfffffffe,0);
   }
   return;
 }
@@ -6023,34 +6034,37 @@ void __cdecl InitThread(scriptInstance_t param_1,int param_2)
 
 // 008A0B60  EmitNormalThread  (clientscript/cscr_compiler.cpp:4647)
 
-void __cdecl EmitNormalThread(scriptInstance_t param_1,sval_u param_2,sval_u *param_3)
+void __cdecl EmitNormalThread(scriptInstance_t inst,sval_u val,sval_u *stmttblock)
 
 {
-  uint uVar1;
+  uint posId_00;
   undefined3 in_stack_00000005;
+  uint posId;
   
-  InitThread(param_1,0);
-  uVar1 = FindVariable(param_1,gScrCompileGlob[_param_1].filePosId,
-                       (param_2.block)->localVarsCreateCount);
-  SetThreadPosition(param_1,uVar1,*(sval_u *)(param_2.block)->localVarsInitBits);
-  EmitThreadInternal(param_1,param_2,*(sval_u *)(param_2.block)->localVarsInitBits,
-                     *(sval_u *)((param_2.block)->localVarsInitBits + 4),param_3->block);
+  InitThread(inst,0);
+  posId_00 = FindVariable(inst,gScrCompileGlob[_inst].filePosId,(val.block)->localVarsCreateCount);
+  SetThreadPosition(inst,posId_00,*(sval_u *)(val.block)->localVarsInitBits);
+  EmitThreadInternal(inst,val,*(sval_u *)(val.block)->localVarsInitBits,
+                     *(sval_u *)((val.block)->localVarsInitBits + 4),stmttblock->block);
   return;
 }
 
 
 // 008A8930  EmitDeveloperThread  (clientscript/cscr_compiler.cpp:4658)
 
-void __cdecl EmitDeveloperThread(scriptInstance_t param_1,sval_u param_2,sval_u *param_3)
+void __cdecl EmitDeveloperThread(scriptInstance_t inst,sval_u val,sval_u *stmttblock)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *pos;
+  uint uVar3;
   undefined3 in_stack_00000005;
+  uint posId;
+  uint savedChecksum;
+  char *begin_pos;
   
-  if (gScrCompilePub[_param_1].developer_statement != 0) {
+  if (gScrCompilePub[_inst].developer_statement != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x1237,0,"%s");
     if (!bVar2) {
@@ -6059,82 +6073,81 @@ void __cdecl EmitDeveloperThread(scriptInstance_t param_1,sval_u param_2,sval_u 
       return;
     }
   }
-  if (gScrVarPub[_param_1].developer_script == false) {
-    pcVar3 = TempMalloc(0);
-    uVar4 = gScrVarPub[_param_1].checksum;
-    gScrCompilePub[_param_1].developer_statement = 2;
-    InitThread(param_1,1);
-    EmitThreadInternal(param_1,param_2,*(sval_u *)(param_2.block)->localVarsInitBits,
-                       *(sval_u *)((param_2.block)->localVarsInitBits + 4),param_3->block);
-    TempMemorySetPos(pcVar3);
-    gScrVarPub[_param_1].checksum = uVar4;
+  if (gScrVarPub[_inst].developer_script == false) {
+    pos = TempMalloc(0);
+    uVar3 = gScrVarPub[_inst].checksum;
+    gScrCompilePub[_inst].developer_statement = 2;
+    InitThread(inst,1);
+    EmitThreadInternal(inst,val,*(sval_u *)(val.block)->localVarsInitBits,
+                       *(sval_u *)((val.block)->localVarsInitBits + 4),stmttblock->block);
+    TempMemorySetPos(pos);
+    gScrVarPub[_inst].checksum = uVar3;
   }
   else {
-    gScrCompilePub[_param_1].developer_statement = 1;
-    InitThread(param_1,1);
-    uVar4 = FindVariable(param_1,gScrCompileGlob[_param_1].filePosId,
-                         (param_2.block)->localVarsCreateCount);
-    SetThreadPosition(param_1,uVar4,*(sval_u *)(param_2.block)->localVarsInitBits);
-    EmitThreadInternal(param_1,param_2,*(sval_u *)(param_2.block)->localVarsInitBits,
-                       *(sval_u *)((param_2.block)->localVarsInitBits + 4),param_3->block);
+    gScrCompilePub[_inst].developer_statement = 1;
+    InitThread(inst,1);
+    uVar3 = FindVariable(inst,gScrCompileGlob[_inst].filePosId,(val.block)->localVarsCreateCount);
+    SetThreadPosition(inst,uVar3,*(sval_u *)(val.block)->localVarsInitBits);
+    EmitThreadInternal(inst,val,*(sval_u *)(val.block)->localVarsInitBits,
+                       *(sval_u *)((val.block)->localVarsInitBits + 4),stmttblock->block);
   }
-  gScrCompilePub[_param_1].developer_statement = 0;
+  gScrCompilePub[_inst].developer_statement = 0;
   return;
 }
 
 
 // 0089F010  EmitThread  (clientscript/cscr_compiler.cpp:4694)
 
-void __cdecl EmitThread(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitThread(scriptInstance_t inst,sval_u val)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *filename;
   undefined3 in_stack_00000005;
-  uint uVar4;
+  uint sourcePos;
   
-  switch(*param_2.codePosValue) {
+  switch(*val.codePosValue) {
   case 'F':
     Scr_CalcLocalVarsThread
-              (param_1,(sval_u)(param_2.block)->localVarsPublicCount,
-               (sval_u)(param_2.block)->localVarsCount,(sval_u *)(param_2.block)->localVars);
-    if (gScrCompileGlob[_param_1].in_developer_thread == false) {
-      EmitNormalThread(param_1,param_2,(sval_u *)(param_2.block)->localVars);
+              (inst,(sval_u)(val.block)->localVarsPublicCount,(sval_u)(val.block)->localVarsCount,
+               (sval_u *)(val.block)->localVars);
+    if (gScrCompileGlob[_inst].in_developer_thread == false) {
+      EmitNormalThread(inst,val,(sval_u *)(val.block)->localVars);
     }
     else {
-      EmitDeveloperThread(param_1,param_2,(sval_u *)(param_2.block)->localVars);
+      EmitDeveloperThread(inst,val,(sval_u *)(val.block)->localVars);
     }
     break;
   case 'G':
-    if ((gScrCompileGlob[_param_1].in_developer_thread != false) &&
+    if ((gScrCompileGlob[_inst].in_developer_thread != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x125a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    gScrCompileGlob[_param_1].in_developer_thread = true;
+    gScrCompileGlob[_inst].in_developer_thread = true;
     break;
   case 'H':
-    if ((gScrCompileGlob[_param_1].in_developer_thread == false) &&
+    if ((gScrCompileGlob[_inst].in_developer_thread == false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp"
                                  ,0x125f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    gScrCompileGlob[_param_1].in_developer_thread = false;
+    gScrCompileGlob[_inst].in_developer_thread = false;
     break;
   case 'I':
-    if (gScrCompileGlob[_param_1].in_developer_thread == false) {
-      uVar4 = (param_2.block)->localVarsCount;
-      pcVar3 = SL_ConvertToString((param_2.block)->localVarsCreateCount,param_1);
-      Scr_UsingTree(param_1,pcVar3,uVar4);
-      Scr_CompileRemoveRefToString(param_1,(param_2.block)->localVarsCreateCount);
+    if (gScrCompileGlob[_inst].in_developer_thread == false) {
+      sourcePos = (val.block)->localVarsCount;
+      filename = SL_ConvertToString((val.block)->localVarsCreateCount,inst);
+      Scr_UsingTree(inst,filename,sourcePos);
+      Scr_CompileRemoveRefToString(inst,(val.block)->localVarsCreateCount);
     }
     else {
-      CompileError(param_1,(param_2.block)->localVarsPublicCount,
+      CompileError(inst,(val.block)->localVarsPublicCount,
                    "cannot put #using_animtree inside /# ... #/ comment");
     }
   }
@@ -6144,26 +6157,25 @@ void __cdecl EmitThread(scriptInstance_t param_1,sval_u param_2)
 
 // 0089ED20  EmitThreadList  (clientscript/cscr_compiler.cpp:4729)
 
-void __cdecl EmitThreadList(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitThreadList(scriptInstance_t inst,sval_u val)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
-  sval_u *local_8;
+  sval_u *node;
   
-  gScrCompileGlob[_param_1].in_developer_thread = false;
-  for (local_8 = *(sval_u **)((param_2.block)->abortLevel + 4); local_8 != (sval_u *)0x0;
-      local_8 = local_8[1].node) {
-    SpecifyThread(param_1,*local_8);
+  gScrCompileGlob[_inst].in_developer_thread = false;
+  for (node = *(sval_u **)((val.block)->abortLevel + 4); node != (sval_u *)0x0; node = node[1].node)
+  {
+    SpecifyThread(inst,*node);
   }
-  if (gScrCompileGlob[_param_1].in_developer_thread != false) {
-    CompileError(param_1,gScrCompileGlob[_param_1].developer_thread_sourcePos,
-                 "/# has no matching #/");
+  if (gScrCompileGlob[_inst].in_developer_thread != false) {
+    CompileError(inst,gScrCompileGlob[_inst].developer_thread_sourcePos,"/# has no matching #/");
   }
-  gScrCompileGlob[_param_1].firstThread[0] = true;
-  gScrCompileGlob[_param_1].firstThread[1] = true;
-  if (gScrCompileGlob[_param_1].in_developer_thread != false) {
+  gScrCompileGlob[_inst].firstThread[0] = true;
+  gScrCompileGlob[_inst].firstThread[1] = true;
+  if (gScrCompileGlob[_inst].in_developer_thread != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x1286,0,"%s");
     if (!bVar2) {
@@ -6172,11 +6184,11 @@ void __cdecl EmitThreadList(scriptInstance_t param_1,sval_u param_2)
       return;
     }
   }
-  for (local_8 = *(sval_u **)((param_2.block)->abortLevel + 4); local_8 != (sval_u *)0x0;
-      local_8 = local_8[1].node) {
-    EmitThread(param_1,*local_8);
+  for (node = *(sval_u **)((val.block)->abortLevel + 4); node != (sval_u *)0x0; node = node[1].node)
+  {
+    EmitThread(inst,*node);
   }
-  if (gScrCompileGlob[_param_1].in_developer_thread != false) {
+  if (gScrCompileGlob[_inst].in_developer_thread != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x128b,0,"%s");
     if (!bVar2) {
@@ -6191,15 +6203,16 @@ void __cdecl EmitThreadList(scriptInstance_t param_1,sval_u param_2)
 
 // 008A8AE0  EmitInclude  (clientscript/cscr_compiler.cpp:4752)
 
-void __cdecl EmitInclude(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitInclude(scriptInstance_t inst,sval_u val)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *filename_00;
+  uint filename_01;
+  uint filename;
   
-  if (*param_2.codePosValue != 'X') {
+  if (*val.codePosValue != 'X') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                              0x1293,0,"%s");
     if (!bVar2) {
@@ -6208,24 +6221,24 @@ void __cdecl EmitInclude(scriptInstance_t param_1,sval_u param_2)
       return;
     }
   }
-  pcVar3 = SL_ConvertToString((param_2.block)->localVarsCreateCount,param_1);
-  uVar4 = Scr_CreateCanonicalFilename(param_1,pcVar3);
-  Scr_CompileRemoveRefToString(param_1,(param_2.block)->localVarsCreateCount);
-  AddFilePrecache(param_1,uVar4,(param_2.block)->localVarsPublicCount,true,(uint *)0x0,(uint *)0x0);
+  filename_00 = SL_ConvertToString((val.block)->localVarsCreateCount,inst);
+  filename_01 = Scr_CreateCanonicalFilename(inst,filename_00);
+  Scr_CompileRemoveRefToString(inst,(val.block)->localVarsCreateCount);
+  AddFilePrecache(inst,filename_01,(val.block)->localVarsPublicCount,true,(uint *)0x0,(uint *)0x0);
   return;
 }
 
 
 // 008A8AA0  EmitIncludeList  (clientscript/cscr_compiler.cpp:4763)
 
-void __cdecl EmitIncludeList(scriptInstance_t param_1,sval_u param_2)
+void __cdecl EmitIncludeList(scriptInstance_t inst,sval_u val)
 
 {
-  sval_u *local_8;
+  sval_u *node;
   
-  for (local_8 = *(sval_u **)((param_2.block)->abortLevel + 4); local_8 != (sval_u *)0x0;
-      local_8 = local_8[1].node) {
-    EmitInclude(param_1,*local_8);
+  for (node = *(sval_u **)((val.block)->abortLevel + 4); node != (sval_u *)0x0; node = node[1].node)
+  {
+    EmitInclude(inst,*node);
   }
   return;
 }
@@ -6234,8 +6247,8 @@ void __cdecl EmitIncludeList(scriptInstance_t param_1,sval_u param_2)
 // 0089E430  ScriptCompile  (clientscript/cscr_compiler.cpp:4775)
 
 void __cdecl
-ScriptCompile(scriptInstance_t param_1,sval_u param_2,uint param_3,uint param_4,uint param_5,
-             PrecacheEntry *param_6,int param_7)
+ScriptCompile(scriptInstance_t inst,sval_u val,uint filePosId,uint fileCountId,uint scriptId,
+             PrecacheEntry *entries,int entriesCount)
 
 {
   code *pcVar1;
@@ -6246,92 +6259,93 @@ ScriptCompile(scriptInstance_t param_1,sval_u param_2,uint param_3,uint param_4,
   int iVar6;
   VariableValue VVar7;
   undefined3 in_stack_00000005;
-  PrecacheEntry *pPVar8;
-  int iVar9;
+  PrecacheEntry *entries_00;
+  int entriesCount_00;
   PrecacheEntry *local_9c;
   VariableUnion local_5c;
   int local_58;
-  int local_54;
-  VariableUnion local_50;
+  int j;
+  VariableUnion pos;
   undefined4 local_4c;
-  ushort local_48;
-  PrecacheEntry *local_44;
-  int local_40;
-  PrecacheEntry *local_3c;
-  uint local_38;
-  uint local_34;
-  uint local_30;
-  VariableUnion local_2c;
+  ushort filename;
+  PrecacheEntry *precachescript;
+  int far_function_count;
+  PrecacheEntry *precachescript2;
+  uint includeFilePosId;
+  uint toPosId;
+  uint posId;
+  VariableUnion includePos;
   int local_28;
-  ushort local_24;
-  uint local_20;
-  PrecacheEntry *local_1c;
-  int local_18;
-  uint local_14;
-  uint local_10;
-  VariableValue local_c;
+  ushort name;
+  uint includePosId;
+  PrecacheEntry *precachescriptList;
+  int i;
+  uint toThreadCountId;
+  uint duplicateFilePosId;
+  VariableValue value;
   
-  gScrCompileGlob[_param_1].filePosId = param_3;
-  gScrCompileGlob[_param_1].fileCountId = param_4;
-  gScrCompileGlob[_param_1].bConstRefCount = false;
-  gScrAnimPub[_param_1].animTreeIndex = 0;
-  gScrCompilePub[_param_1].developer_statement = 0;
-  if (gScrCompilePub[_param_1].far_function_count == 0) {
+  gScrCompileGlob[_inst].filePosId = filePosId;
+  gScrCompileGlob[_inst].fileCountId = fileCountId;
+  gScrCompileGlob[_inst].bConstRefCount = false;
+  gScrAnimPub[_inst].animTreeIndex = 0;
+  gScrCompilePub[_inst].developer_statement = 0;
+  if (gScrCompilePub[_inst].far_function_count == 0) {
     local_9c = (PrecacheEntry *)0x0;
   }
   else {
-    local_9c = param_6 + param_7;
+    local_9c = entries + entriesCount;
   }
-  local_1c = local_9c;
-  iVar6 = param_7 + gScrCompilePub[_param_1].far_function_count;
+  precachescriptList = local_9c;
+  iVar6 = entriesCount + gScrCompilePub[_inst].far_function_count;
   if (0x700 < iVar6) {
     Com_Error(ERR_DROP,
               "MAX_PRECACHE_ENTRIES exceeded.\nThis means that the script recursion is too deep.\nPlease see a coder."
              );
   }
-  gScrCompileGlob[_param_1].precachescriptList = local_1c;
-  EmitIncludeList(param_1,*param_2.node);
-  EmitThreadList(param_1,(sval_u)(param_2.block)->localVarsCreateCount);
+  gScrCompileGlob[_inst].precachescriptList = precachescriptList;
+  EmitIncludeList(inst,*val.node);
+  EmitThreadList(inst,(sval_u)(val.block)->localVarsCreateCount);
   pcVar3 = TempMalloc(0);
-  gScrCompilePub[_param_1].programLen = (int)pcVar3 - (int)gScrVarPub[_param_1].programBuffer;
-  Scr_ShutdownAllocNode(param_1);
+  gScrCompilePub[_inst].programLen = (int)pcVar3 - (int)gScrVarPub[_inst].programBuffer;
+  Scr_ShutdownAllocNode(inst);
   Hunk_ClearTempMemoryHigh();
-  local_40 = (int)gScrCompileGlob[_param_1].precachescriptList - (int)local_1c >> 3;
-  local_10 = AllocObject(param_1);
-  local_18 = 0;
+  far_function_count = (int)gScrCompileGlob[_inst].precachescriptList - (int)precachescriptList >> 3
+  ;
+  duplicateFilePosId = AllocObject(inst);
+  i = 0;
   while( true ) {
-    if (local_40 <= local_18) {
-      ClearObject(param_1,local_10);
-      RemoveRefToEmptyObject(param_1,local_10);
-      LinkFile(param_1,param_3,param_4);
-      local_c.type = 6;
-      SetVariableValue(param_1,param_5,&local_c);
+    if (far_function_count <= i) {
+      ClearObject(inst,duplicateFilePosId);
+      RemoveRefToEmptyObject(inst,duplicateFilePosId);
+      LinkFile(inst,filePosId,fileCountId);
+      value.type = 6;
+      SetVariableValue(inst,scriptId,&value);
       return;
     }
-    local_44 = local_1c + local_18;
-    local_48 = local_44->filename;
-    pPVar8 = param_6;
-    iVar9 = iVar6;
-    pcVar3 = SL_ConvertToString((uint)local_48,param_1);
-    local_38 = Scr_LoadScriptInternal(param_1,pcVar3,pPVar8,iVar9);
-    if (local_38 == 0) break;
-    SL_RemoveRefToString(param_1,(uint)local_48);
-    local_54 = local_18;
-    if (local_44->include != false) {
-      while ((local_54 = local_54 + 1, local_54 < local_40 &&
-             (local_3c = local_1c + local_54, local_3c->include != false))) {
-        if (local_3c->filename == local_48) {
-          CompileError(param_1,local_3c->sourcePos,"Duplicate #include");
+    precachescript = precachescriptList + i;
+    filename = precachescript->filename;
+    entries_00 = entries;
+    entriesCount_00 = iVar6;
+    pcVar3 = SL_ConvertToString((uint)filename,inst);
+    includeFilePosId = Scr_LoadScriptInternal(inst,pcVar3,entries_00,entriesCount_00);
+    if (includeFilePosId == 0) break;
+    SL_RemoveRefToString(inst,(uint)filename);
+    j = i;
+    if (precachescript->include != false) {
+      while ((j = j + 1, j < far_function_count &&
+             (precachescript2 = precachescriptList + j, precachescript2->include != false))) {
+        if (precachescript2->filename == filename) {
+          CompileError(inst,precachescript2->sourcePos,"Duplicate #include");
           return;
         }
       }
-      local_44->include = false;
+      precachescript->include = false;
       local_4c = 7;
-      for (local_20 = FindFirstSibling(param_1,local_38); local_20 != 0;
-          local_20 = FindNextSibling(param_1,local_20)) {
-        VVar7 = Scr_EvalVariable(param_1,local_20);
+      for (includePosId = FindFirstSibling(inst,includeFilePosId); includePosId != 0;
+          includePosId = FindNextSibling(inst,includePosId)) {
+        VVar7 = Scr_EvalVariable(inst,includePosId);
         local_5c = VVar7.u;
-        local_2c.intValue = local_5c.intValue;
+        includePos.intValue = local_5c.intValue;
         local_58 = VVar7.type;
         local_28 = local_58;
         if (((local_58 != 7) && (local_58 != 0xc)) &&
@@ -6341,38 +6355,38 @@ ScriptCompile(scriptInstance_t param_1,sval_u param_2,uint param_3,uint param_4,
           (*pcVar1)();
           return;
         }
-        uVar4 = GetVariableName(param_1,local_20);
-        local_24 = (ushort)uVar4;
-        local_30 = FindVariable(param_1,param_3,uVar4 & 0xffff);
-        if (local_30 != 0) {
-          CheckThreadPosition(param_1,local_30,(uint)local_24,local_44->sourcePos);
+        uVar4 = GetVariableName(inst,includePosId);
+        name = (ushort)uVar4;
+        posId = FindVariable(inst,filePosId,uVar4 & 0xffff);
+        if (posId != 0) {
+          CheckThreadPosition(inst,posId,(uint)name,precachescript->sourcePos);
         }
-        local_34 = GetVariable(param_1,local_10,(uint)local_24);
-        CheckThreadPosition(param_1,local_34,(uint)local_24,local_44->sourcePos);
-        pVVar5 = GetVariableValueAddress(param_1,local_20);
-        local_50 = *pVVar5;
-        SetNewVariableValue(param_1,local_34,(VariableValue *)&local_50);
-        uVar4 = GetVariable(param_1,param_4,(uint)local_24);
-        local_14 = GetObject(param_1,uVar4);
-        LinkThread(param_1,local_14,(VariableValue *)&local_2c,false);
-        RemoveVariable(param_1,param_4,(uint)local_24);
+        toPosId = GetVariable(inst,duplicateFilePosId,(uint)name);
+        CheckThreadPosition(inst,toPosId,(uint)name,precachescript->sourcePos);
+        pVVar5 = GetVariableValueAddress(inst,includePosId);
+        pos = *pVVar5;
+        SetNewVariableValue(inst,toPosId,(VariableValue *)&pos);
+        uVar4 = GetVariable(inst,fileCountId,(uint)name);
+        toThreadCountId = GetObject(inst,uVar4);
+        LinkThread(inst,toThreadCountId,(VariableValue *)&includePos,false);
+        RemoveVariable(inst,fileCountId,(uint)name);
       }
     }
-    local_18 = local_18 + 1;
+    i = i + 1;
   }
-  SL_ConvertToString((uint)local_48,param_1);
-  CompileError(param_1,local_44->sourcePos,"Could not find script \'%s\'");
+  SL_ConvertToString((uint)filename,inst);
+  CompileError(inst,precachescript->sourcePos,"Could not find script \'%s\'");
   return;
 }
 
 
 // 008A8B70  Scr_CompileStatement  (clientscript/cscr_compiler.cpp:4890)
 
-void __cdecl Scr_CompileStatement(scriptInstance_t param_1,sval_u param_2)
+void __cdecl Scr_CompileStatement(scriptInstance_t inst,sval_u parseData)
 
 {
-  EmitStatement(param_1,param_2,false,0,(scr_block_s *)0x0);
-  EmitOpcode(param_1,0x80,0,0);
+  EmitStatement(inst,parseData,false,0,(scr_block_s *)0x0);
+  EmitOpcode(inst,0x80,0,0);
   return;
 }
 

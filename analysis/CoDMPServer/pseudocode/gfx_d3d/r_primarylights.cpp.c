@@ -2,34 +2,33 @@
 
 // 00A8FB50  R_CullSphereFromLightRegionHull  (gfx_d3d/r_primarylights_cull.h:7)
 
-bool __cdecl
-R_CullSphereFromLightRegionHull(GfxLightRegionHull *param_1,float *param_2,float param_3)
+bool __cdecl R_CullSphereFromLightRegionHull(GfxLightRegionHull *hull,float *origin,float radius)
 
 {
   bool bVar1;
   GfxLightRegionAxis *pGVar2;
-  uint local_8;
+  float originOnAxis;
+  float *dir;
+  uint axisIter;
   
-  if (ABS(*param_2 - param_1->kdopMidPoint[0]) < param_3 + param_1->kdopHalfSize[0]) {
-    if (ABS(param_2[1] - param_1->kdopMidPoint[1]) < param_3 + param_1->kdopHalfSize[1]) {
-      if (ABS(param_2[2] - param_1->kdopMidPoint[2]) < param_3 + param_1->kdopHalfSize[2]) {
-        if (ABS((*param_2 + param_2[1]) - param_1->kdopMidPoint[3]) <
-            param_3 + param_1->kdopHalfSize[3]) {
-          if (ABS((*param_2 - param_2[1]) - param_1->kdopMidPoint[4]) <
-              param_3 + param_1->kdopHalfSize[4]) {
-            if (ABS((*param_2 + param_2[2]) - param_1->kdopMidPoint[5]) <
-                param_3 + param_1->kdopHalfSize[5]) {
-              if (ABS((*param_2 - param_2[2]) - param_1->kdopMidPoint[6]) <
-                  param_3 + param_1->kdopHalfSize[6]) {
-                if (ABS((param_2[1] + param_2[2]) - param_1->kdopMidPoint[7]) <
-                    param_3 + param_1->kdopHalfSize[7]) {
-                  if (ABS((param_2[1] - param_2[2]) - param_1->kdopMidPoint[8]) <
-                      param_3 + param_1->kdopHalfSize[8]) {
-                    for (local_8 = 0; local_8 < param_1->axisCount; local_8 = local_8 + 1) {
-                      pGVar2 = param_1->axis + local_8;
-                      if (param_3 + param_1->axis[local_8].halfSize <=
-                          ABS((*param_2 * pGVar2->dir[0] + param_2[1] * pGVar2->dir[1] +
-                              param_2[2] * pGVar2->dir[2]) - param_1->axis[local_8].midPoint)) {
+  if (ABS(*origin - hull->kdopMidPoint[0]) < radius + hull->kdopHalfSize[0]) {
+    if (ABS(origin[1] - hull->kdopMidPoint[1]) < radius + hull->kdopHalfSize[1]) {
+      if (ABS(origin[2] - hull->kdopMidPoint[2]) < radius + hull->kdopHalfSize[2]) {
+        if (ABS((*origin + origin[1]) - hull->kdopMidPoint[3]) < radius + hull->kdopHalfSize[3]) {
+          if (ABS((*origin - origin[1]) - hull->kdopMidPoint[4]) < radius + hull->kdopHalfSize[4]) {
+            if (ABS((*origin + origin[2]) - hull->kdopMidPoint[5]) < radius + hull->kdopHalfSize[5])
+            {
+              if (ABS((*origin - origin[2]) - hull->kdopMidPoint[6]) <
+                  radius + hull->kdopHalfSize[6]) {
+                if (ABS((origin[1] + origin[2]) - hull->kdopMidPoint[7]) <
+                    radius + hull->kdopHalfSize[7]) {
+                  if (ABS((origin[1] - origin[2]) - hull->kdopMidPoint[8]) <
+                      radius + hull->kdopHalfSize[8]) {
+                    for (axisIter = 0; axisIter < hull->axisCount; axisIter = axisIter + 1) {
+                      pGVar2 = hull->axis + axisIter;
+                      if (radius + hull->axis[axisIter].halfSize <=
+                          ABS((*origin * pGVar2->dir[0] + origin[1] * pGVar2->dir[1] +
+                              origin[2] * pGVar2->dir[2]) - hull->axis[axisIter].midPoint)) {
                         return true;
                       }
                     }
@@ -76,30 +75,32 @@ R_CullSphereFromLightRegionHull(GfxLightRegionHull *param_1,float *param_2,float
 
 // 00A8E370  R_ShadowedSpotLightScore  (gfx_d3d/r_primarylights.cpp:42)
 
-float __cdecl R_ShadowedSpotLightScore(GfxViewParms *param_1,GfxLight *param_2)
+float __cdecl R_ShadowedSpotLightScore(GfxViewParms *viewParms,GfxLight *light)
 
 {
   float fVar1;
   float fVar2;
-  float local_10;
+  float intensity;
+  float distToLightFocus;
+  float deltaToFocus;
   float local_c;
   float local_8;
   
-  if (param_2->def == rgp.flashLightDef) {
+  if (light->def == rgp.flashLightDef) {
     fVar2 = 1e+08;
   }
   else {
     fVar2 = (sm_lightScore_eyeProjectDist->current).value;
-    fVar1 = -param_2->radius * (sm_lightScore_spotProjectFrac->current).value;
-    local_10 = fVar1 * param_2->dir[0] +
-               (param_2->origin[0] - (fVar2 * param_1->axis[0][0] + param_1->origin[0]));
-    local_c = fVar1 * param_2->dir[1] +
-              (param_2->origin[1] - (fVar2 * param_1->axis[0][1] + param_1->origin[1]));
-    local_8 = fVar1 * param_2->dir[2] +
-              (param_2->origin[2] - (fVar2 * param_1->axis[0][2] + param_1->origin[2]));
-    fVar2 = Abs((phys_vec3 *)&local_10);
-    fVar2 = (param_2->radius *
-            (param_2->color[0] * 0.299 + param_2->color[1] * 0.587 + param_2->color[2] * 0.114)) /
+    fVar1 = -light->radius * (sm_lightScore_spotProjectFrac->current).value;
+    deltaToFocus = fVar1 * light->dir[0] +
+                   (light->origin[0] - (fVar2 * viewParms->axis[0][0] + viewParms->origin[0]));
+    local_c = fVar1 * light->dir[1] +
+              (light->origin[1] - (fVar2 * viewParms->axis[0][1] + viewParms->origin[1]));
+    local_8 = fVar1 * light->dir[2] +
+              (light->origin[2] - (fVar2 * viewParms->axis[0][2] + viewParms->origin[2]));
+    fVar2 = Abs((phys_vec3 *)&deltaToFocus);
+    fVar2 = (light->radius *
+            (light->color[0] * 0.299 + light->color[1] * 0.587 + light->color[2] * 0.114)) /
             (fVar2 + 1.0);
   }
   return fVar2;
@@ -109,24 +110,24 @@ float __cdecl R_ShadowedSpotLightScore(GfxViewParms *param_1,GfxLight *param_2)
 // 00A8FAA0  R_CullSphereFromLightRegion  (gfx_d3d/r_primarylights_cull.h:53)
 
 bool __cdecl
-R_CullSphereFromLightRegion(GfxLightRegion *param_1,float *param_2,float *param_3,float param_4)
+R_CullSphereFromLightRegion(GfxLightRegion *region,float *lightOrigin,float *origin,float radius)
 
 {
   bool bVar1;
-  uint local_14;
-  float local_10;
+  uint hullIter;
+  float localOrigin;
   float local_c;
   float local_8;
   
-  if (param_1->hullCount == 0) {
+  if (region->hullCount == 0) {
     bVar1 = false;
   }
   else {
-    local_10 = *param_3 - *param_2;
-    local_c = param_3[1] - param_2[1];
-    local_8 = param_3[2] - param_2[2];
-    for (local_14 = 0; local_14 < param_1->hullCount; local_14 = local_14 + 1) {
-      bVar1 = R_CullSphereFromLightRegionHull(param_1->hulls + local_14,&local_10,param_4);
+    localOrigin = *origin - *lightOrigin;
+    local_c = origin[1] - lightOrigin[1];
+    local_8 = origin[2] - lightOrigin[2];
+    for (hullIter = 0; hullIter < region->hullCount; hullIter = hullIter + 1) {
+      bVar1 = R_CullSphereFromLightRegionHull(region->hulls + hullIter,&localOrigin,radius);
       if (!bVar1) {
         return false;
       }
@@ -139,23 +140,24 @@ R_CullSphereFromLightRegion(GfxLightRegion *param_1,float *param_2,float *param_
 
 // 00A8F340  Com_CullBoxFromPrimaryLight  (qcommon/com_bsp_api.h:56)
 
-bool __cdecl Com_CullBoxFromPrimaryLight(ComPrimaryLight *param_1,float *param_2,float *param_3)
+bool __cdecl
+Com_CullBoxFromPrimaryLight(ComPrimaryLight *light,float *boxMidPoint,float *boxHalfSize)
 
 {
   bool bVar1;
-  float local_8;
+  float lightRadius;
   
-  local_8 = param_1->radius;
-  if (param_1->type == '\x02') {
-    local_8 = local_8 / param_1->cosHalfFovOuter;
+  lightRadius = light->radius;
+  if (light->type == '\x02') {
+    lightRadius = lightRadius / light->cosHalfFovOuter;
   }
-  if ((param_1->type != '\x02') || (param_1->cosHalfFovExpanded < 0.0)) {
-    bVar1 = CullBoxFromSphere(param_1->origin,local_8,param_2,param_3);
+  if ((light->type != '\x02') || (light->cosHalfFovExpanded < 0.0)) {
+    bVar1 = CullBoxFromSphere(light->origin,lightRadius,boxMidPoint,boxHalfSize);
   }
   else {
     bVar1 = CullBoxFromConicSectionOfSphere
-                      (param_1->origin,param_1->dir,param_1->cosHalfFovExpanded,local_8,param_2,
-                       param_3);
+                      (light->origin,light->dir,light->cosHalfFovExpanded,lightRadius,boxMidPoint,
+                       boxHalfSize);
   }
   return bVar1;
 }
@@ -165,62 +167,67 @@ bool __cdecl Com_CullBoxFromPrimaryLight(ComPrimaryLight *param_1,float *param_2
 
 uint __cdecl
 R_AddPotentiallyShadowedLight
-          (GfxViewInfo *param_1,uint param_2,GfxCandidateShadowedLight *param_3,uint param_4)
+          (GfxViewInfo *viewInfo,uint shadowableLightIndex,
+          GfxCandidateShadowedLight *candidateLights,uint candidateLightCount)
 
 {
   float fVar1;
   float fVar2;
-  uint local_c;
+  GfxLight *light;
+  uint insertIndex;
+  float score;
   
-  if (param_2 != 0) {
-    if (param_2 == (rgp.world)->sunPrimaryLightIndex) {
-      Com_BitSetAssert(frontEndDataOut->shadowableLightHasShadowMap,param_2,0x20);
+  if (shadowableLightIndex != 0) {
+    if (shadowableLightIndex == (rgp.world)->sunPrimaryLightIndex) {
+      Com_BitSetAssert(frontEndDataOut->shadowableLightHasShadowMap,shadowableLightIndex,0x20);
     }
-    else if ((frontEndDataOut->shadowableLights[param_2].canUseShadowMap != '\0') &&
+    else if ((frontEndDataOut->shadowableLights[shadowableLightIndex].canUseShadowMap != '\0') &&
             ((sm_spotEnable->current).enabled != false)) {
       fVar2 = R_ShadowedSpotLightScore
-                        ((GfxViewParms *)param_1,frontEndDataOut->shadowableLights + param_2);
-      local_c = param_4;
-      while ((local_c != 0 &&
-             (param_3[local_c - 1].score <= fVar2 && fVar2 != param_3[local_c - 1].score))) {
-        fVar1 = param_3[local_c - 1].score;
-        param_3[local_c].shadowableLightIndex = param_3[local_c - 1].shadowableLightIndex;
-        param_3[local_c].score = fVar1;
-        local_c = local_c - 1;
+                        ((GfxViewParms *)viewInfo,
+                         frontEndDataOut->shadowableLights + shadowableLightIndex);
+      insertIndex = candidateLightCount;
+      while ((insertIndex != 0 &&
+             (candidateLights[insertIndex - 1].score <= fVar2 &&
+              fVar2 != candidateLights[insertIndex - 1].score))) {
+        fVar1 = candidateLights[insertIndex - 1].score;
+        candidateLights[insertIndex].shadowableLightIndex =
+             candidateLights[insertIndex - 1].shadowableLightIndex;
+        candidateLights[insertIndex].score = fVar1;
+        insertIndex = insertIndex - 1;
       }
-      param_3[local_c].shadowableLightIndex = param_2;
-      param_3[local_c].score = fVar2;
-      param_4 = param_4 + 1;
-      if ((sm_maxLights->current).integer <= (int)param_4) {
-        param_4 = (sm_maxLights->current).integer;
+      candidateLights[insertIndex].shadowableLightIndex = shadowableLightIndex;
+      candidateLights[insertIndex].score = fVar2;
+      candidateLightCount = candidateLightCount + 1;
+      if ((sm_maxLights->current).integer <= (int)candidateLightCount) {
+        candidateLightCount = (sm_maxLights->current).integer;
       }
     }
   }
-  return param_4;
+  return candidateLightCount;
 }
 
 
 // 00A8FEF0  Com_CullSphereFromPrimaryLight  (qcommon/com_bsp_api.h:70)
 
-bool __cdecl Com_CullSphereFromPrimaryLight(ComPrimaryLight *param_1,float *param_2,float param_3)
+bool __cdecl Com_CullSphereFromPrimaryLight(ComPrimaryLight *light,float *origin,float radius)
 
 {
   bool bVar1;
   float fVar2;
-  float local_8;
+  float lightRadius;
   
-  local_8 = param_1->radius;
-  if (param_1->type == '\x02') {
-    local_8 = local_8 / param_1->cosHalfFovOuter;
+  lightRadius = light->radius;
+  if (light->type == '\x02') {
+    lightRadius = lightRadius / light->cosHalfFovOuter;
   }
-  fVar2 = Vec3DistanceSq(param_1->origin,param_2);
-  if (fVar2 < (param_3 + local_8) * (param_3 + local_8)) {
-    if ((param_1->type != '\x02') || (param_1->cosHalfFovExpanded < 0.0)) {
+  fVar2 = Vec3DistanceSq(light->origin,origin);
+  if (fVar2 < (radius + lightRadius) * (radius + lightRadius)) {
+    if ((light->type != '\x02') || (light->cosHalfFovExpanded < 0.0)) {
       bVar1 = false;
     }
     else {
-      bVar1 = CullSphereFromCone(param_1->origin,param_1->dir,param_1->cosHalfFovExpanded,param_2,
-                                 param_3);
+      bVar1 = CullSphereFromCone(light->origin,light->dir,light->cosHalfFovExpanded,origin,radius);
     }
   }
   else {
@@ -232,34 +239,38 @@ bool __cdecl Com_CullSphereFromPrimaryLight(ComPrimaryLight *param_1,float *para
 
 // 00A8ECC0  R_CullBoxFromLightRegionHull  (gfx_d3d/r_primarylights_cull.h:72)
 
-bool __cdecl R_CullBoxFromLightRegionHull(GfxLightRegionHull *param_1,float *param_2,float *param_3)
+bool __cdecl
+R_CullBoxFromLightRegionHull(GfxLightRegionHull *hull,float *boxMidPoint,float *boxHalfSize)
 
 {
   bool bVar1;
   GfxLightRegionAxis *pGVar2;
-  uint local_8;
+  float halfSizeOnAxis;
+  float *dir;
+  float midPointOnAxis;
+  uint axisIter;
   
-  if (ABS(*param_2 - param_1->kdopMidPoint[0]) < *param_3 + param_1->kdopHalfSize[0]) {
-    if (ABS(param_2[1] - param_1->kdopMidPoint[1]) < param_3[1] + param_1->kdopHalfSize[1]) {
-      if (ABS(param_2[2] - param_1->kdopMidPoint[2]) < param_3[2] + param_1->kdopHalfSize[2]) {
-        if (ABS((*param_2 + param_2[1]) - param_1->kdopMidPoint[3]) <
-            *param_3 + param_3[1] + param_1->kdopHalfSize[3]) {
-          if (ABS((*param_2 - param_2[1]) - param_1->kdopMidPoint[4]) <
-              *param_3 + param_3[1] + param_1->kdopHalfSize[4]) {
-            if (ABS((*param_2 + param_2[2]) - param_1->kdopMidPoint[5]) <
-                *param_3 + param_3[2] + param_1->kdopHalfSize[5]) {
-              if (ABS((*param_2 - param_2[2]) - param_1->kdopMidPoint[6]) <
-                  *param_3 + param_3[2] + param_1->kdopHalfSize[6]) {
-                if (ABS((param_2[1] + param_2[2]) - param_1->kdopMidPoint[7]) <
-                    param_3[1] + param_3[2] + param_1->kdopHalfSize[7]) {
-                  if (ABS((param_2[1] - param_2[2]) - param_1->kdopMidPoint[8]) <
-                      param_3[1] + param_3[2] + param_1->kdopHalfSize[8]) {
-                    for (local_8 = 0; local_8 < param_1->axisCount; local_8 = local_8 + 1) {
-                      pGVar2 = param_1->axis + local_8;
-                      if (*param_3 * ABS(pGVar2->dir[0]) + param_3[1] * ABS(pGVar2->dir[1]) +
-                          param_3[2] * ABS(pGVar2->dir[2]) + param_1->axis[local_8].halfSize <=
-                          ABS((*param_2 * pGVar2->dir[0] + param_2[1] * pGVar2->dir[1] +
-                              param_2[2] * pGVar2->dir[2]) - param_1->axis[local_8].midPoint)) {
+  if (ABS(*boxMidPoint - hull->kdopMidPoint[0]) < *boxHalfSize + hull->kdopHalfSize[0]) {
+    if (ABS(boxMidPoint[1] - hull->kdopMidPoint[1]) < boxHalfSize[1] + hull->kdopHalfSize[1]) {
+      if (ABS(boxMidPoint[2] - hull->kdopMidPoint[2]) < boxHalfSize[2] + hull->kdopHalfSize[2]) {
+        if (ABS((*boxMidPoint + boxMidPoint[1]) - hull->kdopMidPoint[3]) <
+            *boxHalfSize + boxHalfSize[1] + hull->kdopHalfSize[3]) {
+          if (ABS((*boxMidPoint - boxMidPoint[1]) - hull->kdopMidPoint[4]) <
+              *boxHalfSize + boxHalfSize[1] + hull->kdopHalfSize[4]) {
+            if (ABS((*boxMidPoint + boxMidPoint[2]) - hull->kdopMidPoint[5]) <
+                *boxHalfSize + boxHalfSize[2] + hull->kdopHalfSize[5]) {
+              if (ABS((*boxMidPoint - boxMidPoint[2]) - hull->kdopMidPoint[6]) <
+                  *boxHalfSize + boxHalfSize[2] + hull->kdopHalfSize[6]) {
+                if (ABS((boxMidPoint[1] + boxMidPoint[2]) - hull->kdopMidPoint[7]) <
+                    boxHalfSize[1] + boxHalfSize[2] + hull->kdopHalfSize[7]) {
+                  if (ABS((boxMidPoint[1] - boxMidPoint[2]) - hull->kdopMidPoint[8]) <
+                      boxHalfSize[1] + boxHalfSize[2] + hull->kdopHalfSize[8]) {
+                    for (axisIter = 0; axisIter < hull->axisCount; axisIter = axisIter + 1) {
+                      pGVar2 = hull->axis + axisIter;
+                      if (*boxHalfSize * ABS(pGVar2->dir[0]) + boxHalfSize[1] * ABS(pGVar2->dir[1])
+                          + boxHalfSize[2] * ABS(pGVar2->dir[2]) + hull->axis[axisIter].halfSize <=
+                          ABS((*boxMidPoint * pGVar2->dir[0] + boxMidPoint[1] * pGVar2->dir[1] +
+                              boxMidPoint[2] * pGVar2->dir[2]) - hull->axis[axisIter].midPoint)) {
                         return true;
                       }
                     }
@@ -306,15 +317,19 @@ bool __cdecl R_CullBoxFromLightRegionHull(GfxLightRegionHull *param_1,float *par
 
 // 00A8E520  R_AddShadowsForLight  (gfx_d3d/r_primarylights.cpp:96)
 
-void __cdecl R_AddShadowsForLight(GfxViewInfo *param_1,uint param_2,uint param_3,float param_4)
+void __cdecl
+R_AddShadowsForLight
+          (GfxViewInfo *viewInfo,uint shadowableLightIndex,uint totalSpotLightCount,
+          float spotShadowFade)
 
 {
   bool bVar1;
   
   bVar1 = R_AddSpotShadowsForLight
-                    (param_1,frontEndDataOut->shadowableLights + param_2,param_2,param_3,param_4);
+                    (viewInfo,frontEndDataOut->shadowableLights + shadowableLightIndex,
+                     shadowableLightIndex,totalSpotLightCount,spotShadowFade);
   if (bVar1) {
-    Com_BitSetAssert(frontEndDataOut->shadowableLightHasShadowMap,param_2,0x20);
+    Com_BitSetAssert(frontEndDataOut->shadowableLightHasShadowMap,shadowableLightIndex,0x20);
   }
   return;
 }
@@ -323,37 +338,41 @@ void __cdecl R_AddShadowsForLight(GfxViewInfo *param_1,uint param_2,uint param_3
 // 00A8E580  R_AddShadowedLightToShadowHistory  (gfx_d3d/r_primarylights.cpp:102)
 
 void __cdecl
-R_AddShadowedLightToShadowHistory(GfxShadowedLightHistory *param_1,uint param_2,float param_3)
+R_AddShadowedLightToShadowHistory
+          (GfxShadowedLightHistory *shadowHistory,uint shadowableLightIndex,float fadeDelta)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_10;
-  uint local_8;
+  uint historyIndex;
   
-  for (local_8 = 0; local_8 != param_1->entryCount; local_8 = local_8 + 1) {
-    if (param_1->entries[local_8].shadowableLightIndex == param_2) {
-      param_1->entries[local_8].isFadingOut = false;
-      local_10 = param_1->entries[local_8].fade + param_3;
+  for (historyIndex = 0; historyIndex != shadowHistory->entryCount; historyIndex = historyIndex + 1)
+  {
+    if (shadowHistory->entries[historyIndex].shadowableLightIndex == shadowableLightIndex) {
+      shadowHistory->entries[historyIndex].isFadingOut = false;
+      local_10 = shadowHistory->entries[historyIndex].fade + fadeDelta;
       if (0.0 <= local_10 - 1.0) {
         local_10 = 1.0;
       }
-      param_1->entries[local_8].fade = local_10;
+      shadowHistory->entries[historyIndex].fade = local_10;
       return;
     }
   }
-  if (param_1->entryCount < (sm_maxLights->current).unsignedInt) {
-    param_1->entries[param_1->entryCount].shadowableLightIndex = (uchar)param_2;
-    if ((param_1->entries[param_1->entryCount].shadowableLightIndex != param_2) &&
+  if (shadowHistory->entryCount < (sm_maxLights->current).unsignedInt) {
+    shadowHistory->entries[shadowHistory->entryCount].shadowableLightIndex =
+         (uchar)shadowableLightIndex;
+    if ((shadowHistory->entries[shadowHistory->entryCount].shadowableLightIndex !=
+         shadowableLightIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x77,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->entries[param_1->entryCount].isFadingOut = false;
-    param_1->entries[param_1->entryCount].fade = param_3;
-    param_1->entryCount = param_1->entryCount + 1;
+    shadowHistory->entries[shadowHistory->entryCount].isFadingOut = false;
+    shadowHistory->entries[shadowHistory->entryCount].fade = fadeDelta;
+    shadowHistory->entryCount = shadowHistory->entryCount + 1;
   }
   return;
 }
@@ -362,24 +381,25 @@ R_AddShadowedLightToShadowHistory(GfxShadowedLightHistory *param_1,uint param_2,
 // 00A8EC10  R_CullBoxFromLightRegion  (gfx_d3d/r_primarylights_cull.h:123)
 
 bool __cdecl
-R_CullBoxFromLightRegion(GfxLightRegion *param_1,float *param_2,float *param_3,float *param_4)
+R_CullBoxFromLightRegion
+          (GfxLightRegion *region,float *lightOrigin,float *boxMidPoint,float *boxHalfSize)
 
 {
   bool bVar1;
-  uint local_14;
-  float local_10;
+  uint hullIter;
+  float localBoxMidPoint;
   float local_c;
   float local_8;
   
-  if (param_1->hullCount == 0) {
+  if (region->hullCount == 0) {
     bVar1 = false;
   }
   else {
-    local_10 = *param_3 - *param_2;
-    local_c = param_3[1] - param_2[1];
-    local_8 = param_3[2] - param_2[2];
-    for (local_14 = 0; local_14 < param_1->hullCount; local_14 = local_14 + 1) {
-      bVar1 = R_CullBoxFromLightRegionHull(param_1->hulls + local_14,&local_10,param_4);
+    localBoxMidPoint = *boxMidPoint - *lightOrigin;
+    local_c = boxMidPoint[1] - lightOrigin[1];
+    local_8 = boxMidPoint[2] - lightOrigin[2];
+    for (hullIter = 0; hullIter < region->hullCount; hullIter = hullIter + 1) {
+      bVar1 = R_CullBoxFromLightRegionHull(region->hulls + hullIter,&localBoxMidPoint,boxHalfSize);
       if (!bVar1) {
         return false;
       }
@@ -392,7 +412,7 @@ R_CullBoxFromLightRegion(GfxLightRegion *param_1,float *param_2,float *param_3,f
 
 // 00A8E6B0  R_FadeOutShadowHistoryEntries  (gfx_d3d/r_primarylights.cpp:126)
 
-void __cdecl R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *param_1,float param_2)
+void __cdecl R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *shadowHistory,float fadeDelta)
 
 {
   GfxShadowedLightEntry *pGVar1;
@@ -401,14 +421,14 @@ void __cdecl R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *param_1,floa
   code *pcVar4;
   undefined2 uVar5;
   bool bVar6;
-  uint local_8;
+  uint entryIndex;
   
-  local_8 = 0;
+  entryIndex = 0;
   do {
-    if (local_8 == param_1->entryCount) {
+    if (entryIndex == shadowHistory->entryCount) {
       return;
     }
-    if (param_1->entries[local_8].fade <= 0.0) {
+    if (shadowHistory->entries[entryIndex].fade <= 0.0) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                0x84,0,"%s");
       if (!bVar6) {
@@ -417,26 +437,26 @@ void __cdecl R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *param_1,floa
         return;
       }
     }
-    if (param_1->entries[local_8].isFadingOut == false) {
-      param_1->entries[local_8].isFadingOut = true;
-      local_8 = local_8 + 1;
+    if (shadowHistory->entries[entryIndex].isFadingOut == false) {
+      shadowHistory->entries[entryIndex].isFadingOut = true;
+      entryIndex = entryIndex + 1;
     }
     else {
-      param_1->entries[local_8].fade = param_1->entries[local_8].fade - param_2;
-      if (param_1->entries[local_8].fade < 0.01) {
-        param_1->entryCount = param_1->entryCount - 1;
-        pGVar1 = param_1->entries + param_1->entryCount;
+      shadowHistory->entries[entryIndex].fade = shadowHistory->entries[entryIndex].fade - fadeDelta;
+      if (shadowHistory->entries[entryIndex].fade < 0.01) {
+        shadowHistory->entryCount = shadowHistory->entryCount - 1;
+        pGVar1 = shadowHistory->entries + shadowHistory->entryCount;
         bVar6 = pGVar1->isFadingOut;
         uVar5 = *(undefined2 *)&pGVar1->field_0x2;
-        fVar3 = param_1->entries[param_1->entryCount].fade;
-        pGVar2 = param_1->entries + local_8;
+        fVar3 = shadowHistory->entries[shadowHistory->entryCount].fade;
+        pGVar2 = shadowHistory->entries + entryIndex;
         pGVar2->shadowableLightIndex = pGVar1->shadowableLightIndex;
         pGVar2->isFadingOut = bVar6;
         *(undefined2 *)&pGVar2->field_0x2 = uVar5;
-        param_1->entries[local_8].fade = fVar3;
+        shadowHistory->entries[entryIndex].fade = fVar3;
       }
       else {
-        local_8 = local_8 + 1;
+        entryIndex = entryIndex + 1;
       }
     }
   } while( true );
@@ -445,18 +465,20 @@ void __cdecl R_FadeOutShadowHistoryEntries(GfxShadowedLightHistory *param_1,floa
 
 // 00A8DD50  R_ClearShadowedPrimaryLightHistory  (gfx_d3d/r_primarylights.cpp:153)
 
-void __cdecl R_ClearShadowedPrimaryLightHistory(int param_1)
+void __cdecl R_ClearShadowedPrimaryLightHistory(int localClientNum)
 
 {
-  s_shadowHistory[param_1].entryCount = 0;
-  s_shadowHistory[param_1].lastUpdateTime = 0;
+  GfxShadowedLightHistory *history;
+  
+  s_shadowHistory[localClientNum].entryCount = 0;
+  s_shadowHistory[localClientNum].lastUpdateTime = 0;
   return;
 }
 
 
 // 00A8DD80  R_AddDynamicShadowableLight  (gfx_d3d/r_primarylights.cpp:162)
 
-void __cdecl R_AddDynamicShadowableLight(GfxViewInfo *param_1,GfxLight *param_2)
+void __cdecl R_AddDynamicShadowableLight(GfxViewInfo *viewInfo,GfxLight *visibleLight)
 
 {
   uchar uVar1;
@@ -471,12 +493,12 @@ void __cdecl R_AddDynamicShadowableLight(GfxViewInfo *param_1,GfxLight *param_2)
     Com_BitSetAssert(scene.shadowableLightIsUsed,frontEndDataOut->shadowableLightCount,0x80);
     pGVar4 = frontEndDataOut->shadowableLights + frontEndDataOut->shadowableLightCount;
     for (iVar3 = 0x5c; iVar3 != 0; iVar3 = iVar3 + -1) {
-      uVar1 = param_2->canUseShadowMap;
-      sVar2 = param_2->cullDist;
-      pGVar4->type = param_2->type;
+      uVar1 = visibleLight->canUseShadowMap;
+      sVar2 = visibleLight->cullDist;
+      pGVar4->type = visibleLight->type;
       pGVar4->canUseShadowMap = uVar1;
       pGVar4->cullDist = sVar2;
-      param_2 = (GfxLight *)param_2->color;
+      visibleLight = (GfxLight *)visibleLight->color;
       pGVar4 = (GfxLight *)pGVar4->color;
     }
     frontEndDataOut->shadowableLightCount = frontEndDataOut->shadowableLightCount + 1;
@@ -487,31 +509,31 @@ void __cdecl R_AddDynamicShadowableLight(GfxViewInfo *param_1,GfxLight *param_2)
 
 // 00A8DE20  R_IsDynamicShadowedLight  (gfx_d3d/r_primarylights.cpp:176)
 
-int __cdecl R_IsDynamicShadowedLight(uint param_1)
+int __cdecl R_IsDynamicShadowedLight(uint shadowableLightIndex)
 
 {
   uint uVar1;
   
   uVar1 = Com_GetPrimaryLightCount();
-  return (uint)(uVar1 <= param_1);
+  return (uint)(uVar1 <= shadowableLightIndex);
 }
 
 
 // 00A8DE40  R_IsPrimaryLight  (gfx_d3d/r_primarylights.cpp:181)
 
-int __cdecl R_IsPrimaryLight(uint param_1)
+int __cdecl R_IsPrimaryLight(uint shadowableLightIndex)
 
 {
   uint uVar1;
   
   uVar1 = Com_GetPrimaryLightCount();
-  return (uint)(param_1 < uVar1);
+  return (uint)(shadowableLightIndex < uVar1);
 }
 
 
 // 00A8DE60  R_ChooseShadowedLights  (gfx_d3d/r_primarylights.cpp:186)
 
-void __cdecl R_ChooseShadowedLights(GfxViewInfo *param_1)
+void __cdecl R_ChooseShadowedLights(GfxViewInfo *viewInfo)
 
 {
   char *pcVar1;
@@ -524,23 +546,27 @@ void __cdecl R_ChooseShadowedLights(GfxViewInfo *param_1)
   uint *puVar8;
   float fVar9;
   float local_a4;
-  GfxCandidateShadowedLight local_78 [5];
-  uint local_50;
-  uint local_4c;
-  uint local_48;
-  GfxShadowedLightHistory *local_44;
-  uint local_40;
-  int local_3c;
-  uint local_38;
-  float local_34;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24 [8];
+  float cullDist;
+  float distSq;
+  GfxLight *light;
+  uint index;
+  GfxCandidateShadowedLight candidateLights [5];
+  uint timeDelta;
+  uint entryIndex;
+  uint scanIndex;
+  GfxShadowedLightHistory *shadowHistory;
+  uint leadingZeros;
+  uint bitIndex;
+  uint usedBits;
+  float fadeDelta;
+  uint candidateLightIndex;
+  uint candidateLightCount;
+  uint scanLimit;
+  uint shadowableLightIsUsed [8];
   
-  local_44 = s_shadowHistory + param_1->localClientNum;
-  local_50 = (param_1->sceneDef).time - s_shadowHistory[param_1->localClientNum].lastUpdateTime;
-  if (local_50 == 0) {
+  shadowHistory = s_shadowHistory + viewInfo->localClientNum;
+  timeDelta = (viewInfo->sceneDef).time - s_shadowHistory[viewInfo->localClientNum].lastUpdateTime;
+  if (timeDelta == 0) {
     if (((rgp.world)->sunPrimaryLightIndex != 0) &&
        (iVar5 = Com_BitCheckAssert(scene.shadowableLightIsUsed,(rgp.world)->sunPrimaryLightIndex,
                                    0x80), iVar5 != 0)) {
@@ -557,70 +583,73 @@ void __cdecl R_ChooseShadowedLights(GfxViewInfo *param_1)
       (*pcVar3)();
       return;
     }
-    local_28 = frontEndDataOut->shadowableLightCount + 0x1f >> 5;
-    for (local_48 = 0; local_48 != local_28; local_48 = local_48 + 1) {
-      local_38 = scene.shadowableLightIsUsed[local_48];
+    scanLimit = frontEndDataOut->shadowableLightCount + 0x1f >> 5;
+    for (scanIndex = 0; scanIndex != scanLimit; scanIndex = scanIndex + 1) {
+      usedBits = scene.shadowableLightIsUsed[scanIndex];
       while( true ) {
-        local_40 = 0x1f;
-        if (local_38 != 0) {
-          for (; local_38 >> local_40 == 0; local_40 = local_40 - 1) {
+        uVar6 = 0x1f;
+        if (usedBits != 0) {
+          for (; usedBits >> uVar6 == 0; uVar6 = uVar6 - 1) {
           }
         }
-        if (local_38 == 0) {
-          local_40 = 0x3f;
+        if (usedBits == 0) {
+          uVar6 = 0x3f;
         }
-        local_40 = local_40 ^ 0x1f;
-        if (local_40 == 0x20) break;
-        local_3c = 0x1f - local_40;
-        local_38 = ~(1 << ((byte)local_3c & 0x1f)) & local_38;
-        iVar5 = local_48 * 0x20 + local_3c;
+        leadingZeros = uVar6 ^ 0x1f;
+        if (leadingZeros == 0x20) break;
+        bitIndex = 0x1f - leadingZeros;
+        usedBits = ~(1 << ((byte)bitIndex & 0x1f)) & usedBits;
+        iVar5 = scanIndex * 0x20 + bitIndex;
         pcVar1 = (char *)((int)frontEndDataOut + iVar5 * 0x170 + 0x16cf20);
         if (((*pcVar1 != '\x01') && (*pcVar1 != '\x04')) &&
            (sVar2 = *(short *)(pcVar1 + 2),
            fVar9 = Vec3DistanceSq((float *)(pcVar1 + 0x1c),
-                                  (float *)((int)&param_1->field0_0x0 + 0x100)),
+                                  (float *)((int)&viewInfo->field0_0x0 + 0x100)),
            (float)(int)sVar2 * (float)(int)sVar2 < fVar9)) {
           Com_BitClearAssert(scene.shadowableLightIsUsed,iVar5,0x80);
         }
       }
-      local_40 = 0x20;
+      leadingZeros = 0x20;
     }
-    local_44->lastUpdateTime = (param_1->sceneDef).time;
-    local_a4 = (float)local_50 * (0.001 / (sm_spotShadowFadeTime->current).value);
+    shadowHistory->lastUpdateTime = (viewInfo->sceneDef).time;
+    local_a4 = (float)timeDelta * (0.001 / (sm_spotShadowFadeTime->current).value);
     if (0.0 <= local_a4 - 1.0) {
       local_a4 = 1.0;
     }
-    local_34 = local_a4;
-    R_FadeOutShadowHistoryEntries(local_44,local_a4);
+    fadeDelta = local_a4;
+    R_FadeOutShadowHistoryEntries(shadowHistory,local_a4);
     puVar7 = scene.shadowableLightIsUsed;
-    puVar8 = local_24;
+    puVar8 = shadowableLightIsUsed;
     for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
       *puVar8 = *puVar7;
       puVar7 = puVar7 + 1;
       puVar8 = puVar8 + 1;
     }
-    local_2c = 0;
-    for (local_48 = 0; local_48 != local_28; local_48 = local_48 + 1) {
-      local_38 = scene.shadowableLightIsUsed[local_48];
+    candidateLightCount = 0;
+    for (scanIndex = 0; scanIndex != scanLimit; scanIndex = scanIndex + 1) {
+      usedBits = scene.shadowableLightIsUsed[scanIndex];
       while( true ) {
-        local_40 = 0x1f;
-        if (local_38 != 0) {
-          for (; local_38 >> local_40 == 0; local_40 = local_40 - 1) {
+        uVar6 = 0x1f;
+        if (usedBits != 0) {
+          for (; usedBits >> uVar6 == 0; uVar6 = uVar6 - 1) {
           }
         }
-        if (local_38 == 0) {
-          local_40 = 0x3f;
+        if (usedBits == 0) {
+          uVar6 = 0x3f;
         }
-        local_40 = local_40 ^ 0x1f;
-        if (local_40 == 0x20) break;
-        local_3c = 0x1f - local_40;
-        local_38 = ~(1 << ((byte)local_3c & 0x1f)) & local_38;
-        local_2c = R_AddPotentiallyShadowedLight
-                             (param_1,local_48 * 0x20 + local_3c,local_78,local_2c);
+        leadingZeros = uVar6 ^ 0x1f;
+        if (leadingZeros == 0x20) break;
+        bitIndex = 0x1f - leadingZeros;
+        usedBits = ~(1 << ((byte)bitIndex & 0x1f)) & usedBits;
+        candidateLightCount =
+             R_AddPotentiallyShadowedLight
+                       (viewInfo,scanIndex * 0x20 + bitIndex,candidateLights,candidateLightCount);
       }
     }
-    for (local_30 = 0; local_30 < local_2c; local_30 = local_30 + 1) {
-      R_AddShadowedLightToShadowHistory(local_44,local_78[local_30].shadowableLightIndex,local_34);
+    for (candidateLightIndex = 0; candidateLightIndex < candidateLightCount;
+        candidateLightIndex = candidateLightIndex + 1) {
+      R_AddShadowedLightToShadowHistory
+                (shadowHistory,candidateLights[candidateLightIndex].shadowableLightIndex,fadeDelta);
     }
   }
   if ((frontEndDataOut->spotShadowCount != 0) &&
@@ -631,10 +660,10 @@ void __cdecl R_ChooseShadowedLights(GfxViewInfo *param_1)
     (*pcVar3)();
     return;
   }
-  for (local_4c = 0; local_4c < local_44->entryCount; local_4c = local_4c + 1) {
+  for (entryIndex = 0; entryIndex < shadowHistory->entryCount; entryIndex = entryIndex + 1) {
     R_AddShadowsForLight
-              (param_1,(uint)local_44->entries[local_4c].shadowableLightIndex,local_44->entryCount,
-               local_44->entries[local_4c].fade);
+              (viewInfo,(uint)shadowHistory->entries[entryIndex].shadowableLightIndex,
+               shadowHistory->entryCount,shadowHistory->entries[entryIndex].fade);
   }
   return;
 }
@@ -642,13 +671,16 @@ void __cdecl R_ChooseShadowedLights(GfxViewInfo *param_1)
 
 // 00A8E900  R_GetPrimaryLightEntityShadowBit  (gfx_d3d/r_primarylights.cpp:272)
 
-uint __cdecl R_GetPrimaryLightEntityShadowBit(int param_1,uint param_2,uint param_3)
+uint __cdecl R_GetPrimaryLightEntityShadowBit(int localClientNum,uint entnum,uint primaryLightIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
+  uint relevantPrimaryLightIndex;
+  uint relevantPrimaryLightCount;
+  uint ignoredPrimaryLightCount;
   
   if (((rgp.world)->sunPrimaryLightIndex != 1) && ((rgp.world)->sunPrimaryLightIndex != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",0x117
@@ -659,8 +691,8 @@ uint __cdecl R_GetPrimaryLightEntityShadowBit(int param_1,uint param_2,uint para
       return uVar3;
     }
   }
-  if ((param_3 < (rgp.world)->sunPrimaryLightIndex + 1) ||
-     ((rgp.world)->primaryLightCount - 1 < param_3)) {
+  if ((primaryLightIndex < (rgp.world)->sunPrimaryLightIndex + 1) ||
+     ((rgp.world)->primaryLightCount - 1 < primaryLightIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",0x118
                              ,0,
                              "primaryLightIndex not in [rgp.world->sunPrimaryLightIndex + 1, rgp.world->primaryLightCount - 1]\n\t%i not in [%i, %i]"
@@ -672,20 +704,23 @@ uint __cdecl R_GetPrimaryLightEntityShadowBit(int param_1,uint param_2,uint para
     }
   }
   iVar4 = (rgp.world)->sunPrimaryLightIndex + 1;
-  return (param_1 * gfxCfg.entCount + param_2) * ((rgp.world)->primaryLightCount - iVar4) +
-         (param_3 - iVar4);
+  return (localClientNum * gfxCfg.entCount + entnum) * ((rgp.world)->primaryLightCount - iVar4) +
+         (primaryLightIndex - iVar4);
 }
 
 
 // 00A8F3E0  R_GetPrimaryLightDynEntShadowBit  (gfx_d3d/r_primarylights.cpp:289)
 
-uint __cdecl R_GetPrimaryLightDynEntShadowBit(uint param_1,uint param_2)
+uint __cdecl R_GetPrimaryLightDynEntShadowBit(uint entnum,uint primaryLightIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
+  uint relevantPrimaryLightIndex;
+  uint relevantPrimaryLightCount;
+  uint ignoredPrimaryLightCount;
   
   if (((rgp.world)->sunPrimaryLightIndex != 1) && ((rgp.world)->sunPrimaryLightIndex != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",0x128
@@ -696,7 +731,7 @@ uint __cdecl R_GetPrimaryLightDynEntShadowBit(uint param_1,uint param_2)
       return uVar3;
     }
   }
-  if (param_2 <= (rgp.world)->sunPrimaryLightIndex) {
+  if (primaryLightIndex <= (rgp.world)->sunPrimaryLightIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",0x129
                              ,0,"primaryLightIndex > rgp.world->sunPrimaryLightIndex\n\t%i, %i");
     if (!bVar2) {
@@ -706,40 +741,42 @@ uint __cdecl R_GetPrimaryLightDynEntShadowBit(uint param_1,uint param_2)
     }
   }
   iVar4 = (rgp.world)->sunPrimaryLightIndex + 1;
-  return param_1 * ((rgp.world)->primaryLightCount - iVar4) + (param_2 - iVar4);
+  return entnum * ((rgp.world)->primaryLightCount - iVar4) + (primaryLightIndex - iVar4);
 }
 
 
 // 00A8E7B0  R_LinkSphereEntityToPrimaryLights  (gfx_d3d/r_primarylights.cpp:306)
 
 void __cdecl
-R_LinkSphereEntityToPrimaryLights(int param_1,uint param_2,float *param_3,float param_4)
+R_LinkSphereEntityToPrimaryLights(int localClientNum,uint entityNum,float *origin,float radius)
 
 {
   code *pcVar1;
   bool bVar2;
   ComPrimaryLight *pCVar3;
-  uint uVar4;
-  float fVar5;
-  uint local_10;
+  uint bitNum;
+  float fVar4;
+  uint primaryLightIndex;
+  ComPrimaryLight *light;
+  uint bitIndex;
   
-  local_10 = (rgp.world)->sunPrimaryLightIndex;
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
   while( true ) {
-    local_10 = local_10 + 1;
-    if ((rgp.world)->primaryLightCount <= local_10) {
+    primaryLightIndex = primaryLightIndex + 1;
+    if ((rgp.world)->primaryLightCount <= primaryLightIndex) {
       return;
     }
-    pCVar3 = Com_GetPrimaryLight(local_10);
+    pCVar3 = Com_GetPrimaryLight(primaryLightIndex);
     if (((pCVar3->type != '\x02') && (pCVar3->type != '\x03')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x13a,0,"%s\n\t(light->type) = %i"), !bVar2)) break;
-    fVar5 = Vec3DistanceSq(pCVar3->origin,param_3);
-    if ((fVar5 < (pCVar3->radius + param_4) * (pCVar3->radius + param_4)) &&
+    fVar4 = Vec3DistanceSq(pCVar3->origin,origin);
+    if ((fVar4 < (pCVar3->radius + radius) * (pCVar3->radius + radius)) &&
        (((pCVar3->type != '\x02' || (pCVar3->cosHalfFovExpanded < 0.0)) ||
-        (bVar2 = CullSphereFromCone(pCVar3->origin,pCVar3->dir,pCVar3->cosHalfFovExpanded,param_3,
-                                    param_4), !bVar2)))) {
-      uVar4 = R_GetPrimaryLightEntityShadowBit(param_1,param_2,local_10);
-      Com_BitSetAssert((rgp.world)->primaryLightEntityShadowVis,uVar4,0xfffffff);
+        (bVar2 = CullSphereFromCone(pCVar3->origin,pCVar3->dir,pCVar3->cosHalfFovExpanded,origin,
+                                    radius), !bVar2)))) {
+      bitNum = R_GetPrimaryLightEntityShadowBit(localClientNum,entityNum,primaryLightIndex);
+      Com_BitSetAssert((rgp.world)->primaryLightEntityShadowVis,bitNum,0xfffffff);
     }
   }
   pcVar1 = (code *)swi(3);
@@ -750,48 +787,51 @@ R_LinkSphereEntityToPrimaryLights(int param_1,uint param_2,float *param_3,float 
 
 // 00A8EA00  R_LinkBoxEntityToPrimaryLights  (gfx_d3d/r_primarylights.cpp:329)
 
-void __cdecl R_LinkBoxEntityToPrimaryLights(int param_1,uint param_2,float *param_3,float *param_4)
+void __cdecl
+R_LinkBoxEntityToPrimaryLights(int localClientNum,uint entityNum,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   ComPrimaryLight *pCVar3;
-  uint uVar4;
-  float fVar5;
-  uint local_28;
-  float local_1c;
+  uint bitNum;
+  float fVar4;
+  uint primaryLightIndex;
+  ComPrimaryLight *light;
+  uint bitIndex;
+  float boxHalfSize;
   float local_18;
   float local_14;
-  float local_10;
+  float boxMidPoint;
   float local_c;
   float local_8;
   
-  local_10 = (*param_3 + *param_4) * 0.5;
-  local_c = (param_3[1] + param_4[1]) * 0.5;
-  local_8 = (param_3[2] + param_4[2]) * 0.5;
-  local_1c = local_10 - *param_3;
-  local_18 = local_c - param_3[1];
-  local_14 = local_8 - param_3[2];
-  local_28 = (rgp.world)->sunPrimaryLightIndex;
+  boxMidPoint = (*mins + *maxs) * 0.5;
+  local_c = (mins[1] + maxs[1]) * 0.5;
+  local_8 = (mins[2] + maxs[2]) * 0.5;
+  boxHalfSize = boxMidPoint - *mins;
+  local_18 = local_c - mins[1];
+  local_14 = local_8 - mins[2];
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
   while( true ) {
-    local_28 = local_28 + 1;
-    if ((rgp.world)->primaryLightCount <= local_28) {
+    primaryLightIndex = primaryLightIndex + 1;
+    if ((rgp.world)->primaryLightCount <= primaryLightIndex) {
       return;
     }
-    pCVar3 = Com_GetPrimaryLight(local_28);
+    pCVar3 = Com_GetPrimaryLight(primaryLightIndex);
     if (((pCVar3->type != '\x02') && (pCVar3->type != '\x03')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x156,0,"%s\n\t(light->type) = %i"), !bVar2)) break;
-    fVar5 = PointToBoxDistSq(pCVar3->origin,param_3,param_4);
-    if (((fVar5 < pCVar3->radius * pCVar3->radius) &&
+    fVar4 = PointToBoxDistSq(pCVar3->origin,mins,maxs);
+    if (((fVar4 < pCVar3->radius * pCVar3->radius) &&
         (((pCVar3->type != '\x02' || (pCVar3->cosHalfFovExpanded < 0.0)) ||
-         (bVar2 = CullBoxFromCone(pCVar3->origin,pCVar3->dir,pCVar3->cosHalfFovExpanded,&local_10,
-                                  &local_1c), !bVar2)))) &&
+         (bVar2 = CullBoxFromCone(pCVar3->origin,pCVar3->dir,pCVar3->cosHalfFovExpanded,&boxMidPoint
+                                  ,&boxHalfSize), !bVar2)))) &&
        (bVar2 = R_CullBoxFromLightRegion
-                          ((rgp.world)->lightRegion + local_28,pCVar3->origin,&local_10,&local_1c),
-       !bVar2)) {
-      uVar4 = R_GetPrimaryLightEntityShadowBit(param_1,param_2,local_28);
-      Com_BitSetAssert((rgp.world)->primaryLightEntityShadowVis,uVar4,0xfffffff);
+                          ((rgp.world)->lightRegion + primaryLightIndex,pCVar3->origin,&boxMidPoint,
+                           &boxHalfSize), !bVar2)) {
+      bitNum = R_GetPrimaryLightEntityShadowBit(localClientNum,entityNum,primaryLightIndex);
+      Com_BitSetAssert((rgp.world)->primaryLightEntityShadowVis,bitNum,0xfffffff);
     }
   }
   pcVar1 = (code *)swi(3);
@@ -803,58 +843,60 @@ void __cdecl R_LinkBoxEntityToPrimaryLights(int param_1,uint param_2,float *para
 // 00A8F130  R_LinkDynEntToPrimaryLights  (gfx_d3d/r_primarylights.cpp:362)
 
 void __cdecl
-R_LinkDynEntToPrimaryLights(uint param_1,DynEntityDrawType param_2,float *param_3,float *param_4)
+R_LinkDynEntToPrimaryLights(uint dynEntId,DynEntityDrawType drawType,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
-  ComPrimaryLight *pCVar4;
-  uint uVar5;
-  uint local_34;
-  float local_28;
+  ComPrimaryLight *light_00;
+  uint bitNum;
+  uint primaryLightIndex;
+  ComPrimaryLight *light;
+  uint bitIndex;
+  float boxHalfSize;
   float local_24;
   float local_20;
-  uint local_1c;
-  float local_18;
+  uint bestPrimaryLightIndex;
+  float boxMidPoint;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float distSq;
+  float minDistSq;
   
-  local_18 = (*param_3 + *param_4) * 0.5;
-  local_14 = (param_3[1] + param_4[1]) * 0.5;
-  local_10 = (param_3[2] + param_4[2]) * 0.5;
-  local_28 = local_18 - *param_3;
-  local_24 = local_14 - param_3[1];
-  local_20 = local_10 - param_3[2];
-  local_1c = 0;
-  local_8 = 3.4028235e+38;
-  local_34 = (rgp.world)->sunPrimaryLightIndex;
+  boxMidPoint = (*mins + *maxs) * 0.5;
+  local_14 = (mins[1] + maxs[1]) * 0.5;
+  local_10 = (mins[2] + maxs[2]) * 0.5;
+  boxHalfSize = boxMidPoint - *mins;
+  local_24 = local_14 - mins[1];
+  local_20 = local_10 - mins[2];
+  bestPrimaryLightIndex = 0;
+  minDistSq = 3.4028235e+38;
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
   while( true ) {
-    local_34 = local_34 + 1;
-    if ((rgp.world)->primaryLightCount <= local_34) {
-      if (param_2 == DYNENT_DRAW_MODEL) {
-        uVar3 = truncate_cast<unsigned_char>(local_1c);
-        (rgp.world)->nonSunPrimaryLightForModelDynEnt[param_1] = uVar3;
+    primaryLightIndex = primaryLightIndex + 1;
+    if ((rgp.world)->primaryLightCount <= primaryLightIndex) {
+      if (drawType == DYNENT_DRAW_MODEL) {
+        uVar3 = truncate_cast<unsigned_char>(bestPrimaryLightIndex);
+        (rgp.world)->nonSunPrimaryLightForModelDynEnt[dynEntId] = uVar3;
       }
       return;
     }
-    pCVar4 = Com_GetPrimaryLight(local_34);
-    if (((pCVar4->type != '\x02') && (pCVar4->type != '\x03')) &&
+    light_00 = Com_GetPrimaryLight(primaryLightIndex);
+    if (((light_00->type != '\x02') && (light_00->type != '\x03')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x17c,0,"%s\n\t(light->type) = %i"), !bVar2)) break;
-    bVar2 = Com_CullBoxFromPrimaryLight(pCVar4,&local_18,&local_28);
+    bVar2 = Com_CullBoxFromPrimaryLight(light_00,&boxMidPoint,&boxHalfSize);
     if ((!bVar2) &&
        (bVar2 = R_CullBoxFromLightRegion
-                          ((rgp.world)->lightRegion + local_34,pCVar4->origin,&local_18,&local_28),
-       !bVar2)) {
-      uVar5 = R_GetPrimaryLightDynEntShadowBit(param_1,local_34);
-      Com_BitSetAssert((rgp.world)->primaryLightDynEntShadowVis[param_2],uVar5,0xfffffff);
-      local_c = Vec3DistanceSq(pCVar4->origin,&local_18);
-      if (local_c < local_8) {
-        local_1c = local_34;
-        local_8 = local_c;
+                          ((rgp.world)->lightRegion + primaryLightIndex,light_00->origin,
+                           &boxMidPoint,&boxHalfSize), !bVar2)) {
+      bitNum = R_GetPrimaryLightDynEntShadowBit(dynEntId,primaryLightIndex);
+      Com_BitSetAssert((rgp.world)->primaryLightDynEntShadowVis[drawType],bitNum,0xfffffff);
+      distSq = Vec3DistanceSq(light_00->origin,&boxMidPoint);
+      if (distSq < minDistSq) {
+        bestPrimaryLightIndex = primaryLightIndex;
+        minDistSq = distSq;
       }
     }
   }
@@ -866,16 +908,18 @@ R_LinkDynEntToPrimaryLights(uint param_1,DynEntityDrawType param_2,float *param_
 
 // 00A8F4B0  R_UnlinkEntityFromPrimaryLights  (gfx_d3d/r_primarylights.cpp:403)
 
-void __cdecl R_UnlinkEntityFromPrimaryLights(int param_1,uint param_2)
+void __cdecl R_UnlinkEntityFromPrimaryLights(int localClientNum,uint entityNum)
 
 {
-  uint uVar1;
-  uint local_c;
+  uint bitNum;
+  uint primaryLightIndex;
+  uint bitIndex;
   
-  local_c = (rgp.world)->sunPrimaryLightIndex;
-  while (local_c = local_c + 1, local_c < (rgp.world)->primaryLightCount) {
-    uVar1 = R_GetPrimaryLightEntityShadowBit(param_1,param_2,local_c);
-    Com_BitClearAssert((rgp.world)->primaryLightEntityShadowVis,uVar1,0xfffffff);
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
+  while (primaryLightIndex = primaryLightIndex + 1,
+        primaryLightIndex < (rgp.world)->primaryLightCount) {
+    bitNum = R_GetPrimaryLightEntityShadowBit(localClientNum,entityNum,primaryLightIndex);
+    Com_BitClearAssert((rgp.world)->primaryLightEntityShadowVis,bitNum,0xfffffff);
   }
   return;
 }
@@ -883,16 +927,18 @@ void __cdecl R_UnlinkEntityFromPrimaryLights(int param_1,uint param_2)
 
 // 00A8F520  R_UnlinkDynEntFromPrimaryLights  (gfx_d3d/r_primarylights.cpp:418)
 
-void __cdecl R_UnlinkDynEntFromPrimaryLights(uint param_1,DynEntityDrawType param_2)
+void __cdecl R_UnlinkDynEntFromPrimaryLights(uint dynEntId,DynEntityDrawType drawType)
 
 {
-  uint uVar1;
-  uint local_c;
+  uint bitNum;
+  uint primaryLightIndex;
+  uint bitIndex;
   
-  local_c = (rgp.world)->sunPrimaryLightIndex;
-  while (local_c = local_c + 1, local_c < (rgp.world)->primaryLightCount) {
-    uVar1 = R_GetPrimaryLightDynEntShadowBit(param_1,local_c);
-    Com_BitClearAssert((rgp.world)->primaryLightDynEntShadowVis[param_2],uVar1,0xfffffff);
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
+  while (primaryLightIndex = primaryLightIndex + 1,
+        primaryLightIndex < (rgp.world)->primaryLightCount) {
+    bitNum = R_GetPrimaryLightDynEntShadowBit(dynEntId,primaryLightIndex);
+    Com_BitClearAssert((rgp.world)->primaryLightDynEntShadowVis[drawType],bitNum,0xfffffff);
   }
   return;
 }
@@ -900,46 +946,50 @@ void __cdecl R_UnlinkDynEntFromPrimaryLights(uint param_1,DynEntityDrawType para
 
 // 00A8F590  R_IsEntityVisibleToPrimaryLight  (gfx_d3d/r_primarylights.cpp:431)
 
-int __cdecl R_IsEntityVisibleToPrimaryLight(int param_1,uint param_2,uint param_3)
+int __cdecl
+R_IsEntityVisibleToPrimaryLight(int localClientNum,uint entityNum,uint primaryLightIndex)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint bitNum;
+  int iVar1;
+  uint bitIndex;
   
-  uVar1 = R_GetPrimaryLightEntityShadowBit(param_1,param_2,param_3);
-  iVar2 = Com_BitCheckAssert((rgp.world)->primaryLightEntityShadowVis,uVar1,0xfffffff);
-  return iVar2;
+  bitNum = R_GetPrimaryLightEntityShadowBit(localClientNum,entityNum,primaryLightIndex);
+  iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightEntityShadowVis,bitNum,0xfffffff);
+  return iVar1;
 }
 
 
 // 00A8F5D0  R_IsDynEntVisibleToPrimaryLight  (gfx_d3d/r_primarylights.cpp:442)
 
-int __cdecl R_IsDynEntVisibleToPrimaryLight(uint param_1,DynEntityDrawType param_2,uint param_3)
+int __cdecl
+R_IsDynEntVisibleToPrimaryLight(uint dynEntId,DynEntityDrawType drawType,uint primaryLightIndex)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint bitNum;
+  int iVar1;
+  uint bitIndex;
   
-  uVar1 = R_GetPrimaryLightDynEntShadowBit(param_1,param_3);
-  iVar2 = Com_BitCheckAssert((rgp.world)->primaryLightDynEntShadowVis[param_2],uVar1,0xfffffff);
-  return iVar2;
+  bitNum = R_GetPrimaryLightDynEntShadowBit(dynEntId,primaryLightIndex);
+  iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightDynEntShadowVis[drawType],bitNum,0xfffffff);
+  return iVar1;
 }
 
 
 // 00A8F700  R_IsEntityVisibleToShadowedPrimaryLight  (gfx_d3d/r_primarylights.cpp:451)
 
-int __cdecl R_IsEntityVisibleToShadowedPrimaryLight(uint param_1,uint param_2)
+int __cdecl R_IsEntityVisibleToShadowedPrimaryLight(uint baseBitIndex,uint shadowableLightIndex)
 
 {
   int iVar1;
   
-  iVar1 = R_IsPrimaryLight(param_2);
+  iVar1 = R_IsPrimaryLight(shadowableLightIndex);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightEntityShadowVis,param_1 + param_2,0xfffffff)
-    ;
+    iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightEntityShadowVis,
+                               baseBitIndex + shadowableLightIndex,0xfffffff);
   }
   return iVar1;
 }
@@ -947,7 +997,7 @@ int __cdecl R_IsEntityVisibleToShadowedPrimaryLight(uint param_1,uint param_2)
 
 // 00A8F610  R_IsEntityVisibleToAnyShadowedPrimaryLight  (gfx_d3d/r_primarylights.cpp:459)
 
-int __cdecl R_IsEntityVisibleToAnyShadowedPrimaryLight(GfxViewInfo *param_1,uint param_2)
+int __cdecl R_IsEntityVisibleToAnyShadowedPrimaryLight(GfxViewInfo *viewInfo,uint entityNum)
 
 {
   code *pcVar1;
@@ -956,11 +1006,14 @@ int __cdecl R_IsEntityVisibleToAnyShadowedPrimaryLight(GfxViewInfo *param_1,uint
   int iVar4;
   int iVar5;
   int iVar6;
-  uint local_8;
+  uint baseBitIndex;
+  uint relevantPrimaryLightCount;
+  uint ignoredPrimaryLightCount;
+  uint spotShadowIndex;
   
   iVar5 = (rgp.world)->sunPrimaryLightIndex + 1;
   iVar3 = (rgp.world)->primaryLightCount - iVar5;
-  iVar6 = param_1->localClientNum * gfxCfg.entCount;
+  iVar6 = viewInfo->localClientNum * gfxCfg.entCount;
   if ((iVar3 + 1U < frontEndDataOut->spotShadowCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                0x1d5,0,
@@ -970,16 +1023,16 @@ int __cdecl R_IsEntityVisibleToAnyShadowedPrimaryLight(GfxViewInfo *param_1,uint
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  spotShadowIndex = 0;
   while( true ) {
-    if (frontEndDataOut->spotShadowCount <= local_8) {
+    if (frontEndDataOut->spotShadowCount <= spotShadowIndex) {
       return 0;
     }
     iVar4 = R_IsEntityVisibleToShadowedPrimaryLight
-                      ((iVar6 + param_2) * iVar3 - iVar5,
-                       (uint)frontEndDataOut->spotShadows[local_8].shadowableLightIndex);
+                      ((iVar6 + entityNum) * iVar3 - iVar5,
+                       (uint)frontEndDataOut->spotShadows[spotShadowIndex].shadowableLightIndex);
     if (iVar4 != 0) break;
-    local_8 = local_8 + 1;
+    spotShadowIndex = spotShadowIndex + 1;
   }
   return 1;
 }
@@ -988,18 +1041,19 @@ int __cdecl R_IsEntityVisibleToAnyShadowedPrimaryLight(GfxViewInfo *param_1,uint
 // 00A8F820  R_IsDynEntVisibleToShadowedPrimaryLight  (gfx_d3d/r_primarylights.cpp:484)
 
 int __cdecl
-R_IsDynEntVisibleToShadowedPrimaryLight(uint param_1,DynEntityDrawType param_2,uint param_3)
+R_IsDynEntVisibleToShadowedPrimaryLight
+          (uint baseBitIndex,DynEntityDrawType drawType,uint shadowableLightIndex)
 
 {
   int iVar1;
   
-  iVar1 = R_IsPrimaryLight(param_3);
+  iVar1 = R_IsPrimaryLight(shadowableLightIndex);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightDynEntShadowVis[param_2],param_1 + param_3,
-                               0xfffffff);
+    iVar1 = Com_BitCheckAssert((rgp.world)->primaryLightDynEntShadowVis[drawType],
+                               baseBitIndex + shadowableLightIndex,0xfffffff);
   }
   return iVar1;
 }
@@ -1009,7 +1063,7 @@ R_IsDynEntVisibleToShadowedPrimaryLight(uint param_1,DynEntityDrawType param_2,u
 
 int __cdecl
 R_IsDynEntVisibleToAnyShadowedPrimaryLight
-          (GfxViewInfo *param_1,uint param_2,DynEntityDrawType param_3)
+          (GfxViewInfo *viewInfo,uint dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
@@ -1017,7 +1071,10 @@ R_IsDynEntVisibleToAnyShadowedPrimaryLight
   int iVar3;
   int iVar4;
   int iVar5;
-  uint local_8;
+  uint baseBitIndex;
+  uint relevantPrimaryLightCount;
+  uint ignoredPrimaryLightCount;
+  uint spotShadowIndex;
   
   iVar5 = (rgp.world)->sunPrimaryLightIndex + 1;
   iVar3 = (rgp.world)->primaryLightCount - iVar5;
@@ -1030,16 +1087,16 @@ R_IsDynEntVisibleToAnyShadowedPrimaryLight
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  spotShadowIndex = 0;
   while( true ) {
-    if (frontEndDataOut->spotShadowCount <= local_8) {
+    if (frontEndDataOut->spotShadowCount <= spotShadowIndex) {
       return 0;
     }
     iVar4 = R_IsDynEntVisibleToShadowedPrimaryLight
-                      (param_2 * iVar3 - iVar5,param_3,
-                       (uint)frontEndDataOut->spotShadows[local_8].shadowableLightIndex);
+                      (dynEntId * iVar3 - iVar5,drawType,
+                       (uint)frontEndDataOut->spotShadows[spotShadowIndex].shadowableLightIndex);
     if (iVar4 != 0) break;
-    local_8 = local_8 + 1;
+    spotShadowIndex = spotShadowIndex + 1;
   }
   return 1;
 }
@@ -1047,137 +1104,143 @@ R_IsDynEntVisibleToAnyShadowedPrimaryLight
 
 // 00A8F860  R_GetNonSunPrimaryLightForBox  (gfx_d3d/r_primarylights.cpp:520)
 
-uint __cdecl R_GetNonSunPrimaryLightForBox(GfxViewInfo *param_1,float *param_2,float *param_3)
+uint __cdecl
+R_GetNonSunPrimaryLightForBox(GfxViewInfo *viewInfo,float *boxMidPoint,float *boxHalfSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  ComPrimaryLight *pCVar3;
-  uint uVar4;
-  int local_14;
-  uint local_10;
-  uint local_c;
+  ComPrimaryLight *light_00;
+  uint uVar3;
+  int bestPriority;
+  uint primaryLightIndex;
+  uint bestIndex;
+  ComPrimaryLight *light;
   
-  local_c = 0;
-  local_14 = -0x80000000;
-  local_10 = (rgp.world)->sunPrimaryLightIndex;
+  bestIndex = 0;
+  bestPriority = -0x80000000;
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
   while( true ) {
-    local_10 = local_10 + 1;
-    if ((rgp.world)->primaryLightCount <= local_10) {
-      return local_c;
+    primaryLightIndex = primaryLightIndex + 1;
+    if ((rgp.world)->primaryLightCount <= primaryLightIndex) {
+      return bestIndex;
     }
-    pCVar3 = Com_GetPrimaryLight(local_10);
-    if (((pCVar3->type != '\x02') && (pCVar3->type != '\x03')) &&
+    light_00 = Com_GetPrimaryLight(primaryLightIndex);
+    if (((light_00->type != '\x02') && (light_00->type != '\x03')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x212,0,"%s\n\t(light->type) = %i"), !bVar2)) break;
-    bVar2 = Com_CullBoxFromPrimaryLight(pCVar3,param_2,param_3);
+    bVar2 = Com_CullBoxFromPrimaryLight(light_00,boxMidPoint,boxHalfSize);
     if (((!bVar2) &&
         (bVar2 = R_CullBoxFromLightRegion
-                           ((rgp.world)->lightRegion + local_10,pCVar3->origin,param_2,param_3),
-        !bVar2)) && (local_14 < pCVar3->priority)) {
-      local_c = local_10;
-      local_14 = (int)pCVar3->priority;
+                           ((rgp.world)->lightRegion + primaryLightIndex,light_00->origin,
+                            boxMidPoint,boxHalfSize), !bVar2)) &&
+       (bestPriority < light_00->priority)) {
+      bestIndex = primaryLightIndex;
+      bestPriority = (int)light_00->priority;
     }
   }
   pcVar1 = (code *)swi(3);
-  uVar4 = (*pcVar1)();
-  return uVar4;
+  uVar3 = (*pcVar1)();
+  return uVar3;
 }
 
 
 // 00A8F980  R_GetNonSunPrimaryLightForSphere  (gfx_d3d/r_primarylights.cpp:547)
 
-uint __cdecl R_GetNonSunPrimaryLightForSphere(GfxViewInfo *param_1,float *param_2,float param_3)
+uint __cdecl R_GetNonSunPrimaryLightForSphere(GfxViewInfo *viewInfo,float *origin,float radius)
 
 {
   code *pcVar1;
   bool bVar2;
-  ComPrimaryLight *pCVar3;
-  uint uVar4;
-  int local_14;
-  uint local_10;
-  uint local_c;
+  ComPrimaryLight *light_00;
+  uint uVar3;
+  int bestPriority;
+  uint primaryLightIndex;
+  uint bestIndex;
+  ComPrimaryLight *light;
   
-  local_c = 0;
-  local_14 = -0x80000000;
-  local_10 = (rgp.world)->sunPrimaryLightIndex;
+  bestIndex = 0;
+  bestPriority = -0x80000000;
+  primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
   while( true ) {
-    local_10 = local_10 + 1;
-    if ((rgp.world)->primaryLightCount <= local_10) {
-      return local_c;
+    primaryLightIndex = primaryLightIndex + 1;
+    if ((rgp.world)->primaryLightCount <= primaryLightIndex) {
+      return bestIndex;
     }
-    pCVar3 = Com_GetPrimaryLight(local_10);
-    if (((pCVar3->type != '\x02') && (pCVar3->type != '\x03')) &&
+    light_00 = Com_GetPrimaryLight(primaryLightIndex);
+    if (((light_00->type != '\x02') && (light_00->type != '\x03')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_primarylights.cpp",
                                  0x22d,0,"%s\n\t(light->type) = %i"), !bVar2)) break;
-    bVar2 = Com_CullSphereFromPrimaryLight(pCVar3,param_2,param_3);
+    bVar2 = Com_CullSphereFromPrimaryLight(light_00,origin,radius);
     if (((!bVar2) &&
         (bVar2 = R_CullSphereFromLightRegion
-                           ((rgp.world)->lightRegion + local_10,pCVar3->origin,param_2,param_3),
-        !bVar2)) && (local_14 < pCVar3->priority)) {
-      local_c = local_10;
-      local_14 = (int)pCVar3->priority;
+                           ((rgp.world)->lightRegion + primaryLightIndex,light_00->origin,origin,
+                            radius), !bVar2)) && (bestPriority < light_00->priority)) {
+      bestIndex = primaryLightIndex;
+      bestPriority = (int)light_00->priority;
     }
   }
   pcVar1 = (code *)swi(3);
-  uVar4 = (*pcVar1)();
-  return uVar4;
+  uVar3 = (*pcVar1)();
+  return uVar3;
 }
 
 
 // 00A8FFA0  R_ShowPrimaryLightDebugLine  (gfx_d3d/r_primarylights.cpp:579)
 
-void __cdecl R_ShowPrimaryLightDebugLine(float *param_1,uint param_2,int param_3)
+void __cdecl
+R_ShowPrimaryLightDebugLine(float *lineStartPosition,uint primaryLightIndex,int context)
 
 {
   ComPrimaryLight *pCVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  float local_30;
+  ComPrimaryLight *L;
+  float mins;
   float local_2c;
   float local_28;
-  float local_24;
+  float ext;
   float local_20;
   float local_1c;
-  float local_18;
+  float maxs;
   float local_14;
   float local_10;
-  float *local_c;
-  char local_5;
+  float *color;
+  bool drawLine;
   
-  if ((param_3 == (r_debugShowPrimaryLightLines->current).integer) &&
-     (fVar2 = frontEndDataOut->viewParms[0].origin[0] - *param_1,
-     fVar3 = frontEndDataOut->viewParms[0].origin[1] - param_1[1],
-     fVar4 = frontEndDataOut->viewParms[0].origin[2] - param_1[2],
+  if ((context == (r_debugShowPrimaryLightLines->current).integer) &&
+     (fVar2 = frontEndDataOut->viewParms[0].origin[0] - *lineStartPosition,
+     fVar3 = frontEndDataOut->viewParms[0].origin[1] - lineStartPosition[1],
+     fVar4 = frontEndDataOut->viewParms[0].origin[2] - lineStartPosition[2],
      fVar2 * fVar2 + fVar3 * fVar3 + fVar4 * fVar4 <= 810000.0)) {
-    local_5 = '\0';
-    pCVar1 = Com_GetPrimaryLight(param_2);
-    if (param_2 == 0) {
-      local_c = colorRed;
+    drawLine = false;
+    pCVar1 = Com_GetPrimaryLight(primaryLightIndex);
+    if (primaryLightIndex == 0) {
+      color = colorRed;
     }
-    else if (param_2 == 1) {
-      local_c = colorYellow;
+    else if (primaryLightIndex == 1) {
+      color = colorYellow;
     }
-    else if (param_2 == 0xff) {
-      local_c = colorGreen;
+    else if (primaryLightIndex == 0xff) {
+      color = colorGreen;
     }
     else {
-      local_c = colorMdGrey;
-      local_5 = '\x01';
+      color = colorMdGrey;
+      drawLine = true;
     }
-    local_24 = 0.75;
+    ext = 0.75;
     local_20 = 0.75;
     local_1c = 0.75;
-    local_18 = *param_1 + 0.75;
-    local_14 = param_1[1] + 0.75;
-    local_10 = param_1[2] + 0.75;
-    local_30 = *param_1 - 0.75;
-    local_2c = param_1[1] - 0.75;
-    local_28 = param_1[2] - 0.75;
-    R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_30,&local_18,local_c);
-    if (local_5 != '\0') {
-      R_AddDebugLine(&frontEndDataOut->debugGlobals,param_1,pCVar1->origin,local_c,1);
+    maxs = *lineStartPosition + 0.75;
+    local_14 = lineStartPosition[1] + 0.75;
+    local_10 = lineStartPosition[2] + 0.75;
+    mins = *lineStartPosition - 0.75;
+    local_2c = lineStartPosition[1] - 0.75;
+    local_28 = lineStartPosition[2] - 0.75;
+    R_AddDebugBox(&frontEndDataOut->debugGlobals,&mins,&maxs,color);
+    if (drawLine != false) {
+      R_AddDebugLine(&frontEndDataOut->debugGlobals,lineStartPosition,pCVar1->origin,color,1);
     }
   }
   return;

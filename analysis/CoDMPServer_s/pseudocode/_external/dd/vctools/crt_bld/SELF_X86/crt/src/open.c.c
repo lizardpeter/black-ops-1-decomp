@@ -5,23 +5,24 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl
-_sopen_helper(char *param_1,int param_2,int param_3,int param_4,int *param_5,int param_6)
+int __cdecl _sopen_helper(char *path,int oflag,int shflag,int pmode,int *pfh,int bSecure)
 
 {
   int *piVar1;
   int iVar2;
   int unaff_EDI;
   int in_stack_ffffffc8;
-  int aiStack_20 [5];
+  int _Expr_val;
+  int retval;
+  int unlock_flag;
   undefined4 uStack_c;
   undefined *puStack_8;
   
   puStack_8 = &DAT_00ab93d0;
   uStack_c = 0x974ba3;
-  aiStack_20[0] = 0;
-  if (((param_5 == (int *)0x0) || (*param_5 = -1, param_1 == (char *)0x0)) ||
-     ((param_6 != 0 && ((param_4 & 0xfffffe7fU) != 0)))) {
+  unlock_flag = 0;
+  if (((pfh == (int *)0x0) || (*pfh = -1, path == (char *)0x0)) ||
+     ((bSecure != 0 && ((pmode & 0xfffffe7fU) != 0)))) {
     piVar1 = _errno();
     iVar2 = 0x16;
     *piVar1 = 0x16;
@@ -29,12 +30,12 @@ _sopen_helper(char *param_1,int param_2,int param_3,int param_4,int *param_5,int
   }
   else {
     puStack_8 = (undefined *)0x0;
-    iVar2 = _tsopen_nolock(aiStack_20,(int *)param_1,(char *)param_2,param_3,param_4,
-                           in_stack_ffffffc8,unaff_EDI);
+    iVar2 = _tsopen_nolock(&unlock_flag,(int *)path,(char *)oflag,shflag,pmode,in_stack_ffffffc8,
+                           unaff_EDI);
     puStack_8 = (undefined *)0xfffffffe;
     FUN_00974c35();
     if (iVar2 != 0) {
-      *param_5 = -1;
+      *pfh = -1;
     }
   }
   return iVar2;
@@ -43,288 +44,289 @@ _sopen_helper(char *param_1,int param_2,int param_3,int param_4,int *param_5,int
 
 // 00974478  _tsopen_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/open.c:201)
 
+/* WARNING: Variable defined which should be unmapped: bSecure */
+
 int __cdecl
-_tsopen_nolock(int *param_1,int *param_2,char *param_3,int param_4,int param_5,int param_6,
-              int param_7)
+_tsopen_nolock(int *punlock_flag,int *path,char *oflag,int shflag,int pmode,int param_6,int param_7)
 
 {
   byte *pbVar1;
   byte bVar2;
+  ulong uVar3;
   uint *in_EAX;
-  int iVar3;
-  uint uVar4;
-  ulong *puVar5;
-  int *piVar6;
-  DWORD DVar7;
-  long lVar8;
-  int iVar9;
-  HANDLE pvVar10;
-  byte bVar11;
+  int iVar4;
+  uint uVar5;
+  ulong *puVar6;
+  int *piVar7;
+  DWORD DVar8;
+  long lVar9;
+  int iVar10;
+  HANDLE pvVar11;
+  byte bVar12;
   int unaff_EDI;
-  bool bVar12;
-  long64 lVar13;
+  bool bVar13;
+  long64 lVar14;
   _SECURITY_ATTRIBUTES _Stack_34;
-  uint uStack_24;
-  HANDLE pvStack_20;
-  undefined *puStack_1c;
-  DWORD DStack_18;
-  uint uStack_14;
-  uint uStack_10;
-  uint uStack_c;
-  char cStack_8;
+  int retvalue;
+  int fmode;
+  void *osfh;
+  int filepos;
+  ulong filecreate;
+  ulong fileshare;
+  ulong fileattrib;
+  ulong fileaccess;
+  char ch;
   byte bStack_7;
-  byte bStack_6;
-  byte bStack_5;
+  char tmode;
+  char fileflags;
+  int bSecure;
   
-  bVar12 = ((uint)param_3 & 0x80) == 0;
-  uStack_24 = 0;
-  bStack_6 = 0;
+  bVar13 = ((uint)oflag & 0x80) == 0;
+  fmode = 0;
+  tmode = '\0';
   _Stack_34.nLength = 0xc;
   _Stack_34.lpSecurityDescriptor = (LPVOID)0x0;
-  if (bVar12) {
-    bStack_5 = 0;
+  if (bVar13) {
+    fileflags = '\0';
   }
   else {
-    bStack_5 = 0x10;
+    fileflags = '\x10';
   }
-  _Stack_34.bInheritHandle = (BOOL)bVar12;
-  iVar3 = _get_fmode((int *)&uStack_24);
-  if (iVar3 != 0) {
+  _Stack_34.bInheritHandle = (BOOL)bVar13;
+  iVar4 = _get_fmode(&fmode);
+  if (iVar4 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  if ((((uint)param_3 & 0x8000) == 0) && ((((uint)param_3 & 0x74000) != 0 || (uStack_24 != 0x8000)))
-     ) {
-    bStack_5 = bStack_5 | 0x80;
+  if ((((uint)oflag & 0x8000) == 0) && ((((uint)oflag & 0x74000) != 0 || (fmode != 0x8000)))) {
+    fileflags = fileflags | 0x80;
   }
-  uVar4 = (uint)param_3 & 3;
-  if (uVar4 == 0) {
-    uStack_c = 0x80000000;
+  uVar5 = (uint)oflag & 3;
+  if (uVar5 == 0) {
+    fileaccess = 0x80000000;
   }
   else {
-    if (uVar4 == 1) {
-      if ((((uint)param_3 & 8) == 0) || (((uint)param_3 & 0x70000) == 0)) {
-        uStack_c = 0x40000000;
+    if (uVar5 == 1) {
+      if ((((uint)oflag & 8) == 0) || (((uint)oflag & 0x70000) == 0)) {
+        fileaccess = 0x40000000;
         goto LAB_00974545;
       }
     }
-    else if (uVar4 != 2) goto LAB_00974501;
-    uStack_c = 0xc0000000;
+    else if (uVar5 != 2) goto LAB_00974501;
+    fileaccess = 0xc0000000;
   }
 LAB_00974545:
-  if (param_4 == 0x10) {
-    uStack_14 = 0;
+  if (shflag == 0x10) {
+    fileshare = 0;
   }
-  else if (param_4 == 0x20) {
-    uStack_14 = 1;
+  else if (shflag == 0x20) {
+    fileshare = 1;
   }
-  else if (param_4 == 0x30) {
-    uStack_14 = 2;
+  else if (shflag == 0x30) {
+    fileshare = 2;
   }
-  else if (param_4 == 0x40) {
-    uStack_14 = 3;
+  else if (shflag == 0x40) {
+    fileshare = 3;
   }
   else {
-    if (param_4 != 0x80) goto LAB_00974501;
-    uStack_14 = (uint)(uStack_c == 0x80000000);
+    if (shflag != 0x80) goto LAB_00974501;
+    fileshare = (ulong)(fileaccess == 0x80000000);
   }
-  uVar4 = (uint)param_3 & 0x700;
-  if (uVar4 < 0x401) {
-    if ((uVar4 == 0x400) || (uVar4 == 0)) {
-      DStack_18 = 3;
+  uVar5 = (uint)oflag & 0x700;
+  if (uVar5 < 0x401) {
+    if ((uVar5 == 0x400) || (uVar5 == 0)) {
+      filecreate = 3;
     }
-    else if (uVar4 == 0x100) {
-      DStack_18 = 4;
+    else if (uVar5 == 0x100) {
+      filecreate = 4;
     }
     else {
-      if (uVar4 == 0x200) goto LAB_0097464a;
-      if (uVar4 != 0x300) goto LAB_00974501;
-      DStack_18 = 2;
+      if (uVar5 == 0x200) goto LAB_0097464a;
+      if (uVar5 != 0x300) goto LAB_00974501;
+      filecreate = 2;
     }
   }
   else {
-    if (uVar4 != 0x500) {
-      if (uVar4 == 0x600) {
+    if (uVar5 != 0x500) {
+      if (uVar5 == 0x600) {
 LAB_0097464a:
-        DStack_18 = 5;
+        filecreate = 5;
         goto LAB_009745f9;
       }
-      if (uVar4 != 0x700) {
+      if (uVar5 != 0x700) {
 LAB_00974501:
-        puVar5 = __doserrno();
-        *puVar5 = 0;
+        puVar6 = __doserrno();
+        *puVar6 = 0;
         *in_EAX = 0xffffffff;
-        piVar6 = _errno();
-        *piVar6 = 0x16;
+        piVar7 = _errno();
+        *piVar7 = 0x16;
         _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
         return 0x16;
       }
     }
-    DStack_18 = 1;
+    filecreate = 1;
   }
 LAB_009745f9:
-  uStack_10 = 0x80;
-  if ((((uint)param_3 & 0x100) != 0) && (-1 < (char)(~(byte)_umaskval & (byte)param_5))) {
-    uStack_10 = 1;
+  fileattrib = 0x80;
+  if ((((uint)oflag & 0x100) != 0) && (-1 < (char)(~(byte)_umaskval & (byte)pmode))) {
+    fileattrib = 1;
   }
-  if (((uint)param_3 & 0x40) != 0) {
-    uStack_10 = uStack_10 | 0x4000000;
-    uStack_c = uStack_c | 0x10000;
-    uStack_14 = uStack_14 | 4;
+  if (((uint)oflag & 0x40) != 0) {
+    fileattrib = fileattrib | 0x4000000;
+    fileaccess = fileaccess | 0x10000;
+    fileshare = fileshare | 4;
   }
-  if (((uint)param_3 & 0x1000) != 0) {
-    uStack_10 = uStack_10 | 0x100;
+  if (((uint)oflag & 0x1000) != 0) {
+    fileattrib = fileattrib | 0x100;
   }
-  if (((uint)param_3 & 0x20) == 0) {
-    if (((uint)param_3 & 0x10) != 0) {
-      uStack_10 = uStack_10 | 0x10000000;
+  if (((uint)oflag & 0x20) == 0) {
+    if (((uint)oflag & 0x10) != 0) {
+      fileattrib = fileattrib | 0x10000000;
     }
   }
   else {
-    uStack_10 = uStack_10 | 0x8000000;
+    fileattrib = fileattrib | 0x8000000;
   }
-  uVar4 = _alloc_osfhnd();
-  *in_EAX = uVar4;
-  if (uVar4 == 0xffffffff) {
-    puVar5 = __doserrno();
-    *puVar5 = 0;
+  uVar5 = _alloc_osfhnd();
+  *in_EAX = uVar5;
+  if (uVar5 == 0xffffffff) {
+    puVar6 = __doserrno();
+    *puVar6 = 0;
     *in_EAX = 0xffffffff;
-    piVar6 = _errno();
-    *piVar6 = 0x18;
+    piVar7 = _errno();
+    *piVar7 = 0x18;
     goto LAB_00974712;
   }
-  *param_1 = 1;
-  pvStack_20 = CreateFileA((LPCSTR)param_2,uStack_c,uStack_14,&_Stack_34,DStack_18,uStack_10,
-                           (HANDLE)0x0);
-  if (pvStack_20 == (HANDLE)0xffffffff) {
-    if (((uStack_c & 0xc0000000) == 0xc0000000) && (((uint)param_3 & 1) != 0)) {
-      uStack_c = uStack_c & 0x7fffffff;
-      pvStack_20 = CreateFileA((LPCSTR)param_2,uStack_c,uStack_14,&_Stack_34,DStack_18,uStack_10,
-                               (HANDLE)0x0);
-      if (pvStack_20 != (HANDLE)0xffffffff) goto LAB_0097471e;
+  *punlock_flag = 1;
+  osfh = CreateFileA((LPCSTR)path,fileaccess,fileshare,&_Stack_34,filecreate,fileattrib,(HANDLE)0x0)
+  ;
+  if (osfh == (HANDLE)0xffffffff) {
+    if (((fileaccess & 0xc0000000) == 0xc0000000) && (((uint)oflag & 1) != 0)) {
+      fileaccess = fileaccess & 0x7fffffff;
+      osfh = CreateFileA((LPCSTR)path,fileaccess,fileshare,&_Stack_34,filecreate,fileattrib,
+                         (HANDLE)0x0);
+      if (osfh != (HANDLE)0xffffffff) goto LAB_0097471e;
     }
     pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40);
     *pbVar1 = *pbVar1 & 0xfe;
-    DVar7 = GetLastError();
-    _dosmaperr(DVar7);
+    DVar8 = GetLastError();
+    _dosmaperr(DVar8);
     goto LAB_00974712;
   }
 LAB_0097471e:
-  DVar7 = GetFileType(pvStack_20);
-  if (DVar7 == 0) {
+  DVar8 = GetFileType(osfh);
+  if (DVar8 == 0) {
     pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40);
     *pbVar1 = *pbVar1 & 0xfe;
-    DVar7 = GetLastError();
-    _dosmaperr(DVar7);
-    CloseHandle(pvStack_20);
-    if (DVar7 == 0) {
-      piVar6 = _errno();
-      *piVar6 = 0xd;
+    DVar8 = GetLastError();
+    _dosmaperr(DVar8);
+    CloseHandle(osfh);
+    if (DVar8 == 0) {
+      piVar7 = _errno();
+      *piVar7 = 0xd;
     }
     goto LAB_00974712;
   }
-  if (DVar7 == 2) {
-    bStack_5 = bStack_5 | 0x40;
+  if (DVar8 == 2) {
+    fileflags = fileflags | 0x40;
   }
-  else if (DVar7 == 3) {
-    bStack_5 = bStack_5 | 8;
+  else if (DVar8 == 3) {
+    fileflags = fileflags | 8;
   }
-  _set_osfhnd(*in_EAX,(int)pvStack_20);
-  bVar11 = bStack_5 | 1;
-  *(byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40) = bVar11;
+  _set_osfhnd(*in_EAX,(int)osfh);
+  bVar12 = fileflags | 1;
+  *(byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40) = bVar12;
   pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 0x24 + (*in_EAX & 0x1f) * 0x40)
   ;
   *pbVar1 = *pbVar1 & 0x80;
-  bStack_7 = bStack_5 & 0x48;
+  bStack_7 = fileflags & 0x48;
   if (bStack_7 == 0) {
-    bVar2 = bStack_5 & 0x80;
-    bStack_5 = bVar11;
+    bVar2 = fileflags & 0x80;
+    fileflags = bVar12;
     if (bVar2 == 0) goto LAB_00974a92;
-    if (((uint)param_3 & 2) == 0) goto LAB_00974858;
-    puStack_1c = (undefined *)_lseek_nolock(*in_EAX,-1,2);
-    if (puStack_1c == (undefined *)0xffffffff) {
-      puVar5 = __doserrno();
-      bVar11 = bStack_5;
-      if (*puVar5 == 0x83) goto LAB_00974858;
+    if (((uint)oflag & 2) == 0) goto LAB_00974858;
+    filepos = _lseek_nolock(*in_EAX,-1,2);
+    if (filepos == -1) {
+      puVar6 = __doserrno();
+      bVar12 = fileflags;
+      if (*puVar6 == 0x83) goto LAB_00974858;
     }
     else {
-      cStack_8 = '\0';
-      iVar3 = _read_nolock(*in_EAX,&cStack_8,1);
-      if ((((iVar3 != 0) || (cStack_8 != '\x1a')) ||
-          (iVar3 = _chsize_nolock(*in_EAX,CONCAT44(unaff_EDI,(int)puStack_1c >> 0x1f)), iVar3 != -1)
-          ) && (lVar8 = _lseek_nolock(*in_EAX,0,0), bVar11 = bStack_5, lVar8 != -1))
-      goto LAB_00974858;
+      ch = '\0';
+      iVar4 = _read_nolock(*in_EAX,&ch,1);
+      if ((((iVar4 != 0) || (ch != '\x1a')) ||
+          (iVar4 = _chsize_nolock(*in_EAX,CONCAT44(unaff_EDI,filepos >> 0x1f)), iVar4 != -1)) &&
+         (lVar9 = _lseek_nolock(*in_EAX,0,0), bVar12 = fileflags, lVar9 != -1)) goto LAB_00974858;
     }
 LAB_0097480b:
     _close_nolock(*in_EAX);
     goto LAB_00974712;
   }
 LAB_00974858:
-  bStack_5 = bVar11;
-  if ((bStack_5 & 0x80) != 0) {
-    if (((uint)param_3 & 0x74000) == 0) {
-      if ((uStack_24 & 0x74000) == 0) {
-        param_3 = (char *)((uint)param_3 | 0x4000);
+  fileflags = bVar12;
+  if ((fileflags & 0x80U) != 0) {
+    if (((uint)oflag & 0x74000) == 0) {
+      if ((fmode & 0x74000U) == 0) {
+        oflag = (char *)((uint)oflag | 0x4000);
       }
       else {
-        param_3 = (char *)((uint)param_3 | uStack_24 & 0x74000);
+        oflag = (char *)((uint)oflag | fmode & 0x74000U);
       }
     }
-    uVar4 = (uint)param_3 & 0x74000;
-    if (uVar4 == 0x4000) {
-      bStack_6 = 0;
+    uVar5 = (uint)oflag & 0x74000;
+    if (uVar5 == 0x4000) {
+      tmode = '\0';
     }
-    else if ((uVar4 == 0x10000) || (uVar4 == 0x14000)) {
-      if (((uint)param_3 & 0x301) == 0x301) goto LAB_009748c7;
+    else if ((uVar5 == 0x10000) || (uVar5 == 0x14000)) {
+      if (((uint)oflag & 0x301) == 0x301) goto LAB_009748c7;
     }
-    else if ((uVar4 == 0x20000) || (uVar4 == 0x24000)) {
+    else if ((uVar5 == 0x20000) || (uVar5 == 0x24000)) {
 LAB_009748c7:
-      bStack_6 = 2;
+      tmode = '\x02';
     }
-    else if ((uVar4 == 0x40000) || (uVar4 == 0x44000)) {
-      bStack_6 = 1;
+    else if ((uVar5 == 0x40000) || (uVar5 == 0x44000)) {
+      tmode = '\x01';
     }
-    if ((((uint)param_3 & 0x70000) != 0) && (puStack_1c = (undefined *)0x0, (bStack_5 & 0x40) == 0))
-    {
-      uVar4 = uStack_c & 0xc0000000;
-      if (uVar4 == 0x40000000) {
-        if (DStack_18 == 0) goto LAB_00974a92;
-        if (2 < DStack_18) {
-          if (DStack_18 < 5) {
-            lVar13 = _lseeki64_nolock(*in_EAX,0x200000000,unaff_EDI);
-            if (lVar13 == 0) goto LAB_0097492c;
-            lVar13 = _lseeki64_nolock(*in_EAX,0,unaff_EDI);
-            uVar4 = (uint)lVar13 & (uint)((ulonglong)lVar13 >> 0x20);
+    if ((((uint)oflag & 0x70000) != 0) && (filepos = 0, (fileflags & 0x40U) == 0)) {
+      uVar5 = fileaccess & 0xc0000000;
+      if (uVar5 == 0x40000000) {
+        if (filecreate == 0) goto LAB_00974a92;
+        if (2 < filecreate) {
+          if (filecreate < 5) {
+            lVar14 = _lseeki64_nolock(*in_EAX,0x200000000,unaff_EDI);
+            if (lVar14 == 0) goto LAB_0097492c;
+            lVar14 = _lseeki64_nolock(*in_EAX,0,unaff_EDI);
+            uVar5 = (uint)lVar14 & (uint)((ulonglong)lVar14 >> 0x20);
             goto LAB_009749f8;
           }
 LAB_00974923:
-          if (DStack_18 != 5) goto LAB_00974a92;
+          if (filecreate != 5) goto LAB_00974a92;
         }
 LAB_0097492c:
-        iVar3 = 0;
-        if (bStack_6 == 1) {
-          puStack_1c = &DAT_00bfbbef;
-          DStack_18 = 3;
+        iVar4 = 0;
+        if (tmode == '\x01') {
+          filepos = (int)&DAT_00bfbbef;
+          filecreate = 3;
         }
         else {
-          if (bStack_6 != 2) goto LAB_00974a92;
-          puStack_1c = (undefined *)0xfeff;
-          DStack_18 = 2;
+          if (tmode != '\x02') goto LAB_00974a92;
+          filepos = 0xfeff;
+          filecreate = 2;
         }
         do {
-          iVar9 = _write(*in_EAX,(void *)((int)&puStack_1c + iVar3),DStack_18 - iVar3);
-          if (iVar9 == -1) goto LAB_0097480b;
-          iVar3 = iVar3 + iVar9;
-        } while (iVar3 < (int)DStack_18);
+          iVar10 = _write(*in_EAX,(void *)((int)&filepos + iVar4),filecreate - iVar4);
+          if (iVar10 == -1) goto LAB_0097480b;
+          iVar4 = iVar4 + iVar10;
+        } while (iVar4 < (int)filecreate);
       }
       else {
-        if (uVar4 != 0x80000000) {
-          if ((uVar4 == 0xc0000000) && (DStack_18 != 0)) {
-            if (2 < DStack_18) {
-              if (4 < DStack_18) goto LAB_00974923;
-              lVar13 = _lseeki64_nolock(*in_EAX,0x200000000,unaff_EDI);
-              if (lVar13 != 0) {
-                lVar13 = _lseeki64_nolock(*in_EAX,0,unaff_EDI);
-                if (lVar13 == -1) goto LAB_0097480b;
+        if (uVar5 != 0x80000000) {
+          if ((uVar5 == 0xc0000000) && (filecreate != 0)) {
+            if (2 < filecreate) {
+              if (4 < filecreate) goto LAB_00974923;
+              lVar14 = _lseeki64_nolock(*in_EAX,0x200000000,unaff_EDI);
+              if (lVar14 != 0) {
+                lVar14 = _lseeki64_nolock(*in_EAX,0,unaff_EDI);
+                if (lVar14 == -1) goto LAB_0097480b;
                 goto LAB_0097497d;
               }
             }
@@ -333,64 +335,64 @@ LAB_0097492c:
           goto LAB_00974a92;
         }
 LAB_0097497d:
-        iVar3 = _read_nolock(*in_EAX,&puStack_1c,3);
-        if (iVar3 == -1) goto LAB_0097480b;
-        if (iVar3 == 2) {
+        iVar4 = _read_nolock(*in_EAX,&filepos,3);
+        if (iVar4 == -1) goto LAB_0097480b;
+        if (iVar4 == 2) {
 LAB_00974a06:
-          if (((uint)puStack_1c & 0xffff) == 0xfffe) {
+          if ((filepos & 0xffffU) == 0xfffe) {
             _close_nolock(*in_EAX);
-            piVar6 = _errno();
-            *piVar6 = 0x16;
+            piVar7 = _errno();
+            *piVar7 = 0x16;
             return 0x16;
           }
-          if (((uint)puStack_1c & 0xffff) == 0xfeff) {
-            lVar8 = _lseek_nolock(*in_EAX,2,0);
-            if (lVar8 == -1) goto LAB_0097480b;
-            bStack_6 = 2;
+          if ((filepos & 0xffffU) == 0xfeff) {
+            lVar9 = _lseek_nolock(*in_EAX,2,0);
+            if (lVar9 == -1) goto LAB_0097480b;
+            tmode = '\x02';
             goto LAB_00974a92;
           }
         }
-        else if (iVar3 == 3) {
-          if (puStack_1c == &DAT_00bfbbef) {
-            bStack_6 = 1;
+        else if (iVar4 == 3) {
+          if ((undefined *)filepos == &DAT_00bfbbef) {
+            tmode = '\x01';
             goto LAB_00974a92;
           }
           goto LAB_00974a06;
         }
-        uVar4 = _lseek_nolock(*in_EAX,0,0);
+        uVar5 = _lseek_nolock(*in_EAX,0,0);
 LAB_009749f8:
-        if (uVar4 == 0xffffffff) goto LAB_0097480b;
+        if (uVar5 == 0xffffffff) goto LAB_0097480b;
       }
     }
   }
 LAB_00974a92:
-  uVar4 = uStack_c;
+  uVar3 = fileaccess;
   pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 0x24 + (*in_EAX & 0x1f) * 0x40)
   ;
-  *pbVar1 = *pbVar1 ^ (*pbVar1 ^ bStack_6) & 0x7f;
+  *pbVar1 = *pbVar1 ^ (*pbVar1 ^ tmode) & 0x7f;
   pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 0x24 + (*in_EAX & 0x1f) * 0x40)
   ;
-  *pbVar1 = (char)((uint)param_3 >> 0x10) << 7 | *pbVar1 & 0x7f;
-  if ((bStack_7 == 0) && (((uint)param_3 & 8) != 0)) {
+  *pbVar1 = (char)((uint)oflag >> 0x10) << 7 | *pbVar1 & 0x7f;
+  if ((bStack_7 == 0) && (((uint)oflag & 8) != 0)) {
     pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40);
     *pbVar1 = *pbVar1 | 0x20;
   }
-  if (((uStack_c & 0xc0000000) == 0xc0000000) && (((uint)param_3 & 1) != 0)) {
-    CloseHandle(pvStack_20);
-    pvVar10 = CreateFileA((LPCSTR)param_2,uVar4 & 0x7fffffff,uStack_14,&_Stack_34,3,uStack_10,
+  if (((fileaccess & 0xc0000000) == 0xc0000000) && (((uint)oflag & 1) != 0)) {
+    CloseHandle(osfh);
+    pvVar11 = CreateFileA((LPCSTR)path,uVar3 & 0x7fffffff,fileshare,&_Stack_34,3,fileattrib,
                           (HANDLE)0x0);
-    if (pvVar10 == (HANDLE)0xffffffff) {
-      DVar7 = GetLastError();
-      _dosmaperr(DVar7);
+    if (pvVar11 == (HANDLE)0xffffffff) {
+      DVar8 = GetLastError();
+      _dosmaperr(DVar8);
       pbVar1 = (byte *)(*(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4) + 4 + (*in_EAX & 0x1f) * 0x40
                        );
       *pbVar1 = *pbVar1 & 0xfe;
       _free_osfhnd(*in_EAX);
 LAB_00974712:
-      piVar6 = _errno();
-      return *piVar6;
+      piVar7 = _errno();
+      return *piVar7;
     }
-    *(HANDLE *)((*in_EAX & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4)) = pvVar10;
+    *(HANDLE *)((*in_EAX & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)*in_EAX >> 5) * 4)) = pvVar11;
   }
   return 0;
 }
@@ -398,12 +400,12 @@ LAB_00974712:
 
 // 00974C63  _sopen_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/open.c:904)
 
-int __cdecl _sopen_s(int *param_1,char *param_2,int param_3,int param_4,int param_5)
+int __cdecl _sopen_s(int *pfh,char *path,int oflag,int shflag,int pmode)
 
 {
   int iVar1;
   
-  iVar1 = _sopen_helper(param_2,param_3,param_4,param_5,param_1,1);
+  iVar1 = _sopen_helper(path,oflag,shflag,pmode,pfh,1);
   return iVar1;
 }
 

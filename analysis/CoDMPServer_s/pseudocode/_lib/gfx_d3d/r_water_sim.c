@@ -186,12 +186,12 @@ cache_t * __thiscall channel_t<GfxColor>::cache_t::cache_t(cache_t *this)
 void __cdecl R_WaterSimulationRestart(void)
 
 {
-  ulong uVar1;
-  GfxWorld *pGVar2;
+  ulong count;
+  GfxWorld *pGVar1;
   int unaff_ESI;
-  int iVar3;
+  int iVar2;
   tile_t *unaff_EDI;
-  channel_t<float4> *pcVar4;
+  channel_t<float4> *pcVar3;
   
   data.localEyeHeight = -32768.0;
   data.waveTimeleft = 0.0;
@@ -202,33 +202,35 @@ void __cdecl R_WaterSimulationRestart(void)
   data.oldEyePos[0] = 0.0;
   data.oldEyePos[1] = 0.0;
   data.oldEyePos[2] = 0.0;
-  iVar3 = 0x100;
+  iVar2 = 0x100;
   do {
     ExpireAllMeshes(unaff_EDI);
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    iVar2 = iVar2 + -1;
+  } while (iVar2 != 0);
   memset((uchar *)&prevCmd,'\0',0x54);
   R_WaterSimulationTeleport((int)unaff_EDI,unaff_ESI);
   if (rgp.world != (GfxWorld *)0x0) {
     Dvar_SetFloatFromSource(r_watersim_windDir,(rgp.world)->waterDirection,0);
-    iVar3 = 0x400;
-    pcVar4 = data.buffer;
-    pGVar2 = rgp.world;
+    iVar2 = 0x400;
+    pcVar3 = data.buffer;
+    pGVar1 = rgp.world;
     do {
-      uVar1 = *(ulong *)((pGVar2->sunParse).name + iVar3 + -0x38);
-      if (uVar1 != 0) {
-        memcpy((uchar *)pcVar4->v->u,*(uchar **)((pGVar2->sunParse).name + iVar3 + -0x34),uVar1);
-        pGVar2 = rgp.world;
+      count = *(ulong *)((pGVar1->sunParse).name + iVar2 + -0x38);
+      if (count != 0) {
+        memcpy((uchar *)pcVar3->v->u,*(uchar **)((pGVar1->sunParse).name + iVar2 + -0x34),count);
+        pGVar1 = rgp.world;
       }
-      iVar3 = iVar3 + 8;
-      pcVar4 = pcVar4 + 1;
-    } while (iVar3 < 0x410);
+      iVar2 = iVar2 + 8;
+      pcVar3 = pcVar3 + 1;
+    } while (iVar2 < 0x410);
   }
   return;
 }
 
 
 // 0080A990  R_InitWaterSimulationBuffers  (gfx_d3d/r_water_sim.cpp:1196)
+
+/* WARNING: Variable defined which should be unmapped: location */
 
 void __cdecl R_InitWaterSimulationBuffers(int param_1)
 
@@ -238,7 +240,7 @@ void __cdecl R_InitWaterSimulationBuffers(int param_1)
   uint unaff_EBX;
   uint unaff_ESI;
   uint unaff_EDI;
-  EMemTrack unaff_retaddr;
+  int location;
   
   if (comWorld.numWaterCells == 0) {
     data.enabled = false;
@@ -252,19 +254,17 @@ void __cdecl R_InitWaterSimulationBuffers(int param_1)
     (&DAT_02078724)[param_1 * 0x43 + iVar1 * 2] = "water buffers";
     *(undefined4 *)(param_1 * 0x10c + 0x2078728 + iVar1 * 8) = (&DAT_02078720)[param_1 * 0x43];
     data.buffer[0].bufferSize = 0x100080;
-    data.buffer[0].v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr);
+    data.buffer[0].v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     data.buffer[1].bufferSize = 0x100080;
-    data.buffer[1].v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr);
+    data.buffer[1].v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     data.waterheight.bufferSize = 0x20080;
-    data.waterheight.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr)
-    ;
+    data.waterheight.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     data.flooroffset.bufferSize = 0x10080;
-    data.flooroffset.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr)
-    ;
+    data.flooroffset.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     data.shoredist.bufferSize = 0x10080;
-    data.shoredist.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr);
+    data.shoredist.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     data.colors.bufferSize = 0x40080;
-    data.colors.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,unaff_retaddr);
+    data.colors.v = PMem_AllocNamed(param_1,unaff_EDI,unaff_ESI,unaff_EBX,in_ECX,location);
     memset((uchar *)(data.buffer[0].v)->u,'\0',data.buffer[0].bufferSize);
     memset((uchar *)(data.buffer[1].v)->u,'\0',data.buffer[1].bufferSize);
     memset((uchar *)data.waterheight.v,'\0',data.waterheight.bufferSize);
@@ -307,6 +307,7 @@ void __cdecl R_SetWaterSimulationConstants(GfxCmdBufSourceState *param_1,float p
   float fVar1;
   int in_ECX;
   float fVar2;
+  float interp;
   
   fVar1 = data.localSurfaceDistance;
   if ((*(int *)(*(int *)(*(int *)(in_ECX + 0x1680) + 0x16cc40) + 0x18c) == 0) || (!data.enabled)) {
@@ -343,7 +344,7 @@ void __cdecl R_SetWaterSimulationConstants(GfxCmdBufSourceState *param_1,float p
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
+void __cdecl R_WaterSimulationRender(float *eyePos,int viewIndex,uint param_3)
 
 {
   uint in_EAX;
@@ -360,11 +361,11 @@ void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
   WaterSimInfo *unaff_EDI;
   uint uVar9;
   bool bVar10;
-  DebugGlobals *pDVar11;
+  DebugGlobals *end;
+  float *pfVar11;
+  DebugGlobals *end_00;
   float *pfVar12;
-  DebugGlobals *pDVar13;
-  float *pfVar14;
-  DebugGlobals *pDVar15;
+  DebugGlobals *end_01;
   float *local_bc;
   uint *local_b8;
   uint local_b4;
@@ -406,8 +407,8 @@ void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
         expiredMeshes.head = expiredMeshes.head + 1 & 0x3ff) {
     }
     R_WaterSimulationUpdateConfig();
-    R_WaterSimulationTrackView(param_1);
-    R_RenderWaterModel(param_2);
+    R_WaterSimulationTrackView(eyePos);
+    R_RenderWaterModel(viewIndex);
     data.enabled = true;
     data.timeDelta = data.timeDelta + (((int)in_EAX < 0) - 1 & in_EAX);
     uVar9 = debugPoints.head;
@@ -540,18 +541,18 @@ void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
         local_24 = (float)local_b0.externStringCount * 10.0 + (float)local_b0.polySet.vertCount;
         local_34 = (float)local_b0.lines + (float)local_b0.polySet.verts;
         local_30 = (float)local_b0.lineCount + (float)local_b0.polySet.vertCount;
-        pfVar12 = &local_40;
-        pDVar15 = &local_b0;
+        pfVar11 = &local_40;
+        end_01 = &local_b0;
         local_20 = (float)local_b0.externMaxStringCount * 10.0 + (float)local_b0.polySet.vertLimit;
         local_2c = (float)local_b0.lineLimit + (float)local_b0.polySet.vertLimit;
-        R_AddDebugLine(pDVar15,pfVar12,unaff_EDI->pos,unaff_ESI,unaff_EBX);
-        pfVar14 = &local_1c;
-        pDVar13 = &local_b0;
-        R_AddDebugLine(pDVar13,pfVar14,(float *)pDVar15,pfVar12,(int)unaff_EDI);
-        pfVar12 = &local_28;
-        pDVar11 = &local_b0;
-        R_AddDebugLine(pDVar11,pfVar12,(float *)pDVar13,pfVar14,(int)pDVar15);
-        R_AddDebugLine(&local_b0,&local_34,(float *)pDVar11,pfVar12,(int)pDVar13);
+        R_AddDebugLine(end_01,pfVar11,unaff_EDI->pos,unaff_ESI,unaff_EBX);
+        pfVar12 = &local_1c;
+        end_00 = &local_b0;
+        R_AddDebugLine(end_00,pfVar12,(float *)end_01,pfVar11,(int)unaff_EDI);
+        pfVar11 = &local_28;
+        end = &local_b0;
+        R_AddDebugLine(end,pfVar11,(float *)end_00,pfVar12,(int)end_01);
+        R_AddDebugLine(&local_b0,&local_34,(float *)end,pfVar11,(int)end_00);
         uVar9 = uVar9 + 1 & 0xf;
       } while (uVar9 != debugPoints.tail);
       return;
@@ -566,16 +567,17 @@ void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
 void * __cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **param_1,uint param_2,uint param_3)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int hr;
+  char *pcVar1;
+  uint buffersize;
   
   if ((r_loadForRenderer->current).enabled != false) {
-    iVar1 = (**(code **)((int)*dx.device + 0x68))(dx.device,0x387200,0x208,0,0);
-    if (iVar1 < 0) {
-      pcVar2 = DXGetErrorDescriptionA(iVar1);
-      pcVar2 = va("DirectX didn\'t create a %i-byte dynamic vertex buffer: %s\n",0x387200,pcVar2);
+    hr = (**(code **)((int)*dx.device + 0x68))(dx.device,0x387200,0x208,0,0);
+    if (hr < 0) {
+      pcVar1 = DXGetErrorDescriptionA(hr);
+      pcVar1 = va("DirectX didn\'t create a %i-byte dynamic vertex buffer: %s\n",0x387200,pcVar1);
                     /* WARNING: Subroutine does not return */
-      R_FatalInitError(pcVar2);
+      R_FatalInitError(pcVar1);
     }
   }
   return (void *)0x0;
@@ -583,6 +585,10 @@ void * __cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **param_1,uint par
 
 
 // 0080B6D0  R_InitWaterSimulationVertexBuffers  (gfx_d3d/r_water_sim.cpp:1740)
+
+/* WARNING: Variable defined which should be unmapped: lockedindex */
+/* WARNING: Variable defined which should be unmapped: y */
+/* WARNING: Variable defined which should be unmapped: numTris */
 
 void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
 
@@ -593,85 +599,86 @@ void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
   short sVar4;
   short *psVar5;
   int iVar6;
-  ushort *puVar7;
-  short sVar8;
+  uint uVar7;
+  ushort *puVar8;
   short sVar9;
-  uint uVar10;
-  IDirect3DIndexBuffer9 *pIVar11;
+  short sVar10;
+  uint uVar11;
   IDirect3DIndexBuffer9 *pIVar12;
+  IDirect3DIndexBuffer9 *pIVar13;
   IDirect3DIndexBuffer9 *pIStack_40;
-  IDirect3DIndexBuffer9 **in_stack_ffffffd4;
-  uint uVar13;
-  uint in_stack_ffffffd8;
+  int numTris;
+  ushort *lockedindex;
+  uint y;
   uint in_stack_ffffffdc;
   char *in_stack_ffffffe0;
+  uint location;
   
   if (!vertexBuffersAllocated) {
     data.lockedData =
-         Water_AllocVertexBuffer
-                   ((IDirect3DVertexBuffer9 **)in_stack_ffffffd4,in_stack_ffffffd8,in_stack_ffffffdc
-                   );
+         Water_AllocVertexBuffer((IDirect3DVertexBuffer9 **)lockedindex,y,in_stack_ffffffdc);
     data.tileTriCount[0] = 0x200;
     psVar5 = R_AllocStaticIndexBuffer
-                       (in_stack_ffffffd4,in_stack_ffffffd8,in_stack_ffffffdc,in_stack_ffffffe0);
-    uVar13 = 0;
+                       ((IDirect3DIndexBuffer9 **)lockedindex,y,in_stack_ffffffdc,in_stack_ffffffe0)
+    ;
+    lockedindex = (ushort *)0x0;
     do {
-      sVar2 = (short)uVar13 * 0x11;
-      uVar10 = 0;
-      sVar3 = ((short)uVar13 + 1) * 0x11;
+      sVar2 = (short)lockedindex * 0x11;
+      uVar11 = 0;
+      sVar3 = ((short)lockedindex + 1) * 0x11;
       do {
-        sVar4 = (short)uVar10;
+        sVar4 = (short)uVar11;
         *psVar5 = sVar2 + sVar4;
-        sVar8 = sVar3 + sVar4;
-        psVar5[1] = sVar8;
-        sVar9 = sVar2 + 1 + sVar4;
-        psVar5[2] = sVar9;
-        psVar5[3] = sVar9;
-        psVar5[4] = sVar8;
+        sVar9 = sVar3 + sVar4;
+        psVar5[1] = sVar9;
+        sVar10 = sVar2 + 1 + sVar4;
+        psVar5[2] = sVar10;
+        psVar5[3] = sVar10;
+        psVar5[4] = sVar9;
         psVar5[5] = sVar3 + 1 + sVar4;
-        uVar10 = uVar10 + 1;
+        uVar11 = uVar11 + 1;
         psVar5 = psVar5 + 6;
-      } while (uVar10 < 0x10);
-      uVar13 = uVar13 + 1;
-    } while (uVar13 < 0x10);
+      } while (uVar11 < 0x10);
+      lockedindex = (ushort *)((int)lockedindex + 1);
+    } while (lockedindex < (ushort *)0x10);
     pIStack_40 = data.indexBuffer[0];
     (**(code **)((int)*data.indexBuffer[0] + 0x30))();
     iVar6 = (**(code **)((int)*dx.device + 0x6c))(dx.device,0xc00,8,0x65,0,0x4fa1a14,0);
     if (iVar6 < 0) {
-      pIVar11 = (IDirect3DIndexBuffer9 *)0x0;
+      pIVar12 = (IDirect3DIndexBuffer9 *)0x0;
     }
     else {
       iVar6 = (**(code **)((int)*data.indexBuffer[1] + 0x2c))(data.indexBuffer[1],0,0,&pIStack_40,0)
       ;
-      pIVar11 = pIStack_40;
+      pIVar12 = pIStack_40;
       if (iVar6 < 0) {
         (**(code **)((int)*data.indexBuffer[1] + 8))(data.indexBuffer[1]);
-        pIVar11 = (IDirect3DIndexBuffer9 *)0x0;
+        pIVar12 = (IDirect3DIndexBuffer9 *)0x0;
       }
     }
     data.tileTriCount[1] = 0;
-    uVar13 = 0;
+    uVar11 = 0;
     do {
-      uVar10 = 0;
+      uVar7 = 0;
       do {
-        puVar7 = tessTable[-(uint)(uVar10 != 0xe) & 4 | -(uint)(uVar10 != 0) & 8 |
-                           -(uint)(uVar13 != 0) & 2 | (uint)(uVar13 != 0xe)];
+        puVar8 = tessTable[-(uint)(uVar7 != 0xe) & 4 | -(uint)(uVar7 != 0) & 8 |
+                           -(uint)(uVar11 != 0) & 2 | (uint)(uVar11 != 0xe)];
         iVar6 = 0;
-        uVar1 = *puVar7;
-        pIVar12 = pIVar11;
+        uVar1 = *puVar8;
+        pIVar13 = pIVar12;
         while (uVar1 != 0xffff) {
-          puVar7 = puVar7 + 1;
-          *(undefined2 *)pIVar12 = *(undefined2 *)(&stack0xffffffcc + (uint)uVar1 * 2);
-          pIVar12 = (IDirect3DIndexBuffer9 *)&pIVar12->field_0x2;
+          puVar8 = puVar8 + 1;
+          *(undefined2 *)pIVar13 = *(undefined2 *)(&stack0xffffffcc + (uint)uVar1 * 2);
+          pIVar13 = (IDirect3DIndexBuffer9 *)&pIVar13->field_0x2;
           iVar6 = iVar6 + 1;
-          uVar1 = *puVar7;
+          uVar1 = *puVar8;
         }
-        pIVar11 = (IDirect3DIndexBuffer9 *)((int)&pIVar11->field_0x0 + iVar6 * 2);
+        pIVar12 = (IDirect3DIndexBuffer9 *)((int)&pIVar12->field_0x0 + iVar6 * 2);
         data.tileTriCount[1] = data.tileTriCount[1] + iVar6 / 3;
-        uVar10 = uVar10 + 2;
-      } while (uVar10 < 0x10);
-      uVar13 = uVar13 + 2;
-    } while (uVar13 < 0x10);
+        uVar7 = uVar7 + 2;
+      } while (uVar7 < 0x10);
+      uVar11 = uVar11 + 2;
+    } while (uVar11 < 0x10);
     (**(code **)((int)*data.indexBuffer[1] + 0x30))(data.indexBuffer[1]);
     vertexBuffersAllocated = true;
   }
@@ -709,6 +716,8 @@ void __cdecl R_FreeWaterSimulationVertexBuffers(void)
 
 // 0080BA00  R_WaterSimulationSetHeight  (gfx_d3d/r_water_sim.cpp:2027)
 
+/* WARNING: Variable defined which should be unmapped: size */
+
 void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param_3,float param_4)
 
 {
@@ -727,23 +736,27 @@ void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param
   int *unaff_EDI;
   float in_XMM2_Da;
   float in_XMM3_Da;
+  float *center;
+  int size;
+  int v;
   int local_14;
-  int local_10;
-  int local_c;
-  float local_8 [2];
+  int sy;
+  int sx;
+  int u;
+  float radius;
   
   if (data.enabled) {
     iVar10 = (int)(30.0 / config.gridScale);
-    bVar4 = ConvertWorldToGrid(local_8,unaff_EDI,unaff_ESI);
+    bVar4 = ConvertWorldToGrid((float *)&u,unaff_EDI,unaff_ESI);
     fVar3 = DAT_00af3b90;
     if ((bVar4) && (local_14 = 0, uVar9 = data.frame, 0 < iVar10)) {
       do {
         iVar6 = 0;
         if (3 < iVar10) {
-          iVar11 = (int)local_8[0] - iVar10 / 2;
-          iVar7 = (local_14 - iVar10 / 2) + local_c;
-          local_10 = (iVar10 - 4U >> 2) + 1;
-          iVar6 = local_10 * 4;
+          iVar11 = u - iVar10 / 2;
+          iVar7 = (local_14 - iVar10 / 2) + sx;
+          sy = (iVar10 - 4U >> 2) + 1;
+          iVar6 = sy * 4;
           do {
             if ((((0 < iVar11) && (0 < iVar7)) && (iVar11 < 0xff)) && (iVar7 < 0xff)) {
               uVar5 = ~(uVar9 >> 4) & 1;
@@ -802,12 +815,12 @@ void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param
               }
             }
             iVar11 = iVar11 + 4;
-            local_10 = local_10 + -1;
-          } while (local_10 != 0);
+            sy = sy + -1;
+          } while (sy != 0);
         }
         if (iVar6 < iVar10) {
-          iVar7 = (local_14 - iVar10 / 2) + local_c;
-          iVar11 = (iVar6 - iVar10 / 2) + (int)local_8[0];
+          iVar7 = (local_14 - iVar10 / 2) + sx;
+          iVar11 = (iVar6 - iVar10 / 2) + u;
           iVar6 = iVar10 - iVar6;
           do {
             if ((((0 < iVar11) && (0 < iVar7)) && (iVar11 < 0xff)) && (iVar7 < 0xff)) {
@@ -839,7 +852,9 @@ void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param
 
 // 0080BE40  R_WaterSimulationSimpleDisplace  (gfx_d3d/r_water_sim.cpp:2105)
 
-void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float param_3)
+/* WARNING: Variable defined which should be unmapped: v */
+
+void __cdecl R_WaterSimulationSimpleDisplace(float *height,float param_2,float param_3)
 
 {
   float4 *pfVar1;
@@ -856,12 +871,14 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
   float fVar9;
   float fVar10;
   float fVar11;
-  int local_1c;
+  float *hitpos;
+  int v;
+  int sx;
   float local_18;
-  float local_14;
+  int sy;
   float local_10;
   int local_c;
-  float local_8;
+  float scale;
   float local_4;
   
   if (data.enabled) {
@@ -882,19 +899,20 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
     fVar9 = 1.0 / config.gridScale;
     iVar6 = (int)(fVar9 * fVar11);
     bVar2 = ConvertWorldToGrid(&local_18,unaff_EDI,unaff_ESI);
-    if ((bVar2) && (local_1c = 0, 0 < iVar6)) {
+    if ((bVar2) && (sx = 0, 0 < iVar6)) {
       iVar4 = (int)local_10 - iVar6 / 2;
-      local_8 = (float)iVar6;
+      scale = (float)iVar6;
       local_c = (int)local_18 - iVar6 / 2;
-      local_14 = local_8 * 0.5;
+      sy = (int)(scale * 0.5);
       local_18 = (float)(iVar4 * 0x100);
       do {
-        local_10 = ((float)local_1c - local_14) * ((float)local_1c - local_14);
+        local_10 = ((float)sx - (float)sy) * ((float)sx - (float)sy);
         iVar5 = 0;
         iVar7 = local_c;
         do {
-          fVar8 = (float10)sqrtf(((float)iVar5 - local_14) * ((float)iVar5 - local_14) + local_10);
-          fVar8 = (float10)1 - fVar8 / (float10)local_8;
+          fVar8 = (float10)sqrtf(((float)iVar5 - (float)sy) * ((float)iVar5 - (float)sy) + local_10)
+          ;
+          fVar8 = (float10)1 - fVar8 / (float10)scale;
           local_4 = (float)fVar8;
           fVar11 = local_4;
           if (fVar8 < (float10)0) {
@@ -913,9 +931,9 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
           iVar7 = iVar7 + 1;
         } while (iVar5 < iVar6);
         local_18 = (float)((int)local_18 + 0x100);
-        local_1c = local_1c + 1;
+        sx = sx + 1;
         iVar4 = iVar4 + 1;
-      } while (local_1c < iVar6);
+      } while (sx < iVar6);
     }
   }
   return;
@@ -924,11 +942,12 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
 
 // 0080C050  R_WaterSimulationNotifyExplosionEx  (gfx_d3d/r_water_sim.cpp:2170)
 
-void __cdecl R_WaterSimulationNotifyExplosionEx(float *param_1,int param_2,float param_3)
+void __cdecl R_WaterSimulationNotifyExplosionEx(float *height,int param_2,float param_3)
 
 {
   float *in_EAX;
   float in_ECX;
+  int size;
   
   R_WaterSimulationSimpleDisplace(in_EAX,config.gridScale * (float)param_2,in_ECX);
   return;
@@ -986,6 +1005,8 @@ float __cdecl R_WaterSimulationGetBaseHeight(float *param_1)
   float *unaff_EDI;
   float10 extraout_ST0;
   float fVar2;
+  int sy;
+  int sx;
   float fStack_4;
   
   if (data.enabled) {
@@ -1009,13 +1030,14 @@ float __cdecl R_WaterSimulationGetHeight(float *param_1)
   float *unaff_EDI;
   float10 extraout_ST0;
   float fVar2;
-  float afStack_14 [5];
+  int sx;
+  int sy;
   
   if (((r_watersim_enabled != (dvar_s *)0x0) && ((r_watersim_enabled->current).enabled != false)) &&
      (data.enabled)) {
-    bVar1 = ConvertWorldToGrid(afStack_14,(int *)unaff_EDI,(int *)unaff_ESI);
+    bVar1 = ConvertWorldToGrid((float *)&sy,(int *)unaff_EDI,(int *)unaff_ESI);
     if (bVar1) {
-      R_WaterSimulationGetGridPosition((int)afStack_14[0],0,(int)unaff_EDI,unaff_ESI);
+      R_WaterSimulationGetGridPosition(sy,0,(int)unaff_EDI,unaff_ESI);
       return (float)extraout_ST0;
     }
   }
@@ -1029,20 +1051,22 @@ float __cdecl R_WaterSimulationGetHeight(float *param_1)
 void __cdecl R_WaterSimulationGetInfo(float *param_1,WaterSimInfo *param_2)
 
 {
-  float fVar1;
-  bool bVar2;
+  float timeOffset;
+  bool bVar1;
   float *in_EAX;
   float *unaff_ESI;
   float *unaff_EDI;
   float in_XMM0_Da;
+  float fVar2;
+  WaterSimInfo *info;
   float fVar3;
-  float fVar4;
-  int iVar5;
-  int iVar6;
-  float *pfVar7;
-  float fVar8;
-  float *pfVar9;
-  int iStack_74;
+  int timeOffset_00;
+  int timeOffset_01;
+  float *pfVar4;
+  float fVar5;
+  float *pfVar6;
+  int sy;
+  short waterheight;
   float fStack_70;
   float fStack_6c;
   float fStack_68;
@@ -1069,11 +1093,11 @@ void __cdecl R_WaterSimulationGetInfo(float *param_1,WaterSimInfo *param_2)
   float fStack_4;
   
   if (data.enabled) {
-    bVar2 = ConvertWorldToGrid(&fStack_70,(int *)unaff_EDI,(int *)unaff_ESI);
-    fVar1 = fStack_70;
-    if (bVar2) {
+    bVar1 = ConvertWorldToGrid(&fStack_70,(int *)unaff_EDI,(int *)unaff_ESI);
+    timeOffset = fStack_70;
+    if (bVar1) {
       *param_1 = *in_EAX;
-      fVar3 = 1.0;
+      fVar2 = 1.0;
       param_1[1] = in_EAX[1];
       param_1[2] = -3.4028235e+38;
       param_1[9] = 0.0;
@@ -1082,27 +1106,27 @@ void __cdecl R_WaterSimulationGetInfo(float *param_1,WaterSimInfo *param_2)
       param_1[0xc] = 0.0;
       param_1[0xd] = 0.0;
       param_1[0xe] = 0.0;
-      pfVar9 = (float *)0x0;
-      fVar8 = fStack_70;
-      fStack_70 = (float)(uint)(ushort)data.waterheight.v[iStack_74 * 0x100 + (int)fStack_70];
-      R_WaterSimulationGetGridPosition((int)fVar1,0,(int)unaff_EDI,unaff_ESI);
-      pfVar7 = (float *)0xffffffff;
-      fVar4 = fVar1;
-      R_WaterSimulationGetGridPosition((int)fVar1,-1,(int)fVar8,pfVar9);
-      iVar6 = (int)fVar1 + -1;
-      pfVar9 = (float *)0x0;
-      R_WaterSimulationGetGridPosition(iVar6,0,(int)fVar4,pfVar7);
-      iVar5 = (int)fVar1 + 1;
-      pfVar7 = (float *)0x0;
-      R_WaterSimulationGetGridPosition(iVar5,0,iVar6,pfVar9);
-      pfVar9 = (float *)0x0;
-      fVar4 = fVar1;
-      R_WaterSimulationGetGridPosition((int)fVar1,0,iVar5,pfVar7);
-      R_WaterSimulationGetGridPosition((int)fVar1,0,(int)fVar4,pfVar9);
+      pfVar6 = (float *)0x0;
+      fVar5 = fStack_70;
+      fStack_70 = (float)(uint)(ushort)data.waterheight.v[_waterheight * 0x100 + (int)fStack_70];
+      R_WaterSimulationGetGridPosition((int)timeOffset,0,(int)unaff_EDI,unaff_ESI);
+      pfVar4 = (float *)0xffffffff;
+      fVar3 = timeOffset;
+      R_WaterSimulationGetGridPosition((int)timeOffset,-1,(int)fVar5,pfVar6);
+      timeOffset_01 = (int)timeOffset + -1;
+      pfVar6 = (float *)0x0;
+      R_WaterSimulationGetGridPosition(timeOffset_01,0,(int)fVar3,pfVar4);
+      timeOffset_00 = (int)timeOffset + 1;
+      pfVar4 = (float *)0x0;
+      R_WaterSimulationGetGridPosition(timeOffset_00,0,timeOffset_01,pfVar6);
+      pfVar6 = (float *)0x0;
+      fVar3 = timeOffset;
+      R_WaterSimulationGetGridPosition((int)timeOffset,0,timeOffset_00,pfVar4);
+      R_WaterSimulationGetGridPosition((int)timeOffset,0,(int)fVar3,pfVar6);
       fStack_60 = fStack_24 - fStack_30;
-      fStack_6c = (fStack_3c + fVar3) - (fStack_48 - fVar3);
+      fStack_6c = (fStack_3c + fVar2) - (fStack_48 - fVar2);
       fStack_68 = fStack_38 - fStack_44;
-      fStack_5c = (fStack_20 + fVar3) - (fStack_2c - fVar3);
+      fStack_5c = (fStack_20 + fVar2) - (fStack_2c - fVar2);
       fStack_64 = fStack_34 - fStack_40;
       fStack_58 = fStack_1c - fStack_28;
       fStack_54 = fStack_58 * fStack_68 - fStack_5c * fStack_64;
@@ -1204,25 +1228,26 @@ bool __cdecl R_WaterSimulationGetAverageHeight(float *param_1)
 waterdata_t * __thiscall waterdata_t::waterdata_t(waterdata_t *this)
 
 {
-  _vector_constructor_iterator_(data.buffer,0x40e0,2,channel_t<float4>::channel_t<float4>);
-  _vector_constructor_iterator_(data.waterheight.cache,0x220,4,channel_t<short>::cache_t::cache_t);
-  data.waterheight.v = (short *)0x0;
-  data.waterheight.bufferSize = 0;
-  data.waterheight.cache_now = 0;
-  _vector_constructor_iterator_(data.flooroffset.cache,0x120,4,channel_t<char>::cache_t::cache_t);
-  data.flooroffset.v = (char *)0x0;
-  data.flooroffset.bufferSize = 0;
-  data.flooroffset.cache_now = 0;
-  _vector_constructor_iterator_(data.shoredist.cache,0x120,4,channel_t<char>::cache_t::cache_t);
-  data.shoredist.v = (char *)0x0;
-  data.shoredist.bufferSize = 0;
-  data.shoredist.cache_now = 0;
-  _vector_constructor_iterator_(data.colors.cache,0x420,4,channel_t<GfxColor>::cache_t::cache_t);
-  data.colors.v = (GfxColor *)0x0;
-  data.colors.bufferSize = 0;
-  data.colors.cache_now = 0;
-  _vector_constructor_iterator_(data.tiles,0xbc,0x100,tile_t::tile_t);
-  return &data;
+  _vector_constructor_iterator_(::data.buffer,0x40e0,2,channel_t<float4>::channel_t<float4>);
+  _vector_constructor_iterator_(::data.waterheight.cache,0x220,4,channel_t<short>::cache_t::cache_t)
+  ;
+  ::data.waterheight.v = (short *)0x0;
+  ::data.waterheight.bufferSize = 0;
+  ::data.waterheight.cache_now = 0;
+  _vector_constructor_iterator_(::data.flooroffset.cache,0x120,4,channel_t<char>::cache_t::cache_t);
+  ::data.flooroffset.v = (char *)0x0;
+  ::data.flooroffset.bufferSize = 0;
+  ::data.flooroffset.cache_now = 0;
+  _vector_constructor_iterator_(::data.shoredist.cache,0x120,4,channel_t<char>::cache_t::cache_t);
+  ::data.shoredist.v = (char *)0x0;
+  ::data.shoredist.bufferSize = 0;
+  ::data.shoredist.cache_now = 0;
+  _vector_constructor_iterator_(::data.colors.cache,0x420,4,channel_t<GfxColor>::cache_t::cache_t);
+  ::data.colors.v = (GfxColor *)0x0;
+  ::data.colors.bufferSize = 0;
+  ::data.colors.cache_now = 0;
+  _vector_constructor_iterator_(::data.tiles,0xbc,0x100,tile_t::tile_t);
+  return &::data;
 }
 
 

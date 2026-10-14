@@ -2,14 +2,13 @@
 
 // 007CF3D0  PMem_InitPhysicalMemory  (universal/physicalmemory.cpp:315)
 
-void __cdecl
-PMem_InitPhysicalMemory(PhysicalMemory *param_1,char *param_2,void *param_3,uint param_4)
+void __cdecl PMem_InitPhysicalMemory(PhysicalMemory *pmem,char *name,void *memory,uint memorySize)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (PhysicalMemory *)0x0) {
+  if (pmem == (PhysicalMemory *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x13c,0,"%s");
     if (!bVar2) {
@@ -18,7 +17,7 @@ PMem_InitPhysicalMemory(PhysicalMemory *param_1,char *param_2,void *param_3,uint
       return;
     }
   }
-  if (param_3 == (void *)0x0) {
+  if (memory == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x13d,0,"%s");
     if (!bVar2) {
@@ -27,11 +26,11 @@ PMem_InitPhysicalMemory(PhysicalMemory *param_1,char *param_2,void *param_3,uint
       return;
     }
   }
-  memset((uchar *)param_1,'\0',0x22c);
-  param_1->name = param_2;
-  param_1->buf = param_3;
-  param_1->prim[1].pos = param_4;
-  param_1->size = param_4;
+  memset((uchar *)pmem,'\0',0x22c);
+  pmem->name = name;
+  pmem->buf = memory;
+  pmem->prim[1].pos = memorySize;
+  pmem->size = memorySize;
   return;
 }
 
@@ -41,12 +40,13 @@ PMem_InitPhysicalMemory(PhysicalMemory *param_1,char *param_2,void *param_3,uint
 void __cdecl PMem_Init(void)
 
 {
-  LPVOID pvVar1;
+  LPVOID memory_00;
+  void *memory;
   
   if (!g_physicalMemoryInit) {
     g_physicalMemoryInit = true;
-    pvVar1 = VirtualAlloc((LPVOID)0x0,0x14800000,0x1000,4);
-    PMem_InitPhysicalMemory(&g_mem,"main",pvVar1,0x14800000);
+    memory_00 = VirtualAlloc((LPVOID)0x0,0x14800000,0x1000,4);
+    PMem_InitPhysicalMemory(&g_mem,"main",memory_00,0x14800000);
   }
   return;
 }
@@ -54,15 +54,16 @@ void __cdecl PMem_Init(void)
 
 // 007CF4E0  PMem_BeginAllocInPrim  (universal/physicalmemory.cpp:563)
 
-void __cdecl PMem_BeginAllocInPrim(PhysicalMemoryPrim *param_1,char *param_2,EMemTrack param_3)
+void __cdecl PMem_BeginAllocInPrim(PhysicalMemoryPrim *prim,char *name,EMemTrack memTrack)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   undefined3 in_stack_0000000d;
+  PhysicalMemoryAllocation *allocEntry;
   
-  if (param_1->allocName != (char *)0x0) {
+  if (prim->allocName != (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x236,0,"%s");
     if (!bVar3) {
@@ -71,7 +72,7 @@ void __cdecl PMem_BeginAllocInPrim(PhysicalMemoryPrim *param_1,char *param_2,EMe
       return;
     }
   }
-  if (0x1f < param_1->allocListCount) {
+  if (0x1f < prim->allocListCount) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x237,0,"%s");
     if (!bVar3) {
@@ -80,26 +81,26 @@ void __cdecl PMem_BeginAllocInPrim(PhysicalMemoryPrim *param_1,char *param_2,EMe
       return;
     }
   }
-  param_1->allocName = param_2;
-  *(undefined4 *)&param_1->memTrack = _param_3;
-  uVar1 = param_1->allocListCount;
-  param_1->allocListCount = param_1->allocListCount + 1;
-  param_1->allocList[uVar1].name = param_2;
-  param_1->allocList[uVar1].pos = param_1->pos;
+  prim->allocName = name;
+  *(undefined4 *)&prim->memTrack = _memTrack;
+  uVar1 = prim->allocListCount;
+  prim->allocListCount = prim->allocListCount + 1;
+  prim->allocList[uVar1].name = name;
+  prim->allocList[uVar1].pos = prim->pos;
   return;
 }
 
 
 // 007CF470  PMem_BeginAlloc  (universal/physicalmemory.cpp:587)
 
-void __cdecl PMem_BeginAlloc(char *param_1,uint param_2,EMemTrack param_3)
+void __cdecl PMem_BeginAlloc(char *name,uint allocType,EMemTrack memTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  *(uint *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x1c) = param_2;
-  if (1 < param_2) {
+  *(uint *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x1c) = allocType;
+  if (1 < allocType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x24d,0,
                              "allocType doesn\'t index PHYS_ALLOC_COUNT\n\t%i not in [0, %i)");
@@ -109,21 +110,21 @@ void __cdecl PMem_BeginAlloc(char *param_1,uint param_2,EMemTrack param_3)
       return;
     }
   }
-  PMem_BeginAllocInPrim(g_mem.prim + param_2,param_1,param_3);
+  PMem_BeginAllocInPrim(g_mem.prim + allocType,name,memTrack);
   return;
 }
 
 
 // 007CF5E0  PMem_EndAllocInPrim  (universal/physicalmemory.cpp:600)
 
-void __cdecl PMem_EndAllocInPrim(PhysicalMemoryPrim *param_1,char *param_2)
+void __cdecl PMem_EndAllocInPrim(PhysicalMemoryPrim *prim,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = I_stricmp(param_1->allocName,param_2);
+  iVar3 = I_stricmp(prim->allocName,name);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x259,0,"%s");
@@ -133,20 +134,20 @@ void __cdecl PMem_EndAllocInPrim(PhysicalMemoryPrim *param_1,char *param_2)
       return;
     }
   }
-  param_1->allocName = (char *)0x0;
+  prim->allocName = (char *)0x0;
   return;
 }
 
 
 // 007CF590  PMem_EndAlloc  (universal/physicalmemory.cpp:611)
 
-void __cdecl PMem_EndAlloc(char *param_1,uint param_2)
+void __cdecl PMem_EndAlloc(char *name,uint allocType)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (1 < param_2) {
+  if (1 < allocType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                              0x264,0,
                              "allocType doesn\'t index PHYS_ALLOC_COUNT\n\t%i not in [0, %i)");
@@ -156,62 +157,63 @@ void __cdecl PMem_EndAlloc(char *param_1,uint param_2)
       return;
     }
   }
-  PMem_EndAllocInPrim(g_mem.prim + param_2,param_1);
+  PMem_EndAllocInPrim(g_mem.prim + allocType,name);
   return;
 }
 
 
 // 007CF700  PMem_FreeIndex  (universal/physicalmemory.cpp:630)
 
-void __cdecl PMem_FreeIndex(PhysicalMemoryPrim *param_1,uint param_2,int param_3)
+void __cdecl PMem_FreeIndex(PhysicalMemoryPrim *prim,uint allocIndex,int location)
 
 {
-  char *pcVar1;
-  code *pcVar2;
-  bool bVar3;
+  char *name_00;
+  code *pcVar1;
+  bool bVar2;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
-  PhysicalMemoryAllocation *local_c;
+  PhysicalMemoryAllocation *allocEntry;
+  char *name;
   
-  if ((param_1->allocName != (char *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
-                               0x27c,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((prim->allocName != (char *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
+                               0x27c,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_c = param_1->allocList + param_2;
-  pcVar1 = local_c->name;
-  if ((pcVar1 == (char *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
-                               0x282,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  allocEntry = prim->allocList + allocIndex;
+  name_00 = allocEntry->name;
+  if ((name_00 == (char *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
+                               0x282,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_c->name = (char *)0x0;
-  track_flush_physical_alloc(pcVar1,*(int *)&param_1->memTrack);
-  if (param_2 == param_1->allocListCount - 1) {
-    uVar4 = param_1->pos - local_c->pos;
-    uVar5 = (int)uVar4 >> 0x1f;
-    track_physical_alloc(-((uVar4 ^ uVar5) - uVar5),pcVar1,*(int *)&param_1->memTrack,param_3);
-    uVar4 = param_1->pos - local_c->pos;
-    uVar5 = (int)uVar4 >> 0x1f;
-    freeTot = freeTot - ((uVar4 ^ uVar5) - uVar5);
+  allocEntry->name = (char *)0x0;
+  track_flush_physical_alloc(name_00,*(int *)&prim->memTrack);
+  if (allocIndex == prim->allocListCount - 1) {
+    uVar3 = prim->pos - allocEntry->pos;
+    uVar4 = (int)uVar3 >> 0x1f;
+    track_physical_alloc(-((uVar3 ^ uVar4) - uVar4),name_00,*(int *)&prim->memTrack,location);
+    uVar3 = prim->pos - allocEntry->pos;
+    uVar4 = (int)uVar3 >> 0x1f;
+    freeTot = freeTot - ((uVar3 ^ uVar4) - uVar4);
     tlPrintf("freed %.2f\n");
     do {
-      param_1->pos = local_c->pos;
-      if ((param_1->allocListCount == 0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp"
-                                   ,0x2a0,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      prim->pos = allocEntry->pos;
+      if ((prim->allocListCount == 0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp"
+                                   ,0x2a0,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      param_1->allocListCount = param_1->allocListCount - 1;
-    } while ((param_1->allocListCount != 0) &&
-            (local_c = param_1->allocList + (param_1->allocListCount - 1),
-            local_c->name == (char *)0x0));
+      prim->allocListCount = prim->allocListCount - 1;
+    } while ((prim->allocListCount != 0) &&
+            (allocEntry = prim->allocList + (prim->allocListCount - 1),
+            allocEntry->name == (char *)0x0));
   }
   else {
     track_PrintInfo();
@@ -223,34 +225,35 @@ void __cdecl PMem_FreeIndex(PhysicalMemoryPrim *param_1,uint param_2,int param_3
 
 // 007CF6A0  PMem_FreeInPrim  (universal/physicalmemory.cpp:685)
 
-void __cdecl PMem_FreeInPrim(PhysicalMemoryPrim *param_1,char *param_2,int param_3)
+void __cdecl PMem_FreeInPrim(PhysicalMemoryPrim *prim,char *name,int location)
 
 {
-  uint local_c;
+  uint allocIndex;
+  PhysicalMemoryAllocation *allocEntry;
   
-  local_c = 0;
+  allocIndex = 0;
   while( true ) {
-    if (param_1->allocListCount <= local_c) {
+    if (prim->allocListCount <= allocIndex) {
       return;
     }
-    if (param_1->allocList[local_c].name == param_2) break;
-    local_c = local_c + 1;
+    if (prim->allocList[allocIndex].name == name) break;
+    allocIndex = allocIndex + 1;
   }
-  PMem_FreeIndex(param_1,local_c,param_3);
+  PMem_FreeIndex(prim,allocIndex,location);
   return;
 }
 
 
 // 007CF630  PMem_Free  (universal/physicalmemory.cpp:896)
 
-void __cdecl PMem_Free(char *param_1)
+void __cdecl PMem_Free(char *name)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
+  for (i = 0; i < 2; i = i + 1) {
     Com_Printf(0x10,"PMem_Free( %s, %s )\n");
-    PMem_FreeInPrim(g_mem.prim + local_8,param_1,0);
+    PMem_FreeInPrim(g_mem.prim + i,name,0);
   }
   return;
 }
@@ -271,8 +274,8 @@ int __cdecl PMem_GetOverAllocatedSize(void)
 /* WARNING: Restarted to delay deadcode elimination for space: ram */
 
 void * __cdecl
-_PMem_AllocNamed(uint param_1,uint param_2,uint param_3,uint param_4,char *param_5,EMemTrack param_6
-                ,char *param_7,int param_8)
+_PMem_AllocNamed(uint size,uint alignment,uint type,uint allocType,char *name,EMemTrack memTrack,
+                char *file,int lineNum)
 
 {
   code *pcVar1;
@@ -281,59 +284,64 @@ _PMem_AllocNamed(uint param_1,uint param_2,uint param_3,uint param_4,char *param
   uint uVar4;
   uchar *puVar5;
   undefined3 in_stack_00000019;
-  uint local_14;
-  uint local_10;
-  int local_c;
+  uint highPos;
+  uchar *result;
+  int alignedSize;
+  PhysicalMemoryPrim *prim;
+  int location;
+  uint lowPos;
+  int allocedSize;
+  PhysicalMemory *pmem;
   
   PMem_Init();
-  local_14 = (uint)((param_3 & 0x80000000) != 0);
-  if ((param_1 == 0) &&
+  location = (int)((type & 0x80000000) != 0);
+  if ((size == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                                0x3cc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if ((param_2 == 0) &&
+  if ((alignment == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                                0x3cd,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  uVar4 = param_2 - 1;
-  if (param_4 == 0) {
-    local_10 = g_mem.prim[0].pos + uVar4 & ~uVar4;
-    uVar4 = local_10 + param_1;
+  uVar4 = alignment - 1;
+  if (allocType == 0) {
+    lowPos = g_mem.prim[0].pos + uVar4 & ~uVar4;
+    uVar4 = lowPos + size;
     g_overAllocatedSize = uVar4 - g_mem.prim[1].pos;
     if (0 < g_overAllocatedSize) {
       Com_PrintError(0x10,"Need %i more bytes of \'%s\' physical ram for alloc to succeed\n");
       Sys_OutOfMemErrorInternal
                 ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",0x420);
     }
-    local_c = uVar4 - g_mem.prim[0].pos;
+    allocedSize = uVar4 - g_mem.prim[0].pos;
     g_mem.prim[0].pos = uVar4;
   }
   else {
-    if ((param_4 != 1) &&
+    if ((allocType != 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",
                                  0x428,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pvVar3 = (void *)(*pcVar1)();
       return pvVar3;
     }
-    local_10 = g_mem.prim[param_4].pos - param_1 & ~uVar4;
-    g_overAllocatedSize = g_mem.prim[0].pos - local_10;
+    lowPos = g_mem.prim[allocType].pos - size & ~uVar4;
+    g_overAllocatedSize = g_mem.prim[0].pos - lowPos;
     if (0 < g_overAllocatedSize) {
       Com_Printf(0x10,"requested size:  %d  over allocation:  %d\n");
       Sys_OutOfMemErrorInternal
                 ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp",0x442);
     }
-    local_c = g_mem.prim[param_4].pos - local_10;
-    g_mem.prim[param_4].pos = local_10;
+    allocedSize = g_mem.prim[allocType].pos - lowPos;
+    g_mem.prim[allocType].pos = lowPos;
   }
-  puVar5 = g_mem.buf + local_10;
-  track_physical_alloc(local_c,param_5,_param_6,local_14);
+  puVar5 = g_mem.buf + lowPos;
+  track_physical_alloc(allocedSize,name,_memTrack,location);
   return puVar5;
 }
 
@@ -343,17 +351,17 @@ _PMem_AllocNamed(uint param_1,uint param_2,uint param_3,uint param_4,char *param
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void * __cdecl
-_PMem_Alloc(uint param_1,uint param_2,uint param_3,uint param_4,EMemTrack param_5,char *param_6,
-           int param_7)
+_PMem_Alloc(uint size,uint alignment,uint type,uint allocType,EMemTrack memTrack,char *file,
+           int lineNum)
 
 {
   void *pvVar1;
-  char local_10c [260];
+  char allocIdBuf [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_10c,"%s::%s %d");
-  pvVar1 = _PMem_AllocNamed(param_1,param_2,param_3,param_4,local_10c,param_5,param_6,param_7);
+  sprintf(allocIdBuf,"%s::%s %d");
+  pvVar1 = _PMem_AllocNamed(size,alignment,type,allocType,allocIdBuf,memTrack,file,lineNum);
   return pvVar1;
 }
 

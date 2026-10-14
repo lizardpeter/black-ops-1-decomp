@@ -12,10 +12,10 @@ void __cdecl DDL_Init(void)
 
 // 008E62E0  DDL_GetTotalBufferBitSize  (ddl/ddl_api.cpp:56)
 
-int __cdecl DDL_GetTotalBufferBitSize(ddlDef_t *param_1)
+int __cdecl DDL_GetTotalBufferBitSize(ddlDef_t *ddl)
 
 {
-  return param_1->size + 0x140;
+  return ddl->size + 0x140;
 }
 
 
@@ -23,16 +23,17 @@ int __cdecl DDL_GetTotalBufferBitSize(ddlDef_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_Printf(char *param_1)
+void __cdecl DDL_Printf(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((ddl_verbose != (dvar_s *)0x0) && ((ddl_verbose->current).enabled != false)) {
-    _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-    Com_Printf(0x1d,local_10c);
+    _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+    Com_Printf(0x1d,msg);
   }
   return;
 }
@@ -42,15 +43,16 @@ void __cdecl DDL_Printf(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_NoCheckPrintf(char *param_1)
+void __cdecl DDL_NoCheckPrintf(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-  Com_Printf(0x1d,local_10c);
+  _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+  Com_Printf(0x1d,msg);
   return;
 }
 
@@ -59,16 +61,17 @@ void __cdecl DDL_NoCheckPrintf(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_PrintWarning(char *param_1)
+void __cdecl DDL_PrintWarning(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((ddl_verbose != (dvar_s *)0x0) && ((ddl_verbose->current).enabled != false)) {
-    _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-    Com_PrintWarning(0x1d,local_10c);
+    _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+    Com_PrintWarning(0x1d,msg);
   }
   return;
 }
@@ -78,15 +81,16 @@ void __cdecl DDL_PrintWarning(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_NoCheckPrintWarning(char *param_1)
+void __cdecl DDL_NoCheckPrintWarning(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-  Com_PrintWarning(0x1d,local_10c);
+  _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+  Com_PrintWarning(0x1d,msg);
   return;
 }
 
@@ -95,16 +99,17 @@ void __cdecl DDL_NoCheckPrintWarning(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_PrintError(char *param_1)
+void __cdecl DDL_PrintError(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((ddl_verbose != (dvar_s *)0x0) && ((ddl_verbose->current).enabled != false)) {
-    _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-    Com_PrintError(0x1d,local_10c);
+    _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+    Com_PrintError(0x1d,msg);
   }
   return;
 }
@@ -114,37 +119,38 @@ void __cdecl DDL_PrintError(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_NoCheckPrintError(char *param_1)
+void __cdecl DDL_NoCheckPrintError(char *fmt)
 
 {
-  char local_10c [260];
+  char *argptr;
+  char msg [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_10c,0x100,param_1,&stack0x00000008);
-  Com_PrintError(0x1d,local_10c);
+  _vsnprintf(msg,0x100,fmt,&stack0x00000008);
+  Com_PrintError(0x1d,msg);
   return;
 }
 
 
 // 008E65C0  DDL_IsStateReadyForIO  (ddl/ddl_api.cpp:218)
 
-int __cdecl DDL_IsStateReadyForIO(ddlState_t *param_1)
+int __cdecl DDL_IsStateReadyForIO(ddlState_t *state)
 
 {
   int iVar1;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (state->member == (ddlMemberDef_t *)0x0) {
     DDL_PrintError("DDL: Member not found in path.\n");
     iVar1 = 0;
   }
   else {
-    iVar1 = DDL_Lookup_IsLeaf(param_1->member);
+    iVar1 = DDL_Lookup_IsLeaf(state->member);
     if (iVar1 == 0) {
       DDL_PrintError("DDL: Attempt to read or write a value to a non-leaf member.\n");
       iVar1 = 0;
     }
-    else if (param_1->absoluteOffset < param_1->ddl->size) {
+    else if (state->absoluteOffset < state->ddl->size) {
       iVar1 = 1;
     }
     else {
@@ -160,47 +166,47 @@ int __cdecl DDL_IsStateReadyForIO(ddlState_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DDL_AssociateBuffer(char *param_1,int param_2,ddlDef_t *param_3)
+int __cdecl DDL_AssociateBuffer(char *buffer,int bufferSize,ddlDef_t *ddl)
 
 {
   int iVar1;
   uint uVar2;
-  ddlBufferHeader_t local_38;
+  ddlBufferHeader_t header;
   uint local_10;
-  uint local_c;
-  int local_8;
+  int totalDDLBitSize;
+  int totalDDLByteSize;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = param_3->size + 0x140;
-  uVar2 = local_c & 0x80000007;
+  totalDDLBitSize = ddl->size + 0x140;
+  uVar2 = totalDDLBitSize & 0x80000007;
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xfffffff8) + 1;
   }
   if (uVar2 == 0) {
-    local_8 = (int)(local_c + ((int)local_c >> 0x1f & 7U)) >> 3;
+    totalDDLByteSize = (int)(totalDDLBitSize + (totalDDLBitSize >> 0x1f & 7U)) >> 3;
   }
   else {
-    local_8 = ((int)(local_c + ((int)local_c >> 0x1f & 7U)) >> 3) + 1;
+    totalDDLByteSize = ((int)(totalDDLBitSize + (totalDDLBitSize >> 0x1f & 7U)) >> 3) + 1;
   }
-  if (param_2 * 8 < (int)local_c) {
+  if (bufferSize * 8 < totalDDLBitSize) {
     Com_Error(ERR_DROP,
               "DDL: Buffer validation error - buffer is not large enough to accommodate this DDL. %d bytes required.\n"
              );
     iVar1 = 0;
   }
   else {
-    if ((int)local_c < param_2 * 8) {
+    if (totalDDLBitSize < bufferSize * 8) {
       DDL_Printf("DDL: Buffer is currently using %d bytes.\n");
     }
-    DDL_Buffer_ReadHeader(param_1,&local_38);
-    if (local_38.version == 0) {
+    DDL_Buffer_ReadHeader(buffer,&header);
+    if (header.version == 0) {
       DDL_PrintWarning(
                       "DDL: Buffer was not associated with any version. Associating it with version %d.\n"
                       );
-      local_38.version = param_3->version;
-      DDL_Buffer_WriteHeader(param_1,&local_38);
+      header.version = ddl->version;
+      DDL_Buffer_WriteHeader(buffer,&header);
     }
-    else if (local_38.version != param_3->version) {
+    else if (header.version != ddl->version) {
       DDL_PrintError(
                     "DDL: Buffer validation error - buffer is already associated with a different DDL version.\n"
                     );
@@ -217,23 +223,23 @@ int __cdecl DDL_AssociateBuffer(char *param_1,int param_2,ddlDef_t *param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-DDL_FixBufferVersion(char *param_1,ddlDef_t *param_2,char *param_3,char *param_4,int param_5)
+DDL_FixBufferVersion(char *buffer,ddlDef_t *ddlTo,char *ddlName,char *backupBuffer,int bufferSize)
 
 {
   int iVar1;
-  ddlBufferHeader_t local_34;
+  ddlBufferHeader_t header;
   uint local_c;
-  ddlDef_t *local_8;
+  ddlDef_t *ddlFrom;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  DDL_Buffer_ReadHeader(param_1,&local_34);
-  local_8 = DDL_LoadAssetWithVersion(param_3,local_34.version);
-  if (local_8 == (ddlDef_t *)0x0) {
+  DDL_Buffer_ReadHeader(buffer,&header);
+  ddlFrom = DDL_LoadAssetWithVersion(ddlName,header.version);
+  if (ddlFrom == (ddlDef_t *)0x0) {
     DDL_PrintError("DDL: Could not convert versions. Old version not found.\n");
     iVar1 = 0;
   }
   else {
-    iVar1 = DDL_Converter_Versions(local_8,param_2,param_1,param_4,param_5);
+    iVar1 = DDL_Converter_Versions(ddlFrom,ddlTo,buffer,backupBuffer,bufferSize);
   }
   return iVar1;
 }
@@ -244,28 +250,29 @@ DDL_FixBufferVersion(char *param_1,ddlDef_t *param_2,char *param_3,char *param_4
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-ddlDef_t * __cdecl DDL_LoadAssetWithVersion(char *param_1,int param_2)
+ddlDef_t * __cdecl DDL_LoadAssetWithVersion(char *fileName,int version)
 
 {
   XAssetHeader XVar1;
-  XModel *local_c;
-  XModel *local_8;
+  ddlRoot_t *ddlRoot;
+  ddlDef_t *currDef;
+  ddlDef_t *maxDef;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_DDL,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_DDL,fileName,true,-1);
   if (XVar1.xmodelPieces != (XModelPieces *)0x0) {
-    local_c = (XVar1.destructibleDef)->model;
-    local_8 = local_c;
-    if (param_2 == 0) {
-      for (; local_c != (XModel *)0x0; local_c = (XModel *)local_c->partClassification) {
-        if ((int)local_8->name < (int)local_c->name) {
-          local_8 = local_c;
+    currDef = (XVar1.ddlRoot)->ddlDef;
+    maxDef = currDef;
+    if (version == 0) {
+      for (; currDef != (ddlDef_t *)0x0; currDef = currDef->next) {
+        if (maxDef->version < currDef->version) {
+          maxDef = currDef;
         }
       }
-      return (ddlDef_t *)local_8;
+      return maxDef;
     }
-    for (; local_c != (XModel *)0x0; local_c = (XModel *)local_c->partClassification) {
-      if (local_c->name == (char *)param_2) {
-        return (ddlDef_t *)local_c;
+    for (; currDef != (ddlDef_t *)0x0; currDef = currDef->next) {
+      if (currDef->version == version) {
+        return currDef;
       }
     }
   }
@@ -275,63 +282,64 @@ ddlDef_t * __cdecl DDL_LoadAssetWithVersion(char *param_1,int param_2)
 
 // 008E6860  DDL_LoadAsset  (ddl/ddl_api.cpp:380)
 
-ddlDef_t * __cdecl DDL_LoadAsset(char *param_1)
+ddlDef_t * __cdecl DDL_LoadAsset(char *fileName)
 
 {
   ddlDef_t *pdVar1;
   
-  pdVar1 = DDL_LoadAssetWithVersion(param_1,0);
+  pdVar1 = DDL_LoadAssetWithVersion(fileName,0);
   return pdVar1;
 }
 
 
 // 008E6880  DDL_CopyFromBaseState  (ddl/ddl_api.cpp:456)
 
-void __cdecl DDL_CopyFromBaseState(ddlState_t *param_1,ddlState_t *param_2)
+void __cdecl DDL_CopyFromBaseState(ddlState_t *newState,ddlState_t *baseState)
 
 {
-  param_1->absoluteOffset = param_2->absoluteOffset;
-  param_1->arrayIndex = param_2->arrayIndex;
-  param_1->ddl = param_2->ddl;
-  param_1->member = param_2->member;
+  newState->absoluteOffset = baseState->absoluteOffset;
+  newState->arrayIndex = baseState->arrayIndex;
+  newState->ddl = baseState->ddl;
+  newState->member = baseState->member;
   return;
 }
 
 
 // 008E68C0  DDL_Reset  (ddl/ddl_api.cpp:508)
 
-void __cdecl DDL_Reset(ddlState_t *param_1,ddlDef_t *param_2)
+void __cdecl DDL_Reset(ddlState_t *searchState,ddlDef_t *ddl)
 
 {
-  DDL_Lookup_ClearState(param_1);
-  param_1->ddl = param_2;
+  DDL_Lookup_ClearState(searchState);
+  searchState->ddl = ddl;
   return;
 }
 
 
 // 008E68E0  DDL_MoveTo  (ddl/ddl_api.cpp:522)
 
-int __cdecl DDL_MoveTo(ddlState_t *param_1,ddlState_t *param_2,int param_3)
+int __cdecl DDL_MoveTo(ddlState_t *searchState,ddlState_t *resultState,int argNum)
 
 {
   int iVar1;
-  int local_10;
-  undefined4 *local_8;
+  int i;
+  char *memberName;
+  char *args;
   
-  param_2->absoluteOffset = param_1->absoluteOffset;
-  param_2->arrayIndex = param_1->arrayIndex;
-  param_2->ddl = param_1->ddl;
-  param_2->member = param_1->member;
-  local_10 = 0;
-  local_8 = (undefined4 *)&stack0x00000010;
+  resultState->absoluteOffset = searchState->absoluteOffset;
+  resultState->arrayIndex = searchState->arrayIndex;
+  resultState->ddl = searchState->ddl;
+  resultState->member = searchState->member;
+  i = 0;
+  args = &stack0x00000010;
   while( true ) {
-    if (param_3 <= local_10) {
+    if (argNum <= i) {
       return 1;
     }
-    iVar1 = DDL_Lookup_MoveTo(param_2,(char *)*local_8,param_2);
+    iVar1 = DDL_Lookup_MoveTo(resultState,*(char **)args,resultState);
     if (iVar1 == 0) break;
-    local_10 = local_10 + 1;
-    local_8 = local_8 + 1;
+    i = i + 1;
+    args = args + 4;
   }
   return 0;
 }
@@ -339,42 +347,42 @@ int __cdecl DDL_MoveTo(ddlState_t *param_1,ddlState_t *param_2,int param_3)
 
 // 008E6980  DDL_MoveToPath  (ddl/ddl_api.cpp:554)
 
-int __cdecl DDL_MoveToPath(ddlState_t *param_1,ddlState_t *param_2,int param_3,char **param_4)
+int __cdecl DDL_MoveToPath(ddlState_t *searchState,ddlState_t *resultState,int depth,char **ddlPath)
 
 {
   int iVar1;
-  int iVar2;
-  int local_18;
-  ddlState_t local_14;
+  int checkValidIndex;
+  int i;
+  ddlState_t tempState;
   
-  if ((*param_4 == (char *)0x0) || (iVar1 = DDL_MoveToName(param_1,&local_14,*param_4), iVar1 == 0))
-  {
+  if ((*ddlPath == (char *)0x0) ||
+     (iVar1 = DDL_MoveToName(searchState,&tempState,*ddlPath), iVar1 == 0)) {
     iVar1 = 0;
   }
   else {
-    for (local_18 = 1; local_18 < param_3; local_18 = local_18 + 1) {
-      if (param_4[local_18] != (char *)0x0) {
-        if (((local_14.member == (ddlMemberDef_t *)0x0) || ((local_14.member)->arraySize < 2)) ||
-           ((local_14.member)->enumIndex != -1)) {
-          iVar1 = DDL_MoveToName(&local_14,&local_14,param_4[local_18]);
+    for (i = 1; i < depth; i = i + 1) {
+      if (ddlPath[i] != (char *)0x0) {
+        if (((tempState.member == (ddlMemberDef_t *)0x0) || ((tempState.member)->arraySize < 2)) ||
+           ((tempState.member)->enumIndex != -1)) {
+          iVar1 = DDL_MoveToName(&tempState,&tempState,ddlPath[i]);
           if (iVar1 == 0) {
             return 0;
           }
         }
         else {
-          iVar2 = 1;
-          iVar1 = atoi(param_4[local_18]);
-          iVar1 = DDL_MoveToIndex(&local_14,&local_14,iVar1,iVar2);
+          checkValidIndex = 1;
+          iVar1 = atoi(ddlPath[i]);
+          iVar1 = DDL_MoveToIndex(&tempState,&tempState,iVar1,checkValidIndex);
           if (iVar1 == 0) {
             return 0;
           }
         }
       }
     }
-    param_2->absoluteOffset = local_14.absoluteOffset;
-    param_2->arrayIndex = local_14.arrayIndex;
-    param_2->member = local_14.member;
-    param_2->ddl = local_14.ddl;
+    resultState->absoluteOffset = tempState.absoluteOffset;
+    resultState->arrayIndex = tempState.arrayIndex;
+    resultState->member = tempState.member;
+    resultState->ddl = tempState.ddl;
     iVar1 = 1;
   }
   return iVar1;
@@ -383,69 +391,70 @@ int __cdecl DDL_MoveToPath(ddlState_t *param_1,ddlState_t *param_2,int param_3,c
 
 // 008E6A70  DDL_MoveToStart  (ddl/ddl_api.cpp:594)
 
-int __cdecl DDL_MoveToStart(ddlState_t *param_1,ddlDef_t *param_2)
+int __cdecl DDL_MoveToStart(ddlState_t *searchState,ddlDef_t *ddl)
 
 {
   int iVar1;
   
-  iVar1 = DDL_Lookup_MoveToStart(param_1,param_2);
+  iVar1 = DDL_Lookup_MoveToStart(searchState,ddl);
   return iVar1;
 }
 
 
 // 008E6A90  DDL_MoveToName  (ddl/ddl_api.cpp:606)
 
-int __cdecl DDL_MoveToName(ddlState_t *param_1,ddlState_t *param_2,char *param_3)
+int __cdecl DDL_MoveToName(ddlState_t *searchState,ddlState_t *resultState,char *name)
 
 {
   int iVar1;
   
-  iVar1 = DDL_Lookup_MoveTo(param_1,param_3,param_2);
+  iVar1 = DDL_Lookup_MoveTo(searchState,name,resultState);
   return iVar1;
 }
 
 
 // 008E6AB0  DDL_MoveToIndex  (ddl/ddl_api.cpp:619)
 
-int __cdecl DDL_MoveToIndex(ddlState_t *param_1,ddlState_t *param_2,int param_3,int param_4)
+int __cdecl
+DDL_MoveToIndex(ddlState_t *searchState,ddlState_t *resultState,int arrayIndex,int checkValidIndex)
 
 {
   int iVar1;
   
-  iVar1 = DDL_Lookup_MoveToIndex(param_1,param_3,param_2,param_4);
+  iVar1 = DDL_Lookup_MoveToIndex(searchState,arrayIndex,resultState,checkValidIndex);
   return iVar1;
 }
 
 
 // 008E6AD0  DDL_MoveNext  (ddl/ddl_api.cpp:631)
 
-int __cdecl DDL_MoveNext(ddlState_t *param_1,ddlState_t *param_2)
+int __cdecl DDL_MoveNext(ddlState_t *searchState,ddlState_t *resultState)
 
 {
   int iVar1;
   
-  iVar1 = DDL_Lookup_MoveNext(param_1,param_2);
+  iVar1 = DDL_Lookup_MoveNext(searchState,resultState);
   return iVar1;
 }
 
 
 // 008E6AF0  DDL_IterateNext  (ddl/ddl_api.cpp:647)
 
-int __cdecl DDL_IterateNext(ddlState_t *param_1,ddlState_t *param_2)
+int __cdecl DDL_IterateNext(ddlState_t *searchState,ddlState_t *resultState)
 
 {
   int iVar1;
   
-  if (param_1->member->arraySize < 2) {
+  if (searchState->member->arraySize < 2) {
     iVar1 = 0;
   }
-  else if (param_1->arrayIndex + 1 < param_1->member->arraySize) {
-    DDL_CopyFromBaseState(param_2,param_1);
-    if (param_1->arrayIndex != -1) {
-      param_2->absoluteOffset =
-           param_2->member->size / param_2->member->arraySize + param_2->absoluteOffset;
+  else if (searchState->arrayIndex + 1 < searchState->member->arraySize) {
+    DDL_CopyFromBaseState(resultState,searchState);
+    if (searchState->arrayIndex != -1) {
+      resultState->absoluteOffset =
+           resultState->member->size / resultState->member->arraySize + resultState->absoluteOffset;
     }
-    param_2->arrayIndex = param_2->arrayIndex + 1;
+    resultState->arrayIndex = resultState->arrayIndex + 1;
     iVar1 = 1;
   }
   else {
@@ -457,22 +466,22 @@ int __cdecl DDL_IterateNext(ddlState_t *param_1,ddlState_t *param_2)
 
 // 008E6B70  DDL_IteratePrev  (ddl/ddl_api.cpp:679)
 
-int __cdecl DDL_IteratePrev(ddlState_t *param_1,ddlState_t *param_2)
+int __cdecl DDL_IteratePrev(ddlState_t *searchState,ddlState_t *resultState)
 
 {
   int iVar1;
   
-  if (param_1->member->arraySize < 2) {
+  if (searchState->member->arraySize < 2) {
     iVar1 = 0;
   }
-  else if (param_1->arrayIndex + -1 < 0) {
+  else if (searchState->arrayIndex + -1 < 0) {
     iVar1 = 0;
   }
   else {
-    DDL_CopyFromBaseState(param_2,param_1);
-    param_2->absoluteOffset =
-         param_2->absoluteOffset - param_2->member->size / param_2->member->arraySize;
-    param_2->arrayIndex = param_2->arrayIndex + -1;
+    DDL_CopyFromBaseState(resultState,searchState);
+    resultState->absoluteOffset =
+         resultState->absoluteOffset - resultState->member->size / resultState->member->arraySize;
+    resultState->arrayIndex = resultState->arrayIndex + -1;
     iVar1 = 1;
   }
   return iVar1;
@@ -481,23 +490,23 @@ int __cdecl DDL_IteratePrev(ddlState_t *param_1,ddlState_t *param_2)
 
 // 008E6BE0  DDL_IterateFirst  (ddl/ddl_api.cpp:737)
 
-int __cdecl DDL_IterateFirst(ddlState_t *param_1,ddlState_t *param_2)
+int __cdecl DDL_IterateFirst(ddlState_t *searchState,ddlState_t *resultState)
 
 {
   int iVar1;
   
-  if (param_1->member->arraySize < 2) {
+  if (searchState->member->arraySize < 2) {
     iVar1 = 0;
   }
   else {
-    DDL_CopyFromBaseState(param_2,param_1);
-    if (param_2->member->enumIndex == -1) {
+    DDL_CopyFromBaseState(resultState,searchState);
+    if (resultState->member->enumIndex == -1) {
       do {
-        iVar1 = DDL_IteratePrev(param_2,param_2);
+        iVar1 = DDL_IteratePrev(resultState,resultState);
       } while (iVar1 != 0);
     }
     else {
-      param_2->arrayIndex = 0;
+      resultState->arrayIndex = 0;
     }
     iVar1 = 1;
   }
@@ -507,10 +516,10 @@ int __cdecl DDL_IterateFirst(ddlState_t *param_1,ddlState_t *param_2)
 
 // 008E6CD0  DDL_SetValueChanged  (ddl/ddl_api.cpp:787)
 
-void __cdecl DDL_SetValueChanged(char *param_1)
+void __cdecl DDL_SetValueChanged(char *buffer)
 
 {
-  DDL_SetUserFlag(param_1,0,true);
+  DDL_SetUserFlag(buffer,0,true);
   return;
 }
 
@@ -518,27 +527,27 @@ void __cdecl DDL_SetValueChanged(char *param_1)
 // 008E6DB0  DDL_WriteIntValueIfChanged  (ddl/ddl_api.cpp:792)
 
 ddlIntValueChanged_e __cdecl
-DDL_WriteIntValueIfChanged(char *param_1,int param_2,int param_3,uint param_4)
+DDL_WriteIntValueIfChanged(char *buffer,int offset,int size,uint valueToInsert)
 
 {
   int iVar1;
   ddlIntValueChanged_e dVar2;
-  uint local_8;
+  uint oldValue;
   
-  iVar1 = DDL_Buffer_ReadBits(param_1,param_2,param_3,&local_8);
+  iVar1 = DDL_Buffer_ReadBits(buffer,offset,size,&oldValue);
   if (iVar1 == 0) {
     dVar2 = DDL_INTVALUE_ERROR;
   }
-  else if (local_8 == param_4) {
+  else if (oldValue == valueToInsert) {
     dVar2 = DDL_INTVALUE_SAME;
   }
   else {
-    iVar1 = DDL_Buffer_WriteBits(param_1,param_2,param_3,param_4);
+    iVar1 = DDL_Buffer_WriteBits(buffer,offset,size,valueToInsert);
     if (iVar1 == 0) {
       dVar2 = DDL_INTVALUE_ERROR;
     }
     else {
-      DDL_SetValueChanged(param_1);
+      DDL_SetValueChanged(buffer);
       dVar2 = DDL_INTVALUE_CHANGED;
     }
   }
@@ -548,24 +557,26 @@ DDL_WriteIntValueIfChanged(char *param_1,int param_2,int param_3,uint param_4)
 
 // 008E6C40  DDL_SetRawBytes  (ddl/ddl_api.cpp:823)
 
-int __cdecl DDL_SetRawBytes(char *param_1,int param_2,int param_3,char *param_4)
+int __cdecl DDL_SetRawBytes(char *buffer,int offset,int size,char *valueToInsert)
 
 {
   int iVar1;
-  int local_c;
+  uint uValue;
+  int i;
+  int bitOffset;
   
-  iVar1 = DDL_Buffer_ClearBits(param_1,param_2 * 8,param_3 << 3);
+  iVar1 = DDL_Buffer_ClearBits(buffer,offset * 8,size << 3);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
-      iVar1 = DDL_Buffer_WriteBits(param_1,param_2 * 8 + local_c * 8,8,(int)param_4[local_c]);
+    for (i = 0; i < size; i = i + 1) {
+      iVar1 = DDL_Buffer_WriteBits(buffer,offset * 8 + i * 8,8,(int)valueToInsert[i]);
       if (iVar1 == 0) {
         return 0;
       }
     }
-    DDL_SetValueChanged(param_1);
+    DDL_SetValueChanged(buffer);
     iVar1 = 1;
   }
   return iVar1;
@@ -575,7 +586,7 @@ int __cdecl DDL_SetRawBytes(char *param_1,int param_2,int param_3,char *param_4)
 // 008E6CF0  DDL_WriteIntValueInternal  (ddl/ddl_api.cpp:858)
 
 int __cdecl
-DDL_WriteIntValueInternal(ddlMemberDef_t *param_1,int param_2,uint param_3,char *param_4)
+DDL_WriteIntValueInternal(ddlMemberDef_t *member,int absoluteOffset,uint valueToInsert,char *buffer)
 
 {
   code *pcVar1;
@@ -583,7 +594,7 @@ DDL_WriteIntValueInternal(ddlMemberDef_t *param_1,int param_2,uint param_3,char 
   int iVar3;
   ddlIntValueChanged_e dVar4;
   
-  if (((param_1->type != 2) && (param_1->type != 1)) && (param_1->type != 0)) {
+  if (((member->type != 2) && (member->type != 1)) && (member->type != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x35b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -591,13 +602,14 @@ DDL_WriteIntValueInternal(ddlMemberDef_t *param_1,int param_2,uint param_3,char 
       return iVar3;
     }
   }
-  if ((param_3 < param_1->min) || (param_1->max < param_3)) {
+  if ((valueToInsert < member->min) || (member->max < valueToInsert)) {
     DDL_NoCheckPrintWarning("DDL: Trying to set a value of %d when the valid range is %d to %d\n");
     iVar3 = 0;
   }
   else {
     dVar4 = DDL_WriteIntValueIfChanged
-                      (param_4,param_2,param_1->size / param_1->arraySize,param_3 - param_1->min);
+                      (buffer,absoluteOffset,member->size / member->arraySize,
+                       valueToInsert - member->min);
     if (dVar4 == DDL_INTVALUE_ERROR) {
       iVar3 = 0;
     }
@@ -612,23 +624,27 @@ DDL_WriteIntValueInternal(ddlMemberDef_t *param_1,int param_2,uint param_3,char 
 // 008E6E20  DDL_WriteInt64ValueInternal  (ddl/ddl_api.cpp:890)
 
 int __cdecl
-DDL_WriteInt64ValueInternal(ddlMemberDef_t *param_1,int param_2,ulong64 param_3,char *param_4)
+DDL_WriteInt64ValueInternal
+          (ddlMemberDef_t *member,int absoluteOffset,ulong64 valueToInsert,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint extraout_EAX;
+  uint valueToInsert_00;
   ddlIntValueChanged_e dVar4;
+  uint low;
+  int size;
+  uint high;
   
-  if ((param_1->type != 3) &&
+  if ((member->type != 3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x37d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1->size / param_1->arraySize != 0x40) &&
+  if ((member->size / member->arraySize != 0x40) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x37e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -636,10 +652,10 @@ DDL_WriteInt64ValueInternal(ddlMemberDef_t *param_1,int param_2,ulong64 param_3,
     return iVar3;
   }
   _aullshr();
-  iVar3 = (param_1->size / param_1->arraySize) / 2;
-  dVar4 = DDL_WriteIntValueIfChanged(param_4,param_2,iVar3,(uint)param_3);
+  iVar3 = (member->size / member->arraySize) / 2;
+  dVar4 = DDL_WriteIntValueIfChanged(buffer,absoluteOffset,iVar3,(uint)valueToInsert);
   if ((dVar4 != DDL_INTVALUE_ERROR) &&
-     (dVar4 = DDL_WriteIntValueIfChanged(param_4,param_2 + 0x20,iVar3,extraout_EAX),
+     (dVar4 = DDL_WriteIntValueIfChanged(buffer,absoluteOffset + 0x20,iVar3,valueToInsert_00),
      dVar4 != DDL_INTVALUE_ERROR)) {
     return 1;
   }
@@ -650,7 +666,7 @@ DDL_WriteInt64ValueInternal(ddlMemberDef_t *param_1,int param_2,ulong64 param_3,
 // 008E6F10  DDL_WriteStringValueInternal  (ddl/ddl_api.cpp:922)
 
 int __cdecl
-DDL_WriteStringValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3,char *param_4)
+DDL_WriteStringValueInternal(ddlMemberDef_t *member,int absoluteOffset,char *value,char *buffer)
 
 {
   char cVar1;
@@ -659,41 +675,43 @@ DDL_WriteStringValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3,c
   int iVar4;
   uint uVar5;
   char *local_18;
-  uint local_14;
-  uint local_10;
+  uint i;
+  uint len;
+  uint uValue;
+  uint maxChars;
   
-  if ((param_1->type != 5) &&
+  if ((member->type != 5) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x39d,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_18 = param_3;
+  local_18 = value;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  iVar4 = param_1->size / param_1->arraySize;
+  iVar4 = member->size / member->arraySize;
   uVar5 = (int)(iVar4 + (iVar4 >> 0x1f & 7U)) >> 3;
-  local_10 = (int)local_18 - (int)(param_3 + 1);
-  if (uVar5 < (uint)((int)local_18 - (int)(param_3 + 1))) {
+  len = (int)local_18 - (int)(value + 1);
+  if (uVar5 < (uint)((int)local_18 - (int)(value + 1))) {
     Com_PrintError(0x1d,
                    "DDL: \'%s\' too long. Can be up to %d chars but was %d chars. Truncating.\n");
-    local_10 = uVar5;
+    len = uVar5;
   }
-  iVar4 = DDL_Buffer_ClearBits(param_4,param_2,param_1->size / param_1->arraySize);
+  iVar4 = DDL_Buffer_ClearBits(buffer,absoluteOffset,member->size / member->arraySize);
   if (iVar4 == 0) {
     iVar4 = 0;
   }
   else {
-    for (local_14 = 0; local_14 < local_10; local_14 = local_14 + 1) {
-      iVar4 = DDL_Buffer_WriteBits(param_4,param_2 + local_14 * 8,8,(int)param_3[local_14]);
+    for (i = 0; i < len; i = i + 1) {
+      iVar4 = DDL_Buffer_WriteBits(buffer,absoluteOffset + i * 8,8,(int)value[i]);
       if (iVar4 == 0) {
         return 0;
       }
     }
-    DDL_SetValueChanged(param_4);
+    DDL_SetValueChanged(buffer);
     iVar4 = 1;
   }
   return iVar4;
@@ -702,44 +720,45 @@ DDL_WriteStringValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3,c
 
 // 008E7040  DDL_WriteValueInternal  (ddl/ddl_api.cpp:964)
 
-int __cdecl DDL_WriteValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3,char *param_4)
+int __cdecl
+DDL_WriteValueInternal(ddlMemberDef_t *member,int absoluteOffset,char *valueToInsert,char *buffer)
 
 {
-  uint uVar1;
-  int iVar2;
-  ulong64 uVar3;
+  uint valueToInsert_00;
+  int iVar1;
+  ulong64 valueToInsert_01;
   
-  switch(param_1->type) {
+  switch(member->type) {
   case 0:
   case 1:
   case 2:
-    uVar1 = atoi(param_3);
-    iVar2 = DDL_WriteIntValueInternal(param_1,param_2,uVar1,param_4);
+    valueToInsert_00 = atoi(valueToInsert);
+    iVar1 = DDL_WriteIntValueInternal(member,absoluteOffset,valueToInsert_00,buffer);
     break;
   case 3:
-    uVar3 = I_atoi64(param_3);
-    iVar2 = DDL_WriteInt64ValueInternal(param_1,param_2,uVar3,param_4);
+    valueToInsert_01 = I_atoi64(valueToInsert);
+    iVar1 = DDL_WriteInt64ValueInternal(member,absoluteOffset,valueToInsert_01,buffer);
     break;
   default:
-    iVar2 = 0;
+    iVar1 = 0;
     break;
   case 5:
-    iVar2 = DDL_WriteStringValueInternal(param_1,param_2,param_3,param_4);
+    iVar1 = DDL_WriteStringValueInternal(member,absoluteOffset,valueToInsert,buffer);
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 008E70E0  DDL_SetInt  (ddl/ddl_api.cpp:987)
 
-int __cdecl DDL_SetInt(ddlState_t *param_1,uint param_2,char *param_3)
+int __cdecl DDL_SetInt(ddlState_t *searchState,uint value,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x3dc,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -747,7 +766,7 @@ int __cdecl DDL_SetInt(ddlState_t *param_1,uint param_2,char *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x3dd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -755,12 +774,12 @@ int __cdecl DDL_SetInt(ddlState_t *param_1,uint param_2,char *param_3)
       return iVar3;
     }
   }
-  iVar3 = DDL_IsStateReadyForIO(param_1);
+  iVar3 = DDL_IsStateReadyForIO(searchState);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
-    iVar3 = DDL_WriteIntValueInternal(param_1->member,param_1->absoluteOffset,param_2,param_3);
+    iVar3 = DDL_WriteIntValueInternal(searchState->member,searchState->absoluteOffset,value,buffer);
   }
   return iVar3;
 }
@@ -768,7 +787,7 @@ int __cdecl DDL_SetInt(ddlState_t *param_1,uint param_2,char *param_3)
 
 // 008E7180  DDL_SetInt64  (ddl/ddl_api.cpp:1045)
 
-int __cdecl DDL_SetInt64(ddlState_t *param_1,ulong64 param_2,char *param_3)
+int __cdecl DDL_SetInt64(ddlState_t *searchState,ulong64 param_2,char *param_3)
 
 {
   code *pcVar1;
@@ -776,7 +795,7 @@ int __cdecl DDL_SetInt64(ddlState_t *param_1,ulong64 param_2,char *param_3)
   int iVar3;
   undefined4 in_stack_00000008;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x416,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -792,13 +811,13 @@ int __cdecl DDL_SetInt64(ddlState_t *param_1,ulong64 param_2,char *param_3)
       return iVar3;
     }
   }
-  iVar3 = DDL_IsStateReadyForIO(param_1);
+  iVar3 = DDL_IsStateReadyForIO(searchState);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
     iVar3 = DDL_WriteInt64ValueInternal
-                      (param_1->member,param_1->absoluteOffset,
+                      (searchState->member,searchState->absoluteOffset,
                        CONCAT44((undefined4)param_2,in_stack_00000008),param_2._4_4_);
   }
   return iVar3;
@@ -807,14 +826,14 @@ int __cdecl DDL_SetInt64(ddlState_t *param_1,ulong64 param_2,char *param_3)
 
 // 008E7220  DDL_SetString  (ddl/ddl_api.cpp:1103)
 
-int __cdecl DDL_SetString(ddlState_t *param_1,char *param_2,char *param_3)
+int __cdecl DDL_SetString(ddlState_t *searchState,char *value,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x450,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -822,7 +841,7 @@ int __cdecl DDL_SetString(ddlState_t *param_1,char *param_2,char *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x451,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -830,12 +849,13 @@ int __cdecl DDL_SetString(ddlState_t *param_1,char *param_2,char *param_3)
       return iVar3;
     }
   }
-  iVar3 = DDL_IsStateReadyForIO(param_1);
+  iVar3 = DDL_IsStateReadyForIO(searchState);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
-    iVar3 = DDL_WriteStringValueInternal(param_1->member,param_1->absoluteOffset,param_2,param_3);
+    iVar3 = DDL_WriteStringValueInternal
+                      (searchState->member,searchState->absoluteOffset,value,buffer);
   }
   return iVar3;
 }
@@ -843,14 +863,14 @@ int __cdecl DDL_SetString(ddlState_t *param_1,char *param_2,char *param_3)
 
 // 008E72C0  DDL_SetValue  (ddl/ddl_api.cpp:1162)
 
-int __cdecl DDL_SetValue(ddlState_t *param_1,char *param_2,char *param_3)
+int __cdecl DDL_SetValue(ddlState_t *searchState,char *value,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x48b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -858,7 +878,7 @@ int __cdecl DDL_SetValue(ddlState_t *param_1,char *param_2,char *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x48c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -866,13 +886,13 @@ int __cdecl DDL_SetValue(ddlState_t *param_1,char *param_2,char *param_3)
       return iVar3;
     }
   }
-  if ((param_1->member->arraySize < 2) || (param_1->arrayIndex != -1)) {
-    iVar3 = DDL_IsStateReadyForIO(param_1);
+  if ((searchState->member->arraySize < 2) || (searchState->arrayIndex != -1)) {
+    iVar3 = DDL_IsStateReadyForIO(searchState);
     if (iVar3 == 0) {
       iVar3 = 0;
     }
     else {
-      iVar3 = DDL_WriteValueInternal(param_1->member,param_1->absoluteOffset,param_2,param_3);
+      iVar3 = DDL_WriteValueInternal(searchState->member,searchState->absoluteOffset,value,buffer);
     }
   }
   else {
@@ -886,16 +906,16 @@ int __cdecl DDL_SetValue(ddlState_t *param_1,char *param_2,char *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DDL_SetUserFlag(char *param_1,int param_2,bool param_3)
+void __cdecl DDL_SetUserFlag(char *buffer,int flagIndex,bool state)
 
 {
   code *pcVar1;
   bool bVar2;
-  ddlBufferHeader_t local_30;
+  ddlBufferHeader_t header;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (7 < param_2) {
+  if (7 < flagIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x502,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -903,96 +923,97 @@ void __cdecl DDL_SetUserFlag(char *param_1,int param_2,bool param_3)
       return;
     }
   }
-  DDL_Buffer_ReadHeader(param_1,&local_30);
-  if (param_3) {
-    local_30.flags = local_30.flags | (byte)(1 << ((byte)param_2 & 0x1f));
+  DDL_Buffer_ReadHeader(buffer,&header);
+  if (state) {
+    header.flags = header.flags | (byte)(1 << ((byte)flagIndex & 0x1f));
   }
   else {
-    local_30.flags = local_30.flags & ~(byte)(1 << ((byte)param_2 & 0x1f));
+    header.flags = header.flags & ~(byte)(1 << ((byte)flagIndex & 0x1f));
   }
-  DDL_Buffer_WriteHeader(param_1,&local_30);
+  DDL_Buffer_WriteHeader(buffer,&header);
   return;
 }
 
 
 // 008E7410  DDL_ReadIntValueInternal  (ddl/ddl_api.cpp:1322)
 
-uint __cdecl DDL_ReadIntValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3)
+uint __cdecl DDL_ReadIntValueInternal(ddlMemberDef_t *member,int absoluteOffset,char *buffer)
 
 {
   int iVar1;
-  uint local_8;
+  uint uVar2;
+  uint uValue;
   
-  iVar1 = DDL_Buffer_ReadBits(param_3,param_2,param_1->size / param_1->arraySize,&local_8);
+  iVar1 = DDL_Buffer_ReadBits(buffer,absoluteOffset,member->size / member->arraySize,&uValue);
   if (iVar1 == 0) {
-    local_8 = 0;
+    uVar2 = 0;
   }
   else {
-    local_8 = local_8 + param_1->min;
+    uVar2 = uValue + member->min;
   }
-  return local_8;
+  return uVar2;
 }
 
 
 // 008E7450  DDL_ReadInt64ValueInternal  (ddl/ddl_api.cpp:1343)
 
-ulong64 __cdecl DDL_ReadInt64ValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3)
+ulong64 __cdecl DDL_ReadInt64ValueInternal(ddlMemberDef_t *member,int absoluteOffset,char *buffer)
 
 {
   int iVar1;
   uint extraout_EAX;
   undefined4 extraout_EDX;
-  uint local_14;
-  uint local_10;
-  uint local_c;
+  uint low;
+  uint high;
+  uint value;
   undefined4 local_8;
   
-  local_c = 0;
+  value = 0;
   local_8 = 0;
-  iVar1 = DDL_Buffer_ReadBits(param_3,param_2,(param_1->size / param_1->arraySize) / 2,&local_14);
+  iVar1 = DDL_Buffer_ReadBits(buffer,absoluteOffset,(member->size / member->arraySize) / 2,&low);
   if ((iVar1 != 0) &&
-     (iVar1 = DDL_Buffer_ReadBits(param_3,param_2 + 0x20,(param_1->size / param_1->arraySize) / 2,
-                                  &local_10), iVar1 != 0)) {
-    local_c = local_10;
+     (iVar1 = DDL_Buffer_ReadBits(buffer,absoluteOffset + 0x20,
+                                  (member->size / member->arraySize) / 2,&high), iVar1 != 0)) {
+    value = high;
     local_8 = 0;
     _allshl();
-    local_c = local_14 | extraout_EAX;
+    value = low | extraout_EAX;
     local_8 = extraout_EDX;
   }
-  return CONCAT44(local_8,local_c);
+  return CONCAT44(local_8,value);
 }
 
 
 // 008E7500  DDL_ReadStringValueInternal  (ddl/ddl_api.cpp:1372)
 
-char * __cdecl DDL_ReadStringValueInternal(ddlMemberDef_t *param_1,int param_2,char *param_3)
+char * __cdecl DDL_ReadStringValueInternal(ddlMemberDef_t *member,int absoluteOffset,char *buffer)
 
 {
   int iVar1;
   int local_18;
-  int local_10;
-  char local_c [4];
-  int local_8;
+  int i;
+  char uValue [4];
+  int endIndex;
   
   memset((uchar *)stringResult,'\0',0x40);
-  local_18 = (int)(param_1->size + (param_1->size >> 0x1f & 7U)) >> 3;
+  local_18 = (int)(member->size + (member->size >> 0x1f & 7U)) >> 3;
   if (0x3f < local_18) {
     local_18 = 0x40;
   }
-  local_8 = local_18;
-  local_10 = 0;
+  endIndex = local_18;
+  i = 0;
   do {
-    if (local_8 <= local_10) {
+    if (endIndex <= i) {
 LAB_008e759f:
       return stringResult;
     }
-    iVar1 = DDL_Buffer_ReadBits(param_3,param_2 + local_10 * 8,8,(uint *)local_c);
+    iVar1 = DDL_Buffer_ReadBits(buffer,absoluteOffset + i * 8,8,(uint *)uValue);
     if (iVar1 == 0) {
       memset((uchar *)stringResult,'\0',0x40);
       goto LAB_008e759f;
     }
-    stringResult[local_10] = local_c[0];
-    local_10 = local_10 + 1;
+    stringResult[i] = uValue[0];
+    i = i + 1;
   } while( true );
 }
 
@@ -1000,36 +1021,36 @@ LAB_008e759f:
 // 008E75B0  DDL_ReadValueInternal  (ddl/ddl_api.cpp:1404)
 
 int __cdecl
-DDL_ReadValueInternal(ddlMemberDef_t *param_1,int param_2,ddlResult_t *param_3,char *param_4)
+DDL_ReadValueInternal(ddlMemberDef_t *member,int absoluteOffset,ddlResult_t *result,char *buffer)
 
 {
   int iVar1;
   uint uVar2;
-  char *pcVar3;
-  ulong64 uVar4;
+  char *src;
+  ulong64 uVar3;
   
-  if (param_1 == (ddlMemberDef_t *)0x0) {
+  if (member == (ddlMemberDef_t *)0x0) {
     DDL_PrintError("DDL: Member not found in path.\n");
     iVar1 = 0;
   }
   else {
-    iVar1 = DDL_Lookup_IsLeaf(param_1);
+    iVar1 = DDL_Lookup_IsLeaf(member);
     if (iVar1 == 0) {
       DDL_PrintError("DDL: Invalid member, or attempt to read from a non-leaf member.\n");
       iVar1 = 0;
     }
     else {
-      switch(param_1->type) {
+      switch(member->type) {
       case 0:
       case 1:
       case 2:
-        uVar2 = DDL_ReadIntValueInternal(param_1,param_2,param_4);
-        param_3->intValue = uVar2;
+        uVar2 = DDL_ReadIntValueInternal(member,absoluteOffset,buffer);
+        result->intValue = uVar2;
         iVar1 = 1;
         break;
       case 3:
-        uVar4 = DDL_ReadInt64ValueInternal(param_1,param_2,param_4);
-        param_3->int64Value = uVar4;
+        uVar3 = DDL_ReadInt64ValueInternal(member,absoluteOffset,buffer);
+        result->int64Value = uVar3;
         iVar1 = 1;
         break;
       default:
@@ -1037,8 +1058,8 @@ DDL_ReadValueInternal(ddlMemberDef_t *param_1,int param_2,ddlResult_t *param_3,c
         break;
       case 5:
         iVar1 = 0x40;
-        pcVar3 = DDL_ReadStringValueInternal(param_1,param_2,param_4);
-        I_strncpyz(param_3->stringValue,pcVar3,iVar1);
+        src = DDL_ReadStringValueInternal(member,absoluteOffset,buffer);
+        I_strncpyz(result->stringValue,src,iVar1);
         iVar1 = 1;
       }
     }
@@ -1049,7 +1070,7 @@ DDL_ReadValueInternal(ddlMemberDef_t *param_1,int param_2,ddlResult_t *param_3,c
 
 // 008E76A0  DDL_GetInt64  (ddl/ddl_api.cpp:1443)
 
-ulong64 __cdecl DDL_GetInt64(ddlState_t *param_1,char *param_2)
+ulong64 __cdecl DDL_GetInt64(ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -1057,7 +1078,7 @@ ulong64 __cdecl DDL_GetInt64(ddlState_t *param_1,char *param_2)
   int iVar3;
   ulong64 uVar4;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x5a4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1065,7 +1086,7 @@ ulong64 __cdecl DDL_GetInt64(ddlState_t *param_1,char *param_2)
       return uVar4;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x5a5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1073,12 +1094,12 @@ ulong64 __cdecl DDL_GetInt64(ddlState_t *param_1,char *param_2)
       return uVar4;
     }
   }
-  iVar3 = DDL_IsStateReadyForIO(param_1);
+  iVar3 = DDL_IsStateReadyForIO(searchState);
   if (iVar3 == 0) {
     uVar4 = 0;
   }
   else {
-    uVar4 = DDL_ReadInt64ValueInternal(param_1->member,param_1->absoluteOffset,param_2);
+    uVar4 = DDL_ReadInt64ValueInternal(searchState->member,searchState->absoluteOffset,buffer);
   }
   return uVar4;
 }
@@ -1086,7 +1107,7 @@ ulong64 __cdecl DDL_GetInt64(ddlState_t *param_1,char *param_2)
 
 // 008E7730  DDL_GetInt  (ddl/ddl_api.cpp:1506)
 
-uint __cdecl DDL_GetInt(ddlState_t *param_1,char *param_2)
+uint __cdecl DDL_GetInt(ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -1094,7 +1115,7 @@ uint __cdecl DDL_GetInt(ddlState_t *param_1,char *param_2)
   uint uVar3;
   int iVar4;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x5e3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1102,7 +1123,7 @@ uint __cdecl DDL_GetInt(ddlState_t *param_1,char *param_2)
       return uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x5e4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1110,12 +1131,12 @@ uint __cdecl DDL_GetInt(ddlState_t *param_1,char *param_2)
       return uVar3;
     }
   }
-  iVar4 = DDL_IsStateReadyForIO(param_1);
+  iVar4 = DDL_IsStateReadyForIO(searchState);
   if (iVar4 == 0) {
     uVar3 = 0;
   }
   else {
-    uVar3 = DDL_ReadIntValueInternal(param_1->member,param_1->absoluteOffset,param_2);
+    uVar3 = DDL_ReadIntValueInternal(searchState->member,searchState->absoluteOffset,buffer);
   }
   return uVar3;
 }
@@ -1123,7 +1144,7 @@ uint __cdecl DDL_GetInt(ddlState_t *param_1,char *param_2)
 
 // 008E77C0  DDL_GetString  (ddl/ddl_api.cpp:1569)
 
-char * __cdecl DDL_GetString(ddlState_t *param_1,char *param_2)
+char * __cdecl DDL_GetString(ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -1131,7 +1152,7 @@ char * __cdecl DDL_GetString(ddlState_t *param_1,char *param_2)
   char *pcVar3;
   int iVar4;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x622,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1139,7 +1160,7 @@ char * __cdecl DDL_GetString(ddlState_t *param_1,char *param_2)
       return pcVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x623,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1147,12 +1168,12 @@ char * __cdecl DDL_GetString(ddlState_t *param_1,char *param_2)
       return pcVar3;
     }
   }
-  iVar4 = DDL_IsStateReadyForIO(param_1);
+  iVar4 = DDL_IsStateReadyForIO(searchState);
   if (iVar4 == 0) {
     pcVar3 = "";
   }
   else {
-    pcVar3 = DDL_ReadStringValueInternal(param_1->member,param_1->absoluteOffset,param_2);
+    pcVar3 = DDL_ReadStringValueInternal(searchState->member,searchState->absoluteOffset,buffer);
   }
   return pcVar3;
 }
@@ -1160,14 +1181,14 @@ char * __cdecl DDL_GetString(ddlState_t *param_1,char *param_2)
 
 // 008E7850  DDL_GetValue  (ddl/ddl_api.cpp:1630)
 
-int __cdecl DDL_GetValue(ddlState_t *param_1,ddlResult_t *param_2,char *param_3)
+int __cdecl DDL_GetValue(ddlState_t *searchState,ddlResult_t *result,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x65f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1175,7 +1196,7 @@ int __cdecl DDL_GetValue(ddlState_t *param_1,ddlResult_t *param_2,char *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x660,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1183,12 +1204,12 @@ int __cdecl DDL_GetValue(ddlState_t *param_1,ddlResult_t *param_2,char *param_3)
       return iVar3;
     }
   }
-  iVar3 = DDL_IsStateReadyForIO(param_1);
+  iVar3 = DDL_IsStateReadyForIO(searchState);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
-    iVar3 = DDL_ReadValueInternal(param_1->member,param_1->absoluteOffset,param_2,param_3);
+    iVar3 = DDL_ReadValueInternal(searchState->member,searchState->absoluteOffset,result,buffer);
   }
   return iVar3;
 }
@@ -1196,14 +1217,14 @@ int __cdecl DDL_GetValue(ddlState_t *param_1,ddlResult_t *param_2,char *param_3)
 
 // 008E78F0  DDL_GetBits  (ddl/ddl_api.cpp:1652)
 
-int __cdecl DDL_GetBits(char *param_1,int param_2,int param_3,uint *param_4)
+int __cdecl DDL_GetBits(char *buffer,int bitOffset,int bitSize,uint *value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x675,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1211,7 +1232,7 @@ int __cdecl DDL_GetBits(char *param_1,int param_2,int param_3,uint *param_4)
       return iVar3;
     }
   }
-  if (0x20 < (uint)param_3) {
+  if (0x20 < (uint)bitSize) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x676,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1219,7 +1240,7 @@ int __cdecl DDL_GetBits(char *param_1,int param_2,int param_3,uint *param_4)
       return iVar3;
     }
   }
-  iVar3 = DDL_Buffer_ReadBits(param_1,param_2,param_3,param_4);
+  iVar3 = DDL_Buffer_ReadBits(buffer,bitOffset,bitSize,value);
   return iVar3;
 }
 
@@ -1228,15 +1249,15 @@ int __cdecl DDL_GetBits(char *param_1,int param_2,int param_3,uint *param_4)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DDL_GetHeaderVersion(char *param_1)
+int __cdecl DDL_GetHeaderVersion(char *buffer)
 
 {
-  ddlBufferHeader_t local_30;
+  ddlBufferHeader_t header;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  DDL_Buffer_ReadHeader(param_1,&local_30);
-  return local_30.version;
+  DDL_Buffer_ReadHeader(buffer,&header);
+  return header.version;
 }
 
 
@@ -1244,24 +1265,24 @@ int __cdecl DDL_GetHeaderVersion(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl DDL_GetUserFlag(char *param_1,int param_2)
+bool __cdecl DDL_GetUserFlag(char *buffer,int flagIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ddlBufferHeader_t local_30;
+  ddlBufferHeader_t header;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((7 < param_2) &&
+  if ((7 < flagIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_api.cpp",0x6b9,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  DDL_Buffer_ReadHeader(param_1,&local_30);
-  return ((uint)local_30.flags & 1 << ((byte)param_2 & 0x1f)) != 0;
+  DDL_Buffer_ReadHeader(buffer,&header);
+  return ((uint)header.flags & 1 << ((byte)flagIndex & 0x1f)) != 0;
 }
 

@@ -50,18 +50,18 @@ void * __cdecl
 bdAlignedOffsetRealloc(void *param_1,uint param_2,uint param_3,uint param_4,uint param_5)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   undefined4 uStack_c;
   
-  puVar1 = bdAlignedOffsetMalloc(param_3,param_4,param_5);
+  dst = bdAlignedOffsetMalloc(param_3,param_4,param_5);
   if (param_3 < param_2) {
     uStack_c = param_3;
   }
   else {
     uStack_c = param_2;
   }
-  memcpy(puVar1,param_1,uStack_c);
+  memcpy(dst,param_1,uStack_c);
   bdAlignedOffsetFree(param_1);
-  return puVar1;
+  return dst;
 }
 

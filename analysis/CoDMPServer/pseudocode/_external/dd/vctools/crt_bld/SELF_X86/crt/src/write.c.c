@@ -5,37 +5,38 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _write(int param_1,void *param_2,uint param_3)
+int __cdecl _write(int fh,void *buf,uint cnt)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
-  int local_20;
+  int _Expr_val;
+  int r;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) != 0) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) != 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          local_20 = -1;
+          r = -1;
         }
         else {
-          local_20 = _write_nolock(param_1,param_2,param_3);
+          r = _write_nolock(fh,buf,cnt);
         }
         FUN_00c2026e();
-        return local_20;
+        return r;
       }
     }
     puVar1 = __doserrno();
@@ -52,52 +53,51 @@ int __cdecl _write(int param_1,void *param_2,uint param_3)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Type propagation algorithm not settling */
 
-int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
+int __cdecl _write_nolock(int fh,void *buf,uint cnt)
 
 {
   WCHAR WVar1;
-  wchar_t wVar2;
+  ushort uVar2;
   ulong *puVar3;
   int *piVar4;
   int iVar5;
   _tiddata *p_Var6;
   BOOL BVar7;
   DWORD nNumberOfBytesToWrite;
-  uint uVar8;
-  char cVar9;
-  WCHAR *pWVar10;
-  char *pcVar11;
-  int unaff_EDI;
+  WCHAR *pWVar8;
+  uint uVar9;
+  char cVar10;
+  ushort *puVar11;
   int iVar12;
-  WCHAR *pWVar13;
-  ushort uVar14;
-  UINT local_1ae8;
-  uint local_1ae4;
-  char local_1add;
+  int unaff_EDI;
+  int iVar13;
+  ushort *puVar14;
+  ulong dwMode;
+  int isCLocale;
+  char tmode;
   int *local_1adc;
-  char *local_1ad8;
-  int local_1ad4;
-  WCHAR *local_1ad0;
-  char *local_1acc;
-  WCHAR *local_1ac8;
-  DWORD local_1ac4;
-  WCHAR *local_1ac0;
-  WCHAR local_1abc [852];
-  CHAR local_1414 [3416];
-  WCHAR local_6bc [854];
-  undefined2 local_10;
+  int written_2;
+  int lfcount;
+  ushort *local_1ad0;
+  int charcount;
+  int written;
+  ulong dosretval;
+  ushort *pu;
+  ushort lfbuf [852];
+  CHAR utf8_buf [3416];
+  WCHAR utf16_buf [854];
+  undefined2 mboutbuf;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1ad0 = param_2;
-  local_1acc = (char *)0x0;
-  local_1ad4 = 0;
-  if (param_3 == 0) {
+  local_1ad0 = buf;
+  charcount = 0;
+  lfcount = 0;
+  if (cnt == 0) {
     return 0;
   }
-  if (param_2 == (void *)0x0) {
+  if (buf == (void *)0x0) {
     puVar3 = __doserrno();
     *puVar3 = 0;
     piVar4 = _errno();
@@ -105,12 +105,12 @@ int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  piVar4 = (int *)(&__pioinfo + (param_1 >> 5) * 4);
-  iVar12 = (param_1 & 0x1fU) * 0x40;
-  cVar9 = (char)(*(char *)(*piVar4 + iVar12 + 0x24) * '\x02') >> 1;
-  local_1add = cVar9;
+  piVar4 = (int *)(&__pioinfo + (fh >> 5) * 4);
+  iVar13 = (fh & 0x1fU) * 0x40;
+  cVar10 = (char)(*(char *)(*piVar4 + iVar13 + 0x24) * '\x02') >> 1;
+  tmode = cVar10;
   local_1adc = piVar4;
-  if (((cVar9 == '\x02') || (cVar9 == '\x01')) && ((~param_3 & 1) == 0)) {
+  if (((cVar10 == '\x02') || (cVar10 == '\x01')) && ((~cnt & 1) == 0)) {
     puVar3 = __doserrno();
     *puVar3 = 0;
     piVar4 = _errno();
@@ -118,234 +118,233 @@ int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  if ((*(byte *)(*piVar4 + iVar12 + 4) & 0x20) != 0) {
-    _lseeki64_nolock(param_1,0x200000000,unaff_EDI);
+  if ((*(byte *)(*piVar4 + iVar13 + 4) & 0x20) != 0) {
+    _lseeki64_nolock(fh,0x200000000,unaff_EDI);
   }
-  iVar5 = _isatty(param_1);
-  if ((iVar5 == 0) || ((*(byte *)(iVar12 + 4 + *piVar4) & 0x80) == 0)) {
+  iVar5 = _isatty(fh);
+  if ((iVar5 == 0) || ((*(byte *)(iVar13 + 4 + *piVar4) & 0x80) == 0)) {
 LAB_00c1fe00:
-    if ((*(byte *)((undefined4 *)(*piVar4 + iVar12) + 1) & 0x80) == 0) {
-      BVar7 = WriteFile(*(HANDLE *)(*piVar4 + iVar12),local_1ad0,param_3,(LPDWORD)&local_1ad8,
+    if ((*(byte *)((undefined4 *)(*piVar4 + iVar13) + 1) & 0x80) == 0) {
+      BVar7 = WriteFile(*(HANDLE *)(*piVar4 + iVar13),local_1ad0,cnt,(LPDWORD)&written_2,
                         (LPOVERLAPPED)0x0);
       if (BVar7 == 0) {
 LAB_00c20100:
-        local_1ac4 = GetLastError();
+        dosretval = GetLastError();
       }
       else {
-        local_1ac4 = 0;
-        local_1acc = local_1ad8;
+        dosretval = 0;
+        charcount = written_2;
       }
     }
     else {
-      local_1ac4 = 0;
-      if (cVar9 == '\0') {
-        local_1ac8 = local_1ad0;
-        if (param_3 == 0) goto LAB_00c20151;
+      dosretval = 0;
+      if (cVar10 == '\0') {
+        written = (int)local_1ad0;
+        if (cnt == 0) goto LAB_00c20151;
         do {
-          local_1ac0 = (WCHAR *)0x0;
-          uVar8 = (int)local_1ac8 - (int)local_1ad0;
-          pWVar10 = local_1abc;
+          pu = (ushort *)0x0;
+          uVar9 = written - (int)local_1ad0;
+          puVar11 = lfbuf;
           do {
-            if (param_3 <= uVar8) break;
-            pWVar13 = (WCHAR *)((int)local_1ac8 + 1);
-            WVar1 = *local_1ac8;
-            uVar8 = uVar8 + 1;
-            if ((char)WVar1 == '\n') {
-              local_1ad4 = local_1ad4 + 1;
-              *(char *)pWVar10 = '\r';
-              pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-              local_1ac0 = (WCHAR *)((int)local_1ac0 + 1);
+            if (cnt <= uVar9) break;
+            iVar5 = written + 1;
+            cVar10 = *(char *)written;
+            uVar9 = uVar9 + 1;
+            if (cVar10 == '\n') {
+              lfcount = lfcount + 1;
+              *(char *)puVar11 = '\r';
+              puVar11 = (ushort *)((int)puVar11 + 1);
+              pu = (ushort *)((int)pu + 1);
             }
-            *(char *)pWVar10 = (char)WVar1;
-            pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-            local_1ac0 = (WCHAR *)((int)local_1ac0 + 1);
-            local_1ac8 = pWVar13;
-          } while (local_1ac0 < (WCHAR *)0x13ff);
-          BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piVar4),local_1abc,(int)pWVar10 - (int)local_1abc,
-                            (LPDWORD)&local_1ad8,(LPOVERLAPPED)0x0);
+            *(char *)puVar11 = cVar10;
+            puVar11 = (ushort *)((int)puVar11 + 1);
+            pu = (ushort *)((int)pu + 1);
+            written = iVar5;
+          } while (pu < (ushort *)0x13ff);
+          BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piVar4),lfbuf,(int)puVar11 - (int)lfbuf,
+                            (LPDWORD)&written_2,(LPOVERLAPPED)0x0);
           if (BVar7 == 0) goto LAB_00c20100;
-          local_1acc = local_1acc + (int)local_1ad8;
-        } while (((int)pWVar10 - (int)local_1abc <= (int)local_1ad8) &&
-                (piVar4 = local_1adc, (uint)((int)local_1ac8 - (int)local_1ad0) < param_3));
+          charcount = charcount + written_2;
+        } while (((int)puVar11 - (int)lfbuf <= written_2) &&
+                (piVar4 = local_1adc, (uint)(written - (int)local_1ad0) < cnt));
       }
       else {
-        local_1ac0 = local_1ad0;
-        if (cVar9 == '\x02') {
-          if (param_3 == 0) goto LAB_00c20151;
+        pu = local_1ad0;
+        if (cVar10 == '\x02') {
+          if (cnt == 0) goto LAB_00c20151;
           do {
-            local_1ac8 = (WCHAR *)0x0;
-            uVar8 = (int)local_1ac0 - (int)local_1ad0;
-            pWVar10 = local_1abc;
+            written = 0;
+            uVar9 = (int)pu - (int)local_1ad0;
+            puVar11 = lfbuf;
             do {
-              if (param_3 <= uVar8) break;
-              pWVar13 = local_1ac0 + 1;
-              WVar1 = *local_1ac0;
-              uVar8 = uVar8 + 2;
-              if (WVar1 == L'\n') {
-                local_1ad4 = local_1ad4 + 2;
-                *pWVar10 = L'\r';
-                pWVar10 = pWVar10 + 1;
-                local_1ac8 = local_1ac8 + 1;
+              if (cnt <= uVar9) break;
+              puVar14 = pu + 1;
+              uVar2 = *pu;
+              uVar9 = uVar9 + 2;
+              if (uVar2 == 10) {
+                lfcount = lfcount + 2;
+                *puVar11 = 0xd;
+                puVar11 = puVar11 + 1;
+                written = written + 2;
               }
-              local_1ac8 = local_1ac8 + 1;
-              *pWVar10 = WVar1;
-              pWVar10 = pWVar10 + 1;
-              local_1ac0 = pWVar13;
-            } while (local_1ac8 < (WCHAR *)0x13fe);
-            BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piVar4),local_1abc,
-                              (int)pWVar10 - (int)local_1abc,(LPDWORD)&local_1ad8,(LPOVERLAPPED)0x0)
-            ;
+              written = written + 2;
+              *puVar11 = uVar2;
+              puVar11 = puVar11 + 1;
+              pu = puVar14;
+            } while ((uint)written < 0x13fe);
+            BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piVar4),lfbuf,(int)puVar11 - (int)lfbuf,
+                              (LPDWORD)&written_2,(LPOVERLAPPED)0x0);
             if (BVar7 == 0) goto LAB_00c20100;
-            local_1acc = local_1acc + (int)local_1ad8;
-          } while (((int)pWVar10 - (int)local_1abc <= (int)local_1ad8) &&
-                  (piVar4 = local_1adc, (uint)((int)local_1ac0 - (int)local_1ad0) < param_3));
+            charcount = charcount + written_2;
+          } while (((int)puVar11 - (int)lfbuf <= written_2) &&
+                  (piVar4 = local_1adc, (uint)((int)pu - (int)local_1ad0) < cnt));
         }
         else {
-          if (param_3 == 0) goto LAB_00c20151;
+          if (cnt == 0) goto LAB_00c20151;
           do {
-            local_1ac8 = (WCHAR *)0x0;
-            uVar8 = (int)local_1ac0 - (int)local_1ad0;
-            pWVar10 = local_6bc;
+            written = 0;
+            uVar9 = (int)pu - (int)local_1ad0;
+            pWVar8 = utf16_buf;
             do {
-              if (param_3 <= uVar8) break;
-              WVar1 = *local_1ac0;
-              local_1ac0 = local_1ac0 + 1;
-              uVar8 = uVar8 + 2;
+              if (cnt <= uVar9) break;
+              WVar1 = *pu;
+              pu = pu + 1;
+              uVar9 = uVar9 + 2;
               if (WVar1 == L'\n') {
-                *pWVar10 = L'\r';
-                pWVar10 = pWVar10 + 1;
-                local_1ac8 = local_1ac8 + 1;
+                *pWVar8 = L'\r';
+                pWVar8 = pWVar8 + 1;
+                written = written + 2;
               }
-              local_1ac8 = local_1ac8 + 1;
-              *pWVar10 = WVar1;
-              pWVar10 = pWVar10 + 1;
-            } while (local_1ac8 < (WCHAR *)0x6a8);
-            pcVar11 = (char *)0x0;
-            iVar5 = WideCharToMultiByte(0xfde9,0,local_6bc,((int)pWVar10 - (int)local_6bc) / 2,
-                                        local_1414,0xd55,(LPCSTR)0x0,(LPBOOL)0x0);
+              written = written + 2;
+              *pWVar8 = WVar1;
+              pWVar8 = pWVar8 + 1;
+            } while ((uint)written < 0x6a8);
+            iVar12 = 0;
+            iVar5 = WideCharToMultiByte(0xfde9,0,utf16_buf,((int)pWVar8 - (int)utf16_buf) / 2,
+                                        utf8_buf,0xd55,(LPCSTR)0x0,(LPBOOL)0x0);
             if (iVar5 == 0) goto LAB_00c20100;
             do {
-              BVar7 = WriteFile(*(HANDLE *)(iVar12 + *local_1adc),local_1414 + (int)pcVar11,
-                                iVar5 - (int)pcVar11,(LPDWORD)&local_1ad8,(LPOVERLAPPED)0x0);
+              BVar7 = WriteFile(*(HANDLE *)(iVar13 + *local_1adc),utf8_buf + iVar12,iVar5 - iVar12,
+                                (LPDWORD)&written_2,(LPOVERLAPPED)0x0);
               if (BVar7 == 0) {
-                local_1ac4 = GetLastError();
+                dosretval = GetLastError();
                 break;
               }
-              pcVar11 = pcVar11 + (int)local_1ad8;
-            } while ((int)pcVar11 < iVar5);
-          } while ((iVar5 <= (int)pcVar11) &&
-                  (local_1acc = (char *)((int)local_1ac0 - (int)local_1ad0), local_1acc < param_3));
+              iVar12 = iVar12 + written_2;
+            } while (iVar12 < iVar5);
+          } while ((iVar5 <= iVar12) &&
+                  (charcount = (int)pu - (int)local_1ad0, (uint)charcount < cnt));
         }
       }
     }
 LAB_00c2010c:
-    if (local_1acc != (char *)0x0) {
-      return (int)local_1acc - local_1ad4;
+    if (charcount != 0) {
+      return charcount - lfcount;
     }
   }
   else {
     p_Var6 = _getptd();
-    local_1ae4 = (uint)(p_Var6->ptlocinfo->lc_handle[2] == 0);
-    BVar7 = GetConsoleMode(*(HANDLE *)(iVar12 + *piVar4),&local_1ae8);
-    if ((BVar7 == 0) || ((local_1ae4 != 0 && (cVar9 == '\0')))) goto LAB_00c1fe00;
-    local_1ae8 = GetConsoleCP();
-    local_1ac8 = (WCHAR *)0x0;
-    if (param_3 != 0) {
-      local_1ac0 = (WCHAR *)0x0;
-      pWVar10 = local_1ad0;
+    isCLocale = (int)(p_Var6->ptlocinfo->lc_handle[2] == 0);
+    BVar7 = GetConsoleMode(*(HANDLE *)(iVar13 + *piVar4),&dwMode);
+    if ((BVar7 == 0) || ((isCLocale != 0 && (cVar10 == '\0')))) goto LAB_00c1fe00;
+    dwMode = GetConsoleCP();
+    written = 0;
+    if (cnt != 0) {
+      pu = (ushort *)0x0;
+      puVar11 = local_1ad0;
       do {
         piVar4 = local_1adc;
-        if (local_1add == '\0') {
-          cVar9 = (char)*pWVar10;
-          local_1ae4 = (uint)(cVar9 == '\n');
-          iVar5 = *local_1adc + iVar12;
+        if (tmode == '\0') {
+          cVar10 = (char)*puVar11;
+          isCLocale = (int)(cVar10 == '\n');
+          iVar5 = *local_1adc + iVar13;
           if (*(int *)(iVar5 + 0x38) == 0) {
-            iVar5 = isleadbyte(CONCAT22(cVar9 >> 7,(short)cVar9));
+            iVar5 = isleadbyte(CONCAT22(cVar10 >> 7,(short)cVar10));
             if (iVar5 == 0) {
-              uVar14 = 1;
-              pWVar13 = pWVar10;
+              uVar2 = 1;
+              puVar14 = puVar11;
               goto LAB_00c1fc67;
             }
-            if ((char *)((int)local_1ad0 + (param_3 - (int)pWVar10)) < (char *)0x2) {
-              local_1acc = local_1acc + 1;
-              *(char *)(iVar12 + 0x34 + *piVar4) = (char)*pWVar10;
-              *(undefined4 *)(iVar12 + 0x38 + *piVar4) = 1;
+            if ((char *)((int)local_1ad0 + (cnt - (int)puVar11)) < (char *)0x2) {
+              charcount = charcount + 1;
+              *(char *)(iVar13 + 0x34 + *piVar4) = (char)*puVar11;
+              *(undefined4 *)(iVar13 + 0x38 + *piVar4) = 1;
               break;
             }
-            iVar5 = mbtowc((wchar_t *)&local_1ac4,(char *)pWVar10,2);
+            iVar5 = mbtowc((wchar_t *)&dosretval,(char *)puVar11,2);
             if (iVar5 == -1) break;
-            pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-            local_1ac0 = (WCHAR *)((int)local_1ac0 + 1);
+            puVar11 = (ushort *)((int)puVar11 + 1);
+            pu = (ushort *)((int)pu + 1);
           }
           else {
-            local_10._0_1_ = *(CHAR *)(iVar5 + 0x34);
+            mboutbuf._0_1_ = *(CHAR *)(iVar5 + 0x34);
             *(undefined4 *)(iVar5 + 0x38) = 0;
-            uVar14 = 2;
-            pWVar13 = &local_10;
-            local_10._1_1_ = cVar9;
+            uVar2 = 2;
+            puVar14 = &mboutbuf;
+            mboutbuf._1_1_ = cVar10;
 LAB_00c1fc67:
-            iVar5 = mbtowc((wchar_t *)&local_1ac4,(char *)pWVar13,(uint)uVar14);
+            iVar5 = mbtowc((wchar_t *)&dosretval,(char *)puVar14,(uint)uVar2);
             if (iVar5 == -1) break;
           }
-          pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-          local_1ac0 = (WCHAR *)((int)local_1ac0 + 1);
+          puVar11 = (ushort *)((int)puVar11 + 1);
+          pu = (ushort *)((int)pu + 1);
           nNumberOfBytesToWrite =
-               WideCharToMultiByte(local_1ae8,0,(LPCWSTR)&local_1ac4,1,(LPSTR)&local_10,5,
-                                   (LPCSTR)0x0,(LPBOOL)0x0);
+               WideCharToMultiByte(dwMode,0,(LPCWSTR)&dosretval,1,(LPSTR)&mboutbuf,5,(LPCSTR)0x0,
+                                   (LPBOOL)0x0);
           if (nNumberOfBytesToWrite == 0) break;
-          BVar7 = WriteFile(*(HANDLE *)(iVar12 + *local_1adc),&local_10,nNumberOfBytesToWrite,
-                            (LPDWORD)&local_1ac8,(LPOVERLAPPED)0x0);
+          BVar7 = WriteFile(*(HANDLE *)(iVar13 + *local_1adc),&mboutbuf,nNumberOfBytesToWrite,
+                            (LPDWORD)&written,(LPOVERLAPPED)0x0);
           if (BVar7 == 0) goto LAB_00c20100;
-          local_1acc = (char *)((int)local_1ac0 + local_1ad4);
-          if ((int)local_1ac8 < (int)nNumberOfBytesToWrite) break;
-          if (local_1ae4 != 0) {
-            local_10._0_1_ = '\r';
-            BVar7 = WriteFile(*(HANDLE *)(iVar12 + *local_1adc),&local_10,1,(LPDWORD)&local_1ac8,
+          charcount = (int)pu + lfcount;
+          if (written < (int)nNumberOfBytesToWrite) break;
+          if (isCLocale != 0) {
+            mboutbuf._0_1_ = '\r';
+            BVar7 = WriteFile(*(HANDLE *)(iVar13 + *local_1adc),&mboutbuf,1,(LPDWORD)&written,
                               (LPOVERLAPPED)0x0);
             if (BVar7 == 0) goto LAB_00c20100;
-            if ((int)local_1ac8 < 1) break;
-            local_1ad4 = local_1ad4 + 1;
-            local_1acc = local_1acc + 1;
+            if (written < 1) break;
+            lfcount = lfcount + 1;
+            charcount = charcount + 1;
           }
         }
         else {
-          if ((local_1add == '\x01') || (local_1add == '\x02')) {
-            local_1ac4 = (DWORD)(ushort)*pWVar10;
-            local_1ae4 = (uint)(*pWVar10 == L'\n');
-            pWVar10 = pWVar10 + 1;
-            local_1ac0 = local_1ac0 + 1;
+          if ((tmode == '\x01') || (tmode == '\x02')) {
+            dosretval = (ulong)*puVar11;
+            isCLocale = (int)(*puVar11 == 10);
+            puVar11 = puVar11 + 1;
+            pu = pu + 1;
           }
-          if ((local_1add == '\x01') || (local_1add == '\x02')) {
-            wVar2 = _putwch_nolock((wchar_t)local_1ac4);
-            if (wVar2 != (wchar_t)local_1ac4) goto LAB_00c20100;
-            local_1acc = local_1acc + 2;
-            if (local_1ae4 != 0) {
-              local_1ac4 = 0xd;
-              wVar2 = _putwch_nolock(L'\r');
-              if (wVar2 != (wchar_t)local_1ac4) goto LAB_00c20100;
-              local_1acc = local_1acc + 1;
-              local_1ad4 = local_1ad4 + 1;
+          if ((tmode == '\x01') || (tmode == '\x02')) {
+            uVar2 = _putwch_nolock((wchar_t)dosretval);
+            if (uVar2 != (ushort)dosretval) goto LAB_00c20100;
+            charcount = charcount + 2;
+            if (isCLocale != 0) {
+              dosretval = 0xd;
+              uVar2 = _putwch_nolock(L'\r');
+              if (uVar2 != (ushort)dosretval) goto LAB_00c20100;
+              charcount = charcount + 1;
+              lfcount = lfcount + 1;
             }
           }
         }
-      } while (local_1ac0 < param_3);
+      } while (pu < cnt);
       goto LAB_00c2010c;
     }
   }
   piVar4 = local_1adc;
-  if (local_1ac4 != 0) {
-    if (local_1ac4 == 5) {
+  if (dosretval != 0) {
+    if (dosretval == 5) {
       piVar4 = _errno();
       *piVar4 = 9;
       puVar3 = __doserrno();
       *puVar3 = 5;
       return -1;
     }
-    _dosmaperr(local_1ac4);
+    _dosmaperr(dosretval);
     return -1;
   }
 LAB_00c20151:
-  if (((*(byte *)(iVar12 + 4 + *piVar4) & 0x40) != 0) && ((char)*local_1ad0 == '\x1a')) {
+  if (((*(byte *)(iVar13 + 4 + *piVar4) & 0x40) != 0) && ((char)*local_1ad0 == '\x1a')) {
     return 0;
   }
   piVar4 = _errno();

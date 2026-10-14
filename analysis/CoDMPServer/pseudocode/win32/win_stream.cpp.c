@@ -2,14 +2,14 @@
 
 // 007DE280  Stream_Thread  (win32/win_stream.cpp:18)
 
-void __cdecl Stream_Thread(uint param_1)
+void __cdecl Stream_Thread(uint threadContext)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
   
-  if ((param_1 != 0xe) &&
+  if ((threadContext != 0xe) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_stream.cpp",0x13,0,
                                "threadContext == THREAD_CONTEXT_STREAM\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);

@@ -2,13 +2,13 @@
 
 // 0095FBCE  _findclose  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findfile.c:221)
 
-int __cdecl _findclose(int param_1)
+int __cdecl _findclose(int hFile)
 
 {
   BOOL BVar1;
   int *piVar2;
   
-  BVar1 = FindClose((HANDLE)param_1);
+  BVar1 = FindClose((HANDLE)hFile);
   if (BVar1 == 0) {
     piVar2 = _errno();
     *piVar2 = 0x16;

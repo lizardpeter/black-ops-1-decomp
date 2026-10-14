@@ -6,18 +6,18 @@ void __cdecl RB_AllocSuperFlareQueries(void)
 
 {
   IDirect3DQuery9 *pIVar1;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int iFrame;
+  int iPass;
+  int iType;
+  int iClient;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-        for (local_14 = 0; local_14 < 5; local_14 = local_14 + 1) {
+  for (iClient = 0; iClient < 4; iClient = iClient + 1) {
+    for (iType = 0; iType < 2; iType = iType + 1) {
+      for (iPass = 0; iPass < 4; iPass = iPass + 1) {
+        for (iFrame = 0; iFrame < 5; iFrame = iFrame + 1) {
           pIVar1 = RB_HW_AllocOcclusionQuery();
-          SuperFlareQuery[local_14][local_c][local_8][local_10] = pIVar1;
-          SuperFlareQueryIssued[local_14][local_8][local_10] = false;
+          SuperFlareQuery[iFrame][iType][iClient][iPass] = pIVar1;
+          SuperFlareQueryIssued[iFrame][iClient][iPass] = false;
         }
       }
     }
@@ -31,24 +31,25 @@ void __cdecl RB_AllocSuperFlareQueries(void)
 void __cdecl RB_FreeSuperFlareQueries(void)
 
 {
-  IDirect3DTexture9 *pIVar1;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  IDirect3DTexture9 *var_9;
+  IDirect3DQuery9 *varCopy;
+  int iFrame;
+  int iPass;
+  int iType;
+  int iClient;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-        for (local_14 = 0; local_14 < 5; local_14 = local_14 + 1) {
+  for (iClient = 0; iClient < 4; iClient = iClient + 1) {
+    for (iType = 0; iType < 2; iType = iType + 1) {
+      for (iPass = 0; iPass < 4; iPass = iPass + 1) {
+        for (iFrame = 0; iFrame < 5; iFrame = iFrame + 1) {
           do {
             if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
               RB_LogPrint("SuperFlareQuery[iFrame][iType][iClient][iPass]->Release()\n");
             }
-            pIVar1 = (IDirect3DTexture9 *)SuperFlareQuery[local_14][local_c][local_8][local_10];
-            SuperFlareQuery[local_14][local_c][local_8][local_10] = (IDirect3DQuery9 *)0x0;
+            var_9 = (IDirect3DTexture9 *)SuperFlareQuery[iFrame][iType][iClient][iPass];
+            SuperFlareQuery[iFrame][iType][iClient][iPass] = (IDirect3DQuery9 *)0x0;
             R_ReleaseAndSetNULL<IDirect3DTexture9>
-                      (pIVar1,"SuperFlareQuery[iFrame][iType][iClient][iPass]",
+                      (var_9,"SuperFlareQuery[iFrame][iType][iClient][iPass]",
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_superflare.cpp",0x4d);
           } while (alwaysfails != 0);
         }
@@ -70,6 +71,8 @@ GfxVertex * __cdecl RB_SetSuperFlareQuads(void)
   bool bVar4;
   GfxVertex *pGVar5;
   uint uVar6;
+  ushort vertCount;
+  GfxVertex *vert;
   
   if (tess.vertexCount != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_superflare.cpp",0x62,0,
@@ -123,95 +126,99 @@ GfxVertex * __cdecl RB_SetSuperFlareQuads(void)
 // 00B03DB0  RB_DrawSuperFlareOccluder  (gfx_d3d/rb_superflare.cpp:138)
 
 void __cdecl
-RB_DrawSuperFlareOccluder(GfxGenericFilter *param_1,int param_2,int param_3,int param_4)
+RB_DrawSuperFlareOccluder(GfxGenericFilter *FilterInfo,int iFilter,int iPass,int iOccluder)
 
 {
-  GfxVertex *pGVar1;
+  GfxVertex *in;
+  float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
-  float fVar8;
-  float local_2c;
-  float local_14;
+  float sizeY;
+  float radius;
+  float sizeX;
+  float depthOffset;
+  float position;
   float local_10;
   float local_c;
+  GfxVertex *vert;
   
-  local_14 = param_1->passParam[param_2][param_3][0];
-  local_10 = param_1->passParam[param_2][param_3][1];
-  local_c = param_1->passParam[param_2][param_3][2];
-  if (((local_14 == 0.0) && (local_10 == 0.0)) && (local_c == 0.0)) {
-    local_14 = param_1->sunPosition[0];
-    local_10 = param_1->sunPosition[1];
-    local_c = param_1->sunPosition[2];
+  position = FilterInfo->passParam[iFilter][iPass][0];
+  local_10 = FilterInfo->passParam[iFilter][iPass][1];
+  local_c = FilterInfo->passParam[iFilter][iPass][2];
+  if (((position == 0.0) && (local_10 == 0.0)) && (local_c == 0.0)) {
+    position = FilterInfo->sunPosition[0];
+    local_10 = FilterInfo->sunPosition[1];
+    local_c = FilterInfo->sunPosition[2];
   }
-  local_2c = param_1->passParam[param_2][param_3][5];
-  fVar2 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
+  radius = FilterInfo->passParam[iFilter][iPass][5];
+  fVar1 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][0] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][0] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][0];
-  fVar3 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
+  fVar2 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][1] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][1] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][1];
-  fVar4 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
+  fVar3 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][2] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][2] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][2];
-  fVar5 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
+  fVar4 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][3] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][3] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][3];
-  if (local_2c < 0.0) {
-    local_2c = ABS(local_2c) * fVar5;
+  if (radius < 0.0) {
+    radius = ABS(radius) * fVar4;
   }
-  fVar6 = (float)gfxCmdBufSourceState.renderTargetHeight;
-  fVar8 = (float)gfxCmdBufSourceState.renderTargetWidth;
-  pGVar1 = RB_SetSuperFlareQuads();
-  fVar6 = ((fVar6 * (local_2c / fVar5)) / fVar8) * fVar5;
-  fVar8 = (local_2c / fVar5) * fVar5;
-  fVar7 = fVar5 * 5e-05;
-  pGVar1->xyzw[0] = fVar2;
-  pGVar1->xyzw[1] = fVar3;
-  pGVar1->xyzw[2] = fVar4;
-  pGVar1->xyzw[3] = fVar5;
-  pGVar1[1].xyzw[0] = fVar2;
-  pGVar1[1].xyzw[1] = fVar3;
-  pGVar1[1].xyzw[2] = fVar4;
-  pGVar1[1].xyzw[3] = fVar5;
-  pGVar1[2].xyzw[0] = fVar2;
-  pGVar1[2].xyzw[1] = fVar3;
-  pGVar1[2].xyzw[2] = fVar4;
-  pGVar1[2].xyzw[3] = fVar5;
-  pGVar1[3].xyzw[0] = fVar2;
-  pGVar1[3].xyzw[1] = fVar3;
-  pGVar1[3].xyzw[2] = fVar4;
-  pGVar1[3].xyzw[3] = fVar5;
-  pGVar1->xyzw[0] = pGVar1->xyzw[0] + fVar6;
-  pGVar1->xyzw[1] = pGVar1->xyzw[1] + fVar8;
-  pGVar1->xyzw[2] = pGVar1->xyzw[2] + fVar7;
-  pGVar1[1].xyzw[0] = pGVar1[1].xyzw[0] + fVar6;
-  pGVar1[1].xyzw[1] = pGVar1[1].xyzw[1] - fVar8;
-  pGVar1[1].xyzw[2] = pGVar1[1].xyzw[2] + fVar7;
-  pGVar1[2].xyzw[0] = pGVar1[2].xyzw[0] - fVar6;
-  pGVar1[2].xyzw[1] = pGVar1[2].xyzw[1] - fVar8;
-  pGVar1[2].xyzw[2] = pGVar1[2].xyzw[2] + fVar7;
-  pGVar1[3].xyzw[0] = pGVar1[3].xyzw[0] - fVar6;
-  pGVar1[3].xyzw[1] = pGVar1[3].xyzw[1] + fVar8;
-  pGVar1[3].xyzw[2] = pGVar1[3].xyzw[2] + fVar7;
-  Vec4DivideByW(pGVar1->xyzw,pGVar1->xyzw);
-  Vec4DivideByW(pGVar1[1].xyzw,pGVar1[1].xyzw);
-  Vec4DivideByW(pGVar1[2].xyzw,pGVar1[2].xyzw);
-  Vec4DivideByW(pGVar1[3].xyzw,pGVar1[3].xyzw);
+  fVar5 = (float)gfxCmdBufSourceState.renderTargetHeight;
+  fVar7 = (float)gfxCmdBufSourceState.renderTargetWidth;
+  in = RB_SetSuperFlareQuads();
+  fVar5 = ((fVar5 * (radius / fVar4)) / fVar7) * fVar4;
+  fVar7 = (radius / fVar4) * fVar4;
+  fVar6 = fVar4 * 5e-05;
+  in->xyzw[0] = fVar1;
+  in->xyzw[1] = fVar2;
+  in->xyzw[2] = fVar3;
+  in->xyzw[3] = fVar4;
+  in[1].xyzw[0] = fVar1;
+  in[1].xyzw[1] = fVar2;
+  in[1].xyzw[2] = fVar3;
+  in[1].xyzw[3] = fVar4;
+  in[2].xyzw[0] = fVar1;
+  in[2].xyzw[1] = fVar2;
+  in[2].xyzw[2] = fVar3;
+  in[2].xyzw[3] = fVar4;
+  in[3].xyzw[0] = fVar1;
+  in[3].xyzw[1] = fVar2;
+  in[3].xyzw[2] = fVar3;
+  in[3].xyzw[3] = fVar4;
+  in->xyzw[0] = in->xyzw[0] + fVar5;
+  in->xyzw[1] = in->xyzw[1] + fVar7;
+  in->xyzw[2] = in->xyzw[2] + fVar6;
+  in[1].xyzw[0] = in[1].xyzw[0] + fVar5;
+  in[1].xyzw[1] = in[1].xyzw[1] - fVar7;
+  in[1].xyzw[2] = in[1].xyzw[2] + fVar6;
+  in[2].xyzw[0] = in[2].xyzw[0] - fVar5;
+  in[2].xyzw[1] = in[2].xyzw[1] - fVar7;
+  in[2].xyzw[2] = in[2].xyzw[2] + fVar6;
+  in[3].xyzw[0] = in[3].xyzw[0] - fVar5;
+  in[3].xyzw[1] = in[3].xyzw[1] + fVar7;
+  in[3].xyzw[2] = in[3].xyzw[2] + fVar6;
+  Vec4DivideByW(in->xyzw,in->xyzw);
+  Vec4DivideByW(in[1].xyzw,in[1].xyzw);
+  Vec4DivideByW(in[2].xyzw,in[2].xyzw);
+  Vec4DivideByW(in[3].xyzw,in[3].xyzw);
   return;
 }
 
 
 // 00B038F0  RB_DrawSuperFlareOccluders  (gfx_d3d/rb_superflare.cpp:218)
 
-void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
+void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *viewInfo)
 
 {
   float fVar1;
@@ -225,50 +232,52 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
   float local_70;
   float local_5c;
   float local_48;
-  int local_34;
-  Material *local_24 [2];
-  char local_19;
-  int local_18;
-  int local_14;
-  int local_10;
-  GfxGenericFilter *local_8;
+  int iOccluder;
+  uint PossiblePixelCount;
+  bool Error;
+  uint VisiblePixelCount;
+  Material *mat [2];
+  bool QueryInitialized;
+  int iFrame;
+  int iPass;
+  int iFilter;
+  PIXProfile pixProfile;
+  GfxGenericFilter *FilterInfo;
   
   if ((r_superFlare_enable->current).enabled != false) {
     PIXBeginNamedEvent(-1,"RB_SuperFlareVisibility");
-    local_8 = &param_1->genericFilter;
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
-        if (local_14 < 3) {
-          local_18 = r_glob.backEndFrameCount % 5;
-          local_19 = '\x01';
-          if ((SuperFlareQuery[local_18][0][param_1->localClientNum][local_14] ==
-               (IDirect3DQuery9 *)0x0) ||
-             (*(int *)(local_18 * 0x80 + 0xb50ece8 + param_1->localClientNum * 0x10 + local_14 * 4)
-              == 0)) {
-            local_19 = '\0';
+    for (iFilter = 0; iFilter < 3; iFilter = iFilter + 1) {
+      for (iPass = 0; iPass < 0x10; iPass = iPass + 1) {
+        if (iPass < 3) {
+          iFrame = r_glob.backEndFrameCount % 5;
+          QueryInitialized = true;
+          if ((SuperFlareQuery[iFrame][0][viewInfo->localClientNum][iPass] == (IDirect3DQuery9 *)0x0
+              ) || (*(int *)(iFrame * 0x80 + 0xb50ece8 + viewInfo->localClientNum * 0x10 + iPass * 4
+                            ) == 0)) {
+            QueryInitialized = false;
           }
-          if ((SuperFlareQuery[local_18][0][param_1->localClientNum][local_14] ==
-               (IDirect3DQuery9 *)0x0) ||
-             (*(int *)(local_18 * 0x80 + 0xb50ece8 + param_1->localClientNum * 0x10 + local_14 * 4)
-              == 0)) {
-            local_19 = '\0';
+          if ((SuperFlareQuery[iFrame][0][viewInfo->localClientNum][iPass] == (IDirect3DQuery9 *)0x0
+              ) || (*(int *)(iFrame * 0x80 + 0xb50ece8 + viewInfo->localClientNum * 0x10 + iPass * 4
+                            ) == 0)) {
+            QueryInitialized = false;
           }
-          if ((((local_19 == '\0') || (local_8->passEnabled[local_10][local_14] == false)) ||
-              (local_8->passMaterial[local_10][local_14] == (Material *)0x0)) ||
-             (local_8->passQuads[local_10][local_14] < 1)) {
-            local_8->passFlareOcclusion[local_10][local_14] = 0.0;
+          if ((((QueryInitialized == false) ||
+               ((viewInfo->genericFilter).passEnabled[iFilter][iPass] == false)) ||
+              ((viewInfo->genericFilter).passMaterial[iFilter][iPass] == (Material *)0x0)) ||
+             ((viewInfo->genericFilter).passQuads[iFilter][iPass] < 1)) {
+            (viewInfo->genericFilter).passFlareOcclusion[iFilter][iPass] = 0.0;
           }
           else {
-            if (SuperFlareQueryIssued[local_18][param_1->localClientNum][local_14] == false) {
-              local_8->passFlareOcclusion[local_10][local_14] = 0.0;
+            if (SuperFlareQueryIssued[iFrame][viewInfo->localClientNum][iPass] == false) {
+              (viewInfo->genericFilter).passFlareOcclusion[iFilter][iPass] = 0.0;
             }
             else {
               uVar4 = RB_HW_ReadOcclusionQuery
-                                (SuperFlareQuery[local_18][0][param_1->localClientNum][local_14]);
+                                (SuperFlareQuery[iFrame][0][viewInfo->localClientNum][iPass]);
               uVar5 = RB_HW_ReadOcclusionQuery
                                 (*(IDirect3DQuery9 **)
-                                  (local_18 * 0x80 + 0xb50ece8 + param_1->localClientNum * 0x10 +
-                                  local_14 * 4));
+                                  (iFrame * 0x80 + 0xb50ece8 + viewInfo->localClientNum * 0x10 +
+                                  iPass * 4));
               bVar3 = false;
               if (uVar4 == 0) {
                 bVar3 = true;
@@ -293,7 +302,7 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
                 }
                 local_5c = local_70;
               }
-              local_8->passFlareOcclusion[local_10][local_14] = local_5c;
+              (viewInfo->genericFilter).passFlareOcclusion[iFilter][iPass] = local_5c;
             }
             if ((r_superFlare_debug->current).enabled == false) {
               local_74 = rgp.superFlareOccluderNoZ;
@@ -301,33 +310,33 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
             else {
               local_74 = rgp.superFlareOccluderNoZDebug;
             }
-            local_24[0] = local_74;
+            mat[0] = local_74;
             if ((r_superFlare_debug->current).enabled == false) {
               local_78 = rgp.superFlareOccluder;
             }
             else {
               local_78 = rgp.superFlareOccluderDebug;
             }
-            local_24[1] = local_78;
-            for (local_34 = 0; local_34 < 2; local_34 = local_34 + 1) {
+            mat[1] = local_78;
+            for (iOccluder = 0; iOccluder < 2; iOccluder = iOccluder + 1) {
               RB_HW_BeginOcclusionQuery
-                        (SuperFlareQuery[local_18][local_34][param_1->localClientNum][local_14],
+                        (SuperFlareQuery[iFrame][iOccluder][viewInfo->localClientNum][iPass],
                          (void *)0x0);
-              RB_SetTessTechnique(local_24[local_34],'\x04');
+              RB_SetTessTechnique(mat[iOccluder],'\x04');
               R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_CODE);
               RB_CheckTessOverflow(4,6);
               RB_SetIdentity();
-              RB_DrawSuperFlareOccluder(local_8,local_10,local_14,local_34);
+              RB_DrawSuperFlareOccluder(&viewInfo->genericFilter,iFilter,iPass,iOccluder);
               RB_EndTessSurface();
-              pIVar2 = SuperFlareQuery[local_18][local_34][param_1->localClientNum][local_14];
+              pIVar2 = SuperFlareQuery[iFrame][iOccluder][viewInfo->localClientNum][iPass];
               (**(code **)((int)*pIVar2 + 0x18))(pIVar2,1);
-              SuperFlareQueryIssued[local_18][param_1->localClientNum][local_14] = true;
+              SuperFlareQueryIssued[iFrame][viewInfo->localClientNum][iPass] = true;
             }
           }
         }
         else {
-          local_8->passFlareOcclusion[local_10][local_14] = 0.0;
-          local_8->passFlareOcclusion[local_10][local_14] = 0.0;
+          (viewInfo->genericFilter).passFlareOcclusion[iFilter][iPass] = 0.0;
+          (viewInfo->genericFilter).passFlareOcclusion[iFilter][iPass] = 0.0;
         }
       }
     }

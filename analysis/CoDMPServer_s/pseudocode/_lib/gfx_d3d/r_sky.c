@@ -167,12 +167,16 @@ void __cdecl R_SetSunFromDvars(sunflare_t *param_1)
 
 // 008601D0  R_LoadSunThroughDvars  (gfx_d3d/r_sky.cpp:143)
 
+/* WARNING: Variable defined which should be unmapped: sunFile */
+
 void __cdecl R_LoadSunThroughDvars(char *param_1,sunflare_t *param_2)
 
 {
   char *pcVar1;
   int iVar2;
   sunflare_t *unaff_EDI;
+  sunflare_t *sun;
+  char *sunFile;
   char *local_4;
   
   pcVar1 = va("sun/%s.sun");

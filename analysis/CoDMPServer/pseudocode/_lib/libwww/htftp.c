@@ -514,29 +514,29 @@ undefined4 * FUN_00bb9a20(undefined4 param_1,undefined4 param_2,undefined4 param
 undefined4 FUN_00bb9ab0(undefined4 param_1,undefined4 param_2,int param_3,int param_4)
 
 {
-  uchar *puVar1;
-  uchar *puVar2;
+  uchar *string;
+  uchar *string_00;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
-  undefined4 uVar3;
+  undefined4 uVar1;
   undefined1 *extraout_EAX_01;
-  int iVar4;
+  int iVar2;
   int extraout_EAX_02;
   int extraout_EAX_03;
   
-  puVar1 = (uchar *)_HTParse(param_2,"",8);
-  puVar2 = (uchar *)_HTParse(param_2,"",5);
-  strchr(puVar1,'@');
+  string = (uchar *)_HTParse(param_2,"",8);
+  string_00 = (uchar *)_HTParse(param_2,"",5);
+  strchr(string,'@');
   if (extraout_EAX == (undefined1 *)0x0) {
     if ((DAT_0b548000 & 1) == 0) {
-      uVar3 = _HTRequest_userProfile(param_1);
-      iVar4 = _HTLink_method(uVar3);
+      uVar1 = _HTRequest_userProfile(param_1);
+      iVar2 = _HTLink_method(uVar1);
       _HTSACopy(param_3 + 0xc,"anonymous");
-      if (iVar4 == 0) {
+      if (iVar2 == 0) {
         _HTSACopy(param_3 + 0x10,"libwww@");
       }
       else {
-        _HTSACopy(param_3 + 0x10,iVar4);
+        _HTSACopy(param_3 + 0x10,iVar2);
       }
     }
     else {
@@ -546,41 +546,41 @@ undefined4 FUN_00bb9ab0(undefined4 param_1,undefined4 param_2,int param_3,int pa
   }
   else {
     *extraout_EAX = 0;
-    strchr(puVar1,':');
+    strchr(string,':');
     if (extraout_EAX_00 != (undefined1 *)0x0) {
       *extraout_EAX_00 = 0;
       _HTUnEscape(extraout_EAX_00 + 1);
       _HTSACopy(param_3 + 0x10,extraout_EAX_00 + 1);
     }
-    _HTUnEscape(puVar1);
-    _HTSACopy(param_3 + 0xc,puVar1);
+    _HTUnEscape(string);
+    _HTSACopy(param_3 + 0xc,string);
   }
-  strchr(puVar2,';');
+  strchr(string_00,';');
   if (extraout_EAX_01 == (undefined1 *)0x0) {
-    strlen(puVar2);
-    if (puVar2[extraout_EAX_02 + -1] == '/') {
-      strlen(puVar2);
-      puVar2[extraout_EAX_03 + -1] = '\0';
+    strlen(string_00);
+    if (string_00[extraout_EAX_02 + -1] == '/') {
+      strlen(string_00);
+      string_00[extraout_EAX_03 + -1] = '\0';
       *(undefined1 *)(param_4 + 0x2c) = 0x44;
     }
   }
   else {
     *extraout_EAX_01 = 0;
-    iVar4 = strncasecomp(extraout_EAX_01,";type=",6);
-    if (iVar4 == 0) {
+    iVar2 = strncasecomp(extraout_EAX_01,";type=",6);
+    if (iVar2 == 0) {
       if (extraout_EAX_01[-1] == '/') {
         *(undefined1 *)(param_4 + 0x2c) = 0x44;
       }
     }
     else {
-      iVar4 = toupper((int)(char)extraout_EAX_01[6]);
-      *(char *)(param_4 + 0x2c) = (char)iVar4;
+      iVar2 = toupper((int)(char)extraout_EAX_01[6]);
+      *(char *)(param_4 + 0x2c) = (char)iVar2;
     }
   }
-  _HTSACopy(param_4 + 0x20,puVar2);
+  _HTSACopy(param_4 + 0x20,string_00);
   *(undefined4 *)(param_4 + 0x24) = *(undefined4 *)(param_4 + 0x20);
-  _HTMemory_free(puVar1);
-  _HTMemory_free(puVar2);
+  _HTMemory_free(string);
+  _HTMemory_free(string_00);
   return 1;
 }
 

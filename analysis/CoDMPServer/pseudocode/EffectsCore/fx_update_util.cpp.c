@@ -2,11 +2,11 @@
 
 // 005F10B0  FX_TransformPosFromLocalToWorld  (EffectsCore/fx_update_util.cpp:84)
 
-void __cdecl FX_TransformPosFromLocalToWorld(FxSpatialFrame *param_1,float *param_2,float *param_3)
+void __cdecl FX_TransformPosFromLocalToWorld(FxSpatialFrame *frame,float *posLocal,float *posWorld)
 
 {
   float fVar1;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -16,19 +16,19 @@ void __cdecl FX_TransformPosFromLocalToWorld(FxSpatialFrame *param_1,float *para
   float local_c;
   float local_8;
   
-  UnitQuatToAxis(param_1->quat,(float (*) [3])&local_28);
-  fVar1 = *param_2;
-  *param_3 = fVar1 * local_28 + param_1->origin[0];
-  param_3[1] = fVar1 * local_24 + param_1->origin[1];
-  param_3[2] = fVar1 * local_20 + param_1->origin[2];
-  fVar1 = param_2[1];
-  *param_3 = fVar1 * local_1c + *param_3;
-  param_3[1] = fVar1 * local_18 + param_3[1];
-  param_3[2] = fVar1 * local_14 + param_3[2];
-  fVar1 = param_2[2];
-  *param_3 = fVar1 * local_10 + *param_3;
-  param_3[1] = fVar1 * local_c + param_3[1];
-  param_3[2] = fVar1 * local_8 + param_3[2];
+  UnitQuatToAxis(frame->quat,(float (*) [3])&axis);
+  fVar1 = *posLocal;
+  *posWorld = fVar1 * axis + frame->origin[0];
+  posWorld[1] = fVar1 * local_24 + frame->origin[1];
+  posWorld[2] = fVar1 * local_20 + frame->origin[2];
+  fVar1 = posLocal[1];
+  *posWorld = fVar1 * local_1c + *posWorld;
+  posWorld[1] = fVar1 * local_18 + posWorld[1];
+  posWorld[2] = fVar1 * local_14 + posWorld[2];
+  fVar1 = posLocal[2];
+  *posWorld = fVar1 * local_10 + *posWorld;
+  posWorld[1] = fVar1 * local_c + posWorld[1];
+  posWorld[2] = fVar1 * local_8 + posWorld[2];
   return;
 }
 
@@ -36,7 +36,8 @@ void __cdecl FX_TransformPosFromLocalToWorld(FxSpatialFrame *param_1,float *para
 // 005F0BE0  FX_OffsetSpawnOrigin  (EffectsCore/fx_update_util.cpp:96)
 
 void __cdecl
-FX_OffsetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,float *param_4)
+FX_OffsetSpawnOrigin
+          (FxSpatialFrame *effectFrame,FxElemDef *elemDef,int randomSeed,float *spawnOrigin)
 
 {
   code *pcVar1;
@@ -45,12 +46,16 @@ FX_OffsetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,floa
   uint uVar4;
   float10 fVar5;
   float fVar6;
-  float local_48;
+  float fVar7;
+  float dir;
   float local_44;
   float local_40;
-  float local_38;
-  float local_34;
-  float local_28;
+  float height;
+  float yaw;
+  float radius;
+  float sinYaw;
+  float cosYaw;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -60,18 +65,18 @@ FX_OffsetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,floa
   float local_c;
   float local_8;
   
-  uVar4 = param_2->flags & 0x30;
+  uVar4 = elemDef->flags & 0x30;
   if (uVar4 != 0) {
     if (uVar4 == 0x10) {
-      FX_RandomDir(param_3,&local_48);
-      fVar6 = *(float *)(&DAT_00caeb0c + param_3 * 4) * (param_2->spawnOffsetRadius).amplitude +
-              (param_2->spawnOffsetRadius).base;
-      *param_4 = fVar6 * local_48 + *param_4;
-      param_4[1] = fVar6 * local_44 + param_4[1];
-      param_4[2] = fVar6 * local_40 + param_4[2];
+      FX_RandomDir(randomSeed,&dir);
+      fVar6 = *(float *)(&DAT_00caeb0c + randomSeed * 4) * (elemDef->spawnOffsetRadius).amplitude +
+              (elemDef->spawnOffsetRadius).base;
+      *spawnOrigin = fVar6 * dir + *spawnOrigin;
+      spawnOrigin[1] = fVar6 * local_44 + spawnOrigin[1];
+      spawnOrigin[2] = fVar6 * local_40 + spawnOrigin[2];
     }
     else {
-      if (((param_2->flags & 0x30U) != 0x20) &&
+      if (((elemDef->flags & 0x30U) != 0x20) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                    ,0x75,0,"%s\n\t(elemDef->flags & FX_ELEM_SPAWN_OFFSET_MASK) = %i"
                                   ), !bVar3)) {
@@ -79,22 +84,22 @@ FX_OffsetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,floa
         (*pcVar1)();
         return;
       }
-      local_34 = *(float *)(&DAT_00caeb0c + param_3 * 4) * (param_2->spawnOffsetRadius).amplitude +
-                 (param_2->spawnOffsetRadius).base;
-      local_38 = *(float *)(&DAT_00caeb04 + param_3 * 4) * 6.2831855;
-      UnitQuatToAxis(param_1->quat,(float (*) [3])&local_28);
-      fVar2 = (float10)fcos((float10)local_38);
-      fVar5 = (float10)fsin((float10)local_38);
-      fVar6 = local_34 * (float)fVar2;
-      local_34 = local_34 * (float)fVar5;
-      *param_4 = fVar6 * local_1c + *param_4 + local_34 * local_10;
-      param_4[1] = fVar6 * local_18 + param_4[1] + local_34 * local_c;
-      param_4[2] = fVar6 * local_14 + param_4[2] + local_34 * local_8;
-      fVar6 = *(float *)(&DAT_00caeb08 + param_3 * 4) * (param_2->spawnOffsetHeight).amplitude +
-              (param_2->spawnOffsetHeight).base;
-      *param_4 = fVar6 * local_28 + *param_4;
-      param_4[1] = fVar6 * local_24 + param_4[1];
-      param_4[2] = fVar6 * local_20 + param_4[2];
+      radius = *(float *)(&DAT_00caeb0c + randomSeed * 4) * (elemDef->spawnOffsetRadius).amplitude +
+               (elemDef->spawnOffsetRadius).base;
+      yaw = *(float *)(&DAT_00caeb04 + randomSeed * 4) * 6.2831855;
+      UnitQuatToAxis(effectFrame->quat,(float (*) [3])&axis);
+      fVar2 = (float10)fcos((float10)yaw);
+      fVar5 = (float10)fsin((float10)yaw);
+      fVar6 = radius * (float)fVar2;
+      fVar7 = radius * (float)fVar5;
+      *spawnOrigin = fVar6 * local_1c + *spawnOrigin + fVar7 * local_10;
+      spawnOrigin[1] = fVar6 * local_18 + spawnOrigin[1] + fVar7 * local_c;
+      spawnOrigin[2] = fVar6 * local_14 + spawnOrigin[2] + fVar7 * local_8;
+      fVar6 = *(float *)(&DAT_00caeb08 + randomSeed * 4) * (elemDef->spawnOffsetHeight).amplitude +
+              (elemDef->spawnOffsetHeight).base;
+      *spawnOrigin = fVar6 * axis + *spawnOrigin;
+      spawnOrigin[1] = fVar6 * local_24 + spawnOrigin[1];
+      spawnOrigin[2] = fVar6 * local_20 + spawnOrigin[2];
     }
   }
   return;
@@ -105,13 +110,13 @@ FX_OffsetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,floa
 
 void __cdecl
 FX_GetOriginForTrailElem
-          (FxEffect *param_1,FxElemDef *param_2,FxSpatialFrame *param_3,int param_4,float *param_5,
-          float *param_6,float *param_7)
+          (FxEffect *effect,FxElemDef *elemDef,FxSpatialFrame *effectFrameWhenPlayed,int randomSeed,
+          float *outOrigin,float *outRight,float *outUp)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_28 [3];
+  float effectFrameAxis [3];
   float local_1c;
   float local_18;
   float local_14;
@@ -119,7 +124,7 @@ FX_GetOriginForTrailElem
   float local_c;
   float local_8;
   
-  if ((param_6 == (float *)0x0) || (param_7 == (float *)0x0)) {
+  if ((outRight == (float *)0x0) || (outUp == (float *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x89,0,"%s");
     if (!bVar2) {
@@ -128,7 +133,7 @@ FX_GetOriginForTrailElem
       return;
     }
   }
-  if ((param_2->flags & 0xc0U) != 0) {
+  if ((elemDef->flags & 0xc0U) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x8a,0,"%s\n\t((elemDef->flags & FX_ELEM_RUN_MASK)) = %i");
     if (!bVar2) {
@@ -137,15 +142,15 @@ FX_GetOriginForTrailElem
       return;
     }
   }
-  UnitQuatToAxis(param_3->quat,&local_28);
-  *param_6 = local_1c;
-  param_6[1] = local_18;
-  param_6[2] = local_14;
-  *param_7 = local_10;
-  param_7[1] = local_c;
-  param_7[2] = local_8;
-  FX_GetSpawnOrigin(param_3,param_2,param_4,param_5);
-  FX_OffsetSpawnOrigin(param_3,param_2,param_4,param_5);
+  UnitQuatToAxis(effectFrameWhenPlayed->quat,&effectFrameAxis);
+  *outRight = local_1c;
+  outRight[1] = local_18;
+  outRight[2] = local_14;
+  *outUp = local_10;
+  outUp[1] = local_c;
+  outUp[2] = local_8;
+  FX_GetSpawnOrigin(effectFrameWhenPlayed,elemDef,randomSeed,outOrigin);
+  FX_OffsetSpawnOrigin(effectFrameWhenPlayed,elemDef,randomSeed,outOrigin);
   return;
 }
 
@@ -153,26 +158,26 @@ FX_GetOriginForTrailElem
 // 005F0FA0  FX_GetSpawnOrigin  (EffectsCore/fx_update_util.cpp:150)
 
 void __cdecl
-FX_GetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,float *param_4)
+FX_GetSpawnOrigin(FxSpatialFrame *effectFrame,FxElemDef *elemDef,int randomSeed,float *spawnOrigin)
 
 {
-  float local_10;
+  float offset;
   float local_c;
   float local_8;
   
-  local_10 = *(float *)(&DAT_00caeaf8 + param_3 * 4) * param_2->spawnOrigin[0].amplitude +
-             param_2->spawnOrigin[0].base;
-  local_c = *(float *)(&DAT_00caeafc + param_3 * 4) * param_2->spawnOrigin[1].amplitude +
-            param_2->spawnOrigin[1].base;
-  local_8 = *(float *)(&DAT_00caeb00 + param_3 * 4) * param_2->spawnOrigin[2].amplitude +
-            param_2->spawnOrigin[2].base;
-  if ((param_2->flags & 2U) == 0) {
-    *param_4 = local_10 + param_1->origin[0];
-    param_4[1] = local_c + param_1->origin[1];
-    param_4[2] = local_8 + param_1->origin[2];
+  offset = *(float *)(&DAT_00caeaf8 + randomSeed * 4) * elemDef->spawnOrigin[0].amplitude +
+           elemDef->spawnOrigin[0].base;
+  local_c = *(float *)(&DAT_00caeafc + randomSeed * 4) * elemDef->spawnOrigin[1].amplitude +
+            elemDef->spawnOrigin[1].base;
+  local_8 = *(float *)(&DAT_00caeb00 + randomSeed * 4) * elemDef->spawnOrigin[2].amplitude +
+            elemDef->spawnOrigin[2].base;
+  if ((elemDef->flags & 2U) == 0) {
+    *spawnOrigin = offset + effectFrame->origin[0];
+    spawnOrigin[1] = local_c + effectFrame->origin[1];
+    spawnOrigin[2] = local_8 + effectFrame->origin[2];
   }
   else {
-    FX_TransformPosFromLocalToWorld(param_1,&local_10,param_4);
+    FX_TransformPosFromLocalToWorld(effectFrame,&offset,spawnOrigin);
   }
   return;
 }
@@ -180,26 +185,26 @@ FX_GetSpawnOrigin(FxSpatialFrame *param_1,FxElemDef *param_2,int param_3,float *
 
 // 005F1200  FX_SpatialFrameToOrientation  (EffectsCore/fx_update_util.cpp:166)
 
-void __cdecl FX_SpatialFrameToOrientation(FxSpatialFrame *param_1,orientation_t *param_2)
+void __cdecl FX_SpatialFrameToOrientation(FxSpatialFrame *frame,orientation_t *orient)
 
 {
-  param_2->origin[0] = param_1->origin[0];
-  param_2->origin[1] = param_1->origin[1];
-  param_2->origin[2] = param_1->origin[2];
-  UnitQuatToAxis(param_1->quat,param_2->axis);
+  orient->origin[0] = frame->origin[0];
+  orient->origin[1] = frame->origin[1];
+  orient->origin[2] = frame->origin[2];
+  UnitQuatToAxis(frame->quat,orient->axis);
   return;
 }
 
 
 // 005F1250  FX_OrientationDirToWorldDir  (EffectsCore/fx_update_util.cpp:173)
 
-void __cdecl FX_OrientationDirToWorldDir(orientation_t *param_1,float *param_2,float *param_3)
+void __cdecl FX_OrientationDirToWorldDir(orientation_t *orient,float *dir,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == param_3) {
+  if (dir == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0xae,0,"%s");
     if (!bVar2) {
@@ -208,12 +213,9 @@ void __cdecl FX_OrientationDirToWorldDir(orientation_t *param_1,float *param_2,f
       return;
     }
   }
-  *param_3 = *param_2 * param_1->axis[0][0] + param_2[1] * param_1->axis[1][0] +
-             param_2[2] * param_1->axis[2][0];
-  param_3[1] = *param_2 * param_1->axis[0][1] + param_2[1] * param_1->axis[1][1] +
-               param_2[2] * param_1->axis[2][1];
-  param_3[2] = *param_2 * param_1->axis[0][2] + param_2[1] * param_1->axis[1][2] +
-               param_2[2] * param_1->axis[2][2];
+  *out = *dir * orient->axis[0][0] + dir[1] * orient->axis[1][0] + dir[2] * orient->axis[2][0];
+  out[1] = *dir * orient->axis[0][1] + dir[1] * orient->axis[1][1] + dir[2] * orient->axis[2][1];
+  out[2] = *dir * orient->axis[0][2] + dir[1] * orient->axis[1][2] + dir[2] * orient->axis[2][2];
   return;
 }
 
@@ -221,8 +223,8 @@ void __cdecl FX_OrientationDirToWorldDir(orientation_t *param_1,float *param_2,f
 // 005F1340  FX_GetOrientation  (EffectsCore/fx_update_util.cpp:181)
 
 void __cdecl
-FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *param_3,int param_4,
-                 orientation_t *param_5)
+FX_GetOrientation(FxElemDef *elemDef,FxSpatialFrame *frameAtSpawn,FxSpatialFrame *frameNow,
+                 int randomSeed,orientation_t *orient)
 
 {
   code *pcVar1;
@@ -230,10 +232,10 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
   int iVar3;
   uint uVar4;
   float fVar5;
-  float local_14 [3];
-  uint local_8;
+  float up [3];
+  int runFlags;
   
-  iVar3 = Vec4IsNormalized(param_2->quat);
+  iVar3 = Vec4IsNormalized(frameAtSpawn->quat);
   if (iVar3 == 0) {
     va("%g %g %g %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
@@ -244,7 +246,7 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
       return;
     }
   }
-  iVar3 = Vec4IsNormalized(param_3->quat);
+  iVar3 = Vec4IsNormalized(frameNow->quat);
   if (iVar3 == 0) {
     va("%g %g %g %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
@@ -255,36 +257,36 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
       return;
     }
   }
-  local_8 = param_1->flags & 0xc0;
-  if (local_8 == 0) {
-    param_5->origin[0] = 0.0;
-    param_5->origin[1] = 0.0;
-    param_5->origin[2] = 0.0;
-    param_5->axis[0][0] = 1.0;
-    param_5->axis[0][1] = 0.0;
-    param_5->axis[0][2] = 0.0;
-    param_5->axis[1][0] = 0.0;
-    param_5->axis[1][1] = 1.0;
-    param_5->axis[1][2] = 0.0;
-    param_5->axis[2][0] = 0.0;
-    param_5->axis[2][1] = 0.0;
-    param_5->axis[2][2] = 1.0;
+  runFlags = elemDef->flags & 0xc0;
+  if (runFlags == 0) {
+    orient->origin[0] = 0.0;
+    orient->origin[1] = 0.0;
+    orient->origin[2] = 0.0;
+    orient->axis[0][0] = 1.0;
+    orient->axis[0][1] = 0.0;
+    orient->axis[0][2] = 0.0;
+    orient->axis[1][0] = 0.0;
+    orient->axis[1][1] = 1.0;
+    orient->axis[1][2] = 0.0;
+    orient->axis[2][0] = 0.0;
+    orient->axis[2][1] = 0.0;
+    orient->axis[2][2] = 1.0;
   }
-  else if (local_8 == 0x40) {
-    FX_SpatialFrameToOrientation(param_2,param_5);
+  else if (runFlags == 0x40) {
+    FX_SpatialFrameToOrientation(frameAtSpawn,orient);
   }
-  else if (local_8 == 0x80) {
-    FX_SpatialFrameToOrientation(param_3,param_5);
+  else if (runFlags == 0x80) {
+    FX_SpatialFrameToOrientation(frameNow,orient);
   }
   else {
-    if ((local_8 != 0xc0) &&
+    if ((runFlags != 0xc0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                  ,0xd2,0,"%s\n\t(runFlags) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_1->flags & 0x30U) == 0) &&
+    if (((elemDef->flags & 0x30U) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                  ,0xd3,0,"%s\n\t(elemDef->flags & FX_ELEM_SPAWN_OFFSET_MASK) = %i"),
        !bVar2)) {
@@ -292,25 +294,25 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
       (*pcVar1)();
       return;
     }
-    FX_GetSpawnOrigin(param_2,param_1,param_4,param_5->origin);
-    param_5->axis[0][0] = 0.0;
-    param_5->axis[0][1] = 0.0;
-    param_5->axis[0][2] = 0.0;
-    FX_OffsetSpawnOrigin(param_2,param_1,param_4,param_5->axis[0]);
-    param_5->origin[0] = param_5->axis[0][0] + param_5->origin[0];
-    param_5->origin[1] = param_5->axis[0][1] + param_5->origin[1];
-    param_5->origin[2] = param_5->axis[0][2] + param_5->origin[2];
-    fVar5 = Vec3Normalize(param_5->axis[0]);
+    FX_GetSpawnOrigin(frameAtSpawn,elemDef,randomSeed,orient->origin);
+    orient->axis[0][0] = 0.0;
+    orient->axis[0][1] = 0.0;
+    orient->axis[0][2] = 0.0;
+    FX_OffsetSpawnOrigin(frameAtSpawn,elemDef,randomSeed,orient->axis[0]);
+    orient->origin[0] = orient->axis[0][0] + orient->origin[0];
+    orient->origin[1] = orient->axis[0][1] + orient->origin[1];
+    orient->origin[2] = orient->axis[0][2] + orient->origin[2];
+    fVar5 = Vec3Normalize(orient->axis[0]);
     if (fVar5 == 0.0) {
-      param_5->axis[0][0] = 1.0;
-      param_5->axis[0][1] = 0.0;
-      param_5->axis[0][2] = 0.0;
+      orient->axis[0][0] = 1.0;
+      orient->axis[0][1] = 0.0;
+      orient->axis[0][2] = 0.0;
     }
-    if ((param_1->flags & 0x30U) == 0x10) {
-      Vec3Basis_RightHanded(param_5->axis[0],param_5->axis[1],param_5->axis[2]);
+    if ((elemDef->flags & 0x30U) == 0x10) {
+      Vec3Basis_RightHanded(orient->axis[0],orient->axis[1],orient->axis[2]);
     }
     else {
-      if (((param_1->flags & 0x30U) != 0x20) &&
+      if (((elemDef->flags & 0x30U) != 0x20) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                    ,0xe4,0,"%s\n\t(elemDef->flags & FX_ELEM_SPAWN_OFFSET_MASK) = %i"
                                   ), !bVar2)) {
@@ -318,54 +320,54 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
         (*pcVar1)();
         return;
       }
-      if ((param_1->flags & 2U) == 0) {
-        if (ABS(param_5->axis[0][2]) < 0.999) {
-          local_14[0] = 0.0;
-          local_14[1] = 0.0;
-          local_14[2] = 1.0;
+      if ((elemDef->flags & 2U) == 0) {
+        if (ABS(orient->axis[0][2]) < 0.999) {
+          up[0] = 0.0;
+          up[1] = 0.0;
+          up[2] = 1.0;
         }
         else {
-          local_14[0] = 0.0;
-          local_14[1] = 1.0;
-          local_14[2] = 0.0;
+          up[0] = 0.0;
+          up[1] = 1.0;
+          up[2] = 0.0;
         }
       }
       else {
-        local_14[0] = 0.0;
-        local_14[1] = 0.0;
-        local_14[2] = 1.0;
-        uVar4 = param_1->flags & 0x1c000;
+        up[0] = 0.0;
+        up[1] = 0.0;
+        up[2] = 1.0;
+        uVar4 = elemDef->flags & 0x1c000;
         if (uVar4 < 0xc001) {
           if (uVar4 == 0xc000) {
-            local_14[0] = 0.0;
-            local_14[1] = -1.0;
-            local_14[2] = 0.0;
+            up[0] = 0.0;
+            up[1] = -1.0;
+            up[2] = 0.0;
           }
           else if (uVar4 == 0x4000) {
-            local_14[0] = 1.0;
-            local_14[1] = 0.0;
-            local_14[2] = 0.0;
+            up[0] = 1.0;
+            up[1] = 0.0;
+            up[2] = 0.0;
           }
           else if (uVar4 == 0x8000) {
-            local_14[0] = 0.0;
-            local_14[1] = 1.0;
-            local_14[2] = 0.0;
+            up[0] = 0.0;
+            up[1] = 1.0;
+            up[2] = 0.0;
           }
         }
         else if (uVar4 == 0x10000) {
-          local_14[0] = -1.0;
-          local_14[1] = 0.0;
-          local_14[2] = 0.0;
+          up[0] = -1.0;
+          up[1] = 0.0;
+          up[2] = 0.0;
         }
         else if (uVar4 == 0x14000) {
-          local_14[0] = 0.0;
-          local_14[1] = 0.0;
-          local_14[2] = -1.0;
+          up[0] = 0.0;
+          up[1] = 0.0;
+          up[2] = -1.0;
         }
       }
-      Vec3Cross(local_14,param_5->axis[0],param_5->axis[1]);
-      Vec3Normalize(param_5->axis[1]);
-      Vec3Cross(param_5->axis[0],param_5->axis[1],param_5->axis[2]);
+      Vec3Cross(up,orient->axis[0],orient->axis[1]);
+      Vec3Normalize(orient->axis[1]);
+      Vec3Cross(orient->axis[0],orient->axis[1],orient->axis[2]);
     }
   }
   return;
@@ -376,21 +378,22 @@ FX_GetOrientation(FxElemDef *param_1,FxSpatialFrame *param_2,FxSpatialFrame *par
 
 void __cdecl
 FX_GetVelocityAtTimeInFrame
-          (FxElemVelStateInFrame *param_1,FxElemVelStateInFrame *param_2,float *param_3,
-          float *param_4,float *param_5)
+          (FxElemVelStateInFrame *statePrev,FxElemVelStateInFrame *stateNext,float *rangeLerp,
+          float *weight,float *velocity)
 
 {
-  *param_5 = (*param_3 * (param_1->velocity).amplitude[0] + (param_1->velocity).base[0]) * *param_4;
-  *param_5 = (*param_3 * (param_2->velocity).amplitude[0] + (param_2->velocity).base[0]) *
-             param_4[1] + *param_5;
-  param_5[1] = (param_3[1] * (param_1->velocity).amplitude[1] + (param_1->velocity).base[1]) *
-               *param_4;
-  param_5[1] = (param_3[1] * (param_2->velocity).amplitude[1] + (param_2->velocity).base[1]) *
-               param_4[1] + param_5[1];
-  param_5[2] = (param_3[2] * (param_1->velocity).amplitude[2] + (param_1->velocity).base[2]) *
-               *param_4;
-  param_5[2] = (param_3[2] * (param_2->velocity).amplitude[2] + (param_2->velocity).base[2]) *
-               param_4[1] + param_5[2];
+  *velocity = (*rangeLerp * (statePrev->velocity).amplitude[0] + (statePrev->velocity).base[0]) *
+              *weight;
+  *velocity = (*rangeLerp * (stateNext->velocity).amplitude[0] + (stateNext->velocity).base[0]) *
+              weight[1] + *velocity;
+  velocity[1] = (rangeLerp[1] * (statePrev->velocity).amplitude[1] + (statePrev->velocity).base[1])
+                * *weight;
+  velocity[1] = (rangeLerp[1] * (stateNext->velocity).amplitude[1] + (stateNext->velocity).base[1])
+                * weight[1] + velocity[1];
+  velocity[2] = (rangeLerp[2] * (statePrev->velocity).amplitude[2] + (statePrev->velocity).base[2])
+                * *weight;
+  velocity[2] = (rangeLerp[2] * (stateNext->velocity).amplitude[2] + (stateNext->velocity).base[2])
+                * weight[1] + velocity[2];
   return;
 }
 
@@ -399,31 +402,31 @@ FX_GetVelocityAtTimeInFrame
 
 void __cdecl
 FX_GetVelocityAtTime
-          (FxElemDef *param_1,int param_2,float param_3,float param_4,orientation_t *param_5,
-          float *param_6,float *param_7)
+          (FxElemDef *elemDef,int randomSeed,float msecLifeSpan,float msecElapsed,
+          orientation_t *orient,float *baseVel,float *velocity)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
-  float local_4c;
+  float velocityWorld;
   float local_48;
   float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
-  int local_34;
-  FxElemVelStateSample *local_30;
-  uint local_2c;
-  float local_28 [3];
-  float local_1c;
+  float sampleTime;
+  float samplePoint;
+  float velocityScale;
+  int sampleIndex;
+  FxElemVelStateSample *samples;
+  int intervalCount;
+  float velocityLocal [3];
+  float weight;
   float local_18;
-  float local_14;
+  float rangeLerp;
   undefined4 local_10;
   undefined4 local_c;
-  float local_8;
+  float sampleLerp;
   
-  if (param_1 == (FxElemDef *)0x0) {
+  if (elemDef == (FxElemDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x136,0,"%s");
     if (!bVar2) {
@@ -432,7 +435,7 @@ FX_GetVelocityAtTime
       return;
     }
   }
-  if (param_1->velSamples == (FxElemVelStateSample *)0x0) {
+  if (elemDef->velSamples == (FxElemVelStateSample *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x137,0,"%s");
     if (!bVar2) {
@@ -441,7 +444,7 @@ FX_GetVelocityAtTime
       return;
     }
   }
-  if (param_1->velIntervalCount == '\0') {
+  if (elemDef->velIntervalCount == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x138,0,"%s\n\t(elemDef->velIntervalCount) = %i");
     if (!bVar2) {
@@ -450,8 +453,8 @@ FX_GetVelocityAtTime
       return;
     }
   }
-  local_40 = param_4 / param_3;
-  if ((local_40 < 0.0) || (1.0 <= local_40)) {
+  sampleTime = msecElapsed / msecLifeSpan;
+  if ((sampleTime < 0.0) || (1.0 <= sampleTime)) {
     va("%g: %g, %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x13b,0,"%s\n\t%s");
@@ -461,16 +464,16 @@ FX_GetVelocityAtTime
       return;
     }
   }
-  local_14 = *(float *)(&fx_randomTable + param_2 * 4);
-  local_10 = *(undefined4 *)(&DAT_00caeae4 + param_2 * 4);
-  local_c = *(undefined4 *)(&DAT_00caeae8 + param_2 * 4);
-  local_2c = (uint)param_1->velIntervalCount;
-  local_3c = (float)local_2c * local_40;
+  rangeLerp = *(float *)(&fx_randomTable + randomSeed * 4);
+  local_10 = *(undefined4 *)(&DAT_00caeae4 + randomSeed * 4);
+  local_c = *(undefined4 *)(&DAT_00caeae8 + randomSeed * 4);
+  intervalCount = (int)elemDef->velIntervalCount;
+  samplePoint = (float)intervalCount * sampleTime;
   floor();
   _ftol2_sse();
-  local_8 = local_3c - (float)extraout_EAX;
-  local_34 = extraout_EAX;
-  if ((extraout_EAX < 0) || ((int)local_2c <= extraout_EAX)) {
+  sampleLerp = samplePoint - (float)extraout_EAX;
+  sampleIndex = extraout_EAX;
+  if ((extraout_EAX < 0) || (intervalCount <= extraout_EAX)) {
     va("%i for %g on %i intervals");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x145,1,
@@ -482,25 +485,26 @@ FX_GetVelocityAtTime
       return;
     }
   }
-  local_18 = (float)(int)local_2c * local_8;
-  local_1c = (float)(int)local_2c - local_18;
-  local_30 = param_1->velSamples + local_34;
-  *param_7 = *param_6;
-  param_7[1] = param_6[1];
-  param_7[2] = param_6[2];
-  local_38 = 1000.0;
-  if ((param_1->flags & 0x2000000U) != 0) {
-    FX_GetVelocityAtTimeInFrame(&local_30->world,&local_30[1].world,&local_14,&local_1c,&local_4c);
-    *param_7 = local_38 * local_4c + *param_7;
-    param_7[1] = local_38 * local_48 + param_7[1];
-    param_7[2] = local_38 * local_44 + param_7[2];
+  local_18 = (float)intervalCount * sampleLerp;
+  weight = (float)intervalCount - local_18;
+  samples = elemDef->velSamples + sampleIndex;
+  *velocity = *baseVel;
+  velocity[1] = baseVel[1];
+  velocity[2] = baseVel[2];
+  velocityScale = 1000.0;
+  if ((elemDef->flags & 0x2000000U) != 0) {
+    FX_GetVelocityAtTimeInFrame(&samples->world,&samples[1].world,&rangeLerp,&weight,&velocityWorld)
+    ;
+    *velocity = velocityScale * velocityWorld + *velocity;
+    velocity[1] = velocityScale * local_48 + velocity[1];
+    velocity[2] = velocityScale * local_44 + velocity[2];
   }
-  if ((param_1->flags & 0x1000000U) != 0) {
-    FX_GetVelocityAtTimeInFrame(&local_30->local,&local_30[1].local,&local_14,&local_1c,local_28);
-    FX_OrientationDirToWorldDir(param_5,local_28,&local_4c);
-    *param_7 = local_38 * local_4c + *param_7;
-    param_7[1] = local_38 * local_48 + param_7[1];
-    param_7[2] = local_38 * local_44 + param_7[2];
+  if ((elemDef->flags & 0x1000000U) != 0) {
+    FX_GetVelocityAtTimeInFrame(&samples->local,&samples[1].local,&rangeLerp,&weight,velocityLocal);
+    FX_OrientationDirToWorldDir(orient,velocityLocal,&velocityWorld);
+    *velocity = velocityScale * velocityWorld + *velocity;
+    velocity[1] = velocityScale * local_48 + velocity[1];
+    velocity[2] = velocityScale * local_44 + velocity[2];
   }
   return;
 }
@@ -508,13 +512,13 @@ FX_GetVelocityAtTime
 
 // 005F1E70  FX_OrientationPosToWorldPos  (EffectsCore/fx_update_util.cpp:351)
 
-void __cdecl FX_OrientationPosToWorldPos(orientation_t *param_1,float *param_2,float *param_3)
+void __cdecl FX_OrientationPosToWorldPos(orientation_t *orient,float *pos,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == param_3) {
+  if (pos == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x160,0,"%s");
     if (!bVar2) {
@@ -523,19 +527,19 @@ void __cdecl FX_OrientationPosToWorldPos(orientation_t *param_1,float *param_2,f
       return;
     }
   }
-  *param_3 = *param_2 * param_1->axis[0][0] + param_1->origin[0] + param_2[1] * param_1->axis[1][0]
-             + param_2[2] * param_1->axis[2][0];
-  param_3[1] = *param_2 * param_1->axis[0][1] + param_1->origin[1] +
-               param_2[1] * param_1->axis[1][1] + param_2[2] * param_1->axis[2][1];
-  param_3[2] = *param_2 * param_1->axis[0][2] + param_1->origin[2] +
-               param_2[1] * param_1->axis[1][2] + param_2[2] * param_1->axis[2][2];
+  *out = *pos * orient->axis[0][0] + orient->origin[0] + pos[1] * orient->axis[1][0] +
+         pos[2] * orient->axis[2][0];
+  out[1] = *pos * orient->axis[0][1] + orient->origin[1] + pos[1] * orient->axis[1][1] +
+           pos[2] * orient->axis[2][1];
+  out[2] = *pos * orient->axis[0][2] + orient->origin[2] + pos[1] * orient->axis[1][2] +
+           pos[2] * orient->axis[2][2];
   return;
 }
 
 
 // 005F1F80  FX_OrientationPosFromWorldPos  (EffectsCore/fx_update_util.cpp:360)
 
-void __cdecl FX_OrientationPosFromWorldPos(orientation_t *param_1,float *param_2,float *param_3)
+void __cdecl FX_OrientationPosFromWorldPos(orientation_t *orient,float *pos,float *out)
 
 {
   code *pcVar1;
@@ -544,7 +548,7 @@ void __cdecl FX_OrientationPosFromWorldPos(orientation_t *param_1,float *param_2
   float fVar4;
   float fVar5;
   
-  if (param_2 == param_3) {
+  if (pos == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x16b,0,"%s");
     if (!bVar2) {
@@ -553,57 +557,58 @@ void __cdecl FX_OrientationPosFromWorldPos(orientation_t *param_1,float *param_2
       return;
     }
   }
-  fVar3 = *param_2 - param_1->origin[0];
-  fVar4 = param_2[1] - param_1->origin[1];
-  fVar5 = param_2[2] - param_1->origin[2];
-  *param_3 = fVar3 * param_1->axis[0][0] + fVar4 * param_1->axis[0][1] + fVar5 * param_1->axis[0][2]
-  ;
-  param_3[1] = fVar3 * param_1->axis[1][0] + fVar4 * param_1->axis[1][1] +
-               fVar5 * param_1->axis[1][2];
-  param_3[2] = fVar3 * param_1->axis[2][0] + fVar4 * param_1->axis[2][1] +
-               fVar5 * param_1->axis[2][2];
+  fVar3 = *pos - orient->origin[0];
+  fVar4 = pos[1] - orient->origin[1];
+  fVar5 = pos[2] - orient->origin[2];
+  *out = fVar3 * orient->axis[0][0] + fVar4 * orient->axis[0][1] + fVar5 * orient->axis[0][2];
+  out[1] = fVar3 * orient->axis[1][0] + fVar4 * orient->axis[1][1] + fVar5 * orient->axis[1][2];
+  out[2] = fVar3 * orient->axis[2][0] + fVar4 * orient->axis[2][1] + fVar5 * orient->axis[2][2];
   return;
 }
 
 
 // 005F20A0  FX_AddVisBlocker  (EffectsCore/fx_update_util.cpp:377)
 
-void __cdecl FX_AddVisBlocker(FxSystem *param_1,float *param_2,float param_3,float param_4)
+void __cdecl FX_AddVisBlocker(FxSystem *system,float *posWorld,float radius,float opacity)
 
 {
   FxVisState *pFVar1;
   code *pcVar2;
   bool bVar3;
   FxVisBlocker *pFVar4;
+  FxVisBlocker *visBlocker;
+  FxVisState *visState;
+  int blockerIndex;
+  FxVisBlocker *localVisBlocker;
   
-  pFVar1 = param_1->visStateBufferWrite;
+  pFVar1 = system->visStateBufferWrite;
   if (pFVar1->blockerCount + 1 < 0x100) {
     pFVar4 = pFVar1->blocker + pFVar1->blockerCount + 1;
-    pFVar4->origin[0] = *param_2;
-    pFVar4->origin[1] = param_2[1];
-    pFVar4->origin[2] = param_2[2];
-    if ((4096.0 <= param_3) &&
+    pFVar4->origin[0] = *posWorld;
+    pFVar4->origin[1] = posWorld[1];
+    pFVar4->origin[2] = posWorld[2];
+    if ((4096.0 <= radius) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                  ,0x19c,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (((param_4 < 0.0) || (1.0 <= param_4)) &&
+    if (((opacity < 0.0) || (1.0 <= opacity)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp"
                                  ,0x19d,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pFVar4->radius = (ushort)(int)(param_3 * 16.0);
-    pFVar4->visibility = (ushort)(int)((1.0 - param_4) * 65536.0);
+    pFVar4->radius = (ushort)(int)(radius * 16.0);
+    pFVar4->visibility = (ushort)(int)((1.0 - opacity) * 65536.0);
     LOCK();
     pFVar1->blockerCount = pFVar1->blockerCount + 1;
     UNLOCK();
   }
-  else if (warnCount != param_1->frameCount) {
-    warnCount = param_1->frameCount;
+  else if (warnCount != system->frameCount) {
+    warnCount = system->frameCount;
     Com_PrintWarning(0x15,"More than %i visibility blocking particles exist concurrently\n");
   }
   return;
@@ -612,14 +617,15 @@ void __cdecl FX_AddVisBlocker(FxSystem *param_1,float *param_2,float param_3,flo
 
 // 005F2200  FX_ToggleVisBlockerFrame  (EffectsCore/fx_update_util.cpp:424)
 
-void __cdecl FX_ToggleVisBlockerFrame(FxSystem *param_1,FxSystem *param_2)
+void __cdecl FX_ToggleVisBlockerFrame(FxSystem *system,FxSystem *remoteSystem)
 
 {
   FxVisState *pFVar1;
   code *pcVar2;
   bool bVar3;
+  FxVisState *visStateSwapCache;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x1ad,0,"%s");
     if (!bVar3) {
@@ -629,11 +635,11 @@ void __cdecl FX_ToggleVisBlockerFrame(FxSystem *param_1,FxSystem *param_2)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_FX_VIS);
-  pFVar1 = param_1->visStateBufferRead;
-  param_1->visStateBufferRead = param_1->visStateBufferWrite;
-  param_1->visStateBufferWrite = pFVar1;
-  param_1->visStateBufferWrite->blockerCount = 0;
-  fx_serverVisClient = (int)param_1->localClientNum;
+  pFVar1 = system->visStateBufferRead;
+  system->visStateBufferRead = system->visStateBufferWrite;
+  system->visStateBufferWrite = pFVar1;
+  system->visStateBufferWrite->blockerCount = 0;
+  fx_serverVisClient = (int)system->localClientNum;
   Sys_LeaveCriticalSection(CRITSECT_FX_VIS);
   return;
 }
@@ -641,7 +647,7 @@ void __cdecl FX_ToggleVisBlockerFrame(FxSystem *param_1,FxSystem *param_2)
 
 // 005F22A0  FX_CullSphere  (EffectsCore/fx_update_util.cpp:464)
 
-bool __cdecl FX_CullSphere(FxCamera *param_1,uint param_2,float *param_3,float param_4)
+bool __cdecl FX_CullSphere(FxCamera *camera,uint frustumPlaneCount,float *posWorld,float radius)
 
 {
   float (*pafVar1) [4];
@@ -649,16 +655,17 @@ bool __cdecl FX_CullSphere(FxCamera *param_1,uint param_2,float *param_3,float p
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  uint local_8;
+  float pointToPlaneDist;
+  uint planeIndex;
   
-  if ((param_1->isValid == 0) &&
+  if ((camera->isValid == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                                0x1d4,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 != param_1->frustumPlaneCount) && (param_2 != 5)) {
+  if ((frustumPlaneCount != camera->frustumPlaneCount) && (frustumPlaneCount != 5)) {
     va("%i, %i");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                              0x1d5,0,"%s\n\t%s");
@@ -668,14 +675,14 @@ bool __cdecl FX_CullSphere(FxCamera *param_1,uint param_2,float *param_3,float p
       return (bool)uVar4;
     }
   }
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (frustumPlaneCount <= planeIndex) {
       return false;
     }
-    iVar5 = Vec3IsNormalized(param_1->frustum[local_8]);
+    iVar5 = Vec3IsNormalized(camera->frustum[planeIndex]);
     if (iVar5 == 0) {
-      Abs((phys_vec3 *)(param_1->frustum + local_8));
+      Abs((phys_vec3 *)(camera->frustum + planeIndex));
       va("(%g %g %g) len %g");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_update_util.cpp",
                                0x1d9,0,"%s\n\t%s");
@@ -685,10 +692,10 @@ bool __cdecl FX_CullSphere(FxCamera *param_1,uint param_2,float *param_3,float p
         return (bool)uVar4;
       }
     }
-    pafVar1 = param_1->frustum + local_8;
-    if (((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_3[2]) -
-        param_1->frustum[local_8][3] <= -param_4) break;
-    local_8 = local_8 + 1;
+    pafVar1 = camera->frustum + planeIndex;
+    if (((*pafVar1)[0] * *posWorld + (*pafVar1)[1] * posWorld[1] + (*pafVar1)[2] * posWorld[2]) -
+        camera->frustum[planeIndex][3] <= -radius) break;
+    planeIndex = planeIndex + 1;
   }
   return true;
 }
@@ -696,45 +703,47 @@ bool __cdecl FX_CullSphere(FxCamera *param_1,uint param_2,float *param_3,float p
 
 // 005F2480  FX_AnglesToOrientedAxis  (EffectsCore/fx_update_util.cpp:485)
 
-void __cdecl FX_AnglesToOrientedAxis(float *param_1,orientation_t *param_2,float (*param_3) [3])
+void __cdecl FX_AnglesToOrientedAxis(float *anglesInRad,orientation_t *orient,float (*axisOut) [3])
 
 {
   float fVar1;
   float fVar2;
   float10 fVar3;
   float10 fVar4;
-  float local_20;
+  float cy;
+  float sr;
+  float localDir;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float sp;
+  float cr;
+  float cp;
+  float sy;
   
-  fVar3 = (float10)fcos((float10)param_1[1]);
-  fVar4 = (float10)fsin((float10)param_1[1]);
+  fVar3 = (float10)fcos((float10)anglesInRad[1]);
+  fVar4 = (float10)fsin((float10)anglesInRad[1]);
   fVar1 = (float)fVar3;
-  local_8 = (float)fVar4;
-  fVar3 = (float10)fcos((float10)*param_1);
-  fVar4 = (float10)fsin((float10)*param_1);
-  local_c = (float)fVar3;
-  local_14 = (float)fVar4;
-  fVar3 = (float10)fcos((float10)param_1[2]);
-  fVar4 = (float10)fsin((float10)param_1[2]);
-  local_10 = (float)fVar3;
+  sy = (float)fVar4;
+  fVar3 = (float10)fcos((float10)*anglesInRad);
+  fVar4 = (float10)fsin((float10)*anglesInRad);
+  cp = (float)fVar3;
+  sp = (float)fVar4;
+  fVar3 = (float10)fcos((float10)anglesInRad[2]);
+  fVar4 = (float10)fsin((float10)anglesInRad[2]);
+  cr = (float)fVar3;
   fVar2 = (float)fVar4;
-  local_20 = local_c * fVar1;
-  local_1c = local_c * local_8;
-  local_18 = -local_14;
-  FX_OrientationDirToWorldDir(param_2,&local_20,*param_3);
-  local_20 = fVar2 * local_14 * fVar1 - local_10 * local_8;
-  local_1c = fVar2 * local_14 * local_8 + local_10 * fVar1;
-  local_18 = fVar2 * local_c;
-  FX_OrientationDirToWorldDir(param_2,&local_20,param_3[1]);
-  local_20 = local_10 * local_14 * fVar1 + fVar2 * local_8;
-  local_1c = local_10 * local_14 * local_8 - fVar2 * fVar1;
-  local_18 = local_10 * local_c;
-  FX_OrientationDirToWorldDir(param_2,&local_20,param_3[2]);
+  localDir = cp * fVar1;
+  local_1c = cp * sy;
+  local_18 = -sp;
+  FX_OrientationDirToWorldDir(orient,&localDir,*axisOut);
+  localDir = fVar2 * sp * fVar1 - cr * sy;
+  local_1c = fVar2 * sp * sy + cr * fVar1;
+  local_18 = fVar2 * cp;
+  FX_OrientationDirToWorldDir(orient,&localDir,axisOut[1]);
+  localDir = cr * sp * fVar1 + fVar2 * sy;
+  local_1c = cr * sp * sy - fVar2 * fVar1;
+  local_18 = cr * cp;
+  FX_OrientationDirToWorldDir(orient,&localDir,axisOut[2]);
   return;
 }
 
@@ -742,56 +751,59 @@ void __cdecl FX_AnglesToOrientedAxis(float *param_1,orientation_t *param_2,float
 // 005F2630  FX_GetElemAxis  (EffectsCore/fx_update_util.cpp:516)
 
 void __cdecl
-FX_GetElemAxis(FxElemDef *param_1,int param_2,orientation_t *param_3,float param_4,
-              float (*param_5) [3])
+FX_GetElemAxis(FxElemDef *elemDef,int randomSeed,orientation_t *orient,float msecElapsed,
+              float (*axis) [3])
 
 {
-  float local_10;
+  float angles;
   float local_c;
   float local_8;
   
-  local_10 = (*(float *)(&DAT_00caeaec + param_2 * 4) * param_1->angularVelocity[0].amplitude +
-             param_1->angularVelocity[0].base) * param_4 +
-             *(float *)(&DAT_00caeb10 + param_2 * 4) * param_1->spawnAngles[0].amplitude +
-             param_1->spawnAngles[0].base;
-  local_c = (*(float *)(&DAT_00caeaf0 + param_2 * 4) * param_1->angularVelocity[1].amplitude +
-            param_1->angularVelocity[1].base) * param_4 +
-            *(float *)(&DAT_00caeb14 + param_2 * 4) * param_1->spawnAngles[1].amplitude +
-            param_1->spawnAngles[1].base;
-  local_8 = (*(float *)(&DAT_00caeaf4 + param_2 * 4) * param_1->angularVelocity[2].amplitude +
-            param_1->angularVelocity[2].base) * param_4 +
-            *(float *)(&DAT_00caeb18 + param_2 * 4) * param_1->spawnAngles[2].amplitude +
-            param_1->spawnAngles[2].base;
-  FX_AnglesToOrientedAxis(&local_10,param_3,param_5);
+  angles = (*(float *)(&DAT_00caeaec + randomSeed * 4) * elemDef->angularVelocity[0].amplitude +
+           elemDef->angularVelocity[0].base) * msecElapsed +
+           *(float *)(&DAT_00caeb10 + randomSeed * 4) * elemDef->spawnAngles[0].amplitude +
+           elemDef->spawnAngles[0].base;
+  local_c = (*(float *)(&DAT_00caeaf0 + randomSeed * 4) * elemDef->angularVelocity[1].amplitude +
+            elemDef->angularVelocity[1].base) * msecElapsed +
+            *(float *)(&DAT_00caeb14 + randomSeed * 4) * elemDef->spawnAngles[1].amplitude +
+            elemDef->spawnAngles[1].base;
+  local_8 = (*(float *)(&DAT_00caeaf4 + randomSeed * 4) * elemDef->angularVelocity[2].amplitude +
+            elemDef->angularVelocity[2].base) * msecElapsed +
+            *(float *)(&DAT_00caeb18 + randomSeed * 4) * elemDef->spawnAngles[2].amplitude +
+            elemDef->spawnAngles[2].base;
+  FX_AnglesToOrientedAxis(&angles,orient,axis);
   return;
 }
 
 
 // 005F27B0  FX_GetElemLifeSpanMsec  (EffectsCore/fx_update_util.cpp:531)
 
-int __cdecl FX_GetElemLifeSpanMsec(int param_1,float param_2,FxElemDef *param_3)
+int __cdecl FX_GetElemLifeSpanMsec(int elemRandomSeed,float elemWindInterpolate,FxElemDef *elemDef)
 
 {
-  int local_8;
+  float b;
+  float a;
+  int lifespan;
   
-  local_8 = ((int)((uint)*(ushort *)(&fx_randomTable + (param_1 * 2 + 0x22) * 2) *
-                  ((param_3->lifeSpanMsec).amplitude + 1)) >> 0x10) + (param_3->lifeSpanMsec).base;
-  if (param_3->maxWindStrength != 0) {
-    local_8 = (int)((1.0 - param_2) * (float)local_8 + param_2 * (float)param_3->lifespanAtMaxWind);
+  lifespan = ((int)((uint)*(ushort *)(&fx_randomTable + (elemRandomSeed * 2 + 0x22) * 2) *
+                   ((elemDef->lifeSpanMsec).amplitude + 1)) >> 0x10) + (elemDef->lifeSpanMsec).base;
+  if (elemDef->maxWindStrength != 0) {
+    lifespan = (int)((1.0 - elemWindInterpolate) * (float)lifespan +
+                    elemWindInterpolate * (float)elemDef->lifespanAtMaxWind);
   }
-  return local_8;
+  return lifespan;
 }
 
 
 // 005F1980  Vec4IsNormalized  (universal/com_vector.h:717)
 
-int __cdecl Vec4IsNormalized(float *param_1)
+int __cdecl Vec4IsNormalized(float *v)
 
 {
   float fVar1;
   uint local_c;
   
-  fVar1 = Vec4LengthSq(param_1);
+  fVar1 = Vec4LengthSq(v);
   local_c = (uint)(ABS(fVar1 - 1.0) < 0.002);
   return local_c;
 }

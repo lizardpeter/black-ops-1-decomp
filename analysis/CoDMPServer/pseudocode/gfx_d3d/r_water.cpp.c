@@ -12,7 +12,7 @@ void __cdecl TRACK_r_water(void)
 
 // 00AC4490  WaterFrequenciesAtTime  (gfx_d3d/r_water.cpp:148)
 
-void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float param_3)
+void __cdecl WaterFrequenciesAtTime(complex_s *H,water_t *water,float t)
 
 {
   float fVar1;
@@ -21,11 +21,15 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
   bool bVar4;
   int iVar5;
   uint local_50;
-  int local_18;
-  float *local_14;
-  complex_s *local_10;
+  float sinReal;
+  int vecKCount;
+  int vecKIndex;
+  float *wTerm;
+  complex_s *H0;
+  float sinImag;
+  int sinTableIndex;
   
-  if (param_1 == (complex_s *)0x0) {
+  if (H == (complex_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x9d,0,"%s");
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
@@ -33,7 +37,7 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
       return;
     }
   }
-  if (param_2 == (water_t *)0x0) {
+  if (water == (water_t *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x9e,0,"%s");
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
@@ -41,7 +45,7 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
       return;
     }
   }
-  iVar5 = param_2->M * param_2->N;
+  iVar5 = water->M * water->N;
   if (0x1000 < iVar5) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xa3,0,
                              "%s\n\t(vecKCount) = %i");
@@ -51,22 +55,22 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
       return;
     }
   }
-  local_18 = 0;
-  local_14 = param_2->wTerm;
-  local_10 = param_2->H0;
+  vecKIndex = 0;
+  wTerm = water->wTerm;
+  H0 = water->H0;
   do {
-    if (iVar5 <= local_18) {
+    if (iVar5 <= vecKIndex) {
       return;
     }
-    if (*local_14 == 0.0) {
-      param_1[local_18].real = 0.0;
-      param_1[local_18].imag = 0.0;
+    if (*wTerm == 0.0) {
+      H[vecKIndex].real = 0.0;
+      H[vecKIndex].imag = 0.0;
     }
     else {
-      local_50 = (uint)(longlong)ROUND(*local_14 * param_3 * 162.97466);
+      local_50 = (uint)(longlong)ROUND(*wTerm * t * 162.97466);
       fVar1 = waterGlobStatic.sinTable[(local_50 & 0x3ff) + 0xff & 0x3ff];
       fVar2 = waterGlobStatic.sinTable[local_50 & 0x3ff];
-      if (((uint)local_10->real & 0x7f800000) == 0x7f800000) {
+      if (((uint)H0->real & 0x7f800000) == 0x7f800000) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xb4,0,
                                  "%s");
         if (!bVar4) {
@@ -75,7 +79,7 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
           return;
         }
       }
-      if (((uint)local_10->imag & 0x7f800000) == 0x7f800000) {
+      if (((uint)H0->imag & 0x7f800000) == 0x7f800000) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xb5,0,
                                  "%s");
         if (!bVar4) {
@@ -102,9 +106,9 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
           return;
         }
       }
-      param_1[local_18].real = local_10->real * fVar1;
-      param_1[local_18].imag = local_10->imag * fVar2;
-      if (((uint)param_1[local_18].real & 0x7f800000) == 0x7f800000) {
+      H[vecKIndex].real = H0->real * fVar1;
+      H[vecKIndex].imag = H0->imag * fVar2;
+      if (((uint)H[vecKIndex].real & 0x7f800000) == 0x7f800000) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xbb,0,
                                  "%s");
         if (!bVar4) {
@@ -113,7 +117,7 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
           return;
         }
       }
-      if (((uint)param_1[local_18].imag & 0x7f800000) == 0x7f800000) {
+      if (((uint)H[vecKIndex].imag & 0x7f800000) == 0x7f800000) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xbc,0,
                                  "%s");
         if (!bVar4) {
@@ -123,16 +127,16 @@ void __cdecl WaterFrequenciesAtTime(complex_s *param_1,water_t *param_2,float pa
         }
       }
     }
-    local_18 = local_18 + 1;
-    local_14 = local_14 + 1;
-    local_10 = local_10 + 1;
+    vecKIndex = vecKIndex + 1;
+    wTerm = wTerm + 1;
+    H0 = H0 + 1;
   } while( true );
 }
 
 
 // 00AC4A70  TransposeArray  (gfx_d3d/r_water.cpp:194)
 
-void __cdecl TransposeArray(complex_s *param_1,uint param_2)
+void __cdecl TransposeArray(complex_s *H,uint M)
 
 {
   float fVar1;
@@ -140,22 +144,22 @@ void __cdecl TransposeArray(complex_s *param_1,uint param_2)
   float fVar3;
   int iVar4;
   int iVar5;
-  uint local_14;
-  uint local_8;
+  uint j;
+  uint i;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
-      iVar4 = local_8 * param_2 + local_14;
-      fVar1 = param_1[iVar4].real;
-      fVar2 = param_1[iVar4].imag;
-      iVar5 = local_14 * param_2 + local_8;
-      fVar3 = param_1[iVar5].imag;
-      iVar4 = local_8 * param_2 + local_14;
-      param_1[iVar4].real = param_1[iVar5].real;
-      param_1[iVar4].imag = fVar3;
-      iVar4 = local_14 * param_2 + local_8;
-      param_1[iVar4].real = fVar1;
-      param_1[iVar4].imag = fVar2;
+  for (i = 0; i < M; i = i + 1) {
+    for (j = 0; j < i; j = j + 1) {
+      iVar4 = i * M + j;
+      fVar1 = H[iVar4].real;
+      fVar2 = H[iVar4].imag;
+      iVar5 = j * M + i;
+      fVar3 = H[iVar5].imag;
+      iVar4 = i * M + j;
+      H[iVar4].real = H[iVar5].real;
+      H[iVar4].imag = fVar3;
+      iVar4 = j * M + i;
+      H[iVar4].real = fVar1;
+      H[iVar4].imag = fVar2;
     }
   }
   return;
@@ -164,16 +168,17 @@ void __cdecl TransposeArray(complex_s *param_1,uint param_2)
 
 // 00AC4830  WaterAmplitudesFromFrequencies  (gfx_d3d/r_water.cpp:211)
 
-void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
+void __cdecl WaterAmplitudesFromFrequencies(complex_s *H,water_t *water)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ulong local_c;
-  int local_8;
+  int fftIndex;
+  int log2_m;
+  int waterIndex;
   
-  if (param_1 == (complex_s *)0x0) {
+  if (H == (complex_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xd8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -181,7 +186,7 @@ void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
       return;
     }
   }
-  if (param_2 == (water_t *)0x0) {
+  if (water == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xd9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -189,7 +194,7 @@ void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
       return;
     }
   }
-  if (param_2->M != param_2->N) {
+  if (water->M != water->N) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xda,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -197,19 +202,19 @@ void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
       return;
     }
   }
-  for (local_c = 0; param_2->M != 1 << ((byte)local_c & 0x1f); local_c = local_c + 1) {
+  for (log2_m = 0; water->M != 1 << ((byte)log2_m & 0x1f); log2_m = log2_m + 1) {
   }
-  local_8 = 0;
+  waterIndex = 0;
   do {
-    if (param_2->N <= local_8) {
-      TransposeArray(param_1,param_2->M);
-      local_8 = 0;
+    if (water->N <= waterIndex) {
+      TransposeArray(H,water->M);
+      waterIndex = 0;
       do {
-        if (param_2->M <= local_8) {
-          TransposeArray(param_1,param_2->M);
+        if (water->M <= waterIndex) {
+          TransposeArray(H,water->M);
           return;
         }
-        iVar3 = local_8 * param_2->N;
+        iVar3 = waterIndex * water->N;
         if (iVar3 < 0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xf0,0,
                                    "%s");
@@ -228,11 +233,11 @@ void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
             return;
           }
         }
-        FFT(param_1 + iVar3,local_c,waterGlobStatic.fftBitswap,waterGlobStatic.fftTrigTable);
-        local_8 = local_8 + 1;
+        FFT(H + iVar3,log2_m,waterGlobStatic.fftBitswap,waterGlobStatic.fftTrigTable);
+        waterIndex = waterIndex + 1;
       } while( true );
     }
-    iVar3 = local_8 * param_2->M;
+    iVar3 = waterIndex * water->M;
     if (iVar3 < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0xe4,0,"%s"
                               );
@@ -251,15 +256,15 @@ void __cdecl WaterAmplitudesFromFrequencies(complex_s *param_1,water_t *param_2)
         return;
       }
     }
-    FFT(param_1 + iVar3,local_c,waterGlobStatic.fftBitswap,waterGlobStatic.fftTrigTable);
-    local_8 = local_8 + 1;
+    FFT(H + iVar3,log2_m,waterGlobStatic.fftBitswap,waterGlobStatic.fftTrigTable);
+    waterIndex = waterIndex + 1;
   } while( true );
 }
 
 
 // 00AC4B20  WaterPixelsFromAmplitudes  (gfx_d3d/r_water.cpp:250)
 
-void __cdecl WaterPixelsFromAmplitudes(uchar *param_1,complex_s *param_2,water_t *param_3)
+void __cdecl WaterPixelsFromAmplitudes(uchar *pixels,complex_s *H,water_t *water)
 
 {
   complex_s *pcVar1;
@@ -277,30 +282,33 @@ void __cdecl WaterPixelsFromAmplitudes(uchar *param_1,complex_s *param_2,water_t
   float local_58;
   float local_54;
   float local_50;
-  uint local_14;
+  uint ixy;
+  float dz;
+  GfxColor color;
+  uint count;
   
-  if ((param_1 == (uchar *)0x0) &&
+  if ((pixels == (uchar *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x101,0,
                                "%s"), !bVar7)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_2 == (complex_s *)0x0) &&
+  if ((H == (complex_s *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x102,0,
                                "%s"), !bVar7)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_3->M != param_3->N) &&
+  if ((water->M != water->N) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x103,0,
                                "%s"), !bVar7)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  uVar10 = param_3->M * param_3->N;
+  uVar10 = water->M * water->N;
   if (((uVar10 & 3) != 0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x106,0,
                                "%s\n\t(count) = %i"), !bVar7)) {
@@ -309,41 +317,38 @@ void __cdecl WaterPixelsFromAmplitudes(uchar *param_1,complex_s *param_2,water_t
     return;
   }
   fVar4 = 1.0 / (float)uVar10;
-  local_14 = 0;
-  while (local_14 < uVar10) {
-    pcVar5 = param_2 + local_14;
-    pcVar6 = param_2 + local_14;
-    pcVar1 = param_2 + local_14;
-    pcVar2 = param_2 + local_14;
-    iVar8 = local_14 + 1;
-    iVar9 = local_14 + 2;
-    iVar11 = local_14 + 3;
-    local_14 = local_14 + 4;
+  ixy = 0;
+  while (ixy < uVar10) {
+    pcVar5 = H + ixy;
+    pcVar6 = H + ixy;
+    pcVar1 = H + ixy;
+    pcVar2 = H + ixy;
+    iVar8 = ixy + 1;
+    iVar9 = ixy + 2;
+    iVar11 = ixy + 3;
+    ixy = ixy + 4;
     local_50 = SQRT(pcVar1->real * pcVar2->real + pcVar5->imag * pcVar6->imag) * fVar4;
     if (0.0 <= local_50 - 1.0) {
       local_50 = 1.0;
     }
-    local_54 = SQRT(param_2[iVar8].real * param_2[iVar8].real +
-                    param_2[iVar8].imag * param_2[iVar8].imag) * fVar4;
+    local_54 = SQRT(H[iVar8].real * H[iVar8].real + H[iVar8].imag * H[iVar8].imag) * fVar4;
     if (0.0 <= local_54 - 1.0) {
       local_54 = 1.0;
     }
-    local_58 = SQRT(param_2[iVar9].real * param_2[iVar9].real +
-                    param_2[iVar9].imag * param_2[iVar9].imag) * fVar4;
+    local_58 = SQRT(H[iVar9].real * H[iVar9].real + H[iVar9].imag * H[iVar9].imag) * fVar4;
     if (0.0 <= local_58 - 1.0) {
       local_58 = 1.0;
     }
-    local_5c = SQRT(param_2[iVar11].real * param_2[iVar11].real +
-                    param_2[iVar11].imag * param_2[iVar11].imag) * fVar4;
+    local_5c = SQRT(H[iVar11].real * H[iVar11].real + H[iVar11].imag * H[iVar11].imag) * fVar4;
     if (0.0 <= local_5c - 1.0) {
       local_5c = 1.0;
     }
-    *(uint *)param_1 =
+    *(uint *)pixels =
          CONCAT13((char)(int)(local_5c * 255.999),
                   CONCAT12((char)(int)(local_58 * 255.999),
                            CONCAT11((char)(int)(local_54 * 255.999),(char)(int)(local_50 * 255.999))
                           ));
-    param_1 = param_1 + 4;
+    pixels = pixels + 4;
   }
   return;
 }
@@ -351,15 +356,15 @@ void __cdecl WaterPixelsFromAmplitudes(uchar *param_1,complex_s *param_2,water_t
 
 // 00AC4EB0  GenerateMipMaps  (gfx_d3d/r_water.cpp:585)
 
-void __cdecl GenerateMipMaps(_D3DFORMAT param_1,uchar *param_2,water_t *param_3)
+void __cdecl GenerateMipMaps(_D3DFORMAT format,uchar *pixels,water_t *water)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_c;
-  uint local_8;
+  int srcWidth;
+  int mipIndex;
   
-  if (param_2 == (uchar *)0x0) {
+  if (pixels == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x24d,0,"%s")
     ;
     if (!bVar2) {
@@ -368,7 +373,7 @@ void __cdecl GenerateMipMaps(_D3DFORMAT param_1,uchar *param_2,water_t *param_3)
       return;
     }
   }
-  if (param_3 == (water_t *)0x0) {
+  if (water == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x24e,0,"%s")
     ;
     if (!bVar2) {
@@ -377,7 +382,7 @@ void __cdecl GenerateMipMaps(_D3DFORMAT param_1,uchar *param_2,water_t *param_3)
       return;
     }
   }
-  if (param_3->M != param_3->N) {
+  if (water->M != water->N) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x24f,0,"%s")
     ;
     if (!bVar2) {
@@ -386,13 +391,13 @@ void __cdecl GenerateMipMaps(_D3DFORMAT param_1,uchar *param_2,water_t *param_3)
       return;
     }
   }
-  Image_UploadData(param_3->image,D3DFMT_L8,D3DCUBEMAP_FACE_POSITIVE_X,0,waterGlob.pixels);
-  local_c = param_3->M;
-  local_8 = 1;
-  for (; 1 < local_c; local_c = local_c >> 1) {
-    R_DownsampleMipMapBilinear(param_2,local_c,local_c,1,param_2);
-    Image_UploadData(param_3->image,param_1,D3DCUBEMAP_FACE_POSITIVE_X,local_8,param_2);
-    local_8 = local_8 + 1;
+  Image_UploadData(water->image,D3DFMT_L8,D3DCUBEMAP_FACE_POSITIVE_X,0,waterGlob.pixels);
+  srcWidth = water->M;
+  mipIndex = 1;
+  for (; 1 < srcWidth; srcWidth = srcWidth >> 1) {
+    R_DownsampleMipMapBilinear(pixels,srcWidth,srcWidth,1,pixels);
+    Image_UploadData(water->image,format,D3DCUBEMAP_FACE_POSITIVE_X,mipIndex,pixels);
+    mipIndex = mipIndex + 1;
   }
   return;
 }
@@ -400,16 +405,18 @@ void __cdecl GenerateMipMaps(_D3DFORMAT param_1,uchar *param_2,water_t *param_3)
 
 // 00AC4410  R_UploadWaterTextureInternal  (gfx_d3d/r_water.cpp:621)
 
-void __cdecl R_UploadWaterTextureInternal(void *param_1)
+void __cdecl R_UploadWaterTextureInternal(void *data)
 
 {
-  water_t *pwVar1;
+  water_t *water_00;
+  water_t *water;
+  water_t *remoteWater;
   
-  pwVar1 = *(water_t **)param_1;
-  WaterFrequenciesAtTime(waterGlob.H,pwVar1,(pwVar1->writable).floatTime);
-  WaterAmplitudesFromFrequencies(waterGlob.H,pwVar1);
-  WaterPixelsFromAmplitudes(waterGlob.pixels,waterGlob.H,pwVar1);
-  GenerateMipMaps(D3DFMT_L8,waterGlob.pixels,pwVar1);
+  water_00 = *(water_t **)data;
+  WaterFrequenciesAtTime(waterGlob.H,water_00,(water_00->writable).floatTime);
+  WaterAmplitudesFromFrequencies(waterGlob.H,water_00);
+  WaterPixelsFromAmplitudes(waterGlob.pixels,waterGlob.H,water_00);
+  GenerateMipMaps(D3DFMT_L8,waterGlob.pixels,water_00);
   LOCK();
   g_waterLock = g_waterLock + -1;
   UNLOCK();
@@ -421,22 +428,22 @@ void __cdecl R_UploadWaterTextureInternal(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_UploadWaterTexture(water_t *param_1,float param_2)
+void __cdecl R_UploadWaterTexture(water_t *water,float floatTime)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (water_t *)0x0) &&
+  if ((water == (water_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x2c0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->writable).floatTime != param_2) &&
-     ((param_1->writable).floatTime = param_2, (r_drawWater->current).enabled != false)) {
-    Sys_AddWorkerCmdInternal(&r_waterWorkerCmd,&param_1,(WorkerCmdConditional *)0x0);
+  if (((water->writable).floatTime != floatTime) &&
+     ((water->writable).floatTime = floatTime, (r_drawWater->current).enabled != false)) {
+    Sys_AddWorkerCmdInternal(&r_waterWorkerCmd,&water,(WorkerCmdConditional *)0x0);
   }
   return;
 }
@@ -444,17 +451,19 @@ void __cdecl R_UploadWaterTexture(water_t *param_1,float param_2)
 
 // 00AC5050  R_InitWater  (gfx_d3d/r_water.cpp:729)
 
+/* WARNING: Variable defined which should be unmapped: tableIndex */
+
 void __cdecl R_InitWater(void)
 
 {
   undefined4 unaff_EBP;
   double dVar1;
-  int iVar2;
+  int tableIndex;
   
-  for (iVar2 = 0; iVar2 < 0x400; iVar2 = iVar2 + 1) {
-    dVar1 = (double)((float)iVar2 * 0.3515625 * 0.017453292);
-    __libm_sse2_sin((double)CONCAT44(unaff_EBP,iVar2));
-    waterGlobStatic.sinTable[iVar2] = (float)dVar1;
+  for (tableIndex = 0; tableIndex < 0x400; tableIndex = tableIndex + 1) {
+    dVar1 = (double)((float)tableIndex * 0.3515625 * 0.017453292);
+    __libm_sse2_sin((double)CONCAT44(unaff_EBP,tableIndex));
+    waterGlobStatic.sinTable[tableIndex] = (float)dVar1;
   }
   FFT_Init(waterGlobStatic.fftBitswap,waterGlobStatic.fftTrigTable);
   return;
@@ -463,7 +472,7 @@ void __cdecl R_InitWater(void)
 
 // 00AC50C0  Load_PicmipWater  (gfx_d3d/r_water.cpp:739)
 
-void __cdecl Load_PicmipWater(water_t **param_1)
+void __cdecl Load_PicmipWater(water_t **waterRef)
 
 {
   float fVar1;
@@ -473,21 +482,24 @@ void __cdecl Load_PicmipWater(water_t **param_1)
   int iVar5;
   int local_30;
   int local_2c;
-  int local_20;
-  int local_1c;
-  int local_10;
-  int local_8;
+  int m;
+  int srcIndex;
+  int downsample;
+  int N;
+  int n;
+  int M;
+  int dstIndex;
   
-  local_2c = (*param_1)->M >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
+  local_2c = (*waterRef)->M >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
   if (local_2c < 4) {
     local_2c = 4;
   }
-  local_30 = (*param_1)->N >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
+  local_30 = (*waterRef)->N >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
   if (local_30 < 4) {
     local_30 = 4;
   }
-  if ((local_2c != (*param_1)->M) || (local_30 != (*param_1)->N)) {
-    if (((*param_1)->M != (*param_1)->N) &&
+  if ((local_2c != (*waterRef)->M) || (local_30 != (*waterRef)->N)) {
+    if (((*waterRef)->M != (*waterRef)->N) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water.cpp",0x2f2,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -501,21 +513,21 @@ void __cdecl Load_PicmipWater(water_t **param_1)
       (*pcVar3)();
       return;
     }
-    iVar5 = (*param_1)->M / local_2c;
-    (*param_1)->M = local_2c;
-    (*param_1)->N = local_30;
-    local_1c = 0;
-    local_8 = 0;
-    for (local_20 = 0; local_20 < local_2c; local_20 = local_20 + 1) {
-      for (local_10 = 0; local_10 < local_30; local_10 = local_10 + 1) {
-        fVar1 = (*param_1)->H0[local_1c].imag;
-        pcVar2 = (*param_1)->H0;
-        pcVar2[local_8].real = (*param_1)->H0[local_1c].real;
-        pcVar2[local_8].imag = fVar1;
-        local_8 = local_8 + 1;
-        local_1c = local_1c + iVar5;
+    iVar5 = (*waterRef)->M / local_2c;
+    (*waterRef)->M = local_2c;
+    (*waterRef)->N = local_30;
+    srcIndex = 0;
+    dstIndex = 0;
+    for (m = 0; m < local_2c; m = m + 1) {
+      for (n = 0; n < local_30; n = n + 1) {
+        fVar1 = (*waterRef)->H0[srcIndex].imag;
+        pcVar2 = (*waterRef)->H0;
+        pcVar2[dstIndex].real = (*waterRef)->H0[srcIndex].real;
+        pcVar2[dstIndex].imag = fVar1;
+        dstIndex = dstIndex + 1;
+        srcIndex = srcIndex + iVar5;
       }
-      local_1c = (iVar5 + -1) * iVar5 * local_2c + local_1c;
+      srcIndex = (iVar5 + -1) * iVar5 * local_2c + srcIndex;
     }
   }
   return;

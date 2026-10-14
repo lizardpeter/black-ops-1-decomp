@@ -7,16 +7,16 @@
 void * __cdecl ltc_ecc_new_point(void)
 
 {
-  void *pvVar1;
-  int iVar2;
+  void *ptr;
+  int iVar1;
   
-  pvVar1 = tom_game_calloc(1,0xc);
-  if (pvVar1 != (void *)0x0) {
-    iVar2 = ltc_init_multi(pvVar1,(int)pvVar1 + 4,(int)pvVar1 + 8,0);
-    if (iVar2 == 0) {
-      return pvVar1;
+  ptr = tom_game_calloc(1,0xc);
+  if (ptr != (void *)0x0) {
+    iVar1 = ltc_init_multi(ptr,(int)ptr + 4,(int)ptr + 8,0);
+    if (iVar1 == 0) {
+      return ptr;
     }
-    tom_game_free(pvVar1);
+    tom_game_free(ptr);
   }
   return (void *)0x0;
 }

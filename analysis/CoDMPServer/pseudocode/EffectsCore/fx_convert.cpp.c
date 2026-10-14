@@ -4,15 +4,16 @@
 
 void __cdecl
 FX_InterpolateSamples
-          (int param_1,float param_2,float *param_3,float param_4,float *param_5,float param_6,
-          float *param_7)
+          (int dimensions,float time0,float *samples0,float time1,float *samples1,float timeEval,
+          float *result)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  float lerp;
+  int dimIndex;
   
-  if (param_1 < 1) {
+  if (dimensions < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2c,0
                              ,"%s\n\t(dimensions) = %i");
     if (!bVar2) {
@@ -21,7 +22,7 @@ FX_InterpolateSamples
       return;
     }
   }
-  if (param_4 <= param_2) {
+  if (time1 <= time0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2d,0
                              ,"time0 < time1\n\t%g, %g");
     if (!bVar2) {
@@ -30,7 +31,7 @@ FX_InterpolateSamples
       return;
     }
   }
-  if ((param_6 < param_2) || (param_4 < param_6)) {
+  if ((timeEval < time0) || (time1 < timeEval)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2e,0
                              ,"timeEval not in [time0, time1]\n\t%g not in [%g, %g]");
     if (!bVar2) {
@@ -39,7 +40,7 @@ FX_InterpolateSamples
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (samples0 == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2f,0
                              ,"%s");
     if (!bVar2) {
@@ -48,7 +49,7 @@ FX_InterpolateSamples
       return;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (samples1 == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x30,0
                              ,"%s");
     if (!bVar2) {
@@ -57,7 +58,7 @@ FX_InterpolateSamples
       return;
     }
   }
-  if (param_7 == (float *)0x0) {
+  if (result == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x31,0
                              ,"%s");
     if (!bVar2) {
@@ -66,10 +67,10 @@ FX_InterpolateSamples
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    param_7[local_8] =
-         (param_5[local_8] - param_3[local_8]) * ((param_6 - param_2) / (param_4 - param_2)) +
-         param_3[local_8];
+  for (dimIndex = 0; dimIndex < dimensions; dimIndex = dimIndex + 1) {
+    result[dimIndex] =
+         (samples1[dimIndex] - samples0[dimIndex]) * ((timeEval - time0) / (time1 - time0)) +
+         samples0[dimIndex];
   }
   return;
 }
@@ -77,7 +78,7 @@ FX_InterpolateSamples
 
 // 005C92C0  FxCurve_Interpolate1d  (EffectsCore/fxcurve.h:45)
 
-float __cdecl FxCurve_Interpolate1d(float *param_1,float param_2)
+float __cdecl FxCurve_Interpolate1d(float *key,float intermediateTime)
 
 {
   float fVar1;
@@ -87,12 +88,16 @@ float __cdecl FxCurve_Interpolate1d(float *param_1,float param_2)
   code *pcVar5;
   bool bVar6;
   float10 fVar7;
+  float value1;
+  float value0;
+  float time1;
+  float time0;
   
-  fVar1 = *param_1;
-  fVar2 = param_1[2];
-  fVar3 = param_1[1];
-  fVar4 = param_1[3];
-  if (((param_2 < fVar1) || (fVar2 < param_2)) || (fVar1 == fVar2)) {
+  fVar1 = *key;
+  fVar2 = key[2];
+  fVar3 = key[1];
+  fVar4 = key[3];
+  if (((intermediateTime < fVar1) || (fVar2 < intermediateTime)) || (fVar1 == fVar2)) {
     va("%g, %g, %g");
     bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x38,0,
                              "%s\n\t%s");
@@ -102,39 +107,44 @@ float __cdecl FxCurve_Interpolate1d(float *param_1,float param_2)
       return (float)fVar7;
     }
   }
-  return ((fVar4 - fVar3) * (param_2 - fVar1)) / (fVar2 - fVar1) + fVar3;
+  return ((fVar4 - fVar3) * (intermediateTime - fVar1)) / (fVar2 - fVar1) + fVar3;
 }
 
 
 // 005C91E0  FX_SampleCurve1D  (EffectsCore/fx_convert.cpp:58)
 
-float __cdecl FX_SampleCurve1D(FxCurve *param_1,float param_2,float param_3)
+float __cdecl FX_SampleCurve1D(FxCurve *curve,float scale,float time)
 
 {
-  FxCurveIterator local_10;
-  float local_8;
+  float fVar1;
+  FxCurveIterator iter;
+  float value;
   
-  FxCurveIterator_Create(&local_10,param_1);
-  local_8 = FxCurveIterator_SampleTime(&local_10,param_3);
-  local_8 = local_8 * param_2;
-  FxCurveIterator_Release(&local_10);
-  return local_8;
+  FxCurveIterator_Create(&iter,curve);
+  fVar1 = FxCurveIterator_SampleTime(&iter,time);
+  value = fVar1 * scale;
+  FxCurveIterator_Release(&iter);
+  return value;
 }
 
 
 // 005CA3D0  FxCurve_Interpolate3d  (EffectsCore/fxcurve.h:63)
 
-void __cdecl FxCurve_Interpolate3d(float *param_1,float param_2,float *param_3)
+void __cdecl FxCurve_Interpolate3d(float *key,float intermediateTime,float *result)
 
 {
   float fVar1;
   float fVar2;
   code *pcVar3;
   bool bVar4;
+  float *value1;
+  float *value0;
+  float time1;
+  float time0;
   
-  fVar1 = *param_1;
-  fVar2 = param_1[4];
-  if (((param_2 < fVar1) || (fVar2 < param_2)) || (fVar1 == fVar2)) {
+  fVar1 = *key;
+  fVar2 = key[4];
+  if (((intermediateTime < fVar1) || (fVar2 < intermediateTime)) || (fVar1 == fVar2)) {
     va("%g, %g, %g");
     bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x4a,0,
                              "%s\n\t%s");
@@ -144,24 +154,24 @@ void __cdecl FxCurve_Interpolate3d(float *param_1,float param_2,float *param_3)
       return;
     }
   }
-  Vec3Lerp(param_1 + 1,param_1 + 5,(param_2 - fVar1) / (fVar2 - fVar1),param_3);
+  Vec3Lerp(key + 1,key + 5,(intermediateTime - fVar1) / (fVar2 - fVar1),result);
   return;
 }
 
 
 // 005CA2C0  FX_SampleCurve3D  (EffectsCore/fx_convert.cpp:70)
 
-void __cdecl FX_SampleCurve3D(FxCurve *param_1,float param_2,float param_3,float *param_4)
+void __cdecl FX_SampleCurve3D(FxCurve *curve,float scale,float time,float *value)
 
 {
-  FxCurveIterator local_c;
+  FxCurveIterator iter;
   
-  FxCurveIterator_Create(&local_c,param_1);
-  FxCurveIterator_SampleTimeVec3(&local_c,param_4,param_3);
-  *param_4 = param_2 * *param_4;
-  param_4[1] = param_2 * param_4[1];
-  param_4[2] = param_2 * param_4[2];
-  FxCurveIterator_Release(&local_c);
+  FxCurveIterator_Create(&iter,curve);
+  FxCurveIterator_SampleTimeVec3(&iter,value,time);
+  *value = scale * *value;
+  value[1] = scale * value[1];
+  value[2] = scale * value[2];
+  FxCurveIterator_Release(&iter);
   return;
 }
 
@@ -169,99 +179,111 @@ void __cdecl FX_SampleCurve3D(FxCurve *param_1,float param_2,float param_3,float
 // 005C6EE0  FX_MaxErrorForIntervalCount  (EffectsCore/fx_convert.cpp:81)
 
 float __cdecl
-FX_MaxErrorForIntervalCount(int param_1,int param_2,float *param_3,int param_4,float param_5)
+FX_MaxErrorForIntervalCount
+          (int dimensions,int sampleCount,float *samples,int intervalCount,float errorCutoff)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_58 [5];
-  float *local_44;
-  int local_40;
-  int local_3c;
-  int local_38;
-  int local_34;
-  float local_30;
-  float local_2c;
-  int local_28;
-  float local_24 [3];
-  int local_18;
-  float local_14 [3];
-  float *local_8;
+  float timeEval;
+  float timeNext;
+  float lerpedValueIter [3];
+  float timePrev;
+  float *samplesTo;
+  int componentIndex;
+  int intervalIndex;
+  int sampleIndexPrev;
+  int sampleIndexIter;
+  float error;
+  float errorMax;
+  int sampleIndexNext;
+  float lerpedValueNext [3];
+  int componentCount;
+  float *lerpedValuePrev [3];
+  float *samplesFrom;
   
-  if ((param_1 < 1) &&
+  if ((dimensions < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x62
                                ,0,"%s\n\t(dimensions) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_2 < 2) &&
+  if ((sampleCount < 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",99,0
                                ,"%s\n\t(sampleCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((samples == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",100,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  local_18 = param_1 + 1;
-  local_2c = 0.0;
-  local_58[4] = 0.0;
-  local_38 = 1;
-  for (local_40 = 1; local_40 != local_18; local_40 = local_40 + 1) {
-    local_24[local_40 + 3] = param_3[local_40];
+  componentCount = dimensions + 1;
+  errorMax = 0.0;
+  timePrev = 0.0;
+  sampleIndexPrev = 1;
+  for (componentIndex = 1; componentIndex != componentCount; componentIndex = componentIndex + 1) {
+    lerpedValuePrev[componentIndex + -1] = (float *)samples[componentIndex];
   }
-  local_3c = 1;
+  intervalIndex = 1;
   do {
-    if (param_4 < local_3c) {
-      return local_2c;
+    if (intervalCount < intervalIndex) {
+      return errorMax;
     }
-    local_28 = local_38;
-    while ((float)param_4 * param_3[local_28 * local_18] < (float)local_3c) {
-      local_28 = local_28 + 1;
+    sampleIndexNext = sampleIndexPrev;
+    while ((float)intervalCount * samples[sampleIndexNext * componentCount] < (float)intervalIndex)
+    {
+      sampleIndexNext = sampleIndexNext + 1;
     }
-    local_58[0] = (float)local_3c / (float)param_4;
-    local_44 = param_3 + local_28 * local_18;
-    local_8 = local_44 + -local_18;
-    FX_InterpolateSamples(param_1,*local_8,local_8 + 1,*local_44,local_44 + 1,local_58[0],local_24);
-    for (local_34 = local_38; local_34 < local_28; local_34 = local_34 + 1) {
+    timeEval = (float)intervalIndex / (float)intervalCount;
+    samplesTo = samples + sampleIndexNext * componentCount;
+    samplesFrom = samplesTo + -componentCount;
+    FX_InterpolateSamples
+              (dimensions,*samplesFrom,samplesFrom + 1,*samplesTo,samplesTo + 1,timeEval,
+               lerpedValueNext);
+    for (sampleIndexIter = sampleIndexPrev; sampleIndexIter < sampleIndexNext;
+        sampleIndexIter = sampleIndexIter + 1) {
       FX_InterpolateSamples
-                (param_1,local_58[4],local_24 + 4,local_58[0],local_24,param_3[local_34 * local_18],
-                 local_58 + 1);
-      for (local_40 = 1; local_40 < local_18; local_40 = local_40 + 1) {
-        local_30 = ABS(param_3[local_34 * local_18 + local_40] - local_58[local_40]);
-        if ((local_2c < local_30) && (local_2c = local_30, param_5 < local_30)) {
-          return local_30;
+                (dimensions,timePrev,(float *)lerpedValuePrev,timeEval,lerpedValueNext,
+                 samples[sampleIndexIter * componentCount],lerpedValueIter);
+      for (componentIndex = 1; componentIndex < componentCount; componentIndex = componentIndex + 1)
+      {
+        error = ABS(samples[sampleIndexIter * componentCount + componentIndex] -
+                    lerpedValueIter[componentIndex + -1]);
+        if ((errorMax < error) && (errorMax = error, errorCutoff < error)) {
+          return error;
         }
       }
     }
-    for (local_40 = 1; local_40 != local_18; local_40 = local_40 + 1) {
-      local_24[local_40 + 3] = local_24[local_40 + -1];
+    for (componentIndex = 1; componentIndex != componentCount; componentIndex = componentIndex + 1)
+    {
+      lerpedValuePrev[componentIndex + -1] = (float *)lerpedValueNext[componentIndex + -1];
     }
-    local_38 = local_28;
-    local_58[4] = local_58[0];
-    local_3c = local_3c + 1;
+    sampleIndexPrev = sampleIndexNext;
+    intervalIndex = intervalIndex + 1;
+    timePrev = timeEval;
   } while( true );
 }
 
 
 // 005C93A0  FxCurveIterator_MoveToTime  (EffectsCore/fxcurve.h:81)
 
-void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
+void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *source,float time)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float *local_8;
+  int keySize;
+  float *key;
   
-  if (param_1 == (FxCurveIterator *)0x0) {
+  if (source == (FxCurveIterator *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x55,0,"%s"
                             );
     if (!bVar2) {
@@ -270,7 +292,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if (param_1->master == (FxCurve *)0x0) {
+  if (source->master == (FxCurve *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x56,0,"%s"
                             );
     if (!bVar2) {
@@ -279,7 +301,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if (param_1->master == (FxCurve *)0xfffffff8) {
+  if (source->master == (FxCurve *)0xfffffff8) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x57,0,"%s"
                             );
     if (!bVar2) {
@@ -288,7 +310,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if ((param_2 < 0.0) || (1.0 < param_2)) {
+  if ((time < 0.0) || (1.0 < time)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x58,0,
                              "%s\n\t(time) = %g");
     if (!bVar2) {
@@ -297,7 +319,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if (param_1->master->keyCount < 1) {
+  if (source->master->keyCount < 1) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x59,0,
                              "%s\n\t(source->master->keyCount) = %i");
     if (!bVar2) {
@@ -306,7 +328,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if (param_1->master->dimensionCount < 1) {
+  if (source->master->dimensionCount < 1) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x5a,0,
                              "%s\n\t(source->master->dimensionCount) = %i");
     if (!bVar2) {
@@ -315,7 +337,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if ((uint)param_1->master->keyCount <= (uint)param_1->currentKeyIndex) {
+  if ((uint)source->master->keyCount <= (uint)source->currentKeyIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x5b,0,
                              "source->currentKeyIndex doesn\'t index source->master->keyCount\n\t%i not in [0, %i)"
                             );
@@ -325,16 +347,16 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  iVar3 = param_1->master->dimensionCount + 1;
-  local_8 = param_1->master->keys + param_1->currentKeyIndex * iVar3;
-  if (param_2 < *local_8) {
-    param_1->currentKeyIndex = 0;
-    local_8 = param_1->master->keys;
+  iVar3 = source->master->dimensionCount + 1;
+  key = source->master->keys + source->currentKeyIndex * iVar3;
+  if (time < *key) {
+    source->currentKeyIndex = 0;
+    key = source->master->keys;
   }
-  for (; local_8[iVar3] <= param_2 && param_2 != local_8[iVar3]; local_8 = local_8 + iVar3) {
-    param_1->currentKeyIndex = param_1->currentKeyIndex + 1;
+  for (; key[iVar3] <= time && time != key[iVar3]; key = key + iVar3) {
+    source->currentKeyIndex = source->currentKeyIndex + 1;
   }
-  if (local_8 != param_1->master->keys + param_1->currentKeyIndex * iVar3) {
+  if (key != source->master->keys + source->currentKeyIndex * iVar3) {
     va("%p != %p");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x6c,1,
                              "%s\n\t%s");
@@ -344,7 +366,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
       return;
     }
   }
-  if ((uint)param_1->master->keyCount <= (uint)param_1->currentKeyIndex) {
+  if ((uint)source->master->keyCount <= (uint)source->currentKeyIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x6d,1,
                              "source->currentKeyIndex doesn\'t index source->master->keyCount\n\t%i not in [0, %i)"
                             );
@@ -360,16 +382,18 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *param_1,float param_2)
 
 // 005C9230  FxCurveIterator_SampleTime  (EffectsCore/fxcurve.h:114)
 
-float __cdecl FxCurveIterator_SampleTime(FxCurveIterator *param_1,float param_2)
+float __cdecl FxCurveIterator_SampleTime(FxCurveIterator *source,float time)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
+  float result;
+  float *key;
   
-  FxCurveIterator_MoveToTime(param_1,param_2);
-  if (param_1->master->keyCount - 1U <= (uint)param_1->currentKeyIndex) {
+  FxCurveIterator_MoveToTime(source,time);
+  if (source->master->keyCount - 1U <= (uint)source->currentKeyIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x7e,0,
                              "source->currentKeyIndex doesn\'t index source->master->keyCount - 1\n\t%i not in [0, %i)"
                             );
@@ -379,21 +403,22 @@ float __cdecl FxCurveIterator_SampleTime(FxCurveIterator *param_1,float param_2)
       return (float)fVar3;
     }
   }
-  fVar4 = FxCurve_Interpolate1d(param_1->master->keys + param_1->currentKeyIndex * 2,param_2);
+  fVar4 = FxCurve_Interpolate1d(source->master->keys + source->currentKeyIndex * 2,time);
   return fVar4;
 }
 
 
 // 005CA340  FxCurveIterator_SampleTimeVec3  (EffectsCore/fxcurve.h:137)
 
-void __cdecl FxCurveIterator_SampleTimeVec3(FxCurveIterator *param_1,float *param_2,float param_3)
+void __cdecl FxCurveIterator_SampleTimeVec3(FxCurveIterator *source,float *replyVector,float time)
 
 {
   code *pcVar1;
   bool bVar2;
+  float *key;
   
-  FxCurveIterator_MoveToTime(param_1,param_3);
-  if (param_1->master->keyCount - 1U <= (uint)param_1->currentKeyIndex) {
+  FxCurveIterator_MoveToTime(source,time);
+  if (source->master->keyCount - 1U <= (uint)source->currentKeyIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",0x94,0,
                              "source->currentKeyIndex doesn\'t index source->master->keyCount - 1\n\t%i not in [0, %i)"
                             );
@@ -404,52 +429,53 @@ void __cdecl FxCurveIterator_SampleTimeVec3(FxCurveIterator *param_1,float *para
     }
   }
   FxCurve_Interpolate3d
-            ((float *)((int)param_1->master + param_1->currentKeyIndex * 0x10 + 8),param_3,param_2);
+            ((float *)((int)source->master + source->currentKeyIndex * 0x10 + 8),time,replyVector);
   return;
 }
 
 
 // 005C6DD0  FX_DecideSampleCount  (EffectsCore/fx_convert.cpp:145)
 
-int __cdecl FX_DecideSampleCount(int param_1,FxCurve **param_2,int param_3)
+int __cdecl FX_DecideSampleCount(int curveCount,FxCurve **curves,int intervalLimit)
 
 {
   float fVar1;
-  int local_1c;
-  float local_18;
-  int local_10;
-  int local_c;
-  float local_8;
+  int intervalCountBest;
+  float errorBest;
+  float error;
+  int intervalCount;
+  int curveIndex;
+  float errorCumulative;
   
-  local_18 = 3.4028235e+38;
-  local_1c = 1;
-  for (local_10 = 1; local_10 <= param_3; local_10 = local_10 + 1) {
-    local_8 = 0.0;
-    local_c = 0;
-    while ((local_c < param_1 &&
+  errorBest = 3.4028235e+38;
+  intervalCountBest = 1;
+  for (intervalCount = 1; intervalCount <= intervalLimit; intervalCount = intervalCount + 1) {
+    errorCumulative = 0.0;
+    curveIndex = 0;
+    while ((curveIndex < curveCount &&
            ((fVar1 = FX_MaxErrorForIntervalCount
-                               (param_2[local_c]->dimensionCount,param_2[local_c]->keyCount,
-                                param_2[local_c]->keys,local_10,local_18), fVar1 <= local_8 ||
-            (local_8 = fVar1, fVar1 <= local_18))))) {
-      local_c = local_c + 1;
+                               (curves[curveIndex]->dimensionCount,curves[curveIndex]->keyCount,
+                                curves[curveIndex]->keys,intervalCount,errorBest),
+            fVar1 <= errorCumulative || (errorCumulative = fVar1, fVar1 <= errorBest))))) {
+      curveIndex = curveIndex + 1;
     }
-    if (local_8 < local_18) {
-      local_1c = local_10;
-      local_18 = local_8 - 0.02;
-      if (local_18 <= 0.0) break;
+    if (errorCumulative < errorBest) {
+      intervalCountBest = intervalCount;
+      errorBest = errorCumulative - 0.02;
+      if (errorBest <= 0.0) break;
     }
   }
-  return local_1c + 1;
+  return intervalCountBest + 1;
 }
 
 
 // 005C6D20  FX_DecideVelocitySampleCount  (EffectsCore/fx_convert.cpp:182)
 
-int __cdecl FX_DecideVelocitySampleCount(FxEditorElemDef *param_1,int param_2)
+int __cdecl FX_DecideVelocitySampleCount(FxEditorElemDef *edElem,int intervalLimit)
 
 {
   int iVar1;
-  FxCurve *local_34;
+  FxCurve *curves;
   FxCurve *local_30;
   FxCurve *local_2c;
   FxCurve *local_28;
@@ -462,98 +488,98 @@ int __cdecl FX_DecideVelocitySampleCount(FxEditorElemDef *param_1,int param_2)
   FxCurve *local_c;
   FxCurve *local_8;
   
-  local_34 = param_1->velShape[0][0][0];
-  local_30 = param_1->velShape[0][0][1];
-  local_2c = param_1->velShape[0][1][0];
-  local_28 = param_1->velShape[0][1][1];
-  local_24 = param_1->velShape[0][2][0];
-  local_20 = param_1->velShape[0][2][1];
-  local_1c = param_1->velShape[1][0][0];
-  local_18 = param_1->velShape[1][0][1];
-  local_14 = param_1->velShape[1][1][0];
-  local_10 = param_1->velShape[1][1][1];
-  local_c = param_1->velShape[1][2][0];
-  local_8 = param_1->velShape[1][2][1];
-  iVar1 = FX_DecideSampleCount(0xc,&local_34,param_2);
+  curves = edElem->velShape[0][0][0];
+  local_30 = edElem->velShape[0][0][1];
+  local_2c = edElem->velShape[0][1][0];
+  local_28 = edElem->velShape[0][1][1];
+  local_24 = edElem->velShape[0][2][0];
+  local_20 = edElem->velShape[0][2][1];
+  local_1c = edElem->velShape[1][0][0];
+  local_18 = edElem->velShape[1][0][1];
+  local_14 = edElem->velShape[1][1][0];
+  local_10 = edElem->velShape[1][1][1];
+  local_c = edElem->velShape[1][2][0];
+  local_8 = edElem->velShape[1][2][1];
+  iVar1 = FX_DecideSampleCount(0xc,&curves,intervalLimit);
   return iVar1;
 }
 
 
 // 005C7350  FX_GetVisualSampleRouting  (EffectsCore/fx_convert.cpp:207)
 
-void __cdecl FX_GetVisualSampleRouting(FxEditorElemDef *param_1,FxSampleChannel *param_2)
+void __cdecl FX_GetVisualSampleRouting(FxEditorElemDef *edElem,FxSampleChannel *routing)
 
 {
   FxSampleChannel local_c;
   
-  switch(param_1->elemType) {
+  switch(edElem->elemType) {
   case '\0':
   case '\x01':
   case '\x02':
   case '\x03':
   case '\x04':
   case '\x05':
-    *param_2 = FX_CHAN_RGBA;
-    param_2[1] = FX_CHAN_SIZE_0;
-    if (((param_1->elemType == '\x03') || (param_1->elemType == '\x04')) ||
-       ((param_1->flags & 0x10000000U) != 0)) {
+    *routing = FX_CHAN_RGBA;
+    routing[1] = FX_CHAN_SIZE_0;
+    if (((edElem->elemType == '\x03') || (edElem->elemType == '\x04')) ||
+       ((edElem->flags & 0x10000000U) != 0)) {
       local_c = FX_CHAN_SIZE_1;
     }
     else {
       local_c = FX_CHAN_SIZE_0;
     }
-    param_2[2] = local_c;
-    param_2[4] = FX_CHAN_ROTATION;
-    param_2[3] = FX_CHAN_NONE;
+    routing[2] = local_c;
+    routing[4] = FX_CHAN_ROTATION;
+    routing[3] = FX_CHAN_NONE;
     break;
   case '\x06':
-    *param_2 = FX_CHAN_RGBA;
-    param_2[1] = FX_CHAN_SIZE_0;
-    param_2[2] = FX_CHAN_SIZE_1;
-    param_2[4] = FX_CHAN_NONE;
-    param_2[3] = FX_CHAN_SCALE;
+    *routing = FX_CHAN_RGBA;
+    routing[1] = FX_CHAN_SIZE_0;
+    routing[2] = FX_CHAN_SIZE_1;
+    routing[4] = FX_CHAN_NONE;
+    routing[3] = FX_CHAN_SCALE;
     break;
   case '\a':
-    *param_2 = FX_CHAN_NONE;
-    param_2[1] = FX_CHAN_NONE;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_NONE;
-    param_2[3] = FX_CHAN_SCALE;
+    *routing = FX_CHAN_NONE;
+    routing[1] = FX_CHAN_NONE;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_NONE;
+    routing[3] = FX_CHAN_SCALE;
     break;
   case '\b':
-    *param_2 = FX_CHAN_RGBA;
-    param_2[1] = FX_CHAN_SIZE_0;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_NONE;
-    param_2[3] = FX_CHAN_NONE;
+    *routing = FX_CHAN_RGBA;
+    routing[1] = FX_CHAN_SIZE_0;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_NONE;
+    routing[3] = FX_CHAN_NONE;
     break;
   case '\t':
-    *param_2 = FX_CHAN_RGBA;
-    param_2[1] = FX_CHAN_SIZE_0;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_ROTATION;
-    param_2[3] = FX_CHAN_NONE;
+    *routing = FX_CHAN_RGBA;
+    routing[1] = FX_CHAN_SIZE_0;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_ROTATION;
+    routing[3] = FX_CHAN_NONE;
     break;
   case '\n':
-    *param_2 = FX_CHAN_NONE;
-    param_2[1] = FX_CHAN_NONE;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_NONE;
-    param_2[3] = FX_CHAN_SCALE;
+    *routing = FX_CHAN_NONE;
+    routing[1] = FX_CHAN_NONE;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_NONE;
+    routing[3] = FX_CHAN_SCALE;
     break;
   case '\v':
-    *param_2 = FX_CHAN_RGBA;
-    param_2[1] = FX_CHAN_SIZE_0;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_ROTATION;
-    param_2[3] = FX_CHAN_NONE;
+    *routing = FX_CHAN_RGBA;
+    routing[1] = FX_CHAN_SIZE_0;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_ROTATION;
+    routing[3] = FX_CHAN_NONE;
     break;
   case '\f':
-    *param_2 = FX_CHAN_NONE;
-    param_2[1] = FX_CHAN_NONE;
-    param_2[2] = FX_CHAN_NONE;
-    param_2[4] = FX_CHAN_NONE;
-    param_2[3] = FX_CHAN_NONE;
+    *routing = FX_CHAN_NONE;
+    routing[1] = FX_CHAN_NONE;
+    routing[2] = FX_CHAN_NONE;
+    routing[4] = FX_CHAN_NONE;
+    routing[3] = FX_CHAN_NONE;
   }
   return;
 }
@@ -562,70 +588,70 @@ void __cdecl FX_GetVisualSampleRouting(FxEditorElemDef *param_1,FxSampleChannel 
 // 005C75A0  FX_DecideVisualSampleCount  (EffectsCore/fx_convert.cpp:284)
 
 int __cdecl
-FX_DecideVisualSampleCount(FxEditorElemDef *param_1,FxSampleChannel *param_2,int param_3)
+FX_DecideVisualSampleCount(FxEditorElemDef *edElem,FxSampleChannel *routing,int intervalLimit)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   int iVar4;
-  uint local_3c;
-  FxCurve *local_38 [12];
-  uint local_8;
+  uint curveCount;
+  FxCurve *curves [12];
+  uint chanIndex;
   
-  local_3c = 0;
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    switch(param_2[local_8]) {
+  curveCount = 0;
+  for (chanIndex = 0; chanIndex < 5; chanIndex = chanIndex + 1) {
+    switch(routing[chanIndex]) {
     case FX_CHAN_RGBA:
-      local_38[local_3c] = param_1->color[0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 2U) != 0) {
-        local_38[local_3c + 1] = param_1->color[1];
-        uVar2 = local_3c + 2;
+      curves[curveCount] = edElem->color[0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 2U) != 0) {
+        curves[curveCount + 1] = edElem->color[1];
+        uVar2 = curveCount + 2;
       }
-      local_3c = uVar2;
-      local_38[local_3c] = param_1->alpha[0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 4U) != 0) {
-        local_38[local_3c + 1] = param_1->alpha[1];
-        uVar2 = local_3c + 2;
+      curveCount = uVar2;
+      curves[curveCount] = edElem->alpha[0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 4U) != 0) {
+        curves[curveCount + 1] = edElem->alpha[1];
+        uVar2 = curveCount + 2;
       }
       break;
     case FX_CHAN_SIZE_0:
-      local_38[local_3c] = param_1->sizeShape[0][0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 8U) != 0) {
-        local_38[local_3c + 1] = param_1->sizeShape[0][1];
-        uVar2 = local_3c + 2;
+      curves[curveCount] = edElem->sizeShape[0][0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 8U) != 0) {
+        curves[curveCount + 1] = edElem->sizeShape[0][1];
+        uVar2 = curveCount + 2;
       }
       break;
     case FX_CHAN_SIZE_1:
-      local_38[local_3c] = param_1->sizeShape[1][0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 0x10U) != 0) {
-        local_38[local_3c + 1] = param_1->sizeShape[1][1];
-        uVar2 = local_3c + 2;
+      curves[curveCount] = edElem->sizeShape[1][0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 0x10U) != 0) {
+        curves[curveCount + 1] = edElem->sizeShape[1][1];
+        uVar2 = curveCount + 2;
       }
       break;
     case FX_CHAN_SCALE:
-      local_38[local_3c] = param_1->scaleShape[0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 0x20U) != 0) {
-        local_38[local_3c + 1] = param_1->scaleShape[1];
-        uVar2 = local_3c + 2;
+      curves[curveCount] = edElem->scaleShape[0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 0x20U) != 0) {
+        curves[curveCount + 1] = edElem->scaleShape[1];
+        uVar2 = curveCount + 2;
       }
       break;
     case FX_CHAN_ROTATION:
-      local_38[local_3c] = param_1->rotationShape[0];
-      uVar2 = local_3c + 1;
-      if ((param_1->editorFlags & 0x40U) != 0) {
-        local_38[local_3c + 1] = param_1->rotationShape[1];
-        uVar2 = local_3c + 2;
+      curves[curveCount] = edElem->rotationShape[0];
+      uVar2 = curveCount + 1;
+      if ((edElem->editorFlags & 0x40U) != 0) {
+        curves[curveCount + 1] = edElem->rotationShape[1];
+        uVar2 = curveCount + 2;
       }
       break;
     default:
-      uVar2 = local_3c;
-      if ((param_2[local_8] != FX_CHAN_NONE) &&
+      uVar2 = curveCount;
+      if ((routing[chanIndex] != FX_CHAN_NONE) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                    0x14d,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -633,9 +659,9 @@ FX_DecideVisualSampleCount(FxEditorElemDef *param_1,FxSampleChannel *param_2,int
         return iVar4;
       }
     }
-    local_3c = uVar2;
+    curveCount = uVar2;
   }
-  if ((0xc < local_3c) &&
+  if ((0xc < curveCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x152,0,
                                "curveCount not in [0, ARRAY_COUNT( curves )]\n\t%i not in [%i, %i]")
@@ -644,11 +670,11 @@ FX_DecideVisualSampleCount(FxEditorElemDef *param_1,FxSampleChannel *param_2,int
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if (local_3c == 0) {
+  if (curveCount == 0) {
     iVar4 = 0;
   }
   else {
-    iVar4 = FX_DecideSampleCount(local_3c,local_38,param_3);
+    iVar4 = FX_DecideSampleCount(curveCount,curves,intervalLimit);
   }
   return iVar4;
 }
@@ -656,16 +682,17 @@ FX_DecideVisualSampleCount(FxEditorElemDef *param_1,FxSampleChannel *param_2,int
 
 // 005C7820  FX_DecideIntervalLimit  (EffectsCore/fx_convert.cpp:347)
 
-int __cdecl FX_DecideIntervalLimit(FxEditorElemDef *param_1)
+int __cdecl FX_DecideIntervalLimit(FxEditorElemDef *edElemDef)
 
 {
-  int local_c;
+  int intervalLimit;
+  int msecLifeSpanAvg;
   
-  local_c = ((param_1->lifeSpanMsec).amplitude / 2 + (param_1->lifeSpanMsec).base) / 100;
-  if (0x50 < local_c) {
-    local_c = 0x50;
+  intervalLimit = ((edElemDef->lifeSpanMsec).amplitude / 2 + (edElemDef->lifeSpanMsec).base) / 100;
+  if (0x50 < intervalLimit) {
+    intervalLimit = 0x50;
   }
-  return local_c;
+  return intervalLimit;
 }
 
 
@@ -673,8 +700,8 @@ int __cdecl FX_DecideIntervalLimit(FxEditorElemDef *param_1)
 
 void __cdecl
 FX_SampleVelocityInFrame
-          (FxElemDef *param_1,float (*param_2) [3],FxElemVelStateInFrame *param_3,int param_4,
-          int param_5,FxEditorElemDef *param_6)
+          (FxElemDef *elemDef,float (*velScale) [3],FxElemVelStateInFrame *velState,
+          int velStateStride,int useGraphBit,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
@@ -683,143 +710,149 @@ FX_SampleVelocityInFrame
   float fVar4;
   float fVar5;
   char local_84;
-  float local_38;
+  bool anyNonZero;
+  float velEpsilonSq;
+  float sampleTime;
   char local_2f [3];
-  float local_2c;
+  float deltaInSegment;
   float local_28;
   float local_24;
-  float local_20;
+  float velocitySample;
   float local_1c;
   float local_18;
-  int local_14;
-  char local_d;
-  FxElemVelStateInFrame *local_c;
-  char local_8;
+  int sampleIndex;
+  bool brokenCompatibilityMode;
+  FxElemVelStateInFrame *velStatePrev;
+  char useVelocity;
   char local_7;
   
-  local_8 = (param_6->editorFlags & 0x800U) == ((param_5 != 0x2000000) - 1 & 0x800);
-  local_7 = (param_6->editorFlags & 0x1000U) == ((param_5 != 0x2000000) - 1 & 0x1000);
-  if (((bool)local_8) && ((param_6->editorFlags & 0x100U) != 0)) {
+  useVelocity = (edElemDef->editorFlags & 0x800U) == ((useGraphBit != 0x2000000) - 1 & 0x800);
+  local_7 = (edElemDef->editorFlags & 0x1000U) == ((useGraphBit != 0x2000000) - 1 & 0x1000);
+  if (((bool)useVelocity) && ((edElemDef->editorFlags & 0x100U) != 0)) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
-  if (((bool)local_7) && ((param_6->editorFlags & 0x200U) != 0)) {
+  if (((bool)local_7) && ((edElemDef->editorFlags & 0x200U) != 0)) {
     local_84 = '\x01';
   }
   else {
     local_84 = '\0';
   }
   local_2f[0] = local_84;
-  local_d = (param_6->editorFlags & 0x400U) != 0;
-  local_38 = 0.0;
-  if ((bool)local_8) {
-    local_38 = (*param_2)[0] * (*param_2)[0] + (*param_2)[1] * (*param_2)[1] +
-               (*param_2)[2] * (*param_2)[2] + 0.0;
+  brokenCompatibilityMode = (edElemDef->editorFlags & 0x400U) != 0;
+  velEpsilonSq = 0.0;
+  if ((bool)useVelocity) {
+    velEpsilonSq = (*velScale)[0] * (*velScale)[0] + (*velScale)[1] * (*velScale)[1] +
+                   (*velScale)[2] * (*velScale)[2] + 0.0;
   }
   if ((bool)local_7) {
-    local_38 = param_2[1][0] * param_2[1][0] + param_2[1][1] * param_2[1][1] +
-               param_2[1][2] * param_2[1][2] + local_38;
+    velEpsilonSq = velScale[1][0] * velScale[1][0] + velScale[1][1] * velScale[1][1] +
+                   velScale[1][2] * velScale[1][2] + velEpsilonSq;
   }
   bVar2 = false;
-  local_c = (FxElemVelStateInFrame *)0x0;
-  for (local_14 = 0; local_14 <= (int)(uint)param_1->velIntervalCount; local_14 = local_14 + 1) {
-    fVar4 = (float)local_14 / (float)param_1->velIntervalCount;
-    (param_3->velocity).base[0] = 0.0;
-    (param_3->velocity).base[1] = 0.0;
-    (param_3->velocity).base[2] = 0.0;
-    (param_3->velocity).amplitude[0] = 0.0;
-    (param_3->velocity).amplitude[1] = 0.0;
-    (param_3->velocity).amplitude[2] = 0.0;
-    if (local_8 != '\0') {
-      local_20 = FX_SampleCurve1D(param_6->velShape[0][0][0],(*param_2)[0],fVar4);
-      local_1c = FX_SampleCurve1D(param_6->velShape[0][1][0],(*param_2)[1],fVar4);
-      local_18 = FX_SampleCurve1D(param_6->velShape[0][2][0],(*param_2)[2],fVar4);
-      (param_3->velocity).base[0] = (param_3->velocity).base[0] + local_20;
-      (param_3->velocity).base[1] = (param_3->velocity).base[1] + local_1c;
-      (param_3->velocity).base[2] = (param_3->velocity).base[2] + local_18;
+  velStatePrev = (FxElemVelStateInFrame *)0x0;
+  for (sampleIndex = 0; sampleIndex <= (int)(uint)elemDef->velIntervalCount;
+      sampleIndex = sampleIndex + 1) {
+    fVar4 = (float)sampleIndex / (float)elemDef->velIntervalCount;
+    (velState->velocity).base[0] = 0.0;
+    (velState->velocity).base[1] = 0.0;
+    (velState->velocity).base[2] = 0.0;
+    (velState->velocity).amplitude[0] = 0.0;
+    (velState->velocity).amplitude[1] = 0.0;
+    (velState->velocity).amplitude[2] = 0.0;
+    if (useVelocity != '\0') {
+      velocitySample = FX_SampleCurve1D(edElemDef->velShape[0][0][0],(*velScale)[0],fVar4);
+      local_1c = FX_SampleCurve1D(edElemDef->velShape[0][1][0],(*velScale)[1],fVar4);
+      local_18 = FX_SampleCurve1D(edElemDef->velShape[0][2][0],(*velScale)[2],fVar4);
+      (velState->velocity).base[0] = (velState->velocity).base[0] + velocitySample;
+      (velState->velocity).base[1] = (velState->velocity).base[1] + local_1c;
+      (velState->velocity).base[2] = (velState->velocity).base[2] + local_18;
       if (bVar1) {
-        (param_3->velocity).amplitude[0] = (param_3->velocity).amplitude[0] - local_20;
-        (param_3->velocity).amplitude[1] = (param_3->velocity).amplitude[1] - local_1c;
-        (param_3->velocity).amplitude[2] = (param_3->velocity).amplitude[2] - local_18;
+        (velState->velocity).amplitude[0] = (velState->velocity).amplitude[0] - velocitySample;
+        (velState->velocity).amplitude[1] = (velState->velocity).amplitude[1] - local_1c;
+        (velState->velocity).amplitude[2] = (velState->velocity).amplitude[2] - local_18;
       }
     }
     if (local_7 != '\0') {
-      local_20 = FX_SampleCurve1D(param_6->velShape[1][0][0],param_2[1][0],fVar4);
-      local_1c = FX_SampleCurve1D(param_6->velShape[1][1][0],param_2[1][1],fVar4);
-      local_18 = FX_SampleCurve1D(param_6->velShape[1][2][0],param_2[1][2],fVar4);
-      (param_3->velocity).base[0] = (param_3->velocity).base[0] + local_20;
-      (param_3->velocity).base[1] = (param_3->velocity).base[1] + local_1c;
-      (param_3->velocity).base[2] = (param_3->velocity).base[2] + local_18;
-      if (local_2f[-(uint)(local_d != '\0')] != '\0') {
-        (param_3->velocity).amplitude[0] = (param_3->velocity).amplitude[0] - local_20;
-        (param_3->velocity).amplitude[1] = (param_3->velocity).amplitude[1] - local_1c;
-        (param_3->velocity).amplitude[2] = (param_3->velocity).amplitude[2] - local_18;
+      velocitySample = FX_SampleCurve1D(edElemDef->velShape[1][0][0],velScale[1][0],fVar4);
+      local_1c = FX_SampleCurve1D(edElemDef->velShape[1][1][0],velScale[1][1],fVar4);
+      local_18 = FX_SampleCurve1D(edElemDef->velShape[1][2][0],velScale[1][2],fVar4);
+      (velState->velocity).base[0] = (velState->velocity).base[0] + velocitySample;
+      (velState->velocity).base[1] = (velState->velocity).base[1] + local_1c;
+      (velState->velocity).base[2] = (velState->velocity).base[2] + local_18;
+      if (local_2f[-(uint)(brokenCompatibilityMode != false)] != '\0') {
+        (velState->velocity).amplitude[0] = (velState->velocity).amplitude[0] - velocitySample;
+        (velState->velocity).amplitude[1] = (velState->velocity).amplitude[1] - local_1c;
+        (velState->velocity).amplitude[2] = (velState->velocity).amplitude[2] - local_18;
       }
     }
-    if (local_c == (FxElemVelStateInFrame *)0x0) {
-      (param_3->totalDelta).base[0] = 0.0;
-      (param_3->totalDelta).base[1] = 0.0;
-      (param_3->totalDelta).base[2] = 0.0;
+    if (velStatePrev == (FxElemVelStateInFrame *)0x0) {
+      (velState->totalDelta).base[0] = 0.0;
+      (velState->totalDelta).base[1] = 0.0;
+      (velState->totalDelta).base[2] = 0.0;
     }
     else {
-      local_2c = ((local_c->velocity).base[0] + (param_3->velocity).base[0]) * 0.5;
-      local_28 = ((local_c->velocity).base[1] + (param_3->velocity).base[1]) * 0.5;
-      local_24 = ((local_c->velocity).base[2] + (param_3->velocity).base[2]) * 0.5;
-      (param_3->totalDelta).base[0] = local_2c + (local_c->totalDelta).base[0];
-      (param_3->totalDelta).base[1] = local_28 + (local_c->totalDelta).base[1];
-      (param_3->totalDelta).base[2] = local_24 + (local_c->totalDelta).base[2];
+      deltaInSegment = ((velStatePrev->velocity).base[0] + (velState->velocity).base[0]) * 0.5;
+      local_28 = ((velStatePrev->velocity).base[1] + (velState->velocity).base[1]) * 0.5;
+      local_24 = ((velStatePrev->velocity).base[2] + (velState->velocity).base[2]) * 0.5;
+      (velState->totalDelta).base[0] = deltaInSegment + (velStatePrev->totalDelta).base[0];
+      (velState->totalDelta).base[1] = local_28 + (velStatePrev->totalDelta).base[1];
+      (velState->totalDelta).base[2] = local_24 + (velStatePrev->totalDelta).base[2];
       if (!bVar2) {
-        if (local_38 * 1.0000001e-06 <
-            (param_3->totalDelta).base[0] * (param_3->totalDelta).base[0] +
-            (param_3->totalDelta).base[1] * (param_3->totalDelta).base[1] +
-            (param_3->totalDelta).base[2] * (param_3->totalDelta).base[2]) {
+        if (velEpsilonSq * 1.0000001e-06 <
+            (velState->totalDelta).base[0] * (velState->totalDelta).base[0] +
+            (velState->totalDelta).base[1] * (velState->totalDelta).base[1] +
+            (velState->totalDelta).base[2] * (velState->totalDelta).base[2]) {
           bVar2 = true;
         }
       }
     }
     if (bVar1) {
-      fVar5 = FX_SampleCurve1D(param_6->velShape[0][0][1],(*param_2)[0],fVar4);
-      (param_3->velocity).amplitude[0] = fVar5 + (param_3->velocity).amplitude[0];
-      fVar5 = FX_SampleCurve1D(param_6->velShape[0][1][1],(*param_2)[1],fVar4);
-      (param_3->velocity).amplitude[1] = fVar5 + (param_3->velocity).amplitude[1];
-      fVar5 = FX_SampleCurve1D(param_6->velShape[0][2][1],(*param_2)[2],fVar4);
-      (param_3->velocity).amplitude[2] = fVar5 + (param_3->velocity).amplitude[2];
+      fVar5 = FX_SampleCurve1D(edElemDef->velShape[0][0][1],(*velScale)[0],fVar4);
+      (velState->velocity).amplitude[0] = fVar5 + (velState->velocity).amplitude[0];
+      fVar5 = FX_SampleCurve1D(edElemDef->velShape[0][1][1],(*velScale)[1],fVar4);
+      (velState->velocity).amplitude[1] = fVar5 + (velState->velocity).amplitude[1];
+      fVar5 = FX_SampleCurve1D(edElemDef->velShape[0][2][1],(*velScale)[2],fVar4);
+      (velState->velocity).amplitude[2] = fVar5 + (velState->velocity).amplitude[2];
     }
     if (local_2f[0] != '\0') {
-      fVar5 = FX_SampleCurve1D(param_6->velShape[1][0][1],param_2[1][0],fVar4);
-      (param_3->velocity).amplitude[0] = fVar5 + (param_3->velocity).amplitude[0];
-      fVar5 = FX_SampleCurve1D(param_6->velShape[1][1][1],param_2[1][1],fVar4);
-      (param_3->velocity).amplitude[1] = fVar5 + (param_3->velocity).amplitude[1];
-      fVar4 = FX_SampleCurve1D(param_6->velShape[1][2][1],param_2[1][2],fVar4);
-      (param_3->velocity).amplitude[2] = fVar4 + (param_3->velocity).amplitude[2];
+      fVar5 = FX_SampleCurve1D(edElemDef->velShape[1][0][1],velScale[1][0],fVar4);
+      (velState->velocity).amplitude[0] = fVar5 + (velState->velocity).amplitude[0];
+      fVar5 = FX_SampleCurve1D(edElemDef->velShape[1][1][1],velScale[1][1],fVar4);
+      (velState->velocity).amplitude[1] = fVar5 + (velState->velocity).amplitude[1];
+      fVar4 = FX_SampleCurve1D(edElemDef->velShape[1][2][1],velScale[1][2],fVar4);
+      (velState->velocity).amplitude[2] = fVar4 + (velState->velocity).amplitude[2];
     }
-    if (local_c == (FxElemVelStateInFrame *)0x0) {
-      (param_3->totalDelta).amplitude[0] = 0.0;
-      (param_3->totalDelta).amplitude[1] = 0.0;
-      (param_3->totalDelta).amplitude[2] = 0.0;
+    if (velStatePrev == (FxElemVelStateInFrame *)0x0) {
+      (velState->totalDelta).amplitude[0] = 0.0;
+      (velState->totalDelta).amplitude[1] = 0.0;
+      (velState->totalDelta).amplitude[2] = 0.0;
     }
     else {
-      local_2c = ((local_c->velocity).amplitude[0] + (param_3->velocity).amplitude[0]) * 0.5;
-      local_28 = ((local_c->velocity).amplitude[1] + (param_3->velocity).amplitude[1]) * 0.5;
-      local_24 = ((local_c->velocity).amplitude[2] + (param_3->velocity).amplitude[2]) * 0.5;
-      (param_3->totalDelta).amplitude[0] = local_2c + (local_c->totalDelta).amplitude[0];
-      (param_3->totalDelta).amplitude[1] = local_28 + (local_c->totalDelta).amplitude[1];
-      (param_3->totalDelta).amplitude[2] = local_24 + (local_c->totalDelta).amplitude[2];
+      deltaInSegment =
+           ((velStatePrev->velocity).amplitude[0] + (velState->velocity).amplitude[0]) * 0.5;
+      local_28 = ((velStatePrev->velocity).amplitude[1] + (velState->velocity).amplitude[1]) * 0.5;
+      local_24 = ((velStatePrev->velocity).amplitude[2] + (velState->velocity).amplitude[2]) * 0.5;
+      (velState->totalDelta).amplitude[0] = deltaInSegment + (velStatePrev->totalDelta).amplitude[0]
+      ;
+      (velState->totalDelta).amplitude[1] = local_28 + (velStatePrev->totalDelta).amplitude[1];
+      (velState->totalDelta).amplitude[2] = local_24 + (velStatePrev->totalDelta).amplitude[2];
       if ((!bVar2) &&
-         (pfVar3 = (param_3->totalDelta).amplitude,
-         local_38 * 1.0000001e-06 <
-         *pfVar3 * *pfVar3 + (param_3->totalDelta).amplitude[1] * (param_3->totalDelta).amplitude[1]
-         + (param_3->totalDelta).amplitude[2] * (param_3->totalDelta).amplitude[2])) {
+         (pfVar3 = (velState->totalDelta).amplitude,
+         velEpsilonSq * 1.0000001e-06 <
+         *pfVar3 * *pfVar3 +
+         (velState->totalDelta).amplitude[1] * (velState->totalDelta).amplitude[1] +
+         (velState->totalDelta).amplitude[2] * (velState->totalDelta).amplitude[2])) {
         bVar2 = true;
       }
     }
-    local_c = param_3;
-    param_3 = param_3 + param_4;
+    velStatePrev = velState;
+    velState = velState + velStateStride;
   }
   if (bVar2) {
-    param_1->flags = param_1->flags | param_5;
+    elemDef->flags = elemDef->flags | useGraphBit;
   }
   return;
 }
@@ -827,31 +860,33 @@ FX_SampleVelocityInFrame
 
 // 005C8840  FX_SampleVelocity  (EffectsCore/fx_convert.cpp:461)
 
-void __cdecl FX_SampleVelocity(FxElemDef *param_1,FxEditorElemDef *param_2)
+void __cdecl FX_SampleVelocity(FxElemDef *elemDef,FxEditorElemDef *edElemDef)
 
 {
-  float local_24;
+  float velScale;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
   float local_10;
-  FxElemVelStateSample *local_c;
-  int local_8;
+  FxElemVelStateSample *velStateRange;
+  int velStateStride;
   
-  local_1c = 1.0 / ((float)param_1->velIntervalCount * 1000.0);
-  local_24 = local_1c * param_2->velScale[0][0];
-  local_20 = local_1c * param_2->velScale[0][1];
-  local_1c = local_1c * param_2->velScale[0][2];
-  local_10 = 1.0 / ((float)param_1->velIntervalCount * 1000.0);
-  local_18 = local_10 * param_2->velScale[1][0];
-  local_14 = local_10 * param_2->velScale[1][1];
-  local_10 = local_10 * param_2->velScale[1][2];
-  local_8 = 2;
-  local_c = param_1->velSamples;
-  FX_SampleVelocityInFrame(param_1,(float (*) [3])&local_24,&local_c->local,2,0x1000000,param_2);
+  local_1c = 1.0 / ((float)elemDef->velIntervalCount * 1000.0);
+  velScale = local_1c * edElemDef->velScale[0][0];
+  local_20 = local_1c * edElemDef->velScale[0][1];
+  local_1c = local_1c * edElemDef->velScale[0][2];
+  local_10 = 1.0 / ((float)elemDef->velIntervalCount * 1000.0);
+  local_18 = local_10 * edElemDef->velScale[1][0];
+  local_14 = local_10 * edElemDef->velScale[1][1];
+  local_10 = local_10 * edElemDef->velScale[1][2];
+  velStateStride = 2;
+  velStateRange = elemDef->velSamples;
   FX_SampleVelocityInFrame
-            (param_1,(float (*) [3])&local_24,&local_c->world,local_8,0x2000000,param_2);
+            (elemDef,(float (*) [3])&velScale,&velStateRange->local,2,0x1000000,edElemDef);
+  FX_SampleVelocityInFrame
+            (elemDef,(float (*) [3])&velScale,&velStateRange->world,velStateStride,0x2000000,
+             edElemDef);
   return;
 }
 
@@ -860,57 +895,63 @@ void __cdecl FX_SampleVelocity(FxElemDef *param_1,FxEditorElemDef *param_2)
 
 void __cdecl
 FX_SampleVisualStateScalar
-          (FxEditorElemDef *param_1,float param_2,FxSampleChannel param_3,float param_4,
-          float *param_5,float *param_6)
+          (FxEditorElemDef *edElemDef,float sampleTime,FxSampleChannel routing,float scaleFactor,
+          float *base,float *amplitude)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   
-  if (param_3 == FX_CHAN_SIZE_0) {
-    fVar3 = FX_SampleCurve1D(param_1->sizeShape[0][0],param_1->sizeScale[0] * param_4,param_2);
-    *param_5 = fVar3;
-    if ((param_1->editorFlags & 8U) == 0) {
-      *param_6 = 0.0;
+  if (routing == FX_CHAN_SIZE_0) {
+    fVar3 = FX_SampleCurve1D(edElemDef->sizeShape[0][0],edElemDef->sizeScale[0] * scaleFactor,
+                             sampleTime);
+    *base = fVar3;
+    if ((edElemDef->editorFlags & 8U) == 0) {
+      *amplitude = 0.0;
     }
     else {
-      fVar3 = FX_SampleCurve1D(param_1->sizeShape[0][1],param_1->sizeScale[0] * param_4,param_2);
-      *param_6 = fVar3 - *param_5;
+      fVar3 = FX_SampleCurve1D(edElemDef->sizeShape[0][1],edElemDef->sizeScale[0] * scaleFactor,
+                               sampleTime);
+      *amplitude = fVar3 - *base;
     }
   }
-  else if (param_3 == FX_CHAN_SIZE_1) {
-    fVar3 = FX_SampleCurve1D(param_1->sizeShape[1][0],param_1->sizeScale[1] * param_4,param_2);
-    *param_5 = fVar3;
-    if ((param_1->editorFlags & 0x10U) == 0) {
-      *param_6 = 0.0;
+  else if (routing == FX_CHAN_SIZE_1) {
+    fVar3 = FX_SampleCurve1D(edElemDef->sizeShape[1][0],edElemDef->sizeScale[1] * scaleFactor,
+                             sampleTime);
+    *base = fVar3;
+    if ((edElemDef->editorFlags & 0x10U) == 0) {
+      *amplitude = 0.0;
     }
     else {
-      fVar3 = FX_SampleCurve1D(param_1->sizeShape[1][1],param_1->sizeScale[1] * param_4,param_2);
-      *param_6 = fVar3 - *param_5;
+      fVar3 = FX_SampleCurve1D(edElemDef->sizeShape[1][1],edElemDef->sizeScale[1] * scaleFactor,
+                               sampleTime);
+      *amplitude = fVar3 - *base;
     }
   }
-  else if (param_3 == FX_CHAN_SCALE) {
-    fVar3 = FX_SampleCurve1D(param_1->scaleShape[0],param_1->scaleScale * param_4,param_2);
-    *param_5 = fVar3;
-    if ((param_1->editorFlags & 0x20U) == 0) {
-      *param_6 = 0.0;
+  else if (routing == FX_CHAN_SCALE) {
+    fVar3 = FX_SampleCurve1D(edElemDef->scaleShape[0],edElemDef->scaleScale * scaleFactor,sampleTime
+                            );
+    *base = fVar3;
+    if ((edElemDef->editorFlags & 0x20U) == 0) {
+      *amplitude = 0.0;
     }
     else {
-      fVar3 = FX_SampleCurve1D(param_1->scaleShape[1],param_1->scaleScale * param_4,param_2);
-      *param_6 = fVar3 - *param_5;
+      fVar3 = FX_SampleCurve1D(edElemDef->scaleShape[1],edElemDef->scaleScale * scaleFactor,
+                               sampleTime);
+      *amplitude = fVar3 - *base;
     }
   }
   else {
-    if ((param_3 != FX_CHAN_NONE) &&
+    if ((routing != FX_CHAN_NONE) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x1fd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *param_5 = 0.0;
-    *param_6 = 0.0;
+    *base = 0.0;
+    *amplitude = 0.0;
   }
   return;
 }
@@ -918,101 +959,105 @@ FX_SampleVisualStateScalar
 
 // 005C9640  FX_SampleVisualState  (EffectsCore/fx_convert.cpp:518)
 
-void __cdecl FX_SampleVisualState(FxElemDef *param_1,FxEditorElemDef *param_2)
+void __cdecl FX_SampleVisualState(FxElemDef *elemDef,FxEditorElemDef *edElemDef)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
+  float scale;
+  float time;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  int local_34;
-  float local_30;
+  float sampleTime;
+  int secondAlphaSrc;
+  float rotationScale;
+  int sampleIndex;
+  float rgba;
   float local_2c;
   float local_28;
   float local_24;
-  uint local_20;
-  FxElemVisStateSample *local_1c;
-  FxSampleChannel local_18;
+  int secondColorSrc;
+  FxElemVisStateSample *visStateRange;
+  FxSampleChannel routing;
   FxSampleChannel local_14;
   FxSampleChannel local_10;
   FxSampleChannel local_c;
   int local_8;
   
-  FX_GetVisualSampleRouting(param_2,&local_18);
-  fVar4 = (param_2->rotationScale * 0.017453292) / ((float)param_1->visStateIntervalCount * 1000.0);
-  local_20 = (uint)((param_2->editorFlags & 2U) != 0);
-  uVar1 = param_2->editorFlags;
-  local_34 = 0;
+  FX_GetVisualSampleRouting(edElemDef,&routing);
+  scale = (edElemDef->rotationScale * 0.017453292) /
+          ((float)elemDef->visStateIntervalCount * 1000.0);
+  secondColorSrc = (int)((edElemDef->editorFlags & 2U) != 0);
+  uVar1 = edElemDef->editorFlags;
+  sampleIndex = 0;
   do {
-    if ((int)(uint)param_1->visStateIntervalCount < local_34) {
+    if ((int)(uint)elemDef->visStateIntervalCount < sampleIndex) {
       return;
     }
-    fVar5 = (float)local_34 / (float)param_1->visStateIntervalCount;
-    local_1c = param_1->visSamples + local_34;
-    if (local_18 == FX_CHAN_RGBA) {
-      FX_SampleCurve3D(param_2->color[0],1.0,fVar5,&local_30);
-      local_24 = FX_SampleCurve1D(param_2->alpha[0],1.0,fVar5);
-      if ((param_2->editorFlags & 0x80U) != 0) {
-        local_30 = local_24 * local_30;
+    time = (float)sampleIndex / (float)elemDef->visStateIntervalCount;
+    visStateRange = elemDef->visSamples + sampleIndex;
+    if (routing == FX_CHAN_RGBA) {
+      FX_SampleCurve3D(edElemDef->color[0],1.0,time,&rgba);
+      local_24 = FX_SampleCurve1D(edElemDef->alpha[0],1.0,time);
+      if ((edElemDef->editorFlags & 0x80U) != 0) {
+        rgba = local_24 * rgba;
         local_2c = local_24 * local_2c;
         local_28 = local_24 * local_28;
         local_24 = 1.0;
       }
-      Byte4PackVertexColor(&local_30,(uchar *)local_1c);
-      FX_SampleCurve3D(param_2->color[local_20],1.0,fVar5,&local_30);
-      local_24 = FX_SampleCurve1D(param_2->alpha[(uVar1 & 4) != 0],1.0,fVar5);
-      if ((param_2->editorFlags & 0x80U) != 0) {
-        local_30 = local_24 * local_30;
+      Byte4PackVertexColor(&rgba,(uchar *)visStateRange);
+      FX_SampleCurve3D(edElemDef->color[secondColorSrc],1.0,time,&rgba);
+      local_24 = FX_SampleCurve1D(edElemDef->alpha[(uVar1 & 4) != 0],1.0,time);
+      if ((edElemDef->editorFlags & 0x80U) != 0) {
+        rgba = local_24 * rgba;
         local_2c = local_24 * local_2c;
         local_28 = local_24 * local_28;
         local_24 = 1.0;
       }
-      Byte4PackVertexColor(&local_30,(local_1c->amplitude).color);
+      Byte4PackVertexColor(&rgba,(visStateRange->amplitude).color);
     }
     else {
-      if ((local_18 != FX_CHAN_NONE) &&
+      if ((routing != FX_CHAN_NONE) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                    0x233,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      (local_1c->base).color[0] = 0xff;
-      (local_1c->base).color[1] = 0xff;
-      (local_1c->base).color[2] = 0xff;
-      (local_1c->base).color[3] = 0xff;
-      (local_1c->amplitude).color[0] = 0xff;
-      (local_1c->amplitude).color[1] = 0xff;
-      (local_1c->amplitude).color[2] = 0xff;
-      (local_1c->amplitude).color[3] = 0xff;
+      (visStateRange->base).color[0] = 0xff;
+      (visStateRange->base).color[1] = 0xff;
+      (visStateRange->base).color[2] = 0xff;
+      (visStateRange->base).color[3] = 0xff;
+      (visStateRange->amplitude).color[0] = 0xff;
+      (visStateRange->amplitude).color[1] = 0xff;
+      (visStateRange->amplitude).color[2] = 0xff;
+      (visStateRange->amplitude).color[3] = 0xff;
     }
     if (local_8 == 4) {
-      fVar6 = FX_SampleCurve1D(param_2->rotationShape[0],fVar4,fVar5);
-      (local_1c->base).rotationDelta = fVar6;
-      if (local_34 == 0) {
-        (local_1c->base).rotationTotal = 0.0;
+      fVar4 = FX_SampleCurve1D(edElemDef->rotationShape[0],scale,time);
+      (visStateRange->base).rotationDelta = fVar4;
+      if (sampleIndex == 0) {
+        (visStateRange->base).rotationTotal = 0.0;
       }
       else {
-        (local_1c->base).rotationTotal =
-             (local_1c[-1].base.rotationDelta + (local_1c->base).rotationDelta) * 0.5 +
-             local_1c[-1].base.rotationTotal;
+        (visStateRange->base).rotationTotal =
+             (visStateRange[-1].base.rotationDelta + (visStateRange->base).rotationDelta) * 0.5 +
+             visStateRange[-1].base.rotationTotal;
       }
-      if ((param_2->editorFlags & 0x40U) == 0) {
-        (local_1c->amplitude).rotationDelta = 0.0;
-        (local_1c->amplitude).rotationTotal = 0.0;
+      if ((edElemDef->editorFlags & 0x40U) == 0) {
+        (visStateRange->amplitude).rotationDelta = 0.0;
+        (visStateRange->amplitude).rotationTotal = 0.0;
       }
       else {
-        fVar6 = FX_SampleCurve1D(param_2->rotationShape[1],fVar4,fVar5);
-        (local_1c->amplitude).rotationDelta = fVar6 - (local_1c->base).rotationDelta;
-        if (local_34 == 0) {
-          (local_1c->amplitude).rotationTotal = 0.0;
+        fVar4 = FX_SampleCurve1D(edElemDef->rotationShape[1],scale,time);
+        (visStateRange->amplitude).rotationDelta = fVar4 - (visStateRange->base).rotationDelta;
+        if (sampleIndex == 0) {
+          (visStateRange->amplitude).rotationTotal = 0.0;
         }
         else {
-          (local_1c->amplitude).rotationTotal =
-               (local_1c[-1].amplitude.rotationDelta + (local_1c->amplitude).rotationDelta) * 0.5 +
-               local_1c[-1].amplitude.rotationTotal;
+          (visStateRange->amplitude).rotationTotal =
+               (visStateRange[-1].amplitude.rotationDelta + (visStateRange->amplitude).rotationDelta
+               ) * 0.5 + visStateRange[-1].amplitude.rotationTotal;
         }
       }
     }
@@ -1024,18 +1069,21 @@ void __cdecl FX_SampleVisualState(FxElemDef *param_1,FxEditorElemDef *param_2)
         (*pcVar2)();
         return;
       }
-      (local_1c->base).rotationDelta = 0.0;
-      (local_1c->base).rotationTotal = 0.0;
-      (local_1c->amplitude).rotationDelta = 0.0;
-      (local_1c->amplitude).rotationTotal = 0.0;
+      (visStateRange->base).rotationDelta = 0.0;
+      (visStateRange->base).rotationTotal = 0.0;
+      (visStateRange->amplitude).rotationDelta = 0.0;
+      (visStateRange->amplitude).rotationTotal = 0.0;
     }
     FX_SampleVisualStateScalar
-              (param_2,fVar5,local_14,0.5,(local_1c->base).size,(local_1c->amplitude).size);
+              (edElemDef,time,local_14,0.5,(visStateRange->base).size,
+               (visStateRange->amplitude).size);
     FX_SampleVisualStateScalar
-              (param_2,fVar5,local_10,0.5,(local_1c->base).size + 1,(local_1c->amplitude).size + 1);
+              (edElemDef,time,local_10,0.5,(visStateRange->base).size + 1,
+               (visStateRange->amplitude).size + 1);
     FX_SampleVisualStateScalar
-              (param_2,fVar5,local_c,1.0,&(local_1c->base).scale,&(local_1c->amplitude).scale);
-    local_34 = local_34 + 1;
+              (edElemDef,time,local_c,1.0,&(visStateRange->base).scale,
+               &(visStateRange->amplitude).scale);
+    sampleIndex = sampleIndex + 1;
   } while( true );
 }
 
@@ -1044,7 +1092,7 @@ void __cdecl FX_SampleVisualState(FxElemDef *param_1,FxEditorElemDef *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
+void __cdecl Byte4PackVertexColor(float *from,uchar *to)
 
 {
   float10 extraout_ST0;
@@ -1092,15 +1140,16 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   float local_a8;
   float local_a4;
   float local_a0;
-  float local_9c;
+  float minned;
   float local_98;
   float local_94;
   float local_90;
-  undefined4 local_8c;
+  undefined4 inted;
   undefined4 local_88;
   undefined4 local_84;
   undefined4 local_80;
-  undefined4 local_78;
+  uint *out;
+  undefined4 permed;
   undefined1 local_74;
   undefined1 local_73;
   undefined1 local_72;
@@ -1112,52 +1161,52 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   undefined1 local_6c;
   undefined1 local_6b;
   undefined1 local_6a;
-  float local_68;
+  float fs;
   float local_64;
   float local_60;
   float local_5c;
-  float local_58;
+  float bumped;
   float local_54;
   float local_50;
   float local_4c;
-  float local_48;
+  float maxxed;
   float local_44;
   float local_40;
   float local_3c;
-  float local_38;
+  float scaled;
   float local_34;
   float local_30;
   float local_2c;
-  float local_28;
+  float floored;
   float local_24;
   float local_20;
   float local_1c;
-  float local_18;
+  float scale;
   float local_14;
   float local_10;
   float local_c;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = 255.0;
+  scale = 255.0;
   local_14 = 255.0;
   local_10 = 255.0;
   local_c = 255.0;
-  local_68 = *param_1;
-  local_64 = param_1[1];
-  local_60 = param_1[2];
-  local_5c = param_1[3];
-  local_38 = local_68 * 255.0;
+  fs = *from;
+  local_64 = from[1];
+  local_60 = from[2];
+  local_5c = from[3];
+  scaled = fs * 255.0;
   local_34 = local_64 * 255.0;
   local_30 = local_60 * 255.0;
   local_2c = local_5c * 255.0;
-  local_a0 = local_38 + (float)0x3f000000;
+  local_a0 = scaled + (float)0x3f000000;
   local_54 = local_34 + (float)0x3f000000;
   local_50 = local_30 + (float)0x3f000000;
   local_4c = local_2c + (float)0x3f000000;
-  local_58 = local_a0;
+  bumped = local_a0;
   floor();
-  local_28 = (float)extraout_ST0;
+  floored = (float)extraout_ST0;
   local_a4 = local_54;
   floor();
   local_24 = (float)extraout_ST0_00;
@@ -1168,13 +1217,13 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   floor();
   local_138 = (float)extraout_ST0_02;
   local_1c = local_138;
-  if (local_18 - local_28 < 0.0) {
-    local_12c = local_18;
+  if (scale - floored < 0.0) {
+    local_12c = scale;
   }
   else {
-    local_12c = local_28;
+    local_12c = floored;
   }
-  local_9c = local_12c;
+  minned = local_12c;
   local_b4 = local_24;
   local_b0 = local_14;
   if (local_14 - local_24 < 0.0) {
@@ -1205,7 +1254,7 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   else {
     local_13c = (float)0;
   }
-  local_48 = local_13c;
+  maxxed = local_13c;
   local_cc = (float)0;
   local_c8 = local_130;
   if ((float)0 - local_130 < 0.0) {
@@ -1234,7 +1283,7 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   }
   local_3c = local_148;
   local_158 = (undefined4)(longlong)ROUND(local_13c);
-  local_8c = local_158;
+  inted = local_158;
   local_168 = (undefined4)(longlong)ROUND(local_140);
   local_88 = local_168;
   local_178 = (undefined4)(longlong)ROUND(local_144);
@@ -1253,15 +1302,15 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   local_f0 = NATIVE_VERTEX_PERM.v[1];
   local_ec = NATIVE_VERTEX_PERM.v[2];
   local_e8 = NATIVE_VERTEX_PERM.v[3];
-  local_e0 = &local_78;
+  local_e0 = &permed;
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_78._0_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 0x18));
+  permed._0_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 0x18));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_78._1_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 0x10 & 0xff));
+  permed._1_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 0x10 & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_78._2_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 8 & 0xff));
+  permed._2_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] >> 8 & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_78._3_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] & 0xff));
+  permed._3_1_ = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[0] & 0xff));
   local_74 = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[1] >> 0x18));
   local_73 = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[1] >> 0x10 & 0xff));
   local_72 = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[1] >> 8 & 0xff));
@@ -1273,20 +1322,20 @@ void __cdecl Byte4PackVertexColor(float *param_1,uchar *param_2)
   local_6c = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[3] >> 0x18));
   local_6b = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[3] >> 0x10 & 0xff));
   local_6a = *(undefined1 *)((int)&local_114 + (NATIVE_VERTEX_PERM.u[3] >> 8 & 0xff));
-  *(undefined4 *)param_2 = local_78;
+  *(undefined4 *)to = permed;
   return;
 }
 
 
 // 005CA8F0  FX_ElemUsesMaterial  (EffectsCore/fx_convert.cpp:606)
 
-bool __cdecl FX_ElemUsesMaterial(FxEditorElemDef *param_1)
+bool __cdecl FX_ElemUsesMaterial(FxEditorElemDef *edElemDef)
 
 {
   byte bVar1;
   bool bVar2;
   
-  bVar1 = param_1->elemType;
+  bVar1 = edElemDef->elemType;
   if ((bVar1 < 7) || ((10 < bVar1 && (bVar1 != 0xc)))) {
     bVar2 = true;
   }
@@ -1299,43 +1348,46 @@ bool __cdecl FX_ElemUsesMaterial(FxEditorElemDef *param_1)
 
 // 005CBA10  FX_ValidateAtlasSettings  (EffectsCore/fx_convert.cpp:624)
 
-bool __cdecl FX_ValidateAtlasSettings(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ValidateAtlasSettings(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  MaterialInfo local_5c;
-  MaterialInfo local_34;
-  int local_8;
+  MaterialInfo mtlInfoRef;
+  MaterialInfo mtlInfo;
+  int visualIndex;
   
-  if ((param_2 == (FxEditorElemDef *)0x0) &&
+  if ((edElemDef == (FxEditorElemDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x275,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2->visualCount == 0) {
+  if (edElemDef->visualCount == 0) {
     bVar2 = true;
   }
   else {
-    bVar2 = FX_ElemUsesMaterial(param_2);
+    bVar2 = FX_ElemUsesMaterial(edElemDef);
     if (bVar2) {
-      Material_GetInfo((param_2->field45_0x2b4).markVisuals[0].materials[0],&local_5c);
-      if ((uint)local_5c.textureAtlasRowCount * (uint)local_5c.textureAtlasColumnCount < 0x101) {
-        if ((((param_2->atlas).behavior & 3U) == 3) && (0x7f < (param_2->atlas).indexRange)) {
+      Material_GetInfo((edElemDef->field45_0x2b4).markVisuals[0].materials[0],&mtlInfoRef);
+      if ((uint)mtlInfoRef.textureAtlasRowCount * (uint)mtlInfoRef.textureAtlasColumnCount < 0x101)
+      {
+        if ((((edElemDef->atlas).behavior & 3U) == 3) && (0x7f < (edElemDef->atlas).indexRange)) {
           Com_PrintError(0x15,
                          "effect \'%s\' segment \'%s\':\nmaterial %s. atlas range of %i exceeds %i\n"
                         );
           bVar2 = false;
         }
-        else if (((local_5c.textureAtlasRowCount & local_5c.textureAtlasRowCount - 1) == 0) &&
-                ((local_5c.textureAtlasColumnCount & local_5c.textureAtlasColumnCount - 1) == 0)) {
-          for (local_8 = 1; local_8 < param_2->visualCount; local_8 = local_8 + 1) {
-            Material_GetInfo((Material *)param_2->collOffset[local_8 + 0xf],&local_34);
-            if ((local_34.textureAtlasRowCount != local_5c.textureAtlasRowCount) ||
-               (local_34.textureAtlasColumnCount != local_5c.textureAtlasColumnCount)) {
+        else if (((mtlInfoRef.textureAtlasRowCount & mtlInfoRef.textureAtlasRowCount - 1) == 0) &&
+                ((mtlInfoRef.textureAtlasColumnCount & mtlInfoRef.textureAtlasColumnCount - 1) == 0)
+                ) {
+          for (visualIndex = 1; visualIndex < edElemDef->visualCount; visualIndex = visualIndex + 1)
+          {
+            Material_GetInfo((Material *)edElemDef->collOffset[visualIndex + 0xf],&mtlInfo);
+            if ((mtlInfo.textureAtlasRowCount != mtlInfoRef.textureAtlasRowCount) ||
+               (mtlInfo.textureAtlasColumnCount != mtlInfoRef.textureAtlasColumnCount)) {
               Com_PrintError(0x15,
                              "effect \'%s\' segment \'%s\':\nmaterial %s is a %i x %i atlas, but material %s is a %i x %i atlas\n"
                             );
@@ -1368,60 +1420,63 @@ bool __cdecl FX_ValidateAtlasSettings(FxEditorEffectDef *param_1,FxEditorElemDef
 
 // 005CA6F0  FX_ConvertAtlas  (EffectsCore/fx_convert.cpp:678)
 
-void __cdecl FX_ConvertAtlas(FxElemDef *param_1,FxEditorElemDef *param_2)
+void __cdecl FX_ConvertAtlas(FxElemDef *elemDef,FxEditorElemDef *edElemDef)
 
 {
   code *pcVar1;
   bool bVar2;
   uint local_44;
-  MaterialInfo local_3c;
+  MaterialInfo mtlInfo;
+  uint entryCountBits;
+  int indexRange;
+  uint indexRangeBits;
   
-  if ((param_1 == (FxElemDef *)0x0) &&
+  if ((elemDef == (FxElemDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x2a9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (FxEditorElemDef *)0x0) &&
+  if ((edElemDef == (FxEditorElemDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x2aa,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->visualCount == 0) || (bVar2 = FX_ElemUsesMaterial(param_2), !bVar2)) {
-    (param_1->atlas).behavior = '\0';
-    (param_1->atlas).index = '\0';
-    (param_1->atlas).fps = '\0';
-    (param_1->atlas).loopCount = '\0';
-    (param_1->atlas).colIndexBits = '\0';
-    (param_1->atlas).rowIndexBits = '\0';
-    (param_1->atlas).entryCountAndIndexRange = 0;
+  if ((edElemDef->visualCount == 0) || (bVar2 = FX_ElemUsesMaterial(edElemDef), !bVar2)) {
+    (elemDef->atlas).behavior = '\0';
+    (elemDef->atlas).index = '\0';
+    (elemDef->atlas).fps = '\0';
+    (elemDef->atlas).loopCount = '\0';
+    (elemDef->atlas).colIndexBits = '\0';
+    (elemDef->atlas).rowIndexBits = '\0';
+    (elemDef->atlas).entryCountAndIndexRange = 0;
   }
   else {
-    (param_1->atlas).behavior = (uchar)(param_2->atlas).behavior;
-    (param_1->atlas).index = (uchar)(param_2->atlas).index;
-    (param_1->atlas).fps = (uchar)(param_2->atlas).fps;
-    (param_1->atlas).loopCount = (char)(param_2->atlas).loopCount + '\x01';
-    (param_1->atlas).colIndexBits = (uchar)(param_2->atlas).colIndexBits;
-    (param_1->atlas).rowIndexBits = (uchar)(param_2->atlas).rowIndexBits;
-    Material_GetInfo((param_2->field45_0x2b4).markVisuals[0].materials[0],&local_3c);
-    (param_1->atlas).rowIndexBits = '\0';
-    while (1 << ((param_1->atlas).rowIndexBits & 0x1f) < (int)(uint)local_3c.textureAtlasRowCount) {
-      (param_1->atlas).rowIndexBits = (param_1->atlas).rowIndexBits + '\x01';
+    (elemDef->atlas).behavior = (uchar)(edElemDef->atlas).behavior;
+    (elemDef->atlas).index = (uchar)(edElemDef->atlas).index;
+    (elemDef->atlas).fps = (uchar)(edElemDef->atlas).fps;
+    (elemDef->atlas).loopCount = (char)(edElemDef->atlas).loopCount + '\x01';
+    (elemDef->atlas).colIndexBits = (uchar)(edElemDef->atlas).colIndexBits;
+    (elemDef->atlas).rowIndexBits = (uchar)(edElemDef->atlas).rowIndexBits;
+    Material_GetInfo((edElemDef->field45_0x2b4).markVisuals[0].materials[0],&mtlInfo);
+    (elemDef->atlas).rowIndexBits = '\0';
+    while (1 << ((elemDef->atlas).rowIndexBits & 0x1f) < (int)(uint)mtlInfo.textureAtlasRowCount) {
+      (elemDef->atlas).rowIndexBits = (elemDef->atlas).rowIndexBits + '\x01';
     }
-    (param_1->atlas).colIndexBits = '\0';
-    while (1 << ((param_1->atlas).colIndexBits & 0x1f) < (int)(uint)local_3c.textureAtlasColumnCount
-          ) {
-      (param_1->atlas).colIndexBits = (param_1->atlas).colIndexBits + '\x01';
+    (elemDef->atlas).colIndexBits = '\0';
+    while (1 << ((elemDef->atlas).colIndexBits & 0x1f) < (int)(uint)mtlInfo.textureAtlasColumnCount)
+    {
+      (elemDef->atlas).colIndexBits = (elemDef->atlas).colIndexBits + '\x01';
     }
-    local_44 = (param_2->atlas).indexRange;
+    local_44 = (edElemDef->atlas).indexRange;
     if ((int)local_44 < 1) {
       local_44 = 1;
     }
-    (param_1->atlas).entryCountAndIndexRange =
-         (ushort)(1 << ((param_1->atlas).rowIndexBits + (param_1->atlas).colIndexBits & 0x1f)) |
+    (elemDef->atlas).entryCountAndIndexRange =
+         (ushort)(1 << ((elemDef->atlas).rowIndexBits + (elemDef->atlas).colIndexBits & 0x1f)) |
          (ushort)((local_44 & 0x7f) << 9);
   }
   return;
@@ -1430,24 +1485,24 @@ void __cdecl FX_ConvertAtlas(FxElemDef *param_1,FxEditorElemDef *param_2)
 
 // 005CA920  FX_ScaleFloatRange  (EffectsCore/fx_convert.cpp:720)
 
-void __cdecl FX_ScaleFloatRange(FxFloatRange *param_1,FxFloatRange *param_2,float param_3)
+void __cdecl FX_ScaleFloatRange(FxFloatRange *to,FxFloatRange *from,float scale)
 
 {
-  param_1->base = param_2->base * param_3;
-  param_1->amplitude = param_2->amplitude * param_3;
+  to->base = from->base * scale;
+  to->amplitude = from->amplitude * scale;
   return;
 }
 
 
 // 005CA950  FX_ReserveElemDefMemory  (EffectsCore/fx_convert.cpp:727)
 
-void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
+void __cdecl FX_ReserveElemDefMemory(FxElemDef *elemDef,uchar **memPool)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (FxElemDef *)0x0) {
+  if (elemDef == (FxElemDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2d8,
                              0,"%s");
     if (!bVar2) {
@@ -1456,7 +1511,7 @@ void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
       return;
     }
   }
-  if (param_2 == (uchar **)0x0) {
+  if (memPool == (uchar **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2d9,
                              0,"%s");
     if (!bVar2) {
@@ -1465,7 +1520,7 @@ void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
       return;
     }
   }
-  if (*param_2 == (uchar *)0x0) {
+  if (*memPool == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2da,
                              0,"%s");
     if (!bVar2) {
@@ -1474,7 +1529,7 @@ void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
       return;
     }
   }
-  if (param_1->velIntervalCount == '\0') {
+  if (elemDef->velIntervalCount == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x2dc,
                              0,"%s");
     if (!bVar2) {
@@ -1483,22 +1538,22 @@ void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
       return;
     }
   }
-  param_1->velSamples = (FxElemVelStateSample *)*param_2;
-  *param_2 = *param_2 + (param_1->velIntervalCount + 1) * 0x60;
-  if (param_1->visStateIntervalCount == '\0') {
-    param_1->visSamples = (FxElemVisStateSample *)0x0;
+  elemDef->velSamples = (FxElemVelStateSample *)*memPool;
+  *memPool = *memPool + (elemDef->velIntervalCount + 1) * 0x60;
+  if (elemDef->visStateIntervalCount == '\0') {
+    elemDef->visSamples = (FxElemVisStateSample *)0x0;
   }
   else {
-    param_1->visSamples = (FxElemVisStateSample *)*param_2;
-    *param_2 = *param_2 + (param_1->visStateIntervalCount + 1) * 0x30;
+    elemDef->visSamples = (FxElemVisStateSample *)*memPool;
+    *memPool = *memPool + (elemDef->visStateIntervalCount + 1) * 0x30;
   }
-  if (param_1->elemType == '\v') {
-    (param_1->visuals).markArray = (FxElemMarkVisuals *)*param_2;
-    *param_2 = *param_2 + (uint)param_1->visualCount * 8;
+  if (elemDef->elemType == '\v') {
+    (elemDef->visuals).markArray = (FxElemMarkVisuals *)*memPool;
+    *memPool = *memPool + (uint)elemDef->visualCount * 8;
   }
-  else if (1 < param_1->visualCount) {
-    (param_1->visuals).markArray = (FxElemMarkVisuals *)*param_2;
-    *param_2 = *param_2 + (uint)param_1->visualCount * 4;
+  else if (1 < elemDef->visualCount) {
+    (elemDef->visuals).markArray = (FxElemMarkVisuals *)*memPool;
+    *memPool = *memPool + (uint)elemDef->visualCount * 4;
   }
   return;
 }
@@ -1506,47 +1561,46 @@ void __cdecl FX_ReserveElemDefMemory(FxElemDef *param_1,uchar **param_2)
 
 // 005CAAF0  FX_CopyMarkVisuals  (EffectsCore/fx_convert.cpp:760)
 
-void __cdecl FX_CopyMarkVisuals(FxEditorElemDef *param_1,FxElemMarkVisuals *param_2)
+void __cdecl FX_CopyMarkVisuals(FxEditorElemDef *edElemDef,FxElemMarkVisuals *markVisualsArray)
 
 {
-  memcpy((uchar *)param_2,(uchar *)&param_1->field45_0x2b4,param_1->visualCount << 3);
+  memcpy((uchar *)markVisualsArray,(uchar *)&edElemDef->field45_0x2b4,edElemDef->visualCount << 3);
   return;
 }
 
 
 // 005CAB20  FX_CopyVisuals  (EffectsCore/fx_convert.cpp:767)
 
-void __cdecl FX_CopyVisuals(FxEditorElemDef *param_1,FxElemVisuals *param_2)
+void __cdecl FX_CopyVisuals(FxEditorElemDef *edElemDef,FxElemVisuals *visualsArray)
 
 {
-  memcpy((uchar *)param_2,(uchar *)&param_1->field45_0x2b4,param_1->visualCount << 2);
+  memcpy((uchar *)visualsArray,(uchar *)&edElemDef->field45_0x2b4,edElemDef->visualCount << 2);
   return;
 }
 
 
 // 005CAB50  FX_ConvertEffectDefRef  (EffectsCore/fx_convert.cpp:785)
 
-void __cdecl FX_ConvertEffectDefRef(FxEffectDefRef *param_1,FxEffectDef *param_2)
+void __cdecl FX_ConvertEffectDefRef(FxEffectDefRef *ref,FxEffectDef *effectDef)
 
 {
-  param_1->handle = param_2;
+  ref->handle = effectDef;
   return;
 }
 
 
 // 005CBF90  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>  (EffectsCore/fx_convert.cpp:796)
 
-void __cdecl
-FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(FxFloatRange *param_1,FxFloatRange *param_2)
+void __cdecl FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(FxFloatRange *to,FxFloatRange *from)
 
 {
-  if (0.0 < param_2->amplitude || param_2->amplitude == 0.0) {
-    param_1->base = param_2->base;
-    param_1->amplitude = param_2->amplitude;
+  if (0.0 < from->amplitude || from->amplitude == 0.0) {
+    to->base = from->base;
+    to->amplitude = from->amplitude;
   }
   else {
-    param_1->base = param_2->base + param_2->amplitude;
-    param_1->amplitude = -param_2->amplitude;
+    to->base = from->base + from->amplitude;
+    to->amplitude = -from->amplitude;
   }
   return;
 }
@@ -1554,16 +1608,16 @@ FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(FxFloatRange *param_1,FxFloatRa
 
 // 005CBFF0  FX_CopyCanonicalRange<FxIntRange,FxIntRange>  (EffectsCore/fx_convert.cpp:796)
 
-void __cdecl FX_CopyCanonicalRange<FxIntRange,FxIntRange>(FxIntRange *param_1,FxIntRange *param_2)
+void __cdecl FX_CopyCanonicalRange<FxIntRange,FxIntRange>(FxIntRange *to,FxIntRange *from)
 
 {
-  if (param_2->amplitude < 0) {
-    param_1->base = param_2->base + param_2->amplitude;
-    param_1->amplitude = -param_2->amplitude;
+  if (from->amplitude < 0) {
+    to->base = from->base + from->amplitude;
+    to->amplitude = -from->amplitude;
   }
   else {
-    param_1->base = param_2->base;
-    param_1->amplitude = param_2->amplitude;
+    to->base = from->base;
+    to->amplitude = from->amplitude;
   }
   return;
 }
@@ -1571,13 +1625,14 @@ void __cdecl FX_CopyCanonicalRange<FxIntRange,FxIntRange>(FxIntRange *param_1,Fx
 
 // 005CAB60  FX_BoundFloatRange  (EffectsCore/fx_convert.cpp:810)
 
-void __cdecl FX_BoundFloatRange(FxFloatRange *param_1,float param_2,float param_3)
+void __cdecl FX_BoundFloatRange(FxFloatRange *range,float lower,float upper)
 
 {
   code *pcVar1;
   bool bVar2;
+  float nudge;
   
-  if (param_1->amplitude < 0.0) {
+  if (range->amplitude < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x32d,
                              0,"%s");
     if (!bVar2) {
@@ -1586,11 +1641,10 @@ void __cdecl FX_BoundFloatRange(FxFloatRange *param_1,float param_2,float param_
       return;
     }
   }
-  if ((param_1->base <= param_2 && param_2 != param_1->base) ||
-     (param_3 < param_1->base + param_1->amplitude)) {
-    param_1->base = param_1->base + 0.0001;
-    param_1->amplitude = param_1->amplitude - 0.0002;
-    if (param_1->base < param_2) {
+  if ((range->base <= lower && lower != range->base) || (upper < range->base + range->amplitude)) {
+    range->base = range->base + 0.0001;
+    range->amplitude = range->amplitude - 0.0002;
+    if (range->base < lower) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x334,0,"range->base >= lower\n\t%g, %g");
       if (!bVar2) {
@@ -1599,7 +1653,7 @@ void __cdecl FX_BoundFloatRange(FxFloatRange *param_1,float param_2,float param_
         return;
       }
     }
-    if (param_3 < param_1->base + param_1->amplitude) {
+    if (upper < range->base + range->amplitude) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x335,0,"range->base + range->amplitude <= upper\n\t%g, %g");
       if (!bVar2) {
@@ -1615,13 +1669,13 @@ void __cdecl FX_BoundFloatRange(FxFloatRange *param_1,float param_2,float param_
 
 // 005C7870  FX_AdditionalBytesNeededForGeomTrail  (EffectsCore/fx_convert.cpp:827)
 
-int __cdecl FX_AdditionalBytesNeededForGeomTrail(FxEditorElemDef *param_1)
+int __cdecl FX_AdditionalBytesNeededForGeomTrail(FxEditorElemDef *elemDef)
 
 {
   int iVar1;
   
-  if (param_1->elemType == '\x05') {
-    iVar1 = (param_1->trailDef).indCount * 0x16 + 0x1c;
+  if (elemDef->elemType == '\x05') {
+    iVar1 = (elemDef->trailDef).indCount * 0x16 + 0x1c;
   }
   else {
     iVar1 = 0;
@@ -1632,12 +1686,12 @@ int __cdecl FX_AdditionalBytesNeededForGeomTrail(FxEditorElemDef *param_1)
 
 // 005CB440  FX_ConvertTrail_CalcNormForSegment  (EffectsCore/fx_convert.cpp:836)
 
-void __cdecl FX_ConvertTrail_CalcNormForSegment(float *param_1,float *param_2,float *param_3)
+void __cdecl FX_ConvertTrail_CalcNormForSegment(float *vert0,float *vert1,float *outNormal)
 
 {
-  *param_3 = param_1[1] - param_2[1];
-  param_3[1] = *param_2 - *param_1;
-  Vec2Normalize(param_3);
+  *outNormal = vert0[1] - vert1[1];
+  outNormal[1] = *vert1 - *vert0;
+  Vec2Normalize(outNormal);
   return;
 }
 
@@ -1645,7 +1699,7 @@ void __cdecl FX_ConvertTrail_CalcNormForSegment(float *param_1,float *param_2,fl
 // 005CADD0  FX_ConvertTrail_CompileVertices  (EffectsCore/fx_convert.cpp:844)
 
 void __cdecl
-FX_ConvertTrail_CompileVertices(FxEditorElemDef *param_1,FxTrailDef *param_2,uchar **param_3)
+FX_ConvertTrail_CompileVertices(FxEditorElemDef *edElemDef,FxTrailDef *outTrailDef,uchar **mempool)
 
 {
   code *pcVar1;
@@ -1665,164 +1719,171 @@ FX_ConvertTrail_CompileVertices(FxEditorElemDef *param_1,FxTrailDef *param_2,uch
   FxTrailVertex *local_7c;
   float local_74;
   float local_70;
-  FxTrailVertex *local_6c;
-  float local_68;
+  FxTrailVertex *emittedVertPtrIter;
+  float secondaryEdgeNorm;
   float local_64;
-  float local_60;
+  float primaryEdgeNorm;
   float local_5c;
-  float local_58;
+  float accumNorm;
   float local_54;
-  int local_50;
-  ushort *local_4c;
-  uint local_48;
-  FxTrailVertex *local_44;
-  ushort *local_40;
-  ushort *local_3c;
-  FxEditorTrailDef *local_38;
-  uint local_34;
-  float local_30;
-  FxTrailVertex *local_2c;
-  FxTrailVertex *local_28;
-  float local_24;
-  ushort *local_20;
-  ushort *local_1c;
-  float local_18;
-  FxTrailVertex *local_14;
-  float local_10;
-  uint local_c;
-  FxTrailVertex *local_8;
+  int edgeIter;
+  ushort *emittedIndPtrBegin;
+  int indCount;
+  FxTrailVertex *outVertPtrBegin;
+  ushort *primaryEdgeIndPtr;
+  ushort *indPtrEnd;
+  FxEditorTrailDef *trailDef;
+  int vertBytes;
+  float SNAP_TOLERANCE_POS;
+  FxTrailVertex *emittedVertPtrBegin;
+  FxTrailVertex *outVertPtrIter;
+  float SMOOTH_THRESHOLD;
+  ushort *emittedIndPtrEnd;
+  ushort *secondaryEdgeIndPtr;
+  float SNAP_TOLERANCE_NORM;
+  FxTrailVertex *emittedVertPtrEnd;
+  float SNAP_TOLERANCE_TEXCOORD;
+  int indBytes;
+  FxTrailVertex *outVertPtrEnd;
   
-  local_30 = 0.01;
-  local_10 = 0.01;
-  local_18 = 0.95;
-  local_24 = 0.0;
-  local_38 = &param_1->trailDef;
-  if (local_38 != (FxEditorTrailDef *)0x0) {
-    if ((local_38 == (FxEditorTrailDef *)0x0) &&
+  SNAP_TOLERANCE_POS = 0.01;
+  SNAP_TOLERANCE_TEXCOORD = 0.01;
+  SNAP_TOLERANCE_NORM = 0.95;
+  SMOOTH_THRESHOLD = 0.0;
+  trailDef = &edElemDef->trailDef;
+  if (trailDef != (FxEditorTrailDef *)0x0) {
+    if ((trailDef == (FxEditorTrailDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x36b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_48 = local_38->indCount;
-    if (((local_48 & 1) != 0) &&
+    indCount = trailDef->indCount;
+    if (((indCount & 1U) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x36e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_34 = local_48 * 0x14;
-    local_44 = (FxTrailVertex *)*param_3;
-    *param_3 = *param_3 + local_34;
-    local_8 = local_44 + local_48;
-    local_3c = local_38->inds + local_48;
-    local_28 = local_44;
-    for (local_40 = local_38->inds; local_40 != local_3c; local_40 = local_40 + 2) {
+    vertBytes = indCount * 0x14;
+    outVertPtrBegin = (FxTrailVertex *)*mempool;
+    *mempool = *mempool + vertBytes;
+    outVertPtrEnd = outVertPtrBegin + indCount;
+    indPtrEnd = trailDef->inds + indCount;
+    outVertPtrIter = outVertPtrBegin;
+    for (primaryEdgeIndPtr = trailDef->inds; primaryEdgeIndPtr != indPtrEnd;
+        primaryEdgeIndPtr = primaryEdgeIndPtr + 2) {
       FX_ConvertTrail_CalcNormForSegment
-                (local_38->verts[*local_40].pos,local_38->verts[local_40[1]].pos,&local_60);
-      for (local_50 = 0; local_50 != 2; local_50 = local_50 + 1) {
-        local_58 = 0.0;
+                (trailDef->verts[*primaryEdgeIndPtr].pos,trailDef->verts[primaryEdgeIndPtr[1]].pos,
+                 &primaryEdgeNorm);
+      for (edgeIter = 0; edgeIter != 2; edgeIter = edgeIter + 1) {
+        accumNorm = 0.0;
         local_54 = 0.0;
-        for (local_1c = local_38->inds; local_1c != local_3c; local_1c = local_1c + 2) {
-          local_80 = local_38->verts + local_40[local_50];
-          local_7c = local_38->verts + *local_1c;
+        for (secondaryEdgeIndPtr = trailDef->inds; secondaryEdgeIndPtr != indPtrEnd;
+            secondaryEdgeIndPtr = secondaryEdgeIndPtr + 2) {
+          local_80 = trailDef->verts + primaryEdgeIndPtr[edgeIter];
+          local_7c = trailDef->verts + *secondaryEdgeIndPtr;
           local_74 = local_80->pos[0] - local_7c->pos[0];
           local_70 = local_80->pos[1] - local_7c->pos[1];
           fVar4 = Vec2Length(&local_74);
-          if (fVar4 <= local_30) {
+          if (fVar4 <= SNAP_TOLERANCE_POS) {
 LAB_005cb049:
             FX_ConvertTrail_CalcNormForSegment
-                      (local_38->verts[*local_1c].pos,local_38->verts[local_1c[1]].pos,&local_68);
-            if (local_24 < local_60 * local_68 + local_5c * local_64) {
-              local_58 = local_68 + local_58;
+                      (trailDef->verts[*secondaryEdgeIndPtr].pos,
+                       trailDef->verts[secondaryEdgeIndPtr[1]].pos,&secondaryEdgeNorm);
+            if (SMOOTH_THRESHOLD < primaryEdgeNorm * secondaryEdgeNorm + local_5c * local_64) {
+              accumNorm = secondaryEdgeNorm + accumNorm;
               local_54 = local_64 + local_54;
             }
           }
           else {
-            local_94 = local_38->verts + local_40[local_50];
-            local_90 = local_38->verts + local_1c[1];
+            local_94 = trailDef->verts + primaryEdgeIndPtr[edgeIter];
+            local_90 = trailDef->verts + secondaryEdgeIndPtr[1];
             local_88 = local_94->pos[0] - local_90->pos[0];
             local_84 = local_94->pos[1] - local_90->pos[1];
             fVar4 = Vec2Length(&local_88);
-            if (fVar4 <= local_30) goto LAB_005cb049;
+            if (fVar4 <= SNAP_TOLERANCE_POS) goto LAB_005cb049;
           }
         }
-        Vec2Normalize(&local_58);
-        local_a8 = local_28 + local_50;
-        local_a4 = local_38->verts + local_40[local_50];
+        Vec2Normalize(&accumNorm);
+        local_a8 = outVertPtrIter + edgeIter;
+        local_a4 = trailDef->verts + primaryEdgeIndPtr[edgeIter];
         local_a8->pos[0] = local_a4->pos[0];
         local_a8->pos[1] = local_a4->pos[1];
-        local_ac = local_28[local_50].normal;
-        *local_ac = local_58;
+        local_ac = outVertPtrIter[edgeIter].normal;
+        *local_ac = accumNorm;
         local_ac[1] = local_54;
-        local_28[local_50].texCoord = local_38->verts[local_40[local_50]].texCoord;
+        outVertPtrIter[edgeIter].texCoord = trailDef->verts[primaryEdgeIndPtr[edgeIter]].texCoord;
       }
-      local_28 = local_28 + 2;
+      outVertPtrIter = outVertPtrIter + 2;
     }
-    if ((local_28 != local_8) &&
+    if ((outVertPtrIter != outVertPtrEnd) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x39c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_2c = local_44;
-    local_14 = local_44;
-    local_c = local_48 * 2;
-    local_4c = (ushort *)*param_3;
-    *param_3 = *param_3 + local_c;
-    local_20 = local_4c;
-    for (local_28 = local_44; local_28 != local_8; local_28 = local_28 + 1) {
-      if ((local_28 < local_14) &&
+    emittedVertPtrBegin = outVertPtrBegin;
+    emittedVertPtrEnd = outVertPtrBegin;
+    indBytes = indCount * 2;
+    emittedIndPtrBegin = (ushort *)*mempool;
+    *mempool = *mempool + indBytes;
+    emittedIndPtrEnd = emittedIndPtrBegin;
+    for (outVertPtrIter = outVertPtrBegin; outVertPtrIter != outVertPtrEnd;
+        outVertPtrIter = outVertPtrIter + 1) {
+      if ((outVertPtrIter < emittedVertPtrEnd) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                    0x3a8,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      for (local_6c = local_2c; local_6c != local_14; local_6c = local_6c + 1) {
-        local_b4 = local_6c->pos[0] - local_28->pos[0];
-        local_b0 = local_6c->pos[1] - local_28->pos[1];
+      for (emittedVertPtrIter = emittedVertPtrBegin; emittedVertPtrIter != emittedVertPtrEnd;
+          emittedVertPtrIter = emittedVertPtrIter + 1) {
+        local_b4 = emittedVertPtrIter->pos[0] - outVertPtrIter->pos[0];
+        local_b0 = emittedVertPtrIter->pos[1] - outVertPtrIter->pos[1];
         fVar4 = Vec2Length(&local_b4);
-        if (((fVar4 <= local_30) && (ABS(local_28->texCoord - local_6c->texCoord) <= local_10)) &&
-           (local_18 <=
-            local_28->normal[0] * local_6c->normal[0] + local_28->normal[1] * local_6c->normal[1]))
-        break;
+        if (((fVar4 <= SNAP_TOLERANCE_POS) &&
+            (ABS(outVertPtrIter->texCoord - emittedVertPtrIter->texCoord) <= SNAP_TOLERANCE_TEXCOORD
+            )) && (SNAP_TOLERANCE_NORM <=
+                   outVertPtrIter->normal[0] * emittedVertPtrIter->normal[0] +
+                   outVertPtrIter->normal[1] * emittedVertPtrIter->normal[1])) break;
       }
-      if (local_6c == local_14) {
-        local_6c->pos[0] = local_28->pos[0];
-        local_6c->pos[1] = local_28->pos[1];
-        local_6c->normal[0] = local_28->normal[0];
-        local_6c->normal[1] = local_28->normal[1];
-        local_6c->texCoord = local_28->texCoord;
-        local_14 = local_14 + 1;
+      if (emittedVertPtrIter == emittedVertPtrEnd) {
+        emittedVertPtrIter->pos[0] = outVertPtrIter->pos[0];
+        emittedVertPtrIter->pos[1] = outVertPtrIter->pos[1];
+        emittedVertPtrIter->normal[0] = outVertPtrIter->normal[0];
+        emittedVertPtrIter->normal[1] = outVertPtrIter->normal[1];
+        emittedVertPtrIter->texCoord = outVertPtrIter->texCoord;
+        emittedVertPtrEnd = emittedVertPtrEnd + 1;
       }
-      *local_20 = (ushort)(((int)local_6c - (int)local_2c) / 0x14);
-      if (((uint)*local_20 != ((int)local_6c - (int)local_2c) / 0x14) &&
-         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
-                                   0x3bc,0,"%s"), !bVar2)) {
+      *emittedIndPtrEnd = (ushort)(((int)emittedVertPtrIter - (int)emittedVertPtrBegin) / 0x14);
+      if (((uint)*emittedIndPtrEnd != ((int)emittedVertPtrIter - (int)emittedVertPtrBegin) / 0x14)
+         && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp"
+                                      ,0x3bc,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_20 = local_20 + 1;
+      emittedIndPtrEnd = emittedIndPtrEnd + 1;
     }
-    (param_2->field4_0x10).vertsEA = local_2c;
-    param_2->vertCount = ((int)local_14 - (int)local_2c) / 0x14;
-    uVar3 = param_2->vertCount * 0x14;
-    if ((local_34 <= uVar3 && uVar3 - local_34 != 0) &&
+    (outTrailDef->field4_0x10).vertsEA = emittedVertPtrBegin;
+    outTrailDef->vertCount = ((int)emittedVertPtrEnd - (int)emittedVertPtrBegin) / 0x14;
+    uVar3 = outTrailDef->vertCount * 0x14;
+    if (((uint)vertBytes <= uVar3 && uVar3 - vertBytes != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x3c2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    (param_2->field6_0x18).indsEA = local_4c;
-    param_2->indCount = (int)local_20 - (int)local_4c >> 1;
-    uVar3 = param_2->indCount * 2;
-    if ((local_c <= uVar3 && uVar3 - local_c != 0) &&
+    (outTrailDef->field6_0x18).indsEA = emittedIndPtrBegin;
+    outTrailDef->indCount = (int)emittedIndPtrEnd - (int)emittedIndPtrBegin >> 1;
+    uVar3 = outTrailDef->indCount * 2;
+    if (((uint)indBytes <= uVar3 && uVar3 - indBytes != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                  0x3c5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1836,13 +1897,13 @@ LAB_005cb049:
 
 // 005CACC0  FX_ConvertTrail  (EffectsCore/fx_convert.cpp:970)
 
-void __cdecl FX_ConvertTrail(FxTrailDef **param_1,FxEditorElemDef *param_2,uchar **param_3)
+void __cdecl FX_ConvertTrail(FxTrailDef **outTrailDef,FxEditorElemDef *edElemDef,uchar **mempool)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->elemType != '\x05') {
+  if (edElemDef->elemType != '\x05') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x3cb,
                              0,"%s");
     if (!bVar2) {
@@ -1851,10 +1912,10 @@ void __cdecl FX_ConvertTrail(FxTrailDef **param_1,FxEditorElemDef *param_2,uchar
       return;
     }
   }
-  *param_1 = (FxTrailDef *)*param_3;
-  *param_3 = *param_3 + 0x1c;
-  FX_ConvertTrail_CompileVertices(param_2,*param_1,param_3);
-  if (param_2->trailSplitDist < 1) {
+  *outTrailDef = (FxTrailDef *)*mempool;
+  *mempool = *mempool + 0x1c;
+  FX_ConvertTrail_CompileVertices(edElemDef,*outTrailDef,mempool);
+  if (edElemDef->trailSplitDist < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x3d0,
                              0,"%s");
     if (!bVar2) {
@@ -1863,7 +1924,7 @@ void __cdecl FX_ConvertTrail(FxTrailDef **param_1,FxEditorElemDef *param_2,uchar
       return;
     }
   }
-  if (param_2->trailRepeatDist < 1) {
+  if (edElemDef->trailRepeatDist < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x3d1,
                              0,"%s");
     if (!bVar2) {
@@ -1872,37 +1933,36 @@ void __cdecl FX_ConvertTrail(FxTrailDef **param_1,FxEditorElemDef *param_2,uchar
       return;
     }
   }
-  (*param_1)->splitDist = param_2->trailSplitDist;
-  (*param_1)->scrollTimeMsec = (int)(param_2->trailScrollTime * 1000.0);
-  (*param_1)->repeatDist = param_2->trailRepeatDist;
+  (*outTrailDef)->splitDist = edElemDef->trailSplitDist;
+  (*outTrailDef)->scrollTimeMsec = (int)(edElemDef->trailScrollTime * 1000.0);
+  (*outTrailDef)->repeatDist = edElemDef->trailRepeatDist;
   return;
 }
 
 
 // 005CB490  FX_ConvertElemSpawnSound  (EffectsCore/fx_convert.cpp:986)
 
-void __cdecl
-FX_ConvertElemSpawnSound(FxElemSpawnSound *param_1,FxElemSpawnSound *param_2,uchar **param_3)
+void __cdecl FX_ConvertElemSpawnSound(FxElemSpawnSound *dest,FxElemSpawnSound *src,uchar **memPool)
 
 {
   char cVar1;
   char *pcVar2;
   char *local_c;
+  uint bytesNeeded;
   
-  if ((param_2->spawnSound == (char *)0x0) || (*param_2->spawnSound == '\0')) {
-    param_1->spawnSound = (char *)0x0;
+  if ((src->spawnSound == (char *)0x0) || (*src->spawnSound == '\0')) {
+    dest->spawnSound = (char *)0x0;
   }
   else {
-    param_1->spawnSound = (char *)*param_3;
-    local_c = param_2->spawnSound;
+    dest->spawnSound = (char *)*memPool;
+    local_c = src->spawnSound;
     pcVar2 = local_c + 1;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    *param_3 = *param_3 + (int)(local_c + (1 - (int)pcVar2));
-    memcpy((uchar *)param_1->spawnSound,(uchar *)param_2->spawnSound,
-           (ulong)(local_c + (1 - (int)pcVar2)));
+    *memPool = *memPool + (int)(local_c + (1 - (int)pcVar2));
+    memcpy((uchar *)dest->spawnSound,(uchar *)src->spawnSound,(ulong)(local_c + (1 - (int)pcVar2)));
   }
   return;
 }
@@ -1911,8 +1971,8 @@ FX_ConvertElemSpawnSound(FxElemSpawnSound *param_1,FxElemSpawnSound *param_2,uch
 // 005C7B30  FX_ConvertElemDef  (EffectsCore/fx_convert.cpp:1004)
 
 void __cdecl
-FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int param_4,int param_5,
-                 uchar **param_6)
+FX_ConvertElemDef(FxElemDef *elemDef,FxEditorElemDef *edElemDef,int velStateCount,int visStateCount,
+                 int emitIndex,uchar **memPool)
 
 {
   float fVar1;
@@ -1935,229 +1995,230 @@ FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int pa
   float local_68;
   float local_60;
   int local_58;
-  float local_28 [8];
-  char local_5;
+  float ident_2 [8];
+  bool notApplyRotationAxis;
   
-  if ((param_1 == (FxElemDef *)0x0) &&
+  if ((elemDef == (FxElemDef *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x3ed,0,"%s"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  if ((param_2 == (FxEditorElemDef *)0x0) &&
+  if ((edElemDef == (FxEditorElemDef *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x3ee,0,"%s"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  if ((param_3 < 2) &&
+  if ((velStateCount < 2) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x3ef,0,"%s\n\t(velStateCount) = %i"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  if (((param_4 != 0) && (param_4 < 2)) &&
+  if (((visStateCount != 0) && (visStateCount < 2)) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x3f0,0,"%s\n\t(visStateCount) = %i"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  param_1->flags = param_2->flags;
-  if (param_2->billboardPivot[0] * param_2->billboardPivot[0] +
-      param_2->billboardPivot[1] * param_2->billboardPivot[1] == 0.0) {
-    param_1->flags = param_1->flags & 0xffdfffff;
+  elemDef->flags = edElemDef->flags;
+  if (edElemDef->billboardPivot[0] * edElemDef->billboardPivot[0] +
+      edElemDef->billboardPivot[1] * edElemDef->billboardPivot[1] == 0.0) {
+    elemDef->flags = elemDef->flags & 0xffdfffff;
   }
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&param_1->spawnRange,&param_2->spawnRange);
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&param_1->fadeInRange,&param_2->fadeInRange);
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&param_1->fadeOutRange,&param_2->fadeOutRange);
-  param_1->spawnFrustumCullRadius = param_2->spawnFrustumCullRadius;
-  if ((param_2->editorFlags & 1U) == 0) {
-    iVar5 = (param_2->spawnOneShot).count.amplitude;
-    (param_1->spawn).looping.intervalMsec = (param_2->spawnOneShot).count.base;
-    (param_1->spawn).looping.count = iVar5;
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&elemDef->spawnRange,&edElemDef->spawnRange);
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&elemDef->fadeInRange,&edElemDef->fadeInRange);
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&elemDef->fadeOutRange,&edElemDef->fadeOutRange);
+  elemDef->spawnFrustumCullRadius = edElemDef->spawnFrustumCullRadius;
+  if ((edElemDef->editorFlags & 1U) == 0) {
+    iVar5 = (edElemDef->spawnOneShot).count.amplitude;
+    (elemDef->spawn).looping.intervalMsec = (edElemDef->spawnOneShot).count.base;
+    (elemDef->spawn).looping.count = iVar5;
   }
   else {
-    iVar5 = (param_2->spawnLooping).count;
-    (param_1->spawn).looping.intervalMsec = (param_2->spawnLooping).intervalMsec;
-    (param_1->spawn).looping.count = iVar5;
-    if ((param_1->spawn).looping.count == 0) {
-      (param_1->spawn).looping.count = 0x7fffffff;
+    iVar5 = (edElemDef->spawnLooping).count;
+    (elemDef->spawn).looping.intervalMsec = (edElemDef->spawnLooping).intervalMsec;
+    (elemDef->spawn).looping.count = iVar5;
+    if ((elemDef->spawn).looping.count == 0) {
+      (elemDef->spawn).looping.count = 0x7fffffff;
     }
-    if ((param_1->spawn).looping.intervalMsec < 1) {
-      (param_1->spawn).looping.intervalMsec = 1;
+    if ((elemDef->spawn).looping.intervalMsec < 1) {
+      (elemDef->spawn).looping.intervalMsec = 1;
     }
   }
-  FX_CopyCanonicalRange<FxIntRange,FxIntRange>(&param_1->spawnDelayMsec,&param_2->spawnDelayMsec);
-  FX_CopyCanonicalRange<FxIntRange,FxIntRange>(&param_1->lifeSpanMsec,&param_2->lifeSpanMsec);
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(param_1->spawnOrigin,param_2->spawnOrigin);
+  FX_CopyCanonicalRange<FxIntRange,FxIntRange>(&elemDef->spawnDelayMsec,&edElemDef->spawnDelayMsec);
+  FX_CopyCanonicalRange<FxIntRange,FxIntRange>(&elemDef->lifeSpanMsec,&edElemDef->lifeSpanMsec);
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(elemDef->spawnOrigin,edElemDef->spawnOrigin);
   FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
-            (param_1->spawnOrigin + 1,param_2->spawnOrigin + 1);
+            (elemDef->spawnOrigin + 1,edElemDef->spawnOrigin + 1);
   FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
-            (param_1->spawnOrigin + 2,param_2->spawnOrigin + 2);
+            (elemDef->spawnOrigin + 2,edElemDef->spawnOrigin + 2);
   FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
-            (&param_1->spawnOffsetRadius,&param_2->spawnOffsetRadius);
+            (&elemDef->spawnOffsetRadius,&edElemDef->spawnOffsetRadius);
   FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
-            (&param_1->spawnOffsetHeight,&param_2->spawnOffsetHeight);
-  FX_ScaleFloatRange(param_1->spawnAngles,param_2->spawnAngles,0.017453292);
-  FX_ScaleFloatRange(param_1->spawnAngles + 1,param_2->spawnAngles + 1,0.017453292);
-  FX_ScaleFloatRange(param_1->spawnAngles + 2,param_2->spawnAngles + 2,0.017453292);
-  FX_ScaleFloatRange(param_1->angularVelocity,param_2->angularVelocity,1.7453294e-05);
-  FX_ScaleFloatRange(param_1->angularVelocity + 1,param_2->angularVelocity + 1,1.7453294e-05);
-  FX_ScaleFloatRange(param_1->angularVelocity + 2,param_2->angularVelocity + 2,1.7453294e-05);
-  FX_ScaleFloatRange(&param_1->initialRotation,&param_2->initialRotation,0.017453292);
-  local_5 = '\0';
-  if (((param_2->elemType == '\0') || (param_2->elemType == '\x03')) ||
-     (param_2->elemType == '\x04')) {
-    local_5 = '\x01';
+            (&elemDef->spawnOffsetHeight,&edElemDef->spawnOffsetHeight);
+  FX_ScaleFloatRange(elemDef->spawnAngles,edElemDef->spawnAngles,0.017453292);
+  FX_ScaleFloatRange(elemDef->spawnAngles + 1,edElemDef->spawnAngles + 1,0.017453292);
+  FX_ScaleFloatRange(elemDef->spawnAngles + 2,edElemDef->spawnAngles + 2,0.017453292);
+  FX_ScaleFloatRange(elemDef->angularVelocity,edElemDef->angularVelocity,1.7453294e-05);
+  FX_ScaleFloatRange(elemDef->angularVelocity + 1,edElemDef->angularVelocity + 1,1.7453294e-05);
+  FX_ScaleFloatRange(elemDef->angularVelocity + 2,edElemDef->angularVelocity + 2,1.7453294e-05);
+  FX_ScaleFloatRange(&elemDef->initialRotation,&edElemDef->initialRotation,0.017453292);
+  notApplyRotationAxis = false;
+  if (((edElemDef->elemType == '\0') || (edElemDef->elemType == '\x03')) ||
+     (edElemDef->elemType == '\x04')) {
+    notApplyRotationAxis = true;
   }
-  if (local_5 == '\0') {
-    if ((param_2->flags & 0x800000U) == 0) {
-      local_28[0] = 0.0;
-      local_28[1] = 0.0;
-      local_28[2] = 0.0;
-      local_28[3] = 1.0;
-      uVar8 = Vec4PackQuat(local_28);
-      param_1->rotationAxis = uVar8;
+  if (notApplyRotationAxis == false) {
+    if ((edElemDef->flags & 0x800000U) == 0) {
+      ident_2[0] = 0.0;
+      ident_2[1] = 0.0;
+      ident_2[2] = 0.0;
+      ident_2[3] = 1.0;
+      uVar8 = Vec4PackQuat(ident_2);
+      elemDef->rotationAxis = uVar8;
     }
     else {
-      uVar8 = Vec4PackQuat(param_2->rotationAxis);
-      param_1->rotationAxis = uVar8;
+      uVar8 = Vec4PackQuat(edElemDef->rotationAxis);
+      elemDef->rotationAxis = uVar8;
     }
   }
   else {
-    local_28[4] = 0.0;
-    local_28[5] = 0.0;
-    local_28[6] = 0.0;
-    local_28[7] = 1.0;
-    uVar8 = Vec4PackQuat(local_28 + 4);
-    param_1->rotationAxis = uVar8;
+    ident_2[4] = 0.0;
+    ident_2[5] = 0.0;
+    ident_2[6] = 0.0;
+    ident_2[7] = 1.0;
+    uVar8 = Vec4PackQuat(ident_2 + 4);
+    elemDef->rotationAxis = uVar8;
   }
-  FX_ScaleFloatRange(&param_1->gravity,&param_2->gravity,0.01);
-  if (((param_1->gravity).base != 0.0) || ((param_1->gravity).amplitude != 0.0)) {
-    param_1->flags = param_1->flags | 0x4000000;
+  FX_ScaleFloatRange(&elemDef->gravity,&edElemDef->gravity,0.01);
+  if (((elemDef->gravity).base != 0.0) || ((elemDef->gravity).amplitude != 0.0)) {
+    elemDef->flags = elemDef->flags | 0x4000000;
   }
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&param_1->reflectionFactor,&param_2->elasticity);
-  FX_BoundFloatRange(&param_1->reflectionFactor,0.0,1.0);
-  FX_ConvertAtlas(param_1,param_2);
-  param_1->windInfluence = param_2->windInfluence;
-  param_1->elemType = param_2->elemType;
-  param_1->visualCount = (uchar)param_2->visualCount;
-  param_1->velIntervalCount = (char)param_3 + 0xff;
-  if (param_4 == 0) {
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
+            (&elemDef->reflectionFactor,&edElemDef->elasticity);
+  FX_BoundFloatRange(&elemDef->reflectionFactor,0.0,1.0);
+  FX_ConvertAtlas(elemDef,edElemDef);
+  elemDef->windInfluence = edElemDef->windInfluence;
+  elemDef->elemType = edElemDef->elemType;
+  elemDef->visualCount = (uchar)edElemDef->visualCount;
+  elemDef->velIntervalCount = (char)velStateCount + 0xff;
+  if (visStateCount == 0) {
     local_74 = '\0';
   }
   else {
-    local_74 = (char)param_4 + 0xff;
+    local_74 = (char)visStateCount + 0xff;
   }
-  param_1->visStateIntervalCount = local_74;
-  FX_ReserveElemDefMemory(param_1,param_6);
-  FX_SampleVelocity(param_1,param_2);
-  if (param_4 != 0) {
-    FX_SampleVisualState(param_1,param_2);
+  elemDef->visStateIntervalCount = local_74;
+  FX_ReserveElemDefMemory(elemDef,memPool);
+  FX_SampleVelocity(elemDef,edElemDef);
+  if (visStateCount != 0) {
+    FX_SampleVisualState(elemDef,edElemDef);
   }
-  if (param_1->elemType == '\v') {
-    FX_CopyMarkVisuals(param_2,(param_1->visuals).markArray);
+  if (elemDef->elemType == '\v') {
+    FX_CopyMarkVisuals(edElemDef,(elemDef->visuals).markArray);
   }
-  else if (param_1->visualCount == '\0') {
-    (param_1->visuals).markArray = (FxElemMarkVisuals *)0x0;
-    if ((param_1->elemType == '\b') || (param_1->elemType == '\t')) {
-      param_1->visualCount = '\x01';
+  else if (elemDef->visualCount == '\0') {
+    (elemDef->visuals).markArray = (FxElemMarkVisuals *)0x0;
+    if ((elemDef->elemType == '\b') || (elemDef->elemType == '\t')) {
+      elemDef->visualCount = '\x01';
     }
-    else if (param_1->elemType == '\a') {
-      param_1->flags = param_1->flags & 0xf7ffffff;
+    else if (elemDef->elemType == '\a') {
+      elemDef->flags = elemDef->flags & 0xf7ffffff;
     }
   }
   else {
-    if (param_1->visualCount == '\x01') {
-      local_78 = (FxElemVisuals *)&param_1->visuals;
+    if (elemDef->visualCount == '\x01') {
+      local_78 = (FxElemVisuals *)&elemDef->visuals;
     }
     else {
-      local_78 = (param_1->visuals).array;
+      local_78 = (elemDef->visuals).array;
     }
-    FX_CopyVisuals(param_2,local_78);
+    FX_CopyVisuals(edElemDef,local_78);
   }
-  if ((255.0 < param_2->lightingFrac) &&
+  if ((255.0 < edElemDef->lightingFrac) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x46a,0,"%s\n\t(edElemDef->lightingFrac) = %g"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  if ((0xff < (int)(param_2->lightingFrac * 255.0)) &&
+  if ((0xff < (int)(edElemDef->lightingFrac * 255.0)) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x46b,0,"%s\n\t(edElemDef->lightingFrac) = %g"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  param_1->lightingFrac = (uchar)(int)(param_2->lightingFrac * 255.0);
-  if ((param_2->editorFlags & 0x10000U) == 0) {
-    param_1->collMins[0] = 0.0;
-    param_1->collMins[1] = 0.0;
-    param_1->collMins[2] = 0.0;
-    param_1->collMaxs[0] = 0.0;
-    param_1->collMaxs[1] = 0.0;
-    param_1->collMaxs[2] = 0.0;
+  elemDef->lightingFrac = (uchar)(int)(edElemDef->lightingFrac * 255.0);
+  if ((edElemDef->editorFlags & 0x10000U) == 0) {
+    elemDef->collMins[0] = 0.0;
+    elemDef->collMins[1] = 0.0;
+    elemDef->collMins[2] = 0.0;
+    elemDef->collMaxs[0] = 0.0;
+    elemDef->collMaxs[1] = 0.0;
+    elemDef->collMaxs[2] = 0.0;
   }
   else {
-    fVar1 = param_2->collOffset[1];
-    fVar2 = param_2->collRadius;
-    fVar3 = param_2->collOffset[2];
-    fVar4 = param_2->collRadius;
-    param_1->collMins[0] = param_2->collOffset[0] - param_2->collRadius;
-    param_1->collMins[1] = fVar1 - fVar2;
-    param_1->collMins[2] = fVar3 - fVar4;
-    fVar1 = param_2->collOffset[1];
-    fVar2 = param_2->collRadius;
-    fVar3 = param_2->collOffset[2];
-    fVar4 = param_2->collRadius;
-    param_1->collMaxs[0] = param_2->collOffset[0] + param_2->collRadius;
-    param_1->collMaxs[1] = fVar1 + fVar2;
-    param_1->collMaxs[2] = fVar3 + fVar4;
+    fVar1 = edElemDef->collOffset[1];
+    fVar2 = edElemDef->collRadius;
+    fVar3 = edElemDef->collOffset[2];
+    fVar4 = edElemDef->collRadius;
+    elemDef->collMins[0] = edElemDef->collOffset[0] - edElemDef->collRadius;
+    elemDef->collMins[1] = fVar1 - fVar2;
+    elemDef->collMins[2] = fVar3 - fVar4;
+    fVar1 = edElemDef->collOffset[1];
+    fVar2 = edElemDef->collRadius;
+    fVar3 = edElemDef->collOffset[2];
+    fVar4 = edElemDef->collRadius;
+    elemDef->collMaxs[0] = edElemDef->collOffset[0] + edElemDef->collRadius;
+    elemDef->collMaxs[1] = fVar1 + fVar2;
+    elemDef->collMaxs[2] = fVar3 + fVar4;
   }
-  if ((param_2->editorFlags & 0x2000U) == 0) {
+  if ((edElemDef->editorFlags & 0x2000U) == 0) {
     local_7c = (FxEffectDef *)0x0;
   }
   else {
-    local_7c = param_2->effectOnImpact;
+    local_7c = edElemDef->effectOnImpact;
   }
-  FX_ConvertEffectDefRef(&param_1->effectOnImpact,local_7c);
-  if ((param_2->editorFlags & 0x4000U) == 0) {
+  FX_ConvertEffectDefRef(&elemDef->effectOnImpact,local_7c);
+  if ((edElemDef->editorFlags & 0x4000U) == 0) {
     local_80 = (FxEffectDef *)0x0;
   }
   else {
-    local_80 = param_2->effectOnDeath;
+    local_80 = edElemDef->effectOnDeath;
   }
-  FX_ConvertEffectDefRef(&param_1->effectOnDeath,local_80);
-  if ((param_2->editorFlags & 0x8000U) == 0) {
+  FX_ConvertEffectDefRef(&elemDef->effectOnDeath,local_80);
+  if ((edElemDef->editorFlags & 0x8000U) == 0) {
     local_84 = (FxEffectDef *)0x0;
   }
   else {
-    local_84 = param_2->emission;
+    local_84 = edElemDef->emission;
   }
-  FX_ConvertEffectDefRef(&param_1->effectEmitted,local_84);
-  if ((param_2->editorFlags & 0x40000U) == 0) {
+  FX_ConvertEffectDefRef(&elemDef->effectEmitted,local_84);
+  if ((edElemDef->editorFlags & 0x40000U) == 0) {
     local_88 = (FxEffectDef *)0x0;
   }
   else {
-    local_88 = param_2->attachment;
+    local_88 = edElemDef->attachment;
   }
-  FX_ConvertEffectDefRef(&param_1->effectAttached,local_88);
-  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&param_1->emitDist,&param_2->emitDist);
+  FX_ConvertEffectDefRef(&elemDef->effectAttached,local_88);
+  FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>(&elemDef->emitDist,&edElemDef->emitDist);
   FX_CopyCanonicalRange<FxFloatRange,FxFloatRange>
-            (&param_1->emitDistVariance,&param_2->emitDistVariance);
-  if (param_2->elemType == '\x05') {
-    FX_ConvertTrail(&(param_1->field34_0x100).localTrailDef,param_2,param_6);
+            (&elemDef->emitDistVariance,&edElemDef->emitDistVariance);
+  if (edElemDef->elemType == '\x05') {
+    FX_ConvertTrail(&(elemDef->field34_0x100).localTrailDef,edElemDef,memPool);
   }
-  else if (param_2->elemType == '\x06') {
+  else if (edElemDef->elemType == '\x06') {
     FX_CopyCanonicalRange<FxIntRange,FxIntRange>
-              (&(param_1->u).cloudDensityRange,&param_2->cloudDensityRange);
+              (&(elemDef->u).cloudDensityRange,&edElemDef->cloudDensityRange);
   }
-  local_58 = param_2->sortOrder;
+  local_58 = edElemDef->sortOrder;
   if (0xfe < local_58) {
     local_58 = 0xff;
   }
@@ -2167,20 +2228,20 @@ FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int pa
   else {
     local_8c = (uchar)local_58;
   }
-  param_1->sortOrder = local_8c;
-  param_1->alphaFadeTimeMsec = (ushort)param_2->alphaFadeTimeMsec;
-  if ((param_2->editorFlags & 1U) == 0) {
-    param_1->maxWindStrength = 0;
-    param_1->lifespanAtMaxWind = 0;
-    param_1->spawnIntervalAtMaxWind = 0;
+  elemDef->sortOrder = local_8c;
+  elemDef->alphaFadeTimeMsec = (ushort)edElemDef->alphaFadeTimeMsec;
+  if ((edElemDef->editorFlags & 1U) == 0) {
+    elemDef->maxWindStrength = 0;
+    elemDef->lifespanAtMaxWind = 0;
+    elemDef->spawnIntervalAtMaxWind = 0;
   }
   else {
-    param_1->maxWindStrength = (ushort)param_2->maxWindMagnitude;
-    param_1->lifespanAtMaxWind = (ushort)param_2->lifespanAtMaxWind;
-    param_1->spawnIntervalAtMaxWind = (ushort)param_2->spawnIntervalAtMaxWind;
+    elemDef->maxWindStrength = (ushort)edElemDef->maxWindMagnitude;
+    elemDef->lifespanAtMaxWind = (ushort)edElemDef->lifespanAtMaxWind;
+    elemDef->spawnIntervalAtMaxWind = (ushort)edElemDef->spawnIntervalAtMaxWind;
   }
-  if (param_2->elemType != '\x06') {
-    fVar1 = param_2->billboardTopWidth;
+  if (edElemDef->elemType != '\x06') {
+    fVar1 = edElemDef->billboardTopWidth;
     local_60 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_60 = 1.0;
@@ -2191,8 +2252,8 @@ FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int pa
     else {
       local_90 = 0.0;
     }
-    (param_1->u).billboard.topWidth = local_90;
-    fVar1 = param_2->billboardBottomWidth;
+    (elemDef->u).billboard.topWidth = local_90;
+    fVar1 = edElemDef->billboardBottomWidth;
     local_68 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_68 = 1.0;
@@ -2203,16 +2264,16 @@ FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int pa
     else {
       local_94 = 0.0;
     }
-    (param_1->u).billboard.bottomWidth = local_94;
+    (elemDef->u).billboard.bottomWidth = local_94;
   }
-  FX_ConvertElemSpawnSound(&param_1->spawnSound,&param_2->spawnSound,param_6);
-  if ((param_2->flags & 0x200000U) == 0) {
-    param_1->billboardPivot[0] = 0.0;
-    param_1->billboardPivot[1] = 0.0;
+  FX_ConvertElemSpawnSound(&elemDef->spawnSound,&edElemDef->spawnSound,memPool);
+  if ((edElemDef->flags & 0x200000U) == 0) {
+    elemDef->billboardPivot[0] = 0.0;
+    elemDef->billboardPivot[1] = 0.0;
   }
   else {
-    param_1->billboardPivot[0] = param_2->billboardPivot[0] * 2.0;
-    param_1->billboardPivot[1] = param_2->billboardPivot[1] * -2.0;
+    elemDef->billboardPivot[0] = edElemDef->billboardPivot[0] * 2.0;
+    elemDef->billboardPivot[1] = edElemDef->billboardPivot[1] * -2.0;
   }
   return;
 }
@@ -2220,38 +2281,38 @@ FX_ConvertElemDef(FxElemDef *param_1,FxEditorElemDef *param_2,int param_3,int pa
 
 // 005C78A0  FX_FindEmission  (EffectsCore/fx_convert.cpp:1200)
 
-int __cdecl FX_FindEmission(FxEffectDef *param_1,FxEditorEffectDef *param_2)
+int __cdecl FX_FindEmission(FxEffectDef *emission,FxEditorEffectDef *editorEffect)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int elemIndex;
   
-  if ((param_2 == (FxEditorEffectDef *)0x0) &&
+  if ((editorEffect == (FxEditorEffectDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4b3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (FxEditorEffectDef *)0xffffffa0) &&
+  if ((editorEffect == (FxEditorEffectDef *)0xffffffa0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4b4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2->elemCount == 0) &&
+  if ((editorEffect->elemCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4b5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  for (local_8 = 0; local_8 < param_2->elemCount; local_8 = local_8 + 1) {
-    if (param_1 == param_2->elems[local_8].emission) {
-      return local_8;
+  for (elemIndex = 0; elemIndex < editorEffect->elemCount; elemIndex = elemIndex + 1) {
+    if (emission == editorEffect->elems[elemIndex].emission) {
+      return elemIndex;
     }
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x4c2,1,
@@ -2269,130 +2330,137 @@ int __cdecl FX_FindEmission(FxEffectDef *param_1,FxEditorEffectDef *param_2)
 
 int __cdecl
 FX_ConvertElemDefsOfType
-          (FxElemDef *param_1,FxEditorEffectDef *param_2,int param_3,int *param_4,int *param_5,
-          int *param_6,uchar **param_7)
+          (FxElemDef *elemDefArray,FxEditorEffectDef *editorEffect,int loopingFlagState,
+          int *velStateCount,int *visStateCount,int *emitIndex,uchar **memPool)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  FxElemDef *pFVar4;
-  int local_c;
-  int local_8;
+  FxElemDef *elemDef_00;
+  FxElemDef *elemDef;
+  int elemIndex;
+  int elemCount;
   
-  if ((param_1 == (FxElemDef *)0x0) &&
+  if ((elemDefArray == (FxElemDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4cd,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (FxEditorEffectDef *)0x0) &&
+  if ((editorEffect == (FxEditorEffectDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4ce,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_3 != 1) && (param_3 != 0)) &&
+  if (((loopingFlagState != 1) && (loopingFlagState != 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4cf,0,"%s\n\t(loopingFlagState) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4 == (int *)0x0) &&
+  if ((velStateCount == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4d0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_5 == (int *)0x0) &&
+  if ((visStateCount == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x4d1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
-  for (local_c = 0; local_c < param_2->elemCount; local_c = local_c + 1) {
-    if ((param_2->elems[local_c].editorFlags & 1U) == param_3) {
-      pFVar4 = param_1 + local_8;
-      local_8 = local_8 + 1;
-      FX_ConvertElemDef(pFVar4,param_2->elems + local_c,param_4[local_c],param_5[local_c],
-                        param_6[local_c],param_7);
+  elemCount = 0;
+  for (elemIndex = 0; elemIndex < editorEffect->elemCount; elemIndex = elemIndex + 1) {
+    if ((editorEffect->elems[elemIndex].editorFlags & 1U) == loopingFlagState) {
+      elemDef_00 = elemDefArray + elemCount;
+      elemCount = elemCount + 1;
+      FX_ConvertElemDef(elemDef_00,editorEffect->elems + elemIndex,velStateCount[elemIndex],
+                        visStateCount[elemIndex],emitIndex[elemIndex],memPool);
     }
   }
-  return local_8;
+  return elemCount;
 }
 
 
 // 005CB520  FX_CopyEmittedElemDefs  (EffectsCore/fx_convert.cpp:1256)
 
-int __cdecl FX_CopyEmittedElemDefs(FxElemDef *param_1,FxEditorEffectDef *param_2,uchar **param_3)
+int __cdecl
+FX_CopyEmittedElemDefs(FxElemDef *elemDefArray,FxEditorEffectDef *editorEffect,uchar **memPool)
 
 {
-  FxEffectDef *pFVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  FxElemDef *pFVar6;
+  FxEffectDef *emission_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  FxElemDef *pFVar5;
+  FxElemDef *elemDef_00;
+  int iVar6;
   FxElemDef *pFVar7;
-  int iVar8;
-  FxElemDef *pFVar9;
-  FxElemDef *pFVar10;
-  int local_1c;
-  int local_10;
-  int local_8;
+  FxElemDef *pFVar8;
+  FxElemDef *elemDefEmit;
+  FxEffectDef *emission;
+  int elemIndexEmit;
+  FxElemDef *elemDef;
+  int firstEmitted;
+  int elemIndex;
+  int elemIndexStop;
+  int elemCount;
   
-  if ((param_2 == (FxEditorEffectDef *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
-                               0x4f2,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar5 = (*pcVar3)();
-    return iVar5;
+  if ((editorEffect == (FxEditorEffectDef *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
+                               0x4f2,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  local_8 = 0;
-  for (local_10 = 0; local_10 < param_2->elemCount; local_10 = local_10 + 1) {
-    pFVar1 = param_2->elems[local_10].emission;
-    if (((pFVar1 != (FxEffectDef *)0x0) && (pFVar1->elemDefCountOneShot != 0)) &&
-       (iVar5 = FX_FindEmission(pFVar1,param_2), iVar5 == local_10)) {
-      iVar5 = pFVar1->elemDefCountLooping;
-      iVar2 = pFVar1->elemDefCountOneShot;
-      for (local_1c = pFVar1->elemDefCountLooping; local_1c != iVar5 + iVar2;
-          local_1c = local_1c + 1) {
-        pFVar7 = param_1 + local_8;
-        local_8 = local_8 + 1;
-        pFVar6 = (pFVar1->field9_0x1c).elemDefsEA + local_1c;
-        pFVar9 = pFVar6;
-        pFVar10 = pFVar7;
-        for (iVar8 = 0x49; iVar8 != 0; iVar8 = iVar8 + -1) {
-          pFVar10->flags = pFVar9->flags;
-          pFVar9 = (FxElemDef *)&pFVar9->spawn;
-          pFVar10 = (FxElemDef *)&pFVar10->spawn;
+  elemCount = 0;
+  for (elemIndex = 0; elemIndex < editorEffect->elemCount; elemIndex = elemIndex + 1) {
+    emission_00 = editorEffect->elems[elemIndex].emission;
+    if (((emission_00 != (FxEffectDef *)0x0) && (emission_00->elemDefCountOneShot != 0)) &&
+       (iVar4 = FX_FindEmission(emission_00,editorEffect), iVar4 == elemIndex)) {
+      iVar4 = emission_00->elemDefCountLooping;
+      iVar1 = emission_00->elemDefCountOneShot;
+      for (elemIndexEmit = emission_00->elemDefCountLooping; elemIndexEmit != iVar4 + iVar1;
+          elemIndexEmit = elemIndexEmit + 1) {
+        elemDef_00 = elemDefArray + elemCount;
+        elemCount = elemCount + 1;
+        pFVar5 = (emission_00->field9_0x1c).elemDefsEA + elemIndexEmit;
+        pFVar7 = pFVar5;
+        pFVar8 = elemDef_00;
+        for (iVar6 = 0x49; iVar6 != 0; iVar6 = iVar6 + -1) {
+          pFVar8->flags = pFVar7->flags;
+          pFVar7 = (FxElemDef *)&pFVar7->spawn;
+          pFVar8 = (FxElemDef *)&pFVar8->spawn;
         }
-        if ((pFVar7->flags & 0xc0U) == 0x40) {
-          pFVar7->flags = pFVar7->flags & 0xffffff3f;
-          pFVar7->flags = pFVar7->flags;
+        if ((elemDef_00->flags & 0xc0U) == 0x40) {
+          elemDef_00->flags = elemDef_00->flags & 0xffffff3f;
+          elemDef_00->flags = elemDef_00->flags;
         }
-        FX_ReserveElemDefMemory(pFVar7,param_3);
-        memcpy((uchar *)pFVar7->velSamples,(uchar *)pFVar6->velSamples,
-               (pFVar7->velIntervalCount + 1) * 0x60);
-        if (pFVar7->visSamples != (FxElemVisStateSample *)0x0) {
-          memcpy((uchar *)pFVar7->visSamples,(uchar *)pFVar6->visSamples,
-                 (pFVar7->visStateIntervalCount + 1) * 0x30);
+        FX_ReserveElemDefMemory(elemDef_00,memPool);
+        memcpy((uchar *)elemDef_00->velSamples,(uchar *)pFVar5->velSamples,
+               (elemDef_00->velIntervalCount + 1) * 0x60);
+        if (elemDef_00->visSamples != (FxElemVisStateSample *)0x0) {
+          memcpy((uchar *)elemDef_00->visSamples,(uchar *)pFVar5->visSamples,
+                 (elemDef_00->visStateIntervalCount + 1) * 0x30);
         }
-        if (1 < pFVar7->visualCount) {
-          memcpy((uchar *)(pFVar7->visuals).markArray,(uchar *)(pFVar6->visuals).markArray,
-                 (uint)pFVar7->visualCount << 2);
+        if (1 < elemDef_00->visualCount) {
+          memcpy((uchar *)(elemDef_00->visuals).markArray,(uchar *)(pFVar5->visuals).markArray,
+                 (uint)elemDef_00->visualCount << 2);
         }
-        FX_ConvertElemSpawnSound(&pFVar7->spawnSound,&pFVar6->spawnSound,param_3);
+        FX_ConvertElemSpawnSound(&elemDef_00->spawnSound,&pFVar5->spawnSound,memPool);
       }
     }
   }
-  return local_8;
+  return elemCount;
 }
 
 
@@ -2400,37 +2468,38 @@ int __cdecl FX_CopyEmittedElemDefs(FxElemDef *param_1,FxEditorEffectDef *param_2
 
 int __cdecl
 FX_AdditionalBytesNeededForElemDef
-          (uchar param_1,int param_2,int param_3,int param_4,FxElemSpawnSound *param_5)
+          (uchar elemType,int velStateSampleCount,int visStateSampleCount,int visualCount,
+          FxElemSpawnSound *elemSpawnSound)
 
 {
   char cVar1;
   char *pcVar2;
   char *local_c;
-  char *local_8;
+  int bytesNeeded;
   
-  local_8 = (char *)(param_3 * 0x30 + param_2 * 0x60);
-  if (param_1 == '\v') {
-    local_8 = local_8 + param_4 * 8;
+  bytesNeeded = visStateSampleCount * 0x30 + velStateSampleCount * 0x60;
+  if (elemType == '\v') {
+    bytesNeeded = bytesNeeded + visualCount * 8;
   }
-  else if (1 < param_4) {
-    local_8 = local_8 + param_4 * 4;
+  else if (1 < visualCount) {
+    bytesNeeded = bytesNeeded + visualCount * 4;
   }
-  if ((param_5->spawnSound != (char *)0x0) && (*param_5->spawnSound != '\0')) {
-    local_c = param_5->spawnSound;
+  if ((elemSpawnSound->spawnSound != (char *)0x0) && (*elemSpawnSound->spawnSound != '\0')) {
+    local_c = elemSpawnSound->spawnSound;
     pcVar2 = local_c + 1;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    local_8 = local_c + (int)(local_8 + (1 - (int)pcVar2));
+    bytesNeeded = (int)(local_c + ((bytesNeeded + 1) - (int)pcVar2));
   }
-  return (int)local_8;
+  return bytesNeeded;
 }
 
 
 // 005CB7F0  FX_AdditionalBytesNeededForEmission  (EffectsCore/fx_convert.cpp:1335)
 
-int __cdecl FX_AdditionalBytesNeededForEmission(FxEffectDef *param_1)
+int __cdecl FX_AdditionalBytesNeededForEmission(FxEffectDef *emission)
 
 {
   int iVar1;
@@ -2440,10 +2509,14 @@ int __cdecl FX_AdditionalBytesNeededForEmission(FxEffectDef *param_1)
   int iVar5;
   int iVar6;
   int local_20;
-  int local_14;
-  int local_8;
+  int velStateCount;
+  FxElemDef *elemDef;
+  int bytesNeeded;
+  int visStateCount;
+  int elemDefStop;
+  int elemDefIndex;
   
-  if (param_1 == (FxEffectDef *)0x0) {
+  if (emission == (FxEffectDef *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",0x53f,
                              0,"%s");
     if (!bVar4) {
@@ -2452,49 +2525,54 @@ int __cdecl FX_AdditionalBytesNeededForEmission(FxEffectDef *param_1)
       return iVar5;
     }
   }
-  local_14 = param_1->elemDefCountOneShot * 0x124;
-  iVar5 = param_1->elemDefCountLooping;
-  iVar1 = param_1->elemDefCountOneShot;
-  for (local_8 = param_1->elemDefCountLooping; local_8 != iVar5 + iVar1; local_8 = local_8 + 1) {
-    pFVar2 = (param_1->field9_0x1c).elemDefsEA;
-    if (pFVar2[local_8].visStateIntervalCount == '\0') {
+  bytesNeeded = emission->elemDefCountOneShot * 0x124;
+  iVar5 = emission->elemDefCountLooping;
+  iVar1 = emission->elemDefCountOneShot;
+  for (elemDefIndex = emission->elemDefCountLooping; elemDefIndex != iVar5 + iVar1;
+      elemDefIndex = elemDefIndex + 1) {
+    pFVar2 = (emission->field9_0x1c).elemDefsEA;
+    if (pFVar2[elemDefIndex].visStateIntervalCount == '\0') {
       local_20 = 0;
     }
     else {
-      local_20 = pFVar2[local_8].visStateIntervalCount + 1;
+      local_20 = pFVar2[elemDefIndex].visStateIntervalCount + 1;
     }
     iVar6 = FX_AdditionalBytesNeededForElemDef
-                      (pFVar2[local_8].elemType,pFVar2[local_8].velIntervalCount + 1,local_20,
-                       (uint)pFVar2[local_8].visualCount,&pFVar2[local_8].spawnSound);
-    local_14 = iVar6 + local_14;
+                      (pFVar2[elemDefIndex].elemType,pFVar2[elemDefIndex].velIntervalCount + 1,
+                       local_20,(uint)pFVar2[elemDefIndex].visualCount,
+                       &pFVar2[elemDefIndex].spawnSound);
+    bytesNeeded = iVar6 + bytesNeeded;
   }
-  return local_14;
+  return bytesNeeded;
 }
 
 
 // 005CB900  FX_GetLoopingLife  (EffectsCore/fx_convert.cpp:1360)
 
-int __cdecl FX_GetLoopingLife(FxEffectDef *param_1)
+int __cdecl FX_GetLoopingLife(FxEffectDef *effectDef)
 
 {
   FxElemDef *pFVar1;
   int iVar2;
-  int local_c;
-  int local_8;
+  int msecLoopingLife;
+  FxElemDef *elemDef;
+  int elemIndex;
+  int msecLoopingLifeMax;
   
-  local_8 = 0;
-  local_c = 0;
+  msecLoopingLifeMax = 0;
+  elemIndex = 0;
   while( true ) {
-    if (param_1->elemDefCountLooping <= local_c) {
-      return local_8;
+    if (effectDef->elemDefCountLooping <= elemIndex) {
+      return msecLoopingLifeMax;
     }
-    pFVar1 = (param_1->field9_0x1c).elemDefsEA;
-    if (pFVar1[local_c].spawn.looping.count == 0x7fffffff) break;
-    iVar2 = (pFVar1[local_c].spawn.looping.count + -1) * pFVar1[local_c].spawn.looping.intervalMsec;
-    if (local_8 < iVar2) {
-      local_8 = iVar2;
+    pFVar1 = (effectDef->field9_0x1c).elemDefsEA;
+    if (pFVar1[elemIndex].spawn.looping.count == 0x7fffffff) break;
+    iVar2 = (pFVar1[elemIndex].spawn.looping.count + -1) *
+            pFVar1[elemIndex].spawn.looping.intervalMsec;
+    if (msecLoopingLifeMax < iVar2) {
+      msecLoopingLifeMax = iVar2;
     }
-    local_c = local_c + 1;
+    elemIndex = elemIndex + 1;
   }
   return 0x7fffffff;
 }
@@ -2502,12 +2580,12 @@ int __cdecl FX_GetLoopingLife(FxEffectDef *param_1)
 
 // 005CBBF0  FX_ValidateFlags  (EffectsCore/fx_convert.cpp:1383)
 
-bool __cdecl FX_ValidateFlags(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ValidateFlags(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = (param_2->flags & 0xf0U) != 0xc0;
+  bVar1 = (edElemDef->flags & 0xf0U) != 0xc0;
   if (!bVar1) {
     Com_PrintError(0x15,
                    "effect \'%s\' segment \'%s\'\nVelocity is \'relative to offset\', but generation offset is \'none\'\n"
@@ -2519,11 +2597,11 @@ bool __cdecl FX_ValidateFlags(FxEditorEffectDef *param_1,FxEditorElemDef *param_
 
 // 005CBC30  FX_ValidateColor  (EffectsCore/fx_convert.cpp:1395)
 
-bool __cdecl FX_ValidateColor(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ValidateColor(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
-  if (param_2->elemType == '\v') {
-    if (param_2->lightingFrac != 0.0) {
+  if (edElemDef->elemType == '\v') {
+    if (edElemDef->lightingFrac != 0.0) {
       Com_PrintError(0x15,
                      "effect \'%s\' segment \'%s\'\nDecals cannot have a non-zero lighting fraction.\n"
                     );
@@ -2531,11 +2609,11 @@ bool __cdecl FX_ValidateColor(FxEditorEffectDef *param_1,FxEditorElemDef *param_
     }
   }
   else {
-    if (param_2->lightingFrac <= 0.0 && param_2->lightingFrac != 0.0) {
+    if (edElemDef->lightingFrac <= 0.0 && edElemDef->lightingFrac != 0.0) {
       Com_PrintError(0x15,"effect \'%s\' segment \'%s\'\nNegative lighting fraction.\n");
       return false;
     }
-    if (1.0 < param_2->lightingFrac) {
+    if (1.0 < edElemDef->lightingFrac) {
       Com_PrintError(0x15,"effect \'%s\' segment \'%s\'\nLighting fraction larger than 1.0.\n");
       return false;
     }
@@ -2546,39 +2624,40 @@ bool __cdecl FX_ValidateColor(FxEditorEffectDef *param_1,FxEditorElemDef *param_
 
 // 005CBCE0  FX_ValidateVisuals  (EffectsCore/fx_convert.cpp:1423)
 
-bool __cdecl FX_ValidateVisuals(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ValidateVisuals(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
-  int local_8;
+  int indIter;
   
-  if (((param_2->elemType == '\v') || (param_2->elemType == '\f')) && (param_2->visualCount == 0)) {
+  if (((edElemDef->elemType == '\v') || (edElemDef->elemType == '\f')) &&
+     (edElemDef->visualCount == 0)) {
     Com_PrintError(0x15,
                    "effect \'%s\' segment \'%s\'\nThis type of segment must have at least one visual specified.\n"
                   );
     return false;
   }
-  if (param_2->elemType == '\x05') {
-    if (((param_2->trailDef).indCount == 0) || ((param_2->trailDef).vertCount == 0)) {
+  if (edElemDef->elemType == '\x05') {
+    if (((edElemDef->trailDef).indCount == 0) || ((edElemDef->trailDef).vertCount == 0)) {
       Com_PrintError(0x15,"effect \'%s\' segment \'%s\'\nTrail cross-section cannot be empty.\n");
       return false;
     }
-    for (local_8 = 0; local_8 != (param_2->trailDef).indCount; local_8 = local_8 + 1) {
-      if ((param_2->trailDef).vertCount <= (int)(uint)(param_2->trailDef).inds[local_8]) {
+    for (indIter = 0; indIter != (edElemDef->trailDef).indCount; indIter = indIter + 1) {
+      if ((edElemDef->trailDef).vertCount <= (int)(uint)(edElemDef->trailDef).inds[indIter]) {
         Com_PrintError(0x15,
                        "effect \'%s\' segment \'%s\'\nIndex references out of range vertex \'%i\'.\n"
                       );
         return false;
       }
     }
-    if (param_2->trailRepeatDist < 1) {
+    if (edElemDef->trailRepeatDist < 1) {
       Com_PrintError(0x15,"effect \'%s\' segment \'%s\'\nTrail repeat dist <= 0.\n");
       return false;
     }
-    if (param_2->trailSplitDist < 1) {
+    if (edElemDef->trailSplitDist < 1) {
       Com_PrintError(0x15,"effect \'%s\' segment \'%s\'\nTrail split dist <= 0.\n");
       return false;
     }
-    if ((int)((float)param_2->trailRepeatDist * 1000.0) < 1) {
+    if ((int)((float)edElemDef->trailRepeatDist * 1000.0) < 1) {
       Com_PrintError(0x15,
                      "effect \'%s\' segment \'%s\'\nTrail texture repeat dist too close to, or below 0.\n"
                     );
@@ -2591,27 +2670,29 @@ bool __cdecl FX_ValidateVisuals(FxEditorEffectDef *param_1,FxEditorElemDef *para
 
 // 005CBE70  FX_ValidatePhysics  (EffectsCore/fx_convert.cpp:1476)
 
-bool __cdecl FX_ValidatePhysics(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ValidatePhysics(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   float local_1c;
   float local_18;
+  float elasticityMin;
+  float elasticityMax;
   
-  if ((param_2->flags & 0x100U) == 0) {
+  if ((edElemDef->flags & 0x100U) == 0) {
     bVar1 = true;
   }
   else {
-    local_18 = (param_2->elasticity).amplitude;
+    local_18 = (edElemDef->elasticity).amplitude;
     if (0.0 <= local_18 - 0.0) {
       local_18 = 0.0;
     }
-    local_1c = (param_2->elasticity).amplitude;
+    local_1c = (edElemDef->elasticity).amplitude;
     if (0.0 <= 0.0 - local_1c) {
       local_1c = 0.0;
     }
-    if (((param_2->elasticity).base + local_18 < -0.001) ||
-       (1.001 < (param_2->elasticity).base + local_1c)) {
+    if (((edElemDef->elasticity).base + local_18 < -0.001) ||
+       (1.001 < (edElemDef->elasticity).base + local_1c)) {
       Com_PrintError(0x15,
                      "effect \'%s\' segment \'%s\'\nElasticity %g to %g can go outside the range 0 to 1.\n"
                     );
@@ -2627,20 +2708,20 @@ bool __cdecl FX_ValidatePhysics(FxEditorEffectDef *param_1,FxEditorElemDef *para
 
 // 005CB980  FX_Validate  (EffectsCore/fx_convert.cpp:1496)
 
-bool __cdecl FX_Validate(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_Validate(FxEditorEffectDef *editorEffect,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ValidateAtlasSettings(param_1,param_2);
+  bVar1 = FX_ValidateAtlasSettings(editorEffect,edElemDef);
   if (bVar1) {
-    bVar1 = FX_ValidateFlags(param_1,param_2);
+    bVar1 = FX_ValidateFlags(editorEffect,edElemDef);
     if (bVar1) {
-      bVar1 = FX_ValidateColor(param_1,param_2);
+      bVar1 = FX_ValidateColor(editorEffect,edElemDef);
       if (bVar1) {
-        bVar1 = FX_ValidateVisuals(param_1,param_2);
+        bVar1 = FX_ValidateVisuals(editorEffect,edElemDef);
         if (bVar1) {
-          bVar1 = FX_ValidatePhysics(param_1,param_2);
+          bVar1 = FX_ValidatePhysics(editorEffect,edElemDef);
           if (bVar1) {
             bVar1 = true;
           }
@@ -2669,7 +2750,7 @@ bool __cdecl FX_Validate(FxEditorEffectDef *param_1,FxEditorElemDef *param_2)
 
 // 005C6380  FX_Convert  (EffectsCore/fx_convert.cpp:1517)
 
-FxEffectDef * __cdecl FX_Convert(FxEditorEffectDef *param_1,_func___cdecl_void_ptr_int *param_2)
+FxEffectDef * __cdecl FX_Convert(FxEditorEffectDef *editorEffect,_func___cdecl_void_ptr_int *Alloc)
 
 {
   char cVar1;
@@ -2687,101 +2768,106 @@ FxEffectDef * __cdecl FX_Convert(FxEditorEffectDef *param_1,_func___cdecl_void_p
   FxEditorEffectDef *local_218;
   FxEditorEffectDef *local_208;
   float local_1f8;
-  int local_1d4;
-  int local_1c8;
-  int local_1c4 [33];
-  FxEffectDef *local_140;
-  uint local_13c;
-  int local_138;
-  int local_134 [32];
-  int local_b4;
-  char *local_b0;
-  int local_ac [33];
-  FxEditorElemDef *local_28;
-  int local_24;
-  FxElemDef *local_20;
-  FxSampleChannel local_1c [5];
-  float *local_8;
+  float maxDim;
+  Material *worldMat;
+  int visualIndex_2;
+  FxElemDef *elemDef;
+  int intervalLimit;
+  int elemCountTotal;
+  int velStateCount [33];
+  FxEffectDef *effect;
+  int effectFlags;
+  int visualIndex;
+  int emitIndex [32];
+  int firstEmitted;
+  int totalBytesNeeded;
+  int visStateCount [33];
+  FxEditorElemDef *edElemDef;
+  int elemIndex;
+  uchar *memPool;
+  FxSampleChannel routing [5];
+  FxElemVisuals *elemVisual;
   
-  if ((param_1 == (FxEditorEffectDef *)0x0) &&
+  if ((editorEffect == (FxEditorEffectDef *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x5fd,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     pFVar5 = (FxEffectDef *)(*pcVar3)();
     return pFVar5;
   }
-  memset((uchar *)local_134,0xff,0x80);
-  local_b0 = (char *)(param_1->elemCount * 0x124 + 0x3c);
-  local_1c8 = param_1->elemCount;
-  for (local_24 = 0; local_24 < param_1->elemCount; local_24 = local_24 + 1) {
-    local_28 = param_1->elems + local_24;
-    if ((local_28->elemType == '\a') && ((local_28->flags & 0x8000000U) != 0)) {
-      for (local_138 = 0; local_138 < local_28->visualCount; local_138 = local_138 + 1) {
-        local_8 = local_28->collOffset + local_138 + 0xf;
-        if ((*local_8 != 0.0) && (*(int *)((int)*local_8 + 0xec) == 0)) {
+  memset((uchar *)emitIndex,0xff,0x80);
+  totalBytesNeeded = editorEffect->elemCount * 0x124 + 0x3c;
+  elemCountTotal = editorEffect->elemCount;
+  for (elemIndex = 0; elemIndex < editorEffect->elemCount; elemIndex = elemIndex + 1) {
+    edElemDef = editorEffect->elems + elemIndex;
+    if ((edElemDef->elemType == '\a') && ((edElemDef->flags & 0x8000000U) != 0)) {
+      for (visualIndex = 0; visualIndex < edElemDef->visualCount; visualIndex = visualIndex + 1) {
+        elemVisual = (FxElemVisuals *)(edElemDef->collOffset + visualIndex + 0xf);
+        if ((elemVisual->anonymous != (void *)0x0) &&
+           (elemVisual->model->physPreset == (PhysPreset *)0x0)) {
           pPVar6 = FX_RegisterPhysPreset("default");
-          *(PhysPreset **)((int)*local_8 + 0xec) = pPVar6;
+          elemVisual->model->physPreset = pPVar6;
           Com_PrintError(0x14,"ERROR: no physics preset specified for the FX model [%s]\n");
         }
       }
     }
   }
-  for (local_24 = 0; local_24 < param_1->elemCount; local_24 = local_24 + 1) {
-    local_28 = param_1->elems + local_24;
-    bVar4 = FX_Validate(param_1,local_28);
+  for (elemIndex = 0; elemIndex < editorEffect->elemCount; elemIndex = elemIndex + 1) {
+    edElemDef = editorEffect->elems + elemIndex;
+    bVar4 = FX_Validate(editorEffect,edElemDef);
     if (!bVar4) {
       return (FxEffectDef *)0x0;
     }
-    FX_GetVisualSampleRouting(local_28,local_1c);
-    iVar7 = FX_DecideIntervalLimit(local_28);
-    iVar8 = FX_DecideVelocitySampleCount(local_28,iVar7);
-    local_1c4[local_24] = iVar8;
-    iVar7 = FX_DecideVisualSampleCount(local_28,local_1c,iVar7);
-    local_ac[local_24] = iVar7;
+    FX_GetVisualSampleRouting(edElemDef,routing);
+    iVar7 = FX_DecideIntervalLimit(edElemDef);
+    iVar8 = FX_DecideVelocitySampleCount(edElemDef,iVar7);
+    velStateCount[elemIndex] = iVar8;
+    iVar7 = FX_DecideVisualSampleCount(edElemDef,routing,iVar7);
+    visStateCount[elemIndex] = iVar7;
     iVar7 = FX_AdditionalBytesNeededForElemDef
-                      (local_28->elemType,local_1c4[local_24],local_ac[local_24],
-                       local_28->visualCount,&local_28->spawnSound);
-    local_b0 = (char *)(iVar7 + (int)local_b0);
-    iVar7 = FX_AdditionalBytesNeededForGeomTrail(local_28);
-    local_b0 = (char *)(iVar7 + (int)local_b0);
-    if ((local_28->emission != (FxEffectDef *)0x0) && (local_28->emission->elemDefCountOneShot != 0)
-       ) {
-      local_b4 = FX_FindEmission(local_28->emission,param_1);
-      if (local_b4 == local_24) {
-        local_134[local_24] = local_1c8;
-        local_1c8 = local_1c8 + local_28->emission->elemDefCountOneShot;
-        iVar7 = FX_AdditionalBytesNeededForEmission(local_28->emission);
-        local_b0 = (char *)(iVar7 + (int)local_b0);
+                      (edElemDef->elemType,velStateCount[elemIndex],visStateCount[elemIndex],
+                       edElemDef->visualCount,&edElemDef->spawnSound);
+    totalBytesNeeded = iVar7 + totalBytesNeeded;
+    iVar7 = FX_AdditionalBytesNeededForGeomTrail(edElemDef);
+    totalBytesNeeded = iVar7 + totalBytesNeeded;
+    if ((edElemDef->emission != (FxEffectDef *)0x0) &&
+       (edElemDef->emission->elemDefCountOneShot != 0)) {
+      firstEmitted = FX_FindEmission(edElemDef->emission,editorEffect);
+      if (firstEmitted == elemIndex) {
+        emitIndex[elemIndex] = elemCountTotal;
+        elemCountTotal = elemCountTotal + edElemDef->emission->elemDefCountOneShot;
+        iVar7 = FX_AdditionalBytesNeededForEmission(edElemDef->emission);
+        totalBytesNeeded = iVar7 + totalBytesNeeded;
       }
       else {
-        local_134[local_24] = local_134[local_b4];
+        emitIndex[elemIndex] = emitIndex[firstEmitted];
       }
     }
   }
-  local_208 = param_1;
+  local_208 = editorEffect;
   do {
     pcVar9 = local_208->name;
     local_208 = (FxEditorEffectDef *)(local_208->name + 1);
   } while (*pcVar9 != '\0');
-  local_b0 = (char *)((int)local_208 + (((int)local_b0 + 1) - (int)(param_1->name + 1)));
-  local_140 = (*param_2)((int)local_b0);
-  (local_140->field9_0x1c).elemDefsEA = (FxElemDef *)(local_140 + 1);
-  local_20 = (FxElemDef *)(local_140 + 1) + local_1c8;
+  totalBytesNeeded = (int)local_208 + ((totalBytesNeeded + 1) - (int)(editorEffect->name + 1));
+  effect = (*Alloc)(totalBytesNeeded);
+  (effect->field9_0x1c).elemDefsEA = (FxElemDef *)(effect + 1);
+  memPool = (uchar *)((FxElemDef *)(effect + 1) + elemCountTotal);
   iVar7 = FX_ConvertElemDefsOfType
-                    ((local_140->field9_0x1c).elemDefsEA,param_1,1,local_1c4,local_ac,local_134,
-                     (uchar **)&local_20);
-  local_140->elemDefCountLooping = iVar7;
+                    ((effect->field9_0x1c).elemDefsEA,editorEffect,1,velStateCount,visStateCount,
+                     emitIndex,&memPool);
+  effect->elemDefCountLooping = iVar7;
   iVar7 = FX_ConvertElemDefsOfType
-                    ((local_140->field9_0x1c).elemDefsEA + local_140->elemDefCountLooping,param_1,0,
-                     local_1c4,local_ac,local_134,(uchar **)&local_20);
-  local_140->elemDefCountOneShot = iVar7;
+                    ((effect->field9_0x1c).elemDefsEA + effect->elemDefCountLooping,editorEffect,0,
+                     velStateCount,visStateCount,emitIndex,&memPool);
+  effect->elemDefCountOneShot = iVar7;
   iVar7 = FX_CopyEmittedElemDefs
-                    ((local_140->field9_0x1c).elemDefsEA +
-                     local_140->elemDefCountLooping + local_140->elemDefCountOneShot,param_1,
-                     (uchar **)&local_20);
-  local_140->elemDefCountEmission = iVar7;
-  if ((local_140->elemDefCountLooping + local_140->elemDefCountOneShot +
-       local_140->elemDefCountEmission != local_1c8) &&
+                    ((effect->field9_0x1c).elemDefsEA +
+                     effect->elemDefCountLooping + effect->elemDefCountOneShot,editorEffect,&memPool
+                    );
+  effect->elemDefCountEmission = iVar7;
+  if ((effect->elemDefCountLooping + effect->elemDefCountOneShot + effect->elemDefCountEmission !=
+       elemCountTotal) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x653,1,
                                "effect->elemDefCountLooping + effect->elemDefCountOneShot + effect->elemDefCountEmission == elemCountTotal\n\t%i, %i"
@@ -2790,49 +2876,50 @@ FxEffectDef * __cdecl FX_Convert(FxEditorEffectDef *param_1,_func___cdecl_void_p
     pFVar5 = (FxEffectDef *)(*pcVar3)();
     return pFVar5;
   }
-  local_140->efPriority = param_1->edPriority;
-  local_13c = param_1->flags & 0xfffffffc;
-  for (local_24 = 0; local_24 != local_1c8; local_24 = local_24 + 1) {
-    if ((float)(local_140->field9_0x1c).elemDefsEA[local_24].lightingFrac != 0.0) {
-      local_13c = local_13c | 1;
+  effect->efPriority = editorEffect->edPriority;
+  effectFlags = editorEffect->flags & 0xfffffffc;
+  for (elemIndex = 0; elemIndex != elemCountTotal; elemIndex = elemIndex + 1) {
+    if ((float)(effect->field9_0x1c).elemDefsEA[elemIndex].lightingFrac != 0.0) {
+      effectFlags = effectFlags | 1;
       break;
     }
   }
-  for (local_24 = 0; iVar7 = local_24, local_24 != local_1c8; local_24 = local_24 + 1) {
-    pFVar2 = (local_140->field9_0x1c).elemDefsEA;
-    if (pFVar2[local_24].elemType == '\v') {
-      for (local_1d4 = 0; local_1d4 < (int)(uint)pFVar2[iVar7].visualCount;
-          local_1d4 = local_1d4 + 1) {
-        bVar4 = Material_HasImpactMaskTech(pFVar2[iVar7].visuals.markArray[local_1d4].materials[1]);
+  for (elemIndex = 0; iVar7 = elemIndex, elemIndex != elemCountTotal; elemIndex = elemIndex + 1) {
+    pFVar2 = (effect->field9_0x1c).elemDefsEA;
+    if (pFVar2[elemIndex].elemType == '\v') {
+      for (visualIndex_2 = 0; visualIndex_2 < (int)(uint)pFVar2[iVar7].visualCount;
+          visualIndex_2 = visualIndex_2 + 1) {
+        bVar4 = Material_HasImpactMaskTech
+                          (pFVar2[iVar7].visuals.markArray[visualIndex_2].materials[1]);
         if (bVar4) {
-          local_13c = local_13c | 2;
+          effectFlags = effectFlags | 2;
           break;
         }
       }
-      if ((local_13c & 2) != 0) break;
+      if ((effectFlags & 2U) != 0) break;
     }
   }
-  local_140->flags = (uchar)local_13c;
-  iVar7 = FX_GetLoopingLife(local_140);
-  local_140->msecLoopingLife = iVar7;
-  local_140->totalSize = (int)local_b0;
-  local_140->name = (char *)local_20;
-  local_218 = param_1;
-  local_21c = local_140->name;
+  effect->flags = (uchar)effectFlags;
+  iVar7 = FX_GetLoopingLife(effect);
+  effect->msecLoopingLife = iVar7;
+  effect->totalSize = totalBytesNeeded;
+  effect->name = (char *)memPool;
+  local_218 = editorEffect;
+  local_21c = effect->name;
   do {
     cVar1 = local_218->name[0];
     *local_21c = cVar1;
     local_218 = (FxEditorEffectDef *)(local_218->name + 1);
     local_21c = local_21c + 1;
   } while (cVar1 != '\0');
-  local_228 = local_140->name;
+  local_228 = effect->name;
   pcVar9 = local_228 + 1;
   do {
     cVar1 = *local_228;
     local_228 = local_228 + 1;
   } while (cVar1 != '\0');
-  local_20 = (FxElemDef *)(local_228 + (1 - (int)pcVar9) + (int)(local_20->spawnOrigin + -7));
-  if (((int)local_20 - (int)local_140 != local_140->totalSize) &&
+  memPool = memPool + (int)(local_228 + (1 - (int)pcVar9));
+  if (((int)memPool - (int)effect != effect->totalSize) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                                0x67f,1,
                                "memPool - reinterpret_cast< byte * >( effect ) == effect->totalSize\n\t%i, %i"
@@ -2841,32 +2928,32 @@ FxEffectDef * __cdecl FX_Convert(FxEditorEffectDef *param_1,_func___cdecl_void_p
     pFVar5 = (FxEffectDef *)(*pcVar3)();
     return pFVar5;
   }
-  if ((param_1->flags & 4) == 0) {
-    local_140->boundingBoxDim[0] = 0.0;
-    local_140->boundingBoxDim[1] = 0.0;
-    local_140->boundingBoxDim[2] = 0.0;
-    local_140->boundingSphere[0] = 0.0;
-    local_140->boundingSphere[1] = 0.0;
-    local_140->boundingSphere[2] = 0.0;
-    local_140->boundingSphere[3] = 0.0;
+  if ((editorEffect->flags & 4) == 0) {
+    effect->boundingBoxDim[0] = 0.0;
+    effect->boundingBoxDim[1] = 0.0;
+    effect->boundingBoxDim[2] = 0.0;
+    effect->boundingSphere[0] = 0.0;
+    effect->boundingSphere[1] = 0.0;
+    effect->boundingSphere[2] = 0.0;
+    effect->boundingSphere[3] = 0.0;
   }
   else {
-    local_140->boundingBoxDim[0] = param_1->boundingBoxDim[0];
-    local_140->boundingBoxDim[1] = param_1->boundingBoxDim[1];
-    local_140->boundingBoxDim[2] = param_1->boundingBoxDim[2];
-    local_140->boundingSphere[0] = param_1->boundingBoxCentre[0];
-    local_140->boundingSphere[1] = param_1->boundingBoxCentre[1];
-    local_140->boundingSphere[2] = param_1->boundingBoxCentre[2];
-    local_1f8 = param_1->boundingBoxDim[2];
-    if (0.0 <= param_1->boundingBoxDim[1] - local_1f8) {
-      local_1f8 = param_1->boundingBoxDim[1];
+    effect->boundingBoxDim[0] = editorEffect->boundingBoxDim[0];
+    effect->boundingBoxDim[1] = editorEffect->boundingBoxDim[1];
+    effect->boundingBoxDim[2] = editorEffect->boundingBoxDim[2];
+    effect->boundingSphere[0] = editorEffect->boundingBoxCentre[0];
+    effect->boundingSphere[1] = editorEffect->boundingBoxCentre[1];
+    effect->boundingSphere[2] = editorEffect->boundingBoxCentre[2];
+    local_1f8 = editorEffect->boundingBoxDim[2];
+    if (0.0 <= editorEffect->boundingBoxDim[1] - local_1f8) {
+      local_1f8 = editorEffect->boundingBoxDim[1];
     }
-    local_238 = param_1->boundingBoxDim[0];
+    local_238 = editorEffect->boundingBoxDim[0];
     if (local_238 - local_1f8 < 0.0) {
       local_238 = local_1f8;
     }
-    local_140->boundingSphere[3] = local_238 * 1.4142137;
+    effect->boundingSphere[3] = local_238 * 1.4142137;
   }
-  return local_140;
+  return effect;
 }
 

@@ -7,30 +7,29 @@ void __cdecl GenerateLightGridBasisDirs(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_20;
-  int local_1c;
-  int local_18;
-  float local_14;
+  int x;
+  int y;
+  int z;
+  float dir;
   float local_10;
   float local_c;
-  int local_8;
+  int basisIndex;
   
-  local_8 = 0;
-  for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-    local_c = (float)local_18 * 0.6666667 - 1.0;
-    for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
-      local_10 = (float)local_1c * 0.6666667 - 1.0;
-      for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
-        if (((((local_20 < 1) || (2 < local_20)) || (local_1c < 1)) ||
-            ((2 < local_1c || (local_18 < 1)))) || (2 < local_18)) {
-          local_14 = (float)local_20 * 0.6666667 - 1.0;
-          Vec3NormalizeTo(&local_14,gridBasisDirs[local_8]);
-          local_8 = local_8 + 1;
+  basisIndex = 0;
+  for (z = 0; z < 4; z = z + 1) {
+    local_c = (float)z * 0.6666667 - 1.0;
+    for (y = 0; y < 4; y = y + 1) {
+      local_10 = (float)y * 0.6666667 - 1.0;
+      for (x = 0; x < 4; x = x + 1) {
+        if (((((x < 1) || (2 < x)) || (y < 1)) || ((2 < y || (z < 1)))) || (2 < z)) {
+          dir = (float)x * 0.6666667 - 1.0;
+          Vec3NormalizeTo(&dir,gridBasisDirs[basisIndex]);
+          basisIndex = basisIndex + 1;
         }
       }
     }
   }
-  if ((local_8 != 0x38) &&
+  if ((basisIndex != 0x38) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pointlights.cpp",0x29,
                                1,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -44,23 +43,26 @@ void __cdecl GenerateLightGridBasisDirs(void)
 // 00B30320  GatherIncidentEnergyInSpaceForLightFromDir  (gfx_d3d/r_pointlights.cpp:45)
 
 void __cdecl
-GatherIncidentEnergyInSpaceForLightFromDir(float *param_1,float *param_2,float (*param_3) [3])
+GatherIncidentEnergyInSpaceForLightFromDir
+          (float *energy,float *lightFromDir,float (*incidentEnergy) [3])
 
 {
   float (*pafVar1) [3];
   float (*pafVar2) [3];
   float fVar3;
-  int local_8;
+  float attenuation;
+  int sampleIndex;
   
-  for (local_8 = 0; local_8 < 0x38; local_8 = local_8 + 1) {
-    fVar3 = gridBasisDirs[local_8][0] * *param_2 + gridBasisDirs[local_8][1] * param_2[1] +
-            gridBasisDirs[local_8][2] * param_2[2];
+  for (sampleIndex = 0; sampleIndex < 0x38; sampleIndex = sampleIndex + 1) {
+    fVar3 = gridBasisDirs[sampleIndex][0] * *lightFromDir +
+            gridBasisDirs[sampleIndex][1] * lightFromDir[1] +
+            gridBasisDirs[sampleIndex][2] * lightFromDir[2];
     if (0.0 < fVar3) {
-      pafVar2 = param_3 + local_8;
-      pafVar1 = param_3 + local_8;
-      (*pafVar2)[0] = fVar3 * *param_1 + (*pafVar1)[0];
-      (*pafVar2)[1] = fVar3 * param_1[1] + (*pafVar1)[1];
-      (*pafVar2)[2] = fVar3 * param_1[2] + (*pafVar1)[2];
+      pafVar2 = incidentEnergy + sampleIndex;
+      pafVar1 = incidentEnergy + sampleIndex;
+      (*pafVar2)[0] = fVar3 * *energy + (*pafVar1)[0];
+      (*pafVar2)[1] = fVar3 * energy[1] + (*pafVar1)[1];
+      (*pafVar2)[2] = fVar3 * energy[2] + (*pafVar1)[2];
     }
   }
   return;
@@ -69,19 +71,20 @@ GatherIncidentEnergyInSpaceForLightFromDir(float *param_1,float *param_2,float (
 
 // 00B30410  AddLightGridLightingForDir  (gfx_d3d/r_pointlights.cpp:59)
 
-void __cdecl AddLightGridLightingForDir(float (*param_1) [3],GfxDecodedLightGridColors *param_2)
+void __cdecl
+AddLightGridLightingForDir(float (*lightingForDir) [3],GfxDecodedLightGridColors *colors)
 
 {
   float (*pafVar1) [3];
   float (*pafVar2) [4];
-  int local_8;
+  int sampleIndex;
   
-  for (local_8 = 0; local_8 < 0x38; local_8 = local_8 + 1) {
-    pafVar1 = param_1 + local_8;
+  for (sampleIndex = 0; sampleIndex < 0x38; sampleIndex = sampleIndex + 1) {
+    pafVar1 = lightingForDir + sampleIndex;
     (*pafVar1)[0] = SQRT((*pafVar1)[0]);
     (*pafVar1)[1] = SQRT((*pafVar1)[1]);
     (*pafVar1)[2] = SQRT((*pafVar1)[2]);
-    pafVar2 = param_2->rgb + local_8;
+    pafVar2 = colors->rgb + sampleIndex;
     (*pafVar2)[0] = (*pafVar1)[0] + (*pafVar2)[0];
     (*pafVar2)[1] = (*pafVar1)[1] + (*pafVar2)[1];
     (*pafVar2)[2] = (*pafVar1)[2] + (*pafVar2)[2];
@@ -93,7 +96,7 @@ void __cdecl AddLightGridLightingForDir(float (*param_1) [3],GfxDecodedLightGrid
 // 00B304F0  EvaluateHeroLightForGrid  (gfx_d3d/r_pointlights.cpp:75)
 
 bool __cdecl
-EvaluateHeroLightForGrid(GfxHeroLight *param_1,float *param_2,float *param_3,float *param_4)
+EvaluateHeroLightForGrid(GfxHeroLight *light,float *xyz,float *dirToLight,float *attenuatedColor)
 
 {
   bool bVar1;
@@ -104,36 +107,42 @@ EvaluateHeroLightForGrid(GfxHeroLight *param_1,float *param_2,float *param_3,flo
   float fVar6;
   float local_50;
   float local_40;
-  int local_18;
-  float local_14;
+  float dist;
+  float spotScale;
+  float spotDot;
+  int exponent;
+  float spotFactor;
+  float falloff;
+  float cosHalfFovScale;
+  float distSq;
   
-  fVar2 = param_1->origin[0] - *param_2;
-  fVar3 = param_1->origin[1] - param_2[1];
-  fVar4 = param_1->origin[2] - param_2[2];
+  fVar2 = light->origin[0] - *xyz;
+  fVar3 = light->origin[1] - xyz[1];
+  fVar4 = light->origin[2] - xyz[2];
   fVar6 = fVar2 * fVar2 + fVar3 * fVar3 + fVar4 * fVar4;
-  if (fVar6 <= param_1->radius * param_1->radius) {
+  if (fVar6 <= light->radius * light->radius) {
     fVar6 = SQRT(fVar6);
     if (0.001 <= fVar6) {
       fVar5 = 1.0 / fVar6;
-      *param_3 = fVar5 * fVar2;
-      param_3[1] = fVar5 * fVar3;
-      param_3[2] = fVar5 * fVar4;
-      local_14 = 1.0;
-      if (param_1->type == '\x02') {
-        fVar2 = *param_3 * param_1->dir[0] + param_3[1] * param_1->dir[1] +
-                param_3[2] * param_1->dir[2];
-        if (fVar2 <= param_1->cosHalfFovOuter) {
+      *dirToLight = fVar5 * fVar2;
+      dirToLight[1] = fVar5 * fVar3;
+      dirToLight[2] = fVar5 * fVar4;
+      spotFactor = 1.0;
+      if (light->type == '\x02') {
+        fVar2 = *dirToLight * light->dir[0] + dirToLight[1] * light->dir[1] +
+                dirToLight[2] * light->dir[2];
+        if (fVar2 <= light->cosHalfFovOuter) {
           return false;
         }
-        if ((fVar2 < param_1->cosHalfFovInner) &&
-           (fVar2 = (fVar2 - param_1->cosHalfFovOuter) /
-                    (param_1->cosHalfFovInner - param_1->cosHalfFovOuter), fVar2 < 1.0)) {
-          for (local_18 = 0; local_18 < param_1->exponent; local_18 = local_18 + 1) {
-            local_14 = local_14 * fVar2;
+        if ((fVar2 < light->cosHalfFovInner) &&
+           (fVar2 = (fVar2 - light->cosHalfFovOuter) /
+                    (light->cosHalfFovInner - light->cosHalfFovOuter), fVar2 < 1.0)) {
+          for (exponent = 0; exponent < light->exponent; exponent = exponent + 1) {
+            spotFactor = spotFactor * fVar2;
           }
         }
       }
-      fVar6 = fVar6 / param_1->radius;
+      fVar6 = fVar6 / light->radius;
       local_40 = fVar6;
       if (0.0 <= fVar6 - 1.0) {
         local_40 = 1.0;
@@ -144,10 +153,10 @@ EvaluateHeroLightForGrid(GfxHeroLight *param_1,float *param_2,float *param_3,flo
       else {
         local_50 = 0.0;
       }
-      local_14 = (1.0 - local_50) * local_14;
-      *param_4 = local_14 * param_1->color[0];
-      param_4[1] = local_14 * param_1->color[1];
-      param_4[2] = local_14 * param_1->color[2];
+      fVar2 = (1.0 - local_50) * spotFactor;
+      *attenuatedColor = fVar2 * light->color[0];
+      attenuatedColor[1] = fVar2 * light->color[1];
+      attenuatedColor[2] = fVar2 * light->color[2];
       bVar1 = true;
     }
     else {
@@ -176,7 +185,7 @@ void __cdecl R_InitHeroLights(void)
 
 // 00B307C0  R_AdjustLightColorSamples  (gfx_d3d/r_pointlights.cpp:163)
 
-void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
+void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *colors)
 
 {
   double dVar1;
@@ -184,17 +193,22 @@ void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
   float in_stack_ffffffd4;
   float fVar2;
   float (*pafVar3) [4];
-  uint local_14;
+  float meanSample;
+  float biasedMean;
+  uint sampleIter;
+  float intensity;
+  float biasedContrast;
+  float mean;
   
   fVar2 = (r_lightGridIntensity->current).value;
-  for (local_14 = 0; local_14 < 0x38; local_14 = local_14 + 1) {
-    pafVar3 = param_1->rgb + local_14;
+  for (sampleIter = 0; sampleIter < 0x38; sampleIter = sampleIter + 1) {
+    pafVar3 = colors->rgb + sampleIter;
     (*pafVar3)[0] = (*pafVar3)[0] * fVar2;
     (*pafVar3)[1] = (*pafVar3)[1] * fVar2;
     (*pafVar3)[2] = (*pafVar3)[2] * fVar2;
   }
-  for (local_14 = 0; local_14 < 0x38; local_14 = local_14 + 1) {
-    pafVar3 = param_1->rgb + local_14;
+  for (sampleIter = 0; sampleIter < 0x38; sampleIter = sampleIter + 1) {
+    pafVar3 = colors->rgb + sampleIter;
     fVar2 = (*pafVar3)[0];
     dVar1 = (double)fVar2;
     __libm_sse2_pow((double)CONCAT44(in_stack_ffffffd4,in_stack_ffffffd0),
@@ -217,24 +231,28 @@ void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
 
 // 00B30970  R_AddHeroOnlyLightsToGridColors  (gfx_d3d/r_pointlights.cpp:209)
 
-void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *param_1,float *param_2)
+void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *packed,float *heroPos)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   GfxHeroLightTree *pGVar4;
-  float local_348 [3];
+  GfxHeroLightTree *tree;
+  uint light;
+  bool lit;
+  uint node;
+  float dirToLight [3];
   uint auStack_33c [32];
-  float local_2bc [3];
-  uint local_2b0;
-  float local_2ac [169];
-  char local_5;
+  float attenuatedColor [3];
+  uint stackPtr;
+  float incidentEnergy [169];
+  bool foundAny;
   
-  if (((r_heroLighting->current).enabled != false) && (param_2 != (float *)0x0)) {
+  if (((r_heroLighting->current).enabled != false) && (heroPos != (float *)0x0)) {
     if (((r_lightGridEnableTweaks->current).enabled != false) &&
        ((r_lightGridUseTweakedValues->current).enabled != false)) {
-      R_AdjustLightColorSamples(param_1);
+      R_AdjustLightColorSamples(packed);
     }
     if (g_initialized == false) {
       g_initialized = true;
@@ -242,24 +260,24 @@ void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *param_1,
     }
     if (g_heroLightCount != 0) {
       auStack_33c[0] = 0;
-      local_2b0 = 1;
-      local_5 = '\0';
-      while (local_2b0 != 0) {
-        local_2b0 = local_2b0 - 1;
-        uVar1 = auStack_33c[local_2b0];
+      stackPtr = 1;
+      foundAny = false;
+      while (stackPtr != 0) {
+        stackPtr = stackPtr - 1;
+        uVar1 = auStack_33c[stackPtr];
         if (uVar1 < g_heroLightTreeCount) {
           pGVar4 = g_heroLightTree + uVar1;
-          if (((((pGVar4->mins[0] < *param_2 || pGVar4->mins[0] == *param_2) &&
-                (pGVar4->mins[1] < param_2[1] || pGVar4->mins[1] == param_2[1])) &&
-               (pGVar4->mins[2] < param_2[2] || pGVar4->mins[2] == param_2[2])) &&
-              ((*param_2 < pGVar4->maxs[0] || *param_2 == pGVar4->maxs[0] &&
-               (param_2[1] < pGVar4->maxs[1] || param_2[1] == pGVar4->maxs[1])))) &&
-             (param_2[2] < pGVar4->maxs[2] || param_2[2] == pGVar4->maxs[2])) {
-            auStack_33c[local_2b0] = uVar1 * 2 + 1;
-            local_2b0 = local_2b0 + 1;
-            auStack_33c[local_2b0] = uVar1 * 2 + 2;
-            local_2b0 = local_2b0 + 1;
-            if ((0x1f < local_2b0) &&
+          if (((((pGVar4->mins[0] < *heroPos || pGVar4->mins[0] == *heroPos) &&
+                (pGVar4->mins[1] < heroPos[1] || pGVar4->mins[1] == heroPos[1])) &&
+               (pGVar4->mins[2] < heroPos[2] || pGVar4->mins[2] == heroPos[2])) &&
+              ((*heroPos < pGVar4->maxs[0] || *heroPos == pGVar4->maxs[0] &&
+               (heroPos[1] < pGVar4->maxs[1] || heroPos[1] == pGVar4->maxs[1])))) &&
+             (heroPos[2] < pGVar4->maxs[2] || heroPos[2] == pGVar4->maxs[2])) {
+            auStack_33c[stackPtr] = uVar1 * 2 + 1;
+            stackPtr = stackPtr + 1;
+            auStack_33c[stackPtr] = uVar1 * 2 + 2;
+            stackPtr = stackPtr + 1;
+            if ((0x1f < stackPtr) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pointlights.cpp"
                                          ,0x11a,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
@@ -270,17 +288,18 @@ void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *param_1,
         }
         else if ((uVar1 - g_heroLightTreeCount < g_heroLightCount) &&
                 (bVar3 = EvaluateHeroLightForGrid
-                                   (g_heroLights + (uVar1 - g_heroLightTreeCount),param_2,local_348,
-                                    local_2bc), bVar3)) {
-          if (local_5 == '\0') {
-            local_5 = '\x01';
-            memset((uchar *)local_2ac,'\0',0x2a0);
+                                   (g_heroLights + (uVar1 - g_heroLightTreeCount),heroPos,dirToLight
+                                    ,attenuatedColor), bVar3)) {
+          if (foundAny == false) {
+            foundAny = true;
+            memset((uchar *)incidentEnergy,'\0',0x2a0);
           }
-          GatherIncidentEnergyInSpaceForLightFromDir(local_2bc,local_348,(float (*) [3])local_2ac);
+          GatherIncidentEnergyInSpaceForLightFromDir
+                    (attenuatedColor,dirToLight,(float (*) [3])incidentEnergy);
         }
       }
-      if (local_5 != '\0') {
-        AddLightGridLightingForDir((float (*) [3])local_2ac,param_1);
+      if (foundAny != false) {
+        AddLightGridLightingForDir((float (*) [3])incidentEnergy,packed);
       }
     }
   }

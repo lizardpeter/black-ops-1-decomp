@@ -4,18 +4,19 @@
 
 geom_plane * __thiscall
 phys_static_array<geom_plane,128>::add
-          (phys_static_array<geom_plane,128> *this,int param_1,char *param_2)
+          (phys_static_array<geom_plane,128> *this,int no_error,char *error_msg)
 
 {
   geom_plane *pgVar1;
+  geom_plane *rbc;
   
   if (this->m_alloc_count < 0x80) {
     pgVar1 = this->m_slot_array + this->m_alloc_count;
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     pgVar1 = (geom_plane *)0x0;
   }
@@ -53,16 +54,16 @@ void __cdecl _dynamic_initializer_for__PT_AC_EPS_VEC__(void)
 /* WARNING: Removing unreachable block (ram,0x00439a7c) */
 /* WARNING: Removing unreachable block (ram,0x00439a9c) */
 
-phys_vec3 * __cdecl Phys_Vec3ToNitrousVec(phys_vec3 *__return_storage_ptr__,float *param_1)
+phys_vec3 * __cdecl Phys_Vec3ToNitrousVec(phys_vec3 *__return_storage_ptr__,float *inVector)
 
 {
   float fVar1;
   float fVar2;
   float local_14;
   
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  __return_storage_ptr__->x = *param_1;
+  fVar1 = inVector[1];
+  fVar2 = inVector[2];
+  __return_storage_ptr__->x = *inVector;
   __return_storage_ptr__->y = fVar1;
   __return_storage_ptr__->z = fVar2;
   __return_storage_ptr__->w = local_14;
@@ -74,14 +75,15 @@ phys_vec3 * __cdecl Phys_Vec3ToNitrousVec(phys_vec3 *__return_storage_ptr__,floa
 
 gjk_base_t * __cdecl
 create_gjkcc_gjk_geom
-          (float (*param_1) [3],float (*param_2) [3],int param_3,gjk_collision_visitor *param_4)
+          (float (*mins) [3],float (*maxs) [3],int stype,gjk_collision_visitor *allocator)
 
 {
-  gjk_polygon_cylinder_t *pgVar1;
+  gjk_polygon_cylinder_t *gjk_cylinder;
+  gjk_polygon_cylinder_t *gjk_geom;
   
-  pgVar1 = gjk_polygon_cylinder_t::create(param_1,param_2,0.5,param_3,param_4);
-  setup_gjk_polygon_cylinder(*param_1,*param_2,0.5,pgVar1);
-  return (gjk_base_t *)pgVar1;
+  gjk_cylinder = gjk_polygon_cylinder_t::create(mins,maxs,0.5,stype,allocator);
+  setup_gjk_polygon_cylinder(*mins,*maxs,0.5,gjk_cylinder);
+  return (gjk_base_t *)gjk_cylinder;
 }
 
 
@@ -89,7 +91,7 @@ create_gjkcc_gjk_geom
 
 void __thiscall
 gjk_collision_visitor::get_local_query_aabb
-          (gjk_collision_visitor *this,float *param_1,float *param_2)
+          (gjk_collision_visitor *this,float *local_query_aabb_min,float *local_query_aabb_max)
 
 {
   code *pcVar1;
@@ -111,7 +113,7 @@ gjk_collision_visitor::get_local_query_aabb
 void __thiscall
 phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
 ::rotate_right(phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-               *this,phys_gjk_cache_info_internal **param_1)
+               *this,phys_gjk_cache_info_internal **root)
 
 {
   phys_gjk_cache_info_internal *ppVar1;
@@ -119,22 +121,22 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
   int local_28;
   int local_20;
   
-  ppVar1 = ((*param_1)->m_avl_tree_node).m_left;
-  ((*param_1)->m_avl_tree_node).m_left = (ppVar1->m_avl_tree_node).m_right;
-  (ppVar1->m_avl_tree_node).m_right = *param_1;
-  piVar2 = &((*param_1)->m_avl_tree_node).m_balance;
+  ppVar1 = ((*root)->m_avl_tree_node).m_left;
+  ((*root)->m_avl_tree_node).m_left = (ppVar1->m_avl_tree_node).m_right;
+  (ppVar1->m_avl_tree_node).m_right = *root;
+  piVar2 = &((*root)->m_avl_tree_node).m_balance;
   local_20 = -(ppVar1->m_avl_tree_node).m_balance;
   if (local_20 < 1) {
     local_20 = 0;
   }
   *piVar2 = local_20 + 1 + *piVar2;
   piVar2 = &(ppVar1->m_avl_tree_node).m_balance;
-  local_28 = ((*param_1)->m_avl_tree_node).m_balance;
+  local_28 = ((*root)->m_avl_tree_node).m_balance;
   if (local_28 < 1) {
     local_28 = 0;
   }
   *piVar2 = local_28 + 1 + *piVar2;
-  *param_1 = ppVar1;
+  *root = ppVar1;
   return;
 }
 
@@ -143,22 +145,22 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
 
 void __thiscall
 phys_gjk_geom::set_simplex
-          (phys_gjk_geom *this,phys_vec3 *param_1,int param_2,phys_vec3 *param_3,
-          cached_simplex_info *param_4)
+          (phys_gjk_geom *this,phys_vec3 *simplex_inds,int w_set,phys_vec3 *normal,
+          cached_simplex_info *cache_info)
 
 {
   phys_vec3 *ppVar1;
-  int local_c;
-  phys_vec3 *local_8;
+  int i;
+  phys_vec3 *inds;
   
-  local_8 = param_4->m_indices;
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    if ((1 << ((byte)local_c & 0x1f) & param_2) != 0) {
-      ppVar1 = param_1 + local_c;
-      ((phys_vec3 *)&local_8->x)->x = ppVar1->x;
-      local_8->y = ppVar1->y;
-      local_8->z = ppVar1->z;
-      local_8 = local_8 + 1;
+  inds = cache_info->m_indices;
+  for (i = 0; i < 4; i = i + 1) {
+    if ((1 << ((byte)i & 0x1f) & w_set) != 0) {
+      ppVar1 = simplex_inds + i;
+      inds->x = ppVar1->x;
+      inds->y = ppVar1->y;
+      inds->z = ppVar1->z;
+      inds = inds + 1;
     }
   }
   return;
@@ -167,12 +169,12 @@ phys_gjk_geom::set_simplex
 
 // 0043CB60  operator=  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:45)
 
-phys_vec3 * __thiscall phys_vec3::operator=(phys_vec3 *this,phys_vec3 *param_1)
+phys_vec3 * __thiscall phys_vec3::operator=(phys_vec3 *this,phys_vec3 *v)
 
 {
-  this->x = param_1->x;
-  this->y = param_1->y;
-  this->z = param_1->z;
+  this->x = v->x;
+  this->y = v->y;
+  this->z = v->z;
   return this;
 }
 
@@ -181,8 +183,8 @@ phys_vec3 * __thiscall phys_vec3::operator=(phys_vec3 *this,phys_vec3 *param_1)
 
 bool __thiscall
 gjk_brush_t::ray_cast
-          (gjk_brush_t *this,phys_vec3 *param_1,phys_vec3 *param_2,float param_3,float *param_4,
-          phys_vec3 *param_5)
+          (gjk_brush_t *this,phys_vec3 *__formal,phys_vec3 *__formal_2,float __formal_3,
+          float *__formal_4,phys_vec3 *__formal_5)
 
 {
   return false;
@@ -191,34 +193,33 @@ gjk_brush_t::ray_cast
 
 // 00438DE0  update_cg  (bgame/bg_slidemove.cpp:51)
 
-void __thiscall gjkcc_info::update_cg(gjkcc_info *this,float *param_1,float *param_2,bool param_3)
+void __thiscall gjkcc_info::update_cg(gjkcc_info *this,float *mins,float *maxs,bool force)
 
 {
   int iVar1;
   
-  if ((((*param_1 != this->m_mins[0]) || (param_1[1] != this->m_mins[1])) ||
-      (param_1[2] != this->m_mins[2])) ||
-     (((*param_2 != this->m_maxs[0] || (param_2[1] != this->m_maxs[1])) ||
-      ((param_2[2] != this->m_maxs[2] || (param_3)))))) {
-    this->m_mins[0] = *param_1;
-    this->m_mins[1] = param_1[1];
-    this->m_mins[2] = param_1[2];
-    this->m_maxs[0] = *param_2;
-    this->m_maxs[1] = param_2[1];
-    this->m_maxs[2] = param_2[2];
+  if ((((*mins != this->m_mins[0]) || (mins[1] != this->m_mins[1])) || (mins[2] != this->m_mins[2]))
+     || (((*maxs != this->m_maxs[0] || (maxs[1] != this->m_maxs[1])) ||
+         ((maxs[2] != this->m_maxs[2] || (force)))))) {
+    this->m_mins[0] = *mins;
+    this->m_mins[1] = mins[1];
+    this->m_mins[2] = mins[2];
+    this->m_maxs[0] = *maxs;
+    this->m_maxs[1] = maxs[1];
+    this->m_maxs[2] = maxs[2];
     iVar1 = (**(code **)(*(int *)this->m_cg_ + 0x28))();
     if (iVar1 == 4) {
-      setup_gjk_capsule(param_1,param_2,0.5,(gjk_double_sphere_t *)this->m_cg_);
+      setup_gjk_capsule(mins,maxs,0.5,(gjk_double_sphere_t *)this->m_cg_);
     }
     else {
       iVar1 = (**(code **)(*(int *)this->m_cg_ + 0x28))();
       if (iVar1 == 7) {
-        setup_gjk_polygon_cylinder(param_1,param_2,0.5,(gjk_polygon_cylinder_t *)this->m_cg_);
+        setup_gjk_polygon_cylinder(mins,maxs,0.5,(gjk_polygon_cylinder_t *)this->m_cg_);
       }
       else {
         iVar1 = (**(code **)(*(int *)this->m_cg_ + 0x28))();
         if (iVar1 == 5) {
-          setup_gjk_cylinder(param_1,param_2,0.5,(gjk_cylinder_t *)this->m_cg_);
+          setup_gjk_cylinder(mins,maxs,0.5,(gjk_cylinder_t *)this->m_cg_);
         }
       }
     }
@@ -240,7 +241,7 @@ void __thiscall gjkcc_info::update_cg(gjkcc_info *this,float *param_1,float *par
 void __thiscall
 phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
 ::rotate_left(phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-              *this,phys_gjk_cache_info_internal **param_1)
+              *this,phys_gjk_cache_info_internal **root)
 
 {
   phys_gjk_cache_info_internal *ppVar1;
@@ -248,22 +249,22 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
   int local_28;
   int local_20;
   
-  ppVar1 = ((*param_1)->m_avl_tree_node).m_right;
-  ((*param_1)->m_avl_tree_node).m_right = (ppVar1->m_avl_tree_node).m_left;
-  (ppVar1->m_avl_tree_node).m_left = *param_1;
-  piVar2 = &((*param_1)->m_avl_tree_node).m_balance;
+  ppVar1 = ((*root)->m_avl_tree_node).m_right;
+  ((*root)->m_avl_tree_node).m_right = (ppVar1->m_avl_tree_node).m_left;
+  (ppVar1->m_avl_tree_node).m_left = *root;
+  piVar2 = &((*root)->m_avl_tree_node).m_balance;
   local_20 = (ppVar1->m_avl_tree_node).m_balance;
   if (local_20 < 1) {
     local_20 = 0;
   }
   *piVar2 = *piVar2 - (local_20 + 1);
   piVar2 = &(ppVar1->m_avl_tree_node).m_balance;
-  local_28 = -((*param_1)->m_avl_tree_node).m_balance;
+  local_28 = -((*root)->m_avl_tree_node).m_balance;
   if (local_28 < 1) {
     local_28 = 0;
   }
   *piVar2 = *piVar2 - (local_28 + 1);
-  *param_1 = ppVar1;
+  *root = ppVar1;
   return;
 }
 
@@ -277,20 +278,19 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
 /* WARNING: Removing unreachable block (ram,0x0043cc9a) */
 /* WARNING: Removing unreachable block (ram,0x0043ccba) */
 
-void __cdecl Phys_NitrousVecToVec3(phys_vec3 *param_1,float *param_2)
+void __cdecl Phys_NitrousVecToVec3(phys_vec3 *inVector,float *outVector)
 
 {
-  *param_2 = param_1->x;
-  param_2[1] = param_1->y;
-  param_2[2] = param_1->z;
+  *outVector = inVector->x;
+  outVector[1] = inVector->y;
+  outVector[2] = inVector->z;
   return;
 }
 
 
 // 004401E0  operator+  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:54)
 
-phys_vec3 * __cdecl
-operator+(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl operator+(phys_vec3 *__return_storage_ptr__,phys_vec3 *a,phys_vec3 *b)
 
 {
   float fVar1;
@@ -298,11 +298,11 @@ operator+(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_
   float fVar3;
   float fVar4;
   
-  fVar1 = param_1->y;
-  fVar2 = param_2->y;
-  fVar3 = param_1->z;
-  fVar4 = param_2->z;
-  __return_storage_ptr__->x = param_1->x + param_2->x;
+  fVar1 = a->y;
+  fVar2 = b->y;
+  fVar3 = a->z;
+  fVar4 = b->z;
+  __return_storage_ptr__->x = a->x + b->x;
   __return_storage_ptr__->y = fVar1 + fVar2;
   __return_storage_ptr__->z = fVar3 + fVar4;
   return __return_storage_ptr__;
@@ -322,32 +322,32 @@ float __thiscall phys_gjk_geom::get_geom_radius(phys_gjk_geom *this)
 
 void * __thiscall
 phys_transient_allocator::allocate
-          (phys_transient_allocator *this,int param_1,int param_2,int param_3,char *param_4)
+          (phys_transient_allocator *this,int size,int alignment,int no_error,char *error_msg)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
-  void *local_8;
+  void *ptr;
   
-  transient_allocator_update_largest_size(param_1);
-  local_8 = (void *)((uint)(this->m_cur + param_2 + -1) & ~(param_2 - 1U));
-  if (this->m_end < (char *)((int)local_8 + param_1)) {
-    local_8 = (void *)0x0;
+  transient_allocator_update_largest_size(size);
+  ptr = (void *)((uint)(this->m_cur + alignment + -1) & ~(alignment - 1U));
+  if (this->m_end < (char *)((int)ptr + size)) {
+    ptr = (void *)0x0;
   }
   else {
-    this->m_cur = (char *)((int)local_8 + param_1);
+    this->m_cur = (char *)((int)ptr + size);
   }
-  if (local_8 == (void *)0x0) {
+  if (ptr == (void *)0x0) {
     resize(this);
-    local_8 = (void *)((uint)(this->m_cur + param_2 + -1) & ~(param_2 - 1U));
-    if (this->m_end < (char *)((int)local_8 + param_1)) {
-      local_8 = (void *)0x0;
+    ptr = (void *)((uint)(this->m_cur + alignment + -1) & ~(alignment - 1U));
+    if (this->m_end < (char *)((int)ptr + size)) {
+      ptr = (void *)0x0;
     }
     else {
-      this->m_cur = (char *)((int)local_8 + param_1);
+      this->m_cur = (char *)((int)ptr + size);
     }
-    if (local_8 == (void *)0x0) {
+    if (ptr == (void *)0x0) {
       bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_transient_allocator.h"
                         ,0x4f,"ptr","transient allocation too large, increase block_size.");
       if (bVar2) {
@@ -357,16 +357,16 @@ phys_transient_allocator::allocate
       }
     }
   }
-  if ((local_8 == (void *)0x0) && (param_3 == 0)) {
+  if ((ptr == (void *)0x0) && (no_error == 0)) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_transient_allocator.h"
-                      ,0x51,"ptr || no_error",param_4);
+                      ,0x51,"ptr || no_error",error_msg);
     if (bVar2) {
       pcVar1 = (code *)swi(3);
       pvVar3 = (void *)(*pcVar1)();
       return pvVar3;
     }
   }
-  return local_8;
+  return ptr;
 }
 
 
@@ -378,6 +378,7 @@ void __thiscall gjkcc_info::Lock(gjkcc_info *this)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool retv;
   
   LOCK();
   iVar3 = this->m_active;
@@ -405,6 +406,7 @@ void __thiscall gjkcc_info::Unlock(gjkcc_info *this)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool retv;
   
   LOCK();
   iVar3 = this->m_active;
@@ -448,14 +450,16 @@ void __cdecl _dynamic_initializer_for__g_gjkcc_info_allocator__(void)
 
 // 00438BA0  create_gjkcc_info  (bgame/bg_slidemove.cpp:86)
 
-gjkcc_info * __cdecl create_gjkcc_info(uint param_1,bool param_2,float *param_3)
+gjkcc_info * __cdecl create_gjkcc_info(uint gjkcc_id,bool is_server_thread,float *origin)
 
 {
   gjkcc_info *this;
   gjk_polygon_cylinder_t *pgVar1;
+  gjkcc_info *gcci;
+  int stype;
   
   this = phys_simple_allocator<gjkcc_info>::allocate(&g_gjkcc_info_allocator);
-  if (param_1 == 0) {
+  if (gjkcc_id == 0) {
     (this->m_gjk_cache).m_max_num_gjk_ci = 0;
     (this->m_gjk_cache).m_list_head = (phys_gjk_cache_info_internal *)0x0;
   }
@@ -464,7 +468,7 @@ gjkcc_info * __cdecl create_gjkcc_info(uint param_1,bool param_2,float *param_3)
     (this->m_gjk_cache).m_list_head = (phys_gjk_cache_info_internal *)0x0;
   }
   this->m_active = 0;
-  this->m_is_server_thread = param_2;
+  this->m_is_server_thread = is_server_thread;
   phys_mat44::operator=(&this->m_cg_to_world_xform,&PHYS_IDENTITY_MATRIX);
   this->m_mins[0] = -15.0;
   this->m_mins[1] = -15.0;
@@ -477,9 +481,9 @@ gjkcc_info * __cdecl create_gjkcc_info(uint param_1,bool param_2,float *param_3)
                       (gjk_collision_visitor *)&g_empty_collision_visitor);
   this->m_cg_ = (gjk_base_t *)pgVar1;
   gjkcc_info::update_cg(this,this->m_mins,this->m_maxs,true);
-  this->m_last_origin[0] = *param_3;
-  this->m_last_origin[1] = param_3[1];
-  this->m_last_origin[2] = param_3[2];
+  this->m_last_origin[0] = *origin;
+  this->m_last_origin[1] = origin[1];
+  this->m_last_origin[2] = origin[2];
   return this;
 }
 
@@ -600,14 +604,15 @@ phys_mat44 * __thiscall gjk_base_t::get_xform(gjk_base_t *this)
 
 // 00439070  destroy_gjkcc_info  (bgame/bg_slidemove.cpp:107)
 
-void __cdecl destroy_gjkcc_info(void *param_1)
+void __cdecl destroy_gjkcc_info(void *gcci_)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  gjkcc_info *gcci;
   
-  if ((param_1 == (void *)0x0) &&
+  if ((gcci_ == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x6c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -615,9 +620,9 @@ void __cdecl destroy_gjkcc_info(void *param_1)
     return;
   }
   LOCK();
-  iVar3 = *(int *)((int)param_1 + 0x1e0);
+  iVar3 = *(int *)((int)gcci_ + 0x1e0);
   if (iVar3 == 1) {
-    *(int *)((int)param_1 + 0x1e0) = 1;
+    *(int *)((int)gcci_ + 0x1e0) = 1;
     iVar3 = 1;
   }
   UNLOCK();
@@ -628,18 +633,18 @@ void __cdecl destroy_gjkcc_info(void *param_1)
     (*pcVar1)();
     return;
   }
-  gjk_polygon_cylinder_t::destroy(*(gjk_polygon_cylinder_t **)((int)param_1 + 0x1e8));
-  gjk_query_output::verify_empty((gjk_query_output *)((int)param_1 + 0x90));
+  gjk_polygon_cylinder_t::destroy(*(gjk_polygon_cylinder_t **)((int)gcci_ + 0x1e8));
+  gjk_query_output::verify_empty((gjk_query_output *)((int)gcci_ + 0x90));
   phys_heap_gjk_cache_system_avl_tree::shutdown
-            ((phys_heap_gjk_cache_system_avl_tree *)((int)param_1 + 0x78));
-  phys_simple_allocator<gjkcc_info>::free(&g_gjkcc_info_allocator,param_1);
+            ((phys_heap_gjk_cache_system_avl_tree *)((int)gcci_ + 0x78));
+  phys_simple_allocator<gjkcc_info>::free(&g_gjkcc_info_allocator,gcci_);
   return;
 }
 
 
 // 004403F0  is_foot  (physics/phys_colgeom.h:109)
 
-bool __thiscall gjk_base_t::is_foot(gjk_base_t *this,phys_vec3 *param_1)
+bool __thiscall gjk_base_t::is_foot(gjk_base_t *this,phys_vec3 *hit_point)
 
 {
   return false;
@@ -648,7 +653,7 @@ bool __thiscall gjk_base_t::is_foot(gjk_base_t *this,phys_vec3 *param_1)
 
 // 00440400  is_walkable  (physics/phys_colgeom.h:110)
 
-bool __thiscall gjk_base_t::is_walkable(gjk_base_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+bool __thiscall gjk_base_t::is_walkable(gjk_base_t *this,phys_vec3 *hit_point,phys_vec3 *up)
 
 {
   return false;
@@ -658,14 +663,14 @@ bool __thiscall gjk_base_t::is_walkable(gjk_base_t *this,phys_vec3 *param_1,phys
 // 00444DE0  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 geom_plane * __thiscall
-phys_static_array<geom_plane,128>::operator[](phys_static_array<geom_plane,128> *this,int param_1)
+phys_static_array<geom_plane,128>::operator[](phys_static_array<geom_plane,128> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   geom_plane *pgVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -674,7 +679,7 @@ phys_static_array<geom_plane,128>::operator[](phys_static_array<geom_plane,128> 
       return pgVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
@@ -710,6 +715,7 @@ void __thiscall gjkcc_info_database_t::Lock(gjkcc_info_database_t *this)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool retv;
   
   LOCK();
   iVar3 = this->m_token;
@@ -737,6 +743,7 @@ void __thiscall gjkcc_info_database_t::Unlock(gjkcc_info_database_t *this)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool retv;
   
   LOCK();
   iVar3 = this->m_token;
@@ -758,13 +765,14 @@ void __thiscall gjkcc_info_database_t::Unlock(gjkcc_info_database_t *this)
 
 // 004396C0  verify_internal  (bgame/bg_slidemove.cpp:137)
 
-void __thiscall gjkcc_info_database_t::verify_internal(gjkcc_info_database_t *this,bool param_1)
+void __thiscall
+gjkcc_info_database_t::verify_internal(gjkcc_info_database_t *this,bool is_server_thread)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (this->m_is_server_thread != param_1) {
+  if (this->m_is_server_thread != is_server_thread) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x89,0,
                              "%s");
     if (!bVar2) {
@@ -794,7 +802,7 @@ phys_vec3 * __thiscall gjk_aabb_t::get_center(gjk_aabb_t *this,phys_vec3 *__retu
 
 gjkcc_info * __thiscall
 gjkcc_info_database_t::gjkcc_info_find_or_create
-          (gjkcc_info_database_t *this,uint param_1,bool param_2,float *param_3)
+          (gjkcc_info_database_t *this,uint gjkcc_id,bool is_server_thread,float *origin)
 
 {
   code *pcVar1;
@@ -802,33 +810,35 @@ gjkcc_info_database_t::gjkcc_info_find_or_create
   gjkcc_info *pgVar3;
   int iVar4;
   generic_avl_map_node_t *local_18;
-  generic_avl_map_node_t *local_c;
+  gjkcc_info *gcci_2;
+  generic_avl_map_node_t *gamn;
+  gjkcc_info *gcci;
   
-  verify_internal(this,param_2);
+  verify_internal(this,is_server_thread);
   Lock(this);
   local_18 = (this->m_map).m_tree_root;
-  while ((local_18 != (generic_avl_map_node_t *)0x0 && (param_1 != local_18->m_avl_key))) {
-    if (param_1 < local_18->m_avl_key) {
+  while ((local_18 != (generic_avl_map_node_t *)0x0 && (gjkcc_id != local_18->m_avl_key))) {
+    if (gjkcc_id < local_18->m_avl_key) {
       local_18 = (local_18->m_avl_node_info).m_left;
     }
     else {
       local_18 = (local_18->m_avl_node_info).m_right;
     }
   }
-  local_c = local_18;
+  gamn = local_18;
   if (local_18 == (generic_avl_map_node_t *)0x0) {
-    pgVar3 = create_gjkcc_info(param_1,param_2,param_3);
-    local_c = generic_avl_map_add(&this->m_map,pgVar3,param_1);
+    pgVar3 = create_gjkcc_info(gjkcc_id,is_server_thread,origin);
+    gamn = generic_avl_map_add(&this->m_map,pgVar3,gjkcc_id);
     this->m_gcci_count = this->m_gcci_count + 1;
   }
-  if ((local_c == (generic_avl_map_node_t *)0x0) &&
+  if ((gamn == (generic_avl_map_node_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x9c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gjkcc_info *)(*pcVar1)();
     return pgVar3;
   }
-  pgVar3 = local_c->m_data;
+  pgVar3 = gamn->m_data;
   if ((pgVar3 == (gjkcc_info *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x9e,0,
                                "%s"), !bVar2)) {
@@ -850,7 +860,7 @@ gjkcc_info_database_t::gjkcc_info_find_or_create
     pgVar3 = (gjkcc_info *)(*pcVar1)();
     return pgVar3;
   }
-  if ((pgVar3->m_is_server_thread != param_2) &&
+  if ((pgVar3->m_is_server_thread != is_server_thread) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0xa0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -867,7 +877,7 @@ gjkcc_info_database_t::gjkcc_info_find_or_create
 void __thiscall
 phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
 ::remove(phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-         *this,phys_gjk_geom_id_pair_key *param_1)
+         *this,phys_gjk_geom_id_pair_key *key)
 
 {
   phys_gjk_cache_info_internal *ppVar1;
@@ -879,14 +889,14 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
   **pppVar5;
   int *piVar6;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  **local_10c;
+  **cur_item;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  *local_104 [64];
+  *the_stack [64];
   
-  local_104[0] = this;
-  local_10c = local_104;
+  the_stack[0] = this;
+  cur_item = the_stack;
   while( true ) {
-    ppVar1 = (*local_10c)->m_tree_root;
+    ppVar1 = (*cur_item)->m_tree_root;
     if ((ppVar1 == (phys_gjk_cache_info_internal *)0x0) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa1
                           ,"root",""), bVar4)) {
@@ -894,32 +904,32 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
       (*pcVar3)();
       return;
     }
-    if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+    if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa2
                           ,"cur_item + 1 - the_stack < 32",""), bVar4)) break;
-    pppVar5 = local_10c + 2;
-    if (param_1->m_id1 == ppVar1->_padding_) {
-      bVar4 = param_1->m_id2 < (uint)ppVar1->_padding_;
+    pppVar5 = cur_item + 2;
+    if (key->m_id1 == ppVar1->_padding_) {
+      bVar4 = key->m_id2 < (uint)ppVar1->_padding_;
     }
     else {
-      bVar4 = param_1->m_id1 < (uint)ppVar1->_padding_;
+      bVar4 = key->m_id1 < (uint)ppVar1->_padding_;
     }
     if (bVar4) {
-      local_10c[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                      *)0xffffffff;
+      cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                     *)0xffffffff;
       *pppVar5 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
                   *)&ppVar1->m_avl_tree_node;
-      local_10c = pppVar5;
+      cur_item = pppVar5;
     }
     else {
-      if (param_1->m_id1 == ppVar1->_padding_) {
-        bVar4 = (uint)ppVar1->_padding_ < param_1->m_id2;
+      if (key->m_id1 == ppVar1->_padding_) {
+        bVar4 = (uint)ppVar1->_padding_ < key->m_id2;
       }
       else {
-        bVar4 = (uint)ppVar1->_padding_ < param_1->m_id1;
+        bVar4 = (uint)ppVar1->_padding_ < key->m_id1;
       }
       if (!bVar4) {
-        if ((param_1->m_id1 == ppVar1->_padding_) && (param_1->m_id2 == ppVar1->_padding_)) {
+        if ((key->m_id1 == ppVar1->_padding_) && (key->m_id2 == ppVar1->_padding_)) {
           bVar4 = true;
         }
         else {
@@ -932,34 +942,34 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
           (*pcVar3)();
           return;
         }
-        ppVar2 = *local_10c;
+        ppVar2 = *cur_item;
         if ((ppVar2->m_tree_root->m_avl_tree_node).m_right == (phys_gjk_cache_info_internal *)0x0) {
           ppVar2->m_tree_root = (ppVar2->m_tree_root->m_avl_tree_node).m_left;
         }
         else {
-          local_10c[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                          *)0x1;
-          pppVar5 = local_10c + 2;
+          cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                         *)0x1;
+          pppVar5 = cur_item + 2;
           *pppVar5 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
                       *)&(ppVar2->m_tree_root->m_avl_tree_node).m_right;
-          local_10c = pppVar5;
-          while (((*local_10c)->m_tree_root->m_avl_tree_node).m_left !=
+          cur_item = pppVar5;
+          while (((*cur_item)->m_tree_root->m_avl_tree_node).m_left !=
                  (phys_gjk_cache_info_internal *)0x0) {
-            if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+            if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
                (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h"
                                   ,0xbf,"cur_item + 1 - the_stack < 32",""), bVar4)) {
               pcVar3 = (code *)swi(3);
               (*pcVar3)();
               return;
             }
-            local_10c[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                            *)0xffffffff;
-            local_10c[2] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                            *)&(*local_10c)->m_tree_root->m_avl_tree_node;
-            local_10c = local_10c + 2;
+            cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                           *)0xffffffff;
+            cur_item[2] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                           *)&(*cur_item)->m_tree_root->m_avl_tree_node;
+            cur_item = cur_item + 2;
           }
-          ppVar1 = (*local_10c)->m_tree_root;
-          (*local_10c)->m_tree_root = (ppVar1->m_avl_tree_node).m_right;
+          ppVar1 = (*cur_item)->m_tree_root;
+          (*cur_item)->m_tree_root = (ppVar1->m_avl_tree_node).m_right;
           (ppVar1->m_avl_tree_node).m_left = (ppVar2->m_tree_root->m_avl_tree_node).m_left;
           (ppVar1->m_avl_tree_node).m_right = (ppVar2->m_tree_root->m_avl_tree_node).m_right;
           (ppVar1->m_avl_tree_node).m_balance = (ppVar2->m_tree_root->m_avl_tree_node).m_balance;
@@ -968,12 +978,12 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
           ppVar2->m_tree_root = ppVar1;
         }
         do {
-          if (local_10c <= local_104) {
+          if (cur_item <= the_stack) {
             return;
           }
-          ppVar2 = local_10c[-2];
+          ppVar2 = cur_item[-2];
           piVar6 = &(ppVar2->m_tree_root->m_avl_tree_node).m_balance;
-          *piVar6 = *piVar6 - (int)local_10c[-1];
+          *piVar6 = *piVar6 - (int)cur_item[-1];
           if ((ppVar2->m_tree_root->m_avl_tree_node).m_balance == -2) {
             if ((((ppVar2->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance == 1) {
               rotate_left(this,&(ppVar2->m_tree_root->m_avl_tree_node).m_left);
@@ -1007,17 +1017,17 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
               return;
             }
           }
-          local_10c = local_10c + -2;
+          cur_item = cur_item + -2;
           if ((ppVar2->m_tree_root->m_avl_tree_node).m_balance != 0) {
             return;
           }
         } while( true );
       }
-      local_10c[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                      *)0x1;
+      cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                     *)0x1;
       *pppVar5 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
                   *)&(ppVar1->m_avl_tree_node).m_right;
-      local_10c = pppVar5;
+      cur_item = pppVar5;
     }
   }
   pcVar3 = (code *)swi(3);
@@ -1036,7 +1046,7 @@ phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_t
 void __thiscall
 phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
 ::remove(phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-         *this,bpei_database_id *param_1)
+         *this,bpei_database_id *key)
 
 {
   broad_phase_environment_info *pbVar1;
@@ -1047,15 +1057,18 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
   phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
   **pppVar5;
   int *piVar6;
+  broad_phase_environment_info *replace_node;
+  broad_phase_environment_info *root;
   phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-  **local_10c;
+  **cur_item;
+  broad_phase_environment_info **node_to_be_removed;
   phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-  *local_104 [64];
+  *the_stack [64];
   
-  local_104[0] = this;
-  local_10c = local_104;
+  the_stack[0] = this;
+  cur_item = the_stack;
   while( true ) {
-    pbVar1 = (*local_10c)->m_tree_root;
+    pbVar1 = (*cur_item)->m_tree_root;
     if ((pbVar1 == (broad_phase_environment_info *)0x0) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa1
                           ,"root",""), bVar4)) {
@@ -1063,33 +1076,33 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
       (*pcVar3)();
       return;
     }
-    if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+    if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa2
                           ,"cur_item + 1 - the_stack < 32",""), bVar4)) break;
-    pppVar5 = local_10c + 2;
-    if (param_1->m_id1 == (pbVar1->m_database_id).m_id1) {
-      bVar4 = param_1->m_id2 < (pbVar1->m_database_id).m_id2;
+    pppVar5 = cur_item + 2;
+    if (key->m_id1 == (pbVar1->m_database_id).m_id1) {
+      bVar4 = key->m_id2 < (pbVar1->m_database_id).m_id2;
     }
     else {
-      bVar4 = param_1->m_id1 < (pbVar1->m_database_id).m_id1;
+      bVar4 = key->m_id1 < (pbVar1->m_database_id).m_id1;
     }
     if (bVar4) {
-      local_10c[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-                      *)0xffffffff;
+      cur_item[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+                     *)0xffffffff;
       *pppVar5 = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
                   *)&pbVar1->m_avl_tree_node;
-      local_10c = pppVar5;
+      cur_item = pppVar5;
     }
     else {
-      if (param_1->m_id1 == (pbVar1->m_database_id).m_id1) {
-        bVar4 = (pbVar1->m_database_id).m_id2 < param_1->m_id2;
+      if (key->m_id1 == (pbVar1->m_database_id).m_id1) {
+        bVar4 = (pbVar1->m_database_id).m_id2 < key->m_id2;
       }
       else {
-        bVar4 = (pbVar1->m_database_id).m_id1 < param_1->m_id1;
+        bVar4 = (pbVar1->m_database_id).m_id1 < key->m_id1;
       }
       if (!bVar4) {
-        if ((param_1->m_id1 == (pbVar1->m_database_id).m_id1) &&
-           (param_1->m_id2 == (pbVar1->m_database_id).m_id2)) {
+        if ((key->m_id1 == (pbVar1->m_database_id).m_id1) &&
+           (key->m_id2 == (pbVar1->m_database_id).m_id2)) {
           bVar4 = true;
         }
         else {
@@ -1102,34 +1115,34 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
           (*pcVar3)();
           return;
         }
-        ppVar2 = *local_10c;
+        ppVar2 = *cur_item;
         if ((ppVar2->m_tree_root->m_avl_tree_node).m_right == (broad_phase_environment_info *)0x0) {
           ppVar2->m_tree_root = (ppVar2->m_tree_root->m_avl_tree_node).m_left;
         }
         else {
-          local_10c[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-                          *)0x1;
-          pppVar5 = local_10c + 2;
+          cur_item[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+                         *)0x1;
+          pppVar5 = cur_item + 2;
           *pppVar5 = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
                       *)&(ppVar2->m_tree_root->m_avl_tree_node).m_right;
-          local_10c = pppVar5;
-          while (((*local_10c)->m_tree_root->m_avl_tree_node).m_left !=
+          cur_item = pppVar5;
+          while (((*cur_item)->m_tree_root->m_avl_tree_node).m_left !=
                  (broad_phase_environment_info *)0x0) {
-            if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+            if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
                (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h"
                                   ,0xbf,"cur_item + 1 - the_stack < 32",""), bVar4)) {
               pcVar3 = (code *)swi(3);
               (*pcVar3)();
               return;
             }
-            local_10c[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-                            *)0xffffffff;
-            local_10c[2] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-                            *)&(*local_10c)->m_tree_root->m_avl_tree_node;
-            local_10c = local_10c + 2;
+            cur_item[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+                           *)0xffffffff;
+            cur_item[2] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+                           *)&(*cur_item)->m_tree_root->m_avl_tree_node;
+            cur_item = cur_item + 2;
           }
-          pbVar1 = (*local_10c)->m_tree_root;
-          (*local_10c)->m_tree_root = (pbVar1->m_avl_tree_node).m_right;
+          pbVar1 = (*cur_item)->m_tree_root;
+          (*cur_item)->m_tree_root = (pbVar1->m_avl_tree_node).m_right;
           (pbVar1->m_avl_tree_node).m_left = (ppVar2->m_tree_root->m_avl_tree_node).m_left;
           (pbVar1->m_avl_tree_node).m_right = (ppVar2->m_tree_root->m_avl_tree_node).m_right;
           (pbVar1->m_avl_tree_node).m_balance = (ppVar2->m_tree_root->m_avl_tree_node).m_balance;
@@ -1138,12 +1151,12 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
           ppVar2->m_tree_root = pbVar1;
         }
         do {
-          if (local_10c <= local_104) {
+          if (cur_item <= the_stack) {
             return;
           }
-          ppVar2 = local_10c[-2];
+          ppVar2 = cur_item[-2];
           piVar6 = &(ppVar2->m_tree_root->m_avl_tree_node).m_balance;
-          *piVar6 = *piVar6 - (int)local_10c[-1];
+          *piVar6 = *piVar6 - (int)cur_item[-1];
           if ((ppVar2->m_tree_root->m_avl_tree_node).m_balance == -2) {
             if ((((ppVar2->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance == 1) {
               phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::rotate_left
@@ -1185,17 +1198,17 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
               return;
             }
           }
-          local_10c = local_10c + -2;
+          cur_item = cur_item + -2;
           if ((ppVar2->m_tree_root->m_avl_tree_node).m_balance != 0) {
             return;
           }
         } while( true );
       }
-      local_10c[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-                      *)0x1;
+      cur_item[1] = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+                     *)0x1;
       *pppVar5 = (phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
                   *)&(pbVar1->m_avl_tree_node).m_right;
-      local_10c = pppVar5;
+      cur_item = pppVar5;
     }
   }
   pcVar3 = (code *)swi(3);
@@ -1207,7 +1220,8 @@ phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_
 // 00439710  gjkcc_info_find  (bgame/bg_slidemove.cpp:169)
 
 gjkcc_info * __thiscall
-gjkcc_info_database_t::gjkcc_info_find(gjkcc_info_database_t *this,uint param_1,bool param_2)
+gjkcc_info_database_t::gjkcc_info_find
+          (gjkcc_info_database_t *this,uint gjkcc_id,bool is_server_thread)
 
 {
   code *pcVar1;
@@ -1215,12 +1229,14 @@ gjkcc_info_database_t::gjkcc_info_find(gjkcc_info_database_t *this,uint param_1,
   gjkcc_info *pgVar3;
   int iVar4;
   generic_avl_map_node_t *local_14;
+  generic_avl_map_node_t *gamn;
+  gjkcc_info *gcci;
   
-  verify_internal(this,param_2);
+  verify_internal(this,is_server_thread);
   Lock(this);
   local_14 = (this->m_map).m_tree_root;
-  while ((local_14 != (generic_avl_map_node_t *)0x0 && (param_1 != local_14->m_avl_key))) {
-    if (param_1 < local_14->m_avl_key) {
+  while ((local_14 != (generic_avl_map_node_t *)0x0 && (gjkcc_id != local_14->m_avl_key))) {
+    if (gjkcc_id < local_14->m_avl_key) {
       local_14 = (local_14->m_avl_node_info).m_left;
     }
     else {
@@ -1256,7 +1272,7 @@ gjkcc_info_database_t::gjkcc_info_find(gjkcc_info_database_t *this,uint param_1,
     pgVar3 = (gjkcc_info *)(*pcVar1)();
     return pgVar3;
   }
-  if ((pgVar3->m_is_server_thread != param_2) &&
+  if ((pgVar3->m_is_server_thread != is_server_thread) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0xb1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1271,7 +1287,7 @@ gjkcc_info_database_t::gjkcc_info_find(gjkcc_info_database_t *this,uint param_1,
 // 00439EC0  phys_inv_multiply  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:182)
 
 phys_vec3 * __cdecl
-phys_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 *param_2)
+phys_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *mat,phys_vec3 *v)
 
 {
   float fVar1;
@@ -1287,20 +1303,19 @@ phys_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec
   float fVar11;
   float fVar12;
   
-  fVar1 = param_2->x;
-  fVar2 = (param_1->z).x;
-  fVar3 = param_2->y;
-  fVar4 = (param_1->z).y;
-  fVar5 = param_2->z;
-  fVar6 = (param_1->z).z;
-  fVar7 = param_2->x;
-  fVar8 = (param_1->y).x;
-  fVar9 = param_2->y;
-  fVar10 = (param_1->y).y;
-  fVar11 = param_2->z;
-  fVar12 = (param_1->y).z;
-  __return_storage_ptr__->x =
-       param_2->x * (param_1->x).x + param_2->y * (param_1->x).y + param_2->z * (param_1->x).z;
+  fVar1 = v->x;
+  fVar2 = (mat->z).x;
+  fVar3 = v->y;
+  fVar4 = (mat->z).y;
+  fVar5 = v->z;
+  fVar6 = (mat->z).z;
+  fVar7 = v->x;
+  fVar8 = (mat->y).x;
+  fVar9 = v->y;
+  fVar10 = (mat->y).y;
+  fVar11 = v->z;
+  fVar12 = (mat->y).z;
+  __return_storage_ptr__->x = v->x * (mat->x).x + v->y * (mat->x).y + v->z * (mat->x).z;
   __return_storage_ptr__->y = fVar7 * fVar8 + fVar9 * fVar10 + fVar11 * fVar12;
   __return_storage_ptr__->z = fVar1 * fVar2 + fVar3 * fVar4 + fVar5 * fVar6;
   return __return_storage_ptr__;
@@ -1310,16 +1325,18 @@ phys_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec
 // 00439870  gjkcc_info_destroy  (bgame/bg_slidemove.cpp:183)
 
 void __thiscall
-gjkcc_info_database_t::gjkcc_info_destroy(gjkcc_info_database_t *this,uint param_1,bool param_2)
+gjkcc_info_database_t::gjkcc_info_destroy
+          (gjkcc_info_database_t *this,uint gjkcc_id,bool is_server_thread)
 
 {
-  void *pvVar1;
+  void *gcci__00;
+  void *gcci_;
   
-  verify_internal(this,param_2);
+  verify_internal(this,is_server_thread);
   Lock(this);
-  pvVar1 = generic_avl_map_destroy(&this->m_map,param_1);
-  if (pvVar1 != (void *)0x0) {
-    destroy_gjkcc_info(pvVar1);
+  gcci__00 = generic_avl_map_destroy(&this->m_map,gjkcc_id);
+  if (gcci__00 != (void *)0x0) {
+    destroy_gjkcc_info(gcci__00);
     this->m_gcci_count = this->m_gcci_count + -1;
   }
   Unlock(this);
@@ -1330,7 +1347,7 @@ gjkcc_info_database_t::gjkcc_info_destroy(gjkcc_info_database_t *this,uint param
 // 00439E20  phys_full_inv_multiply  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:185)
 
 phys_vec3 * __cdecl
-phys_full_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 *param_2)
+phys_full_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *mat,phys_vec3 *v)
 
 {
   phys_vec3 local_30;
@@ -1339,14 +1356,14 @@ phys_full_inv_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phy
   float local_18;
   phys_vec3 *local_14;
   
-  local_14 = &param_1->w;
-  local_30.x = param_2->x - local_14->x;
-  local_30.y = param_2->y - (param_1->w).y;
-  local_30.z = param_2->z - (param_1->w).z;
+  local_14 = &mat->w;
+  local_30.x = v->x - local_14->x;
+  local_30.y = v->y - (mat->w).y;
+  local_30.z = v->z - (mat->w).z;
   local_20 = local_30.z;
   local_1c = local_30.y;
   local_18 = local_30.x;
-  phys_inv_multiply(__return_storage_ptr__,param_1,&local_30);
+  phys_inv_multiply(__return_storage_ptr__,mat,&local_30);
   return __return_storage_ptr__;
 }
 
@@ -1379,18 +1396,18 @@ void __cdecl _dynamic_initializer_for__g_gjkcc_info_server_database__(void)
 
 // 00439CF0  find_gjkcc_info  (bgame/bg_slidemove.cpp:208)
 
-gjkcc_info * __cdecl find_gjkcc_info(uint param_1,bool param_2)
+gjkcc_info * __cdecl find_gjkcc_info(uint gjkcc_id,bool is_server_thread)
 
 {
-  gjkcc_info *local_8;
+  gjkcc_info *gcci;
   
-  if (param_2) {
-    local_8 = gjkcc_info_database_t::gjkcc_info_find(&g_gjkcc_info_server_database,param_1,true);
+  if (is_server_thread) {
+    gcci = gjkcc_info_database_t::gjkcc_info_find(&g_gjkcc_info_server_database,gjkcc_id,true);
   }
   else {
-    local_8 = gjkcc_info_database_t::gjkcc_info_find(&g_gjkcc_info_client_database,param_1,false);
+    gcci = gjkcc_info_database_t::gjkcc_info_find(&g_gjkcc_info_client_database,gjkcc_id,false);
   }
-  return local_8;
+  return gcci;
 }
 
 
@@ -1424,13 +1441,14 @@ bool __thiscall cached_query_info_t::is_empty(cached_query_info_t *this)
 
 // 004398D0  destroy_client_gjkcc_info  (bgame/bg_slidemove.cpp:218)
 
-void __cdecl destroy_client_gjkcc_info(int param_1)
+void __cdecl destroy_client_gjkcc_info(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
+  uint gjkcc_id;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0xdc,0,
                              "%s");
     if (!bVar2) {
@@ -1440,7 +1458,7 @@ void __cdecl destroy_client_gjkcc_info(int param_1)
     }
   }
   gjkcc_info_database_t::gjkcc_info_destroy
-            (&g_gjkcc_info_client_database,(uint)(cg_pmove + param_1),false);
+            (&g_gjkcc_info_client_database,(uint)(cg_pmove + localClientNum),false);
   return;
 }
 
@@ -1448,7 +1466,7 @@ void __cdecl destroy_client_gjkcc_info(int param_1)
 // 00444980  add  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:229)
 
 void __thiscall
-phys_link_list<gjk_geom_info_t>::add(phys_link_list<gjk_geom_info_t> *this,gjk_geom_info_t *param_1)
+phys_link_list<gjk_geom_info_t>::add(phys_link_list<gjk_geom_info_t> *this,gjk_geom_info_t *p)
 
 {
   code *pcVar1;
@@ -1463,10 +1481,10 @@ phys_link_list<gjk_geom_info_t>::add(phys_link_list<gjk_geom_info_t> *this,gjk_g
       return;
     }
   }
-  param_1->m_next_link = (gjk_geom_info_t *)0x0;
+  p->m_next_link = (gjk_geom_info_t *)0x0;
   this->m_alloc_count = this->m_alloc_count + 1;
-  *this->m_last_next_ptr = param_1;
-  this->m_last_next_ptr = &param_1->m_next_link;
+  *this->m_last_next_ptr = p;
+  this->m_last_next_ptr = &p->m_next_link;
   return;
 }
 
@@ -1475,7 +1493,7 @@ phys_link_list<gjk_geom_info_t>::add(phys_link_list<gjk_geom_info_t> *this,gjk_g
 
 void __thiscall
 phys_link_list<gjk_trace_output_t>::add
-          (phys_link_list<gjk_trace_output_t> *this,gjk_trace_output_t *param_1)
+          (phys_link_list<gjk_trace_output_t> *this,gjk_trace_output_t *p)
 
 {
   code *pcVar1;
@@ -1490,36 +1508,36 @@ phys_link_list<gjk_trace_output_t>::add
       return;
     }
   }
-  param_1->m_next_link = (gjk_trace_output_t *)0x0;
+  p->m_next_link = (gjk_trace_output_t *)0x0;
   this->m_alloc_count = this->m_alloc_count + 1;
-  *this->m_last_next_ptr = param_1;
-  this->m_last_next_ptr = &param_1->m_next_link;
+  *this->m_last_next_ptr = p;
+  this->m_last_next_ptr = &p->m_next_link;
   return;
 }
 
 
 // 00439930  gjkcc_prolog  (bgame/bg_slidemove.cpp:231)
 
-void __cdecl gjkcc_prolog(gjkcc_input_t *param_1,float *param_2)
+void __cdecl gjkcc_prolog(gjkcc_input_t *gjkcc_in,float *origin)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *start_origin;
   phys_vec3 local_30;
   gjkcc_info *local_14;
   
-  if (param_1->is_server_thread == false) {
+  if (gjkcc_in->is_server_thread == false) {
     local_14 = gjkcc_info_database_t::gjkcc_info_find_or_create
-                         (&g_gjkcc_info_client_database,param_1->gjkcc_id,false,param_2);
+                         (&g_gjkcc_info_client_database,gjkcc_in->gjkcc_id,false,origin);
   }
   else {
     local_14 = gjkcc_info_database_t::gjkcc_info_find_or_create
-                         (&g_gjkcc_info_server_database,param_1->gjkcc_id,true,param_2);
+                         (&g_gjkcc_info_server_database,gjkcc_in->gjkcc_id,true,origin);
   }
   gjkcc_info::Lock(local_14);
-  ppVar1 = Phys_Vec3ToNitrousVec(&local_30,param_2);
+  start_origin = Phys_Vec3ToNitrousVec(&local_30,origin);
   gjk_query_output::cached_query_prolog
-            (&local_14->m_gjk_query_output,param_1->is_server_thread,param_1->proximity_data,
-             param_1->proximity_mask,ppVar1);
+            (&local_14->m_gjk_query_output,gjkcc_in->is_server_thread,gjkcc_in->proximity_data,
+             gjkcc_in->proximity_mask,start_origin);
   return;
 }
 
@@ -1581,17 +1599,18 @@ void __cdecl _dynamic_initializer_for__PHYS_X_VEC__(void)
 
 // 00439B40  gjkcc_epilog  (bgame/bg_slidemove.cpp:267)
 
-void __cdecl gjkcc_epilog(gjkcc_input_t *param_1,float *param_2)
+void __cdecl gjkcc_epilog(gjkcc_input_t *gjkcc_in,float *origin)
 
 {
   gjkcc_info *this;
+  gjkcc_info *gcci;
   
-  this = find_gjkcc_info(param_1->gjkcc_id,param_1->is_server_thread);
+  this = find_gjkcc_info(gjkcc_in->gjkcc_id,gjkcc_in->is_server_thread);
   phys_heap_gjk_cache_system_avl_tree::update_cache(&this->m_gjk_cache);
   gjk_query_output::cached_query_epilog(&this->m_gjk_query_output);
-  this->m_last_origin[0] = *param_2;
-  this->m_last_origin[1] = param_2[1];
-  this->m_last_origin[2] = param_2[2];
+  this->m_last_origin[0] = *origin;
+  this->m_last_origin[1] = origin[1];
+  this->m_last_origin[2] = origin[2];
   gjkcc_info::Unlock(this);
   return;
 }
@@ -1652,15 +1671,16 @@ void __thiscall bpei_database_t::purge_database(bpei_database_t *this)
 
 {
   broad_phase_environment_info *pbVar1;
-  broad_phase_environment_info *local_8;
+  broad_phase_environment_info *next_bpei;
+  broad_phase_environment_info *bpei;
   
-  local_8 = this->m_bpei_list;
-  while (local_8 != (broad_phase_environment_info *)0x0) {
-    pbVar1 = local_8->m_next_bpei;
+  bpei = this->m_bpei_list;
+  while (bpei != (broad_phase_environment_info *)0x0) {
+    pbVar1 = bpei->m_next_bpei;
     phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-    ::remove(&this->m_bpei_map,&local_8->m_database_id);
-    phys_simple_allocator<broad_phase_environment_info>::free(&this->m_bpei_allocator,local_8);
-    local_8 = pbVar1;
+    ::remove(&this->m_bpei_map,&bpei->m_database_id);
+    phys_simple_allocator<broad_phase_environment_info>::free(&this->m_bpei_allocator,bpei);
+    bpei = pbVar1;
   }
   this->m_bpei_list = (broad_phase_environment_info *)0x0;
   return;
@@ -1669,10 +1689,10 @@ void __thiscall bpei_database_t::purge_database(bpei_database_t *this)
 
 // 00439D30  is_foot  (bgame/bg_slidemove.cpp:318)
 
-bool __thiscall gjk_double_sphere_t::is_foot(gjk_double_sphere_t *this,phys_vec3 *param_1)
+bool __thiscall gjk_double_sphere_t::is_foot(gjk_double_sphere_t *this,phys_vec3 *hit_point)
 
 {
-  return param_1->z <= this->m_list_center[1].z - 1.0;
+  return hit_point->z <= this->m_list_center[1].z - 1.0;
 }
 
 
@@ -1706,7 +1726,7 @@ gjk_query_output * __thiscall gjk_query_output::gjk_query_output(gjk_query_outpu
 
 // 00439D80  is_foot  (bgame/bg_slidemove.cpp:327)
 
-bool __thiscall gjk_cylinder_t::is_foot(gjk_cylinder_t *this,phys_vec3 *param_1)
+bool __thiscall gjk_cylinder_t::is_foot(gjk_cylinder_t *this,phys_vec3 *hit_point)
 
 {
   int iVar1;
@@ -1717,7 +1737,7 @@ bool __thiscall gjk_cylinder_t::is_foot(gjk_cylinder_t *this,phys_vec3 *param_1)
   gjk_cylinder_t *local_14;
   
   local_14 = this;
-  phys_full_inv_multiply(&local_30,&this->xform,param_1);
+  phys_full_inv_multiply(&local_30,&this->xform,hit_point);
   iVar1 = local_14->direction;
   if (((iVar1 < 0) || (2 < iVar1)) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20,
@@ -1835,29 +1855,31 @@ void __thiscall gjk_query_output::verify_empty(gjk_query_output *this)
 
 // 00439FC0  is_foot  (bgame/bg_slidemove.cpp:336)
 
-bool __thiscall gjk_polygon_cylinder_t::is_foot(gjk_polygon_cylinder_t *this,phys_vec3 *param_1)
+bool __thiscall gjk_polygon_cylinder_t::is_foot(gjk_polygon_cylinder_t *this,phys_vec3 *hit_point)
 
 {
   bool bVar1;
   double dVar2;
   undefined4 in_stack_ffffffe4;
+  float ANG;
   
   if (this->m_mode == 0) {
     if ((_S2 & 1) == 0) {
       _S2 = _S2 | 1;
       dVar2 = 0.5235987901687622;
       __libm_sse2_sin((double)CONCAT44(in_stack_ffffffe4,this));
-      offset = this->m_geom_radius * (float)dVar2;
+      ::offset = this->m_geom_radius * (float)dVar2;
     }
-    if ((((this->m_center).z - this->m_half_height) + this->m_foot_offset) - offset < param_1->z) {
+    if ((((this->m_center).z - this->m_half_height) + this->m_foot_offset) - ::offset < hit_point->z
+       ) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
   }
-  else if ((((this->m_center).z - this->m_half_height) + this->m_capsule_radius) - 1.0 < param_1->z)
-  {
+  else if ((((this->m_center).z - this->m_half_height) + this->m_capsule_radius) - 1.0 <
+           hit_point->z) {
     bVar1 = false;
   }
   else {
@@ -1869,31 +1891,30 @@ bool __thiscall gjk_polygon_cylinder_t::is_foot(gjk_polygon_cylinder_t *this,phy
 
 // 00441A00  phys_min  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_math.h:343)
 
-phys_vec3 * __cdecl
-phys_min(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl phys_min(phys_vec3 *__return_storage_ptr__,phys_vec3 *v1,phys_vec3 *v2)
 
 {
   float local_28;
   float local_24;
   float local_20;
   
-  if (param_2->z < param_1->z) {
-    local_20 = param_2->z;
+  if (v2->z < v1->z) {
+    local_20 = v2->z;
   }
   else {
-    local_20 = param_1->z;
+    local_20 = v1->z;
   }
-  if (param_2->y < param_1->y) {
-    local_24 = param_2->y;
-  }
-  else {
-    local_24 = param_1->y;
-  }
-  if (param_2->x < param_1->x) {
-    local_28 = param_2->x;
+  if (v2->y < v1->y) {
+    local_24 = v2->y;
   }
   else {
-    local_28 = param_1->x;
+    local_24 = v1->y;
+  }
+  if (v2->x < v1->x) {
+    local_28 = v2->x;
+  }
+  else {
+    local_28 = v1->x;
   }
   __return_storage_ptr__->x = local_28;
   __return_storage_ptr__->y = local_24;
@@ -1904,31 +1925,30 @@ phys_min(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2
 
 // 00441B40  phys_max  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_math.h:354)
 
-phys_vec3 * __cdecl
-phys_max(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl phys_max(phys_vec3 *__return_storage_ptr__,phys_vec3 *v1,phys_vec3 *v2)
 
 {
   float local_28;
   float local_24;
   float local_20;
   
-  if (param_1->z < param_2->z) {
-    local_20 = param_2->z;
+  if (v1->z < v2->z) {
+    local_20 = v2->z;
   }
   else {
-    local_20 = param_1->z;
+    local_20 = v1->z;
   }
-  if (param_1->y < param_2->y) {
-    local_24 = param_2->y;
-  }
-  else {
-    local_24 = param_1->y;
-  }
-  if (param_1->x < param_2->x) {
-    local_28 = param_2->x;
+  if (v1->y < v2->y) {
+    local_24 = v2->y;
   }
   else {
-    local_28 = param_1->x;
+    local_24 = v1->y;
+  }
+  if (v1->x < v2->x) {
+    local_28 = v2->x;
+  }
+  else {
+    local_28 = v1->x;
   }
   __return_storage_ptr__->x = local_28;
   __return_storage_ptr__->y = local_24;
@@ -1939,12 +1959,12 @@ phys_max(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2
 
 // 0043A0D0  is_walkable  (bgame/bg_slidemove.cpp:356)
 
-bool __thiscall gjk_brush_t::is_walkable(gjk_brush_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+bool __thiscall gjk_brush_t::is_walkable(gjk_brush_t *this,phys_vec3 *hit_point,phys_vec3 *up)
 
 {
   bool bVar1;
   
-  bVar1 = ::is_walkable(this->brush,param_1,param_2);
+  bVar1 = ::is_walkable(this->brush,hit_point,up);
   return bVar1;
 }
 
@@ -1952,12 +1972,12 @@ bool __thiscall gjk_brush_t::is_walkable(gjk_brush_t *this,phys_vec3 *param_1,ph
 // 0043A100  is_walkable  (bgame/bg_slidemove.cpp:361)
 
 bool __thiscall
-gjk_partition_t::is_walkable(gjk_partition_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+gjk_partition_t::is_walkable(gjk_partition_t *this,phys_vec3 *hit_point,phys_vec3 *up)
 
 {
   bool bVar1;
   
-  bVar1 = ::is_walkable(this->partition,param_1,param_2);
+  bVar1 = ::is_walkable(this->partition,hit_point,up);
   return bVar1;
 }
 
@@ -1970,24 +1990,24 @@ void __thiscall
 phys_heap_gjk_cache_system_avl_tree::update_cache(phys_heap_gjk_cache_system_avl_tree *this)
 
 {
-  phys_gjk_cache_info_internal **local_c;
-  phys_gjk_cache_info_internal *local_8;
+  phys_gjk_cache_info_internal **gjk_ci_i;
+  phys_gjk_cache_info_internal *gjk_ci;
   
-  local_c = &this->m_list_head;
-  local_8 = *local_c;
-  while (local_8 != (phys_gjk_cache_info_internal *)0x0) {
-    if ((local_8->_padding_ & 1U) == 0) {
-      *local_c = local_8->m_next_gjk_ci;
+  gjk_ci_i = &this->m_list_head;
+  gjk_ci = *gjk_ci_i;
+  while (gjk_ci != (phys_gjk_cache_info_internal *)0x0) {
+    if ((gjk_ci->_padding_ & 1U) == 0) {
+      *gjk_ci_i = gjk_ci->m_next_gjk_ci;
       phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-      ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&local_8->_padding_);
+      ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&gjk_ci->_padding_);
       phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal>::free
-                (&this->m_list_phys_gjk_cache_info_internal,local_8);
+                (&this->m_list_phys_gjk_cache_info_internal,gjk_ci);
     }
     else {
-      local_c = &local_8->m_next_gjk_ci;
-      local_8->_padding_ = local_8->_padding_ & 0xfffffffe;
+      gjk_ci_i = &gjk_ci->m_next_gjk_ci;
+      gjk_ci->_padding_ = gjk_ci->_padding_ & 0xfffffffe;
     }
-    local_8 = *local_c;
+    gjk_ci = *gjk_ci_i;
   }
   return;
 }
@@ -1995,18 +2015,18 @@ phys_heap_gjk_cache_system_avl_tree::update_cache(phys_heap_gjk_cache_system_avl
 
 // 0043B6A0  set_cg_position  (bgame/bg_slidemove.cpp:394)
 
-void __thiscall gjk_trace_input_t::set_cg_position(gjk_trace_input_t *this,phys_vec3 *param_1)
+void __thiscall gjk_trace_input_t::set_cg_position(gjk_trace_input_t *this,phys_vec3 *position)
 
 {
   gjkcc_info *pgVar1;
   
   pgVar1 = this->m_gcci;
-  (pgVar1->m_cg_to_world_xform).w.x = param_1->x;
-  (pgVar1->m_cg_to_world_xform).w.y = param_1->y;
-  (pgVar1->m_cg_to_world_xform).w.z = param_1->z;
-  (this->m_query_input).m_cg_position.x = param_1->x;
-  (this->m_query_input).m_cg_position.y = param_1->y;
-  (this->m_query_input).m_cg_position.z = param_1->z;
+  (pgVar1->m_cg_to_world_xform).w.x = position->x;
+  (pgVar1->m_cg_to_world_xform).w.y = position->y;
+  (pgVar1->m_cg_to_world_xform).w.z = position->z;
+  (this->m_query_input).m_cg_position.x = position->x;
+  (this->m_query_input).m_cg_position.y = position->y;
+  (this->m_query_input).m_cg_position.z = position->z;
   return;
 }
 
@@ -2033,31 +2053,31 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0043A130  calc_time  (bgame/bg_slidemove.cpp:411)
 
-void __cdecl calc_time(phys_gjk_info *param_1,bool param_2,float *param_3,float *param_4)
+void __cdecl calc_time(phys_gjk_info *gjk_info,bool keep_all_collisions,float *time,float *dist)
 
 {
   float fVar1;
   
-  fVar1 = (param_1->m_cg1_relative_translation_loc).x * (param_1->cg1_cinfo_loc).m_n.x +
-          (param_1->m_cg1_relative_translation_loc).y * (param_1->cg1_cinfo_loc).m_n.y +
-          (param_1->m_cg1_relative_translation_loc).z * (param_1->cg1_cinfo_loc).m_n.z;
-  *param_4 = param_1->m_continuous_collision_lambda * fVar1 +
-             ((param_1->cg1_cinfo_loc).m_p1.x - (param_1->cg1_cinfo_loc).m_p2.x) *
-             (param_1->cg1_cinfo_loc).m_n.x +
-             ((param_1->cg1_cinfo_loc).m_p1.y - (param_1->cg1_cinfo_loc).m_p2.y) *
-             (param_1->cg1_cinfo_loc).m_n.y +
-             ((param_1->cg1_cinfo_loc).m_p1.z - (param_1->cg1_cinfo_loc).m_p2.z) *
-             (param_1->cg1_cinfo_loc).m_n.z + 0.125;
+  fVar1 = (gjk_info->m_cg1_relative_translation_loc).x * (gjk_info->cg1_cinfo_loc).m_n.x +
+          (gjk_info->m_cg1_relative_translation_loc).y * (gjk_info->cg1_cinfo_loc).m_n.y +
+          (gjk_info->m_cg1_relative_translation_loc).z * (gjk_info->cg1_cinfo_loc).m_n.z;
+  *dist = gjk_info->m_continuous_collision_lambda * fVar1 +
+          ((gjk_info->cg1_cinfo_loc).m_p1.x - (gjk_info->cg1_cinfo_loc).m_p2.x) *
+          (gjk_info->cg1_cinfo_loc).m_n.x +
+          ((gjk_info->cg1_cinfo_loc).m_p1.y - (gjk_info->cg1_cinfo_loc).m_p2.y) *
+          (gjk_info->cg1_cinfo_loc).m_n.y +
+          ((gjk_info->cg1_cinfo_loc).m_p1.z - (gjk_info->cg1_cinfo_loc).m_p2.z) *
+          (gjk_info->cg1_cinfo_loc).m_n.z + 0.125;
   if (0.0 <= fVar1) {
-    if ((*param_4 <= 0.0625) || (param_2)) {
-      *param_3 = param_1->m_continuous_collision_lambda;
+    if ((*dist <= 0.0625) || (keep_all_collisions)) {
+      *time = gjk_info->m_continuous_collision_lambda;
     }
     else {
-      *param_3 = 1.0;
+      *time = 1.0;
     }
   }
   else {
-    *param_3 = param_1->m_continuous_collision_lambda;
+    *time = gjk_info->m_continuous_collision_lambda;
   }
   return;
 }
@@ -2065,23 +2085,24 @@ void __cdecl calc_time(phys_gjk_info *param_1,bool param_2,float *param_3,float 
 
 // 0043A2D0  POLYGON_CYLINDER_HACK  (bgame/bg_slidemove.cpp:452)
 
-void __cdecl POLYGON_CYLINDER_HACK(phys_gjk_input *param_1,gjk_base_t *param_2,gjk_base_t *param_3)
+void __cdecl POLYGON_CYLINDER_HACK(phys_gjk_input *pgi,gjk_base_t *cg1,gjk_base_t *cg2)
 
 {
   int iVar1;
   float10 fVar2;
+  gjk_polygon_cylinder_t *pcyl;
   
-  iVar1 = (**(code **)(*(int *)param_2 + 0x28))();
+  iVar1 = (**(code **)(*(int *)cg1 + 0x28))();
   if (iVar1 == 7) {
-    iVar1 = (**(code **)(*(int *)param_3 + 0x34))();
+    iVar1 = (**(code **)(*(int *)cg2 + 0x34))();
     if (iVar1 == 0) {
-      param_2[1].m_aabb_mx_loc.z = 1.4013e-45;
+      cg1[1].m_aabb_mx_loc.z = 1.4013e-45;
     }
     else {
-      param_2[1].m_aabb_mx_loc.z = 0.0;
+      cg1[1].m_aabb_mx_loc.z = 0.0;
     }
-    fVar2 = (float10)(**(code **)(*(int *)param_2 + 0x14))();
-    param_1->cg1_radius = (float)fVar2;
+    fVar2 = (float10)(**(code **)(*(int *)cg1 + 0x14))();
+    pgi->cg1_radius = (float)fVar2;
   }
   return;
 }
@@ -2096,6 +2117,7 @@ phys_simple_allocator<gjkcc_info>::allocate(phys_simple_allocator<gjkcc_info> *t
 
 {
   gjkcc_info *local_40;
+  void *slot;
   
   local_40 = PMM_ALLOC(0x200,0x10);
   if (local_40 == (gjkcc_info *)0x0) {
@@ -2124,13 +2146,13 @@ phys_simple_allocator<gjkcc_info>::allocate(phys_simple_allocator<gjkcc_info> *t
 void __thiscall
 phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal>::free
           (phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal>
-           *this,phys_gjk_cache_info_internal *param_1)
+           *this,phys_gjk_cache_info_internal *slot)
 
 {
-  if (param_1 != (phys_gjk_cache_info_internal *)0x0) {
-    PMM_VALIDATE(param_1,0x90,0x10);
+  if (slot != (phys_gjk_cache_info_internal *)0x0) {
+    PMM_VALIDATE(slot,0x90,0x10);
     this->m_count = this->m_count + -1;
-    PMM_FREE(param_1,0x90,0x10);
+    PMM_FREE(slot,0x90,0x10);
   }
   return;
 }
@@ -2143,15 +2165,15 @@ phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_i
 /* WARNING: Removing unreachable block (ram,0x00444cb3) */
 
 void __thiscall
-phys_simple_allocator<gjkcc_info>::free(phys_simple_allocator<gjkcc_info> *this,gjkcc_info *param_1)
+phys_simple_allocator<gjkcc_info>::free(phys_simple_allocator<gjkcc_info> *this,gjkcc_info *slot)
 
 {
-  if (param_1 != (gjkcc_info *)0x0) {
-    PMM_VALIDATE(param_1,0x200,0x10);
+  if (slot != (gjkcc_info *)0x0) {
+    PMM_VALIDATE(slot,0x200,0x10);
     this->m_count = this->m_count + -1;
-    gjk_query_output::~gjk_query_output(&param_1->m_gjk_query_output);
-    phys_heap_gjk_cache_system_avl_tree::shutdown(&param_1->m_gjk_cache);
-    PMM_FREE(param_1,0x200,0x10);
+    gjk_query_output::~gjk_query_output(&slot->m_gjk_query_output);
+    phys_heap_gjk_cache_system_avl_tree::shutdown(&slot->m_gjk_cache);
+    PMM_FREE(slot,0x200,0x10);
   }
   return;
 }
@@ -2165,13 +2187,13 @@ phys_simple_allocator<gjkcc_info>::free(phys_simple_allocator<gjkcc_info> *this,
 void __thiscall
 phys_simple_allocator<broad_phase_environment_info>::free
           (phys_simple_allocator<broad_phase_environment_info> *this,
-          broad_phase_environment_info *param_1)
+          broad_phase_environment_info *slot)
 
 {
-  if (param_1 != (broad_phase_environment_info *)0x0) {
-    PMM_VALIDATE(param_1,0x24,4);
+  if (slot != (broad_phase_environment_info *)0x0) {
+    PMM_VALIDATE(slot,0x24,4);
     this->m_count = this->m_count + -1;
-    PMM_FREE(param_1,0x24,4);
+    PMM_FREE(slot,0x24,4);
   }
   return;
 }
@@ -2182,8 +2204,8 @@ phys_simple_allocator<broad_phase_environment_info>::free
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-gjk_collide(phys_gjk_info *param_1,phys_gjk_input *param_2,gjk_trace_output_t *param_3,
-           gjk_trace_input_t *param_4,gjk_geom_info_t *param_5)
+gjk_collide(phys_gjk_info *gjk_info,phys_gjk_input *pgi,gjk_trace_output_t *gto,
+           gjk_trace_input_t *gti,gjk_geom_info_t *gi)
 
 {
   gjkcc_info *pgVar1;
@@ -2209,41 +2231,41 @@ gjk_collide(phys_gjk_info *param_1,phys_gjk_input *param_2,gjk_trace_output_t *p
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  POLYGON_CYLINDER_HACK(param_2,param_4->m_cg,param_5->m_cg);
-  local_15 = phys_gjk_info::phys_collide_do_gjk_collide(param_1,param_2);
+  POLYGON_CYLINDER_HACK(pgi,gti->m_cg,gi->m_cg);
+  local_15 = phys_gjk_info::phys_collide_do_gjk_collide(gjk_info,pgi);
   if ((!(bool)local_15) ||
-     ((calc_time(param_1,param_4->m_keep_all_collisions,&local_20,&local_1c),
-      param_2->m_end_time <= local_20 && (0.0 <= local_1c)))) {
+     ((calc_time(gjk_info,gti->m_keep_all_collisions,&local_20,&local_1c),
+      pgi->m_end_time <= local_20 && (0.0 <= local_1c)))) {
     return false;
   }
-  if ((param_3 == (gjk_trace_output_t *)0x0) &&
+  if ((gto == (gjk_trace_output_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x291,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_24 = &param_1->cg1_cinfo_loc;
-  local_28 = &param_3->m_arm;
+  local_24 = &gjk_info->cg1_cinfo_loc;
+  local_28 = &gto->m_arm;
   local_28->x = (local_24->m_p1).x;
-  (param_3->m_arm).y = (param_1->cg1_cinfo_loc).m_p1.y;
-  (param_3->m_arm).z = (param_1->cg1_cinfo_loc).m_p1.z;
-  pgVar1 = param_4->m_gcci;
+  (gto->m_arm).y = (gjk_info->cg1_cinfo_loc).m_p1.y;
+  (gto->m_arm).z = (gjk_info->cg1_cinfo_loc).m_p1.z;
+  pgVar1 = gti->m_gcci;
   local_2c = &(pgVar1->m_cg_to_world_xform).w;
-  local_30 = &(param_1->cg1_cinfo_loc).m_p2;
+  local_30 = &(gjk_info->cg1_cinfo_loc).m_p2;
   local_50 = local_30->x + local_2c->x;
-  local_4c = (param_1->cg1_cinfo_loc).m_p2.y + (pgVar1->m_cg_to_world_xform).w.y;
-  local_48 = (param_1->cg1_cinfo_loc).m_p2.z + (pgVar1->m_cg_to_world_xform).w.z;
-  local_54 = &param_3->m_hit_point;
+  local_4c = (gjk_info->cg1_cinfo_loc).m_p2.y + (pgVar1->m_cg_to_world_xform).w.y;
+  local_48 = (gjk_info->cg1_cinfo_loc).m_p2.z + (pgVar1->m_cg_to_world_xform).w.z;
+  local_54 = &gto->m_hit_point;
   local_54->x = local_50;
-  (param_3->m_hit_point).y = local_4c;
-  (param_3->m_hit_point).z = local_48;
-  local_58 = &(param_1->cg1_cinfo_loc).m_n;
-  (param_3->m_hit_normal).x = local_58->x;
-  (param_3->m_hit_normal).y = (param_1->cg1_cinfo_loc).m_n.y;
-  (param_3->m_hit_normal).z = (param_1->cg1_cinfo_loc).m_n.z;
-  param_3->m_hit_time = local_20;
-  param_3->m_hit_dist = local_1c;
+  (gto->m_hit_point).y = local_4c;
+  (gto->m_hit_point).z = local_48;
+  local_58 = &(gjk_info->cg1_cinfo_loc).m_n;
+  (gto->m_hit_normal).x = local_58->x;
+  (gto->m_hit_normal).y = (gjk_info->cg1_cinfo_loc).m_n.y;
+  (gto->m_hit_normal).z = (gjk_info->cg1_cinfo_loc).m_n.z;
+  gto->m_hit_time = local_20;
+  gto->m_hit_dist = local_1c;
   local_3c = local_48;
   local_38 = local_4c;
   local_34 = local_50;
@@ -2252,110 +2274,111 @@ gjk_collide(phys_gjk_info *param_1,phys_gjk_input *param_2,gjk_trace_output_t *p
     tlWarning(local_158);
     Com_PrintError(1,local_158);
   }
-  bVar3 = (bool)(**(code **)(*(int *)param_4->m_cg + 0x2c))();
-  param_3->m_is_foot = bVar3;
-  param_3->m_gi = param_5;
+  bVar3 = (bool)(**(code **)(*(int *)gti->m_cg + 0x2c))();
+  gto->m_is_foot = bVar3;
+  gto->m_gi = gi;
   return true;
 }
 
 
 // 0043AFB0  init_pgi  (bgame/bg_slidemove.cpp:687)
 
-void __cdecl init_pgi(phys_gjk_input *param_1,gjk_trace_input_t *param_2)
+void __cdecl init_pgi(phys_gjk_input *pgi,gjk_trace_input_t *gti)
 
 {
   gjkcc_info *pgVar1;
   gjk_base_t *pgVar2;
   float10 fVar3;
   
-  (param_1->m_cg1_translation).x = (param_2->m_query_input).m_cg_translation.x;
-  (param_1->m_cg1_translation).y = (param_2->m_query_input).m_cg_translation.y;
-  (param_1->m_cg1_translation).z = (param_2->m_query_input).m_cg_translation.z;
-  (param_1->m_cg2_translation).x = PHYS_ZERO_VEC.x;
-  (param_1->m_cg2_translation).y = PHYS_ZERO_VEC.y;
-  (param_1->m_cg2_translation).z = PHYS_ZERO_VEC.z;
-  param_1->m_start_time = 0.0;
-  param_1->m_end_time = 1.0;
-  pgVar1 = param_2->m_gcci;
-  pgVar2 = param_2->m_cg;
-  fVar3 = (float10)(**(code **)(*(int *)param_2->m_cg + 0x14))();
-  param_1->gjk_cg1 = (phys_gjk_geom *)pgVar2;
-  param_1->gjk_cg2 = (phys_gjk_geom *)0x0;
-  param_1->cg1_to_world_xform = &pgVar1->m_cg_to_world_xform;
-  param_1->cg2_to_world_xform = (phys_mat44 *)0x0;
-  param_1->cg1_radius = (float)fVar3;
-  param_1->cg2_radius = 0.0;
-  param_1->gjk_ci = (phys_gjk_cache_info *)0x0;
-  param_1->m_sep_thresh = param_2->m_gjk_ac_eps;
-  param_1->m_intersection_test_only = false;
-  param_1->m_continuous_collision = true;
+  (pgi->m_cg1_translation).x = (gti->m_query_input).m_cg_translation.x;
+  (pgi->m_cg1_translation).y = (gti->m_query_input).m_cg_translation.y;
+  (pgi->m_cg1_translation).z = (gti->m_query_input).m_cg_translation.z;
+  (pgi->m_cg2_translation).x = PHYS_ZERO_VEC.x;
+  (pgi->m_cg2_translation).y = PHYS_ZERO_VEC.y;
+  (pgi->m_cg2_translation).z = PHYS_ZERO_VEC.z;
+  pgi->m_start_time = 0.0;
+  pgi->m_end_time = 1.0;
+  pgVar1 = gti->m_gcci;
+  pgVar2 = gti->m_cg;
+  fVar3 = (float10)(**(code **)(*(int *)gti->m_cg + 0x14))();
+  pgi->gjk_cg1 = (phys_gjk_geom *)pgVar2;
+  pgi->gjk_cg2 = (phys_gjk_geom *)0x0;
+  pgi->cg1_to_world_xform = &pgVar1->m_cg_to_world_xform;
+  pgi->cg2_to_world_xform = (phys_mat44 *)0x0;
+  pgi->cg1_radius = (float)fVar3;
+  pgi->cg2_radius = 0.0;
+  pgi->gjk_ci = (phys_gjk_cache_info *)0x0;
+  pgi->m_sep_thresh = gti->m_gjk_ac_eps;
+  pgi->m_intersection_test_only = false;
+  pgi->m_continuous_collision = true;
   return;
 }
 
 
 // 0043B0E0  set_pgi_cg2  (bgame/bg_slidemove.cpp:694)
 
-void __cdecl
-set_pgi_cg2(phys_gjk_input *param_1,gjk_trace_input_t *param_2,gjk_geom_info_t *param_3)
+void __cdecl set_pgi_cg2(phys_gjk_input *pgi,gjk_trace_input_t *gti,gjk_geom_info_t *gi)
 
 {
   phys_mat44 *ppVar1;
   phys_gjk_cache_info *ppVar2;
   float10 fVar3;
   
-  param_1->gjk_cg2 = (phys_gjk_geom *)param_3->m_cg;
-  ppVar1 = gjk_geom_info_t::get_xform(param_3);
-  param_1->cg2_to_world_xform = ppVar1;
-  fVar3 = (float10)(**(code **)(*(int *)param_3->m_cg + 0x14))();
-  param_1->cg2_radius = (float)fVar3;
-  ppVar2 = get_gjk_cache_info(param_2->m_gjk_cache,param_2->m_cg,param_3->m_cg);
-  param_1->gjk_ci = ppVar2;
+  pgi->gjk_cg2 = (phys_gjk_geom *)gi->m_cg;
+  ppVar1 = gjk_geom_info_t::get_xform(gi);
+  pgi->cg2_to_world_xform = ppVar1;
+  fVar3 = (float10)(**(code **)(*(int *)gi->m_cg + 0x14))();
+  pgi->cg2_radius = (float)fVar3;
+  ppVar2 = get_gjk_cache_info(gti->m_gjk_cache,gti->m_cg,gi->m_cg);
+  pgi->gjk_ci = ppVar2;
   return;
 }
 
 
 // 0043A5D0  sort_gi_list  (bgame/bg_slidemove.cpp:715)
 
-void __cdecl sort_gi_list(gjk_geom_info_t **param_1,int param_2)
+void __cdecl sort_gi_list(gjk_geom_info_t **list,int list_count)
 
 {
   gjk_geom_info_t *pgVar1;
-  int iVar2;
-  gjk_geom_info_t **local_18;
-  gjk_geom_info_t **local_14;
-  gjk_geom_info_t **local_10;
+  int list_count_00;
+  gjk_geom_info_t **cur;
+  gjk_geom_info_t **prev_cur;
+  gjk_geom_info_t **middle;
+  gjk_geom_info_t **prev_middle;
+  int middle_index;
+  gjk_geom_info_t **last;
   
-  if (param_2 < 3) {
-    if ((param_2 == 2) &&
-       (param_1[1]->m_hit_time <= (*param_1)->m_hit_time &&
-        (*param_1)->m_hit_time != param_1[1]->m_hit_time)) {
-      pgVar1 = *param_1;
-      *param_1 = param_1[1];
-      param_1[1] = pgVar1;
+  if (list_count < 3) {
+    if ((list_count == 2) &&
+       (list[1]->m_hit_time <= (*list)->m_hit_time && (*list)->m_hit_time != list[1]->m_hit_time)) {
+      pgVar1 = *list;
+      *list = list[1];
+      list[1] = pgVar1;
     }
   }
   else {
-    iVar2 = param_2 / 2;
-    sort_gi_list(param_1,iVar2);
-    sort_gi_list(param_1 + iVar2,param_2 - iVar2);
-    local_14 = param_1 + iVar2;
-    local_10 = local_14 + -1;
-    while ((local_14 < param_1 + param_2 &&
-           ((*local_14)->m_hit_time <= (*local_10)->m_hit_time &&
-            (*local_10)->m_hit_time != (*local_14)->m_hit_time))) {
-      pgVar1 = *local_10;
-      *local_10 = *local_14;
-      *local_14 = pgVar1;
-      while ((local_18 = local_10 + -1, param_1 < local_10 &&
-             ((*local_10)->m_hit_time <= (*local_18)->m_hit_time &&
-              (*local_18)->m_hit_time != (*local_10)->m_hit_time))) {
-        pgVar1 = *local_18;
-        *local_18 = *local_10;
-        *local_10 = pgVar1;
-        local_10 = local_18;
+    list_count_00 = list_count / 2;
+    sort_gi_list(list,list_count_00);
+    sort_gi_list(list + list_count_00,list_count - list_count_00);
+    middle = list + list_count_00;
+    prev_middle = middle + -1;
+    while ((middle < list + list_count &&
+           ((*middle)->m_hit_time <= (*prev_middle)->m_hit_time &&
+            (*prev_middle)->m_hit_time != (*middle)->m_hit_time))) {
+      pgVar1 = *prev_middle;
+      *prev_middle = *middle;
+      *middle = pgVar1;
+      while ((prev_cur = prev_middle + -1, list < prev_middle &&
+             ((*prev_middle)->m_hit_time <= (*prev_cur)->m_hit_time &&
+              (*prev_cur)->m_hit_time != (*prev_middle)->m_hit_time))) {
+        pgVar1 = *prev_cur;
+        *prev_cur = *prev_middle;
+        *prev_middle = pgVar1;
+        prev_middle = prev_cur;
       }
-      local_10 = local_14;
-      local_14 = local_14 + 1;
+      prev_middle = middle;
+      middle = middle + 1;
     }
   }
   return;
@@ -2368,16 +2391,16 @@ void __cdecl sort_gi_list(gjk_geom_info_t **param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x0043a983) */
 /* WARNING: Removing unreachable block (ram,0x0043adc5) */
 
-void __cdecl gjk_trace(gjk_trace_input_t *param_1,list_gjk_trace_output *param_2)
+void __cdecl gjk_trace(gjk_trace_input_t *gti,list_gjk_trace_output *list)
 
 {
   float *pfVar1;
   float fVar2;
-  gjk_geom_info_t *pgVar3;
-  code *pcVar4;
-  bool bVar5;
-  gjk_geom_info_t **ppgVar6;
-  DWORD DVar7;
+  gjk_geom_info_t *gi;
+  code *pcVar3;
+  bool bVar4;
+  gjk_geom_info_t **list_00;
+  DWORD DVar5;
   gjk_trace_output_t *local_4c8;
   float local_4b0;
   int local_4a0;
@@ -2401,45 +2424,45 @@ void __cdecl gjk_trace(gjk_trace_input_t *param_1,list_gjk_trace_output *param_2
   float local_14;
   
   PIXBeginNamedEvent(-1,"gjk_trace_query");
-  local_14 = (param_1->m_query_input).m_cg_position.x;
-  local_18 = param_1->m_gcci;
+  local_14 = (gti->m_query_input).m_cg_position.x;
+  local_18 = gti->m_gcci;
   local_1c = (local_18->m_cg_to_world_xform).w.x;
   if ((local_14 != local_1c) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d5,0,
-                               "%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d5,0,
+                               "%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  local_20 = (param_1->m_query_input).m_cg_position.y;
-  local_24 = param_1->m_gcci;
+  local_20 = (gti->m_query_input).m_cg_position.y;
+  local_24 = gti->m_gcci;
   local_28 = (local_24->m_cg_to_world_xform).w.y;
   if ((local_20 != local_28) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d6,0,
-                               "%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d6,0,
+                               "%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  local_2c = (param_1->m_query_input).m_cg_position.z;
-  local_30 = param_1->m_gcci;
+  local_2c = (gti->m_query_input).m_cg_position.z;
+  local_30 = gti->m_gcci;
   local_34 = (local_30->m_cg_to_world_xform).w.z;
   if ((local_2c != local_34) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d7,0,
-                               "%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x2d7,0,
+                               "%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  gjk_query_output::query_prolog(param_1->m_query_output,&param_1->m_query_input);
-  gjk_query_cached(&param_1->m_query_input,param_1->m_query_output);
-  gjk_query_output::query_epilog(param_1->m_query_output);
+  gjk_query_output::query_prolog(gti->m_query_output,&gti->m_query_input);
+  gjk_query_cached(&gti->m_query_input,gti->m_query_output);
+  gjk_query_output::query_epilog(gti->m_query_output);
   phys_gjk_info::phys_gjk_info(&local_3e0);
-  (param_2->m_list).m_first = (gjk_trace_output_t *)0x0;
-  (param_2->m_list).m_last_next_ptr = (gjk_trace_output_t **)param_2;
-  (param_2->m_list).m_alloc_count = 0;
-  param_2->m_first_hit = (gjk_trace_output_t *)0x0;
-  local_3e4 = (param_1->m_query_output->m_list_geom_info).m_alloc_count;
+  (list->m_list).m_first = (gjk_trace_output_t *)0x0;
+  (list->m_list).m_last_next_ptr = (gjk_trace_output_t **)list;
+  (list->m_list).m_alloc_count = 0;
+  list->m_first_hit = (gjk_trace_output_t *)0x0;
+  local_3e4 = (gti->m_query_output->m_list_geom_info).m_alloc_count;
   if (local_3e4 == 0) {
     local_3f0 = GetCurrentThreadId();
     local_3ec = 0;
@@ -2448,83 +2471,81 @@ void __cdecl gjk_trace(gjk_trace_input_t *param_1,list_gjk_trace_output *param_2
     }
   }
   else {
-    init_pgi(&local_440,param_1);
-    ppgVar6 = phys_transient_allocator::allocate
-                        (param_1->m_allocator,
-                         (param_1->m_query_output->m_list_geom_info).m_alloc_count << 2,4,0,
-                         "phys_transient_allocator out of memory.");
+    init_pgi(&local_440,gti);
+    list_00 = phys_transient_allocator::allocate
+                        (gti->m_allocator,(gti->m_query_output->m_list_geom_info).m_alloc_count << 2
+                         ,4,0,"phys_transient_allocator out of memory.");
     local_458 = 0;
-    for (local_464 = (param_1->m_query_output->m_list_geom_info).m_first;
+    for (local_464 = (gti->m_query_output->m_list_geom_info).m_first;
         local_464 != (gjk_geom_info_t *)0x0; local_464 = local_464->m_next_link) {
-      ppgVar6[local_458] = local_464;
+      list_00[local_458] = local_464;
       local_458 = local_458 + 1;
     }
-    sort_gi_list(ppgVar6,local_458);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    sort_gi_list(list_00,local_458);
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"gjk_trace_collide");
     local_498 = phys_transient_allocator::allocate
-                          (param_1->m_allocator,0x50,0x10,0,
-                           "phys_transient_allocator out of memory.");
+                          (gti->m_allocator,0x50,0x10,0,"phys_transient_allocator out of memory.");
     if (local_498 == (gjk_trace_output_t *)0x0) {
       local_498 = (gjk_trace_output_t *)0x0;
     }
     local_49c = local_498;
     local_4a0 = 0;
-    while ((local_4a0 < local_458 && (ppgVar6[local_4a0]->m_hit_time <= local_440.m_end_time))) {
-      pgVar3 = ppgVar6[local_4a0];
-      local_440.m_start_time = pgVar3->m_hit_time;
-      set_pgi_cg2(&local_440,param_1,pgVar3);
-      bVar5 = gjk_collide(&local_3e0,&local_440,local_49c,param_1,pgVar3);
-      if (bVar5) {
-        phys_link_list<gjk_trace_output_t>::add(&param_2->m_list,local_49c);
+    while ((local_4a0 < local_458 && (list_00[local_4a0]->m_hit_time <= local_440.m_end_time))) {
+      gi = list_00[local_4a0];
+      local_440.m_start_time = gi->m_hit_time;
+      set_pgi_cg2(&local_440,gti,gi);
+      bVar4 = gjk_collide(&local_3e0,&local_440,local_49c,gti,gi);
+      if (bVar4) {
+        phys_link_list<gjk_trace_output_t>::add(&list->m_list,local_49c);
         if (local_49c->m_hit_time <= local_440.m_end_time &&
             local_440.m_end_time != local_49c->m_hit_time) {
-          local_4b0 = local_49c->m_hit_time + param_1->m_extra_time;
+          local_4b0 = local_49c->m_hit_time + gti->m_extra_time;
           if (1.0 < local_4b0) {
             local_4b0 = 1.0;
           }
           local_440.m_end_time = local_4b0;
         }
-        if (param_2->m_first_hit == (gjk_trace_output_t *)0x0) {
-          param_2->m_first_hit = local_49c;
+        if (list->m_first_hit == (gjk_trace_output_t *)0x0) {
+          list->m_first_hit = local_49c;
         }
         else {
-          fVar2 = param_2->m_first_hit->m_hit_time;
+          fVar2 = list->m_first_hit->m_hit_time;
           if (fVar2 < local_49c->m_hit_time || fVar2 == local_49c->m_hit_time) {
             if ((local_49c->m_hit_time == 0.0) &&
-               (fVar2 = param_2->m_first_hit->m_hit_dist,
+               (fVar2 = list->m_first_hit->m_hit_dist,
                local_49c->m_hit_dist <= fVar2 && fVar2 != local_49c->m_hit_dist)) {
-              if ((param_2->m_first_hit->m_hit_time != 0.0) &&
-                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp"
-                                           ,0x316,0,"%s"), !bVar5)) {
-                pcVar4 = (code *)swi(3);
-                (*pcVar4)();
+              if ((list->m_first_hit->m_hit_time != 0.0) &&
+                 (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp"
+                                           ,0x316,0,"%s"), !bVar4)) {
+                pcVar3 = (code *)swi(3);
+                (*pcVar3)();
                 return;
               }
-              param_2->m_first_hit = local_49c;
+              list->m_first_hit = local_49c;
             }
           }
           else {
-            param_2->m_first_hit = local_49c;
+            list->m_first_hit = local_49c;
           }
         }
         local_4c8 = phys_transient_allocator::allocate
-                              (param_1->m_allocator,0x50,0x10,0,
+                              (gti->m_allocator,0x50,0x10,0,
                                "phys_transient_allocator out of memory.");
         if (local_4c8 == (gjk_trace_output_t *)0x0) {
           local_4c8 = (gjk_trace_output_t *)0x0;
         }
         local_49c = local_4c8;
-        if ((param_1->m_exit_on_penetration != false) &&
-           (pfVar1 = &param_2->m_first_hit->m_hit_dist, *pfVar1 <= 0.0 && *pfVar1 != 0.0)) break;
+        if ((gti->m_exit_on_penetration != false) &&
+           (pfVar1 = &list->m_first_hit->m_hit_dist, *pfVar1 <= 0.0 && *pfVar1 != 0.0)) break;
       }
       local_4a0 = local_4a0 + 1;
     }
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -2534,24 +2555,27 @@ void __cdecl gjk_trace(gjk_trace_input_t *param_1,list_gjk_trace_output *param_2
 
 // 00440AB0  support  (physics/phys_colgeom.h:747)
 
-int __thiscall gjk_polygon_cylinder_t::poly_verts::support(poly_verts *this,phys_vec3 *param_1)
+/* WARNING: Variable defined which should be unmapped: at */
+
+int __thiscall gjk_polygon_cylinder_t::poly_verts::support(poly_verts *this,phys_vec3 *v)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float fVar4;
-  double dVar5;
-  undefined4 in_stack_ffffffec;
+  double dVar4;
+  float at;
+  float tempi;
+  int best_i;
+  float pi;
   
-  dVar5 = (double)param_1->y;
-  __libm_sse2_atan2((double)CONCAT44(param_1->y,this),(double)CONCAT44(in_stack_ffffffec,param_1->x)
-                   );
-  fVar4 = (float)dVar5;
-  if (fVar4 < 0.0) {
-    fVar4 = fVar4 + 6.2831855;
+  dVar4 = (double)v->y;
+  __libm_sse2_atan2((double)CONCAT44(v->y,this),(double)CONCAT44(at,v->x));
+  at = (float)dVar4;
+  if (at < 0.0) {
+    at = at + 6.2831855;
   }
-  iVar3 = (int)((fVar4 * 12.0) / 6.2831855 + 0.5) % 0xc;
+  iVar3 = (int)((at * 12.0) / 6.2831855 + 0.5) % 0xc;
   if ((iVar3 < 0) || (0xb < iVar3)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x317,0,
                              "%s");
@@ -2568,16 +2592,17 @@ int __thiscall gjk_polygon_cylinder_t::poly_verts::support(poly_verts *this,phys
 // 00440410  get_co_si  (physics/phys_colgeom.h:801)
 
 void __thiscall
-gjk_polygon_cylinder_t::poly_verts::get_co_si
-          (poly_verts *this,int param_1,float *param_2,float *param_3)
+gjk_polygon_cylinder_t::poly_verts::get_co_si(poly_verts *this,int i,float *co_,float *si_)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int *piVar4;
+  int quad;
+  int ii;
   
-  if ((param_1 < 0) || (0xb < param_1)) {
+  if ((i < 0) || (0xb < i)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x322,0,
                              "%s");
     if (!bVar2) {
@@ -2586,60 +2611,66 @@ gjk_polygon_cylinder_t::poly_verts::get_co_si
       return;
     }
   }
-  iVar3 = param_1 / 3;
+  iVar3 = i / 3;
   piVar4 = (int *)((int)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
-                          ::__l2::b)[iVar3] * param_1 +
+                          ::__l2::b)[iVar3] * i +
                   (int)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
                          ::__l2::a)[iVar3]);
-  *param_2 = (float)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
-                      ::__l2::cos)[iVar3] * this->m_co[(int)piVar4];
-  *param_3 = (float)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
-                      ::__l2::sis)[iVar3] * this->m_si[(int)piVar4];
+  *co_ = (float)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
+                  ::__l2::cos)[iVar3] * this->m_co[(int)piVar4];
+  *si_ = (float)(&`public:_void___thiscall_gjk_polygon_cylinder_t::poly_verts::get_co_si(int,float*,float*)'
+                  ::__l2::sis)[iVar3] * this->m_si[(int)piVar4];
   return;
 }
 
 
 // 0043B2C0  setup_query_input  (bgame/bg_slidemove.cpp:805)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-setup_query_input(gjkcc_input_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4,
-                 phys_vec3 *param_5,int param_6,int param_7,gjk_query_input *param_8)
+setup_query_input(gjkcc_input_t *gjkcc_in,phys_vec3 *aabb_min,phys_vec3 *aabb_max,
+                 phys_vec3 *position,phys_vec3 *translation,int passEntityNum,int contentMask,
+                 gjk_query_input *query_input)
 
 {
-  IgnoreEntParams local_10;
+  IgnoreEntParams ignoreEntParams;
   
-  (param_8->m_cg_aabb_min).x = param_2->x;
-  (param_8->m_cg_aabb_min).y = param_2->y;
-  (param_8->m_cg_aabb_min).z = param_2->z;
-  (param_8->m_cg_aabb_max).x = param_3->x;
-  (param_8->m_cg_aabb_max).y = param_3->y;
-  (param_8->m_cg_aabb_max).z = param_3->z;
-  (param_8->m_cg_position).x = param_4->x;
-  (param_8->m_cg_position).y = param_4->y;
-  (param_8->m_cg_position).z = param_4->z;
-  (param_8->m_cg_translation).x = param_5->x;
-  (param_8->m_cg_translation).y = param_5->y;
-  (param_8->m_cg_translation).z = param_5->z;
-  (param_8->m_ac_eps_vec).x = PT_AC_EPS_VEC.x;
-  (param_8->m_ac_eps_vec).y = PT_AC_EPS_VEC.y;
-  (param_8->m_ac_eps_vec).z = PT_AC_EPS_VEC.z;
-  param_8->m_contents = param_7;
-  if (param_1->is_server_thread == false) {
-    param_8->m_pass_entity_num = param_6;
-    param_8->m_pass_owner_num = -1;
+  (query_input->m_cg_aabb_min).x = aabb_min->x;
+  (query_input->m_cg_aabb_min).y = aabb_min->y;
+  (query_input->m_cg_aabb_min).z = aabb_min->z;
+  (query_input->m_cg_aabb_max).x = aabb_max->x;
+  (query_input->m_cg_aabb_max).y = aabb_max->y;
+  (query_input->m_cg_aabb_max).z = aabb_max->z;
+  (query_input->m_cg_position).x = position->x;
+  (query_input->m_cg_position).y = position->y;
+  (query_input->m_cg_position).z = position->z;
+  (query_input->m_cg_translation).x = translation->x;
+  (query_input->m_cg_translation).y = translation->y;
+  (query_input->m_cg_translation).z = translation->z;
+  (query_input->m_ac_eps_vec).x = PT_AC_EPS_VEC.x;
+  (query_input->m_ac_eps_vec).y = PT_AC_EPS_VEC.y;
+  (query_input->m_ac_eps_vec).z = PT_AC_EPS_VEC.z;
+  query_input->m_contents = contentMask;
+  if (gjkcc_in->is_server_thread == false) {
+    query_input->m_pass_entity_num = passEntityNum;
+    query_input->m_pass_owner_num = -1;
   }
   else {
-    SV_SetupIgnoreEntParams(&local_10,param_6);
-    param_8->m_pass_entity_num = local_10.baseEntity;
-    param_8->m_pass_owner_num = local_10.parentEntity;
+    SV_SetupIgnoreEntParams(&ignoreEntParams,passEntityNum);
+    query_input->m_pass_entity_num = ignoreEntParams.baseEntity;
+    query_input->m_pass_owner_num = ignoreEntParams.parentEntity;
   }
-  param_8->m_is_server_thread = param_1->is_server_thread;
-  param_8->m_proximity_data = param_1->proximity_data;
-  param_8->m_proximity_mask = param_1->proximity_mask;
-  param_8->m_gjk_query_flags = param_1->m_gjk_query_flags;
-  (param_8->m_geom_skip_list).m_first = (gjk_geom_info_t *)0x0;
-  (param_8->m_geom_skip_list).m_last_next_ptr = &(param_8->m_geom_skip_list).m_first;
-  (param_8->m_geom_skip_list).m_alloc_count = 0;
+  query_input->m_is_server_thread = gjkcc_in->is_server_thread;
+  query_input->m_proximity_data = gjkcc_in->proximity_data;
+  query_input->m_proximity_mask = gjkcc_in->proximity_mask;
+  query_input->m_gjk_query_flags = gjkcc_in->m_gjk_query_flags;
+  (query_input->m_geom_skip_list).m_first = (gjk_geom_info_t *)0x0;
+  (query_input->m_geom_skip_list).m_last_next_ptr = &(query_input->m_geom_skip_list).m_first;
+  (query_input->m_geom_skip_list).m_alloc_count = 0;
   return;
 }
 
@@ -2648,7 +2679,7 @@ setup_query_input(gjkcc_input_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3,p
 
 void __thiscall
 gjk_polygon_cylinder_t::support
-          (gjk_polygon_cylinder_t *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+          (gjk_polygon_cylinder_t *this,phys_vec3 *v,phys_vec3 *support_vert,phys_vec3 *support_ind)
 
 {
   code *pcVar1;
@@ -2670,16 +2701,16 @@ gjk_polygon_cylinder_t::support
   
   local_14 = this;
   if (this->m_mode == 0) {
-    local_18 = (float)poly_verts::support(&s_poly_verts,param_1);
-    local_1c = param_1->z;
+    local_18 = (float)poly_verts::support(&s_poly_verts,v);
+    local_1c = v->z;
     if (local_1c < 0.0) {
-      param_3->x = (float)((int)local_18 + 0xc);
+      support_ind->x = (float)((int)local_18 + 0xc);
       local_20 = -local_14->m_half_height + local_14->m_foot_offset;
       local_24 = -local_14->m_half_height;
       local_28 = 3.50325e-44;
     }
     else {
-      param_3->x = local_18;
+      support_ind->x = local_18;
       local_20 = local_14->m_half_height - local_14->m_head_offset;
       local_24 = local_14->m_half_height;
       local_28 = 3.36312e-44;
@@ -2691,17 +2722,16 @@ gjk_polygon_cylinder_t::support
     fVar5 = (local_14->m_center).x + 0.0;
     fVar6 = (local_14->m_center).y + 0.0;
     local_24 = local_24 + (local_14->m_center).z;
-    if ((fVar3 - fVar5) * param_1->x + (fVar4 - fVar6) * param_1->y +
-        (local_20 - local_24) * param_1->z < 0.0) {
-      param_3->x = local_28;
-      param_2->x = fVar5;
-      param_2->y = fVar6;
-      param_2->z = local_24;
+    if ((fVar3 - fVar5) * v->x + (fVar4 - fVar6) * v->y + (local_20 - local_24) * v->z < 0.0) {
+      support_ind->x = local_28;
+      support_vert->x = fVar5;
+      support_vert->y = fVar6;
+      support_vert->z = local_24;
     }
     else {
-      param_2->x = fVar3;
-      param_2->y = fVar4;
-      param_2->z = local_20;
+      support_vert->x = fVar3;
+      support_vert->y = fVar4;
+      support_vert->z = local_20;
     }
   }
   else {
@@ -2719,18 +2749,17 @@ gjk_polygon_cylinder_t::support
     fVar6 = (local_14->m_center).x - 0.0;
     fVar8 = (local_14->m_center).y - 0.0;
     fVar7 = (local_14->m_center).z - fVar7;
-    if ((fVar3 - fVar6) * param_1->x + (fVar4 - fVar8) * param_1->y + (fVar5 - fVar7) * param_1->z <
-        0.0) {
-      param_3->x = 1.4013e-45;
-      param_2->x = fVar6;
-      param_2->y = fVar8;
-      param_2->z = fVar7;
+    if ((fVar3 - fVar6) * v->x + (fVar4 - fVar8) * v->y + (fVar5 - fVar7) * v->z < 0.0) {
+      support_ind->x = 1.4013e-45;
+      support_vert->x = fVar6;
+      support_vert->y = fVar8;
+      support_vert->z = fVar7;
     }
     else {
-      param_3->x = 0.0;
-      param_2->x = fVar3;
-      param_2->y = fVar4;
-      param_2->z = fVar5;
+      support_ind->x = 0.0;
+      support_vert->x = fVar3;
+      support_vert->y = fVar4;
+      support_vert->z = fVar5;
     }
   }
   return;
@@ -2740,8 +2769,8 @@ gjk_polygon_cylinder_t::support
 // 0043B450  setup_trace_info  (bgame/bg_slidemove.cpp:841)
 
 void __cdecl
-setup_trace_info(gjkcc_input_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                int param_6,int param_7,gjk_trace_input_t *param_8)
+setup_trace_info(gjkcc_input_t *gjkcc_in,float *start,float *mins,float *maxs,float *end,
+                int passEntityNum,int contentMask,gjk_trace_input_t *gti)
 
 {
   code *pcVar1;
@@ -2754,38 +2783,38 @@ setup_trace_info(gjkcc_input_t *param_1,float *param_2,float *param_3,float *par
   phys_vec3 local_30;
   gjkcc_info *local_14;
   
-  local_14 = find_gjkcc_info(param_1->gjkcc_id,param_1->is_server_thread);
-  param_8->m_gcci = local_14;
-  gjkcc_info::update_cg(param_8->m_gcci,param_3,param_4,false);
-  param_8->m_cg = local_14->m_cg_;
-  param_8->m_gjk_cache = &local_14->m_gjk_cache;
-  param_8->m_query_output = &local_14->m_gjk_query_output;
-  Phys_Vec3ToNitrousVec(&local_30,param_2);
-  Phys_Vec3ToNitrousVec(&local_40,param_5);
+  local_14 = find_gjkcc_info(gjkcc_in->gjkcc_id,gjkcc_in->is_server_thread);
+  gti->m_gcci = local_14;
+  gjkcc_info::update_cg(gti->m_gcci,mins,maxs,false);
+  gti->m_cg = local_14->m_cg_;
+  gti->m_gjk_cache = &local_14->m_gjk_cache;
+  gti->m_query_output = &local_14->m_gjk_query_output;
+  Phys_Vec3ToNitrousVec(&local_30,start);
+  Phys_Vec3ToNitrousVec(&local_40,end);
   local_60.x = local_40.x - local_30.x;
   local_60.y = local_40.y - local_30.y;
   local_60.z = local_40.z - local_30.z;
   local_4c = local_60.z;
   local_48 = local_60.y;
   local_44 = local_60.x;
-  gjk_trace_input_t::set_cg_position(param_8,&local_30);
-  (param_8->m_query_input).m_cg_translation.x = local_60.x;
-  (param_8->m_query_input).m_cg_translation.y = local_60.y;
-  (param_8->m_query_input).m_cg_translation.z = local_60.z;
-  param_8->m_gjk_ac_eps = 0.125;
-  param_8->m_keep_all_collisions = false;
-  param_8->m_exit_on_penetration = true;
-  param_8->m_extra_time = 0.0;
-  param_8->m_allocator = &param_8->m_query_output->m_allocator;
-  setup_query_input(param_1,&local_14->m_cg_aabb_min,&local_14->m_cg_aabb_max,&local_30,&local_60,
-                    param_6,param_7,&param_8->m_query_input);
-  if (param_1->gjkcc_id == 0) {
-    if (param_1->m_gjk_cg == (gjk_base_t *)0x0) {
-      phys_mat44::operator=(&param_8->m_gcci->m_cg_to_world_xform,&PHYS_IDENTITY_MATRIX);
-      gjk_trace_input_t::set_cg_position(param_8,&local_30);
+  gjk_trace_input_t::set_cg_position(gti,&local_30);
+  (gti->m_query_input).m_cg_translation.x = local_60.x;
+  (gti->m_query_input).m_cg_translation.y = local_60.y;
+  (gti->m_query_input).m_cg_translation.z = local_60.z;
+  gti->m_gjk_ac_eps = 0.125;
+  gti->m_keep_all_collisions = false;
+  gti->m_exit_on_penetration = true;
+  gti->m_extra_time = 0.0;
+  gti->m_allocator = &gti->m_query_output->m_allocator;
+  setup_query_input(gjkcc_in,&local_14->m_cg_aabb_min,&local_14->m_cg_aabb_max,&local_30,&local_60,
+                    passEntityNum,contentMask,&gti->m_query_input);
+  if (gjkcc_in->gjkcc_id == 0) {
+    if (gjkcc_in->m_gjk_cg == (gjk_base_t *)0x0) {
+      phys_mat44::operator=(&gti->m_gcci->m_cg_to_world_xform,&PHYS_IDENTITY_MATRIX);
+      gjk_trace_input_t::set_cg_position(gti,&local_30);
     }
     else {
-      if (param_1->m_gjk_cg == (gjk_base_t *)0x0) {
+      if (gjkcc_in->m_gjk_cg == (gjk_base_t *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x36e,
                                  0,"%s");
         if (!bVar2) {
@@ -2794,12 +2823,11 @@ setup_trace_info(gjkcc_input_t *param_1,float *param_2,float *param_3,float *par
           return;
         }
       }
-      param_8->m_cg = param_1->m_gjk_cg;
-      phys_mat44::operator=(&param_8->m_gcci->m_cg_to_world_xform,param_1->m_mat);
-      gjk_trace_input_t::set_cg_position(param_8,&local_30);
-      (**(code **)(*(int *)param_8->m_cg + 0x18))
-                (&PHYS_IDENTITY_MATRIX,&param_8->m_query_input,
-                 &(param_8->m_query_input).m_cg_aabb_max);
+      gti->m_cg = gjkcc_in->m_gjk_cg;
+      phys_mat44::operator=(&gti->m_gcci->m_cg_to_world_xform,gjkcc_in->m_mat);
+      gjk_trace_input_t::set_cg_position(gti,&local_30);
+      (**(code **)(*(int *)gti->m_cg + 0x18))
+                (&PHYS_IDENTITY_MATRIX,&gti->m_query_input,&(gti->m_query_input).m_cg_aabb_max);
     }
   }
   return;
@@ -2810,8 +2838,8 @@ setup_trace_info(gjkcc_input_t *param_1,float *param_2,float *param_3,float *par
 
 void __thiscall
 gjk_polygon_cylinder_t::get_simplex
-          (gjk_polygon_cylinder_t *this,cached_simplex_info *param_1,int param_2,phys_vec3 *param_3,
-          phys_vec3 *param_4)
+          (gjk_polygon_cylinder_t *this,cached_simplex_info *cache_info,int index_count,
+          phys_vec3 *simplex_verts,phys_vec3 *simplex_inds)
 
 {
   float fVar1;
@@ -2848,8 +2876,8 @@ gjk_polygon_cylinder_t::get_simplex
   
   local_14 = this;
   if (this->m_mode == 0) {
-    for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {
-      local_1c = param_1->m_indices[local_18].x;
+    for (local_18 = 0; local_18 < index_count; local_18 = local_18 + 1) {
+      local_1c = cache_info->m_indices[local_18].x;
       if (((int)local_1c < 0) &&
          (bVar6 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x373,
                             "ind >= 0",""), bVar6)) {
@@ -2857,7 +2885,7 @@ gjk_polygon_cylinder_t::get_simplex
         (*pcVar5)();
         return;
       }
-      param_4[local_18].x = local_1c;
+      simplex_inds[local_18].x = local_1c;
       if ((int)local_1c < 0xc) {
         poly_verts::get_co_si(&s_poly_verts,(int)local_1c,&local_24,&local_20);
         local_40 = local_14->m_polygon_cylinder_radius * local_24;
@@ -2867,7 +2895,7 @@ gjk_polygon_cylinder_t::get_simplex
         local_60 = local_40 + local_44->x;
         local_5c = local_3c + (local_14->m_center).y;
         local_58 = local_38 + (local_14->m_center).z;
-        local_64 = param_3 + local_18;
+        local_64 = simplex_verts + local_18;
         local_64->x = local_60;
         local_64->y = local_5c;
         local_64->z = local_58;
@@ -2886,7 +2914,7 @@ gjk_polygon_cylinder_t::get_simplex
         fVar2 = local_14->m_foot_offset;
         fVar3 = (local_14->m_center).y;
         fVar4 = (local_14->m_center).z;
-        ppVar7 = param_3 + local_18;
+        ppVar7 = simplex_verts + local_18;
         ppVar7->x = local_14->m_polygon_cylinder_radius * local_70 + (local_14->m_center).x;
         ppVar7->y = fVar8 * local_6c + fVar3;
         ppVar7->z = -fVar1 + fVar2 + fVar4;
@@ -2895,7 +2923,7 @@ gjk_polygon_cylinder_t::get_simplex
         fVar8 = local_14->m_half_height;
         fVar1 = (local_14->m_center).y;
         fVar2 = (local_14->m_center).z;
-        ppVar7 = param_3 + local_18;
+        ppVar7 = simplex_verts + local_18;
         ppVar7->x = (local_14->m_center).x + 0.0;
         ppVar7->y = fVar1 + 0.0;
         ppVar7->z = fVar8 + fVar2;
@@ -2911,7 +2939,7 @@ gjk_polygon_cylinder_t::get_simplex
         fVar8 = local_14->m_half_height;
         fVar1 = (local_14->m_center).y;
         fVar2 = (local_14->m_center).z;
-        ppVar7 = param_3 + local_18;
+        ppVar7 = simplex_verts + local_18;
         ppVar7->x = (local_14->m_center).x + 0.0;
         ppVar7->y = fVar1 + 0.0;
         ppVar7->z = -fVar8 + fVar2;
@@ -2927,8 +2955,8 @@ gjk_polygon_cylinder_t::get_simplex
       return;
     }
     fVar8 = local_14->m_half_height - local_14->m_capsule_radius;
-    for (local_154 = 0; local_154 < param_2; local_154 = local_154 + 1) {
-      fVar1 = param_1->m_indices[local_154].x;
+    for (local_154 = 0; local_154 < index_count; local_154 = local_154 + 1) {
+      fVar1 = cache_info->m_indices[local_154].x;
       if (((fVar1 != 0.0) && (fVar1 != 1.4013e-45)) &&
          (bVar6 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x394,
                             "ind == 0 || ind == 1",""), bVar6)) {
@@ -2936,11 +2964,11 @@ gjk_polygon_cylinder_t::get_simplex
         (*pcVar5)();
         return;
       }
-      param_4[local_154].x = fVar1;
+      simplex_inds[local_154].x = fVar1;
       if (fVar1 == 0.0) {
         fVar1 = (local_14->m_center).y;
         fVar2 = (local_14->m_center).z;
-        ppVar7 = param_3 + local_154;
+        ppVar7 = simplex_verts + local_154;
         ppVar7->x = (local_14->m_center).x + 0.0;
         ppVar7->y = fVar1 + 0.0;
         ppVar7->z = fVar2 + fVar8;
@@ -2948,7 +2976,7 @@ gjk_polygon_cylinder_t::get_simplex
       else {
         fVar1 = (local_14->m_center).y;
         fVar2 = (local_14->m_center).z;
-        ppVar7 = param_3 + local_154;
+        ppVar7 = simplex_verts + local_154;
         ppVar7->x = (local_14->m_center).x - 0.0;
         ppVar7->y = fVar1 - 0.0;
         ppVar7->z = fVar2 - fVar8;
@@ -2962,8 +2990,8 @@ gjk_polygon_cylinder_t::get_simplex
 // 0043B710  gjk_player_trace  (bgame/bg_slidemove.cpp:921)
 
 void __cdecl
-gjk_player_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float *param_4,
-                float *param_5,float *param_6,int param_7,int param_8)
+gjk_player_trace(gjkcc_input_t *gjkcc_in,trace_t *results,float *start,float *mins,float *maxs,
+                float *end,int passEntityNum,int contentMask)
 
 {
   code *pcVar1;
@@ -2979,7 +3007,7 @@ gjk_player_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float *p
   local_c0.m_query_input.m_geom_skip_list.m_first = (gjk_geom_info_t *)0x0;
   local_c0.m_query_input.m_geom_skip_list.m_alloc_count = 0;
   local_c0.m_query_input.m_geom_skip_list.m_last_next_ptr = &local_c8->m_first;
-  setup_trace_info(param_1,param_3,param_4,param_5,param_6,param_7,param_8,&local_c0);
+  setup_trace_info(gjkcc_in,start,mins,maxs,end,passEntityNum,contentMask,&local_c0);
   local_d8.m_list.m_first = (gjk_trace_output_t *)0x0;
   local_d8.m_list.m_last_next_ptr = (gjk_trace_output_t **)&local_d8;
   local_d8.m_list.m_alloc_count = 0;
@@ -3001,11 +3029,11 @@ gjk_player_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float *p
     }
   }
   if (local_d8.m_first_hit == (gjk_trace_output_t *)0x0) {
-    fill_results_no_hit(param_2);
+    fill_results_no_hit(results);
   }
   else {
     bVar2 = is_walkable(local_d8.m_first_hit);
-    fill_results(local_d8.m_first_hit,bVar2,param_2);
+    fill_results(local_d8.m_first_hit,bVar2,results);
   }
   return;
 }
@@ -3015,24 +3043,24 @@ gjk_player_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float *p
 
 void __cdecl
 gjk_polygon_cylinder_t::calc_disc_aabb
-          (phys_vec3 *param_1,float param_2,phys_vec3 *param_3,phys_vec3 *param_4)
+          (phys_vec3 *axis,float radius,phys_vec3 *aabb_min,phys_vec3 *aabb_max)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  fVar1 = param_1->x * param_1->x;
-  fVar2 = param_1->y * param_1->y;
-  fVar3 = param_1->z * param_1->z;
-  param_4->x = param_2 * SQRT(fVar2 + fVar3);
-  param_4->y = param_2 * SQRT(fVar1 + fVar3);
-  param_4->z = param_2 * SQRT(fVar1 + fVar2);
-  fVar1 = param_4->y;
-  fVar2 = param_4->z;
-  param_3->x = -param_4->x;
-  param_3->y = -fVar1;
-  param_3->z = -fVar2;
+  fVar1 = axis->x * axis->x;
+  fVar2 = axis->y * axis->y;
+  fVar3 = axis->z * axis->z;
+  aabb_max->x = radius * SQRT(fVar2 + fVar3);
+  aabb_max->y = radius * SQRT(fVar1 + fVar3);
+  aabb_max->z = radius * SQRT(fVar1 + fVar2);
+  fVar1 = aabb_max->y;
+  fVar2 = aabb_max->z;
+  aabb_min->x = -aabb_max->x;
+  aabb_min->y = -fVar1;
+  aabb_min->z = -fVar2;
   return;
 }
 
@@ -3041,7 +3069,7 @@ gjk_polygon_cylinder_t::calc_disc_aabb
 
 void __thiscall
 gjk_polygon_cylinder_t::calc_aabb
-          (gjk_polygon_cylinder_t *this,phys_mat44 *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+          (gjk_polygon_cylinder_t *this,phys_mat44 *xform,phys_vec3 *aabb_min,phys_vec3 *aabb_max)
 
 {
   float fVar1;
@@ -3049,8 +3077,8 @@ gjk_polygon_cylinder_t::calc_aabb
   float fVar3;
   code *pcVar4;
   bool bVar5;
-  phys_vec3 *ppVar6;
-  phys_vec3 *ppVar7;
+  phys_vec3 *a;
+  phys_vec3 *b;
   phys_vec3 local_f0;
   phys_vec3 local_e0;
   float local_d0;
@@ -3084,17 +3112,17 @@ gjk_polygon_cylinder_t::calc_aabb
   gjk_polygon_cylinder_t *local_14;
   
   local_14 = this;
-  calc_disc_aabb(&param_1->z,this->m_polygon_cylinder_radius,param_2,param_3);
-  local_18 = &param_1->z;
+  calc_disc_aabb(&xform->z,this->m_polygon_cylinder_radius,aabb_min,aabb_max);
+  local_18 = &xform->z;
   local_1c = local_14->m_half_height;
   local_40.x = local_1c * local_18->x;
-  local_40.y = local_1c * (param_1->z).y;
-  local_40.z = local_1c * (param_1->z).z;
-  local_44 = &param_1->z;
+  local_40.y = local_1c * (xform->z).y;
+  local_40.z = local_1c * (xform->z).z;
+  local_44 = &xform->z;
   local_48 = -local_14->m_half_height;
   local_70.x = local_48 * local_44->x;
-  local_70.y = local_48 * (param_1->z).y;
-  local_70.z = local_48 * (param_1->z).z;
+  local_70.y = local_48 * (xform->z).y;
+  local_70.z = local_48 * (xform->z).z;
   local_54 = local_70.z;
   local_50 = local_70.y;
   local_4c = local_70.x;
@@ -3102,22 +3130,22 @@ gjk_polygon_cylinder_t::calc_aabb
   local_24 = local_40.y;
   local_20 = local_40.x;
   local_84 = phys_min(&local_80,&local_40,&local_70);
-  local_a0 = param_2->x + local_84->x;
-  local_9c = param_2->y + local_84->y;
-  local_98 = param_2->z + local_84->z;
-  param_2->x = local_a0;
-  param_2->y = local_9c;
-  param_2->z = local_98;
+  local_a0 = aabb_min->x + local_84->x;
+  local_9c = aabb_min->y + local_84->y;
+  local_98 = aabb_min->z + local_84->z;
+  aabb_min->x = local_a0;
+  aabb_min->y = local_9c;
+  aabb_min->z = local_98;
   local_90 = local_98;
   local_8c = local_9c;
   local_88 = local_a0;
   local_b4 = phys_max(&local_b0,&local_40,&local_70);
-  local_d0 = param_3->x + local_b4->x;
-  local_cc = param_3->y + local_b4->y;
-  local_c8 = param_3->z + local_b4->z;
-  param_3->x = local_d0;
-  param_3->y = local_cc;
-  param_3->z = local_c8;
+  local_d0 = aabb_max->x + local_b4->x;
+  local_cc = aabb_max->y + local_b4->y;
+  local_c8 = aabb_max->z + local_b4->z;
+  aabb_max->x = local_d0;
+  aabb_max->y = local_cc;
+  aabb_max->z = local_c8;
   local_c0 = local_c8;
   local_bc = local_cc;
   local_b8 = local_d0;
@@ -3148,18 +3176,18 @@ gjk_polygon_cylinder_t::calc_aabb
       return;
     }
   }
-  ppVar7 = &param_1->w;
-  ppVar6 = phys_multiply33(&local_e0,param_1,&local_14->m_center);
-  operator+(&local_f0,ppVar6,ppVar7);
+  b = &xform->w;
+  a = phys_multiply33(&local_e0,xform,&local_14->m_center);
+  operator+(&local_f0,a,b);
   fVar1 = local_14->m_geom_radius;
   fVar2 = local_14->m_geom_radius;
   fVar3 = local_14->m_geom_radius;
-  param_2->x = (param_2->x + local_f0.x) - fVar1;
-  param_2->y = (param_2->y + local_f0.y) - fVar2;
-  param_2->z = (param_2->z + local_f0.z) - fVar3;
-  param_3->x = param_3->x + local_f0.x + fVar1;
-  param_3->y = param_3->y + local_f0.y + fVar2;
-  param_3->z = param_3->z + local_f0.z + fVar3;
+  aabb_min->x = (aabb_min->x + local_f0.x) - fVar1;
+  aabb_min->y = (aabb_min->y + local_f0.y) - fVar2;
+  aabb_min->z = (aabb_min->z + local_f0.z) - fVar3;
+  aabb_max->x = aabb_max->x + local_f0.x + fVar1;
+  aabb_max->y = aabb_max->y + local_f0.y + fVar2;
+  aabb_max->z = aabb_max->z + local_f0.z + fVar3;
   return;
 }
 
@@ -3171,7 +3199,7 @@ gjk_polygon_cylinder_t::calc_aabb
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl no_push_out(gjk_trace_output_t *param_1)
+bool __cdecl no_push_out(gjk_trace_output_t *gto)
 
 {
   short sVar1;
@@ -3180,19 +3208,20 @@ bool __cdecl no_push_out(gjk_trace_output_t *param_1)
   undefined1 uVar4;
   centity_s *pcVar5;
   gentity_s *pgVar6;
-  vehicle_info_t *local_c;
+  vehicle_info_t *info;
+  int etype;
   
-  if (param_1->m_gi->m_ent_info != (gjk_entity_info_t *)0x0) {
-    if (param_1->m_gi->m_ent_info->m_ent_type == ET_CENT) {
-      pcVar5 = gjk_entity_info_t::get_cent(param_1->m_gi->m_ent_info);
+  if (gto->m_gi->m_ent_info != (gjk_entity_info_t *)0x0) {
+    if (gto->m_gi->m_ent_info->m_ent_type == ET_CENT) {
+      pcVar5 = gjk_entity_info_t::get_cent(gto->m_gi->m_ent_info);
       sVar1 = (pcVar5->nextState).eType;
     }
     else {
-      if (param_1->m_gi->m_ent_info->m_ent_type != ET_GENT) {
-        if (param_1->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
+      if (gto->m_gi->m_ent_info->m_ent_type != ET_GENT) {
+        if (gto->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
           return false;
         }
-        if ((param_1->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
+        if ((gto->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",
                                      0x3cb,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -3201,29 +3230,30 @@ bool __cdecl no_push_out(gjk_trace_output_t *param_1)
         }
         return false;
       }
-      pgVar6 = gjk_entity_info_t::get_gent(param_1->m_gi->m_ent_info);
+      pgVar6 = gjk_entity_info_t::get_gent(gto->m_gi->m_ent_info);
       sVar1 = (pgVar6->s).eType;
     }
-    if ((sVar1 == 1) || (sVar1 == 0x11)) {
+    etype = (int)sVar1;
+    if ((etype == 1) || (etype == 0x11)) {
       return true;
     }
-    if (sVar1 == 0xe) {
-      if (param_1->m_gi->m_ent_info->m_ent_type == ET_CENT) {
-        pcVar5 = gjk_entity_info_t::get_cent(param_1->m_gi->m_ent_info);
-        local_c = CG_GetVehicleInfo((uint)(pcVar5->nextState).un2.vehicleState.vehicleInfoIndex);
+    if (etype == 0xe) {
+      if (gto->m_gi->m_ent_info->m_ent_type == ET_CENT) {
+        pcVar5 = gjk_entity_info_t::get_cent(gto->m_gi->m_ent_info);
+        info = CG_GetVehicleInfo((uint)(pcVar5->nextState).un2.vehicleState.vehicleInfoIndex);
       }
       else {
-        if ((param_1->m_gi->m_ent_info->m_ent_type != ET_GENT) &&
+        if ((gto->m_gi->m_ent_info->m_ent_type != ET_GENT) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",
                                      0x3db,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        pgVar6 = gjk_entity_info_t::get_gent(param_1->m_gi->m_ent_info);
-        local_c = CG_GetVehicleInfo((uint)(pgVar6->s).un2.vehicleState.vehicleInfoIndex);
+        pgVar6 = gjk_entity_info_t::get_gent(gto->m_gi->m_ent_info);
+        info = CG_GetVehicleInfo((uint)(pgVar6->s).un2.vehicleState.vehicleInfoIndex);
       }
-      if ((local_c != (vehicle_info_t *)0x0) && (local_c->remoteControl != 0)) {
+      if ((info != (vehicle_info_t *)0x0) && (info->remoteControl != 0)) {
         return true;
       }
     }
@@ -3260,25 +3290,26 @@ float __thiscall gjk_polygon_cylinder_t::get_geom_radius(gjk_polygon_cylinder_t 
 
 // 0043BB30  set_hit_info  (bgame/bg_slidemove.cpp:1001)
 
-void __cdecl set_hit_info(geom_plane *param_1,gjk_trace_output_t *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl set_hit_info(geom_plane *gp,gjk_trace_output_t *gto)
 
 {
   bool bVar1;
   
-  (param_1->m_normal).x = (param_2->m_hit_normal).x;
-  (param_1->m_normal).y = (param_2->m_hit_normal).y;
-  (param_1->m_normal).z = (param_2->m_hit_normal).z;
-  (param_1->m_arm).x = (param_2->m_arm).x;
-  (param_1->m_arm).y = (param_2->m_arm).y;
-  (param_1->m_arm).z = (param_2->m_arm).z;
-  param_1->m_d = (param_1->m_normal).x * (param_2->m_hit_point).x +
-                 (param_1->m_normal).y * (param_2->m_hit_point).y +
-                 (param_1->m_normal).z * (param_2->m_hit_point).z;
-  param_1->m_active = true;
-  bVar1 = is_walkable(param_2);
-  param_1->m_walkable = bVar1;
-  bVar1 = no_push_out(param_2);
-  param_1->m_no_push_out = bVar1;
+  (gp->m_normal).x = (gto->m_hit_normal).x;
+  (gp->m_normal).y = (gto->m_hit_normal).y;
+  (gp->m_normal).z = (gto->m_hit_normal).z;
+  (gp->m_arm).x = (gto->m_arm).x;
+  (gp->m_arm).y = (gto->m_arm).y;
+  (gp->m_arm).z = (gto->m_arm).z;
+  gp->m_d = (gp->m_normal).x * (gto->m_hit_point).x + (gp->m_normal).y * (gto->m_hit_point).y +
+            (gp->m_normal).z * (gto->m_hit_point).z;
+  gp->m_active = true;
+  bVar1 = is_walkable(gto);
+  gp->m_walkable = bVar1;
+  bVar1 = no_push_out(gto);
+  gp->m_no_push_out = bVar1;
   return;
 }
 
@@ -3286,15 +3317,16 @@ void __cdecl set_hit_info(geom_plane *param_1,gjk_trace_output_t *param_2)
 // 0043BC10  add_hit_info  (bgame/bg_slidemove.cpp:1011)
 
 void __cdecl
-add_hit_info(gjk_trace_output_t *param_1,phys_static_array<geom_plane,128> *param_2,
-            phys_link_list<gjk_geom_info_t> *param_3)
+add_hit_info(gjk_trace_output_t *gto,phys_static_array<geom_plane,128> *list_geom_plane,
+            phys_link_list<gjk_geom_info_t> *geom_skip_list)
 
 {
-  geom_plane *pgVar1;
+  geom_plane *gp_00;
+  geom_plane *gp;
   
-  pgVar1 = phys_static_array<geom_plane,128>::add(param_2,0,"phys array add overflow.");
-  set_hit_info(pgVar1,param_1);
-  phys_link_list<gjk_geom_info_t>::add(param_3,param_1->m_gi);
+  gp_00 = phys_static_array<geom_plane,128>::add(list_geom_plane,0,"phys array add overflow.");
+  set_hit_info(gp_00,gto);
+  phys_link_list<gjk_geom_info_t>::add(geom_skip_list,gto->m_gi);
   return;
 }
 
@@ -3302,19 +3334,22 @@ add_hit_info(gjk_trace_output_t *param_1,phys_static_array<geom_plane,128> *para
 // 0043BC50  project_succeeded  (bgame/bg_slidemove.cpp:1022)
 
 bool __cdecl
-project_succeeded(phys_static_array<geom_plane,128> *param_1,phys_vec3 *param_2,float param_3)
+project_succeeded(phys_static_array<geom_plane,128> *list_geom_plane,phys_vec3 *new_position,
+                 float PROJECT_FAIL_THRESH)
 
 {
-  geom_plane *local_8;
+  float dist;
+  geom_plane *gp;
+  geom_plane *gp_i;
   
-  local_8 = param_1->m_slot_array;
+  gp_i = list_geom_plane->m_slot_array;
   while( true ) {
-    if (param_1->m_slot_array + param_1->m_alloc_count == local_8) {
+    if (list_geom_plane->m_slot_array + list_geom_plane->m_alloc_count == gp_i) {
       return true;
     }
-    if ((param_2->x * (local_8->m_normal).x + param_2->y * (local_8->m_normal).y +
-        param_2->z * (local_8->m_normal).z) - local_8->m_right_side < -param_3) break;
-    local_8 = local_8 + 1;
+    if ((new_position->x * (gp_i->m_normal).x + new_position->y * (gp_i->m_normal).y +
+        new_position->z * (gp_i->m_normal).z) - gp_i->m_right_side < -PROJECT_FAIL_THRESH) break;
+    gp_i = gp_i + 1;
   }
   return false;
 }
@@ -3326,8 +3361,7 @@ project_succeeded(phys_static_array<geom_plane,128> *param_1,phys_vec3 *param_2,
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-gjk_push_out(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,gjk_slide_move_output_t *param_3
-            )
+gjk_push_out(gjkcc_input_t *gjkcc_in,gjk_slide_move_input_t *input,gjk_slide_move_output_t *output)
 
 {
   float (*pafVar1) [3];
@@ -3406,14 +3440,14 @@ gjk_push_out(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,gjk_slide_mo
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_1830.m_slot_array = (geom_plane *)&local_1830;
   local_1830.m_alloc_count = 0;
-  Phys_Vec3ToNitrousVec(&local_1840,*param_2->position);
+  Phys_Vec3ToNitrousVec(&local_1840,*input->position);
   local_1850.x = local_1840.x;
   local_1850.y = local_1840.y;
   local_1850.z = local_1840.z;
   local_1850.w = local_1840.w;
   gjk_query_input::gjk_query_input(&local_1900.m_query_input);
-  setup_trace_info(param_1,*param_2->position,*param_2->mins,*param_2->maxs,*param_2->position,
-                   param_2->clientnum,param_2->tracemask,&local_1900);
+  setup_trace_info(gjkcc_in,*input->position,*input->mins,*input->maxs,*input->position,
+                   input->clientnum,input->tracemask,&local_1900);
   local_1900.m_keep_all_collisions = true;
   local_1900.m_exit_on_penetration = false;
   local_1900.m_extra_time = 1.0;
@@ -3426,11 +3460,11 @@ gjk_push_out(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,gjk_slide_mo
   do {
     if (4 < local_1918) {
 LAB_0043ca89:
-      Phys_NitrousVecToVec3(&local_1850,param_3->new_position);
-      pafVar1 = param_2->velocity;
-      param_3->new_velocity[0] = (*pafVar1)[0];
-      param_3->new_velocity[1] = (*pafVar1)[1];
-      param_3->new_velocity[2] = (*pafVar1)[2];
+      Phys_NitrousVecToVec3(&local_1850,output->new_position);
+      pafVar1 = input->velocity;
+      output->new_velocity[0] = (*pafVar1)[0];
+      output->new_velocity[1] = (*pafVar1)[1];
+      output->new_velocity[2] = (*pafVar1)[2];
       for (local_2114 = 0; local_2114 < local_1830.m_alloc_count; local_2114 = local_2114 + 1) {
       }
       return true;
@@ -3467,7 +3501,7 @@ LAB_0043ca89:
       local_1978 = local_1830.m_alloc_count;
       auStack_1b78[local_1830.m_alloc_count] = local_1968->m_gi;
       add_hit_info(local_1974,&local_1830,&local_1900.m_query_input.m_geom_skip_list);
-      (**(code **)param_2->_padding_)(local_1974);
+      (**(code **)input->_padding_)(local_1974);
       local_1970 = local_1968->m_next_link;
       local_1968 = local_1970;
     }
@@ -3636,7 +3670,7 @@ bool __thiscall gjk_physics_collision_visitor::is_query(gjk_physics_collision_vi
 
 bool __thiscall
 create_gjk_geom_collision_visitor::query_create_prolog
-          (create_gjk_geom_collision_visitor *this,void *param_1)
+          (create_gjk_geom_collision_visitor *this,void *geom_2)
 
 {
   return true;
@@ -3647,7 +3681,8 @@ create_gjk_geom_collision_visitor::query_create_prolog
 
 bool __thiscall
 create_gjk_geom_collision_visitor::query_create_prolog_1
-          (create_gjk_geom_collision_visitor *this,float *param_1,float *param_2,void *param_3)
+          (create_gjk_geom_collision_visitor *this,float *local_aabb_min_2,float *local_aabb_max_2,
+          void *geom_2)
 
 {
   return true;
@@ -3663,8 +3698,8 @@ create_gjk_geom_collision_visitor::query_create_prolog_1
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 int __cdecl
-gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool param_3,
-               gjk_slide_move_output_t *param_4,bool *param_5)
+gjk_slide_move1(gjkcc_input_t *gjkcc_in,gjk_slide_move_input_t *input,bool no_push_out,
+               gjk_slide_move_output_t *output,bool *needs_push_out)
 
 {
   code *pcVar1;
@@ -3892,21 +3927,21 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_1830.m_slot_array = (geom_plane *)&local_1830;
   local_1830.m_alloc_count = 0;
-  Phys_Vec3ToNitrousVec(&local_1840,*param_2->position);
-  Phys_Vec3ToNitrousVec(&local_1850,*param_2->velocity);
+  Phys_Vec3ToNitrousVec(&local_1840,*input->position);
+  Phys_Vec3ToNitrousVec(&local_1850,*input->velocity);
   local_1860 = local_1850.x;
   local_185c = local_1850.y;
   local_1858 = local_1850.z;
   local_1854 = local_1850.w;
-  if (param_2->has_gravity != 0) {
+  if (input->has_gravity != 0) {
     local_1864 = &local_1858;
-    local_1858 = local_1850.z - (float)param_2->gravity * param_2->frametime;
+    local_1858 = local_1850.z - (float)input->gravity * input->frametime;
   }
   gjk_query_input::gjk_query_input(&local_1920.m_query_input);
   local_1940 = local_1850.x + local_1860;
   local_193c = local_1850.y + local_185c;
   local_1938 = local_1850.z + local_1858;
-  local_1944 = param_2->frametime * 0.5;
+  local_1944 = input->frametime * 0.5;
   local_1960 = local_1944 * local_1940;
   local_195c = local_1944 * local_193c;
   local_1958 = local_1944 * local_1938;
@@ -3923,13 +3958,13 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
   local_1928 = local_193c;
   local_1924 = local_1940;
   Phys_NitrousVecToVec3(&local_1980,local_198c);
-  setup_trace_info(param_1,*param_2->position,*param_2->mins,*param_2->maxs,local_198c,
-                   param_2->clientnum,param_2->tracemask,&local_1920);
+  setup_trace_info(gjkcc_in,*input->position,*input->mins,*input->maxs,local_198c,input->clientnum,
+                   input->tracemask,&local_1920);
   local_1920.m_exit_on_penetration = false;
   local_19e0.x = local_1980.x - local_1840.x;
   local_19e0.y = local_1980.y - local_1840.y;
   local_19e0.z = local_1980.z - local_1840.z;
-  local_19b4 = param_2->frametime;
+  local_19b4 = input->frametime;
   local_19f0.x = local_19b4 * local_1860;
   local_19f0.y = local_19b4 * local_185c;
   local_19f0.z = local_19b4 * local_1858;
@@ -3937,7 +3972,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
   local_1a00.m_list.m_last_next_ptr = (gjk_trace_output_t **)&local_1a00;
   local_1a00.m_list.m_alloc_count = 0;
   local_1a00.m_first_hit = (gjk_trace_output_t *)0x0;
-  *param_5 = false;
+  *needs_push_out = false;
   local_1a04 = 0x43c80000;
   local_1a08 = (local_19e0.x * local_19e0.x + local_19e0.y * local_19e0.y +
                local_19e0.z * local_19e0.z) * 16.0;
@@ -3976,7 +4011,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
     phys_vec3::operator=(&((local_1920.m_gcci)->m_cg_to_world_xform).w,&local_1840);
     phys_vec3::operator=(&local_1920.m_query_input.m_cg_position,&local_1840);
     phys_vec3::operator=(&local_1920.m_query_input.m_cg_translation,&local_19e0);
-    local_1a3c = param_2->frametime - local_1a28;
+    local_1a3c = input->frametime - local_1a28;
     if (local_1a24 <= local_1a3c) {
       local_1a40 = local_1a24 / local_1a3c;
     }
@@ -4058,7 +4093,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
     while (local_1acc != local_1ac8) {
       local_1ad4 = local_1ac8;
       if (local_1ac8->m_hit_time * local_1a3c - local_1a70 <= local_1a24) {
-        if (param_1->m_ent_num != -1) {
+        if (gjkcc_in->m_ent_num != -1) {
           local_1af0.x = (local_1ac8->m_hit_point).x;
           local_1af0.y = (local_1ac8->m_hit_point).y;
           local_1af0.z = (local_1ac8->m_hit_point).z;
@@ -4079,7 +4114,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
           Phys_NitrousVecToVec3(&local_1af0,local_1b3c);
           Phys_NitrousVecToVec3(&local_1b30,local_1b48);
         }
-        if ((param_3) && (local_1ad4->m_hit_dist <= 0.0 && local_1ad4->m_hit_dist != 0.0)) {
+        if ((no_push_out) && (local_1ad4->m_hit_dist <= 0.0 && local_1ad4->m_hit_dist != 0.0)) {
           local_1b4c = local_1ad4->m_hit_dist;
           local_1b70 = local_1b4c * (local_1ad4->m_hit_normal).x;
           local_1b6c = local_1b4c * (local_1ad4->m_hit_normal).y;
@@ -4094,7 +4129,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
           local_1b50 = local_1b70;
         }
         add_hit_info(local_1ad4,&local_1830,&local_1920.m_query_input.m_geom_skip_list);
-        (**(code **)param_2->_padding_)(local_1ad4);
+        (**(code **)input->_padding_)(local_1ad4);
       }
       local_1ad0 = local_1ac8->m_next_link;
       local_1ac8 = local_1ad0;
@@ -4127,7 +4162,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
            (local_1bb0 * *(float *)local_1b80->m_buffer +
             local_1bac * *(float *)(local_1b80->m_buffer + 4) +
            local_1ba8 * *(float *)(local_1b80->m_buffer + 8));
-      if (((param_3) || (local_1b80->m_buffer[0x2e] != '\0')) &&
+      if (((no_push_out) || (local_1b80->m_buffer[0x2e] != '\0')) &&
          (0.0 < *(float *)(local_1b80->m_buffer + 0x28))) {
         local_1b80->m_buffer[0x28] = '\0';
         local_1b80->m_buffer[0x29] = '\0';
@@ -4148,7 +4183,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
     local_1be8 = local_1bc8 - local_1a18;
     local_1bf4 = local_1bf0 * local_1bf0 + local_1bec * local_1bec + local_1be8 * local_1be8;
     if (local_1a10 < local_1bf4) {
-      *param_5 = true;
+      *needs_push_out = true;
       for (local_1bfc = 0; local_1bfc < local_1830.m_alloc_count; local_1bfc = local_1bfc + 1) {
       }
       return 0;
@@ -4182,7 +4217,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
   if ((g_bDebugRenderPlayerCollision->current).enabled != false) {
     Sys_LeaveCriticalSection(CRTISECT_DEBUG_BRUSHES_AND_PATCHES);
   }
-  local_1c18 = 1.0 / param_2->frametime;
+  local_1c18 = 1.0 / input->frametime;
   local_1c40 = local_1c18 * local_19f0.x;
   local_1c3c = local_1c18 * local_19f0.y;
   local_1c38 = local_1c18 * local_19f0.z;
@@ -4192,7 +4227,7 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
   local_1850.x = local_1c40;
   local_1850.y = local_1c3c;
   local_1850.z = local_1c38;
-  if ((do_step_down != false) && (param_2->do_step_down != false)) {
+  if ((do_step_down != false) && (input->do_step_down != false)) {
     local_1c44 = 10000.0;
     local_1c48 = 0;
     local_1c4c = (phys_static_array<geom_plane,128> *)local_1830.m_slot_array;
@@ -4358,8 +4393,8 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
       }
     }
   }
-  Phys_NitrousVecToVec3(&local_1840,param_4->new_position);
-  Phys_NitrousVecToVec3(&local_1850,param_4->new_velocity);
+  Phys_NitrousVecToVec3(&local_1840,output->new_position);
+  Phys_NitrousVecToVec3(&local_1850,output->new_velocity);
   for (local_1dec = 0; local_1dec < local_1830.m_alloc_count; local_1dec = local_1dec + 1) {
   }
   return (uint)(0 < local_1830.m_alloc_count);
@@ -4369,49 +4404,49 @@ gjk_slide_move1(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,bool para
 // 0043EBD0  gjk_slide_move  (bgame/bg_slidemove.cpp:1547)
 
 int __cdecl
-gjk_slide_move(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,
-              gjk_slide_move_output_t *param_3)
+gjk_slide_move(gjkcc_input_t *gjkcc_in,gjk_slide_move_input_t *input,gjk_slide_move_output_t *output
+              )
 
 {
   float (*pafVar1) [3];
-  float local_24;
+  float p1;
   float local_20;
   float local_1c;
-  float local_18;
+  float p0;
   float local_14;
   float local_10;
-  int local_c;
-  undefined1 local_6;
-  bool local_5;
+  int retv;
+  bool succeeded;
+  bool needs_push_out;
   
-  param_3->expensive_push_out = false;
-  param_3->expensive_push_out_failed = false;
-  local_c = gjk_slide_move1(param_1,param_2,false,param_3,&local_5);
-  if (local_5 != false) {
+  output->expensive_push_out = false;
+  output->expensive_push_out_failed = false;
+  retv = gjk_slide_move1(gjkcc_in,input,false,output,&needs_push_out);
+  if (needs_push_out != false) {
     if ((phys_debugExpensivePushout->current).enabled != false) {
-      pafVar1 = param_2->position;
-      local_18 = (*pafVar1)[0];
+      pafVar1 = input->position;
+      p0 = (*pafVar1)[0];
       local_14 = (*pafVar1)[1];
       local_10 = (*pafVar1)[2];
-      pafVar1 = param_2->velocity;
-      local_24 = (*pafVar1)[0];
+      pafVar1 = input->velocity;
+      p1 = (*pafVar1)[0];
       local_20 = (*pafVar1)[1];
       local_1c = (*pafVar1)[2];
-      G_DebugLineWithDuration(&local_18,&local_24,colorRed,1,1000);
-      local_24 = local_18;
+      G_DebugLineWithDuration(&p0,&p1,colorRed,1,1000);
+      p1 = p0;
       local_20 = local_14;
       local_1c = local_10 + 10000.0;
-      G_DebugLineWithDuration(&local_18,&local_24,colorBlue,1,1000);
+      G_DebugLineWithDuration(&p0,&p1,colorBlue,1,1000);
     }
-    param_3->expensive_push_out = true;
-    local_6 = gjk_push_out(param_1,param_2,param_3);
-    if (!(bool)local_6) {
-      param_3->expensive_push_out_failed = true;
-      gjk_slide_move1(param_1,param_2,true,param_3,&local_5);
+    output->expensive_push_out = true;
+    succeeded = gjk_push_out(gjkcc_in,input,output);
+    if (!succeeded) {
+      output->expensive_push_out_failed = true;
+      gjk_slide_move1(gjkcc_in,input,true,output,&needs_push_out);
     }
-    local_c = 1;
+    retv = 1;
   }
-  return local_c;
+  return retv;
 }
 
 
@@ -4419,8 +4454,7 @@ gjk_slide_move(gjkcc_input_t *param_1,gjk_slide_move_input_t *param_2,
 
 void __cdecl
 setup_player_push_slide_move_input
-          (player_push_slide_move_input_t *param_1,pmove_t *param_2,pml_t *param_3,
-          phys_vec3 *param_4)
+          (player_push_slide_move_input_t *input,pmove_t *pm,pml_t *pml,phys_vec3 *push_movement)
 
 {
   phys_vec3 local_40;
@@ -4432,23 +4466,23 @@ setup_player_push_slide_move_input
   
   local_14 = 0x3d088889;
   local_18 = 0x41efffff;
-  local_40.x = param_4->x * 29.999998;
-  local_40.y = param_4->y * 29.999998;
-  local_40.z = param_4->z * 29.999998;
+  local_40.x = push_movement->x * 29.999998;
+  local_40.y = push_movement->y * 29.999998;
+  local_40.z = push_movement->z * 29.999998;
   local_24 = local_40.z;
   local_20 = local_40.y;
   local_1c = local_40.x;
-  Phys_NitrousVecToVec3(&local_40,param_1->velocity_);
-  param_1->_padding_ = (uint)param_2->ps->clientNum;
-  *(undefined1 *)&param_1->_padding_ = 1;
-  param_1->_padding_ = local_14;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = (int)param_2->maxs;
-  param_1->_padding_ = (int)param_2->mins;
-  param_1->_padding_ = (int)param_2->ps->origin;
-  param_1->_padding_ = param_2->tracemask;
-  param_1->_padding_ = (int)param_1->velocity_;
+  Phys_NitrousVecToVec3(&local_40,input->velocity_);
+  input->_padding_ = (uint)pm->ps->clientNum;
+  *(undefined1 *)&input->_padding_ = 1;
+  input->_padding_ = local_14;
+  input->_padding_ = 0;
+  input->_padding_ = 0;
+  input->_padding_ = (int)pm->maxs;
+  input->_padding_ = (int)pm->mins;
+  input->_padding_ = (int)pm->ps->origin;
+  input->_padding_ = pm->tracemask;
+  input->_padding_ = (int)input->velocity_;
   return;
 }
 
@@ -4465,9 +4499,9 @@ setup_player_push_slide_move_input
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,float *param_5,
-                 int param_6,int param_7,gjkcc_input_t *param_8,float param_9,float param_10,
-                 float *param_11,float *param_12)
+gjk_sentient_push(pmove_t *pm,pml_t *pml,float *origin,float *mins,float *maxs,int contentMask,
+                 int passEntityNum,gjkcc_input_t *gjkcc_in,float pushRadius,float frameTime,
+                 float *velocity_,float *origin_)
 
 {
   code *pcVar1;
@@ -4556,7 +4590,7 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if ((param_10 <= 0.0) &&
+  if ((frameTime <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x643,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -4567,26 +4601,26 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
   local_1c = 0;
   local_18 = 0;
   local_24 = 2.0;
-  local_40 = param_9 + 2.0;
-  local_3c = param_9 + 2.0;
+  local_40 = pushRadius + 2.0;
+  local_3c = pushRadius + 2.0;
   local_38 = 0.0;
-  local_54 = Phys_Vec3ToNitrousVec(&local_50,param_4);
+  local_54 = Phys_Vec3ToNitrousVec(&local_50,mins);
   local_70 = local_54->x - local_40;
   local_6c = local_54->y - local_3c;
   local_68 = local_54->z - local_38;
   local_60 = local_68;
   local_5c = local_6c;
   local_58 = local_70;
-  local_84 = Phys_Vec3ToNitrousVec(&local_80,param_5);
+  local_84 = Phys_Vec3ToNitrousVec(&local_80,maxs);
   local_a0 = local_84->x + local_40;
   local_9c = local_84->y + local_3c;
   local_98 = local_84->z + local_38;
   local_90 = local_98;
   local_8c = local_9c;
   local_88 = local_a0;
-  Phys_Vec3ToNitrousVec(&local_b0,param_3);
+  Phys_Vec3ToNitrousVec(&local_b0,origin);
   gjk_query_input::gjk_query_input(&local_160.m_query_input);
-  setup_trace_info(param_8,param_3,param_4,param_5,param_3,param_7,param_6,&local_160);
+  setup_trace_info(gjkcc_in,origin,mins,maxs,origin,passEntityNum,contentMask,&local_160);
   local_160.m_query_input.m_cg_aabb_min.x = local_70;
   local_160.m_query_input.m_cg_aabb_min.y = local_6c;
   local_160.m_query_input.m_cg_aabb_min.z = local_68;
@@ -4622,7 +4656,7 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
       }
       if ((local_1989 != '\0') &&
          (iVar5 = (**(code **)(*(int *)local_1988->m_cg + 0x28))(), iVar5 == 7)) {
-        local_1990 = param_9 + 15.0;
+        local_1990 = pushRadius + 15.0;
         local_1994 = local_1988->m_cg;
         local_1998 = local_1994[1].m_aabb_mn_loc.w + local_1994[1].m_aabb_mn_loc.y;
         local_199c = gjk_geom_info_t::get_xform(local_1988);
@@ -4683,19 +4717,19 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
     project(&PHYS_ZERO_VEC,&local_1970,&local_1a40);
     local_1a44 = local_1a40.x * local_1a40.x + local_1a40.y * local_1a40.y +
                  local_1a40.z * local_1a40.z;
-    if (param_9 * param_9 < local_1a44) {
+    if (pushRadius * pushRadius < local_1a44) {
       local_1a48 = SQRT(local_1a44);
-      local_1a4c = param_9 / local_1a48;
+      local_1a4c = pushRadius / local_1a48;
       local_1a40.x = local_1a40.x * local_1a4c;
       local_1a40.y = local_1a40.y * local_1a4c;
       local_1a40.z = local_1a40.z * local_1a4c;
     }
     local_1a84._padding_ = (int)player_push_slide_move_input_t::vftable;
-    setup_player_push_slide_move_input(&local_1a84,param_1,param_2,&local_1a40);
-    gjk_slide_move(param_8,(gjk_slide_move_input_t *)&local_1a84,&local_1aa0);
-    *param_12 = local_1aa0.new_position[0];
-    param_12[1] = local_1aa0.new_position[1];
-    param_12[2] = local_1aa0.new_position[2];
+    setup_player_push_slide_move_input(&local_1a84,pm,pml,&local_1a40);
+    gjk_slide_move(gjkcc_in,(gjk_slide_move_input_t *)&local_1a84,&local_1aa0);
+    *origin_ = local_1aa0.new_position[0];
+    origin_[1] = local_1aa0.new_position[1];
+    origin_[2] = local_1aa0.new_position[2];
     local_1aa4 = (phys_static_array<geom_plane,128> *)local_1970.m_slot_array;
     local_1ab0 = (phys_static_array<geom_plane,128> *)
                  ((int)&(local_1970.m_slot_array)->m_normal + local_1970.m_alloc_count * 0x30);
@@ -4711,12 +4745,12 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
       local_1ab4 = local_1aa8;
     }
     local_1aac = local_1ab0;
-    ppVar6 = Phys_Vec3ToNitrousVec(&local_1ad0,param_1->ps->velocity);
+    ppVar6 = Phys_Vec3ToNitrousVec(&local_1ad0,pm->ps->velocity);
     local_1a40.x = ppVar6->x;
     local_1a40.y = ppVar6->y;
     local_1a40.z = ppVar6->z;
     project(&local_1a40,&local_1970,&local_1a40);
-    Phys_NitrousVecToVec3(&local_1a40,param_1->ps->velocity);
+    Phys_NitrousVecToVec3(&local_1a40,pm->ps->velocity);
   }
   for (local_1ad8 = 0; local_1ad8 < local_1970.m_alloc_count; local_1ad8 = local_1ad8 + 1) {
   }
@@ -4726,7 +4760,7 @@ gjk_sentient_push(pmove_t *param_1,pml_t *param_2,float *param_3,float *param_4,
 
 // 0043F990  render_gjkcc_collision  (bgame/bg_slidemove.cpp:1721)
 
-void __cdecl render_gjkcc_collision(float (*param_1) [3],float (*param_2) [3],float (*param_3) [3])
+void __cdecl render_gjkcc_collision(float (*mins) [3],float (*maxs) [3],float (*origin) [3])
 
 {
   phys_vec3 *ppVar1;
@@ -4809,8 +4843,8 @@ void __cdecl render_gjkcc_collision(float (*param_1) [3],float (*param_2) [3],fl
   
   gjk_base_t::gjk_base_t((gjk_base_t *)&local_90);
   local_90._padding_ = (int)gjk_polygon_cylinder_t::vftable;
-  setup_gjk_polygon_cylinder(*param_1,*param_2,0.5,&local_90);
-  Phys_Vec3ToNitrousVec(&local_a0,*param_3);
+  setup_gjk_polygon_cylinder(*mins,*maxs,0.5,&local_90);
+  Phys_Vec3ToNitrousVec(&local_a0,*origin);
   if (render_bounding_box != false) {
     ppVar5 = &PHYS_IDENTITY_MATRIX;
     ppVar6 = &local_e0;
@@ -4942,11 +4976,11 @@ void __cdecl render_gjkcc_collision(float (*param_1) [3],float (*param_2) [3],fl
 
 // 00441EF0  render_gjkcc_collision  (bgame/bg_slidemove.cpp:1773)
 
-void __cdecl render_gjkcc_collision(pmove_t *param_1)
+void __cdecl render_gjkcc_collision(pmove_t *pm)
 
 {
   if ((render_player_collision->current).integer == 1) {
-    render_gjkcc_collision(&param_1->mins,&param_1->maxs,&param_1->ps->origin);
+    render_gjkcc_collision(&pm->mins,&pm->maxs,&pm->ps->origin);
   }
   return;
 }
@@ -4955,8 +4989,8 @@ void __cdecl render_gjkcc_collision(pmove_t *param_1)
 // 00441F30  PM_gjk_ground_trace  (bgame/bg_slidemove.cpp:1784)
 
 void __cdecl
-PM_gjk_ground_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float *param_4,
-                   float *param_5,float *param_6,int param_7,int param_8,float *param_9)
+PM_gjk_ground_trace(gjkcc_input_t *gjkcc_in,trace_t *results,float *start,float *mins,float *maxs,
+                   float *end,int passEntityNum,int contentMask,float *first_hit_time)
 
 {
   code *pcVar1;
@@ -4984,9 +5018,9 @@ PM_gjk_ground_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float
   local_d0.m_query_input.m_geom_skip_list.m_first = (gjk_geom_info_t *)0x0;
   local_d0.m_query_input.m_geom_skip_list.m_alloc_count = 0;
   local_d0.m_query_input.m_geom_skip_list.m_last_next_ptr = &local_d8->m_first;
-  setup_trace_info(param_1,param_3,param_4,param_5,param_6,param_7,param_8,&local_d0);
+  setup_trace_info(gjkcc_in,start,mins,maxs,end,passEntityNum,contentMask,&local_d0);
   local_d0.m_exit_on_penetration = false;
-  local_dc = param_3[2] - param_6[2];
+  local_dc = start[2] - end[2];
   if ((local_dc < 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x707,0,
                                "%s"), !bVar3)) {
@@ -5008,19 +5042,19 @@ PM_gjk_ground_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float
   gjk_trace(&local_d0,&local_f0);
   pgVar2 = local_f0.m_list.m_first;
   if (local_f0.m_first_hit == (gjk_trace_output_t *)0x0) {
-    fill_results_no_hit(param_2);
+    fill_results_no_hit(results);
   }
   else {
-    if (param_9 != (float *)0x0) {
-      *param_9 = (local_f0.m_first_hit)->m_hit_time;
+    if (first_hit_time != (float *)0x0) {
+      *first_hit_time = (local_f0.m_first_hit)->m_hit_time;
     }
-    fVar5 = (param_6[2] - param_3[2]) * (local_f0.m_first_hit)->m_hit_time + param_3[2];
+    fVar5 = (end[2] - start[2]) * (local_f0.m_first_hit)->m_hit_time + start[2];
     local_f8 = local_f0.m_list.m_first;
     local_fc = (local_f0.m_list.m_first)->m_hit_time;
     local_fd = is_walkable(local_f0.m_list.m_first);
     for (local_104 = pgVar2->m_next_link; local_104 != (gjk_trace_output_t *)0x0;
         local_104 = local_104->m_next_link) {
-      fVar6 = (param_6[2] - param_3[2]) * local_104->m_hit_time + param_3[2];
+      fVar6 = (end[2] - start[2]) * local_104->m_hit_time + start[2];
       if ((fVar5 < fVar6) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",
                                    0x718,0,"%s"), !bVar3)) {
@@ -5048,7 +5082,7 @@ PM_gjk_ground_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float
         }
       }
     }
-    fill_results(local_f8,local_fd,param_2);
+    fill_results(local_f8,local_fd,results);
   }
   return;
 }
@@ -5056,7 +5090,7 @@ PM_gjk_ground_trace(gjkcc_input_t *param_1,trace_t *param_2,float *param_3,float
 
 // 004433D0  PM_VerifyPronePosition  (bgame/bg_slidemove.cpp:1867)
 
-int __cdecl PM_VerifyPronePosition(pmove_t *param_1,float *param_2,float *param_3)
+int __cdecl PM_VerifyPronePosition(pmove_t *pm,float *vFallbackOrg,float *vFallbackVel)
 
 {
   float fVar1;
@@ -5065,123 +5099,124 @@ int __cdecl PM_VerifyPronePosition(pmove_t *param_1,float *param_2,float *param_
   float fVar4;
   float fVar5;
   float fVar6;
-  playerState_s *ppVar7;
-  code *pcVar8;
-  bool bVar9;
-  int iVar10;
-  uint local_c;
+  playerState_s *ps_00;
+  code *pcVar7;
+  bool bVar8;
+  int iVar9;
+  int bProneOK;
+  playerState_s *ps;
   
-  ppVar7 = param_1->ps;
-  if ((ppVar7 == (playerState_s *)0x0) &&
-     (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x74f,0,
-                               "%s"), !bVar9)) {
-    pcVar8 = (code *)swi(3);
-    iVar10 = (*pcVar8)();
-    return iVar10;
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x74f,0,
+                               "%s"), !bVar8)) {
+    pcVar7 = (code *)swi(3);
+    iVar9 = (*pcVar7)();
+    return iVar9;
   }
   if (return_true == false) {
-    if ((ppVar7->pm_flags & 1U) == 0) {
-      local_c = 1;
+    if ((ps_00->pm_flags & 1U) == 0) {
+      bProneOK = 1;
     }
     else {
-      bVar9 = BG_CheckProne(ppVar7,(uint)ppVar7->clientNum,ppVar7->origin,15.0,30.0,
-                            ppVar7->proneDirection,&ppVar7->fTorsoPitch,&ppVar7->fWaistPitch,true,
-                            true,true,param_1->handler,PCT_CLIENT,50.0);
-      local_c = (uint)bVar9;
-      if (local_c == 0) {
-        fVar1 = ppVar7->origin[0];
-        fVar2 = ppVar7->origin[1];
-        fVar3 = ppVar7->origin[2];
-        fVar4 = ppVar7->velocity[0];
-        fVar5 = ppVar7->velocity[1];
-        fVar6 = ppVar7->velocity[2];
-        ppVar7->origin[0] = *param_2;
-        ppVar7->origin[1] = param_2[1];
-        ppVar7->origin[2] = param_2[2];
-        ppVar7->velocity[0] = *param_3;
-        ppVar7->velocity[1] = param_3[1];
-        ppVar7->velocity[2] = param_3[2];
-        bVar9 = BG_CheckProne(ppVar7,(uint)ppVar7->clientNum,ppVar7->origin,15.0,30.0,
-                              ppVar7->proneDirection,&ppVar7->fTorsoPitch,&ppVar7->fWaistPitch,true,
-                              true,true,param_1->handler,PCT_CLIENT,50.0);
-        if (bVar9) {
-          local_c = 0;
+      bVar8 = BG_CheckProne(ps_00,(uint)ps_00->clientNum,ps_00->origin,15.0,30.0,
+                            ps_00->proneDirection,&ps_00->fTorsoPitch,&ps_00->fWaistPitch,true,true,
+                            true,pm->handler,PCT_CLIENT,50.0);
+      bProneOK = (int)bVar8;
+      if (bProneOK == 0) {
+        fVar1 = ps_00->origin[0];
+        fVar2 = ps_00->origin[1];
+        fVar3 = ps_00->origin[2];
+        fVar4 = ps_00->velocity[0];
+        fVar5 = ps_00->velocity[1];
+        fVar6 = ps_00->velocity[2];
+        ps_00->origin[0] = *vFallbackOrg;
+        ps_00->origin[1] = vFallbackOrg[1];
+        ps_00->origin[2] = vFallbackOrg[2];
+        ps_00->velocity[0] = *vFallbackVel;
+        ps_00->velocity[1] = vFallbackVel[1];
+        ps_00->velocity[2] = vFallbackVel[2];
+        bVar8 = BG_CheckProne(ps_00,(uint)ps_00->clientNum,ps_00->origin,15.0,30.0,
+                              ps_00->proneDirection,&ps_00->fTorsoPitch,&ps_00->fWaistPitch,true,
+                              true,true,pm->handler,PCT_CLIENT,50.0);
+        if (bVar8) {
+          bProneOK = 0;
         }
         else {
-          ppVar7->origin[0] = fVar1;
-          ppVar7->origin[1] = fVar2;
-          ppVar7->origin[2] = fVar3;
-          ppVar7->velocity[0] = fVar4;
-          ppVar7->velocity[1] = fVar5;
-          ppVar7->velocity[2] = fVar6;
-          local_c = 1;
+          ps_00->origin[0] = fVar1;
+          ps_00->origin[1] = fVar2;
+          ps_00->origin[2] = fVar3;
+          ps_00->velocity[0] = fVar4;
+          ps_00->velocity[1] = fVar5;
+          ps_00->velocity[2] = fVar6;
+          bProneOK = 1;
         }
       }
     }
   }
   else {
-    local_c = 1;
+    bProneOK = 1;
   }
-  return local_c;
+  return bProneOK;
 }
 
 
 // 00442330  PM_PermuteRestrictiveClipPlanes  (bgame/bg_slidemove.cpp:1919)
 
 float __cdecl
-PM_PermuteRestrictiveClipPlanes(float *param_1,int param_2,float (*param_3) [3],int *param_4)
+PM_PermuteRestrictiveClipPlanes(float *velocity,int planeCount,float (*planes) [3],int *permutation)
 
 {
   code *pcVar1;
   bool bVar2;
   float (*pafVar3) [3];
   float10 fVar4;
-  int local_2c;
+  int permutedIndex;
   float afStack_28 [8];
-  int local_8;
+  int planeIndex;
   
-  if ((param_1 == (float *)0x0) &&
+  if ((velocity == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x784,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if (((param_2 < 1) || (8 < param_2)) &&
+  if (((planeCount < 1) || (8 < planeCount)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x785,0,
                                "%s\n\t(planeCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if ((param_3 == (float (*) [3])0x0) &&
+  if ((planes == (float (*) [3])0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x786,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if ((param_4 == (int *)0x0) &&
+  if ((permutation == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x787,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pafVar3 = param_3 + local_8;
-    afStack_28[local_8] =
-         *param_1 * (*pafVar3)[0] + param_1[1] * (*pafVar3)[1] + param_1[2] * (*pafVar3)[2];
-    local_2c = local_8;
-    while ((local_2c != 0 &&
-           (afStack_28[local_8] < afStack_28[param_4[local_2c + -1]] ||
-            afStack_28[local_8] == afStack_28[param_4[local_2c + -1]]))) {
-      param_4[local_2c] = param_4[local_2c + -1];
-      local_2c = local_2c + -1;
+  for (planeIndex = 0; planeIndex < planeCount; planeIndex = planeIndex + 1) {
+    pafVar3 = planes + planeIndex;
+    afStack_28[planeIndex] =
+         *velocity * (*pafVar3)[0] + velocity[1] * (*pafVar3)[1] + velocity[2] * (*pafVar3)[2];
+    permutedIndex = planeIndex;
+    while ((permutedIndex != 0 &&
+           (afStack_28[planeIndex] < afStack_28[permutation[permutedIndex + -1]] ||
+            afStack_28[planeIndex] == afStack_28[permutation[permutedIndex + -1]]))) {
+      permutation[permutedIndex] = permutation[permutedIndex + -1];
+      permutedIndex = permutedIndex + -1;
     }
-    param_4[local_2c] = local_8;
+    permutation[permutedIndex] = planeIndex;
   }
-  return afStack_28[*param_4];
+  return afStack_28[*permutation];
 }
 
 
@@ -5191,24 +5226,24 @@ PM_PermuteRestrictiveClipPlanes(float *param_1,int param_2,float (*param_3) [3],
 
 void __thiscall
 player_gjk_slide_move_input_t::custom_process
-          (player_gjk_slide_move_input_t *this,gjk_trace_output_t *param_1)
+          (player_gjk_slide_move_input_t *this,gjk_trace_output_t *gto)
 
 {
   ushort uVar1;
-  int iVar2;
-  float4 local_40 [3];
+  int glassId;
+  float4 trace [3];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40[0].v[0] = 0.0;
-  local_40[0].v[1] = 0.0;
-  local_40[0].v[2] = 0.0;
-  local_40[0].v[3] = 0.0;
-  fill_results_type_and_id(param_1,(trace_t *)local_40);
-  uVar1 = Trace_GetEntityHitId((trace_t *)local_40);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  fill_results_type_and_id(gto,(trace_t *)trace);
+  uVar1 = Trace_GetEntityHitId((trace_t *)trace);
   PM_AddTouchEnt(this->pm,(uint)uVar1);
-  iVar2 = Trace_GetGlassHitId((trace_t *)local_40);
-  PM_AddTouchGlass(this->pm,iVar2);
+  glassId = Trace_GetGlassHitId((trace_t *)trace);
+  PM_AddTouchGlass(this->pm,glassId);
   return;
 }
 
@@ -5217,28 +5252,28 @@ player_gjk_slide_move_input_t::custom_process
 
 void __cdecl
 setup_player_gjk_slide_move_input
-          (player_gjk_slide_move_input_t *param_1,pmove_t *param_2,pml_t *param_3,int param_4)
+          (player_gjk_slide_move_input_t *input,pmove_t *pm,pml_t *pml,int gravity)
 
 {
   undefined1 local_8;
   
-  param_1->_padding_ = (uint)param_2->ps->clientNum;
-  if (((param_4 == 0) && (param_3->groundPlane != 0)) && ((param_2->ps->pm_flags & 8U) == 0)) {
+  input->_padding_ = (uint)pm->ps->clientNum;
+  if (((gravity == 0) && (pml->groundPlane != 0)) && ((pm->ps->pm_flags & 8U) == 0)) {
     local_8 = 1;
   }
   else {
     local_8 = 0;
   }
-  *(undefined1 *)&param_1->_padding_ = local_8;
-  param_1->_padding_ = (int)param_3->frametime;
-  param_1->_padding_ = param_2->ps->gravity;
-  param_1->_padding_ = param_4;
-  param_1->_padding_ = (int)param_2->maxs;
-  param_1->_padding_ = (int)param_2->mins;
-  param_1->_padding_ = (int)param_2->ps->origin;
-  param_1->_padding_ = param_2->tracemask;
-  param_1->_padding_ = (int)param_2->ps->velocity;
-  param_1->pm = param_2;
+  *(undefined1 *)&input->_padding_ = local_8;
+  input->_padding_ = (int)pml->frametime;
+  input->_padding_ = pm->ps->gravity;
+  input->_padding_ = gravity;
+  input->_padding_ = (int)pm->maxs;
+  input->_padding_ = (int)pm->mins;
+  input->_padding_ = (int)pm->ps->origin;
+  input->_padding_ = pm->tracemask;
+  input->_padding_ = (int)pm->ps->velocity;
+  input->pm = pm;
   return;
 }
 
@@ -5247,7 +5282,7 @@ setup_player_gjk_slide_move_input
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PM_SlideMove(pmove_t *param_1,pml_t *param_2,int param_3,bool param_4)
+int __cdecl PM_SlideMove(pmove_t *pm,pml_t *pml,int gravity,bool is_step_up)
 
 {
   playerState_s *ppVar1;
@@ -5257,206 +5292,205 @@ int __cdecl PM_SlideMove(pmove_t *param_1,pml_t *param_2,int param_3,bool param_
   uint uVar5;
   int iVar6;
   float fVar7;
-  player_gjk_slide_move_input_t local_188;
-  gjk_slide_move_output_t local_154;
-  gjkcc_input_t *local_138;
-  int local_134;
-  float local_130;
+  player_gjk_slide_move_input_t input;
+  int retv;
+  gjk_slide_move_output_t output;
+  gjkcc_input_t *gjkcc_in;
+  int j;
+  float dir;
   float local_12c;
   float local_128;
-  float local_124;
-  int local_120;
-  float local_11c;
+  float d;
+  int numbumps;
+  float endClipVelocity;
   float local_118;
   float local_114;
-  int local_110;
-  float local_10c [25];
-  int local_a8 [8];
-  float local_88;
-  float local_84;
+  int k;
+  float planes [25];
+  int permutation [8];
+  float time_left;
+  float end;
   float local_80;
   float local_7c;
-  uint local_78;
-  int local_74;
-  float local_70;
+  int numplanes;
+  int bumpcount;
+  float primal_velocity;
   float local_6c;
   float local_68;
-  float4 local_64;
+  float4 trace;
   float local_54;
   char local_3a;
   char local_39;
   uint local_2c;
-  float local_28;
+  float endVelocity;
   float local_24;
   float local_20;
-  float local_1c;
+  float clipVelocity;
   float local_18;
   float local_14;
-  int local_10;
-  playerState_s *local_c;
-  float local_8;
+  int i;
+  playerState_s *ps;
+  float into;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((phys_player_collision_mode->current).integer == 1) {
-    local_188._padding_ = (int)player_gjk_slide_move_input_t::vftable;
-    setup_player_gjk_slide_move_input(&local_188,param_1,param_2,param_3);
-    local_138 = param_1->m_gjkcc_input;
-    uVar5 = gjk_slide_move(local_138,(gjk_slide_move_input_t *)&local_188,&local_154);
-    ppVar1 = param_1->ps;
-    ppVar1->origin[0] = local_154.new_position[0];
-    ppVar1->origin[1] = local_154.new_position[1];
-    ppVar1->origin[2] = local_154.new_position[2];
-    ppVar1 = param_1->ps;
-    ppVar1->velocity[0] = local_154.new_velocity[0];
-    ppVar1->velocity[1] = local_154.new_velocity[1];
-    ppVar1->velocity[2] = local_154.new_velocity[2];
+    input._padding_ = (int)player_gjk_slide_move_input_t::vftable;
+    setup_player_gjk_slide_move_input(&input,pm,pml,gravity);
+    gjkcc_in = pm->m_gjkcc_input;
+    uVar5 = gjk_slide_move(gjkcc_in,(gjk_slide_move_input_t *)&input,&output);
+    ppVar1 = pm->ps;
+    ppVar1->origin[0] = output.new_position[0];
+    ppVar1->origin[1] = output.new_position[1];
+    ppVar1->origin[2] = output.new_position[2];
+    ppVar1 = pm->ps;
+    ppVar1->velocity[0] = output.new_velocity[0];
+    ppVar1->velocity[1] = output.new_velocity[1];
+    ppVar1->velocity[2] = output.new_velocity[2];
   }
   else {
-    local_64.v[0] = 0.0;
-    local_64.v[1] = 0.0;
-    local_64.v[2] = 0.0;
-    local_64.v[3] = 0.0;
-    local_c = param_1->ps;
-    if ((local_c == (playerState_s *)0x0) &&
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    ps = pm->ps;
+    if ((ps == (playerState_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x7ef,
                                  0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar6 = (*pcVar2)();
       return iVar6;
     }
-    local_120 = 4;
-    local_70 = local_c->velocity[0];
-    local_6c = local_c->velocity[1];
-    local_68 = local_c->velocity[2];
-    local_28 = local_c->velocity[0];
-    local_24 = local_c->velocity[1];
-    local_20 = local_c->velocity[2];
-    if (param_3 != 0) {
-      local_68 = local_20 - (float)local_c->gravity * param_2->frametime;
-      local_c->velocity[2] = (local_c->velocity[2] + local_68) * 0.5;
+    numbumps = 4;
+    primal_velocity = ps->velocity[0];
+    local_6c = ps->velocity[1];
+    local_68 = ps->velocity[2];
+    endVelocity = ps->velocity[0];
+    local_24 = ps->velocity[1];
+    local_20 = ps->velocity[2];
+    if (gravity != 0) {
+      local_68 = local_20 - (float)ps->gravity * pml->frametime;
+      ps->velocity[2] = (ps->velocity[2] + local_68) * 0.5;
       local_20 = local_68;
-      if (param_2->groundPlane != 0) {
-        PM_ClipVelocity(local_c->velocity,(float *)&param_2->groundTrace,local_c->velocity);
+      if (pml->groundPlane != 0) {
+        PM_ClipVelocity(ps->velocity,(float *)&pml->groundTrace,ps->velocity);
       }
     }
-    local_88 = param_2->frametime;
-    bVar3 = param_2->groundPlane != 0;
+    time_left = pml->frametime;
+    bVar3 = pml->groundPlane != 0;
     if (bVar3) {
-      local_10c[0] = (param_2->groundTrace).normal.vec.v[0];
-      local_10c[1] = (param_2->groundTrace).normal.vec.v[1];
-      local_10c[2] = (param_2->groundTrace).normal.vec.v[2];
+      planes[0] = (pml->groundTrace).normal.vec.v[0];
+      planes[1] = (pml->groundTrace).normal.vec.v[1];
+      planes[2] = (pml->groundTrace).normal.vec.v[2];
     }
-    local_78 = (uint)bVar3;
-    Vec3NormalizeTo(local_c->velocity,local_10c + local_78 * 3);
-    local_78 = local_78 + 1;
-    for (local_74 = 0; local_74 < local_120; local_74 = local_74 + 1) {
-      local_84 = local_88 * local_c->velocity[0] + local_c->origin[0];
-      local_80 = local_88 * local_c->velocity[1] + local_c->origin[1];
-      local_7c = local_88 * local_c->velocity[2] + local_c->origin[2];
-      PM_playerTrace(param_1,(trace_t *)&local_64,local_c->origin,param_1->mins,param_1->maxs,
-                     &local_84,(uint)local_c->clientNum,param_1->tracemask);
+    numplanes = (int)bVar3;
+    Vec3NormalizeTo(ps->velocity,planes + numplanes * 3);
+    numplanes = numplanes + 1;
+    for (bumpcount = 0; bumpcount < numbumps; bumpcount = bumpcount + 1) {
+      end = time_left * ps->velocity[0] + ps->origin[0];
+      local_80 = time_left * ps->velocity[1] + ps->origin[1];
+      local_7c = time_left * ps->velocity[2] + ps->origin[2];
+      PM_playerTrace(pm,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&end,(uint)ps->clientNum,
+                     pm->tracemask);
       if (local_3a != '\0') {
-        local_c->velocity[2] = 0.0;
+        ps->velocity[2] = 0.0;
         return 1;
       }
       if ((local_39 != '\0') && (do_push != false)) {
-        local_c->origin[0] = local_c->origin[0] + local_64.v[0];
-        local_c->origin[1] = local_c->origin[1] + local_64.v[1];
-        local_c->origin[2] = local_c->origin[2] + local_64.v[2];
+        ps->origin[0] = ps->origin[0] + trace.v[0];
+        ps->origin[1] = ps->origin[1] + trace.v[1];
+        ps->origin[2] = ps->origin[2] + trace.v[2];
       }
       if (0.0 < local_54) {
-        Vec3Lerp(local_c->origin,&local_84,local_54,local_c->origin);
+        Vec3Lerp(ps->origin,&end,local_54,ps->origin);
       }
       if (local_54 == 1.0) break;
-      uVar4 = Trace_GetEntityHitId((trace_t *)&local_64);
-      PM_AddTouchEnt(param_1,(uint)uVar4);
-      local_88 = local_88 - local_88 * local_54;
-      if (7 < (int)local_78) {
-        local_c->velocity[0] = 0.0;
-        local_c->velocity[1] = 0.0;
-        local_c->velocity[2] = 0.0;
+      uVar4 = Trace_GetEntityHitId((trace_t *)&trace);
+      PM_AddTouchEnt(pm,(uint)uVar4);
+      time_left = time_left - time_left * local_54;
+      if (7 < numplanes) {
+        ps->velocity[0] = 0.0;
+        ps->velocity[1] = 0.0;
+        ps->velocity[2] = 0.0;
         return 1;
       }
-      for (local_10 = 0; local_10 < (int)local_78; local_10 = local_10 + 1) {
-        if (0.999 < local_64.v[0] * local_10c[local_10 * 3] +
-                    local_64.v[1] * local_10c[local_10 * 3 + 1] +
-                    local_64.v[2] * local_10c[local_10 * 3 + 2]) {
-          PM_ClipVelocity(local_c->velocity,local_64.v,local_c->velocity);
-          local_c->velocity[0] = local_64.v[0] + local_c->velocity[0];
-          local_c->velocity[1] = local_64.v[1] + local_c->velocity[1];
-          local_c->velocity[2] = local_64.v[2] + local_c->velocity[2];
+      for (i = 0; i < numplanes; i = i + 1) {
+        if (0.999 < trace.v[0] * planes[i * 3] + trace.v[1] * planes[i * 3 + 1] +
+                    trace.v[2] * planes[i * 3 + 2]) {
+          PM_ClipVelocity(ps->velocity,trace.v,ps->velocity);
+          ps->velocity[0] = trace.v[0] + ps->velocity[0];
+          ps->velocity[1] = trace.v[1] + ps->velocity[1];
+          ps->velocity[2] = trace.v[2] + ps->velocity[2];
           break;
         }
       }
-      uVar5 = local_78;
-      if ((int)local_78 <= local_10) {
-        local_10c[local_78 * 3] = local_64.v[0];
-        local_10c[uVar5 * 3 + 1] = local_64.v[1];
-        local_10c[uVar5 * 3 + 2] = local_64.v[2];
-        local_78 = local_78 + 1;
-        local_8 = PM_PermuteRestrictiveClipPlanes
-                            (local_c->velocity,local_78,(float (*) [3])local_10c,local_a8);
-        if (local_8 < 0.1) {
-          if (param_2->impactSpeed <= -local_8 && -local_8 != param_2->impactSpeed) {
-            param_2->impactSpeed = -local_8;
+      iVar6 = numplanes;
+      if (numplanes <= i) {
+        planes[numplanes * 3] = trace.v[0];
+        planes[iVar6 * 3 + 1] = trace.v[1];
+        planes[iVar6 * 3 + 2] = trace.v[2];
+        numplanes = numplanes + 1;
+        into = PM_PermuteRestrictiveClipPlanes
+                         (ps->velocity,numplanes,(float (*) [3])planes,permutation);
+        if (into < 0.1) {
+          if (pml->impactSpeed <= -into && -into != pml->impactSpeed) {
+            pml->impactSpeed = -into;
           }
-          PM_ClipVelocity(local_c->velocity,local_10c + local_a8[0] * 3,&local_1c);
-          PM_ClipVelocity(&local_28,local_10c + local_a8[0] * 3,&local_11c);
-          for (local_134 = 1; local_134 < (int)local_78; local_134 = local_134 + 1) {
-            iVar6 = local_a8[local_134];
-            if (local_1c * local_10c[iVar6 * 3] + local_18 * local_10c[iVar6 * 3 + 1] +
-                local_14 * local_10c[iVar6 * 3 + 2] < 0.1) {
-              PM_ClipVelocity(&local_1c,local_10c + local_a8[local_134] * 3,&local_1c);
-              PM_ClipVelocity(&local_11c,local_10c + local_a8[local_134] * 3,&local_11c);
-              if (local_1c * local_10c[local_a8[0] * 3] + local_18 * local_10c[local_a8[0] * 3 + 1]
-                  + local_14 * local_10c[local_a8[0] * 3 + 2] < 0.0) {
-                Vec3Cross(local_10c + local_a8[0] * 3,local_10c + local_a8[local_134] * 3,&local_130
-                         );
-                Vec3Normalize(&local_130);
-                fVar7 = local_130 * local_c->velocity[0] + local_12c * local_c->velocity[1] +
-                        local_128 * local_c->velocity[2];
-                local_1c = fVar7 * local_130;
+          PM_ClipVelocity(ps->velocity,planes + permutation[0] * 3,&clipVelocity);
+          PM_ClipVelocity(&endVelocity,planes + permutation[0] * 3,&endClipVelocity);
+          for (j = 1; j < numplanes; j = j + 1) {
+            iVar6 = permutation[j];
+            if (clipVelocity * planes[iVar6 * 3] + local_18 * planes[iVar6 * 3 + 1] +
+                local_14 * planes[iVar6 * 3 + 2] < 0.1) {
+              PM_ClipVelocity(&clipVelocity,planes + permutation[j] * 3,&clipVelocity);
+              PM_ClipVelocity(&endClipVelocity,planes + permutation[j] * 3,&endClipVelocity);
+              if (clipVelocity * planes[permutation[0] * 3] +
+                  local_18 * planes[permutation[0] * 3 + 1] +
+                  local_14 * planes[permutation[0] * 3 + 2] < 0.0) {
+                Vec3Cross(planes + permutation[0] * 3,planes + permutation[j] * 3,&dir);
+                Vec3Normalize(&dir);
+                fVar7 = dir * ps->velocity[0] + local_12c * ps->velocity[1] +
+                        local_128 * ps->velocity[2];
+                clipVelocity = fVar7 * dir;
                 local_18 = fVar7 * local_12c;
                 local_14 = fVar7 * local_128;
-                local_124 = local_130 * local_28 + local_12c * local_24 + local_128 * local_20;
-                local_11c = local_124 * local_130;
-                local_118 = local_124 * local_12c;
-                local_114 = local_124 * local_128;
-                for (local_110 = 1; local_110 < (int)local_78; local_110 = local_110 + 1) {
-                  if ((local_110 != local_134) &&
-                     (iVar6 = local_a8[local_110],
-                     fVar7 * local_130 * local_10c[iVar6 * 3] +
-                     fVar7 * local_12c * local_10c[iVar6 * 3 + 1] +
-                     fVar7 * local_128 * local_10c[iVar6 * 3 + 2] < 0.1)) {
-                    local_c->velocity[0] = 0.0;
-                    local_c->velocity[1] = 0.0;
-                    local_c->velocity[2] = 0.0;
+                d = dir * endVelocity + local_12c * local_24 + local_128 * local_20;
+                endClipVelocity = d * dir;
+                local_118 = d * local_12c;
+                local_114 = d * local_128;
+                for (k = 1; k < numplanes; k = k + 1) {
+                  if ((k != j) &&
+                     (iVar6 = permutation[k],
+                     fVar7 * dir * planes[iVar6 * 3] + fVar7 * local_12c * planes[iVar6 * 3 + 1] +
+                     fVar7 * local_128 * planes[iVar6 * 3 + 2] < 0.1)) {
+                    ps->velocity[0] = 0.0;
+                    ps->velocity[1] = 0.0;
+                    ps->velocity[2] = 0.0;
                     return 1;
                   }
                 }
               }
             }
           }
-          local_c->velocity[0] = local_1c;
-          local_c->velocity[1] = local_18;
-          local_c->velocity[2] = local_14;
-          local_28 = local_11c;
+          ps->velocity[0] = clipVelocity;
+          ps->velocity[1] = local_18;
+          ps->velocity[2] = local_14;
+          endVelocity = endClipVelocity;
           local_24 = local_118;
           local_20 = local_114;
         }
       }
     }
-    if (param_3 != 0) {
-      local_c->velocity[0] = local_28;
-      local_c->velocity[1] = local_24;
-      local_c->velocity[2] = local_20;
+    if (gravity != 0) {
+      ps->velocity[0] = endVelocity;
+      ps->velocity[1] = local_24;
+      ps->velocity[2] = local_20;
     }
-    if (local_c->pm_time != 0) {
-      local_c->velocity[0] = local_70;
-      local_c->velocity[1] = local_6c;
-      local_c->velocity[2] = local_68;
+    if (ps->pm_time != 0) {
+      ps->velocity[0] = primal_velocity;
+      ps->velocity[1] = local_6c;
+      ps->velocity[2] = local_68;
     }
-    uVar5 = (uint)(local_74 != 0);
+    uVar5 = (uint)(bumpcount != 0);
   }
   return uVar5;
 }
@@ -5466,7 +5500,7 @@ int __cdecl PM_SlideMove(pmove_t *param_1,pml_t *param_2,int param_3,bool param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_StepSlideMove(pmove_t *param_1,pml_t *param_2,int param_3)
+void __cdecl PM_StepSlideMove(pmove_t *pm,pml_t *pml,int gravity)
 
 {
   float *pfVar1;
@@ -5482,42 +5516,50 @@ void __cdecl PM_StepSlideMove(pmove_t *param_1,pml_t *param_2,int param_3)
   float fVar11;
   float fVar12;
   float fVar13;
-  int local_c8;
-  float local_98;
+  int old;
+  float bobmove;
+  float fSlowDownMax;
+  float fSpeedScale;
+  float fDelta;
+  int iDelta;
+  int jumping;
+  int stepMovedLess;
+  int iBumps;
+  float start_o;
   float local_94;
   float local_90;
-  float4 local_8c;
+  float4 trace;
   float local_7c;
   char local_60;
   uint local_54;
-  float local_50;
+  float endpos;
   float local_4c;
   float local_48;
-  float local_44;
+  float start_v;
   float local_40;
   float local_3c;
-  float local_38;
+  float down_o;
   float local_34;
   float local_30;
-  float local_2c;
+  float up;
   float local_28;
   float local_24;
-  int local_20;
-  float local_1c;
+  int bHadGround;
+  float down;
   float local_18;
   float local_14;
-  playerState_s *local_10;
-  float local_c;
-  float local_8;
+  playerState_s *ps;
+  float fStepSize;
+  float fStepAmount;
   
   local_54 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8c.v[0] = 0.0;
-  local_8c.v[1] = 0.0;
-  local_8c.v[2] = 0.0;
-  local_8c.v[3] = 0.0;
-  local_8 = 0.0;
-  local_10 = param_1->ps;
-  if ((local_10 == (playerState_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  fStepAmount = 0.0;
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_slidemove.cpp",0x8bf,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
@@ -5525,199 +5567,197 @@ void __cdecl PM_StepSlideMove(pmove_t *param_1,pml_t *param_2,int param_3)
     return;
   }
   bVar6 = false;
-  if ((local_10->pm_flags & 8U) == 0) {
-    if (param_2->groundPlane == 0) {
-      local_20 = 0;
-      if (((local_10->pm_flags & 0x4000U) != 0) && (local_10->pm_time != 0)) {
-        Jump_ClearState(local_10);
+  if ((ps->pm_flags & 8U) == 0) {
+    if (pml->groundPlane == 0) {
+      bHadGround = 0;
+      if (((ps->pm_flags & 0x4000U) != 0) && (ps->pm_time != 0)) {
+        Jump_ClearState(ps);
       }
     }
     else {
-      local_20 = 1;
+      bHadGround = 1;
     }
   }
   else {
-    local_20 = 0;
-    Jump_ClearState(local_10);
+    bHadGround = 0;
+    Jump_ClearState(ps);
   }
-  local_98 = local_10->origin[0];
-  local_94 = local_10->origin[1];
-  local_90 = local_10->origin[2];
-  local_44 = local_10->velocity[0];
-  local_40 = local_10->velocity[1];
-  local_3c = local_10->velocity[2];
-  iVar9 = PM_SlideMove(param_1,param_2,param_3,false);
-  if ((local_10->pm_flags & 1U) == 0) {
-    local_c = 18.0;
+  start_o = ps->origin[0];
+  local_94 = ps->origin[1];
+  local_90 = ps->origin[2];
+  start_v = ps->velocity[0];
+  local_40 = ps->velocity[1];
+  local_3c = ps->velocity[2];
+  iVar9 = PM_SlideMove(pm,pml,gravity,false);
+  if ((ps->pm_flags & 1U) == 0) {
+    fStepSize = 18.0;
   }
   else {
-    local_c = 10.0;
+    fStepSize = 10.0;
   }
-  if (local_10->groundEntityNum == 0x3ff) {
-    if (((local_10->pm_flags & 0x4000U) != 0) && (local_10->pm_time != 0)) {
-      Jump_ClearState(local_10);
+  if (ps->groundEntityNum == 0x3ff) {
+    if (((ps->pm_flags & 0x4000U) != 0) && (ps->pm_time != 0)) {
+      Jump_ClearState(ps);
     }
-    if (((iVar9 != 0) && ((local_10->pm_flags & 0x4000U) != 0)) &&
-       (bVar7 = Jump_GetStepHeight(local_10,&local_98,&local_c), bVar7)) {
-      if (local_c < 1.0) {
+    if (((iVar9 != 0) && ((ps->pm_flags & 0x4000U) != 0)) &&
+       (bVar7 = Jump_GetStepHeight(ps,&start_o,&fStepSize), bVar7)) {
+      if (fStepSize < 1.0) {
         return;
       }
       bVar6 = true;
     }
     if (!bVar6) {
-      if ((local_10->pm_flags & 8U) == 0) {
+      if ((ps->pm_flags & 8U) == 0) {
         return;
       }
-      if (local_10->velocity[2] <= 0.0) {
+      if (ps->velocity[2] <= 0.0) {
         return;
       }
     }
   }
-  local_38 = local_10->origin[0];
-  local_34 = local_10->origin[1];
-  local_30 = local_10->origin[2];
-  fVar13 = local_10->velocity[0];
-  fVar2 = local_10->velocity[1];
-  fVar3 = local_10->velocity[2];
-  fVar11 = local_38 - local_98;
+  down_o = ps->origin[0];
+  local_34 = ps->origin[1];
+  local_30 = ps->origin[2];
+  fVar13 = ps->velocity[0];
+  fVar2 = ps->velocity[1];
+  fVar3 = ps->velocity[2];
+  fVar11 = down_o - start_o;
   fVar12 = local_34 - local_94;
   if ((iVar9 != 0) ||
-     ((param_2->groundPlane != 0 &&
-      (pfVar1 = (param_2->groundTrace).normal.vec.v + 2, *pfVar1 <= 0.9 && *pfVar1 != 0.9)))) {
-    local_2c = local_98;
+     ((pml->groundPlane != 0 &&
+      (pfVar1 = (pml->groundTrace).normal.vec.v + 2, *pfVar1 <= 0.9 && *pfVar1 != 0.9)))) {
+    up = start_o;
     local_28 = local_94;
-    local_24 = local_c + 1.0 + local_90;
-    PM_playerTrace(param_1,(trace_t *)&local_8c,&local_98,param_1->mins,param_1->maxs,&local_2c,
-                   (uint)local_10->clientNum,param_1->tracemask);
-    local_8 = (local_c + 1.0) * local_7c - 1.0;
-    if (1.0 <= local_8) {
-      local_10->origin[0] = local_2c;
-      local_10->origin[1] = local_28;
-      local_10->origin[2] = local_90 + local_8;
-      local_10->velocity[0] = local_44;
-      local_10->velocity[1] = local_40;
-      local_10->velocity[2] = local_3c;
-      PM_SlideMove(param_1,param_2,param_3,true);
+    local_24 = fStepSize + 1.0 + local_90;
+    PM_playerTrace(pm,(trace_t *)&trace,&start_o,pm->mins,pm->maxs,&up,(uint)ps->clientNum,
+                   pm->tracemask);
+    fStepAmount = (fStepSize + 1.0) * local_7c - 1.0;
+    if (1.0 <= fStepAmount) {
+      ps->origin[0] = up;
+      ps->origin[1] = local_28;
+      ps->origin[2] = local_90 + fStepAmount;
+      ps->velocity[0] = start_v;
+      ps->velocity[1] = local_40;
+      ps->velocity[2] = local_3c;
+      PM_SlideMove(pm,pml,gravity,true);
     }
     else {
-      local_8 = 0.0;
+      fStepAmount = 0.0;
     }
   }
-  if ((local_20 != 0) || (local_8 != 0.0)) {
-    local_1c = local_10->origin[0];
-    local_18 = local_10->origin[1];
-    local_14 = local_10->origin[2] - local_8;
-    if (local_20 != 0) {
+  if ((bHadGround != 0) || (fStepAmount != 0.0)) {
+    down = ps->origin[0];
+    local_18 = ps->origin[1];
+    local_14 = ps->origin[2] - fStepAmount;
+    if (bHadGround != 0) {
       local_14 = local_14 - 9.0;
     }
     if ((phys_player_collision_mode->current).integer == 1) {
-      PM_gjk_ground_trace(param_1->m_gjkcc_input,(trace_t *)&local_8c,local_10->origin,param_1->mins
-                          ,param_1->maxs,&local_1c,(uint)local_10->clientNum,param_1->tracemask,
-                          (float *)0x0);
+      PM_gjk_ground_trace(pm->m_gjkcc_input,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&down,
+                          (uint)ps->clientNum,pm->tracemask,(float *)0x0);
     }
     else {
-      PM_playerTrace(param_1,(trace_t *)&local_8c,local_10->origin,param_1->mins,param_1->maxs,
-                     &local_1c,(uint)local_10->clientNum,param_1->tracemask);
+      PM_playerTrace(pm,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&down,(uint)ps->clientNum,
+                     pm->tracemask);
     }
-    uVar8 = Trace_GetEntityHitId((trace_t *)&local_8c);
+    uVar8 = Trace_GetEntityHitId((trace_t *)&trace);
     if ((int)(uint)uVar8 < (com_maxclients->current).integer) {
-      local_10->origin[0] = local_38;
-      local_10->origin[1] = local_34;
-      local_10->origin[2] = local_30;
-      local_10->velocity[0] = fVar13;
-      local_10->velocity[1] = fVar2;
-      local_10->velocity[2] = fVar3;
+      ps->origin[0] = down_o;
+      ps->origin[1] = local_34;
+      ps->origin[2] = local_30;
+      ps->velocity[0] = fVar13;
+      ps->velocity[1] = fVar2;
+      ps->velocity[2] = fVar3;
       return;
     }
     if (1.0 <= local_7c) {
-      if (local_8 != 0.0) {
-        local_10->origin[2] = local_10->origin[2] - local_8;
+      if (fStepAmount != 0.0) {
+        ps->origin[2] = ps->origin[2] - fStepAmount;
       }
     }
     else {
       if ((phys_player_collision_mode->current).integer == 1) {
         if (local_60 == '\0') {
-          local_10->origin[0] = local_38;
-          local_10->origin[1] = local_34;
-          local_10->origin[2] = local_30;
-          local_10->velocity[0] = fVar13;
-          local_10->velocity[1] = fVar2;
-          local_10->velocity[2] = fVar3;
+          ps->origin[0] = down_o;
+          ps->origin[1] = local_34;
+          ps->origin[2] = local_30;
+          ps->velocity[0] = fVar13;
+          ps->velocity[1] = fVar2;
+          ps->velocity[2] = fVar3;
           return;
         }
       }
-      else if ((local_60 == '\0') && (local_8c.v[2] < 0.3)) {
-        local_10->origin[0] = local_38;
-        local_10->origin[1] = local_34;
-        local_10->origin[2] = local_30;
-        local_10->velocity[0] = fVar13;
-        local_10->velocity[1] = fVar2;
-        local_10->velocity[2] = fVar3;
+      else if ((local_60 == '\0') && (trace.v[2] < 0.3)) {
+        ps->origin[0] = down_o;
+        ps->origin[1] = local_34;
+        ps->origin[2] = local_30;
+        ps->velocity[0] = fVar13;
+        ps->velocity[1] = fVar2;
+        ps->velocity[2] = fVar3;
         return;
       }
-      Vec3Lerp(local_10->origin,&local_1c,local_7c,local_10->origin);
-      PM_ProjectVelocity(local_10->velocity,local_8c.v,local_10->velocity);
+      Vec3Lerp(ps->origin,&down,local_7c,ps->origin);
+      PM_ProjectVelocity(ps->velocity,trace.v,ps->velocity);
     }
   }
-  if (((local_10->origin[0] - local_98) * local_44 + (local_10->origin[1] - local_94) * local_40 <=
-       fVar11 * local_44 + fVar12 * local_40 + 0.001) ||
-     ((bVar6 && (bVar7 = Jump_IsPlayerAboveMax(local_10), bVar7)))) {
-    local_10->origin[0] = local_38;
-    local_10->origin[1] = local_34;
-    local_10->origin[2] = local_30;
-    local_10->velocity[0] = fVar13;
-    local_10->velocity[1] = fVar2;
-    local_10->velocity[2] = fVar3;
-    local_8 = 0.0;
-    if (local_20 != 0) {
-      local_1c = local_10->origin[0];
-      local_18 = local_10->origin[1];
-      local_14 = local_10->origin[2] - 9.0;
-      PM_playerTrace(param_1,(trace_t *)&local_8c,local_10->origin,param_1->mins,param_1->maxs,
-                     &local_1c,(uint)local_10->clientNum,param_1->tracemask);
+  if (((ps->origin[0] - start_o) * start_v + (ps->origin[1] - local_94) * local_40 <=
+       fVar11 * start_v + fVar12 * local_40 + 0.001) ||
+     ((bVar6 && (bVar7 = Jump_IsPlayerAboveMax(ps), bVar7)))) {
+    ps->origin[0] = down_o;
+    ps->origin[1] = local_34;
+    ps->origin[2] = local_30;
+    ps->velocity[0] = fVar13;
+    ps->velocity[1] = fVar2;
+    ps->velocity[2] = fVar3;
+    fStepAmount = 0.0;
+    if (bHadGround != 0) {
+      down = ps->origin[0];
+      local_18 = ps->origin[1];
+      local_14 = ps->origin[2] - 9.0;
+      PM_playerTrace(pm,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&down,(uint)ps->clientNum,
+                     pm->tracemask);
       if (local_7c < 1.0) {
-        Vec3Lerp(local_10->origin,&local_1c,local_7c,&local_50);
-        local_8 = local_48 - local_10->origin[2];
-        local_10->origin[0] = local_50;
-        local_10->origin[1] = local_4c;
-        local_10->origin[2] = local_48;
+        Vec3Lerp(ps->origin,&down,local_7c,&endpos);
+        fStepAmount = local_48 - ps->origin[2];
+        ps->origin[0] = endpos;
+        ps->origin[1] = local_4c;
+        ps->origin[2] = local_48;
         if ((phys_player_collision_mode->current).integer == 1) {
-          PM_ProjectVelocity(local_10->velocity,local_8c.v,local_10->velocity);
+          PM_ProjectVelocity(ps->velocity,trace.v,ps->velocity);
         }
         else {
-          PM_ClipVelocity(local_10->velocity,local_8c.v,local_10->velocity);
+          PM_ClipVelocity(ps->velocity,trace.v,ps->velocity);
         }
       }
     }
   }
   if (bVar6) {
-    Jump_ClampVelocity(local_10,&local_38);
+    Jump_ClampVelocity(ps,&down_o);
   }
-  if ((((local_20 != 0) && (local_10->pm_type < 9)) &&
-      (iVar9 = PM_VerifyPronePosition(param_1,&local_98,&local_44), iVar9 != 0)) &&
-     ((0.5 < ABS(local_10->origin[2] - local_30) &&
-      (uVar4 = (uint)ROUND((local_10->origin[2] - local_30) + 9.313226e-10), uVar4 != 0)))) {
-    if ((param_1->viewChangeTime < local_10->commandTime) ||
-       (local_10->commandTime + 1000 < param_1->viewChangeTime)) {
-      param_1->viewChange = (local_10->origin[2] - local_30) + param_1->viewChange;
-      param_1->viewChangeTime = local_10->commandTime;
+  if ((((bHadGround != 0) && (ps->pm_type < 9)) &&
+      (iVar9 = PM_VerifyPronePosition(pm,&start_o,&start_v), iVar9 != 0)) &&
+     ((0.5 < ABS(ps->origin[2] - local_30) &&
+      (uVar4 = (uint)ROUND((ps->origin[2] - local_30) + 9.313226e-10), uVar4 != 0)))) {
+    if ((pm->viewChangeTime < ps->commandTime) || (ps->commandTime + 1000 < pm->viewChangeTime)) {
+      pm->viewChange = (ps->origin[2] - local_30) + pm->viewChange;
+      pm->viewChangeTime = ps->commandTime;
     }
-    fVar13 = (1.0 - ABS(local_10->origin[2] - local_90) / local_c) * 0.8 + 0.19999999;
-    local_10->velocity[0] = fVar13 * local_10->velocity[0];
-    local_10->velocity[1] = fVar13 * local_10->velocity[1];
-    local_10->velocity[2] = fVar13 * local_10->velocity[2];
-    fVar13 = Vec2Length(local_10->velocity);
-    param_1->xyspeed = fVar13;
+    fVar13 = (1.0 - ABS(ps->origin[2] - local_90) / fStepSize) * 0.8 + 0.19999999;
+    ps->velocity[0] = fVar13 * ps->velocity[0];
+    ps->velocity[1] = fVar13 * ps->velocity[1];
+    ps->velocity[2] = fVar13 * ps->velocity[2];
+    fVar13 = Vec2Length(ps->velocity);
+    pm->xyspeed = fVar13;
     uVar10 = (int)uVar4 >> 0x1f;
-    if (((3 < (int)((uVar4 ^ uVar10) - uVar10)) && (local_10->groundEntityNum != 0x3ff)) &&
-       (iVar9 = PM_ShouldMakeFootsteps(param_1), iVar9 != 0)) {
-      local_c8 = (int)((uVar4 ^ uVar10) - uVar10) / 2;
-      if (4 < local_c8) {
-        local_c8 = 4;
+    if (((3 < (int)((uVar4 ^ uVar10) - uVar10)) && (ps->groundEntityNum != 0x3ff)) &&
+       (iVar9 = PM_ShouldMakeFootsteps(pm), iVar9 != 0)) {
+      iDelta = (int)((uVar4 ^ uVar10) - uVar10) / 2;
+      if (4 < iDelta) {
+        iDelta = 4;
       }
-      iVar9 = local_10->bobCycle;
-      local_10->bobCycle = (int)((float)iVar9 + (float)local_c8 * 1.25 + 7.0) & 0xff;
-      PM_FootstepEvent(param_1,param_2,iVar9,local_10->bobCycle,1);
+      iVar9 = ps->bobCycle;
+      ps->bobCycle = (int)((float)iVar9 + (float)iDelta * 1.25 + 7.0) & 0xff;
+      PM_FootstepEvent(pm,pml,iVar9,ps->bobCycle,1);
     }
   }
   return;
@@ -5726,21 +5766,21 @@ void __cdecl PM_StepSlideMove(pmove_t *param_1,pml_t *param_2,int param_3)
 
 // 00438D10  operator=  (line unknown)
 
-phys_mat44 * __thiscall phys_mat44::operator=(phys_mat44 *this,phys_mat44 *param_1)
+phys_mat44 * __thiscall phys_mat44::operator=(phys_mat44 *this,phys_mat44 *__that)
 
 {
-  (this->x).x = (param_1->x).x;
-  (this->x).y = (param_1->x).y;
-  (this->x).z = (param_1->x).z;
-  (this->y).x = (param_1->y).x;
-  (this->y).y = (param_1->y).y;
-  (this->y).z = (param_1->y).z;
-  (this->z).x = (param_1->z).x;
-  (this->z).y = (param_1->z).y;
-  (this->z).z = (param_1->z).z;
-  (this->w).x = (param_1->w).x;
-  (this->w).y = (param_1->w).y;
-  (this->w).z = (param_1->w).z;
+  (this->x).x = (__that->x).x;
+  (this->x).y = (__that->x).y;
+  (this->x).z = (__that->x).z;
+  (this->y).x = (__that->y).x;
+  (this->y).y = (__that->y).y;
+  (this->y).z = (__that->y).z;
+  (this->z).x = (__that->z).x;
+  (this->z).y = (__that->z).y;
+  (this->z).z = (__that->z).z;
+  (this->w).x = (__that->w).x;
+  (this->w).y = (__that->w).y;
+  (this->w).z = (__that->w).z;
   return this;
 }
 

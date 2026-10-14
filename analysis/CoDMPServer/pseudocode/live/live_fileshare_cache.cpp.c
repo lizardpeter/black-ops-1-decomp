@@ -57,33 +57,35 @@ void __cdecl Live_FileShare_CacheShutdown(void)
 
 // 009642B0  Live_FileShare_Hash  (live/live_fileshare_cache.cpp:63)
 
-int __cdecl Live_FileShare_Hash(ulong64 param_1,fileShareLocation param_2)
+int __cdecl Live_FileShare_Hash(ulong64 fileID,fileShareLocation location)
 
 {
   fileShareLocation extraout_EAX;
+  int hashValue;
   
   _aullshr();
-  return (int)(extraout_EAX ^ (fileShareLocation)param_1 ^ param_2) % 300;
+  return (int)(extraout_EAX ^ (fileShareLocation)fileID ^ location) % 300;
 }
 
 
 // 009642F0  Live_FileShare_IsCached  (live/live_fileshare_cache.cpp:72)
 
-bool __cdecl Live_FileShare_IsCached(ulong64 param_1,fileShareLocation param_2,int *param_3)
+bool __cdecl Live_FileShare_IsCached(ulong64 fileID,fileShareLocation location,int *index)
 
 {
   bool bVar1;
   int iVar2;
+  int idx;
   
   if (s_fshCache == (fshCacheFileDetails_t *)0x0) {
     bVar1 = false;
   }
   else {
-    iVar2 = Live_FileShare_Hash(param_1,param_2);
-    if ((((int)s_fshCache[iVar2].descriptor.m_fileID == (int)param_1) &&
-        (*(int *)((int)&s_fshCache[iVar2].descriptor.m_fileID + 4) == param_1._4_4_)) &&
-       (s_fshCache[iVar2].location == param_2)) {
-      *param_3 = iVar2;
+    iVar2 = Live_FileShare_Hash(fileID,location);
+    if ((((int)s_fshCache[iVar2].descriptor.m_fileID == (int)fileID) &&
+        (*(int *)((int)&s_fshCache[iVar2].descriptor.m_fileID + 4) == fileID._4_4_)) &&
+       (s_fshCache[iVar2].location == location)) {
+      *index = iVar2;
       bVar1 = true;
     }
     else {
@@ -97,21 +99,23 @@ bool __cdecl Live_FileShare_IsCached(ulong64 param_1,fileShareLocation param_2,i
 // 00964380  Live_FileShareCache_AddDescriptor  (live/live_fileshare_cache.cpp:89)
 
 void __cdecl
-Live_FileShareCache_AddDescriptor(ulong64 param_1,fileShareLocation param_2,bdFileMetaData *param_3)
+Live_FileShareCache_AddDescriptor
+          (ulong64 fileID,fileShareLocation location,bdFileMetaData *descriptor)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   fshCacheFileDetails_t *pfVar4;
+  int index;
   
   if ((s_fshCache != (fshCacheFileDetails_t *)0x0) || (bVar1 = Live_FileShare_CacheInit(), bVar1)) {
-    iVar2 = Live_FileShare_Hash(param_1,param_2);
-    s_fshCache[iVar2].location = param_2;
+    iVar2 = Live_FileShare_Hash(fileID,location);
+    s_fshCache[iVar2].location = location;
     pfVar4 = s_fshCache + iVar2;
     for (iVar3 = 0x20e; iVar3 != 0; iVar3 = iVar3 + -1) {
-      (pfVar4->descriptor)._padding_ = param_3->_padding_;
-      param_3 = (bdFileMetaData *)&param_3->field_0x4;
+      (pfVar4->descriptor)._padding_ = descriptor->_padding_;
+      descriptor = (bdFileMetaData *)&descriptor->field_0x4;
       pfVar4 = (fshCacheFileDetails_t *)&(pfVar4->descriptor).field_0x4;
     }
   }
@@ -122,22 +126,23 @@ Live_FileShareCache_AddDescriptor(ulong64 param_1,fileShareLocation param_2,bdFi
 // 009643F0  Live_FileShareCache_GetDescriptor  (live/live_fileshare_cache.cpp:101)
 
 bool __cdecl
-Live_FileShareCache_GetDescriptor(ulong64 param_1,fileShareLocation param_2,bdFileMetaData *param_3)
+Live_FileShareCache_GetDescriptor
+          (ulong64 fileID,fileShareLocation location,bdFileMetaData *descriptor)
 
 {
   bool bVar1;
   int iVar2;
   fshCacheFileDetails_t *pfVar3;
-  int local_8;
+  int index;
   
-  local_8 = 0;
-  bVar1 = Live_FileShare_IsCached(param_1,param_2,&local_8);
+  index = 0;
+  bVar1 = Live_FileShare_IsCached(fileID,location,&index);
   if (bVar1) {
-    pfVar3 = s_fshCache + local_8;
+    pfVar3 = s_fshCache + index;
     for (iVar2 = 0x20e; iVar2 != 0; iVar2 = iVar2 + -1) {
-      param_3->_padding_ = (pfVar3->descriptor)._padding_;
+      descriptor->_padding_ = (pfVar3->descriptor)._padding_;
       pfVar3 = (fshCacheFileDetails_t *)&(pfVar3->descriptor).field_0x4;
-      param_3 = (bdFileMetaData *)&param_3->field_0x4;
+      descriptor = (bdFileMetaData *)&descriptor->field_0x4;
     }
     bVar1 = true;
   }
@@ -150,21 +155,22 @@ Live_FileShareCache_GetDescriptor(ulong64 param_1,fileShareLocation param_2,bdFi
 
 // 00964450  Live_FileShare_IsRatingCached  (live/live_fileshare_cache.cpp:116)
 
-bool __cdecl Live_FileShare_IsRatingCached(ulong64 param_1,fileShareLocation param_2,int *param_3)
+bool __cdecl Live_FileShare_IsRatingCached(ulong64 fileID,fileShareLocation location,int *index)
 
 {
   bool bVar1;
   int iVar2;
+  int idx;
   
   if (s_fshRatingCache == (fshCacheRatingDetails_t *)0x0) {
     bVar1 = false;
   }
   else {
-    iVar2 = Live_FileShare_Hash(param_1,param_2);
-    if ((((int)s_fshRatingCache[iVar2].fileID == (int)param_1) &&
-        (*(int *)((int)&s_fshRatingCache[iVar2].fileID + 4) == param_1._4_4_)) &&
-       (s_fshRatingCache[iVar2].location == param_2)) {
-      *param_3 = iVar2;
+    iVar2 = Live_FileShare_Hash(fileID,location);
+    if ((((int)s_fshRatingCache[iVar2].fileID == (int)fileID) &&
+        (*(int *)((int)&s_fshRatingCache[iVar2].fileID + 4) == fileID._4_4_)) &&
+       (s_fshRatingCache[iVar2].location == location)) {
+      *index = iVar2;
       bVar1 = true;
     }
     else {
@@ -178,8 +184,7 @@ bool __cdecl Live_FileShare_IsRatingCached(ulong64 param_1,fileShareLocation par
 // 009644E0  Live_FileShareCache_AddRating  (live/live_fileshare_cache.cpp:133)
 
 void __cdecl
-Live_FileShareCache_AddRating
-          (ulong64 param_1,fileShareLocation param_2,bdVoteRankStatsInfo *param_3)
+Live_FileShareCache_AddRating(ulong64 fileID,fileShareLocation location,bdVoteRankStatsInfo *rating)
 
 {
   fshCacheRatingDetails_t *pfVar1;
@@ -187,18 +192,19 @@ Live_FileShareCache_AddRating
   int iVar3;
   int iVar4;
   bdVoteRankStatsInfo *pbVar5;
+  int index;
   
   if ((s_fshRatingCache != (fshCacheRatingDetails_t *)0x0) ||
      (bVar2 = Live_FileShare_CacheInit(), bVar2)) {
-    iVar3 = Live_FileShare_Hash(param_1,param_2);
-    s_fshRatingCache[iVar3].location = param_2;
+    iVar3 = Live_FileShare_Hash(fileID,location);
+    s_fshRatingCache[iVar3].location = location;
     pfVar1 = s_fshRatingCache;
-    *(undefined4 *)&s_fshRatingCache[iVar3].fileID = (undefined4)param_1;
-    *(undefined4 *)((int)&pfVar1[iVar3].fileID + 4) = param_1._4_4_;
+    *(undefined4 *)&s_fshRatingCache[iVar3].fileID = (undefined4)fileID;
+    *(undefined4 *)((int)&pfVar1[iVar3].fileID + 4) = fileID._4_4_;
     pbVar5 = &s_fshRatingCache[iVar3].rating;
     for (iVar4 = 0x32; iVar4 != 0; iVar4 = iVar4 + -1) {
-      pbVar5->_padding_ = param_3->_padding_;
-      param_3 = (bdVoteRankStatsInfo *)&param_3->_padding_;
+      pbVar5->_padding_ = rating->_padding_;
+      rating = (bdVoteRankStatsInfo *)&rating->_padding_;
       pbVar5 = (bdVoteRankStatsInfo *)&pbVar5->_padding_;
     }
   }
@@ -209,23 +215,22 @@ Live_FileShareCache_AddRating
 // 00964570  Live_FileShareCache_GetRating  (live/live_fileshare_cache.cpp:146)
 
 bool __cdecl
-Live_FileShareCache_GetRating
-          (ulong64 param_1,fileShareLocation param_2,bdVoteRankStatsInfo *param_3)
+Live_FileShareCache_GetRating(ulong64 fileID,fileShareLocation location,bdVoteRankStatsInfo *rating)
 
 {
   bool bVar1;
   int iVar2;
   bdVoteRankStatsInfo *pbVar3;
-  int local_8;
+  int index;
   
-  local_8 = 0;
-  bVar1 = Live_FileShare_IsRatingCached(param_1,param_2,&local_8);
+  index = 0;
+  bVar1 = Live_FileShare_IsRatingCached(fileID,location,&index);
   if (bVar1) {
-    pbVar3 = &s_fshRatingCache[local_8].rating;
+    pbVar3 = &s_fshRatingCache[index].rating;
     for (iVar2 = 0x32; iVar2 != 0; iVar2 = iVar2 + -1) {
-      param_3->_padding_ = pbVar3->_padding_;
+      rating->_padding_ = pbVar3->_padding_;
       pbVar3 = (bdVoteRankStatsInfo *)&pbVar3->_padding_;
-      param_3 = (bdVoteRankStatsInfo *)&param_3->_padding_;
+      rating = (bdVoteRankStatsInfo *)&rating->_padding_;
     }
     bVar1 = true;
   }

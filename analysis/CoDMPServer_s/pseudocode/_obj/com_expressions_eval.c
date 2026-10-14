@@ -104,17 +104,17 @@ char * __cdecl GetSourceString(int param_1,char *param_2)
 int __cdecl GetSourceInt(Operand *param_1)
 
 {
-  char *pcVar1;
+  char *nptr;
   int *in_ECX;
   
   if (*in_ECX == 1) {
     return (int)(float)in_ECX[1];
   }
-  pcVar1 = (char *)in_ECX[1];
+  nptr = (char *)in_ECX[1];
   if (*in_ECX != 0) {
-    pcVar1 = (char *)atoi(pcVar1);
+    nptr = (char *)atoi(nptr);
   }
-  return (int)pcVar1;
+  return (int)nptr;
 }
 
 
@@ -536,7 +536,7 @@ void __cdecl Expression_Error(char *param_1,...)
 {
   char *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *string;
   char acStack_400 [1023];
   undefined1 uStack_1;
   
@@ -545,10 +545,10 @@ void __cdecl Expression_Error(char *param_1,...)
     _snprintf(acStack_400,0x400,"^1Expression Error (%s:%d): ");
     pcVar1 = acStack_400;
     do {
-      pcVar3 = pcVar1;
-      pcVar1 = pcVar3 + 1;
-    } while (*pcVar3 != '\0');
-    _vsnprintf(pcVar3,0x400,param_1,&stack0x00000008);
+      string = pcVar1;
+      pcVar1 = string + 1;
+    } while (*string != '\0');
+    _vsnprintf(string,0x400,param_1,&stack0x00000008);
     uStack_1 = 0;
     Com_PrintMessage(0x10,acStack_400,3);
   }
@@ -566,7 +566,7 @@ void __cdecl Expression_Warn(char *param_1,...)
 {
   char *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *string;
   char acStack_400 [1023];
   undefined1 uStack_1;
   
@@ -575,10 +575,10 @@ void __cdecl Expression_Warn(char *param_1,...)
     _snprintf(acStack_400,0x400,"^3Expression Warning (%s:%d): ");
     pcVar1 = acStack_400;
     do {
-      pcVar3 = pcVar1;
-      pcVar1 = pcVar3 + 1;
-    } while (*pcVar3 != '\0');
-    _vsnprintf(pcVar3,0x400,param_1,&stack0x00000008);
+      string = pcVar1;
+      pcVar1 = string + 1;
+    } while (*string != '\0');
+    _vsnprintf(string,0x400,param_1,&stack0x00000008);
     uStack_1 = 0;
     Com_PrintMessage(0x10,acStack_400,2);
   }
@@ -596,27 +596,27 @@ void __cdecl Expression_TraceInternal(char *param_1,...)
   char cVar1;
   char *pcVar2;
   undefined *puVar3;
-  char *pcVar4;
-  int iVar5;
+  char *string;
+  int iVar4;
   char acStack_400 [1023];
   undefined1 uStack_1;
   
-  iVar5 = 0x400;
+  iVar4 = 0x400;
   puVar3 = &UNK_00a6a97f;
   do {
     cVar1 = puVar3[1];
     (&stack0xff595281)[(int)puVar3] = cVar1;
     if (cVar1 == '\0') break;
-    iVar5 = iVar5 + -1;
+    iVar4 = iVar4 + -1;
     puVar3 = puVar3 + 1;
-  } while (iVar5 != 0);
+  } while (iVar4 != 0);
   uStack_1 = 0;
   pcVar2 = acStack_400;
   do {
-    pcVar4 = pcVar2;
-    pcVar2 = pcVar4 + 1;
-  } while (*pcVar4 != '\0');
-  _vsnprintf(pcVar4,0x400,param_1,&stack0x00000008);
+    string = pcVar2;
+    pcVar2 = string + 1;
+  } while (*string != '\0');
+  _vsnprintf(string,0x400,param_1,&stack0x00000008);
   uStack_1 = 0;
   Com_PrintMessage(0x10,acStack_400,0);
   return;

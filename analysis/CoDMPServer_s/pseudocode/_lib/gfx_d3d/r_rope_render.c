@@ -36,6 +36,8 @@ void __cdecl R_Rope_Add(VisualRope *param_1)
 
 // 008080F0  R_Rope_CalcVisibility  (gfx_d3d/r_rope_render.cpp:435)
 
+/* WARNING: Variable defined which should be unmapped: visFlag */
+
 uchar __cdecl R_Rope_CalcVisibility(float *param_1,int param_2)
 
 {
@@ -46,6 +48,7 @@ uchar __cdecl R_Rope_CalcVisibility(float *param_1,int param_2)
   int *piVar3;
   int iVar4;
   int iVar5;
+  uchar visFlag;
   
   iVar4 = 0;
   piVar3 = &dpvsGlob.views[in_EDX][0].frustumPlaneCount;

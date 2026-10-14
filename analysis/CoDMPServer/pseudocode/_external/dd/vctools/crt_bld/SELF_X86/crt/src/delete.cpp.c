@@ -2,10 +2,10 @@
 
 // 00C0E85C  operator_delete  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/delete.cpp:20)
 
-void __cdecl operator_delete(void *param_1)
+void __cdecl operator_delete(void *p)
 
 {
-  free(param_1);
+  free(p);
   return;
 }
 

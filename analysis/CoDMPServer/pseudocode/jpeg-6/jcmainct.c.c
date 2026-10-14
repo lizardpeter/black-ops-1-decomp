@@ -2,25 +2,26 @@
 
 // 00B5C720  start_pass_main  (jpeg-6/jcmainct.c:70)
 
-void __cdecl start_pass_main(jpeg_compress_struct *param_1,J_BUF_MODE param_2)
+void __cdecl start_pass_main(jpeg_compress_struct *cinfo,J_BUF_MODE pass_mode)
 
 {
   jpeg_c_main_controller *pjVar1;
+  my_main_controller *main_;
   
-  pjVar1 = param_1->main;
-  if (param_1->raw_data_in == '\0') {
+  pjVar1 = cinfo->main;
+  if (cinfo->raw_data_in == '\0') {
     pjVar1[1].start_pass = (_func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *)0x0;
     pjVar1[1].process_data =
          (_func___cdecl_void_jpeg_compress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x0;
     *(undefined1 *)&pjVar1[2].start_pass = 0;
     pjVar1[2].process_data =
-         (_func___cdecl_void_jpeg_compress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)param_2;
-    if (param_2 == JBUF_PASS_THRU) {
+         (_func___cdecl_void_jpeg_compress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)pass_mode;
+    if (pass_mode == JBUF_PASS_THRU) {
       pjVar1->process_data = process_data_simple_main;
     }
     else {
-      param_1->err->msg_code = 4;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 4;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
   }
   return;
@@ -30,37 +31,39 @@ void __cdecl start_pass_main(jpeg_compress_struct *param_1,J_BUF_MODE param_2)
 // 00B5C7A0  process_data_simple_main  (jpeg-6/jcmainct.c:116)
 
 void __cdecl
-process_data_simple_main(jpeg_compress_struct *param_1,uchar **param_2,uint *param_3,uint param_4)
+process_data_simple_main
+          (jpeg_compress_struct *cinfo,uchar **input_buf,uint *in_row_ctr,uint in_rows_avail)
 
 {
   jpeg_c_main_controller *pjVar1;
   uchar uVar2;
+  my_main_controller *main_;
   
-  pjVar1 = param_1->main;
+  pjVar1 = cinfo->main;
   while( true ) {
-    if ((_func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *)param_1->total_iMCU_rows <=
+    if ((_func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *)cinfo->total_iMCU_rows <=
         pjVar1[1].start_pass) {
       return;
     }
     if (pjVar1[1].process_data <
         (_func___cdecl_void_jpeg_compress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x8) {
-      (*param_1->prep->pre_process_data)
-                (param_1,param_2,param_3,param_4,(uchar ***)(pjVar1 + 3),
+      (*cinfo->prep->pre_process_data)
+                (cinfo,input_buf,in_row_ctr,in_rows_avail,(uchar ***)(pjVar1 + 3),
                  (uint *)&pjVar1[1].process_data,8);
     }
     if (pjVar1[1].process_data !=
         (_func___cdecl_void_jpeg_compress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x8) break;
-    uVar2 = (*param_1->coef->compress_data)(param_1,(uchar ***)(pjVar1 + 3));
+    uVar2 = (*cinfo->coef->compress_data)(cinfo,(uchar ***)(pjVar1 + 3));
     if (uVar2 == '\0') {
       if (*(char *)&pjVar1[2].start_pass != '\0') {
         return;
       }
-      *param_3 = *param_3 - 1;
+      *in_row_ctr = *in_row_ctr - 1;
       *(undefined1 *)&pjVar1[2].start_pass = 1;
       return;
     }
     if (*(char *)&pjVar1[2].start_pass != '\0') {
-      *param_3 = *param_3 + 1;
+      *in_row_ctr = *in_row_ctr + 1;
       *(undefined1 *)&pjVar1[2].start_pass = 0;
     }
     pjVar1[1].process_data =
@@ -73,33 +76,34 @@ process_data_simple_main(jpeg_compress_struct *param_1,uchar **param_2,uint *par
 
 // 00B5C640  jinit_c_main_controller  (jpeg-6/jcmainct.c:246)
 
-void __cdecl jinit_c_main_controller(jpeg_compress_struct *param_1,uchar param_2)
+void __cdecl jinit_c_main_controller(jpeg_compress_struct *cinfo,uchar need_full_buffer)
 
 {
   jpeg_c_main_controller *pjVar1;
   uchar **ppuVar2;
-  int local_c;
-  jpeg_component_info *local_8;
+  my_main_controller *main_;
+  int ci;
+  jpeg_component_info *compptr;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x40);
-  param_1->main = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x40);
+  cinfo->main = pjVar1;
   pjVar1->start_pass = start_pass_main;
-  if (param_1->raw_data_in == '\0') {
-    if (param_2 == '\0') {
-      local_c = 0;
-      local_8 = param_1->comp_info;
-      for (; local_c < param_1->num_components; local_c = local_c + 1) {
-        ppuVar2 = (*param_1->mem->alloc_sarray)
-                            ((jpeg_common_struct *)param_1,1,local_8->width_in_blocks << 3,
-                             local_8->v_samp_factor << 3);
-        (&pjVar1[3].start_pass)[local_c] =
+  if (cinfo->raw_data_in == '\0') {
+    if (need_full_buffer == '\0') {
+      ci = 0;
+      compptr = cinfo->comp_info;
+      for (; ci < cinfo->num_components; ci = ci + 1) {
+        ppuVar2 = (*cinfo->mem->alloc_sarray)
+                            ((jpeg_common_struct *)cinfo,1,compptr->width_in_blocks << 3,
+                             compptr->v_samp_factor << 3);
+        (&pjVar1[3].start_pass)[ci] =
              (_func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *)ppuVar2;
-        local_8 = local_8 + 1;
+        compptr = compptr + 1;
       }
     }
     else {
-      param_1->err->msg_code = 4;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 4;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
   }
   return;

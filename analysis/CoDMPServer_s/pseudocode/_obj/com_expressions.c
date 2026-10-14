@@ -126,13 +126,13 @@ bool __cdecl Expression_Parse(char **param_1,ExpressionStatement *param_2,void *
   int iVar3;
   undefined4 uVar4;
   undefined4 *puVar5;
-  expressionRpn *peVar6;
-  uchar *puVar7;
-  char *pcVar8;
-  int iVar9;
+  expressionRpn *src;
+  uchar *dst;
+  char *nptr;
+  int iVar6;
   int unaff_ESI;
   int *unaff_EDI;
-  double dVar10;
+  double dVar7;
   void **local_30;
   int local_2c;
   int local_28;
@@ -143,7 +143,7 @@ bool __cdecl Expression_Parse(char **param_1,ExpressionStatement *param_2,void *
   local_30 = (void **)0x0;
   local_28 = 0;
   local_10 = 0;
-  iVar9 = 2;
+  iVar6 = 2;
   if (in_EAX != 0) {
     local_30 = local_8;
     local_8[0] = param_3;
@@ -159,89 +159,89 @@ bool __cdecl Expression_Parse(char **param_1,ExpressionStatement *param_2,void *
 LAB_006733e2:
   do {
     iVar2 = FUN_006a9e90();
-    pcVar8 = (char *)(*(int *)(iVar2 + 0x4280) * 0x428 + iVar2);
-    if (pcVar8[0x408] == '\0') {
+    nptr = (char *)(*(int *)(iVar2 + 0x4280) * 0x428 + iVar2);
+    if (nptr[0x408] == '\0') {
 LAB_0067342a:
-      pcVar8 = (char *)FUN_006aa5f0(param_1,0);
+      nptr = (char *)FUN_006aa5f0(param_1,0);
     }
     else {
-      pcVar8[0x408] = '\0';
-      if (pcVar8[0x409] != '\0') {
-        *param_1 = *(char **)(pcVar8 + 0x420);
-        *(undefined4 *)(pcVar8 + 0x404) = *(undefined4 *)(pcVar8 + 0x41c);
+      nptr[0x408] = '\0';
+      if (nptr[0x409] != '\0') {
+        *param_1 = *(char **)(nptr + 0x420);
+        *(undefined4 *)(nptr + 0x404) = *(undefined4 *)(nptr + 0x41c);
         goto LAB_0067342a;
       }
     }
-    if (pcVar8 == (char *)0x0) {
+    if (nptr == (char *)0x0) {
 LAB_006736ab:
-      iVar9 = FUN_006a9e90();
-      if (*(int *)(iVar9 + 0x4280) == 0) {
+      iVar6 = FUN_006a9e90();
+      if (*(int *)(iVar6 + 0x4280) == 0) {
         Com_Error(ERR_FATAL,"\x15Com_EndParseSession: session underflow");
       }
-      *(int *)(iVar9 + 0x4280) = *(int *)(iVar9 + 0x4280) + -1;
-      peVar6 = MakeRPN((expressionEntry *)(param_2 + 8),unaff_EDI);
-      puVar7 = (uchar *)FUN_00672f60();
-      *(uchar **)(param_2 + 0xc) = puVar7;
-      memcpy(puVar7,(uchar *)peVar6,*(int *)(param_2 + 8) * 0xc);
+      *(int *)(iVar6 + 0x4280) = *(int *)(iVar6 + 0x4280) + -1;
+      src = MakeRPN((expressionEntry *)(param_2 + 8),unaff_EDI);
+      dst = (uchar *)FUN_00672f60();
+      *(uchar **)(param_2 + 0xc) = dst;
+      memcpy(dst,(uchar *)src,*(int *)(param_2 + 8) * 0xc);
       return true;
     }
     iVar2 = FUN_006a9e90();
     iVar2 = *(int *)(*(int *)(iVar2 + 0x4280) * 0x428 + 0x400 + iVar2);
-    iVar3 = I_strnicmp(pcVar8,(char *)unaff_EDI,unaff_ESI);
+    iVar3 = I_strnicmp(nptr,(char *)unaff_EDI,unaff_ESI);
     if (iVar3 == 0) goto LAB_006736ab;
     if ((iVar2 == 2) || (iVar3 = FUN_00672fa0(), iVar3 == 0)) {
       switch(iVar2) {
       case 1:
-        dVar10 = atof(pcVar8);
-        iVar9 = atoi(pcVar8);
-        if ((float)dVar10 == (float)iVar9) {
-          puVar5 = (undefined4 *)FUN_00673180(iVar9);
+        dVar7 = atof(nptr);
+        iVar6 = atoi(nptr);
+        if ((float)dVar7 == (float)iVar6) {
+          puVar5 = (undefined4 *)FUN_00673180(iVar6);
         }
         else {
-          puVar5 = (undefined4 *)FUN_00673120((float)dVar10);
+          puVar5 = (undefined4 *)FUN_00673120((float)dVar7);
         }
         break;
       case 2:
       case 3:
-        puVar5 = (undefined4 *)FUN_00673090(pcVar8);
+        puVar5 = (undefined4 *)FUN_00673090(nptr);
         break;
       case 4:
-        puVar5 = (undefined4 *)FUN_00673020(pcVar8);
+        puVar5 = (undefined4 *)FUN_00673020(nptr);
         break;
       default:
         Com_PrintError(0x10,"%s:%d - Expression Error: Unknown token \'%s\'\n",
-                       *(undefined4 *)param_2,*(undefined4 *)(param_2 + 4),pcVar8);
+                       *(undefined4 *)param_2,*(undefined4 *)(param_2 + 4),nptr);
         Com_PrintError(0x10,"%s\n",pcVar1);
-        iVar9 = FUN_006a9e90();
-        if (*(int *)(iVar9 + 0x4280) == 0) {
+        iVar6 = FUN_006a9e90();
+        if (*(int *)(iVar6 + 0x4280) == 0) {
           Com_Error(ERR_FATAL,"\x15Com_EndParseSession: session underflow");
         }
-        *(int *)(iVar9 + 0x4280) = *(int *)(iVar9 + 0x4280) + -1;
+        *(int *)(iVar6 + 0x4280) = *(int *)(iVar6 + 0x4280) + -1;
         return false;
       }
       local_10 = *(undefined8 *)(puVar5 + 1);
-      iVar9 = 1;
+      iVar6 = 1;
     }
     else {
       if (iVar3 == 6) {
-        if (iVar9 == 0) {
+        if (iVar6 == 0) {
           if (local_28 != 1) {
 LAB_006734ac:
             iVar3 = 7;
           }
         }
-        else if (iVar9 == 2) goto LAB_006734ac;
+        else if (iVar6 == 2) goto LAB_006734ac;
       }
       else if (iVar3 == 0x11) {
         local_2c = local_2c + 1;
-        if (iVar9 != 2) {
-          if (iVar9 == 0) {
+        if (iVar6 != 2) {
+          if (iVar6 == 0) {
             if (0x17 < local_28) {
               local_28 = 0x11;
               goto LAB_006733e2;
             }
           }
-          else if (iVar9 == 1) {
+          else if (iVar6 == 1) {
             uVar4 = FUN_00672ec0((undefined4)local_10,local_10._4_4_);
             Com_PrintError(0x10,"%s:%d - Expression Error: %s(...\n",*(undefined4 *)param_2,
                            *(undefined4 *)(param_2 + 4),uVar4);
@@ -263,7 +263,7 @@ LAB_006734ac:
         }
         if (local_2c == 0) goto LAB_006736ab;
       }
-      iVar9 = 0;
+      iVar6 = 0;
       local_28 = iVar3;
       if (local_30 == (void **)0x0) {
         puVar5 = malloc(0x10);

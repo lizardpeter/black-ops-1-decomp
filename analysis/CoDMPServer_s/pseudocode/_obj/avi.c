@@ -923,7 +923,7 @@ uint __thiscall avi_s::output_data(avi_s *this,void *param_1,uint param_2)
   uint uVar1;
   uint uVar2;
   int unaff_ESI;
-  ulong uVar3;
+  ulong count;
   
   if (*(HANDLE *)(unaff_ESI + 0xa7868) == (HANDLE)0x0) {
     return *(uint *)(unaff_ESI + 0xa7858);
@@ -943,26 +943,26 @@ uint __thiscall avi_s::output_data(avi_s *this,void *param_1,uint param_2)
     *(int *)(unaff_ESI + 0xa784c) = *(int *)(unaff_ESI + 0xa784c) + param_2;
   }
   else {
-    uVar3 = (unaff_ESI - uVar2) + 0x50140;
-    if (uVar3 != 0) {
-      if (*(uint *)(unaff_ESI + 0xa7854) <= uVar2 != *(uint *)(unaff_ESI + 0xa7854) <= uVar2 + uVar3
+    count = (unaff_ESI - uVar2) + 0x50140;
+    if (count != 0) {
+      if (*(uint *)(unaff_ESI + 0xa7854) <= uVar2 != *(uint *)(unaff_ESI + 0xa7854) <= uVar2 + count
          ) {
         do {
           Com_PrintWarning(0x10,"WARNING: Movie encoding buffer overrun\n");
           Sleep(1);
         } while (*(uint *)(unaff_ESI + 0xa7854) <= *(uint *)(unaff_ESI + 0xa784c) !=
-                 *(uint *)(unaff_ESI + 0xa7854) <= *(uint *)(unaff_ESI + 0xa784c) + uVar3);
+                 *(uint *)(unaff_ESI + 0xa7854) <= *(uint *)(unaff_ESI + 0xa784c) + count);
       }
-      memcpy(*(uchar **)(unaff_ESI + 0xa784c),param_1,uVar3);
+      memcpy(*(uchar **)(unaff_ESI + 0xa784c),param_1,count);
     }
-    uVar2 = (param_2 - uVar3) + 0x10140 + unaff_ESI;
+    uVar2 = (param_2 - count) + 0x10140 + unaff_ESI;
     uVar1 = *(uint *)(unaff_ESI + 0xa7854);
     while (uVar1 <= uVar2) {
       Com_PrintWarning(0x10,"WARNING: Movie encoding buffer overrun\n");
       Sleep(1);
       uVar1 = *(uint *)(unaff_ESI + 0xa7854);
     }
-    memcpy((uchar *)(unaff_ESI + 0x10140),(uchar *)(uVar3 + (int)param_1),param_2 - uVar3);
+    memcpy((uchar *)(unaff_ESI + 0x10140),(uchar *)(count + (int)param_1),param_2 - count);
     *(uint *)(unaff_ESI + 0xa784c) = uVar2;
   }
   uVar2 = *(uint *)(unaff_ESI + 0xa7858);

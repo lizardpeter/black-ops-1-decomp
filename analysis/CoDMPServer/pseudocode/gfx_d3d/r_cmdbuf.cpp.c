@@ -2,10 +2,10 @@
 
 // 00B2B5B0  R_InitContext  (gfx_d3d/r_cmdbuf.cpp:68)
 
-void __cdecl R_InitContext(GfxBackEndData *param_1,GfxCmdBuf *param_2)
+void __cdecl R_InitContext(GfxBackEndData *data,GfxCmdBuf *cmdBuf)
 
 {
-  param_2->device = dx.device;
+  cmdBuf->device = dx.device;
   return;
 }
 

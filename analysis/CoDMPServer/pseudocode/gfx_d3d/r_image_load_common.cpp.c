@@ -3,7 +3,8 @@
 // 00B36950  Image_GetMipmapResolution  (gfx_d3d/r_image_load_common.cpp:36)
 
 void __cdecl
-Image_GetMipmapResolution(int param_1,int param_2,int param_3,ushort *param_4,ushort *param_5)
+Image_GetMipmapResolution
+          (int baseWidth,int baseHeight,int mipmap,ushort *mipWidth,ushort *mipHeight)
 
 {
   code *pcVar1;
@@ -11,59 +12,59 @@ Image_GetMipmapResolution(int param_1,int param_2,int param_3,ushort *param_4,us
   uint local_14;
   uint local_10;
   
-  if ((param_1 < 1) &&
+  if ((baseWidth < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x25,0,"%s\n\t(baseWidth) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 1) &&
+  if ((baseHeight < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x26,0,"%s\n\t(baseHeight) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 0) &&
+  if ((mipmap < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x27,0,"%s\n\t(mipmap) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (ushort *)0x0) &&
+  if ((mipWidth == (ushort *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x28,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (ushort *)0x0) &&
+  if ((mipHeight == (ushort *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x29,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = (uint)param_1 >> ((byte)param_3 & 0x1f);
+  local_10 = (uint)baseWidth >> ((byte)mipmap & 0x1f);
   if ((int)local_10 < 2) {
     local_10 = 1;
   }
-  *param_4 = (ushort)local_10;
-  local_14 = (uint)param_2 >> ((byte)param_3 & 0x1f);
+  *mipWidth = (ushort)local_10;
+  local_14 = (uint)baseHeight >> ((byte)mipmap & 0x1f);
   if ((int)local_14 < 2) {
     local_14 = 1;
   }
-  *param_5 = (ushort)local_14;
-  if ((*param_4 == 0) &&
+  *mipHeight = (ushort)local_14;
+  if ((*mipWidth == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x2d,1,"%s\n\t(*mipWidth) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*param_5 == 0) &&
+  if ((*mipHeight == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x2e,1,"%s\n\t(*mipHeight) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -76,47 +77,47 @@ Image_GetMipmapResolution(int param_1,int param_2,int param_3,ushort *param_4,us
 
 // 00B36AF0  Image_GetPlatformScreenWidth  (gfx_d3d/r_image_load_common.cpp:50)
 
-int __cdecl Image_GetPlatformScreenWidth(int param_1,int param_2)
+int __cdecl Image_GetPlatformScreenWidth(int platform,int screenWidth)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == 1) {
-    param_2 = 0x280;
+  if (platform == 1) {
+    screenWidth = 0x280;
   }
-  else if ((param_1 != 0) &&
+  else if ((platform != 0) &&
           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                     ,0x38,0,"%s\n\t(platform) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  return param_2;
+  return screenWidth;
 }
 
 
 // 00B36B40  Image_GetPlatformScreenHeight  (gfx_d3d/r_image_load_common.cpp:61)
 
-int __cdecl Image_GetPlatformScreenHeight(int param_1,int param_2)
+int __cdecl Image_GetPlatformScreenHeight(int platform,int screenHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == 1) {
-    param_2 = 0x1e0;
+  if (platform == 1) {
+    screenHeight = 0x1e0;
   }
-  else if ((param_1 != 0) &&
+  else if ((platform != 0) &&
           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                     ,0x43,0,"%s\n\t(platform) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  return param_2;
+  return screenHeight;
 }
 
 
@@ -124,25 +125,27 @@ int __cdecl Image_GetPlatformScreenHeight(int param_1,int param_2)
 
 void __cdecl
 Image_TrackFullscreenTexture
-          (GfxImage *param_1,int param_2,int param_3,int param_4,_D3DFORMAT param_5)
+          (GfxImage *image,int fullscreenWidth,int fullscreenHeight,int picmip,_D3DFORMAT format)
 
 {
-  int iVar1;
-  uint uVar2;
-  ushort local_14 [2];
-  ushort local_10 [2];
-  int local_c;
-  int local_8;
+  int baseHeight;
+  uint memory_00;
+  int memory;
+  int platformHeight;
+  ushort width;
+  ushort height;
+  int platformWidth;
+  int platform;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    local_c = Image_GetPlatformScreenWidth(local_8,param_2);
-    iVar1 = Image_GetPlatformScreenHeight(local_8,param_3);
-    Image_GetMipmapResolution(local_c,iVar1,param_4,local_14,local_10);
-    uVar2 = Image_GetCardMemoryAmount(3,param_5,(uint)local_14[0],(uint)local_10[0],1);
+  for (platform = 0; platform < 2; platform = platform + 1) {
+    platformWidth = Image_GetPlatformScreenWidth(platform,fullscreenWidth);
+    baseHeight = Image_GetPlatformScreenHeight(platform,fullscreenHeight);
+    Image_GetMipmapResolution(platformWidth,baseHeight,picmip,&width,&height);
+    memory_00 = Image_GetCardMemoryAmount(3,format,(uint)width,(uint)height,1);
     if ((useFastFile->current).enabled == false) {
-      Image_TrackTotalMemory(param_1,local_8,uVar2);
+      Image_TrackTotalMemory(image,platform,memory_00);
     }
-    (param_1->cardMemory).platform[local_8] = uVar2;
+    (image->cardMemory).platform[platform] = memory_00;
   }
   return;
 }
@@ -151,58 +154,58 @@ Image_TrackFullscreenTexture
 // 00B36B90  Image_TrackTexture  (gfx_d3d/r_image_load_common.cpp:101)
 
 void __cdecl
-Image_TrackTexture(GfxImage *param_1,int param_2,_D3DFORMAT param_3,int param_4,int param_5,
-                  int param_6)
+Image_TrackTexture(GfxImage *image,int imageFlags,_D3DFORMAT format,int width,int height,int depth)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  uint memory_00;
+  int local_30;
+  int local_2c;
+  int local_28;
+  int memory;
+  int depthUsed;
+  int heightUsed;
+  int widthUsed;
+  int platform;
   
-  local_8 = 0;
+  platform = 0;
   while( true ) {
-    if (1 < local_8) {
+    if (1 < platform) {
       return;
     }
-    if ((param_2 & 1U) == 0) {
-      local_28 = param_4 >> ((param_1->picmip).platform[local_8] & 0x1f);
-      if ((int)local_28 < 2) {
+    if ((imageFlags & 1U) == 0) {
+      local_28 = width >> ((image->picmip).platform[platform] & 0x1f);
+      if (local_28 < 2) {
         local_28 = 1;
       }
-      local_c = local_28;
-      local_2c = param_5 >> ((param_1->picmip).platform[local_8] & 0x1f);
-      if ((int)local_2c < 2) {
+      widthUsed = local_28;
+      local_2c = height >> ((image->picmip).platform[platform] & 0x1f);
+      if (local_2c < 2) {
         local_2c = 1;
       }
-      local_10 = local_2c;
-      local_30 = param_6 >> ((param_1->picmip).platform[local_8] & 0x1f);
-      if ((int)local_30 < 2) {
+      heightUsed = local_2c;
+      local_30 = depth >> ((image->picmip).platform[platform] & 0x1f);
+      if (local_30 < 2) {
         local_30 = 1;
       }
-      local_14 = local_30;
+      depthUsed = local_30;
     }
     else {
-      local_c = param_4;
-      local_10 = param_5;
-      local_14 = param_6;
+      widthUsed = width;
+      heightUsed = height;
+      depthUsed = depth;
     }
-    uVar3 = Image_GetCardMemoryAmount(param_2,param_3,local_c,local_10,local_14);
-    if ((((param_1->cardMemory).platform[local_8] != 0) &&
-        ((param_1->cardMemory).platform[local_8] != uVar3)) &&
+    memory_00 = Image_GetCardMemoryAmount(imageFlags,format,widthUsed,heightUsed,depthUsed);
+    if ((((image->cardMemory).platform[platform] != 0) &&
+        ((image->cardMemory).platform[platform] != memory_00)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                  ,0x85,0,"%s"), !bVar2)) break;
     if ((useFastFile->current).enabled == false) {
-      Image_TrackTotalMemory(param_1,local_8,uVar3);
+      Image_TrackTotalMemory(image,platform,memory_00);
     }
-    (param_1->cardMemory).platform[local_8] = uVar3;
-    local_8 = local_8 + 1;
+    (image->cardMemory).platform[platform] = memory_00;
+    platform = platform + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -213,156 +216,156 @@ Image_TrackTexture(GfxImage *param_1,int param_2,_D3DFORMAT param_3,int param_4,
 // 00B36D00  Image_GetCardMemoryAmountForMipLevel  (gfx_d3d/r_image_load_common.cpp:145)
 
 uint __cdecl
-Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT param_1,uint param_2,uint param_3,uint param_4)
+Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT format,uint mipWidth,uint mipHeight,uint mipDepth)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *fmt;
+  uint uVar3;
   
-  if ((int)param_1 < 0x31545845) {
-    if (param_1 == D3DFMT_DXT1) {
-      return (param_2 + 3 >> 2) * (param_3 + 3 >> 2) * param_4 * 8;
+  if ((int)format < 0x31545845) {
+    if (format == D3DFMT_DXT1) {
+      return (mipWidth + 3 >> 2) * (mipHeight + 3 >> 2) * mipDepth * 8;
     }
-    switch(param_1) {
+    switch(format) {
     case D3DFMT_A8R8G8B8:
     case D3DFMT_X8R8G8B8:
     case D3DFMT_G16R16:
     case D3DFMT_D24S8:
     case D3DFMT_G16R16F:
     case D3DFMT_R32F:
-      uVar4 = param_2 * param_3 * param_4 * 4;
+      uVar3 = mipWidth * mipHeight * mipDepth * 4;
       break;
     case D3DFMT_R5G6B5:
     case D3DFMT_A8L8:
     case D3DFMT_D16:
-      uVar4 = param_2 * param_3 * param_4 * 2;
+      uVar3 = mipWidth * mipHeight * mipDepth * 2;
       break;
     default:
       goto switchD_00b36d3d_caseD_18;
     case D3DFMT_A8:
     case D3DFMT_L8:
-      uVar4 = param_2 * param_3 * param_4;
+      uVar3 = mipWidth * mipHeight * mipDepth;
       break;
     case D3DFMT_A8B8G8R8:
-      uVar4 = param_2 * param_3 * param_4 * 4;
+      uVar3 = mipWidth * mipHeight * mipDepth * 4;
       break;
     case D3DFMT_A16B16G16R16:
     case D3DFMT_A16B16G16R16F:
-      uVar4 = param_2 * param_3 * param_4 * 8;
+      uVar3 = mipWidth * mipHeight * mipDepth * 8;
     }
   }
   else {
-    if ((param_1 == D3DFMT_DXT3) || (param_1 == D3DFMT_DXT5)) {
-      return (param_2 + 3 >> 2) * (param_3 + 3 >> 2) * param_4 * 0x10;
+    if ((format == D3DFMT_DXT3) || (format == D3DFMT_DXT5)) {
+      return (mipWidth + 3 >> 2) * (mipHeight + 3 >> 2) * mipDepth * 0x10;
     }
 switchD_00b36d3d_caseD_18:
-    pcVar3 = va("unhandled case: %d");
+    fmt = va("unhandled case: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
-                             0xbc,1,pcVar3);
+                             0xbc,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      uVar4 = (*pcVar1)();
-      return uVar4;
+      uVar3 = (*pcVar1)();
+      return uVar3;
     }
-    uVar4 = 0;
+    uVar3 = 0;
   }
-  return uVar4;
+  return uVar3;
 }
 
 
 // 00B36EA0  Image_GetCardMemoryAmount  (gfx_d3d/r_image_load_common.cpp:278)
 
 uint __cdecl
-Image_GetCardMemoryAmount(uint param_1,_D3DFORMAT param_2,uint param_3,uint param_4,uint param_5)
+Image_GetCardMemoryAmount(uint imageFlags,_D3DFORMAT format,uint width,uint height,uint depth)
 
 {
   uint uVar1;
   uint local_20;
   uint local_1c;
   uint local_18;
-  uint local_8;
+  uint memory;
   
-  local_8 = Image_GetCardMemoryAmountForMipLevel(param_2,param_3,param_4,param_5);
-  if ((param_1 & 2) == 0) {
-    while (3 < param_3 + param_4 + param_5) {
-      local_18 = param_3 >> 1;
+  memory = Image_GetCardMemoryAmountForMipLevel(format,width,height,depth);
+  if ((imageFlags & 2) == 0) {
+    while (3 < width + height + depth) {
+      local_18 = width >> 1;
       if (local_18 < 2) {
         local_18 = 1;
       }
-      param_3 = local_18;
-      local_1c = param_4 >> 1;
+      width = local_18;
+      local_1c = height >> 1;
       if (local_1c < 2) {
         local_1c = 1;
       }
-      param_4 = local_1c;
-      local_20 = param_5 >> 1;
+      height = local_1c;
+      local_20 = depth >> 1;
       if (local_20 < 2) {
         local_20 = 1;
       }
-      param_5 = local_20;
-      uVar1 = Image_GetCardMemoryAmountForMipLevel(param_2,local_18,local_1c,local_20);
-      local_8 = uVar1 + local_8;
+      depth = local_20;
+      uVar1 = Image_GetCardMemoryAmountForMipLevel(format,local_18,local_1c,local_20);
+      memory = uVar1 + memory;
     }
   }
-  if ((param_1 & 4) != 0) {
-    local_8 = local_8 * 6;
+  if ((imageFlags & 4) != 0) {
+    memory = memory * 6;
   }
-  return local_8;
+  return memory;
 }
 
 
 // 00B37A10  Image_SourceBytesPerSlice_PC  (gfx_d3d/r_image_load_common.cpp:348)
 
-int __cdecl Image_SourceBytesPerSlice_PC(_D3DFORMAT param_1,int param_2,int param_3)
+int __cdecl Image_SourceBytesPerSlice_PC(_D3DFORMAT format,int width,int height)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *fmt;
+  int iVar3;
   
-  if (0x4b < (int)param_1) {
-    if ((int)param_1 < 0x31545845) {
-      if (param_1 == D3DFMT_DXT1) {
-        return (param_2 + 3 >> 2) * (param_3 + 3 >> 2) * 8;
+  if (0x4b < (int)format) {
+    if ((int)format < 0x31545845) {
+      if (format == D3DFMT_DXT1) {
+        return (width + 3 >> 2) * (height + 3 >> 2) * 8;
       }
-      if (param_1 == D3DFMT_D16) goto switchD_00b37a43_caseD_17;
-      if (param_1 == D3DFMT_R32F) goto switchD_00b37a43_caseD_15;
+      if (format == D3DFMT_D16) goto switchD_00b37a43_caseD_17;
+      if (format == D3DFMT_R32F) goto switchD_00b37a43_caseD_15;
     }
-    else if ((param_1 == D3DFMT_DXT3) || (param_1 == D3DFMT_DXT5)) {
-      return (param_2 + 3 >> 2) * (param_3 + 3 >> 2) * 0x10;
+    else if ((format == D3DFMT_DXT3) || (format == D3DFMT_DXT5)) {
+      return (width + 3 >> 2) * (height + 3 >> 2) * 0x10;
     }
 switchD_00b37a43_caseD_18:
-    pcVar3 = va("unhandled case: %d");
+    fmt = va("unhandled case: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
-                             0x17b,1,pcVar3);
+                             0x17b,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
     return 0;
   }
-  if (param_1 == D3DFMT_D24S8) {
+  if (format == D3DFMT_D24S8) {
 switchD_00b37a43_caseD_15:
-    return param_2 * param_3 * 4;
+    return width * height * 4;
   }
-  switch(param_1) {
+  switch(format) {
   case D3DFMT_A8R8G8B8:
     goto switchD_00b37a43_caseD_15;
   case D3DFMT_X8R8G8B8:
-    return param_2 * param_3 * 3;
+    return width * height * 3;
   case D3DFMT_R5G6B5:
   case D3DFMT_A8L8:
 switchD_00b37a43_caseD_17:
-    return param_2 * param_3 * 2;
+    return width * height * 2;
   default:
     goto switchD_00b37a43_caseD_18;
   case D3DFMT_A8:
   case D3DFMT_L8:
-    return param_2 * param_3;
+    return width * height;
   }
 }
 
@@ -371,73 +374,73 @@ switchD_00b37a43_caseD_17:
 
 void __cdecl
 Image_Upload2D_CopyDataBlock_PC
-          (int param_1,int param_2,uchar *param_3,_D3DFORMAT param_4,int param_5,uchar *param_6)
+          (int width,int height,uchar *src,_D3DFORMAT format,int dstPitch,uchar *dst)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  ulong local_10;
-  int local_c;
-  int local_8;
+  char *fmt;
+  int srcStride;
+  int y;
+  int dy;
   
-  if ((param_3 == (uchar *)0x0) &&
+  if ((src == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x253,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 == (uchar *)0x0) &&
+  if ((dst == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x254,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((int)param_4 < 0x31545845) {
-    if (param_4 == D3DFMT_DXT1) {
-      local_10 = (param_1 + 3 >> 2) << 3;
-      local_8 = 4;
+  if ((int)format < 0x31545845) {
+    if (format == D3DFMT_DXT1) {
+      srcStride = (width + 3 >> 2) << 3;
+      dy = 4;
     }
     else {
-      switch(param_4) {
+      switch(format) {
       case D3DFMT_A8R8G8B8:
       case D3DFMT_X8R8G8B8:
       case D3DFMT_A8B8G8R8:
       case D3DFMT_G16R16:
-        local_10 = param_1 << 2;
-        local_8 = 1;
+        srcStride = width << 2;
+        dy = 1;
         break;
       case D3DFMT_R5G6B5:
       case D3DFMT_A8L8:
-        local_10 = param_1 << 1;
-        local_8 = 1;
+        srcStride = width << 1;
+        dy = 1;
         break;
       default:
         goto switchD_00b37507_caseD_18;
       case D3DFMT_A8:
       case D3DFMT_L8:
-        local_10 = param_1;
-        local_8 = 1;
+        srcStride = width;
+        dy = 1;
         break;
       case D3DFMT_A16B16G16R16:
       case D3DFMT_A16B16G16R16F:
-        local_10 = param_1 << 2;
-        local_8 = 1;
+        srcStride = width << 2;
+        dy = 1;
         break;
       case D3DFMT_R32F:
-        local_10 = param_1 << 2;
-        local_8 = 1;
+        srcStride = width << 2;
+        dy = 1;
       }
     }
   }
   else {
-    if ((param_4 != D3DFMT_DXT3) && (param_4 != D3DFMT_DXT5)) {
+    if ((format != D3DFMT_DXT3) && (format != D3DFMT_DXT5)) {
 switchD_00b37507_caseD_18:
-      pcVar3 = va("unhandled case: %d");
+      fmt = va("unhandled case: %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
-                               ,0x283,1,pcVar3);
+                               ,0x283,1,fmt);
       if (bVar2) {
         return;
       }
@@ -445,10 +448,10 @@ switchD_00b37507_caseD_18:
       (*pcVar1)();
       return;
     }
-    local_10 = (param_1 + 3 >> 2) << 4;
-    local_8 = 4;
+    srcStride = (width + 3 >> 2) << 4;
+    dy = 4;
   }
-  if (param_5 < (int)local_10) {
+  if (dstPitch < srcStride) {
     va("%i x %i: %i < %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
                              0x287,0,"%s\n\t%s");
@@ -458,14 +461,14 @@ switchD_00b37507_caseD_18:
       return;
     }
   }
-  if (param_5 == local_10) {
-    memcpy(param_6,param_3,((param_2 + -1) / local_8 + 1) * local_10);
+  if (dstPitch == srcStride) {
+    memcpy(dst,src,((height + -1) / dy + 1) * srcStride);
   }
   else {
-    for (local_c = 0; local_c < param_2; local_c = local_c + local_8) {
-      memcpy(param_6,param_3,local_10);
-      param_6 = param_6 + param_5;
-      param_3 = param_3 + local_10;
+    for (y = 0; y < height; y = y + dy) {
+      memcpy(dst,src,srcStride);
+      dst = dst + dstPitch;
+      src = src + srcStride;
     }
   }
   return;
@@ -476,8 +479,7 @@ switchD_00b37507_caseD_18:
 
 void __cdecl
 Image_Upload2D_CopyData_PC
-          (GfxImage *param_1,_D3DFORMAT param_2,_D3DCUBEMAP_FACES param_3,uint param_4,
-          uchar *param_5)
+          (GfxImage *image,_D3DFORMAT format,_D3DCUBEMAP_FACES face,uint mipLevel,uchar *src)
 
 {
   code *pcVar1;
@@ -486,23 +488,31 @@ Image_Upload2D_CopyData_PC
   int iVar4;
   uint local_44;
   uint local_40;
-  int local_14;
+  int semaphore_4;
+  HRESULT hr_4;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  int lockedRect;
   uchar *local_10;
-  uint local_c;
-  uint local_8;
+  uint width;
+  uint height;
   
-  local_40 = (uint)(param_1->width >> ((byte)param_4 & 0x1f));
+  local_40 = (uint)(image->width >> ((byte)mipLevel & 0x1f));
   if (local_40 < 2) {
     local_40 = 1;
   }
-  local_c = local_40;
-  local_44 = (uint)(param_1->height >> ((byte)param_4 & 0x1f));
+  width = local_40;
+  local_44 = (uint)(image->height >> ((byte)mipLevel & 0x1f));
   if (local_44 < 2) {
     local_44 = 1;
   }
-  local_8 = local_44;
-  if (param_1->mapType == '\x03') {
-    if (((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
+  height = local_44;
+  if (image->mapType == '\x03') {
+    if (((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                  ,0x2ab,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -514,8 +524,8 @@ Image_Upload2D_CopyData_PC
       RB_LogPrint("image->texture.map->LockRect( mipLevel, &lockedRect, 0, 0 )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*(param_1->texture).basemap + 0x4c))
-                      ((param_1->texture).basemap,param_4,&local_14,0,0);
+    iVar4 = (**(code **)((int)*(image->texture).basemap + 0x4c))
+                      ((image->texture).basemap,mipLevel,&lockedRect,0,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -526,14 +536,13 @@ Image_Upload2D_CopyData_PC
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp (%i) image->texture.map->LockRect( mipLevel, &lockedRect, 0, 0 ) failed: %s\n"
                );
     }
-    Image_Upload2D_CopyDataBlock_PC(local_c,local_8,param_5,param_2,local_14,local_10);
+    Image_Upload2D_CopyDataBlock_PC(width,height,src,format,lockedRect,local_10);
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("image->texture.map->UnlockRect( mipLevel )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*(param_1->texture).basemap + 0x50))
-                      ((param_1->texture).basemap,param_4);
+    iVar4 = (**(code **)((int)*(image->texture).basemap + 0x50))((image->texture).basemap,mipLevel);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -546,24 +555,24 @@ Image_Upload2D_CopyData_PC
     }
   }
   else {
-    if ((param_1->mapType != '\x05') &&
+    if ((image->mapType != '\x05') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                  ,0x2b2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((param_3 != D3DCUBEMAP_FACE_POSITIVE_X) && (param_3 != D3DCUBEMAP_FACE_NEGATIVE_X)) &&
-         (param_3 != D3DCUBEMAP_FACE_POSITIVE_Y)) &&
-        ((param_3 != D3DCUBEMAP_FACE_NEGATIVE_Y && (param_3 != D3DCUBEMAP_FACE_POSITIVE_Z)))) &&
-       ((param_3 != D3DCUBEMAP_FACE_NEGATIVE_Z &&
+    if (((((face != D3DCUBEMAP_FACE_POSITIVE_X) && (face != D3DCUBEMAP_FACE_NEGATIVE_X)) &&
+         (face != D3DCUBEMAP_FACE_POSITIVE_Y)) &&
+        ((face != D3DCUBEMAP_FACE_NEGATIVE_Y && (face != D3DCUBEMAP_FACE_POSITIVE_Z)))) &&
+       ((face != D3DCUBEMAP_FACE_NEGATIVE_Z &&
         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                   ,0x2b4,0,"%s\n\t(face) = %i"), !bVar2)))) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
+    if (((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                  ,0x2b5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -575,8 +584,8 @@ Image_Upload2D_CopyData_PC
       RB_LogPrint("image->texture.cubemap->LockRect( face, mipLevel, &lockedRect, 0, 0 )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*(param_1->texture).basemap + 0x4c))
-                      ((param_1->texture).basemap,param_3,param_4,&local_14,0,0);
+    iVar4 = (**(code **)((int)*(image->texture).basemap + 0x4c))
+                      ((image->texture).basemap,face,mipLevel,&lockedRect,0,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -587,14 +596,14 @@ Image_Upload2D_CopyData_PC
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp (%i) image->texture.cubemap->LockRect( face, mipLevel, &lockedRect, 0, 0 ) failed: %s\n"
                );
     }
-    Image_Upload2D_CopyDataBlock_PC(local_c,local_8,param_5,param_2,local_14,local_10);
+    Image_Upload2D_CopyDataBlock_PC(width,height,src,format,lockedRect,local_10);
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("image->texture.cubemap->UnlockRect( face, mipLevel )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*(param_1->texture).basemap + 0x50))
-                      ((param_1->texture).basemap,param_3,param_4);
+    iVar4 = (**(code **)((int)*(image->texture).basemap + 0x50))
+                      ((image->texture).basemap,face,mipLevel);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -612,58 +621,63 @@ Image_Upload2D_CopyData_PC
 
 // 00B37720  Image_Upload3D_CopyData_PC  (gfx_d3d/r_image_load_common.cpp:824)
 
-void __cdecl
-Image_Upload3D_CopyData_PC(GfxImage *param_1,_D3DFORMAT param_2,uint param_3,uchar *param_4)
+void __cdecl Image_Upload3D_CopyData_PC(GfxImage *image,_D3DFORMAT format,uint mipLevel,uchar *src)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  byte bVar6;
+  int hr_00;
+  byte bVar5;
   uint local_50;
   uint local_4c;
   uint local_48;
-  int local_20;
-  int local_1c;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  int depth;
+  int srcRowPitch;
+  int sliceIndex;
+  int lockedBox;
   int local_18;
   uchar *local_14;
-  uint local_10;
-  uint local_c;
-  uchar *local_8;
+  int width;
+  int height;
+  uchar *dst;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x341,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->mapType != '\x04') &&
+  if ((image->mapType != '\x04') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x342,0,"%s\n\t(image->mapType) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar6 = (byte)param_3;
-  local_48 = (uint)(param_1->width >> (bVar6 & 0x1f));
+  bVar5 = (byte)mipLevel;
+  local_48 = (uint)(image->width >> (bVar5 & 0x1f));
   if (local_48 < 2) {
     local_48 = 1;
   }
-  local_10 = local_48;
-  local_4c = (uint)(param_1->height >> (bVar6 & 0x1f));
+  width = local_48;
+  local_4c = (uint)(image->height >> (bVar5 & 0x1f));
   if (local_4c < 2) {
     local_4c = 1;
   }
-  local_c = local_4c;
-  local_50 = (uint)(param_1->depth >> (bVar6 & 0x1f));
+  height = local_4c;
+  local_50 = (uint)(image->depth >> (bVar5 & 0x1f));
   if (local_50 < 2) {
     local_50 = 1;
   }
-  iVar3 = Image_SourceBytesPerSlice_PC(param_2,local_48,local_4c);
-  if (((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
+  iVar3 = Image_SourceBytesPerSlice_PC(format,local_48,local_4c);
+  if (((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
                                ,0x349,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -675,31 +689,30 @@ Image_Upload3D_CopyData_PC(GfxImage *param_1,_D3DFORMAT param_2,uint param_3,uch
     RB_LogPrint("image->texture.volmap->LockBox( mipLevel, &lockedBox, 0, 0 )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*(param_1->texture).basemap + 0x4c))
-                    ((param_1->texture).basemap,param_3,&local_1c,0,0);
+  hr_00 = (**(code **)((int)*(image->texture).basemap + 0x4c))
+                    ((image->texture).basemap,mipLevel,&lockedBox,0,0);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp (%i) image->texture.volmap->LockBox( mipLevel, &lockedBox, 0, 0 ) failed: %s\n"
              );
   }
-  local_8 = local_14;
-  for (local_20 = 0; local_20 < (int)local_50; local_20 = local_20 + 1) {
-    Image_Upload2D_CopyDataBlock_PC(local_10,local_c,param_4,param_2,local_1c,local_8);
-    param_4 = param_4 + iVar3;
-    local_8 = local_8 + local_18;
+  dst = local_14;
+  for (sliceIndex = 0; sliceIndex < (int)local_50; sliceIndex = sliceIndex + 1) {
+    Image_Upload2D_CopyDataBlock_PC(width,height,src,format,lockedBox,dst);
+    src = src + iVar3;
+    dst = dst + local_18;
   }
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("image->texture.volmap->UnlockBox( mipLevel )\n");
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*(param_1->texture).basemap + 0x50))((param_1->texture).basemap,param_3)
-  ;
+  iVar4 = (**(code **)((int)*(image->texture).basemap + 0x50))((image->texture).basemap,mipLevel);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -710,7 +723,7 @@ Image_Upload3D_CopyData_PC(GfxImage *param_1,_D3DFORMAT param_2,uint param_3,uch
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp (%i) image->texture.volmap->UnlockBox( mipLevel ) failed: %s\n"
              );
   }
-  (**(code **)((int)*(param_1->texture).basemap + 0x24))((param_1->texture).basemap);
+  (**(code **)((int)*(image->texture).basemap + 0x24))((image->texture).basemap);
   return;
 }
 
@@ -718,19 +731,19 @@ Image_Upload3D_CopyData_PC(GfxImage *param_1,_D3DFORMAT param_2,uint param_3,uch
 // 00B36F90  Image_UploadData  (gfx_d3d/r_image_load_common.cpp:1039)
 
 void __cdecl
-Image_UploadData(GfxImage *param_1,_D3DFORMAT param_2,_D3DCUBEMAP_FACES param_3,uint param_4,
-                uchar *param_5)
+Image_UploadData(GfxImage *image,_D3DFORMAT format,_D3DCUBEMAP_FACES face,uint mipLevel,uchar *src)
 
 {
   int iVar1;
+  int semaphore;
   
-  if (((param_1->mapType != '\x05') || (param_4 == 0)) || (gfxMetrics.canMipCubemaps)) {
+  if (((image->mapType != '\x05') || (mipLevel == 0)) || (gfxMetrics.canMipCubemaps)) {
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    if (param_1->mapType == '\x04') {
-      Image_Upload3D_CopyData_PC(param_1,param_2,param_4,param_5);
+    if (image->mapType == '\x04') {
+      Image_Upload3D_CopyData_PC(image,format,mipLevel,src);
     }
     else {
-      Image_Upload2D_CopyData_PC(param_1,param_2,param_3,param_4,param_5);
+      Image_Upload2D_CopyData_PC(image,format,face,mipLevel,src);
     }
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
@@ -742,35 +755,35 @@ Image_UploadData(GfxImage *param_1,_D3DFORMAT param_2,_D3DCUBEMAP_FACES param_3,
 
 // 00B37B50  Image_CountMipmaps  (gfx_d3d/r_image_load_common.cpp:1080)
 
-uint __cdecl Image_CountMipmaps(uint param_1,uint param_2,uint param_3,uint param_4)
+uint __cdecl Image_CountMipmaps(uint imageFlags,uint width,uint height,uint depth)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  uint mipRes;
+  uint mipCount;
   
-  if ((param_1 & 2) == 0) {
-    local_8 = 1;
-    for (local_c = 1; ((local_c < param_2 || (local_c < param_3)) || (local_c < param_4));
-        local_c = local_c * 2) {
-      local_8 = local_8 + 1;
+  if ((imageFlags & 2) == 0) {
+    mipCount = 1;
+    for (mipRes = 1; ((mipRes < width || (mipRes < height)) || (mipRes < depth));
+        mipRes = mipRes * 2) {
+      mipCount = mipCount + 1;
     }
   }
   else {
-    local_8 = 1;
+    mipCount = 1;
   }
-  return local_8;
+  return mipCount;
 }
 
 
 // 00B37BB0  Image_GetPicmip  (gfx_d3d/r_image_load_common.cpp:1471)
 
-void __cdecl Image_GetPicmip(GfxImage *param_1,Picmip *param_2)
+void __cdecl Image_GetPicmip(GfxImage *image,Picmip *picmip)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
                              0x5c0,0,"%s");
     if (!bVar2) {
@@ -779,7 +792,7 @@ void __cdecl Image_GetPicmip(GfxImage *param_1,Picmip *param_2)
       return;
     }
   }
-  if (param_2 == (Picmip *)0x0) {
+  if (picmip == (Picmip *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
                              0x5c1,0,"%s");
     if (!bVar2) {
@@ -788,11 +801,11 @@ void __cdecl Image_GetPicmip(GfxImage *param_1,Picmip *param_2)
       return;
     }
   }
-  if (param_1->noPicmip == false) {
-    Image_PicmipForSemantic(param_1->semantic,param_2);
+  if (image->noPicmip == false) {
+    Image_PicmipForSemantic(image->semantic,picmip);
   }
   else {
-    *(undefined2 *)param_2->platform = 0;
+    *(undefined2 *)picmip->platform = 0;
   }
   return;
 }
@@ -801,49 +814,53 @@ void __cdecl Image_GetPicmip(GfxImage *param_1,Picmip *param_2)
 // 00B37C40  Image_Setup  (gfx_d3d/r_image_load_common.cpp:1497)
 
 void __cdecl
-Image_Setup(GfxImage *param_1,int param_2,int param_3,int param_4,int param_5,_D3DFORMAT param_6,
-           char *param_7,uint param_8)
+Image_Setup(GfxImage *image,int width,int height,int depth,int imageFlags,_D3DFORMAT imageFormat,
+           char *name,uint allocFlags)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
+  uint mipmapCount_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int mipmapCount;
+  int semaphore;
   
-  if ((param_1 == (GfxImage *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
-                               ,0x5de,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((image == (GfxImage *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
+                               ,0x5de,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  param_1->width = (ushort)param_2;
-  param_1->height = (ushort)param_3;
-  param_1->depth = (ushort)param_4;
-  uVar1 = (uint)((param_5 & 2U) != 0);
+  image->width = (ushort)width;
+  image->height = (ushort)height;
+  image->depth = (ushort)depth;
+  mipmapCount_00 = (uint)((imageFlags & 2U) != 0);
   if ((r_loadForRenderer->current).enabled != false) {
-    iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    if ((param_5 & 4U) == 0) {
-      if ((param_5 & 8U) == 0) {
-        Image_Create2DTexture_PC(param_1,param_1->width,param_1->height,uVar1,param_5,param_6);
+    iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    if ((imageFlags & 4U) == 0) {
+      if ((imageFlags & 8U) == 0) {
+        Image_Create2DTexture_PC
+                  (image,image->width,image->height,mipmapCount_00,imageFlags,imageFormat);
       }
       else {
         Image_Create3DTexture_PC
-                  (param_1,param_1->width,param_1->height,param_1->depth,uVar1,param_5,param_6);
+                  (image,image->width,image->height,image->depth,mipmapCount_00,imageFlags,
+                   imageFormat);
       }
     }
     else {
-      Image_CreateCubeTexture_PC(param_1,param_1->width,uVar1,param_6);
+      Image_CreateCubeTexture_PC(image,image->width,mipmapCount_00,imageFormat);
     }
-    if (iVar4 != 0) {
+    if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    Image_TrackTexture(param_1,param_5,param_6,param_2,param_3,param_4);
-    if ((param_1->delayLoadPixels != false) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
-                                 ,0x64d,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    Image_TrackTexture(image,imageFlags,imageFormat,width,height,depth);
+    if ((image->delayLoadPixels != false) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp"
+                                 ,0x64d,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
@@ -854,25 +871,25 @@ Image_Setup(GfxImage *param_1,int param_2,int param_3,int param_4,int param_5,_D
 // 00B37DB0  Image_SetupAndLoad  (gfx_d3d/r_image_load_common.cpp:1712)
 
 void __cdecl
-Image_SetupAndLoad(GfxImage *param_1,int param_2,int param_3,int param_4,int param_5,
-                  _D3DFORMAT param_6,char *param_7,uint param_8)
+Image_SetupAndLoad(GfxImage *image,int width,int height,int depth,int imageFlags,
+                  _D3DFORMAT imageFormat,char *name,uint allocFlags)
 
 {
-  Image_Setup(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+  Image_Setup(image,width,height,depth,imageFlags,imageFormat,name,allocFlags);
   return;
 }
 
 
 // 00B37DE0  Image_CubemapFace  (gfx_d3d/r_image_load_common.cpp:1718)
 
-_D3DCUBEMAP_FACES __cdecl Image_CubemapFace(uint param_1)
+_D3DCUBEMAP_FACES __cdecl Image_CubemapFace(uint faceIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   _D3DCUBEMAP_FACES _Var3;
   
-  if (5 < param_1) {
+  if (5 < faceIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_common.cpp",
                              0x6bd,0,"%s\n\t(faceIndex) = %i");
     if (!bVar2) {
@@ -881,6 +898,6 @@ _D3DCUBEMAP_FACES __cdecl Image_CubemapFace(uint param_1)
       return _Var3;
     }
   }
-  return param_1;
+  return faceIndex;
 }
 

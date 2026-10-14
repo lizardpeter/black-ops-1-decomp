@@ -2,49 +2,49 @@
 
 // 00966FB4  _isctype_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/isctype.c:114)
 
-int __cdecl _isctype_l(int param_1,int param_2,localeinfo_struct *param_3)
+int __cdecl _isctype_l(int c,int mask,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
   char cVar2;
-  _LocaleUpdate _Stack_1c;
+  _LocaleUpdate _loc_update;
   char cStack_c;
   char cStack_b;
   undefined1 uStack_a;
-  ushort auStack_8 [2];
+  ushort chartype;
   
-  _LocaleUpdate::_LocaleUpdate(&_Stack_1c,param_3);
-  if (param_1 + 1U < 0x101) {
-    auStack_8[0] = (_Stack_1c.localeinfo.locinfo)->pctype[param_1];
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (c + 1U < 0x101) {
+    chartype = (_loc_update.localeinfo.locinfo)->pctype[c];
   }
   else {
-    iVar1 = _isleadbyte_l(param_1 >> 8 & 0xff,&_Stack_1c.localeinfo);
-    cVar2 = (char)param_1;
+    iVar1 = _isleadbyte_l(c >> 8 & 0xff,&_loc_update.localeinfo);
+    cVar2 = (char)c;
     if (iVar1 == 0) {
       cStack_b = '\0';
       iVar1 = 1;
       cStack_c = cVar2;
     }
     else {
-      param_1._0_1_ = (char)((uint)param_1 >> 8);
-      cStack_c = (char)param_1;
+      c._0_1_ = (char)((uint)c >> 8);
+      cStack_c = (char)c;
       uStack_a = 0;
       iVar1 = 2;
       cStack_b = cVar2;
     }
-    iVar1 = __crtGetStringTypeA(&_Stack_1c.localeinfo,1,&cStack_c,iVar1,auStack_8,
-                                (_Stack_1c.localeinfo.locinfo)->lc_codepage,
-                                (_Stack_1c.localeinfo.locinfo)->lc_handle[2],1);
+    iVar1 = __crtGetStringTypeA(&_loc_update.localeinfo,1,&cStack_c,iVar1,&chartype,
+                                (_loc_update.localeinfo.locinfo)->lc_codepage,
+                                (_loc_update.localeinfo.locinfo)->lc_handle[2],1);
     if (iVar1 == 0) {
-      if (_Stack_1c.updated != false) {
-        (_Stack_1c.ptd)->_ownlocale = (_Stack_1c.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 0;
     }
   }
-  if (_Stack_1c.updated != false) {
-    (_Stack_1c.ptd)->_ownlocale = (_Stack_1c.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
-  return (uint)auStack_8[0] & param_2;
+  return (uint)chartype & mask;
 }
 

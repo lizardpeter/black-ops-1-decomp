@@ -7,30 +7,30 @@
 
 int __cdecl
 __crtGetStringTypeA_stat
-          (localeinfo_struct *param_1,ulong param_2,char *param_3,int param_4,ushort *param_5,
-          int param_6,int param_7,int param_8)
+          (localeinfo_struct *dwInfoType,ulong lpSrcStr,char *cchSrc,int lpCharType,
+          ushort *code_page,int lcid,int bError,int param_8)
 
 {
-  uint uVar1;
-  BOOL BVar2;
-  DWORD DVar3;
+  uint size;
+  BOOL BVar1;
+  DWORD DVar2;
   uint cchWideChar;
-  undefined4 *puVar4;
-  int cchSrc;
-  ushort *puVar5;
+  undefined4 *puVar3;
+  int cchSrc_00;
+  ushort *toCP;
   int *in_ECX;
   LPCWSTR lpWideCharStr;
-  char *pcVar6;
-  BOOL BStack_c;
+  char *pBlock;
+  ushort dummy;
   uint uStack_8;
   
   uStack_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   lpWideCharStr = (LPCWSTR)0x0;
   if (f_use == 0) {
-    BVar2 = GetStringTypeW(1,L"",1,(LPWORD)&BStack_c);
-    if (BVar2 == 0) {
-      DVar3 = GetLastError();
-      if (DVar3 == 0x78) {
+    BVar1 = GetStringTypeW(1,L"",1,&dummy);
+    if (BVar1 == 0) {
+      DVar2 = GetLastError();
+      if (DVar2 == 0x78) {
         f_use = 2;
       }
       goto LAB_00975399;
@@ -40,90 +40,91 @@ __crtGetStringTypeA_stat
   else {
 LAB_00975399:
     if ((f_use == 2) || (f_use == 0)) {
-      pcVar6 = (char *)0x0;
-      if (param_6 == 0) {
-        param_6 = *(int *)(*in_ECX + 0x14);
+      pBlock = (char *)0x0;
+      if (lcid == 0) {
+        lcid = *(int *)(*in_ECX + 0x14);
       }
-      if (param_5 == (ushort *)0x0) {
-        param_5 = *(ushort **)(*in_ECX + 4);
+      if (code_page == (ushort *)0x0) {
+        code_page = *(ushort **)(*in_ECX + 4);
       }
-      puVar5 = (ushort *)__ansicp(param_6);
-      if (puVar5 == (ushort *)0xffffffff) {
+      toCP = (ushort *)__ansicp(lcid);
+      if (toCP == (ushort *)0xffffffff) {
         return 0;
       }
-      if ((puVar5 != param_5) &&
-         (pcVar6 = __convertcp((int)param_5,(int)puVar5,(char *)param_2,(int *)&param_3,(char *)0x0,
-                               0), param_2 = (ulong)pcVar6, pcVar6 == (char *)0x0)) {
+      if ((toCP != code_page) &&
+         (pBlock = __convertcp((int)code_page,(int)toCP,(char *)lpSrcStr,(int *)&cchSrc,(char *)0x0,
+                               0), lpSrcStr = (ulong)pBlock, pBlock == (char *)0x0)) {
         return 0;
       }
-      BVar2 = GetStringTypeA(param_6,(DWORD)param_1,(LPCSTR)param_2,(int)param_3,(LPWORD)param_4);
-      if (pcVar6 != (char *)0x0) {
-        free(pcVar6);
-        return BVar2;
+      BVar1 = GetStringTypeA(lcid,(DWORD)dwInfoType,(LPCSTR)lpSrcStr,(int)cchSrc,(LPWORD)lpCharType)
+      ;
+      if (pBlock != (char *)0x0) {
+        free(pBlock);
+        return BVar1;
       }
-      return BVar2;
+      return BVar1;
     }
     if (f_use != 1) {
       return 0;
     }
   }
-  BStack_c = 0;
-  if (param_5 == (ushort *)0x0) {
-    param_5 = *(ushort **)(*in_ECX + 4);
+  _dummy = 0;
+  if (code_page == (ushort *)0x0) {
+    code_page = *(ushort **)(*in_ECX + 4);
   }
-  cchWideChar = MultiByteToWideChar((UINT)param_5,(uint)(param_7 != 0) * 8 + 1,(LPCSTR)param_2,
-                                    (int)param_3,(LPWSTR)0x0,0);
+  cchWideChar = MultiByteToWideChar((UINT)code_page,(uint)(bError != 0) * 8 + 1,(LPCSTR)lpSrcStr,
+                                    (int)cchSrc,(LPWSTR)0x0,0);
   if (cchWideChar == 0) {
     return 0;
   }
   if ((0 < (int)cchWideChar) && (cchWideChar < 0x7ffffff1)) {
-    uVar1 = cchWideChar * 2 + 8;
-    if (uVar1 < 0x401) {
-      puVar4 = (undefined4 *)&stack0xffffffe8;
+    size = cchWideChar * 2 + 8;
+    if (size < 0x401) {
+      puVar3 = (undefined4 *)&stack0xffffffe8;
       lpWideCharStr = (LPCWSTR)&stack0xffffffe8;
       if (&stack0x00000000 == (undefined1 *)0x18) goto LAB_0097542e;
     }
     else {
-      puVar4 = malloc(uVar1);
+      puVar3 = malloc(size);
       lpWideCharStr = (LPCWSTR)0x0;
-      if (puVar4 == (undefined4 *)0x0) goto LAB_0097542e;
-      *puVar4 = 0xdddd;
+      if (puVar3 == (undefined4 *)0x0) goto LAB_0097542e;
+      *puVar3 = 0xdddd;
     }
-    lpWideCharStr = (LPCWSTR)(puVar4 + 2);
+    lpWideCharStr = (LPCWSTR)(puVar3 + 2);
   }
 LAB_0097542e:
   if (lpWideCharStr == (LPCWSTR)0x0) {
     return 0;
   }
   memset((uchar *)lpWideCharStr,'\0',cchWideChar * 2);
-  cchSrc = MultiByteToWideChar((UINT)param_5,1,(LPCSTR)param_2,(int)param_3,lpWideCharStr,
-                               cchWideChar);
-  if (cchSrc != 0) {
-    BStack_c = GetStringTypeW((DWORD)param_1,lpWideCharStr,cchSrc,(LPWORD)param_4);
+  cchSrc_00 = MultiByteToWideChar((UINT)code_page,1,(LPCSTR)lpSrcStr,(int)cchSrc,lpWideCharStr,
+                                  cchWideChar);
+  if (cchSrc_00 != 0) {
+    _dummy = GetStringTypeW((DWORD)dwInfoType,lpWideCharStr,cchSrc_00,(LPWORD)lpCharType);
   }
   _freea(lpWideCharStr);
-  return BStack_c;
+  return _dummy;
 }
 
 
 // 009754F8  __crtGetStringTypeA  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_str.c:194)
 
+/* WARNING: Variable defined which should be unmapped: _loc_update */
+
 int __cdecl
-__crtGetStringTypeA(localeinfo_struct *param_1,ulong param_2,char *param_3,int param_4,
-                   ushort *param_5,int param_6,int param_7,int param_8)
+__crtGetStringTypeA(localeinfo_struct *plocinfo,ulong dwInfoType,char *lpSrcStr,int cchSrc,
+                   ushort *lpCharType,int code_page,int lcid,int bError)
 
 {
   int iVar1;
-  threadlocaleinfostruct *in_stack_ffffffec;
-  _tiddata *p_Stack_c;
-  bool bStack_8;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate((_LocaleUpdate *)&stack0xffffffec,param_1);
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
   iVar1 = __crtGetStringTypeA_stat
-                    ((localeinfo_struct *)param_2,(ulong)param_3,(char *)param_4,(int)param_5,
-                     (ushort *)param_6,param_7,param_8,(int)in_stack_ffffffec);
-  if (bStack_8 != false) {
-    p_Stack_c->_ownlocale = p_Stack_c->_ownlocale & 0xfffffffd;
+                    ((localeinfo_struct *)dwInfoType,(ulong)lpSrcStr,(char *)cchSrc,(int)lpCharType,
+                     (ushort *)code_page,lcid,bError,(int)_loc_update.localeinfo.locinfo);
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return iVar1;
 }

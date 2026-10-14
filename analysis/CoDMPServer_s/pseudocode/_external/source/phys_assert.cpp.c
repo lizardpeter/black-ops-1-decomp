@@ -15,6 +15,8 @@ void __cdecl phys_set_debug_callback(_func___cdecl_void_void_ptr *param_1)
 void __cdecl phys_exec_debug_callback(void *param_1)
 
 {
+  void *data;
+  
                     /* WARNING: Could not recover jumptable at 0x008f4420. Too many branches */
                     /* WARNING: Treating indirect jump as call */
   (*g_phys_debug_callback)(param_1);
@@ -26,9 +28,10 @@ void __cdecl phys_exec_debug_callback(void *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PHYS_WARNING(char *param_1,int param_2,char *param_3,char *param_4)
+void __cdecl PHYS_WARNING(char *line,int expr,char *desc,char *param_4)
 
 {
+  char *file;
   char acStack_204 [512];
   uint uStack_4;
   

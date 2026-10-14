@@ -166,7 +166,7 @@ ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3
   int iVar7;
   uint uVar8;
   undefined4 unaff_ESI;
-  ResultCache *pRVar9;
+  ResultCache *dst;
   char *unaff_EDI;
   int local_c;
   int local_8;
@@ -177,7 +177,7 @@ ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3
   if (!bVar3) {
     Com_PrintError(0xf,"Could not retrieve currency for controller %d\n");
   }
-  pRVar9 = (ResultCache *)&DAT_00b0bc60;
+  dst = (ResultCache *)&DAT_00b0bc60;
   puVar6 = &DAT_00b0bc70;
   uVar8 = 0;
   do {
@@ -188,13 +188,13 @@ ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3
       DAT_034f8f64 = DAT_034f8f64 + 1;
       return pRVar1;
     }
-    if (puVar6[-2] < *(uint *)(pRVar9 + 8)) {
-      pRVar9 = pRVar1;
+    if (puVar6[-2] < *(uint *)(dst + 8)) {
+      dst = pRVar1;
     }
     uVar8 = uVar8 + 0x818;
     puVar6 = puVar6 + 0x206;
   } while (uVar8 < 0x2060);
-  memset((uchar *)pRVar9,'\0',0x818);
+  memset((uchar *)dst,'\0',0x818);
   local_4 = 0;
   if (0 < *(int *)(DAT_034f8f60 + 0x14)) {
     local_c = 0;
@@ -231,23 +231,23 @@ LAB_00410670:
           uVar8 = uVar8 | 4;
         }
         if (((uVar8 & param_1) == param_1) && ((param_2 & uVar8) == 0)) {
-          *(short *)(pRVar9 + *(int *)(pRVar9 + 0x14) * 2 + 0x18) = sVar2;
-          *(int *)(pRVar9 + 0x14) = *(int *)(pRVar9 + 0x14) + 1;
+          *(short *)(dst + *(int *)(dst + 0x14) * 2 + 0x18) = sVar2;
+          *(int *)(dst + 0x14) = *(int *)(dst + 0x14) + 1;
         }
       }
       local_c = local_c + 0x28;
       local_4 = local_4 + 1;
     } while (local_4 < *(int *)(iVar7 + 0x14));
   }
-  qsort(pRVar9 + 0x18,*(uint *)(pRVar9 + 0x14),2,FUN_00410540);
+  qsort(dst + 0x18,*(uint *)(dst + 0x14),2,FUN_00410540);
   uVar8 = DAT_00aec678;
-  *(uint *)(pRVar9 + 8) = DAT_034f8f64;
-  *(uint *)(pRVar9 + 4) = uVar8;
+  *(uint *)(dst + 8) = DAT_034f8f64;
+  *(uint *)(dst + 4) = uVar8;
   DAT_034f8f64 = DAT_034f8f64 + 1;
-  *(int *)pRVar9 = in_EAX;
-  *(int *)(pRVar9 + 0xc) = param_1;
-  *(uint *)(pRVar9 + 0x10) = param_2;
-  return pRVar9;
+  *(int *)dst = in_EAX;
+  *(int *)(dst + 0xc) = param_1;
+  *(uint *)(dst + 0x10) = param_2;
+  return dst;
 }
 
 
@@ -986,26 +986,26 @@ char * __cdecl BG_EmblemsWriteString(short param_1,CompositeEmblemLayer *param_2
 {
   int unaff_ESI;
   uchar *unaff_EDI;
-  uchar *puVar1;
-  CompositeEmblemLayer *pCVar2;
-  int iVar3;
+  uchar *dst;
+  CompositeEmblemLayer *pCVar1;
+  int iVar2;
   int in_stack_ffffff4c;
-  int iVar4;
+  int iVar3;
   
   if (DAT_01d4c1ac == 0) {
     DAT_01d4c1ac = 1;
     FUN_005f9580();
   }
-  iVar3 = 0x30;
-  puVar1 = &stack0xffffff4c;
-  pCVar2 = (CompositeEmblemLayer *)0x0;
-  memset(puVar1,'\0',0x30);
-  iVar4 = 0;
-  BG_EmblemsWriteMsg((msg_t *)param_2,(short)puVar1,pCVar2,iVar3);
+  iVar2 = 0x30;
+  dst = &stack0xffffff4c;
+  pCVar1 = (CompositeEmblemLayer *)0x0;
+  memset(dst,'\0',0x30);
+  iVar3 = 0;
+  BG_EmblemsWriteMsg((msg_t *)param_2,(short)dst,pCVar1,iVar2);
   if (in_stack_ffffff4c != 0) {
     return (char *)0x0;
   }
-  Com_EncodeYEnc(unaff_EDI,unaff_ESI,(char *)0x0,iVar4);
+  Com_EncodeYEnc(unaff_EDI,unaff_ESI,(char *)0x0,iVar3);
   return &DAT_04faece0;
 }
 

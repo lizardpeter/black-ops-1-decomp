@@ -2,56 +2,56 @@
 
 // 00961953  _aligned_malloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c:68)
 
-void * __cdecl _aligned_malloc(uint param_1,uint param_2)
+void * __cdecl _aligned_malloc(uint size,uint alignment)
 
 {
   void *pvVar1;
   
-  pvVar1 = _aligned_offset_malloc(param_1,param_2,0);
+  pvVar1 = _aligned_offset_malloc(size,alignment,0);
   return pvVar1;
 }
 
 
 // 0096188B  _aligned_offset_malloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c:99)
 
-void * __cdecl _aligned_offset_malloc(uint param_1,uint param_2,uint param_3)
+void * __cdecl _aligned_offset_malloc(uint size,uint align,uint offset)
 
 {
-  uint uVar1;
-  int iVar2;
-  int *piVar3;
+  uint size_00;
+  int iVar1;
+  int *piVar2;
+  void *pvVar3;
   void *pvVar4;
-  void *pvVar5;
   
-  if ((param_2 & param_2 - 1) == 0) {
-    if ((param_3 == 0) || (param_3 < param_1)) {
-      if (param_2 < 5) {
-        param_2 = 4;
+  if ((align & align - 1) == 0) {
+    if ((offset == 0) || (offset < size)) {
+      if (align < 5) {
+        align = 4;
       }
-      iVar2 = (-param_3 & 3) + 4 + (param_2 - 1);
-      uVar1 = iVar2 + param_1;
-      if (uVar1 < param_1) {
-        piVar3 = _errno();
-        *piVar3 = 0xc;
+      iVar1 = (-offset & 3) + 4 + (align - 1);
+      size_00 = iVar1 + size;
+      if (size_00 < size) {
+        piVar2 = _errno();
+        *piVar2 = 0xc;
       }
       else {
-        pvVar4 = malloc(uVar1);
-        if (pvVar4 != (void *)0x0) {
-          pvVar5 = (void *)(((int)pvVar4 + param_3 + iVar2 & ~(param_2 - 1)) - param_3);
-          *(void **)((int)pvVar5 + (-4 - (-param_3 & 3))) = pvVar4;
-          return pvVar5;
+        pvVar3 = malloc(size_00);
+        if (pvVar3 != (void *)0x0) {
+          pvVar4 = (void *)(((int)pvVar3 + offset + iVar1 & ~(align - 1)) - offset);
+          *(void **)((int)pvVar4 + (-4 - (-offset & 3))) = pvVar3;
+          return pvVar4;
         }
       }
     }
     else {
-      piVar3 = _errno();
-      *piVar3 = 0x16;
+      piVar2 = _errno();
+      *piVar2 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
   }
   else {
-    piVar3 = _errno();
-    *piVar3 = 0x16;
+    piVar2 = _errno();
+    *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   return (void *)0x0;
@@ -60,19 +60,19 @@ void * __cdecl _aligned_offset_malloc(uint param_1,uint param_2,uint param_3)
 
 // 00961AEF  _aligned_realloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c:158)
 
-void * __cdecl _aligned_realloc(void *param_1,uint param_2,uint param_3)
+void * __cdecl _aligned_realloc(void *memblock,uint size,uint alignment)
 
 {
   void *pvVar1;
   
-  pvVar1 = _aligned_offset_realloc(param_1,param_2,param_3,0);
+  pvVar1 = _aligned_offset_realloc(memblock,size,alignment,0);
   return pvVar1;
 }
 
 
 // 0096196A  _aligned_offset_realloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c:236)
 
-void * __cdecl _aligned_offset_realloc(void *param_1,uint param_2,uint param_3,uint param_4)
+void * __cdecl _aligned_offset_realloc(void *memblock,uint size,uint align,uint offset)
 
 {
   int iVar1;
@@ -83,84 +83,87 @@ void * __cdecl _aligned_offset_realloc(void *param_1,uint param_2,uint param_3,u
   uint uVar6;
   uint uVar7;
   uint uVar8;
-  void *local_1c;
-  uint local_14;
-  void *local_8;
+  int save_errno;
+  uint stptr;
+  uint diff;
+  uint movsz;
+  uint reqsz;
+  int bFree;
+  uint ptr;
   
   bVar2 = false;
-  if (param_1 == (void *)0x0) {
-    pvVar3 = _aligned_offset_malloc(param_2,param_3,param_4);
+  if (memblock == (void *)0x0) {
+    pvVar3 = _aligned_offset_malloc(size,align,offset);
     return pvVar3;
   }
-  if (param_2 == 0) {
-    _aligned_free(param_1);
+  if (size == 0) {
+    _aligned_free(memblock);
     return (void *)0x0;
   }
-  if (((param_3 & param_3 - 1) != 0) || ((param_4 != 0 && (param_2 <= param_4)))) {
+  if (((align & align - 1) != 0) || ((offset != 0 && (size <= offset)))) {
     piVar4 = _errno();
     *piVar4 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return (void *)0x0;
   }
-  pvVar3 = *(void **)(((uint)param_1 & 0xfffffffc) - 4);
-  if (param_3 < 5) {
-    param_3 = 4;
+  pvVar3 = *(void **)(((uint)memblock & 0xfffffffc) - 4);
+  if (align < 5) {
+    align = 4;
   }
-  iVar5 = (int)param_1 - (int)pvVar3;
-  uVar7 = param_3 - 1;
-  uVar8 = -param_4 & 3;
+  iVar5 = (int)memblock - (int)pvVar3;
+  uVar7 = align - 1;
+  uVar8 = -offset & 3;
   uVar6 = _msize(pvVar3);
-  local_14 = (int)pvVar3 + (uVar6 - (int)param_1);
-  if (param_2 < local_14) {
-    local_14 = param_2;
+  movsz = (int)pvVar3 + (uVar6 - (int)memblock);
+  if (size < movsz) {
+    movsz = size;
   }
-  uVar6 = uVar8 + param_2 + 4 + uVar7;
-  if (uVar6 < param_2) {
+  uVar6 = uVar8 + size + 4 + uVar7;
+  if (uVar6 < size) {
     piVar4 = _errno();
     *piVar4 = 0xc;
 LAB_00961a7e:
-    param_1 = (uchar *)0x0;
+    memblock = (uchar *)0x0;
   }
   else {
-    if ((void *)((int)pvVar3 + uVar7 + uVar8 + 4) < param_1) {
+    if ((void *)((int)pvVar3 + uVar7 + uVar8 + 4) < memblock) {
 LAB_00961a71:
-      local_8 = malloc(uVar6);
-      if (local_8 == (void *)0x0) goto LAB_00961a7e;
+      ptr = (uint)malloc(uVar6);
+      if ((void *)ptr == (void *)0x0) goto LAB_00961a7e;
       bVar2 = true;
-      local_1c = pvVar3;
+      stptr = (uint)pvVar3;
     }
     else {
       piVar4 = _errno();
       iVar1 = *piVar4;
-      local_1c = _expand(pvVar3,uVar6);
-      local_8 = local_1c;
-      if (local_1c == (void *)0x0) {
+      stptr = (uint)_expand(pvVar3,uVar6);
+      ptr = stptr;
+      if ((void *)stptr == (void *)0x0) {
         piVar4 = _errno();
         *piVar4 = iVar1;
         goto LAB_00961a71;
       }
     }
-    if ((local_8 != (void *)((int)param_1 - iVar5)) ||
-       ((~uVar7 & (int)param_1 + param_4 + uVar8) != 0)) {
-      param_1 = (void *)(((int)local_8 + param_4 + uVar7 + uVar8 + 4 & ~uVar7) - param_4);
-      memmove(param_1,(uchar *)(iVar5 + (int)local_1c),local_14);
+    if ((ptr != (int)memblock - iVar5) || ((~uVar7 & (int)memblock + offset + uVar8) != 0)) {
+      memblock = (void *)((ptr + uVar8 + uVar7 + 4 + offset & ~uVar7) - offset);
+      memmove(memblock,(uchar *)(iVar5 + stptr),movsz);
       if (bVar2) {
-        free(local_1c);
+        free((void *)stptr);
       }
-      *(void **)((int)param_1 + (-4 - uVar8)) = local_8;
+      *(uint *)((int)memblock + (-4 - uVar8)) = ptr;
     }
   }
-  return param_1;
+  return memblock;
 }
 
 
 // 00961939  _aligned_free  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/align.c:457)
 
-void __cdecl _aligned_free(void *param_1)
+void __cdecl _aligned_free(void *memblock)
 
 {
-  if (param_1 != (void *)0x0) {
-    free(*(void **)(((uint)param_1 & 0xfffffffc) - 4));
+  if (memblock != (void *)0x0) {
+    free(*(void **)(((uint)memblock & 0xfffffffc) - 4));
   }
   return;
 }

@@ -70,10 +70,10 @@ ddlDef_t * __cdecl PCache_GetPublicProfileDDL(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *param_1)
+void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *task)
 
 {
-  uint uVar1;
+  int iVar1;
   int iVar2;
   uint uVar3;
   PCacheComponent *pPVar4;
@@ -82,36 +82,40 @@ void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *param_1)
   char *pcVar7;
   int unaff_EDI;
   PCacheComponent *pPVar8;
-  uint local_12c;
-  int local_118;
-  char local_114 [256];
+  int retrievedProfileIndex;
+  int controllerIndex;
+  PCache_ScopedLock __pcache_lock;
+  int batchCount;
+  PCachePublicProfile *profile;
+  int batchedProfileIndex;
+  char backup [256];
   uint local_14;
-  PublicProfileInfo *local_10;
-  uint local_c;
-  uint local_8;
+  PublicProfileInfo *dwProfile;
+  int totalNumberOfProfilesRetrieved;
+  uint index;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar1 = *(uint *)param_1->payload;
-  local_c = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
-  iVar2 = param_1->controllerIndex;
+  iVar1 = *(int *)task->payload;
+  totalNumberOfProfilesRetrieved = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
+  iVar2 = task->controllerIndex;
   PCache_Lock();
-  local_8 = 0;
-  while (uVar3 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr), local_8 < uVar3) {
-    local_10 = s_taskData[param_1->controllerIndex] + local_8;
-    if ((local_10->m_memberVERSION == 2) &&
-       (pPVar4 = PCache_GetComponent(param_1->controllerIndex,(ulonglong)(uint)local_10->_padding_,
+  index = 0;
+  while (uVar3 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr), index < uVar3) {
+    dwProfile = s_taskData[task->controllerIndex] + index;
+    if ((dwProfile->m_memberVERSION == 2) &&
+       (pPVar4 = PCache_GetComponent(task->controllerIndex,(ulonglong)(uint)dwProfile->_padding_,
                                      unaff_EDI), pPVar4 != (PCacheComponent *)0x0)) {
-      iVar5 = DDL_AssociateBuffer((char *)local_10->m_memberddl,0x100,g_playerDDL);
+      iVar5 = DDL_AssociateBuffer((char *)dwProfile->m_memberddl,0x100,g_playerDDL);
       if (iVar5 == 0) {
         iVar5 = DDL_FixBufferVersion
-                          ((char *)local_10->m_memberddl,g_playerDDL,"ddl_mp/player.ddl",local_114,
+                          ((char *)dwProfile->m_memberddl,g_playerDDL,"ddl_mp/player.ddl",backup,
                            0x100);
         if (iVar5 == 0) {
           memset((uchar *)(pPVar4 + 1),'\0',0x100);
           DDL_AssociateBuffer((char *)(pPVar4 + 1),0x100,g_playerDDL);
         }
         else {
-          pcVar7 = local_114;
+          pcVar7 = backup;
           pPVar8 = pPVar4 + 1;
           for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
             *(undefined4 *)&pPVar8->xuid = *(undefined4 *)pcVar7;
@@ -121,7 +125,7 @@ void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *param_1)
         }
       }
       else {
-        puVar6 = local_10->m_memberddl;
+        puVar6 = dwProfile->m_memberddl;
         pPVar8 = pPVar4 + 1;
         for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
           *(undefined4 *)&pPVar8->xuid = *(undefined4 *)puVar6;
@@ -131,20 +135,23 @@ void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *param_1)
       }
       pPVar4->state = pPVar4->state | 2;
     }
-    local_8 = local_8 + 1;
+    index = index + 1;
   }
-  if (uVar1 != local_c) {
-    for (local_118 = 0; local_118 < (int)uVar1; local_118 = local_118 + 1) {
-      for (local_12c = 0; (int)local_12c < (int)local_c; local_12c = local_12c + 1) {
-        iVar5 = param_1->controllerIndex * 0x1180;
-        if (((int)s_batchedProfileXuids[iVar2][local_118] ==
-             *(int *)(iVar5 + 0xa53a2a0 + local_12c * 0x118)) &&
-           (*(int *)(iVar2 * 0x80 + 0xa53a0ec + local_118 * 8) ==
-            *(int *)(iVar5 + 0xa53a2a4 + local_12c * 0x118))) break;
+  if (iVar1 != totalNumberOfProfilesRetrieved) {
+    for (batchedProfileIndex = 0; batchedProfileIndex < iVar1;
+        batchedProfileIndex = batchedProfileIndex + 1) {
+      for (retrievedProfileIndex = 0; retrievedProfileIndex < totalNumberOfProfilesRetrieved;
+          retrievedProfileIndex = retrievedProfileIndex + 1) {
+        iVar5 = task->controllerIndex * 0x1180;
+        if (((int)s_batchedProfileXuids[iVar2][batchedProfileIndex] ==
+             *(int *)(iVar5 + 0xa53a2a0 + retrievedProfileIndex * 0x118)) &&
+           (*(int *)(iVar2 * 0x80 + 0xa53a0ec + batchedProfileIndex * 8) ==
+            *(int *)(iVar5 + 0xa53a2a4 + retrievedProfileIndex * 0x118))) break;
       }
-      if (local_12c == local_c) {
-        pPVar4 = PCache_GetComponent(param_1->controllerIndex,
-                                     (ulonglong)*(uint *)(iVar2 * 0x80 + 0xa53a0ec + local_118 * 8),
+      if (retrievedProfileIndex == totalNumberOfProfilesRetrieved) {
+        pPVar4 = PCache_GetComponent(task->controllerIndex,
+                                     (ulonglong)
+                                     *(uint *)(iVar2 * 0x80 + 0xa53a0ec + batchedProfileIndex * 8),
                                      unaff_EDI);
         memset((uchar *)(pPVar4 + 1),'\0',0x100);
         pPVar4->state = pPVar4->state | 0x20;
@@ -158,25 +165,29 @@ void __cdecl PCache_GetPublicProfilesCompleted(TaskRecord *param_1)
 
 // 00970D70  PCache_GetPublicProfilesFailed  (live/live_pcache_profile.cpp:125)
 
+/* WARNING: Variable defined which should be unmapped: controllerIndex */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_GetPublicProfilesFailed(TaskRecord *param_1)
+void __cdecl PCache_GetPublicProfilesFailed(TaskRecord *task)
 
 {
   int iVar1;
-  PCacheComponent *pPVar2;
-  int iVar3;
-  int local_8;
+  int iVar2;
+  PCacheComponent *pPVar3;
+  int controllerIndex;
+  PCache_ScopedLock __pcache_lock;
+  int batchCount;
+  PCachePublicProfile *profile;
+  int index;
   
-  iVar1 = *(int *)param_1->payload;
-  iVar3 = param_1->controllerIndex;
+  iVar1 = *(int *)task->payload;
+  iVar2 = task->controllerIndex;
   PCache_Lock();
-  for (local_8 = 0; local_8 < iVar1; local_8 = local_8 + 1) {
-    pPVar2 = PCache_GetComponent(param_1->controllerIndex,
-                                 (ulonglong)*(uint *)(iVar3 * 0x80 + 0xa53a0ec + local_8 * 8),iVar3)
-    ;
-    memset((uchar *)(pPVar2 + 1),'\0',0x100);
-    pPVar2->state = pPVar2->state | 0x20;
+  for (index = 0; index < iVar1; index = index + 1) {
+    pPVar3 = PCache_GetComponent(task->controllerIndex,
+                                 (ulonglong)*(uint *)(iVar2 * 0x80 + 0xa53a0ec + index * 8),iVar2);
+    memset((uchar *)(pPVar3 + 1),'\0',0x100);
+    pPVar3->state = pPVar3->state | 0x20;
   }
   PCache_Unlock();
   return;
@@ -187,11 +198,13 @@ void __cdecl PCache_GetPublicProfilesFailed(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_SetPublicProfileCompleted(TaskRecord *param_1)
+void __cdecl PCache_SetPublicProfileCompleted(TaskRecord *task)
 
 {
+  PCache_ScopedLock __pcache_lock;
+  
   PCache_Lock();
-  *(uint *)((int)param_1->payload + 0x18) = *(uint *)((int)param_1->payload + 0x18) & 0xfffffffe;
+  *(uint *)((int)task->payload + 0x18) = *(uint *)((int)task->payload + 0x18) & 0xfffffffe;
   PCache_Unlock();
   return;
 }
@@ -201,14 +214,15 @@ void __cdecl PCache_SetPublicProfileCompleted(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_SetPublicProfileFailed(TaskRecord *param_1)
+void __cdecl PCache_SetPublicProfileFailed(TaskRecord *task)
 
 {
   uint uVar1;
+  PCache_ScopedLock __pcache_lock;
   
   PCache_Lock();
   uVar1 = PCache_Time();
-  *(uint *)((int)param_1->payload + 0x10) = uVar1 + 300;
+  *(uint *)((int)task->payload + 0x10) = uVar1 + 300;
   PCache_Unlock();
   return;
 }
@@ -219,7 +233,7 @@ void __cdecl PCache_SetPublicProfileFailed(TaskRecord *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
+void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *task)
 
 {
   int *piVar1;
@@ -230,12 +244,14 @@ void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
   uchar *puVar6;
   int *piVar7;
   int *piVar8;
-  int local_10c [64];
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *profile;
+  int backup [64];
   uint local_c;
-  PublicProfileInfo *local_8;
+  PublicProfileInfo *dwProfile;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar4 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+  uVar4 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
   if ((uVar4 != 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0xa2,0,"%s"), !bVar3)) {
@@ -244,8 +260,8 @@ void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
     return;
   }
   PCache_Lock();
-  local_8 = s_userData + param_1->controllerIndex;
-  piVar1 = param_1->payload;
+  dwProfile = s_userData + task->controllerIndex;
+  piVar1 = task->payload;
   if ((piVar1 == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0xa9,0,"%s"), !bVar3)) {
@@ -260,36 +276,36 @@ void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
     (*pcVar2)();
     return;
   }
-  if (((*piVar1 != local_8->_padding_) || (piVar1[1] != local_8->_padding_)) &&
+  if (((*piVar1 != dwProfile->_padding_) || (piVar1[1] != dwProfile->_padding_)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0xab,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((piVar1[2] != param_1->controllerIndex) &&
+  if ((piVar1[2] != task->controllerIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0xac,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (local_8->m_memberVERSION != 2) {
-    memset(local_8->m_memberddl,'\0',0x100);
+  if (dwProfile->m_memberVERSION != 2) {
+    memset(dwProfile->m_memberddl,'\0',0x100);
     piVar1[6] = piVar1[6] | 0x41;
   }
-  iVar5 = DDL_AssociateBuffer((char *)local_8->m_memberddl,0x100,g_playerDDL);
+  iVar5 = DDL_AssociateBuffer((char *)dwProfile->m_memberddl,0x100,g_playerDDL);
   if (iVar5 == 0) {
     iVar5 = DDL_FixBufferVersion
-                      ((char *)local_8->m_memberddl,g_playerDDL,"ddl_mp/player.ddl",
-                       (char *)local_10c,0x100);
+                      ((char *)dwProfile->m_memberddl,g_playerDDL,"ddl_mp/player.ddl",(char *)backup
+                       ,0x100);
     if (iVar5 == 0) {
       memset((uchar *)(piVar1 + 8),'\0',0x100);
       DDL_AssociateBuffer((char *)(piVar1 + 8),0x100,g_playerDDL);
       piVar1[6] = piVar1[6] | 0x41;
     }
     else {
-      piVar7 = local_10c;
+      piVar7 = backup;
       piVar8 = piVar1 + 8;
       for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
         *piVar8 = *piVar7;
@@ -300,7 +316,7 @@ void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
     }
   }
   else {
-    puVar6 = local_8->m_memberddl;
+    puVar6 = dwProfile->m_memberddl;
     piVar7 = piVar1 + 8;
     for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
       *piVar7 = *(int *)puVar6;
@@ -318,7 +334,7 @@ void __cdecl PCache_GetPublicProfileCompleted(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_GetPublicProfileFailed(TaskRecord *param_1)
+void __cdecl PCache_GetPublicProfileFailed(TaskRecord *task)
 
 {
   void *pvVar1;
@@ -326,9 +342,11 @@ void __cdecl PCache_GetPublicProfileFailed(TaskRecord *param_1)
   bool bVar3;
   bdLobbyErrorCode bVar4;
   undefined3 extraout_var;
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *profile;
   
   PCache_Lock();
-  pvVar1 = param_1->payload;
+  pvVar1 = task->payload;
   if (pvVar1 == (void *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",0xce
                              ,0,"%s");
@@ -347,7 +365,7 @@ void __cdecl PCache_GetPublicProfileFailed(TaskRecord *param_1)
       return;
     }
   }
-  if (*(int *)((int)pvVar1 + 8) != param_1->controllerIndex) {
+  if (*(int *)((int)pvVar1 + 8) != task->controllerIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",0xd0
                              ,0,"%s");
     if (!bVar3) {
@@ -356,7 +374,7 @@ void __cdecl PCache_GetPublicProfileFailed(TaskRecord *param_1)
       return;
     }
   }
-  bVar4 = bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
+  bVar4 = bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
   if (CONCAT31(extraout_var,bVar4) == 800) {
     memset((uchar *)((int)pvVar1 + 0x20),'\0',0x100);
     DDL_AssociateBuffer((char *)((int)pvVar1 + 0x20),0x100,g_playerDDL);
@@ -371,26 +389,26 @@ void __cdecl PCache_GetPublicProfileFailed(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_NukeProfile(int param_1)
+void __cdecl PCache_NukeProfile(int controlleridx)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_14;
-  TaskRecord *local_10;
-  bdProfiles *local_c;
-  bdLobbyService *local_8;
+  TaskRecord *task;
+  bdProfiles *profileService;
+  bdLobbyService *lobbyService;
   
-  local_8 = dwGetLobby(param_1);
-  if (local_8 != (bdLobbyService *)0x0) {
-    local_c = bdLobbyService::getProfiles(local_8);
-    if (local_c != (bdProfiles *)0x0) {
-      local_10 = TaskManager2_CreateTask(task_pcacheNukeProfile,param_1,(TaskRecord *)0x0,0);
-      bVar1 = bdProfiles::deleteProfile(local_c);
+  lobbyService = dwGetLobby(controlleridx);
+  if (lobbyService != (bdLobbyService *)0x0) {
+    profileService = bdLobbyService::getProfiles(lobbyService);
+    if (profileService != (bdProfiles *)0x0) {
+      task = TaskManager2_CreateTask(task_pcacheNukeProfile,controlleridx,(TaskRecord *)0x0,0);
+      other_3 = bdProfiles::deleteProfile(profileService);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_10->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-      TaskManager2_StartTask(local_10);
+      TaskManager2_StartTask(task);
     }
   }
   return;
@@ -401,31 +419,36 @@ void __cdecl PCache_NukeProfile(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl PCache_BatchUpdatePublicProfiles(int param_1,PCachePublicProfile *param_2,int param_3)
+void __cdecl
+PCache_BatchUpdatePublicProfiles(int controllerIndex,PCachePublicProfile *profiles,int count)
 
 {
   code *pcVar1;
   bool bVar2;
+  bdLobbyService *this;
   Status SVar3;
-  uint uVar4;
-  bdReference<bdRemoteTask> bVar5;
-  int iVar6;
-  char *pcVar7;
+  bdProfiles *this_00;
+  PCachePublicProfile *pPVar4;
+  uint uVar5;
+  TaskRecord *pTVar6;
+  bdReference<bdRemoteTask> bVar7;
+  int iVar8;
+  char *pcVar9;
   int unaff_EDI;
-  uchar *puVar8;
+  uchar *puVar10;
   bdReference<bdByteBuffer> local_38;
   undefined1 local_34 [4];
-  __uint64 local_30;
-  bdProfiles *local_28;
-  bdLobbyService *local_24;
-  TaskRecord *local_20;
-  int local_1c;
-  PCachePublicProfile *local_18;
-  int local_14;
-  uint local_10;
-  undefined8 local_c;
+  PCache_ScopedLock __pcache_lock;
+  bdProfiles *profileService;
+  bdLobbyService *lobbyService;
+  TaskRecord *task;
+  int batchCount;
+  PCachePublicProfile *profile;
+  int index;
+  uint updateDelta;
+  undefined8 xuid;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0xf9,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
@@ -434,114 +457,119 @@ void __cdecl PCache_BatchUpdatePublicProfiles(int param_1,PCachePublicProfile *p
     (*pcVar1)();
     return;
   }
-  local_24 = dwGetLobby(param_1);
-  if (((((local_24 != (bdLobbyService *)0x0) &&
-        (SVar3 = bdLobbyService::getStatus(local_24), SVar3 == BD_CONNECTED)) &&
-       (local_28 = bdLobbyService::getProfiles(local_24), local_28 != (bdProfiles *)0x0)) &&
-      ((bVar2 = TaskManager2_TaskIsInProgressForController(task_pcacheGetPublicProfiles,param_1),
-       !bVar2 && (bVar2 = TaskManager2_TaskIsInProgressForController
-                                    (task_pcacheGetPublicProfile,param_1), !bVar2)))) &&
-     (bVar2 = TaskManager2_TaskIsInProgressForController(task_pcacheSetPublicProfile,param_1),
-     !bVar2)) {
+  this = dwGetLobby(controllerIndex);
+  if (((((this != (bdLobbyService *)0x0) &&
+        (SVar3 = bdLobbyService::getStatus(this), SVar3 == BD_CONNECTED)) &&
+       (this_00 = bdLobbyService::getProfiles(this), this_00 != (bdProfiles *)0x0)) &&
+      ((bVar2 = TaskManager2_TaskIsInProgressForController
+                          (task_pcacheGetPublicProfiles,controllerIndex), !bVar2 &&
+       (bVar2 = TaskManager2_TaskIsInProgressForController
+                          (task_pcacheGetPublicProfile,controllerIndex), !bVar2)))) &&
+     (bVar2 = TaskManager2_TaskIsInProgressForController
+                        (task_pcacheSetPublicProfile,controllerIndex), !bVar2)) {
     PCache_Lock();
-    memset((uchar *)(s_batchedProfileXuids + param_1),'\0',0x80);
-    local_c = Live_GetXuid(param_1);
-    local_18 = (PCachePublicProfile *)PCache_GetComponent(param_1,local_c >> 0x20,unaff_EDI);
-    (local_18->c).state = (local_18->c).state | 8;
-    local_10 = PCache_Time();
-    local_10 = local_10 - (local_18->c).updateTime;
-    if ((((local_18->c).state & 2) == 0) && (0xe < local_10)) {
-      if ((((local_18->c).state & 1) != 0) &&
+    memset((uchar *)(s_batchedProfileXuids + controllerIndex),'\0',0x80);
+    xuid = Live_GetXuid(controllerIndex);
+    pPVar4 = (PCachePublicProfile *)PCache_GetComponent(controllerIndex,xuid >> 0x20,unaff_EDI);
+    (pPVar4->c).state = (pPVar4->c).state | 8;
+    uVar5 = PCache_Time();
+    uVar5 = uVar5 - (pPVar4->c).updateTime;
+    if ((((pPVar4->c).state & 2) == 0) && (0xe < uVar5)) {
+      if ((((pPVar4->c).state & 1) != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp"
                                    ,0x11d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      uVar4 = PCache_Time();
-      (local_18->c).updateTime = uVar4;
-      local_20 = TaskManager2_CreateTask(task_pcacheGetPublicProfile,param_1,(TaskRecord *)0x0,0);
-      bVar5 = bdProfiles::getPublicInfos
-                        (local_28,&local_30,(bdProfileInfo *)&local_c,(uint)(s_userData + param_1));
+      uVar5 = PCache_Time();
+      (pPVar4->c).updateTime = uVar5;
+      pTVar6 = TaskManager2_CreateTask
+                         (task_pcacheGetPublicProfile,controllerIndex,(TaskRecord *)0x0,0);
+      bVar7 = bdProfiles::getPublicInfos
+                        (this_00,(__uint64 *)&stack0xffffffd0,(bdProfileInfo *)&xuid,
+                         (uint)(s_userData + controllerIndex));
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_20->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar5.m_ptr);
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_30);
-      local_20->payload = local_18;
-      TaskManager2_StartTask(local_20);
+                ((bdReference<bdAddrHandle> *)&pTVar6->remoteTask,
+                 (bdReference<bdAddrHandle> *)bVar7.m_ptr);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&stack0xffffffd0);
+      pTVar6->payload = pPVar4;
+      TaskManager2_StartTask(pTVar6);
       PCache_Unlock();
     }
-    else if ((((local_18->c).state & 1) == 0) ||
-            ((local_10 < 0x3c && (((local_18->c).state & 0x40) == 0)))) {
-      if (((local_18->c).state & 2) != 0) {
-        PCache_UpdateProfileData(param_1,local_18);
+    else if ((((pPVar4->c).state & 1) == 0) || ((uVar5 < 0x3c && (((pPVar4->c).state & 0x40) == 0)))
+            ) {
+      if (((pPVar4->c).state & 2) != 0) {
+        PCache_UpdateProfileData(controllerIndex,pPVar4);
       }
-      local_1c = 0;
-      local_14 = 0;
-      while ((local_14 < param_3 && (local_1c < 0x10))) {
-        local_18 = param_2 + local_14;
-        if ((local_18->c).controllerIndex == param_1) {
-          if ((((local_18->c).state & 8) != 0) &&
-             (((int)(local_18->c).xuid != (int)local_c ||
-              (*(int *)((int)&(local_18->c).xuid + 4) != local_c._4_4_)))) {
-            (local_18->c).state = (local_18->c).state & 0xfffffff7;
+      batchCount = 0;
+      index = 0;
+      while ((index < count && (batchCount < 0x10))) {
+        pPVar4 = profiles + index;
+        if ((pPVar4->c).controllerIndex == controllerIndex) {
+          if ((((pPVar4->c).state & 8) != 0) &&
+             (((int)(pPVar4->c).xuid != (int)xuid ||
+              (*(int *)((int)&(pPVar4->c).xuid + 4) != xuid._4_4_)))) {
+            (pPVar4->c).state = (pPVar4->c).state & 0xfffffff7;
           }
-          if ((((local_18->c).state & 4) != 0) && (((local_18->c).state & 1) == 0)) {
-            (local_18->c).state = (local_18->c).state & 0xfffffffb;
-            uVar4 = PCache_Time();
-            (local_18->c).updateTime = uVar4;
-            if (((int)(local_18->c).xuid == 0 && *(int *)((int)&(local_18->c).xuid + 4) == 0) &&
+          if ((((pPVar4->c).state & 4) != 0) && (((pPVar4->c).state & 1) == 0)) {
+            (pPVar4->c).state = (pPVar4->c).state & 0xfffffffb;
+            uVar5 = PCache_Time();
+            (pPVar4->c).updateTime = uVar5;
+            if (((int)(pPVar4->c).xuid == 0 && *(int *)((int)&(pPVar4->c).xuid + 4) == 0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp"
                                          ,0x14b,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            *(int *)(s_batchedProfileXuids[param_1] + local_1c) = (int)(local_18->c).xuid;
-            *(undefined4 *)(param_1 * 0x80 + 0xa53a0ec + local_1c * 8) =
-                 *(undefined4 *)((int)&(local_18->c).xuid + 4);
-            local_1c = local_1c + 1;
+            *(int *)(s_batchedProfileXuids[controllerIndex] + batchCount) = (int)(pPVar4->c).xuid;
+            *(undefined4 *)(controllerIndex * 0x80 + 0xa53a0ec + batchCount * 8) =
+                 *(undefined4 *)((int)&(pPVar4->c).xuid + 4);
+            batchCount = batchCount + 1;
           }
         }
-        local_14 = local_14 + 1;
+        index = index + 1;
       }
-      if (0 < local_1c) {
-        local_20 = TaskManager2_CreateTask(task_pcacheGetPublicProfiles,param_1,(TaskRecord *)0x0,0)
-        ;
-        *(int *)local_20->payload = local_1c;
-        bVar5 = bdProfiles::getPublicInfos
-                          (local_28,(__uint64 *)&local_38,
-                           (bdProfileInfo *)(s_batchedProfileXuids + param_1),
-                           (uint)(s_taskData + param_1));
+      if (0 < batchCount) {
+        pTVar6 = TaskManager2_CreateTask
+                           (task_pcacheGetPublicProfiles,controllerIndex,(TaskRecord *)0x0,0);
+        *(int *)pTVar6->payload = batchCount;
+        bVar7 = bdProfiles::getPublicInfos
+                          (this_00,(__uint64 *)&local_38,
+                           (bdProfileInfo *)(s_batchedProfileXuids + controllerIndex),
+                           (uint)(s_taskData + controllerIndex));
         bdReference<bdAddrHandle>::operator=
-                  ((bdReference<bdAddrHandle> *)&local_20->remoteTask,
-                   (bdReference<bdAddrHandle> *)bVar5.m_ptr);
+                  ((bdReference<bdAddrHandle> *)&pTVar6->remoteTask,
+                   (bdReference<bdAddrHandle> *)bVar7.m_ptr);
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_38);
-        TaskManager2_StartTask(local_20);
+        TaskManager2_StartTask(pTVar6);
       }
       PCache_Unlock();
     }
     else {
-      uVar4 = PCache_Time();
-      (local_18->c).updateTime = uVar4;
-      (local_18->c).state = (local_18->c).state & 0xffffffbf;
-      s_userData[param_1].m_memberVERSION = 2;
-      pcVar7 = local_18->ddl;
-      puVar8 = s_userData[param_1].m_memberddl;
-      for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *(undefined4 *)puVar8 = *(undefined4 *)pcVar7;
-        pcVar7 = pcVar7 + 4;
-        puVar8 = puVar8 + 4;
+      uVar5 = PCache_Time();
+      (pPVar4->c).updateTime = uVar5;
+      (pPVar4->c).state = (pPVar4->c).state & 0xffffffbf;
+      s_userData[controllerIndex].m_memberVERSION = 2;
+      pcVar9 = pPVar4->ddl;
+      puVar10 = s_userData[controllerIndex].m_memberddl;
+      for (iVar8 = 0x40; iVar8 != 0; iVar8 = iVar8 + -1) {
+        *(undefined4 *)puVar10 = *(undefined4 *)pcVar9;
+        pcVar9 = pcVar9 + 4;
+        puVar10 = puVar10 + 4;
       }
-      s_userData[param_1].m_memberddl[0x100] = '\0';
-      local_20 = TaskManager2_CreateTask(task_pcacheSetPublicProfile,param_1,(TaskRecord *)0x0,0);
-      bVar5 = bdProfiles::setPublicInfo(local_28,(bdProfileInfo *)local_34);
+      s_userData[controllerIndex].m_memberddl[0x100] = '\0';
+      pTVar6 = TaskManager2_CreateTask
+                         (task_pcacheSetPublicProfile,controllerIndex,(TaskRecord *)0x0,0);
+      bVar7 = bdProfiles::setPublicInfo(this_00,(bdProfileInfo *)local_34);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_20->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar5.m_ptr);
+                ((bdReference<bdAddrHandle> *)&pTVar6->remoteTask,
+                 (bdReference<bdAddrHandle> *)bVar7.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_34);
-      local_20->payload = local_18;
-      TaskManager2_StartTask(local_20);
+      pTVar6->payload = pPVar4;
+      TaskManager2_StartTask(pTVar6);
       PCache_Unlock();
     }
   }
@@ -551,7 +579,7 @@ void __cdecl PCache_BatchUpdatePublicProfiles(int param_1,PCachePublicProfile *p
 
 // 00971770  PCache_GetRankInternal  (live/live_pcache_profile.cpp:347)
 
-bool __cdecl PCache_GetRankInternal(PCachePublicProfile *param_1,int *param_2,int *param_3)
+bool __cdecl PCache_GetRankInternal(PCachePublicProfile *profile,int *rank,int *prestige)
 
 {
   code *pcVar1;
@@ -569,7 +597,7 @@ bool __cdecl PCache_GetRankInternal(PCachePublicProfile *param_1,int *param_2,in
       return (bool)uVar3;
     }
   }
-  if (param_1 == (PCachePublicProfile *)0x0) {
+  if (profile == (PCachePublicProfile *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                              0x15e,0,"%s");
     if (!bVar2) {
@@ -578,15 +606,15 @@ bool __cdecl PCache_GetRankInternal(PCachePublicProfile *param_1,int *param_2,in
       return (bool)uVar3;
     }
   }
-  bVar2 = PCache_TouchComponent(&param_1->c);
+  bVar2 = PCache_TouchComponent(&profile->c);
   if (bVar2) {
-    if (param_2 != (int *)0x0) {
-      uVar4 = DDL_GetInt(&s_rankState,param_1->ddl);
-      *param_2 = uVar4;
+    if (rank != (int *)0x0) {
+      uVar4 = DDL_GetInt(&s_rankState,profile->ddl);
+      *rank = uVar4;
     }
-    if (param_3 != (int *)0x0) {
-      uVar4 = DDL_GetInt(&s_prestigeState,param_1->ddl);
-      *param_3 = uVar4;
+    if (prestige != (int *)0x0) {
+      uVar4 = DDL_GetInt(&s_prestigeState,profile->ddl);
+      *prestige = uVar4;
     }
     bVar2 = true;
   }
@@ -599,20 +627,24 @@ bool __cdecl PCache_GetRankInternal(PCachePublicProfile *param_1,int *param_2,in
 
 // 00971830  PCache_GetRank  (live/live_pcache_profile.cpp:365)
 
-bool __cdecl PCache_GetRank(int param_1,ulong64 param_2,int *param_3,int *param_4)
+/* WARNING: Variable defined which should be unmapped: __pcache_lock */
+
+bool __cdecl PCache_GetRank(int controllerIndex,ulong64 param_2,int *prestige,int *param_4)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  PCachePublicProfile *pPVar4;
-  int in_stack_fffffff4;
+  PCachePublicProfile *profile;
+  int iStack_c;
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *publicProfile;
   
   *param_2._4_4_ = 0;
   PCache_Lock();
-  pPVar4 = (PCachePublicProfile *)
-           PCache_GetComponent(param_1,param_2 & 0xffffffff,in_stack_fffffff4);
-  if (pPVar4 == (PCachePublicProfile *)0x0) {
+  profile = (PCachePublicProfile *)
+            PCache_GetComponent(controllerIndex,param_2 & 0xffffffff,iStack_c);
+  if (profile == (PCachePublicProfile *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                              0x175,0,"%s");
     if (!bVar2) {
@@ -621,28 +653,32 @@ bool __cdecl PCache_GetRank(int param_1,ulong64 param_2,int *param_3,int *param_
       return (bool)uVar3;
     }
   }
-  uVar3 = PCache_GetRankInternal(pPVar4,param_2._4_4_,param_3);
+  bVar2 = PCache_GetRankInternal(profile,param_2._4_4_,prestige);
   PCache_Unlock();
-  return (bool)uVar3;
+  return bVar2;
 }
 
 
 // 009718B0  PCache_GetCodpoints  (live/live_pcache_profile.cpp:379)
 
-bool __cdecl PCache_GetCodpoints(int param_1,ulong64 param_2,int *param_3)
+/* WARNING: Variable defined which should be unmapped: __pcache_lock */
+
+bool __cdecl PCache_GetCodpoints(int controllerIndex,ulong64 param_2,int *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  PCacheComponent *pPVar4;
-  uint uVar5;
-  int in_stack_fffffff4;
+  PCacheComponent *component;
+  uint uVar4;
+  int iStack_c;
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *publicProfile;
   
   *param_2._4_4_ = 0;
   PCache_Lock();
-  pPVar4 = PCache_GetComponent(param_1,param_2 & 0xffffffff,in_stack_fffffff4);
-  if (pPVar4 == (PCacheComponent *)0x0) {
+  component = PCache_GetComponent(controllerIndex,param_2 & 0xffffffff,iStack_c);
+  if (component == (PCacheComponent *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                              0x183,0,"%s");
     if (!bVar2) {
@@ -651,44 +687,53 @@ bool __cdecl PCache_GetCodpoints(int param_1,ulong64 param_2,int *param_3)
       return (bool)uVar3;
     }
   }
-  bVar2 = PCache_TouchComponent(pPVar4);
+  bVar2 = PCache_TouchComponent(component);
   if (bVar2) {
     if (param_2._4_4_ != (uint *)0x0) {
-      uVar5 = DDL_GetInt(&s_codpointsState,(char *)(pPVar4 + 1));
-      *param_2._4_4_ = uVar5;
+      uVar4 = DDL_GetInt(&s_codpointsState,(char *)(component + 1));
+      *param_2._4_4_ = uVar4;
     }
-    uVar3 = 1;
     PCache_Unlock();
+    iStack_c._1_1_ = true;
+    iStack_c._2_1_ = iStack_c._1_1_;
   }
   else {
-    uVar3 = 0;
     PCache_Unlock();
+    iStack_c._2_1_ = false;
   }
-  return (bool)uVar3;
+  return iStack_c._2_1_;
 }
 
 
 // 00971960  PCache_UpdateProfileData  (live/live_pcache_profile.cpp:399)
 
-void __cdecl PCache_UpdateProfileData(int param_1,PCachePublicProfile *param_2)
+/* WARNING: Variable defined which should be unmapped: emblem */
+
+void __cdecl PCache_UpdateProfileData(int controllerIndex,PCachePublicProfile *profile)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar *puVar3;
+  uchar *buffer;
+  uint uVar3;
   uint uVar4;
   uint uVar5;
-  uint uVar6;
-  uint uVar7;
-  uint uVar8;
-  uint uVar9;
-  PCacheComponent *pPVar10;
-  int in_stack_ffffffe0;
+  uint value;
+  uint value_00;
+  uint value_01;
+  PCacheComponent *component;
+  PCacheComponent *emblem;
+  int currentRank;
+  int currentCodpoints;
+  int currentPrestige;
+  int newRank;
+  int newPrestige;
+  int newCodpoints;
   
-  bVar2 = LiveStorage_DoWeHaveAllStats(param_1);
+  bVar2 = LiveStorage_DoWeHaveAllStats(controllerIndex);
   if (bVar2) {
-    puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    bVar2 = LiveStats_GetBasicTrainingState(puVar3);
+    buffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    bVar2 = LiveStats_GetBasicTrainingState(buffer);
     if (!bVar2) {
       bVar2 = PCache_IsLocked();
       if ((!bVar2) &&
@@ -698,46 +743,46 @@ void __cdecl PCache_UpdateProfileData(int param_1,PCachePublicProfile *param_2)
         (*pcVar1)();
         return;
       }
-      if ((param_2 == (PCachePublicProfile *)0x0) &&
+      if ((profile == (PCachePublicProfile *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp"
                                    ,0x1a0,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((param_2->c).controllerIndex != param_1) &&
+      if (((profile->c).controllerIndex != controllerIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp"
                                    ,0x1a1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      uVar4 = DDL_GetInt(&s_rankState,param_2->ddl);
-      uVar5 = DDL_GetInt(&s_prestigeState,param_2->ddl);
-      uVar6 = DDL_GetInt(&s_codpointsState,param_2->ddl);
-      uVar7 = LiveStats_GetRank(param_1);
-      uVar8 = LiveStats_GetPrestige(param_1);
-      uVar9 = LiveStats_GetCurrency(param_1);
-      if (((uVar4 != uVar7) || (uVar5 != uVar8)) || (uVar6 != uVar9)) {
-        DDL_SetInt(&s_rankState,uVar7,param_2->ddl);
-        DDL_SetInt(&s_prestigeState,uVar8,param_2->ddl);
-        DDL_SetInt(&s_codpointsState,uVar9,param_2->ddl);
-        (param_2->c).state = (param_2->c).state | 1;
-        if (uVar4 != uVar7) {
-          (param_2->c).state = (param_2->c).state | 0x40;
-          uVar4 = PCache_Time();
-          (param_2->c).updateTime = uVar4;
-          pPVar10 = PCache_GetComponent(param_1,CONCAT44(1,*(undefined4 *)
-                                                            ((int)&(param_2->c).xuid + 4)),
-                                        in_stack_ffffffe0);
-          if ((pPVar10 == (PCacheComponent *)0x0) &&
+      uVar3 = DDL_GetInt(&s_rankState,profile->ddl);
+      uVar4 = DDL_GetInt(&s_prestigeState,profile->ddl);
+      uVar5 = DDL_GetInt(&s_codpointsState,profile->ddl);
+      value = LiveStats_GetRank(controllerIndex);
+      value_00 = LiveStats_GetPrestige(controllerIndex);
+      value_01 = LiveStats_GetCurrency(controllerIndex);
+      if (((uVar3 != value) || (uVar4 != value_00)) || (uVar5 != value_01)) {
+        DDL_SetInt(&s_rankState,value,profile->ddl);
+        DDL_SetInt(&s_prestigeState,value_00,profile->ddl);
+        DDL_SetInt(&s_codpointsState,value_01,profile->ddl);
+        (profile->c).state = (profile->c).state | 1;
+        if (uVar3 != value) {
+          (profile->c).state = (profile->c).state | 0x40;
+          uVar3 = PCache_Time();
+          (profile->c).updateTime = uVar3;
+          component = PCache_GetComponent(controllerIndex,
+                                          CONCAT44(1,*(undefined4 *)((int)&(profile->c).xuid + 4)),
+                                          (int)emblem);
+          if ((component == (PCacheComponent *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp"
                                        ,0x1ba,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          PCache_InvalidateComponent(pPVar10);
+          PCache_InvalidateComponent(component);
         }
       }
     }
@@ -749,33 +794,30 @@ void __cdecl PCache_UpdateProfileData(int param_1,PCachePublicProfile *param_2)
 // 009723D0  SetItemFloat  (live/live_pcache_profile.cpp:466)
 
 void __cdecl
-SetItemFloat(ddlState_t *param_1,char *param_2,char *param_3,float param_4,float param_5,
-            float param_6,int param_7)
+SetItemFloat(ddlState_t *state,char *buffer,char *item,float value,float min,float max,int range)
 
 {
-  uint extraout_EAX;
+  uint value_00;
   ddlState_t local_18;
   float local_8;
   
-  if (param_4 - param_6 < 0.0) {
-    local_8 = param_4;
+  if (value - max < 0.0) {
+    local_8 = value;
   }
   else {
-    local_8 = param_6;
+    local_8 = max;
   }
   floor();
   _ftol2_sse();
-  DDL_MoveToName(param_1,&local_18,param_3);
-  DDL_SetInt(&local_18,extraout_EAX,param_2);
+  DDL_MoveToName(state,&local_18,item);
+  DDL_SetInt(&local_18,value_00,buffer);
   return;
 }
 
 
 // 00971F30  GetItemFloat  (live/live_pcache_profile.cpp:474)
 
-float __cdecl
-GetItemFloat(ddlState_t *param_1,char *param_2,char *param_3,float param_4,float param_5,int param_6
-            )
+float __cdecl GetItemFloat(ddlState_t *state,char *buffer,char *item,float min,float max,int range)
 
 {
   uint uVar1;
@@ -783,19 +825,21 @@ GetItemFloat(ddlState_t *param_1,char *param_2,char *param_3,float param_4,float
   float local_24;
   float local_20;
   ddlState_t local_1c;
+  int out;
+  float value;
   
-  DDL_MoveToName(param_1,&local_1c,param_3);
-  uVar1 = DDL_GetInt(&local_1c,param_2);
-  fVar2 = (param_5 - param_4) * ((float)(int)uVar1 / (float)(param_6 + -1)) + param_4;
+  DDL_MoveToName(state,&local_1c,item);
+  uVar1 = DDL_GetInt(&local_1c,buffer);
+  fVar2 = (max - min) * ((float)(int)uVar1 / (float)(range + -1)) + min;
   local_20 = fVar2;
-  if (0.0 <= fVar2 - param_5) {
-    local_20 = param_5;
+  if (0.0 <= fVar2 - max) {
+    local_20 = max;
   }
-  if (param_4 - fVar2 < 0.0) {
+  if (min - fVar2 < 0.0) {
     local_24 = local_20;
   }
   else {
-    local_24 = param_4;
+    local_24 = min;
   }
   return local_24;
 }
@@ -805,7 +849,8 @@ GetItemFloat(ddlState_t *param_1,char *param_2,char *param_3,float param_4,float
 
 void __cdecl
 PCache_GetProfileEmblem
-          (PCachePublicProfile *param_1,CompositeEmblemLayer *param_2,int param_3,short *param_4)
+          (PCachePublicProfile *profile,CompositeEmblemLayer *layers,int layerCount,
+          short *backgroundID)
 
 {
   code *pcVar1;
@@ -818,17 +863,17 @@ PCache_GetProfileEmblem
   ddlState_t local_d4 [9];
   ddlState_t local_38;
   ddlState_t local_28;
-  int local_18;
-  ddlState_t local_14;
+  int layer;
+  ddlState_t layerState;
   
-  if ((param_1 == (PCachePublicProfile *)0x0) &&
+  if ((profile == (PCachePublicProfile *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0x1ec,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (CompositeEmblemLayer *)0x0) &&
+  if ((layers == (CompositeEmblemLayer *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0x1ed,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -843,46 +888,46 @@ PCache_GetProfileEmblem
     (*pcVar1)();
     return;
   }
-  if ((((param_1->c).state & 2) == 0) &&
+  if ((((profile->c).state & 2) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0x1f1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  memset((uchar *)param_2,'\0',param_3 << 5);
-  DDL_MoveToName(&s_emblemState,&local_14,"layer");
-  DDL_MoveToIndex(&local_14,&local_14,0,1);
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    DDL_MoveToName(&local_14,&local_28,"icon");
-    uVar3 = DDL_GetInt(&local_28,param_1->ddl);
-    param_2[local_18].icon = (short)uVar3 + -1;
-    DDL_MoveToName(&local_14,&local_38,"color");
-    iVar4 = local_18;
-    uVar3 = DDL_GetInt(&local_38,param_1->ddl);
-    param_2[iVar4].colorIdx = uVar3;
-    fVar5 = GetItemFloat(&local_14,param_1->ddl,"posx",-1.0,1.0,0x100);
-    param_2[local_18].pos[0] = fVar5;
-    fVar5 = GetItemFloat(&local_14,param_1->ddl,"posy",-1.0,1.0,0x100);
-    param_2[local_18].pos[1] = fVar5;
-    fVar5 = GetItemFloat(&local_14,param_1->ddl,"scalex",-4.0,4.0,0x100);
-    param_2[local_18].scale[0] = fVar5;
-    fVar5 = GetItemFloat(&local_14,param_1->ddl,"scaley",-4.0,4.0,0x100);
-    param_2[local_18].scale[1] = fVar5;
-    fVar5 = GetItemFloat(&local_14,param_1->ddl,"angle",0.0,360.0,0x200);
-    param_2[local_18].angle = fVar5;
-    DDL_MoveToName(&local_14,local_d4,"outline");
-    uVar3 = DDL_GetInt(local_d4,param_1->ddl);
-    param_2[local_18].outline = 0 < (int)uVar3;
-    DDL_MoveToName(&local_14,&local_e4,"flip");
-    uVar3 = DDL_GetInt(&local_e4,param_1->ddl);
-    param_2[local_18].flip = 0 < (int)uVar3;
-    iVar4 = DDL_IterateNext(&local_14,&local_14);
+  memset((uchar *)layers,'\0',layerCount << 5);
+  DDL_MoveToName(&s_emblemState,&layerState,"layer");
+  DDL_MoveToIndex(&layerState,&layerState,0,1);
+  for (layer = 0; layer < layerCount; layer = layer + 1) {
+    DDL_MoveToName(&layerState,&local_28,"icon");
+    uVar3 = DDL_GetInt(&local_28,profile->ddl);
+    layers[layer].icon = (short)uVar3 + -1;
+    DDL_MoveToName(&layerState,&local_38,"color");
+    iVar4 = layer;
+    uVar3 = DDL_GetInt(&local_38,profile->ddl);
+    layers[iVar4].colorIdx = uVar3;
+    fVar5 = GetItemFloat(&layerState,profile->ddl,"posx",-1.0,1.0,0x100);
+    layers[layer].pos[0] = fVar5;
+    fVar5 = GetItemFloat(&layerState,profile->ddl,"posy",-1.0,1.0,0x100);
+    layers[layer].pos[1] = fVar5;
+    fVar5 = GetItemFloat(&layerState,profile->ddl,"scalex",-4.0,4.0,0x100);
+    layers[layer].scale[0] = fVar5;
+    fVar5 = GetItemFloat(&layerState,profile->ddl,"scaley",-4.0,4.0,0x100);
+    layers[layer].scale[1] = fVar5;
+    fVar5 = GetItemFloat(&layerState,profile->ddl,"angle",0.0,360.0,0x200);
+    layers[layer].angle = fVar5;
+    DDL_MoveToName(&layerState,local_d4,"outline");
+    uVar3 = DDL_GetInt(local_d4,profile->ddl);
+    layers[layer].outline = 0 < (int)uVar3;
+    DDL_MoveToName(&layerState,&local_e4,"flip");
+    uVar3 = DDL_GetInt(&local_e4,profile->ddl);
+    layers[layer].flip = 0 < (int)uVar3;
+    iVar4 = DDL_IterateNext(&layerState,&layerState);
     if (iVar4 == 0) break;
   }
   DDL_MoveToName(&s_emblemState,&local_f4,"background");
-  uVar3 = DDL_GetInt(&local_f4,param_1->ddl);
-  *param_4 = (short)uVar3;
+  uVar3 = DDL_GetInt(&local_f4,profile->ddl);
+  *backgroundID = (short)uVar3;
   return;
 }
 
@@ -890,14 +935,15 @@ PCache_GetProfileEmblem
 // 00972000  PCache_SetProfileEmblem  (live/live_pcache_profile.cpp:524)
 
 void __cdecl
-PCache_SetProfileEmblem(int param_1,CompositeEmblemLayer *param_2,int param_3,short param_4)
+PCache_SetProfileEmblem
+          (int controllerIndex,CompositeEmblemLayer *layers,int layerCount,short backgroundID)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  PCacheComponent *pPVar5;
+  PCacheComponent *component;
   int in_stack_ffffff00;
   ddlState_t local_ec;
   uint local_dc;
@@ -906,12 +952,13 @@ PCache_SetProfileEmblem(int param_1,CompositeEmblemLayer *param_2,int param_3,sh
   ddlState_t local_4c;
   uint local_3c;
   ddlState_t local_38;
-  int local_28;
-  ddlState_t local_20;
-  PCacheComponent *local_10;
-  undefined8 local_c;
+  int layer;
+  PCache_ScopedLock __pcache_lock;
+  ddlState_t layerState;
+  PCachePublicProfile *profile;
+  undefined8 xuid;
   
-  if ((param_2 == (CompositeEmblemLayer *)0x0) &&
+  if ((layers == (CompositeEmblemLayer *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0x212,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -919,47 +966,46 @@ PCache_SetProfileEmblem(int param_1,CompositeEmblemLayer *param_2,int param_3,sh
     return;
   }
   PCache_Lock();
-  local_c = Live_GetXuid(param_1);
-  local_10 = PCache_GetComponent(param_1,local_c >> 0x20,in_stack_ffffff00);
-  if (((local_10->state & 2) == 0) &&
+  xuid = Live_GetXuid(controllerIndex);
+  profile = (PCachePublicProfile *)
+            PCache_GetComponent(controllerIndex,xuid >> 0x20,in_stack_ffffff00);
+  if ((((profile->c).state & 2) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_pcache_profile.cpp",
                                0x219,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  DDL_MoveToName(&s_emblemState,&local_20,"layer");
-  DDL_MoveToIndex(&local_20,&local_20,0,1);
-  for (local_28 = 0; local_28 < param_3; local_28 = local_28 + 1) {
-    local_3c = (int)param_2[local_28].icon + 1;
-    DDL_MoveToName(&local_20,&local_38,"icon");
-    DDL_SetInt(&local_38,local_3c,(char *)(local_10 + 1));
-    local_50 = param_2[local_28].colorIdx;
-    DDL_MoveToName(&local_20,&local_4c,"color");
-    DDL_SetInt(&local_4c,local_50,(char *)(local_10 + 1));
-    SetItemFloat(&local_20,(char *)(local_10 + 1),"posx",param_2[local_28].pos[0],-1.0,1.0,0x100);
-    SetItemFloat(&local_20,(char *)(local_10 + 1),"posy",param_2[local_28].pos[1],-1.0,1.0,0x100);
-    SetItemFloat(&local_20,(char *)(local_10 + 1),"scalex",param_2[local_28].scale[0],-4.0,4.0,0x100
-                );
-    SetItemFloat(&local_20,(char *)(local_10 + 1),"scaley",param_2[local_28].scale[1],-4.0,4.0,0x100
-                );
-    SetItemFloat(&local_20,(char *)(local_10 + 1),"angle",param_2[local_28].angle,0.0,360.0,0x200);
-    local_dc = (uint)(param_2[local_28].outline != false);
-    DDL_MoveToName(&local_20,local_d8,"outline");
-    DDL_SetInt(local_d8,local_dc,(char *)(local_10 + 1));
-    bVar2 = param_2[local_28].flip;
-    DDL_MoveToName(&local_20,&local_ec,"flip");
-    DDL_SetInt(&local_ec,(uint)(bVar2 != false),(char *)(local_10 + 1));
-    iVar3 = DDL_IterateNext(&local_20,&local_20);
+  DDL_MoveToName(&s_emblemState,&layerState,"layer");
+  DDL_MoveToIndex(&layerState,&layerState,0,1);
+  for (layer = 0; layer < layerCount; layer = layer + 1) {
+    local_3c = (int)layers[layer].icon + 1;
+    DDL_MoveToName(&layerState,&local_38,"icon");
+    DDL_SetInt(&local_38,local_3c,profile->ddl);
+    local_50 = layers[layer].colorIdx;
+    DDL_MoveToName(&layerState,&local_4c,"color");
+    DDL_SetInt(&local_4c,local_50,profile->ddl);
+    SetItemFloat(&layerState,profile->ddl,"posx",layers[layer].pos[0],-1.0,1.0,0x100);
+    SetItemFloat(&layerState,profile->ddl,"posy",layers[layer].pos[1],-1.0,1.0,0x100);
+    SetItemFloat(&layerState,profile->ddl,"scalex",layers[layer].scale[0],-4.0,4.0,0x100);
+    SetItemFloat(&layerState,profile->ddl,"scaley",layers[layer].scale[1],-4.0,4.0,0x100);
+    SetItemFloat(&layerState,profile->ddl,"angle",layers[layer].angle,0.0,360.0,0x200);
+    local_dc = (uint)(layers[layer].outline != false);
+    DDL_MoveToName(&layerState,local_d8,"outline");
+    DDL_SetInt(local_d8,local_dc,profile->ddl);
+    bVar2 = layers[layer].flip;
+    DDL_MoveToName(&layerState,&local_ec,"flip");
+    DDL_SetInt(&local_ec,(uint)(bVar2 != false),profile->ddl);
+    iVar3 = DDL_IterateNext(&layerState,&layerState);
     if (iVar3 == 0) break;
   }
   DDL_MoveToName(&s_emblemState,(ddlState_t *)&stack0xffffff00,"background");
-  DDL_SetInt((ddlState_t *)&stack0xffffff00,(int)param_4,(char *)(local_10 + 1));
-  local_10->state = local_10->state | 0x41;
+  DDL_SetInt((ddlState_t *)&stack0xffffff00,(int)backgroundID,profile->ddl);
+  (profile->c).state = (profile->c).state | 0x41;
   uVar4 = PCache_Time();
-  local_10->updateTime = uVar4;
-  pPVar5 = PCache_GetComponent(param_1,CONCAT44(1,local_c._4_4_),in_stack_ffffff00);
-  PCache_InvalidateComponent(pPVar5);
+  (profile->c).updateTime = uVar4;
+  component = PCache_GetComponent(controllerIndex,CONCAT44(1,xuid._4_4_),in_stack_ffffff00);
+  PCache_InvalidateComponent(component);
   PCache_Unlock();
   return;
 }

@@ -2,11 +2,12 @@
 
 // 00C24040  _ValidateImageBase  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c:44)
 
-int __cdecl _ValidateImageBase(uchar *param_1)
+int __cdecl _ValidateImageBase(uchar *pImageBase)
 
 {
-  if ((*(short *)param_1 == 0x5a4d) && (*(int *)(param_1 + *(int *)(param_1 + 0x3c)) == 0x4550)) {
-    return (uint)((short)*(int *)((int)(param_1 + *(int *)(param_1 + 0x3c)) + 0x18) == 0x10b);
+  if ((*(short *)pImageBase == 0x5a4d) &&
+     (*(int *)(pImageBase + *(int *)(pImageBase + 0x3c)) == 0x4550)) {
+    return (uint)((short)*(int *)((int)(pImageBase + *(int *)(pImageBase + 0x3c)) + 0x18) == 0x10b);
   }
   return 0;
 }
@@ -14,25 +15,26 @@ int __cdecl _ValidateImageBase(uchar *param_1)
 
 // 00C24080  _FindPESection  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c:92)
 
-_IMAGE_SECTION_HEADER * __cdecl _FindPESection(uchar *param_1,ulong param_2)
+_IMAGE_SECTION_HEADER * __cdecl _FindPESection(uchar *pImageBase,ulong rva)
 
 {
   int iVar1;
   _IMAGE_SECTION_HEADER *p_Var2;
   uint uVar3;
   
-  iVar1 = *(int *)(param_1 + 0x3c);
+  iVar1 = *(int *)(pImageBase + 0x3c);
   uVar3 = 0;
-  p_Var2 = (_IMAGE_SECTION_HEADER *)(param_1 + *(ushort *)(param_1 + iVar1 + 0x14) + 0x18 + iVar1);
-  if (*(ushort *)(param_1 + iVar1 + 6) != 0) {
+  p_Var2 = (_IMAGE_SECTION_HEADER *)
+           (pImageBase + *(ushort *)(pImageBase + iVar1 + 0x14) + 0x18 + iVar1);
+  if (*(ushort *)(pImageBase + iVar1 + 6) != 0) {
     do {
-      if ((p_Var2->VirtualAddress <= param_2) &&
-         (param_2 < (p_Var2->Misc).PhysicalAddress + p_Var2->VirtualAddress)) {
+      if ((p_Var2->VirtualAddress <= rva) &&
+         (rva < (p_Var2->Misc).PhysicalAddress + p_Var2->VirtualAddress)) {
         return p_Var2;
       }
       uVar3 = uVar3 + 1;
       p_Var2 = p_Var2 + 1;
-    } while (uVar3 < *(ushort *)(param_1 + iVar1 + 6));
+    } while (uVar3 < *(ushort *)(pImageBase + iVar1 + 6));
   }
   return (_IMAGE_SECTION_HEADER *)0x0;
 }
@@ -40,7 +42,7 @@ _IMAGE_SECTION_HEADER * __cdecl _FindPESection(uchar *param_1,ulong param_2)
 
 // 00C240D0  _IsNonwritableInCurrentImage  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/pesect.c:149)
 
-int __cdecl _IsNonwritableInCurrentImage(uchar *param_1)
+int __cdecl _IsNonwritableInCurrentImage(uchar *pTarget)
 
 {
   int iVar1;
@@ -57,7 +59,7 @@ int __cdecl _IsNonwritableInCurrentImage(uchar *param_1)
   local_8 = 0;
   iVar1 = _ValidateImageBase((uchar *)&IMAGE_DOS_HEADER_00400000);
   if (iVar1 != 0) {
-    p_Var2 = _FindPESection((uchar *)&IMAGE_DOS_HEADER_00400000,(ulong)(param_1 + -0x400000));
+    p_Var2 = _FindPESection((uchar *)&IMAGE_DOS_HEADER_00400000,(ulong)(pTarget + -0x400000));
     if (p_Var2 != (_IMAGE_SECTION_HEADER *)0x0) {
       ExceptionList = local_14;
       return ~(p_Var2->Characteristics >> 0x1f) & 1;

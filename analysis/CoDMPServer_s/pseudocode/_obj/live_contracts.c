@@ -1703,18 +1703,18 @@ void __cdecl LiveContracts_SetFilterCmd(void)
 {
   int *piVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   iVar2 = *piVar1;
   if (piVar1[iVar2 + 0x21] == 2) {
     if (piVar1[iVar2 + 0x21] < 2) {
-      pcVar3 = "";
+      nptr = "";
     }
     else {
-      pcVar3 = *(char **)(piVar1[iVar2 + 0x29] + 4);
+      nptr = *(char **)(piVar1[iVar2 + 0x29] + 4);
     }
-    DAT_0350b240 = atoi(pcVar3);
+    DAT_0350b240 = atoi(nptr);
     FUN_0077b1c0(0);
   }
   return;

@@ -2160,20 +2160,20 @@ void __cdecl Playlist_SetSVMapRotation(void)
   int iVar6;
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar7;
-  uchar *puVar8;
+  uchar *str2;
+  uchar *str1;
   int extraout_EAX_01;
-  playlistEntry *ppVar9;
-  undefined4 *puVar10;
-  uint uVar11;
-  uint uVar12;
+  playlistEntry *ppVar7;
+  undefined4 *puVar8;
+  uint uVar9;
+  uint uVar10;
   char *unaff_EBX;
-  undefined **ppuVar13;
-  char *pcVar14;
+  undefined **ppuVar11;
+  char *pcVar12;
   char *unaff_EDI;
-  undefined1 auVar15 [4];
-  char *pcVar16;
-  ushort uVar17;
+  undefined1 auVar13 [4];
+  char *pcVar14;
+  ushort uVar15;
   uint uStack_810;
   int iStack_80c;
   int iStack_808;
@@ -2202,10 +2202,10 @@ void __cdecl Playlist_SetSVMapRotation(void)
     uStack_810 = 1;
   }
   if ((&DAT_01f21228)[uStack_810 * 0x26] != 0) {
-    pcVar16 = "";
+    pcVar14 = "";
     auStack_804 = (undefined1  [4])(uStack_810 * 0x98);
     Dvar_SetStringByName("",unaff_EDI);
-    Dvar_SetStringByName("",pcVar16);
+    Dvar_SetStringByName("",pcVar14);
     if (uStack_810 < 0x40) {
       iStack_808 = (&DAT_01f21228)[uStack_810 * 0x26];
     }
@@ -2213,143 +2213,143 @@ void __cdecl Playlist_SetSVMapRotation(void)
       iStack_808 = 0;
     }
     iStack_80c = 0;
-    auVar15 = (undefined1  [4])(uStack_810 * 0x98);
+    auVar13 = (undefined1  [4])(uStack_810 * 0x98);
     if (0 < iStack_808) {
       do {
-        if ((((uStack_810 < 0x40) && (0 < *(int *)((int)&DAT_01f21228 + (int)auVar15))) &&
-            (-1 < iStack_80c)) && (iStack_80c < *(int *)((int)&DAT_01f21228 + (int)auVar15))) {
-          ppuVar13 = (undefined **)
-                     (&DAT_01ef9150 + (*(int *)((int)&DAT_01f21224 + (int)auVar15) + iStack_80c) * 5
+        if ((((uStack_810 < 0x40) && (0 < *(int *)((int)&DAT_01f21228 + (int)auVar13))) &&
+            (-1 < iStack_80c)) && (iStack_80c < *(int *)((int)&DAT_01f21228 + (int)auVar13))) {
+          ppuVar11 = (undefined **)
+                     (&DAT_01ef9150 + (*(int *)((int)&DAT_01f21224 + (int)auVar13) + iStack_80c) * 5
                      );
         }
         else {
-          ppuVar13 = &PTR_s__00adeb88;
+          ppuVar11 = &PTR_s__00adeb88;
         }
-        ppVar5 = Playlist_FindGametype(ppuVar13[1]);
+        ppVar5 = Playlist_FindGametype(ppuVar11[1]);
         if (ppVar5 != (playlistGametype *)0x0) {
-          pcVar16 = *ppuVar13;
+          pcVar14 = *ppuVar11;
           do {
-            cVar3 = *pcVar16;
-            pcVar16 = pcVar16 + 1;
+            cVar3 = *pcVar14;
+            pcVar14 = pcVar14 + 1;
           } while (cVar3 != '\0');
-          pcVar16 = *(char **)ppVar5;
+          pcVar14 = *(char **)ppVar5;
           do {
-            cVar3 = *pcVar16;
-            pcVar16 = pcVar16 + 1;
+            cVar3 = *pcVar14;
+            pcVar14 = pcVar14 + 1;
           } while (cVar3 != '\0');
           Com_HashString("playlist_excludeGametype",0);
           iVar6 = FUN_0069fda0();
           if (iVar6 == 0) {
-            pcVar16 = "";
+            pcVar14 = "";
           }
           else if (*(int *)(iVar6 + 0x10) == 6) {
             if (*(int *)(iVar6 + 0x58) == 0) {
-              pcVar16 = "";
+              pcVar14 = "";
             }
             else {
-              pcVar16 = *(char **)(*(int *)(iVar6 + 0x5c) + *(int *)(iVar6 + 0x18) * 4);
+              pcVar14 = *(char **)(*(int *)(iVar6 + 0x5c) + *(int *)(iVar6 + 0x18) * 4);
             }
           }
           else {
-            pcVar16 = *(char **)(iVar6 + 0x18);
+            pcVar14 = *(char **)(iVar6 + 0x18);
           }
-          strstr((uchar *)pcVar16,*(uchar **)ppVar5);
+          strstr((uchar *)pcVar14,*(uchar **)ppVar5);
           if (extraout_EAX == 0) {
             Com_HashString("playlist_excludeMap",0);
             iVar6 = FUN_0069fda0();
             if (iVar6 == 0) {
-              pcVar16 = "";
+              pcVar14 = "";
             }
             else if (*(int *)(iVar6 + 0x10) == 6) {
               if (*(int *)(iVar6 + 0x58) == 0) {
-                pcVar16 = "";
+                pcVar14 = "";
               }
               else {
-                pcVar16 = *(char **)(*(int *)(iVar6 + 0x5c) + *(int *)(iVar6 + 0x18) * 4);
+                pcVar14 = *(char **)(*(int *)(iVar6 + 0x5c) + *(int *)(iVar6 + 0x18) * 4);
               }
             }
             else {
-              pcVar16 = *(char **)(iVar6 + 0x18);
+              pcVar14 = *(char **)(iVar6 + 0x18);
             }
-            strstr((uchar *)pcVar16,*ppuVar13);
+            strstr((uchar *)pcVar14,*ppuVar11);
             if (extraout_EAX_00 == 0) {
-              puVar7 = (uchar *)va("%s %s");
-              puVar8 = (uchar *)Dvar_GetString((char *)puVar7);
-              strstr(puVar8,puVar7);
+              str2 = (uchar *)va("%s %s");
+              str1 = (uchar *)Dvar_GetString((char *)str2);
+              strstr(str1,str2);
               if ((((extraout_EAX_01 == 0) &&
                    ((bVar4 = Dvar_GetBool(unaff_EDI), !bVar4 ||
-                    (bVar4 = UI_IsMapDlc(*ppuVar13,2), !bVar4)))) &&
+                    (bVar4 = UI_IsMapDlc(*ppuVar11,2), !bVar4)))) &&
                   ((bVar4 = Dvar_GetBool(unaff_EDI), !bVar4 ||
-                   (bVar4 = UI_IsMapDlc(*ppuVar13,3), !bVar4)))) &&
+                   (bVar4 = UI_IsMapDlc(*ppuVar11,3), !bVar4)))) &&
                  ((bVar4 = Dvar_GetBool(unaff_EDI), !bVar4 ||
-                  (bVar4 = UI_IsMapDlc(*ppuVar13,4), !bVar4)))) {
+                  (bVar4 = UI_IsMapDlc(*ppuVar11,4), !bVar4)))) {
                 Com_Printf(0,"Playlist %d entry %d included: %s %s.\n",(playlist->current).integer);
-                ppuVar13[4] = (undefined *)0x0;
+                ppuVar11[4] = (undefined *)0x0;
                 if (bVar1) goto LAB_0064e4c6;
                 if (iStack_80c == 0) {
-                  pcVar16 = auStack_804 + 3;
+                  pcVar14 = auStack_804 + 3;
                   do {
-                    pcVar14 = pcVar16;
-                    pcVar16 = pcVar14 + 1;
-                  } while (pcVar14[1] != '\0');
-                  builtin_strncpy(pcVar14 + 1,"gametype ",10);
+                    pcVar12 = pcVar14;
+                    pcVar14 = pcVar12 + 1;
+                  } while (pcVar12[1] != '\0');
+                  builtin_strncpy(pcVar12 + 1,"gametype ",10);
 LAB_0064e3d5:
                   strncat();
                 }
                 else {
-                  ppVar9 = Playlist_GetEntry((int)unaff_EDI,(int)unaff_EBX);
-                  ppVar5 = Playlist_FindGametype(*(char **)(ppVar9 + 4));
+                  ppVar7 = Playlist_GetEntry((int)unaff_EDI,(int)unaff_EBX);
+                  ppVar5 = Playlist_FindGametype(*(char **)(ppVar7 + 4));
                   if ((ppVar5 == (playlistGametype *)0x0) ||
                      (iVar6 = I_strcmp(unaff_EDI,unaff_EBX), iVar6 != 0)) {
-                    pcVar16 = auStack_804 + 3;
+                    pcVar14 = auStack_804 + 3;
                     do {
-                      pcVar14 = pcVar16;
-                      pcVar16 = pcVar14 + 1;
-                    } while (pcVar14[1] != '\0');
-                    builtin_strncpy(pcVar14 + 1," gametype ",0xb);
+                      pcVar12 = pcVar14;
+                      pcVar14 = pcVar12 + 1;
+                    } while (pcVar12[1] != '\0');
+                    builtin_strncpy(pcVar12 + 1," gametype ",0xb);
                     goto LAB_0064e3d5;
                   }
                 }
                 puVar2 = (undefined4 *)(auStack_804 + 3);
                 do {
-                  puVar10 = puVar2;
-                  puVar2 = (undefined4 *)((int)puVar10 + 1);
-                } while (*(char *)((int)puVar10 + 1) != '\0');
-                *(undefined4 *)((int)puVar10 + 1) = 0x70616d20;
-                *(undefined2 *)((int)puVar10 + 5) = 0x20;
+                  puVar8 = puVar2;
+                  puVar2 = (undefined4 *)((int)puVar8 + 1);
+                } while (*(char *)((int)puVar8 + 1) != '\0');
+                *(undefined4 *)((int)puVar8 + 1) = 0x70616d20;
+                *(undefined2 *)((int)puVar8 + 5) = 0x20;
                 strncat();
-                pcVar16 = acStack_800;
+                pcVar14 = acStack_800;
                 do {
-                  pcVar14 = pcVar16;
-                  pcVar16 = pcVar14 + 1;
-                } while (*pcVar14 != '\0');
-                pcVar16 = acStack_401 + 1;
+                  pcVar12 = pcVar14;
+                  pcVar14 = pcVar12 + 1;
+                } while (*pcVar12 != '\0');
+                pcVar14 = acStack_401 + 1;
                 do {
-                  cVar3 = *pcVar16;
-                  pcVar16 = pcVar16 + 1;
+                  cVar3 = *pcVar14;
+                  pcVar14 = pcVar14 + 1;
                 } while (cVar3 != '\0');
-                if (pcVar16 + (int)&stack0x00000000 * -2 + (int)(pcVar14 + 0xbff) < (char *)0x400) {
-                  pcVar16 = acStack_800;
-                  do {
-                    cVar3 = *pcVar16;
-                    pcVar16 = pcVar16 + 1;
-                  } while (cVar3 != '\0');
-                  uVar11 = (int)pcVar16 - (int)acStack_800;
-                  pcVar16 = acStack_401;
-                  do {
-                    pcVar14 = pcVar16 + 1;
-                    pcVar16 = pcVar16 + 1;
-                  } while (*pcVar14 != '\0');
+                if (pcVar14 + (int)&stack0x00000000 * -2 + (int)(pcVar12 + 0xbff) < (char *)0x400) {
                   pcVar14 = acStack_800;
-                  for (uVar12 = uVar11 >> 2; uVar12 != 0; uVar12 = uVar12 - 1) {
-                    *(undefined4 *)pcVar16 = *(undefined4 *)pcVar14;
-                    pcVar14 = pcVar14 + 4;
-                    pcVar16 = pcVar16 + 4;
-                  }
-                  for (uVar11 = uVar11 & 3; uVar11 != 0; uVar11 = uVar11 - 1) {
-                    *pcVar16 = *pcVar14;
+                  do {
+                    cVar3 = *pcVar14;
                     pcVar14 = pcVar14 + 1;
-                    pcVar16 = pcVar16 + 1;
+                  } while (cVar3 != '\0');
+                  uVar9 = (int)pcVar14 - (int)acStack_800;
+                  pcVar14 = acStack_401;
+                  do {
+                    pcVar12 = pcVar14 + 1;
+                    pcVar14 = pcVar14 + 1;
+                  } while (*pcVar12 != '\0');
+                  pcVar12 = acStack_800;
+                  for (uVar10 = uVar9 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
+                    *(undefined4 *)pcVar14 = *(undefined4 *)pcVar12;
+                    pcVar12 = pcVar12 + 4;
+                    pcVar14 = pcVar14 + 4;
+                  }
+                  for (uVar9 = uVar9 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
+                    *pcVar14 = *pcVar12;
+                    pcVar12 = pcVar12 + 1;
+                    pcVar14 = pcVar14 + 1;
                   }
                   acStack_800[0] = '\0';
                 }
@@ -2365,21 +2365,21 @@ LAB_0064e3d5:
             }
           }
           Com_Printf(0,"Playlist %d entry %d excluded: %s %s.\n",(playlist->current).integer);
-          ppuVar13[4] = (undefined *)0x1;
+          ppuVar11[4] = (undefined *)0x1;
         }
 LAB_0064e4c6:
         iStack_80c = iStack_80c + 1;
-        auVar15 = auStack_804;
+        auVar13 = auStack_804;
       } while (iStack_80c < iStack_808);
     }
-    uVar17 = (ushort)unaff_EDI;
+    uVar15 = (ushort)unaff_EDI;
     Com_HashString("sv_maprotation",0);
     iVar6 = FUN_0069fda0();
     if (iVar6 != 0) {
       FUN_006a1a00();
       return;
     }
-    _Dvar_RegisterString("sv_maprotation",(char *)0x4000,uVar17,unaff_EBX);
+    _Dvar_RegisterString("sv_maprotation",(char *)0x4000,uVar15,unaff_EBX);
   }
   return;
 }

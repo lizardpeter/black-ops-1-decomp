@@ -2,167 +2,168 @@
 
 // 007CEFC0  lsp_quant_nb  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:153)
 
-void __cdecl lsp_quant_nb(float *param_1,float *param_2,int param_3,SpeexBits *param_4)
+void __cdecl lsp_quant_nb(float *qlsp,float *order,int bits,SpeexBits *param_4)
 
 {
   float fVar1;
-  float *pfVar2;
-  SpeexBits *pSVar3;
+  float *cdbk;
+  SpeexBits *pSVar2;
+  float *pfVar3;
   float *pfVar4;
-  float *pfVar5;
+  int iVar5;
   int iVar6;
-  int iVar7;
   int unaff_ESI;
   int unaff_EDI;
-  int iVar8;
+  int iVar7;
+  float *lsp;
   float afStack_28 [5];
   float afStack_14 [5];
   
-  iVar8 = param_3;
-  pfVar2 = param_2;
-  iVar7 = 0;
-  if (3 < param_3) {
-    iVar6 = (param_3 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = param_2 + 1;
-    pfVar5 = param_1 + 3;
+  iVar7 = bits;
+  cdbk = order;
+  iVar6 = 0;
+  if (3 < bits) {
+    iVar5 = (bits - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = order + 1;
+    pfVar4 = qlsp + 3;
     do {
-      pfVar4[-1] = pfVar5[-3];
-      iVar6 = iVar6 + -1;
-      *pfVar4 = *(float *)((int)param_1 + (-0x10 - (int)param_2) + (int)(pfVar4 + 4));
-      pfVar4[1] = pfVar5[-1];
-      pfVar4[2] = *pfVar5;
+      pfVar3[-1] = pfVar4[-3];
+      iVar5 = iVar5 + -1;
+      *pfVar3 = *(float *)((int)qlsp + (-0x10 - (int)order) + (int)(pfVar3 + 4));
+      pfVar3[1] = pfVar4[-1];
+      pfVar3[2] = *pfVar4;
+      pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
-      pfVar5 = pfVar5 + 4;
-    } while (iVar6 != 0);
+    } while (iVar5 != 0);
   }
-  if (iVar7 < param_3) {
-    iVar6 = param_3 - iVar7;
-    pfVar4 = param_2 + iVar7;
+  if (iVar6 < bits) {
+    iVar5 = bits - iVar6;
+    pfVar3 = order + iVar6;
     do {
-      iVar6 = iVar6 + -1;
-      *pfVar4 = *(float *)((int)pfVar4 + ((int)param_1 - (int)param_2));
-      pfVar4 = pfVar4 + 1;
-    } while (iVar6 != 0);
+      iVar5 = iVar5 + -1;
+      *pfVar3 = *(float *)((int)pfVar3 + ((int)qlsp - (int)order));
+      pfVar3 = pfVar3 + 1;
+    } while (iVar5 != 0);
   }
-  compute_quant_weights(afStack_28,(float *)param_3,unaff_EDI);
-  param_3 = 0;
-  if (3 < iVar8) {
-    param_2 = (float *)0x2;
-    pfVar4 = pfVar2 + 2;
+  compute_quant_weights(afStack_28,(float *)bits,unaff_EDI);
+  bits = 0;
+  if (3 < iVar7) {
+    order = (float *)0x2;
+    pfVar3 = cdbk + 2;
     do {
-      fVar1 = (float)param_3;
-      param_3 = param_3 + 4;
-      pfVar4[-2] = pfVar4[-2] - (fVar1 * 0.25 + 0.25);
-      pfVar4[-1] = pfVar4[-1] - ((float)((int)param_2 + -1) * 0.25 + 0.25);
-      *pfVar4 = *pfVar4 - ((float)(int)param_2 * 0.25 + 0.25);
-      pfVar4[1] = pfVar4[1] - ((float)((int)param_2 + 1) * 0.25 + 0.25);
+      fVar1 = (float)bits;
+      bits = bits + 4;
+      pfVar3[-2] = pfVar3[-2] - (fVar1 * 0.25 + 0.25);
+      pfVar3[-1] = pfVar3[-1] - ((float)((int)order + -1) * 0.25 + 0.25);
+      *pfVar3 = *pfVar3 - ((float)(int)order * 0.25 + 0.25);
+      pfVar3[1] = pfVar3[1] - ((float)((int)order + 1) * 0.25 + 0.25);
+      pfVar3 = pfVar3 + 4;
+      order = order + 1;
+    } while (bits < iVar7 + -3);
+  }
+  for (; bits < iVar7; bits = bits + 1) {
+    cdbk[bits] = cdbk[bits] - ((float)bits * 0.25 + 0.25);
+  }
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 256.0;
+      pfVar3[-1] = pfVar3[-1] * 256.0;
+      *pfVar3 = *pfVar3 * 256.0;
+      pfVar3[1] = pfVar3[1] * 256.0;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 256.0;
+  }
+  pfVar3 = cdbk;
+  pSVar2 = (SpeexBits *)lsp_quant(cdbk,cdbk_nb,unaff_EDI,unaff_ESI);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 2.0;
+      pfVar3[-1] = pfVar3[-1] * 2.0;
+      *pfVar3 = *pfVar3 * 2.0;
+      pfVar3[1] = pfVar3[1] * 2.0;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 2.0;
+  }
+  pfVar3 = cdbk;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(cdbk,afStack_28,cdbk_nb_low1,5,unaff_EDI);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  *cdbk = *cdbk * 2.0;
+  cdbk[1] = cdbk[1] * 2.0;
+  cdbk[2] = cdbk[2] * 2.0;
+  cdbk[3] = cdbk[3] * 2.0;
+  cdbk[4] = cdbk[4] * 2.0;
+  pfVar3 = cdbk;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(cdbk,afStack_28,cdbk_nb_low2,5,(int)pSVar2);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  pfVar3 = cdbk + 5;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(pfVar3,afStack_14,cdbk_nb_high1,5,(int)pSVar2);
+  speex_bits_pack(pSVar2,6,unaff_EDI);
+  *pfVar3 = *pfVar3 * 2.0;
+  cdbk[6] = cdbk[6] * 2.0;
+  cdbk[7] = cdbk[7] * 2.0;
+  cdbk[8] = cdbk[8] * 2.0;
+  cdbk[9] = cdbk[9] * 2.0;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(pfVar3,afStack_14,cdbk_nb_high2,5,(int)pSVar2);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 0.00097656;
+      pfVar3[-1] = pfVar3[-1] * 0.00097656;
+      *pfVar3 = *pfVar3 * 0.00097656;
+      pfVar3[1] = pfVar3[1] * 0.00097656;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 0.00097656;
+  }
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 1;
+    pfVar4 = qlsp + 3;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-1] = pfVar4[-3] - pfVar3[-1];
+      *pfVar3 = *(float *)((int)qlsp + (-0x10 - (int)cdbk) + (int)(pfVar3 + 4)) - *pfVar3;
+      pfVar3[1] = pfVar4[-1] - pfVar3[1];
+      pfVar3[2] = *pfVar4 - pfVar3[2];
+      pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
-      param_2 = param_2 + 1;
-    } while (param_3 < iVar8 + -3);
+    } while (iVar5 != 0);
   }
-  for (; param_3 < iVar8; param_3 = param_3 + 1) {
-    pfVar2[param_3] = pfVar2[param_3] - ((float)param_3 * 0.25 + 0.25);
-  }
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
+  if (iVar6 < iVar7) {
+    iVar7 = iVar7 - iVar6;
+    pfVar3 = cdbk + iVar6;
     do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 256.0;
-      pfVar4[-1] = pfVar4[-1] * 256.0;
-      *pfVar4 = *pfVar4 * 256.0;
-      pfVar4[1] = pfVar4[1] * 256.0;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 256.0;
-  }
-  pfVar4 = pfVar2;
-  pSVar3 = (SpeexBits *)lsp_quant(pfVar2,cdbk_nb,unaff_EDI,unaff_ESI);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 2.0;
-      pfVar4[-1] = pfVar4[-1] * 2.0;
-      *pfVar4 = *pfVar4 * 2.0;
-      pfVar4[1] = pfVar4[1] * 2.0;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 2.0;
-  }
-  pfVar4 = pfVar2;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar2,afStack_28,cdbk_nb_low1,5,unaff_EDI);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  *pfVar2 = *pfVar2 * 2.0;
-  pfVar2[1] = pfVar2[1] * 2.0;
-  pfVar2[2] = pfVar2[2] * 2.0;
-  pfVar2[3] = pfVar2[3] * 2.0;
-  pfVar2[4] = pfVar2[4] * 2.0;
-  pfVar4 = pfVar2;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar2,afStack_28,cdbk_nb_low2,5,(int)pSVar3);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  pfVar4 = pfVar2 + 5;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar4,afStack_14,cdbk_nb_high1,5,(int)pSVar3);
-  speex_bits_pack(pSVar3,6,unaff_EDI);
-  *pfVar4 = *pfVar4 * 2.0;
-  pfVar2[6] = pfVar2[6] * 2.0;
-  pfVar2[7] = pfVar2[7] * 2.0;
-  pfVar2[8] = pfVar2[8] * 2.0;
-  pfVar2[9] = pfVar2[9] * 2.0;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar4,afStack_14,cdbk_nb_high2,5,(int)pSVar3);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 0.00097656;
-      pfVar4[-1] = pfVar4[-1] * 0.00097656;
-      *pfVar4 = *pfVar4 * 0.00097656;
-      pfVar4[1] = pfVar4[1] * 0.00097656;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 0.00097656;
-  }
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 1;
-    pfVar5 = param_1 + 3;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-1] = pfVar5[-3] - pfVar4[-1];
-      *pfVar4 = *(float *)((int)param_1 + (-0x10 - (int)pfVar2) + (int)(pfVar4 + 4)) - *pfVar4;
-      pfVar4[1] = pfVar5[-1] - pfVar4[1];
-      pfVar4[2] = *pfVar5 - pfVar4[2];
-      pfVar4 = pfVar4 + 4;
-      pfVar5 = pfVar5 + 4;
-    } while (iVar6 != 0);
-  }
-  if (iVar7 < iVar8) {
-    iVar8 = iVar8 - iVar7;
-    pfVar4 = pfVar2 + iVar7;
-    do {
-      iVar8 = iVar8 + -1;
-      *pfVar4 = *(float *)(((int)param_1 - (int)pfVar2) + (int)pfVar4) - *pfVar4;
-      pfVar4 = pfVar4 + 1;
-    } while (iVar8 != 0);
+      iVar7 = iVar7 + -1;
+      *pfVar3 = *(float *)(((int)qlsp - (int)cdbk) + (int)pfVar3) - *pfVar3;
+      pfVar3 = pfVar3 + 1;
+    } while (iVar7 != 0);
   }
   return;
 }
@@ -170,7 +171,9 @@ void __cdecl lsp_quant_nb(float *param_1,float *param_2,int param_3,SpeexBits *p
 
 // 007CF360  lsp_unquant_nb  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:207)
 
-void __cdecl lsp_unquant_nb(float *param_1,int param_2,SpeexBits *param_3)
+/* WARNING: Variable defined which should be unmapped: i */
+
+void __cdecl lsp_unquant_nb(float *order,int bits,SpeexBits *param_3)
 
 {
   int iVar1;
@@ -178,218 +181,213 @@ void __cdecl lsp_unquant_nb(float *param_1,int param_2,SpeexBits *param_3)
   int unaff_ESI;
   float10 extraout_ST0;
   float10 extraout_ST1;
+  float *lsp;
   int iVar3;
   int iVar4;
+  int i;
   int local_4;
   
   local_4 = 0;
-  if (0 < param_2) {
+  if (0 < bits) {
     do {
       iVar1 = local_4 + 1;
-      param_1[local_4] = (float)local_4 * 0.25 + 0.25;
+      order[local_4] = (float)local_4 * 0.25 + 0.25;
       local_4 = iVar1;
-    } while (iVar1 < param_2);
+    } while (iVar1 < bits);
   }
   iVar4 = 6;
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,unaff_ESI);
   iVar1 = uVar2 * 10;
   iVar3 = 6;
-  *param_1 = *param_1 + (float)(int)cdbk_nb[uVar2 * 10] * 0.0039062;
-  param_1[1] = (float)(int)cdbk_nb[iVar1 + 1] * 0.0039062 + param_1[1];
-  param_1[2] = (float)(int)cdbk_nb[iVar1 + 2] * 0.0039062 + param_1[2];
-  param_1[3] = (float)(int)cdbk_nb[iVar1 + 3] * 0.0039062 + param_1[3];
-  param_1[4] = (float)(int)cdbk_nb[iVar1 + 4] * 0.0039062 + param_1[4];
-  param_1[5] = (float)(int)cdbk_nb[iVar1 + 5] * 0.0039062 + param_1[5];
-  param_1[6] = (float)(int)cdbk_nb[iVar1 + 6] * 0.0039062 + param_1[6];
-  param_1[7] = (float)(int)cdbk_nb[iVar1 + 7] * 0.0039062 + param_1[7];
-  param_1[8] = (float)(int)cdbk_nb[iVar1 + 8] * 0.0039062 + param_1[8];
-  param_1[9] = (float)(int)cdbk_nb[iVar1 + 9] * 0.0039062 + param_1[9];
+  *order = *order + (float)(int)cdbk_nb[uVar2 * 10] * 0.0039062;
+  order[1] = (float)(int)cdbk_nb[iVar1 + 1] * 0.0039062 + order[1];
+  order[2] = (float)(int)cdbk_nb[iVar1 + 2] * 0.0039062 + order[2];
+  order[3] = (float)(int)cdbk_nb[iVar1 + 3] * 0.0039062 + order[3];
+  order[4] = (float)(int)cdbk_nb[iVar1 + 4] * 0.0039062 + order[4];
+  order[5] = (float)(int)cdbk_nb[iVar1 + 5] * 0.0039062 + order[5];
+  order[6] = (float)(int)cdbk_nb[iVar1 + 6] * 0.0039062 + order[6];
+  order[7] = (float)(int)cdbk_nb[iVar1 + 7] * 0.0039062 + order[7];
+  order[8] = (float)(int)cdbk_nb[iVar1 + 8] * 0.0039062 + order[8];
+  order[9] = (float)(int)cdbk_nb[iVar1 + 9] * 0.0039062 + order[9];
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar4);
-  *param_1 = *param_1 + (float)(int)cdbk_nb_low1[uVar2 * 5] * 0.0019531;
+  *order = *order + (float)(int)cdbk_nb_low1[uVar2 * 5] * 0.0019531;
   iVar4 = 6;
-  param_1[1] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 1] * 0.0019531 + param_1[1];
-  param_1[2] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 2] * 0.0019531 + param_1[2];
-  param_1[3] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 3] * 0.0019531 + param_1[3];
-  param_1[4] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 4] * 0.0019531 + param_1[4];
+  order[1] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 1] * 0.0019531 + order[1];
+  order[2] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 2] * 0.0019531 + order[2];
+  order[3] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 3] * 0.0019531 + order[3];
+  order[4] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 4] * 0.0019531 + order[4];
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar3);
   iVar1 = 6;
-  *param_1 = *param_1 + (float)(int)cdbk_nb_low2[uVar2 * 5] * 0.00097656;
-  param_1[1] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 1] * 0.00097656 + param_1[1];
-  param_1[2] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 2] * 0.00097656 + param_1[2];
-  param_1[3] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 3] * 0.00097656 + param_1[3];
-  param_1[4] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 4] * 0.00097656 + param_1[4];
+  *order = *order + (float)(int)cdbk_nb_low2[uVar2 * 5] * 0.00097656;
+  order[1] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 1] * 0.00097656 + order[1];
+  order[2] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 2] * 0.00097656 + order[2];
+  order[3] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 3] * 0.00097656 + order[3];
+  order[4] = (float)(int)cdbk_nb_low2[uVar2 * 5 + 4] * 0.00097656 + order[4];
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar4);
-  param_1[5] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5] * extraout_ST1 + (float10)param_1[5]);
-  param_1[6] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 1] * extraout_ST1 +
-                      (float10)param_1[6]);
-  param_1[7] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 2] * extraout_ST1 +
-                      (float10)param_1[7]);
-  param_1[8] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 3] * extraout_ST1 +
-                      (float10)param_1[8]);
-  param_1[9] = (float)((float10)param_1[9] +
-                      (float10)(int)cdbk_nb_high1[uVar2 * 5 + 4] * extraout_ST1);
+  order[5] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5] * extraout_ST1 + (float10)order[5]);
+  order[6] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 1] * extraout_ST1 + (float10)order[6]);
+  order[7] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 2] * extraout_ST1 + (float10)order[7]);
+  order[8] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 3] * extraout_ST1 + (float10)order[8]);
+  order[9] = (float)((float10)order[9] + (float10)(int)cdbk_nb_high1[uVar2 * 5 + 4] * extraout_ST1);
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar1);
-  param_1[5] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5] * extraout_ST0 + (float10)param_1[5]);
-  param_1[6] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 1] * extraout_ST0 +
-                      (float10)param_1[6]);
-  param_1[7] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 2] * extraout_ST0 +
-                      (float10)param_1[7]);
-  param_1[8] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 3] * extraout_ST0 +
-                      (float10)param_1[8]);
-  param_1[9] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 4] * extraout_ST0 +
-                      (float10)param_1[9]);
+  order[5] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5] * extraout_ST0 + (float10)order[5]);
+  order[6] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 1] * extraout_ST0 + (float10)order[6]);
+  order[7] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 2] * extraout_ST0 + (float10)order[7]);
+  order[8] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 3] * extraout_ST0 + (float10)order[8]);
+  order[9] = (float)((float10)(int)cdbk_nb_high2[uVar2 * 5 + 4] * extraout_ST0 + (float10)order[9]);
   return;
 }
 
 
 // 007CF6B0  lsp_quant_lbr  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:236)
 
-void __cdecl lsp_quant_lbr(float *param_1,float *param_2,int param_3,SpeexBits *param_4)
+void __cdecl lsp_quant_lbr(float *qlsp,float *order,int bits,SpeexBits *param_4)
 
 {
   float fVar1;
-  float *pfVar2;
-  SpeexBits *pSVar3;
+  float *cdbk;
+  SpeexBits *pSVar2;
+  float *pfVar3;
   float *pfVar4;
-  float *pfVar5;
+  int iVar5;
   int iVar6;
-  int iVar7;
   int unaff_ESI;
   int unaff_EDI;
-  int iVar8;
+  int iVar7;
+  float *lsp;
   float local_28 [5];
   float local_14 [5];
   
-  iVar8 = param_3;
-  pfVar2 = param_2;
-  iVar7 = 0;
-  if (3 < param_3) {
-    iVar6 = (param_3 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = param_2 + 1;
-    pfVar5 = param_1 + 3;
+  iVar7 = bits;
+  cdbk = order;
+  iVar6 = 0;
+  if (3 < bits) {
+    iVar5 = (bits - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = order + 1;
+    pfVar4 = qlsp + 3;
     do {
-      pfVar4[-1] = pfVar5[-3];
-      iVar6 = iVar6 + -1;
-      *pfVar4 = *(float *)((int)param_1 + (-0x10 - (int)param_2) + (int)(pfVar4 + 4));
-      pfVar4[1] = pfVar5[-1];
-      pfVar4[2] = *pfVar5;
+      pfVar3[-1] = pfVar4[-3];
+      iVar5 = iVar5 + -1;
+      *pfVar3 = *(float *)((int)qlsp + (-0x10 - (int)order) + (int)(pfVar3 + 4));
+      pfVar3[1] = pfVar4[-1];
+      pfVar3[2] = *pfVar4;
+      pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
-      pfVar5 = pfVar5 + 4;
-    } while (iVar6 != 0);
+    } while (iVar5 != 0);
   }
-  if (iVar7 < param_3) {
-    iVar6 = param_3 - iVar7;
-    pfVar4 = param_2 + iVar7;
+  if (iVar6 < bits) {
+    iVar5 = bits - iVar6;
+    pfVar3 = order + iVar6;
     do {
-      iVar6 = iVar6 + -1;
-      *pfVar4 = *(float *)((int)pfVar4 + ((int)param_1 - (int)param_2));
-      pfVar4 = pfVar4 + 1;
-    } while (iVar6 != 0);
+      iVar5 = iVar5 + -1;
+      *pfVar3 = *(float *)((int)pfVar3 + ((int)qlsp - (int)order));
+      pfVar3 = pfVar3 + 1;
+    } while (iVar5 != 0);
   }
-  compute_quant_weights(local_28,(float *)param_3,unaff_EDI);
-  param_3 = 0;
-  if (3 < iVar8) {
-    param_2 = (float *)0x2;
-    pfVar4 = pfVar2 + 2;
+  compute_quant_weights(local_28,(float *)bits,unaff_EDI);
+  bits = 0;
+  if (3 < iVar7) {
+    order = (float *)0x2;
+    pfVar3 = cdbk + 2;
     do {
-      fVar1 = (float)param_3;
-      param_3 = param_3 + 4;
-      pfVar4[-2] = pfVar4[-2] - (fVar1 * 0.25 + 0.25);
-      pfVar4[-1] = pfVar4[-1] - ((float)((int)param_2 + -1) * 0.25 + 0.25);
-      *pfVar4 = *pfVar4 - ((float)(int)param_2 * 0.25 + 0.25);
-      pfVar4[1] = pfVar4[1] - ((float)((int)param_2 + 1) * 0.25 + 0.25);
+      fVar1 = (float)bits;
+      bits = bits + 4;
+      pfVar3[-2] = pfVar3[-2] - (fVar1 * 0.25 + 0.25);
+      pfVar3[-1] = pfVar3[-1] - ((float)((int)order + -1) * 0.25 + 0.25);
+      *pfVar3 = *pfVar3 - ((float)(int)order * 0.25 + 0.25);
+      pfVar3[1] = pfVar3[1] - ((float)((int)order + 1) * 0.25 + 0.25);
+      pfVar3 = pfVar3 + 4;
+      order = order + 1;
+    } while (bits < iVar7 + -3);
+  }
+  for (; bits < iVar7; bits = bits + 1) {
+    cdbk[bits] = cdbk[bits] - ((float)bits * 0.25 + 0.25);
+  }
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 256.0;
+      pfVar3[-1] = pfVar3[-1] * 256.0;
+      *pfVar3 = *pfVar3 * 256.0;
+      pfVar3[1] = pfVar3[1] * 256.0;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 256.0;
+  }
+  pfVar3 = cdbk;
+  pSVar2 = (SpeexBits *)lsp_quant(cdbk,cdbk_nb,unaff_EDI,unaff_ESI);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 2.0;
+      pfVar3[-1] = pfVar3[-1] * 2.0;
+      *pfVar3 = *pfVar3 * 2.0;
+      pfVar3[1] = pfVar3[1] * 2.0;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 2.0;
+  }
+  pfVar3 = cdbk;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(cdbk,local_28,cdbk_nb_low1,5,unaff_EDI);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  pfVar3 = cdbk + 5;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(pfVar3,local_14,cdbk_nb_high1,5,(int)pSVar2);
+  speex_bits_pack(pSVar2,6,(int)pfVar3);
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 2;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-2] = pfVar3[-2] * 0.0019531;
+      pfVar3[-1] = pfVar3[-1] * 0.0019531;
+      *pfVar3 = *pfVar3 * 0.0019531;
+      pfVar3[1] = pfVar3[1] * 0.0019531;
+      pfVar3 = pfVar3 + 4;
+    } while (iVar5 != 0);
+  }
+  for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
+    cdbk[iVar6] = cdbk[iVar6] * 0.0019531;
+  }
+  iVar6 = 0;
+  if (3 < iVar7) {
+    iVar5 = (iVar7 - 4U >> 2) + 1;
+    iVar6 = iVar5 * 4;
+    pfVar3 = cdbk + 1;
+    pfVar4 = qlsp + 3;
+    do {
+      iVar5 = iVar5 + -1;
+      pfVar3[-1] = pfVar4[-3] - pfVar3[-1];
+      *pfVar3 = *(float *)((int)pfVar3 + ((int)qlsp - (int)cdbk)) - *pfVar3;
+      pfVar3[1] = pfVar4[-1] - pfVar3[1];
+      pfVar3[2] = *pfVar4 - pfVar3[2];
+      pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
-      param_2 = param_2 + 1;
-    } while (param_3 < iVar8 + -3);
+    } while (iVar5 != 0);
   }
-  for (; param_3 < iVar8; param_3 = param_3 + 1) {
-    pfVar2[param_3] = pfVar2[param_3] - ((float)param_3 * 0.25 + 0.25);
-  }
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
+  if (iVar6 < iVar7) {
+    iVar7 = iVar7 - iVar6;
+    pfVar3 = cdbk + iVar6;
     do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 256.0;
-      pfVar4[-1] = pfVar4[-1] * 256.0;
-      *pfVar4 = *pfVar4 * 256.0;
-      pfVar4[1] = pfVar4[1] * 256.0;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 256.0;
-  }
-  pfVar4 = pfVar2;
-  pSVar3 = (SpeexBits *)lsp_quant(pfVar2,cdbk_nb,unaff_EDI,unaff_ESI);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 2.0;
-      pfVar4[-1] = pfVar4[-1] * 2.0;
-      *pfVar4 = *pfVar4 * 2.0;
-      pfVar4[1] = pfVar4[1] * 2.0;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 2.0;
-  }
-  pfVar4 = pfVar2;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar2,local_28,cdbk_nb_low1,5,unaff_EDI);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  pfVar4 = pfVar2 + 5;
-  pSVar3 = (SpeexBits *)lsp_weight_quant(pfVar4,local_14,cdbk_nb_high1,5,(int)pSVar3);
-  speex_bits_pack(pSVar3,6,(int)pfVar4);
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 2;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-2] = pfVar4[-2] * 0.0019531;
-      pfVar4[-1] = pfVar4[-1] * 0.0019531;
-      *pfVar4 = *pfVar4 * 0.0019531;
-      pfVar4[1] = pfVar4[1] * 0.0019531;
-      pfVar4 = pfVar4 + 4;
-    } while (iVar6 != 0);
-  }
-  for (; iVar7 < iVar8; iVar7 = iVar7 + 1) {
-    pfVar2[iVar7] = pfVar2[iVar7] * 0.0019531;
-  }
-  iVar7 = 0;
-  if (3 < iVar8) {
-    iVar6 = (iVar8 - 4U >> 2) + 1;
-    iVar7 = iVar6 * 4;
-    pfVar4 = pfVar2 + 1;
-    pfVar5 = param_1 + 3;
-    do {
-      iVar6 = iVar6 + -1;
-      pfVar4[-1] = pfVar5[-3] - pfVar4[-1];
-      *pfVar4 = *(float *)((int)pfVar4 + ((int)param_1 - (int)pfVar2)) - *pfVar4;
-      pfVar4[1] = pfVar5[-1] - pfVar4[1];
-      pfVar4[2] = *pfVar5 - pfVar4[2];
-      pfVar4 = pfVar4 + 4;
-      pfVar5 = pfVar5 + 4;
-    } while (iVar6 != 0);
-  }
-  if (iVar7 < iVar8) {
-    iVar8 = iVar8 - iVar7;
-    pfVar4 = pfVar2 + iVar7;
-    do {
-      iVar8 = iVar8 + -1;
-      *pfVar4 = *(float *)(((int)param_1 - (int)pfVar2) + (int)pfVar4) - *pfVar4;
-      pfVar4 = pfVar4 + 1;
-    } while (iVar8 != 0);
+      iVar7 = iVar7 + -1;
+      *pfVar3 = *(float *)(((int)qlsp - (int)cdbk) + (int)pfVar3) - *pfVar3;
+      pfVar3 = pfVar3 + 1;
+    } while (iVar7 != 0);
   }
   return;
 }
@@ -397,62 +395,62 @@ void __cdecl lsp_quant_lbr(float *param_1,float *param_2,int param_3,SpeexBits *
 
 // 007CF9C0  lsp_unquant_lbr  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:277)
 
-void __cdecl lsp_unquant_lbr(float *param_1,int param_2,SpeexBits *param_3)
+/* WARNING: Variable defined which should be unmapped: i */
+
+void __cdecl lsp_unquant_lbr(float *order,int bits,SpeexBits *param_3)
 
 {
   int iVar1;
   uint uVar2;
   int unaff_ESI;
   float10 extraout_ST0;
+  float *lsp;
   int iVar3;
   int iVar4;
+  int i;
   int local_4;
   
   local_4 = 0;
-  if (0 < param_2) {
+  if (0 < bits) {
     do {
       iVar1 = local_4 + 1;
-      param_1[local_4] = (float)local_4 * 0.25 + 0.25;
+      order[local_4] = (float)local_4 * 0.25 + 0.25;
       local_4 = iVar1;
-    } while (iVar1 < param_2);
+    } while (iVar1 < bits);
   }
   iVar4 = 6;
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,unaff_ESI);
   iVar1 = uVar2 * 10;
   iVar3 = 6;
-  *param_1 = *param_1 + (float)(int)cdbk_nb[uVar2 * 10] * 0.0039062;
-  param_1[1] = (float)(int)cdbk_nb[iVar1 + 1] * 0.0039062 + param_1[1];
-  param_1[2] = (float)(int)cdbk_nb[iVar1 + 2] * 0.0039062 + param_1[2];
-  param_1[3] = (float)(int)cdbk_nb[iVar1 + 3] * 0.0039062 + param_1[3];
-  param_1[4] = (float)(int)cdbk_nb[iVar1 + 4] * 0.0039062 + param_1[4];
-  param_1[5] = (float)(int)cdbk_nb[iVar1 + 5] * 0.0039062 + param_1[5];
-  param_1[6] = (float)(int)cdbk_nb[iVar1 + 6] * 0.0039062 + param_1[6];
-  param_1[7] = (float)(int)cdbk_nb[iVar1 + 7] * 0.0039062 + param_1[7];
-  param_1[8] = (float)(int)cdbk_nb[iVar1 + 8] * 0.0039062 + param_1[8];
-  param_1[9] = (float)(int)cdbk_nb[iVar1 + 9] * 0.0039062 + param_1[9];
+  *order = *order + (float)(int)cdbk_nb[uVar2 * 10] * 0.0039062;
+  order[1] = (float)(int)cdbk_nb[iVar1 + 1] * 0.0039062 + order[1];
+  order[2] = (float)(int)cdbk_nb[iVar1 + 2] * 0.0039062 + order[2];
+  order[3] = (float)(int)cdbk_nb[iVar1 + 3] * 0.0039062 + order[3];
+  order[4] = (float)(int)cdbk_nb[iVar1 + 4] * 0.0039062 + order[4];
+  order[5] = (float)(int)cdbk_nb[iVar1 + 5] * 0.0039062 + order[5];
+  order[6] = (float)(int)cdbk_nb[iVar1 + 6] * 0.0039062 + order[6];
+  order[7] = (float)(int)cdbk_nb[iVar1 + 7] * 0.0039062 + order[7];
+  order[8] = (float)(int)cdbk_nb[iVar1 + 8] * 0.0039062 + order[8];
+  order[9] = (float)(int)cdbk_nb[iVar1 + 9] * 0.0039062 + order[9];
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar4);
-  *param_1 = *param_1 + (float)(int)cdbk_nb_low1[uVar2 * 5] * 0.0019531;
-  param_1[1] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 1] * 0.0019531 + param_1[1];
-  param_1[2] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 2] * 0.0019531 + param_1[2];
-  param_1[3] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 3] * 0.0019531 + param_1[3];
-  param_1[4] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 4] * 0.0019531 + param_1[4];
+  *order = *order + (float)(int)cdbk_nb_low1[uVar2 * 5] * 0.0019531;
+  order[1] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 1] * 0.0019531 + order[1];
+  order[2] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 2] * 0.0019531 + order[2];
+  order[3] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 3] * 0.0019531 + order[3];
+  order[4] = (float)(int)cdbk_nb_low1[uVar2 * 5 + 4] * 0.0019531 + order[4];
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,iVar3);
-  param_1[5] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5] * extraout_ST0 + (float10)param_1[5]);
-  param_1[6] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 1] * extraout_ST0 +
-                      (float10)param_1[6]);
-  param_1[7] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 2] * extraout_ST0 +
-                      (float10)param_1[7]);
-  param_1[8] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 3] * extraout_ST0 +
-                      (float10)param_1[8]);
-  param_1[9] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 4] * extraout_ST0 +
-                      (float10)param_1[9]);
+  order[5] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5] * extraout_ST0 + (float10)order[5]);
+  order[6] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 1] * extraout_ST0 + (float10)order[6]);
+  order[7] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 2] * extraout_ST0 + (float10)order[7]);
+  order[8] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 3] * extraout_ST0 + (float10)order[8]);
+  order[9] = (float)((float10)(int)cdbk_nb_high1[uVar2 * 5 + 4] * extraout_ST0 + (float10)order[9]);
   return;
 }
 
 
 // 007CFC00  lsp_quant_high  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:313)
 
-void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits *param_4)
+void __cdecl lsp_quant_high(float *qlsp,float *order,int bits,SpeexBits *param_4)
 
 {
   float fVar1;
@@ -464,59 +462,60 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
   int unaff_ESI;
   int unaff_EDI;
   int iVar7;
-  int local_2c;
+  float *lsp;
+  int quant_weight;
   float local_28 [10];
   
-  iVar7 = param_3;
+  iVar7 = bits;
   iVar6 = 0;
-  if (3 < param_3) {
-    iVar5 = (param_3 - 4U >> 2) + 1;
+  if (3 < bits) {
+    iVar5 = (bits - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
-    pfVar3 = param_2 + 1;
-    pfVar4 = param_1 + 3;
+    pfVar3 = order + 1;
+    pfVar4 = qlsp + 3;
     do {
       pfVar3[-1] = pfVar4[-3];
       iVar5 = iVar5 + -1;
-      *pfVar3 = *(float *)((int)param_1 + (-0x10 - (int)param_2) + (int)(pfVar3 + 4));
+      *pfVar3 = *(float *)((int)qlsp + (-0x10 - (int)order) + (int)(pfVar3 + 4));
       pfVar3[1] = pfVar4[-1];
       pfVar3[2] = *pfVar4;
       pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
     } while (iVar5 != 0);
   }
-  if (iVar6 < param_3) {
-    iVar5 = param_3 - iVar6;
-    pfVar3 = param_2 + iVar6;
+  if (iVar6 < bits) {
+    iVar5 = bits - iVar6;
+    pfVar3 = order + iVar6;
     do {
       iVar5 = iVar5 + -1;
-      *pfVar3 = *(float *)((int)pfVar3 + ((int)param_1 - (int)param_2));
+      *pfVar3 = *(float *)((int)pfVar3 + ((int)qlsp - (int)order));
       pfVar3 = pfVar3 + 1;
     } while (iVar5 != 0);
   }
-  compute_quant_weights(local_28,(float *)param_3,unaff_EDI);
-  param_3 = 0;
+  compute_quant_weights(local_28,(float *)bits,unaff_EDI);
+  bits = 0;
   if (3 < iVar7) {
-    local_2c = 2;
-    pfVar3 = param_2 + 2;
+    quant_weight = 2;
+    pfVar3 = order + 2;
     do {
-      fVar1 = (float)param_3;
-      param_3 = param_3 + 4;
+      fVar1 = (float)bits;
+      bits = bits + 4;
       pfVar3[-2] = pfVar3[-2] - (fVar1 * 0.3125 + 0.75);
-      pfVar3[-1] = pfVar3[-1] - ((float)(local_2c + -1) * 0.3125 + 0.75);
-      *pfVar3 = *pfVar3 - ((float)local_2c * 0.3125 + 0.75);
-      pfVar3[1] = pfVar3[1] - ((float)(local_2c + 1) * 0.3125 + 0.75);
+      pfVar3[-1] = pfVar3[-1] - ((float)(quant_weight + -1) * 0.3125 + 0.75);
+      *pfVar3 = *pfVar3 - ((float)quant_weight * 0.3125 + 0.75);
+      pfVar3[1] = pfVar3[1] - ((float)(quant_weight + 1) * 0.3125 + 0.75);
       pfVar3 = pfVar3 + 4;
-      local_2c = local_2c + 4;
-    } while (param_3 < iVar7 + -3);
+      quant_weight = quant_weight + 4;
+    } while (bits < iVar7 + -3);
   }
-  for (; param_3 < iVar7; param_3 = param_3 + 1) {
-    param_2[param_3] = param_2[param_3] - ((float)param_3 * 0.3125 + 0.75);
+  for (; bits < iVar7; bits = bits + 1) {
+    order[bits] = order[bits] - ((float)bits * 0.3125 + 0.75);
   }
   iVar6 = 0;
   if (3 < iVar7) {
     iVar5 = (iVar7 - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
-    pfVar3 = param_2 + 2;
+    pfVar3 = order + 2;
     do {
       iVar5 = iVar5 + -1;
       pfVar3[-2] = pfVar3[-2] * 256.0;
@@ -527,16 +526,16 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
     } while (iVar5 != 0);
   }
   for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
-    param_2[iVar6] = param_2[iVar6] * 256.0;
+    order[iVar6] = order[iVar6] * 256.0;
   }
-  pfVar3 = param_2;
-  pSVar2 = (SpeexBits *)lsp_quant(param_2,high_lsp_cdbk,unaff_EDI,unaff_ESI);
+  pfVar3 = order;
+  pSVar2 = (SpeexBits *)lsp_quant(order,high_lsp_cdbk,unaff_EDI,unaff_ESI);
   speex_bits_pack(pSVar2,6,(int)pfVar3);
   iVar6 = 0;
   if (3 < iVar7) {
     iVar5 = (iVar7 - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
-    pfVar3 = param_2 + 2;
+    pfVar3 = order + 2;
     do {
       iVar5 = iVar5 + -1;
       pfVar3[-2] = pfVar3[-2] * 2.0;
@@ -547,16 +546,16 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
     } while (iVar5 != 0);
   }
   for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
-    param_2[iVar6] = param_2[iVar6] * 2.0;
+    order[iVar6] = order[iVar6] * 2.0;
   }
-  pfVar3 = param_2;
-  pSVar2 = (SpeexBits *)lsp_weight_quant(param_2,local_28,high_lsp_cdbk2,iVar7,unaff_EDI);
+  pfVar3 = order;
+  pSVar2 = (SpeexBits *)lsp_weight_quant(order,local_28,high_lsp_cdbk2,iVar7,unaff_EDI);
   speex_bits_pack(pSVar2,6,(int)pfVar3);
   iVar6 = 0;
   if (3 < iVar7) {
     iVar5 = (iVar7 - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
-    pfVar3 = param_2 + 2;
+    pfVar3 = order + 2;
     do {
       iVar5 = iVar5 + -1;
       pfVar3[-2] = pfVar3[-2] * 0.0019531;
@@ -567,18 +566,18 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
     } while (iVar5 != 0);
   }
   for (; iVar6 < iVar7; iVar6 = iVar6 + 1) {
-    param_2[iVar6] = param_2[iVar6] * 0.0019531;
+    order[iVar6] = order[iVar6] * 0.0019531;
   }
   iVar6 = 0;
   if (3 < iVar7) {
     iVar5 = (iVar7 - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
-    pfVar3 = param_2 + 1;
-    pfVar4 = param_1 + 3;
+    pfVar3 = order + 1;
+    pfVar4 = qlsp + 3;
     do {
       iVar5 = iVar5 + -1;
       pfVar3[-1] = pfVar4[-3] - pfVar3[-1];
-      *pfVar3 = *(float *)((int)pfVar3 + ((int)param_1 - (int)param_2)) - *pfVar3;
+      *pfVar3 = *(float *)((int)pfVar3 + ((int)qlsp - (int)order)) - *pfVar3;
       pfVar3[1] = pfVar4[-1] - pfVar3[1];
       pfVar3[2] = *pfVar4 - pfVar3[2];
       pfVar3 = pfVar3 + 4;
@@ -587,10 +586,10 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
   }
   if (iVar6 < iVar7) {
     iVar7 = iVar7 - iVar6;
-    pfVar3 = param_2 + iVar6;
+    pfVar3 = order + iVar6;
     do {
       iVar7 = iVar7 + -1;
-      *pfVar3 = *(float *)(((int)param_1 - (int)param_2) + (int)pfVar3) - *pfVar3;
+      *pfVar3 = *(float *)(((int)qlsp - (int)order) + (int)pfVar3) - *pfVar3;
       pfVar3 = pfVar3 + 1;
     } while (iVar7 != 0);
   }
@@ -600,7 +599,9 @@ void __cdecl lsp_quant_high(float *param_1,float *param_2,int param_3,SpeexBits 
 
 // 007CFEF0  lsp_unquant_high  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/quant_lsp.c:360)
 
-void __cdecl lsp_unquant_high(float *param_1,int param_2,SpeexBits *param_3)
+/* WARNING: Variable defined which should be unmapped: i */
+
+void __cdecl lsp_unquant_high(float *order,int bits,SpeexBits *param_3)
 
 {
   int iVar1;
@@ -609,21 +610,23 @@ void __cdecl lsp_unquant_high(float *param_1,int param_2,SpeexBits *param_3)
   int iVar4;
   float *pfVar5;
   int unaff_ESI;
+  float *lsp;
+  int i;
   int local_4;
   
   local_4 = 0;
-  if (0 < param_2) {
+  if (0 < bits) {
     do {
       iVar2 = local_4 + 1;
-      param_1[local_4] = (float)local_4 * 0.3125 + 0.75;
+      order[local_4] = (float)local_4 * 0.3125 + 0.75;
       local_4 = iVar2;
-    } while (iVar2 < param_2);
+    } while (iVar2 < bits);
   }
   uVar3 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,unaff_ESI);
   iVar2 = 0;
-  if (3 < param_2) {
-    iVar4 = uVar3 * param_2;
-    pfVar5 = param_1 + 2;
+  if (3 < bits) {
+    iVar4 = uVar3 * bits;
+    pfVar5 = order + 2;
     do {
       iVar1 = iVar2 + iVar4;
       iVar2 = iVar2 + 4;
@@ -632,21 +635,20 @@ void __cdecl lsp_unquant_high(float *param_1,int param_2,SpeexBits *param_3)
       *pfVar5 = (float)(int)*(char *)(iVar4 + 0x9e835e + iVar2) * 0.0039062 + *pfVar5;
       pfVar5[1] = (float)(int)*(char *)(iVar4 + 0x9e835f + iVar2) * 0.0039062 + pfVar5[1];
       pfVar5 = pfVar5 + 4;
-    } while (iVar2 < param_2 + -3);
+    } while (iVar2 < bits + -3);
   }
-  if (iVar2 < param_2) {
+  if (iVar2 < bits) {
     do {
       iVar4 = iVar2 + 1;
-      param_1[iVar2] =
-           (float)(int)high_lsp_cdbk[iVar2 + uVar3 * param_2] * 0.0039062 + param_1[iVar2];
+      order[iVar2] = (float)(int)high_lsp_cdbk[iVar2 + uVar3 * bits] * 0.0039062 + order[iVar2];
       iVar2 = iVar4;
-    } while (iVar4 < param_2);
+    } while (iVar4 < bits);
   }
   uVar3 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000006,unaff_ESI);
   iVar2 = 0;
-  if (3 < param_2) {
-    iVar4 = uVar3 * param_2;
-    pfVar5 = param_1 + 2;
+  if (3 < bits) {
+    iVar4 = uVar3 * bits;
+    pfVar5 = order + 2;
     do {
       iVar1 = iVar2 + iVar4;
       iVar2 = iVar2 + 4;
@@ -655,15 +657,14 @@ void __cdecl lsp_unquant_high(float *param_1,int param_2,SpeexBits *param_3)
       *pfVar5 = (float)(int)high_lsp_cdbk[iVar2 + iVar4 + 0x1fe] * 0.0019531 + *pfVar5;
       pfVar5[1] = (float)(int)high_lsp_cdbk[iVar2 + iVar4 + 0x1ff] * 0.0019531 + pfVar5[1];
       pfVar5 = pfVar5 + 4;
-    } while (iVar2 < param_2 + -3);
+    } while (iVar2 < bits + -3);
   }
-  if (iVar2 < param_2) {
+  if (iVar2 < bits) {
     do {
       iVar4 = iVar2 + 1;
-      param_1[iVar2] =
-           (float)(int)high_lsp_cdbk2[iVar2 + uVar3 * param_2] * 0.0019531 + param_1[iVar2];
+      order[iVar2] = (float)(int)high_lsp_cdbk2[iVar2 + uVar3 * bits] * 0.0019531 + order[iVar2];
       iVar2 = iVar4;
-    } while (iVar4 < param_2);
+    } while (iVar4 < bits);
   }
   return;
 }

@@ -11,6 +11,7 @@ void __cdecl CG_Viewpos_f(void)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
@@ -27,15 +28,16 @@ void __cdecl CG_Viewpos_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ScoresUp(int param_1)
+void __cdecl CG_ScoresUp(int localClientNum)
 
 {
   int iVar1;
   cg_s *pcVar2;
+  cg_s *cgameGlob;
   
-  iVar1 = CG_IsScoreboardDisplayed(param_1);
+  iVar1 = CG_IsScoreboardDisplayed(localClientNum);
   if (iVar1 != 0) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
     pcVar2->showScores = 0;
     pcVar2->scoresTop = -1;
     pcVar2->scoreFadeTime = pcVar2->time;
@@ -56,6 +58,7 @@ void __cdecl CG_ScoresUp_f(void)
 {
   cg_s *pcVar1;
   uiMenuCommand_t uVar2;
+  int localClientNum;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
@@ -76,12 +79,13 @@ void __cdecl CG_ScoresUp_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ScoresDown(int param_1)
+void __cdecl CG_ScoresDown(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   pcVar1->showScores = 1;
   return;
 }
@@ -99,6 +103,7 @@ void __cdecl CG_ScoresDown_f(void)
 {
   cg_s *pcVar1;
   uiMenuCommand_t uVar2;
+  int localClientNum;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
@@ -125,8 +130,12 @@ void __cdecl CG_ShellShock_f(void)
   cg_s *pcVar1;
   int iVar2;
   char *pcVar3;
-  shellshock_parms_t *psVar4;
-  double dVar5;
+  shellshock_parms_t *parms;
+  double dVar4;
+  int duration;
+  cg_s *cgameGlob;
+  int localClientNum;
+  cgs_t *cgs;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap == (snapshot_s *)0x0) {
@@ -145,13 +154,13 @@ void __cdecl CG_ShellShock_f(void)
     }
   }
   pcVar3 = Cmd_Argv(1);
-  dVar5 = atof(pcVar3);
+  dVar4 = atof(pcVar3);
   pcVar1 = CG_GetLocalClientGlobals(0);
   CG_GetLocalClientStaticGlobals(0);
-  psVar4 = BG_GetShellshockParms(0);
-  BG_SetShellShockParmsFromDvars(psVar4);
+  parms = BG_GetShellshockParms(0);
+  BG_SetShellShockParmsFromDvars(parms);
   (pcVar1->testShock).time = pcVar1->time;
-  (pcVar1->testShock).duration = (int)ROUND((float)dVar5 * 1000.0 + 9.313226e-10);
+  (pcVar1->testShock).duration = (int)ROUND((float)dVar4 * 1000.0 + 9.313226e-10);
   return;
 }
 
@@ -168,14 +177,15 @@ void __cdecl CG_ShellShock_Load_f(void)
 {
   cg_s *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *name_00;
+  char *name;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
     iVar2 = Cmd_Argc();
     if (iVar2 == 2) {
-      pcVar3 = Cmd_Argv(1);
-      BG_LoadShellShockDvars(pcVar3);
+      name_00 = Cmd_Argv(1);
+      BG_LoadShellShockDvars(name_00);
     }
     else {
       Com_Printf(0,"USAGE: cg_shellshock_load <name>\n");
@@ -197,14 +207,15 @@ void __cdecl CG_ShellShock_Save_f(void)
 {
   cg_s *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *name_00;
+  char *name;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
     iVar2 = Cmd_Argc();
     if (iVar2 == 2) {
-      pcVar3 = Cmd_Argv(1);
-      BG_SaveShellShockDvars(pcVar3);
+      name_00 = Cmd_Argv(1);
+      BG_SaveShellShockDvars(name_00);
     }
     else {
       Com_Printf(0,"USAGE: cg_shellshock_save <name>\n");
@@ -216,7 +227,7 @@ void __cdecl CG_ShellShock_Save_f(void)
 
 // 00494060  CG_CheatsOK  (cgame_mp/cg_consolecmds_mp.cpp:229)
 
-bool __cdecl CG_CheatsOK(char *param_1)
+bool __cdecl CG_CheatsOK(char *cmdName)
 
 {
   bool bVar1;
@@ -243,24 +254,28 @@ void __cdecl CG_MovieCamera_f(void)
   cg_s *pcVar2;
   cg_s *pcVar3;
   centity_s *pcVar4;
-  int local_10;
-  bool local_9;
+  cg_s *cgameGlob;
+  int localClientNum;
+  char *msg;
+  int value;
+  bool hud_state;
+  centity_s *centTarget;
   
-  local_9 = true;
+  hud_state = true;
   bVar1 = CG_CheatsOK("cg_moviecamera");
   if (bVar1) {
     pcVar2 = CG_GetLocalClientGlobals(0);
     pcVar3 = CG_GetLocalClientGlobals(0);
     if (pcVar3->nextSnap != (snapshot_s *)0x0) {
       if (pcVar2->cameraMode == 1) {
-        local_10 = 0;
+        value = 0;
         if ((cg_paused->current).integer == 2) {
           Dvar_SetInt(cg_paused,1);
         }
       }
       else {
-        local_10 = 1;
-        local_9 = false;
+        value = 1;
+        hud_state = false;
         pcVar4 = CG_GetEntity(0,pcVar2->clientNum);
         if (pcVar4->nextValid == 0) {
           pcVar2->movieCameraOrigin[0] = (pcVar2->refdef).vieworg[0];
@@ -274,8 +289,8 @@ void __cdecl CG_MovieCamera_f(void)
           pcVar2->movieCameraOrigin[2] = pcVar2->movieCameraOrigin[2] + 10.0;
         }
       }
-      pcVar2->cameraMode = local_10;
-      Dvar_SetBool(cg_draw2D,local_9);
+      pcVar2->cameraMode = value;
+      Dvar_SetBool(cg_draw2D,hud_state);
     }
   }
   return;
@@ -296,8 +311,12 @@ void __cdecl CG_FollowCamera_f(void)
   cg_s *pcVar2;
   cg_s *pcVar3;
   int iVar4;
-  char *pcVar5;
-  centity_s *pcVar6;
+  char *nptr;
+  centity_s *pcVar5;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int clientNum;
+  centity_s *centTarget;
   
   bVar1 = CG_CheatsOK("cg_followcamera");
   if (bVar1) {
@@ -309,8 +328,8 @@ void __cdecl CG_FollowCamera_f(void)
         Com_Printf(0xe,"Usage: cg_followcamera <clientnum>\n");
       }
       else {
-        pcVar5 = Cmd_Argv(1);
-        iVar4 = atoi(pcVar5);
+        nptr = Cmd_Argv(1);
+        iVar4 = atoi(nptr);
         if (iVar4 < 0) {
           if (pcVar2->cameraMode == 2) {
             pcVar2->cameraMode = 0;
@@ -319,14 +338,14 @@ void __cdecl CG_FollowCamera_f(void)
         }
         else {
           pcVar2->followCameraClient = iVar4;
-          pcVar6 = CG_GetEntity(0,pcVar2->followCameraClient);
-          if (pcVar6->nextValid == 0) {
+          pcVar5 = CG_GetEntity(0,pcVar2->followCameraClient);
+          if (pcVar5->nextValid == 0) {
             Com_PrintWarning(0xe,"Cannot find client %d to follow.\n");
           }
           else {
-            pcVar2->movieCameraOrigin[0] = (pcVar6->pose).origin[0];
-            pcVar2->movieCameraOrigin[1] = (pcVar6->pose).origin[1];
-            pcVar2->movieCameraOrigin[2] = (pcVar6->pose).origin[2];
+            pcVar2->movieCameraOrigin[0] = (pcVar5->pose).origin[0];
+            pcVar2->movieCameraOrigin[1] = (pcVar5->pose).origin[1];
+            pcVar2->movieCameraOrigin[2] = (pcVar5->pose).origin[2];
             pcVar2->cameraMode = 2;
             Dvar_SetBool(cg_draw2D,false);
           }
@@ -340,14 +359,14 @@ void __cdecl CG_FollowCamera_f(void)
 
 // 004943C0  CL_LocalClient_IsCUIFlagSet  (client/client.h:287)
 
-bool __cdecl CL_LocalClient_IsCUIFlagSet(int param_1,int param_2)
+bool __cdecl CL_LocalClient_IsCUIFlagSet(int localClientNum,int flag)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\live\\../client/client.h",0x120,0,
                              "%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -356,7 +375,7 @@ bool __cdecl CL_LocalClient_IsCUIFlagSet(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return (clientUIActives[param_1].flags & param_2) != 0;
+  return (clientUIActives[localClientNum].flags & flag) != 0;
 }
 
 
@@ -371,6 +390,8 @@ void __cdecl CG_QuickMessage_f(void)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if ((pcVar1->nextSnap != (snapshot_s *)0x0) && (((pcVar1->nextSnap->ps).otherFlags & 4U) != 0)) {
@@ -392,14 +413,17 @@ void __cdecl CG_VoiceChat_f(void)
 {
   cg_s *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *text;
+  cg_s *cgameGlob;
+  int localClientNum;
+  char *chatCmd;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if ((pcVar1->nextSnap != (snapshot_s *)0x0) && (iVar2 = Cmd_Argc(), iVar2 == 2)) {
     if (((pcVar1->nextSnap->ps).pm_type == 5) || (((pcVar1->nextSnap->ps).otherFlags & 4U) != 0)) {
       Cmd_Argv(1);
-      pcVar3 = va("cmd vsay %s\n");
-      Cbuf_AddText(0,pcVar3);
+      text = va("cmd vsay %s\n");
+      Cbuf_AddText(0,text);
     }
     else {
       UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT");
@@ -422,14 +446,17 @@ void __cdecl CG_TeamVoiceChat_f(void)
 {
   cg_s *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *text;
+  cg_s *cgameGlob;
+  int localClientNum;
+  char *chatCmd;
   
   pcVar1 = CG_GetLocalClientGlobals(0);
   if ((pcVar1->nextSnap != (snapshot_s *)0x0) && (iVar2 = Cmd_Argc(), iVar2 == 2)) {
     if (((pcVar1->nextSnap->ps).pm_type == 5) || (((pcVar1->nextSnap->ps).otherFlags & 4U) != 0)) {
       Cmd_Argv(1);
-      pcVar3 = va("cmd vsay_team %s\n");
-      Cbuf_AddText(0,pcVar3);
+      text = va("cmd vsay_team %s\n");
+      Cbuf_AddText(0,text);
     }
     else {
       UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT");
@@ -442,10 +469,16 @@ void __cdecl CG_TeamVoiceChat_f(void)
 
 // 00494380  CG_UpdateVehicleBindings_f  (cgame_mp/cg_consolecmds_mp.cpp:430)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CG_UpdateVehicleBindings_f(void)
 
 {
   bool bVar1;
+  int localClientNum;
   
   bVar1 = CL_LocalClient_IsCUIFlagSet(0,0x20);
   if (bVar1) {
@@ -456,6 +489,11 @@ void __cdecl CG_UpdateVehicleBindings_f(void)
 
 
 // 00494410  CG_RestartSmokeGrenades_f  (cgame_mp/cg_consolecmds_mp.cpp:443)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_RestartSmokeGrenades_f(void)
 
@@ -496,6 +534,11 @@ void __cdecl UpdateBloomTweaks_f(void)
 
 
 // 00493770  CG_InitConsoleCommands  (cgame_mp/cg_consolecmds_mp.cpp:496)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_InitConsoleCommands(void)
 

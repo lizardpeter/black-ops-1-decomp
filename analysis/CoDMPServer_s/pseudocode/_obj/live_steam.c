@@ -154,7 +154,7 @@ void __cdecl LiveSteam_Init(void)
 void __cdecl LiveSteam_Shutdown(void)
 
 {
-  CSteamAchievements *pCVar1;
+  CSteamAchievements *p;
   CSteamAchievements *this;
   
   if (DAT_0350b27e == '\0') {
@@ -162,10 +162,10 @@ void __cdecl LiveSteam_Shutdown(void)
     return;
   }
   LiveSteam_Server_Shutdown();
-  pCVar1 = g_liveSteamAchievements;
+  p = g_liveSteamAchievements;
   if (g_liveSteamAchievements != (CSteamAchievements *)0x0) {
     CSteamAchievements::~CSteamAchievements(this);
-    operator_delete(pCVar1);
+    operator_delete(p);
     DAT_0350b27e = 0;
     return;
   }

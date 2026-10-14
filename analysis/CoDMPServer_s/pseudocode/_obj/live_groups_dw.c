@@ -143,12 +143,12 @@ bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3
   char *pcVar3;
   int iVar4;
   int iVar5;
-  char *pcVar6;
+  char *nptr;
   int unaff_ESI;
-  int iVar7;
+  int iVar6;
   char *unaff_EDI;
   
-  pcVar6 = (char *)0x0;
+  nptr = (char *)0x0;
   strchr((uchar *)param_1,'/');
   pcVar3 = param_1;
   if (extraout_EAX == 0) {
@@ -158,26 +158,26 @@ bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3
     } while (cVar1 != '\0');
   }
   else {
-    pcVar6 = (char *)(extraout_EAX + 1);
-    if (*pcVar6 == '\0') {
-      pcVar6 = (char *)0x0;
+    nptr = (char *)(extraout_EAX + 1);
+    if (*nptr == '\0') {
+      nptr = (char *)0x0;
     }
   }
-  iVar7 = 0;
+  iVar6 = 0;
   if (0 < _DAT_0350b270) {
     do {
       iVar4 = I_strnicmp(param_1,unaff_EDI,unaff_ESI);
       if (iVar4 == 0) {
-        *param_3 = (GroupSet *)(&PTR_s_playlist_00ad57d8 + iVar7 * 5);
-        if (pcVar6 == (char *)0x0) {
+        *param_3 = (GroupSet *)(&PTR_s_playlist_00ad57d8 + iVar6 * 5);
+        if (nptr == (char *)0x0) {
           *param_2 = -1;
         }
         else {
-          if ((&DAT_00ad57e0)[iVar7 * 5] != 0) {
+          if ((&DAT_00ad57e0)[iVar6 * 5] != 0) {
             iVar4 = 0;
-            if (0 < (int)(&DAT_00ad57e4)[iVar7 * 5]) {
+            if (0 < (int)(&DAT_00ad57e4)[iVar6 * 5]) {
               do {
-                iVar5 = I_strnicmp(pcVar6,unaff_EDI,unaff_ESI);
+                iVar5 = I_strnicmp(nptr,unaff_EDI,unaff_ESI);
                 if (iVar5 == 0) {
                   *param_2 = iVar4;
                   return true;
@@ -185,15 +185,15 @@ bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3
                 iVar4 = iVar4 + 1;
               } while (iVar4 < *(int *)(*param_3 + 0xc));
             }
-            Com_PrintError(1,"Group \'%s\' not found in set \'%s\'\n",pcVar6,
-                           (&PTR_s_playlist_00ad57d8)[iVar7 * 5]);
+            Com_PrintError(1,"Group \'%s\' not found in set \'%s\'\n",nptr,
+                           (&PTR_s_playlist_00ad57d8)[iVar6 * 5]);
             return false;
           }
-          iVar4 = atoi(pcVar6);
+          iVar4 = atoi(nptr);
           pGVar2 = *param_3;
-          iVar7 = *(int *)(pGVar2 + 0xc);
+          iVar6 = *(int *)(pGVar2 + 0xc);
           *param_2 = iVar4;
-          if (iVar7 < iVar4) {
+          if (iVar6 < iVar4) {
             Com_PrintError(1,"Group ID \'%d\' out of bounds for set \'%s\'\n",iVar4,
                            *(undefined4 *)pGVar2);
             return false;
@@ -201,8 +201,8 @@ bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3
         }
         return true;
       }
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < _DAT_0350b270);
+      iVar6 = iVar6 + 1;
+    } while (iVar6 < _DAT_0350b270);
   }
   Com_PrintError(1,"Group \'%s\' not found\n",param_1);
   return false;

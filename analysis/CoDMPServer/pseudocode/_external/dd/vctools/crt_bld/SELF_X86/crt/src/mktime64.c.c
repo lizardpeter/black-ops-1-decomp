@@ -2,7 +2,7 @@
 
 // 00C18926  _mktime64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c:57)
 
-long64 __cdecl _mktime64(tm *param_1)
+long64 __cdecl _mktime64(tm *tb)
 
 {
   int unaff_EBP;
@@ -15,7 +15,7 @@ long64 __cdecl _mktime64(tm *param_1)
 
 // 00C18671  _make__time64_t  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c:123)
 
-long64 __cdecl _make__time64_t(tm *param_1,int param_2)
+long64 __cdecl _make__time64_t(tm *ultflag,int param_2)
 
 {
   uint *in_EAX;
@@ -39,60 +39,60 @@ long64 __cdecl _make__time64_t(tm *param_1,int param_2)
   int extraout_EDX_05;
   tm *ptVar5;
   bool bVar6;
-  tm local_4c;
+  tm tbtemp;
   int local_28;
   int local_24;
-  uint local_20;
+  uint tmptm2;
   int local_1c;
-  uint local_18;
+  uint tmptm1;
   int local_14;
   int local_10;
-  uint local_c;
-  uint local_8;
+  long dstbias;
+  long timezone;
   
-  local_c = 0;
-  local_8 = 0;
+  dstbias = 0;
+  timezone = 0;
   if (in_EAX == (uint *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     local_14 = -1;
-    local_18 = 0xffffffff;
+    tmptm1 = 0xffffffff;
     goto LAB_00c18922;
   }
-  local_18 = in_EAX[5];
-  local_14 = (int)local_18 >> 0x1f;
-  if ((local_14 + -1 + (uint)(0x44 < local_18) == 0) && (local_18 - 0x45 < 0x409)) {
+  tmptm1 = in_EAX[5];
+  local_14 = (int)tmptm1 >> 0x1f;
+  if ((local_14 + -1 + (uint)(0x44 < tmptm1) == 0) && (tmptm1 - 0x45 < 0x409)) {
     uVar4 = in_EAX[4];
     if (((int)uVar4 < 0) || (0xb < (int)uVar4)) {
       uVar2 = (int)uVar4 / 0xc;
       uVar4 = (int)uVar4 % 0xc;
-      bVar6 = CARRY4(local_18,uVar2);
-      local_18 = local_18 + uVar2;
+      bVar6 = CARRY4(tmptm1,uVar2);
+      tmptm1 = tmptm1 + uVar2;
       in_EAX[4] = uVar4;
       local_14 = local_14 + ((int)uVar2 >> 0x1f) + (uint)bVar6;
       if ((int)uVar4 < 0) {
-        bVar6 = local_18 != 0;
-        local_18 = local_18 - 1;
+        bVar6 = tmptm1 != 0;
+        tmptm1 = tmptm1 - 1;
         in_EAX[4] = uVar4 + 0xc;
         local_14 = local_14 + -1 + (uint)bVar6;
       }
-      if ((local_14 + -1 + (uint)(0x44 < local_18) != 0) || (0x408 < local_18 - 0x45))
+      if ((local_14 + -1 + (uint)(0x44 < tmptm1) != 0) || (0x408 < tmptm1 - 0x45))
       goto LAB_00c18911;
     }
     uVar4 = in_EAX[4];
-    local_20 = *(uint *)(&_days + uVar4 * 4);
-    local_1c = (int)local_20 >> 0x1f;
+    tmptm2 = *(uint *)(&_days + uVar4 * 4);
+    local_1c = (int)tmptm2 >> 0x1f;
     _allrem();
     if ((((extraout_EAX == 0 && extraout_EDX == 0) &&
          (_allrem(), extraout_EAX_00 != 0 || extraout_EDX_00 != 0)) ||
         (_allrem(), extraout_EAX_01 == 0 && extraout_EDX_01 == 0)) && (1 < (int)uVar4)) {
-      bVar6 = 0xfffffffe < local_20;
-      local_20 = local_20 + 1;
+      bVar6 = 0xfffffffe < tmptm2;
+      tmptm2 = tmptm2 + 1;
       local_1c = local_1c + (uint)bVar6;
     }
-    local_28 = local_18 - 1;
-    local_24 = local_14 - (uint)(local_18 == 0);
+    local_28 = tmptm1 - 1;
+    local_24 = local_14 - (uint)(tmptm1 == 0);
     _alldiv();
     uVar4 = in_EAX[3];
     local_10 = extraout_EDX_02 + ((int)uVar4 >> 0x1f) + (uint)CARRY4(extraout_EAX_02,uVar4);
@@ -106,37 +106,37 @@ long64 __cdecl _make__time64_t(tm *param_1,int param_2)
     _allmul();
     _allmul();
     uVar4 = *in_EAX;
-    local_18 = uVar4 + extraout_EAX_05;
+    tmptm1 = uVar4 + extraout_EAX_05;
     local_14 = ((int)uVar4 >> 0x1f) + extraout_EDX_05 + (uint)CARRY4(uVar4,extraout_EAX_05);
-    if (param_1 == (tm *)0x0) {
-      iVar3 = _gmtime64_s(&local_4c,(long64 *)&local_18);
+    if (ultflag == (tm *)0x0) {
+      iVar3 = _gmtime64_s(&tbtemp,(long64 *)&tmptm1);
 LAB_00c188fb:
       if (iVar3 != 0) goto LAB_00c18911;
     }
     else {
       __tzset();
-      iVar3 = _get_dstbias((long *)&local_c);
+      iVar3 = _get_dstbias(&dstbias);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      iVar3 = _get_timezone((long *)&local_8);
+      iVar3 = _get_timezone(&timezone);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      bVar6 = CARRY4(local_18,local_8);
-      local_18 = local_18 + local_8;
-      local_14 = local_14 + ((int)local_8 >> 0x1f) + (uint)bVar6;
-      iVar3 = _localtime64_s(&local_4c,(long64 *)&local_18);
+      bVar6 = CARRY4(tmptm1,timezone);
+      tmptm1 = tmptm1 + timezone;
+      local_14 = local_14 + (timezone >> 0x1f) + (uint)bVar6;
+      iVar3 = _localtime64_s(&tbtemp,(long64 *)&tmptm1);
       if (iVar3 != 0) goto LAB_00c18911;
-      if ((0 < (int)in_EAX[8]) || (((int)in_EAX[8] < 0 && (0 < local_4c.tm_isdst)))) {
-        bVar6 = CARRY4(local_18,local_c);
-        local_18 = local_18 + local_c;
-        local_14 = local_14 + ((int)local_c >> 0x1f) + (uint)bVar6;
-        iVar3 = _localtime64_s(&local_4c,(long64 *)&local_18);
+      if ((0 < (int)in_EAX[8]) || (((int)in_EAX[8] < 0 && (0 < tbtemp.tm_isdst)))) {
+        bVar6 = CARRY4(tmptm1,dstbias);
+        tmptm1 = tmptm1 + dstbias;
+        local_14 = local_14 + (dstbias >> 0x1f) + (uint)bVar6;
+        iVar3 = _localtime64_s(&tbtemp,(long64 *)&tmptm1);
         goto LAB_00c188fb;
       }
     }
-    ptVar5 = &local_4c;
+    ptVar5 = &tbtemp;
     for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
       *in_EAX = ptVar5->tm_sec;
       ptVar5 = (tm *)&ptVar5->tm_min;
@@ -148,9 +148,9 @@ LAB_00c18911:
     piVar1 = _errno();
     local_14 = -1;
     *piVar1 = 0x16;
-    local_18 = 0xffffffff;
+    tmptm1 = 0xffffffff;
   }
 LAB_00c18922:
-  return CONCAT44(local_14,local_18);
+  return CONCAT44(local_14,tmptm1);
 }
 

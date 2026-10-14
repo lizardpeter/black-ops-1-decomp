@@ -553,57 +553,57 @@ void __cdecl SV_Startup(int param_1)
 void __cdecl SV_SetExpectedHunkUsage(char *param_1)
 
 {
-  uint uVar1;
-  int iVar2;
-  uchar *puVar3;
-  char *pcVar4;
+  uint size;
+  int iVar1;
+  uchar *dst;
+  char *pcVar2;
   int unaff_ESI;
   char *unaff_EDI;
   uchar *local_4;
   
-  iVar2 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_4);
+  iVar1 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_4);
   if (local_4 != (uchar *)0x0) {
-    *(int *)(&DAT_01f41584 + (int)local_4 * 0x11c) = iVar2;
+    *(int *)(&DAT_01f41584 + (int)local_4 * 0x11c) = iVar1;
     *(undefined4 *)(&DAT_01f41590 + (int)local_4 * 0x11c) = 0;
   }
   *(undefined4 *)(&DAT_01f41580 + (int)local_4 * 0x11c) = 0;
-  if (-1 < iVar2) {
-    uVar1 = iVar2 + 1;
-    puVar3 = malloc(uVar1);
-    if (puVar3 == (uchar *)0x0) {
+  if (-1 < iVar1) {
+    size = iVar1 + 1;
+    dst = malloc(size);
+    if (dst == (uchar *)0x0) {
                     /* WARNING: Subroutine does not return */
       FUN_00699280();
     }
-    Com_Memset(puVar3,0,uVar1);
-    memset(puVar3,'\0',uVar1);
-    FS_Read(puVar3,iVar2,(int)local_4);
+    Com_Memset(dst,0,size);
+    memset(dst,'\0',size);
+    FS_Read(dst,iVar1,(int)local_4);
     FS_FCloseFile((int)unaff_EDI);
-    local_4 = puVar3;
+    local_4 = dst;
     do {
       do {
-        iVar2 = FUN_006a9e90();
-        iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
-        if (*(char *)(iVar2 + 0x408) != '\0') {
-          local_4 = *(uchar **)(iVar2 + 0x420);
-          *(undefined1 *)(iVar2 + 0x408) = 0;
-          *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
+        iVar1 = FUN_006a9e90();
+        iVar1 = *(int *)(iVar1 + 0x4280) * 0x428 + iVar1;
+        if (*(char *)(iVar1 + 0x408) != '\0') {
+          local_4 = *(uchar **)(iVar1 + 0x420);
+          *(undefined1 *)(iVar1 + 0x408) = 0;
+          *(undefined4 *)(iVar1 + 0x404) = *(undefined4 *)(iVar1 + 0x41c);
         }
-        pcVar4 = (char *)FUN_006aa5f0(&local_4,1);
-        if (*pcVar4 == '\0') goto LAB_0061235d;
-        iVar2 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
-      } while (iVar2 != 0);
-      iVar2 = FUN_006a9e90();
-      iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
-      if (*(char *)(iVar2 + 0x408) != '\0') {
-        local_4 = *(uchar **)(iVar2 + 0x420);
-        *(undefined1 *)(iVar2 + 0x408) = 0;
-        *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
+        pcVar2 = (char *)FUN_006aa5f0(&local_4,1);
+        if (*pcVar2 == '\0') goto LAB_0061235d;
+        iVar1 = I_strnicmp(pcVar2,unaff_EDI,unaff_ESI);
+      } while (iVar1 != 0);
+      iVar1 = FUN_006a9e90();
+      iVar1 = *(int *)(iVar1 + 0x4280) * 0x428 + iVar1;
+      if (*(char *)(iVar1 + 0x408) != '\0') {
+        local_4 = *(uchar **)(iVar1 + 0x420);
+        *(undefined1 *)(iVar1 + 0x408) = 0;
+        *(undefined4 *)(iVar1 + 0x404) = *(undefined4 *)(iVar1 + 0x41c);
       }
-      pcVar4 = (char *)FUN_006aa5f0(&local_4,1);
-    } while ((pcVar4 == (char *)0x0) || (*pcVar4 == '\0'));
-    com_expectedHunkUsage = atoi(pcVar4);
+      pcVar2 = (char *)FUN_006aa5f0(&local_4,1);
+    } while ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0'));
+    com_expectedHunkUsage = atoi(pcVar2);
 LAB_0061235d:
-    free(puVar3);
+    free(dst);
   }
   return;
 }
@@ -1190,8 +1190,8 @@ void __cdecl SV_AllocateClientMemory(HunkUser *param_1,int param_2,int param_3)
 
 {
   int *piVar1;
-  IKState **ppIVar2;
-  int iVar3;
+  IKState **dst;
+  int iVar2;
   int unaff_EDI;
   
   piVar1 = DAT_03500f48;
@@ -1221,11 +1221,11 @@ void __cdecl SV_AllocateClientMemory(HunkUser *param_1,int param_2,int param_3)
   DAT_01e5d484 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*piVar1 * 5])
                                     (piVar1,unaff_EDI * 0x5000,0x80,"svs.cachedSnapshotEntities");
   memset(DAT_01e5d484,'\0',DAT_01e5d4a4 << 8);
-  iVar3 = 2;
+  iVar2 = 2;
   if (2 < unaff_EDI) {
-    iVar3 = unaff_EDI;
+    iVar2 = unaff_EDI;
   }
-  DAT_01e5d4a8 = iVar3 * iVar3;
+  DAT_01e5d4a8 = iVar2 * iVar2;
   DAT_01e5d4f4 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*piVar1 * 5])
                                     (piVar1,DAT_01e5d4a8 * 0x27d0,4,"svs.cachedSnapshotClients");
   memset(DAT_01e5d4f4,'\0',DAT_01e5d4a8 * 0x27d0);
@@ -1235,12 +1235,12 @@ void __cdecl SV_AllocateClientMemory(HunkUser *param_1,int param_2,int param_3)
   DAT_01e5d4d8 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*piVar1 * 5])
                                     (piVar1,0x1000000,4,"svs.archivedSnapshotBuffer");
   memset(DAT_01e5d4d8,'\0',0x1000000);
-  ppIVar2 = (IKState **)
-            (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*piVar1 * 5])
-                      (piVar1,0x1ce00,0x10,"sv_ikStatesArray");
-  sv_ikBuf = (uchar *)ppIVar2;
-  memset((uchar *)ppIVar2,'\0',0x1ce00);
-  ikStates = ppIVar2;
+  dst = (IKState **)
+        (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*piVar1 * 5])
+                  (piVar1,0x1ce00,0x10,"sv_ikStatesArray");
+  sv_ikBuf = (uchar *)dst;
+  memset((uchar *)dst,'\0',0x1ce00);
+  ikStates = dst;
   return;
 }
 

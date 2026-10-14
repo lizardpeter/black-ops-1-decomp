@@ -44,9 +44,9 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
 
 {
   float fVar1;
-  rigid_body *prVar2;
+  rigid_body *b2;
   user_rigid_body *this;
-  rigid_body_constraint_custom_path *prVar3;
+  rigid_body_constraint_custom_path *prVar2;
   float *unaff_ESI;
   float *unaff_EDI;
   float fStack_34;
@@ -59,29 +59,29 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
   float fStack_18;
   float fStack_14;
   
-  prVar2 = (rigid_body *)**(undefined4 **)(*(int *)(*(int *)(param_1 + 0x158) + 0x69c) + 0x230);
+  b2 = (rigid_body *)**(undefined4 **)(*(int *)(*(int *)(param_1 + 0x158) + 0x69c) + 0x230);
   this = phys_sys::create_user_rigid_body(1);
   user_rigid_body::set(this,(phys_mat44 *)0x0);
-  prVar3 = phys_sys::create_rbc_custom_path(prVar2,(rigid_body *)this,1);
-  (prVar3->b1_r_loc).x = 0.0;
-  (prVar3->b1_r_loc).y = 0.0;
-  (prVar3->b1_r_loc).z = 0.0;
+  prVar2 = phys_sys::create_rbc_custom_path(b2,(rigid_body *)this,1);
+  (prVar2->b1_r_loc).x = 0.0;
+  (prVar2->b1_r_loc).y = 0.0;
+  (prVar2->b1_r_loc).z = 0.0;
   AnglesToAxis(unaff_EDI,unaff_ESI);
-  (prVar3->m_path_mat).x.x = fStack_34;
-  (prVar3->m_path_mat).x.y = fStack_30;
-  (prVar3->m_path_mat).x.z = fStack_2c;
-  (prVar3->m_path_mat).y.x = fStack_28;
-  (prVar3->m_path_mat).y.y = fStack_24;
-  (prVar3->m_path_mat).y.z = fStack_20;
-  (prVar3->m_path_mat).z.x = fStack_1c;
-  (prVar3->m_path_mat).z.y = fStack_18;
-  (prVar3->m_path_mat).z.z = fStack_14;
-  (prVar3->m_path_mat).w.x = *(float *)(param_1 + 0x124);
+  (prVar2->m_path_mat).x.x = fStack_34;
+  (prVar2->m_path_mat).x.y = fStack_30;
+  (prVar2->m_path_mat).x.z = fStack_2c;
+  (prVar2->m_path_mat).y.x = fStack_28;
+  (prVar2->m_path_mat).y.y = fStack_24;
+  (prVar2->m_path_mat).y.z = fStack_20;
+  (prVar2->m_path_mat).z.x = fStack_1c;
+  (prVar2->m_path_mat).z.y = fStack_18;
+  (prVar2->m_path_mat).z.z = fStack_14;
+  (prVar2->m_path_mat).w.x = *(float *)(param_1 + 0x124);
   fVar1 = *(float *)(param_1 + 0x128);
-  prVar3->m_urb = this;
-  (prVar3->m_path_mat).w.y = fVar1;
-  (prVar3->m_path_mat).w.z = *(float *)(param_1 + 300);
-  user_rigid_body::set(this,&prVar3->m_path_mat);
-  return prVar3;
+  prVar2->m_urb = this;
+  (prVar2->m_path_mat).w.y = fVar1;
+  (prVar2->m_path_mat).w.z = *(float *)(param_1 + 300);
+  user_rigid_body::set(this,&prVar2->m_path_mat);
+  return prVar2;
 }
 

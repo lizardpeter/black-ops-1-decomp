@@ -18,13 +18,13 @@ XAnimClientNotifyList::XAnimClientNotifyList(XAnimClientNotifyList *this)
 void __thiscall XAnimClientNotifyList::~XAnimClientNotifyList(XAnimClientNotifyList *this)
 
 {
-  int local_c;
-  XAnimClientNotifyList *local_8;
+  int iLoop;
+  XAnimClientNotify *pNotify;
   
-  local_8 = this;
-  for (local_c = 0; local_c < this->m_numNotifies; local_c = local_c + 1) {
-    XAnimClientNotify::~XAnimClientNotify((XAnimClientNotify *)local_8);
-    local_8 = (XAnimClientNotifyList *)(local_8->m_clientNotifyMemory + 0x18);
+  pNotify = (XAnimClientNotify *)this;
+  for (iLoop = 0; iLoop < this->m_numNotifies; iLoop = iLoop + 1) {
+    XAnimClientNotify::~XAnimClientNotify(pNotify);
+    pNotify = pNotify + 1;
   }
   return;
 }
@@ -33,25 +33,27 @@ void __thiscall XAnimClientNotifyList::~XAnimClientNotifyList(XAnimClientNotifyL
 // 007FC9F0  AddNotify  (xanim/xanim_clientnotify.cpp:36)
 
 void __thiscall
-XAnimClientNotifyList::AddNotify(XAnimClientNotifyList *this,ClientNotifyData *param_1)
+XAnimClientNotifyList::AddNotify(XAnimClientNotifyList *this,ClientNotifyData *notifyData)
 
 {
   int iVar1;
   XAnimClientNotify *this_00;
-  int local_8;
+  XAnimClientNotify *testNotify;
+  XAnimClientNotify *pNotify;
+  int iInsertLoc;
   
   if (this->m_numNotifies < 0x40) {
     iVar1 = this->m_numNotifies;
-    while ((local_8 = iVar1 + -1, -1 < local_8 &&
+    while ((iInsertLoc = iVar1 + -1, -1 < iInsertLoc &&
            (this_00 = (XAnimClientNotify *)(this->m_clientNotifyMemory + iVar1 * 0x18 + -0x18),
-           param_1->timeFrac < this_00->timeFrac))) {
+           notifyData->timeFrac < this_00->timeFrac))) {
       XAnimClientNotify::swap(this_00,this_00 + 1);
-      iVar1 = local_8;
+      iVar1 = iInsertLoc;
     }
     if ((XAnimClientNotify *)(this->m_clientNotifyMemory + iVar1 * 0x18) != (XAnimClientNotify *)0x0
        ) {
       XAnimClientNotify::XAnimClientNotify
-                ((XAnimClientNotify *)(this->m_clientNotifyMemory + iVar1 * 0x18),param_1);
+                ((XAnimClientNotify *)(this->m_clientNotifyMemory + iVar1 * 0x18),notifyData);
     }
     this->m_numNotifies = this->m_numNotifies + 1;
   }
@@ -62,7 +64,7 @@ XAnimClientNotifyList::AddNotify(XAnimClientNotifyList *this,ClientNotifyData *p
 // 007FCAB0  XAnimClientNotify  (xanim/xanim_clientnotify.cpp:67)
 
 XAnimClientNotify * __thiscall
-XAnimClientNotify::XAnimClientNotify(XAnimClientNotify *this,ClientNotifyData *param_1)
+XAnimClientNotify::XAnimClientNotify(XAnimClientNotify *this,ClientNotifyData *notifyData)
 
 {
   this->name = (char *)0x0;
@@ -71,10 +73,10 @@ XAnimClientNotify::XAnimClientNotify(XAnimClientNotify *this,ClientNotifyData *p
   this->notifyType = 0;
   this->clNotifyName = 0;
   this->timeFrac = 0.0;
-  this->svNotetrackName = param_1->notetrackName;
-  this->notifyType = param_1->notifyType;
-  this->clNotifyName = param_1->notifyName;
-  this->timeFrac = param_1->timeFrac;
+  this->svNotetrackName = notifyData->notetrackName;
+  this->notifyType = notifyData->notifyType;
+  this->clNotifyName = notifyData->notifyName;
+  this->timeFrac = notifyData->timeFrac;
   if (this->clNotifyName != 0) {
     SL_AddRefToString(this->clNotifyName,SCRIPTINSTANCE_CLIENT);
   }
@@ -101,7 +103,7 @@ void __thiscall XAnimClientNotify::~XAnimClientNotify(XAnimClientNotify *this)
 
 // 007FCBB0  swap  (xanim/xanim_clientnotify.cpp:95)
 
-void __thiscall XAnimClientNotify::swap(XAnimClientNotify *this,XAnimClientNotify *param_1)
+void __thiscall XAnimClientNotify::swap(XAnimClientNotify *this,XAnimClientNotify *otherNotify)
 
 {
   float fVar1;
@@ -112,40 +114,40 @@ void __thiscall XAnimClientNotify::swap(XAnimClientNotify *this,XAnimClientNotif
   float *pfVar6;
   uint *puVar7;
   
-  if (this != param_1) {
+  if (this != otherNotify) {
     pcVar2 = this->name;
-    this->name = param_1->name;
-    param_1->name = pcVar2;
+    this->name = otherNotify->name;
+    otherNotify->name = pcVar2;
   }
-  puVar7 = &param_1->svNotetrackName;
+  puVar7 = &otherNotify->svNotetrackName;
   puVar4 = &this->svNotetrackName;
   if (puVar4 != puVar7) {
     uVar3 = *puVar4;
     *puVar4 = *puVar7;
     *puVar7 = uVar3;
   }
-  puVar4 = &param_1->clNotetrackName;
+  puVar4 = &otherNotify->clNotetrackName;
   puVar7 = &this->clNotetrackName;
   if (puVar7 != puVar4) {
     uVar3 = *puVar7;
     *puVar7 = *puVar4;
     *puVar4 = uVar3;
   }
-  puVar4 = &param_1->notifyType;
+  puVar4 = &otherNotify->notifyType;
   puVar7 = &this->notifyType;
   if (puVar7 != puVar4) {
     uVar3 = *puVar7;
     *puVar7 = *puVar4;
     *puVar4 = uVar3;
   }
-  puVar7 = &param_1->clNotifyName;
+  puVar7 = &otherNotify->clNotifyName;
   puVar4 = &this->clNotifyName;
   if (puVar4 != puVar7) {
     uVar3 = *puVar4;
     *puVar4 = *puVar7;
     *puVar7 = uVar3;
   }
-  pfVar5 = &param_1->timeFrac;
+  pfVar5 = &otherNotify->timeFrac;
   pfVar6 = &this->timeFrac;
   if (pfVar6 != pfVar5) {
     fVar1 = *pfVar6;
@@ -185,16 +187,16 @@ char * __thiscall XAnimClientNotify::GetNotifyStringName(XAnimClientNotify *this
 uint __thiscall XAnimClientNotify::GetNotetrackCLName(XAnimClientNotify *this)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  scriptInstance_t sVar3;
+  char *str;
+  uint uVar1;
+  scriptInstance_t inst;
   
   if (this->clNotetrackName == 0) {
-    sVar3 = SCRIPTINSTANCE_CLIENT;
-    uVar2 = 0;
-    pcVar1 = SL_ConvertToString(this->svNotetrackName,SCRIPTINSTANCE_SERVER);
-    uVar2 = SL_GetString(pcVar1,uVar2,sVar3);
-    this->clNotetrackName = uVar2;
+    inst = SCRIPTINSTANCE_CLIENT;
+    uVar1 = 0;
+    str = SL_ConvertToString(this->svNotetrackName,SCRIPTINSTANCE_SERVER);
+    uVar1 = SL_GetString(str,uVar1,inst);
+    this->clNotetrackName = uVar1;
   }
   return this->clNotetrackName;
 }

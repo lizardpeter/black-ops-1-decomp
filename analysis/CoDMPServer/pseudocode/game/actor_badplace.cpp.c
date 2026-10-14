@@ -22,43 +22,43 @@ void __cdecl TRACK_actor_badplace(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_UpdateBadPlaceCount(badplace_t *param_1,int param_2)
+void __cdecl Path_UpdateBadPlaceCount(badplace_t *place,int delta)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  if ((param_1 == (badplace_t *)0x0) &&
+  if ((place == (badplace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x3e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2 != -1) && (param_2 != 1)) &&
+  if (((delta != -1) && (delta != 1)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x3f,0,
                                "%s\n\t(delta) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_1->type) {
+  switch(place->type) {
   case '\x01':
   case '\x03':
-    Path_UpdateArcBadPlaceCount(&(param_1->parms).arc,(uint)param_1->teamflags,param_2);
+    Path_UpdateArcBadPlaceCount(&(place->parms).arc,(uint)place->teamflags,delta);
     break;
   case '\x02':
-    Path_UpdateBrushBadPlaceCount((param_1->parms).brush.volume,(uint)param_1->teamflags,param_2);
+    Path_UpdateBrushBadPlaceCount((place->parms).brush.volume,(uint)place->teamflags,delta);
     break;
   case '\x04':
     Path_UpdateLimitedDepthArcBadPlaceCount
-              (&(param_1->parms).arc,(uint)param_1->teamflags,param_2,param_1->depth);
+              (&(place->parms).arc,(uint)place->teamflags,delta,place->depth);
     break;
   default:
-    pcVar3 = va("unhandled bad place type %i");
+    fmt = va("unhandled bad place type %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x51,0,
-                             pcVar3);
+                             fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -71,11 +71,11 @@ void __cdecl Path_UpdateBadPlaceCount(badplace_t *param_1,int param_2)
 
 // 008E9F60  Path_FreeBadPlace  (game/actor_badplace.cpp:94)
 
-void __cdecl Path_FreeBadPlace(int param_1)
+void __cdecl Path_FreeBadPlace(int index)
 
 {
-  if (-1 < param_1) {
-    gFreePendingBadPlaces[param_1] = '\x01';
+  if (-1 < index) {
+    gFreePendingBadPlaces[index] = '\x01';
   }
   return;
 }
@@ -88,20 +88,20 @@ void __cdecl Path_FreeBadPlace(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Path_FindBadPlace(uint param_1)
+int __cdecl Path_FindBadPlace(uint name)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xff < local_8) {
+    if (0xff < i) {
       return -1;
     }
-    if (g_badplaces[local_8].name == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_badplaces[i].name == name) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -118,30 +118,31 @@ void __cdecl Path_UpdateBadPlaces(void)
   code *pcVar1;
   bool bVar2;
   bool bVar3;
-  int local_10;
-  badplace_parms_t *local_8;
+  int i;
+  bool updateFlee;
+  _pendedBadPlace *pendedBP;
   
   bVar2 = false;
-  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-    if (gFreePendingBadPlaces[local_10] != '\0') {
-      Path_UpdateBadPlaceCount(g_badplaces + local_10,-1);
-      g_badplaces[local_10].type = '\0';
-      Scr_SetString(&g_badplaces[local_10].name,0,SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < 0x100; i = i + 1) {
+    if (gFreePendingBadPlaces[i] != '\0') {
+      Path_UpdateBadPlaceCount(g_badplaces + i,-1);
+      g_badplaces[i].type = '\0';
+      Scr_SetString(&g_badplaces[i].name,0,SCRIPTINSTANCE_SERVER);
       bVar2 = true;
     }
   }
   memset((uchar *)gFreePendingBadPlaces,'\0',0x100);
-  local_8 = &gPendendBadPlaces[0].params;
-  local_10 = 0;
+  pendedBP = gPendendBadPlaces;
+  i = 0;
   do {
-    if (gPendedBadPlaceCount <= local_10) {
+    if (gPendedBadPlaceCount <= i) {
       if (gPendedBadPlaceCount != 0) {
         Actor_BadPlacesChanged();
         gPendedBadPlaceCount = 0;
       }
-      for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-        if ((g_badplaces[local_10].type != '\0') && (g_badplaces[local_10].endtime < level.time)) {
-          Path_FreeBadPlace(local_10);
+      for (i = 0; i < 0x100; i = i + 1) {
+        if ((g_badplaces[i].type != '\0') && (g_badplaces[i].endtime < level.time)) {
+          Path_FreeBadPlace(i);
         }
       }
       if (bVar2) {
@@ -149,7 +150,7 @@ void __cdecl Path_UpdateBadPlaces(void)
       }
       return;
     }
-    if (*(int *)((int)local_8 + 0x28) != 3) {
+    if (pendedBP->type != 3) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0xa7,0,
                                "%s");
       if (!bVar3) {
@@ -158,10 +159,10 @@ void __cdecl Path_UpdateBadPlaces(void)
         return;
       }
     }
-    Path_MakeBadPlaceEx((uint)local_8[1].arc.origin[0],*(int *)((int)local_8 + 0x20),
-                        *(int *)((int)local_8 + 0x24),*(int *)((int)local_8 + 0x28),local_8);
-    local_8 = (badplace_parms_t *)((int)local_8 + 0x2c);
-    local_10 = local_10 + 1;
+    Path_MakeBadPlaceEx(pendedBP->name,pendedBP->duration,pendedBP->teamflags,pendedBP->type,
+                        &pendedBP->params);
+    pendedBP = pendedBP + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -173,62 +174,61 @@ void __cdecl Path_UpdateBadPlaces(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-badplace_t * __cdecl Path_AllocBadPlace(uint param_1,int param_2,badplace_parms_t *param_3)
+badplace_t * __cdecl Path_AllocBadPlace(uint name,int duration,badplace_parms_t *params)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  badplace_t *pbVar4;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int index;
+  badplace_t *pbVar3;
+  int endtime;
+  int lowest;
+  int best;
+  int i;
   
-  if (param_1 != 0) {
-    iVar3 = Path_FindBadPlace(param_1);
-    Path_FreeBadPlace(iVar3);
+  if (name != 0) {
+    index = Path_FindBadPlace(name);
+    Path_FreeBadPlace(index);
   }
-  local_14 = level.time + param_2;
-  if (param_2 < 1) {
-    if (param_1 == 0) {
+  endtime = level.time + duration;
+  if (duration < 1) {
+    if (name == 0) {
       Scr_Error("anonymous bad places must have a duration",false);
       return (badplace_t *)0x0;
     }
-    local_14 = 0x7fffffff;
+    endtime = 0x7fffffff;
   }
-  else if (param_2 < 0xfa) {
+  else if (duration < 0xfa) {
     Com_PrintWarning(0x12,
                      "WARNING: A badplace was created with duration [%.2f second], which is less than the ping time [%.2f second]\n"
                     );
   }
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if (g_badplaces[local_8].type == '\0') {
-      Scr_SetString(&g_badplaces[local_8].name,param_1,SCRIPTINSTANCE_SERVER);
-      g_badplaces[local_8].endtime = local_14;
-      return g_badplaces + local_8;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if (g_badplaces[i].type == '\0') {
+      Scr_SetString(&g_badplaces[i].name,name,SCRIPTINSTANCE_SERVER);
+      g_badplaces[i].endtime = endtime;
+      return g_badplaces + i;
     }
   }
-  local_c = 0;
-  local_10 = 0x7fffffff;
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if ((g_badplaces[local_8].endtime - level.time < local_10) &&
-       (g_badplaces[local_8].type == '\x03')) {
-      local_c = local_8;
-      local_10 = g_badplaces[local_8].endtime - level.time;
+  best = 0;
+  lowest = 0x7fffffff;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if ((g_badplaces[i].endtime - level.time < lowest) && (g_badplaces[i].type == '\x03')) {
+      best = i;
+      lowest = g_badplaces[i].endtime - level.time;
     }
   }
-  if ((0xff < local_c) &&
+  if ((0xff < best) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0xf9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    pbVar4 = (badplace_t *)(*pcVar1)();
-    return pbVar4;
+    pbVar3 = (badplace_t *)(*pcVar1)();
+    return pbVar3;
   }
-  Path_FreeBadPlace(local_c);
-  Scr_SetString(&g_badplaces[local_c].name,param_1,SCRIPTINSTANCE_SERVER);
-  g_badplaces[local_c].endtime = local_14;
-  return g_badplaces + local_c;
+  Path_FreeBadPlace(best);
+  Scr_SetString(&g_badplaces[best].name,name,SCRIPTINSTANCE_SERVER);
+  g_badplaces[best].endtime = endtime;
+  return g_badplaces + best;
 }
 
 
@@ -236,14 +236,14 @@ badplace_t * __cdecl Path_AllocBadPlace(uint param_1,int param_2,badplace_parms_
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_IsCoverNode(pathnode_t *param_1)
+int __cdecl Path_IsCoverNode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.h",0xe1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -251,7 +251,7 @@ int __cdecl Path_IsCoverNode(pathnode_t *param_1)
       return iVar3;
     }
   }
-  return 1 << ((byte)(param_1->constant).type & 0x1f) & 0x83ffc;
+  return 1 << ((byte)(node->constant).type & 0x1f) & 0x83ffc;
 }
 
 
@@ -263,57 +263,58 @@ int __cdecl Path_IsCoverNode(pathnode_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Path_MakeBadPlaceEx(uint param_1,int param_2,int param_3,int param_4,badplace_parms_t *param_5)
+Path_MakeBadPlaceEx(uint name,int duration,int teamflags,int type,badplace_parms_t *parms)
 
 {
   code *pcVar1;
   bool bVar2;
-  badplace_t *pbVar3;
-  int iVar4;
-  badplace_parms_t *pbVar5;
+  badplace_t *place_00;
+  int iVar3;
+  badplace_parms_t *pbVar4;
+  badplace_t *place;
   
   if ((ai_enableBadPlaces->current).enabled != false) {
-    if ((param_5 == (badplace_parms_t *)0x0) &&
+    if ((parms == (badplace_parms_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x125
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_3 < 1) || (0xf < param_3)) &&
+    if (((teamflags < 1) || (0xf < teamflags)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x126
                                  ,0,"%s\n\t(teamflags) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 != (param_3 & 0xffU)) &&
+    if ((teamflags != (teamflags & 0xffU)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x127
                                  ,0,"%s\n\t(teamflags) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_4 != (param_4 & 0xffU)) &&
+    if ((type != (type & 0xffU)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x128
                                  ,0,"%s\n\t(type) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pbVar3 = Path_AllocBadPlace(param_1,param_2,param_5);
-    if (pbVar3 != (badplace_t *)0x0) {
-      pbVar3->teamflags = (uchar)param_3;
-      pbVar3->type = (uchar)param_4;
-      pbVar5 = &pbVar3->parms;
-      for (iVar4 = 7; iVar4 != 0; iVar4 = iVar4 + -1) {
-        (pbVar5->arc).origin[0] = (param_5->arc).origin[0];
-        param_5 = (badplace_parms_t *)((param_5->arc).origin + 1);
-        pbVar5 = (badplace_parms_t *)((int)pbVar5 + 4);
+    place_00 = Path_AllocBadPlace(name,duration,parms);
+    if (place_00 != (badplace_t *)0x0) {
+      place_00->teamflags = (uchar)teamflags;
+      place_00->type = (uchar)type;
+      pbVar4 = &place_00->parms;
+      for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
+        (pbVar4->arc).origin[0] = (parms->arc).origin[0];
+        parms = (badplace_parms_t *)((parms->arc).origin + 1);
+        pbVar4 = (badplace_parms_t *)((int)pbVar4 + 4);
       }
-      pbVar3->pingTime = level.time;
-      pbVar3->depth = 10;
-      Path_UpdateBadPlaceCount(pbVar3,1);
+      place_00->pingTime = level.time;
+      place_00->depth = 10;
+      Path_UpdateBadPlaceCount(place_00,1);
     }
   }
   return;
@@ -327,88 +328,87 @@ Path_MakeBadPlaceEx(uint param_1,int param_2,int param_3,int param_4,badplace_pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DrawBadPlace(badplace_t *param_1)
+void __cdecl Path_DrawBadPlace(badplace_t *place)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  ai_event_t aVar4;
-  float local_38;
+  char *fmt;
+  ai_event_t aVar3;
+  float fVar4;
+  float v0;
   float local_34;
   float local_30;
-  float local_2c;
+  float dir1;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float radius;
+  float v1;
   float local_18;
   float local_14;
-  float local_10;
+  float dir0;
   float local_c;
   float local_8;
   
-  aVar4 = param_1->type - AI_EV_FIRST_POINT_EVENT;
-  switch(aVar4) {
+  aVar3 = place->type - AI_EV_FIRST_POINT_EVENT;
+  switch(aVar3) {
   case AI_EV_BAD:
   case AI_EV_FOOTSTEP:
   case AI_EV_FOOTSTEP_LITE:
-    if ((param_1->parms).arc.radius * (param_1->parms).arc.radius == 0.0) {
-      local_20 = Actor_EventDefaultRadiusSqrd(aVar4);
-      local_20 = SQRT(local_20);
+    if ((place->parms).arc.radius * (place->parms).arc.radius == 0.0) {
+      fVar4 = Actor_EventDefaultRadiusSqrd(aVar3);
+      radius = SQRT(fVar4);
     }
     else {
-      local_20 = (param_1->parms).arc.radius;
+      radius = (place->parms).arc.radius;
     }
-    if (((param_1->parms).arc.angle0 == 0.0) && ((param_1->parms).arc.angle1 == 360.0)) {
-      local_38 = (param_1->parms).arc.origin[0];
-      local_34 = (param_1->parms).arc.origin[1];
-      local_30 = (param_1->parms).arc.origin[2];
-      G_DebugCircle(&local_38,local_20,colorRed,1,1,0);
-      local_30 = local_30 - (param_1->parms).arc.halfheight;
-      G_DebugCircle(&local_38,local_20,colorLtOrange,1,1,0);
-      local_30 = (param_1->parms).arc.halfheight * 2.0 + local_30;
-      G_DebugCircle(&local_38,local_20,colorLtOrange,1,1,0);
+    if (((place->parms).arc.angle0 == 0.0) && ((place->parms).arc.angle1 == 360.0)) {
+      v0 = (place->parms).arc.origin[0];
+      local_34 = (place->parms).arc.origin[1];
+      local_30 = (place->parms).arc.origin[2];
+      G_DebugCircle(&v0,radius,colorRed,1,1,0);
+      local_30 = local_30 - (place->parms).arc.halfheight;
+      G_DebugCircle(&v0,radius,colorLtOrange,1,1,0);
+      local_30 = (place->parms).arc.halfheight * 2.0 + local_30;
+      G_DebugCircle(&v0,radius,colorLtOrange,1,1,0);
     }
     else {
-      YawVectors((param_1->parms).arc.angle0,&local_10,(float *)0x0);
-      YawVectors((param_1->parms).arc.angle1,&local_2c,(float *)0x0);
-      local_38 = (param_1->parms).arc.origin[0];
-      local_34 = (param_1->parms).arc.origin[1];
-      local_30 = (param_1->parms).arc.origin[2] - (param_1->parms).arc.halfheight;
-      G_DebugArc(&local_38,local_20,(param_1->parms).arc.angle0,(param_1->parms).arc.angle1,colorRed
-                 ,1,0);
-      local_1c = local_20 * local_10 + local_38;
-      local_18 = local_20 * local_c + local_34;
-      local_14 = local_20 * local_8 + local_30;
-      G_DebugLine(&local_38,&local_1c,colorRed,1);
-      local_1c = local_20 * local_2c + local_38;
-      local_18 = local_20 * local_28 + local_34;
-      local_14 = local_20 * local_24 + local_30;
-      G_DebugLine(&local_38,&local_1c,colorRed,1);
-      local_30 = (param_1->parms).arc.halfheight * 2.0 + local_30;
-      local_1c = local_20 * local_10 + local_38;
-      local_18 = local_20 * local_c + local_34;
-      local_14 = local_20 * local_8 + local_30;
-      G_DebugArc(&local_38,local_20,(param_1->parms).arc.angle0,(param_1->parms).arc.angle1,colorRed
-                 ,1,0);
-      local_1c = local_20 * local_10 + local_38;
-      local_18 = local_20 * local_c + local_34;
-      local_14 = local_20 * local_8 + local_30;
-      G_DebugLine(&local_38,&local_1c,colorRed,1);
-      local_1c = local_20 * local_2c + local_38;
-      local_18 = local_20 * local_28 + local_34;
-      local_14 = local_20 * local_24 + local_30;
-      G_DebugLine(&local_38,&local_1c,colorRed,1);
+      YawVectors((place->parms).arc.angle0,&dir0,(float *)0x0);
+      YawVectors((place->parms).arc.angle1,&dir1,(float *)0x0);
+      v0 = (place->parms).arc.origin[0];
+      local_34 = (place->parms).arc.origin[1];
+      local_30 = (place->parms).arc.origin[2] - (place->parms).arc.halfheight;
+      G_DebugArc(&v0,radius,(place->parms).arc.angle0,(place->parms).arc.angle1,colorRed,1,0);
+      v1 = radius * dir0 + v0;
+      local_18 = radius * local_c + local_34;
+      local_14 = radius * local_8 + local_30;
+      G_DebugLine(&v0,&v1,colorRed,1);
+      v1 = radius * dir1 + v0;
+      local_18 = radius * local_28 + local_34;
+      local_14 = radius * local_24 + local_30;
+      G_DebugLine(&v0,&v1,colorRed,1);
+      local_30 = (place->parms).arc.halfheight * 2.0 + local_30;
+      v1 = radius * dir0 + v0;
+      local_18 = radius * local_c + local_34;
+      local_14 = radius * local_8 + local_30;
+      G_DebugArc(&v0,radius,(place->parms).arc.angle0,(place->parms).arc.angle1,colorRed,1,0);
+      v1 = radius * dir0 + v0;
+      local_18 = radius * local_c + local_34;
+      local_14 = radius * local_8 + local_30;
+      G_DebugLine(&v0,&v1,colorRed,1);
+      v1 = radius * dir1 + v0;
+      local_18 = radius * local_28 + local_34;
+      local_14 = radius * local_24 + local_30;
+      G_DebugLine(&v0,&v1,colorRed,1);
     }
     break;
   case AI_EV_FIRST_POINT_EVENT:
-    G_DebugDrawBrushModel((param_1->parms).brush.volume,colorRed,1,0);
+    G_DebugDrawBrushModel((place->parms).brush.volume,colorRed,1,0);
     break;
   default:
-    pcVar3 = va("unhandled bad place type %i");
+    fmt = va("unhandled bad place type %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x1de,0,
-                             pcVar3);
+                             fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -429,11 +429,11 @@ void __cdecl Path_DrawBadPlace(badplace_t *param_1)
 void __cdecl Path_DrawBadPlaces(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if (g_badplaces[local_8].type != '\0') {
-      Path_DrawBadPlace(g_badplaces + local_8);
+  for (i = 0; i < 0x100; i = i + 1) {
+    if (g_badplaces[i].type != '\0') {
+      Path_DrawBadPlace(g_badplaces + i);
     }
   }
   return;
@@ -465,10 +465,10 @@ void __cdecl Path_InitBadPlaces(void)
 void __cdecl Path_ShutdownBadPlaces(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    Scr_SetString(&g_badplaces[local_8].name,0,SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < 0x100; i = i + 1) {
+    Scr_SetString(&g_badplaces[i].name,0,SCRIPTINSTANCE_SERVER);
   }
   memset((uchar *)g_badplaces,'\0',0x2c00);
   return;
@@ -477,12 +477,13 @@ void __cdecl Path_ShutdownBadPlaces(void)
 
 // 008EA800  Actor_IsInAnyBadPlace  (game/actor_badplace.cpp:609)
 
+/* WARNING: Variable defined which should be unmapped: badPlaceIndex */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_IsInAnyBadPlace(actor_s *param_1)
+bool __cdecl Actor_IsInAnyBadPlace(actor_s *self)
 
 {
   code *pcVar1;
@@ -490,37 +491,39 @@ bool __cdecl Actor_IsInAnyBadPlace(actor_s *param_1)
   undefined1 uVar3;
   int iVar4;
   float fVar5;
-  char *pcVar6;
-  float fVar7;
+  char *fmt;
+  uint badPlaceIndex;
+  badplace_arc_t *arcParam;
   
   iVar4 = G_rand();
-  if ((float)iVar4 <= param_1->badPlaceAwareness * 32767.0) {
-    for (fVar7 = 0.0; (uint)fVar7 < 0x100; fVar7 = (float)((int)fVar7 + 1)) {
-      if (g_badplaces[(int)fVar7].type != '\0') {
-        fVar5 = (float)(g_badplaces[(int)fVar7].type - 1);
+  if ((float)iVar4 <= self->badPlaceAwareness * 32767.0) {
+    for (badPlaceIndex = 0; badPlaceIndex < 0x100; badPlaceIndex = badPlaceIndex + 1) {
+      if (g_badplaces[badPlaceIndex].type != '\0') {
+        fVar5 = (float)(g_badplaces[badPlaceIndex].type - 1);
         switch(fVar5) {
         case 0.0:
         case 2.8026e-45:
         case 4.2039e-45:
-          bVar2 = Actor_IsInsideArc((actor_s *)g_badplaces[(int)fVar7].parms.arc.radius,
-                                    (float *)g_badplaces[(int)fVar7].parms.arc.angle0,
-                                    g_badplaces[(int)fVar7].parms.arc.angle1,
-                                    g_badplaces[(int)fVar7].parms.arc.halfheight,fVar5,fVar7);
+          bVar2 = Actor_IsInsideArc((actor_s *)g_badplaces[badPlaceIndex].parms.arc.radius,
+                                    (float *)g_badplaces[badPlaceIndex].parms.arc.angle0,
+                                    g_badplaces[badPlaceIndex].parms.arc.angle1,
+                                    g_badplaces[badPlaceIndex].parms.arc.halfheight,fVar5,
+                                    (float)badPlaceIndex);
           if (bVar2) {
             return true;
           }
           break;
         case 1.4013e-45:
-          iVar4 = SV_EntityContact((param_1->ent->r).mins,(param_1->ent->r).maxs,
-                                   g_badplaces[(int)fVar7].parms.brush.volume);
+          iVar4 = SV_EntityContact((self->ent->r).mins,(self->ent->r).maxs,
+                                   g_badplaces[badPlaceIndex].parms.brush.volume);
           if (iVar4 != 0) {
             return true;
           }
           break;
         default:
-          pcVar6 = va("unhandled bad place type %i");
+          fmt = va("unhandled bad place type %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",
-                                   0x27d,0,pcVar6);
+                                   0x27d,0,fmt);
           if (!bVar2) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
@@ -536,6 +539,7 @@ bool __cdecl Actor_IsInAnyBadPlace(actor_s *param_1)
 
 // 008EA970  Actor_BadPlace_UpdateFleeingActors  (game/actor_badplace.cpp:653)
 
+/* WARNING: Variable defined which should be unmapped: actor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -545,15 +549,15 @@ void __cdecl Actor_BadPlace_UpdateFleeingActors(void)
 
 {
   bool bVar1;
-  actor_s *paVar2;
   int in_ECX;
   int unaff_EBP;
+  actor_s *actor;
   
-  for (paVar2 = Actor_FirstActor(in_ECX); paVar2 != (actor_s *)0x0;
-      paVar2 = Actor_NextActor(paVar2,unaff_EBP)) {
-    if ((paVar2->eState[paVar2->stateLevel] == AIS_BADPLACE_FLEE) &&
-       (bVar1 = Actor_IsInAnyBadPlace(paVar2), !bVar1)) {
-      paVar2->aiBadPlace = AI_BADPLACE_NONE;
+  for (actor = Actor_FirstActor(in_ECX); actor != (actor_s *)0x0;
+      actor = Actor_NextActor(actor,unaff_EBP)) {
+    if ((actor->eState[actor->stateLevel] == AIS_BADPLACE_FLEE) &&
+       (bVar1 = Actor_IsInAnyBadPlace(actor), !bVar1)) {
+      actor->aiBadPlace = AI_BADPLACE_NONE;
     }
   }
   return;
@@ -572,43 +576,43 @@ float __cdecl Actor_BadPlace_GetMaximumFleeRadius(void)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  float10 fVar4;
-  uint local_c;
-  float local_8;
+  char *fmt;
+  float10 fVar3;
+  uint badPlaceIndex;
+  float maxRadius;
   
-  local_8 = -1.0;
-  local_c = 0;
+  maxRadius = -1.0;
+  badPlaceIndex = 0;
   do {
-    if (0xff < local_c) {
-      return local_8;
+    if (0xff < badPlaceIndex) {
+      return maxRadius;
     }
-    if (g_badplaces[local_c].type != '\0') {
-      switch(g_badplaces[local_c].type) {
+    if (g_badplaces[badPlaceIndex].type != '\0') {
+      switch(g_badplaces[badPlaceIndex].type) {
       case '\x01':
       case '\x03':
       case '\x04':
-        if (local_8 < g_badplaces[local_c].parms.arc.radius) {
-          local_8 = g_badplaces[local_c].parms.arc.radius;
+        if (maxRadius < g_badplaces[badPlaceIndex].parms.arc.radius) {
+          maxRadius = g_badplaces[badPlaceIndex].parms.arc.radius;
         }
         break;
       case '\x02':
-        if (local_8 < g_badplaces[local_c].parms.arc.origin[1]) {
-          local_8 = g_badplaces[local_c].parms.arc.origin[1];
+        if (maxRadius < g_badplaces[badPlaceIndex].parms.arc.origin[1]) {
+          maxRadius = g_badplaces[badPlaceIndex].parms.arc.origin[1];
         }
         break;
       default:
-        pcVar3 = va("unhandled bad place type %i");
+        fmt = va("unhandled bad place type %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",700,0
-                                 ,pcVar3);
+                                 ,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
-          fVar4 = (float10)(*pcVar1)();
-          return (float)fVar4;
+          fVar3 = (float10)(*pcVar1)();
+          return (float)fVar3;
         }
       }
     }
-    local_c = local_c + 1;
+    badPlaceIndex = badPlaceIndex + 1;
   } while( true );
 }
 
@@ -618,35 +622,36 @@ float __cdecl Actor_BadPlace_GetMaximumFleeRadius(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 bool __cdecl
-Actor_BadPlace_HasPotentialNodeDuplicates(pathsort_t *param_1,int param_2,pathnode_t *param_3)
+Actor_BadPlace_HasPotentialNodeDuplicates
+          (pathsort_t *potentialNodes,int potentialNodeCount,pathnode_t *checkNode)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_8;
+  int potentialNodeIndex;
   
-  if ((param_1 == (pathsort_t *)0x0) &&
+  if ((potentialNodes == (pathsort_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x2cd,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (pathnode_t *)0x0) &&
+  if ((checkNode == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x2ce,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  potentialNodeIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (potentialNodeCount <= potentialNodeIndex) {
       return false;
     }
-    if (param_1[local_8].node == param_3) break;
-    local_8 = local_8 + 1;
+    if (potentialNodes[potentialNodeIndex].node == checkNode) break;
+    potentialNodeIndex = potentialNodeIndex + 1;
   }
   return true;
 }
@@ -659,53 +664,55 @@ Actor_BadPlace_HasPotentialNodeDuplicates(pathsort_t *param_1,int param_2,pathno
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_BadPlace_IsNodeInAnyBadPlace(pathnode_t *param_1)
+bool __cdecl Actor_BadPlace_IsNodeInAnyBadPlace(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  uint local_c;
+  char *fmt;
+  uint badPlaceIndex;
+  badplace_arc_t *arcParam;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x30c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_c = 0;
+  badPlaceIndex = 0;
   do {
-    if (0xff < local_c) {
+    if (0xff < badPlaceIndex) {
       return false;
     }
-    if (g_badplaces[local_c].type != '\0') {
-      switch(g_badplaces[local_c].type) {
+    if (g_badplaces[badPlaceIndex].type != '\0') {
+      switch(g_badplaces[badPlaceIndex].type) {
       case '\x01':
       case '\x03':
       case '\x04':
-        if ((&g_badplaces[local_c].parms != (badplace_parms_t *)0x0) &&
-           (iVar4 = Path_IsNodeInArc(param_1,(float *)&g_badplaces[local_c].parms,
-                                     g_badplaces[local_c].parms.arc.radius,
-                                     g_badplaces[local_c].parms.arc.angle0,
-                                     g_badplaces[local_c].parms.arc.angle1,
-                                     g_badplaces[local_c].parms.arc.halfheight), iVar4 != 0)) {
+        if ((&g_badplaces[badPlaceIndex].parms != (badplace_parms_t *)0x0) &&
+           (iVar4 = Path_IsNodeInArc(node,(float *)&g_badplaces[badPlaceIndex].parms,
+                                     g_badplaces[badPlaceIndex].parms.arc.radius,
+                                     g_badplaces[badPlaceIndex].parms.arc.angle0,
+                                     g_badplaces[badPlaceIndex].parms.arc.angle1,
+                                     g_badplaces[badPlaceIndex].parms.arc.halfheight), iVar4 != 0))
+        {
           return true;
         }
         break;
       case '\x02':
-        iVar4 = SV_EntityContact((param_1->constant).vOrigin,(param_1->constant).vOrigin,
-                                 g_badplaces[local_c].parms.brush.volume);
+        iVar4 = SV_EntityContact((node->constant).vOrigin,(node->constant).vOrigin,
+                                 g_badplaces[badPlaceIndex].parms.brush.volume);
         if (iVar4 != 0) {
           return true;
         }
         break;
       default:
-        pcVar5 = va("unhandled bad place type %i");
+        fmt = va("unhandled bad place type %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x323
-                                 ,0,pcVar5);
+                                 ,0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
@@ -713,7 +720,7 @@ bool __cdecl Actor_BadPlace_IsNodeInAnyBadPlace(pathnode_t *param_1)
         }
       }
     }
-    local_c = local_c + 1;
+    badPlaceIndex = badPlaceIndex + 1;
   } while( true );
 }
 
@@ -726,106 +733,112 @@ bool __cdecl Actor_BadPlace_IsNodeInAnyBadPlace(pathnode_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Actor_BadPlace_FindSafeNodeOutsideBadPlace(actor_s *param_1,pathsort_t *param_2,float param_3)
+Actor_BadPlace_FindSafeNodeOutsideBadPlace
+          (actor_s *self,pathsort_t *potentialNodes,float maxFleeDist)
 
 {
-  pathnode_t *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_c18;
-  pathsort_t local_c14 [256];
-  int local_10;
-  int local_c;
-  float local_8;
+  pathnode_t *node_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  pathnode_t *node;
+  int nodeIndex;
+  pathsort_t nodes [256];
+  int nodeCount;
+  int potentialNodeCount;
+  float metric;
   
-  if ((param_1 == (actor_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33c,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((self == (actor_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33c,0
+                               ,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_1->sentient == (sentient_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33d,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((self->sentient == (sentient_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33d,0
+                               ,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_2 == (pathsort_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33e,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((potentialNodes == (pathsort_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33e,0
+                               ,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_3 <= 0.0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33f,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((maxFleeDist <= 0.0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x33f,0
+                               ,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  local_10 = Path_NodesInCylinder((param_1->ent->r).currentOrigin,param_3,80.0,local_c14,0x100,-2);
-  local_c = 0;
-  for (local_c18 = 0; local_c18 < local_10; local_c18 = local_c18 + 1) {
-    ppVar1 = local_c14[local_c18].node;
-    bVar3 = Actor_BadPlace_IsNodeInAnyBadPlace(ppVar1);
-    if (((!bVar3) && (iVar4 = Path_CanClaimNode(ppVar1,param_1->sentient), iVar4 != 0)) &&
-       (bVar3 = Actor_BadPlace_HasPotentialNodeDuplicates(param_2,local_c,ppVar1), !bVar3)) {
-      local_8 = Vec3DistanceSq((param_1->ent->r).currentOrigin,(ppVar1->constant).vOrigin);
-      iVar4 = Path_IsCoverNode(ppVar1);
-      if (iVar4 != 0) {
-        local_8 = local_8 * 0.9;
+  nodeCount = Path_NodesInCylinder((self->ent->r).currentOrigin,maxFleeDist,80.0,nodes,0x100,-2);
+  potentialNodeCount = 0;
+  for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex = nodeIndex + 1) {
+    node_00 = nodes[nodeIndex].node;
+    bVar2 = Actor_BadPlace_IsNodeInAnyBadPlace(node_00);
+    if (((!bVar2) && (iVar3 = Path_CanClaimNode(node_00,self->sentient), iVar3 != 0)) &&
+       (bVar2 = Actor_BadPlace_HasPotentialNodeDuplicates(potentialNodes,potentialNodeCount,node_00)
+       , !bVar2)) {
+      metric = Vec3DistanceSq((self->ent->r).currentOrigin,(node_00->constant).vOrigin);
+      iVar3 = Path_IsCoverNode(node_00);
+      if (iVar3 != 0) {
+        metric = metric * 0.9;
       }
-      param_2[local_c].metric = local_8;
-      param_2[local_c].node = ppVar1;
-      local_c = local_c + 1;
+      potentialNodes[potentialNodeCount].metric = metric;
+      potentialNodes[potentialNodeCount].node = node_00;
+      potentialNodeCount = potentialNodeCount + 1;
     }
   }
-  if (1 < local_c) {
+  if (1 < potentialNodeCount) {
     std::_Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-              (param_2,param_2 + local_c,((int)(param_2 + local_c) - (int)param_2) / 0xc,
+              (potentialNodes,potentialNodes + potentialNodeCount,
+               ((int)(potentialNodes + potentialNodeCount) - (int)potentialNodes) / 0xc,
                Path_CompareNodesIncreasing);
   }
-  return local_c;
+  return potentialNodeCount;
 }
 
 
 // 008EB1C0  Actor_BadPlace_FindSafeNodeAlongPath  (game/actor_badplace.cpp:879)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: pathNodeIndex */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-pathnode_t * __cdecl Actor_BadPlace_FindSafeNodeAlongPath(actor_s *param_1)
+pathnode_t * __cdecl Actor_BadPlace_FindSafeNodeAlongPath(actor_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   pathnode_t *ppVar3;
   int iVar4;
-  int iVar5;
-  actor_s *in_stack_fffffff4;
+  int pathNodeIndex;
+  pathnode_t *node;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x373,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     ppVar3 = (pathnode_t *)(*pcVar1)();
     return ppVar3;
   }
-  bVar2 = Actor_HasPath(in_stack_fffffff4);
+  bVar2 = Actor_HasPath((actor_s *)pathNodeIndex);
   if (bVar2) {
-    for (iVar5 = (param_1->Path).lookaheadNextNode + 1; -1 < iVar5; iVar5 = iVar5 + -1) {
-      if ((((0 < ((path_t *)(&param_1->Physics + 1))->pts[iVar5].iNodeNum) &&
+    for (pathNodeIndex = (self->Path).lookaheadNextNode + 1; -1 < pathNodeIndex;
+        pathNodeIndex = pathNodeIndex + -1) {
+      if ((((0 < ((path_t *)(&self->Physics + 1))->pts[pathNodeIndex].iNodeNum) &&
            (ppVar3 = Path_ConvertIndexToNode
-                               (((path_t *)(&param_1->Physics + 1))->pts[iVar5].iNodeNum),
+                               (((path_t *)(&self->Physics + 1))->pts[pathNodeIndex].iNodeNum),
            ppVar3 != (pathnode_t *)0x0)) &&
           (bVar2 = Actor_BadPlace_IsNodeInAnyBadPlace(ppVar3), !bVar2)) &&
-         (iVar4 = Path_CanClaimNode(ppVar3,param_1->sentient), iVar4 != 0)) {
+         (iVar4 = Path_CanClaimNode(ppVar3,self->sentient), iVar4 != 0)) {
         return ppVar3;
       }
     }
@@ -841,7 +854,7 @@ pathnode_t * __cdecl Actor_BadPlace_FindSafeNodeAlongPath(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *param_1)
+bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *self)
 
 {
   code *pcVar1;
@@ -853,16 +866,19 @@ bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *param_1)
   actor_s *paVar7;
   pathnode_t *in_stack_fffff3ec;
   float in_stack_fffff3f0;
-  int local_10;
+  float maxFleeDist;
+  int potentialNodeIndex;
+  pathnode_t *safeNode;
+  int potentialNodeCount;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x39f,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1->sentient == (sentient_s *)0x0) &&
+  if ((self->sentient == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x3a0,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -871,7 +887,7 @@ bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *param_1)
   }
   fVar6 = Actor_BadPlace_GetMaximumFleeRadius();
   if (0.0 <= fVar6) {
-    ppVar4 = Actor_BadPlace_FindSafeNodeAlongPath(param_1);
+    ppVar4 = Actor_BadPlace_FindSafeNodeAlongPath(self);
     if (ppVar4 != (pathnode_t *)0x0) {
       paVar7 = (actor_s *)&DAT_00000001;
       bVar2 = Actor_FindPathToNode
@@ -883,9 +899,10 @@ bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *param_1)
       }
     }
     iVar5 = Actor_BadPlace_FindSafeNodeOutsideBadPlace
-                      (param_1,(pathsort_t *)&stack0xfffff3ec,fVar6 + 100.0);
-    for (local_10 = 0; local_10 < iVar5; local_10 = local_10 + 1) {
-      if ((*(int *)(&stack0xfffff3ec + local_10 * 0xc) == 0) &&
+                      (self,(pathsort_t *)&stack0xfffff3ec,fVar6 + 100.0);
+    for (potentialNodeIndex = 0; potentialNodeIndex < iVar5;
+        potentialNodeIndex = potentialNodeIndex + 1) {
+      if ((*(int *)(&stack0xfffff3ec + potentialNodeIndex * 0xc) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",
                                    0x3ba,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -909,10 +926,10 @@ bool __cdecl Actor_BadPlace_AttemptEscape(actor_s *param_1)
 
 // 008EA9D0  Actor_BadPlace_Flee_Start  (game/actor_badplace.cpp:994)
 
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_BadPlace_Flee_Start(actor_s *param_1,ai_state_t param_2)
 
@@ -921,6 +938,8 @@ bool __cdecl Actor_BadPlace_Flee_Start(actor_s *param_1,ai_state_t param_2)
   bool bVar2;
   undefined1 uVar3;
   actor_s *in_ECX;
+  ai_state_t ePrevState;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x3e3,0,
@@ -941,6 +960,7 @@ bool __cdecl Actor_BadPlace_Flee_Start(actor_s *param_1,ai_state_t param_2)
 
 // 008EB2A0  Actor_BadPlace_Flee_Think  (game/actor_badplace.cpp:1023)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -954,23 +974,25 @@ actor_think_result_t __cdecl Actor_BadPlace_Flee_Think(actor_s *param_1)
   actor_think_result_t aVar3;
   DWORD DVar4;
   int iVar5;
+  actor_s *in_ECX;
   actor_s *paVar6;
-  actor_s *extraout_var;
-  actor_s *paVar7;
+  actor_s *self;
   ai_orient_mode_t in_stack_ffffffd0;
   actor_think_result_t local_10;
+  float NEAR_CLAIM_NODE_DIST;
+  bool isInBadPlace;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"fleethink");
-  paVar6 = extraout_var;
-  if ((extraout_var == (actor_s *)0x0) &&
+  if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_badplace.cpp",0x401,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     aVar3 = (*pcVar1)();
     return aVar3;
   }
-  if (paVar6->aiBadPlace == AI_BADPLACE_NONE) {
-    Actor_SetState(paVar6,in_stack_ffffffd0);
+  if (in_ECX->aiBadPlace == AI_BADPLACE_NONE) {
+    Actor_SetState(in_ECX,in_stack_ffffffd0);
     local_10 = ACTOR_THINK_REPEAT;
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -978,41 +1000,40 @@ actor_think_result_t __cdecl Actor_BadPlace_Flee_Think(actor_s *param_1)
     }
   }
   else {
-    Actor_PreThink(paVar6);
-    paVar6->pszDebugInfo = "badplace_flee";
-    bVar2 = Actor_HasPath(paVar6);
+    Actor_PreThink(in_ECX);
+    in_ECX->pszDebugInfo = "badplace_flee";
+    bVar2 = Actor_HasPath(in_ECX);
     if (bVar2) {
-      Actor_SetOrientMode(paVar6,in_stack_ffffffd0);
-      Actor_TeamMoveBlockedClear(paVar6);
-      paVar7 = paVar6;
-      Actor_MoveAlongPathWithTeam(paVar6,true,false,false);
+      Actor_SetOrientMode(in_ECX,in_stack_ffffffd0);
+      Actor_TeamMoveBlockedClear(in_ECX);
+      Actor_MoveAlongPathWithTeam(in_ECX,true,false,false);
       paVar6 = (actor_s *)0x8eb390;
-      iVar5 = EntHandle::isDefined(&paVar7->pCloseEnt);
-      if ((iVar5 != 0) || (paVar7->pPileUpActor != (actor_s *)0x0)) {
+      iVar5 = EntHandle::isDefined(&in_ECX->pCloseEnt);
+      if ((iVar5 != 0) || (in_ECX->pPileUpActor != (actor_s *)0x0)) {
         paVar6 = (actor_s *)0x8eb3a8;
-        Actor_ClearPath(paVar7);
+        Actor_ClearPath(in_ECX);
       }
     }
     else {
-      paVar7 = paVar6;
-      bVar2 = Actor_IsInAnyBadPlace(paVar6);
+      paVar6 = in_ECX;
+      bVar2 = Actor_IsInAnyBadPlace(in_ECX);
       if (bVar2) {
         paVar6 = (actor_s *)0x42000000;
-        iVar5 = Actor_NearClaimNode((actor_s *)0x42000000,(float)paVar7);
+        iVar5 = Actor_NearClaimNode((actor_s *)0x42000000,(float)in_ECX);
         if (iVar5 != 0) {
-          Path_MarkNodeInvalid(paVar7->sentient->pClaimedNode,paVar7->sentient->eTeam);
+          Path_MarkNodeInvalid(in_ECX->sentient->pClaimedNode,in_ECX->sentient->eTeam);
         }
       }
-      if ((!bVar2) || (bVar2 = Actor_BadPlace_AttemptEscape(paVar7), !bVar2)) {
-        paVar7->aiBadPlace = AI_BADPLACE_NONE;
-        Actor_SetState(paVar6,(ai_state_t)paVar7);
+      if ((!bVar2) || (bVar2 = Actor_BadPlace_AttemptEscape(in_ECX), !bVar2)) {
+        in_ECX->aiBadPlace = AI_BADPLACE_NONE;
+        Actor_SetState(paVar6,(ai_state_t)in_ECX);
         DVar4 = GetCurrentThreadId();
         if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
         return ACTOR_THINK_REPEAT;
       }
-      Actor_AnimStop(paVar6,(scr_animscript_t *)paVar7);
+      Actor_AnimStop(paVar6,(scr_animscript_t *)in_ECX);
     }
     Actor_PostThink(paVar6);
     DVar4 = GetCurrentThreadId();
@@ -1032,8 +1053,8 @@ actor_think_result_t __cdecl Actor_BadPlace_Flee_Think(actor_s *param_1)
 void __cdecl
 std::
 _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,int param_2,int param_3,pathsort_t param_4,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_5)
+          (pathsort_t *_First_2,int _Hole_2,int _Bottom_2,pathsort_t _Val_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2)
 
 {
   bool bVar1;
@@ -1042,45 +1063,45 @@ _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,path
   pathsort_t local_20;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int _Idx_2;
+  int _Top_2;
   
-  local_8 = param_2;
-  while (local_c = param_2 * 2 + 2, local_c < param_3) {
-    bVar1 = (*param_5)(param_1 + local_c,param_1 + param_2 * 2 + 1);
+  _Top_2 = _Hole_2;
+  while (_Idx_2 = _Hole_2 * 2 + 2, _Idx_2 < _Bottom_2) {
+    bVar1 = (*_Pred_2)(_First_2 + _Idx_2,_First_2 + _Hole_2 * 2 + 1);
     if (bVar1) {
-      local_c = local_c + -1;
+      _Idx_2 = _Idx_2 + -1;
     }
-    ppVar2 = param_1 + local_c;
-    ppVar3 = param_1 + param_2;
+    ppVar2 = _First_2 + _Idx_2;
+    ppVar3 = _First_2 + _Hole_2;
     ppVar3->node = ppVar2->node;
     ppVar3->metric = ppVar2->metric;
     ppVar3->distMetric = ppVar2->distMetric;
-    param_2 = local_c;
+    _Hole_2 = _Idx_2;
   }
-  if (local_c == param_3) {
-    ppVar2 = param_1 + param_3 + -1;
-    ppVar3 = param_1 + param_2;
+  if (_Idx_2 == _Bottom_2) {
+    ppVar2 = _First_2 + _Bottom_2 + -1;
+    ppVar3 = _First_2 + _Hole_2;
     ppVar3->node = ppVar2->node;
     ppVar3->metric = ppVar2->metric;
     ppVar3->distMetric = ppVar2->distMetric;
-    param_2 = param_3 + -1;
+    _Hole_2 = _Bottom_2 + -1;
   }
-  local_20.node = param_4.node;
-  local_20.metric = param_4.metric;
-  local_20.distMetric = param_4.distMetric;
-  local_14 = param_2;
-  while (local_10 = (local_14 + -1) / 2, local_8 < local_14) {
-    bVar1 = (*param_5)(param_1 + local_10,&local_20);
+  local_20.node = _Val_2.node;
+  local_20.metric = _Val_2.metric;
+  local_20.distMetric = _Val_2.distMetric;
+  local_14 = _Hole_2;
+  while (local_10 = (local_14 + -1) / 2, _Top_2 < local_14) {
+    bVar1 = (*_Pred_2)(_First_2 + local_10,&local_20);
     if (!bVar1) break;
-    ppVar3 = param_1 + local_10;
-    ppVar2 = param_1 + local_14;
+    ppVar3 = _First_2 + local_10;
+    ppVar2 = _First_2 + local_14;
     ppVar2->node = ppVar3->node;
     ppVar2->metric = ppVar3->metric;
     ppVar2->distMetric = ppVar3->distMetric;
     local_14 = local_10;
   }
-  ppVar2 = param_1 + local_14;
+  ppVar2 = _First_2 + local_14;
   ppVar2->node = local_20.node;
   ppVar2->metric = local_20.metric;
   ppVar2->distMetric = local_20.distMetric;
@@ -1094,20 +1115,20 @@ _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,path
 
 void __cdecl
 std::make_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,pathsort_t *param_2,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_3)
+          (pathsort_t *_First_2,pathsort_t *_Last_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2)
 
 {
-  int iVar1;
+  int _Bottom_2;
   int local_18;
   
-  if (1 < ((int)param_2 - (int)param_1) / 0xc) {
-    iVar1 = ((int)param_2 - (int)param_1) / 0xc;
-    local_18 = iVar1 / 2;
+  if (1 < ((int)_Last_2 - (int)_First_2) / 0xc) {
+    _Bottom_2 = ((int)_Last_2 - (int)_First_2) / 0xc;
+    local_18 = _Bottom_2 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First_2,local_18,_Bottom_2,_First_2[local_18],_Pred_2);
     }
   }
   return;
@@ -1120,20 +1141,20 @@ std::make_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_
 
 void __cdecl
 std::_Sort_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,pathsort_t *param_2,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_3)
+          (pathsort_t *_First_2,pathsort_t *_Last_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2)
 
 {
-  pathsort_t pVar1;
+  pathsort_t _Val_2;
   
-  for (; 1 < ((int)param_2 - (int)param_1) / 0xc; param_2 = param_2 + -1) {
-    if (1 < ((int)param_2 - (int)param_1) / 0xc) {
-      pVar1 = param_2[-1];
-      param_2[-1].node = param_1->node;
-      param_2[-1].metric = param_1->metric;
-      param_2[-1].distMetric = param_1->distMetric;
+  for (; 1 < ((int)_Last_2 - (int)_First_2) / 0xc; _Last_2 = _Last_2 + -1) {
+    if (1 < ((int)_Last_2 - (int)_First_2) / 0xc) {
+      _Val_2 = _Last_2[-1];
+      _Last_2[-1].node = _First_2->node;
+      _Last_2[-1].metric = _First_2->metric;
+      _Last_2[-1].distMetric = _First_2->distMetric;
       _Adjust_heap<pathsort_t_*,int,pathsort_t,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-                (param_1,0,((int)param_2 + (-0xc - (int)param_1)) / 0xc,pVar1,param_3);
+                (_First_2,0,((int)_Last_2 + (-0xc - (int)_First_2)) / 0xc,_Val_2,_Pred_2);
     }
   }
   return;
@@ -1147,46 +1168,48 @@ std::_Sort_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const
 void __cdecl
 std::
 _Insertion_sort1<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&),pathsort_t>
-          (pathsort_t *param_1,pathsort_t *param_2,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_3,pathsort_t *param_4)
+          (pathsort_t *_First_2,pathsort_t *_Last_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2,pathsort_t *__formal_2)
 
 {
-  pathsort_t *ppVar1;
+  GfxCachedShaderText *pGVar1;
   bool bVar2;
-  pathsort_t *ppVar3;
-  pathsort_t local_18;
-  pathsort_t *local_c;
-  pathsort_t *local_8;
+  GfxCachedShaderText *pGVar3;
+  GfxCachedShaderText *_First1_2;
+  pathsort_t _Val_2;
+  GfxCachedShaderText *_Next1_2;
+  GfxCachedShaderText *_Next_2;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (local_c = local_8 + 1, local_c != param_2) {
-      local_18.node = local_c->node;
-      local_18.metric = local_8[1].metric;
-      local_18.distMetric = local_8[1].distMetric;
-      local_8 = local_c;
-      bVar2 = (*param_3)(&local_18,param_1);
+  if (_First_2 != _Last_2) {
+    _Next_2 = (GfxCachedShaderText *)_First_2;
+    while (_Next1_2 = _Next_2 + 1, _Next1_2 != (GfxCachedShaderText *)_Last_2) {
+      _Val_2.node = (pathnode_t *)_Next1_2->name;
+      _Val_2.metric = (float)_Next_2[1].text;
+      _Val_2.distMetric = (float)_Next_2[1].textSize;
+      _Next_2 = _Next1_2;
+      bVar2 = (*_Pred_2)(&_Val_2,_First_2);
       if (bVar2) {
-        local_c = local_c + 1;
-        stdext::unchecked_copy_backward<pathsort_t_*,pathsort_t_*>(param_1,local_8,local_c);
-        param_1->node = local_18.node;
-        param_1->metric = local_18.metric;
-        param_1->distMetric = local_18.distMetric;
+        _Next1_2 = _Next1_2 + 1;
+        stdext::unchecked_copy_backward<pathsort_t_*,pathsort_t_*>
+                  (_First_2,(pathsort_t *)_Next_2,(pathsort_t *)_Next1_2);
+        _First_2->node = _Val_2.node;
+        _First_2->metric = _Val_2.metric;
+        _First_2->distMetric = _Val_2.distMetric;
       }
       else {
         while( true ) {
-          ppVar1 = local_c;
-          ppVar3 = local_c + -1;
-          bVar2 = (*param_3)(&local_18,ppVar3);
+          pGVar1 = _Next1_2;
+          pGVar3 = _Next1_2 + -1;
+          bVar2 = (*_Pred_2)(&_Val_2,(pathsort_t *)pGVar3);
           if (!bVar2) break;
-          local_c->node = ppVar3->node;
-          local_c->metric = ppVar1[-1].metric;
-          local_c->distMetric = ppVar1[-1].distMetric;
-          local_c = ppVar3;
+          _Next1_2->name = (char *)pGVar3->name;
+          _Next1_2->text = pGVar1[-1].text;
+          _Next1_2->textSize = pGVar1[-1].textSize;
+          _Next1_2 = pGVar3;
         }
-        local_c->node = local_18.node;
-        local_c->metric = local_18.metric;
-        local_c->distMetric = local_18.distMetric;
+        _Next1_2->name = (char *)_Val_2.node;
+        _Next1_2->text = (char *)_Val_2.metric;
+        _Next1_2->textSize = (int)_Val_2.distMetric;
       }
     }
   }
@@ -1200,8 +1223,8 @@ _Insertion_sort1<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_cons
 
 void __cdecl
 std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,pathsort_t *param_2,pathsort_t *param_3,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_4)
+          (pathsort_t *_First_2,pathsort_t *_Mid_2,pathsort_t *_Last_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2)
 
 {
   pathnode_t *ppVar1;
@@ -1211,63 +1234,64 @@ std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)
   int iVar5;
   pathsort_t *ppVar6;
   pathsort_t *ppVar7;
+  uint _Step_2;
   
-  if (((int)param_3 - (int)param_1) / 0xc < 0x29) {
-    bVar4 = (*param_4)(param_2,param_1);
-    if ((bVar4) && (param_2 != param_1)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = param_1->node;
-      param_2->metric = param_1->metric;
-      param_2->distMetric = param_1->distMetric;
-      param_1->node = ppVar1;
-      param_1->metric = fVar2;
-      param_1->distMetric = fVar3;
+  if (((int)_Last_2 - (int)_First_2) / 0xc < 0x29) {
+    bVar4 = (*_Pred_2)(_Mid_2,_First_2);
+    if ((bVar4) && (_Mid_2 != _First_2)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = _First_2->node;
+      _Mid_2->metric = _First_2->metric;
+      _Mid_2->distMetric = _First_2->distMetric;
+      _First_2->node = ppVar1;
+      _First_2->metric = fVar2;
+      _First_2->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(param_3,param_2);
-    if ((bVar4) && (param_3 != param_2)) {
-      ppVar1 = param_3->node;
-      fVar2 = param_3->metric;
-      fVar3 = param_3->distMetric;
-      param_3->node = param_2->node;
-      param_3->metric = param_2->metric;
-      param_3->distMetric = param_2->distMetric;
-      param_2->node = ppVar1;
-      param_2->metric = fVar2;
-      param_2->distMetric = fVar3;
+    bVar4 = (*_Pred_2)(_Last_2,_Mid_2);
+    if ((bVar4) && (_Last_2 != _Mid_2)) {
+      ppVar1 = _Last_2->node;
+      fVar2 = _Last_2->metric;
+      fVar3 = _Last_2->distMetric;
+      _Last_2->node = _Mid_2->node;
+      _Last_2->metric = _Mid_2->metric;
+      _Last_2->distMetric = _Mid_2->distMetric;
+      _Mid_2->node = ppVar1;
+      _Mid_2->metric = fVar2;
+      _Mid_2->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(param_2,param_1);
-    if ((bVar4) && (param_2 != param_1)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = param_1->node;
-      param_2->metric = param_1->metric;
-      param_2->distMetric = param_1->distMetric;
-      param_1->node = ppVar1;
-      param_1->metric = fVar2;
-      param_1->distMetric = fVar3;
+    bVar4 = (*_Pred_2)(_Mid_2,_First_2);
+    if ((bVar4) && (_Mid_2 != _First_2)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = _First_2->node;
+      _Mid_2->metric = _First_2->metric;
+      _Mid_2->distMetric = _First_2->distMetric;
+      _First_2->node = ppVar1;
+      _First_2->metric = fVar2;
+      _First_2->distMetric = fVar3;
     }
   }
   else {
-    iVar5 = ((int)param_3 - (int)param_1) / 0xc + 1;
+    iVar5 = ((int)_Last_2 - (int)_First_2) / 0xc + 1;
     iVar5 = (int)(iVar5 + (iVar5 >> 0x1f & 7U)) >> 3;
-    ppVar7 = param_1 + iVar5 * 2;
-    ppVar6 = param_1 + iVar5;
-    bVar4 = (*param_4)(ppVar6,param_1);
-    if ((bVar4) && (ppVar6 != param_1)) {
+    ppVar7 = _First_2 + iVar5 * 2;
+    ppVar6 = _First_2 + iVar5;
+    bVar4 = (*_Pred_2)(ppVar6,_First_2);
+    if ((bVar4) && (ppVar6 != _First_2)) {
       ppVar1 = ppVar6->node;
       fVar2 = ppVar6->metric;
       fVar3 = ppVar6->distMetric;
-      ppVar6->node = param_1->node;
-      ppVar6->metric = param_1->metric;
-      ppVar6->distMetric = param_1->distMetric;
-      param_1->node = ppVar1;
-      param_1->metric = fVar2;
-      param_1->distMetric = fVar3;
+      ppVar6->node = _First_2->node;
+      ppVar6->metric = _First_2->metric;
+      ppVar6->distMetric = _First_2->distMetric;
+      _First_2->node = ppVar1;
+      _First_2->metric = fVar2;
+      _First_2->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(ppVar7,ppVar6);
+    bVar4 = (*_Pred_2)(ppVar7,ppVar6);
     if ((bVar4) && (ppVar7 != ppVar6)) {
       ppVar1 = ppVar7->node;
       fVar2 = ppVar7->metric;
@@ -1279,59 +1303,59 @@ std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)
       ppVar6->metric = fVar2;
       ppVar6->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(ppVar6,param_1);
-    if ((bVar4) && (ppVar6 != param_1)) {
+    bVar4 = (*_Pred_2)(ppVar6,_First_2);
+    if ((bVar4) && (ppVar6 != _First_2)) {
       ppVar1 = ppVar6->node;
       fVar2 = ppVar6->metric;
       fVar3 = ppVar6->distMetric;
-      ppVar6->node = param_1->node;
-      ppVar6->metric = param_1->metric;
-      ppVar6->distMetric = param_1->distMetric;
-      param_1->node = ppVar1;
-      param_1->metric = fVar2;
-      param_1->distMetric = fVar3;
+      ppVar6->node = _First_2->node;
+      ppVar6->metric = _First_2->metric;
+      ppVar6->distMetric = _First_2->distMetric;
+      _First_2->node = ppVar1;
+      _First_2->metric = fVar2;
+      _First_2->distMetric = fVar3;
     }
-    ppVar7 = param_2 + iVar5;
-    ppVar6 = param_2 + -iVar5;
-    bVar4 = (*param_4)(param_2,ppVar6);
-    if ((bVar4) && (param_2 != ppVar6)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = ppVar6->node;
-      param_2->metric = ppVar6->metric;
-      param_2->distMetric = ppVar6->distMetric;
+    ppVar7 = _Mid_2 + iVar5;
+    ppVar6 = _Mid_2 + -iVar5;
+    bVar4 = (*_Pred_2)(_Mid_2,ppVar6);
+    if ((bVar4) && (_Mid_2 != ppVar6)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = ppVar6->node;
+      _Mid_2->metric = ppVar6->metric;
+      _Mid_2->distMetric = ppVar6->distMetric;
       ppVar6->node = ppVar1;
       ppVar6->metric = fVar2;
       ppVar6->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(ppVar7,param_2);
-    if ((bVar4) && (ppVar7 != param_2)) {
+    bVar4 = (*_Pred_2)(ppVar7,_Mid_2);
+    if ((bVar4) && (ppVar7 != _Mid_2)) {
       ppVar1 = ppVar7->node;
       fVar2 = ppVar7->metric;
       fVar3 = ppVar7->distMetric;
-      ppVar7->node = param_2->node;
-      ppVar7->metric = param_2->metric;
-      ppVar7->distMetric = param_2->distMetric;
-      param_2->node = ppVar1;
-      param_2->metric = fVar2;
-      param_2->distMetric = fVar3;
+      ppVar7->node = _Mid_2->node;
+      ppVar7->metric = _Mid_2->metric;
+      ppVar7->distMetric = _Mid_2->distMetric;
+      _Mid_2->node = ppVar1;
+      _Mid_2->metric = fVar2;
+      _Mid_2->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(param_2,ppVar6);
-    if ((bVar4) && (param_2 != ppVar6)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = ppVar6->node;
-      param_2->metric = ppVar6->metric;
-      param_2->distMetric = ppVar6->distMetric;
+    bVar4 = (*_Pred_2)(_Mid_2,ppVar6);
+    if ((bVar4) && (_Mid_2 != ppVar6)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = ppVar6->node;
+      _Mid_2->metric = ppVar6->metric;
+      _Mid_2->distMetric = ppVar6->distMetric;
       ppVar6->node = ppVar1;
       ppVar6->metric = fVar2;
       ppVar6->distMetric = fVar3;
     }
-    ppVar7 = param_3 + -iVar5;
-    ppVar6 = param_3 + iVar5 * -2;
-    bVar4 = (*param_4)(ppVar7,ppVar6);
+    ppVar7 = _Last_2 + -iVar5;
+    ppVar6 = _Last_2 + iVar5 * -2;
+    bVar4 = (*_Pred_2)(ppVar7,ppVar6);
     if ((bVar4) && (ppVar7 != ppVar6)) {
       ppVar1 = ppVar7->node;
       fVar2 = ppVar7->metric;
@@ -1343,19 +1367,19 @@ std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)
       ppVar6->metric = fVar2;
       ppVar6->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(param_3,ppVar7);
-    if ((bVar4) && (param_3 != ppVar7)) {
-      ppVar1 = param_3->node;
-      fVar2 = param_3->metric;
-      fVar3 = param_3->distMetric;
-      param_3->node = ppVar7->node;
-      param_3->metric = ppVar7->metric;
-      param_3->distMetric = ppVar7->distMetric;
+    bVar4 = (*_Pred_2)(_Last_2,ppVar7);
+    if ((bVar4) && (_Last_2 != ppVar7)) {
+      ppVar1 = _Last_2->node;
+      fVar2 = _Last_2->metric;
+      fVar3 = _Last_2->distMetric;
+      _Last_2->node = ppVar7->node;
+      _Last_2->metric = ppVar7->metric;
+      _Last_2->distMetric = ppVar7->distMetric;
       ppVar7->node = ppVar1;
       ppVar7->metric = fVar2;
       ppVar7->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(ppVar7,ppVar6);
+    bVar4 = (*_Pred_2)(ppVar7,ppVar6);
     if ((bVar4) && (ppVar7 != ppVar6)) {
       ppVar1 = ppVar7->node;
       fVar2 = ppVar7->metric;
@@ -1367,40 +1391,40 @@ std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)
       ppVar6->metric = fVar2;
       ppVar6->distMetric = fVar3;
     }
-    ppVar6 = param_3 + -iVar5;
-    ppVar7 = param_1 + iVar5;
-    bVar4 = (*param_4)(param_2,ppVar7);
-    if ((bVar4) && (param_2 != ppVar7)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = ppVar7->node;
-      param_2->metric = ppVar7->metric;
-      param_2->distMetric = ppVar7->distMetric;
+    ppVar6 = _Last_2 + -iVar5;
+    ppVar7 = _First_2 + iVar5;
+    bVar4 = (*_Pred_2)(_Mid_2,ppVar7);
+    if ((bVar4) && (_Mid_2 != ppVar7)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = ppVar7->node;
+      _Mid_2->metric = ppVar7->metric;
+      _Mid_2->distMetric = ppVar7->distMetric;
       ppVar7->node = ppVar1;
       ppVar7->metric = fVar2;
       ppVar7->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(ppVar6,param_2);
-    if ((bVar4) && (ppVar6 != param_2)) {
+    bVar4 = (*_Pred_2)(ppVar6,_Mid_2);
+    if ((bVar4) && (ppVar6 != _Mid_2)) {
       ppVar1 = ppVar6->node;
       fVar2 = ppVar6->metric;
       fVar3 = ppVar6->distMetric;
-      ppVar6->node = param_2->node;
-      ppVar6->metric = param_2->metric;
-      ppVar6->distMetric = param_2->distMetric;
-      param_2->node = ppVar1;
-      param_2->metric = fVar2;
-      param_2->distMetric = fVar3;
+      ppVar6->node = _Mid_2->node;
+      ppVar6->metric = _Mid_2->metric;
+      ppVar6->distMetric = _Mid_2->distMetric;
+      _Mid_2->node = ppVar1;
+      _Mid_2->metric = fVar2;
+      _Mid_2->distMetric = fVar3;
     }
-    bVar4 = (*param_4)(param_2,ppVar7);
-    if ((bVar4) && (param_2 != ppVar7)) {
-      ppVar1 = param_2->node;
-      fVar2 = param_2->metric;
-      fVar3 = param_2->distMetric;
-      param_2->node = ppVar7->node;
-      param_2->metric = ppVar7->metric;
-      param_2->distMetric = ppVar7->distMetric;
+    bVar4 = (*_Pred_2)(_Mid_2,ppVar7);
+    if ((bVar4) && (_Mid_2 != ppVar7)) {
+      ppVar1 = _Mid_2->node;
+      fVar2 = _Mid_2->metric;
+      fVar3 = _Mid_2->distMetric;
+      _Mid_2->node = ppVar7->node;
+      _Mid_2->metric = ppVar7->metric;
+      _Mid_2->distMetric = ppVar7->distMetric;
       ppVar7->node = ppVar1;
       ppVar7->metric = fVar2;
       ppVar7->distMetric = fVar3;
@@ -1416,196 +1440,177 @@ std::_Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)
 
 pair<pathsort_t_*,pathsort_t_*> __cdecl
 std::_Unguarded_partition<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,pathsort_t *param_2,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_3)
+          (pathsort_t *param_1,pathsort_t *_First_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Last_2)
 
 {
-  float fVar1;
-  float fVar2;
-  nodeType nVar3;
-  float fVar4;
-  ushort uVar5;
-  ushort uVar6;
-  ushort uVar7;
-  ushort uVar8;
-  ushort uVar9;
-  bool bVar10;
-  pathnode_t *ppVar11;
-  pathnode_t *ppVar12;
-  pathnode_t *ppVar13;
-  float *pfVar14;
-  pair<pathsort_t_*,pathsort_t_*> pVar15;
+  char *pcVar1;
+  char *pcVar2;
+  int iVar3;
+  bool bVar4;
+  GfxCachedShaderText *pGVar5;
+  GfxCachedShaderText *pGVar6;
+  GfxCachedShaderText *pGVar7;
+  GfxCachedShaderText *pGVar8;
+  pair<pathsort_t_*,pathsort_t_*> pVar9;
   _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *in_stack_00000010;
-  pathnode_t *local_18;
-  pathnode_t *local_14;
-  pathnode_t *local_10;
-  pathnode_t *local_c;
+  GfxCachedShaderText *_Plast_2;
+  GfxCachedShaderText *_Glast_2;
+  GfxCachedShaderText *_Pfirst_2;
+  GfxCachedShaderText *_Gfirst_2;
+  GfxCachedShaderText *_Mid_2;
   
-  local_10 = (pathnode_t *)(param_2 + ((int)param_3 - (int)param_2) / 0x18);
+  _Pfirst_2 = (GfxCachedShaderText *)(_First_2 + ((int)_Last_2 - (int)_First_2) / 0x18);
   _Median<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-            (param_2,(pathsort_t *)local_10,(pathsort_t *)(param_3 + -0xc),in_stack_00000010);
-  local_18 = (pathnode_t *)&(local_10->constant).target;
-  while (((param_2 < local_10 &&
-          (bVar10 = (*in_stack_00000010)
-                              ((pathsort_t *)&local_10[-1].transient.fCost,(pathsort_t *)local_10),
-          !bVar10)) &&
-         (bVar10 = (*in_stack_00000010)
-                             ((pathsort_t *)local_10,(pathsort_t *)&local_10[-1].transient.fCost),
-         !bVar10))) {
-    local_10 = (pathnode_t *)&local_10[-1].transient.fCost;
+            (_First_2,(pathsort_t *)_Pfirst_2,(pathsort_t *)(_Last_2 + -0xc),in_stack_00000010);
+  _Plast_2 = _Pfirst_2 + 1;
+  while (((_First_2 < _Pfirst_2 &&
+          (bVar4 = (*in_stack_00000010)((pathsort_t *)(_Pfirst_2 + -1),(pathsort_t *)_Pfirst_2),
+          !bVar4)) &&
+         (bVar4 = (*in_stack_00000010)((pathsort_t *)_Pfirst_2,(pathsort_t *)(_Pfirst_2 + -1)),
+         !bVar4))) {
+    _Pfirst_2 = _Pfirst_2 + -1;
   }
-  while (((local_18 < param_3 &&
-          (bVar10 = (*in_stack_00000010)((pathsort_t *)local_18,(pathsort_t *)local_10), !bVar10))
-         && (bVar10 = (*in_stack_00000010)((pathsort_t *)local_10,(pathsort_t *)local_18), !bVar10))
-        ) {
-    local_18 = (pathnode_t *)&(local_18->constant).target;
+  while (((_Plast_2 < _Last_2 &&
+          (bVar4 = (*in_stack_00000010)((pathsort_t *)_Plast_2,(pathsort_t *)_Pfirst_2), !bVar4)) &&
+         (bVar4 = (*in_stack_00000010)((pathsort_t *)_Pfirst_2,(pathsort_t *)_Plast_2), !bVar4))) {
+    _Plast_2 = _Plast_2 + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  ppVar13 = local_18;
-  ppVar12 = local_c;
-  ppVar11 = local_10;
+  _Gfirst_2 = _Plast_2;
+  _Glast_2 = _Pfirst_2;
+  pGVar6 = _Plast_2;
+  pGVar7 = _Gfirst_2;
+  pGVar5 = _Pfirst_2;
   do {
-    while (local_10 = ppVar11, local_c = ppVar12, local_18 = ppVar13, param_3 <= local_c) {
+    while (_Pfirst_2 = pGVar5, _Gfirst_2 = pGVar7, _Plast_2 = pGVar6, _Last_2 <= _Gfirst_2) {
 LAB_008eb797:
-      for (; param_2 < local_14; local_14 = (pathnode_t *)&local_14[-1].transient.fCost) {
-        bVar10 = (*in_stack_00000010)
-                           ((pathsort_t *)&local_14[-1].transient.fCost,(pathsort_t *)local_10);
-        ppVar13 = local_10;
-        if (!bVar10) {
-          bVar10 = (*in_stack_00000010)
-                             ((pathsort_t *)local_10,(pathsort_t *)&local_14[-1].transient.fCost);
-          if (bVar10) break;
-          ppVar13 = (pathnode_t *)&local_10[-1].transient.fCost;
-          pfVar14 = &local_14[-1].transient.fCost;
-          if (ppVar13 != (pathnode_t *)pfVar14) {
-            fVar1 = *(float *)ppVar13;
-            fVar2 = local_10[-1].transient.fHeuristic;
-            fVar4 = local_10[-1].transient.costFactor;
-            *(float *)ppVar13 = *pfVar14;
-            local_10[-1].transient.fHeuristic = local_14[-1].transient.fHeuristic;
-            local_10[-1].transient.costFactor = local_14[-1].transient.costFactor;
-            *pfVar14 = fVar1;
-            local_14[-1].transient.fHeuristic = fVar2;
-            local_14[-1].transient.costFactor = fVar4;
+      for (; _First_2 < _Glast_2; _Glast_2 = _Glast_2 + -1) {
+        bVar4 = (*in_stack_00000010)((pathsort_t *)(_Glast_2 + -1),(pathsort_t *)_Pfirst_2);
+        pGVar6 = _Pfirst_2;
+        if (!bVar4) {
+          bVar4 = (*in_stack_00000010)((pathsort_t *)_Pfirst_2,(pathsort_t *)(_Glast_2 + -1));
+          if (bVar4) break;
+          pGVar6 = _Pfirst_2 + -1;
+          pGVar7 = _Glast_2 + -1;
+          if (pGVar6 != pGVar7) {
+            pcVar1 = pGVar6->name;
+            pcVar2 = _Pfirst_2[-1].text;
+            iVar3 = _Pfirst_2[-1].textSize;
+            pGVar6->name = pGVar7->name;
+            _Pfirst_2[-1].text = _Glast_2[-1].text;
+            _Pfirst_2[-1].textSize = _Glast_2[-1].textSize;
+            pGVar7->name = pcVar1;
+            _Glast_2[-1].text = pcVar2;
+            _Glast_2[-1].textSize = iVar3;
           }
         }
-        local_10 = ppVar13;
+        _Pfirst_2 = pGVar6;
       }
-      if ((local_14 == (pathnode_t *)param_2) && (local_c == (pathnode_t *)param_3)) {
-        param_1->node = local_10;
-        param_1->metric = (float)local_18;
-        pVar15.second = (pathsort_t *)local_18;
-        pVar15.first = param_1;
-        return pVar15;
+      if ((_Glast_2 == (GfxCachedShaderText *)_First_2) &&
+         (_Gfirst_2 == (GfxCachedShaderText *)_Last_2)) {
+        param_1->node = (pathnode_t *)_Pfirst_2;
+        param_1->metric = (float)_Plast_2;
+        pVar9.second = (pathsort_t *)_Plast_2;
+        pVar9.first = param_1;
+        return pVar9;
       }
-      if (local_14 == (pathnode_t *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          ppVar13 = (pathnode_t *)(local_10->constant).type;
-          fVar1 = *(float *)&(local_10->constant).spawnflags;
-          fVar2 = *(float *)&(local_10->constant).script_linkName;
-          (local_10->constant).type = (nodeType)(local_18->constant).type;
-          *(float *)&(local_10->constant).spawnflags = *(float *)&(local_18->constant).spawnflags;
-          *(float *)&(local_10->constant).script_linkName =
-               *(float *)&(local_18->constant).script_linkName;
-          (local_18->constant).type = (nodeType)ppVar13;
-          *(float *)&(local_18->constant).spawnflags = fVar1;
-          *(float *)&(local_18->constant).script_linkName = fVar2;
+      if (_Glast_2 == (GfxCachedShaderText *)_First_2) {
+        if ((_Plast_2 != _Gfirst_2) && (_Pfirst_2 != _Plast_2)) {
+          pcVar1 = _Pfirst_2->name;
+          pcVar2 = _Pfirst_2->text;
+          iVar3 = _Pfirst_2->textSize;
+          _Pfirst_2->name = _Plast_2->name;
+          _Pfirst_2->text = _Plast_2->text;
+          _Pfirst_2->textSize = _Plast_2->textSize;
+          _Plast_2->name = pcVar1;
+          _Plast_2->text = pcVar2;
+          _Plast_2->textSize = iVar3;
         }
-        ppVar13 = (pathnode_t *)&(local_18->constant).target;
-        ppVar11 = (pathnode_t *)&(local_10->constant).target;
-        ppVar12 = (pathnode_t *)&(local_c->constant).target;
-        if (local_10 != local_c) {
-          nVar3 = (local_10->constant).type;
-          uVar6 = (local_10->constant).spawnflags;
-          uVar7 = (local_10->constant).targetname;
-          uVar8 = (local_10->constant).script_linkName;
-          uVar9 = (local_10->constant).script_noteworthy;
-          (local_10->constant).type = (local_c->constant).type;
-          uVar5 = (local_c->constant).targetname;
-          (local_10->constant).spawnflags = (local_c->constant).spawnflags;
-          (local_10->constant).targetname = uVar5;
-          uVar5 = (local_c->constant).script_noteworthy;
-          (local_10->constant).script_linkName = (local_c->constant).script_linkName;
-          (local_10->constant).script_noteworthy = uVar5;
-          (local_c->constant).type = nVar3;
-          (local_c->constant).spawnflags = uVar6;
-          (local_c->constant).targetname = uVar7;
-          (local_c->constant).script_linkName = uVar8;
-          (local_c->constant).script_noteworthy = uVar9;
+        pGVar6 = _Plast_2 + 1;
+        pGVar7 = _Gfirst_2 + 1;
+        pGVar5 = _Pfirst_2 + 1;
+        if (_Pfirst_2 != _Gfirst_2) {
+          pcVar1 = _Pfirst_2->name;
+          pcVar2 = _Pfirst_2->text;
+          iVar3 = _Pfirst_2->textSize;
+          _Pfirst_2->name = _Gfirst_2->name;
+          _Pfirst_2->text = _Gfirst_2->text;
+          _Pfirst_2->textSize = _Gfirst_2->textSize;
+          _Gfirst_2->name = pcVar1;
+          _Gfirst_2->text = pcVar2;
+          _Gfirst_2->textSize = iVar3;
         }
       }
-      else if (local_c == (pathnode_t *)param_3) {
-        pfVar14 = &local_14[-1].transient.fCost;
-        ppVar11 = (pathnode_t *)&local_10[-1].transient.fCost;
-        if (((pathnode_t *)pfVar14 != ppVar11) && ((pathnode_t *)pfVar14 != ppVar11)) {
-          fVar1 = *pfVar14;
-          fVar2 = local_14[-1].transient.fHeuristic;
-          fVar4 = local_14[-1].transient.costFactor;
-          *pfVar14 = *(float *)ppVar11;
-          local_14[-1].transient.fHeuristic = local_10[-1].transient.fHeuristic;
-          local_14[-1].transient.costFactor = local_10[-1].transient.costFactor;
-          *(float *)ppVar11 = fVar1;
-          local_10[-1].transient.fHeuristic = fVar2;
-          local_10[-1].transient.costFactor = fVar4;
+      else if (_Gfirst_2 == (GfxCachedShaderText *)_Last_2) {
+        pGVar8 = _Glast_2 + -1;
+        pGVar5 = _Pfirst_2 + -1;
+        if ((pGVar8 != pGVar5) && (pGVar8 != pGVar5)) {
+          pcVar1 = pGVar8->name;
+          pcVar2 = _Glast_2[-1].text;
+          iVar3 = _Glast_2[-1].textSize;
+          pGVar8->name = pGVar5->name;
+          _Glast_2[-1].text = _Pfirst_2[-1].text;
+          _Glast_2[-1].textSize = _Pfirst_2[-1].textSize;
+          pGVar5->name = pcVar1;
+          _Pfirst_2[-1].text = pcVar2;
+          _Pfirst_2[-1].textSize = iVar3;
         }
-        ppVar13 = (pathnode_t *)&local_18[-1].transient.fCost;
-        ppVar12 = local_c;
-        local_14 = (pathnode_t *)pfVar14;
-        if (ppVar11 != ppVar13) {
-          fVar1 = *(float *)ppVar11;
-          fVar2 = local_10[-1].transient.fHeuristic;
-          fVar4 = local_10[-1].transient.costFactor;
-          *(float *)ppVar11 = *(float *)ppVar13;
-          local_10[-1].transient.fHeuristic = local_18[-1].transient.fHeuristic;
-          local_10[-1].transient.costFactor = local_18[-1].transient.costFactor;
-          *(float *)ppVar13 = fVar1;
-          local_18[-1].transient.fHeuristic = fVar2;
-          local_18[-1].transient.costFactor = fVar4;
+        pGVar6 = _Plast_2 + -1;
+        pGVar7 = _Gfirst_2;
+        _Glast_2 = pGVar8;
+        if (pGVar5 != pGVar6) {
+          pcVar1 = pGVar5->name;
+          pcVar2 = _Pfirst_2[-1].text;
+          iVar3 = _Pfirst_2[-1].textSize;
+          pGVar5->name = pGVar6->name;
+          _Pfirst_2[-1].text = _Plast_2[-1].text;
+          _Pfirst_2[-1].textSize = _Plast_2[-1].textSize;
+          pGVar6->name = pcVar1;
+          _Plast_2[-1].text = pcVar2;
+          _Plast_2[-1].textSize = iVar3;
         }
       }
       else {
-        pfVar14 = &local_14[-1].transient.fCost;
-        if (local_c != (pathnode_t *)pfVar14) {
-          fVar1 = (float)(local_c->constant).type;
-          fVar2 = *(float *)&(local_c->constant).spawnflags;
-          fVar4 = *(float *)&(local_c->constant).script_linkName;
-          (local_c->constant).type = (nodeType)*pfVar14;
-          *(float *)&(local_c->constant).spawnflags = local_14[-1].transient.fHeuristic;
-          *(float *)&(local_c->constant).script_linkName = local_14[-1].transient.costFactor;
-          *pfVar14 = fVar1;
-          local_14[-1].transient.fHeuristic = fVar2;
-          local_14[-1].transient.costFactor = fVar4;
+        pGVar8 = _Glast_2 + -1;
+        if (_Gfirst_2 != pGVar8) {
+          pcVar1 = _Gfirst_2->name;
+          pcVar2 = _Gfirst_2->text;
+          iVar3 = _Gfirst_2->textSize;
+          _Gfirst_2->name = pGVar8->name;
+          _Gfirst_2->text = _Glast_2[-1].text;
+          _Gfirst_2->textSize = _Glast_2[-1].textSize;
+          pGVar8->name = pcVar1;
+          _Glast_2[-1].text = pcVar2;
+          _Glast_2[-1].textSize = iVar3;
         }
-        ppVar13 = local_18;
-        ppVar12 = (pathnode_t *)&(local_c->constant).target;
-        ppVar11 = local_10;
-        local_14 = (pathnode_t *)pfVar14;
+        pGVar6 = _Plast_2;
+        pGVar7 = _Gfirst_2 + 1;
+        pGVar5 = _Pfirst_2;
+        _Glast_2 = pGVar8;
       }
     }
-    bVar10 = (*in_stack_00000010)((pathsort_t *)local_10,(pathsort_t *)local_c);
-    ppVar13 = local_18;
-    if (!bVar10) {
-      bVar10 = (*in_stack_00000010)((pathsort_t *)local_c,(pathsort_t *)local_10);
-      if (bVar10) goto LAB_008eb797;
-      ppVar13 = (pathnode_t *)&(local_18->constant).target;
-      if (local_18 != local_c) {
-        ppVar12 = (pathnode_t *)(local_18->constant).type;
-        fVar1 = *(float *)&(local_18->constant).spawnflags;
-        fVar2 = *(float *)&(local_18->constant).script_linkName;
-        (local_18->constant).type = (nodeType)(local_c->constant).type;
-        *(float *)&(local_18->constant).spawnflags = *(float *)&(local_c->constant).spawnflags;
-        *(float *)&(local_18->constant).script_linkName =
-             *(float *)&(local_c->constant).script_linkName;
-        (local_c->constant).type = (nodeType)ppVar12;
-        *(float *)&(local_c->constant).spawnflags = fVar1;
-        *(float *)&(local_c->constant).script_linkName = fVar2;
+    bVar4 = (*in_stack_00000010)((pathsort_t *)_Pfirst_2,(pathsort_t *)_Gfirst_2);
+    pGVar6 = _Plast_2;
+    if (!bVar4) {
+      bVar4 = (*in_stack_00000010)((pathsort_t *)_Gfirst_2,(pathsort_t *)_Pfirst_2);
+      if (bVar4) goto LAB_008eb797;
+      pGVar6 = _Plast_2 + 1;
+      if (_Plast_2 != _Gfirst_2) {
+        pcVar1 = _Plast_2->name;
+        pcVar2 = _Plast_2->text;
+        iVar3 = _Plast_2->textSize;
+        _Plast_2->name = _Gfirst_2->name;
+        _Plast_2->text = _Gfirst_2->text;
+        _Plast_2->textSize = _Gfirst_2->textSize;
+        _Gfirst_2->name = pcVar1;
+        _Gfirst_2->text = pcVar2;
+        _Gfirst_2->textSize = iVar3;
       }
     }
-    local_18 = ppVar13;
-    ppVar13 = local_18;
-    ppVar12 = (pathnode_t *)&(local_c->constant).target;
-    ppVar11 = local_10;
+    _Plast_2 = pGVar6;
+    pGVar6 = _Plast_2;
+    pGVar7 = _Gfirst_2 + 1;
+    pGVar5 = _Pfirst_2;
   } while( true );
 }
 
@@ -1616,39 +1621,41 @@ LAB_008eb797:
 
 void __cdecl
 std::_Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-          (pathsort_t *param_1,pathsort_t *param_2,int param_3,
-          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *param_4)
+          (pathsort_t *_First_2,pathsort_t *_Last_2,int _Ideal_2,
+          _func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *_Pred_2)
 
 {
-  pathsort_t local_10;
+  pathnode_t *_Mid_2;
+  pathsort_t *local_c;
+  int _Count_2;
   
-  while ((local_10.distMetric = (float)(((int)param_2 - (int)param_1) / 0xc),
-         0x20 < (int)local_10.distMetric && (0 < param_3))) {
+  while ((_Count_2 = ((int)_Last_2 - (int)_First_2) / 0xc, 0x20 < _Count_2 && (0 < _Ideal_2))) {
     _Unguarded_partition<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-              (&local_10,param_1,(_func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if (((int)local_10.node - (int)param_1) / 0xc < ((int)param_2 - (int)local_10.metric) / 0xc) {
+              ((pathsort_t *)&stack0xfffffff0,_First_2,
+               (_func___cdecl_bool_pathsort_t_ptr_pathsort_t_ptr *)_Last_2);
+    _Ideal_2 = (_Ideal_2 / 2) / 2 + _Ideal_2 / 2;
+    if (((int)_Mid_2 - (int)_First_2) / 0xc < ((int)_Last_2 - (int)local_c) / 0xc) {
       _Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-                (param_1,(pathsort_t *)local_10.node,param_3,param_4);
-      param_1 = (pathsort_t *)local_10.metric;
+                (_First_2,(pathsort_t *)_Mid_2,_Ideal_2,_Pred_2);
+      _First_2 = local_c;
     }
     else {
       _Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-                ((pathsort_t *)local_10.metric,param_2,param_3,param_4);
-      param_2 = (pathsort_t *)local_10.node;
+                (local_c,_Last_2,_Ideal_2,_Pred_2);
+      _Last_2 = (pathsort_t *)_Mid_2;
     }
   }
-  if ((int)local_10.distMetric < 0x21) {
-    if (1 < (int)local_10.distMetric) {
+  if (_Count_2 < 0x21) {
+    if (1 < _Count_2) {
       _Insertion_sort1<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&),pathsort_t>
-                (param_1,param_2,param_4,(pathsort_t *)0x0);
+                (_First_2,_Last_2,_Pred_2,(pathsort_t *)0x0);
     }
   }
   else {
     make_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-              (param_1,param_2,param_4);
+              (_First_2,_Last_2,_Pred_2);
     _Sort_heap<pathsort_t_*,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-              (param_1,param_2,param_4);
+              (_First_2,_Last_2,_Pred_2);
   }
   return;
 }
@@ -1660,21 +1667,21 @@ std::_Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_
 
 pathsort_t * __cdecl
 stdext::unchecked_copy_backward<pathsort_t_*,pathsort_t_*>
-          (pathsort_t *param_1,pathsort_t *param_2,pathsort_t *param_3)
+          (pathsort_t *_First_3,pathsort_t *_Last_3,pathsort_t *_Dest_3)
 
 {
   pathsort_t *local_28;
   pathsort_t *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest_3;
+  local_24 = _Last_3;
+  while (_First_3 != local_24) {
     local_28[-1].node = local_24[-1].node;
     local_28[-1].metric = local_24[-1].metric;
     local_28[-1].distMetric = local_24[-1].distMetric;
     local_28 = local_28 + -1;
     local_24 = local_24 + -1;
   }
-  return param_3 + -(((int)param_2 - (int)param_1) / 0xc);
+  return _Dest_3 + -(((int)_Last_3 - (int)_First_3) / 0xc);
 }
 

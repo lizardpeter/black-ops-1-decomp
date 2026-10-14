@@ -17,7 +17,7 @@ void __cdecl _dynamic_initializer_for__g_extraCamConfig__(void)
 
 /* WARNING: Enum "eExtraCamResolution": Some values do not have unique names */
 
-void __cdecl CreateExtraCamRenderTargets(eExtraCamResolution param_1,int param_2)
+void __cdecl CreateExtraCamRenderTargets(eExtraCamResolution resConfig,int location)
 
 {
   code *pcVar1;
@@ -25,20 +25,21 @@ void __cdecl CreateExtraCamRenderTargets(eExtraCamResolution param_1,int param_2
   int iVar3;
   uint local_44;
   uint local_2c;
-  uint local_10;
-  uint local_c;
+  uint width;
+  uint height;
+  int semaphore;
   
-  local_10 = 0;
-  local_c = 0;
-  if (param_1 == EXTRACAM_RES_DEFAULT) {
-    local_10 = 0x100;
-    local_c = 0x100;
+  width = 0;
+  height = 0;
+  if (resConfig == EXTRACAM_RES_DEFAULT) {
+    width = 0x100;
+    height = 0x100;
   }
-  else if (param_1 == EXTRACAM_RES_HIGH) {
+  else if (resConfig == EXTRACAM_RES_HIGH) {
     local_2c = (uint)(longlong)ROUND((float)vidConfig.sceneWidth * 0.6);
-    local_10 = local_2c & 0xfffffff8;
+    width = local_2c & 0xfffffff8;
     local_44 = (uint)(longlong)ROUND((float)vidConfig.sceneHeight * 0.6);
-    local_c = local_44 & 0xfffffff8;
+    height = local_44 & 0xfffffff8;
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_extracam.cpp",0x2e,0,
@@ -50,13 +51,13 @@ void __cdecl CreateExtraCamRenderTargets(eExtraCamResolution param_1,int param_2
     }
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  R_InitExtraCamRenderTargets(local_10,local_c,param_2);
+  R_InitExtraCamRenderTargets(width,height,location);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  g_extraCamConfig.renderTargetWidth = local_10;
-  g_extraCamConfig.renderTargetHeight = local_c;
-  g_extraCamConfig.aspectRatio = (float)((float10)local_10 / (float10)local_c);
+  g_extraCamConfig.renderTargetWidth = width;
+  g_extraCamConfig.renderTargetHeight = height;
+  g_extraCamConfig.aspectRatio = (float)((float10)width / (float10)height);
   return;
 }
 
@@ -72,19 +73,20 @@ float __cdecl R_ExtraCam_AspectRatio(void)
 
 // 00A70EB0  R_ExtraCam_Init  (gfx_d3d/r_extracam.cpp:64)
 
+/* WARNING: Enum "eExtraCamResolution": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
-/* WARNING: Enum "eExtraCamResolution": Some values do not have unique names */
 
-void __cdecl R_ExtraCam_Init(int param_1)
+void __cdecl R_ExtraCam_Init(int location)
 
 {
   XAssetHeader XVar1;
   eExtraCamResolution local_18;
-  eExtraCamResolution local_8;
+  XGlobals *xGlobals;
+  eExtraCamResolution requestedRes;
   
   if (!g_extraCamConfig.initialized) {
-    local_8 = EXTRACAM_RES_DEFAULT;
+    requestedRes = EXTRACAM_RES_DEFAULT;
     if ((useFastFile->current).enabled != false) {
       XVar1 = DB_FindXAssetHeader(ASSET_TYPE_XGLOBALS,"xGlobalsSingleton",false,-1);
       if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
@@ -93,12 +95,12 @@ void __cdecl R_ExtraCam_Init(int param_1)
       else {
         local_18 = (XVar1.sound)->packHash;
       }
-      local_8 = local_18;
+      requestedRes = local_18;
     }
-    if (local_8 != EXTRACAM_RES_OFF) {
-      PMem_BeginAlloc("ExtraCamHeap",param_1,TRACK_MISC);
-      CreateExtraCamRenderTargets(local_8,param_1);
-      PMem_EndAlloc("ExtraCamHeap",param_1);
+    if (requestedRes != EXTRACAM_RES_OFF) {
+      PMem_BeginAlloc("ExtraCamHeap",location,TRACK_MISC);
+      CreateExtraCamRenderTargets(requestedRes,location);
+      PMem_EndAlloc("ExtraCamHeap",location);
       g_extraCamConfig.initialized = true;
     }
   }

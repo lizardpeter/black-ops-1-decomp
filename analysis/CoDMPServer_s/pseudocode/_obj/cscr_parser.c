@@ -10,44 +10,44 @@ void __cdecl Scr_InitOpcodeLookup(scriptInstance_t param_1)
   HunkUser *pHVar1;
   int in_EAX;
   int iVar2;
-  scrParserGlob_t *psVar3;
-  uchar *puVar4;
-  scrParserPub_t *psVar5;
-  int iVar6;
+  scrParserGlob_t *dst;
+  uchar *dst_00;
+  scrParserPub_t *dst_01;
+  int iVar3;
   
   pHVar1 = g_DebugHunkUser;
   if ((&DAT_02462626)[in_EAX * 0x58] != '\0') {
-    iVar6 = in_EAX * 0x34;
+    iVar3 = in_EAX * 0x34;
     iVar2 = (-(uint)(in_EAX != 1) & 0x3c000) + 0x4000;
-    *(int *)(&DAT_02261e8c + iVar6) = iVar2;
-    *(undefined4 *)(&DAT_02261eb4 + iVar6) = 0xffffffff;
-    *(undefined4 *)(&DAT_02261e90 + iVar6) = 0;
-    psVar3 = (scrParserGlob_t *)
-             (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar1 * 5])
-                       (pHVar1,iVar2 * 0xc,4,"Scr_InitOpcodeLookup");
-    iVar2 = *(int *)(&DAT_02261e8c + iVar6);
-    (&gScrParserGlob)[in_EAX * 0xd] = psVar3;
-    memset((uchar *)psVar3,'\0',iVar2 * 0xc);
+    *(int *)(&DAT_02261e8c + iVar3) = iVar2;
+    *(undefined4 *)(&DAT_02261eb4 + iVar3) = 0xffffffff;
+    *(undefined4 *)(&DAT_02261e90 + iVar3) = 0;
+    dst = (scrParserGlob_t *)
+          (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar1 * 5])
+                    (pHVar1,iVar2 * 0xc,4,"Scr_InitOpcodeLookup");
+    iVar2 = *(int *)(&DAT_02261e8c + iVar3);
+    (&gScrParserGlob)[in_EAX * 0xd] = dst;
+    memset((uchar *)dst,'\0',iVar2 * 0xc);
     pHVar1 = g_DebugHunkUser;
     iVar2 = (-(uint)(in_EAX != 1) & 0x5fff0) + 0x10;
-    *(int *)(&DAT_02261e98 + iVar6) = iVar2;
-    *(undefined4 *)(&DAT_02261e9c + iVar6) = 0;
-    puVar4 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar1 * 5])
+    *(int *)(&DAT_02261e98 + iVar3) = iVar2;
+    *(undefined4 *)(&DAT_02261e9c + iVar3) = 0;
+    dst_00 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar1 * 5])
                                 (pHVar1,iVar2 * 8,4,"Scr_InitOpcodeLookup");
-    *(uchar **)(&DAT_02261e94 + iVar6) = puVar4;
-    memset(puVar4,'\0',*(int *)(&DAT_02261e98 + iVar6) * 8);
+    *(uchar **)(&DAT_02261e94 + iVar3) = dst_00;
+    memset(dst_00,'\0',*(int *)(&DAT_02261e98 + iVar3) * 8);
     pHVar1 = g_DebugHunkUser;
     iVar2 = (-(uint)(in_EAX != 1) & 0xf0) + 0x10;
-    *(int *)(&DAT_02261ea0 + iVar6) = iVar2;
-    *(undefined4 *)(&DAT_02261ea4 + iVar6) = 0;
-    *(undefined4 *)(&DAT_02261ea8 + iVar6) = 0;
+    *(int *)(&DAT_02261ea0 + iVar3) = iVar2;
+    *(undefined4 *)(&DAT_02261ea4 + iVar3) = 0;
+    *(undefined4 *)(&DAT_02261ea8 + iVar3) = 0;
     *(undefined4 *)(&DAT_02462604 + in_EAX * 0x10) = 0;
-    psVar5 = (scrParserPub_t *)
+    dst_01 = (scrParserPub_t *)
              (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar1 * 5])
                        (pHVar1,iVar2 * 0x18,4,"Scr_InitOpcodeLookup");
-    iVar2 = *(int *)(&DAT_02261ea0 + iVar6);
-    (&gScrParserPub)[in_EAX * 4] = psVar5;
-    memset((uchar *)psVar5,'\0',iVar2 * 0x18);
+    iVar2 = *(int *)(&DAT_02261ea0 + iVar3);
+    (&gScrParserPub)[in_EAX * 4] = dst_01;
+    memset((uchar *)dst_01,'\0',iVar2 * 0x18);
   }
   return;
 }
@@ -123,74 +123,74 @@ void __cdecl AddOpcodePos(scriptInstance_t param_1,uint param_2,int param_3)
   int in_EAX;
   int iVar3;
   scrParserGlob_t *psVar4;
-  uchar *puVar5;
+  uchar *dst;
+  int iVar5;
   int iVar6;
-  int iVar7;
   
   pHVar2 = g_DebugHunkUser;
   if (((&DAT_02462626)[in_EAX * 0x58] != '\0') &&
-     (iVar6 = in_EAX * 0x21038, *(int *)(&DAT_0223fa88 + iVar6) != 2)) {
-    if ((&DAT_0223fa85)[iVar6] == '\0') {
+     (iVar5 = in_EAX * 0x21038, *(int *)(&DAT_0223fa88 + iVar5) != 2)) {
+    if ((&DAT_0223fa85)[iVar5] == '\0') {
       param_2 = param_2 & 0xfffffffe;
     }
-    iVar7 = in_EAX * 0x34;
-    if (*(uint *)(&DAT_02261e8c + iVar7) <= *(uint *)(&DAT_02261e90 + iVar7)) {
-      iVar3 = *(uint *)(&DAT_02261e8c + iVar7) + 0x10000;
-      *(int *)(&DAT_02261e8c + iVar7) = iVar3;
+    iVar6 = in_EAX * 0x34;
+    if (*(uint *)(&DAT_02261e8c + iVar6) <= *(uint *)(&DAT_02261e90 + iVar6)) {
+      iVar3 = *(uint *)(&DAT_02261e8c + iVar6) + 0x10000;
+      *(int *)(&DAT_02261e8c + iVar6) = iVar3;
       psVar4 = (scrParserGlob_t *)
                (*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar2 * 5])
                          (pHVar2,iVar3 * 0xc,4,"AddOpcodePos");
-      memset((uchar *)psVar4,'\0',*(int *)(&DAT_02261e8c + iVar7) * 0xc);
+      memset((uchar *)psVar4,'\0',*(int *)(&DAT_02261e8c + iVar6) * 0xc);
       memcpy((uchar *)psVar4,(uchar *)(&gScrParserGlob)[in_EAX * 0xd],
-             *(int *)(&DAT_02261e90 + iVar7) * 0xc);
+             *(int *)(&DAT_02261e90 + iVar6) * 0xc);
       (*(code *)(&PTR_operator_delete_00adbb50)[*(int *)g_DebugHunkUser * 5])
                 (g_DebugHunkUser,(&gScrParserGlob)[in_EAX * 0xd]);
       (&gScrParserGlob)[in_EAX * 0xd] = psVar4;
     }
     pHVar2 = g_DebugHunkUser;
-    if (*(uint *)(&DAT_02261e98 + iVar7) <= *(uint *)(&DAT_02261e9c + iVar7)) {
-      iVar3 = *(uint *)(&DAT_02261e98 + iVar7) + 0x10000;
-      *(int *)(&DAT_02261e98 + iVar7) = iVar3;
-      puVar5 = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar2 * 5])
-                                  (pHVar2,iVar3 * 8,4,"AddOpcodePos");
-      memset(puVar5,'\0',*(int *)(&DAT_02261e98 + iVar7) * 8);
-      memcpy(puVar5,*(uchar **)(&DAT_02261e94 + iVar7),*(int *)(&DAT_02261e9c + iVar7) * 8);
+    if (*(uint *)(&DAT_02261e98 + iVar6) <= *(uint *)(&DAT_02261e9c + iVar6)) {
+      iVar3 = *(uint *)(&DAT_02261e98 + iVar6) + 0x10000;
+      *(int *)(&DAT_02261e98 + iVar6) = iVar3;
+      dst = (uchar *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar2 * 5])
+                               (pHVar2,iVar3 * 8,4,"AddOpcodePos");
+      memset(dst,'\0',*(int *)(&DAT_02261e98 + iVar6) * 8);
+      memcpy(dst,*(uchar **)(&DAT_02261e94 + iVar6),*(int *)(&DAT_02261e9c + iVar6) * 8);
       (*(code *)(&PTR_operator_delete_00adbb50)[*(int *)g_DebugHunkUser * 5])
-                (g_DebugHunkUser,*(undefined4 *)(&DAT_02261e94 + iVar7));
-      *(uchar **)(&DAT_02261e94 + iVar7) = puVar5;
+                (g_DebugHunkUser,*(undefined4 *)(&DAT_02261e94 + iVar6));
+      *(uchar **)(&DAT_02261e94 + iVar6) = dst;
     }
-    if (*(int *)(&DAT_02261ea4 + iVar7) == *(int *)(&DAT_0223fa8c + iVar6)) {
-      *(int *)(&DAT_02261e90 + iVar7) = *(int *)(&DAT_02261e90 + iVar7) + -1;
-      psVar4 = (&gScrParserGlob)[in_EAX * 0xd] + *(int *)(&DAT_02261e90 + iVar7) * 0xc;
+    if (*(int *)(&DAT_02261ea4 + iVar6) == *(int *)(&DAT_0223fa8c + iVar5)) {
+      *(int *)(&DAT_02261e90 + iVar6) = *(int *)(&DAT_02261e90 + iVar6) + -1;
+      psVar4 = (&gScrParserGlob)[in_EAX * 0xd] + *(int *)(&DAT_02261e90 + iVar6) * 0xc;
     }
     else {
       psVar4 = (&gScrParserGlob)[in_EAX * 0xd];
-      *(int *)(&DAT_02261ea4 + iVar7) = *(int *)(&DAT_0223fa8c + iVar6);
-      psVar4 = psVar4 + *(int *)(&DAT_02261e90 + iVar7) * 0xc;
-      *(undefined4 *)(&DAT_02261ea8 + iVar7) = 0;
-      *(undefined4 *)(psVar4 + 4) = *(undefined4 *)(&DAT_02261e9c + iVar7);
-      *(undefined4 *)psVar4 = *(undefined4 *)(&DAT_02261ea4 + iVar7);
+      *(int *)(&DAT_02261ea4 + iVar6) = *(int *)(&DAT_0223fa8c + iVar5);
+      psVar4 = psVar4 + *(int *)(&DAT_02261e90 + iVar6) * 0xc;
+      *(undefined4 *)(&DAT_02261ea8 + iVar6) = 0;
+      *(undefined4 *)(psVar4 + 4) = *(undefined4 *)(&DAT_02261e9c + iVar6);
+      *(undefined4 *)psVar4 = *(undefined4 *)(&DAT_02261ea4 + iVar6);
     }
-    iVar6 = *(int *)(psVar4 + 4) + *(int *)(&DAT_02261ea8 + iVar7);
-    psVar1 = (scriptInstance_t *)(*(int *)(&DAT_02261e94 + iVar7) + iVar6 * 8);
+    iVar5 = *(int *)(psVar4 + 4) + *(int *)(&DAT_02261ea8 + iVar6);
+    psVar1 = (scriptInstance_t *)(*(int *)(&DAT_02261e94 + iVar6) + iVar5 * 8);
     *psVar1 = param_1;
     if (param_1 == ~SCRIPTINSTANCE_SERVER) {
-      *(int *)(&DAT_02261eb4 + iVar7) = iVar6;
+      *(int *)(&DAT_02261eb4 + iVar6) = iVar5;
     }
     else if (param_1 == ~SCRIPTINSTANCE_CLIENT) {
-      *(int *)(&DAT_02261eb8 + iVar7) = iVar6;
+      *(int *)(&DAT_02261eb8 + iVar6) = iVar5;
     }
-    else if ((-1 < *(int *)(&DAT_02261eb4 + iVar7)) && ((param_2 & 1) != 0)) {
-      *(scriptInstance_t *)(*(int *)(&DAT_02261e94 + iVar7) + *(int *)(&DAT_02261eb4 + iVar7) * 8) =
+    else if ((-1 < *(int *)(&DAT_02261eb4 + iVar6)) && ((param_2 & 1) != 0)) {
+      *(scriptInstance_t *)(*(int *)(&DAT_02261e94 + iVar6) + *(int *)(&DAT_02261eb4 + iVar6) * 8) =
            param_1;
-      *(undefined4 *)(&DAT_02261eb4 + iVar7) = 0xffffffff;
+      *(undefined4 *)(&DAT_02261eb4 + iVar6) = 0xffffffff;
     }
     psVar1 = psVar1 + 1;
     *psVar1 = *psVar1 | param_2;
-    *(int *)(&DAT_02261ea8 + iVar7) = *(int *)(&DAT_02261ea8 + iVar7) + 1;
-    *(undefined4 *)(psVar4 + 8) = *(undefined4 *)(&DAT_02261ea8 + iVar7);
-    *(int *)(&DAT_02261e90 + iVar7) = *(int *)(&DAT_02261e90 + iVar7) + 1;
-    *(int *)(&DAT_02261e9c + iVar7) = *(int *)(&DAT_02261e9c + iVar7) + 1;
+    *(int *)(&DAT_02261ea8 + iVar6) = *(int *)(&DAT_02261ea8 + iVar6) + 1;
+    *(undefined4 *)(psVar4 + 8) = *(undefined4 *)(&DAT_02261ea8 + iVar6);
+    *(int *)(&DAT_02261e90 + iVar6) = *(int *)(&DAT_02261e90 + iVar6) + 1;
+    *(int *)(&DAT_02261e9c + iVar6) = *(int *)(&DAT_02261e9c + iVar6) + 1;
   }
   return;
 }

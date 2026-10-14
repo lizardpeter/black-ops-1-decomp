@@ -2,10 +2,10 @@
 
 // 006F3DC0  MSG_EntityIsLinked  (qcommon/sv_msg_write_mp.cpp:22)
 
-bool __cdecl MSG_EntityIsLinked(entityState_s *param_1)
+bool __cdecl MSG_EntityIsLinked(entityState_s *ent)
 
 {
-  return (param_1->clientLinkInfo).parentEnt != 0;
+  return (ent->clientLinkInfo).parentEnt != 0;
 }
 
 
@@ -13,36 +13,37 @@ bool __cdecl MSG_EntityIsLinked(entityState_s *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteGroundEntityNum(int param_1,msg_t *param_2,int param_3)
+void __cdecl MSG_WriteGroundEntityNum(int clientNum,msg_t *msg,int groundEntityNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_10;
-  int local_8;
+  int bits;
+  int partialBits;
+  int value;
   
-  if ((param_2->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x23,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_3 == 0x3fe) {
-    MSG_WriteBit1(param_2);
+  if (groundEntityNum == 0x3fe) {
+    MSG_WriteBit1(msg);
   }
   else {
-    MSG_WriteBit0(param_2);
-    if (param_3 == 0) {
-      MSG_WriteBit1(param_2);
+    MSG_WriteBit0(msg);
+    if (groundEntityNum == 0) {
+      MSG_WriteBit1(msg);
     }
     else {
-      MSG_WriteBit0(param_2);
-      MSG_WriteBits(param_2,param_3,2);
-      local_8 = param_3 >> 2;
-      for (local_10 = 8; local_10 != 0; local_10 = local_10 + -8) {
-        MSG_WriteByte(param_2,local_8);
-        local_8 = local_8 >> 8;
+      MSG_WriteBit0(msg);
+      MSG_WriteBits(msg,groundEntityNum,2);
+      value = groundEntityNum >> 2;
+      for (bits = 8; bits != 0; bits = bits + -8) {
+        MSG_WriteByte(msg,value);
+        value = value >> 8;
       }
     }
   }
@@ -55,32 +56,32 @@ void __cdecl MSG_WriteGroundEntityNum(int param_1,msg_t *param_2,int param_3)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteDeltaField_Default
-          (SnapshotInfo_s *param_1,msg_t *param_2,NetField *param_3,int *param_4,int *param_5)
+MSG_WriteDeltaField_Default(SnapshotInfo_s *snapInfo,msg_t *msg,NetField *field,int *fromF,int *toF)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *fmt;
+  int iVar3;
+  int toVal;
   
-  if (param_3->bits < -0x32) {
-    pcVar3 = va("Missed a MSG_ case in MSG_WriteDeltaField - value is %i");
+  if (field->bits < -0x32) {
+    fmt = va("Missed a MSG_ case in MSG_WriteDeltaField - value is %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x52,
-                             0,pcVar3);
+                             0,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  iVar4 = MSG_GetField(param_5,param_3->size);
-  if (iVar4 == 0) {
-    MSG_WriteBit0(param_2);
+  iVar3 = MSG_GetField(toF,field->size);
+  if (iVar3 == 0) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    MSG_WriteValue(param_1,param_2,param_4,param_5,param_3->bits,param_3->size,param_3->name);
+    MSG_WriteBit1(msg);
+    MSG_WriteValue(snapInfo,msg,fromF,toF,field->bits,field->size,field->name);
   }
   return;
 }
@@ -92,18 +93,20 @@ MSG_WriteDeltaField_Default
 
 int __cdecl
 MSG_WriteDeltaStruct
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *param_4,uchar *param_5,
-          int param_6,int param_7,int param_8,NetField *param_9,int param_10,int param_11,
-          bool param_12)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,uchar *from,uchar *to,int force,
+          int numFields,int indexBits,NetField *stateFields,int bChangeBit,int skippedFieldBits,
+          bool isEntity)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  int startBits;
+  int lc;
   
-  iVar3 = MSG_GetUsedBitCount(param_2);
-  if (param_2->readOnly != 0) {
+  iVar3 = MSG_GetUsedBitCount(msg);
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x7a,
                              0,"%s");
     if (!bVar2) {
@@ -112,7 +115,7 @@ MSG_WriteDeltaStruct
       return iVar3;
     }
   }
-  if (param_5 == (uchar *)0x0) {
+  if (to == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x7b,
                              0,"%s");
     if (!bVar2) {
@@ -121,7 +124,7 @@ MSG_WriteDeltaStruct
       return iVar3;
     }
   }
-  if ((uint)(1 << ((byte)param_8 & 0x1f)) <= *(uint *)param_5) {
+  if ((uint)(1 << ((byte)indexBits & 0x1f)) <= *(uint *)to) {
     va("to = %i, bits = %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x7d,
                              0,"%s\n\t%s");
@@ -131,32 +134,32 @@ MSG_WriteDeltaStruct
       return iVar3;
     }
   }
-  iVar4 = MSG_GetLastChangedField(param_1,param_4,param_5,param_7,param_9);
+  iVar4 = MSG_GetLastChangedField(snapInfo,from,to,numFields,stateFields);
   if (iVar4 == 0) {
-    if (param_6 == 0) {
+    if (force == 0) {
       iVar4 = 0;
     }
     else {
-      if (param_10 != 0) {
-        MSG_WriteBit1(param_2);
+      if (bChangeBit != 0) {
+        MSG_WriteBit1(msg);
       }
-      MSG_WriteEntityIndex(param_1,param_2,*(int *)param_5,param_8);
-      MSG_WriteBit0(param_2);
-      MSG_WriteBit0(param_2);
-      iVar4 = MSG_GetUsedBitCount(param_2);
+      MSG_WriteEntityIndex(snapInfo,msg,*(int *)to,indexBits);
+      MSG_WriteBit0(msg);
+      MSG_WriteBit0(msg);
+      iVar4 = MSG_GetUsedBitCount(msg);
       iVar4 = iVar4 - iVar3;
     }
   }
   else {
-    if (param_10 != 0) {
-      MSG_WriteBit1(param_2);
+    if (bChangeBit != 0) {
+      MSG_WriteBit1(msg);
     }
-    MSG_WriteEntityIndex(param_1,param_2,*(int *)param_5,param_8);
-    MSG_WriteBit0(param_2);
+    MSG_WriteEntityIndex(snapInfo,msg,*(int *)to,indexBits);
+    MSG_WriteBit0(msg);
     MSG_WriteDeltaFields
-              (param_1,param_2,param_3,param_4,param_5,param_6,iVar4 + -1,param_7,param_9,param_11,
-               false,param_12);
-    iVar4 = MSG_GetUsedBitCount(param_2);
+              (snapInfo,msg,time,from,to,force,iVar4 + -1,numFields,stateFields,skippedFieldBits,
+               false,isEntity);
+    iVar4 = MSG_GetUsedBitCount(msg);
     iVar4 = iVar4 - iVar3;
   }
   return iVar4;
@@ -169,17 +172,19 @@ MSG_WriteDeltaStruct
 
 int __cdecl
 MSG_WriteAppendedDeltaStruct
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *param_4,uchar *param_5,
-          int param_6,int param_7,int param_8,NetField *param_9,int param_10,int param_11)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,uchar *from,uchar *to,int force,
+          int numFields,int indexBits,NetField *stateFields,int bChangeBit,int skippedFieldBits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  int startBits;
+  int lc;
   
-  iVar3 = MSG_GetUsedBitCount(param_2);
-  if (param_2->readOnly != 0) {
+  iVar3 = MSG_GetUsedBitCount(msg);
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0xdd,
                              0,"%s");
     if (!bVar2) {
@@ -188,7 +193,7 @@ MSG_WriteAppendedDeltaStruct
       return iVar3;
     }
   }
-  if (param_5 == (uchar *)0x0) {
+  if (to == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0xde,
                              0,"%s");
     if (!bVar2) {
@@ -197,7 +202,7 @@ MSG_WriteAppendedDeltaStruct
       return iVar3;
     }
   }
-  if ((uint)(1 << ((byte)param_8 & 0x1f)) <= *(uint *)param_5) {
+  if ((uint)(1 << ((byte)indexBits & 0x1f)) <= *(uint *)to) {
     va("to = %i, bits = %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0xe0,
                              0,"%s\n\t%s");
@@ -207,22 +212,22 @@ MSG_WriteAppendedDeltaStruct
       return iVar3;
     }
   }
-  iVar4 = MSG_GetLastChangedField(param_1,param_4,param_5,param_7,param_9);
+  iVar4 = MSG_GetLastChangedField(snapInfo,from,to,numFields,stateFields);
   if (iVar4 == 0) {
-    if (param_6 == 0) {
+    if (force == 0) {
       iVar4 = 0;
     }
     else {
-      MSG_WriteBit0(param_2);
-      iVar4 = MSG_GetUsedBitCount(param_2);
+      MSG_WriteBit0(msg);
+      iVar4 = MSG_GetUsedBitCount(msg);
       iVar4 = iVar4 - iVar3;
     }
   }
   else {
     MSG_WriteDeltaFields
-              (param_1,param_2,param_3,param_4,param_5,param_6,iVar4 + -1,param_7,param_9,param_11,
+              (snapInfo,msg,time,from,to,force,iVar4 + -1,numFields,stateFields,skippedFieldBits,
                false,false);
-    iVar4 = MSG_GetUsedBitCount(param_2);
+    iVar4 = MSG_GetUsedBitCount(msg);
     iVar4 = iVar4 - iVar3;
   }
   return iVar4;
@@ -235,64 +240,70 @@ MSG_WriteAppendedDeltaStruct
 
 void __cdecl
 MSG_WriteEntityDeltaFields
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s *param_4,
-          entityState_s *param_5,int param_6,int param_7,int param_8,NetField *param_9,int param_10,
-          int *param_11)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,entityState_s *fromES,entityState_s *toES,
+          int force,int lastChanged,int numFields,NetField *stateFields,int skippedFieldBits,
+          int *fieldsChanged)
 
 {
   code *pcVar1;
   char cVar2;
   int iVar3;
   bool bVar4;
-  char *pcVar5;
-  NetField *pNVar6;
-  int local_c;
+  char *fmt;
+  NetField *pNVar5;
+  bool forceThisField_2;
+  bool forceThisField;
+  bool xorValueAgainstOldValue;
+  uchar *from;
+  NetField *field;
+  int i;
+  uchar *to;
   
-  iVar3 = param_7;
-  if ((param_2->readOnly != 0) &&
+  iVar3 = lastChanged;
+  if ((msg->readOnly != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x11d,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_8 <= param_7) &&
+  if ((numFields <= lastChanged) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x11e,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 == 0) && (param_7 < 0)) {
-    MSG_WriteBit0(param_2);
+  if ((force == 0) && (lastChanged < 0)) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    if ((param_7 < 0) &&
+    MSG_WriteBit1(msg);
+    if ((lastChanged < 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                  0x12d,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1->entJustUnlinked == false) {
-      MSG_WriteBit0(param_2);
+    if (snapInfo->entJustUnlinked == false) {
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
     }
-    MSG_WriteLastChangedField(param_2,param_7,param_8);
-    param_7 = -1;
-    for (local_c = 0; local_c <= iVar3; local_c = local_c + 1) {
-      pNVar6 = param_9 + local_c;
-      if (((1 << ((byte)local_c & 0x1f) & param_11[local_c >> 5]) != 0) &&
-         ((pNVar6->changeHints != '\x02' || (local_c == iVar3)))) {
-        if (param_1->entJustUnlinked == false) {
+    MSG_WriteLastChangedField(msg,lastChanged,numFields);
+    lastChanged = -1;
+    for (i = 0; i <= iVar3; i = i + 1) {
+      pNVar5 = stateFields + i;
+      if (((1 << ((byte)i & 0x1f) & fieldsChanged[i >> 5]) != 0) &&
+         ((pNVar5->changeHints != '\x02' || (i == iVar3)))) {
+        if (snapInfo->entJustUnlinked == false) {
 LAB_006f4778:
           cVar2 = '\0';
         }
         else {
-          if ((pNVar6->bits < -0x42) || (-0x3d < pNVar6->bits)) {
+          if ((pNVar5->bits < -0x42) || (-0x3d < pNVar5->bits)) {
             bVar4 = false;
           }
           else {
@@ -301,10 +312,10 @@ LAB_006f4778:
           if (!bVar4) goto LAB_006f4778;
           cVar2 = '\x01';
         }
-        bVar4 = MSG_WriteDeltaField(param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,pNVar6
-                                    ,local_c,true,(bool)('\x01' - cVar2),param_7,param_10,true);
+        bVar4 = MSG_WriteDeltaField(snapInfo,msg,time,(uchar *)fromES,(uchar *)toES,pNVar5,i,true,
+                                    (bool)('\x01' - cVar2),lastChanged,skippedFieldBits,true);
         if (bVar4) {
-          param_7 = local_c;
+          lastChanged = i;
         }
         else {
           bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp"
@@ -317,23 +328,23 @@ LAB_006f4778:
         }
       }
     }
-    if ((param_7 != iVar3) &&
+    if ((lastChanged != iVar3) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                  0x152,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_7 = -1;
-    for (local_c = 0; local_c < iVar3; local_c = local_c + 1) {
-      pNVar6 = param_9 + local_c;
-      if (pNVar6->changeHints == '\x02') {
-        if (param_1->entJustUnlinked == false) {
+    lastChanged = -1;
+    for (i = 0; i < iVar3; i = i + 1) {
+      pNVar5 = stateFields + i;
+      if (pNVar5->changeHints == '\x02') {
+        if (snapInfo->entJustUnlinked == false) {
 LAB_006f48a9:
           cVar2 = '\0';
         }
         else {
-          if ((pNVar6->bits < -0x42) || (-0x3d < pNVar6->bits)) {
+          if ((pNVar5->bits < -0x42) || (-0x3d < pNVar5->bits)) {
             bVar4 = false;
           }
           else {
@@ -342,15 +353,15 @@ LAB_006f48a9:
           if (!bVar4) goto LAB_006f48a9;
           cVar2 = '\x01';
         }
-        bVar4 = MSG_WriteDeltaField(param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,pNVar6
-                                    ,local_c,true,(bool)('\x01' - cVar2),param_7,param_10,false);
+        bVar4 = MSG_WriteDeltaField(snapInfo,msg,time,(uchar *)fromES,(uchar *)toES,pNVar5,i,true,
+                                    (bool)('\x01' - cVar2),lastChanged,skippedFieldBits,false);
         if (bVar4) {
-          param_7 = local_c;
+          lastChanged = i;
         }
         else {
-          pcVar5 = va("An ALWAYS_CHANGES field (%s) didn\'t have its delta written?");
+          fmt = va("An ALWAYS_CHANGES field (%s) didn\'t have its delta written?");
           bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp"
-                                   ,0x166,0,pcVar5);
+                                   ,0x166,0,fmt);
           if (!bVar4) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
@@ -368,34 +379,38 @@ LAB_006f48a9:
 
 /* WARNING: Removing unreachable block (ram,0x006f42da) */
 /* WARNING: Removing unreachable block (ram,0x006f431f) */
+/* WARNING: Variable defined which should be unmapped: from */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 int __cdecl
 MSG_WriteEntityDelta
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s *param_4,
-          entityState_s *param_5,DeltaFlags param_6,int param_7,int param_8,NetField *param_9)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,entityState_s *fromES,entityState_s *toES,
+          DeltaFlags flags,int numFields,int indexBits,NetField *stateFields)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  entityState_s *peVar5;
-  NetField *local_2c;
-  int local_28;
-  int local_18;
-  uint local_14 [3];
-  entityState_s *local_8;
+  int startBits;
+  uchar *from;
+  NetField *field;
+  int lc;
+  int *toF;
+  bool force;
+  int *fromF;
+  int i;
+  uint fieldsChanged [3];
+  uchar *to;
   
-  local_28 = -1;
+  lc = -1;
   g_entsDeltaCompared = g_entsDeltaCompared + 1;
-  local_8 = param_5;
-  peVar5 = param_4;
-  iVar3 = MSG_GetUsedBitCount(param_2);
-  local_14[0] = 0;
-  local_14[1] = 0;
-  local_14[2] = 0;
-  if (param_2->readOnly != 0) {
+  to = (uchar *)toES;
+  iVar3 = MSG_GetUsedBitCount(msg);
+  fieldsChanged[0] = 0;
+  fieldsChanged[1] = 0;
+  fieldsChanged[2] = 0;
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x18a
                              ,0,"%s");
     if (!bVar2) {
@@ -404,16 +419,16 @@ MSG_WriteEntityDelta
       return iVar3;
     }
   }
-  if (local_8 == (entityState_s *)0x0) {
+  if (to == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x18b
                              ,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)(peVar5);
+      iVar3 = (*pcVar1)(fromES);
       return iVar3;
     }
   }
-  if ((uint)(1 << ((byte)param_8 & 0x1f)) <= (uint)local_8->number) {
+  if ((uint)(1 << ((byte)indexBits & 0x1f)) <= *(uint *)to) {
     va("to = %i, bits = %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",0x18d
                              ,0,"%s\n\t%s");
@@ -423,28 +438,28 @@ MSG_WriteEntityDelta
       return iVar3;
     }
   }
-  local_2c = param_9;
-  for (local_18 = 0; local_18 < param_7; local_18 = local_18 + 1) {
-    bVar2 = MSG_ShouldSendEntityField(param_1,param_4,param_5,local_2c);
+  field = stateFields;
+  for (i = 0; i < numFields; i = i + 1) {
+    bVar2 = MSG_ShouldSendEntityField(snapInfo,fromES,toES,field);
     if (bVar2) {
-      local_28 = local_18;
-      local_14[local_18 >> 5] = 1 << ((byte)local_18 & 0x1f) | local_14[local_18 >> 5];
+      lc = i;
+      fieldsChanged[i >> 5] = 1 << ((byte)i & 0x1f) | fieldsChanged[i >> 5];
     }
-    local_2c = local_2c + 1;
+    field = field + 1;
   }
-  if (((local_28 < -1) || (param_7 < local_28)) &&
+  if (((lc < -1) || (numFields < lc)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x19d,0,"%s\n\t(lc) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (local_28 < 0) {
-    if (param_6 == DELTA_FLAGS_FORCE) {
-      MSG_WriteEntityIndex(param_1,param_2,local_8->number,param_8);
-      MSG_WriteBit0(param_2);
-      MSG_WriteBit0(param_2);
-      iVar4 = MSG_GetUsedBitCount(param_2);
+  if (lc < 0) {
+    if (flags == DELTA_FLAGS_FORCE) {
+      MSG_WriteEntityIndex(snapInfo,msg,*(int *)to,indexBits);
+      MSG_WriteBit0(msg);
+      MSG_WriteBit0(msg);
+      iVar4 = MSG_GetUsedBitCount(msg);
       iVar4 = iVar4 - iVar3;
     }
     else {
@@ -452,9 +467,9 @@ MSG_WriteEntityDelta
     }
   }
   else {
-    MSG_WriteEntityIndex(param_1,param_2,local_8->number,param_8);
-    MSG_WriteBit0(param_2);
-    if (((1 << ((byte)local_28 & 0x1f) & local_14[local_28 >> 5]) == 0) &&
+    MSG_WriteEntityIndex(snapInfo,msg,*(int *)to,indexBits);
+    MSG_WriteBit0(msg);
+    if (((1 << ((byte)lc & 0x1f) & fieldsChanged[lc >> 5]) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                  0x1d4,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -462,9 +477,9 @@ MSG_WriteEntityDelta
       return iVar3;
     }
     MSG_WriteEntityDeltaFields
-              (param_1,param_2,param_3,param_4,param_5,(uint)(param_6 == DELTA_FLAGS_FORCE),local_28
-               ,param_7,param_9,3,(int *)local_14);
-    iVar4 = MSG_GetUsedBitCount(param_2);
+              (snapInfo,msg,time,fromES,toES,(uint)(flags == DELTA_FLAGS_FORCE),lc,numFields,
+               stateFields,3,(int *)fieldsChanged);
+    iVar4 = MSG_GetUsedBitCount(msg);
     iVar4 = iVar4 - iVar3;
   }
   return iVar4;
@@ -477,39 +492,42 @@ MSG_WriteEntityDelta
 
 bool __cdecl
 MSG_WriteDeltaArchivedEntity
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,archivedEntity_s *param_4,
-          archivedEntity_s *param_5,DeltaFlags param_6)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,archivedEntity_s *from,archivedEntity_s *to,
+          DeltaFlags flags)
 
 {
-  NetField *pNVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  PacketEntityType PVar5;
-  NetFieldList *pNVar6;
-  int iVar7;
+  NetField *stateFields;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  PacketEntityType packetEntityType;
+  NetFieldList *pNVar4;
+  int iVar5;
+  int bitsWritten;
+  NetField *field;
+  int numFields;
+  bool force;
   
-  if (param_2->readOnly != 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",499,0
+  if (msg->readOnly != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",499,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      uVar4 = (*pcVar2)();
-      return (bool)uVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  bVar3 = true;
-  PVar5 = MSG_GetPacketEntityTypeForEType((int)(param_5->s).eType);
-  MSG_PacketAnalyze_SetPacketEntityType(param_1,PVar5,bVar3);
-  MSG_WriteEntityDeltaForEType
-            (param_1,param_2,param_3,(int)(param_5->s).eType,&param_4->s,&param_5->s,param_6);
-  pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_ARCHIVED_ENTITY,param_1->demoSnapshot);
-  pNVar1 = pNVar6->array;
-  pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_ARCHIVED_ENTITY,param_1->demoSnapshot);
-  iVar7 = MSG_WriteAppendedDeltaStruct
-                    (param_1,param_2,param_3,(uchar *)&param_4->r,(uchar *)&param_5->r,
-                     (uint)(param_6 == DELTA_FLAGS_FORCE),pNVar6->count,10,pNVar1,0,1);
-  return 0 < iVar7;
+  bVar2 = true;
+  packetEntityType = MSG_GetPacketEntityTypeForEType((int)(to->s).eType);
+  MSG_PacketAnalyze_SetPacketEntityType(snapInfo,packetEntityType,bVar2);
+  MSG_WriteEntityDeltaForEType(snapInfo,msg,time,(int)(to->s).eType,&from->s,&to->s,flags);
+  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_ARCHIVED_ENTITY,snapInfo->demoSnapshot);
+  stateFields = pNVar4->array;
+  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_ARCHIVED_ENTITY,snapInfo->demoSnapshot);
+  iVar5 = MSG_WriteAppendedDeltaStruct
+                    (snapInfo,msg,time,(uchar *)&from->r,(uchar *)&to->r,
+                     (uint)(flags == DELTA_FLAGS_FORCE),pNVar4->count,10,stateFields,0,1);
+  return 0 < iVar5;
 }
 
 
@@ -519,55 +537,55 @@ MSG_WriteDeltaArchivedEntity
 
 void __cdecl
 MSG_WriteDeltaHudElems
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,hudelem_s *param_4,hudelem_s *param_5,
-          int param_6)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,hudelem_s *from,hudelem_s *to,int count)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_1c;
-  int local_18;
-  int local_10;
-  int local_c;
+  int j;
+  int lastChanged;
+  int lc;
+  int i;
+  int inuse;
+  int bitsUsedAtStart;
   
-  if ((param_2->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x21e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_6 != 0x1f) && (param_6 != 0x1f)) &&
+  if (((count != 0x1f) && (count != 0x1f)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x21f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  for (local_c = 0; (local_c < param_6 && (param_5[local_c].type != '\0')); local_c = local_c + 1) {
+  for (inuse = 0; (inuse < count && (to[inuse].type != '\0')); inuse = inuse + 1) {
   }
-  MSG_WriteBits(param_2,local_c,5);
-  local_10 = 0;
+  MSG_WriteBits(msg,inuse,5);
+  i = 0;
   do {
-    if (local_c <= local_10) {
+    if (inuse <= i) {
       return;
     }
-    MSG_GetUsedBitCount(param_2);
-    MSG_WriteDeltaHudElems_ValidateHudElem(param_4 + local_10,param_5 + local_10);
-    iVar3 = MSG_WriteDeltaHudElems_LastChangedField(param_1,local_10,param_4,param_5);
-    MSG_WriteBits(param_2,iVar3 + 1,6);
-    local_18 = -1;
-    for (local_1c = 0; local_1c <= iVar3; local_1c = local_1c + 1) {
-      bVar2 = MSG_WriteDeltaField(param_1,param_2,param_3,(uchar *)(param_4 + local_10),
-                                  (uchar *)(param_5 + local_10),
-                                  (NetField *)(&hudElemFields + local_1c * 0x1c),local_1c,false,true
-                                  ,local_18,3,true);
+    MSG_GetUsedBitCount(msg);
+    MSG_WriteDeltaHudElems_ValidateHudElem(from + i,to + i);
+    iVar3 = MSG_WriteDeltaHudElems_LastChangedField(snapInfo,i,from,to);
+    MSG_WriteBits(msg,iVar3 + 1,6);
+    lastChanged = -1;
+    for (j = 0; j <= iVar3; j = j + 1) {
+      bVar2 = MSG_WriteDeltaField(snapInfo,msg,time,(uchar *)(from + i),(uchar *)(to + i),
+                                  (NetField *)(&hudElemFields + j * 0x1c),j,false,true,lastChanged,3
+                                  ,true);
       if (bVar2) {
-        local_18 = local_1c;
+        lastChanged = j;
       }
     }
-    if (local_18 != iVar3) {
+    if (lastChanged != iVar3) {
       va("%i != %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp",
                                0x241,0,"%s\n\t%s");
@@ -577,11 +595,11 @@ MSG_WriteDeltaHudElems
         return;
       }
     }
-    if ((param_1->archived == false) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
-      MSG_GetUsedBitCount(param_2);
+    if ((snapInfo->archived == false) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
+      MSG_GetUsedBitCount(msg);
       CG_QuickPrint("Hudelem %d bits\n");
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 

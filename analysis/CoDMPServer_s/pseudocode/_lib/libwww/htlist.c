@@ -138,21 +138,21 @@ undefined4 _HTList_removeObjectAll(void)
   int *piVar1;
   int *in_EAX;
   undefined4 uVar2;
-  int *piVar3;
+  int *pBlock;
   int unaff_EDI;
   
   uVar2 = 0;
   if (in_EAX != (int *)0x0) {
     piVar1 = (int *)in_EAX[1];
-    while (piVar3 = piVar1, piVar3 != (int *)0x0) {
-      if (*piVar3 == unaff_EDI) {
-        in_EAX[1] = piVar3[1];
-        free(piVar3);
+    while (pBlock = piVar1, pBlock != (int *)0x0) {
+      if (*pBlock == unaff_EDI) {
+        in_EAX[1] = pBlock[1];
+        free(pBlock);
         uVar2 = 1;
-        piVar3 = in_EAX;
+        pBlock = in_EAX;
       }
-      in_EAX = piVar3;
-      piVar1 = (int *)piVar3[1];
+      in_EAX = pBlock;
+      piVar1 = (int *)pBlock[1];
     }
   }
   return uVar2;
@@ -168,19 +168,19 @@ undefined4 _HTList_removeFirstObject(void)
   undefined4 *puVar2;
   undefined4 *in_EAX;
   undefined4 *puVar3;
-  undefined4 *puVar4;
+  undefined4 *pBlock;
   
   if ((in_EAX != (undefined4 *)0x0) &&
      (puVar2 = (undefined4 *)in_EAX[1], (undefined4 *)in_EAX[1] != (undefined4 *)0x0)) {
     do {
-      puVar4 = puVar2;
+      pBlock = puVar2;
       puVar3 = in_EAX;
-      in_EAX = puVar4;
-      puVar2 = (undefined4 *)puVar4[1];
-    } while ((undefined4 *)puVar4[1] != (undefined4 *)0x0);
-    uVar1 = *puVar4;
+      in_EAX = pBlock;
+      puVar2 = (undefined4 *)pBlock[1];
+    } while ((undefined4 *)pBlock[1] != (undefined4 *)0x0);
+    uVar1 = *pBlock;
     puVar3[1] = 0;
-    free(puVar4);
+    free(pBlock);
     return uVar1;
   }
   return 0;

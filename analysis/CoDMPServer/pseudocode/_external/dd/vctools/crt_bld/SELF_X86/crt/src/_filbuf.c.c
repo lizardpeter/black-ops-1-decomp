@@ -2,7 +2,7 @@
 
 // 00C22854  _filbuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_filbuf.c:100)
 
-int __cdecl _filbuf(_iobuf *param_1)
+int __cdecl _filbuf(_iobuf *str)
 
 {
   byte bVar1;
@@ -10,58 +10,58 @@ int __cdecl _filbuf(_iobuf *param_1)
   int iVar3;
   uint uVar4;
   ioinfo *piVar5;
-  char *pcVar6;
+  char *buf;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (str == (_iobuf *)0x0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
-    uVar4 = param_1->_flag;
+    uVar4 = str->_flag;
     if (((uVar4 & 0x83) != 0) && ((uVar4 & 0x40) == 0)) {
       if ((uVar4 & 2) == 0) {
-        param_1->_flag = uVar4 | 1;
+        str->_flag = uVar4 | 1;
         if ((uVar4 & 0x10c) == 0) {
-          _getbuf(param_1);
+          _getbuf(str);
         }
         else {
-          param_1->_ptr = param_1->_base;
+          str->_ptr = str->_base;
         }
-        uVar4 = param_1->_bufsiz;
-        pcVar6 = param_1->_base;
-        iVar3 = _fileno(param_1);
-        iVar3 = _read(iVar3,pcVar6,uVar4);
-        param_1->_cnt = iVar3;
+        uVar4 = str->_bufsiz;
+        buf = str->_base;
+        iVar3 = _fileno(str);
+        iVar3 = _read(iVar3,buf,uVar4);
+        str->_cnt = iVar3;
         if ((iVar3 != 0) && (iVar3 != -1)) {
-          if ((param_1->_flag & 0x82) == 0) {
-            iVar3 = _fileno(param_1);
-            if ((iVar3 == -1) || (iVar3 = _fileno(param_1), iVar3 == -2)) {
+          if ((str->_flag & 0x82) == 0) {
+            iVar3 = _fileno(str);
+            if ((iVar3 == -1) || (iVar3 = _fileno(str), iVar3 == -2)) {
               piVar5 = &__badioinfo;
             }
             else {
-              iVar3 = _fileno(param_1);
-              uVar4 = _fileno(param_1);
+              iVar3 = _fileno(str);
+              uVar4 = _fileno(str);
               piVar5 = (ioinfo *)((uVar4 & 0x1f) * 0x40 + *(int *)(&__pioinfo + (iVar3 >> 5) * 4));
             }
             if ((piVar5->osfile & 0x82U) == 0x82) {
-              param_1->_flag = param_1->_flag | 0x2000;
+              str->_flag = str->_flag | 0x2000;
             }
           }
-          if (((param_1->_bufsiz == 0x200) && ((param_1->_flag & 8U) != 0)) &&
-             ((param_1->_flag & 0x400U) == 0)) {
-            param_1->_bufsiz = 0x1000;
+          if (((str->_bufsiz == 0x200) && ((str->_flag & 8U) != 0)) && ((str->_flag & 0x400U) == 0))
+          {
+            str->_bufsiz = 0x1000;
           }
-          param_1->_cnt = param_1->_cnt + -1;
-          bVar1 = *param_1->_ptr;
-          param_1->_ptr = param_1->_ptr + 1;
+          str->_cnt = str->_cnt + -1;
+          bVar1 = *str->_ptr;
+          str->_ptr = str->_ptr + 1;
           return (uint)bVar1;
         }
-        param_1->_flag = param_1->_flag | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
-        param_1->_cnt = 0;
+        str->_flag = str->_flag | (-(uint)(iVar3 != 0) & 0x10) + 0x10;
+        str->_cnt = 0;
       }
       else {
-        param_1->_flag = uVar4 | 0x20;
+        str->_flag = uVar4 | 0x20;
       }
     }
   }

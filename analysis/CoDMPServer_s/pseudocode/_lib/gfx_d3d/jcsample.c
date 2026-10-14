@@ -2,6 +2,8 @@
 
 // 0087BBD0  jinit_downsampler  (jpeg-6/jcsample.c:465)
 
+/* WARNING: Variable defined which should be unmapped: smoothok */
+
 void __cdecl jinit_downsampler(jpeg_compress_struct *param_1)
 
 {
@@ -12,6 +14,9 @@ void __cdecl jinit_downsampler(jpeg_compress_struct *param_1)
   int *piVar5;
   int *unaff_ESI;
   undefined4 *puVar6;
+  uchar smoothok;
+  my_downsampler *downsample;
+  int ci;
   int iStack_4;
   
   bVar3 = true;

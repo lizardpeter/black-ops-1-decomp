@@ -977,17 +977,17 @@ CCubeMapProcessor::DXTCompressCubeFaceScaleGamma
 {
   int iVar1;
   uint uVar2;
-  void *pvVar3;
+  void *__formal;
   CImageSurface *this_00;
-  uint uVar4;
-  float *pfVar5;
-  int iVar6;
-  ushort *puVar7;
+  uint uVar3;
+  float *pfVar4;
+  int iVar5;
+  ushort *puVar6;
+  int iVar7;
   int iVar8;
-  int iVar9;
   CImageSurface *this_01;
   void *unaff_EDI;
-  int iVar10;
+  int iVar9;
   uint *puStack_868;
   uint *puStack_864;
   int iStack_85c;
@@ -1007,7 +1007,7 @@ CCubeMapProcessor::DXTCompressCubeFaceScaleGamma
   uStack_4 = 0xffffffff;
   puStack_8 = &LAB_00996dbb;
   pvStack_c = ExceptionList;
-  pvVar3 = (void *)(__security_cookie ^ (uint)&stack0xfffff788);
+  __formal = (void *)(__security_cookie ^ (uint)&stack0xfffff788);
   ExceptionList = &pvStack_c;
   pCStack_840 = this;
   overlappedTask::overlappedTask(aoStack_81c);
@@ -1015,140 +1015,140 @@ CCubeMapProcessor::DXTCompressCubeFaceScaleGamma
   iVar1 = this->m_OutputSurface[param_2][param_1].m_Width;
   this_00 = this->m_OutputSurface[param_2] + param_1;
   uStack_4 = 0;
-  uVar4 = 0;
-  puVar7 = (ushort *)(&sg_CubeNgh + param_1 * 8);
+  uVar3 = 0;
+  puVar6 = (ushort *)(&sg_CubeNgh + param_1 * 8);
   do {
-    uVar2 = (uint)(*puVar7 >> 8);
-    auStack_82c[uVar4] = *puVar7 & 0xff;
-    auStack_83c[uVar4] = uVar2;
-    if ((uVar4 == uVar2) || (uVar2 + uVar4 == 3)) {
-      acStack_844[uVar4] = '\x01';
+    uVar2 = (uint)(*puVar6 >> 8);
+    auStack_82c[uVar3] = *puVar6 & 0xff;
+    auStack_83c[uVar3] = uVar2;
+    if ((uVar3 == uVar2) || (uVar2 + uVar3 == 3)) {
+      acStack_844[uVar3] = '\x01';
     }
     else {
-      acStack_844[uVar4] = '\0';
+      acStack_844[uVar3] = '\0';
     }
-    uVar4 = uVar4 + 1;
-    puVar7 = puVar7 + 1;
-  } while ((int)uVar4 < 4);
+    uVar3 = uVar3 + 1;
+    puVar6 = puVar6 + 1;
+  } while ((int)uVar3 < 4);
   puStack_868 = param_4;
   iStack_85c = 0;
   if (0 < iVar1) {
     do {
-      iVar8 = 0;
+      iVar7 = 0;
       puStack_864 = puStack_868 + 2;
       do {
         CBlockCompressor::Clear((CBlockCompressor *)aoStack_81c);
         if (iVar1 == 1) {
-          iVar9 = 0x10;
+          iVar8 = 0x10;
           do {
-            pfVar5 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar8,iStack_85c);
-            CBlockCompressor::AddRGBATexel((CBlockCompressor *)aoStack_81c,pfVar5);
-            iVar9 = iVar9 + -1;
-          } while (iVar9 != 0);
+            pfVar4 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar7,iStack_85c);
+            CBlockCompressor::AddRGBATexel((CBlockCompressor *)aoStack_81c,pfVar4);
+            iVar8 = iVar8 + -1;
+          } while (iVar8 != 0);
           if (param_7 == '\x01') {
-            iVar9 = 0;
+            iVar8 = 0;
             this_01 = this->m_OutputSurface[param_2];
             do {
-              if (iVar9 != param_1) {
-                iVar10 = 0x10;
+              if (iVar8 != param_1) {
+                iVar9 = 0x10;
                 do {
-                  pfVar5 = CImageSurface::GetSurfaceTexelPtr(this_01,iVar8,iStack_85c);
-                  CBlockCompressor::AddRGBATexel((CBlockCompressor *)aoStack_81c,pfVar5);
-                  iVar10 = iVar10 + -1;
+                  pfVar4 = CImageSurface::GetSurfaceTexelPtr(this_01,iVar7,iStack_85c);
+                  CBlockCompressor::AddRGBATexel((CBlockCompressor *)aoStack_81c,pfVar4);
+                  iVar9 = iVar9 + -1;
                   this = pCStack_840;
-                } while (iVar10 != 0);
+                } while (iVar9 != 0);
               }
-              iVar9 = iVar9 + 1;
+              iVar8 = iVar8 + 1;
               this_01 = this_01 + 1;
-            } while (iVar9 < 6);
+            } while (iVar8 < 6);
           }
         }
         else {
-          iVar9 = this->m_NumChannels;
+          iVar8 = this->m_NumChannels;
           if (iVar1 == 2) {
-            iVar9 = iVar9 * 8;
-            pfVar5 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar8,iStack_85c);
-            CBlockCompressor::AddRGBA2x2TexelBlock((CBlockCompressor *)aoStack_81c,pfVar5,iVar9);
+            iVar8 = iVar8 * 8;
+            pfVar4 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar7,iStack_85c);
+            CBlockCompressor::AddRGBA2x2TexelBlock((CBlockCompressor *)aoStack_81c,pfVar4,iVar8);
             if (param_7 == '\x01') {
-              iVar9 = 0;
+              iVar8 = 0;
               do {
-                if (iVar9 != param_1) {
-                  iVar10 = this->m_NumChannels * 8;
-                  pfVar5 = CImageSurface::GetSurfaceTexelPtr
-                                     (this->m_OutputSurface[0] + iVar9 + iStack_848,iVar8,iStack_85c
+                if (iVar8 != param_1) {
+                  iVar9 = this->m_NumChannels * 8;
+                  pfVar4 = CImageSurface::GetSurfaceTexelPtr
+                                     (this->m_OutputSurface[0] + iVar8 + iStack_848,iVar7,iStack_85c
                                      );
                   CBlockCompressor::AddRGBA2x2TexelBlock
-                            ((CBlockCompressor *)aoStack_81c,pfVar5,iVar10);
+                            ((CBlockCompressor *)aoStack_81c,pfVar4,iVar9);
                 }
-                iVar9 = iVar9 + 1;
-              } while (iVar9 < 6);
+                iVar8 = iVar8 + 1;
+              } while (iVar8 < 6);
             }
           }
           else if (iVar1 == 4) {
-            iVar9 = iVar9 << 4;
-            pfVar5 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar8,iStack_85c);
-            CBlockCompressor::AddRGBA4x4TexelBlock((CBlockCompressor *)aoStack_81c,pfVar5,iVar9);
+            iVar8 = iVar8 << 4;
+            pfVar4 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar7,iStack_85c);
+            CBlockCompressor::AddRGBA4x4TexelBlock((CBlockCompressor *)aoStack_81c,pfVar4,iVar8);
             if (param_7 == '\x01') {
-              iVar9 = 0;
+              iVar8 = 0;
               do {
-                if (iVar9 != param_1) {
-                  iVar10 = this->m_NumChannels << 4;
-                  pfVar5 = CImageSurface::GetSurfaceTexelPtr
-                                     (this->m_OutputSurface[0] + iVar9 + iStack_848,iVar8,iStack_85c
+                if (iVar8 != param_1) {
+                  iVar9 = this->m_NumChannels << 4;
+                  pfVar4 = CImageSurface::GetSurfaceTexelPtr
+                                     (this->m_OutputSurface[0] + iVar8 + iStack_848,iVar7,iStack_85c
                                      );
                   CBlockCompressor::AddRGBA4x4TexelBlock
-                            ((CBlockCompressor *)aoStack_81c,pfVar5,iVar10);
+                            ((CBlockCompressor *)aoStack_81c,pfVar4,iVar9);
                 }
-                iVar9 = iVar9 + 1;
-              } while (iVar9 < 6);
+                iVar8 = iVar8 + 1;
+              } while (iVar8 < 6);
             }
           }
           else {
-            iVar9 = iVar9 * iVar1 * 4;
-            pfVar5 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar8,iStack_85c);
-            CBlockCompressor::AddRGBA4x4TexelBlock((CBlockCompressor *)aoStack_81c,pfVar5,iVar9);
+            iVar8 = iVar8 * iVar1 * 4;
+            pfVar4 = CImageSurface::GetSurfaceTexelPtr(this_00,iVar7,iStack_85c);
+            CBlockCompressor::AddRGBA4x4TexelBlock((CBlockCompressor *)aoStack_81c,pfVar4,iVar8);
             if (param_7 == '\x01') {
-              iVar9 = iVar1 + -4;
-              abStack_84c[0] = iVar8 == 0;
-              abStack_84c[1] = iVar8 == iVar9;
+              iVar8 = iVar1 + -4;
+              abStack_84c[0] = iVar7 == 0;
+              abStack_84c[1] = iVar7 == iVar8;
               abStack_84c[2] = iStack_85c == 0;
-              abStack_84c[3] = iStack_85c == iVar9;
-              iVar10 = 0;
+              abStack_84c[3] = iStack_85c == iVar8;
+              iVar9 = 0;
               do {
-                if (abStack_84c[iVar10] == true) {
-                  iVar6 = iStack_85c;
-                  if ((iVar10 != 0) && (iVar10 != 1)) {
-                    iVar6 = iVar8;
+                if (abStack_84c[iVar9] == true) {
+                  iVar5 = iStack_85c;
+                  if ((iVar9 != 0) && (iVar9 != 1)) {
+                    iVar5 = iVar7;
                   }
-                  if (acStack_844[iVar10] == '\x01') {
-                    iVar6 = (iVar1 - iVar6) + -4;
+                  if (acStack_844[iVar9] == '\x01') {
+                    iVar5 = (iVar1 - iVar5) + -4;
                   }
-                  switch(auStack_83c[iVar10]) {
+                  switch(auStack_83c[iVar9]) {
                   case 0:
                     iStack_850 = 0;
-                    iStack_858 = iVar6;
+                    iStack_858 = iVar5;
                     break;
                   case 1:
-                    iStack_858 = iVar6;
-                    iStack_850 = iVar9;
+                    iStack_858 = iVar5;
+                    iStack_850 = iVar8;
                     break;
                   case 2:
                     iStack_858 = 0;
-                    iStack_850 = iVar6;
+                    iStack_850 = iVar5;
                     break;
                   case 3:
-                    iStack_858 = iVar9;
-                    iStack_850 = iVar6;
+                    iStack_858 = iVar8;
+                    iStack_850 = iVar5;
                   }
-                  iVar6 = this->m_NumChannels * iVar1 * 4;
-                  pfVar5 = CImageSurface::GetSurfaceTexelPtr
-                                     (this->m_OutputSurface[0] + iStack_848 + auStack_82c[iVar10],
+                  iVar5 = this->m_NumChannels * iVar1 * 4;
+                  pfVar4 = CImageSurface::GetSurfaceTexelPtr
+                                     (this->m_OutputSurface[0] + iStack_848 + auStack_82c[iVar9],
                                       iStack_850,iStack_858);
                   CBlockCompressor::AddRGBA4x4TexelBlock
-                            ((CBlockCompressor *)aoStack_81c,pfVar5,iVar6);
+                            ((CBlockCompressor *)aoStack_81c,pfVar4,iVar5);
                 }
-                iVar10 = iVar10 + 1;
-              } while (iVar10 < 4);
+                iVar9 = iVar9 + 1;
+              } while (iVar9 < 4);
             }
           }
         }
@@ -1157,34 +1157,34 @@ CCubeMapProcessor::DXTCompressCubeFaceScaleGamma
         if (param_3 == 100) {
           CBlockCompressor::CompressDXTColorBlock
                     ((CBlockCompressor *)aoStack_81c,puStack_868,'\x01');
-          iVar9 = 8;
+          iVar8 = 8;
 LAB_0097d6de:
-          puStack_868 = (uint *)((int)puStack_868 + iVar9);
-          puStack_864 = (uint *)((int)puStack_864 + iVar9);
+          puStack_868 = (uint *)((int)puStack_868 + iVar8);
+          puStack_864 = (uint *)((int)puStack_864 + iVar8);
         }
         else {
           if (param_3 == 0x65) {
             CBlockCompressor::Pack4BitAlphaBlock((CBlockCompressor *)aoStack_81c,puStack_868);
             CBlockCompressor::CompressDXTColorBlock
                       ((CBlockCompressor *)aoStack_81c,puStack_864,'\0');
-            iVar9 = 0x10;
+            iVar8 = 0x10;
             goto LAB_0097d6de;
           }
           if (param_3 == 0x66) {
             CBlockCompressor::CompressDXT5AlphaBlock((CBlockCompressor *)aoStack_81c,puStack_868);
             CBlockCompressor::CompressDXTColorBlock
                       ((CBlockCompressor *)aoStack_81c,puStack_864,'\0');
-            iVar9 = 0x10;
+            iVar8 = 0x10;
             goto LAB_0097d6de;
           }
         }
-        iVar8 = iVar8 + 4;
-      } while (iVar8 < iVar1);
+        iVar7 = iVar7 + 4;
+      } while (iVar7 < iVar1);
       iStack_85c = iStack_85c + 4;
     } while (iStack_85c < iVar1);
   }
   uStack_4 = 0xffffffff;
-  operator_delete(pvVar3,unaff_EDI);
+  operator_delete(__formal,unaff_EDI);
   ExceptionList = pvStack_c;
   return;
 }

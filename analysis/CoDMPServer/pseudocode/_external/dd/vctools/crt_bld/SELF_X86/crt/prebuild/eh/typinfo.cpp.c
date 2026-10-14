@@ -13,12 +13,12 @@ void __thiscall type_info::~type_info(type_info *this)
 
 // 00C0E2FC  operator==  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/typinfo.cpp:89)
 
-bool __thiscall type_info::operator==(type_info *this,type_info *param_1)
+bool __thiscall type_info::operator==(type_info *this,type_info *rhs)
 
 {
   int extraout_EAX;
   
-  strcmp(&param_1->field_0x9,&this->field_0x9);
+  strcmp(&rhs->field_0x9,&this->field_0x9);
   return (bool)('\x01' - (extraout_EAX != 0));
 }
 

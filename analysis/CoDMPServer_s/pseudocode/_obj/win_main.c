@@ -334,9 +334,9 @@ char * __cdecl Sys_GetClipboardData(void)
   int unaff_EBP;
   char *unaff_ESI;
   char *unaff_EDI;
-  char *pcVar3;
+  char *string;
   
-  pcVar3 = (char *)0x0;
+  string = (char *)0x0;
   BVar1 = OpenClipboard((HWND)0x0);
   if (BVar1 != 0) {
     hMem = GetClipboardData(1);
@@ -344,16 +344,16 @@ char * __cdecl Sys_GetClipboardData(void)
       pvVar2 = GlobalLock(hMem);
       if (pvVar2 != (LPVOID)0x0) {
         GlobalSize(hMem);
-        pcVar3 = Com_AllocEvent((int)unaff_EDI);
+        string = Com_AllocEvent((int)unaff_EDI);
         GlobalSize(hMem);
         I_strncpyz(unaff_EDI,unaff_ESI,unaff_EBP);
         GlobalUnlock(hMem);
-        strtok(pcVar3,"\n\r\b");
+        strtok(string,"\n\r\b");
       }
     }
     CloseClipboard();
   }
-  return pcVar3;
+  return string;
 }
 
 

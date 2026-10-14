@@ -7,23 +7,24 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ActorProcessSnapshot(int param_1,centity_s *param_2)
+void __cdecl CG_ActorProcessSnapshot(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
   cg_s *pcVar2;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  CG_UpdateActorDObj(param_1,param_2,
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  CG_UpdateActorDObj(localClientNum,cent,
                      (actorInfo_t *)
-                     &(pcVar2->bgs).actorinfo[(param_2->nextState).lerp.u.missile.launchTime + 3].
+                     &(pcVar2->bgs).actorinfo[(cent->nextState).lerp.u.missile.launchTime + 3].
                       nextValid);
-  bVar1 = CL_LocalClient_IsFirstActive(param_1);
+  bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
   if (bVar1) {
-    if (param_2 == (centity_s *)0x0) {
+    if (cent == (centity_s *)0x0) {
       bVar1 = false;
     }
-    else if (param_2->scriptThreaded == 0) {
+    else if (cent->scriptThreaded == 0) {
       bVar1 = false;
     }
     else {
@@ -34,8 +35,8 @@ void __cdecl CG_ActorProcessSnapshot(int param_1,centity_s *param_2)
     bVar1 = false;
   }
   if ((bVar1) &&
-     ((param_2->currentState).u.turret.ownerNum != (param_2->nextState).lerp.u.turret.ownerNum)) {
-    CScr_NotifyNum(param_1,(param_2->nextState).number,0,(uint)cscr_const.enemy,0);
+     ((cent->currentState).u.turret.ownerNum != (cent->nextState).lerp.u.turret.ownerNum)) {
+    CScr_NotifyNum(localClientNum,(cent->nextState).number,0,(uint)cscr_const.enemy,0);
   }
   return;
 }
@@ -48,28 +49,35 @@ void __cdecl CG_ActorProcessSnapshot(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateActorDObj(int param_1,centity_s *param_2,actorInfo_t *param_3)
+void __cdecl CG_UpdateActorDObj(int localClientNum,centity_s *cent,actorInfo_t *ai)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  cgs_t *pcVar4;
-  DObj *pDVar5;
-  int iVar6;
-  XModel *pXVar7;
-  XAnimTree_s *pXVar8;
-  float (*pafVar9) [3];
-  entityState_s *peVar10;
-  FxMarkDObjUpdateContext local_214;
-  uint local_10c;
-  XAnimTree_s *local_108;
-  DObjModel_s local_104 [32];
+  cg_s *cgameGlob_00;
+  cgs_t *pcVar3;
+  DObj *pDVar4;
+  int iVar5;
+  XModel *pXVar6;
+  XAnimTree_s *pXVar7;
+  float (*pafVar8) [3];
+  entityState_s *peVar9;
+  XModel *xmodel;
+  int iNumModels;
+  cg_s *cgameGlob;
+  DObj *pDObj;
+  int model;
+  entityState_s *es;
+  cgs_t *cgs;
+  FxMarkDObjUpdateContext markUpdateContext;
+  int objExists;
+  XAnimTree_s *pAnimTree;
+  DObjModel_s dobjModels [32];
   
-  if (param_2->nextValid != 0) {
-    peVar10 = &param_2->nextState;
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    if ((0xf < (uint)(param_2->nextState).lerp.u.turret.gunAngles[0]) &&
+  if (cent->nextValid != 0) {
+    peVar9 = &cent->nextState;
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    if ((0xf < (uint)(cent->nextState).lerp.u.turret.gunAngles[0]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",
                                  0x7b,0,
                                  "es->lerp.u.actor.index.actorNum doesn\'t index MAX_ACTORS\n\t%i not in [0, %i)"
@@ -78,48 +86,47 @@ void __cdecl CG_UpdateActorDObj(int param_1,centity_s *param_2,actorInfo_t *para
       (*pcVar1)();
       return;
     }
-    pcVar4 = CG_GetLocalClientStaticGlobals(param_1);
-    pDVar5 = Com_GetClientDObj(peVar10->number,param_1);
-    FX_MarkEntUpdateBegin(&local_214,pDVar5,false,0);
-    local_10c = (uint)(pDVar5 != (DObj *)0x0);
-    local_108 = param_3->pXAnimTree;
-    iVar6 = CG_WhatModelShouldLocalPlayerSee
-                      (param_1,pcVar3,param_2,(param_2->nextState).lerp.u.actor.team,
-                       (int)(param_2->nextState).index.brushmodel,
-                       (int)(param_2->nextState).enemyModel);
-    if ((local_108 == (XAnimTree_s *)0x0) || (iVar6 != 0)) {
-      if (local_10c != 0) {
-        pXVar7 = DObjGetModel(pDVar5,0);
-        if (((param_3->dobjDirty == 0) && (pXVar8 = DObjGetTree(pDVar5), local_108 == pXVar8)) &&
-           (pcVar4->gameModels[iVar6] == pXVar7)) {
+    pcVar3 = CG_GetLocalClientStaticGlobals(localClientNum);
+    pDVar4 = Com_GetClientDObj(peVar9->number,localClientNum);
+    FX_MarkEntUpdateBegin(&markUpdateContext,pDVar4,false,0);
+    objExists = (int)(pDVar4 != (DObj *)0x0);
+    pAnimTree = ai->pXAnimTree;
+    iVar5 = CG_WhatModelShouldLocalPlayerSee
+                      (localClientNum,cgameGlob_00,cent,(cent->nextState).lerp.u.actor.team,
+                       (int)(cent->nextState).index.brushmodel,(int)(cent->nextState).enemyModel);
+    if ((pAnimTree == (XAnimTree_s *)0x0) || (iVar5 != 0)) {
+      if (objExists != 0) {
+        pXVar6 = DObjGetModel(pDVar4,0);
+        if (((ai->dobjDirty == 0) && (pXVar7 = DObjGetTree(pDVar4), pAnimTree == pXVar7)) &&
+           (pcVar3->gameModels[iVar5] == pXVar6)) {
           return;
         }
-        CG_SafeDObjFree(param_1,peVar10->number);
+        CG_SafeDObjFree(localClientNum,peVar9->number);
       }
-      local_104[0].model = pcVar4->gameModels[iVar6];
-      if ((local_104[0].model == (XModel *)0x0) &&
+      dobjModels[0].model = pcVar3->gameModels[iVar5];
+      if ((dobjModels[0].model == (XModel *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",
                                    0xa7,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_104[0].boneName = 0;
-      local_104[0].ignoreCollision = false;
-      if (local_108 != (XAnimTree_s *)0x0) {
-        pDVar5 = Com_ClientDObjCreate(local_104,1,local_108,peVar10->number,param_1);
-        param_3->dobjDirty = 0;
-        pafVar9 = cg_entityOriginArray[param_1] + peVar10->number;
-        (*pafVar9)[0] = 131072.0;
-        (*pafVar9)[1] = 131072.0;
-        (*pafVar9)[2] = 131072.0;
-        FX_MarkEntUpdateEnd(&local_214,param_1,peVar10->number,pDVar5,false,0);
+      dobjModels[0].boneName = 0;
+      dobjModels[0].ignoreCollision = false;
+      if (pAnimTree != (XAnimTree_s *)0x0) {
+        pDVar4 = Com_ClientDObjCreate(dobjModels,1,pAnimTree,peVar9->number,localClientNum);
+        ai->dobjDirty = 0;
+        pafVar8 = cg_entityOriginArray[localClientNum] + peVar9->number;
+        (*pafVar8)[0] = 131072.0;
+        (*pafVar8)[1] = 131072.0;
+        (*pafVar8)[2] = 131072.0;
+        FX_MarkEntUpdateEnd(&markUpdateContext,localClientNum,peVar9->number,pDVar4,false,0);
       }
     }
     else {
-      XAnimClearTree(local_108);
-      if (local_10c != 0) {
-        CG_SafeDObjFree(param_1,peVar10->number);
+      XAnimClearTree(pAnimTree);
+      if (objExists != 0) {
+        CG_SafeDObjFree(localClientNum,peVar9->number);
       }
     }
   }
@@ -134,7 +141,7 @@ void __cdecl CG_UpdateActorDObj(int param_1,centity_s *param_2,actorInfo_t *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_EntityNeedsScriptThread(int param_1,centity_s *param_2)
+bool __cdecl CG_EntityNeedsScriptThread(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
@@ -146,12 +153,12 @@ bool __cdecl CG_EntityNeedsScriptThread(int param_1,centity_s *param_2)
     bVar1 = true;
   }
   if (bVar1) {
-    bVar1 = CL_LocalClient_IsFirstActive(param_1);
+    bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
     if (bVar1) {
-      if (param_2 == (centity_s *)0x0) {
+      if (cent == (centity_s *)0x0) {
         bVar1 = false;
       }
-      else if (param_2->scriptThreaded == 0) {
+      else if (cent->scriptThreaded == 0) {
         bVar1 = true;
       }
       else {
@@ -171,47 +178,51 @@ bool __cdecl CG_EntityNeedsScriptThread(int param_1,centity_s *param_2)
 
 // 00471780  CG_ResetActorEntity  (cgame_mp/cg_actors_mp.cpp:195)
 
+/* WARNING: Variable defined which should be unmapped: es */
+/* WARNING: Variable defined which should be unmapped: cgs */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ResetActorEntity(int param_1,cg_s *param_2,centity_s *param_3)
+void __cdecl CG_ResetActorEntity(int localClientNum,cg_s *cgameGlob,centity_s *cent)
 
 {
-  int *piVar1;
-  XAnimTree_s *pXVar2;
-  code *pcVar3;
-  bool bVar4;
-  cgs_t *pcVar5;
-  entityState_s *peVar6;
+  int *ai_00;
+  XAnimTree_s *tree;
+  code *pcVar1;
+  bool bVar2;
+  cgs_t *pcVar3;
+  actorInfo_t *ai;
+  entityState_s *es;
+  cgs_t *cgs;
+  XAnimTree_s *pAnimTree;
   
-  peVar6 = &param_3->nextState;
-  if (0xf < (uint)(param_3->nextState).lerp.u.turret.gunAngles[0]) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0xc9,0,
+  if (0xf < (uint)(cent->nextState).lerp.u.turret.gunAngles[0]) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0xc9,0,
                              "es->lerp.u.actor.index.actorNum doesn\'t index MAX_ACTORS\n\t%i not in [0, %i)"
                             );
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  piVar1 = &(param_2->bgs).actorinfo[(peVar6->lerp).u.missile.launchTime + 3].nextValid;
-  pcVar5 = CG_GetLocalClientStaticGlobals(param_1);
-  pXVar2 = (XAnimTree_s *)piVar1[0x14];
-  piVar1[0x13] = 1;
-  if (pXVar2 == (XAnimTree_s *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0xd1,0,
+  ai_00 = &(cgameGlob->bgs).actorinfo[(cent->nextState).lerp.u.missile.launchTime + 3].nextValid;
+  pcVar3 = CG_GetLocalClientStaticGlobals(localClientNum);
+  tree = (XAnimTree_s *)ai_00[0x14];
+  ai_00[0x13] = 1;
+  if (tree == (XAnimTree_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0xd1,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)(peVar6,pcVar5);
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)(&cent->nextState,pcVar3);
       return;
     }
   }
-  XAnimClearTreeGoalWeights(pXVar2,0,0.0,-1);
-  CG_UpdateActorDObj(param_1,param_3,(actorInfo_t *)piVar1);
+  XAnimClearTreeGoalWeights(tree,0,0.0,-1);
+  CG_UpdateActorDObj(localClientNum,cent,(actorInfo_t *)ai_00);
   return;
 }
 
@@ -223,13 +234,13 @@ void __cdecl CG_ResetActorEntity(int param_1,cg_s *param_2,centity_s *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Actor_PreControllers(int param_1,centity_s *param_2)
+void __cdecl CG_Actor_PreControllers(int localClientNum,centity_s *cent)
 
 {
-  (param_2->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
-  (param_2->pose).field19_0x6c.turret.barrelPitch = 0.0;
-  (param_2->pose).field19_0x6c.fx.triggerTime = 1;
-  (param_2->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
+  (cent->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
+  (cent->pose).field19_0x6c.turret.barrelPitch = 0.0;
+  (cent->pose).field19_0x6c.fx.triggerTime = 1;
+  (cent->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
   return;
 }
 
@@ -241,64 +252,69 @@ void __cdecl CG_Actor_PreControllers(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Actor(int param_1,centity_s *param_2)
+void __cdecl CG_Actor(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
-  ushort uVar2;
-  DObj *pDVar3;
-  cg_s *pcVar4;
-  uint local_60;
-  float local_4c [3];
-  cgs_t *local_40;
-  float local_3c [3];
+  ushort handle;
+  DObj *dobj;
+  cg_s *pcVar2;
+  uint renderFxFlags;
+  ushort t;
+  DObj *obj;
+  entityState_s *s1;
+  cg_s *cgameGlob;
+  float mins [3];
+  cgs_t *cgs;
+  float bounds [3];
   float local_30 [3];
-  float local_24 [3];
-  float local_18;
+  float maxs [3];
+  float lightingOrigin;
   float local_14;
   float local_10;
-  int local_c;
-  int *local_8;
+  int res;
+  actorInfo_t *actorInfo;
   
-  if (((param_2->nextState).lerp.eFlags & 0x20U) == 0) {
-    local_40 = CG_GetLocalClientStaticGlobals(param_1);
-    pDVar3 = Com_GetClientDObj((param_2->nextState).number,param_1);
-    if (pDVar3 != (DObj *)0x0) {
-      bVar1 = CG_EntityNeedsScriptThread(param_1,param_2);
+  if (((cent->nextState).lerp.eFlags & 0x20U) == 0) {
+    cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+    dobj = Com_GetClientDObj((cent->nextState).number,localClientNum);
+    if (dobj != (DObj *)0x0) {
+      bVar1 = CG_EntityNeedsScriptThread(localClientNum,cent);
       if (bVar1) {
-        param_2->scriptThreaded = 1;
-        Scr_AddInt(param_1,SCRIPTINSTANCE_CLIENT);
-        uVar2 = CScr_ExecEntThread(param_2,cg_scr_data.entityspawned,1);
-        Scr_FreeThread(uVar2,SCRIPTINSTANCE_CLIENT);
+        cent->scriptThreaded = 1;
+        Scr_AddInt(localClientNum,SCRIPTINSTANCE_CLIENT);
+        handle = CScr_ExecEntThread(cent,cg_scr_data.entityspawned,1);
+        Scr_FreeThread(handle,SCRIPTINSTANCE_CLIENT);
       }
-      pcVar4 = CG_GetLocalClientGlobals(param_1);
-      local_8 = &(pcVar4->bgs).actorinfo[(param_2->nextState).lerp.u.missile.launchTime + 3].
-                 nextValid;
-      BG_Dog_UpdateAnimationState(param_1,&param_2->nextState,(actorInfo_t *)local_8);
-      CG_Actor_PreControllers(param_1,param_2);
-      local_18 = (param_2->pose).origin[0];
-      local_14 = (param_2->pose).origin[1];
-      local_10 = (param_2->pose).origin[2] + 32.0;
-      if (((param_2->pose).isRagdoll != '\0') && (0 < (param_2->pose).ragdollHandle)) {
-        Ragdoll_GetRootOrigin((param_2->pose).ragdollHandle,(param_2->pose).origin);
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+      actorInfo = (actorInfo_t *)
+                  &(pcVar2->bgs).actorinfo[(cent->nextState).lerp.u.missile.launchTime + 3].
+                   nextValid;
+      BG_Dog_UpdateAnimationState(localClientNum,&cent->nextState,actorInfo);
+      CG_Actor_PreControllers(localClientNum,cent);
+      lightingOrigin = (cent->pose).origin[0];
+      local_14 = (cent->pose).origin[1];
+      local_10 = (cent->pose).origin[2] + 32.0;
+      if (((cent->pose).isRagdoll != '\0') && (0 < (cent->pose).ragdollHandle)) {
+        Ragdoll_GetRootOrigin((cent->pose).ragdollHandle,(cent->pose).origin);
       }
-      CG_DoFootsteps(param_1,param_2);
-      CG_GetEntityDobjBounds(param_2,pDVar3,local_4c,local_24,local_3c,local_30);
-      local_c = R_CullBoxCurDpvs(local_3c,param_1);
-      if (local_c == 0) {
-        CG_HighlightPlayer(param_1,param_2,&(param_2->pose).constantSet,false);
-        local_60 = 0x400004;
-        bVar1 = CG_IsInfrared(param_1);
+      CG_DoFootsteps(localClientNum,cent);
+      CG_GetEntityDobjBounds(cent,dobj,mins,maxs,bounds,local_30);
+      res = R_CullBoxCurDpvs(bounds,localClientNum);
+      if (res == 0) {
+        CG_HighlightPlayer(localClientNum,cent,&(cent->pose).constantSet,false);
+        renderFxFlags = 0x400004;
+        bVar1 = CG_IsInfrared(localClientNum);
         if (bVar1) {
-          local_60 = 0x400084;
+          renderFxFlags = 0x400084;
         }
-        R_AddDObjToScene(pDVar3,&param_2->pose,(param_2->nextState).number,local_60,&local_18,0.0,
-                         0.0,0.0,0.0,-1,-1,&(param_2->pose).constantSet,(ShaderConstantSet *)0x0,0.0
-                         ,1.0);
+        R_AddDObjToScene(dobj,&cent->pose,(cent->nextState).number,renderFxFlags,&lightingOrigin,0.0
+                         ,0.0,0.0,0.0,-1,-1,&(cent->pose).constantSet,(ShaderConstantSet *)0x0,0.0,
+                         1.0);
       }
-      if (((param_2->nextState).eType == 0x11) &&
-         (bVar1 = CL_LocalClient_IsFirstActive(param_1), bVar1)) {
-        CG_DoTouchTriggers(param_2,param_1);
+      if (((cent->nextState).eType == 0x11) &&
+         (bVar1 = CL_LocalClient_IsFirstActive(localClientNum), bVar1)) {
+        CG_DoTouchTriggers(cent,localClientNum);
       }
     }
   }
@@ -313,48 +329,53 @@ void __cdecl CG_Actor(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ActorCorpse(int param_1,centity_s *param_2)
+void __cdecl CG_ActorCorpse(int localClientNum,centity_s *cent)
 
 {
-  actorInfo_t *paVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  entityState_s *peVar5;
-  cgs_t *pcVar6;
-  DObj *pDVar7;
-  float local_10;
+  actorInfo_t *ai_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  entityState_s *peVar4;
+  cgs_t *pcVar5;
+  DObj *obj_00;
+  actorInfo_t *ai;
+  DObj *obj;
+  cgs_t *cgs;
+  entityState_s *es;
+  int corpseIndex;
+  float lightingOrigin;
   float local_c;
   float local_8;
   
-  peVar5 = &param_2->nextState;
-  if ((((param_2->nextState).lerp.eFlags & 0x40000U) == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0x152
-                               ,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  peVar4 = &cent->nextState;
+  if ((((cent->nextState).lerp.eFlags & 0x40000U) == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",0x152
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if (((param_2->nextState).lerp.eFlags & 0x20U) == 0) {
-    iVar2 = peVar5->number;
-    if ((7 < iVar2 - 0x24U) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",
-                                 0x159,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if (((cent->nextState).lerp.eFlags & 0x20U) == 0) {
+    iVar1 = peVar4->number;
+    if ((7 < iVar1 - 0x24U) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_actors_mp.cpp",
+                                 0x159,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    pcVar6 = CG_GetLocalClientStaticGlobals(param_1);
-    paVar1 = (actorInfo_t *)(pcVar6->corpseinfo[1].vehAnimLastAngle + iVar2 * 0x15);
-    CG_UpdateActorDObj(param_1,param_2,paVar1);
-    pDVar7 = Com_GetClientDObj(peVar5->number,param_1);
-    if (pDVar7 != (DObj *)0x0) {
-      BG_Dog_UpdateAnimationState(param_1,&param_2->nextState,paVar1);
-      local_10 = (param_2->pose).origin[0];
-      local_c = (param_2->pose).origin[1];
-      local_8 = (param_2->pose).origin[2];
-      if (((param_2->nextState).lerp.eFlags & 8U) == 0) {
-        if (((param_2->nextState).lerp.eFlags & 4U) == 0) {
+    pcVar5 = CG_GetLocalClientStaticGlobals(localClientNum);
+    ai_00 = (actorInfo_t *)(pcVar5->corpseinfo[1].vehAnimLastAngle + iVar1 * 0x15);
+    CG_UpdateActorDObj(localClientNum,cent,ai_00);
+    obj_00 = Com_GetClientDObj(peVar4->number,localClientNum);
+    if (obj_00 != (DObj *)0x0) {
+      BG_Dog_UpdateAnimationState(localClientNum,&cent->nextState,ai_00);
+      lightingOrigin = (cent->pose).origin[0];
+      local_c = (cent->pose).origin[1];
+      local_8 = (cent->pose).origin[2];
+      if (((cent->nextState).lerp.eFlags & 8U) == 0) {
+        if (((cent->nextState).lerp.eFlags & 4U) == 0) {
           local_8 = local_8 + 32.0;
         }
         else {
@@ -364,9 +385,9 @@ void __cdecl CG_ActorCorpse(int param_1,centity_s *param_2)
       else {
         local_8 = local_8 + 12.0;
       }
-      CG_HighlightPlayer(param_1,param_2,&(param_2->pose).constantSet,false);
-      R_AddDObjToScene(pDVar7,&param_2->pose,peVar5->number,0x400000,&local_10,0.0,0.0,0.0,0.0,-1,-1
-                       ,&(param_2->pose).constantSet,(ShaderConstantSet *)0x0,0.0,1.0);
+      CG_HighlightPlayer(localClientNum,cent,&(cent->pose).constantSet,false);
+      R_AddDObjToScene(obj_00,&cent->pose,peVar4->number,0x400000,&lightingOrigin,0.0,0.0,0.0,0.0,-1
+                       ,-1,&(cent->pose).constantSet,(ShaderConstantSet *)0x0,0.0,1.0);
     }
   }
   return;
@@ -377,14 +398,14 @@ void __cdecl CG_ActorCorpse(int param_1,centity_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-cgs_t * __cdecl CG_GetLocalClientStaticGlobals(int param_1)
+cgs_t * __cdecl CG_GetLocalClientStaticGlobals(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   cgs_t *pcVar3;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame_mp/cg_local_mp.h",
                              0x733,0,"%s\n\t(localClientNum) = %i");
     if (!bVar2) {

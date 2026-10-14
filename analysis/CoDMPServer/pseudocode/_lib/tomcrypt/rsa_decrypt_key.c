@@ -13,7 +13,7 @@ rsa_decrypt_key_ex(undefined4 param_1,uint param_2,int param_3,int param_4,undef
   int iVar1;
   undefined4 uVar2;
   uint uVar3;
-  void *pvVar4;
+  void *ptr;
   uint uStack_4;
   
   if (param_3 == 0) {
@@ -51,19 +51,19 @@ rsa_decrypt_key_ex(undefined4 param_1,uint param_2,int param_3,int param_4,undef
   if (uVar3 != param_2) {
     return 7;
   }
-  pvVar4 = tom_game_malloc(param_2);
-  if (pvVar4 != (void *)0x0) {
+  ptr = tom_game_malloc(param_2);
+  if (ptr != (void *)0x0) {
     uStack_4 = param_2;
-    iVar1 = (*DAT_0b563960)(param_1,param_2,pvVar4,&uStack_4,1,param_10);
+    iVar1 = (*DAT_0b563960)(param_1,param_2,ptr,&uStack_4,1,param_10);
     if (iVar1 == 0) {
       if (param_8 == 2) {
-        iVar1 = pkcs_1_oaep_decode(pvVar4,uStack_4,param_5,param_6,uVar2,param_7);
-        tom_game_free(pvVar4);
+        iVar1 = pkcs_1_oaep_decode(ptr,uStack_4,param_5,param_6,uVar2,param_7);
+        tom_game_free(ptr);
         return iVar1;
       }
-      iVar1 = pkcs_1_v1_5_decode(pvVar4,uStack_4,2,uVar2,param_3,param_4,param_9);
+      iVar1 = pkcs_1_v1_5_decode(ptr,uStack_4,2,uVar2,param_3,param_4,param_9);
     }
-    tom_game_free(pvVar4);
+    tom_game_free(ptr);
     return iVar1;
   }
   return 0xd;

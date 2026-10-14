@@ -2,48 +2,52 @@
 
 // 00C2222C  __crtsetenv  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c:76)
 
-int __cdecl __crtsetenv(char **param_1,int param_2)
+int __cdecl __crtsetenv(char **poption,int primary)
 
 {
-  uint uVar1;
+  uint size;
+  uchar *string;
+  int *piVar1;
   uchar *puVar2;
-  int *piVar3;
-  uchar *puVar4;
-  int iVar5;
-  uint uVar6;
-  char **ppcVar7;
+  int iVar3;
+  uint uVar4;
+  char **ppcVar5;
   int extraout_EAX;
-  char *lpName;
+  char *_Dst;
   int extraout_EAX_00;
-  BOOL BVar8;
-  char **ppcVar9;
+  BOOL BVar6;
+  char **ppcVar7;
   char **unaff_EDI;
-  bool bVar10;
-  uchar *puVar11;
-  int local_10;
+  bool bVar8;
+  uchar *_Src;
+  char *equal;
+  char **env;
+  int retval;
+  int remove;
+  char *option;
   
-  local_10 = 0;
-  if (param_1 == (char **)0x0) {
-    piVar3 = _errno();
-    *piVar3 = 0x16;
+  retval = 0;
+  if (poption == (char **)0x0) {
+    piVar1 = _errno();
+    *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  puVar2 = (uchar *)*param_1;
-  if (((puVar2 == (uchar *)0x0) || (puVar4 = _mbschr(puVar2,0x3d), puVar4 == (uchar *)0x0)) ||
-     (puVar2 == puVar4)) {
+  string = (uchar *)*poption;
+  if (((string == (uchar *)0x0) || (puVar2 = _mbschr(string,0x3d), puVar2 == (uchar *)0x0)) ||
+     (string == puVar2)) {
 LAB_00c222bc:
-    piVar3 = _errno();
-    *piVar3 = 0x16;
+    piVar1 = _errno();
+    *piVar1 = 0x16;
     return -1;
   }
-  bVar10 = puVar4[1] == '\0';
+  bVar8 = puVar2[1] == '\0';
   if (_environ == __initenv) {
     _environ = copy_environ(unaff_EDI);
   }
   if (_environ == (char **)0x0) {
-    if ((param_2 == 0) || (_wenviron == (ushort **)0x0)) {
-      if (bVar10) {
+    if ((primary == 0) || (_wenviron == (ushort **)0x0)) {
+      if (bVar8) {
         return 0;
       }
       _environ = _malloc_crt(4);
@@ -60,92 +64,92 @@ LAB_00c222bc:
       }
     }
     else {
-      iVar5 = __wtomb_environ();
-      if (iVar5 != 0) goto LAB_00c222bc;
+      iVar3 = __wtomb_environ();
+      if (iVar3 != 0) goto LAB_00c222bc;
     }
   }
-  ppcVar7 = _environ;
+  ppcVar5 = _environ;
   if (_environ == (char **)0x0) {
     return -1;
   }
-  uVar6 = findenv((char *)puVar2,(int)unaff_EDI);
-  if (((int)uVar6 < 0) || (*ppcVar7 == (char *)0x0)) {
-    if (bVar10) {
-      free(puVar2);
-      *param_1 = (char *)0x0;
+  uVar4 = findenv((char *)string,(int)unaff_EDI);
+  if (((int)uVar4 < 0) || (*ppcVar5 == (char *)0x0)) {
+    if (bVar8) {
+      free(string);
+      *poption = (char *)0x0;
       return 0;
     }
-    if ((int)uVar6 < 0) {
-      uVar6 = -uVar6;
+    if ((int)uVar4 < 0) {
+      uVar4 = -uVar4;
     }
-    uVar1 = uVar6 + 2;
-    if ((int)uVar1 < (int)uVar6) {
+    size = uVar4 + 2;
+    if ((int)size < (int)uVar4) {
       return -1;
     }
-    if (0x3ffffffe < uVar1) {
+    if (0x3ffffffe < size) {
       return -1;
     }
-    ppcVar7 = _recalloc_crt(_environ,4,uVar1);
-    if (ppcVar7 == (char **)0x0) {
+    ppcVar5 = _recalloc_crt(_environ,4,size);
+    if (ppcVar5 == (char **)0x0) {
       return -1;
     }
-    ppcVar7[uVar6] = (char *)puVar2;
-    (ppcVar7 + uVar6)[1] = (char *)0x0;
-    *param_1 = (char *)0x0;
+    ppcVar5[uVar4] = (char *)string;
+    (ppcVar5 + uVar4)[1] = (char *)0x0;
+    *poption = (char *)0x0;
   }
   else {
-    ppcVar9 = ppcVar7 + uVar6;
-    free(*ppcVar9);
-    if (!bVar10) {
-      *ppcVar9 = (char *)puVar2;
-      *param_1 = (char *)0x0;
+    ppcVar7 = ppcVar5 + uVar4;
+    free(*ppcVar7);
+    if (!bVar8) {
+      *ppcVar7 = (char *)string;
+      *poption = (char *)0x0;
       goto LAB_00c223ca;
     }
-    while (*ppcVar9 != (char *)0x0) {
-      *ppcVar9 = ppcVar9[1];
-      uVar6 = uVar6 + 1;
-      ppcVar9 = ppcVar7 + uVar6;
+    while (*ppcVar7 != (char *)0x0) {
+      *ppcVar7 = ppcVar7[1];
+      uVar4 = uVar4 + 1;
+      ppcVar7 = ppcVar5 + uVar4;
     }
-    if ((0x3ffffffe < uVar6) || (ppcVar7 = _recalloc_crt(_environ,uVar6,4), ppcVar7 == (char **)0x0)
+    if ((0x3ffffffe < uVar4) || (ppcVar5 = _recalloc_crt(_environ,uVar4,4), ppcVar5 == (char **)0x0)
        ) goto LAB_00c223ca;
   }
-  _environ = ppcVar7;
+  _environ = ppcVar5;
 LAB_00c223ca:
-  if (param_2 != 0) {
-    uVar6 = 1;
-    strlen(puVar2);
-    lpName = _calloc_crt(extraout_EAX + 2,uVar6);
-    if (lpName != (char *)0x0) {
-      puVar11 = puVar2;
-      strlen(puVar2);
-      iVar5 = strcpy_s(lpName,extraout_EAX_00 + 2,(char *)puVar11);
-      if (iVar5 != 0) {
+  if (primary != 0) {
+    uVar4 = 1;
+    strlen(string);
+    _Dst = _calloc_crt(extraout_EAX + 2,uVar4);
+    if (_Dst != (char *)0x0) {
+      _Src = string;
+      strlen(string);
+      iVar3 = strcpy_s(_Dst,extraout_EAX_00 + 2,(char *)_Src);
+      if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      puVar4[(int)lpName - (int)puVar2] = '\0';
-      BVar8 = SetEnvironmentVariableA
-                        (lpName,(LPCSTR)(~-(uint)bVar10 &
-                                        (uint)(puVar4 + ((int)lpName - (int)puVar2) + 1)));
-      if (BVar8 == 0) {
-        local_10 = -1;
-        piVar3 = _errno();
-        *piVar3 = 0x2a;
+      puVar2[(int)_Dst - (int)string] = '\0';
+      BVar6 = SetEnvironmentVariableA
+                        (_Dst,(LPCSTR)(~-(uint)bVar8 &
+                                      (uint)(puVar2 + ((int)_Dst - (int)string) + 1)));
+      if (BVar6 == 0) {
+        retval = -1;
+        piVar1 = _errno();
+        *piVar1 = 0x2a;
       }
-      free(lpName);
+      free(_Dst);
     }
   }
-  if (bVar10) {
-    free(puVar2);
-    *param_1 = (char *)0x0;
-    return local_10;
+  if (bVar8) {
+    free(string);
+    *poption = (char *)0x0;
+    return retval;
   }
-  return local_10;
+  return retval;
 }
 
 
 // 00C22180  findenv  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c:387)
 
-int __cdecl findenv(char *param_1,int param_2)
+int __cdecl findenv(char *name,int param_2)
 
 {
   int iVar1;
@@ -157,7 +161,7 @@ int __cdecl findenv(char *param_1,int param_2)
     if ((uchar *)*ppcVar2 == (uchar *)0x0) {
       return -((int)ppcVar2 - (int)_environ >> 2);
     }
-    iVar1 = _mbsnbicoll((uchar *)param_1,(uchar *)*ppcVar2,unaff_EDI);
+    iVar1 = _mbsnbicoll((uchar *)name,(uchar *)*ppcVar2,unaff_EDI);
     if ((iVar1 == 0) && (((*ppcVar2)[unaff_EDI] == '=' || ((*ppcVar2)[unaff_EDI] == '\0')))) break;
     ppcVar2 = ppcVar2 + 1;
   }
@@ -176,6 +180,7 @@ char ** __cdecl copy_environ(char **param_1)
   char *pcVar3;
   int *piVar4;
   char **ppcVar5;
+  char **newenviron;
   
   ppcVar2 = (char **)0x0;
   if (in_EAX != (int *)0x0) {

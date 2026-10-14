@@ -5,11 +5,11 @@
 void __cdecl R_ClearFogs(void)
 
 {
-  uint local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    memset((uchar *)(rg.clientFogs + local_8),'\0',400);
-    rg.clientFogs[local_8].index = 0;
+  for (i = 0; (uint)i < 4; i = i + 1) {
+    memset((uchar *)(rg.clientFogs + i),'\0',400);
+    rg.clientFogs[i].index = 0;
   }
   return;
 }
@@ -18,16 +18,17 @@ void __cdecl R_ClearFogs(void)
 // 00AB8880  R_SetFogFromServer  (gfx_d3d/r_fog.cpp:31)
 
 void __cdecl
-R_SetFogFromServer(int param_1,float param_2,float param_3,float param_4,float param_5,float param_6
-                  ,float param_7,float param_8,float param_9,float param_10,float param_11,
-                  float param_12,float param_13,float param_14,float param_15,float param_16,
-                  float param_17,float param_18)
+R_SetFogFromServer(int localClientNum,float start,float r,float g,float b,float density,
+                  float heightDensity,float baseHeight,float fogColorScale,float sunFogColorR,
+                  float sunFogColorG,float sunFogColorB,float sunFogDirX,float sunFogDirY,
+                  float sunFogDirZ,float sunFogStartAng,float sunFogEndAng,float fogMaxOpacity)
 
 {
   code *pcVar1;
   bool bVar2;
+  GfxClientFog *fog;
   
-  if (3 < (uint)param_1) {
+  if (3 < (uint)localClientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_fog.cpp",0x20,0,
                              "localClientNum doesn\'t index ARRAY_COUNT(rg.clientFogs)\n\t%i not in [0, %i)"
                             );
@@ -37,57 +38,59 @@ R_SetFogFromServer(int param_1,float param_2,float param_3,float param_4,float p
       return;
     }
   }
-  rg.clientFogs[param_1].settings[1].fogStart = param_2;
-  rg.clientFogs[param_1].settings[1].heightDensity = param_7;
-  rg.clientFogs[param_1].settings[1].density = param_6;
-  rg.clientFogs[param_1].settings[1].baseHeight = param_8;
-  rg.clientFogs[param_1].settings[1].color[0] = param_3;
-  rg.clientFogs[param_1].settings[1].color[1] = param_4;
-  rg.clientFogs[param_1].settings[1].color[2] = param_5;
-  rg.clientFogs[param_1].settings[1].color[3] = param_9;
-  rg.clientFogs[param_1].settings[1].sunFogColor[0] = param_10;
-  rg.clientFogs[param_1].settings[1].sunFogColor[1] = param_11;
-  rg.clientFogs[param_1].settings[1].sunFogColor[2] = param_12;
-  rg.clientFogs[param_1].settings[1].sunFogColor[3] = param_18;
-  rg.clientFogs[param_1].settings[1].sunFogDir[0] = param_13;
-  rg.clientFogs[param_1].settings[1].sunFogDir[1] = param_14;
-  rg.clientFogs[param_1].settings[1].sunFogDir[2] = param_15;
-  rg.clientFogs[param_1].settings[1].sunFogEndAng = param_17;
-  rg.clientFogs[param_1].settings[1].sunFogStartAng = param_16;
-  rg.clientFogs[param_1].settings[1].maxDensity = param_6 * 100.0;
+  rg.clientFogs[localClientNum].settings[1].fogStart = start;
+  rg.clientFogs[localClientNum].settings[1].heightDensity = heightDensity;
+  rg.clientFogs[localClientNum].settings[1].density = density;
+  rg.clientFogs[localClientNum].settings[1].baseHeight = baseHeight;
+  rg.clientFogs[localClientNum].settings[1].color[0] = r;
+  rg.clientFogs[localClientNum].settings[1].color[1] = g;
+  rg.clientFogs[localClientNum].settings[1].color[2] = b;
+  rg.clientFogs[localClientNum].settings[1].color[3] = fogColorScale;
+  rg.clientFogs[localClientNum].settings[1].sunFogColor[0] = sunFogColorR;
+  rg.clientFogs[localClientNum].settings[1].sunFogColor[1] = sunFogColorG;
+  rg.clientFogs[localClientNum].settings[1].sunFogColor[2] = sunFogColorB;
+  rg.clientFogs[localClientNum].settings[1].sunFogColor[3] = fogMaxOpacity;
+  rg.clientFogs[localClientNum].settings[1].sunFogDir[0] = sunFogDirX;
+  rg.clientFogs[localClientNum].settings[1].sunFogDir[1] = sunFogDirY;
+  rg.clientFogs[localClientNum].settings[1].sunFogDir[2] = sunFogDirZ;
+  rg.clientFogs[localClientNum].settings[1].sunFogEndAng = sunFogEndAng;
+  rg.clientFogs[localClientNum].settings[1].sunFogStartAng = sunFogStartAng;
+  rg.clientFogs[localClientNum].settings[1].maxDensity = density * 100.0;
   return;
 }
 
 
 // 00AB89D0  R_GetFogSettings  (gfx_d3d/r_fog.cpp:64)
 
-void __cdecl R_GetFogSettings(float *param_1)
+void __cdecl R_GetFogSettings(float *fogSettings)
 
 {
-  *param_1 = rg.clientFogs[0].settings[1].fogStart;
-  param_1[1] = 1.0 / rg.clientFogs[0].settings[1].density;
-  param_1[2] = rg.clientFogs[0].settings[1].baseHeight;
-  param_1[3] = 1.0 / rg.clientFogs[0].settings[1].heightDensity;
-  param_1[4] = rg.clientFogs[0].settings[1].color[0];
-  param_1[5] = rg.clientFogs[0].settings[1].color[1];
-  param_1[6] = rg.clientFogs[0].settings[1].color[2];
-  param_1[7] = rg.clientFogs[0].settings[1].color[3];
-  param_1[8] = rg.clientFogs[0].settings[1].sunFogColor[0];
-  param_1[9] = rg.clientFogs[0].settings[1].sunFogColor[1];
-  param_1[10] = rg.clientFogs[0].settings[1].sunFogColor[2];
-  param_1[0xb] = rg.clientFogs[0].settings[1].sunFogDir[0];
-  param_1[0xc] = rg.clientFogs[0].settings[1].sunFogDir[1];
-  param_1[0xd] = rg.clientFogs[0].settings[1].sunFogDir[2];
-  param_1[0xe] = rg.clientFogs[0].settings[1].sunFogStartAng;
-  param_1[0xf] = rg.clientFogs[0].settings[1].sunFogEndAng;
-  param_1[0x10] = rg.clientFogs[0].settings[1].sunFogColor[3];
+  GfxClientFog *fog;
+  
+  *fogSettings = rg.clientFogs[0].settings[1].fogStart;
+  fogSettings[1] = 1.0 / rg.clientFogs[0].settings[1].density;
+  fogSettings[2] = rg.clientFogs[0].settings[1].baseHeight;
+  fogSettings[3] = 1.0 / rg.clientFogs[0].settings[1].heightDensity;
+  fogSettings[4] = rg.clientFogs[0].settings[1].color[0];
+  fogSettings[5] = rg.clientFogs[0].settings[1].color[1];
+  fogSettings[6] = rg.clientFogs[0].settings[1].color[2];
+  fogSettings[7] = rg.clientFogs[0].settings[1].color[3];
+  fogSettings[8] = rg.clientFogs[0].settings[1].sunFogColor[0];
+  fogSettings[9] = rg.clientFogs[0].settings[1].sunFogColor[1];
+  fogSettings[10] = rg.clientFogs[0].settings[1].sunFogColor[2];
+  fogSettings[0xb] = rg.clientFogs[0].settings[1].sunFogDir[0];
+  fogSettings[0xc] = rg.clientFogs[0].settings[1].sunFogDir[1];
+  fogSettings[0xd] = rg.clientFogs[0].settings[1].sunFogDir[2];
+  fogSettings[0xe] = rg.clientFogs[0].settings[1].sunFogStartAng;
+  fogSettings[0xf] = rg.clientFogs[0].settings[1].sunFogEndAng;
+  fogSettings[0x10] = rg.clientFogs[0].settings[1].sunFogColor[3];
   return;
 }
 
 
 // 00AB8B60  R_SwitchFog  (gfx_d3d/r_fog.cpp:90)
 
-void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
+void __cdecl R_SwitchFog(int localClientNum,int fogvar,int startTime,int transitionTime)
 
 {
   code *pcVar1;
@@ -97,8 +100,9 @@ void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
   GfxFog *pGVar5;
   int *piVar6;
   GfxFog *pGVar7;
+  GfxClientFog *fog;
   
-  if ((3 < (uint)param_1) &&
+  if ((3 < (uint)localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_fog.cpp",0x5b,0,
                                "localClientNum doesn\'t index ARRAY_COUNT(rg.clientFogs)\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -106,48 +110,48 @@ void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
     (*pcVar1)();
     return;
   }
-  if (((param_2 < 0) || (4 < param_2)) &&
+  if (((fogvar < 0) || (4 < fogvar)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_fog.cpp",0x5c,0,
                                "%s\n\t(fogvar) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = param_1 * 0x194 + 0xa8679c4;
-  rg.clientFogs[param_1].index = param_2;
-  if (rg.clientFogs[param_1].settings[2].density == 0.0) {
-    piVar6 = (int *)(rg.clientFogs[param_1].index * 0x50 + iVar3);
-    pGVar5 = rg.clientFogs[param_1].settings + 3;
+  iVar3 = localClientNum * 0x194 + 0xa8679c4;
+  rg.clientFogs[localClientNum].index = fogvar;
+  if (rg.clientFogs[localClientNum].settings[2].density == 0.0) {
+    piVar6 = (int *)(rg.clientFogs[localClientNum].index * 0x50 + iVar3);
+    pGVar5 = rg.clientFogs[localClientNum].settings + 3;
     for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
       pGVar5->startTime = *piVar6;
       piVar6 = piVar6 + 1;
       pGVar5 = (GfxFog *)&pGVar5->finishTime;
     }
-    param_4 = 0;
+    transitionTime = 0;
   }
   else {
-    pGVar5 = rg.clientFogs[param_1].settings + 2;
-    pGVar7 = rg.clientFogs[param_1].settings + 3;
+    pGVar5 = rg.clientFogs[localClientNum].settings + 2;
+    pGVar7 = rg.clientFogs[localClientNum].settings + 3;
     for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
       pGVar7->startTime = pGVar5->startTime;
       pGVar5 = (GfxFog *)&pGVar5->finishTime;
       pGVar7 = (GfxFog *)&pGVar7->finishTime;
     }
   }
-  piVar6 = (int *)(rg.clientFogs[param_1].index * 0x50 + iVar3);
-  pGVar5 = rg.clientFogs[param_1].settings + 4;
+  piVar6 = (int *)(rg.clientFogs[localClientNum].index * 0x50 + iVar3);
+  pGVar5 = rg.clientFogs[localClientNum].settings + 4;
   for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
     pGVar5->startTime = *piVar6;
     piVar6 = piVar6 + 1;
     pGVar5 = (GfxFog *)&pGVar5->finishTime;
   }
-  if (param_4 == 0) {
-    rg.clientFogs[param_1].settings[4].startTime = 0;
-    rg.clientFogs[param_1].settings[4].finishTime = 0;
+  if (transitionTime == 0) {
+    rg.clientFogs[localClientNum].settings[4].startTime = 0;
+    rg.clientFogs[localClientNum].settings[4].finishTime = 0;
   }
   else {
-    rg.clientFogs[param_1].settings[4].startTime = param_3;
-    rg.clientFogs[param_1].settings[4].finishTime = param_3 + param_4;
+    rg.clientFogs[localClientNum].settings[4].startTime = startTime;
+    rg.clientFogs[localClientNum].settings[4].finishTime = startTime + transitionTime;
   }
   return;
 }

@@ -179,24 +179,24 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
 void __thiscall bpei_database_t::update_database(bpei_database_t *this)
 
 {
-  broad_phase_environment_info *pbVar1;
-  broad_phase_environment_info **ppbVar2;
+  broad_phase_environment_info *size;
+  broad_phase_environment_info **ppbVar1;
   
-  ppbVar2 = &this->m_bpei_list;
-  pbVar1 = this->m_bpei_list;
-  while (pbVar1 != (broad_phase_environment_info *)0x0) {
-    if (pbVar1->m_data == (void *)0x0) {
-      *ppbVar2 = pbVar1->m_next_bpei;
+  ppbVar1 = &this->m_bpei_list;
+  size = this->m_bpei_list;
+  while (size != (broad_phase_environment_info *)0x0) {
+    if (size->m_data == (void *)0x0) {
+      *ppbVar1 = size->m_next_bpei;
       phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-      ::remove(&this->m_bpei_map,&pbVar1->m_database_id);
+      ::remove(&this->m_bpei_map,&size->m_database_id);
       (this->m_bpei_allocator).m_count = (this->m_bpei_allocator).m_count + -1;
-      PMM_FREE(pbVar1,0x24,4);
+      PMM_FREE(size,0x24,4);
     }
     else {
-      ppbVar2 = &pbVar1->m_next_bpei;
-      pbVar1->m_data = (void *)0x0;
+      ppbVar1 = &size->m_next_bpei;
+      size->m_data = (void *)0x0;
     }
-    pbVar1 = *ppbVar2;
+    size = *ppbVar1;
   }
   return;
 }

@@ -10,7 +10,7 @@ uint __cdecl bdStrlcpy(char *param_1,char *param_2,uint param_3)
   char cVar1;
   char *pcVar2;
   uint uVar3;
-  uint uVar4;
+  uint count;
   
   pcVar2 = param_2;
   do {
@@ -19,12 +19,12 @@ uint __cdecl bdStrlcpy(char *param_1,char *param_2,uint param_3)
   } while (cVar1 != '\0');
   uVar3 = (int)pcVar2 - (int)(param_2 + 1);
   if ((param_3 != 0) && (param_1 != (char *)0x0)) {
-    uVar4 = param_3 - 1;
+    count = param_3 - 1;
     if (uVar3 < param_3 - 1) {
-      uVar4 = uVar3;
+      count = uVar3;
     }
-    memcpy((uchar *)param_1,(uchar *)param_2,uVar4);
-    param_1[uVar4] = '\0';
+    memcpy((uchar *)param_1,(uchar *)param_2,count);
+    param_1[count] = '\0';
   }
   return uVar3;
 }

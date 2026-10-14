@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _findfirst64i32(char *param_1,_finddata64i32_t *param_2)
+int __cdecl _findfirst64i32(char *szWild,_finddata64i32_t *pfd)
 
 {
   int *piVar1;
@@ -12,28 +12,28 @@ int __cdecl _findfirst64i32(char *param_1,_finddata64i32_t *param_2)
   DWORD DVar3;
   int iVar4;
   long64 lVar5;
-  _WIN32_FIND_DATAA local_148;
+  _WIN32_FIND_DATAA wfd;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (_finddata64i32_t *)0x0) || (param_1 == (char *)0x0)) {
+  if ((pfd == (_finddata64i32_t *)0x0) || (szWild == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  pvVar2 = FindFirstFileA(param_1,&local_148);
+  pvVar2 = FindFirstFileA(szWild,&wfd);
   if (pvVar2 != (HANDLE)0xffffffff) {
-    param_2->attrib = -(uint)(local_148.dwFileAttributes != 0x80) & local_148.dwFileAttributes;
-    lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftCreationTime);
-    param_2->time_create = lVar5;
-    lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftLastAccessTime);
-    param_2->time_access = lVar5;
-    lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftLastWriteTime);
-    *(int *)&param_2->time_write = (int)lVar5;
-    param_2->size = local_148.nFileSizeLow;
-    *(int *)((int)&param_2->time_write + 4) = (int)((ulonglong)lVar5 >> 0x20);
-    iVar4 = strcpy_s(param_2->name,0x104,local_148.cFileName);
+    pfd->attrib = -(uint)(wfd.dwFileAttributes != 0x80) & wfd.dwFileAttributes;
+    lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftCreationTime);
+    pfd->time_create = lVar5;
+    lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftLastAccessTime);
+    pfd->time_access = lVar5;
+    lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftLastWriteTime);
+    *(int *)&pfd->time_write = (int)lVar5;
+    pfd->size = wfd.nFileSizeLow;
+    *(int *)((int)&pfd->time_write + 4) = (int)((ulonglong)lVar5 >> 0x20);
+    iVar4 = strcpy_s(pfd->name,0x104,wfd.cFileName);
     if (iVar4 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       return (int)pvVar2;
@@ -66,7 +66,7 @@ LAB_00c14b4e:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _findnext64i32(int param_1,_finddata64i32_t *param_2)
+int __cdecl _findnext64i32(int hFile,_finddata64i32_t *pfd)
 
 {
   int *piVar1;
@@ -74,27 +74,27 @@ int __cdecl _findnext64i32(int param_1,_finddata64i32_t *param_2)
   DWORD DVar3;
   int iVar4;
   long64 lVar5;
-  _WIN32_FIND_DATAA local_148;
+  _WIN32_FIND_DATAA wfd;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == -1) {
+  if (hFile == -1) {
     piVar1 = _errno();
   }
   else {
-    if (param_2 != (_finddata64i32_t *)0x0) {
-      BVar2 = FindNextFileA((HANDLE)param_1,&local_148);
+    if (pfd != (_finddata64i32_t *)0x0) {
+      BVar2 = FindNextFileA((HANDLE)hFile,&wfd);
       if (BVar2 != 0) {
-        param_2->attrib = -(uint)(local_148.dwFileAttributes != 0x80) & local_148.dwFileAttributes;
-        lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftCreationTime);
-        param_2->time_create = lVar5;
-        lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftLastAccessTime);
-        param_2->time_access = lVar5;
-        lVar5 = __time64_t_from_ft((_FILETIME *)&local_148.ftLastWriteTime);
-        *(int *)&param_2->time_write = (int)lVar5;
-        param_2->size = local_148.nFileSizeLow;
-        *(int *)((int)&param_2->time_write + 4) = (int)((ulonglong)lVar5 >> 0x20);
-        iVar4 = strcpy_s(param_2->name,0x104,local_148.cFileName);
+        pfd->attrib = -(uint)(wfd.dwFileAttributes != 0x80) & wfd.dwFileAttributes;
+        lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftCreationTime);
+        pfd->time_create = lVar5;
+        lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftLastAccessTime);
+        pfd->time_access = lVar5;
+        lVar5 = __time64_t_from_ft((_FILETIME *)&wfd.ftLastWriteTime);
+        *(int *)&pfd->time_write = (int)lVar5;
+        pfd->size = wfd.nFileSizeLow;
+        *(int *)((int)&pfd->time_write + 4) = (int)((ulonglong)lVar5 >> 0x20);
+        iVar4 = strcpy_s(pfd->name,0x104,wfd.cFileName);
         if (iVar4 != 0) {
           _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
         }
@@ -129,22 +129,21 @@ LAB_00c14c84:
 
 // 00C14A6D  __time64_t_from_ft  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/findf64.c:228)
 
-long64 __cdecl __time64_t_from_ft(_FILETIME *param_1)
+long64 __cdecl __time64_t_from_ft(_FILETIME *pft)
 
 {
   BOOL BVar1;
   long64 lVar2;
-  _SYSTEMTIME local_1c;
-  _FILETIME local_c;
+  _SYSTEMTIME st;
+  _FILETIME lft;
   
-  if ((param_1->dwLowDateTime != 0) || (param_1->dwHighDateTime != 0)) {
-    BVar1 = FileTimeToLocalFileTime((FILETIME *)param_1,&local_c);
+  if ((pft->dwLowDateTime != 0) || (pft->dwHighDateTime != 0)) {
+    BVar1 = FileTimeToLocalFileTime((FILETIME *)pft,&lft);
     if (BVar1 != 0) {
-      BVar1 = FileTimeToSystemTime(&local_c,&local_1c);
+      BVar1 = FileTimeToSystemTime(&lft,&st);
       if (BVar1 != 0) {
-        lVar2 = __loctotime64_t((uint)local_1c.wYear,(uint)local_1c.wMonth,(uint)local_1c.wDay,
-                                (uint)local_1c.wHour,(uint)local_1c.wMinute,(uint)local_1c.wSecond,
-                                -1);
+        lVar2 = __loctotime64_t((uint)st.wYear,(uint)st.wMonth,(uint)st.wDay,(uint)st.wHour,
+                                (uint)st.wMinute,(uint)st.wSecond,-1);
         return lVar2;
       }
     }

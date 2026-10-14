@@ -2,7 +2,7 @@
 
 // 00977FB1  wcscpy_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcscpy_s.inl:13)
 
-int __cdecl wcscpy_s(ushort *param_1,uint param_2,wchar_t *param_3)
+int __cdecl wcscpy_s(ushort *_Dst,uint _SizeInWords,wchar_t *_Src)
 
 {
   wchar_t wVar1;
@@ -10,27 +10,27 @@ int __cdecl wcscpy_s(ushort *param_1,uint param_2,wchar_t *param_3)
   wchar_t *pwVar3;
   int iVar4;
   
-  if ((param_1 != (ushort *)0x0) && (param_2 != 0)) {
-    pwVar3 = (wchar_t *)param_1;
-    if (param_3 != (wchar_t *)0x0) {
+  if ((_Dst != (ushort *)0x0) && (_SizeInWords != 0)) {
+    pwVar3 = (wchar_t *)_Dst;
+    if (_Src != (wchar_t *)0x0) {
       do {
-        wVar1 = *param_3;
+        wVar1 = *_Src;
         *pwVar3 = wVar1;
-        param_3 = param_3 + 1;
+        _Src = _Src + 1;
         if (wVar1 == L'\0') break;
-        param_2 = param_2 - 1;
+        _SizeInWords = _SizeInWords - 1;
         pwVar3 = pwVar3 + 1;
-      } while (param_2 != 0);
-      if (param_2 != 0) {
+      } while (_SizeInWords != 0);
+      if (_SizeInWords != 0) {
         return 0;
       }
-      *param_1 = 0;
+      *_Dst = 0;
       piVar2 = _errno();
       iVar4 = 0x22;
       *piVar2 = 0x22;
       goto LAB_00977fd3;
     }
-    *param_1 = 0;
+    *_Dst = 0;
   }
   piVar2 = _errno();
   iVar4 = 0x16;

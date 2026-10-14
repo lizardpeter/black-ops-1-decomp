@@ -2,7 +2,7 @@
 
 // 00421080  BG_GetAmmoInClipForWeaponDef  (bgame/bg_weapons_ammo.h:118)
 
-int __cdecl BG_GetAmmoInClipForWeaponDef(playerState_s *param_1,WeaponVariantDef *param_2)
+int __cdecl BG_GetAmmoInClipForWeaponDef(playerState_s *ps,WeaponVariantDef *weapVarDef)
 
 {
   code *pcVar1;
@@ -10,14 +10,14 @@ int __cdecl BG_GetAmmoInClipForWeaponDef(playerState_s *param_1,WeaponVariantDef
   int iVar3;
   int local_8;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_ammo.h",0x77,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (WeaponVariantDef *)0x0) &&
+  if ((weapVarDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_ammo.h",0x78,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -29,24 +29,24 @@ int __cdecl BG_GetAmmoInClipForWeaponDef(playerState_s *param_1,WeaponVariantDef
     if (0xe < local_8) {
       return 0;
     }
-    if (param_1->ammoInClip[local_8].clipIndex == param_2->iClipIndex) break;
+    if (ps->ammoInClip[local_8].clipIndex == weapVarDef->iClipIndex) break;
     local_8 = local_8 + 1;
   }
-  return param_1->ammoInClip[local_8].count;
+  return ps->ammoInClip[local_8].count;
 }
 
 
 // 00421030  BG_GetAmmoInClip  (bgame/bg_weapons_ammo.h:129)
 
-int __cdecl BG_GetAmmoInClip(playerState_s *param_1,uint param_2)
+int __cdecl BG_GetAmmoInClip(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  WeaponVariantDef *pWVar4;
+  WeaponVariantDef *weapVarDef;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_ammo.h",0x82,0,
                              "%s");
     if (!bVar2) {
@@ -55,8 +55,8 @@ int __cdecl BG_GetAmmoInClip(playerState_s *param_1,uint param_2)
       return iVar3;
     }
   }
-  pWVar4 = BG_GetWeaponVariantDef(param_2);
-  iVar3 = BG_GetAmmoInClipForWeaponDef(param_1,pWVar4);
+  weapVarDef = BG_GetWeaponVariantDef(weaponIndex);
+  iVar3 = BG_GetAmmoInClipForWeaponDef(ps,weapVarDef);
   return iVar3;
 }
 
@@ -66,6 +66,8 @@ int __cdecl BG_GetAmmoInClip(playerState_s *param_1,uint param_2)
 void __cdecl Mantle_RegisterDvars(void)
 
 {
+  ushort demoFlag;
+  
   mantle_enable = _Dvar_RegisterBool("mantle_enable",true,0x180,"Enable player mantling");
   mantle_debug = _Dvar_RegisterBool("mantle_debug",false,0x180,"Show debug information for mantling"
                                    );
@@ -104,13 +106,13 @@ void __cdecl Mantle_RegisterDvars(void)
 
 // 0041E7B0  Mantle_DebugPrint  (bgame/bg_mantle.cpp:191)
 
-void __cdecl Mantle_DebugPrint(char *param_1)
+void __cdecl Mantle_DebugPrint(char *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((msg == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0xc0,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -126,14 +128,15 @@ void __cdecl Mantle_DebugPrint(char *param_1)
 
 // 0041E3E0  Trans_GetUpIndex  (bgame/bg_mantle.cpp:205)
 
-int __cdecl Trans_GetUpIndex(int param_1)
+int __cdecl Trans_GetUpIndex(int transIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  MantleAnimTransition *trans;
   
-  if ((param_1 < 0) || (7 < param_1)) {
+  if ((transIndex < 0) || (7 < transIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0xce,0,
                              "transIndex not in [0, MANTLE_UP_COUNT]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -142,20 +145,21 @@ int __cdecl Trans_GetUpIndex(int param_1)
       return iVar3;
     }
   }
-  return s_mantleTrans[param_1].upAnimIndex;
+  return s_mantleTrans[transIndex].upAnimIndex;
 }
 
 
 // 0041E430  Trans_GetOverIndex  (bgame/bg_mantle.cpp:217)
 
-int __cdecl Trans_GetOverIndex(int param_1)
+int __cdecl Trans_GetOverIndex(int transIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  MantleAnimTransition *trans;
   
-  if ((param_1 < 0) || (7 < param_1)) {
+  if ((transIndex < 0) || (7 < transIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0xda,0,
                              "transIndex not in [0, MANTLE_UP_COUNT]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -164,20 +168,21 @@ int __cdecl Trans_GetOverIndex(int param_1)
       return iVar3;
     }
   }
-  return s_mantleTrans[param_1].overAnimIndex;
+  return s_mantleTrans[transIndex].overAnimIndex;
 }
 
 
 // 0041E490  Trans_GetHeight  (bgame/bg_mantle.cpp:229)
 
-float __cdecl Trans_GetHeight(int param_1)
+float __cdecl Trans_GetHeight(int transIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
+  MantleAnimTransition *trans;
   
-  if ((param_1 < 0) || (7 < param_1)) {
+  if ((transIndex < 0) || (7 < transIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0xe6,0,
                              "transIndex not in [0, MANTLE_UP_COUNT]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -186,41 +191,44 @@ float __cdecl Trans_GetHeight(int param_1)
       return (float)fVar3;
     }
   }
-  return s_mantleTrans[param_1].height;
+  return s_mantleTrans[transIndex].height;
 }
 
 
 // 0041F910  Mantle_GetUpLength  (bgame/bg_mantle.cpp:241)
 
-int __cdecl Mantle_GetUpLength(MantleState *param_1)
+int __cdecl Mantle_GetUpLength(MantleState *mstate)
 
 {
-  uint uVar1;
-  int local_8;
+  uint anim;
+  int animIndex;
+  int time;
   
-  uVar1 = Trans_GetUpIndex(param_1->transIndex);
-  local_8 = XAnimGetLengthMsec(s_mantleAnims,uVar1);
-  if ((param_1->flags & 0x800U) != 0) {
-    local_8 = (int)((float)local_8 * (perk_mantleReduction->current).value);
+  anim = Trans_GetUpIndex(mstate->transIndex);
+  time = XAnimGetLengthMsec(s_mantleAnims,anim);
+  if ((mstate->flags & 0x800U) != 0) {
+    time = (int)((float)time * (perk_mantleReduction->current).value);
   }
-  return local_8;
+  return time;
 }
 
 
 // 0041F970  Mantle_GetOverLength  (bgame/bg_mantle.cpp:263)
 
-int __cdecl Mantle_GetOverLength(MantleState *param_1)
+int __cdecl Mantle_GetOverLength(MantleState *mstate)
 
 {
   int iVar1;
-  uint uVar2;
+  uint anim;
+  int animIndex;
+  int time;
   
-  if ((param_1->flags & 1U) == 0) {
+  if ((mstate->flags & 1U) == 0) {
     iVar1 = 0;
   }
   else {
-    uVar2 = Trans_GetOverIndex(param_1->transIndex);
-    iVar1 = XAnimGetLengthMsec(s_mantleAnims,uVar2);
+    anim = Trans_GetOverIndex(mstate->transIndex);
+    iVar1 = XAnimGetLengthMsec(s_mantleAnims,anim);
   }
   return iVar1;
 }
@@ -228,18 +236,20 @@ int __cdecl Mantle_GetOverLength(MantleState *param_1)
 
 // 00420A20  Mantle_GetAnim  (bgame/bg_mantle.cpp:281)
 
-int __cdecl Mantle_GetAnim(MantleState *param_1)
+int __cdecl Mantle_GetAnim(MantleState *mstate)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_c;
+  int upTime;
+  int animIndex;
+  int overTime;
   
-  iVar3 = Mantle_GetUpLength(param_1);
-  iVar4 = Mantle_GetOverLength(param_1);
-  if ((param_1->timer < 0) || (iVar3 + iVar4 < param_1->timer)) {
+  iVar3 = Mantle_GetUpLength(mstate);
+  iVar4 = Mantle_GetOverLength(mstate);
+  if ((mstate->timer < 0) || (iVar3 + iVar4 < mstate->timer)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x121,0,"%s")
     ;
     if (!bVar2) {
@@ -248,35 +258,37 @@ int __cdecl Mantle_GetAnim(MantleState *param_1)
       return iVar3;
     }
   }
-  if (iVar3 < param_1->timer) {
-    local_c = Trans_GetOverIndex(param_1->transIndex);
+  if (iVar3 < mstate->timer) {
+    animIndex = Trans_GetOverIndex(mstate->transIndex);
   }
   else {
-    local_c = Trans_GetUpIndex(param_1->transIndex);
+    animIndex = Trans_GetUpIndex(mstate->transIndex);
   }
-  return local_c;
+  return animIndex;
 }
 
 
 // 0041F9C0  Mantle_GetAnimDelta  (bgame/bg_mantle.cpp:304)
 
-void __cdecl Mantle_GetAnimDelta(MantleState *param_1,int param_2,float *param_3)
+void __cdecl Mantle_GetAnimDelta(MantleState *mstate,int time,float *delta)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_20;
+  float frac;
+  int upTime;
+  float trans;
   float local_1c;
   float local_18;
-  uint local_14;
-  float local_10 [2];
-  int local_8;
+  int animIndex;
+  float rot [2];
+  int overTime;
   
-  iVar3 = Mantle_GetUpLength(param_1);
-  local_8 = Mantle_GetOverLength(param_1);
-  if ((param_2 < 0) || (iVar3 + local_8 < param_2)) {
+  iVar3 = Mantle_GetUpLength(mstate);
+  overTime = Mantle_GetOverLength(mstate);
+  if ((time < 0) || (iVar3 + overTime < time)) {
     va("time: %i, upTime: %i, overTime: %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x13b,0,
                              "%s\n\t%s");
@@ -286,28 +298,28 @@ void __cdecl Mantle_GetAnimDelta(MantleState *param_1,int param_2,float *param_3
       return;
     }
   }
-  if (iVar3 < param_2) {
-    fVar4 = (float)local_8;
-    local_14 = Trans_GetUpIndex(param_1->transIndex);
-    XAnimGetAbsDelta(s_mantleAnims,local_14,local_10,&local_20,1.0);
-    local_14 = Trans_GetOverIndex(param_1->transIndex);
-    XAnimGetAbsDelta(s_mantleAnims,local_14,local_10,param_3,(float)(param_2 - iVar3) / fVar4);
-    *param_3 = *param_3 + local_20;
-    param_3[1] = param_3[1] + local_1c;
-    param_3[2] = param_3[2] + local_18;
+  if (iVar3 < time) {
+    fVar4 = (float)overTime;
+    animIndex = Trans_GetUpIndex(mstate->transIndex);
+    XAnimGetAbsDelta(s_mantleAnims,animIndex,rot,&trans,1.0);
+    animIndex = Trans_GetOverIndex(mstate->transIndex);
+    XAnimGetAbsDelta(s_mantleAnims,animIndex,rot,delta,(float)(time - iVar3) / fVar4);
+    *delta = *delta + trans;
+    delta[1] = delta[1] + local_1c;
+    delta[2] = delta[2] + local_18;
   }
   else {
-    local_14 = Trans_GetUpIndex(param_1->transIndex);
-    XAnimGetAbsDelta(s_mantleAnims,local_14,local_10,param_3,(float)param_2 / (float)iVar3);
+    animIndex = Trans_GetUpIndex(mstate->transIndex);
+    XAnimGetAbsDelta(s_mantleAnims,animIndex,rot,delta,(float)time / (float)iVar3);
   }
-  VectorAngleMultiply(param_3,param_1->yaw);
+  VectorAngleMultiply(delta,mstate->yaw);
   return;
 }
 
 
 // 0041FB60  Mantle_FindTransition  (bgame/bg_mantle.cpp:345)
 
-int __cdecl Mantle_FindTransition(float param_1,float param_2)
+int __cdecl Mantle_FindTransition(float curHeight,float goalHeight)
 
 {
   code *pcVar1;
@@ -315,11 +327,13 @@ int __cdecl Mantle_FindTransition(float param_1,float param_2)
   int iVar3;
   float fVar4;
   float fVar5;
-  int local_10;
-  int local_c;
-  float local_8;
+  float diff;
+  float height;
+  int bestIndex;
+  int transIndex;
+  float bestDiff;
   
-  fVar4 = param_2 - param_1;
+  fVar4 = goalHeight - curHeight;
   if (fVar4 <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x161,0,
                              "%s\n\t(height) = %g");
@@ -329,17 +343,17 @@ int __cdecl Mantle_FindTransition(float param_1,float param_2)
       return iVar3;
     }
   }
-  local_10 = 0;
+  bestIndex = 0;
   fVar5 = Trans_GetHeight(0);
-  local_8 = ABS(fVar5 - fVar4);
-  for (local_c = 1; local_c < 7; local_c = local_c + 1) {
-    fVar5 = Trans_GetHeight(local_c);
-    if (ABS(fVar5 - fVar4) < local_8) {
-      local_10 = local_c;
-      local_8 = ABS(fVar5 - fVar4);
+  bestDiff = ABS(fVar5 - fVar4);
+  for (transIndex = 1; transIndex < 7; transIndex = transIndex + 1) {
+    fVar5 = Trans_GetHeight(transIndex);
+    if (ABS(fVar5 - fVar4) < bestDiff) {
+      bestIndex = transIndex;
+      bestDiff = ABS(fVar5 - fVar4);
     }
   }
-  return local_10;
+  return bestIndex;
 }
 
 
@@ -347,36 +361,36 @@ int __cdecl Mantle_FindTransition(float param_1,float param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Mantle_CalcEndPos(pmove_t *param_1,MantleResults *param_2)
+void __cdecl Mantle_CalcEndPos(pmove_t *pm,MantleResults *mresults)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_74;
+  float mins;
   float local_70;
   float local_6c;
-  float local_68;
+  float start;
   float local_64;
   float local_60;
-  float local_5c;
+  float end;
   float local_58;
   float local_54;
-  float4 local_50;
+  float4 trace;
   float local_40;
   char local_25;
   uint local_18;
-  float local_14;
+  float maxs;
   float local_10;
   float local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  local_8 = param_1->ps;
-  if (local_8 == (playerState_s *)0x0) {
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x181,0,"%s")
     ;
     if (!bVar2) {
@@ -385,50 +399,48 @@ void __cdecl Mantle_CalcEndPos(pmove_t *param_1,MantleResults *param_2)
       return;
     }
   }
-  if ((param_2->flags & 1U) == 0) {
-    param_2->endPos[0] = param_2->ledgePos[0];
-    param_2->endPos[1] = param_2->ledgePos[1];
-    param_2->endPos[2] = param_2->ledgePos[2];
+  if ((mresults->flags & 1U) == 0) {
+    mresults->endPos[0] = mresults->ledgePos[0];
+    mresults->endPos[1] = mresults->ledgePos[1];
+    mresults->endPos[2] = mresults->ledgePos[2];
   }
   else {
-    local_74 = -15.0;
+    mins = -15.0;
     local_70 = -15.0;
     local_6c = 0.0;
-    local_14 = 15.0;
+    maxs = 15.0;
     local_10 = 15.0;
     local_c = 50.0;
-    local_68 = param_2->ledgePos[0];
-    local_64 = param_2->ledgePos[1];
-    local_60 = param_2->ledgePos[2];
-    local_5c = param_2->dir[0] * 31.0 + local_68;
-    local_58 = param_2->dir[1] * 31.0 + local_64;
-    local_54 = param_2->dir[2] * 31.0 + local_60;
-    PM_trace(param_1,(trace_t *)&local_50,&local_68,&local_74,&local_14,&local_5c,
-             (uint)local_8->clientNum,param_1->tracemask);
+    start = mresults->ledgePos[0];
+    local_64 = mresults->ledgePos[1];
+    local_60 = mresults->ledgePos[2];
+    end = mresults->dir[0] * 31.0 + start;
+    local_58 = mresults->dir[1] * 31.0 + local_64;
+    local_54 = mresults->dir[2] * 31.0 + local_60;
+    PM_trace(pm,(trace_t *)&trace,&start,&mins,&maxs,&end,(uint)ps->clientNum,pm->tracemask);
     if ((local_25 != '\0') || (local_40 < 1.0)) {
-      param_2->flags = param_2->flags & 0xfffffffc;
-      param_2->endPos[0] = param_2->ledgePos[0];
-      param_2->endPos[1] = param_2->ledgePos[1];
-      param_2->endPos[2] = param_2->ledgePos[2];
+      mresults->flags = mresults->flags & 0xfffffffc;
+      mresults->endPos[0] = mresults->ledgePos[0];
+      mresults->endPos[1] = mresults->ledgePos[1];
+      mresults->endPos[2] = mresults->ledgePos[2];
     }
     else {
-      local_68 = local_5c;
+      start = end;
       local_64 = local_58;
       local_60 = local_54;
       local_54 = local_54 - 18.0;
-      PM_trace(param_1,(trace_t *)&local_50,&local_68,&local_74,&local_14,&local_5c,
-               (uint)local_8->clientNum,param_1->tracemask);
+      PM_trace(pm,(trace_t *)&trace,&start,&mins,&maxs,&end,(uint)ps->clientNum,pm->tracemask);
       if ((local_25 != '\0') || (local_40 < 1.0)) {
-        param_2->flags = param_2->flags & 0xfffffffc;
-        param_2->endPos[0] = param_2->ledgePos[0];
-        param_2->endPos[1] = param_2->ledgePos[1];
-        param_2->endPos[2] = param_2->ledgePos[2];
+        mresults->flags = mresults->flags & 0xfffffffc;
+        mresults->endPos[0] = mresults->ledgePos[0];
+        mresults->endPos[1] = mresults->ledgePos[1];
+        mresults->endPos[2] = mresults->ledgePos[2];
       }
       else {
-        param_2->endPos[0] = local_5c;
-        param_2->endPos[1] = local_58;
-        param_2->endPos[2] = local_54;
-        param_2->endPos[2] = (local_54 - local_60) * local_40 + local_60;
+        mresults->endPos[0] = end;
+        mresults->endPos[1] = local_58;
+        mresults->endPos[2] = local_54;
+        mresults->endPos[2] = (local_54 - local_60) * local_40 + local_60;
       }
     }
   }
@@ -438,11 +450,13 @@ void __cdecl Mantle_CalcEndPos(pmove_t *param_1,MantleResults *param_2)
 
 // 0041FC40  Mantle_SetHaveWeapon  (bgame/bg_mantle.cpp:433)
 
-void __cdecl Mantle_SetHaveWeapon(MantleState *param_1,playerState_s *param_2)
+void __cdecl Mantle_SetHaveWeapon(MantleState *mstate,playerState_s *ps)
 
 {
-  BG_GetWeaponDef((uint)param_2->weapon);
-  Trans_GetHeight(param_1->transIndex);
+  WeaponDef *weapDef;
+  
+  BG_GetWeaponDef((uint)ps->weapon);
+  Trans_GetHeight(mstate->transIndex);
   return;
 }
 
@@ -452,55 +466,56 @@ void __cdecl Mantle_SetHaveWeapon(MantleState *param_1,playerState_s *param_2)
 /* WARNING: Removing unreachable block (ram,0x0041f817) */
 /* WARNING: Removing unreachable block (ram,0x0041f83b) */
 
-void __cdecl Mantle_Start(pmove_t *param_1,playerState_s *param_2,MantleResults *param_3)
+void __cdecl Mantle_Start(pmove_t *pm,playerState_s *ps,MantleResults *mresults)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int iVar4;
   uint extraout_EAX;
   uint extraout_EDX;
-  float fVar4;
-  float local_18;
+  float fVar5;
+  float trans;
   float local_14;
   float local_10;
-  MantleState *local_c;
-  int local_8;
+  MantleState *mstate;
+  int mantleTime;
   
-  local_c = &param_2->mantleState;
-  fVar4 = vectoyaw(param_3->dir);
-  local_c->yaw = fVar4;
-  local_c->timer = 0;
-  iVar3 = Mantle_FindTransition(param_3->startPos[2],param_3->ledgePos[2]);
-  local_c->transIndex = iVar3;
-  local_c->flags = param_3->flags;
-  iVar3 = Mantle_GetUpLength(local_c);
-  local_8 = Mantle_GetOverLength(local_c);
-  local_8 = iVar3 + local_8;
-  Mantle_GetAnimDelta(local_c,local_8,&local_18);
-  param_2->origin[0] = param_3->endPos[0] - local_18;
-  param_2->origin[1] = param_3->endPos[1] - local_14;
-  param_2->origin[2] = param_3->endPos[2] - local_10;
-  if (((param_2->pm_flags & 4U) != 0) &&
+  mstate = &ps->mantleState;
+  fVar5 = vectoyaw(mresults->dir);
+  mstate->yaw = fVar5;
+  mstate->timer = 0;
+  iVar3 = Mantle_FindTransition(mresults->startPos[2],mresults->ledgePos[2]);
+  mstate->transIndex = iVar3;
+  mstate->flags = mresults->flags;
+  iVar3 = Mantle_GetUpLength(mstate);
+  iVar4 = Mantle_GetOverLength(mstate);
+  mantleTime = iVar3 + iVar4;
+  Mantle_GetAnimDelta(mstate,mantleTime,&trans);
+  ps->origin[0] = mresults->endPos[0] - trans;
+  ps->origin[1] = mresults->endPos[1] - local_14;
+  ps->origin[2] = mresults->endPos[2] - local_10;
+  if (((ps->pm_flags & 4U) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x1f1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_2->pm_flags = param_2->pm_flags | 4;
-  Mantle_SetHaveWeapon(local_c,param_2);
+  ps->pm_flags = ps->pm_flags | 4;
+  Mantle_SetHaveWeapon(mstate,ps);
   _allshl();
-  if ((extraout_EAX & param_2->perks[0]) != 0 || (extraout_EDX & param_2->perks[1]) != 0) {
-    local_c->flags = local_c->flags | 0x800;
+  if ((extraout_EAX & ps->perks[0]) != 0 || (extraout_EDX & ps->perks[1]) != 0) {
+    mstate->flags = mstate->flags | 0x800;
   }
-  BG_AddPredictableEventToPlayerstate(0x6d,0,param_2);
-  param_2->eFlags = param_2->eFlags | 0x8000;
-  param_1->mantleEndPos[0] = param_3->endPos[0];
-  param_1->mantleEndPos[1] = param_3->endPos[1];
-  param_1->mantleEndPos[2] = param_3->endPos[2];
-  param_1->mantleDuration = local_8;
-  param_1->mantleStarted = true;
+  BG_AddPredictableEventToPlayerstate(0x6d,0,ps);
+  ps->eFlags = ps->eFlags | 0x8000;
+  pm->mantleEndPos[0] = mresults->endPos[0];
+  pm->mantleEndPos[1] = mresults->endPos[1];
+  pm->mantleEndPos[2] = mresults->endPos[2];
+  pm->mantleDuration = mantleTime;
+  pm->mantleStarted = true;
   return;
 }
 
@@ -509,99 +524,99 @@ void __cdecl Mantle_Start(pmove_t *param_1,playerState_s *param_2,MantleResults 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Mount_CheckProne(pmove_t *param_1,pml_t *param_2)
+void __cdecl Mount_CheckProne(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
-  float local_8c;
+  float lookVec;
   float local_88;
   float local_84;
-  float local_80;
+  float dropMins;
   float local_7c;
   undefined4 local_78;
-  float4 local_74;
+  float4 trace;
   float local_64;
   uint local_3c;
-  float local_38;
+  float lookAngles;
   float local_34;
   undefined4 local_30;
-  float local_2c;
+  float dropMaxs;
   float local_28;
   float local_24;
-  playerState_s *local_20;
-  float local_1c;
+  playerState_s *ps;
+  float traceStart;
   float local_18;
   float local_14;
-  float local_10;
+  float traceEnd;
   float local_c;
   float local_8;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_74.v[0] = 0.0;
-  local_74.v[1] = 0.0;
-  local_74.v[2] = 0.0;
-  local_74.v[3] = 0.0;
-  local_20 = param_1->ps;
-  if ((local_20 == (playerState_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x21f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pWVar3 = BG_GetWeaponDef((uint)local_20->weapon);
-  if (((pWVar3->mountableWeapon != false) && (bVar2 = Mount_CanPlayerDeployTurret(local_20), bVar2))
-     && (ABS(local_20->proneDirectionPitch) < turretPronePitchMax)) {
-    local_1c = local_20->origin[0];
-    local_18 = local_20->origin[1];
-    local_14 = local_20->origin[2];
-    local_38 = local_20->proneDirectionPitch;
-    local_34 = local_20->proneDirection;
+  pWVar3 = BG_GetWeaponDef((uint)ps->weapon);
+  if (((pWVar3->mountableWeapon != false) && (bVar2 = Mount_CanPlayerDeployTurret(ps), bVar2)) &&
+     (ABS(ps->proneDirectionPitch) < turretPronePitchMax)) {
+    traceStart = ps->origin[0];
+    local_18 = ps->origin[1];
+    local_14 = ps->origin[2];
+    lookAngles = ps->proneDirectionPitch;
+    local_34 = ps->proneDirection;
     local_30 = 0;
-    AngleVectors(&local_38,&local_8c,(float *)0x0,(float *)0x0);
-    local_1c = turretTestDist * local_8c + local_1c;
+    AngleVectors(&lookAngles,&lookVec,(float *)0x0,(float *)0x0);
+    traceStart = turretTestDist * lookVec + traceStart;
     local_18 = turretTestDist * local_88 + local_18;
     local_14 = turretTestDist * local_84 + local_14;
     local_8 = local_14 - heightTestDist;
-    local_80 = -dropTraceWidth;
+    dropMins = -dropTraceWidth;
     local_7c = -dropTraceWidth;
     local_78 = 0;
     local_24 = dropTraceWidth * 2.0;
-    local_2c = dropTraceWidth;
+    dropMaxs = dropTraceWidth;
     local_28 = dropTraceWidth;
-    local_10 = local_1c;
+    traceEnd = traceStart;
     local_c = local_18;
-    PM_trace(param_1,(trace_t *)&local_74,&local_1c,&local_80,&local_2c,&local_10,
-             (uint)local_20->clientNum,param_1->tracemask);
+    PM_trace(pm,(trace_t *)&trace,&traceStart,&dropMins,&dropMaxs,&traceEnd,(uint)ps->clientNum,
+             pm->tracemask);
     if (local_64 < 1.0) {
-      local_1c = local_20->origin[0];
-      local_18 = local_20->origin[1];
-      local_14 = local_20->origin[2] + turretTestFeetRaise;
-      local_10 = turretTestFeetDist * local_8c + local_1c;
+      traceStart = ps->origin[0];
+      local_18 = ps->origin[1];
+      local_14 = ps->origin[2] + turretTestFeetRaise;
+      traceEnd = turretTestFeetDist * lookVec + traceStart;
       local_c = turretTestFeetDist * local_88 + local_18;
       local_8 = turretTestFeetDist * local_84 + local_14;
-      PM_trace(param_1,(trace_t *)&local_74,&local_1c,&local_80,&local_2c,&local_10,
-               (uint)local_20->clientNum,param_1->tracemask);
+      PM_trace(pm,(trace_t *)&trace,&traceStart,&dropMins,&dropMaxs,&traceEnd,(uint)ps->clientNum,
+               pm->tracemask);
       if (1.0 <= local_64) {
-        local_1c = local_10;
+        traceStart = traceEnd;
         local_18 = local_c;
         local_14 = local_8;
         local_8 = local_8 - (turretTestDist + turretTestFeetRaise);
-        PM_trace(param_1,(trace_t *)&local_74,&local_1c,&local_80,&local_2c,&local_10,
-                 (uint)local_20->clientNum,param_1->tracemask);
+        PM_trace(pm,(trace_t *)&trace,&traceStart,&dropMins,&dropMaxs,&traceEnd,(uint)ps->clientNum,
+                 pm->tracemask);
         if (1.0 <= local_64) {
           return;
         }
       }
-      local_20->mountAvailable = true;
-      local_20->cursorHintEntIndex = 0x3ff;
-      local_20->mountPos[0] = local_20->origin[0];
-      local_20->mountPos[1] = local_20->origin[1];
-      local_20->mountPos[2] = local_20->origin[2];
-      local_20->mountDir = local_20->viewangles[1];
-      (local_20->mantleState).flags = (local_20->mantleState).flags | 0x480;
+      ps->mountAvailable = true;
+      ps->cursorHintEntIndex = 0x3ff;
+      ps->mountPos[0] = ps->origin[0];
+      ps->mountPos[1] = ps->origin[1];
+      ps->mountPos[2] = ps->origin[2];
+      ps->mountDir = ps->viewangles[1];
+      (ps->mantleState).flags = (ps->mantleState).flags | 0x480;
     }
   }
   return;
@@ -612,16 +627,16 @@ void __cdecl Mount_CheckProne(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *param_3)
+void __cdecl Mount_CheckLedge(pmove_t *pm,pml_t *pml,MantleResults *mresults)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   double dVar4;
-  float fVar5;
-  float *pfVar6;
-  float *pfVar7;
+  float yaw;
+  float *forward;
+  float *right;
   double in_stack_ffffff00;
   float local_f8 [4];
   float *local_e8;
@@ -673,7 +688,7 @@ void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *par
   local_4c.v[3] = 0.0;
   local_50 = 2.0;
   local_54 = 6.0;
-  local_58 = param_1->ps;
+  local_58 = pm->ps;
   if ((local_58 == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x268,0,
                                "%s"), !bVar2)) {
@@ -689,34 +704,34 @@ void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *par
   local_70 = 0;
   local_6c = 0;
   local_68 = 0x3f800000;
-  local_74 = param_3->ledgePos[2] - local_58->origin[2];
+  local_74 = mresults->ledgePos[2] - local_58->origin[2];
   local_78 = ABS(local_74);
   pWVar3 = BG_GetWeaponDef((uint)local_58->weapon);
-  if ((((pWVar3->mountableWeapon != false) && ((param_3->flags & 0x20U) != 0)) && (local_78 < 50.0))
-     && (bVar2 = Mount_CanPlayerDeployTurret(local_58), bVar2)) {
+  if ((((pWVar3->mountableWeapon != false) && ((mresults->flags & 0x20U) != 0)) && (local_78 < 50.0)
+      ) && (bVar2 = Mount_CanPlayerDeployTurret(local_58), bVar2)) {
     local_84 = 0.0;
     local_80 = 1.0;
     local_7c = 0.0;
-    pfVar7 = (float *)0x0;
-    pfVar6 = &local_84;
-    fVar5 = AngleNormalize360(local_58->viewangles[1]);
-    YawVectors(fVar5,pfVar6,pfVar7);
+    right = (float *)0x0;
+    forward = &local_84;
+    yaw = AngleNormalize360(local_58->viewangles[1]);
+    YawVectors(yaw,forward,right);
     local_88 = local_58->origin;
-    local_8c = param_3->ledgePos;
+    local_8c = mresults->ledgePos;
     local_98 = *local_8c - *local_88;
-    local_94 = param_3->ledgePos[1] - local_58->origin[1];
+    local_94 = mresults->ledgePos[1] - local_58->origin[1];
     local_90 = 0.0;
     Vec3Normalize(&local_98);
     local_9c = local_84 * local_98 + local_80 * local_94 + local_7c * local_90;
     dVar4 = (double)local_9c;
     __libm_sse2_acos(in_stack_ffffff00);
     if ((float)dVar4 * 57.295776 < 30.0) {
-      vectoangles(param_3->dir,&local_a8);
+      vectoangles(mresults->dir,&local_a8);
       YawVectors(local_a4 + 180.0,&local_b4,(float *)0x0);
       local_b8 = 0x42100000;
-      local_bc = param_3->ledgePos;
+      local_bc = mresults->ledgePos;
       local_c8 = local_b4 * 36.0 + *local_bc;
-      local_c4 = local_b0 * 36.0 + param_3->ledgePos[1];
+      local_c4 = local_b0 * 36.0 + mresults->ledgePos[1];
       local_ac = local_58->origin[2] + local_54;
       local_c0 = local_58->origin[2] - local_54;
       local_d4 = -local_50;
@@ -727,8 +742,8 @@ void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *par
       local_d8 = local_50 * 2.0;
       local_b4 = local_c8;
       local_b0 = local_c4;
-      PM_trace(param_1,(trace_t *)&local_4c,&local_b4,&local_d4,&local_e0,&local_c8,
-               (uint)local_58->clientNum,param_1->tracemask);
+      PM_trace(pm,(trace_t *)&local_4c,&local_b4,&local_d4,&local_e0,&local_c8,
+               (uint)local_58->clientNum,pm->tracemask);
       if (1.0 <= local_3c) {
         if (local_5d != false) {
           local_f8[0] = 1.0;
@@ -742,14 +757,14 @@ void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *par
         local_58->mountAvailable = true;
         local_58->cursorHintEntIndex = 0x3ff;
         local_e4 = local_58->mountPos;
-        local_e8 = param_3->ledgePos;
+        local_e8 = mresults->ledgePos;
         *local_e4 = *local_e8;
-        local_58->mountPos[1] = param_3->ledgePos[1];
-        local_58->mountPos[2] = param_3->ledgePos[2];
+        local_58->mountPos[1] = mresults->ledgePos[1];
+        local_58->mountPos[2] = mresults->ledgePos[2];
         local_58->mountDir = local_a4;
         (local_58->mantleState).flags = (local_58->mantleState).flags | 0x80;
         (local_58->mantleState).flags = (local_58->mantleState).flags & 0xfffffbff;
-        param_3->flags = param_3->flags | 0x80;
+        mresults->flags = mresults->flags | 0x80;
         if (local_5d != false) {
           local_f8[0] = 0.0;
           local_f8[1] = 1.0;
@@ -768,40 +783,41 @@ void __cdecl Mount_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Mantle_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *param_3,float param_4)
+bool __cdecl Mantle_CheckLedge(pmove_t *pm,pml_t *pml,MantleResults *mresults,float height)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  float fVar5;
-  float local_78;
+  char *msg;
+  float fVar4;
+  float playerRadius;
+  float mins;
   undefined4 local_74;
   undefined4 local_70;
-  float local_6c;
+  float start;
   float local_68;
   float local_64;
-  float local_60;
+  float end;
   float local_5c;
   float local_58;
-  float4 local_54;
+  float4 trace;
   float local_44;
   int local_38;
   char local_29;
   char local_28;
   uint local_1c;
-  float local_18 [3];
-  uint local_c;
-  playerState_s *local_8;
+  float maxs [3];
+  int mask;
+  playerState_s *ps;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54.v[0] = 0.0;
-  local_54.v[1] = 0.0;
-  local_54.v[2] = 0.0;
-  local_54.v[3] = 0.0;
-  local_8 = param_1->ps;
-  if (local_8 == (playerState_s *)0x0) {
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x2c8,0,"%s")
     ;
     if (!bVar2) {
@@ -810,45 +826,43 @@ bool __cdecl Mantle_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *pa
       return (bool)uVar3;
     }
   }
-  pcVar4 = va("Checking for ledge at %f units");
-  Mantle_DebugPrint(pcVar4);
-  local_78 = -15.0;
+  msg = va("Checking for ledge at %f units");
+  Mantle_DebugPrint(msg);
+  mins = -15.0;
   local_74 = 0xc1700000;
   local_70 = 0;
-  local_18[0] = 15.0;
-  local_18[1] = 15.0;
-  local_18[2] = 30.0;
-  local_6c = param_3->startPos[0];
-  local_68 = param_3->startPos[1];
-  local_64 = param_3->startPos[2] + param_4;
-  local_60 = param_3->dir[0] * 16.0 + local_6c;
-  local_5c = param_3->dir[1] * 16.0 + local_68;
-  local_58 = param_3->dir[2] * 16.0 + local_64;
-  local_c = param_1->tracemask & 0xfdff7fff;
-  PM_trace(param_1,(trace_t *)&local_54,&local_6c,&local_78,local_18,&local_60,
-           (uint)local_8->clientNum,local_c);
+  maxs[0] = 15.0;
+  maxs[1] = 15.0;
+  maxs[2] = 30.0;
+  start = mresults->startPos[0];
+  local_68 = mresults->startPos[1];
+  local_64 = mresults->startPos[2] + height;
+  end = mresults->dir[0] * 16.0 + start;
+  local_5c = mresults->dir[1] * 16.0 + local_68;
+  local_58 = mresults->dir[2] * 16.0 + local_64;
+  mask = pm->tracemask & 0xfdff7fff;
+  PM_trace(pm,(trace_t *)&trace,&start,&mins,maxs,&end,(uint)ps->clientNum,mask);
   if ((local_29 != '\0') || (local_44 < 1.0)) {
     Mantle_DebugPrint("Mantle Failed: Forward movement is blocked");
     bVar2 = false;
   }
   else {
-    local_6c = local_60;
+    start = end;
     local_68 = local_5c;
     local_64 = local_58;
-    local_58 = param_3->startPos[2] + 18.0;
-    PM_trace(param_1,(trace_t *)&local_54,&local_6c,&local_78,local_18,&local_60,
-             (uint)local_8->clientNum,local_c);
+    local_58 = mresults->startPos[2] + 18.0;
+    PM_trace(pm,(trace_t *)&trace,&start,&mins,maxs,&end,(uint)ps->clientNum,mask);
     if ((local_29 == '\0') && (local_44 != 1.0)) {
       if (local_28 == '\0') {
         Mantle_DebugPrint("Mantle Failed: Ledge is too steep");
         bVar2 = false;
       }
       else {
-        param_3->ledgePos[0] = local_60;
-        param_3->ledgePos[1] = local_5c;
-        param_3->ledgePos[2] = local_58;
-        param_3->ledgePos[2] = (local_58 - local_64) * local_44 + local_64;
-        if (param_3->ledgePos[2] - param_3->startPos[2] <= 0.0) {
+        mresults->ledgePos[0] = end;
+        mresults->ledgePos[1] = local_5c;
+        mresults->ledgePos[2] = local_58;
+        mresults->ledgePos[2] = (local_58 - local_64) * local_44 + local_64;
+        if (mresults->ledgePos[2] - mresults->startPos[2] <= 0.0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x2f7,0
                                    ,"%s\n\t((mresults->ledgePos[2] - mresults->startPos[2])) = %g");
           if (!bVar2) {
@@ -857,51 +871,50 @@ bool __cdecl Mantle_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *pa
             return (bool)uVar3;
           }
         }
-        local_18[2] = 50.0;
-        PM_trace(param_1,(trace_t *)&local_54,param_3->ledgePos,&local_78,local_18,param_3->ledgePos
-                 ,(uint)local_8->clientNum,param_1->tracemask);
+        maxs[2] = 50.0;
+        PM_trace(pm,(trace_t *)&trace,mresults->ledgePos,&mins,maxs,mresults->ledgePos,
+                 (uint)ps->clientNum,pm->tracemask);
         if (local_29 == '\0') {
-          local_6c = param_3->startPos[0];
-          local_68 = param_3->startPos[1];
-          local_64 = param_3->startPos[2] + param_4;
-          fVar5 = (mantle_check_glass_extra_range->current).value + 16.0;
-          local_60 = fVar5 * param_3->dir[0] + local_6c;
-          local_5c = fVar5 * param_3->dir[1] + local_68;
-          local_58 = fVar5 * param_3->dir[2] + local_64;
-          local_18[2] = 30.0;
-          PM_trace(param_1,(trace_t *)&local_54,&local_6c,&local_78,local_18,&local_60,
-                   (uint)local_8->clientNum,local_c);
+          start = mresults->startPos[0];
+          local_68 = mresults->startPos[1];
+          local_64 = mresults->startPos[2] + height;
+          fVar4 = (mantle_check_glass_extra_range->current).value + 16.0;
+          end = fVar4 * mresults->dir[0] + start;
+          local_5c = fVar4 * mresults->dir[1] + local_68;
+          local_58 = fVar4 * mresults->dir[2] + local_64;
+          maxs[2] = 30.0;
+          PM_trace(pm,(trace_t *)&trace,&start,&mins,maxs,&end,(uint)ps->clientNum,mask);
           if ((local_29 != '\0') || ((local_44 < 1.0 && (local_38 == 4)))) {
             Mantle_DebugPrint("Mantle Failed: Glass is no the way");
             bVar2 = false;
           }
           else {
-            if (((local_8->mantleState).flags & 0x200U) == 0) {
-              Mount_CheckLedge(param_1,param_2,param_3);
+            if (((ps->mantleState).flags & 0x200U) == 0) {
+              Mount_CheckLedge(pm,pml,mresults);
             }
-            if (((param_3->flags & 1U) == 0) && ((param_3->flags & 2U) == 0)) {
+            if (((mresults->flags & 1U) == 0) && ((mresults->flags & 2U) == 0)) {
               bVar2 = false;
             }
             else {
-              (local_8->mantleState).flags = (local_8->mantleState).flags | 0x10;
-              param_3->flags = param_3->flags | 0x10;
+              (ps->mantleState).flags = (ps->mantleState).flags | 0x10;
+              mresults->flags = mresults->flags | 0x10;
               Mantle_DebugPrint("Mantle available!");
-              Mantle_CalcEndPos(param_1,param_3);
-              bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,10);
+              Mantle_CalcEndPos(pm,mresults);
+              bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,10);
               if (bVar2) {
-                if ((local_8->eFlags & 4U) == 0) {
-                  PM_trace(param_1,(trace_t *)&local_54,param_3->ledgePos,playerMins,playerMaxs,
-                           param_3->ledgePos,(uint)local_8->clientNum,param_1->tracemask);
+                if ((ps->eFlags & 4U) == 0) {
+                  PM_trace(pm,(trace_t *)&trace,mresults->ledgePos,playerMins,playerMaxs,
+                           mresults->ledgePos,(uint)ps->clientNum,pm->tracemask);
                   if (local_29 != '\0') {
-                    param_3->flags = param_3->flags | 4;
+                    mresults->flags = mresults->flags | 4;
                   }
-                  PM_trace(param_1,(trace_t *)&local_54,param_3->endPos,playerMins,playerMaxs,
-                           param_3->endPos,(uint)local_8->clientNum,param_1->tracemask);
+                  PM_trace(pm,(trace_t *)&trace,mresults->endPos,playerMins,playerMaxs,
+                           mresults->endPos,(uint)ps->clientNum,pm->tracemask);
                   if (local_29 == '\0') {
-                    param_3->flags = param_3->flags | 8;
+                    mresults->flags = mresults->flags | 8;
                   }
                 }
-                Mantle_Start(param_1,local_8,param_3);
+                Mantle_Start(pm,ps,mresults);
                 bVar2 = true;
               }
               else {
@@ -927,21 +940,21 @@ bool __cdecl Mantle_CheckLedge(pmove_t *param_1,pml_t *param_2,MantleResults *pa
 
 // 0041E080  Mantle_CreateAnims  (bgame/bg_mantle.cpp:830)
 
-void __cdecl Mantle_CreateAnims(_func___cdecl_void_ptr_int *param_1)
+void __cdecl Mantle_CreateAnims(_func___cdecl_void_ptr_int *xanimAlloc)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_24;
+  float delta;
   float local_20;
   float local_1c;
-  uint local_18;
-  int local_14;
-  float local_10 [3];
+  int animIndex;
+  int transIndex;
+  float rot [3];
   
   if (s_mantleAnims == (XAnim_s *)0x0) {
-    s_mantleAnims = XAnimCreateAnims("PLAYER_MANTLE",0xb,param_1);
+    s_mantleAnims = XAnimCreateAnims("PLAYER_MANTLE",0xb,xanimAlloc);
     if ((s_mantleAnims == (XAnim_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x348,0,
                                  "%s"), !bVar2)) {
@@ -950,28 +963,28 @@ void __cdecl Mantle_CreateAnims(_func___cdecl_void_ptr_int *param_1)
       return;
     }
     XAnimBlend(s_mantleAnims,0,s_mantleAnimNames[0],1,10,0);
-    for (local_18 = 1; (int)local_18 < 0xb; local_18 = local_18 + 1) {
-      BG_CreateXAnim(s_mantleAnims,local_18,s_mantleAnimNames[local_18]);
+    for (animIndex = 1; animIndex < 0xb; animIndex = animIndex + 1) {
+      BG_CreateXAnim(s_mantleAnims,animIndex,s_mantleAnimNames[animIndex]);
     }
-    for (local_14 = 0; local_14 < 7; local_14 = local_14 + 1) {
-      local_18 = Trans_GetUpIndex(local_14);
-      XAnimGetAbsDelta(s_mantleAnims,local_18,local_10,&local_24,1.0);
-      if (1.0 < ABS(local_24 - 16.0)) {
+    for (transIndex = 0; transIndex < 7; transIndex = transIndex + 1) {
+      animIndex = Trans_GetUpIndex(transIndex);
+      XAnimGetAbsDelta(s_mantleAnims,animIndex,rot,&delta,1.0);
+      if (1.0 < ABS(delta - 16.0)) {
         Com_Error(ERR_DROP,"Mantle anim [%s] has X translation %f, should be %f\n");
       }
       if (1.0 < ABS(local_20)) {
         Com_Error(ERR_DROP,"Mantle anim [%s] has Y translation %f, should be %f\n");
       }
-      fVar3 = Trans_GetHeight(local_14);
+      fVar3 = Trans_GetHeight(transIndex);
       if (1.0 < ABS(local_1c - fVar3)) {
-        Trans_GetHeight(local_14);
+        Trans_GetHeight(transIndex);
         Com_Error(ERR_DROP,"Mantle anim [%s] has Z translation %f, should be %f\n");
       }
     }
-    for (local_14 = 8; local_14 < 3; local_14 = local_14 + 1) {
-      local_18 = Trans_GetOverIndex(local_14);
-      XAnimGetAbsDelta(s_mantleAnims,local_18,local_10,&local_24,1.0);
-      if (1.0 < ABS(local_24 - 31.0)) {
+    for (transIndex = 8; transIndex < 3; transIndex = transIndex + 1) {
+      animIndex = Trans_GetOverIndex(transIndex);
+      XAnimGetAbsDelta(s_mantleAnims,animIndex,rot,&delta,1.0);
+      if (1.0 < ABS(delta - 31.0)) {
         Com_Error(ERR_DROP,"Mantle anim [%s] has X translation %f, should be %f\n");
       }
       if (1.0 < ABS(local_20)) {
@@ -998,8 +1011,7 @@ void __cdecl Mantle_ShutdownAnims(void)
 
 // 004202E0  Mantle_FindMantleSurface  (bgame/bg_mantle.cpp:895)
 
-bool __cdecl
-Mantle_FindMantleSurface(pmove_t *param_1,pml_t *param_2,trace_t *param_3,float *param_4)
+bool __cdecl Mantle_FindMantleSurface(pmove_t *pm,pml_t *pml,trace_t *trace,float *mantleDir)
 
 {
   code *pcVar1;
@@ -1038,7 +1050,7 @@ Mantle_FindMantleSurface(pmove_t *param_1,pml_t *param_2,trace_t *param_3,float 
   float local_18;
   playerState_s *local_14;
   
-  local_14 = param_1->ps;
+  local_14 = pm->ps;
   if (local_14 == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x38d,0,"%s")
     ;
@@ -1081,8 +1093,8 @@ Mantle_FindMantleSurface(pmove_t *param_1,pml_t *param_2,trace_t *param_3,float 
   }
   local_4c = local_18 - (mantle_check_radius->current).value;
   local_50 = (mantle_check_range->current).value + local_4c;
-  local_5c = param_2->forward[0];
-  local_58 = param_2->forward[1];
+  local_5c = pml->forward[0];
+  local_58 = pml->forward[1];
   local_54 = 0.0;
   Vec3Normalize(&local_5c);
   local_60 = -local_4c;
@@ -1094,27 +1106,26 @@ Mantle_FindMantleSurface(pmove_t *param_1,pml_t *param_2,trace_t *param_3,float 
   local_80 = local_50 * local_5c + *local_74;
   local_7c = local_50 * local_58 + local_14->origin[1];
   local_78 = local_50 * local_54 + local_14->origin[2];
-  PM_trace(param_1,param_3,&local_70,&local_30,&local_48,&local_80,(uint)local_14->clientNum,
-           0x1000000);
-  if ((param_3->startsolid == false) && (param_3->allsolid == false)) {
-    if (param_3->fraction == 1.0) {
+  PM_trace(pm,trace,&local_70,&local_30,&local_48,&local_80,(uint)local_14->clientNum,0x1000000);
+  if ((trace->startsolid == false) && (trace->allsolid == false)) {
+    if (trace->fraction == 1.0) {
       Mantle_DebugPrint("Mantle Failed: No mantle surface found");
       bVar2 = false;
     }
-    else if ((param_3->sflags & 0x1c000000U) == 0) {
+    else if ((trace->sflags & 0x1c000000U) == 0) {
       Mantle_DebugPrint(
                        "Mantle Failed: No mantle surface with MANTLE_ON, MANTLE_OVER or MOUNT found"
                        );
       bVar2 = false;
     }
     else {
-      *param_4 = -(float)(param_3->normal).vec.u[0];
-      param_4[1] = -(float)(param_3->normal).vec.u[1];
-      param_4[2] = -(float)(param_3->normal).vec.u[2];
-      param_4[2] = 0.0;
-      fVar5 = Vec3Normalize(param_4);
+      *mantleDir = -(float)(trace->normal).vec.u[0];
+      mantleDir[1] = -(float)(trace->normal).vec.u[1];
+      mantleDir[2] = -(float)(trace->normal).vec.u[2];
+      mantleDir[2] = 0.0;
+      fVar5 = Vec3Normalize(mantleDir);
       if (0.0001 <= fVar5) {
-        dVar4 = (double)(local_5c * *param_4 + local_58 * param_4[1] + local_54 * param_4[2]);
+        dVar4 = (double)(local_5c * *mantleDir + local_58 * mantleDir[1] + local_54 * mantleDir[2]);
         __libm_sse2_acos((double)CONCAT44(in_stack_ffffff74,in_stack_ffffff70));
         if ((float)dVar4 * 57.295776 < (mantle_check_angle->current).value ||
             (float)dVar4 * 57.295776 == (mantle_check_angle->current).value) {
@@ -1143,73 +1154,73 @@ Mantle_FindMantleSurface(pmove_t *param_1,pml_t *param_2,trace_t *param_3,float 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Mantle_Check(pmove_t *param_1,pml_t *param_2)
+void __cdecl Mantle_Check(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_88;
+  float mantleDir;
   float local_84;
   float local_80;
-  float4 local_7c;
+  float4 trace;
   uint local_68;
   uint local_44;
-  MantleResults local_40;
-  playerState_s *local_8;
+  MantleResults mresults;
+  playerState_s *ps;
   
   local_44 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_7c.v[0] = 0.0;
-  local_7c.v[1] = 0.0;
-  local_7c.v[2] = 0.0;
-  local_7c.v[3] = 0.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
   Mantle_DebugPrint("====== Mantle Debug ======");
-  (param_1->ps->mantleState).flags = (param_1->ps->mantleState).flags & 0xfffffeff;
-  param_1->ps->mountAvailable = false;
+  (pm->ps->mantleState).flags = (pm->ps->mantleState).flags & 0xfffffeff;
+  pm->ps->mountAvailable = false;
   if ((mantle_enable->current).enabled == false) {
     Mantle_DebugPrint("Mantle Failed: Not enabled");
   }
   else {
-    local_8 = param_1->ps;
-    if ((local_8 == (playerState_s *)0x0) &&
+    ps = pm->ps;
+    if ((ps == (playerState_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x3e4,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Mantle_ClearHint(local_8);
-    if (local_8->pm_type < 9) {
-      if ((local_8->pm_flags & 4U) == 0) {
-        if ((local_8->eFlags & 0xcU) == 0) {
-          bVar2 = Mantle_FindMantleSurface(param_1,param_2,(trace_t *)&local_7c,&local_88);
+    Mantle_ClearHint(ps);
+    if (ps->pm_type < 9) {
+      if ((ps->pm_flags & 4U) == 0) {
+        if ((ps->eFlags & 0xcU) == 0) {
+          bVar2 = Mantle_FindMantleSurface(pm,pml,(trace_t *)&trace,&mantleDir);
           if (bVar2) {
-            memset((uchar *)&local_40,'\0',0x38);
-            local_40.dir[0] = local_88;
-            local_40.dir[1] = local_84;
-            local_40.dir[2] = local_80;
-            local_40.startPos[0] = local_8->origin[0];
-            local_40.startPos[1] = local_8->origin[1];
-            local_40.startPos[2] = local_8->origin[2];
+            memset((uchar *)&mresults,'\0',0x38);
+            mresults.dir[0] = mantleDir;
+            mresults.dir[1] = local_84;
+            mresults.dir[2] = local_80;
+            mresults.startPos[0] = ps->origin[0];
+            mresults.startPos[1] = ps->origin[1];
+            mresults.startPos[2] = ps->origin[2];
             if ((local_68 & 0x8000000) == 0) {
               if ((local_68 & 0x4000000) != 0) {
-                local_40.flags = local_40.flags | 2;
+                mresults.flags = mresults.flags | 2;
               }
             }
             else {
-              local_40.flags = local_40.flags | 1;
+              mresults.flags = mresults.flags | 1;
             }
             if ((local_68 & 0x10000000) != 0) {
-              local_40.flags = local_40.flags | 0x20;
+              mresults.flags = mresults.flags | 0x20;
             }
-            bVar2 = Mantle_CheckLedge(param_1,param_2,&local_40,60.0);
-            if ((!bVar2) && (bVar2 = Mantle_CheckLedge(param_1,param_2,&local_40,40.0), !bVar2)) {
-              Mantle_CheckLedge(param_1,param_2,&local_40,20.0);
+            bVar2 = Mantle_CheckLedge(pm,pml,&mresults,60.0);
+            if ((!bVar2) && (bVar2 = Mantle_CheckLedge(pm,pml,&mresults,40.0), !bVar2)) {
+              Mantle_CheckLedge(pm,pml,&mresults,20.0);
             }
           }
         }
         else {
-          if (((local_8->eFlags & 8U) != 0) && ((prone_bipod_enable->current).enabled != false)) {
-            Mount_CheckProne(param_1,param_2);
+          if (((ps->eFlags & 8U) != 0) && ((prone_bipod_enable->current).enabled != false)) {
+            Mount_CheckProne(pm,pml);
           }
           Mantle_DebugPrint("Mantle Failed: Player not standing");
         }
@@ -1228,33 +1239,34 @@ void __cdecl Mantle_Check(pmove_t *param_1,pml_t *param_2)
 
 // 00420720  Mantle_Move  (bgame/bg_mantle.cpp:1061)
 
-void __cdecl Mantle_Move(pmove_t *param_1,playerState_s *param_2,pml_t *param_3)
+void __cdecl Mantle_Move(pmove_t *pm,playerState_s *ps,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float fVar4;
-  float local_30;
+  int iVar4;
+  float fVar5;
+  float trans;
   float local_2c;
   float local_28;
-  float local_24;
+  float prevTrans;
   float local_20;
   float local_1c;
-  int local_18;
-  MantleState *local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int prevTime;
+  MantleState *mstate;
+  int animIndex;
+  int deltaTime;
+  int mantleLength;
   
-  if (((param_2->pm_flags & 4U) == 0) &&
+  if (((ps->pm_flags & 4U) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x42e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3->msec < 0) &&
+  if ((pml->msec < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x42f,0,
                                "%s\n\t(pml->msec) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1262,52 +1274,52 @@ void __cdecl Mantle_Move(pmove_t *param_1,playerState_s *param_2,pml_t *param_3)
     return;
   }
   if ((mantle_enable->current).enabled != false) {
-    local_14 = &param_2->mantleState;
-    (param_2->mantleState).flags = (param_2->mantleState).flags & 0xffffffef;
-    if (((param_2->mantleState).flags & 4U) != 0) {
-      BG_AddPredictableEventToPlayerstate(9,0,param_2);
+    mstate = &ps->mantleState;
+    (ps->mantleState).flags = (ps->mantleState).flags & 0xffffffef;
+    if (((ps->mantleState).flags & 4U) != 0) {
+      BG_AddPredictableEventToPlayerstate(9,0,ps);
     }
-    iVar3 = Mantle_GetUpLength(local_14);
-    local_8 = Mantle_GetOverLength(local_14);
-    local_8 = iVar3 + local_8;
-    local_18 = local_14->timer;
-    local_14->timer = local_14->timer + param_3->msec;
-    if (local_8 < local_14->timer) {
-      local_14->timer = local_8;
+    iVar3 = Mantle_GetUpLength(mstate);
+    iVar4 = Mantle_GetOverLength(mstate);
+    mantleLength = iVar3 + iVar4;
+    prevTime = mstate->timer;
+    mstate->timer = mstate->timer + pml->msec;
+    if (mantleLength < mstate->timer) {
+      mstate->timer = mantleLength;
     }
-    local_c = local_14->timer - local_18;
-    Mantle_GetAnimDelta(local_14,local_18,&local_24);
-    Mantle_GetAnimDelta(local_14,local_14->timer,&local_30);
-    local_10 = Mantle_GetAnim(local_14);
-    BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,local_10 + ANIM_MT_MANTLE_ROOT,1);
-    local_30 = local_30 - local_24;
+    deltaTime = mstate->timer - prevTime;
+    Mantle_GetAnimDelta(mstate,prevTime,&prevTrans);
+    Mantle_GetAnimDelta(mstate,mstate->timer,&trans);
+    animIndex = Mantle_GetAnim(mstate);
+    BG_AnimScriptAnimation(pm,AISTATE_COMBAT,animIndex + ANIM_MT_MANTLE_ROOT,1);
+    trans = trans - prevTrans;
     local_2c = local_2c - local_20;
     local_28 = local_28 - local_1c;
-    param_2->origin[0] = local_30 + param_2->origin[0];
-    param_2->origin[1] = local_2c + param_2->origin[1];
-    param_2->origin[2] = local_28 + param_2->origin[2];
-    fVar4 = 1.0 / ((float)local_c * 0.001);
-    param_2->velocity[0] = fVar4 * local_30;
-    param_2->velocity[1] = fVar4 * local_2c;
-    param_2->velocity[2] = fVar4 * local_28;
-    if (local_14->timer == local_8) {
-      if (((param_2->pm_flags & 4U) == 0) &&
+    ps->origin[0] = trans + ps->origin[0];
+    ps->origin[1] = local_2c + ps->origin[1];
+    ps->origin[2] = local_28 + ps->origin[2];
+    fVar5 = 1.0 / ((float)deltaTime * 0.001);
+    ps->velocity[0] = fVar5 * trans;
+    ps->velocity[1] = fVar5 * local_2c;
+    ps->velocity[2] = fVar5 * local_28;
+    if (mstate->timer == mantleLength) {
+      if (((ps->pm_flags & 4U) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x455,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      param_2->pm_flags = param_2->pm_flags & 0xfffffffb;
-      param_1->mantleStarted = false;
-      if ((local_14->flags & 1U) != 0) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,1);
+      ps->pm_flags = ps->pm_flags & 0xfffffffb;
+      pm->mantleStarted = false;
+      if ((mstate->flags & 1U) != 0) {
+        BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,1);
       }
-      if ((local_14->flags & 8U) != 0) {
-        BG_AddPredictableEventToPlayerstate(8,0,param_2);
-        param_2->eFlags = param_2->eFlags & 0xffff7fff;
+      if ((mstate->flags & 8U) != 0) {
+        BG_AddPredictableEventToPlayerstate(8,0,ps);
+        ps->eFlags = ps->eFlags & 0xffff7fff;
       }
-      local_14->flags = local_14->flags | 0x100;
+      mstate->flags = mstate->flags | 0x100;
     }
   }
   return;
@@ -1316,23 +1328,24 @@ void __cdecl Mantle_Move(pmove_t *param_1,playerState_s *param_2,pml_t *param_3)
 
 // 00420AC0  Mantle_CapView  (bgame/bg_mantle.cpp:1140)
 
-void __cdecl Mantle_CapView(playerState_s *param_1)
+void __cdecl Mantle_CapView(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float local_10;
-  float local_c;
+  float delta;
+  float yaw;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x478,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->pm_flags & 4U) == 0) &&
+  if (((ps->pm_flags & 4U) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x479,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1340,25 +1353,25 @@ void __cdecl Mantle_CapView(playerState_s *param_1)
     return;
   }
   if (((mantle_enable->current).enabled != false) &&
-     ((local_c = AngleDelta((param_1->mantleState).yaw,param_1->viewangles[1]),
-      local_c < -(mantle_view_yawcap->current).value ||
-      ((mantle_view_yawcap->current).value < local_c)))) {
-    for (; local_c < -(mantle_view_yawcap->current).value;
-        local_c = local_c + (mantle_view_yawcap->current).value) {
+     ((delta = AngleDelta((ps->mantleState).yaw,ps->viewangles[1]),
+      delta < -(mantle_view_yawcap->current).value || ((mantle_view_yawcap->current).value < delta))
+     )) {
+    for (; delta < -(mantle_view_yawcap->current).value;
+        delta = delta + (mantle_view_yawcap->current).value) {
     }
-    for (; (mantle_view_yawcap->current).value <= local_c &&
-           local_c != (mantle_view_yawcap->current).value;
-        local_c = local_c - (mantle_view_yawcap->current).value) {
+    for (; (mantle_view_yawcap->current).value <= delta &&
+           delta != (mantle_view_yawcap->current).value;
+        delta = delta - (mantle_view_yawcap->current).value) {
     }
-    if (local_c <= 0.0) {
+    if (delta <= 0.0) {
       local_10 = (mantle_view_yawcap->current).value;
     }
     else {
       local_10 = -(float)(mantle_view_yawcap->current).unsignedInt;
     }
-    param_1->delta_angles[1] = param_1->delta_angles[1] + local_c;
-    fVar3 = AngleNormalize360((param_1->mantleState).yaw + local_10);
-    param_1->viewangles[1] = fVar3;
+    ps->delta_angles[1] = ps->delta_angles[1] + delta;
+    fVar3 = AngleNormalize360((ps->mantleState).yaw + local_10);
+    ps->viewangles[1] = fVar3;
   }
   return;
 }
@@ -1366,13 +1379,13 @@ void __cdecl Mantle_CapView(playerState_s *param_1)
 
 // 00420C70  Mantle_ClearHint  (bgame/bg_mantle.cpp:1172)
 
-void __cdecl Mantle_ClearHint(playerState_s *param_1)
+void __cdecl Mantle_ClearHint(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x495,0,"%s")
     ;
     if (!bVar2) {
@@ -1381,25 +1394,26 @@ void __cdecl Mantle_ClearHint(playerState_s *param_1)
       return;
     }
   }
-  (param_1->mantleState).flags = (param_1->mantleState).flags & 0xffffff6f;
+  (ps->mantleState).flags = (ps->mantleState).flags & 0xffffff6f;
   return;
 }
 
 
 // 00420CC0  Mantle_IsWeaponInactive  (bgame/bg_mantle.cpp:1183)
 
-bool __cdecl Mantle_IsWeaponInactive(playerState_s *param_1)
+bool __cdecl Mantle_IsWeaponInactive(playerState_s *ps)
 
 {
   bool bVar1;
+  MantleState *mstate;
   
   if ((mantle_enable->current).enabled == false) {
     bVar1 = false;
   }
-  else if ((param_1->pm_flags & 4U) == 0) {
+  else if ((ps->pm_flags & 4U) == 0) {
     bVar1 = false;
   }
-  else if (((param_1->mantleState).flags & 0x40U) == 0) {
+  else if (((ps->mantleState).flags & 0x40U) == 0) {
     bVar1 = true;
   }
   else {
@@ -1411,12 +1425,12 @@ bool __cdecl Mantle_IsWeaponInactive(playerState_s *param_1)
 
 // 00420D10  Mantle_IsWeaponEquipped  (bgame/bg_mantle.cpp:1205)
 
-bool __cdecl Mantle_IsWeaponEquipped(playerState_s *param_1)
+bool __cdecl Mantle_IsWeaponEquipped(playerState_s *ps)
 
 {
   bool bVar1;
   
-  if (((param_1->pm_flags & 4U) != 0) && (bVar1 = Mantle_IsWeaponInactive(param_1), !bVar1)) {
+  if (((ps->pm_flags & 4U) != 0) && (bVar1 = Mantle_IsWeaponInactive(ps), !bVar1)) {
     return true;
   }
   return false;
@@ -1425,41 +1439,45 @@ bool __cdecl Mantle_IsWeaponEquipped(playerState_s *param_1)
 
 // 00420D50  Mantle_DoAnim  (bgame/bg_mantle.cpp:1214)
 
-bool __cdecl Mantle_DoAnim(playerState_s *param_1)
+bool __cdecl Mantle_DoAnim(playerState_s *ps)
 
 {
   float fVar1;
+  MantleState *mstate;
   
-  fVar1 = Trans_GetHeight((param_1->mantleState).transIndex);
+  fVar1 = Trans_GetHeight((ps->mantleState).transIndex);
   return (mantle_weapon_anim_height->current).value < fVar1;
 }
 
 
 // 00420DA0  Mantle_GetDuration  (bgame/bg_mantle.cpp:1224)
 
-int __cdecl Mantle_GetDuration(playerState_s *param_1)
+int __cdecl Mantle_GetDuration(playerState_s *ps)
 
 {
   int iVar1;
   int iVar2;
+  MantleState *mstate;
   
-  iVar1 = Mantle_GetUpLength(&param_1->mantleState);
-  iVar2 = Mantle_GetOverLength(&param_1->mantleState);
+  iVar1 = Mantle_GetUpLength(&ps->mantleState);
+  iVar2 = Mantle_GetOverLength(&ps->mantleState);
   return iVar2 + iVar1;
 }
 
 
 // 00420DE0  Mantle_GetMantleFrac  (bgame/bg_mantle.cpp:1234)
 
-float __cdecl Mantle_GetMantleFrac(playerState_s *param_1)
+float __cdecl Mantle_GetMantleFrac(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float10 fVar4;
+  MantleState *mstate;
+  int mantleLength;
   
-  iVar3 = Mantle_GetDuration(param_1);
+  iVar3 = Mantle_GetDuration(ps);
   if (iVar3 < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_mantle.cpp",0x4d6,0,
                              "%s\n\t(mantleLength) = %i");
@@ -1469,58 +1487,54 @@ float __cdecl Mantle_GetMantleFrac(playerState_s *param_1)
       return (float)fVar4;
     }
   }
-  return (float)(param_1->mantleState).timer / (float)iVar3;
+  return (float)(ps->mantleState).timer / (float)iVar3;
 }
 
 
 // 00420E40  Mount_CanPlayerDeployTurret  (bgame/bg_mantle.cpp:1248)
 
-bool __cdecl Mount_CanPlayerDeployTurret(playerState_s *param_1)
+bool __cdecl Mount_CanPlayerDeployTurret(playerState_s *ps)
 
 {
   bool bVar1;
   int iVar2;
-  uint local_c;
+  int pmflags;
+  int disabled_pm_flags;
   
-  if (((((param_1->weaponstate == 10) || (param_1->weaponstate == 0xc)) ||
-       (param_1->weaponstate == 0xe)) ||
-      ((param_1->weaponstate == 0xd || (param_1->weaponstate == 0xb)))) ||
-     ((param_1->weaponstate == 0xf || (param_1->weaponstate == 0x10)))) {
+  if (((((ps->weaponstate == 10) || (ps->weaponstate == 0xc)) || (ps->weaponstate == 0xe)) ||
+      ((ps->weaponstate == 0xd || (ps->weaponstate == 0xb)))) ||
+     ((ps->weaponstate == 0xf || (ps->weaponstate == 0x10)))) {
     bVar1 = false;
   }
-  else if (((param_1->weaponstate == 0x11) || (param_1->weaponstate == 0x12)) ||
-          (param_1->weaponstate == 0x13)) {
+  else if (((ps->weaponstate == 0x11) || (ps->weaponstate == 0x12)) || (ps->weaponstate == 0x13)) {
     bVar1 = false;
   }
-  else if ((((param_1->weaponstate == 1) || (param_1->weaponstate == 2)) ||
-           (param_1->weaponstate == 3)) ||
-          ((param_1->weaponstate == 4 || (param_1->weaponstate == 5)))) {
+  else if ((((ps->weaponstate == 1) || (ps->weaponstate == 2)) || (ps->weaponstate == 3)) ||
+          ((ps->weaponstate == 4 || (ps->weaponstate == 5)))) {
     bVar1 = false;
   }
-  else if ((param_1->weaponstate == 3) ||
-          ((param_1->weaponstate == 4 || (param_1->weaponstate == 5)))) {
+  else if ((ps->weaponstate == 3) || ((ps->weaponstate == 4 || (ps->weaponstate == 5)))) {
     bVar1 = false;
   }
-  else if ((param_1->weaponstate == 1) || (param_1->weaponstate == 2)) {
+  else if ((ps->weaponstate == 1) || (ps->weaponstate == 2)) {
     bVar1 = false;
   }
-  else if ((param_1->weaponstate < 0x1b) || (0x1d < param_1->weaponstate)) {
-    if ((param_1->weaponstate == 0x23) ||
-       ((param_1->weaponstate == 0x24 || (param_1->weaponstate == 0x25)))) {
+  else if ((ps->weaponstate < 0x1b) || (0x1d < ps->weaponstate)) {
+    if ((ps->weaponstate == 0x23) || ((ps->weaponstate == 0x24 || (ps->weaponstate == 0x25)))) {
       bVar1 = false;
     }
-    else if ((param_1->weaponstate < 0x14) || (0x19 < param_1->weaponstate)) {
-      if ((param_1->eFlags & 0x300U) == 0) {
-        iVar2 = BG_GetAmmoInClip(param_1,(uint)param_1->weapon);
+    else if ((ps->weaponstate < 0x14) || (0x19 < ps->weaponstate)) {
+      if ((ps->eFlags & 0x300U) == 0) {
+        iVar2 = BG_GetAmmoInClip(ps,(uint)ps->weapon);
         if (iVar2 < 1) {
           bVar1 = false;
         }
         else {
-          local_c = param_1->pm_flags;
-          if ((local_c & 1) != 0) {
-            local_c = local_c & 0xffffbfff;
+          pmflags = ps->pm_flags;
+          if ((pmflags & 1U) != 0) {
+            pmflags = pmflags & 0xffffbfff;
           }
-          if ((local_c & 0x2e00c) == 0) {
+          if ((pmflags & 0x2e00cU) == 0) {
             bVar1 = true;
           }
           else {

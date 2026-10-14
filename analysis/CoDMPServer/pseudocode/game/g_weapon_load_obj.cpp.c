@@ -3,7 +3,7 @@
 // 0069A070  G_ParseAIWeaponAccurayGraphFile  (game/g_weapon_load_obj.cpp:19)
 
 bool __cdecl
-G_ParseAIWeaponAccurayGraphFile(char *param_1,char *param_2,float (*param_3) [2],int *param_4)
+G_ParseAIWeaponAccurayGraphFile(char *buffer,char *fileName,float (*knots) [2],int *knotCount)
 
 {
   code *pcVar1;
@@ -12,61 +12,62 @@ G_ParseAIWeaponAccurayGraphFile(char *param_1,char *param_2,float (*param_3) [2]
   char *pcVar4;
   int iVar5;
   double dVar6;
-  int local_c;
+  int knotCountIndex;
+  char *token;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x17
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((fileName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x18
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (float (*) [2])0x0) &&
+  if ((knots == (float (*) [2])0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x19
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == (int *)0x0) &&
+  if ((knotCount == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x1a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  Com_BeginParseSession(param_2);
-  pcVar4 = Com_Parse(&param_1);
+  Com_BeginParseSession(fileName);
+  pcVar4 = Com_Parse(&buffer);
   iVar5 = atoi(pcVar4);
-  *param_4 = iVar5;
-  local_c = 0;
-  while ((pcVar4 = Com_Parse(&param_1), *pcVar4 != '\0' && (*pcVar4 != '}'))) {
+  *knotCount = iVar5;
+  knotCountIndex = 0;
+  while ((pcVar4 = Com_Parse(&buffer), *pcVar4 != '\0' && (*pcVar4 != '}'))) {
     dVar6 = atof(pcVar4);
-    param_3[local_c][0] = (float)dVar6;
-    pcVar4 = Com_Parse(&param_1);
+    knots[knotCountIndex][0] = (float)dVar6;
+    pcVar4 = Com_Parse(&buffer);
     if ((*pcVar4 == '\0') || (*pcVar4 == '}')) break;
     dVar6 = atof(pcVar4);
-    param_3[local_c][1] = (float)dVar6;
-    local_c = local_c + 1;
-    if (0xf < local_c) {
+    knots[knotCountIndex][1] = (float)dVar6;
+    knotCountIndex = knotCountIndex + 1;
+    if (0xf < knotCountIndex) {
       Com_PrintWarning(0xf,"WARNING: \"%s\" has too many graph knots\n");
       Com_EndParseSession();
       return false;
     }
   }
   Com_EndParseSession();
-  if (local_c != *param_4) {
+  if (knotCountIndex != *knotCount) {
     Com_PrintError(0xf,"ERROR: \"%s\" Error in parsing an ai weapon accuracy file\n");
     return false;
   }
-  if (param_3[local_c + -1][0] != 1.0) {
+  if (knots[knotCountIndex + -1][0] != 1.0) {
     Com_PrintError(0xf,"ERROR: \"%s\" Range must be 0.0 to 1.0\n");
     return false;
   }
@@ -81,7 +82,7 @@ G_ParseAIWeaponAccurayGraphFile(char *param_1,char *param_2,float (*param_3) [2]
 
 bool __cdecl
 G_ParseWeaponAccurayGraphInternal
-          (WeaponDef *param_1,char *param_2,char *param_3,float (*param_4) [2],int *param_5)
+          (WeaponDef *weaponDef,char *dirName,char *graphName,float (*knots) [2],int *knotCount)
 
 {
   code *pcVar1;
@@ -91,24 +92,25 @@ G_ParseWeaponAccurayGraphInternal
   int iVar5;
   int iVar6;
   char *local_4064;
-  char local_405c [64];
-  uchar local_401c [16388];
+  int fileLength;
+  char fileName [64];
+  uchar buffer [16388];
   uint local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  char *identifierStr;
+  int knotCountInternal;
+  int fileHandle;
+  int identifierStrLength;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = "WEAPONACCUFILE";
+  identifierStr = "WEAPONACCUFILE";
   local_4064 = "WEAPONACCUFILE";
   pcVar2 = local_4064;
   do {
     local_4064 = pcVar2;
     pcVar2 = local_4064 + 1;
   } while (*local_4064 != '\0');
-  local_8 = local_4064 + -0xccda74;
-  if (param_1 == (WeaponDef *)0x0) {
+  identifierStrLength = (int)(local_4064 + -0xccda74);
+  if (weaponDef == (WeaponDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x58,0
                              ,"%s");
     if (!bVar3) {
@@ -117,7 +119,7 @@ G_ParseWeaponAccurayGraphInternal
       return (bool)uVar4;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (graphName == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x59,0
                              ,"%s");
     if (!bVar3) {
@@ -126,7 +128,7 @@ G_ParseWeaponAccurayGraphInternal
       return (bool)uVar4;
     }
   }
-  if (param_4 == (float (*) [2])0x0) {
+  if (knots == (float (*) [2])0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x5a,0
                              ,"%s");
     if (!bVar3) {
@@ -135,7 +137,7 @@ G_ParseWeaponAccurayGraphInternal
       return (bool)uVar4;
     }
   }
-  if (param_5 == (int *)0x0) {
+  if (knotCount == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x5b,0
                              ,"%s");
     if (!bVar3) {
@@ -144,7 +146,7 @@ G_ParseWeaponAccurayGraphInternal
       return (bool)uVar4;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (dirName == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_weapon_load_obj.cpp",0x5c,0
                              ,"%s");
     if (!bVar3) {
@@ -153,33 +155,33 @@ G_ParseWeaponAccurayGraphInternal
       return (bool)uVar4;
     }
   }
-  if (((param_1->weapType == WEAPTYPE_BULLET) || (param_1->weapType == WEAPTYPE_PROJECTILE)) ||
-     (param_1->weapType == WEAPTYPE_GAS)) {
-    if (*param_3 == '\0') {
+  if (((weaponDef->weapType == WEAPTYPE_BULLET) || (weaponDef->weapType == WEAPTYPE_PROJECTILE)) ||
+     (weaponDef->weapType == WEAPTYPE_GAS)) {
+    if (*graphName == '\0') {
       bVar3 = true;
     }
     else {
-      sprintf(local_405c,"accuracy/%s/%s");
-      iVar5 = FS_FOpenFileByMode(local_405c,&local_c,FS_READ);
+      sprintf(fileName,"accuracy/%s/%s");
+      iVar5 = FS_FOpenFileByMode(fileName,&fileHandle,FS_READ);
       if (iVar5 < 0) {
         Com_PrintWarning(0xf,"WARNING: Could not load ai weapon accuracy file \'%s\'\n");
         bVar3 = false;
       }
       else {
-        FS_Read(local_401c,(int)local_8,local_c);
-        local_401c[(int)local_8] = '\0';
-        iVar6 = strncmp((char *)local_401c,local_14,(uint)local_8);
+        FS_Read(buffer,identifierStrLength,fileHandle);
+        buffer[identifierStrLength] = '\0';
+        iVar6 = strncmp((char *)buffer,identifierStr,identifierStrLength);
         if (iVar6 == 0) {
-          if (iVar5 - (int)local_8 < 0x4000) {
-            memset(local_401c,'\0',0x4000);
-            FS_Read(local_401c,iVar5 - (int)local_8,local_c);
-            local_401c[iVar5 - (int)local_8] = '\0';
-            FS_FCloseFile(local_c);
-            local_10 = 0;
-            bVar3 = G_ParseAIWeaponAccurayGraphFile((char *)local_401c,local_405c,param_4,&local_10)
-            ;
+          if (iVar5 - identifierStrLength < 0x4000) {
+            memset(buffer,'\0',0x4000);
+            FS_Read(buffer,iVar5 - identifierStrLength,fileHandle);
+            buffer[iVar5 - identifierStrLength] = '\0';
+            FS_FCloseFile(fileHandle);
+            knotCountInternal = 0;
+            bVar3 = G_ParseAIWeaponAccurayGraphFile
+                              ((char *)buffer,fileName,knots,&knotCountInternal);
             if (bVar3) {
-              *param_5 = local_10;
+              *knotCount = knotCountInternal;
               bVar3 = true;
             }
             else {
@@ -190,14 +192,14 @@ G_ParseWeaponAccurayGraphInternal
             Com_PrintWarning(0xf,
                              "WARNING: \"%s\" Is too long of an ai weapon accuracy file to parse\n")
             ;
-            FS_FCloseFile(local_c);
+            FS_FCloseFile(fileHandle);
             bVar3 = false;
           }
         }
         else {
           Com_PrintWarning(0xf,"WARNING: \"%s\" does not appear to be an ai weapon accuracy file\n")
           ;
-          FS_FCloseFile(local_c);
+          FS_FCloseFile(fileHandle);
           bVar3 = false;
         }
       }
@@ -212,37 +214,40 @@ G_ParseWeaponAccurayGraphInternal
 
 // 00699C00  G_ParseWeaponAccurayGraphs  (game/g_weapon_load_obj.cpp:146)
 
-bool __cdecl G_ParseWeaponAccurayGraphs(WeaponDef *param_1)
+bool __cdecl G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
 
 {
   bool bVar1;
   float (*pafVar2) [2];
-  ulong uVar3;
-  int local_8c;
-  int local_88;
-  float local_84 [32];
+  ulong count;
+  int size;
+  int weaponType;
+  int accuracyGraphKnotCount;
+  float accuracyGraphKnots [32];
   
-  local_8c = 0;
+  weaponType = 0;
   while( true ) {
-    if (1 < local_8c) {
+    if (1 < weaponType) {
       return true;
     }
-    memset((uchar *)local_84,'\0',0x80);
-    local_88 = 0;
+    memset((uchar *)accuracyGraphKnots,'\0',0x80);
+    accuracyGraphKnotCount = 0;
     bVar1 = G_ParseWeaponAccurayGraphInternal
-                      (param_1,accuracyDirName[local_8c],param_1->accuracyGraphName[local_8c],
-                       (float (*) [2])local_84,&local_88);
+                      (weaponDef,accuracyDirName[weaponType],
+                       weaponDef->accuracyGraphName[weaponType],(float (*) [2])accuracyGraphKnots,
+                       &accuracyGraphKnotCount);
     if (!bVar1) break;
-    if (0 < local_88) {
-      uVar3 = local_88 << 3;
-      pafVar2 = Hunk_AllocLowAlign(uVar3,4,"G_ParseWeaponAccurayGraphs",10);
-      param_1->accuracyGraphKnots[local_8c] = pafVar2;
-      param_1->originalAccuracyGraphKnots[local_8c] = param_1->accuracyGraphKnots[local_8c];
-      memcpy((uchar *)param_1->accuracyGraphKnots[local_8c],(uchar *)local_84,uVar3);
-      param_1->accuracyGraphKnotCount[local_8c] = local_88;
-      param_1->originalAccuracyGraphKnotCount[local_8c] = param_1->accuracyGraphKnotCount[local_8c];
+    if (0 < accuracyGraphKnotCount) {
+      count = accuracyGraphKnotCount << 3;
+      pafVar2 = Hunk_AllocLowAlign(count,4,"G_ParseWeaponAccurayGraphs",10);
+      weaponDef->accuracyGraphKnots[weaponType] = pafVar2;
+      weaponDef->originalAccuracyGraphKnots[weaponType] = weaponDef->accuracyGraphKnots[weaponType];
+      memcpy((uchar *)weaponDef->accuracyGraphKnots[weaponType],(uchar *)accuracyGraphKnots,count);
+      weaponDef->accuracyGraphKnotCount[weaponType] = accuracyGraphKnotCount;
+      weaponDef->originalAccuracyGraphKnotCount[weaponType] =
+           weaponDef->accuracyGraphKnotCount[weaponType];
     }
-    local_8c = local_8c + 1;
+    weaponType = weaponType + 1;
   }
   return false;
 }

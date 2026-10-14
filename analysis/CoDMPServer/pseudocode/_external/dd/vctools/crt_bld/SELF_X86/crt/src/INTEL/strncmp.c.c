@@ -2,21 +2,21 @@
 
 // 00C0F2DF  strncmp  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strncmp.c:42)
 
-int __cdecl strncmp(char *param_1,char *param_2,uint param_3)
+int __cdecl strncmp(char *first,char *last,uint count)
 
 {
   byte *pbVar1;
   uint uVar2;
   byte *pbVar3;
   uint uVar4;
-  uint local_8;
+  uint n;
   
-  local_8 = 0;
-  if (param_3 != 0) {
-    if ((3 < param_3) && (pbVar1 = (byte *)param_1, pbVar3 = (byte *)param_2, param_3 != 4)) {
+  n = 0;
+  if (count != 0) {
+    if ((3 < count) && (pbVar1 = (byte *)first, pbVar3 = (byte *)last, count != 4)) {
       do {
-        param_1 = (char *)(pbVar1 + 4);
-        param_2 = (char *)(pbVar3 + 4);
+        first = (char *)(pbVar1 + 4);
+        last = (char *)(pbVar3 + 4);
         if ((*pbVar1 == 0) || (*pbVar1 != *pbVar3)) {
           uVar2 = (uint)*pbVar1;
           uVar4 = (uint)*pbVar3;
@@ -37,20 +37,20 @@ int __cdecl strncmp(char *param_1,char *param_2,uint param_3)
           uVar4 = (uint)pbVar3[3];
           goto LAB_00c0f39b;
         }
-        local_8 = local_8 + 4;
-        pbVar1 = (byte *)param_1;
-        pbVar3 = (byte *)param_2;
-      } while (local_8 < param_3 - 4);
+        n = n + 4;
+        pbVar1 = (byte *)first;
+        pbVar3 = (byte *)last;
+      } while (n < count - 4);
     }
-    for (; local_8 < param_3; local_8 = local_8 + 1) {
-      if ((*param_1 == 0) || (*param_1 != *param_2)) {
-        uVar2 = (uint)(byte)*param_1;
-        uVar4 = (uint)(byte)*param_2;
+    for (; n < count; n = n + 1) {
+      if ((*first == 0) || (*first != *last)) {
+        uVar2 = (uint)(byte)*first;
+        uVar4 = (uint)(byte)*last;
 LAB_00c0f39b:
         return uVar2 - uVar4;
       }
-      param_1 = param_1 + 1;
-      param_2 = param_2 + 1;
+      first = first + 1;
+      last = last + 1;
     }
   }
   return 0;

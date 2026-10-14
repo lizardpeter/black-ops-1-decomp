@@ -2,329 +2,329 @@
 
 // 0096268B  memcmp  (line unknown)
 
-int __cdecl memcmp(void *param_1,void *param_2,uint param_3)
+int __cdecl memcmp(void *lhs,void *rhs,uint siz)
 
 {
   int iVar1;
   uint uVar2;
   uint uVar3;
   
-  if (param_3 == 0) {
+  if (siz == 0) {
     return 0;
   }
-  if (param_3 == 1) {
-    uVar2 = (uint)*(byte *)param_1;
-    uVar3 = (uint)*(byte *)param_2;
+  if (siz == 1) {
+    uVar2 = (uint)*(byte *)lhs;
+    uVar3 = (uint)*(byte *)rhs;
 LAB_00963be4:
     if (uVar2 == uVar3) {
       return 0;
     }
     return (uint)(0 < (int)(uVar2 - uVar3)) * 2 + -1;
   }
-  if (param_3 == 2) {
-    uVar2 = (uint)*(byte *)param_1;
-    uVar3 = (uint)*(byte *)param_2;
+  if (siz == 2) {
+    uVar2 = (uint)*(byte *)lhs;
+    uVar3 = (uint)*(byte *)rhs;
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 1);
-    uVar3 = (uint)*(byte *)((int)param_2 + 1);
+    uVar2 = (uint)*(byte *)((int)lhs + 1);
+    uVar3 = (uint)*(byte *)((int)rhs + 1);
     goto LAB_00963be4;
   }
-  if (param_3 == 3) {
-    uVar2 = (uint)*(byte *)param_1;
-    uVar3 = (uint)*(byte *)param_2;
+  if (siz == 3) {
+    uVar2 = (uint)*(byte *)lhs;
+    uVar3 = (uint)*(byte *)rhs;
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 1);
-    uVar3 = (uint)*(byte *)((int)param_2 + 1);
+    uVar2 = (uint)*(byte *)((int)lhs + 1);
+    uVar3 = (uint)*(byte *)((int)rhs + 1);
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 2);
-    uVar3 = (uint)*(byte *)((int)param_2 + 2);
+    uVar2 = (uint)*(byte *)((int)lhs + 2);
+    uVar3 = (uint)*(byte *)((int)rhs + 2);
     goto LAB_00963be4;
   }
-  if (param_3 == 4) {
-    uVar2 = (uint)*(byte *)param_1;
-    uVar3 = (uint)*(byte *)param_2;
+  if (siz == 4) {
+    uVar2 = (uint)*(byte *)lhs;
+    uVar3 = (uint)*(byte *)rhs;
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 1);
-    uVar3 = (uint)*(byte *)((int)param_2 + 1);
+    uVar2 = (uint)*(byte *)((int)lhs + 1);
+    uVar3 = (uint)*(byte *)((int)rhs + 1);
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 2);
-    uVar3 = (uint)*(byte *)((int)param_2 + 2);
+    uVar2 = (uint)*(byte *)((int)lhs + 2);
+    uVar3 = (uint)*(byte *)((int)rhs + 2);
     if ((uVar2 != uVar3) &&
        (iVar1 = (uint)(uVar2 != uVar3 && -1 < (int)(uVar2 - uVar3)) * 2 + -1, iVar1 != 0)) {
       return iVar1;
     }
-    uVar2 = (uint)*(byte *)((int)param_1 + 3);
-    uVar3 = (uint)*(byte *)((int)param_2 + 3);
+    uVar2 = (uint)*(byte *)((int)lhs + 3);
+    uVar3 = (uint)*(byte *)((int)rhs + 3);
     goto LAB_00963be4;
   }
-  for (; 0x1f < param_3; param_3 = param_3 - 0x20) {
-    if (*(int *)param_1 == *(int *)param_2) {
+  for (; 0x1f < siz; siz = siz - 0x20) {
+    if (*(int *)lhs == *(int *)rhs) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)param_1;
-      uVar2 = (uint)*(byte *)param_2;
+      uVar3 = (uint)*(byte *)lhs;
+      uVar2 = (uint)*(byte *)rhs;
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 1);
-      uVar2 = (uint)*(byte *)((int)param_2 + 1);
+      uVar3 = (uint)*(byte *)((int)lhs + 1);
+      uVar2 = (uint)*(byte *)((int)rhs + 1);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 2);
-      uVar2 = (uint)*(byte *)((int)param_2 + 2);
+      uVar3 = (uint)*(byte *)((int)lhs + 2);
+      uVar2 = (uint)*(byte *)((int)rhs + 2);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 3) != (uint)*(byte *)((int)param_2 + 3)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 3) -
-                                (uint)*(byte *)((int)param_2 + 3))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 3) != (uint)*(byte *)((int)rhs + 3)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 3) - (uint)*(byte *)((int)rhs + 3))) * 2
+                + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 4) == *(int *)((int)param_2 + 4)) {
+    if (*(int *)((int)lhs + 4) == *(int *)((int)rhs + 4)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 4);
-      uVar2 = (uint)*(byte *)((int)param_2 + 4);
+      uVar3 = (uint)*(byte *)((int)lhs + 4);
+      uVar2 = (uint)*(byte *)((int)rhs + 4);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 5);
-      uVar2 = (uint)*(byte *)((int)param_2 + 5);
+      uVar3 = (uint)*(byte *)((int)lhs + 5);
+      uVar2 = (uint)*(byte *)((int)rhs + 5);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 6);
-      uVar2 = (uint)*(byte *)((int)param_2 + 6);
+      uVar3 = (uint)*(byte *)((int)lhs + 6);
+      uVar2 = (uint)*(byte *)((int)rhs + 6);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 7) != (uint)*(byte *)((int)param_2 + 7)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 7) -
-                                (uint)*(byte *)((int)param_2 + 7))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 7) != (uint)*(byte *)((int)rhs + 7)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 7) - (uint)*(byte *)((int)rhs + 7))) * 2
+                + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 8) == *(int *)((int)param_2 + 8)) {
+    if (*(int *)((int)lhs + 8) == *(int *)((int)rhs + 8)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 8);
-      uVar2 = (uint)*(byte *)((int)param_2 + 8);
+      uVar3 = (uint)*(byte *)((int)lhs + 8);
+      uVar2 = (uint)*(byte *)((int)rhs + 8);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 9);
-      uVar2 = (uint)*(byte *)((int)param_2 + 9);
+      uVar3 = (uint)*(byte *)((int)lhs + 9);
+      uVar2 = (uint)*(byte *)((int)rhs + 9);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 10);
-      uVar2 = (uint)*(byte *)((int)param_2 + 10);
+      uVar3 = (uint)*(byte *)((int)lhs + 10);
+      uVar2 = (uint)*(byte *)((int)rhs + 10);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0xb) != (uint)*(byte *)((int)param_2 + 0xb)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0xb) -
-                                (uint)*(byte *)((int)param_2 + 0xb))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0xb) != (uint)*(byte *)((int)rhs + 0xb)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0xb) - (uint)*(byte *)((int)rhs + 0xb)))
+                * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 0xc) == *(int *)((int)param_2 + 0xc)) {
+    if (*(int *)((int)lhs + 0xc) == *(int *)((int)rhs + 0xc)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 0xc);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0xc);
+      uVar3 = (uint)*(byte *)((int)lhs + 0xc);
+      uVar2 = (uint)*(byte *)((int)rhs + 0xc);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0xd);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0xd);
+      uVar3 = (uint)*(byte *)((int)lhs + 0xd);
+      uVar2 = (uint)*(byte *)((int)rhs + 0xd);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0xe);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0xe);
+      uVar3 = (uint)*(byte *)((int)lhs + 0xe);
+      uVar2 = (uint)*(byte *)((int)rhs + 0xe);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0xf) != (uint)*(byte *)((int)param_2 + 0xf)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0xf) -
-                                (uint)*(byte *)((int)param_2 + 0xf))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0xf) != (uint)*(byte *)((int)rhs + 0xf)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0xf) - (uint)*(byte *)((int)rhs + 0xf)))
+                * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 0x10) == *(int *)((int)param_2 + 0x10)) {
+    if (*(int *)((int)lhs + 0x10) == *(int *)((int)rhs + 0x10)) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x10);
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x10);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x10);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x10);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x11);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x11);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x11);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x11);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x12);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x12);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x12);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x12);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0x13) != (uint)*(byte *)((int)param_2 + 0x13)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0x13) -
-                                (uint)*(byte *)((int)param_2 + 0x13))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0x13) != (uint)*(byte *)((int)rhs + 0x13)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0x13) - (uint)*(byte *)((int)rhs + 0x13)
+                                )) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 0x14) == *(int *)((int)param_2 + 0x14)) {
+    if (*(int *)((int)lhs + 0x14) == *(int *)((int)rhs + 0x14)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x14);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x14);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x14);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x14);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x15);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x15);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x15);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x15);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x16);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x16);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x16);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x16);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0x17) != (uint)*(byte *)((int)param_2 + 0x17)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0x17) -
-                                (uint)*(byte *)((int)param_2 + 0x17))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0x17) != (uint)*(byte *)((int)rhs + 0x17)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0x17) - (uint)*(byte *)((int)rhs + 0x17)
+                                )) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 0x18) == *(int *)((int)param_2 + 0x18)) {
+    if (*(int *)((int)lhs + 0x18) == *(int *)((int)rhs + 0x18)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x18);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x18);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x18);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x18);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x19);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x19);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x19);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x19);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x1a);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x1a);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x1a);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x1a);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0x1b) != (uint)*(byte *)((int)param_2 + 0x1b)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0x1b) -
-                                (uint)*(byte *)((int)param_2 + 0x1b))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0x1b) != (uint)*(byte *)((int)rhs + 0x1b)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0x1b) - (uint)*(byte *)((int)rhs + 0x1b)
+                                )) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    if (*(int *)((int)param_1 + 0x1c) == *(int *)((int)param_2 + 0x1c)) {
+    if (*(int *)((int)lhs + 0x1c) == *(int *)((int)rhs + 0x1c)) {
       iVar1 = 0;
     }
     else {
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x1c);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x1c);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x1c);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x1c);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x1d);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x1d);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x1d);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x1d);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + 0x1e);
-      uVar2 = (uint)*(byte *)((int)param_2 + 0x1e);
+      uVar3 = (uint)*(byte *)((int)lhs + 0x1e);
+      uVar2 = (uint)*(byte *)((int)rhs + 0x1e);
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + 0x1f) != (uint)*(byte *)((int)param_2 + 0x1f)) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + 0x1f) -
-                                (uint)*(byte *)((int)param_2 + 0x1f))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + 0x1f) != (uint)*(byte *)((int)rhs + 0x1f)) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + 0x1f) - (uint)*(byte *)((int)rhs + 0x1f)
+                                )) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
-    param_1 = (void *)((int)param_1 + 0x20);
-    param_2 = (void *)((int)param_2 + 0x20);
+    lhs = (void *)((int)lhs + 0x20);
+    rhs = (void *)((int)rhs + 0x20);
   }
-  switch(param_3) {
+  switch(siz) {
   default:
     goto switchD_00962b52_caseD_0;
   case 1:
@@ -380,223 +380,216 @@ LAB_00963be4:
   case 0x1b:
     goto switchD_00962b52_caseD_1b;
   case 0x1c:
-    if (*(uint *)((int)param_1 + (param_3 - 0x1c)) == *(uint *)((int)param_2 + (param_3 - 0x1c))) {
+    if (*(uint *)((int)lhs + (siz - 0x1c)) == *(uint *)((int)rhs + (siz - 0x1c))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x1c)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1c));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x1c)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1c));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1b));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1b));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1b));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1b));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1a));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1a));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1a));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1a));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x19)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x19))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x19)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x19)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x19)) != (uint)*(byte *)((int)rhs + (siz - 0x19))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x19)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x19)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_18:
-    if (*(uint *)((int)param_1 + (param_3 - 0x18)) == *(uint *)((int)param_2 + (param_3 - 0x18))) {
+    if (*(uint *)((int)lhs + (siz - 0x18)) == *(uint *)((int)rhs + (siz - 0x18))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x18)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x18));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x18)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x18));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x17));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x17));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x17));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x17));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x16));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x16));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x16));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x16));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x15)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x15))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x15)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x15)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x15)) != (uint)*(byte *)((int)rhs + (siz - 0x15))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x15)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x15)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_14:
-    if (*(uint *)((int)param_1 + (param_3 - 0x14)) == *(uint *)((int)param_2 + (param_3 - 0x14))) {
+    if (*(uint *)((int)lhs + (siz - 0x14)) == *(uint *)((int)rhs + (siz - 0x14))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x14)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x14));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x14)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x14));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x13));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x13));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x13));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x13));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x12));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x12));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x12));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x12));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x11)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x11))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x11)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x11)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x11)) != (uint)*(byte *)((int)rhs + (siz - 0x11))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x11)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x11)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_10:
-    if (*(uint *)((int)param_1 + (param_3 - 0x10)) == *(uint *)((int)param_2 + (param_3 - 0x10))) {
+    if (*(uint *)((int)lhs + (siz - 0x10)) == *(uint *)((int)rhs + (siz - 0x10))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x10)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x10));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x10)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xf));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xf));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xf));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xf));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xe));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xe));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xe));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xe));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0xd)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0xd))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0xd)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0xd)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0xd)) != (uint)*(byte *)((int)rhs + (siz - 0xd))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0xd)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0xd)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_c:
-    if (*(int *)((int)param_1 + (param_3 - 0xc)) == *(int *)((int)param_2 + (param_3 - 0xc))) {
+    if (*(int *)((int)lhs + (siz - 0xc)) == *(int *)((int)rhs + (siz - 0xc))) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xc));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xc));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xc));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xc));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xb));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xb));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xb));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xb));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 10));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 10));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 10));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 9)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 9))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 9)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 9)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 9)) != (uint)*(byte *)((int)rhs + (siz - 9))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 9)) -
+                                (uint)*(byte *)((int)rhs + (siz - 9)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_8:
-    if (*(uint *)((int)param_1 + (param_3 - 8)) == *(uint *)((int)param_2 + (param_3 - 8))) {
+    if (*(uint *)((int)lhs + (siz - 8)) == *(uint *)((int)rhs + (siz - 8))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 8)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 8));
+      uVar3 = *(uint *)((int)lhs + (siz - 8)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 8));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 7));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 7));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 7));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 7));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 6));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 6));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 6));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 6));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 5)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 5))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 5)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 5)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 5)) != (uint)*(byte *)((int)rhs + (siz - 5))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 5)) -
+                                (uint)*(byte *)((int)rhs + (siz - 5)))) * 2 + -1;
       }
     }
     if (iVar1 == 0) {
 switchD_00962b52_caseD_4:
-      if (*(uint *)((int)param_1 + (param_3 - 4)) == *(uint *)((int)param_2 + (param_3 - 4))) {
+      if (*(uint *)((int)lhs + (siz - 4)) == *(uint *)((int)rhs + (siz - 4))) {
         iVar1 = 0;
       }
       else {
-        uVar3 = *(uint *)((int)param_1 + (param_3 - 4)) & 0xff;
-        uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 4));
+        uVar3 = *(uint *)((int)lhs + (siz - 4)) & 0xff;
+        uVar2 = (uint)*(byte *)((int)rhs + (siz - 4));
         if ((uVar3 == uVar2) ||
            (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 == 0)) {
-          uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 3));
-          uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 3));
+          uVar3 = (uint)*(byte *)((int)lhs + (siz - 3));
+          uVar2 = (uint)*(byte *)((int)rhs + (siz - 3));
           if ((uVar3 == uVar2) ||
              (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 == 0)) {
-            uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 2));
-            uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 2));
+            uVar3 = (uint)*(byte *)((int)lhs + (siz - 2));
+            uVar2 = (uint)*(byte *)((int)rhs + (siz - 2));
             if ((uVar3 == uVar2) ||
                (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 == 0)) {
               iVar1 = 0;
-              if ((uint)*(byte *)((int)param_1 + (param_3 - 1)) !=
-                  (uint)*(byte *)((int)param_2 + (param_3 - 1))) {
-                iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 1)) -
-                                        (uint)*(byte *)((int)param_2 + (param_3 - 1)))) * 2 + -1;
+              if ((uint)*(byte *)((int)lhs + (siz - 1)) != (uint)*(byte *)((int)rhs + (siz - 1))) {
+                iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 1)) -
+                                        (uint)*(byte *)((int)rhs + (siz - 1)))) * 2 + -1;
               }
             }
           }
@@ -609,479 +602,464 @@ switchD_00962b52_caseD_0:
     }
     return iVar1;
   case 0x1d:
-    if (*(uint *)((int)param_1 + (param_3 - 0x1d)) == *(uint *)((int)param_2 + (param_3 - 0x1d))) {
+    if (*(uint *)((int)lhs + (siz - 0x1d)) == *(uint *)((int)rhs + (siz - 0x1d))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x1d)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1d));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x1d)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1d));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1c));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1c));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1c));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1c));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1b));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1b));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1b));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1b));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x1a)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x1a))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x1a)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x1a)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x1a)) != (uint)*(byte *)((int)rhs + (siz - 0x1a))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x1a)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x1a)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
   case 0x19:
-    if (*(uint *)((int)param_1 + (param_3 - 0x19)) == *(uint *)((int)param_2 + (param_3 - 0x19))) {
+    if (*(uint *)((int)lhs + (siz - 0x19)) == *(uint *)((int)rhs + (siz - 0x19))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x19)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x19));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x19)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x19));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x18));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x18));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x18));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x18));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x17));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x17));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x17));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x17));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x16)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x16))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x16)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x16)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x16)) != (uint)*(byte *)((int)rhs + (siz - 0x16))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x16)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x16)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_15:
-    if (*(uint *)((int)param_1 + (param_3 - 0x15)) == *(uint *)((int)param_2 + (param_3 - 0x15))) {
+    if (*(uint *)((int)lhs + (siz - 0x15)) == *(uint *)((int)rhs + (siz - 0x15))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x15)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x15));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x15)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x15));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x14));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x14));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x14));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x14));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x13));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x13));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x13));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x13));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x12)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x12))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x12)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x12)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x12)) != (uint)*(byte *)((int)rhs + (siz - 0x12))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x12)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x12)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_11:
-    if (*(uint *)((int)param_1 + (param_3 - 0x11)) == *(uint *)((int)param_2 + (param_3 - 0x11))) {
+    if (*(uint *)((int)lhs + (siz - 0x11)) == *(uint *)((int)rhs + (siz - 0x11))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x11)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x11));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x11)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x11));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x10));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x10));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x10));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xf));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xf));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xf));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xf));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0xe)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0xe))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0xe)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0xe)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0xe)) != (uint)*(byte *)((int)rhs + (siz - 0xe))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0xe)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0xe)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_d:
-    if (*(uint *)((int)param_1 + (param_3 - 0xd)) == *(uint *)((int)param_2 + (param_3 - 0xd))) {
+    if (*(uint *)((int)lhs + (siz - 0xd)) == *(uint *)((int)rhs + (siz - 0xd))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0xd)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xd));
+      uVar3 = *(uint *)((int)lhs + (siz - 0xd)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xd));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xc));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xc));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xc));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xc));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xb));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xb));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xb));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xb));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 10)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 10))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 10)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 10)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 10)) != (uint)*(byte *)((int)rhs + (siz - 10))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 10)) -
+                                (uint)*(byte *)((int)rhs + (siz - 10)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_9:
-    if (*(int *)((int)param_1 + (param_3 - 9)) == *(int *)((int)param_2 + (param_3 - 9))) {
+    if (*(int *)((int)lhs + (siz - 9)) == *(int *)((int)rhs + (siz - 9))) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 9));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 9));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 9));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 9));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 8));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 8));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 8));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 8));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 7));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 7));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 7));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 7));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 6)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 6))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 6)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 6)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 6)) != (uint)*(byte *)((int)rhs + (siz - 6))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 6)) -
+                                (uint)*(byte *)((int)rhs + (siz - 6)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_5:
-    if (*(uint *)((int)param_1 + (param_3 - 5)) == *(uint *)((int)param_2 + (param_3 - 5))) {
+    if (*(uint *)((int)lhs + (siz - 5)) == *(uint *)((int)rhs + (siz - 5))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 5)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 5));
+      uVar3 = *(uint *)((int)lhs + (siz - 5)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 5));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 4));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 4));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 4));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 4));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 3));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 3));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 3));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 3));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 2)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 2))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 2)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 2)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 2)) != (uint)*(byte *)((int)rhs + (siz - 2))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 2)) -
+                                (uint)*(byte *)((int)rhs + (siz - 2)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_1:
-    if ((uint)*(byte *)((int)param_1 + (param_3 - 1)) ==
-        (uint)*(byte *)((int)param_2 + (param_3 - 1))) {
+    if ((uint)*(byte *)((int)lhs + (siz - 1)) == (uint)*(byte *)((int)rhs + (siz - 1))) {
       return 0;
     }
-    return (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 1)) -
-                           (uint)*(byte *)((int)param_2 + (param_3 - 1)))) * 2 + -1;
+    return (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 1)) -
+                           (uint)*(byte *)((int)rhs + (siz - 1)))) * 2 + -1;
   case 0x1e:
-    if (*(uint *)((int)param_1 + (param_3 - 0x1e)) == *(uint *)((int)param_2 + (param_3 - 0x1e))) {
+    if (*(uint *)((int)lhs + (siz - 0x1e)) == *(uint *)((int)rhs + (siz - 0x1e))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x1e)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1e));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x1e)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1e));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1d));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1d));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1d));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1d));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1c));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1c));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1c));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1c));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x1b)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x1b))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x1b)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x1b)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x1b)) != (uint)*(byte *)((int)rhs + (siz - 0x1b))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x1b)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x1b)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_1a:
-    if (*(uint *)((int)param_1 + (param_3 - 0x1a)) == *(uint *)((int)param_2 + (param_3 - 0x1a))) {
+    if (*(uint *)((int)lhs + (siz - 0x1a)) == *(uint *)((int)rhs + (siz - 0x1a))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x1a)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1a));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x1a)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1a));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x19));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x19));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x19));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x19));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x18));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x18));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x18));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x18));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x17)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x17))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x17)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x17)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x17)) != (uint)*(byte *)((int)rhs + (siz - 0x17))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x17)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x17)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_16:
-    if (*(uint *)((int)param_1 + (param_3 - 0x16)) == *(uint *)((int)param_2 + (param_3 - 0x16))) {
+    if (*(uint *)((int)lhs + (siz - 0x16)) == *(uint *)((int)rhs + (siz - 0x16))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x16)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x16));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x16)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x16));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x15));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x15));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x15));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x15));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x14));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x14));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x14));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x14));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x13)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x13))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x13)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x13)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x13)) != (uint)*(byte *)((int)rhs + (siz - 0x13))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x13)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x13)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_12:
-    if (*(uint *)((int)param_1 + (param_3 - 0x12)) == *(uint *)((int)param_2 + (param_3 - 0x12))) {
+    if (*(uint *)((int)lhs + (siz - 0x12)) == *(uint *)((int)rhs + (siz - 0x12))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x12)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x12));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x12)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x12));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x11));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x11));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x11));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x11));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x10));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x10));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x10));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0xf)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0xf))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0xf)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0xf)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0xf)) != (uint)*(byte *)((int)rhs + (siz - 0xf))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0xf)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0xf)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_e:
-    if (*(uint *)((int)param_1 + (param_3 - 0xe)) == *(uint *)((int)param_2 + (param_3 - 0xe))) {
+    if (*(uint *)((int)lhs + (siz - 0xe)) == *(uint *)((int)rhs + (siz - 0xe))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0xe)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xe));
+      uVar3 = *(uint *)((int)lhs + (siz - 0xe)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xe));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xd));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xd));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xd));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xd));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xc));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xc));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xc));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xc));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0xb)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0xb))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0xb)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0xb)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0xb)) != (uint)*(byte *)((int)rhs + (siz - 0xb))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0xb)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0xb)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_a:
-    if (*(int *)((int)param_1 + (param_3 - 10)) == *(int *)((int)param_2 + (param_3 - 10))) {
+    if (*(int *)((int)lhs + (siz - 10)) == *(int *)((int)rhs + (siz - 10))) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 10));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 10));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 10));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 9));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 9));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 9));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 9));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 8));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 8));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 8));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 8));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 7)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 7))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 7)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 7)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 7)) != (uint)*(byte *)((int)rhs + (siz - 7))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 7)) -
+                                (uint)*(byte *)((int)rhs + (siz - 7)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_6:
-    if (*(uint *)((int)param_1 + (param_3 - 6)) == *(uint *)((int)param_2 + (param_3 - 6))) {
+    if (*(uint *)((int)lhs + (siz - 6)) == *(uint *)((int)rhs + (siz - 6))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 6)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 6));
+      uVar3 = *(uint *)((int)lhs + (siz - 6)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 6));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 5));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 5));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 5));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 5));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 4));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 4));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 4));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 4));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 3)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 3))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 3)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 3)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 3)) != (uint)*(byte *)((int)rhs + (siz - 3))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 3)) -
+                                (uint)*(byte *)((int)rhs + (siz - 3)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_2:
-    if (*(short *)((int)param_1 + (param_3 - 2)) != *(short *)((int)param_2 + (param_3 - 2))) {
+    if (*(short *)((int)lhs + (siz - 2)) != *(short *)((int)rhs + (siz - 2))) {
 LAB_00963738:
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 2));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 2));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 2));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 2));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
@@ -1090,239 +1068,232 @@ LAB_00963738:
     }
     goto switchD_00962b52_caseD_0;
   case 0x1f:
-    if (*(int *)((int)param_1 + (param_3 - 0x1f)) == *(int *)((int)param_2 + (param_3 - 0x1f))) {
+    if (*(int *)((int)lhs + (siz - 0x1f)) == *(int *)((int)rhs + (siz - 0x1f))) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1f));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1f));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1f));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1f));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1e));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1e));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1e));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1e));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1d));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1d));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1d));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1d));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x1c)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x1c))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x1c)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x1c)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x1c)) != (uint)*(byte *)((int)rhs + (siz - 0x1c))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x1c)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x1c)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_1b:
-    if (*(uint *)((int)param_1 + (param_3 - 0x1b)) == *(uint *)((int)param_2 + (param_3 - 0x1b))) {
+    if (*(uint *)((int)lhs + (siz - 0x1b)) == *(uint *)((int)rhs + (siz - 0x1b))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x1b)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1b));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x1b)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1b));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x1a));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x1a));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x1a));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x1a));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x19));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x19));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x19));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x19));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x18)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x18))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x18)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x18)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x18)) != (uint)*(byte *)((int)rhs + (siz - 0x18))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x18)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x18)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_17:
-    if (*(uint *)((int)param_1 + (param_3 - 0x17)) == *(uint *)((int)param_2 + (param_3 - 0x17))) {
+    if (*(uint *)((int)lhs + (siz - 0x17)) == *(uint *)((int)rhs + (siz - 0x17))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x17)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x17));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x17)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x17));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x16));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x16));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x16));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x16));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x15));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x15));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x15));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x15));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x14)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x14))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x14)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x14)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x14)) != (uint)*(byte *)((int)rhs + (siz - 0x14))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x14)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x14)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_13:
-    if (*(uint *)((int)param_1 + (param_3 - 0x13)) == *(uint *)((int)param_2 + (param_3 - 0x13))) {
+    if (*(uint *)((int)lhs + (siz - 0x13)) == *(uint *)((int)rhs + (siz - 0x13))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0x13)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x13));
+      uVar3 = *(uint *)((int)lhs + (siz - 0x13)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x13));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x12));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x12));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x12));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x12));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0x11));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0x11));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0x11));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0x11));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0x10)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0x10))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0x10)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0x10)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0x10)) != (uint)*(byte *)((int)rhs + (siz - 0x10))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0x10)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0x10)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_f:
-    if (*(int *)((int)param_1 + (param_3 - 0xf)) == *(int *)((int)param_2 + (param_3 - 0xf))) {
+    if (*(int *)((int)lhs + (siz - 0xf)) == *(int *)((int)rhs + (siz - 0xf))) {
       iVar1 = 0;
     }
     else {
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xf));
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xf));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xf));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xf));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xe));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xe));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xe));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xe));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 0xd));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xd));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 0xd));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xd));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 0xc)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 0xc))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 0xc)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 0xc)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 0xc)) != (uint)*(byte *)((int)rhs + (siz - 0xc))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 0xc)) -
+                                (uint)*(byte *)((int)rhs + (siz - 0xc)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_b:
-    if (*(uint *)((int)param_1 + (param_3 - 0xb)) == *(uint *)((int)param_2 + (param_3 - 0xb))) {
+    if (*(uint *)((int)lhs + (siz - 0xb)) == *(uint *)((int)rhs + (siz - 0xb))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 0xb)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 0xb));
+      uVar3 = *(uint *)((int)lhs + (siz - 0xb)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 0xb));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 10));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 10));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 10));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 10));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 9));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 9));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 9));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 9));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 8)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 8))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 8)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 8)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 8)) != (uint)*(byte *)((int)rhs + (siz - 8))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 8)) -
+                                (uint)*(byte *)((int)rhs + (siz - 8)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_7:
-    if (*(uint *)((int)param_1 + (param_3 - 7)) == *(uint *)((int)param_2 + (param_3 - 7))) {
+    if (*(uint *)((int)lhs + (siz - 7)) == *(uint *)((int)rhs + (siz - 7))) {
       iVar1 = 0;
     }
     else {
-      uVar3 = *(uint *)((int)param_1 + (param_3 - 7)) & 0xff;
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 7));
+      uVar3 = *(uint *)((int)lhs + (siz - 7)) & 0xff;
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 7));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 6));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 6));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 6));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 6));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
-      uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 5));
-      uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 5));
+      uVar3 = (uint)*(byte *)((int)lhs + (siz - 5));
+      uVar2 = (uint)*(byte *)((int)rhs + (siz - 5));
       if ((uVar3 != uVar2) &&
          (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
         return iVar1;
       }
       iVar1 = 0;
-      if ((uint)*(byte *)((int)param_1 + (param_3 - 4)) !=
-          (uint)*(byte *)((int)param_2 + (param_3 - 4))) {
-        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)param_1 + (param_3 - 4)) -
-                                (uint)*(byte *)((int)param_2 + (param_3 - 4)))) * 2 + -1;
+      if ((uint)*(byte *)((int)lhs + (siz - 4)) != (uint)*(byte *)((int)rhs + (siz - 4))) {
+        iVar1 = (uint)(0 < (int)((uint)*(byte *)((int)lhs + (siz - 4)) -
+                                (uint)*(byte *)((int)rhs + (siz - 4)))) * 2 + -1;
       }
     }
     if (iVar1 != 0) {
       return iVar1;
     }
 switchD_00962b52_caseD_3:
-    uVar3 = (uint)*(byte *)((int)param_1 + (param_3 - 3));
-    uVar2 = (uint)*(byte *)((int)param_2 + (param_3 - 3));
+    uVar3 = (uint)*(byte *)((int)lhs + (siz - 3));
+    uVar2 = (uint)*(byte *)((int)rhs + (siz - 3));
     if ((uVar3 != uVar2) &&
        (iVar1 = (uint)(uVar3 != uVar2 && -1 < (int)(uVar3 - uVar2)) * 2 + -1, iVar1 != 0)) {
       return iVar1;

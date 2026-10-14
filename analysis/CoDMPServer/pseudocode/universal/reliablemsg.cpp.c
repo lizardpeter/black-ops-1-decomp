@@ -4,15 +4,16 @@
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl RMsg_FindMessageSlot(int param_1,uchar param_2)
+int __cdecl RMsg_FindMessageSlot(int clientSlot,uchar sequenceNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  reliableClient *client;
+  int msgSlot;
   
-  if ((0x3f < (uint)param_1) &&
+  if ((0x3f < (uint)clientSlot) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x3b,
                                0,"clientSlot doesn\'t index MAX_DEST_CLIENTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -20,16 +21,16 @@ int __cdecl RMsg_FindMessageSlot(int param_1,uchar param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  msgSlot = 0;
   while( true ) {
-    if (0x13 < local_8) {
+    if (0x13 < msgSlot) {
       return -1;
     }
-    if ((*(char *)(param_1 * 0x81c + 0x9b438c4 + local_8 * 0x34) != '\0') &&
-       (*(uchar *)(param_1 * 0x81c + 0x9b438c5 + local_8 * 0x34) == param_2)) break;
-    local_8 = local_8 + 1;
+    if ((*(char *)(clientSlot * 0x81c + 0x9b438c4 + msgSlot * 0x34) != '\0') &&
+       (*(uchar *)(clientSlot * 0x81c + 0x9b438c5 + msgSlot * 0x34) == sequenceNum)) break;
+    msgSlot = msgSlot + 1;
   }
-  return local_8;
+  return msgSlot;
 }
 
 
@@ -37,18 +38,19 @@ int __cdecl RMsg_FindMessageSlot(int param_1,uchar param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl RMsg_FindOldestSeq(int param_1)
+int __cdecl RMsg_FindOldestSeq(int clientSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  uint local_c;
-  int local_8;
+  int iVar4;
+  reliableClient *client;
+  int oldestSeq;
+  int msgSlot;
   
-  local_c = 0x7fffffff;
-  if (0x3f < (uint)param_1) {
+  oldestSeq = 0x7fffffff;
+  if (0x3f < (uint)clientSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x4d,0,
                              "clientSlot doesn\'t index MAX_DEST_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -57,28 +59,28 @@ int __cdecl RMsg_FindOldestSeq(int param_1)
       return iVar3;
     }
   }
-  iVar3 = param_1 * 0x81c;
-  for (local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
-    if ((*(char *)(iVar3 + 0x9b438c4 + local_8 * 0x34) != '\0') &&
-       (*(byte *)(iVar3 + 0x9b438c5 + local_8 * 0x34) < local_c)) {
-      local_c = (uint)*(byte *)(iVar3 + 0x9b438c5 + local_8 * 0x34);
+  iVar3 = clientSlot * 0x81c;
+  for (msgSlot = 0; msgSlot < 0x14; msgSlot = msgSlot + 1) {
+    if ((*(char *)(iVar3 + 0x9b438c4 + msgSlot * 0x34) != '\0') &&
+       ((uint)*(byte *)(iVar3 + 0x9b438c5 + msgSlot * 0x34) < (uint)oldestSeq)) {
+      oldestSeq = (int)*(byte *)(iVar3 + 0x9b438c5 + msgSlot * 0x34);
     }
   }
-  if (local_c == 0) {
-    local_c = 0x100;
-    iVar3 = RMsg_FindMessageSlot(param_1,0xff);
+  if (oldestSeq == 0) {
+    oldestSeq = 0x100;
+    iVar3 = RMsg_FindMessageSlot(clientSlot,0xff);
     if (iVar3 < 0) {
-      local_c = 0;
+      oldestSeq = 0;
     }
     else {
       do {
-        uVar4 = local_c - 1;
-        iVar3 = RMsg_FindMessageSlot(param_1,(char)local_c + 0xfe);
-        local_c = uVar4;
+        iVar4 = oldestSeq + -1;
+        iVar3 = RMsg_FindMessageSlot(clientSlot,(char)oldestSeq + 0xfe);
+        oldestSeq = iVar4;
       } while (-1 < iVar3);
     }
   }
-  return local_c;
+  return oldestSeq;
 }
 
 
@@ -86,13 +88,13 @@ int __cdecl RMsg_FindOldestSeq(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl RMsg_DropAllPacketsForClient(int param_1)
+void __cdecl RMsg_DropAllPacketsForClient(int clientSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x3f < (uint)param_1) {
+  if (0x3f < (uint)clientSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x6f,0,
                              "clientSlot doesn\'t index MAX_DEST_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -101,7 +103,7 @@ void __cdecl RMsg_DropAllPacketsForClient(int param_1)
       return;
     }
   }
-  memset((uchar *)(s_reliableClientMessages + param_1),'\0',0x81c);
+  memset((uchar *)(s_reliableClientMessages + clientSlot),'\0',0x81c);
   return;
 }
 
@@ -110,34 +112,34 @@ void __cdecl RMsg_DropAllPacketsForClient(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl RMsg_FindSlotForAddr(netadr_t *param_1)
+int __cdecl RMsg_FindSlotForAddr(netadr_t *to)
 
 {
   undefined2 uVar1;
   int iVar2;
-  int local_8;
+  int client;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    iVar2 = NET_CompareAdr(*param_1,s_reliableClientMessages[local_8].addr);
+  for (client = 0; client < 0x40; client = client + 1) {
+    iVar2 = NET_CompareAdr(*to,s_reliableClientMessages[client].addr);
     if (iVar2 != 0) {
-      return local_8;
+      return client;
     }
   }
-  local_8 = 0;
+  client = 0;
   while( true ) {
-    if (0x3f < local_8) {
+    if (0x3f < client) {
       return -1;
     }
-    if (s_reliableClientMessages[local_8].bufferUsed == 0) break;
-    local_8 = local_8 + 1;
+    if (s_reliableClientMessages[client].bufferUsed == 0) break;
+    client = client + 1;
   }
-  s_reliableClientMessages[local_8].addr.type = param_1->type;
-  *(undefined4 *)s_reliableClientMessages[local_8].addr.ip = *(undefined4 *)param_1->ip;
-  uVar1 = *(undefined2 *)&param_1->field_0xa;
-  s_reliableClientMessages[local_8].addr.port = param_1->port;
-  *(undefined2 *)&s_reliableClientMessages[local_8].addr.field_0xa = uVar1;
-  s_reliableClientMessages[local_8].addr.addrHandleIndex = param_1->addrHandleIndex;
-  return local_8;
+  s_reliableClientMessages[client].addr.type = to->type;
+  *(undefined4 *)s_reliableClientMessages[client].addr.ip = *(undefined4 *)to->ip;
+  uVar1 = *(undefined2 *)&to->field_0xa;
+  s_reliableClientMessages[client].addr.port = to->port;
+  *(undefined2 *)&s_reliableClientMessages[client].addr.field_0xa = uVar1;
+  s_reliableClientMessages[client].addr.addrHandleIndex = to->addrHandleIndex;
+  return client;
 }
 
 
@@ -146,10 +148,10 @@ int __cdecl RMsg_FindSlotForAddr(netadr_t *param_1)
 void __cdecl RMsg_Init(void)
 
 {
-  int local_8;
+  int clientSlot;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    RMsg_DropAllPacketsForClient(local_8);
+  for (clientSlot = 0; clientSlot < 0x40; clientSlot = clientSlot + 1) {
+    RMsg_DropAllPacketsForClient(clientSlot);
   }
   reliableResendTime =
        _Dvar_RegisterInt("reliableResendTime",300,0,0x7fffffff,0,
@@ -167,7 +169,7 @@ void __cdecl RMsg_Init(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl RMsg_AddRMsgsToPacket(int param_1,msg_t *param_2)
+void __cdecl RMsg_AddRMsgsToPacket(int clientSlot,msg_t *outMsg)
 
 {
   code *pcVar1;
@@ -175,9 +177,12 @@ void __cdecl RMsg_AddRMsgsToPacket(int param_1,msg_t *param_2)
   bool bVar3;
   int iVar4;
   int iVar5;
-  uint local_10;
+  reliableClient *client;
+  int seq;
+  int msgSlot;
+  bool headerWritten;
   
-  if (0x3f < (uint)param_1) {
+  if (0x3f < (uint)clientSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x171,0
                              ,"clientSlot doesn\'t index MAX_DEST_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -187,9 +192,9 @@ void __cdecl RMsg_AddRMsgsToPacket(int param_1,msg_t *param_2)
     }
   }
   bVar2 = false;
-  iVar4 = param_1 * 0x81c;
-  local_10 = RMsg_FindOldestSeq(param_1);
-  if (local_10 == 0x7fffffff) {
+  iVar4 = clientSlot * 0x81c;
+  seq = RMsg_FindOldestSeq(clientSlot);
+  if (seq == 0x7fffffff) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x177,0
                              ,"%s");
     if (!bVar3) {
@@ -199,19 +204,19 @@ void __cdecl RMsg_AddRMsgsToPacket(int param_1,msg_t *param_2)
     }
   }
   while( true ) {
-    iVar5 = RMsg_FindMessageSlot(param_1,(uchar)local_10);
+    iVar5 = RMsg_FindMessageSlot(clientSlot,(uchar)seq);
     if (iVar5 < 0) break;
     if (!bVar2) {
-      MSG_WriteString(param_2,"R");
+      MSG_WriteString(outMsg,"R");
       bVar2 = true;
     }
-    MSG_WriteByte(param_2,(uint)*(byte *)(iVar4 + 0x9b438c5 + iVar5 * 0x34));
+    MSG_WriteByte(outMsg,(uint)*(byte *)(iVar4 + 0x9b438c5 + iVar5 * 0x34));
     if ((showpackets->current).integer != 0) {
       Com_Printf(0x10,"reliable send (%i): %s\n");
     }
-    MSG_WriteData(param_2,*(void **)(iVar4 + 0x9b438d0 + iVar5 * 0x34),
+    MSG_WriteData(outMsg,*(void **)(iVar4 + 0x9b438d0 + iVar5 * 0x34),
                   *(int *)(iVar4 + 0x9b438dc + iVar5 * 0x34));
-    local_10 = local_10 + 1 & 0xff;
+    seq = seq + 1U & 0xff;
   }
   return;
 }
@@ -227,40 +232,41 @@ void __cdecl RMsg_SendMessages(void)
   code *pcVar1;
   bool bVar2;
   reliableClient *prVar3;
-  int local_3c;
-  msg_t local_38;
-  int local_8;
+  reliableClient *client;
+  int clientSlot;
+  msg_t msg;
+  int now;
   
-  local_8 = Sys_Milliseconds();
-  local_3c = 0;
+  now = Sys_Milliseconds();
+  clientSlot = 0;
   do {
-    if (0x3f < local_3c) {
+    if (0x3f < clientSlot) {
       return;
     }
-    prVar3 = s_reliableClientMessages + local_3c;
-    if ((s_reliableClientMessages[local_3c].bufferUsed != 0) &&
+    prVar3 = s_reliableClientMessages + clientSlot;
+    if ((s_reliableClientMessages[clientSlot].bufferUsed != 0) &&
        ((reliableResendTime->current).integer <=
-        local_8 - s_reliableClientMessages[local_3c].lastSendTime)) {
+        now - s_reliableClientMessages[clientSlot].lastSendTime)) {
       if ((reliableTimeoutTime->current).integer <
-          local_8 - s_reliableClientMessages[local_3c].firstSendTime) {
+          now - s_reliableClientMessages[clientSlot].firstSendTime) {
         NET_AdrToString(prVar3->addr);
         Com_PrintWarning(0x10,
                          "Dropping all reliable packets for client at \'%s\' since they haven\'t ack\'d a reliable message in %ims\n"
                         );
-        RMsg_DropAllPacketsForClient(local_3c);
+        RMsg_DropAllPacketsForClient(clientSlot);
       }
       else {
-        s_reliableClientMessages[local_3c].lastSendTime = local_8;
-        MSG_Init(&local_38,s_tempBuf,0x44c);
-        RMsg_AddRMsgsToPacket(local_3c,&local_38);
-        if ((local_38.cursize == 0) &&
+        s_reliableClientMessages[clientSlot].lastSendTime = now;
+        MSG_Init(&msg,s_tempBuf,0x44c);
+        RMsg_AddRMsgsToPacket(clientSlot,&msg);
+        if ((msg.cursize == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp"
                                      ,0x1b5,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if ((local_38.overflowed != 0) &&
+        if ((msg.overflowed != 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp"
                                      ,0x1b6,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -274,18 +280,18 @@ void __cdecl RMsg_SendMessages(void)
           (*pcVar1)();
           return;
         }
-        NET_OutOfBandData(NS_MAXCLIENTS,prVar3->addr,local_38.data,local_38.cursize);
-        bVar2 = NET_OutOfBandData(NS_MAXCLIENTS,prVar3->addr,local_38.data,local_38.cursize);
+        NET_OutOfBandData(NS_MAXCLIENTS,prVar3->addr,msg.data,msg.cursize);
+        bVar2 = NET_OutOfBandData(NS_MAXCLIENTS,prVar3->addr,msg.data,msg.cursize);
         if (!bVar2) {
           NET_AdrToString(prVar3->addr);
           Com_PrintWarning(0x10,
                            "Dropping all reliable packets for client at \'%s\' since we got a packet error trying to send to them\n"
                           );
-          RMsg_DropAllPacketsForClient(local_3c);
+          RMsg_DropAllPacketsForClient(clientSlot);
         }
       }
     }
-    local_3c = local_3c + 1;
+    clientSlot = clientSlot + 1;
   } while( true );
 }
 
@@ -294,13 +300,13 @@ void __cdecl RMsg_SendMessages(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl RMsg_AckSequence(netadr_t *param_1,uchar param_2)
+void __cdecl RMsg_AckSequence(netadr_t *from,uchar sequenceNum)
 
 {
-  char *pcVar1;
+  char *data;
   
-  pcVar1 = va("RA %i");
-  NET_OutOfBandPrint(NS_MAXCLIENTS,*param_1,pcVar1);
+  data = va("RA %i");
+  NET_OutOfBandPrint(NS_MAXCLIENTS,*from,data);
   return;
 }
 
@@ -309,16 +315,17 @@ void __cdecl RMsg_AckSequence(netadr_t *param_1,uchar param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl RMsg_CountOutstandingMessages(int param_1)
+int __cdecl RMsg_CountOutstandingMessages(int clientSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
-  int local_8;
+  reliableClient *client;
+  int total;
+  int msgSlot;
   
-  if (0x3f < (uint)param_1) {
+  if (0x3f < (uint)clientSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x1e1,0
                              ,"clientSlot doesn\'t index MAX_DEST_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -327,13 +334,13 @@ int __cdecl RMsg_CountOutstandingMessages(int param_1)
       return iVar3;
     }
   }
-  local_c = 0;
-  for (local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
-    if (*(char *)(param_1 * 0x81c + 0x9b438c4 + local_8 * 0x34) != '\0') {
-      local_c = local_c + 1;
+  total = 0;
+  for (msgSlot = 0; msgSlot < 0x14; msgSlot = msgSlot + 1) {
+    if (*(char *)(clientSlot * 0x81c + 0x9b438c4 + msgSlot * 0x34) != '\0') {
+      total = total + 1;
     }
   }
-  return local_c;
+  return total;
 }
 
 
@@ -341,15 +348,15 @@ int __cdecl RMsg_CountOutstandingMessages(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
+void __cdecl RMsg_AckMsgSlot(reliableClient *client,int clientSlot,int msgSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int tmpSlot;
   
-  if (0x13 < (uint)param_3) {
+  if (0x13 < (uint)msgSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x1f5,0
                              ,"msgSlot doesn\'t index MAX_RELIABLE_MSGS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -358,7 +365,7 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_1->msgs[param_3].msg.cursize < 1) {
+  if (client->msgs[msgSlot].msg.cursize < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x1f6,0
                              ,"%s\n\t(client->msgs[msgSlot].msg.cursize) = %i");
     if (!bVar2) {
@@ -367,7 +374,7 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (999 < (uint)param_1->bytesAckd) {
+  if (999 < (uint)client->bytesAckd) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",0x1f7,0
                              ,
                              "client->bytesAckd doesn\'t index PER_CLIENT_BUF_SIZE\n\t%i not in [0, %i)"
@@ -378,15 +385,15 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
       return;
     }
   }
-  param_1->bytesAckd = param_1->bytesAckd + param_1->msgs[param_3].msg.cursize;
-  param_1->msgs[param_3].active = false;
-  local_8 = 0;
+  client->bytesAckd = client->bytesAckd + client->msgs[msgSlot].msg.cursize;
+  client->msgs[msgSlot].active = false;
+  tmpSlot = 0;
   do {
-    if (0x13 < local_8) {
-      if (param_1->bytesAckd == param_1->bufferUsed) {
-        param_1->bytesAckd = 0;
-        param_1->bufferUsed = 0;
-        iVar3 = RMsg_CountOutstandingMessages(param_2);
+    if (0x13 < tmpSlot) {
+      if (client->bytesAckd == client->bufferUsed) {
+        client->bytesAckd = 0;
+        client->bufferUsed = 0;
+        iVar3 = RMsg_CountOutstandingMessages(clientSlot);
         if (iVar3 != 0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",
                                    0x208,0,"%s");
@@ -399,8 +406,8 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
       }
       return;
     }
-    if ((param_1->msgs[local_8].active != false) &&
-       ((int)param_1->msgs[local_8].msg.data - (int)param_1->reliableBuf < param_1->bytesAckd)) {
+    if ((client->msgs[tmpSlot].active != false) &&
+       ((int)client->msgs[tmpSlot].msg.data - (int)client->reliableBuf < client->bytesAckd)) {
       va(
         "for client %i, acking msg slot %i is changing bytesAckd from %i to %i, but active msgSlot %i\'s buffer would get blown away by that because it spans from %i to %i"
         );
@@ -412,7 +419,7 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    tmpSlot = tmpSlot + 1;
   } while( true );
 }
 
@@ -421,34 +428,37 @@ void __cdecl RMsg_AckMsgSlot(reliableClient *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl RMsg_MarkPacketReceived(netadr_t *param_1,uchar param_2)
+void __cdecl RMsg_MarkPacketReceived(netadr_t *from,uchar sequenceNum)
 
 {
   code *pcVar1;
   bool bVar2;
+  int clientSlot_00;
   int iVar3;
-  int iVar4;
-  uint local_10;
+  reliableClient *client;
+  int oldestSeq;
+  int clientSlot;
+  int msgSlot;
   
-  iVar3 = RMsg_FindSlotForAddr(param_1);
-  if (iVar3 < 0) {
+  clientSlot_00 = RMsg_FindSlotForAddr(from);
+  if (clientSlot_00 < 0) {
     Com_PrintError(0x10,"Received reliable packet ack for sequence %i from unknown IP %u.%u.%u.%u\n"
                   );
   }
   else {
-    iVar4 = RMsg_FindMessageSlot(iVar3,param_2);
-    if (-1 < iVar4) {
-      local_10 = RMsg_FindOldestSeq(iVar3);
-      while ((int)local_10 <= (int)(uint)param_2) {
-        if (((local_10 & 0xff) != local_10) &&
+    iVar3 = RMsg_FindMessageSlot(clientSlot_00,sequenceNum);
+    if (-1 < iVar3) {
+      oldestSeq = RMsg_FindOldestSeq(clientSlot_00);
+      while (oldestSeq <= (int)(uint)sequenceNum) {
+        if (((oldestSeq & 0xffU) != oldestSeq) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp"
                                      ,0x22a,0,"%s\n\t(oldestSeq) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        iVar4 = RMsg_FindMessageSlot(iVar3,(uchar)local_10);
-        if (iVar4 < 0) {
+        iVar3 = RMsg_FindMessageSlot(clientSlot_00,(uchar)oldestSeq);
+        if (iVar3 < 0) {
           va("Unable to find oldest Sequence %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\reliablemsg.cpp",
                                    0x22c,0,"%s\n\t%s");
@@ -458,8 +468,8 @@ void __cdecl RMsg_MarkPacketReceived(netadr_t *param_1,uchar param_2)
             return;
           }
         }
-        RMsg_AckMsgSlot(s_reliableClientMessages + iVar3,iVar3,iVar4);
-        local_10 = RMsg_FindOldestSeq(iVar3);
+        RMsg_AckMsgSlot(s_reliableClientMessages + clientSlot_00,clientSlot_00,iVar3);
+        oldestSeq = RMsg_FindOldestSeq(clientSlot_00);
       }
     }
   }

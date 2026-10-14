@@ -26,20 +26,21 @@ void __cdecl Demo_StartSaveProcess(void)
 
 {
   uchar *puVar1;
-  char *pcVar2;
-  int iVar3;
-  bool bVar4;
+  char *string;
+  int size;
+  bool writeInfoFile;
+  uchar *mem;
   
   Sys_AssistAndWaitWorkerCmdInternal(&Demo_SaveWorkerCmd);
   MSG_WriteBits(&demo.msg,0,2);
-  bVar4 = false;
-  iVar3 = demo.msg.cursize;
+  writeInfoFile = false;
+  size = demo.msg.cursize;
   puVar1 = Demo_GetActiveMemoryBuffer();
-  Demo_Save(puVar1,iVar3,bVar4);
+  Demo_Save(puVar1,size,writeInfoFile);
   puVar1 = Demo_SwapActiveMemoryBuffer();
   MSG_Init(&demo.msg,puVar1,0xc000);
-  pcVar2 = va("DEMO: Switching to buffer %d\n");
-  Demo_Printf(3,pcVar2);
+  string = va("DEMO: Switching to buffer %d\n");
+  Demo_Printf(3,string);
   return;
 }
 
@@ -48,21 +49,21 @@ void __cdecl Demo_StartSaveProcess(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl Demo_Save(uchar *param_1,int param_2,bool param_3)
+void __cdecl Demo_Save(uchar *data,int size,bool writeInfoFile)
 
 {
-  uchar *local_10;
+  uchar *cmd;
   int local_c;
   bool local_8;
   
   if ((demo_save_smp->current).enabled == false) {
-    Demo_SaveInternal(param_1,param_2,param_3);
+    Demo_SaveInternal(data,size,writeInfoFile);
   }
   else {
-    local_10 = param_1;
-    local_c = param_2;
-    local_8 = param_3;
-    Sys_AddWorkerCmdInternal(&Demo_SaveWorkerCmd,&local_10,(WorkerCmdConditional *)0x0);
+    cmd = data;
+    local_c = size;
+    local_8 = writeInfoFile;
+    Sys_AddWorkerCmdInternal(&Demo_SaveWorkerCmd,&cmd,(WorkerCmdConditional *)0x0);
   }
   return;
 }
@@ -73,30 +74,32 @@ void __cdecl Demo_Save(uchar *param_1,int param_2,bool param_3)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SaveInternal(uchar *param_1,int param_2,bool param_3)
+void __cdecl Demo_SaveInternal(uchar *data,int size,bool writeInfoFile)
 
 {
   int iVar1;
-  char *pcVar2;
-  DWORD DVar3;
-  msg_t local_34;
+  char *string;
+  DWORD DVar2;
+  int compressedSize;
+  int bytesWritten;
+  msg_t compressedMsg;
   
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Demo_SaveInternal()");
   memset(demo.memBlock.compressedMsgBuf,'\0',0xc000);
-  MSG_Init(&local_34,demo.memBlock.compressedMsgBuf,0xc000);
+  MSG_Init(&compressedMsg,demo.memBlock.compressedMsgBuf,0xc000);
   demo.memBlock.compressedSize =
-       MSG_CompressWithZLib(param_1,param_2,demo.memBlock.compressedMsgBuf,0xc000);
-  demo.memBlock.uncompressedSize = param_2;
+       MSG_CompressWithZLib(data,size,demo.memBlock.compressedMsgBuf,0xc000);
+  demo.memBlock.uncompressedSize = size;
   iVar1 = Demo_Write(&demo.memBlock,demo.memBlock.compressedSize + 8,demo.demoFileHandle);
   demo.totalSize = demo.totalSize + iVar1;
-  pcVar2 = va("DEMO: CurSize: %d CompressedSize: %d. Written %d bytes to demo file %s.demo\n");
-  Demo_Printf(2,pcVar2);
+  string = va("DEMO: CurSize: %d CompressedSize: %d. Written %d bytes to demo file %s.demo\n");
+  Demo_Printf(2,string);
   Demo_PopulateHeliPatches(&demo.info);
-  if (param_3) {
+  if (writeInfoFile) {
     Demo_WriteInfoData(demo.demoFileHandle,&demo.info);
   }
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -105,13 +108,13 @@ void __cdecl Demo_SaveInternal(uchar *param_1,int param_2,bool param_3)
 
 // 009CA050  Demo_StartStreaming  (demo/demo_recording.cpp:190)
 
-void __cdecl Demo_StartStreaming(int param_1)
+void __cdecl Demo_StartStreaming(int controllerIndex)
 
 {
   s_uploadStreamData.active = true;
   s_uploadStreamData.writer = 0;
   s_uploadStreamData.reader = 0;
-  s_uploadStreamData.controllerIndex = param_1;
+  s_uploadStreamData.controllerIndex = controllerIndex;
   s_uploadStreamData.overflow = false;
   s_uploadStreamUsage.changed = false;
   s_uploadStreamUsage.highwater = 0;
@@ -134,13 +137,13 @@ void __cdecl Demo_StopStreaming(void)
 
 // 009CA0D0  Demo_AreDifferencesValid  (demo/demo_recording.cpp:233)
 
-bool __cdecl Demo_AreDifferencesValid(int param_1,int param_2)
+bool __cdecl Demo_AreDifferencesValid(int diffBefore,int diffAfter)
 
 {
   bool bVar1;
   
-  if ((param_1 < 0) || (param_2 < 1)) {
-    if ((param_1 < 0) && (param_2 < 0)) {
+  if ((diffBefore < 0) || (diffAfter < 1)) {
+    if ((diffBefore < 0) && (diffAfter < 0)) {
       bVar1 = true;
     }
     else {
@@ -156,7 +159,7 @@ bool __cdecl Demo_AreDifferencesValid(int param_1,int param_2)
 
 // 009CA100  Demo_AppendToStreamingHistory  (demo/demo_recording.cpp:249)
 
-void __cdecl Demo_AppendToStreamingHistory(int param_1,bool param_2)
+void __cdecl Demo_AppendToStreamingHistory(int val,bool isAdded)
 
 {
   uploadStreamDebugData_t *puVar1;
@@ -164,27 +167,27 @@ void __cdecl Demo_AppendToStreamingHistory(int param_1,bool param_2)
   undefined1 uVar3;
   undefined1 uVar4;
   undefined1 uVar5;
-  int local_8;
+  int i;
   
   if ((fsShowStreamingGraph->current).enabled != false) {
-    for (local_8 = 1; local_8 < 0x3c; local_8 = local_8 + 1) {
-      puVar1 = s_uploadStreamUsage.history + local_8;
+    for (i = 1; i < 0x3c; i = i + 1) {
+      puVar1 = s_uploadStreamUsage.history + i;
       uVar3 = puVar1->field_0x1;
       uVar4 = puVar1->field_0x2;
       uVar5 = puVar1->field_0x3;
-      pcVar2 = gamerTag + local_8 * 8 + 0x1c;
+      pcVar2 = gamerTag + i * 8 + 0x1c;
       pcVar2[0] = puVar1->isDataAdded;
       pcVar2[1] = uVar3;
       pcVar2[2] = uVar4;
       pcVar2[3] = uVar5;
-      *(int *)(local_8 * 8 + 0xa7ddb0c) = s_uploadStreamUsage.history[local_8].value;
+      *(int *)(i * 8 + 0xa7ddb0c) = s_uploadStreamUsage.history[i].value;
     }
-    s_uploadStreamUsage.history[0x3b].isDataAdded = param_2;
-    s_uploadStreamUsage.history[0x3b].value = param_1;
+    s_uploadStreamUsage.history[0x3b].isDataAdded = isAdded;
+    s_uploadStreamUsage.history[0x3b].value = val;
     s_uploadStreamUsage.changed = true;
   }
-  if ((param_2) && (s_uploadStreamUsage.highwater < param_1)) {
-    s_uploadStreamUsage.highwater = param_1;
+  if ((isAdded) && (s_uploadStreamUsage.highwater < val)) {
+    s_uploadStreamUsage.highwater = val;
   }
   return;
 }
@@ -224,14 +227,19 @@ int __cdecl Demo_CurrAvailableBuffer(void)
 
 // 009CA200  Demo_SaveToStreamBuffer  (demo/demo_recording.cpp:299)
 
-void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
+void __cdecl Demo_SaveToStreamBuffer(void *data,int dataSize)
 
 {
   bool bVar1;
   DWORD DVar2;
-  ulong uVar3;
-  ulong uVar4;
-  int iVar5;
+  ulong count;
+  ulong count_00;
+  int iVar3;
+  int overflowAmount;
+  int fillAmount;
+  int diffBefore;
+  int diffAfter;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"Demo_SaveToStreamBuffer");
   if (s_uploadStreamData.active == false) {
@@ -241,11 +249,11 @@ void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
     }
   }
   else {
-    if (s_uploadStreamData.writer + param_2 < 0x60001) {
-      memcpy(s_uploadStreamData.buffer + s_uploadStreamData.writer,param_1,param_2);
-      iVar5 = s_uploadStreamData.writer - s_uploadStreamData.reader;
-      s_uploadStreamData.writer = s_uploadStreamData.writer + param_2;
-      bVar1 = Demo_AreDifferencesValid(iVar5,s_uploadStreamData.writer - s_uploadStreamData.reader);
+    if (s_uploadStreamData.writer + dataSize < 0x60001) {
+      memcpy(s_uploadStreamData.buffer + s_uploadStreamData.writer,data,dataSize);
+      iVar3 = s_uploadStreamData.writer - s_uploadStreamData.reader;
+      s_uploadStreamData.writer = s_uploadStreamData.writer + dataSize;
+      bVar1 = Demo_AreDifferencesValid(iVar3,s_uploadStreamData.writer - s_uploadStreamData.reader);
       if (!bVar1) {
         LiveStorage_FileShare_AbortOperation
                   (s_uploadStreamData.controllerIndex,FILESHARE_LOCATION_POOLEDSTORAGE);
@@ -256,17 +264,17 @@ void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
       }
     }
     else {
-      uVar3 = 0x60000 - s_uploadStreamData.writer;
-      uVar4 = param_2 - uVar3;
-      memcpy(s_uploadStreamData.buffer + s_uploadStreamData.writer,param_1,uVar3);
-      memcpy(s_uploadStreamData.buffer,(uchar *)((int)param_1 + uVar3),uVar4);
+      count = 0x60000 - s_uploadStreamData.writer;
+      count_00 = dataSize - count;
+      memcpy(s_uploadStreamData.buffer + s_uploadStreamData.writer,data,count);
+      memcpy(s_uploadStreamData.buffer,(uchar *)((int)data + count),count_00);
       if (s_uploadStreamData.writer < s_uploadStreamData.reader) {
         LiveStorage_FileShare_AbortOperation
                   (s_uploadStreamData.controllerIndex,FILESHARE_LOCATION_POOLEDSTORAGE);
         Live_DelayedComError("Demo streaming buffer overflow (Err 2).");
       }
-      s_uploadStreamData.writer = uVar4;
-      if (s_uploadStreamData.reader < (int)uVar4) {
+      s_uploadStreamData.writer = count_00;
+      if (s_uploadStreamData.reader < (int)count_00) {
         LiveStorage_FileShare_AbortOperation
                   (s_uploadStreamData.controllerIndex,FILESHARE_LOCATION_POOLEDSTORAGE);
         Live_DelayedComError("Demo streaming buffer overflow (Err 3).");
@@ -274,11 +282,11 @@ void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
     }
     s_uploadStreamData.lastWrite = Sys_Milliseconds();
     bVar1 = true;
-    iVar5 = Demo_GetCurrUsedBuffer();
-    Demo_AppendToStreamingHistory(iVar5,bVar1);
+    iVar3 = Demo_GetCurrUsedBuffer();
+    Demo_AppendToStreamingHistory(iVar3,bVar1);
     Sys_SetDemoStreamingEvent();
-    iVar5 = Demo_CurrAvailableBuffer();
-    if ((iVar5 < 0xc000) && (s_uploadStreamData.overflow == false)) {
+    iVar3 = Demo_CurrAvailableBuffer();
+    if ((iVar3 < 0xc000) && (s_uploadStreamData.overflow == false)) {
       Com_PrintError(0x10,"Stopping demo recording due to dangerously low buffer space");
       s_uploadStreamData.overflow = true;
       Cbuf_InsertText(0,"demo_stoprecord;");
@@ -294,13 +302,14 @@ void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
 
 // 009CA440  Demo_RecordSentPacket  (demo/demo_recording.cpp:408)
 
-void __cdecl Demo_RecordSentPacket(uint param_1)
+void __cdecl Demo_RecordSentPacket(uint size)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
+  int index;
   
   if (99 < (uint)s_uploadStreamData.sendHistoryIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x19b,0,
@@ -315,7 +324,7 @@ void __cdecl Demo_RecordSentPacket(uint param_1)
   iVar2 = s_uploadStreamData.sendHistoryIndex;
   iVar4 = Sys_Milliseconds();
   s_uploadStreamData.sendHistory[iVar2].ms = iVar4;
-  s_uploadStreamData.sendHistory[iVar2].size = param_1;
+  s_uploadStreamData.sendHistory[iVar2].size = size;
   s_uploadStreamData.sendHistoryIndex = (iVar2 + 1) % 100;
   return;
 }
@@ -340,7 +349,7 @@ bool __cdecl Demo_ShouldThrottle(void)
 
 // 009CA500  Demo_ThrottleStream  (demo/demo_recording.cpp:445)
 
-uint __cdecl Demo_ThrottleStream(uint param_1)
+uint __cdecl Demo_ThrottleStream(uint dataSize)
 
 {
   code *pcVar1;
@@ -350,12 +359,16 @@ uint __cdecl Demo_ThrottleStream(uint param_1)
   float fVar5;
   float local_34;
   float local_30;
-  char *local_28;
-  float local_20;
-  int local_1c;
-  uint local_14;
-  int local_10;
-  float local_c;
+  int timeUntilThrottle;
+  int bytesPerSecond;
+  int minInterval;
+  float packetsPerSecond;
+  int throttlePointTime;
+  int currentTime;
+  int index;
+  int historicalBytes;
+  float howScrewedAreWe;
+  int timeSinceLast;
   
   bVar2 = Demo_ShouldThrottle();
   if (bVar2) {
@@ -372,51 +385,53 @@ uint __cdecl Demo_ThrottleStream(uint param_1)
       else {
         local_34 = 0.0;
       }
-      local_c = local_34;
+      howScrewedAreWe = local_34;
     }
     else {
-      local_c = 0.75;
+      howScrewedAreWe = 0.75;
     }
-    local_20 = (float)((int)(demo_packetsPerSecondMax->current).string -
-                      (demo_packetsPerSecondMin->current).integer) * local_c +
-               (float)(demo_packetsPerSecondMin->current).integer;
-    local_28 = (demo_bytesPerSecondMin->current).string +
-               (int)((float)((int)(demo_bytesPerSecondMax->current).string -
-                            (demo_bytesPerSecondMin->current).integer) * local_c);
+    packetsPerSecond =
+         (float)((int)(demo_packetsPerSecondMax->current).string -
+                (demo_packetsPerSecondMin->current).integer) * howScrewedAreWe +
+         (float)(demo_packetsPerSecondMin->current).integer;
+    bytesPerSecond =
+         (int)((demo_bytesPerSecondMin->current).string +
+              (int)((float)((int)(demo_bytesPerSecondMax->current).string -
+                           (demo_bytesPerSecondMin->current).integer) * howScrewedAreWe));
   }
   else {
-    local_20 = 99.0;
+    packetsPerSecond = 99.0;
     iVar3 = Live_GetUploadSpeed();
-    local_28 = (char *)((int)(iVar3 + (iVar3 >> 0x1f & 0xfU)) >> 4);
+    bytesPerSecond = (int)(iVar3 + (iVar3 >> 0x1f & 0xfU)) >> 4;
   }
-  local_10 = (int)local_28 - param_1;
-  local_14 = s_uploadStreamData.sendHistoryIndex - 1;
-  if (local_14 == 0xffffffff) {
-    local_14 = 99;
+  historicalBytes = bytesPerSecond - dataSize;
+  index = s_uploadStreamData.sendHistoryIndex + -1;
+  if (index == -1) {
+    index = 99;
   }
   iVar3 = Sys_Milliseconds();
-  iVar3 = iVar3 - s_uploadStreamData.sendHistory[local_14].ms;
-  if (iVar3 < (int)(1000.0 / local_20)) {
+  iVar3 = iVar3 - s_uploadStreamData.sendHistory[index].ms;
+  if (iVar3 < (int)(1000.0 / packetsPerSecond)) {
     Com_Printf(0x10,"DEMO THROTTLE CLOSED FOR INTERVAL: %dms\n");
-    NET_Sleep((int)(1000.0 / local_20) - iVar3);
+    NET_Sleep((int)(1000.0 / packetsPerSecond) - iVar3);
   }
   iVar3 = Sys_Milliseconds();
-  local_1c = 0;
+  throttlePointTime = 0;
   do {
-    if (local_14 == s_uploadStreamData.sendHistoryIndex) {
+    if (index == s_uploadStreamData.sendHistoryIndex) {
 LAB_009ca756:
-      if (iVar3 - local_1c < 1000) {
+      if (iVar3 - throttlePointTime < 1000) {
         Demo_CurrAvailableBuffer();
         Com_Printf(0x10,"DEMO THROTTLE CLOSED: %dms, %dbytes. Buffer Available: %d\n");
-        NET_Sleep(1000 - (iVar3 - local_1c));
+        NET_Sleep(1000 - (iVar3 - throttlePointTime));
       }
       else {
         Demo_CurrAvailableBuffer();
         Com_Printf(0x10,"DEMO THROTTLE OPEN: %dms, %dbytes. Buffer Available: %d\n");
       }
-      return param_1;
+      return dataSize;
     }
-    if ((99 < local_14) &&
+    if ((99 < (uint)index) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x1f6
                                  ,0,
                                  "index doesn\'t index DEMOSTREAMING_SEND_HISTORY\n\t%i not in [0, %i)"
@@ -425,15 +440,15 @@ LAB_009ca756:
       uVar4 = (*pcVar1)();
       return uVar4;
     }
-    if (s_uploadStreamData.sendHistory[local_14].size == 0) goto LAB_009ca756;
-    local_10 = local_10 - s_uploadStreamData.sendHistory[local_14].size;
-    if (local_10 < 1) {
-      local_1c = s_uploadStreamData.sendHistory[local_14].ms;
+    if (s_uploadStreamData.sendHistory[index].size == 0) goto LAB_009ca756;
+    historicalBytes = historicalBytes - s_uploadStreamData.sendHistory[index].size;
+    if (historicalBytes < 1) {
+      throttlePointTime = s_uploadStreamData.sendHistory[index].ms;
       goto LAB_009ca756;
     }
-    local_14 = local_14 - 1;
-    if (local_14 == 0xffffffff) {
-      local_14 = 99;
+    index = index + -1;
+    if (index == -1) {
+      index = 99;
     }
   } while( true );
 }
@@ -443,14 +458,14 @@ LAB_009ca756:
 
 /* WARNING: Removing unreachable block (ram,0x009ca81c) */
 
-uint __cdecl Demo_WriteToStream(void *param_1,uint param_2,uint param_3)
+uint __cdecl Demo_WriteToStream(void *data,uint dataSize,uint bytesUploaded)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int iVar4;
-  uint local_8;
+  int val;
+  uint bytesToUpload;
   
   while (s_uploadStreamData.reader == s_uploadStreamData.writer) {
     if (s_uploadStreamData.active == true) {
@@ -462,40 +477,40 @@ uint __cdecl Demo_WriteToStream(void *param_1,uint param_2,uint param_3)
     }
   }
   if (s_uploadStreamData.reader < s_uploadStreamData.writer) {
-    local_8 = s_uploadStreamData.writer - s_uploadStreamData.reader;
-    if (param_2 < local_8) {
-      local_8 = param_2;
+    bytesToUpload = s_uploadStreamData.writer - s_uploadStreamData.reader;
+    if (dataSize < bytesToUpload) {
+      bytesToUpload = dataSize;
     }
-    memcpy(param_1,s_uploadStreamData.buffer + s_uploadStreamData.reader,local_8);
-    s_uploadStreamData.reader = s_uploadStreamData.reader + local_8;
+    memcpy(data,s_uploadStreamData.buffer + s_uploadStreamData.reader,bytesToUpload);
+    s_uploadStreamData.reader = s_uploadStreamData.reader + bytesToUpload;
   }
   else {
-    local_8 = 0x60000 - s_uploadStreamData.reader;
-    if (param_2 < local_8) {
-      local_8 = param_2;
-      memcpy(param_1,s_uploadStreamData.buffer + s_uploadStreamData.reader,param_2);
-      s_uploadStreamData.reader = s_uploadStreamData.reader + param_2;
+    bytesToUpload = 0x60000 - s_uploadStreamData.reader;
+    if (dataSize < bytesToUpload) {
+      bytesToUpload = dataSize;
+      memcpy(data,s_uploadStreamData.buffer + s_uploadStreamData.reader,dataSize);
+      s_uploadStreamData.reader = s_uploadStreamData.reader + dataSize;
     }
     else {
-      memcpy(param_1,s_uploadStreamData.buffer + s_uploadStreamData.reader,local_8);
+      memcpy(data,s_uploadStreamData.buffer + s_uploadStreamData.reader,bytesToUpload);
       s_uploadStreamData.reader = 0;
     }
   }
-  if ((local_8 == 0) &&
+  if ((bytesToUpload == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x25c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (local_8 == 0) {
+  if (bytesToUpload == 0) {
     Com_Error(ERR_DROP,"Demo streaming buffer error.\n");
   }
   bVar2 = false;
-  iVar4 = Demo_GetCurrUsedBuffer();
-  Demo_AppendToStreamingHistory(iVar4,bVar2);
-  Demo_RecordSentPacket(local_8);
-  return local_8;
+  val = Demo_GetCurrUsedBuffer();
+  Demo_AppendToStreamingHistory(val,bVar2);
+  Demo_RecordSentPacket(bytesToUpload);
+  return bytesToUpload;
 }
 
 
@@ -503,18 +518,21 @@ uint __cdecl Demo_WriteToStream(void *param_1,uint param_2,uint param_3)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl Demo_SaveCallback(jqBatch *param_1)
+int __cdecl Demo_SaveCallback(jqBatch *batch)
 
 {
-  undefined4 *puVar1;
-  DWORD DVar2;
+  undefined4 *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
+  demoSaveCmd *cmd;
   
   PIXBeginNamedEvent(-1,"Demo_SaveCmd");
-  puVar1 = jqLockData(param_1);
-  Demo_SaveInternal((uchar *)*puVar1,puVar1[1],*(bool *)(puVar1 + 2));
-  jqUnlockData(param_1,puVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  Demo_SaveInternal((uchar *)*data_00,data_00[1],*(bool *)(data_00 + 2));
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -529,15 +547,15 @@ int __cdecl Demo_SaveCallback(jqBatch *param_1)
 uchar * __cdecl Demo_GetActiveMemoryBuffer(void)
 
 {
-  uchar *local_8;
+  uchar *mem;
   
   if (demo.msgBufFlag) {
-    local_8 = demo.msgBuf1;
+    mem = demo.msgBuf1;
   }
   else {
-    local_8 = demo.msgBuf0;
+    mem = demo.msgBuf0;
   }
-  return local_8;
+  return mem;
 }
 
 
@@ -549,16 +567,16 @@ uchar * __cdecl Demo_GetActiveMemoryBuffer(void)
 uchar * __cdecl Demo_SwapActiveMemoryBuffer(void)
 
 {
-  uchar *local_8;
+  uchar *mem;
   
   if (demo.msgBufFlag) {
-    local_8 = demo.msgBuf0;
+    mem = demo.msgBuf0;
   }
   else {
-    local_8 = demo.msgBuf1;
+    mem = demo.msgBuf1;
   }
   demo.msgBufFlag = (bool)('\x01' - demo.msgBufFlag);
-  return local_8;
+  return mem;
 }
 
 
@@ -567,15 +585,15 @@ uchar * __cdecl Demo_SwapActiveMemoryBuffer(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetIntermissionPoint(float *param_1,float *param_2)
+void __cdecl Demo_SetIntermissionPoint(float *origin,float *angles)
 
 {
-  demo.intermissionPointOrigin[0] = *param_1;
-  demo.intermissionPointOrigin[1] = param_1[1];
-  demo.intermissionPointOrigin[2] = param_1[2];
-  demo.intermissionPointAngles[0] = *param_2;
-  demo.intermissionPointAngles[1] = param_2[1];
-  demo.intermissionPointAngles[2] = param_2[2];
+  demo.intermissionPointOrigin[0] = *origin;
+  demo.intermissionPointOrigin[1] = origin[1];
+  demo.intermissionPointOrigin[2] = origin[2];
+  demo.intermissionPointAngles[0] = *angles;
+  demo.intermissionPointAngles[1] = angles[1];
+  demo.intermissionPointAngles[2] = angles[2];
   return;
 }
 
@@ -585,12 +603,12 @@ void __cdecl Demo_SetIntermissionPoint(float *param_1,float *param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_GetIntermissionPointOrigin(float (*param_1) [3])
+void __cdecl Demo_GetIntermissionPointOrigin(float (*origin) [3])
 
 {
-  (*param_1)[0] = demo.intermissionPointOrigin[0];
-  (*param_1)[1] = demo.intermissionPointOrigin[1];
-  (*param_1)[2] = demo.intermissionPointOrigin[2];
+  (*origin)[0] = demo.intermissionPointOrigin[0];
+  (*origin)[1] = demo.intermissionPointOrigin[1];
+  (*origin)[2] = demo.intermissionPointOrigin[2];
   return;
 }
 
@@ -600,12 +618,12 @@ void __cdecl Demo_GetIntermissionPointOrigin(float (*param_1) [3])
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_GetIntermissionPointAngles(float (*param_1) [3])
+void __cdecl Demo_GetIntermissionPointAngles(float (*angles) [3])
 
 {
-  (*param_1)[0] = demo.intermissionPointAngles[0];
-  (*param_1)[1] = demo.intermissionPointAngles[1];
-  (*param_1)[2] = demo.intermissionPointAngles[2];
+  (*angles)[0] = demo.intermissionPointAngles[0];
+  (*angles)[1] = demo.intermissionPointAngles[1];
+  (*angles)[2] = demo.intermissionPointAngles[2];
   return;
 }
 
@@ -615,10 +633,10 @@ void __cdecl Demo_GetIntermissionPointAngles(float (*param_1) [3])
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_RecordPlayerSessionState(int param_1,int param_2)
+void __cdecl Demo_RecordPlayerSessionState(int clientNum,int state)
 
 {
-  demo.playerSessionState[param_1] = param_2;
+  demo.playerSessionState[clientNum] = state;
   return;
 }
 
@@ -628,12 +646,12 @@ void __cdecl Demo_RecordPlayerSessionState(int param_1,int param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_IsPlayerSpectating(int param_1)
+bool __cdecl Demo_IsPlayerSpectating(int clientNum)
 
 {
   bool local_8;
   
-  if ((demo.playerSessionState[param_1] == 2) || (demo.playerSessionState[param_1] == 3)) {
+  if ((demo.playerSessionState[clientNum] == 2) || (demo.playerSessionState[clientNum] == 3)) {
     local_8 = true;
   }
   else {
@@ -655,16 +673,18 @@ bool __cdecl Demo_IsInFinalKillcam(void)
 
 {
   int *piVar1;
-  int local_10;
+  int i;
+  client_t *cl;
+  bool result;
   
-  local_10 = 0;
+  i = 0;
   while( true ) {
-    if (demo.header.maxClients <= local_10) {
+    if (demo.header.maxClients <= i) {
       return true;
     }
-    piVar1 = (int *)(local_10 * 0x84d00 + (int)svs.clients);
+    piVar1 = (int *)(i * 0x84d00 + (int)svs.clients);
     if ((4 < *piVar1) && (*(int *)(*(int *)(piVar1[0x155b] + 0x144) + 0x26ac) < 0)) break;
-    local_10 = local_10 + 1;
+    i = i + 1;
   }
   return false;
 }
@@ -675,10 +695,10 @@ bool __cdecl Demo_IsInFinalKillcam(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_IsPlayerDead(int param_1)
+bool __cdecl Demo_IsPlayerDead(int clientNum)
 
 {
-  return 8 < demo.ps[param_1].pm_type;
+  return 8 < demo.ps[clientNum].pm_type;
 }
 
 
@@ -687,10 +707,10 @@ bool __cdecl Demo_IsPlayerDead(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ClientConnected(int param_1)
+void __cdecl Demo_ClientConnected(int clientNum)
 
 {
-  demo.lastReliableCommandRecorded[param_1] = 0;
+  demo.lastReliableCommandRecorded[clientNum] = 0;
   return;
 }
 
@@ -709,15 +729,15 @@ int __cdecl Demo_GetDemoClientIndex(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetDemoClientIndex(int param_1)
+void __cdecl Demo_SetDemoClientIndex(int index)
 
 {
-  if ((param_1 < 0) || (demo.header.maxClients <= param_1)) {
+  if ((index < 0) || (demo.header.maxClients <= index)) {
     Com_PrintError(0,"ERROR: can\'t set demo client. range is 0 to %d.\n");
     Demo_End(false);
   }
   else {
-    g_democlientindex = param_1;
+    g_democlientindex = index;
   }
   return;
 }
@@ -795,54 +815,54 @@ bool __cdecl Demo_ShouldBuildDemoSnapshot(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteHeader(msg_t *param_1,bool param_2)
+void __cdecl Demo_WriteHeader(msg_t *msg,bool isDemoClip)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int c;
+  char *string;
   
-  MSG_WriteByte(param_1,demo.header.version);
-  MSG_WriteByte(param_1,demo.header.maxClients);
-  iVar1 = Demo_GetDemoClientIndex();
-  MSG_WriteByte(param_1,iVar1);
-  if (param_2) {
-    MSG_WriteBit1(param_1);
+  MSG_WriteByte(msg,demo.header.version);
+  MSG_WriteByte(msg,demo.header.maxClients);
+  c = Demo_GetDemoClientIndex();
+  MSG_WriteByte(msg,c);
+  if (isDemoClip) {
+    MSG_WriteBit1(msg);
   }
   else {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   if (demo.header.settings.onlinegame == false) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
+    MSG_WriteBit1(msg);
   }
   if (demo.header.settings.xblive_privatematch == false) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
+    MSG_WriteBit1(msg);
   }
   if (demo.header.settings.xblive_wagermatch == false) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
+    MSG_WriteBit1(msg);
   }
   if (demo.header.settings.systemlink == false) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
+    MSG_WriteBit1(msg);
   }
   if (demo.header.settings.customGameMode == false) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
+    MSG_WriteBit1(msg);
   }
-  pcVar2 = va("DEMO Header: Version: %d\n");
-  Demo_Printf(3,pcVar2);
+  string = va("DEMO Header: Version: %d\n");
+  Demo_Printf(3,string);
   return;
 }
 
@@ -861,9 +881,14 @@ void __cdecl Demo_BuildDemoSnapshot(void)
   bool bVar1;
   clientHeader_t *pcVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
-  uint local_c;
+  char *string;
+  int iVar4;
+  client_t *client;
+  int lastframe;
+  int initBitsUsed;
+  int clientNum;
+  int snapFlags;
+  clientHeader_t *clientHeader;
   
   bVar1 = Demo_ShouldWriteToDemoFile();
   if (bVar1) {
@@ -876,25 +901,25 @@ void __cdecl Demo_BuildDemoSnapshot(void)
     pcVar2 = (clientHeader_t *)(g_democlientindex * 0x84d00 + (int)svs.clients);
     iVar3 = MSG_GetUsedBitCount(&demo.msg);
     g_snapInfo.clientNum = ((int)pcVar2 - (int)svs.clients) / 0x84d00;
-    iVar5 = (pcVar2->netchan).outgoingSequence - demo.lastProcessedMsgNum;
+    iVar4 = (pcVar2->netchan).outgoingSequence - demo.lastProcessedMsgNum;
     g_snapInfo.archived = false;
     g_snapInfo.client = pcVar2;
-    pcVar4 = va("Demo_BuildDemoSnapshot() - msgType: %d msgSeq: %d clientCmd: %d\n");
-    Demo_Printf(1,pcVar4);
+    string = va("Demo_BuildDemoSnapshot() - msgType: %d msgSeq: %d clientCmd: %d\n");
+    Demo_Printf(1,string);
     g_snapInfo.snapshotDeltaTime = svsHeader.time;
-    local_c = svsHeader.snapFlagServerBit;
+    snapFlags = svsHeader.snapFlagServerBit;
     if (pcVar2->rateDelayed != 0) {
-      local_c = svsHeader.snapFlagServerBit | 1;
+      snapFlags = svsHeader.snapFlagServerBit | 1;
     }
     if (pcVar2->sendAsActive == 0) {
-      local_c = local_c | 2;
+      snapFlags = snapFlags | 2;
     }
     Demo_WriteSnapshotStartData
               (0,&demo.msg,(pcVar2->netchan).outgoingSequence,
                pcVar2[0xb].netchan.prof.send.packets[0x37].bFragment,svsHeader.time,
-               svsHeader.physicsTime,iVar5,local_c);
-    iVar5 = MSG_GetUsedBitCount(&demo.msg);
-    Demo_RecordProfileData(1,(int)((iVar5 - iVar3) + (iVar5 - iVar3 >> 0x1f & 7U)) >> 3);
+               svsHeader.physicsTime,iVar4,snapFlags);
+    iVar4 = MSG_GetUsedBitCount(&demo.msg);
+    Demo_RecordProfileData(1,(int)((iVar4 - iVar3) + (iVar4 - iVar3 >> 0x1f & 7U)) >> 3);
     Demo_WriteMatchState(&demo.msg);
     Demo_WritePlayerStates(&demo.msg);
     Demo_WritePacketEntities(&demo.msg);
@@ -915,23 +940,27 @@ void __cdecl Demo_BuildDemoSnapshot(void)
 // 009CB0D0  Demo_WriteSnapshotStartData  (demo/demo_recording.cpp:1038)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
 Demo_WriteSnapshotStartData
-          (int param_1,msg_t *param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-          int param_8)
+          (int localClientNum,msg_t *msg,int msgSequence,int cmdSequence,int serverTime,
+          int physicsTime,int lastFrame,int snapFlags)
 
 {
-  MSG_WriteBits(param_2,3,2);
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_WriteLong(param_2,param_3);
-  MSG_WriteLong(param_2,param_4);
-  Demo_WriteServerCommands(param_2);
-  MSG_WriteByte(param_2,0xc);
-  MSG_WriteLong(param_2,param_5);
-  MSG_WriteLong(param_2,param_6);
-  MSG_WriteByte(param_2,param_7);
-  MSG_WriteByte(param_2,param_8);
+  MSG_WriteBits(msg,3,2);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteLong(msg,msgSequence);
+  MSG_WriteLong(msg,cmdSequence);
+  Demo_WriteServerCommands(msg);
+  MSG_WriteByte(msg,0xc);
+  MSG_WriteLong(msg,serverTime);
+  MSG_WriteLong(msg,physicsTime);
+  MSG_WriteByte(msg,lastFrame);
+  MSG_WriteByte(msg,snapFlags);
   return;
 }
 
@@ -941,21 +970,22 @@ Demo_WriteSnapshotStartData
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteGamestateToBuffer(int param_1,int param_2,msg_t *param_3,int param_4)
+void __cdecl Demo_WriteGamestateToBuffer(int clientNum,int demoMsgType,msg_t *msg,int msgSequence)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  char *s;
   
   bVar2 = Demo_IsEnabled();
   if (bVar2) {
-    MSG_WriteBits(&demo.msg,param_2,2);
-    MSG_WriteLong(&demo.msg,param_4);
-    MSG_Embed(&demo.msg,param_3);
-    Demo_RecordProfileData(0,param_3->cursize);
+    MSG_WriteBits(&demo.msg,demoMsgType,2);
+    MSG_WriteLong(&demo.msg,msgSequence);
+    MSG_Embed(&demo.msg,msg);
+    Demo_RecordProfileData(0,msg->cursize);
     Demo_StartSaveProcess();
-    if ((param_1 != g_democlientindex) &&
+    if ((clientNum != g_democlientindex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x445
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -979,14 +1009,16 @@ void __cdecl Demo_WriteGamestateToBuffer(int param_1,int param_2,msg_t *param_3,
 
 // 009CB2B0  Demo_ShouldFilterServerCommand  (demo/demo_recording.cpp:1118)
 
-bool __cdecl Demo_ShouldFilterServerCommand(int param_1,char *param_2)
+bool __cdecl Demo_ShouldFilterServerCommand(int clientNum,char *cmd)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
+  char *cmdToken;
+  int configStringType;
   
-  pcVar2 = Com_Parse(&param_2);
+  pcVar2 = Com_Parse(&cmd);
   switch(*pcVar2) {
   case '8':
   case 'L':
@@ -997,18 +1029,18 @@ bool __cdecl Demo_ShouldFilterServerCommand(int param_1,char *param_2)
     Demo_Printf(4,pcVar2);
     return true;
   default:
-    bVar1 = Demo_IsPlayerSpectating(param_1);
-    if ((bVar1) || (bVar1 = Demo_IsPlayerDead(param_1), bVar1)) {
+    bVar1 = Demo_IsPlayerSpectating(clientNum);
+    if ((bVar1) || (bVar1 = Demo_IsPlayerDead(clientNum), bVar1)) {
       return true;
     }
     break;
   case 'R':
     return false;
   case 'd':
-    pcVar2 = Com_Parse(&param_2);
+    pcVar2 = Com_Parse(&cmd);
     iVar3 = atoi(pcVar2);
-    bVar1 = Demo_IsPlayerSpectating(param_1);
-    if ((bVar1) || (bVar1 = Demo_IsPlayerDead(param_1), bVar1)) {
+    bVar1 = Demo_IsPlayerSpectating(clientNum);
+    if ((bVar1) || (bVar1 = Demo_IsPlayerDead(clientNum), bVar1)) {
       if (((((iVar3 < 0x8e4) || (0x9e3 < iVar3)) && ((iVar3 < 0xc2b || (0xc4a < iVar3)))) &&
           ((iVar3 < 0x620 || (0x81f < iVar3)))) && (iVar3 != 0xc)) {
         return true;
@@ -1035,7 +1067,7 @@ bool __cdecl Demo_ShouldFilterServerCommand(int param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteServerCommands(msg_t *param_1)
+void __cdecl Demo_WriteServerCommands(msg_t *msg)
 
 {
   code *pcVar1;
@@ -1044,43 +1076,43 @@ void __cdecl Demo_WriteServerCommands(msg_t *param_1)
   DWORD DVar4;
   char acStack_1102c [4096];
   uint uStack_1002c;
-  int *piStack_10028;
-  int iStack_10024;
-  int iStack_10020;
+  client_t *client;
+  int cl;
+  int cmdListIdx;
   uint auStack_1001c [8192];
-  char local_801a;
-  char local_8019;
-  uint local_8018;
-  int local_8014;
-  int local_8010;
+  bool recordedFirstSetOfCmds;
+  bool foundMatchingCmd;
+  int cmdNum;
+  int numCmds;
+  int clientNum;
   uint auStack_800c [4097];
-  uint local_4008;
+  int cmd;
   int aiStack_4004 [4095];
   undefined4 uStack_8;
   
   uStack_8 = 0x9cb47d;
   uStack_1002c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8014 = 0;
-  local_801a = '\0';
+  numCmds = 0;
+  recordedFirstSetOfCmds = false;
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Writing Server Commands");
   memset((uchar *)auStack_1001c,'\0',0x8000);
-  iStack_10024 = 0;
+  cl = 0;
   do {
-    if (demo.header.maxClients <= iStack_10024) {
-      if ((0x1000 < local_8014) &&
+    if (demo.header.maxClients <= cl) {
+      if ((0x1000 < numCmds) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",
                                    0x4e9,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      for (iStack_10020 = 0; iStack_10020 < local_8014; iStack_10020 = iStack_10020 + 1) {
-        local_8010 = aiStack_4004[iStack_10020];
-        local_8018 = auStack_800c[iStack_10020];
-        piStack_10028 = (int *)(local_8010 * 0x84d00 + (int)svs.clients);
-        MSG_WriteByte(param_1,10);
-        MSG_WriteLong(param_1,auStack_1001c[iStack_10020 * 2]);
-        MSG_WriteString(param_1,(char *)piStack_10028[(local_8018 & 0x7f) * 3 + 0x12c7]);
+      for (cmdListIdx = 0; cmdListIdx < numCmds; cmdListIdx = cmdListIdx + 1) {
+        clientNum = aiStack_4004[cmdListIdx];
+        cmdNum = auStack_800c[cmdListIdx];
+        client = (client_t *)(clientNum * 0x84d00 + (int)svs.clients);
+        MSG_WriteByte(msg,10);
+        MSG_WriteLong(msg,auStack_1001c[cmdListIdx * 2]);
+        MSG_WriteString(msg,client->reliableCommandInfo[cmdNum & 0x7f].cmd);
         _snprintf(acStack_1102c,0x1000,"DEMO: w ServerCommands MaskCmdNum: %i %i CmdString: %s\n");
         Demo_Printf(4,acStack_1102c);
       }
@@ -1090,54 +1122,51 @@ void __cdecl Demo_WriteServerCommands(msg_t *param_1)
       }
       return;
     }
-    piStack_10028 = (int *)(iStack_10024 * 0x84d00 + (int)svs.clients);
-    if (*piStack_10028 == 5) {
-      local_4008 = demo.lastReliableCommandRecorded[iStack_10024];
-      while (local_4008 = local_4008 + 1, (int)local_4008 <= piStack_10028[0x1447]) {
-        bVar2 = Demo_ShouldFilterServerCommand
-                          (iStack_10024,(char *)piStack_10028[(local_4008 & 0x7f) * 3 + 0x12c7]);
+    client = (client_t *)(cl * 0x84d00 + (int)svs.clients);
+    if ((client->header).state == 5) {
+      cmd = demo.lastReliableCommandRecorded[cl];
+      while (cmd = cmd + 1, cmd <= client->reliableSequence) {
+        bVar2 = Demo_ShouldFilterServerCommand(cl,client->reliableCommandInfo[cmd & 0x7f].cmd);
         if (!bVar2) {
-          if (local_801a == '\0') {
-            aiStack_4004[local_8014] = iStack_10024;
-            auStack_800c[local_8014] = local_4008;
-            auStack_1001c[local_8014 * 2 + (iStack_10024 >> 5)] =
-                 1 << ((byte)iStack_10024 & 0x1f) |
-                 auStack_1001c[local_8014 * 2 + (iStack_10024 >> 5)];
-            local_8014 = local_8014 + 1;
+          if (recordedFirstSetOfCmds == false) {
+            aiStack_4004[numCmds] = cl;
+            auStack_800c[numCmds] = cmd;
+            auStack_1001c[numCmds * 2 + (cl >> 5)] =
+                 1 << ((byte)cl & 0x1f) | auStack_1001c[numCmds * 2 + (cl >> 5)];
+            numCmds = numCmds + 1;
           }
           else {
-            local_8019 = '\0';
-            for (iStack_10020 = 0; iStack_10020 < local_8014; iStack_10020 = iStack_10020 + 1) {
-              local_8010 = aiStack_4004[iStack_10020];
-              local_8018 = auStack_800c[iStack_10020];
-              iVar3 = I_stricmp((char *)piStack_10028[(local_4008 & 0x7f) * 3 + 0x12c7],
+            foundMatchingCmd = false;
+            for (cmdListIdx = 0; cmdListIdx < numCmds; cmdListIdx = cmdListIdx + 1) {
+              clientNum = aiStack_4004[cmdListIdx];
+              cmdNum = auStack_800c[cmdListIdx];
+              iVar3 = I_stricmp(client->reliableCommandInfo[cmd & 0x7f].cmd,
                                 *(char **)((int)svs.clients +
-                                          (local_8018 & 0x7f) * 0xc + local_8010 * 0x84d00 + 0x4b1c)
-                               );
+                                          (cmdNum & 0x7fU) * 0xc + clientNum * 0x84d00 + 0x4b1c));
               if (iVar3 == 0) {
-                local_8019 = '\x01';
+                foundMatchingCmd = true;
                 break;
               }
             }
-            iVar3 = iStack_10024 >> 5;
-            if (local_8019 == '\0') {
-              aiStack_4004[local_8014] = iStack_10024;
-              auStack_800c[local_8014] = local_4008;
-              auStack_1001c[local_8014 * 2 + iVar3] =
-                   1 << ((byte)iStack_10024 & 0x1f) | auStack_1001c[local_8014 * 2 + iVar3];
-              local_8014 = local_8014 + 1;
+            iVar3 = cl >> 5;
+            if (foundMatchingCmd == false) {
+              aiStack_4004[numCmds] = cl;
+              auStack_800c[numCmds] = cmd;
+              auStack_1001c[numCmds * 2 + iVar3] =
+                   1 << ((byte)cl & 0x1f) | auStack_1001c[numCmds * 2 + iVar3];
+              numCmds = numCmds + 1;
             }
             else {
-              auStack_1001c[iStack_10020 * 2 + iVar3] =
-                   1 << ((byte)iStack_10024 & 0x1f) | auStack_1001c[iStack_10020 * 2 + iVar3];
+              auStack_1001c[cmdListIdx * 2 + iVar3] =
+                   1 << ((byte)cl & 0x1f) | auStack_1001c[cmdListIdx * 2 + iVar3];
             }
           }
         }
       }
-      local_801a = '\x01';
-      demo.lastReliableCommandRecorded[iStack_10024] = piStack_10028[0x1447];
+      recordedFirstSetOfCmds = true;
+      demo.lastReliableCommandRecorded[cl] = client->reliableSequence;
     }
-    iStack_10024 = iStack_10024 + 1;
+    cl = cl + 1;
   } while( true );
 }
 
@@ -1150,36 +1179,37 @@ void __cdecl Demo_WriteServerCommands(msg_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteMatchState(msg_t *param_1)
+void __cdecl Demo_WriteMatchState(msg_t *msg)
 
 {
   int iVar1;
-  char *pcVar2;
-  DWORD DVar3;
-  int iVar4;
+  char *string;
+  DWORD DVar2;
+  int iVar3;
+  MatchState *pMVar4;
   MatchState *pMVar5;
-  MatchState *pMVar6;
+  int bitsUsed;
+  int bitsStart;
   
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Writing MatchState");
   g_snapInfo.clientNum = g_democlientindex;
   g_snapInfo.client = (clientHeader_t *)(g_democlientindex * 0x84d00 + (int)svs.clients);
-  MSG_ClearLastReferencedEntity(param_1);
-  iVar1 = MSG_GetUsedBitCount(param_1);
-  MSG_WriteDeltaMatchState(&g_snapInfo,param_1,svsHeader.time,&demo.matchState,svsHeader.matchState)
-  ;
-  pMVar5 = svsHeader.matchState;
-  pMVar6 = &demo.matchState;
-  for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pMVar6->index = pMVar5->index;
+  MSG_ClearLastReferencedEntity(msg);
+  iVar1 = MSG_GetUsedBitCount(msg);
+  MSG_WriteDeltaMatchState(&g_snapInfo,msg,svsHeader.time,&demo.matchState,svsHeader.matchState);
+  pMVar4 = svsHeader.matchState;
+  pMVar5 = &demo.matchState;
+  for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
+    pMVar5->index = pMVar4->index;
+    pMVar4 = (MatchState *)&pMVar4->archivedState;
     pMVar5 = (MatchState *)&pMVar5->archivedState;
-    pMVar6 = (MatchState *)&pMVar6->archivedState;
   }
-  iVar4 = MSG_GetUsedBitCount(param_1);
-  pcVar2 = va("DEMO: w Type: MatchState Size: %d bytes\n");
-  Demo_Printf(9,pcVar2);
-  Demo_RecordProfileData(2,(int)((iVar4 - iVar1) + (iVar4 - iVar1 >> 0x1f & 7U)) >> 3);
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  iVar3 = MSG_GetUsedBitCount(msg);
+  string = va("DEMO: w Type: MatchState Size: %d bytes\n");
+  Demo_Printf(9,string);
+  Demo_RecordProfileData(2,(int)((iVar3 - iVar1) + (iVar3 - iVar1 >> 0x1f & 7U)) >> 3);
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1195,84 +1225,85 @@ void __cdecl Demo_WriteMatchState(msg_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WritePlayerStates(msg_t *param_1)
+void __cdecl Demo_WritePlayerStates(msg_t *msg)
 
 {
   bool bVar1;
   bool bVar2;
   playerState_s *ppVar3;
   int iVar4;
-  char *pcVar5;
-  DWORD DVar6;
-  int local_26c4;
-  playerState_s local_26b4;
-  int local_8;
+  char *string;
+  DWORD DVar5;
+  int i;
+  client_t *cl;
+  int bitsUsed;
+  bool isFinalKillcam;
+  playerState_s tempPS;
+  int bitsStart;
   
-  local_8 = 0x9cba6d;
+  bitsStart = 0x9cba6d;
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Writing PlayerStates");
   bVar1 = Demo_IsInFinalKillcam();
-  for (local_26c4 = 0; local_26c4 < demo.header.maxClients; local_26c4 = local_26c4 + 1) {
-    g_snapInfo.client = (clientHeader_t *)(local_26c4 * 0x84d00 + (int)svs.clients);
-    g_snapInfo.clientNum = local_26c4;
+  for (i = 0; i < demo.header.maxClients; i = i + 1) {
+    g_snapInfo.client = (clientHeader_t *)(i * 0x84d00 + (int)svs.clients);
+    g_snapInfo.clientNum = i;
     if (((g_snapInfo.client)->state == 5) &&
-       (ppVar3 = G_GetPlayerState(local_26c4), ppVar3 != (playerState_s *)0x0)) {
-      local_8 = MSG_GetUsedBitCount(param_1);
-      MSG_WriteBit1(param_1);
-      bVar2 = Demo_IsPlayerSpectating(local_26c4);
-      if (((bVar2) && (bVar2 = Demo_IsPlayerDead(local_26c4), bVar2)) || (bVar1)) {
-        memcpy((uchar *)&local_26b4,(uchar *)(demo.ps + local_26c4),0x26a4);
-        local_26b4.eFlags = local_26b4.eFlags | 2;
-        local_26b4.stats[4] = 0xc;
-        MSG_WriteDeltaPlayerstate
-                  (&g_snapInfo,param_1,svsHeader.time,demo.ps + local_26c4,&local_26b4);
+       (ppVar3 = G_GetPlayerState(i), ppVar3 != (playerState_s *)0x0)) {
+      bitsStart = MSG_GetUsedBitCount(msg);
+      MSG_WriteBit1(msg);
+      bVar2 = Demo_IsPlayerSpectating(i);
+      if (((bVar2) && (bVar2 = Demo_IsPlayerDead(i), bVar2)) || (bVar1)) {
+        memcpy((uchar *)&tempPS,(uchar *)(demo.ps + i),0x26a4);
+        tempPS.eFlags = tempPS.eFlags | 2;
+        tempPS.stats[4] = 0xc;
+        MSG_WriteDeltaPlayerstate(&g_snapInfo,msg,svsHeader.time,demo.ps + i,&tempPS);
       }
       else {
-        ppVar3 = G_GetPlayerState(local_26c4);
-        memcpy((uchar *)&local_26b4,(uchar *)ppVar3,0x26a4);
-        bVar2 = Demo_IsPlayerSpectating(local_26c4);
+        ppVar3 = G_GetPlayerState(i);
+        memcpy((uchar *)&tempPS,(uchar *)ppVar3,0x26a4);
+        bVar2 = Demo_IsPlayerSpectating(i);
         if (bVar2) {
-          memcpy((uchar *)&local_26b4,(uchar *)&g_defaultPlayerState,0x26a4);
-          local_26b4.clientNum = (uchar)local_26c4;
-          local_26b4.pm_type = 4;
-          local_26b4.eFlags = local_26b4.eFlags | 2;
-          local_26b4.stats[4] = 0xd;
-          Demo_GetIntermissionPointOrigin(&local_26b4.origin);
-          Demo_GetIntermissionPointAngles(&local_26b4.viewangles);
+          memcpy((uchar *)&tempPS,(uchar *)&g_defaultPlayerState,0x26a4);
+          tempPS.clientNum = (uchar)i;
+          tempPS.pm_type = 4;
+          tempPS.eFlags = tempPS.eFlags | 2;
+          tempPS.stats[4] = 0xd;
+          Demo_GetIntermissionPointOrigin(&tempPS.origin);
+          Demo_GetIntermissionPointAngles(&tempPS.viewangles);
         }
         else {
-          bVar2 = Demo_IsPlayerDead(local_26c4);
+          bVar2 = Demo_IsPlayerDead(i);
           if (bVar2) {
-            local_26b4.stats[4] = 0xc;
+            tempPS.stats[4] = 0xc;
           }
           else {
-            local_26b4.stats[4] = 0xe;
+            tempPS.stats[4] = 0xe;
           }
         }
-        MSG_WriteDeltaPlayerstate
-                  (&g_snapInfo,param_1,svsHeader.time,demo.ps + local_26c4,&local_26b4);
+        MSG_WriteDeltaPlayerstate(&g_snapInfo,msg,svsHeader.time,demo.ps + i,&tempPS);
       }
-      iVar4 = MSG_GetUsedBitCount(param_1);
-      iVar4 = iVar4 - local_8;
-      pcVar5 = va("DEMO: w Type: PlayerState Client: %d Size: %d bytes\n");
-      Demo_Printf(0x11,pcVar5);
+      iVar4 = MSG_GetUsedBitCount(msg);
+      iVar4 = iVar4 - bitsStart;
+      string = va("DEMO: w Type: PlayerState Client: %d Size: %d bytes\n");
+      Demo_Printf(0x11,string);
       Demo_RecordProfileData(3,(int)(iVar4 + (iVar4 >> 0x1f & 7U)) >> 3);
-      bVar2 = Demo_IsPlayerSpectating(local_26c4);
-      if ((bVar2) || (bVar2 = Demo_IsPlayerDead(local_26c4), bVar2)) {
-        memcpy((uchar *)(demo.ps + local_26c4),(uchar *)&local_26b4,0x26a4);
+      bVar2 = Demo_IsPlayerSpectating(i);
+      if ((bVar2) || (bVar2 = Demo_IsPlayerDead(i), bVar2)) {
+        memcpy((uchar *)(demo.ps + i),(uchar *)&tempPS,0x26a4);
       }
       else {
-        ppVar3 = G_GetPlayerState(local_26c4);
-        memcpy((uchar *)(demo.ps + local_26c4),(uchar *)ppVar3,0x26a4);
+        ppVar3 = G_GetPlayerState(i);
+        memcpy((uchar *)(demo.ps + i),(uchar *)ppVar3,0x26a4);
       }
     }
     else {
-      MSG_WriteBit0(param_1);
+      MSG_WriteBit0(msg);
     }
   }
   g_snapInfo.clientNum = g_democlientindex;
   g_snapInfo.client = (clientHeader_t *)(g_democlientindex * 0x84d00 + (int)svs.clients);
-  DVar6 = GetCurrentThreadId();
-  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1288,7 +1319,7 @@ void __cdecl Demo_WritePlayerStates(msg_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WritePacketEntities(msg_t *param_1)
+void __cdecl Demo_WritePacketEntities(msg_t *msg)
 
 {
   code *pcVar1;
@@ -1297,99 +1328,101 @@ void __cdecl Demo_WritePacketEntities(msg_t *param_1)
   int iVar4;
   int iVar5;
   DWORD DVar6;
-  entityState_s *peVar7;
+  gentity_s *pgVar7;
   entityState_s *peVar8;
-  int local_1048;
-  int local_1044;
-  DeltaFlags local_1040;
-  int local_1038;
-  int local_1034;
-  entityState_s *local_1030;
-  int local_102c;
-  int local_1024;
-  entityState_s *local_1020;
-  int local_101c;
+  int i_2;
+  int i;
+  DeltaFlags forceWrite;
+  int startBits;
+  int oldEntNum;
+  int newIndex;
+  entityState_s *newEnt;
+  int oldClientMask;
+  int newEntNum;
+  entityState_s *oldEnt;
+  int newClientMask;
   int aiStack_1014 [1024];
-  int local_14;
-  int local_10;
-  int local_c;
-  entityState_s *local_8;
+  int numEntities;
+  int initBitsUsed;
+  int oldIndex;
+  gentity_s *ent;
   
-  local_8 = (entityState_s *)0x9cbe3d;
-  local_14 = 0;
-  local_c = 0;
-  local_1034 = 0;
+  ent = (gentity_s *)0x9cbe3d;
+  numEntities = 0;
+  oldIndex = 0;
+  newIndex = 0;
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Writing EntityStates");
-  for (local_1044 = 0; local_1044 < sv.num_entities; local_1044 = local_1044 + 1) {
-    local_8 = (entityState_s *)
-              ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_1044 + -0x18);
-    if ((((char)local_8[1].number != '\0') &&
-        ((*(int *)&local_8[1].lerp.pos != 0 || ((local_8[1].number & 0x10000) == 0)))) &&
-       ((0x1f < local_8->number ||
-        ((bVar2 = Demo_IsPlayerSpectating(local_8->number), !bVar2 &&
-         (bVar2 = Demo_IsPlayerDead(local_8->number), !bVar2)))))) {
-      aiStack_1014[local_14] = local_1044;
-      local_14 = local_14 + 1;
+  for (i = 0; i < sv.num_entities; i = i + 1) {
+    ent = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * i + -0x18);
+    if ((((ent->r).linked != '\0') &&
+        (((ent->r).broadcastTime != 0 || (((ent->r).svFlags & 1) == 0)))) &&
+       ((0x1f < (ent->s).number ||
+        ((bVar2 = Demo_IsPlayerSpectating((ent->s).number), !bVar2 &&
+         (bVar2 = Demo_IsPlayerDead((ent->s).number), !bVar2)))))) {
+      aiStack_1014[numEntities] = i;
+      numEntities = numEntities + 1;
     }
   }
-  local_10 = MSG_GetUsedBitCount(param_1);
-  MSG_ClearLastReferencedEntity(param_1);
-  MSG_WriteBits(param_1,local_14,0xb);
+  initBitsUsed = MSG_GetUsedBitCount(msg);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteBits(msg,numEntities,0xb);
   do {
-    if ((demo.prevNumEntities <= local_c) && (local_14 <= local_1034)) {
-      MSG_WriteEntityIndex(&g_snapInfo,param_1,0x3ff,10);
-      for (local_1048 = 0; local_1048 < local_14; local_1048 = local_1048 + 1) {
-        local_8 = (entityState_s *)
-                  ((int)((sv.gentities)->s).lerp.pos.trBase +
-                  sv.gentitySize * aiStack_1014[local_1048] + -0x18);
-        peVar7 = local_8;
-        peVar8 = demo.ent + local_1048;
+    if ((demo.prevNumEntities <= oldIndex) && (numEntities <= newIndex)) {
+      MSG_WriteEntityIndex(&g_snapInfo,msg,0x3ff,10);
+      for (i_2 = 0; i_2 < numEntities; i_2 = i_2 + 1) {
+        ent = (gentity_s *)
+              ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * aiStack_1014[i_2] + -0x18
+              );
+        pgVar7 = ent;
+        peVar8 = demo.ent + i_2;
         for (iVar4 = 0x38; iVar4 != 0; iVar4 = iVar4 + -1) {
-          peVar8->number = peVar7->number;
-          peVar7 = (entityState_s *)&peVar7->lerp;
+          peVar8->number = (pgVar7->s).number;
+          pgVar7 = (gentity_s *)&(pgVar7->s).lerp;
           peVar8 = (entityState_s *)&peVar8->lerp;
         }
-        demo.entClientMask[local_1048][0] = local_8[1].lerp.eFlags;
+        demo.entClientMask[i_2][0] = (ent->r).clientMask[0];
       }
-      MSG_GetUsedBitCount(param_1);
+      MSG_GetUsedBitCount(msg);
       pcVar3 = va("DEMO: w Type: PacketEntities NumEntities: %d FirstEntity: 0 Size: %d bits\n");
       Demo_Printf(0x21,pcVar3);
-      iVar4 = MSG_GetUsedBitCount(param_1);
-      Demo_RecordProfileData(4,(int)((iVar4 - local_10) + (iVar4 - local_10 >> 0x1f & 7U)) >> 3);
-      demo.prevNumEntities = local_14;
+      iVar4 = MSG_GetUsedBitCount(msg);
+      Demo_RecordProfileData
+                (4,(int)((iVar4 - initBitsUsed) + (iVar4 - initBitsUsed >> 0x1f & 7U)) >> 3);
+      demo.prevNumEntities = numEntities;
       DVar6 = GetCurrentThreadId();
       if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    local_1030 = (entityState_s *)
-                 ((int)((sv.gentities)->s).lerp.pos.trBase +
-                 sv.gentitySize * aiStack_1014[local_1034] + -0x18);
-    if (local_1034 < local_14) {
-      local_1024 = local_1030->number;
+    pgVar7 = (gentity_s *)
+             ((int)((sv.gentities)->s).lerp.pos.trBase +
+             sv.gentitySize * aiStack_1014[newIndex] + -0x18);
+    if (newIndex < numEntities) {
+      newEntNum = (pgVar7->s).number;
     }
     else {
-      local_1024 = 9999;
+      newEntNum = 9999;
     }
-    if (local_c < demo.prevNumEntities) {
-      local_1038 = demo.ent[local_c].number;
+    if (oldIndex < demo.prevNumEntities) {
+      oldEntNum = demo.ent[oldIndex].number;
     }
     else {
-      local_1038 = 9999;
+      oldEntNum = 9999;
     }
-    local_8 = local_1030;
-    if (local_1038 == local_1024) {
-      local_1020 = demo.ent + local_c;
-      local_1040 = DELTA_FLAGS_NONE;
-      local_102c = demo.entClientMask[local_c][0];
-      local_101c = local_1030[1].lerp.eFlags;
+    newEnt = (entityState_s *)pgVar7;
+    ent = pgVar7;
+    if (oldEntNum == newEntNum) {
+      oldEnt = demo.ent + oldIndex;
+      forceWrite = DELTA_FLAGS_NONE;
+      oldClientMask = demo.entClientMask[oldIndex][0];
+      newClientMask = (pgVar7->r).clientMask[0];
       pcVar3 = va("EntityState: OldNum = NewNum = %d\n");
       Demo_Printf(0x20,pcVar3);
     }
-    else if (local_1024 < local_1038) {
-      local_1020 = &svsHeader.svEntities[local_1024].baseline.s;
-      if ((local_1024 != local_1030->number) &&
+    else if (newEntNum < oldEntNum) {
+      oldEnt = &svsHeader.svEntities[newEntNum].baseline.s;
+      if ((newEntNum != (pgVar7->s).number) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",
                                    0x5df,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1397,57 +1430,57 @@ void __cdecl Demo_WritePacketEntities(msg_t *param_1)
         return;
       }
       g_snapInfo.fromBaseline = true;
-      local_1040 = DELTA_FLAGS_FORCE;
-      local_102c = 0;
-      local_101c = local_8[1].lerp.eFlags;
+      forceWrite = DELTA_FLAGS_FORCE;
+      oldClientMask = 0;
+      newClientMask = (ent->r).clientMask[0];
       pcVar3 = va("EntityState: NewNum (%d) < OldNum (%d). Writing with baselines\n");
       Demo_Printf(0x20,pcVar3);
     }
     else {
-      local_1020 = demo.ent + local_c;
-      local_1030 = (entityState_s *)0x0;
-      local_1040 = DELTA_FLAGS_FORCE;
-      local_102c = demo.entClientMask[local_c][0];
-      local_101c = 0;
+      oldEnt = demo.ent + oldIndex;
+      newEnt = (entityState_s *)0x0;
+      forceWrite = DELTA_FLAGS_FORCE;
+      oldClientMask = demo.entClientMask[oldIndex][0];
+      newClientMask = 0;
       pcVar3 = va("EntityState: NewNum (%d) > OldNum (%d). Entity is removed\n");
       Demo_Printf(0x20,pcVar3);
     }
-    if ((local_1030 != (entityState_s *)0x0) && (local_102c != local_101c)) {
-      local_1040 = DELTA_FLAGS_FORCE;
+    if ((newEnt != (entityState_s *)0x0) && (oldClientMask != newClientMask)) {
+      forceWrite = DELTA_FLAGS_FORCE;
     }
-    iVar4 = MSG_GetUsedBitCount(param_1);
-    MSG_WriteEntity(&g_snapInfo,param_1,svsHeader.time,local_1020,local_1030,local_1040);
+    iVar4 = MSG_GetUsedBitCount(msg);
+    MSG_WriteEntity(&g_snapInfo,msg,svsHeader.time,oldEnt,newEnt,forceWrite);
     g_snapInfo.fromBaseline = false;
-    iVar5 = MSG_GetUsedBitCount(param_1);
+    iVar5 = MSG_GetUsedBitCount(msg);
     if (iVar5 != iVar4) {
-      if (local_1030 == (entityState_s *)0x0) {
-        MSG_WriteBit0(param_1);
-        demo.entClientMask[local_c][0] = 0;
-        demo.entClientMask[local_c][1] = 0;
+      if (newEnt == (entityState_s *)0x0) {
+        MSG_WriteBit0(msg);
+        demo.entClientMask[oldIndex][0] = 0;
+        demo.entClientMask[oldIndex][1] = 0;
         pcVar3 = va("Entity %d is removed. So, writing clientMask bit 0.\n");
         Demo_Printf(0x20,pcVar3);
       }
-      else if (local_102c == local_101c) {
-        MSG_WriteBit0(param_1);
+      else if (oldClientMask == newClientMask) {
+        MSG_WriteBit0(msg);
         pcVar3 = va("OldClientMask: (%d) == NewClientMask: (%d). So, writing clientMask bit 0.\n");
         Demo_Printf(0x20,pcVar3);
       }
       else {
-        MSG_WriteBit1(param_1);
-        MSG_WriteBits(param_1,local_101c,0x20);
+        MSG_WriteBit1(msg);
+        MSG_WriteBits(msg,newClientMask,0x20);
         pcVar3 = va("Writing ClientMask (%d) for entity %d\n");
         Demo_Printf(0x20,pcVar3);
       }
     }
-    if (local_1038 == local_1024) {
-      local_c = local_c + 1;
-      local_1034 = local_1034 + 1;
+    if (oldEntNum == newEntNum) {
+      oldIndex = oldIndex + 1;
+      newIndex = newIndex + 1;
     }
-    else if (local_1024 < local_1038) {
-      local_1034 = local_1034 + 1;
+    else if (newEntNum < oldEntNum) {
+      newIndex = newIndex + 1;
     }
     else {
-      local_c = local_c + 1;
+      oldIndex = oldIndex + 1;
     }
   } while( true );
 }
@@ -1461,7 +1494,7 @@ void __cdecl Demo_WritePacketEntities(msg_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WritePacketClients(msg_t *param_1)
+void __cdecl Demo_WritePacketClients(msg_t *msg)
 
 {
   clientState_s *pcVar1;
@@ -1469,97 +1502,99 @@ void __cdecl Demo_WritePacketClients(msg_t *param_1)
   DWORD DVar3;
   int iVar4;
   clientState_s *pcVar5;
-  int local_b4;
-  int local_ac;
-  int local_a8;
-  int local_a4;
-  int local_a0;
+  int i_2;
+  client_t *cl;
+  int i;
+  int forceWrite;
+  int newClientNum;
+  int newIndex;
   int aiStack_9c [32];
-  clientState_s *local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  clientState_s *local_c;
-  int local_8;
+  clientState_s *oldClient;
+  int oldClientNum;
+  int initBitsUsed;
+  int oldIndex;
+  clientState_s *newClient;
+  int numClients;
   
-  local_8 = 0;
-  local_10 = 0;
-  local_a0 = 0;
+  numClients = 0;
+  oldIndex = 0;
+  newIndex = 0;
   PIXBeginNamedEvent(-0xff0001,"Demo Recording - Writing ClientStates");
-  for (local_ac = 0; local_ac < demo.header.maxClients; local_ac = local_ac + 1) {
-    if (4 < *(int *)(local_ac * 0x84d00 + (int)svs.clients)) {
-      aiStack_9c[local_8] = local_ac;
-      local_8 = local_8 + 1;
+  for (i = 0; i < demo.header.maxClients; i = i + 1) {
+    if (4 < *(int *)(i * 0x84d00 + (int)svs.clients)) {
+      aiStack_9c[numClients] = i;
+      numClients = numClients + 1;
     }
   }
-  local_14 = MSG_GetUsedBitCount(param_1);
-  MSG_ClearLastReferencedEntity(param_1);
-  MSG_WriteBits(param_1,local_8,5);
-  while ((local_10 < demo.prevNumClients || (local_a0 < local_8))) {
-    if (local_a0 < local_8) {
-      pcVar1 = G_GetClientState(aiStack_9c[local_a0]);
-      local_a4 = pcVar1->clientIndex;
+  initBitsUsed = MSG_GetUsedBitCount(msg);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteBits(msg,numClients,5);
+  while ((oldIndex < demo.prevNumClients || (newIndex < numClients))) {
+    if (newIndex < numClients) {
+      pcVar1 = G_GetClientState(aiStack_9c[newIndex]);
+      newClientNum = pcVar1->clientIndex;
     }
     else {
-      local_a4 = 9999;
+      newClientNum = 9999;
     }
-    if (local_10 < demo.prevNumClients) {
-      local_18 = demo.client[local_10].clientIndex;
+    if (oldIndex < demo.prevNumClients) {
+      oldClientNum = demo.client[oldIndex].clientIndex;
     }
     else {
-      local_18 = 9999;
+      oldClientNum = 9999;
     }
-    if (local_18 == local_a4) {
-      local_1c = demo.client + local_10;
-      local_c = G_GetClientState(aiStack_9c[local_a0]);
-      local_a8 = 0;
+    if (oldClientNum == newClientNum) {
+      oldClient = demo.client + oldIndex;
+      newClient = G_GetClientState(aiStack_9c[newIndex]);
+      forceWrite = 0;
       pcVar2 = va("ClientState: OldNum = NewNum = %d\n");
       Demo_Printf(0x40,pcVar2);
     }
-    else if (local_a4 < local_18) {
-      local_1c = (clientState_s *)0x0;
-      local_c = G_GetClientState(aiStack_9c[local_a0]);
-      local_a8 = 1;
-      Demo_InfoPlayerConnected(local_a4);
+    else if (newClientNum < oldClientNum) {
+      oldClient = (clientState_s *)0x0;
+      newClient = G_GetClientState(aiStack_9c[newIndex]);
+      forceWrite = 1;
+      Demo_InfoPlayerConnected(newClientNum);
       pcVar2 = va("ClientState: NewNum (%d) < OldNum (%d). Writing with baselines\n");
       Demo_Printf(0x40,pcVar2);
     }
     else {
-      local_1c = demo.client + local_10;
-      local_c = (clientState_s *)0x0;
-      local_a8 = 1;
-      Demo_InfoPlayerDisconnected(local_18);
+      oldClient = demo.client + oldIndex;
+      newClient = (clientState_s *)0x0;
+      forceWrite = 1;
+      Demo_InfoPlayerDisconnected(oldClientNum);
       pcVar2 = va("ClientState: NewNum (%d) > OldNum (%d). Client is removed\n");
       Demo_Printf(0x40,pcVar2);
     }
-    MSG_WriteDeltaClient(&g_snapInfo,param_1,svsHeader.time,local_1c,local_c,local_a8);
-    if (local_18 == local_a4) {
-      local_10 = local_10 + 1;
-      local_a0 = local_a0 + 1;
+    MSG_WriteDeltaClient(&g_snapInfo,msg,svsHeader.time,oldClient,newClient,forceWrite);
+    if (oldClientNum == newClientNum) {
+      oldIndex = oldIndex + 1;
+      newIndex = newIndex + 1;
     }
-    else if (local_a4 < local_18) {
-      local_a0 = local_a0 + 1;
+    else if (newClientNum < oldClientNum) {
+      newIndex = newIndex + 1;
     }
     else {
-      local_10 = local_10 + 1;
+      oldIndex = oldIndex + 1;
     }
   }
-  MSG_WriteBit0(param_1);
-  for (local_b4 = 0; local_b4 < local_8; local_b4 = local_b4 + 1) {
-    pcVar1 = G_GetClientState(aiStack_9c[local_b4]);
-    pcVar5 = demo.client + local_b4;
+  MSG_WriteBit0(msg);
+  for (i_2 = 0; i_2 < numClients; i_2 = i_2 + 1) {
+    pcVar1 = G_GetClientState(aiStack_9c[i_2]);
+    pcVar5 = demo.client + i_2;
     for (iVar4 = 0x34; iVar4 != 0; iVar4 = iVar4 + -1) {
       pcVar5->clientIndex = pcVar1->clientIndex;
       pcVar1 = (clientState_s *)&pcVar1->team;
       pcVar5 = (clientState_s *)&pcVar5->team;
     }
   }
-  MSG_GetUsedBitCount(param_1);
+  MSG_GetUsedBitCount(msg);
   pcVar2 = va("DEMO: w Type: PacketClients NumClients: %d FirstClient: 0 Size: %d bits\n");
   Demo_Printf(0x41,pcVar2);
-  iVar4 = MSG_GetUsedBitCount(param_1);
-  Demo_RecordProfileData(5,(int)((iVar4 - local_14) + (iVar4 - local_14 >> 0x1f & 7U)) >> 3);
-  demo.prevNumClients = local_8;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  Demo_RecordProfileData(5,(int)((iVar4 - initBitsUsed) + (iVar4 - initBitsUsed >> 0x1f & 7U)) >> 3)
+  ;
+  demo.prevNumClients = numClients;
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1570,45 +1605,45 @@ void __cdecl Demo_WritePacketClients(msg_t *param_1)
 
 // 009CC850  Demo_PopulateStaticInfoData  (demo/demo_recording.cpp:1965)
 
-void __cdecl Demo_PopulateStaticInfoData(demoMetaInfo *param_1)
+void __cdecl Demo_PopulateStaticInfoData(demoMetaInfo *info)
 
 {
   char *pcVar1;
   long64 lVar2;
   int iVar3;
-  qtime_s local_28;
+  qtime_s systemTime;
   
-  Com_RealTime(&local_28,true);
+  Com_RealTime(&systemTime,true);
   iVar3 = 0x100;
   pcVar1 = Dvar_GetString("g_gametype");
-  I_strncpyz(param_1->gameType,pcVar1,iVar3);
+  I_strncpyz(info->gameType,pcVar1,iVar3);
   iVar3 = 0x100;
   pcVar1 = Dvar_GetString("mapname");
-  I_strncpyz(param_1->mapName,pcVar1,iVar3);
-  param_1->week = local_28.tm_yday / 7;
-  param_1->month = local_28.tm_mon + 1;
-  param_1->year = local_28.tm_year + 0x76c;
-  param_1->day = local_28.tm_mday;
-  param_1->hour = local_28.tm_hour;
-  param_1->min = local_28.tm_min;
+  I_strncpyz(info->mapName,pcVar1,iVar3);
+  info->week = systemTime.tm_yday / 7;
+  info->month = systemTime.tm_mon + 1;
+  info->year = systemTime.tm_year + 0x76c;
+  info->day = systemTime.tm_mday;
+  info->hour = systemTime.tm_hour;
+  info->min = systemTime.tm_min;
   lVar2 = _time64((long64 *)0x0);
-  param_1->createTime = (uint)lVar2;
+  info->createTime = (uint)lVar2;
   return;
 }
 
 
 // 009CC920  Demo_WriteToBuffer  (demo/demo_recording.cpp:1992)
 
-int __cdecl Demo_WriteToBuffer(void *param_1,void *param_2,int param_3,int param_4,int param_5)
+int __cdecl Demo_WriteToBuffer(void *to,void *from,int size,int bytesWritten,int maxBufferSize)
 
 {
-  if (param_4 + param_3 < param_5) {
-    memcpy(param_1,param_2,param_3);
+  if (bytesWritten + size < maxBufferSize) {
+    memcpy(to,from,size);
   }
   else {
-    param_3 = 0;
+    size = 0;
   }
-  return param_3;
+  return size;
 }
 
 
@@ -1617,73 +1652,75 @@ int __cdecl Demo_WriteToBuffer(void *param_1,void *param_2,int param_3,int param
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Demo_WriteInfoDataToBuffer(demoMetaInfo *param_1,uchar *param_2,int param_3)
+int __cdecl Demo_WriteInfoDataToBuffer(demoMetaInfo *info,uchar *buffer,int maxBufferSize)
 
 {
   int iVar1;
   int iVar2;
-  int local_10;
-  int local_c;
-  int local_8;
+  ulong bytesWritten;
+  int version;
+  int totalBytesWritten;
+  int i;
   
-  local_c = 0;
-  local_10 = demo.header.version;
-  iVar1 = Demo_WriteToBuffer(param_2,&local_10,4,0,param_3);
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->startTime,4,iVar1,param_3);
+  totalBytesWritten = 0;
+  version = demo.header.version;
+  iVar1 = Demo_WriteToBuffer(buffer,&version,4,0,maxBufferSize);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->startTime,4,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,&param_1->endTime,4,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,&info->endTime,4,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->numConnectedPlayersInfoCount,4,iVar1,param_3)
-  ;
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->numConnectedPlayersInfoCount,4,iVar1,
+                             maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,&param_1->numDefaultBookmarksCount,4,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,&info->numDefaultBookmarksCount,4,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->numHeliPatchesCount,4,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->numHeliPatchesCount,4,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,param_1->author,0x20,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,info->author,0x20,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,param_1->gameType,0x100,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,info->gameType,0x100,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,param_1->mapName,0x100,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,info->mapName,0x100,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,param_1->name,0x16,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,info->name,0x16,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,param_1->description,0x16,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,info->description,0x16,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->week,4,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->week,4,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,&param_1->month,4,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,&info->month,4,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->year,4,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->year,4,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + iVar2,&param_1->day,4,iVar2,param_3);
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,&info->day,4,iVar2,maxBufferSize);
   iVar1 = iVar1 + iVar2;
-  iVar2 = Demo_WriteToBuffer(param_2 + iVar1,&param_1->hour,4,iVar1,param_3);
+  iVar2 = Demo_WriteToBuffer(buffer + iVar1,&info->hour,4,iVar1,maxBufferSize);
   iVar2 = iVar2 + iVar1;
-  local_c = Demo_WriteToBuffer(param_2 + iVar2,&param_1->min,4,iVar2,param_3);
-  local_c = local_c + iVar2;
-  for (local_8 = 0; local_8 < param_1->numConnectedPlayersInfoCount; local_8 = local_8 + 1) {
-    if (param_1->connectedPlayers[local_8].disconnectTime == 0) {
-      param_1->connectedPlayers[local_8].disconnectTime = param_1->endTime;
+  iVar1 = Demo_WriteToBuffer(buffer + iVar2,&info->min,4,iVar2,maxBufferSize);
+  totalBytesWritten = iVar1 + iVar2;
+  for (i = 0; i < info->numConnectedPlayersInfoCount; i = i + 1) {
+    if (info->connectedPlayers[i].disconnectTime == 0) {
+      info->connectedPlayers[i].disconnectTime = info->endTime;
     }
-    iVar1 = Demo_WriteToBuffer(param_2 + local_c,param_1->connectedPlayers + local_8,0x18,local_c,
-                               param_3);
-    local_c = local_c + iVar1;
+    iVar1 = Demo_WriteToBuffer(buffer + totalBytesWritten,info->connectedPlayers + i,0x18,
+                               totalBytesWritten,maxBufferSize);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  for (local_8 = 0; local_8 < param_1->numDefaultBookmarksCount; local_8 = local_8 + 1) {
-    iVar1 = Demo_WriteToBuffer(param_2 + local_c,param_1->defaultBookmarks + local_8,0xc,local_c,
-                               param_3);
-    local_c = local_c + iVar1;
+  for (i = 0; i < info->numDefaultBookmarksCount; i = i + 1) {
+    iVar1 = Demo_WriteToBuffer(buffer + totalBytesWritten,info->defaultBookmarks + i,0xc,
+                               totalBytesWritten,maxBufferSize);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  for (local_8 = 0; local_8 < param_1->numHeliPatchesCount; local_8 = local_8 + 1) {
-    iVar1 = Demo_WriteToBuffer(param_2 + local_c,param_1->heliPatches + local_8,0x18,local_c,param_3
-                              );
-    local_c = local_c + iVar1;
+  for (i = 0; i < info->numHeliPatchesCount; i = i + 1) {
+    iVar1 = Demo_WriteToBuffer(buffer + totalBytesWritten,info->heliPatches + i,0x18,
+                               totalBytesWritten,maxBufferSize);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  iVar1 = Demo_WriteToBuffer(param_2 + local_c,&local_c,4,local_c,param_3);
-  local_c = local_c + iVar1;
-  iVar1 = Demo_WriteToBuffer(param_2 + local_c,&local_10,4,local_c,param_3);
-  return local_c + iVar1;
+  iVar1 = Demo_WriteToBuffer(buffer + totalBytesWritten,&totalBytesWritten,4,totalBytesWritten,
+                             maxBufferSize);
+  totalBytesWritten = totalBytesWritten + iVar1;
+  iVar1 = Demo_WriteToBuffer(buffer + totalBytesWritten,&version,4,totalBytesWritten,maxBufferSize);
+  return totalBytesWritten + iVar1;
 }
 
 
@@ -1692,7 +1729,7 @@ int __cdecl Demo_WriteInfoDataToBuffer(demoMetaInfo *param_1,uchar *param_2,int 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteInfoData(int param_1,demoMetaInfo *param_2)
+void __cdecl Demo_WriteInfoData(int handle,demoMetaInfo *info)
 
 {
   int iVar1;
@@ -1711,57 +1748,55 @@ void __cdecl Demo_WriteInfoData(int param_1,demoMetaInfo *param_2)
   int iVar14;
   int iVar15;
   int iVar16;
-  char *pcVar17;
-  int local_10;
-  int local_c;
-  int local_8;
+  int iVar17;
+  char *string;
+  ulong bytesWritten;
+  int version;
+  int totalBytesWritten;
+  int i;
   
-  local_c = 0;
-  local_10 = demo.header.version;
-  iVar1 = Demo_Write(&local_10,4,param_1);
-  iVar2 = Demo_Write(&param_2->startTime,4,param_1);
-  iVar3 = Demo_Write(&param_2->endTime,4,param_1);
-  iVar4 = Demo_Write(&param_2->numConnectedPlayersInfoCount,4,param_1);
-  iVar5 = Demo_Write(&param_2->numDefaultBookmarksCount,4,param_1);
-  iVar6 = Demo_Write(&param_2->numHeliPatchesCount,4,param_1);
-  iVar7 = Demo_Write(param_2->author,0x20,param_1);
-  iVar8 = Demo_Write(param_2->gameType,0x100,param_1);
-  iVar9 = Demo_Write(param_2->mapName,0x100,param_1);
-  iVar10 = Demo_Write(param_2->name,0x16,param_1);
-  iVar11 = Demo_Write(param_2->description,0x16,param_1);
-  iVar12 = Demo_Write(&param_2->week,4,param_1);
-  iVar13 = Demo_Write(&param_2->month,4,param_1);
-  iVar14 = Demo_Write(&param_2->year,4,param_1);
-  iVar15 = Demo_Write(&param_2->day,4,param_1);
-  iVar16 = Demo_Write(&param_2->hour,4,param_1);
-  local_c = Demo_Write(&param_2->min,4,param_1);
-  local_c = local_c + iVar16 + iVar15 + iVar14 + iVar13 + iVar12 + iVar11 + iVar10 + iVar9 + iVar8 +
-                                                                                             iVar7 +
-                                                                                             iVar6 +
-                                                                                             iVar5 +
-                                                                                             iVar4 +
-                                                                                             iVar3 +
-                                                                                             iVar2 +
-                                                                                             iVar1;
-  for (local_8 = 0; local_8 < param_2->numConnectedPlayersInfoCount; local_8 = local_8 + 1) {
-    if (param_2->connectedPlayers[local_8].disconnectTime == 0) {
-      param_2->connectedPlayers[local_8].disconnectTime = param_2->endTime;
+  totalBytesWritten = 0;
+  version = demo.header.version;
+  iVar1 = Demo_Write(&version,4,handle);
+  iVar2 = Demo_Write(&info->startTime,4,handle);
+  iVar3 = Demo_Write(&info->endTime,4,handle);
+  iVar4 = Demo_Write(&info->numConnectedPlayersInfoCount,4,handle);
+  iVar5 = Demo_Write(&info->numDefaultBookmarksCount,4,handle);
+  iVar6 = Demo_Write(&info->numHeliPatchesCount,4,handle);
+  iVar7 = Demo_Write(info->author,0x20,handle);
+  iVar8 = Demo_Write(info->gameType,0x100,handle);
+  iVar9 = Demo_Write(info->mapName,0x100,handle);
+  iVar10 = Demo_Write(info->name,0x16,handle);
+  iVar11 = Demo_Write(info->description,0x16,handle);
+  iVar12 = Demo_Write(&info->week,4,handle);
+  iVar13 = Demo_Write(&info->month,4,handle);
+  iVar14 = Demo_Write(&info->year,4,handle);
+  iVar15 = Demo_Write(&info->day,4,handle);
+  iVar16 = Demo_Write(&info->hour,4,handle);
+  iVar17 = Demo_Write(&info->min,4,handle);
+  totalBytesWritten =
+       iVar17 + iVar16 + iVar15 + iVar14 + iVar13 + iVar12 + iVar11 + iVar10 + iVar9 + iVar8 + iVar7
+                                                                                               + 
+                                                  iVar6 + iVar5 + iVar4 + iVar3 + iVar2 + iVar1;
+  for (i = 0; i < info->numConnectedPlayersInfoCount; i = i + 1) {
+    if (info->connectedPlayers[i].disconnectTime == 0) {
+      info->connectedPlayers[i].disconnectTime = info->endTime;
     }
-    iVar1 = Demo_Write(param_2->connectedPlayers + local_8,0x18,param_1);
-    local_c = local_c + iVar1;
+    iVar1 = Demo_Write(info->connectedPlayers + i,0x18,handle);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  for (local_8 = 0; local_8 < param_2->numDefaultBookmarksCount; local_8 = local_8 + 1) {
-    iVar1 = Demo_Write(param_2->defaultBookmarks + local_8,0xc,param_1);
-    local_c = local_c + iVar1;
+  for (i = 0; i < info->numDefaultBookmarksCount; i = i + 1) {
+    iVar1 = Demo_Write(info->defaultBookmarks + i,0xc,handle);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  for (local_8 = 0; local_8 < param_2->numHeliPatchesCount; local_8 = local_8 + 1) {
-    iVar1 = Demo_Write(param_2->heliPatches + local_8,0x18,param_1);
-    local_c = local_c + iVar1;
+  for (i = 0; i < info->numHeliPatchesCount; i = i + 1) {
+    iVar1 = Demo_Write(info->heliPatches + i,0x18,handle);
+    totalBytesWritten = totalBytesWritten + iVar1;
   }
-  Demo_Write(&local_c,4,param_1);
-  Demo_Write(&local_10,4,param_1);
-  pcVar17 = va("DEMO Info: Written %d bytes to demo file.\n");
-  Demo_Printf(0x102,pcVar17);
+  Demo_Write(&totalBytesWritten,4,handle);
+  Demo_Write(&version,4,handle);
+  string = va("DEMO Info: Written %d bytes to demo file.\n");
+  Demo_Printf(0x102,string);
   return;
 }
 
@@ -1774,36 +1809,36 @@ void __cdecl Demo_WriteInfoData(int param_1,demoMetaInfo *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_InfoPlayerConnected(int param_1)
+void __cdecl Demo_InfoPlayerConnected(int clientNum)
 
 {
   code *pcVar1;
   client_t *pcVar2;
   int iVar3;
   bool bVar4;
-  char *pcVar5;
-  uchar local_8;
+  char *string;
+  int index;
   
   iVar3 = demo.info.numConnectedPlayersInfoCount;
   if (demo.info.numConnectedPlayersInfoCount < 0x32) {
-    local_8 = (uchar)demo.info.numConnectedPlayersInfoCount;
-    demo.info.connectedPlayers[demo.info.numConnectedPlayersInfoCount].playerIndex = local_8;
-    demo.info.connectedPlayers[iVar3].clientNum = (uchar)param_1;
+    index._0_1_ = (uchar)demo.info.numConnectedPlayersInfoCount;
+    demo.info.connectedPlayers[demo.info.numConnectedPlayersInfoCount].playerIndex = (uchar)index;
+    demo.info.connectedPlayers[iVar3].clientNum = (uchar)clientNum;
     demo.info.connectedPlayers[iVar3].connectTime = svs.time;
     pcVar2 = svs.clients;
     *(undefined4 *)&demo.info.connectedPlayers[iVar3].xuid =
-         *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84cf0);
+         *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84cf0);
     *(undefined4 *)((int)&demo.info.connectedPlayers[iVar3].xuid + 4) =
-         *(undefined4 *)((int)pcVar2 + param_1 * 0x84d00 + 0x84cf4);
-    if (((uint)demo.info.connectedPlayers[iVar3].clientNum != param_1) &&
+         *(undefined4 *)((int)pcVar2 + clientNum * 0x84d00 + 0x84cf4);
+    if (((uint)demo.info.connectedPlayers[iVar3].clientNum != clientNum) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x876
                                  ,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pcVar5 = va("DEMO Info: Player Index: %d ClientNum: %d Connect Time: %d\n");
-    Demo_Printf(0x100,pcVar5);
+    string = va("DEMO Info: Player Index: %d ClientNum: %d Connect Time: %d\n");
+    Demo_Printf(0x100,string);
     demo.info.numConnectedPlayersInfoCount = demo.info.numConnectedPlayersInfoCount + 1;
   }
   return;
@@ -1818,22 +1853,22 @@ void __cdecl Demo_InfoPlayerConnected(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_InfoPlayerDisconnected(int param_1)
+void __cdecl Demo_InfoPlayerDisconnected(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int local_c;
-  uint local_8;
+  char *string;
+  int i;
+  int playerIndex;
   
-  local_8 = 0xffffffff;
-  for (local_c = 0; local_c < demo.info.numConnectedPlayersInfoCount; local_c = local_c + 1) {
-    if ((uint)demo.info.connectedPlayers[local_c].clientNum == param_1) {
-      local_8 = (uint)demo.info.connectedPlayers[local_c].playerIndex;
+  playerIndex = -1;
+  for (i = 0; i < demo.info.numConnectedPlayersInfoCount; i = i + 1) {
+    if ((uint)demo.info.connectedPlayers[i].clientNum == clientNum) {
+      playerIndex = (int)demo.info.connectedPlayers[i].playerIndex;
     }
   }
-  if (local_8 == 0xffffffff) {
+  if (playerIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x890,0,
                              "%s");
     if (!bVar2) {
@@ -1842,9 +1877,9 @@ void __cdecl Demo_InfoPlayerDisconnected(int param_1)
       return;
     }
   }
-  pcVar3 = va("DEMO Info: Player Index: %d ClientNum: %d Disconnected Time: %d\n");
-  Demo_Printf(0x100,pcVar3);
-  demo.info.connectedPlayers[local_8].disconnectTime = svs.time;
+  string = va("DEMO Info: Player Index: %d ClientNum: %d Disconnected Time: %d\n");
+  Demo_Printf(0x100,string);
+  demo.info.connectedPlayers[playerIndex].disconnectTime = svs.time;
   return;
 }
 
@@ -1854,31 +1889,32 @@ void __cdecl Demo_InfoPlayerDisconnected(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_AddBookmark(int param_1,int param_2,int param_3,int param_4)
+void __cdecl Demo_AddBookmark(int type,int time,int clientNum1,int clientNum2)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
-  char *pcVar4;
+  char *string;
+  int index;
   
   iVar2 = demo.info.numDefaultBookmarksCount;
   if (demo.info.numDefaultBookmarksCount < 1000) {
-    demo.info.defaultBookmarks[demo.info.numDefaultBookmarksCount].type = (uchar)param_1;
-    demo.info.defaultBookmarks[iVar2].time = param_2;
-    demo.info.defaultBookmarks[iVar2].clientNum1 = (uchar)param_3;
-    demo.info.defaultBookmarks[iVar2].clientNum2 = (uchar)param_4;
-    if (((((uint)demo.info.defaultBookmarks[iVar2].type != param_1) ||
-         ((uint)demo.info.defaultBookmarks[iVar2].clientNum1 != param_3)) ||
-        ((uint)demo.info.defaultBookmarks[iVar2].clientNum2 != param_4)) &&
+    demo.info.defaultBookmarks[demo.info.numDefaultBookmarksCount].type = (uchar)type;
+    demo.info.defaultBookmarks[iVar2].time = time;
+    demo.info.defaultBookmarks[iVar2].clientNum1 = (uchar)clientNum1;
+    demo.info.defaultBookmarks[iVar2].clientNum2 = (uchar)clientNum2;
+    if (((((uint)demo.info.defaultBookmarks[iVar2].type != type) ||
+         ((uint)demo.info.defaultBookmarks[iVar2].clientNum1 != clientNum1)) ||
+        ((uint)demo.info.defaultBookmarks[iVar2].clientNum2 != clientNum2)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_recording.cpp",0x8ac
                                  ,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pcVar4 = va("DEMO Info: Bookmark - Type: %d Time: %d ClientNum1: %d ClientNum2: %d\n");
-    Demo_Printf(0x100,pcVar4);
+    string = va("DEMO Info: Bookmark - Type: %d Time: %d ClientNum1: %d ClientNum2: %d\n");
+    Demo_Printf(0x100,string);
     demo.info.numDefaultBookmarksCount = demo.info.numDefaultBookmarksCount + 1;
   }
   return;

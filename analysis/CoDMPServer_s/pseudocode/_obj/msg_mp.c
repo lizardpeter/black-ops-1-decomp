@@ -387,40 +387,40 @@ int __cdecl MSG_ReadBitsCompress(uchar *param_1,int param_2,uchar *param_3,int p
   char *in_ECX;
   uchar *unaff_EBX;
   int unaff_ESI;
-  ulong uVar2;
-  nodetype *pnVar3;
+  ulong count;
+  nodetype *pnVar2;
   int *unaff_EDI;
   int iStack_8;
   nodetype anStack_4 [4];
   
   cVar1 = *in_ECX;
-  uVar2 = in_EAX - 1;
+  count = in_EAX - 1;
   if (cVar1 == '\0') {
-    memcpy(param_1,(uchar *)(in_ECX + 1),uVar2);
+    memcpy(param_1,(uchar *)(in_ECX + 1),count);
   }
   else {
     if (cVar1 == '\x01') {
       iStack_8 = 0;
-      pnVar3 = (nodetype *)param_1;
-      if (0 < (int)(uVar2 * 8)) {
+      pnVar2 = (nodetype *)param_1;
+      if (0 < (int)(count * 8)) {
         do {
           Huff_offsetReceive(anStack_4,&iStack_8,unaff_EBX,unaff_EDI);
-          *pnVar3 = anStack_4[0];
-          pnVar3 = pnVar3 + 1;
-        } while (iStack_8 < (int)(uVar2 * 8));
+          *pnVar2 = anStack_4[0];
+          pnVar2 = pnVar2 + 1;
+        } while (iStack_8 < (int)(count * 8));
       }
-      return (int)pnVar3 - (int)param_1;
+      return (int)pnVar2 - (int)param_1;
     }
     if (cVar1 != '\x02') {
       return 0;
     }
-    uVar2 = MSG_DecompressWithZLib(param_1,0x10000,(uchar *)unaff_EDI,unaff_ESI);
+    count = MSG_DecompressWithZLib(param_1,0x10000,(uchar *)unaff_EDI,unaff_ESI);
     if ((msg_zlibCompressOutput->current).enabled != false) {
-      Com_Printf(0xf,"zlib decompress %d\n",uVar2);
-      return uVar2;
+      Com_Printf(0xf,"zlib decompress %d\n",count);
+      return count;
     }
   }
-  return uVar2;
+  return count;
 }
 
 
@@ -431,28 +431,28 @@ int __cdecl MSG_ReadBitsCompress(uchar *param_1,int param_2,uchar *param_3,int p
 void __cdecl MSG_Embed(msg_t *param_1,msg_t *param_2)
 
 {
-  ulong uVar1;
+  ulong count;
+  int iVar1;
   int iVar2;
-  int iVar3;
   undefined4 *unaff_ESI;
   int unaff_EDI;
+  msg_t *pmVar3;
   msg_t *pmVar4;
-  msg_t *pmVar5;
   
   if ((int)(unaff_ESI[4] - unaff_ESI[5]) < *(int *)(param_1 + 0x14) + 1) {
     *unaff_ESI = 1;
     return;
   }
-  pmVar4 = (msg_t *)(-unaff_ESI[8] - 3 & 7);
-  pmVar5 = pmVar4;
-  MSG_WriteBits(pmVar4,3,unaff_EDI);
-  MSG_WriteBits((msg_t *)0x0,(int)pmVar4,(int)pmVar5);
-  uVar1 = *(ulong *)(param_1 + 0x14);
-  memcpy((uchar *)(unaff_ESI[2] + unaff_ESI[5]),*(uchar **)(param_1 + 8),uVar1);
-  iVar2 = unaff_ESI[5];
-  iVar3 = *(int *)(param_1 + 0x20);
-  unaff_ESI[5] = uVar1 + iVar2;
-  unaff_ESI[8] = iVar3 + iVar2 * 8;
+  pmVar3 = (msg_t *)(-unaff_ESI[8] - 3 & 7);
+  pmVar4 = pmVar3;
+  MSG_WriteBits(pmVar3,3,unaff_EDI);
+  MSG_WriteBits((msg_t *)0x0,(int)pmVar3,(int)pmVar4);
+  count = *(ulong *)(param_1 + 0x14);
+  memcpy((uchar *)(unaff_ESI[2] + unaff_ESI[5]),*(uchar **)(param_1 + 8),count);
+  iVar1 = unaff_ESI[5];
+  iVar2 = *(int *)(param_1 + 0x20);
+  unaff_ESI[5] = count + iVar1;
+  unaff_ESI[8] = iVar2 + iVar1 * 8;
   return;
 }
 
@@ -1089,7 +1089,7 @@ void __cdecl MSG_ReadData(msg_t *param_1,void *param_2,int param_3)
   int iVar1;
   int iVar2;
   int iVar3;
-  ulong uVar4;
+  ulong count;
   undefined4 *unaff_ESI;
   
   iVar2 = unaff_ESI[7];
@@ -1101,11 +1101,11 @@ void __cdecl MSG_ReadData(msg_t *param_1,void *param_2,int param_3)
     return;
   }
   if (iVar1 <= unaff_ESI[6] + iVar3) {
-    uVar4 = iVar3 - iVar2;
-    if (0 < (int)uVar4) {
-      memcpy((uchar *)param_1,(uchar *)(unaff_ESI[2] + iVar2),uVar4);
-      param_2 = (void *)((int)param_2 - uVar4);
-      param_1 = param_1 + uVar4;
+    count = iVar3 - iVar2;
+    if (0 < (int)count) {
+      memcpy((uchar *)param_1,(uchar *)(unaff_ESI[2] + iVar2),count);
+      param_2 = (void *)((int)param_2 - count);
+      param_1 = param_1 + count;
     }
     if (0 < (int)param_2) {
       memcpy((uchar *)param_1,(uchar *)((unaff_ESI[3] - unaff_ESI[5]) + unaff_ESI[7]),(ulong)param_2

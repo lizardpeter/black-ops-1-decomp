@@ -6,65 +6,65 @@
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
 int __cdecl
-vfprintf_helper(_func___cdecl_int__iobuf_ptr_char_ptr_localeinfo_struct_ptr_char_ptr *param_1,
-               _iobuf *param_2,char *param_3,localeinfo_struct *param_4,char *param_5)
+vfprintf_helper(_func___cdecl_int__iobuf_ptr_char_ptr_localeinfo_struct_ptr_char_ptr *outfn,
+               _iobuf *str,char *format,localeinfo_struct *plocinfo,char *ap)
 
 {
   int *piVar1;
   uint uVar2;
-  int iVar3;
-  ioinfo *piVar4;
-  int local_20;
+  int flag;
+  ioinfo *piVar3;
+  int retval;
   
-  local_20 = 0;
-  if ((param_2 == (_iobuf *)0x0) || (param_3 == (char *)0x0)) {
+  retval = 0;
+  if ((str == (_iobuf *)0x0) || (format == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  _lock_file(param_2);
-  if ((param_2->_flag & 0x40) == 0) {
-    uVar2 = _fileno(param_2);
+  _lock_file(str);
+  if ((str->_flag & 0x40) == 0) {
+    uVar2 = _fileno(str);
     if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
-      piVar4 = &__badioinfo;
+      piVar3 = &__badioinfo;
     }
     else {
-      piVar4 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
+      piVar3 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
     }
-    if (piVar4->textmode == '\0') {
+    if (piVar3->textmode == '\0') {
       if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
-        piVar4 = &__badioinfo;
+        piVar3 = &__badioinfo;
       }
       else {
-        piVar4 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
+        piVar3 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
       }
-      if (piVar4->unicode == '\0') goto LAB_00c177fd;
+      if (piVar3->unicode == '\0') goto LAB_00c177fd;
     }
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    local_20 = -1;
+    retval = -1;
   }
 LAB_00c177fd:
-  if (local_20 == 0) {
-    iVar3 = _stbuf(param_2);
-    local_20 = (*param_1)(param_2,param_3,param_4,param_5);
-    _ftbuf(iVar3,param_2);
+  if (retval == 0) {
+    flag = _stbuf(str);
+    retval = (*outfn)(str,format,plocinfo,ap);
+    _ftbuf(flag,str);
   }
   FUN_00c17839();
-  return local_20;
+  return retval;
 }
 
 
 // 00C17843  vfprintf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vfprintf.c:116)
 
-int __cdecl vfprintf(_iobuf *param_1,char *param_2,char *param_3)
+int __cdecl vfprintf(_iobuf *str,char *format,char *ap)
 
 {
   int iVar1;
   
-  iVar1 = vfprintf_helper(_output_l,param_1,param_2,(localeinfo_struct *)0x0,param_3);
+  iVar1 = vfprintf_helper(_output_l,str,format,(localeinfo_struct *)0x0,ap);
   return iVar1;
 }
 

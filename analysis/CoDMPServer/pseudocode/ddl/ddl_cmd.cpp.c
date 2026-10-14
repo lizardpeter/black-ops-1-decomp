@@ -6,14 +6,15 @@ void __cdecl DDL_Cmd_GetAsset_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  ddlDef_t *pdVar3;
+  char *fileName;
+  ddlDef_t *pdVar2;
+  ddlDef_t *ddl;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = DDL_LoadAsset(pcVar2);
-    if (pdVar3 == (ddlDef_t *)0x0) {
+    fileName = Cmd_Argv(1);
+    pdVar2 = DDL_LoadAsset(fileName);
+    if (pdVar2 == (ddlDef_t *)0x0) {
       Cmd_Argv(1);
       DDL_NoCheckPrintError("DDL: Asset %s could not be loaded.\n");
     }
@@ -35,30 +36,31 @@ void __cdecl DDL_Cmd_Show_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  ddlDef_t *pdVar3;
-  ddlState_t local_14;
+  char *fileName;
+  ddlDef_t *ddl_00;
+  ddlDef_t *ddl;
+  ddlState_t searchState;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = DDL_LoadAsset(pcVar2);
-    if (pdVar3 == (ddlDef_t *)0x0) {
+    fileName = Cmd_Argv(1);
+    ddl_00 = DDL_LoadAsset(fileName);
+    if (ddl_00 == (ddlDef_t *)0x0) {
       Cmd_Argv(1);
       DDL_NoCheckPrintError("DDL: Asset %s could not be loaded.\n");
     }
     else {
-      DDL_Reset(&local_14,pdVar3);
+      DDL_Reset(&searchState,ddl_00);
       DDL_NoCheckPrintf("DDL Contents:\n");
-      DDL_MoveToStart(&local_14,pdVar3);
-      if (local_14.arrayIndex < 0) {
+      DDL_MoveToStart(&searchState,ddl_00);
+      if (searchState.arrayIndex < 0) {
         DDL_NoCheckPrintf("%d \t%s (%d)\n");
       }
       else {
         DDL_NoCheckPrintf("%d \t%s[%d] (%d)\n");
       }
-      while (iVar1 = DDL_MoveNext(&local_14,&local_14), iVar1 != 0) {
-        if (local_14.arrayIndex < 0) {
+      while (iVar1 = DDL_MoveNext(&searchState,&searchState), iVar1 != 0) {
+        if (searchState.arrayIndex < 0) {
           DDL_NoCheckPrintf("%d \t%s (%d)\n");
         }
         else {

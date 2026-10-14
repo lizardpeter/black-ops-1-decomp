@@ -2,7 +2,7 @@
 
 // 00C2B710  strpbrk  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/STRSPN.ASM:191)
 
-void __cdecl strpbrk(uchar *param_1,uchar *param_2)
+void __cdecl strpbrk(uchar *string,uchar *control)
 
 {
   byte bVar1;
@@ -41,17 +41,17 @@ void __cdecl strpbrk(uchar *param_1,uchar *param_2)
   abStack_28[2] = 0;
   abStack_28[3] = 0;
   while( true ) {
-    bVar1 = *param_2;
+    bVar1 = *control;
     if (bVar1 == 0) break;
-    param_2 = param_2 + 1;
+    control = control + 1;
     abStack_28[(int)(uint)bVar1 >> 3] = abStack_28[(int)(uint)bVar1 >> 3] | '\x01' << (bVar1 & 7);
   }
   do {
-    bVar1 = *param_1;
+    bVar1 = *string;
     if (bVar1 == 0) {
       return;
     }
-    param_1 = param_1 + 1;
+    string = string + 1;
   } while ((abStack_28[(int)(uint)bVar1 >> 3] >> (bVar1 & 7) & 1) == 0);
   return;
 }

@@ -2,18 +2,18 @@
 
 // 00C2B610  __free_lconv_num  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initnum.c:211)
 
-void __cdecl __free_lconv_num(lconv *param_1)
+void __cdecl __free_lconv_num(lconv *l)
 
 {
-  if (param_1 != (lconv *)0x0) {
-    if (param_1->decimal_point != __lconv_c.decimal_point) {
-      free(param_1->decimal_point);
+  if (l != (lconv *)0x0) {
+    if (l->decimal_point != __lconv_c.decimal_point) {
+      free(l->decimal_point);
     }
-    if (param_1->thousands_sep != __lconv_c.thousands_sep) {
-      free(param_1->thousands_sep);
+    if (l->thousands_sep != __lconv_c.thousands_sep) {
+      free(l->thousands_sep);
     }
-    if (param_1->grouping != __lconv_c.grouping) {
-      free(param_1->grouping);
+    if (l->grouping != __lconv_c.grouping) {
+      free(l->grouping);
     }
   }
   return;

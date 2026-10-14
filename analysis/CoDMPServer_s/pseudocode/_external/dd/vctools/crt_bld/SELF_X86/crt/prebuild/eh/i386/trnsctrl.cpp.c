@@ -2,41 +2,45 @@
 
 // 00961CC0  _JumpToContinuation  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:77)
 
-void __cdecl _JumpToContinuation(void *param_1,EHRegistrationNode *param_2)
+void __cdecl _JumpToContinuation(void *target,EHRegistrationNode *pRN)
 
 {
+  long targetEBP;
+  
   ExceptionList = *(void **)ExceptionList;
                     /* WARNING: Could not recover jumptable at 0x00961ceb. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*param_1)();
+  (*target)();
   return;
 }
 
 
 // 00961CF2  _CallMemberFunction0  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:118)
 
-void __cdecl _CallMemberFunction0(void *param_1,void *param_2)
+void __cdecl _CallMemberFunction0(void *pthis_3,void *pmfn_3)
 
 {
   LOCK();
   UNLOCK();
                     /* WARNING: Could not recover jumptable at 0x00961cf7. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*param_2)();
+  (*pmfn_3)();
   return;
 }
 
 
 // 00961CF9  _UnwindNestedFrames  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:218)
 
-void __cdecl _UnwindNestedFrames(EHRegistrationNode *param_1,EHExceptionRecord *param_2)
+void __cdecl _UnwindNestedFrames(EHRegistrationNode *pRN,EHExceptionRecord *pExcept)
 
 {
   void *pvVar1;
+  void *pReturnPoint;
+  EHRegistrationNode *pDispatcherRN;
   
   pvVar1 = ExceptionList;
-  _RtlUnwind_16(param_1,(PVOID)0x961d24,(PEXCEPTION_RECORD)param_2,(PVOID)0x0);
-  param_2->ExceptionFlags = param_2->ExceptionFlags & 0xfffffffd;
+  _RtlUnwind_16(pRN,(PVOID)0x961d24,(PEXCEPTION_RECORD)pExcept,(PVOID)0x0);
+  pExcept->ExceptionFlags = pExcept->ExceptionFlags & 0xfffffffd;
   *(void **)pvVar1 = ExceptionList;
   ExceptionList = pvVar1;
   return;
@@ -46,15 +50,15 @@ void __cdecl _UnwindNestedFrames(EHRegistrationNode *param_1,EHExceptionRecord *
 // 00961D4D  __CxxFrameHandler3  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:341)
 
 _EXCEPTION_DISPOSITION __cdecl
-__CxxFrameHandler3(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *param_3,
-                  void *param_4)
+__CxxFrameHandler3(EHExceptionRecord *pExcept,EHRegistrationNode *pRN,void *pContext,void *pDC)
 
 {
   _s_FuncInfo *in_EAX;
   _EXCEPTION_DISPOSITION _Var1;
+  _EXCEPTION_DISPOSITION result;
   
   _Var1 = __InternalCxxFrameHandler
-                    (param_1,param_2,param_3,param_4,in_EAX,0,(EHRegistrationNode *)0x0,'\0');
+                    (pExcept,pRN,pContext,pDC,in_EAX,0,(EHRegistrationNode *)0x0,'\0');
   return _Var1;
 }
 
@@ -62,27 +66,27 @@ __CxxFrameHandler3(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *
 // 00962046  _CallCatchBlock2  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:485)
 
 void * __cdecl
-_CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,int param_4,
-                ulong param_5)
+_CallCatchBlock2(EHRegistrationNode *pRN,_s_FuncInfo *pFuncInfo,void *handlerAddress,int CatchDepth,
+                ulong NLGCode)
 
 {
   void *extraout_EAX;
-  void *local_1c;
+  void *CGRN;
   code *local_18;
   uint local_14;
   _s_FuncInfo *local_10;
   EHRegistrationNode *local_c;
   int local_8;
   
-  local_14 = __security_cookie ^ (uint)&local_1c;
-  local_10 = param_2;
-  local_8 = param_4 + 1;
+  local_14 = __security_cookie ^ (uint)&CGRN;
+  local_10 = pFuncInfo;
+  local_8 = CatchDepth + 1;
   local_18 = CatchGuardHandler;
-  local_c = param_1;
-  local_1c = ExceptionList;
-  ExceptionList = &local_1c;
-  _CallSettingFrame((ulong)param_3,(ulong)param_1,param_5);
-  ExceptionList = local_1c;
+  local_c = pRN;
+  CGRN = ExceptionList;
+  ExceptionList = &CGRN;
+  _CallSettingFrame((ulong)handlerAddress,(ulong)pRN,NLGCode);
+  ExceptionList = CGRN;
   return extraout_EAX;
 }
 
@@ -92,14 +96,14 @@ _CallCatchBlock2(EHRegistrationNode *param_1,_s_FuncInfo *param_2,void *param_3,
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 _EXCEPTION_DISPOSITION __cdecl
-CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3,void *param_4)
+CatchGuardHandler(EHExceptionRecord *pExcept,CatchGuardRN *pRN,void *pContext,void *__formal)
 
 {
   _EXCEPTION_DISPOSITION _Var1;
   
   _Var1 = __InternalCxxFrameHandler
-                    (param_1,param_2->pRN,param_3,(void *)0x0,param_2->pFuncInfo,param_2->CatchDepth
-                     ,(EHRegistrationNode *)param_2,'\0');
+                    (pExcept,pRN->pRN,pContext,(void *)0x0,pRN->pFuncInfo,pRN->CatchDepth,
+                     (EHRegistrationNode *)pRN,'\0');
   return _Var1;
 }
 
@@ -107,16 +111,16 @@ CatchGuardHandler(EHExceptionRecord *param_1,CatchGuardRN *param_2,void *param_3
 // 00961DB6  _CallSETranslator  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:637)
 
 int __cdecl
-_CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *param_3,void *param_4
-                 ,_s_FuncInfo *param_5,int param_6,EHRegistrationNode *param_7)
+_CallSETranslator(EHExceptionRecord *pExcept,EHRegistrationNode *pRN,void *pContext,void *pDC,
+                 _s_FuncInfo *pFuncInfo,int CatchDepth,EHRegistrationNode *pMarkerRN)
 
 {
   _tiddata *p_Var1;
-  int local_3c;
-  EHExceptionRecord *local_38;
+  int DidTranslate;
+  EHExceptionRecord *pointers;
   void *local_34;
-  code *local_30;
-  undefined4 *local_2c;
+  code *pSETranslator;
+  undefined4 *TGRN;
   code *local_28;
   uint local_24;
   _s_FuncInfo *local_20;
@@ -129,32 +133,32 @@ _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *p
   
   local_c = &stack0xfffffffc;
   local_10 = &stack0xffffffc0;
-  if (param_1 == (EHExceptionRecord *)0x123) {
-    param_2->pNext = (EHRegistrationNode *)0x961e61;
-    local_3c = 1;
+  if (pExcept == (EHExceptionRecord *)0x123) {
+    pRN->pNext = (EHRegistrationNode *)0x961e61;
+    DidTranslate = 1;
   }
   else {
     local_28 = TranslatorGuardHandler;
-    local_24 = __security_cookie ^ (uint)&local_2c;
-    local_20 = param_5;
-    local_1c = param_2;
-    local_18 = param_6;
-    local_14 = param_7;
+    local_24 = __security_cookie ^ (uint)&TGRN;
+    local_20 = pFuncInfo;
+    local_1c = pRN;
+    local_18 = CatchDepth;
+    local_14 = pMarkerRN;
     local_8 = 0;
-    local_2c = ExceptionList;
-    ExceptionList = &local_2c;
-    local_38 = param_1;
-    local_34 = param_3;
+    TGRN = ExceptionList;
+    ExceptionList = &TGRN;
+    pointers = pExcept;
+    local_34 = pContext;
     p_Var1 = _getptd();
-    local_30 = p_Var1->_translator;
-    (*local_30)(param_1->ExceptionCode,&local_38);
-    local_3c = 0;
+    pSETranslator = p_Var1->_translator;
+    (*pSETranslator)(pExcept->ExceptionCode,&pointers);
+    DidTranslate = 0;
     if (local_8 != 0) {
-      *local_2c = *(undefined4 *)ExceptionList;
+      *TGRN = *(undefined4 *)ExceptionList;
     }
-    ExceptionList = local_2c;
+    ExceptionList = TGRN;
   }
-  return local_3c;
+  return DidTranslate;
 }
 
 
@@ -164,27 +168,27 @@ _CallSETranslator(EHExceptionRecord *param_1,EHRegistrationNode *param_2,void *p
 
 _EXCEPTION_DISPOSITION __cdecl
 TranslatorGuardHandler
-          (EHExceptionRecord *param_1,TranslatorGuardRN *param_2,void *param_3,void *param_4)
+          (EHExceptionRecord *pExcept,TranslatorGuardRN *pRN,void *pContext,void *__formal)
 
 {
   _EXCEPTION_DISPOSITION _Var1;
-  EHRegistrationNode *local_8;
+  void *pContinue;
   
-  if ((param_1->ExceptionFlags & 0x66) != 0) {
-    param_2->DidUnwind = 1;
+  if ((pExcept->ExceptionFlags & 0x66) != 0) {
+    pRN->DidUnwind = 1;
     return ExceptionContinueSearch;
   }
   __InternalCxxFrameHandler
-            (param_1,param_2->pRN,param_3,(void *)0x0,param_2->pFuncInfo,param_2->CatchDepth,
-             param_2->pMarkerRN,'\x01');
-  if (param_2->DidUnwind == 0) {
-    _UnwindNestedFrames((EHRegistrationNode *)param_2,param_1);
+            (pExcept,pRN->pRN,pContext,(void *)0x0,pRN->pFuncInfo,pRN->CatchDepth,pRN->pMarkerRN,
+             '\x01');
+  if (pRN->DidUnwind == 0) {
+    _UnwindNestedFrames((EHRegistrationNode *)pRN,pExcept);
   }
-  _CallSETranslator((EHExceptionRecord *)0x123,(EHRegistrationNode *)&local_8,(void *)0x0,
+  _CallSETranslator((EHExceptionRecord *)0x123,(EHRegistrationNode *)&pContinue,(void *)0x0,
                     (void *)0x0,(_s_FuncInfo *)0x0,0,(EHRegistrationNode *)0x0);
                     /* WARNING: Could not recover jumptable at 0x00961f24. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  _Var1 = (*(code *)local_8)();
+  _Var1 = (*pContinue)();
   return _Var1;
 }
 
@@ -192,7 +196,7 @@ TranslatorGuardHandler
 // 00961F2C  _GetRangeOfTrysToCheck  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:848)
 
 _s_TryBlockMapEntry * __cdecl
-_GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_4,uint *param_5)
+_GetRangeOfTrysToCheck(_s_FuncInfo *pFuncInfo,int CatchDepth,int curState,uint *pStart,uint *pEnd)
 
 {
   _s_TryBlockMapEntry *p_Var1;
@@ -201,27 +205,27 @@ _GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_
   uint uVar4;
   uint uVar5;
   
-  p_Var1 = param_1->pTryBlockMap;
-  uVar5 = param_1->nTryBlocks;
+  p_Var1 = pFuncInfo->pTryBlockMap;
+  uVar5 = pFuncInfo->nTryBlocks;
   uVar2 = uVar5;
   uVar3 = uVar5;
-  while (uVar4 = uVar2, -1 < param_2) {
+  while (uVar4 = uVar2, -1 < CatchDepth) {
     if (uVar5 == 0xffffffff) {
                     /* WARNING: Subroutine does not return */
       _inconsistency();
     }
     uVar5 = uVar5 - 1;
-    if (((p_Var1[uVar5].tryHigh < param_3) && (param_3 <= p_Var1[uVar5].catchHigh)) ||
+    if (((p_Var1[uVar5].tryHigh < curState) && (curState <= p_Var1[uVar5].catchHigh)) ||
        (uVar2 = uVar4, uVar5 == 0xffffffff)) {
-      param_2 = param_2 + -1;
+      CatchDepth = CatchDepth + -1;
       uVar2 = uVar5;
       uVar3 = uVar4;
     }
   }
   uVar5 = uVar5 + 1;
-  *param_4 = uVar5;
-  *param_5 = uVar3;
-  if ((uVar3 <= param_1->nTryBlocks) && (uVar5 <= uVar3)) {
+  *pStart = uVar5;
+  *pEnd = uVar3;
+  if ((uVar3 <= pFuncInfo->nTryBlocks) && (uVar5 <= uVar3)) {
     return p_Var1 + uVar5;
   }
                     /* WARNING: Subroutine does not return */
@@ -231,23 +235,23 @@ _GetRangeOfTrysToCheck(_s_FuncInfo *param_1,int param_2,int param_3,uint *param_
 
 // 00961FA1  _CreateFrameInfo  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:889)
 
-FrameInfo * __cdecl _CreateFrameInfo(FrameInfo *param_1,void *param_2)
+FrameInfo * __cdecl _CreateFrameInfo(FrameInfo *pFrameInfo,void *pExceptionObject)
 
 {
   _tiddata *p_Var1;
   
-  param_1->pExceptionObject = param_2;
+  pFrameInfo->pExceptionObject = pExceptionObject;
   p_Var1 = _getptd();
-  param_1->pNext = p_Var1->_pFrameInfoChain;
+  pFrameInfo->pNext = p_Var1->_pFrameInfoChain;
   p_Var1 = _getptd();
-  p_Var1->_pFrameInfoChain = param_1;
-  return param_1;
+  p_Var1->_pFrameInfoChain = pFrameInfo;
+  return pFrameInfo;
 }
 
 
 // 00961FCD  _IsExceptionObjectToBeDestroyed  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:907)
 
-int __cdecl _IsExceptionObjectToBeDestroyed(void *param_1)
+int __cdecl _IsExceptionObjectToBeDestroyed(void *pExceptionObject)
 
 {
   _tiddata *p_Var1;
@@ -259,7 +263,7 @@ int __cdecl _IsExceptionObjectToBeDestroyed(void *param_1)
     if (piVar2 == (int *)0x0) {
       return 1;
     }
-    if ((void *)*piVar2 == param_1) break;
+    if ((void *)*piVar2 == pExceptionObject) break;
     piVar2 = (int *)piVar2[1];
   }
   return 0;
@@ -268,7 +272,7 @@ int __cdecl _IsExceptionObjectToBeDestroyed(void *param_1)
 
 // 00961FF4  _FindAndUnlinkFrame  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/trnsctrl.cpp:926)
 
-void __cdecl _FindAndUnlinkFrame(FrameInfo *param_1)
+void __cdecl _FindAndUnlinkFrame(FrameInfo *pFrameInfo)
 
 {
   FrameInfo *pFVar1;
@@ -276,9 +280,9 @@ void __cdecl _FindAndUnlinkFrame(FrameInfo *param_1)
   FrameInfo *pFVar3;
   
   p_Var2 = _getptd();
-  if (param_1 == p_Var2->_pFrameInfoChain) {
+  if (pFrameInfo == p_Var2->_pFrameInfoChain) {
     p_Var2 = _getptd();
-    p_Var2->_pFrameInfoChain = param_1->pNext;
+    p_Var2->_pFrameInfoChain = pFrameInfo->pNext;
   }
   else {
     p_Var2 = _getptd();
@@ -290,8 +294,8 @@ void __cdecl _FindAndUnlinkFrame(FrameInfo *param_1)
         _inconsistency();
       }
       pFVar1 = pFVar3->pNext;
-    } while (param_1 != pFVar3->pNext);
-    pFVar3->pNext = param_1->pNext;
+    } while (pFrameInfo != pFVar3->pNext);
+    pFVar3->pNext = pFrameInfo->pNext;
   }
   return;
 }

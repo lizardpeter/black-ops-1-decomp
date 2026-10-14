@@ -5,7 +5,7 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _fstat64i32(int param_1,_stat64i32 *param_2)
+int __cdecl _fstat64i32(int fildes,_stat64i32 *buf)
 
 {
   _stat64i32 *p_Var1;
@@ -18,39 +18,40 @@ int __cdecl _fstat64i32(int param_1,_stat64i32 *param_2)
   ushort uVar8;
   int iVar9;
   long64 lVar10;
-  _BY_HANDLE_FILE_INFORMATION local_70;
-  _SYSTEMTIME local_3c;
-  _FILETIME local_2c;
-  int local_20;
+  _BY_HANDLE_FILE_INFORMATION bhfi;
+  _SYSTEMTIME SystemTime;
+  _FILETIME LocalFTime;
+  int _Expr_val;
+  int retval;
   undefined4 uStack_c;
   undefined *local_8;
   
-  p_Var1 = param_2;
+  p_Var1 = buf;
   local_8 = &DAT_00dfa2d0;
   uStack_c = 0xc29bca;
-  local_20 = 0;
-  if (param_2 == (_stat64i32 *)0x0) {
+  retval = 0;
+  if (buf == (_stat64i32 *)0x0) {
     puVar2 = __doserrno();
     *puVar2 = 0;
     piVar3 = _errno();
     *piVar3 = 0x16;
     goto LAB_00c29bef;
   }
-  memset((uchar *)param_2,'\0',0x30);
-  if (param_1 == -2) {
+  memset((uchar *)buf,'\0',0x30);
+  if (fildes == -2) {
     puVar2 = __doserrno();
     *puVar2 = 0;
     piVar3 = _errno();
     *piVar3 = 9;
     return -1;
   }
-  if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-    param_2 = (_stat64i32 *)(&__pioinfo + (param_1 >> 5) * 4);
-    iVar9 = (param_1 & 0x1fU) * 0x40;
-    if ((*(byte *)(param_2->st_dev + 4 + iVar9) & 1) != 0) {
-      __lock_fhandle(param_1);
+  if ((-1 < fildes) && ((uint)fildes < (uint)_nhandle)) {
+    buf = (_stat64i32 *)(&__pioinfo + (fildes >> 5) * 4);
+    iVar9 = (fildes & 0x1fU) * 0x40;
+    if ((*(byte *)(buf->st_dev + 4 + iVar9) & 1) != 0) {
+      __lock_fhandle(fildes);
       local_8 = (undefined *)0x0;
-      puVar4 = (undefined4 *)(param_2->st_dev + iVar9);
+      puVar4 = (undefined4 *)(buf->st_dev + iVar9);
       if ((*(byte *)(puVar4 + 1) & 1) == 0) {
 LAB_00c29c86:
         piVar3 = _errno();
@@ -71,8 +72,8 @@ LAB_00c29c86:
             uVar8 = 0x1000;
           }
           p_Var1->st_mode = uVar8;
-          p_Var1->st_dev = param_1;
-          p_Var1->st_rdev = param_1;
+          p_Var1->st_dev = fildes;
+          p_Var1->st_rdev = fildes;
           p_Var1->st_nlink = 1;
           p_Var1->st_ino = 0;
           p_Var1->st_gid = 0;
@@ -87,9 +88,9 @@ LAB_00c29c86:
             p_Var1->st_size = 0;
           }
           else {
-            BVar7 = PeekNamedPipe(*(HANDLE *)(param_2->st_dev + iVar9),(LPVOID)0x0,0,(LPDWORD)0x0,
-                                  (LPDWORD)&param_2,(LPDWORD)0x0);
-            p_Var1->st_size = -(uint)(BVar7 != 0) & (uint)param_2;
+            BVar7 = PeekNamedPipe(*(HANDLE *)(buf->st_dev + iVar9),(LPVOID)0x0,0,(LPDWORD)0x0,
+                                  (LPDWORD)&buf,(LPDWORD)0x0);
+            p_Var1->st_size = -(uint)(BVar7 != 0) & (uint)buf;
           }
           goto LAB_00c29c95;
         }
@@ -98,60 +99,60 @@ LAB_00c29c86:
         p_Var1->st_uid = 0;
         p_Var1->st_ino = 0;
         p_Var1->st_nlink = 1;
-        BVar7 = GetFileInformationByHandle(*(HANDLE *)(param_2->st_dev + iVar9),&local_70);
+        BVar7 = GetFileInformationByHandle(*(HANDLE *)(buf->st_dev + iVar9),&bhfi);
         if (BVar7 != 0) {
-          if (((byte)local_70.dwFileAttributes & 1) == 0) {
+          if (((byte)bhfi.dwFileAttributes & 1) == 0) {
             uVar8 = p_Var1->st_mode | 0x1b6;
           }
           else {
             uVar8 = p_Var1->st_mode | 0x124;
           }
           p_Var1->st_mode = uVar8;
-          if ((local_70.ftLastWriteTime.dwLowDateTime == 0) &&
-             (local_70.ftLastWriteTime.dwHighDateTime == 0)) {
+          if ((bhfi.ftLastWriteTime.dwLowDateTime == 0) &&
+             (bhfi.ftLastWriteTime.dwHighDateTime == 0)) {
             *(undefined4 *)&p_Var1->st_mtime = 0;
             *(undefined4 *)((int)&p_Var1->st_mtime + 4) = 0;
           }
           else {
-            BVar7 = FileTimeToLocalFileTime(&local_70.ftLastWriteTime,&local_2c);
-            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&local_2c,&local_3c), BVar7 == 0))
+            BVar7 = FileTimeToLocalFileTime(&bhfi.ftLastWriteTime,&LocalFTime);
+            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&LocalFTime,&SystemTime), BVar7 == 0))
             goto LAB_00c29c91;
-            lVar10 = __loctotime64_t((uint)local_3c.wYear,(uint)local_3c.wMonth,(uint)local_3c.wDay,
-                                     (uint)local_3c.wHour,(uint)local_3c.wMinute,
-                                     (uint)local_3c.wSecond,-1);
+            lVar10 = __loctotime64_t((uint)SystemTime.wYear,(uint)SystemTime.wMonth,
+                                     (uint)SystemTime.wDay,(uint)SystemTime.wHour,
+                                     (uint)SystemTime.wMinute,(uint)SystemTime.wSecond,-1);
             p_Var1->st_mtime = lVar10;
           }
-          if ((local_70.ftLastAccessTime.dwLowDateTime == 0) &&
-             (local_70.ftLastAccessTime.dwHighDateTime == 0)) {
+          if ((bhfi.ftLastAccessTime.dwLowDateTime == 0) &&
+             (bhfi.ftLastAccessTime.dwHighDateTime == 0)) {
             *(int *)&p_Var1->st_atime = (int)p_Var1->st_mtime;
             *(undefined4 *)((int)&p_Var1->st_atime + 4) =
                  *(undefined4 *)((int)&p_Var1->st_mtime + 4);
           }
           else {
-            BVar7 = FileTimeToLocalFileTime(&local_70.ftLastAccessTime,&local_2c);
-            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&local_2c,&local_3c), BVar7 == 0))
+            BVar7 = FileTimeToLocalFileTime(&bhfi.ftLastAccessTime,&LocalFTime);
+            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&LocalFTime,&SystemTime), BVar7 == 0))
             goto LAB_00c29c91;
-            lVar10 = __loctotime64_t((uint)local_3c.wYear,(uint)local_3c.wMonth,(uint)local_3c.wDay,
-                                     (uint)local_3c.wHour,(uint)local_3c.wMinute,
-                                     (uint)local_3c.wSecond,-1);
+            lVar10 = __loctotime64_t((uint)SystemTime.wYear,(uint)SystemTime.wMonth,
+                                     (uint)SystemTime.wDay,(uint)SystemTime.wHour,
+                                     (uint)SystemTime.wMinute,(uint)SystemTime.wSecond,-1);
             p_Var1->st_atime = lVar10;
           }
-          if ((local_70.ftCreationTime.dwLowDateTime == 0) &&
-             (local_70.ftCreationTime.dwHighDateTime == 0)) {
+          if ((bhfi.ftCreationTime.dwLowDateTime == 0) && (bhfi.ftCreationTime.dwHighDateTime == 0))
+          {
             *(int *)&p_Var1->st_ctime = (int)p_Var1->st_mtime;
             *(undefined4 *)((int)&p_Var1->st_ctime + 4) =
                  *(undefined4 *)((int)&p_Var1->st_mtime + 4);
           }
           else {
-            BVar7 = FileTimeToLocalFileTime(&local_70.ftCreationTime,&local_2c);
-            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&local_2c,&local_3c), BVar7 == 0))
+            BVar7 = FileTimeToLocalFileTime(&bhfi.ftCreationTime,&LocalFTime);
+            if ((BVar7 == 0) || (BVar7 = FileTimeToSystemTime(&LocalFTime,&SystemTime), BVar7 == 0))
             goto LAB_00c29c91;
-            lVar10 = __loctotime64_t((uint)local_3c.wYear,(uint)local_3c.wMonth,(uint)local_3c.wDay,
-                                     (uint)local_3c.wHour,(uint)local_3c.wMinute,
-                                     (uint)local_3c.wSecond,-1);
+            lVar10 = __loctotime64_t((uint)SystemTime.wYear,(uint)SystemTime.wMonth,
+                                     (uint)SystemTime.wDay,(uint)SystemTime.wHour,
+                                     (uint)SystemTime.wMinute,(uint)SystemTime.wSecond,-1);
             p_Var1->st_ctime = lVar10;
           }
-          p_Var1->st_size = local_70.nFileSizeLow;
+          p_Var1->st_size = bhfi.nFileSizeLow;
           p_Var1->st_mode = p_Var1->st_mode | 0x8000;
           p_Var1->st_dev = 0;
           p_Var1->st_rdev = 0;
@@ -162,11 +163,11 @@ LAB_00c29cce:
         _dosmaperr(DVar5);
       }
 LAB_00c29c91:
-      local_20 = -1;
+      retval = -1;
 LAB_00c29c95:
       local_8 = (undefined *)0xfffffffe;
       FUN_00c29f0b();
-      return local_20;
+      return retval;
     }
   }
   puVar2 = __doserrno();

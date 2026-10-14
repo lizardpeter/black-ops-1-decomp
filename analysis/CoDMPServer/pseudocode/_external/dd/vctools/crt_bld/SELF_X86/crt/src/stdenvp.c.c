@@ -8,52 +8,52 @@ int __cdecl _setenvp(void)
   int extraout_EAX;
   char **ppcVar1;
   int extraout_EAX_00;
-  char *pcVar2;
-  uint uVar3;
-  uchar *puVar4;
-  int iVar5;
+  char *_Dst;
+  uint count;
+  uchar *puVar2;
+  int iVar3;
   
   if (__mbctype_initialized == 0) {
     __initmbctable();
   }
-  iVar5 = 0;
-  puVar4 = (uchar *)_aenvptr;
+  iVar3 = 0;
+  puVar2 = (uchar *)_aenvptr;
   if (_aenvptr != (char *)0x0) {
-    for (; *puVar4 != '\0'; puVar4 = puVar4 + extraout_EAX + 1) {
-      if (*puVar4 != '=') {
-        iVar5 = iVar5 + 1;
+    for (; *puVar2 != '\0'; puVar2 = puVar2 + extraout_EAX + 1) {
+      if (*puVar2 != '=') {
+        iVar3 = iVar3 + 1;
       }
-      strlen(puVar4);
+      strlen(puVar2);
     }
-    ppcVar1 = _calloc_crt(iVar5 + 1,4);
-    puVar4 = (uchar *)_aenvptr;
+    ppcVar1 = _calloc_crt(iVar3 + 1,4);
+    puVar2 = (uchar *)_aenvptr;
     _environ = ppcVar1;
     if (ppcVar1 != (char **)0x0) {
       do {
-        if (*puVar4 == '\0') {
+        if (*puVar2 == '\0') {
           free(_aenvptr);
           _aenvptr = (char *)0x0;
           *ppcVar1 = (char *)0x0;
           __env_initialized = 1;
           return 0;
         }
-        strlen(puVar4);
-        uVar3 = extraout_EAX_00 + 1;
-        if (*puVar4 != '=') {
-          pcVar2 = _calloc_crt(uVar3,1);
-          *ppcVar1 = pcVar2;
-          if (pcVar2 == (char *)0x0) {
+        strlen(puVar2);
+        count = extraout_EAX_00 + 1;
+        if (*puVar2 != '=') {
+          _Dst = _calloc_crt(count,1);
+          *ppcVar1 = _Dst;
+          if (_Dst == (char *)0x0) {
             free(_environ);
             _environ = (char **)0x0;
             return -1;
           }
-          iVar5 = strcpy_s(pcVar2,uVar3,(char *)puVar4);
-          if (iVar5 != 0) {
+          iVar3 = strcpy_s(_Dst,count,(char *)puVar2);
+          if (iVar3 != 0) {
             _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
           }
           ppcVar1 = ppcVar1 + 1;
         }
-        puVar4 = puVar4 + uVar3;
+        puVar2 = puVar2 + count;
       } while( true );
     }
   }

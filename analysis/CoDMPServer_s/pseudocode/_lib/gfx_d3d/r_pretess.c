@@ -2,7 +2,9 @@
 
 // 0085E420  R_MergeAndEmitDrawSurfLists  (gfx_d3d/r_pretess.cpp:319)
 
-void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndData *param_3)
+/* WARNING: Variable defined which should be unmapped: primarySortKey */
+
+void __cdecl R_MergeAndEmitDrawSurfLists(uint data,uint param_2,GfxBackEndData *param_3)
 
 {
   GfxDrawSurf *pGVar1;
@@ -18,12 +20,14 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
   uint uVar8;
   uint uVar9;
   int iVar10;
+  uint stageCount;
+  uint primarySortKey;
   uint uStack_14c;
   uchar *apuStack_140 [40];
   uint auStack_a0 [40];
   
   iVar10 = 0x8000 - *(int *)(param_2 + 0x15d7a4);
-  if ((0 < iVar10) && (uVar6 = 0, param_1 != 0)) {
+  if ((0 < iVar10) && (uVar6 = 0, data != 0)) {
     plVar7 = scene.drawSurfCount + in_EDX;
     do {
       if (iVar10 < *plVar7) {
@@ -38,8 +42,8 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
         uVar6 = uVar6 + 1;
       }
       plVar7 = plVar7 + 1;
-      param_1 = param_1 - 1;
-    } while (param_1 != 0);
+      data = data - 1;
+    } while (data != 0);
     if (uVar6 != 0) {
       while (uVar6 != 1) {
         _aullshr();

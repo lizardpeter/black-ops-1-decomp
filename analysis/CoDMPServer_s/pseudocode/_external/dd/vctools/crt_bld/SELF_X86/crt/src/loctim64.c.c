@@ -2,7 +2,7 @@
 
 // 0095E9B5  _localtime64_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/loctim64.c:62)
 
-int __cdecl _localtime64_s(tm *param_1,long64 *param_2)
+int __cdecl _localtime64_s(tm *ptm,long64 *ptime)
 
 {
   uint uVar1;
@@ -14,103 +14,103 @@ int __cdecl _localtime64_s(tm *param_1,long64 *param_2)
   int extraout_EAX_02;
   int extraout_EDX;
   bool bVar4;
-  uint local_18;
+  uint ltime;
   int local_14;
-  uint local_10;
-  int local_c;
-  uint local_8;
+  long dstbias;
+  int daylight;
+  long timezone;
   
-  local_c = 0;
-  local_10 = 0;
-  local_8 = 0;
-  if (param_1 == (tm *)0x0) {
+  daylight = 0;
+  dstbias = 0;
+  timezone = 0;
+  if (ptm == (tm *)0x0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x16;
   }
-  memset((uchar *)param_1,0xff,0x24);
-  if (param_2 == (long64 *)0x0) {
+  memset((uchar *)ptm,0xff,0x24);
+  if (ptime == (long64 *)0x0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x16;
   }
-  iVar3 = *(int *)((int)param_2 + 4);
-  if (((iVar3 < 1) && (iVar3 < 0)) ||
-     ((6 < iVar3 && ((7 < iVar3 || (0x93406fff < (uint)*param_2)))))) {
+  iVar3 = *(int *)((int)ptime + 4);
+  if (((iVar3 < 1) && (iVar3 < 0)) || ((6 < iVar3 && ((7 < iVar3 || (0x93406fff < (uint)*ptime))))))
+  {
     piVar2 = _errno();
     *piVar2 = 0x16;
     return 0x16;
   }
   __tzset();
-  iVar3 = _get_daylight(&local_c);
+  iVar3 = _get_daylight(&daylight);
   if (iVar3 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar3 = _get_dstbias((long *)&local_10);
+  iVar3 = _get_dstbias(&dstbias);
   if (iVar3 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar3 = _get_timezone((long *)&local_8);
+  iVar3 = _get_timezone(&timezone);
   if (iVar3 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar3 = *(int *)((int)param_2 + 4);
-  uVar1 = (uint)*param_2;
+  iVar3 = *(int *)((int)ptime + 4);
+  uVar1 = (uint)*ptime;
   if ((-1 < iVar3) && ((0 < iVar3 || (0x3f480 < uVar1)))) {
-    local_18 = uVar1 - local_8;
-    local_14 = (iVar3 - ((int)local_8 >> 0x1f)) - (uint)(uVar1 < local_8);
-    iVar3 = _gmtime64_s(param_1,(long64 *)&local_18);
+    ltime = uVar1 - timezone;
+    local_14 = (iVar3 - (timezone >> 0x1f)) - (uint)(uVar1 < (uint)timezone);
+    iVar3 = _gmtime64_s(ptm,(long64 *)&ltime);
     if (iVar3 != 0) {
       return iVar3;
     }
-    if (local_c == 0) {
+    if (daylight == 0) {
       return 0;
     }
-    iVar3 = _isindst(param_1);
+    iVar3 = _isindst(ptm);
     if (iVar3 == 0) {
       return 0;
     }
-    bVar4 = local_18 < local_10;
-    local_18 = local_18 - local_10;
-    local_14 = (local_14 - ((int)local_10 >> 0x1f)) - (uint)bVar4;
-    iVar3 = _gmtime64_s(param_1,(long64 *)&local_18);
+    bVar4 = ltime < (uint)dstbias;
+    ltime = ltime - dstbias;
+    local_14 = (local_14 - (dstbias >> 0x1f)) - (uint)bVar4;
+    iVar3 = _gmtime64_s(ptm,(long64 *)&ltime);
     if (iVar3 == 0) {
-      param_1->tm_isdst = 1;
+      ptm->tm_isdst = 1;
       return 0;
     }
     return iVar3;
   }
-  iVar3 = _gmtime64_s(param_1,param_2);
+  iVar3 = _gmtime64_s(ptm,ptime);
   if (iVar3 != 0) {
     return iVar3;
   }
-  if ((local_c != 0) && (iVar3 = _isindst(param_1), iVar3 != 0)) {
-    param_1->tm_isdst = 1;
+  if ((daylight != 0) && (iVar3 = _isindst(ptm), iVar3 != 0)) {
+    ptm->tm_isdst = 1;
   }
   _allrem();
-  param_1->tm_sec = extraout_EAX;
+  ptm->tm_sec = extraout_EAX;
   if (extraout_EAX < 0) {
-    param_1->tm_sec = extraout_EAX + 0x3c;
+    ptm->tm_sec = extraout_EAX + 0x3c;
   }
   _alldiv();
   _allrem();
-  param_1->tm_min = extraout_EAX_00;
+  ptm->tm_min = extraout_EAX_00;
   if (extraout_EAX_00 < 0) {
-    param_1->tm_min = extraout_EAX_00 + 0x3c;
+    ptm->tm_min = extraout_EAX_00 + 0x3c;
   }
   _alldiv();
   _allrem();
-  param_1->tm_hour = extraout_EAX_01;
+  ptm->tm_hour = extraout_EAX_01;
   if (extraout_EAX_01 < 0) {
-    param_1->tm_hour = extraout_EAX_01 + 0x18;
+    ptm->tm_hour = extraout_EAX_01 + 0x18;
   }
   _alldiv();
   if (-1 < extraout_EDX) {
     if ((0 < extraout_EDX) || (extraout_EAX_02 != 0)) {
-      param_1->tm_mday = param_1->tm_mday + extraout_EAX_02;
-      param_1->tm_wday = (param_1->tm_wday + extraout_EAX_02) % 7;
+      ptm->tm_mday = ptm->tm_mday + extraout_EAX_02;
+      ptm->tm_wday = (ptm->tm_wday + extraout_EAX_02) % 7;
       goto LAB_0095ec24;
     }
     if (0 < extraout_EDX) {
@@ -120,36 +120,36 @@ int __cdecl _localtime64_s(tm *param_1,long64 *param_2)
       return 0;
     }
   }
-  param_1->tm_mday = param_1->tm_mday + extraout_EAX_02;
-  param_1->tm_wday = (extraout_EAX_02 + 7 + param_1->tm_wday) % 7;
-  if (param_1->tm_mday < 1) {
-    param_1->tm_yday = param_1->tm_yday + extraout_EAX_02 + 0x16d;
-    param_1->tm_year = param_1->tm_year + -1;
-    param_1->tm_mday = param_1->tm_mday + 0x1f;
-    param_1->tm_mon = 0xb;
+  ptm->tm_mday = ptm->tm_mday + extraout_EAX_02;
+  ptm->tm_wday = (extraout_EAX_02 + 7 + ptm->tm_wday) % 7;
+  if (ptm->tm_mday < 1) {
+    ptm->tm_yday = ptm->tm_yday + extraout_EAX_02 + 0x16d;
+    ptm->tm_year = ptm->tm_year + -1;
+    ptm->tm_mday = ptm->tm_mday + 0x1f;
+    ptm->tm_mon = 0xb;
     return 0;
   }
 LAB_0095ec24:
-  param_1->tm_yday = param_1->tm_yday + extraout_EAX_02;
+  ptm->tm_yday = ptm->tm_yday + extraout_EAX_02;
   return 0;
 }
 
 
 // 0095EC6D  _localtime64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/loctim64.c:234)
 
-tm * __cdecl _localtime64(long64 *param_1)
+tm * __cdecl _localtime64(long64 *ptime)
 
 {
-  tm *ptVar1;
-  int iVar2;
-  tm *ptVar3;
+  tm *ptm;
+  int iVar1;
+  tm *ptVar2;
   
-  ptVar1 = __getgmtimebuf();
-  ptVar3 = (tm *)0x0;
-  if (ptVar1 != (tm *)0x0) {
-    iVar2 = _localtime64_s(ptVar1,param_1);
-    ptVar3 = (tm *)(~-(uint)(iVar2 != 0) & (uint)ptVar1);
+  ptm = __getgmtimebuf();
+  ptVar2 = (tm *)0x0;
+  if (ptm != (tm *)0x0) {
+    iVar1 = _localtime64_s(ptm,ptime);
+    ptVar2 = (tm *)(~-(uint)(iVar1 != 0) & (uint)ptm);
   }
-  return ptVar3;
+  return ptVar2;
 }
 

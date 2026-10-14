@@ -19,17 +19,17 @@ uint __cdecl bdPlatformTiming::getLoResTimeStamp(void)
 char * _HTErrnoString(void)
 
 {
-  char *pcVar1;
+  char *string;
   
-  pcVar1 = (char *)_HTMemory_malloc(0x40,0);
-  if (pcVar1 == (char *)0x0) {
+  string = (char *)_HTMemory_malloc(0x40,0);
+  if (string == (char *)0x0) {
     _HTMemory_outofmem("HTErrnoString",
                        "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTInet.c",0x2a);
   }
-  *pcVar1 = '\0';
+  *string = '\0';
   _WSAGetLastError_0();
-  sprintf(pcVar1,"WinSock reported error=%ld");
-  return pcVar1;
+  sprintf(string,"WinSock reported error=%ld");
+  return string;
 }
 
 
@@ -245,7 +245,7 @@ uchar * _HTGetTmpFileName(uchar *param_1)
 {
   uchar uVar1;
   int extraout_EAX;
-  uchar *puVar2;
+  uchar *dst;
   int extraout_EAX_00;
   uchar *extraout_EAX_01;
   int local_18;
@@ -260,18 +260,18 @@ uchar * _HTGetTmpFileName(uchar *param_1)
     strlen(param_1);
     local_18 = extraout_EAX;
   }
-  puVar2 = (uchar *)_HTMemory_malloc(local_18 + 0x10);
-  if (puVar2 == (uchar *)0x0) {
+  dst = (uchar *)_HTMemory_malloc(local_18 + 0x10);
+  if (dst == (uchar *)0x0) {
     _HTMemory_outofmem("HTGetTmpFileName",
                        "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTInet.c",0x279);
   }
   if (param_1 == (uchar *)0x0) {
-    tmpnam((char *)puVar2);
+    tmpnam((char *)dst);
   }
   else {
-    strcpy(puVar2,param_1);
-    strlen(puVar2);
-    local_8 = puVar2 + extraout_EAX_00;
+    strcpy(dst,param_1);
+    strlen(dst);
+    local_8 = dst + extraout_EAX_00;
     if (local_8[-1] != '\\') {
       *local_8 = '\\';
       local_8 = local_8 + 1;
@@ -289,6 +289,6 @@ uchar * _HTGetTmpFileName(uchar *param_1)
       } while (uVar1 != '\0');
     }
   }
-  return puVar2;
+  return dst;
 }
 

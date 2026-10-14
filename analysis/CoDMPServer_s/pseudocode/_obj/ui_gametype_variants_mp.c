@@ -1594,7 +1594,7 @@ void __cdecl Scr_GameVariants_AddConditional(GVRule *param_1)
   double dVar3;
   scriptInstance_t in_stack_00000008;
   scriptInstance_t sVar4;
-  char *pcVar5;
+  char *nptr;
   
   if (param_1[0x106] == (GVRule)0x0) {
     return;
@@ -1605,18 +1605,18 @@ void __cdecl Scr_GameVariants_AddConditional(GVRule *param_1)
   Scr_AddArrayStringIndexed(sVar4,(scriptInstance_t)unaff_EDI);
   Scr_AddString((char *)0x0,sVar4);
   Scr_AddArrayStringIndexed((uint)unaff_EDI,unaff_ESI);
-  pcVar5 = *(char **)(*(int *)(&DAT_00aee384 + (uint)(byte)GVar1 * 0x18) + 4 +
-                     (uint)(byte)param_1[0x109] * 8);
+  nptr = *(char **)(*(int *)(&DAT_00aee384 + (uint)(byte)GVar1 * 0x18) + 4 +
+                   (uint)(byte)param_1[0x109] * 8);
   switch(*(undefined4 *)(&DAT_00aee38c + (uint)(byte)GVar1 * 0x18)) {
   case 0:
     break;
   case 1:
-    iVar2 = atoi(pcVar5);
-    Scr_AddInt(iVar2,(scriptInstance_t)pcVar5);
+    iVar2 = atoi(nptr);
+    Scr_AddInt(iVar2,(scriptInstance_t)nptr);
     Scr_AddArrayStringIndexed((uint)param_1,in_stack_00000008);
     return;
   case 2:
-    dVar3 = atof(pcVar5);
+    dVar3 = atof(nptr);
     Scr_AddFloat((float)dVar3,(scriptInstance_t)unaff_EDI);
     Scr_AddArrayStringIndexed((uint)param_1,in_stack_00000008);
     return;
@@ -1626,8 +1626,8 @@ void __cdecl Scr_GameVariants_AddConditional(GVRule *param_1)
     Scr_AddArrayStringIndexed((uint)param_1,in_stack_00000008);
     return;
   }
-  iVar2 = I_strnicmp(pcVar5,unaff_EDI,unaff_ESI);
-  if ((iVar2 != 0) && (iVar2 = I_strnicmp(pcVar5,unaff_EDI,unaff_ESI), iVar2 != 0)) {
+  iVar2 = I_strnicmp(nptr,unaff_EDI,unaff_ESI);
+  if ((iVar2 != 0) && (iVar2 = I_strnicmp(nptr,unaff_EDI,unaff_ESI), iVar2 != 0)) {
     Scr_AddInt(1,(scriptInstance_t)unaff_EDI);
     Scr_AddArrayStringIndexed((uint)param_1,in_stack_00000008);
     return;
@@ -1650,7 +1650,7 @@ void __cdecl Scr_GameVariants_AddParams(GVRule *param_1)
   scriptInstance_t unaff_EDI;
   double dVar3;
   scriptInstance_t in_stack_00000008;
-  GVRule *pGVar4;
+  GVRule *nptr;
   
   GVar1 = param_1[2];
   if ((&DAT_00aedfb8)[(uint)(byte)GVar1 * 0x14] == '\0') {
@@ -1659,9 +1659,9 @@ void __cdecl Scr_GameVariants_AddParams(GVRule *param_1)
   Scr_MakeArray(unaff_EDI);
   switch((&DAT_00aedfb8)[(uint)(byte)GVar1 * 0x14]) {
   case 1:
-    pGVar4 = param_1 + 4;
-    iVar2 = atoi((char *)pGVar4);
-    Scr_AddInt(iVar2,(scriptInstance_t)pGVar4);
+    nptr = param_1 + 4;
+    iVar2 = atoi((char *)nptr);
+    Scr_AddInt(iVar2,(scriptInstance_t)nptr);
     break;
   case 2:
     dVar3 = atof((char *)(param_1 + 4));

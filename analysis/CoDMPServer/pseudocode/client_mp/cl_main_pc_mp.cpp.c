@@ -22,7 +22,7 @@ bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(bdReference<bdByteBuffer> 
 // 005A5DB0  operator=  (<external>/projects_pc/cod/codsrc/DemonWare/bdcore/bdreference/bdreference.inl:68)
 
 void __thiscall
-bdReference<bdCommonAddr>::operator=(bdReference<bdCommonAddr> *this,bdCommonAddr *param_1)
+bdReference<bdCommonAddr>::operator=(bdReference<bdCommonAddr> *this,bdCommonAddr *p_3)
 
 {
   bdCommonAddr *pbVar1;
@@ -32,7 +32,7 @@ bdReference<bdCommonAddr>::operator=(bdReference<bdCommonAddr> *this,bdCommonAdd
      (this->m_ptr != (bdCommonAddr *)0x0)) {
     (**(code **)this->m_ptr->_padding_)(1);
   }
-  this->m_ptr = param_1;
+  this->m_ptr = p_3;
   if (this->m_ptr != (bdCommonAddr *)0x0) {
     InterlockedIncrement(&this->m_ptr->_padding_);
   }
@@ -87,89 +87,91 @@ netadr_t * __cdecl CL_GetLastRconAddress(void)
 
 // 00568110  CL_SetServerInfo  (client_mp/cl_main_pc_mp.cpp:130)
 
-void __cdecl CL_SetServerInfo(serverInfo_t *param_1,char *param_2,int param_3)
+void __cdecl CL_SetServerInfo(serverInfo_t *server,char *info,int ping)
 
 {
   char *pcVar1;
   int iVar2;
+  char *countrycode;
+  char *longname;
   
-  if (param_1 != (serverInfo_t *)0x0) {
-    if (param_2 != (char *)0x0) {
-      pcVar1 = Info_ValueForKey(param_2,"nettype");
+  if (server != (serverInfo_t *)0x0) {
+    if (info != (char *)0x0) {
+      pcVar1 = Info_ValueForKey(info,"nettype");
       iVar2 = atoi(pcVar1);
-      param_1->netType = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"minping");
+      server->netType = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"minping");
       iVar2 = atoi(pcVar1);
-      param_1->minPing = (short)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"maxping");
+      server->minPing = (short)iVar2;
+      pcVar1 = Info_ValueForKey(info,"maxping");
       iVar2 = atoi(pcVar1);
-      param_1->maxPing = (short)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"sv_allowAnonymous");
+      server->maxPing = (short)iVar2;
+      pcVar1 = Info_ValueForKey(info,"sv_allowAnonymous");
       iVar2 = atoi(pcVar1);
-      param_1->allowAnonymous = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"con_disabled");
+      server->allowAnonymous = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"con_disabled");
       iVar2 = atoi(pcVar1);
-      param_1->consoleDisabled = (char)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"pswrd");
+      server->consoleDisabled = (char)iVar2;
+      pcVar1 = Info_ValueForKey(info,"pswrd");
       iVar2 = atoi(pcVar1);
-      param_1->bPassword = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"pure");
+      server->bPassword = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"pure");
       iVar2 = atoi(pcVar1);
-      param_1->pure = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"ff");
+      server->pure = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"ff");
       iVar2 = atoi(pcVar1);
-      param_1->friendlyfire = (char)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"kc");
+      server->friendlyfire = (char)iVar2;
+      pcVar1 = Info_ValueForKey(info,"kc");
       iVar2 = atoi(pcVar1);
-      param_1->killcam = (char)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"hc");
+      server->killcam = (char)iVar2;
+      pcVar1 = Info_ValueForKey(info,"hc");
       iVar2 = atoi(pcVar1);
-      param_1->hardcore = (char)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"hw");
+      server->hardcore = (char)iVar2;
+      pcVar1 = Info_ValueForKey(info,"hw");
       iVar2 = atoi(pcVar1);
-      param_1->hardware = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"mod");
+      server->hardware = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"mod");
       iVar2 = atoi(pcVar1);
-      param_1->mod = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"wagerbet");
+      server->mod = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"wagerbet");
       iVar2 = atoi(pcVar1);
-      *(int *)(param_1->city + 0x16) = iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"playlist");
+      *(int *)(server->city + 0x16) = iVar2;
+      pcVar1 = Info_ValueForKey(info,"playlist");
       iVar2 = atoi(pcVar1);
-      *(int *)param_1[1].xnaddr.addrBuff = iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"clients");
+      *(int *)server[1].xnaddr.addrBuff = iVar2;
+      pcVar1 = Info_ValueForKey(info,"clients");
       iVar2 = atoi(pcVar1);
-      param_1->clients = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"voice");
+      server->clients = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"voice");
       iVar2 = atoi(pcVar1);
-      param_1->voice = (uchar)iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"pb");
+      server->voice = (uchar)iVar2;
+      pcVar1 = Info_ValueForKey(info,"pb");
       iVar2 = atoi(pcVar1);
-      param_1->punkbuster = 0 < iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"basic");
+      server->punkbuster = 0 < iVar2;
+      pcVar1 = Info_ValueForKey(info,"basic");
       iVar2 = atoi(pcVar1);
-      param_1[1].xnaddr.addrBuff[8] = 0 < iVar2;
-      pcVar1 = Info_ValueForKey(param_2,"customclass");
+      server[1].xnaddr.addrBuff[8] = 0 < iVar2;
+      pcVar1 = Info_ValueForKey(info,"customclass");
       iVar2 = atoi(pcVar1);
-      param_1[1].xnaddr.addrBuff[9] = 0 < iVar2;
-      memset(param_1[1].xnaddr.addrBuff + 10,'\0',0x40);
-      pcVar1 = Info_ValueForKey(param_2,"geolocation");
+      server[1].xnaddr.addrBuff[9] = 0 < iVar2;
+      memset(server[1].xnaddr.addrBuff + 10,'\0',0x40);
+      pcVar1 = Info_ValueForKey(info,"geolocation");
       pcVar1 = CL_LongNameForShortName(pcVar1);
       if (pcVar1 == (char *)0x0) {
         iVar2 = 0x40;
-        pcVar1 = Info_ValueForKey(param_2,"geolocation");
-        I_strncpyz((char *)(param_1[1].xnaddr.addrBuff + 10),pcVar1,iVar2);
+        pcVar1 = Info_ValueForKey(info,"geolocation");
+        I_strncpyz((char *)(server[1].xnaddr.addrBuff + 10),pcVar1,iVar2);
       }
       else {
-        I_strncpyz((char *)(param_1[1].xnaddr.addrBuff + 10),pcVar1,0x40);
+        I_strncpyz((char *)(server[1].xnaddr.addrBuff + 10),pcVar1,0x40);
       }
-      if (*(int *)(param_1[1].xnaddr.addrBuff + 4) == 5) {
-        pcVar1 = Info_ValueForKey(param_2,"countrycode");
-        I_strncpyz((char *)((int)&param_1[1].nonce + 2),pcVar1,3);
+      if (*(int *)(server[1].xnaddr.addrBuff + 4) == 5) {
+        pcVar1 = Info_ValueForKey(info,"countrycode");
+        I_strncpyz((char *)((int)&server[1].nonce + 2),pcVar1,3);
       }
     }
-    param_1->gotInfo = '\x01';
-    param_1->ping = (short)param_3;
+    server->gotInfo = '\x01';
+    server->ping = (short)ping;
   }
   return;
 }
@@ -180,43 +182,43 @@ void __cdecl CL_SetServerInfo(serverInfo_t *param_1,char *param_2,int param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_ServerInfoPacket(bdSecurityID *param_1,msg_t *param_2,int param_3)
+void __cdecl CL_ServerInfoPacket(bdSecurityID *secID,msg_t *msg,int time)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   int local_428;
-  int *local_420;
-  char local_41c [1024];
+  int prot;
+  int *numServers;
+  char strBuf [1024];
   uint local_1c;
-  char *local_18;
-  serverInfo_t *local_14;
-  char *local_10;
-  serverInfo_t *local_c;
-  int local_8;
+  char *ptr;
+  serverInfo_t *server;
+  char *infoString;
+  serverInfo_t *servers;
+  int pingTime;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  CL_GetServerList(cls.pingUpdateSource,&local_c,&local_420);
-  if (local_c != (serverInfo_t *)0x0) {
-    local_10 = MSG_ReadString(param_2,local_41c,0x400);
-    pcVar1 = Info_ValueForKey(local_10,"protocol");
-    iVar2 = atoi(pcVar1);
-    local_18 = Dvar_GetString("debug_protocol");
-    if (*local_18 == '\0') {
+  CL_GetServerList(cls.pingUpdateSource,&servers,&numServers);
+  if (servers != (serverInfo_t *)0x0) {
+    infoString = MSG_ReadString(msg,strBuf,0x400);
+    nptr = Info_ValueForKey(infoString,"protocol");
+    iVar1 = atoi(nptr);
+    ptr = Dvar_GetString("debug_protocol");
+    if (*ptr == '\0') {
       local_428 = 0x414;
     }
     else {
-      local_428 = atoi(local_18);
+      local_428 = atoi(ptr);
     }
-    if (iVar2 == local_428) {
-      local_14 = FindServerBySecID(param_1,cls.pingUpdateSource);
-      if (local_14 == (serverInfo_t *)0x0) {
+    if (iVar1 == local_428) {
+      server = FindServerBySecID(secID,cls.pingUpdateSource);
+      if (server == (serverInfo_t *)0x0) {
         Com_DPrintf(0xe,"Got ping response from %llu, but no match was found. Hax?\n");
       }
-      else if ((local_14->pingedTime != 0) &&
-              (local_8 = param_3 - local_14->pingedTime, -1 < local_8)) {
+      else if ((server->pingedTime != 0) && (pingTime = time - server->pingedTime, -1 < pingTime)) {
         Com_DPrintf(0xe,"ping time %dms from %s\n");
-        CL_SetServerInfo(local_14,local_10,local_8);
+        CL_SetServerInfo(server,infoString,pingTime);
       }
     }
     else {
@@ -230,99 +232,104 @@ void __cdecl CL_ServerInfoPacket(bdSecurityID *param_1,msg_t *param_2,int param_
 // 005685D0  CL_Connect  (client_mp/cl_main_pc_mp.cpp:403)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_Connect(serverInfo_t *param_1)
+void __cdecl CL_Connect(serverInfo_t *server)
 
 {
-  netadr_t nVar1;
-  netadr_t nVar2;
-  ushort uVar3;
-  clientUIActive_t *pcVar4;
-  clientConnection_t *pcVar5;
-  connstate_t cVar6;
-  int iVar7;
-  char *pcVar8;
-  undefined1 uVar9;
-  undefined1 uVar10;
-  undefined2 uVar11;
-  bdSessionID local_14;
+  netadr_t adr;
+  netadr_t adr_00;
+  ushort uVar1;
+  clientUIActive_t *pcVar2;
+  clientConnection_t *pcVar3;
+  connstate_t cVar4;
+  int iVar5;
+  char *value;
+  undefined1 uVar6;
+  undefined1 uVar7;
+  undefined2 uVar8;
+  clientActive_t *cl;
+  bool wasconnected;
+  connstate_t connstate;
+  clientUIActive_t *clUI;
+  clientConnection_t *clc;
+  bdSessionID sessionID;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdSessionID::bdSessionID(&local_14);
-  local_14.m_sessionID.ab._0_4_ = *(undefined4 *)(param_1->xnkid).ab;
-  local_14.m_sessionID.ab._4_4_ = *(undefined4 *)((param_1->xnkid).ab + 4);
-  dwSetSessionID(&local_14);
-  pcVar4 = CL_GetLocalClientUIGlobals(0);
+  bdSessionID::bdSessionID(&sessionID);
+  sessionID.m_sessionID.ab._0_4_ = *(undefined4 *)(server->xnkid).ab;
+  sessionID.m_sessionID.ab._4_4_ = *(undefined4 *)((server->xnkid).ab + 4);
+  dwSetSessionID(&sessionID);
+  pcVar2 = CL_GetLocalClientUIGlobals(0);
   CL_GetLocalClientGlobals(0);
-  pcVar5 = CL_GetLocalClientConnection(0);
-  pcVar5->serverMessage[0] = '\0';
-  cVar6 = CL_GetLocalClientConnectionState(0);
-  if ((int)cVar6 < 6) {
+  pcVar3 = CL_GetLocalClientConnection(0);
+  pcVar3->serverMessage[0] = '\0';
+  cVar4 = CL_GetLocalClientConnectionState(0);
+  if ((int)cVar4 < 6) {
     Dvar_SetBoolByName("cl_wasconnected",false);
   }
   else {
     Dvar_SetBoolByName("cl_wasconnected",true);
     SND_StopSounds(SND_STOP_ALL);
-    pcVar4->keyCatchers = 0;
+    pcVar2->keyCatchers = 0;
   }
-  CL_SetupClientsForIngame(param_1->mapName);
+  CL_SetupClientsForIngame(server->mapName);
   CL_AllocatePerLocalClientMemory((char *)0x0,0);
   SV_KillLocalServer();
   CCS_ClearConstantConfigStrings();
   cl_serverLoadingMap = false;
-  uVar9 = 0;
-  uVar10 = 0;
-  uVar11 = 0;
-  iVar7 = Com_LocalClient_GetControllerIndex(0);
-  SV_Frame(iVar7,CONCAT22(uVar11,CONCAT11(uVar10,uVar9)));
+  uVar6 = 0;
+  uVar7 = 0;
+  uVar8 = 0;
+  iVar5 = Com_LocalClient_GetControllerIndex(0);
+  SV_Frame(iVar5,CONCAT22(uVar8,CONCAT11(uVar7,uVar6)));
   Cmd_ExecuteSingleCommand(0,0,"fileShareAbortOperation");
   CL_Disconnect(0,true);
   Con_Close(0);
-  dwRegisterSecIDAndKey(&param_1->xnkid,&param_1->xnkey);
-  dwCommonAddrToNetadr(&param_1->adr,(uchar *)param_1,&param_1->xnkid);
-  I_strncpyz(cls.servername,param_1->hostName,0x100);
-  (pcVar5->serverAddress).type = (param_1->adr).type;
-  *(undefined4 *)(pcVar5->serverAddress).ip = *(undefined4 *)(param_1->adr).ip;
-  uVar11 = *(undefined2 *)&(param_1->adr).field_0xa;
-  (pcVar5->serverAddress).port = (param_1->adr).port;
-  *(undefined2 *)&(pcVar5->serverAddress).field_0xa = uVar11;
-  (pcVar5->serverAddress).addrHandleIndex = (param_1->adr).addrHandleIndex;
-  if ((pcVar5->serverAddress).port == 0) {
-    uVar3 = BigShort(0xc02);
-    (pcVar5->serverAddress).port = uVar3;
+  dwRegisterSecIDAndKey(&server->xnkid,&server->xnkey);
+  dwCommonAddrToNetadr(&server->adr,(uchar *)server,&server->xnkid);
+  I_strncpyz(cls.servername,server->hostName,0x100);
+  (pcVar3->serverAddress).type = (server->adr).type;
+  *(undefined4 *)(pcVar3->serverAddress).ip = *(undefined4 *)(server->adr).ip;
+  uVar8 = *(undefined2 *)&(server->adr).field_0xa;
+  (pcVar3->serverAddress).port = (server->adr).port;
+  *(undefined2 *)&(pcVar3->serverAddress).field_0xa = uVar8;
+  (pcVar3->serverAddress).addrHandleIndex = (server->adr).addrHandleIndex;
+  if ((pcVar3->serverAddress).port == 0) {
+    uVar1 = BigShort(0xc02);
+    (pcVar3->serverAddress).port = uVar1;
   }
-  BigShort((pcVar5->serverAddress).port);
+  BigShort((pcVar3->serverAddress).port);
   Com_Printf(0,"%s resolved to %i.%i.%i.%i:%i\n");
-  iVar7 = (pcVar5->serverAddress).addrHandleIndex;
-  nVar1.addrHandleIndex._1_1_ = (char)((uint)iVar7 >> 8);
-  nVar1._0_13_ = *(undefined1 (*) [13])&pcVar5->serverAddress;
-  nVar1.addrHandleIndex._2_2_ = (short)((uint)iVar7 >> 0x10);
-  iVar7 = NET_IsLocalAddress(nVar1);
-  if ((iVar7 == 0) && (iVar7 = CL_LocalClient_GetActiveCount(), iVar7 == 0)) {
+  iVar5 = (pcVar3->serverAddress).addrHandleIndex;
+  adr.addrHandleIndex._1_1_ = (char)((uint)iVar5 >> 8);
+  adr._0_13_ = *(undefined1 (*) [13])&pcVar3->serverAddress;
+  adr.addrHandleIndex._2_2_ = (short)((uint)iVar5 >> 0x10);
+  iVar5 = NET_IsLocalAddress(adr);
+  if ((iVar5 == 0) && (iVar5 = CL_LocalClient_GetActiveCount(), iVar5 == 0)) {
     Com_Error(ERR_DROP,"EXE_ERR_INVALID_CD_KEY");
-    bdTaskResult::~bdTaskResult((bdTaskResult *)&local_14);
+    bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
     return;
   }
-  iVar7 = (pcVar5->serverAddress).addrHandleIndex;
-  nVar2.addrHandleIndex._1_1_ = (char)((uint)iVar7 >> 8);
-  nVar2._0_13_ = *(undefined1 (*) [13])&pcVar5->serverAddress;
-  nVar2.addrHandleIndex._2_2_ = (short)((uint)iVar7 >> 0x10);
-  iVar7 = NET_IsLocalAddress(nVar2);
-  if (iVar7 == 0) {
+  iVar5 = (pcVar3->serverAddress).addrHandleIndex;
+  adr_00.addrHandleIndex._1_1_ = (char)((uint)iVar5 >> 8);
+  adr_00._0_13_ = *(undefined1 (*) [13])&pcVar3->serverAddress;
+  adr_00.addrHandleIndex._2_2_ = (short)((uint)iVar5 >> 0x10);
+  iVar5 = NET_IsLocalAddress(adr_00);
+  if (iVar5 == 0) {
     CL_SetLocalClientConnectionState(0,CA_CONNECTING);
   }
   else {
     CL_SetLocalClientConnectionState(0,CA_CHALLENGING);
   }
   CL_LocalClient_ClearCUIFlag(0,0x40);
-  pcVar5->connectTime = -99999;
-  pcVar5->connectPacketCount = 0;
-  pcVar5->clientChallenge = 0;
-  pcVar5->nonce = 0;
-  if (param_1[1].xnaddr.addrBuff[8] == '\0') {
+  pcVar3->connectTime = -99999;
+  pcVar3->connectPacketCount = 0;
+  pcVar3->clientChallenge = 0;
+  pcVar3->nonce = 0;
+  if (server[1].xnaddr.addrBuff[8] == '\0') {
     LiveStorage_SetFirstTimeRunning(false);
     if ((xblive_basictraining->current).enabled == false) {
       CL_CACValidateRequest_f();
@@ -331,20 +338,20 @@ void __cdecl CL_Connect(serverInfo_t *param_1)
   else {
     Dvar_SetBool(xblive_basictraining,true);
   }
-  if (param_1[1].xnaddr.addrBuff[9] != '\0') {
+  if (server[1].xnaddr.addrBuff[9] != '\0') {
     Dvar_SetBoolByName("custom_class_mode",true);
   }
   UI_UseAltColorPalette(cls.servername);
-  pcVar5->qport = g_qport;
-  cls.serveruid._0_4_ = *(undefined4 *)(param_1->city + 2);
-  cls.serveruid._4_4_ = *(undefined4 *)(param_1->city + 6);
+  pcVar3->qport = g_qport;
+  cls.serveruid._0_4_ = *(undefined4 *)(server->city + 2);
+  cls.serveruid._4_4_ = *(undefined4 *)(server->city + 6);
   UI_ClearErrors();
-  pcVar8 = UI_SafeTranslateString("MENU_CONNECTING_CAPS");
-  Dvar_SetStringByName("statusinfo_popmenuTitle",pcVar8);
+  value = UI_SafeTranslateString("MENU_CONNECTING_CAPS");
+  Dvar_SetStringByName("statusinfo_popmenuTitle",value);
   Dvar_SetStringByName("statusinfo_popmenuMessage",cls.servername);
   Dvar_SetStringByName("statusinfo_onEscArg","disconnect;");
   UI_OpenMenu(0,"code_statusinfo_popmenu");
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&local_14);
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
   return;
 }
 
@@ -354,80 +361,84 @@ void __cdecl CL_Connect(serverInfo_t *param_1)
 void __cdecl CL_ConnectHackDW(void)
 
 {
-  char *pcVar1;
+  char *text;
   
-  pcVar1 = va("connect %s\n");
-  Cbuf_AddText(0,pcVar1);
+  text = va("connect %s\n");
+  Cbuf_AddText(0,text);
   return;
 }
 
 
 // 005689D0  CL_Connect_f  (client_mp/cl_main_pc_mp.cpp:536)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl CL_Connect_f(void)
 
 {
   byte bVar1;
-  netadr_t nVar2;
-  netadr_t nVar3;
-  netadr_t nVar4;
-  undefined4 uVar5;
+  netadr_t adr;
+  netadr_t adr_00;
+  netadr_t adr_01;
+  undefined4 uVar2;
+  undefined1 uVar3;
+  undefined1 uVar4;
+  undefined1 uVar5;
   undefined1 uVar6;
-  undefined1 uVar7;
-  undefined1 uVar8;
+  undefined2 uVar7;
+  undefined4 uVar8;
   undefined1 uVar9;
-  undefined2 uVar10;
-  undefined4 uVar11;
+  undefined1 uVar10;
+  undefined1 uVar11;
   undefined1 uVar12;
-  undefined1 uVar13;
-  undefined1 uVar14;
+  undefined2 uVar13;
+  undefined4 uVar14;
   undefined1 uVar15;
-  undefined2 uVar16;
-  undefined4 uVar17;
+  undefined1 uVar16;
+  undefined1 uVar17;
   undefined1 uVar18;
-  undefined1 uVar19;
-  undefined1 uVar20;
-  undefined1 uVar21;
-  undefined2 uVar22;
-  ushort uVar23;
-  int iVar24;
-  clientUIActive_t *pcVar25;
-  clientConnection_t *pcVar26;
-  byte *pbVar27;
-  DWOnlineStatus DVar28;
-  bool bVar29;
-  undefined1 uVar30;
-  undefined1 uVar31;
-  undefined2 uVar32;
+  undefined2 uVar19;
+  ushort uVar20;
+  int iVar21;
+  clientUIActive_t *pcVar22;
+  clientConnection_t *pcVar23;
+  byte *src;
+  DWOnlineStatus DVar24;
+  bool bVar25;
+  undefined1 uVar26;
+  undefined1 uVar27;
+  undefined2 uVar28;
   int local_34;
   byte *local_2c;
   byte *local_28;
+  clientActive_t *cl;
+  clientUIActive_t *clUI;
+  clientConnection_t *clc;
+  char *server;
   
-  iVar24 = Cmd_Argc();
-  if (iVar24 == 2) {
+  iVar21 = Cmd_Argc();
+  if (iVar21 == 2) {
     SND_StopSounds(SND_STOP_ALL);
     CL_AllocatePerLocalClientMemory((char *)0x0,0);
-    pcVar25 = CL_GetLocalClientUIGlobals(0);
+    pcVar22 = CL_GetLocalClientUIGlobals(0);
     CL_GetLocalClientGlobals(0);
-    pcVar26 = CL_GetLocalClientConnection(0);
-    pcVar26->serverMessage[0] = '\0';
-    pbVar27 = (byte *)Cmd_Argv(1);
+    pcVar23 = CL_GetLocalClientConnection(0);
+    pcVar23->serverMessage[0] = '\0';
+    src = (byte *)Cmd_Argv(1);
     local_28 = (byte *)0xc96b70;
-    local_2c = pbVar27;
+    local_2c = src;
     do {
       bVar1 = *local_2c;
-      bVar29 = bVar1 < *local_28;
+      bVar25 = bVar1 < *local_28;
       if (bVar1 != *local_28) {
 LAB_00568a8f:
-        local_34 = (1 - (uint)bVar29) - (uint)(bVar29 != 0);
+        local_34 = (1 - (uint)bVar25) - (uint)(bVar25 != 0);
         goto LAB_00568a97;
       }
       if (bVar1 == 0) break;
       bVar1 = local_2c[1];
-      bVar29 = bVar1 < local_28[1];
+      bVar25 = bVar1 < local_28[1];
       if (bVar1 != local_28[1]) goto LAB_00568a8f;
       local_2c = local_2c + 2;
       local_28 = local_28 + 2;
@@ -440,101 +451,101 @@ LAB_00568a97:
     cl_serverLoadingMap = false;
     g_waitingForServer = false;
     FS_DisablePureCheck(false);
-    uVar30 = 0;
-    uVar31 = 0;
-    uVar32 = 0;
-    iVar24 = Com_LocalClient_GetControllerIndex(0);
-    SV_Frame(iVar24,CONCAT22(uVar32,CONCAT11(uVar31,uVar30)));
+    uVar26 = 0;
+    uVar27 = 0;
+    uVar28 = 0;
+    iVar21 = Com_LocalClient_GetControllerIndex(0);
+    SV_Frame(iVar21,CONCAT22(uVar28,CONCAT11(uVar27,uVar26)));
     CL_Disconnect(0,true);
     Con_Close(0);
-    I_strncpyz(cls.servername,(char *)pbVar27,0x100);
-    iVar24 = NET_StringToAdr(cls.servername,&pcVar26->serverAddress);
-    if (iVar24 == 0) {
+    I_strncpyz(cls.servername,(char *)src,0x100);
+    iVar21 = NET_StringToAdr(cls.servername,&pcVar23->serverAddress);
+    if (iVar21 == 0) {
       Com_Printf(0,"Bad server address\n");
       CL_SetLocalClientConnectionState(0,CA_DISCONNECTED);
       Com_Error(ERR_DISCONNECT,"Bad server address");
     }
     else {
-      if ((pcVar26->serverAddress).port == 0) {
-        uVar23 = BigShort(0xc02);
-        (pcVar26->serverAddress).port = uVar23;
+      if ((pcVar23->serverAddress).port == 0) {
+        uVar20 = BigShort(0xc02);
+        (pcVar23->serverAddress).port = uVar20;
       }
-      BigShort((pcVar26->serverAddress).port);
+      BigShort((pcVar23->serverAddress).port);
       Com_Printf(0,"%s resolved to %i.%i.%i.%i:%i\n");
-      uVar5 = (pcVar26->serverAddress).type;
-      uVar6 = (pcVar26->serverAddress).ip[0];
-      uVar7 = (pcVar26->serverAddress).ip[1];
-      uVar8 = (pcVar26->serverAddress).ip[2];
-      uVar9 = (pcVar26->serverAddress).ip[3];
-      uVar10 = (pcVar26->serverAddress).port;
-      nVar2.port = uVar10;
-      nVar2.ip[3] = uVar9;
-      nVar2.ip[2] = uVar8;
-      nVar2.ip[1] = uVar7;
-      nVar2.ip[0] = uVar6;
-      nVar2.type = uVar5;
-      iVar24 = (pcVar26->serverAddress).addrHandleIndex;
-      nVar2._10_2_ = (short)((uint)*(undefined4 *)&(pcVar26->serverAddress).port >> 0x10);
-      nVar2.addrHandleIndex._0_1_ = (char)iVar24;
-      nVar2.addrHandleIndex._1_1_ = (char)((uint)iVar24 >> 8);
-      nVar2.addrHandleIndex._2_2_ = (short)((uint)iVar24 >> 0x10);
-      iVar24 = NET_IsLocalAddress(nVar2);
-      if ((iVar24 == 0) && (iVar24 = CL_LocalClient_GetActiveCount(), iVar24 == 0)) {
+      uVar2 = (pcVar23->serverAddress).type;
+      uVar3 = (pcVar23->serverAddress).ip[0];
+      uVar4 = (pcVar23->serverAddress).ip[1];
+      uVar5 = (pcVar23->serverAddress).ip[2];
+      uVar6 = (pcVar23->serverAddress).ip[3];
+      uVar7 = (pcVar23->serverAddress).port;
+      adr.port = uVar7;
+      adr.ip[3] = uVar6;
+      adr.ip[2] = uVar5;
+      adr.ip[1] = uVar4;
+      adr.ip[0] = uVar3;
+      adr.type = uVar2;
+      iVar21 = (pcVar23->serverAddress).addrHandleIndex;
+      adr._10_2_ = (short)((uint)*(undefined4 *)&(pcVar23->serverAddress).port >> 0x10);
+      adr.addrHandleIndex._0_1_ = (char)iVar21;
+      adr.addrHandleIndex._1_1_ = (char)((uint)iVar21 >> 8);
+      adr.addrHandleIndex._2_2_ = (short)((uint)iVar21 >> 0x10);
+      iVar21 = NET_IsLocalAddress(adr);
+      if ((iVar21 == 0) && (iVar21 = CL_LocalClient_GetActiveCount(), iVar21 == 0)) {
         Com_Error(ERR_DROP,"EXE_ERR_INVALID_CD_KEY");
         return;
       }
-      uVar11 = (pcVar26->serverAddress).type;
-      uVar12 = (pcVar26->serverAddress).ip[0];
-      uVar13 = (pcVar26->serverAddress).ip[1];
-      uVar14 = (pcVar26->serverAddress).ip[2];
-      uVar15 = (pcVar26->serverAddress).ip[3];
-      uVar16 = (pcVar26->serverAddress).port;
-      nVar3.port = uVar16;
-      nVar3.ip[3] = uVar15;
-      nVar3.ip[2] = uVar14;
-      nVar3.ip[1] = uVar13;
-      nVar3.ip[0] = uVar12;
-      nVar3.type = uVar11;
-      iVar24 = (pcVar26->serverAddress).addrHandleIndex;
-      nVar3._10_2_ = (short)((uint)*(undefined4 *)&(pcVar26->serverAddress).port >> 0x10);
-      nVar3.addrHandleIndex._0_1_ = (char)iVar24;
-      nVar3.addrHandleIndex._1_1_ = (char)((uint)iVar24 >> 8);
-      nVar3.addrHandleIndex._2_2_ = (short)((uint)iVar24 >> 0x10);
-      iVar24 = Sys_IsLANAddress(nVar3);
-      if ((iVar24 == 0) && (DVar28 = dwGetLogOnStatus(0), DVar28 != DW_LIVE_CONNECTED)) {
+      uVar8 = (pcVar23->serverAddress).type;
+      uVar9 = (pcVar23->serverAddress).ip[0];
+      uVar10 = (pcVar23->serverAddress).ip[1];
+      uVar11 = (pcVar23->serverAddress).ip[2];
+      uVar12 = (pcVar23->serverAddress).ip[3];
+      uVar13 = (pcVar23->serverAddress).port;
+      adr_00.port = uVar13;
+      adr_00.ip[3] = uVar12;
+      adr_00.ip[2] = uVar11;
+      adr_00.ip[1] = uVar10;
+      adr_00.ip[0] = uVar9;
+      adr_00.type = uVar8;
+      iVar21 = (pcVar23->serverAddress).addrHandleIndex;
+      adr_00._10_2_ = (short)((uint)*(undefined4 *)&(pcVar23->serverAddress).port >> 0x10);
+      adr_00.addrHandleIndex._0_1_ = (char)iVar21;
+      adr_00.addrHandleIndex._1_1_ = (char)((uint)iVar21 >> 8);
+      adr_00.addrHandleIndex._2_2_ = (short)((uint)iVar21 >> 0x10);
+      iVar21 = Sys_IsLANAddress(adr_00);
+      if ((iVar21 == 0) && (DVar24 = dwGetLogOnStatus(0), DVar24 != DW_LIVE_CONNECTED)) {
         _Dvar_RegisterBool("dw_connectafterlogin",true,0x40,"");
         CL_SetLocalClientConnectionState(0,CA_DISCONNECTED);
         return;
       }
-      uVar17 = (pcVar26->serverAddress).type;
-      uVar18 = (pcVar26->serverAddress).ip[0];
-      uVar19 = (pcVar26->serverAddress).ip[1];
-      uVar20 = (pcVar26->serverAddress).ip[2];
-      uVar21 = (pcVar26->serverAddress).ip[3];
-      uVar22 = (pcVar26->serverAddress).port;
-      nVar4.port = uVar22;
-      nVar4.ip[3] = uVar21;
-      nVar4.ip[2] = uVar20;
-      nVar4.ip[1] = uVar19;
-      nVar4.ip[0] = uVar18;
-      nVar4.type = uVar17;
-      iVar24 = (pcVar26->serverAddress).addrHandleIndex;
-      nVar4._10_2_ = (short)((uint)*(undefined4 *)&(pcVar26->serverAddress).port >> 0x10);
-      nVar4.addrHandleIndex._0_1_ = (char)iVar24;
-      nVar4.addrHandleIndex._1_1_ = (char)((uint)iVar24 >> 8);
-      nVar4.addrHandleIndex._2_2_ = (short)((uint)iVar24 >> 0x10);
-      iVar24 = NET_IsLocalAddress(nVar4);
-      if (iVar24 == 0) {
+      uVar14 = (pcVar23->serverAddress).type;
+      uVar15 = (pcVar23->serverAddress).ip[0];
+      uVar16 = (pcVar23->serverAddress).ip[1];
+      uVar17 = (pcVar23->serverAddress).ip[2];
+      uVar18 = (pcVar23->serverAddress).ip[3];
+      uVar19 = (pcVar23->serverAddress).port;
+      adr_01.port = uVar19;
+      adr_01.ip[3] = uVar18;
+      adr_01.ip[2] = uVar17;
+      adr_01.ip[1] = uVar16;
+      adr_01.ip[0] = uVar15;
+      adr_01.type = uVar14;
+      iVar21 = (pcVar23->serverAddress).addrHandleIndex;
+      adr_01._10_2_ = (short)((uint)*(undefined4 *)&(pcVar23->serverAddress).port >> 0x10);
+      adr_01.addrHandleIndex._0_1_ = (char)iVar21;
+      adr_01.addrHandleIndex._1_1_ = (char)((uint)iVar21 >> 8);
+      adr_01.addrHandleIndex._2_2_ = (short)((uint)iVar21 >> 0x10);
+      iVar21 = NET_IsLocalAddress(adr_01);
+      if (iVar21 == 0) {
         CL_SetLocalClientConnectionState(0,CA_CONNECTING);
       }
       else {
         CL_SetLocalClientConnectionState(0,CA_CHALLENGING);
       }
-      pcVar25->keyCatchers = 0;
+      pcVar22->keyCatchers = 0;
       CL_LocalClient_ClearCUIFlag(0,0x40);
-      pcVar26->connectTime = -99999;
-      pcVar26->connectPacketCount = 0;
-      pcVar26->qport = g_qport;
+      pcVar23->connectTime = -99999;
+      pcVar23->connectPacketCount = 0;
+      pcVar23->qport = g_qport;
       Cbuf_ExecuteBuffer(0,0,"selectStringTableEntryInDvar mp/didyouknow.csv 0 didyouknow");
       UI_CloseAll(0);
       UI_ClearErrors();
@@ -570,38 +581,38 @@ void __cdecl CL_PC_RequireLiveSignin(void)
 
 // 00568D30  CL_InitServerInfo  (client_mp/cl_main_pc_mp.cpp:726)
 
-void __cdecl CL_InitServerInfo(serverInfo_t *param_1,netadr_t param_2)
+void __cdecl CL_InitServerInfo(serverInfo_t *server,netadr_t adr)
 
 {
   serverInfo_t *psVar1;
   
-  (param_1->adr).type = param_2.type;
-  *&(param_1->adr).ip = param_2.ip;
-  (param_1->adr).port = param_2.port;
-  *(undefined2 *)&(param_1->adr).field_0xa = param_2._10_2_;
-  (param_1->adr).addrHandleIndex = param_2.addrHandleIndex;
-  param_1->pingedTime = 0;
-  param_1->gotInfo = '\0';
-  param_1->clients = '\0';
-  param_1->hostName[0] = '\0';
-  param_1->mapName[0] = '\0';
-  param_1->maxClients = '\0';
-  param_1->maxPing = 0;
-  param_1->minPing = 0;
-  param_1->ping = -1;
-  param_1->game[0] = '\0';
-  *(undefined1 *)((int)&param_1->score + 1) = 0;
-  param_1->netType = '\0';
-  param_1->allowAnonymous = '\0';
-  param_1->dirty = '\x01';
-  param_1->requestCount = '\0';
-  param_1[1].xnaddr.addrBuff[8] = '\0';
-  param_1->city[10] = '\0';
-  param_1->city[0xb] = '\0';
-  param_1->city[0xc] = '\0';
-  param_1->city[0xd] = '\0';
-  param_1[1].xnaddr.addrBuff[10] = '\0';
-  psVar1 = param_1 + 1;
+  (server->adr).type = adr.type;
+  *&(server->adr).ip = adr.ip;
+  (server->adr).port = adr.port;
+  *(undefined2 *)&(server->adr).field_0xa = adr._10_2_;
+  (server->adr).addrHandleIndex = adr.addrHandleIndex;
+  server->pingedTime = 0;
+  server->gotInfo = '\0';
+  server->clients = '\0';
+  server->hostName[0] = '\0';
+  server->mapName[0] = '\0';
+  server->maxClients = '\0';
+  server->maxPing = 0;
+  server->minPing = 0;
+  server->ping = -1;
+  server->game[0] = '\0';
+  *(undefined1 *)((int)&server->score + 1) = 0;
+  server->netType = '\0';
+  server->allowAnonymous = '\0';
+  server->dirty = '\x01';
+  server->requestCount = '\0';
+  server[1].xnaddr.addrBuff[8] = '\0';
+  server->city[10] = '\0';
+  server->city[0xb] = '\0';
+  server->city[0xc] = '\0';
+  server->city[0xd] = '\0';
+  server[1].xnaddr.addrBuff[10] = '\0';
+  psVar1 = server + 1;
   (psVar1->xnaddr).addrBuff[4] = '\0';
   (psVar1->xnaddr).addrBuff[5] = '\0';
   (psVar1->xnaddr).addrBuff[6] = '\0';
@@ -615,19 +626,21 @@ void __cdecl CL_InitServerInfo(serverInfo_t *param_1,netadr_t param_2)
 /* WARNING: Removing unreachable block (ram,0x00568e65) */
 /* WARNING: Removing unreachable block (ram,0x00568e8a) */
 
-int __cdecl CL_RawPingSetupBuffer(void *param_1,int param_2,uchar param_3,bdSecurityID *param_4)
+int __cdecl CL_RawPingSetupBuffer(void *buffer,int buffersize,uchar opcode,bdSecurityID *secID)
 
 {
   int iVar1;
+  int byteswritten;
+  uchar *buffptr;
   
-  if (param_2 < 9) {
+  if (buffersize < 9) {
     Com_PrintWarning(0,"Rawpingbuffersetup: buffer is too small.\n");
     iVar1 = 0;
   }
   else {
-    *(uchar *)param_1 = param_3;
-    *(undefined4 *)((int)param_1 + 1) = *(undefined4 *)param_4->ab;
-    *(undefined4 *)((int)param_1 + 5) = *(undefined4 *)(param_4->ab + 4);
+    *(uchar *)buffer = opcode;
+    *(undefined4 *)((int)buffer + 1) = *(undefined4 *)secID->ab;
+    *(undefined4 *)((int)buffer + 5) = *(undefined4 *)(secID->ab + 4);
     iVar1 = 9;
   }
   return iVar1;
@@ -638,47 +651,47 @@ int __cdecl CL_RawPingSetupBuffer(void *param_1,int param_2,uchar param_3,bdSecu
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CL_RawPingServer(serverInfo_t *param_1,uchar param_2)
+void __cdecl CL_RawPingServer(serverInfo_t *server,uchar opcode)
 
 {
-  netadr_t nVar1;
-  netadr_t nVar2;
-  int iVar3;
-  netadr_t local_34;
-  undefined1 local_24;
+  netadr_t a;
+  netadr_t b;
+  int iVar1;
+  netadr_t privserveraddr;
+  undefined1 sendBuf;
   undefined4 local_23;
   undefined4 local_1f;
-  netadr_t local_18;
+  netadr_t pubserveraddr;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_24 = 0;
+  sendBuf = 0;
   local_23 = 0;
   local_1f = 0;
-  CL_RawPingSetupBuffer(&local_24,9,param_2,&param_1->xnkid);
-  iVar3 = Sys_Milliseconds();
-  param_1->pingedTime = iVar3;
-  dwXnaddrtonetadr((uchar *)param_1,&local_34,&local_18);
-  dwRawSendTo(&local_18,&local_24,9);
-  nVar1.ip[0] = local_34.ip[0];
-  nVar1.ip[1] = local_34.ip[1];
-  nVar1.ip[2] = local_34.ip[2];
-  nVar1.ip[3] = local_34.ip[3];
-  nVar1.type = local_34.type;
-  nVar1.port = local_34.port;
-  nVar1._10_2_ = local_34._10_2_;
-  nVar1.addrHandleIndex = local_34.addrHandleIndex;
-  nVar2.ip[0] = local_18.ip[0];
-  nVar2.ip[1] = local_18.ip[1];
-  nVar2.ip[2] = local_18.ip[2];
-  nVar2.ip[3] = local_18.ip[3];
-  nVar2.type = local_18.type;
-  nVar2.port = local_18.port;
-  nVar2._10_2_ = local_18._10_2_;
-  nVar2.addrHandleIndex = local_18.addrHandleIndex;
-  iVar3 = NET_CompareAdr(nVar1,nVar2);
-  if (iVar3 == 0) {
-    dwRawSendTo(&local_34,&local_24,9);
+  CL_RawPingSetupBuffer(&sendBuf,9,opcode,&server->xnkid);
+  iVar1 = Sys_Milliseconds();
+  server->pingedTime = iVar1;
+  dwXnaddrtonetadr((uchar *)server,&privserveraddr,&pubserveraddr);
+  dwRawSendTo(&pubserveraddr,&sendBuf,9);
+  a.ip[0] = privserveraddr.ip[0];
+  a.ip[1] = privserveraddr.ip[1];
+  a.ip[2] = privserveraddr.ip[2];
+  a.ip[3] = privserveraddr.ip[3];
+  a.type = privserveraddr.type;
+  a.port = privserveraddr.port;
+  a._10_2_ = privserveraddr._10_2_;
+  a.addrHandleIndex = privserveraddr.addrHandleIndex;
+  b.ip[0] = pubserveraddr.ip[0];
+  b.ip[1] = pubserveraddr.ip[1];
+  b.ip[2] = pubserveraddr.ip[2];
+  b.ip[3] = pubserveraddr.ip[3];
+  b.type = pubserveraddr.type;
+  b.port = pubserveraddr.port;
+  b._10_2_ = pubserveraddr._10_2_;
+  b.addrHandleIndex = pubserveraddr.addrHandleIndex;
+  iVar1 = NET_CompareAdr(a,b);
+  if (iVar1 == 0) {
+    dwRawSendTo(&privserveraddr,&sendBuf,9);
   }
   return;
 }
@@ -689,33 +702,35 @@ void __cdecl CL_RawPingServer(serverInfo_t *param_1,uchar param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CL_ServersResponsePacket(MatchMakingInfo *param_1,int param_2,bool param_3)
+void __cdecl CL_ServersResponsePacket(MatchMakingInfo *mminfo,int numResults,bool geo)
 
 {
   bdQoSRemoteAddr *this;
-  netadr_t nVar1;
-  netadr_t nVar2;
-  bool bVar3;
-  ddlDef_t *pdVar4;
-  char *pcVar5;
-  uint uVar6;
-  int iVar7;
+  netadr_t a;
+  netadr_t b;
+  int iVar1;
+  bool bVar2;
+  ddlDef_t *pdVar3;
+  char *countrycode;
+  uint uVar4;
+  int iVar5;
   int local_2168;
   bdReference<bdByteBuffer> *local_2164;
   int local_2138;
   bdQoSRemoteAddr *local_2134;
-  netadr_t local_2128;
-  netadr_t local_2118;
-  MatchMakingInfo *local_2108;
-  bdReference<bdAddrHandle> local_2104;
-  int local_2100;
-  bdQoSRemoteAddr local_20fc [300];
+  bdQoSRemoteAddr *serverqosaddr;
+  netadr_t pubadr;
+  netadr_t privadr;
+  MatchMakingInfo *serverdetails;
+  bdReference<bdCommonAddr> hostAddress;
+  int j;
+  bdQoSRemoteAddr forQoS [300];
   bdReference<bdByteBuffer> bStack_2c;
-  int local_28;
-  serverInfo_t *local_24;
-  uint local_20;
-  int *local_1c;
-  undefined4 local_18;
+  int i;
+  serverInfo_t *server;
+  int natClientCount;
+  int *count;
+  undefined4 adr;
   undefined4 local_14;
   undefined4 local_10;
   undefined4 local_c;
@@ -723,7 +738,7 @@ void __cdecl CL_ServersResponsePacket(MatchMakingInfo *param_1,int param_2,bool 
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_2138 = 300;
-  local_2134 = local_20fc;
+  local_2134 = forQoS;
   while (local_2138 = local_2138 + -1, -1 < local_2138) {
     (local_2134->m_addr).m_ptr = (bdCommonAddr *)0x0;
     bdSecurityID::bdSecurityID(&local_2134->m_id);
@@ -736,100 +751,102 @@ void __cdecl CL_ServersResponsePacket(MatchMakingInfo *param_1,int param_2,bool 
     atexit(`CL_ServersResponsePacket'::__l2::_dynamic_atexit_destructor_for__s_qoslistener__);
   }
   Com_DPrintf(0xe,"CL_ServersResponsePacket\n");
-  local_28 = 0;
-  local_2100 = 0;
-  local_20 = 0;
-  bVar3 = CL_GetServerList(cls.pingUpdateSource,&local_24,&local_1c);
-  if ((bVar3) && (local_24 != (serverInfo_t *)0x0)) {
-    local_24 = (serverInfo_t *)(*local_1c * 0x178 + (int)local_24);
-    local_28 = 0;
-    local_2100 = *local_1c;
-    while ((local_28 < param_2 && (local_2100 < 20000))) {
-      local_2108 = param_1 + local_28;
-      pdVar4 = LiveStats_GetStatsDDL();
-      if (pdVar4->version == local_2108->m_memberDDL_VERSION) {
-        if (!param_3) {
-          pcVar5 = LiveSteam_GetCountryCode();
-          uVar6 = dwRegionCodeFromCountryCode(pcVar5);
-          if (local_2108->m_memberGEOGRAPHICAL_LOCATION == uVar6) goto LAB_00569091;
+  i = 0;
+  natClientCount = 0;
+  bVar2 = CL_GetServerList(cls.pingUpdateSource,&server,&count);
+  if ((bVar2) && (server != (serverInfo_t *)0x0)) {
+    server = (serverInfo_t *)(*count * 0x178 + (int)server);
+    i = 0;
+    j = *count;
+    while ((i < numResults && (j < 20000))) {
+      serverdetails = mminfo + i;
+      pdVar3 = LiveStats_GetStatsDDL();
+      if (pdVar3->version == serverdetails->m_memberDDL_VERSION) {
+        if (!geo) {
+          countrycode = LiveSteam_GetCountryCode();
+          uVar4 = dwRegionCodeFromCountryCode(countrycode);
+          if (serverdetails->m_memberGEOGRAPHICAL_LOCATION == uVar4) goto LAB_00569091;
         }
         dwGetLocalCommonAddr();
-        bdMatchMakingInfo::getHostAddrAsCommonAddr((bdMatchMakingInfo *)local_2108,&local_2104);
-        bdCommonAddr::serialize((bdCommonAddr *)local_2104.m_ptr,(uchar *)local_24);
+        bdMatchMakingInfo::getHostAddrAsCommonAddr((bdMatchMakingInfo *)serverdetails,&hostAddress);
+        bdCommonAddr::serialize(hostAddress.m_ptr,(uchar *)server);
         local_14 = 0;
         local_10 = 0;
         local_c = 0;
-        local_18 = 4;
-        CL_InitServerInfo(local_24,(netadr_t)ZEXT816(4));
-        local_24->maxClients = (uchar)local_2108->_padding_;
-        I_strncpyz(local_24->hostName,local_2108->m_memberservername,0x20);
-        I_strncpyz(local_24->mapName,local_2108->m_membermapname,0x20);
-        *(undefined4 *)(local_24->xnkey).ab = *(undefined4 *)local_2108->m_membersecKey;
-        *(undefined4 *)((local_24->xnkey).ab + 4) = *(undefined4 *)(local_2108->m_membersecKey + 4);
-        *(undefined4 *)((local_24->xnkey).ab + 8) = *(undefined4 *)(local_2108->m_membersecKey + 8);
-        *(undefined4 *)((local_24->xnkey).ab + 0xc) =
-             *(undefined4 *)(local_2108->m_membersecKey + 0xc);
-        *(int *)(local_24->xnkid).ab = local_2108->_padding_;
-        *(int *)((local_24->xnkid).ab + 4) = local_2108->_padding_;
-        Com_IntToGametype((char *)((int)&local_24->score + 1),local_2108->m_memberGAME_TYPE);
-        *(int *)(local_24->city + 0xe) = local_2108->m_memberGEOGRAPHICAL_LOCATION;
-        *(uint *)(local_24[1].xnaddr.addrBuff + 4) = local_2108->m_memberLICENSE;
-        if (*(int *)(local_24[1].xnaddr.addrBuff + 4) == 5) {
-          local_24->clients = (uchar)local_2108->_padding_;
-          dwXnaddrtonetadr((uchar *)local_24,&local_2118,&local_2128);
-          nVar1.ip[0] = local_2118.ip[0];
-          nVar1.ip[1] = local_2118.ip[1];
-          nVar1.ip[2] = local_2118.ip[2];
-          nVar1.ip[3] = local_2118.ip[3];
-          nVar1.type = local_2118.type;
-          nVar1.port = local_2118.port;
-          nVar1._10_2_ = local_2118._10_2_;
-          nVar1.addrHandleIndex = local_2118.addrHandleIndex;
-          nVar2.ip[0] = local_2128.ip[0];
-          nVar2.ip[1] = local_2128.ip[1];
-          nVar2.ip[2] = local_2128.ip[2];
-          nVar2.ip[3] = local_2128.ip[3];
-          nVar2.type = local_2128.type;
-          nVar2.port = local_2128.port;
-          nVar2._10_2_ = local_2128._10_2_;
-          nVar2.addrHandleIndex = local_2128.addrHandleIndex;
-          iVar7 = NET_CompareAdr(nVar1,nVar2);
-          uVar6 = local_20;
-          if (iVar7 == 0) {
-            this = local_20fc + local_20;
-            local_20 = local_20 + 1;
-            bdReference<bdAddrHandle>::operator=((bdReference<bdAddrHandle> *)this,&local_2104);
-            iVar7 = local_2108->_padding_;
-            *(int *)local_20fc[uVar6].m_id.ab = local_2108->_padding_;
-            *(int *)(local_20fc[uVar6].m_id.ab + 4) = iVar7;
-            *(undefined4 *)local_20fc[uVar6].m_key.ab = *(undefined4 *)local_2108->m_membersecKey;
-            *(undefined4 *)(local_20fc[uVar6].m_key.ab + 4) =
-                 *(undefined4 *)(local_2108->m_membersecKey + 4);
-            *(undefined4 *)(local_20fc[uVar6].m_key.ab + 8) =
-                 *(undefined4 *)(local_2108->m_membersecKey + 8);
-            *(undefined4 *)(local_20fc[uVar6].m_key.ab + 0xc) =
-                 *(undefined4 *)(local_2108->m_membersecKey + 0xc);
+        adr = 4;
+        CL_InitServerInfo(server,(netadr_t)ZEXT816(4));
+        server->maxClients = (uchar)serverdetails->_padding_;
+        I_strncpyz(server->hostName,serverdetails->m_memberservername,0x20);
+        I_strncpyz(server->mapName,serverdetails->m_membermapname,0x20);
+        *(undefined4 *)(server->xnkey).ab = *(undefined4 *)serverdetails->m_membersecKey;
+        *(undefined4 *)((server->xnkey).ab + 4) = *(undefined4 *)(serverdetails->m_membersecKey + 4)
+        ;
+        *(undefined4 *)((server->xnkey).ab + 8) = *(undefined4 *)(serverdetails->m_membersecKey + 8)
+        ;
+        *(undefined4 *)((server->xnkey).ab + 0xc) =
+             *(undefined4 *)(serverdetails->m_membersecKey + 0xc);
+        *(int *)(server->xnkid).ab = serverdetails->_padding_;
+        *(int *)((server->xnkid).ab + 4) = serverdetails->_padding_;
+        Com_IntToGametype((char *)((int)&server->score + 1),serverdetails->m_memberGAME_TYPE);
+        *(int *)(server->city + 0xe) = serverdetails->m_memberGEOGRAPHICAL_LOCATION;
+        *(uint *)(server[1].xnaddr.addrBuff + 4) = serverdetails->m_memberLICENSE;
+        if (*(int *)(server[1].xnaddr.addrBuff + 4) == 5) {
+          server->clients = (uchar)serverdetails->_padding_;
+          dwXnaddrtonetadr((uchar *)server,&privadr,&pubadr);
+          a.ip[0] = privadr.ip[0];
+          a.ip[1] = privadr.ip[1];
+          a.ip[2] = privadr.ip[2];
+          a.ip[3] = privadr.ip[3];
+          a.type = privadr.type;
+          a.port = privadr.port;
+          a._10_2_ = privadr._10_2_;
+          a.addrHandleIndex = privadr.addrHandleIndex;
+          b.ip[0] = pubadr.ip[0];
+          b.ip[1] = pubadr.ip[1];
+          b.ip[2] = pubadr.ip[2];
+          b.ip[3] = pubadr.ip[3];
+          b.type = pubadr.type;
+          b.port = pubadr.port;
+          b._10_2_ = pubadr._10_2_;
+          b.addrHandleIndex = pubadr.addrHandleIndex;
+          iVar5 = NET_CompareAdr(a,b);
+          iVar1 = natClientCount;
+          if (iVar5 == 0) {
+            this = forQoS + natClientCount;
+            natClientCount = natClientCount + 1;
+            bdReference<bdAddrHandle>::operator=
+                      ((bdReference<bdAddrHandle> *)this,(bdReference<bdAddrHandle> *)&hostAddress);
+            iVar5 = serverdetails->_padding_;
+            *(int *)forQoS[iVar1].m_id.ab = serverdetails->_padding_;
+            *(int *)(forQoS[iVar1].m_id.ab + 4) = iVar5;
+            *(undefined4 *)forQoS[iVar1].m_key.ab = *(undefined4 *)serverdetails->m_membersecKey;
+            *(undefined4 *)(forQoS[iVar1].m_key.ab + 4) =
+                 *(undefined4 *)(serverdetails->m_membersecKey + 4);
+            *(undefined4 *)(forQoS[iVar1].m_key.ab + 8) =
+                 *(undefined4 *)(serverdetails->m_membersecKey + 8);
+            *(undefined4 *)(forQoS[iVar1].m_key.ab + 0xc) =
+                 *(undefined4 *)(serverdetails->m_membersecKey + 0xc);
           }
         }
         else {
-          local_24->clients = (char)local_2108->_padding_ + 0xff;
+          server->clients = (char)serverdetails->_padding_ + 0xff;
         }
-        *(int *)(local_24->city + 2) = (int)param_1[local_28].m_memberdemonwareID;
-        *(undefined4 *)(local_24->city + 6) =
-             *(undefined4 *)((int)&param_1[local_28].m_memberdemonwareID + 4);
-        local_24 = (serverInfo_t *)&local_24[1].adr;
-        local_2100 = local_2100 + 1;
+        *(int *)(server->city + 2) = (int)mminfo[i].m_memberdemonwareID;
+        *(undefined4 *)(server->city + 6) = *(undefined4 *)((int)&mminfo[i].m_memberdemonwareID + 4)
+        ;
+        server = (serverInfo_t *)&server[1].adr;
+        j = j + 1;
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
-                  ((bdReference<bdByteBuffer> *)&local_2104);
+                  ((bdReference<bdByteBuffer> *)&hostAddress);
       }
 LAB_00569091:
-      local_28 = local_28 + 1;
+      i = i + 1;
     }
-    *local_1c = local_2100;
+    *count = j;
     Com_Printf(0xe,"%d servers parsed (total %d)\n");
-    if (local_20 != 0) {
+    if (natClientCount != 0) {
       dwClearQoSProbes();
-      dwStartQoSProbes(&s_qoslistener,local_20,local_20fc);
+      dwStartQoSProbes(&s_qoslistener,natClientCount,forQoS);
     }
     cls.waitdwfindsessionsresponse = 0;
   }
@@ -845,17 +862,21 @@ LAB_00569091:
 
 // 00569470  CL_FindServers_f  (client_mp/cl_main_pc_mp.cpp:997)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl CL_FindServers_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  int local_14;
-  int *local_c;
-  serverInfo_t *local_8;
+  char *nptr;
+  int servertype;
+  int i;
+  serverInfo_t *server;
+  int *count;
+  serverInfo_t *servers;
   
-  local_8 = (serverInfo_t *)0x0;
+  servers = (serverInfo_t *)0x0;
   bVar1 = dwIsPagedFindInProgress();
   if ((!bVar1) && (bVar1 = Live_FindFavouritesInProgress(), !bVar1)) {
     iVar2 = Cmd_Argc();
@@ -863,22 +884,22 @@ void __cdecl CL_FindServers_f(void)
       Com_Printf(0,"usage: findservers [unranked|ranked|wager|favourites|friends|recent]\n");
     }
     else {
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = atoi(pcVar3);
+      nptr = Cmd_Argv(1);
+      iVar2 = atoi(nptr);
       if ((iVar2 < 0) || (5 < iVar2)) {
         Com_Printf(0,
                    "argument should be 0 for unranked, 1 for ranked, 2 for wager, 3 for favourite, 4 for friends, 5 for recent\n"
                   );
       }
       else {
-        bVar1 = CL_GetServerList(iVar2,&local_8,&local_c);
+        bVar1 = CL_GetServerList(iVar2,&servers,&count);
         if (bVar1) {
-          for (local_14 = 0; local_14 < *local_c; local_14 = local_14 + 1) {
-            *(char *)((int)local_8 + local_14 * 0x178 + 0x6f) =
-                 *(char *)((int)local_8 + local_14 * 0x178 + 0x6f) + '\x01';
-            if (*(char *)((int)local_8 + local_14 * 0x178 + 0x6f) == '\0') {
-              *(char *)((int)local_8 + local_14 * 0x178 + 0x6f) =
-                   *(char *)((int)local_8 + local_14 * 0x178 + 0x6f) + -1;
+          for (i = 0; i < *count; i = i + 1) {
+            *(char *)((int)servers + i * 0x178 + 0x6f) =
+                 *(char *)((int)servers + i * 0x178 + 0x6f) + '\x01';
+            if (*(char *)((int)servers + i * 0x178 + 0x6f) == '\0') {
+              *(char *)((int)servers + i * 0x178 + 0x6f) =
+                   *(char *)((int)servers + i * 0x178 + 0x6f) + -1;
             }
           }
           Com_Printf(0,"Contacting Demonware..\n");
@@ -899,7 +920,7 @@ void __cdecl CL_FindServers_f(void)
           }
           cls.waitdwfindsessionsresponse = 1;
           cls.pingUpdateSource = iVar2;
-          *local_c = 0;
+          *count = 0;
           if (cls.pingUpdateSource == 1) {
             cls.lastFindSessionsTime = Sys_Milliseconds();
           }
@@ -924,66 +945,59 @@ void __cdecl CL_LanSessions_f(void)
 // 0056ABA0  CL_LanConnect_f  (client_mp/cl_main_pc_mp.cpp:1084)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl CL_LanConnect_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char **ppcVar4;
-  int local_19c;
-  bdReference<bdCommonAddr> local_198;
-  undefined4 local_194;
-  undefined4 local_190;
-  undefined4 local_18c;
-  undefined4 local_188;
-  serverInfo_t local_184;
+  char *nptr;
+  char **endptr;
+  int serverInfoIdx;
+  bdReference<bdCommonAddr> hostAddr;
+  serverInfo_t server;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdSecurityKey::bdSecurityKey(&local_184.xnkey);
-  bdSecurityID::bdSecurityID(&local_184.xnkid);
-  local_198.m_ptr = (bdCommonAddr *)0x0;
+  bdSecurityKey::bdSecurityKey(&server.xnkey);
+  bdSecurityID::bdSecurityID(&server.xnkid);
+  hostAddr.m_ptr = (bdCommonAddr *)0x0;
   iVar2 = Cmd_Argc();
   if (iVar2 == 1) {
-    local_19c = 0;
+    serverInfoIdx = 0;
   }
   else {
     iVar2 = Cmd_Argc();
     if (iVar2 != 2) {
       Com_Printf(0,"usage: lanconnect [idx]\n");
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_198)
-      ;
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&hostAddr);
       return;
     }
     iVar2 = 10;
-    ppcVar4 = (char **)0x0;
-    pcVar3 = Cmd_Argv(1);
-    local_19c = strtol(pcVar3,ppcVar4,iVar2);
+    endptr = (char **)0x0;
+    nptr = Cmd_Argv(1);
+    serverInfoIdx = strtol(nptr,endptr,iVar2);
   }
-  local_190 = 0;
-  local_18c = 0;
-  local_188 = 0;
-  local_194 = 4;
-  CL_InitServerInfo(&local_184,(netadr_t)ZEXT816(4));
-  bVar1 = dwGetLanSession(local_19c,&local_198,&local_184.xnkid,&local_184.xnkey);
+  CL_InitServerInfo(&server,(netadr_t)ZEXT816(4));
+  bVar1 = dwGetLanSession(serverInfoIdx,&hostAddr,&server.xnkid,&server.xnkey);
   if (bVar1) {
-    local_184.adr.port = 0xc02;
-    iVar2 = I_strncmp(local_184.hostName,"localhost",0x20);
+    server.adr.port = 0xc02;
+    iVar2 = I_strncmp(server.hostName,"localhost",0x20);
     if (iVar2 == 0) {
       SV_KillLocalServer();
     }
     FS_DisablePureCheck(false);
-    bdCommonAddr::serialize(local_198.m_ptr,(uchar *)&local_184);
-    CL_Connect(&local_184);
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_198);
+    bdCommonAddr::serialize(hostAddr.m_ptr,(uchar *)&server);
+    CL_Connect(&server);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&hostAddr);
   }
   else {
     Com_Printf(0,
                "lanconnect [idx]: ot of range server info index. use lansessions to obtain all lan sessions.\n"
               );
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_198);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&hostAddr);
   }
   return;
 }
@@ -1007,19 +1021,21 @@ void __cdecl CL_RconLogin(void)
 {
   uchar uVar1;
   int iVar2;
-  uchar *puVar3;
+  uchar *src;
   uchar *local_20;
+  int passwordLength;
+  char *password;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 3) {
-    puVar3 = (uchar *)Cmd_Argv(2);
-    local_20 = puVar3;
+    src = (uchar *)Cmd_Argv(2);
+    local_20 = src;
     do {
       uVar1 = *local_20;
       local_20 = local_20 + 1;
     } while (uVar1 != '\0');
-    if ((uint)((int)local_20 - (int)(puVar3 + 1)) < 0x18) {
-      memcpy((uchar *)&rconGlob,puVar3,((int)local_20 - (int)(puVar3 + 1)) + 1);
+    if ((uint)((int)local_20 - (int)(src + 1)) < 0x18) {
+      memcpy((uchar *)&rconGlob,src,((int)local_20 - (int)(src + 1)) + 1);
     }
     else {
       Com_Printf(0xe,"rcon password must be %i characters or less\n");
@@ -1055,12 +1071,13 @@ void __cdecl CL_RconHost(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *s;
+  char *hostName;
   
   iVar3 = Cmd_Argc();
   if (iVar3 == 3) {
-    pcVar4 = Cmd_Argv(2);
-    iVar3 = NET_StringToAdr(pcVar4,&rconGlob.host);
+    s = Cmd_Argv(2);
+    iVar3 = NET_StringToAdr(s,&rconGlob.host);
     if (iVar3 == 0) {
       Com_Printf(0xe,"bad host address\n");
       if ((rconGlob.host.type != NA_BAD) &&
@@ -1100,85 +1117,86 @@ void __cdecl CL_Rcon_f(void)
 
 {
   uchar uVar1;
-  netadr_t nVar2;
-  netsrc_t nVar3;
-  short sVar4;
-  int iVar5;
-  int iVar6;
-  char *pcVar7;
-  connstate_t cVar8;
-  netadrtype_t nVar9;
-  uchar auVar10 [4];
-  uchar *puVar11;
-  undefined4 uVar12;
-  int iVar13;
+  netadr_t adr;
+  netsrc_t sock;
+  short sVar2;
+  int iVar3;
+  int len_00;
+  char *add;
+  connstate_t cVar4;
+  netadrtype_t nVar5;
+  uchar auVar6 [4];
+  uchar *puVar7;
+  undefined4 uVar8;
+  int mayAddQuotes;
   uchar *local_454;
-  uchar local_42c [1024];
-  int local_2c;
-  int local_28;
-  clientConnection_t *local_24;
-  int local_20;
-  netadrtype_t local_1c;
+  connstate_t connstate;
+  uchar message [1024];
+  int maxlen;
+  int len;
+  clientConnection_t *clc;
+  int i;
+  netadrtype_t to;
   uchar local_18 [4];
   undefined4 local_14;
   int local_10;
   uint local_c;
-  char *local_8;
+  char *cmd;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar5 = Cmd_Argc();
-  if (iVar5 < 2) {
+  iVar3 = Cmd_Argc();
+  if (iVar3 < 2) {
     Com_Printf(0,"USAGE: rcon <command> <options...>\n");
   }
   else {
-    local_8 = Cmd_Argv(1);
-    iVar5 = I_stricmp(local_8,"login");
-    if (iVar5 == 0) {
+    cmd = Cmd_Argv(1);
+    iVar3 = I_stricmp(cmd,"login");
+    if (iVar3 == 0) {
       CL_RconLogin();
     }
     else {
-      iVar5 = I_stricmp(local_8,"logout");
-      if (iVar5 == 0) {
+      iVar3 = I_stricmp(cmd,"logout");
+      if (iVar3 == 0) {
         CL_RconLogout();
       }
       else {
-        iVar5 = I_stricmp(local_8,"host");
-        if (iVar5 == 0) {
+        iVar3 = I_stricmp(cmd,"host");
+        if (iVar3 == 0) {
           CL_RconHost();
         }
         else if (rconGlob.password[0] == '\0') {
           Com_Printf(0,"You need to log in with \'rcon login <password>\' before using rcon.\n");
         }
         else {
-          local_2c = 0x400;
-          local_28 = Com_AddToString("rcon ",(char *)local_42c,0,0x400,0);
-          local_28 = Com_AddToString(rconGlob.password,(char *)local_42c,local_28,local_2c,0);
-          local_20 = 1;
-          while (iVar5 = Cmd_Argc(), local_20 < iVar5) {
-            iVar6 = Com_AddToString(" ",(char *)local_42c,local_28,local_2c,0);
-            iVar13 = 1;
-            puVar11 = local_42c;
-            iVar5 = local_2c;
-            local_28 = iVar6;
-            pcVar7 = Cmd_Argv(local_20);
-            local_28 = Com_AddToString(pcVar7,(char *)puVar11,iVar6,iVar5,iVar13);
-            local_20 = local_20 + 1;
+          maxlen = 0x400;
+          len = Com_AddToString("rcon ",(char *)message,0,0x400,0);
+          len = Com_AddToString(rconGlob.password,(char *)message,len,maxlen,0);
+          i = 1;
+          while (iVar3 = Cmd_Argc(), i < iVar3) {
+            len_00 = Com_AddToString(" ",(char *)message,len,maxlen,0);
+            mayAddQuotes = 1;
+            puVar7 = message;
+            iVar3 = maxlen;
+            len = len_00;
+            add = Cmd_Argv(i);
+            len = Com_AddToString(add,(char *)puVar7,len_00,iVar3,mayAddQuotes);
+            i = i + 1;
           }
-          if (local_28 == local_2c) {
+          if (len == maxlen) {
             Com_Printf(0,"rcon commands are limited to %i characters\n");
           }
           else {
-            local_42c[local_28] = '\0';
-            cVar8 = CL_GetLocalClientConnectionState(0);
-            local_24 = CL_GetLocalClientConnection(0);
-            if ((int)cVar8 < 6) {
+            message[len] = '\0';
+            cVar4 = CL_GetLocalClientConnectionState(0);
+            clc = CL_GetLocalClientConnection(0);
+            if ((int)cVar4 < 6) {
               if (rconGlob.host.type == NA_BAD) {
                 Com_Printf(0,"Can\'t determine rcon target.  You can fix this by either:\n");
                 Com_Printf(0,"1) Joining the server as a player.\n");
                 Com_Printf(0,"2) Setting the host server with \'rcon host <address>\'.\n");
                 return;
               }
-              local_1c = rconGlob.host.type;
+              to = rconGlob.host.type;
               local_18[0] = rconGlob.host.ip[0];
               local_18[1] = rconGlob.host.ip[1];
               local_18[2] = rconGlob.host.ip[2];
@@ -1186,35 +1204,35 @@ void __cdecl CL_Rcon_f(void)
               local_14._0_2_ = rconGlob.host.port;
               local_14._2_2_ = rconGlob.host._10_2_;
               local_10 = rconGlob.host.addrHandleIndex;
-              sVar4 = BigShort(rconGlob.host.port);
-              local_14 = CONCAT22(local_14._2_2_,sVar4);
+              sVar2 = BigShort(rconGlob.host.port);
+              local_14 = CONCAT22(local_14._2_2_,sVar2);
             }
             else {
-              local_1c = (local_24->netchan).remoteAddress.type;
-              local_18 = *&(local_24->netchan).remoteAddress.ip;
-              local_14 = *(undefined4 *)&(local_24->netchan).remoteAddress.port;
-              local_10 = (local_24->netchan).remoteAddress.addrHandleIndex;
+              to = (clc->netchan).remoteAddress.type;
+              local_18 = *&(clc->netchan).remoteAddress.ip;
+              local_14 = *(undefined4 *)&(clc->netchan).remoteAddress.port;
+              local_10 = (clc->netchan).remoteAddress.addrHandleIndex;
             }
-            local_454 = local_42c;
+            local_454 = message;
             do {
               uVar1 = *local_454;
               local_454 = local_454 + 1;
             } while (uVar1 != '\0');
-            local_454 = local_454 + (1 - (int)(local_42c + 1));
-            puVar11 = local_42c;
-            nVar9 = local_1c;
-            auVar10 = local_18;
-            uVar12 = local_14;
-            iVar5 = local_10;
-            nVar3 = Com_LocalClient_GetNetworkID(0);
-            nVar2.ip[0] = auVar10[0];
-            nVar2.ip[1] = auVar10[1];
-            nVar2.ip[2] = auVar10[2];
-            nVar2.ip[3] = auVar10[3];
-            nVar2.type = nVar9;
-            nVar2._8_4_ = uVar12;
-            nVar2.addrHandleIndex = iVar5;
-            NET_OutOfBandData(nVar3,nVar2,puVar11,(int)local_454);
+            local_454 = local_454 + (1 - (int)(message + 1));
+            puVar7 = message;
+            nVar5 = to;
+            auVar6 = local_18;
+            uVar8 = local_14;
+            iVar3 = local_10;
+            sock = Com_LocalClient_GetNetworkID(0);
+            adr.ip[0] = auVar6[0];
+            adr.ip[1] = auVar6[1];
+            adr.ip[2] = auVar6[2];
+            adr.ip[3] = auVar6[3];
+            adr.type = nVar5;
+            adr._8_4_ = uVar8;
+            adr.addrHandleIndex = iVar3;
+            NET_OutOfBandData(sock,adr,puVar7,(int)local_454);
           }
         }
       }
@@ -1226,82 +1244,81 @@ void __cdecl CL_Rcon_f(void)
 
 // 00569AC0  CL_GetServerStatus  (client_mp/cl_main_pc_mp.cpp:1391)
 
-serverStatusInfoResponse_s * __cdecl CL_GetServerStatus(bdSecurityID *param_1)
+serverStatusInfoResponse_s * __cdecl CL_GetServerStatus(bdSecurityID *secID)
 
 {
   bool bVar1;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  int oldest;
+  int i;
+  int oldestTime;
   
-  for (local_c = 0; (int)local_c < 0x10; local_c = local_c + 1) {
-    bVar1 = bdSecurityID::operator==(param_1,&cl_serverStatusList[local_c].secId);
+  for (i = 0; i < 0x10; i = i + 1) {
+    bVar1 = bdSecurityID::operator==(secID,&cl_serverStatusList[i].secId);
     if (bVar1) {
-      return cl_serverStatusList + local_c;
+      return cl_serverStatusList + i;
     }
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xf < (int)local_c) {
-      local_10 = 0xffffffff;
-      local_8 = 0;
-      for (local_c = 0; (int)local_c < 0x10; local_c = local_c + 1) {
-        if ((local_10 == 0xffffffff) || (cl_serverStatusList[local_c].startTime < local_8)) {
-          local_10 = local_c;
-          local_8 = cl_serverStatusList[local_c].startTime;
+    if (0xf < i) {
+      oldest = -1;
+      oldestTime = 0;
+      for (i = 0; i < 0x10; i = i + 1) {
+        if ((oldest == -1) || (cl_serverStatusList[i].startTime < oldestTime)) {
+          oldest = i;
+          oldestTime = cl_serverStatusList[i].startTime;
         }
       }
-      if (local_10 == 0xffffffff) {
+      if (oldest == -1) {
         serverStatusCount = serverStatusCount + 1;
-        local_10 = serverStatusCount & 0xf;
+        oldest = serverStatusCount & 0xf;
       }
-      return cl_serverStatusList + local_10;
+      return cl_serverStatusList + oldest;
     }
-    if (cl_serverStatusList[local_c].retrieved != 0) break;
-    local_c = local_c + 1;
+    if (cl_serverStatusList[i].retrieved != 0) break;
+    i = i + 1;
   }
-  return cl_serverStatusList + local_c;
+  return cl_serverStatusList + i;
 }
 
 
 // 00569BF0  CL_GetServerStatusScoreBoard  (client_mp/cl_main_pc_mp.cpp:1432)
 
-serverStatusInfoResponse_s * __cdecl CL_GetServerStatusScoreBoard(bdSecurityID *param_1)
+serverStatusInfoResponse_s * __cdecl CL_GetServerStatusScoreBoard(bdSecurityID *secID)
 
 {
   bool bVar1;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  int oldest;
+  int i;
+  int oldestTime;
   
-  for (local_c = 0; (int)local_c < 0x10; local_c = local_c + 1) {
-    bVar1 = bdSecurityID::operator==(param_1,&cl_serverStatusScoreBoardList[local_c].secId);
+  for (i = 0; i < 0x10; i = i + 1) {
+    bVar1 = bdSecurityID::operator==(secID,&cl_serverStatusScoreBoardList[i].secId);
     if (bVar1) {
-      return cl_serverStatusScoreBoardList + local_c;
+      return cl_serverStatusScoreBoardList + i;
     }
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xf < (int)local_c) {
-      local_10 = 0xffffffff;
-      local_8 = 0;
-      for (local_c = 0; (int)local_c < 0x10; local_c = local_c + 1) {
-        if ((local_10 == 0xffffffff) || (cl_serverStatusScoreBoardList[local_c].startTime < local_8)
-           ) {
-          local_10 = local_c;
-          local_8 = cl_serverStatusScoreBoardList[local_c].startTime;
+    if (0xf < i) {
+      oldest = -1;
+      oldestTime = 0;
+      for (i = 0; i < 0x10; i = i + 1) {
+        if ((oldest == -1) || (cl_serverStatusScoreBoardList[i].startTime < oldestTime)) {
+          oldest = i;
+          oldestTime = cl_serverStatusScoreBoardList[i].startTime;
         }
       }
-      if (local_10 == 0xffffffff) {
+      if (oldest == -1) {
         serverStatusCount = serverStatusCount + 1;
-        local_10 = serverStatusCount & 0xf;
+        oldest = serverStatusCount & 0xf;
       }
-      return cl_serverStatusScoreBoardList + local_10;
+      return cl_serverStatusScoreBoardList + oldest;
     }
-    if (cl_serverStatusScoreBoardList[local_c].retrieved != 0) break;
-    local_c = local_c + 1;
+    if (cl_serverStatusScoreBoardList[i].retrieved != 0) break;
+    i = i + 1;
   }
-  return cl_serverStatusScoreBoardList + local_c;
+  return cl_serverStatusScoreBoardList + i;
 }
 
 
@@ -1309,29 +1326,29 @@ serverStatusInfoResponse_s * __cdecl CL_GetServerStatusScoreBoard(bdSecurityID *
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl CL_ServerStatus(char *param_1,char *param_2,int param_3)
+int __cdecl CL_ServerStatus(char *serversecurityID,char *serverStatusString,int maxLen)
 
 {
   serverStatusInfoResponse_s *psVar1;
   bool bVar2;
   int iVar3;
-  bdSecurityID local_1c;
+  bdSecurityID secId;
   uint local_14;
-  serverStatusInfoResponse_s *local_10;
-  int local_c;
-  serverInfo_t *local_8;
+  serverStatusInfoResponse_s *serverStatus;
+  int i;
+  serverInfo_t *server;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      cl_serverStatusList[local_c].address.port = 0;
-      cl_serverStatusList[local_c].retrieved = 1;
-      psVar1 = cl_serverStatusList + local_c;
+  if (serversecurityID == (char *)0x0) {
+    for (i = 0; i < 0x10; i = i + 1) {
+      cl_serverStatusList[i].address.port = 0;
+      cl_serverStatusList[i].retrieved = 1;
+      psVar1 = cl_serverStatusList + i;
       (psVar1->secId).ab[0] = '\0';
       (psVar1->secId).ab[1] = '\0';
       (psVar1->secId).ab[2] = '\0';
       (psVar1->secId).ab[3] = '\0';
-      psVar1 = cl_serverStatusList + local_c;
+      psVar1 = cl_serverStatusList + i;
       (psVar1->secId).ab[4] = '\0';
       (psVar1->secId).ab[5] = '\0';
       (psVar1->secId).ab[6] = '\0';
@@ -1339,46 +1356,46 @@ int __cdecl CL_ServerStatus(char *param_1,char *param_2,int param_3)
     }
   }
   else {
-    bdSecurityID::bdSecurityID(&local_1c);
-    local_1c.ab._0_4_ = *(undefined4 *)param_1;
-    local_1c.ab._4_4_ = *(undefined4 *)(param_1 + 4);
-    local_8 = FindServerBySecID(&local_1c,cls.pingUpdateSource);
-    if (local_8 != (serverInfo_t *)0x0) {
-      local_10 = CL_GetServerStatus(&local_1c);
-      if (param_2 == (char *)0x0) {
-        local_10->retrieved = 1;
+    bdSecurityID::bdSecurityID(&secId);
+    secId.ab._0_4_ = *(undefined4 *)serversecurityID;
+    secId.ab._4_4_ = *(undefined4 *)(serversecurityID + 4);
+    server = FindServerBySecID(&secId,cls.pingUpdateSource);
+    if (server != (serverInfo_t *)0x0) {
+      serverStatus = CL_GetServerStatus(&secId);
+      if (serverStatusString == (char *)0x0) {
+        serverStatus->retrieved = 1;
       }
       else {
-        bVar2 = bdSecurityID::operator==(&local_1c,&local_10->secId);
+        bVar2 = bdSecurityID::operator==(&secId,&serverStatus->secId);
         if (bVar2) {
-          if (local_10->pending == 0) {
-            I_strncpyz(param_2,local_10->string,param_3);
-            local_10->retrieved = 1;
-            local_10->startTime = 0;
+          if (serverStatus->pending == 0) {
+            I_strncpyz(serverStatusString,serverStatus->string,maxLen);
+            serverStatus->retrieved = 1;
+            serverStatus->startTime = 0;
             return 1;
           }
           iVar3 = Sys_Milliseconds();
-          if (local_10->startTime < iVar3 - (cl_serverStatusResendTime->current).integer) {
-            local_10->print = 0;
-            local_10->pending = 1;
-            local_10->retrieved = 0;
-            local_10->time = 0;
+          if (serverStatus->startTime < iVar3 - (cl_serverStatusResendTime->current).integer) {
+            serverStatus->print = 0;
+            serverStatus->pending = 1;
+            serverStatus->retrieved = 0;
+            serverStatus->time = 0;
             iVar3 = Sys_Milliseconds();
-            local_10->startTime = iVar3;
-            CL_RawPingServer(local_8,'\x04');
+            serverStatus->startTime = iVar3;
+            CL_RawPingServer(server,'\x04');
             return 0;
           }
         }
-        else if (local_10->retrieved != 0) {
-          local_10->print = 0;
-          local_10->pending = 1;
-          local_10->retrieved = 0;
+        else if (serverStatus->retrieved != 0) {
+          serverStatus->print = 0;
+          serverStatus->pending = 1;
+          serverStatus->retrieved = 0;
           iVar3 = Sys_Milliseconds();
-          local_10->startTime = iVar3;
-          local_10->time = 0;
-          *(undefined4 *)(local_10->secId).ab = local_1c.ab._0_4_;
-          *(undefined4 *)((local_10->secId).ab + 4) = local_1c.ab._4_4_;
-          CL_RawPingServer(local_8,'\x04');
+          serverStatus->startTime = iVar3;
+          serverStatus->time = 0;
+          *(undefined4 *)(serverStatus->secId).ab = secId.ab._0_4_;
+          *(undefined4 *)((serverStatus->secId).ab + 4) = secId.ab._4_4_;
+          CL_RawPingServer(server,'\x04');
           return 0;
         }
       }
@@ -1392,29 +1409,29 @@ int __cdecl CL_ServerStatus(char *param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl CL_ServerStatusScoreBoard(char *param_1,char *param_2,int param_3)
+int __cdecl CL_ServerStatusScoreBoard(char *serversecurityID,char *serverStatusString,int maxLen)
 
 {
   serverStatusInfoResponse_s *psVar1;
   bool bVar2;
   int iVar3;
-  bdSecurityID local_1c;
+  bdSecurityID secId;
   uint local_14;
-  serverStatusInfoResponse_s *local_10;
-  int local_c;
-  serverInfo_t *local_8;
+  serverStatusInfoResponse_s *serverStatus;
+  int i;
+  serverInfo_t *server;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      cl_serverStatusScoreBoardList[local_c].address.port = 0;
-      cl_serverStatusScoreBoardList[local_c].retrieved = 1;
-      psVar1 = cl_serverStatusScoreBoardList + local_c;
+  if (serversecurityID == (char *)0x0) {
+    for (i = 0; i < 0x10; i = i + 1) {
+      cl_serverStatusScoreBoardList[i].address.port = 0;
+      cl_serverStatusScoreBoardList[i].retrieved = 1;
+      psVar1 = cl_serverStatusScoreBoardList + i;
       (psVar1->secId).ab[0] = '\0';
       (psVar1->secId).ab[1] = '\0';
       (psVar1->secId).ab[2] = '\0';
       (psVar1->secId).ab[3] = '\0';
-      psVar1 = cl_serverStatusScoreBoardList + local_c;
+      psVar1 = cl_serverStatusScoreBoardList + i;
       (psVar1->secId).ab[4] = '\0';
       (psVar1->secId).ab[5] = '\0';
       (psVar1->secId).ab[6] = '\0';
@@ -1422,46 +1439,46 @@ int __cdecl CL_ServerStatusScoreBoard(char *param_1,char *param_2,int param_3)
     }
   }
   else {
-    bdSecurityID::bdSecurityID(&local_1c);
-    local_1c.ab._0_4_ = *(undefined4 *)param_1;
-    local_1c.ab._4_4_ = *(undefined4 *)(param_1 + 4);
-    local_8 = FindServerBySecID(&local_1c,cls.pingUpdateSource);
-    if (local_8 != (serverInfo_t *)0x0) {
-      local_10 = CL_GetServerStatusScoreBoard(&local_1c);
-      if (param_2 == (char *)0x0) {
-        local_10->retrieved = 1;
+    bdSecurityID::bdSecurityID(&secId);
+    secId.ab._0_4_ = *(undefined4 *)serversecurityID;
+    secId.ab._4_4_ = *(undefined4 *)(serversecurityID + 4);
+    server = FindServerBySecID(&secId,cls.pingUpdateSource);
+    if (server != (serverInfo_t *)0x0) {
+      serverStatus = CL_GetServerStatusScoreBoard(&secId);
+      if (serverStatusString == (char *)0x0) {
+        serverStatus->retrieved = 1;
       }
       else {
-        bVar2 = bdSecurityID::operator==(&local_1c,&local_10->secId);
+        bVar2 = bdSecurityID::operator==(&secId,&serverStatus->secId);
         if (bVar2) {
-          if (local_10->pending == 0) {
-            I_strncpyz(param_2,local_10->string,param_3);
-            local_10->retrieved = 1;
-            local_10->startTime = 0;
+          if (serverStatus->pending == 0) {
+            I_strncpyz(serverStatusString,serverStatus->string,maxLen);
+            serverStatus->retrieved = 1;
+            serverStatus->startTime = 0;
             return 1;
           }
           iVar3 = Sys_Milliseconds();
-          if (local_10->startTime < iVar3 - (cl_serverStatusResendTime->current).integer) {
-            local_10->print = 0;
-            local_10->pending = 1;
-            local_10->retrieved = 0;
-            local_10->time = 0;
+          if (serverStatus->startTime < iVar3 - (cl_serverStatusResendTime->current).integer) {
+            serverStatus->print = 0;
+            serverStatus->pending = 1;
+            serverStatus->retrieved = 0;
+            serverStatus->time = 0;
             iVar3 = Sys_Milliseconds();
-            local_10->startTime = iVar3;
-            CL_RawPingServer(local_8,'\x06');
+            serverStatus->startTime = iVar3;
+            CL_RawPingServer(server,'\x06');
             return 0;
           }
         }
-        else if (local_10->retrieved != 0) {
-          local_10->print = 0;
-          local_10->pending = 1;
-          local_10->retrieved = 0;
+        else if (serverStatus->retrieved != 0) {
+          serverStatus->print = 0;
+          serverStatus->pending = 1;
+          serverStatus->retrieved = 0;
           iVar3 = Sys_Milliseconds();
-          local_10->startTime = iVar3;
-          local_10->time = 0;
-          *(undefined4 *)(local_10->secId).ab = local_1c.ab._0_4_;
-          *(undefined4 *)((local_10->secId).ab + 4) = local_1c.ab._4_4_;
-          CL_RawPingServer(local_8,'\x06');
+          serverStatus->startTime = iVar3;
+          serverStatus->time = 0;
+          *(undefined4 *)(serverStatus->secId).ab = secId.ab._0_4_;
+          *(undefined4 *)((serverStatus->secId).ab + 4) = secId.ab._4_4_;
+          CL_RawPingServer(server,'\x06');
           return 0;
         }
       }
@@ -1477,7 +1494,7 @@ int __cdecl CL_ServerStatusScoreBoard(char *param_1,char *param_2,int param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_ServerStatusScoreBoardResponse(msg_t *param_1,bdSecurityID *param_2)
+void __cdecl CL_ServerStatusScoreBoardResponse(msg_t *msg,bdSecurityID *secID)
 
 {
   char *pcVar1;
@@ -1486,63 +1503,64 @@ void __cdecl CL_ServerStatusScoreBoardResponse(msg_t *param_1,bdSecurityID *para
   serverStatusInfoResponse_s *local_403c;
   serverStatusInfoResponse_s *local_402c;
   serverStatusInfoResponse_s *local_401c;
-  char local_4014 [16384];
+  int len;
+  char strBuf [16384];
   uint local_14;
-  char *local_10;
-  serverStatusInfoResponse_s *local_c;
-  int local_8;
+  char *s;
+  serverStatusInfoResponse_s *serverStatus;
+  int i;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (serverStatusInfoResponse_s *)0x0;
-  local_8 = 0;
+  serverStatus = (serverStatusInfoResponse_s *)0x0;
+  i = 0;
   do {
-    if (0xf < local_8) {
+    if (0xf < i) {
 LAB_0056a1ea:
-      if (local_c != (serverStatusInfoResponse_s *)0x0) {
-        local_10 = MSG_ReadStringLine(param_1,local_4014,0x4000);
-        Com_sprintf(local_c->string,0x4000,"%s");
-        local_401c = local_c;
+      if (serverStatus != (serverStatusInfoResponse_s *)0x0) {
+        s = MSG_ReadStringLine(msg,strBuf,0x4000);
+        Com_sprintf(serverStatus->string,0x4000,"%s");
+        local_401c = serverStatus;
         do {
           pcVar1 = local_401c->string;
           local_401c = (serverStatusInfoResponse_s *)(local_401c->string + 1);
         } while (*pcVar1 != '\0');
-        iVar3 = (int)local_401c - (int)(local_c->string + 1);
-        Com_sprintf((char *)((int)local_c + iVar3),0x4000 - iVar3,"\\");
-        local_8 = 0;
-        local_10 = MSG_ReadStringLine(param_1,local_4014,0x4000);
-        while (*local_10 != '\0') {
-          local_402c = local_c;
+        iVar3 = (int)local_401c - (int)(serverStatus->string + 1);
+        Com_sprintf((char *)((int)serverStatus + iVar3),0x4000 - iVar3,"\\");
+        i = 0;
+        s = MSG_ReadStringLine(msg,strBuf,0x4000);
+        while (*s != '\0') {
+          local_402c = serverStatus;
           do {
             pcVar1 = local_402c->string;
             local_402c = (serverStatusInfoResponse_s *)(local_402c->string + 1);
           } while (*pcVar1 != '\0');
-          iVar3 = (int)local_402c - (int)(local_c->string + 1);
-          Com_sprintf((char *)((int)local_c + iVar3),0x4000 - iVar3,"\\%s");
-          local_10 = MSG_ReadStringLine(param_1,local_4014,0x4000);
-          local_8 = local_8 + 1;
+          iVar3 = (int)local_402c - (int)(serverStatus->string + 1);
+          Com_sprintf((char *)((int)serverStatus + iVar3),0x4000 - iVar3,"\\%s");
+          s = MSG_ReadStringLine(msg,strBuf,0x4000);
+          i = i + 1;
         }
-        local_403c = local_c;
+        local_403c = serverStatus;
         do {
           pcVar1 = local_403c->string;
           local_403c = (serverStatusInfoResponse_s *)(local_403c->string + 1);
         } while (*pcVar1 != '\0');
-        iVar3 = (int)local_403c - (int)(local_c->string + 1);
-        Com_sprintf((char *)((int)local_c + iVar3),0x4000 - iVar3,"\\");
+        iVar3 = (int)local_403c - (int)(serverStatus->string + 1);
+        Com_sprintf((char *)((int)serverStatus + iVar3),0x4000 - iVar3,"\\");
         iVar3 = Sys_Milliseconds();
-        local_c->time = iVar3;
-        local_c->pending = 0;
-        if (local_c->print != 0) {
-          local_c->retrieved = 1;
+        serverStatus->time = iVar3;
+        serverStatus->pending = 0;
+        if (serverStatus->print != 0) {
+          serverStatus->retrieved = 1;
         }
       }
       return;
     }
-    bVar2 = bdSecurityID::operator==(param_2,&cl_serverStatusScoreBoardList[local_8].secId);
+    bVar2 = bdSecurityID::operator==(secID,&cl_serverStatusScoreBoardList[i].secId);
     if (bVar2) {
-      local_c = cl_serverStatusScoreBoardList + local_8;
+      serverStatus = cl_serverStatusScoreBoardList + i;
       goto LAB_0056a1ea;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1552,7 +1570,7 @@ LAB_0056a1ea:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_ServerStatusResponse(msg_t *param_1,bdSecurityID *param_2)
+void __cdecl CL_ServerStatusResponse(msg_t *msg,bdSecurityID *secID)
 
 {
   char *pcVar1;
@@ -1560,92 +1578,92 @@ void __cdecl CL_ServerStatusResponse(msg_t *param_1,bdSecurityID *param_2)
   int iVar3;
   serverStatusInfoResponse_s *local_830;
   serverStatusInfoResponse_s *local_820;
-  char local_81c [1024];
-  int local_41c;
-  int local_418;
-  char local_414 [1024];
+  char info [1024];
+  int l;
+  int len;
+  char strBuf [1024];
   uint local_14;
-  char *local_10;
-  serverStatusInfoResponse_s *local_c;
-  int local_8;
+  char *s;
+  serverStatusInfoResponse_s *serverStatus;
+  int i;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (serverStatusInfoResponse_s *)0x0;
-  local_8 = 0;
+  serverStatus = (serverStatusInfoResponse_s *)0x0;
+  i = 0;
   do {
-    if (0xf < local_8) {
+    if (0xf < i) {
 LAB_0056a4b6:
-      if (local_c != (serverStatusInfoResponse_s *)0x0) {
-        local_10 = MSG_ReadStringLine(param_1,local_414,0x400);
-        local_418 = 0;
-        Com_sprintf(local_c->string,0x4000,"%s");
-        if (local_c->print != 0) {
+      if (serverStatus != (serverStatusInfoResponse_s *)0x0) {
+        s = MSG_ReadStringLine(msg,strBuf,0x400);
+        len = 0;
+        Com_sprintf(serverStatus->string,0x4000,"%s");
+        if (serverStatus->print != 0) {
           Com_Printf(0xe,"Server settings:\n");
-          while (*local_10 != '\0') {
-            local_8 = 0;
-            while ((local_8 < 2 && (*local_10 != '\0'))) {
-              if (*local_10 == '\\') {
-                local_10 = local_10 + 1;
+          while (*s != '\0') {
+            i = 0;
+            while ((i < 2 && (*s != '\0'))) {
+              if (*s == '\\') {
+                s = s + 1;
               }
-              local_41c = 0;
-              while (*local_10 != '\0') {
-                local_81c[local_41c] = *local_10;
-                local_41c = local_41c + 1;
-                if ((0x3fe < local_41c) || (local_10 = local_10 + 1, *local_10 == '\\')) break;
+              l = 0;
+              while (*s != '\0') {
+                info[l] = *s;
+                l = l + 1;
+                if ((0x3fe < l) || (s = s + 1, *s == '\\')) break;
               }
-              local_81c[local_41c] = '\0';
-              if (local_8 == 0) {
+              info[l] = '\0';
+              if (i == 0) {
                 Com_Printf(0xe,"%-24s");
               }
               else {
                 Com_Printf(0xe,"%s\n");
               }
-              local_8 = local_8 + 1;
+              i = i + 1;
             }
           }
         }
-        local_820 = local_c;
+        local_820 = serverStatus;
         do {
           pcVar1 = local_820->string;
           local_820 = (serverStatusInfoResponse_s *)(local_820->string + 1);
         } while (*pcVar1 != '\0');
-        local_418 = (int)local_820 - (int)(local_c->string + 1);
-        Com_sprintf((char *)((int)local_c + local_418),0x4000 - local_418,"\\");
-        local_830 = local_c;
+        len = (int)local_820 - (int)(serverStatus->string + 1);
+        Com_sprintf((char *)((int)serverStatus + len),0x4000 - len,"\\");
+        local_830 = serverStatus;
         do {
           pcVar1 = local_830->string;
           local_830 = (serverStatusInfoResponse_s *)(local_830->string + 1);
         } while (*pcVar1 != '\0');
-        local_418 = (int)local_830 - (int)(local_c->string + 1);
-        Com_sprintf((char *)((int)local_c + local_418),0x4000 - local_418,"\\");
+        len = (int)local_830 - (int)(serverStatus->string + 1);
+        Com_sprintf((char *)((int)serverStatus + len),0x4000 - len,"\\");
         iVar3 = Sys_Milliseconds();
-        local_c->time = iVar3;
-        local_c->pending = 0;
-        if (local_c->print != 0) {
-          local_c->retrieved = 1;
+        serverStatus->time = iVar3;
+        serverStatus->pending = 0;
+        if (serverStatus->print != 0) {
+          serverStatus->retrieved = 1;
         }
       }
       return;
     }
-    bVar2 = bdSecurityID::operator==(param_2,&cl_serverStatusList[local_8].secId);
+    bVar2 = bdSecurityID::operator==(secID,&cl_serverStatusList[i].secId);
     if (bVar2) {
-      local_c = cl_serverStatusList + local_8;
+      serverStatus = cl_serverStatusList + i;
       goto LAB_0056a4b6;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0056A750  CL_ResetPlayerMuting  (client_mp/cl_main_pc_mp.cpp:1942)
 
-void __cdecl CL_ResetPlayerMuting(int param_1)
+void __cdecl CL_ResetPlayerMuting(int muteClientIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((muteClientIndex < 0) || (0x1f < muteClientIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp",0x798
                              ,0,"%s");
     if (!bVar2) {
@@ -1654,21 +1672,21 @@ void __cdecl CL_ResetPlayerMuting(int param_1)
       return;
     }
   }
-  s_playerMute[param_1] = false;
+  s_playerMute[muteClientIndex] = false;
   return;
 }
 
 
 // 0056A7A0  CL_MutePlayer  (client_mp/cl_main_pc_mp.cpp:1951)
 
-void __cdecl CL_MutePlayer(int param_1,int param_2)
+void __cdecl CL_MutePlayer(int localClientNum,int muteClientIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x1f < (uint)param_2) {
+  if (0x1f < (uint)muteClientIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp",0x7a1
                              ,0,"muteClientIndex doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1677,8 +1695,8 @@ void __cdecl CL_MutePlayer(int param_1,int param_2)
       return;
     }
   }
-  s_playerMute[param_2] = (bool)('\x01' - (s_playerMute[param_2] != false));
-  if (s_playerMute[param_2] == false) {
+  s_playerMute[muteClientIndex] = (bool)('\x01' - (s_playerMute[muteClientIndex] != false));
+  if (s_playerMute[muteClientIndex] == false) {
     pcVar3 = va("unmuteplayer %i\n");
     Cbuf_AddText(0,pcVar3);
   }
@@ -1692,14 +1710,14 @@ void __cdecl CL_MutePlayer(int param_1,int param_2)
 
 // 0056A840  CL_IsPlayerMuted  (client_mp/cl_main_pc_mp.cpp:1964)
 
-bool __cdecl CL_IsPlayerMuted(int param_1,int param_2)
+bool __cdecl CL_IsPlayerMuted(int localClientNum,int muteClientIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_2 < 0) || (0x1f < param_2)) {
+  if ((muteClientIndex < 0) || (0x1f < muteClientIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp",0x7ae
                              ,0,"%s");
     if (!bVar2) {
@@ -1708,7 +1726,7 @@ bool __cdecl CL_IsPlayerMuted(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return s_playerMute[param_2];
+  return s_playerMute[muteClientIndex];
 }
 
 
@@ -1758,13 +1776,13 @@ void __cdecl CL_ClearMutedList(void)
 void __cdecl CL_FinishMotdDownload(void)
 
 {
-  char *local_c;
-  int local_8;
+  void *buf;
+  int fileSize;
   
-  local_8 = FS_ReadFile("motd.txt",&local_c);
-  if (-1 < local_8) {
-    Dvar_SetStringByName("motd",local_c);
-    FS_FreeFile(local_c);
+  fileSize = FS_ReadFile("motd.txt",&buf);
+  if (-1 < fileSize) {
+    Dvar_SetStringByName("motd",buf);
+    FS_FreeFile(buf);
   }
   return;
 }
@@ -1773,6 +1791,7 @@ void __cdecl CL_FinishMotdDownload(void)
 // 0056A900  CL_WWWDownload  (client_mp/cl_main_pc_mp.cpp:2017)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl CL_WWWDownload(void)
 
@@ -1780,8 +1799,11 @@ void __cdecl CL_WWWDownload(void)
   bool bVar1;
   dlStatus_t dVar2;
   int iVar3;
-  char *pcVar4;
-  char local_10c [260];
+  char *fmt;
+  char *error;
+  char *basepath;
+  dlStatus_t ret;
+  char to_ospath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1796,11 +1818,11 @@ void __cdecl CL_WWWDownload(void)
     }
     else if (dVar2 == DL_DONE) {
       cls.download = 0;
-      FS_BuildOSPath((fs_homepath->current).string,(char *)0x0,cls.originalDownloadName,local_10c);
-      remove(local_10c);
-      iVar3 = rename(cls.downloadTempName,local_10c);
+      FS_BuildOSPath((fs_homepath->current).string,(char *)0x0,cls.originalDownloadName,to_ospath);
+      remove(to_ospath);
+      iVar3 = rename(cls.downloadTempName,to_ospath);
       if (iVar3 != 0) {
-        FS_CopyFile(cls.downloadTempName,local_10c);
+        FS_CopyFile(cls.downloadTempName,to_ospath);
         remove(cls.downloadTempName);
       }
       cls.downloadName[0] = '\0';
@@ -1818,10 +1840,10 @@ void __cdecl CL_WWWDownload(void)
       cls.wwwDlInProgress = 0;
     }
     else {
-      pcVar4 = va("Download failure while getting \'%s\'\n");
+      fmt = va("Download failure while getting \'%s\'\n");
       cls.wwwDlDisconnected = 0;
       CL_ClearStaticDownload();
-      Com_Error(ERR_DROP,pcVar4);
+      Com_Error(ERR_DROP,fmt);
     }
   }
   return;
@@ -1865,7 +1887,7 @@ void __cdecl CL_Platform_RegisterCommands(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl CL_RequestCACValidateSuccess(TaskRecord *param_1)
+void __cdecl CL_RequestCACValidateSuccess(TaskRecord *task)
 
 {
   Com_Printf(0xe,"CACValidate: Successfully sent message to server\n");
@@ -1877,7 +1899,7 @@ void __cdecl CL_RequestCACValidateSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl CL_RequestCACValidateFailure(TaskRecord *param_1)
+void __cdecl CL_RequestCACValidateFailure(TaskRecord *task)
 
 {
   Com_DPrintf(0xe,"CACValidate: Failed to send message to server!\n");
@@ -1887,37 +1909,38 @@ void __cdecl CL_RequestCACValidateFailure(TaskRecord *param_1)
 
 // 0056ADF0  CL_CACValidateServerMatches  (client_mp/cl_main_pc_mp.cpp:2180)
 
-bool __cdecl CL_CACValidateServerMatches(ulong64 param_1)
+bool __cdecl CL_CACValidateServerMatches(ulong64 uid)
 
 {
-  cacvalidateserver_t cVar1;
-  bool local_5;
+  bool bVar1;
+  cacvalidateserver_t cVar2;
+  bool retval;
   
-  local_5 = param_1 != g_cacValidateServer.uid;
-  if (local_5) {
+  bVar1 = uid != g_cacValidateServer.uid;
+  if (bVar1) {
     Com_DPrintf(0xf,"CACValidate: ACK received, expected uid %llu, got uid %llu\n");
-    cVar1 = g_cacValidateServer;
+    cVar2 = g_cacValidateServer;
   }
   else {
     Com_DPrintf(0xf,"CACValidate: ACK received from %llu\n");
-    cVar1 = g_cacValidateServer;
+    cVar2 = g_cacValidateServer;
   }
-  local_5 = !local_5;
-  g_cacValidateServer.uid._4_4_ = (undefined4)(cVar1.uid >> 0x20);
-  g_cacValidateServer.uid._0_4_ = (undefined4)cVar1.uid;
-  return local_5;
+  retval = !bVar1;
+  g_cacValidateServer.uid._4_4_ = (undefined4)(cVar2.uid >> 0x20);
+  g_cacValidateServer.uid._0_4_ = (undefined4)cVar2.uid;
+  return retval;
 }
 
 
 // 0056ADA0  CL_CACValidateHandleNACK  (client_mp/cl_main_pc_mp.cpp:2199)
 
-void __cdecl CL_CACValidateHandleNACK(ulong64 param_1)
+void __cdecl CL_CACValidateHandleNACK(ulong64 uid)
 
 {
   bool bVar1;
   
   if (g_cacValidateState == CAC_REQUESTSENT) {
-    bVar1 = CL_CACValidateServerMatches(param_1);
+    bVar1 = CL_CACValidateServerMatches(uid);
     if (bVar1) {
       Com_DPrintf(0xe,
                   "CACValidate: Got NACK from the server\n CAC_REQUESTSENT --> CAC_NOTVALIDATED\n");
@@ -1930,13 +1953,13 @@ void __cdecl CL_CACValidateHandleNACK(ulong64 param_1)
 
 // 0056AE60  CL_CACValidateHandleOK  (client_mp/cl_main_pc_mp.cpp:2208)
 
-void __cdecl CL_CACValidateHandleOK(ulong64 param_1)
+void __cdecl CL_CACValidateHandleOK(ulong64 uid)
 
 {
   bool bVar1;
   
   if (g_cacValidateState == CAC_REQUESTSENT) {
-    bVar1 = CL_CACValidateServerMatches(param_1);
+    bVar1 = CL_CACValidateServerMatches(uid);
     if (bVar1) {
       Com_DPrintf(0xf,"CACValidate: Got OK from server\n CAC_REQUESTSENT --> CAC_VALIDATED\n");
       UI_CloseMenu(0,"popup_gettingdata");
@@ -1950,13 +1973,13 @@ void __cdecl CL_CACValidateHandleOK(ulong64 param_1)
 
 // 0056AEC0  CL_CACValidateHandleBad  (client_mp/cl_main_pc_mp.cpp:2219)
 
-void __cdecl CL_CACValidateHandleBad(ulong64 param_1)
+void __cdecl CL_CACValidateHandleBad(ulong64 uid)
 
 {
   bool bVar1;
   
   if (g_cacValidateState == CAC_REQUESTSENT) {
-    bVar1 = CL_CACValidateServerMatches(param_1);
+    bVar1 = CL_CACValidateServerMatches(uid);
     if (bVar1) {
       Com_DPrintf(0xe,"CACValidate: Got BAD from server\n CAC_REQUESTSENT --> CAC_REJECTED\n");
       g_cacValidateState = CAC_REJECTED;
@@ -1972,19 +1995,27 @@ void __cdecl CL_CACValidateHandleBad(ulong64 param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl CL_RequestCACValidate(ulong64 param_1)
+bool __cdecl CL_RequestCACValidate(ulong64 serverId)
 
 {
   code *pcVar1;
   ulong64 uVar2;
   bool bVar3;
   undefined1 uVar4;
-  uchar *puVar5;
-  int iVar6;
-  uint uVar7;
-  TaskRecord *pTVar8;
-  bool local_9d05;
-  char local_9d04 [2];
+  uchar *buffer;
+  int iVar5;
+  uint length;
+  TaskRecord *pTVar6;
+  TaskRecord *ptask;
+  TaskRecord *childTask;
+  uchar *statsBuffer;
+  uint *cacsize;
+  uint *checksum;
+  int newStatsSize;
+  bool basicTraining;
+  uchar *ptr;
+  bool retval;
+  char compressedBuffer [2];
   uint local_9d02;
   uint local_9cfe;
   uchar local_9cfa [40178];
@@ -1992,35 +2023,35 @@ bool __cdecl CL_RequestCACValidate(ulong64 param_1)
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   Com_DPrintf(0xe,"CACValidate: Compressing stats\n");
-  local_9d05 = false;
-  puVar5 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_FORCE_NORMAL,true);
+  retval = false;
+  buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_FORCE_NORMAL,true);
   bVar3 = LiveStorage_DoWeHaveAllStats(0);
   if (bVar3) {
-    iVar6 = LiveStats_ReadVersionFromBuffer((char *)puVar5);
-    if ((stat_version->current).integer == iVar6) {
-      bVar3 = LiveStats_GetBasicTrainingState(puVar5);
+    iVar5 = LiveStats_ReadVersionFromBuffer((char *)buffer);
+    if ((stat_version->current).integer == iVar5) {
+      bVar3 = LiveStats_GetBasicTrainingState(buffer);
       if (bVar3) {
         Com_PrintError(0,"Basic training stats in force-normal. bad.\n");
-        local_9d05 = false;
+        retval = false;
         uVar2 = CONCAT44(g_cacValidateServer.uid._4_4_,(undefined4)g_cacValidateServer.uid);
       }
       else {
-        uVar7 = MSG_CompressWithZLib(puVar5,0x9ce8,local_9cfa,0x9ce8);
-        local_9d04[0] = '\x03';
-        local_9d04[1] = 0;
-        local_9d02 = uVar7;
-        local_9cfe = Com_BlockChecksumKey32(local_9cfa,uVar7,0);
+        length = MSG_CompressWithZLib(buffer,0x9ce8,local_9cfa,0x9ce8);
+        compressedBuffer[0] = '\x03';
+        compressedBuffer[1] = 0;
+        local_9d02 = length;
+        local_9cfe = Com_BlockChecksumKey32(local_9cfa,length,0);
         Com_Printf(0xe,"CACValidate: Stats compressed to %i bytes, using checksum %u\n");
-        if (uVar7 < 0x4000) {
-          pTVar8 = dwMessaging_SendInstantMessage(param_1,local_9d04,uVar7 + 10);
+        if (length < 0x4000) {
+          pTVar6 = dwMessaging_SendInstantMessage(serverId,compressedBuffer,length + 10);
           uVar2 = CONCAT44(g_cacValidateServer.uid._4_4_,(undefined4)g_cacValidateServer.uid);
-          if (pTVar8 != (TaskRecord *)0x0) {
-            pTVar8 = TaskManager2_CreateTask(task_RequestCACValidate,0,pTVar8,0);
+          if (pTVar6 != (TaskRecord *)0x0) {
+            pTVar6 = TaskManager2_CreateTask(task_RequestCACValidate,0,pTVar6,0);
             uVar2 = CONCAT44(g_cacValidateServer.uid._4_4_,(undefined4)g_cacValidateServer.uid);
-            if (pTVar8 != (TaskRecord *)0x0) {
-              TaskManager2_StartTask(pTVar8);
-              local_9d05 = true;
-              uVar2 = param_1;
+            if (pTVar6 != (TaskRecord *)0x0) {
+              TaskManager2_StartTask(pTVar6);
+              retval = true;
+              uVar2 = serverId;
             }
           }
         }
@@ -2041,17 +2072,17 @@ bool __cdecl CL_RequestCACValidate(ulong64 param_1)
     }
     else {
       Com_PrintError(0xe,"Not doing cacvalidate, no version in buffer!\n");
-      local_9d05 = false;
+      retval = false;
       uVar2 = CONCAT44(g_cacValidateServer.uid._4_4_,(undefined4)g_cacValidateServer.uid);
     }
   }
   else {
-    local_9d05 = false;
+    retval = false;
     uVar2 = CONCAT44(g_cacValidateServer.uid._4_4_,(undefined4)g_cacValidateServer.uid);
   }
   g_cacValidateServer.uid._4_4_ = (undefined4)(uVar2 >> 0x20);
   g_cacValidateServer.uid._0_4_ = (undefined4)uVar2;
-  return local_9d05;
+  return retval;
 }
 
 
@@ -2071,7 +2102,8 @@ void __cdecl CL_CACValidateRequest_f(void)
 {
   code *pcVar1;
   bool bVar2;
-  uchar *puVar3;
+  uchar *buffer;
+  bool basicTraining;
   
   bVar2 = Dvar_GetBool("allItemsUnlocked");
   if ((bVar2) || (bVar2 = Dvar_GetBool("allItemsPurchased"), bVar2)) {
@@ -2082,8 +2114,8 @@ void __cdecl CL_CACValidateRequest_f(void)
     if (!bVar2) {
       bVar2 = LiveStorage_DoWeHaveAllStats(0);
       if (bVar2) {
-        puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-        bVar2 = LiveStats_GetBasicTrainingState(puVar3);
+        buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+        bVar2 = LiveStats_GetBasicTrainingState(buffer);
         if (bVar2) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp"
                                    ,0x90d,0,
@@ -2124,7 +2156,7 @@ bool __cdecl CL_PrestigeRequest(void)
 
 {
   int iVar1;
-  bool local_5;
+  bool retval;
   
   iVar1 = LiveStats_WritePrestigeToStats(0);
   if (iVar1 == 0) {
@@ -2134,8 +2166,8 @@ bool __cdecl CL_PrestigeRequest(void)
     Com_DPrintf(0xe,"Prestige incremented!\n");
     CL_CACValidateRequest_f();
   }
-  local_5 = iVar1 != 0;
-  return local_5;
+  retval = iVar1 != 0;
+  return retval;
 }
 
 
@@ -2165,6 +2197,7 @@ void __cdecl CL_CACValidate_Frame(void)
   bdTrulyRandomImpl *this;
   uint uVar3;
   int iVar4;
+  uint servernum;
   
   if ((_S2 & 1) == 0) {
     _S2 = _S2 | 1;
@@ -2340,6 +2373,9 @@ void __cdecl _dynamic_initializer_for__s_quickMatchServers__(void)
 
 // 0056B7C0  CL_QuickMatchConnect_f  (client_mp/cl_main_pc_mp.cpp:2583)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl CL_QuickMatchConnect_f(void)
 
 {
@@ -2361,10 +2397,10 @@ bool __cdecl CL_QuickMatch_InProgress(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl CL_QuickMatch_FindSessionsSuccess(TaskRecord *param_1)
+void __cdecl CL_QuickMatch_FindSessionsSuccess(TaskRecord *task)
 
 {
-  s_numServers = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+  s_numServers = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
   Com_DPrintf(0xe,"QuickMatch: Backend returned %i results\n");
   if (s_numServers == 0) {
     s_quickmatchstate = QM_FAILED;
@@ -2380,7 +2416,7 @@ void __cdecl CL_QuickMatch_FindSessionsSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl CL_QuickMatch_FindSessionsFailure(TaskRecord *param_1)
+void __cdecl CL_QuickMatch_FindSessionsFailure(TaskRecord *task)
 
 {
   s_quickmatchstate = QM_DORMANT;
@@ -2393,17 +2429,18 @@ void __cdecl CL_QuickMatch_FindSessionsFailure(TaskRecord *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-CL_QuickMatch_Start(int param_1,char *param_2,int param_3,int param_4,int param_5,int param_6)
+CL_QuickMatch_Start(int servertype,char *mapname,int playlist,int minPlayers,int maxPlayers,
+                   int maxPing)
 
 {
   code *pcVar1;
   bool bVar2;
   bdReference<bdRemoteTask> bVar3;
   bdReference<bdByteBuffer> local_30;
-  MatchMaking_PC_QUICKMATCH_Query local_2c;
-  TaskRecord *local_10;
-  bdCommonAddr *local_c;
-  bdMatchMaking *local_8;
+  MatchMaking_PC_QUICKMATCH_Query query;
+  TaskRecord *task;
+  bdCommonAddr *remoteTask;
+  bdMatchMaking *matchmaking;
   
   bVar2 = CL_QuickMatch_InProgress();
   if (bVar2) {
@@ -2417,39 +2454,39 @@ CL_QuickMatch_Start(int param_1,char *param_2,int param_3,int param_4,int param_
       s_numServers = 0;
       s_lastpingedserver = 0;
       s_serveriter = 0;
-      local_8 = dwGetMatchmaking(0);
-      if ((local_8 == (bdMatchMaking *)0x0) &&
+      matchmaking = dwGetMatchmaking(0);
+      if ((matchmaking == (bdMatchMaking *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp"
                                    ,0xa50,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_8 != (bdMatchMaking *)0x0) {
-        local_10 = TaskManager2_CreateTask(task_QuickMatchFindSessions,0,(TaskRecord *)0x0,0);
-        MatchMaking_PC_QUICKMATCH_Query::MatchMaking_PC_QUICKMATCH_Query(&local_2c);
-        local_2c.m_memberPARAM_SERVERTYPE = param_1;
-        local_2c.m_memberPARAM_NETCODE_VERSION = 0x414;
-        local_2c.m_memberPARAM_PLAYLIST = param_3;
-        local_2c.m_memberPARAM_PLAYLIST_VERSION = Playlist_GetVersionNumber();
-        local_2c.m_memberPARAM_LICENSE = 0xffffffff;
+      if (matchmaking != (bdMatchMaking *)0x0) {
+        task = TaskManager2_CreateTask(task_QuickMatchFindSessions,0,(TaskRecord *)0x0,0);
+        MatchMaking_PC_QUICKMATCH_Query::MatchMaking_PC_QUICKMATCH_Query(&query);
+        query.m_memberPARAM_SERVERTYPE = servertype;
+        query.m_memberPARAM_NETCODE_VERSION = 0x414;
+        query.m_memberPARAM_PLAYLIST = playlist;
+        query.m_memberPARAM_PLAYLIST_VERSION = Playlist_GetVersionNumber();
+        query.m_memberPARAM_LICENSE = 0xffffffff;
         bVar3 = bdMatchMaking::findSessions
-                          (local_8,(uint)&local_30,3,0,(bdSessionParams *)0x1f4,
-                           (bdMatchMakingInfo *)&local_2c);
-        local_c = (bdCommonAddr *)(bVar3.m_ptr)->_padding_;
+                          (matchmaking,(uint)&local_30,3,0,(bdSessionParams *)0x1f4,
+                           (bdMatchMakingInfo *)&query);
+        remoteTask = (bdCommonAddr *)(bVar3.m_ptr)->_padding_;
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_30);
-        if (local_c != (bdCommonAddr *)0x0) {
+        if (remoteTask != (bdCommonAddr *)0x0) {
           bdReference<bdCommonAddr>::operator=
-                    ((bdReference<bdCommonAddr> *)&local_10->remoteTask,local_c);
-          TaskManager2_StartTask(local_10);
+                    ((bdReference<bdCommonAddr> *)&task->remoteTask,remoteTask);
+          TaskManager2_StartTask(task);
           s_quickmatchstate = QM_FINDING;
-          I_strncpyz(s_quickmatch_params.mapname,param_2,4);
-          s_quickmatch_params.maxping = param_6;
-          s_quickmatch_params.minplayers = param_4;
-          s_quickmatch_params.maxplayers = param_5;
+          I_strncpyz(s_quickmatch_params.mapname,mapname,4);
+          s_quickmatch_params.maxping = maxPing;
+          s_quickmatch_params.minplayers = minPlayers;
+          s_quickmatch_params.maxplayers = maxPlayers;
           s_quickmatch_params.isWager = false;
         }
-        bdSessionParams::~bdSessionParams((bdSessionParams *)&local_2c);
+        bdSessionParams::~bdSessionParams((bdSessionParams *)&query);
       }
     }
   }
@@ -2467,15 +2504,15 @@ void __cdecl CL_QuickWager_Start(void)
   code *pcVar1;
   bool bVar2;
   bdReference<bdRemoteTask> bVar3;
-  int iVar4;
-  int *piVar5;
-  char *pcVar6;
+  int controllerIndex;
+  int *outInt;
+  char *statName;
   bdReference<bdByteBuffer> local_34;
-  MatchMaking_PC_WAGER_Query local_30;
-  TaskRecord *local_14;
-  bdCommonAddr *local_10;
-  char local_c [4];
-  bdMatchMaking *local_8;
+  MatchMaking_PC_WAGER_Query query;
+  TaskRecord *task;
+  bdCommonAddr *remoteTask;
+  char mapname [4];
+  bdMatchMaking *matchmaking;
   
   bVar2 = CL_QuickMatch_InProgress();
   if (bVar2) {
@@ -2489,43 +2526,43 @@ void __cdecl CL_QuickWager_Start(void)
       s_numServers = 0;
       s_lastpingedserver = 0;
       s_serveriter = 0;
-      builtin_strncpy(local_c,"any",4);
-      local_8 = dwGetMatchmaking(0);
-      if ((local_8 == (bdMatchMaking *)0x0) &&
+      builtin_strncpy(mapname,"any",4);
+      matchmaking = dwGetMatchmaking(0);
+      if ((matchmaking == (bdMatchMaking *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp"
                                    ,0xa7c,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_8 != (bdMatchMaking *)0x0) {
-        local_14 = TaskManager2_CreateTask(task_QuickMatchFindSessions,0,(TaskRecord *)0x0,0);
-        MatchMaking_PC_WAGER_Query::MatchMaking_PC_WAGER_Query(&local_30);
-        local_30.m_memberPARAM_SERVERTYPE = 2;
-        local_30.m_memberPARAM_NETCODE_VERSION = 0x414;
-        local_30.m_memberPARAM_PLAYLIST_MIN = (cl_wager_firstplaylist->current).integer;
-        local_30.m_memberPARAM_PLAYLIST_MAX = (cl_wager_lastplaylist->current).integer;
-        local_30.m_memberPARAM_PLAYLIST_VERSION = Playlist_GetVersionNumber();
-        local_30.m_memberPARAM_LICENSE = 0x7fffffff;
+      if (matchmaking != (bdMatchMaking *)0x0) {
+        task = TaskManager2_CreateTask(task_QuickMatchFindSessions,0,(TaskRecord *)0x0,0);
+        MatchMaking_PC_WAGER_Query::MatchMaking_PC_WAGER_Query(&query);
+        query.m_memberPARAM_SERVERTYPE = 2;
+        query.m_memberPARAM_NETCODE_VERSION = 0x414;
+        query.m_memberPARAM_PLAYLIST_MIN = (cl_wager_firstplaylist->current).integer;
+        query.m_memberPARAM_PLAYLIST_MAX = (cl_wager_lastplaylist->current).integer;
+        query.m_memberPARAM_PLAYLIST_VERSION = Playlist_GetVersionNumber();
+        query.m_memberPARAM_LICENSE = 0x7fffffff;
         bVar3 = bdMatchMaking::findSessions
-                          (local_8,(uint)&local_34,5,0,(bdSessionParams *)0x1f4,
-                           (bdMatchMakingInfo *)&local_30);
-        local_10 = (bdCommonAddr *)(bVar3.m_ptr)->_padding_;
+                          (matchmaking,(uint)&local_34,5,0,(bdSessionParams *)0x1f4,
+                           (bdMatchMakingInfo *)&query);
+        remoteTask = (bdCommonAddr *)(bVar3.m_ptr)->_padding_;
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_34);
-        if (local_10 != (bdCommonAddr *)0x0) {
+        if (remoteTask != (bdCommonAddr *)0x0) {
           bdReference<bdCommonAddr>::operator=
-                    ((bdReference<bdCommonAddr> *)&local_14->remoteTask,local_10);
-          TaskManager2_StartTask(local_14);
+                    ((bdReference<bdCommonAddr> *)&task->remoteTask,remoteTask);
+          TaskManager2_StartTask(task);
           s_quickmatchstate = QM_FINDING;
-          I_strncpyz(s_quickmatch_params.mapname,local_c,4);
+          I_strncpyz(s_quickmatch_params.mapname,mapname,4);
           s_quickmatch_params.maxping = (cl_wager_maxping->current).integer;
           s_quickmatch_params.isWager = true;
-          pcVar6 = "CODPOINTS";
-          piVar5 = &s_quickmatch_params.codpoints;
-          iVar4 = Com_LocalClient_GetControllerIndex(0);
-          LiveStats_GetIntPlayerStat(iVar4,piVar5,pcVar6);
+          statName = "CODPOINTS";
+          outInt = &s_quickmatch_params.codpoints;
+          controllerIndex = Com_LocalClient_GetControllerIndex(0);
+          LiveStats_GetIntPlayerStat(controllerIndex,outInt,statName);
         }
-        bdSessionParams::~bdSessionParams((bdSessionParams *)&local_30);
+        bdSessionParams::~bdSessionParams((bdSessionParams *)&query);
       }
     }
   }
@@ -2535,42 +2572,47 @@ void __cdecl CL_QuickWager_Start(void)
 
 // 0056BBC0  CL_QuickMatch_f  (client_mp/cl_main_pc_mp.cpp:2716)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl CL_QuickMatch_f(void)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_1c;
-  int local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int minplayers;
+  int maxplayers;
+  int servertype;
+  int playlist;
+  char *mapname;
+  int maxping;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 6) {
     pcVar2 = Cmd_Argv(1);
-    local_10 = atoi(pcVar2);
-    local_c = Cmd_Argv(2);
+    playlist = atoi(pcVar2);
+    mapname = Cmd_Argv(2);
     pcVar2 = Cmd_Argv(3);
-    local_1c = atoi(pcVar2);
+    minplayers = atoi(pcVar2);
     pcVar2 = Cmd_Argv(4);
-    local_18 = atoi(pcVar2);
+    maxplayers = atoi(pcVar2);
     pcVar2 = Cmd_Argv(5);
-    local_8 = atoi(pcVar2);
+    maxping = atoi(pcVar2);
   }
   else {
-    local_10 = -1;
-    local_c = "any";
-    local_1c = 0;
-    local_18 = 0x18;
-    local_8 = 0x96;
+    playlist = -1;
+    mapname = "any";
+    minplayers = 0;
+    maxplayers = 0x18;
+    maxping = 0x96;
   }
-  CL_QuickMatch_Start(1,local_c,local_10,local_1c,local_18,local_8);
+  CL_QuickMatch_Start(1,mapname,playlist,minplayers,maxplayers,maxping);
   return;
 }
 
 
 // 0056BC90  CL_QuickWager_f  (client_mp/cl_main_pc_mp.cpp:2746)
+
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl CL_QuickWager_f(void)
 
@@ -2614,21 +2656,21 @@ void __cdecl CL_QuickMatch_InitDvars(void)
 void __cdecl CL_QuickMatch_Init(void)
 
 {
-  netadr_t nVar1;
-  uint local_1c;
+  netadr_t adr;
+  uint i;
   uint local_10;
   
   local_10 = local_10 & 0xffff0000;
-  for (local_1c = 0; local_1c < 0x32; local_1c = local_1c + 1) {
-    nVar1._8_4_ = local_10;
-    nVar1.type = NA_IP;
-    nVar1.ip[0] = '\0';
-    nVar1.ip[1] = '\0';
-    nVar1.ip[2] = '\0';
-    nVar1.ip[3] = '\0';
-    nVar1.addrHandleIndex = -1;
-    CL_InitServerInfo((serverInfo_t *)(s_quickmatchCandidates + local_1c * 0x178),nVar1);
-    *(undefined2 *)(s_quickmatchCandidates + local_1c * 0x178 + 0x74) = 0xffff;
+  for (i = 0; i < 0x32; i = i + 1) {
+    adr._8_4_ = local_10;
+    adr.type = NA_IP;
+    adr.ip[0] = '\0';
+    adr.ip[1] = '\0';
+    adr.ip[2] = '\0';
+    adr.ip[3] = '\0';
+    adr.addrHandleIndex = -1;
+    CL_InitServerInfo((serverInfo_t *)(s_quickmatchCandidates + i * 0x178),adr);
+    *(undefined2 *)(s_quickmatchCandidates + i * 0x178 + 0x74) = 0xffff;
   }
   Cmd_AddCommandInternal("quickmatch",CL_QuickMatch_f,(cmd_function_s *)&CL_QuickMatch_f_VAR);
   Cmd_AddCommandInternal("wagermatch",CL_QuickWager_f,(cmd_function_s *)&CL_QuickWager_f_VAR);
@@ -2639,52 +2681,52 @@ void __cdecl CL_QuickMatch_Init(void)
 
 // 0056BE50  CL_QuickMatch_ServerMatches  (client_mp/cl_main_pc_mp.cpp:2785)
 
-bool __cdecl CL_QuickMatch_ServerMatches(MatchMakingInfo *param_1)
+bool __cdecl CL_QuickMatch_ServerMatches(MatchMakingInfo *server)
 
 {
   int iVar1;
   bool bVar2;
   bool local_1c;
   bool local_10;
-  bool local_5;
+  bool retval;
   
   bVar2 = true;
   iVar1 = I_strcmp(s_quickmatch_params.mapname,"any");
   if (iVar1 != 0) {
-    iVar1 = I_strcmp(param_1->m_membermapname,s_quickmatch_params.mapname);
+    iVar1 = I_strcmp(server->m_membermapname,s_quickmatch_params.mapname);
     bVar2 = iVar1 == 0;
   }
   if (s_quickmatch_params.isWager == false) {
-    if ((bVar2) && (param_1->m_memberserverType == 1)) {
+    if ((bVar2) && (server->m_memberserverType == 1)) {
       bVar2 = true;
     }
     else {
       bVar2 = false;
     }
-    if ((bVar2) && ((uint)param_1->_padding_ <= (uint)s_quickmatch_params.maxplayers)) {
+    if ((bVar2) && ((uint)server->_padding_ <= (uint)s_quickmatch_params.maxplayers)) {
       bVar2 = true;
     }
     else {
       bVar2 = false;
     }
-    if ((bVar2) && ((uint)s_quickmatch_params.minplayers <= (uint)param_1->_padding_)) {
+    if ((bVar2) && ((uint)s_quickmatch_params.minplayers <= (uint)server->_padding_)) {
       local_1c = true;
     }
     else {
       local_1c = false;
     }
-    local_5 = local_1c;
+    retval = local_1c;
   }
   else {
-    if ((bVar2) && (param_1->m_memberserverType == 2)) {
+    if ((bVar2) && (server->m_memberserverType == 2)) {
       local_10 = true;
     }
     else {
       local_10 = false;
     }
-    local_5 = local_10;
+    retval = local_10;
   }
-  return local_5;
+  return retval;
 }
 
 
@@ -2696,20 +2738,18 @@ void __cdecl CL_QuickMatch_PingServers(void)
 
 {
   code *pcVar1;
-  netadr_t nVar2;
+  netadr_t adr;
+  uint uVar2;
   bool bVar3;
   uint uVar4;
-  serverInfo_t local_19c;
-  bdReference<bdByteBuffer> local_24;
-  undefined4 local_20;
-  undefined4 local_1c;
+  MatchMakingInfo *server_00;
+  serverInfo_t fakeserver;
+  bdReference<bdCommonAddr> serveraddr;
   uint local_18;
   int local_14;
-  uint local_10;
-  MatchMakingInfo *local_c;
-  int local_8;
+  MatchMakingInfo *server;
+  int i;
   
-  local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (cl_maxppf == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp",0xaf9
                              ,0,"%s");
@@ -2719,42 +2759,43 @@ void __cdecl CL_QuickMatch_PingServers(void)
       return;
     }
   }
-  local_8 = 0;
-  while ((local_8 < (cl_maxppf->current).integer && (s_serveriter < s_numServers))) {
-    local_c = s_quickMatchServers + s_serveriter;
+  i = 0;
+  while ((uVar2 = s_serveriter, i < (cl_maxppf->current).integer && (s_serveriter < s_numServers)))
+  {
+    server_00 = s_quickMatchServers + s_serveriter;
     s_serveriter = s_serveriter + 1;
-    local_8 = local_8 + 1;
-    bVar3 = CL_QuickMatch_ServerMatches(local_c);
+    bVar3 = CL_QuickMatch_ServerMatches(server_00);
     if (bVar3) {
       s_lastpingedserver = s_lastpingedserver + 1;
       Com_DPrintf(0xe,"Pinging %s\n");
       uVar4 = Sys_Milliseconds();
-      local_c->m_pingedtime = uVar4;
+      s_quickMatchServers[uVar2].m_pingedtime = uVar4;
       Com_DPrintf(0xe,"Server %i pingedtime set to %u\n");
-      bdSecurityKey::bdSecurityKey(&local_19c.xnkey);
-      bdSecurityID::bdSecurityID(&local_19c.xnkid);
-      local_1c = 0;
+      bdSecurityKey::bdSecurityKey(&fakeserver.xnkey);
+      bdSecurityID::bdSecurityID(&fakeserver.xnkid);
       local_18 = local_18 & 0xffff0000;
-      local_20 = 4;
-      nVar2._8_4_ = local_18;
-      nVar2.type = NA_IP;
-      nVar2.ip[0] = '\0';
-      nVar2.ip[1] = '\0';
-      nVar2.ip[2] = '\0';
-      nVar2.ip[3] = '\0';
-      nVar2.addrHandleIndex = local_14;
-      CL_InitServerInfo(&local_19c,nVar2);
+      adr._8_4_ = local_18;
+      adr.type = NA_IP;
+      adr.ip[0] = '\0';
+      adr.ip[1] = '\0';
+      adr.ip[2] = '\0';
+      adr.ip[3] = '\0';
+      adr.addrHandleIndex = local_14;
+      CL_InitServerInfo(&fakeserver,adr);
       dwGetLocalCommonAddr();
-      bdMatchMakingInfo::getHostAddrAsCommonAddr((bdMatchMakingInfo *)local_c,&local_24);
-      bdCommonAddr::serialize((bdCommonAddr *)local_24.m_ptr,(uchar *)&local_19c);
-      local_19c.xnkid.ab._0_4_ = local_c->_padding_;
-      local_19c.xnkid.ab._4_4_ = local_c->_padding_;
-      CL_RawPingServer(&local_19c,'\b');
+      bdMatchMakingInfo::getHostAddrAsCommonAddr((bdMatchMakingInfo *)server_00,&serveraddr);
+      bdCommonAddr::serialize(serveraddr.m_ptr,(uchar *)&fakeserver);
+      fakeserver.xnkid.ab._0_4_ = s_quickMatchServers[uVar2]._padding_;
+      fakeserver.xnkid.ab._4_4_ = s_quickMatchServers[uVar2]._padding_;
+      CL_RawPingServer(&fakeserver,'\b');
       s_lastPing = Sys_Milliseconds();
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_24);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&serveraddr);
+      i = i + 1;
     }
     else {
       Com_DPrintf(0xe,"Skipping server %s\n");
+      i = i + 1;
     }
   }
   return;
@@ -2793,6 +2834,7 @@ bool __cdecl CL_QuickMatch_ShouldChooseSession(void)
   ulonglong uVar2;
   bool bVar3;
   bool local_1c;
+  float responsepercent;
   
   uVar2 = (ulonglong)s_numPingResponses;
   uVar1 = (ulonglong)s_lastpingedserver;
@@ -2816,132 +2858,135 @@ bool __cdecl CL_QuickMatch_ShouldChooseSession(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_QuickMatch_PingResponse(bdSecurityID *param_1,msg_t *param_2)
+void __cdecl CL_QuickMatch_PingResponse(bdSecurityID *secID,msg_t *msg)
 
 {
-  uint uVar1;
-  char *pcVar2;
+  char *pcVar1;
+  int iVar2;
   int iVar3;
-  MatchMakingInfo *pMVar4;
-  uchar *puVar5;
-  int *piVar6;
+  uchar *puVar4;
+  int *piVar5;
+  bool bVar6;
   bool bVar7;
-  bool bVar8;
   int local_44c;
-  bdReference<bdByteBuffer> local_434;
-  float local_430;
-  serverInfo_t *local_42c;
-  float local_428;
-  undefined4 local_424;
-  undefined4 local_420;
-  undefined4 local_41c;
-  undefined4 local_418;
-  float local_414;
-  uint local_410;
-  char local_40c;
+  MatchMakingInfo *serverinfo;
+  bdReference<bdCommonAddr> hostAddress;
+  float fullscore;
+  serverInfo_t *server;
+  float fullness;
+  float pingscore;
+  uint i;
+  char strBuf;
   uchar local_40b [1023];
   uint local_c;
-  char *local_8;
+  char *infoString;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40c = '\0';
+  strBuf = '\0';
   memset(local_40b,'\0',0x3ff);
-  local_410 = 0;
+  i = 0;
   do {
-    if (s_numServers <= local_410) {
+    if (s_numServers <= i) {
       return;
     }
-    iVar3 = 8;
-    bVar7 = false;
-    bVar8 = true;
+    iVar2 = 8;
+    bVar6 = false;
+    bVar7 = true;
     local_44c = 0;
-    puVar5 = param_1->ab;
-    piVar6 = &s_quickMatchServers[local_410]._padding_;
+    puVar4 = secID->ab;
+    piVar5 = &s_quickMatchServers[i]._padding_;
     do {
-      if (iVar3 == 0) break;
-      iVar3 = iVar3 + -1;
-      bVar7 = *puVar5 < (byte)*piVar6;
-      bVar8 = *puVar5 == (byte)*piVar6;
-      puVar5 = puVar5 + 1;
-      piVar6 = (int *)((int)piVar6 + 1);
-    } while (bVar8);
-    if (!bVar8) {
-      local_44c = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+      if (iVar2 == 0) break;
+      iVar2 = iVar2 + -1;
+      bVar6 = *puVar4 < (byte)*piVar5;
+      bVar7 = *puVar4 == (byte)*piVar5;
+      puVar4 = puVar4 + 1;
+      piVar5 = (int *)((int)piVar5 + 1);
+    } while (bVar7);
+    if (!bVar7) {
+      local_44c = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
     }
-    if ((local_44c == 0) && (s_quickMatchServers[local_410].m_pingedtime != 0)) {
-      local_42c = (serverInfo_t *)(s_quickmatchCandidates + s_numPingResponses * 0x178);
+    if ((local_44c == 0) && (s_quickMatchServers[i].m_pingedtime != 0)) {
+      iVar3 = s_numPingResponses * 0x178;
       s_numPingResponses = s_numPingResponses + 1;
-      local_8 = MSG_ReadString(param_2,&local_40c,0x400);
-      uVar1 = local_410;
-      pMVar4 = s_quickMatchServers + local_410;
-      local_420 = 0;
-      local_41c = 0;
-      local_418 = 0;
-      local_424 = 4;
-      CL_InitServerInfo(local_42c,(netadr_t)ZEXT816(4));
+      infoString = MSG_ReadString(msg,&strBuf,0x400);
+      CL_InitServerInfo((serverInfo_t *)(s_quickmatchCandidates + iVar3),(netadr_t)ZEXT816(4));
       dwGetLocalCommonAddr();
-      bdMatchMakingInfo::getHostAddrAsCommonAddr((bdMatchMakingInfo *)pMVar4,&local_434);
-      bdCommonAddr::serialize((bdCommonAddr *)local_434.m_ptr,(uchar *)local_42c);
-      iVar3 = Sys_Milliseconds();
-      local_42c->ping = (short)iVar3 - (short)s_quickMatchServers[uVar1].m_pingedtime;
-      s_quickMatchServers[uVar1].m_pingedtime = 0;
-      pcVar2 = Info_ValueForKey(local_8,"clients");
-      iVar3 = atoi(pcVar2);
-      local_42c->clients = (uchar)iVar3;
-      local_42c->maxClients = (uchar)s_quickMatchServers[uVar1]._padding_;
-      pcVar2 = Info_ValueForKey(local_8,"wagerbet");
-      iVar3 = atoi(pcVar2);
-      *(int *)(local_42c->city + 0x16) = iVar3;
-      I_strncpyz(local_42c->hostName,s_quickMatchServers[uVar1].m_memberservername,0x20);
-      I_strncpyz(local_42c->mapName,s_quickMatchServers[uVar1].m_membermapname,0x20);
-      *(undefined4 *)(local_42c->xnkey).ab =
-           *(undefined4 *)s_quickMatchServers[uVar1].m_membersecKey;
-      *(undefined4 *)((local_42c->xnkey).ab + 4) =
-           *(undefined4 *)(s_quickMatchServers[uVar1].m_membersecKey + 4);
-      *(undefined4 *)((local_42c->xnkey).ab + 8) =
-           *(undefined4 *)(s_quickMatchServers[uVar1].m_membersecKey + 8);
-      *(undefined4 *)((local_42c->xnkey).ab + 0xc) =
-           *(undefined4 *)(s_quickMatchServers[uVar1].m_membersecKey + 0xc);
-      *(int *)(local_42c->xnkid).ab = s_quickMatchServers[uVar1]._padding_;
-      *(int *)((local_42c->xnkid).ab + 4) = s_quickMatchServers[uVar1]._padding_;
-      local_414 = (float)(cl_quickmatch_pingweight->current).integer / (float)(int)local_42c->ping;
-      local_428 = ((float)local_42c->clients / (float)local_42c->maxClients) * 100.0;
+      bdMatchMakingInfo::getHostAddrAsCommonAddr
+                ((bdMatchMakingInfo *)(s_quickMatchServers + i),&hostAddress);
+      bdCommonAddr::serialize(hostAddress.m_ptr,(uchar *)(s_quickmatchCandidates + iVar3));
+      iVar2 = Sys_Milliseconds();
+      *(short *)(s_quickmatchCandidates + iVar3 + 0x74) =
+           (short)iVar2 - (short)s_quickMatchServers[i].m_pingedtime;
+      s_quickMatchServers[i].m_pingedtime = 0;
+      pcVar1 = Info_ValueForKey(infoString,"clients");
+      iVar2 = atoi(pcVar1);
+      s_quickmatchCandidates[iVar3 + 0x65] = (char)iVar2;
+      s_quickmatchCandidates[iVar3 + 0x66] = (char)s_quickMatchServers[i]._padding_;
+      pcVar1 = Info_ValueForKey(infoString,"wagerbet");
+      iVar2 = atoi(pcVar1);
+      *(int *)(s_quickmatchCandidates + iVar3 + 0x124) = iVar2;
+      I_strncpyz(s_quickmatchCandidates + iVar3 + 0x7d,s_quickMatchServers[i].m_memberservername,
+                 0x20);
+      I_strncpyz(s_quickmatchCandidates + iVar3 + 0x9d,s_quickMatchServers[i].m_membermapname,0x20);
+      *(undefined4 *)(s_quickmatchCandidates + iVar3 + 0x19) =
+           *(undefined4 *)s_quickMatchServers[i].m_membersecKey;
+      *(undefined4 *)(s_quickmatchCandidates + iVar3 + 0x1d) =
+           *(undefined4 *)(s_quickMatchServers[i].m_membersecKey + 4);
+      *(undefined4 *)(s_quickmatchCandidates + iVar3 + 0x21) =
+           *(undefined4 *)(s_quickMatchServers[i].m_membersecKey + 8);
+      *(undefined4 *)(s_quickmatchCandidates + iVar3 + 0x25) =
+           *(undefined4 *)(s_quickMatchServers[i].m_membersecKey + 0xc);
+      *(int *)(s_quickmatchCandidates + iVar3 + 0x29) = s_quickMatchServers[i]._padding_;
+      *(int *)(s_quickmatchCandidates + iVar3 + 0x2d) = s_quickMatchServers[i]._padding_;
+      pingscore = (float)(cl_quickmatch_pingweight->current).integer /
+                  (float)(int)*(short *)(s_quickmatchCandidates + iVar3 + 0x74);
+      fullness = ((float)(byte)s_quickmatchCandidates[iVar3 + 0x65] /
+                 (float)(byte)s_quickmatchCandidates[iVar3 + 0x66]) * 100.0;
       Com_DPrintf(0xe,"Server %s has pingscore of %f, fullness of %f\n");
-      if (100.0 <= local_428) {
-        local_428 = 0.0;
-        local_414 = 0.0;
+      if (100.0 <= fullness) {
+        fullness = 0.0;
+        pingscore = 0.0;
       }
       if ((s_quickmatch_params.isWager != false) &&
-         (s_quickmatch_params.codpoints < *(int *)(local_42c->city + 0x16))) {
-        local_428 = -1.0;
-        local_414 = 1.0;
+         (s_quickmatch_params.codpoints < *(int *)(s_quickmatchCandidates + iVar3 + 0x124))) {
+        fullness = -1.0;
+        pingscore = 1.0;
       }
-      local_430 = (float)(cl_quickmatch_fullnessweight->current).integer * local_428;
-      Com_IntToGametype((char *)((int)&local_42c->score + 1),
-                        s_quickMatchServers[uVar1].m_memberGAME_TYPE);
-      local_430 = local_430 + 1.0;
-      *(int *)(local_42c->city + 0x12) = (int)(local_430 * local_414);
-      *(int *)(local_42c->city + 2) = (int)s_quickMatchServers[uVar1].m_memberdemonwareID;
-      *(undefined4 *)(local_42c->city + 6) =
-           *(undefined4 *)((int)&s_quickMatchServers[uVar1].m_memberdemonwareID + 4);
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_434);
+      iVar2 = (cl_quickmatch_fullnessweight->current).integer;
+      Com_IntToGametype(s_quickmatchCandidates + iVar3 + 0xfd,
+                        s_quickMatchServers[i].m_memberGAME_TYPE);
+      *(int *)(s_quickmatchCandidates + iVar3 + 0x120) =
+           (int)(((float)iVar2 * fullness + 1.0) * pingscore);
+      *(int *)(s_quickmatchCandidates + iVar3 + 0x110) =
+           (int)s_quickMatchServers[i].m_memberdemonwareID;
+      *(undefined4 *)(s_quickmatchCandidates + iVar3 + 0x114) =
+           *(undefined4 *)((int)&s_quickMatchServers[i].m_memberdemonwareID + 4);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&hostAddress);
       return;
     }
-    local_410 = local_410 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0056C770  CL_QuickMatch_CompareServers  (client_mp/cl_main_pc_mp.cpp:2918)
 
-int __cdecl CL_QuickMatch_CompareServers(void *param_1,void *param_2)
+int __cdecl CL_QuickMatch_CompareServers(void *sv1,void *sv2)
 
 {
-  return *(int *)((int)param_2 + 0x120) - *(int *)((int)param_1 + 0x120);
+  serverInfo_t *qms1;
+  serverInfo_t *qms2;
+  
+  return *(int *)((int)sv2 + 0x120) - *(int *)((int)sv1 + 0x120);
 }
 
 
 // 0056C620  CL_QuickMatch_ChooseSession  (client_mp/cl_main_pc_mp.cpp:2927)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 bool __cdecl CL_QuickMatch_ChooseSession(void)
 
@@ -2949,8 +2994,8 @@ bool __cdecl CL_QuickMatch_ChooseSession(void)
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uint local_c;
-  bool local_5;
+  uint i;
+  bool retval;
   
   if ((s_quickmatchstate != QM_CHOOSE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_pc_mp.cpp",
@@ -2959,11 +3004,11 @@ bool __cdecl CL_QuickMatch_ChooseSession(void)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_5 = false;
+  retval = false;
   if (s_numPingResponses != 0) {
     qsort(s_quickmatchCandidates,s_numPingResponses,0x178,CL_QuickMatch_CompareServers);
     Com_DPrintf(0xe,"Hostname\tPing\t\tClients\tScore\n");
-    for (local_c = 0; local_c < s_numPingResponses; local_c = local_c + 1) {
+    for (i = 0; i < s_numPingResponses; i = i + 1) {
       Com_DPrintf(0xe,"%s\t\t%i\t\t%i\t\t%i\n");
     }
     if (s_quickmatch_params.isWager == false) {
@@ -2978,9 +3023,9 @@ bool __cdecl CL_QuickMatch_ChooseSession(void)
         Cmd_ExecuteSingleCommand(0,0,"openmenu QuickWagerConfirmation");
       }
     }
-    local_5 = true;
+    retval = true;
   }
-  return local_5;
+  return retval;
 }
 
 
@@ -2993,9 +3038,9 @@ void __cdecl CL_QuickMatch_Frame(void)
 
 {
   bool bVar1;
-  char *pcVar2;
-  char *pcVar3;
-  int iVar4;
+  char *toastPopupDesc;
+  char *toastPopupTitle;
+  int toastPopupDuration;
   
   switch(s_quickmatchstate) {
   case QM_DORMANT:
@@ -3021,10 +3066,11 @@ void __cdecl CL_QuickMatch_Frame(void)
     }
     break;
   case QM_FAILED:
-    iVar4 = 0xa8c;
-    pcVar2 = UI_SafeTranslateString("PLATFORM_QUICKMATCH_FAILED");
-    pcVar3 = UI_SafeTranslateString("");
-    UI_OpenToastPopup(0,"menu_mp_killstreak_select",pcVar3,pcVar2,iVar4);
+    toastPopupDuration = 0xa8c;
+    toastPopupDesc = UI_SafeTranslateString("PLATFORM_QUICKMATCH_FAILED");
+    toastPopupTitle = UI_SafeTranslateString("");
+    UI_OpenToastPopup(0,"menu_mp_killstreak_select",toastPopupTitle,toastPopupDesc,
+                      toastPopupDuration);
     s_quickmatchstate = QM_DORMANT;
   }
   return;
@@ -3033,17 +3079,16 @@ void __cdecl CL_QuickMatch_Frame(void)
 
 // 0056C940  CL_LongNameForShortName  (client_mp/cl_main_pc_mp.cpp:3027)
 
-char * __cdecl CL_LongNameForShortName(char *param_1)
+char * __cdecl CL_LongNameForShortName(char *shortname)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; (local_8 < 0x400 && (s_cityNames[local_8].shortname[0] != '\0'));
-      local_8 = local_8 + 1) {
-    iVar1 = I_stricmp(param_1,s_cityNames[local_8].shortname);
+  for (i = 0; (i < 0x400 && (s_cityNames[i].shortname[0] != '\0')); i = i + 1) {
+    iVar1 = I_stricmp(shortname,s_cityNames[i].shortname);
     if (iVar1 == 0) {
-      return s_cityNames[local_8].longname;
+      return s_cityNames[i].longname;
     }
   }
   return (char *)0x0;

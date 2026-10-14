@@ -435,10 +435,10 @@ int __cdecl dwRawSendTo(netadr_t *param_1,void *param_2,uint param_3)
 {
   int *piVar1;
   uint in_EAX;
-  undefined1 *puVar2;
+  undefined1 *p;
   bdNetImpl *this;
-  bdNetStartParams *pbVar3;
-  int iVar4;
+  bdNetStartParams *pbVar2;
+  int iVar3;
   int in_ECX;
   bdAddr abStack_8 [8];
   
@@ -446,25 +446,25 @@ int __cdecl dwRawSendTo(netadr_t *param_1,void *param_2,uint param_3)
     Com_PrintError(0,"sendto before interceptor started, show this to Ewan!\n");
   }
   if (in_EAX < 0x4f0) {
-    puVar2 = operator_new__(in_EAX + 4);
-    if (puVar2 != (undefined1 *)0x0) {
-      puVar2[3] = 0xff;
-      puVar2[2] = 0xff;
-      puVar2[1] = 0xff;
-      *puVar2 = 0xff;
-      memcpy(puVar2 + 4,(uchar *)param_1,in_EAX);
+    p = operator_new__(in_EAX + 4);
+    if (p != (undefined1 *)0x0) {
+      p[3] = 0xff;
+      p[2] = 0xff;
+      p[1] = 0xff;
+      *p = 0xff;
+      memcpy(p + 4,(uchar *)param_1,in_EAX);
       this = bdSingleton<bdNetImpl>::getInstance();
-      pbVar3 = bdNetImpl::getParams(this);
-      piVar1 = *(int **)(pbVar3 + 4);
+      pbVar2 = bdNetImpl::getParams(this);
+      piVar1 = *(int **)(pbVar2 + 4);
       bdAddr::bdAddr(abStack_8);
       Com_sprintf("%i.%i.%i.%i:%i",(uint)*(byte *)(in_ECX + 4),(char *)(uint)*(byte *)(in_ECX + 5),
                   (uint)*(byte *)(in_ECX + 6),(uint)*(byte *)(in_ECX + 7),
                   (uint)*(ushort *)(in_ECX + 8));
       bdAddr::set(abStack_8,&DAT_04fb9bc0);
-      iVar4 = (**(code **)(*piVar1 + 0x10))(abStack_8,puVar2,in_EAX + 4);
-      operator_delete__(puVar2);
+      iVar3 = (**(code **)(*piVar1 + 0x10))(abStack_8,p,in_EAX + 4);
+      operator_delete__(p);
       bdInetAddr::~bdInetAddr((bdInetAddr *)&stack0xffffffec);
-      return iVar4;
+      return iVar3;
     }
   }
   return 0;
@@ -790,11 +790,11 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
   bdInetAddr *this_02;
   uint uVar4;
   bdAddr *this_03;
-  ulong uVar5;
-  bdAddrHandle *pbVar6;
-  bdSecurityID *pbVar7;
-  undefined4 *puVar8;
-  undefined1 *puVar9;
+  ulong count;
+  bdAddrHandle *pbVar5;
+  bdSecurityID *pbVar6;
+  undefined4 *puVar7;
+  undefined1 *puVar8;
   undefined1 uStack_19;
   bdAddrHandle *local_18;
   undefined4 uStack_14;
@@ -807,7 +807,7 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
         (r_reflectionProbeGenerateExit == (dvar_s *)0x0)) ||
        ((r_reflectionProbeGenerateExit->current).enabled == false)))))) {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c20);
-    uVar5 = 0xfffffff7;
+    count = 0xfffffff7;
     this = bdSingleton<bdNetImpl>::getInstance();
     if (this != (bdNetImpl *)0x0) {
       this_00 = bdNetImpl::getSocketRouter(this);
@@ -815,25 +815,25 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
         bVar3 = bdSocketRouter::getStatus(this_00);
         if (bVar3 == 1) {
           local_18 = (bdAddrHandle *)0x0;
-          uVar5 = (**(code **)(*(int *)this_00 + 0x24))(&local_18,param_2,param_3);
-          if ((0 < (int)uVar5) && (local_18 != (bdAddrHandle *)0x0)) {
+          count = (**(code **)(*(int *)this_00 + 0x24))(&local_18,param_2,param_3);
+          if ((0 < (int)count) && (local_18 != (bdAddrHandle *)0x0)) {
             uStack_14 = 0;
             bdSecurityID::bdSecurityID(abStack_10);
             bdAddrHandle::getSecID(local_18,abStack_10);
-            puVar9 = &uStack_19;
-            puVar8 = &uStack_14;
-            pbVar7 = abStack_10;
-            pbVar6 = local_18;
+            puVar8 = &uStack_19;
+            puVar7 = &uStack_14;
+            pbVar6 = abStack_10;
+            pbVar5 = local_18;
             if (local_18 != (bdAddrHandle *)0x0) {
               InterlockedIncrement((LONG *)(local_18 + 4));
             }
-            cVar1 = FUN_0051ee40(pbVar6,pbVar7,puVar8,puVar9);
+            cVar1 = FUN_0051ee40(pbVar5,pbVar6,puVar7,puVar8);
             if (cVar1 == '\0') {
-              uVar5 = 0;
+              count = 0;
             }
             else {
-              uVar5 = uVar5 - 2;
-              memmove(param_2,(uchar *)((int)param_2 + 2),uVar5);
+              count = count - 2;
+              memmove(param_2,(uchar *)((int)param_2 + 2),count);
               this_01 = (bdTrulyRandomImpl *)bdAddrHandle::getRealAddr(local_18);
               this_02 = (bdInetAddr *)bdTrulyRandomImpl::bdTrulyRandomImpl(this_01);
               uVar4 = bdInetAddr::toUInt32(this_02);
@@ -853,7 +853,7 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
       }
     }
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c20);
-    return uVar5;
+    return count;
   }
   return 0;
 }

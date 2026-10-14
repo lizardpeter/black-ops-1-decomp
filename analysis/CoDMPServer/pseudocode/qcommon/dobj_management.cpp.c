@@ -24,7 +24,7 @@ void __cdecl TRACK_dobj_management(void)
 
 // 006D8210  Com_GetServerDObj  (qcommon/dobj_management.cpp:83)
 
-DObj * __cdecl Com_GetServerDObj(int param_1)
+DObj * __cdecl Com_GetServerDObj(int handle)
 
 {
   code *pcVar1;
@@ -32,7 +32,7 @@ DObj * __cdecl Com_GetServerDObj(int param_1)
   DObj *pDVar3;
   DObj *local_8;
   
-  if (0x3ff < (uint)param_1) {
+  if (0x3ff < (uint)handle) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0x54,
                              0,"%s\n\t(handle) = %i");
     if (!bVar2) {
@@ -41,7 +41,7 @@ DObj * __cdecl Com_GetServerDObj(int param_1)
       return pDVar3;
     }
   }
-  if (0xbff < (ushort)serverObjMap[param_1]) {
+  if (0xbff < (ushort)serverObjMap[handle]) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0x55,
                              0,"%s");
     if (!bVar2) {
@@ -50,11 +50,11 @@ DObj * __cdecl Com_GetServerDObj(int param_1)
       return pDVar3;
     }
   }
-  if (serverObjMap[param_1] == 0) {
+  if (serverObjMap[handle] == 0) {
     local_8 = (DObj *)0x0;
   }
   else {
-    local_8 = (DObj *)(objBuf + serverObjMap[param_1]);
+    local_8 = (DObj *)(objBuf + serverObjMap[handle]);
   }
   return local_8;
 }
@@ -66,91 +66,91 @@ int __cdecl Com_GetFreeDObjIndex(void)
 
 {
   code *pcVar1;
-  uint uVar2;
-  uint uVar3;
-  bool bVar4;
-  int iVar5;
-  uint local_8;
+  int iVar2;
+  bool bVar3;
+  int iVar4;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_DOBJ_ALLOC);
-  uVar3 = com_lastDObjIndex;
-  while (uVar2 = uVar3, local_8 = uVar2 + 1, (int)local_8 < 0xc00) {
-    uVar3 = local_8;
-    if (objAlloced[uVar2 + 1] == false) {
-      com_lastDObjIndex = local_8;
-      if ((local_8 == 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
-                                   ,0x70,0,"%s"), !bVar4)) {
+  iVar4 = com_lastDObjIndex;
+  while (iVar2 = iVar4, i = iVar2 + 1, i < 0xc00) {
+    iVar4 = i;
+    if (objAlloced[iVar2 + 1] == false) {
+      com_lastDObjIndex = i;
+      if ((i == 0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
+                                   ,0x70,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
-        iVar5 = (*pcVar1)();
-        return iVar5;
+        iVar4 = (*pcVar1)();
+        return iVar4;
       }
-      if ((0xbff < local_8) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
-                                   ,0x71,0,"%s"), !bVar4)) {
+      if ((0xbff < (uint)i) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
+                                   ,0x71,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
-        iVar5 = (*pcVar1)();
-        return iVar5;
+        iVar4 = (*pcVar1)();
+        return iVar4;
       }
-      objAlloced[uVar2 + 1] = true;
+      objAlloced[iVar2 + 1] = true;
       if ((objFreeCount == 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
-                                   ,0x73,0,"%s"), !bVar4)) {
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
+                                   ,0x73,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
-        iVar5 = (*pcVar1)();
-        return iVar5;
+        iVar4 = (*pcVar1)();
+        return iVar4;
       }
       objFreeCount = objFreeCount + -1;
       Sys_LeaveCriticalSection(CRITSECT_DOBJ_ALLOC);
-      return local_8;
+      return i;
     }
   }
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (com_lastDObjIndex < (int)local_8) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
+    if (com_lastDObjIndex < i) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0x8f,0,"unreachable");
-      if (bVar4) {
+      if (bVar3) {
         return 0;
       }
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
-    if (objAlloced[local_8] == false) break;
-    local_8 = local_8 + 1;
+    if (objAlloced[i] == false) break;
+    i = i + 1;
   }
-  com_lastDObjIndex = local_8;
-  if ((local_8 == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
-                               0x82,0,"%s"), !bVar4)) {
+  com_lastDObjIndex = i;
+  if ((i == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
+                               0x82,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
-    iVar5 = (*pcVar1)();
-    return iVar5;
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  if ((0xbff < local_8) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
-                               0x83,0,"%s"), !bVar4)) {
+  if ((0xbff < (uint)i) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
+                               0x83,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
-    iVar5 = (*pcVar1)();
-    return iVar5;
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  objAlloced[local_8] = true;
+  objAlloced[i] = true;
   if ((objFreeCount == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
-                               0x85,0,"%s"), !bVar4)) {
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
+                               0x85,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
-    iVar5 = (*pcVar1)();
-    return iVar5;
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
   objFreeCount = objFreeCount + -1;
   Sys_LeaveCriticalSection(CRITSECT_DOBJ_ALLOC);
-  return local_8;
+  return i;
 }
 
 
 // 006D82B0  Com_ClientDObjCreate  (qcommon/dobj_management.cpp:155)
 
+/* WARNING: Variable defined which should be unmapped: pDObj */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -158,7 +158,7 @@ int __cdecl Com_GetFreeDObjIndex(void)
 
 DObj * __cdecl
 Com_ClientDObjCreate
-          (DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,int param_4,int param_5)
+          (DObjModel_s *dobjModels,ushort numModels,XAnimTree_s *tree,int handle,int localClientNum)
 
 {
   byte bVar1;
@@ -167,60 +167,63 @@ Com_ClientDObjCreate
   DObj *pDVar4;
   cg_s *pcVar5;
   uint uVar6;
-  undefined4 uVar7;
-  short local_10;
+  cg_s *cgameGlob;
+  DObj *pDObj;
+  bool isLocalPlayer;
+  int index;
+  int entnum;
+  playerState_s *ps;
   
-  if ((param_1 == (DObjModel_s *)0x0) &&
+  if ((dobjModels == (DObjModel_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xa2,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pDVar4 = (DObj *)(*pcVar2)();
     return pDVar4;
   }
-  uVar7 = 0;
-  if ((0x600 < (uint)param_4) &&
+  if ((0x600 < (uint)handle) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xa7,0,"%s\n\t(handle) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pDVar4 = (DObj *)(*pcVar2)();
     return pDVar4;
   }
-  pDVar4 = Com_GetClientDObj(param_4,param_5);
+  pDVar4 = Com_GetClientDObj(handle,localClientNum);
   if ((pDVar4 != (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xa8,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    pDVar4 = (DObj *)(*pcVar2)(uVar7);
+    pDVar4 = (DObj *)(*pcVar2)(0);
     return pDVar4;
   }
-  pcVar5 = CG_GetLocalClientGlobals(param_5);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
   bVar1 = (pcVar5->predictedPlayerState).clientNum;
   uVar6 = Com_GetFreeDObjIndex();
-  if ((0x600 < (uint)param_4) &&
+  if ((0x600 < (uint)handle) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xb5,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pDVar4 = (DObj *)(*pcVar2)();
     return pDVar4;
   }
-  if ((param_4 < param_5 * 0x601) &&
+  if ((handle < localClientNum * 0x601) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xb7,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pDVar4 = (DObj *)(*pcVar2)();
     return pDVar4;
   }
-  if ((param_5 * 0x601 + 0x601 <= param_4) &&
+  if ((localClientNum * 0x601 + 0x601 <= handle) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xb8,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pDVar4 = (DObj *)(*pcVar2)();
     return pDVar4;
   }
-  DObjCreateExt(param_1,(uint)param_2,param_3,objBuf + uVar6,param_4 + 1U & 0xffff,false,
-                (uint)bVar1 == param_4,param_5);
-  local_10 = (short)uVar6;
-  clientObjMap[param_4] = local_10;
+  DObjCreateExt(dobjModels,(uint)numModels,tree,objBuf + uVar6,handle + 1U & 0xffff,false,
+                (uint)bVar1 == handle,localClientNum);
+  index._0_2_ = (short)uVar6;
+  clientObjMap[handle] = (short)index;
   if ((0xbff < uVar6) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0xbf,0,"%s"), !bVar3)) {
@@ -237,14 +240,15 @@ Com_ClientDObjCreate
 
 // 006D8700  Com_ClientDObjClearAllSkel  (qcommon/dobj_management.cpp:209)
 
-void __cdecl Com_ClientDObjClearAllSkel(int param_1)
+void __cdecl Com_ClientDObjClearAllSkel(int localClientNum)
 
 {
-  int local_8;
+  int index;
+  int handleOffset;
   
-  for (local_8 = 0; local_8 < 0x601; local_8 = local_8 + 1) {
-    if (clientObjMap[local_8] != 0) {
-      DObjSkelClear((DObj *)(objBuf + clientObjMap[local_8]));
+  for (handleOffset = 0; handleOffset < 0x601; handleOffset = handleOffset + 1) {
+    if (clientObjMap[handleOffset] != 0) {
+      DObjSkelClear((DObj *)(objBuf + clientObjMap[handleOffset]));
     }
   }
   return;
@@ -254,16 +258,16 @@ void __cdecl Com_ClientDObjClearAllSkel(int param_1)
 // 006D8760  Com_ServerDObjCreate  (qcommon/dobj_management.cpp:241)
 
 DObj * __cdecl
-Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,int param_4)
+Com_ServerDObjCreate(DObjModel_s *dobjModels,ushort numModels,XAnimTree_s *tree,int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   DObj *pDVar3;
   uint uVar4;
-  short local_8;
+  int index;
   
-  if (param_1 == (DObjModel_s *)0x0) {
+  if (dobjModels == (DObjModel_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0xf4,
                              0,"%s");
     if (!bVar2) {
@@ -272,7 +276,7 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
       return pDVar3;
     }
   }
-  if (0x3ff < (uint)param_4) {
+  if (0x3ff < (uint)handle) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0xf5,
                              0,"%s\n\t(handle) = %i");
     if (!bVar2) {
@@ -281,7 +285,7 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
       return pDVar3;
     }
   }
-  pDVar3 = Com_GetServerDObj(param_4);
+  pDVar3 = Com_GetServerDObj(handle);
   if (pDVar3 != (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0xf6,
                              0,"%s");
@@ -292,7 +296,7 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
     }
   }
   uVar4 = Com_GetFreeDObjIndex();
-  if (0x3ff < (uint)param_4) {
+  if (0x3ff < (uint)handle) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0xf9,
                              0,"%s");
     if (!bVar2) {
@@ -301,8 +305,8 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
       return pDVar3;
     }
   }
-  local_8 = (short)uVar4;
-  serverObjMap[param_4] = local_8;
+  index._0_2_ = (short)uVar4;
+  serverObjMap[handle] = (short)index;
   if (0xbff < uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0xfb,
                              0,"%s");
@@ -312,7 +316,7 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
       return pDVar3;
     }
   }
-  DObjCreateExt(param_1,(uint)param_2,param_3,objBuf + uVar4,param_4 + 1U & 0xffff,true,false,-1);
+  DObjCreateExt(dobjModels,(uint)numModels,tree,objBuf + uVar4,handle + 1U & 0xffff,true,false,-1);
   if (objFreeCount == 0) {
     Com_Error(ERR_DROP,"\x15No free DObjs");
   }
@@ -322,28 +326,29 @@ Com_ServerDObjCreate(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,in
 
 // 006D88D0  Com_SafeClientDObjFree  (qcommon/dobj_management.cpp:267)
 
-void __cdecl Com_SafeClientDObjFree(int param_1,int param_2)
+void __cdecl Com_SafeClientDObjFree(int handle,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int index;
   
-  if ((0x600 < (uint)param_1) &&
+  if ((0x600 < (uint)handle) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0x10e,0,"%s\n\t(handle) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x600 < (uint)param_1) &&
+  if ((0x600 < (uint)handle) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0x114,0,"%s\n\t(handle) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x600 < (uint)(param_1 + param_2 * -0x601)) &&
+  if ((0x600 < (uint)(handle + localClientNum * -0x601)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0x115,0,
                                "handle - localClientNum * CLIENT_DOBJ_HANDLE_MAX doesn\'t index CLIENT_DOBJ_HANDLE_MAX\n\t%i not in [0, %i)"
@@ -352,9 +357,9 @@ void __cdecl Com_SafeClientDObjFree(int param_1,int param_2)
     (*pcVar1)();
     return;
   }
-  uVar3 = (uint)clientObjMap[param_1];
+  uVar3 = (uint)clientObjMap[handle];
   if (uVar3 != 0) {
-    clientObjMap[param_1] = 0;
+    clientObjMap[handle] = 0;
     if ((0xbff < uVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                  0x11c,0,"%s"), !bVar2)) {
@@ -374,23 +379,24 @@ void __cdecl Com_SafeClientDObjFree(int param_1,int param_2)
 
 // 006D8A20  Com_SafeServerDObjFree  (qcommon/dobj_management.cpp:311)
 
-void __cdecl Com_SafeServerDObjFree(int param_1)
+void __cdecl Com_SafeServerDObjFree(int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int index;
   
-  if ((0x3ff < (uint)param_1) &&
+  if ((0x3ff < (uint)handle) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                0x13a,0,"%s\n\t(handle) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar3 = (uint)serverObjMap[param_1];
+  uVar3 = (uint)serverObjMap[handle];
   if (uVar3 != 0) {
-    serverObjMap[param_1] = 0;
+    serverObjMap[handle] = 0;
     if ((0xbff < uVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                  0x141,0,"%s"), !bVar2)) {
@@ -430,12 +436,12 @@ void __cdecl Com_ShutdownDObj(void)
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
   if (g_bDObjInited != 0) {
     g_bDObjInited = 0;
-    for (local_8 = 0; local_8 < 0xc00; local_8 = local_8 + 1) {
-      if ((objAlloced[local_8] != false) &&
+    for (i = 0; i < 0xc00; i = i + 1) {
+      if ((objAlloced[i] != false) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp"
                                    ,0x178,0,"%s\n\t(i) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -443,8 +449,8 @@ void __cdecl Com_ShutdownDObj(void)
         return;
       }
     }
-    for (local_8 = 0; local_8 < 0x601; local_8 = local_8 + 1) {
-      if (clientObjMap[local_8] != 0) {
+    for (i = 0; i < 0x601; i = i + 1) {
+      if (clientObjMap[i] != 0) {
         va("i: %d, clientObjMap[i]: %d");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                  0x17a,0,"%s\n\t%s");
@@ -455,8 +461,8 @@ void __cdecl Com_ShutdownDObj(void)
         }
       }
     }
-    for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-      if (serverObjMap[local_8] != 0) {
+    for (i = 0; i < 0x400; i = i + 1) {
+      if (serverObjMap[i] != 0) {
         va("i: %d, serverObjMap[i]: %d");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",
                                  0x17c,0,"%s\n\t%s");
@@ -485,19 +491,20 @@ void __cdecl DB_SaveDObjs(void)
 
 {
   DObj *pDVar1;
-  undefined4 local_10;
-  undefined4 local_8;
+  int handle;
+  DObj *obj;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < 0x601; local_10 = local_10 + 1) {
-      pDVar1 = Com_GetClientDObj(local_10,local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    for (handle = 0; handle < 0x601; handle = handle + 1) {
+      pDVar1 = Com_GetClientDObj(handle,localClientNum);
       if (pDVar1 != (DObj *)0x0) {
         DObjArchive(pDVar1);
       }
     }
   }
-  for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {
-    pDVar1 = Com_GetServerDObj(local_10);
+  for (handle = 0; handle < 0x400; handle = handle + 1) {
+    pDVar1 = Com_GetServerDObj(handle);
     if (pDVar1 != (DObj *)0x0) {
       DObjArchive(pDVar1);
     }
@@ -512,19 +519,20 @@ void __cdecl DB_LoadDObjs(void)
 
 {
   DObj *pDVar1;
-  undefined4 local_10;
-  undefined4 local_8;
+  int handle;
+  DObj *obj;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < 0x601; local_10 = local_10 + 1) {
-      pDVar1 = Com_GetClientDObj(local_10,local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    for (handle = 0; handle < 0x601; handle = handle + 1) {
+      pDVar1 = Com_GetClientDObj(handle,localClientNum);
       if (pDVar1 != (DObj *)0x0) {
         DObjUnarchive(pDVar1);
       }
     }
   }
-  for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {
-    pDVar1 = Com_GetServerDObj(local_10);
+  for (handle = 0; handle < 0x400; handle = handle + 1) {
+    pDVar1 = Com_GetServerDObj(handle);
     if (pDVar1 != (DObj *)0x0) {
       DObjUnarchive(pDVar1);
     }
@@ -535,7 +543,9 @@ void __cdecl DB_LoadDObjs(void)
 
 // 006D8E40  Com_GetClientDObj  (qcommon/dobj_management.cpp:463)
 
-DObj * __cdecl Com_GetClientDObj(int param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: pDObj */
+
+DObj * __cdecl Com_GetClientDObj(int handle,int localClientNum)
 
 {
   code *pcVar1;
@@ -543,9 +553,9 @@ DObj * __cdecl Com_GetClientDObj(int param_1,int param_2)
   DObj *pDVar3;
   uint uVar4;
   DObj *local_c;
-  undefined4 uVar5;
+  DObj *pDObj;
   
-  if ((param_1 < 0) || (0x600 < param_1)) {
+  if ((handle < 0) || (0x600 < handle)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0x1d0
                              ,0,"%s\n\t(handle) = %i");
     if (!bVar2) {
@@ -554,7 +564,7 @@ DObj * __cdecl Com_GetClientDObj(int param_1,int param_2)
       return pDVar3;
     }
   }
-  if (param_2 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0x1d1
                              ,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
@@ -565,8 +575,7 @@ DObj * __cdecl Com_GetClientDObj(int param_1,int param_2)
       return pDVar3;
     }
   }
-  uVar5 = 0;
-  uVar4 = param_2 * 0x601 + param_1;
+  uVar4 = localClientNum * 0x601 + handle;
   if (0x600 < uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dobj_management.cpp",0x1de
                              ,0,"%s\n\t(handle) = %i");
@@ -581,7 +590,7 @@ DObj * __cdecl Com_GetClientDObj(int param_1,int param_2)
                              ,0,"%s\n\t(clientObjMap[handle]) = %i");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      pDVar3 = (DObj *)(*pcVar1)(uVar5);
+      pDVar3 = (DObj *)(*pcVar1)(0);
       return pDVar3;
     }
   }

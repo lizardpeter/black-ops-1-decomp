@@ -5,10 +5,10 @@
 char * _HTErrnoString(void)
 
 {
-  char *pcVar1;
+  char *string;
   
-  pcVar1 = (char *)_HTMemory_malloc();
-  if (pcVar1 == (char *)0x0) {
+  string = (char *)_HTMemory_malloc();
+  if (string == (char *)0x0) {
     if (DAT_03547718 != (code *)0x0) {
       (*DAT_03547718)("HTErrnoString",
                       "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTInet.c",0x2a);
@@ -16,10 +16,10 @@ char * _HTErrnoString(void)
                     /* WARNING: Subroutine does not return */
     abort();
   }
-  *pcVar1 = '\0';
+  *string = '\0';
   _WSAGetLastError_0();
-  sprintf(pcVar1,"WinSock reported error=%ld");
-  return pcVar1;
+  sprintf(string,"WinSock reported error=%ld");
+  return string;
 }
 
 
@@ -121,7 +121,7 @@ undefined4 _HTGetMailAddress(void)
 
 {
   char *pcVar1;
-  void *pvVar2;
+  void *pBlock;
   undefined4 uStack_10c;
   DWORD DStack_108;
   CHAR aCStack_104 [256];
@@ -140,10 +140,10 @@ undefined4 _HTGetMailAddress(void)
   uStack_10c = 0;
   _HTSACopy(pcVar1);
   _HTSACat(&uStack_10c,"@");
-  pvVar2 = (void *)_HTGetHostName();
-  if (pvVar2 != (void *)0x0) {
-    _HTSACat(&uStack_10c,pvVar2);
-    free(pvVar2);
+  pBlock = (void *)_HTGetHostName();
+  if (pBlock != (void *)0x0) {
+    _HTSACat(&uStack_10c,pBlock);
+    free(pBlock);
   }
   return uStack_10c;
 }
@@ -158,9 +158,9 @@ char * _HTGetNewsServer(void)
 {
   char cVar1;
   char *pcVar2;
-  _iobuf *p_Var3;
-  char *pcVar4;
-  int iVar5;
+  _iobuf *str;
+  char *pcVar3;
+  int iVar4;
   char *pcStack_58;
   char acStack_54 [79];
   undefined1 uStack_5;
@@ -169,22 +169,22 @@ char * _HTGetNewsServer(void)
   uStack_4 = __security_cookie ^ (uint)&pcStack_58;
   pcVar2 = getenv("NNTPSERVER");
   if (pcVar2 == (char *)0x0) {
-    p_Var3 = fopen("/usr/local/lib/rn/server","r");
+    str = fopen("/usr/local/lib/rn/server","r");
     uStack_5 = 0;
-    if (p_Var3 != (_iobuf *)0x0) {
-      pcVar4 = fgets(acStack_54,0x4f,p_Var3);
-      if (pcVar4 != (char *)0x0) {
+    if (str != (_iobuf *)0x0) {
+      pcVar3 = fgets(acStack_54,0x4f,str);
+      if (pcVar3 != (char *)0x0) {
         for (pcVar2 = acStack_54; (*pcVar2 == ' ' || (*pcVar2 == '\t')); pcVar2 = pcVar2 + 1) {
         }
         cVar1 = *pcVar2;
-        pcVar4 = pcVar2;
-        while ((cVar1 != '\0' && (iVar5 = isspace((int)*pcVar4), iVar5 == 0))) {
-          pcVar4 = pcVar4 + 1;
-          cVar1 = *pcVar4;
+        pcVar3 = pcVar2;
+        while ((cVar1 != '\0' && (iVar4 = isspace((int)*pcVar3), iVar4 == 0))) {
+          pcVar3 = pcVar3 + 1;
+          cVar1 = *pcVar3;
         }
-        *pcVar4 = '\0';
+        *pcVar3 = '\0';
       }
-      fclose(p_Var3);
+      fclose(str);
       if (pcVar2 != (char *)0x0) goto LAB_0089d919;
     }
   }
@@ -196,16 +196,16 @@ LAB_0089d919:
 LAB_0089d923:
   pcStack_58 = (char *)0x0;
   _HTSACopy(pcVar2);
-  pcVar4 = pcStack_58;
+  pcVar3 = pcStack_58;
   cVar1 = *pcStack_58;
   pcVar2 = pcStack_58;
   while (cVar1 != '\0') {
-    iVar5 = tolower((int)*pcVar2);
-    *pcVar2 = (char)iVar5;
+    iVar4 = tolower((int)*pcVar2);
+    *pcVar2 = (char)iVar4;
     pcVar2 = pcVar2 + 1;
     cVar1 = *pcVar2;
   }
-  return pcVar4;
+  return pcVar3;
 }
 
 
@@ -246,7 +246,7 @@ char * _HTGetTmpFileName(void)
   uchar *extraout_EAX;
   uchar *puVar5;
   int iVar6;
-  uchar *puVar7;
+  uchar *string;
   char *unaff_EDI;
   
   pcVar3 = unaff_EDI;
@@ -280,20 +280,20 @@ char * _HTGetTmpFileName(void)
       cVar1 = *pcVar4;
       pcVar4 = pcVar4 + 1;
     } while (cVar1 != '\0');
-    puVar7 = (uchar *)(pcVar3 + ((int)pcVar4 - (int)(pcVar3 + 1)));
+    string = (uchar *)(pcVar3 + ((int)pcVar4 - (int)(pcVar3 + 1)));
     if (pcVar3[((int)pcVar4 - (int)(pcVar3 + 1)) + -1] != '\\') {
-      *puVar7 = '\\';
-      puVar7 = puVar7 + 1;
+      *string = '\\';
+      string = string + 1;
     }
-    tmpnam((char *)puVar7);
-    strrchr(puVar7,'\\');
+    tmpnam((char *)string);
+    strrchr(string,'\\');
     puVar5 = extraout_EAX;
     if (extraout_EAX != (uchar *)0x0) {
       do {
         puVar5 = puVar5 + 1;
         uVar2 = *puVar5;
-        *puVar7 = uVar2;
-        puVar7 = puVar7 + 1;
+        *string = uVar2;
+        string = string + 1;
       } while (uVar2 != '\0');
       return pcVar3;
     }

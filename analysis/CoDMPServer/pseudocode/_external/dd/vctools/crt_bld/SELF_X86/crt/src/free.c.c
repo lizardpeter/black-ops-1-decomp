@@ -5,33 +5,34 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl free(void *param_1)
+void __cdecl free(void *pBlock)
 
 {
-  tagHeader *ptVar1;
-  BOOL BVar2;
-  int *piVar3;
-  DWORD DVar4;
-  int iVar5;
+  tagHeader *pHeader_00;
+  BOOL BVar1;
+  int *piVar2;
+  DWORD oserrno;
+  int iVar3;
+  tagHeader *pHeader;
   
-  if (param_1 != (void *)0x0) {
+  if (pBlock != (void *)0x0) {
     if (__active_heap == 3) {
       _lock(4);
-      ptVar1 = __sbh_find_block(param_1);
-      if (ptVar1 != (tagHeader *)0x0) {
-        __sbh_free_block(ptVar1,param_1);
+      pHeader_00 = __sbh_find_block(pBlock);
+      if (pHeader_00 != (tagHeader *)0x0) {
+        __sbh_free_block(pHeader_00,pBlock);
       }
       FUN_00c0fa2b();
-      if (ptVar1 != (tagHeader *)0x0) {
+      if (pHeader_00 != (tagHeader *)0x0) {
         return;
       }
     }
-    BVar2 = HeapFree(_crtheap,0,param_1);
-    if (BVar2 == 0) {
-      piVar3 = _errno();
-      DVar4 = GetLastError();
-      iVar5 = _get_errno_from_oserr(DVar4);
-      *piVar3 = iVar5;
+    BVar1 = HeapFree(_crtheap,0,pBlock);
+    if (BVar1 == 0) {
+      piVar2 = _errno();
+      oserrno = GetLastError();
+      iVar3 = _get_errno_from_oserr(oserrno);
+      *piVar2 = iVar3;
     }
   }
   return;

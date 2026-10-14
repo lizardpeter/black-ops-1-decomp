@@ -2,6 +2,8 @@
 
 // 00848820  R_InitExtraCamRenderTargets  (gfx_d3d/r_rendertarget.cpp:6493)
 
+/* WARNING: Variable defined which should be unmapped: surfaceDesc */
+
 void __cdecl R_InitExtraCamRenderTargets(uint param_1,uint param_2,int param_3)
 
 {
@@ -12,12 +14,10 @@ void __cdecl R_InitExtraCamRenderTargets(uint param_1,uint param_2,int param_3)
   int iVar1;
   int iVar2;
   IDirect3DSurface9 *pIVar3;
-  undefined1 *puVar4;
-  RenderTargetUsage in_stack_ffffffd8;
-  GfxRenderTarget *in_stack_ffffffdc;
-  uint in_stack_ffffffe0;
+  _D3DRESOURCETYPE *p_Var4;
+  _D3DSURFACE_DESC surfaceDesc;
   
-  puVar4 = &stack0xffffffdc;
+  p_Var4 = &surfaceDesc.Type;
   g_extraCamSettings.enabled = true;
   g_extraCamSettings.width = in_ECX;
   g_extraCamSettings.height = unaff_EDI;
@@ -27,16 +27,19 @@ void __cdecl R_InitExtraCamRenderTargets(uint param_1,uint param_2,int param_3)
   iVar1 = 0x14;
   iVar2 = unaff_EDI;
   R_InitSizedRenderTargetImage
-            (0x14,unaff_EDI,(int)pIVar3,(int)puVar4,(_D3DFORMAT)unaff_ESI,in_stack_ffffffd8,
-             in_stack_ffffffdc,in_stack_ffffffe0);
+            (0x14,unaff_EDI,(int)pIVar3,(int)p_Var4,(_D3DFORMAT)unaff_ESI,surfaceDesc.Format,
+             (GfxRenderTarget *)surfaceDesc.Type,surfaceDesc.Usage);
   R_InitSizedRenderTargetImage
-            (0x15,unaff_EDI,iVar1,iVar2,(_D3DFORMAT)pIVar3,(RenderTargetUsage)puVar4,unaff_ESI,
-             in_stack_ffffffd8);
+            (0x15,unaff_EDI,iVar1,iVar2,(_D3DFORMAT)pIVar3,(RenderTargetUsage)p_Var4,unaff_ESI,
+             surfaceDesc.Format);
   return;
 }
 
 
 // 00848880  R_InitUI3DRenderTarget  (gfx_d3d/r_rendertarget.cpp:6555)
+
+/* WARNING: Variable defined which should be unmapped: location */
+/* WARNING: Variable defined which should be unmapped: allocatePingPongBuffer */
 
 void __cdecl R_InitUI3DRenderTarget(ushort param_1,ushort param_2,int param_3,bool param_4)
 
@@ -44,18 +47,19 @@ void __cdecl R_InitUI3DRenderTarget(ushort param_1,ushort param_2,int param_3,bo
   _D3DFORMAT _Var1;
   int unaff_ESI;
   uint unaff_EDI;
-  int unaff_retaddr;
+  bool allocatePingPongBuffer;
   undefined2 in_stack_00000006;
   undefined2 in_stack_0000000a;
   undefined3 in_stack_00000011;
+  int location;
   
   _Var1 = _param_1;
   R_InitSizedRenderTargetImage
-            (0x12,unaff_EDI & 0xffff,unaff_ESI,unaff_retaddr,_param_1,_param_2,
+            (0x12,unaff_EDI & 0xffff,unaff_ESI,_allocatePingPongBuffer,_param_1,_param_2,
              (GfxRenderTarget *)param_3,_param_4);
   if ((char)param_1 != '\0') {
     R_InitSizedRenderTargetImage
-              (0x13,unaff_EDI & 0xffff,unaff_ESI,unaff_retaddr,_Var1,_param_2,
+              (0x13,unaff_EDI & 0xffff,unaff_ESI,_allocatePingPongBuffer,_Var1,_param_2,
                (GfxRenderTarget *)param_3,_param_4);
   }
   return;

@@ -2,6 +2,8 @@
 
 // 008F2C50  compute_convex_poly_area  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:7)
 
+/* WARNING: Variable defined which should be unmapped: area */
+
 float __thiscall phys_contact_manifold::compute_convex_poly_area(phys_contact_manifold *this)
 
 {
@@ -9,6 +11,7 @@ float __thiscall phys_contact_manifold::compute_convex_poly_area(phys_contact_ma
   contact_manifold_mesh_point *pcVar2;
   contact_manifold_mesh_point **ppcVar3;
   contact_manifold_mesh_point **ppcVar4;
+  float area;
   float local_18;
   
   ppcVar1 = this->m_list_contact_point;
@@ -32,12 +35,15 @@ float __thiscall phys_contact_manifold::compute_convex_poly_area(phys_contact_ma
 
 // 008F2CF0  compute_convex_poly_perimeter  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:25)
 
+/* WARNING: Variable defined which should be unmapped: perimeter */
+
 float __thiscall phys_contact_manifold::compute_convex_poly_perimeter(phys_contact_manifold *this)
 
 {
   contact_manifold_mesh_point **ppcVar1;
   contact_manifold_mesh_point **ppcVar2;
   float10 extraout_ST0;
+  float perimeter;
   float local_10;
   
   local_10 = 0.0;
@@ -53,7 +59,7 @@ float __thiscall phys_contact_manifold::compute_convex_poly_perimeter(phys_conta
 
 // 008F2D70  feature_qsort  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:45)
 
-void __cdecl feature_qsort(contact_manifold_mesh_point **param_1,int param_2)
+void __cdecl feature_qsort(contact_manifold_mesh_point **list_count,int param_2)
 
 {
   contact_manifold_mesh_point **ppcVar1;
@@ -64,23 +70,24 @@ void __cdecl feature_qsort(contact_manifold_mesh_point **param_1,int param_2)
   contact_manifold_mesh_point **ppcVar6;
   contact_manifold_mesh_point **ppcVar7;
   bool bVar8;
+  contact_manifold_mesh_point **list;
   
   iVar5 = param_2 + -2;
   bVar8 = param_2 == 2;
   while( true ) {
     if (bVar8) {
-      pcVar3 = *param_1;
-      if ((pcVar3->m_contact_p).x < (param_1[1]->m_contact_p).x) {
-        *param_1 = param_1[1];
-        param_1[1] = pcVar3;
+      pcVar3 = *list_count;
+      if ((pcVar3->m_contact_p).x < (list_count[1]->m_contact_p).x) {
+        *list_count = list_count[1];
+        list_count[1] = pcVar3;
       }
       return;
     }
     if (SBORROW4(param_2,2) != iVar5 < 0) break;
-    pcVar3 = *param_1;
-    ppcVar2 = param_1 + param_2 + -1;
-    ppcVar6 = param_1 + 1;
-    ppcVar7 = param_1;
+    pcVar3 = *list_count;
+    ppcVar2 = list_count + param_2 + -1;
+    ppcVar6 = list_count + 1;
+    ppcVar7 = list_count;
     if (ppcVar6 <= ppcVar2) {
       iVar5 = (int)ppcVar2 + (4 - (int)ppcVar6);
       if (3 < (int)(iVar5 + (iVar5 >> 0x1f & 3U)) >> 2) {
@@ -126,11 +133,11 @@ void __cdecl feature_qsort(contact_manifold_mesh_point **param_1,int param_2)
         }
       }
     }
-    *param_1 = *ppcVar7;
+    *list_count = *ppcVar7;
     *ppcVar7 = pcVar3;
-    feature_qsort(param_1,(int)ppcVar7 - (int)param_1 >> 2);
+    feature_qsort(list_count,(int)ppcVar7 - (int)list_count >> 2);
     param_2 = (int)ppcVar2 - (int)ppcVar7 >> 2;
-    param_1 = ppcVar7 + 1;
+    list_count = ppcVar7 + 1;
     iVar5 = param_2 + -2;
     bVar8 = iVar5 == 0;
   }
@@ -358,7 +365,7 @@ LAB_008f37c5:
 // 008F2B60  phys_v2_to_v3_multiply  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_contact_manifold.h:64)
 
 phys_vec3 * __cdecl
-phys_v2_to_v3_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec2 *param_2)
+phys_v2_to_v3_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *m,phys_vec2 *v)
 
 {
   float fVar1;
@@ -368,13 +375,13 @@ phys_v2_to_v3_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phy
   float fVar5;
   float fVar6;
   
-  fVar1 = param_2->y;
-  fVar2 = (param_1->y).y;
-  fVar3 = (param_1->y).z;
-  fVar4 = param_2->x;
-  fVar5 = (param_1->x).y;
-  fVar6 = (param_1->x).z;
-  __return_storage_ptr__->x = fVar4 * (param_1->x).x + fVar1 * (param_1->y).x;
+  fVar1 = v->y;
+  fVar2 = (m->y).y;
+  fVar3 = (m->y).z;
+  fVar4 = v->x;
+  fVar5 = (m->x).y;
+  fVar6 = (m->x).z;
+  __return_storage_ptr__->x = fVar4 * (m->x).x + fVar1 * (m->y).x;
   __return_storage_ptr__->y = fVar5 * fVar4 + fVar2 * fVar1;
   __return_storage_ptr__->z = fVar4 * fVar6 + fVar1 * fVar3;
   return __return_storage_ptr__;
@@ -384,17 +391,17 @@ phys_v2_to_v3_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phy
 // 008F2BF0  displace_contact_p  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_contact_manifold.h:117)
 
 void __cdecl
-displace_contact_p(contact_manifold_mesh_point **param_1,phys_vec2 *param_2,phys_mat44 *param_3)
+displace_contact_p(contact_manifold_mesh_point **mp,phys_vec2 *d,phys_mat44 *contact_mat)
 
 {
   contact_manifold_mesh_point *pcVar1;
   phys_vec3 *ppVar2;
   phys_vec3 local_20;
   
-  pcVar1 = *param_1;
-  (pcVar1->m_contact_p).x = (pcVar1->m_contact_p).x + param_2->x;
-  (pcVar1->m_contact_p).y = param_2->y + (pcVar1->m_contact_p).y;
-  ppVar2 = phys_v2_to_v3_multiply(&local_20,param_3,param_2);
+  pcVar1 = *mp;
+  (pcVar1->m_contact_p).x = (pcVar1->m_contact_p).x + d->x;
+  (pcVar1->m_contact_p).y = d->y + (pcVar1->m_contact_p).y;
+  ppVar2 = phys_v2_to_v3_multiply(&local_20,contact_mat,d);
   (pcVar1->m_p).x = ppVar2->x + (pcVar1->m_p).x;
   (pcVar1->m_p).y = ppVar2->y + (pcVar1->m_p).y;
   (pcVar1->m_p).z = ppVar2->z + (pcVar1->m_p).z;
@@ -404,7 +411,7 @@ displace_contact_p(contact_manifold_mesh_point **param_1,phys_vec2 *param_2,phys
 
 // 008F2EB0  convex_poly_qsort  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:155)
 
-void __cdecl convex_poly_qsort(contact_manifold_mesh_point **param_1,int param_2)
+void __cdecl convex_poly_qsort(contact_manifold_mesh_point **list_count,int param_2)
 
 {
   contact_manifold_mesh_point **ppcVar1;
@@ -415,26 +422,27 @@ void __cdecl convex_poly_qsort(contact_manifold_mesh_point **param_1,int param_2
   contact_manifold_mesh_point **ppcVar6;
   contact_manifold_mesh_point **ppcVar7;
   bool bVar8;
+  contact_manifold_mesh_point **list;
   
   iVar5 = param_2 + -2;
   bVar8 = param_2 == 2;
   while( true ) {
     if (bVar8) {
-      pcVar3 = param_1[1];
-      pcVar4 = *param_1;
+      pcVar3 = list_count[1];
+      pcVar4 = *list_count;
       if (((pcVar3->m_contact_p).x < (pcVar4->m_contact_p).x) ||
          (((pcVar4->m_contact_p).x == (pcVar3->m_contact_p).x &&
           ((pcVar3->m_contact_p).y < (pcVar4->m_contact_p).y)))) {
-        *param_1 = param_1[1];
-        param_1[1] = pcVar4;
+        *list_count = list_count[1];
+        list_count[1] = pcVar4;
       }
       return;
     }
     if (SBORROW4(param_2,2) != iVar5 < 0) break;
-    pcVar3 = *param_1;
-    ppcVar2 = param_1 + param_2 + -1;
-    ppcVar6 = param_1 + 1;
-    ppcVar7 = param_1;
+    pcVar3 = *list_count;
+    ppcVar2 = list_count + param_2 + -1;
+    ppcVar6 = list_count + 1;
+    ppcVar7 = list_count;
     if (ppcVar6 <= ppcVar2) {
       iVar5 = (int)ppcVar2 + (4 - (int)ppcVar6);
       if (3 < (int)(iVar5 + (iVar5 >> 0x1f & 3U)) >> 2) {
@@ -490,11 +498,11 @@ void __cdecl convex_poly_qsort(contact_manifold_mesh_point **param_1,int param_2
         }
       }
     }
-    *param_1 = *ppcVar7;
+    *list_count = *ppcVar7;
     *ppcVar7 = pcVar3;
-    convex_poly_qsort(param_1,(int)ppcVar7 - (int)param_1 >> 2);
+    convex_poly_qsort(list_count,(int)ppcVar7 - (int)list_count >> 2);
     param_2 = (int)ppcVar2 - (int)ppcVar7 >> 2;
-    param_1 = ppcVar7 + 1;
+    list_count = ppcVar7 + 1;
     iVar5 = param_2 + -2;
     bVar8 = iVar5 == 0;
   }
@@ -505,18 +513,17 @@ void __cdecl convex_poly_qsort(contact_manifold_mesh_point **param_1,int param_2
 // 008F42C0  rht  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:158)
 
 bool __cdecl
-phys_contact_manifold::rht(phys_vec2 *param_1,phys_vec2 *param_2,float param_3,float param_4)
+phys_contact_manifold::rht(phys_vec2 *e2,phys_vec2 *min_length2,float min_sin_sq,float param_4)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  fVar1 = param_1->x * param_2->y - param_2->x * param_1->y;
-  if ((((0.0 <= fVar1) &&
-       (fVar2 = param_1->x * param_1->x + param_1->y * param_1->y, param_3 < fVar2)) &&
-      (fVar3 = param_2->x * param_2->x + param_2->y * param_2->y, param_3 <= fVar3)) &&
-     (param_4 < (fVar1 * fVar1) / (fVar3 * fVar2))) {
+  fVar1 = e2->x * min_length2->y - min_length2->x * e2->y;
+  if ((((0.0 <= fVar1) && (fVar2 = e2->x * e2->x + e2->y * e2->y, min_sin_sq < fVar2)) &&
+      (fVar3 = min_length2->x * min_length2->x + min_length2->y * min_length2->y,
+      min_sin_sq <= fVar3)) && (param_4 < (fVar1 * fVar1) / (fVar3 * fVar2))) {
     return true;
   }
   return false;
@@ -536,6 +543,8 @@ void __thiscall phys_contact_manifold::generate_convex_poly_internal(phys_contac
   contact_manifold_mesh_point **ppcVar6;
   contact_manifold_mesh_point **ppcVar7;
   contact_manifold_mesh_point **ppcVar8;
+  contact_manifold_mesh_point **min_cp_mp;
+  contact_manifold_mesh_point **last_i_smp;
   phys_vec2 local_18;
   phys_vec2 local_10;
   
@@ -638,9 +647,11 @@ phys_contact_manifold::generate_convex_poly(phys_contact_manifold *this,phys_mat
 
 // 008F3230  intersect_poly_segment  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_contact_manifold.cpp:263)
 
+/* WARNING: Variable defined which should be unmapped: dir */
+
 void __thiscall
 phys_contact_manifold_process::intersect_poly_segment
-          (phys_contact_manifold_process *this,phys_contact_manifold *param_1,phys_vec2 *param_2,
+          (phys_contact_manifold_process *this,phys_contact_manifold *p0,phys_vec2 *p1,
           phys_vec2 *param_3)
 
 {
@@ -658,18 +669,20 @@ phys_contact_manifold_process::intersect_poly_segment
   phys_vec2 *ppVar12;
   phys_vec2 *ppVar13;
   contact_manifold_mesh_point **ppcVar14;
+  phys_contact_manifold *cman;
+  phys_vec2 dir;
   
-  ppVar12 = param_2;
-  fVar6 = param_3->x - param_2->x;
-  fVar7 = param_3->y - param_2->y;
-  ppcVar3 = param_1->m_list_contact_point;
-  param_2 = (phys_vec2 *)&DAT_3f800000;
+  ppVar12 = p1;
+  fVar6 = param_3->x - p1->x;
+  fVar7 = param_3->y - p1->y;
+  ppcVar3 = p0->m_list_contact_point;
+  p1 = (phys_vec2 *)&DAT_3f800000;
   ppVar1 = (phys_vec2 *)0x0;
   ppcVar14 = ppcVar3;
-  pcVar5 = ppcVar3[param_1->m_list_contact_point_count + -1];
-  ppVar11 = param_2;
+  pcVar5 = ppcVar3[p0->m_list_contact_point_count + -1];
+  ppVar11 = p1;
   do {
-    if (ppcVar3 + param_1->m_list_contact_point_count + -1 < ppcVar14) {
+    if (ppcVar3 + p0->m_list_contact_point_count + -1 < ppcVar14) {
       this->m_list_isect_point = ppcVar3;
       this->m_contact_point_count = 2;
       pcVar5 = *ppcVar3;
@@ -688,12 +701,12 @@ phys_contact_manifold_process::intersect_poly_segment
     fVar8 = fVar9 * ((pcVar5->m_contact_p).x - ppVar12->x) +
             fVar2 * ((pcVar5->m_contact_p).y - ppVar12->y);
     fVar2 = fVar9 * fVar6 + fVar7 * fVar2;
-    param_2 = ppVar11;
+    p1 = ppVar11;
     if ((fVar2 <= -0.0001) || (0.0001 <= fVar2)) {
       ppVar10 = (phys_vec2 *)(fVar8 / fVar2);
       if (0.0 <= fVar2) {
         ppVar13 = ppVar1;
-        param_2 = ppVar10;
+        p1 = ppVar10;
         if ((float)ppVar11 <= (float)ppVar10) goto LAB_008f3360;
       }
       else {
@@ -701,11 +714,11 @@ phys_contact_manifold_process::intersect_poly_segment
         if ((float)ppVar10 <= (float)ppVar1) {
 LAB_008f3360:
           ppVar13 = ppVar1;
-          param_2 = ppVar11;
+          p1 = ppVar11;
         }
       }
       ppVar1 = ppVar13;
-      if ((float)param_2 < (float)ppVar1) {
+      if ((float)p1 < (float)ppVar1) {
         return;
       }
     }
@@ -714,7 +727,7 @@ LAB_008f3360:
     }
     ppcVar14 = ppcVar14 + 1;
     pcVar5 = pcVar4;
-    ppVar11 = param_2;
+    ppVar11 = p1;
   } while( true );
 }
 
@@ -733,7 +746,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 bool __thiscall
 phys_contact_manifold_process::find_bottom
-          (phys_contact_manifold_process *this,bridge *param_1,isect_info *param_2,
+          (phys_contact_manifold_process *this,bridge *left_cman,isect_info *right_cman,
           isect_info *param_3)
 
 {
@@ -753,13 +766,13 @@ phys_contact_manifold_process::find_bottom
   phys_vec2 *ppVar14;
   bool bVar15;
   
-  ppcVar2 = param_1->m_left_i;
-  ppcVar3 = param_1->m_right_i;
+  ppcVar2 = left_cman->m_left_i;
+  ppcVar3 = left_cman->m_right_i;
   ppcVar11 = ppcVar2;
   do {
-    ppcVar4 = param_1->m_right_i;
-    if (ppcVar11 == param_2->m_last_i) {
-      ppcVar12 = param_2->m_cman->m_list_contact_point;
+    ppcVar4 = left_cman->m_right_i;
+    if (ppcVar11 == right_cman->m_last_i) {
+      ppcVar12 = right_cman->m_cman->m_list_contact_point;
     }
     else {
       ppcVar12 = ppcVar11 + 1;
@@ -769,20 +782,20 @@ phys_contact_manifold_process::find_bottom
     ppVar14 = &pcVar5->m_contact_p;
     fVar8 = (pcVar5->m_contact_p).y - ((*ppcVar11)->m_contact_p).y;
     while( true ) {
-      if (param_1->m_right_i == param_3->m_cman->m_list_contact_point) {
+      if (left_cman->m_right_i == param_3->m_cman->m_list_contact_point) {
         ppcVar12 = param_3->m_last_i;
       }
       else {
-        ppcVar12 = param_1->m_right_i + -1;
+        ppcVar12 = left_cman->m_right_i + -1;
       }
       if (0.0 <= (((*ppcVar12)->m_contact_p).y - (pcVar5->m_contact_p).y) * fVar7 -
                  fVar8 * (((*ppcVar12)->m_contact_p).x - ppVar14->x)) break;
-      param_1->m_right_i = ppcVar12;
+      left_cman->m_right_i = ppcVar12;
       if (ppcVar12 == ppcVar3) {
         return false;
       }
     }
-    ppcVar12 = param_1->m_right_i;
+    ppcVar12 = left_cman->m_right_i;
     if (ppcVar12 == param_3->m_cman->m_list_contact_point) {
       ppcVar13 = param_3->m_last_i;
     }
@@ -793,35 +806,35 @@ phys_contact_manifold_process::find_bottom
     fVar1 = (pcVar6->m_contact_p).x - ((*ppcVar12)->m_contact_p).x;
     fVar10 = (pcVar6->m_contact_p).y - ((*ppcVar12)->m_contact_p).y;
     while( true ) {
-      if (param_1->m_left_i == param_2->m_last_i) {
-        ppcVar12 = param_2->m_cman->m_list_contact_point;
+      if (left_cman->m_left_i == right_cman->m_last_i) {
+        ppcVar12 = right_cman->m_cman->m_list_contact_point;
       }
       else {
-        ppcVar12 = param_1->m_left_i + 1;
+        ppcVar12 = left_cman->m_left_i + 1;
       }
       if ((((*ppcVar12)->m_contact_p).y - (pcVar6->m_contact_p).y) * fVar1 -
           fVar10 * (((*ppcVar12)->m_contact_p).x - (pcVar6->m_contact_p).x) <= 0.0) break;
-      param_1->m_left_i = ppcVar12;
+      left_cman->m_left_i = ppcVar12;
       if (ppcVar12 == ppcVar2) {
         return false;
       }
     }
-    ppcVar12 = param_1->m_left_i;
+    ppcVar12 = left_cman->m_left_i;
     bVar15 = ppcVar11 != ppcVar12;
     ppcVar11 = ppcVar12;
-  } while ((bVar15) || (ppcVar4 != param_1->m_right_i));
+  } while ((bVar15) || (ppcVar4 != left_cman->m_right_i));
   fVar9 = fVar10 * fVar7 - fVar8 * fVar1;
   if (0.0001 < fVar9) {
     fVar9 = (((pcVar6->m_contact_p).x - ppVar14->x) * fVar10 -
             ((pcVar6->m_contact_p).y - (pcVar5->m_contact_p).y) * fVar1) / fVar9;
     fVar1 = (pcVar5->m_contact_p).y;
-    (param_1->m_intersection_p).x = ppVar14->x + fVar9 * fVar7;
-    (param_1->m_intersection_p).y = fVar1 + fVar8 * fVar9;
+    (left_cman->m_intersection_p).x = ppVar14->x + fVar9 * fVar7;
+    (left_cman->m_intersection_p).y = fVar1 + fVar8 * fVar9;
     return true;
   }
-  pcVar5 = *param_1->m_right_i;
-  (param_1->m_intersection_p).x = (pcVar5->m_contact_p).x;
-  (param_1->m_intersection_p).y = (pcVar5->m_contact_p).y;
+  pcVar5 = *left_cman->m_right_i;
+  (left_cman->m_intersection_p).x = (pcVar5->m_contact_p).x;
+  (left_cman->m_intersection_p).y = (pcVar5->m_contact_p).y;
   return true;
 }
 
@@ -836,6 +849,7 @@ phys_contact_manifold_process::isect_info::init(isect_info *this,phys_contact_ma
   float fVar2;
   contact_manifold_mesh_point **ppcVar3;
   contact_manifold_mesh_point *pcVar4;
+  phys_contact_manifold *cman;
   
   this->m_cman = param_1;
   ppcVar3 = param_1->m_list_contact_point;
@@ -900,18 +914,18 @@ phys_contact_manifold_process::intersect_poly_poly(phys_contact_manifold_process
   isect_info *piVar15;
   contact_manifold_mesh_point **ppcVar16;
   bridge *pbVar17;
-  isect_info *piVar18;
+  isect_info *right_cman;
   float10 extraout_ST0;
+  float fVar18;
   float fVar19;
-  float fVar20;
-  bridge *local_5c;
-  isect_info *local_58;
-  int local_54;
+  bridge *right_gb;
+  int list_bridge_count;
+  int max_ctr;
   float local_48;
-  float local_44;
+  float vdisplace;
   phys_vec2 local_40;
   float local_38;
-  float local_34;
+  float gb_cman1;
   isect_info local_30;
   isect_info local_18;
   
@@ -933,63 +947,63 @@ phys_contact_manifold_process::intersect_poly_poly(phys_contact_manifold_process
   (this->m_allocator).m_buffer_cur = (char *)pbVar17;
   iVar11 = (local_30.m_cman)->m_list_contact_point_count +
            (local_18.m_cman)->m_list_contact_point_count;
-  local_58 = &local_18;
+  list_bridge_count = (int)&local_18;
   piVar12 = &local_30;
-  local_54 = 0;
-  local_5c = pbVar17;
-  piVar15 = local_58;
-  piVar18 = piVar12;
+  max_ctr = 0;
+  right_gb = pbVar17;
+  piVar15 = (isect_info *)list_bridge_count;
+  right_cman = piVar12;
   if (-1 < iVar11) {
     do {
-      fVar19 = (piVar15->m_edge).y;
-      fVar20 = (piVar18->m_edge).x;
+      fVar18 = (piVar15->m_edge).y;
+      fVar19 = (right_cman->m_edge).x;
       ppcVar16 = piVar15->m_i;
-      fVar2 = (piVar18->m_edge).y;
-      local_5c->m_left_i = piVar18->m_i;
+      fVar2 = (right_cman->m_edge).y;
+      right_gb->m_left_i = right_cman->m_i;
       fVar3 = (piVar15->m_edge).x;
-      local_5c->m_right_i = ppcVar16;
-      if (fVar19 * fVar20 - fVar2 * fVar3 < 0.0) {
+      right_gb->m_right_i = ppcVar16;
+      if (fVar18 * fVar19 - fVar2 * fVar3 < 0.0) {
         local_48 = (piVar15->m_edge).x;
-        local_44 = (piVar15->m_edge).y;
+        vdisplace = (piVar15->m_edge).y;
         piVar12 = piVar15;
       }
       else {
-        local_44 = (piVar18->m_edge).y;
-        local_48 = (piVar18->m_edge).x;
-        piVar12 = piVar18;
+        vdisplace = (right_cman->m_edge).y;
+        local_48 = (right_cman->m_edge).x;
+        piVar12 = right_cman;
       }
       isect_info::update(piVar12);
-      local_38 = ((*piVar15->m_i)->m_contact_p).x - ((*piVar18->m_i)->m_contact_p).x;
-      local_34 = ((*piVar15->m_i)->m_contact_p).y - ((*piVar18->m_i)->m_contact_p).y;
-      fVar19 = local_48 * local_34 - local_44 * local_38;
-      local_58 = piVar15;
-      piVar12 = piVar18;
-      if (fVar19 <= 0.0) {
-        if (0.0 <= fVar19) {
-          local_40.x = -local_44;
+      local_38 = ((*piVar15->m_i)->m_contact_p).x - ((*right_cman->m_i)->m_contact_p).x;
+      gb_cman1 = ((*piVar15->m_i)->m_contact_p).y - ((*right_cman->m_i)->m_contact_p).y;
+      fVar18 = local_48 * gb_cman1 - vdisplace * local_38;
+      list_bridge_count = (int)piVar15;
+      piVar12 = right_cman;
+      if (fVar18 <= 0.0) {
+        if (0.0 <= fVar18) {
+          local_40.x = -vdisplace;
           _CIsqrt();
           local_40.x = (0.034 / (float)extraout_ST0) * local_40.x;
           local_40.y = (0.034 / (float)extraout_ST0) * local_48;
           displace_contact_p(piVar15->m_i,&local_40,&this->contact_mat);
         }
         else {
-          local_58 = piVar18;
+          list_bridge_count = (int)right_cman;
           piVar12 = piVar15;
-          if (local_54 != 0) {
-            bVar7 = find_bottom(this,local_5c,piVar18,piVar15);
+          if (max_ctr != 0) {
+            bVar7 = find_bottom(this,right_gb,right_cman,piVar15);
             if (!bVar7) {
               return;
             }
-            local_5c = local_5c + 1;
+            right_gb = right_gb + 1;
           }
         }
       }
-      local_54 = local_54 + 1;
-      piVar15 = local_58;
-      piVar18 = piVar12;
-    } while (local_54 <= iVar11);
+      max_ctr = max_ctr + 1;
+      piVar15 = (isect_info *)list_bridge_count;
+      right_cman = piVar12;
+    } while (max_ctr <= iVar11);
   }
-  uVar8 = (int)local_5c - (int)pbVar17 >> 4;
+  uVar8 = (int)right_gb - (int)pbVar17 >> 4;
   uVar13 = uVar8 & 0x80000001;
   bVar7 = uVar13 == 0;
   if ((int)uVar13 < 0) {
@@ -1031,8 +1045,8 @@ phys_contact_manifold_process::intersect_poly_poly(phys_contact_manifold_process
             }
           }
           pppcVar14 = pppcVar14 + 4;
-          piVar12 = local_58;
-          local_58 = piVar15;
+          piVar12 = (isect_info *)list_bridge_count;
+          list_bridge_count = (int)piVar15;
         } while (iVar11 < (int)uVar8);
       }
       iVar11 = (int)ppcVar16 - (int)this->m_list_isect_point >> 2;
@@ -1041,15 +1055,15 @@ phys_contact_manifold_process::intersect_poly_poly(phys_contact_manifold_process
       *ppcVar1 = *ppcVar1 + iVar11 * 4;
       return;
     }
-    ppVar9 = local_58->m_cman;
+    ppVar9 = ((isect_info *)list_bridge_count)->m_cman;
     this->m_list_isect_point = ppVar9->m_list_contact_point;
     this->m_contact_point_count = ppVar9->m_list_contact_point_count;
     return;
   }
-  fVar19 = phys_contact_manifold::compute_convex_poly_perimeter(&this->cman1);
-  fVar20 = phys_contact_manifold::compute_convex_poly_perimeter(&this->cman2);
+  fVar18 = phys_contact_manifold::compute_convex_poly_perimeter(&this->cman1);
+  fVar19 = phys_contact_manifold::compute_convex_poly_perimeter(&this->cman2);
   ppVar9 = &this->cman1;
-  if (fVar19 < fVar20 == (fVar19 == fVar20)) {
+  if (fVar18 < fVar19 == (fVar18 == fVar19)) {
     ppVar9 = &this->cman2;
   }
   this->m_list_isect_point = ppVar9->m_list_contact_point;

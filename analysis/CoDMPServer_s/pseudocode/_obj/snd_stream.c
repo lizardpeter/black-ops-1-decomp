@@ -223,45 +223,45 @@ void __cdecl Snd_StreamOpen(uint param_1,char *param_2,bool param_3,uint param_4
   int iVar2;
   uint uVar3;
   int in_EAX;
-  uchar *puVar4;
+  uchar *dest;
   undefined3 in_stack_0000000d;
   
   uVar3 = param_4;
   iVar2 = _param_3;
   tlPcGetTick();
-  puVar4 = (uchar *)(in_EAX * 400 + _DAT_03508d4c);
-  tlAtomicMutex::Lock((tlAtomicMutex *)(puVar4 + 0x140));
-  strncpy(puVar4,(uchar *)param_1,0x104);
-  *(int *)(puVar4 + 0x178) = iVar2;
-  puVar4[0x184] = (uchar)param_2;
-  puVar4[0x186] = '\x01';
-  *(uint *)(puVar4 + 0x17c) = uVar3;
+  dest = (uchar *)(in_EAX * 400 + _DAT_03508d4c);
+  tlAtomicMutex::Lock((tlAtomicMutex *)(dest + 0x140));
+  strncpy(dest,(uchar *)param_1,0x104);
+  *(int *)(dest + 0x178) = iVar2;
+  dest[0x184] = (uchar)param_2;
+  dest[0x186] = '\x01';
+  *(uint *)(dest + 0x17c) = uVar3;
   if (iVar2 != 0) {
-    FUN_00775840(puVar4,param_1,0);
-    if (puVar4[0x185] != '\0') {
-      puVar4[0x185] = '\0';
-      puVar4[0x188] = '\0';
-      puVar4[0x17c] = '\0';
-      puVar4[0x17d] = '\0';
-      puVar4[0x17e] = '\0';
-      puVar4[0x17f] = '\0';
-      puVar4[0x178] = '\0';
-      puVar4[0x179] = '\0';
-      puVar4[0x17a] = '\0';
-      puVar4[0x17b] = '\0';
+    FUN_00775840(dest,param_1,0);
+    if (dest[0x185] != '\0') {
+      dest[0x185] = '\0';
+      dest[0x188] = '\0';
+      dest[0x17c] = '\0';
+      dest[0x17d] = '\0';
+      dest[0x17e] = '\0';
+      dest[0x17f] = '\0';
+      dest[0x178] = '\0';
+      dest[0x179] = '\0';
+      dest[0x17a] = '\0';
+      dest[0x17b] = '\0';
     }
   }
   SetEvent(DAT_01da481c);
-  piVar1 = (int *)(puVar4 + 0x148);
+  piVar1 = (int *)(dest + 0x148);
   *piVar1 = *piVar1 + -1;
   if (*piVar1 == 0) {
     param_2 = (char *)0x0;
     InterlockedExchange((LONG *)&param_2,0);
-    *(undefined4 *)&((tlAtomicMutex *)(puVar4 + 0x140))->ThreadId = 0;
-    puVar4[0x144] = '\0';
-    puVar4[0x145] = '\0';
-    puVar4[0x146] = '\0';
-    puVar4[0x147] = '\0';
+    *(undefined4 *)&((tlAtomicMutex *)(dest + 0x140))->ThreadId = 0;
+    dest[0x144] = '\0';
+    dest[0x145] = '\0';
+    dest[0x146] = '\0';
+    dest[0x147] = '\0';
   }
   return;
 }
@@ -688,15 +688,15 @@ void __cdecl Snd_StreamSetError(snd_stream *param_1,snd_stream_request *param_2)
 
 {
   int *piVar1;
-  snd_stream *psVar2;
-  int iVar3;
+  snd_stream *dst;
+  int iVar2;
   char *unaff_ESI;
   
-  psVar2 = param_1;
+  dst = param_1;
   tlAtomicMutex::Lock((tlAtomicMutex *)(unaff_ESI + 0x140));
-  iVar3 = _stricmp((char *)psVar2,unaff_ESI);
-  if ((iVar3 == 0) &&
-     (*(uint *)(psVar2 + 0x104) ==
+  iVar2 = _stricmp((char *)dst,unaff_ESI);
+  if ((iVar2 == 0) &&
+     (*(uint *)(dst + 0x104) ==
       (-(uint)(*(uint *)(unaff_ESI + 0x160) < *(uint *)(unaff_ESI + 0x164)) &
       *(uint *)(unaff_ESI + 0x160)))) {
     unaff_ESI[0x185] = '\x01';
@@ -814,7 +814,7 @@ void __cdecl Snd_StreamUpdate(void)
   int iVar7;
   int iVar8;
   snd_stream_request *unaff_EDI;
-  snd_stream *psVar9;
+  snd_stream *dst;
   snd_stream asStack_aa8 [260];
   int aiStack_9a4 [616];
   
@@ -825,12 +825,12 @@ void __cdecl Snd_StreamUpdate(void)
     iVar8 = 0;
     memset((uchar *)asStack_aa8,'\0',0xaa0);
     uVar6 = 0;
-    psVar9 = asStack_aa8;
+    dst = asStack_aa8;
     do {
-      FUN_00775910(psVar9);
-      if (*psVar9 != (snd_stream)0x0) {
-        iVar3 = FUN_00775c50(psVar9,*(undefined4 *)(psVar9 + 0x104));
-        *(int *)(psVar9 + 0x10c) = iVar3;
+      FUN_00775910(dst);
+      if (*dst != (snd_stream)0x0) {
+        iVar3 = FUN_00775c50(dst,*(undefined4 *)(dst + 0x104));
+        *(int *)(dst + 0x10c) = iVar3;
         if (iVar3 == 0) {
           iVar8 = iVar8 + 1;
         }
@@ -838,14 +838,14 @@ void __cdecl Snd_StreamUpdate(void)
           cVar1 = FUN_00775ae0();
           if (cVar1 == '\0') {
             LOCK();
-            *(int *)(*(int *)(psVar9 + 0x10c) + 4) = *(int *)(*(int *)(psVar9 + 0x10c) + 4) + -1;
+            *(int *)(*(int *)(dst + 0x10c) + 4) = *(int *)(*(int *)(dst + 0x10c) + 4) + -1;
             UNLOCK();
           }
-          memset((uchar *)psVar9,'\0',0x110);
+          memset((uchar *)dst,'\0',0x110);
         }
       }
       uVar6 = uVar6 + 400;
-      psVar9 = psVar9 + 0x110;
+      dst = dst + 0x110;
     } while (uVar6 < 4000);
     if (iVar8 == 0) break;
     iVar3 = -1;

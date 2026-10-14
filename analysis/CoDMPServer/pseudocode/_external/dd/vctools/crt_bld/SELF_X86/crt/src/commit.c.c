@@ -5,7 +5,7 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _commit(int param_1)
+int __cdecl _commit(int filedes)
 
 {
   int *piVar1;
@@ -13,36 +13,37 @@ int __cdecl _commit(int param_1)
   BOOL BVar2;
   ulong *puVar3;
   int iVar4;
-  DWORD local_20;
+  int _Expr_val;
+  int retval;
   
-  if (param_1 == -2) {
+  if (filedes == -2) {
     piVar1 = _errno();
     *piVar1 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar4 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(iVar4 + 4 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)) & 1) != 0) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(iVar4 + 4 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)) & 1) != 0) {
-          hFile = (HANDLE)_get_osfhandle(param_1);
+    if ((-1 < filedes) && ((uint)filedes < (uint)_nhandle)) {
+      iVar4 = (filedes & 0x1fU) * 0x40;
+      if ((*(byte *)(iVar4 + 4 + *(int *)(&__pioinfo + (filedes >> 5) * 4)) & 1) != 0) {
+        __lock_fhandle(filedes);
+        if ((*(byte *)(iVar4 + 4 + *(int *)(&__pioinfo + (filedes >> 5) * 4)) & 1) != 0) {
+          hFile = (HANDLE)_get_osfhandle(filedes);
           BVar2 = FlushFileBuffers(hFile);
           if (BVar2 == 0) {
-            local_20 = GetLastError();
+            retval = GetLastError();
           }
           else {
-            local_20 = 0;
+            retval = 0;
           }
-          if (local_20 == 0) goto LAB_00c23f36;
+          if (retval == 0) goto LAB_00c23f36;
           puVar3 = __doserrno();
-          *puVar3 = local_20;
+          *puVar3 = retval;
         }
         piVar1 = _errno();
         *piVar1 = 9;
-        local_20 = 0xffffffff;
+        retval = -1;
 LAB_00c23f36:
         FUN_00c23f4b();
-        return local_20;
+        return retval;
       }
     }
     piVar1 = _errno();

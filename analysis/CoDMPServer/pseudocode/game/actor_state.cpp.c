@@ -7,13 +7,13 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetDefaultState(actor_s *param_1)
+void __cdecl Actor_SetDefaultState(actor_s *actor)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->stateLevel != 0) {
+  if (actor->stateLevel != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x81,0,"%s")
     ;
     if (!bVar2) {
@@ -22,7 +22,7 @@ void __cdecl Actor_SetDefaultState(actor_s *param_1)
       return;
     }
   }
-  if (param_1->simulatedStateLevel != 0) {
+  if (actor->simulatedStateLevel != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x82,0,"%s")
     ;
     if (!bVar2) {
@@ -31,7 +31,7 @@ void __cdecl Actor_SetDefaultState(actor_s *param_1)
       return;
     }
   }
-  if (param_1->transitionCount != 0) {
+  if (actor->transitionCount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x83,0,"%s")
     ;
     if (!bVar2) {
@@ -40,8 +40,8 @@ void __cdecl Actor_SetDefaultState(actor_s *param_1)
       return;
     }
   }
-  param_1->eState[0] = AIS_DEFAULT;
-  param_1->eSimulatedState[0] = AIS_DEFAULT;
+  actor->eState[0] = AIS_DEFAULT;
+  actor->eSimulatedState[0] = AIS_DEFAULT;
   return;
 }
 
@@ -63,6 +63,8 @@ bool __cdecl Actor_StartState(actor_s *param_1,ai_state_t param_2)
   int in_EDX;
   ai_state_t unaff_ESI;
   actor_s *unaff_EDI;
+  ai_state_t eStartedState;
+  actor_s *self;
   
   if (*(int *)(in_ECX + 0x48) == 0) {
     *(int *)(in_ECX + 0x4c) = level.time;
@@ -85,6 +87,7 @@ bool __cdecl Actor_StartState(actor_s *param_1,ai_state_t param_2)
 
 // 0091C500  Actor_FinishState  (game/actor_state.cpp:164)
 
+/* WARNING: Variable defined which should be unmapped: eNextState */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -99,6 +102,9 @@ void __cdecl Actor_FinishState(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t eNextState;
+  actor_s *self;
+  ai_state_t eCurState;
   
   iVar1 = *(int *)(in_ECX + 0x18 + *(int *)(in_ECX + 0x48) * 4);
   if (AIFuncTable[*(int *)(in_ECX + 8)][iVar1].pfnFinish ==
@@ -118,6 +124,7 @@ void __cdecl Actor_FinishState(actor_s *param_1,ai_state_t param_2)
 
 // 0091C590  Actor_SuspendState  (game/actor_state.cpp:182)
 
+/* WARNING: Variable defined which should be unmapped: eNextState */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -132,6 +139,9 @@ void __cdecl Actor_SuspendState(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t eNextState;
+  actor_s *self;
+  ai_state_t eCurState;
   
   iVar1 = *(int *)(in_ECX + 0x18 + *(int *)(in_ECX + 0x48) * 4);
   if (AIFuncTable[*(int *)(in_ECX + 8)][iVar1].pfnSuspend ==
@@ -156,16 +166,16 @@ void __cdecl Actor_SuspendState(actor_s *param_1,ai_state_t param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ai_state_t __cdecl Actor_GetNextPopedState(actor_s *param_1)
+ai_state_t __cdecl Actor_GetNextPopedState(actor_s *self)
 
 {
   ai_state_t aVar1;
   
-  if (param_1->stateLevel == 0) {
+  if (self->stateLevel == 0) {
     aVar1 = AIS_DEFAULT;
   }
   else {
-    aVar1 = param_1->eState[param_1->stateLevel - 1];
+    aVar1 = self->eState[self->stateLevel - 1];
   }
   return aVar1;
 }
@@ -173,6 +183,7 @@ ai_state_t __cdecl Actor_GetNextPopedState(actor_s *param_1)
 
 // 0091C6D0  Actor_ResumeState  (game/actor_state.cpp:218)
 
+/* WARNING: Variable defined which should be unmapped: ePrevState */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -188,6 +199,10 @@ bool __cdecl Actor_ResumeState(actor_s *param_1,ai_state_t param_2)
   actor_s *in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t ePrevState;
+  actor_s *self;
+  bool result;
+  ai_state_t eCurState;
   
   aVar1 = in_ECX->eState[in_ECX->stateLevel];
   if ((AIFuncTable[in_ECX->species][aVar1].pfnResume ==
@@ -209,18 +224,20 @@ bool __cdecl Actor_ResumeState(actor_s *param_1,ai_state_t param_2)
 
 // 0091C620  Actor_StartDefaultState  (game/actor_state.cpp:243)
 
+/* WARNING: Variable defined which should be unmapped: startSuccess */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_StartDefaultState(actor_s *param_1)
+void __cdecl Actor_StartDefaultState(actor_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *in_ECX;
   ai_state_t unaff_EBP;
+  bool startSuccess;
   
   bVar2 = Actor_StartState(in_ECX,unaff_EBP);
   if (!bVar2) {
@@ -238,26 +255,30 @@ void __cdecl Actor_StartDefaultState(actor_s *param_1)
 
 // 0091C670  Actor_ResumePopedState  (game/actor_state.cpp:257)
 
+/* WARNING: Variable defined which should be unmapped: startSuccess */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_ResumePopedState(actor_s *param_1,ai_state_t param_2)
+void __cdecl Actor_ResumePopedState(actor_s *self,ai_state_t state)
 
 {
   bool bVar1;
   actor_s *in_ECX;
   ai_state_t unaff_EBP;
+  undefined3 uStack_8;
+  bool startSuccess;
   
+  _uStack_8 = in_ECX;
   do {
-    if (param_1->stateLevel == 0) {
-      Actor_StartDefaultState(param_1);
+    if (self->stateLevel == 0) {
+      Actor_StartDefaultState(self);
       return;
     }
-    param_1->stateLevel = param_1->stateLevel - 1;
-    bVar1 = Actor_ResumeState(in_ECX,unaff_EBP);
-    in_ECX = (actor_s *)CONCAT13(bVar1,(int3)in_ECX);
+    self->stateLevel = self->stateLevel - 1;
+    bVar1 = Actor_ResumeState(_uStack_8,unaff_EBP);
+    _uStack_8 = (actor_s *)CONCAT13(bVar1,uStack_8);
   } while (!bVar1);
   return;
 }
@@ -275,11 +296,13 @@ void __cdecl Actor_ThinkStateTransitions(actor_s *param_1)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   actor_s *in_ECX;
   actor_s *unaff_ESI;
-  ai_state_transition_t aVar4;
-  uint local_8;
+  ai_state_transition_t aVar3;
+  actor_s *self;
+  bool startSuccess;
+  uint i;
   
   if ((in_ECX->transitionCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x11f,0,
@@ -288,13 +311,13 @@ void __cdecl Actor_ThinkStateTransitions(actor_s *param_1)
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (in_ECX->transitionCount <= local_8) {
+    if (in_ECX->transitionCount <= i) {
       in_ECX->transitionCount = 0;
       in_ECX->simulatedStateLevel = in_ECX->stateLevel;
-      for (local_8 = 0; local_8 <= in_ECX->stateLevel; local_8 = local_8 + 1) {
-        in_ECX->eSimulatedState[local_8] = in_ECX->eState[local_8];
+      for (i = 0; i <= in_ECX->stateLevel; i = i + 1) {
+        in_ECX->eSimulatedState[i] = in_ECX->eState[i];
       }
       return;
     }
@@ -310,15 +333,15 @@ void __cdecl Actor_ThinkStateTransitions(actor_s *param_1)
       (*pcVar1)();
       return;
     }
-    aVar4 = in_ECX->StateTransitions[local_8].eTransition;
-    if (aVar4 == AIS_TRANSITION_SET) {
+    aVar3 = in_ECX->StateTransitions[i].eTransition;
+    if (aVar3 == AIS_TRANSITION_SET) {
       Actor_FinishState(unaff_ESI,AIS_DEFAULT);
-      bVar2 = Actor_StartState(unaff_ESI,aVar4);
+      bVar2 = Actor_StartState(unaff_ESI,aVar3);
       if (!bVar2) {
         Actor_StartDefaultState(in_ECX);
       }
     }
-    else if (aVar4 == AIS_TRANSITION_PUSH) {
+    else if (aVar3 == AIS_TRANSITION_PUSH) {
       if ((5 < in_ECX->stateLevel + 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x133,
                                    0,"%s"), !bVar2)) {
@@ -326,14 +349,14 @@ void __cdecl Actor_ThinkStateTransitions(actor_s *param_1)
         (*pcVar1)();
         return;
       }
-      Actor_SuspendState(unaff_ESI,aVar4);
+      Actor_SuspendState(unaff_ESI,aVar3);
       in_ECX->stateLevel = in_ECX->stateLevel + 1;
-      bVar2 = Actor_StartState(unaff_ESI,aVar4);
+      bVar2 = Actor_StartState(unaff_ESI,aVar3);
       if (!bVar2) {
-        Actor_ResumePopedState(in_ECX,in_ECX->StateTransitions[local_8].eState);
+        Actor_ResumePopedState(in_ECX,in_ECX->StateTransitions[i].eState);
       }
     }
-    else if (aVar4 == AIS_TRANSITION_POP) {
+    else if (aVar3 == AIS_TRANSITION_POP) {
       if ((in_ECX->stateLevel == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x13c,
                                    0,"%s"), !bVar2)) {
@@ -341,20 +364,20 @@ void __cdecl Actor_ThinkStateTransitions(actor_s *param_1)
         (*pcVar1)();
         return;
       }
-      Actor_FinishState(unaff_ESI,aVar4);
+      Actor_FinishState(unaff_ESI,aVar3);
       Actor_ResumePopedState(in_ECX,in_ECX->eState[in_ECX->stateLevel]);
     }
     else {
-      pcVar3 = va("invalid state transition %i");
+      fmt = va("invalid state transition %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x142,0,
-                               pcVar3);
+                               fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -376,6 +399,8 @@ void __cdecl Actor_SetSubState(actor_s *param_1,ai_substate_t param_2)
   bool bVar2;
   int in_ECX;
   undefined4 in_EDX;
+  ai_substate_t eSubState;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x15b,0,"%s"
@@ -403,15 +428,17 @@ int __cdecl Actor_IsStateOnStack(actor_s *param_1,ai_state_t param_2)
 {
   int in_ECX;
   int in_EDX;
-  uint local_8;
+  ai_state_t eState;
+  actor_s *self;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (*(uint *)(in_ECX + 0xd8) < local_8) {
+    if (*(uint *)(in_ECX + 0xd8) < i) {
       return 0;
     }
-    if (*(int *)(in_ECX + 0xc0 + local_8 * 4) == in_EDX) break;
-    local_8 = local_8 + 1;
+    if (*(int *)(in_ECX + 0xc0 + i * 4) == in_EDX) break;
+    i = i + 1;
   }
   return 1;
 }
@@ -433,6 +460,10 @@ void __cdecl Actor_SimplifyStateTransitions(actor_s *param_1)
   code *pcVar4;
   bool bVar5;
   int in_ECX;
+  actor_s *self;
+  ai_state_transition_t eCmd1;
+  ai_state_transition_t eCmd2;
+  ai_state_transition_t eTransition;
   
   while( true ) {
     if (*(uint *)(in_ECX + 0xbc) < 2) {
@@ -479,10 +510,10 @@ void __cdecl Actor_SimplifyStateTransitions(actor_s *param_1)
 
 // 0091CCC0  Actor_AllowedToPushState  (game/actor_state.cpp:454)
 
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl Actor_AllowedToPushState(actor_s *param_1,ai_state_t param_2)
 
@@ -492,8 +523,10 @@ int __cdecl Actor_AllowedToPushState(actor_s *param_1,ai_state_t param_2)
   int iVar3;
   int in_ECX;
   int in_EDX;
-  uint local_c;
-  uint local_8;
+  ai_state_t eState;
+  actor_s *self;
+  uint j;
+  uint i;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x1ca,0,
@@ -509,18 +542,17 @@ int __cdecl Actor_AllowedToPushState(actor_s *param_1,ai_state_t param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 1;
+  i = 1;
   do {
-    if (*(uint *)(in_ECX + 0xd8) < local_8) {
+    if (*(uint *)(in_ECX + 0xd8) < i) {
       return 1;
     }
-    for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-      if (*(ai_state_t *)(in_ECX + 0xc0 + local_8 * 4) == g_eSupercedingStates[in_EDX + -7][local_c]
-         ) {
+    for (j = 0; j < 5; j = j + 1) {
+      if (*(ai_state_t *)(in_ECX + 0xc0 + i * 4) == g_eSupercedingStates[in_EDX + -7][j]) {
         return 0;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -540,8 +572,10 @@ void __cdecl Actor_PrepareToPushState(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   int in_EDX;
   actor_s *unaff_ESI;
-  uint local_c;
-  uint local_8;
+  ai_state_t eState;
+  actor_s *self;
+  uint j;
+  uint i;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x1e4,0,
@@ -557,27 +591,27 @@ void __cdecl Actor_PrepareToPushState(actor_s *param_1,ai_state_t param_2)
     (*pcVar1)();
     return;
   }
-  local_8 = 1;
+  i = 1;
   do {
-    if (*(uint *)(in_ECX + 0xd8) < local_8) {
+    if (*(uint *)(in_ECX + 0xd8) < i) {
       return;
     }
-    for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-      if (*(ai_state_t *)(in_ECX + 0xc0 + local_8 * 4) == g_eSupercededStates[in_EDX + -7][local_c])
-      {
+    for (j = 0; j < 5; j = j + 1) {
+      if (*(ai_state_t *)(in_ECX + 0xc0 + i * 4) == g_eSupercededStates[in_EDX + -7][j]) {
         do {
           Actor_PopState(unaff_ESI);
-        } while (local_8 <= *(uint *)(in_ECX + 0xd8));
+        } while (i <= *(uint *)(in_ECX + 0xd8));
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0091CB50  Actor_OnStateChange  (game/actor_state.cpp:513)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -587,6 +621,7 @@ void __cdecl Actor_OnStateChange(actor_s *param_1)
 
 {
   actor_s *in_ECX;
+  actor_s *self;
   
   Actor_ClearArrivalPos(in_ECX);
   return;
@@ -595,6 +630,7 @@ void __cdecl Actor_OnStateChange(actor_s *param_1)
 
 // 0091C850  Actor_SetState  (game/actor_state.cpp:524)
 
+/* WARNING: Variable defined which should be unmapped: eState */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -607,6 +643,8 @@ void __cdecl Actor_SetState(actor_s *param_1,ai_state_t param_2)
   bool bVar2;
   int in_ECX;
   actor_s *in_EDX;
+  ai_state_t eState;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x20f,0,"%s"
@@ -649,6 +687,8 @@ void __cdecl Actor_SetState(actor_s *param_1,ai_state_t param_2)
 
 // 0091CB70  Actor_PushState  (game/actor_state.cpp:551)
 
+/* WARNING: Variable defined which should be unmapped: eState */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -662,6 +702,8 @@ int __cdecl Actor_PushState(actor_s *param_1,ai_state_t param_2)
   int iVar3;
   ai_state_t in_ECX;
   actor_s *in_EDX;
+  ai_state_t eState;
+  actor_s *self;
   
   if (in_ECX == AIS_INVALID) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x22a,0,"%s"
@@ -713,6 +755,7 @@ int __cdecl Actor_PushState(actor_s *param_1,ai_state_t param_2)
 
 // 0091CE90  Actor_PopState  (game/actor_state.cpp:585)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -724,6 +767,7 @@ void __cdecl Actor_PopState(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_state.cpp",0x24c,0,"%s"
@@ -764,10 +808,11 @@ void __cdecl Actor_PopState(actor_s *param_1)
 
 // 0091CF90  Actor_ForceState  (game/actor_state.cpp:609)
 
+/* WARNING: Variable defined which should be unmapped: eState */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Actor_ForceState(actor_s *param_1,ai_state_t param_2)
 
@@ -777,6 +822,8 @@ void __cdecl Actor_ForceState(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t eState;
+  actor_s *self;
   
   do {
     if (*(int *)(in_ECX + 0x48) == 0) {

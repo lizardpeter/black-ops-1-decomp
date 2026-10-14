@@ -7,12 +7,12 @@ undefined4 * _HTDir_new(int param_1,uint param_2,int param_3)
 {
   undefined4 *puVar1;
   undefined4 uVar2;
-  uchar *puVar3;
+  uchar *string;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
   uchar *extraout_EAX_01;
   int extraout_EAX_02;
-  int *piVar4;
+  int *piVar3;
   undefined1 *local_14;
   int local_10;
   undefined4 local_8;
@@ -69,38 +69,38 @@ LAB_00be3f06:
   }
   uVar2 = _HTRequest_anchor(param_1);
   uVar2 = _HTAnchor_address(uVar2);
-  puVar3 = (uchar *)_HTParse(uVar2,"",5);
-  strchr(puVar3,';');
+  string = (uchar *)_HTParse(uVar2,"",5);
+  strchr(string,';');
   local_14 = extraout_EAX;
   if ((extraout_EAX != (undefined1 *)0x0) ||
-     (strchr(puVar3,'?'), local_14 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
+     (strchr(string,'?'), local_14 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
     *local_14 = 0;
   }
-  _HTSACopy(&local_8,puVar3);
+  _HTSACopy(&local_8,string);
   _HTUnEscape(local_8);
-  strrchr(puVar3,'/');
+  strrchr(string,'/');
   if ((extraout_EAX_01 != (uchar *)0x0) &&
-     ((strlen(puVar3), extraout_EAX_01 < puVar3 + extraout_EAX_02 + -1 ||
-      (extraout_EAX_01 == puVar3)))) {
+     ((strlen(string), extraout_EAX_01 < string + extraout_EAX_02 + -1 ||
+      (extraout_EAX_01 == string)))) {
     _HTSACopy(puVar1 + 5,extraout_EAX_01 + 1);
     _HTSACat(puVar1 + 5,"/");
   }
   _HTMemory_free(uVar2);
   uVar2 = 0;
-  _HTMemory_free(puVar3);
-  piVar4 = (int *)*puVar1;
-  (**(code **)(*piVar4 + 0x1c))(piVar4,0x2a,0,0,piVar4,uVar2,0);
-  (**(code **)(*piVar4 + 0x1c))(piVar4,0x28,0,0);
-  (**(code **)(*piVar4 + 0x1c))(piVar4,0x56,0,0);
-  (**(code **)(*piVar4 + 0x14))(piVar4,"Current index is ");
-  (**(code **)(*piVar4 + 0x14))(piVar4,local_8);
-  (**(code **)(*piVar4 + 0x20))(piVar4,0x56);
-  (**(code **)(*piVar4 + 0x20))(piVar4,0x28);
-  (**(code **)(*piVar4 + 0x1c))(piVar4,0xc,0,0);
-  (**(code **)(*piVar4 + 0x1c))(piVar4,0x22,0,0);
-  (**(code **)(*piVar4 + 0x14))(piVar4,"Index of ");
-  (**(code **)(*piVar4 + 0x14))(piVar4,local_8);
-  (**(code **)(*piVar4 + 0x20))(piVar4,0x22);
+  _HTMemory_free(string);
+  piVar3 = (int *)*puVar1;
+  (**(code **)(*piVar3 + 0x1c))(piVar3,0x2a,0,0,piVar3,uVar2,0);
+  (**(code **)(*piVar3 + 0x1c))(piVar3,0x28,0,0);
+  (**(code **)(*piVar3 + 0x1c))(piVar3,0x56,0,0);
+  (**(code **)(*piVar3 + 0x14))(piVar3,"Current index is ");
+  (**(code **)(*piVar3 + 0x14))(piVar3,local_8);
+  (**(code **)(*piVar3 + 0x20))(piVar3,0x56);
+  (**(code **)(*piVar3 + 0x20))(piVar3,0x28);
+  (**(code **)(*piVar3 + 0x1c))(piVar3,0xc,0,0);
+  (**(code **)(*piVar3 + 0x1c))(piVar3,0x22,0,0);
+  (**(code **)(*piVar3 + 0x14))(piVar3,"Index of ");
+  (**(code **)(*piVar3 + 0x14))(piVar3,local_8);
+  (**(code **)(*piVar3 + 0x20))(piVar3,0x22);
   _HTMemory_free(local_8);
   return puVar1;
 }

@@ -2,10 +2,10 @@
 
 // 00C245A3  _initp_misc_initcrit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/initcrit.c:47)
 
-void __cdecl _initp_misc_initcrit(void *param_1)
+void __cdecl _initp_misc_initcrit(void *enull)
 
 {
-  __pfnInitCritSecAndSpinCount = param_1;
+  __pfnInitCritSecAndSpinCount = enull;
   return;
 }
 
@@ -15,12 +15,13 @@ void __cdecl _initp_misc_initcrit(void *param_1)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl __crtInitCritSecAndSpinCount(_RTL_CRITICAL_SECTION *param_1,ulong param_2)
+int __cdecl __crtInitCritSecAndSpinCount(_RTL_CRITICAL_SECTION *lpCriticalSection,ulong dwSpinCount)
 
 {
   BOOL BVar1;
+  int ret;
   
-  BVar1 = InitializeCriticalSectionAndSpinCount((LPCRITICAL_SECTION)param_1,param_2);
+  BVar1 = InitializeCriticalSectionAndSpinCount((LPCRITICAL_SECTION)lpCriticalSection,dwSpinCount);
   return BVar1;
 }
 

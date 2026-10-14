@@ -199,10 +199,10 @@ undefined4 _HTBasic_parse(int param_1,int param_2,undefined4 param_3,int param_4
 {
   int iVar1;
   int iVar2;
-  void *pvVar3;
-  void *pvVar4;
-  code *pcVar5;
-  bool bVar6;
+  void *pBlock;
+  void *pBlock_00;
+  code *pcVar3;
+  bool bVar4;
   
   if (param_2 == 0) {
     iVar1 = 0;
@@ -210,7 +210,7 @@ undefined4 _HTBasic_parse(int param_1,int param_2,undefined4 param_3,int param_4
   else {
     iVar1 = *(int *)(param_2 + 0x18);
   }
-  bVar6 = param_4 == -0x197;
+  bVar4 = param_4 == -0x197;
   if ((param_1 == 0) || (iVar1 == 0)) {
     return 0xffffffff;
   }
@@ -219,7 +219,7 @@ undefined4 _HTBasic_parse(int param_1,int param_2,undefined4 param_3,int param_4
   iVar2 = _HTNextField(&param_2);
   if (((iVar1 != 0) && (iVar1 = strcasecomp(), iVar1 == 0)) && (iVar2 != 0)) {
     _HTRequest_setRealm();
-    if (bVar6) {
+    if (bVar4) {
       iVar1 = _HTAA_updateNode(1,*(undefined4 *)(param_1 + 0x94),0);
       if ((1 < *(int *)(param_1 + 0x34)) && (param_4 == -0x191)) {
         if (iVar1 == 0) {
@@ -229,22 +229,22 @@ undefined4 _HTBasic_parse(int param_1,int param_2,undefined4 param_3,int param_4
       }
     }
     else {
-      pvVar3 = (void *)_HTAnchor_address();
-      pvVar4 = (void *)FUN_00882480();
-      iVar1 = _HTAA_updateNode(0,pvVar4,0);
+      pBlock = (void *)_HTAnchor_address();
+      pBlock_00 = (void *)FUN_00882480();
+      iVar1 = _HTAA_updateNode(0,pBlock_00,0);
       if (((1 < *(int *)(param_1 + 0x34)) && (param_4 == -0x191)) && (iVar1 != 0)) {
         *(undefined4 *)(iVar1 + 8) = 1;
       }
-      if (pvVar3 != (void *)0x0) {
-        free(pvVar3);
+      if (pBlock != (void *)0x0) {
+        free(pBlock);
       }
-      if (pvVar4 != (void *)0x0) {
-        free(pvVar4);
+      if (pBlock_00 != (void *)0x0) {
+        free(pBlock_00);
       }
     }
     if ((((iVar1 != 0) && (*(int *)(iVar1 + 8) != 0)) &&
-        (pcVar5 = (code *)_HTAlert_find(), pcVar5 != (code *)0x0)) &&
-       (iVar1 = (*pcVar5)(param_1,0x20000,bVar6 + '\n',0,0,0), iVar1 != 1)) {
+        (pcVar3 = (code *)_HTAlert_find(), pcVar3 != (code *)0x0)) &&
+       (iVar1 = (*pcVar3)(param_1,0x20000,bVar4 + '\n',0,0,0), iVar1 != 1)) {
       return 0xffffffff;
     }
   }

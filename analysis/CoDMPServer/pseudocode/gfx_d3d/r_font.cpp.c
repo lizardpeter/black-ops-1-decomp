@@ -2,36 +2,38 @@
 
 // 00A78BE0  R_GetCharacterGlyph  (gfx_d3d/r_font.cpp:23)
 
-Glyph * __cdecl R_GetCharacterGlyph(Font_s *param_1,uint param_2)
+Glyph * __cdecl R_GetCharacterGlyph(Font_s *font,uint letter)
 
 {
   code *pcVar1;
   bool bVar2;
   Glyph *pGVar3;
   int iVar4;
-  int local_10;
-  int local_c;
+  Glyph *glyph;
+  int top;
+  int bottom;
+  int mid;
   
-  if ((param_2 < 0x20) || (0x7f < param_2)) {
-    local_10 = param_1->glyphCount + -1;
-    local_c = 0x60;
-    while (local_c <= local_10) {
-      iVar4 = (local_10 + local_c) / 2;
-      if (param_1->glyphs[iVar4].letter == param_2) {
-        return param_1->glyphs + iVar4;
+  if ((letter < 0x20) || (0x7f < letter)) {
+    top = font->glyphCount + -1;
+    bottom = 0x60;
+    while (bottom <= top) {
+      iVar4 = (top + bottom) / 2;
+      if (font->glyphs[iVar4].letter == letter) {
+        return font->glyphs + iVar4;
       }
-      if (param_1->glyphs[iVar4].letter < param_2) {
-        local_c = iVar4 + 1;
+      if (font->glyphs[iVar4].letter < letter) {
+        bottom = iVar4 + 1;
       }
       else {
-        local_10 = iVar4 + -1;
+        top = iVar4 + -1;
       }
     }
-    pGVar3 = param_1->glyphs + 0xe;
+    pGVar3 = font->glyphs + 0xe;
   }
   else {
-    pGVar3 = param_1->glyphs + (param_2 - 0x20);
-    if ((pGVar3->letter != param_2) &&
+    pGVar3 = font->glyphs + (letter - 0x20);
+    if ((pGVar3->letter != letter) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0x30,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -45,24 +47,28 @@ Glyph * __cdecl R_GetCharacterGlyph(Font_s *param_1,uint param_2)
 
 // 00A78CC0  R_FontGetRandomLetter  (gfx_d3d/r_font.cpp:68)
 
-uint __cdecl R_FontGetRandomLetter(Font_s *param_1,int param_2)
+uint __cdecl R_FontGetRandomLetter(Font_s *font,int seed)
 
 {
   uint uVar1;
+  int randResult;
+  uint letter;
   
-  uVar1 = RandWithSeed(&param_2);
+  uVar1 = RandWithSeed(&seed);
   return (int)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"[uVar1 % 0x3e];
 }
 
 
 // 00A78D00  R_FontGetRandomNumberCharacter  (gfx_d3d/r_font.cpp:81)
 
-uint __cdecl R_FontGetRandomNumberCharacter(Font_s *param_1,int param_2)
+uint __cdecl R_FontGetRandomNumberCharacter(Font_s *font,int seed)
 
 {
   uint uVar1;
+  int randResult;
+  uint letter;
   
-  uVar1 = RandWithSeed(&param_2);
+  uVar1 = RandWithSeed(&seed);
   return (int)"023456789"[uVar1 % 9];
 }
 
@@ -79,14 +85,15 @@ void __cdecl TRACK_r_font(void)
 
 // 00A78DA0  R_RegisterFont_LoadObj  (gfx_d3d/r_font.cpp:108)
 
-Font_s * __cdecl R_RegisterFont_LoadObj(char *param_1,int param_2)
+Font_s * __cdecl R_RegisterFont_LoadObj(char *fontName,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   Font_s *pFVar3;
   int iVar4;
-  int local_8;
+  Font_s *font;
+  int fontIndex;
   
   if ((!rg.registered) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0x70,0,"%s")
@@ -95,11 +102,11 @@ Font_s * __cdecl R_RegisterFont_LoadObj(char *param_1,int param_2)
     pFVar3 = (Font_s *)(*pcVar1)();
     return pFVar3;
   }
-  local_8 = 0;
+  fontIndex = 0;
   while( true ) {
-    if (registeredFontCount <= local_8) {
+    if (registeredFontCount <= fontIndex) {
       if (registeredFontCount < 0x10) {
-        pFVar3 = R_LoadFont(param_1,param_2);
+        pFVar3 = R_LoadFont(fontName,imageTrack);
         if (pFVar3 == (Font_s *)0x0) {
           Com_Error(ERR_DROP,"R_RegisterFont: Error while reading font \'%s\'");
         }
@@ -112,11 +119,11 @@ Font_s * __cdecl R_RegisterFont_LoadObj(char *param_1,int param_2)
       }
       return pFVar3;
     }
-    iVar4 = I_stricmp(param_1,registeredFont[local_8]->fontName);
+    iVar4 = I_stricmp(fontName,registeredFont[fontIndex]->fontName);
     if (iVar4 == 0) break;
-    local_8 = local_8 + 1;
+    fontIndex = fontIndex + 1;
   }
-  return registeredFont[local_8];
+  return registeredFont[fontIndex];
 }
 
 
@@ -125,19 +132,19 @@ Font_s * __cdecl R_RegisterFont_LoadObj(char *param_1,int param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-Font_s * __cdecl R_RegisterFont_FastFile(char *param_1,int param_2)
+Font_s * __cdecl R_RegisterFont_FastFile(char *fontName,int imageTrack)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_FONT,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_FONT,fontName,true,-1);
   return (Font_s *)XVar1.xmodelPieces;
 }
 
 
 // 00A78D60  R_RegisterFont  (gfx_d3d/r_font.cpp:147)
 
-Font_s * __cdecl R_RegisterFont(char *param_1,int param_2)
+Font_s * __cdecl R_RegisterFont(char *name,int imageTrack)
 
 {
   Font_s *pFVar1;
@@ -149,7 +156,7 @@ Font_s * __cdecl R_RegisterFont(char *param_1,int param_2)
   else {
     local_c = R_RegisterFont_FastFile;
   }
-  pFVar1 = (Font_s *)(*local_c)(param_1,param_2);
+  pFVar1 = (Font_s *)(*local_c)(name,imageTrack);
   return pFVar1;
 }
 
@@ -186,14 +193,14 @@ void __cdecl R_ShutdownFonts(void)
 
 // 00A78F00  R_NormalizedTextScale  (gfx_d3d/r_font.cpp:167)
 
-float __cdecl R_NormalizedTextScale(Font_s *param_1,float param_2)
+float __cdecl R_NormalizedTextScale(Font_s *font,float scale)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 == (Font_s *)0x0) {
+  if (font == (Font_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0xa8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -201,7 +208,7 @@ float __cdecl R_NormalizedTextScale(Font_s *param_1,float param_2)
       return (float)fVar3;
     }
   }
-  if (param_1->pixelHeight < 1) {
+  if (font->pixelHeight < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0xa9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -209,98 +216,98 @@ float __cdecl R_NormalizedTextScale(Font_s *param_1,float param_2)
       return (float)fVar3;
     }
   }
-  return (param_2 * 48.0) / (float)param_1->pixelHeight;
+  return (scale * 48.0) / (float)font->pixelHeight;
 }
 
 
 // 00A78F70  R_LetterWidth  (gfx_d3d/r_font.cpp:174)
 
-int __cdecl R_LetterWidth(uint param_1,Font_s *param_2)
+int __cdecl R_LetterWidth(uint letter,Font_s *font)
 
 {
   Glyph *pGVar1;
   
-  pGVar1 = R_GetCharacterGlyph(param_2,param_1);
+  pGVar1 = R_GetCharacterGlyph(font,letter);
   return (uint)pGVar1->dx;
 }
 
 
 // 00A78F90  R_TextWidth  (gfx_d3d/r_font.cpp:179)
 
-int __cdecl R_TextWidth(char *param_1,int param_2,Font_s *param_3)
+int __cdecl R_TextWidth(char *text,int maxChars,Font_s *font)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  Glyph *pGVar5;
-  int local_10;
-  int local_c;
-  int local_8;
+  uint letter_00;
+  Glyph *pGVar4;
+  uint letter;
+  int lineWidth;
+  int maxWidth;
+  int count;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0xb9,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (Font_s *)0x0) &&
+  if ((font == (Font_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0xba,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_10 = 0;
-  local_c = 0;
-  if (param_2 < 1) {
-    param_2 = 0x7fffffff;
+  lineWidth = 0;
+  maxWidth = 0;
+  if (maxChars < 1) {
+    maxChars = 0x7fffffff;
   }
-  local_8 = 0;
-  while ((*param_1 != '\0' && (local_8 < param_2))) {
-    uVar4 = SEH_ReadCharFromString(&param_1,(int *)0x0);
-    if ((uVar4 == 0xd) || (uVar4 == 10)) {
-      local_10 = 0;
+  count = 0;
+  while ((*text != '\0' && (count < maxChars))) {
+    letter_00 = SEH_ReadCharFromString(&text,(int *)0x0);
+    if ((letter_00 == 0xd) || (letter_00 == 10)) {
+      lineWidth = 0;
     }
-    else if ((uVar4 == 0x5e) &&
-            (((((param_1 != (char *)0x0 && (*param_1 != '^')) && ('/' < *param_1)) &&
-              (*param_1 < 'A')) ||
-             (((param_1 != (char *)0x0 && (*param_1 != '^')) && (*param_1 == 'F')))))) {
-      param_1 = param_1 + 1;
+    else if ((letter_00 == 0x5e) &&
+            (((((text != (char *)0x0 && (*text != '^')) && ('/' < *text)) && (*text < 'A')) ||
+             (((text != (char *)0x0 && (*text != '^')) && (*text == 'F')))))) {
+      text = text + 1;
     }
-    else if (((uVar4 == 0x5e) && (*param_1 == 'C')) &&
-            ((param_1 != (char *)0xffffffff &&
-             (((param_1[1] != '^' && ('/' < param_1[1])) && (param_1[1] < 'A')))))) {
-      param_1 = param_1 + 2;
+    else if (((letter_00 == 0x5e) && (*text == 'C')) &&
+            ((text != (char *)0xffffffff &&
+             (((text[1] != '^' && ('/' < text[1])) && (text[1] < 'A')))))) {
+      text = text + 2;
     }
-    else if ((uVar4 == 0x5e) && (*param_1 == 'L')) {
-      param_1 = param_1 + 1;
+    else if ((letter_00 == 0x5e) && (*text == 'L')) {
+      text = text + 1;
     }
     else {
-      pGVar5 = R_GetCharacterGlyph(param_3,uVar4);
-      local_10 = (uint)pGVar5->dx + local_10;
-      if (local_c < local_10) {
-        local_c = local_10;
+      pGVar4 = R_GetCharacterGlyph(font,letter_00);
+      lineWidth = (uint)pGVar4->dx + lineWidth;
+      if (maxWidth < lineWidth) {
+        maxWidth = lineWidth;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   }
-  return local_c;
+  return maxWidth;
 }
 
 
 // 00A79150  R_TextHeight  (gfx_d3d/r_font.cpp:230)
 
-int __cdecl R_TextHeight(Font_s *param_1)
+int __cdecl R_TextHeight(Font_s *font)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (Font_s *)0x0) {
+  if (font == (Font_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0xe7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -308,123 +315,126 @@ int __cdecl R_TextHeight(Font_s *param_1)
       return iVar3;
     }
   }
-  return param_1->pixelHeight;
+  return font->pixelHeight;
 }
 
 
 // 00A79190  R_TextLineWrapPosition  (gfx_d3d/r_font.cpp:316)
 
 char * __cdecl
-R_TextLineWrapPosition(char *param_1,int param_2,int param_3,Font_s *param_4,float param_5)
+R_TextLineWrapPosition(char *text,int bufferSize,int pixelsAvailable,Font_s *font,float scale)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  int local_18;
-  char *local_14;
-  char *local_10;
-  char *local_c;
-  uint local_8;
+  int pixelsUsed;
+  char *preLetterPos;
+  char *wrapPos;
+  char *parsePos;
+  uint letter;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0x143,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  local_18 = 0;
-  if (param_2 < 1) {
-    param_2 = 0x7fffffff;
+  pixelsUsed = 0;
+  if (bufferSize < 1) {
+    bufferSize = 0x7fffffff;
   }
-  local_10 = (char *)0x0;
-  local_14 = (char *)0x0;
-  local_c = param_1;
+  wrapPos = (char *)0x0;
+  preLetterPos = (char *)0x0;
+  parsePos = text;
   while( true ) {
     while( true ) {
-      pcVar3 = local_c;
-      if (*local_c == '\0') {
-        if ((int)local_c - (int)param_1 != param_2) {
-          return local_c;
+      pcVar3 = parsePos;
+      if (*parsePos == '\0') {
+        if ((int)parsePos - (int)text != bufferSize) {
+          return parsePos;
         }
-        if (local_10 == (char *)0x0) {
-          return local_14;
+        if (wrapPos == (char *)0x0) {
+          return preLetterPos;
         }
-        return local_10;
+        return wrapPos;
       }
-      local_14 = local_c;
-      local_8 = SEH_ReadCharFromString(&local_c,(int *)0x0);
-      if (local_8 != 0xd) break;
-      local_18 = 0;
+      preLetterPos = parsePos;
+      letter = SEH_ReadCharFromString(&parsePos,(int *)0x0);
+      if (letter != 0xd) break;
+      pixelsUsed = 0;
     }
-    if (local_8 == 10) {
-      return local_c;
+    if (letter == 10) {
+      return parsePos;
     }
-    if ((local_8 == 0x5e) &&
-       (((((local_c != (char *)0x0 && (*local_c != '^')) && ('/' < *local_c)) && (*local_c < 'A'))
-        || (((local_c != (char *)0x0 && (*local_c != '^')) && (*local_c == 'F')))))) {
-      local_c = local_c + 1;
+    if ((letter == 0x5e) &&
+       (((((parsePos != (char *)0x0 && (*parsePos != '^')) && ('/' < *parsePos)) &&
+         (*parsePos < 'A')) ||
+        (((parsePos != (char *)0x0 && (*parsePos != '^')) && (*parsePos == 'F')))))) {
+      parsePos = parsePos + 1;
     }
-    else if ((local_8 == 0x5e) && ((*local_c == '\x01' || (*local_c == '\x02')))) {
-      if (param_4 != (Font_s *)0x0) {
-        iVar4 = (local_c[1] + -0x10) * param_4->pixelHeight + 0x10;
-        local_18 = ((int)(iVar4 + (iVar4 >> 0x1f & 0x1fU)) >> 5) + local_18;
+    else if ((letter == 0x5e) && ((*parsePos == '\x01' || (*parsePos == '\x02')))) {
+      if (font != (Font_s *)0x0) {
+        iVar4 = (parsePos[1] + -0x10) * font->pixelHeight + 0x10;
+        pixelsUsed = ((int)(iVar4 + (iVar4 >> 0x1f & 0x1fU)) >> 5) + pixelsUsed;
       }
-      if (pcVar3 != param_1) {
-        local_10 = pcVar3;
+      if (pcVar3 != text) {
+        wrapPos = pcVar3;
       }
-      local_c = local_c + 7;
+      parsePos = parsePos + 7;
     }
     else {
-      if (param_4 != (Font_s *)0x0) {
-        iVar4 = R_LetterWidth(local_8,param_4);
-        local_18 = iVar4 + local_18;
+      if (font != (Font_s *)0x0) {
+        iVar4 = R_LetterWidth(letter,font);
+        pixelsUsed = iVar4 + pixelsUsed;
       }
-      if (pcVar3 != param_1) {
-        if ((local_8 < 0x100) && (iVar4 = isspace(local_8), iVar4 != 0)) {
+      if (pcVar3 != text) {
+        if ((letter < 0x100) && (iVar4 = isspace(letter), iVar4 != 0)) {
           bVar2 = true;
         }
         else {
           bVar2 = false;
         }
         if (bVar2) {
-          local_10 = local_c;
+          wrapPos = parsePos;
         }
       }
     }
-    if ((local_10 != (char *)0x0) && ((float)param_3 < (float)local_18 * param_5)) break;
-    if (param_2 < (int)local_c - (int)param_1) {
-      if (local_10 == (char *)0x0) {
+    if ((wrapPos != (char *)0x0) && ((float)pixelsAvailable < (float)pixelsUsed * scale)) break;
+    if (bufferSize < (int)parsePos - (int)text) {
+      if (wrapPos == (char *)0x0) {
         return pcVar3;
       }
-      return local_10;
+      return wrapPos;
     }
-    if ((float)param_3 < (float)local_18 * param_5) {
+    if ((float)pixelsAvailable < (float)pixelsUsed * scale) {
       return pcVar3;
     }
   }
-  return local_10;
+  return wrapPos;
 }
 
 
 // 00A793D0  R_ConsoleTextWidth  (gfx_d3d/r_font.cpp:394)
 
-int __cdecl R_ConsoleTextWidth(char *param_1,int param_2,int param_3,int param_4,Font_s *param_5)
+int __cdecl R_ConsoleTextWidth(char *textPool,int poolSize,int firstChar,int charCount,Font_s *font)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  uint uVar5;
-  uint local_18;
-  int local_14;
-  int local_c;
-  uint local_8;
+  uint letter_00;
+  int indexMask;
+  int parsePos;
+  int width;
+  uint letter;
+  int usedCharCount;
+  int stopPos;
   
-  if ((param_2 - 1U & param_2) != 0) {
+  if ((poolSize - 1U & poolSize) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_font.cpp",0x192,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -432,31 +442,32 @@ int __cdecl R_ConsoleTextWidth(char *param_1,int param_2,int param_3,int param_4
       return iVar3;
     }
   }
-  uVar4 = param_2 - 1;
-  local_8 = param_3 + param_4 & uVar4;
-  local_18 = param_3;
-  local_14 = 0;
-  while (local_18 != local_8) {
-    uVar5 = SEH_DecodeLetter((int)param_1[local_18],(int)param_1[local_18 + 1 & uVar4],&local_c,
-                             (int *)0x0);
-    local_18 = local_18 + local_c & uVar4;
-    if ((uVar5 == 0x5e) &&
-       (((((param_1 + local_18 != (char *)0x0 && (param_1[local_18] != '^')) &&
-          ('/' < param_1[local_18])) && (param_1[local_18] < 'A')) ||
-        (((param_1 + local_18 != (char *)0x0 && (param_1[local_18] != '^')) &&
-         (param_1[local_18] == 'F')))))) {
-      local_18 = local_18 + 1 & uVar4;
+  uVar4 = poolSize - 1;
+  stopPos = firstChar + charCount & uVar4;
+  parsePos = firstChar;
+  width = 0;
+  while (parsePos != stopPos) {
+    letter_00 = SEH_DecodeLetter((int)textPool[parsePos],(int)textPool[parsePos + 1U & uVar4],
+                                 &usedCharCount,(int *)0x0);
+    parsePos = parsePos + usedCharCount & uVar4;
+    if ((letter_00 == 0x5e) &&
+       (((((textPool + parsePos != (char *)0x0 && (textPool[parsePos] != '^')) &&
+          ('/' < textPool[parsePos])) && (textPool[parsePos] < 'A')) ||
+        (((textPool + parsePos != (char *)0x0 && (textPool[parsePos] != '^')) &&
+         (textPool[parsePos] == 'F')))))) {
+      parsePos = parsePos + 1U & uVar4;
     }
-    else if ((uVar5 == 0x5e) && ((param_1[local_18] == '\x01' || (param_1[local_18] == '\x02')))) {
-      iVar3 = (param_1[local_18 + 1 & uVar4] + -0x10) * param_5->pixelHeight + 0x10;
-      local_14 = ((int)(iVar3 + (iVar3 >> 0x1f & 0x1fU)) >> 5) + local_14;
-      local_18 = local_18 + 7 & uVar4;
+    else if ((letter_00 == 0x5e) &&
+            ((textPool[parsePos] == '\x01' || (textPool[parsePos] == '\x02')))) {
+      iVar3 = (textPool[parsePos + 1U & uVar4] + -0x10) * font->pixelHeight + 0x10;
+      width = ((int)(iVar3 + (iVar3 >> 0x1f & 0x1fU)) >> 5) + width;
+      parsePos = parsePos + 7U & uVar4;
     }
     else {
-      iVar3 = R_LetterWidth(uVar5,param_5);
-      local_14 = iVar3 + local_14;
+      iVar3 = R_LetterWidth(letter_00,font);
+      width = iVar3 + width;
     }
   }
-  return local_14;
+  return width;
 }
 

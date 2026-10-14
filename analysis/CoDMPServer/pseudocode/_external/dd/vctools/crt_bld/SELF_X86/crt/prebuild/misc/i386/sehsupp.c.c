@@ -5,9 +5,11 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _rt_probe_read4(ulong *param_1)
+int __cdecl _rt_probe_read4(ulong *ptr)
 
 {
+  int readable;
+  
   return 1;
 }
 

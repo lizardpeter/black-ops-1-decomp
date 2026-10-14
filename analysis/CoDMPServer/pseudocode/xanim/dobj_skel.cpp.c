@@ -4,56 +4,59 @@
 
 void __cdecl
 GetControlAndDuplicatePartBits
-          (DObj *param_1,int *param_2,int *param_3,int *param_4,int *param_5,int *param_6)
+          (DObj *obj,int *partBits,int *ignorePartBits,int *savedDuplicatePartBits,int *calcPartBits
+          ,int *controlPartBits)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  int local_18;
-  int local_c;
+  char *fmt;
+  uint uVar3;
+  int boneIndex;
+  DSkel *skel;
+  int boneIndexHigh;
+  int i;
+  int boneIndexLow;
   
-  if ((param_1 == (DObj *)0xffffffec) &&
+  if ((obj == (DObj *)0xffffffec) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x3c,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = 0;
+  i = 0;
   do {
-    if (4 < local_c) {
+    if (4 < i) {
       return;
     }
-    (param_1->skel).partBits.skel[local_c] =
-         (param_1->skel).partBits.skel[local_c] | param_2[local_c];
-    param_6[local_c] = (param_1->skel).partBits.control[local_c];
-    param_5[local_c] = ~(param_3[local_c] | param_4[local_c]);
-    if ((param_6[local_c] & param_4[local_c]) != 0) {
-      DObjDumpInfo(param_1);
-      for (local_18 = 0; local_18 < (int)(uint)param_1->numBones; local_18 = local_18 + 1) {
-        uVar4 = 0x80000000 >> ((byte)local_18 & 0x1f);
-        if (((param_6[local_18 >> 5] & uVar4) != 0) && ((param_4[local_18 >> 5] & uVar4) != 0))
-        break;
+    (obj->skel).partBits.skel[i] = (obj->skel).partBits.skel[i] | partBits[i];
+    controlPartBits[i] = (obj->skel).partBits.control[i];
+    calcPartBits[i] = ~(ignorePartBits[i] | savedDuplicatePartBits[i]);
+    if ((controlPartBits[i] & savedDuplicatePartBits[i]) != 0) {
+      DObjDumpInfo(obj);
+      for (boneIndex = 0; boneIndex < (int)(uint)obj->numBones; boneIndex = boneIndex + 1) {
+        uVar3 = 0x80000000 >> ((byte)boneIndex & 0x1f);
+        if (((controlPartBits[boneIndex >> 5] & uVar3) != 0) &&
+           ((savedDuplicatePartBits[boneIndex >> 5] & uVar3) != 0)) break;
       }
-      pcVar3 = va("control/meld conflict on bone %d - see the console log for details");
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x56,0,
-                               pcVar3);
+      fmt = va("control/meld conflict on bone %d - see the console log for details");
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x56,0,fmt)
+      ;
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 007E8450  CalcSkelDuplicateBones  (xanim/dobj_skel.cpp:100)
 
-uchar * __cdecl CalcSkelDuplicateBones(XModel *param_1,DSkel *param_2,int param_3,uchar *param_4)
+uchar * __cdecl CalcSkelDuplicateBones(XModel *model,DSkel *skel,int minBoneIndex,uchar *pos)
 
 {
   byte bVar1;
@@ -66,15 +69,19 @@ uchar * __cdecl CalcSkelDuplicateBones(XModel *param_1,DSkel *param_2,int param_
   uint uVar8;
   DObjAnimMat *pDVar9;
   DObjAnimMat *pDVar10;
+  int boneIndex;
+  DObjAnimMat *mat;
+  int parentIndex;
+  int maxBoneIndex;
   
-  pDVar3 = (param_2->field2_0x40).mat;
-  bVar1 = param_1->numBones;
+  pDVar3 = (skel->field2_0x40).mat;
+  bVar1 = model->numBones;
   do {
-    uVar8 = *param_4 - 1;
-    if ((uint)bVar1 + param_3 <= uVar8) {
-      return param_4;
+    uVar8 = *pos - 1;
+    if ((uint)bVar1 + minBoneIndex <= uVar8) {
+      return pos;
     }
-    bVar2 = param_4[1];
+    bVar2 = pos[1];
     if ((int)uVar8 <= (int)(bVar2 - 1)) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x7b,0,"%s"
                               );
@@ -91,7 +98,7 @@ uchar * __cdecl CalcSkelDuplicateBones(XModel *param_1,DSkel *param_2,int param_
       pDVar9 = (DObjAnimMat *)(pDVar9->quat + 1);
       pDVar10 = (DObjAnimMat *)(pDVar10->quat + 1);
     }
-    param_4 = param_4 + 2;
+    pos = pos + 2;
   } while( true );
 }
 
@@ -99,7 +106,7 @@ uchar * __cdecl CalcSkelDuplicateBones(XModel *param_1,DSkel *param_2,int param_
 // 007E84F0  CalcSkelRootBonesNoParentOrDuplicate  (xanim/dobj_skel.cpp:136)
 
 void __cdecl
-CalcSkelRootBonesNoParentOrDuplicate(XModel *param_1,DSkel *param_2,int param_3,int *param_4)
+CalcSkelRootBonesNoParentOrDuplicate(XModel *model,DSkel *skel,int minBoneIndex,int *calcPartBits)
 
 {
   DObjAnimMat *pDVar1;
@@ -108,58 +115,64 @@ CalcSkelRootBonesNoParentOrDuplicate(XModel *param_1,DSkel *param_2,int param_3,
   uint uVar4;
   int iVar5;
   int iVar6;
-  DObjAnimMat *pDVar7;
-  float fVar8;
+  DObjAnimMat *v;
+  float fVar7;
   int local_54;
-  uint local_1c;
-  int local_14;
-  int local_8;
+  int boneIndex;
+  int maxBoneIndexHigh;
+  int maxBoneIndexLow;
+  int bits;
+  DObjAnimMat *mat;
+  int boneIndexHigh;
+  int boneIndexLow;
+  int boneBit;
+  int maxBoneIndex;
   
-  iVar6 = (uint)param_1->numRootBones + param_3;
-  local_14 = param_3 >> 5;
-  local_8 = iVar6 + local_14 * -0x20;
-  pDVar1 = (param_2->field2_0x40).mat;
+  iVar6 = (uint)model->numRootBones + minBoneIndex;
+  boneIndexHigh = minBoneIndex >> 5;
+  maxBoneIndex = iVar6 + boneIndexHigh * -0x20;
+  pDVar1 = (skel->field2_0x40).mat;
   do {
-    if (iVar6 + -1 >> 5 < local_14) {
+    if (iVar6 + -1 >> 5 < boneIndexHigh) {
       return;
     }
-    local_1c = param_4[local_14];
-    if (local_8 < 0x21) {
-      local_54 = local_8;
+    bits = calcPartBits[boneIndexHigh];
+    if (maxBoneIndex < 0x21) {
+      local_54 = maxBoneIndex;
     }
     else {
       local_54 = 0x20;
     }
     while( true ) {
       uVar4 = 0x1f;
-      if (local_1c != 0) {
-        for (; local_1c >> uVar4 == 0; uVar4 = uVar4 - 1) {
+      if (bits != 0) {
+        for (; (uint)bits >> uVar4 == 0; uVar4 = uVar4 - 1) {
         }
       }
-      if (local_1c == 0) {
+      if (bits == 0) {
         uVar4 = 0x3f;
       }
       uVar4 = uVar4 ^ 0x1f;
       if (local_54 <= (int)uVar4) break;
-      iVar5 = local_14 * 0x20 + uVar4;
+      iVar5 = boneIndexHigh * 0x20 + uVar4;
       uVar4 = 0x80000000 >> ((byte)uVar4 & 0x1f);
-      if (((local_1c & uVar4) == 0) &&
+      if (((bits & uVar4) == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0xb6,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_1c = ~uVar4 & local_1c;
-      param_4[local_14] = local_1c;
-      pDVar7 = pDVar1 + iVar5;
-      fVar8 = Vec4LengthSq(pDVar7->quat);
-      if (fVar8 == 0.0) {
-        pDVar7->quat[3] = 1.0;
-        pDVar7->transWeight = 2.0;
+      bits = ~uVar4 & bits;
+      calcPartBits[boneIndexHigh] = bits;
+      v = pDVar1 + iVar5;
+      fVar7 = Vec4LengthSq(v->quat);
+      if (fVar7 == 0.0) {
+        v->quat[3] = 1.0;
+        v->transWeight = 2.0;
       }
       else {
-        pDVar7->transWeight = 2.0 / fVar8;
+        v->transWeight = 2.0 / fVar7;
       }
       if (((((((uint)pDVar1[iVar5].quat[0] & 0x7f800000) == 0x7f800000) ||
             (((uint)pDVar1[iVar5].quat[1] & 0x7f800000) == 0x7f800000)) ||
@@ -181,8 +194,8 @@ CalcSkelRootBonesNoParentOrDuplicate(XModel *param_1,DSkel *param_2,int param_3,
         return;
       }
     }
-    local_14 = local_14 + 1;
-    local_8 = local_8 + -0x20;
+    boneIndexHigh = boneIndexHigh + 1;
+    maxBoneIndex = maxBoneIndex + -0x20;
   } while( true );
 }
 
@@ -191,145 +204,151 @@ CalcSkelRootBonesNoParentOrDuplicate(XModel *param_1,DSkel *param_2,int param_3,
 
 void __cdecl
 CalcSkelRootBonesWithParent
-          (XModel *param_1,DSkel *param_2,uint param_3,uint param_4,int *param_5,int *param_6)
+          (XModel *model,DSkel *skel,uint minBoneIndex,uint modelParent,int *calcPartBits,
+          int *controlPartBits)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  DObjAnimMat *pDVar5;
-  DObjAnimMat *pDVar6;
-  float fVar7;
+  DObjAnimMat *inout;
+  DObjAnimMat *in;
+  float fVar5;
   uint local_cc;
-  float local_2c [4];
-  uint local_1c;
-  DObjAnimMat *local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  DObjAnimMat *parentMat;
+  DObjAnimMat *childMat;
+  uint boneIndex;
+  uint maxBoneIndexHigh;
+  uint maxBoneIndexLow;
+  float quat [4];
+  int bits;
+  DObjAnimMat *mat;
+  uint boneIndexHigh;
+  uint boneIndexLow;
+  int boneBit;
+  uint maxBoneIndex;
   
-  iVar4 = param_1->numRootBones + param_3;
-  local_14 = param_3 >> 5;
-  local_8 = iVar4 + local_14 * -0x20;
-  local_18 = (param_2->field2_0x40).mat;
-  pDVar6 = local_18 + param_4;
+  iVar4 = model->numRootBones + minBoneIndex;
+  boneIndexHigh = minBoneIndex >> 5;
+  maxBoneIndex = iVar4 + boneIndexHigh * -0x20;
+  mat = (skel->field2_0x40).mat;
+  in = mat + modelParent;
   do {
-    if (iVar4 - 1U >> 5 < local_14) {
+    if (iVar4 - 1U >> 5 < boneIndexHigh) {
       return;
     }
-    local_1c = param_5[local_14];
-    if ((int)local_8 < 0x21) {
-      local_cc = local_8;
+    bits = calcPartBits[boneIndexHigh];
+    if ((int)maxBoneIndex < 0x21) {
+      local_cc = maxBoneIndex;
     }
     else {
       local_cc = 0x20;
     }
     while( true ) {
-      local_10 = 0x1f;
-      if (local_1c != 0) {
-        for (; local_1c >> local_10 == 0; local_10 = local_10 - 1) {
+      uVar3 = 0x1f;
+      if (bits != 0) {
+        for (; (uint)bits >> uVar3 == 0; uVar3 = uVar3 - 1) {
         }
       }
-      if (local_1c == 0) {
-        local_10 = 0x3f;
+      if (bits == 0) {
+        uVar3 = 0x3f;
       }
-      local_10 = local_10 ^ 0x1f;
-      if (local_cc <= local_10) break;
-      uVar3 = local_14 * 0x20 + local_10;
-      local_c = 0x80000000 >> ((byte)local_10 & 0x1f);
-      if (((local_1c & local_c) == 0) &&
+      boneIndexLow = uVar3 ^ 0x1f;
+      if (local_cc <= boneIndexLow) break;
+      uVar3 = boneIndexHigh * 0x20 + boneIndexLow;
+      boneBit = 0x80000000 >> ((byte)boneIndexLow & 0x1f);
+      if (((bits & boneBit) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x102,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_1c = ~local_c & local_1c;
-      param_5[local_14] = local_1c;
-      if ((uVar3 <= param_4) &&
+      bits = ~boneBit & bits;
+      calcPartBits[boneIndexHigh] = bits;
+      if ((uVar3 <= modelParent) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x107,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((((param_2->partBits).anim[local_14] & local_c) == 0) &&
+      if ((((skel->partBits).anim[boneIndexHigh] & boneBit) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x109,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((0x80000000U >> ((byte)param_4 & 0x1f) & (param_2->partBits).skel[param_4 >> 5]) == 0) &&
-         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x10e,0
-                                   ,"%s"), !bVar2)) {
+      if (((0x80000000U >> ((byte)modelParent & 0x1f) & (skel->partBits).skel[modelParent >> 5]) ==
+           0) && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp"
+                                           ,0x10e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((0x80000000U >> ((byte)param_4 & 0x1f) & (param_2->partBits).anim[param_4 >> 5]) == 0) &&
-         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x10f,0
-                                   ,"%s"), !bVar2)) {
+      if (((0x80000000U >> ((byte)modelParent & 0x1f) & (skel->partBits).anim[modelParent >> 5]) ==
+           0) && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp"
+                                           ,0x10f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      pDVar5 = (param_2->field2_0x40).mat + uVar3;
-      if ((param_6[local_14] & local_c) == 0) {
-        QuatMultiplyEquals(pDVar6->quat,pDVar5->quat);
+      inout = (skel->field2_0x40).mat + uVar3;
+      if ((controlPartBits[boneIndexHigh] & boneBit) == 0) {
+        QuatMultiplyEquals(in->quat,inout->quat);
       }
       else {
-        if ((((param_2->partBits).skel[0] & 0x80000000U) == 0) &&
+        if ((((skel->partBits).skel[0] & 0x80000000U) == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x121
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if ((((param_2->partBits).anim[0] & 0x80000000U) == 0) &&
+        if ((((skel->partBits).anim[0] & 0x80000000U) == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x122
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        QuatMultiplyReverseInverse(local_18->quat,pDVar6->quat,local_2c);
-        QuatMultiplyReverseEquals(local_2c,pDVar5->quat);
-        QuatMultiplyEquals(local_18->quat,pDVar5->quat);
+        QuatMultiplyReverseInverse(mat->quat,in->quat,quat);
+        QuatMultiplyReverseEquals(quat,inout->quat);
+        QuatMultiplyEquals(mat->quat,inout->quat);
       }
-      if (((((((uint)pDVar5->quat[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)pDVar5->quat[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)pDVar5->quat[2] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar5->quat[3] & 0x7f800000) == 0x7f800000)) &&
+      if (((((((uint)inout->quat[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)inout->quat[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)inout->quat[2] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->quat[3] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x133,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((((((uint)pDVar5->trans[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)pDVar5->trans[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar5->trans[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)inout->trans[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)inout->trans[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->trans[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x134,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      fVar7 = Vec4LengthSq(pDVar5->quat);
-      if (fVar7 == 0.0) {
-        pDVar5->quat[3] = 1.0;
-        pDVar5->transWeight = 2.0;
+      fVar5 = Vec4LengthSq(inout->quat);
+      if (fVar5 == 0.0) {
+        inout->quat[3] = 1.0;
+        inout->transWeight = 2.0;
       }
       else {
-        pDVar5->transWeight = 2.0 / fVar7;
+        inout->transWeight = 2.0 / fVar5;
       }
-      MatrixTransformVectorQuatTransEquals(pDVar6,pDVar5->trans);
-      if ((((((uint)pDVar5->trans[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)pDVar5->trans[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar5->trans[2] & 0x7f800000) == 0x7f800000)) &&
+      MatrixTransformVectorQuatTransEquals(in,inout->trans);
+      if ((((((uint)inout->trans[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)inout->trans[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->trans[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x140,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -337,8 +356,8 @@ CalcSkelRootBonesWithParent
         return;
       }
     }
-    local_14 = local_14 + 1;
-    local_8 = local_8 - 0x20;
+    boneIndexHigh = boneIndexHigh + 1;
+    maxBoneIndex = maxBoneIndex - 0x20;
   } while( true );
 }
 
@@ -346,170 +365,178 @@ CalcSkelRootBonesWithParent
 // 007E9100  CalcSkelNonRootBones  (xanim/dobj_skel.cpp:337)
 
 void __cdecl
-CalcSkelNonRootBones(XModel *param_1,DSkel *param_2,int param_3,int *param_4,int *param_5)
+CalcSkelNonRootBones
+          (XModel *model,DSkel *skel,int minBoneIndex,int *calcPartBits,int *controlPartBits)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
-  DObjAnimMat *pDVar4;
+  uint uVar4;
+  DObjAnimMat *in;
   int iVar5;
   int iVar6;
-  DObjAnimMat *pDVar7;
-  float fVar8;
+  DObjAnimMat *inout;
+  float fVar7;
   int local_104;
-  float local_38 [4];
-  uint local_28;
-  DObjAnimMat *local_24;
-  int local_20;
-  byte *local_1c;
-  uint local_18;
-  int local_14;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  DObjAnimMat *childMat;
+  DObjAnimMat *parentMat;
+  int boneIndex;
+  int maxBoneIndexHigh;
+  int maxBoneIndexLow;
+  float *trans;
+  float quat [4];
+  int bits;
+  DObjAnimMat *mat;
+  int boneOffset;
+  uchar *parentList;
+  int parentOffset;
+  int boneIndexHigh;
+  int boneIndexLow;
+  int boneBit;
+  int maxBoneIndex;
   
-  iVar5 = ((uint)param_1->numBones + param_3) - (uint)param_1->numRootBones;
-  local_14 = param_3 >> 5;
-  local_8 = iVar5 + local_14 * -0x20;
-  local_24 = (param_2->field2_0x40).mat;
+  iVar5 = ((uint)model->numBones + minBoneIndex) - (uint)model->numRootBones;
+  boneIndexHigh = minBoneIndex >> 5;
+  maxBoneIndex = iVar5 + boneIndexHigh * -0x20;
+  mat = (skel->field2_0x40).mat;
   do {
-    if (iVar5 + -1 >> 5 < local_14) {
+    if (iVar5 + -1 >> 5 < boneIndexHigh) {
       return;
     }
-    local_28 = param_4[local_14];
-    if (local_8 < 0x21) {
-      local_104 = local_8;
+    bits = calcPartBits[boneIndexHigh];
+    if (maxBoneIndex < 0x21) {
+      local_104 = maxBoneIndex;
     }
     else {
       local_104 = 0x20;
     }
     while( true ) {
-      local_10 = 0x1f;
-      if (local_28 != 0) {
-        for (; local_28 >> local_10 == 0; local_10 = local_10 - 1) {
+      uVar4 = 0x1f;
+      if (bits != 0) {
+        for (; (uint)bits >> uVar4 == 0; uVar4 = uVar4 - 1) {
         }
       }
-      if (local_28 == 0) {
-        local_10 = 0x3f;
+      if (bits == 0) {
+        uVar4 = 0x3f;
       }
-      local_10 = local_10 ^ 0x1f;
-      if (local_104 <= (int)local_10) break;
-      iVar6 = local_14 * 0x20 + local_10;
-      local_c = 0x80000000 >> ((byte)local_10 & 0x1f);
-      if (((local_28 & local_c) == 0) &&
+      boneIndexLow = uVar4 ^ 0x1f;
+      if (local_104 <= boneIndexLow) break;
+      iVar6 = boneIndexHigh * 0x20 + boneIndexLow;
+      boneBit = 0x80000000 >> ((byte)boneIndexLow & 0x1f);
+      if (((bits & boneBit) == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x186,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_28 = ~local_c & local_28;
-      param_4[local_14] = local_28;
-      pDVar7 = local_24 + iVar6;
-      local_20 = iVar6 - param_3;
-      local_1c = (param_1->field6_0xc).localParentList + local_20;
-      local_18 = (uint)*local_1c;
-      pDVar4 = pDVar7 + -local_18;
-      if (((((((uint)pDVar4->quat[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)pDVar4->quat[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)pDVar4->quat[2] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar4->quat[3] & 0x7f800000) == 0x7f800000)) &&
+      bits = ~boneBit & bits;
+      calcPartBits[boneIndexHigh] = bits;
+      inout = mat + iVar6;
+      boneOffset = iVar6 - minBoneIndex;
+      parentList = (model->field6_0xc).localParentList + boneOffset;
+      parentOffset = (int)*parentList;
+      in = inout + -parentOffset;
+      if (((((((uint)in->quat[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)in->quat[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)in->quat[2] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)in->quat[3] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x195,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((((uint)pDVar4->trans[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)pDVar4->trans[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar4->trans[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)in->trans[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)in->trans[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)in->trans[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x196,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((param_2->partBits).anim[local_14] & local_c) == 0) &&
+      if ((((skel->partBits).anim[boneIndexHigh] & boneBit) == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x199,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (((0x80000000U >> ((char)iVar6 - (char)local_18 & 0x1fU) &
-           (param_2->partBits).skel[(int)(iVar6 - local_18) >> 5]) == 0) &&
+      if (((0x80000000U >> ((char)iVar6 - (char)parentOffset & 0x1fU) &
+           (skel->partBits).skel[iVar6 - parentOffset >> 5]) == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x19e,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (((0x80000000U >> ((char)iVar6 - (char)local_18 & 0x1fU) &
-           (param_2->partBits).anim[(int)(iVar6 - local_18) >> 5]) == 0) &&
+      if (((0x80000000U >> ((char)iVar6 - (char)parentOffset & 0x1fU) &
+           (skel->partBits).anim[iVar6 - parentOffset >> 5]) == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x19f,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((param_5[local_14] & local_c) == 0) {
-        QuatMultiplyEquals(pDVar4->quat,pDVar7->quat);
+      if ((controlPartBits[boneIndexHigh] & boneBit) == 0) {
+        QuatMultiplyEquals(in->quat,inout->quat);
       }
       else {
-        if ((((param_2->partBits).skel[0] & 0x80000000U) == 0) &&
+        if ((((skel->partBits).skel[0] & 0x80000000U) == 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x1ae
                                      ,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if ((((param_2->partBits).anim[0] & 0x80000000U) == 0) &&
+        if ((((skel->partBits).anim[0] & 0x80000000U) == 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x1af
                                      ,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        QuatMultiplyReverseInverse(local_24->quat,pDVar4->quat,local_38);
-        QuatMultiplyReverseEquals(local_38,pDVar7->quat);
-        QuatMultiplyEquals(local_24->quat,pDVar7->quat);
+        QuatMultiplyReverseInverse(mat->quat,in->quat,quat);
+        QuatMultiplyReverseEquals(quat,inout->quat);
+        QuatMultiplyEquals(mat->quat,inout->quat);
       }
-      if (((((((uint)pDVar7->quat[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)pDVar7->quat[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)pDVar7->quat[2] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar7->quat[3] & 0x7f800000) == 0x7f800000)) &&
+      if (((((((uint)inout->quat[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)inout->quat[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)inout->quat[2] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->quat[3] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x1c0,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((((uint)pDVar7->trans[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)pDVar7->trans[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar7->trans[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)inout->trans[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)inout->trans[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->trans[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x1c1,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      fVar8 = Vec4LengthSq(pDVar7->quat);
-      if (fVar8 == 0.0) {
-        pDVar7->quat[3] = 1.0;
-        pDVar7->transWeight = 2.0;
+      fVar7 = Vec4LengthSq(inout->quat);
+      if (fVar7 == 0.0) {
+        inout->quat[3] = 1.0;
+        inout->transWeight = 2.0;
       }
       else {
-        pDVar7->transWeight = 2.0 / fVar8;
+        inout->transWeight = 2.0 / fVar7;
       }
-      pfVar1 = (param_1->field8_0x14).localTrans + local_20 * 3;
-      pDVar7->trans[0] = pDVar7->trans[0] + *pfVar1;
-      pDVar7->trans[1] = pDVar7->trans[1] + pfVar1[1];
-      pDVar7->trans[2] = pDVar7->trans[2] + pfVar1[2];
-      MatrixTransformVectorQuatTransEquals(pDVar4,pDVar7->trans);
-      if ((((((uint)pDVar7->trans[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)pDVar7->trans[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)pDVar7->trans[2] & 0x7f800000) == 0x7f800000)) &&
+      pfVar1 = (model->field8_0x14).localTrans + boneOffset * 3;
+      inout->trans[0] = inout->trans[0] + *pfVar1;
+      inout->trans[1] = inout->trans[1] + pfVar1[1];
+      inout->trans[2] = inout->trans[2] + pfVar1[2];
+      MatrixTransformVectorQuatTransEquals(in,inout->trans);
+      if ((((((uint)inout->trans[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)inout->trans[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)inout->trans[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x1cd,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -517,26 +544,26 @@ CalcSkelNonRootBones(XModel *param_1,DSkel *param_2,int param_3,int *param_4,int
         return;
       }
     }
-    local_14 = local_14 + 1;
-    local_8 = local_8 + -0x20;
+    boneIndexHigh = boneIndexHigh + 1;
+    maxBoneIndex = maxBoneIndex + -0x20;
   } while( true );
 }
 
 
 // 007E7CE0  DobjHasAnyPartBits  (xanim/dobj_skel.cpp:473)
 
-bool __cdecl DobjHasAnyPartBits(int *param_1)
+bool __cdecl DobjHasAnyPartBits(int *partBits)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return false;
     }
-    if (param_1[local_8] != 0) break;
-    local_8 = local_8 + 1;
+    if (partBits[i] != 0) break;
+    i = i + 1;
   }
   return true;
 }
@@ -544,7 +571,9 @@ bool __cdecl DobjHasAnyPartBits(int *param_1)
 
 // 007E7D20  DObjCalcSkel  (xanim/dobj_skel.cpp:505)
 
-void __cdecl DObjCalcSkel(DObj *param_1,int *param_2)
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
+
+void __cdecl DObjCalcSkel(DObj *obj,int *partBits)
 
 {
   int iVar1;
@@ -552,122 +581,127 @@ void __cdecl DObjCalcSkel(DObj *param_1,int *param_2)
   code *pcVar3;
   bool bVar4;
   DWORD DVar5;
-  int *local_90;
-  int local_8c;
-  uint local_80;
-  int local_78 [5];
-  uint local_64;
-  XModel *local_60;
-  int local_5c;
+  uchar *pos;
+  int j;
+  uchar *modelParents;
+  uchar *duplicateParts;
+  uint boneIndex;
+  PIXProfile pixProfile;
+  int controlPartBits [5];
+  int numModels;
+  XModel *model;
+  int calcPartBitsArchive;
   undefined4 local_58;
   undefined4 local_54;
   undefined4 local_50;
   undefined4 local_4c;
-  uint local_48;
-  char local_41;
-  DSkel *local_40;
-  int local_3c;
+  uint modelParent;
+  bool bDoneIK;
+  DSkel *skel;
+  int calcPartBits;
   undefined4 local_38;
   undefined4 local_34;
   undefined4 local_30;
   undefined4 local_2c;
-  uint local_28 [5];
-  int local_14;
-  XModel **local_10;
-  char local_9;
-  int *local_8;
+  uint ignorePartBits [5];
+  int i;
+  XModel **models;
+  bool bFinished;
+  int *savedDuplicatePartBits;
   
   PIXBeginNamedEvent(-1,"DObjCalcSkel");
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x212,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_40 = &param_1->skel;
-  if ((local_40 == (DSkel *)0x0) &&
+  skel = &obj->skel;
+  if ((skel == (DSkel *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x215,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_9 = '\x01';
-  for (local_14 = 0; local_14 < 5; local_14 = local_14 + 1) {
-    local_28[local_14] = ~param_2[local_14] | (local_40->partBits).skel[local_14];
-    if (local_28[local_14] != 0xffffffff) {
-      local_9 = '\0';
+  bFinished = true;
+  for (i = 0; i < 5; i = i + 1) {
+    ignorePartBits[i] = ~partBits[i] | (skel->partBits).skel[i];
+    if (ignorePartBits[i] != 0xffffffff) {
+      bFinished = false;
     }
   }
-  if (local_9 == '\0') {
-    DObjCalcAnim(param_1,param_2);
-    if ((param_1->duplicateParts == 0) &&
+  if (bFinished == false) {
+    DObjCalcAnim(obj,partBits);
+    if ((obj->duplicateParts == 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x242,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_8 = (int *)SL_ConvertToString((uint)param_1->duplicateParts,SCRIPTINSTANCE_SERVER);
-    local_90 = local_8 + 5;
-    GetControlAndDuplicatePartBits(param_1,param_2,(int *)local_28,local_8,&local_3c,local_78);
-    local_5c = local_3c;
+    savedDuplicatePartBits =
+         (int *)SL_ConvertToString((uint)obj->duplicateParts,SCRIPTINSTANCE_SERVER);
+    pos = (uchar *)(savedDuplicatePartBits + 5);
+    GetControlAndDuplicatePartBits
+              (obj,partBits,(int *)ignorePartBits,savedDuplicatePartBits,&calcPartBits,
+               controlPartBits);
+    calcPartBitsArchive = calcPartBits;
     local_58 = local_38;
     local_54 = local_34;
     local_50 = local_30;
     local_4c = local_2c;
-    local_64 = (uint)param_1->numModels;
-    local_80 = 0;
-    ppXVar2 = (param_1->field14_0x78).localModels;
-    iVar1 = local_64 * 4;
-    local_10 = ppXVar2;
-    for (local_8c = 0; local_8c < (int)local_64; local_8c = local_8c + 1) {
-      local_60 = local_10[local_8c];
-      local_48 = (uint)*(byte *)((int)ppXVar2 + local_8c + iVar1);
-      local_90 = (int *)CalcSkelDuplicateBones(local_60,local_40,local_80,(uchar *)local_90);
-      local_41 = '\0';
-      if (((local_8c == 0) && (bVar4 = IKImport_IsIKEntity((uchar *)param_1), bVar4)) &&
-         (bVar4 = DobjHasAnyPartBits(local_78), !bVar4)) {
-        IK_UpdateEntity(param_1->entnum - 1,(uchar *)param_1,true,&local_5c);
-        local_41 = '\x01';
+    numModels = (int)obj->numModels;
+    boneIndex = 0;
+    ppXVar2 = (obj->field14_0x78).localModels;
+    iVar1 = numModels * 4;
+    models = ppXVar2;
+    for (j = 0; j < numModels; j = j + 1) {
+      model = models[j];
+      modelParent = (uint)*(byte *)((int)ppXVar2 + j + iVar1);
+      pos = CalcSkelDuplicateBones(model,skel,boneIndex,pos);
+      bDoneIK = false;
+      if (((j == 0) && (bVar4 = IKImport_IsIKEntity((uchar *)obj), bVar4)) &&
+         (bVar4 = DobjHasAnyPartBits(controlPartBits), !bVar4)) {
+        IK_UpdateEntity(obj->entnum - 1,(uchar *)obj,true,&calcPartBitsArchive);
+        bDoneIK = true;
       }
-      if (local_48 == 0xff) {
-        CalcSkelRootBonesNoParentOrDuplicate(local_60,local_40,local_80,&local_3c);
+      if (modelParent == 0xff) {
+        CalcSkelRootBonesNoParentOrDuplicate(model,skel,boneIndex,&calcPartBits);
       }
       else {
-        CalcSkelRootBonesWithParent(local_60,local_40,local_80,local_48,&local_3c,local_78);
+        CalcSkelRootBonesWithParent(model,skel,boneIndex,modelParent,&calcPartBits,controlPartBits);
       }
-      CalcSkelNonRootBones(local_60,local_40,local_60->numRootBones + local_80,&local_3c,local_78);
-      if (((local_8c == 0) && (bVar4 = IKImport_IsIKEntity((uchar *)param_1), bVar4)) &&
-         (local_41 == '\0')) {
-        IK_UpdateEntity(param_1->entnum - 1,(uchar *)param_1,false,&local_5c);
+      CalcSkelNonRootBones(model,skel,model->numRootBones + boneIndex,&calcPartBits,controlPartBits)
+      ;
+      if (((j == 0) && (bVar4 = IKImport_IsIKEntity((uchar *)obj), bVar4)) && (bDoneIK == false)) {
+        IK_UpdateEntity(obj->entnum - 1,(uchar *)obj,false,&calcPartBitsArchive);
       }
-      local_80 = local_60->numBones + local_80;
+      boneIndex = model->numBones + boneIndex;
     }
-    if (((char)*local_90 != '\0') &&
+    if ((*pos != '\0') &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x2b5,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    for (local_80 = 0; local_80 < param_1->numBones; local_80 = local_80 + 1) {
-      if ((0x80000000U >> ((byte)local_80 & 0x1f) & (local_40->partBits).anim[local_80 >> 5]) != 0)
-      {
-        if (((((((uint)(local_40->field2_0x40).mat[local_80].quat[0] & 0x7f800000) == 0x7f800000) ||
-              (((uint)(local_40->field2_0x40).mat[local_80].quat[1] & 0x7f800000) == 0x7f800000)) ||
-             (((uint)(local_40->field2_0x40).mat[local_80].quat[2] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)(local_40->field2_0x40).mat[local_80].quat[3] & 0x7f800000) == 0x7f800000)) &&
+    for (boneIndex = 0; boneIndex < obj->numBones; boneIndex = boneIndex + 1) {
+      if ((0x80000000U >> ((byte)boneIndex & 0x1f) & (skel->partBits).anim[boneIndex >> 5]) != 0) {
+        if (((((((uint)(skel->field2_0x40).mat[boneIndex].quat[0] & 0x7f800000) == 0x7f800000) ||
+              (((uint)(skel->field2_0x40).mat[boneIndex].quat[1] & 0x7f800000) == 0x7f800000)) ||
+             (((uint)(skel->field2_0x40).mat[boneIndex].quat[2] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)(skel->field2_0x40).mat[boneIndex].quat[3] & 0x7f800000) == 0x7f800000)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",700,0
                                      ,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        if ((((((uint)(local_40->field2_0x40).mat[local_80].trans[0] & 0x7f800000) == 0x7f800000) ||
-             (((uint)(local_40->field2_0x40).mat[local_80].trans[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)(local_40->field2_0x40).mat[local_80].trans[2] & 0x7f800000) == 0x7f800000)) &&
+        if ((((((uint)(skel->field2_0x40).mat[boneIndex].trans[0] & 0x7f800000) == 0x7f800000) ||
+             (((uint)(skel->field2_0x40).mat[boneIndex].trans[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)(skel->field2_0x40).mat[boneIndex].trans[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x2bd
                                      ,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
@@ -693,18 +727,20 @@ void __cdecl DObjCalcSkel(DObj *param_1,int *param_2)
 
 // 007E9B40  DObjCalcBaseAnim  (xanim/dobj_skel.cpp:715)
 
-void __cdecl DObjCalcBaseAnim(DObj *param_1,DObjAnimMat *param_2,int *param_3)
+void __cdecl DObjCalcBaseAnim(DObj *obj,DObjAnimMat *mat,int *partBits)
 
 {
   XModel *pXVar1;
   code *pcVar2;
   bool bVar3;
-  int local_1c;
-  int local_18;
-  short *local_c;
-  uint local_8;
+  int j;
+  int boneIndex;
+  float inv_quat_scale;
+  XModel *model;
+  short *quats;
+  int i;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x2d2,0,"%s")
     ;
     if (!bVar3) {
@@ -713,7 +749,7 @@ void __cdecl DObjCalcBaseAnim(DObj *param_1,DObjAnimMat *param_2,int *param_3)
       return;
     }
   }
-  if (param_2 == (DObjAnimMat *)0x0) {
+  if (mat == (DObjAnimMat *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x2d3,0,"%s")
     ;
     if (!bVar3) {
@@ -722,35 +758,34 @@ void __cdecl DObjCalcBaseAnim(DObj *param_1,DObjAnimMat *param_2,int *param_3)
       return;
     }
   }
-  local_18 = 0;
-  for (local_1c = 0; local_1c < (int)(uint)param_1->numModels; local_1c = local_1c + 1) {
-    pXVar1 = (param_1->field14_0x78).localModels[local_1c];
-    for (local_8 = (uint)pXVar1->numRootBones; local_8 != 0; local_8 = local_8 - 1) {
-      param_2->quat[0] = 0.0;
-      param_2->quat[1] = 0.0;
-      param_2->quat[2] = 0.0;
-      param_2->quat[3] = 1.0;
-      param_2->trans[0] = 0.0;
-      param_2->trans[1] = 0.0;
-      param_2->trans[2] = 0.0;
-      param_2 = param_2 + 1;
-      local_18 = local_18 + 1;
+  boneIndex = 0;
+  for (j = 0; j < (int)(uint)obj->numModels; j = j + 1) {
+    pXVar1 = (obj->field14_0x78).localModels[j];
+    for (i = (int)pXVar1->numRootBones; i != 0; i = i + -1) {
+      mat->quat[0] = 0.0;
+      mat->quat[1] = 0.0;
+      mat->quat[2] = 0.0;
+      mat->quat[3] = 1.0;
+      mat->trans[0] = 0.0;
+      mat->trans[1] = 0.0;
+      mat->trans[2] = 0.0;
+      mat = mat + 1;
+      boneIndex = boneIndex + 1;
     }
-    local_c = (pXVar1->field7_0x10).localQuats;
-    for (local_8 = (uint)pXVar1->numBones - (uint)pXVar1->numRootBones; local_8 != 0;
-        local_8 = local_8 + -1) {
-      if ((0x80000000U >> ((byte)local_18 & 0x1f) & param_3[local_18 >> 5]) != 0) {
-        param_2->quat[0] = (float)(int)*local_c * 3.051851e-05;
-        param_2->quat[1] = (float)(int)local_c[1] * 3.051851e-05;
-        param_2->quat[2] = (float)(int)local_c[2] * 3.051851e-05;
-        param_2->quat[3] = (float)(int)local_c[3] * 3.051851e-05;
-        param_2->trans[0] = 0.0;
-        param_2->trans[1] = 0.0;
-        param_2->trans[2] = 0.0;
+    quats = (pXVar1->field7_0x10).localQuats;
+    for (i = (uint)pXVar1->numBones - (uint)pXVar1->numRootBones; i != 0; i = i + -1) {
+      if ((0x80000000U >> ((byte)boneIndex & 0x1f) & partBits[boneIndex >> 5]) != 0) {
+        mat->quat[0] = (float)(int)*quats * 3.051851e-05;
+        mat->quat[1] = (float)(int)quats[1] * 3.051851e-05;
+        mat->quat[2] = (float)(int)quats[2] * 3.051851e-05;
+        mat->quat[3] = (float)(int)quats[3] * 3.051851e-05;
+        mat->trans[0] = 0.0;
+        mat->trans[1] = 0.0;
+        mat->trans[2] = 0.0;
       }
-      param_2 = param_2 + 1;
-      local_18 = local_18 + 1;
-      local_c = local_c + 4;
+      mat = mat + 1;
+      boneIndex = boneIndex + 1;
+      quats = quats + 4;
     }
   }
   return;
@@ -759,28 +794,30 @@ void __cdecl DObjCalcBaseAnim(DObj *param_1,DObjAnimMat *param_2,int *param_3)
 
 // 007E9850  DObjCalcBaseSkel  (xanim/dobj_skel.cpp:775)
 
-void __cdecl DObjCalcBaseSkel(DObj *param_1,DObjAnimMat *param_2,int *param_3)
+void __cdecl DObjCalcBaseSkel(DObj *obj,DObjAnimMat *mat,int *partBits)
 
 {
   int iVar1;
   XModel **ppXVar2;
   code *pcVar3;
   bool bVar4;
-  uchar *local_b8;
-  int local_b4;
-  uint local_a8;
-  int local_a4 [5];
-  uint local_90;
-  XModel *local_8c;
-  uint local_88;
-  DSkel local_84;
-  uint local_38 [5];
+  uchar *pos;
+  int j;
+  uchar *modelParents;
+  uchar *duplicateParts;
+  uint boneIndex;
+  int controlPartBits [5];
+  int numModels;
+  XModel *model;
+  uint modelParent;
+  DSkel skel;
+  uint calcPartBits [5];
   uint auStack_24 [5];
-  int local_10;
-  XModel **local_c;
-  char *local_8;
+  int i;
+  XModel **models;
+  int *savedDuplicatePartBits;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x318,0,"%s")
     ;
     if (!bVar4) {
@@ -789,7 +826,7 @@ void __cdecl DObjCalcBaseSkel(DObj *param_1,DObjAnimMat *param_2,int *param_3)
       return;
     }
   }
-  if (param_2 == (DObjAnimMat *)0x0) {
+  if (mat == (DObjAnimMat *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x319,0,"%s")
     ;
     if (!bVar4) {
@@ -798,16 +835,16 @@ void __cdecl DObjCalcBaseSkel(DObj *param_1,DObjAnimMat *param_2,int *param_3)
       return;
     }
   }
-  local_84.field2_0x40.mat = param_2;
-  local_84.timeStamp = 0;
-  for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {
-    local_84.partBits.skel[local_10] = param_3[local_10];
-    local_84.partBits.anim[local_10] = local_84.partBits.skel[local_10];
-    local_84.partBits.control[local_10] = 0;
-    auStack_24[local_10] = ~param_3[local_10];
+  skel.field2_0x40.mat = mat;
+  skel.timeStamp = 0;
+  for (i = 0; i < 5; i = i + 1) {
+    skel.partBits.skel[i] = partBits[i];
+    skel.partBits.anim[i] = skel.partBits.skel[i];
+    skel.partBits.control[i] = 0;
+    auStack_24[i] = ~partBits[i];
   }
-  DObjCalcBaseAnim(param_1,param_2,param_3);
-  if (param_1->duplicateParts == 0) {
+  DObjCalcBaseAnim(obj,mat,partBits);
+  if (obj->duplicateParts == 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp",0x32b,0,"%s")
     ;
     if (!bVar4) {
@@ -816,30 +853,32 @@ void __cdecl DObjCalcBaseSkel(DObj *param_1,DObjAnimMat *param_2,int *param_3)
       return;
     }
   }
-  local_8 = SL_ConvertToString((uint)param_1->duplicateParts,SCRIPTINSTANCE_SERVER);
-  local_b8 = (uchar *)(local_8 + 0x14);
-  for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {
-    local_a4[local_10] = 0;
-    local_38[local_10] = ~(auStack_24[local_10] | *(uint *)(local_8 + local_10 * 4));
+  savedDuplicatePartBits =
+       (int *)SL_ConvertToString((uint)obj->duplicateParts,SCRIPTINSTANCE_SERVER);
+  pos = (uchar *)(savedDuplicatePartBits + 5);
+  for (i = 0; i < 5; i = i + 1) {
+    controlPartBits[i] = 0;
+    calcPartBits[i] = ~(auStack_24[i] | savedDuplicatePartBits[i]);
   }
-  local_90 = (uint)param_1->numModels;
-  local_a8 = 0;
-  ppXVar2 = (param_1->field14_0x78).localModels;
-  iVar1 = local_90 * 4;
-  local_c = ppXVar2;
-  for (local_b4 = 0; local_b4 < (int)local_90; local_b4 = local_b4 + 1) {
-    local_8c = local_c[local_b4];
-    local_88 = (uint)*(byte *)((int)ppXVar2 + local_b4 + iVar1);
-    local_b8 = CalcSkelDuplicateBones(local_8c,&local_84,local_a8,local_b8);
-    if (local_88 == 0xff) {
-      CalcSkelRootBonesNoParentOrDuplicate(local_8c,&local_84,local_a8,(int *)local_38);
+  numModels = (int)obj->numModels;
+  boneIndex = 0;
+  ppXVar2 = (obj->field14_0x78).localModels;
+  iVar1 = numModels * 4;
+  models = ppXVar2;
+  for (j = 0; j < numModels; j = j + 1) {
+    model = models[j];
+    modelParent = (uint)*(byte *)((int)ppXVar2 + j + iVar1);
+    pos = CalcSkelDuplicateBones(model,&skel,boneIndex,pos);
+    if (modelParent == 0xff) {
+      CalcSkelRootBonesNoParentOrDuplicate(model,&skel,boneIndex,(int *)calcPartBits);
     }
     else {
-      CalcSkelRootBonesWithParent(local_8c,&local_84,local_a8,local_88,(int *)local_38,local_a4);
+      CalcSkelRootBonesWithParent
+                (model,&skel,boneIndex,modelParent,(int *)calcPartBits,controlPartBits);
     }
     CalcSkelNonRootBones
-              (local_8c,&local_84,local_8c->numRootBones + local_a8,(int *)local_38,local_a4);
-    local_a8 = local_8c->numBones + local_a8;
+              (model,&skel,model->numRootBones + boneIndex,(int *)calcPartBits,controlPartBits);
+    boneIndex = model->numBones + boneIndex;
   }
   return;
 }
@@ -847,24 +886,20 @@ void __cdecl DObjCalcBaseSkel(DObj *param_1,DObjAnimMat *param_2,int *param_3)
 
 // 007E8D40  QuatMultiplyReverseInverse  (universal/com_math.h:1736)
 
-void __cdecl QuatMultiplyReverseInverse(float *param_1,float *param_2,float *param_3)
+void __cdecl QuatMultiplyReverseInverse(float *in1,float *in2,float *out)
 
 {
-  *param_3 = ((*param_2 * param_1[3] - param_2[3] * *param_1) - param_2[2] * param_1[1]) +
-             param_2[1] * param_1[2];
-  param_3[1] = ((param_2[1] * param_1[3] + param_2[2] * *param_1) - param_2[3] * param_1[1]) -
-               *param_2 * param_1[2];
-  param_3[2] = ((param_2[2] * param_1[3] - param_2[1] * *param_1) + *param_2 * param_1[1]) -
-               param_2[3] * param_1[2];
-  param_3[3] = param_2[3] * param_1[3] + *param_2 * *param_1 + param_2[1] * param_1[1] +
-               param_2[2] * param_1[2];
+  *out = ((*in2 * in1[3] - in2[3] * *in1) - in2[2] * in1[1]) + in2[1] * in1[2];
+  out[1] = ((in2[1] * in1[3] + in2[2] * *in1) - in2[3] * in1[1]) - *in2 * in1[2];
+  out[2] = ((in2[2] * in1[3] - in2[1] * *in1) + *in2 * in1[1]) - in2[3] * in1[2];
+  out[3] = in2[3] * in1[3] + *in2 * *in1 + in2[1] * in1[1] + in2[2] * in1[2];
   return;
 }
 
 
 // 007E8E90  MatrixTransformVectorQuatTransEquals  (universal/com_math.h:1750)
 
-void __cdecl MatrixTransformVectorQuatTransEquals(DObjAnimMat *param_1,float *param_2)
+void __cdecl MatrixTransformVectorQuatTransEquals(DObjAnimMat *in,float *inout)
 
 {
   float fVar1;
@@ -872,7 +907,7 @@ void __cdecl MatrixTransformVectorQuatTransEquals(DObjAnimMat *param_1,float *pa
   float fVar3;
   float fVar4;
   float fVar5;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -882,23 +917,22 @@ void __cdecl MatrixTransformVectorQuatTransEquals(DObjAnimMat *param_1,float *pa
   float local_c;
   float local_8;
   
-  ConvertQuatToMat(param_1,(float (*) [3])&local_28);
-  fVar1 = param_2[2];
-  fVar2 = param_1->trans[0];
-  fVar3 = *param_2;
-  fVar4 = param_2[2];
-  fVar5 = param_1->trans[1];
-  param_2[2] = *param_2 * local_20 + param_2[1] * local_14 + param_2[2] * local_8 +
-               param_1->trans[2];
-  *param_2 = *param_2 * local_28 + param_2[1] * local_1c + fVar1 * local_10 + fVar2;
-  param_2[1] = fVar3 * local_24 + param_2[1] * local_18 + fVar4 * local_c + fVar5;
+  ConvertQuatToMat(in,(float (*) [3])&axis);
+  fVar1 = inout[2];
+  fVar2 = in->trans[0];
+  fVar3 = *inout;
+  fVar4 = inout[2];
+  fVar5 = in->trans[1];
+  inout[2] = *inout * local_20 + inout[1] * local_14 + inout[2] * local_8 + in->trans[2];
+  *inout = *inout * axis + inout[1] * local_1c + fVar1 * local_10 + fVar2;
+  inout[1] = fVar3 * local_24 + inout[1] * local_18 + fVar4 * local_c + fVar5;
   return;
 }
 
 
 // 007E8F80  QuatMultiplyReverseEquals  (universal/com_math.h:1764)
 
-void __cdecl QuatMultiplyReverseEquals(float *param_1,float *param_2)
+void __cdecl QuatMultiplyReverseEquals(float *in,float *inout)
 
 {
   float fVar1;
@@ -920,29 +954,28 @@ void __cdecl QuatMultiplyReverseEquals(float *param_1,float *param_2)
   float fVar17;
   float fVar18;
   
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  fVar3 = *param_2;
-  fVar4 = param_1[3];
-  fVar5 = *param_1;
-  fVar6 = param_1[2];
-  fVar7 = param_1[1];
-  fVar8 = *param_2;
-  fVar9 = *param_1;
-  fVar10 = param_2[1];
-  fVar11 = param_1[3];
-  fVar12 = param_1[3];
-  fVar13 = *param_1;
-  fVar14 = *param_2;
-  fVar15 = param_1[1];
-  fVar16 = param_2[1];
-  fVar17 = param_1[2];
-  fVar18 = param_2[2];
-  *param_2 = (*param_1 * param_2[3] + param_1[3] * *param_2 + param_1[2] * param_2[1]) -
-             param_1[1] * param_2[2];
-  param_2[1] = (fVar1 * param_2[3] - fVar2 * fVar3) + fVar4 * param_2[1] + fVar5 * param_2[2];
-  param_2[2] = ((fVar6 * param_2[3] + fVar7 * fVar8) - fVar9 * fVar10) + fVar11 * param_2[2];
-  param_2[3] = ((fVar12 * param_2[3] - fVar13 * fVar14) - fVar15 * fVar16) - fVar17 * fVar18;
+  fVar1 = in[1];
+  fVar2 = in[2];
+  fVar3 = *inout;
+  fVar4 = in[3];
+  fVar5 = *in;
+  fVar6 = in[2];
+  fVar7 = in[1];
+  fVar8 = *inout;
+  fVar9 = *in;
+  fVar10 = inout[1];
+  fVar11 = in[3];
+  fVar12 = in[3];
+  fVar13 = *in;
+  fVar14 = *inout;
+  fVar15 = in[1];
+  fVar16 = inout[1];
+  fVar17 = in[2];
+  fVar18 = inout[2];
+  *inout = (*in * inout[3] + in[3] * *inout + in[2] * inout[1]) - in[1] * inout[2];
+  inout[1] = (fVar1 * inout[3] - fVar2 * fVar3) + fVar4 * inout[1] + fVar5 * inout[2];
+  inout[2] = ((fVar6 * inout[3] + fVar7 * fVar8) - fVar9 * fVar10) + fVar11 * inout[2];
+  inout[3] = ((fVar12 * inout[3] - fVar13 * fVar14) - fVar15 * fVar16) - fVar17 * fVar18;
   return;
 }
 

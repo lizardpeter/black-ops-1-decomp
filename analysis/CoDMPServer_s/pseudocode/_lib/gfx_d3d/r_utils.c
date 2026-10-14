@@ -30,6 +30,7 @@ bool __cdecl R_CullPointAndRadius(float *param_1,float param_2,DpvsPlane *param_
   float *pfVar2;
   int in_EDX;
   float in_XMM0_Da;
+  DpvsPlane *clipPlanes;
   
   iVar1 = 0;
   if (0 < in_EDX) {
@@ -49,20 +50,24 @@ bool __cdecl R_CullPointAndRadius(float *param_1,float param_2,DpvsPlane *param_
 
 // 00806C00  FresnelTerm  (gfx_d3d/r_utils.cpp:333)
 
-float __cdecl FresnelTerm(float param_1,float param_2,float param_3)
+/* WARNING: Variable defined which should be unmapped: incidentAngle */
+
+float __cdecl FresnelTerm(float n0,float n1,float cosIncidentAngle)
 
 {
   double dVar1;
   float10 extraout_ST0;
   double dVar2;
   double dVar3;
+  double incidentAngle;
+  double sinRatio;
   
-  fabsf(param_3);
+  fabsf(cosIncidentAngle);
   _CIacos();
-  dVar2 = (double)extraout_ST0;
-  dVar3 = dVar2;
-  __libm_sse2_sin(dVar2);
-  dVar2 = dVar2 * (double)(param_1 / param_2);
+  dVar3 = (double)extraout_ST0;
+  dVar2 = dVar3;
+  __libm_sse2_sin(dVar3);
+  dVar2 = dVar2 * (double)(n0 / n1);
   dVar1 = 1.0;
   if ((1.0 < dVar2) || (dVar1 = -1.0, dVar2 < -1.0)) {
     dVar2 = dVar1;
@@ -72,8 +77,8 @@ float __cdecl FresnelTerm(float param_1,float param_2,float param_3)
   __libm_sse2_sin(dVar2);
   __libm_sse2_sin(dVar2);
   __libm_sse2_tan(dVar2);
-  dVar2 = __libm_sse2_tan(dVar2);
-  return (float)dVar2;
+  dVar3 = __libm_sse2_tan(dVar2);
+  return (float)dVar3;
 }
 
 

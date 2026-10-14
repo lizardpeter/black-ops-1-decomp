@@ -2,21 +2,22 @@
 
 // 00B57630  emit_byte  (jpeg-6/jcmarker.c:110)
 
-void __cdecl emit_byte(jpeg_compress_struct *param_1,int param_2)
+void __cdecl emit_byte(jpeg_compress_struct *cinfo,int val)
 
 {
   jpeg_destination_mgr *pjVar1;
   uchar uVar2;
+  jpeg_destination_mgr *dest;
   
-  pjVar1 = param_1->dest;
-  *pjVar1->next_output_byte = (uchar)param_2;
+  pjVar1 = cinfo->dest;
+  *pjVar1->next_output_byte = (uchar)val;
   pjVar1->next_output_byte = pjVar1->next_output_byte + 1;
   pjVar1->free_in_buffer = pjVar1->free_in_buffer - 1;
   if (pjVar1->free_in_buffer == 0) {
-    uVar2 = (*pjVar1->empty_output_buffer)(param_1);
+    uVar2 = (*pjVar1->empty_output_buffer)(cinfo);
     if (uVar2 == '\0') {
-      param_1->err->msg_code = 0x18;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x18;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
   }
   return;
@@ -25,101 +26,103 @@ void __cdecl emit_byte(jpeg_compress_struct *param_1,int param_2)
 
 // 00B57600  emit_marker  (jpeg-6/jcmarker.c:124)
 
-void __cdecl emit_marker(jpeg_compress_struct *param_1,JPEG_MARKER param_2)
+void __cdecl emit_marker(jpeg_compress_struct *cinfo,JPEG_MARKER mark)
 
 {
-  emit_byte(param_1,0xff);
-  emit_byte(param_1,param_2);
+  emit_byte(cinfo,0xff);
+  emit_byte(cinfo,mark);
   return;
 }
 
 
 // 00B576B0  emit_2bytes  (jpeg-6/jcmarker.c:133)
 
-void __cdecl emit_2bytes(jpeg_compress_struct *param_1,int param_2)
+void __cdecl emit_2bytes(jpeg_compress_struct *cinfo,int value)
 
 {
-  emit_byte(param_1,param_2 >> 8 & 0xff);
-  emit_byte(param_1,param_2 & 0xff);
+  emit_byte(cinfo,value >> 8 & 0xff);
+  emit_byte(cinfo,value & 0xff);
   return;
 }
 
 
 // 00B57AD0  emit_dqt  (jpeg-6/jcmarker.c:147)
 
-int __cdecl emit_dqt(jpeg_compress_struct *param_1,int param_2)
+int __cdecl emit_dqt(jpeg_compress_struct *cinfo,int index)
 
 {
   ushort uVar1;
   JQUANT_TBL *pJVar2;
-  int local_c;
-  int local_8;
+  uint qval;
+  JQUANT_TBL *qtbl;
+  int i;
+  int prec;
   
-  pJVar2 = param_1->quant_tbl_ptrs[param_2];
+  pJVar2 = cinfo->quant_tbl_ptrs[index];
   if (pJVar2 == (JQUANT_TBL *)0x0) {
-    param_1->err->msg_code = 0x34;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 0x34;
+    (cinfo->err->msg_parm).i[0] = index;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-    if (0xff < pJVar2->quantval[local_c]) {
-      local_8 = 1;
+  prec = 0;
+  for (i = 0; i < 0x40; i = i + 1) {
+    if (0xff < pJVar2->quantval[i]) {
+      prec = 1;
     }
   }
   if (pJVar2->sent_table == '\0') {
-    emit_marker(param_1,M_DQT);
-    emit_2bytes(param_1,(-(uint)(local_8 != 0) & 0x40) + 0x43);
-    emit_byte(param_1,local_8 * 0x10 + param_2);
-    for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-      uVar1 = pJVar2->quantval[*(int *)(&jpeg_natural_order + local_c * 4)];
-      if (local_8 != 0) {
-        emit_byte(param_1,(uint)(uVar1 >> 8));
+    emit_marker(cinfo,M_DQT);
+    emit_2bytes(cinfo,(-(uint)(prec != 0) & 0x40) + 0x43);
+    emit_byte(cinfo,prec * 0x10 + index);
+    for (i = 0; i < 0x40; i = i + 1) {
+      uVar1 = pJVar2->quantval[*(int *)(&jpeg_natural_order + i * 4)];
+      if (prec != 0) {
+        emit_byte(cinfo,(uint)(uVar1 >> 8));
       }
-      emit_byte(param_1,uVar1 & 0xff);
+      emit_byte(cinfo,uVar1 & 0xff);
     }
     pJVar2->sent_table = '\x01';
   }
-  return local_8;
+  return prec;
 }
 
 
 // 00B57E80  emit_dht  (jpeg-6/jcmarker.c:186)
 
-void __cdecl emit_dht(jpeg_compress_struct *param_1,int param_2,uchar param_3)
+void __cdecl emit_dht(jpeg_compress_struct *cinfo,int index,uchar is_ac)
 
 {
-  JHUFF_TBL *local_10;
-  int local_c;
-  int local_8;
+  JHUFF_TBL *htbl;
+  int i;
+  int length;
   
-  if (param_3 == '\0') {
-    local_10 = param_1->dc_huff_tbl_ptrs[param_2];
+  if (is_ac == '\0') {
+    htbl = cinfo->dc_huff_tbl_ptrs[index];
   }
   else {
-    local_10 = param_1->ac_huff_tbl_ptrs[param_2];
-    param_2 = param_2 + 0x10;
+    htbl = cinfo->ac_huff_tbl_ptrs[index];
+    index = index + 0x10;
   }
-  if (local_10 == (JHUFF_TBL *)0x0) {
-    param_1->err->msg_code = 0x32;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (htbl == (JHUFF_TBL *)0x0) {
+    cinfo->err->msg_code = 0x32;
+    (cinfo->err->msg_parm).i[0] = index;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (local_10->sent_table == '\0') {
-    emit_marker(param_1,M_DHT);
-    local_8 = 0;
-    for (local_c = 1; local_c < 0x11; local_c = local_c + 1) {
-      local_8 = (uint)local_10->bits[local_c] + local_8;
+  if (htbl->sent_table == '\0') {
+    emit_marker(cinfo,M_DHT);
+    length = 0;
+    for (i = 1; i < 0x11; i = i + 1) {
+      length = (uint)htbl->bits[i] + length;
     }
-    emit_2bytes(param_1,local_8 + 0x13);
-    emit_byte(param_1,param_2);
-    for (local_c = 1; local_c < 0x11; local_c = local_c + 1) {
-      emit_byte(param_1,(uint)local_10->bits[local_c]);
+    emit_2bytes(cinfo,length + 0x13);
+    emit_byte(cinfo,index);
+    for (i = 1; i < 0x11; i = i + 1) {
+      emit_byte(cinfo,(uint)htbl->bits[i]);
     }
-    for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-      emit_byte(param_1,(uint)local_10->huffval[local_c]);
+    for (i = 0; i < length; i = i + 1) {
+      emit_byte(cinfo,(uint)htbl->huffval[i]);
     }
-    local_10->sent_table = '\x01';
+    htbl->sent_table = '\x01';
   }
   return;
 }
@@ -127,42 +130,42 @@ void __cdecl emit_dht(jpeg_compress_struct *param_1,int param_2,uchar param_3)
 
 // 00B57FD0  emit_dri  (jpeg-6/jcmarker.c:267)
 
-void __cdecl emit_dri(jpeg_compress_struct *param_1)
+void __cdecl emit_dri(jpeg_compress_struct *cinfo)
 
 {
-  emit_marker(param_1,M_DRI);
-  emit_2bytes(param_1,4);
-  emit_2bytes(param_1,param_1->restart_interval);
+  emit_marker(cinfo,M_DRI);
+  emit_2bytes(cinfo,4);
+  emit_2bytes(cinfo,cinfo->restart_interval);
   return;
 }
 
 
 // 00B57C10  emit_sof  (jpeg-6/jcmarker.c:279)
 
-void __cdecl emit_sof(jpeg_compress_struct *param_1,JPEG_MARKER param_2)
+void __cdecl emit_sof(jpeg_compress_struct *cinfo,JPEG_MARKER code)
 
 {
-  int local_c;
-  jpeg_component_info *local_8;
+  int ci;
+  jpeg_component_info *compptr;
   
-  emit_marker(param_1,param_2);
-  emit_2bytes(param_1,param_1->num_components * 3 + 8);
-  if ((0xffff < (int)param_1->image_height) || (0xffff < (int)param_1->image_width)) {
-    param_1->err->msg_code = 0x29;
-    (param_1->err->msg_parm).i[0] = 0xffff;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  emit_marker(cinfo,code);
+  emit_2bytes(cinfo,cinfo->num_components * 3 + 8);
+  if ((0xffff < (int)cinfo->image_height) || (0xffff < (int)cinfo->image_width)) {
+    cinfo->err->msg_code = 0x29;
+    (cinfo->err->msg_parm).i[0] = 0xffff;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  emit_byte(param_1,param_1->data_precision);
-  emit_2bytes(param_1,param_1->image_height);
-  emit_2bytes(param_1,param_1->image_width);
-  emit_byte(param_1,param_1->num_components);
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    emit_byte(param_1,local_8->component_id);
-    emit_byte(param_1,local_8->h_samp_factor * 0x10 + local_8->v_samp_factor);
-    emit_byte(param_1,local_8->quant_tbl_no);
-    local_8 = local_8 + 1;
+  emit_byte(cinfo,cinfo->data_precision);
+  emit_2bytes(cinfo,cinfo->image_height);
+  emit_2bytes(cinfo,cinfo->image_width);
+  emit_byte(cinfo,cinfo->num_components);
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    emit_byte(cinfo,compptr->component_id);
+    emit_byte(cinfo,compptr->h_samp_factor * 0x10 + compptr->v_samp_factor);
+    emit_byte(cinfo,compptr->quant_tbl_no);
+    compptr = compptr + 1;
   }
   return;
 }
@@ -170,88 +173,89 @@ void __cdecl emit_sof(jpeg_compress_struct *param_1,JPEG_MARKER param_2)
 
 // 00B58010  emit_sos  (jpeg-6/jcmarker.c:310)
 
-void __cdecl emit_sos(jpeg_compress_struct *param_1)
+void __cdecl emit_sos(jpeg_compress_struct *cinfo)
 
 {
   jpeg_component_info *pjVar1;
-  int local_14;
-  int local_10;
-  int local_8;
+  int td;
+  int ta;
+  jpeg_component_info *compptr;
+  int i;
   
-  emit_marker(param_1,M_SOS);
-  emit_2bytes(param_1,param_1->comps_in_scan * 2 + 6);
-  emit_byte(param_1,param_1->comps_in_scan);
-  for (local_8 = 0; local_8 < param_1->comps_in_scan; local_8 = local_8 + 1) {
-    pjVar1 = param_1->cur_comp_info[local_8];
-    emit_byte(param_1,pjVar1->component_id);
-    local_14 = pjVar1->dc_tbl_no;
-    local_10 = pjVar1->ac_tbl_no;
-    if (param_1->progressive_mode != '\0') {
-      if (param_1->Ss == 0) {
-        local_10 = 0;
-        if ((param_1->Ah != 0) && (param_1->arith_code == '\0')) {
-          local_14 = 0;
+  emit_marker(cinfo,M_SOS);
+  emit_2bytes(cinfo,cinfo->comps_in_scan * 2 + 6);
+  emit_byte(cinfo,cinfo->comps_in_scan);
+  for (i = 0; i < cinfo->comps_in_scan; i = i + 1) {
+    pjVar1 = cinfo->cur_comp_info[i];
+    emit_byte(cinfo,pjVar1->component_id);
+    td = pjVar1->dc_tbl_no;
+    ta = pjVar1->ac_tbl_no;
+    if (cinfo->progressive_mode != '\0') {
+      if (cinfo->Ss == 0) {
+        ta = 0;
+        if ((cinfo->Ah != 0) && (cinfo->arith_code == '\0')) {
+          td = 0;
         }
       }
       else {
-        local_14 = 0;
+        td = 0;
       }
     }
-    emit_byte(param_1,local_14 * 0x10 + local_10);
+    emit_byte(cinfo,td * 0x10 + ta);
   }
-  emit_byte(param_1,param_1->Ss);
-  emit_byte(param_1,param_1->Se);
-  emit_byte(param_1,param_1->Ah * 0x10 + param_1->Al);
+  emit_byte(cinfo,cinfo->Ss);
+  emit_byte(cinfo,cinfo->Se);
+  emit_byte(cinfo,cinfo->Ah * 0x10 + cinfo->Al);
   return;
 }
 
 
 // 00B57780  emit_jfif_app0  (jpeg-6/jcmarker.c:351)
 
-void __cdecl emit_jfif_app0(jpeg_compress_struct *param_1)
+void __cdecl emit_jfif_app0(jpeg_compress_struct *cinfo)
 
 {
-  emit_marker(param_1,M_APP0);
-  emit_2bytes(param_1,0x10);
-  emit_byte(param_1,0x4a);
-  emit_byte(param_1,0x46);
-  emit_byte(param_1,0x49);
-  emit_byte(param_1,0x46);
-  emit_byte(param_1,0);
-  emit_byte(param_1,(uint)param_1->JFIF_major_version);
-  emit_byte(param_1,(uint)param_1->JFIF_minor_version);
-  emit_byte(param_1,(uint)param_1->density_unit);
-  emit_2bytes(param_1,(uint)param_1->X_density);
-  emit_2bytes(param_1,(uint)param_1->Y_density);
-  emit_byte(param_1,0);
-  emit_byte(param_1,0);
+  emit_marker(cinfo,M_APP0);
+  emit_2bytes(cinfo,0x10);
+  emit_byte(cinfo,0x4a);
+  emit_byte(cinfo,0x46);
+  emit_byte(cinfo,0x49);
+  emit_byte(cinfo,0x46);
+  emit_byte(cinfo,0);
+  emit_byte(cinfo,(uint)cinfo->JFIF_major_version);
+  emit_byte(cinfo,(uint)cinfo->JFIF_minor_version);
+  emit_byte(cinfo,(uint)cinfo->density_unit);
+  emit_2bytes(cinfo,(uint)cinfo->X_density);
+  emit_2bytes(cinfo,(uint)cinfo->Y_density);
+  emit_byte(cinfo,0);
+  emit_byte(cinfo,0);
   return;
 }
 
 
 // 00B57880  emit_adobe_app14  (jpeg-6/jcmarker.c:386)
 
-void __cdecl emit_adobe_app14(jpeg_compress_struct *param_1)
+void __cdecl emit_adobe_app14(jpeg_compress_struct *cinfo)
 
 {
-  emit_marker(param_1,M_APP14);
-  emit_2bytes(param_1,0xe);
-  emit_byte(param_1,0x41);
-  emit_byte(param_1,100);
-  emit_byte(param_1,0x6f);
-  emit_byte(param_1,0x62);
-  emit_byte(param_1,0x65);
-  emit_2bytes(param_1,100);
-  emit_2bytes(param_1,0);
-  emit_2bytes(param_1,0);
-  if (param_1->jpeg_color_space == JCS_YCbCr) {
-    emit_byte(param_1,1);
+  emit_marker(cinfo,M_APP14);
+  emit_2bytes(cinfo,0xe);
+  emit_byte(cinfo,0x41);
+  emit_byte(cinfo,100);
+  emit_byte(cinfo,0x6f);
+  emit_byte(cinfo,0x62);
+  emit_byte(cinfo,0x65);
+  emit_2bytes(cinfo,100);
+  emit_2bytes(cinfo,0);
+  emit_2bytes(cinfo,0);
+  if (cinfo->jpeg_color_space == JCS_YCbCr) {
+    emit_byte(cinfo,1);
   }
-  else if (param_1->jpeg_color_space == JCS_YCCK) {
-    emit_byte(param_1,2);
+  else if (cinfo->jpeg_color_space == JCS_YCCK) {
+    emit_byte(cinfo,2);
   }
   else {
-    emit_byte(param_1,0);
+    emit_byte(cinfo,0);
   }
   return;
 }
@@ -259,44 +263,45 @@ void __cdecl emit_adobe_app14(jpeg_compress_struct *param_1)
 
 // 00B575B0  write_marker_header  (jpeg-6/jcmarker.c:440)
 
-void __cdecl write_marker_header(jpeg_compress_struct *param_1,int param_2,uint param_3)
+void __cdecl write_marker_header(jpeg_compress_struct *cinfo,int marker,uint datalen)
 
 {
-  if (0xfffd < param_3) {
-    param_1->err->msg_code = 0xb;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (0xfffd < datalen) {
+    cinfo->err->msg_code = 0xb;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  emit_marker(param_1,param_2);
-  emit_2bytes(param_1,param_3 + 2);
+  emit_marker(cinfo,marker);
+  emit_2bytes(cinfo,datalen + 2);
   return;
 }
 
 
 // 00B576F0  write_marker_byte  (jpeg-6/jcmarker.c:452)
 
-void __cdecl write_marker_byte(jpeg_compress_struct *param_1,int param_2)
+void __cdecl write_marker_byte(jpeg_compress_struct *cinfo,int val)
 
 {
-  emit_byte(param_1,param_2);
+  emit_byte(cinfo,val);
   return;
 }
 
 
 // 00B57710  write_file_header  (jpeg-6/jcmarker.c:470)
 
-void __cdecl write_file_header(jpeg_compress_struct *param_1)
+void __cdecl write_file_header(jpeg_compress_struct *cinfo)
 
 {
   jpeg_marker_writer *pjVar1;
+  my_marker_writer *marker;
   
-  pjVar1 = param_1->marker;
-  emit_marker(param_1,M_SOI);
+  pjVar1 = cinfo->marker;
+  emit_marker(cinfo,M_SOI);
   pjVar1[1].write_file_header = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
-  if (param_1->write_JFIF_header != '\0') {
-    emit_jfif_app0(param_1);
+  if (cinfo->write_JFIF_header != '\0') {
+    emit_jfif_app0(cinfo);
   }
-  if (param_1->write_Adobe_marker != '\0') {
-    emit_adobe_app14(param_1);
+  if (cinfo->write_Adobe_marker != '\0') {
+    emit_adobe_app14(cinfo);
   }
   return;
 }
@@ -304,58 +309,59 @@ void __cdecl write_file_header(jpeg_compress_struct *param_1)
 
 // 00B57960  write_frame_header  (jpeg-6/jcmarker.c:495)
 
-void __cdecl write_frame_header(jpeg_compress_struct *param_1)
+void __cdecl write_frame_header(jpeg_compress_struct *cinfo)
 
 {
   bool bVar1;
   int iVar2;
-  int local_10;
-  jpeg_component_info *local_c;
-  int local_8;
+  uchar is_baseline;
+  int ci;
+  jpeg_component_info *compptr;
+  int prec;
   
-  local_8 = 0;
-  local_10 = 0;
-  local_c = param_1->comp_info;
-  for (; local_10 < param_1->num_components; local_10 = local_10 + 1) {
-    iVar2 = emit_dqt(param_1,local_c->quant_tbl_no);
-    local_8 = iVar2 + local_8;
-    local_c = local_c + 1;
+  prec = 0;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    iVar2 = emit_dqt(cinfo,compptr->quant_tbl_no);
+    prec = iVar2 + prec;
+    compptr = compptr + 1;
   }
-  if (((param_1->arith_code == '\0') && (param_1->progressive_mode == '\0')) &&
-     (param_1->data_precision == 8)) {
+  if (((cinfo->arith_code == '\0') && (cinfo->progressive_mode == '\0')) &&
+     (cinfo->data_precision == 8)) {
     bVar1 = true;
-    local_10 = 0;
-    local_c = param_1->comp_info;
-    for (; local_10 < param_1->num_components; local_10 = local_10 + 1) {
-      if ((1 < local_c->dc_tbl_no) || (1 < local_c->ac_tbl_no)) {
+    ci = 0;
+    compptr = cinfo->comp_info;
+    for (; ci < cinfo->num_components; ci = ci + 1) {
+      if ((1 < compptr->dc_tbl_no) || (1 < compptr->ac_tbl_no)) {
         bVar1 = false;
       }
-      local_c = local_c + 1;
+      compptr = compptr + 1;
     }
-    if ((local_8 != 0) && (bVar1)) {
+    if ((prec != 0) && (bVar1)) {
       bVar1 = false;
-      param_1->err->msg_code = 0x4b;
-      (*param_1->err->emit_message)((jpeg_common_struct *)param_1,0);
+      cinfo->err->msg_code = 0x4b;
+      (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,0);
     }
   }
   else {
     bVar1 = false;
   }
-  if (param_1->arith_code == '\0') {
-    if (param_1->progressive_mode == '\0') {
+  if (cinfo->arith_code == '\0') {
+    if (cinfo->progressive_mode == '\0') {
       if (bVar1) {
-        emit_sof(param_1,M_SOF0);
+        emit_sof(cinfo,M_SOF0);
       }
       else {
-        emit_sof(param_1,M_SOF1);
+        emit_sof(cinfo,M_SOF1);
       }
     }
     else {
-      emit_sof(param_1,M_SOF2);
+      emit_sof(cinfo,M_SOF2);
     }
   }
   else {
-    emit_sof(param_1,M_SOF9);
+    emit_sof(cinfo,M_SOF9);
   }
   return;
 }
@@ -363,92 +369,95 @@ void __cdecl write_frame_header(jpeg_compress_struct *param_1)
 
 // 00B57D50  write_scan_header  (jpeg-6/jcmarker.c:552)
 
-void __cdecl write_scan_header(jpeg_compress_struct *param_1)
+void __cdecl write_scan_header(jpeg_compress_struct *cinfo)
 
 {
   jpeg_marker_writer *pjVar1;
   jpeg_component_info *pjVar2;
-  int local_c;
+  jpeg_component_info *compptr;
+  int i;
+  my_marker_writer *marker;
   
-  pjVar1 = param_1->marker;
-  if (param_1->arith_code == '\0') {
-    for (local_c = 0; local_c < param_1->comps_in_scan; local_c = local_c + 1) {
-      pjVar2 = param_1->cur_comp_info[local_c];
-      if (param_1->progressive_mode == '\0') {
-        emit_dht(param_1,pjVar2->dc_tbl_no,'\0');
-        emit_dht(param_1,pjVar2->ac_tbl_no,'\x01');
+  pjVar1 = cinfo->marker;
+  if (cinfo->arith_code == '\0') {
+    for (i = 0; i < cinfo->comps_in_scan; i = i + 1) {
+      pjVar2 = cinfo->cur_comp_info[i];
+      if (cinfo->progressive_mode == '\0') {
+        emit_dht(cinfo,pjVar2->dc_tbl_no,'\0');
+        emit_dht(cinfo,pjVar2->ac_tbl_no,'\x01');
       }
-      else if (param_1->Ss == 0) {
-        if (param_1->Ah == 0) {
-          emit_dht(param_1,pjVar2->dc_tbl_no,'\0');
+      else if (cinfo->Ss == 0) {
+        if (cinfo->Ah == 0) {
+          emit_dht(cinfo,pjVar2->dc_tbl_no,'\0');
         }
       }
       else {
-        emit_dht(param_1,pjVar2->ac_tbl_no,'\x01');
+        emit_dht(cinfo,pjVar2->ac_tbl_no,'\x01');
       }
     }
   }
   else {
-    GamerProfile_WriteSettings((int)param_1);
+    GamerProfile_WriteSettings((int)cinfo);
   }
-  if ((_func___cdecl_void_jpeg_compress_struct_ptr *)param_1->restart_interval !=
+  if ((_func___cdecl_void_jpeg_compress_struct_ptr *)cinfo->restart_interval !=
       pjVar1[1].write_file_header) {
-    emit_dri(param_1);
+    emit_dri(cinfo);
     pjVar1[1].write_file_header =
-         (_func___cdecl_void_jpeg_compress_struct_ptr *)param_1->restart_interval;
+         (_func___cdecl_void_jpeg_compress_struct_ptr *)cinfo->restart_interval;
   }
-  emit_sos(param_1);
+  emit_sos(cinfo);
   return;
 }
 
 
 // 00B58170  write_file_trailer  (jpeg-6/jcmarker.c:603)
 
-void __cdecl write_file_trailer(jpeg_compress_struct *param_1)
+void __cdecl write_file_trailer(jpeg_compress_struct *cinfo)
 
 {
-  emit_marker(param_1,M_EOI);
+  emit_marker(cinfo,M_EOI);
   return;
 }
 
 
 // 00B58190  write_tables_only  (jpeg-6/jcmarker.c:617)
 
-void __cdecl write_tables_only(jpeg_compress_struct *param_1)
+void __cdecl write_tables_only(jpeg_compress_struct *cinfo)
 
 {
-  int local_8;
+  int i;
   
-  emit_marker(param_1,M_SOI);
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if (param_1->quant_tbl_ptrs[local_8] != (JQUANT_TBL *)0x0) {
-      emit_dqt(param_1,local_8);
+  emit_marker(cinfo,M_SOI);
+  for (i = 0; i < 4; i = i + 1) {
+    if (cinfo->quant_tbl_ptrs[i] != (JQUANT_TBL *)0x0) {
+      emit_dqt(cinfo,i);
     }
   }
-  if (param_1->arith_code == '\0') {
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-      if (param_1->dc_huff_tbl_ptrs[local_8] != (JHUFF_TBL *)0x0) {
-        emit_dht(param_1,local_8,'\0');
+  if (cinfo->arith_code == '\0') {
+    for (i = 0; i < 4; i = i + 1) {
+      if (cinfo->dc_huff_tbl_ptrs[i] != (JHUFF_TBL *)0x0) {
+        emit_dht(cinfo,i,'\0');
       }
-      if (param_1->ac_huff_tbl_ptrs[local_8] != (JHUFF_TBL *)0x0) {
-        emit_dht(param_1,local_8,'\x01');
+      if (cinfo->ac_huff_tbl_ptrs[i] != (JHUFF_TBL *)0x0) {
+        emit_dht(cinfo,i,'\x01');
       }
     }
   }
-  emit_marker(param_1,M_EOI);
+  emit_marker(cinfo,M_EOI);
   return;
 }
 
 
 // 00B57530  jinit_marker_writer  (jpeg-6/jcmarker.c:646)
 
-void __cdecl jinit_marker_writer(jpeg_compress_struct *param_1)
+void __cdecl jinit_marker_writer(jpeg_compress_struct *cinfo)
 
 {
   jpeg_marker_writer *pjVar1;
+  my_marker_writer *marker;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x20);
-  param_1->marker = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x20);
+  cinfo->marker = pjVar1;
   pjVar1->write_file_header = write_file_header;
   pjVar1->write_frame_header = write_frame_header;
   pjVar1->write_scan_header = write_scan_header;

@@ -4,8 +4,7 @@
 
 phys_vec3 * __thiscall
 phys_gjk_geom::support_only
-          (phys_gjk_geom *this,phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,
-          phys_vec3 *param_2)
+          (phys_gjk_geom *this,phys_vec3 *__return_storage_ptr__,phys_mat44 *xform,phys_vec3 *v)
 
 {
   undefined1 local_40 [16];
@@ -14,14 +13,11 @@ phys_gjk_geom::support_only
   float local_1c;
   float local_18;
   
-  local_20 = (param_1->x).z * param_2->z + (param_1->x).x * param_2->x + (param_1->x).y * param_2->y
-  ;
-  local_1c = (param_1->y).z * param_2->z + (param_1->y).x * param_2->x + (param_1->y).y * param_2->y
-  ;
-  local_18 = (param_1->z).z * param_2->z + param_2->x * (param_1->z).x + (param_1->z).y * param_2->y
-  ;
+  local_20 = (xform->x).z * v->z + (xform->x).x * v->x + (xform->x).y * v->y;
+  local_1c = (xform->y).z * v->z + (xform->y).x * v->x + (xform->y).y * v->y;
+  local_18 = (xform->z).z * v->z + v->x * (xform->z).x + (xform->z).y * v->y;
   (**(code **)*this)(&local_20,&local_30,local_40);
-  phys_full_multiply(__return_storage_ptr__,param_1,&local_30);
+  phys_full_multiply(__return_storage_ptr__,xform,&local_30);
   return __return_storage_ptr__;
 }
 
@@ -29,14 +25,14 @@ phys_gjk_geom::support_only
 // 00A0BF90  get_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:26)
 
 void __cdecl
-get_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *param_3,
-           phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,phys_vec3 *param_7,int *param_8)
+get_simplex(phys_gjk_geom *cg1,phys_gjk_geom *cg2,phys_gjk_cache_info *gjk_ci,phys_vec3 *a_verts,
+           phys_vec3 *a_inds,phys_vec3 *b_verts,phys_vec3 *b_inds,int *vert_count)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_3->m_flags & 8) == 0) {
+  if ((gjk_ci->m_flags & 8) == 0) {
     bVar2 = _tlAssert("source/phys_gjk.cpp",0x1b,"gjk_ci->is_simplex_valid()","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -44,9 +40,9 @@ get_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *p
       return;
     }
   }
-  (**(code **)((int)*param_1 + 4))(&param_3->m_support_a,param_3->m_support_count,param_4,param_5);
-  (**(code **)((int)*param_2 + 4))(&param_3->m_support_b,param_3->m_support_count,param_6,param_7);
-  *param_8 = param_3->m_support_count;
+  (**(code **)((int)*cg1 + 4))(&gjk_ci->m_support_a,gjk_ci->m_support_count,a_verts,a_inds);
+  (**(code **)((int)*cg2 + 4))(&gjk_ci->m_support_b,gjk_ci->m_support_count,b_verts,b_inds);
+  *vert_count = gjk_ci->m_support_count;
   return;
 }
 
@@ -54,14 +50,14 @@ get_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *p
 // 00A0C000  set_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:35)
 
 void __cdecl
-set_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *param_3,
-           phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,phys_vec3 *param_7,int param_8)
+set_simplex(phys_gjk_geom *cg1,phys_gjk_geom *cg2,phys_gjk_cache_info *gjk_ci,phys_vec3 *a_normal,
+           phys_vec3 *b_normal,phys_vec3 *a_inds,phys_vec3 *b_inds,int w_set)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_8 < 1) || (0xf < param_8)) {
+  if ((w_set < 1) || (0xf < w_set)) {
     bVar2 = _tlAssert("source/phys_gjk.cpp",0x24,"w_set > 0 && w_set <= 15","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -69,34 +65,34 @@ set_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *p
       return;
     }
   }
-  param_3->m_flags = param_3->m_flags | 8;
-  (**(code **)((int)*param_1 + 8))(param_6,param_8,param_4,&param_3->m_support_a);
-  (**(code **)((int)*param_2 + 8))(param_7,param_8,param_5,&param_3->m_support_b);
-  param_3->m_support_count = BIT_COUNT[param_8];
+  gjk_ci->m_flags = gjk_ci->m_flags | 8;
+  (**(code **)((int)*cg1 + 8))(a_inds,w_set,a_normal,&gjk_ci->m_support_a);
+  (**(code **)((int)*cg2 + 8))(b_inds,w_set,b_normal,&gjk_ci->m_support_b);
+  gjk_ci->m_support_count = BIT_COUNT[w_set];
   return;
 }
 
 
 // 00A0BD30  operator*=  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:48)
 
-phys_vec3 * __thiscall phys_vec3::operator*=(phys_vec3 *this,float param_1)
+phys_vec3 * __thiscall phys_vec3::operator*=(phys_vec3 *this,float d)
 
 {
-  this->x = param_1 * this->x;
-  this->y = this->y * param_1;
-  this->z = param_1 * this->z;
+  this->x = d * this->x;
+  this->y = this->y * d;
+  this->z = d * this->z;
   return this;
 }
 
 
 // 00A0BD60  operator/=  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:49)
 
-phys_vec3 * __thiscall phys_vec3::operator/=(phys_vec3 *this,float param_1)
+phys_vec3 * __thiscall phys_vec3::operator/=(phys_vec3 *this,float d)
 
 {
   float fVar1;
   
-  fVar1 = 1.0 / param_1;
+  fVar1 = 1.0 / d;
   this->x = fVar1 * this->x;
   this->y = this->y * fVar1;
   this->z = fVar1 * this->z;
@@ -106,14 +102,14 @@ phys_vec3 * __thiscall phys_vec3::operator/=(phys_vec3 *this,float param_1)
 
 // 00A0E4A0  compress_verts  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:61)
 
-int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
+int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int w_set)
 
 {
   uint uVar1;
   phys_vec3 *ppVar2;
   bool bVar3;
   
-  bVar3 = (param_1 & 1U) != 0;
+  bVar3 = (w_set & 1U) != 0;
   if (bVar3) {
     this->m_a_verts[0].x = this->m_a_verts[0].x;
     this->m_a_verts[0].y = this->m_a_verts[0].y;
@@ -129,7 +125,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
     this->m_b_inds[0].z = this->m_b_inds[0].z;
   }
   uVar1 = (uint)bVar3;
-  if ((param_1 & 2U) != 0) {
+  if ((w_set & 2U) != 0) {
     this->m_a_verts[uVar1].x = this->m_a_verts[1].x;
     this->m_a_verts[uVar1].y = this->m_a_verts[1].y;
     this->m_a_verts[uVar1].z = this->m_a_verts[1].z;
@@ -145,7 +141,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
     ppVar2->y = this->m_b_inds[1].y;
     ppVar2->z = this->m_b_inds[1].z;
   }
-  if ((param_1 & 4U) != 0) {
+  if ((w_set & 4U) != 0) {
     this->m_a_verts[uVar1].x = this->m_a_verts[2].x;
     this->m_a_verts[uVar1].y = this->m_a_verts[2].y;
     this->m_a_verts[uVar1].z = this->m_a_verts[2].z;
@@ -161,7 +157,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
     ppVar2->y = this->m_b_inds[2].y;
     ppVar2->z = this->m_b_inds[2].z;
   }
-  if ((param_1 & 8U) != 0) {
+  if ((w_set & 8U) != 0) {
     this->m_a_verts[uVar1].x = this->m_a_verts[3].x;
     this->m_a_verts[uVar1].y = this->m_a_verts[3].y;
     this->m_a_verts[uVar1].z = this->m_a_verts[3].z;
@@ -183,7 +179,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
 
 // 00A0EE10  comp_v  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:78)
 
-void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 *param_2)
+void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int w_set,phys_vec3 *v)
 
 {
   code *pcVar1;
@@ -201,13 +197,13 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
   float local_20;
   float local_1c [3];
   
-  if (((param_1 < 1) || (0xe < param_1)) &&
+  if (((w_set < 1) || (0xe < w_set)) &&
      (bVar3 = _tlAssert("source/phys_gjk.cpp",0x4f,"w_set > 0 && w_set < 15",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar3 = (param_1 & 1U) != 0;
+  bVar3 = (w_set & 1U) != 0;
   if (bVar3) {
     local_b0[0xc] = this->m_w_verts[0].x;
     local_b0[0xd] = this->m_w_verts[0].y;
@@ -215,21 +211,21 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
   }
   uVar6 = (uint)bVar3;
   uVar5 = uVar6;
-  if ((param_1 & 2U) != 0) {
+  if ((w_set & 2U) != 0) {
     local_b0[uVar6 * 4 + 0xc] = this->m_w_verts[1].x;
     uVar5 = uVar6 + 1;
     local_b0[uVar6 * 4 + 0xd] = this->m_w_verts[1].y;
     local_b0[uVar6 * 4 + 0xe] = this->m_w_verts[1].z;
   }
   uVar6 = uVar5;
-  if ((param_1 & 4U) != 0) {
+  if ((w_set & 4U) != 0) {
     local_b0[uVar5 * 4 + 0xc] = this->m_w_verts[2].x;
     uVar6 = uVar5 + 1;
     local_b0[uVar5 * 4 + 0xd] = this->m_w_verts[2].y;
     local_b0[uVar5 * 4 + 0xe] = this->m_w_verts[2].z;
   }
   uVar5 = uVar6;
-  if ((param_1 & 8U) != 0) {
+  if ((w_set & 8U) != 0) {
     local_b0[uVar6 * 4 + 0xc] = this->m_w_verts[3].x;
     uVar5 = uVar6 + 1;
     local_b0[uVar6 * 4 + 0xd] = this->m_w_verts[3].y;
@@ -243,9 +239,9 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
     return;
   }
   if (uVar5 == 1) {
-    param_2->x = local_b0[0xc];
-    param_2->y = local_b0[0xd];
-    param_2->z = local_b0[0xe];
+    v->x = local_b0[0xc];
+    v->y = local_b0[0xd];
+    v->z = local_b0[0xe];
     return;
   }
   local_20 = local_b0[0x10] - local_b0[0xc];
@@ -284,9 +280,9 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
   if (0.010000001 < fVar2) {
     fVar2 = (local_28 * local_b0[0xe] + local_30 * local_b0[0xc] + local_2c * local_b0[0xd]) / fVar2
     ;
-    param_2->x = fVar2 * local_30;
-    param_2->y = fVar2 * local_2c;
-    param_2->z = local_28 * fVar2;
+    v->x = fVar2 * local_30;
+    v->y = fVar2 * local_2c;
+    v->z = local_28 * fVar2;
     return;
   }
   local_b0[4] = local_b0[0x14] - local_b0[0x10];
@@ -327,9 +323,9 @@ LAB_00a0f21a:
   local_1c[0] = local_b0[iVar4 * 4 + 0xd] - local_b0[iVar4 * 4 + 1] * fVar2;
   local_b0[0xe] = local_b0[iVar4 * 4 + 0xe];
 LAB_00a0f2ad:
-  param_2->x = local_20;
-  param_2->y = local_1c[0];
-  param_2->z = local_b0[0xe] - local_28;
+  v->x = local_20;
+  v->y = local_1c[0];
+  v->z = local_b0[0xe] - local_28;
   return;
 }
 
@@ -337,27 +333,25 @@ LAB_00a0f2ad:
 // 00A0BD90  phys_mat44  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:151)
 
 phys_mat44 * __thiscall
-phys_mat44::phys_mat44
-          (phys_mat44 *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,
-          phys_vec3 *param_4)
+phys_mat44::phys_mat44(phys_mat44 *this,phys_vec3 *x_,phys_vec3 *y_,phys_vec3 *z_,phys_vec3 *w_)
 
 {
-  (this->x).x = param_1->x;
-  (this->x).y = param_1->y;
-  (this->x).z = param_1->z;
-  (this->x).w = param_1->w;
-  (this->y).x = param_2->x;
-  (this->y).y = param_2->y;
-  (this->y).z = param_2->z;
-  (this->y).w = param_2->w;
-  (this->z).x = param_3->x;
-  (this->z).y = param_3->y;
-  (this->z).z = param_3->z;
-  (this->z).w = param_3->w;
-  (this->w).x = param_4->x;
-  (this->w).y = param_4->y;
-  (this->w).z = param_4->z;
-  (this->w).w = param_4->w;
+  (this->x).x = x_->x;
+  (this->x).y = x_->y;
+  (this->x).z = x_->z;
+  (this->x).w = x_->w;
+  (this->y).x = y_->x;
+  (this->y).y = y_->y;
+  (this->y).z = y_->z;
+  (this->y).w = y_->w;
+  (this->z).x = z_->x;
+  (this->z).y = z_->y;
+  (this->z).z = z_->z;
+  (this->z).w = z_->w;
+  (this->w).x = w_->x;
+  (this->w).y = w_->y;
+  (this->w).z = w_->z;
+  (this->w).w = w_->w;
   return this;
 }
 
@@ -365,8 +359,7 @@ phys_mat44::phys_mat44
 // 00A0E710  comp_closest_points  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:161)
 
 void __thiscall
-phys_gjk_info::comp_closest_points
-          (phys_gjk_info *this,int param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+phys_gjk_info::comp_closest_points(phys_gjk_info *this,int w_set,phys_vec3 *a,phys_vec3 *b)
 
 {
   phys_gjk_set_info *ppVar1;
@@ -377,68 +370,68 @@ phys_gjk_info::comp_closest_points
   bool bVar6;
   float local_14;
   
-  param_2->x = 0.0;
-  param_2->y = 0.0;
-  param_2->z = 0.0;
-  param_3->x = 0.0;
-  ppVar1 = this->m_set_list + param_1;
-  param_3->y = 0.0;
-  param_3->z = 0.0;
+  a->x = 0.0;
+  a->y = 0.0;
+  a->z = 0.0;
+  b->x = 0.0;
+  ppVar1 = this->m_set_list + w_set;
+  b->y = 0.0;
+  b->z = 0.0;
   local_14 = 0.0;
-  if ((param_1 & 1U) != 0) {
+  if ((w_set & 1U) != 0) {
     local_14 = ppVar1->m_lamda[0];
     fVar2 = this->m_a_verts[0].y;
     fVar3 = this->m_a_verts[0].z;
-    param_2->x = param_2->x + local_14 * this->m_a_verts[0].x;
-    param_2->y = param_2->y + fVar2 * local_14;
-    param_2->z = param_2->z + fVar3 * local_14;
+    a->x = a->x + local_14 * this->m_a_verts[0].x;
+    a->y = a->y + fVar2 * local_14;
+    a->z = a->z + fVar3 * local_14;
     fVar2 = this->m_b_verts[0].y;
     fVar3 = this->m_b_verts[0].z;
-    param_3->x = param_3->x + this->m_b_verts[0].x * local_14;
-    param_3->y = param_3->y + fVar2 * local_14;
-    param_3->z = fVar3 * local_14 + param_3->z;
+    b->x = b->x + this->m_b_verts[0].x * local_14;
+    b->y = b->y + fVar2 * local_14;
+    b->z = fVar3 * local_14 + b->z;
     local_14 = local_14 + 0.0;
   }
-  if ((param_1 & 2U) != 0) {
+  if ((w_set & 2U) != 0) {
     fVar2 = ppVar1->m_lamda[1];
     fVar3 = this->m_a_verts[1].y;
     fVar4 = this->m_a_verts[1].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[1].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[1].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[1].y;
     fVar4 = this->m_b_verts[1].z;
-    param_3->x = param_3->x + this->m_b_verts[1].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[1].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     local_14 = fVar2 + local_14;
   }
-  if ((param_1 & 4U) != 0) {
+  if ((w_set & 4U) != 0) {
     fVar2 = ppVar1->m_lamda[2];
     fVar3 = this->m_a_verts[2].y;
     fVar4 = this->m_a_verts[2].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[2].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[2].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[2].y;
     fVar4 = this->m_b_verts[2].z;
-    param_3->x = param_3->x + this->m_b_verts[2].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[2].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     local_14 = fVar2 + local_14;
   }
-  if ((param_1 & 8U) != 0) {
+  if ((w_set & 8U) != 0) {
     fVar2 = ppVar1->m_lamda[3];
     fVar3 = this->m_a_verts[3].y;
     fVar4 = this->m_a_verts[3].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[3].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[3].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[3].y;
     fVar4 = this->m_b_verts[3].z;
-    param_3->x = param_3->x + this->m_b_verts[3].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[3].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     local_14 = fVar2 + local_14;
   }
   if (0.0 < local_14 == (local_14 == 0.0)) {
@@ -450,19 +443,19 @@ phys_gjk_info::comp_closest_points
     }
   }
   local_14 = 1.0 / local_14;
-  param_2->x = local_14 * param_2->x;
-  param_2->y = param_2->y * local_14;
-  param_2->z = param_2->z * local_14;
-  param_3->x = param_3->x * local_14;
-  param_3->y = param_3->y * local_14;
-  param_3->z = local_14 * param_3->z;
+  a->x = local_14 * a->x;
+  a->y = a->y * local_14;
+  a->z = a->z * local_14;
+  b->x = b->x * local_14;
+  b->y = b->y * local_14;
+  b->z = local_14 * b->z;
   return;
 }
 
 
 // 00A0BE00  phys_full_inv_multiply_mat  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:236)
 
-void __cdecl phys_full_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+void __cdecl phys_full_inv_multiply_mat(phys_mat44 *dest,phys_mat44 *left,phys_mat44 *right)
 
 {
   float fVar1;
@@ -483,63 +476,61 @@ void __cdecl phys_full_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,
   phys_mat44 local_60;
   phys_vec3 local_20;
   
-  if (param_1 != param_2) {
-    fVar1 = (param_2->y).y;
-    fVar2 = (param_3->x).y;
-    fVar3 = (param_2->y).x;
-    fVar4 = (param_3->x).x;
-    fVar5 = (param_2->y).z;
-    fVar6 = (param_3->x).z;
-    fVar7 = (param_2->z).y;
-    fVar8 = (param_3->x).y;
-    fVar9 = (param_2->z).x;
-    fVar10 = (param_3->x).x;
-    fVar11 = (param_2->z).z;
-    fVar12 = (param_3->x).z;
-    (param_1->x).x =
-         (param_2->x).z * (param_3->x).z +
-         (param_2->x).y * (param_3->x).y + (param_2->x).x * (param_3->x).x;
-    (param_1->x).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
-    (param_1->x).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
-    fVar1 = (param_2->y).y;
-    fVar2 = (param_3->y).y;
-    fVar3 = (param_2->y).x;
-    fVar4 = (param_3->y).x;
-    fVar5 = (param_2->y).z;
-    fVar6 = (param_3->y).z;
-    fVar7 = (param_2->z).y;
-    fVar8 = (param_3->y).y;
-    fVar9 = (param_2->z).x;
-    fVar10 = (param_3->y).x;
-    fVar11 = (param_2->z).z;
-    fVar12 = (param_3->y).z;
-    (param_1->y).x =
-         (param_3->y).z * (param_2->x).z +
-         (param_3->y).y * (param_2->x).y + (param_2->x).x * (param_3->y).x;
-    (param_1->y).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
-    (param_1->y).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
-    local_20.x = (param_3->z).z * (param_2->x).z +
-                 (param_2->x).y * (param_3->z).y + (param_3->z).x * (param_2->x).x;
-    local_20.y = (param_2->y).z * (param_3->z).z +
-                 (param_2->y).x * (param_3->z).x + (param_2->y).y * (param_3->z).y;
-    local_20.z = (param_2->z).z * (param_3->z).z +
-                 (param_3->z).x * (param_2->z).x + (param_2->z).y * (param_3->z).y;
-    (param_1->z).x = local_20.x;
-    (param_1->z).y = local_20.y;
-    (param_1->z).z = local_20.z;
-    ppVar13 = phys_full_inv_multiply(&local_20,param_2,&param_3->w);
-    (param_1->w).x = ppVar13->x;
-    (param_1->w).y = ppVar13->y;
-    (param_1->w).z = ppVar13->z;
+  if (dest != left) {
+    fVar1 = (left->y).y;
+    fVar2 = (right->x).y;
+    fVar3 = (left->y).x;
+    fVar4 = (right->x).x;
+    fVar5 = (left->y).z;
+    fVar6 = (right->x).z;
+    fVar7 = (left->z).y;
+    fVar8 = (right->x).y;
+    fVar9 = (left->z).x;
+    fVar10 = (right->x).x;
+    fVar11 = (left->z).z;
+    fVar12 = (right->x).z;
+    (dest->x).x = (left->x).z * (right->x).z +
+                  (left->x).y * (right->x).y + (left->x).x * (right->x).x;
+    (dest->x).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
+    (dest->x).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
+    fVar1 = (left->y).y;
+    fVar2 = (right->y).y;
+    fVar3 = (left->y).x;
+    fVar4 = (right->y).x;
+    fVar5 = (left->y).z;
+    fVar6 = (right->y).z;
+    fVar7 = (left->z).y;
+    fVar8 = (right->y).y;
+    fVar9 = (left->z).x;
+    fVar10 = (right->y).x;
+    fVar11 = (left->z).z;
+    fVar12 = (right->y).z;
+    (dest->y).x = (right->y).z * (left->x).z +
+                  (right->y).y * (left->x).y + (left->x).x * (right->y).x;
+    (dest->y).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
+    (dest->y).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
+    local_20.x = (right->z).z * (left->x).z +
+                 (left->x).y * (right->z).y + (right->z).x * (left->x).x;
+    local_20.y = (left->y).z * (right->z).z +
+                 (left->y).x * (right->z).x + (left->y).y * (right->z).y;
+    local_20.z = (left->z).z * (right->z).z +
+                 (right->z).x * (left->z).x + (left->z).y * (right->z).y;
+    (dest->z).x = local_20.x;
+    (dest->z).y = local_20.y;
+    (dest->z).z = local_20.z;
+    ppVar13 = phys_full_inv_multiply(&local_20,left,&right->w);
+    (dest->w).x = ppVar13->x;
+    (dest->w).y = ppVar13->y;
+    (dest->w).z = ppVar13->z;
     return;
   }
   ppVar15 = &local_60;
   for (iVar14 = 0x10; iVar14 != 0; iVar14 = iVar14 + -1) {
-    (ppVar15->x).x = (param_2->x).x;
-    param_2 = (phys_mat44 *)&(param_2->x).y;
+    (ppVar15->x).x = (left->x).x;
+    left = (phys_mat44 *)&(left->x).y;
     ppVar15 = (phys_mat44 *)&(ppVar15->x).y;
   }
-  phys_full_inv_multiply_mat(param_1,&local_60,param_3);
+  phys_full_inv_multiply_mat(dest,&local_60,right);
   return;
 }
 
@@ -556,19 +547,19 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00A0C080  gjk_subalgorithm  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:311)
 
-int __thiscall phys_gjk_info::gjk_subalgorithm(phys_gjk_info *this,int param_1,int param_2)
+int __thiscall phys_gjk_info::gjk_subalgorithm(phys_gjk_info *this,int w_set,int new_index)
 
 {
   int iVar1;
   
-  iVar1 = backup1(this,param_2,false);
+  iVar1 = backup1(this,new_index,false);
   return iVar1;
 }
 
 
 // 00A0C0A0  seed_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:380)
 
-int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
+int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int cached_vert_count)
 
 {
   float fVar1;
@@ -580,13 +571,13 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
   uint uVar7;
   int iVar8;
   
-  if ((param_1 < 1) &&
+  if ((cached_vert_count < 1) &&
      (bVar4 = _tlAssert("source/phys_gjk.cpp",0x17d,"cached_vert_count > 0",""), bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((3 < param_1) &&
+  if ((3 < cached_vert_count) &&
      (bVar4 = _tlAssert("source/phys_gjk.cpp",0x17e,"cached_vert_count < 4",""), bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
@@ -595,8 +586,8 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
   iVar5 = 0;
   this->m_w_set = 0;
   uVar7 = 1;
-  if (3 < param_1) {
-    iVar8 = (param_1 - 4U >> 2) + 1;
+  if (3 < cached_vert_count) {
+    iVar8 = (cached_vert_count - 4U >> 2) + 1;
     iVar5 = iVar8 * 4;
     pfVar6 = &this->m_b_verts[0].y;
     do {
@@ -632,8 +623,8 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
       pfVar6 = pfVar6 + 0x10;
     } while (iVar8 != 0);
   }
-  if (iVar5 < param_1) {
-    iVar8 = param_1 - iVar5;
+  if (iVar5 < cached_vert_count) {
+    iVar8 = cached_vert_count - iVar5;
     pfVar6 = &this->m_b_verts[iVar5].y;
     do {
       fVar1 = (this->m_gjk_origin).y;
@@ -655,50 +646,52 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
 // 00A0F2E0  init_gjk  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:440)
 
 int __thiscall
-phys_gjk_info::init_gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+phys_gjk_info::init_gjk
+          (phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+          bool in_separation_loop)
 
 {
-  phys_gjk_cache_info *ppVar1;
-  phys_vec3 *ppVar2;
-  int iVar3;
-  phys_vec3 *ppVar4;
+  phys_gjk_cache_info *gjk_ci;
+  phys_vec3 *ppVar1;
+  int w_set;
+  phys_vec3 *v;
   phys_vec3 local_30;
   int local_18;
   int local_14;
   
-  if (param_3) {
+  if (in_separation_loop) {
     local_14 = compress_verts(this,this->m_w_set);
   }
   else {
-    ppVar1 = param_1->gjk_ci;
-    if ((ppVar1 == (phys_gjk_cache_info *)0x0) || ((ppVar1->m_flags & 8) == 0)) goto LAB_00a0f3cb;
-    get_simplex(param_1->gjk_cg1,param_1->gjk_cg2,ppVar1,this->m_a_verts,this->m_a_inds,
-                this->m_b_verts,this->m_b_inds,&local_14);
+    gjk_ci = d->gjk_ci;
+    if ((gjk_ci == (phys_gjk_cache_info *)0x0) || ((gjk_ci->m_flags & 8) == 0)) goto LAB_00a0f3cb;
+    get_simplex(d->gjk_cg1,d->gjk_cg2,gjk_ci,this->m_a_verts,this->m_a_inds,this->m_b_verts,
+                this->m_b_inds,&local_14);
     if (0 < local_14) {
       local_18 = local_14;
-      ppVar4 = this->m_b_verts;
+      v = this->m_b_verts;
       do {
-        ppVar2 = phys_full_multiply(&local_30,&this->cg2_to_cg1_xform,ppVar4);
-        ppVar4->x = ppVar2->x;
+        ppVar1 = phys_full_multiply(&local_30,&this->cg2_to_cg1_xform,v);
+        v->x = ppVar1->x;
         local_18 = local_18 + -1;
-        ppVar4->y = ppVar2->y;
-        ppVar4->z = ppVar2->z;
-        ppVar4 = ppVar4 + 1;
+        v->y = ppVar1->y;
+        v->z = ppVar1->z;
+        v = v + 1;
       } while (local_18 != 0);
       local_18 = 0;
     }
   }
   if (local_14 != 0) {
-    iVar3 = seed_simplex(this,local_14);
-    this->m_w_set = iVar3;
-    comp_v(this,iVar3,&this->m_support_dir);
+    w_set = seed_simplex(this,local_14);
+    this->m_w_set = w_set;
+    comp_v(this,w_set,&this->m_support_dir);
     this->m_last_w_set = this->m_w_set;
     return 1;
   }
 LAB_00a0f3cb:
-  (this->m_support_dir).x = param_2->x;
-  (this->m_support_dir).y = param_2->y;
-  (this->m_support_dir).z = param_2->z;
+  (this->m_support_dir).x = initial_support_dir->x;
+  (this->m_support_dir).y = initial_support_dir->y;
+  (this->m_support_dir).z = initial_support_dir->z;
   this->m_last_w_set = 0;
   this->m_w_set = 0;
   return 0;
@@ -707,7 +700,7 @@ LAB_00a0f3cb:
 
 // 00A0C360  backup1  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:473)
 
-int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
+int __cdecl backup1(phys_gjk_info *gjk_info,int new_index,bool seed_simplex)
 
 {
   float fVar1;
@@ -754,18 +747,18 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
   uint local_18;
   float local_14;
   
-  fVar1 = param_1->m_w_verts[param_2].y;
-  ppVar10 = param_1->m_w_verts + param_2;
-  fVar9 = (float)(1 << ((byte)param_2 & 0x1f));
+  fVar1 = gjk_info->m_w_verts[new_index].y;
+  ppVar10 = gjk_info->m_w_verts + new_index;
+  fVar9 = (float)(1 << ((byte)new_index & 0x1f));
   local_20 = 1.4013e-45;
   local_a4 = (uint)fVar9;
   local_2c = ppVar10->z * ppVar10->z + ppVar10->x * ppVar10->x + fVar1 * fVar1;
-  param_1->m_set_list[(int)fVar9].m_lamda[param_2] = 1.0;
+  gjk_info->m_set_list[(int)fVar9].m_lamda[new_index] = 1.0;
   local_30 = 0;
   local_28 = (float *)0x0;
-  local_18 = param_1->m_w_set & ~(uint)fVar9;
+  local_18 = gjk_info->m_w_set & ~(uint)fVar9;
   pfVar11 = local_f0 + 2;
-  local_24 = &param_1->m_w_verts[0].z;
+  local_24 = &gjk_info->m_w_verts[0].z;
   do {
     iVar3 = local_30;
     if (((uint)local_20 & local_18) != 0) {
@@ -798,20 +791,20 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
           if (local_1c < local_2c) {
             local_2c = local_1c;
             fVar9 = (float)((uint)local_20 | local_a4);
-            param_1->m_set_list[(int)fVar9].m_lamda[(int)local_28] = fVar1;
-            param_1->m_set_list[(int)fVar9].m_lamda[param_2] = fVar4;
+            gjk_info->m_set_list[(int)fVar9].m_lamda[(int)local_28] = fVar1;
+            gjk_info->m_set_list[(int)fVar9].m_lamda[new_index] = fVar4;
             pfVar8 = local_24;
           }
         }
       }
-      if (param_3) {
+      if (seed_simplex) {
         local_1c = pfVar8[-1] * pfVar8[-1] +
                    ((phys_vec3 *)(pfVar8 + -2))->x * ((phys_vec3 *)(pfVar8 + -2))->x +
                    *pfVar8 * *pfVar8;
         if (local_1c < local_2c) {
           local_2c = local_1c;
           local_30 = local_30 + 1;
-          param_1->m_set_list[(int)local_20].m_lamda[(int)local_28] = 1.0;
+          gjk_info->m_set_list[(int)local_20].m_lamda[(int)local_28] = 1.0;
           pfVar11 = pfVar11 + 4;
           fVar9 = local_20;
           goto LAB_00a0c5bf;
@@ -826,30 +819,30 @@ LAB_00a0c5bf:
     local_28 = (float *)((int)local_28 + 1);
     local_20 = (float)((int)local_20 << 1 | (uint)((int)local_20 < 0));
     if (3 < (int)local_28) {
-      if ((param_3) && (local_30 == 2)) {
-        fVar4 = param_1->m_w_verts[2].x - param_1->m_w_verts[1].x;
+      if ((seed_simplex) && (local_30 == 2)) {
+        fVar4 = gjk_info->m_w_verts[2].x - gjk_info->m_w_verts[1].x;
         local_50 = fVar4;
-        fVar2 = param_1->m_w_verts[2].y - param_1->m_w_verts[1].y;
+        fVar2 = gjk_info->m_w_verts[2].y - gjk_info->m_w_verts[1].y;
         local_4c = fVar2;
-        fVar5 = param_1->m_w_verts[2].z - param_1->m_w_verts[1].z;
+        fVar5 = gjk_info->m_w_verts[2].z - gjk_info->m_w_verts[1].z;
         local_48 = fVar5;
         fVar1 = fVar2 * fVar2 + fVar4 * fVar4 + fVar5 * fVar5;
         if (9.9999994e-11 < fVar1) {
-          fVar1 = -(param_1->m_w_verts[1].z * fVar5 +
-                   param_1->m_w_verts[1].x * fVar4 + param_1->m_w_verts[1].y * fVar2) / fVar1;
+          fVar1 = -(gjk_info->m_w_verts[1].z * fVar5 +
+                   gjk_info->m_w_verts[1].x * fVar4 + gjk_info->m_w_verts[1].y * fVar2) / fVar1;
           if ((0.0 < fVar1) && (0.0 < 1.0 - fVar1)) {
             local_50 = fVar1 * fVar4;
             local_4c = fVar1 * fVar2;
             local_48 = fVar1 * fVar5;
-            local_60 = param_1->m_w_verts[1].x + fVar1 * fVar4;
-            local_5c = param_1->m_w_verts[1].y + fVar1 * fVar2;
-            local_58 = param_1->m_w_verts[1].z + fVar1 * fVar5;
+            local_60 = gjk_info->m_w_verts[1].x + fVar1 * fVar4;
+            local_5c = gjk_info->m_w_verts[1].y + fVar1 * fVar2;
+            local_58 = gjk_info->m_w_verts[1].z + fVar1 * fVar5;
             fVar4 = local_58 * local_58 + local_5c * local_5c + local_60 * local_60;
             if (fVar4 < local_2c) {
               local_2c = fVar4;
               fVar9 = 8.40779e-45;
-              param_1->m_set_list[6].m_lamda[1] = 1.0 - fVar1;
-              param_1->m_set_list[6].m_lamda[2] = fVar1;
+              gjk_info->m_set_list[6].m_lamda[1] = 1.0 - fVar1;
+              gjk_info->m_set_list[6].m_lamda[2] = fVar1;
             }
           }
         }
@@ -901,10 +894,10 @@ LAB_00a0c5bf:
                     fVar9 = (float)(1 << ((byte)iVar3 & 0x1f) |
                                     1 << ((byte)*(undefined4 *)((int)aiStack_fc + (int)local_24) &
                                          0x1f) | local_a4);
-                    param_1->m_set_list[(int)fVar9].m_lamda
+                    gjk_info->m_set_list[(int)fVar9].m_lamda
                     [*(int *)((int)aiStack_fc + (int)local_24)] = fVar2;
-                    param_1->m_set_list[(int)fVar9].m_lamda[iVar3] = local_34;
-                    param_1->m_set_list[(int)fVar9].m_lamda[param_2] = local_20;
+                    gjk_info->m_set_list[(int)fVar9].m_lamda[iVar3] = local_34;
+                    gjk_info->m_set_list[(int)fVar9].m_lamda[new_index] = local_20;
                   }
                 }
               }
@@ -918,7 +911,7 @@ LAB_00a0c5bf:
           local_1c = (float)((int)local_1c + 1);
         } while (local_18 != 0);
       }
-      if ((local_30 == 3) && (param_1->m_lower_dist_sq <= 0.0)) {
+      if ((local_30 == 3) && (gjk_info->m_lower_dist_sq <= 0.0)) {
         fVar2 = local_f0[1] * local_d8 - local_f0[2] * local_f0[5];
         fVar4 = local_f0[4] * local_f0[2] - local_f0[0] * local_d8;
         fVar1 = local_f0[5] * local_f0[0] - local_f0[4] * local_f0[1];
@@ -958,17 +951,18 @@ LAB_00a0c5bf:
 /* WARNING: Removing unreachable block (ram,0x00a0ce65) */
 
 gjk_retval_e __thiscall
-phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+                  bool in_separation_loop)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *v;
+  float fVar1;
   float fVar2;
-  float fVar3;
-  bool bVar4;
-  float *pfVar5;
-  int iVar6;
-  phys_vec3 *ppVar7;
-  uint uVar8;
+  bool bVar3;
+  float *pfVar4;
+  int iVar5;
+  phys_vec3 *ppVar6;
+  uint uVar7;
   phys_vec3 local_90;
   float local_80;
   float local_7c;
@@ -994,47 +988,47 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
   
   this->m_lower_dist_sq = -34.0;
   this->m_upper_dist_sq = 34.0;
-  iVar6 = init_gjk(this,param_1,param_2,param_3);
-  this->m_gjk_iter = iVar6;
-  ppVar1 = &this->m_support_dir;
+  iVar5 = init_gjk(this,d,initial_support_dir,in_separation_loop);
+  this->m_gjk_iter = iVar5;
+  v = &this->m_support_dir;
   while( true ) {
-    fVar2 = (this->m_support_dir).y;
-    fVar3 = (this->m_support_dir).z;
-    fVar2 = fVar3 * fVar3 + ppVar1->x * ppVar1->x + fVar2 * fVar2;
-    this->m_upper_dist_sq = fVar2;
-    if ((this->m_gjk_iter != 0) && (fVar2 < this->m_gjk_pen_thresh_sq)) {
+    fVar1 = (this->m_support_dir).y;
+    fVar2 = (this->m_support_dir).z;
+    fVar1 = fVar2 * fVar2 + v->x * v->x + fVar1 * fVar1;
+    this->m_upper_dist_sq = fVar1;
+    if ((this->m_gjk_iter != 0) && (fVar1 < this->m_gjk_pen_thresh_sq)) {
       return GJK_PENETRATING;
     }
-    uVar8 = this->m_w_set;
-    if ((uVar8 & 1) == 0) {
+    uVar7 = this->m_w_set;
+    if ((uVar7 & 1) == 0) {
       local_14 = 0;
     }
-    else if ((uVar8 & 2) == 0) {
+    else if ((uVar7 & 2) == 0) {
       local_14 = 1;
     }
     else {
-      local_14 = (uVar8 & 4 | 8) >> 2;
+      local_14 = (uVar7 & 4 | 8) >> 2;
     }
-    local_70 = -ppVar1->x;
+    local_70 = -v->x;
     local_6c = -(this->m_support_dir).y;
     local_1c = this->m_a_verts + local_14;
     local_68 = -(this->m_support_dir).z;
-    (**(code **)*param_1->gjk_cg1)(&local_70,local_1c,this->m_a_inds + local_14);
+    (**(code **)*d->gjk_cg1)(&local_70,local_1c,this->m_a_inds + local_14);
     local_18 = this->m_b_verts + local_14;
     local_80 = (this->cg2_to_cg1_xform).x.z * (this->m_support_dir).z +
-               ppVar1->x * (this->cg2_to_cg1_xform).x.x +
+               v->x * (this->cg2_to_cg1_xform).x.x +
                (this->cg2_to_cg1_xform).x.y * (this->m_support_dir).y;
     local_7c = (this->cg2_to_cg1_xform).y.z * (this->m_support_dir).z +
-               ppVar1->x * (this->cg2_to_cg1_xform).y.x +
+               v->x * (this->cg2_to_cg1_xform).y.x +
                (this->cg2_to_cg1_xform).y.y * (this->m_support_dir).y;
     local_78 = (this->cg2_to_cg1_xform).z.z * (this->m_support_dir).z +
-               (this->cg2_to_cg1_xform).z.x * ppVar1->x +
+               (this->cg2_to_cg1_xform).z.x * v->x +
                (this->cg2_to_cg1_xform).z.y * (this->m_support_dir).y;
-    (**(code **)*param_1->gjk_cg2)(&local_80,local_18,this->m_b_inds + local_14);
-    ppVar7 = phys_multiply33(&local_90,&this->cg2_to_cg1_xform,local_18);
-    local_30 = ppVar7->x + (this->cg2_to_cg1_xform).w.x;
-    local_2c = ppVar7->y + (this->cg2_to_cg1_xform).w.y;
-    local_28 = ppVar7->z + (this->cg2_to_cg1_xform).w.z;
+    (**(code **)*d->gjk_cg2)(&local_80,local_18,this->m_b_inds + local_14);
+    ppVar6 = phys_multiply33(&local_90,&this->cg2_to_cg1_xform,local_18);
+    local_30 = ppVar6->x + (this->cg2_to_cg1_xform).w.x;
+    local_2c = ppVar6->y + (this->cg2_to_cg1_xform).w.y;
+    local_28 = ppVar6->z + (this->cg2_to_cg1_xform).w.z;
     local_18->x = local_30;
     local_18->y = local_2c;
     local_18->z = local_28;
@@ -1045,24 +1039,24 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
     local_4c = local_3c - (this->m_gjk_origin).y;
     local_48 = local_38 - (this->m_gjk_origin).z;
     local_1c = (phys_vec3 *)
-               (local_50 * ppVar1->x + local_4c * (this->m_support_dir).y +
+               (local_50 * v->x + local_4c * (this->m_support_dir).y +
                local_48 * (this->m_support_dir).z);
     if ((((0.0 < (float)local_1c) && (0.0 < this->m_upper_dist_sq)) &&
         (local_1c = (phys_vec3 *)(((float)local_1c * (float)local_1c) / this->m_upper_dist_sq),
         this->m_lower_dist_sq < (float)local_1c)) &&
        ((this->m_lower_dist_sq = (float)local_1c, (this->m_flags & 1) != 0 &&
-        (pfVar5 = (float *)(this->m_gjk_sep_thresh * this->m_gjk_sep_thresh),
-        bVar4 = (float)pfVar5 < (float)local_1c, local_1c = (phys_vec3 *)pfVar5, bVar4)))) break;
+        (pfVar4 = (float *)(this->m_gjk_sep_thresh * this->m_gjk_sep_thresh),
+        bVar3 = (float)pfVar4 < (float)local_1c, local_1c = (phys_vec3 *)pfVar4, bVar3)))) break;
     if ((this->m_gjk_iter != 0) && (0.0 < this->m_lower_dist_sq)) {
       if ((1.0 - CONV_THRESH) * (1.0 - CONV_THRESH) * this->m_upper_dist_sq < this->m_lower_dist_sq)
       {
         return GJK_VALID;
       }
       local_1c = (phys_vec3 *)&this->m_w_verts[0].z;
-      iVar6 = 0;
-      uVar8 = 1;
+      iVar5 = 0;
+      uVar7 = 1;
       do {
-        if ((this->m_last_w_set & uVar8) != 0) {
+        if ((this->m_last_w_set & uVar7) != 0) {
           local_60 = local_50 - ((phys_vec3 *)((int)local_1c + -8))->x;
           local_5c = local_4c - *(float *)((int)local_1c + -4);
           local_58 = local_48 - local_1c->x;
@@ -1072,22 +1066,22 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
           }
         }
         local_1c = (phys_vec3 *)((int)local_1c + 0x10);
-        iVar6 = iVar6 + 1;
-        uVar8 = uVar8 * 2;
-      } while (iVar6 < 4);
+        iVar5 = iVar5 + 1;
+        uVar7 = uVar7 * 2;
+      } while (iVar5 < 4);
     }
-    ppVar7 = this->m_w_verts + local_14;
-    ppVar7->x = local_50;
-    ppVar7->y = local_4c;
-    ppVar7->z = local_48;
+    ppVar6 = this->m_w_verts + local_14;
+    ppVar6->x = local_50;
+    ppVar6->y = local_4c;
+    ppVar6->z = local_48;
     this->m_w_set = this->m_w_set | 1 << ((byte)local_14 & 0x1f);
     this->m_last_w_set = this->m_w_set;
-    iVar6 = backup1(this,local_14,false);
-    this->m_w_set = iVar6;
-    if (iVar6 == 0xf) {
+    iVar5 = backup1(this,local_14,false);
+    this->m_w_set = iVar5;
+    if (iVar5 == 0xf) {
       return GJK_PENETRATING;
     }
-    comp_v(this,iVar6,ppVar1);
+    comp_v(this,iVar5,v);
     this->m_gjk_iter = this->m_gjk_iter + 1;
     if (0x1d < this->m_gjk_iter) {
       return GJK_VALID;
@@ -1106,7 +1100,8 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
 
 gjk_retval_e __thiscall
 phys_gjk_info::gjk_ray_cast
-          (phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+          (phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+          bool in_separation_loop)
 
 {
   float fVar1;
@@ -1150,7 +1145,7 @@ phys_gjk_info::gjk_ray_cast
   bool local_15;
   float local_14;
   
-  local_14 = param_1->m_start_time;
+  local_14 = d->m_start_time;
   this->m_continuous_collision_lambda = local_14;
   local_14 = -local_14;
   local_40 = local_14 * (this->m_cg1_relative_translation_loc).x;
@@ -1161,10 +1156,10 @@ phys_gjk_info::gjk_ray_cast
   (this->m_gjk_origin).z = local_38;
   this->m_lower_dist_sq = -34.0;
   this->m_upper_dist_sq = 34.0;
-  iVar6 = init_gjk(this,param_1,param_2,param_3);
+  iVar6 = init_gjk(this,d,initial_support_dir,in_separation_loop);
   this->m_flags = this->m_flags & 0xffffffda;
   this->m_gjk_iter = iVar6;
-  if ((param_1->gjk_ci == (phys_gjk_cache_info *)0x0) || ((param_1->gjk_ci->m_flags & 4) == 0)) {
+  if ((d->gjk_ci == (phys_gjk_cache_info *)0x0) || ((d->gjk_ci->m_flags & 4) == 0)) {
     uVar7 = this->m_flags & 0xffffffef;
   }
   else {
@@ -1225,7 +1220,7 @@ LAB_00a0d223:
     local_8c = -(this->m_support_dir).y;
     local_20 = this->m_a_verts + local_24;
     local_88 = -(this->m_support_dir).z;
-    (**(code **)*param_1->gjk_cg1)(&local_90,local_20,this->m_a_inds + local_24);
+    (**(code **)*d->gjk_cg1)(&local_90,local_20,this->m_a_inds + local_24);
     ppVar10 = this->m_b_verts + local_24;
     local_a0 = (this->cg2_to_cg1_xform).x.z * (this->m_support_dir).z +
                (this->cg2_to_cg1_xform).x.x * (this->m_support_dir).x +
@@ -1236,7 +1231,7 @@ LAB_00a0d223:
     local_98 = (this->cg2_to_cg1_xform).z.z * (this->m_support_dir).z +
                (this->cg2_to_cg1_xform).z.x * (this->m_support_dir).x +
                (this->cg2_to_cg1_xform).z.y * (this->m_support_dir).y;
-    (**(code **)*param_1->gjk_cg2)(&local_a0,ppVar10,this->m_b_inds + local_24);
+    (**(code **)*d->gjk_cg2)(&local_a0,ppVar10,this->m_b_inds + local_24);
     ppVar9 = phys_multiply33(&local_b0,&this->cg2_to_cg1_xform,ppVar10);
     local_60 = ppVar9->x + (this->cg2_to_cg1_xform).w.x;
     local_5c = ppVar9->y + (this->cg2_to_cg1_xform).w.y;
@@ -1311,8 +1306,8 @@ LAB_00a0d223:
                      (this->m_support_dir).y * (this->m_gjk_origin).y;
           local_20 = (phys_vec3 *)((local_1c + fVar2) / fVar1);
           if (this->m_continuous_collision_lambda + 0.0001 < (float)local_20) {
-            if (param_1->m_end_time < (float)local_20) {
-              fVar1 = local_1c + (fVar2 - param_1->m_end_time * fVar1);
+            if (d->m_end_time < (float)local_20) {
+              fVar1 = local_1c + (fVar2 - d->m_end_time * fVar1);
               local_1c = this->m_gjk_sep_thresh * local_14;
               if (local_1c < fVar1) {
                 if ((fVar1 <= 0.0) &&
@@ -1324,7 +1319,7 @@ LAB_00a0d223:
                 }
                 return GJK_SEPARATED;
               }
-              local_20 = (phys_vec3 *)param_1->m_end_time;
+              local_20 = (phys_vec3 *)d->m_end_time;
               this->m_flags = this->m_flags | 5;
             }
             fVar1 = (float)local_20 - this->m_continuous_collision_lambda;
@@ -1351,7 +1346,7 @@ LAB_00a0d223:
             if (this->m_w_set == 0) {
               this->m_w_set = 1 << ((byte)local_24 & 0x1f);
             }
-            iVar6 = init_gjk(this,param_1,ppVar10,true);
+            iVar6 = init_gjk(this,d,ppVar10,true);
             if ((iVar6 == 0) &&
                (bVar5 = _tlAssert("source/phys_gjk.cpp",0x77e,"did_init",""), bVar5)) {
               pcVar4 = (code *)swi(3);
@@ -1424,14 +1419,14 @@ LAB_00a0d2c4:
 
 phys_vec3 * __thiscall
 phys_gjk_info::get_initial_support_dir
-          (phys_gjk_info *this,phys_vec3 *__return_storage_ptr__,phys_gjk_input *param_1)
+          (phys_gjk_info *this,phys_vec3 *__return_storage_ptr__,phys_gjk_input *d)
 
 {
-  phys_gjk_cache_info *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  phys_vec3 *ppVar4;
-  float *pfVar5;
+  phys_gjk_cache_info *v;
+  code *pcVar1;
+  bool bVar2;
+  phys_vec3 *ppVar3;
+  float *pfVar4;
   undefined1 local_60 [16];
   undefined1 local_50 [16];
   phys_vec3 local_40;
@@ -1441,18 +1436,18 @@ phys_gjk_info::get_initial_support_dir
   float local_24;
   phys_gjk_info *local_14;
   
-  ppVar1 = param_1->gjk_ci;
+  v = d->gjk_ci;
   local_14 = this;
-  if ((ppVar1 != (phys_gjk_cache_info *)0x0) && ((ppVar1->m_flags & 4) != 0)) {
-    phys_inv_multiply(__return_storage_ptr__,param_1->cg1_to_world_xform,&ppVar1->m_support_dir);
+  if ((v != (phys_gjk_cache_info *)0x0) && ((v->m_flags & 4) != 0)) {
+    phys_inv_multiply(__return_storage_ptr__,d->cg1_to_world_xform,&v->m_support_dir);
     return __return_storage_ptr__;
   }
-  ppVar4 = (phys_vec3 *)(**(code **)((int)*param_1->gjk_cg2 + 0xc))(local_50);
-  phys_full_multiply(&local_40,&local_14->cg2_to_cg1_xform,ppVar4);
-  pfVar5 = (float *)(**(code **)((int)*param_1->gjk_cg1 + 0xc))(local_60);
-  local_30 = *pfVar5 - local_40.x;
-  local_2c = pfVar5[1] - local_40.y;
-  local_28 = pfVar5[2] - local_40.z;
+  ppVar3 = (phys_vec3 *)(**(code **)((int)*d->gjk_cg2 + 0xc))(local_50);
+  phys_full_multiply(&local_40,&local_14->cg2_to_cg1_xform,ppVar3);
+  pfVar4 = (float *)(**(code **)((int)*d->gjk_cg1 + 0xc))(local_60);
+  local_30 = *pfVar4 - local_40.x;
+  local_2c = pfVar4[1] - local_40.y;
+  local_28 = pfVar4[2] - local_40.z;
   local_14 = (phys_gjk_info *)(local_28 * local_28 + local_2c * local_2c + local_30 * local_30);
   if (9.999999e-09 <= (float)local_14) {
     __return_storage_ptr__->x = local_30;
@@ -1467,11 +1462,11 @@ phys_gjk_info::get_initial_support_dir
      (pai_gjk_initial_support_dir.m_hits_frame_count <
       pai_gjk_initial_support_dir.m_max_hits_per_frame)) {
     if (pai_gjk_initial_support_dir.m_use_warnings_only == false) {
-      bVar3 = _tlAssert("source/phys_gjk.cpp",0x7f7,"0","degenerate gjk initial support dir.");
-      if (bVar3) {
-        pcVar2 = (code *)swi(3);
-        ppVar4 = (phys_vec3 *)(*pcVar2)();
-        return ppVar4;
+      bVar2 = _tlAssert("source/phys_gjk.cpp",0x7f7,"0","degenerate gjk initial support dir.");
+      if (bVar2) {
+        pcVar1 = (code *)swi(3);
+        ppVar3 = (phys_vec3 *)(*pcVar1)();
+        return ppVar3;
       }
     }
     else {
@@ -1501,7 +1496,7 @@ phys_gjk_info::get_initial_support_dir
 /* WARNING: Removing unreachable block (ram,0x00a0de0b) */
 /* WARNING: Removing unreachable block (ram,0x00a0de2b) */
 
-gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_input *param_1)
+gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   phys_gjk_cache_info *ppVar1;
@@ -1510,8 +1505,8 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
   gjk_retval_e gVar4;
   phys_vec3 *ppVar5;
   float10 extraout_ST0;
-  int iVar6;
-  char *pcVar7;
+  int line;
+  char *desc;
   phys_vec3 local_90;
   undefined1 local_80 [16];
   phys_vec3 local_70;
@@ -1531,12 +1526,12 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
   (this->m_gjk_origin).y = ::PHYS_ZERO_VEC.y;
   (this->m_gjk_origin).z = ::PHYS_ZERO_VEC.z;
   this->m_flags = this->m_flags | 1;
-  get_initial_support_dir(this,&local_40,param_1);
+  get_initial_support_dir(this,&local_40,d);
   if ((this->m_flags & 8) == 0) {
-    local_14 = gjk(this,param_1,&local_40,false);
+    local_14 = gjk(this,d,&local_40,false);
   }
   else {
-    local_14 = gjk_ray_cast(this,param_1,&local_40,false);
+    local_14 = gjk_ray_cast(this,d,&local_40,false);
   }
   if (local_14 == GJK_INVALID) {
     bVar3 = _tlAssert("source/phys_gjk.cpp",0x80a,"retv != GJK_INVALID","");
@@ -1560,9 +1555,8 @@ LAB_00a0dc1c:
         tlWarning("m_continuous_collision_lambda problem");
       }
       this->m_continuous_collision_lambda = 0.0;
-      if ((param_1->gjk_ci == (phys_gjk_cache_info *)0x0) || ((param_1->gjk_ci->m_flags & 4) == 0))
-      {
-        ppVar5 = gjk_sep_dir::comp_sep_dir(&local_70,param_1,this);
+      if ((d->gjk_ci == (phys_gjk_cache_info *)0x0) || ((d->gjk_ci->m_flags & 4) == 0)) {
+        ppVar5 = gjk_sep_dir::comp_sep_dir(&local_70,d,this);
       }
       else {
         ppVar5 = &local_40;
@@ -1575,10 +1569,10 @@ LAB_00a0dc1c:
          ) {
         local_18 = local_40.x * local_40.x + local_40.y * local_40.y + local_40.z * local_40.z;
         if (local_18 < 9.999999e-09) {
-          pcVar7 = "initial support dir invalid.";
-          iVar6 = 0x820;
+          desc = "initial support dir invalid.";
+          line = 0x820;
 LAB_00a0dd2b:
-          bVar3 = _tlAssert("source/phys_gjk.cpp",iVar6,"0",pcVar7);
+          bVar3 = _tlAssert("source/phys_gjk.cpp",line,"0",desc);
           if (bVar3) {
             pcVar2 = (code *)swi(3);
             gVar4 = (*pcVar2)();
@@ -1598,9 +1592,9 @@ LAB_00a0dd2b:
         local_60 = -local_30.x;
         local_5c = -local_30.y;
         local_58 = -local_30.z;
-        (**(code **)*param_1->gjk_cg1)(&local_60,&local_70,local_80);
-        ppVar5 = phys_gjk_geom::support_only
-                           (param_1->gjk_cg2,&local_90,&this->cg2_to_cg1_xform,&local_30);
+        (**(code **)*d->gjk_cg1)(&local_60,&local_70,local_80);
+        ppVar5 = phys_gjk_geom::support_only(d->gjk_cg2,&local_90,&this->cg2_to_cg1_xform,&local_30)
+        ;
         local_40.x = local_70.x - ppVar5->x;
         local_40.y = local_70.y - ppVar5->y;
         local_40.z = local_70.z - ppVar5->z;
@@ -1614,18 +1608,17 @@ LAB_00a0dd2b:
         (this->m_gjk_origin).x = local_50;
         (this->m_gjk_origin).y = local_4c;
         (this->m_gjk_origin).z = local_48;
-        gVar4 = gjk(this,param_1,&local_30,1 < (int)local_14);
+        gVar4 = gjk(this,d,&local_30,1 < (int)local_14);
         if (gVar4 == GJK_PENETRATING) {
           tlWarning("gjk has possibly failed.");
-          if (((local_14 == GJK_VALID) &&
-              (ppVar1 = param_1->gjk_ci, ppVar1 != (phys_gjk_cache_info *)0x0)) &&
-             ((ppVar1->m_flags & 8) != 0)) {
+          if (((local_14 == GJK_VALID) && (ppVar1 = d->gjk_ci, ppVar1 != (phys_gjk_cache_info *)0x0)
+              ) && ((ppVar1->m_flags & 8) != 0)) {
             ppVar1->m_flags = ppVar1->m_flags & 0xfffffff7;
-            gVar4 = gjk(this,param_1,&local_30,false);
+            gVar4 = gjk(this,d,&local_30,false);
             if (gVar4 != GJK_PENETRATING) goto LAB_00a0df12;
           }
-          pcVar7 = "gjk has failed.";
-          iVar6 = 0x83e;
+          desc = "gjk has failed.";
+          line = 0x83e;
           goto LAB_00a0dd2b;
         }
 LAB_00a0df12:
@@ -1650,17 +1643,17 @@ LAB_00a0df12:
 
 // 00A0EBA0  gjk_cache_update_invalid  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2124)
 
-void __thiscall phys_gjk_info::gjk_cache_update_invalid(phys_gjk_info *this,phys_gjk_input *param_1)
+void __thiscall phys_gjk_info::gjk_cache_update_invalid(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
-    puVar1 = &param_1->gjk_ci->m_flags;
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 & 0xfffffffb;
-    puVar1 = &param_1->gjk_ci->m_flags;
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 & 0xfffffff7;
   }
   return;
@@ -1669,8 +1662,7 @@ void __thiscall phys_gjk_info::gjk_cache_update_invalid(phys_gjk_info *this,phys
 
 // 00A0EBD0  gjk_cache_update_separated  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2134)
 
-void __thiscall
-phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *param_1)
+void __thiscall phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *d_2)
 
 {
   uint *puVar1;
@@ -1678,16 +1670,16 @@ phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *pa
   phys_vec3 *ppVar3;
   phys_vec3 local_20;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d_2->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d_2->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
-    ppVar3 = phys_multiply33(&local_20,param_1->cg1_to_world_xform,&this->m_support_dir);
-    ppVar2 = param_1->gjk_ci;
+    ppVar3 = phys_multiply33(&local_20,d_2->cg1_to_world_xform,&this->m_support_dir);
+    ppVar2 = d_2->gjk_ci;
     ppVar2->m_flags = ppVar2->m_flags | 4;
     (ppVar2->m_support_dir).x = ppVar3->x;
     (ppVar2->m_support_dir).y = ppVar3->y;
     (ppVar2->m_support_dir).z = ppVar3->z;
-    puVar1 = &param_1->gjk_ci->m_flags;
+    puVar1 = &d_2->gjk_ci->m_flags;
     *puVar1 = *puVar1 & 0xfffffff7;
   }
   return;
@@ -1696,41 +1688,40 @@ phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *pa
 
 // 00A0EC40  gjk_cache_update_colliding  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2144)
 
-void __thiscall
-phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *param_1)
+void __thiscall phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
-  phys_vec3 *ppVar2;
-  phys_gjk_cache_info *ppVar3;
-  phys_vec3 *ppVar4;
+  phys_vec3 *v_2;
+  phys_gjk_cache_info *ppVar2;
+  phys_vec3 *ppVar3;
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
-    ppVar2 = &(this->cg1_cinfo_loc).m_n;
-    ppVar4 = phys_multiply33(&local_30,param_1->cg1_to_world_xform,ppVar2);
-    ppVar3 = param_1->gjk_ci;
-    ppVar3->m_flags = ppVar3->m_flags | 4;
-    (ppVar3->m_support_dir).x = ppVar4->x;
-    (ppVar3->m_support_dir).y = ppVar4->y;
-    (ppVar3->m_support_dir).z = ppVar4->z;
+    v_2 = &(this->cg1_cinfo_loc).m_n;
+    ppVar3 = phys_multiply33(&local_30,d->cg1_to_world_xform,v_2);
+    ppVar2 = d->gjk_ci;
+    ppVar2->m_flags = ppVar2->m_flags | 4;
+    (ppVar2->m_support_dir).x = ppVar3->x;
+    (ppVar2->m_support_dir).y = ppVar3->y;
+    (ppVar2->m_support_dir).z = ppVar3->z;
     local_20.x = (this->cg2_to_cg1_xform).x.z * (this->cg1_cinfo_loc).m_n.z +
-                 ppVar2->x * (this->cg2_to_cg1_xform).x.x +
+                 v_2->x * (this->cg2_to_cg1_xform).x.x +
                  (this->cg2_to_cg1_xform).x.y * (this->cg1_cinfo_loc).m_n.y;
     local_20.y = (this->cg2_to_cg1_xform).y.z * (this->cg1_cinfo_loc).m_n.z +
-                 (this->cg2_to_cg1_xform).y.x * ppVar2->x +
+                 (this->cg2_to_cg1_xform).y.x * v_2->x +
                  (this->cg2_to_cg1_xform).y.y * (this->cg1_cinfo_loc).m_n.y;
     local_20.z = (this->cg2_to_cg1_xform).z.z * (this->cg1_cinfo_loc).m_n.z +
-                 (this->cg2_to_cg1_xform).z.x * ppVar2->x +
+                 (this->cg2_to_cg1_xform).z.x * v_2->x +
                  (this->cg2_to_cg1_xform).z.y * (this->cg1_cinfo_loc).m_n.y;
-    local_30.x = -ppVar2->x;
+    local_30.x = -v_2->x;
     local_30.y = -(this->cg1_cinfo_loc).m_n.y;
     local_30.z = -(this->cg1_cinfo_loc).m_n.z;
-    set_simplex(param_1->gjk_cg1,param_1->gjk_cg2,param_1->gjk_ci,&local_30,&local_20,this->m_a_inds
-                ,this->m_b_inds,this->m_w_set);
+    set_simplex(d->gjk_cg1,d->gjk_cg2,d->gjk_ci,&local_30,&local_20,this->m_a_inds,this->m_b_inds,
+                this->m_w_set);
   }
   return;
 }
@@ -1739,15 +1730,15 @@ phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *pa
 // 00A0ED50  gjk_cache_update_test_only_penetrating  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2166)
 
 void __thiscall
-phys_gjk_info::gjk_cache_update_test_only_penetrating(phys_gjk_info *this,phys_gjk_input *param_1)
+phys_gjk_info::gjk_cache_update_test_only_penetrating(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
-    puVar1 = &param_1->gjk_ci->m_flags;
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 & 0xfffffff7;
   }
   return;
@@ -1763,8 +1754,7 @@ phys_gjk_info::gjk_cache_update_test_only_penetrating(phys_gjk_info *this,phys_g
 /* WARNING: Removing unreachable block (ram,0x00a0e466) */
 /* WARNING: Removing unreachable block (ram,0x00a0e486) */
 
-bool __thiscall
-phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *param_1)
+bool __thiscall phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
@@ -1784,9 +1774,9 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
   gjk_retval_e gVar15;
   float fVar16;
   
-  fVar16 = param_1->m_start_time;
-  if ((((NAN(fVar16) || 0.0 < fVar16 == (fVar16 == 0.0)) ||
-       (param_1->m_end_time < param_1->m_start_time)) || (1.0 < param_1->m_end_time)) &&
+  fVar16 = d->m_start_time;
+  if ((((NAN(fVar16) || 0.0 < fVar16 == (fVar16 == 0.0)) || (d->m_end_time < d->m_start_time)) ||
+      (1.0 < d->m_end_time)) &&
      (bVar13 = _tlAssert("source/phys_gjk.cpp",0x880,
                          "(d->m_start_time >= 0.0f) && (d->m_start_time <= d->m_end_time) && (d->m_end_time <= 1.0f)"
                          ,""), bVar13)) {
@@ -1795,13 +1785,12 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
     return (bool)uVar14;
   }
   this->m_flags = 0;
-  phys_full_inv_multiply_mat
-            (&this->cg2_to_cg1_xform,param_1->cg1_to_world_xform,param_1->cg2_to_world_xform);
-  if (param_1->m_continuous_collision != false) {
-    ppVar7 = param_1->cg1_to_world_xform;
-    fVar10 = (param_1->m_cg1_translation).x - (param_1->m_cg2_translation).x;
-    fVar11 = (param_1->m_cg1_translation).y - (param_1->m_cg2_translation).y;
-    fVar12 = (param_1->m_cg1_translation).z - (param_1->m_cg2_translation).z;
+  phys_full_inv_multiply_mat(&this->cg2_to_cg1_xform,d->cg1_to_world_xform,d->cg2_to_world_xform);
+  if (d->m_continuous_collision != false) {
+    ppVar7 = d->cg1_to_world_xform;
+    fVar10 = (d->m_cg1_translation).x - (d->m_cg2_translation).x;
+    fVar11 = (d->m_cg1_translation).y - (d->m_cg2_translation).y;
+    fVar12 = (d->m_cg1_translation).z - (d->m_cg2_translation).z;
     fVar16 = (ppVar7->y).y;
     fVar2 = (ppVar7->y).x;
     fVar3 = (ppVar7->y).z;
@@ -1814,11 +1803,11 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
     (this->m_cg1_relative_translation_loc).z = fVar12 * fVar6 + fVar4 * fVar11 + fVar5 * fVar10;
     this->m_flags = this->m_flags | 8;
   }
-  fVar16 = param_1->cg2_radius + param_1->cg1_radius;
+  fVar16 = d->cg2_radius + d->cg1_radius;
   this->m_geom_radii_sum = fVar16;
-  fVar16 = fVar16 + param_1->m_sep_thresh;
+  fVar16 = fVar16 + d->m_sep_thresh;
   this->m_gjk_sep_thresh = fVar16;
-  if (param_1->m_intersection_test_only == false) {
+  if (d->m_intersection_test_only == false) {
     fVar16 = 0.0011560001;
   }
   else {
@@ -1826,7 +1815,7 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
     fVar16 = fVar16 * fVar16;
   }
   this->m_gjk_pen_thresh_sq = fVar16;
-  gVar15 = collide(this,param_1);
+  gVar15 = collide(this,d);
   if (gVar15 == GJK_INVALID) {
     bVar13 = _tlAssert("source/phys_gjk.cpp",0x89f,"0","phys_gjk failed");
     if (bVar13) {
@@ -1834,18 +1823,18 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
       uVar14 = (*pcVar9)();
       return (bool)uVar14;
     }
-    if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-      puVar1 = &param_1->gjk_ci->m_flags;
+    if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 | 1;
-      puVar1 = &param_1->gjk_ci->m_flags;
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 & 0xfffffffb;
-      puVar1 = &param_1->gjk_ci->m_flags;
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 & 0xfffffff7;
     }
     return false;
   }
   if (gVar15 == GJK_SEPARATED) {
-    gjk_cache_update_separated(this,param_1);
+    gjk_cache_update_separated(this,d);
     return false;
   }
   if ((this->m_flags & 2) != 0) {
@@ -1857,7 +1846,7 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
       return (bool)uVar14;
     }
     if (this->m_w_set == 0xf) {
-      gjk_cache_update_invalid(this,param_1);
+      gjk_cache_update_invalid(this,d);
       return true;
     }
     if (gVar15 != GJK_VALID) {
@@ -1867,11 +1856,11 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
         uVar14 = (*pcVar9)();
         return (bool)uVar14;
       }
-      gjk_cache_update_test_only_penetrating(this,param_1);
+      gjk_cache_update_test_only_penetrating(this,d);
       return true;
     }
     comp_v(this,this->m_w_set,&this->m_support_dir);
-    gjk_cache_update_separated(this,param_1);
+    gjk_cache_update_separated(this,d);
     return true;
   }
   if (((gVar15 != GJK_VALID) && (gVar15 != GJK_PENETRATING)) &&
@@ -1889,7 +1878,7 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
       uVar14 = (*pcVar9)();
       return (bool)uVar14;
     }
-    gjk_cache_update_invalid(this,param_1);
+    gjk_cache_update_invalid(this,d);
     return false;
   }
   if (((0xe < iVar8) || (iVar8 < 1)) &&
@@ -1902,21 +1891,21 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
   comp_v(this,this->m_w_set,&(this->cg1_cinfo_loc).m_n);
   fVar16 = Abs(&(this->cg1_cinfo_loc).m_n);
   phys_vec3::operator/=(&(this->cg1_cinfo_loc).m_n,fVar16);
-  fVar16 = param_1->cg1_radius;
+  fVar16 = d->cg1_radius;
   fVar2 = (this->cg1_cinfo_loc).m_n.y;
   fVar3 = (this->cg1_cinfo_loc).m_n.z;
   (this->cg1_cinfo_loc).m_p1.x = (this->cg1_cinfo_loc).m_p1.x - fVar16 * (this->cg1_cinfo_loc).m_n.x
   ;
   (this->cg1_cinfo_loc).m_p1.y = (this->cg1_cinfo_loc).m_p1.y - fVar2 * fVar16;
   (this->cg1_cinfo_loc).m_p1.z = (this->cg1_cinfo_loc).m_p1.z - fVar16 * fVar3;
-  fVar16 = param_1->cg2_radius;
+  fVar16 = d->cg2_radius;
   fVar2 = (this->cg1_cinfo_loc).m_n.y;
   fVar3 = (this->cg1_cinfo_loc).m_n.z;
   (this->cg1_cinfo_loc).m_p2.x = (this->cg1_cinfo_loc).m_p2.x + fVar16 * (this->cg1_cinfo_loc).m_n.x
   ;
   (this->cg1_cinfo_loc).m_p2.y = fVar2 * fVar16 + (this->cg1_cinfo_loc).m_p2.y;
   (this->cg1_cinfo_loc).m_p2.z = (this->cg1_cinfo_loc).m_p2.z + fVar16 * fVar3;
-  gjk_cache_update_colliding(this,param_1);
+  gjk_cache_update_colliding(this,d);
   return true;
 }
 

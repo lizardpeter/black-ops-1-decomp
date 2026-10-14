@@ -2,25 +2,33 @@
 
 // 0095C5EC  vscan_fn  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sscanf.c:42)
 
+/* WARNING: Variable defined which should be unmapped: str */
+
 int __cdecl
-vscan_fn(_func___cdecl_int__iobuf_ptr_uchar_ptr_localeinfo_struct_ptr_char_ptr *param_1,
-        char *param_2,char *param_3,localeinfo_struct *param_4,char *param_5)
+vscan_fn(_func___cdecl_int__iobuf_ptr_uchar_ptr_localeinfo_struct_ptr_char_ptr *inputfn,char *format
+        ,char *plocinfo,localeinfo_struct *arglist,char *param_5)
 
 {
+  uint extraout_EAX;
   int *piVar1;
   int iVar2;
   uchar *unaff_ESI;
+  _iobuf str;
   
   strlen(unaff_ESI);
-  if ((unaff_ESI == (uchar *)0x0) || (param_2 == (char *)0x0)) {
+  if ((unaff_ESI == (uchar *)0x0) || (format == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    iVar2 = (*param_1)((_iobuf *)&stack0xffffffdc,(uchar *)param_2,(localeinfo_struct *)param_3,
-                       (char *)param_4);
+    str._flag = 0x49;
+    str._cnt = 0x7fffffff;
+    if (extraout_EAX < 0x80000000) {
+      str._cnt = extraout_EAX;
+    }
+    iVar2 = (*inputfn)(&str,(uchar *)format,(localeinfo_struct *)plocinfo,(char *)arglist);
   }
   return iVar2;
 }
@@ -28,13 +36,13 @@ vscan_fn(_func___cdecl_int__iobuf_ptr_uchar_ptr_localeinfo_struct_ptr_char_ptr *
 
 // 0095C656  sscanf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sscanf.c:153)
 
-int __cdecl sscanf(char *param_1,char *param_2)
+int __cdecl sscanf(char *string,char *format)
 
 {
   int iVar1;
   char *unaff_ESI;
   
-  iVar1 = vscan_fn(_input_l,param_2,(char *)0x0,(localeinfo_struct *)&stack0x0000000c,unaff_ESI);
+  iVar1 = vscan_fn(_input_l,format,(char *)0x0,(localeinfo_struct *)&stack0x0000000c,unaff_ESI);
   return iVar1;
 }
 

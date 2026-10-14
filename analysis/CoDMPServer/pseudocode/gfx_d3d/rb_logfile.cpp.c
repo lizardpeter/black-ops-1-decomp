@@ -18,14 +18,14 @@ void __cdecl RB_CloseLogFile(void)
 void __cdecl RB_OpenLogFile(void)
 
 {
-  long64 local_14;
-  tm *local_8;
+  long64 aclock;
+  tm *newtime;
   
   if ((r_logFileGlob.fp == (_iobuf *)0x0) &&
      (r_logFileGlob.fp = fopen("dx.log","wt"), r_logFileGlob.fp != (_iobuf *)0x0)) {
-    _time64(&local_14);
-    local_8 = _localtime64(&local_14);
-    asctime(local_8);
+    _time64(&aclock);
+    newtime = _localtime64(&aclock);
+    asctime(newtime);
     fprintf(r_logFileGlob.fp,"%s\n");
     fflush(r_logFileGlob.fp);
   }
@@ -65,7 +65,7 @@ void __cdecl RB_UpdateLogging(void)
 
 // 00ABA7C0  RB_LogPrint  (gfx_d3d/rb_logfile.cpp:101)
 
-void __cdecl RB_LogPrint(char *param_1)
+void __cdecl RB_LogPrint(char *text)
 
 {
   code *pcVar1;
@@ -91,13 +91,13 @@ void __cdecl RB_LogPrint(char *param_1)
 
 // 00ABA830  RB_LogTechniqueType  (gfx_d3d/rb_logfile.cpp:117)
 
-char * __cdecl RB_LogTechniqueType(uchar param_1)
+char * __cdecl RB_LogTechniqueType(uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char *local_214 [4];
+  char *techniqueNames [4];
   char *local_204;
   char *local_200;
   char *local_1fc;
@@ -226,10 +226,10 @@ char * __cdecl RB_LogTechniqueType(uchar param_1)
   char *local_10;
   char *local_c;
   
-  local_214[0] = "TECHNIQUE_DEPTH_PREPASS";
-  local_214[1] = "TECHNIQUE_BUILD_FLOAT_Z";
-  local_214[2] = "TECHNIQUE_BUILD_SHADOWMAP_DEPTH";
-  local_214[3] = "TECHNIQUE_BUILD_SHADOWMAP_COLOR";
+  techniqueNames[0] = "TECHNIQUE_DEPTH_PREPASS";
+  techniqueNames[1] = "TECHNIQUE_BUILD_FLOAT_Z";
+  techniqueNames[2] = "TECHNIQUE_BUILD_SHADOWMAP_DEPTH";
+  techniqueNames[3] = "TECHNIQUE_BUILD_SHADOWMAP_COLOR";
   local_204 = "TECHNIQUE_UNLIT";
   local_200 = "TECHNIQUE_EMISSIVE";
   local_1fc = "TECHNIQUE_EMISSIVE_SHADOW";
@@ -357,11 +357,11 @@ char * __cdecl RB_LogTechniqueType(uchar param_1)
   local_14 = "TECHNIQUE_DEBUG_BUMPMAP_INSTANCED";
   local_10 = "TECHNIQUE_IMPACT_MASK";
   local_c = "TECHNIQUE_COUNT";
-  if (param_1 == 0xff) {
+  if (techType == 0xff) {
     pcVar3 = "TECHNIQUE_NONE";
   }
   else {
-    if (0x82 < param_1) {
+    if (0x82 < techType) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x127,0,
                                "%s\n\t(techType) = %i");
       if (!bVar2) {
@@ -370,7 +370,7 @@ char * __cdecl RB_LogTechniqueType(uchar param_1)
         return pcVar3;
       }
     }
-    pcVar3 = local_214[param_1];
+    pcVar3 = techniqueNames[techType];
   }
   return pcVar3;
 }
@@ -378,12 +378,12 @@ char * __cdecl RB_LogTechniqueType(uchar param_1)
 
 // 00ABB060  RB_LogBlend  (gfx_d3d/rb_logfile.cpp:300)
 
-void __cdecl RB_LogBlend(char *param_1,int param_2)
+void __cdecl RB_LogBlend(char *format,int blend)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *text;
   
   if ((r_logFile->current).integer == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x13f,0,
@@ -394,7 +394,7 @@ void __cdecl RB_LogBlend(char *param_1,int param_2)
       return;
     }
   }
-  if (0xd < (uint)param_2) {
+  if (0xd < (uint)blend) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x140,0,
                              "blend doesn\'t index ARRAY_COUNT( blendNames )\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -403,20 +403,20 @@ void __cdecl RB_LogBlend(char *param_1,int param_2)
       return;
     }
   }
-  pcVar3 = va(param_1);
-  RB_LogPrint(pcVar3);
+  text = va(format);
+  RB_LogPrint(text);
   return;
 }
 
 
 // 00ABB150  RB_LogBlendOp  (gfx_d3d/rb_logfile.cpp:326)
 
-void __cdecl RB_LogBlendOp(char *param_1,int param_2)
+void __cdecl RB_LogBlendOp(char *format,int blendOp)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *text;
   
   if ((r_logFile->current).integer == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x151,0,
@@ -427,7 +427,7 @@ void __cdecl RB_LogBlendOp(char *param_1,int param_2)
       return;
     }
   }
-  if (5 < (uint)param_2) {
+  if (5 < (uint)blendOp) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x152,0,
                              "blendOp doesn\'t index ARRAY_COUNT( blendOpNames )\n\t%i not in [0, %i)"
                             );
@@ -437,8 +437,8 @@ void __cdecl RB_LogBlendOp(char *param_1,int param_2)
       return;
     }
   }
-  pcVar3 = va(param_1);
-  RB_LogPrint(pcVar3);
+  text = va(format);
+  RB_LogPrint(text);
   return;
 }
 
@@ -446,13 +446,13 @@ void __cdecl RB_LogBlendOp(char *param_1,int param_2)
 // 00ABB460  RB_LogBool  (gfx_d3d/rb_logfile.cpp:344)
 
 void __cdecl
-RB_LogBool(char *param_1,int param_2,int param_3,int param_4,char *param_5,char *param_6)
+RB_LogBool(char *keyName,int stateBits,int changedBits,int bitMask,char *trueName,char *falseName)
 
 {
-  char *pcVar1;
+  char *text;
   
-  pcVar1 = va("---------- (%c)%-14s: %s\n");
-  RB_LogPrint(pcVar1);
+  text = va("---------- (%c)%-14s: %s\n");
+  RB_LogPrint(text);
   return;
 }
 
@@ -460,22 +460,23 @@ RB_LogBool(char *param_1,int param_2,int param_3,int param_4,char *param_5,char 
 // 00ABB200  RB_LogFromTable  (gfx_d3d/rb_logfile.cpp:351)
 
 void __cdecl
-RB_LogFromTable(char *param_1,int param_2,int param_3,int param_4,int param_5,
-               StateBitsTable *param_6,int param_7)
+RB_LogFromTable(char *keyName,int stateBits,int changedBits,int bitMask,int bitShift,
+               StateBitsTable *table,int tableCount)
 
 {
   char *pcVar1;
-  int local_c;
+  int tableIndex;
+  bool isChanged;
   
-  local_c = 0;
+  tableIndex = 0;
   while( true ) {
-    if (param_7 <= local_c) {
+    if (tableCount <= tableIndex) {
       pcVar1 = va("---------- (%c)%-14s: unknown - %08x\n");
       RB_LogPrint(pcVar1);
       return;
     }
-    if (param_6[local_c].stateBits == (param_2 & param_4) >> ((byte)param_5 & 0x1f)) break;
-    local_c = local_c + 1;
+    if (table[tableIndex].stateBits == (stateBits & bitMask) >> ((byte)bitShift & 0x1f)) break;
+    tableIndex = tableIndex + 1;
   }
   pcVar1 = va("---------- (%c)%-14s: %s\n");
   RB_LogPrint(pcVar1);
@@ -485,19 +486,19 @@ RB_LogFromTable(char *param_1,int param_2,int param_3,int param_4,int param_5,
 
 // 00ABB4C0  RB_LogStencilState  (gfx_d3d/rb_logfile.cpp:369)
 
-void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
+void __cdecl RB_LogStencilState(int stateBits1,int changedBits1,StencilLogBits *desc)
 
 {
   char *pcVar1;
   int iVar2;
   int iVar3;
   int iVar4;
-  char *pcVar5;
-  StateBitsTable *pSVar6;
-  char *pcVar7;
-  int iVar8;
-  int iVar9;
-  StateBitsTable local_84;
+  char *trueName;
+  StateBitsTable *pSVar5;
+  char *falseName;
+  int iVar6;
+  int iVar7;
+  StateBitsTable stencilFuncNames;
   undefined4 local_7c;
   char *local_78;
   undefined4 local_74;
@@ -512,7 +513,7 @@ void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
   char *local_50;
   undefined4 local_4c;
   char *local_48;
-  StateBitsTable local_44;
+  StateBitsTable stencilOpNames;
   undefined4 local_3c;
   char *local_38;
   undefined4 local_34;
@@ -528,8 +529,8 @@ void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
   undefined4 local_c;
   char *local_8;
   
-  local_84.stateBits = 0;
-  local_84.name = "Never";
+  stencilFuncNames.stateBits = 0;
+  stencilFuncNames.name = "Never";
   local_7c = 1;
   local_78 = "Less";
   local_74 = 2;
@@ -544,8 +545,8 @@ void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
   local_50 = "GreaterEqual";
   local_4c = 7;
   local_48 = "Always";
-  local_44.stateBits = 0;
-  local_44.name = "Keep";
+  stencilOpNames.stateBits = 0;
+  stencilOpNames.name = "Keep";
   local_3c = 1;
   local_38 = "Zero";
   local_34 = 2;
@@ -560,44 +561,44 @@ void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
   local_10 = "Incr";
   local_c = 7;
   local_8 = "Decr";
-  pcVar7 = "Disabled";
-  pcVar5 = "Enabled";
-  iVar4 = param_3->enableMask;
-  iVar3 = param_1;
-  iVar9 = param_2;
+  falseName = "Disabled";
+  trueName = "Enabled";
+  iVar4 = desc->enableMask;
+  iVar3 = stateBits1;
+  iVar7 = changedBits1;
   pcVar1 = va("Stencil %s");
-  RB_LogBool(pcVar1,iVar3,iVar9,iVar4,pcVar5,pcVar7);
-  if ((param_1 & param_3->enableMask) != 0) {
-    iVar8 = 8;
-    pSVar6 = &local_84;
-    iVar4 = param_3->funcShift;
-    iVar2 = 7 << ((byte)param_3->funcShift & 0x1f);
-    iVar3 = param_1;
-    iVar9 = param_2;
+  RB_LogBool(pcVar1,iVar3,iVar7,iVar4,trueName,falseName);
+  if ((stateBits1 & desc->enableMask) != 0) {
+    iVar6 = 8;
+    pSVar5 = &stencilFuncNames;
+    iVar4 = desc->funcShift;
+    iVar2 = 7 << ((byte)desc->funcShift & 0x1f);
+    iVar3 = stateBits1;
+    iVar7 = changedBits1;
     pcVar1 = va("%s Func");
-    RB_LogFromTable(pcVar1,iVar3,iVar9,iVar2,iVar4,pSVar6,iVar8);
-    iVar8 = 8;
-    pSVar6 = &local_44;
-    iVar4 = param_3->passShift;
-    iVar2 = 7 << ((byte)param_3->passShift & 0x1f);
-    iVar3 = param_1;
-    iVar9 = param_2;
+    RB_LogFromTable(pcVar1,iVar3,iVar7,iVar2,iVar4,pSVar5,iVar6);
+    iVar6 = 8;
+    pSVar5 = &stencilOpNames;
+    iVar4 = desc->passShift;
+    iVar2 = 7 << ((byte)desc->passShift & 0x1f);
+    iVar3 = stateBits1;
+    iVar7 = changedBits1;
     pcVar1 = va("%s Pass");
-    RB_LogFromTable(pcVar1,iVar3,iVar9,iVar2,iVar4,pSVar6,iVar8);
-    iVar8 = 8;
-    pSVar6 = &local_44;
-    iVar4 = param_3->failShift;
-    iVar2 = 7 << ((byte)param_3->failShift & 0x1f);
-    iVar3 = param_1;
-    iVar9 = param_2;
+    RB_LogFromTable(pcVar1,iVar3,iVar7,iVar2,iVar4,pSVar5,iVar6);
+    iVar6 = 8;
+    pSVar5 = &stencilOpNames;
+    iVar4 = desc->failShift;
+    iVar2 = 7 << ((byte)desc->failShift & 0x1f);
+    iVar3 = stateBits1;
+    iVar7 = changedBits1;
     pcVar1 = va("%s Fail");
-    RB_LogFromTable(pcVar1,iVar3,iVar9,iVar2,iVar4,pSVar6,iVar8);
-    iVar9 = 8;
-    pSVar6 = &local_44;
-    iVar4 = param_3->zfailShift;
-    iVar3 = 7 << ((byte)param_3->zfailShift & 0x1f);
+    RB_LogFromTable(pcVar1,iVar3,iVar7,iVar2,iVar4,pSVar5,iVar6);
+    iVar7 = 8;
+    pSVar5 = &stencilOpNames;
+    iVar4 = desc->zfailShift;
+    iVar3 = 7 << ((byte)desc->zfailShift & 0x1f);
     pcVar1 = va("%s ZFail");
-    RB_LogFromTable(pcVar1,param_1,param_2,iVar3,iVar4,pSVar6,iVar9);
+    RB_LogFromTable(pcVar1,stateBits1,changedBits1,iVar3,iVar4,pSVar5,iVar7);
   }
   return;
 }
@@ -605,35 +606,35 @@ void __cdecl RB_LogStencilState(int param_1,int param_2,StencilLogBits *param_3)
 
 // 00ABAD60  RB_LogPrintState_0  (gfx_d3d/rb_logfile.cpp:405)
 
-void __cdecl RB_LogPrintState_0(int param_1,int param_2)
+void __cdecl RB_LogPrintState_0(int stateBits0,int changedBits0)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StateBitsTable local_3c;
+  StateBitsTable alphaTestTable;
   undefined4 local_34;
   char *local_30;
   undefined4 local_2c;
   char *local_28;
   undefined4 local_24;
   char *local_20;
-  StateBitsTable local_1c;
+  StateBitsTable cullTable;
   undefined4 local_14;
   char *local_10;
   undefined4 local_c;
   char *local_8;
   
-  local_3c.stateBits = 0x800;
-  local_3c.name = "Disabled";
+  alphaTestTable.stateBits = 0x800;
+  alphaTestTable.name = "Disabled";
   local_34 = 0x1000;
   local_30 = "GT0";
   local_2c = 0x2000;
   local_28 = "GE255";
   local_24 = 0x3000;
   local_20 = "GE128";
-  local_1c.stateBits = 0x4000;
-  local_1c.name = "None";
+  cullTable.stateBits = 0x4000;
+  cullTable.name = "None";
   local_14 = 0x8000;
   local_10 = "Back";
   local_c = 0xc000;
@@ -647,25 +648,25 @@ void __cdecl RB_LogPrintState_0(int param_1,int param_2)
   }
   pcVar3 = va("---------- (%c)Blend         : ");
   RB_LogPrint(pcVar3);
-  if ((param_1 & 0x700U) == 0) {
+  if ((stateBits0 & 0x700U) == 0) {
     RB_LogPrint("Disabled\n");
   }
   else {
-    RB_LogBlendOp("%s( ",(int)(param_1 & 0x700U) >> 8);
-    RB_LogBlend("%s, ",param_1 & 0xf);
-    RB_LogBlend("%s )\n",(int)(param_1 & 0xf0U) >> 4);
+    RB_LogBlendOp("%s( ",(int)(stateBits0 & 0x700U) >> 8);
+    RB_LogBlend("%s, ",stateBits0 & 0xf);
+    RB_LogBlend("%s )\n",(int)(stateBits0 & 0xf0U) >> 4);
   }
   pcVar3 = va("---------- (%c)SeparateAlpha : ");
   RB_LogPrint(pcVar3);
-  if ((param_1 & 0x7000000U) == 0) {
+  if ((stateBits0 & 0x7000000U) == 0) {
     RB_LogPrint("Disabled\n");
   }
   else {
-    RB_LogBlendOp("%s( ",(int)(param_1 & 0x7000000U) >> 0x18);
-    RB_LogBlend("%s, ",(int)(param_1 & 0xf0000U) >> 0x10);
-    RB_LogBlend("%s )\n",(int)(param_1 & 0xf00000U) >> 0x14);
+    RB_LogBlendOp("%s( ",(int)(stateBits0 & 0x7000000U) >> 0x18);
+    RB_LogBlend("%s, ",(int)(stateBits0 & 0xf0000U) >> 0x10);
+    RB_LogBlend("%s )\n",(int)(stateBits0 & 0xf00000U) >> 0x14);
   }
-  RB_LogFromTable("AlphaTest",param_1,param_2,0x3800,0,&local_3c,4);
+  RB_LogFromTable("AlphaTest",stateBits0,changedBits0,0x3800,0,&alphaTestTable,4);
   pcVar3 = va("---------- (%c)Color Write   : ");
   RB_LogPrint(pcVar3);
   pcVar3 = va("%s, ");
@@ -676,21 +677,21 @@ void __cdecl RB_LogPrintState_0(int param_1,int param_2)
   RB_LogPrint(pcVar3);
   pcVar3 = va("%s\n");
   RB_LogPrint(pcVar3);
-  RB_LogFromTable("Cull Face",param_1,param_2,0xc000,0,&local_1c,3);
+  RB_LogFromTable("Cull Face",stateBits0,changedBits0,0xc000,0,&cullTable,3);
   return;
 }
 
 
 // 00ABB2C0  RB_LogPrintState_1  (gfx_d3d/rb_logfile.cpp:458)
 
-void __cdecl RB_LogPrintState_1(int param_1,int param_2)
+void __cdecl RB_LogPrintState_1(int stateBits1,int changedBits1)
 
 {
   code *pcVar1;
   bool bVar2;
-  StencilLogBits local_7c;
-  StencilLogBits local_64;
-  StateBitsTable local_4c;
+  StencilLogBits stencilLogFront;
+  StencilLogBits stencilLogBack;
+  StateBitsTable depthTestTable;
   undefined4 local_44;
   char *local_40;
   undefined4 local_3c;
@@ -699,7 +700,7 @@ void __cdecl RB_LogPrintState_1(int param_1,int param_2)
   char *local_30;
   undefined4 local_2c;
   char *local_28;
-  StateBitsTable local_24;
+  StateBitsTable polygonOffsetTable;
   undefined4 local_1c;
   undefined *local_18;
   undefined4 local_14;
@@ -707,8 +708,8 @@ void __cdecl RB_LogPrintState_1(int param_1,int param_2)
   undefined4 local_c;
   char *local_8;
   
-  local_4c.stateBits = 2;
-  local_4c.name = "Disabled";
+  depthTestTable.stateBits = 2;
+  depthTestTable.name = "Disabled";
   local_44 = 4;
   local_40 = "Less";
   local_3c = 0xc;
@@ -717,26 +718,26 @@ void __cdecl RB_LogPrintState_1(int param_1,int param_2)
   local_30 = "Equal";
   local_2c = 0;
   local_28 = "Always";
-  local_24.stateBits = 0;
-  local_24.name = "0";
+  polygonOffsetTable.stateBits = 0;
+  polygonOffsetTable.name = "0";
   local_1c = 0x10;
   local_18 = &s_1;
   local_14 = 0x20;
   local_10 = "2";
   local_c = 0x30;
   local_8 = "shadowmap";
-  local_7c.description = "Front";
-  local_7c.enableMask = 0x40;
-  local_7c.passShift = 8;
-  local_7c.failShift = 0xb;
-  local_7c.zfailShift = 0xe;
-  local_7c.funcShift = 0x11;
-  local_64.description = "Back";
-  local_64.enableMask = 0x80;
-  local_64.passShift = 0x14;
-  local_64.failShift = 0x17;
-  local_64.zfailShift = 0x1a;
-  local_64.funcShift = 0x1d;
+  stencilLogFront.description = "Front";
+  stencilLogFront.enableMask = 0x40;
+  stencilLogFront.passShift = 8;
+  stencilLogFront.failShift = 0xb;
+  stencilLogFront.zfailShift = 0xe;
+  stencilLogFront.funcShift = 0x11;
+  stencilLogBack.description = "Back";
+  stencilLogBack.enableMask = 0x80;
+  stencilLogBack.passShift = 0x14;
+  stencilLogBack.failShift = 0x17;
+  stencilLogBack.zfailShift = 0x1a;
+  stencilLogBack.funcShift = 0x1d;
   if ((r_logFile->current).integer == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_logfile.cpp",0x1ed,0,
                              "%s");
@@ -746,11 +747,11 @@ void __cdecl RB_LogPrintState_1(int param_1,int param_2)
       return;
     }
   }
-  RB_LogBool("Depth Write",param_1,param_2,1,"Enabled","Disabled");
-  RB_LogFromTable("Depth Test",param_1,param_2,0xe,0,&local_4c,5);
-  RB_LogFromTable("Polygon Offset",param_1,param_2,0x30,0,&local_24,4);
-  RB_LogStencilState(param_1,param_2,&local_7c);
-  RB_LogStencilState(param_1,param_2,&local_64);
+  RB_LogBool("Depth Write",stateBits1,changedBits1,1,"Enabled","Disabled");
+  RB_LogFromTable("Depth Test",stateBits1,changedBits1,0xe,0,&depthTestTable,5);
+  RB_LogFromTable("Polygon Offset",stateBits1,changedBits1,0x30,0,&polygonOffsetTable,4);
+  RB_LogStencilState(stateBits1,changedBits1,&stencilLogFront);
+  RB_LogStencilState(stateBits1,changedBits1,&stencilLogBack);
   return;
 }
 

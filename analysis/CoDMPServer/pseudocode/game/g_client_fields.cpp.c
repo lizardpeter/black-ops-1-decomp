@@ -4,14 +4,14 @@
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_ReadOnly(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_ReadOnly(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *error;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x1b,0,
                              "%s");
     if (!bVar2) {
@@ -20,7 +20,7 @@ void __cdecl ClientScr_ReadOnly(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (client_fields_s *)0x0) {
+  if (pField == (client_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x1c,0,
                              "%s");
     if (!bVar2) {
@@ -30,8 +30,8 @@ void __cdecl ClientScr_ReadOnly(gclient_s *param_1,client_fields_s *param_2)
     }
   }
   bVar2 = false;
-  pcVar3 = va("player field %s is read-only");
-  Scr_Error(pcVar3,bVar2);
+  error = va("player field %s is read-only");
+  Scr_Error(error,bVar2);
   return;
 }
 
@@ -43,16 +43,17 @@ void __cdecl ClientScr_ReadOnly(gclient_s *param_1,client_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetSessionTeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetSessionTeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  ushort newTeam;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x26,0,
                              "%s");
     if (!bVar2) {
@@ -63,29 +64,29 @@ void __cdecl ClientScr_SetSessionTeam(gclient_s *param_1,client_fields_s *param_
   }
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar3 & 0xffff) == (uint)scr_const.axis) {
-    (param_1->sess).cs.team = TEAM_AXIS;
+    (pSelf->sess).cs.team = TEAM_AXIS;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.allies) {
-    (param_1->sess).cs.team = TEAM_ALLIES;
+    (pSelf->sess).cs.team = TEAM_ALLIES;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.spectator) {
-    (param_1->sess).cs.team = TEAM_SPECTATOR;
+    (pSelf->sess).cs.team = TEAM_SPECTATOR;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.none) {
-    (param_1->sess).cs.team = TEAM_BAD;
+    (pSelf->sess).cs.team = TEAM_BAD;
   }
   else {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar3 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("\'%s\' is an illegal sessionteam string. Must be allies, axis, none, or spectator."
-               );
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("\'%s\' is an illegal sessionteam string. Must be allies, axis, none, or spectator.")
+    ;
+    Scr_Error(error,(bool)force_terminal);
   }
-  if (level.maxclients <= ((int)param_1 - (int)level.clients) / 0x29e0) {
+  if (level.maxclients <= ((int)pSelf - (int)level.clients) / 0x29e0) {
     Scr_Error("client is not pointing to the level.clients array",false);
   }
-  GamerProfile_WriteSettings((param_1->sess).cs.clientIndex);
-  ClientUserinfoChanged(((int)param_1 - (int)level.clients) / 0x29e0);
+  GamerProfile_WriteSettings((pSelf->sess).cs.clientIndex);
+  ClientUserinfoChanged(((int)pSelf - (int)level.clients) / 0x29e0);
   CalculateRanks();
   return;
 }
@@ -95,16 +96,17 @@ void __cdecl ClientScr_SetSessionTeam(gclient_s *param_1,client_fields_s *param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetFFATeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetFFATeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  ushort newTeam;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x46,0,
                              "%s");
     if (!bVar2) {
@@ -115,20 +117,20 @@ void __cdecl ClientScr_SetFFATeam(gclient_s *param_1,client_fields_s *param_2)
   }
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar3 & 0xffff) == (uint)scr_const.axis) {
-    (param_1->sess).cs.ffaTeam = TEAM_FFA_AXIS;
+    (pSelf->sess).cs.ffaTeam = TEAM_FFA_AXIS;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.allies) {
-    (param_1->sess).cs.ffaTeam = TEAM_FFA_ALLIES;
+    (pSelf->sess).cs.ffaTeam = TEAM_FFA_ALLIES;
   }
   else if (((uVar3 & 0xffff) == (uint)scr_const.none) ||
           ((uVar3 & 0xffff) == (uint)scr_const.spectator)) {
-    (param_1->sess).cs.ffaTeam = TEAM_FFA_NONE;
+    (pSelf->sess).cs.ffaTeam = TEAM_FFA_NONE;
   }
   else {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar3 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("\'%s\' is an illegal ffateam string. Must be allies or axis.");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("\'%s\' is an illegal ffateam string. Must be allies or axis.");
+    Scr_Error(error,(bool)force_terminal);
   }
   return;
 }
@@ -138,14 +140,14 @@ void __cdecl ClientScr_SetFFATeam(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetFFATeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetFFATeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   ffa_team_t fVar1;
   code *pcVar2;
   bool bVar3;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x56,0,
                              "%s");
     if (!bVar3) {
@@ -154,7 +156,7 @@ void __cdecl ClientScr_GetFFATeam(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  fVar1 = (param_1->sess).cs.ffaTeam;
+  fVar1 = (pSelf->sess).cs.ffaTeam;
   if (fVar1 == TEAM_FFA_AXIS) {
     Scr_AddConstString((uint)scr_const.axis,SCRIPTINSTANCE_SERVER);
   }
@@ -172,15 +174,15 @@ void __cdecl ClientScr_GetFFATeam(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetName(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetName(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *value;
+  scriptInstance_t inst;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x6c,0,
                              "%s");
     if (!bVar2) {
@@ -189,9 +191,9 @@ void __cdecl ClientScr_GetName(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar3 = CS_DisplayName(&(param_1->sess).cs,3);
-  Scr_AddString(pcVar3,sVar4);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = CS_DisplayName(&(pSelf->sess).cs,3);
+  Scr_AddString(value,inst);
   return;
 }
 
@@ -200,14 +202,15 @@ void __cdecl ClientScr_GetName(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetGroundType(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetGroundType(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *value;
+  char *groundType;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x73,0,
                              "%s");
     if (!bVar2) {
@@ -216,9 +219,9 @@ void __cdecl ClientScr_GetGroundType(gclient_s *param_1,client_fields_s *param_2
       return;
     }
   }
-  if ((param_1->ps).groundType != 0) {
-    pcVar3 = Com_SurfaceTypeToName((param_1->ps).groundType);
-    Scr_AddString(pcVar3,SCRIPTINSTANCE_SERVER);
+  if ((pSelf->ps).groundType != 0) {
+    value = Com_SurfaceTypeToName((pSelf->ps).groundType);
+    Scr_AddString(value,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -228,20 +231,20 @@ void __cdecl ClientScr_GetGroundType(gclient_s *param_1,client_fields_s *param_2
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetSessionTeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetSessionTeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((pSelf == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x7e,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch((param_1->sess).cs.team) {
+  switch((pSelf->sess).cs.team) {
   case TEAM_BAD:
     Scr_AddConstString((uint)scr_const.none,SCRIPTINSTANCE_SERVER);
     break;
@@ -260,7 +263,7 @@ void __cdecl ClientScr_GetSessionTeam(gclient_s *param_1,client_fields_s *param_
 
 // 005FE6F0  CScr_GetColumnTypeByName  (game/g_client_fields.cpp:174)
 
-scoreboardColumnType_t __cdecl CScr_GetColumnTypeByName(char *param_1)
+scoreboardColumnType_t __cdecl CScr_GetColumnTypeByName(char *typeName)
 
 {
   byte bVar1;
@@ -268,15 +271,15 @@ scoreboardColumnType_t __cdecl CScr_GetColumnTypeByName(char *param_1)
   int local_18;
   byte *local_10;
   byte *local_c;
-  scoreboardColumnType_t local_8;
+  int i;
   
-  local_8 = SB_TYPE_INVALID;
+  i = 0;
   do {
-    if (0x11 < (int)local_8) {
+    if (0x11 < i) {
       return SB_TYPE_INVALID;
     }
-    local_c = (byte *)g_scoreboardColumnNames[local_8];
-    local_10 = (byte *)param_1;
+    local_c = (byte *)g_scoreboardColumnNames[i];
+    local_10 = (byte *)typeName;
     do {
       bVar1 = *local_10;
       bVar2 = bVar1 < *local_c;
@@ -295,26 +298,26 @@ LAB_005fe75e:
     local_18 = 0;
 LAB_005fe766:
     if (local_18 == 0) {
-      return local_8;
+      return i;
     }
-    local_8 = local_8 + SB_TYPE_NONE;
+    i = i + 1;
   } while( true );
 }
 
 
 // 005FE780  CScr_GetColumnNameByType  (game/g_client_fields.cpp:184)
 
-char * __cdecl CScr_GetColumnNameByType(scoreboardColumnType_t param_1)
+char * __cdecl CScr_GetColumnNameByType(scoreboardColumnType_t columnType)
 
 {
   char *pcVar1;
   
-  if (((int)param_1 < 0) || (3 < (int)param_1)) {
+  if (((int)columnType < 0) || (3 < (int)columnType)) {
     Com_PrintWarning(1,"There is no name for scoreboard column type %i.");
     pcVar1 = g_scoreboardColumnNames[0];
   }
   else {
-    pcVar1 = g_scoreboardColumnNames[param_1];
+    pcVar1 = g_scoreboardColumnNames[columnType];
   }
   return pcVar1;
 }
@@ -324,23 +327,24 @@ char * __cdecl CScr_GetColumnNameByType(scoreboardColumnType_t param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetSessionState(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetSessionState(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  ushort newState;
   
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((pSelf == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0xcb,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->sess).connected == CON_DISCONNECTED) &&
+  if (((pSelf->sess).connected == CON_DISCONNECTED) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0xcc,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -349,29 +353,29 @@ void __cdecl ClientScr_SetSessionState(gclient_s *param_1,client_fields_s *param
   }
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar3 & 0xffff) == (uint)scr_const.playing) {
-    (param_1->sess).sessionState = SESS_STATE_PLAYING;
+    (pSelf->sess).sessionState = SESS_STATE_PLAYING;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.dead) {
-    (param_1->sess).sessionState = SESS_STATE_DEAD;
+    (pSelf->sess).sessionState = SESS_STATE_DEAD;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.spectator) {
-    (param_1->sess).sessionState = SESS_STATE_SPECTATOR;
+    (pSelf->sess).sessionState = SESS_STATE_SPECTATOR;
   }
   else if ((uVar3 & 0xffff) == (uint)scr_const.intermission) {
-    (param_1->ps).eFlags = (param_1->ps).eFlags ^ 2;
-    (param_1->sess).sessionState = SESS_STATE_INTERMISSION;
+    (pSelf->ps).eFlags = (pSelf->ps).eFlags ^ 2;
+    (pSelf->sess).sessionState = SESS_STATE_INTERMISSION;
     bVar2 = Demo_IsRecording();
     if (bVar2) {
       Demo_End(false);
     }
   }
   else {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar3 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va(
-               "\'%s\' is an illegal sessionstate string. Must be playing, dead, spectator, or intermission."
-               );
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va(
+              "\'%s\' is an illegal sessionstate string. Must be playing, dead, spectator, or intermission."
+              );
+    Scr_Error(error,(bool)force_terminal);
   }
   return;
 }
@@ -381,27 +385,27 @@ void __cdecl ClientScr_SetSessionState(gclient_s *param_1,client_fields_s *param
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetSessionState(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetSessionState(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((pSelf == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0xf4,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->sess).connected == CON_DISCONNECTED) &&
+  if (((pSelf->sess).connected == CON_DISCONNECTED) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0xf5,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch((param_1->sess).sessionState) {
+  switch((pSelf->sess).sessionState) {
   case SESS_STATE_PLAYING:
     Scr_AddConstString((uint)scr_const.playing,SCRIPTINSTANCE_SERVER);
     break;
@@ -425,14 +429,15 @@ void __cdecl ClientScr_GetSessionState(gclient_s *param_1,client_fields_s *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetMaxHealth(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetMaxHealth(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  gentity_s *pEnt;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x116,0,
                              "%s");
     if (!bVar2) {
@@ -441,7 +446,7 @@ void __cdecl ClientScr_SetMaxHealth(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  if ((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) {
+  if ((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x117,0,
                              "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
@@ -452,15 +457,15 @@ void __cdecl ClientScr_SetMaxHealth(gclient_s *param_1,client_fields_s *param_2)
     }
   }
   iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (param_1->sess).maxHealth = iVar3;
-  if ((param_1->sess).maxHealth < 1) {
-    (param_1->sess).maxHealth = 1;
+  (pSelf->sess).maxHealth = iVar3;
+  if ((pSelf->sess).maxHealth < 1) {
+    (pSelf->sess).maxHealth = 1;
   }
-  if ((param_1->sess).maxHealth < (param_1->ps).stats[0]) {
-    (param_1->ps).stats[0] = (param_1->sess).maxHealth;
+  if ((pSelf->sess).maxHealth < (pSelf->ps).stats[0]) {
+    (pSelf->ps).stats[0] = (pSelf->sess).maxHealth;
   }
-  g_entities[((int)param_1 - (int)level.clients) / 0x29e0].health = (param_1->ps).stats[0];
-  (param_1->ps).stats[2] = (param_1->sess).maxHealth;
+  g_entities[((int)pSelf - (int)level.clients) / 0x29e0].health = (pSelf->ps).stats[0];
+  (pSelf->ps).stats[2] = (pSelf->sess).maxHealth;
   return;
 }
 
@@ -472,7 +477,7 @@ void __cdecl ClientScr_SetMaxHealth(gclient_s *param_1,client_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetScore(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetScore(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
@@ -480,16 +485,17 @@ void __cdecl ClientScr_SetScore(gclient_s *param_1,client_fields_s *param_2)
   int local_14;
   int local_10;
   int local_c;
+  int score;
   
   local_14 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((pSelf == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x132,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) &&
+  if (((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x133,
                                0,
                                "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
@@ -511,7 +517,7 @@ void __cdecl ClientScr_SetScore(gclient_s *param_1,client_fields_s *param_2)
     }
     local_10 = local_c;
   }
-  (param_1->sess).cs.score.score = local_10;
+  (pSelf->sess).cs.score.score = local_10;
   CalculateRanks();
   return;
 }
@@ -519,14 +525,15 @@ void __cdecl ClientScr_SetScore(gclient_s *param_1,client_fields_s *param_2)
 
 // 005FECD0  ClientScr_GetScoreboardColumnIndexByType  (game/g_client_fields.cpp:334)
 
-int __cdecl ClientScr_GetScoreboardColumnIndexByType(scoreboardColumnType_t param_1)
+int __cdecl ClientScr_GetScoreboardColumnIndexByType(scoreboardColumnType_t columnType)
 
 {
   code *pcVar1;
   bool bVar2;
   MatchState *pMVar3;
   int iVar4;
-  int local_c;
+  int i;
+  MatchState *matchState;
   
   pMVar3 = G_GetMatchState();
   if ((pMVar3 == (MatchState *)0x0) &&
@@ -536,15 +543,15 @@ int __cdecl ClientScr_GetScoreboardColumnIndexByType(scoreboardColumnType_t para
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (3 < local_c) {
+    if (3 < i) {
       return -1;
     }
-    if ((pMVar3->unarchivedState).scoreboardColumnTypes[local_c] == param_1) break;
-    local_c = local_c + 1;
+    if ((pMVar3->unarchivedState).scoreboardColumnTypes[i] == columnType) break;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
@@ -552,21 +559,22 @@ int __cdecl ClientScr_GetScoreboardColumnIndexByType(scoreboardColumnType_t para
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl ClientScr_SetColumnValue(gclient_s *param_1,scoreboardColumnType_t param_2)
+int __cdecl ClientScr_SetColumnValue(gclient_s *pSelf,scoreboardColumnType_t columnType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int columnIndex;
+  int value;
   
-  local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (param_1->sess).scoreboardColumnCache[param_2] = local_8;
-  if (param_2 == SB_TYPE_X2SCORE) {
-    local_8 = local_8 / 10;
+  value = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  (pSelf->sess).scoreboardColumnCache[columnType] = value;
+  if (columnType == SB_TYPE_X2SCORE) {
+    value = value / 10;
   }
-  iVar3 = ClientScr_GetScoreboardColumnIndexByType(param_2);
-  if (param_1 == (gclient_s *)0x0) {
+  iVar3 = ClientScr_GetScoreboardColumnIndexByType(columnType);
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x162,0,
                              "%s");
     if (!bVar2) {
@@ -576,9 +584,9 @@ int __cdecl ClientScr_SetColumnValue(gclient_s *param_1,scoreboardColumnType_t p
     }
   }
   if (-1 < iVar3) {
-    (param_1->sess).cs.score.scoreboardColumns[iVar3] = local_8;
+    (pSelf->sess).cs.score.scoreboardColumns[iVar3] = value;
   }
-  return local_8;
+  return value;
 }
 
 
@@ -586,13 +594,13 @@ int __cdecl ClientScr_SetColumnValue(gclient_s *param_1,scoreboardColumnType_t p
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetKills(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetKills(gclient_s *pSelf,client_fields_s *pField)
 
 {
   int iVar1;
   
-  iVar1 = ClientScr_SetColumnValue(param_1,SB_TYPE_KILLS);
-  (param_1->sess).cs.score.kills = iVar1;
+  iVar1 = ClientScr_SetColumnValue(pSelf,SB_TYPE_KILLS);
+  (pSelf->sess).cs.score.kills = iVar1;
   return;
 }
 
@@ -601,13 +609,13 @@ void __cdecl ClientScr_SetKills(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetDeaths(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetDeaths(gclient_s *pSelf,client_fields_s *pField)
 
 {
   int iVar1;
   
-  iVar1 = ClientScr_SetColumnValue(param_1,SB_TYPE_DEATHS);
-  (param_1->sess).cs.score.deaths = iVar1;
+  iVar1 = ClientScr_SetColumnValue(pSelf,SB_TYPE_DEATHS);
+  (pSelf->sess).cs.score.deaths = iVar1;
   return;
 }
 
@@ -616,13 +624,13 @@ void __cdecl ClientScr_SetDeaths(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetAssists(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetAssists(gclient_s *pSelf,client_fields_s *pField)
 
 {
   int iVar1;
   
-  iVar1 = ClientScr_SetColumnValue(param_1,SB_TYPE_ASSISTS);
-  (param_1->sess).cs.score.assists = iVar1;
+  iVar1 = ClientScr_SetColumnValue(pSelf,SB_TYPE_ASSISTS);
+  (pSelf->sess).cs.score.assists = iVar1;
   return;
 }
 
@@ -631,10 +639,10 @@ void __cdecl ClientScr_SetAssists(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetDefends(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetDefends(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_DEFENDS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_DEFENDS);
   return;
 }
 
@@ -643,10 +651,10 @@ void __cdecl ClientScr_SetDefends(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetPlants(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetPlants(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_PLANTS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_PLANTS);
   return;
 }
 
@@ -655,10 +663,10 @@ void __cdecl ClientScr_SetPlants(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetDefuses(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetDefuses(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_DEFUSES);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_DEFUSES);
   return;
 }
 
@@ -667,10 +675,10 @@ void __cdecl ClientScr_SetDefuses(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetReturns(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetReturns(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_RETURNS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_RETURNS);
   return;
 }
 
@@ -679,10 +687,10 @@ void __cdecl ClientScr_SetReturns(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetCaptures(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetCaptures(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_CAPTURES);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_CAPTURES);
   return;
 }
 
@@ -691,10 +699,10 @@ void __cdecl ClientScr_SetCaptures(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetDestructions(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetDestructions(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_DESTRUCTIONS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_DESTRUCTIONS);
   return;
 }
 
@@ -703,10 +711,10 @@ void __cdecl ClientScr_SetDestructions(gclient_s *param_1,client_fields_s *param
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetSurvived(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetSurvived(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_SURVIVED);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_SURVIVED);
   return;
 }
 
@@ -715,10 +723,10 @@ void __cdecl ClientScr_SetSurvived(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetStabs(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetStabs(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_STABS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_STABS);
   return;
 }
 
@@ -727,10 +735,10 @@ void __cdecl ClientScr_SetStabs(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetTomahawks(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetTomahawks(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_TOMAHAWKS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_TOMAHAWKS);
   return;
 }
 
@@ -739,10 +747,10 @@ void __cdecl ClientScr_SetTomahawks(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetHumiliated(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetHumiliated(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_HUMILIATED);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_HUMILIATED);
   return;
 }
 
@@ -751,10 +759,10 @@ void __cdecl ClientScr_SetHumiliated(gclient_s *param_1,client_fields_s *param_2
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetX2Score(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetX2Score(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_X2SCORE);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_X2SCORE);
   return;
 }
 
@@ -763,10 +771,10 @@ void __cdecl ClientScr_SetX2Score(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetHeadshots(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetHeadshots(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  ClientScr_SetColumnValue(param_1,SB_TYPE_HEADSHOTS);
+  ClientScr_SetColumnValue(pSelf,SB_TYPE_HEADSHOTS);
   return;
 }
 
@@ -775,14 +783,15 @@ void __cdecl ClientScr_SetHeadshots(gclient_s *param_1,client_fields_s *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetSpectatorClient(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetSpectatorClient(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int iNewSpectatorClient;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x20c,0,
                              "%s");
     if (!bVar2) {
@@ -795,7 +804,7 @@ void __cdecl ClientScr_SetSpectatorClient(gclient_s *param_1,client_fields_s *pa
   if ((iVar3 < -1) || (0x1f < iVar3)) {
     Scr_Error("spectatorclient can only be set to -1, or a valid client number",false);
   }
-  (param_1->sess).forceSpectatorClient = iVar3;
+  (pSelf->sess).forceSpectatorClient = iVar3;
   return;
 }
 
@@ -804,14 +813,15 @@ void __cdecl ClientScr_SetSpectatorClient(gclient_s *param_1,client_fields_s *pa
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetKillCamEntity(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetKillCamEntity(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int iNewKillCamEntity;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x221,0,
                              "%s");
     if (!bVar2) {
@@ -824,7 +834,7 @@ void __cdecl ClientScr_SetKillCamEntity(gclient_s *param_1,client_fields_s *para
   if ((iVar3 < -1) || (0x3ff < iVar3)) {
     Scr_Error("killcamentity can only be set to -1, or a valid entity number",false);
   }
-  (param_1->sess).killCamEntity = iVar3;
+  (pSelf->sess).killCamEntity = iVar3;
   return;
 }
 
@@ -833,14 +843,15 @@ void __cdecl ClientScr_SetKillCamEntity(gclient_s *param_1,client_fields_s *para
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetKillCamTargetEntity(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetKillCamTargetEntity(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int iNewKillCamEntity;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x22f,0,
                              "%s");
     if (!bVar2) {
@@ -853,7 +864,7 @@ void __cdecl ClientScr_SetKillCamTargetEntity(gclient_s *param_1,client_fields_s
   if ((iVar3 < -1) || (0x3ff < iVar3)) {
     Scr_Error("killcamentity can only be set to -1, or a valid entity number",false);
   }
-  (param_1->sess).killCamTargetEntity = iVar3;
+  (pSelf->sess).killCamTargetEntity = iVar3;
   return;
 }
 
@@ -862,15 +873,16 @@ void __cdecl ClientScr_SetKillCamTargetEntity(gclient_s *param_1,client_fields_s
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetStatusIcon(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetStatusIcon(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *pszIcon_00;
+  int iVar3;
+  char *pszIcon;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x245,0,
                              "%s");
     if (!bVar2) {
@@ -879,9 +891,9 @@ void __cdecl ClientScr_SetStatusIcon(gclient_s *param_1,client_fields_s *param_2
       return;
     }
   }
-  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = GScr_GetStatusIconIndex(pcVar3);
-  (param_1->sess).cs.score.status_icon = iVar4;
+  pszIcon_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar3 = GScr_GetStatusIconIndex(pszIcon_00);
+  (pSelf->sess).cs.score.status_icon = iVar3;
   return;
 }
 
@@ -891,16 +903,16 @@ void __cdecl ClientScr_SetStatusIcon(gclient_s *param_1,client_fields_s *param_2
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetStatusIcon(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetStatusIcon(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_40c [1028];
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x253,0,
                              "%s");
     if (!bVar2) {
@@ -909,7 +921,7 @@ void __cdecl ClientScr_GetStatusIcon(gclient_s *param_1,client_fields_s *param_2
       return;
     }
   }
-  if (((param_1->sess).cs.score.status_icon < 0) || (8 < (param_1->sess).cs.score.status_icon)) {
+  if (((pSelf->sess).cs.score.status_icon < 0) || (8 < (pSelf->sess).cs.score.status_icon)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x255,0,
                              "%s");
     if (!bVar2) {
@@ -918,12 +930,12 @@ void __cdecl ClientScr_GetStatusIcon(gclient_s *param_1,client_fields_s *param_2
       return;
     }
   }
-  if ((param_1->sess).cs.score.status_icon == 0) {
+  if ((pSelf->sess).cs.score.status_icon == 0) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    SV_GetConfigstring((param_1->sess).cs.score.status_icon + 0xc13,local_40c,0x400);
-    Scr_AddString(local_40c,SCRIPTINSTANCE_SERVER);
+    SV_GetConfigstring((pSelf->sess).cs.score.status_icon + 0xc13,szConfigString,0x400);
+    Scr_AddString(szConfigString,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -936,16 +948,18 @@ void __cdecl ClientScr_GetStatusIcon(gclient_s *param_1,client_fields_s *param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetHeadIcon(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
+  char *pszIcon_00;
+  int iVar4;
+  gentity_s *pEnt;
+  char *pszIcon;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x26e,0,
                              "%s");
     if (!bVar2) {
@@ -954,7 +968,7 @@ void __cdecl ClientScr_SetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  if ((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) {
+  if ((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x26f,0,
                              "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
@@ -964,10 +978,10 @@ void __cdecl ClientScr_SetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  iVar3 = (int)param_1 - (int)level.clients;
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar5 = GScr_GetHeadIconIndex(pcVar4);
-  g_entities[iVar3 / 0x29e0].s.iHeadIcon = (uchar)iVar5;
+  iVar3 = (int)pSelf - (int)level.clients;
+  pszIcon_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar4 = GScr_GetHeadIconIndex(pszIcon_00);
+  g_entities[iVar3 / 0x29e0].s.iHeadIcon = (uchar)iVar4;
   return;
 }
 
@@ -980,18 +994,18 @@ void __cdecl ClientScr_SetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetHeadIcon(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_40c [1024];
+  char szConfigString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *pEnt;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x283,0,
                              "%s");
     if (!bVar2) {
@@ -1000,7 +1014,7 @@ void __cdecl ClientScr_GetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  if ((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) {
+  if ((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x284,0,
                              "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
@@ -1010,14 +1024,14 @@ void __cdecl ClientScr_GetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
       return;
     }
   }
-  iVar3 = ((int)param_1 - (int)level.clients) / 0x29e0;
-  local_8 = g_entities + iVar3;
+  iVar3 = ((int)pSelf - (int)level.clients) / 0x29e0;
+  pEnt = g_entities + iVar3;
   if (g_entities[iVar3].s.iHeadIcon == '\0') {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else if (g_entities[iVar3].s.iHeadIcon < 0x10) {
-    SV_GetConfigstring(g_entities[iVar3].s.iHeadIcon + 0xc1b,local_40c,0x400);
-    Scr_AddString(local_40c,SCRIPTINSTANCE_SERVER);
+    SV_GetConfigstring(g_entities[iVar3].s.iHeadIcon + 0xc1b,szConfigString,0x400);
+    Scr_AddString(szConfigString,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -1030,17 +1044,19 @@ void __cdecl ClientScr_GetHeadIcon(gclient_s *param_1,client_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetHeadIconTeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetHeadIconTeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  char *pcVar5;
-  undefined1 uVar6;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *pEnt;
+  ushort sTeam;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x29f,0,
                              "%s");
     if (!bVar2) {
@@ -1049,7 +1065,7 @@ void __cdecl ClientScr_SetHeadIconTeam(gclient_s *param_1,client_fields_s *param
       return;
     }
   }
-  if ((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) {
+  if ((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x2a0,0,
                              "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
@@ -1059,7 +1075,7 @@ void __cdecl ClientScr_SetHeadIconTeam(gclient_s *param_1,client_fields_s *param
       return;
     }
   }
-  iVar3 = ((int)param_1 - (int)level.clients) / 0x29e0;
+  iVar3 = ((int)pSelf - (int)level.clients) / 0x29e0;
   uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar4 & 0xffff) == (uint)scr_const.none) {
     g_entities[iVar3].s.faction.iHeadIconTeam = '\0';
@@ -1071,12 +1087,12 @@ void __cdecl ClientScr_SetHeadIconTeam(gclient_s *param_1,client_fields_s *param
     g_entities[iVar3].s.faction.iHeadIconTeam = '\x01';
   }
   else if ((uVar4 & 0xffff) == (uint)scr_const.spectator) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar4 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va(
-               "\'%s\' is an illegal head icon team string. Must be none, allies, axis, or spectator."
-               );
-    Scr_Error(pcVar5,(bool)uVar6);
+    error = va(
+              "\'%s\' is an illegal head icon team string. Must be none, allies, axis, or spectator."
+              );
+    Scr_Error(error,(bool)force_terminal);
   }
   else {
     g_entities[iVar3].s.faction.iHeadIconTeam = '\x03';
@@ -1092,14 +1108,15 @@ void __cdecl ClientScr_SetHeadIconTeam(gclient_s *param_1,client_fields_s *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetHeadIconTeam(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetHeadIconTeam(gclient_s *pSelf,client_fields_s *pField)
 
 {
   uchar uVar1;
   code *pcVar2;
   bool bVar3;
+  gentity_s *pEnt;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",699,0,
                              "%s");
     if (!bVar3) {
@@ -1108,7 +1125,7 @@ void __cdecl ClientScr_GetHeadIconTeam(gclient_s *param_1,client_fields_s *param
       return;
     }
   }
-  if ((uint)level.maxclients <= (uint)(((int)param_1 - (int)level.clients) / 0x29e0)) {
+  if ((uint)level.maxclients <= (uint)(((int)pSelf - (int)level.clients) / 0x29e0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",700,0,
                              "pSelf - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
@@ -1118,7 +1135,7 @@ void __cdecl ClientScr_GetHeadIconTeam(gclient_s *param_1,client_fields_s *param
       return;
     }
   }
-  uVar1 = g_entities[((int)param_1 - (int)level.clients) / 0x29e0].s.faction.iHeadIconTeam;
+  uVar1 = g_entities[((int)pSelf - (int)level.clients) / 0x29e0].s.faction.iHeadIconTeam;
   if (uVar1 == '\x01') {
     Scr_AddConstString((uint)scr_const.axis,SCRIPTINSTANCE_SERVER);
   }
@@ -1139,14 +1156,14 @@ void __cdecl ClientScr_GetHeadIconTeam(gclient_s *param_1,client_fields_s *param
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetArchiveTime(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetArchiveTime(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x2d6,0,
                              "%s");
     if (!bVar2) {
@@ -1157,7 +1174,7 @@ void __cdecl ClientScr_SetArchiveTime(gclient_s *param_1,client_fields_s *param_
   }
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   _ftol2_sse();
-  (param_1->sess).archiveTime = extraout_EAX;
+  (pSelf->sess).archiveTime = extraout_EAX;
   return;
 }
 
@@ -1166,10 +1183,10 @@ void __cdecl ClientScr_SetArchiveTime(gclient_s *param_1,client_fields_s *param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetArchiveTime(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetArchiveTime(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  Scr_AddFloat((float)(param_1->sess).archiveTime * 0.001,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat((float)(pSelf->sess).archiveTime * 0.001,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1178,14 +1195,14 @@ void __cdecl ClientScr_GetArchiveTime(gclient_s *param_1,client_fields_s *param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_SetPSOffsetTime(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_SetPSOffsetTime(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (pSelf == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x2ed,0,
                              "%s");
     if (!bVar2) {
@@ -1195,7 +1212,7 @@ void __cdecl ClientScr_SetPSOffsetTime(gclient_s *param_1,client_fields_s *param
     }
   }
   iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (param_1->sess).psOffsetTime = iVar3;
+  (pSelf->sess).psOffsetTime = iVar3;
   return;
 }
 
@@ -1207,14 +1224,16 @@ void __cdecl ClientScr_SetPSOffsetTime(gclient_s *param_1,client_fields_s *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetEntityFromIndex(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetEntityFromIndex(gclient_s *pSelf,client_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  gentity_s *ent;
+  int entNum;
   
-  iVar3 = GetField((int *)((int)(param_1->ps).origin + param_2->ofs + -0x24),param_2->size[0]);
+  iVar3 = GetField((int *)((int)(pSelf->ps).origin + pField->ofs + -0x24),pField->size[0]);
   if (((iVar3 < 0) || (0x400 < iVar3)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x306,
                                0,"entNum not in [0, MAX_GENTITIES]\n\t%i not in [%i, %i]"), !bVar2))
@@ -1241,10 +1260,10 @@ void __cdecl ClientScr_GetEntityFromIndex(gclient_s *param_1,client_fields_s *pa
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl ClientScr_GetPSOffsetTime(gclient_s *param_1,client_fields_s *param_2)
+void __cdecl ClientScr_GetPSOffsetTime(gclient_s *pSelf,client_fields_s *pField)
 
 {
-  Scr_AddInt((param_1->sess).archiveTime,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((pSelf->sess).archiveTime,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1258,14 +1277,14 @@ void __cdecl GScr_AddFieldsForClient(void)
 {
   code *pcVar1;
   bool bVar2;
-  client_fields_s *local_8;
+  client_fields_s *f;
   
-  local_8 = fields;
+  f = fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if (((int)&local_8[-0x741ad].type / 0x1c & 0xc000U) != 0) {
+    if (((int)&f[-0x741ad].type / 0x1c & 0xc000U) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x37d,
                                0,"%s");
       if (!bVar2) {
@@ -1274,7 +1293,7 @@ void __cdecl GScr_AddFieldsForClient(void)
         return;
       }
     }
-    if ((int)&local_8[-0x741ad].type / 0x1c != ((int)&local_8[-0x741ad].type / 0x1c & 0xffffU)) {
+    if ((int)&f[-0x741ad].type / 0x1c != ((int)&f[-0x741ad].type / 0x1c & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x37e,
                                0,"%s");
       if (!bVar2) {
@@ -1283,9 +1302,9 @@ void __cdecl GScr_AddFieldsForClient(void)
         return;
       }
     }
-    Scr_AddClassField(0,local_8->name,(int)&local_8[-0x741ad].type / 0x1c & 0xffffU | 0xc000,
+    Scr_AddClassField(0,f->name,(int)&f[-0x741ad].type / 0x1c & 0xffffU | 0xc000,
                       SCRIPTINSTANCE_SERVER);
-    local_8 = local_8 + 1;
+    f = f + 1;
   } while( true );
 }
 
@@ -1293,14 +1312,18 @@ void __cdecl GScr_AddFieldsForClient(void)
 // 005FF8C0  Scr_SetClientField  (game/g_client_fields.cpp:906)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
+void __cdecl Scr_SetClientField(gclient_s *client,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  client_fields_s *f;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x38d,0,
                              "%s");
     if (!bVar2) {
@@ -1309,7 +1332,7 @@ void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (0x28 < (uint)param_2) {
+  if (0x28 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x38e,0,
                              "%s");
     if (!bVar2) {
@@ -1318,7 +1341,7 @@ void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (param_2 < 0) {
+  if (offset < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x38f,0,
                              "%s");
     if (!bVar2) {
@@ -1327,8 +1350,8 @@ void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (fields[param_2].setter == (_func___cdecl_void_gclient_s_ptr_client_fields_s_ptr *)0x0) {
-    if (fields[param_2].ofs == 0) {
+  if (fields[offset].setter == (_func___cdecl_void_gclient_s_ptr_client_fields_s_ptr *)0x0) {
+    if (fields[offset].ofs == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x399,
                                0,"%s");
       if (!bVar2) {
@@ -1337,10 +1360,10 @@ void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
         return;
       }
     }
-    GScr_SetGenericField((uchar *)param_1,fields[param_2].type,fields[param_2].ofs,0);
+    GScr_SetGenericField((uchar *)client,fields[offset].type,fields[offset].ofs,0);
   }
   else {
-    (*fields[param_2].setter)(param_1,fields + param_2);
+    (*fields[offset].setter)(client,fields + offset);
   }
   return;
 }
@@ -1350,13 +1373,14 @@ void __cdecl Scr_SetClientField(gclient_s *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Scr_GetClientField(gclient_s *param_1,int param_2)
+void __cdecl Scr_GetClientField(gclient_s *client,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  client_fields_s *f;
   
-  if (param_1 == (gclient_s *)0x0) {
+  if (client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x3ac,0,
                              "%s");
     if (!bVar2) {
@@ -1365,7 +1389,7 @@ void __cdecl Scr_GetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (0x28 < (uint)param_2) {
+  if (0x28 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x3ad,0,
                              "%s");
     if (!bVar2) {
@@ -1374,7 +1398,7 @@ void __cdecl Scr_GetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (param_2 < 0) {
+  if (offset < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x3ae,0,
                              "%s");
     if (!bVar2) {
@@ -1383,8 +1407,8 @@ void __cdecl Scr_GetClientField(gclient_s *param_1,int param_2)
       return;
     }
   }
-  if (fields[param_2].getter == (_func___cdecl_void_gclient_s_ptr_client_fields_s_ptr *)0x0) {
-    if (fields[param_2].ofs == 0) {
+  if (fields[offset].getter == (_func___cdecl_void_gclient_s_ptr_client_fields_s_ptr *)0x0) {
+    if (fields[offset].ofs == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_client_fields.cpp",0x3b8,
                                0,"%s");
       if (!bVar2) {
@@ -1394,10 +1418,10 @@ void __cdecl Scr_GetClientField(gclient_s *param_1,int param_2)
       }
     }
     GScr_GetGenericField
-              ((uchar *)param_1,fields[param_2].type,fields[param_2].ofs,fields[param_2].whichbits);
+              ((uchar *)client,fields[offset].type,fields[offset].ofs,fields[offset].whichbits);
   }
   else {
-    (*fields[param_2].getter)(param_1,fields + param_2);
+    (*fields[offset].getter)(client,fields + offset);
   }
   return;
 }

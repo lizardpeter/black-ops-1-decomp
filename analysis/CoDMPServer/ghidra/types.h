@@ -7,6 +7,7 @@ float10
 typedef unsigned long long    GUID;
 typedef pointer32 ImageBaseOffset32;
 
+typedef long double    longdouble;
 typedef long long    longlong;
 typedef signed char    schar;
 typedef unsigned char    uchar;

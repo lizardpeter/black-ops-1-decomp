@@ -2,25 +2,25 @@
 
 // 00A70E00  R_RegisterWorkerThreadDvar  (gfx_d3d/r_dvars.cpp:1153)
 
-dvar_s * __cdecl R_RegisterWorkerThreadDvar(char *param_1,uint param_2)
+dvar_s * __cdecl R_RegisterWorkerThreadDvar(char *name,uint workerIndex)
 
 {
   uint uVar1;
   dvar_s *pdVar2;
-  char *local_10;
-  bool local_9;
-  ushort local_8;
+  char *helpString;
+  bool defaultState;
+  ushort flags;
   
-  local_8 = 0x4000;
-  local_9 = true;
-  local_10 = "Enable worker thread";
+  flags = 0x4000;
+  defaultState = true;
+  helpString = "Enable worker thread";
   uVar1 = Sys_GetDefaultWorkerThreadsCount();
-  if ((uVar1 <= param_2) || ((sys_smp_allowed->current).enabled == false)) {
-    local_8 = 0x40;
-    local_9 = false;
-    local_10 = "Worker thread always disabled; not enough hardware threads";
+  if ((uVar1 <= workerIndex) || ((sys_smp_allowed->current).enabled == false)) {
+    flags = 0x40;
+    defaultState = false;
+    helpString = "Worker thread always disabled; not enough hardware threads";
   }
-  pdVar2 = _Dvar_RegisterBool(param_1,local_9,local_8,local_10);
+  pdVar2 = _Dvar_RegisterBool(name,defaultState,flags,helpString);
   return pdVar2;
 }
 
@@ -30,13 +30,13 @@ dvar_s * __cdecl R_RegisterWorkerThreadDvar(char *param_1,uint param_2)
 void __cdecl R_RegisterDvars(void)
 
 {
-  uint uVar1;
-  dvar_s *pdVar2;
-  int iVar3;
-  int iVar4;
-  ushort uVar5;
-  char *pcVar6;
-  uint local_8;
+  uint value;
+  dvar_s *pdVar1;
+  int min;
+  int max;
+  ushort flags;
+  char *description;
+  int i;
   
   R_RegisterSunDvars();
   r_ignore = _Dvar_RegisterInt("r_ignore",0,-0x80000000,0x7fffffff,0,"used for debugging anything");
@@ -259,15 +259,15 @@ void __cdecl R_RegisterDvars(void)
        _Dvar_RegisterBool("r_smp_backend",true,0,"Process renderer back end in a separate thread");
   r_smp_worker = _Dvar_RegisterBool("r_smp_worker",true,0,
                                     "Process renderer front end in a separate thread");
-  pcVar6 = "Number of worker threads";
-  uVar5 = 0;
-  iVar4 = 8;
-  iVar3 = 2;
-  uVar1 = Sys_GetDefaultWorkerThreadsCount();
-  r_smp_worker_threads = _Dvar_RegisterInt("r_smp_worker_threads",uVar1,iVar3,iVar4,uVar5,pcVar6);
-  for (local_8 = 0; (int)local_8 < (r_smp_worker_threads->current).integer; local_8 = local_8 + 1) {
-    pdVar2 = R_RegisterWorkerThreadDvar(names[local_8],local_8);
-    r_smp_worker_thread[local_8] = pdVar2;
+  description = "Number of worker threads";
+  flags = 0;
+  max = 8;
+  min = 2;
+  value = Sys_GetDefaultWorkerThreadsCount();
+  r_smp_worker_threads = _Dvar_RegisterInt("r_smp_worker_threads",value,min,max,flags,description);
+  for (i = 0; i < (r_smp_worker_threads->current).integer; i = i + 1) {
+    pdVar1 = R_RegisterWorkerThreadDvar(names[i],i);
+    r_smp_worker_thread[i] = pdVar1;
   }
   r_aaAlpha = _Dvar_RegisterEnum("r_aaAlpha",s_aaAlphaNames,1,1,"Transparency anti-aliasing method")
   ;
@@ -1140,14 +1140,14 @@ void __cdecl R_RegisterDvars(void)
 
 // 00A70E70  R_CheckDvarModified  (gfx_d3d/r_dvars.cpp:2215)
 
-bool __cdecl R_CheckDvarModified(dvar_s *param_1)
+bool __cdecl R_CheckDvarModified(dvar_s *dvar)
 
 {
   bool bVar1;
   
-  bVar1 = param_1->modified != false;
+  bVar1 = dvar->modified != false;
   if (bVar1) {
-    Dvar_ClearModified(param_1);
+    Dvar_ClearModified(dvar);
   }
   return bVar1;
 }

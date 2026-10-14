@@ -6,6 +6,7 @@ int __cdecl Sys_Milliseconds(void)
 
 {
   DWORD DVar1;
+  int sys_curtime;
   
   if (initialized == 0) {
     sys_timeBase = timeGetTime();
@@ -30,12 +31,15 @@ int __cdecl Sys_MillisecondsRaw(void)
 
 // 007DE170  Sys_SnapVector  (win32/win_shared.cpp:64)
 
-void __cdecl Sys_SnapVector(float *param_1)
+void __cdecl Sys_SnapVector(float *v)
 
 {
-  *param_1 = (float)(int)ROUND(*param_1);
-  param_1[1] = (float)(int)ROUND(param_1[1]);
-  param_1[2] = (float)(int)ROUND(param_1[2]);
+  float f;
+  int i;
+  
+  *v = (float)(int)ROUND(*v);
+  v[1] = (float)(int)ROUND(v[1]);
+  v[2] = (float)(int)ROUND(v[2]);
   return;
 }
 

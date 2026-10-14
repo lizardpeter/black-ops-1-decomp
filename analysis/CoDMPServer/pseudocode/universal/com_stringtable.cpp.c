@@ -2,54 +2,59 @@
 
 // 007B5D70  StringTable_FirstHashIndex  (universal/com_stringtable.cpp:15)
 
-int __cdecl StringTable_FirstHashIndex(StringTable *param_1,int param_2)
+int __cdecl StringTable_FirstHashIndex(StringTable *table,int hash)
 
 {
   int iVar1;
-  int local_14;
-  int local_c;
+  int end;
+  int valueCount;
+  int begin;
+  int mid;
   
-  local_c = 0;
-  iVar1 = param_1->rowCount * param_1->columnCount;
-  while (local_14 = iVar1, local_c < local_14) {
-    iVar1 = (local_c + local_14) / 2;
-    if (param_1->values[param_1->cellIndex[iVar1]].hash < param_2) {
-      local_c = iVar1 + 1;
-      iVar1 = local_14;
+  begin = 0;
+  iVar1 = table->rowCount * table->columnCount;
+  while (end = iVar1, begin < end) {
+    iVar1 = (begin + end) / 2;
+    if (table->values[table->cellIndex[iVar1]].hash < hash) {
+      begin = iVar1 + 1;
+      iVar1 = end;
     }
   }
-  return local_c;
+  return begin;
 }
 
 
 // 007B5C60  StringTable_LookupRowNumForValue  (universal/com_stringtable.cpp:35)
 
-int __cdecl StringTable_LookupRowNumForValue(StringTable *param_1,int param_2,char *param_3)
+int __cdecl StringTable_LookupRowNumForValue(StringTable *table,int comparisonColumn,char *value)
 
 {
   int iVar1;
   int iVar2;
+  int hash_00;
   int iVar3;
   int iVar4;
-  int iVar5;
-  int local_c;
+  int cell;
+  int hash;
+  int idx;
+  int valueCount;
   
-  if (param_1->columnCount != 0) {
-    if (param_2 < param_1->columnCount) {
-      iVar3 = StringTable_HashString(param_3);
-      iVar1 = param_1->rowCount;
-      iVar2 = param_1->columnCount;
-      local_c = StringTable_FirstHashIndex(param_1,iVar3);
-      if (-1 < local_c) {
-        for (; local_c < iVar1 * iVar2; local_c = local_c + 1) {
-          iVar5 = (int)param_1->cellIndex[local_c];
-          if (param_1->values[iVar5].hash != iVar3) {
+  if (table->columnCount != 0) {
+    if (comparisonColumn < table->columnCount) {
+      hash_00 = StringTable_HashString(value);
+      iVar1 = table->rowCount;
+      iVar2 = table->columnCount;
+      idx = StringTable_FirstHashIndex(table,hash_00);
+      if (-1 < idx) {
+        for (; idx < iVar1 * iVar2; idx = idx + 1) {
+          iVar4 = (int)table->cellIndex[idx];
+          if (table->values[iVar4].hash != hash_00) {
             return -1;
           }
-          if (((iVar5 % param_1->columnCount == param_2) &&
-              (param_1->values[iVar5].string != (char *)0x0)) &&
-             (iVar4 = I_stricmp(param_3,param_1->values[iVar5].string), iVar4 == 0)) {
-            return iVar5 / param_1->columnCount;
+          if (((iVar4 % table->columnCount == comparisonColumn) &&
+              (table->values[iVar4].string != (char *)0x0)) &&
+             (iVar3 = I_stricmp(value,table->values[iVar4].string), iVar3 == 0)) {
+            return iVar4 / table->columnCount;
           }
         }
       }
@@ -64,34 +69,35 @@ int __cdecl StringTable_LookupRowNumForValue(StringTable *param_1,int param_2,ch
 
 // 007B5DE0  StringTable_LookupColumnNumForValue  (universal/com_stringtable.cpp:77)
 
-int __cdecl StringTable_LookupColumnNumForValue(StringTable *param_1,int param_2,char *param_3)
+int __cdecl StringTable_LookupColumnNumForValue(StringTable *table,int comparisonRow,char *value)
 
 {
   int iVar1;
   int iVar2;
-  int local_8;
+  int hash;
+  int slot;
+  int col;
   
-  iVar1 = StringTable_HashString(param_3);
-  if (param_1->columnCount == 0) {
-    local_8 = -1;
+  iVar1 = StringTable_HashString(value);
+  if (table->columnCount == 0) {
+    col = -1;
   }
-  else if (param_2 < param_1->rowCount) {
-    local_8 = param_1->columnCount;
+  else if (comparisonRow < table->rowCount) {
+    col = table->columnCount;
     do {
-      local_8 = local_8 + -1;
-      if (local_8 < 0) {
+      col = col + -1;
+      if (col < 0) {
         return -1;
       }
-      iVar2 = param_2 * param_1->columnCount + local_8;
-    } while (((param_1->values[iVar2].hash != iVar1) ||
-             (param_1->values[iVar2].string == (char *)0x0)) ||
-            (iVar2 = I_stricmp(param_3,param_1->values[iVar2].string), iVar2 != 0));
+      iVar2 = comparisonRow * table->columnCount + col;
+    } while (((table->values[iVar2].hash != iVar1) || (table->values[iVar2].string == (char *)0x0))
+            || (iVar2 = I_stricmp(value,table->values[iVar2].string), iVar2 != 0));
   }
   else {
     Com_PrintError(0xd,"Unable to compare against row number %i - there are only %i row");
-    local_8 = -1;
+    col = -1;
   }
-  return local_8;
+  return col;
 }
 
 
@@ -99,59 +105,65 @@ int __cdecl StringTable_LookupColumnNumForValue(StringTable *param_1,int param_2
 
 int __cdecl
 StringTable_LookupRowNumForValue
-          (StringTable *param_1,int param_2,char *param_3,int param_4,char *param_5,int param_6,
-          char *param_7)
+          (StringTable *table,int comparisonColumn1,char *value1,int comparisonColumn2,char *value2,
+          int comparisonColumn3,char *value3)
 
 {
   int iVar1;
   int iVar2;
+  int hash;
   int iVar3;
   int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
-  int local_18;
-  int local_14;
-  int local_c;
+  int slot2;
+  int row;
+  int slot3;
+  int slot1;
+  int hash3;
+  int idx;
+  int hash1;
+  int hash2;
+  int valueCount;
   
-  if (param_1->columnCount != 0) {
-    if (((param_2 < param_1->columnCount) && (param_4 < param_1->columnCount)) &&
-       (param_6 < param_1->columnCount)) {
-      iVar3 = StringTable_HashString(param_3);
-      local_c = 0;
-      local_18 = 0;
-      if (param_5 != (char *)0x0) {
-        local_c = StringTable_HashString(param_5);
+  if (table->columnCount != 0) {
+    if (((comparisonColumn1 < table->columnCount) && (comparisonColumn2 < table->columnCount)) &&
+       (comparisonColumn3 < table->columnCount)) {
+      hash = StringTable_HashString(value1);
+      hash2 = 0;
+      hash3 = 0;
+      if (value2 != (char *)0x0) {
+        hash2 = StringTable_HashString(value2);
       }
-      if (param_7 != (char *)0x0) {
-        local_18 = StringTable_HashString(param_7);
+      if (value3 != (char *)0x0) {
+        hash3 = StringTable_HashString(value3);
       }
-      iVar1 = param_1->rowCount;
-      iVar2 = param_1->columnCount;
-      local_14 = StringTable_FirstHashIndex(param_1,iVar3);
-      if (-1 < local_14) {
-        for (; local_14 < iVar1 * iVar2; local_14 = local_14 + 1) {
-          iVar6 = (int)param_1->cellIndex[local_14];
-          if (param_1->values[iVar6].hash != iVar3) {
+      iVar1 = table->rowCount;
+      iVar2 = table->columnCount;
+      idx = StringTable_FirstHashIndex(table,hash);
+      if (-1 < idx) {
+        for (; idx < iVar1 * iVar2; idx = idx + 1) {
+          iVar5 = (int)table->cellIndex[idx];
+          if (table->values[iVar5].hash != hash) {
             return -1;
           }
-          if (iVar6 % param_1->columnCount == param_2) {
-            iVar4 = iVar6 / param_1->columnCount;
-            iVar5 = iVar4 * param_1->columnCount + param_4;
-            iVar7 = iVar4 * param_1->columnCount + param_6;
-            if (((param_1->values[iVar6].string != (char *)0x0) &&
-                (iVar6 = I_stricmp(param_3,param_1->values[iVar6].string), iVar6 == 0)) &&
-               ((param_5 == (char *)0x0 ||
-                (((param_1->values[iVar5].hash == local_c &&
-                  (param_1->values[iVar5].string != (char *)0x0)) &&
-                 (iVar6 = I_stricmp(param_5,param_1->values[iVar5].string), iVar6 == 0)))))) {
-              if (param_7 == (char *)0x0) {
-                return iVar4;
+          if (iVar5 % table->columnCount == comparisonColumn1) {
+            iVar3 = iVar5 / table->columnCount;
+            iVar4 = iVar3 * table->columnCount + comparisonColumn2;
+            iVar6 = iVar3 * table->columnCount + comparisonColumn3;
+            if (((table->values[iVar5].string != (char *)0x0) &&
+                (iVar5 = I_stricmp(value1,table->values[iVar5].string), iVar5 == 0)) &&
+               ((value2 == (char *)0x0 ||
+                (((table->values[iVar4].hash == hash2 &&
+                  (table->values[iVar4].string != (char *)0x0)) &&
+                 (iVar5 = I_stricmp(value2,table->values[iVar4].string), iVar5 == 0)))))) {
+              if (value3 == (char *)0x0) {
+                return iVar3;
               }
-              if (((param_1->values[iVar7].hash == local_18) &&
-                  (param_1->values[iVar7].string != (char *)0x0)) &&
-                 (iVar6 = I_stricmp(param_7,param_1->values[iVar7].string), iVar6 == 0)) {
-                return iVar4;
+              if (((table->values[iVar6].hash == hash3) &&
+                  (table->values[iVar6].string != (char *)0x0)) &&
+                 (iVar5 = I_stricmp(value3,table->values[iVar6].string), iVar5 == 0)) {
+                return iVar3;
               }
             }
           }
@@ -168,15 +180,14 @@ StringTable_LookupRowNumForValue
 
 // 007B6100  StringTable_GetColumnValueForRow  (universal/com_stringtable.cpp:164)
 
-char * __cdecl StringTable_GetColumnValueForRow(StringTable *param_1,int param_2,int param_3)
+char * __cdecl StringTable_GetColumnValueForRow(StringTable *table,int row,int column)
 
 {
   char *pcVar1;
   
-  if ((((param_3 < param_1->columnCount) && (param_2 < param_1->rowCount)) && (-1 < param_2)) &&
-     ((-1 < param_3 &&
-      (param_1->values[param_2 * param_1->columnCount + param_3].string != (char *)0x0)))) {
-    pcVar1 = param_1->values[param_2 * param_1->columnCount + param_3].string;
+  if ((((column < table->columnCount) && (row < table->rowCount)) && (-1 < row)) &&
+     ((-1 < column && (table->values[row * table->columnCount + column].string != (char *)0x0)))) {
+    pcVar1 = table->values[row * table->columnCount + column].string;
   }
   else {
     pcVar1 = "";
@@ -187,19 +198,20 @@ char * __cdecl StringTable_GetColumnValueForRow(StringTable *param_1,int param_2
 
 // 007B6160  StringTable_Lookup  (universal/com_stringtable.cpp:172)
 
-char * __cdecl StringTable_Lookup(StringTable *param_1,int param_2,char *param_3,int param_4)
+char * __cdecl
+StringTable_Lookup(StringTable *table,int comparisonColumn,char *value,int valueColumn)
 
 {
   char *pcVar1;
-  int iVar2;
+  int row;
   
-  if (param_1 == (StringTable *)0x0) {
+  if (table == (StringTable *)0x0) {
     Com_PrintError(0xd,"Unable to find the lookup table in the fastfile, aborting lookup\n");
     pcVar1 = "";
   }
   else {
-    iVar2 = StringTable_LookupRowNumForValue(param_1,param_2,param_3);
-    pcVar1 = StringTable_GetColumnValueForRow(param_1,iVar2,param_4);
+    row = StringTable_LookupRowNumForValue(table,comparisonColumn,value);
+    pcVar1 = StringTable_GetColumnValueForRow(table,row,valueColumn);
   }
   return pcVar1;
 }
@@ -208,21 +220,21 @@ char * __cdecl StringTable_Lookup(StringTable *param_1,int param_2,char *param_3
 // 007B61B0  StringTable_Lookup  (universal/com_stringtable.cpp:182)
 
 char * __cdecl
-StringTable_Lookup(StringTable *param_1,int param_2,char *param_3,int param_4,char *param_5,
-                  int param_6)
+StringTable_Lookup(StringTable *table,int comparisonColumn1,char *value1,int comparisonColumn2,
+                  char *value2,int valueColumn)
 
 {
   char *pcVar1;
-  int iVar2;
+  int row;
   
-  if (param_1 == (StringTable *)0x0) {
+  if (table == (StringTable *)0x0) {
     Com_PrintError(0xd,"Unable to find the lookup table in the fastfile, aborting lookup\n");
     pcVar1 = "";
   }
   else {
-    iVar2 = StringTable_LookupRowNumForValue(param_1,param_2,param_3,param_4,param_5,-1,(char *)0x0)
-    ;
-    pcVar1 = StringTable_GetColumnValueForRow(param_1,iVar2,param_6);
+    row = StringTable_LookupRowNumForValue
+                    (table,comparisonColumn1,value1,comparisonColumn2,value2,-1,(char *)0x0);
+    pcVar1 = StringTable_GetColumnValueForRow(table,row,valueColumn);
   }
   return pcVar1;
 }
@@ -231,63 +243,65 @@ StringTable_Lookup(StringTable *param_1,int param_2,char *param_3,int param_4,ch
 // 007B6210  StringTable_Find  (universal/com_stringtable.cpp:202)
 
 int __cdecl
-StringTable_Find(StringTable *param_1,int *param_2,int param_3,int param_4,char *param_5,int param_6
-                ,char *param_7)
+StringTable_Find(StringTable *table,int *results,int maxResults,int comparisonColumn1,char *value1,
+                int comparisonColumn2,char *value2)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
-  int local_14;
-  int local_c;
-  int local_8;
+  int slot1;
+  int slot2;
+  int row;
+  int hash1;
+  int hash2;
+  int nFound;
   
-  if (param_1->columnCount == 0) {
-    local_8 = 0;
+  if (table->columnCount == 0) {
+    nFound = 0;
   }
-  else if ((param_4 < param_1->columnCount) && (param_6 < param_1->columnCount)) {
-    iVar1 = StringTable_HashString(param_5);
-    local_c = 0;
-    if (param_7 != (char *)0x0) {
-      local_c = StringTable_HashString(param_7);
+  else if ((comparisonColumn1 < table->columnCount) && (comparisonColumn2 < table->columnCount)) {
+    iVar1 = StringTable_HashString(value1);
+    hash2 = 0;
+    if (value2 != (char *)0x0) {
+      hash2 = StringTable_HashString(value2);
     }
-    local_8 = 0;
-    for (local_14 = 0; local_14 < param_1->rowCount; local_14 = local_14 + 1) {
-      iVar3 = local_14 * param_1->columnCount + param_4;
-      iVar2 = local_14 * param_1->columnCount + param_6;
-      if ((((param_1->values[iVar3].hash == iVar1) && (param_1->values[iVar3].string != (char *)0x0)
-           ) && (iVar3 = I_stricmp(param_5,param_1->values[iVar3].string), iVar3 == 0)) &&
-         ((param_7 == (char *)0x0 ||
-          (((param_1->values[iVar2].hash == local_c &&
-            (param_1->values[iVar2].string != (char *)0x0)) &&
-           (iVar2 = I_stricmp(param_7,param_1->values[iVar2].string), iVar2 == 0)))))) {
-        if (local_8 == param_3) {
+    nFound = 0;
+    for (row = 0; row < table->rowCount; row = row + 1) {
+      iVar3 = row * table->columnCount + comparisonColumn1;
+      iVar2 = row * table->columnCount + comparisonColumn2;
+      if ((((table->values[iVar3].hash == iVar1) && (table->values[iVar3].string != (char *)0x0)) &&
+          (iVar3 = I_stricmp(value1,table->values[iVar3].string), iVar3 == 0)) &&
+         ((value2 == (char *)0x0 ||
+          (((table->values[iVar2].hash == hash2 && (table->values[iVar2].string != (char *)0x0)) &&
+           (iVar2 = I_stricmp(value2,table->values[iVar2].string), iVar2 == 0)))))) {
+        if (nFound == maxResults) {
           Com_PrintError(0xd,"Too many matches found. Increase maxResults: %i");
-          return param_3;
+          return maxResults;
         }
-        param_2[local_8] = local_14;
-        local_8 = local_8 + 1;
+        results[nFound] = row;
+        nFound = nFound + 1;
       }
     }
   }
   else {
     Com_PrintError(0xd,"Unable to compare against column number %i - there are only %i columns");
-    local_8 = 0;
+    nFound = 0;
   }
-  return local_8;
+  return nFound;
 }
 
 
 // 007B63C0  StringTable_RowCount  (universal/com_stringtable.cpp:240)
 
-int __cdecl StringTable_RowCount(StringTable *param_1)
+int __cdecl StringTable_RowCount(StringTable *table)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (StringTable *)0x0) {
+  if (table == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable.cpp",
                              0xf1,0,"%s");
     if (!bVar2) {
@@ -296,20 +310,20 @@ int __cdecl StringTable_RowCount(StringTable *param_1)
       return iVar3;
     }
   }
-  return param_1->rowCount;
+  return table->rowCount;
 }
 
 
 // 007B6400  StringTable_ColumnCount  (universal/com_stringtable.cpp:247)
 
-int __cdecl StringTable_ColumnCount(StringTable *param_1)
+int __cdecl StringTable_ColumnCount(StringTable *table)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (StringTable *)0x0) {
+  if (table == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable.cpp",
                              0xf8,0,"%s");
     if (!bVar2) {
@@ -318,42 +332,43 @@ int __cdecl StringTable_ColumnCount(StringTable *param_1)
       return iVar3;
     }
   }
-  return param_1->columnCount;
+  return table->columnCount;
 }
 
 
 // 007B6440  StringTable_Checksum  (universal/com_stringtable.cpp:254)
 
-uint __cdecl StringTable_Checksum(StringTable *param_1,uint param_2)
+uint __cdecl StringTable_Checksum(StringTable *table,uint initialCrc)
 
 {
   char cVar1;
   char *pcVar2;
   char *local_28;
   char *local_18;
-  int local_10;
-  uint local_c;
-  int local_8;
+  char *val;
+  int row;
+  uint crc;
+  int col;
   
-  local_18 = param_1->name;
+  local_18 = table->name;
   pcVar2 = local_18 + 1;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  local_c = Com_BlockChecksumKey32(param_1->name,(int)local_18 - (int)pcVar2,param_2);
-  for (local_8 = 0; local_8 < param_1->columnCount; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < param_1->rowCount; local_10 = local_10 + 1) {
-      pcVar2 = param_1->values[local_10 * param_1->columnCount + local_8].string;
+  crc = Com_BlockChecksumKey32(table->name,(int)local_18 - (int)pcVar2,initialCrc);
+  for (col = 0; col < table->columnCount; col = col + 1) {
+    for (row = 0; row < table->rowCount; row = row + 1) {
+      pcVar2 = table->values[row * table->columnCount + col].string;
       local_28 = pcVar2;
       do {
         cVar1 = *local_28;
         local_28 = local_28 + 1;
       } while (cVar1 != '\0');
-      local_c = Com_BlockChecksumKey32(pcVar2,(int)local_28 - (int)(pcVar2 + 1),local_c);
+      crc = Com_BlockChecksumKey32(pcVar2,(int)local_28 - (int)(pcVar2 + 1),crc);
     }
   }
-  return local_c;
+  return crc;
 }
 
 
@@ -362,20 +377,20 @@ uint __cdecl StringTable_Checksum(StringTable *param_1,uint param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl StringTable_GetAsset_FastFile(char *param_1,StringTable **param_2)
+void __cdecl StringTable_GetAsset_FastFile(char *filename,StringTable **tablePtr)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_STRINGTABLE,param_1,true,-1);
-  *param_2 = (StringTable *)XVar1;
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_STRINGTABLE,filename,true,-1);
+  *tablePtr = (StringTable *)XVar1;
   return;
 }
 
 
 // 007B6570  StringTable_GetAsset  (universal/com_stringtable.cpp:283)
 
-void __cdecl StringTable_GetAsset(char *param_1,StringTable **param_2)
+void __cdecl StringTable_GetAsset(char *filename,StringTable **tablePtr)
 
 {
   code *local_c;
@@ -386,7 +401,7 @@ void __cdecl StringTable_GetAsset(char *param_1,StringTable **param_2)
   else {
     local_c = StringTable_GetAsset_FastFile;
   }
-  (*local_c)(param_1,param_2);
+  (*local_c)(filename,tablePtr);
   return;
 }
 

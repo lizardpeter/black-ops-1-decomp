@@ -2,12 +2,12 @@
 
 // 006A7900  Sound_UpdateSample  (groupvoice/play.cpp:17)
 
-int __cdecl Sound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint param_3)
+int __cdecl Sound_UpdateSample(dsound_sample_t *sample,char *data,uint data_len)
 
 {
   int iVar1;
   
-  iVar1 = DSound_UpdateSample(param_1,param_2,param_3);
+  iVar1 = DSound_UpdateSample(sample,data,data_len);
   return iVar1;
 }
 
@@ -26,24 +26,24 @@ dsound_sample_t * __cdecl Sound_NewSample(void)
 
 // 006A7930  Sound_DestroySample  (groupvoice/play.cpp:39)
 
-int __cdecl Sound_DestroySample(dsound_sample_t *param_1)
+int __cdecl Sound_DestroySample(dsound_sample_t *sample)
 
 {
   int iVar1;
   
-  iVar1 = Record_DestroySample(param_1);
+  iVar1 = Record_DestroySample(sample);
   return iVar1;
 }
 
 
 // 006A7950  Sound_StopSample  (groupvoice/play.cpp:55)
 
-bool __cdecl Sound_StopSample(dsound_sample_t *param_1)
+bool __cdecl Sound_StopSample(dsound_sample_t *sample)
 
 {
   bool bVar1;
   
-  bVar1 = DSound_StopSample(param_1);
+  bVar1 = DSound_StopSample(sample);
   return bVar1;
 }
 
@@ -62,22 +62,22 @@ void __cdecl Sound_Frame(void)
 
 // 006A7980  Sound_SampleFrame  (groupvoice/play.cpp:114)
 
-void __cdecl Sound_SampleFrame(dsound_sample_t *param_1)
+void __cdecl Sound_SampleFrame(dsound_sample_t *sample)
 
 {
-  DSound_SampleFrame(param_1);
+  DSound_SampleFrame(sample);
   return;
 }
 
 
 // 006A79A0  Sound_Init  (groupvoice/play.cpp:126)
 
-int __cdecl Sound_Init(void *param_1)
+int __cdecl Sound_Init(void *handle)
 
 {
   int iVar1;
   
-  iVar1 = DSound_Init(true,param_1);
+  iVar1 = DSound_Init(true,handle);
   return iVar1;
 }
 

@@ -2,14 +2,14 @@
 
 // 00A0F500  encode_size_alignment  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:37)
 
-uint __cdecl phys_slot_pool::encode_size_alignment(uint param_1,uint param_2)
+uint __cdecl phys_slot_pool::encode_size_alignment(uint size,uint alignment)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (0xffff < param_1) {
+  if (0xffff < size) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x26,"size <= 0xFFFF","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -17,7 +17,7 @@ uint __cdecl phys_slot_pool::encode_size_alignment(uint param_1,uint param_2)
       return uVar3;
     }
   }
-  if (0xffff < param_2) {
+  if (0xffff < alignment) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x27,"alignment <= 0xFFFF","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -25,7 +25,7 @@ uint __cdecl phys_slot_pool::encode_size_alignment(uint param_1,uint param_2)
       return uVar3;
     }
   }
-  return param_2 << 0x10 | param_1;
+  return alignment << 0x10 | size;
 }
 
 
@@ -33,7 +33,7 @@ uint __cdecl phys_slot_pool::encode_size_alignment(uint param_1,uint param_2)
 
 void __thiscall
 minspec_hash_table<phys_slot_pool,64>::add
-          (minspec_hash_table<phys_slot_pool,64> *this,uint param_1,phys_slot_pool *param_2)
+          (minspec_hash_table<phys_slot_pool,64> *this,uint key,phys_slot_pool *entry_to_add)
 
 {
   phys_slot_pool *ppVar1;
@@ -45,20 +45,20 @@ minspec_hash_table<phys_slot_pool,64>::add
   uint uVar7;
   uint *puVar8;
   uint uVar9;
-  uint local_204 [64];
-  phys_slot_pool *local_104 [64];
+  uint collision_counts [64];
+  phys_slot_pool *entry_list [64];
   
-  ppVar1 = this->m_hash_table[param_1 % this->m_mod];
+  ppVar1 = this->m_hash_table[key % this->m_mod];
   do {
     if (ppVar1 == (phys_slot_pool *)0x0) {
 LAB_00a0ff3e:
-      local_104[0] = param_2;
+      entry_list[0] = entry_to_add;
       uVar7 = 1;
       uVar4 = 0;
       do {
         for (ppVar1 = this->m_hash_table[uVar4]; ppVar1 != (phys_slot_pool *)0x0;
             ppVar1 = ppVar1->m_hash_next) {
-          local_104[uVar7] = ppVar1;
+          entry_list[uVar7] = ppVar1;
           uVar7 = uVar7 + 1;
         }
         this->m_hash_table[uVar4] = (phys_slot_pool *)0x0;
@@ -69,7 +69,7 @@ LAB_00a0ff3e:
       this->m_total_collisions = 100000;
       for (uVar4 = uVar7; uVar4 < 0x40; uVar4 = uVar4 + 1) {
         if (uVar4 != 0) {
-          puVar8 = local_204;
+          puVar8 = collision_counts;
           for (uVar5 = uVar4; uVar5 != 0; uVar5 = uVar5 - 1) {
             *puVar8 = 0;
             puVar8 = puVar8 + 1;
@@ -77,19 +77,19 @@ LAB_00a0ff3e:
         }
         uVar5 = 0;
         uVar9 = 0;
-        param_1 = 0;
+        key = 0;
         if (uVar7 != 0) {
           uVar6 = 0;
           do {
-            uVar5 = local_104[uVar6]->m_map_key % uVar4;
-            local_204[uVar5] = local_204[uVar5] + 1;
-            uVar5 = local_204[uVar5];
+            uVar5 = entry_list[uVar6]->m_map_key % uVar4;
+            collision_counts[uVar5] = collision_counts[uVar5] + 1;
+            uVar5 = collision_counts[uVar5];
             if (uVar9 < uVar5) {
               uVar9 = uVar5;
             }
-            uVar5 = param_1 + uVar5;
+            uVar5 = key + uVar5;
             uVar6 = uVar6 + 1;
-            param_1 = uVar5;
+            key = uVar5;
           } while (uVar6 < uVar7);
         }
         if (uVar5 < this->m_total_collisions) {
@@ -108,7 +108,7 @@ LAB_00a0ff3e:
       uVar4 = 0;
       if (uVar7 != 0) {
         do {
-          ppVar1 = local_104[uVar4];
+          ppVar1 = entry_list[uVar4];
           uVar5 = ppVar1->m_map_key % this->m_mod;
           uVar4 = uVar4 + 1;
           ppVar1->m_hash_next = this->m_hash_table[uVar5];
@@ -117,7 +117,7 @@ LAB_00a0ff3e:
       }
       return;
     }
-    if (ppVar1->m_map_key == param_1) {
+    if (ppVar1->m_map_key == key) {
       bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_hash_table.h",0x26
                         ,"find(key) == NULL","");
       if (bVar3) {
@@ -134,7 +134,7 @@ LAB_00a0ff3e:
 
 // 009E1DE0  operator_delete  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/new:63)
 
-void __cdecl operator_delete(void *param_1,void *param_2)
+void __cdecl operator_delete(void *__formal,void *__formal_2)
 
 {
   return;
@@ -144,7 +144,8 @@ void __cdecl operator_delete(void *param_1,void *param_2)
 // 00A0F9B0  phys_memory_manager  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:144)
 
 phys_memory_manager * __thiscall
-phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1,int param_2)
+phys_memory_manager::phys_memory_manager
+          (phys_memory_manager *this,void *memory_buffer,int memory_buffer_size)
 
 {
   int iVar1;
@@ -160,9 +161,9 @@ phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1
   (this->m_slot_pool_map).m_highest_collision = 0;
   (this->m_slot_pool_map).m_total_collisions = 0;
   (this->m_slot_pool_allocate_mutex).m_token = 0;
-  this->m_buffer_start = param_1;
-  this->m_buffer_cur = param_1;
-  this->m_buffer_end = (char *)(param_2 + (int)param_1);
+  this->m_buffer_start = memory_buffer;
+  this->m_buffer_cur = memory_buffer;
+  this->m_buffer_end = (char *)(memory_buffer_size + (int)memory_buffer);
   this->m_list_slot_pool_count = 0;
   pmVar2 = &this->m_slot_pool_map;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -179,7 +180,7 @@ phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1
 
 // 00A0F620  allocate  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:158)
 
-void * __thiscall phys_memory_manager::allocate(phys_memory_manager *this,uint param_1,uint param_2)
+void * __thiscall phys_memory_manager::allocate(phys_memory_manager *this,uint size,uint alignment)
 
 {
   char **ppcVar1;
@@ -191,8 +192,8 @@ void * __thiscall phys_memory_manager::allocate(phys_memory_manager *this,uint p
   ppcVar1 = &this->m_buffer_cur;
   do {
     pcVar2 = *ppcVar1;
-    pvVar5 = (void *)((uint)(pcVar2 + (param_2 - 1)) & ~(param_2 - 1));
-    pcVar3 = (char *)(param_1 + (int)pvVar5);
+    pvVar5 = (void *)((uint)(pcVar2 + (alignment - 1)) & ~(alignment - 1));
+    pcVar3 = (char *)(size + (int)pvVar5);
     if (this->m_buffer_end < pcVar3) {
       return (void *)0x0;
     }
@@ -246,31 +247,31 @@ phys_slot_pool * __thiscall phys_memory_manager::allocate_slot_pool(phys_memory_
 // 00A0F700  get_slot_pool  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:203)
 
 phys_slot_pool * __thiscall
-phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint param_2)
+phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint slot_size,uint slot_alignment)
 
 {
   minspec_read_write_mutex *this_00;
   code *pcVar1;
   bool bVar2;
   phys_slot_pool *ppVar3;
+  uint key;
   uint uVar4;
-  uint uVar5;
   minspec_hash_table<phys_slot_pool,64> *this_01;
   
-  if ((param_2 < 4) &&
+  if ((slot_alignment < 4) &&
      (bVar2 = _tlAssert("source/phys_mem_new.cpp",0xcc,"slot_alignment >= 4",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     ppVar3 = (phys_slot_pool *)(*pcVar1)();
     return ppVar3;
   }
-  if ((param_1 % param_2 != 0) &&
+  if ((slot_size % slot_alignment != 0) &&
      (bVar2 = _tlAssert("source/phys_mem_new.cpp",0xcd,"slot_size % slot_alignment == 0",""), bVar2)
      ) {
     pcVar1 = (code *)swi(3);
     ppVar3 = (phys_slot_pool *)(*pcVar1)();
     return ppVar3;
   }
-  if (((param_2 & 3) != 0) &&
+  if (((slot_alignment & 3) != 0) &&
      (bVar2 = _tlAssert("source/phys_mem_new.cpp",0xd0,
                         "slot_alignment % PHYS_ALIGNOF(phys_slot_pool::extra_info) == 0",""), bVar2)
      ) {
@@ -278,30 +279,30 @@ phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint p
     ppVar3 = (phys_slot_pool *)(*pcVar1)();
     return ppVar3;
   }
-  uVar4 = phys_slot_pool::encode_size_alignment(param_1 + 8,param_2);
+  key = phys_slot_pool::encode_size_alignment(slot_size + 8,slot_alignment);
   this_00 = &this->m_slot_pool_map_mutex;
   minspec_read_write_mutex::ReadLock(this_00);
   this_01 = &this->m_slot_pool_map;
-  for (ppVar3 = this_01->m_hash_table[uVar4 % (this->m_slot_pool_map).m_mod];
-      (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != uVar4));
-      ppVar3 = ppVar3->m_hash_next) {
+  for (ppVar3 = this_01->m_hash_table[key % (this->m_slot_pool_map).m_mod];
+      (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != key)); ppVar3 = ppVar3->m_hash_next)
+  {
   }
   minspec_read_write_mutex::ReadUnlock(this_00);
   if (ppVar3 == (phys_slot_pool *)0x0) {
     minspec_read_write_mutex::WriteLock(this_00);
-    for (ppVar3 = this_01->m_hash_table[uVar4 % (this->m_slot_pool_map).m_mod];
-        (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != uVar4));
+    for (ppVar3 = this_01->m_hash_table[key % (this->m_slot_pool_map).m_mod];
+        (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != key));
         ppVar3 = ppVar3->m_hash_next) {
     }
     if (ppVar3 == (phys_slot_pool *)0x0) {
       ppVar3 = allocate_slot_pool(this);
       (ppVar3->m_first_free_slot).m_ptr = (void *)0x0;
       (ppVar3->m_first_free_slot).m_tag = 0;
-      uVar5 = phys_slot_pool::encode_size_alignment(param_1 + 8,param_2);
-      ppVar3->m_map_key = uVar5;
+      uVar4 = phys_slot_pool::encode_size_alignment(slot_size + 8,slot_alignment);
+      ppVar3->m_map_key = uVar4;
       ppVar3->m_total_slot_count = 0;
       ppVar3->m_allocated_slot_count = 0;
-      minspec_hash_table<phys_slot_pool,64>::add(this_01,uVar4,ppVar3);
+      minspec_hash_table<phys_slot_pool,64>::add(this_01,key,ppVar3);
     }
     minspec_read_write_mutex::WriteUnlock(this_00);
   }
@@ -311,7 +312,7 @@ phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint p
 
 // 00A0FA30  phys_memory_manager_init  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:236)
 
-void __cdecl phys_memory_manager_init(void *param_1,int param_2)
+void __cdecl phys_memory_manager_init(void *memory_buffer,int memory_buffer_size)
 
 {
   code *pcVar1;
@@ -341,13 +342,13 @@ void __cdecl phys_memory_manager_init(void *param_1,int param_2)
       return;
     }
   }
-  g_phys_memory_manager = (phys_memory_manager *)((int)param_1 + 7U & 0xfffffff8);
-  g_phys_memory_buffer = param_1;
-  g_phys_memory_buffer_size = param_2;
+  g_phys_memory_manager = (phys_memory_manager *)((int)memory_buffer + 7U & 0xfffffff8);
+  g_phys_memory_buffer = memory_buffer;
+  g_phys_memory_buffer_size = memory_buffer_size;
   if (g_phys_memory_manager != (phys_memory_manager *)0x0) {
     phys_memory_manager::phys_memory_manager
               (g_phys_memory_manager,g_phys_memory_manager + 1,
-               (int)param_1 + (param_2 - (int)(g_phys_memory_manager + 1)));
+               (int)memory_buffer + (memory_buffer_size - (int)(g_phys_memory_manager + 1)));
   }
   return;
 }
@@ -367,14 +368,14 @@ void __cdecl phys_memory_manager_term(void)
 
 // 00A0F860  PMM_PERM_ALLOCATE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:263)
 
-void * __cdecl PMM_PERM_ALLOCATE(uint param_1,uint param_2)
+void * __cdecl PMM_PERM_ALLOCATE(uint size,uint alignment)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  pvVar3 = phys_memory_manager::allocate(g_phys_memory_manager,param_1,param_2);
+  pvVar3 = phys_memory_manager::allocate(g_phys_memory_manager,size,alignment);
   if ((pvVar3 == (void *)0x0) &&
      (bVar2 = _tlAssert("source/phys_mem_new.cpp",0x109,"ptr",
                         "physics memory manager error: out of memory."), bVar2)) {
@@ -388,14 +389,14 @@ void * __cdecl PMM_PERM_ALLOCATE(uint param_1,uint param_2)
 
 // 00A0F590  init  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:270)
 
-void __thiscall phys_slot_pool::init(phys_slot_pool *this,uint param_1,uint param_2)
+void __thiscall phys_slot_pool::init(phys_slot_pool *this,uint slot_size,uint slot_alignment)
 
 {
   uint uVar1;
   
   (this->m_first_free_slot).m_ptr = (void *)0x0;
   (this->m_first_free_slot).m_tag = 0;
-  uVar1 = encode_size_alignment(param_1,param_2);
+  uVar1 = encode_size_alignment(slot_size,slot_alignment);
   this->m_map_key = uVar1;
   this->m_total_slot_count = 0;
   this->m_allocated_slot_count = 0;
@@ -415,7 +416,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00A0FAF0  extra_info_init  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:285)
 
-void __thiscall phys_slot_pool::extra_info_init(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::extra_info_init(phys_slot_pool *this,void *slot)
 
 {
   int *piVar1;
@@ -424,8 +425,8 @@ void __thiscall phys_slot_pool::extra_info_init(phys_slot_pool *this,void *param
   bool bVar4;
   int *piVar5;
   
-  if (param_1 != (void *)0x0) {
-    puVar2 = (undefined4 *)(((this->m_map_key & 0xffff) - 8) + (int)param_1);
+  if (slot != (void *)0x0) {
+    puVar2 = (undefined4 *)(((this->m_map_key & 0xffff) - 8) + (int)slot);
     *puVar2 = this;
     puVar2[1] = 0xfedcba98;
     piVar1 = &this->m_total_slot_count;
@@ -446,8 +447,8 @@ void __thiscall phys_slot_pool::extra_info_init(phys_slot_pool *this,void *param
         return;
       }
     }
-    param_1 = (void *)0x0;
-    InterlockedExchange((LONG *)&param_1,0);
+    slot = (void *)0x0;
+    InterlockedExchange((LONG *)&slot,0);
   }
   return;
 }
@@ -455,7 +456,7 @@ void __thiscall phys_slot_pool::extra_info_init(phys_slot_pool *this,void *param
 
 // 00A0FB70  extra_info_allocate  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:302)
 
-void __thiscall phys_slot_pool::extra_info_allocate(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::extra_info_allocate(phys_slot_pool *this,void *slot)
 
 {
   code *pcVar1;
@@ -468,10 +469,10 @@ void __thiscall phys_slot_pool::extra_info_allocate(phys_slot_pool *this,void *p
   
   local_8 = 0;
   InterlockedExchange(&local_8,0);
-  pvVar2 = param_1;
+  pvVar2 = slot;
   uVar5 = this->m_map_key;
-  if ((param_1 == (void *)0x0) &&
-     (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x132,"slot",""), bVar3)) {
+  if ((slot == (void *)0x0) && (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x132,"slot",""), bVar3)
+     ) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
@@ -510,58 +511,58 @@ void __thiscall phys_slot_pool::extra_info_allocate(phys_slot_pool *this,void *p
     (*pcVar1)();
     return;
   }
-  param_1 = (void *)0x0;
-  InterlockedExchange((LONG *)&param_1,0);
+  slot = (void *)0x0;
+  InterlockedExchange((LONG *)&slot,0);
   return;
 }
 
 
 // 00A0FC80  extra_info_free  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:319)
 
-void __thiscall phys_slot_pool::extra_info_free(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::extra_info_free(phys_slot_pool *this,void *slot)
 
 {
   int *piVar1;
   code *pcVar2;
-  void *pvVar3;
-  bool bVar4;
-  int iVar5;
-  uint uVar6;
+  void *dst;
+  bool bVar3;
+  int iVar4;
+  uint uVar5;
   LONG local_8;
   
   local_8 = 0;
   InterlockedExchange(&local_8,0);
-  pvVar3 = param_1;
-  uVar6 = this->m_map_key;
-  if ((param_1 == (void *)0x0) &&
-     (bVar4 = _tlAssert("source/phys_mem_new.cpp",0x143,"slot",""), bVar4)) {
+  dst = slot;
+  uVar5 = this->m_map_key;
+  if ((slot == (void *)0x0) && (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x143,"slot",""), bVar3)
+     ) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  uVar6 = uVar6 & 0xffff;
-  memset(pvVar3,0xff,uVar6 - 8);
-  if ((*(phys_slot_pool **)((uVar6 - 8) + (int)pvVar3) != this) &&
-     (bVar4 = _tlAssert("source/phys_mem_new.cpp",0x149,
+  uVar5 = uVar5 & 0xffff;
+  memset(dst,0xff,uVar5 - 8);
+  if ((*(phys_slot_pool **)((uVar5 - 8) + (int)dst) != this) &&
+     (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x149,
                         "GetStuff32(&ei->m_slot_pool_owner) == this_",
-                        "attempting to free a slot that was not allocated from this pool."), bVar4))
+                        "attempting to free a slot that was not allocated from this pool."), bVar3))
   {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  piVar1 = (int *)((uVar6 - 4) + (int)pvVar3);
+  piVar1 = (int *)((uVar5 - 4) + (int)dst);
   LOCK();
-  iVar5 = *piVar1;
-  if (iVar5 == -0x1234568) {
+  iVar4 = *piVar1;
+  if (iVar4 == -0x1234568) {
     *piVar1 = (int)this;
-    iVar5 = -0x1234568;
+    iVar4 = -0x1234568;
   }
   UNLOCK();
-  if ((iVar5 != -0x1234568) &&
-     (bVar4 = _tlAssert("source/phys_mem_new.cpp",0x14c,"retv",
+  if ((iVar4 != -0x1234568) &&
+     (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x14c,"retv",
                         "incorrect owner attempting to free a slot, possibly trying to free a slot more than once."
-                       ), bVar4)) {
+                       ), bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
@@ -571,29 +572,29 @@ void __thiscall phys_slot_pool::extra_info_free(phys_slot_pool *this,void *param
   *piVar1 = *piVar1 + -1;
   UNLOCK();
   if ((this->m_total_slot_count < *piVar1) &&
-     (bVar4 = _tlAssert("source/phys_mem_new.cpp",0x14e,
+     (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x14e,
                         "GetStuff32(&m_allocated_slot_count) <= GetStuff32(&m_total_slot_count)",
-                        "internal error."), bVar4)) {
+                        "internal error."), bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
   if ((*piVar1 < 0) &&
-     (bVar4 = _tlAssert("source/phys_mem_new.cpp",0x14f,"GetStuff32(&m_allocated_slot_count) >= 0",
-                        "internal error."), bVar4)) {
+     (bVar3 = _tlAssert("source/phys_mem_new.cpp",0x14f,"GetStuff32(&m_allocated_slot_count) >= 0",
+                        "internal error."), bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_1 = (void *)0x0;
-  InterlockedExchange((LONG *)&param_1,0);
+  slot = (void *)0x0;
+  InterlockedExchange((LONG *)&slot,0);
   return;
 }
 
 
 // 00A0FDC0  validate_slot  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:340)
 
-void __thiscall phys_slot_pool::validate_slot(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::validate_slot(phys_slot_pool *this,void *slot)
 
 {
   code *pcVar1;
@@ -604,7 +605,7 @@ void __thiscall phys_slot_pool::validate_slot(phys_slot_pool *this,void *param_1
   local_8 = 0;
   InterlockedExchange(&local_8,0);
   uVar3 = this->m_map_key & 0xffff;
-  if (*(phys_slot_pool **)((uVar3 - 8) + (int)param_1) != this) {
+  if (*(phys_slot_pool **)((uVar3 - 8) + (int)slot) != this) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x15a,"GetStuff32(&ei->m_slot_pool_owner) == this_",
                       "slot does not belong to this slot_pool.");
     if (bVar2) {
@@ -613,7 +614,7 @@ void __thiscall phys_slot_pool::validate_slot(phys_slot_pool *this,void *param_1
       return;
     }
   }
-  if (*(int *)((int)param_1 + (uVar3 - 4)) != -0x1234568) {
+  if (*(int *)((int)slot + (uVar3 - 4)) != -0x1234568) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x15b,
                       "GetStuff32(&ei->m_allocation_owner) == allocation_owner",
                       "slot does not belong to this allocation_owner.");
@@ -629,11 +630,11 @@ void __thiscall phys_slot_pool::validate_slot(phys_slot_pool *this,void *param_1
 
 // 00A0F5D0  ppu_pmm_get_linear_buffer  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:381)
 
-void __cdecl ppu_pmm_get_linear_buffer(char ***param_1,char **param_2)
+void __cdecl ppu_pmm_get_linear_buffer(char ***linear_buffer_cur,char **linear_buffer_end)
 
 {
-  *param_1 = &g_phys_memory_manager->m_buffer_cur;
-  *param_2 = g_phys_memory_manager->m_buffer_end;
+  *linear_buffer_cur = &g_phys_memory_manager->m_buffer_cur;
+  *linear_buffer_end = g_phys_memory_manager->m_buffer_end;
   return;
 }
 
@@ -644,48 +645,48 @@ void * __thiscall phys_slot_pool::allocate_slot(phys_slot_pool *this)
 
 {
   tagged_void_pointer_t tVar2;
-  undefined4 *puVar3;
-  uint uVar4;
+  undefined4 *slot;
+  uint uVar3;
   phys_slot_pool *this_00;
-  undefined4 *puVar5;
-  void *pvVar6;
-  uint uVar7;
+  undefined4 *puVar4;
+  void *slot_00;
+  uint uVar5;
   LONG local_18;
-  phys_slot_pool *local_14;
+  phys_slot_pool *first_slot;
   tagged_void_pointer_t tVar1;
   
-  local_14 = this;
+  first_slot = this;
   do {
-    this_00 = local_14;
-    puVar3 = (local_14->m_first_free_slot).m_ptr;
-    uVar4 = (local_14->m_first_free_slot).m_tag;
-    tVar2 = local_14->m_first_free_slot;
-    if (puVar3 == (undefined4 *)0x0) {
-      pvVar6 = phys_memory_manager::allocate
-                         (g_phys_memory_manager,local_14->m_map_key & 0xffff,
-                          local_14->m_map_key >> 0x10);
-      extra_info_init(this_00,pvVar6);
-      return pvVar6;
+    this_00 = first_slot;
+    slot = (first_slot->m_first_free_slot).m_ptr;
+    uVar3 = (first_slot->m_first_free_slot).m_tag;
+    tVar2 = first_slot->m_first_free_slot;
+    if (slot == (undefined4 *)0x0) {
+      slot_00 = phys_memory_manager::allocate
+                          (g_phys_memory_manager,first_slot->m_map_key & 0xffff,
+                           first_slot->m_map_key >> 0x10);
+      extra_info_init(this_00,slot_00);
+      return slot_00;
     }
     local_18 = 0;
     InterlockedExchange(&local_18,0);
     LOCK();
     tVar1 = this_00->m_first_free_slot;
     if (tVar2 == tVar1) {
-      tVar2.m_tag = uVar4 + 1;
-      tVar2.m_ptr = (void *)*puVar3;
+      tVar2.m_tag = uVar3 + 1;
+      tVar2.m_ptr = (void *)*slot;
       this_00->m_first_free_slot = tVar2;
-      puVar5 = puVar3;
-      uVar7 = uVar4;
+      puVar4 = slot;
+      uVar5 = uVar3;
     }
     else {
-      puVar5 = tVar1.m_ptr;
-      uVar7 = tVar1.m_tag;
+      puVar4 = tVar1.m_ptr;
+      uVar5 = tVar1.m_tag;
     }
     UNLOCK();
-  } while ((puVar5 != puVar3) || (uVar7 != uVar4));
-  extra_info_allocate(local_14,puVar3);
-  return puVar3;
+  } while ((puVar4 != slot) || (uVar5 != uVar3));
+  extra_info_allocate(first_slot,slot);
+  return slot;
 }
 
 
@@ -693,7 +694,7 @@ void * __thiscall phys_slot_pool::allocate_slot(phys_slot_pool *this)
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *slot)
 
 {
   tagged_void_pointer_t tVar1;
@@ -706,26 +707,26 @@ void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
   uint uVar8;
   LONG local_14;
   
-  if ((param_1 == (void *)0x0) &&
+  if ((slot == (void *)0x0) &&
      (bVar6 = _tlAssert("source/phys_mem_new.cpp",0x1bd,"slot",
                         "no support support for freeing NULL slots."), bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  extra_info_free(this,param_1);
+  extra_info_free(this,slot);
   do {
     pvVar2 = (this->m_first_free_slot).m_ptr;
     uVar3 = (this->m_first_free_slot).m_tag;
     tVar5 = this->m_first_free_slot;
-    *(void **)param_1 = pvVar2;
+    *(void **)slot = pvVar2;
     local_14 = 0;
     InterlockedExchange(&local_14,0);
     LOCK();
     tVar1 = this->m_first_free_slot;
     if (tVar5 == tVar1) {
       tVar1.m_tag = uVar3 + 1;
-      tVar1.m_ptr = param_1;
+      tVar1.m_ptr = slot;
       this->m_first_free_slot = tVar1;
       pvVar7 = pvVar2;
       uVar8 = uVar3;
@@ -742,7 +743,7 @@ void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
 
 // 00A0F8B0  PMM_ALLOC  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:464)
 
-void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
+void * __cdecl PMM_ALLOC(uint size,uint alignment)
 
 {
   code *pcVar1;
@@ -750,7 +751,7 @@ void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
   void *pvVar3;
   phys_slot_pool *this;
   
-  if (param_1 == 0) {
+  if (size == 0) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x1d1,"size > 0","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -758,7 +759,7 @@ void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
       return pvVar3;
     }
   }
-  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_1,param_2);
+  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,size,alignment);
   pvVar3 = phys_slot_pool::allocate_slot(this);
   return pvVar3;
 }
@@ -766,42 +767,42 @@ void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
 
 // 00A0F900  PMM_FREE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:470)
 
-void __cdecl PMM_FREE(void *param_1,uint param_2,uint param_3)
+void __cdecl PMM_FREE(void *ptr,uint size,uint alignment)
 
 {
   phys_slot_pool *this;
   
-  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_2,param_3);
-  phys_slot_pool::free_slot(this,param_1);
+  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,size,alignment);
+  phys_slot_pool::free_slot(this,ptr);
   return;
 }
 
 
 // 00A0F930  PSP_ALLOC  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:476)
 
-void * __cdecl PSP_ALLOC(void *param_1)
+void * __cdecl PSP_ALLOC(void *slot_pool)
 
 {
   void *pvVar1;
   
-  pvVar1 = phys_slot_pool::allocate_slot(param_1);
+  pvVar1 = phys_slot_pool::allocate_slot(slot_pool);
   return pvVar1;
 }
 
 
 // 00A0F5F0  PSP_FREE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:482)
 
-void __cdecl PSP_FREE(void *param_1,void *param_2)
+void __cdecl PSP_FREE(void *slot_pool,void *slot)
 
 {
-  phys_slot_pool::free_slot(param_1,param_2);
+  phys_slot_pool::free_slot(slot_pool,slot);
   return;
 }
 
 
 // 00A0F940  GET_PHYS_SLOT_POOL  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:488)
 
-void * __cdecl GET_PHYS_SLOT_POOL(uint param_1,uint param_2)
+void * __cdecl GET_PHYS_SLOT_POOL(uint size,uint alignment)
 
 {
   code *pcVar1;
@@ -809,7 +810,7 @@ void * __cdecl GET_PHYS_SLOT_POOL(uint param_1,uint param_2)
   void *pvVar3;
   phys_slot_pool *ppVar4;
   
-  if (param_1 == 0) {
+  if (size == 0) {
     bVar2 = _tlAssert("source/phys_mem_new.cpp",0x1e9,"size > 0","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -817,27 +818,27 @@ void * __cdecl GET_PHYS_SLOT_POOL(uint param_1,uint param_2)
       return pvVar3;
     }
   }
-  ppVar4 = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_1,param_2);
+  ppVar4 = phys_memory_manager::get_slot_pool(g_phys_memory_manager,size,alignment);
   return ppVar4;
 }
 
 
 // 00A0F980  PMM_VALIDATE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:496)
 
-void __cdecl PMM_VALIDATE(void *param_1,uint param_2,uint param_3)
+void __cdecl PMM_VALIDATE(void *ptr,uint size,uint alignment)
 
 {
   phys_slot_pool *this;
   
-  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_2,param_3);
-  phys_slot_pool::validate_slot(this,param_1);
+  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,size,alignment);
+  phys_slot_pool::validate_slot(this,ptr);
   return;
 }
 
 
 // 00A0F610  transient_allocator_update_largest_size  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:529)
 
-void __cdecl transient_allocator_update_largest_size(int param_1)
+void __cdecl transient_allocator_update_largest_size(int __formal)
 
 {
   return;

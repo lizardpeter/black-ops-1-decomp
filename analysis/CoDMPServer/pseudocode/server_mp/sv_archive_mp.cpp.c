@@ -8,7 +8,7 @@
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-gentity_s * __cdecl SV_GentityNumLocal(int param_1)
+gentity_s * __cdecl SV_GentityNumLocal(int num)
 
 {
   code *pcVar1;
@@ -25,8 +25,7 @@ gentity_s * __cdecl SV_GentityNumLocal(int param_1)
     }
   }
   return (gentity_s *)
-         ((int)((svsHeader.gentities)->s).lerp.pos.trBase + svsHeader.gentitySize * param_1 + -0x18)
-  ;
+         ((int)((svsHeader.gentities)->s).lerp.pos.trBase + svsHeader.gentitySize * num + -0x18);
 }
 
 
@@ -38,7 +37,7 @@ gentity_s * __cdecl SV_GentityNumLocal(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-clientState_s * __cdecl G_GetClientStateLocal(int param_1)
+clientState_s * __cdecl G_GetClientStateLocal(int clientNum)
 
 {
   code *pcVar1;
@@ -56,7 +55,7 @@ clientState_s * __cdecl G_GetClientStateLocal(int param_1)
   }
   return (clientState_s *)
          ((int)(svsHeader.firstClientState)->attachModelIndex +
-         svsHeader.clientSize * param_1 + -0x10);
+         svsHeader.clientSize * clientNum + -0x10);
 }
 
 
@@ -96,16 +95,17 @@ MatchState * __cdecl G_GetMatchStateLocal(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetFollowPlayerStateLocal(int param_1,playerState_s *param_2)
+int __cdecl GetFollowPlayerStateLocal(int clientNum,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar *puVar4;
+  uchar *src;
+  hudelem_s *phVar4;
   hudelem_s *phVar5;
-  hudelem_s *phVar6;
-  uint local_c;
+  uint index;
+  playerState_s *clientPs;
   
   if (svsHeaderValid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp",0x42,
@@ -116,19 +116,18 @@ int __cdecl GetFollowPlayerStateLocal(int param_1,playerState_s *param_2)
       return iVar3;
     }
   }
-  puVar4 = (uchar *)((int)(svsHeader.firstPlayerState)->origin +
-                    svsHeader.clientSize * param_1 + -0x24);
-  if ((*(uint *)(puVar4 + 0x14) & 4) == 0) {
-    memset((uchar *)param_2,'\0',0x26a4);
+  src = (uchar *)((int)(svsHeader.firstPlayerState)->origin +
+                 svsHeader.clientSize * clientNum + -0x24);
+  if ((*(uint *)(src + 0x14) & 4) == 0) {
+    memset((uchar *)ps,'\0',0x26a4);
     iVar3 = 0;
   }
   else {
-    memcpy((uchar *)param_2,puVar4,0x26a4);
-    local_c = 0;
-    while ((local_c < 0x1f && (*(char *)((int)param_2->objective + local_c * 0x70 + 0x670) != '\0'))
-          ) {
-      memset((uchar *)((param_2->hud).current + local_c),'\0',0x70);
-      if (*(char *)((int)param_2->objective + local_c * 0x70 + 0x670) != '\0') {
+    memcpy((uchar *)ps,src,0x26a4);
+    index = 0;
+    while ((index < 0x1f && (*(char *)((int)ps->objective + index * 0x70 + 0x670) != '\0'))) {
+      memset((uchar *)((ps->hud).current + index),'\0',0x70);
+      if (*(char *)((int)ps->objective + index * 0x70 + 0x670) != '\0') {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp",
                                  0x52,0,"%s");
         if (!bVar2) {
@@ -137,19 +136,19 @@ int __cdecl GetFollowPlayerStateLocal(int param_1,playerState_s *param_2)
           return iVar3;
         }
       }
-      local_c = local_c + 1;
+      index = index + 1;
     }
-    for (; local_c < 0x1f; local_c = local_c + 1) {
+    for (; index < 0x1f; index = index + 1) {
       iVar3 = 0x1c;
       bVar2 = true;
-      phVar5 = (param_2->hud).current + local_c;
-      phVar6 = &g_dummyHudCurrent;
+      phVar4 = (ps->hud).current + index;
+      phVar5 = &g_dummyHudCurrent;
       do {
         if (iVar3 == 0) break;
         iVar3 = iVar3 + -1;
-        bVar2 = phVar5->x == phVar6->x;
+        bVar2 = phVar4->x == phVar5->x;
+        phVar4 = (hudelem_s *)&phVar4->y;
         phVar5 = (hudelem_s *)&phVar5->y;
-        phVar6 = (hudelem_s *)&phVar6->y;
       } while (bVar2);
       if (!bVar2) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp",
@@ -177,7 +176,7 @@ int __cdecl GetFollowPlayerStateLocal(int param_1,playerState_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ArchiveSnapshot(msg_t *param_1)
+void __cdecl SV_ArchiveSnapshot(msg_t *msg)
 
 {
   code *pcVar1;
@@ -187,51 +186,58 @@ void __cdecl SV_ArchiveSnapshot(msg_t *param_1)
   clientState_s *pcVar5;
   DWORD DVar6;
   int iVar7;
-  MatchState *pMVar8;
-  gentity_s *pgVar9;
-  archivedEntity_s *paVar10;
-  MatchState *pMVar11;
-  clientState_s *pcVar12;
-  cachedClient_s *local_2844;
-  int local_2840;
-  client_t *local_2838;
-  int local_282c;
-  SnapshotInfo_s local_2818;
-  archivedEntity_s *local_2800;
-  int local_27fc;
-  int local_27f8;
-  cachedSnapshot_t *local_27f4;
-  cachedSnapshot_t *local_27f0;
-  int local_27ec;
-  int local_27e8;
-  gentity_s *local_27e4;
-  int local_27e0;
-  int local_27dc;
-  gentity_s *local_27d8;
-  archivedEntity_s local_27d4;
+  MatchState *to;
+  gentity_s *pgVar8;
+  archivedEntity_s *paVar9;
+  MatchState *pMVar10;
+  clientState_s *pcVar11;
+  cachedClient_s *cachedClient2;
+  int e;
+  svEntity_s *svEnt;
+  client_t *c;
+  archivedEntity_s *remoteCachedEnt;
+  clientHeader_t *localClient;
+  int newnum;
+  int archivedFrame;
+  cachedClient_s *remoteCachedClient;
+  MatchState *matchState;
+  cachedSnapshot_t *cachedSnapshotFrames;
+  SnapshotInfo_s snapInfo;
+  archivedEntity_s *cachedEnt;
+  int oldindex;
+  int oldnum;
+  cachedSnapshot_t *cachedFrame;
+  cachedSnapshot_t *remoteCachedFrame;
+  int to_num_clients;
+  int from_num_clients;
+  gentity_s *remoteEnt;
+  int firstCachedSnapshotFrame;
+  int lastEntityNum;
+  gentity_s *ent;
+  archivedEntity_s archivedEnt;
   uint local_26d0;
-  uint local_26cc;
-  MatchState *local_26c8;
-  playerState_s local_26c4;
-  MatchState *local_18;
-  undefined4 local_14;
-  archivedEntity_s *local_10;
-  cachedSnapshot_t *local_c;
-  cachedClient_s *local_8;
+  int i;
+  MatchState *remoteMatchState;
+  playerState_s ps;
+  MatchState *cachedMatchState;
+  int clientNum;
+  archivedEntity_s *baseline;
+  cachedSnapshot_t *cachedFrame2;
+  cachedClient_s *cachedClient;
   
-  local_8 = (cachedClient_s *)0x6f6a5d;
+  cachedClient = (cachedClient_s *)0x6f6a5d;
   local_26d0 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = 0;
-  local_2818.client = (clientHeader_t *)0x0;
-  local_2818.snapshotDeltaTime = 0;
-  local_2818.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
-  local_2818.packetEntityTypeArchived = false;
-  local_2818._21_3_ = 0;
-  local_2818.fromBaseline = false;
-  local_2818.archived = true;
-  local_2818.entJustUnlinked = false;
-  local_2818.demoSnapshot = false;
-  local_2818.clientNum = 0;
+  clientNum = 0;
+  snapInfo.client = (clientHeader_t *)0x0;
+  snapInfo.snapshotDeltaTime = 0;
+  snapInfo.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
+  snapInfo.packetEntityTypeArchived = false;
+  snapInfo._21_3_ = 0;
+  snapInfo.fromBaseline = false;
+  snapInfo.archived = true;
+  snapInfo.entJustUnlinked = false;
+  snapInfo.demoSnapshot = false;
+  snapInfo.clientNum = 0;
   if ((svsHeaderValid == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp",
                                0x91,0,"%s"), !bVar2)) {
@@ -275,103 +281,102 @@ void __cdecl SV_ArchiveSnapshot(msg_t *param_1)
     (*pcVar1)();
     return;
   }
-  local_27e0 = svsHeader.nextCachedSnapshotFrames + -0x200;
-  if (local_27e0 < 0) {
-    local_27e0 = 0;
+  firstCachedSnapshotFrame = svsHeader.nextCachedSnapshotFrames + -0x200;
+  if (firstCachedSnapshotFrame < 0) {
+    firstCachedSnapshotFrame = 0;
   }
   svsHeader.archivedEntityCount = 0;
-  local_26cc = svsHeader.nextCachedSnapshotFrames;
+  i = svsHeader.nextCachedSnapshotFrames;
   do {
-    local_26cc = local_26cc - 1;
-    if ((int)local_26cc < local_27e0) goto LAB_006f747b;
-    uVar3 = local_26cc & 0x800001ff;
+    i = i + -1;
+    if (i < firstCachedSnapshotFrame) goto LAB_006f747b;
+    uVar3 = i & 0x800001ff;
     if ((int)uVar3 < 0) {
       uVar3 = (uVar3 - 1 | 0xfffffe00) + 1;
     }
-    local_c = svsHeader.cachedSnapshotFrames + uVar3;
-  } while ((local_c->archivedFrame < svsHeader.nextArchivedSnapshotFrames - svsHeader.fps) ||
-          (local_c->usesDelta != 0));
-  if ((local_c->first_entity <
+    cachedFrame2 = svsHeader.cachedSnapshotFrames + uVar3;
+  } while ((cachedFrame2->archivedFrame < svsHeader.nextArchivedSnapshotFrames - svsHeader.fps) ||
+          (cachedFrame2->usesDelta != 0));
+  if ((cachedFrame2->first_entity <
        svsHeader.nextCachedSnapshotEntities - svsHeader.numCachedSnapshotEntities) ||
-     (local_c->first_client <
+     (cachedFrame2->first_client <
       svsHeader.nextCachedSnapshotClients - svsHeader.numCachedSnapshotClients)) {
 LAB_006f747b:
     PIXBeginNamedEvent(0x3030ff,"write delta");
-    MSG_WriteBit1(param_1);
-    MSG_WriteLong(param_1,svsHeader.time);
-    MSG_WriteLong(param_1,svsHeader.physicsTime);
-    MSG_ClearLastReferencedEntity(param_1);
+    MSG_WriteBit1(msg);
+    MSG_WriteLong(msg,svsHeader.time);
+    MSG_WriteLong(msg,svsHeader.physicsTime);
+    MSG_ClearLastReferencedEntity(msg);
     uVar3 = svsHeader.nextCachedSnapshotFrames & 0x800001ff;
     if ((int)uVar3 < 0) {
       uVar3 = (uVar3 - 1 | 0xfffffe00) + 1;
     }
-    local_27f4 = svsHeader.cachedSnapshotFrames + uVar3;
-    local_27f4->archivedFrame = svsHeader.nextArchivedSnapshotFrames;
-    local_27f4->matchState = svsHeader.nextCachedSnapshotMatchStates;
-    local_27f4->num_entities = 0;
-    local_27f4->first_entity = svsHeader.nextCachedSnapshotEntities;
-    local_27f4->num_clients = 0;
-    local_27f4->first_client = svsHeader.nextCachedSnapshotClients;
-    local_27f4->usesDelta = 0;
-    local_27f4->time = svsHeader.time;
-    local_27f4->physicsTime = svsHeader.physicsTime;
-    local_27f0 = local_27f4;
-    MSG_ClearLastReferencedEntity(param_1);
-    pMVar8 = svsHeader.cachedSnapshotMatchStates +
-             svsHeader.nextCachedSnapshotMatchStates % svsHeader.numCachedSnapshotMatchStates;
-    local_26c8 = pMVar8;
+    cachedFrame = svsHeader.cachedSnapshotFrames + uVar3;
+    cachedFrame->archivedFrame = svsHeader.nextArchivedSnapshotFrames;
+    cachedFrame->matchState = svsHeader.nextCachedSnapshotMatchStates;
+    cachedFrame->num_entities = 0;
+    cachedFrame->first_entity = svsHeader.nextCachedSnapshotEntities;
+    cachedFrame->num_clients = 0;
+    cachedFrame->first_client = svsHeader.nextCachedSnapshotClients;
+    cachedFrame->usesDelta = 0;
+    cachedFrame->time = svsHeader.time;
+    cachedFrame->physicsTime = svsHeader.physicsTime;
+    remoteCachedFrame = cachedFrame;
+    MSG_ClearLastReferencedEntity(msg);
+    to = svsHeader.cachedSnapshotMatchStates +
+         svsHeader.nextCachedSnapshotMatchStates % svsHeader.numCachedSnapshotMatchStates;
+    remoteMatchState = to;
     pMVar4 = G_GetMatchStateLocal();
-    pMVar11 = pMVar8;
+    pMVar10 = to;
     for (iVar7 = 0x20; iVar7 != 0; iVar7 = iVar7 + -1) {
-      pMVar11->index = pMVar4->index;
+      pMVar10->index = pMVar4->index;
       pMVar4 = (MatchState *)&pMVar4->archivedState;
-      pMVar11 = (MatchState *)&pMVar11->archivedState;
+      pMVar10 = (MatchState *)&pMVar10->archivedState;
     }
-    MSG_WriteDeltaMatchState(&local_2818,param_1,svsHeader.time,(MatchState *)0x0,pMVar8);
+    MSG_WriteDeltaMatchState(&snapInfo,msg,svsHeader.time,(MatchState *)0x0,to);
     svsHeader.nextCachedSnapshotMatchStates = svsHeader.nextCachedSnapshotMatchStates + 1;
     if (0x7ffffffd < svsHeader.nextCachedSnapshotMatchStates) {
       Com_Error(ERR_FATAL,"\x15svsHeader.nextCachedSnapshotMatchStates wrapped");
     }
-    MSG_ClearLastReferencedEntity(param_1);
-    local_2838 = svsHeader.clients;
-    for (local_26cc = 0; (int)local_26cc < svsHeader.maxclients; local_26cc = local_26cc + 1) {
-      if (2 < (local_2838->header).state) {
-        local_8 = svsHeader.cachedSnapshotClients +
-                  svsHeader.nextCachedSnapshotClients % svsHeader.numCachedSnapshotClients;
-        pcVar5 = G_GetClientStateLocal(local_26cc);
-        pcVar12 = &local_8->cs;
+    MSG_ClearLastReferencedEntity(msg);
+    c = svsHeader.clients;
+    for (i = 0; i < svsHeader.maxclients; i = i + 1) {
+      if (2 < (c->header).state) {
+        cachedClient = svsHeader.cachedSnapshotClients +
+                       svsHeader.nextCachedSnapshotClients % svsHeader.numCachedSnapshotClients;
+        pcVar5 = G_GetClientStateLocal(i);
+        pcVar11 = &cachedClient->cs;
         for (iVar7 = 0x34; iVar7 != 0; iVar7 = iVar7 + -1) {
-          pcVar12->clientIndex = pcVar5->clientIndex;
+          pcVar11->clientIndex = pcVar5->clientIndex;
           pcVar5 = (clientState_s *)&pcVar5->team;
-          pcVar12 = (clientState_s *)&pcVar12->team;
+          pcVar11 = (clientState_s *)&pcVar11->team;
         }
-        MSG_WriteDeltaClient(&local_2818,param_1,svsHeader.time,(clientState_s *)0x0,&local_8->cs,1)
-        ;
-        iVar7 = GetFollowPlayerStateLocal(local_26cc,&local_8->ps);
-        local_8->playerStateExists = iVar7;
-        if (local_8->playerStateExists == 0) {
-          MSG_WriteBit0(param_1);
+        MSG_WriteDeltaClient(&snapInfo,msg,svsHeader.time,(clientState_s *)0x0,&cachedClient->cs,1);
+        iVar7 = GetFollowPlayerStateLocal(i,&cachedClient->ps);
+        cachedClient->playerStateExists = iVar7;
+        if (cachedClient->playerStateExists == 0) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_1);
+          MSG_WriteBit1(msg);
           MSG_WriteDeltaPlayerstate
-                    (&local_2818,param_1,svsHeader.time,(playerState_s *)0x0,&local_8->ps);
+                    (&snapInfo,msg,svsHeader.time,(playerState_s *)0x0,&cachedClient->ps);
         }
         svsHeader.nextCachedSnapshotClients = svsHeader.nextCachedSnapshotClients + 1;
         if (0x7ffffffd < svsHeader.nextCachedSnapshotClients) {
           Com_Error(ERR_FATAL,"\x15svsHeader.nextCachedSnapshotClients wrapped");
         }
-        local_27f4->num_clients = local_27f4->num_clients + 1;
+        cachedFrame->num_clients = cachedFrame->num_clients + 1;
       }
-      local_2838 = (client_t *)(local_2838[1].userinfo + 0x3d8);
+      c = (client_t *)(c[1].userinfo + 0x3d8);
     }
-    MSG_WriteBit0(param_1);
-    MSG_ClearLastReferencedEntity(param_1);
-    for (local_2840 = 0; local_2840 < svsHeader.num_entities; local_2840 = local_2840 + 1) {
-      local_27e4 = SV_GentityNumLocal(local_2840);
-      if ((local_27e4->r).linked != '\0') {
-        local_27d8 = local_27e4;
-        if ((local_27e4->s).number != local_2840) {
+    MSG_WriteBit0(msg);
+    MSG_ClearLastReferencedEntity(msg);
+    for (e = 0; e < svsHeader.num_entities; e = e + 1) {
+      remoteEnt = SV_GentityNumLocal(e);
+      if ((remoteEnt->r).linked != '\0') {
+        ent = remoteEnt;
+        if ((remoteEnt->s).number != e) {
           va("entnum: %d vs %d, eType: %d, origin: %f %f %f");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                    ,0x1b8,0,"%s\n\t%s");
@@ -381,50 +386,49 @@ LAB_006f747b:
             return;
           }
         }
-        if ((((local_27d8->r).broadcastTime != 0) ||
-            (((local_27d8->s).clientLinkInfo.flags & 1) != 0)) ||
-           ((((local_27d8->r).svFlags & 1) == 0 &&
-            (((((local_27d8->r).svFlags & 0x18) != 0 ||
-              (svsHeader.svEntities[(local_27d8->s).number].numClusters != 0)) &&
-             (((local_27d8->r).svFlags & 0x80) == 0)))))) {
-          local_10 = &svsHeader.svEntities[(local_27d8->s).number].baseline;
-          if ((local_10 == (archivedEntity_s *)0x0) &&
+        if ((((ent->r).broadcastTime != 0) || (((ent->s).clientLinkInfo.flags & 1) != 0)) ||
+           ((((ent->r).svFlags & 1) == 0 &&
+            (((((ent->r).svFlags & 0x18) != 0 ||
+              (svsHeader.svEntities[(ent->s).number].numClusters != 0)) &&
+             (((ent->r).svFlags & 0x80) == 0)))))) {
+          baseline = &svsHeader.svEntities[(ent->s).number].baseline;
+          if ((baseline == (archivedEntity_s *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                        ,0x1ca,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_2800 = svsHeader.cachedSnapshotEntities +
-                       svsHeader.nextCachedSnapshotEntities % svsHeader.numCachedSnapshotEntities;
-          pgVar9 = local_27d8;
-          paVar10 = local_2800;
+          cachedEnt = svsHeader.cachedSnapshotEntities +
+                      svsHeader.nextCachedSnapshotEntities % svsHeader.numCachedSnapshotEntities;
+          pgVar8 = ent;
+          paVar9 = cachedEnt;
           for (iVar7 = 0x38; iVar7 != 0; iVar7 = iVar7 + -1) {
-            (paVar10->s).number = (pgVar9->s).number;
-            pgVar9 = (gentity_s *)&(pgVar9->s).lerp;
-            paVar10 = (archivedEntity_s *)&(paVar10->s).lerp;
+            (paVar9->s).number = (pgVar8->s).number;
+            pgVar8 = (gentity_s *)&(pgVar8->s).lerp;
+            paVar9 = (archivedEntity_s *)&(paVar9->s).lerp;
           }
-          (local_2800->r).svFlags = (uint)(local_27d8->r).svFlags;
-          if ((local_27d8->r).broadcastTime != 0) {
-            (local_2800->r).svFlags = (local_2800->r).svFlags | 8;
+          (cachedEnt->r).svFlags = (uint)(ent->r).svFlags;
+          if ((ent->r).broadcastTime != 0) {
+            (cachedEnt->r).svFlags = (cachedEnt->r).svFlags | 8;
           }
-          (local_2800->r).clientMask[0] = (local_27d8->r).clientMask[0];
-          (local_2800->r).absmin[0] = (local_27d8->r).absmin[0];
-          (local_2800->r).absmin[1] = (local_27d8->r).absmin[1];
-          (local_2800->r).absmin[2] = (local_27d8->r).absmin[2];
-          (local_2800->r).absmax[0] = (local_27d8->r).absmax[0];
-          (local_2800->r).absmax[1] = (local_27d8->r).absmax[1];
-          (local_2800->r).absmax[2] = (local_27d8->r).absmax[2];
-          local_2818.fromBaseline = true;
+          (cachedEnt->r).clientMask[0] = (ent->r).clientMask[0];
+          (cachedEnt->r).absmin[0] = (ent->r).absmin[0];
+          (cachedEnt->r).absmin[1] = (ent->r).absmin[1];
+          (cachedEnt->r).absmin[2] = (ent->r).absmin[2];
+          (cachedEnt->r).absmax[0] = (ent->r).absmax[0];
+          (cachedEnt->r).absmax[1] = (ent->r).absmax[1];
+          (cachedEnt->r).absmax[2] = (ent->r).absmax[2];
+          snapInfo.fromBaseline = true;
           MSG_WriteDeltaArchivedEntity
-                    (&local_2818,param_1,svsHeader.time,local_10,local_2800,DELTA_FLAGS_FORCE);
+                    (&snapInfo,msg,svsHeader.time,baseline,cachedEnt,DELTA_FLAGS_FORCE);
           svsHeader.archivedEntityCount = svsHeader.archivedEntityCount + 1;
-          local_2818._12_4_ = (uint)(uint3)local_2818._13_3_ << 8;
+          snapInfo._12_4_ = (uint)(uint3)snapInfo._13_3_ << 8;
           svsHeader.nextCachedSnapshotEntities = svsHeader.nextCachedSnapshotEntities + 1;
           if (0x7ffffffd < svsHeader.nextCachedSnapshotEntities) {
             Com_Error(ERR_FATAL,"\x15svsHeader.nextCachedSnapshotEntities wrapped");
           }
-          local_27f4->num_entities = local_27f4->num_entities + 1;
+          cachedFrame->num_entities = cachedFrame->num_entities + 1;
         }
       }
     }
@@ -438,40 +442,41 @@ LAB_006f747b:
     }
   }
   else {
-    MSG_WriteBit0(param_1);
-    MSG_WriteLong(param_1,local_c->archivedFrame);
-    MSG_WriteLong(param_1,svsHeader.time);
-    MSG_WriteLong(param_1,svsHeader.physicsTime);
-    MSG_ClearLastReferencedEntity(param_1);
-    local_18 = svsHeader.cachedSnapshotMatchStates +
-               local_c->matchState % svsHeader.numCachedSnapshotMatchStates;
+    MSG_WriteBit0(msg);
+    MSG_WriteLong(msg,cachedFrame2->archivedFrame);
+    MSG_WriteLong(msg,svsHeader.time);
+    MSG_WriteLong(msg,svsHeader.physicsTime);
+    MSG_ClearLastReferencedEntity(msg);
+    cachedMatchState =
+         svsHeader.cachedSnapshotMatchStates +
+         cachedFrame2->matchState % svsHeader.numCachedSnapshotMatchStates;
     pMVar4 = G_GetMatchStateLocal();
-    MSG_WriteDeltaMatchState(&local_2818,param_1,svsHeader.time,local_18,pMVar4);
-    MSG_ClearLastReferencedEntity(param_1);
-    local_27ec = svsHeader.maxclients;
-    local_27e8 = local_c->num_clients;
-    local_8 = (cachedClient_s *)0x0;
-    local_282c = 0;
-    local_27fc = 0;
+    MSG_WriteDeltaMatchState(&snapInfo,msg,svsHeader.time,cachedMatchState,pMVar4);
+    MSG_ClearLastReferencedEntity(msg);
+    to_num_clients = svsHeader.maxclients;
+    from_num_clients = cachedFrame2->num_clients;
+    cachedClient = (cachedClient_s *)0x0;
+    newnum = 0;
+    oldindex = 0;
     PIXBeginNamedEvent(0x3030ff,"clients");
-    while ((local_282c < local_27ec || (local_27fc < local_27e8))) {
-      if ((local_282c < local_27ec) && (*(int *)((int)svsHeader.clients + local_282c * 0x84d00) < 3)
-         ) {
-        local_282c = local_282c + 1;
+    while ((newnum < to_num_clients || (oldindex < from_num_clients))) {
+      if ((newnum < to_num_clients) && (*(int *)((int)svsHeader.clients + newnum * 0x84d00) < 3)) {
+        newnum = newnum + 1;
       }
       else {
-        if (local_27fc < local_27e8) {
-          local_2844 = svsHeader.cachedSnapshotClients +
-                       (local_c->first_client + local_27fc) % svsHeader.numCachedSnapshotClients;
-          local_27f8 = (local_2844->cs).clientIndex;
+        if (oldindex < from_num_clients) {
+          cachedClient2 =
+               svsHeader.cachedSnapshotClients +
+               (cachedFrame2->first_client + oldindex) % svsHeader.numCachedSnapshotClients;
+          oldnum = (cachedClient2->cs).clientIndex;
         }
         else {
-          local_2844 = (cachedClient_s *)0x0;
-          local_27f8 = 9999;
+          cachedClient2 = (cachedClient_s *)0x0;
+          oldnum = 9999;
         }
-        local_2818.clientNum = local_282c;
-        if (local_282c == local_27f8) {
-          if ((local_2844 == (cachedClient_s *)0x0) &&
+        snapInfo.clientNum = newnum;
+        if (newnum == oldnum) {
+          if ((cachedClient2 == (cachedClient_s *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                        ,0xef,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -479,44 +484,40 @@ LAB_006f747b:
             return;
           }
           iVar7 = 1;
-          pcVar5 = G_GetClientStateLocal(local_282c);
-          MSG_WriteDeltaClient(&local_2818,param_1,svsHeader.time,&local_2844->cs,pcVar5,iVar7);
-          iVar7 = GetFollowPlayerStateLocal(local_282c,&local_26c4);
+          pcVar5 = G_GetClientStateLocal(newnum);
+          MSG_WriteDeltaClient(&snapInfo,msg,svsHeader.time,&cachedClient2->cs,pcVar5,iVar7);
+          iVar7 = GetFollowPlayerStateLocal(newnum,&ps);
           if (iVar7 == 0) {
-            MSG_WriteBit0(param_1);
+            MSG_WriteBit0(msg);
           }
           else {
-            MSG_WriteBit1(param_1);
-            if (local_2844->playerStateExists == 0) {
-              MSG_WriteDeltaPlayerstate
-                        (&local_2818,param_1,svsHeader.time,(playerState_s *)0x0,&local_26c4);
+            MSG_WriteBit1(msg);
+            if (cachedClient2->playerStateExists == 0) {
+              MSG_WriteDeltaPlayerstate(&snapInfo,msg,svsHeader.time,(playerState_s *)0x0,&ps);
             }
             else {
-              MSG_WriteDeltaPlayerstate
-                        (&local_2818,param_1,svsHeader.time,&local_2844->ps,&local_26c4);
+              MSG_WriteDeltaPlayerstate(&snapInfo,msg,svsHeader.time,&cachedClient2->ps,&ps);
             }
           }
-          local_27fc = local_27fc + 1;
-          local_282c = local_282c + 1;
+          oldindex = oldindex + 1;
+          newnum = newnum + 1;
         }
-        else if (local_282c < local_27f8) {
+        else if (newnum < oldnum) {
           iVar7 = 1;
-          pcVar5 = G_GetClientStateLocal(local_282c);
-          MSG_WriteDeltaClient(&local_2818,param_1,svsHeader.time,(clientState_s *)0x0,pcVar5,iVar7)
-          ;
-          iVar7 = GetFollowPlayerStateLocal(local_282c,&local_26c4);
+          pcVar5 = G_GetClientStateLocal(newnum);
+          MSG_WriteDeltaClient(&snapInfo,msg,svsHeader.time,(clientState_s *)0x0,pcVar5,iVar7);
+          iVar7 = GetFollowPlayerStateLocal(newnum,&ps);
           if (iVar7 == 0) {
-            MSG_WriteBit0(param_1);
+            MSG_WriteBit0(msg);
           }
           else {
-            MSG_WriteBit1(param_1);
-            MSG_WriteDeltaPlayerstate
-                      (&local_2818,param_1,svsHeader.time,(playerState_s *)0x0,&local_26c4);
+            MSG_WriteBit1(msg);
+            MSG_WriteDeltaPlayerstate(&snapInfo,msg,svsHeader.time,(playerState_s *)0x0,&ps);
           }
-          local_282c = local_282c + 1;
+          newnum = newnum + 1;
         }
-        else if (local_27f8 < local_282c) {
-          local_27fc = local_27fc + 1;
+        else if (oldnum < newnum) {
+          oldindex = oldindex + 1;
         }
       }
     }
@@ -524,15 +525,15 @@ LAB_006f747b:
     if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    MSG_WriteBit0(param_1);
-    MSG_ClearLastReferencedEntity(param_1);
-    local_27dc = -1;
+    MSG_WriteBit0(msg);
+    MSG_ClearLastReferencedEntity(msg);
+    lastEntityNum = -1;
     PIXBeginNamedEvent(0x3030ff,"entities");
-    for (local_2840 = 0; local_2840 < svsHeader.num_entities; local_2840 = local_2840 + 1) {
-      local_27e4 = SV_GentityNumLocal(local_2840);
-      if ((local_27e4->r).linked != '\0') {
-        local_27d8 = local_27e4;
-        if ((local_27e4->s).number != local_2840) {
+    for (e = 0; e < svsHeader.num_entities; e = e + 1) {
+      remoteEnt = SV_GentityNumLocal(e);
+      if ((remoteEnt->r).linked != '\0') {
+        ent = remoteEnt;
+        if ((remoteEnt->s).number != e) {
           va("entnum: %d vs %d, eType: %d, origin: %f %f %f");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                    ,0x12d,0,"%s\n\t%s");
@@ -542,39 +543,38 @@ LAB_006f747b:
             return;
           }
         }
-        if ((((local_27d8->r).broadcastTime != 0) ||
-            (((local_27d8->s).clientLinkInfo.flags & 1) != 0)) ||
-           ((((local_27d8->r).svFlags & 1) == 0 &&
-            (((((local_27d8->r).svFlags & 0x18) != 0 ||
-              (svsHeader.svEntities[(local_27d8->s).number].numClusters != 0)) &&
-             (((local_27d8->r).svFlags & 0x80) == 0)))))) {
-          local_10 = &svsHeader.svEntities[(local_27d8->s).number].baseline;
-          if ((local_10 == (archivedEntity_s *)0x0) &&
+        if ((((ent->r).broadcastTime != 0) || (((ent->s).clientLinkInfo.flags & 1) != 0)) ||
+           ((((ent->r).svFlags & 1) == 0 &&
+            (((((ent->r).svFlags & 0x18) != 0 ||
+              (svsHeader.svEntities[(ent->s).number].numClusters != 0)) &&
+             (((ent->r).svFlags & 0x80) == 0)))))) {
+          baseline = &svsHeader.svEntities[(ent->s).number].baseline;
+          if ((baseline == (archivedEntity_s *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                        ,0x13f,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          pgVar9 = local_27d8;
-          paVar10 = &local_27d4;
+          pgVar8 = ent;
+          paVar9 = &archivedEnt;
           for (iVar7 = 0x38; iVar7 != 0; iVar7 = iVar7 + -1) {
-            (paVar10->s).number = (pgVar9->s).number;
-            pgVar9 = (gentity_s *)&(pgVar9->s).lerp;
-            paVar10 = (archivedEntity_s *)&(paVar10->s).lerp;
+            (paVar9->s).number = (pgVar8->s).number;
+            pgVar8 = (gentity_s *)&(pgVar8->s).lerp;
+            paVar9 = (archivedEntity_s *)&(paVar9->s).lerp;
           }
-          local_27d4.r.svFlags = (int)(local_27d8->r).svFlags;
-          if ((local_27d8->r).broadcastTime != 0) {
-            local_27d4.r.svFlags = local_27d4.r.svFlags | 8;
+          archivedEnt.r.svFlags = (int)(ent->r).svFlags;
+          if ((ent->r).broadcastTime != 0) {
+            archivedEnt.r.svFlags = archivedEnt.r.svFlags | 8;
           }
-          local_27d4.r.clientMask[0] = (local_27d8->r).clientMask[0];
-          local_27d4.r.absmin[0] = (local_27d8->r).absmin[0];
-          local_27d4.r.absmin[1] = (local_27d8->r).absmin[1];
-          local_27d4.r.absmin[2] = (local_27d8->r).absmin[2];
-          local_27d4.r.absmax[0] = (local_27d8->r).absmax[0];
-          local_27d4.r.absmax[1] = (local_27d8->r).absmax[1];
-          local_27d4.r.absmax[2] = (local_27d8->r).absmax[2];
-          if (local_27dc == (local_27d8->s).number) {
+          archivedEnt.r.clientMask[0] = (ent->r).clientMask[0];
+          archivedEnt.r.absmin[0] = (ent->r).absmin[0];
+          archivedEnt.r.absmin[1] = (ent->r).absmin[1];
+          archivedEnt.r.absmin[2] = (ent->r).absmin[2];
+          archivedEnt.r.absmax[0] = (ent->r).absmax[0];
+          archivedEnt.r.absmax[1] = (ent->r).absmax[1];
+          archivedEnt.r.absmax[2] = (ent->r).absmax[2];
+          if (lastEntityNum == (ent->s).number) {
             va("lastEntityNum is %i, cur entnum is %i");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_archive_mp.cpp"
                                      ,0x14c,0,"%s\n\t%s");
@@ -584,15 +584,14 @@ LAB_006f747b:
               return;
             }
           }
-          local_2818.fromBaseline = true;
+          snapInfo.fromBaseline = true;
           bVar2 = MSG_WriteDeltaArchivedEntity
-                            (&local_2818,param_1,svsHeader.time,local_10,&local_27d4,
-                             DELTA_FLAGS_FORCE);
+                            (&snapInfo,msg,svsHeader.time,baseline,&archivedEnt,DELTA_FLAGS_FORCE);
           if (bVar2) {
             svsHeader.archivedEntityCount = svsHeader.archivedEntityCount + 1;
           }
-          local_2818._12_4_ = (uint)(uint3)local_2818._13_3_ << 8;
-          local_27dc = (local_27d8->s).number;
+          snapInfo._12_4_ = (uint)(uint3)snapInfo._13_3_ << 8;
+          lastEntityNum = (ent->s).number;
         }
       }
     }
@@ -601,7 +600,7 @@ LAB_006f747b:
       _D3DPERF_EndEvent_0();
     }
   }
-  MSG_WriteEntityIndex(&local_2818,param_1,0x3ff,10);
+  MSG_WriteEntityIndex(&snapInfo,msg,0x3ff,10);
   return;
 }
 

@@ -2,12 +2,12 @@
 
 // 00C0C336  operator_new[]  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/newaop.cpp:6)
 
-void * __cdecl operator_new__(uint param_1)
+void * __cdecl operator_new__(uint count)
 
 {
   void *pvVar1;
   
-  pvVar1 = operator_new(param_1);
+  pvVar1 = operator_new(count);
   return pvVar1;
 }
 

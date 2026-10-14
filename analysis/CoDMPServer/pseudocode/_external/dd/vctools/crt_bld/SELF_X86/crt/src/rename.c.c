@@ -2,21 +2,21 @@
 
 // 00C110EF  rename  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rename.c:40)
 
-int __cdecl rename(char *param_1,char *param_2)
+int __cdecl rename(char *oldname,char *newname)
 
 {
   BOOL BVar1;
-  ulong uVar2;
+  ulong oserrno;
   
-  BVar1 = MoveFileA(param_1,param_2);
+  BVar1 = MoveFileA(oldname,newname);
   if (BVar1 == 0) {
-    uVar2 = GetLastError();
+    oserrno = GetLastError();
   }
   else {
-    uVar2 = 0;
+    oserrno = 0;
   }
-  if (uVar2 != 0) {
-    _dosmaperr(uVar2);
+  if (oserrno != 0) {
+    _dosmaperr(oserrno);
     return -1;
   }
   return 0;

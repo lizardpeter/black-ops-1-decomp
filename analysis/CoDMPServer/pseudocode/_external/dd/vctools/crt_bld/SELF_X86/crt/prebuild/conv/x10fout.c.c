@@ -7,7 +7,7 @@
 /* WARNING: Removing unreachable block (ram,0x00c2eacd) */
 /* WARNING: Removing unreachable block (ram,0x00c2ead2) */
 
-int __cdecl _I10_OUTPUT(_LDOUBLE param_1,int param_2,uint param_3,_FloatOutStruct *param_4)
+int __cdecl _I10_OUTPUT(_LDOUBLE ld,int ndigits,uint output_flags,_FloatOutStruct *fos)
 
 {
   int iVar1;
@@ -30,27 +30,29 @@ int __cdecl _I10_OUTPUT(_LDOUBLE param_1,int param_2,uint param_3,_FloatOutStruc
   ushort uVar18;
   uint uVar19;
   char *pcVar20;
+  int retval;
+  ushort sign;
   ushort *local_70;
   ushort *local_6c;
   undefined *local_68;
   int local_5c;
   int local_58;
   int local_54;
-  short local_50;
+  short ir;
   ushort *local_4c;
   int local_48;
   int local_44;
-  ushort local_40;
+  ushort tmp12;
   undefined2 uStack_3e;
   undefined2 uStack_3c;
   undefined2 uStack_3a;
   undefined4 local_38;
-  undefined4 local_34;
+  undefined4 ld12_one_tenth;
   undefined4 local_30;
   undefined2 local_2c;
   undefined1 uStack_2a;
   undefined1 uStack_29;
-  undefined4 local_24;
+  undefined4 ld12;
   undefined4 uStack_20;
   ushort uStack_1c;
   undefined1 local_1a;
@@ -63,42 +65,42 @@ int __cdecl _I10_OUTPUT(_LDOUBLE param_1,int param_2,uint param_3,_FloatOutStruc
   ushort uStack_a;
   uint local_8;
   
-  _Var3.ld = param_1.ld;
+  _Var3.ld = ld.ld;
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = param_1.ld[0];
-  uStack_13 = param_1.ld[1];
-  uStack_12 = param_1.ld._2_2_;
-  local_10[0] = param_1.ld._4_2_;
-  local_10[1] = param_1.ld._6_2_;
-  local_c._0_1_ = param_1.ld[8];
-  local_c._1_1_ = param_1.ld[9];
-  uVar7 = param_1.ld._8_2_ & 0x8000;
-  uVar12 = (ushort)param_1.ld._8_2_ & 0x7fff;
-  local_34 = 0xcccccccc;
+  local_14 = ld.ld[0];
+  uStack_13 = ld.ld[1];
+  uStack_12 = ld.ld._2_2_;
+  local_10[0] = ld.ld._4_2_;
+  local_10[1] = ld.ld._6_2_;
+  local_c._0_1_ = ld.ld[8];
+  local_c._1_1_ = ld.ld[9];
+  uVar7 = ld.ld._8_2_ & 0x8000;
+  uVar12 = (ushort)ld.ld._8_2_ & 0x7fff;
+  ld12_one_tenth = 0xcccccccc;
   local_30 = 0xcccccccc;
   local_2c._0_1_ = 0xcc;
   local_2c._1_1_ = 0xcc;
   uStack_2a = 0xfb;
   uStack_29 = 0x3f;
   if (uVar7 == 0) {
-    param_4->sign = ' ';
+    fos->sign = ' ';
   }
   else {
-    param_4->sign = '-';
+    fos->sign = '-';
   }
   uVar14 = _Var3.ld._4_4_;
-  local_24._2_2_ = _Var3.ld._0_2_;
+  ld12._2_2_ = _Var3.ld._0_2_;
   iVar4 = _Var3.ld._0_4_;
   if ((((short)uVar12 == 0) && (uVar14 == 0)) && (iVar4 == 0)) {
-    param_4->exp = 0;
-    param_4->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
-    param_4->ManLen = '\x01';
-    param_4->man[0] = '0';
-    param_4->man[1] = '\0';
+    fos->exp = 0;
+    fos->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
+    fos->ManLen = '\x01';
+    fos->man[0] = '0';
+    fos->man[1] = '\0';
     return 1;
   }
   if ((short)uVar12 == 0x7fff) {
-    param_4->exp = 1;
+    fos->exp = 1;
     if (((uVar14 == 0x80000000) && (iVar4 == 0)) || ((uVar14 & 0x40000000) != 0)) {
       if ((uVar7 == 0) || (uVar14 != 0xc0000000)) {
         if ((uVar14 != 0x80000000) || (iVar4 != 0)) goto LAB_00c2e6be;
@@ -112,41 +114,41 @@ LAB_00c2e6be:
         }
         pcVar20 = "1#IND";
       }
-      iVar4 = strcpy_s(param_4->man,0x16,pcVar20);
+      iVar4 = strcpy_s(fos->man,0x16,pcVar20);
       if (iVar4 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      param_4->ManLen = '\x05';
+      fos->ManLen = '\x05';
     }
     else {
       pcVar20 = "1#SNAN";
 LAB_00c2e6c3:
-      iVar4 = strcpy_s(param_4->man,0x16,pcVar20);
+      iVar4 = strcpy_s(fos->man,0x16,pcVar20);
       if (iVar4 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      param_4->ManLen = '\x06';
+      fos->ManLen = '\x06';
     }
     return 0;
   }
-  local_50 = (short)(((uVar12 >> 8) + (uVar14 >> 0x18) * 2) * 0x4d + -0x134312f4 + uVar12 * 0x4d10
-                    >> 0x10);
-  local_24._0_2_ = 0;
-  uVar14 = -(int)local_50;
+  ir = (short)(((uVar12 >> 8) + (uVar14 >> 0x18) * 2) * 0x4d + -0x134312f4 + uVar12 * 0x4d10 >> 0x10
+              );
+  ld12._0_2_ = 0;
+  uVar14 = -(int)ir;
   local_1a = (undefined1)uVar12;
   bStack_19 = (byte)(uVar12 >> 8);
   uStack_20._2_2_ = local_10[0];
   uStack_1c = local_10[1];
-  uVar12 = (uint)local_24._2_2_ << 0x10;
+  uVar12 = (uint)ld12._2_2_ << 0x10;
   uStack_20._0_2_ = uStack_12;
   uStack_20 = _Var3.ld._2_4_;
   local_68 = (undefined *)0xe1eed0;
   if (uVar14 != 0) {
-    uVar12 = (uint)local_24._2_2_ << 0x10;
-    uVar6 = (uint)local_24._2_2_ << 0x10;
+    uVar12 = (uint)ld12._2_2_ << 0x10;
+    uVar6 = (uint)ld12._2_2_ << 0x10;
     if ((int)uVar14 < 0) {
       local_68 = &DAT_00e1f030;
-      uVar14 = (int)local_50;
+      uVar14 = (int)ir;
     }
 joined_r0x00c2e751:
     do {
@@ -158,12 +160,12 @@ joined_r0x00c2e751:
       if (uVar9 != 0) {
         puVar10 = (ushort *)(local_68 + uVar9 * 0xc);
         if (0x7fff < *puVar10) {
-          local_40 = (ushort)*(undefined4 *)puVar10;
+          tmp12 = (ushort)*(undefined4 *)puVar10;
           uStack_3e = (undefined2)((uint)*(undefined4 *)puVar10 >> 0x10);
           puVar5 = puVar10 + 4;
           uStack_3c = (undefined2)*(undefined4 *)(puVar10 + 2);
           uStack_3a = (undefined2)((uint)*(undefined4 *)(puVar10 + 2) >> 0x10);
-          puVar10 = &local_40;
+          puVar10 = &tmp12;
           local_38 = *(undefined4 *)puVar5;
           iVar4 = CONCAT22(uStack_3c,uStack_3e) + -1;
           uStack_3e = (undefined2)iVar4;
@@ -199,7 +201,7 @@ joined_r0x00c2e751:
               do {
                 local_54 = local_44;
                 if (0 < local_44) {
-                  local_70 = (ushort *)((int)&local_24 + local_5c * 2);
+                  local_70 = (ushort *)((int)&ld12 + local_5c * 2);
                   local_6c = puVar10 + 4;
                   do {
                     bVar2 = false;
@@ -307,7 +309,7 @@ LAB_00c2e904:
               }
               if (uVar18 < 0x7fff) {
                 bStack_19 = (byte)(uVar18 >> 8) | (byte)((ushort)local_4c >> 8);
-                local_24 = uVar12;
+                ld12 = uVar12;
                 uStack_1c = uStack_a;
                 local_1a = (undefined1)uVar18;
                 uVar6 = uVar12;
@@ -316,8 +318,8 @@ LAB_00c2e904:
                 uStack_20._0_2_ = 0;
                 uStack_20._2_2_ = 0;
                 uStack_20 = 0;
-                local_24._0_2_ = 0;
-                local_24._2_2_ = 0;
+                ld12._0_2_ = 0;
+                ld12._2_2_ = 0;
                 uVar12 = 0;
                 iVar4 = (((ushort)local_4c == 0) - 1 & 0x80000000) + 0x7fff8000;
                 uStack_1c = (ushort)iVar4;
@@ -341,8 +343,8 @@ LAB_00c2e904:
         uStack_20._0_2_ = 0;
         uStack_20._2_2_ = 0;
         uStack_20 = 0;
-        local_24._0_2_ = 0;
-        local_24._2_2_ = 0;
+        ld12._0_2_ = 0;
+        ld12._2_2_ = 0;
         uVar12 = 0;
         uVar6 = 0;
       }
@@ -350,7 +352,7 @@ LAB_00c2e904:
   }
   uVar14 = CONCAT13(bStack_19,CONCAT12(local_1a,uStack_1c));
   if ((ushort)(uVar14 >> 0x10) < 0x3fff) goto LAB_00c2ec98;
-  local_50 = local_50 + 1;
+  ir = ir + 1;
   local_54 = 0;
   local_14 = 0;
   uStack_13 = 0;
@@ -378,7 +380,7 @@ LAB_00c2e904:
         local_58 = local_44;
         if (0 < local_44) {
           local_4c = &local_2c;
-          puVar5 = (ushort *)((int)&local_24 + local_5c * 2);
+          puVar5 = (ushort *)((int)&ld12 + local_5c * 2);
           do {
             bVar2 = false;
             uVar12 = *(uint *)(puVar10 + -2) + (uint)*local_4c * (uint)*puVar5;
@@ -501,17 +503,17 @@ LAB_00c2eb91:
   local_1a = (undefined1)((uint)iVar4 >> 0x10);
   bStack_19 = (byte)((uint)iVar4 >> 0x18);
 LAB_00c2ec98:
-  param_4->exp = local_50;
-  if (((param_3 & 1) != 0) && (param_2 = param_2 + local_50, param_2 < 1)) {
-    param_4->exp = 0;
-    param_4->ManLen = '\x01';
-    param_4->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
-    param_4->man[0] = '0';
-    param_4->man[1] = '\0';
+  fos->exp = ir;
+  if (((output_flags & 1) != 0) && (ndigits = ndigits + ir, ndigits < 1)) {
+    fos->exp = 0;
+    fos->ManLen = '\x01';
+    fos->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
+    fos->man[0] = '0';
+    fos->man[1] = '\0';
     return 1;
   }
-  if (0x15 < param_2) {
-    param_2 = 0x15;
+  if (0x15 < ndigits) {
+    ndigits = 0x15;
   }
   iVar4 = (CONCAT13(bStack_19,CONCAT12(local_1a,uStack_1c)) >> 0x10) - 0x3ffe;
   local_1a = 0;
@@ -544,14 +546,14 @@ LAB_00c2ec98:
       uVar14 = uVar14 - 1;
       uStack_20._0_2_ = (undefined2)uVar15;
       uStack_20._2_2_ = (ushort)(uVar9 >> 0x10);
-      local_24._0_2_ = (undefined2)(uVar12 >> 1);
-      local_24._2_2_ = (ushort)(uVar6 >> 0x10);
-      uVar12 = CONCAT22(local_24._2_2_,(undefined2)local_24);
+      ld12._0_2_ = (undefined2)(uVar12 >> 1);
+      ld12._2_2_ = (ushort)(uVar6 >> 0x10);
+      uVar12 = CONCAT22(ld12._2_2_,(undefined2)ld12);
     } while (0 < (int)uVar14);
   }
-  pcVar20 = param_4->man;
+  pcVar20 = fos->man;
   pcVar16 = pcVar20;
-  for (iVar4 = param_2 + 1; 0 < iVar4; iVar4 = iVar4 + -1) {
+  for (iVar4 = ndigits + 1; 0 < iVar4; iVar4 = iVar4 + -1) {
     uVar14 = (CONCAT13(bStack_19,CONCAT12(local_1a,uStack_1c)) * 2 | uVar9 >> 0x1f) * 2 |
              (uVar9 & 0x7fffffff) >> 0x1e;
     uVar15 = (uVar9 * 2 | uVar6 >> 0x1f) * 2 | (uVar6 & 0x7fffffff) >> 0x1e;
@@ -584,11 +586,11 @@ LAB_00c2ec98:
     for (; (pcVar20 <= pcVar17 && (*pcVar17 == '0')); pcVar17 = pcVar17 + -1) {
     }
     if (pcVar17 < pcVar20) {
-      param_4->exp = 0;
-      param_4->ManLen = '\x01';
-      param_4->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
+      fos->exp = 0;
+      fos->ManLen = '\x01';
+      fos->sign = ((uVar7 != 0x8000) - 1U & 0xd) + 0x20;
       *pcVar20 = '0';
-      param_4->man[1] = '\0';
+      fos->man[1] = '\0';
       return 1;
     }
   }
@@ -598,13 +600,13 @@ LAB_00c2ec98:
     }
     if (pcVar17 < pcVar20) {
       pcVar17 = pcVar17 + 1;
-      param_4->exp = param_4->exp + 1;
+      fos->exp = fos->exp + 1;
     }
     *pcVar17 = *pcVar17 + '\x01';
   }
-  cVar13 = ((char)pcVar17 - (char)param_4) + -3;
-  param_4->ManLen = cVar13;
-  param_4->man[cVar13] = '\0';
+  cVar13 = ((char)pcVar17 - (char)fos) + -3;
+  fos->ManLen = cVar13;
+  fos->man[cVar13] = '\0';
   return 1;
 }
 

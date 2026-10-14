@@ -5,13 +5,14 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-CreateBasicBuffer(IDirectSound8 *param_1,IDirectSoundBuffer **param_2,int param_3,int param_4,
-                 int param_5)
+CreateBasicBuffer(IDirectSound8 *lpDirectSound,IDirectSoundBuffer **ppDsb,int sampleRate,
+                 int channels,int bufferSize)
 
 {
   uint uVar1;
   int iVar2;
-  undefined4 local_40;
+  HRESULT hr;
+  undefined4 dsbdesc;
   undefined4 local_3c;
   int local_38;
   undefined4 local_34;
@@ -21,7 +22,7 @@ CreateBasicBuffer(IDirectSound8 *param_1,IDirectSoundBuffer **param_2,int param_
   undefined4 local_24;
   undefined4 local_20;
   uint local_1c;
-  undefined2 local_18;
+  undefined2 wfx;
   undefined2 uStack_16;
   int local_14;
   int local_10;
@@ -31,21 +32,21 @@ CreateBasicBuffer(IDirectSound8 *param_1,IDirectSoundBuffer **param_2,int param_
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_8 = 0;
-  _local_18 = CONCAT22((undefined2)param_4,1);
-  local_14 = param_3;
-  uVar1 = (int)((param_4 & 0xffffU) * 0x10) >> 3;
+  _wfx = CONCAT22((undefined2)channels,1);
+  local_14 = sampleRate;
+  uVar1 = (int)((channels & 0xffffU) * 0x10) >> 3;
   _local_c = CONCAT22(0x10,(short)uVar1);
-  local_10 = (uVar1 & 0xffff) * param_3;
+  local_10 = (uVar1 & 0xffff) * sampleRate;
   local_34 = 0;
   local_2c = 0;
   local_28 = 0;
   local_24 = 0;
   local_20 = 0;
-  local_40 = 0x24;
+  dsbdesc = 0x24;
   local_3c = 33000;
-  local_38 = param_5;
-  local_30 = &local_18;
-  iVar2 = (**(code **)((int)*lpds + 0xc))(lpds,&local_40,param_2,0);
+  local_38 = bufferSize;
+  local_30 = &wfx;
+  iVar2 = (**(code **)((int)*lpds + 0xc))(lpds,&dsbdesc,ppDsb,0);
   if (iVar2 < 0) {
     Com_Printf(9,"Failed to create sound buffer!\n");
   }
@@ -55,16 +56,16 @@ CreateBasicBuffer(IDirectSound8 *param_1,IDirectSoundBuffer **param_2,int param_
 
 // 006A79D0  DSound_GetBytesLeft  (groupvoice/play_dsound.cpp:76)
 
-int __cdecl DSound_GetBytesLeft(dsound_sample_t *param_1)
+int __cdecl DSound_GetBytesLeft(dsound_sample_t *sample)
 
 {
-  return param_1->bytesBuffered;
+  return sample->bytesBuffered;
 }
 
 
 // 006A79E0  DSound_UpdateSample  (groupvoice/play_dsound.cpp:81)
 
-int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint param_3)
+int __cdecl DSound_UpdateSample(dsound_sample_t *sample,char *data,uint data_len)
 
 {
   code *pcVar1;
@@ -72,28 +73,32 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
   int iVar3;
   int iVar4;
   uint local_30;
-  ulong local_20;
-  uchar *local_14;
-  ulong local_10;
-  uchar *local_c;
-  ulong local_8;
+  HRESULT hr;
+  int bytesToUpload;
+  int dataOffset;
+  int tempBytesLeft;
+  int bytesLeft;
+  void *pLock1;
+  ulong dwLockLen2;
+  void *pLock2;
+  ulong dwLockLen1;
   
   if (dsoundplay_initialized) {
-    if (param_3 == 0) {
+    if (data_len == 0) {
       iVar3 = 0;
     }
     else {
-      iVar3 = DSound_GetBytesLeft(param_1);
-      if (((int)param_1->currentBufferLength < iVar3) &&
+      iVar3 = DSound_GetBytesLeft(sample);
+      if (((int)sample->currentBufferLength < iVar3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp",
                                    0x5f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      local_30 = param_1->dwBufferSize - iVar3;
-      if ((int)param_3 < (int)local_30) {
-        local_30 = param_3;
+      local_30 = sample->dwBufferSize - iVar3;
+      if ((int)data_len < (int)local_30) {
+        local_30 = data_len;
       }
       if (local_30 == 0) {
         iVar3 = 0;
@@ -106,16 +111,16 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        if (((int)param_1->dwBufferSize <= (int)local_30) &&
+        if (((int)sample->dwBufferSize <= (int)local_30) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp"
                                      ,0x69,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        iVar4 = (**(code **)((int)*param_1->DSB + 0x2c))
-                          (param_1->DSB,param_1->currentOffset,local_30,&local_14,&local_8,&local_c,
-                           &local_10,0);
+        iVar4 = (**(code **)((int)*sample->DSB + 0x2c))
+                          (sample->DSB,sample->currentOffset,local_30,&pLock1,&dwLockLen1,&pLock2,
+                           &dwLockLen2,0);
         if (iVar4 < 0) {
           if (iVar4 < -0x7787ffb9) {
             if (iVar4 == -0x7787ffba) {
@@ -136,17 +141,17 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
           iVar3 = -1;
         }
         else {
-          local_20 = 0;
-          if (local_14 != (uchar *)0x0) {
-            memcpy(local_14,(uchar *)param_2,local_8);
-            local_20 = local_8;
+          dataOffset = 0;
+          if (pLock1 != (void *)0x0) {
+            memcpy(pLock1,(uchar *)data,dwLockLen1);
+            dataOffset = dwLockLen1;
           }
-          if (local_c != (uchar *)0x0) {
-            memcpy(local_c,(uchar *)(param_2 + local_20),local_10);
-            local_20 = local_20 + local_10;
+          if (pLock2 != (void *)0x0) {
+            memcpy(pLock2,(uchar *)(data + dataOffset),dwLockLen2);
+            dataOffset = dataOffset + dwLockLen2;
           }
-          iVar4 = (**(code **)((int)*param_1->DSB + 0x4c))
-                            (param_1->DSB,local_14,local_8,local_c,local_10);
+          iVar4 = (**(code **)((int)*sample->DSB + 0x4c))
+                            (sample->DSB,pLock1,dwLockLen1,pLock2,dwLockLen2);
           if (iVar4 < 0) {
             if (iVar4 == -0x7ff8ffa9) {
               Com_Printf(9,"DSERR_INVALIDPARAM\n");
@@ -158,31 +163,31 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
             iVar3 = -1;
           }
           else {
-            if ((param_1->dwBufferSize < param_1->currentBufferLength) &&
+            if ((sample->dwBufferSize < sample->currentBufferLength) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp"
                                          ,0xad,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            if ((param_1->currentBufferLength < param_1->dwBufferSize) &&
-               (param_1->currentBufferLength = param_1->currentBufferLength + local_20,
-               param_1->dwBufferSize < param_1->currentBufferLength)) {
-              param_1->currentBufferLength = param_1->dwBufferSize;
+            if ((sample->currentBufferLength < sample->dwBufferSize) &&
+               (sample->currentBufferLength = sample->currentBufferLength + dataOffset,
+               sample->dwBufferSize < sample->currentBufferLength)) {
+              sample->currentBufferLength = sample->dwBufferSize;
             }
-            param_1->bytesBuffered = param_1->bytesBuffered + local_20;
-            if (((int)param_1->currentBufferLength < param_1->bytesBuffered) &&
+            sample->bytesBuffered = sample->bytesBuffered + dataOffset;
+            if (((int)sample->currentBufferLength < sample->bytesBuffered) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp"
                                          ,0xb9,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            if (param_1->playing != false) {
-              param_1->lastOffset = param_1->currentOffset;
+            if (sample->playing != false) {
+              sample->lastOffset = sample->currentOffset;
             }
-            param_1->currentOffset = (param_1->currentOffset + local_20) % param_1->dwBufferSize;
-            iVar4 = DSound_GetBytesLeft(param_1);
+            sample->currentOffset = (sample->currentOffset + dataOffset) % sample->dwBufferSize;
+            iVar4 = DSound_GetBytesLeft(sample);
             if (((int)(iVar3 + local_30) < iVar4) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp"
                                          ,0xc2,0,"%s"), !bVar2)) {
@@ -190,7 +195,7 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            iVar3 = local_8 + local_10;
+            iVar3 = dwLockLen1 + dwLockLen2;
           }
         }
       }
@@ -205,7 +210,7 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
 
 // 006A7DE0  DSound_AdjustSamplePlayback  (groupvoice/play_dsound.cpp:200)
 
-void __cdecl DSound_AdjustSamplePlayback(dsound_sample_t *param_1,int param_2)
+void __cdecl DSound_AdjustSamplePlayback(dsound_sample_t *sample,int bytesLeft)
 
 {
   longlong lVar1;
@@ -213,8 +218,9 @@ void __cdecl DSound_AdjustSamplePlayback(dsound_sample_t *param_1,int param_2)
   bool bVar3;
   ushort in_FPUControlWord;
   undefined4 local_1c;
+  uint newFreq;
   
-  if (param_2 < 1) {
+  if (bytesLeft < 1) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp",0xcd,0
                              ,"%s");
     if (!bVar3) {
@@ -223,31 +229,30 @@ void __cdecl DSound_AdjustSamplePlayback(dsound_sample_t *param_1,int param_2)
       return;
     }
   }
-  if (param_2 < MIN_COMFORTABLE_BUFFER_AMOUNT) {
-    param_1->playMode = '\x01';
+  if (bytesLeft < MIN_COMFORTABLE_BUFFER_AMOUNT) {
+    sample->playMode = '\x01';
   }
-  else if (MAX_COMFORTABLE_BUFFER_AMOUNT < param_2) {
-    param_1->playMode = '\0';
+  else if (MAX_COMFORTABLE_BUFFER_AMOUNT < bytesLeft) {
+    sample->playMode = '\0';
   }
-  else if (((param_1->playMode == '\0') && (param_2 <= COMFORTABLE_BUFFER_AMOUNT)) ||
-          ((param_1->playMode == '\x01' && (COMFORTABLE_BUFFER_AMOUNT <= param_2)))) {
-    param_1->playMode = '\x02';
+  else if (((sample->playMode == '\0') && (bytesLeft <= COMFORTABLE_BUFFER_AMOUNT)) ||
+          ((sample->playMode == '\x01' && (COMFORTABLE_BUFFER_AMOUNT <= bytesLeft)))) {
+    sample->playMode = '\x02';
   }
-  if (param_1->playMode == '\0') {
+  if (sample->playMode == '\0') {
     lVar1 = (longlong)
-            ROUND((float)param_1->frequency * maxScalingUpMultiplier + (float)param_1->frequency);
-    (**(code **)((int)*param_1->DSB + 0x44))
-              (param_1->DSB,(int)lVar1,lVar1,in_FPUControlWord | 0xc00);
+            ROUND((float)sample->frequency * maxScalingUpMultiplier + (float)sample->frequency);
+    (**(code **)((int)*sample->DSB + 0x44))(sample->DSB,(int)lVar1,lVar1,in_FPUControlWord | 0xc00);
   }
-  else if (param_1->playMode == '\x01') {
+  else if (sample->playMode == '\x01') {
     local_1c = (undefined4)
                (longlong)
-               ROUND((float)param_1->frequency -
-                     (float)param_1->frequency * maxScalingDownMultiplier);
-    (**(code **)((int)*param_1->DSB + 0x44))(param_1->DSB,local_1c);
+               ROUND((float)sample->frequency - (float)sample->frequency * maxScalingDownMultiplier)
+    ;
+    (**(code **)((int)*sample->DSB + 0x44))(sample->DSB,local_1c);
   }
   else {
-    (**(code **)((int)*param_1->DSB + 0x44))(param_1->DSB,param_1->frequency);
+    (**(code **)((int)*sample->DSB + 0x44))(sample->DSB,sample->frequency);
   }
   return;
 }
@@ -255,121 +260,123 @@ void __cdecl DSound_AdjustSamplePlayback(dsound_sample_t *param_1,int param_2)
 
 // 006A7F40  DSound_BufferUnderrunOccurred  (groupvoice/play_dsound.cpp:245)
 
-bool __cdecl DSound_BufferUnderrunOccurred(dsound_sample_t *param_1,ulong param_2)
+bool __cdecl DSound_BufferUnderrunOccurred(dsound_sample_t *sample,ulong currentPlayPos)
 
 {
-  return param_1->bytesBuffered < 1;
+  return sample->bytesBuffered < 1;
 }
 
 
 // 006A7F60  DSound_HandleBufferUnderrun  (groupvoice/play_dsound.cpp:252)
 
-void __cdecl DSound_HandleBufferUnderrun(dsound_sample_t *param_1)
+/* WARNING: Variable defined which should be unmapped: bytesLeft */
+
+void __cdecl DSound_HandleBufferUnderrun(dsound_sample_t *sample)
 
 {
   int iVar1;
+  int bytesLeft;
   
-  iVar1 = DSound_GetBytesLeft(param_1);
-  (**(code **)((int)*param_1->DSB + 0x48))(param_1->DSB,iVar1);
-  param_1->currentBufferLength = 0;
-  param_1->currentOffset = 0;
-  param_1->lastOffset = 0;
-  param_1->lastPlayPos = 0;
-  if (param_1->stopPosition == 0) {
-    param_1->stopPosition = 0;
+  iVar1 = DSound_GetBytesLeft(sample);
+  (**(code **)((int)*sample->DSB + 0x48))(sample->DSB,iVar1);
+  sample->currentBufferLength = 0;
+  sample->currentOffset = 0;
+  sample->lastOffset = 0;
+  sample->lastPlayPos = 0;
+  if (sample->stopPosition == 0) {
+    sample->stopPosition = 0;
   }
   else {
-    param_1->stopPosition = param_1->stopPosition - param_1->currentOffset;
+    sample->stopPosition = sample->stopPosition - sample->currentOffset;
   }
-  (**(code **)((int)*param_1->DSB + 0x34))(param_1->DSB,param_1->currentOffset);
-  param_1->lastOffset = param_1->currentOffset;
-  param_1->playing = false;
-  param_1->bytesBuffered = 0;
+  (**(code **)((int)*sample->DSB + 0x34))(sample->DSB,sample->currentOffset);
+  sample->lastOffset = sample->currentOffset;
+  sample->playing = false;
+  sample->bytesBuffered = 0;
   return;
 }
 
 
 // 006A8020  DSound_SampleFrame  (groupvoice/play_dsound.cpp:283)
 
-void __cdecl DSound_SampleFrame(dsound_sample_t *param_1)
+/* WARNING: Variable defined which should be unmapped: dwFakeWritePos */
+
+void __cdecl DSound_SampleFrame(dsound_sample_t *sample)
 
 {
-  uint uVar1;
-  code *pcVar2;
+  code *pcVar1;
+  ulong uVar2;
   bool bVar3;
-  uint *puVar4;
-  uint *puVar5;
-  uint uVar6;
-  uint local_18;
-  int local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  ulong *puVar4;
+  ulong *puVar5;
+  ulong dwFakeWritePos;
+  ulong dwWritePos;
+  HRESULT hr;
+  int bytesLeft;
+  ulong dwPlayPos;
+  int bytesPlayed;
   
-  local_10 = DSound_GetBytesLeft(param_1);
-  if ((param_1->playing == false) && (COMFORTABLE_BUFFER_AMOUNT <= local_10)) {
-    local_14 = (**(code **)((int)*param_1->DSB + 0x30))(param_1->DSB,0,0,1);
-    if (local_14 < 0) {
+  bytesLeft = DSound_GetBytesLeft(sample);
+  if ((sample->playing == false) && (COMFORTABLE_BUFFER_AMOUNT <= bytesLeft)) {
+    hr = (**(code **)((int)*sample->DSB + 0x30))(sample->DSB,0,0,1);
+    if (hr < 0) {
       Com_Printf(9,"Error: Failed to play DirectSound play buffer (%i)!\n");
       return;
     }
-    local_14 = (**(code **)((int)*param_1->DSB + 0x34))(param_1->DSB,param_1->lastPlayPos);
-    if (local_14 < 0) {
+    hr = (**(code **)((int)*sample->DSB + 0x34))(sample->DSB,sample->lastPlayPos);
+    if (hr < 0) {
       Com_Printf(9,"Error: Failed to set current position to %i when playing sound buffer!\n");
     }
-    param_1->playing = true;
-    param_1->playMode = '\x02';
+    sample->playing = true;
+    sample->playMode = '\x02';
   }
-  if (param_1->playing != false) {
-    puVar5 = &local_18;
-    puVar4 = &local_c;
-    local_14 = (**(code **)((int)*param_1->DSB + 0x10))(param_1->DSB,puVar4,puVar5);
-    if (local_14 < 0) {
+  if (sample->playing != false) {
+    puVar5 = &dwWritePos;
+    puVar4 = &dwPlayPos;
+    hr = (**(code **)((int)*sample->DSB + 0x10))(sample->DSB,puVar4,puVar5);
+    if (hr < 0) {
       Com_Printf(9,"Error: Failed to get cursor positions \n");
     }
-    uVar1 = param_1->currentOffset;
-    uVar6 = local_18;
-    local_18 = uVar1;
-    if (param_1->stopPosition < 0) {
-      bVar3 = DSound_BufferUnderrunOccurred(param_1,local_c);
-      uVar1 = local_18;
+    uVar2 = dwWritePos;
+    dwWritePos = sample->currentOffset;
+    if (sample->stopPosition < 0) {
+      bVar3 = DSound_BufferUnderrunOccurred(sample,dwPlayPos);
       if (bVar3) {
-        DSound_HandleBufferUnderrun(param_1);
+        DSound_HandleBufferUnderrun(sample);
         return;
       }
     }
-    else if (local_c < param_1->lastPlayPos) {
-      if (((int)param_1->lastPlayPos <= param_1->stopPosition) ||
-         (param_1->stopPosition <= (int)local_c)) {
-        DSound_StopSample(param_1);
+    else if (dwPlayPos < sample->lastPlayPos) {
+      if (((int)sample->lastPlayPos <= sample->stopPosition) ||
+         (sample->stopPosition <= (int)dwPlayPos)) {
+        DSound_StopSample(sample);
         return;
       }
     }
-    else if (((int)param_1->lastPlayPos < param_1->stopPosition) &&
-            (param_1->stopPosition <= (int)local_c)) {
-      DSound_StopSample(param_1);
+    else if (((int)sample->lastPlayPos < sample->stopPosition) &&
+            (sample->stopPosition <= (int)dwPlayPos)) {
+      DSound_StopSample(sample);
       return;
     }
-    local_18 = uVar1;
-    DSound_AdjustSamplePlayback(param_1,local_10);
-    local_8 = local_c - param_1->lastPlayPos;
-    if (local_8 < 0) {
-      local_8 = (param_1->currentBufferLength - param_1->lastPlayPos) + local_c;
+    DSound_AdjustSamplePlayback(sample,bytesLeft);
+    bytesPlayed = dwPlayPos - sample->lastPlayPos;
+    if (bytesPlayed < 0) {
+      bytesPlayed = (sample->currentBufferLength - sample->lastPlayPos) + dwPlayPos;
     }
-    if ((local_8 < 0) &&
+    if ((bytesPlayed < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\play_dsound.cpp",
                                  0x16e,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)(puVar4,puVar5,uVar6);
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)(puVar4,puVar5,uVar2);
       return;
     }
-    param_1->bytesBuffered = param_1->bytesBuffered - local_8;
-    bVar3 = DSound_BufferUnderrunOccurred(param_1,local_c);
+    sample->bytesBuffered = sample->bytesBuffered - bytesPlayed;
+    bVar3 = DSound_BufferUnderrunOccurred(sample,dwPlayPos);
     if (bVar3) {
-      DSound_HandleBufferUnderrun(param_1);
+      DSound_HandleBufferUnderrun(sample);
     }
     else {
-      param_1->lastPlayPos = local_c;
+      sample->lastPlayPos = dwPlayPos;
     }
   }
   return;
@@ -383,6 +390,8 @@ dsound_sample_t * __cdecl DSound_NewSample(void)
 {
   dsound_sample_t *pdVar1;
   int iVar2;
+  HRESULT hr;
+  dsound_sample_t *sample;
   
   if (dsoundplay_initialized) {
     pdVar1 = DSOUNDRecord_NewSample();
@@ -405,24 +414,25 @@ dsound_sample_t * __cdecl DSound_NewSample(void)
 
 // 006A83F0  DSound_StopSample  (groupvoice/play_dsound.cpp:427)
 
-bool __cdecl DSound_StopSample(dsound_sample_t *param_1)
+bool __cdecl DSound_StopSample(dsound_sample_t *sample)
 
 {
   bool bVar1;
   int iVar2;
+  HRESULT hr;
   
   if (dsoundplay_initialized) {
-    if (param_1->playing == false) {
+    if (sample->playing == false) {
       bVar1 = false;
     }
     else {
-      if (param_1->DSB != (IDirectSoundBuffer *)0x0) {
-        (**(code **)((int)*param_1->DSB + 0x48))(param_1->DSB);
+      if (sample->DSB != (IDirectSoundBuffer *)0x0) {
+        (**(code **)((int)*sample->DSB + 0x48))(sample->DSB);
       }
-      param_1->stopPosition = -1;
-      param_1->channel = -1;
-      param_1->playing = false;
-      iVar2 = (**(code **)((int)*param_1->DSB + 0x34))(param_1->DSB,0);
+      sample->stopPosition = -1;
+      sample->channel = -1;
+      sample->playing = false;
+      iVar2 = (**(code **)((int)*sample->DSB + 0x34))(sample->DSB,0);
       if (iVar2 < 0) {
         Com_Printf(9,"Error: Failed to set current position to %i when playing sound buffer!\n");
       }
@@ -438,10 +448,11 @@ bool __cdecl DSound_StopSample(dsound_sample_t *param_1)
 
 // 006A8490  DSound_Init  (groupvoice/play_dsound.cpp:473)
 
-int __cdecl DSound_Init(bool param_1,void *param_2)
+int __cdecl DSound_Init(bool callDsoundInit,void *handle)
 
 {
   int iVar1;
+  HRESULT hr;
   
   if (dsoundplay_initialized) {
     iVar1 = 1;
@@ -453,7 +464,7 @@ int __cdecl DSound_Init(bool param_1,void *param_2)
       iVar1 = 0;
     }
     else {
-      iVar1 = (**(code **)((int)*lpds + 0x18))(lpds,param_2,2);
+      iVar1 = (**(code **)((int)*lpds + 0x18))(lpds,handle,2);
       if (iVar1 < 0) {
         Com_Printf(9,"Error: [play] failure when calling SetCooperativeLevel()\n");
         iVar1 = 0;

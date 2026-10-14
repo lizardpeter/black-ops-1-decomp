@@ -2,84 +2,84 @@
 
 // 00C1B35F  __freetlocinfo  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c:144)
 
-void __cdecl __freetlocinfo(threadlocaleinfostruct *param_1)
+void __cdecl __freetlocinfo(threadlocaleinfostruct *ptloci)
 
 {
   int *piVar1;
-  __lc_time_data *p_Var2;
-  threadlocaleinfostruct *ptVar3;
-  int **ppiVar4;
+  __lc_time_data *lc_time;
+  threadlocaleinfostruct *pBlock;
+  int **ppiVar2;
   
-  ptVar3 = param_1;
-  if ((((param_1->lconv != (lconv *)0x0) && (param_1->lconv != &__lconv_c)) &&
-      (param_1->lconv_intl_refcount != (int *)0x0)) && (*param_1->lconv_intl_refcount == 0)) {
-    piVar1 = param_1->lconv_mon_refcount;
+  pBlock = ptloci;
+  if ((((ptloci->lconv != (lconv *)0x0) && (ptloci->lconv != &__lconv_c)) &&
+      (ptloci->lconv_intl_refcount != (int *)0x0)) && (*ptloci->lconv_intl_refcount == 0)) {
+    piVar1 = ptloci->lconv_mon_refcount;
     if ((piVar1 != (int *)0x0) && (*piVar1 == 0)) {
       free(piVar1);
-      __free_lconv_mon(param_1->lconv);
+      __free_lconv_mon(ptloci->lconv);
     }
-    piVar1 = param_1->lconv_num_refcount;
+    piVar1 = ptloci->lconv_num_refcount;
     if ((piVar1 != (int *)0x0) && (*piVar1 == 0)) {
       free(piVar1);
-      __free_lconv_num(param_1->lconv);
+      __free_lconv_num(ptloci->lconv);
     }
-    free(param_1->lconv_intl_refcount);
-    free(param_1->lconv);
+    free(ptloci->lconv_intl_refcount);
+    free(ptloci->lconv);
   }
-  if ((param_1->ctype1_refcount != (int *)0x0) && (*param_1->ctype1_refcount == 0)) {
-    free(param_1->ctype1 + -0x7f);
-    free(param_1->pclmap + -0x80);
-    free(param_1->pcumap + -0x80);
-    free(param_1->ctype1_refcount);
+  if ((ptloci->ctype1_refcount != (int *)0x0) && (*ptloci->ctype1_refcount == 0)) {
+    free(ptloci->ctype1 + -0x7f);
+    free(ptloci->pclmap + -0x80);
+    free(ptloci->pcumap + -0x80);
+    free(ptloci->ctype1_refcount);
   }
-  p_Var2 = param_1->lc_time_curr;
-  if ((p_Var2 != &__lc_time_c) && (p_Var2->refcount == 0)) {
-    __free_lc_time(p_Var2);
-    free(param_1->lc_time_curr);
+  lc_time = ptloci->lc_time_curr;
+  if ((lc_time != &__lc_time_c) && (lc_time->refcount == 0)) {
+    __free_lc_time(lc_time);
+    free(ptloci->lc_time_curr);
   }
-  ppiVar4 = &param_1->lc_category[0].refcount;
-  param_1 = (threadlocaleinfostruct *)&DAT_00000006;
+  ppiVar2 = &ptloci->lc_category[0].refcount;
+  ptloci = (threadlocaleinfostruct *)&DAT_00000006;
   do {
-    if (((((<unnamed_type_lc_category> *)(ppiVar4 + -2))->locale != __clocalestr) &&
-        (piVar1 = *ppiVar4, piVar1 != (int *)0x0)) && (*piVar1 == 0)) {
+    if (((((<unnamed_type_lc_category> *)(ppiVar2 + -2))->locale != __clocalestr) &&
+        (piVar1 = *ppiVar2, piVar1 != (int *)0x0)) && (*piVar1 == 0)) {
       free(piVar1);
     }
-    if ((((wchar_t *)ppiVar4[-1] != (wchar_t *)0x0) && (piVar1 = ppiVar4[1], piVar1 != (int *)0x0))
+    if ((((wchar_t *)ppiVar2[-1] != (wchar_t *)0x0) && (piVar1 = ppiVar2[1], piVar1 != (int *)0x0))
        && (*piVar1 == 0)) {
       free(piVar1);
     }
-    ppiVar4 = ppiVar4 + 4;
-    param_1 = (threadlocaleinfostruct *)((int)&param_1[-1].lc_time_curr + 3);
-  } while (param_1 != (threadlocaleinfostruct *)0x0);
-  free(ptVar3);
+    ppiVar2 = ppiVar2 + 4;
+    ptloci = (threadlocaleinfostruct *)((int)&ptloci[-1].lc_time_curr + 3);
+  } while (ptloci != (threadlocaleinfostruct *)0x0);
+  free(pBlock);
   return;
 }
 
 
 // 00C1B4A8  __addlocaleref  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c:225)
 
-void __cdecl __addlocaleref(threadlocaleinfostruct *param_1)
+void __cdecl __addlocaleref(threadlocaleinfostruct *ptloci)
 
 {
   threadlocaleinfostruct *ptVar1;
   int **ppiVar2;
   
-  ptVar1 = param_1;
-  InterlockedIncrement(&param_1->refcount);
-  if (param_1->lconv_intl_refcount != (LONG *)0x0) {
-    InterlockedIncrement(param_1->lconv_intl_refcount);
+  ptVar1 = ptloci;
+  InterlockedIncrement(&ptloci->refcount);
+  if (ptloci->lconv_intl_refcount != (LONG *)0x0) {
+    InterlockedIncrement(ptloci->lconv_intl_refcount);
   }
-  if (param_1->lconv_mon_refcount != (LONG *)0x0) {
-    InterlockedIncrement(param_1->lconv_mon_refcount);
+  if (ptloci->lconv_mon_refcount != (LONG *)0x0) {
+    InterlockedIncrement(ptloci->lconv_mon_refcount);
   }
-  if (param_1->lconv_num_refcount != (LONG *)0x0) {
-    InterlockedIncrement(param_1->lconv_num_refcount);
+  if (ptloci->lconv_num_refcount != (LONG *)0x0) {
+    InterlockedIncrement(ptloci->lconv_num_refcount);
   }
-  if (param_1->ctype1_refcount != (LONG *)0x0) {
-    InterlockedIncrement(param_1->ctype1_refcount);
+  if (ptloci->ctype1_refcount != (LONG *)0x0) {
+    InterlockedIncrement(ptloci->ctype1_refcount);
   }
-  ppiVar2 = &param_1->lc_category[0].refcount;
-  param_1 = (threadlocaleinfostruct *)&DAT_00000006;
+  ppiVar2 = &ptloci->lc_category[0].refcount;
+  ptloci = (threadlocaleinfostruct *)&DAT_00000006;
   do {
     if ((((<unnamed_type_lc_category> *)(ppiVar2 + -2))->locale != __clocalestr) &&
        (*ppiVar2 != (LONG *)0x0)) {
@@ -89,8 +89,8 @@ void __cdecl __addlocaleref(threadlocaleinfostruct *param_1)
       InterlockedIncrement(ppiVar2[1]);
     }
     ppiVar2 = ppiVar2 + 4;
-    param_1 = (threadlocaleinfostruct *)((int)&param_1[-1].lc_time_curr + 3);
-  } while (param_1 != (threadlocaleinfostruct *)0x0);
+    ptloci = (threadlocaleinfostruct *)((int)&ptloci[-1].lc_time_curr + 3);
+  } while (ptloci != (threadlocaleinfostruct *)0x0);
   InterlockedIncrement(&ptVar1->lc_time_curr->refcount);
   return;
 }
@@ -98,29 +98,29 @@ void __cdecl __addlocaleref(threadlocaleinfostruct *param_1)
 
 // 00C1B537  __removelocaleref  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.c:259)
 
-void * __cdecl __removelocaleref(threadlocaleinfostruct *param_1)
+void * __cdecl __removelocaleref(threadlocaleinfostruct *ptloci)
 
 {
   threadlocaleinfostruct *ptVar1;
   int **ppiVar2;
   
-  ptVar1 = param_1;
-  if (param_1 != (threadlocaleinfostruct *)0x0) {
-    InterlockedDecrement(&param_1->refcount);
-    if (param_1->lconv_intl_refcount != (LONG *)0x0) {
-      InterlockedDecrement(param_1->lconv_intl_refcount);
+  ptVar1 = ptloci;
+  if (ptloci != (threadlocaleinfostruct *)0x0) {
+    InterlockedDecrement(&ptloci->refcount);
+    if (ptloci->lconv_intl_refcount != (LONG *)0x0) {
+      InterlockedDecrement(ptloci->lconv_intl_refcount);
     }
-    if (param_1->lconv_mon_refcount != (LONG *)0x0) {
-      InterlockedDecrement(param_1->lconv_mon_refcount);
+    if (ptloci->lconv_mon_refcount != (LONG *)0x0) {
+      InterlockedDecrement(ptloci->lconv_mon_refcount);
     }
-    if (param_1->lconv_num_refcount != (LONG *)0x0) {
-      InterlockedDecrement(param_1->lconv_num_refcount);
+    if (ptloci->lconv_num_refcount != (LONG *)0x0) {
+      InterlockedDecrement(ptloci->lconv_num_refcount);
     }
-    if (param_1->ctype1_refcount != (LONG *)0x0) {
-      InterlockedDecrement(param_1->ctype1_refcount);
+    if (ptloci->ctype1_refcount != (LONG *)0x0) {
+      InterlockedDecrement(ptloci->ctype1_refcount);
     }
-    ppiVar2 = &param_1->lc_category[0].refcount;
-    param_1 = (threadlocaleinfostruct *)&DAT_00000006;
+    ppiVar2 = &ptloci->lc_category[0].refcount;
+    ptloci = (threadlocaleinfostruct *)&DAT_00000006;
     do {
       if ((((<unnamed_type_lc_category> *)(ppiVar2 + -2))->locale != __clocalestr) &&
          (*ppiVar2 != (LONG *)0x0)) {
@@ -130,8 +130,8 @@ void * __cdecl __removelocaleref(threadlocaleinfostruct *param_1)
         InterlockedDecrement(ppiVar2[1]);
       }
       ppiVar2 = ppiVar2 + 4;
-      param_1 = (threadlocaleinfostruct *)((int)&param_1[-1].lc_time_curr + 3);
-    } while (param_1 != (threadlocaleinfostruct *)0x0);
+      ptloci = (threadlocaleinfostruct *)((int)&ptloci[-1].lc_time_curr + 3);
+    } while (ptloci != (threadlocaleinfostruct *)0x0);
     InterlockedDecrement(&ptVar1->lc_time_curr->refcount);
   }
   return ptVar1;
@@ -144,19 +144,19 @@ threadlocaleinfostruct * __cdecl
 _updatetlocinfoEx_nolock(threadlocaleinfostruct **param_1,threadlocaleinfostruct *param_2)
 
 {
-  threadlocaleinfostruct *ptVar1;
+  threadlocaleinfostruct *ptloci;
   undefined4 *in_EAX;
   threadlocaleinfostruct *unaff_EDI;
   
   if ((unaff_EDI != (threadlocaleinfostruct *)0x0) && (in_EAX != (undefined4 *)0x0)) {
-    ptVar1 = (threadlocaleinfostruct *)*in_EAX;
-    if (ptVar1 != unaff_EDI) {
+    ptloci = (threadlocaleinfostruct *)*in_EAX;
+    if (ptloci != unaff_EDI) {
       *in_EAX = unaff_EDI;
       __addlocaleref(unaff_EDI);
-      if (ptVar1 != (threadlocaleinfostruct *)0x0) {
-        __removelocaleref(ptVar1);
-        if ((ptVar1->refcount == 0) && (ptVar1 != (threadlocaleinfostruct *)&__initiallocinfo)) {
-          __freetlocinfo(ptVar1);
+      if (ptloci != (threadlocaleinfostruct *)0x0) {
+        __removelocaleref(ptloci);
+        if ((ptloci->refcount == 0) && (ptloci != (threadlocaleinfostruct *)&__initiallocinfo)) {
+          __freetlocinfo(ptloci);
         }
       }
     }
@@ -177,6 +177,7 @@ threadlocaleinfostruct * __cdecl __updatetlocinfo(void)
   _tiddata *p_Var1;
   threadlocaleinfostruct *unaff_EDI;
   threadlocaleinfostruct **in_stack_ffffffd0;
+  threadlocaleinfostruct *ptloci;
   
   p_Var1 = _getptd();
   if (((p_Var1->_ownlocale & __globallocalestatus) == 0) ||

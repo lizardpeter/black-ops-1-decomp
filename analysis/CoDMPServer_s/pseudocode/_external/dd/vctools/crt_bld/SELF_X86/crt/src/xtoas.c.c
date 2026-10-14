@@ -2,7 +2,7 @@
 
 // 0097415E  xtoa_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:93)
 
-int __cdecl xtoa_s(ulong param_1,char *param_2,uint param_3,uint param_4,int param_5)
+int __cdecl xtoa_s(ulong sizeInTChars,char *radix,uint is_neg,uint param_4,int param_5)
 
 {
   ulonglong uVar1;
@@ -14,7 +14,7 @@ int __cdecl xtoa_s(ulong param_1,char *param_2,uint param_3,uint param_4,int par
   char cVar5;
   char *pcVar6;
   int iVar7;
-  uint uStack_8;
+  uint length;
   
   if (in_ECX == (char *)0x0) {
     piVar3 = _errno();
@@ -22,38 +22,38 @@ int __cdecl xtoa_s(ulong param_1,char *param_2,uint param_3,uint param_4,int par
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x16;
   }
-  if (param_1 == 0) {
+  if (sizeInTChars == 0) {
 LAB_00974192:
     piVar3 = _errno();
     iVar7 = 0x16;
   }
   else {
     *in_ECX = '\0';
-    if ((param_3 != 0) + 1 < param_1) {
-      if ((char *)0x22 < param_2 + -2) goto LAB_00974192;
+    if ((is_neg != 0) + 1 < sizeInTChars) {
+      if ((char *)0x22 < radix + -2) goto LAB_00974192;
       pcVar6 = in_ECX;
-      if (param_3 != 0) {
+      if (is_neg != 0) {
         *in_ECX = '-';
         pcVar6 = in_ECX + 1;
         in_EAX = -in_EAX;
       }
-      uStack_8 = (uint)(param_3 != 0);
+      length = (uint)(is_neg != 0);
       pcVar2 = pcVar6;
       do {
         pcVar4 = pcVar2;
         uVar1 = (ulonglong)in_EAX;
-        in_EAX = in_EAX / (uint)param_2;
-        cVar5 = (char)(uVar1 % ZEXT48(param_2));
-        if ((uint)(uVar1 % ZEXT48(param_2)) < 10) {
+        in_EAX = in_EAX / (uint)radix;
+        cVar5 = (char)(uVar1 % ZEXT48(radix));
+        if ((uint)(uVar1 % ZEXT48(radix)) < 10) {
           cVar5 = cVar5 + '0';
         }
         else {
           cVar5 = cVar5 + 'W';
         }
         *pcVar4 = cVar5;
-        uStack_8 = uStack_8 + 1;
-      } while ((in_EAX != 0) && (pcVar2 = pcVar4 + 1, uStack_8 < param_1));
-      if (uStack_8 < param_1) {
+        length = length + 1;
+      } while ((in_EAX != 0) && (pcVar2 = pcVar4 + 1, length < sizeInTChars));
+      if (length < sizeInTChars) {
         pcVar4[1] = '\0';
         do {
           cVar5 = *pcVar4;
@@ -77,14 +77,14 @@ LAB_00974192:
 
 // 0097423B  _ultoa_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:199)
 
-int __cdecl _ultoa_s(ulong param_1,char *param_2,uint param_3,int param_4)
+int __cdecl _ultoa_s(ulong val,char *buf,uint sizeInTChars,int radix)
 
 {
   int iVar1;
   uint unaff_EBP;
   int unaff_retaddr;
   
-  iVar1 = xtoa_s(param_3,(char *)param_4,0,unaff_EBP,unaff_retaddr);
+  iVar1 = xtoa_s(sizeInTChars,(char *)radix,0,unaff_EBP,unaff_retaddr);
   return iVar1;
 }
 

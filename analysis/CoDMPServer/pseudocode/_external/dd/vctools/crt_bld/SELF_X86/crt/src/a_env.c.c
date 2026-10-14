@@ -11,13 +11,15 @@ void * __cdecl __crtGetEnvironmentStringsA(void)
   WCHAR *pWVar4;
   WCHAR *pWVar5;
   int iVar6;
-  uint cbMultiByte;
+  uint cb;
   LPSTR lpMultiByteStr;
+  uchar *src;
   uchar *puVar7;
   uchar *puVar8;
-  uchar *puVar9;
   LPWCH lpWideCharStr;
-  LPSTR local_8;
+  int nSizeW;
+  int nSizeA;
+  char *aEnv;
   
   lpWideCharStr = (LPWCH)0x0;
   if (f_use == 0) {
@@ -35,28 +37,28 @@ void * __cdecl __crtGetEnvironmentStringsA(void)
     if ((f_use != 2) && (f_use != 0)) {
       return (void *)0x0;
     }
-    puVar7 = (uchar *)GetEnvironmentStrings();
-    if (puVar7 == (uchar *)0x0) {
+    src = (uchar *)GetEnvironmentStrings();
+    if (src == (uchar *)0x0) {
       return (void *)0x0;
     }
-    uVar1 = *puVar7;
-    puVar8 = puVar7;
+    uVar1 = *src;
+    puVar7 = src;
     while (uVar1 != '\0') {
       do {
-        puVar9 = puVar8;
-        puVar8 = puVar9 + 1;
-      } while (*puVar8 != '\0');
-      puVar8 = puVar9 + 2;
-      uVar1 = *puVar8;
+        puVar8 = puVar7;
+        puVar7 = puVar8 + 1;
+      } while (*puVar7 != '\0');
+      puVar7 = puVar8 + 2;
+      uVar1 = *puVar7;
     }
-    puVar9 = _malloc_crt((uint)(puVar8 + (1 - (int)puVar7)));
-    if (puVar9 == (uchar *)0x0) {
-      FreeEnvironmentStringsA((LPCH)puVar7);
+    puVar8 = _malloc_crt((uint)(puVar7 + (1 - (int)src)));
+    if (puVar8 == (uchar *)0x0) {
+      FreeEnvironmentStringsA((LPCH)src);
       return (void *)0x0;
     }
-    memcpy(puVar9,puVar7,(ulong)(puVar8 + (1 - (int)puVar7)));
-    FreeEnvironmentStringsA((LPCH)puVar7);
-    return puVar9;
+    memcpy(puVar8,src,(ulong)(puVar7 + (1 - (int)src)));
+    FreeEnvironmentStringsA((LPCH)src);
+    return puVar8;
   }
 LAB_00c275d7:
   if ((lpWideCharStr == (LPWCH)0x0) &&
@@ -74,16 +76,15 @@ LAB_00c275d7:
     WVar2 = *pWVar5;
   }
   iVar6 = ((int)pWVar5 - (int)lpWideCharStr >> 1) + 1;
-  cbMultiByte = WideCharToMultiByte(0,0,lpWideCharStr,iVar6,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
-  local_8 = (LPSTR)0x0;
-  if (((cbMultiByte != 0) &&
-      (lpMultiByteStr = _malloc_crt(cbMultiByte), lpMultiByteStr != (LPSTR)0x0)) &&
-     (iVar6 = WideCharToMultiByte(0,0,lpWideCharStr,iVar6,lpMultiByteStr,cbMultiByte,(LPCSTR)0x0,
-                                  (LPBOOL)0x0), local_8 = lpMultiByteStr, iVar6 == 0)) {
+  cb = WideCharToMultiByte(0,0,lpWideCharStr,iVar6,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+  aEnv = (LPSTR)0x0;
+  if (((cb != 0) && (lpMultiByteStr = _malloc_crt(cb), lpMultiByteStr != (LPSTR)0x0)) &&
+     (iVar6 = WideCharToMultiByte(0,0,lpWideCharStr,iVar6,lpMultiByteStr,cb,(LPCSTR)0x0,(LPBOOL)0x0)
+     , aEnv = lpMultiByteStr, iVar6 == 0)) {
     free(lpMultiByteStr);
-    local_8 = (LPSTR)0x0;
+    aEnv = (char *)0x0;
   }
   FreeEnvironmentStringsW(lpWideCharStr);
-  return local_8;
+  return aEnv;
 }
 

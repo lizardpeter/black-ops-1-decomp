@@ -2,14 +2,15 @@
 
 // 00B082D0  R_WatersEquivalent  (gfx_d3d/r_water_load_obj.cpp:13)
 
-int __cdecl R_WatersEquivalent(water_t *param_1,water_t *param_2)
+int __cdecl R_WatersEquivalent(water_t *w0,water_t *w1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  float fDirAngleCos;
   
-  if (param_1 == (water_t *)0x0) {
+  if (w0 == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x10
                              ,0,"%s");
     if (!bVar2) {
@@ -18,7 +19,7 @@ int __cdecl R_WatersEquivalent(water_t *param_1,water_t *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (water_t *)0x0) {
+  if (w1 == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x11
                              ,0,"%s");
     if (!bVar2) {
@@ -27,17 +28,15 @@ int __cdecl R_WatersEquivalent(water_t *param_1,water_t *param_2)
       return iVar3;
     }
   }
-  if ((param_1->M == param_2->M) && (param_1->N == param_2->N)) {
-    if ((param_1->Lx == param_2->Lx) && (param_1->Lz == param_2->Lz)) {
-      if (ABS(param_1->amplitude - param_2->amplitude) <= 0.001) {
-        if (ABS(param_1->gravity - param_2->gravity) <= 0.1) {
-          if (ABS(param_1->windvel - param_2->windvel) <= 0.1) {
-            if (ABS((param_1->winddir[0] * param_2->winddir[0] +
-                    param_1->winddir[1] * param_2->winddir[1]) /
-                    (SQRT((param_1->winddir[0] * param_1->winddir[0] +
-                          param_1->winddir[1] * param_1->winddir[1]) *
-                          (param_2->winddir[0] * param_2->winddir[0] +
-                          param_2->winddir[1] * param_2->winddir[1])) + 1e-10) - 1.0) <= 0.001) {
+  if ((w0->M == w1->M) && (w0->N == w1->N)) {
+    if ((w0->Lx == w1->Lx) && (w0->Lz == w1->Lz)) {
+      if (ABS(w0->amplitude - w1->amplitude) <= 0.001) {
+        if (ABS(w0->gravity - w1->gravity) <= 0.1) {
+          if (ABS(w0->windvel - w1->windvel) <= 0.1) {
+            if (ABS((w0->winddir[0] * w1->winddir[0] + w0->winddir[1] * w1->winddir[1]) /
+                    (SQRT((w0->winddir[0] * w0->winddir[0] + w0->winddir[1] * w0->winddir[1]) *
+                          (w1->winddir[0] * w1->winddir[0] + w1->winddir[1] * w1->winddir[1])) +
+                    1e-10) - 1.0) <= 0.001) {
               iVar3 = 1;
             }
             else {
@@ -69,7 +68,7 @@ int __cdecl R_WatersEquivalent(water_t *param_1,water_t *param_2)
 
 // 00B08630  R_PickWaterFrequencies  (gfx_d3d/r_water_load_obj.cpp:39)
 
-void __cdecl R_PickWaterFrequencies(water_t *param_1)
+void __cdecl R_PickWaterFrequencies(water_t *water)
 
 {
   float fVar1;
@@ -86,14 +85,24 @@ void __cdecl R_PickWaterFrequencies(water_t *param_1)
   double dVar12;
   float in_stack_ffffffac;
   float in_stack_ffffffb0;
-  int local_44;
-  int local_20;
-  int local_18;
-  float local_10;
+  int m;
+  float m_scale;
+  float Ph;
+  float kz;
+  float windfactor;
+  float L_sqrd;
+  float K_sqrd;
+  float windvelsqrd;
+  float n_scale;
+  int n;
+  float scale;
+  int i;
+  float kx;
+  float E;
   float local_c;
-  float local_8;
+  float w_sqrd;
   
-  if (param_1 == (water_t *)0x0) {
+  if (water == (water_t *)0x0) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x38
                              ,0,"%s");
     if (!bVar7) {
@@ -102,39 +111,39 @@ void __cdecl R_PickWaterFrequencies(water_t *param_1)
       return;
     }
   }
-  fVar8 = param_1->windvel * param_1->windvel;
-  fVar1 = param_1->gravity;
-  iVar4 = param_1->N;
-  fVar2 = param_1->Lx;
-  iVar5 = param_1->M;
-  fVar3 = param_1->Lz;
-  local_18 = 0;
-  for (local_20 = -param_1->N / 2; local_20 < param_1->N / 2; local_20 = local_20 + 1) {
-    fVar9 = (float)local_20 * (6.2831855 / ((float)iVar4 * fVar2));
-    for (local_44 = -param_1->M / 2; local_44 < param_1->M / 2; local_44 = local_44 + 1) {
-      fVar10 = (float)local_44 * (6.2831855 / ((float)iVar5 * fVar3));
-      GaussianRandom(&local_10,&local_c);
+  fVar8 = water->windvel * water->windvel;
+  fVar1 = water->gravity;
+  iVar4 = water->N;
+  fVar2 = water->Lx;
+  iVar5 = water->M;
+  fVar3 = water->Lz;
+  i = 0;
+  for (n = -water->N / 2; n < water->N / 2; n = n + 1) {
+    fVar9 = (float)n * (6.2831855 / ((float)iVar4 * fVar2));
+    for (m = -water->M / 2; m < water->M / 2; m = m + 1) {
+      fVar10 = (float)m * (6.2831855 / ((float)iVar5 * fVar3));
+      GaussianRandom(&E,&local_c);
       fVar11 = fVar9 * fVar9 + fVar10 * fVar10;
-      local_8 = param_1->gravity * SQRT(fVar11);
-      fVar10 = param_1->winddir[0] * fVar9 + param_1->winddir[1] * fVar10;
+      w_sqrd = water->gravity * SQRT(fVar11);
+      fVar10 = water->winddir[0] * fVar9 + water->winddir[1] * fVar10;
       if (0.0 < fVar10) {
         dVar12 = (double)(-1.0 / (fVar11 * ((fVar8 * fVar8) / fVar1)));
         __libm_sse2_exp((double)CONCAT44(in_stack_ffffffb0,in_stack_ffffffac));
         in_stack_ffffffb0 =
-             SQRT(((param_1->amplitude * (float)dVar12) / (fVar11 * fVar11 * fVar11)) *
+             SQRT(((water->amplitude * (float)dVar12) / (fVar11 * fVar11 * fVar11)) *
                   fVar10 * fVar10 * 0.5);
-        fVar10 = in_stack_ffffffb0 * param_1->amplitude;
-        param_1->H0[local_18].real = local_10 * fVar10;
-        param_1->H0[local_18].imag = local_c * fVar10;
-        in_stack_ffffffac = SQRT(local_8);
-        param_1->wTerm[local_18] = in_stack_ffffffac;
+        fVar10 = in_stack_ffffffb0 * water->amplitude;
+        water->H0[i].real = E * fVar10;
+        water->H0[i].imag = local_c * fVar10;
+        in_stack_ffffffac = SQRT(w_sqrd);
+        water->wTerm[i] = in_stack_ffffffac;
       }
       else {
-        param_1->H0[local_18].real = 0.0;
-        param_1->H0[local_18].imag = 0.0;
-        param_1->wTerm[local_18] = 0.0;
+        water->H0[i].real = 0.0;
+        water->H0[i].imag = 0.0;
+        water->wTerm[i] = 0.0;
       }
-      local_18 = local_18 + 1;
+      i = i + 1;
     }
   }
   return;
@@ -143,7 +152,7 @@ void __cdecl R_PickWaterFrequencies(water_t *param_1)
 
 // 00B08510  R_CreateWaterSetup  (gfx_d3d/r_water_load_obj.cpp:106)
 
-void __cdecl R_CreateWaterSetup(water_t *param_1,int param_2,water_t *param_3)
+void __cdecl R_CreateWaterSetup(water_t *source,int waterMapSetupIndex,water_t *destination)
 
 {
   code *pcVar1;
@@ -151,15 +160,17 @@ void __cdecl R_CreateWaterSetup(water_t *param_1,int param_2,water_t *param_3)
   int iVar3;
   complex_s *pcVar4;
   float *pfVar5;
-  char *pcVar6;
-  GfxImage *pGVar7;
-  int iVar8;
+  char *name;
+  GfxImage *pGVar6;
+  int iVar7;
+  water_t *pwVar8;
   water_t *pwVar9;
-  water_t *pwVar10;
-  ushort uVar11;
-  ushort uVar12;
+  ushort imageWidth;
+  ushort imageHeight;
+  GfxImage *image;
+  int elementCount;
   
-  if (param_1 == (water_t *)0x0) {
+  if (source == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x6d
                              ,0,"%s");
     if (!bVar2) {
@@ -168,7 +179,7 @@ void __cdecl R_CreateWaterSetup(water_t *param_1,int param_2,water_t *param_3)
       return;
     }
   }
-  if (param_3 == (water_t *)0x0) {
+  if (destination == (water_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x6e
                              ,0,"%s");
     if (!bVar2) {
@@ -177,24 +188,24 @@ void __cdecl R_CreateWaterSetup(water_t *param_1,int param_2,water_t *param_3)
       return;
     }
   }
-  iVar3 = param_1->M * param_1->N;
-  pwVar9 = param_1;
-  pwVar10 = param_3;
-  for (iVar8 = 0x11; iVar8 != 0; iVar8 = iVar8 + -1) {
-    (pwVar10->writable).floatTime = (pwVar9->writable).floatTime;
+  iVar3 = source->M * source->N;
+  pwVar8 = source;
+  pwVar9 = destination;
+  for (iVar7 = 0x11; iVar7 != 0; iVar7 = iVar7 + -1) {
+    (pwVar9->writable).floatTime = (pwVar8->writable).floatTime;
+    pwVar8 = (water_t *)&pwVar8->H0;
     pwVar9 = (water_t *)&pwVar9->H0;
-    pwVar10 = (water_t *)&pwVar10->H0;
   }
   pcVar4 = Material_Alloc(iVar3 * 8);
-  param_3->H0 = pcVar4;
+  destination->H0 = pcVar4;
   pfVar5 = Material_Alloc(iVar3 * 4);
-  param_3->wTerm = pfVar5;
-  R_PickWaterFrequencies(param_3);
-  uVar12 = (ushort)param_1->N;
-  uVar11 = (ushort)param_1->M;
-  pcVar6 = va("watersetup%i");
-  pGVar7 = R_CreateWaterMap(pcVar6,uVar11,uVar12);
-  if (pGVar7 == (GfxImage *)0x0) {
+  destination->wTerm = pfVar5;
+  R_PickWaterFrequencies(destination);
+  imageHeight = (ushort)source->N;
+  imageWidth = (ushort)source->M;
+  name = va("watersetup%i");
+  pGVar6 = R_CreateWaterMap(name,imageWidth,imageHeight);
+  if (pGVar6 == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",0x80
                              ,1,"%s");
     if (!bVar2) {
@@ -203,37 +214,37 @@ void __cdecl R_CreateWaterSetup(water_t *param_1,int param_2,water_t *param_3)
       return;
     }
   }
-  param_3->image = pGVar7;
+  destination->image = pGVar6;
   return;
 }
 
 
 // 00B07FE0  R_LoadWaterSetup  (gfx_d3d/r_water_load_obj.cpp:133)
 
-water_t * __cdecl R_LoadWaterSetup(water_t *param_1)
+water_t * __cdecl R_LoadWaterSetup(water_t *water)
 
 {
   code *pcVar1;
   bool bVar2;
   water_t *pwVar3;
   int iVar4;
-  int local_8;
+  int waterMapSetupIndex;
   
-  if (((param_1->N - 1U & param_1->N) != 0) &&
+  if (((water->N - 1U & water->N) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x88,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if (((param_1->M - 1U & param_1->M) != 0) &&
+  if (((water->M - 1U & water->M) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x89,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if (((param_1->M < 4) || (0x40 < param_1->M)) &&
+  if (((water->M < 4) || (0x40 < water->M)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8a,0,
                                "water->M not in [MIN_WATER_SIZE, MAX_WATER_SIZE]\n\t%i not in [%i, %i]"
@@ -242,7 +253,7 @@ water_t * __cdecl R_LoadWaterSetup(water_t *param_1)
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if (((param_1->N < 4) || (0x40 < param_1->N)) &&
+  if (((water->N < 4) || (0x40 < water->N)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8b,0,
                                "water->N not in [MIN_WATER_SIZE, MAX_WATER_SIZE]\n\t%i not in [%i, %i]"
@@ -251,67 +262,67 @@ water_t * __cdecl R_LoadWaterSetup(water_t *param_1)
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if ((param_1->Lx <= 0.0) &&
+  if ((water->Lx <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if ((param_1->Lz <= 0.0) &&
+  if ((water->Lz <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if ((param_1->gravity <= 0.0) &&
+  if ((water->gravity <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if ((param_1->windvel <= 0.0) &&
+  if ((water->windvel <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x8f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if (((param_1->winddir[0] == 0.0) && (param_1->winddir[1] == 0.0)) &&
+  if (((water->winddir[0] == 0.0) && (water->winddir[1] == 0.0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x90,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  if ((param_1->amplitude <= 0.0) &&
+  if ((water->amplitude <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_load_obj.cpp",
                                0x91,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pwVar3 = (water_t *)(*pcVar1)();
     return pwVar3;
   }
-  local_8 = 0;
+  waterMapSetupIndex = 0;
   while( true ) {
-    if (sceneWaterMapSetupsCount <= local_8) {
-      if (local_8 == 0x10) {
+    if (sceneWaterMapSetupsCount <= waterMapSetupIndex) {
+      if (waterMapSetupIndex == 0x10) {
         Com_PrintError(8,"ERROR: map uses more than %i waterMap textures\n");
         pwVar3 = (water_t *)0x0;
       }
       else {
-        R_CreateWaterSetup(param_1,local_8,sceneWaterMapSetups + local_8);
+        R_CreateWaterSetup(water,waterMapSetupIndex,sceneWaterMapSetups + waterMapSetupIndex);
         sceneWaterMapSetupsCount = sceneWaterMapSetupsCount + 1;
-        pwVar3 = sceneWaterMapSetups + local_8;
+        pwVar3 = sceneWaterMapSetups + waterMapSetupIndex;
       }
       return pwVar3;
     }
-    iVar4 = R_WatersEquivalent(sceneWaterMapSetups + local_8,param_1);
+    iVar4 = R_WatersEquivalent(sceneWaterMapSetups + waterMapSetupIndex,water);
     if (iVar4 != 0) break;
-    local_8 = local_8 + 1;
+    waterMapSetupIndex = waterMapSetupIndex + 1;
   }
-  return sceneWaterMapSetups + local_8;
+  return sceneWaterMapSetups + waterMapSetupIndex;
 }
 
 

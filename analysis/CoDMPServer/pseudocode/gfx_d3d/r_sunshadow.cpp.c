@@ -3,63 +3,65 @@
 // 00B19DD0  R_CalcBoxVsCylinderRayMinBox  (gfx_d3d/r_sunshadow.cpp:57)
 
 void __cdecl
-R_CalcBoxVsCylinderRayMinBox
-          (float *param_1,float *param_2,float *param_3,float param_4,float *param_5)
+R_CalcBoxVsCylinderRayMinBox(float *box,float *origin,float *forward,float radius,float *outBox)
 
 {
   uint uVar1;
   uint uVar2;
   float fVar3;
-  float local_1c [3];
-  uint local_10;
-  int local_c;
-  int local_8;
+  int a2;
+  int a3;
+  float dist;
+  float inter [3];
+  int axis;
+  int side;
+  int points;
   
-  local_8 = 0;
-  param_5[2] = 3.4028235e+38;
-  param_5[1] = 3.4028235e+38;
-  *param_5 = 3.4028235e+38;
-  param_5[5] = -3.4028235e+38;
-  param_5[4] = -3.4028235e+38;
-  param_5[3] = -3.4028235e+38;
-  for (local_c = 0; local_c < 6; local_c = local_c + 3) {
-    for (local_10 = 0; (int)local_10 < 3; local_10 = local_10 + 1) {
-      if (param_3[local_10] != 0.0) {
-        fVar3 = (param_1[local_c + local_10] - param_2[local_10]) / param_3[local_10];
-        local_1c[0] = fVar3 * *param_3 + *param_2;
-        local_1c[1] = fVar3 * param_3[1] + param_2[1];
-        local_1c[2] = fVar3 * param_3[2] + param_2[2];
-        uVar1 = ~local_10 & 1;
-        uVar2 = ~local_10 & 2;
-        if ((((param_1[uVar1] < local_1c[uVar1] || param_1[uVar1] == local_1c[uVar1]) &&
-             (param_1[uVar2] < local_1c[uVar2] || param_1[uVar2] == local_1c[uVar2])) &&
-            (local_1c[uVar1] < param_1[uVar1 + 3] || local_1c[uVar1] == param_1[uVar1 + 3])) &&
-           (local_1c[uVar2] < param_1[uVar2 + 3] || local_1c[uVar2] == param_1[uVar2 + 3])) {
-          local_8 = local_8 + 1;
-          Vec3Min(param_5,local_1c,param_5);
-          Vec3Max(param_5 + 3,local_1c,param_5 + 3);
+  points = 0;
+  outBox[2] = 3.4028235e+38;
+  outBox[1] = 3.4028235e+38;
+  *outBox = 3.4028235e+38;
+  outBox[5] = -3.4028235e+38;
+  outBox[4] = -3.4028235e+38;
+  outBox[3] = -3.4028235e+38;
+  for (side = 0; side < 6; side = side + 3) {
+    for (axis = 0; axis < 3; axis = axis + 1) {
+      if (forward[axis] != 0.0) {
+        fVar3 = (box[side + axis] - origin[axis]) / forward[axis];
+        inter[0] = fVar3 * *forward + *origin;
+        inter[1] = fVar3 * forward[1] + origin[1];
+        inter[2] = fVar3 * forward[2] + origin[2];
+        uVar1 = ~axis & 1;
+        uVar2 = ~axis & 2;
+        if ((((box[uVar1] < inter[uVar1] || box[uVar1] == inter[uVar1]) &&
+             (box[uVar2] < inter[uVar2] || box[uVar2] == inter[uVar2])) &&
+            (inter[uVar1] < box[uVar1 + 3] || inter[uVar1] == box[uVar1 + 3])) &&
+           (inter[uVar2] < box[uVar2 + 3] || inter[uVar2] == box[uVar2 + 3])) {
+          points = points + 1;
+          Vec3Min(outBox,inter,outBox);
+          Vec3Max(outBox + 3,inter,outBox + 3);
         }
       }
     }
   }
-  if (local_8 < 2) {
-    *param_5 = *param_1;
-    param_5[1] = param_1[1];
-    param_5[2] = param_1[2];
-    param_5[3] = param_1[3];
-    param_5[4] = param_1[4];
-    param_5[5] = param_1[5];
+  if (points < 2) {
+    *outBox = *box;
+    outBox[1] = box[1];
+    outBox[2] = box[2];
+    outBox[3] = box[3];
+    outBox[4] = box[4];
+    outBox[5] = box[5];
   }
   else {
-    fVar3 = -param_4;
-    *param_5 = *param_5 + fVar3;
-    param_5[1] = param_5[1] + fVar3;
-    param_5[2] = param_5[2] + fVar3;
-    param_5[3] = param_5[3] + param_4;
-    param_5[4] = param_5[4] + param_4;
-    param_5[5] = param_5[5] + param_4;
-    Vec3Max(param_5,param_1,param_5);
-    Vec3Min(param_5 + 3,param_1 + 3,param_5 + 3);
+    fVar3 = -radius;
+    *outBox = *outBox + fVar3;
+    outBox[1] = outBox[1] + fVar3;
+    outBox[2] = outBox[2] + fVar3;
+    outBox[3] = outBox[3] + radius;
+    outBox[4] = outBox[4] + radius;
+    outBox[5] = outBox[5] + radius;
+    Vec3Max(outBox,box,outBox);
+    Vec3Min(outBox + 3,box + 3,outBox + 3);
   }
   return;
 }
@@ -69,56 +71,56 @@ R_CalcBoxVsCylinderRayMinBox
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_GetSceneExtentsAlongDir(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl R_GetSceneExtentsAlongDir(float *origin,float *forward,float *nearCap,float *farCap)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_54;
-  DpvsPlane local_40;
+  DpvsPlane nearPlane;
   uint local_2c;
-  float local_28;
-  float local_24 [6];
-  float local_c;
-  float local_8;
+  float distMin;
+  float bounds [6];
+  float farthest;
+  float distMax;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
   R_CalcBoxVsCylinderRayMinBox
-            ((rgp.world)->mins,dpvsGlob.viewOrg,param_2,dpvsGlob.sunShadow.sunShadowDrawDist,
-             local_24);
-  local_40.coeffs[0] = *param_2;
-  local_40.coeffs[1] = param_2[1];
-  local_40.coeffs[2] = param_2[2];
-  local_40.coeffs[3] = -param_1[2];
-  R_SetDpvsPlaneSides(&local_40);
-  local_28 = R_DpvsPlaneMinSignedDistToBox(&local_40,local_24);
-  local_8 = R_DpvsPlaneMaxSignedDistToBox(&local_40,local_24);
-  local_c = local_40.coeffs[0] * dpvsGlob.viewOrg[0] + local_40.coeffs[1] * dpvsGlob.viewOrg[1] +
-            local_40.coeffs[2] * dpvsGlob.viewOrg[2] + local_40.coeffs[3] +
-            dpvsGlob.sunShadow.sunShadowDrawDist;
-  if (local_28 < local_c) {
-    local_54 = local_c;
-    if (0.0 <= local_c - local_8) {
-      local_54 = local_8;
+            ((rgp.world)->mins,dpvsGlob.viewOrg,forward,dpvsGlob.sunShadow.sunShadowDrawDist,bounds)
+  ;
+  nearPlane.coeffs[0] = *forward;
+  nearPlane.coeffs[1] = forward[1];
+  nearPlane.coeffs[2] = forward[2];
+  nearPlane.coeffs[3] = -origin[2];
+  R_SetDpvsPlaneSides(&nearPlane);
+  distMin = R_DpvsPlaneMinSignedDistToBox(&nearPlane,bounds);
+  distMax = R_DpvsPlaneMaxSignedDistToBox(&nearPlane,bounds);
+  farthest = nearPlane.coeffs[0] * dpvsGlob.viewOrg[0] + nearPlane.coeffs[1] * dpvsGlob.viewOrg[1] +
+             nearPlane.coeffs[2] * dpvsGlob.viewOrg[2] + nearPlane.coeffs[3] +
+             dpvsGlob.sunShadow.sunShadowDrawDist;
+  if (distMin < farthest) {
+    local_54 = farthest;
+    if (0.0 <= farthest - distMax) {
+      local_54 = distMax;
     }
-    local_8 = local_54;
+    distMax = local_54;
   }
-  if ((local_8 <= local_28) &&
+  if ((distMax <= distMin) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x97,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  *param_3 = local_28;
-  *param_4 = local_8;
+  *nearCap = distMin;
+  *farCap = distMax;
   return;
 }
 
 
 // 00B1A0F0  R_GetSunAxes  (gfx_d3d/r_sunshadow.cpp:159)
 
-void __cdecl R_GetSunAxes(float (*param_1) [3])
+void __cdecl R_GetSunAxes(float (*sunAxis) [3])
 
 {
   code *pcVar1;
@@ -144,22 +146,22 @@ void __cdecl R_GetSunAxes(float (*param_1) [3])
     }
   }
   pGVar2 = frontEndDataOut;
-  (*param_1)[0] = -(frontEndDataOut->sunLight).dir[0];
-  (*param_1)[1] = -(pGVar2->sunLight).dir[1];
-  (*param_1)[2] = -(pGVar2->sunLight).dir[2];
-  if (0.1 <= (*param_1)[0] * (*param_1)[0] + (*param_1)[1] * (*param_1)[1]) {
-    param_1[2][0] = 0.0;
-    param_1[2][1] = 0.0;
-    param_1[2][2] = 1.0;
+  (*sunAxis)[0] = -(frontEndDataOut->sunLight).dir[0];
+  (*sunAxis)[1] = -(pGVar2->sunLight).dir[1];
+  (*sunAxis)[2] = -(pGVar2->sunLight).dir[2];
+  if (0.1 <= (*sunAxis)[0] * (*sunAxis)[0] + (*sunAxis)[1] * (*sunAxis)[1]) {
+    sunAxis[2][0] = 0.0;
+    sunAxis[2][1] = 0.0;
+    sunAxis[2][2] = 1.0;
   }
   else {
-    param_1[2][0] = 1.0;
-    param_1[2][1] = 0.0;
-    param_1[2][2] = 0.0;
+    sunAxis[2][0] = 1.0;
+    sunAxis[2][1] = 0.0;
+    sunAxis[2][2] = 0.0;
   }
-  Vec3Cross(param_1[2],*param_1,param_1[1]);
-  Vec3Normalize(param_1[1]);
-  Vec3Cross(*param_1,param_1[1],param_1[2]);
+  Vec3Cross(sunAxis[2],*sunAxis,sunAxis[1]);
+  Vec3Normalize(sunAxis[1]);
+  Vec3Cross(*sunAxis,sunAxis[1],sunAxis[2]);
   return;
 }
 
@@ -167,7 +169,9 @@ void __cdecl R_GetSunAxes(float (*param_1) [3])
 // 00B1B7A0  R_ClipSpaceToWorldSpace  (gfx_d3d/r_sunshadow.cpp:174)
 
 void __cdecl
-R_ClipSpaceToWorldSpace(GfxMatrix *param_1,float (*param_2) [3],int param_3,float (*param_4) [3])
+R_ClipSpaceToWorldSpace
+          (GfxMatrix *invViewProjMtx,float (*clipSpacePoints) [3],int pointCount,
+          float (*worldSpacePoints) [3])
 
 {
   float fVar1;
@@ -176,26 +180,26 @@ R_ClipSpaceToWorldSpace(GfxMatrix *param_1,float (*param_2) [3],int param_3,floa
   code *pcVar4;
   bool bVar5;
   float (*pafVar6) [3];
-  float local_20 [4];
-  int local_10;
-  int local_c;
-  float local_8;
+  float homogenousPoint [4];
+  int pointIndex;
+  int term;
+  float scale;
   
-  local_10 = 0;
+  pointIndex = 0;
   do {
-    if (param_3 <= local_10) {
+    if (pointCount <= pointIndex) {
       return;
     }
-    pafVar6 = param_2 + local_10;
+    pafVar6 = clipSpacePoints + pointIndex;
     fVar1 = (*pafVar6)[0];
     fVar2 = (*pafVar6)[1];
     fVar3 = (*pafVar6)[2];
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      local_20[local_c] =
-           fVar1 * param_1->m[0][local_c] + fVar2 * param_1->m[1][local_c] +
-           fVar3 * param_1->m[2][local_c] + param_1->m[3][local_c];
+    for (term = 0; term < 4; term = term + 1) {
+      homogenousPoint[term] =
+           fVar1 * invViewProjMtx->m[0][term] + fVar2 * invViewProjMtx->m[1][term] +
+           fVar3 * invViewProjMtx->m[2][term] + invViewProjMtx->m[3][term];
     }
-    if (local_20[3] <= 0.0) {
+    if (homogenousPoint[3] <= 0.0) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0xba,0,
                                "%s");
       if (!bVar5) {
@@ -204,22 +208,22 @@ R_ClipSpaceToWorldSpace(GfxMatrix *param_1,float (*param_2) [3],int param_3,floa
         return;
       }
     }
-    local_8 = 1.0 / local_20[3];
-    pafVar6 = param_4 + local_10;
-    (*pafVar6)[0] = local_8 * local_20[0];
-    (*pafVar6)[1] = local_8 * local_20[1];
-    (*pafVar6)[2] = local_8 * local_20[2];
-    local_10 = local_10 + 1;
+    scale = 1.0 / homogenousPoint[3];
+    pafVar6 = worldSpacePoints + pointIndex;
+    (*pafVar6)[0] = scale * homogenousPoint[0];
+    (*pafVar6)[1] = scale * homogenousPoint[1];
+    (*pafVar6)[2] = scale * homogenousPoint[2];
+    pointIndex = pointIndex + 1;
   } while( true );
 }
 
 
 // 00B1B780  R_GetFrustumNearClipPoints  (gfx_d3d/r_sunshadow.cpp:193)
 
-void __cdecl R_GetFrustumNearClipPoints(GfxMatrix *param_1,float (*param_2) [3])
+void __cdecl R_GetFrustumNearClipPoints(GfxMatrix *invViewProjMtx,float (*frustumPoints) [3])
 
 {
-  R_ClipSpaceToWorldSpace(param_1,g_clipSpacePoints,4,param_2);
+  R_ClipSpaceToWorldSpace(invViewProjMtx,g_clipSpacePoints,4,frustumPoints);
   return;
 }
 
@@ -228,22 +232,25 @@ void __cdecl R_GetFrustumNearClipPoints(GfxMatrix *param_1,float (*param_2) [3])
 
 void __cdecl
 R_SetupSunShadowBoundingPoly
-          (float (*param_1) [2],float *param_2,float *param_3,float param_4,float *param_5,
-          GfxSunShadowBoundingPoly *param_6,uint param_7)
+          (float (*frustumPointsInSunProj) [2],float *viewOrgInSunProj,
+          float *snappedViewOrgInSunProj,float maxSizeInSunProj,float *snappedViewOrgInClipSpace,
+          GfxSunShadowBoundingPoly *boundingPoly,uint pointCount)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_98;
-  int local_90;
-  float local_8c [16];
-  float local_4c [18];
+  uint nearPointIndex;
+  float scaleToClipSpace;
+  int pointIndex;
+  float tempFrustumPointsInSunProj [16];
+  float frustumBoundingPolyInSunProj [18];
   
-  memcpy((uchar *)local_8c,(uchar *)param_1,param_7 << 3);
-  uVar3 = Com_ConvexHull((float (*) [2])local_8c,param_7,(float (*) [2])local_4c);
-  param_6->pointCount = uVar3;
-  if ((param_6->pointCount < 3) || (9 < param_6->pointCount)) {
+  memcpy((uchar *)tempFrustumPointsInSunProj,(uchar *)frustumPointsInSunProj,pointCount << 3);
+  uVar3 = Com_ConvexHull((float (*) [2])tempFrustumPointsInSunProj,pointCount,
+                         (float (*) [2])frustumBoundingPolyInSunProj);
+  boundingPoly->pointCount = uVar3;
+  if ((boundingPoly->pointCount < 3) || (9 < boundingPoly->pointCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0xd0,1,
                              "boundingPoly->pointCount not in [3, R_SUNSHADOW_SIDE_PLANES_MAX]\n\t%i not in [%i, %i]"
                             );
@@ -253,31 +260,35 @@ R_SetupSunShadowBoundingPoly
       return;
     }
   }
-  local_90 = 0;
+  pointIndex = 0;
   do {
-    if (param_6->pointCount <= local_90) {
-      param_6->snapDelta[0] = *param_2 - *param_3;
-      param_6->snapDelta[1] = param_2[1] - param_3[1];
+    if (boundingPoly->pointCount <= pointIndex) {
+      boundingPoly->snapDelta[0] = *viewOrgInSunProj - *snappedViewOrgInSunProj;
+      boundingPoly->snapDelta[1] = viewOrgInSunProj[1] - snappedViewOrgInSunProj[1];
       return;
     }
-    param_6->points[local_90][0] = (local_4c[local_90 * 2] - *param_2) * (2.0 / param_4) + *param_5;
-    param_6->points[local_90][1] =
-         (local_4c[local_90 * 2 + 1] - param_2[1]) * (2.0 / param_4) + param_5[1];
-    param_6->pointIsNear[local_90] = 0;
-    for (local_98 = 4; local_98 < param_7; local_98 = local_98 + 1) {
-      if ((local_4c[local_90 * 2] == param_1[local_98][0]) &&
-         (local_4c[local_90 * 2 + 1] == param_1[local_98][1])) {
+    boundingPoly->points[pointIndex][0] =
+         (frustumBoundingPolyInSunProj[pointIndex * 2] - *viewOrgInSunProj) *
+         (2.0 / maxSizeInSunProj) + *snappedViewOrgInClipSpace;
+    boundingPoly->points[pointIndex][1] =
+         (frustumBoundingPolyInSunProj[pointIndex * 2 + 1] - viewOrgInSunProj[1]) *
+         (2.0 / maxSizeInSunProj) + snappedViewOrgInClipSpace[1];
+    boundingPoly->pointIsNear[pointIndex] = 0;
+    for (nearPointIndex = 4; nearPointIndex < pointCount; nearPointIndex = nearPointIndex + 1) {
+      if ((frustumBoundingPolyInSunProj[pointIndex * 2] == frustumPointsInSunProj[nearPointIndex][0]
+          ) && (frustumBoundingPolyInSunProj[pointIndex * 2 + 1] ==
+                frustumPointsInSunProj[nearPointIndex][1])) {
         bVar2 = true;
       }
       else {
         bVar2 = false;
       }
       if (bVar2) {
-        param_6->pointIsNear[local_90] = 1;
+        boundingPoly->pointIsNear[pointIndex] = 1;
         break;
       }
     }
-    local_90 = local_90 + 1;
+    pointIndex = pointIndex + 1;
   } while( true );
 }
 
@@ -286,22 +297,22 @@ R_SetupSunShadowBoundingPoly
 
 void __cdecl
 R_SunShadowMapBoundingPoly
-          (GfxSunShadowBoundingPoly *param_1,float param_2,float (*param_3) [2],int *param_4,
-          uint param_5)
+          (GfxSunShadowBoundingPoly *boundingPoly,float sampleSize,float (*polyInClipSpace) [2],
+          int *pointIsNear,uint partitionRes)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
-  int local_8;
+  int pointIndex;
   
-  fVar3 = 2.0 / ((float)param_5 * param_2);
-  fVar1 = param_1->snapDelta[0];
-  fVar2 = param_1->snapDelta[1];
-  for (local_8 = 0; local_8 < param_1->pointCount; local_8 = local_8 + 1) {
-    param_3[local_8][0] = param_1->points[local_8][0] + fVar3 * fVar1;
-    param_3[local_8][1] = param_1->points[local_8][1] + fVar3 * fVar2;
-    param_4[local_8] = param_1->pointIsNear[local_8];
+  fVar3 = 2.0 / ((float)partitionRes * sampleSize);
+  fVar1 = boundingPoly->snapDelta[0];
+  fVar2 = boundingPoly->snapDelta[1];
+  for (pointIndex = 0; pointIndex < boundingPoly->pointCount; pointIndex = pointIndex + 1) {
+    polyInClipSpace[pointIndex][0] = boundingPoly->points[pointIndex][0] + fVar3 * fVar1;
+    polyInClipSpace[pointIndex][1] = boundingPoly->points[pointIndex][1] + fVar3 * fVar2;
+    pointIsNear[pointIndex] = boundingPoly->pointIsNear[pointIndex];
   }
   return;
 }
@@ -311,85 +322,95 @@ R_SunShadowMapBoundingPoly
 
 uint __cdecl
 R_SunShadowMapClipSpaceClipPlanes
-          (GfxSunShadowBoundingPoly *param_1,int param_2,float param_3,float (*param_4) [4],
-          uint param_5)
+          (GfxSunShadowBoundingPoly *boundingPoly,int partitionIndex,float sampleSize,
+          float (*boundingPolyClipSpacePlanes) [4],uint partitionRes)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  uint local_84;
-  int local_80 [10];
-  int local_58;
-  float local_54 [20];
+  uint planeCount;
+  int pointIsNear [10];
+  int pointIndex;
+  float frustumBoundPolyInClipSpace [20];
   
-  R_SunShadowMapBoundingPoly(param_1,param_3,(float (*) [2])local_54,local_80,param_5);
-  iVar1 = param_1->pointCount;
-  local_54[iVar1 * 2] = local_54[0];
-  local_54[iVar1 * 2 + 1] = local_54[1];
-  local_80[param_1->pointCount] = local_80[0];
-  local_84 = 0;
-  for (local_58 = 0; local_58 < param_1->pointCount; local_58 = local_58 + 1) {
-    if ((((param_2 == 0) || (rg.sunShadowFull == 0)) || (local_80[local_58] != 0)) ||
-       (local_80[local_58 + 1] != 0)) {
-      param_4[local_84][0] = local_54[local_58 * 2 + 3] - local_54[local_58 * 2 + 1];
-      param_4[local_84][1] = local_54[local_58 * 2] - local_54[local_58 * 2 + 2];
-      param_4[local_84][2] = 0.0;
-      param_4[local_84][3] =
-           -(local_54[local_58 * 2] * param_4[local_84][0] +
-            local_54[local_58 * 2 + 1] * param_4[local_84][1]);
-      local_84 = local_84 + 1;
+  R_SunShadowMapBoundingPoly
+            (boundingPoly,sampleSize,(float (*) [2])frustumBoundPolyInClipSpace,pointIsNear,
+             partitionRes);
+  iVar1 = boundingPoly->pointCount;
+  frustumBoundPolyInClipSpace[iVar1 * 2] = frustumBoundPolyInClipSpace[0];
+  frustumBoundPolyInClipSpace[iVar1 * 2 + 1] = frustumBoundPolyInClipSpace[1];
+  pointIsNear[boundingPoly->pointCount] = pointIsNear[0];
+  planeCount = 0;
+  for (pointIndex = 0; pointIndex < boundingPoly->pointCount; pointIndex = pointIndex + 1) {
+    if ((((partitionIndex == 0) || (rg.sunShadowFull == 0)) || (pointIsNear[pointIndex] != 0)) ||
+       (pointIsNear[pointIndex + 1] != 0)) {
+      boundingPolyClipSpacePlanes[planeCount][0] =
+           frustumBoundPolyInClipSpace[pointIndex * 2 + 3] -
+           frustumBoundPolyInClipSpace[pointIndex * 2 + 1];
+      boundingPolyClipSpacePlanes[planeCount][1] =
+           frustumBoundPolyInClipSpace[pointIndex * 2] -
+           frustumBoundPolyInClipSpace[pointIndex * 2 + 2];
+      boundingPolyClipSpacePlanes[planeCount][2] = 0.0;
+      boundingPolyClipSpacePlanes[planeCount][3] =
+           -(frustumBoundPolyInClipSpace[pointIndex * 2] *
+             boundingPolyClipSpacePlanes[planeCount][0] +
+            frustumBoundPolyInClipSpace[pointIndex * 2 + 1] *
+            boundingPolyClipSpacePlanes[planeCount][1]);
+      planeCount = planeCount + 1;
     }
   }
-  if ((param_2 != 0) && (rg.sunShadowFull != 0)) {
-    if ((5 < local_84) &&
+  if ((partitionIndex != 0) && (rg.sunShadowFull != 0)) {
+    if ((5 < planeCount) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x10f
                                  ,0,"%s\n\t(planeCount) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return uVar4;
     }
-    for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
-      param_4[local_84][0] =
-           (g_shadowFrustumBound[local_58 + 1][1] - g_shadowFrustumBound[local_58][1]) *
+    for (pointIndex = 0; pointIndex < 4; pointIndex = pointIndex + 1) {
+      boundingPolyClipSpacePlanes[planeCount][0] =
+           (g_shadowFrustumBound[pointIndex + 1][1] - g_shadowFrustumBound[pointIndex][1]) *
            rg.sunShadowmapScale;
-      param_4[local_84][1] =
-           (g_shadowFrustumBound[local_58][0] - g_shadowFrustumBound[local_58 + 1][0]) *
+      boundingPolyClipSpacePlanes[planeCount][1] =
+           (g_shadowFrustumBound[pointIndex][0] - g_shadowFrustumBound[pointIndex + 1][0]) *
            rg.sunShadowmapScale;
-      param_4[local_84][2] = 0.0;
-      param_4[local_84][3] =
-           -(g_shadowFrustumBound[local_58][0] * param_4[local_84][0] +
-            g_shadowFrustumBound[local_58][1] * param_4[local_84][1]) * rg.sunShadowmapScale;
-      local_84 = local_84 + 1;
+      boundingPolyClipSpacePlanes[planeCount][2] = 0.0;
+      boundingPolyClipSpacePlanes[planeCount][3] =
+           -(g_shadowFrustumBound[pointIndex][0] * boundingPolyClipSpacePlanes[planeCount][0] +
+            g_shadowFrustumBound[pointIndex][1] * boundingPolyClipSpacePlanes[planeCount][1]) *
+           rg.sunShadowmapScale;
+      planeCount = planeCount + 1;
     }
   }
-  return local_84;
+  return planeCount;
 }
 
 
 // 00B1BB20  R_SetupSunShadowMapViewMatrix  (gfx_d3d/r_sunshadow.cpp:287)
 
 void __cdecl
-R_SetupSunShadowMapViewMatrix(float *param_1,float (*param_2) [3],GfxSunShadowProjection *param_3)
+R_SetupSunShadowMapViewMatrix
+          (float *snappedViewOrgInSunProj,float (*sunAxis) [3],GfxSunShadowProjection *sunProj)
 
 {
-  param_3->viewMatrix[0][0] = -param_2[1][0];
-  param_3->viewMatrix[1][0] = -param_2[1][1];
-  param_3->viewMatrix[2][0] = -param_2[1][2];
-  param_3->viewMatrix[3][0] = -*param_1;
-  param_3->viewMatrix[0][1] = param_2[2][0];
-  param_3->viewMatrix[1][1] = param_2[2][1];
-  param_3->viewMatrix[2][1] = param_2[2][2];
-  param_3->viewMatrix[3][1] = -param_1[1];
-  param_3->viewMatrix[0][2] = (*param_2)[0];
-  param_3->viewMatrix[1][2] = (*param_2)[1];
-  param_3->viewMatrix[2][2] = (*param_2)[2];
-  param_3->viewMatrix[3][2] = 0.0;
-  param_3->viewMatrix[0][3] = 0.0;
-  param_3->viewMatrix[1][3] = 0.0;
-  param_3->viewMatrix[2][3] = 0.0;
-  param_3->viewMatrix[3][3] = 1.0;
+  sunProj->viewMatrix[0][0] = -sunAxis[1][0];
+  sunProj->viewMatrix[1][0] = -sunAxis[1][1];
+  sunProj->viewMatrix[2][0] = -sunAxis[1][2];
+  sunProj->viewMatrix[3][0] = -*snappedViewOrgInSunProj;
+  sunProj->viewMatrix[0][1] = sunAxis[2][0];
+  sunProj->viewMatrix[1][1] = sunAxis[2][1];
+  sunProj->viewMatrix[2][1] = sunAxis[2][2];
+  sunProj->viewMatrix[3][1] = -snappedViewOrgInSunProj[1];
+  sunProj->viewMatrix[0][2] = (*sunAxis)[0];
+  sunProj->viewMatrix[1][2] = (*sunAxis)[1];
+  sunProj->viewMatrix[2][2] = (*sunAxis)[2];
+  sunProj->viewMatrix[3][2] = 0.0;
+  sunProj->viewMatrix[0][3] = 0.0;
+  sunProj->viewMatrix[1][3] = 0.0;
+  sunProj->viewMatrix[2][3] = 0.0;
+  sunProj->viewMatrix[3][3] = 1.0;
   return;
 }
 
@@ -398,14 +419,15 @@ R_SetupSunShadowMapViewMatrix(float *param_1,float (*param_2) [3],GfxSunShadowPr
 
 void __cdecl
 R_SunShadowMapProjectionMatrix
-          (float *param_1,float param_2,float param_3,float param_4,GfxViewParms *param_5,
-          uint param_6)
+          (float *snappedViewOrgInClipSpace,float shadowSampleSize,float nearClip,float farClip,
+          GfxViewParms *shadowViewParms,uint partitionRes)
 
 {
   code *pcVar1;
   bool bVar2;
+  float shadowSampleExtents;
   
-  if (param_2 == 0.0) {
+  if (shadowSampleSize == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x139,0,
                              "%s");
     if (!bVar2) {
@@ -414,16 +436,17 @@ R_SunShadowMapProjectionMatrix
       return;
     }
   }
-  memset((uchar *)&param_5->projectionMatrix,'\0',0x40);
-  (param_5->projectionMatrix).m[0][0] = 2.0 / ((float)param_6 * param_2);
-  (param_5->projectionMatrix).m[3][0] = *param_1;
-  (param_5->projectionMatrix).m[1][1] = (param_5->projectionMatrix).m[0][0];
-  (param_5->projectionMatrix).m[3][1] = param_1[1];
-  (param_5->projectionMatrix).m[2][2] = 1.0 / ((param_4 - param_3) + 2.0);
-  (param_5->projectionMatrix).m[3][2] = -(param_3 - 1.0) * (param_5->projectionMatrix).m[2][2];
-  (param_5->projectionMatrix).m[3][3] = 1.0;
-  param_5->depthHackNearClip = (param_5->projectionMatrix).m[3][2];
-  R_SetupViewProjectionMatrices(param_5,false);
+  memset((uchar *)&shadowViewParms->projectionMatrix,'\0',0x40);
+  (shadowViewParms->projectionMatrix).m[0][0] = 2.0 / ((float)partitionRes * shadowSampleSize);
+  (shadowViewParms->projectionMatrix).m[3][0] = *snappedViewOrgInClipSpace;
+  (shadowViewParms->projectionMatrix).m[1][1] = (shadowViewParms->projectionMatrix).m[0][0];
+  (shadowViewParms->projectionMatrix).m[3][1] = snappedViewOrgInClipSpace[1];
+  (shadowViewParms->projectionMatrix).m[2][2] = 1.0 / ((farClip - nearClip) + 2.0);
+  (shadowViewParms->projectionMatrix).m[3][2] =
+       -(nearClip - 1.0) * (shadowViewParms->projectionMatrix).m[2][2];
+  (shadowViewParms->projectionMatrix).m[3][3] = 1.0;
+  shadowViewParms->depthHackNearClip = (shadowViewParms->projectionMatrix).m[3][2];
+  R_SetupViewProjectionMatrices(shadowViewParms,false);
   return;
 }
 
@@ -432,14 +455,18 @@ R_SunShadowMapProjectionMatrix
 
 void __cdecl
 R_SetupSunShadowMapPartitionFraction
-          (GfxViewParms *param_1,float param_2,GfxSunShadowProjection *param_3,float *param_4)
+          (GfxViewParms *viewParms,float scaleToFitUsable,GfxSunShadowProjection *sunProj,
+          float *partitionFraction)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float zNear;
+  float sampleSizeNear;
+  float endOfNearFrustum;
   
-  fVar3 = param_1->zNear;
+  fVar3 = viewParms->zNear;
   if (fVar3 == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x15d,0,
                              "%s");
@@ -449,12 +476,13 @@ R_SetupSunShadowMapPartitionFraction
       return;
     }
   }
-  fVar3 = 1.0 / (fVar3 * (sm_sunSampleSizeNear->current).value * param_2);
-  *param_4 = fVar3 * param_1->axis[0][0];
-  param_4[1] = fVar3 * param_1->axis[0][1];
-  param_4[2] = fVar3 * param_1->axis[0][2];
-  param_4[3] = -(param_1->origin[0] * *param_4 + param_1->origin[1] * param_4[1] +
-                param_1->origin[2] * param_4[2]);
+  fVar3 = 1.0 / (fVar3 * (sm_sunSampleSizeNear->current).value * scaleToFitUsable);
+  *partitionFraction = fVar3 * viewParms->axis[0][0];
+  partitionFraction[1] = fVar3 * viewParms->axis[0][1];
+  partitionFraction[2] = fVar3 * viewParms->axis[0][2];
+  partitionFraction[3] =
+       -(viewParms->origin[0] * *partitionFraction + viewParms->origin[1] * partitionFraction[1] +
+        viewParms->origin[2] * partitionFraction[2]);
   return;
 }
 
@@ -463,7 +491,8 @@ R_SetupSunShadowMapPartitionFraction
 
 void __cdecl
 R_GetSunShadowMapPartitionViewOrgInTextureSpace
-          (float *param_1,float *param_2,float *param_3,float param_4,float *param_5,uint param_6)
+          (float *viewOrgInPixels,float *viewOrgInSunProj,float *snappedViewOrgInSunProj,
+          float sampleSize,float *viewOrgInTexSpace,uint partitionRes)
 
 {
   float10 extraout_ST0;
@@ -471,30 +500,34 @@ R_GetSunShadowMapPartitionViewOrgInTextureSpace
   
   floor();
   floor();
-  *param_5 = (1.0 / (float)param_6) * (float)extraout_ST0;
-  param_5[1] = (1.0 / (float)param_6) * (float)extraout_ST0_00;
+  *viewOrgInTexSpace = (1.0 / (float)partitionRes) * (float)extraout_ST0;
+  viewOrgInTexSpace[1] = (1.0 / (float)partitionRes) * (float)extraout_ST0_00;
   return;
 }
 
 
 // 00B1BE20  R_SetupNearRegionPlane  (gfx_d3d/r_sunshadow.cpp:379)
 
-void __cdecl R_SetupNearRegionPlane(float *param_1)
+void __cdecl R_SetupNearRegionPlane(float *partitionFraction)
 
 {
   code *pcVar1;
   bool bVar2;
-  DpvsPlane *pDVar3;
-  float fVar4;
-  float local_18;
-  uint local_10;
+  DpvsPlane *plane;
+  float fVar3;
+  DpvsPlane *shadowNearPlane;
+  float size;
+  DpvsPlane *shadowFarPlane;
+  uint partitionIndex;
+  float scale;
+  float length;
   
-  scene.shadowNearPlane[0].coeffs[0] = *param_1;
-  scene.shadowNearPlane[0].coeffs[1] = param_1[1];
-  scene.shadowNearPlane[0].coeffs[2] = param_1[2];
-  scene.shadowNearPlane[0].coeffs[3] = param_1[3];
-  fVar4 = Abs((phys_vec3 *)scene.shadowNearPlane);
-  if (fVar4 <= 0.0) {
+  scene.shadowNearPlane[0].coeffs[0] = *partitionFraction;
+  scene.shadowNearPlane[0].coeffs[1] = partitionFraction[1];
+  scene.shadowNearPlane[0].coeffs[2] = partitionFraction[2];
+  scene.shadowNearPlane[0].coeffs[3] = partitionFraction[3];
+  fVar3 = Abs((phys_vec3 *)scene.shadowNearPlane);
+  if (fVar3 <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x187,0,
                              "%s");
     if (!bVar2) {
@@ -503,18 +536,18 @@ void __cdecl R_SetupNearRegionPlane(float *param_1)
       return;
     }
   }
-  fVar4 = 1.0 / fVar4;
-  scene.shadowNearPlane[0].coeffs[0] = fVar4 * scene.shadowNearPlane[0].coeffs[0];
-  scene.shadowNearPlane[0].coeffs[1] = fVar4 * scene.shadowNearPlane[0].coeffs[1];
-  scene.shadowNearPlane[0].coeffs[2] = fVar4 * scene.shadowNearPlane[0].coeffs[2];
-  scene.shadowNearPlane[0].coeffs[3] = fVar4 * scene.shadowNearPlane[0].coeffs[3];
+  fVar3 = 1.0 / fVar3;
+  scene.shadowNearPlane[0].coeffs[0] = fVar3 * scene.shadowNearPlane[0].coeffs[0];
+  scene.shadowNearPlane[0].coeffs[1] = fVar3 * scene.shadowNearPlane[0].coeffs[1];
+  scene.shadowNearPlane[0].coeffs[2] = fVar3 * scene.shadowNearPlane[0].coeffs[2];
+  scene.shadowNearPlane[0].coeffs[3] = fVar3 * scene.shadowNearPlane[0].coeffs[3];
   R_SetDpvsPlaneSides(scene.shadowNearPlane);
-  scene.shadowNearPlane[1].coeffs[0] = *param_1;
-  scene.shadowNearPlane[1].coeffs[1] = param_1[1];
-  scene.shadowNearPlane[1].coeffs[2] = param_1[2];
-  scene.shadowNearPlane[1].coeffs[3] = param_1[3] - 0.75;
-  fVar4 = Abs((phys_vec3 *)(scene.shadowNearPlane + 1));
-  if (fVar4 <= 0.0) {
+  scene.shadowNearPlane[1].coeffs[0] = *partitionFraction;
+  scene.shadowNearPlane[1].coeffs[1] = partitionFraction[1];
+  scene.shadowNearPlane[1].coeffs[2] = partitionFraction[2];
+  scene.shadowNearPlane[1].coeffs[3] = partitionFraction[3] - 0.75;
+  fVar3 = Abs((phys_vec3 *)(scene.shadowNearPlane + 1));
+  if (fVar3 <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x191,0,
                              "%s");
     if (!bVar2) {
@@ -523,26 +556,27 @@ void __cdecl R_SetupNearRegionPlane(float *param_1)
       return;
     }
   }
-  fVar4 = 1.0 / fVar4;
-  scene.shadowNearPlane[1].coeffs[0] = fVar4 * scene.shadowNearPlane[1].coeffs[0];
-  scene.shadowNearPlane[1].coeffs[1] = fVar4 * scene.shadowNearPlane[1].coeffs[1];
-  scene.shadowNearPlane[1].coeffs[2] = fVar4 * scene.shadowNearPlane[1].coeffs[2];
-  scene.shadowNearPlane[1].coeffs[3] = fVar4 * scene.shadowNearPlane[1].coeffs[3];
+  fVar3 = 1.0 / fVar3;
+  scene.shadowNearPlane[1].coeffs[0] = fVar3 * scene.shadowNearPlane[1].coeffs[0];
+  scene.shadowNearPlane[1].coeffs[1] = fVar3 * scene.shadowNearPlane[1].coeffs[1];
+  scene.shadowNearPlane[1].coeffs[2] = fVar3 * scene.shadowNearPlane[1].coeffs[2];
+  scene.shadowNearPlane[1].coeffs[3] = fVar3 * scene.shadowNearPlane[1].coeffs[3];
   R_SetDpvsPlaneSides(scene.shadowNearPlane + 1);
-  local_18 = 1.0;
-  local_10 = 0;
+  size = 1.0;
+  partitionIndex = 0;
   do {
-    if (1 < local_10) {
+    if (1 < partitionIndex) {
       return;
     }
-    pDVar3 = scene.shadowFarPlane + local_10;
-    pDVar3->coeffs[0] = *param_1;
-    scene.shadowFarPlane[local_10].coeffs[1] = param_1[1];
-    scene.shadowFarPlane[local_10].coeffs[2] = param_1[2];
-    scene.shadowFarPlane[local_10].coeffs[3] = param_1[3];
-    scene.shadowFarPlane[local_10].coeffs[3] = scene.shadowFarPlane[local_10].coeffs[3] - local_18;
-    fVar4 = Abs((phys_vec3 *)pDVar3);
-    if (fVar4 <= 0.0) {
+    plane = scene.shadowFarPlane + partitionIndex;
+    plane->coeffs[0] = *partitionFraction;
+    scene.shadowFarPlane[partitionIndex].coeffs[1] = partitionFraction[1];
+    scene.shadowFarPlane[partitionIndex].coeffs[2] = partitionFraction[2];
+    scene.shadowFarPlane[partitionIndex].coeffs[3] = partitionFraction[3];
+    scene.shadowFarPlane[partitionIndex].coeffs[3] =
+         scene.shadowFarPlane[partitionIndex].coeffs[3] - size;
+    fVar3 = Abs((phys_vec3 *)plane);
+    if (fVar3 <= 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x19e,0
                                ,"%s");
       if (!bVar2) {
@@ -551,14 +585,17 @@ void __cdecl R_SetupNearRegionPlane(float *param_1)
         return;
       }
     }
-    fVar4 = -1.0 / fVar4;
-    pDVar3->coeffs[0] = fVar4 * pDVar3->coeffs[0];
-    scene.shadowFarPlane[local_10].coeffs[1] = fVar4 * scene.shadowFarPlane[local_10].coeffs[1];
-    scene.shadowFarPlane[local_10].coeffs[2] = fVar4 * scene.shadowFarPlane[local_10].coeffs[2];
-    scene.shadowFarPlane[local_10].coeffs[3] = fVar4 * scene.shadowFarPlane[local_10].coeffs[3];
-    R_SetDpvsPlaneSides(pDVar3);
-    local_18 = local_18 * rg.sunShadowPartitionRatio;
-    local_10 = local_10 + 1;
+    fVar3 = -1.0 / fVar3;
+    plane->coeffs[0] = fVar3 * plane->coeffs[0];
+    scene.shadowFarPlane[partitionIndex].coeffs[1] =
+         fVar3 * scene.shadowFarPlane[partitionIndex].coeffs[1];
+    scene.shadowFarPlane[partitionIndex].coeffs[2] =
+         fVar3 * scene.shadowFarPlane[partitionIndex].coeffs[2];
+    scene.shadowFarPlane[partitionIndex].coeffs[3] =
+         fVar3 * scene.shadowFarPlane[partitionIndex].coeffs[3];
+    R_SetDpvsPlaneSides(plane);
+    size = size * rg.sunShadowPartitionRatio;
+    partitionIndex = partitionIndex + 1;
   } while( true );
 }
 
@@ -567,8 +604,8 @@ void __cdecl R_SetupNearRegionPlane(float *param_1)
 
 void __cdecl
 R_SetupSunShadowMapProjection
-          (GfxViewParms *param_1,float (*param_2) [3],GfxSunShadow *param_3,float (*param_4) [2],
-          float *param_5,uint param_6)
+          (GfxViewParms *viewParms,float (*sunAxis) [3],GfxSunShadow *sunShadow,
+          float (*snappedViewOrgInClipSpace) [2],float *partitionFraction,uint partitionRes)
 
 {
   bool bVar1;
@@ -589,242 +626,253 @@ R_SetupSunShadowMapProjection
   uint local_2b4;
   uint local_294;
   float local_210;
-  float local_178;
+  float minsInSunProj;
   float local_174;
   float local_170 [2];
-  float local_168;
+  float sizeInSunProj;
   float local_164;
-  float local_160 [12];
-  float local_130;
+  float frustumPoints [12];
+  float maxsInSunProj;
   float local_12c;
   float local_128 [2];
-  GfxSunShadowProjection *local_120;
-  float local_11c [9];
+  GfxSunShadowProjection *sunProj;
+  float frustumPointsInSunProj [9];
   float local_f8;
   float local_dc [17];
-  int local_98;
-  float local_90;
+  int snappedViewOrgInTicks;
+  float viewOrgInTexSpace;
   float local_8c;
   float local_88;
   float local_84;
-  float local_80;
+  float shadowOrg;
   float local_7c;
   float local_78;
-  float local_74;
+  float viewOrgInSunProj;
   float local_70;
-  float local_6c;
-  uint local_68;
-  GfxSunShadowPartition *local_64;
-  float local_60;
+  float sampleSizeFar;
+  uint farShadowBegin;
+  GfxSunShadowPartition *partitionNear;
+  float offset;
   float local_5c;
-  uint local_58;
-  int local_54;
-  float local_50;
+  uint pointIndex;
+  uint farShadowEnd;
+  float frustumPoint;
   float local_4c;
   float local_48;
-  uint local_44;
-  uint local_40;
-  GfxSunShadowPartition *local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
+  int useShadowOffset;
+  uint farShadowMiddle;
+  GfxSunShadowPartition *partitionFar;
+  float sampleSizeNear;
+  float scale;
+  float maxSizeInSunProj;
+  float shadowOrgInSunProj;
   float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
+  float farShadowSizeRatio;
+  float scaleToFitUsable;
+  float viewOrgInPixels;
   float local_18;
   float local_14;
   float local_10;
-  float local_c;
+  float snappedViewOrgInSunProj;
   float local_8;
   
-  local_74 = -(param_1->origin[0] * param_2[1][0] + param_1->origin[1] * param_2[1][1] +
-              param_1->origin[2] * param_2[1][2]);
-  local_70 = param_1->origin[0] * param_2[2][0] + param_1->origin[1] * param_2[2][1] +
-             param_1->origin[2] * param_2[2][2];
-  local_178 = 3.4028235e+38;
+  viewOrgInSunProj =
+       -(viewParms->origin[0] * sunAxis[1][0] + viewParms->origin[1] * sunAxis[1][1] +
+        viewParms->origin[2] * sunAxis[1][2]);
+  local_70 = viewParms->origin[0] * sunAxis[2][0] + viewParms->origin[1] * sunAxis[2][1] +
+             viewParms->origin[2] * sunAxis[2][2];
+  minsInSunProj = 3.4028235e+38;
   local_174 = 3.4028235e+38;
-  local_130 = -3.4028235e+38;
+  maxsInSunProj = -3.4028235e+38;
   local_12c = -3.4028235e+38;
-  R_GetFrustumNearClipPoints(&param_1->inverseViewProjectionMatrix,(float (*) [3])local_160);
-  for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
-    local_50 = local_160[local_58 * 3];
-    local_4c = local_160[local_58 * 3 + 1];
-    local_48 = local_160[local_58 * 3 + 2];
-    local_11c[local_58 * 2] =
-         -(local_160[local_58 * 3] * param_2[1][0] + local_160[local_58 * 3 + 1] * param_2[1][1] +
-          local_160[local_58 * 3 + 2] * param_2[1][2]);
-    local_11c[local_58 * 2 + 1] =
-         local_160[local_58 * 3] * param_2[2][0] + local_160[local_58 * 3 + 1] * param_2[2][1] +
-         local_160[local_58 * 3 + 2] * param_2[2][2];
-    AddPointToBounds2D(local_11c + local_58 * 2,&local_178,&local_130);
+  R_GetFrustumNearClipPoints(&viewParms->inverseViewProjectionMatrix,(float (*) [3])frustumPoints);
+  for (pointIndex = 0; pointIndex < 4; pointIndex = pointIndex + 1) {
+    frustumPoint = frustumPoints[pointIndex * 3];
+    local_4c = frustumPoints[pointIndex * 3 + 1];
+    local_48 = frustumPoints[pointIndex * 3 + 2];
+    frustumPointsInSunProj[pointIndex * 2] =
+         -(frustumPoints[pointIndex * 3] * sunAxis[1][0] +
+           frustumPoints[pointIndex * 3 + 1] * sunAxis[1][1] +
+          frustumPoints[pointIndex * 3 + 2] * sunAxis[1][2]);
+    frustumPointsInSunProj[pointIndex * 2 + 1] =
+         frustumPoints[pointIndex * 3] * sunAxis[2][0] +
+         frustumPoints[pointIndex * 3 + 1] * sunAxis[2][1] +
+         frustumPoints[pointIndex * 3 + 2] * sunAxis[2][2];
+    AddPointToBounds2D(frustumPointsInSunProj + pointIndex * 2,&minsInSunProj,&maxsInSunProj);
   }
-  local_11c[8] = local_74;
+  frustumPointsInSunProj[8] = viewOrgInSunProj;
   local_f8 = local_70;
-  pfVar3 = local_11c;
+  pfVar3 = frustumPointsInSunProj;
   pfVar4 = local_dc;
   for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
     *pfVar4 = *pfVar3;
     pfVar3 = pfVar3 + 1;
     pfVar4 = pfVar4 + 1;
   }
-  for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
-    local_60 = local_dc[local_58 * 2] - local_74;
-    local_5c = local_dc[local_58 * 2 + 1] - local_70;
-    local_dc[local_58 * 2 + 8] = (0.75 / rg.sunShadowPartitionRatio) * local_60 + local_74;
-    local_dc[local_58 * 2 + 9] = (0.75 / rg.sunShadowPartitionRatio) * local_5c + local_70;
-    AddPointToBounds2D(local_dc + local_58 * 2 + 8,local_170,local_128);
+  for (pointIndex = 0; pointIndex < 4; pointIndex = pointIndex + 1) {
+    offset = local_dc[pointIndex * 2] - viewOrgInSunProj;
+    local_5c = local_dc[pointIndex * 2 + 1] - local_70;
+    local_dc[pointIndex * 2 + 8] = (0.75 / rg.sunShadowPartitionRatio) * offset + viewOrgInSunProj;
+    local_dc[pointIndex * 2 + 9] = (0.75 / rg.sunShadowPartitionRatio) * local_5c + local_70;
+    AddPointToBounds2D(local_dc + pointIndex * 2 + 8,local_170,local_128);
   }
-  AddPointToBounds2D(&local_74,&local_178,&local_130);
-  local_168 = local_130 - local_178;
+  AddPointToBounds2D(&viewOrgInSunProj,&minsInSunProj,&maxsInSunProj);
+  sizeInSunProj = maxsInSunProj - minsInSunProj;
   local_164 = local_12c - local_174;
   local_210 = local_164;
-  if (0.0 <= local_168 - local_164) {
-    local_210 = local_168;
+  if (0.0 <= sizeInSunProj - local_164) {
+    local_210 = sizeInSunProj;
   }
-  local_30 = local_210;
-  local_38 = (sm_sunSampleSizeNear->current).value;
-  local_6c = local_38 * rg.sunShadowPartitionRatio;
-  local_34 = local_6c * rg.sunShadowmapScaleNum;
-  dpvsGlob.sunShadow.sunShadowDrawDist = (float)param_6 * local_6c;
+  maxSizeInSunProj = local_210;
+  sampleSizeNear = (sm_sunSampleSizeNear->current).value;
+  sampleSizeFar = sampleSizeNear * rg.sunShadowPartitionRatio;
+  scale = sampleSizeFar * rg.sunShadowmapScaleNum;
+  dpvsGlob.sunShadow.sunShadowDrawDist = (float)partitionRes * sampleSizeFar;
   floor();
   _ftol2_sse();
-  local_98 = extraout_EAX;
+  snappedViewOrgInTicks = extraout_EAX;
   floor();
   _ftol2_sse();
-  local_c = (float)local_98 * local_34;
-  local_8 = (float)extraout_EAX_00 * local_34;
-  local_20 = (float)(param_6 - 1) / local_30;
-  local_68 = param_6 - rg.sunShadowSize >> 1;
-  local_54 = param_6 - local_68;
-  local_40 = local_68 + local_54 >> 1;
-  local_24 = (float)((float10)rg.sunShadowSize / (float10)param_6);
-  local_64 = param_3->partition;
-  local_3c = param_3->partition + 1;
-  local_80 = (sm_sunShadowCenter->current).value;
+  snappedViewOrgInSunProj = (float)snappedViewOrgInTicks * scale;
+  local_8 = (float)extraout_EAX_00 * scale;
+  scaleToFitUsable = (float)(partitionRes - 1) / maxSizeInSunProj;
+  farShadowBegin = partitionRes - rg.sunShadowSize >> 1;
+  farShadowEnd = partitionRes - farShadowBegin;
+  farShadowMiddle = farShadowBegin + farShadowEnd >> 1;
+  farShadowSizeRatio = (float)((float10)rg.sunShadowSize / (float10)partitionRes);
+  partitionNear = sunShadow->partition;
+  partitionFar = sunShadow->partition + 1;
+  shadowOrg = (sm_sunShadowCenter->current).value;
   local_7c = (sm_sunShadowCenter->current).vector[1];
   local_78 = (sm_sunShadowCenter->current).vector[2];
-  if (((local_80 == 0.0) && (local_7c == 0.0)) && (local_78 == 0.0)) {
+  if (((shadowOrg == 0.0) && (local_7c == 0.0)) && (local_78 == 0.0)) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
-  local_44 = (uint)!bVar1;
-  local_2c = -(local_80 * param_2[1][0] + local_7c * param_2[1][1] + local_78 * param_2[1][2]);
-  local_28 = local_80 * param_2[2][0] + local_7c * param_2[2][1] + local_78 * param_2[2][2];
+  useShadowOffset = (int)!bVar1;
+  shadowOrgInSunProj =
+       -(shadowOrg * sunAxis[1][0] + local_7c * sunAxis[1][1] + local_78 * sunAxis[1][2]);
+  local_28 = shadowOrg * sunAxis[2][0] + local_7c * sunAxis[2][1] + local_78 * sunAxis[2][2];
   ceil();
-  (local_64->viewport).width = (int)ROUND((float)extraout_ST0) & 0xffff;
+  (partitionNear->viewport).width = (int)ROUND((float)extraout_ST0) & 0xffff;
   ceil();
-  (local_64->viewport).height = (int)ROUND((float)extraout_ST0_00) & 0xffff;
-  if (local_74 < (local_178 + local_130) * 0.5) {
-    local_1c = (local_74 - local_178) * local_20 + 1.0;
-    if (local_44 == 0) {
-      local_14 = (local_74 - local_178) * local_20 * local_24 + (float)(local_68 + 1);
+  (partitionNear->viewport).height = (int)ROUND((float)extraout_ST0_00) & 0xffff;
+  if (viewOrgInSunProj < (minsInSunProj + maxsInSunProj) * 0.5) {
+    viewOrgInPixels = (viewOrgInSunProj - minsInSunProj) * scaleToFitUsable + 1.0;
+    if (useShadowOffset == 0) {
+      local_14 = (viewOrgInSunProj - minsInSunProj) * scaleToFitUsable * farShadowSizeRatio +
+                 (float)(farShadowBegin + 1);
       floor();
       local_2b4 = (uint)extraout_ST0_02;
-      if ((int)local_2b4 <= (int)local_68) {
-        local_2b4 = local_68;
+      if ((int)local_2b4 <= (int)farShadowBegin) {
+        local_2b4 = farShadowBegin;
       }
-      (local_3c->viewport).x = local_2b4;
+      (partitionFar->viewport).x = local_2b4;
     }
     else {
-      local_14 = (local_74 - local_2c) / local_6c + (float)local_40;
-      (local_3c->viewport).x = local_68;
+      local_14 = (viewOrgInSunProj - shadowOrgInSunProj) / sampleSizeFar + (float)farShadowMiddle;
+      (partitionFar->viewport).x = farShadowBegin;
     }
-    (local_64->viewport).x = 0;
-    (local_3c->viewport).width = local_54 - (local_3c->viewport).x;
+    (partitionNear->viewport).x = 0;
+    (partitionFar->viewport).width = farShadowEnd - (partitionFar->viewport).x;
   }
   else {
-    local_1c = (float)(param_6 - 1) - (local_130 - local_74) * local_20;
-    if (local_44 == 0) {
-      local_14 = (float)(local_54 - 1) - (local_130 - local_74) * local_20 * local_24;
+    viewOrgInPixels =
+         (float)(partitionRes - 1) - (maxsInSunProj - viewOrgInSunProj) * scaleToFitUsable;
+    if (useShadowOffset == 0) {
+      local_14 = (float)(farShadowEnd - 1) -
+                 (maxsInSunProj - viewOrgInSunProj) * scaleToFitUsable * farShadowSizeRatio;
       ceil();
-      local_294 = (int)extraout_ST0_01 - local_68;
+      local_294 = (int)extraout_ST0_01 - farShadowBegin;
       if ((int)rg.sunShadowSize <= (int)local_294) {
         local_294 = rg.sunShadowSize;
       }
-      (local_3c->viewport).width = local_294;
+      (partitionFar->viewport).width = local_294;
     }
     else {
-      local_14 = (float)local_40 - (local_74 - local_2c) / local_6c;
-      (local_3c->viewport).width = rg.sunShadowSize;
+      local_14 = (float)farShadowMiddle - (viewOrgInSunProj - shadowOrgInSunProj) / sampleSizeFar;
+      (partitionFar->viewport).width = rg.sunShadowSize;
     }
-    (local_64->viewport).x = param_6 - (local_64->viewport).width;
-    (local_3c->viewport).x = local_68;
+    (partitionNear->viewport).x = partitionRes - (partitionNear->viewport).width;
+    (partitionFar->viewport).x = farShadowBegin;
   }
   if ((local_174 + local_12c) * 0.5 < local_70) {
-    local_18 = (local_12c - local_70) * local_20 + 1.0;
-    if (local_44 == 0) {
-      local_10 = (local_12c - local_70) * local_20 * local_24 + (float)(local_68 + 1);
+    local_18 = (local_12c - local_70) * scaleToFitUsable + 1.0;
+    if (useShadowOffset == 0) {
+      local_10 = (local_12c - local_70) * scaleToFitUsable * farShadowSizeRatio +
+                 (float)(farShadowBegin + 1);
       floor();
       local_2fc = (uint)extraout_ST0_04;
-      if ((int)local_2fc <= (int)local_68) {
-        local_2fc = local_68;
+      if ((int)local_2fc <= (int)farShadowBegin) {
+        local_2fc = farShadowBegin;
       }
-      (local_3c->viewport).y = local_2fc;
+      (partitionFar->viewport).y = local_2fc;
     }
     else {
-      local_10 = (local_70 - local_28) / local_6c + (float)local_40;
-      (local_3c->viewport).y = local_68;
+      local_10 = (local_70 - local_28) / sampleSizeFar + (float)farShadowMiddle;
+      (partitionFar->viewport).y = farShadowBegin;
     }
-    (local_64->viewport).y = 0;
-    (local_3c->viewport).height = local_54 - (local_3c->viewport).y;
+    (partitionNear->viewport).y = 0;
+    (partitionFar->viewport).height = farShadowEnd - (partitionFar->viewport).y;
   }
   else {
-    local_18 = (float)(param_6 - 1) - (local_70 - local_174) * local_20;
-    if (local_44 == 0) {
-      local_10 = (float)(local_54 - 1) - (local_70 - local_174) * local_20 * local_24;
+    local_18 = (float)(partitionRes - 1) - (local_70 - local_174) * scaleToFitUsable;
+    if (useShadowOffset == 0) {
+      local_10 = (float)(farShadowEnd - 1) -
+                 (local_70 - local_174) * scaleToFitUsable * farShadowSizeRatio;
       ceil();
-      local_2dc = (int)extraout_ST0_03 - local_68;
+      local_2dc = (int)extraout_ST0_03 - farShadowBegin;
       if ((int)rg.sunShadowSize <= (int)local_2dc) {
         local_2dc = rg.sunShadowSize;
       }
-      (local_3c->viewport).height = local_2dc;
+      (partitionFar->viewport).height = local_2dc;
     }
     else {
-      local_10 = (float)local_40 - (local_70 - local_28) / local_6c;
-      (local_3c->viewport).height = rg.sunShadowSize;
+      local_10 = (float)farShadowMiddle - (local_70 - local_28) / sampleSizeFar;
+      (partitionFar->viewport).height = rg.sunShadowSize;
     }
-    (local_64->viewport).y = param_6 - (local_64->viewport).height;
-    (local_3c->viewport).y = local_68;
+    (partitionNear->viewport).y = partitionRes - (partitionNear->viewport).height;
+    (partitionFar->viewport).y = farShadowBegin;
   }
   if (rg.sunShadowFull == 0) {
-    (local_3c->viewport).x = (local_64->viewport).x;
-    (local_3c->viewport).y = (local_64->viewport).y;
-    (local_3c->viewport).width = (local_64->viewport).width;
-    (local_3c->viewport).height = (local_64->viewport).height;
+    (partitionFar->viewport).x = (partitionNear->viewport).x;
+    (partitionFar->viewport).y = (partitionNear->viewport).y;
+    (partitionFar->viewport).width = (partitionNear->viewport).width;
+    (partitionFar->viewport).height = (partitionNear->viewport).height;
   }
   R_GetSunShadowMapPartitionViewOrgInTextureSpace
-            (&local_1c,&local_74,&local_c,local_38,&local_90,param_6);
+            (&viewOrgInPixels,&viewOrgInSunProj,&snappedViewOrgInSunProj,sampleSizeNear,
+             &viewOrgInTexSpace,partitionRes);
   R_GetSunShadowMapPartitionViewOrgInTextureSpace
-            (&local_14,&local_74,&local_c,local_6c,&local_88,param_6);
-  local_120 = &param_3->sunProj;
-  (param_3->sunProj).switchPartition[3] = 1.0 / rg.sunShadowPartitionRatio;
-  (param_3->sunProj).switchPartition[0] =
-       local_88 - local_90 * (param_3->sunProj).switchPartition[3];
-  (param_3->sunProj).switchPartition[1] =
-       ((local_84 - local_8c * (param_3->sunProj).switchPartition[3]) + 1.0) * 0.5;
-  (param_3->sunProj).switchPartition[2] = 0.0;
+            (&local_14,&viewOrgInSunProj,&snappedViewOrgInSunProj,sampleSizeFar,&local_88,
+             partitionRes);
+  sunProj = &sunShadow->sunProj;
+  (sunShadow->sunProj).switchPartition[3] = 1.0 / rg.sunShadowPartitionRatio;
+  (sunShadow->sunProj).switchPartition[0] =
+       local_88 - viewOrgInTexSpace * (sunShadow->sunProj).switchPartition[3];
+  (sunShadow->sunProj).switchPartition[1] =
+       ((local_84 - local_8c * (sunShadow->sunProj).switchPartition[3]) + 1.0) * 0.5;
+  (sunShadow->sunProj).switchPartition[2] = 0.0;
   fVar5 = 32.0 / rg.sunShadowmapScale;
-  (param_3->sunProj).shadowmapScale[0] = 16.0 / rg.sunShadowmapScale;
-  (param_3->sunProj).shadowmapScale[1] = fVar5;
-  (param_3->sunProj).shadowmapScale[2] = 0.0;
-  (param_3->sunProj).shadowmapScale[3] = 0.0;
-  (*param_4)[0] = local_90 * 2.0 - 1.0;
-  (*param_4)[1] = 1.0 - local_8c * 2.0;
-  param_4[1][0] = local_88 * 2.0 - 1.0;
-  param_4[1][1] = 1.0 - local_84 * 2.0;
-  R_SetupSunShadowMapViewMatrix(&local_c,param_2,local_120);
+  (sunShadow->sunProj).shadowmapScale[0] = 16.0 / rg.sunShadowmapScale;
+  (sunShadow->sunProj).shadowmapScale[1] = fVar5;
+  (sunShadow->sunProj).shadowmapScale[2] = 0.0;
+  (sunShadow->sunProj).shadowmapScale[3] = 0.0;
+  (*snappedViewOrgInClipSpace)[0] = viewOrgInTexSpace * 2.0 - 1.0;
+  (*snappedViewOrgInClipSpace)[1] = 1.0 - local_8c * 2.0;
+  snappedViewOrgInClipSpace[1][0] = local_88 * 2.0 - 1.0;
+  snappedViewOrgInClipSpace[1][1] = 1.0 - local_84 * 2.0;
+  R_SetupSunShadowMapViewMatrix(&snappedViewOrgInSunProj,sunAxis,sunProj);
   R_SetupSunShadowBoundingPoly
-            ((float (*) [2])local_11c,&local_74,&local_c,local_30,*param_4,&local_64->boundingPoly,5
-            );
+            ((float (*) [2])frustumPointsInSunProj,&viewOrgInSunProj,&snappedViewOrgInSunProj,
+             maxSizeInSunProj,*snappedViewOrgInClipSpace,&partitionNear->boundingPoly,5);
   R_SetupSunShadowBoundingPoly
-            ((float (*) [2])local_dc,&local_74,&local_c,local_30,param_4[1],&local_3c->boundingPoly,
-             8);
-  R_SetupSunShadowMapPartitionFraction(param_1,local_20,local_120,param_5);
-  R_SetupNearRegionPlane(param_5);
+            ((float (*) [2])local_dc,&viewOrgInSunProj,&snappedViewOrgInSunProj,maxSizeInSunProj,
+             snappedViewOrgInClipSpace[1],&partitionFar->boundingPoly,8);
+  R_SetupSunShadowMapPartitionFraction(viewParms,scaleToFitUsable,sunProj,partitionFraction);
+  R_SetupNearRegionPlane(partitionFraction);
   return;
 }
 
@@ -833,7 +881,8 @@ R_SetupSunShadowMapProjection
 
 void __cdecl
 R_GetSunShadowLookupMatrix
-          (GfxViewParms *param_1,GfxSunShadowProjection *param_2,float *param_3,GfxMatrix *param_4)
+          (GfxViewParms *shadowViewParms,GfxSunShadowProjection *sunProj,float *partitionFraction,
+          GfxMatrix *lookupMatrix)
 
 {
   float fVar1;
@@ -841,6 +890,14 @@ R_GetSunShadowLookupMatrix
   float fVar3;
   float fVar4;
   float fVar5;
+  float x0;
+  float xScale;
+  float x1;
+  float xShift;
+  float yShift;
+  float y1;
+  float y0;
+  float yScale;
   
   fVar2 = 0.5 / (float)dx.sunShadowPartitionRes + 0.0;
   fVar3 = 0.5 / (float)dx.sunShadowPartitionRes + 1.0;
@@ -850,120 +907,126 @@ R_GetSunShadowLookupMatrix
   fVar2 = (fVar3 + fVar2) * 0.5;
   fVar3 = (fVar5 - fVar4) * 0.5;
   fVar4 = (fVar5 + fVar4) * 0.5;
-  param_4->m[0][0] =
-       (param_1->viewProjectionMatrix).m[0][0] * fVar1 +
-       (param_1->viewProjectionMatrix).m[0][3] * fVar2;
-  param_4->m[1][0] =
-       (param_1->viewProjectionMatrix).m[1][0] * fVar1 +
-       (param_1->viewProjectionMatrix).m[1][3] * fVar2;
-  param_4->m[2][0] =
-       (param_1->viewProjectionMatrix).m[2][0] * fVar1 +
-       (param_1->viewProjectionMatrix).m[2][3] * fVar2;
-  param_4->m[3][0] =
-       (param_1->viewProjectionMatrix).m[3][0] * fVar1 +
-       (param_1->viewProjectionMatrix).m[3][3] * fVar2;
-  param_4->m[0][1] =
-       (param_1->viewProjectionMatrix).m[0][1] * fVar3 +
-       (param_1->viewProjectionMatrix).m[0][3] * fVar4;
-  param_4->m[1][1] =
-       (param_1->viewProjectionMatrix).m[1][1] * fVar3 +
-       (param_1->viewProjectionMatrix).m[1][3] * fVar4;
-  param_4->m[2][1] =
-       (param_1->viewProjectionMatrix).m[2][1] * fVar3 +
-       (param_1->viewProjectionMatrix).m[2][3] * fVar4;
-  param_4->m[3][1] =
-       (param_1->viewProjectionMatrix).m[3][1] * fVar3 +
-       (param_1->viewProjectionMatrix).m[3][3] * fVar4;
-  param_4->m[0][2] = (param_1->viewProjectionMatrix).m[0][2];
-  param_4->m[1][2] = (param_1->viewProjectionMatrix).m[1][2];
-  param_4->m[2][2] = (param_1->viewProjectionMatrix).m[2][2];
-  param_4->m[3][2] = (param_1->viewProjectionMatrix).m[3][2];
-  param_4->m[0][3] = *param_3;
-  param_4->m[1][3] = param_3[1];
-  param_4->m[2][3] = param_3[2];
-  param_4->m[3][3] = param_3[3];
+  lookupMatrix->m[0][0] =
+       (shadowViewParms->viewProjectionMatrix).m[0][0] * fVar1 +
+       (shadowViewParms->viewProjectionMatrix).m[0][3] * fVar2;
+  lookupMatrix->m[1][0] =
+       (shadowViewParms->viewProjectionMatrix).m[1][0] * fVar1 +
+       (shadowViewParms->viewProjectionMatrix).m[1][3] * fVar2;
+  lookupMatrix->m[2][0] =
+       (shadowViewParms->viewProjectionMatrix).m[2][0] * fVar1 +
+       (shadowViewParms->viewProjectionMatrix).m[2][3] * fVar2;
+  lookupMatrix->m[3][0] =
+       (shadowViewParms->viewProjectionMatrix).m[3][0] * fVar1 +
+       (shadowViewParms->viewProjectionMatrix).m[3][3] * fVar2;
+  lookupMatrix->m[0][1] =
+       (shadowViewParms->viewProjectionMatrix).m[0][1] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[0][3] * fVar4;
+  lookupMatrix->m[1][1] =
+       (shadowViewParms->viewProjectionMatrix).m[1][1] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[1][3] * fVar4;
+  lookupMatrix->m[2][1] =
+       (shadowViewParms->viewProjectionMatrix).m[2][1] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[2][3] * fVar4;
+  lookupMatrix->m[3][1] =
+       (shadowViewParms->viewProjectionMatrix).m[3][1] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[3][3] * fVar4;
+  lookupMatrix->m[0][2] = (shadowViewParms->viewProjectionMatrix).m[0][2];
+  lookupMatrix->m[1][2] = (shadowViewParms->viewProjectionMatrix).m[1][2];
+  lookupMatrix->m[2][2] = (shadowViewParms->viewProjectionMatrix).m[2][2];
+  lookupMatrix->m[3][2] = (shadowViewParms->viewProjectionMatrix).m[3][2];
+  lookupMatrix->m[0][3] = *partitionFraction;
+  lookupMatrix->m[1][3] = partitionFraction[1];
+  lookupMatrix->m[2][3] = partitionFraction[2];
+  lookupMatrix->m[3][3] = partitionFraction[3];
   return;
 }
 
 
 // 00B19990  R_SetupSunShadowMaps  (gfx_d3d/r_sunshadow.cpp:685)
 
-void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
+void __cdecl R_SetupSunShadowMaps(GfxViewParms *viewParms,GfxSunShadow *sunShadow)
 
 {
   int iVar1;
   GfxSunShadowProjection *pGVar2;
   GfxViewParms *pGVar3;
-  float local_10c;
+  float sunOrigin;
   float local_108;
   float local_104;
-  uint local_100;
-  GfxSunShadowProjection *local_fc;
-  float local_f8 [4];
-  uint local_e8;
-  float local_e4 [4];
-  float local_d4;
-  int local_d0;
-  float local_cc [37];
-  float local_38;
-  float local_34;
+  uint planeCount;
+  GfxSunShadowProjection *sunProj;
+  float snappedViewOrgInClipSpace [4];
+  uint sunShadowPartitionRes;
+  float partitionFraction [4];
+  float nearClip;
+  int partitionIndex;
+  float boundingPolyClipSpacePlanes [37];
+  float sampleSizeNear;
+  float sunAxis;
   float local_30;
   float local_2c;
-  float local_10;
-  GfxViewParms *local_c;
-  GfxViewParms *local_8;
+  float farClip;
+  GfxViewParms *shadowViewParms;
+  GfxSunShadowPartition *partition;
   
-  local_38 = (float)(sm_sunSampleSizeNear->current).integer;
-  local_e8 = dx.sunShadowPartitionRes;
-  R_GetSunAxes((float (*) [3])&local_34);
+  sampleSizeNear = (sm_sunSampleSizeNear->current).value;
+  sunShadowPartitionRes = dx.sunShadowPartitionRes;
+  R_GetSunAxes((float (*) [3])&sunAxis);
   R_SetupSunShadowMapProjection
-            (param_1,(float (*) [3])&local_34,param_2,(float (*) [2])local_f8,local_e4,local_e8);
-  local_10c = -(param_2->sunProj).viewMatrix[3][0];
-  local_108 = -(param_2->sunProj).viewMatrix[3][1];
-  local_104 = -(param_2->sunProj).viewMatrix[3][2];
-  R_GetSceneExtentsAlongDir(&local_10c,&local_34,&local_d4,&local_10);
-  local_fc = &param_2->sunProj;
-  for (local_d0 = 0; local_d0 < 2; local_d0 = local_d0 + 1) {
-    local_c = &param_2->partition[local_d0].shadowViewParms;
-    local_8 = local_c;
-    memset((uchar *)local_c,0xb0,0x140);
-    local_c->origin[0] = -local_34;
-    local_c->origin[1] = -local_30;
-    local_c->origin[2] = -local_2c;
-    local_c->origin[3] = 0.0;
-    Vec3PackNormAxis((float (*) [3])&local_34,local_c->axis);
-    pGVar2 = local_fc;
-    pGVar3 = local_c;
+            (viewParms,(float (*) [3])&sunAxis,sunShadow,(float (*) [2])snappedViewOrgInClipSpace,
+             partitionFraction,sunShadowPartitionRes);
+  sunOrigin = -(sunShadow->sunProj).viewMatrix[3][0];
+  local_108 = -(sunShadow->sunProj).viewMatrix[3][1];
+  local_104 = -(sunShadow->sunProj).viewMatrix[3][2];
+  R_GetSceneExtentsAlongDir(&sunOrigin,&sunAxis,&nearClip,&farClip);
+  sunProj = &sunShadow->sunProj;
+  for (partitionIndex = 0; partitionIndex < 2; partitionIndex = partitionIndex + 1) {
+    shadowViewParms = &sunShadow->partition[partitionIndex].shadowViewParms;
+    partition = (GfxSunShadowPartition *)shadowViewParms;
+    memset((uchar *)shadowViewParms,0xb0,0x140);
+    shadowViewParms->origin[0] = -sunAxis;
+    shadowViewParms->origin[1] = -local_30;
+    shadowViewParms->origin[2] = -local_2c;
+    shadowViewParms->origin[3] = 0.0;
+    Vec3PackNormAxis((float (*) [3])&sunAxis,shadowViewParms->axis);
+    pGVar2 = sunProj;
+    pGVar3 = shadowViewParms;
     for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
       (pGVar3->viewMatrix).m[0][0] = pGVar2->viewMatrix[0][0];
       pGVar2 = (GfxSunShadowProjection *)(pGVar2->viewMatrix[0] + 1);
       pGVar3 = (GfxViewParms *)((pGVar3->viewMatrix).m[0] + 1);
     }
     R_SunShadowMapProjectionMatrix
-              (local_f8 + local_d0 * 2,local_38,local_d4,local_10,local_c,local_e8);
-    local_100 = R_SunShadowMapClipSpaceClipPlanes
-                          ((GfxSunShadowBoundingPoly *)(local_8[1].viewMatrix.m[1] + 1),local_d0,
-                           local_38,(float (*) [4])local_cc,local_e8);
-    R_SetupShadowSurfacesDpvs(local_c,(float (*) [4])local_cc,local_100,local_d0);
-    local_38 = local_38 * rg.sunShadowPartitionRatio;
-    param_2->sunShadowCount = param_2->sunShadowCount + 1;
+              (snappedViewOrgInClipSpace + partitionIndex * 2,sampleSizeNear,nearClip,farClip,
+               shadowViewParms,sunShadowPartitionRes);
+    planeCount = R_SunShadowMapClipSpaceClipPlanes
+                           (&partition->boundingPoly,partitionIndex,sampleSizeNear,
+                            (float (*) [4])boundingPolyClipSpacePlanes,sunShadowPartitionRes);
+    R_SetupShadowSurfacesDpvs
+              (shadowViewParms,(float (*) [4])boundingPolyClipSpacePlanes,planeCount,partitionIndex)
+    ;
+    sampleSizeNear = sampleSizeNear * rg.sunShadowPartitionRatio;
+    sunShadow->sunShadowCount = sunShadow->sunShadowCount + 1;
   }
-  local_8 = &param_2->partition[0].shadowViewParms;
-  R_GetSunShadowLookupMatrix(local_8,local_fc,local_e4,&param_2->lookupMatrix);
+  partition = sunShadow->partition;
+  R_GetSunShadowLookupMatrix
+            (&partition->shadowViewParms,sunProj,partitionFraction,&sunShadow->lookupMatrix);
   return;
 }
 
 
 // 00B1C450  R_SunShadowMaps  (gfx_d3d/r_sunshadow.cpp:771)
 
-void __cdecl R_SunShadowMaps(GfxSunShadow *param_1)
+void __cdecl R_SunShadowMaps(GfxSunShadow *sunShadow)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  uint uVar4;
-  int local_c;
+  uint viewIndex_00;
+  int partitionIndex;
+  uint viewIndex;
   
   if ((rgp.world == (GfxWorld *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x307,0
@@ -975,21 +1038,21 @@ void __cdecl R_SunShadowMaps(GfxSunShadow *param_1)
   PIXBeginNamedEvent(-1,"shadow maps");
   shadowGlob.defaultShadowCasterTechnique =
        Material_GetTechnique(rgp.depthPrepassMaterial,gfxMetrics.shadowmapBuildTechType);
-  local_c = 0;
+  partitionIndex = 0;
   while( true ) {
-    if (1 < local_c) {
+    if (1 < partitionIndex) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    uVar4 = local_c + 1;
-    if (((uVar4 == 0) || (2 < uVar4)) &&
+    viewIndex_00 = partitionIndex + 1;
+    if (((viewIndex_00 == 0) || (2 < viewIndex_00)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x317
                                  ,0,"%s\n\t(viewIndex) = %i"), !bVar2)) break;
-    R_AddWorldSurfacesFrustumOnly(uVar4);
-    local_c = local_c + 1;
+    R_AddWorldSurfacesFrustumOnly(viewIndex_00);
+    partitionIndex = partitionIndex + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -999,58 +1062,62 @@ void __cdecl R_SunShadowMaps(GfxSunShadow *param_1)
 
 // 00B1C550  R_MergeAndEmitSunShadowMapsSurfs  (gfx_d3d/r_sunshadow.cpp:803)
 
-void __cdecl R_MergeAndEmitSunShadowMapsSurfs(GfxViewInfo *param_1)
+void __cdecl R_MergeAndEmitSunShadowMapsSurfs(GfxViewInfo *viewInfo)
 
 {
-  GfxDrawSurfListInfo *pGVar1;
-  int iVar2;
-  code *pcVar3;
+  GfxDrawSurfListInfo *info_00;
+  int iVar1;
+  code *pcVar2;
+  GfxBackEndData *pGVar3;
   GfxBackEndData *pGVar4;
-  GfxBackEndData *pGVar5;
-  bool bVar6;
-  DWORD DVar7;
-  uint local_10;
+  bool bVar5;
+  DWORD DVar6;
+  int firstDrawSurf;
+  GfxDrawSurfListInfo *info;
+  uint partitionIndex;
+  GfxSunShadow *sunShadow;
+  GfxSunShadowPartition *partition;
   
-  pGVar4 = frontEndDataOut;
+  pGVar3 = frontEndDataOut;
   PIXBeginNamedEvent(-1,"emit sun shadow map surfs");
   if (((frontEndDataOut->sunLight).type != '\x01') &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x32f,0
-                               ,"%s"), !bVar6)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x32f,0
+                               ,"%s"), !bVar5)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  local_10 = 0;
+  partitionIndex = 0;
   while( true ) {
-    if (1 < local_10) {
-      DVar7 = GetCurrentThreadId();
-      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (1 < partitionIndex) {
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    pGVar1 = param_1->drawList + local_10 + 8;
-    R_InitDrawSurfListInfo(pGVar1);
-    pGVar1->baseTechType = gfxMetrics.shadowmapBuildTechType;
-    pGVar1->viewInfo = param_1;
-    pGVar5 = frontEndDataOut;
-    pGVar1->viewOrigin[0] = (frontEndDataOut->sunLight).dir[0];
-    pGVar1->viewOrigin[1] = (pGVar5->sunLight).dir[1];
-    pGVar1->viewOrigin[2] = (pGVar5->sunLight).dir[2];
-    pGVar1->viewOrigin[3] = 0.0;
-    if ((pGVar1->cameraView != 0) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x343
-                                 ,0,"%s"), !bVar6)) break;
-    iVar2 = frontEndDataOut->drawSurfCount;
-    R_MergeAndEmitDrawSurfLists(local_10 * 4 + 0x13,1,frontEndDataOut);
-    R_MergeAndEmitDrawSurfLists(local_10 * 4 + 0x14,3,frontEndDataOut);
-    pGVar1->drawSurfs = frontEndDataOut->drawSurfs + iVar2;
-    pGVar1->drawSurfCount = frontEndDataOut->drawSurfCount - iVar2;
-    (pGVar4->sunShadow).partition[local_10].partitionIndex = local_10;
-    local_10 = local_10 + 1;
+    info_00 = viewInfo->drawList + partitionIndex + 8;
+    R_InitDrawSurfListInfo(info_00);
+    info_00->baseTechType = gfxMetrics.shadowmapBuildTechType;
+    info_00->viewInfo = viewInfo;
+    pGVar4 = frontEndDataOut;
+    info_00->viewOrigin[0] = (frontEndDataOut->sunLight).dir[0];
+    info_00->viewOrigin[1] = (pGVar4->sunLight).dir[1];
+    info_00->viewOrigin[2] = (pGVar4->sunLight).dir[2];
+    info_00->viewOrigin[3] = 0.0;
+    if ((info_00->cameraView != 0) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sunshadow.cpp",0x343
+                                 ,0,"%s"), !bVar5)) break;
+    iVar1 = frontEndDataOut->drawSurfCount;
+    R_MergeAndEmitDrawSurfLists(partitionIndex * 4 + 0x13,1,frontEndDataOut);
+    R_MergeAndEmitDrawSurfLists(partitionIndex * 4 + 0x14,3,frontEndDataOut);
+    info_00->drawSurfs = frontEndDataOut->drawSurfs + iVar1;
+    info_00->drawSurfCount = frontEndDataOut->drawSurfCount - iVar1;
+    (pGVar3->sunShadow).partition[partitionIndex].partitionIndex = partitionIndex;
+    partitionIndex = partitionIndex + 1;
   }
-  pcVar3 = (code *)swi(3);
-  (*pcVar3)();
+  pcVar2 = (code *)swi(3);
+  (*pcVar2)();
   return;
 }
 

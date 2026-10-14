@@ -2,13 +2,13 @@
 
 // 0096EBD5  __CxxUnhandledExceptionFilter  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/unhandld.cpp:67)
 
-long __cdecl __CxxUnhandledExceptionFilter(_EXCEPTION_POINTERS *param_1)
+long __cdecl __CxxUnhandledExceptionFilter(_EXCEPTION_POINTERS *pPtrs)
 
 {
   _EXCEPTION_RECORD *p_Var1;
   undefined *puVar2;
   
-  p_Var1 = param_1->ExceptionRecord;
+  p_Var1 = pPtrs->ExceptionRecord;
   if (((p_Var1->ExceptionCode == -0x1f928c9d) && (p_Var1->NumberParameters == 3)) &&
      ((puVar2 = (undefined *)p_Var1->ExceptionInformation[0], puVar2 == (undefined *)0x19930520 ||
       (((puVar2 == (undefined *)0x19930521 || (puVar2 == (undefined *)0x19930522)) ||

@@ -2,7 +2,7 @@
 
 // 00C28E5E  strcat_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcscat_s.inl:13)
 
-int __cdecl strcat_s(char *param_1,uint param_2,char *param_3)
+int __cdecl strcat_s(char *_Dst,uint _SizeInBytes,char *_Src)
 
 {
   char cVar1;
@@ -10,34 +10,34 @@ int __cdecl strcat_s(char *param_1,uint param_2,char *param_3)
   char *pcVar3;
   int iVar4;
   
-  if ((param_1 != (char *)0x0) && (param_2 != 0)) {
-    pcVar3 = param_1;
-    if (param_3 != (char *)0x0) {
+  if ((_Dst != (char *)0x0) && (_SizeInBytes != 0)) {
+    pcVar3 = _Dst;
+    if (_Src != (char *)0x0) {
       do {
         if (*pcVar3 == '\0') break;
         pcVar3 = pcVar3 + 1;
-        param_2 = param_2 - 1;
-      } while (param_2 != 0);
-      if (param_2 != 0) {
+        _SizeInBytes = _SizeInBytes - 1;
+      } while (_SizeInBytes != 0);
+      if (_SizeInBytes != 0) {
         do {
-          cVar1 = *param_3;
+          cVar1 = *_Src;
           *pcVar3 = cVar1;
           pcVar3 = pcVar3 + 1;
-          param_3 = param_3 + 1;
+          _Src = _Src + 1;
           if (cVar1 == '\0') break;
-          param_2 = param_2 - 1;
-        } while (param_2 != 0);
-        if (param_2 != 0) {
+          _SizeInBytes = _SizeInBytes - 1;
+        } while (_SizeInBytes != 0);
+        if (_SizeInBytes != 0) {
           return 0;
         }
-        *param_1 = '\0';
+        *_Dst = '\0';
         piVar2 = _errno();
         iVar4 = 0x22;
         *piVar2 = 0x22;
         goto LAB_00c28e80;
       }
     }
-    *param_1 = '\0';
+    *_Dst = '\0';
   }
   piVar2 = _errno();
   iVar4 = 0x16;

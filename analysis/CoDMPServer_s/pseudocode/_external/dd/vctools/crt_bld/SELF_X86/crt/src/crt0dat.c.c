@@ -2,7 +2,7 @@
 
 // 0095FDDF  _crt_waiting_on_module_handle  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:156)
 
-HINSTANCE__ * __cdecl _crt_waiting_on_module_handle(wchar_t *param_1)
+HINSTANCE__ * __cdecl _crt_waiting_on_module_handle(wchar_t *szModuleName)
 
 {
   HMODULE pHVar1;
@@ -11,7 +11,7 @@ HINSTANCE__ * __cdecl _crt_waiting_on_module_handle(wchar_t *param_1)
   dwMilliseconds = 1000;
   do {
     Sleep(dwMilliseconds);
-    pHVar1 = GetModuleHandleW(param_1);
+    pHVar1 = GetModuleHandleW(szModuleName);
     dwMilliseconds = dwMilliseconds + 1000;
     if (60000 < dwMilliseconds) {
       return (HINSTANCE__ *)pHVar1;
@@ -23,7 +23,7 @@ HINSTANCE__ * __cdecl _crt_waiting_on_module_handle(wchar_t *param_1)
 
 // 0095FECE  _cinit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:277)
 
-int __cdecl _cinit(int param_1)
+int __cdecl _cinit(int initFloatingPrecision)
 
 {
   int iVar1;
@@ -31,7 +31,7 @@ int __cdecl _cinit(int param_1)
   
   iVar1 = _IsNonwritableInCurrentImage((uchar *)&_FPinit);
   if (iVar1 != 0) {
-    _fpmath(param_1);
+    _fpmath(initFloatingPrecision);
   }
   _initp_misc_cfltcvt_tab();
   iVar1 = _initterm_e(__xi_a,__xi_z);
@@ -50,20 +50,20 @@ int __cdecl _cinit(int param_1)
 
 // 0096007F  exit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:411)
 
-void __cdecl exit(int param_1)
+void __cdecl exit(int code)
 
 {
-  doexit(param_1,0,0);
+  doexit(code,0,0);
   return;
 }
 
 
 // 00960095  _exit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:419)
 
-void __cdecl _exit(int param_1)
+void __cdecl _exit(int code)
 
 {
-  doexit(param_1,1,0);
+  doexit(code,1,0);
   return;
 }
 
@@ -90,13 +90,13 @@ void __cdecl _c_exit(void)
 
 // 0095FE0F  _amsg_exit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:460)
 
-void __cdecl _amsg_exit(int param_1)
+void __cdecl _amsg_exit(int rterrnum)
 
 {
   code *pcVar1;
   
   _FF_MSGBANNER();
-  _NMSG_WRITE(param_1);
+  _NMSG_WRITE(rterrnum);
   pcVar1 = _decode_pointer(_aexit_rtn);
   (*pcVar1)(0xff);
   return;
@@ -108,7 +108,7 @@ void __cdecl _amsg_exit(int param_1)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl doexit(int param_1,int param_2,int param_3)
+void __cdecl doexit(int code,int quick,int retcaller)
 
 {
   int *piVar1;
@@ -118,21 +118,21 @@ void __cdecl doexit(int param_1,int param_2,int param_3)
   int *piVar5;
   int *piVar6;
   _func___cdecl_void **in_stack_ffffffc4;
-  int *local_2c;
-  int *local_24;
-  int *local_20;
+  int *onexitbegin;
+  int *onexitend_saved;
+  int *onexitbegin_saved;
   
   _lock(8);
   if (_C_Exit_Done != 1) {
     _C_Termination_Done = 1;
-    _exitflag = (char)param_3;
-    if (param_2 == 0) {
+    _exitflag = (char)retcaller;
+    if (quick == 0) {
       piVar1 = _decode_pointer(__onexitbegin);
       if (piVar1 != (int *)0x0) {
         piVar2 = _decode_pointer(__onexitend);
-        local_2c = piVar1;
-        local_24 = piVar2;
-        local_20 = piVar1;
+        onexitbegin = piVar1;
+        onexitend_saved = piVar2;
+        onexitbegin_saved = piVar1;
         while (piVar2 = piVar2 + -1, piVar1 <= piVar2) {
           pvVar3 = _encoded_null();
           if ((void *)*piVar2 != pvVar3) {
@@ -143,12 +143,13 @@ void __cdecl doexit(int param_1,int param_2,int param_3)
             (*pcVar4)();
             piVar5 = _decode_pointer(__onexitbegin);
             piVar6 = _decode_pointer(__onexitend);
-            if ((local_20 != piVar5) || (piVar1 = local_2c, local_24 != piVar6)) {
+            if ((onexitbegin_saved != piVar5) || (piVar1 = onexitbegin, onexitend_saved != piVar6))
+            {
               piVar2 = piVar6;
               piVar1 = piVar5;
-              local_2c = piVar5;
-              local_24 = piVar6;
-              local_20 = piVar5;
+              onexitbegin = piVar5;
+              onexitend_saved = piVar6;
+              onexitbegin_saved = piVar5;
             }
           }
         }
@@ -158,19 +159,19 @@ void __cdecl doexit(int param_1,int param_2,int param_3)
     _initterm(__xt_z,in_stack_ffffffc4);
   }
   FUN_0096006a();
-  if (param_3 != 0) {
+  if (retcaller != 0) {
     return;
   }
   _C_Exit_Done = 1;
   _unlock(8);
                     /* WARNING: Subroutine does not return */
-  __crtExitProcess(param_1);
+  __crtExitProcess(code);
 }
 
 
 // 0095FE38  __crtCorExitProcess  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:698)
 
-void __cdecl __crtCorExitProcess(int param_1)
+void __cdecl __crtCorExitProcess(int status)
 
 {
   HMODULE hModule;
@@ -180,7 +181,7 @@ void __cdecl __crtCorExitProcess(int param_1)
   if (hModule != (HMODULE)0x0) {
     pFVar1 = GetProcAddress(hModule,"CorExitProcess");
     if (pFVar1 != (FARPROC)0x0) {
-      (*pFVar1)(param_1);
+      (*pFVar1)(status);
     }
   }
   return;
@@ -189,12 +190,12 @@ void __cdecl __crtCorExitProcess(int param_1)
 
 // 0095FE63  __crtExitProcess  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:721)
 
-void __cdecl __crtExitProcess(int param_1)
+void __cdecl __crtExitProcess(int status)
 
 {
-  __crtCorExitProcess(param_1);
+  __crtCorExitProcess(status);
                     /* WARNING: Subroutine does not return */
-  ExitProcess(param_1);
+  ExitProcess(status);
 }
 
 
@@ -223,17 +224,17 @@ void __cdecl _unlockexit(void)
 void __cdecl _init_pointers(void)
 
 {
-  void *pvVar1;
+  void *enull;
   
-  pvVar1 = _encoded_null();
-  _initp_heap_handler(pvVar1);
-  _initp_misc_initcrit(pvVar1);
-  _initp_misc_invarg(pvVar1);
-  _initp_misc_purevirt(pvVar1);
-  _initp_misc_rand_s(pvVar1);
-  _initp_misc_winsig(pvVar1);
-  _initp_misc_winxfltr(pvVar1);
-  _initp_eh_hooks(pvVar1);
+  enull = _encoded_null();
+  _initp_heap_handler(enull);
+  _initp_misc_initcrit(enull);
+  _initp_misc_invarg(enull);
+  _initp_misc_purevirt(enull);
+  _initp_misc_rand_s(enull);
+  _initp_misc_winsig(enull);
+  _initp_misc_winxfltr(enull);
+  _initp_eh_hooks(enull);
   _aexit_rtn = _encode_pointer(_exit);
   return;
 }
@@ -241,12 +242,12 @@ void __cdecl _init_pointers(void)
 
 // 0095FE8D  _initterm  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:889)
 
-void __cdecl _initterm(_func___cdecl_void **param_1,_func___cdecl_void **param_2)
+void __cdecl _initterm(_func___cdecl_void **pfend,_func___cdecl_void **param_2)
 
 {
   _func___cdecl_void **in_EAX;
   
-  for (; in_EAX < param_1; in_EAX = in_EAX + 1) {
+  for (; in_EAX < pfend; in_EAX = in_EAX + 1) {
     if (*in_EAX != (_func___cdecl_void *)0x0) {
       (**in_EAX)();
     }
@@ -257,17 +258,17 @@ void __cdecl _initterm(_func___cdecl_void **param_1,_func___cdecl_void **param_2
 
 // 0095FEAA  _initterm_e  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0dat.c:938)
 
-int __cdecl _initterm_e(_func___cdecl_int **param_1,_func___cdecl_int **param_2)
+int __cdecl _initterm_e(_func___cdecl_int **pfbegin,_func___cdecl_int **pfend)
 
 {
   int iVar1;
   
   iVar1 = 0;
-  while ((param_1 < param_2 && (iVar1 == 0))) {
-    if (*param_1 != (_func___cdecl_int *)0x0) {
-      iVar1 = (**param_1)();
+  while ((pfbegin < pfend && (iVar1 == 0))) {
+    if (*pfbegin != (_func___cdecl_int *)0x0) {
+      iVar1 = (**pfbegin)();
     }
-    param_1 = param_1 + 1;
+    pfbegin = pfbegin + 1;
   }
   return iVar1;
 }

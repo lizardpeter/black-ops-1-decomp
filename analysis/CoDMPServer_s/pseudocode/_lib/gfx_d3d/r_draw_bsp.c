@@ -5,9 +5,9 @@
 void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2)
 
 {
-  uint uVar1;
-  MaterialVertexDeclType MVar2;
-  IDirect3DVertexBuffer9 *pIVar3;
+  uint vertexStride2;
+  MaterialVertexDeclType MVar1;
+  IDirect3DVertexBuffer9 *vb2;
   GfxCmdBufPrimState *in_EAX;
   int in_ECX;
   uint unaff_EBP;
@@ -15,29 +15,29 @@ void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *param_1,srfTriangles_
   GfxCmdBufPrimState *unaff_EDI;
   uint unaff_retaddr;
   
-  uVar1 = *(uint *)(in_ECX + 0x2c);
-  MVar2 = in_EAX->vertDeclType;
-  pIVar3 = (IDirect3DVertexBuffer9 *)g_layerDataStride[MVar2];
-  if (pIVar3 != (IDirect3DVertexBuffer9 *)0x0) {
-    if (-1 < (int)uVar1) {
+  vertexStride2 = *(uint *)(in_ECX + 0x2c);
+  MVar1 = in_EAX->vertDeclType;
+  vb2 = (IDirect3DVertexBuffer9 *)g_layerDataStride[MVar1];
+  if (vb2 != (IDirect3DVertexBuffer9 *)0x0) {
+    if (-1 < (int)vertexStride2) {
       R_SetTripleStreamSource
                 (in_EAX,(IDirect3DVertexBuffer9 *)(*(int *)(in_ECX + 0x1c) * 0x2c),
-                 (uint)(g_worldDraw->vld).layerVb,*(uint *)(in_ECX + 0xc),pIVar3,
-                 (uint)stream2VertexBuffer,uVar1,(IDirect3DVertexBuffer9 *)g_stream2Stride[MVar2],
-                 (uint)unaff_EDI,(uint)unaff_ESI);
+                 (uint)(g_worldDraw->vld).layerVb,*(uint *)(in_ECX + 0xc),vb2,
+                 (uint)stream2VertexBuffer,vertexStride2,
+                 (IDirect3DVertexBuffer9 *)g_stream2Stride[MVar1],(uint)unaff_EDI,(uint)unaff_ESI);
       return;
     }
     R_SetDoubleStreamSource
               ((GfxCmdBufPrimState *)(*(int *)(in_ECX + 0x1c) * 0x2c),(g_worldDraw->vld).layerVb,
-               *(uint *)(in_ECX + 0xc),(uint)pIVar3,(IDirect3DVertexBuffer9 *)unaff_EDI,
-               (uint)unaff_ESI,unaff_EBP);
+               *(uint *)(in_ECX + 0xc),(uint)vb2,(IDirect3DVertexBuffer9 *)unaff_EDI,(uint)unaff_ESI
+               ,unaff_EBP);
     return;
   }
-  if (-1 < (int)uVar1) {
+  if (-1 < (int)vertexStride2) {
     R_SetTripleStreamSource
               (in_EAX,(IDirect3DVertexBuffer9 *)(*(int *)(in_ECX + 0x1c) * 0x2c),0,0,
-               (IDirect3DVertexBuffer9 *)0x0,(uint)stream2VertexBuffer,uVar1,
-               (IDirect3DVertexBuffer9 *)g_stream2Stride[MVar2],(uint)unaff_EDI,(uint)unaff_ESI);
+               (IDirect3DVertexBuffer9 *)0x0,(uint)stream2VertexBuffer,vertexStride2,
+               (IDirect3DVertexBuffer9 *)g_stream2Stride[MVar1],(uint)unaff_EDI,(uint)unaff_ESI);
     return;
   }
   R_SetStreamSource(unaff_EDI,unaff_ESI,unaff_EBP,unaff_retaddr);
@@ -49,7 +49,7 @@ void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *param_1,srfTriangles_
 
 void __cdecl
 R_DrawBspDrawSurfsLit
-          (uint *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3,
+          (uint *context,GfxCmdBufContext param_2,GfxCmdBufContext param_3,
           GfxDrawSurfListInfo *param_4)
 
 {
@@ -57,7 +57,9 @@ R_DrawBspDrawSurfsLit
   MaterialPass *pMVar2;
   uchar unaff_SI;
   GfxCmdBufPrimState *unaff_EDI;
-  GfxTrianglesDrawStream GStack_20;
+  uint *primDrawSurfPos;
+  GfxTrianglesDrawStream drawStream;
+  GfxDrawSurfListInfo *info;
   
   pMVar2 = (param_2.field0_0x0._s_0.state)->pass;
   bVar1 = pMVar2->customSamplerFlags;
@@ -73,127 +75,117 @@ R_DrawBspDrawSurfsLit
   if ((bVar1 & 8) != 0) {
     R_SetSamplerState(param_2.field0_0x0._s_0.state,(uint)unaff_EDI,unaff_SI);
   }
-  GStack_20.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  GStack_20.lightmapPrimaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xc];
-  GStack_20.lightmapSecondaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xd];
-  GStack_20.lightmapSecondaryTextureB = (param_2.field0_0x0._s_0.state)->samplerTexture[0xe];
-  GStack_20.whiteTexture = &(rgp.whiteImage)->texture;
-  GStack_20.customSamplerFlags = (uint)pMVar2->customSamplerFlags;
-  GStack_20.primDrawSurfPos = param_1;
-  GStack_20.hasSunDirChanged =
-       ((((param_2.field0_0x0._s_0.source)->input).data)->prim).hasSunDirChanged;
-  R_DrawTrianglesLit(&GStack_20,&(param_2.field0_0x0._s_0.state)->prim,unaff_EDI);
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = GStack_20.reflectionProbeTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xc] = GStack_20.lightmapPrimaryTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xd] = GStack_20.lightmapSecondaryTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xe] = GStack_20.lightmapSecondaryTextureB;
+  drawStream.lightmapPrimaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.lightmapSecondaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xc];
+  drawStream.lightmapSecondaryTextureB = (param_2.field0_0x0._s_0.state)->samplerTexture[0xd];
+  drawStream.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->samplerTexture[0xe];
+  drawStream.primDrawSurfPos = (uint *)rgp.whiteImage;
+  drawStream.hasSunDirChanged = (int)pMVar2->customSamplerFlags;
+  drawStream.reflectionProbeTexture = (GfxTexture *)context;
+  R_DrawTrianglesLit((GfxTrianglesDrawStream *)&drawStream.primDrawSurfPos,
+                     &(param_2.field0_0x0._s_0.state)->prim,unaff_EDI);
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = drawStream.lightmapPrimaryTexture;
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xc] = drawStream.lightmapSecondaryTexture;
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xd] = drawStream.lightmapSecondaryTextureB;
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xe] = (GfxTexture *)drawStream.customSamplerFlags
+  ;
   return;
 }
 
 
 // 008751A0  R_DrawBspDrawSurfsLitPreTess  (gfx_d3d/r_draw_bsp.cpp:901)
 
-void __cdecl R_DrawBspDrawSurfsLitPreTess(uint *param_1,GfxCmdBufContext param_2)
+/* WARNING: Variable defined which should be unmapped: reflectionProbeIndex */
+
+void __cdecl R_DrawBspDrawSurfsLitPreTess(void)
 
 {
   uchar uVar1;
-  uchar uVar2;
-  byte bVar3;
-  ushort uVar4;
-  short sVar5;
-  ushort uVar6;
-  GfxSurface *pGVar7;
-  float fVar8;
-  int *piVar9;
-  GfxCmdBufContext GVar10;
-  GfxCmdBufContext GVar11;
-  uchar uVar12;
-  int iVar13;
+  byte bVar2;
+  ushort uVar3;
+  short sVar4;
+  ushort uVar5;
+  GfxSurface *pGVar6;
+  int iVar7;
   int *in_EAX;
-  int *piVar14;
-  uint uVar15;
-  ushort *puVar16;
-  short *psVar17;
-  GfxImage *unaff_ESI;
+  int *piVar8;
+  uint uVar9;
+  ushort *puVar10;
+  short *psVar11;
+  srfTriangles_t *unaff_ESI;
   GfxCmdBufPrimState *unaff_EDI;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
+  uint reflectionProbeIndex;
+  uint lightmapIndex;
+  uint baseIndex;
   int iStack_20;
-  int iStack_1c;
-  GfxCmdBufContext_u_0 GStack_14;
-  uint *puStack_c;
-  GfxCmdBufSourceState *pGStack_8;
+  GfxReadCmdBuf cmdBuf;
+  GfxCmdBufContext aGStack_14 [2];
   
   do {
     do {
-      piVar14 = in_EAX;
-      iStack_1c = *piVar14;
-      if (iStack_1c == 0) {
+      piVar8 = in_EAX;
+      cmdBuf.primDrawSurfPos = (uint *)*piVar8;
+      if (cmdBuf.primDrawSurfPos == (uint *)0x0) {
         return;
       }
-      iStack_20 = piVar14[1];
-      iVar13 = iStack_1c + 2;
-      uVar12 = 0xff;
-      uVar2 = '\x1f';
-      in_EAX = piVar14 + iVar13;
-    } while (iStack_1c == 0);
-    puVar16 = (ushort *)((int)piVar14 + 10);
+      iStack_20 = piVar8[1];
+      iVar7 = (int)cmdBuf.primDrawSurfPos + 2;
+      lightmapIndex = 0xff;
+      uVar1 = '\x1f';
+      in_EAX = piVar8 + iVar7;
+    } while (cmdBuf.primDrawSurfPos == (uint *)0x0);
+    puVar10 = (ushort *)((int)piVar8 + 10);
     do {
-      uVar4 = puVar16[-1];
-      pGVar7 = ((rgp.world)->dpvs).surfaces;
-      uVar1 = pGVar7[uVar4].reflectionProbeIndex;
-      if ((uVar12 != uVar1) || (uVar2 != pGVar7[uVar4].lightmapIndex)) {
-        uVar2 = pGVar7[uVar4].lightmapIndex;
-        if ((*(byte *)((int)((param_2.field0_0x0._s_0.source)->matrices).matrix[3].m[1][0] + 0xf) &
-            1) != 0) {
-          GVar10.field0_0x0._s_0.state = (GfxCmdBufState *)param_2.field0_0x0._s_0.source;
-          GVar10.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1;
-          R_SetSampler(GVar10,0x72,(uchar)unaff_EDI,unaff_ESI);
+      uVar3 = puVar10[-1];
+      pGVar6 = ((rgp.world)->dpvs).surfaces;
+      uVar9 = (uint)pGVar6[uVar3].reflectionProbeIndex;
+      if ((lightmapIndex != uVar9) || (uVar1 != pGVar6[uVar3].lightmapIndex)) {
+        uVar1 = pGVar6[uVar3].lightmapIndex;
+        if ((*(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xf) & 1) != 0) {
+          R_SetSampler();
         }
-        GVar11.field0_0x0._s_0.state = (GfxCmdBufState *)param_2.field0_0x0._s_0.source;
-        GVar11.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1;
-        R_SetLightmap(GVar11,(uint)unaff_EDI);
-        bVar3 = *(byte *)((int)((param_2.field0_0x0._s_0.source)->matrices).matrix[3].m[1][0] + 0xd)
-        ;
-        GStack_14._s_0.source = (GfxCmdBufSourceState *)param_1;
-        GStack_14._s_0.state = (GfxCmdBufState *)param_2.field0_0x0._s_0.source;
-        if (bVar3 != 0) {
-          R_SetPassShaderObjectArguments
-                    ((GfxCmdBufContext *)&GStack_14._s_0,(uint)bVar3,
-                     (MaterialShaderArgument *)unaff_EDI);
+        R_SetLightmap();
+        bVar2 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xd);
+        if (bVar2 != 0) {
+          R_SetPassShaderObjectArguments(aGStack_14,(uint)bVar2,(MaterialShaderArgument *)unaff_EDI)
+          ;
         }
-        fVar8 = ((param_2.field0_0x0._s_0.source)->matrices).matrix[3].m[1][0];
-        puStack_c = param_1;
-        bVar3 = *(byte *)((int)fVar8 + 0xc);
-        pGStack_8 = param_2.field0_0x0._s_0.source;
-        uVar12 = uVar1;
-        if (bVar3 != 0) {
-          psVar17 = *(short **)((int)fVar8 + 0x10);
-          uVar15 = (uint)bVar3;
-          sVar5 = *psVar17;
-          while (sVar5 == 3) {
+        bVar2 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xc);
+        lightmapIndex = uVar9;
+        if (bVar2 != 0) {
+          psVar11 = *(short **)(*(int *)(in_stack_00000008 + 0xd0) + 0x10);
+          uVar9 = (uint)bVar2;
+          sVar4 = *psVar11;
+          while (sVar4 == 3) {
             R_SetVertexShaderConstantFromCode_New
                       ((GfxCmdBufContext *)unaff_EDI,(MaterialShaderArgument *)unaff_ESI);
-            psVar17 = psVar17 + 4;
-            uVar15 = uVar15 - 1;
-            if (uVar15 == 0) break;
-            sVar5 = *psVar17;
+            psVar11 = psVar11 + 4;
+            uVar9 = uVar9 - 1;
+            if (uVar9 == 0) break;
+            sVar4 = *psVar11;
           }
         }
       }
-      uVar6 = *puVar16;
-      R_SetStreamsForBspSurface(unaff_EDI,(srfTriangles_t *)unaff_ESI);
-      piVar9 = (int *)((param_2.field0_0x0._s_0.source)->matrices).matrix[2].m[1][0];
-      (**(code **)(*piVar9 + 0x148))(piVar9,4,0,0,pGVar7[uVar4].tris.vertexCount,iStack_20,uVar6);
-      iStack_20 = (uint)*puVar16 * 3 + iStack_20;
-      puVar16 = puVar16 + 2;
-      iStack_1c = iStack_1c + -1;
-    } while (iStack_1c != 0);
+      uVar5 = *puVar10;
+      R_SetStreamsForBspSurface(unaff_EDI,unaff_ESI);
+      (**(code **)(**(int **)(in_stack_00000008 + 0x90) + 0x148))
+                (*(int **)(in_stack_00000008 + 0x90),4,0,0,pGVar6[uVar3].tris.vertexCount,iStack_20,
+                 uVar5);
+      iStack_20 = (uint)*puVar10 * 3 + iStack_20;
+      puVar10 = puVar10 + 2;
+      cmdBuf.primDrawSurfPos = cmdBuf.primDrawSurfPos + -1;
+    } while (cmdBuf.primDrawSurfPos != (uint *)0x0);
   } while( true );
 }
 
 
 // 00875360  R_DrawBspDrawSurfsPreTess  (gfx_d3d/r_draw_bsp.cpp:955)
 
-void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
+/* WARNING: Variable defined which should be unmapped: index */
+
+void __cdecl R_DrawBspDrawSurfsPreTess(uint *context,GfxCmdBufContext param_2)
 
 {
   int iVar1;
@@ -207,7 +199,11 @@ void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
   int iVar8;
   GfxCmdBufPrimState *unaff_EDI;
   float fVar9;
+  uint *primDrawSurfPos;
+  uint index;
   float fStack_18;
+  srfTriangles_t *tris;
+  GfxReadCmdBuf cmdBuf;
   GfxCmdBufContext_u_0 GStack_8;
   
   GStack_8._s_0.source = param_2.field0_0x0._s_0.source;
@@ -217,8 +213,8 @@ void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
     R_SetPassShaderObjectArguments
               ((GfxCmdBufContext *)&GStack_8._s_0,(uint)bVar2,(MaterialShaderArgument *)unaff_EDI);
   }
-  R_SetupPassPerPrimArgs(param_2);
-  uVar5 = param_1;
+  R_SetupPassPerPrimArgs();
+  uVar5 = context;
   while( true ) {
     fVar3 = (((GfxCmdBufSourceState *)uVar5)->matrices).matrix[0].m[0][0];
     if (fVar3 == 0.0) break;
@@ -228,14 +224,14 @@ void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
          ((((GfxCmdBufSourceState *)uVar5)->matrices).matrix[0].m[0] + (int)fVar3 + 2);
     pGVar7 = (GfxSurface *)0x0;
     iVar8 = 0;
-    param_1 = (uint *)0xffffffff;
+    context = (uint *)0xffffffff;
     fStack_18 = 0.0;
     if (fVar3 != 0.0) {
       do {
         pGVar6 = ((rgp.world)->dpvs).surfaces +
                  *(ushort *)
                   ((((GfxCmdBufSourceState *)uVar5)->matrices).matrix[0].m[0] + (int)fStack_18 + 2);
-        if (param_1 != (uint *)(pGVar6->tris).firstVertex) {
+        if (context != (uint *)(pGVar6->tris).firstVertex) {
           if (iVar8 != 0) {
             R_SetStreamsForBspSurface(unaff_EDI,unaff_ESI);
             pIVar4 = ((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device;
@@ -244,7 +240,7 @@ void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
             fVar9 = (float)(iVar8 * 3 + (int)fVar9);
             iVar8 = 0;
           }
-          param_1 = (uint *)(pGVar6->tris).firstVertex;
+          context = (uint *)(pGVar6->tris).firstVertex;
           pGVar7 = pGVar6;
         }
         iVar1 = (int)fStack_18 * 4;

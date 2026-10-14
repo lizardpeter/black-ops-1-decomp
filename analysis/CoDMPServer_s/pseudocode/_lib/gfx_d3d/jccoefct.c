@@ -2,7 +2,7 @@
 
 // 00879F70  jinit_c_coef_controller  (jpeg-6/jccoefct.c:406)
 
-void __cdecl jinit_c_coef_controller(jpeg_compress_struct *param_1,uchar param_2)
+void __cdecl jinit_c_coef_controller(jpeg_compress_struct *need_full_buffer,uchar param_2)
 
 {
   int iVar1;
@@ -11,32 +11,33 @@ void __cdecl jinit_c_coef_controller(jpeg_compress_struct *param_1,uchar param_2
   jvirt_barray_control *pjVar4;
   _func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *p_Var5;
   int *piVar6;
+  jpeg_compress_struct *cinfo;
   jpeg_c_coef_controller *pjStack_8;
   
-  pjStack_8 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x68);
-  param_1->coef = pjStack_8;
+  pjStack_8 = (*need_full_buffer->mem->alloc_small)((jpeg_common_struct *)need_full_buffer,1,0x68);
+  need_full_buffer->coef = pjStack_8;
   pjStack_8->start_pass = start_pass_coef;
   if (param_2 != '\0') {
     _param_2 = 0;
-    if (0 < param_1->num_components) {
-      piVar6 = &param_1->comp_info->h_samp_factor;
+    if (0 < need_full_buffer->num_components) {
+      piVar6 = &need_full_buffer->comp_info->h_samp_factor;
       pjStack_8 = pjStack_8 + 8;
       do {
         uVar3 = piVar6[1];
         iVar1 = (piVar6[6] - 1U) + uVar3;
         iVar2 = (piVar6[5] - 1U) + *piVar6;
-        pjVar4 = (*param_1->mem->request_virt_barray)
-                           ((jpeg_common_struct *)param_1,1,'\0',iVar2 - iVar2 % *piVar6,
+        pjVar4 = (*need_full_buffer->mem->request_virt_barray)
+                           ((jpeg_common_struct *)need_full_buffer,1,'\0',iVar2 - iVar2 % *piVar6,
                             iVar1 - iVar1 % (int)uVar3,uVar3);
         pjStack_8->start_pass = (_func___cdecl_void_jpeg_compress_struct_ptr_J_BUF_MODE *)pjVar4;
         _param_2 = _param_2 + 1;
         pjStack_8 = (jpeg_c_coef_controller *)&pjStack_8->compress_data;
         piVar6 = piVar6 + 0x15;
-      } while (_param_2 < param_1->num_components);
+      } while (_param_2 < need_full_buffer->num_components);
     }
     return;
   }
-  p_Var5 = (*param_1->mem->alloc_large)((jpeg_common_struct *)param_1,1,0x500);
+  p_Var5 = (*need_full_buffer->mem->alloc_large)((jpeg_common_struct *)need_full_buffer,1,0x500);
   pjStack_8[3].compress_data =
        (_func___cdecl_uchar_jpeg_compress_struct_ptr_uchar_ptr_ptr_ptr *)(p_Var5 + 0x80);
   pjStack_8[4].start_pass = p_Var5 + 0x100;

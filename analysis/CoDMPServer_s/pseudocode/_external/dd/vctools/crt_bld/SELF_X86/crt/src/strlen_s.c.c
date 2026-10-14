@@ -2,20 +2,20 @@
 
 // 0096AFFC  strnlen  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlen_s.c:38)
 
-uint __cdecl strnlen(char *param_1,uint param_2)
+uint __cdecl strnlen(char *str,uint maxsize)
 
 {
   uint uVar1;
   
   uVar1 = 0;
-  if (param_2 != 0) {
+  if (maxsize != 0) {
     do {
-      if (*param_1 == '\0') {
+      if (*str == '\0') {
         return uVar1;
       }
       uVar1 = uVar1 + 1;
-      param_1 = param_1 + 1;
-    } while (uVar1 < param_2);
+      str = str + 1;
+    } while (uVar1 < maxsize);
   }
   return uVar1;
 }

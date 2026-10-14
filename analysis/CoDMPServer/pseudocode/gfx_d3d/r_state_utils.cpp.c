@@ -2,7 +2,7 @@
 
 // 00AF7B20  R_MatrixIdentity44  (gfx_d3d/r_state_utils.cpp:24)
 
-void __cdecl R_MatrixIdentity44(float (*param_1) [4])
+void __cdecl R_MatrixIdentity44(float (*out) [4])
 
 {
   code *pcVar1;
@@ -10,7 +10,7 @@ void __cdecl R_MatrixIdentity44(float (*param_1) [4])
   int iVar3;
   float *pfVar4;
   
-  if (param_1 == (float (*) [4])0x0) {
+  if (out == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x19,0,
                              "%s");
     if (!bVar2) {
@@ -22,9 +22,9 @@ void __cdecl R_MatrixIdentity44(float (*param_1) [4])
   iVar3 = 0x10;
   pfVar4 = g_identityMatrix44[0];
   for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    (*param_1)[0] = *pfVar4;
+    (*out)[0] = *pfVar4;
     pfVar4 = pfVar4 + 1;
-    param_1 = (float (*) [4])((int)param_1 + 4);
+    out = (float (*) [4])((int)out + 4);
   }
   return;
 }
@@ -33,7 +33,7 @@ void __cdecl R_MatrixIdentity44(float (*param_1) [4])
 // 00AF6C90  R_InitCmdBufSourceState  (gfx_d3d/r_state_utils.cpp:30)
 
 void __cdecl
-R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,int param_3)
+R_InitCmdBufSourceState(GfxCmdBufSourceState *source,GfxCmdBufInput *input,int cameraView)
 
 {
   float (*pafVar1) [4];
@@ -42,9 +42,9 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
   int iVar4;
   GfxCmdBufInput *pGVar5;
   GfxCmdBufInput *pGVar6;
-  uint local_8;
+  uint constant;
   
-  if (param_1 == (GfxCmdBufSourceState *)0x0) {
+  if (source == (GfxCmdBufSourceState *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x21,0,
                              "%s");
     if (!bVar3) {
@@ -53,7 +53,7 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
       return;
     }
   }
-  if (param_2 == (GfxCmdBufInput *)0x0) {
+  if (input == (GfxCmdBufInput *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x22,0,
                              "%s");
     if (!bVar3) {
@@ -62,28 +62,28 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
       return;
     }
   }
-  memset((uchar *)param_1,'\0',0x1a90);
-  pGVar5 = param_2;
-  pGVar6 = &param_1->input;
+  memset((uchar *)source,'\0',0x1a90);
+  pGVar5 = input;
+  pGVar6 = &source->input;
   for (iVar4 = 0x3a4; iVar4 != 0; iVar4 = iVar4 + -1) {
     pGVar6->consts[0][0] = pGVar5->consts[0][0];
     pGVar5 = (GfxCmdBufInput *)(pGVar5->consts[0] + 1);
     pGVar6 = (GfxCmdBufInput *)(pGVar6->consts[0] + 1);
   }
-  for (local_8 = 0; local_8 < 0xc5; local_8 = local_8 + 1) {
-    if ((((GfxCmdBufInput_conflict *)param_2 == &gfxCmdBufInput) ||
-        (*(int *)(&s_codeConstUpdateFreq + local_8 * 4) != 2)) || (local_8 < 0x2f)) {
-      pafVar1 = (param_1->input).consts + local_8;
+  for (constant = 0; constant < 0xc5; constant = constant + 1) {
+    if ((((GfxCmdBufInput_conflict *)input == &gfxCmdBufInput) ||
+        (*(int *)(&s_codeConstUpdateFreq + constant * 4) != 2)) || (constant < 0x2f)) {
+      pafVar1 = (source->input).consts + constant;
       (*pafVar1)[0] = 3.4028235e+38;
       (*pafVar1)[1] = 3.4028235e+38;
       (*pafVar1)[2] = 3.4028235e+38;
       (*pafVar1)[3] = 0.0;
     }
     else {
-      param_1->constVersions[local_8 + 0x18] = 1;
+      source->constVersions[constant + 0x18] = 1;
     }
   }
-  if (param_1->cameraView != 0) {
+  if (source->cameraView != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x44,1,
                              "%s");
     if (!bVar3) {
@@ -92,87 +92,91 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
       return;
     }
   }
-  (param_1->sceneViewport).x = (int)1.0;
-  (param_1->scissorViewport).x = (int)1.0;
-  (param_1->scissorViewport).y = param_3;
+  (source->sceneViewport).x = (int)1.0;
+  (source->scissorViewport).x = (int)1.0;
+  (source->scissorViewport).y = cameraView;
   return;
 }
 
 
 // 00AF7670  R_SetDefaultStateBits  (gfx_d3d/r_state_utils.cpp:84)
 
-void __cdecl R_SetDefaultStateBits(uint *param_1)
+void __cdecl R_SetDefaultStateBits(uint *stateBits)
 
 {
-  *param_1 = 0;
-  param_1[1] = 0;
-  *param_1 = *param_1 | 0x800;
-  *param_1 = *param_1 | 0x18000000;
-  *param_1 = *param_1 | 0x4000;
-  *param_1 = *param_1;
-  *param_1 = *param_1;
-  param_1[1] = param_1[1] | 2;
-  param_1[1] = param_1[1];
+  *stateBits = 0;
+  stateBits[1] = 0;
+  *stateBits = *stateBits | 0x800;
+  *stateBits = *stateBits | 0x18000000;
+  *stateBits = *stateBits | 0x4000;
+  *stateBits = *stateBits;
+  *stateBits = *stateBits;
+  stateBits[1] = stateBits[1] | 2;
+  stateBits[1] = stateBits[1];
   return;
 }
 
 
 // 00AF6E30  R_InitCmdBufState  (gfx_d3d/r_state_utils.cpp:121)
 
-void __cdecl R_InitCmdBufState(GfxCmdBufState *param_1)
+void __cdecl R_InitCmdBufState(GfxCmdBufState *state)
 
 {
-  IDirect3DDevice9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
-  uint local_10;
+  IDirect3DDevice9 *device_00;
+  code *pcVar1;
+  bool bVar2;
+  uint samplerState;
+  uint samplerIndex;
+  IDirect3DDevice9 *device;
+  uint forceSamplerState;
   
-  if (param_1 == (GfxCmdBufState *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x83,0,
+  if (state == (GfxCmdBufState *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x83,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pIVar1 = (param_1->prim).field0_0x0.device;
-  memset(param_1->refSamplerState,'\0',0x13d0);
-  (param_1->prim).field0_0x0.device = pIVar1;
-  param_1->depthRangeType = GFX_DEPTH_RANGE_FULL;
-  param_1->depthRangeNear = 0.0;
-  param_1->depthRangeFar = 1.0;
-  param_1->renderTargetId = '\0';
-  R_SetDefaultStateBits(param_1->activeStateBits);
-  R_SetDefaultStateBits(param_1->refStateBits);
-  R_SetCompleteState(pIVar1,param_1->activeStateBits);
-  R_SetDefaultAlphaTestFunction(param_1);
-  uVar4 = R_DecodeSamplerState('\x01','\0');
-  for (local_10 = 0; local_10 < 0x10; local_10 = local_10 + 1) {
-    R_HW_ForceSamplerState((param_1->prim).field0_0x0.device,local_10,uVar4);
-    param_1->refSamplerState[local_10] = '\x01';
-    param_1->samplerState[local_10] = uVar4;
+  device_00 = (state->prim).field0_0x0.device;
+  memset(state->refSamplerState,'\0',0x13d0);
+  (state->prim).field0_0x0.device = device_00;
+  state->depthRangeType = GFX_DEPTH_RANGE_FULL;
+  state->depthRangeNear = 0.0;
+  state->depthRangeFar = 1.0;
+  state->renderTargetId = '\0';
+  R_SetDefaultStateBits(state->activeStateBits);
+  R_SetDefaultStateBits(state->refStateBits);
+  R_SetCompleteState(device_00,state->activeStateBits);
+  R_SetDefaultAlphaTestFunction(state);
+  samplerState = R_DecodeSamplerState('\x01','\0');
+  for (samplerIndex = 0; samplerIndex < 0x10; samplerIndex = samplerIndex + 1) {
+    R_HW_ForceSamplerState((state->prim).field0_0x0.device,samplerIndex,samplerState);
+    state->refSamplerState[samplerIndex] = '\x01';
+    state->samplerState[samplerIndex] = samplerState;
   }
-  (param_1->prim).vertexDecl = (IDirect3DVertexDeclaration9 *)0xffffffff;
-  param_1->pixelShader = (MaterialPixelShader *)0xffffffff;
-  param_1->stateOverride = 0;
-  (param_1->prim).viewStats = (param_1->prim).frameStats.viewStats;
+  (state->prim).vertexDecl = (IDirect3DVertexDeclaration9 *)0xffffffff;
+  state->pixelShader = (MaterialPixelShader *)0xffffffff;
+  state->stateOverride = 0;
+  (state->prim).viewStats = (state->prim).frameStats.viewStats;
   return;
 }
 
 
 // 00AF76F0  R_InitCmdBufSamplerState  (gfx_d3d/r_state_utils.cpp:201)
 
-void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *param_1)
+void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *state)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  uint local_10;
+  uint samplerState;
+  uint samplerIndex;
+  IDirect3DDevice9 *device;
+  uint forceSamplerState;
   
-  if (param_1 == (GfxCmdBufState *)0x0) {
+  if (state == (GfxCmdBufState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0xd0,0,
                              "%s");
     if (!bVar2) {
@@ -181,11 +185,11 @@ void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *param_1)
       return;
     }
   }
-  uVar3 = R_DecodeSamplerState('\x01','\0');
-  for (local_10 = 0; local_10 < 0x10; local_10 = local_10 + 1) {
-    R_HW_ForceSamplerState((param_1->prim).field0_0x0.device,local_10,uVar3);
-    param_1->refSamplerState[local_10] = '\x01';
-    param_1->samplerState[local_10] = uVar3;
+  samplerState = R_DecodeSamplerState('\x01','\0');
+  for (samplerIndex = 0; samplerIndex < 0x10; samplerIndex = samplerIndex + 1) {
+    R_HW_ForceSamplerState((state->prim).field0_0x0.device,samplerIndex,samplerState);
+    state->refSamplerState[samplerIndex] = '\x01';
+    state->samplerState[samplerIndex] = samplerState;
   }
   return;
 }
@@ -193,34 +197,36 @@ void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *param_1)
 
 // 00AF77B0  R_WorldMatrixChanged  (gfx_d3d/r_state_utils.cpp:244)
 
-void __cdecl R_WorldMatrixChanged(GfxCmdBufSourceState *param_1)
+void __cdecl R_WorldMatrixChanged(GfxCmdBufSourceState *source)
 
 {
-  *(short *)((int)&param_1->viewParms3D + 2) = *(short *)((int)&param_1->viewParms3D + 2) + 1;
-  *(short *)(param_1->skinnedPlacement).base.quat =
-       *(short *)(param_1->skinnedPlacement).base.quat + 1;
-  *(short *)((param_1->skinnedPlacement).base.quat + 1) =
-       *(short *)((param_1->skinnedPlacement).base.quat + 1) + 1;
-  *(short *)((param_1->skinnedPlacement).base.quat + 2) =
-       *(short *)((param_1->skinnedPlacement).base.quat + 2) + 1;
-  param_1->constVersions[0xdd] = *(ushort *)((int)&param_1->viewParms3D + 2);
+  *(short *)((int)&source->viewParms3D + 2) = *(short *)((int)&source->viewParms3D + 2) + 1;
+  *(short *)(source->skinnedPlacement).base.quat =
+       *(short *)(source->skinnedPlacement).base.quat + 1;
+  *(short *)((source->skinnedPlacement).base.quat + 1) =
+       *(short *)((source->skinnedPlacement).base.quat + 1) + 1;
+  *(short *)((source->skinnedPlacement).base.quat + 2) =
+       *(short *)((source->skinnedPlacement).base.quat + 2) + 1;
+  source->constVersions[0xdd] = *(ushort *)((int)&source->viewParms3D + 2);
   return;
 }
 
 
 // 00AF7790  R_GetActiveWorldMatrix  (gfx_d3d/r_state_utils.cpp:254)
 
-GfxMatrix * __cdecl R_GetActiveWorldMatrix(GfxCmdBufSourceState *param_1)
+GfxMatrix * __cdecl R_GetActiveWorldMatrix(GfxCmdBufSourceState *source)
 
 {
-  R_WorldMatrixChanged(param_1);
-  return (GfxMatrix *)param_1;
+  GfxMatrix *worldMatrix;
+  
+  R_WorldMatrixChanged(source);
+  return (GfxMatrix *)source;
 }
 
 
 // 00AF7910  R_CmdBufSet2D  (gfx_d3d/r_state_utils.cpp:263)
 
-void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *source,GfxViewport *viewport)
 
 {
   code *pcVar1;
@@ -239,7 +245,7 @@ void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
   float local_18;
   float local_14;
   
-  if (param_2->width < 1) {
+  if (viewport->width < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x10f,0
                              ,"%s\n\t(viewport->width) = %i");
     if (!bVar2) {
@@ -248,7 +254,7 @@ void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
       return;
     }
   }
-  if (param_2->height < 1) {
+  if (viewport->height < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x110,0
                              ,"%s\n\t(viewport->height) = %i");
     if (!bVar2) {
@@ -257,9 +263,9 @@ void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
       return;
     }
   }
-  local_14 = 1.0 / (float)param_2->width;
-  local_18 = 1.0 / (float)param_2->height;
-  local_1c = (param_1->viewParms).viewMatrix.m + 3;
+  local_14 = 1.0 / (float)viewport->width;
+  local_18 = 1.0 / (float)viewport->height;
+  local_1c = (source->viewParms).viewMatrix.m + 3;
   memset((uchar *)local_60,'\0',0x40);
   local_60[0] = local_14 * 2.0;
   local_4c = local_18 * -2.0;
@@ -286,11 +292,11 @@ void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
     pfVar3 = pfVar3 + 1;
   }
   memset((uchar *)(local_1c + 0xc),'\0',0x40);
-  *(short *)&param_1->depthHackFlags = (short)param_1->depthHackFlags + 1;
-  *(short *)((int)&param_1->depthHackFlags + 2) = *(short *)((int)&param_1->depthHackFlags + 2) + 1;
-  *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) =
-       *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) + 1;
-  pfVar3 = (float *)R_GetActiveWorldMatrix(param_1);
+  *(short *)&source->depthHackFlags = (short)source->depthHackFlags + 1;
+  *(short *)((int)&source->depthHackFlags + 2) = *(short *)((int)&source->depthHackFlags + 2) + 1;
+  *(short *)((int)(source->skinnedPlacement).base.quat + 2) =
+       *(short *)((int)(source->skinnedPlacement).base.quat + 2) + 1;
+  pfVar3 = (float *)R_GetActiveWorldMatrix(source);
   pfVar5 = local_a0;
   for (iVar4 = 0x10; iVar4 != 0; iVar4 = iVar4 + -1) {
     *pfVar3 = *pfVar5;
@@ -303,18 +309,37 @@ void __cdecl R_CmdBufSet2D(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
 
 // 00AF6FB0  R_HW_ForceSamplerState  (gfx_d3d/r_setstate_d3d.h:280)
 
-void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint param_3)
+void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *device,uint samplerIndex,uint samplerState)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_7;
+  HRESULT hr_7;
+  int semaphore_6;
+  HRESULT hr_6;
+  int semaphore_5;
+  HRESULT hr_5;
+  int semaphore_4;
+  HRESULT hr_4;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  _D3DTEXTUREFILTERTYPE minFilter;
+  _D3DTEXTUREFILTERTYPE mipFilter;
+  _D3DTEXTUREADDRESS address;
+  int anisotropy;
+  _D3DTEXTUREFILTERTYPE magFilter;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MINFILTER, minFilter )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,6,(param_3 & 0xf00) >> 8);
+  iVar2 = (**(code **)((int)*device + 0x114))(device,samplerIndex,6,(samplerState & 0xf00) >> 8);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -330,7 +355,7 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MAGFILTER, magFilter )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,5,(param_3 & 0xf000) >> 0xc);
+  iVar2 = (**(code **)((int)*device + 0x114))(device,samplerIndex,5,(samplerState & 0xf000) >> 0xc);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -341,13 +366,13 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetSamplerState( samplerIndex, D3DSAMP_MAGFILTER, magFilter ) failed: %s\n"
              );
   }
-  if (1 < (param_3 & 0xff)) {
+  if (1 < (samplerState & 0xff)) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MAXANISOTROPY, anisotropy )\n");
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,10,param_3 & 0xff);
+    iVar2 = (**(code **)((int)*device + 0x114))(device,samplerIndex,10,samplerState & 0xff);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -364,7 +389,8 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MIPFILTER, mipFilter )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,7,(param_3 & 0xf0000) >> 0x10);
+  iVar2 = (**(code **)((int)*device + 0x114))
+                    (device,samplerIndex,7,(samplerState & 0xf0000) >> 0x10);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -380,7 +406,8 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSU, address )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,1,(param_3 & 0x300000) >> 0x14);
+  iVar2 = (**(code **)((int)*device + 0x114))
+                    (device,samplerIndex,1,(samplerState & 0x300000) >> 0x14);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -396,7 +423,8 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSV, address )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,2,(param_3 & 0xc00000) >> 0x16);
+  iVar2 = (**(code **)((int)*device + 0x114))
+                    (device,samplerIndex,2,(samplerState & 0xc00000) >> 0x16);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -412,7 +440,8 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
     RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSW, address )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,3,(param_3 & 0x3000000) >> 0x18);
+  iVar2 = (**(code **)((int)*device + 0x114))
+                    (device,samplerIndex,3,(samplerState & 0x3000000) >> 0x18);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -429,22 +458,23 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
 
 // 00AF7830  R_Set2D  (gfx_d3d/r_state_utils.cpp:318)
 
-void __cdecl R_Set2D(GfxCmdBufSourceState *param_1)
+void __cdecl R_Set2D(GfxCmdBufSourceState *source)
 
 {
   DWORD DVar1;
-  GfxViewport local_14;
+  PIXProfile pixProfile;
+  GfxViewport viewport;
   
-  if ((param_1->scissorViewport).width != 2) {
+  if ((source->scissorViewport).width != 2) {
     PIXBeginNamedEvent(-1,"R_Set2D");
-    (param_1->scissorViewport).width = 2;
-    *(undefined1 *)(param_1[1].matrices.matrix[0].m[2] + 2) = 1;
-    (param_1->skinnedPlacement).base.origin[0] = 0.0;
-    (param_1->skinnedPlacement).base.origin[1] = 0.0;
-    (param_1->skinnedPlacement).base.origin[2] = 0.0;
-    (param_1->skinnedPlacement).scale = 1.0;
-    R_GetViewport(param_1,&local_14);
-    R_CmdBufSet2D(param_1,&local_14);
+    (source->scissorViewport).width = 2;
+    *(undefined1 *)(source[1].matrices.matrix[0].m[2] + 2) = 1;
+    (source->skinnedPlacement).base.origin[0] = 0.0;
+    (source->skinnedPlacement).base.origin[1] = 0.0;
+    (source->skinnedPlacement).base.origin[2] = 0.0;
+    (source->skinnedPlacement).scale = 1.0;
+    R_GetViewport(source,&viewport);
+    R_CmdBufSet2D(source,&viewport);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -456,27 +486,28 @@ void __cdecl R_Set2D(GfxCmdBufSourceState *param_1)
 
 // 00AF7B70  R_CmdBufSet3D  (gfx_d3d/r_state_utils.cpp:346)
 
-void __cdecl R_CmdBufSet3D(GfxCmdBufSourceState *param_1)
+void __cdecl R_CmdBufSet3D(GfxCmdBufSourceState *source)
 
 {
-  GfxMatrix *pGVar1;
+  GfxMatrix *out;
+  GfxMatrix *worldMatrix;
   
-  *(short *)&param_1->depthHackFlags = (short)param_1->depthHackFlags + 1;
-  *(short *)((int)&param_1->depthHackFlags + 2) = *(short *)((int)&param_1->depthHackFlags + 2) + 1;
-  *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) =
-       *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) + 1;
-  pGVar1 = R_GetActiveWorldMatrix(param_1);
-  R_MatrixIdentity44((float (*) [4])pGVar1);
-  pGVar1->m[3][0] = pGVar1->m[3][0] - (param_1->skinnedPlacement).base.origin[0];
-  pGVar1->m[3][1] = pGVar1->m[3][1] - (param_1->skinnedPlacement).base.origin[1];
-  pGVar1->m[3][2] = pGVar1->m[3][2] - (param_1->skinnedPlacement).base.origin[2];
+  *(short *)&source->depthHackFlags = (short)source->depthHackFlags + 1;
+  *(short *)((int)&source->depthHackFlags + 2) = *(short *)((int)&source->depthHackFlags + 2) + 1;
+  *(short *)((int)(source->skinnedPlacement).base.quat + 2) =
+       *(short *)((int)(source->skinnedPlacement).base.quat + 2) + 1;
+  out = R_GetActiveWorldMatrix(source);
+  R_MatrixIdentity44((float (*) [4])out);
+  out->m[3][0] = out->m[3][0] - (source->skinnedPlacement).base.origin[0];
+  out->m[3][1] = out->m[3][1] - (source->skinnedPlacement).base.origin[1];
+  out->m[3][2] = out->m[3][2] - (source->skinnedPlacement).base.origin[2];
   return;
 }
 
 
 // 00AF7C40  R_Set3D  (gfx_d3d/r_state_utils.cpp:357)
 
-void __cdecl R_Set3D(GfxCmdBufSourceState *param_1)
+void __cdecl R_Set3D(GfxCmdBufSourceState *source)
 
 {
   code *pcVar1;
@@ -485,37 +516,38 @@ void __cdecl R_Set3D(GfxCmdBufSourceState *param_1)
   int iVar4;
   float *pfVar5;
   float (*pafVar6) [4];
+  PIXProfile pixProfile;
   
-  if (((param_1->sceneDef).time == 0) &&
+  if (((source->sceneDef).time == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x166
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->scissorViewport).width != 1) {
+  if ((source->scissorViewport).width != 1) {
     PIXBeginNamedEvent(-1,"R_Set3D");
-    (param_1->scissorViewport).width = 1;
-    pfVar5 = (float *)(param_1->sceneDef).time;
-    pafVar6 = (param_1->viewParms).viewMatrix.m + 3;
+    (source->scissorViewport).width = 1;
+    pfVar5 = (float *)(source->sceneDef).time;
+    pafVar6 = (source->viewParms).viewMatrix.m + 3;
     for (iVar4 = 0x50; iVar4 != 0; iVar4 = iVar4 + -1) {
       (*pafVar6)[0] = *pfVar5;
       pfVar5 = pfVar5 + 1;
       pafVar6 = (float (*) [4])(*pafVar6 + 1);
     }
-    if ((param_1->viewParms).zFar == 0.0) {
-      (param_1->skinnedPlacement).base.origin[0] = 0.0;
-      (param_1->skinnedPlacement).base.origin[1] = 0.0;
-      (param_1->skinnedPlacement).base.origin[2] = 0.0;
+    if ((source->viewParms).zFar == 0.0) {
+      (source->skinnedPlacement).base.origin[0] = 0.0;
+      (source->skinnedPlacement).base.origin[1] = 0.0;
+      (source->skinnedPlacement).base.origin[2] = 0.0;
     }
     else {
-      (param_1->skinnedPlacement).base.origin[0] = (param_1->viewParms).axis[2][2];
-      (param_1->skinnedPlacement).base.origin[1] = (param_1->viewParms).depthHackNearClip;
-      (param_1->skinnedPlacement).base.origin[2] = (param_1->viewParms).zNear;
+      (source->skinnedPlacement).base.origin[0] = (source->viewParms).axis[2][2];
+      (source->skinnedPlacement).base.origin[1] = (source->viewParms).depthHackNearClip;
+      (source->skinnedPlacement).base.origin[2] = (source->viewParms).zNear;
     }
-    (param_1->skinnedPlacement).scale = 1.0;
-    R_CmdBufSet3D(param_1);
-    UpdateVPosToWorld(param_1);
+    (source->skinnedPlacement).scale = 1.0;
+    R_CmdBufSet3D(source);
+    UpdateVPosToWorld(source);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -534,7 +566,7 @@ void __cdecl R_Set3D(GfxCmdBufSourceState *param_1)
 /* WARNING: Removing unreachable block (ram,0x00af8208) */
 /* WARNING: Removing unreachable block (ram,0x00af822f) */
 
-void __cdecl R_DeriveNearPlaneConstantsForView(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveNearPlaneConstantsForView(GfxCmdBufSourceState *source)
 
 {
   float fVar1;
@@ -544,100 +576,103 @@ void __cdecl R_DeriveNearPlaneConstantsForView(GfxCmdBufSourceState *param_1)
   code *pcVar5;
   bool bVar6;
   float fVar7;
+  GfxMatrix *mtx;
+  float *viewOrg;
+  GfxViewParms *viewParms;
+  float scale;
   
-  if (((param_1->viewParms).axis[2][1] * 1e-05 <=
-       ABS((param_1->viewParms).inverseViewProjectionMatrix.m[3][3])) &&
+  if (((source->viewParms).axis[2][1] * 1e-05 <=
+       ABS((source->viewParms).inverseViewProjectionMatrix.m[3][3])) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x196
                                ,0,"%s\n\t(mtx->m[0][3]) = %g"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if (((param_1->viewParms).axis[2][1] * 1e-05 <= ABS((param_1->viewParms).origin[3])) &&
+  if (((source->viewParms).axis[2][1] * 1e-05 <= ABS((source->viewParms).origin[3])) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x197
                                ,0,"%s\n\t(mtx->m[1][3]) = %g"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if (((param_1->viewParms).axis[2][1] == 0.0) &&
+  if (((source->viewParms).axis[2][1] == 0.0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state_utils.cpp",0x198
                                ,0,"%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  fVar7 = 1.0 / (param_1->viewParms).axis[2][1];
-  fVar1 = (param_1->viewParms).axis[1][2];
-  fVar2 = (param_1->viewParms).depthHackNearClip;
-  fVar3 = (param_1->viewParms).axis[2][0];
-  fVar4 = (param_1->viewParms).zNear;
-  (param_1->input).consts[0x10][0] =
-       fVar7 * (param_1->viewParms).axis[1][1] - (param_1->viewParms).axis[2][2];
-  (param_1->input).consts[0x10][1] = fVar7 * fVar1 - fVar2;
-  (param_1->input).consts[0x10][2] = fVar7 * fVar3 - fVar4;
-  (param_1->input).consts[0x10][3] = 0.0;
-  R_DirtyCodeConstant(param_1,0x10);
+  fVar7 = 1.0 / (source->viewParms).axis[2][1];
+  fVar1 = (source->viewParms).axis[1][2];
+  fVar2 = (source->viewParms).depthHackNearClip;
+  fVar3 = (source->viewParms).axis[2][0];
+  fVar4 = (source->viewParms).zNear;
+  (source->input).consts[0x10][0] =
+       fVar7 * (source->viewParms).axis[1][1] - (source->viewParms).axis[2][2];
+  (source->input).consts[0x10][1] = fVar7 * fVar1 - fVar2;
+  (source->input).consts[0x10][2] = fVar7 * fVar3 - fVar4;
+  (source->input).consts[0x10][3] = 0.0;
+  R_DirtyCodeConstant(source,0x10);
   fVar7 = fVar7 + fVar7;
-  fVar1 = (param_1->viewParms).inverseViewProjectionMatrix.m[3][1];
-  fVar2 = (param_1->viewParms).inverseViewProjectionMatrix.m[3][2];
-  (param_1->input).consts[0x11][0] =
-       fVar7 * (param_1->viewParms).inverseViewProjectionMatrix.m[3][0];
-  (param_1->input).consts[0x11][1] = fVar7 * fVar1;
-  (param_1->input).consts[0x11][2] = fVar7 * fVar2;
-  (param_1->input).consts[0x11][3] = 0.0;
-  R_DirtyCodeConstant(param_1,0x11);
-  fVar1 = (param_1->viewParms).origin[1];
-  fVar2 = (param_1->viewParms).origin[2];
-  (param_1->input).consts[0x12][0] = -fVar7 * (param_1->viewParms).origin[0];
-  (param_1->input).consts[0x12][1] = -fVar7 * fVar1;
-  (param_1->input).consts[0x12][2] = -fVar7 * fVar2;
-  (param_1->input).consts[0x12][3] = 0.0;
-  R_DirtyCodeConstant(param_1,0x12);
+  fVar1 = (source->viewParms).inverseViewProjectionMatrix.m[3][1];
+  fVar2 = (source->viewParms).inverseViewProjectionMatrix.m[3][2];
+  (source->input).consts[0x11][0] = fVar7 * (source->viewParms).inverseViewProjectionMatrix.m[3][0];
+  (source->input).consts[0x11][1] = fVar7 * fVar1;
+  (source->input).consts[0x11][2] = fVar7 * fVar2;
+  (source->input).consts[0x11][3] = 0.0;
+  R_DirtyCodeConstant(source,0x11);
+  fVar1 = (source->viewParms).origin[1];
+  fVar2 = (source->viewParms).origin[2];
+  (source->input).consts[0x12][0] = -fVar7 * (source->viewParms).origin[0];
+  (source->input).consts[0x12][1] = -fVar7 * fVar1;
+  (source->input).consts[0x12][2] = -fVar7 * fVar2;
+  (source->input).consts[0x12][3] = 0.0;
+  R_DirtyCodeConstant(source,0x12);
   return;
 }
 
 
 // 00AF7DB0  R_BeginView  (gfx_d3d/r_state_utils.cpp:426)
 
-void __cdecl R_BeginView(GfxCmdBufSourceState *param_1,GfxSceneDef *param_2,GfxViewParms *param_3)
+void __cdecl R_BeginView(GfxCmdBufSourceState *source,GfxSceneDef *sceneDef,GfxViewParms *viewParms)
 
 {
-  (param_1->scissorViewport).height = param_2->time;
-  param_1->materialTime = param_2->floatTime;
-  param_1->destructibleBurnAmount = param_2->viewOffset[0];
-  param_1->destructibleFadeAmount = param_2->viewOffset[1];
-  param_1->wetness = param_2->viewOffset[2];
-  (param_1->sceneDef).time = (int)param_3;
-  (param_1->sceneViewport).y = (int)param_2->viewOffset[0];
-  (param_1->sceneViewport).width = (int)param_2->viewOffset[1];
-  (param_1->sceneViewport).height = (int)param_2->viewOffset[2];
-  (param_1->scissorViewport).width = 0;
-  R_Set3D(param_1);
-  param_1[1].matrices.matrix[0].m[0][3] = 0.0;
-  param_1[1].matrices.matrix[0].m[1][0] = 0.0;
-  param_1[1].matrices.matrix[0].m[1][1] = 0.0;
-  param_1[1].matrices.matrix[0].m[1][2] = 0.0;
-  R_SetGameTime(param_1,param_1->materialTime);
-  R_DeriveNearPlaneConstantsForView(param_1);
+  (source->scissorViewport).height = sceneDef->time;
+  source->materialTime = sceneDef->floatTime;
+  source->destructibleBurnAmount = sceneDef->viewOffset[0];
+  source->destructibleFadeAmount = sceneDef->viewOffset[1];
+  source->wetness = sceneDef->viewOffset[2];
+  (source->sceneDef).time = (int)viewParms;
+  (source->sceneViewport).y = (int)sceneDef->viewOffset[0];
+  (source->sceneViewport).width = (int)sceneDef->viewOffset[1];
+  (source->sceneViewport).height = (int)sceneDef->viewOffset[2];
+  (source->scissorViewport).width = 0;
+  R_Set3D(source);
+  source[1].matrices.matrix[0].m[0][3] = 0.0;
+  source[1].matrices.matrix[0].m[1][0] = 0.0;
+  source[1].matrices.matrix[0].m[1][1] = 0.0;
+  source[1].matrices.matrix[0].m[1][2] = 0.0;
+  R_SetGameTime(source,source->materialTime);
+  R_DeriveNearPlaneConstantsForView(source);
   return;
 }
 
 
 // 00AF8290  R_SetShadowLookupMatrix  (gfx_d3d/r_state_utils.cpp:462)
 
-void __cdecl R_SetShadowLookupMatrix(GfxCmdBufSourceState *param_1,GfxMatrix *param_2)
+void __cdecl R_SetShadowLookupMatrix(GfxCmdBufSourceState *source,GfxMatrix *matrix)
 
 {
   int iVar1;
   float (*pafVar2) [4];
   
-  *(short *)((int)(param_1->skinnedPlacement).base.quat + 6) =
-       *(short *)((int)(param_1->skinnedPlacement).base.quat + 6) + 1;
-  pafVar2 = (param_1->shadowLookupMatrix).m + 3;
+  *(short *)((int)(source->skinnedPlacement).base.quat + 6) =
+       *(short *)((int)(source->skinnedPlacement).base.quat + 6) + 1;
+  pafVar2 = (source->shadowLookupMatrix).m + 3;
   for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
-    (*pafVar2)[0] = *(float *)param_2;
-    param_2 = (GfxMatrix *)((int)param_2 + 4);
+    (*pafVar2)[0] = *(float *)matrix;
+    matrix = (GfxMatrix *)((int)matrix + 4);
     pafVar2 = (float (*) [4])(*pafVar2 + 1);
   }
   return;
@@ -646,16 +681,19 @@ void __cdecl R_SetShadowLookupMatrix(GfxCmdBufSourceState *param_1,GfxMatrix *pa
 
 // 00AF74E0  R_SetDefaultAlphaTestFunction  (gfx_d3d/r_state.h:2007)
 
-void __cdecl R_SetDefaultAlphaTestFunction(GfxCmdBufState *param_1)
+void __cdecl R_SetDefaultAlphaTestFunction(GfxCmdBufState *state)
 
 {
   IDirect3DDevice9 *pIVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DDevice9 *device;
   
-  pIVar1 = (param_1->prim).field0_0x0.device;
+  pIVar1 = (state->prim).field0_0x0.device;
   if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x7db,0,"%s")
      , !bVar3)) {
@@ -668,32 +706,34 @@ void __cdecl R_SetDefaultAlphaTestFunction(GfxCmdBufState *param_1)
     RB_LogPrint("device->SetRenderState( D3DRS_ALPHAREF, 0 )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x18,0);
+  hr_00 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x18,0);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h (%i) device->SetRenderState( D3DRS_ALPHAREF, 0 ) failed: %s\n"
              );
   }
-  param_1->alphaRef = '\0';
+  state->alphaRef = '\0';
   return;
 }
 
 
 // 00AF75E0  R_DecodeSamplerState  (gfx_d3d/r_state.h:2415)
 
-uint __cdecl R_DecodeSamplerState(uchar param_1,uchar param_2)
+uint __cdecl R_DecodeSamplerState(uchar samplerState,uchar mipLodBias)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  uint tableIndex;
+  uint decoded;
   
-  if (0x17 < (param_1 & 0x1f)) {
+  if (0x17 < (samplerState & 0x1f)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x975,0,
                              "tableIndex doesn\'t index ARRAY_COUNT(s_decodeSamplerFilterState)\n\t%i not in [0, %i)"
                             );
@@ -703,8 +743,9 @@ uint __cdecl R_DecodeSamplerState(uchar param_1,uchar param_2)
       return uVar3;
     }
   }
-  return (param_1 & 0x80) << 0x12 |
-         (param_1 & 0x40) << 0x11 |
-         (param_1 & 0x20) << 0x10 | s_decodeSamplerFilterState[param_1 & 0x1f] | 0x1500000;
+  return (samplerState & 0x80) << 0x12 |
+         (samplerState & 0x40) << 0x11 |
+         (samplerState & 0x20) << 0x10 | s_decodeSamplerFilterState[samplerState & 0x1f] | 0x1500000
+  ;
 }
 

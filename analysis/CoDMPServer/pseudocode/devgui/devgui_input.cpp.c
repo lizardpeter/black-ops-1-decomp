@@ -4,7 +4,7 @@
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-void __cdecl DevGui_UpdateScrollInputs(int param_1)
+void __cdecl DevGui_UpdateScrollInputs(int localClientNum)
 
 {
   bool bVar1;
@@ -16,19 +16,21 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
   undefined4 local_38;
   undefined4 local_34;
   undefined4 local_30;
-  undefined4 local_28;
-  undefined4 local_24;
-  undefined4 local_20;
-  undefined4 local_18;
-  undefined4 local_14;
-  undefined4 local_10;
-  undefined4 local_c;
-  undefined4 local_8;
+  float highScale;
+  float right;
+  float left;
+  float lx;
+  float lowScale;
+  float up;
+  float down;
+  float ltrig;
+  float ly;
+  float rtrig;
   
-  local_20 = 0.0;
-  local_c = 0.0;
-  local_8 = 0.0;
-  local_10 = 0.0;
+  lx = 0.0;
+  ly = 0.0;
+  rtrig = 0.0;
+  ltrig = 0.0;
   bVar1 = DevGui_IsButtonDown(INPUT_RIGHT);
   if (bVar1) {
     local_30 = 1.0;
@@ -36,7 +38,7 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
   else {
     local_30 = 0.0;
   }
-  local_28 = local_30;
+  right = local_30;
   bVar1 = DevGui_IsButtonDown(INPUT_LEFT);
   if (bVar1) {
     local_34 = 1.0;
@@ -44,7 +46,7 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
   else {
     local_34 = 0.0;
   }
-  local_24 = local_34;
+  left = local_34;
   bVar1 = DevGui_IsButtonDown(INPUT_UP);
   if (bVar1) {
     local_38 = 1.0;
@@ -52,7 +54,7 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
   else {
     local_38 = 0.0;
   }
-  local_18 = local_38;
+  up = local_38;
   bVar1 = DevGui_IsButtonDown(INPUT_DOWN);
   if (bVar1) {
     local_3c = 1.0;
@@ -60,8 +62,8 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
   else {
     local_3c = 0.0;
   }
-  local_14 = local_3c;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
+  down = local_3c;
+  iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = GPad_IsActive(iVar2);
   if (bVar1) {
     fVar3 = GPad_GetStick(s_input.gamePadIndex,GPAD_INVALID);
@@ -71,7 +73,7 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
     else {
       local_40 = 1.0;
     }
-    local_20 = fVar3 * fVar3 * local_40;
+    lx = fVar3 * fVar3 * local_40;
     fVar3 = GPad_GetStick(s_input.gamePadIndex,GPAD_LY);
     if (fVar3 < 0.0) {
       local_44 = -1.0;
@@ -79,30 +81,30 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
     else {
       local_44 = 1.0;
     }
-    local_c = fVar3 * fVar3 * local_44;
-    local_8 = GPad_GetButton(s_input.gamePadIndex,GPAD_R_TRIG);
-    local_10 = GPad_GetButton(s_input.gamePadIndex,GPAD_L_TRIG);
+    ly = fVar3 * fVar3 * local_44;
+    rtrig = GPad_GetButton(s_input.gamePadIndex,GPAD_R_TRIG);
+    ltrig = GPad_GetButton(s_input.gamePadIndex,GPAD_L_TRIG);
   }
   if (s_input.gamePadIndex < 0) {
-    iVar2 = Key_IsDown(param_1,200);
+    iVar2 = Key_IsDown(localClientNum,200);
     if (iVar2 != 0) {
-      local_20 = s_input.mousePos[0];
-      local_c = -s_input.mousePos[1];
+      lx = s_input.mousePos[0];
+      ly = -s_input.mousePos[1];
     }
   }
   s_input.mousePos[0] = 0.0;
   s_input.mousePos[1] = 0.0;
   if (((local_30 != 0.0) || (local_34 != 0.0)) && ((local_38 != 0.0 || (local_3c != 0.0)))) {
-    local_28 = 0.0;
-    local_24 = 0.0;
-    local_18 = 0.0;
-    local_14 = 0.0;
+    right = 0.0;
+    left = 0.0;
+    up = 0.0;
+    down = 0.0;
   }
-  s_input.scrollScale = (local_10 * 1.0 + 1.0) * (local_8 * 4.0 + 1.0);
-  s_input.digitalAxis[0] = local_28 - local_24;
-  s_input.digitalAxis[1] = local_18 - local_14;
-  s_input.analogAxis[0] = local_20;
-  s_input.analogAxis[1] = local_c;
+  s_input.scrollScale = (ltrig * 1.0 + 1.0) * (rtrig * 4.0 + 1.0);
+  s_input.digitalAxis[0] = right - left;
+  s_input.digitalAxis[1] = up - down;
+  s_input.analogAxis[0] = lx;
+  s_input.analogAxis[1] = ly;
   return;
 }
 
@@ -110,37 +112,37 @@ void __cdecl DevGui_UpdateScrollInputs(int param_1)
 // 0059CC10  DevGui_UpdateScrollStates  (devgui/devgui_input.cpp:231)
 
 void __cdecl
-DevGui_UpdateScrollStates(float param_1,DevGuiInputState *param_2,float *param_3,float *param_4)
+DevGui_UpdateScrollStates(float deltaTime,DevGuiInputState *states,float *axis,float *times)
 
 {
   DevGuiInputState DVar1;
-  int local_8;
+  int axisIndex;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    if (param_3[local_8] == 0.0) {
-      param_2[local_8] = SCROLL_NONE;
-      param_4[local_8] = 0.0;
+  for (axisIndex = 0; axisIndex < 2; axisIndex = axisIndex + 1) {
+    if (axis[axisIndex] == 0.0) {
+      states[axisIndex] = SCROLL_NONE;
+      times[axisIndex] = 0.0;
     }
     else {
-      DVar1 = param_2[local_8];
+      DVar1 = states[axisIndex];
       if (DVar1 == SCROLL_NONE) {
-        if (0.4 < ABS(param_3[local_8])) {
-          param_2[local_8] = SCROLL_PRESSED;
+        if (0.4 < ABS(axis[axisIndex])) {
+          states[axisIndex] = SCROLL_PRESSED;
         }
       }
       else if (DVar1 == SCROLL_PRESSED) {
-        param_2[local_8] = SCROLL_STALLED;
-        param_4[local_8] = 0.0;
+        states[axisIndex] = SCROLL_STALLED;
+        times[axisIndex] = 0.0;
       }
       else if (DVar1 == SCROLL_STALLED) {
-        param_4[local_8] = param_4[local_8] + param_1;
-        if (0.25 < param_4[local_8]) {
-          param_2[local_8] = SCROLL_HELD;
-          param_4[local_8] = 0.0;
+        times[axisIndex] = times[axisIndex] + deltaTime;
+        if (0.25 < times[axisIndex]) {
+          states[axisIndex] = SCROLL_HELD;
+          times[axisIndex] = 0.0;
         }
       }
       else {
-        param_4[local_8] = param_4[local_8] + param_1;
+        times[axisIndex] = times[axisIndex] + deltaTime;
       }
     }
   }
@@ -150,7 +152,7 @@ DevGui_UpdateScrollStates(float param_1,DevGuiInputState *param_2,float *param_3
 
 // 0059CD60  DevGui_UpdateMenuScroll  (devgui/devgui_input.cpp:276)
 
-void __cdecl DevGui_UpdateMenuScroll(float param_1)
+void __cdecl DevGui_UpdateMenuScroll(float deltaTime)
 
 {
   bool bVar1;
@@ -158,45 +160,49 @@ void __cdecl DevGui_UpdateMenuScroll(float param_1)
   float fVar3;
   float local_38;
   float local_34;
-  float local_18 [2];
-  int local_10;
+  float adjustedAnalogAxis [2];
+  int axisIndex;
+  bool pressed;
+  bool held;
+  float axis;
   
   if (ABS(s_input.analogAxis[0]) <= ABS(s_input.analogAxis[1])) {
-    local_18[0] = 0.0;
-    local_18[1] = s_input.analogAxis[1];
+    adjustedAnalogAxis[0] = 0.0;
+    adjustedAnalogAxis[1] = s_input.analogAxis[1];
   }
   else {
-    local_18[0] = s_input.analogAxis[0];
-    local_18[1] = 0.0;
+    adjustedAnalogAxis[0] = s_input.analogAxis[0];
+    adjustedAnalogAxis[1] = 0.0;
   }
-  for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    s_input.menuScroll[local_10] = 0;
-    if ((s_input.digitalStates[local_10] == SCROLL_HELD) ||
-       (s_input.analogStates[local_10] == SCROLL_HELD)) {
+  for (axisIndex = 0; axisIndex < 2; axisIndex = axisIndex + 1) {
+    s_input.menuScroll[axisIndex] = 0;
+    if ((s_input.digitalStates[axisIndex] == SCROLL_HELD) ||
+       (s_input.analogStates[axisIndex] == SCROLL_HELD)) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
-    if ((s_input.digitalStates[local_10] == SCROLL_PRESSED) ||
-       (s_input.analogStates[local_10] == SCROLL_PRESSED)) {
+    if ((s_input.digitalStates[axisIndex] == SCROLL_PRESSED) ||
+       (s_input.analogStates[axisIndex] == SCROLL_PRESSED)) {
       bVar2 = true;
     }
     else {
       bVar2 = false;
     }
-    fVar3 = (s_input.digitalAxis[local_10] + local_18[local_10]) * s_input.scrollScale;
+    fVar3 = (s_input.digitalAxis[axisIndex] + adjustedAnalogAxis[axisIndex]) * s_input.scrollScale;
     if (bVar1) {
-      s_input.menuScrollTime[local_10] = param_1 * ABS(fVar3) + s_input.menuScrollTime[local_10];
-      while (0.1 < s_input.menuScrollTime[local_10]) {
+      s_input.menuScrollTime[axisIndex] = deltaTime * ABS(fVar3) + s_input.menuScrollTime[axisIndex]
+      ;
+      while (0.1 < s_input.menuScrollTime[axisIndex]) {
         if (fVar3 < 0.0) {
           local_34 = -1.0;
         }
         else {
           local_34 = 1.0;
         }
-        s_input.menuScroll[local_10] = s_input.menuScroll[local_10] + (short)(int)local_34;
-        s_input.menuScrollTime[local_10] = s_input.menuScrollTime[local_10] - 0.1;
+        s_input.menuScroll[axisIndex] = s_input.menuScroll[axisIndex] + (short)(int)local_34;
+        s_input.menuScrollTime[axisIndex] = s_input.menuScrollTime[axisIndex] - 0.1;
       }
     }
     else if (bVar2) {
@@ -206,8 +212,8 @@ void __cdecl DevGui_UpdateMenuScroll(float param_1)
       else {
         local_38 = 1.0;
       }
-      s_input.menuScroll[local_10] = s_input.menuScroll[local_10] + (short)(int)local_38;
-      s_input.menuScrollTime[local_10] = 0.0;
+      s_input.menuScroll[axisIndex] = s_input.menuScroll[axisIndex] + (short)(int)local_38;
+      s_input.menuScrollTime[axisIndex] = 0.0;
     }
   }
   return;
@@ -236,17 +242,17 @@ void __cdecl DevGui_InputShutdown(void)
 
 // 0059C740  DevGui_SelectGamepad  (devgui/devgui_input.cpp:341)
 
-void __cdecl DevGui_SelectGamepad(int param_1)
+void __cdecl DevGui_SelectGamepad(int gamePadIndex)
 
 {
-  s_input.selectedGamePadIndex = param_1;
+  s_input.selectedGamePadIndex = gamePadIndex;
   return;
 }
 
 
 // 0059CFC0  DevGui_InputUpdateGamepad  (devgui/devgui_input.cpp:352)
 
-bool __cdecl DevGui_InputUpdateGamepad(int param_1)
+bool __cdecl DevGui_InputUpdateGamepad(int localClientNum)
 
 {
   bool bVar1;
@@ -278,52 +284,55 @@ void __cdecl DevGui_InputUpdateMouse(void)
 
 /* WARNING: Removing unreachable block (ram,0x0059c77a) */
 
-bool __cdecl DevGui_InputUpdate(int param_1,float param_2)
+bool __cdecl DevGui_InputUpdate(int localClientNum,float deltaTime)
 
 {
   int iVar1;
   float fVar2;
-  int local_c;
+  int butIndex;
+  bool foundInput;
   
-  DevGui_InputUpdateGamepad(param_1);
+  DevGui_InputUpdateGamepad(localClientNum);
   DevGui_InputUpdateMouse();
-  for (local_c = 0; local_c < 0xd; local_c = local_c + 1) {
-    s_input.prevButtonDown[local_c] = s_input.buttonDown[local_c];
+  for (butIndex = 0; butIndex < 0xd; butIndex = butIndex + 1) {
+    s_input.prevButtonDown[butIndex] = s_input.buttonDown[butIndex];
     if (-1 < s_input.gamePadIndex) {
-      fVar2 = GPad_GetButton(s_input.gamePadIndex,s_butMapsGamepad[local_c]);
-      *(bool *)(local_c + 0x3326688) = 0.0 < fVar2;
+      fVar2 = GPad_GetButton(s_input.gamePadIndex,s_butMapsGamepad[butIndex]);
+      *(bool *)(butIndex + 0x3326688) = 0.0 < fVar2;
     }
-    iVar1 = Key_IsDown(param_1,s_butMapsKey[local_c]);
-    *(bool *)(local_c + 0x3326688) = iVar1 != 0;
+    iVar1 = Key_IsDown(localClientNum,s_butMapsKey[butIndex]);
+    *(bool *)(butIndex + 0x3326688) = iVar1 != 0;
   }
-  DevGui_UpdateScrollInputs(param_1);
-  DevGui_UpdateScrollStates(param_2,s_input.digitalStates,s_input.digitalAxis,s_input.digitalTimes);
+  DevGui_UpdateScrollInputs(localClientNum);
+  DevGui_UpdateScrollStates
+            (deltaTime,s_input.digitalStates,s_input.digitalAxis,s_input.digitalTimes);
   if (-1 < s_input.gamePadIndex) {
-    DevGui_UpdateScrollStates(param_2,s_input.analogStates,s_input.analogAxis,s_input.analogTimes);
+    DevGui_UpdateScrollStates(deltaTime,s_input.analogStates,s_input.analogAxis,s_input.analogTimes)
+    ;
   }
-  DevGui_UpdateMenuScroll(param_2);
-  CL_ClearKeys(param_1);
+  DevGui_UpdateMenuScroll(deltaTime);
+  CL_ClearKeys(localClientNum);
   return true;
 }
 
 
 // 0059D050  DevGui_MouseEvent  (devgui/devgui_input.cpp:459)
 
-void __cdecl DevGui_MouseEvent(int param_1,int param_2)
+void __cdecl DevGui_MouseEvent(int dx,int dy)
 
 {
-  s_input.mousePos[0] = (float)param_1;
-  s_input.mousePos[1] = (float)param_2;
+  s_input.mousePos[0] = (float)dx;
+  s_input.mousePos[1] = (float)dy;
   return;
 }
 
 
 // 0059D070  DevGui_GetMenuScroll  (devgui/devgui_input.cpp:471)
 
-short __cdecl DevGui_GetMenuScroll(DevGuiInputAxis param_1)
+short __cdecl DevGui_GetMenuScroll(DevGuiInputAxis axis)
 
 {
-  return s_input.menuScroll[param_1];
+  return s_input.menuScroll[axis];
 }
 
 
@@ -331,7 +340,7 @@ short __cdecl DevGui_GetMenuScroll(DevGuiInputAxis param_1)
 
 long64 __cdecl
 DevGui_UpdateIntScroll
-          (float param_1,long64 param_2,long64 param_3,long64 param_4,DevGuiInputAxis param_5)
+          (float deltaTime,long64 param_2,long64 param_3,long64 param_4,DevGuiInputAxis param_5)
 
 {
   code *pcVar1;
@@ -342,8 +351,9 @@ DevGui_UpdateIntScroll
   long64 lVar6;
   uint in_stack_00000008;
   float local_4c;
-  float local_c;
-  uint local_8;
+  __int64 range;
+  float stepTime;
+  int scroll;
   
   iVar3 = param_3._4_4_ - param_2._4_4_;
   iVar5 = ((int)param_4 - (int)param_3) - (uint)(param_3._4_4_ < param_2._4_4_);
@@ -366,20 +376,20 @@ DevGui_UpdateIntScroll
     param_3._0_4_ = 0;
   }
   else {
-    local_8 = 0;
+    scroll = 0;
     if (s_input.digitalStates[param_4._4_4_] == SCROLL_HELD) {
-      local_c = 0.1 / s_input.scrollScale;
-      if (s_input.sliderScrollMaxTimeStep < local_c) {
-        local_c = s_input.sliderScrollMaxTimeStep;
+      stepTime = 0.1 / s_input.scrollScale;
+      if (s_input.sliderScrollMaxTimeStep < stepTime) {
+        stepTime = s_input.sliderScrollMaxTimeStep;
       }
-      for (s_input.digitalSliderTime = s_input.digitalSliderTime + param_1;
-          local_c < s_input.digitalSliderTime;
-          s_input.digitalSliderTime = s_input.digitalSliderTime - local_c) {
-        local_8 = local_8 + (int)ROUND(s_input.digitalAxis[param_4._4_4_] + 9.313226e-10);
+      for (s_input.digitalSliderTime = s_input.digitalSliderTime + deltaTime;
+          stepTime < s_input.digitalSliderTime;
+          s_input.digitalSliderTime = s_input.digitalSliderTime - stepTime) {
+        scroll = scroll + (int)ROUND(s_input.digitalAxis[param_4._4_4_] + 9.313226e-10);
       }
     }
     else if (s_input.digitalStates[param_4._4_4_] == SCROLL_PRESSED) {
-      local_8 = (uint)ROUND(s_input.digitalAxis[param_4._4_4_] + 9.313226e-10);
+      scroll = (int)ROUND(s_input.digitalAxis[param_4._4_4_] + 9.313226e-10);
     }
     else {
       s_input.digitalSliderTime = 0.0;
@@ -395,28 +405,28 @@ DevGui_UpdateIntScroll
         lVar6 = (*pcVar1)();
         return lVar6;
       }
-      local_c = (s_input.sliderScrollTime / (float)CONCAT44(iVar5,iVar3)) /
-                ABS(s_input.analogAxis[param_4._4_4_] * s_input.scrollScale);
-      if (s_input.sliderScrollMaxTimeStep < local_c) {
-        local_c = s_input.sliderScrollMaxTimeStep;
+      stepTime = (s_input.sliderScrollTime / (float)CONCAT44(iVar5,iVar3)) /
+                 ABS(s_input.analogAxis[param_4._4_4_] * s_input.scrollScale);
+      if (s_input.sliderScrollMaxTimeStep < stepTime) {
+        stepTime = s_input.sliderScrollMaxTimeStep;
       }
-      s_input.analogSliderTime = s_input.analogSliderTime + param_1;
+      s_input.analogSliderTime = s_input.analogSliderTime + deltaTime;
       do {
-        if (s_input.analogSliderTime < local_c) goto LAB_0059d391;
+        if (s_input.analogSliderTime < stepTime) goto LAB_0059d391;
         if (s_input.analogAxis[param_4._4_4_] < 0.0) {
           local_4c = -1.0;
         }
         else {
           local_4c = 1.0;
         }
-        local_8 = (int)local_4c + local_8;
-        s_input.analogSliderTime = s_input.analogSliderTime - local_c;
+        scroll = (int)local_4c + scroll;
+        s_input.analogSliderTime = s_input.analogSliderTime - stepTime;
       } while ((-1 < s_input.gamePadIndex) || (2.0 < ABS(s_input.analogAxis[param_4._4_4_])));
       s_input.analogSliderTime = 0.0;
     }
 LAB_0059d391:
-    uVar4 = local_8 + in_stack_00000008;
-    iVar3 = (int)param_2 + ((int)local_8 >> 0x1f) + (uint)CARRY4(local_8,in_stack_00000008);
+    uVar4 = scroll + in_stack_00000008;
+    iVar3 = (int)param_2 + (scroll >> 0x1f) + (uint)CARRY4(scroll,in_stack_00000008);
     if (((((int)param_3 < iVar3) || (((int)param_3 <= iVar3 && (param_2._4_4_ < uVar4)))) &&
         (param_2._4_4_ = uVar4, param_3._0_4_ = iVar3, (int)param_4 <= iVar3)) &&
        (((int)param_4 < iVar3 || (param_3._4_4_ <= uVar4)))) {
@@ -432,78 +442,80 @@ LAB_0059d391:
 
 float __cdecl
 DevGui_UpdateFloatScroll
-          (float param_1,float param_2,float param_3,float param_4,float param_5,
-          DevGuiInputAxis param_6)
+          (float deltaTime,float value,float min,float max,float step,DevGuiInputAxis axis)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_c;
-  float local_8;
+  float fVar4;
+  float analog;
+  float range;
+  float stepTime;
+  float scroll;
   
-  if ((param_4 - param_3 < 0.0) &&
+  if ((max - min < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_input.cpp",0x243,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_5 == 0.0) &&
+  if ((step == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_input.cpp",0x244,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((int)param_6 < 0) || (1 < (int)param_6)) &&
+  if ((((int)axis < 0) || (1 < (int)axis)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_input.cpp",0x245,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  local_8 = ((s_input.analogAxis[param_6] * s_input.scrollScale) / s_input.sliderScrollTime) *
-            (param_4 - param_3) * param_1;
-  if (s_input.digitalStates[param_6] == SCROLL_HELD) {
-    local_c = 0.1 / s_input.scrollScale;
-    if (s_input.sliderScrollMaxTimeStep < local_c) {
-      local_c = s_input.sliderScrollMaxTimeStep;
+  scroll = ((s_input.analogAxis[axis] * s_input.scrollScale) / s_input.sliderScrollTime) *
+           (max - min) * deltaTime;
+  if (s_input.digitalStates[axis] == SCROLL_HELD) {
+    stepTime = 0.1 / s_input.scrollScale;
+    if (s_input.sliderScrollMaxTimeStep < stepTime) {
+      stepTime = s_input.sliderScrollMaxTimeStep;
     }
-    for (s_input.digitalSliderTime = s_input.digitalSliderTime + param_1;
-        local_c < s_input.digitalSliderTime;
-        s_input.digitalSliderTime = s_input.digitalSliderTime - local_c) {
-      local_8 = s_input.digitalAxis[param_6] * param_5 + local_8;
+    for (s_input.digitalSliderTime = s_input.digitalSliderTime + deltaTime;
+        stepTime < s_input.digitalSliderTime;
+        s_input.digitalSliderTime = s_input.digitalSliderTime - stepTime) {
+      scroll = s_input.digitalAxis[axis] * step + scroll;
     }
   }
-  else if (s_input.digitalStates[param_6] == SCROLL_PRESSED) {
-    local_8 = s_input.digitalAxis[param_6] * param_5 + local_8;
+  else if (s_input.digitalStates[axis] == SCROLL_PRESSED) {
+    scroll = s_input.digitalAxis[axis] * step + scroll;
   }
-  local_8 = param_2 + local_8;
-  if ((param_3 < local_8) && (param_3 = local_8, param_4 <= local_8)) {
-    param_3 = param_4;
+  fVar4 = value + scroll;
+  if ((min < fVar4) && (min = fVar4, max <= fVar4)) {
+    min = max;
   }
-  return param_3;
+  return min;
 }
 
 
 // 0059D5D0  DevGui_IsButtonDown  (devgui/devgui_input.cpp:618)
 
-bool __cdecl DevGui_IsButtonDown(DevGuiInputButton param_1)
+bool __cdecl DevGui_IsButtonDown(DevGuiInputButton button)
 
 {
-  return s_input.buttonDown[param_1];
+  return s_input.buttonDown[button];
 }
 
 
 // 0059D5E0  DevGui_IsButtonPressed  (devgui/devgui_input.cpp:627)
 
-bool __cdecl DevGui_IsButtonPressed(DevGuiInputButton param_1)
+bool __cdecl DevGui_IsButtonPressed(DevGuiInputButton button)
 
 {
   bool local_8;
   
-  if ((s_input.buttonDown[param_1] == false) || (s_input.prevButtonDown[param_1] != false)) {
+  if ((s_input.buttonDown[button] == false) || (s_input.prevButtonDown[button] != false)) {
     local_8 = false;
   }
   else {
@@ -515,12 +527,12 @@ bool __cdecl DevGui_IsButtonPressed(DevGuiInputButton param_1)
 
 // 0059D620  DevGui_IsButtonReleased  (devgui/devgui_input.cpp:636)
 
-bool __cdecl DevGui_IsButtonReleased(DevGuiInputButton param_1)
+bool __cdecl DevGui_IsButtonReleased(DevGuiInputButton button)
 
 {
   bool local_8;
   
-  if ((s_input.buttonDown[param_1] == false) && (s_input.prevButtonDown[param_1] != false)) {
+  if ((s_input.buttonDown[button] == false) && (s_input.prevButtonDown[button] != false)) {
     local_8 = true;
   }
   else {

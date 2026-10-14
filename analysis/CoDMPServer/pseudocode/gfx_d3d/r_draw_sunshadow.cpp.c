@@ -3,25 +3,27 @@
 // 00B53570  R_DrawSunShadowMapCallback  (gfx_d3d/r_draw_sunshadow.cpp:136)
 
 void __cdecl
-R_DrawSunShadowMapCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawSunShadowMapCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
   int iVar1;
-  GfxDrawSurfListInfo *pGVar2;
+  GfxDrawSurfListInfo *info;
+  GfxDrawSurfListInfo *drawList;
+  GfxSunShadowPartition *partition;
   
-  iVar1 = *(int *)param_1;
-  pGVar2 = *(GfxDrawSurfListInfo **)((int)param_1 + 4);
-  R_SetRenderTarget(param_2,'\x0e');
+  iVar1 = *(int *)userData;
+  info = *(GfxDrawSurfListInfo **)((int)userData + 4);
+  R_SetRenderTarget(context,'\x0e');
   if (*(int *)(iVar1 + 0x140) == 0) {
-    R_ClearScreen(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x03',
+    R_ClearScreen(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x03',
                   shadowmapClearColor,1.0,'\0',(GfxViewport *)0x0);
   }
-  R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
+  R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
                      *(uint *)(iVar1 + 0x144),
                      dx.sunShadowPartitionRes * *(int *)(iVar1 + 0x140) + *(int *)(iVar1 + 0x148),
                      *(uint *)(iVar1 + 0x14c),*(uint *)(iVar1 + 0x150));
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,pGVar2);
-  R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,info);
+  R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   return;
 }
 
@@ -31,7 +33,7 @@ R_DrawSunShadowMapCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufConte
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_DrawSunShadowMap(GfxViewInfo *param_1,uint param_2,GfxCmdBuf *param_3)
+void __cdecl R_DrawSunShadowMap(GfxViewInfo *viewInfo,uint partitionIndex,GfxCmdBuf *cmdBuf)
 
 {
   GfxViewParms *local_1ac8;
@@ -44,22 +46,22 @@ void __cdecl R_DrawSunShadowMap(GfxViewInfo *param_1,uint param_2,GfxCmdBuf *par
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  R_InitCmdBufSourceState(&local_1ab0,&param_1->input,0);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,0);
   R_SetWindShaderConstants(&local_1ab0);
   R_SetRenderTargetSize(&local_1ab0,'\x0e');
-  local_1ab4 = (param_1->exposureValue).whitePoint[2];
-  local_1ab8 = (GfxViewParms *)((int)local_1ab4 + 0x183ff0 + param_2 * 0x1d0);
-  local_1abc = param_1->drawList + param_2 + 8;
+  local_1ab4 = (viewInfo->exposureValue).whitePoint[2];
+  local_1ab8 = (GfxViewParms *)((int)local_1ab4 + 0x183ff0 + partitionIndex * 0x1d0);
+  local_1abc = viewInfo->drawList + partitionIndex + 8;
   local_1ac0 = (local_1ab8->projectionMatrix).m[2][2];
   R_UpdateCodeConstant
             (&local_1ab0,0x14,(sm_polygonOffsetBias->current).value * 0.25 * local_1ac0,
              (sm_polygonOffsetScale->current).value,0.0,0.0);
-  R_SetViewportValues(&local_1ab0,0,dx.sunShadowPartitionRes * param_2,dx.sunShadowPartitionRes,
-                      dx.sunShadowPartitionRes);
+  R_SetViewportValues(&local_1ab0,0,dx.sunShadowPartitionRes * partitionIndex,
+                      dx.sunShadowPartitionRes,dx.sunShadowPartitionRes);
   local_1ac8 = local_1ab8;
   local_1ac4 = local_1abc;
-  R_DrawCall(R_DrawSunShadowMapCallback,&local_1ac8,&local_1ab0,param_1,local_1abc,local_1ab8,
-             param_3,(GfxCmdBuf *)0x0);
+  R_DrawCall(R_DrawSunShadowMapCallback,&local_1ac8,&local_1ab0,viewInfo,local_1abc,local_1ab8,
+             cmdBuf,(GfxCmdBuf *)0x0);
   return;
 }
 

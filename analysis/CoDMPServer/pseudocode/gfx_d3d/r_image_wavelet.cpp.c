@@ -17,13 +17,14 @@ void __cdecl TRACK_r_image_wavelet(void)
 
 // 00B41A30  Wavelet_ConsumeBits  (gfx_d3d/r_image_wavelet.cpp:32)
 
-void __cdecl Wavelet_ConsumeBits(ushort param_1,WaveletDecode *param_2)
+void __cdecl Wavelet_ConsumeBits(ushort bitCount,WaveletDecode *decode)
 
 {
   code *pcVar1;
   bool bVar2;
+  uint nextData;
   
-  if ((param_1 == 0) || (0x10 < param_1)) {
+  if ((bitCount == 0) || (0x10 < bitCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",0x23,
                              0,"%s");
     if (!bVar2) {
@@ -32,7 +33,7 @@ void __cdecl Wavelet_ConsumeBits(ushort param_1,WaveletDecode *param_2)
       return;
     }
   }
-  if (7 < param_2->bit) {
+  if (7 < decode->bit) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",0x24,
                              0,"%s");
     if (!bVar2) {
@@ -41,15 +42,15 @@ void __cdecl Wavelet_ConsumeBits(ushort param_1,WaveletDecode *param_2)
       return;
     }
   }
-  param_2->value = param_2->value >> ((byte)param_1 & 0x1f);
-  param_2->value =
-       param_2->value |
-       (ushort)((CONCAT13(param_2->data[3],
-                          CONCAT12(param_2->data[2],CONCAT11(param_2->data[1],*param_2->data))) >>
-                ((byte)param_2->bit & 0x1f)) << (0x10 - (byte)param_1 & 0x1f));
-  param_2->bit = param_2->bit + param_1;
-  param_2->data = param_2->data + ((int)(uint)param_2->bit >> 3);
-  param_2->bit = param_2->bit & 7;
+  decode->value = decode->value >> ((byte)bitCount & 0x1f);
+  decode->value =
+       decode->value |
+       (ushort)((CONCAT13(decode->data[3],
+                          CONCAT12(decode->data[2],CONCAT11(decode->data[1],*decode->data))) >>
+                ((byte)decode->bit & 0x1f)) << (0x10 - (byte)bitCount & 0x1f));
+  decode->bit = decode->bit + bitCount;
+  decode->data = decode->data + ((int)(uint)decode->bit >> 3);
+  decode->bit = decode->bit & 7;
   return;
 }
 
@@ -57,7 +58,8 @@ void __cdecl Wavelet_ConsumeBits(ushort param_1,WaveletDecode *param_2)
 // 00B41B50  Wavelet_DecodeValue  (gfx_d3d/r_image_wavelet.cpp:47)
 
 int __cdecl
-Wavelet_DecodeValue(WaveletHuffmanDecode *param_1,ushort param_2,int param_3,WaveletDecode *param_4)
+Wavelet_DecodeValue(WaveletHuffmanDecode *decodeTable,ushort bitCount,int bias,WaveletDecode *decode
+                   )
 
 {
   code *pcVar1;
@@ -65,10 +67,11 @@ Wavelet_DecodeValue(WaveletHuffmanDecode *param_1,ushort param_2,int param_3,Wav
   int iVar3;
   byte bVar4;
   uint uVar5;
-  int local_8;
+  int index;
+  int value;
   
-  bVar4 = (byte)param_2;
-  if ((1 << (bVar4 & 0x1f)) + -1 < param_3 * 2 + -1) {
+  bVar4 = (byte)bitCount;
+  if ((1 << (bVar4 & 0x1f)) + -1 < bias * 2 + -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",0x33,
                              0,"%s");
     if (!bVar2) {
@@ -77,7 +80,7 @@ Wavelet_DecodeValue(WaveletHuffmanDecode *param_1,ushort param_2,int param_3,Wav
       return iVar3;
     }
   }
-  if (param_3 * 2 + -1 <= (1 << (bVar4 - 1 & 0x1f)) + -1) {
+  if (bias * 2 + -1 <= (1 << (bVar4 - 1 & 0x1f)) + -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",0x34,
                              0,"%s");
     if (!bVar2) {
@@ -86,58 +89,63 @@ Wavelet_DecodeValue(WaveletHuffmanDecode *param_1,ushort param_2,int param_3,Wav
       return iVar3;
     }
   }
-  uVar5 = param_4->value & 0xfff;
-  Wavelet_ConsumeBits(param_1[uVar5].bits,param_4);
-  local_8 = (int)param_1[uVar5].value;
-  if (local_8 == -0x8000) {
-    local_8 = ((uint)param_4->value & (1 << (bVar4 & 0x1f)) - 1U) - param_3;
-    Wavelet_ConsumeBits(param_2,param_4);
+  uVar5 = decode->value & 0xfff;
+  Wavelet_ConsumeBits(decodeTable[uVar5].bits,decode);
+  value = (int)decodeTable[uVar5].value;
+  if (value == -0x8000) {
+    value = ((uint)decode->value & (1 << (bVar4 & 0x1f)) - 1U) - bias;
+    Wavelet_ConsumeBits(bitCount,decode);
   }
-  return local_8;
+  return value;
 }
 
 
 // 00B41C50  Wavelet_AddDeltaToMipmap  (gfx_d3d/r_image_wavelet.cpp:66)
 
 void __cdecl
-Wavelet_AddDeltaToMipmap(uchar *param_1,int param_2,WaveletDecode *param_3,int *param_4)
+Wavelet_AddDeltaToMipmap(uchar *inout,int size,WaveletDecode *decode,int *dstChanOffset)
 
 {
   uchar uVar1;
   int iVar2;
   int iVar3;
-  int local_c;
+  int chanIndex;
+  uchar *value;
   
   do {
-    local_c = 0;
+    chanIndex = 0;
     do {
-      iVar2 = param_4[local_c];
-      uVar1 = param_1[iVar2];
-      iVar3 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,param_3);
-      param_1[iVar2] = uVar1 + (char)iVar3;
-      local_c = local_c + 1;
-    } while (local_c < param_3->channels);
-    param_1 = param_1 + param_3->bpp;
-    param_2 = param_2 + -1;
-  } while (param_2 != 0);
+      iVar2 = dstChanOffset[chanIndex];
+      uVar1 = inout[iVar2];
+      iVar3 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,decode);
+      inout[iVar2] = uVar1 + (char)iVar3;
+      chanIndex = chanIndex + 1;
+    } while (chanIndex < decode->channels);
+    inout = inout + decode->bpp;
+    size = size + -1;
+  } while (size != 0);
   return;
 }
 
 
 // 00B412B0  Wavelet_DecompressLevel  (gfx_d3d/r_image_wavelet.cpp:87)
 
-void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode *param_3)
+void __cdecl Wavelet_DecompressLevel(uchar *src,uchar *dst,WaveletDecode *decode)
 
 {
   code *pcVar1;
   bool bVar2;
-  undefined4 uStack_74;
-  int local_70 [4];
-  uchar *local_60;
-  int local_5c;
-  int local_58;
-  int local_54;
-  int local_50;
+  bool abStack_74 [3];
+  bool needsMipDelta;
+  uchar *dstChanOffset;
+  int local_6c;
+  int local_68;
+  int local_64;
+  uchar *dstChan;
+  int size;
+  int stride;
+  int chanIndex;
+  int coeff;
   int local_4c;
   int local_48;
   int local_44;
@@ -149,62 +157,62 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
   int local_2c;
   int local_28;
   int local_24;
-  uint local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int evenOddParity;
+  int dstBpp;
+  int base;
+  int x;
+  int y;
+  int h;
+  int w;
   
-  if (((param_3->bpp < 1) || (4 < param_3->bpp)) &&
+  if (((decode->bpp < 1) || (4 < decode->bpp)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",
                                0x67,0,"decode->bpp not in [1, 4]\n\t%i not in [%i, %i]"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_3->bpp != param_3->channels) && ((param_3->bpp != 4 || (param_3->channels != 3)))) &&
+  if (((decode->bpp != decode->channels) && ((decode->bpp != 4 || (decode->channels != 3)))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",
                                0x68,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3->mipLevel < 0) &&
+  if ((decode->mipLevel < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",
                                0x69,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c = param_3->bpp;
-  switch(param_3->bpp) {
+  dstBpp = decode->bpp;
+  switch(decode->bpp) {
   case 1:
-    local_70[0] = 0;
+    dstChanOffset = (uchar *)0x0;
     break;
   case 2:
-    local_70[0] = 0;
-    local_70[1] = 1;
+    dstChanOffset = (uchar *)0x0;
+    local_6c = 1;
     break;
   case 3:
   case 4:
-    local_70[0] = 0;
-    local_70[1] = 1;
-    local_70[2] = 2;
-    local_70[3] = 3;
+    dstChanOffset = (uchar *)0x0;
+    local_6c = 1;
+    local_68 = 2;
+    local_64 = 3;
   }
-  local_8 = param_3->width >> ((byte)param_3->mipLevel & 0x1f);
-  local_c = param_3->height >> ((byte)param_3->mipLevel & 0x1f);
-  if ((local_8 < 2) || (local_c < 2)) {
-    if (local_8 < 1) {
-      local_8 = 1;
+  w = decode->width >> ((byte)decode->mipLevel & 0x1f);
+  h = decode->height >> ((byte)decode->mipLevel & 0x1f);
+  if ((w < 2) || (h < 2)) {
+    if (w < 1) {
+      w = 1;
     }
-    if (local_c < 1) {
-      local_c = 1;
+    if (h < 1) {
+      h = 1;
     }
-    local_5c = local_8 * local_c;
-    if ((local_8 * local_c < 1) &&
+    size = w * h;
+    if ((w * h < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp",
                                  0x8b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -212,114 +220,109 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
       return;
     }
     do {
-      for (local_54 = 0; local_54 < param_3->channels; local_54 = local_54 + 1) {
-        param_2[local_70[local_54]] = *param_3->data;
-        param_3->data = param_3->data + 1;
+      for (chanIndex = 0; chanIndex < decode->channels; chanIndex = chanIndex + 1) {
+        dst[(int)(&dstChanOffset)[chanIndex]] = *decode->data;
+        decode->data = decode->data + 1;
       }
-      if (param_3->bpp != param_3->channels) {
-        param_2[local_70[3]] = 0xff;
+      if (decode->bpp != decode->channels) {
+        dst[local_64] = 0xff;
       }
-      param_2 = param_2 + local_1c;
-      local_5c = local_5c + -1;
-    } while (local_5c != 0);
+      dst = dst + dstBpp;
+      size = size + -1;
+    } while (size != 0);
   }
   else {
-    if (param_3->dataInitialized == false) {
-      param_3->value = CONCAT11(param_3->data[1],*param_3->data);
-      param_3->bit = 0;
-      param_3->data = param_3->data + 2;
-      param_3->dataInitialized = true;
+    if (decode->dataInitialized == false) {
+      decode->value = CONCAT11(decode->data[1],*decode->data);
+      decode->bit = 0;
+      decode->data = decode->data + 2;
+      decode->dataInitialized = true;
     }
-    uStack_74._3_1_ = (param_3->value & 1) != 0;
-    Wavelet_ConsumeBits(1,param_3);
-    if (uStack_74._3_1_ != '\0') {
+    needsMipDelta = (decode->value & 1) != 0;
+    Wavelet_ConsumeBits(1,decode);
+    if (needsMipDelta != false) {
       Wavelet_AddDeltaToMipmap
-                (param_1,(int)(local_8 * local_c + (local_8 * local_c >> 0x1f & 3U)) >> 2,param_3,
-                 local_70);
+                (src,(int)(w * h + (w * h >> 0x1f & 3U)) >> 2,decode,(int *)&dstChanOffset);
     }
-    local_58 = local_8 * local_1c;
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 2) {
-      for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 2) {
-        if (((param_1 < param_2 + local_1c + local_58) && (param_2 <= param_1)) &&
+    stride = w * dstBpp;
+    for (y = 0; y < h; y = y + 2) {
+      for (x = 0; x < w; x = x + 2) {
+        if (((src < dst + dstBpp + stride) && (dst <= src)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_wavelet.cpp"
                                      ,0xab,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (param_3->channels != 1) {
-          local_20 = param_3->value & 1;
-          Wavelet_ConsumeBits(1,param_3);
-          local_50 = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,param_3);
-          local_4c = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,param_3);
-          local_48 = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,param_3);
-          local_18 = (uint)param_1[local_70[0]] * 2;
-          local_60 = param_2 + local_70[0];
-          *local_60 = (char)(local_18 + local_50 + local_4c + local_48 >> 1) + (char)local_20;
-          local_60[local_1c] = (uchar)((local_18 + local_50) - (local_4c + local_48) >> 1);
-          local_60[local_58] = (uchar)((local_18 - local_50) + (local_4c - local_48) >> 1);
-          local_60[local_58 + local_1c] =
-               (uchar)((local_18 - local_50) - (local_4c - local_48) >> 1);
-          if (2 < param_3->channels) {
-            local_20 = param_3->value & 1;
-            Wavelet_ConsumeBits(1,param_3);
-            local_44 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
-            local_44 = local_44 + local_50;
-            local_40 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
+        if (decode->channels != 1) {
+          evenOddParity = decode->value & 1;
+          Wavelet_ConsumeBits(1,decode);
+          coeff = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,decode);
+          local_4c = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,decode);
+          local_48 = Wavelet_DecodeValue(waveletDecodeBlue,9,0xff,decode);
+          base = (uint)src[(int)dstChanOffset] * 2;
+          dstChan = dst + (int)dstChanOffset;
+          *dstChan = (char)(base + coeff + local_4c + local_48 >> 1) + (char)evenOddParity;
+          dstChan[dstBpp] = (uchar)((base + coeff) - (local_4c + local_48) >> 1);
+          dstChan[stride] = (uchar)((base - coeff) + (local_4c - local_48) >> 1);
+          dstChan[stride + dstBpp] = (uchar)((base - coeff) - (local_4c - local_48) >> 1);
+          if (2 < decode->channels) {
+            evenOddParity = decode->value & 1;
+            Wavelet_ConsumeBits(1,decode);
+            local_44 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
+            local_44 = local_44 + coeff;
+            local_40 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
             local_40 = local_40 + local_4c;
-            local_3c = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
+            local_3c = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
             local_3c = local_3c + local_48;
-            local_18 = (uint)param_1[local_70[1]] * 2;
-            local_60 = param_2 + local_70[1];
-            *local_60 = (char)(local_18 + local_44 + local_40 + local_3c >> 1) + (char)local_20;
-            local_60[local_1c] = (uchar)((local_18 + local_44) - (local_40 + local_3c) >> 1);
-            local_60[local_58] = (uchar)((local_18 - local_44) + (local_40 - local_3c) >> 1);
-            local_60[local_58 + local_1c] =
-                 (uchar)((local_18 - local_44) - (local_40 - local_3c) >> 1);
-            local_20 = param_3->value & 1;
-            Wavelet_ConsumeBits(1,param_3);
-            local_38 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
-            local_38 = local_38 + local_50;
-            local_34 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
+            base = (uint)src[local_6c] * 2;
+            dstChan = dst + local_6c;
+            *dstChan = (char)(base + local_44 + local_40 + local_3c >> 1) + (char)evenOddParity;
+            dstChan[dstBpp] = (uchar)((base + local_44) - (local_40 + local_3c) >> 1);
+            dstChan[stride] = (uchar)((base - local_44) + (local_40 - local_3c) >> 1);
+            dstChan[stride + dstBpp] = (uchar)((base - local_44) - (local_40 - local_3c) >> 1);
+            evenOddParity = decode->value & 1;
+            Wavelet_ConsumeBits(1,decode);
+            local_38 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
+            local_38 = local_38 + coeff;
+            local_34 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
             local_34 = local_34 + local_4c;
-            local_30 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,param_3);
+            local_30 = Wavelet_DecodeValue(waveletDecodeRedGreen,10,0x1fe,decode);
             local_30 = local_30 + local_48;
-            local_18 = (uint)param_1[local_70[2]] * 2;
-            local_60 = param_2 + local_70[2];
-            *local_60 = (char)(local_18 + local_38 + local_34 + local_30 >> 1) + (char)local_20;
-            local_60[local_1c] = (uchar)((local_18 + local_38) - (local_34 + local_30) >> 1);
-            local_60[local_58] = (uchar)((local_18 - local_38) + (local_34 - local_30) >> 1);
-            local_60[local_58 + local_1c] =
-                 (uchar)((local_18 - local_38) - (local_34 - local_30) >> 1);
+            base = (uint)src[local_68] * 2;
+            dstChan = dst + local_68;
+            *dstChan = (char)(base + local_38 + local_34 + local_30 >> 1) + (char)evenOddParity;
+            dstChan[dstBpp] = (uchar)((base + local_38) - (local_34 + local_30) >> 1);
+            dstChan[stride] = (uchar)((base - local_38) + (local_34 - local_30) >> 1);
+            dstChan[stride + dstBpp] = (uchar)((base - local_38) - (local_34 - local_30) >> 1);
           }
         }
-        if (param_3->channels == 3) {
-          if (param_3->channels != param_3->bpp) {
-            local_60 = param_2 + local_70[3];
-            *local_60 = 0xff;
-            local_60[local_1c] = 0xff;
-            local_60[local_58] = 0xff;
-            local_60[local_58 + local_1c] = 0xff;
+        if (decode->channels == 3) {
+          if (decode->channels != decode->bpp) {
+            dstChan = dst + local_64;
+            *dstChan = 0xff;
+            dstChan[dstBpp] = 0xff;
+            dstChan[stride] = 0xff;
+            dstChan[stride + dstBpp] = 0xff;
           }
         }
         else {
-          local_20 = param_3->value & 1;
-          Wavelet_ConsumeBits(1,param_3);
-          local_2c = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,param_3);
-          local_28 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,param_3);
-          local_24 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,param_3);
-          local_18 = (uint)param_1[(&uStack_74)[param_3->channels]] * 2;
-          local_60 = param_2 + (&uStack_74)[param_3->channels];
-          *local_60 = (char)(local_18 + local_2c + local_28 + local_24 >> 1) + (char)local_20;
-          local_60[local_1c] = (uchar)((local_18 + local_2c) - (local_28 + local_24) >> 1);
-          local_60[local_58] = (uchar)((local_18 - local_2c) + (local_28 - local_24) >> 1);
-          local_60[local_58 + local_1c] =
-               (uchar)((local_18 - local_2c) - (local_28 - local_24) >> 1);
+          evenOddParity = decode->value & 1;
+          Wavelet_ConsumeBits(1,decode);
+          local_2c = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,decode);
+          local_28 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,decode);
+          local_24 = Wavelet_DecodeValue(waveletDecodeAlpha,9,0xff,decode);
+          base = (uint)src[*(int *)(abStack_74 + decode->channels * 4)] * 2;
+          dstChan = dst + *(int *)(abStack_74 + decode->channels * 4);
+          *dstChan = (char)(base + local_2c + local_28 + local_24 >> 1) + (char)evenOddParity;
+          dstChan[dstBpp] = (uchar)((base + local_2c) - (local_28 + local_24) >> 1);
+          dstChan[stride] = (uchar)((base - local_2c) + (local_28 - local_24) >> 1);
+          dstChan[stride + dstBpp] = (uchar)((base - local_2c) - (local_28 - local_24) >> 1);
         }
-        param_1 = param_1 + local_1c;
-        param_2 = param_2 + local_1c * 2;
+        src = src + dstBpp;
+        dst = dst + dstBpp * 2;
       }
-      param_2 = param_2 + local_58;
+      dst = dst + stride;
     }
   }
   return;

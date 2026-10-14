@@ -2,7 +2,7 @@
 
 // 00C281E0  __ascii_strnicmp  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/_strnicm.asm:69)
 
-void __cdecl __ascii_strnicmp(uchar *param_1,uchar *param_2,ulong param_3)
+void __cdecl __ascii_strnicmp(uchar *first,uchar *last,ulong count)
 
 {
   uchar uVar1;
@@ -10,13 +10,13 @@ void __cdecl __ascii_strnicmp(uchar *param_1,uchar *param_2,ulong param_3)
   uint uVar4;
   undefined2 uVar3;
   
-  if (param_3 != 0) {
+  if (count != 0) {
     while( true ) {
-      bVar2 = *param_1;
-      uVar1 = *param_2;
+      bVar2 = *first;
+      uVar1 = *last;
       if ((bVar2 == 0) || (uVar4 = (uint)CONCAT11(bVar2,uVar1), uVar1 == '\0')) break;
-      param_1 = param_1 + 1;
-      param_2 = param_2 + 1;
+      first = first + 1;
+      last = last + 1;
       if ((0x40 < bVar2) && (bVar2 < 0x5b)) {
         uVar4 = (uint)CONCAT11(bVar2 + 0x20,uVar1);
       }
@@ -28,8 +28,8 @@ void __cdecl __ascii_strnicmp(uchar *param_1,uchar *param_2,ulong param_3)
       if ((char)((ushort)uVar3 >> 8) != (char)uVar3) {
         return;
       }
-      param_3 = param_3 - 1;
-      if (param_3 == 0) {
+      count = count - 1;
+      if (count == 0) {
         return;
       }
     }

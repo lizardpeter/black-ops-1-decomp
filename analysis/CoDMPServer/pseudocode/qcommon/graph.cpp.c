@@ -2,7 +2,7 @@
 
 // 006DE500  GraphFloat_ParseBuffer  (qcommon/graph.cpp:28)
 
-void __cdecl GraphFloat_ParseBuffer(GraphFloat *param_1,char *param_2,char *param_3)
+void __cdecl GraphFloat_ParseBuffer(GraphFloat *graph,char *buffer,char *fileName)
 
 {
   code *pcVar1;
@@ -11,50 +11,51 @@ void __cdecl GraphFloat_ParseBuffer(GraphFloat *param_1,char *param_2,char *para
   int iVar4;
   double dVar5;
   double dVar6;
-  int local_10;
+  char *token;
+  int knotIndex;
   
-  if ((param_1 == (GraphFloat *)0x0) &&
+  if ((graph == (GraphFloat *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x21,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x22,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((fileName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x23,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  I_strncpyz(param_1->name,param_3,0x40);
-  Com_BeginParseSession(param_3);
-  pcVar3 = Com_Parse(&param_2);
+  I_strncpyz(graph->name,fileName,0x40);
+  Com_BeginParseSession(fileName);
+  pcVar3 = Com_Parse(&buffer);
   iVar4 = atoi(pcVar3);
-  param_1->knotCount = iVar4;
-  local_10 = 0;
-  while ((pcVar3 = Com_Parse(&param_2), *pcVar3 != '\0' && (*pcVar3 != '}'))) {
+  graph->knotCount = iVar4;
+  knotIndex = 0;
+  while ((pcVar3 = Com_Parse(&buffer), *pcVar3 != '\0' && (*pcVar3 != '}'))) {
     dVar5 = atof(pcVar3);
-    pcVar3 = Com_Parse(&param_2);
+    pcVar3 = Com_Parse(&buffer);
     if ((*pcVar3 == '\0') || (*pcVar3 == '}')) break;
     dVar6 = atof(pcVar3);
-    if (0x1f < local_10) {
+    if (0x1f < knotIndex) {
       Com_Error(ERR_DROP,"\x15GraphFloat_ParseBuffer: File [%s] has too many knots.  Max is [%d]\n")
       ;
     }
-    param_1->knots[local_10][0] = (float)dVar5;
-    param_1->knots[local_10][1] = (float)dVar6;
-    local_10 = local_10 + 1;
+    graph->knots[knotIndex][0] = (float)dVar5;
+    graph->knots[knotIndex][1] = (float)dVar6;
+    knotIndex = knotIndex + 1;
   }
   Com_EndParseSession();
-  if (local_10 != param_1->knotCount) {
+  if (knotIndex != graph->knotCount) {
     Com_Error(ERR_DROP,"\x15GraphFloat_ParseBuffer: Error parsing graph file [%s]");
   }
   return;
@@ -66,17 +67,18 @@ void __cdecl GraphFloat_ParseBuffer(GraphFloat *param_1,char *param_2,char *para
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GraphFloat_Load(GraphFloat *param_1,char *param_2,float param_3)
+void __cdecl GraphFloat_Load(GraphFloat *graph,char *fileName,float scale)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char local_400c [16388];
+  char *buffer_00;
+  char *buffer;
+  char loadBuffer [16388];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (GraphFloat *)0x0) {
+  if (graph == (GraphFloat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x52,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -84,7 +86,7 @@ void __cdecl GraphFloat_Load(GraphFloat *param_1,char *param_2,float param_3)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (fileName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x53,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -92,10 +94,10 @@ void __cdecl GraphFloat_Load(GraphFloat *param_1,char *param_2,float param_3)
       return;
     }
   }
-  Com_Memset(param_1,0,0x168);
-  pcVar3 = Com_LoadInfoString(param_2,"graph","GRAPH_FLOAT_FILE",local_400c);
-  GraphFloat_ParseBuffer(param_1,pcVar3,param_2);
-  param_1->scale = param_3;
+  Com_Memset(graph,0,0x168);
+  buffer_00 = Com_LoadInfoString(fileName,"graph","GRAPH_FLOAT_FILE",loadBuffer);
+  GraphFloat_ParseBuffer(graph,buffer_00,fileName);
+  graph->scale = scale;
   return;
 }
 
@@ -104,53 +106,54 @@ void __cdecl GraphFloat_Load(GraphFloat *param_1,char *param_2,float param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-GraphFloat * __cdecl GraphFloat_Load(char *param_1)
+GraphFloat * __cdecl GraphFloat_Load(char *fileName)
 
 {
   int iVar1;
-  char local_94 [132];
+  char graphName [132];
   uint local_10;
-  GraphFloat *local_c;
-  int local_8;
+  GraphFloat *graph;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
-    local_c = (GraphFloat *)0x0;
+  if ((fileName == (char *)0x0) || (*fileName == '\0')) {
+    graph = (GraphFloat *)0x0;
   }
   else {
-    for (local_8 = 0; local_8 < gGraphsCount; local_8 = local_8 + 1) {
-      local_c = gGraphs + local_8;
-      iVar1 = I_stricmp(local_c->name,param_1);
+    for (i = 0; i < gGraphsCount; i = i + 1) {
+      graph = gGraphs + i;
+      iVar1 = I_stricmp(graph->name,fileName);
       if (iVar1 == 0) {
-        return local_c;
+        return graph;
       }
     }
-    if (local_8 == 8) {
-      local_c = (GraphFloat *)0x0;
+    if (i == 8) {
+      graph = (GraphFloat *)0x0;
     }
     else {
-      local_c = gGraphs + gGraphsCount;
+      graph = gGraphs + gGraphsCount;
       gGraphsCount = gGraphsCount + 1;
-      GraphFloat_Load(local_c,param_1,1.0);
-      Com_sprintf(local_94,0x80,"Graphs/%s");
-      GraphFloat_CreateDevGui(local_c,local_94);
+      GraphFloat_Load(graph,fileName,1.0);
+      Com_sprintf(graphName,0x80,"Graphs/%s");
+      GraphFloat_CreateDevGui(graph,graphName);
     }
   }
-  return local_c;
+  return graph;
 }
 
 
 // 006DE7B0  GraphFloat_GetValue  (qcommon/graph.cpp:142)
 
-float __cdecl GraphFloat_GetValue(GraphFloat *param_1,float param_2)
+float __cdecl GraphFloat_GetValue(GraphFloat *graph,float fraction)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
+  float result;
   
-  if (param_1 == (GraphFloat *)0x0) {
+  if (graph == (GraphFloat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x91,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -158,7 +161,7 @@ float __cdecl GraphFloat_GetValue(GraphFloat *param_1,float param_2)
       return (float)fVar3;
     }
   }
-  if ((param_2 < 0.0) || (1.0 < param_2)) {
+  if ((fraction < 0.0) || (1.0 < fraction)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0x92,0,
                              "fraction not in [0.0f, 1.0f]\n\t%g not in [%g, %g]");
     if (!bVar2) {
@@ -167,8 +170,8 @@ float __cdecl GraphFloat_GetValue(GraphFloat *param_1,float param_2)
       return (float)fVar3;
     }
   }
-  fVar4 = GraphGetValueFromFraction(param_1->knotCount,param_1->knots,param_2);
-  return fVar4 * param_1->scale;
+  fVar4 = GraphGetValueFromFraction(graph->knotCount,graph->knots,fraction);
+  return fVar4 * graph->scale;
 }
 
 
@@ -176,7 +179,7 @@ float __cdecl GraphFloat_GetValue(GraphFloat *param_1,float param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GraphFloat_SaveToFile(GraphFloat *param_1)
+void __cdecl GraphFloat_SaveToFile(GraphFloat *graph)
 
 {
   char cVar1;
@@ -184,16 +187,16 @@ void __cdecl GraphFloat_SaveToFile(GraphFloat *param_1)
   bool bVar3;
   char *local_430;
   char *local_420;
-  char local_41c;
+  char buffer;
   undefined1 auStack_41b [1027];
   uint local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int knotCount;
+  int fileHandle;
+  char *basePath;
+  int knotIndex;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (GraphFloat *)0x0) {
+  if (graph == (GraphFloat *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xa7,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -201,12 +204,12 @@ void __cdecl GraphFloat_SaveToFile(GraphFloat *param_1)
       return;
     }
   }
-  local_10 = FS_FOpenTextFileWrite(param_1->name);
-  if (local_10 == 0) {
+  fileHandle = FS_FOpenTextFileWrite(graph->name);
+  if (fileHandle == 0) {
     Com_PrintError(0,"GraphFloat_SaveToFile: Could not save file [%s].\n");
   }
   else {
-    if (param_1->knotCount == 0) {
+    if (graph->knotCount == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xb5,0,"%s");
       if (!bVar3) {
         pcVar2 = (code *)swi(3);
@@ -214,25 +217,25 @@ void __cdecl GraphFloat_SaveToFile(GraphFloat *param_1)
         return;
       }
     }
-    local_14 = param_1->knotCount;
-    Com_sprintf(&local_41c,0x400,"%s\n\n%d\n");
-    local_420 = &local_41c;
+    knotCount = graph->knotCount;
+    Com_sprintf(&buffer,0x400,"%s\n\n%d\n");
+    local_420 = &buffer;
     do {
       cVar1 = *local_420;
       local_420 = local_420 + 1;
     } while (cVar1 != '\0');
-    FS_Write(&local_41c,(int)local_420 - (int)auStack_41b,local_10);
-    for (local_8 = 0; local_8 < local_14; local_8 = local_8 + 1) {
-      Com_sprintf(&local_41c,0x400,"%.4f %.4f\n");
-      local_430 = &local_41c;
+    FS_Write(&buffer,(int)local_420 - (int)auStack_41b,fileHandle);
+    for (knotIndex = 0; knotIndex < knotCount; knotIndex = knotIndex + 1) {
+      Com_sprintf(&buffer,0x400,"%.4f %.4f\n");
+      local_430 = &buffer;
       do {
         cVar1 = *local_430;
         local_430 = local_430 + 1;
       } while (cVar1 != '\0');
-      FS_Write(&local_41c,(int)local_430 - (int)auStack_41b,local_10);
+      FS_Write(&buffer,(int)local_430 - (int)auStack_41b,fileHandle);
     }
-    FS_FCloseFile(local_10);
-    local_c = Sys_DefaultInstallPath();
+    FS_FCloseFile(fileHandle);
+    basePath = Sys_DefaultInstallPath();
     Com_Printf(0x12,"^7GraphFloat_SaveToFile: Successfully saved file [%s\\%s].\n");
   }
   return;
@@ -241,28 +244,29 @@ void __cdecl GraphFloat_SaveToFile(GraphFloat *param_1)
 
 // 006DE950  GraphFloat_DevGuiCB_Event  (qcommon/graph.cpp:209)
 
-void __cdecl GraphFloat_DevGuiCB_Event(DevGraph *param_1,DevEventType param_2,int param_3)
+void __cdecl GraphFloat_DevGuiCB_Event(DevGraph *graph,DevEventType event,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
+  GraphFloat *graphData;
   
-  if ((param_1 == (DevGraph *)0x0) &&
+  if ((graph == (DevGraph *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xd4,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->data == (void *)0x0) &&
+  if ((graph->data == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xd5,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 == EVENT_SAVE) {
-    GraphFloat_SaveToFile(param_1->data);
+  if (event == EVENT_SAVE) {
+    GraphFloat_SaveToFile(graph->data);
   }
   return;
 }
@@ -271,23 +275,25 @@ void __cdecl GraphFloat_DevGuiCB_Event(DevGraph *param_1,DevEventType param_2,in
 // 006DEC20  GraphFloat_DevGuiCB_Text  (qcommon/graph.cpp:233)
 
 void __cdecl
-GraphFloat_DevGuiCB_Text(DevGraph *param_1,float param_2,float param_3,char *param_4,int param_5)
+GraphFloat_DevGuiCB_Text(DevGraph *devGuiGraph,float inputX,float inputY,char *text,int textLength)
 
 {
-  sprintf(param_4,"Fraction: %.3f, Value: %.3f");
+  GraphFloat *graph;
+  
+  sprintf(text,"Fraction: %.3f, Value: %.3f");
   return;
 }
 
 
 // 006DE880  GraphFloat_CreateDevGui  (qcommon/graph.cpp:247)
 
-void __cdecl GraphFloat_CreateDevGui(GraphFloat *param_1,char *param_2)
+void __cdecl GraphFloat_CreateDevGui(GraphFloat *graph,char *devguiPath)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GraphFloat *)0x0) {
+  if (graph == (GraphFloat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xf8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -295,7 +301,7 @@ void __cdecl GraphFloat_CreateDevGui(GraphFloat *param_1,char *param_2)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (devguiPath == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\graph.cpp",0xf9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -303,13 +309,13 @@ void __cdecl GraphFloat_CreateDevGui(GraphFloat *param_1,char *param_2)
       return;
     }
   }
-  (param_1->devguiGraph).knotCountMax = 0x20;
-  (param_1->devguiGraph).knots = param_1->knots;
-  (param_1->devguiGraph).knotCount = &param_1->knotCount;
-  (param_1->devguiGraph).eventCallback = GraphFloat_DevGuiCB_Event;
-  (param_1->devguiGraph).textCallback = GraphFloat_DevGuiCB_Text;
-  (param_1->devguiGraph).data = param_1;
-  DevGui_AddGraph(param_2,&param_1->devguiGraph);
+  (graph->devguiGraph).knotCountMax = 0x20;
+  (graph->devguiGraph).knots = graph->knots;
+  (graph->devguiGraph).knotCount = &graph->knotCount;
+  (graph->devguiGraph).eventCallback = GraphFloat_DevGuiCB_Event;
+  (graph->devguiGraph).textCallback = GraphFloat_DevGuiCB_Text;
+  (graph->devguiGraph).data = graph;
+  DevGui_AddGraph(devguiPath,&graph->devguiGraph);
   return;
 }
 

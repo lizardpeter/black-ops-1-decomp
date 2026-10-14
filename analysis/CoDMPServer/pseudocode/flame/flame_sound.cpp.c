@@ -2,14 +2,14 @@
 
 // 00893180  Flame_Class_Source_Sound_Init  (flame/flame_sound.cpp:14)
 
-void __cdecl Flame_Class_Source_Sound_Init(flameSource_t *param_1)
+void __cdecl Flame_Class_Source_Sound_Init(flameSource_t *source)
 
 {
-  param_1->wasFiring = false;
-  param_1->lastSoundTime = 0;
-  param_1->flameSoundPoint[0] = 0.0;
-  param_1->flameSoundPoint[1] = 0.0;
-  param_1->flameSoundPoint[2] = 0.0;
+  source->wasFiring = false;
+  source->lastSoundTime = 0;
+  source->flameSoundPoint[0] = 0.0;
+  source->flameSoundPoint[1] = 0.0;
+  source->flameSoundPoint[2] = 0.0;
   return;
 }
 
@@ -18,70 +18,70 @@ void __cdecl Flame_Class_Source_Sound_Init(flameSource_t *param_1)
 
 void __cdecl
 Flame_Class_Source_Sound
-          (int param_1,bool param_2,bool param_3,int param_4,flameTable *param_5,
-          flameSource_t *param_6)
+          (int localClientNum,bool isFiring,bool isFirstPerson,int time,flameTable *table,
+          flameSource_t *source)
 
 {
   flameRenderList_s *pfVar1;
   code *pcVar2;
   bool bVar3;
   float (*pafVar4) [3];
-  float local_30;
+  float listener;
   float local_2c;
   float local_28;
-  float local_24;
+  float points;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
   float local_10;
-  playerState_s *local_c;
-  snd_flame_source_flags local_8;
+  playerState_s *playerState;
+  int flags;
   
-  if ((param_5 == (flameTable *)0x0) &&
+  if ((table == (flameTable *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_sound.cpp",0x18,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_6 == (flameSource_t *)0x0) &&
+  if ((source == (flameSource_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_sound.cpp",0x19,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_6->lastSoundTime == 0) {
-    param_6->lastSoundTime = param_4;
-    param_6->flameSoundPoint[0] = param_6->origin[0];
-    param_6->flameSoundPoint[1] = param_6->origin[1];
-    param_6->flameSoundPoint[2] = param_6->origin[2];
+  if (source->lastSoundTime == 0) {
+    source->lastSoundTime = time;
+    source->flameSoundPoint[0] = source->origin[0];
+    source->flameSoundPoint[1] = source->origin[1];
+    source->flameSoundPoint[2] = source->origin[2];
   }
-  if ((param_6->currentStream == (flameStream_s *)0x0) ||
-     (param_6->currentStream->chunkList == (flameChunk_s *)0x0)) {
-    param_6->flameSoundPoint[0] = param_6->origin[0];
-    param_6->flameSoundPoint[1] = param_6->origin[1];
-    param_6->flameSoundPoint[2] = param_6->origin[2];
+  if ((source->currentStream == (flameStream_s *)0x0) ||
+     (source->currentStream->chunkList == (flameChunk_s *)0x0)) {
+    source->flameSoundPoint[0] = source->origin[0];
+    source->flameSoundPoint[1] = source->origin[1];
+    source->flameSoundPoint[2] = source->origin[2];
   }
   else {
-    local_c = CG_GetPredictedPlayerState(param_1);
-    local_30 = local_c->origin[0];
-    local_2c = local_c->origin[1];
-    local_28 = local_c->origin[2];
-    pfVar1 = param_6->currentStream->renderList;
-    local_24 = pfVar1->fuelVerts[0][0];
+    playerState = CG_GetPredictedPlayerState(localClientNum);
+    listener = playerState->origin[0];
+    local_2c = playerState->origin[1];
+    local_28 = playerState->origin[2];
+    pfVar1 = source->currentStream->renderList;
+    points = pfVar1->fuelVerts[0][0];
     local_20 = pfVar1->fuelVerts[0][1];
     local_1c = pfVar1->fuelVerts[0][2];
-    pafVar4 = param_6->currentStream->renderList->fuelVerts +
-              (int)param_5->flameVar_streamFuelNumSegments + -1;
+    pafVar4 = source->currentStream->renderList->fuelVerts +
+              (int)table->flameVar_streamFuelNumSegments + -1;
     local_18 = (*pafVar4)[0];
     local_14 = (*pafVar4)[1];
     local_10 = (*pafVar4)[2];
-    SND_GetNearestPointOnStrip(&local_30,(float (*) [3])&local_24,2,param_6->flameSoundPoint);
-    if ((((((uint)param_6->flameSoundPoint[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_6->flameSoundPoint[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_6->flameSoundPoint[2] & 0x7f800000) == 0x7f800000)) &&
+    SND_GetNearestPointOnStrip(&listener,(float (*) [3])&points,2,source->flameSoundPoint);
+    if ((((((uint)source->flameSoundPoint[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)source->flameSoundPoint[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)source->flameSoundPoint[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_sound.cpp",0x2a,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -89,22 +89,22 @@ Flame_Class_Source_Sound
       return;
     }
   }
-  local_8 = SND_FLAME_SOURCE_NONE;
-  if ((param_6->wasFiring == false) && (param_2)) {
-    local_8 = SND_FLAME_SOURCE_TURN_ON;
+  flags = 0;
+  if ((source->wasFiring == false) && (isFiring)) {
+    flags = 1;
   }
-  if ((param_6->wasFiring != false) && (!param_2)) {
-    local_8 = local_8 | SND_FLAME_SOURCE_TURN_OFF;
+  if ((source->wasFiring != false) && (!isFiring)) {
+    flags = flags | 2;
   }
-  if (param_2) {
-    local_8 = local_8 | SND_FLAME_SOURCE_IS_FIRING;
+  if (isFiring) {
+    flags = flags | 4;
   }
-  param_6->wasFiring = param_2;
-  param_6->lastSoundTime = param_4;
+  source->wasFiring = isFiring;
+  source->lastSoundTime = time;
   CG_FlameSourceUpdate
-            (param_1,param_6->entityNum,param_6->origin,param_6->flameSoundPoint,local_8,
-             param_5->flameOffLoopSound,param_5->flameIgniteSound,param_5->flameOnLoopSound,
-             param_5->flameCooldownSound);
+            (localClientNum,source->entityNum,source->origin,source->flameSoundPoint,flags,
+             table->flameOffLoopSound,table->flameIgniteSound,table->flameOnLoopSound,
+             table->flameCooldownSound);
   return;
 }
 

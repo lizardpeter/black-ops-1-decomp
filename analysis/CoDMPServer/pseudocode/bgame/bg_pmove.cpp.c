@@ -2,36 +2,37 @@
 
 // 00438660  bitarray<51>  (qcommon/bitarray.h:25)
 
-bitarray<51> * __thiscall bitarray<51>::bitarray<51>(bitarray<51> *this,int param_1)
+bitarray<51> * __thiscall bitarray<51>::bitarray<51>(bitarray<51> *this,int this)
 
 {
   uint in_stack_00000008;
   int local_10;
-  uint *local_8;
+  int v;
+  char *argList;
   
   for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    *(undefined4 *)(param_1 + local_10 * 4) = 0;
+    *(undefined4 *)(this + local_10 * 4) = 0;
   }
-  setBit((bitarray<51> *)param_1,in_stack_00000008);
-  local_8 = (uint *)&stack0x0000000c;
+  setBit((bitarray<51> *)this,in_stack_00000008);
+  argList = &stack0x0000000c;
   while( true ) {
-    if (*local_8 == 0xffffffff) break;
-    setBit((bitarray<51> *)param_1,*local_8);
-    local_8 = local_8 + 1;
+    if (*(uint *)argList == 0xffffffff) break;
+    setBit((bitarray<51> *)this,*(uint *)argList);
+    argList = argList + 4;
   }
-  return (bitarray<51> *)param_1;
+  return (bitarray<51> *)this;
 }
 
 
 // 004386D0  setBit  (qcommon/bitarray.h:114)
 
-void __thiscall bitarray<51>::setBit(bitarray<51> *this,uint param_1)
+void __thiscall bitarray<51>::setBit(bitarray<51> *this,uint pos)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x32 < param_1) {
+  if (0x32 < pos) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/bitarray.h",
                              0x73,0,"%s");
     if (!bVar2) {
@@ -40,7 +41,7 @@ void __thiscall bitarray<51>::setBit(bitarray<51> *this,uint param_1)
       return;
     }
   }
-  this->array[param_1 >> 5] = 0x80000000U >> ((byte)param_1 & 0x1f) | this->array[param_1 >> 5];
+  this->array[pos >> 5] = 0x80000000U >> ((byte)pos & 0x1f) | this->array[pos >> 5];
   return;
 }
 
@@ -49,65 +50,66 @@ void __thiscall bitarray<51>::setBit(bitarray<51> *this,uint param_1)
 
 void __thiscall
 colgeom_visitor_inlined_t<200>::update
-          (colgeom_visitor_inlined_t<200> *this,float *param_1,float *param_2,float *param_3,
-          float *param_4,int param_5)
+          (colgeom_visitor_inlined_t<200> *this,float *start,float *end,float *mins,float *maxs,
+          int mask)
 
 {
-  float local_64;
+  int _mask;
+  float _mn;
   float local_60;
   float local_5c;
-  float local_58;
+  float extents_start;
   float local_54;
   float local_50;
-  float local_4c;
+  float extents_end;
   float local_48;
   float local_44;
-  float local_40;
+  float _mx;
   float local_3c;
   float local_38;
-  float local_34;
+  float offset;
   float local_30;
   float local_2c;
-  float local_28;
+  float size;
   float local_24;
   float local_20;
-  undefined4 local_1c;
+  undefined4 expand_vec;
   undefined4 local_18;
   float local_14;
-  float local_10;
+  float fudge;
   float local_c;
   float local_8;
   
-  local_10 = `public:_void___thiscall_colgeom_visitor_inlined_t<200>::update(float_const*_const,float_const*_const,float_const*_const,float_const*_const,int)'
-             ::__l2::fFudge;
+  fudge = `public:_void___thiscall_colgeom_visitor_inlined_t<200>::update(float_const*_const,float_const*_const,float_const*_const,float_const*_const,int)'
+          ::__l2::fFudge;
   local_c = `public:_void___thiscall_colgeom_visitor_inlined_t<200>::update(float_const*_const,float_const*_const,float_const*_const,float_const*_const,int)'
             ::__l2::fFudge;
   local_8 = `public:_void___thiscall_colgeom_visitor_inlined_t<200>::update(float_const*_const,float_const*_const,float_const*_const,float_const*_const,int)'
             ::__l2::fFudge;
-  local_34 = *param_3 * 0.5 + *param_4 * 0.5;
-  local_30 = param_3[1] * 0.5 + param_4[1] * 0.5;
-  local_2c = param_3[2] * 0.5 + param_4[2] * 0.5;
-  local_28 = *param_4 - local_34;
-  local_24 = param_4[1] - local_30;
-  local_20 = param_4[2] - local_2c;
-  local_58 = *param_1 + local_34;
-  local_54 = param_1[1] + local_30;
-  local_50 = param_1[2] + local_2c;
-  local_4c = *param_2 + local_34;
-  local_48 = param_2[1] + local_30;
-  local_44 = param_2[2] + local_2c;
-  Vec3Min(&local_58,&local_4c,&local_64);
-  Vec3Max(&local_58,&local_4c,&local_40);
-  local_64 = (local_64 - local_28) - local_10;
+  offset = *mins * 0.5 + *maxs * 0.5;
+  local_30 = mins[1] * 0.5 + maxs[1] * 0.5;
+  local_2c = mins[2] * 0.5 + maxs[2] * 0.5;
+  size = *maxs - offset;
+  local_24 = maxs[1] - local_30;
+  local_20 = maxs[2] - local_2c;
+  extents_start = *start + offset;
+  local_54 = start[1] + local_30;
+  local_50 = start[2] + local_2c;
+  extents_end = *end + offset;
+  local_48 = end[1] + local_30;
+  local_44 = end[2] + local_2c;
+  Vec3Min(&extents_start,&extents_end,&_mn);
+  Vec3Max(&extents_start,&extents_end,&_mx);
+  _mn = (_mn - size) - fudge;
   local_60 = (local_60 - local_24) - local_c;
   local_5c = (local_5c - local_20) - local_8;
-  local_40 = local_40 + local_28 + local_10;
+  _mx = _mx + size + fudge;
   local_3c = local_3c + local_24 + local_c;
   local_38 = local_38 + local_20 + local_8;
-  local_1c = 0x428c0000;
+  expand_vec = 0x428c0000;
   local_18 = 0x428c0000;
   local_14 = 20.0;
-  (**(code **)(this->_padding_ + 0x14))(&local_64,&local_40,param_5,&local_1c);
+  (**(code **)(this->_padding_ + 0x14))(&_mn,&_mx,mask,&expand_vec);
   return;
 }
 
@@ -187,22 +189,22 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00429970  setup_gjkcc_input  (bgame/bg_pmove.cpp:295)
 
-void __cdecl setup_gjkcc_input(pmove_t *param_1,gjkcc_input_t *param_2)
+void __cdecl setup_gjkcc_input(pmove_t *pm,gjkcc_input_t *gjkcc_in)
 
 {
-  param_2->gjkcc_id = (uint)param_1;
-  param_2->is_server_thread = (bool)('\x01' - (param_1->handler != '\x01'));
-  param_2->proximity_data = &param_1->proximity_data;
-  param_2->proximity_mask = 0x3818813;
-  if (param_1->handler == '\x01') {
-    param_2->m_ent_num = (uint)param_1->ps->clientNum;
+  gjkcc_in->gjkcc_id = (uint)pm;
+  gjkcc_in->is_server_thread = (bool)('\x01' - (pm->handler != '\x01'));
+  gjkcc_in->proximity_data = &pm->proximity_data;
+  gjkcc_in->proximity_mask = 0x3818813;
+  if (pm->handler == '\x01') {
+    gjkcc_in->m_ent_num = (uint)pm->ps->clientNum;
   }
   else {
-    param_2->m_ent_num = -1;
+    gjkcc_in->m_ent_num = -1;
   }
-  param_2->m_gjk_query_flags = 3;
-  param_2->m_gjk_cg = (gjk_base_t *)0x0;
-  param_2->m_mat = (phys_mat44 *)0x0;
+  gjkcc_in->m_gjk_query_flags = 3;
+  gjkcc_in->m_gjk_cg = (gjk_base_t *)0x0;
+  gjkcc_in->m_mat = (phys_mat44 *)0x0;
   return;
 }
 
@@ -210,26 +212,25 @@ void __cdecl setup_gjkcc_input(pmove_t *param_1,gjkcc_input_t *param_2)
 // 00429A00  PM_trace  (bgame/bg_pmove.cpp:320)
 
 void __cdecl
-PM_trace(pmove_t *param_1,trace_t *param_2,float *param_3,float *param_4,float *param_5,
-        float *param_6,int param_7,int param_8)
+PM_trace(pmove_t *pm,trace_t *results,float *start,float *mins,float *maxs,float *end,
+        int passEntityNum,int contentMask)
 
 {
   code *pcVar1;
   bool bVar2;
-  col_context_t local_30;
-  undefined1 local_5;
+  col_context_t context;
+  bool is_server_thread;
   
-  local_5 = param_1->handler == '\x01';
-  if ((bool)local_5) {
+  is_server_thread = pm->handler == '\x01';
+  if (is_server_thread) {
     g_num_server_trace_calls = g_num_server_trace_calls + 1;
   }
   else {
     g_num_client_trace_calls = g_num_client_trace_calls + 1;
   }
-  col_context_t::col_context_t(&local_30);
-  colgeom_visitor_inlined_t<200>::update
-            (&param_1->proximity_data,param_3,param_6,param_4,param_5,0x3818813);
-  if ((param_8 & 0x3818813U) != param_8) {
+  col_context_t::col_context_t(&context);
+  colgeom_visitor_inlined_t<200>::update(&pm->proximity_data,start,end,mins,maxs,0x3818813);
+  if ((contentMask & 0x3818813U) != contentMask) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x152,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -237,10 +238,10 @@ PM_trace(pmove_t *param_1,trace_t *param_2,float *param_3,float *param_4,float *
       return;
     }
   }
-  local_30.prims = (param_1->proximity_data).prims;
-  local_30.nprims = (param_1->proximity_data).nprims;
-  (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-            (param_2,param_3,param_4,param_5,param_6,param_7,param_8,&local_30);
+  context.prims = (pm->proximity_data).prims;
+  context.nprims = (pm->proximity_data).nprims;
+  (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+            (results,start,mins,maxs,end,passEntityNum,contentMask,&context);
   return;
 }
 
@@ -250,66 +251,65 @@ PM_trace(pmove_t *param_1,trace_t *param_2,float *param_3,float *param_4,float *
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-PM_playerTrace(pmove_t *param_1,trace_t *param_2,float *param_3,float *param_4,float *param_5,
-              float *param_6,int param_7,int param_8)
+PM_playerTrace(pmove_t *pm,trace_t *results,float *start,float *mins,float *maxs,float *end,
+              int passEntityNum,int contentMask)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  moveclip_t local_94;
+  moveclip_t clip;
   uint local_34;
-  col_context_t local_30;
-  gjkcc_input_t *local_8;
+  col_context_t context;
+  gjkcc_input_t *gjkcc_in;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((phys_player_collision_mode->current).integer == 1) {
-    local_8 = param_1->m_gjkcc_input;
-    gjk_player_trace(local_8,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+    gjkcc_in = pm->m_gjkcc_input;
+    gjk_player_trace(gjkcc_in,results,start,mins,maxs,end,passEntityNum,contentMask);
   }
   else {
-    col_context_t::col_context_t(&local_30);
-    colgeom_visitor_inlined_t<200>::update
-              (&param_1->proximity_data,param_3,param_6,param_4,param_5,0x3818813);
-    if (((param_8 & 0x3818813U) != param_8) &&
+    col_context_t::col_context_t(&context);
+    colgeom_visitor_inlined_t<200>::update(&pm->proximity_data,start,end,mins,maxs,0x3818813);
+    if (((contentMask & 0x3818813U) != contentMask) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x16e,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_30.prims = (param_1->proximity_data).prims;
-    local_30.nprims = (param_1->proximity_data).nprims;
-    (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-              (param_2,param_3,param_4,param_5,param_6,param_7,param_8,&local_30);
-    if (param_2->startsolid == false) {
+    context.prims = (pm->proximity_data).prims;
+    context.nprims = (pm->proximity_data).nprims;
+    (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+              (results,start,mins,maxs,end,passEntityNum,contentMask,&context);
+    if (results->startsolid == false) {
       return;
     }
-    if ((param_2->cflags & 0x2008000U) == 0) {
+    if ((results->cflags & 0x2008000U) == 0) {
       return;
     }
-    uVar3 = Trace_GetEntityHitId(param_2);
-    PM_AddTouchEnt(param_1,(uint)uVar3);
-    param_1->tracemask = param_1->tracemask & 0xfdff7fff;
-    (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-              (param_2,param_3,param_4,param_5,param_6,param_7,param_8 & 0xfdff7fff,&local_30);
+    uVar3 = Trace_GetEntityHitId(results);
+    PM_AddTouchEnt(pm,(uint)uVar3);
+    pm->tracemask = pm->tracemask & 0xfdff7fff;
+    (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+              (results,start,mins,maxs,end,passEntityNum,contentMask & 0xfdff7fff,&context);
   }
-  if (0.0 < param_2->fraction) {
-    TraceExtents::TraceExtents(&local_94.extents);
-    local_94.extents.start.vec.v[0] = *param_3;
-    local_94.extents.start.vec.v[1] = param_3[1];
-    local_94.extents.start.vec.v[2] = param_3[2];
-    local_94.extents.end.vec.v[0] = *param_6;
-    local_94.extents.end.vec.v[1] = param_6[1];
-    local_94.extents.end.vec.v[2] = param_6[2];
-    local_94.mins[0] = *param_4;
-    local_94.mins[1] = param_4[1];
-    local_94.mins[2] = param_4[2];
-    local_94.maxs[0] = *param_5;
-    local_94.maxs[1] = param_5[1];
-    local_94.maxs[2] = param_5[2];
-    local_94.contentmask = param_8;
-    GlassSv_ClipMoveTrace(&local_94,param_2);
+  if (0.0 < results->fraction) {
+    TraceExtents::TraceExtents(&clip.extents);
+    clip.extents.start.vec.v[0] = *start;
+    clip.extents.start.vec.v[1] = start[1];
+    clip.extents.start.vec.v[2] = start[2];
+    clip.extents.end.vec.v[0] = *end;
+    clip.extents.end.vec.v[1] = end[1];
+    clip.extents.end.vec.v[2] = end[2];
+    clip.mins[0] = *mins;
+    clip.mins[1] = mins[1];
+    clip.mins[2] = mins[2];
+    clip.maxs[0] = *maxs;
+    clip.maxs[1] = maxs[1];
+    clip.maxs[2] = maxs[2];
+    clip.contentmask = contentMask;
+    GlassSv_ClipMoveTrace(&clip,results);
   }
   return;
 }
@@ -337,39 +337,39 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 00429E60  PM_AddEvent  (bgame/bg_pmove.cpp:410)
 
-void __cdecl PM_AddEvent(playerState_s *param_1,int param_2)
+void __cdecl PM_AddEvent(playerState_s *ps,int newEvent)
 
 {
-  BG_AddPredictableEventToPlayerstate(param_2,0,param_1);
+  BG_AddPredictableEventToPlayerstate(newEvent,0,ps);
   return;
 }
 
 
 // 00429E80  PM_AddTouchEnt  (bgame/bg_pmove.cpp:420)
 
-void __cdecl PM_AddTouchEnt(pmove_t *param_1,int param_2)
+void __cdecl PM_AddTouchEnt(pmove_t *pm,int entityNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_2 != 0x3fe) {
-    if ((param_1 == (pmove_t *)0x0) &&
+  if (entityNum != 0x3fe) {
+    if ((pm == (pmove_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1ab,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1->numtouch != 0x20) {
-      for (local_8 = 0; local_8 < param_1->numtouch; local_8 = local_8 + 1) {
-        if (param_1->touchents[local_8] == param_2) {
+    if (pm->numtouch != 0x20) {
+      for (i = 0; i < pm->numtouch; i = i + 1) {
+        if (pm->touchents[i] == entityNum) {
           return;
         }
       }
-      param_1->touchents[param_1->numtouch] = param_2;
-      param_1->numtouch = param_1->numtouch + 1;
+      pm->touchents[pm->numtouch] = entityNum;
+      pm->numtouch = pm->numtouch + 1;
     }
   }
   return;
@@ -378,13 +378,13 @@ void __cdecl PM_AddTouchEnt(pmove_t *param_1,int param_2)
 
 // 0042FBC0  Vec3Cross  (universal/com_vector.h:449)
 
-void __cdecl Vec3Cross(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Cross(float *v0,float *v1,float *cross)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (v0 == cross) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector.h",0x1c2,0,
                              "%s");
     if (!bVar2) {
@@ -393,7 +393,7 @@ void __cdecl Vec3Cross(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_2 == param_3) {
+  if (v1 == cross) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector.h",0x1c3,0,
                              "%s");
     if (!bVar2) {
@@ -402,45 +402,45 @@ void __cdecl Vec3Cross(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  *param_3 = param_1[1] * param_2[2] - param_1[2] * param_2[1];
-  param_3[1] = param_1[2] * *param_2 - *param_1 * param_2[2];
-  param_3[2] = *param_1 * param_2[1] - param_1[1] * *param_2;
+  *cross = v0[1] * v1[2] - v0[2] * v1[1];
+  cross[1] = v0[2] * *v1 - *v0 * v1[2];
+  cross[2] = *v0 * v1[1] - v0[1] * *v1;
   return;
 }
 
 
 // 00429F20  PM_AddTouchGlass  (bgame/bg_pmove.cpp:454)
 
-void __cdecl PM_AddTouchGlass(pmove_t *param_1,int param_2)
+void __cdecl PM_AddTouchGlass(pmove_t *pm,int glassId)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_2 != -1) {
-    if (((param_2 < 0) || (999 < param_2)) &&
+  if (glassId != -1) {
+    if (((glassId < 0) || (999 < glassId)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1cc,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1 == (pmove_t *)0x0) &&
+    if ((pm == (pmove_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1ce,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1->numGlassTouch != 0x20) {
-      for (local_8 = 0; local_8 < param_1->numGlassTouch; local_8 = local_8 + 1) {
-        if (param_1->touchGlasses[local_8] == param_2) {
+    if (pm->numGlassTouch != 0x20) {
+      for (i = 0; i < pm->numGlassTouch; i = i + 1) {
+        if (pm->touchGlasses[i] == glassId) {
           return;
         }
       }
-      param_1->touchGlasses[param_1->numGlassTouch] = param_2;
-      param_1->numGlassTouch = param_1->numGlassTouch + 1;
+      pm->touchGlasses[pm->numGlassTouch] = glassId;
+      pm->numGlassTouch = pm->numGlassTouch + 1;
     }
   }
   return;
@@ -449,43 +449,49 @@ void __cdecl PM_AddTouchGlass(pmove_t *param_1,int param_2)
 
 // 0042A010  PM_ClipVelocity  (bgame/bg_pmove.cpp:491)
 
-void __cdecl PM_ClipVelocity(float *param_1,float *param_2,float *param_3)
+void __cdecl PM_ClipVelocity(float *in,float *normal,float *out)
 
 {
   float fVar1;
+  float parallel;
   
-  fVar1 = *param_1 * *param_2 + param_1[1] * param_2[1] + param_1[2] * param_2[2];
+  fVar1 = *in * *normal + in[1] * normal[1] + in[2] * normal[2];
   fVar1 = -(fVar1 - ABS(fVar1) * 0.001);
-  *param_3 = fVar1 * *param_2 + *param_1;
-  param_3[1] = fVar1 * param_2[1] + param_1[1];
-  param_3[2] = fVar1 * param_2[2] + param_1[2];
+  *out = fVar1 * *normal + *in;
+  out[1] = fVar1 * normal[1] + in[1];
+  out[2] = fVar1 * normal[2] + in[2];
   return;
 }
 
 
 // 0042A0E0  PM_ProjectVelocity  (bgame/bg_pmove.cpp:502)
 
-void __cdecl PM_ProjectVelocity(float *param_1,float *param_2,float *param_3)
+void __cdecl PM_ProjectVelocity(float *velIn,float *normal,float *velOut)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float lengthSq2D;
+  float adjustedLengthSq;
+  float newZ;
+  float lengthScale;
+  float originalLengthSq;
   
-  fVar2 = *param_1 * *param_1 + param_1[1] * param_1[1];
-  if ((ABS(param_2[2]) < 0.001) || (fVar2 == 0.0)) {
-    *param_3 = *param_1;
-    param_3[1] = param_1[1];
-    param_3[2] = param_1[2];
+  fVar2 = *velIn * *velIn + velIn[1] * velIn[1];
+  if ((ABS(normal[2]) < 0.001) || (fVar2 == 0.0)) {
+    *velOut = *velIn;
+    velOut[1] = velIn[1];
+    velOut[2] = velIn[2];
   }
   else {
-    fVar3 = -(*param_1 * *param_2 + param_1[1] * param_2[1]) / param_2[2];
-    fVar1 = param_1[1];
-    fVar2 = SQRT((param_1[2] * param_1[2] + fVar2) / (fVar3 * fVar3 + fVar2));
-    if ((fVar2 < 1.0) || ((fVar3 < 0.0 || (0.0 < param_1[2])))) {
-      *param_3 = fVar2 * *param_1;
-      param_3[1] = fVar2 * fVar1;
-      param_3[2] = fVar2 * fVar3;
+    fVar3 = -(*velIn * *normal + velIn[1] * normal[1]) / normal[2];
+    fVar1 = velIn[1];
+    fVar2 = SQRT((velIn[2] * velIn[2] + fVar2) / (fVar3 * fVar3 + fVar2));
+    if ((fVar2 < 1.0) || ((fVar3 < 0.0 || (0.0 < velIn[2])))) {
+      *velOut = fVar2 * *velIn;
+      velOut[1] = fVar2 * fVar1;
+      velOut[2] = fVar2 * fVar3;
     }
   }
   return;
@@ -494,23 +500,23 @@ void __cdecl PM_ProjectVelocity(float *param_1,float *param_2,float *param_3)
 
 // 0042A280  PM_GetEffectiveStance  (bgame/bg_pmove.cpp:548)
 
-int __cdecl PM_GetEffectiveStance(playerState_s *param_1)
+int __cdecl PM_GetEffectiveStance(playerState_s *ps)
 
 {
   int iVar1;
   
-  if (param_1->viewHeightTarget == 0x16) {
-    if (param_1->waterlevel < 2) {
-      iVar1 = (param_1->waterlevel != 0) + 1;
+  if (ps->viewHeightTarget == 0x16) {
+    if (ps->waterlevel < 2) {
+      iVar1 = (ps->waterlevel != 0) + 1;
     }
     else {
       iVar1 = 0;
     }
   }
-  else if (param_1->viewHeightTarget == 0x28) {
+  else if (ps->viewHeightTarget == 0x28) {
     iVar1 = 2;
   }
-  else if (param_1->viewHeightTarget == 0xb) {
+  else if (ps->viewHeightTarget == 0xb) {
     iVar1 = 1;
   }
   else {
@@ -524,24 +530,24 @@ int __cdecl PM_GetEffectiveStance(playerState_s *param_1)
 
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
 
-PmStanceFrontBack __cdecl PM_GetStanceEx(int param_1,int param_2)
+PmStanceFrontBack __cdecl PM_GetStanceEx(int stance,int backward)
 
 {
   code *pcVar1;
   bool bVar2;
   PmStanceFrontBack PVar3;
   
-  if ((2 < param_1) &&
+  if ((2 < stance) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x23e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     PVar3 = (*pcVar1)();
     return PVar3;
   }
-  if (param_2 != 0) {
-    param_1 = param_1 + PM_STANCE_BACKWARD_FIRST;
+  if (backward != 0) {
+    stance = stance + PM_STANCE_BACKWARD_FIRST;
   }
-  return param_1;
+  return stance;
 }
 
 
@@ -550,41 +556,42 @@ PmStanceFrontBack __cdecl PM_GetStanceEx(int param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x0042a324) */
 /* WARNING: Removing unreachable block (ram,0x0042a348) */
 
-int __cdecl PM_GetSprintLeft(playerState_s *param_1,int param_2)
+int __cdecl PM_GetSprintLeft(playerState_s *ps,int gametime)
 
 {
   uint extraout_EAX;
   uint extraout_EDX;
   int local_28;
   int local_18;
-  int local_c;
+  SprintState *ss;
+  int sprintLeft;
+  int maxSprintTime;
   
-  local_28 = BG_GetMaxSprintTime(param_1);
-  local_c = local_28;
+  local_28 = BG_GetMaxSprintTime(ps);
+  sprintLeft = local_28;
   if ((((player_sprintUnlimited->current).enabled == false) &&
-      (_allshl(), (extraout_EAX & param_1->perks[0]) == 0 && (extraout_EDX & param_1->perks[1]) == 0
-      )) && ((param_1->sprintState).lastSprintStart != 0)) {
-    if ((param_1->sprintState).lastSprintEnd < (param_1->sprintState).lastSprintStart) {
-      local_c = (param_1->sprintState).sprintStartMaxLength -
-                (param_2 - (param_1->sprintState).lastSprintStart);
+      (_allshl(), (extraout_EAX & ps->perks[0]) == 0 && (extraout_EDX & ps->perks[1]) == 0)) &&
+     ((ps->sprintState).lastSprintStart != 0)) {
+    if ((ps->sprintState).lastSprintEnd < (ps->sprintState).lastSprintStart) {
+      sprintLeft = (ps->sprintState).sprintStartMaxLength -
+                   (gametime - (ps->sprintState).lastSprintStart);
     }
-    else if ((param_1->sprintState).sprintDelay == 0) {
-      local_c = (((param_1->sprintState).sprintStartMaxLength -
-                 ((param_1->sprintState).lastSprintEnd - (param_1->sprintState).lastSprintStart)) +
-                param_2) - (param_1->sprintState).lastSprintEnd;
+    else if ((ps->sprintState).sprintDelay == 0) {
+      sprintLeft = (((ps->sprintState).sprintStartMaxLength -
+                    ((ps->sprintState).lastSprintEnd - (ps->sprintState).lastSprintStart)) +
+                   gametime) - (ps->sprintState).lastSprintEnd;
     }
     else {
-      local_c = ((((param_1->sprintState).sprintStartMaxLength -
-                  ((param_1->sprintState).lastSprintEnd - (param_1->sprintState).lastSprintStart)) +
-                 param_2) - (param_1->sprintState).lastSprintEnd) -
-                (param_1->sprintState).sprintCooldown;
+      sprintLeft = ((((ps->sprintState).sprintStartMaxLength -
+                     ((ps->sprintState).lastSprintEnd - (ps->sprintState).lastSprintStart)) +
+                    gametime) - (ps->sprintState).lastSprintEnd) - (ps->sprintState).sprintCooldown;
     }
   }
-  if (local_c < 0) {
+  if (sprintLeft < 0) {
     local_18 = 0;
   }
   else {
-    local_18 = local_c;
+    local_18 = sprintLeft;
   }
   if (local_18 <= local_28) {
     local_28 = local_18;
@@ -607,7 +614,7 @@ int __cdecl DB_SizeofXAsset<XAnimParts>(void)
 /* WARNING: Removing unreachable block (ram,0x0042a4ce) */
 /* WARNING: Removing unreachable block (ram,0x0042a4f2) */
 
-int __cdecl PM_GetSprintLeftLastTime(playerState_s *param_1)
+int __cdecl PM_GetSprintLeftLastTime(playerState_s *ps)
 
 {
   code *pcVar1;
@@ -616,8 +623,11 @@ int __cdecl PM_GetSprintLeftLastTime(playerState_s *param_1)
   uint extraout_EAX;
   uint extraout_EDX;
   int local_18;
+  SprintState *ss;
+  int sprintLeft;
+  int maxSprintTime;
   
-  bVar2 = PM_IsSprinting(param_1);
+  bVar2 = PM_IsSprinting(ps);
   if ((bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x27b,0,"%s"
                               ), !bVar2)) {
@@ -625,12 +635,11 @@ int __cdecl PM_GetSprintLeftLastTime(playerState_s *param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = BG_GetMaxSprintTime(param_1);
+  iVar3 = BG_GetMaxSprintTime(ps);
   if (((player_sprintUnlimited->current).enabled == false) &&
-     (_allshl(), (extraout_EAX & param_1->perks[0]) == 0 && (extraout_EDX & param_1->perks[1]) == 0)
-     ) {
-    local_18 = (param_1->sprintState).sprintStartMaxLength -
-               ((param_1->sprintState).lastSprintEnd - (param_1->sprintState).lastSprintStart);
+     (_allshl(), (extraout_EAX & ps->perks[0]) == 0 && (extraout_EDX & ps->perks[1]) == 0)) {
+    local_18 = (ps->sprintState).sprintStartMaxLength -
+               ((ps->sprintState).lastSprintEnd - (ps->sprintState).lastSprintStart);
     if (local_18 < 0) {
       local_18 = 0;
     }
@@ -644,15 +653,16 @@ int __cdecl PM_GetSprintLeftLastTime(playerState_s *param_1)
 
 // 0042A5A0  PM_IsSprinting  (bgame/bg_pmove.cpp:655)
 
-bool __cdecl PM_IsSprinting(playerState_s *param_1)
+bool __cdecl PM_IsSprinting(playerState_s *ps)
 
 {
   bool bVar1;
+  SprintState *ss;
   
-  if ((param_1->sprintState).lastSprintStart == 0) {
+  if ((ps->sprintState).lastSprintStart == 0) {
     bVar1 = false;
   }
-  else if ((param_1->sprintState).lastSprintEnd < (param_1->sprintState).lastSprintStart) {
+  else if ((ps->sprintState).lastSprintEnd < (ps->sprintState).lastSprintStart) {
     bVar1 = true;
   }
   else {
@@ -664,14 +674,15 @@ bool __cdecl PM_IsSprinting(playerState_s *param_1)
 
 // 0042F380  PM_StartSprint  (bgame/bg_pmove.cpp:670)
 
-void __cdecl PM_StartSprint(playerState_s *param_1,pmove_t *param_2,pml_t *param_3,int param_4)
+void __cdecl PM_StartSprint(playerState_s *ps,pmove_t *pm,pml_t *pml,int sprintLeft)
 
 {
   code *pcVar1;
   bool bVar2;
+  SprintState *ss;
   
-  if (((param_1->sprintState).lastSprintEnd != 0) &&
-     ((param_1->sprintState).lastSprintEnd < (param_1->sprintState).lastSprintStart)) {
+  if (((ps->sprintState).lastSprintEnd != 0) &&
+     ((ps->sprintState).lastSprintEnd < (ps->sprintState).lastSprintStart)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x2a2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -679,27 +690,28 @@ void __cdecl PM_StartSprint(playerState_s *param_1,pmove_t *param_2,pml_t *param
       return;
     }
   }
-  (param_1->sprintState).sprintStartMaxLength = param_4;
-  (param_1->sprintState).lastSprintStart = (param_2->cmd).serverTime;
-  param_1->pm_flags = param_1->pm_flags | 0x8000;
+  (ps->sprintState).sprintStartMaxLength = sprintLeft;
+  (ps->sprintState).lastSprintStart = (pm->cmd).serverTime;
+  ps->pm_flags = ps->pm_flags | 0x8000;
   return;
 }
 
 
 // 0042F400  PM_EndSprint  (bgame/bg_pmove.cpp:685)
 
-void __cdecl PM_EndSprint(playerState_s *param_1,pmove_t *param_2,pml_t *param_3)
+void __cdecl PM_EndSprint(playerState_s *ps,pmove_t *pm,pml_t *pml)
 
 {
   bool bVar1;
+  SprintState *ss;
   
-  if ((param_1->pm_flags & 0x8000U) != 0) {
-    (param_1->sprintState).sprintDelay = 0;
-    (param_1->sprintState).lastSprintEnd = (param_2->cmd).serverTime;
-    param_1->pm_flags = param_1->pm_flags & 0xffff7fff;
-    bVar1 = bitarray<51>::testBit(&(param_2->cmd).button_bits,1);
+  if ((ps->pm_flags & 0x8000U) != 0) {
+    (ps->sprintState).sprintDelay = 0;
+    (ps->sprintState).lastSprintEnd = (pm->cmd).serverTime;
+    ps->pm_flags = ps->pm_flags & 0xffff7fff;
+    bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,1);
     if (bVar1) {
-      (param_1->sprintState).sprintButtonUpRequired = 1;
+      (ps->sprintState).sprintButtonUpRequired = 1;
     }
   }
   return;
@@ -709,76 +721,75 @@ void __cdecl PM_EndSprint(playerState_s *param_1,pmove_t *param_2,pml_t *param_3
 // 0042F470  PM_SprintStartInterferingButtons  (bgame/bg_pmove.cpp:702)
 
 bool __cdecl
-PM_SprintStartInterferingButtons(playerState_s *param_1,int param_2,bitarray<51> *param_3)
+PM_SprintStartInterferingButtons(playerState_s *ps,int forwardSpeed,bitarray<51> *button_bits)
 
 {
   bool bVar1;
   WeaponDef *pWVar2;
   
-  if ((param_1->pm_flags & 8U) == 0) {
-    if (param_1->waterlevel < 2) {
-      if ((player_sprintForwardMinimum->current).integer < param_2) {
-        bVar1 = bitarray<51>::testBit(param_3,10);
+  if ((ps->pm_flags & 8U) == 0) {
+    if (ps->waterlevel < 2) {
+      if ((player_sprintForwardMinimum->current).integer < forwardSpeed) {
+        bVar1 = bitarray<51>::testBit(button_bits,10);
         if (bVar1) {
           bVar1 = true;
         }
         else {
-          bVar1 = bitarray<51>::testBit(param_3,4);
+          bVar1 = bitarray<51>::testBit(button_bits,4);
           if (bVar1) {
             bVar1 = true;
           }
           else {
-            bVar1 = bitarray<51>::testBit(param_3,2);
+            bVar1 = bitarray<51>::testBit(button_bits,2);
             if (bVar1) {
               bVar1 = true;
             }
             else {
-              bVar1 = bitarray<51>::testBit(param_3,0);
+              bVar1 = bitarray<51>::testBit(button_bits,0);
               if (bVar1) {
                 bVar1 = true;
               }
               else {
-                bVar1 = bitarray<51>::testBit(param_3,5);
+                bVar1 = bitarray<51>::testBit(button_bits,5);
                 if (bVar1) {
                   bVar1 = true;
                 }
                 else {
-                  bVar1 = bitarray<51>::testBit(param_3,0xe);
+                  bVar1 = bitarray<51>::testBit(button_bits,0xe);
                   if (bVar1) {
                     bVar1 = true;
                   }
                   else {
-                    bVar1 = bitarray<51>::testBit(param_3,0xf);
+                    bVar1 = bitarray<51>::testBit(button_bits,0xf);
                     if (bVar1) {
                       bVar1 = true;
                     }
                     else {
-                      bVar1 = bitarray<51>::testBit(param_3,0x18);
+                      bVar1 = bitarray<51>::testBit(button_bits,0x18);
                       if ((bVar1) &&
-                         (pWVar2 = BG_GetWeaponDef((uint)param_1->weapon),
+                         (pWVar2 = BG_GetWeaponDef((uint)ps->weapon),
                          pWVar2->offhandSlot != OFFHAND_SLOT_EQUIPMENT)) {
                         return true;
                       }
-                      if (param_1->leanf == 0.0) {
-                        if ((param_1->pm_flags & 0x1001cU) == 0) {
-                          if (((param_1->pm_flags & 0x4000U) == 0) || (param_1->pm_time != 0)) {
-                            if (((param_1->weaponstate == 0x11) ||
-                                ((param_1->weaponstate == 0x12 || (param_1->weaponstate == 0x13))))
-                               || ((0x13 < param_1->weaponstate && (param_1->weaponstate < 0x1a))))
-                            {
+                      if (ps->leanf == 0.0) {
+                        if ((ps->pm_flags & 0x1001cU) == 0) {
+                          if (((ps->pm_flags & 0x4000U) == 0) || (ps->pm_time != 0)) {
+                            if (((ps->weaponstate == 0x11) ||
+                                ((ps->weaponstate == 0x12 || (ps->weaponstate == 0x13)))) ||
+                               ((0x13 < ps->weaponstate && (ps->weaponstate < 0x1a)))) {
                               bVar1 = true;
                             }
                             else {
-                              pWVar2 = BG_GetWeaponDef((uint)param_1->weapon);
+                              pWVar2 = BG_GetWeaponDef((uint)ps->weapon);
                               if ((pWVar2->offhandSlot == OFFHAND_SLOT_EQUIPMENT) &&
-                                 ((((param_1->weaponstate == 6 || (param_1->weaponstate == 7)) ||
-                                   (param_1->weaponstate == 0x1f)) ||
-                                  (((param_1->weaponstate == 0x11 || (param_1->weaponstate == 0x12))
-                                   || (param_1->weaponstate == 0x13)))))) {
+                                 ((((ps->weaponstate == 6 || (ps->weaponstate == 7)) ||
+                                   (ps->weaponstate == 0x1f)) ||
+                                  (((ps->weaponstate == 0x11 || (ps->weaponstate == 0x12)) ||
+                                   (ps->weaponstate == 0x13)))))) {
                                 bVar1 = true;
                               }
-                              else if ((param_1->pm_flags & 0x800000U) == 0) {
-                                if ((param_1->pm_flags & 0x400000U) == 0) {
+                              else if ((ps->pm_flags & 0x800000U) == 0) {
+                                if ((ps->pm_flags & 0x400000U) == 0) {
                                   bVar1 = false;
                                 }
                                 else {
@@ -826,7 +837,7 @@ PM_SprintStartInterferingButtons(playerState_s *param_1,int param_2,bitarray<51>
 
 // 00431960  PM_CmdScaleForStance  (bgame/bg_pmove.cpp:745)
 
-float __cdecl PM_CmdScaleForStance(pmove_t *param_1)
+float __cdecl PM_CmdScaleForStance(pmove_t *pm)
 
 {
   code *pcVar1;
@@ -834,13 +845,15 @@ float __cdecl PM_CmdScaleForStance(pmove_t *param_1)
   int iVar3;
   float10 fVar4;
   float fVar5;
+  int stance;
+  float lerpFrac;
   
-  if ((param_1->ps->pm_flags & 0x400000U) == 0) {
-    fVar5 = PM_GetViewHeightLerp(param_1,0x28,0xb);
+  if ((pm->ps->pm_flags & 0x400000U) == 0) {
+    fVar5 = PM_GetViewHeightLerp(pm,0x28,0xb);
     if (fVar5 == 0.0) {
-      fVar5 = PM_GetViewHeightLerp(param_1,0xb,0x28);
+      fVar5 = PM_GetViewHeightLerp(pm,0xb,0x28);
       if (fVar5 == 0.0) {
-        if (param_1->ps == (playerState_s *)0x0) {
+        if (pm->ps == (playerState_s *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x2fa,0,
                                    "%s");
           if (!bVar2) {
@@ -849,7 +862,7 @@ float __cdecl PM_CmdScaleForStance(pmove_t *param_1)
             return (float)fVar4;
           }
         }
-        iVar3 = PM_GetEffectiveStance(param_1->ps);
+        iVar3 = PM_GetEffectiveStance(pm->ps);
         if (iVar3 == 1) {
           fVar5 = 0.15;
         }
@@ -877,76 +890,74 @@ float __cdecl PM_CmdScaleForStance(pmove_t *param_1)
 
 // 0042F6B0  PM_SprintEndingButtons  (bgame/bg_pmove.cpp:772)
 
-bool __cdecl PM_SprintEndingButtons(pmove_t *param_1)
+bool __cdecl PM_SprintEndingButtons(pmove_t *pm)
 
 {
   bool bVar1;
   WeaponDef *pWVar2;
   
-  if (param_1->ps->waterlevel < 2) {
-    if ((param_1->ps->pm_flags & 0x10018U) == 0) {
-      if ((player_sprintForwardMinimum->current).integer < (int)(param_1->cmd).forwardmove) {
-        bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,10);
+  if (pm->ps->waterlevel < 2) {
+    if ((pm->ps->pm_flags & 0x10018U) == 0) {
+      if ((player_sprintForwardMinimum->current).integer < (int)(pm->cmd).forwardmove) {
+        bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,10);
         if (bVar1) {
           bVar1 = true;
         }
         else {
-          bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,4);
+          bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,4);
           if (bVar1) {
             bVar1 = true;
           }
           else {
-            bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,2);
+            bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,2);
             if (bVar1) {
               bVar1 = true;
             }
             else {
-              bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0);
+              bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0);
               if (bVar1) {
                 bVar1 = true;
               }
               else {
-                bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,5);
+                bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,5);
                 if (bVar1) {
                   bVar1 = true;
                 }
                 else {
-                  bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xe);
+                  bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xe);
                   if (bVar1) {
                     bVar1 = true;
                   }
                   else {
-                    bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xf);
+                    bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xf);
                     if (bVar1) {
                       bVar1 = true;
                     }
                     else {
-                      bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,8);
+                      bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,8);
                       if (bVar1) {
                         bVar1 = true;
                       }
                       else {
-                        bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,9);
+                        bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,9);
                         if (bVar1) {
                           bVar1 = true;
                         }
-                        else if (param_1->ps->leanf == 0.0) {
-                          bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x18);
+                        else if (pm->ps->leanf == 0.0) {
+                          bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x18);
                           if ((bVar1) &&
-                             (pWVar2 = BG_GetWeaponDef((uint)param_1->ps->weapon),
+                             (pWVar2 = BG_GetWeaponDef((uint)pm->ps->weapon),
                              pWVar2->offhandSlot != OFFHAND_SLOT_EQUIPMENT)) {
                             return true;
                           }
-                          if ((((param_1->ps->weaponstate == 0x11) ||
-                               (param_1->ps->weaponstate == 0x12)) ||
-                              (param_1->ps->weaponstate == 0x13)) ||
-                             (((0x13 < param_1->ps->weaponstate && (param_1->ps->weaponstate < 0x1a)
-                               ) || ((param_1->ps->weaponstate == 0x21 ||
-                                     (param_1->ps->weaponstate == 0x22)))))) {
+                          if ((((pm->ps->weaponstate == 0x11) || (pm->ps->weaponstate == 0x12)) ||
+                              (pm->ps->weaponstate == 0x13)) ||
+                             (((0x13 < pm->ps->weaponstate && (pm->ps->weaponstate < 0x1a)) ||
+                              ((pm->ps->weaponstate == 0x21 || (pm->ps->weaponstate == 0x22)))))) {
                             bVar1 = true;
                           }
-                          else if ((param_1->ps->pm_flags & 0x800000U) == 0) {
-                            if ((param_1->ps->pm_flags & 0x40000U) == 0) {
+                          else if ((pm->ps->pm_flags & 0x800000U) == 0) {
+                            if ((pm->ps->pm_flags & 0x40000U) == 0) {
                               bVar1 = false;
                             }
                             else {
@@ -986,68 +997,68 @@ bool __cdecl PM_SprintEndingButtons(pmove_t *param_1)
 
 // 004389D0  Vec3Min  (universal/com_vector.h:785)
 
-void __cdecl Vec3Min(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Min(float *a,float *b,float *result)
 
 {
   float local_10;
   float local_c;
   float local_8;
   
-  if (*param_2 < *param_1 || *param_2 == *param_1) {
-    local_8 = *param_2;
+  if (*b < *a || *b == *a) {
+    local_8 = *b;
   }
   else {
-    local_8 = *param_1;
+    local_8 = *a;
   }
-  *param_3 = local_8;
-  if (param_2[1] < param_1[1] || param_2[1] == param_1[1]) {
-    local_c = param_2[1];
-  }
-  else {
-    local_c = param_1[1];
-  }
-  param_3[1] = local_c;
-  if (param_2[2] < param_1[2] || param_2[2] == param_1[2]) {
-    local_10 = param_2[2];
+  *result = local_8;
+  if (b[1] < a[1] || b[1] == a[1]) {
+    local_c = b[1];
   }
   else {
-    local_10 = param_1[2];
+    local_c = a[1];
   }
-  param_3[2] = local_10;
+  result[1] = local_c;
+  if (b[2] < a[2] || b[2] == a[2]) {
+    local_10 = b[2];
+  }
+  else {
+    local_10 = a[2];
+  }
+  result[2] = local_10;
   return;
 }
 
 
 // 00438A90  Vec3Max  (universal/com_vector.h:792)
 
-void __cdecl Vec3Max(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Max(float *a,float *b,float *result)
 
 {
   float local_10;
   float local_c;
   float local_8;
   
-  if (*param_1 < *param_2 || *param_1 == *param_2) {
-    local_8 = *param_2;
+  if (*a < *b || *a == *b) {
+    local_8 = *b;
   }
   else {
-    local_8 = *param_1;
+    local_8 = *a;
   }
-  *param_3 = local_8;
-  if (param_1[1] < param_2[1] || param_1[1] == param_2[1]) {
-    local_c = param_2[1];
-  }
-  else {
-    local_c = param_1[1];
-  }
-  param_3[1] = local_c;
-  if (param_1[2] < param_2[2] || param_1[2] == param_2[2]) {
-    local_10 = param_2[2];
+  *result = local_8;
+  if (a[1] < b[1] || a[1] == b[1]) {
+    local_c = b[1];
   }
   else {
-    local_10 = param_1[2];
+    local_c = a[1];
   }
-  param_3[2] = local_10;
+  result[1] = local_c;
+  if (a[2] < b[2] || a[2] == b[2]) {
+    local_10 = b[2];
+  }
+  else {
+    local_10 = a[2];
+  }
+  result[2] = local_10;
   return;
 }
 
@@ -1057,25 +1068,23 @@ void __cdecl Vec3Max(float *param_1,float *param_2,float *param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-is_not_penetrating(pmove_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                  int param_6)
+is_not_penetrating(pmove_t *pm,float *start,float *mins,float *maxs,float *end,int contentMask)
 
 {
   bool local_48;
-  float4 local_44 [2];
+  float4 trace [2];
   char local_1a;
   char local_19;
   uint local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_44[0].v[0] = 0.0;
-  local_44[0].v[1] = 0.0;
-  local_44[0].v[2] = 0.0;
-  local_44[0].v[3] = 0.0;
-  local_8 = param_1->ps;
-  PM_playerTrace(param_1,(trace_t *)local_44,param_2,param_3,param_4,param_5,
-                 (uint)local_8->clientNum,param_6);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  ps = pm->ps;
+  PM_playerTrace(pm,(trace_t *)trace,start,mins,maxs,end,(uint)ps->clientNum,contentMask);
   if ((((phys_player_collision_mode->current).integer == 1) && (local_19 == '\0')) ||
      (((phys_player_collision_mode->current).integer != 1 && (local_1a == '\0')))) {
     local_48 = true;
@@ -1089,21 +1098,23 @@ is_not_penetrating(pmove_t *param_1,float *param_2,float *param_3,float *param_4
 
 // 0042F8D0  PM_CanCrouch  (bgame/bg_pmove.cpp:820)
 
-bool __cdecl PM_CanCrouch(playerState_s *param_1,pmove_t *param_2)
+bool __cdecl PM_CanCrouch(playerState_s *ps,pmove_t *pm)
 
 {
   float fVar1;
   bool bVar2;
+  float save_maxs2;
+  bool not_pen;
   
-  if ((param_1->pm_flags & 1U) == 0) {
+  if ((ps->pm_flags & 1U) == 0) {
     bVar2 = true;
   }
   else {
-    fVar1 = param_2->maxs[2];
-    param_2->maxs[2] = 50.0;
-    bVar2 = is_not_penetrating(param_2,param_1->origin,param_2->mins,param_2->maxs,param_1->origin,
-                               param_2->tracemask & 0xfdff7fff);
-    param_2->maxs[2] = fVar1;
+    fVar1 = pm->maxs[2];
+    pm->maxs[2] = 50.0;
+    bVar2 = is_not_penetrating(pm,ps->origin,pm->mins,pm->maxs,ps->origin,pm->tracemask & 0xfdff7fff
+                              );
+    pm->maxs[2] = fVar1;
   }
   return bVar2;
 }
@@ -1111,17 +1122,17 @@ bool __cdecl PM_CanCrouch(playerState_s *param_1,pmove_t *param_2)
 
 // 0042A5E0  PM_CanStand  (bgame/bg_pmove.cpp:842)
 
-bool __cdecl PM_CanStand(playerState_s *param_1,pmove_t *param_2)
+bool __cdecl PM_CanStand(playerState_s *ps,pmove_t *pm)
 
 {
   bool bVar1;
   
-  if ((param_1->pm_flags & 3U) == 0) {
+  if ((ps->pm_flags & 3U) == 0) {
     bVar1 = true;
   }
   else {
-    bVar1 = is_not_penetrating(param_2,param_1->origin,playerMins,playerMaxs,param_1->origin,
-                               param_2->tracemask & 0xfdff7fff);
+    bVar1 = is_not_penetrating(pm,ps->origin,playerMins,playerMaxs,ps->origin,
+                               pm->tracemask & 0xfdff7fff);
   }
   return bVar1;
 }
@@ -1129,27 +1140,29 @@ bool __cdecl PM_CanStand(playerState_s *param_1,pmove_t *param_2)
 
 // 0042EEA0  PM_UpdateVisionAnims  (bgame/bg_pmove.cpp:861)
 
-void __cdecl PM_UpdateVisionAnims(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UpdateVisionAnims(pmove_t *pm,pml_t *pml)
 
 {
   ushort uVar1;
   bool bVar2;
   animScriptCommand_t *paVar3;
+  short animNum;
+  animScriptCommand_t *animCmd;
   
-  if (param_1->ps->pm_type < 9) {
-    bVar2 = BG_IsShellshockAnim(param_1->ps);
+  if (pm->ps->pm_type < 9) {
+    bVar2 = BG_IsShellshockAnim(pm->ps);
     if (bVar2) {
-      BG_AnimScriptEvent(param_1,ANIM_ET_SHELLSHOCK,1,0);
+      BG_AnimScriptEvent(pm,ANIM_ET_SHELLSHOCK,1,0);
     }
-    else if (param_1->ps->visionSetLerpRatio <= 0.0) {
-      uVar1 = param_1->ps->torsoAnim;
-      paVar3 = BG_AnimScriptEventGetCommand(param_1->ps,ANIM_ET_SHELLSHOCK);
+    else if (pm->ps->visionSetLerpRatio <= 0.0) {
+      uVar1 = pm->ps->torsoAnim;
+      paVar3 = BG_AnimScriptEventGetCommand(pm->ps,ANIM_ET_SHELLSHOCK);
       if ((paVar3 != (animScriptCommand_t *)0x0) && (paVar3->animIndex[0] == (uVar1 & 0xfbff))) {
-        BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_IDLE,1);
+        BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_IDLE,1);
       }
     }
     else {
-      BG_AnimScriptEvent(param_1,ANIM_ET_FLARED,1,0);
+      BG_AnimScriptEvent(pm,ANIM_ET_FLARED,1,0);
     }
   }
   return;
@@ -1158,15 +1171,16 @@ void __cdecl PM_UpdateVisionAnims(pmove_t *param_1,pml_t *param_2)
 
 // 0042EF60  PM_UpdateScriptedAnim  (bgame/bg_pmove.cpp:893)
 
-void __cdecl PM_UpdateScriptedAnim(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UpdateScriptedAnim(pmove_t *pm,pml_t *pml)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1 == (playerState_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x381,0,"%s");
     if (!bVar3) {
@@ -1177,15 +1191,15 @@ void __cdecl PM_UpdateScriptedAnim(pmove_t *param_1,pml_t *param_2)
   }
   if ((ppVar1->pm_flags & 0x100000U) != 0) {
     if (ppVar1->scriptedAnimTime == 0) {
-      iVar4 = BG_AnimScriptEvent(param_1,ANIM_ET_SCRIPTEVENT,0,1);
-      ppVar1->scriptedAnimTime = iVar4 + (param_1->cmd).serverTime;
+      iVar4 = BG_AnimScriptEvent(pm,ANIM_ET_SCRIPTEVENT,0,1);
+      ppVar1->scriptedAnimTime = iVar4 + (pm->cmd).serverTime;
     }
-    if ((param_1->cmd).serverTime < ppVar1->scriptedAnimTime) {
-      BG_AnimScriptEvent(param_1,ANIM_ET_SCRIPTEVENT,1,0);
+    if ((pm->cmd).serverTime < ppVar1->scriptedAnimTime) {
+      BG_AnimScriptEvent(pm,ANIM_ET_SCRIPTEVENT,1,0);
     }
     else {
       ppVar1->scriptedAnimTime = 0;
-      if (param_1->handler == '\0') {
+      if (pm->handler == '\0') {
         ppVar1->scriptedAnim = 0;
       }
       ppVar1->pm_flags = ppVar1->pm_flags & 0xffefffff;
@@ -1202,83 +1216,85 @@ void __cdecl PM_UpdateScriptedAnim(pmove_t *param_1,pml_t *param_2)
 /* WARNING: Removing unreachable block (ram,0x0042f17c) */
 /* WARNING: Removing unreachable block (ram,0x0042f1a0) */
 
-void __cdecl PM_UpdateSprint(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UpdateSprint(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
   uint extraout_EAX;
-  SprintState *pSVar5;
+  SprintState *pSVar4;
   uint extraout_EDX;
-  char local_15;
+  bool unlimited_sprint;
+  SprintState *ss;
+  int sprintLeft;
+  playerState_s *ps;
+  int maxSprintTime;
   
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x3a6,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x3a6,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  pSVar5 = &ppVar1->sprintState;
-  if ((pSVar5->sprintButtonUpRequired != 0) &&
-     (bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,1), !bVar3)) {
-    pSVar5->sprintButtonUpRequired = 0;
+  pSVar4 = &ps_00->sprintState;
+  if ((pSVar4->sprintButtonUpRequired != 0) &&
+     (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,1), !bVar2)) {
+    pSVar4->sprintButtonUpRequired = 0;
   }
-  if ((ppVar1->pm_type == 0) || (ppVar1->pm_type == 1)) {
-    if ((ppVar1->weaponstate < 0x2f) || (0x31 < ppVar1->weaponstate)) {
-      iVar4 = BG_GetMaxSprintTime(ppVar1);
-      if (iVar4 < 1) {
-        PM_EndSprint(ppVar1,param_1,param_2);
+  if ((ps_00->pm_type == 0) || (ps_00->pm_type == 1)) {
+    if ((ps_00->weaponstate < 0x2f) || (0x31 < ps_00->weaponstate)) {
+      iVar3 = BG_GetMaxSprintTime(ps_00);
+      if (iVar3 < 1) {
+        PM_EndSprint(ps_00,pm,pml);
       }
-      else if ((ppVar1->pm_flags & 0x8000U) == 0) {
-        if (((((((ppVar1->sprintState).sprintDelay == 0) ||
-               ((ppVar1->sprintState).sprintCooldown <=
-                (param_1->cmd).serverTime - (ppVar1->sprintState).lastSprintEnd)) &&
-              (bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,1), bVar3)) &&
-             (((ppVar1->pm_flags & 0x40000U) == 0 && (pSVar5->sprintButtonUpRequired == 0)))) &&
-            ((bVar3 = PM_SprintStartInterferingButtons
-                                (ppVar1,(int)(param_1->cmd).forwardmove,&(param_1->cmd).button_bits)
-             , !bVar3 &&
-             ((bVar3 = PM_CanCrouch(ppVar1,param_1), bVar3 &&
-              (bVar3 = PM_CanStand(ppVar1,param_1), bVar3)))))) &&
-           (iVar4 = PM_GetSprintLeft(ppVar1,(param_1->cmd).serverTime),
-           (player_sprintMinTime->current).value * 1000.0 < (float)iVar4)) {
-          PM_StartSprint(ppVar1,param_1,param_2,iVar4);
+      else if ((ps_00->pm_flags & 0x8000U) == 0) {
+        if (((((((ps_00->sprintState).sprintDelay == 0) ||
+               ((ps_00->sprintState).sprintCooldown <=
+                (pm->cmd).serverTime - (ps_00->sprintState).lastSprintEnd)) &&
+              (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,1), bVar2)) &&
+             (((ps_00->pm_flags & 0x40000U) == 0 && (pSVar4->sprintButtonUpRequired == 0)))) &&
+            ((bVar2 = PM_SprintStartInterferingButtons
+                                (ps_00,(int)(pm->cmd).forwardmove,&(pm->cmd).button_bits), !bVar2 &&
+             ((bVar2 = PM_CanCrouch(ps_00,pm), bVar2 && (bVar2 = PM_CanStand(ps_00,pm), bVar2))))))
+           && (iVar3 = PM_GetSprintLeft(ps_00,(pm->cmd).serverTime),
+              (player_sprintMinTime->current).value * 1000.0 < (float)iVar3)) {
+          PM_StartSprint(ps_00,pm,pml,iVar3);
         }
       }
       else {
-        local_15 = (player_sprintUnlimited->current).enabled;
+        unlimited_sprint = (player_sprintUnlimited->current).enabled;
         _allshl();
-        if ((extraout_EAX & ppVar1->perks[0]) != 0 || (extraout_EDX & ppVar1->perks[1]) != 0) {
-          local_15 = '\x01';
+        if ((extraout_EAX & ps_00->perks[0]) != 0 || (extraout_EDX & ps_00->perks[1]) != 0) {
+          unlimited_sprint = true;
         }
-        if ((local_15 == '\0') &&
-           ((ppVar1->sprintState).sprintStartMaxLength <=
-            (param_1->cmd).serverTime - (ppVar1->sprintState).lastSprintStart)) {
-          PM_EndSprint(ppVar1,param_1,param_2);
-          (ppVar1->sprintState).sprintDelay = 1;
+        if ((unlimited_sprint == false) &&
+           ((ps_00->sprintState).sprintStartMaxLength <=
+            (pm->cmd).serverTime - (ps_00->sprintState).lastSprintStart)) {
+          PM_EndSprint(ps_00,pm,pml);
+          (ps_00->sprintState).sprintDelay = 1;
         }
         else {
-          bVar3 = PM_SprintEndingButtons(param_1);
-          if (bVar3) {
-            PM_EndSprint(ppVar1,param_1,param_2);
-            bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,10);
-            if (bVar3) {
-              (ppVar1->sprintState).lastSprintEnd = (ppVar1->sprintState).lastSprintEnd + 800;
+          bVar2 = PM_SprintEndingButtons(pm);
+          if (bVar2) {
+            PM_EndSprint(ps_00,pm,pml);
+            bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,10);
+            if (bVar2) {
+              (ps_00->sprintState).lastSprintEnd = (ps_00->sprintState).lastSprintEnd + 800;
             }
           }
         }
       }
     }
     else {
-      PM_EndSprint(ppVar1,param_1,param_2);
+      PM_EndSprint(ps_00,pm,pml);
     }
   }
   else {
-    PM_EndSprint(ppVar1,param_1,param_2);
+    PM_EndSprint(ps_00,pm,pml);
   }
   return;
 }
@@ -1286,104 +1302,104 @@ void __cdecl PM_UpdateSprint(pmove_t *param_1,pml_t *param_2)
 
 // 0042FCA0  PM_Friction  (bgame/bg_pmove.cpp:1023)
 
-void __cdecl PM_Friction(playerState_s *param_1,pml_t *param_2,pmove_t *param_3)
+void __cdecl PM_Friction(playerState_s *ps,pml_t *pml,pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float local_48;
-  float local_3c [7];
-  float *local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
+  float scales [6];
+  float control;
+  float *vel;
+  float newspeed;
+  float drop;
+  float speed;
+  float vec;
   float local_c;
   float local_8;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x405,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_20 = param_1->velocity;
-  local_10 = *local_20;
-  local_c = param_1->velocity[1];
-  local_8 = param_1->velocity[2];
-  if (param_2->walking != 0) {
+  vel = ps->velocity;
+  vec = *vel;
+  local_c = ps->velocity[1];
+  local_8 = ps->velocity[2];
+  if (pml->walking != 0) {
     local_8 = 0.0;
   }
-  local_48 = Abs((phys_vec3 *)&local_10);
-  local_14 = local_48;
+  local_48 = Abs((phys_vec3 *)&vec);
+  speed = local_48;
   if (1.0 <= local_48) {
-    local_18 = 0.0;
-    if ((param_1->pm_flags & 0x20000U) == 0) {
-      if (param_1->waterlevel < 2) {
-        if (((param_2->walking != 0) && (((param_2->groundTrace).sflags & 2U) == 0)) &&
-           ((param_1->pm_flags & 0x100U) == 0)) {
+    drop = 0.0;
+    if ((ps->pm_flags & 0x20000U) == 0) {
+      if (ps->waterlevel < 2) {
+        if (((pml->walking != 0) && (((pml->groundTrace).sflags & 2U) == 0)) &&
+           ((ps->pm_flags & 0x100U) == 0)) {
           if (local_48 < (stopspeed->current).value) {
             local_48 = (stopspeed->current).value;
           }
-          local_3c[6] = local_48;
-          if ((param_1->pm_flags & 0x80U) == 0) {
-            if ((param_1->pm_flags & 0x4000U) != 0) {
-              fVar3 = Jump_ReduceFriction(param_1);
-              local_3c[6] = fVar3 * local_3c[6];
+          control = local_48;
+          if ((ps->pm_flags & 0x80U) == 0) {
+            if ((ps->pm_flags & 0x4000U) != 0) {
+              fVar3 = Jump_ReduceFriction(ps);
+              control = fVar3 * control;
             }
           }
           else {
-            local_3c[6] = local_48 * 0.3;
+            control = local_48 * 0.3;
           }
-          if ((param_1->pm_flags & 0x400000U) != 0) {
-            fVar3 = Dtp_ReduceFriction(param_3,param_1);
-            local_3c[6] = fVar3 * local_3c[6];
+          if ((ps->pm_flags & 0x400000U) != 0) {
+            fVar3 = Dtp_ReduceFriction(pm,ps);
+            control = fVar3 * control;
           }
-          local_18 = local_3c[6] * (friction->current).value * param_2->frametime + local_18;
+          drop = control * (friction->current).value * pml->frametime + drop;
         }
-        if (((param_2->groundTrace).sflags & 2U) != 0) {
-          local_18 = local_14 * (player_sliding_friction->current).value * param_2->frametime +
-                     local_18;
+        if (((pml->groundTrace).sflags & 2U) != 0) {
+          drop = speed * (player_sliding_friction->current).value * pml->frametime + drop;
         }
       }
     }
     else {
-      if ((param_1->meleeChargeTime < 1) &&
+      if ((ps->meleeChargeTime < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x418,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_18 = (local_14 / ((float)param_1->meleeChargeTime * 0.001)) * param_2->frametime;
+      drop = (speed / ((float)ps->meleeChargeTime * 0.001)) * pml->frametime;
     }
-    if (param_1->waterlevel != 0) {
-      local_3c[0] = 0.0;
-      local_3c[1] = 1.0;
-      local_3c[2] = 2.0;
-      local_3c[3] = 3.0;
-      local_3c[4] = 3.0;
-      local_3c[5] = 3.0;
-      local_18 = local_14 * 1.0 * local_3c[param_1->waterlevel] * param_2->frametime + local_18;
+    if (ps->waterlevel != 0) {
+      scales[0] = 0.0;
+      scales[1] = 1.0;
+      scales[2] = 2.0;
+      scales[3] = 3.0;
+      scales[4] = 3.0;
+      scales[5] = 3.0;
+      drop = speed * 1.0 * scales[ps->waterlevel] * pml->frametime + drop;
     }
-    if (param_1->pm_type == 4) {
-      local_18 = local_14 * 5.0 * param_2->frametime + local_18;
+    if (ps->pm_type == 4) {
+      drop = speed * 5.0 * pml->frametime + drop;
     }
-    local_1c = local_14 - local_18;
-    if (local_1c < 0.0) {
-      local_1c = 0.0;
+    newspeed = speed - drop;
+    if (newspeed < 0.0) {
+      newspeed = 0.0;
     }
-    local_1c = local_1c / local_14;
-    *local_20 = local_1c * *local_20;
-    local_20[1] = local_1c * local_20[1];
-    local_20[2] = local_1c * local_20[2];
+    fVar3 = newspeed / speed;
+    *vel = fVar3 * *vel;
+    vel[1] = fVar3 * vel[1];
+    vel[2] = fVar3 * vel[2];
   }
   else {
-    *local_20 = 0.0;
-    local_20[1] = 0.0;
-    local_20[2] = 0.0;
+    *vel = 0.0;
+    vel[1] = 0.0;
+    vel[2] = 0.0;
   }
   return;
 }
@@ -1391,58 +1407,62 @@ void __cdecl PM_Friction(playerState_s *param_1,pml_t *param_2,pmove_t *param_3)
 
 // 00430040  PM_Accelerate  (bgame/bg_pmove.cpp:1115)
 
-void __cdecl
-PM_Accelerate(playerState_s *param_1,pml_t *param_2,float *param_3,float param_4,float param_5)
+void __cdecl PM_Accelerate(playerState_s *ps,pml_t *pml,float *wishdir,float wishspeed,float accel)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float local_5c;
-  float local_28;
+  float pushDir;
   float local_24;
   float local_20;
-  float local_18;
-  float local_8;
+  float pushLen;
+  float canPush;
+  float control;
+  float addspeed;
+  float currentspeed;
+  float accelspeed;
   
-  if ((param_1->pm_flags & 8U) == 0) {
-    if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps->pm_flags & 8U) == 0) {
+    if ((ps == (playerState_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x464,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    fVar3 = param_4 - (param_1->velocity[0] * *param_3 + param_1->velocity[1] * param_3[1] +
-                      param_1->velocity[2] * param_3[2]);
+    fVar3 = wishspeed -
+            (ps->velocity[0] * *wishdir + ps->velocity[1] * wishdir[1] +
+            ps->velocity[2] * wishdir[2]);
     if (0.0 < fVar3) {
-      if ((stopspeed->current).value <= param_4) {
-        local_5c = param_4;
+      if ((stopspeed->current).value <= wishspeed) {
+        local_5c = wishspeed;
       }
       else {
         local_5c = (stopspeed->current).value;
       }
-      local_8 = param_5 * param_2->frametime * local_5c;
-      if (fVar3 < local_8) {
-        local_8 = fVar3;
+      accelspeed = accel * pml->frametime * local_5c;
+      if (fVar3 < accelspeed) {
+        accelspeed = fVar3;
       }
-      param_1->velocity[0] = local_8 * *param_3 + param_1->velocity[0];
-      param_1->velocity[1] = local_8 * param_3[1] + param_1->velocity[1];
-      param_1->velocity[2] = local_8 * param_3[2] + param_1->velocity[2];
+      ps->velocity[0] = accelspeed * *wishdir + ps->velocity[0];
+      ps->velocity[1] = accelspeed * wishdir[1] + ps->velocity[1];
+      ps->velocity[2] = accelspeed * wishdir[2] + ps->velocity[2];
     }
   }
   else {
-    local_28 = param_4 * *param_3 - param_1->velocity[0];
-    local_24 = param_4 * param_3[1] - param_1->velocity[1];
-    local_20 = param_4 * param_3[2] - param_1->velocity[2];
-    fVar3 = Vec3Normalize(&local_28);
-    local_18 = param_5 * param_2->frametime * param_4;
-    if (fVar3 < local_18) {
-      local_18 = fVar3;
+    pushDir = wishspeed * *wishdir - ps->velocity[0];
+    local_24 = wishspeed * wishdir[1] - ps->velocity[1];
+    local_20 = wishspeed * wishdir[2] - ps->velocity[2];
+    fVar3 = Vec3Normalize(&pushDir);
+    canPush = accel * pml->frametime * wishspeed;
+    if (fVar3 < canPush) {
+      canPush = fVar3;
     }
-    param_1->velocity[0] = local_18 * local_28 + param_1->velocity[0];
-    param_1->velocity[1] = local_18 * local_24 + param_1->velocity[1];
-    param_1->velocity[2] = local_18 * local_20 + param_1->velocity[2];
+    ps->velocity[0] = canPush * pushDir + ps->velocity[0];
+    ps->velocity[1] = canPush * local_24 + ps->velocity[1];
+    ps->velocity[2] = canPush * local_20 + ps->velocity[2];
   }
   return;
 }
@@ -1450,33 +1470,33 @@ PM_Accelerate(playerState_s *param_1,pml_t *param_2,float *param_3,float param_4
 
 // 00430870  PM_DoSlideAdjustments  (bgame/bg_pmove.cpp:1160)
 
-void __cdecl PM_DoSlideAdjustments(playerState_s *param_1,pml_t *param_2)
+void __cdecl PM_DoSlideAdjustments(playerState_s *ps,pml_t *pml)
 
 {
-  float local_28;
+  float nvel;
   float local_24;
   float local_20;
-  float local_1c;
+  float dir;
   float local_18;
   undefined4 local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float wishspeed;
+  float len2;
+  float vel_cap;
   
-  if (((param_2->groundTrace).sflags & 2U) != 0) {
-    local_1c = (param_2->groundTrace).normal.vec.v[0];
-    local_18 = (param_2->groundTrace).normal.vec.v[1];
+  if (((pml->groundTrace).sflags & 2U) != 0) {
+    dir = (pml->groundTrace).normal.vec.v[0];
+    local_18 = (pml->groundTrace).normal.vec.v[1];
     local_14 = 0;
-    Vec3Normalize(&local_1c);
-    local_10 = (player_sliding_wishspeed->current).value;
-    PM_Accelerate(param_1,param_2,&local_1c,local_10,accel);
-    local_8 = (player_sliding_velocity_cap->current).value;
-    local_c = Abs((phys_vec3 *)param_1->velocity);
-    if (local_8 * local_8 < local_c) {
-      Vec3NormalizeTo(param_1->velocity,&local_28);
-      param_1->velocity[0] = local_8 * local_28;
-      param_1->velocity[1] = local_8 * local_24;
-      param_1->velocity[2] = local_8 * local_20;
+    Vec3Normalize(&dir);
+    wishspeed = (player_sliding_wishspeed->current).value;
+    PM_Accelerate(ps,pml,&dir,wishspeed,accel);
+    vel_cap = (player_sliding_velocity_cap->current).value;
+    len2 = Abs((phys_vec3 *)ps->velocity);
+    if (vel_cap * vel_cap < len2) {
+      Vec3NormalizeTo(ps->velocity,&nvel);
+      ps->velocity[0] = vel_cap * nvel;
+      ps->velocity[1] = vel_cap * local_24;
+      ps->velocity[2] = vel_cap * local_20;
     }
   }
   return;
@@ -1485,112 +1505,116 @@ void __cdecl PM_DoSlideAdjustments(playerState_s *param_1,pml_t *param_2)
 
 // 004302D0  PM_MoveScale  (bgame/bg_pmove.cpp:1190)
 
-float __cdecl PM_MoveScale(playerState_s *param_1,float param_2,float param_3,float param_4)
+float __cdecl PM_MoveScale(playerState_s *ps,float fmove,float rmove,float umove)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_10;
-  float local_8;
+  float fVar4;
+  float max;
+  float total;
+  float scale;
   
-  local_10 = ABS(param_2);
-  if (local_10 < ABS(param_3)) {
-    local_10 = ABS(param_3);
+  max = ABS(fmove);
+  if (max < ABS(rmove)) {
+    max = ABS(rmove);
   }
-  if (local_10 < ABS(param_4)) {
-    local_10 = ABS(param_4);
+  if (max < ABS(umove)) {
+    max = ABS(umove);
   }
-  if (local_10 == 0.0) {
-    local_8 = 0.0;
+  if (max == 0.0) {
+    scale = 0.0;
   }
   else {
-    if ((param_1 == (playerState_s *)0x0) &&
+    if ((ps == (playerState_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x4b4,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    local_8 = ((float)param_1->speed * local_10) /
-              (SQRT(param_2 * param_2 + param_3 * param_3 + param_4 * param_4) * 127.0);
-    if (((param_1->pm_flags & 0x40U) == 0) && (param_1->leanf == 0.0)) {
-      local_8 = local_8 * 1.0;
+    fVar4 = ((float)ps->speed * max) / (SQRT(fmove * fmove + rmove * rmove + umove * umove) * 127.0)
+    ;
+    if (((ps->pm_flags & 0x40U) == 0) && (ps->leanf == 0.0)) {
+      scale = fVar4 * 1.0;
     }
     else {
-      local_8 = local_8 * 0.4;
+      scale = fVar4 * 0.4;
     }
-    if (param_1->pm_type == 2) {
-      local_8 = local_8 * 3.0;
+    if (ps->pm_type == 2) {
+      scale = scale * 3.0;
     }
-    if (param_1->pm_type == 3) {
-      local_8 = local_8 * (cg_ufo_scaler->current).value;
+    if (ps->pm_type == 3) {
+      scale = scale * (cg_ufo_scaler->current).value;
     }
-    if (param_1->pm_type == 4) {
-      local_8 = local_8 * (player_spectateSpeedScale->current).value;
+    if (ps->pm_type == 4) {
+      scale = scale * (player_spectateSpeedScale->current).value;
     }
   }
-  return local_8;
+  return scale;
 }
 
 
 // 00430470  PM_CmdScale  (bgame/bg_pmove.cpp:1233)
 
-float __cdecl PM_CmdScale(playerState_s *param_1,usercmd_s *param_2)
+float __cdecl PM_CmdScale(playerState_s *ps,usercmd_s *cmd)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   float10 fVar4;
-  int local_10;
-  float local_8;
+  float fVar5;
+  int max;
+  float total;
+  float scale;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x4d6,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  uVar3 = (int)param_2->forwardmove >> 0x1f;
-  local_10 = ((int)param_2->forwardmove ^ uVar3) - uVar3;
-  uVar3 = (int)param_2->rightmove >> 0x1f;
-  if (local_10 < (int)(((int)param_2->rightmove ^ uVar3) - uVar3)) {
-    uVar3 = (int)param_2->rightmove >> 0x1f;
-    local_10 = ((int)param_2->rightmove ^ uVar3) - uVar3;
+  uVar3 = (int)cmd->forwardmove >> 0x1f;
+  max = ((int)cmd->forwardmove ^ uVar3) - uVar3;
+  uVar3 = (int)cmd->rightmove >> 0x1f;
+  if (max < (int)(((int)cmd->rightmove ^ uVar3) - uVar3)) {
+    uVar3 = (int)cmd->rightmove >> 0x1f;
+    max = ((int)cmd->rightmove ^ uVar3) - uVar3;
   }
-  if (local_10 == 0) {
-    local_8 = 0.0;
+  if (max == 0) {
+    scale = 0.0;
   }
   else {
-    local_8 = ((float)param_1->speed * (float)local_10) /
-              (SQRT((float)((int)param_2->forwardmove * (int)param_2->forwardmove +
-                           (int)param_2->rightmove * (int)param_2->rightmove)) * 127.0);
-    if ((((param_1->pm_flags & 0x40U) == 0) && (param_1->leanf == 0.0)) &&
-       ((param_1->pm_flags & 0x400000U) == 0)) {
-      local_8 = local_8 * 1.0;
+    fVar5 = ((float)ps->speed * (float)max) /
+            (SQRT((float)((int)cmd->forwardmove * (int)cmd->forwardmove +
+                         (int)cmd->rightmove * (int)cmd->rightmove)) * 127.0);
+    if ((((ps->pm_flags & 0x40U) == 0) && (ps->leanf == 0.0)) && ((ps->pm_flags & 0x400000U) == 0))
+    {
+      scale = fVar5 * 1.0;
     }
     else {
-      local_8 = local_8 * 0.4;
+      scale = fVar5 * 0.4;
     }
-    if (param_1->pm_type == 2) {
-      local_8 = local_8 * 3.0;
+    if (ps->pm_type == 2) {
+      scale = scale * 3.0;
     }
-    if (param_1->pm_type == 3) {
-      local_8 = local_8 * 6.0;
+    if (ps->pm_type == 3) {
+      scale = scale * 6.0;
     }
-    if (param_1->pm_type == 4) {
-      local_8 = local_8 * (player_spectateSpeedScale->current).value;
+    if (ps->pm_type == 4) {
+      scale = scale * (player_spectateSpeedScale->current).value;
     }
   }
-  return local_8;
+  return scale;
 }
 
 
 // 00431580  PM_CmdScale_Walk  (bgame/bg_pmove.cpp:1280)
 
-float __cdecl PM_CmdScale_Walk(pmove_t *param_1,usercmd_s *param_2)
+float __cdecl PM_CmdScale_Walk(pmove_t *pm,usercmd_s *cmd)
 
 {
   playerState_s *ppVar1;
@@ -1601,17 +1625,24 @@ float __cdecl PM_CmdScale_Walk(pmove_t *param_1,usercmd_s *param_2)
   float10 fVar6;
   float fVar7;
   float local_40;
-  float local_20;
-  float local_c;
+  float waterScale;
+  float max;
+  float fmove;
+  WeaponDef *weapon;
+  float total;
+  bool adsProne;
+  float smove;
+  float scale;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x50a,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar6 = (float10)(*pcVar2)();
     return (float)fVar6;
   }
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((ppVar1 == (playerState_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x50c,0,"%s"
                               ), !bVar3)) {
@@ -1625,81 +1656,85 @@ float __cdecl PM_CmdScale_Walk(pmove_t *param_1,usercmd_s *param_2)
   else {
     bVar3 = true;
   }
-  if (param_2->forwardmove < '\0') {
-    local_20 = (float)(int)param_2->forwardmove * (player_backSpeedScale->current).value;
+  if (cmd->forwardmove < '\0') {
+    fVar7 = (float)(int)cmd->forwardmove * (player_backSpeedScale->current).value;
   }
   else {
-    local_20 = (float)(int)param_2->forwardmove;
+    fVar7 = (float)(int)cmd->forwardmove;
   }
-  local_20 = ABS(local_20);
-  local_40 = ABS((float)(int)param_2->rightmove * (player_strafeSpeedScale->current).value);
-  if (0.0 <= local_20 - local_40) {
-    local_40 = local_20;
+  fmove = ABS(fVar7);
+  local_40 = ABS((float)(int)cmd->rightmove * (player_strafeSpeedScale->current).value);
+  if (0.0 <= fmove - local_40) {
+    local_40 = fmove;
   }
   if (local_40 == 0.0) {
-    local_c = 0.0;
+    fVar7 = 0.0;
   }
   else {
-    local_c = ((float)ppVar1->speed * local_40) /
-              (SQRT((float)((int)param_2->forwardmove * (int)param_2->forwardmove +
-                           (int)param_2->rightmove * (int)param_2->rightmove)) * 127.0);
+    fVar7 = ((float)ppVar1->speed * local_40) /
+            (SQRT((float)((int)cmd->forwardmove * (int)cmd->forwardmove +
+                         (int)cmd->rightmove * (int)cmd->rightmove)) * 127.0);
     if ((((ppVar1->pm_flags & 0x40U) != 0) || (ppVar1->leanf != 0.0)) || (bVar3)) {
-      local_c = local_c * 0.4;
+      scale = fVar7 * 0.4;
     }
     else {
-      local_c = local_c * 1.0;
+      scale = fVar7 * 1.0;
     }
     if (((ppVar1->pm_flags & 0x8000U) != 0) && (ppVar1->viewHeightTarget == 0x3c)) {
-      local_c = local_c * (player_sprintSpeedScale->current).value;
+      scale = scale * (player_sprintSpeedScale->current).value;
     }
     if (ppVar1->pm_type == 2) {
-      local_c = local_c * 3.0;
+      scale = scale * 3.0;
     }
     else if (ppVar1->pm_type == 3) {
-      local_c = local_c * 6.0;
+      scale = scale * 6.0;
     }
     else {
-      fVar7 = PM_CmdScaleForStance(param_1);
-      local_c = fVar7 * local_c;
+      fVar7 = PM_CmdScaleForStance(pm);
+      scale = fVar7 * scale;
       if (0 < ppVar1->waterlevel) {
-        local_c = local_c * (1.0 - ((float)ppVar1->waterlevel / 3.0) * 0.39999998);
+        scale = scale * (1.0 - ((float)ppVar1->waterlevel / 3.0) * 0.39999998);
       }
     }
     pWVar4 = BG_GetWeaponDef((uint)ppVar1->weapon);
     if (((ppVar1->weapon == 0) || (pWVar4->moveSpeedScale <= 0.0)) ||
        (((ppVar1->pm_flags & 0x40U) != 0 || (bVar3)))) {
       if ((ppVar1->weapon != 0) && (0.0 < pWVar4->adsMoveSpeedScale)) {
-        local_c = local_c * pWVar4->adsMoveSpeedScale;
+        scale = scale * pWVar4->adsMoveSpeedScale;
       }
     }
     else {
-      local_c = local_c * pWVar4->moveSpeedScale;
+      scale = scale * pWVar4->moveSpeedScale;
     }
     if ((ppVar1->pm_flags & 0x10000U) != 0) {
       psVar5 = BG_GetShellshockParms(ppVar1->shellshockIndex);
-      local_c = local_c * (psVar5->movement).scale;
+      scale = scale * (psVar5->movement).scale;
     }
-    local_c = local_c * ppVar1->moveSpeedScaleMultiplier;
+    fVar7 = scale * ppVar1->moveSpeedScaleMultiplier;
   }
-  return local_c;
+  return fVar7;
 }
 
 
 // 0042A700  PM_DamageScale_Walk  (bgame/bg_pmove.cpp:1364)
 
-float __cdecl PM_DamageScale_Walk(int param_1)
+float __cdecl PM_DamageScale_Walk(int damage_timer)
 
 {
   float fVar1;
+  float timer_gradiant;
+  float timer_max;
+  float move_scale;
+  float min_scale;
   
-  if (param_1 == 0) {
+  if (damage_timer == 0) {
     fVar1 = 1.0;
   }
   else if ((player_dmgtimer_maxTime->current).value == 0.0) {
     fVar1 = 1.0;
   }
   else {
-    fVar1 = (float)param_1 *
+    fVar1 = (float)damage_timer *
             (-(player_dmgtimer_minScale->current).value / (player_dmgtimer_maxTime->current).value)
             + 1.0;
   }
@@ -1709,99 +1744,103 @@ float __cdecl PM_DamageScale_Walk(int param_1)
 
 // 004309A0  PM_SetMovementDir  (bgame/bg_pmove.cpp:1397)
 
-void __cdecl PM_SetMovementDir(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_SetMovementDir(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   uint extraout_EAX;
   uint extraout_EAX_00;
-  uint extraout_EAX_01;
-  uint extraout_EAX_02;
-  float local_28;
+  int extraout_EAX_01;
+  int extraout_EAX_02;
+  float fVar3;
+  float dir;
   float local_24;
-  uint local_1c;
-  phys_vec3 local_18;
-  playerState_s *local_8;
+  int moveyaw;
+  float moved;
+  float local_14;
+  float local_10;
+  float speed;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x57b,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x57e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_8->pm_flags & 1U) == 0) || ((local_8->eFlags & 0x300U) != 0)) {
-    if ((local_8->pm_flags & 8U) == 0) {
-      local_18.x = local_8->origin[0] - param_2->previous_origin[0];
-      local_18.y = local_8->origin[1] - param_2->previous_origin[1];
-      local_18.z = local_8->origin[2] - param_2->previous_origin[2];
-      if (((((param_1->cmd).forwardmove != '\0') || ((param_1->cmd).rightmove != '\0')) &&
-          (local_8->groundEntityNum != 0x3ff)) &&
-         (((local_18.w = Abs(&local_18), local_18.w != 0.0 &&
-           (param_2->frametime * 5.0 < local_18.w)) && ((zombietron->current).enabled == false)))) {
-        Vec3NormalizeTo(&local_18.x,&local_28);
-        vectoangles(&local_28,&local_28);
-        AngleDelta(local_24,local_8->viewangles[1]);
+  if (((ps->pm_flags & 1U) == 0) || ((ps->eFlags & 0x300U) != 0)) {
+    if ((ps->pm_flags & 8U) == 0) {
+      moved = ps->origin[0] - pml->previous_origin[0];
+      local_14 = ps->origin[1] - pml->previous_origin[1];
+      local_10 = ps->origin[2] - pml->previous_origin[2];
+      if (((((pm->cmd).forwardmove != '\0') || ((pm->cmd).rightmove != '\0')) &&
+          (ps->groundEntityNum != 0x3ff)) &&
+         (((speed = Abs((phys_vec3 *)&stack0xffffffe8), speed != 0.0 &&
+           (pml->frametime * 5.0 < speed)) && ((zombietron->current).enabled == false)))) {
+        Vec3NormalizeTo(&stack0xffffffe8,&dir);
+        vectoangles(&dir,&dir);
+        AngleDelta(local_24,ps->viewangles[1]);
         _ftol2_sse();
-        local_1c = extraout_EAX_01;
-        if ((param_1->cmd).forwardmove < '\0') {
-          AngleNormalize180((float)(int)extraout_EAX_01 + 180.0);
+        moveyaw = extraout_EAX_01;
+        if ((pm->cmd).forwardmove < '\0') {
+          AngleNormalize180((float)extraout_EAX_01 + 180.0);
           _ftol2_sse();
-          local_1c = extraout_EAX_02;
+          moveyaw = extraout_EAX_02;
         }
-        if (0x5a < (int)((local_1c ^ (int)local_1c >> 0x1f) - ((int)local_1c >> 0x1f))) {
-          if ((int)local_1c < 1) {
-            local_1c = 0xffffffa6;
+        if (0x5a < (moveyaw ^ moveyaw >> 0x1f) - (moveyaw >> 0x1f)) {
+          if (moveyaw < 1) {
+            moveyaw = -0x5a;
           }
           else {
-            local_1c = 0x5a;
+            moveyaw = 0x5a;
           }
         }
-        local_8->movementDir = (int)(char)local_1c;
+        ps->movementDir = (int)(char)moveyaw;
         return;
       }
-      local_8->movementDir = 0;
+      ps->movementDir = 0;
     }
     else {
-      local_18.w = vectoyaw(local_8->vLadderVec);
-      local_18.w = local_18.w + 180.0;
-      AngleDelta(local_18.w,local_8->viewangles[1]);
+      fVar3 = vectoyaw(ps->vLadderVec);
+      speed = fVar3 + 180.0;
+      AngleDelta(speed,ps->viewangles[1]);
       _ftol2_sse();
-      local_1c = extraout_EAX_00;
+      moveyaw = extraout_EAX_00;
       if (0x5a < (int)((extraout_EAX_00 ^ (int)extraout_EAX_00 >> 0x1f) -
                       ((int)extraout_EAX_00 >> 0x1f))) {
         if ((int)extraout_EAX_00 < 1) {
-          local_1c = 0xffffffa6;
+          moveyaw = -0x5a;
         }
         else {
-          local_1c = 0x5a;
+          moveyaw = 0x5a;
         }
       }
-      local_8->movementDir = (int)(char)local_1c;
+      ps->movementDir = (int)(char)moveyaw;
     }
   }
   else {
-    AngleDelta(local_8->proneDirection,local_8->viewangles[1]);
+    AngleDelta(ps->proneDirection,ps->viewangles[1]);
     _ftol2_sse();
-    local_1c = extraout_EAX;
+    moveyaw = extraout_EAX;
     if (0x5a < (int)((extraout_EAX ^ (int)extraout_EAX >> 0x1f) - ((int)extraout_EAX >> 0x1f))) {
       if ((int)extraout_EAX < 1) {
-        local_1c = 0xffffffa6;
+        moveyaw = -0x5a;
       }
       else {
-        local_1c = 0x5a;
+        moveyaw = 0x5a;
       }
     }
-    local_8->movementDir = (int)(char)local_1c;
+    ps->movementDir = (int)(char)moveyaw;
   }
   return;
 }
@@ -1809,58 +1848,59 @@ void __cdecl PM_SetMovementDir(pmove_t *param_1,pml_t *param_2)
 
 // 0042A780  PM_GroundSurfaceType  (bgame/bg_pmove.cpp:1479)
 
-int __cdecl PM_GroundSurfaceType(playerState_s *param_1,pml_t *param_2)
+int __cdecl PM_GroundSurfaceType(playerState_s *ps,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  int iSurfType;
   
-  if ((param_2 == (pml_t *)0x0) &&
+  if ((pml == (pml_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x5ca,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_2->groundTrace).sflags & 0x2000U) == 0) {
-    local_8 = (int)((param_2->groundTrace).sflags & 0x3f00000U) >> 0x14;
-    if ((0x1e < local_8) &&
+  if (((pml->groundTrace).sflags & 0x2000U) == 0) {
+    iSurfType = (int)((pml->groundTrace).sflags & 0x3f00000U) >> 0x14;
+    if ((0x1e < (uint)iSurfType) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x5d0,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if ((param_1 != (playerState_s *)0x0) && (param_1->waterlevel != 0)) {
-      local_8 = 0x14;
+    if ((ps != (playerState_s *)0x0) && (ps->waterlevel != 0)) {
+      iSurfType = 0x14;
     }
   }
   else {
-    local_8 = 0;
+    iSurfType = 0;
   }
-  return local_8;
+  return iSurfType;
 }
 
 
 // 0042F960  PM_FlyMove  (bgame/bg_pmove.cpp:1509)
 
-void __cdecl PM_FlyMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_FlyMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_44;
+  float wishdir;
   undefined4 local_40;
   float local_3c;
-  float local_38 [4];
-  float local_28 [6];
-  int local_10;
-  float local_c;
-  playerState_s *local_8;
+  float wishvel [3];
+  float wishspeed;
+  float forward [6];
+  int i;
+  float scale;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x5ef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1868,8 +1908,8 @@ void __cdecl PM_FlyMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  local_8 = param_1->ps;
-  if (local_8 == (playerState_s *)0x0) {
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x5f2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1877,41 +1917,40 @@ void __cdecl PM_FlyMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  PM_Friction(local_8,param_2,param_1);
-  local_c = PM_CmdScale(local_8,&param_1->cmd);
-  if (local_c == 0.0) {
-    local_38[0] = 0.0;
-    local_38[1] = 0.0;
-    local_38[2] = 0.0;
+  PM_Friction(ps,pml,pm);
+  scale = PM_CmdScale(ps,&pm->cmd);
+  if (scale == 0.0) {
+    wishvel[0] = 0.0;
+    wishvel[1] = 0.0;
+    wishvel[2] = 0.0;
   }
   else {
-    local_28[4] = 0.0;
-    local_28[3] = 0.0;
-    local_28[5] = 1.0;
-    Vec3Cross(local_28 + 3,param_2->right,local_28);
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      local_38[local_10] =
-           ((float)(int)(param_1->cmd).forwardmove * local_28[local_10] +
-           (float)(int)(param_1->cmd).rightmove * param_2->right[local_10]) * local_c;
+    forward[4] = 0.0;
+    forward[3] = 0.0;
+    forward[5] = 1.0;
+    Vec3Cross(forward + 3,pml->right,forward);
+    for (i = 0; i < 3; i = i + 1) {
+      wishvel[i] = ((float)(int)(pm->cmd).forwardmove * forward[i] +
+                   (float)(int)(pm->cmd).rightmove * pml->right[i]) * scale;
     }
   }
-  if (local_8->speed != 0) {
-    local_c = PM_MoveScale(local_8,0.0,0.0,127.0);
-    bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,6);
+  if (ps->speed != 0) {
+    scale = PM_MoveScale(ps,0.0,0.0,127.0);
+    bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,6);
     if (bVar2) {
-      local_38[2] = local_38[2] - local_c * 127.0;
+      wishvel[2] = wishvel[2] - scale * 127.0;
     }
-    bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,7);
+    bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,7);
     if (bVar2) {
-      local_38[2] = local_c * 127.0 + local_38[2];
+      wishvel[2] = scale * 127.0 + wishvel[2];
     }
   }
-  local_44 = local_38[0];
-  local_40 = local_38[1];
-  local_3c = local_38[2];
-  local_38[3] = Vec3Normalize(&local_44);
-  PM_Accelerate(local_8,param_2,&local_44,local_38[3],8.0);
-  PM_StepSlideMove(param_1,param_2,0);
+  wishdir = wishvel[0];
+  local_40 = wishvel[1];
+  local_3c = wishvel[2];
+  wishspeed = Vec3Normalize(&wishdir);
+  PM_Accelerate(ps,pml,&wishdir,wishspeed,8.0);
+  PM_StepSlideMove(pm,pml,0);
   return;
 }
 
@@ -1920,7 +1959,7 @@ void __cdecl PM_FlyMove(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_AirMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_AirMove(pmove_t *pm,pml_t *pml)
 
 {
   char cVar1;
@@ -1929,23 +1968,26 @@ void __cdecl PM_AirMove(pmove_t *param_1,pml_t *param_2)
   int iVar4;
   pmove_t *ppVar5;
   usercmd_s *puVar6;
+  float fVar7;
   int local_70;
-  float local_68;
+  float fmove;
+  float wishdir;
   undefined4 local_64;
   undefined4 local_60;
-  float local_5c [4];
-  float local_4c;
-  int local_48;
-  float local_44;
-  playerState_s *local_40;
-  usercmd_s local_3c;
+  float wishvel [3];
+  float wishspeed;
+  float smove;
+  int i;
+  float scale;
+  playerState_s *ps;
+  usercmd_s cmd;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_70 = 0; local_70 < 2; local_70 = local_70 + 1) {
-    local_3c.button_bits.array[local_70] = 0;
+    cmd.button_bits.array[local_70] = 0;
   }
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x639,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1953,8 +1995,8 @@ void __cdecl PM_AirMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  local_40 = param_1->ps;
-  if (local_40 == (playerState_s *)0x0) {
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x63c,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1962,40 +2004,39 @@ void __cdecl PM_AirMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  if ((local_40->pm_flags & 0x400000U) != 0) {
-    Dtp_AirMove(local_40,param_1);
+  if ((ps->pm_flags & 0x400000U) != 0) {
+    Dtp_AirMove(ps,pm);
   }
-  PM_Friction(local_40,param_2,param_1);
-  cVar1 = (param_1->cmd).forwardmove;
-  local_4c = (float)(int)(param_1->cmd).rightmove;
-  puVar6 = &local_3c;
-  ppVar5 = param_1;
+  PM_Friction(ps,pml,pm);
+  cVar1 = (pm->cmd).forwardmove;
+  smove = (float)(int)(pm->cmd).rightmove;
+  puVar6 = &cmd;
+  ppVar5 = pm;
   for (iVar4 = 0xd; ppVar5 = (pmove_t *)&ppVar5->cmd, iVar4 != 0; iVar4 = iVar4 + -1) {
     puVar6->serverTime = ((usercmd_s *)ppVar5)->serverTime;
     puVar6 = (usercmd_s *)&puVar6->button_bits;
   }
-  local_44 = PM_CmdScale(local_40,&local_3c);
-  param_2->forward[2] = 0.0;
-  param_2->right[2] = 0.0;
-  Vec3Normalize(param_2->forward);
-  Vec3Normalize(param_2->right);
-  for (local_48 = 0; local_48 < 2; local_48 = local_48 + 1) {
-    local_5c[local_48] =
-         param_2->forward[local_48] * (float)(int)cVar1 + param_2->right[local_48] * local_4c;
+  scale = PM_CmdScale(ps,&cmd);
+  pml->forward[2] = 0.0;
+  pml->right[2] = 0.0;
+  Vec3Normalize(pml->forward);
+  Vec3Normalize(pml->right);
+  for (i = 0; i < 2; i = i + 1) {
+    wishvel[i] = pml->forward[i] * (float)(int)cVar1 + pml->right[i] * smove;
   }
-  local_5c[2] = 0.0;
-  local_68 = local_5c[0];
-  local_64 = local_5c[1];
+  wishvel[2] = 0.0;
+  wishdir = wishvel[0];
+  local_64 = wishvel[1];
   local_60 = 0;
-  local_5c[3] = Vec3Normalize(&local_68);
-  local_5c[3] = local_5c[3] * local_44;
-  PM_Accelerate(local_40,param_2,&local_68,local_5c[3],1.0);
-  PM_DoSlideAdjustments(local_40,param_2);
-  if (param_2->groundPlane != 0) {
-    PM_ClipVelocity(local_40->velocity,(float *)&param_2->groundTrace,local_40->velocity);
+  fVar7 = Vec3Normalize(&wishdir);
+  wishspeed = fVar7 * scale;
+  PM_Accelerate(ps,pml,&wishdir,wishspeed,1.0);
+  PM_DoSlideAdjustments(ps,pml);
+  if (pml->groundPlane != 0) {
+    PM_ClipVelocity(ps->velocity,(float *)&pml->groundTrace,ps->velocity);
   }
-  PM_StepSlideMove(param_1,param_2,1);
-  PM_SetMovementDir(param_1,param_2);
+  PM_StepSlideMove(pm,pml,1);
+  PM_SetMovementDir(pm,pml);
   return;
 }
 
@@ -2004,117 +2045,118 @@ void __cdecl PM_AirMove(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_SwimMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_SwimMove(pmove_t *pm,pml_t *pml)
 
 {
-  float fVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  pmove_t *ppVar5;
-  usercmd_s *puVar6;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  pmove_t *ppVar4;
+  usercmd_s *puVar5;
+  float fVar6;
   float fVar7;
   float local_b0;
   float local_a8;
   int local_94;
-  float local_8c;
+  float fmove;
+  float wishdir;
   undefined4 local_88;
   float local_84;
-  float local_80;
-  float local_7c;
-  float local_78 [6];
-  float local_60;
-  float local_5c;
-  float local_58 [4];
-  int local_48;
-  float local_44;
-  playerState_s *local_40;
-  usercmd_s local_3c;
+  float mod;
+  float undertow_scale;
+  float wishvel [6];
+  float floatspeed;
+  float wishspeed;
+  float floatdir [3];
+  float smove;
+  int i;
+  float scale;
+  playerState_s *ps;
+  usercmd_s cmd;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_94 = 0; local_94 < 2; local_94 = local_94 + 1) {
-    local_3c.button_bits.array[local_94] = 0;
+    cmd.button_bits.array[local_94] = 0;
   }
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x68a,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x68a,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_40 = param_1->ps;
-  if ((local_40 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x68d,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x68d,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  PM_Friction(local_40,param_2,param_1);
-  fVar7 = (float)(int)(param_1->cmd).forwardmove;
-  local_58[3] = (float)(int)(param_1->cmd).rightmove;
-  puVar6 = &local_3c;
-  ppVar5 = param_1;
-  for (iVar4 = 0xd; ppVar5 = (pmove_t *)&ppVar5->cmd, iVar4 != 0; iVar4 = iVar4 + -1) {
-    puVar6->serverTime = ((usercmd_s *)ppVar5)->serverTime;
-    puVar6 = (usercmd_s *)&puVar6->button_bits;
+  PM_Friction(ps,pml,pm);
+  fVar6 = (float)(int)(pm->cmd).forwardmove;
+  smove = (float)(int)(pm->cmd).rightmove;
+  puVar5 = &cmd;
+  ppVar4 = pm;
+  for (iVar3 = 0xd; ppVar4 = (pmove_t *)&ppVar4->cmd, iVar3 != 0; iVar3 = iVar3 + -1) {
+    puVar5->serverTime = ((usercmd_s *)ppVar4)->serverTime;
+    puVar5 = (usercmd_s *)&puVar5->button_bits;
   }
-  local_44 = PM_CmdScale(local_40,&local_3c);
-  local_44 = local_44 * (player_waterSpeedScale->current).value;
-  for (local_48 = 0; local_48 < 3; local_48 = local_48 + 1) {
-    local_78[local_48] = param_2->forward[local_48] * fVar7 + param_2->right[local_48] * local_58[3]
-    ;
+  fVar7 = PM_CmdScale(ps,&cmd);
+  scale = fVar7 * (player_waterSpeedScale->current).value;
+  for (i = 0; i < 3; i = i + 1) {
+    wishvel[i] = pml->forward[i] * fVar6 + pml->right[i] * smove;
   }
-  if ((local_40->waterlevel == 3) && (0.0 <= local_78[2])) {
-    local_78[2] = 0.0;
+  if ((ps->waterlevel == 3) && (0.0 <= wishvel[2])) {
+    wishvel[2] = 0.0;
   }
-  local_8c = local_78[0];
-  local_88 = local_78[1];
-  local_84 = local_78[2];
-  local_5c = Vec3Normalize(&local_8c);
-  local_5c = local_5c * local_44;
-  local_58[0] = 0.0;
-  local_58[1] = 0.0;
-  local_58[2] = 1.0;
-  fVar1 = local_40->moveSpeedScaleMultiplier;
-  local_a8 = fVar1;
-  if (0.0 <= fVar1 - 1.5) {
+  wishdir = wishvel[0];
+  local_88 = wishvel[1];
+  local_84 = wishvel[2];
+  fVar7 = Vec3Normalize(&wishdir);
+  wishspeed = fVar7 * scale;
+  floatdir[0] = 0.0;
+  floatdir[1] = 0.0;
+  floatdir[2] = 1.0;
+  fVar7 = ps->moveSpeedScaleMultiplier;
+  local_a8 = fVar7;
+  if (0.0 <= fVar7 - 1.5) {
     local_a8 = 1.5;
   }
-  if (0.5 - fVar1 < 0.0) {
+  if (0.5 - fVar7 < 0.0) {
     local_b0 = local_a8;
   }
   else {
     local_b0 = 0.5;
   }
-  local_80 = local_b0;
+  mod = local_b0;
   if (local_b0 <= 1.0) {
-    local_60 = (player_floatSpeed->current).value / 2.0 +
-               (1.0 - local_b0) * -2.0 * (player_floatSpeed->current).value;
+    floatspeed = (player_floatSpeed->current).value / 2.0 +
+                 (1.0 - local_b0) * -2.0 * (player_floatSpeed->current).value;
   }
   else {
-    local_60 = local_b0 * (player_floatSpeed->current).value;
+    floatspeed = local_b0 * (player_floatSpeed->current).value;
   }
-  if (((3 < local_40->waterlevel) && (fVar7 == 0.0)) && (local_58[3] == 0.0)) {
-    if (0.0 <= local_60) {
-      PM_Accelerate(local_40,param_2,local_58,local_60,2.0);
+  if (((3 < ps->waterlevel) && (fVar6 == 0.0)) && (smove == 0.0)) {
+    if (0.0 <= floatspeed) {
+      PM_Accelerate(ps,pml,floatdir,floatspeed,2.0);
     }
     else {
-      local_60 = local_60 * -1.0;
-      local_58[2] = -1.0;
-      PM_Accelerate(local_40,param_2,local_58,local_60,2.0);
+      floatspeed = floatspeed * -1.0;
+      floatdir[2] = -1.0;
+      PM_Accelerate(ps,pml,floatdir,floatspeed,2.0);
     }
   }
-  PM_Accelerate(local_40,param_2,&local_8c,local_5c,2.0);
-  bVar3 = CM_GetWaterForce(local_40->origin,local_78 + 3,&local_7c);
-  if (bVar3) {
-    PM_Accelerate(local_40,param_2,local_78 + 3,local_7c,2.0);
+  PM_Accelerate(ps,pml,&wishdir,wishspeed,2.0);
+  bVar2 = CM_GetWaterForce(ps->origin,wishvel + 3,&undertow_scale);
+  if (bVar2) {
+    PM_Accelerate(ps,pml,wishvel + 3,undertow_scale,2.0);
   }
-  param_2->groundPlane = 0;
-  param_2->walking = 0;
-  PM_StepSlideMove(param_1,param_2,0);
-  PM_SetMovementDir(param_1,param_2);
+  pml->groundPlane = 0;
+  pml->walking = 0;
+  PM_StepSlideMove(pm,pml,0);
+  PM_SetMovementDir(pm,pml);
   return;
 }
 
@@ -2123,7 +2165,7 @@ void __cdecl PM_SwimMove(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_WalkMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_WalkMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
@@ -2134,119 +2176,120 @@ void __cdecl PM_WalkMove(pmove_t *param_1,pml_t *param_2)
   float fVar6;
   float fVar7;
   int local_78;
-  float local_70 [3];
-  float local_64;
+  float fmove;
+  float wishdir [3];
+  float wishvel;
   float local_60;
   undefined4 local_5c;
-  int local_58;
-  float local_54;
-  float local_50;
-  float local_4c;
-  float local_48;
-  playerState_s *local_44;
-  usercmd_s local_40;
+  int iStance;
+  float wishspeed;
+  float acceleration;
+  float smove;
+  float scale;
+  playerState_s *ps;
+  usercmd_s cmd;
   uint local_c;
-  int local_8;
+  int canJump;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_78 = 0; local_78 < 2; local_78 = local_78 + 1) {
-    local_40.button_bits.array[local_78] = 0;
+    cmd.button_bits.array[local_78] = 0;
   }
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x6f1,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_44 = param_1->ps;
-  if ((local_44 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x6f4,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_44->pm_flags & 0x4000U) != 0) {
-    Jump_ApplySlowdown(local_44);
+  if ((ps->pm_flags & 0x4000U) != 0) {
+    Jump_ApplySlowdown(ps);
   }
-  if ((local_44->pm_flags & 0x8000U) != 0) {
-    (param_1->cmd).rightmove =
-         (schar)(int)((float)(int)(param_1->cmd).rightmove *
+  if ((ps->pm_flags & 0x8000U) != 0) {
+    (pm->cmd).rightmove =
+         (schar)(int)((float)(int)(pm->cmd).rightmove *
                      (player_sprintStrafeSpeedScale->current).value);
   }
-  local_8 = 1;
-  if ((local_44->groundEntityNum != 0x3ff) &&
-     (iVar3 = (*(code *)(&PTR_CG_IsEntWalkable_00dff52c)[(uint)param_1->handler * 8])
-                        (param_1->localClientNum,local_44->groundEntityNum), iVar3 == 0)) {
-    local_8 = 0;
+  canJump = 1;
+  if ((ps->groundEntityNum != 0x3ff) &&
+     (iVar3 = (*(code *)(&PTR_CG_IsEntWalkable_00dff52c)[(uint)pm->handler * 8])
+                        (pm->localClientNum,ps->groundEntityNum), iVar3 == 0)) {
+    canJump = 0;
   }
-  if ((local_8 != 0) && (bVar2 = Jump_Check(param_1,param_2), bVar2)) {
-    PM_AirMove(param_1,param_2);
+  if ((canJump != 0) && (bVar2 = Jump_Check(pm,pml), bVar2)) {
+    PM_AirMove(pm,pml);
     return;
   }
-  iVar3 = Dtp_Update(param_1,param_2);
+  iVar3 = Dtp_Update(pm,pml);
   if (iVar3 == 0) {
-    PM_Friction(local_44,param_2,param_1);
-    fVar6 = (float)(int)(param_1->cmd).forwardmove;
-    local_4c = (float)(int)(param_1->cmd).rightmove;
-    puVar5 = &local_40;
-    ppVar4 = param_1;
+    PM_Friction(ps,pml,pm);
+    fVar6 = (float)(int)(pm->cmd).forwardmove;
+    smove = (float)(int)(pm->cmd).rightmove;
+    puVar5 = &cmd;
+    ppVar4 = pm;
     for (iVar3 = 0xd; ppVar4 = (pmove_t *)&ppVar4->cmd, iVar3 != 0; iVar3 = iVar3 + -1) {
       puVar5->serverTime = ((usercmd_s *)ppVar4)->serverTime;
       puVar5 = (usercmd_s *)&puVar5->button_bits;
     }
-    local_48 = PM_CmdScale_Walk(param_1,&local_40);
-    fVar7 = PM_DamageScale_Walk(local_44->damageTimer);
-    local_48 = fVar7 * local_48;
-    local_44->damageTimer = local_44->damageTimer - (int)(param_2->frametime * 1000.0);
-    if (local_44->damageTimer < 1) {
-      local_44->damageTimer = 0;
+    scale = PM_CmdScale_Walk(pm,&cmd);
+    fVar7 = PM_DamageScale_Walk(ps->damageTimer);
+    scale = fVar7 * scale;
+    ps->damageTimer = ps->damageTimer - (int)(pml->frametime * 1000.0);
+    if (ps->damageTimer < 1) {
+      ps->damageTimer = 0;
     }
-    param_2->forward[2] = 0.0;
-    param_2->right[2] = 0.0;
-    Vec2Normalize(param_2->forward);
-    Vec2Normalize(param_2->right);
-    local_64 = fVar6 * param_2->forward[0] + local_4c * param_2->right[0];
-    local_60 = fVar6 * param_2->forward[1] + local_4c * param_2->right[1];
+    pml->forward[2] = 0.0;
+    pml->right[2] = 0.0;
+    Vec2Normalize(pml->forward);
+    Vec2Normalize(pml->right);
+    wishvel = fVar6 * pml->forward[0] + smove * pml->right[0];
+    local_60 = fVar6 * pml->forward[1] + smove * pml->right[1];
     local_5c = 0;
-    local_54 = Vec3NormalizeTo(&local_64,local_70);
-    local_54 = local_54 * local_48;
-    PM_ProjectVelocity(local_70,(float *)&param_2->groundTrace,local_70);
-    local_58 = PM_GetEffectiveStance(local_44);
-    if (((param_2->groundTrace).sflags & 2U) == 0) {
-      if ((local_44->pm_flags & 0x100U) == 0) {
-        if (local_58 == 1) {
-          local_50 = 19.0;
+    fVar6 = Vec3NormalizeTo(&wishvel,wishdir);
+    wishspeed = fVar6 * scale;
+    PM_ProjectVelocity(wishdir,(float *)&pml->groundTrace,wishdir);
+    iStance = PM_GetEffectiveStance(ps);
+    if (((pml->groundTrace).sflags & 2U) == 0) {
+      if ((ps->pm_flags & 0x100U) == 0) {
+        if (iStance == 1) {
+          acceleration = 19.0;
         }
-        else if (local_58 == 2) {
-          local_50 = 12.0;
+        else if (iStance == 2) {
+          acceleration = 12.0;
         }
         else {
-          local_50 = 9.0;
+          acceleration = 9.0;
         }
       }
       else {
-        local_50 = 1.0;
+        acceleration = 1.0;
       }
     }
     else {
-      local_50 = 2.0;
+      acceleration = 2.0;
     }
-    if ((local_44->pm_flags & 0x80U) != 0) {
-      local_50 = local_50 * 0.25;
+    if ((ps->pm_flags & 0x80U) != 0) {
+      acceleration = acceleration * 0.25;
     }
-    PM_Accelerate(local_44,param_2,local_70,local_54,local_50);
-    PM_DoSlideAdjustments(local_44,param_2);
-    if ((((param_2->groundTrace).sflags & 2U) != 0) || ((local_44->pm_flags & 0x100U) != 0)) {
-      local_44->velocity[2] = local_44->velocity[2] - (float)local_44->gravity * param_2->frametime;
+    PM_Accelerate(ps,pml,wishdir,wishspeed,acceleration);
+    PM_DoSlideAdjustments(ps,pml);
+    if ((((pml->groundTrace).sflags & 2U) != 0) || ((ps->pm_flags & 0x100U) != 0)) {
+      ps->velocity[2] = ps->velocity[2] - (float)ps->gravity * pml->frametime;
     }
-    PM_ProjectVelocity(local_44->velocity,(float *)&param_2->groundTrace,local_44->velocity);
-    PM_StepSlideMove(param_1,param_2,0);
-    PM_SetMovementDir(param_1,param_2);
+    PM_ProjectVelocity(ps->velocity,(float *)&pml->groundTrace,ps->velocity);
+    PM_StepSlideMove(pm,pml,0);
+    PM_SetMovementDir(pm,pml);
   }
   else {
-    PM_AirMove(param_1,param_2);
+    PM_AirMove(pm,pml);
   }
   return;
 }
@@ -2254,33 +2297,34 @@ void __cdecl PM_WalkMove(pmove_t *param_1,pml_t *param_2)
 
 // 00431A60  PM_DeadMove  (bgame/bg_pmove.cpp:1885)
 
-void __cdecl PM_DeadMove(playerState_s *param_1,pml_t *param_2)
+void __cdecl PM_DeadMove(playerState_s *ps,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float forward;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x760,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->walking != 0) {
-    fVar3 = Abs((phys_vec3 *)param_1->velocity);
+  if (pml->walking != 0) {
+    fVar3 = Abs((phys_vec3 *)ps->velocity);
     fVar3 = fVar3 - 20.0;
     if (0.0 < fVar3) {
-      Vec3Normalize(param_1->velocity);
-      param_1->velocity[0] = fVar3 * param_1->velocity[0];
-      param_1->velocity[1] = fVar3 * param_1->velocity[1];
-      param_1->velocity[2] = fVar3 * param_1->velocity[2];
+      Vec3Normalize(ps->velocity);
+      ps->velocity[0] = fVar3 * ps->velocity[0];
+      ps->velocity[1] = fVar3 * ps->velocity[1];
+      ps->velocity[2] = fVar3 * ps->velocity[2];
     }
     else {
-      param_1->velocity[0] = 0.0;
-      param_1->velocity[1] = 0.0;
-      param_1->velocity[2] = 0.0;
+      ps->velocity[0] = 0.0;
+      ps->velocity[1] = 0.0;
+      ps->velocity[2] = 0.0;
     }
   }
   return;
@@ -2289,224 +2333,225 @@ void __cdecl PM_DeadMove(playerState_s *param_1,pml_t *param_2)
 
 // 00431B70  PM_NoclipMove  (bgame/bg_pmove.cpp:1915)
 
-void __cdecl PM_NoclipMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_NoclipMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float local_7c;
-  float local_48;
+  float fmove;
+  float wishdir;
   undefined4 local_44;
   undefined4 local_40;
-  float local_3c;
-  float local_38 [4];
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
-  playerState_s *local_c;
-  float local_8;
+  float control;
+  float wishvel [3];
+  float wishspeed;
+  float curFriction;
+  float newspeed;
+  float drop;
+  float speed;
+  float smove;
+  int i;
+  float scale;
+  playerState_s *ps;
+  float umove;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x78b,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = param_1->ps;
-  if ((local_c == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x78e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c->viewHeightTarget = 0x3c;
-  local_1c = Abs((phys_vec3 *)local_c->velocity);
-  if (1.0 <= local_1c) {
-    local_28 = (friction->current).value * 1.5;
-    local_7c = local_1c;
-    if (local_1c < (stopspeed->current).value) {
+  ps->viewHeightTarget = 0x3c;
+  speed = Abs((phys_vec3 *)ps->velocity);
+  if (1.0 <= speed) {
+    curFriction = (friction->current).value * 1.5;
+    local_7c = speed;
+    if (speed < (stopspeed->current).value) {
       local_7c = (stopspeed->current).value;
     }
-    local_3c = local_7c;
-    local_20 = local_7c * local_28 * param_2->frametime + 0.0;
-    local_24 = local_1c - local_20;
-    if (local_24 < 0.0) {
-      local_24 = 0.0;
+    control = local_7c;
+    drop = local_7c * curFriction * pml->frametime + 0.0;
+    newspeed = speed - drop;
+    if (newspeed < 0.0) {
+      newspeed = 0.0;
     }
-    local_24 = local_24 / local_1c;
-    local_c->velocity[0] = local_24 * local_c->velocity[0];
-    local_c->velocity[1] = local_24 * local_c->velocity[1];
-    local_c->velocity[2] = local_24 * local_c->velocity[2];
+    newspeed = newspeed / speed;
+    ps->velocity[0] = newspeed * ps->velocity[0];
+    ps->velocity[1] = newspeed * ps->velocity[1];
+    ps->velocity[2] = newspeed * ps->velocity[2];
   }
   else {
-    local_c->velocity[0] = 0.0;
-    local_c->velocity[1] = 0.0;
-    local_c->velocity[2] = 0.0;
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    ps->velocity[2] = 0.0;
   }
-  fVar3 = (float)(int)(param_1->cmd).forwardmove;
-  local_18 = (float)(int)(param_1->cmd).rightmove;
-  local_8 = 0.0;
-  bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,7);
+  fVar3 = (float)(int)(pm->cmd).forwardmove;
+  smove = (float)(int)(pm->cmd).rightmove;
+  umove = 0.0;
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,7);
   if (bVar2) {
-    local_8 = local_8 + 127.0;
+    umove = umove + 127.0;
   }
-  bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,6);
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,6);
   if (bVar2) {
-    local_8 = local_8 - 127.0;
+    umove = umove - 127.0;
   }
-  local_10 = PM_MoveScale(local_c,fVar3,local_18,local_8);
-  for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-    local_38[local_14] =
-         param_2->forward[local_14] * fVar3 + param_2->right[local_14] * local_18 +
-         param_2->up[local_14] * local_8;
+  scale = PM_MoveScale(ps,fVar3,smove,umove);
+  for (i = 0; i < 3; i = i + 1) {
+    wishvel[i] = pml->forward[i] * fVar3 + pml->right[i] * smove + pml->up[i] * umove;
   }
-  local_48 = local_38[0];
-  local_44 = local_38[1];
-  local_40 = local_38[2];
-  local_38[3] = Vec3Normalize(&local_48);
-  local_38[3] = local_38[3] * local_10;
-  PM_Accelerate(local_c,param_2,&local_48,local_38[3],9.0);
-  fVar3 = param_2->frametime;
-  local_c->origin[0] = fVar3 * local_c->velocity[0] + local_c->origin[0];
-  local_c->origin[1] = fVar3 * local_c->velocity[1] + local_c->origin[1];
-  local_c->origin[2] = fVar3 * local_c->velocity[2] + local_c->origin[2];
+  wishdir = wishvel[0];
+  local_44 = wishvel[1];
+  local_40 = wishvel[2];
+  fVar3 = Vec3Normalize(&wishdir);
+  wishspeed = fVar3 * scale;
+  PM_Accelerate(ps,pml,&wishdir,wishspeed,9.0);
+  fVar3 = pml->frametime;
+  ps->origin[0] = fVar3 * ps->velocity[0] + ps->origin[0];
+  ps->origin[1] = fVar3 * ps->velocity[1] + ps->origin[1];
+  ps->origin[2] = fVar3 * ps->velocity[2] + ps->origin[2];
   return;
 }
 
 
 // 00431F20  PM_UFOMove  (bgame/bg_pmove.cpp:1996)
 
-void __cdecl PM_UFOMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UFOMove(pmove_t *pm,pml_t *pml)
 
 {
-  float fVar1;
-  code *pcVar2;
-  bool bVar3;
+  code *pcVar1;
+  bool bVar2;
+  float fVar3;
   float local_94;
-  float local_64 [6];
-  int local_4c;
-  float local_48;
-  float local_44;
+  float forward [6];
+  int i;
+  float fmove;
+  float wishdir;
   undefined4 local_40;
   undefined4 local_3c;
-  float local_38;
-  float local_34 [4];
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  playerState_s *local_c;
-  float local_8;
+  float control;
+  float wishvel [3];
+  float wishspeed;
+  float curFriction;
+  float newspeed;
+  float drop;
+  float speed;
+  float smove;
+  float scale;
+  playerState_s *ps;
+  float umove;
   
-  if (param_1 == (pmove_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x7d9,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (pm == (pmove_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x7d9,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_c = param_1->ps;
-  if (local_c == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x7dc,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x7dc,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_c->viewHeightTarget = 0x3c;
-  local_48 = (float)(int)(param_1->cmd).forwardmove;
-  local_14 = (float)(int)(param_1->cmd).rightmove;
-  local_8 = 0.0;
-  bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,7);
-  if (bVar3) {
-    local_8 = local_8 + 127.0;
+  ps->viewHeightTarget = 0x3c;
+  fmove = (float)(int)(pm->cmd).forwardmove;
+  smove = (float)(int)(pm->cmd).rightmove;
+  umove = 0.0;
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,7);
+  if (bVar2) {
+    umove = umove + 127.0;
   }
-  bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,6);
-  if (bVar3) {
-    local_8 = local_8 - 127.0;
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,6);
+  if (bVar2) {
+    umove = umove - 127.0;
   }
-  if (((local_48 == 0.0) && (local_14 == 0.0)) && (local_8 == 0.0)) {
-    local_18 = 0.0;
+  if (((fmove == 0.0) && (smove == 0.0)) && (umove == 0.0)) {
+    speed = 0.0;
   }
   else {
-    local_18 = Abs((phys_vec3 *)local_c->velocity);
+    speed = Abs((phys_vec3 *)ps->velocity);
   }
-  if (1.0 <= local_18) {
-    local_24 = (friction->current).value * 1.5;
-    if ((stopspeed->current).value <= local_18) {
-      local_94 = local_18;
+  if (1.0 <= speed) {
+    curFriction = (friction->current).value * 1.5;
+    if ((stopspeed->current).value <= speed) {
+      local_94 = speed;
     }
     else {
       local_94 = (stopspeed->current).value;
     }
-    local_38 = local_94;
-    local_1c = local_94 * local_24 * param_2->frametime + 0.0;
-    local_20 = local_18 - local_1c;
-    if (local_20 < 0.0) {
-      local_20 = 0.0;
+    control = local_94;
+    drop = local_94 * curFriction * pml->frametime + 0.0;
+    newspeed = speed - drop;
+    if (newspeed < 0.0) {
+      newspeed = 0.0;
     }
-    local_20 = local_20 / local_18;
-    local_c->velocity[0] = local_20 * local_c->velocity[0];
-    local_c->velocity[1] = local_20 * local_c->velocity[1];
-    local_c->velocity[2] = local_20 * local_c->velocity[2];
+    newspeed = newspeed / speed;
+    ps->velocity[0] = newspeed * ps->velocity[0];
+    ps->velocity[1] = newspeed * ps->velocity[1];
+    ps->velocity[2] = newspeed * ps->velocity[2];
   }
   else {
-    local_c->velocity[0] = 0.0;
-    local_c->velocity[1] = 0.0;
-    local_c->velocity[2] = 0.0;
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    ps->velocity[2] = 0.0;
   }
-  local_10 = PM_MoveScale(local_c,local_48,local_14,local_8);
-  local_64[4] = 0.0;
-  local_64[3] = 0.0;
-  local_64[5] = 1.0;
-  Vec3Cross(local_64 + 3,param_2->right,local_64);
-  for (local_4c = 0; local_4c < 3; local_4c = local_4c + 1) {
-    local_34[local_4c] =
-         local_64[local_4c] * local_48 + param_2->right[local_4c] * local_14 +
-         local_64[local_4c + 3] * local_8;
+  scale = PM_MoveScale(ps,fmove,smove,umove);
+  forward[4] = 0.0;
+  forward[3] = 0.0;
+  forward[5] = 1.0;
+  Vec3Cross(forward + 3,pml->right,forward);
+  for (i = 0; i < 3; i = i + 1) {
+    wishvel[i] = forward[i] * fmove + pml->right[i] * smove + forward[i + 3] * umove;
   }
-  local_44 = local_34[0];
-  local_40 = local_34[1];
-  local_3c = local_34[2];
-  local_34[3] = Vec3Normalize(&local_44);
-  local_34[3] = local_34[3] * local_10;
-  PM_Accelerate(local_c,param_2,&local_44,local_34[3],9.0);
-  fVar1 = param_2->frametime;
-  local_c->origin[0] = fVar1 * local_c->velocity[0] + local_c->origin[0];
-  local_c->origin[1] = fVar1 * local_c->velocity[1] + local_c->origin[1];
-  local_c->origin[2] = fVar1 * local_c->velocity[2] + local_c->origin[2];
+  wishdir = wishvel[0];
+  local_40 = wishvel[1];
+  local_3c = wishvel[2];
+  fVar3 = Vec3Normalize(&wishdir);
+  wishspeed = fVar3 * scale;
+  PM_Accelerate(ps,pml,&wishdir,wishspeed,9.0);
+  fVar3 = pml->frametime;
+  ps->origin[0] = fVar3 * ps->velocity[0] + ps->origin[0];
+  ps->origin[1] = fVar3 * ps->velocity[1] + ps->origin[1];
+  ps->origin[2] = fVar3 * ps->velocity[2] + ps->origin[2];
   return;
 }
 
 
 // 0042AE10  PM_FootstepType  (bgame/bg_pmove.cpp:2120)
 
-int __cdecl PM_FootstepType(pmove_t *param_1,pml_t *param_2)
+int __cdecl PM_FootstepType(pmove_t *pm,pml_t *pml)
 
 {
   playerState_s *ppVar1;
   uint uVar2;
   int iVar3;
+  int iPMFlags;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   uVar2 = ppVar1->pm_flags;
   if ((uVar2 & 1) == 0) {
     if ((uVar2 & 2) == 0) {
       if (((uVar2 & 0x40) == 0) && (ppVar1->leanf == 0.0)) {
         if ((uVar2 & 0x8000) == 0) {
-          if ((player_runThreshhold->current).value < param_1->xyspeed ||
-              (player_runThreshhold->current).value == param_1->xyspeed) {
+          if ((player_runThreshhold->current).value < pm->xyspeed ||
+              (player_runThreshhold->current).value == pm->xyspeed) {
             iVar3 = 0x68;
           }
           else {
@@ -2522,8 +2567,8 @@ int __cdecl PM_FootstepType(pmove_t *param_1,pml_t *param_2)
       }
     }
     else if (((uVar2 & 0x40) == 0) && (ppVar1->leanf == 0.0)) {
-      if ((player_runThreshhold->current).value < param_1->xyspeed ||
-          (player_runThreshhold->current).value == param_1->xyspeed) {
+      if ((player_runThreshhold->current).value < pm->xyspeed ||
+          (player_runThreshhold->current).value == pm->xyspeed) {
         iVar3 = 0x6a;
       }
       else {
@@ -2543,7 +2588,7 @@ int __cdecl PM_FootstepType(pmove_t *param_1,pml_t *param_2)
 
 // 00433130  PM_LightLandingForSurface  (bgame/bg_pmove.cpp:2170)
 
-int __cdecl PM_LightLandingForSurface(playerState_s *param_1,pml_t *param_2)
+int __cdecl PM_LightLandingForSurface(playerState_s *ps,pml_t *pml)
 
 {
   return 0x69;
@@ -2552,24 +2597,26 @@ int __cdecl PM_LightLandingForSurface(playerState_s *param_1,pml_t *param_2)
 
 // 00433150  PM_HardLandingForSurface  (bgame/bg_pmove.cpp:2212)
 
-int __cdecl PM_HardLandingForSurface(playerState_s *param_1,pml_t *param_2)
+int __cdecl PM_HardLandingForSurface(playerState_s *ps,pml_t *pml)
 
 {
   int iVar1;
+  int iSurfType;
   
-  iVar1 = PM_GroundSurfaceType(param_1,param_2);
+  iVar1 = PM_GroundSurfaceType(ps,pml);
   return iVar1 + 0x6f;
 }
 
 
 // 00433180  PM_DamageLandingForSurface  (bgame/bg_pmove.cpp:2232)
 
-int __cdecl PM_DamageLandingForSurface(playerState_s *param_1,pml_t *param_2)
+int __cdecl PM_DamageLandingForSurface(playerState_s *ps,pml_t *pml)
 
 {
   int iVar1;
+  int iSurfType;
   
-  iVar1 = PM_GroundSurfaceType(param_1,param_2);
+  iVar1 = PM_GroundSurfaceType(ps,pml);
   if (iVar1 == 0) {
     Com_PrintError(1,
                    "PM_DamageLandingForSurface has been called with a ground surface of type \'NONE\' near (%.2f %.2f %.2f). \nThis means a player has landed on a surface that wasn\'t properly setup to be used as a ground surface. \nUse a different material which has a surface type set.\n"
@@ -2584,7 +2631,7 @@ int __cdecl PM_DamageLandingForSurface(playerState_s *param_1,pml_t *param_2)
 /* WARNING: Removing unreachable block (ram,0x00432d72) */
 /* WARNING: Removing unreachable block (ram,0x00432d96) */
 
-void __cdecl PM_CrashLand(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_CrashLand(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
@@ -2595,45 +2642,45 @@ void __cdecl PM_CrashLand(pmove_t *param_1,pml_t *param_2)
   uint *puVar5;
   uint extraout_EDX;
   playerState_s *ppVar6;
-  uint local_68;
-  uint local_48;
-  uint local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
-  uint local_28;
-  int local_24;
-  float local_20;
-  float local_1c;
-  uint local_18;
-  float local_14;
-  playerState_s *local_10;
-  float local_c;
-  float local_8;
+  int local_68;
+  int local_48;
+  int damage;
+  float fallHeight;
+  float t;
+  float vel;
+  float c;
+  float dist;
+  float landVel;
+  int viewDip;
+  int stunTime;
+  float b;
+  float acc;
+  int surfaceType;
+  float a;
+  playerState_s *ps;
+  float den;
+  float fSpeedMult;
   
-  local_10 = param_1->ps;
-  if ((local_10 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x8dc,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_10->waterlevel != 3) {
-    local_34 = param_2->previous_origin[2] - local_10->origin[2];
-    local_38 = param_2->previous_velocity[2];
-    local_1c = -(float)local_10->gravity;
-    local_14 = local_1c * 0.5;
-    local_c = local_38 * local_38 - local_14 * 4.0 * local_34;
-    if (0.0 <= local_c) {
-      local_3c = (-local_38 - SQRT(local_c)) / (local_14 * 2.0);
-      local_2c = (local_3c * local_1c + local_38) * -1.0;
-      local_40 = (local_2c * local_2c) / ((float)local_10->gravity * 2.0);
-      local_30 = local_34;
-      local_20 = local_38;
+  if (ps->waterlevel != 3) {
+    c = pml->previous_origin[2] - ps->origin[2];
+    vel = pml->previous_velocity[2];
+    acc = -(float)ps->gravity;
+    a = acc * 0.5;
+    den = vel * vel - a * 4.0 * c;
+    if (0.0 <= den) {
+      t = (-vel - SQRT(den)) / (a * 2.0);
+      landVel = (t * acc + vel) * -1.0;
+      fallHeight = (landVel * landVel) / ((float)ps->gravity * 2.0);
+      dist = c;
+      b = vel;
       if (((bg_fallDamageMinHeight->current).value <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x8f4,0,
                                    "%s"), !bVar2)) {
@@ -2649,110 +2696,110 @@ void __cdecl PM_CrashLand(pmove_t *param_1,pml_t *param_2)
         (*pcVar1)();
         return;
       }
-      if ((bg_fallDamageMinHeight->current).value < local_40) {
-        if (local_40 < (bg_fallDamageMaxHeight->current).value) {
-          local_48 = (uint)(((local_40 - (bg_fallDamageMinHeight->current).value) /
-                            ((bg_fallDamageMaxHeight->current).value -
-                            (bg_fallDamageMinHeight->current).value)) * 100.0);
-          if (99 < (int)local_48) {
+      if ((bg_fallDamageMinHeight->current).value < fallHeight) {
+        if (fallHeight < (bg_fallDamageMaxHeight->current).value) {
+          local_48 = (int)(((fallHeight - (bg_fallDamageMinHeight->current).value) /
+                           ((bg_fallDamageMaxHeight->current).value -
+                           (bg_fallDamageMinHeight->current).value)) * 100.0);
+          if (99 < local_48) {
             local_48 = 100;
           }
-          if ((int)local_48 < 1) {
+          if (local_48 < 1) {
             local_68 = 0;
           }
           else {
             local_68 = local_48;
           }
-          local_44 = local_68;
+          damage = local_68;
         }
         else {
-          local_44 = 100;
+          damage = 100;
         }
       }
       else {
-        local_44 = 0;
+        damage = 0;
       }
-      Dtp_AdjustDamage(local_10,local_40,(int *)&local_44);
-      ppVar6 = local_10;
-      puVar5 = local_10->perks;
+      Dtp_AdjustDamage(ps,fallHeight,&damage);
+      ppVar6 = ps;
+      puVar5 = ps->perks;
       _allshl();
       if ((extraout_EAX & *puVar5) != 0 || (extraout_EDX & ppVar6->perks[1]) != 0) {
-        local_44 = 0;
+        damage = 0;
       }
-      if ((((param_2->groundTrace).sflags & 1U) != 0) || (8 < local_10->pm_type)) {
-        local_44 = 0;
+      if ((((pml->groundTrace).sflags & 1U) != 0) || (8 < ps->pm_type)) {
+        damage = 0;
       }
-      if (local_10->waterlevel == 2) {
-        local_44 = (uint)((float)(int)local_44 * 0.5);
+      if (ps->waterlevel == 2) {
+        damage = (int)((float)damage * 0.5);
       }
-      if (12.0 < local_40) {
-        local_28 = (uint)(((local_40 - 12.0) / 26.0) * 4.0 + 4.0);
-        if (0x18 < (int)local_28) {
-          local_28 = 0x18;
+      if (12.0 < fallHeight) {
+        viewDip = (int)(((fallHeight - 12.0) / 26.0) * 4.0 + 4.0);
+        if (0x18 < viewDip) {
+          viewDip = 0x18;
         }
-        if ((local_10->pm_flags & 0x400000U) == 0) {
-          BG_AnimScriptEvent(param_1,ANIM_ET_LAND,0,1);
+        if ((ps->pm_flags & 0x400000U) == 0) {
+          BG_AnimScriptEvent(pm,ANIM_ET_LAND,0,1);
         }
       }
       else {
-        local_28 = 0;
+        viewDip = 0;
       }
-      uVar3 = PM_GroundSurfaceType(local_10,param_2);
-      local_18 = uVar3;
-      if (local_44 == 0) {
-        if (4.0 < local_40) {
-          if (8.0 <= local_40) {
-            if (12.0 <= local_40) {
-              local_10->velocity[0] = local_10->velocity[0] * 0.67;
-              local_10->velocity[1] = local_10->velocity[1] * 0.67;
-              local_10->velocity[2] = local_10->velocity[2] * 0.67;
-              uVar3 = local_28;
-              ppVar6 = local_10;
-              iVar4 = PM_HardLandingForSurface(local_10,param_2);
+      uVar3 = PM_GroundSurfaceType(ps,pml);
+      surfaceType = uVar3;
+      if (damage == 0) {
+        if (4.0 < fallHeight) {
+          if (8.0 <= fallHeight) {
+            if (12.0 <= fallHeight) {
+              ps->velocity[0] = ps->velocity[0] * 0.67;
+              ps->velocity[1] = ps->velocity[1] * 0.67;
+              ps->velocity[2] = ps->velocity[2] * 0.67;
+              uVar3 = viewDip;
+              ppVar6 = ps;
+              iVar4 = PM_HardLandingForSurface(ps,pml);
               BG_AddPredictableEventToPlayerstate(iVar4,uVar3,ppVar6);
             }
             else {
-              ppVar6 = local_10;
+              ppVar6 = ps;
               iVar4 = DB_SizeofXAsset<XAnimParts>();
               BG_AddPredictableEventToPlayerstate(iVar4,uVar3,ppVar6);
             }
           }
           else {
-            ppVar6 = local_10;
-            iVar4 = PM_LightLandingForSurface(local_10,param_2);
+            ppVar6 = ps;
+            iVar4 = PM_LightLandingForSurface(ps,pml);
             BG_AddPredictableEventToPlayerstate(iVar4,uVar3,ppVar6);
           }
         }
       }
       else {
-        if (((int)local_44 < 100) && (((param_2->groundTrace).sflags & 2U) == 0)) {
-          local_24 = local_44 * 0x23 + 500;
-          if (2000 < local_24) {
-            local_24 = 2000;
+        if ((damage < 100) && (((pml->groundTrace).sflags & 2U) == 0)) {
+          stunTime = damage * 0x23 + 500;
+          if (2000 < stunTime) {
+            stunTime = 2000;
           }
-          if (local_24 < 0x1f5) {
-            local_8 = 0.5;
+          if (stunTime < 0x1f5) {
+            fSpeedMult = 0.5;
           }
-          else if (local_24 < 0x5dc) {
-            local_8 = 0.5 - (((float)local_24 - 500.0) / 1000.0) * 0.3;
+          else if (stunTime < 0x5dc) {
+            fSpeedMult = 0.5 - (((float)stunTime - 500.0) / 1000.0) * 0.3;
           }
           else {
-            local_8 = 0.2;
+            fSpeedMult = 0.2;
           }
-          local_10->pm_time = local_24;
-          local_10->pm_flags = local_10->pm_flags | 0x80;
-          local_10->velocity[0] = local_8 * local_10->velocity[0];
-          local_10->velocity[1] = local_8 * local_10->velocity[1];
-          local_10->velocity[2] = local_8 * local_10->velocity[2];
+          ps->pm_time = stunTime;
+          ps->pm_flags = ps->pm_flags | 0x80;
+          ps->velocity[0] = fSpeedMult * ps->velocity[0];
+          ps->velocity[1] = fSpeedMult * ps->velocity[1];
+          ps->velocity[2] = fSpeedMult * ps->velocity[2];
         }
         else {
-          local_10->velocity[0] = local_10->velocity[0] * 0.67;
-          local_10->velocity[1] = local_10->velocity[1] * 0.67;
-          local_10->velocity[2] = local_10->velocity[2] * 0.67;
+          ps->velocity[0] = ps->velocity[0] * 0.67;
+          ps->velocity[1] = ps->velocity[1] * 0.67;
+          ps->velocity[2] = ps->velocity[2] * 0.67;
         }
-        uVar3 = local_44;
-        ppVar6 = local_10;
-        iVar4 = PM_DamageLandingForSurface(local_10,param_2);
+        uVar3 = damage;
+        ppVar6 = ps;
+        iVar4 = PM_DamageLandingForSurface(ps,pml);
         BG_AddPredictableEventToPlayerstate(iVar4,uVar3,ppVar6);
       }
     }
@@ -2763,69 +2810,69 @@ void __cdecl PM_CrashLand(pmove_t *param_1,pml_t *param_2)
 
 // 004331F0  PM_CorrectAllSolid  (bgame/bg_pmove.cpp:2430)
 
-int __cdecl PM_CorrectAllSolid(pmove_t *param_1,pml_t *param_2,trace_t *param_3)
+int __cdecl PM_CorrectAllSolid(pmove_t *pm,pml_t *pml,trace_t *trace)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  ushort uVar4;
-  int iVar5;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  ushort uVar3;
+  int iVar4;
+  trace_t *ptVar5;
   trace_t *ptVar6;
-  trace_t *ptVar7;
-  uint local_18;
-  float local_10;
+  uint i;
+  playerState_s *ps;
+  float point;
   float local_c;
   float local_8;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x984,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x984,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x987,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x987,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  local_18 = 0;
+  i = 0;
   while( true ) {
-    if (0x19 < local_18) {
-      uVar4 = Trace_GetEntityHitId(param_3);
-      ppVar1->groundEntityNum = (uint)uVar4;
-      param_2->groundPlane = 0;
-      param_2->almostGroundPlane = 0;
-      param_2->walking = 0;
-      Jump_ClearState(ppVar1);
+    if (0x19 < i) {
+      uVar3 = Trace_GetEntityHitId(trace);
+      ps_00->groundEntityNum = (uint)uVar3;
+      pml->groundPlane = 0;
+      pml->almostGroundPlane = 0;
+      pml->walking = 0;
+      Jump_ClearState(ps_00);
       return 0;
     }
-    local_10 = ppVar1->origin[0] + CorrectSolidDeltas[local_18][0];
-    local_c = ppVar1->origin[1] + CorrectSolidDeltas[local_18][1];
-    local_8 = ppVar1->origin[2] + CorrectSolidDeltas[local_18][2];
-    PM_playerTrace(param_1,param_3,&local_10,param_1->mins,param_1->maxs,&local_10,
-                   (uint)ppVar1->clientNum,param_1->tracemask);
-    if (param_3->startsolid == false) break;
-    local_18 = local_18 + 1;
+    point = ps_00->origin[0] + CorrectSolidDeltas[i][0];
+    local_c = ps_00->origin[1] + CorrectSolidDeltas[i][1];
+    local_8 = ps_00->origin[2] + CorrectSolidDeltas[i][2];
+    PM_playerTrace(pm,trace,&point,pm->mins,pm->maxs,&point,(uint)ps_00->clientNum,pm->tracemask);
+    if (trace->startsolid == false) break;
+    i = i + 1;
   }
-  ppVar1->origin[0] = local_10;
-  ppVar1->origin[1] = local_c;
-  ppVar1->origin[2] = local_8;
-  local_8 = (ppVar1->origin[2] - 1.0) - 0.25;
-  PM_playerTrace(param_1,param_3,ppVar1->origin,param_1->mins,param_1->maxs,&local_10,
-                 (uint)ppVar1->clientNum,param_1->tracemask);
-  ptVar6 = param_3;
-  ptVar7 = &param_2->groundTrace;
-  for (iVar5 = 0xe; iVar5 != 0; iVar5 = iVar5 + -1) {
-    (ptVar7->normal).vec.v[0] = (ptVar6->normal).vec.v[0];
+  ps_00->origin[0] = point;
+  ps_00->origin[1] = local_c;
+  ps_00->origin[2] = local_8;
+  local_8 = (ps_00->origin[2] - 1.0) - 0.25;
+  PM_playerTrace(pm,trace,ps_00->origin,pm->mins,pm->maxs,&point,(uint)ps_00->clientNum,
+                 pm->tracemask);
+  ptVar5 = trace;
+  ptVar6 = &pml->groundTrace;
+  for (iVar4 = 0xe; iVar4 != 0; iVar4 = iVar4 + -1) {
+    (ptVar6->normal).vec.v[0] = (ptVar5->normal).vec.v[0];
+    ptVar5 = (trace_t *)((int)&(ptVar5->normal).vec + 4);
     ptVar6 = (trace_t *)((int)&(ptVar6->normal).vec + 4);
-    ptVar7 = (trace_t *)((int)&(ptVar7->normal).vec + 4);
   }
-  Vec3Lerp(ppVar1->origin,&local_10,param_3->fraction,ppVar1->origin);
+  Vec3Lerp(ps_00->origin,&point,trace->fraction,ps_00->origin);
   return 1;
 }
 
@@ -2834,73 +2881,73 @@ int __cdecl PM_CorrectAllSolid(pmove_t *param_1,pml_t *param_2,trace_t *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_GroundTraceMissed(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_GroundTraceMissed(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   uint local_60;
   uint local_5c;
-  float4 local_50;
+  float4 trace;
   float local_40;
   uint local_18;
-  playerState_s *local_14;
-  float local_10;
+  playerState_s *ps;
+  float point;
   float local_c;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  if ((param_1 == (pmove_t *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x9b5,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = param_1->ps;
-  if ((local_14 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x9b8,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_14->groundEntityNum == 0x3ff) {
-    local_10 = local_14->origin[0];
-    local_c = local_14->origin[1];
-    local_8 = local_14->origin[2] - 1.0;
-    PM_playerTrace(param_1,(trace_t *)&local_50,local_14->origin,param_1->mins,param_1->maxs,
-                   &local_10,(uint)local_14->clientNum,param_1->tracemask);
+  if (ps->groundEntityNum == 0x3ff) {
+    point = ps->origin[0];
+    local_c = ps->origin[1];
+    local_8 = ps->origin[2] - 1.0;
+    PM_playerTrace(pm,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&point,(uint)ps->clientNum,
+                   pm->tracemask);
     local_60 = (uint)(local_40 != 1.0);
-    param_2->almostGroundPlane = local_60;
+    pml->almostGroundPlane = local_60;
   }
   else {
-    local_10 = local_14->origin[0];
-    local_c = local_14->origin[1];
-    local_8 = local_14->origin[2] - 64.0;
-    PM_playerTrace(param_1,(trace_t *)&local_50,local_14->origin,param_1->mins,param_1->maxs,
-                   &local_10,(uint)local_14->clientNum,param_1->tracemask);
+    point = ps->origin[0];
+    local_c = ps->origin[1];
+    local_8 = ps->origin[2] - 64.0;
+    PM_playerTrace(pm,(trace_t *)&trace,ps->origin,pm->mins,pm->maxs,&point,(uint)ps->clientNum,
+                   pm->tracemask);
     if (local_40 == 1.0) {
-      if ((local_14->pm_flags & 0x400000U) == 0) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,1);
+      if ((ps->pm_flags & 0x400000U) == 0) {
+        BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,1);
       }
-      param_2->almostGroundPlane = 0;
+      pml->almostGroundPlane = 0;
     }
     else {
       local_5c = (uint)(local_40 < 0.015625);
-      param_2->almostGroundPlane = local_5c;
-      if ((param_2->almostGroundPlane == 0) && ((local_14->pm_flags & 0x400000U) == 0)) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,1);
+      pml->almostGroundPlane = local_5c;
+      if ((pml->almostGroundPlane == 0) && ((ps->pm_flags & 0x400000U) == 0)) {
+        BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,1);
       }
     }
   }
-  local_14->groundEntityNum = 0x3ff;
-  param_2->groundPlane = 0;
-  param_2->walking = 0;
+  ps->groundEntityNum = 0x3ff;
+  pml->groundPlane = 0;
+  pml->walking = 0;
   return;
 }
 
@@ -2909,7 +2956,7 @@ void __cdecl PM_GroundTraceMissed(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_GroundTrace(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_GroundTrace(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
@@ -2918,120 +2965,119 @@ void __cdecl PM_GroundTrace(pmove_t *param_1,pml_t *param_2)
   int iVar4;
   float4 *pfVar5;
   trace_t *ptVar6;
-  float4 local_a0;
+  float4 airTrace;
   float local_90;
-  uint local_68;
-  uint local_64;
-  float local_60;
+  int stype_2;
+  int stype;
+  float start;
   float local_5c;
   float local_58;
-  float4 local_54;
+  float4 trace;
   float local_44;
   uint local_40;
   char local_2a;
   char local_29;
   byte local_28;
   uint local_1c;
-  playerState_s *local_18;
-  float local_14;
+  playerState_s *ps;
+  float point;
   float local_10;
   float local_c;
-  gjkcc_input_t *local_8;
+  gjkcc_input_t *gjkcc_in;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54.v[0] = 0.0;
-  local_54.v[1] = 0.0;
-  local_54.v[2] = 0.0;
-  local_54.v[3] = 0.0;
-  if ((param_1 == (pmove_t *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x9f4,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_18 = param_1->ps;
-  if ((local_18 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x9f7,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_18->groundType = 0;
-  local_60 = local_18->origin[0];
-  local_5c = local_18->origin[1];
-  local_14 = local_18->origin[0];
-  local_10 = local_18->origin[1];
-  if ((local_18->eFlags & 0x300U) == 0) {
-    local_58 = local_18->origin[2] + 0.25;
-    local_c = local_18->origin[2] - 0.25;
+  ps->groundType = 0;
+  start = ps->origin[0];
+  local_5c = ps->origin[1];
+  point = ps->origin[0];
+  local_10 = ps->origin[1];
+  if ((ps->eFlags & 0x300U) == 0) {
+    local_58 = ps->origin[2] + 0.25;
+    local_c = ps->origin[2] - 0.25;
   }
   else {
-    local_58 = local_18->origin[2];
-    local_c = local_18->origin[2] - 1.0;
+    local_58 = ps->origin[2];
+    local_c = ps->origin[2] - 1.0;
   }
-  local_8 = param_1->m_gjkcc_input;
+  gjkcc_in = pm->m_gjkcc_input;
   if ((phys_player_collision_mode->current).integer == 1) {
-    PM_gjk_ground_trace(local_8,(trace_t *)&local_54,&local_60,param_1->mins,param_1->maxs,&local_14
-                        ,(uint)local_18->clientNum,param_1->tracemask,(float *)0x0);
+    PM_gjk_ground_trace(gjkcc_in,(trace_t *)&trace,&start,pm->mins,pm->maxs,&point,
+                        (uint)ps->clientNum,pm->tracemask,(float *)0x0);
   }
   else {
-    PM_playerTrace(param_1,(trace_t *)&local_54,&local_60,param_1->mins,param_1->maxs,&local_14,
-                   (uint)local_18->clientNum,param_1->tracemask);
+    PM_playerTrace(pm,(trace_t *)&trace,&start,pm->mins,pm->maxs,&point,(uint)ps->clientNum,
+                   pm->tracemask);
   }
-  pfVar5 = &local_54;
-  ptVar6 = &param_2->groundTrace;
+  pfVar5 = &trace;
+  ptVar6 = &pml->groundTrace;
   for (iVar4 = 0xe; iVar4 != 0; iVar4 = iVar4 + -1) {
     (ptVar6->normal).vec.v[0] = pfVar5->v[0];
     pfVar5 = (float4 *)(pfVar5->v + 1);
     ptVar6 = (trace_t *)((int)&(ptVar6->normal).vec + 4);
   }
-  local_18->groundType = (int)(local_40 & 0x3f00000) >> 0x14;
-  if (((param_2->groundTrace).sflags & 2U) == 0) {
-    local_18->pm_flags = local_18->pm_flags & 0xff7fffff;
-    if (local_18->slideTime != 0) {
-      local_18->slideTime = 0;
-      BG_AddPredictableEventToPlayerstate(8,0,local_18);
-      if (param_1->handler == '\x01') {
-        local_68 = Dtp_CalcSurfaceType(param_1,param_2);
-        BG_AddPredictableEventToPlayerstate(0xbd,local_68,local_18);
+  ps->groundType = (int)(local_40 & 0x3f00000) >> 0x14;
+  if (((pml->groundTrace).sflags & 2U) == 0) {
+    ps->pm_flags = ps->pm_flags & 0xff7fffff;
+    if (ps->slideTime != 0) {
+      ps->slideTime = 0;
+      BG_AddPredictableEventToPlayerstate(8,0,ps);
+      if (pm->handler == '\x01') {
+        stype_2 = Dtp_CalcSurfaceType(pm,pml);
+        BG_AddPredictableEventToPlayerstate(0xbd,stype_2,ps);
       }
     }
   }
   else {
-    local_18->pm_flags = local_18->pm_flags | 0x800000;
-    if (local_18->slideTime == 0) {
-      local_18->slideTime = (param_1->cmd).serverTime;
-      BG_AddPredictableEventToPlayerstate(9,0,local_18);
-      if (param_1->handler == '\x01') {
-        local_64 = Dtp_CalcSurfaceType(param_1,param_2);
-        BG_AddPredictableEventToPlayerstate(0xbc,local_64,local_18);
+    ps->pm_flags = ps->pm_flags | 0x800000;
+    if (ps->slideTime == 0) {
+      ps->slideTime = (pm->cmd).serverTime;
+      BG_AddPredictableEventToPlayerstate(9,0,ps);
+      if (pm->handler == '\x01') {
+        stype = Dtp_CalcSurfaceType(pm,pml);
+        BG_AddPredictableEventToPlayerstate(0xbc,stype,ps);
       }
     }
   }
-  if ((local_2a == '\0') ||
-     (iVar4 = PM_CorrectAllSolid(param_1,param_2,(trace_t *)&local_54), iVar4 != 0)) {
+  if ((local_2a == '\0') || (iVar4 = PM_CorrectAllSolid(pm,pml,(trace_t *)&trace), iVar4 != 0)) {
     if (local_29 != '\0') {
-      local_58 = local_18->origin[2] - 0.001;
+      local_58 = ps->origin[2] - 0.001;
       if ((phys_player_collision_mode->current).integer == 1) {
-        PM_gjk_ground_trace(local_8,(trace_t *)&local_54,&local_60,param_1->mins,param_1->maxs,
-                            &local_14,(uint)local_18->clientNum,param_1->tracemask,(float *)0x0);
+        PM_gjk_ground_trace(gjkcc_in,(trace_t *)&trace,&start,pm->mins,pm->maxs,&point,
+                            (uint)ps->clientNum,pm->tracemask,(float *)0x0);
       }
       else {
-        PM_playerTrace(param_1,(trace_t *)&local_54,&local_60,param_1->mins,param_1->maxs,&local_14,
-                       (uint)local_18->clientNum,param_1->tracemask);
+        PM_playerTrace(pm,(trace_t *)&trace,&start,pm->mins,pm->maxs,&point,(uint)ps->clientNum,
+                       pm->tracemask);
       }
       if (local_29 != '\0') {
-        uVar3 = Trace_GetEntityHitId((trace_t *)&local_54);
-        local_18->groundEntityNum = (uint)uVar3;
-        param_2->groundPlane = 1;
-        param_2->almostGroundPlane = 1;
-        param_2->walking = (uint)local_28;
+        uVar3 = Trace_GetEntityHitId((trace_t *)&trace);
+        ps->groundEntityNum = (uint)uVar3;
+        pml->groundPlane = 1;
+        pml->almostGroundPlane = 1;
+        pml->walking = (uint)local_28;
         return;
       }
-      pfVar5 = &local_54;
-      ptVar6 = &param_2->groundTrace;
+      pfVar5 = &trace;
+      ptVar6 = &pml->groundTrace;
       for (iVar4 = 0xe; iVar4 != 0; iVar4 = iVar4 + -1) {
         (ptVar6->normal).vec.v[0] = pfVar5->v[0];
         pfVar5 = (float4 *)(pfVar5->v + 1);
@@ -3039,61 +3085,61 @@ void __cdecl PM_GroundTrace(pmove_t *param_1,pml_t *param_2)
       }
     }
     if (local_44 == 1.0) {
-      PM_GroundTraceMissed(param_1,param_2);
+      PM_GroundTraceMissed(pm,pml);
     }
     else {
-      if ((((local_54.v[0] == 0.0) && (local_54.v[1] == 0.0)) && (local_54.v[2] == 0.0)) &&
+      if ((((trace.v[0] == 0.0) && (trace.v[1] == 0.0)) && (trace.v[2] == 0.0)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xa58,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((((phys_player_collision_mode->current).integer == 1) || ((local_18->pm_flags & 8U) != 0)
-           ) || ((local_18->velocity[2] <= 0.0 ||
-                 (local_18->velocity[0] * local_54.v[0] + local_18->velocity[1] * local_54.v[1] +
-                  local_18->velocity[2] * local_54.v[2] <= 10.0)))) ||
-         ((local_18->groundEntityNum != 0x3ff && (local_18->groundEntityNum != 0x3fe)))) {
+      if (((((phys_player_collision_mode->current).integer == 1) || ((ps->pm_flags & 8U) != 0)) ||
+          ((ps->velocity[2] <= 0.0 ||
+           (ps->velocity[0] * trace.v[0] + ps->velocity[1] * trace.v[1] +
+            ps->velocity[2] * trace.v[2] <= 10.0)))) ||
+         ((ps->groundEntityNum != 0x3ff && (ps->groundEntityNum != 0x3fe)))) {
         if (local_28 == 0) {
-          local_18->groundEntityNum = 0x3ff;
-          param_2->groundPlane = 1;
-          param_2->almostGroundPlane = 1;
-          param_2->walking = 0;
-          Jump_ClearState(local_18);
+          ps->groundEntityNum = 0x3ff;
+          pml->groundPlane = 1;
+          pml->almostGroundPlane = 1;
+          pml->walking = 0;
+          Jump_ClearState(ps);
         }
         else {
-          param_2->groundPlane = 1;
-          param_2->almostGroundPlane = 1;
-          param_2->walking = 1;
-          if (local_18->groundEntityNum == 0x3ff) {
-            PM_CrashLand(param_1,param_2);
+          pml->groundPlane = 1;
+          pml->almostGroundPlane = 1;
+          pml->walking = 1;
+          if (ps->groundEntityNum == 0x3ff) {
+            PM_CrashLand(pm,pml);
           }
-          uVar3 = Trace_GetEntityHitId((trace_t *)&local_54);
-          local_18->groundEntityNum = (uint)uVar3;
-          PM_AddTouchEnt(param_1,local_18->groundEntityNum);
+          uVar3 = Trace_GetEntityHitId((trace_t *)&trace);
+          ps->groundEntityNum = (uint)uVar3;
+          PM_AddTouchEnt(pm,ps->groundEntityNum);
         }
       }
       else {
         local_c = local_c - 32.0;
-        local_a0.v[0] = 0.0;
-        local_a0.v[1] = 0.0;
-        local_a0.v[2] = 0.0;
-        local_a0.v[3] = 0.0;
+        airTrace.v[0] = 0.0;
+        airTrace.v[1] = 0.0;
+        airTrace.v[2] = 0.0;
+        airTrace.v[3] = 0.0;
         if ((phys_player_collision_mode->current).integer == 1) {
-          PM_gjk_ground_trace(local_8,(trace_t *)&local_a0,&local_60,param_1->mins,param_1->maxs,
-                              &local_14,(uint)local_18->clientNum,param_1->tracemask,(float *)0x0);
+          PM_gjk_ground_trace(gjkcc_in,(trace_t *)&airTrace,&start,pm->mins,pm->maxs,&point,
+                              (uint)ps->clientNum,pm->tracemask,(float *)0x0);
         }
         else {
-          PM_playerTrace(param_1,(trace_t *)&local_a0,&local_60,param_1->mins,param_1->maxs,
-                         &local_14,(uint)local_18->clientNum,param_1->tracemask);
+          PM_playerTrace(pm,(trace_t *)&airTrace,&start,pm->mins,pm->maxs,&point,(uint)ps->clientNum
+                         ,pm->tracemask);
         }
-        if ((local_90 == 1.0) && ((local_18->pm_flags & 0x400000U) == 0)) {
-          BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,0);
+        if ((local_90 == 1.0) && ((ps->pm_flags & 0x400000U) == 0)) {
+          BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,0);
         }
-        param_2->almostGroundPlane = 0;
-        local_18->groundEntityNum = 0x3ff;
-        param_2->groundPlane = 0;
-        param_2->walking = 0;
+        pml->almostGroundPlane = 0;
+        ps->groundEntityNum = 0x3ff;
+        pml->groundPlane = 0;
+        pml->walking = 0;
       }
     }
   }
@@ -3103,16 +3149,16 @@ void __cdecl PM_GroundTrace(pmove_t *param_1,pml_t *param_2)
 
 // 0042A830  PM_GetWaterLevel  (bgame/bg_pmove.cpp:2716)
 
-int __cdecl PM_GetWaterLevel(playerState_s *param_1,float param_2)
+int __cdecl PM_GetWaterLevel(playerState_s *ps,float waterHeight)
 
 {
   int iVar1;
   
-  if (param_2 < param_1->origin[2] + 60.0) {
-    if (param_2 < param_1->origin[2] + 54.0) {
-      if (param_2 < param_1->origin[2] + 45.0) {
-        if (param_2 < param_1->origin[2] + 24.0) {
-          if (param_2 < param_1->origin[2] + 3.0) {
+  if (waterHeight < ps->origin[2] + 60.0) {
+    if (waterHeight < ps->origin[2] + 54.0) {
+      if (waterHeight < ps->origin[2] + 45.0) {
+        if (waterHeight < ps->origin[2] + 24.0) {
+          if (waterHeight < ps->origin[2] + 3.0) {
             iVar1 = 0;
           }
           else {
@@ -3140,15 +3186,16 @@ int __cdecl PM_GetWaterLevel(playerState_s *param_1,float param_2)
 
 // 004336E0  PM_SetWaterLevel  (bgame/bg_pmove.cpp:2744)
 
-void __cdecl PM_SetWaterLevel(pmove_t *param_1)
+void __cdecl PM_SetWaterLevel(pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float fVar4;
+  float waterHeight_00;
+  float waterHeight;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xabd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3156,7 +3203,7 @@ void __cdecl PM_SetWaterLevel(pmove_t *param_1)
       return;
     }
   }
-  if (param_1->ps == (playerState_s *)0x0) {
+  if (pm->ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xabe,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3164,25 +3211,25 @@ void __cdecl PM_SetWaterLevel(pmove_t *param_1)
       return;
     }
   }
-  fVar4 = CM_GetWaterHeight(param_1->ps->origin,200.0,-200.0);
-  iVar3 = PM_GetWaterLevel(param_1->ps,fVar4);
-  param_1->ps->waterlevel = iVar3;
+  waterHeight_00 = CM_GetWaterHeight(pm->ps->origin,200.0,-200.0);
+  iVar3 = PM_GetWaterLevel(pm->ps,waterHeight_00);
+  pm->ps->waterlevel = iVar3;
   return;
 }
 
 
 // 0042A8E0  PM_GetViewHeightLerpTime  (bgame/bg_pmove.cpp:2766)
 
-int __cdecl PM_GetViewHeightLerpTime(playerState_s *param_1,int param_2,int param_3)
+int __cdecl PM_GetViewHeightLerpTime(playerState_s *ps,int iTarget,int bDown)
 
 {
   int iVar1;
   
-  if (param_2 == 0xb) {
+  if (iTarget == 0xb) {
     iVar1 = 400;
   }
-  else if (param_2 == 0x28) {
-    if (param_3 == 0) {
+  else if (iTarget == 0x28) {
+    if (bDown == 0) {
       iVar1 = 400;
     }
     else {
@@ -3198,7 +3245,7 @@ int __cdecl PM_GetViewHeightLerpTime(playerState_s *param_1,int param_2,int para
 
 // 00435390  PM_ViewHeightTableLerp  (bgame/bg_pmove.cpp:2799)
 
-float __cdecl PM_ViewHeightTableLerp(int param_1,viewLerpWaypoint_s *param_2,float *param_3)
+float __cdecl PM_ViewHeightTableLerp(int iFrac,viewLerpWaypoint_s *pTable,float *pfPosOfs)
 
 {
   code *pcVar1;
@@ -3207,44 +3254,46 @@ float __cdecl PM_ViewHeightTableLerp(int param_1,viewLerpWaypoint_s *param_2,flo
   viewLerpWaypoint_s *pvVar4;
   float10 fVar5;
   float fVar6;
-  viewLerpWaypoint_s *local_10;
-  int local_c;
+  float fEntryFrac;
+  viewLerpWaypoint_s *pCurr;
+  int i;
+  viewLerpWaypoint_s *pPrev;
   
-  if (param_1 == 0) {
-    *param_3 = (float)param_2->iOffset;
-    fVar6 = param_2->fViewHeight;
+  if (iFrac == 0) {
+    *pfPosOfs = (float)pTable->iOffset;
+    fVar6 = pTable->fViewHeight;
   }
   else {
-    if ((99 < param_1) &&
+    if ((99 < iFrac) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xafb,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar5 = (float10)(*pcVar1)();
       return (float)fVar5;
     }
-    local_10 = param_2 + 1;
-    local_c = 1;
+    pCurr = pTable + 1;
+    i = 1;
     do {
-      if (param_1 == local_10->iFrac) {
-        *param_3 = (float)local_10->iOffset;
-        return local_10->fViewHeight;
+      if (iFrac == pCurr->iFrac) {
+        *pfPosOfs = (float)pCurr->iOffset;
+        return pCurr->fViewHeight;
       }
-      if (param_1 < local_10->iFrac) {
-        pvVar4 = param_2 + local_c + -1;
-        if ((local_10->iFrac == pvVar4->iFrac || local_10->iFrac - pvVar4->iFrac < 0) &&
+      if (iFrac < pCurr->iFrac) {
+        pvVar4 = pTable + i + -1;
+        if ((pCurr->iFrac == pvVar4->iFrac || pCurr->iFrac - pvVar4->iFrac < 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xb11,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           fVar5 = (float10)(*pcVar1)();
           return (float)fVar5;
         }
-        fVar6 = (float)(param_1 - pvVar4->iFrac) / (float)(local_10->iFrac - pvVar4->iFrac);
-        *param_3 = (float)pvVar4->iOffset + (float)(local_10->iOffset - pvVar4->iOffset) * fVar6;
-        return (local_10->fViewHeight - pvVar4->fViewHeight) * fVar6 + pvVar4->fViewHeight;
+        fVar6 = (float)(iFrac - pvVar4->iFrac) / (float)(pCurr->iFrac - pvVar4->iFrac);
+        *pfPosOfs = (float)pvVar4->iOffset + (float)(pCurr->iOffset - pvVar4->iOffset) * fVar6;
+        return (pCurr->fViewHeight - pvVar4->fViewHeight) * fVar6 + pvVar4->fViewHeight;
       }
-      local_c = local_c + 1;
-      local_10 = param_2 + local_c;
-    } while (local_10->iFrac != -1);
+      i = i + 1;
+      pCurr = pTable + i;
+    } while (pCurr->iFrac != -1);
     pcVar3 = va("No encapsulating table entries found for fraction %i");
     if ((pcVar3 == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xb1e,0,
@@ -3253,8 +3302,8 @@ float __cdecl PM_ViewHeightTableLerp(int param_1,viewLerpWaypoint_s *param_2,flo
       fVar5 = (float10)(*pcVar1)();
       return (float)fVar5;
     }
-    *param_3 = (float)param_2->iOffset;
-    fVar6 = param_2->fViewHeight;
+    *pfPosOfs = (float)pTable->iOffset;
+    fVar6 = pTable->fViewHeight;
   }
   return fVar6;
 }
@@ -3262,120 +3311,120 @@ float __cdecl PM_ViewHeightTableLerp(int param_1,viewLerpWaypoint_s *param_2,flo
 
 // 00433790  PM_GetViewHeightLerp  (bgame/bg_pmove.cpp:2862)
 
-float __cdecl PM_GetViewHeightLerp(pmove_t *param_1,int param_2,int param_3)
+float __cdecl PM_GetViewHeightLerp(pmove_t *pm,int iFromHeight,int iToHeight)
 
 {
-  playerState_s *ppVar1;
-  int iVar2;
-  float local_c;
+  playerState_s *ps_00;
+  int iVar1;
+  int iLerpTime;
+  float fLerpFrac;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  if (ppVar1->viewHeightLerpTime == 0) {
-    local_c = 0.0;
+  ps_00 = pm->ps;
+  if (ps_00->viewHeightLerpTime == 0) {
+    fLerpFrac = 0.0;
   }
-  else if (((param_2 == -1) || (param_3 == -1)) ||
-          ((param_3 == ppVar1->viewHeightLerpTarget &&
-           (((param_3 != 0x28 || ((param_2 == 0xb && (ppVar1->viewHeightLerpDown == 0)))) ||
-            ((param_2 == 0x3c && (ppVar1->viewHeightLerpDown != 0)))))))) {
-    iVar2 = PM_GetViewHeightLerpTime(ppVar1,ppVar1->viewHeightLerpTarget,ppVar1->viewHeightLerpDown)
-    ;
-    local_c = (float)((param_1->cmd).serverTime - ppVar1->viewHeightLerpTime) / (float)iVar2;
-    if (0.0 <= local_c) {
-      if (1.0 < local_c) {
-        local_c = 1.0;
+  else if (((iFromHeight == -1) || (iToHeight == -1)) ||
+          ((iToHeight == ps_00->viewHeightLerpTarget &&
+           (((iToHeight != 0x28 || ((iFromHeight == 0xb && (ps_00->viewHeightLerpDown == 0)))) ||
+            ((iFromHeight == 0x3c && (ps_00->viewHeightLerpDown != 0)))))))) {
+    iVar1 = PM_GetViewHeightLerpTime(ps_00,ps_00->viewHeightLerpTarget,ps_00->viewHeightLerpDown);
+    fLerpFrac = (float)((pm->cmd).serverTime - ps_00->viewHeightLerpTime) / (float)iVar1;
+    if (0.0 <= fLerpFrac) {
+      if (1.0 < fLerpFrac) {
+        fLerpFrac = 1.0;
       }
     }
     else {
-      local_c = 0.0;
+      fLerpFrac = 0.0;
     }
   }
   else {
-    local_c = 0.0;
+    fLerpFrac = 0.0;
   }
-  return local_c;
+  return fLerpFrac;
 }
 
 
 // 00434C60  PM_ViewHeightAdjust  (bgame/bg_pmove.cpp:2905)
 
-void __cdecl PM_ViewHeightAdjust(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_ViewHeightAdjust(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  float fVar4;
-  float local_14;
-  int local_10;
-  int local_c;
-  playerState_s *local_8;
+  char *fmt;
+  float fVar3;
+  float fNewPosOfs;
+  int iLerpFrac;
+  int iLerpTime;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xb5c,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xb5f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8->viewHeightTarget == 0) || (local_8->viewHeightCurrent == 0.0)) {
-    if (local_8->pm_type == 4) {
-      local_8->viewHeightCurrent = 0.0;
+  if ((ps->viewHeightTarget == 0) || (ps->viewHeightCurrent == 0.0)) {
+    if (ps->pm_type == 4) {
+      ps->viewHeightCurrent = 0.0;
     }
     else {
-      local_8->viewHeightCurrent = (float)local_8->viewHeightTarget;
+      ps->viewHeightCurrent = (float)ps->viewHeightTarget;
     }
   }
-  else if ((local_8->viewHeightCurrent != (float)local_8->viewHeightTarget) ||
-          (local_8->viewHeightLerpTime != 0)) {
-    local_10 = 0;
-    local_14 = 0.0;
-    if ((local_8->viewHeightTarget == 0xb) ||
-       ((local_8->viewHeightTarget == 0x28 || (local_8->viewHeightTarget == 0x3c)))) {
-      if (local_8->viewHeightLerpTime != 0) {
-        local_c = PM_GetViewHeightLerpTime
-                            (local_8,local_8->viewHeightLerpTarget,local_8->viewHeightLerpDown);
-        local_10 = (((param_1->cmd).serverTime - local_8->viewHeightLerpTime) * 100) / local_c;
-        if (local_10 < 0) {
-          local_10 = 0;
+  else if ((ps->viewHeightCurrent != (float)ps->viewHeightTarget) || (ps->viewHeightLerpTime != 0))
+  {
+    iLerpFrac = 0;
+    fNewPosOfs = 0.0;
+    if ((ps->viewHeightTarget == 0xb) ||
+       ((ps->viewHeightTarget == 0x28 || (ps->viewHeightTarget == 0x3c)))) {
+      if (ps->viewHeightLerpTime != 0) {
+        iLerpTime = PM_GetViewHeightLerpTime(ps,ps->viewHeightLerpTarget,ps->viewHeightLerpDown);
+        iLerpFrac = (((pm->cmd).serverTime - ps->viewHeightLerpTime) * 100) / iLerpTime;
+        if (iLerpFrac < 0) {
+          iLerpFrac = 0;
         }
-        else if (100 < local_10) {
-          local_10 = 100;
+        else if (100 < iLerpFrac) {
+          iLerpFrac = 100;
         }
-        if (local_10 == 100) {
-          if (local_8->pm_type == 8) {
-            local_8->pm_type = 0;
+        if (iLerpFrac == 100) {
+          if (ps->pm_type == 8) {
+            ps->pm_type = 0;
           }
-          local_8->viewHeightCurrent = (float)local_8->viewHeightLerpTarget;
-          local_8->viewHeightLerpTime = 0;
+          ps->viewHeightCurrent = (float)ps->viewHeightLerpTarget;
+          ps->viewHeightLerpTime = 0;
         }
         else {
-          if (local_8->viewHeightLerpTarget == 0xb) {
-            fVar4 = PM_ViewHeightTableLerp(local_10,viewLerp_CrouchProne,&local_14);
-            local_8->viewHeightCurrent = fVar4;
+          if (ps->viewHeightLerpTarget == 0xb) {
+            fVar3 = PM_ViewHeightTableLerp(iLerpFrac,viewLerp_CrouchProne,&fNewPosOfs);
+            ps->viewHeightCurrent = fVar3;
           }
-          else if (local_8->viewHeightLerpTarget == 0x28) {
-            if (local_8->viewHeightLerpDown == 0) {
-              fVar4 = PM_ViewHeightTableLerp(local_10,viewLerp_ProneCrouch,&local_14);
-              local_8->viewHeightCurrent = fVar4;
+          else if (ps->viewHeightLerpTarget == 0x28) {
+            if (ps->viewHeightLerpDown == 0) {
+              fVar3 = PM_ViewHeightTableLerp(iLerpFrac,viewLerp_ProneCrouch,&fNewPosOfs);
+              ps->viewHeightCurrent = fVar3;
             }
             else {
-              fVar4 = PM_ViewHeightTableLerp(local_10,viewLerp_StandCrouch,&local_14);
-              local_8->viewHeightCurrent = fVar4;
+              fVar3 = PM_ViewHeightTableLerp(iLerpFrac,viewLerp_StandCrouch,&fNewPosOfs);
+              ps->viewHeightCurrent = fVar3;
             }
           }
           else {
-            fVar4 = PM_ViewHeightTableLerp(local_10,viewLerp_CrouchStand,&local_14);
-            local_8->viewHeightCurrent = fVar4;
+            fVar3 = PM_ViewHeightTableLerp(iLerpFrac,viewLerp_CrouchStand,&fNewPosOfs);
+            ps->viewHeightCurrent = fVar3;
           }
-          if ((local_14 != 0.0) &&
+          if ((fNewPosOfs != 0.0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
                                        0xbac,0,
                                        "Wow, someone added view height offsets back in!  You need to restore this code and the viewHeightLerpPosAdj field"
@@ -3386,40 +3435,40 @@ void __cdecl PM_ViewHeightAdjust(pmove_t *param_1,pml_t *param_2)
           }
         }
       }
-      if (local_8->viewHeightLerpTime == 0) {
-        if (local_8->viewHeightCurrent != (float)local_8->viewHeightTarget) {
-          local_8->viewHeightLerpTime = (param_1->cmd).serverTime;
-          if (local_8->viewHeightTarget == 0xb) {
-            local_8->viewHeightLerpDown = 1;
-            if (local_8->viewHeightCurrent <= 40.0) {
-              local_8->viewHeightLerpTarget = 0xb;
+      if (ps->viewHeightLerpTime == 0) {
+        if (ps->viewHeightCurrent != (float)ps->viewHeightTarget) {
+          ps->viewHeightLerpTime = (pm->cmd).serverTime;
+          if (ps->viewHeightTarget == 0xb) {
+            ps->viewHeightLerpDown = 1;
+            if (ps->viewHeightCurrent <= 40.0) {
+              ps->viewHeightLerpTarget = 0xb;
             }
             else {
-              local_8->viewHeightLerpTarget = 0x28;
+              ps->viewHeightLerpTarget = 0x28;
             }
           }
-          else if (local_8->viewHeightTarget == 0x28) {
-            if (local_8->viewHeightCurrent <= (float)local_8->viewHeightTarget) {
-              local_8->viewHeightLerpDown = 0;
+          else if (ps->viewHeightTarget == 0x28) {
+            if (ps->viewHeightCurrent <= (float)ps->viewHeightTarget) {
+              ps->viewHeightLerpDown = 0;
             }
             else {
-              local_8->viewHeightLerpDown = 1;
+              ps->viewHeightLerpDown = 1;
             }
-            local_8->viewHeightLerpTarget = 0x28;
+            ps->viewHeightLerpTarget = 0x28;
           }
-          else if (local_8->viewHeightTarget == 0x3c) {
-            local_8->viewHeightLerpDown = 0;
-            if (40.0 < local_8->viewHeightCurrent || local_8->viewHeightCurrent == 40.0) {
-              local_8->viewHeightLerpTarget = 0x3c;
+          else if (ps->viewHeightTarget == 0x3c) {
+            ps->viewHeightLerpDown = 0;
+            if (40.0 < ps->viewHeightCurrent || ps->viewHeightCurrent == 40.0) {
+              ps->viewHeightLerpTarget = 0x3c;
             }
             else {
-              local_8->viewHeightLerpTarget = 0x28;
+              ps->viewHeightLerpTarget = 0x28;
             }
           }
           else {
-            pcVar3 = va("View height lerp to %i reached bad place\n");
+            fmt = va("View height lerp to %i reached bad place\n");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc1c,
-                                     0,pcVar3);
+                                     0,fmt);
             if (!bVar2) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
@@ -3428,51 +3477,49 @@ void __cdecl PM_ViewHeightAdjust(pmove_t *param_1,pml_t *param_2)
           }
         }
       }
-      else if ((local_8->viewHeightTarget != local_8->viewHeightLerpTarget) &&
-              (((local_8->viewHeightTarget < local_8->viewHeightLerpTarget &&
-                (local_8->viewHeightLerpDown == 0)) ||
-               ((local_8->viewHeightLerpTarget < local_8->viewHeightTarget &&
-                (local_8->viewHeightLerpDown != 0)))))) {
-        local_10 = 100 - local_10;
-        local_8->viewHeightLerpDown = local_8->viewHeightLerpDown ^ 1;
-        if (local_8->viewHeightLerpDown == 0) {
-          if (local_8->viewHeightLerpTarget == 0xb) {
-            local_8->viewHeightLerpTarget = 0x28;
+      else if ((ps->viewHeightTarget != ps->viewHeightLerpTarget) &&
+              (((ps->viewHeightTarget < ps->viewHeightLerpTarget && (ps->viewHeightLerpDown == 0))
+               || ((ps->viewHeightLerpTarget < ps->viewHeightTarget && (ps->viewHeightLerpDown != 0)
+                   ))))) {
+        iLerpFrac = 100 - iLerpFrac;
+        ps->viewHeightLerpDown = ps->viewHeightLerpDown ^ 1;
+        if (ps->viewHeightLerpDown == 0) {
+          if (ps->viewHeightLerpTarget == 0xb) {
+            ps->viewHeightLerpTarget = 0x28;
           }
-          else if (local_8->viewHeightLerpTarget == 0x28) {
-            local_8->viewHeightLerpTarget = 0x3c;
+          else if (ps->viewHeightLerpTarget == 0x28) {
+            ps->viewHeightLerpTarget = 0x3c;
           }
         }
-        else if (local_8->viewHeightLerpTarget == 0x3c) {
-          local_8->viewHeightLerpTarget = 0x28;
+        else if (ps->viewHeightLerpTarget == 0x3c) {
+          ps->viewHeightLerpTarget = 0x28;
         }
-        else if (local_8->viewHeightLerpTarget == 0x28) {
-          local_8->viewHeightLerpTarget = 0xb;
+        else if (ps->viewHeightLerpTarget == 0x28) {
+          ps->viewHeightLerpTarget = 0xb;
         }
-        if (local_10 == 100) {
-          local_8->viewHeightCurrent = (float)local_8->viewHeightLerpTarget;
-          local_8->viewHeightLerpTime = 0;
+        if (iLerpFrac == 100) {
+          ps->viewHeightCurrent = (float)ps->viewHeightLerpTarget;
+          ps->viewHeightLerpTime = 0;
         }
         else {
-          local_c = PM_GetViewHeightLerpTime
-                              (local_8,local_8->viewHeightLerpTarget,local_8->viewHeightLerpDown);
-          local_8->viewHeightLerpTime =
-               (param_1->cmd).serverTime - (int)((float)local_10 * 0.01 * (float)local_c);
-          if (local_8->viewHeightLerpTarget == 0xb) {
-            PM_ViewHeightTableLerp(local_10,viewLerp_CrouchProne,&local_14);
+          iLerpTime = PM_GetViewHeightLerpTime(ps,ps->viewHeightLerpTarget,ps->viewHeightLerpDown);
+          ps->viewHeightLerpTime =
+               (pm->cmd).serverTime - (int)((float)iLerpFrac * 0.01 * (float)iLerpTime);
+          if (ps->viewHeightLerpTarget == 0xb) {
+            PM_ViewHeightTableLerp(iLerpFrac,viewLerp_CrouchProne,&fNewPosOfs);
           }
-          else if (local_8->viewHeightLerpTarget == 0x28) {
-            if (local_8->viewHeightLerpDown == 0) {
-              PM_ViewHeightTableLerp(local_10,viewLerp_ProneCrouch,&local_14);
+          else if (ps->viewHeightLerpTarget == 0x28) {
+            if (ps->viewHeightLerpDown == 0) {
+              PM_ViewHeightTableLerp(iLerpFrac,viewLerp_ProneCrouch,&fNewPosOfs);
             }
             else {
-              PM_ViewHeightTableLerp(local_10,viewLerp_StandCrouch,&local_14);
+              PM_ViewHeightTableLerp(iLerpFrac,viewLerp_StandCrouch,&fNewPosOfs);
             }
           }
           else {
-            PM_ViewHeightTableLerp(local_10,viewLerp_CrouchStand,&local_14);
+            PM_ViewHeightTableLerp(iLerpFrac,viewLerp_CrouchStand,&fNewPosOfs);
           }
-          if ((local_14 != 0.0) &&
+          if ((fNewPosOfs != 0.0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
                                        0xbf3,0,
                                        "Wow, someone added view height offsets back in!  You need to restore the viewHeightLerpPosAdj field back in!"
@@ -3485,18 +3532,18 @@ void __cdecl PM_ViewHeightAdjust(pmove_t *param_1,pml_t *param_2)
       }
     }
     else {
-      local_8->viewHeightLerpTime = 0;
-      if ((float)local_8->viewHeightTarget < local_8->viewHeightCurrent ||
-          (float)local_8->viewHeightTarget == local_8->viewHeightCurrent) {
-        local_8->viewHeightCurrent = local_8->viewHeightCurrent - param_2->frametime * 180.0;
-        if (local_8->viewHeightCurrent <= (float)local_8->viewHeightTarget) {
-          local_8->viewHeightCurrent = (float)local_8->viewHeightTarget;
+      ps->viewHeightLerpTime = 0;
+      if ((float)ps->viewHeightTarget < ps->viewHeightCurrent ||
+          (float)ps->viewHeightTarget == ps->viewHeightCurrent) {
+        ps->viewHeightCurrent = ps->viewHeightCurrent - pml->frametime * 180.0;
+        if (ps->viewHeightCurrent <= (float)ps->viewHeightTarget) {
+          ps->viewHeightCurrent = (float)ps->viewHeightTarget;
         }
       }
       else {
-        local_8->viewHeightCurrent = param_2->frametime * 180.0 + local_8->viewHeightCurrent;
-        if ((float)local_8->viewHeightTarget <= local_8->viewHeightCurrent) {
-          local_8->viewHeightCurrent = (float)local_8->viewHeightTarget;
+        ps->viewHeightCurrent = pml->frametime * 180.0 + ps->viewHeightCurrent;
+        if ((float)ps->viewHeightTarget <= ps->viewHeightCurrent) {
+          ps->viewHeightCurrent = (float)ps->viewHeightTarget;
         }
       }
     }
@@ -3507,67 +3554,69 @@ void __cdecl PM_ViewHeightAdjust(pmove_t *param_1,pml_t *param_2)
 
 // 0042A920  PlayerProneAllowed  (bgame/bg_pmove.cpp:3109)
 
-bool __cdecl PlayerProneAllowed(pmove_t *param_1)
+bool __cdecl PlayerProneAllowed(pmove_t *pm)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  bool checkProne;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc28,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    uVar4 = (*pcVar2)();
-    return (bool)uVar4;
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc28,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc2a,0,"%s"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    uVar4 = (*pcVar2)();
-    return (bool)uVar4;
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc2a,0,"%s"
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
-  bVar3 = BG_WeaponBlocksProne((uint)param_1->ps->weapon);
-  if (bVar3) {
-    bVar3 = false;
+  bVar2 = BG_WeaponBlocksProne((uint)pm->ps->weapon);
+  if (bVar2) {
+    bVar2 = false;
   }
-  else if ((ppVar1->pm_flags & 1U) == 0) {
-    if (ppVar1->groundEntityNum != 0x3ff) {
-      if (0 < param_1->ps->waterlevel) {
+  else if ((ps_00->pm_flags & 1U) == 0) {
+    if (ps_00->groundEntityNum != 0x3ff) {
+      if (0 < pm->ps->waterlevel) {
         return false;
       }
-      bVar3 = BG_CheckProne(ppVar1,(uint)ppVar1->clientNum,ppVar1->origin,param_1->maxs[0],30.0,
-                            ppVar1->viewangles[1],&ppVar1->fTorsoPitch,&ppVar1->fWaistPitch,false,
-                            ppVar1->groundEntityNum != 0x3ff,true,param_1->handler,PCT_CLIENT,50.0);
-      if (bVar3) {
+      bVar2 = BG_CheckProne(ps_00,(uint)ps_00->clientNum,ps_00->origin,pm->maxs[0],30.0,
+                            ps_00->viewangles[1],&ps_00->fTorsoPitch,&ps_00->fWaistPitch,false,
+                            ps_00->groundEntityNum != 0x3ff,true,pm->handler,PCT_CLIENT,50.0);
+      if (bVar2) {
         return true;
       }
     }
-    bVar3 = false;
+    bVar2 = false;
   }
   else {
-    bVar3 = true;
+    bVar2 = true;
   }
-  return bVar3;
+  return bVar2;
 }
 
 
 // 00433890  PM_IsPlayerFrozenByWeapon  (bgame/bg_pmove.cpp:3140)
 
-bool __cdecl PM_IsPlayerFrozenByWeapon(playerState_s *param_1)
+bool __cdecl PM_IsPlayerFrozenByWeapon(playerState_s *ps)
 
 {
   WeaponDef *pWVar1;
   bool bVar2;
+  WeaponDef *weapDef;
   
-  if (((((param_1->weaponstate == 6) || (param_1->weaponstate == 7)) ||
-       (param_1->weaponstate == 0x1f)) ||
-      (((param_1->weaponstate == 0x11 || (param_1->weaponstate == 0x12)) ||
-       (param_1->weaponstate == 0x13)))) && (param_1->weapon != 0)) {
-    pWVar1 = BG_GetWeaponDef((uint)param_1->weapon);
+  if (((((ps->weaponstate == 6) || (ps->weaponstate == 7)) || (ps->weaponstate == 0x1f)) ||
+      (((ps->weaponstate == 0x11 || (ps->weaponstate == 0x12)) || (ps->weaponstate == 0x13)))) &&
+     (ps->weapon != 0)) {
+    pWVar1 = BG_GetWeaponDef((uint)ps->weapon);
     bVar2 = pWVar1->freezeMovementWhenFiring != false;
   }
   else {
@@ -3581,229 +3630,224 @@ bool __cdecl PM_IsPlayerFrozenByWeapon(playerState_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_CheckDuck(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_CheckDuck(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  col_context_t local_cc;
-  float local_a0;
+  col_context_t context_2;
+  float delta;
+  float vPoint;
   float local_9c;
   float local_98;
-  float local_94;
+  float vEnd;
   float local_90;
   float local_8c;
-  float local_88;
-  undefined1 local_81;
-  float local_80;
-  undefined1 local_79;
-  col_context_t local_78;
-  int local_50;
-  uint local_4c;
-  uint local_48;
-  float local_44;
+  float save_maxs2_2;
+  bool not_pen_2;
+  float save_maxs2;
+  bool not_pen;
+  col_context_t context;
+  int iStance;
+  int bWasProne;
+  int bWasStanding;
+  float trace;
   float local_40;
   float local_3c;
   undefined4 local_38;
   float local_34;
   char local_19;
   uint local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_44 = 0.0;
+  trace = 0.0;
   local_40 = 0.0;
   local_3c = 0.0;
   local_38 = 0;
-  col_context_t::col_context_t(&local_78);
-  if ((param_1 == (pmove_t *)0x0) &&
+  col_context_t::col_context_t(&context);
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc60,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xc63,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->proneChange = 0;
-  if (local_8->pm_type == 4) {
-    param_1->mins[0] = -8.0;
-    param_1->mins[1] = -8.0;
-    param_1->mins[2] = -8.0;
-    param_1->maxs[0] = 8.0;
-    param_1->maxs[1] = 8.0;
-    param_1->maxs[2] = 16.0;
-    local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
-    bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,8);
+  pm->proneChange = 0;
+  if (ps->pm_type == 4) {
+    pm->mins[0] = -8.0;
+    pm->mins[1] = -8.0;
+    pm->mins[2] = -8.0;
+    pm->maxs[0] = 8.0;
+    pm->maxs[1] = 8.0;
+    pm->maxs[2] = 16.0;
+    ps->pm_flags = ps->pm_flags & 0xfffffffc;
+    bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,8);
     if (bVar2) {
-      bitarray<51>::resetBit(&(param_1->cmd).button_bits,8);
-      BG_AddPredictableEventToPlayerstate(8,0,local_8);
+      bitarray<51>::resetBit(&(pm->cmd).button_bits,8);
+      BG_AddPredictableEventToPlayerstate(8,0,ps);
     }
-    local_8->viewHeightTarget = 0;
-    local_8->viewHeightCurrent = 0.0;
+    ps->viewHeightTarget = 0;
+    ps->viewHeightCurrent = 0.0;
   }
   else {
-    local_4c = (uint)((local_8->pm_flags & 1U) != 0);
-    local_48 = (uint)((local_8->pm_flags & 3U) == 0);
-    param_1->mins[0] = -15.0;
-    param_1->mins[1] = -15.0;
-    param_1->mins[2] = 0.0;
-    param_1->maxs[0] = 15.0;
-    param_1->maxs[1] = 15.0;
-    param_1->maxs[2] = 70.0;
-    if (local_8->pm_type == 9) {
-      local_8->viewHeightTarget = 8;
-      if ((local_8->pm_flags & 2U) == 0) {
-        if ((local_8->pm_flags & 1U) != 0) {
-          param_1->maxs[2] = 30.0;
+    bWasProne = (int)((ps->pm_flags & 1U) != 0);
+    bWasStanding = (int)((ps->pm_flags & 3U) == 0);
+    pm->mins[0] = -15.0;
+    pm->mins[1] = -15.0;
+    pm->mins[2] = 0.0;
+    pm->maxs[0] = 15.0;
+    pm->maxs[1] = 15.0;
+    pm->maxs[2] = 70.0;
+    if (ps->pm_type == 9) {
+      ps->viewHeightTarget = 8;
+      if ((ps->pm_flags & 2U) == 0) {
+        if ((ps->pm_flags & 1U) != 0) {
+          pm->maxs[2] = 30.0;
         }
       }
       else {
-        param_1->maxs[2] = 50.0;
+        pm->maxs[2] = 50.0;
       }
-      PM_ViewHeightAdjust(param_1,param_2);
+      PM_ViewHeightAdjust(pm,pml);
     }
-    else if ((local_4c == 0) || (local_8->waterlevel < 1)) {
-      if (((local_8->pm_flags & 3U) == 0) ||
-         (((local_8->eFlags & 0x4000U) == 0 && (local_8->waterlevel < 2)))) {
-        if ((local_8->pm_flags & 0x8000U) == 0) {
-          if ((local_8->eFlags & 0x300U) == 0) {
-            if ((local_8->eFlags & 0x4000U) == 0) {
-              if ((((local_8->pm_flags & 0xc00U) == 0) &&
-                  (bVar2 = PM_IsPlayerFrozenByWeapon(local_8), !bVar2)) &&
-                 (local_8->weaponstate != 0x23)) {
-                if ((local_8->pm_type == 6) || (local_8->pm_type == 7)) {
-                  local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
-                  local_8->pm_flags = local_8->pm_flags | 2;
+    else if ((bWasProne == 0) || (ps->waterlevel < 1)) {
+      if (((ps->pm_flags & 3U) == 0) || (((ps->eFlags & 0x4000U) == 0 && (ps->waterlevel < 2)))) {
+        if ((ps->pm_flags & 0x8000U) == 0) {
+          if ((ps->eFlags & 0x300U) == 0) {
+            if ((ps->eFlags & 0x4000U) == 0) {
+              if ((((ps->pm_flags & 0xc00U) == 0) && (bVar2 = PM_IsPlayerFrozenByWeapon(ps), !bVar2)
+                  ) && (ps->weaponstate != 0x23)) {
+                if ((ps->pm_type == 6) || (ps->pm_type == 7)) {
+                  ps->pm_flags = ps->pm_flags & 0xfffffffe;
+                  ps->pm_flags = ps->pm_flags | 2;
                 }
-                else if (((local_8->pm_flags & 0x400000U) == 0) &&
-                        (iVar3 = Dtp_CanMove(param_1), iVar3 != 0)) {
-                  if (((local_8->pm_flags & 8U) != 0) &&
-                     ((bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,8), bVar2 ||
-                      (bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,9), bVar2)))) {
-                    bitarray<51>::resetBit(&(param_1->cmd).button_bits,8);
-                    bitarray<51>::resetBit(&(param_1->cmd).button_bits,9);
-                    BG_AddPredictableEventToPlayerstate(8,0,local_8);
+                else if (((ps->pm_flags & 0x400000U) == 0) && (iVar3 = Dtp_CanMove(pm), iVar3 != 0))
+                {
+                  if (((ps->pm_flags & 8U) != 0) &&
+                     ((bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,8), bVar2 ||
+                      (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,9), bVar2)))) {
+                    bitarray<51>::resetBit(&(pm->cmd).button_bits,8);
+                    bitarray<51>::resetBit(&(pm->cmd).button_bits,9);
+                    BG_AddPredictableEventToPlayerstate(8,0,ps);
                   }
-                  bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,8);
-                  if ((bVar2) && ((local_8->pm_flags & 0x400U) == 0)) {
-                    bVar2 = PlayerProneAllowed(param_1);
+                  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,8);
+                  if ((bVar2) && ((ps->pm_flags & 0x400U) == 0)) {
+                    bVar2 = PlayerProneAllowed(pm);
                     if (bVar2) {
-                      local_8->pm_flags = local_8->pm_flags | 1;
-                      local_8->pm_flags = local_8->pm_flags & 0xfffffffd;
+                      ps->pm_flags = ps->pm_flags | 1;
+                      ps->pm_flags = ps->pm_flags & 0xfffffffd;
                     }
-                    else if (local_8->groundEntityNum != 0x3ff) {
-                      local_8->pm_flags = local_8->pm_flags | 0x1000;
-                      BG_AddPredictableEventToPlayerstate(0xcd,3,local_8);
-                      bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xc);
+                    else if (ps->groundEntityNum != 0x3ff) {
+                      ps->pm_flags = ps->pm_flags | 0x1000;
+                      BG_AddPredictableEventToPlayerstate(0xcd,3,ps);
+                      bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xc);
                       if (!bVar2) {
-                        if ((local_8->pm_flags & 1U) == 0) {
-                          if ((local_8->pm_flags & 2U) == 0) {
-                            BG_AddPredictableEventToPlayerstate(8,0,local_8);
+                        if ((ps->pm_flags & 1U) == 0) {
+                          if ((ps->pm_flags & 2U) == 0) {
+                            BG_AddPredictableEventToPlayerstate(8,0,ps);
                           }
                           else {
-                            BG_AddPredictableEventToPlayerstate(9,0,local_8);
+                            BG_AddPredictableEventToPlayerstate(9,0,ps);
                           }
                         }
                         else {
-                          BG_AddPredictableEventToPlayerstate(9,0,local_8);
+                          BG_AddPredictableEventToPlayerstate(9,0,ps);
                         }
                       }
                     }
                   }
                   else {
-                    bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,9);
+                    bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,9);
                     if (bVar2) {
-                      if (param_1->ps->waterlevel < 2) {
-                        if ((local_8->pm_flags & 1U) == 0) {
-                          if ((local_8->eFlags & 0x4000U) == 0) {
-                            if (((local_8->pm_flags & 2U) == 0) &&
+                      if (pm->ps->waterlevel < 2) {
+                        if ((ps->pm_flags & 1U) == 0) {
+                          if ((ps->eFlags & 0x4000U) == 0) {
+                            if (((ps->pm_flags & 2U) == 0) &&
                                ((bg_playStandToCrouchAnims->current).enabled != false)) {
-                              BG_AnimScriptEvent(param_1,ANIM_ET_STAND_TO_CROUCH,0,0);
+                              BG_AnimScriptEvent(pm,ANIM_ET_STAND_TO_CROUCH,0,0);
                             }
-                            local_8->pm_flags = local_8->pm_flags | 2;
+                            ps->pm_flags = ps->pm_flags | 2;
                           }
                         }
                         else {
-                          local_80 = param_1->maxs[2];
-                          param_1->maxs[2] = 50.0;
-                          local_79 = is_not_penetrating(param_1,local_8->origin,param_1->mins,
-                                                        param_1->maxs,local_8->origin,
-                                                        param_1->tracemask & 0xfdff7fff);
-                          param_1->maxs[2] = local_80;
-                          if ((bool)local_79) {
-                            if (((local_8->pm_type != 8) && (local_8->pm_type != 6)) &&
-                               ((local_8->pm_type != 7 && (local_8->groundEntityNum != 0x3ff)))) {
-                              BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_CROUCH,0,1);
+                          save_maxs2 = pm->maxs[2];
+                          pm->maxs[2] = 50.0;
+                          not_pen = is_not_penetrating(pm,ps->origin,pm->mins,pm->maxs,ps->origin,
+                                                       pm->tracemask & 0xfdff7fff);
+                          pm->maxs[2] = save_maxs2;
+                          if (not_pen) {
+                            if (((ps->pm_type != 8) && (ps->pm_type != 6)) &&
+                               ((ps->pm_type != 7 && (ps->groundEntityNum != 0x3ff)))) {
+                              BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_CROUCH,0,1);
                             }
-                            local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
-                            local_8->pm_flags = local_8->pm_flags | 2;
+                            ps->pm_flags = ps->pm_flags & 0xfffffffe;
+                            ps->pm_flags = ps->pm_flags | 2;
                           }
                           else {
-                            bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xc);
+                            bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xc);
                             if (!bVar2) {
-                              BG_AddPredictableEventToPlayerstate(10,2,local_8);
+                              BG_AddPredictableEventToPlayerstate(10,2,ps);
                             }
                           }
                         }
                       }
                       else {
-                        BG_AddPredictableEventToPlayerstate(8,0,local_8);
+                        BG_AddPredictableEventToPlayerstate(8,0,ps);
                       }
                     }
-                    else if ((local_8->pm_flags & 1U) == 0) {
-                      if ((local_8->pm_flags & 2U) != 0) {
-                        bVar2 = is_not_penetrating(param_1,local_8->origin,param_1->mins,
-                                                   param_1->maxs,local_8->origin,
-                                                   param_1->tracemask & 0xfdff7fff);
+                    else if ((ps->pm_flags & 1U) == 0) {
+                      if ((ps->pm_flags & 2U) != 0) {
+                        bVar2 = is_not_penetrating(pm,ps->origin,pm->mins,pm->maxs,ps->origin,
+                                                   pm->tracemask & 0xfdff7fff);
                         if (bVar2) {
                           if ((bg_playStandToCrouchAnims->current).enabled != false) {
-                            BG_AnimScriptEvent(param_1,ANIM_ET_CROUCH_TO_STAND,0,0);
+                            BG_AnimScriptEvent(pm,ANIM_ET_CROUCH_TO_STAND,0,0);
                           }
-                          local_8->pm_flags = local_8->pm_flags & 0xfffffffd;
+                          ps->pm_flags = ps->pm_flags & 0xfffffffd;
                         }
                         else {
-                          bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xc);
+                          bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xc);
                           if (!bVar2) {
-                            BG_AddPredictableEventToPlayerstate(9,1,local_8);
+                            BG_AddPredictableEventToPlayerstate(9,1,ps);
                           }
                         }
                       }
                     }
                     else {
-                      bVar2 = is_not_penetrating(param_1,local_8->origin,param_1->mins,param_1->maxs
-                                                 ,local_8->origin,param_1->tracemask & 0xfdff7fff);
+                      bVar2 = is_not_penetrating(pm,ps->origin,pm->mins,pm->maxs,ps->origin,
+                                                 pm->tracemask & 0xfdff7fff);
                       if (bVar2) {
-                        BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_STAND,0,0);
-                        local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
+                        BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_STAND,0,0);
+                        ps->pm_flags = ps->pm_flags & 0xfffffffc;
                       }
                       else {
-                        local_88 = param_1->maxs[2];
-                        param_1->maxs[2] = 50.0;
-                        local_81 = is_not_penetrating(param_1,local_8->origin,param_1->mins,
-                                                      param_1->maxs,local_8->origin,
-                                                      param_1->tracemask & 0xfdff7fff);
-                        param_1->maxs[2] = local_88;
-                        if ((bool)local_81) {
-                          if (((local_8->pm_type != 8) && (local_8->pm_type != 6)) &&
-                             (local_8->pm_type != 7)) {
-                            BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_CROUCH,0,1);
+                        save_maxs2_2 = pm->maxs[2];
+                        pm->maxs[2] = 50.0;
+                        not_pen_2 = is_not_penetrating(pm,ps->origin,pm->mins,pm->maxs,ps->origin,
+                                                       pm->tracemask & 0xfdff7fff);
+                        pm->maxs[2] = save_maxs2_2;
+                        if (not_pen_2) {
+                          if (((ps->pm_type != 8) && (ps->pm_type != 6)) && (ps->pm_type != 7)) {
+                            BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_CROUCH,0,1);
                           }
-                          local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
-                          local_8->pm_flags = local_8->pm_flags | 2;
+                          ps->pm_flags = ps->pm_flags & 0xfffffffe;
+                          ps->pm_flags = ps->pm_flags | 2;
                         }
                         else {
-                          bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xc);
+                          bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xc);
                           if (!bVar2) {
-                            BG_AddPredictableEventToPlayerstate(10,1,local_8);
+                            BG_AddPredictableEventToPlayerstate(10,1,ps);
                           }
                         }
                       }
@@ -3811,148 +3855,145 @@ void __cdecl PM_CheckDuck(pmove_t *param_1,pml_t *param_2)
                   }
                 }
                 else {
-                  bitarray<51>::setBit(&(param_1->cmd).button_bits,8);
-                  bitarray<51>::resetBit(&(param_1->cmd).button_bits,9);
-                  bitarray<51>::resetBit(&(param_1->cmd).button_bits,1);
-                  local_8->eFlags = local_8->eFlags & 0xfffffffb;
-                  local_8->pm_flags = local_8->pm_flags & 0xfffffffd;
-                  local_8->viewHeightTarget = 0xb;
-                  BG_AddPredictableEventToPlayerstate(10,0,local_8);
+                  bitarray<51>::setBit(&(pm->cmd).button_bits,8);
+                  bitarray<51>::resetBit(&(pm->cmd).button_bits,9);
+                  bitarray<51>::resetBit(&(pm->cmd).button_bits,1);
+                  ps->eFlags = ps->eFlags & 0xfffffffb;
+                  ps->pm_flags = ps->pm_flags & 0xfffffffd;
+                  ps->viewHeightTarget = 0xb;
+                  BG_AddPredictableEventToPlayerstate(10,0,ps);
                 }
               }
             }
             else {
-              local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
+              ps->pm_flags = ps->pm_flags & 0xfffffffc;
             }
           }
-          else if (((local_8->eFlags & 0x100U) == 0) || ((local_8->eFlags & 0x200U) != 0)) {
-            if (((local_8->eFlags & 0x200U) == 0) || ((local_8->eFlags & 0x100U) != 0)) {
-              local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
+          else if (((ps->eFlags & 0x100U) == 0) || ((ps->eFlags & 0x200U) != 0)) {
+            if (((ps->eFlags & 0x200U) == 0) || ((ps->eFlags & 0x100U) != 0)) {
+              ps->pm_flags = ps->pm_flags & 0xfffffffc;
             }
             else {
-              local_8->pm_flags = local_8->pm_flags | 2;
-              local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
+              ps->pm_flags = ps->pm_flags | 2;
+              ps->pm_flags = ps->pm_flags & 0xfffffffe;
             }
           }
           else {
-            local_8->pm_flags = local_8->pm_flags | 1;
-            local_8->pm_flags = local_8->pm_flags & 0xfffffffd;
+            ps->pm_flags = ps->pm_flags | 1;
+            ps->pm_flags = ps->pm_flags & 0xfffffffd;
           }
-          if (local_8->viewHeightLerpTime == 0) {
-            if ((local_8->pm_type == 6) || (local_8->pm_type == 7)) {
-              if (local_8->viewHeightTarget == 0x3c) {
-                BG_AnimScriptEvent(param_1,ANIM_ET_STAND_TO_LASTSTAND,0,1);
+          if (ps->viewHeightLerpTime == 0) {
+            if ((ps->pm_type == 6) || (ps->pm_type == 7)) {
+              if (ps->viewHeightTarget == 0x3c) {
+                BG_AnimScriptEvent(pm,ANIM_ET_STAND_TO_LASTSTAND,0,1);
               }
-              else if (local_8->viewHeightTarget == 0x28) {
-                BG_AnimScriptEvent(param_1,ANIM_ET_CROUCH_TO_LASTSTAND,0,1);
+              else if (ps->viewHeightTarget == 0x28) {
+                BG_AnimScriptEvent(pm,ANIM_ET_CROUCH_TO_LASTSTAND,0,1);
               }
-              else if (local_8->viewHeightTarget == 0xb) {
-                BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_LASTSTAND,0,1);
+              else if (ps->viewHeightTarget == 0xb) {
+                BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_LASTSTAND,0,1);
               }
-              local_8->viewHeightTarget = 0x16;
+              ps->viewHeightTarget = 0x16;
             }
-            else if ((local_8->pm_flags & 1U) == 0) {
-              if (local_8->viewHeightTarget == 0xb) {
-                local_8->viewHeightTarget = 0x28;
-                param_1->proneChange = 1;
-                BG_PlayAnim(local_8,0,ANIM_BP_TORSO,0,0,1,1);
+            else if ((ps->pm_flags & 1U) == 0) {
+              if (ps->viewHeightTarget == 0xb) {
+                ps->viewHeightTarget = 0x28;
+                pm->proneChange = 1;
+                BG_PlayAnim(ps,0,ANIM_BP_TORSO,0,0,1,1);
               }
-              else if ((local_8->pm_flags & 2U) == 0) {
-                local_8->viewHeightTarget = 0x3c;
+              else if ((ps->pm_flags & 2U) == 0) {
+                ps->viewHeightTarget = 0x3c;
               }
               else {
-                local_8->viewHeightTarget = 0x28;
+                ps->viewHeightTarget = 0x28;
               }
             }
-            else if (local_8->viewHeightTarget == 0x3c) {
-              local_8->viewHeightTarget = 0x28;
+            else if (ps->viewHeightTarget == 0x3c) {
+              ps->viewHeightTarget = 0x28;
             }
-            else if (local_8->viewHeightTarget != 0xb) {
-              local_8->viewHeightTarget = 0xb;
-              param_1->proneChange = 1;
-              BG_PlayAnim(local_8,0,ANIM_BP_TORSO,0,0,1,1);
-              Jump_ActivateSlowdown(local_8);
+            else if (ps->viewHeightTarget != 0xb) {
+              ps->viewHeightTarget = 0xb;
+              pm->proneChange = 1;
+              BG_PlayAnim(ps,0,ANIM_BP_TORSO,0,0,1,1);
+              Jump_ActivateSlowdown(ps);
             }
           }
-          PM_ViewHeightAdjust(param_1,param_2);
-          local_50 = PM_GetEffectiveStance(local_8);
-          if (local_50 == 1) {
-            param_1->maxs[2] = 30.0;
-            local_8->eFlags = local_8->eFlags | 8;
-            local_8->eFlags = local_8->eFlags & 0xfffffffb;
-            local_8->pm_flags = local_8->pm_flags | 1;
-            local_8->pm_flags = local_8->pm_flags & 0xfffffffd;
+          PM_ViewHeightAdjust(pm,pml);
+          iStance = PM_GetEffectiveStance(ps);
+          if (iStance == 1) {
+            pm->maxs[2] = 30.0;
+            ps->eFlags = ps->eFlags | 8;
+            ps->eFlags = ps->eFlags & 0xfffffffb;
+            ps->pm_flags = ps->pm_flags | 1;
+            ps->pm_flags = ps->pm_flags & 0xfffffffd;
           }
-          else if (local_50 == 2) {
-            param_1->maxs[2] = 50.0;
-            local_8->eFlags = local_8->eFlags | 4;
-            local_8->eFlags = local_8->eFlags & 0xfffffff7;
-            local_8->pm_flags = local_8->pm_flags | 2;
-            local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
+          else if (iStance == 2) {
+            pm->maxs[2] = 50.0;
+            ps->eFlags = ps->eFlags | 4;
+            ps->eFlags = ps->eFlags & 0xfffffff7;
+            ps->pm_flags = ps->pm_flags | 2;
+            ps->pm_flags = ps->pm_flags & 0xfffffffe;
           }
           else {
-            param_1->maxs[2] = 70.0;
-            local_8->eFlags = local_8->eFlags & 0xfffffff3;
-            local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
+            pm->maxs[2] = 70.0;
+            ps->eFlags = ps->eFlags & 0xfffffff3;
+            ps->pm_flags = ps->pm_flags & 0xfffffffc;
           }
-          if ((local_8->pm_flags & 0x400000U) != 0) {
-            if (30.0 < local_8->viewHeightCurrent || local_8->viewHeightCurrent == 30.0) {
-              if (50.0 < local_8->viewHeightCurrent || local_8->viewHeightCurrent == 50.0) {
-                param_1->maxs[2] = 70.0;
+          if ((ps->pm_flags & 0x400000U) != 0) {
+            if (30.0 < ps->viewHeightCurrent || ps->viewHeightCurrent == 30.0) {
+              if (50.0 < ps->viewHeightCurrent || ps->viewHeightCurrent == 50.0) {
+                pm->maxs[2] = 70.0;
               }
               else {
-                param_1->maxs[2] = 50.0;
+                pm->maxs[2] = 50.0;
               }
             }
             else {
-              param_1->maxs[2] = 30.0;
+              pm->maxs[2] = 30.0;
             }
           }
-          if ((local_8->pm_flags & 1U) != 0) {
-            if (local_4c == 0) {
-              col_context_t::col_context_t(&local_cc);
-              if (((param_1->cmd).forwardmove != '\0') || ((param_1->cmd).rightmove != '\0')) {
-                local_8->pm_flags = local_8->pm_flags & 0xfffffdff;
-                PM_ExitAimDownSight(local_8);
+          if ((ps->pm_flags & 1U) != 0) {
+            if (bWasProne == 0) {
+              col_context_t::col_context_t(&context_2);
+              if (((pm->cmd).forwardmove != '\0') || ((pm->cmd).rightmove != '\0')) {
+                ps->pm_flags = ps->pm_flags & 0xfffffdff;
+                PM_ExitAimDownSight(ps);
               }
-              local_94 = local_8->origin[0];
-              local_90 = local_8->origin[1];
-              local_8c = local_8->origin[2] + 10.0;
+              vEnd = ps->origin[0];
+              local_90 = ps->origin[1];
+              local_8c = ps->origin[2] + 10.0;
               colgeom_visitor_inlined_t<200>::update
-                        (&param_1->proximity_data,local_8->origin,&local_94,param_1->mins,
-                         param_1->maxs,0x3818813);
-              local_cc.prims = (param_1->proximity_data).prims;
-              local_cc.nprims = (param_1->proximity_data).nprims;
-              (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-                        (&local_44,local_8->origin,param_1->mins,param_1->maxs,&local_94,
-                         local_8->clientNum,param_1->tracemask & 0xfdff7fff,&local_cc);
-              Vec3Lerp(local_8->origin,&local_94,local_34,&local_94);
+                        (&pm->proximity_data,ps->origin,&vEnd,pm->mins,pm->maxs,0x3818813);
+              context_2.prims = (pm->proximity_data).prims;
+              context_2.nprims = (pm->proximity_data).nprims;
+              (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+                        (&trace,ps->origin,pm->mins,pm->maxs,&vEnd,ps->clientNum,
+                         pm->tracemask & 0xfdff7fff,&context_2);
+              Vec3Lerp(ps->origin,&vEnd,local_34,&vEnd);
               colgeom_visitor_inlined_t<200>::update
-                        (&param_1->proximity_data,&local_94,local_8->origin,param_1->mins,
-                         param_1->maxs,0x3818813);
-              local_cc.prims = (param_1->proximity_data).prims;
-              local_cc.nprims = (param_1->proximity_data).nprims;
-              (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-                        (&local_44,&local_94,param_1->mins,param_1->maxs,local_8->origin,
-                         local_8->clientNum,param_1->tracemask & 0xfdff7fff,&local_cc);
-              Vec3Lerp(&local_94,local_8->origin,local_34,local_8->origin);
-              local_8->proneDirection = local_8->viewangles[1];
-              local_a0 = local_8->origin[0];
-              local_9c = local_8->origin[1];
-              local_98 = local_8->origin[2] - 0.25;
+                        (&pm->proximity_data,&vEnd,ps->origin,pm->mins,pm->maxs,0x3818813);
+              context_2.prims = (pm->proximity_data).prims;
+              context_2.nprims = (pm->proximity_data).nprims;
+              (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+                        (&trace,&vEnd,pm->mins,pm->maxs,ps->origin,ps->clientNum,
+                         pm->tracemask & 0xfdff7fff,&context_2);
+              Vec3Lerp(&vEnd,ps->origin,local_34,ps->origin);
+              ps->proneDirection = ps->viewangles[1];
+              vPoint = ps->origin[0];
+              local_9c = ps->origin[1];
+              local_98 = ps->origin[2] - 0.25;
               colgeom_visitor_inlined_t<200>::update
-                        (&param_1->proximity_data,local_8->origin,&local_a0,param_1->mins,
-                         param_1->maxs,0x3818813);
-              local_cc.prims = (param_1->proximity_data).prims;
-              local_cc.nprims = (param_1->proximity_data).nprims;
-              (**(code **)(&pmoveHandlers + (uint)param_1->handler * 0x20))
-                        (&local_44,local_8->origin,param_1->mins,param_1->maxs,&local_a0,
-                         local_8->clientNum,param_1->tracemask & 0xfdff7fff,&local_cc);
-              if (((local_19 != '\0') || (1.0 <= local_34)) || (local_8->pm_type == 6)) {
-                local_8->proneDirectionPitch = 0.0;
+                        (&pm->proximity_data,ps->origin,&vPoint,pm->mins,pm->maxs,0x3818813);
+              context_2.prims = (pm->proximity_data).prims;
+              context_2.nprims = (pm->proximity_data).nprims;
+              (**(code **)(&pmoveHandlers + (uint)pm->handler * 0x20))
+                        (&trace,ps->origin,pm->mins,pm->maxs,&vPoint,ps->clientNum,
+                         pm->tracemask & 0xfdff7fff,&context_2);
+              if (((local_19 != '\0') || (1.0 <= local_34)) || (ps->pm_type == 6)) {
+                ps->proneDirectionPitch = 0.0;
               }
               else {
-                if (((local_44 == 0.0) && (local_40 == 0.0)) &&
+                if (((trace == 0.0) && (local_40 == 0.0)) &&
                    ((local_3c == 0.0 &&
                     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp"
                                               ,0xe86,0,"%s"), !bVar2)))) {
@@ -3960,59 +4001,59 @@ void __cdecl PM_CheckDuck(pmove_t *param_1,pml_t *param_2)
                   (*pcVar1)();
                   return;
                 }
-                fVar4 = PitchForYawOnNormal(local_8->proneDirection,&local_44);
-                local_8->proneDirectionPitch = fVar4;
+                fVar4 = PitchForYawOnNormal(ps->proneDirection,&trace);
+                ps->proneDirectionPitch = fVar4;
               }
-              fVar4 = AngleDelta(local_8->proneDirectionPitch,local_8->viewangles[0]);
+              fVar4 = AngleDelta(ps->proneDirectionPitch,ps->viewangles[0]);
               if (-45.0 <= fVar4) {
                 if (fVar4 <= 45.0) {
-                  local_8->proneTorsoPitch = local_8->proneDirectionPitch;
+                  ps->proneTorsoPitch = ps->proneDirectionPitch;
                 }
                 else {
-                  local_8->proneTorsoPitch = local_8->viewangles[0] + 45.0;
+                  ps->proneTorsoPitch = ps->viewangles[0] + 45.0;
                 }
               }
               else {
-                local_8->proneTorsoPitch = local_8->viewangles[0] - 45.0;
+                ps->proneTorsoPitch = ps->viewangles[0] - 45.0;
               }
             }
-            if (local_8->pm_type == 6) {
-              local_8->proneDirection = local_8->viewangles[1];
+            if (ps->pm_type == 6) {
+              ps->proneDirection = ps->viewangles[1];
             }
           }
         }
         else {
-          if ((local_8->pm_flags & 1U) != 0) {
-            BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_SPRINT,0,1);
+          if ((ps->pm_flags & 1U) != 0) {
+            BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_SPRINT,0,1);
           }
-          local_8->viewHeightTarget = 0x3c;
-          local_8->eFlags = local_8->eFlags & 0xfffffff3;
-          local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
-          BG_AddPredictableEventToPlayerstate(8,0,local_8);
-          PM_ViewHeightAdjust(param_1,param_2);
+          ps->viewHeightTarget = 0x3c;
+          ps->eFlags = ps->eFlags & 0xfffffff3;
+          ps->pm_flags = ps->pm_flags & 0xfffffffc;
+          BG_AddPredictableEventToPlayerstate(8,0,ps);
+          PM_ViewHeightAdjust(pm,pml);
         }
       }
       else {
-        local_8->viewHeightTarget = 0x3c;
-        local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
-        BG_AddPredictableEventToPlayerstate(8,0,local_8);
-        PM_ViewHeightAdjust(param_1,param_2);
+        ps->viewHeightTarget = 0x3c;
+        ps->pm_flags = ps->pm_flags & 0xfffffffc;
+        BG_AddPredictableEventToPlayerstate(8,0,ps);
+        PM_ViewHeightAdjust(pm,pml);
       }
     }
     else {
-      local_8->viewHeightTarget = 0x28;
-      BG_AddPredictableEventToPlayerstate(9,0,local_8);
-      if ((local_8->pm_type != 8) && ((local_8->pm_type != 6 && (local_8->pm_type != 7)))) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_PRONE_TO_CROUCH,0,1);
+      ps->viewHeightTarget = 0x28;
+      BG_AddPredictableEventToPlayerstate(9,0,ps);
+      if ((ps->pm_type != 8) && ((ps->pm_type != 6 && (ps->pm_type != 7)))) {
+        BG_AnimScriptEvent(pm,ANIM_ET_PRONE_TO_CROUCH,0,1);
       }
-      local_8->pm_flags = local_8->pm_flags & 0xfffffffe;
-      local_8->pm_flags = local_8->pm_flags | 0x1000;
-      if (2 < local_8->waterlevel) {
-        local_8->viewHeightTarget = 0x3c;
-        local_8->pm_flags = local_8->pm_flags & 0xfffffffc;
-        BG_AddPredictableEventToPlayerstate(8,0,local_8);
+      ps->pm_flags = ps->pm_flags & 0xfffffffe;
+      ps->pm_flags = ps->pm_flags | 0x1000;
+      if (2 < ps->waterlevel) {
+        ps->viewHeightTarget = 0x3c;
+        ps->pm_flags = ps->pm_flags & 0xfffffffc;
+        BG_AddPredictableEventToPlayerstate(8,0,ps);
       }
-      PM_ViewHeightAdjust(param_1,param_2);
+      PM_ViewHeightAdjust(pm,pml);
     }
   }
   return;
@@ -4023,58 +4064,59 @@ void __cdecl PM_CheckDuck(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_FootstepEvent(pmove_t *param_1,pml_t *param_2,int param_3,int param_4,int param_5)
+void __cdecl
+PM_FootstepEvent(pmove_t *pm,pml_t *pml,int iOldBobCycle,int iNewBobCycle,int bFootStep)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  int iVar4;
-  playerState_s *ppVar5;
-  float local_74;
+  uint eventParm;
+  int newEvent;
+  playerState_s *ps_00;
+  float mins;
   float local_70;
   float local_6c;
-  float local_68;
+  float vEnd;
   float local_64;
   float local_60;
-  uint local_5c;
-  undefined4 local_58;
-  float local_54;
+  int iClipMask;
+  float fTraceDist;
+  float maxs;
   float local_50;
   float local_4c;
-  float4 local_48;
+  float4 trace;
   float local_38;
   uint local_34;
   uint local_10;
-  uint local_c;
-  playerState_s *local_8;
+  int iSurfaceType;
+  playerState_s *ps;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xeac,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_3 >> 6 != param_4 >> 6) {
-    if (local_8->groundEntityNum == 0x3ff) {
-      if ((param_5 != 0) && ((local_8->pm_flags & 8U) != 0)) {
-        local_48.v[0] = 0.0;
-        local_48.v[1] = 0.0;
-        local_48.v[2] = 0.0;
-        local_48.v[3] = 0.0;
-        local_74 = param_1->mins[0] + 6.0;
-        local_70 = param_1->mins[1] + 6.0;
+  if (iOldBobCycle >> 6 != iNewBobCycle >> 6) {
+    if (ps->groundEntityNum == 0x3ff) {
+      if ((bFootStep != 0) && ((ps->pm_flags & 8U) != 0)) {
+        trace.v[0] = 0.0;
+        trace.v[1] = 0.0;
+        trace.v[2] = 0.0;
+        trace.v[3] = 0.0;
+        mins = pm->mins[0] + 6.0;
+        local_70 = pm->mins[1] + 6.0;
         local_6c = 8.0;
-        local_4c = param_1->maxs[2];
-        local_54 = param_1->maxs[0] - 6.0;
-        local_50 = param_1->maxs[1] - 6.0;
+        local_4c = pm->maxs[2];
+        maxs = pm->maxs[0] - 6.0;
+        local_50 = pm->maxs[1] - 6.0;
         if (local_4c < 8.0) {
           local_4c = 8.0;
         }
-        if ((local_54 < local_74) &&
+        if ((maxs < mins) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xec8,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -4095,31 +4137,30 @@ void __cdecl PM_FootstepEvent(pmove_t *param_1,pml_t *param_2,int param_3,int pa
           (*pcVar1)();
           return;
         }
-        local_5c = param_1->tracemask & 0xfdfe7fff;
-        local_58 = 0xc1f80000;
-        local_68 = local_8->vLadderVec[0] * -31.0 + local_8->origin[0];
-        local_64 = local_8->vLadderVec[1] * -31.0 + local_8->origin[1];
-        local_60 = local_8->vLadderVec[2] * -31.0 + local_8->origin[2];
+        iClipMask = pm->tracemask & 0xfdfe7fff;
+        fTraceDist = -31.0;
+        vEnd = ps->vLadderVec[0] * -31.0 + ps->origin[0];
+        local_64 = ps->vLadderVec[1] * -31.0 + ps->origin[1];
+        local_60 = ps->vLadderVec[2] * -31.0 + ps->origin[2];
         if ((phys_player_collision_mode->current).integer == 1) {
-          PM_trace(param_1,(trace_t *)&local_48,local_8->origin,&local_74,&local_54,&local_68,
-                   (uint)local_8->clientNum,local_5c);
+          PM_trace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&vEnd,(uint)ps->clientNum,iClipMask);
         }
         else {
-          PM_playerTrace(param_1,(trace_t *)&local_48,local_8->origin,&local_74,&local_54,&local_68,
-                         (uint)local_8->clientNum,local_5c);
+          PM_playerTrace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&vEnd,(uint)ps->clientNum,
+                         iClipMask);
         }
-        local_c = (int)(local_34 & 0x3f00000) >> 0x14;
-        if ((local_38 == 1.0) || (local_c == 0)) {
-          local_c = 0x15;
+        iSurfaceType = (int)(local_34 & 0x3f00000) >> 0x14;
+        if ((local_38 == 1.0) || (iSurfaceType == 0)) {
+          iSurfaceType = 0x15;
         }
-        BG_AddPredictableEventToPlayerstate(0x68,local_c,local_8);
+        BG_AddPredictableEventToPlayerstate(0x68,iSurfaceType,ps);
       }
     }
-    else if (param_5 != 0) {
-      ppVar5 = local_8;
-      uVar3 = PM_GroundSurfaceType(local_8,param_2);
-      iVar4 = PM_FootstepType(param_1,param_2);
-      BG_AddPredictableEventToPlayerstate(iVar4,uVar3,ppVar5);
+    else if (bFootStep != 0) {
+      ps_00 = ps;
+      eventParm = PM_GroundSurfaceType(ps,pml);
+      newEvent = PM_FootstepType(pm,pml);
+      BG_AddPredictableEventToPlayerstate(newEvent,eventParm,ps_00);
     }
   }
   return;
@@ -4128,12 +4169,12 @@ void __cdecl PM_FootstepEvent(pmove_t *param_1,pml_t *param_2,int param_3,int pa
 
 // 0042AF00  PM_ShouldMakeFootsteps  (bgame/bg_pmove.cpp:3819)
 
-int __cdecl PM_ShouldMakeFootsteps(pmove_t *param_1)
+int __cdecl PM_ShouldMakeFootsteps(pmove_t *pm)
 
 {
   uint local_8;
   
-  local_8 = (uint)((player_footstepsThreshhold->current).value <= param_1->xyspeed);
+  local_8 = (uint)((player_footstepsThreshhold->current).value <= pm->xyspeed);
   return local_8;
 }
 
@@ -4142,68 +4183,69 @@ int __cdecl PM_ShouldMakeFootsteps(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl PM_Footsteps_TurnAnim(clientInfo_t *param_1)
+int __cdecl PM_Footsteps_TurnAnim(clientInfo_t *ci)
 
 {
   float fVar1;
-  int local_8;
+  float diff;
+  int turnAdjust;
   
-  local_8 = 0;
-  if (((param_1->turnAnimType != '\0') && (param_1->turnAnimEndTime != 0)) &&
+  turnAdjust = 0;
+  if (((ci->turnAnimType != '\0') && (ci->turnAnimEndTime != 0)) &&
      ((xanim_debug->current).enabled != false)) {
     Com_DPrintf(0x11,"turn anim end time is %i, time is %i\n");
   }
-  if ((param_1->legs).yawing == 0) {
-    if ((param_1->turnAnimEndTime != 0) &&
-       (param_1->turnAnimEndTime = 0, (xanim_debug->current).enabled != false)) {
+  if ((ci->legs).yawing == 0) {
+    if ((ci->turnAnimEndTime != 0) &&
+       (ci->turnAnimEndTime = 0, (xanim_debug->current).enabled != false)) {
       Com_Printf(0x11,"[%i] playing idle anim after turn anim\n");
     }
   }
   else {
-    fVar1 = AngleNormalize180((param_1->legs).yawAngle - (param_1->torso).yawAngle);
+    fVar1 = AngleNormalize180((ci->legs).yawAngle - (ci->torso).yawAngle);
     if (fVar1 <= 0.0) {
       if (0.0 <= fVar1) {
-        local_8 = (int)param_1->turnAnimType;
+        turnAdjust = (int)ci->turnAnimType;
       }
       else {
-        local_8 = 2;
+        turnAdjust = 2;
       }
     }
     else {
-      local_8 = 1;
+      turnAdjust = 1;
     }
-    param_1->turnAnimType = (char)local_8;
-    param_1->turnAnimEndTime =
+    ci->turnAnimType = (char)turnAdjust;
+    ci->turnAnimEndTime =
          *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4) + 100
     ;
   }
-  return local_8;
+  return turnAdjust;
 }
 
 
 // 00435940  PM_GetNotMovingAnim  (bgame/bg_pmove.cpp:3928)
 
-scriptAnimMoveTypes_t __cdecl PM_GetNotMovingAnim(int param_1)
+scriptAnimMoveTypes_t __cdecl PM_GetNotMovingAnim(int turnAdjust)
 
 {
-  return notMovingAnims[param_1];
+  return notMovingAnims[turnAdjust];
 }
 
 
 // 00435950  PM_ShouldFlinch  (bgame/bg_pmove.cpp:3964)
 
-int __cdecl PM_ShouldFlinch(playerState_s *param_1)
+int __cdecl PM_ShouldFlinch(playerState_s *ps)
 
 {
   uint uVar1;
-  int local_8;
+  int flinch_end_time;
   
-  if ((float)param_1->viewHeightTarget == param_1->viewHeightCurrent) {
-    local_8 = param_1->damageDuration - (player_dmgtimer_flinchTime->current).integer;
-    if (local_8 < 0) {
-      local_8 = 0;
+  if ((float)ps->viewHeightTarget == ps->viewHeightCurrent) {
+    flinch_end_time = ps->damageDuration - (player_dmgtimer_flinchTime->current).integer;
+    if (flinch_end_time < 0) {
+      flinch_end_time = 0;
     }
-    uVar1 = (uint)(local_8 < param_1->damageTimer);
+    uVar1 = (uint)(flinch_end_time < ps->damageTimer);
   }
   else {
     uVar1 = 0;
@@ -4214,42 +4256,46 @@ int __cdecl PM_ShouldFlinch(playerState_s *param_1)
 
 // 004361A0  PM_Footstep_LadderMove  (bgame/bg_pmove.cpp:3987)
 
-bool __cdecl PM_Footstep_LadderMove(pmove_t *param_1,pml_t *param_2)
+bool __cdecl PM_Footstep_LadderMove(pmove_t *pm,pml_t *pml)
 
 {
   float fVar1;
   playerState_s *ppVar2;
-  int iVar3;
-  bool bVar4;
-  float local_c;
+  int iOldBobCycle;
+  bool bVar3;
+  float fMaxSpeed;
+  float fLadderSpeed;
+  playerState_s *ps;
+  float bobmove;
+  int old;
   
-  ppVar2 = param_1->ps;
+  ppVar2 = pm->ps;
   if ((ppVar2->pm_flags & 8U) == 0) {
-    bVar4 = false;
+    bVar3 = false;
   }
-  else if ((param_1->cmd).serverTime - ppVar2->jumpTime < 300) {
-    bVar4 = true;
+  else if ((pm->cmd).serverTime - ppVar2->jumpTime < 300) {
+    bVar3 = true;
   }
   else {
     fVar1 = ppVar2->velocity[2];
     if (((ppVar2->pm_flags & 0x40U) == 0) && (ppVar2->leanf == 0.0)) {
-      local_c = (fVar1 / 95.25) * 0.45;
+      bobmove = (fVar1 / 95.25) * 0.45;
     }
     else {
-      local_c = (fVar1 / 38.100002) * 0.35;
+      bobmove = (fVar1 / 38.100002) * 0.35;
     }
     if (fVar1 < 0.0) {
-      BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_CLIMBDOWN,0);
+      BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_CLIMBDOWN,0);
     }
     else {
-      BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_CLIMBUP,1);
+      BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_CLIMBUP,1);
     }
-    iVar3 = ppVar2->bobCycle;
-    ppVar2->bobCycle = (int)((float)iVar3 + (float)param_2->msec * local_c) & 0xff;
-    PM_FootstepEvent(param_1,param_2,iVar3,ppVar2->bobCycle,1);
-    bVar4 = true;
+    iOldBobCycle = ppVar2->bobCycle;
+    ppVar2->bobCycle = (int)((float)iOldBobCycle + (float)pml->msec * bobmove) & 0xff;
+    PM_FootstepEvent(pm,pml,iOldBobCycle,ppVar2->bobCycle,1);
+    bVar3 = true;
   }
-  return bVar4;
+  return bVar3;
 }
 
 
@@ -4257,73 +4303,75 @@ bool __cdecl PM_Footstep_LadderMove(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl PM_Footsteps_NotMoving(pmove_t *param_1,int param_2,bool param_3)
+void __cdecl PM_Footsteps_NotMoving(pmove_t *pm,int stance,bool allow_flinch)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  scriptAnimMoveTypes_t sVar4;
-  int iVar5;
-  int local_18;
-  int local_14;
-  clientInfo_t *local_10;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  scriptAnimMoveTypes_t movetype;
+  int iVar3;
+  int turnAdjust;
+  int animResult;
+  clientInfo_t *ci;
+  scriptAnimMoveTypes_t anim;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  if ((param_1->xyspeed <= 1.0 && param_1->xyspeed != 1.0) && (ppVar1->waterlevel < 3)) {
-    ppVar1->bobCycle = 0;
+  ps_00 = pm->ps;
+  if ((pm->xyspeed <= 1.0 && pm->xyspeed != 1.0) && (ps_00->waterlevel < 3)) {
+    ps_00->bobCycle = 0;
   }
-  local_18 = 0;
-  if ((int)(uint)ppVar1->clientNum < (com_maxclients->current).integer) {
-    local_10 = (clientInfo_t *)
-               (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0 +
-               (uint)ppVar1->clientNum * 0x5c8);
+  turnAdjust = 0;
+  if ((int)(uint)ps_00->clientNum < (com_maxclients->current).integer) {
+    ci = (clientInfo_t *)
+         (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0 +
+         (uint)ps_00->clientNum * 0x5c8);
   }
   else {
-    local_10 = (clientInfo_t *)0x0;
+    ci = (clientInfo_t *)0x0;
   }
-  if (((local_10 != (clientInfo_t *)0x0) && ((player_turnAnims->current).enabled != false)) &&
-     ((ppVar1->pm_flags & 4U) == 0)) {
-    local_18 = PM_Footsteps_TurnAnim(local_10);
+  if (((ci != (clientInfo_t *)0x0) && ((player_turnAnims->current).enabled != false)) &&
+     ((ps_00->pm_flags & 4U) == 0)) {
+    turnAdjust = PM_Footsteps_TurnAnim(ci);
   }
-  sVar4 = PM_GetNotMovingAnim(local_18);
-  if (ppVar1->waterlevel < 3) {
-    if (local_18 == 0) {
-      if ((param_3) && (iVar5 = PM_ShouldFlinch(ppVar1), iVar5 != 0)) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_FLINCH,1,1);
+  movetype = PM_GetNotMovingAnim(turnAdjust);
+  if (ps_00->waterlevel < 3) {
+    if (turnAdjust == 0) {
+      if ((allow_flinch) && (iVar3 = PM_ShouldFlinch(ps_00), iVar3 != 0)) {
+        BG_AnimScriptEvent(pm,ANIM_ET_FLINCH,1,1);
         return;
       }
-      local_14 = BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,sVar4,0);
+      animResult = BG_AnimScriptAnimation(pm,AISTATE_COMBAT,movetype,0);
     }
     else {
-      local_14 = BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,sVar4,0);
-      if ((0 < local_14) && (local_10->turnAnimEndTime == 0)) {
-        if ((ppVar1->legsAnimDuration < 1) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xfe1,
-                                     0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      animResult = BG_AnimScriptAnimation(pm,AISTATE_COMBAT,movetype,0);
+      if ((0 < animResult) && (ci->turnAnimEndTime == 0)) {
+        if ((ps_00->legsAnimDuration < 1) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0xfe1,
+                                     0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        local_10->turnAnimEndTime =
+        ci->turnAnimEndTime =
              *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4) +
-             ppVar1->legsAnimDuration;
+             ps_00->legsAnimDuration;
         if ((xanim_debug->current).enabled != false) {
           Com_Printf(0x11,"[%i] turn anim should end at %i\n");
         }
       }
     }
-    if (local_14 < 0) {
-      if ((param_3) && (iVar5 = PM_ShouldFlinch(ppVar1), iVar5 != 0)) {
-        BG_AnimScriptEvent(param_1,ANIM_ET_FLINCH,1,1);
+    if (animResult < 0) {
+      if ((allow_flinch) && (iVar3 = PM_ShouldFlinch(ps_00), iVar3 != 0)) {
+        BG_AnimScriptEvent(pm,ANIM_ET_FLINCH,1,1);
       }
       else {
-        BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_IDLE,0);
+        BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_IDLE,0);
       }
     }
   }
   else {
-    BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_SWIM,0);
+    BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_SWIM,0);
   }
   return;
 }
@@ -4331,7 +4379,7 @@ void __cdecl PM_Footsteps_NotMoving(pmove_t *param_1,int param_2,bool param_3)
 
 // 00436300  PM_GetMaxSpeed  (bgame/bg_pmove.cpp:4100)
 
-float __cdecl PM_GetMaxSpeed(pmove_t *param_1,int param_2,int param_3)
+float __cdecl PM_GetMaxSpeed(pmove_t *pm,int walking,int sprinting)
 
 {
   code *pcVar1;
@@ -4339,63 +4387,65 @@ float __cdecl PM_GetMaxSpeed(pmove_t *param_1,int param_2,int param_3)
   WeaponDef *pWVar3;
   float10 fVar4;
   float fVar5;
-  float local_c;
+  float fMaxSpeed;
+  WeaponDef *weapon;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1008,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if ((param_1->ps == (playerState_s *)0x0) &&
+  if ((pm->ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1009,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  local_c = (float)param_1->ps->speed;
-  if ((param_1->cmd).forwardmove == '\0') {
-    if ((param_1->cmd).rightmove != '\0') {
-      local_c = (((player_strafeSpeedScale->current).value - 1.0) * 0.75 + 1.0) * local_c;
+  fMaxSpeed = (float)pm->ps->speed;
+  if ((pm->cmd).forwardmove == '\0') {
+    if ((pm->cmd).rightmove != '\0') {
+      fMaxSpeed = (((player_strafeSpeedScale->current).value - 1.0) * 0.75 + 1.0) * fMaxSpeed;
     }
   }
-  else if ((param_1->cmd).rightmove == '\0') {
-    if ((param_1->cmd).forwardmove < '\0') {
-      local_c = local_c * (player_backSpeedScale->current).value;
+  else if ((pm->cmd).rightmove == '\0') {
+    if ((pm->cmd).forwardmove < '\0') {
+      fMaxSpeed = fMaxSpeed * (player_backSpeedScale->current).value;
     }
   }
   else {
-    local_c = (((player_strafeSpeedScale->current).value - 1.0) * 0.75 + 1.0 + 1.0) * 0.5 * local_c;
-    if ((param_1->cmd).forwardmove < '\0') {
-      local_c = ((player_backSpeedScale->current).value + 1.0) * 0.5 * local_c;
+    fMaxSpeed = (((player_strafeSpeedScale->current).value - 1.0) * 0.75 + 1.0 + 1.0) * 0.5 *
+                fMaxSpeed;
+    if ((pm->cmd).forwardmove < '\0') {
+      fMaxSpeed = ((player_backSpeedScale->current).value + 1.0) * 0.5 * fMaxSpeed;
     }
   }
-  if (param_2 == 0) {
-    if (param_3 == 0) {
-      local_c = local_c * 1.0;
+  if (walking == 0) {
+    if (sprinting == 0) {
+      fMaxSpeed = fMaxSpeed * 1.0;
     }
     else {
-      local_c = local_c * (player_sprintSpeedScale->current).value;
+      fMaxSpeed = fMaxSpeed * (player_sprintSpeedScale->current).value;
     }
   }
   else {
-    local_c = local_c * 0.4;
+    fMaxSpeed = fMaxSpeed * 0.4;
   }
-  if (param_1->ps->weapon != 0) {
-    pWVar3 = BG_GetWeaponDef((uint)param_1->ps->weapon);
-    if ((pWVar3->moveSpeedScale <= 0.0) || ((param_1->ps->pm_flags & 0x40U) != 0)) {
+  if (pm->ps->weapon != 0) {
+    pWVar3 = BG_GetWeaponDef((uint)pm->ps->weapon);
+    if ((pWVar3->moveSpeedScale <= 0.0) || ((pm->ps->pm_flags & 0x40U) != 0)) {
       if (0.0 < pWVar3->adsMoveSpeedScale) {
-        local_c = local_c * pWVar3->adsMoveSpeedScale;
+        fMaxSpeed = fMaxSpeed * pWVar3->adsMoveSpeedScale;
       }
     }
     else {
-      local_c = local_c * pWVar3->moveSpeedScale;
+      fMaxSpeed = fMaxSpeed * pWVar3->moveSpeedScale;
     }
   }
-  fVar5 = PM_CmdScaleForStance(param_1);
-  return fVar5 * local_c * param_1->ps->moveSpeedScaleMultiplier;
+  fVar5 = PM_CmdScaleForStance(pm);
+  return fVar5 * fMaxSpeed * pm->ps->moveSpeedScaleMultiplier;
 }
 
 
@@ -4404,19 +4454,19 @@ float __cdecl PM_GetMaxSpeed(pmove_t *param_1,int param_2,int param_3)
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
 
 float __cdecl
-PM_GetBobMove(pmove_t *param_1,PmStanceFrontBack param_2,float param_3,float param_4,int param_5,
-             int param_6)
+PM_GetBobMove(pmove_t *pm,PmStanceFrontBack stance,float xyspeed,float fMaxSpeed,int walking,
+             int sprinting)
 
 {
-  float local_8;
+  float bobFactor;
   
-  if ((param_2 == PM_STANCE_STAND) && (param_6 != 0)) {
-    local_8 = (player_sprintCameraBob->current).value;
+  if ((stance == PM_STANCE_STAND) && (sprinting != 0)) {
+    bobFactor = (player_sprintCameraBob->current).value;
   }
   else {
-    local_8 = bobFactorTable[param_2][param_5];
+    bobFactor = bobFactorTable[stance][walking];
   }
-  return (param_3 / param_4) * local_8;
+  return (xyspeed / fMaxSpeed) * bobFactor;
 }
 
 
@@ -4425,66 +4475,68 @@ PM_GetBobMove(pmove_t *param_1,PmStanceFrontBack param_2,float param_3,float par
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
 
 scriptAnimMoveTypes_t __cdecl
-PM_GetMoveAnim(playerState_s *param_1,pml_t *param_2,PmStanceFrontBack param_3,int param_4,
-              int param_5)
+PM_GetMoveAnim(playerState_s *ps,pml_t *pml,PmStanceFrontBack stance,int walking,int sprinting)
 
 {
   uint uVar1;
-  scriptAnimMoveTypes_t local_10;
-  int local_c;
+  scriptAnimMoveTypes_t moveAnim;
+  int stumble_end_time;
+  int stumble;
   
-  local_c = param_1->damageDuration - (player_dmgtimer_stumbleTime->current).integer;
-  if (local_c < 0) {
-    local_c = 0;
+  stumble_end_time = ps->damageDuration - (player_dmgtimer_stumbleTime->current).integer;
+  if (stumble_end_time < 0) {
+    stumble_end_time = 0;
   }
-  uVar1 = (uint)(local_c < param_1->damageTimer);
-  local_10 = moveAnimTable[param_3][param_4][uVar1];
-  if ((param_3 == PM_STANCE_STAND) && (param_5 != 0)) {
-    local_10 = (-(uint)(uVar1 != 0) & 0x10) + ANIM_MT_SPRINT;
+  uVar1 = (uint)(stumble_end_time < ps->damageTimer);
+  moveAnim = moveAnimTable[stance][walking][uVar1];
+  if ((stance == PM_STANCE_STAND) && (sprinting != 0)) {
+    moveAnim = (-(uint)(uVar1 != 0) & 0x10) + ANIM_MT_SPRINT;
   }
-  if ((param_1->pm_flags & 0x400000U) != 0) {
-    local_10 = ANIM_MT_DTP;
+  if ((ps->pm_flags & 0x400000U) != 0) {
+    moveAnim = ANIM_MT_DTP;
   }
-  if (((param_2->groundTrace).sflags & 2U) != 0) {
-    local_10 = ANIM_MT_SLIDE;
+  if (((pml->groundTrace).sflags & 2U) != 0) {
+    moveAnim = ANIM_MT_SLIDE;
   }
-  if (2 < param_1->waterlevel) {
-    local_10 = ANIM_MT_SWIM;
+  if (2 < ps->waterlevel) {
+    moveAnim = ANIM_MT_SWIM;
   }
-  return local_10;
+  return moveAnim;
 }
 
 
 // 004365C0  PM_Footstep_NotTryingToMove  (bgame/bg_pmove.cpp:4293)
 
-void __cdecl PM_Footstep_NotTryingToMove(pmove_t *param_1)
+void __cdecl PM_Footstep_NotTryingToMove(pmove_t *pm)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int animResult;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x10ca,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x10ca,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if (param_1->xyspeed <= 120.0) {
-    if (ppVar1->waterlevel < 3) {
-      iVar4 = PM_ShouldFlinch(ppVar1);
-      if (iVar4 == 0) {
-        BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_IDLE,0);
+  if (pm->xyspeed <= 120.0) {
+    if (ps_00->waterlevel < 3) {
+      iVar3 = PM_ShouldFlinch(ps_00);
+      if (iVar3 == 0) {
+        BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_IDLE,0);
       }
       else {
-        BG_AnimScriptEvent(param_1,ANIM_ET_FLINCH,1,1);
+        BG_AnimScriptEvent(pm,ANIM_ET_FLINCH,1,1);
       }
     }
     else {
-      BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_SWIM,0);
+      BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_SWIM,0);
     }
   }
   return;
@@ -4493,14 +4545,15 @@ void __cdecl PM_Footstep_NotTryingToMove(pmove_t *param_1)
 
 // 004359B0  PM_VehicleDrive  (bgame/bg_pmove.cpp:4328)
 
-void __cdecl PM_VehicleDrive(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_VehicleDrive(pmove_t *pm,pml_t *pml)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x10eb,0,"%s")
     ;
     if (!bVar3) {
@@ -4509,10 +4562,10 @@ void __cdecl PM_VehicleDrive(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((((ppVar1->eFlags & 0x4000U) != 0) && (ppVar1->viewlocked_entNum != 0x3ff)) &&
      (ppVar1->vehiclePos == 0)) {
-    if ((&PTR_CG_SetVehDriverInputs_00dff528)[(uint)param_1->handler * 8] == (undefined *)0x0) {
+    if ((&PTR_CG_SetVehDriverInputs_00dff528)[(uint)pm->handler * 8] == (undefined *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x10f0,0,
                                "%s");
       if (!bVar3) {
@@ -4521,8 +4574,8 @@ void __cdecl PM_VehicleDrive(pmove_t *param_1,pml_t *param_2)
         return;
       }
     }
-    (*(code *)(&PTR_CG_SetVehDriverInputs_00dff528)[(uint)param_1->handler * 8])
-              (param_1->localClientNum,(int)ppVar1->viewlocked_entNum,&param_1->cmd);
+    (*(code *)(&PTR_CG_SetVehDriverInputs_00dff528)[(uint)pm->handler * 8])
+              (pm->localClientNum,(int)ppVar1->viewlocked_entNum,&pm->cmd);
   }
   return;
 }
@@ -4530,35 +4583,34 @@ void __cdecl PM_VehicleDrive(pmove_t *param_1,pml_t *param_2)
 
 // 00436680  BG_CalcBob  (bgame/bg_pmove.cpp:4342)
 
-int __cdecl BG_CalcBob(pmove_t *param_1,pml_t *param_2,int param_3,float param_4)
+int __cdecl BG_CalcBob(pmove_t *pm,pml_t *pml,int old,float bobmove)
 
 {
   int iVar1;
   WeaponDef *pWVar2;
   uint uVar3;
   
-  if ((param_1->ps->pm_flags & 0x400000U) == 0) {
-    if (((param_1->ps->pm_flags & 0x8000U) == 0) || (param_1->ps->viewHeightTarget != 0x28)) {
-      if (((param_1->ps->pm_flags & 0x8000U) == 0) && (param_1->ps->waterlevel < 3)) {
-        uVar3 = (int)((float)param_3 + (float)param_2->msec * param_4) & 0xff;
+  if ((pm->ps->pm_flags & 0x400000U) == 0) {
+    if (((pm->ps->pm_flags & 0x8000U) == 0) || (pm->ps->viewHeightTarget != 0x28)) {
+      if (((pm->ps->pm_flags & 0x8000U) == 0) && (pm->ps->waterlevel < 3)) {
+        uVar3 = (int)((float)old + (float)pml->msec * bobmove) & 0xff;
       }
       else {
-        iVar1 = param_2->msec;
-        pWVar2 = BG_GetWeaponDef((uint)param_1->ps->weapon);
-        uVar3 = (int)((float)param_3 + (float)iVar1 * param_4 * pWVar2->fSprintCycleScale) & 0xff;
+        iVar1 = pml->msec;
+        pWVar2 = BG_GetWeaponDef((uint)pm->ps->weapon);
+        uVar3 = (int)((float)old + (float)iVar1 * bobmove * pWVar2->fSprintCycleScale) & 0xff;
       }
     }
     else {
-      iVar1 = param_2->msec;
-      pWVar2 = BG_GetWeaponDef((uint)param_1->ps->weapon);
-      uVar3 = (int)((float)param_3 + (float)iVar1 * param_4 * pWVar2->fDuckedSprintCycleScale) &
-              0xff;
+      iVar1 = pml->msec;
+      pWVar2 = BG_GetWeaponDef((uint)pm->ps->weapon);
+      uVar3 = (int)((float)old + (float)iVar1 * bobmove * pWVar2->fDuckedSprintCycleScale) & 0xff;
     }
   }
   else {
-    iVar1 = param_2->msec;
-    pWVar2 = BG_GetWeaponDef((uint)param_1->ps->weapon);
-    uVar3 = (int)((float)param_3 + (float)iVar1 * param_4 * pWVar2->fDtpCycleScale) & 0xff;
+    iVar1 = pml->msec;
+    pWVar2 = BG_GetWeaponDef((uint)pm->ps->weapon);
+    uVar3 = (int)((float)old + (float)iVar1 * bobmove * pWVar2->fDtpCycleScale) & 0xff;
   }
   return uVar3;
 }
@@ -4566,40 +4618,41 @@ int __cdecl BG_CalcBob(pmove_t *param_1,pml_t *param_2,int param_3,float param_4
 
 // 00436800  PM_ApplyMovementAnimations  (bgame/bg_pmove.cpp:4354)
 
+/* WARNING: Variable defined which should be unmapped: animResult */
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
 
 void __cdecl
 PM_ApplyMovementAnimations
-          (pmove_t *param_1,pml_t *param_2,PmStanceFrontBack param_3,int param_4,int param_5)
+          (pmove_t *pm,pml_t *pml,PmStanceFrontBack stanceFrontBack,int walking,int sprinting)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  scriptAnimMoveTypes_t sVar4;
-  int iVar5;
-  undefined4 uVar6;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  scriptAnimMoveTypes_t movetype;
+  scriptAnimMoveTypes_t moveAnim;
+  int animResult;
+  playerState_s *ps;
   
-  uVar6 = 0xffffffff;
-  ppVar1 = param_1->ps;
-  if (ppVar1 == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1107,0,"%s")
+  ps_00 = pm->ps;
+  if (ps_00 == (playerState_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1107,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)(uVar6);
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)(0xffffffff);
       return;
     }
   }
-  sVar4 = PM_GetMoveAnim(ppVar1,param_2,param_3,param_4,param_5);
-  if (param_5 == 0) {
-    iVar5 = BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,sVar4,0);
+  movetype = PM_GetMoveAnim(ps_00,pml,stanceFrontBack,walking,sprinting);
+  if (sprinting == 0) {
+    animResult = BG_AnimScriptAnimation(pm,AISTATE_COMBAT,movetype,0);
   }
   else {
-    iVar5 = BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,sVar4,1);
+    animResult = BG_AnimScriptAnimation(pm,AISTATE_COMBAT,movetype,1);
   }
-  if (iVar5 < 0) {
-    BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,ANIM_MT_IDLE,0);
+  if (animResult < 0) {
+    BG_AnimScriptAnimation(pm,AISTATE_COMBAT,ANIM_MT_IDLE,0);
   }
   return;
 }
@@ -4608,25 +4661,27 @@ PM_ApplyMovementAnimations
 // 00436970  PM_ApplyLegAnimations  (bgame/bg_pmove.cpp:4384)
 
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
 PM_ApplyLegAnimations
-          (pmove_t *param_1,pml_t *param_2,int param_3,PmStanceFrontBack param_4,int param_5,
-          int param_6)
+          (pmove_t *pm,pml_t *pml,int iStance,PmStanceFrontBack stanceFrontBack,int walking,
+          int sprinting)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1122,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((ppVar1 == (playerState_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1125,0,
                                "%s"), !bVar3)) {
@@ -4634,14 +4689,14 @@ PM_ApplyLegAnimations
     (*pcVar2)();
     return;
   }
-  if ((((param_2->almostGroundPlane != 0) && (param_2->walking == 0)) &&
-      ((ppVar1->pm_flags & 4U) == 0)) && (ppVar1->pm_type == 0)) {
-    if ((player_moveThreshhold->current).value < param_1->xyspeed ||
-        (player_moveThreshhold->current).value == param_1->xyspeed) {
-      PM_ApplyMovementAnimations(param_1,param_2,param_4,1,0);
+  if ((((pml->almostGroundPlane != 0) && (pml->walking == 0)) && ((ppVar1->pm_flags & 4U) == 0)) &&
+     (ppVar1->pm_type == 0)) {
+    if ((player_moveThreshhold->current).value < pm->xyspeed ||
+        (player_moveThreshhold->current).value == pm->xyspeed) {
+      PM_ApplyMovementAnimations(pm,pml,stanceFrontBack,1,0);
     }
     else {
-      PM_Footsteps_NotMoving(param_1,param_3,false);
+      PM_Footsteps_NotMoving(pm,iStance,false);
     }
   }
   return;
@@ -4650,41 +4705,44 @@ PM_ApplyLegAnimations
 
 // 00436A50  PM_CalcPlayerPitch  (bgame/bg_pmove.cpp:4428)
 
-float __cdecl PM_CalcPlayerPitch(playerState_s *param_1,pml_t *param_2)
+float __cdecl PM_CalcPlayerPitch(playerState_s *ps,pml_t *pml)
 
 {
   float fVar1;
-  float fVar2;
-  float local_20;
+  float angle2;
+  float playerYaw;
+  float yawTrans;
+  float diff;
+  float groundNormAngles;
   float local_1c;
-  float local_14;
+  float groundTrace;
   float local_10;
   float local_c;
-  float local_8;
+  float pitchTrans;
   
-  fVar1 = AngleNormalize360(param_1->viewangles[1]);
-  if (param_2->groundPlane == 0) {
+  fVar1 = AngleNormalize360(ps->viewangles[1]);
+  if (pml->groundPlane == 0) {
     fVar1 = 0.0;
   }
   else {
-    local_14 = (param_2->groundTrace).normal.vec.v[0];
-    local_10 = (param_2->groundTrace).normal.vec.v[1];
-    local_c = (param_2->groundTrace).normal.vec.v[2];
-    vectoangles(&local_14,&local_20);
-    fVar2 = AngleNormalize360(local_1c);
-    fVar1 = AngleDelta(fVar1,fVar2);
+    groundTrace = (pml->groundTrace).normal.vec.v[0];
+    local_10 = (pml->groundTrace).normal.vec.v[1];
+    local_c = (pml->groundTrace).normal.vec.v[2];
+    vectoangles(&groundTrace,&groundNormAngles);
+    angle2 = AngleNormalize360(local_1c);
+    fVar1 = AngleDelta(fVar1,angle2);
     if (35.0 <= ABS(fVar1)) {
       if (ABS(fVar1) <= 145.0) {
-        local_8 = 0.0;
+        pitchTrans = 0.0;
       }
       else {
-        local_8 = local_20 + 90.0;
+        pitchTrans = groundNormAngles + 90.0;
       }
     }
     else {
-      local_8 = -(local_20 + 90.0);
+      pitchTrans = -(groundNormAngles + 90.0);
     }
-    fVar1 = AngleNormalize180(local_8);
+    fVar1 = AngleNormalize180(pitchTrans);
   }
   return fVar1;
 }
@@ -4692,15 +4750,16 @@ float __cdecl PM_CalcPlayerPitch(playerState_s *param_1,pml_t *param_2)
 
 // 0042CF60  PM_IsInAir  (bgame/bg_pmove.cpp:4458)
 
-bool __cdecl PM_IsInAir(pmove_t *param_1,pml_t *param_2)
+bool __cdecl PM_IsInAir(pmove_t *pm,pml_t *pml)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x116d,0,"%s")
     ;
     if (!bVar3) {
@@ -4709,7 +4768,7 @@ bool __cdecl PM_IsInAir(pmove_t *param_1,pml_t *param_2)
       return (bool)uVar4;
     }
   }
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1 == (playerState_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x116f,0,"%s")
     ;
@@ -4740,175 +4799,179 @@ bool __cdecl PM_IsInAir(pmove_t *param_1,pml_t *param_2)
 // 00435A90  PM_Footsteps  (bgame/bg_pmove.cpp:4488)
 
 /* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl PM_Footsteps(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_Footsteps(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  byte bVar3;
+  playerState_s *ps_00;
+  code *pcVar1;
+  byte bVar2;
+  bool bVar3;
   bool bVar4;
-  bool bVar5;
+  int iVar5;
+  scriptAnimMoveTypes_t movetype;
+  uint stance;
+  PmStanceFrontBack stanceFrontBack_00;
   int iVar6;
-  scriptAnimMoveTypes_t sVar7;
-  uint uVar8;
-  PmStanceFrontBack PVar9;
-  int iVar10;
-  float fVar11;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  float local_10;
+  float fVar7;
+  clientInfo_t *ci;
+  float fMaxSpeed;
+  int iStance;
+  int walking;
+  int sprinting;
+  int animWalking;
+  playerState_s *ps;
+  float bobmove;
+  int old;
+  PmStanceFrontBack stanceFrontBack;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1192,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1192,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1195,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1195,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x119a,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x119a,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if (ppVar1->pm_type < 9) {
-    if ((int)(uint)ppVar1->clientNum < (com_maxclients->current).integer) {
+  if (ps_00->pm_type < 9) {
+    if ((int)(uint)ps_00->clientNum < (com_maxclients->current).integer) {
       *(undefined4 *)
        (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-        (uint)ppVar1->clientNum * 0x5c8 + 0x614) = 0;
+        (uint)ps_00->clientNum * 0x5c8 + 0x614) = 0;
     }
-    fVar11 = Vec2Length(ppVar1->velocity);
-    param_1->xyspeed = fVar11;
-    fVar11 = PM_CalcPlayerPitch(ppVar1,param_2);
-    param_1->currentPitch = fVar11;
-    param_1->averagePitch =
-         (float)(bg_slopeFrames->current).integer * param_1->averagePitch -
-         param_1->pitchHistory[param_1->nextPitch];
-    param_1->pitchHistory[param_1->nextPitch] = param_1->currentPitch;
-    param_1->averagePitch =
-         (param_1->averagePitch + param_1->currentPitch) / (float)(bg_slopeFrames->current).integer;
-    param_1->nextPitch = param_1->nextPitch + 1;
-    if ((bg_slopeFrames->current).integer <= param_1->nextPitch) {
-      param_1->nextPitch = 0;
+    fVar7 = Vec2Length(ps_00->velocity);
+    pm->xyspeed = fVar7;
+    fVar7 = PM_CalcPlayerPitch(ps_00,pml);
+    pm->currentPitch = fVar7;
+    pm->averagePitch =
+         (float)(bg_slopeFrames->current).integer * pm->averagePitch -
+         pm->pitchHistory[pm->nextPitch];
+    pm->pitchHistory[pm->nextPitch] = pm->currentPitch;
+    pm->averagePitch =
+         (pm->averagePitch + pm->currentPitch) / (float)(bg_slopeFrames->current).integer;
+    pm->nextPitch = pm->nextPitch + 1;
+    if ((bg_slopeFrames->current).integer <= pm->nextPitch) {
+      pm->nextPitch = 0;
     }
-    if ((param_1->ps->pm_flags & 0x400000U) != 0) {
-      iVar6 = BG_CalcBob(param_1,param_2,ppVar1->bobCycle,dtpBobMove);
-      ppVar1->bobCycle = iVar6;
+    if ((pm->ps->pm_flags & 0x400000U) != 0) {
+      iVar5 = BG_CalcBob(pm,pml,ps_00->bobCycle,dtpBobMove);
+      ps_00->bobCycle = iVar5;
     }
-    if ((ppVar1->eFlags & 0x300U) == 0) {
-      uVar8 = PM_GetEffectiveStance(ppVar1);
-      PVar9 = PM_GetStanceEx(uVar8,ppVar1->pm_flags & 0x20);
-      bVar4 = PM_IsInAir(param_1,param_2);
-      if ((((bVar4) && (ppVar1->waterlevel == 0)) && ((ppVar1->pm_flags & 0x400000U) == 0)) &&
-         (((ppVar1->pm_flags & 0x800000U) == 0 && ((ppVar1->pm_flags & 4U) == 0)))) {
-        bVar4 = PM_Footstep_LadderMove(param_1,param_2);
-        if (!bVar4) {
-          PM_ApplyLegAnimations(param_1,param_2,uVar8,PVar9,1,0);
+    if ((ps_00->eFlags & 0x300U) == 0) {
+      stance = PM_GetEffectiveStance(ps_00);
+      stanceFrontBack_00 = PM_GetStanceEx(stance,ps_00->pm_flags & 0x20);
+      bVar3 = PM_IsInAir(pm,pml);
+      if ((((bVar3) && (ps_00->waterlevel == 0)) && ((ps_00->pm_flags & 0x400000U) == 0)) &&
+         (((ps_00->pm_flags & 0x800000U) == 0 && ((ps_00->pm_flags & 4U) == 0)))) {
+        bVar3 = PM_Footstep_LadderMove(pm,pml);
+        if (!bVar3) {
+          PM_ApplyLegAnimations(pm,pml,stance,stanceFrontBack_00,1,0);
         }
-        if ((uVar8 != (ppVar1->pm_flags & 3U)) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x11cf
-                                     ,0,"%s"), !bVar4)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if ((stance != (ps_00->pm_flags & 3U)) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x11cf
+                                     ,0,"%s"), !bVar3)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
       else {
-        if (((ppVar1->pm_flags & 0x40U) == 0) && (ppVar1->leanf == 0.0)) {
-          bVar3 = 0;
+        if (((ps_00->pm_flags & 0x40U) == 0) && (ps_00->leanf == 0.0)) {
+          bVar2 = 0;
         }
         else {
-          bVar3 = 1;
+          bVar2 = 1;
         }
-        local_20 = (uint)bVar3;
-        bVar4 = (ppVar1->pm_flags & 0x8000U) != 0;
-        local_1c = (uint)bVar4;
-        if (((local_1c != 0) && (local_20 != 0)) &&
-           ((ppVar1->leanf == 0.0 &&
-            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
-                                      0x11d7,0,"%s"), !bVar5)))) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        walking = (int)bVar2;
+        bVar3 = (ps_00->pm_flags & 0x8000U) != 0;
+        sprinting = (int)bVar3;
+        if (((sprinting != 0) && (walking != 0)) &&
+           ((ps_00->leanf == 0.0 &&
+            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
+                                      0x11d7,0,"%s"), !bVar4)))) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        if (((((player_moveThreshhold->current).value < param_1->xyspeed ||
-               (player_moveThreshhold->current).value == param_1->xyspeed) && (ppVar1->pm_type != 1)
-             ) || ((ppVar1->pm_flags & 0x800000U) != 0)) || ((ppVar1->pm_flags & 4U) != 0)) {
-          if ((((param_1->cmd).forwardmove == '\0') && ((param_1->cmd).rightmove == '\0')) &&
-             ((ppVar1->pm_flags & 0x800000U) == 0)) {
-            PM_Footstep_NotTryingToMove(param_1);
-            if (2 < ppVar1->waterlevel) {
-              iVar6 = BG_CalcBob(param_1,param_2,ppVar1->bobCycle,
+        if (((((player_moveThreshhold->current).value < pm->xyspeed ||
+               (player_moveThreshhold->current).value == pm->xyspeed) && (ps_00->pm_type != 1)) ||
+            ((ps_00->pm_flags & 0x800000U) != 0)) || ((ps_00->pm_flags & 4U) != 0)) {
+          if ((((pm->cmd).forwardmove == '\0') && ((pm->cmd).rightmove == '\0')) &&
+             ((ps_00->pm_flags & 0x800000U) == 0)) {
+            PM_Footstep_NotTryingToMove(pm);
+            if (2 < ps_00->waterlevel) {
+              iVar5 = BG_CalcBob(pm,pml,ps_00->bobCycle,
                                  (bg_weaponBobFrequencySwimming->current).value);
-              ppVar1->bobCycle = iVar6;
+              ps_00->bobCycle = iVar5;
             }
           }
           else {
-            local_18 = local_20;
-            if ((uVar8 == 0) && ((param_1->ps->pm_flags & 0x400000U) == 0)) {
-              local_20 = (uint)(bVar3 | param_1->xyspeed <= (player_runbkThreshhold->current).value)
-              ;
-              local_1c = (uint)(bVar4 && (player_sprintThreshhold->current).value <=
-                                         param_1->xyspeed);
-              if ((player_animWalkThreshhold->current).value < param_1->xyspeed ||
-                  (player_animWalkThreshhold->current).value == param_1->xyspeed) {
-                if ((player_animRunThreshhold->current).value < param_1->xyspeed ||
-                    (player_animRunThreshhold->current).value == param_1->xyspeed) {
-                  local_18 = 0;
+            animWalking = walking;
+            if ((stance == 0) && ((pm->ps->pm_flags & 0x400000U) == 0)) {
+              walking = (int)(bVar2 | pm->xyspeed <= (player_runbkThreshhold->current).value);
+              sprinting = (int)(bVar3 && (player_sprintThreshhold->current).value <= pm->xyspeed);
+              if ((player_animWalkThreshhold->current).value < pm->xyspeed ||
+                  (player_animWalkThreshhold->current).value == pm->xyspeed) {
+                if ((player_animRunThreshhold->current).value < pm->xyspeed ||
+                    (player_animRunThreshhold->current).value == pm->xyspeed) {
+                  animWalking = 0;
                 }
                 else {
-                  local_18 = 1;
+                  animWalking = 1;
                 }
               }
               else if ((player_enableShuffleAnims->current).enabled == false) {
-                local_18 = 1;
+                animWalking = 1;
               }
               else {
-                local_18 = 2;
+                animWalking = 2;
               }
             }
-            PM_ApplyMovementAnimations(param_1,param_2,PVar9,local_18,local_1c);
-            fVar11 = PM_GetMaxSpeed(param_1,local_20,local_1c);
-            local_10 = PM_GetBobMove(param_1,PVar9,param_1->xyspeed,fVar11,local_20,local_1c);
-            if (((param_1->ps->pm_flags & 0x400000U) == 0) &&
-               ((param_1->ps->pm_flags & 0x800000U) == 0)) {
-              iVar6 = ppVar1->bobCycle;
-              if (2 < ppVar1->waterlevel) {
-                local_10 = (bg_weaponBobFrequencySwimming->current).value;
+            PM_ApplyMovementAnimations(pm,pml,stanceFrontBack_00,animWalking,sprinting);
+            fVar7 = PM_GetMaxSpeed(pm,walking,sprinting);
+            bobmove = PM_GetBobMove(pm,stanceFrontBack_00,pm->xyspeed,fVar7,walking,sprinting);
+            if (((pm->ps->pm_flags & 0x400000U) == 0) && ((pm->ps->pm_flags & 0x800000U) == 0)) {
+              iVar5 = ps_00->bobCycle;
+              if (2 < ps_00->waterlevel) {
+                bobmove = (bg_weaponBobFrequencySwimming->current).value;
               }
-              iVar10 = BG_CalcBob(param_1,param_2,iVar6,local_10);
-              ppVar1->bobCycle = iVar10;
-              iVar10 = PM_ShouldMakeFootsteps(param_1);
-              PM_FootstepEvent(param_1,param_2,iVar6,ppVar1->bobCycle,iVar10);
+              iVar6 = BG_CalcBob(pm,pml,iVar5,bobmove);
+              ps_00->bobCycle = iVar6;
+              iVar6 = PM_ShouldMakeFootsteps(pm);
+              PM_FootstepEvent(pm,pml,iVar5,ps_00->bobCycle,iVar6);
             }
           }
         }
         else {
-          PM_Footsteps_NotMoving(param_1,uVar8,true);
-          if (2 < ppVar1->waterlevel) {
-            iVar6 = BG_CalcBob(param_1,param_2,ppVar1->bobCycle,
-                               (bg_weaponBobFrequencySwimming->current).value);
-            ppVar1->bobCycle = iVar6;
+          PM_Footsteps_NotMoving(pm,stance,true);
+          if (2 < ps_00->waterlevel) {
+            iVar5 = BG_CalcBob(pm,pml,ps_00->bobCycle,(bg_weaponBobFrequencySwimming->current).value
+                              );
+            ps_00->bobCycle = iVar5;
           }
         }
       }
     }
     else {
-      iVar6 = 0;
-      sVar7 = CL_LocalClient_GetActiveCount();
-      BG_AnimScriptAnimation(param_1,AISTATE_COMBAT,sVar7,iVar6);
+      iVar5 = 0;
+      movetype = CL_LocalClient_GetActiveCount();
+      BG_AnimScriptAnimation(pm,AISTATE_COMBAT,movetype,iVar5);
     }
   }
   return;
@@ -4919,39 +4982,39 @@ void __cdecl PM_Footsteps(pmove_t *param_1,pml_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_FoliageSounds(pmove_t *param_1)
+void __cdecl PM_FoliageSounds(pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_64;
+  float mins;
   float local_60;
   float local_5c;
-  float local_58;
-  float4 local_54 [2];
+  float speedFrac;
+  float4 trace [2];
   char local_29;
   uint local_1c;
-  float local_18;
+  float maxs;
   float local_14;
   float local_10;
-  int local_c;
-  playerState_s *local_8;
+  int interval;
+  playerState_s *ps;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54[0].v[0] = 0.0;
-  local_54[0].v[1] = 0.0;
-  local_54[0].v[2] = 0.0;
-  local_54[0].v[3] = 0.0;
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x122c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((bg_foliagesnd_minspeed->current).value < param_1->xyspeed ||
-      (bg_foliagesnd_minspeed->current).value == param_1->xyspeed) {
+  if ((bg_foliagesnd_minspeed->current).value < pm->xyspeed ||
+      (bg_foliagesnd_minspeed->current).value == pm->xyspeed) {
     if (((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value <= 0.0)
        && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1236,
                                     1,"%s"), !bVar2)) {
@@ -4959,38 +5022,36 @@ void __cdecl PM_FoliageSounds(pmove_t *param_1)
       (*pcVar1)();
       return;
     }
-    local_58 = (param_1->xyspeed - (bg_foliagesnd_minspeed->current).value) /
-               ((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value);
-    if (1.0 < local_58) {
-      local_58 = 1.0;
+    speedFrac = (pm->xyspeed - (bg_foliagesnd_minspeed->current).value) /
+                ((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value);
+    if (1.0 < speedFrac) {
+      speedFrac = 1.0;
     }
-    local_c = (int)((float)((int)(bg_foliagesnd_fastinterval->current).string -
-                           (bg_foliagesnd_slowinterval->current).integer) * local_58 +
-                   (float)(bg_foliagesnd_slowinterval->current).integer);
-    if (local_8->foliageSoundTime + local_c < (param_1->cmd).serverTime) {
-      local_64 = param_1->mins[0] * 0.75;
-      local_60 = param_1->mins[1] * 0.75;
-      local_5c = param_1->mins[2] * 0.75;
-      local_18 = param_1->maxs[0] * 0.75;
-      local_14 = param_1->maxs[1] * 0.75;
-      local_10 = param_1->maxs[2] * 0.9;
+    interval = (int)((float)((int)(bg_foliagesnd_fastinterval->current).string -
+                            (bg_foliagesnd_slowinterval->current).integer) * speedFrac +
+                    (float)(bg_foliagesnd_slowinterval->current).integer);
+    if (ps->foliageSoundTime + interval < (pm->cmd).serverTime) {
+      mins = pm->mins[0] * 0.75;
+      local_60 = pm->mins[1] * 0.75;
+      local_5c = pm->mins[2] * 0.75;
+      maxs = pm->maxs[0] * 0.75;
+      local_14 = pm->maxs[1] * 0.75;
+      local_10 = pm->maxs[2] * 0.9;
       if ((phys_player_collision_mode->current).integer == 1) {
-        PM_trace(param_1,(trace_t *)local_54,local_8->origin,&local_64,&local_18,local_8->origin,
-                 (uint)local_8->clientNum,2);
+        PM_trace(pm,(trace_t *)trace,ps->origin,&mins,&maxs,ps->origin,(uint)ps->clientNum,2);
       }
       else {
-        PM_playerTrace(param_1,(trace_t *)local_54,local_8->origin,&local_64,&local_18,
-                       local_8->origin,(uint)local_8->clientNum,2);
+        PM_playerTrace(pm,(trace_t *)trace,ps->origin,&mins,&maxs,ps->origin,(uint)ps->clientNum,2);
       }
       if (local_29 != '\0') {
-        PM_AddEvent(local_8,1);
-        local_8->foliageSoundTime = (param_1->cmd).serverTime;
+        PM_AddEvent(ps,1);
+        ps->foliageSoundTime = (pm->cmd).serverTime;
       }
     }
   }
-  else if ((int)((bg_foliagesnd_resetinterval->current).string + local_8->foliageSoundTime) <
-           (param_1->cmd).serverTime) {
-    local_8->foliageSoundTime = 0;
+  else if ((int)((bg_foliagesnd_resetinterval->current).string + ps->foliageSoundTime) <
+           (pm->cmd).serverTime) {
+    ps->foliageSoundTime = 0;
   }
   return;
 }
@@ -4998,14 +5059,14 @@ void __cdecl PM_FoliageSounds(pmove_t *param_1)
 
 // 00436E80  PM_DropTimers  (bgame/bg_pmove.cpp:4695)
 
-void __cdecl PM_DropTimers(playerState_s *param_1,pml_t *param_2)
+void __cdecl PM_DropTimers(playerState_s *ps,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1258,0,"%s")
     ;
     if (!bVar2) {
@@ -5014,34 +5075,32 @@ void __cdecl PM_DropTimers(playerState_s *param_1,pml_t *param_2)
       return;
     }
   }
-  if (param_1->pm_time != 0) {
-    if (((param_1->pm_flags & 0x200000U) != 0) && (param_1->groundEntityNum == 0x3fe)) {
-      param_1->pm_flags = param_1->pm_flags & 0xffdfffff;
-      param_1->pm_time = 0;
+  if (ps->pm_time != 0) {
+    if (((ps->pm_flags & 0x200000U) != 0) && (ps->groundEntityNum == 0x3fe)) {
+      ps->pm_flags = ps->pm_flags & 0xffdfffff;
+      ps->pm_time = 0;
     }
-    if (param_2->msec < param_1->pm_time) {
-      param_1->pm_time = param_1->pm_time - param_2->msec;
+    if (pml->msec < ps->pm_time) {
+      ps->pm_time = ps->pm_time - pml->msec;
     }
     else {
-      if ((param_1->pm_flags & 0x4000U) != 0) {
-        Jump_ClearState(param_1);
+      if ((ps->pm_flags & 0x4000U) != 0) {
+        Jump_ClearState(ps);
       }
-      param_1->pm_flags = param_1->pm_flags & 0xffdfbe7f;
-      param_1->pm_time = 0;
+      ps->pm_flags = ps->pm_flags & 0xffdfbe7f;
+      ps->pm_time = 0;
     }
   }
-  if ((0 < param_1->legsTimer) &&
-     (param_1->legsTimer = param_1->legsTimer - param_2->msec, param_1->legsTimer < 0)) {
-    param_1->legsTimer = 0;
-    iVar3 = G_IsServerGameSystem((uint)param_1->clientNum);
+  if ((0 < ps->legsTimer) && (ps->legsTimer = ps->legsTimer - pml->msec, ps->legsTimer < 0)) {
+    ps->legsTimer = 0;
+    iVar3 = G_IsServerGameSystem((uint)ps->clientNum);
     if (iVar3 != 0) {
       Com_Printf(0x13,"end legs\n");
     }
   }
-  if ((0 < param_1->torsoTimer) &&
-     (param_1->torsoTimer = param_1->torsoTimer - param_2->msec, param_1->torsoTimer < 0)) {
-    param_1->torsoTimer = 0;
-    iVar3 = G_IsServerGameSystem((uint)param_1->clientNum);
+  if ((0 < ps->torsoTimer) && (ps->torsoTimer = ps->torsoTimer - pml->msec, ps->torsoTimer < 0)) {
+    ps->torsoTimer = 0;
+    iVar3 = G_IsServerGameSystem((uint)ps->clientNum);
     if (iVar3 != 0) {
       Com_Printf(0x13,"end torso\n");
     }
@@ -5055,9 +5114,9 @@ void __cdecl PM_DropTimers(playerState_s *param_1,pml_t *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-PM_UpdateLean(playerState_s *param_1,float param_2,usercmd_s *param_3,
+PM_UpdateLean(playerState_s *ps,float msec,usercmd_s *cmd,
              _func___cdecl_void_trace_t_ptr_float_ptr_float_ptr_float_ptr_float_ptr_int_int_col_context_t_ptr
-             *param_4)
+             *capsuleTrace)
 
 {
   bool bVar1;
@@ -5066,128 +5125,128 @@ PM_UpdateLean(playerState_s *param_1,float param_2,usercmd_s *param_3,
   float local_c4;
   float local_c0;
   float local_b0;
-  col_context_t local_a8;
-  int local_80;
-  float local_7c;
-  float local_78;
+  float fLean;
+  col_context_t context;
+  int iStance;
+  float fLeanMax;
+  float start;
   float local_74;
   float local_70;
-  float local_6c;
+  float end;
   float local_68;
   float local_64;
-  float local_60;
-  float4 local_5c;
+  float leanofs;
+  float4 trace;
   float local_4c;
   uint local_24;
-  float local_20 [6];
-  int local_8;
+  float tmins [6];
+  int leaning;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
-  local_60 = 0.0;
-  local_5c.v[0] = 0.0;
-  local_5c.v[1] = 0.0;
-  local_5c.v[2] = 0.0;
-  local_5c.v[3] = 0.0;
-  col_context_t::col_context_t(&local_a8);
-  if (((param_1->weaponstate != 0x23) &&
-      ((((bVar1 = bitarray<51>::testBit(&param_3->button_bits,6), bVar1 ||
-         (bVar1 = bitarray<51>::testBit(&param_3->button_bits,7), bVar1)) &&
-        ((param_1->pm_flags & 0x800U) == 0)) && (param_1->pm_type < 9)))) &&
-     ((param_1->groundEntityNum != 0x3ff || (param_1->pm_type == 1)))) {
-    bVar1 = bitarray<51>::testBit(&param_3->button_bits,6);
+  leaning = 0;
+  leanofs = 0.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  if (((ps->weaponstate != 0x23) &&
+      ((((bVar1 = bitarray<51>::testBit(&cmd->button_bits,6), bVar1 ||
+         (bVar1 = bitarray<51>::testBit(&cmd->button_bits,7), bVar1)) &&
+        ((ps->pm_flags & 0x800U) == 0)) && (ps->pm_type < 9)))) &&
+     ((ps->groundEntityNum != 0x3ff || (ps->pm_type == 1)))) {
+    bVar1 = bitarray<51>::testBit(&cmd->button_bits,6);
     if (bVar1) {
-      local_8 = local_8 + -1;
+      leaning = leaning + -1;
     }
-    bVar1 = bitarray<51>::testBit(&param_3->button_bits,7);
+    bVar1 = bitarray<51>::testBit(&cmd->button_bits,7);
     if (bVar1) {
-      local_8 = local_8 + 1;
+      leaning = leaning + 1;
     }
   }
-  if ((((param_1->eFlags & 0x4300U) == 0) || (local_8 = 0, (param_1->eFlags & 0x4000U) == 0)) ||
-     ((param_1->vehiclePos < 1 || ((4 < param_1->vehiclePos || (param_1->vehicleType == 6)))))) {
-    local_80 = PM_GetEffectiveStance(param_1);
-    if (local_80 == 1) {
-      local_7c = 0.25;
+  if ((((ps->eFlags & 0x4300U) == 0) || (leaning = 0, (ps->eFlags & 0x4000U) == 0)) ||
+     ((ps->vehiclePos < 1 || ((4 < ps->vehiclePos || (ps->vehicleType == 6)))))) {
+    iStance = PM_GetEffectiveStance(ps);
+    if (iStance == 1) {
+      fLeanMax = 0.25;
     }
     else {
-      local_7c = 0.5;
+      fLeanMax = 0.5;
     }
-    local_60 = param_1->leanf;
-    if (local_8 == 0) {
-      if (local_60 <= 0.0) {
-        if ((local_60 < 0.0) && (local_60 = (param_2 / 280.0) * local_7c + local_60, 0.0 < local_60)
-           ) {
-          local_60 = 0.0;
+    leanofs = ps->leanf;
+    if (leaning == 0) {
+      if (leanofs <= 0.0) {
+        if ((leanofs < 0.0) && (leanofs = (msec / 280.0) * fLeanMax + leanofs, 0.0 < leanofs)) {
+          leanofs = 0.0;
         }
       }
       else {
-        local_60 = local_60 - (param_2 / 280.0) * local_7c;
-        if (local_60 < 0.0) {
-          local_60 = 0.0;
+        leanofs = leanofs - (msec / 280.0) * fLeanMax;
+        if (leanofs < 0.0) {
+          leanofs = 0.0;
         }
       }
     }
-    else if (local_8 < 1) {
-      if (-local_7c < local_60) {
-        local_60 = local_60 - (param_2 / 350.0) * local_7c;
+    else if (leaning < 1) {
+      if (-fLeanMax < leanofs) {
+        leanofs = leanofs - (msec / 350.0) * fLeanMax;
       }
-      if (local_60 < -local_7c) {
-        local_60 = -local_7c;
+      if (leanofs < -fLeanMax) {
+        leanofs = -fLeanMax;
       }
     }
     else {
-      if (local_60 < local_7c) {
-        local_60 = (param_2 / 350.0) * local_7c + local_60;
+      if (leanofs < fLeanMax) {
+        leanofs = (msec / 350.0) * fLeanMax + leanofs;
       }
-      if (local_7c < local_60) {
-        local_60 = local_7c;
+      if (fLeanMax < leanofs) {
+        leanofs = fLeanMax;
       }
     }
-    param_1->leanf = local_60;
-    if (param_1->leanf != 0.0) {
-      if (param_1->leanf < 0.0) {
+    ps->leanf = leanofs;
+    if (ps->leanf != 0.0) {
+      if (ps->leanf < 0.0) {
         local_c4 = -1.0;
       }
       else {
         local_c4 = 1.0;
       }
-      local_78 = param_1->origin[0];
-      local_74 = param_1->origin[1];
-      local_70 = param_1->origin[2] + param_1->viewHeightCurrent;
-      local_6c = local_78;
+      start = ps->origin[0];
+      local_74 = ps->origin[1];
+      local_70 = ps->origin[2] + ps->viewHeightCurrent;
+      end = start;
       local_68 = local_74;
       local_64 = local_70;
-      AddLeanToPosition(&local_6c,param_1->viewangles[1],local_c4,16.0,20.0);
-      local_20[0] = -8.0;
-      local_20[1] = -8.0;
-      local_20[2] = -8.0;
-      local_20[3] = 8.0;
-      local_20[4] = 8.0;
-      local_20[5] = 8.0;
-      (*param_4)((trace_t *)&local_5c,&local_78,local_20,local_20 + 3,&local_6c,
-                 (uint)param_1->clientNum,0x3818813,&local_a8);
+      AddLeanToPosition(&end,ps->viewangles[1],local_c4,16.0,20.0);
+      tmins[0] = -8.0;
+      tmins[1] = -8.0;
+      tmins[2] = -8.0;
+      tmins[3] = 8.0;
+      tmins[4] = 8.0;
+      tmins[5] = 8.0;
+      (*capsuleTrace)((trace_t *)&trace,&start,tmins,tmins + 3,&end,(uint)ps->clientNum,0x3818813,
+                      &context);
       fVar2 = UnGetLeanFraction(local_4c);
-      if (fVar2 < ABS(param_1->leanf)) {
-        if (param_1->leanf < 0.0) {
+      if (fVar2 < ABS(ps->leanf)) {
+        if (ps->leanf < 0.0) {
           local_c8 = -1.0;
         }
         else {
           local_c8 = 1.0;
         }
-        param_1->leanf = fVar2 * local_c8;
+        ps->leanf = fVar2 * local_c8;
       }
     }
   }
   else {
-    bVar1 = bitarray<51>::testBit(&param_3->button_bits,9);
+    bVar1 = bitarray<51>::testBit(&cmd->button_bits,9);
     if (bVar1) {
-      param_1->leanf = param_2 / GUNNER_CROUCH_TIME + param_1->leanf;
+      ps->leanf = msec / GUNNER_CROUCH_TIME + ps->leanf;
     }
     else {
-      param_1->leanf = param_1->leanf - param_2 / GUNNER_CROUCH_TIME;
+      ps->leanf = ps->leanf - msec / GUNNER_CROUCH_TIME;
     }
-    fVar2 = param_1->leanf;
+    fVar2 = ps->leanf;
     local_b0 = fVar2;
     if (0.0 <= fVar2 - 1.0) {
       local_b0 = 1.0;
@@ -5198,7 +5257,7 @@ PM_UpdateLean(playerState_s *param_1,float param_2,usercmd_s *param_3,
     else {
       local_c0 = 0.0;
     }
-    param_1->leanf = local_c0;
+    ps->leanf = local_c0;
   }
   return;
 }
@@ -5206,19 +5265,22 @@ PM_UpdateLean(playerState_s *param_1,float param_2,usercmd_s *param_3,
 
 // 0042C3A0  BG_CheckProneTurned  (bgame/bg_pmove.cpp:4905)
 
-int __cdecl BG_CheckProneTurned(playerState_s *param_1,float param_2,uchar param_3)
+int __cdecl BG_CheckProneTurned(playerState_s *ps,float newProneYaw,uchar handler)
 
 {
   bool bVar1;
   float fVar2;
   float fVar3;
+  float delta;
+  float testYaw;
+  float fraction;
+  float prone_feet_dist;
   
-  fVar3 = AngleDelta(param_2,param_1->viewangles[1]);
+  fVar3 = AngleDelta(newProneYaw,ps->viewangles[1]);
   fVar2 = ABS(fVar3) / 240.0;
-  fVar3 = AngleNormalize360(param_2 - (1.0 - fVar2) * fVar3);
-  bVar1 = BG_CheckProne(param_1,(uint)param_1->clientNum,param_1->origin,15.0,30.0,fVar3,
-                        &param_1->fTorsoPitch,&param_1->fWaistPitch,true,
-                        param_1->groundEntityNum != 0x3ff,true,param_3,PCT_CLIENT,
+  fVar3 = AngleNormalize360(newProneYaw - (1.0 - fVar2) * fVar3);
+  bVar1 = BG_CheckProne(ps,(uint)ps->clientNum,ps->origin,15.0,30.0,fVar3,&ps->fTorsoPitch,
+                        &ps->fWaistPitch,true,ps->groundEntityNum != 0x3ff,true,handler,PCT_CLIENT,
                         fVar2 * PRONE_FEET_DIST_TURNED + (1.0 - fVar2) * 50.0);
   return (uint)bVar1;
 }
@@ -5226,26 +5288,26 @@ int __cdecl BG_CheckProneTurned(playerState_s *param_1,float param_2,uchar param
 
 // 0042B9C0  PM_UpdateViewLockedEnt  (bgame/bg_pmove.cpp:4921)
 
-void __cdecl PM_UpdateViewLockedEnt(playerState_s *param_1,usercmd_s *param_2,uchar param_3)
+void __cdecl PM_UpdateViewLockedEnt(playerState_s *ps,usercmd_s *cmd,uchar handler)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_44;
+  float dir;
   float local_40;
   float local_3c;
-  float local_38;
+  float origin;
   float local_34;
   float local_30;
-  float local_2c;
+  float viewPos;
   float local_28;
   float local_24;
-  undefined1 local_20 [12];
-  float local_14 [3];
-  int local_8;
+  undefined1 angles [12];
+  float lookAngles [3];
+  int i;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1341,0,"%s")
     ;
     if (!bVar2) {
@@ -5255,19 +5317,19 @@ void __cdecl PM_UpdateViewLockedEnt(playerState_s *param_1,usercmd_s *param_2,uc
     }
   }
   if ((player_viewLockEnt->current).integer != 0) {
-    (*(code *)(&PTR_CG_GetEntityOriginAngles_00dff518)[(uint)param_3 * 8])
-              (param_1->clientNum,(player_viewLockEnt->current).integer,&local_38,local_20);
-    local_2c = param_1->origin[0];
-    local_28 = param_1->origin[1];
-    local_24 = param_1->origin[2] + param_1->viewHeightCurrent;
-    local_44 = local_38 - local_2c;
+    (*(code *)(&PTR_CG_GetEntityOriginAngles_00dff518)[(uint)handler * 8])
+              (ps->clientNum,(player_viewLockEnt->current).integer,&origin,angles);
+    viewPos = ps->origin[0];
+    local_28 = ps->origin[1];
+    local_24 = ps->origin[2] + ps->viewHeightCurrent;
+    dir = origin - viewPos;
     local_40 = local_34 - local_28;
     local_3c = local_30 - local_24;
-    vectoangles(&local_44,local_14);
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      fVar3 = AngleDelta(local_14[local_8],param_1->viewangles[local_8]);
-      param_1->delta_angles[local_8] = fVar3 + param_1->delta_angles[local_8];
-      param_1->viewangles[local_8] = local_14[local_8];
+    vectoangles(&dir,lookAngles);
+    for (i = 0; i < 2; i = i + 1) {
+      fVar3 = AngleDelta(lookAngles[i],ps->viewangles[i]);
+      ps->delta_angles[i] = fVar3 + ps->delta_angles[i];
+      ps->viewangles[i] = lookAngles[i];
     }
   }
   return;
@@ -5276,40 +5338,40 @@ void __cdecl PM_UpdateViewLockedEnt(playerState_s *param_1,usercmd_s *param_2,uc
 
 // 0042BB30  PM_UpdateViewAngles_Clamp  (bgame/bg_pmove.cpp:4950)
 
-void __cdecl PM_UpdateViewAngles_Clamp(playerState_s *param_1,usercmd_s *param_2,uchar param_3)
+void __cdecl PM_UpdateViewAngles_Clamp(playerState_s *ps,usercmd_s *cmd,uchar handler)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
-  float local_14;
-  int local_10;
+  float temp;
+  int i;
+  float maxPitch;
+  float minPitch;
   
   fVar1 = (player_view_pitch_up->current).value;
   fVar2 = (player_view_pitch_down->current).value;
-  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-    local_14 = AngleNormalize180((float)param_2->angles[local_10] * 0.005493164 +
-                                 param_1->delta_angles[local_10]);
-    if ((((param_3 == '\0') && ((param_1->eFlags & 0x4000U) != 0)) && (0 < param_1->vehiclePos)) &&
-       ((param_1->vehiclePos < 5 && (param_1->leanf != 0.0)))) {
-      param_1->delta_angles[local_10] =
-           param_1->delta_angles[local_10] - (local_14 - param_1->viewangles[local_10]);
+  for (i = 0; i < 3; i = i + 1) {
+    temp = AngleNormalize180((float)cmd->angles[i] * 0.005493164 + ps->delta_angles[i]);
+    if ((((handler == '\0') && ((ps->eFlags & 0x4000U) != 0)) && (0 < ps->vehiclePos)) &&
+       ((ps->vehiclePos < 5 && (ps->leanf != 0.0)))) {
+      ps->delta_angles[i] = ps->delta_angles[i] - (temp - ps->viewangles[i]);
     }
     else {
-      if (local_10 == 0) {
-        if (local_14 <= fVar2) {
-          if (local_14 < -fVar1) {
-            param_1->delta_angles[0] = -fVar1 - (float)param_2->angles[0] * 0.005493164;
-            local_14 = -fVar1;
+      if (i == 0) {
+        if (temp <= fVar2) {
+          if (temp < -fVar1) {
+            ps->delta_angles[0] = -fVar1 - (float)cmd->angles[0] * 0.005493164;
+            temp = -fVar1;
           }
         }
         else {
-          param_1->delta_angles[0] = fVar2 - (float)param_2->angles[0] * 0.005493164;
-          local_14 = fVar2;
+          ps->delta_angles[0] = fVar2 - (float)cmd->angles[0] * 0.005493164;
+          temp = fVar2;
         }
       }
-      fVar3 = AngleNormalize180(local_14);
-      param_1->viewangles[local_10] = fVar3;
+      fVar3 = AngleNormalize180(temp);
+      ps->viewangles[i] = fVar3;
     }
   }
   return;
@@ -5318,36 +5380,32 @@ void __cdecl PM_UpdateViewAngles_Clamp(playerState_s *param_1,usercmd_s *param_2
 
 // 0042B540  PM_UpdateViewAngles_RangeLimited  (bgame/bg_pmove.cpp:4998)
 
-void __cdecl PM_UpdateViewAngles_RangeLimited(playerState_s *param_1,float param_2)
+void __cdecl PM_UpdateViewAngles_RangeLimited(playerState_s *ps,float oldYaw)
 
 {
   float fVar1;
-  float local_c;
-  int local_8;
+  float delta;
+  int i;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    if ((param_1->viewAngleClampRange[local_8] < 180.0) &&
-       ((local_c = AngleDelta(param_1->viewAngleClampBase[local_8],param_1->viewangles[local_8]),
-        param_1->viewAngleClampRange[local_8] <= local_c &&
-        local_c != param_1->viewAngleClampRange[local_8] ||
-        (local_c < -param_1->viewAngleClampRange[local_8])))) {
-      if (local_c < param_1->viewAngleClampRange[local_8] ||
-          local_c == param_1->viewAngleClampRange[local_8]) {
-        local_c = local_c + param_1->viewAngleClampRange[local_8];
+  for (i = 0; i < 2; i = i + 1) {
+    if ((ps->viewAngleClampRange[i] < 180.0) &&
+       ((fVar1 = AngleDelta(ps->viewAngleClampBase[i],ps->viewangles[i]),
+        ps->viewAngleClampRange[i] <= fVar1 && fVar1 != ps->viewAngleClampRange[i] ||
+        (fVar1 < -ps->viewAngleClampRange[i])))) {
+      if (fVar1 < ps->viewAngleClampRange[i] || fVar1 == ps->viewAngleClampRange[i]) {
+        delta = fVar1 + ps->viewAngleClampRange[i];
       }
       else {
-        local_c = local_c - param_1->viewAngleClampRange[local_8];
+        delta = fVar1 - ps->viewAngleClampRange[i];
       }
-      param_1->delta_angles[local_8] = param_1->delta_angles[local_8] + local_c;
-      if (local_c <= 0.0) {
-        fVar1 = AngleNormalize360(param_1->viewAngleClampBase[local_8] +
-                                  param_1->viewAngleClampRange[local_8]);
-        param_1->viewangles[local_8] = fVar1;
+      ps->delta_angles[i] = ps->delta_angles[i] + delta;
+      if (delta <= 0.0) {
+        fVar1 = AngleNormalize360(ps->viewAngleClampBase[i] + ps->viewAngleClampRange[i]);
+        ps->viewangles[i] = fVar1;
       }
       else {
-        fVar1 = AngleNormalize360(param_1->viewAngleClampBase[local_8] -
-                                  param_1->viewAngleClampRange[local_8]);
-        param_1->viewangles[local_8] = fVar1;
+        fVar1 = AngleNormalize360(ps->viewAngleClampBase[i] - ps->viewAngleClampRange[i]);
+        ps->viewangles[i] = fVar1;
       }
     }
   }
@@ -5357,32 +5415,33 @@ void __cdecl PM_UpdateViewAngles_RangeLimited(playerState_s *param_1,float param
 
 // 0042BD00  PM_UpdateViewAngles_LadderClamp  (bgame/bg_pmove.cpp:5042)
 
-void __cdecl PM_UpdateViewAngles_LadderClamp(playerState_s *param_1)
+void __cdecl PM_UpdateViewAngles_LadderClamp(playerState_s *ps)
 
 {
   float fVar1;
-  float local_c;
+  float fVar2;
+  float delta;
+  float ladderFacing;
   
-  fVar1 = vectoyaw(param_1->vLadderVec);
+  fVar1 = vectoyaw(ps->vLadderVec);
   fVar1 = fVar1 + 180.0;
-  local_c = AngleDelta(fVar1,param_1->viewangles[1]);
-  if (((bg_ladder_yawcap->current).value <= local_c && local_c != (bg_ladder_yawcap->current).value)
-     || (local_c < -(bg_ladder_yawcap->current).value)) {
-    if (local_c < (bg_ladder_yawcap->current).value || local_c == (bg_ladder_yawcap->current).value)
-    {
-      local_c = local_c + (bg_ladder_yawcap->current).value;
+  fVar2 = AngleDelta(fVar1,ps->viewangles[1]);
+  if (((bg_ladder_yawcap->current).value <= fVar2 && fVar2 != (bg_ladder_yawcap->current).value) ||
+     (fVar2 < -(bg_ladder_yawcap->current).value)) {
+    if (fVar2 < (bg_ladder_yawcap->current).value || fVar2 == (bg_ladder_yawcap->current).value) {
+      delta = fVar2 + (bg_ladder_yawcap->current).value;
     }
     else {
-      local_c = local_c - (bg_ladder_yawcap->current).value;
+      delta = fVar2 - (bg_ladder_yawcap->current).value;
     }
-    param_1->delta_angles[1] = param_1->delta_angles[1] + local_c;
-    if (local_c <= 0.0) {
+    ps->delta_angles[1] = ps->delta_angles[1] + delta;
+    if (delta <= 0.0) {
       fVar1 = AngleNormalize360(fVar1 + (bg_ladder_yawcap->current).value);
-      param_1->viewangles[1] = fVar1;
+      ps->viewangles[1] = fVar1;
     }
     else {
       fVar1 = AngleNormalize360(fVar1 - (bg_ladder_yawcap->current).value);
-      param_1->viewangles[1] = fVar1;
+      ps->viewangles[1] = fVar1;
     }
   }
   return;
@@ -5393,40 +5452,42 @@ void __cdecl PM_UpdateViewAngles_LadderClamp(playerState_s *param_1)
 
 void __cdecl
 PM_UpdateViewAngles_ProneYawClamp
-          (playerState_s *param_1,float param_2,int param_3,float param_4,float param_5)
+          (playerState_s *ps,float delta,int proneBlocked,float oldViewYaw,float newViewYaw)
 
 {
   float fVar1;
   float fVar2;
+  float deltaYaw2;
+  float deltaYaw1;
   
-  if (((bg_prone_yawcap->current).value <= param_2 && param_2 != (bg_prone_yawcap->current).value)
-     || (param_2 < -(bg_prone_yawcap->current).value)) {
-    if (param_2 < (bg_prone_yawcap->current).value || param_2 == (bg_prone_yawcap->current).value) {
-      param_2 = param_2 + (bg_prone_yawcap->current).value;
+  if (((bg_prone_yawcap->current).value <= delta && delta != (bg_prone_yawcap->current).value) ||
+     (delta < -(bg_prone_yawcap->current).value)) {
+    if (delta < (bg_prone_yawcap->current).value || delta == (bg_prone_yawcap->current).value) {
+      delta = delta + (bg_prone_yawcap->current).value;
     }
     else {
-      param_2 = param_2 - (bg_prone_yawcap->current).value;
+      delta = delta - (bg_prone_yawcap->current).value;
     }
-    param_1->delta_angles[1] = param_1->delta_angles[1] + param_2;
-    if (param_2 <= 0.0) {
-      fVar1 = AngleNormalize360(param_1->proneDirection + (bg_prone_yawcap->current).value);
-      param_1->viewangles[1] = fVar1;
+    ps->delta_angles[1] = ps->delta_angles[1] + delta;
+    if (delta <= 0.0) {
+      fVar1 = AngleNormalize360(ps->proneDirection + (bg_prone_yawcap->current).value);
+      ps->viewangles[1] = fVar1;
     }
     else {
-      fVar1 = AngleNormalize360(param_1->proneDirection - (bg_prone_yawcap->current).value);
-      param_1->viewangles[1] = fVar1;
+      fVar1 = AngleNormalize360(ps->proneDirection - (bg_prone_yawcap->current).value);
+      ps->viewangles[1] = fVar1;
     }
   }
-  if (param_3 != 0) {
-    param_1->pm_flags = param_1->pm_flags | 0x1000;
-    BG_AddPredictableEventToPlayerstate(0xcd,3,param_1);
-    fVar1 = AngleDelta(param_4,param_1->viewangles[1]);
+  if (proneBlocked != 0) {
+    ps->pm_flags = ps->pm_flags | 0x1000;
+    BG_AddPredictableEventToPlayerstate(0xcd,3,ps);
+    fVar1 = AngleDelta(oldViewYaw,ps->viewangles[1]);
     if (ABS(fVar1) <= 1.0) {
-      fVar2 = AngleDelta(param_5,param_1->viewangles[1]);
+      fVar2 = AngleDelta(newViewYaw,ps->viewangles[1]);
       if (0.0 < fVar1 * fVar2) {
-        fVar2 = AngleNormalize360(param_1->viewangles[1] + fVar1 * 0.98);
-        param_1->viewangles[1] = fVar2;
-        param_1->delta_angles[1] = param_1->delta_angles[1] + fVar1 * 0.98;
+        fVar2 = AngleNormalize360(ps->viewangles[1] + fVar1 * 0.98);
+        ps->viewangles[1] = fVar2;
+        ps->delta_angles[1] = ps->delta_angles[1] + fVar1 * 0.98;
       }
     }
   }
@@ -5436,28 +5497,28 @@ PM_UpdateViewAngles_ProneYawClamp
 
 // 0042C6A0  PM_UpdateViewAngles_PronePitchClamp  (bgame/bg_pmove.cpp:5120)
 
-void __cdecl PM_UpdateViewAngles_PronePitchClamp(playerState_s *param_1)
+void __cdecl PM_UpdateViewAngles_PronePitchClamp(playerState_s *ps)
 
 {
   float fVar1;
-  float local_8;
+  float delta;
   
-  local_8 = AngleDelta(param_1->proneTorsoPitch,param_1->viewangles[0]);
-  if ((45.0 < local_8) || (local_8 < -45.0)) {
-    if (local_8 <= 45.0) {
-      local_8 = local_8 + 45.0;
+  fVar1 = AngleDelta(ps->proneTorsoPitch,ps->viewangles[0]);
+  if ((45.0 < fVar1) || (fVar1 < -45.0)) {
+    if (fVar1 <= 45.0) {
+      delta = fVar1 + 45.0;
     }
     else {
-      local_8 = local_8 - 45.0;
+      delta = fVar1 - 45.0;
     }
-    param_1->delta_angles[0] = param_1->delta_angles[0] + local_8;
-    if (local_8 <= 0.0) {
-      fVar1 = AngleNormalize180(param_1->proneTorsoPitch + 45.0);
-      param_1->viewangles[0] = fVar1;
+    ps->delta_angles[0] = ps->delta_angles[0] + delta;
+    if (delta <= 0.0) {
+      fVar1 = AngleNormalize180(ps->proneTorsoPitch + 45.0);
+      ps->viewangles[0] = fVar1;
     }
     else {
-      fVar1 = AngleNormalize180(param_1->proneTorsoPitch - 45.0);
-      param_1->viewangles[0] = fVar1;
+      fVar1 = AngleNormalize180(ps->proneTorsoPitch - 45.0);
+      ps->viewangles[0] = fVar1;
     }
   }
   return;
@@ -5468,114 +5529,122 @@ void __cdecl PM_UpdateViewAngles_PronePitchClamp(playerState_s *param_1)
 
 void __cdecl
 PM_UpdateViewAngles_Prone
-          (playerState_s *param_1,float param_2,usercmd_s *param_3,uchar param_4,float param_5)
+          (playerState_s *ps,float msec,usercmd_s *cmd,uchar handler,float oldViewYaw)
 
 {
-  float fVar1;
+  float newViewYaw_00;
+  bool bVar1;
   bool bVar2;
-  bool bVar3;
-  int iVar4;
+  int iVar3;
+  float fVar4;
   float fVar5;
-  float local_24;
-  float local_1c;
-  int local_8;
+  float maxDeltaYaw;
+  float delta;
+  float newViewYaw;
+  float newProneYaw;
+  int deltaOutOfRange;
+  int playerMoving;
+  int bProneOK;
+  int bRetry;
+  int proneBlocked;
   
-  fVar1 = param_1->viewangles[1];
-  local_8 = 0;
-  fVar5 = AngleDelta(param_1->proneDirection,param_1->viewangles[1]);
+  newViewYaw_00 = ps->viewangles[1];
+  proneBlocked = 0;
+  fVar5 = AngleDelta(ps->proneDirection,ps->viewangles[1]);
   if (((bg_prone_yawcap->current).value - 5.0 < fVar5) ||
      (fVar5 < -((bg_prone_yawcap->current).value - 5.0))) {
-    bVar3 = true;
+    bVar1 = true;
   }
   else {
-    bVar3 = false;
+    bVar1 = false;
   }
-  if (((param_3->forwardmove == '\0') && (param_3->rightmove == '\0')) || (fVar5 == 0.0)) {
+  if (((cmd->forwardmove == '\0') && (cmd->rightmove == '\0')) || (fVar5 == 0.0)) {
     bVar2 = false;
   }
   else {
     bVar2 = true;
   }
-  if ((bVar3) || (bVar2)) {
-    local_1c = param_2 * 55.0 * 0.001;
-    if (local_1c <= ABS(fVar5)) {
+  if ((bVar1) || (bVar2)) {
+    fVar4 = msec * 55.0 * 0.001;
+    if (fVar4 <= ABS(fVar5)) {
       if (fVar5 <= 0.0) {
-        local_1c = param_1->proneDirection + local_1c;
+        newProneYaw = ps->proneDirection + fVar4;
       }
       else {
-        local_1c = param_1->proneDirection - local_1c;
+        newProneYaw = ps->proneDirection - fVar4;
       }
     }
     else {
-      local_1c = param_1->viewangles[1];
+      newProneYaw = ps->viewangles[1];
     }
-    bVar3 = true;
-    while (iVar4 = BG_CheckProneTurned(param_1,local_1c,param_4), iVar4 == 0) {
-      if (!bVar3) goto LAB_0042c173;
-      local_24 = AngleDelta(param_1->proneDirection,local_1c);
-      bVar3 = 1.0 < ABS(local_24);
-      if (bVar3) {
-        if (local_24 <= 0.0) {
-          local_24 = -1.0;
+    bVar1 = true;
+    while (iVar3 = BG_CheckProneTurned(ps,newProneYaw,handler), iVar3 == 0) {
+      if (!bVar1) goto LAB_0042c173;
+      delta = AngleDelta(ps->proneDirection,newProneYaw);
+      bVar1 = 1.0 < ABS(delta);
+      if (bVar1) {
+        if (delta <= 0.0) {
+          delta = -1.0;
         }
         else {
-          local_24 = 1.0;
+          delta = 1.0;
         }
       }
       else {
-        local_8 = 1;
+        proneBlocked = 1;
       }
-      local_1c = AngleNormalize360(local_1c + local_24);
+      newProneYaw = AngleNormalize360(newProneYaw + delta);
     }
-    bVar2 = BG_CheckProne(param_1,(uint)param_1->clientNum,param_1->origin,15.0,30.0,
-                          param_1->viewangles[1],(float *)0x0,(float *)0x0,true,
-                          param_1->groundEntityNum != 0x3ff,true,param_4,PCT_CLIENT,
+    bVar1 = BG_CheckProne(ps,(uint)ps->clientNum,ps->origin,15.0,30.0,ps->viewangles[1],(float *)0x0
+                          ,(float *)0x0,true,ps->groundEntityNum != 0x3ff,true,handler,PCT_CLIENT,
                           PRONE_FEET_DIST_TURNED);
-    bVar3 = false;
-    if ((bVar2) &&
-       (bVar3 = BG_CheckProne(param_1,(uint)param_1->clientNum,param_1->origin,15.0,30.0,local_1c,
-                              (float *)0x0,(float *)0x0,true,param_1->groundEntityNum != 0x3ff,true,
-                              param_4,PCT_CLIENT,PRONE_FEET_DIST_TURNED), bVar3)) {
-      param_1->proneDirection = local_1c;
+    bProneOK = (int)bVar1;
+    if (bProneOK != 0) {
+      bVar1 = BG_CheckProne(ps,(uint)ps->clientNum,ps->origin,15.0,30.0,newProneYaw,(float *)0x0,
+                            (float *)0x0,true,ps->groundEntityNum != 0x3ff,true,handler,PCT_CLIENT,
+                            PRONE_FEET_DIST_TURNED);
+      bProneOK = (int)bVar1;
+      if (bProneOK != 0) {
+        ps->proneDirection = newProneYaw;
+      }
     }
-    if (bVar3 == false) {
-      local_8 = 1;
+    if (bProneOK == 0) {
+      proneBlocked = 1;
     }
   }
 LAB_0042c173:
-  local_24 = AngleDelta(param_1->proneDirection,param_1->viewangles[1]);
-  if (local_24 != 0.0) {
-    local_1c = param_1->proneDirection;
-    bVar3 = true;
-    while ((bVar2 = BG_CheckProne(param_1,(uint)param_1->clientNum,param_1->origin,15.0,30.0,
-                                  local_1c,(float *)0x0,(float *)0x0,true,
-                                  param_1->groundEntityNum != 0x3ff,true,param_4,PCT_CLIENT,
-                                  PRONE_FEET_DIST_TURNED), !bVar2 ||
-           (iVar4 = BG_CheckProneTurned(param_1,local_1c,param_4), iVar4 == 0))) {
-      if (!bVar3) goto LAB_0042c362;
-      bVar3 = 1.0 < ABS(local_24);
-      if (bVar3) {
-        if (local_24 <= 0.0) {
-          local_24 = -1.0;
+  delta = AngleDelta(ps->proneDirection,ps->viewangles[1]);
+  if (delta != 0.0) {
+    newProneYaw = ps->proneDirection;
+    bVar1 = true;
+    while ((bVar2 = BG_CheckProne(ps,(uint)ps->clientNum,ps->origin,15.0,30.0,newProneYaw,
+                                  (float *)0x0,(float *)0x0,true,ps->groundEntityNum != 0x3ff,true,
+                                  handler,PCT_CLIENT,PRONE_FEET_DIST_TURNED), !bVar2 ||
+           (iVar3 = BG_CheckProneTurned(ps,newProneYaw,handler), iVar3 == 0))) {
+      if (!bVar1) goto LAB_0042c362;
+      bVar1 = 1.0 < ABS(delta);
+      if (bVar1) {
+        if (delta <= 0.0) {
+          delta = -1.0;
         }
         else {
-          local_24 = 1.0;
+          delta = 1.0;
         }
       }
-      local_8 = 1;
-      param_1->delta_angles[1] = param_1->delta_angles[1] + local_24;
-      fVar5 = AngleNormalize360(param_1->viewangles[1] + local_24);
-      param_1->viewangles[1] = fVar5;
-      local_24 = AngleDelta(param_1->proneDirection,param_1->viewangles[1]);
+      proneBlocked = 1;
+      ps->delta_angles[1] = ps->delta_angles[1] + delta;
+      fVar5 = AngleNormalize360(ps->viewangles[1] + delta);
+      ps->viewangles[1] = fVar5;
+      delta = AngleDelta(ps->proneDirection,ps->viewangles[1]);
       if (!bVar2) {
-        local_1c = AngleNormalize360(local_1c + local_24);
+        newProneYaw = AngleNormalize360(newProneYaw + delta);
       }
     }
-    param_1->proneDirection = local_1c;
+    ps->proneDirection = newProneYaw;
   }
 LAB_0042c362:
-  PM_UpdateViewAngles_ProneYawClamp(param_1,local_24,local_8,param_5,fVar1);
-  PM_UpdateViewAngles_PronePitchClamp(param_1);
+  PM_UpdateViewAngles_ProneYawClamp(ps,delta,proneBlocked,oldViewYaw,newViewYaw_00);
+  PM_UpdateViewAngles_PronePitchClamp(ps);
   return;
 }
 
@@ -5583,68 +5652,68 @@ LAB_0042c362:
 // 0042B6E0  PM_UpdateViewAngles  (bgame/bg_pmove.cpp:5281)
 
 void __cdecl
-PM_UpdateViewAngles(int param_1,playerState_s *param_2,float param_3,usercmd_s *param_4,
-                   uchar param_5)
+PM_UpdateViewAngles(int localClientNum,playerState_s *ps,float msec,usercmd_s *cmd,uchar handler)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float temp;
+  float oldViewYaw;
+  bool linkedView;
   
-  if (param_2->pm_type != 5) {
-    if ((param_2->pm_type < 9) || ((param_2->eFlags2 & 0x10000000U) != 0)) {
-      fVar3 = param_2->viewangles[1];
-      PM_UpdateViewAngles_Clamp(param_2,param_4,param_5);
-      PM_UpdateViewLockedEnt(param_2,param_4,param_5);
-      if ((param_2->eFlags & 0x4300U) == 0) {
-        if ((param_2->pm_flags & 4U) == 0) {
-          if ((((param_2->pm_flags & 8U) != 0) && (param_2->groundEntityNum == 0x3ff)) &&
+  if (ps->pm_type != 5) {
+    if ((ps->pm_type < 9) || ((ps->eFlags2 & 0x10000000U) != 0)) {
+      fVar3 = ps->viewangles[1];
+      PM_UpdateViewAngles_Clamp(ps,cmd,handler);
+      PM_UpdateViewLockedEnt(ps,cmd,handler);
+      if ((ps->eFlags & 0x4300U) == 0) {
+        if ((ps->pm_flags & 4U) == 0) {
+          if ((((ps->pm_flags & 8U) != 0) && (ps->groundEntityNum == 0x3ff)) &&
              ((bg_ladder_yawcap->current).value != 0.0)) {
-            PM_UpdateViewAngles_LadderClamp(param_2);
+            PM_UpdateViewAngles_LadderClamp(ps);
           }
-          if (((param_2->pm_flags & 1U) != 0) &&
+          if (((ps->pm_flags & 1U) != 0) &&
              (*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                       0x100 + (uint)param_2->clientNum * 0x5c8) == 0)) {
-            if (((param_2->eFlags & 0x300U) != 0) &&
+                       0x100 + (uint)ps->clientNum * 0x5c8) == 0)) {
+            if (((ps->eFlags & 0x300U) != 0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
                                          0x14ec,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            PM_UpdateViewAngles_Prone(param_2,param_3,param_4,param_5,fVar3);
+            PM_UpdateViewAngles_Prone(ps,msec,cmd,handler,fVar3);
           }
-          if (((param_2->pm_type != 3) && (param_2->pm_type != 2)) && (param_2->pm_type != 4)) {
-            PM_UpdateLean(param_2,param_3,param_4,
+          if (((ps->pm_type != 3) && (ps->pm_type != 2)) && (ps->pm_type != 4)) {
+            PM_UpdateLean(ps,msec,cmd,
                           *(_func___cdecl_void_trace_t_ptr_float_ptr_float_ptr_float_ptr_float_ptr_int_int_col_context_t_ptr
-                            **)(&pmoveHandlers + (uint)param_5 * 0x20));
+                            **)(&pmoveHandlers + (uint)handler * 0x20));
           }
         }
         else {
-          Mantle_CapView(param_2);
+          Mantle_CapView(ps);
         }
       }
       else {
-        if ((((param_2->eFlags & 0x4000U) != 0) && (0 < param_2->vehiclePos)) &&
-           (param_2->vehiclePos < 5)) {
-          PM_UpdateLean(param_2,param_3,param_4,
+        if ((((ps->eFlags & 0x4000U) != 0) && (0 < ps->vehiclePos)) && (ps->vehiclePos < 5)) {
+          PM_UpdateLean(ps,msec,cmd,
                         *(_func___cdecl_void_trace_t_ptr_float_ptr_float_ptr_float_ptr_float_ptr_int_int_col_context_t_ptr
-                          **)(&pmoveHandlers + (uint)param_5 * 0x20));
+                          **)(&pmoveHandlers + (uint)handler * 0x20));
         }
-        if (((param_5 != '\x01') || (param_2->vehiclePos < 1)) || (4 < param_2->vehiclePos)) {
-          PM_UpdateViewAngles_RangeLimited(param_2,fVar3);
+        if (((handler != '\x01') || (ps->vehiclePos < 1)) || (4 < ps->vehiclePos)) {
+          PM_UpdateViewAngles_RangeLimited(ps,fVar3);
         }
       }
     }
     else {
-      if (param_2->stats[1] == 999) {
-        fVar3 = AngleNormalize360((float)param_4->angles[1] * 0.005493164 + param_2->delta_angles[1]
-                                 );
-        param_2->stats[1] = (int)(fVar3 * 0.005493164);
+      if (ps->stats[1] == 999) {
+        fVar3 = AngleNormalize360((float)cmd->angles[1] * 0.005493164 + ps->delta_angles[1]);
+        ps->stats[1] = (int)(fVar3 * 0.005493164);
       }
-      PM_UpdateLean(param_2,param_3,param_4,
+      PM_UpdateLean(ps,msec,cmd,
                     *(_func___cdecl_void_trace_t_ptr_float_ptr_float_ptr_float_ptr_float_ptr_int_int_col_context_t_ptr
-                      **)(&pmoveHandlers + (uint)param_5 * 0x20));
+                      **)(&pmoveHandlers + (uint)handler * 0x20));
     }
   }
   return;
@@ -5653,112 +5722,113 @@ PM_UpdateViewAngles(int param_1,playerState_s *param_2,float param_3,usercmd_s *
 
 // 0042C7B0  PM_UpdatePronePitch  (bgame/bg_pmove.cpp:5388)
 
-void __cdecl PM_UpdatePronePitch(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UpdatePronePitch(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  float fVar4;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  float fVar3;
   float local_38;
   float local_34;
-  float local_10;
+  int bProneOK;
+  float fTargPitch;
+  float delta;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1511,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1511,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1514,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1514,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((ppVar1->pm_flags & 1U) != 0) {
-    if (ppVar1->groundEntityNum == 0x3ff) {
-      if (ppVar1->viewHeightTarget == 0x16) {
-        BG_AddPredictableEventToPlayerstate(9,0,ppVar1);
+  if ((ps_00->pm_flags & 1U) != 0) {
+    if (ps_00->groundEntityNum == 0x3ff) {
+      if (ps_00->viewHeightTarget == 0x16) {
+        BG_AddPredictableEventToPlayerstate(9,0,ps_00);
       }
       else {
-        if (param_2->groundPlane == 0) {
-          bVar3 = true;
+        if (pml->groundPlane == 0) {
+          bVar2 = true;
         }
         else {
-          bVar3 = (param_2->groundTrace).walkable;
+          bVar2 = (pml->groundTrace).walkable;
         }
-        bVar3 = BG_CheckProne(ppVar1,(uint)ppVar1->clientNum,ppVar1->origin,15.0,30.0,
-                              ppVar1->proneDirection,&ppVar1->fTorsoPitch,&ppVar1->fWaistPitch,true,
-                              ppVar1->groundEntityNum != 0x3ff,bVar3,param_1->handler,PCT_CLIENT,
-                              50.0);
-        if ((!bVar3) || (1 < ppVar1->waterlevel)) {
-          BG_AddPredictableEventToPlayerstate(9,0,ppVar1);
-          ppVar1->pm_flags = ppVar1->pm_flags | 0x1000;
+        bVar2 = BG_CheckProne(ps_00,(uint)ps_00->clientNum,ps_00->origin,15.0,30.0,
+                              ps_00->proneDirection,&ps_00->fTorsoPitch,&ps_00->fWaistPitch,true,
+                              ps_00->groundEntityNum != 0x3ff,bVar2,pm->handler,PCT_CLIENT,50.0);
+        if ((!bVar2) || (1 < ps_00->waterlevel)) {
+          BG_AddPredictableEventToPlayerstate(9,0,ps_00);
+          ps_00->pm_flags = ps_00->pm_flags | 0x1000;
         }
       }
     }
-    else if ((param_2->groundPlane == 0) || ((param_2->groundTrace).walkable != false)) {
-      if ((ppVar1->viewHeightTarget == 0x16) &&
-         ((50.0 < ABS(ppVar1->fTorsoPitch) || (50.0 < ABS(ppVar1->fWaistPitch))))) {
-        BG_AddPredictableEventToPlayerstate(9,0,ppVar1);
+    else if ((pml->groundPlane == 0) || ((pml->groundTrace).walkable != false)) {
+      if ((ps_00->viewHeightTarget == 0x16) &&
+         ((50.0 < ABS(ps_00->fTorsoPitch) || (50.0 < ABS(ps_00->fWaistPitch))))) {
+        BG_AddPredictableEventToPlayerstate(9,0,ps_00);
       }
     }
     else {
-      BG_AddPredictableEventToPlayerstate(9,0,ppVar1);
+      BG_AddPredictableEventToPlayerstate(9,0,ps_00);
     }
-    if (param_2->groundPlane == 0) {
-      local_10 = 0.0;
+    if (pml->groundPlane == 0) {
+      fTargPitch = 0.0;
     }
-    else if (ppVar1->pm_type == 6) {
-      local_10 = PitchForYawOnNormal(ppVar1->viewangles[1],(float *)&param_2->groundTrace);
+    else if (ps_00->pm_type == 6) {
+      fTargPitch = PitchForYawOnNormal(ps_00->viewangles[1],(float *)&pml->groundTrace);
     }
     else {
-      local_10 = PitchForYawOnNormal(ppVar1->proneDirection,(float *)&param_2->groundTrace);
+      fTargPitch = PitchForYawOnNormal(ps_00->proneDirection,(float *)&pml->groundTrace);
     }
-    fVar4 = AngleDelta(local_10,ppVar1->proneDirectionPitch);
-    if (fVar4 != 0.0) {
-      if (ABS(fVar4) <= param_2->frametime * 70.0) {
-        ppVar1->proneDirectionPitch = ppVar1->proneDirectionPitch + fVar4;
+    fVar3 = AngleDelta(fTargPitch,ps_00->proneDirectionPitch);
+    if (fVar3 != 0.0) {
+      if (ABS(fVar3) <= pml->frametime * 70.0) {
+        ps_00->proneDirectionPitch = ps_00->proneDirectionPitch + fVar3;
       }
       else {
-        if (fVar4 < 0.0) {
+        if (fVar3 < 0.0) {
           local_34 = -1.0;
         }
         else {
           local_34 = 1.0;
         }
-        ppVar1->proneDirectionPitch =
-             param_2->frametime * 70.0 * local_34 + ppVar1->proneDirectionPitch;
+        ps_00->proneDirectionPitch = pml->frametime * 70.0 * local_34 + ps_00->proneDirectionPitch;
       }
-      fVar4 = AngleNormalize180(ppVar1->proneDirectionPitch);
-      ppVar1->proneDirectionPitch = fVar4;
+      fVar3 = AngleNormalize180(ps_00->proneDirectionPitch);
+      ps_00->proneDirectionPitch = fVar3;
     }
-    if (param_2->groundPlane == 0) {
-      local_10 = 0.0;
+    if (pml->groundPlane == 0) {
+      fTargPitch = 0.0;
     }
     else {
-      local_10 = PitchForYawOnNormal(ppVar1->viewangles[1],(float *)&param_2->groundTrace);
+      fTargPitch = PitchForYawOnNormal(ps_00->viewangles[1],(float *)&pml->groundTrace);
     }
-    fVar4 = AngleDelta(local_10,ppVar1->proneTorsoPitch);
-    if (fVar4 != 0.0) {
-      if (ABS(fVar4) <= param_2->frametime * 70.0) {
-        ppVar1->proneTorsoPitch = ppVar1->proneTorsoPitch + fVar4;
+    fVar3 = AngleDelta(fTargPitch,ps_00->proneTorsoPitch);
+    if (fVar3 != 0.0) {
+      if (ABS(fVar3) <= pml->frametime * 70.0) {
+        ps_00->proneTorsoPitch = ps_00->proneTorsoPitch + fVar3;
       }
       else {
-        if (fVar4 < 0.0) {
+        if (fVar3 < 0.0) {
           local_38 = -1.0;
         }
         else {
           local_38 = 1.0;
         }
-        ppVar1->proneTorsoPitch = param_2->frametime * 70.0 * local_38 + ppVar1->proneTorsoPitch;
+        ps_00->proneTorsoPitch = pml->frametime * 70.0 * local_38 + ps_00->proneTorsoPitch;
       }
-      fVar4 = AngleNormalize180(ppVar1->proneTorsoPitch);
-      ppVar1->proneTorsoPitch = fVar4;
+      fVar3 = AngleNormalize180(ps_00->proneTorsoPitch);
+      ps_00->proneTorsoPitch = fVar3;
     }
   }
   return;
@@ -5767,11 +5837,11 @@ void __cdecl PM_UpdatePronePitch(pmove_t *param_1,pml_t *param_2)
 
 // 0042CC50  PM_SetProneMovementOverride  (bgame/bg_pmove.cpp:5494)
 
-void __cdecl PM_SetProneMovementOverride(playerState_s *param_1)
+void __cdecl PM_SetProneMovementOverride(playerState_s *ps)
 
 {
-  if ((param_1->pm_flags & 1U) != 0) {
-    param_1->pm_flags = param_1->pm_flags | 0x200;
+  if ((ps->pm_flags & 1U) != 0) {
+    ps->pm_flags = ps->pm_flags | 0x200;
   }
   return;
 }
@@ -5779,14 +5849,15 @@ void __cdecl PM_SetProneMovementOverride(playerState_s *param_1)
 
 // 00437020  PM_UpdatePlayerWalkingFlag  (bgame/bg_pmove.cpp:5508)
 
-void __cdecl PM_UpdatePlayerWalkingFlag(pmove_t *param_1)
+void __cdecl PM_UpdatePlayerWalkingFlag(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((ppVar1 == (playerState_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1588,0,
                                "%s"), !bVar3)) {
@@ -5795,9 +5866,8 @@ void __cdecl PM_UpdatePlayerWalkingFlag(pmove_t *param_1)
     return;
   }
   ppVar1->pm_flags = ppVar1->pm_flags & 0xffffffbf;
-  if (((((ppVar1->pm_type < 9) &&
-        (bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0xb), bVar3)) &&
-       ((ppVar1->pm_flags & 1U) == 0)) &&
+  if (((((ppVar1->pm_type < 9) && (bVar3 = bitarray<51>::testBit(&(pm->cmd).button_bits,0xb), bVar3)
+        ) && ((ppVar1->pm_flags & 1U) == 0)) &&
       ((((ppVar1->pm_flags & 0x10U) != 0 && (ppVar1->weaponstate != 10)) &&
        ((ppVar1->weaponstate != 0xc &&
         ((ppVar1->weaponstate != 0xe && (ppVar1->weaponstate != 0xd)))))))) &&
@@ -5816,22 +5886,22 @@ void __cdecl PM_UpdatePlayerWalkingFlag(pmove_t *param_1)
 
 // 00437860  PM_SetLadderFlag  (bgame/bg_pmove.cpp:5541)
 
-void __cdecl PM_SetLadderFlag(playerState_s *param_1)
+void __cdecl PM_SetLadderFlag(playerState_s *ps)
 
 {
-  param_1->pm_flags = param_1->pm_flags | 8;
+  ps->pm_flags = ps->pm_flags | 8;
   return;
 }
 
 
 // 00437150  PM_ClearLadderFlag  (bgame/bg_pmove.cpp:5547)
 
-void __cdecl PM_ClearLadderFlag(playerState_s *param_1)
+void __cdecl PM_ClearLadderFlag(playerState_s *ps)
 
 {
-  if ((param_1->pm_flags & 8U) != 0) {
-    param_1->pm_flags = param_1->pm_flags | 0x2000;
-    param_1->pm_flags = param_1->pm_flags & 0xfffffff7;
+  if ((ps->pm_flags & 8U) != 0) {
+    ps->pm_flags = ps->pm_flags | 0x2000;
+    ps->pm_flags = ps->pm_flags & 0xfffffff7;
   }
   return;
 }
@@ -5841,102 +5911,101 @@ void __cdecl PM_ClearLadderFlag(playerState_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PM_CheckLadderMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_CheckLadderMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int local_a8;
-  float local_7c;
+  float vLadderCheckDir;
   float local_78;
   float local_74;
-  float local_70;
+  float mins;
   float local_6c;
   float local_68;
-  float local_64;
-  float local_60;
+  float tracedist;
+  float spot;
   float local_5c;
   float local_58;
-  int local_54;
-  float local_50;
+  int fellOffLadderInAir;
+  float maxs;
   float local_4c;
   float local_48;
-  float4 local_44;
+  float4 trace;
   float local_34;
   uint local_30;
   uint local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_44.v[0] = 0.0;
-  local_44.v[1] = 0.0;
-  local_44.v[2] = 0.0;
-  local_44.v[3] = 0.0;
-  if ((param_1 == (pmove_t *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x15c6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x15c9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->walking != 0) || (2 < local_8->waterlevel)) {
-    local_8->pm_flags = local_8->pm_flags & 0xffffdfff;
+  if ((pml->walking != 0) || (2 < ps->waterlevel)) {
+    ps->pm_flags = ps->pm_flags & 0xffffdfff;
   }
-  if (((local_8->pm_time == 0) || ((local_8->pm_flags & 8U) != 0)) ||
-     ((local_8->pm_flags & 0x180U) == 0)) {
-    if (param_2->walking == 0) {
-      local_64 = 30.0;
+  if (((ps->pm_time == 0) || ((ps->pm_flags & 8U) != 0)) || ((ps->pm_flags & 0x180U) == 0)) {
+    if (pml->walking == 0) {
+      tracedist = 30.0;
     }
     else {
-      local_64 = 8.0;
+      tracedist = 8.0;
     }
-    if (((local_8->pm_flags & 8U) == 0) || (local_8->groundEntityNum != 0x3ff)) {
+    if (((ps->pm_flags & 8U) == 0) || (ps->groundEntityNum != 0x3ff)) {
       local_a8 = 0;
     }
     else {
       local_a8 = 1;
     }
-    local_54 = local_a8;
+    fellOffLadderInAir = local_a8;
     if (local_a8 == 0) {
-      local_7c = param_2->forward[0];
-      local_78 = param_2->forward[1];
+      vLadderCheckDir = pml->forward[0];
+      local_78 = pml->forward[1];
       local_74 = 0.0;
-      Vec3Normalize(&local_7c);
+      Vec3Normalize(&vLadderCheckDir);
     }
     else {
-      local_7c = -local_8->vLadderVec[0];
-      local_78 = -local_8->vLadderVec[1];
-      local_74 = -local_8->vLadderVec[2];
+      vLadderCheckDir = -ps->vLadderVec[0];
+      local_78 = -ps->vLadderVec[1];
+      local_74 = -ps->vLadderVec[2];
     }
-    if (local_8->pm_type < 9) {
-      if ((local_8->pm_flags & 0x2000U) == 0) {
-        iVar3 = PM_GetEffectiveStance(local_8);
+    if (ps->pm_type < 9) {
+      if ((ps->pm_flags & 0x2000U) == 0) {
+        iVar3 = PM_GetEffectiveStance(ps);
         if (iVar3 == 1) {
-          PM_ClearLadderFlag(local_8);
+          PM_ClearLadderFlag(ps);
         }
-        else if ((param_1->cmd).serverTime - local_8->jumpTime < 300) {
-          PM_ClearLadderFlag(local_8);
+        else if ((pm->cmd).serverTime - ps->jumpTime < 300) {
+          PM_ClearLadderFlag(ps);
         }
         else {
-          local_70 = param_1->mins[0] + 6.0;
-          local_6c = param_1->mins[1] + 6.0;
+          mins = pm->mins[0] + 6.0;
+          local_6c = pm->mins[1] + 6.0;
           local_68 = 8.0;
-          local_48 = param_1->maxs[2];
-          local_50 = param_1->maxs[0] - 6.0;
-          local_4c = param_1->maxs[1] - 6.0;
+          local_48 = pm->maxs[2];
+          maxs = pm->maxs[0] - 6.0;
+          local_4c = pm->maxs[1] - 6.0;
           if (local_48 < 8.0) {
             local_48 = 8.0;
           }
-          if ((local_50 < local_70) &&
+          if ((maxs < mins) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",
                                        0x1615,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -5957,61 +6026,61 @@ void __cdecl PM_CheckLadderMove(pmove_t *param_1,pml_t *param_2)
             (*pcVar1)();
             return;
           }
-          local_60 = local_64 * local_7c + local_8->origin[0];
-          local_5c = local_64 * local_78 + local_8->origin[1];
-          local_58 = local_64 * local_74 + local_8->origin[2];
+          spot = tracedist * vLadderCheckDir + ps->origin[0];
+          local_5c = tracedist * local_78 + ps->origin[1];
+          local_58 = tracedist * local_74 + ps->origin[2];
           if ((phys_player_collision_mode->current).integer == 1) {
-            PM_trace(param_1,(trace_t *)&local_44,local_8->origin,&local_70,&local_50,&local_60,
-                     (uint)local_8->clientNum,param_1->tracemask);
+            PM_trace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&spot,(uint)ps->clientNum,
+                     pm->tracemask);
           }
           else {
-            PM_playerTrace(param_1,(trace_t *)&local_44,local_8->origin,&local_70,&local_50,
-                           &local_60,(uint)local_8->clientNum,param_1->tracemask);
+            PM_playerTrace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&spot,(uint)ps->clientNum,
+                           pm->tracemask);
           }
           if (((local_34 < 1.0) && ((local_30 & 8) != 0)) &&
-             ((param_2->walking == 0 || ('\0' < (param_1->cmd).forwardmove)))) {
-            if ((local_8->pm_flags & 8U) != 0) {
-              PM_SetLadderFlag(local_8);
+             ((pml->walking == 0 || ('\0' < (pm->cmd).forwardmove)))) {
+            if ((ps->pm_flags & 8U) != 0) {
+              PM_SetLadderFlag(ps);
               return;
             }
-            local_8->vLadderVec[0] = local_44.v[0];
-            local_8->vLadderVec[1] = local_44.v[1];
-            local_8->vLadderVec[2] = local_44.v[2];
-            local_7c = -local_8->vLadderVec[0];
-            local_78 = -local_8->vLadderVec[1];
-            local_74 = -local_8->vLadderVec[2];
-            local_60 = local_64 * local_7c + local_8->origin[0];
-            local_5c = local_64 * local_78 + local_8->origin[1];
-            local_58 = local_64 * local_74 + local_8->origin[2];
+            ps->vLadderVec[0] = trace.v[0];
+            ps->vLadderVec[1] = trace.v[1];
+            ps->vLadderVec[2] = trace.v[2];
+            vLadderCheckDir = -ps->vLadderVec[0];
+            local_78 = -ps->vLadderVec[1];
+            local_74 = -ps->vLadderVec[2];
+            spot = tracedist * vLadderCheckDir + ps->origin[0];
+            local_5c = tracedist * local_78 + ps->origin[1];
+            local_58 = tracedist * local_74 + ps->origin[2];
             if ((phys_player_collision_mode->current).integer == 1) {
-              PM_trace(param_1,(trace_t *)&local_44,local_8->origin,&local_70,&local_50,&local_60,
-                       (uint)local_8->clientNum,param_1->tracemask);
+              PM_trace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&spot,(uint)ps->clientNum,
+                       pm->tracemask);
             }
             else {
-              PM_playerTrace(param_1,(trace_t *)&local_44,local_8->origin,&local_70,&local_50,
-                             &local_60,(uint)local_8->clientNum,param_1->tracemask);
+              PM_playerTrace(pm,(trace_t *)&trace,ps->origin,&mins,&maxs,&spot,(uint)ps->clientNum,
+                             pm->tracemask);
             }
             if ((local_34 < 1.0) && ((local_30 & 8) != 0)) {
-              PM_SetLadderFlag(local_8);
+              PM_SetLadderFlag(ps);
               return;
             }
           }
-          PM_ClearLadderFlag(local_8);
-          if (local_54 != 0) {
-            BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,1);
+          PM_ClearLadderFlag(ps);
+          if (fellOffLadderInAir != 0) {
+            BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,1);
           }
         }
       }
       else {
-        PM_ClearLadderFlag(local_8);
+        PM_ClearLadderFlag(ps);
       }
     }
     else {
-      local_8->groundEntityNum = 0x3ff;
-      param_2->groundPlane = 0;
-      param_2->almostGroundPlane = 0;
-      param_2->walking = 0;
-      PM_ClearLadderFlag(local_8);
+      ps->groundEntityNum = 0x3ff;
+      pml->groundPlane = 0;
+      pml->almostGroundPlane = 0;
+      pml->walking = 0;
+      PM_ClearLadderFlag(ps);
     }
   }
   return;
@@ -6020,7 +6089,7 @@ void __cdecl PM_CheckLadderMove(pmove_t *param_1,pml_t *param_2)
 
 // 00437880  PM_LadderMove  (bgame/bg_pmove.cpp:5702)
 
-void __cdecl PM_LadderMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_LadderMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
@@ -6028,138 +6097,136 @@ void __cdecl PM_LadderMove(pmove_t *param_1,pml_t *param_2)
   uint extraout_EAX;
   float fVar3;
   float local_d8;
-  float local_4c [3];
-  float local_40;
-  float local_3c;
+  float wishdir [3];
+  float fSideSpeed;
+  float wishvel;
   float local_38;
   float local_34;
-  float local_30 [3];
-  float local_24;
+  float vTempRight [3];
+  float vSideDir;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  uint local_10;
-  float local_c;
-  playerState_s *local_8;
+  float fSpeedDrop;
+  float wishspeed;
+  float upscale;
+  int moveyaw;
+  float scale;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
+  if ((pm == (pmove_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1653,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1->ps;
-  if ((local_8 == (playerState_s *)0x0) &&
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1656,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Jump_Check(param_1,param_2);
+  bVar2 = Jump_Check(pm,pml);
   if (bVar2) {
-    PM_AirMove(param_1,param_2);
+    PM_AirMove(pm,pml);
   }
   else {
-    local_14 = (param_2->forward[2] + 0.25) * 2.5;
-    if (local_14 <= 1.0) {
-      if (local_14 < -1.0) {
-        local_14 = -1.0;
+    upscale = (pml->forward[2] + 0.25) * 2.5;
+    if (upscale <= 1.0) {
+      if (upscale < -1.0) {
+        upscale = -1.0;
       }
     }
     else {
-      local_14 = 1.0;
+      upscale = 1.0;
     }
-    param_2->forward[2] = 0.0;
-    Vec3Normalize(param_2->forward);
-    param_2->right[2] = 0.0;
-    Vec3NormalizeTo(param_2->right,local_30);
-    ProjectPointOnPlane(local_30,local_8->vLadderVec,param_2->right);
-    local_c = PM_CmdScale(local_8,&param_1->cmd);
-    local_3c = 0.0;
+    pml->forward[2] = 0.0;
+    Vec3Normalize(pml->forward);
+    pml->right[2] = 0.0;
+    Vec3NormalizeTo(pml->right,vTempRight);
+    ProjectPointOnPlane(vTempRight,ps->vLadderVec,pml->right);
+    scale = PM_CmdScale(ps,&pm->cmd);
+    wishvel = 0.0;
     local_38 = 0.0;
     local_34 = 0.0;
-    if ((param_1->cmd).forwardmove != '\0') {
-      local_34 = local_14 * 0.5 * local_c * (float)(int)(param_1->cmd).forwardmove;
+    if ((pm->cmd).forwardmove != '\0') {
+      local_34 = upscale * 0.5 * scale * (float)(int)(pm->cmd).forwardmove;
     }
-    if ((param_1->cmd).rightmove != '\0') {
-      fVar3 = local_c * 0.2 * (float)(int)(param_1->cmd).rightmove;
-      local_3c = fVar3 * param_2->right[0] + 0.0;
-      local_38 = fVar3 * param_2->right[1] + 0.0;
-      local_34 = fVar3 * param_2->right[2] + local_34;
+    if ((pm->cmd).rightmove != '\0') {
+      fVar3 = scale * 0.2 * (float)(int)(pm->cmd).rightmove;
+      wishvel = fVar3 * pml->right[0] + 0.0;
+      local_38 = fVar3 * pml->right[1] + 0.0;
+      local_34 = fVar3 * pml->right[2] + local_34;
     }
-    local_18 = Vec3NormalizeTo(&local_3c,local_4c);
-    PM_Accelerate(local_8,param_2,local_4c,local_18,9.0);
-    if ((param_1->cmd).forwardmove == '\0') {
-      if (local_8->velocity[2] <= 0.0) {
-        local_8->velocity[2] = (float)local_8->gravity * param_2->frametime + local_8->velocity[2];
-        if (0.0 < local_8->velocity[2]) {
-          local_8->velocity[2] = 0.0;
+    wishspeed = Vec3NormalizeTo(&wishvel,wishdir);
+    PM_Accelerate(ps,pml,wishdir,wishspeed,9.0);
+    if ((pm->cmd).forwardmove == '\0') {
+      if (ps->velocity[2] <= 0.0) {
+        ps->velocity[2] = (float)ps->gravity * pml->frametime + ps->velocity[2];
+        if (0.0 < ps->velocity[2]) {
+          ps->velocity[2] = 0.0;
         }
       }
       else {
-        local_8->velocity[2] = local_8->velocity[2] - (float)local_8->gravity * param_2->frametime;
-        if (local_8->velocity[2] <= 0.0 && local_8->velocity[2] != 0.0) {
-          local_8->velocity[2] = 0.0;
+        ps->velocity[2] = ps->velocity[2] - (float)ps->gravity * pml->frametime;
+        if (ps->velocity[2] <= 0.0 && ps->velocity[2] != 0.0) {
+          ps->velocity[2] = 0.0;
         }
       }
     }
-    if ((param_1->cmd).rightmove == '\0') {
-      local_24 = param_2->right[0];
-      local_20 = param_2->right[1];
-      Vec2Normalize(&local_24);
-      local_40 = local_24 * local_8->velocity[0] + local_20 * local_8->velocity[1];
-      if (local_40 != 0.0) {
-        local_8->velocity[0] = -local_40 * local_24 + local_8->velocity[0];
-        local_8->velocity[1] = -local_40 * local_20 + local_8->velocity[1];
-        local_1c = local_40 * param_2->frametime * 16.0;
-        if (ABS(local_1c) < ABS(local_40)) {
-          if (ABS(local_1c) < 1.0) {
-            if (local_1c < 0.0) {
+    if ((pm->cmd).rightmove == '\0') {
+      vSideDir = pml->right[0];
+      local_20 = pml->right[1];
+      Vec2Normalize(&vSideDir);
+      fSideSpeed = vSideDir * ps->velocity[0] + local_20 * ps->velocity[1];
+      if (fSideSpeed != 0.0) {
+        ps->velocity[0] = -fSideSpeed * vSideDir + ps->velocity[0];
+        ps->velocity[1] = -fSideSpeed * local_20 + ps->velocity[1];
+        fSpeedDrop = fSideSpeed * pml->frametime * 16.0;
+        if (ABS(fSpeedDrop) < ABS(fSideSpeed)) {
+          if (ABS(fSpeedDrop) < 1.0) {
+            if (fSpeedDrop < 0.0) {
               local_d8 = -1.0;
             }
             else {
               local_d8 = 1.0;
             }
-            local_1c = local_d8;
+            fSpeedDrop = local_d8;
           }
-          local_40 = local_40 - local_1c;
-          local_8->velocity[0] = local_40 * local_24 + local_8->velocity[0];
-          local_8->velocity[1] = local_40 * local_20 + local_8->velocity[1];
+          fSideSpeed = fSideSpeed - fSpeedDrop;
+          ps->velocity[0] = fSideSpeed * vSideDir + ps->velocity[0];
+          ps->velocity[1] = fSideSpeed * local_20 + ps->velocity[1];
         }
       }
     }
-    if (param_2->walking == 0) {
-      local_40 = local_8->vLadderVec[0] * local_8->velocity[0] +
-                 local_8->vLadderVec[1] * local_8->velocity[1];
-      local_8->velocity[0] = -local_40 * local_8->vLadderVec[0] + local_8->velocity[0];
-      local_8->velocity[1] = -local_40 * local_8->vLadderVec[1] + local_8->velocity[1];
-      if ((((local_8->velocity[0] != 0.0) || (local_8->velocity[1] != 0.0)) ||
-          (local_8->velocity[2] != 0.0)) &&
-         (local_8->velocity[0] * local_8->velocity[0] + local_8->velocity[1] * local_8->velocity[1]
-          <= local_8->velocity[2] * local_8->velocity[2])) {
-        local_40 = -50.0;
-        local_8->velocity[0] = local_8->vLadderVec[0] * -50.0 + local_8->velocity[0];
-        local_8->velocity[1] = local_8->vLadderVec[1] * -50.0 + local_8->velocity[1];
+    if (pml->walking == 0) {
+      fSideSpeed = ps->vLadderVec[0] * ps->velocity[0] + ps->vLadderVec[1] * ps->velocity[1];
+      ps->velocity[0] = -fSideSpeed * ps->vLadderVec[0] + ps->velocity[0];
+      ps->velocity[1] = -fSideSpeed * ps->vLadderVec[1] + ps->velocity[1];
+      if ((((ps->velocity[0] != 0.0) || (ps->velocity[1] != 0.0)) || (ps->velocity[2] != 0.0)) &&
+         (ps->velocity[0] * ps->velocity[0] + ps->velocity[1] * ps->velocity[1] <=
+          ps->velocity[2] * ps->velocity[2])) {
+        fSideSpeed = -50.0;
+        ps->velocity[0] = ps->vLadderVec[0] * -50.0 + ps->velocity[0];
+        ps->velocity[1] = ps->vLadderVec[1] * -50.0 + ps->velocity[1];
       }
     }
-    PM_StepSlideMove(param_1,param_2,0);
-    local_c = vectoyaw(local_8->vLadderVec);
-    local_c = local_c + 180.0;
-    AngleDelta(local_c,local_8->viewangles[1]);
+    PM_StepSlideMove(pm,pml,0);
+    fVar3 = vectoyaw(ps->vLadderVec);
+    scale = fVar3 + 180.0;
+    AngleDelta(scale,ps->viewangles[1]);
     _ftol2_sse();
-    local_10 = extraout_EAX;
+    moveyaw = extraout_EAX;
     if (0x4b < (int)((extraout_EAX ^ (int)extraout_EAX >> 0x1f) - ((int)extraout_EAX >> 0x1f))) {
       if ((int)extraout_EAX < 1) {
-        local_10 = 0xffffffb5;
+        moveyaw = -0x4b;
       }
       else {
-        local_10 = 0x4b;
+        moveyaw = 0x4b;
       }
     }
-    local_8->movementDir = (int)(char)local_10;
+    ps->movementDir = (int)(char)moveyaw;
   }
   return;
 }
@@ -6167,30 +6234,30 @@ void __cdecl PM_LadderMove(pmove_t *param_1,pml_t *param_2)
 
 // 0042CD70  PM_MeleeChargeClear  (bgame/bg_pmove.cpp:5856)
 
-void __cdecl PM_MeleeChargeClear(playerState_s *param_1)
+void __cdecl PM_MeleeChargeClear(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_10;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x16e1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->pm_flags = param_1->pm_flags & 0xfffdffff;
-  param_1->meleeChargeYaw = 0.0;
-  param_1->meleeChargeDist = 0;
-  param_1->meleeChargeTime = 0;
+  ps->pm_flags = ps->pm_flags & 0xfffdffff;
+  ps->meleeChargeYaw = 0.0;
+  ps->meleeChargeDist = 0;
+  ps->meleeChargeTime = 0;
   if ((player_bayonetLaunchProof->current).enabled != false) {
     local_10 = (player_bayonetLaunchZCap->current).value;
-    if (0.0 <= local_10 - param_1->velocity[2]) {
-      local_10 = param_1->velocity[2];
+    if (0.0 <= local_10 - ps->velocity[2]) {
+      local_10 = ps->velocity[2];
     }
-    param_1->velocity[2] = local_10;
+    ps->velocity[2] = local_10;
   }
   return;
 }
@@ -6198,15 +6265,16 @@ void __cdecl PM_MeleeChargeClear(playerState_s *param_1)
 
 // 0042CE50  PM_MeleeChargeIsValid  (bgame/bg_pmove.cpp:5882)
 
-bool __cdecl PM_MeleeChargeIsValid(pmove_t *param_1,pml_t *param_2)
+bool __cdecl PM_MeleeChargeIsValid(pmove_t *pm,pml_t *pml)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x16fd,0,"%s")
     ;
     if (!bVar3) {
@@ -6215,7 +6283,7 @@ bool __cdecl PM_MeleeChargeIsValid(pmove_t *param_1,pml_t *param_2)
       return (bool)uVar4;
     }
   }
-  if (param_2 == (pml_t *)0x0) {
+  if (pml == (pml_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x16fe,0,"%s")
     ;
     if (!bVar3) {
@@ -6224,7 +6292,7 @@ bool __cdecl PM_MeleeChargeIsValid(pmove_t *param_1,pml_t *param_2)
       return (bool)uVar4;
     }
   }
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1 == (playerState_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1701,0,"%s")
     ;
@@ -6235,13 +6303,13 @@ bool __cdecl PM_MeleeChargeIsValid(pmove_t *param_1,pml_t *param_2)
     }
   }
   if ((ppVar1->pm_flags & 0x20000U) == 0) {
-    if ((param_1->cmd).meleeChargeDist == '\0') {
+    if ((pm->cmd).meleeChargeDist == '\0') {
       bVar3 = false;
     }
     else if (ppVar1->pm_type == 0) {
       if ((ppVar1->eFlags & 0x300U) == 0) {
         if ((ppVar1->pm_flags & 0xcU) == 0) {
-          bVar3 = PM_IsInAir(param_1,param_2);
+          bVar3 = PM_IsInAir(pm,pml);
           if (bVar3) {
             bVar3 = false;
           }
@@ -6270,45 +6338,46 @@ bool __cdecl PM_MeleeChargeIsValid(pmove_t *param_1,pml_t *param_2)
 
 // 0042CC80  PM_MeleeChargeStart  (bgame/bg_pmove.cpp:5914)
 
-void __cdecl PM_MeleeChargeStart(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_MeleeChargeStart(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x171d,0,"%s")
+  if (pm == (pmove_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x171d,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  ppVar1 = param_1->ps;
-  if (ppVar1 == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1720,0,"%s")
+  ps_00 = pm->ps;
+  if (ps_00 == (playerState_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1720,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   if ((player_bayonetLaunchDebugging->current).enabled != false) {
-    (param_1->cmd).meleeChargeDist = 0xfa;
-    (param_1->cmd).meleeChargeYaw = ppVar1->viewangles[1];
+    (pm->cmd).meleeChargeDist = 0xfa;
+    (pm->cmd).meleeChargeYaw = ps_00->viewangles[1];
   }
-  bVar3 = PM_MeleeChargeIsValid(param_1,param_2);
-  if (bVar3) {
-    ppVar1->pm_flags = ppVar1->pm_flags | 0x20000;
-    ppVar1->meleeChargeYaw = (param_1->cmd).meleeChargeYaw;
-    ppVar1->meleeChargeDist = (uint)(param_1->cmd).meleeChargeDist;
-    ppVar1->meleeChargeTime = 0;
+  bVar2 = PM_MeleeChargeIsValid(pm,pml);
+  if (bVar2) {
+    ps_00->pm_flags = ps_00->pm_flags | 0x20000;
+    ps_00->meleeChargeYaw = (pm->cmd).meleeChargeYaw;
+    ps_00->meleeChargeDist = (uint)(pm->cmd).meleeChargeDist;
+    ps_00->meleeChargeTime = 0;
   }
   else {
-    PM_MeleeChargeClear(ppVar1);
+    PM_MeleeChargeClear(ps_00);
   }
   return;
 }
@@ -6316,55 +6385,55 @@ void __cdecl PM_MeleeChargeStart(pmove_t *param_1,pml_t *param_2)
 
 // 0042D000  PM_CalcMeleeChargeTime  (bgame/bg_pmove.cpp:5942)
 
-void __cdecl PM_CalcMeleeChargeTime(playerState_s *param_1,int *param_2,float *param_3)
+void __cdecl PM_CalcMeleeChargeTime(playerState_s *ps,int *outTime,float *outChargeVel)
 
 {
   int iVar1;
   bool bVar2;
   float local_28;
-  float local_24;
+  float chargeDir;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  uint local_10;
-  WeaponDef *local_c;
-  undefined1 local_5;
+  float range;
+  float chargeVel;
+  float chargeTime;
+  int weaponIndex;
+  WeaponDef *weapDef;
+  bool charging;
   
-  local_10 = 0;
-  bVar2 = BG_IsUseAsMeleeWeapon((uint)param_1->weapon);
+  weaponIndex = 0;
+  bVar2 = BG_IsUseAsMeleeWeapon((uint)ps->weapon);
   if (bVar2) {
-    local_10 = (uint)param_1->weapon;
+    weaponIndex = (int)ps->weapon;
   }
   else {
-    local_10 = param_1->meleeWeapon;
+    weaponIndex = ps->meleeWeapon;
   }
-  local_c = BG_GetWeaponDef(local_10);
-  bVar2 = BG_IsBayonetWeapon(local_10);
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  bVar2 = BG_IsBayonetWeapon(weaponIndex);
   if (bVar2) {
     local_28 = (player_bayonetRange->current).value;
   }
   else {
     local_28 = (player_meleeRange->current).value;
   }
-  local_1c = local_28;
-  local_5 = local_28 < (float)param_1->meleeChargeDist;
-  if ((bool)local_5) {
-    iVar1 = local_c->meleeChargeDelay;
+  range = local_28;
+  charging = local_28 < (float)ps->meleeChargeDist;
+  if (charging) {
+    iVar1 = weapDef->meleeChargeDelay;
   }
   else {
-    iVar1 = local_c->iMeleeDelay;
+    iVar1 = weapDef->iMeleeDelay;
   }
-  local_14 = (float)iVar1 * 0.001;
-  if (0.0 < local_14) {
-    local_18 = ((float)param_1->meleeChargeDist / local_14) * 2.0;
-    YawVectors2D(param_1->meleeChargeYaw,&local_24,(float *)0x0);
-    *param_3 = local_18 * local_24;
-    param_3[1] = local_18 * local_20;
-    *param_2 = (int)(local_14 * 1000.0);
+  chargeTime = (float)iVar1 * 0.001;
+  if (0.0 < chargeTime) {
+    chargeVel = ((float)ps->meleeChargeDist / chargeTime) * 2.0;
+    YawVectors2D(ps->meleeChargeYaw,&chargeDir,(float *)0x0);
+    *outChargeVel = chargeVel * chargeDir;
+    outChargeVel[1] = chargeVel * local_20;
+    *outTime = (int)(chargeTime * 1000.0);
   }
   else {
-    PM_MeleeChargeClear(param_1);
+    PM_MeleeChargeClear(ps);
   }
   return;
 }
@@ -6372,33 +6441,34 @@ void __cdecl PM_CalcMeleeChargeTime(playerState_s *param_1,int *param_2,float *p
 
 // 00438030  PM_CheckMeleeCharge  (bgame/bg_pmove.cpp:5982)
 
-void __cdecl PM_CheckMeleeCharge(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_CheckMeleeCharge(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1761,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1761,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1764,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1764,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((ppVar1->pm_flags & 0x20000U) == 0) {
-    PM_MeleeChargeClear(ppVar1);
+  if ((ps_00->pm_flags & 0x20000U) == 0) {
+    PM_MeleeChargeClear(ps_00);
   }
-  else if (ppVar1->meleeChargeTime == 0) {
-    PM_CalcMeleeChargeTime(ppVar1,&ppVar1->meleeChargeTime,ppVar1->velocity);
+  else if (ps_00->meleeChargeTime == 0) {
+    PM_CalcMeleeChargeTime(ps_00,&ps_00->meleeChargeTime,ps_00->velocity);
   }
   return;
 }
@@ -6406,20 +6476,20 @@ void __cdecl PM_CheckMeleeCharge(pmove_t *param_1,pml_t *param_2)
 
 // 004380E0  PM_MeleeChargeMove  (bgame/bg_pmove.cpp:6007)
 
-void __cdecl PM_MeleeChargeMove(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_MeleeChargeMove(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_1c;
+  float dir;
   float local_18;
   float local_14;
-  float local_10;
-  float local_c;
-  playerState_s *local_8;
+  float newSpeed;
+  float speed;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
+  if (pm == (pmove_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x177d,0,"%s")
     ;
     if (!bVar2) {
@@ -6428,7 +6498,7 @@ void __cdecl PM_MeleeChargeMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  if (param_2 == (pml_t *)0x0) {
+  if (pml == (pml_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x177e,0,"%s")
     ;
     if (!bVar2) {
@@ -6437,8 +6507,8 @@ void __cdecl PM_MeleeChargeMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  local_8 = param_1->ps;
-  if (local_8 == (playerState_s *)0x0) {
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1781,0,"%s")
     ;
     if (!bVar2) {
@@ -6447,75 +6517,77 @@ void __cdecl PM_MeleeChargeMove(pmove_t *param_1,pml_t *param_2)
       return;
     }
   }
-  local_c = Vec3NormalizeTo(local_8->velocity,&local_1c);
-  local_10 = local_c;
-  if (0.0 < local_c) {
-    local_10 = local_c - (local_c / ((float)local_8->meleeChargeTime * 0.001)) * param_2->frametime;
-    if (local_10 < 0.0) {
-      local_10 = 0.0;
+  speed = Vec3NormalizeTo(ps->velocity,&dir);
+  newSpeed = speed;
+  if (0.0 < speed) {
+    newSpeed = speed - (speed / ((float)ps->meleeChargeTime * 0.001)) * pml->frametime;
+    if (newSpeed < 0.0) {
+      newSpeed = 0.0;
     }
-    fVar3 = (local_c + local_10) * 0.5;
-    local_8->velocity[0] = fVar3 * local_1c;
-    local_8->velocity[1] = fVar3 * local_18;
-    local_8->velocity[2] = fVar3 * local_14;
+    fVar3 = (speed + newSpeed) * 0.5;
+    ps->velocity[0] = fVar3 * dir;
+    ps->velocity[1] = fVar3 * local_18;
+    ps->velocity[2] = fVar3 * local_14;
   }
-  PM_ProjectVelocity(local_8->velocity,(float *)&param_2->groundTrace,local_8->velocity);
-  if ((local_8->velocity[0] != 0.0) || (local_8->velocity[1] != 0.0)) {
-    PM_StepSlideMove(param_1,param_2,0);
+  PM_ProjectVelocity(ps->velocity,(float *)&pml->groundTrace,ps->velocity);
+  if ((ps->velocity[0] != 0.0) || (ps->velocity[1] != 0.0)) {
+    PM_StepSlideMove(pm,pml,0);
   }
-  local_8->velocity[0] = local_10 * local_1c;
-  local_8->velocity[1] = local_10 * local_18;
-  local_8->velocity[2] = local_10 * local_14;
-  local_8->meleeChargeTime = local_8->meleeChargeTime - param_2->msec;
-  if (local_8->meleeChargeTime < 1) {
-    local_8->velocity[0] = 0.0;
-    local_8->velocity[1] = 0.0;
-    PM_MeleeChargeClear(local_8);
+  ps->velocity[0] = newSpeed * dir;
+  ps->velocity[1] = newSpeed * local_18;
+  ps->velocity[2] = newSpeed * local_14;
+  ps->meleeChargeTime = ps->meleeChargeTime - pml->msec;
+  if (ps->meleeChargeTime < 1) {
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    PM_MeleeChargeClear(ps);
   }
-  PM_SetMovementDir(param_1,param_2);
+  PM_SetMovementDir(pm,pml);
   return;
 }
 
 
 // 00438350  TurretNVGTrigger  (bgame/bg_pmove.cpp:6055)
 
-void __cdecl TurretNVGTrigger(pmove_t *param_1)
+void __cdecl TurretNVGTrigger(pmove_t *pm)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  bool nvPressed;
+  playerState_s *ps;
   
-  if ((param_1 == (pmove_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17aa,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((pm == (pmove_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17aa,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = param_1->ps;
-  if ((ppVar1 == (playerState_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17ac,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  ps_00 = pm->ps;
+  if ((ps_00 == (playerState_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17ac,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  bVar3 = bitarray<51>::testBit(&(param_1->oldcmd).button_bits,0x12);
-  if ((bVar3) || (bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x12), !bVar3)) {
-    bVar3 = false;
+  bVar2 = bitarray<51>::testBit(&(pm->oldcmd).button_bits,0x12);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x12), !bVar2)) {
+    bVar2 = false;
   }
   else {
-    bVar3 = true;
+    bVar2 = true;
   }
-  if (bVar3) {
-    if ((ppVar1->weapFlags & 0x40U) == 0) {
-      ppVar1->weapFlags = ppVar1->weapFlags | 0x40;
-      PM_AddEvent(ppVar1,0x5c);
+  if (bVar2) {
+    if ((ps_00->weapFlags & 0x40U) == 0) {
+      ps_00->weapFlags = ps_00->weapFlags | 0x40;
+      PM_AddEvent(ps_00,0x5c);
     }
     else {
-      ppVar1->weapFlags = ppVar1->weapFlags & 0xffffffbf;
-      PM_AddEvent(ppVar1,0x5d);
+      ps_00->weapFlags = ps_00->weapFlags & 0xffffffbf;
+      PM_AddEvent(ps_00,0x5d);
     }
   }
   return;
@@ -6524,16 +6596,16 @@ void __cdecl TurretNVGTrigger(pmove_t *param_1)
 
 // 00438450  PM_UpdatePush  (bgame/bg_pmove.cpp:6084)
 
-void __cdecl PM_UpdatePush(pmove_t *param_1,pml_t *param_2)
+void __cdecl PM_UpdatePush(pmove_t *pm,pml_t *pml)
 
 {
   code *pcVar1;
   bool bVar2;
-  gjkcc_input_t local_28;
-  playerState_s *local_8;
+  gjkcc_input_t gjkcc_in;
+  playerState_s *ps;
   
-  local_8 = param_1->ps;
-  if (local_8 == (playerState_s *)0x0) {
+  ps = pm->ps;
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17c8,0,"%s")
     ;
     if (!bVar2) {
@@ -6543,10 +6615,10 @@ void __cdecl PM_UpdatePush(pmove_t *param_1,pml_t *param_2)
     }
   }
   if ((playerPushAmount->current).value != 0.0) {
-    setup_gjkcc_input(param_1,&local_28);
-    gjk_sentient_push(param_1,param_2,local_8->origin,param_1->mins,param_1->maxs,param_1->tracemask
-                      ,(uint)local_8->clientNum,&local_28,(playerPushAmount->current).value,
-                      param_2->frametime,local_8->velocity,local_8->origin);
+    setup_gjkcc_input(pm,&gjkcc_in);
+    gjk_sentient_push(pm,pml,ps->origin,pm->mins,pm->maxs,pm->tracemask,(uint)ps->clientNum,
+                      &gjkcc_in,(playerPushAmount->current).value,pml->frametime,ps->velocity,
+                      ps->origin);
   }
   return;
 }
@@ -6554,25 +6626,26 @@ void __cdecl PM_UpdatePush(pmove_t *param_1,pml_t *param_2)
 
 // 00438520  set_stance  (bgame/bg_pmove.cpp:6100)
 
-void __cdecl set_stance(pmove_t *param_1)
+void __cdecl set_stance(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  param_1->mins[0] = -15.0;
-  param_1->mins[1] = -15.0;
-  param_1->mins[2] = 0.0;
-  param_1->maxs[0] = 15.0;
-  param_1->maxs[1] = 15.0;
-  param_1->maxs[2] = 70.0;
+  ppVar1 = pm->ps;
+  pm->mins[0] = -15.0;
+  pm->mins[1] = -15.0;
+  pm->mins[2] = 0.0;
+  pm->maxs[0] = 15.0;
+  pm->maxs[1] = 15.0;
+  pm->maxs[2] = 70.0;
   if ((ppVar1->pm_flags & 1U) == 0) {
     if ((ppVar1->pm_flags & 2U) != 0) {
-      param_1->maxs[2] = 50.0;
+      pm->maxs[2] = 50.0;
     }
   }
   else {
-    param_1->maxs[2] = 30.0;
+    pm->maxs[2] = 30.0;
   }
   return;
 }
@@ -6581,8 +6654,10 @@ void __cdecl set_stance(pmove_t *param_1)
 // 0042D2F0  PmoveSingle  (bgame/bg_pmove.cpp:6111)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "PmStanceFrontBack": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl PmoveSingle(pmove_t *param_1)
+void __cdecl PmoveSingle(pmove_t *pm)
 
 {
   code *pcVar1;
@@ -6602,203 +6677,201 @@ void __cdecl PmoveSingle(pmove_t *param_1)
   int local_108;
   int local_fc;
   int local_f0;
-  bitarray<51> local_cc;
-  bitarray<51> local_c4;
-  uint local_bc [2];
-  bitarray<51> local_b4;
-  uint local_ac [2];
-  pml_t local_a4;
+  float realVelSqrd;
+  float supposedVelSqrd;
+  WeaponDef *weapDefDW;
+  bitarray<51> mask_bits_5;
+  bitarray<51> mask_bits_4;
+  uint mask_bits_3 [2];
+  bitarray<51> mask_bits_2;
+  uint mask_bits [2];
+  pml_t pml;
   uint local_14;
-  int local_10;
-  playerState_s *local_c;
-  WeaponDef *local_8;
+  int stance;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_a4.groundTrace.normal.vec.v[0] = 0.0;
-  local_a4.groundTrace.normal.vec.v[1] = 0.0;
-  local_a4.groundTrace.normal.vec.v[2] = 0.0;
-  local_a4.groundTrace.normal.vec.v[3] = 0.0;
-  set_stance(param_1);
-  local_c = param_1->ps;
-  if ((local_c == (playerState_s *)0x0) &&
+  pml.groundTrace.normal.vec.v[0] = 0.0;
+  pml.groundTrace.normal.vec.v[1] = 0.0;
+  pml.groundTrace.normal.vec.v[2] = 0.0;
+  pml.groundTrace.normal.vec.v[3] = 0.0;
+  set_stance(pm);
+  ps = pm->ps;
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x17ea,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = BG_GetWeaponDef((uint)local_c->weapon);
-  local_c->waterlevel = 0;
-  if ((local_c->eFlags2 & 0x10000000U) != 0) {
-    local_c->velocity[0] = 0.0;
-    local_c->velocity[1] = 0.0;
-    local_c->velocity[2] = 0.0;
+  weapDef = BG_GetWeaponDef((uint)ps->weapon);
+  ps->waterlevel = 0;
+  if ((ps->eFlags2 & 0x10000000U) != 0) {
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    ps->velocity[2] = 0.0;
   }
-  this = local_c;
-  if ((local_c->pm_flags & 0x20000U) != 0) {
-    (param_1->cmd).forwardmove = '\x7f';
-    (param_1->cmd).rightmove = '\0';
-    this = (playerState_s *)param_1;
+  this = ps;
+  if ((ps->pm_flags & 0x20000U) != 0) {
+    (pm->cmd).forwardmove = '\x7f';
+    (pm->cmd).rightmove = '\0';
+    this = (playerState_s *)pm;
   }
-  if (((local_c->pm_flags & 0x800U) == 0) && (this = local_c, local_c->weaponstate != 0x23)) {
-    if ((local_c->pm_flags & 0x400U) == 0) {
-      bVar2 = PM_IsPlayerFrozenByWeapon(local_c);
+  if (((ps->pm_flags & 0x800U) == 0) && (this = ps, ps->weaponstate != 0x23)) {
+    if ((ps->pm_flags & 0x400U) == 0) {
+      bVar2 = PM_IsPlayerFrozenByWeapon(ps);
       if (bVar2) {
-        (param_1->cmd).forwardmove = '\0';
-        (param_1->cmd).rightmove = '\0';
-        bitarray<51>::bitarray<51>((bitarray<51> *)param_1,(int)local_bc);
+        (pm->cmd).forwardmove = '\0';
+        (pm->cmd).rightmove = '\0';
+        bitarray<51>::bitarray<51>((bitarray<51> *)pm,(int)mask_bits_3);
         for (local_108 = 0; local_108 < 2; local_108 = local_108 + 1) {
-          local_bc[local_108] = ~local_bc[local_108];
+          mask_bits_3[local_108] = ~mask_bits_3[local_108];
         }
         for (local_10c = 0; local_10c < 2; local_10c = local_10c + 1) {
-          (param_1->cmd).button_bits.array[local_10c] =
-               (param_1->cmd).button_bits.array[local_10c] & local_bc[local_10c];
+          (pm->cmd).button_bits.array[local_10c] =
+               (pm->cmd).button_bits.array[local_10c] & mask_bits_3[local_10c];
         }
-        local_c->velocity[0] = 0.0;
-        local_c->velocity[1] = 0.0;
-        local_c->velocity[2] = 0.0;
+        ps->velocity[0] = 0.0;
+        ps->velocity[1] = 0.0;
+        ps->velocity[2] = 0.0;
       }
-      else if (((local_c->eFlags2 & 0x10000000U) != 0) && ((local_c->eFlags & 0x4000U) == 0)) {
-        (param_1->cmd).forwardmove = '\0';
-        (param_1->cmd).rightmove = '\0';
-        bitarray<51>::bitarray<51>(&local_c4,(int)&local_c4);
+      else if (((ps->eFlags2 & 0x10000000U) != 0) && ((ps->eFlags & 0x4000U) == 0)) {
+        (pm->cmd).forwardmove = '\0';
+        (pm->cmd).rightmove = '\0';
+        bitarray<51>::bitarray<51>(&mask_bits_4,(int)&mask_bits_4);
         for (local_118 = 0; local_118 < 2; local_118 = local_118 + 1) {
-          local_c4.array[local_118] = ~local_c4.array[local_118];
+          mask_bits_4.array[local_118] = ~mask_bits_4.array[local_118];
         }
         for (local_11c = 0; local_11c < 2; local_11c = local_11c + 1) {
-          (param_1->cmd).button_bits.array[local_11c] =
-               (param_1->cmd).button_bits.array[local_11c] & local_c4.array[local_11c];
+          (pm->cmd).button_bits.array[local_11c] =
+               (pm->cmd).button_bits.array[local_11c] & mask_bits_4.array[local_11c];
         }
-        local_c->velocity[0] = 0.0;
-        local_c->velocity[1] = 0.0;
-        local_c->velocity[2] = 0.0;
+        ps->velocity[0] = 0.0;
+        ps->velocity[1] = 0.0;
+        ps->velocity[2] = 0.0;
       }
     }
     else {
-      bitarray<51>::bitarray<51>(&local_b4,(int)&local_b4);
+      bitarray<51>::bitarray<51>(&mask_bits_2,(int)&mask_bits_2);
       for (local_fc = 0; local_fc < 2; local_fc = local_fc + 1) {
-        (param_1->cmd).button_bits.array[local_fc] =
-             (param_1->cmd).button_bits.array[local_fc] & local_b4.array[local_fc];
+        (pm->cmd).button_bits.array[local_fc] =
+             (pm->cmd).button_bits.array[local_fc] & mask_bits_2.array[local_fc];
       }
-      (param_1->cmd).forwardmove = '\0';
-      (param_1->cmd).rightmove = '\0';
-      local_c->velocity[0] = 0.0;
-      local_c->velocity[1] = 0.0;
-      local_c->velocity[2] = 0.0;
+      (pm->cmd).forwardmove = '\0';
+      (pm->cmd).rightmove = '\0';
+      ps->velocity[0] = 0.0;
+      ps->velocity[1] = 0.0;
+      ps->velocity[2] = 0.0;
     }
   }
   else {
-    bitarray<51>::bitarray<51>((bitarray<51> *)this,(int)local_ac);
+    bitarray<51>::bitarray<51>((bitarray<51> *)this,(int)mask_bits);
     for (local_f0 = 0; local_f0 < 2; local_f0 = local_f0 + 1) {
-      (param_1->cmd).button_bits.array[local_f0] =
-           (param_1->cmd).button_bits.array[local_f0] & local_ac[local_f0];
+      (pm->cmd).button_bits.array[local_f0] =
+           (pm->cmd).button_bits.array[local_f0] & mask_bits[local_f0];
     }
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
-    local_c->velocity[0] = 0.0;
-    local_c->velocity[1] = 0.0;
-    local_c->velocity[2] = 0.0;
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    ps->velocity[2] = 0.0;
   }
-  bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x1d);
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x1d);
   if (bVar2) {
-    bitarray<51>::bitarray<51>(&local_cc,(int)&local_cc);
+    bitarray<51>::bitarray<51>(&mask_bits_5,(int)&mask_bits_5);
     for (local_128 = 0; local_128 < 2; local_128 = local_128 + 1) {
-      (param_1->cmd).button_bits.array[local_128] =
-           (param_1->cmd).button_bits.array[local_128] & local_cc.array[local_128];
+      (pm->cmd).button_bits.array[local_128] =
+           (pm->cmd).button_bits.array[local_128] & mask_bits_5.array[local_128];
     }
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
   }
-  local_c->pm_flags = local_c->pm_flags & 0xffffefff;
-  if ((8 < local_c->pm_type) && ((local_c->eFlags2 & 0x10000000U) == 0)) {
-    param_1->tracemask = param_1->tracemask & 0xfdff7fff;
+  ps->pm_flags = ps->pm_flags & 0xffffefff;
+  if ((8 < ps->pm_type) && ((ps->eFlags2 & 0x10000000U) == 0)) {
+    pm->tracemask = pm->tracemask & 0xfdff7fff;
   }
-  if ((((local_c->pm_flags & 1U) == 0) || (iVar3 = BG_UsingSniperScope(local_c), iVar3 != 0)) ||
-     ((local_c->eFlags & 0x300U) != 0)) {
-    local_c->pm_flags = local_c->pm_flags & 0xfffffdff;
+  if ((((ps->pm_flags & 1U) == 0) || (iVar3 = BG_UsingSniperScope(ps), iVar3 != 0)) ||
+     ((ps->eFlags & 0x300U) != 0)) {
+    ps->pm_flags = ps->pm_flags & 0xfffffdff;
   }
-  else if ((((param_1->cmd).forwardmove != (param_1->oldcmd).forwardmove) &&
-           (ABS((float)(int)(param_1->oldcmd).forwardmove) <
-            ABS((float)(int)(param_1->cmd).forwardmove))) ||
-          (((param_1->cmd).rightmove != (param_1->oldcmd).rightmove &&
-           (ABS((float)(int)(param_1->oldcmd).rightmove) < ABS((float)(int)(param_1->cmd).rightmove)
-           )))) {
-    if (((local_c->pm_flags & 0x400000U) == 0) &&
-       (iVar3 = PM_InteruptWeaponWithProneMove(local_c), iVar3 != 0)) {
-      local_c->pm_flags = local_c->pm_flags & 0xfffffdff;
-      PM_ExitAimDownSight(local_c);
+  else if ((((pm->cmd).forwardmove != (pm->oldcmd).forwardmove) &&
+           (ABS((float)(int)(pm->oldcmd).forwardmove) < ABS((float)(int)(pm->cmd).forwardmove))) ||
+          (((pm->cmd).rightmove != (pm->oldcmd).rightmove &&
+           (ABS((float)(int)(pm->oldcmd).rightmove) < ABS((float)(int)(pm->cmd).rightmove))))) {
+    if (((ps->pm_flags & 0x400000U) == 0) &&
+       (iVar3 = PM_InteruptWeaponWithProneMove(ps), iVar3 != 0)) {
+      ps->pm_flags = ps->pm_flags & 0xfffffdff;
+      PM_ExitAimDownSight(ps);
     }
   }
-  else if (((local_c->pm_flags & 0x10U) == 0) &&
-          ((((((local_c->weaponstate == 0 || (local_c->weaponstate == 1)) ||
-              (local_c->weaponstate == 2)) ||
-             ((local_c->weaponstate == 3 || (local_c->weaponstate == 4)))) ||
-            (local_c->weaponstate == 5)) || (local_c->weaponstate == 10)))) {
-    pWVar4 = BG_GetWeaponDef((uint)local_c->weapon);
+  else if (((ps->pm_flags & 0x10U) == 0) &&
+          ((((((ps->weaponstate == 0 || (ps->weaponstate == 1)) || (ps->weaponstate == 2)) ||
+             ((ps->weaponstate == 3 || (ps->weaponstate == 4)))) || (ps->weaponstate == 5)) ||
+           (ps->weaponstate == 10)))) {
+    pWVar4 = BG_GetWeaponDef((uint)ps->weapon);
     if ((pWVar4->bDualWield == false) ||
-       ((((local_c->weaponstateLeft != 0 && (local_c->weaponstateLeft != 10)) &&
-         ((local_c->weaponstate != 1 &&
-          (((local_c->weaponstate != 2 && (local_c->weaponstate != 3)) &&
-           (local_c->weaponstate != 4)))))) && (local_c->weaponstate != 5)))) {
-      pWVar4 = BG_GetWeaponDef((uint)local_c->weapon);
+       ((((ps->weaponstateLeft != 0 && (ps->weaponstateLeft != 10)) &&
+         ((ps->weaponstate != 1 &&
+          (((ps->weaponstate != 2 && (ps->weaponstate != 3)) && (ps->weaponstate != 4)))))) &&
+        (ps->weaponstate != 5)))) {
+      pWVar4 = BG_GetWeaponDef((uint)ps->weapon);
       if (pWVar4->bDualWield == false) {
-        local_c->pm_flags = local_c->pm_flags & 0xfffffdff;
+        ps->pm_flags = ps->pm_flags & 0xfffffdff;
       }
     }
     else {
-      local_c->pm_flags = local_c->pm_flags & 0xfffffdff;
+      ps->pm_flags = ps->pm_flags & 0xfffffdff;
     }
   }
-  local_10 = PM_GetEffectiveStance(local_c);
-  if ((((local_c->pm_flags & 0x10U) != 0) && (local_10 == 1)) &&
-     (iVar3 = BG_UsingSniperScope(local_c), iVar3 == 0)) {
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
+  stance = PM_GetEffectiveStance(ps);
+  if ((((ps->pm_flags & 0x10U) != 0) && (stance == 1)) &&
+     (iVar3 = BG_UsingSniperScope(ps), iVar3 == 0)) {
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
   }
-  bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x1d);
-  if ((bVar2) && (local_c->locationSelectionType == LOC_SEL_NONE)) {
-    local_c->eFlags = local_c->eFlags | 0x200000;
+  bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x1d);
+  if ((bVar2) && (ps->locationSelectionType == LOC_SEL_NONE)) {
+    ps->eFlags = ps->eFlags | 0x200000;
   }
   else {
-    local_c->eFlags = local_c->eFlags & 0xffdfffff;
+    ps->eFlags = ps->eFlags & 0xffdfffff;
   }
-  local_c->eFlags = local_c->eFlags & 0xffffffbf;
-  if ((local_c->pm_type != 5) && ((local_c->pm_flags & 0x400U) == 0)) {
-    if ((local_c->eFlags & 0x4000U) == 0) {
-      if ((local_c->eFlags & 0x300U) == 0) {
-        if ((((local_c->weaponstate == 0) || (local_c->weaponstate == 6)) ||
-            (local_c->weaponstate == 0x1f)) &&
-           (((iVar3 = PM_WeaponAmmoAvailable(local_c), iVar3 != 0 ||
-             (local_8->unlimitedAmmo != false)) &&
-            ((bVar2 = BG_PlayerWeaponOverheating(local_c,(uint)local_c->weapon), !bVar2 &&
-             ((local_c->weapFlags & 8U) == 0)))))) {
-          bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0);
-          if ((bVar2) && (local_c->waterlevel < 3)) {
-            local_c->eFlags = local_c->eFlags | 0x40;
+  ps->eFlags = ps->eFlags & 0xffffffbf;
+  if ((ps->pm_type != 5) && ((ps->pm_flags & 0x400U) == 0)) {
+    if ((ps->eFlags & 0x4000U) == 0) {
+      if ((ps->eFlags & 0x300U) == 0) {
+        if ((((ps->weaponstate == 0) || (ps->weaponstate == 6)) || (ps->weaponstate == 0x1f)) &&
+           (((iVar3 = PM_WeaponAmmoAvailable(ps), iVar3 != 0 || (weapDef->unlimitedAmmo != false))
+            && ((bVar2 = BG_PlayerWeaponOverheating(ps,(uint)ps->weapon), !bVar2 &&
+                ((ps->weapFlags & 8U) == 0)))))) {
+          bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0);
+          if ((bVar2) && (ps->waterlevel < 3)) {
+            ps->eFlags = ps->eFlags | 0x40;
           }
           else {
-            iVar3 = PM_IsWeaponMinFireTimeElapsed(local_c,false);
+            iVar3 = PM_IsWeaponMinFireTimeElapsed(ps,false);
             if (iVar3 != 0) {
-              local_c->eFlags = local_c->eFlags | 0x40;
+              ps->eFlags = ps->eFlags | 0x40;
             }
           }
         }
-        if ((local_8->bDualWield != false) &&
-           (((local_c->weaponstateLeft == 0 || (local_c->weaponstateLeft == 6)) ||
-            (local_c->weaponstateLeft == 0x1f)))) {
-          pWVar4 = BG_GetWeaponDef(local_8->dualWieldWeaponIndex);
-          iVar3 = BG_GetAmmoInClip(local_c,local_8->dualWieldWeaponIndex);
+        if ((weapDef->bDualWield != false) &&
+           (((ps->weaponstateLeft == 0 || (ps->weaponstateLeft == 6)) ||
+            (ps->weaponstateLeft == 0x1f)))) {
+          pWVar4 = BG_GetWeaponDef(weapDef->dualWieldWeaponIndex);
+          iVar3 = BG_GetAmmoInClip(ps,weapDef->dualWieldWeaponIndex);
           if ((((iVar3 != 0) || (pWVar4->unlimitedAmmo != false)) &&
-              (bVar2 = BG_PlayerWeaponOverheating(local_c,local_8->dualWieldWeaponIndex), !bVar2))
-             && ((local_c->weapFlags & 8U) == 0)) {
-            bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x18);
-            if ((bVar2) && (local_c->waterlevel < 3)) {
-              local_c->eFlags = local_c->eFlags | 0x40;
+              (bVar2 = BG_PlayerWeaponOverheating(ps,weapDef->dualWieldWeaponIndex), !bVar2)) &&
+             ((ps->weapFlags & 8U) == 0)) {
+            bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x18);
+            if ((bVar2) && (ps->waterlevel < 3)) {
+              ps->eFlags = ps->eFlags | 0x40;
             }
             else {
-              iVar3 = PM_IsWeaponMinFireTimeElapsed(local_c,true);
+              iVar3 = PM_IsWeaponMinFireTimeElapsed(ps,true);
               if (iVar3 != 0) {
-                local_c->eFlags = local_c->eFlags | 0x40;
+                ps->eFlags = ps->eFlags | 0x40;
               }
             }
           }
@@ -6806,289 +6879,284 @@ void __cdecl PmoveSingle(pmove_t *param_1)
       }
     }
     else {
-      bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x22);
-      if (((bVar2) || (bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x23), bVar2)) ||
-         (bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0), bVar2)) {
-        local_c->eFlags = local_c->eFlags | 0x40;
+      bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x22);
+      if (((bVar2) || (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x23), bVar2)) ||
+         (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0), bVar2)) {
+        ps->eFlags = ps->eFlags | 0x40;
       }
     }
   }
-  if (((local_c->pm_type < 9) &&
-      (bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0), !bVar2)) &&
-     (bVar2 = bitarray<51>::testBit(&(param_1->cmd).button_bits,8), !bVar2)) {
-    local_c->pm_flags = local_c->pm_flags & 0xfffffbff;
+  if (((ps->pm_type < 9) && (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,0), !bVar2)) &&
+     (bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,8), !bVar2)) {
+    ps->pm_flags = ps->pm_flags & 0xfffffbff;
   }
-  memset((uchar *)&local_a4,'\0',0x8c);
-  local_a4.msec = (param_1->cmd).serverTime - local_c->commandTime;
-  if (local_a4.msec < 1) {
-    local_a4.msec = 1;
+  memset((uchar *)&pml,'\0',0x8c);
+  pml.msec = (pm->cmd).serverTime - ps->commandTime;
+  if (pml.msec < 1) {
+    pml.msec = 1;
   }
-  else if (200 < local_a4.msec) {
-    local_a4.msec = 200;
+  else if (200 < pml.msec) {
+    pml.msec = 200;
   }
-  local_c->commandTime = (param_1->cmd).serverTime;
-  local_a4.previous_origin[0] = local_c->origin[0];
-  local_a4.previous_origin[1] = local_c->origin[1];
-  local_a4.previous_origin[2] = local_c->origin[2];
-  local_a4.previous_velocity[0] = local_c->velocity[0];
-  local_a4.previous_velocity[1] = local_c->velocity[1];
-  local_a4.previous_velocity[2] = local_c->velocity[2];
-  local_a4.frametime = (float)local_a4.msec * 0.001;
-  PM_AdjustAimSpreadScale(param_1,&local_a4);
-  PM_UpdateViewAngles(param_1->localClientNum,local_c,(float)local_a4.msec,&param_1->cmd,
-                      param_1->handler);
-  PM_SetWaterLevel(param_1);
-  if (((player_topDownCamMode->current).integer < 2) || (local_c->pm_type == 2)) {
-    AngleVectors(local_c->viewangles,local_a4.forward,local_a4.right,local_a4.up);
+  ps->commandTime = (pm->cmd).serverTime;
+  pml.previous_origin[0] = ps->origin[0];
+  pml.previous_origin[1] = ps->origin[1];
+  pml.previous_origin[2] = ps->origin[2];
+  pml.previous_velocity[0] = ps->velocity[0];
+  pml.previous_velocity[1] = ps->velocity[1];
+  pml.previous_velocity[2] = ps->velocity[2];
+  pml.frametime = (float)pml.msec * 0.001;
+  PM_AdjustAimSpreadScale(pm,&pml);
+  PM_UpdateViewAngles(pm->localClientNum,ps,(float)pml.msec,&pm->cmd,pm->handler);
+  PM_SetWaterLevel(pm);
+  if (((player_topDownCamMode->current).integer < 2) || (ps->pm_type == 2)) {
+    AngleVectors(ps->viewangles,pml.forward,pml.right,pml.up);
   }
   else {
-    YawVectors((player_topDownCamAngles->current).vector[1],local_a4.forward,local_a4.right);
-    local_a4.up[0] = 0.0;
-    local_a4.up[1] = 0.0;
-    local_a4.up[2] = 0.0;
+    YawVectors((player_topDownCamAngles->current).vector[1],pml.forward,pml.right);
+    pml.up[0] = 0.0;
+    pml.up[1] = 0.0;
+    pml.up[2] = 0.0;
   }
-  if ((param_1->cmd).forwardmove < '\0') {
-    local_c->pm_flags = local_c->pm_flags | 0x20;
+  if ((pm->cmd).forwardmove < '\0') {
+    ps->pm_flags = ps->pm_flags | 0x20;
   }
-  else if (('\0' < (param_1->cmd).forwardmove) ||
-          (((param_1->cmd).forwardmove == '\0' && ((param_1->cmd).rightmove != '\0')))) {
-    local_c->pm_flags = local_c->pm_flags & 0xffffffdf;
+  else if (('\0' < (pm->cmd).forwardmove) ||
+          (((pm->cmd).forwardmove == '\0' && ((pm->cmd).rightmove != '\0')))) {
+    ps->pm_flags = ps->pm_flags & 0xffffffdf;
   }
-  if ((6 < local_c->pm_type) && ((local_c->eFlags2 & 0x10000000U) == 0)) {
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
+  if ((6 < ps->pm_type) && ((ps->eFlags2 & 0x10000000U) == 0)) {
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
   }
-  if ((local_10 == 1) && ((local_c->pm_flags & 0x200U) != 0)) {
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
+  if ((stance == 1) && ((ps->pm_flags & 0x200U) != 0)) {
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
   }
-  iVar3 = Dtp_CanMove(param_1);
+  iVar3 = Dtp_CanMove(pm);
   if (iVar3 == 0) {
-    (param_1->cmd).forwardmove = '\0';
-    (param_1->cmd).rightmove = '\0';
+    (pm->cmd).forwardmove = '\0';
+    (pm->cmd).rightmove = '\0';
   }
-  Mantle_ClearHint(local_c);
-  BG_AnimUpdatePlayerStateConditions(param_1);
-  switch(local_c->pm_type) {
+  Mantle_ClearHint(ps);
+  BG_AnimUpdatePlayerStateConditions(pm);
+  switch(ps->pm_type) {
   case 1:
   case 10:
-    PM_ClearLadderFlag(local_c);
-    local_c->groundEntityNum = 0x3ff;
-    local_a4.groundPlane = 0;
-    local_a4.almostGroundPlane = 0;
-    local_a4.walking = 0;
-    local_c->velocity[0] = 0.0;
-    local_c->velocity[1] = 0.0;
-    local_c->velocity[2] = 0.0;
-    PM_UpdateScriptedAnim(param_1,&local_a4);
-    PM_UpdateAimDownSightFlag(param_1,&local_a4);
-    PM_UpdateSprint(param_1,&local_a4);
-    PM_UpdatePlayerWalkingFlag(param_1);
-    PM_DropTimers(local_c,&local_a4);
-    PM_CheckDuck(param_1,&local_a4);
-    PM_Footsteps(param_1,&local_a4);
-    PM_Weapon(param_1,&local_a4);
-    PM_VehicleDrive(param_1,&local_a4);
-    if (((param_1->ps->pm_flags & 0x400000U) != 0) && (param_1->ps->pm_type == 1)) {
-      Dtp_Interrupt(param_1);
+    PM_ClearLadderFlag(ps);
+    ps->groundEntityNum = 0x3ff;
+    pml.groundPlane = 0;
+    pml.almostGroundPlane = 0;
+    pml.walking = 0;
+    ps->velocity[0] = 0.0;
+    ps->velocity[1] = 0.0;
+    ps->velocity[2] = 0.0;
+    PM_UpdateScriptedAnim(pm,&pml);
+    PM_UpdateAimDownSightFlag(pm,&pml);
+    PM_UpdateSprint(pm,&pml);
+    PM_UpdatePlayerWalkingFlag(pm);
+    PM_DropTimers(ps,&pml);
+    PM_CheckDuck(pm,&pml);
+    PM_Footsteps(pm,&pml);
+    PM_Weapon(pm,&pml);
+    PM_VehicleDrive(pm,&pml);
+    if (((pm->ps->pm_flags & 0x400000U) != 0) && (pm->ps->pm_type == 1)) {
+      Dtp_Interrupt(pm);
     }
     break;
   case 2:
-    local_c->groundEntityNum = 0x3ff;
-    PM_ClearLadderFlag(local_c);
-    PM_UpdateAimDownSightFlag(param_1,&local_a4);
-    PM_UpdateSprint(param_1,&local_a4);
-    PM_UpdatePlayerWalkingFlag(param_1);
-    PM_DropTimers(local_c,&local_a4);
-    PM_NoclipMove(param_1,&local_a4);
-    PM_UpdateAimDownSightLerp(param_1,&local_a4);
+    ps->groundEntityNum = 0x3ff;
+    PM_ClearLadderFlag(ps);
+    PM_UpdateAimDownSightFlag(pm,&pml);
+    PM_UpdateSprint(pm,&pml);
+    PM_UpdatePlayerWalkingFlag(pm);
+    PM_DropTimers(ps,&pml);
+    PM_NoclipMove(pm,&pml);
+    PM_UpdateAimDownSightLerp(pm,&pml);
     break;
   case 3:
-    local_c->groundEntityNum = 0x3ff;
-    PM_ClearLadderFlag(local_c);
-    PM_UpdateAimDownSightFlag(param_1,&local_a4);
-    PM_UpdateSprint(param_1,&local_a4);
-    PM_UpdatePlayerWalkingFlag(param_1);
-    PM_DropTimers(local_c,&local_a4);
-    PM_UFOMove(param_1,&local_a4);
-    PM_UpdateAimDownSightLerp(param_1,&local_a4);
+    ps->groundEntityNum = 0x3ff;
+    PM_ClearLadderFlag(ps);
+    PM_UpdateAimDownSightFlag(pm,&pml);
+    PM_UpdateSprint(pm,&pml);
+    PM_UpdatePlayerWalkingFlag(pm);
+    PM_DropTimers(ps,&pml);
+    PM_UFOMove(pm,&pml);
+    PM_UpdateAimDownSightLerp(pm,&pml);
     break;
   case 4:
-    PM_ClearLadderFlag(local_c);
-    PM_UpdateAimDownSightFlag(param_1,&local_a4);
-    PM_UpdateSprint(param_1,&local_a4);
-    PM_UpdatePlayerWalkingFlag(param_1);
-    PM_CheckDuck(param_1,&local_a4);
-    PM_DropTimers(local_c,&local_a4);
-    PM_FlyMove(param_1,&local_a4);
-    PM_UpdateAimDownSightLerp(param_1,&local_a4);
-    BG_ClipCameraToHeliPatch
-              (local_c->origin,local_a4.previous_origin,local_c->velocity,(float (*) [3])0x0);
+    PM_ClearLadderFlag(ps);
+    PM_UpdateAimDownSightFlag(pm,&pml);
+    PM_UpdateSprint(pm,&pml);
+    PM_UpdatePlayerWalkingFlag(pm);
+    PM_CheckDuck(pm,&pml);
+    PM_DropTimers(ps,&pml);
+    PM_FlyMove(pm,&pml);
+    PM_UpdateAimDownSightLerp(pm,&pml);
+    BG_ClipCameraToHeliPatch(ps->origin,pml.previous_origin,ps->velocity,(float (*) [3])0x0);
     break;
   case 5:
-    PM_ClearLadderFlag(local_c);
-    PM_UpdateAimDownSightFlag(param_1,&local_a4);
-    PM_UpdateSprint(param_1,&local_a4);
-    PM_UpdateAimDownSightLerp(param_1,&local_a4);
+    PM_ClearLadderFlag(ps);
+    PM_UpdateAimDownSightFlag(pm,&pml);
+    PM_UpdateSprint(pm,&pml);
+    PM_UpdateAimDownSightLerp(pm,&pml);
     break;
   case 6:
   case 7:
-    if (local_c->weaponstate == 0x23) {
-      PM_ResetWeaponState(local_c);
+    if (ps->weaponstate == 0x23) {
+      PM_ResetWeaponState(ps);
     }
-    PM_ClearLadderFlag(local_c);
-    local_c->eFlags = local_c->eFlags & 0xfffffcff;
+    PM_ClearLadderFlag(ps);
+    ps->eFlags = ps->eFlags & 0xfffffcff;
   default:
-    if ((param_1->ps->weaponstate == 0x23) && ((param_1->ps->eFlags & 0x300U) != 0)) {
-      local_c->weaponstate = 0x24;
+    if ((pm->ps->weaponstate == 0x23) && ((pm->ps->eFlags & 0x300U) != 0)) {
+      ps->weaponstate = 0x24;
     }
-    if (((param_1->ps->weaponstate == 0x24) && ((param_1->ps->weapFlags & 0x1000U) == 0)) &&
-       ((iVar3 = BG_GetAmmoInClip(param_1->ps,(uint)param_1->ps->weapon), iVar3 < 1 ||
-        ((param_1->ps->eFlags & 0x300U) == 0)))) {
-      param_1->ps->weapFlags = param_1->ps->weapFlags | 0x1000;
-      PM_AddEvent(param_1->ps,0x27);
+    if (((pm->ps->weaponstate == 0x24) && ((pm->ps->weapFlags & 0x1000U) == 0)) &&
+       ((iVar3 = BG_GetAmmoInClip(pm->ps,(uint)pm->ps->weapon), iVar3 < 1 ||
+        ((pm->ps->eFlags & 0x300U) == 0)))) {
+      pm->ps->weapFlags = pm->ps->weapFlags | 0x1000;
+      PM_AddEvent(pm->ps,0x27);
     }
-    if ((local_c->eFlags & 0x300U) == 0) {
-      if ((local_c->eFlags2 & 0x10000000U) == 0) {
-        if ((local_c->pm_flags & 4U) == 0) {
-          param_1->mins[0] = -15.0;
-          param_1->mins[1] = -15.0;
-          param_1->mins[2] = 0.0;
-          param_1->maxs[0] = 15.0;
-          param_1->maxs[1] = 15.0;
-          param_1->maxs[2] = 70.0;
-          PM_UpdateAimDownSightFlag(param_1,&local_a4);
-          PM_UpdateSprint(param_1,&local_a4);
-          PM_UpdatePlayerWalkingFlag(param_1);
-          PM_CheckDuck(param_1,&local_a4);
-          PM_GroundTrace(param_1,&local_a4);
+    if ((ps->eFlags & 0x300U) == 0) {
+      if ((ps->eFlags2 & 0x10000000U) == 0) {
+        if ((ps->pm_flags & 4U) == 0) {
+          pm->mins[0] = -15.0;
+          pm->mins[1] = -15.0;
+          pm->mins[2] = 0.0;
+          pm->maxs[0] = 15.0;
+          pm->maxs[1] = 15.0;
+          pm->maxs[2] = 70.0;
+          PM_UpdateAimDownSightFlag(pm,&pml);
+          PM_UpdateSprint(pm,&pml);
+          PM_UpdatePlayerWalkingFlag(pm);
+          PM_CheckDuck(pm,&pml);
+          PM_GroundTrace(pm,&pml);
         }
-        Mantle_Check(param_1,&local_a4);
-        if ((local_c->pm_flags & 4U) == 0) {
-          PM_UpdateScriptedAnim(param_1,&local_a4);
-          PM_UpdateVisionAnims(param_1,&local_a4);
-          PM_UpdatePronePitch(param_1,&local_a4);
-          PM_DropTimers(local_c,&local_a4);
-          if (5 < local_c->pm_type) {
-            PM_DeadMove(local_c,&local_a4);
+        Mantle_Check(pm,&pml);
+        if ((ps->pm_flags & 4U) == 0) {
+          PM_UpdateScriptedAnim(pm,&pml);
+          PM_UpdateVisionAnims(pm,&pml);
+          PM_UpdatePronePitch(pm,&pml);
+          PM_DropTimers(ps,&pml);
+          if (5 < ps->pm_type) {
+            PM_DeadMove(ps,&pml);
           }
-          PM_CheckLadderMove(param_1,&local_a4);
-          PM_CheckMeleeCharge(param_1,&local_a4);
-          Dtp_CheckForEnd(param_1);
+          PM_CheckLadderMove(pm,&pml);
+          PM_CheckMeleeCharge(pm,&pml);
+          Dtp_CheckForEnd(pm);
           PIXBeginNamedEvent(0,"PM_Move");
-          if ((local_c->pm_flags & 8U) == 0) {
-            if ((local_c->pm_flags & 0x20000U) == 0) {
-              if (local_c->waterlevel < 3) {
-                if (local_a4.walking == 0) {
-                  PM_AirMove(param_1,&local_a4);
+          if ((ps->pm_flags & 8U) == 0) {
+            if ((ps->pm_flags & 0x20000U) == 0) {
+              if (ps->waterlevel < 3) {
+                if (pml.walking == 0) {
+                  PM_AirMove(pm,&pml);
                 }
                 else {
-                  PM_WalkMove(param_1,&local_a4);
+                  PM_WalkMove(pm,&pml);
                 }
               }
               else {
-                PM_SwimMove(param_1,&local_a4);
+                PM_SwimMove(pm,&pml);
               }
             }
             else {
-              PM_MeleeChargeMove(param_1,&local_a4);
+              PM_MeleeChargeMove(pm,&pml);
             }
           }
           else {
-            PM_LadderMove(param_1,&local_a4);
+            PM_LadderMove(pm,&pml);
           }
-          PM_UpdatePush(param_1,&local_a4);
+          PM_UpdatePush(pm,&pml);
           DVar5 = GetCurrentThreadId();
           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
-          PM_GroundTrace(param_1,&local_a4);
-          PM_Footsteps(param_1,&local_a4);
-          PM_Weapon(param_1,&local_a4);
-          param_1->ps->bRunLeftGun = true;
-          PM_Weapon(param_1,&local_a4);
-          param_1->ps->bRunLeftGun = false;
-          PM_FoliageSounds(param_1);
-          fVar6 = local_c->origin[0] - local_a4.previous_origin[0];
-          fVar7 = local_c->origin[1] - local_a4.previous_origin[1];
-          fVar8 = local_c->origin[2] - local_a4.previous_origin[2];
-          if ((fVar6 * fVar6 + fVar7 * fVar7 + fVar8 * fVar8) /
-              (local_a4.frametime * local_a4.frametime) <
-              (local_c->velocity[0] * local_c->velocity[0] +
-               local_c->velocity[1] * local_c->velocity[1] +
-              local_c->velocity[2] * local_c->velocity[2]) * 0.25) {
-            fVar9 = 1.0 / local_a4.frametime;
-            local_c->velocity[0] = fVar9 * fVar6;
-            local_c->velocity[1] = fVar9 * fVar7;
-            local_c->velocity[2] = fVar9 * fVar8;
+          PM_GroundTrace(pm,&pml);
+          PM_Footsteps(pm,&pml);
+          PM_Weapon(pm,&pml);
+          pm->ps->bRunLeftGun = true;
+          PM_Weapon(pm,&pml);
+          pm->ps->bRunLeftGun = false;
+          PM_FoliageSounds(pm);
+          fVar6 = ps->origin[0] - pml.previous_origin[0];
+          fVar7 = ps->origin[1] - pml.previous_origin[1];
+          fVar8 = ps->origin[2] - pml.previous_origin[2];
+          if ((fVar6 * fVar6 + fVar7 * fVar7 + fVar8 * fVar8) / (pml.frametime * pml.frametime) <
+              (ps->velocity[0] * ps->velocity[0] + ps->velocity[1] * ps->velocity[1] +
+              ps->velocity[2] * ps->velocity[2]) * 0.25) {
+            fVar9 = 1.0 / pml.frametime;
+            ps->velocity[0] = fVar9 * fVar6;
+            ps->velocity[1] = fVar9 * fVar7;
+            ps->velocity[2] = fVar9 * fVar8;
           }
-          Sys_SnapVector(local_c->velocity);
+          Sys_SnapVector(ps->velocity);
         }
         else {
-          PM_ClearLadderFlag(local_c);
-          local_c->groundEntityNum = 0x3ff;
-          local_a4.groundPlane = 0;
-          local_a4.walking = 0;
-          PM_UpdateAimDownSightFlag(param_1,&local_a4);
-          PM_UpdateSprint(param_1,&local_a4);
-          PM_UpdatePlayerWalkingFlag(param_1);
-          PM_CheckDuck(param_1,&local_a4);
-          Mantle_Move(param_1,local_c,&local_a4);
-          PM_Weapon(param_1,&local_a4);
-          param_1->ps->bRunLeftGun = true;
-          PM_Weapon(param_1,&local_a4);
-          param_1->ps->bRunLeftGun = false;
+          PM_ClearLadderFlag(ps);
+          ps->groundEntityNum = 0x3ff;
+          pml.groundPlane = 0;
+          pml.walking = 0;
+          PM_UpdateAimDownSightFlag(pm,&pml);
+          PM_UpdateSprint(pm,&pml);
+          PM_UpdatePlayerWalkingFlag(pm);
+          PM_CheckDuck(pm,&pml);
+          Mantle_Move(pm,ps,&pml);
+          PM_Weapon(pm,&pml);
+          pm->ps->bRunLeftGun = true;
+          PM_Weapon(pm,&pml);
+          pm->ps->bRunLeftGun = false;
         }
       }
       else {
-        PM_GroundTrace(param_1,&local_a4);
-        param_1->mins[0] = -15.0;
-        param_1->mins[1] = -15.0;
-        param_1->mins[2] = 0.0;
-        param_1->maxs[0] = 15.0;
-        param_1->maxs[1] = 15.0;
-        param_1->maxs[2] = 70.0;
-        PM_UpdateAimDownSightFlag(param_1,&local_a4);
-        PM_DropTimers(local_c,&local_a4);
-        PM_UpdateSpinLerp(param_1,&local_a4);
-        PM_VehicleDrive(param_1,&local_a4);
-        PM_UpdateAimDownSightLerp(param_1,&local_a4);
-        PM_StepSlideMove(param_1,&local_a4,(uint)(local_a4.groundPlane == 0));
-        local_c->damageTimer = local_c->damageTimer - (int)(local_a4.frametime * 1000.0);
-        if (local_c->damageTimer < 1) {
-          local_c->damageTimer = 0;
+        PM_GroundTrace(pm,&pml);
+        pm->mins[0] = -15.0;
+        pm->mins[1] = -15.0;
+        pm->mins[2] = 0.0;
+        pm->maxs[0] = 15.0;
+        pm->maxs[1] = 15.0;
+        pm->maxs[2] = 70.0;
+        PM_UpdateAimDownSightFlag(pm,&pml);
+        PM_DropTimers(ps,&pml);
+        PM_UpdateSpinLerp(pm,&pml);
+        PM_VehicleDrive(pm,&pml);
+        PM_UpdateAimDownSightLerp(pm,&pml);
+        PM_StepSlideMove(pm,&pml,(uint)(pml.groundPlane == 0));
+        ps->damageTimer = ps->damageTimer - (int)(pml.frametime * 1000.0);
+        if (ps->damageTimer < 1) {
+          ps->damageTimer = 0;
         }
         bVar2 = true;
-        iVar3 = PM_GetEffectiveStance(local_c);
-        PM_Footsteps_NotMoving(param_1,iVar3,bVar2);
-        PM_Weapon(param_1,&local_a4);
-        param_1->ps->bRunLeftGun = true;
-        PM_Weapon(param_1,&local_a4);
-        param_1->ps->bRunLeftGun = false;
+        iVar3 = PM_GetEffectiveStance(ps);
+        PM_Footsteps_NotMoving(pm,iVar3,bVar2);
+        PM_Weapon(pm,&pml);
+        pm->ps->bRunLeftGun = true;
+        PM_Weapon(pm,&pml);
+        pm->ps->bRunLeftGun = false;
       }
     }
     else {
-      PM_ClearLadderFlag(local_c);
-      local_c->groundEntityNum = 0x3ff;
-      local_a4.groundPlane = 0;
-      local_a4.almostGroundPlane = 0;
-      local_a4.walking = 0;
-      local_c->velocity[0] = 0.0;
-      local_c->velocity[1] = 0.0;
-      local_c->velocity[2] = 0.0;
-      PM_UpdateAimDownSightFlag(param_1,&local_a4);
-      PM_UpdateSprint(param_1,&local_a4);
-      PM_UpdatePlayerWalkingFlag(param_1);
-      TurretNVGTrigger(param_1);
-      PM_DropTimers(local_c,&local_a4);
-      PM_CheckDuck(param_1,&local_a4);
-      PM_UpdateAimDownSightLerp(param_1,&local_a4);
-      PM_Footsteps(param_1,&local_a4);
-      if (((param_1->ps->weaponstate != 0x23) && (param_1->ps->weaponstate != 0x24)) &&
-         (param_1->ps->weaponstate != 0x25)) {
-        PM_ResetWeaponState(local_c);
+      PM_ClearLadderFlag(ps);
+      ps->groundEntityNum = 0x3ff;
+      pml.groundPlane = 0;
+      pml.almostGroundPlane = 0;
+      pml.walking = 0;
+      ps->velocity[0] = 0.0;
+      ps->velocity[1] = 0.0;
+      ps->velocity[2] = 0.0;
+      PM_UpdateAimDownSightFlag(pm,&pml);
+      PM_UpdateSprint(pm,&pml);
+      PM_UpdatePlayerWalkingFlag(pm);
+      TurretNVGTrigger(pm);
+      PM_DropTimers(ps,&pml);
+      PM_CheckDuck(pm,&pml);
+      PM_UpdateAimDownSightLerp(pm,&pml);
+      PM_Footsteps(pm,&pml);
+      if (((pm->ps->weaponstate != 0x23) && (pm->ps->weaponstate != 0x24)) &&
+         (pm->ps->weaponstate != 0x25)) {
+        PM_ResetWeaponState(ps);
       }
-      PM_Weapon_Turret(param_1,&local_a4);
+      PM_Weapon_Turret(pm,&pml);
     }
   }
   return;
@@ -7097,23 +7165,26 @@ void __cdecl PmoveSingle(pmove_t *param_1)
 
 // 0042D190  Pmove_1  (bgame/bg_pmove.cpp:6746)
 
-void __cdecl Pmove_1(pmove_t *param_1)
+void __cdecl Pmove_1(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  char *pcVar5;
-  DWORD DVar6;
-  int iVar7;
-  pmove_t *ppVar8;
-  usercmd_s *puVar9;
-  int local_14;
+  char *Name;
+  DWORD DVar5;
+  int iVar6;
+  pmove_t *ppVar7;
+  usercmd_s *puVar8;
+  int msec;
+  int finalTime;
+  PIXProfile pixProfile;
+  playerState_s *ps;
   
-  pcVar5 = va("Pmove %d");
-  PIXBeginNamedEvent(-1,pcVar5);
-  ppVar1 = param_1->ps;
+  Name = va("Pmove %d");
+  PIXBeginNamedEvent(-1,Name);
+  ppVar1 = pm->ps;
   if ((ppVar1 == (playerState_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp",0x1a61,0,
                                "%s"), !bVar4)) {
@@ -7121,10 +7192,10 @@ void __cdecl Pmove_1(pmove_t *param_1)
     (*pcVar3)();
     return;
   }
-  iVar2 = (param_1->cmd).serverTime;
+  iVar2 = (pm->cmd).serverTime;
   if (iVar2 < ppVar1->commandTime) {
-    DVar6 = GetCurrentThreadId();
-    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -7132,24 +7203,24 @@ void __cdecl Pmove_1(pmove_t *param_1)
     if (ppVar1->commandTime + 1000 < iVar2) {
       ppVar1->commandTime = iVar2 + -1000;
     }
-    param_1->numtouch = 0;
-    param_1->numGlassTouch = 0;
+    pm->numtouch = 0;
+    pm->numGlassTouch = 0;
     while (ppVar1->commandTime != iVar2) {
-      local_14 = iVar2 - ppVar1->commandTime;
-      if (0x42 < local_14) {
-        local_14 = 0x42;
+      msec = iVar2 - ppVar1->commandTime;
+      if (0x42 < msec) {
+        msec = 0x42;
       }
-      (param_1->cmd).serverTime = ppVar1->commandTime + local_14;
-      PmoveSingle(param_1);
-      puVar9 = &param_1->oldcmd;
-      ppVar8 = param_1;
-      for (iVar7 = 0xd; ppVar8 = (pmove_t *)&ppVar8->cmd, iVar7 != 0; iVar7 = iVar7 + -1) {
-        puVar9->serverTime = ((usercmd_s *)ppVar8)->serverTime;
-        puVar9 = (usercmd_s *)&puVar9->button_bits;
+      (pm->cmd).serverTime = ppVar1->commandTime + msec;
+      PmoveSingle(pm);
+      puVar8 = &pm->oldcmd;
+      ppVar7 = pm;
+      for (iVar6 = 0xd; ppVar7 = (pmove_t *)&ppVar7->cmd, iVar6 != 0; iVar6 = iVar6 + -1) {
+        puVar8->serverTime = ((usercmd_s *)ppVar7)->serverTime;
+        puVar8 = (usercmd_s *)&puVar8->button_bits;
       }
     }
-    DVar6 = GetCurrentThreadId();
-    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -7159,17 +7230,17 @@ void __cdecl Pmove_1(pmove_t *param_1)
 
 // 004385F0  Pmove  (bgame/bg_pmove.cpp:6819)
 
-void __cdecl Pmove(pmove_t *param_1)
+void __cdecl Pmove(pmove_t *pm)
 
 {
-  gjkcc_input_t local_24;
+  gjkcc_input_t gjkcc_in;
   
-  setup_gjkcc_input(param_1,&local_24);
-  param_1->m_gjkcc_input = &local_24;
-  gjkcc_prolog(&local_24,param_1->ps->origin);
-  Pmove_1(param_1);
-  gjkcc_epilog(&local_24,param_1->ps->origin);
-  param_1->m_gjkcc_input = (gjkcc_input_t *)0x0;
+  setup_gjkcc_input(pm,&gjkcc_in);
+  pm->m_gjkcc_input = &gjkcc_in;
+  gjkcc_prolog(&gjkcc_in,pm->ps->origin);
+  Pmove_1(pm);
+  gjkcc_epilog(&gjkcc_in,pm->ps->origin);
+  pm->m_gjkcc_input = (gjkcc_input_t *)0x0;
   return;
 }
 

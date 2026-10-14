@@ -5,24 +5,24 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl fputc(int param_1,_iobuf *param_2)
+int __cdecl fputc(int ch,_iobuf *str)
 
 {
   int *piVar1;
   uint uVar2;
   ioinfo *piVar3;
-  uint local_20;
+  int retval;
   
-  local_20 = 0;
-  if (param_2 == (_iobuf *)0x0) {
+  retval = 0;
+  if (str == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  _lock_file(param_2);
-  if ((param_2->_flag & 0x40) == 0) {
-    uVar2 = _fileno(param_2);
+  _lock_file(str);
+  if ((str->_flag & 0x40) == 0) {
+    uVar2 = _fileno(str);
     if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
       piVar3 = &__badioinfo;
     }
@@ -41,22 +41,22 @@ int __cdecl fputc(int param_1,_iobuf *param_2)
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    local_20 = 0xffffffff;
+    retval = -1;
   }
 LAB_00c1851c:
-  if (local_20 == 0) {
-    piVar1 = &param_2->_cnt;
+  if (retval == 0) {
+    piVar1 = &str->_cnt;
     *piVar1 = *piVar1 + -1;
     if (*piVar1 < 0) {
-      local_20 = _flsbuf(param_1,param_2);
+      retval = _flsbuf(ch,str);
     }
     else {
-      *param_2->_ptr = (char)param_1;
-      local_20 = param_1 & 0xff;
-      param_2->_ptr = param_2->_ptr + 1;
+      *str->_ptr = (char)ch;
+      retval = ch & 0xff;
+      str->_ptr = str->_ptr + 1;
     }
   }
   FUN_00c1855a();
-  return local_20;
+  return retval;
 }
 

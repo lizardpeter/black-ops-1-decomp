@@ -2,40 +2,40 @@
 
 // 00ACBEE0  ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>  (gfx_d3d/r_drawsurf.cpp:302)
 
-void __cdecl
-ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *param_1,GfxDrawSurf *param_2)
+void __cdecl ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *lo,GfxDrawSurf *hi)
 
 {
   uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  GfxDrawSurf *pGVar4;
-  GfxDrawSurf *local_20;
-  uint local_1c;
+  undefined4 uVar2;
+  undefined4 uVar3;
+  undefined4 uVar4;
+  GfxDrawSurf *pGVar5;
+  GfxDrawSurf *max;
+  uint maxKey;
   uint local_18;
-  GfxDrawSurf *local_8;
+  GfxDrawSurf *walk;
   
-  for (; param_1 < param_2; param_2 = param_2 + -1) {
-    local_20 = param_1;
-    local_1c = *(uint *)param_1;
-    local_18 = *(uint *)((int)param_1 + 4);
-    pGVar4 = param_1;
-    while (local_8 = pGVar4 + 1, local_8 <= param_2) {
-      uVar1 = *(uint *)((int)pGVar4 + 0xc);
-      pGVar4 = local_8;
-      if ((local_18 <= uVar1) && ((local_18 < uVar1 || (local_1c < *(uint *)local_8)))) {
-        local_20 = local_8;
-        local_1c = *(uint *)local_8;
+  for (; lo < hi; hi = hi + -1) {
+    max = lo;
+    maxKey = *(uint *)lo;
+    local_18 = *(uint *)((int)lo + 4);
+    pGVar5 = lo;
+    while (walk = pGVar5 + 1, walk <= hi) {
+      uVar1 = *(uint *)((int)pGVar5 + 0xc);
+      pGVar5 = walk;
+      if ((local_18 <= uVar1) && ((local_18 < uVar1 || (maxKey < *(uint *)walk)))) {
+        max = walk;
+        maxKey = *(uint *)walk;
         local_18 = uVar1;
       }
     }
-    uVar1 = *(uint *)local_20;
-    uVar2 = *(uint *)((int)local_20 + 4);
-    uVar3 = *(uint *)((int)param_2 + 4);
-    *(uint *)local_20 = *(uint *)param_2;
-    *(uint *)((int)local_20 + 4) = uVar3;
-    *(uint *)param_2 = uVar1;
-    *(uint *)((int)param_2 + 4) = uVar2;
+    uVar2 = *(undefined4 *)max;
+    uVar3 = *(undefined4 *)((int)max + 4);
+    uVar4 = *(undefined4 *)((int)hi + 4);
+    *(undefined4 *)max = *(undefined4 *)hi;
+    *(undefined4 *)((int)max + 4) = uVar4;
+    *(undefined4 *)hi = uVar2;
+    *(undefined4 *)((int)hi + 4) = uVar3;
   }
   return;
 }
@@ -44,52 +44,53 @@ ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *param_1,GfxDr
 // 00ACBFA0  ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>  (gfx_d3d/r_drawsurf.cpp:302)
 
 void __cdecl
-ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>
-          (GfxDrawSurf *param_1,GfxDrawSurf *param_2)
+ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *lo,GfxDrawSurf *hi)
 
 {
   uint uVar1;
-  uint uVar2;
-  GfxDrawSurf *pGVar3;
+  undefined4 uVar2;
+  undefined4 uVar3;
+  undefined4 uVar4;
+  GfxDrawSurf *pGVar5;
   uint extraout_EAX;
   uint extraout_EAX_00;
   uint extraout_EDX;
   uint extraout_EDX_00;
-  uint uVar4;
-  GfxDrawSurf *local_20;
-  uint local_1c;
+  uint uVar6;
+  GfxDrawSurf *max;
+  uint maxKey;
   uint local_18;
-  GfxDrawSurf *local_8;
+  GfxDrawSurf *walk;
   
-  for (; param_1 < param_2; param_2 = param_2 + -1) {
-    local_20 = param_1;
-    uVar1 = *(uint *)param_1;
-    uVar4 = *(uint *)((int)param_1 + 4);
+  for (; lo < hi; hi = hi + -1) {
+    max = lo;
+    uVar1 = *(uint *)lo;
+    uVar6 = *(uint *)((int)lo + 4);
     _aullshr();
     _allshl();
-    local_1c = uVar1 | extraout_EAX;
-    local_18 = uVar4 & 0x3ffffff | extraout_EDX;
-    pGVar3 = param_1;
-    while (local_8 = pGVar3 + 1, local_8 <= param_2) {
-      uVar1 = *(uint *)local_8;
-      uVar4 = *(uint *)((int)pGVar3 + 0xc);
+    maxKey = uVar1 | extraout_EAX;
+    local_18 = uVar6 & 0x3ffffff | extraout_EDX;
+    pGVar5 = lo;
+    while (walk = pGVar5 + 1, walk <= hi) {
+      uVar1 = *(uint *)walk;
+      uVar6 = *(uint *)((int)pGVar5 + 0xc);
       _aullshr();
       _allshl();
-      uVar4 = uVar4 & 0x3ffffff | extraout_EDX_00;
-      pGVar3 = local_8;
-      if ((local_18 <= uVar4) && ((local_18 < uVar4 || (local_1c < (uVar1 | extraout_EAX_00))))) {
-        local_20 = local_8;
-        local_1c = uVar1 | extraout_EAX_00;
-        local_18 = uVar4;
+      uVar6 = uVar6 & 0x3ffffff | extraout_EDX_00;
+      pGVar5 = walk;
+      if ((local_18 <= uVar6) && ((local_18 < uVar6 || (maxKey < (uVar1 | extraout_EAX_00))))) {
+        max = walk;
+        maxKey = uVar1 | extraout_EAX_00;
+        local_18 = uVar6;
       }
     }
-    uVar1 = *(uint *)local_20;
-    uVar4 = *(uint *)((int)local_20 + 4);
-    uVar2 = *(uint *)((int)param_2 + 4);
-    *(uint *)local_20 = *(uint *)param_2;
-    *(uint *)((int)local_20 + 4) = uVar2;
-    *(uint *)param_2 = uVar1;
-    *(uint *)((int)param_2 + 4) = uVar4;
+    uVar2 = *(undefined4 *)max;
+    uVar3 = *(undefined4 *)((int)max + 4);
+    uVar4 = *(undefined4 *)((int)hi + 4);
+    *(undefined4 *)max = *(undefined4 *)hi;
+    *(undefined4 *)((int)max + 4) = uVar4;
+    *(undefined4 *)hi = uVar2;
+    *(undefined4 *)((int)hi + 4) = uVar3;
   }
   return;
 }
@@ -97,7 +98,7 @@ ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>
 
 // 00ACB760  qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>  (gfx_d3d/r_drawsurf.cpp:328)
 
-void __cdecl qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *param_1,int param_2)
+void __cdecl qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *elems,int count)
 
 {
   undefined4 uVar1;
@@ -106,114 +107,112 @@ void __cdecl qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *para
   uint uVar4;
   uint uVar5;
   uint uVar6;
-  uint uVar7;
-  uint uVar8;
+  GfxDrawSurf *pGVar7;
+  int iVar8;
   GfxDrawSurf *pGVar9;
-  int iVar10;
-  GfxDrawSurf *pGVar11;
-  GfxDrawSurf *local_114;
-  GfxDrawSurf *local_10c;
-  GfxDrawSurf *local_108;
+  GfxDrawSurf *loWalk;
+  int sortCount;
+  GfxDrawSurf *hiEnd;
+  GfxDrawSurf *hiWalk;
   undefined4 auStack_104 [30];
-  undefined4 auStack_8c [31];
-  int local_10;
-  GfxDrawSurf *local_c;
-  GfxDrawSurf *local_8;
+  int aiStack_8c [31];
+  int stackPos;
+  GfxDrawSurf *loEnd;
+  GfxDrawSurf *mid;
   
-  if (param_2 < 2) {
+  if (count < 2) {
     return;
   }
-  local_10 = 0;
-  local_c = param_1;
-  local_10c = param_1 + param_2 + -1;
+  stackPos = 0;
+  loEnd = elems;
+  hiEnd = elems + count + -1;
 LAB_00acb791:
-  iVar10 = ((int)local_10c - (int)local_c >> 3) + 1;
-  if (8 < iVar10) {
-    local_8 = local_c + iVar10 / 2;
-    uVar1 = *(undefined4 *)local_8;
-    uVar2 = *(undefined4 *)((int)local_8 + 4);
-    uVar3 = *(undefined4 *)((int)local_c + 4);
-    *(undefined4 *)local_8 = *(undefined4 *)local_c;
-    *(undefined4 *)((int)local_8 + 4) = uVar3;
-    *(undefined4 *)local_c = uVar1;
-    *(undefined4 *)((int)local_c + 4) = uVar2;
-    local_114 = local_c;
-    uVar4 = *(uint *)local_c;
-    uVar5 = *(uint *)((int)local_c + 4);
-    pGVar9 = local_114;
-    local_108 = local_10c + 1;
+  iVar8 = ((int)hiEnd - (int)loEnd >> 3) + 1;
+  if (8 < iVar8) {
+    mid = loEnd + iVar8 / 2;
+    uVar1 = *(undefined4 *)mid;
+    uVar2 = *(undefined4 *)((int)mid + 4);
+    uVar3 = *(undefined4 *)((int)loEnd + 4);
+    *(undefined4 *)mid = *(undefined4 *)loEnd;
+    *(undefined4 *)((int)mid + 4) = uVar3;
+    *(undefined4 *)loEnd = uVar1;
+    *(undefined4 *)((int)loEnd + 4) = uVar2;
+    loWalk = loEnd;
+    uVar4 = *(uint *)loEnd;
+    uVar5 = *(uint *)((int)loEnd + 4);
+    pGVar7 = loWalk;
+    hiWalk = hiEnd + 1;
 LAB_00acb83f:
-    local_114 = pGVar9;
-    pGVar9 = local_114 + 1;
-    pGVar11 = local_108;
-    if (pGVar9 <= local_10c) goto LAB_00acb85e;
+    loWalk = pGVar7;
+    pGVar7 = loWalk + 1;
+    pGVar9 = hiWalk;
+    if (pGVar7 <= hiEnd) goto LAB_00acb85e;
     goto LAB_00acb893;
   }
-  ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(local_c,local_10c);
+  ShortSortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(loEnd,hiEnd);
   goto LAB_00acba48;
 LAB_00acb85e:
-  if ((*(uint *)((int)local_114 + 0xc) < uVar5) ||
-     ((*(uint *)((int)local_114 + 0xc) == uVar5 && (*(uint *)pGVar9 <= uVar4)))) goto LAB_00acb83f;
+  if ((*(uint *)((int)loWalk + 0xc) < uVar5) ||
+     ((*(uint *)((int)loWalk + 0xc) == uVar5 && (*(uint *)pGVar7 <= uVar4)))) goto LAB_00acb83f;
 LAB_00acb893:
-  while (local_108 = pGVar11, pGVar11 = local_108 + -1, local_c < pGVar11) {
-    if ((*(uint *)((int)local_108 + -4) <= uVar5) &&
-       ((uVar5 != *(uint *)((int)local_108 + -4) || (*(uint *)pGVar11 < uVar4)))) break;
+  while (hiWalk = pGVar9, pGVar9 = hiWalk + -1, loEnd < pGVar9) {
+    if ((*(uint *)((int)hiWalk + -4) <= uVar5) &&
+       ((uVar5 != *(uint *)((int)hiWalk + -4) || (*(uint *)pGVar9 < uVar4)))) break;
   }
-  if (pGVar9 <= pGVar11) {
-    uVar8 = *(uint *)pGVar9;
-    uVar6 = *(uint *)((int)local_114 + 0xc);
-    uVar7 = *(uint *)((int)local_108 + -4);
-    *(uint *)pGVar9 = *(uint *)pGVar11;
-    *(uint *)((int)local_114 + 0xc) = uVar7;
-    *(uint *)pGVar11 = uVar8;
-    *(uint *)((int)local_108 + -4) = uVar6;
-    local_108 = pGVar11;
+  if (pGVar7 <= pGVar9) {
+    uVar6 = *(uint *)pGVar7;
+    uVar1 = *(undefined4 *)((int)loWalk + 0xc);
+    uVar2 = *(undefined4 *)((int)hiWalk + -4);
+    *(uint *)pGVar7 = *(uint *)pGVar9;
+    *(undefined4 *)((int)loWalk + 0xc) = uVar2;
+    *(uint *)pGVar9 = uVar6;
+    *(undefined4 *)((int)hiWalk + -4) = uVar1;
+    hiWalk = pGVar9;
     goto LAB_00acb83f;
   }
-  uVar4 = *(uint *)local_c;
-  uVar5 = *(uint *)((int)local_c + 4);
-  uVar8 = *(uint *)((int)local_108 + -4);
-  *(uint *)local_c = *(uint *)pGVar11;
-  *(uint *)((int)local_c + 4) = uVar8;
-  *(uint *)pGVar11 = uVar4;
-  *(uint *)((int)local_108 + -4) = uVar5;
-  if ((int)local_108 + (-0x10 - (int)local_c) >> 3 < (int)local_10c - (int)pGVar9 >> 3) {
-    if (pGVar9 < local_10c) {
-      auStack_104[local_10] = pGVar9;
-      auStack_8c[local_10] = local_10c;
-      local_10 = local_10 + 1;
+  uVar4 = *(uint *)loEnd;
+  uVar1 = *(undefined4 *)((int)loEnd + 4);
+  uVar2 = *(undefined4 *)((int)hiWalk + -4);
+  *(uint *)loEnd = *(uint *)pGVar9;
+  *(undefined4 *)((int)loEnd + 4) = uVar2;
+  *(uint *)pGVar9 = uVar4;
+  *(undefined4 *)((int)hiWalk + -4) = uVar1;
+  if ((int)hiWalk + (-0x10 - (int)loEnd) >> 3 < (int)hiEnd - (int)pGVar7 >> 3) {
+    if (pGVar7 < hiEnd) {
+      auStack_104[stackPos] = pGVar7;
+      aiStack_8c[stackPos] = (int)hiEnd;
+      stackPos = stackPos + 1;
     }
-    if (local_c < local_108 + -2) {
-      local_10c = local_108 + -2;
+    if (loEnd < hiWalk + -2) {
+      hiEnd = hiWalk + -2;
       goto LAB_00acb791;
     }
   }
   else {
-    if (local_c <= pGVar11) {
-      auStack_104[local_10] = local_c;
-      auStack_8c[local_10] = local_108 + -2;
-      local_10 = local_10 + 1;
+    if (loEnd <= pGVar9) {
+      auStack_104[stackPos] = loEnd;
+      aiStack_8c[stackPos] = (int)(hiWalk + -2);
+      stackPos = stackPos + 1;
     }
-    if (pGVar9 < local_10c) {
-      local_c = pGVar9;
+    if (pGVar7 < hiEnd) {
+      loEnd = pGVar7;
       goto LAB_00acb791;
     }
   }
 LAB_00acba48:
-  local_10 = local_10 + -1;
-  if (local_10 < 0) {
+  stackPos = stackPos + -1;
+  if (stackPos < 0) {
     return;
   }
-  local_c = (GfxDrawSurf *)auStack_104[local_10];
-  local_10c = (GfxDrawSurf *)auStack_8c[local_10];
+  loEnd = (GfxDrawSurf *)auStack_104[stackPos];
+  hiEnd = (GfxDrawSurf *)aiStack_8c[stackPos];
   goto LAB_00acb791;
 }
 
 
 // 00ACBA80  qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>  (gfx_d3d/r_drawsurf.cpp:328)
 
-void __cdecl
-qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *param_1,int param_2)
+void __cdecl qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *elems,int count)
 
 {
   undefined4 uVar1;
@@ -221,125 +220,125 @@ qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(GfxDrawSurf *param_1,in
   undefined4 uVar3;
   uint uVar4;
   uint uVar5;
-  uint uVar6;
   uint extraout_EAX;
   uint extraout_EAX_00;
-  GfxDrawSurf *pGVar7;
+  GfxDrawSurf *pGVar6;
   uint extraout_EAX_01;
-  int iVar8;
-  GfxDrawSurf *pGVar9;
+  int iVar7;
+  GfxDrawSurf *pGVar8;
   uint extraout_EDX;
   uint extraout_EDX_00;
   uint extraout_EDX_01;
+  uint uVar9;
   uint uVar10;
-  uint uVar11;
-  GfxDrawSurf *local_114;
-  GfxDrawSurf *local_10c;
-  GfxDrawSurf *local_108;
+  GfxDrawSurf *loWalk;
+  int sortCount;
+  GfxDrawSurf *hiEnd;
+  GfxDrawSurf *hiWalk;
   undefined4 auStack_104 [30];
-  undefined4 auStack_8c [31];
-  int local_10;
-  GfxDrawSurf *local_c;
-  GfxDrawSurf *local_8;
+  int aiStack_8c [31];
+  int stackPos;
+  GfxDrawSurf *loEnd;
+  GfxDrawSurf *mid;
   
-  if (param_2 < 2) {
+  if (count < 2) {
     return;
   }
-  local_10 = 0;
-  local_c = param_1;
-  local_10c = param_1 + param_2 + -1;
+  stackPos = 0;
+  loEnd = elems;
+  hiEnd = elems + count + -1;
 LAB_00acbab2:
-  iVar8 = ((int)local_10c - (int)local_c >> 3) + 1;
-  if (8 < iVar8) {
-    local_8 = local_c + iVar8 / 2;
-    uVar1 = *(undefined4 *)local_8;
-    uVar2 = *(undefined4 *)((int)local_8 + 4);
-    uVar3 = *(undefined4 *)((int)local_c + 4);
-    *(undefined4 *)local_8 = *(undefined4 *)local_c;
-    *(undefined4 *)((int)local_8 + 4) = uVar3;
-    *(undefined4 *)local_c = uVar1;
-    *(undefined4 *)((int)local_c + 4) = uVar2;
-    local_114 = local_c;
-    uVar4 = *(uint *)local_c;
-    uVar10 = *(uint *)((int)local_c + 4);
+  iVar7 = ((int)hiEnd - (int)loEnd >> 3) + 1;
+  if (8 < iVar7) {
+    mid = loEnd + iVar7 / 2;
+    uVar1 = *(undefined4 *)mid;
+    uVar2 = *(undefined4 *)((int)mid + 4);
+    uVar3 = *(undefined4 *)((int)loEnd + 4);
+    *(undefined4 *)mid = *(undefined4 *)loEnd;
+    *(undefined4 *)((int)mid + 4) = uVar3;
+    *(undefined4 *)loEnd = uVar1;
+    *(undefined4 *)((int)loEnd + 4) = uVar2;
+    loWalk = loEnd;
+    uVar4 = *(uint *)loEnd;
+    uVar9 = *(uint *)((int)loEnd + 4);
     _aullshr();
     _allshl();
-    uVar10 = uVar10 & 0x3ffffff | extraout_EDX;
-    pGVar9 = local_114;
-    local_108 = local_10c + 1;
+    uVar9 = uVar9 & 0x3ffffff | extraout_EDX;
+    pGVar8 = loWalk;
+    hiWalk = hiEnd + 1;
 LAB_00acbbc4:
-    local_114 = pGVar9;
-    pGVar9 = local_114 + 1;
-    pGVar7 = local_108;
-    if (pGVar9 <= local_10c) goto LAB_00acbbe6;
+    loWalk = pGVar8;
+    pGVar8 = loWalk + 1;
+    pGVar6 = hiWalk;
+    if (pGVar8 <= hiEnd) goto LAB_00acbbe6;
     goto LAB_00acbc87;
   }
-  ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(local_c,local_10c);
+  ShortSortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(loEnd,hiEnd);
   goto LAB_00acbeab;
 LAB_00acbbe6:
-  uVar6 = *(uint *)pGVar9;
-  uVar11 = *(uint *)((int)local_114 + 0xc);
+  uVar5 = *(uint *)pGVar8;
+  uVar10 = *(uint *)((int)loWalk + 0xc);
   _aullshr();
   _allshl();
-  uVar11 = uVar11 & 0x3ffffff | extraout_EDX_00;
-  if ((uVar11 < uVar10) ||
-     ((uVar11 == uVar10 && ((uVar6 | extraout_EAX_00) <= (uVar4 | extraout_EAX)))))
+  uVar10 = uVar10 & 0x3ffffff | extraout_EDX_00;
+  if ((uVar10 < uVar9) ||
+     ((uVar10 == uVar9 && ((uVar5 | extraout_EAX_00) <= (uVar4 | extraout_EAX)))))
   goto LAB_00acbbc4;
 LAB_00acbc87:
-  while (local_108 = pGVar7, pGVar7 = local_108 + -1, local_c < pGVar7) {
-    uVar6 = *(uint *)pGVar7;
-    uVar11 = *(uint *)((int)local_108 + -4);
+  while (hiWalk = pGVar6, pGVar6 = hiWalk + -1, loEnd < pGVar6) {
+    uVar5 = *(uint *)pGVar6;
+    uVar10 = *(uint *)((int)hiWalk + -4);
     _aullshr();
     _allshl();
-    uVar11 = uVar11 & 0x3ffffff | extraout_EDX_01;
-    if ((uVar11 <= uVar10) &&
-       ((uVar10 != uVar11 || ((uVar6 | extraout_EAX_01) < (uVar4 | extraout_EAX))))) break;
+    uVar10 = uVar10 & 0x3ffffff | extraout_EDX_01;
+    if ((uVar10 <= uVar9) &&
+       ((uVar9 != uVar10 || ((uVar5 | extraout_EAX_01) < (uVar4 | extraout_EAX))))) break;
   }
-  if (pGVar9 <= pGVar7) {
-    uVar6 = *(uint *)pGVar9;
-    uVar11 = *(uint *)((int)local_114 + 0xc);
-    uVar5 = *(uint *)((int)local_108 + -4);
-    *(uint *)pGVar9 = *(uint *)pGVar7;
-    *(uint *)((int)local_114 + 0xc) = uVar5;
-    *(uint *)pGVar7 = uVar6;
-    *(uint *)((int)local_108 + -4) = uVar11;
-    local_108 = pGVar7;
+  if (pGVar8 <= pGVar6) {
+    uVar5 = *(uint *)pGVar8;
+    uVar1 = *(undefined4 *)((int)loWalk + 0xc);
+    uVar2 = *(undefined4 *)((int)hiWalk + -4);
+    *(uint *)pGVar8 = *(uint *)pGVar6;
+    *(undefined4 *)((int)loWalk + 0xc) = uVar2;
+    *(uint *)pGVar6 = uVar5;
+    *(undefined4 *)((int)hiWalk + -4) = uVar1;
+    hiWalk = pGVar6;
     goto LAB_00acbbc4;
   }
-  uVar4 = *(uint *)local_c;
-  uVar10 = *(uint *)((int)local_c + 4);
-  uVar6 = *(uint *)((int)local_108 + -4);
-  *(uint *)local_c = *(uint *)pGVar7;
-  *(uint *)((int)local_c + 4) = uVar6;
-  *(uint *)pGVar7 = uVar4;
-  *(uint *)((int)local_108 + -4) = uVar10;
-  if ((int)local_108 + (-0x10 - (int)local_c) >> 3 < (int)local_10c - (int)pGVar9 >> 3) {
-    if (pGVar9 < local_10c) {
-      auStack_104[local_10] = pGVar9;
-      auStack_8c[local_10] = local_10c;
-      local_10 = local_10 + 1;
+  uVar4 = *(uint *)loEnd;
+  uVar1 = *(undefined4 *)((int)loEnd + 4);
+  uVar2 = *(undefined4 *)((int)hiWalk + -4);
+  *(uint *)loEnd = *(uint *)pGVar6;
+  *(undefined4 *)((int)loEnd + 4) = uVar2;
+  *(uint *)pGVar6 = uVar4;
+  *(undefined4 *)((int)hiWalk + -4) = uVar1;
+  if ((int)hiWalk + (-0x10 - (int)loEnd) >> 3 < (int)hiEnd - (int)pGVar8 >> 3) {
+    if (pGVar8 < hiEnd) {
+      auStack_104[stackPos] = pGVar8;
+      aiStack_8c[stackPos] = (int)hiEnd;
+      stackPos = stackPos + 1;
     }
-    if (local_c < local_108 + -2) {
-      local_10c = local_108 + -2;
+    if (loEnd < hiWalk + -2) {
+      hiEnd = hiWalk + -2;
       goto LAB_00acbab2;
     }
   }
   else {
-    if (local_c <= pGVar7) {
-      auStack_104[local_10] = local_c;
-      auStack_8c[local_10] = local_108 + -2;
-      local_10 = local_10 + 1;
+    if (loEnd <= pGVar6) {
+      auStack_104[stackPos] = loEnd;
+      aiStack_8c[stackPos] = (int)(hiWalk + -2);
+      stackPos = stackPos + 1;
     }
-    local_c = pGVar9;
-    if (pGVar9 < local_10c) goto LAB_00acbab2;
+    loEnd = pGVar8;
+    if (pGVar8 < hiEnd) goto LAB_00acbab2;
   }
 LAB_00acbeab:
-  local_10 = local_10 + -1;
-  if (local_10 < 0) {
+  stackPos = stackPos + -1;
+  if (stackPos < 0) {
     return;
   }
-  local_c = (GfxDrawSurf *)auStack_104[local_10];
-  local_10c = (GfxDrawSurf *)auStack_8c[local_10];
+  loEnd = (GfxDrawSurf *)auStack_104[stackPos];
+  hiEnd = (GfxDrawSurf *)aiStack_8c[stackPos];
   goto LAB_00acbab2;
 }
 
@@ -349,10 +348,10 @@ LAB_00acbeab:
 /* WARNING: Removing unreachable block (ram,0x00ac9bf7) */
 /* WARNING: Removing unreachable block (ram,0x00ac9c1c) */
 
-void __cdecl R_SortDrawSurfs(GfxDrawSurf *param_1,int param_2)
+void __cdecl R_SortDrawSurfs(GfxDrawSurf *drawSurfList,int surfCount)
 
 {
-  qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(param_1,param_2);
+  qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>(drawSurfList,surfCount);
   return;
 }
 
@@ -362,10 +361,10 @@ void __cdecl R_SortDrawSurfs(GfxDrawSurf *param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x00ac9c77) */
 /* WARNING: Removing unreachable block (ram,0x00ac9c9c) */
 
-void __cdecl R_ReverseSortDrawSurfs(GfxDrawSurf *param_1,int param_2)
+void __cdecl R_ReverseSortDrawSurfs(GfxDrawSurf *drawSurfList,int surfCount)
 
 {
-  qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(param_1,param_2);
+  qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(drawSurfList,surfCount);
   return;
 }
 
@@ -376,17 +375,18 @@ void __cdecl R_SetPrimaryLightShadowSurfaces(void)
 
 {
   uint extraout_EAX;
-  uint local_18;
-  uint local_8;
+  uint surfIndex;
+  uint primaryLightIndex;
   
-  for (local_8 = 0; local_8 < (rgp.world)->primaryLightCount; local_8 = local_8 + 1) {
-    (rgp.world)->shadowGeom[local_8].surfaceCount = 0;
+  for (primaryLightIndex = 0; primaryLightIndex < (rgp.world)->primaryLightCount;
+      primaryLightIndex = primaryLightIndex + 1) {
+    (rgp.world)->shadowGeom[primaryLightIndex].surfaceCount = 0;
   }
-  for (local_18 = 0; local_18 < (rgp.world)->models->surfaceCount; local_18 = local_18 + 1) {
+  for (surfIndex = 0; surfIndex < (rgp.world)->models->surfaceCount; surfIndex = surfIndex + 1) {
     _aullshr();
     if ((extraout_EAX & 1) != 0) {
       R_ForEachPrimaryLightAffectingSurface
-                (rgp.world,((rgp.world)->dpvs).surfaces + local_18,local_18,
+                (rgp.world,((rgp.world)->dpvs).surfaces + surfIndex,surfIndex,
                  R_AddShadowSurfaceToPrimaryLight);
     }
   }
@@ -396,7 +396,7 @@ void __cdecl R_SetPrimaryLightShadowSurfaces(void)
 
 // 00AC9FC0  R_GetWorldDrawSurf  (gfx_d3d/r_drawsurf.cpp:529)
 
-GfxDrawSurf __cdecl R_GetWorldDrawSurf(GfxSurface *param_1)
+GfxDrawSurf __cdecl R_GetWorldDrawSurf(GfxSurface *worldSurf)
 
 {
   uint uVar1;
@@ -408,11 +408,11 @@ GfxDrawSurf __cdecl R_GetWorldDrawSurf(GfxSurface *param_1)
   uint extraout_EDX;
   GfxDrawSurf GVar5;
   
-  uVar1 = *(uint *)&(param_1->material->info).drawSurf;
-  uVar2 = *(uint *)((int)&(param_1->material->info).drawSurf + 4);
+  uVar1 = *(uint *)&(worldSurf->material->info).drawSurf;
+  uVar2 = *(uint *)((int)&(worldSurf->material->info).drawSurf + 4);
   _allshl();
   _aullshr();
-  if ((extraout_EAX_00 & 0xff) != (uint)param_1->primaryLightIndex) {
+  if ((extraout_EAX_00 & 0xff) != (uint)worldSurf->primaryLightIndex) {
     _aullshr();
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x217,1,
                              "drawSurf.fields.primaryLightIndex == worldSurf->primaryLightIndex\n\t%i, %i"
@@ -443,7 +443,10 @@ void __cdecl R_SortWorldSurfaces(void)
   GfxDrawSurf GVar6;
   undefined4 local_2c;
   undefined4 local_28;
-  uint local_20;
+  uint surfIndex;
+  uint worldSurfCount;
+  tlNamedEventMarker marker;
+  GfxSurface *worldSurfArray;
   
   if (rgp.world == (GfxWorld *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x226,0,
@@ -486,17 +489,18 @@ void __cdecl R_SortWorldSurfaces(void)
       return;
     }
   }
-  for (local_20 = 0; local_20 < uVar2; local_20 = local_20 + 1) {
-    GVar6 = R_GetWorldDrawSurf(pGVar1 + local_20);
+  for (surfIndex = 0; surfIndex < uVar2; surfIndex = surfIndex + 1) {
+    GVar6 = R_GetWorldDrawSurf(pGVar1 + surfIndex);
     local_2c = (undefined4)GVar6.packed;
     local_28 = (undefined4)((ulonglong)GVar6 >> 0x20);
     pGVar3 = ((rgp.world)->dpvs).surfaceMaterials;
-    *(undefined4 *)(pGVar3 + local_20) = local_2c;
-    *(undefined4 *)((int)pGVar3 + local_20 * 8 + 4) = local_28;
+    *(undefined4 *)(pGVar3 + surfIndex) = local_2c;
+    *(undefined4 *)((int)pGVar3 + surfIndex * 8 + 4) = local_28;
     _aullshr();
-    if (((extraout_EAX & 1) != 0) && ((pGVar1[local_20].flags & 1) != 0)) {
-      ((rgp.world)->dpvs).surfaceCastsSunShadow[local_20 >> 5] =
-           1 << ((byte)local_20 & 0x1f) | ((rgp.world)->dpvs).surfaceCastsSunShadow[local_20 >> 5];
+    if (((extraout_EAX & 1) != 0) && ((pGVar1[surfIndex].flags & 1) != 0)) {
+      ((rgp.world)->dpvs).surfaceCastsSunShadow[surfIndex >> 5] =
+           1 << ((byte)surfIndex & 0x1f) | ((rgp.world)->dpvs).surfaceCastsSunShadow[surfIndex >> 5]
+      ;
     }
   }
   R_SetPrimaryLightShadowSurfaces();
@@ -506,24 +510,27 @@ void __cdecl R_SortWorldSurfaces(void)
 
 // 00ACA510  R_AllocFxDrawSurf  (gfx_d3d/r_drawsurf.cpp:581)
 
-GfxDrawSurf * __cdecl R_AllocFxDrawSurf(uint param_1)
+GfxDrawSurf * __cdecl R_AllocFxDrawSurf(uint region)
 
 {
   long *plVar1;
   int iVar2;
   GfxDrawSurf *pGVar3;
+  GfxDrawSurf *drawSurf;
+  uint maxCount;
+  int drawSurfCount;
   
-  plVar1 = scene.drawSurfCount + param_1;
+  plVar1 = scene.drawSurfCount + region;
   LOCK();
   iVar2 = *plVar1;
   *plVar1 = *plVar1 + 1;
   UNLOCK();
-  if (iVar2 < scene.maxDrawSurfCount[param_1]) {
-    pGVar3 = scene.drawSurfs[param_1] + iVar2;
+  if (iVar2 < scene.maxDrawSurfCount[region]) {
+    pGVar3 = scene.drawSurfs[region] + iVar2;
   }
   else {
     LOCK();
-    scene.drawSurfCount[param_1] = scene.drawSurfCount[param_1] + -1;
+    scene.drawSurfCount[region] = scene.drawSurfCount[region] + -1;
     UNLOCK();
     R_WarnOncePerFrame(R_WARN_MAX_FX_DRAWSURFS);
     pGVar3 = (GfxDrawSurf *)0x0;
@@ -534,19 +541,19 @@ GfxDrawSurf * __cdecl R_AllocFxDrawSurf(uint param_1)
 
 // 00ACA590  R_GetMaterialSortKey  (gfx_d3d/r_drawsurf.cpp:613)
 
-uchar __cdecl R_GetMaterialSortKey(Material *param_1)
+uchar __cdecl R_GetMaterialSortKey(Material *material)
 
 {
-  return (param_1->info).sortKey;
+  return (material->info).sortKey;
 }
 
 
 // 00ACA5A0  R_GetMaterialInfoPacked  (gfx_d3d/r_drawsurf.cpp:618)
 
-ulong64 __cdecl R_GetMaterialInfoPacked(Material *param_1)
+ulong64 __cdecl R_GetMaterialInfoPacked(Material *material)
 
 {
-  return (param_1->info).drawSurf.packed;
+  return (material->info).drawSurf.packed;
 }
 
 
@@ -554,8 +561,8 @@ ulong64 __cdecl R_GetMaterialInfoPacked(Material *param_1)
 
 void __cdecl
 R_AddCodeMeshDrawSurf
-          (Material *param_1,r_double_index_t *param_2,uint param_3,uint param_4,uint param_5,
-          char *param_6,uint param_7)
+          (Material *material,r_double_index_t *indices,uint indexCount,uint argOffset,uint argCount
+          ,char *fxName,uint region)
 
 {
   FxCodeMeshData *pFVar1;
@@ -566,17 +573,22 @@ R_AddCodeMeshDrawSurf
   int extraout_EAX;
   MaterialTechnique *pMVar6;
   long *plVar7;
-  uint uVar8;
-  GfxDrawSurf *pGVar9;
+  uint region_00;
+  GfxDrawSurf *pGVar8;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
-  ulong64 uVar10;
+  ulong64 uVar9;
+  undefined4 uVar10;
   undefined4 uVar11;
   undefined4 uVar12;
-  undefined4 uVar13;
+  FxCodeMeshData *localCodeMesh;
+  GfxDrawSurf *drawSurf;
+  FxCodeMeshData *codeMesh;
+  GfxDrawSurf *localDrawSurf;
+  uint codeMeshIndex;
   
-  if ((param_3 == 0) &&
+  if ((indexCount == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x27b,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -591,19 +603,19 @@ R_AddCodeMeshDrawSurf
     return;
   }
   _aullshr();
-  uVar13 = 0;
-  uVar12 = 4;
-  uVar11 = 0;
+  uVar12 = 0;
+  uVar11 = 4;
+  uVar10 = 0;
   _allmul();
-  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != param_1) &&
+  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x27f,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pMVar6 = Material_GetTechnique(param_1,gfxDrawMethod.emissiveTechType);
-  if ((pMVar6 == (MaterialTechnique *)0x0) || (((param_1->info).gameFlags & 2) != 0)) {
+  pMVar6 = Material_GetTechnique(material,gfxDrawMethod.emissiveTechType);
+  if ((pMVar6 == (MaterialTechnique *)0x0) || (((material->info).gameFlags & 2) != 0)) {
     if (((r_fullbright == (dvar_s *)0x0) || (r_lightConflicts == (dvar_s *)0x0)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x285,
                                  0,"%s"), !bVar4)) {
@@ -624,42 +636,42 @@ R_AddCodeMeshDrawSurf
     UNLOCK();
     if (uVar2 < 0x800) {
       pFVar1 = frontEndDataOut->codeMeshes + uVar2;
-      pFVar1->triCount = param_3 / 3;
-      pFVar1->indices = param_2->value;
-      if (((param_5 == 0) && (param_4 != 0)) &&
+      pFVar1->triCount = indexCount / 3;
+      pFVar1->indices = indices->value;
+      if (((argCount == 0) && (argOffset != 0)) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                    0x2a8,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
-        (*pcVar3)(uVar11,uVar12,uVar13);
+        (*pcVar3)(uVar10,uVar11,uVar12);
         return;
       }
-      if ((0xff < param_4) &&
+      if ((0xff < argOffset) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                    0x2a9,0,"%s\n\t(argOffset) = %i"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      pFVar1->argCount = (ushort)param_5;
-      if ((pFVar1->argCount != param_5) &&
+      pFVar1->argCount = (ushort)argCount;
+      if ((pFVar1->argCount != argCount) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                    0x2ab,0,"%s\n\t(argCount) = %i"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      pFVar1->argOffset = (ushort)param_4;
-      if ((pFVar1->argOffset != param_4) &&
+      pFVar1->argOffset = (ushort)argOffset;
+      if ((pFVar1->argOffset != argOffset) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                    0x2ad,0,"%s\n\t(argOffset) = %i"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      uVar5 = R_GetMaterialSortKey(param_1);
-      uVar8 = (uVar5 == '0') + param_7 + ((uVar5 != '\x18') - 1 & 2);
-      pGVar9 = R_AllocFxDrawSurf(uVar8);
-      if (pGVar9 != (GfxDrawSurf *)0x0) {
+      uVar5 = R_GetMaterialSortKey(material);
+      region_00 = (uVar5 == '0') + region + ((uVar5 != '\x18') - 1 & 2);
+      pGVar8 = R_AllocFxDrawSurf(region_00);
+      if (pGVar8 != (GfxDrawSurf *)0x0) {
         if ((0xffff < uVar2) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                      0x2bf,0,
@@ -669,14 +681,14 @@ R_AddCodeMeshDrawSurf
           (*pcVar3)();
           return;
         }
-        uVar10 = R_GetMaterialInfoPacked(param_1);
-        pGVar9->packed = uVar10;
-        *(uint *)pGVar9 = *(uint *)pGVar9 & 0xffff0000 | uVar2 & 0xffff;
-        *(undefined4 *)((int)pGVar9 + 4) = *(undefined4 *)((int)pGVar9 + 4);
-        *(undefined4 *)pGVar9 = *(undefined4 *)pGVar9;
-        *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) & 0xff87ffff | 0x580000;
-        *(undefined4 *)pGVar9 = *(undefined4 *)pGVar9;
-        *(undefined4 *)((int)pGVar9 + 4) = *(undefined4 *)((int)pGVar9 + 4);
+        uVar9 = R_GetMaterialInfoPacked(material);
+        pGVar8->packed = uVar9;
+        *(uint *)pGVar8 = *(uint *)pGVar8 & 0xffff0000 | uVar2 & 0xffff;
+        *(undefined4 *)((int)pGVar8 + 4) = *(undefined4 *)((int)pGVar8 + 4);
+        *(undefined4 *)pGVar8 = *(undefined4 *)pGVar8;
+        *(uint *)((int)pGVar8 + 4) = *(uint *)((int)pGVar8 + 4) & 0xff87ffff | 0x580000;
+        *(undefined4 *)pGVar8 = *(undefined4 *)pGVar8;
+        *(undefined4 *)((int)pGVar8 + 4) = *(undefined4 *)((int)pGVar8 + 4);
         _aullshr();
         if (((extraout_EAX_00 & 3) != 2) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
@@ -685,7 +697,7 @@ R_AddCodeMeshDrawSurf
           (*pcVar3)();
           return;
         }
-        if (((uVar8 != 0xd) && (uVar8 != 0x10)) && (pGVar9 != scene.drawSurfs[uVar8])) {
+        if (((region_00 != 0xd) && (region_00 != 0x10)) && (pGVar8 != scene.drawSurfs[region_00])) {
           _aullshr();
           _aullshr();
           if (((extraout_EAX_01 & 0x3f) < (extraout_EAX_02 & 0x3f)) &&
@@ -710,8 +722,8 @@ R_AddCodeMeshDrawSurf
 
 void __cdecl
 R_AddRopeCodeMeshDrawSurf
-          (Material *param_1,r_double_index_t *param_2,uint param_3,uint param_4,uint param_5,
-          uint param_6,uint param_7)
+          (Material *material,r_double_index_t *indices,uint indexCount,uint argOffset,uint argCount
+          ,uint primaryLightIndex,uint drawsurfRegion)
 
 {
   FxCodeMeshData *pFVar1;
@@ -726,8 +738,13 @@ R_AddRopeCodeMeshDrawSurf
   ulong64 uVar7;
   undefined4 uVar8;
   undefined4 uVar9;
+  FxCodeMeshData *localCodeMesh;
+  GfxDrawSurf *drawSurf;
+  FxCodeMeshData *codeMesh;
+  GfxDrawSurf *localDrawSurf;
+  uint codeMeshIndex;
   
-  if ((param_3 == 0) &&
+  if ((indexCount == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x2dc,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -743,7 +760,7 @@ R_AddRopeCodeMeshDrawSurf
   }
   _aullshr();
   _allmul();
-  if (*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != param_1) {
+  if (*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) {
     _aullshr();
     uVar9 = 0;
     uVar8 = 4;
@@ -765,39 +782,39 @@ R_AddRopeCodeMeshDrawSurf
   UNLOCK();
   if (uVar2 < 0x800) {
     pFVar1 = frontEndDataOut->codeMeshes + uVar2;
-    pFVar1->triCount = param_3 / 3;
-    pFVar1->indices = param_2->value;
-    if (((param_5 == 0) && (param_4 != 0)) &&
+    pFVar1->triCount = indexCount / 3;
+    pFVar1->indices = indices->value;
+    if (((argCount == 0) && (argOffset != 0)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x303,
                                  0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((0xff < param_4) &&
+    if ((0xff < argOffset) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x304,
                                  0,"%s\n\t(argOffset) = %i"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    pFVar1->argCount = (ushort)param_5;
-    if ((pFVar1->argCount != param_5) &&
+    pFVar1->argCount = (ushort)argCount;
+    if ((pFVar1->argCount != argCount) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x306,
                                  0,"%s\n\t(argCount) = %i"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    pFVar1->argOffset = (ushort)param_4;
-    if ((pFVar1->argOffset != param_4) &&
+    pFVar1->argOffset = (ushort)argOffset;
+    if ((pFVar1->argOffset != argOffset) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x308,
                                  0,"%s\n\t(argOffset) = %i"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    pGVar5 = R_AllocFxDrawSurf(param_7);
+    pGVar5 = R_AllocFxDrawSurf(drawsurfRegion);
     if (pGVar5 != (GfxDrawSurf *)0x0) {
       if ((0xffff < uVar2) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
@@ -808,7 +825,7 @@ R_AddRopeCodeMeshDrawSurf
         (*pcVar3)();
         return;
       }
-      uVar7 = R_GetMaterialInfoPacked(param_1);
+      uVar7 = R_GetMaterialInfoPacked(material);
       pGVar5->packed = uVar7;
       *(uint *)pGVar5 = *(uint *)pGVar5 & 0xffff0000 | uVar2 & 0xffff;
       *(undefined4 *)((int)pGVar5 + 4) = *(undefined4 *)((int)pGVar5 + 4);
@@ -833,8 +850,8 @@ R_AddRopeCodeMeshDrawSurf
 // 00ACA920  R_AddGlassDrawSurf  (gfx_d3d/r_drawsurf.cpp:811)
 
 void __cdecl
-R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,uint param_5,
-                  uint param_6,uint param_7)
+R_AddGlassDrawSurf(Material *material,ushort *indices,uint indexCount,uint lightHandle,
+                  uint primaryLightIndex,uint reflectionProbeIndex,uint drawsurfRegion)
 
 {
   FxCodeMeshData *pFVar1;
@@ -851,8 +868,13 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
   ulong64 uVar7;
   undefined4 uVar8;
   undefined4 uVar9;
+  FxCodeMeshData *localCodeMesh;
+  GfxDrawSurf *drawSurf;
+  FxCodeMeshData *codeMesh;
+  GfxDrawSurf *localDrawSurf;
+  uint codeMeshIndex;
   
-  if (param_3 == 0) {
+  if (indexCount == 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x334,0,
                              "%s");
     if (!bVar4) {
@@ -863,7 +885,7 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
   }
   _aullshr();
   _allmul();
-  if (*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != param_1) {
+  if (*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) {
     _aullshr();
     uVar9 = 0;
     uVar8 = 4;
@@ -885,12 +907,12 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
   UNLOCK();
   if (uVar2 < 0x800) {
     pFVar1 = frontEndDataOut->codeMeshes + uVar2;
-    pFVar1->triCount = param_3 / 3;
-    pFVar1->indices = param_2;
+    pFVar1->triCount = indexCount / 3;
+    pFVar1->indices = indices;
     pFVar1->argCount = 0;
     pFVar1->argOffset = 0;
-    pFVar1->lightHandle = param_4;
-    pGVar5 = R_AllocFxDrawSurf(param_7);
+    pFVar1->lightHandle = lightHandle;
+    pGVar5 = R_AllocFxDrawSurf(drawsurfRegion);
     if (pGVar5 != (GfxDrawSurf *)0x0) {
       if (0xffff < uVar2) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x36d,
@@ -903,7 +925,7 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
           return;
         }
       }
-      uVar7 = R_GetMaterialInfoPacked(param_1);
+      uVar7 = R_GetMaterialInfoPacked(material);
       pGVar5->packed = uVar7;
       *(uint *)pGVar5 = *(uint *)pGVar5 & 0xffff0000 | uVar2 & 0xffff;
       *(undefined4 *)((int)pGVar5 + 4) = *(undefined4 *)((int)pGVar5 + 4);
@@ -932,21 +954,21 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
 
 void __cdecl
 R_AddMarkMeshDrawSurf
-          (Material *param_1,GfxMarkContext *param_2,ushort *param_3,uint param_4,float *param_5,
-          uint param_6)
+          (Material *material,GfxMarkContext *context,ushort *indices,uint indexCount,
+          float *hitNormal,uint visLightsMask)
 
 {
-  uint uVar1;
-  FxMarkMeshData *pFVar2;
-  uint uVar3;
-  uchar uVar4;
-  code *pcVar5;
+  uint region_00;
+  FxMarkMeshData *pFVar1;
+  uint uVar2;
+  uchar uVar3;
+  code *pcVar4;
+  bool bVar5;
   bool bVar6;
-  bool bVar7;
   int extraout_EAX;
-  MaterialTechnique *pMVar8;
-  uint uVar9;
-  GfxDrawSurf *pGVar10;
+  MaterialTechnique *pMVar7;
+  uint uVar8;
+  GfxDrawSurf *pGVar9;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
@@ -956,123 +978,129 @@ R_AddMarkMeshDrawSurf
   uint extraout_EAX_06;
   uint extraout_EAX_07;
   uint extraout_EAX_08;
-  long *plVar11;
-  uint uVar12;
+  long *plVar10;
+  uint uVar11;
   uint extraout_EDX;
   uint extraout_EDX_00;
   uint extraout_EDX_01;
   uint extraout_EDX_02;
   uint extraout_EDX_03;
+  undefined4 uVar12;
   undefined4 uVar13;
   undefined4 uVar14;
-  undefined4 uVar15;
+  bool isForSeeThruBulletHoleDecal;
+  GfxDrawSurf *drawSurf;
+  uchar refLitTechType;
+  uint region;
+  uint markMeshIndex;
+  FxMarkMeshData *markMesh;
   
   if ((g_processMarkMesh == 0) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x386,0,
-                               "%s"), !bVar6)) {
-    pcVar5 = (code *)swi(3);
-    (*pcVar5)();
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x386,0,
+                               "%s"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)();
     return;
   }
   _aullshr();
-  uVar15 = 0;
-  uVar14 = 4;
-  uVar13 = 0;
+  uVar14 = 0;
+  uVar13 = 4;
+  uVar12 = 0;
   _allmul();
-  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != param_1) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x387,0,
-                               "%s"), !bVar6)) {
-    pcVar5 = (code *)swi(3);
-    (*pcVar5)(uVar13,uVar14,uVar15);
+  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x387,0,
+                               "%s"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)(uVar12,uVar13,uVar14);
     return;
   }
-  pMVar8 = Material_GetTechnique(param_1,gfxDrawMethod.litTechType[0xc][0][0][0]);
-  if (pMVar8 == (MaterialTechnique *)0x0) {
+  pMVar7 = Material_GetTechnique(material,gfxDrawMethod.litTechType[0xc][0][0][0]);
+  if (pMVar7 == (MaterialTechnique *)0x0) {
     R_WarnOncePerFrame(R_WARN_NONLIGHTMAP_MARK_MATERIAL);
   }
   else {
-    bVar6 = Material_IsForSeeThruBulletHoleDecal(param_1);
-    if ((bVar6) || (0x17 < (param_1->info).sortKey)) {
-      plVar11 = &frontEndDataOut->markMeshCount;
+    bVar5 = Material_IsForSeeThruBulletHoleDecal(material);
+    if ((bVar5) || (0x17 < (material->info).sortKey)) {
+      plVar10 = &frontEndDataOut->markMeshCount;
       LOCK();
-      uVar3 = *plVar11;
-      *plVar11 = *plVar11 + 1;
+      uVar2 = *plVar10;
+      *plVar10 = *plVar10 + 1;
       UNLOCK();
-      if (uVar3 < 0x600) {
-        pFVar2 = frontEndDataOut->markMeshes + uVar3;
-        pFVar2->triCount = param_4 / 3;
-        pFVar2->indices = param_3;
-        pFVar2->modelIndex = param_2->modelIndex;
-        pFVar2->modelTypeAndSurf = param_2->modelTypeAndSurf;
-        pFVar2->normal[0] = *param_5;
-        pFVar2->normal[1] = param_5[1];
-        pFVar2->normal[2] = param_5[2];
-        uVar4 = (param_1->info).sortKey;
-        uVar12 = (uVar4 != '\x18') - 1 & 2;
-        uVar9 = (uint)(uVar4 == '0');
-        uVar1 = uVar9 + 6 + uVar12;
-        pGVar10 = R_AllocFxDrawSurf(uVar1);
-        if (pGVar10 != (GfxDrawSurf *)0x0) {
-          if ((0xffff < uVar3) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
+      if (uVar2 < 0x600) {
+        pFVar1 = frontEndDataOut->markMeshes + uVar2;
+        pFVar1->triCount = indexCount / 3;
+        pFVar1->indices = indices;
+        pFVar1->modelIndex = context->modelIndex;
+        pFVar1->modelTypeAndSurf = context->modelTypeAndSurf;
+        pFVar1->normal[0] = *hitNormal;
+        pFVar1->normal[1] = hitNormal[1];
+        pFVar1->normal[2] = hitNormal[2];
+        uVar3 = (material->info).sortKey;
+        uVar11 = (uVar3 != '\x18') - 1 & 2;
+        uVar8 = (uint)(uVar3 == '0');
+        region_00 = uVar8 + 6 + uVar11;
+        pGVar9 = R_AllocFxDrawSurf(region_00);
+        if (pGVar9 != (GfxDrawSurf *)0x0) {
+          if ((0xffff < uVar2) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                        0x3b5,0,
                                        "markMeshIndex doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          *(undefined4 *)pGVar10 = *(undefined4 *)&(param_1->info).drawSurf;
-          *(undefined4 *)((int)pGVar10 + 4) = *(undefined4 *)((int)&(param_1->info).drawSurf + 4);
-          *(uint *)pGVar10 = *(uint *)pGVar10 & 0xffff0000 | uVar3 & 0xffff;
-          *(undefined4 *)((int)pGVar10 + 4) = *(undefined4 *)((int)pGVar10 + 4);
+          *(undefined4 *)pGVar9 = *(undefined4 *)&(material->info).drawSurf;
+          *(undefined4 *)((int)pGVar9 + 4) = *(undefined4 *)((int)&(material->info).drawSurf + 4);
+          *(uint *)pGVar9 = *(uint *)pGVar9 & 0xffff0000 | uVar2 & 0xffff;
+          *(undefined4 *)((int)pGVar9 + 4) = *(undefined4 *)((int)pGVar9 + 4);
           _allshl();
-          *(uint *)pGVar10 = *(uint *)pGVar10 & 0xfe0fffff | extraout_EAX_00;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) | extraout_EDX;
-          *(undefined4 *)pGVar10 = *(undefined4 *)pGVar10;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) & 0xff87ffff | 0x600000;
-          *(undefined4 *)pGVar10 = *(undefined4 *)pGVar10;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) & 0xfe7fffff | 0x1000000;
+          *(uint *)pGVar9 = *(uint *)pGVar9 & 0xfe0fffff | extraout_EAX_00;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) | extraout_EDX;
+          *(undefined4 *)pGVar9 = *(undefined4 *)pGVar9;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) & 0xff87ffff | 0x600000;
+          *(undefined4 *)pGVar9 = *(undefined4 *)pGVar9;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) & 0xfe7fffff | 0x1000000;
           _allshl();
-          *(uint *)pGVar10 = *(uint *)pGVar10 & 0xf1ffffff | extraout_EAX_01;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) | extraout_EDX_00;
+          *(uint *)pGVar9 = *(uint *)pGVar9 & 0xf1ffffff | extraout_EAX_01;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) | extraout_EDX_00;
           _allshl();
-          *(uint *)pGVar10 = *(uint *)pGVar10 | extraout_EAX_02;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) & 0xfff807ff | extraout_EDX_01;
+          *(uint *)pGVar9 = *(uint *)pGVar9 | extraout_EAX_02;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) & 0xfff807ff | extraout_EDX_01;
           _allshl();
-          *(uint *)pGVar10 = *(uint *)pGVar10 & 0xdfffffff | extraout_EAX_03;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) | extraout_EDX_02;
+          *(uint *)pGVar9 = *(uint *)pGVar9 & 0xdfffffff | extraout_EAX_03;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) | extraout_EDX_02;
           _allshl();
-          *(uint *)pGVar10 = *(uint *)pGVar10 & 0xbfffffff | extraout_EAX_04;
-          *(uint *)((int)pGVar10 + 4) = *(uint *)((int)pGVar10 + 4) | extraout_EDX_03;
-          if (((!bVar6) && (_aullshr(), (extraout_EAX_05 & 3) != 2)) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
-                                       0x3c8,1,"%s"), !bVar6)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          *(uint *)pGVar9 = *(uint *)pGVar9 & 0xbfffffff | extraout_EAX_04;
+          *(uint *)((int)pGVar9 + 4) = *(uint *)((int)pGVar9 + 4) | extraout_EDX_03;
+          if (((!bVar5) && (_aullshr(), (extraout_EAX_05 & 3) != 2)) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
+                                       0x3c8,1,"%s"), !bVar5)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
           _aullshr();
-          if ((extraout_EAX_06 & 7) != (uint)param_2->reflectionProbeIndex) {
+          if ((extraout_EAX_06 & 7) != (uint)context->reflectionProbeIndex) {
             _aullshr();
-            bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
+            bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                                      0x3ca,1,
                                      "drawSurf->fields.reflectionProbeIndex == context->reflectionProbeIndex\n\t%i, %i"
                                     );
-            if (!bVar6) {
-              pcVar5 = (code *)swi(3);
-              (*pcVar5)();
+            if (!bVar5) {
+              pcVar4 = (code *)swi(3);
+              (*pcVar4)();
               return;
             }
           }
-          if ((uVar1 != 6) && (pGVar10 != scene.drawSurfs[uVar12 + uVar9 + 6])) {
+          if ((region_00 != 6) && (pGVar9 != scene.drawSurfs[uVar11 + uVar8 + 6])) {
             _aullshr();
             _aullshr();
             if (((extraout_EAX_07 & 0x3f) < (extraout_EAX_08 & 0x3f)) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp"
-                                         ,0x3cb,1,"%s\n\t(region) = %i"), !bVar6)) {
-              pcVar5 = (code *)swi(3);
-              (*pcVar5)();
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp"
+                                         ,0x3cb,1,"%s\n\t(region) = %i"), !bVar5)) {
+              pcVar4 = (code *)swi(3);
+              (*pcVar4)();
               return;
             }
           }
@@ -1092,91 +1120,94 @@ R_AddMarkMeshDrawSurf
 
 // 00ACB0A0  R_AddParticleCloudDrawSurf  (gfx_d3d/r_drawsurf.cpp:1002)
 
-bool __cdecl R_AddParticleCloudDrawSurf(uint param_1,Material *param_2)
+bool __cdecl R_AddParticleCloudDrawSurf(uint cloudIndex,Material *material)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  uchar uVar5;
+  uint region_00;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  uchar uVar4;
   int extraout_EAX;
-  MaterialTechnique *pMVar6;
-  GfxDrawSurf *pGVar7;
+  MaterialTechnique *pMVar5;
+  GfxDrawSurf *pGVar6;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
-  uint uVar8;
-  ulong64 uVar9;
+  uint uVar7;
+  ulong64 uVar8;
+  undefined4 uVar9;
   undefined4 uVar10;
   undefined4 uVar11;
-  undefined4 uVar12;
+  GfxDrawSurf *drawSurf;
+  uint region;
+  GfxDrawSurf *localDrawSurf;
   
-  if (((uint)frontEndDataOut->cloudCount <= param_1) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x3f2,0,
+  if (((uint)frontEndDataOut->cloudCount <= cloudIndex) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x3f2,0,
                                "cloudIndex doesn\'t index frontEndDataOut->cloudCount\n\t%i not in [0, %i)"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    uVar4 = (*pcVar2)();
-    return (bool)uVar4;
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
   _aullshr();
-  uVar12 = 0;
-  uVar11 = 4;
-  uVar10 = 0;
+  uVar11 = 0;
+  uVar10 = 4;
+  uVar9 = 0;
   _allmul();
-  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != param_2) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x3f3,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    uVar4 = (*pcVar2)(uVar10,uVar11,uVar12);
-    return (bool)uVar4;
+  if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x3f3,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)(uVar9,uVar10,uVar11);
+    return (bool)uVar3;
   }
-  pMVar6 = Material_GetTechnique(param_2,gfxDrawMethod.emissiveTechType);
-  if (pMVar6 == (MaterialTechnique *)0x0) {
+  pMVar5 = Material_GetTechnique(material,gfxDrawMethod.emissiveTechType);
+  if (pMVar5 == (MaterialTechnique *)0x0) {
     R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL);
-    bVar3 = false;
+    bVar2 = false;
   }
   else {
-    uVar5 = R_GetMaterialSortKey(param_2);
-    uVar8 = (uVar5 != '\x18') - 1 & 2;
-    uVar1 = (uVar5 == '0') + 0xd + uVar8;
-    pGVar7 = R_AllocFxDrawSurf(uVar1);
-    if (pGVar7 == (GfxDrawSurf *)0x0) {
-      bVar3 = false;
+    uVar4 = R_GetMaterialSortKey(material);
+    uVar7 = (uVar4 != '\x18') - 1 & 2;
+    region_00 = (uVar4 == '0') + 0xd + uVar7;
+    pGVar6 = R_AllocFxDrawSurf(region_00);
+    if (pGVar6 == (GfxDrawSurf *)0x0) {
+      bVar2 = false;
     }
     else {
-      uVar9 = R_GetMaterialInfoPacked(param_2);
-      pGVar7->packed = uVar9;
-      *(uint *)pGVar7 = *(uint *)pGVar7 & 0xffff0000 | param_1 & 0xffff;
-      *(undefined4 *)((int)pGVar7 + 4) = *(undefined4 *)((int)pGVar7 + 4);
-      *(undefined4 *)pGVar7 = *(undefined4 *)pGVar7;
-      *(uint *)((int)pGVar7 + 4) = *(uint *)((int)pGVar7 + 4) & 0xff87ffff | 0x680000;
-      *(undefined4 *)pGVar7 = *(undefined4 *)pGVar7;
-      *(undefined4 *)((int)pGVar7 + 4) = *(undefined4 *)((int)pGVar7 + 4);
+      uVar8 = R_GetMaterialInfoPacked(material);
+      pGVar6->packed = uVar8;
+      *(uint *)pGVar6 = *(uint *)pGVar6 & 0xffff0000 | cloudIndex & 0xffff;
+      *(undefined4 *)((int)pGVar6 + 4) = *(undefined4 *)((int)pGVar6 + 4);
+      *(undefined4 *)pGVar6 = *(undefined4 *)pGVar6;
+      *(uint *)((int)pGVar6 + 4) = *(uint *)((int)pGVar6 + 4) & 0xff87ffff | 0x680000;
+      *(undefined4 *)pGVar6 = *(undefined4 *)pGVar6;
+      *(undefined4 *)((int)pGVar6 + 4) = *(undefined4 *)((int)pGVar6 + 4);
       _aullshr();
       if (((extraout_EAX_00 & 3) != 2) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
-                                   0x409,1,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        uVar4 = (*pcVar2)();
-        return (bool)uVar4;
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
+                                   0x409,1,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        uVar3 = (*pcVar1)();
+        return (bool)uVar3;
       }
-      if ((uVar1 != 0xd) && (pGVar7 != scene.drawSurfs[uVar8 + (uVar5 == '0') + 0xd])) {
+      if ((region_00 != 0xd) && (pGVar6 != scene.drawSurfs[uVar7 + (uVar4 == '0') + 0xd])) {
         _aullshr();
         _aullshr();
         if (((extraout_EAX_01 & 0x3f) < (extraout_EAX_02 & 0x3f)) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
-                                     0x40b,1,"%s\n\t(region) = %i"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          uVar4 = (*pcVar2)();
-          return (bool)uVar4;
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
+                                     0x40b,1,"%s\n\t(region) = %i"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          uVar3 = (*pcVar1)();
+          return (bool)uVar3;
         }
       }
-      bVar3 = true;
+      bVar2 = true;
     }
   }
-  return bVar3;
+  return bVar2;
 }
 
 
@@ -1246,7 +1277,7 @@ void __cdecl R_EndMarkMeshVerts(void)
 
 // 00ACB3C0  R_ReserveCodeMeshIndices  (gfx_d3d/r_drawsurf.cpp:1159)
 
-bool __cdecl R_ReserveCodeMeshIndices(int param_1,r_double_index_t **param_2)
+bool __cdecl R_ReserveCodeMeshIndices(int indexCount,r_double_index_t **indicesOut)
 
 {
   code *pcVar1;
@@ -1260,7 +1291,7 @@ bool __cdecl R_ReserveCodeMeshIndices(int param_1,r_double_index_t **param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = R_ReserveMeshIndices(frontEndDataOut->codeMeshPtr,param_1,param_2,false);
+  bVar2 = R_ReserveMeshIndices(frontEndDataOut->codeMeshPtr,indexCount,indicesOut,false);
   if (!bVar2) {
     R_WarnOncePerFrame(R_WARN_MAX_CODE_INDS);
   }
@@ -1270,7 +1301,7 @@ bool __cdecl R_ReserveCodeMeshIndices(int param_1,r_double_index_t **param_2)
 
 // 00ACB430  R_ReserveCodeMeshVerts  (gfx_d3d/r_drawsurf.cpp:1210)
 
-bool __cdecl R_ReserveCodeMeshVerts(int param_1,ushort *param_2)
+bool __cdecl R_ReserveCodeMeshVerts(int vertCount,ushort *baseVertex)
 
 {
   code *pcVar1;
@@ -1284,7 +1315,7 @@ bool __cdecl R_ReserveCodeMeshVerts(int param_1,ushort *param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = R_ReserveMeshVerts(frontEndDataOut->codeMeshPtr,param_1,param_2);
+  bVar2 = R_ReserveMeshVerts(frontEndDataOut->codeMeshPtr,vertCount,baseVertex);
   if (!bVar2) {
     R_WarnOncePerFrame(R_WARN_MAX_CODE_VERTS);
   }
@@ -1294,7 +1325,7 @@ bool __cdecl R_ReserveCodeMeshVerts(int param_1,ushort *param_2)
 
 // 00ACB4A0  R_ReserveCodeMeshArgs  (gfx_d3d/r_drawsurf.cpp:1231)
 
-bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
+bool __cdecl R_ReserveCodeMeshArgs(int argCount,uint *argOffsetOut)
 
 {
   uint uVar1;
@@ -1302,6 +1333,8 @@ bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
   bool bVar3;
   undefined1 uVar4;
   uint uVar5;
+  uint newArgCount;
+  uint oldArgCount;
   
   if ((g_processCodeMesh == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x4d3,0,
@@ -1310,14 +1343,14 @@ bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_1 < 0) &&
+  if ((argCount < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x4d4,0,
                                "%s\n\t(argCount) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (uint *)0x0) &&
+  if ((argOffsetOut == (uint *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",0x4d5,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1326,26 +1359,26 @@ bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
   }
   do {
     uVar1 = frontEndDataOut->codeMeshArgsCount;
-    if (0xff < uVar1 + param_1) {
+    if (0xff < uVar1 + argCount) {
       R_WarnOncePerFrame(R_WARN_MAX_CODE_ARGS);
       return false;
     }
     LOCK();
     uVar5 = frontEndDataOut->codeMeshArgsCount;
     if (uVar1 == uVar5) {
-      frontEndDataOut->codeMeshArgsCount = uVar1 + param_1;
+      frontEndDataOut->codeMeshArgsCount = uVar1 + argCount;
       uVar5 = uVar1;
     }
     UNLOCK();
   } while (uVar5 != uVar1);
-  *param_2 = uVar1;
+  *argOffsetOut = uVar1;
   return true;
 }
 
 
 // 00ACB590  R_ReserveMarkMeshIndices  (gfx_d3d/r_drawsurf.cpp:1257)
 
-bool __cdecl R_ReserveMarkMeshIndices(int param_1,r_double_index_t **param_2)
+bool __cdecl R_ReserveMarkMeshIndices(int indexCount,r_double_index_t **indicesOut)
 
 {
   code *pcVar1;
@@ -1359,7 +1392,7 @@ bool __cdecl R_ReserveMarkMeshIndices(int param_1,r_double_index_t **param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = R_ReserveMeshIndices(&frontEndDataOut->markMesh,param_1,param_2,false);
+  bVar2 = R_ReserveMeshIndices(&frontEndDataOut->markMesh,indexCount,indicesOut,false);
   if (!bVar2) {
     R_WarnOncePerFrame(R_WARN_MAX_MARK_INDS);
   }
@@ -1369,7 +1402,7 @@ bool __cdecl R_ReserveMarkMeshIndices(int param_1,r_double_index_t **param_2)
 
 // 00ACB600  R_ReserveMarkMeshVerts  (gfx_d3d/r_drawsurf.cpp:1268)
 
-bool __cdecl R_ReserveMarkMeshVerts(int param_1,ushort *param_2)
+bool __cdecl R_ReserveMarkMeshVerts(int vertCount,ushort *baseVertex)
 
 {
   code *pcVar1;
@@ -1383,7 +1416,7 @@ bool __cdecl R_ReserveMarkMeshVerts(int param_1,ushort *param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = R_ReserveMeshVerts(&frontEndDataOut->markMesh,param_1,param_2);
+  bVar2 = R_ReserveMeshVerts(&frontEndDataOut->markMesh,vertCount,baseVertex);
   if (!bVar2) {
     R_WarnOncePerFrame(R_WARN_MAX_MARK_VERTS);
   }
@@ -1393,7 +1426,7 @@ bool __cdecl R_ReserveMarkMeshVerts(int param_1,ushort *param_2)
 
 // 00ACB670  R_GetCodeMeshArgs  (gfx_d3d/r_drawsurf.cpp:1280)
 
-float (*) [4] __cdecl R_GetCodeMeshArgs(uint param_1)
+float (*) [4] __cdecl R_GetCodeMeshArgs(uint argOffset)
 
 {
   code *pcVar1;
@@ -1409,13 +1442,13 @@ float (*) [4] __cdecl R_GetCodeMeshArgs(uint param_1)
       return pafVar3;
     }
   }
-  return frontEndDataOut->codeMeshArgs + param_1;
+  return frontEndDataOut->codeMeshArgs + argOffset;
 }
 
 
 // 00ACB6C0  R_GetCodeMeshVerts  (gfx_d3d/r_drawsurf.cpp:1286)
 
-GfxPackedVertex * __cdecl R_GetCodeMeshVerts(ushort param_1)
+GfxPackedVertex * __cdecl R_GetCodeMeshVerts(ushort baseVertex)
 
 {
   code *pcVar1;
@@ -1431,14 +1464,14 @@ GfxPackedVertex * __cdecl R_GetCodeMeshVerts(ushort param_1)
       return pGVar3;
     }
   }
-  pGVar3 = (GfxPackedVertex *)R_GetMeshVerts(frontEndDataOut->codeMeshPtr,param_1);
+  pGVar3 = (GfxPackedVertex *)R_GetMeshVerts(frontEndDataOut->codeMeshPtr,baseVertex);
   return pGVar3;
 }
 
 
 // 00ACB710  R_GetMarkMeshVerts  (gfx_d3d/r_drawsurf.cpp:1296)
 
-GfxWorldVertex * __cdecl R_GetMarkMeshVerts(ushort param_1)
+GfxWorldVertex * __cdecl R_GetMarkMeshVerts(ushort baseVertex)
 
 {
   code *pcVar1;
@@ -1454,7 +1487,7 @@ GfxWorldVertex * __cdecl R_GetMarkMeshVerts(ushort param_1)
       return pGVar3;
     }
   }
-  pGVar3 = (GfxWorldVertex *)R_GetMeshVerts(&frontEndDataOut->markMesh,param_1);
+  pGVar3 = (GfxWorldVertex *)R_GetMeshVerts(&frontEndDataOut->markMesh,baseVertex);
   return pGVar3;
 }
 

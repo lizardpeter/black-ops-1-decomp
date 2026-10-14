@@ -2,30 +2,30 @@
 
 // 007C5D70  Eval_PrepareBinaryOpSameTypes  (universal/eval.cpp:105)
 
-void __cdecl Eval_PrepareBinaryOpSameTypes(Eval *param_1)
+void __cdecl Eval_PrepareBinaryOpSameTypes(Eval *eval)
 
 {
   char *local_c;
   char *local_8;
   
-  if (param_1->valStackPos < 2) {
+  if (eval->valStackPos < 2) {
     local_8 = "missing operand (for example, \'a + \' or \' / b\')";
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_8,(_s__ThrowInfo *)&__TI2PAD);
   }
-  if ((param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING) &&
-     (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-    if (param_1->valStack[param_1->valStackPos + -2].type !=
-        param_1->valStack[param_1->valStackPos + -1].type) {
-      if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_INT) {
-        param_1->valStack[param_1->valStackPos + -2].u.d =
-             (double)param_1->valStack[param_1->valStackPos + -2].u.i;
-        param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_DOUBLE;
+  if ((eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING) &&
+     (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+    if (eval->valStack[eval->valStackPos + -2].type != eval->valStack[eval->valStackPos + -1].type)
+    {
+      if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_INT) {
+        eval->valStack[eval->valStackPos + -2].u.d =
+             (double)eval->valStack[eval->valStackPos + -2].u.i;
+        eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_DOUBLE;
       }
       else {
-        param_1->valStack[param_1->valStackPos + -1].u.d =
-             (double)param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStack[param_1->valStackPos + -1].type = EVAL_VALUE_DOUBLE;
+        eval->valStack[eval->valStackPos + -1].u.d =
+             (double)eval->valStack[eval->valStackPos + -1].u.i;
+        eval->valStack[eval->valStackPos + -1].type = EVAL_VALUE_DOUBLE;
       }
     }
     return;
@@ -38,28 +38,26 @@ void __cdecl Eval_PrepareBinaryOpSameTypes(Eval *param_1)
 
 // 007C5EF0  Eval_PrepareBinaryOpIntegers  (universal/eval.cpp:128)
 
-void __cdecl Eval_PrepareBinaryOpIntegers(Eval *param_1)
+void __cdecl Eval_PrepareBinaryOpIntegers(Eval *eval)
 
 {
   char *local_c;
   char *local_8;
   
-  if (param_1->valStackPos < 2) {
+  if (eval->valStackPos < 2) {
     local_8 = "missing operand (for example, \'a + \' or \' / b\')";
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_8,(_s__ThrowInfo *)&__TI2PAD);
   }
-  if ((param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING) &&
-     (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-    if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-      param_1->valStack[param_1->valStackPos + -2].u.i =
-           (int)param_1->valStack[param_1->valStackPos + -2].u.d;
-      param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+  if ((eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING) &&
+     (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+    if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+      eval->valStack[eval->valStackPos + -2].u.i = (int)eval->valStack[eval->valStackPos + -2].u.d;
+      eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
     }
-    if (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
-      param_1->valStack[param_1->valStackPos + -1].u.i =
-           (int)param_1->valStack[param_1->valStackPos + -1].u.d;
-      param_1->valStack[param_1->valStackPos + -1].type = EVAL_VALUE_INT;
+    if (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
+      eval->valStack[eval->valStackPos + -1].u.i = (int)eval->valStack[eval->valStackPos + -1].u.d;
+      eval->valStack[eval->valStackPos + -1].type = EVAL_VALUE_INT;
     }
     return;
   }
@@ -71,7 +69,7 @@ void __cdecl Eval_PrepareBinaryOpIntegers(Eval *param_1)
 
 // 007C6050  Eval_PrepareBinaryOpBoolean  (universal/eval.cpp:148)
 
-void __cdecl Eval_PrepareBinaryOpBoolean(Eval *param_1)
+void __cdecl Eval_PrepareBinaryOpBoolean(Eval *eval)
 
 {
   uint local_14;
@@ -79,30 +77,30 @@ void __cdecl Eval_PrepareBinaryOpBoolean(Eval *param_1)
   char *local_c;
   char *local_8;
   
-  if (param_1->valStackPos < 2) {
+  if (eval->valStackPos < 2) {
     local_8 = "missing operand (for example, \'a + \' or \' / b\')";
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_8,(_s__ThrowInfo *)&__TI2PAD);
   }
-  if ((param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING) &&
-     (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-    if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-      local_10 = (uint)(param_1->valStack[param_1->valStackPos + -2].u.d != 0.0);
-      *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_10;
-      param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+  if ((eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING) &&
+     (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+    if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+      local_10 = (uint)(eval->valStack[eval->valStackPos + -2].u.d != 0.0);
+      *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_10;
+      eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
     }
     else {
-      *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-           (uint)(param_1->valStack[param_1->valStackPos + -2].u.i != 0);
+      *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+           (uint)(eval->valStack[eval->valStackPos + -2].u.i != 0);
     }
-    if (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
-      local_14 = (uint)(param_1->valStack[param_1->valStackPos + -1].u.d != 0.0);
-      *(uint *)&param_1->valStack[param_1->valStackPos + -1].u = local_14;
-      param_1->valStack[param_1->valStackPos + -1].type = EVAL_VALUE_INT;
+    if (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
+      local_14 = (uint)(eval->valStack[eval->valStackPos + -1].u.d != 0.0);
+      *(uint *)&eval->valStack[eval->valStackPos + -1].u = local_14;
+      eval->valStack[eval->valStackPos + -1].type = EVAL_VALUE_INT;
     }
     else {
-      *(uint *)&param_1->valStack[param_1->valStackPos + -1].u =
-           (uint)(param_1->valStack[param_1->valStackPos + -1].u.i != 0);
+      *(uint *)&eval->valStack[eval->valStackPos + -1].u =
+           (uint)(eval->valStack[eval->valStackPos + -1].u.i != 0);
     }
     return;
   }
@@ -114,23 +112,23 @@ void __cdecl Eval_PrepareBinaryOpBoolean(Eval *param_1)
 
 // 007C4010  Eval_AnyMissingOperands  (universal/eval.cpp:177)
 
-bool __cdecl Eval_AnyMissingOperands(Eval *param_1)
+bool __cdecl Eval_AnyMissingOperands(Eval *eval)
 
 {
-  int local_c;
-  int local_8;
+  int opIndex;
+  int requiredOperandCount;
   
-  local_8 = 1;
-  for (local_c = 0; local_c < param_1->opStackPos; local_c = local_c + 1) {
-    local_8 = local_8 + s_consumedOperandCount[param_1->opStack[local_c]];
+  requiredOperandCount = 1;
+  for (opIndex = 0; opIndex < eval->opStackPos; opIndex = opIndex + 1) {
+    requiredOperandCount = requiredOperandCount + s_consumedOperandCount[eval->opStack[opIndex]];
   }
-  return local_8 != param_1->valStackPos;
+  return requiredOperandCount != eval->valStackPos;
 }
 
 
 // 007C4320  Eval_EvaluationStep  (universal/eval.cpp:193)
 
-bool __cdecl Eval_EvaluationStep(Eval *param_1)
+bool __cdecl Eval_EvaluationStep(Eval *eval)
 
 {
   <unnamed_type_u> *p<Var1;
@@ -182,35 +180,35 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
   char *local_18;
   char *local_14;
   
-  if (param_1->opStackPos == 0) {
+  if (eval->opStackPos == 0) {
     bVar5 = false;
   }
   else {
-    param_1->opStackPos = param_1->opStackPos + -1;
-    if (param_1->opStack[param_1->opStackPos] == EVAL_OP_LPAREN) {
+    eval->opStackPos = eval->opStackPos + -1;
+    if (eval->opStack[eval->opStackPos] == EVAL_OP_LPAREN) {
       bVar5 = true;
     }
     else {
-      if (param_1->opStack[param_1->opStackPos] == EVAL_OP_QUESTION) {
+      if (eval->opStack[eval->opStackPos] == EVAL_OP_QUESTION) {
         local_14 = "found \'?\' with no following \':\' in expression of type \'a ? b : c\'";
                     /* WARNING: Subroutine does not return */
         _CxxThrowException(&local_14,(_s__ThrowInfo *)&__TI2PAD);
       }
-      if (param_1->valStackPos == 0) {
+      if (eval->valStackPos == 0) {
         local_18 = "missing operand (for example, \'a + \' or \' / b\')";
                     /* WARNING: Subroutine does not return */
         _CxxThrowException(&local_18,(_s__ThrowInfo *)&__TI2PAD);
       }
-      local_1c = param_1->opStack[param_1->opStackPos] - EVAL_OP_COLON;
+      local_1c = eval->opStack[eval->opStackPos] - EVAL_OP_COLON;
       switch(local_1c) {
       case 0:
-        if (param_1->valStackPos < 3) {
+        if (eval->valStackPos < 3) {
           local_a0 = "missing operand (for example, \'a + \' or \' / b\')";
                     /* WARNING: Subroutine does not return */
           _CxxThrowException(&local_a0,(_s__ThrowInfo *)&__TI2PAD);
         }
-        if (param_1->valStack[param_1->valStackPos + -3].type == EVAL_VALUE_DOUBLE) {
-          if (param_1->valStack[param_1->valStackPos + -3].u.d == 0.0) {
+        if (eval->valStack[eval->valStackPos + -3].type == EVAL_VALUE_DOUBLE) {
+          if (eval->valStack[eval->valStackPos + -3].u.d == 0.0) {
             local_a4 = -1;
           }
           else {
@@ -219,28 +217,28 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
           local_a8 = local_a4;
         }
         else {
-          if (param_1->valStack[param_1->valStackPos + -3].type != EVAL_VALUE_INT) {
+          if (eval->valStack[eval->valStackPos + -3].type != EVAL_VALUE_INT) {
             local_ac = "can only switch on numbers";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_ac,(_s__ThrowInfo *)&__TI2PAD);
           }
-          local_a8 = -1 - (uint)(param_1->valStack[param_1->valStackPos + -3].u.i != 0);
+          local_a8 = -1 - (uint)(eval->valStack[eval->valStackPos + -3].u.i != 0);
         }
-        if ((param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_STRING) &&
-           (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_STRING)) {
-          free(*(void **)((int)param_1 + (param_1->valStackPos + (1 - local_a8)) * 0x10 + 0x1008));
+        if ((eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_STRING) &&
+           (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_STRING)) {
+          free(*(void **)((int)eval + (eval->valStackPos + (1 - local_a8)) * 0x10 + 0x1008));
         }
         else {
-          Eval_PrepareBinaryOpSameTypes(param_1);
+          Eval_PrepareBinaryOpSameTypes(eval);
         }
-        pEVar2 = param_1->valStack + param_1->valStackPos + local_a8;
-        pEVar3 = param_1->valStack + param_1->valStackPos + -3;
+        pEVar2 = eval->valStack + eval->valStackPos + local_a8;
+        pEVar3 = eval->valStack + eval->valStackPos + -3;
         pEVar3->type = pEVar2->type;
         *(undefined4 *)&pEVar3->field_0x4 = *(undefined4 *)&pEVar2->field_0x4;
         (pEVar3->u).i = (pEVar2->u).i;
         *(undefined4 *)((int)&pEVar3->u + 4) = *(undefined4 *)((int)&pEVar2->u + 4);
-        param_1->valStackPos = param_1->valStackPos + -2;
-        param_1->opStackPos = param_1->opStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -2;
+        eval->opStackPos = eval->opStackPos + -1;
         break;
       default:
         bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\eval.cpp",0x1e8,0,
@@ -252,23 +250,23 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
         uVar6 = (*pcVar4)();
         return (bool)uVar6;
       case 2:
-        if (((param_1->valStackPos < 2) ||
-            (param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
-           (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-          Eval_PrepareBinaryOpSameTypes(param_1);
-          if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-            param_1->valStack[param_1->valStackPos + -2].u.d =
-                 param_1->valStack[param_1->valStackPos + -2].u.d +
-                 param_1->valStack[param_1->valStackPos + -1].u.d;
+        if (((eval->valStackPos < 2) ||
+            (eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
+           (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+          Eval_PrepareBinaryOpSameTypes(eval);
+          if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+            eval->valStack[eval->valStackPos + -2].u.d =
+                 eval->valStack[eval->valStackPos + -2].u.d +
+                 eval->valStack[eval->valStackPos + -1].u.d;
           }
           else {
-            param_1->valStack[param_1->valStackPos + -2].u.s =
-                 param_1->valStack[param_1->valStackPos + -2].u.s +
-                 (int)param_1->valStack[param_1->valStackPos + -1].u.s;
+            eval->valStack[eval->valStackPos + -2].u.s =
+                 eval->valStack[eval->valStackPos + -2].u.s +
+                 (int)eval->valStack[eval->valStackPos + -1].u.s;
           }
         }
         else {
-          local_30 = param_1->valStack[param_1->valStackPos + -2].u.s;
+          local_30 = eval->valStack[eval->valStackPos + -2].u.s;
           local_38 = local_30 + 1;
           local_34 = local_30;
           do {
@@ -276,7 +274,7 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
             local_34 = local_34 + 1;
           } while (local_39 != '\0');
           local_48 = (int)local_34 - (int)local_38;
-          local_4c = param_1->valStack[param_1->valStackPos + -1].u.s;
+          local_4c = eval->valStack[eval->valStackPos + -1].u.s;
           local_54 = local_4c + 1;
           local_50 = local_4c;
           do {
@@ -287,324 +285,319 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
           local_44 = local_5c;
           local_40 = local_48;
           local_60 = malloc(local_48 + 1 + local_5c);
-          memcpy(local_60,(uchar *)param_1->valStack[param_1->valStackPos + -2].u.s,local_48);
-          memcpy(local_60 + local_48,(uchar *)param_1->valStack[param_1->valStackPos + -1].u.s,
+          memcpy(local_60,(uchar *)eval->valStack[eval->valStackPos + -2].u.s,local_48);
+          memcpy(local_60 + local_48,(uchar *)eval->valStack[eval->valStackPos + -1].u.s,
                  local_44 + 1);
-          free(param_1->valStack[param_1->valStackPos + -2].u.s);
-          free(param_1->valStack[param_1->valStackPos + -1].u.s);
-          param_1->valStack[param_1->valStackPos + -2].u.s = (char *)local_60;
+          free(eval->valStack[eval->valStackPos + -2].u.s);
+          free(eval->valStack[eval->valStackPos + -1].u.s);
+          eval->valStack[eval->valStackPos + -2].u.s = (char *)local_60;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 3:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               param_1->valStack[param_1->valStackPos + -2].u.d -
-               param_1->valStack[param_1->valStackPos + -1].u.d;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          eval->valStack[eval->valStackPos + -2].u.d =
+               eval->valStack[eval->valStackPos + -2].u.d -
+               eval->valStack[eval->valStackPos + -1].u.d;
         }
         else {
-          param_1->valStack[param_1->valStackPos + -2].u.s =
-               param_1->valStack[param_1->valStackPos + -2].u.s +
-               -param_1->valStack[param_1->valStackPos + -1].u.i;
+          eval->valStack[eval->valStackPos + -2].u.s =
+               eval->valStack[eval->valStackPos + -2].u.s +
+               -eval->valStack[eval->valStackPos + -1].u.i;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 4:
         break;
       case 5:
-        if (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_INT) {
-          param_1->valStack[param_1->valStackPos + -1].u.i =
-               -param_1->valStack[param_1->valStackPos + -1].u.i;
+        if (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_INT) {
+          eval->valStack[eval->valStackPos + -1].u.i = -eval->valStack[eval->valStackPos + -1].u.i;
         }
         else {
-          if (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_DOUBLE) {
+          if (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_DOUBLE) {
             local_20 = "cannot negate strings";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_20,(_s__ThrowInfo *)&__TI2PAD);
           }
-          param_1->valStack[param_1->valStackPos + -1].u =
-               (<unnamed_type_u>)
-               (param_1->valStack[param_1->valStackPos + -1].u ^ 0x8000000000000000);
+          eval->valStack[eval->valStackPos + -1].u =
+               (<unnamed_type_u>)(eval->valStack[eval->valStackPos + -1].u ^ 0x8000000000000000);
         }
         break;
       case 6:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               param_1->valStack[param_1->valStackPos + -2].u.d *
-               param_1->valStack[param_1->valStackPos + -1].u.d;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          eval->valStack[eval->valStackPos + -2].u.d =
+               eval->valStack[eval->valStackPos + -2].u.d *
+               eval->valStack[eval->valStackPos + -1].u.d;
         }
         else {
-          param_1->valStack[param_1->valStackPos + -2].u.i =
-               param_1->valStack[param_1->valStackPos + -2].u.i *
-               param_1->valStack[param_1->valStackPos + -1].u.i;
+          eval->valStack[eval->valStackPos + -2].u.i =
+               eval->valStack[eval->valStackPos + -2].u.i *
+               eval->valStack[eval->valStackPos + -1].u.i;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 7:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          if (param_1->valStack[param_1->valStackPos + -1].u.d == 0.0) {
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          if (eval->valStack[eval->valStackPos + -1].u.d == 0.0) {
             local_64 = "divide by zero";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_64,(_s__ThrowInfo *)&__TI2PAD);
           }
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               param_1->valStack[param_1->valStackPos + -2].u.d /
-               param_1->valStack[param_1->valStackPos + -1].u.d;
+          eval->valStack[eval->valStackPos + -2].u.d =
+               eval->valStack[eval->valStackPos + -2].u.d /
+               eval->valStack[eval->valStackPos + -1].u.d;
         }
         else {
-          if (param_1->valStack[param_1->valStackPos + -1].u.i == 0) {
+          if (eval->valStack[eval->valStackPos + -1].u.i == 0) {
             local_68 = "divide by zero";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_68,(_s__ThrowInfo *)&__TI2PAD);
           }
-          param_1->valStack[param_1->valStackPos + -2].u.i =
-               param_1->valStack[param_1->valStackPos + -2].u.i /
-               param_1->valStack[param_1->valStackPos + -1].u.i;
+          eval->valStack[eval->valStackPos + -2].u.i =
+               eval->valStack[eval->valStackPos + -2].u.i /
+               eval->valStack[eval->valStackPos + -1].u.i;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 8:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          if (param_1->valStack[param_1->valStackPos + -1].u.d == 0.0) {
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          if (eval->valStack[eval->valStackPos + -1].u.d == 0.0) {
             local_6c = "divide by zero";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_6c,(_s__ThrowInfo *)&__TI2PAD);
           }
           floor();
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               param_1->valStack[param_1->valStackPos + -2].u.d -
-               param_1->valStack[param_1->valStackPos + -1].u.d * (double)extraout_ST0;
+          eval->valStack[eval->valStackPos + -2].u.d =
+               eval->valStack[eval->valStackPos + -2].u.d -
+               eval->valStack[eval->valStackPos + -1].u.d * (double)extraout_ST0;
         }
         else {
-          if (param_1->valStack[param_1->valStackPos + -1].u.i == 0) {
+          if (eval->valStack[eval->valStackPos + -1].u.i == 0) {
             local_7c[0] = "divide by zero";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(local_7c,(_s__ThrowInfo *)&__TI2PAD);
           }
-          param_1->valStack[param_1->valStackPos + -2].u.i =
-               param_1->valStack[param_1->valStackPos + -2].u.i %
-               param_1->valStack[param_1->valStackPos + -1].u.i;
+          eval->valStack[eval->valStackPos + -2].u.i =
+               eval->valStack[eval->valStackPos + -2].u.i %
+               eval->valStack[eval->valStackPos + -1].u.i;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 9:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          iVar7 = param_1->valStackPos;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          iVar7 = eval->valStackPos;
           dVar8 = 2.0;
           __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),in_stack_ffffff48);
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               dVar8 * param_1->valStack[iVar7 + -2].u.d;
+          eval->valStack[eval->valStackPos + -2].u.d = dVar8 * eval->valStack[iVar7 + -2].u.d;
         }
         else {
-          param_1->valStack[param_1->valStackPos + -2].u.i =
-               param_1->valStack[param_1->valStackPos + -2].u.i <<
-               ((byte)param_1->valStack[param_1->valStackPos + -1].u.i & 0x1f);
+          eval->valStack[eval->valStackPos + -2].u.i =
+               eval->valStack[eval->valStackPos + -2].u.i <<
+               ((byte)eval->valStack[eval->valStackPos + -1].u.i & 0x1f);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 10:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          iVar7 = param_1->valStackPos;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          iVar7 = eval->valStackPos;
           dVar8 = 2.0;
           __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),in_stack_ffffff48);
-          param_1->valStack[param_1->valStackPos + -2].u.d =
-               dVar8 * param_1->valStack[iVar7 + -2].u.d;
+          eval->valStack[eval->valStackPos + -2].u.d = dVar8 * eval->valStack[iVar7 + -2].u.d;
         }
         else {
-          param_1->valStack[param_1->valStackPos + -2].u.i =
-               param_1->valStack[param_1->valStackPos + -2].u.i >>
-               ((byte)param_1->valStack[param_1->valStackPos + -1].u.i & 0x1f);
+          eval->valStack[eval->valStackPos + -2].u.i =
+               eval->valStack[eval->valStackPos + -2].u.i >>
+               ((byte)eval->valStack[eval->valStackPos + -1].u.i & 0x1f);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0xb:
-        if (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
-          param_1->valStack[param_1->valStackPos + -1].u.i =
-               (int)param_1->valStack[param_1->valStackPos + -1].u.d;
-          param_1->valStack[param_1->valStackPos + -1].type = EVAL_VALUE_INT;
+        if (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
+          eval->valStack[eval->valStackPos + -1].u.i =
+               (int)eval->valStack[eval->valStackPos + -1].u.d;
+          eval->valStack[eval->valStackPos + -1].type = EVAL_VALUE_INT;
         }
-        else if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_STRING) {
+        else if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_STRING) {
           local_2c = "cannot bitwise invert strings";
                     /* WARNING: Subroutine does not return */
           _CxxThrowException(&local_2c,(_s__ThrowInfo *)&__TI2PAD);
         }
-        param_1->valStack[param_1->valStackPos + -1].u.i =
-             ~param_1->valStack[param_1->valStackPos + -1].u.i;
+        eval->valStack[eval->valStackPos + -1].u.i = ~eval->valStack[eval->valStackPos + -1].u.i;
         break;
       case 0xc:
-        Eval_PrepareBinaryOpIntegers(param_1);
-        param_1->valStack[param_1->valStackPos + -2].u.i =
-             param_1->valStack[param_1->valStackPos + -2].u.i &
-             param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStackPos = param_1->valStackPos + -1;
+        Eval_PrepareBinaryOpIntegers(eval);
+        eval->valStack[eval->valStackPos + -2].u.i =
+             eval->valStack[eval->valStackPos + -2].u.i & eval->valStack[eval->valStackPos + -1].u.i
+        ;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0xd:
-        Eval_PrepareBinaryOpIntegers(param_1);
-        param_1->valStack[param_1->valStackPos + -2].u.i =
-             param_1->valStack[param_1->valStackPos + -2].u.i |
-             param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStackPos = param_1->valStackPos + -1;
+        Eval_PrepareBinaryOpIntegers(eval);
+        eval->valStack[eval->valStackPos + -2].u.i =
+             eval->valStack[eval->valStackPos + -2].u.i | eval->valStack[eval->valStackPos + -1].u.i
+        ;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0xe:
-        Eval_PrepareBinaryOpIntegers(param_1);
-        param_1->valStack[param_1->valStackPos + -2].u.i =
-             param_1->valStack[param_1->valStackPos + -2].u.i ^
-             param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStackPos = param_1->valStackPos + -1;
+        Eval_PrepareBinaryOpIntegers(eval);
+        eval->valStack[eval->valStackPos + -2].u.i =
+             eval->valStack[eval->valStackPos + -2].u.i ^ eval->valStack[eval->valStackPos + -1].u.i
+        ;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0xf:
-        if (param_1->valStack[param_1->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
-          local_24 = (uint)(param_1->valStack[param_1->valStackPos + -1].u.d == 0.0);
-          *(uint *)&param_1->valStack[param_1->valStackPos + -1].u = local_24;
+        if (eval->valStack[eval->valStackPos + -1].type == EVAL_VALUE_DOUBLE) {
+          local_24 = (uint)(eval->valStack[eval->valStackPos + -1].u.d == 0.0);
+          *(uint *)&eval->valStack[eval->valStackPos + -1].u = local_24;
         }
         else {
-          if (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_INT) {
+          if (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_INT) {
             local_28 = "cannot logical invert strings";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_28,(_s__ThrowInfo *)&__TI2PAD);
           }
-          *(uint *)&param_1->valStack[param_1->valStackPos + -1].u =
-               (uint)(param_1->valStack[param_1->valStackPos + -1].u.i == 0);
+          *(uint *)&eval->valStack[eval->valStackPos + -1].u =
+               (uint)(eval->valStack[eval->valStackPos + -1].u.i == 0);
         }
-        param_1->valStack[param_1->valStackPos + -1].type = EVAL_VALUE_INT;
+        eval->valStack[eval->valStackPos + -1].type = EVAL_VALUE_INT;
         break;
       case 0x10:
-        Eval_PrepareBinaryOpBoolean(param_1);
-        param_1->valStack[param_1->valStackPos + -2].u.i =
-             param_1->valStack[param_1->valStackPos + -2].u.i &
-             param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStackPos = param_1->valStackPos + -1;
+        Eval_PrepareBinaryOpBoolean(eval);
+        eval->valStack[eval->valStackPos + -2].u.i =
+             eval->valStack[eval->valStackPos + -2].u.i & eval->valStack[eval->valStackPos + -1].u.i
+        ;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x11:
-        Eval_PrepareBinaryOpBoolean(param_1);
-        param_1->valStack[param_1->valStackPos + -2].u.i =
-             param_1->valStack[param_1->valStackPos + -2].u.i |
-             param_1->valStack[param_1->valStackPos + -1].u.i;
-        param_1->valStackPos = param_1->valStackPos + -1;
+        Eval_PrepareBinaryOpBoolean(eval);
+        eval->valStack[eval->valStackPos + -2].u.i =
+             eval->valStack[eval->valStackPos + -2].u.i | eval->valStack[eval->valStackPos + -1].u.i
+        ;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x12:
-        if (((param_1->valStackPos < 2) ||
-            (param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
-           (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-          Eval_PrepareBinaryOpSameTypes(param_1);
-          if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-            local_84 = (uint)(param_1->valStack[param_1->valStackPos + -2].u.d ==
-                             param_1->valStack[param_1->valStackPos + -1].u.d);
-            *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_84;
-            param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+        if (((eval->valStackPos < 2) ||
+            (eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
+           (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+          Eval_PrepareBinaryOpSameTypes(eval);
+          if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+            local_84 = (uint)(eval->valStack[eval->valStackPos + -2].u.d ==
+                             eval->valStack[eval->valStackPos + -1].u.d);
+            *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_84;
+            eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
           }
           else {
-            *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-                 (uint)(param_1->valStack[param_1->valStackPos + -2].u.i ==
-                       param_1->valStack[param_1->valStackPos + -1].u.i);
+            *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+                 (uint)(eval->valStack[eval->valStackPos + -2].u.i ==
+                       eval->valStack[eval->valStackPos + -1].u.i);
           }
         }
         else {
-          iVar7 = _stricmp(param_1->valStack[param_1->valStackPos + -2].u.s,
-                           param_1->valStack[param_1->valStackPos + -1].u.s);
+          iVar7 = _stricmp(eval->valStack[eval->valStackPos + -2].u.s,
+                           eval->valStack[eval->valStackPos + -1].u.s);
           local_7d = 1 - (iVar7 != 0);
-          free(param_1->valStack[param_1->valStackPos + -2].u.s);
-          free(param_1->valStack[param_1->valStackPos + -1].u.s);
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = (uint)local_7d;
+          free(eval->valStack[eval->valStackPos + -2].u.s);
+          free(eval->valStack[eval->valStackPos + -1].u.s);
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = (uint)local_7d;
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x13:
-        if (((param_1->valStackPos < 2) ||
-            (param_1->valStack[param_1->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
-           (param_1->valStack[param_1->valStackPos + -1].type != EVAL_VALUE_STRING)) {
-          Eval_PrepareBinaryOpSameTypes(param_1);
-          if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-            local_8c = (uint)(param_1->valStack[param_1->valStackPos + -2].u.d !=
-                             param_1->valStack[param_1->valStackPos + -1].u.d);
-            *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_8c;
-            param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+        if (((eval->valStackPos < 2) ||
+            (eval->valStack[eval->valStackPos + -2].type != EVAL_VALUE_STRING)) ||
+           (eval->valStack[eval->valStackPos + -1].type != EVAL_VALUE_STRING)) {
+          Eval_PrepareBinaryOpSameTypes(eval);
+          if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+            local_8c = (uint)(eval->valStack[eval->valStackPos + -2].u.d !=
+                             eval->valStack[eval->valStackPos + -1].u.d);
+            *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_8c;
+            eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
           }
           else {
-            *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-                 (uint)(param_1->valStack[param_1->valStackPos + -2].u.i !=
-                       param_1->valStack[param_1->valStackPos + -1].u.i);
+            *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+                 (uint)(eval->valStack[eval->valStackPos + -2].u.i !=
+                       eval->valStack[eval->valStackPos + -1].u.i);
           }
         }
         else {
-          iVar7 = _stricmp(param_1->valStack[param_1->valStackPos + -2].u.s,
-                           param_1->valStack[param_1->valStackPos + -1].u.s);
+          iVar7 = _stricmp(eval->valStack[eval->valStackPos + -2].u.s,
+                           eval->valStack[eval->valStackPos + -1].u.s);
           local_85 = '\x01' - (iVar7 != 0);
-          free(param_1->valStack[param_1->valStackPos + -2].u.s);
-          free(param_1->valStack[param_1->valStackPos + -1].u.s);
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = (uint)(local_85 == '\0');
+          free(eval->valStack[eval->valStackPos + -2].u.s);
+          free(eval->valStack[eval->valStackPos + -1].u.s);
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = (uint)(local_85 == '\0');
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x14:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          dVar8 = param_1->valStack[param_1->valStackPos + -1].u.d;
-          p<Var1 = &param_1->valStack[param_1->valStackPos + -2].u;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          dVar8 = eval->valStack[eval->valStackPos + -1].u.d;
+          p<Var1 = &eval->valStack[eval->valStackPos + -2].u;
           local_90 = (uint)(p<Var1->d <= dVar8 && dVar8 != p<Var1->d);
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_90;
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_90;
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
         }
         else {
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-               (uint)(param_1->valStack[param_1->valStackPos + -2].u.i <
-                     param_1->valStack[param_1->valStackPos + -1].u.i);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+               (uint)(eval->valStack[eval->valStackPos + -2].u.i <
+                     eval->valStack[eval->valStackPos + -1].u.i);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x15:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          local_94 = (uint)(param_1->valStack[param_1->valStackPos + -2].u.d <=
-                           param_1->valStack[param_1->valStackPos + -1].u.d);
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_94;
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          local_94 = (uint)(eval->valStack[eval->valStackPos + -2].u.d <=
+                           eval->valStack[eval->valStackPos + -1].u.d);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_94;
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
         }
         else {
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-               (uint)(param_1->valStack[param_1->valStackPos + -2].u.i <=
-                     param_1->valStack[param_1->valStackPos + -1].u.i);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+               (uint)(eval->valStack[eval->valStackPos + -2].u.i <=
+                     eval->valStack[eval->valStackPos + -1].u.i);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x16:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          dVar8 = param_1->valStack[param_1->valStackPos + -2].u.d;
-          p<Var1 = &param_1->valStack[param_1->valStackPos + -1].u;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          dVar8 = eval->valStack[eval->valStackPos + -2].u.d;
+          p<Var1 = &eval->valStack[eval->valStackPos + -1].u;
           local_98 = (uint)(p<Var1->d <= dVar8 && dVar8 != p<Var1->d);
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_98;
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_98;
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
         }
         else {
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-               (uint)(param_1->valStack[param_1->valStackPos + -1].u.i <
-                     param_1->valStack[param_1->valStackPos + -2].u.i);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+               (uint)(eval->valStack[eval->valStackPos + -1].u.i <
+                     eval->valStack[eval->valStackPos + -2].u.i);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
         break;
       case 0x17:
-        Eval_PrepareBinaryOpSameTypes(param_1);
-        if (param_1->valStack[param_1->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
-          local_9c = (uint)(param_1->valStack[param_1->valStackPos + -1].u.d <=
-                           param_1->valStack[param_1->valStackPos + -2].u.d);
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u = local_9c;
-          param_1->valStack[param_1->valStackPos + -2].type = EVAL_VALUE_INT;
+        Eval_PrepareBinaryOpSameTypes(eval);
+        if (eval->valStack[eval->valStackPos + -2].type == EVAL_VALUE_DOUBLE) {
+          local_9c = (uint)(eval->valStack[eval->valStackPos + -1].u.d <=
+                           eval->valStack[eval->valStackPos + -2].u.d);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u = local_9c;
+          eval->valStack[eval->valStackPos + -2].type = EVAL_VALUE_INT;
         }
         else {
-          *(uint *)&param_1->valStack[param_1->valStackPos + -2].u =
-               (uint)(param_1->valStack[param_1->valStackPos + -1].u.i <=
-                     param_1->valStack[param_1->valStackPos + -2].u.i);
+          *(uint *)&eval->valStack[eval->valStackPos + -2].u =
+               (uint)(eval->valStack[eval->valStackPos + -1].u.i <=
+                     eval->valStack[eval->valStackPos + -2].u.i);
         }
-        param_1->valStackPos = param_1->valStackPos + -1;
+        eval->valStackPos = eval->valStackPos + -1;
       }
       bVar5 = true;
     }
@@ -615,22 +608,22 @@ bool __cdecl Eval_EvaluationStep(Eval *param_1)
 
 // 007C62F0  Eval_CanPushValue  (universal/eval.cpp:497)
 
-bool __cdecl Eval_CanPushValue(Eval *param_1)
+bool __cdecl Eval_CanPushValue(Eval *eval)
 
 {
   undefined1 uVar1;
   char *local_8;
   
-  if (param_1->valStackPos == 0) {
+  if (eval->valStackPos == 0) {
     uVar1 = 1;
   }
   else {
-    if (param_1->valStackPos == 0x400) {
+    if (eval->valStackPos == 0x400) {
       local_8 = "evaluation stack overflow - expression is too complex";
                     /* WARNING: Subroutine does not return */
       _CxxThrowException(&local_8,(_s__ThrowInfo *)&__TI2PAD);
     }
-    uVar1 = param_1->pushedOp;
+    uVar1 = eval->pushedOp;
   }
   return (bool)uVar1;
 }
@@ -638,16 +631,16 @@ bool __cdecl Eval_CanPushValue(Eval *param_1)
 
 // 007C6260  Eval_IsUnaryOp  (universal/eval.cpp:508)
 
-bool __cdecl Eval_IsUnaryOp(Eval *param_1)
+bool __cdecl Eval_IsUnaryOp(Eval *eval)
 
 {
   undefined1 uVar1;
   
-  if (param_1->valStackPos == 0) {
+  if (eval->valStackPos == 0) {
     uVar1 = 1;
   }
   else {
-    uVar1 = param_1->pushedOp;
+    uVar1 = eval->pushedOp;
   }
   return (bool)uVar1;
 }
@@ -655,86 +648,86 @@ bool __cdecl Eval_IsUnaryOp(Eval *param_1)
 
 // 007C4070  Eval_PushOperator  (universal/eval.cpp:517)
 
-bool __cdecl Eval_PushOperator(Eval *param_1,EvalOperatorType param_2)
+bool __cdecl Eval_PushOperator(Eval *eval,EvalOperatorType op)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char local_14;
+  bool local_14;
   char *local_10;
   char *local_c;
-  char local_7;
-  char local_6;
-  undefined1 local_5;
+  bool leftToRight;
+  char precedence;
+  bool higherPrecedence;
   
-  if ((-1 < s_precedence[param_2]) && ((param_2 != EVAL_OP_RPAREN || (param_1->parenCount != 0)))) {
-    if (param_2 == EVAL_OP_LPAREN) {
-      if ((param_1->valStackPos != 0) && (param_1->pushedOp == false)) {
+  if ((-1 < s_precedence[op]) && ((op != EVAL_OP_RPAREN || (eval->parenCount != 0)))) {
+    if (op == EVAL_OP_LPAREN) {
+      if ((eval->valStackPos != 0) && (eval->pushedOp == false)) {
         return false;
       }
-      param_1->parenCount = param_1->parenCount + 1;
+      eval->parenCount = eval->parenCount + 1;
     }
-    if (param_2 == EVAL_OP_PLUS) {
-      bVar2 = Eval_IsUnaryOp(param_1);
+    if (op == EVAL_OP_PLUS) {
+      bVar2 = Eval_IsUnaryOp(eval);
       if (bVar2) {
-        param_2 = EVAL_OP_UNARY_PLUS;
+        op = EVAL_OP_UNARY_PLUS;
       }
     }
-    else if ((param_2 == EVAL_OP_MINUS) && (bVar2 = Eval_IsUnaryOp(param_1), bVar2)) {
-      param_2 = EVAL_OP_UNARY_MINUS;
+    else if ((op == EVAL_OP_MINUS) && (bVar2 = Eval_IsUnaryOp(eval), bVar2)) {
+      op = EVAL_OP_UNARY_MINUS;
     }
-    if ((((int)param_2 < 0) || (EVAL_OP_GREATER_EQUAL < param_2)) &&
+    if ((((int)op < 0) || (EVAL_OP_GREATER_EQUAL < op)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\eval.cpp",0x225,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    local_6 = s_precedence[param_2];
+    precedence = s_precedence[op];
     do {
-      if (param_1->opStackPos < 1) {
+      if (eval->opStackPos < 1) {
 LAB_007c426e:
-        if ((param_2 == EVAL_OP_COLON) &&
-           ((param_1->opStackPos == 0 ||
-            (param_1->opStack[param_1->opStackPos + -1] != EVAL_OP_QUESTION)))) {
-          if (param_1->parenCount != 0) {
+        if ((op == EVAL_OP_COLON) &&
+           ((eval->opStackPos == 0 || (eval->opStack[eval->opStackPos + -1] != EVAL_OP_QUESTION))))
+        {
+          if (eval->parenCount != 0) {
             local_c = "found \':\' without preceding \'?\' in expression of type \'a ? b : c\'";
                     /* WARNING: Subroutine does not return */
             _CxxThrowException(&local_c,(_s__ThrowInfo *)&__TI2PAD);
           }
           return false;
         }
-        if (param_1->opStackPos == 0x400) {
+        if (eval->opStackPos == 0x400) {
           local_10 = "evaluation stack overflow - expression is too complex";
                     /* WARNING: Subroutine does not return */
           _CxxThrowException(&local_10,(_s__ThrowInfo *)&__TI2PAD);
         }
-        param_1->opStack[param_1->opStackPos] = param_2;
-        param_1->opStackPos = param_1->opStackPos + 1;
-        param_1->pushedOp = true;
+        eval->opStack[eval->opStackPos] = op;
+        eval->opStackPos = eval->opStackPos + 1;
+        eval->pushedOp = true;
         return true;
       }
-      local_5 = local_6 < s_precedence[param_1->opStack[param_1->opStackPos + -1]];
-      if ((s_precedence[param_1->opStack[param_1->opStackPos + -1]] == local_6) &&
-         (s_rightToLeft[param_1->opStack[param_1->opStackPos + -1]] == false)) {
-        local_14 = '\x01';
+      higherPrecedence = precedence < s_precedence[eval->opStack[eval->opStackPos + -1]];
+      if ((s_precedence[eval->opStack[eval->opStackPos + -1]] == precedence) &&
+         (s_rightToLeft[eval->opStack[eval->opStackPos + -1]] == false)) {
+        local_14 = true;
       }
       else {
-        local_14 = '\0';
+        local_14 = false;
       }
-      local_7 = local_14;
-      if ((!(bool)local_5) && (local_14 == '\0')) goto LAB_007c426e;
-      if (param_1->opStack[param_1->opStackPos + -1] == EVAL_OP_LPAREN) {
-        if (param_2 == EVAL_OP_RPAREN) {
-          param_1->parenCount = param_1->parenCount + -1;
-          param_1->opStackPos = param_1->opStackPos + -1;
-          param_1->pushedOp = false;
+      leftToRight = local_14;
+      if ((!higherPrecedence) && (local_14 == false)) goto LAB_007c426e;
+      if (eval->opStack[eval->opStackPos + -1] == EVAL_OP_LPAREN) {
+        if (op == EVAL_OP_RPAREN) {
+          eval->parenCount = eval->parenCount + -1;
+          eval->opStackPos = eval->opStackPos + -1;
+          eval->pushedOp = false;
           return true;
         }
         goto LAB_007c426e;
       }
-      bVar2 = Eval_EvaluationStep(param_1);
+      bVar2 = Eval_EvaluationStep(eval);
     } while (bVar2);
   }
   return false;
@@ -743,17 +736,17 @@ LAB_007c426e:
 
 // 007C6280  Eval_PushInteger  (universal/eval.cpp:598)
 
-bool __cdecl Eval_PushInteger(Eval *param_1,int param_2)
+bool __cdecl Eval_PushInteger(Eval *eval,int value)
 
 {
   bool bVar1;
   
-  bVar1 = Eval_CanPushValue(param_1);
+  bVar1 = Eval_CanPushValue(eval);
   if (bVar1) {
-    param_1->valStack[param_1->valStackPos].type = EVAL_VALUE_INT;
-    param_1->valStack[param_1->valStackPos].u.i = param_2;
-    param_1->valStackPos = param_1->valStackPos + 1;
-    param_1->pushedOp = false;
+    eval->valStack[eval->valStackPos].type = EVAL_VALUE_INT;
+    eval->valStack[eval->valStackPos].u.i = value;
+    eval->valStackPos = eval->valStackPos + 1;
+    eval->pushedOp = false;
   }
   return bVar1;
 }
@@ -761,21 +754,21 @@ bool __cdecl Eval_PushInteger(Eval *param_1,int param_2)
 
 // 007C6340  Eval_PushNumber  (universal/eval.cpp:611)
 
-bool __cdecl Eval_PushNumber(Eval *param_1,double param_2)
+bool __cdecl Eval_PushNumber(Eval *eval,double param_2)
 
 {
   <unnamed_type_u> <Var1;
   bool bVar2;
   undefined4 in_stack_00000008;
   
-  bVar2 = Eval_CanPushValue(param_1);
+  bVar2 = Eval_CanPushValue(eval);
   if (bVar2) {
-    param_1->valStack[param_1->valStackPos].type = EVAL_VALUE_DOUBLE;
+    eval->valStack[eval->valStackPos].type = EVAL_VALUE_DOUBLE;
     <Var1._4_4_ = param_2._0_4_;
     <Var1.i = in_stack_00000008;
-    param_1->valStack[param_1->valStackPos].u = <Var1;
-    param_1->valStackPos = param_1->valStackPos + 1;
-    param_1->pushedOp = false;
+    eval->valStack[eval->valStackPos].u = <Var1;
+    eval->valStackPos = eval->valStackPos + 1;
+    eval->pushedOp = false;
   }
   return bVar2;
 }
@@ -783,7 +776,7 @@ bool __cdecl Eval_PushNumber(Eval *param_1,double param_2)
 
 // 007C63C0  Eval_Solve  (universal/eval.cpp:639)
 
-EvalValue * __cdecl Eval_Solve(EvalValue *__return_storage_ptr__,Eval *param_1)
+EvalValue * __cdecl Eval_Solve(EvalValue *__return_storage_ptr__,Eval *eval)
 
 {
   code *pcVar1;
@@ -805,30 +798,29 @@ EvalValue * __cdecl Eval_Solve(EvalValue *__return_storage_ptr__,Eval *param_1)
   ExceptionList = &local_10;
   local_8 = 0;
   puVar2 = &uStack_30;
-  if (param_1->parenCount != 0) {
+  if (eval->parenCount != 0) {
     local_18 = "missing \')\'";
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_18,(_s__ThrowInfo *)&__TI2PAD);
   }
   do {
     local_14 = (undefined1 *)puVar2;
-    bVar3 = Eval_EvaluationStep(param_1);
+    bVar3 = Eval_EvaluationStep(eval);
     puVar2 = (uint *)local_14;
   } while (bVar3);
-  if ((param_1->opStackPos != 0) &&
+  if ((eval->opStackPos != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\eval.cpp",0x289,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     pEVar4 = (EvalValue *)(*pcVar1)();
     return pEVar4;
   }
-  if (param_1->valStackPos < 2) {
-    __return_storage_ptr__->type = param_1->valStack[0].type;
-    *(undefined4 *)&__return_storage_ptr__->field_0x4 =
-         *(undefined4 *)&param_1->valStack[0].field_0x4;
-    (__return_storage_ptr__->u).i = param_1->valStack[0].u.i;
+  if (eval->valStackPos < 2) {
+    __return_storage_ptr__->type = eval->valStack[0].type;
+    *(undefined4 *)&__return_storage_ptr__->field_0x4 = *(undefined4 *)&eval->valStack[0].field_0x4;
+    (__return_storage_ptr__->u).i = eval->valStack[0].u.i;
     *(undefined4 *)((int)&__return_storage_ptr__->u + 4) =
-         *(undefined4 *)((int)&param_1->valStack[0].u + 4);
+         *(undefined4 *)((int)&eval->valStack[0].u + 4);
     pEVar4 = (EvalValue *)FUN_007c652e();
     return pEVar4;
   }
@@ -840,136 +832,136 @@ EvalValue * __cdecl Eval_Solve(EvalValue *__return_storage_ptr__,Eval *param_1)
 
 // 007C6540  Eval_OperatorForToken  (universal/eval.cpp:673)
 
-bool __cdecl Eval_OperatorForToken(char *param_1,EvalOperatorType *param_2)
+bool __cdecl Eval_OperatorForToken(char *text,EvalOperatorType *op)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\eval.cpp",0x2a2,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (EvalOperatorType *)0x0) &&
+  if ((op == (EvalOperatorType *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\eval.cpp",0x2a3,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  switch(*param_1) {
+  switch(*text) {
   case '!':
-    if (param_1[1] == '=') {
-      *param_2 = EVAL_OP_NOT_EQUAL;
+    if (text[1] == '=') {
+      *op = EVAL_OP_NOT_EQUAL;
       bVar2 = true;
     }
     else {
-      *param_2 = EVAL_OP_LOGICAL_NOT;
+      *op = EVAL_OP_LOGICAL_NOT;
       bVar2 = true;
     }
     break;
   case '%':
-    *param_2 = EVAL_OP_MODULUS;
+    *op = EVAL_OP_MODULUS;
     bVar2 = true;
     break;
   case '&':
-    if (param_1[1] == '&') {
-      *param_2 = EVAL_OP_LOGICAL_AND;
+    if (text[1] == '&') {
+      *op = EVAL_OP_LOGICAL_AND;
       bVar2 = true;
     }
     else {
-      *param_2 = EVAL_OP_BITWISE_AND;
+      *op = EVAL_OP_BITWISE_AND;
       bVar2 = true;
     }
     break;
   case '(':
-    *param_2 = EVAL_OP_LPAREN;
+    *op = EVAL_OP_LPAREN;
     bVar2 = true;
     break;
   case ')':
-    *param_2 = EVAL_OP_RPAREN;
+    *op = EVAL_OP_RPAREN;
     bVar2 = true;
     break;
   case '*':
-    *param_2 = EVAL_OP_MULTIPLY;
+    *op = EVAL_OP_MULTIPLY;
     bVar2 = true;
     break;
   case '+':
-    *param_2 = EVAL_OP_PLUS;
+    *op = EVAL_OP_PLUS;
     bVar2 = true;
     break;
   case '-':
-    *param_2 = EVAL_OP_MINUS;
+    *op = EVAL_OP_MINUS;
     bVar2 = true;
     break;
   case '/':
-    *param_2 = EVAL_OP_DIVIDE;
+    *op = EVAL_OP_DIVIDE;
     bVar2 = true;
     break;
   case ':':
-    *param_2 = EVAL_OP_COLON;
+    *op = EVAL_OP_COLON;
     bVar2 = true;
     break;
   case '<':
-    if (param_1[1] == '<') {
-      *param_2 = EVAL_OP_LSHIFT;
+    if (text[1] == '<') {
+      *op = EVAL_OP_LSHIFT;
       bVar2 = true;
     }
-    else if (param_1[1] == '=') {
-      *param_2 = EVAL_OP_LESS_EQUAL;
+    else if (text[1] == '=') {
+      *op = EVAL_OP_LESS_EQUAL;
       bVar2 = true;
     }
     else {
-      *param_2 = EVAL_OP_LESS;
+      *op = EVAL_OP_LESS;
       bVar2 = true;
     }
     break;
   case '=':
-    if (param_1[1] == '=') {
-      *param_2 = EVAL_OP_EQUALS;
+    if (text[1] == '=') {
+      *op = EVAL_OP_EQUALS;
       return true;
     }
   default:
     bVar2 = false;
     break;
   case '>':
-    if (param_1[1] == '>') {
-      *param_2 = EVAL_OP_RSHIFT;
+    if (text[1] == '>') {
+      *op = EVAL_OP_RSHIFT;
       bVar2 = true;
     }
-    else if (param_1[1] == '=') {
-      *param_2 = EVAL_OP_GREATER_EQUAL;
+    else if (text[1] == '=') {
+      *op = EVAL_OP_GREATER_EQUAL;
       bVar2 = true;
     }
     else {
-      *param_2 = EVAL_OP_GREATER;
+      *op = EVAL_OP_GREATER;
       bVar2 = true;
     }
     break;
   case '?':
-    *param_2 = EVAL_OP_QUESTION;
+    *op = EVAL_OP_QUESTION;
     bVar2 = true;
     break;
   case '^':
-    *param_2 = EVAL_OP_BITWISE_XOR;
+    *op = EVAL_OP_BITWISE_XOR;
     bVar2 = true;
     break;
   case '|':
-    if (param_1[1] == '|') {
-      *param_2 = EVAL_OP_LOGICAL_OR;
+    if (text[1] == '|') {
+      *op = EVAL_OP_LOGICAL_OR;
       bVar2 = true;
     }
     else {
-      *param_2 = EVAL_OP_BITWISE_OR;
+      *op = EVAL_OP_BITWISE_OR;
       bVar2 = true;
     }
     break;
   case '~':
-    *param_2 = EVAL_OP_BITWISE_NOT;
+    *op = EVAL_OP_BITWISE_NOT;
     bVar2 = true;
   }
   return bVar2;

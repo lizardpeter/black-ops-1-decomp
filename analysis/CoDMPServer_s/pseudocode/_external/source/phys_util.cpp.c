@@ -4,7 +4,8 @@
 
 void __cdecl
 nuge::get_ballistic_info
-          (rigid_body **param_1,int param_2,phys_vec3 *param_3,phys_vec3 *param_4,float *param_5)
+          (rigid_body **list_rigid_body,int rbodies_count,phys_vec3 *center_of_mass,
+          phys_vec3 *total_momentum,float *total_mass)
 
 {
   float fVar1;
@@ -15,17 +16,17 @@ nuge::get_ballistic_info
   int iVar6;
   rigid_body **pprVar7;
   
-  param_3->x = ::PHYS_ZERO_VEC.x;
-  param_3->y = ::PHYS_ZERO_VEC.y;
-  param_3->z = ::PHYS_ZERO_VEC.z;
-  param_4->x = ::PHYS_ZERO_VEC.x;
+  center_of_mass->x = ::PHYS_ZERO_VEC.x;
+  center_of_mass->y = ::PHYS_ZERO_VEC.y;
+  center_of_mass->z = ::PHYS_ZERO_VEC.z;
+  total_momentum->x = ::PHYS_ZERO_VEC.x;
   iVar6 = 0;
-  param_4->y = ::PHYS_ZERO_VEC.y;
-  param_4->z = ::PHYS_ZERO_VEC.z;
-  *param_5 = 0.0;
-  if (3 < param_2) {
-    pprVar7 = param_1 + 2;
-    iVar5 = (param_2 - 4U >> 2) + 1;
+  total_momentum->y = ::PHYS_ZERO_VEC.y;
+  total_momentum->z = ::PHYS_ZERO_VEC.z;
+  *total_mass = 0.0;
+  if (3 < rbodies_count) {
+    pprVar7 = list_rigid_body + 2;
+    iVar5 = (rbodies_count - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
     do {
       prVar3 = pprVar7[-2];
@@ -33,86 +34,86 @@ nuge::get_ballistic_info
         fVar4 = 1.0 / prVar3->m_inv_mass;
         fVar1 = (prVar3->m_mat).w.y;
         fVar2 = (prVar3->m_mat).w.z;
-        param_3->x = param_3->x + fVar4 * (prVar3->m_mat).w.x;
-        param_3->y = param_3->y + fVar1 * fVar4;
-        param_3->z = param_3->z + fVar2 * fVar4;
+        center_of_mass->x = center_of_mass->x + fVar4 * (prVar3->m_mat).w.x;
+        center_of_mass->y = center_of_mass->y + fVar1 * fVar4;
+        center_of_mass->z = center_of_mass->z + fVar2 * fVar4;
         fVar1 = (prVar3->m_t_vel).y;
         fVar2 = (prVar3->m_t_vel).z;
-        param_4->x = param_4->x + (prVar3->m_t_vel).x * fVar4;
-        param_4->y = param_4->y + fVar1 * fVar4;
-        param_4->z = fVar2 * fVar4 + param_4->z;
-        *param_5 = fVar4 + *param_5;
+        total_momentum->x = total_momentum->x + (prVar3->m_t_vel).x * fVar4;
+        total_momentum->y = total_momentum->y + fVar1 * fVar4;
+        total_momentum->z = fVar2 * fVar4 + total_momentum->z;
+        *total_mass = fVar4 + *total_mass;
       }
       prVar3 = pprVar7[-1];
       if (prVar3 != (rigid_body *)0x0) {
         fVar4 = 1.0 / prVar3->m_inv_mass;
         fVar1 = (prVar3->m_mat).w.y;
         fVar2 = (prVar3->m_mat).w.z;
-        param_3->x = param_3->x + fVar4 * (prVar3->m_mat).w.x;
-        param_3->y = param_3->y + fVar1 * fVar4;
-        param_3->z = param_3->z + fVar2 * fVar4;
+        center_of_mass->x = center_of_mass->x + fVar4 * (prVar3->m_mat).w.x;
+        center_of_mass->y = center_of_mass->y + fVar1 * fVar4;
+        center_of_mass->z = center_of_mass->z + fVar2 * fVar4;
         fVar1 = (prVar3->m_t_vel).y;
         fVar2 = (prVar3->m_t_vel).z;
-        param_4->x = param_4->x + (prVar3->m_t_vel).x * fVar4;
-        param_4->y = param_4->y + fVar1 * fVar4;
-        param_4->z = fVar2 * fVar4 + param_4->z;
-        *param_5 = fVar4 + *param_5;
+        total_momentum->x = total_momentum->x + (prVar3->m_t_vel).x * fVar4;
+        total_momentum->y = total_momentum->y + fVar1 * fVar4;
+        total_momentum->z = fVar2 * fVar4 + total_momentum->z;
+        *total_mass = fVar4 + *total_mass;
       }
       prVar3 = *pprVar7;
       if (prVar3 != (rigid_body *)0x0) {
         fVar4 = 1.0 / prVar3->m_inv_mass;
         fVar1 = (prVar3->m_mat).w.y;
         fVar2 = (prVar3->m_mat).w.z;
-        param_3->x = param_3->x + fVar4 * (prVar3->m_mat).w.x;
-        param_3->y = param_3->y + fVar1 * fVar4;
-        param_3->z = param_3->z + fVar2 * fVar4;
+        center_of_mass->x = center_of_mass->x + fVar4 * (prVar3->m_mat).w.x;
+        center_of_mass->y = center_of_mass->y + fVar1 * fVar4;
+        center_of_mass->z = center_of_mass->z + fVar2 * fVar4;
         fVar1 = (prVar3->m_t_vel).y;
         fVar2 = (prVar3->m_t_vel).z;
-        param_4->x = param_4->x + (prVar3->m_t_vel).x * fVar4;
-        param_4->y = param_4->y + fVar1 * fVar4;
-        param_4->z = fVar2 * fVar4 + param_4->z;
-        *param_5 = fVar4 + *param_5;
+        total_momentum->x = total_momentum->x + (prVar3->m_t_vel).x * fVar4;
+        total_momentum->y = total_momentum->y + fVar1 * fVar4;
+        total_momentum->z = fVar2 * fVar4 + total_momentum->z;
+        *total_mass = fVar4 + *total_mass;
       }
       prVar3 = pprVar7[1];
       if (prVar3 != (rigid_body *)0x0) {
         fVar4 = 1.0 / prVar3->m_inv_mass;
         fVar1 = (prVar3->m_mat).w.y;
         fVar2 = (prVar3->m_mat).w.z;
-        param_3->x = param_3->x + fVar4 * (prVar3->m_mat).w.x;
-        param_3->y = param_3->y + fVar1 * fVar4;
-        param_3->z = param_3->z + fVar2 * fVar4;
+        center_of_mass->x = center_of_mass->x + fVar4 * (prVar3->m_mat).w.x;
+        center_of_mass->y = center_of_mass->y + fVar1 * fVar4;
+        center_of_mass->z = center_of_mass->z + fVar2 * fVar4;
         fVar1 = (prVar3->m_t_vel).y;
         fVar2 = (prVar3->m_t_vel).z;
-        param_4->x = param_4->x + (prVar3->m_t_vel).x * fVar4;
-        param_4->y = param_4->y + fVar1 * fVar4;
-        param_4->z = fVar2 * fVar4 + param_4->z;
-        *param_5 = fVar4 + *param_5;
+        total_momentum->x = total_momentum->x + (prVar3->m_t_vel).x * fVar4;
+        total_momentum->y = total_momentum->y + fVar1 * fVar4;
+        total_momentum->z = fVar2 * fVar4 + total_momentum->z;
+        *total_mass = fVar4 + *total_mass;
       }
       pprVar7 = pprVar7 + 4;
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
   }
-  for (; iVar6 < param_2; iVar6 = iVar6 + 1) {
-    prVar3 = param_1[iVar6];
+  for (; iVar6 < rbodies_count; iVar6 = iVar6 + 1) {
+    prVar3 = list_rigid_body[iVar6];
     if (prVar3 != (rigid_body *)0x0) {
       fVar4 = 1.0 / prVar3->m_inv_mass;
       fVar1 = (prVar3->m_mat).w.y;
       fVar2 = (prVar3->m_mat).w.z;
-      param_3->x = param_3->x + fVar4 * (prVar3->m_mat).w.x;
-      param_3->y = param_3->y + fVar1 * fVar4;
-      param_3->z = param_3->z + fVar2 * fVar4;
+      center_of_mass->x = center_of_mass->x + fVar4 * (prVar3->m_mat).w.x;
+      center_of_mass->y = center_of_mass->y + fVar1 * fVar4;
+      center_of_mass->z = center_of_mass->z + fVar2 * fVar4;
       fVar1 = (prVar3->m_t_vel).y;
       fVar2 = (prVar3->m_t_vel).z;
-      param_4->x = param_4->x + (prVar3->m_t_vel).x * fVar4;
-      param_4->y = param_4->y + fVar1 * fVar4;
-      param_4->z = fVar2 * fVar4 + param_4->z;
-      *param_5 = fVar4 + *param_5;
+      total_momentum->x = total_momentum->x + (prVar3->m_t_vel).x * fVar4;
+      total_momentum->y = total_momentum->y + fVar1 * fVar4;
+      total_momentum->z = fVar2 * fVar4 + total_momentum->z;
+      *total_mass = fVar4 + *total_mass;
     }
   }
-  fVar1 = 1.0 / *param_5;
-  param_3->x = fVar1 * param_3->x;
-  param_3->y = param_3->y * fVar1;
-  param_3->z = fVar1 * param_3->z;
+  fVar1 = 1.0 / *total_mass;
+  center_of_mass->x = fVar1 * center_of_mass->x;
+  center_of_mass->y = center_of_mass->y * fVar1;
+  center_of_mass->z = fVar1 * center_of_mass->z;
   return;
 }
 
@@ -120,7 +121,8 @@ nuge::get_ballistic_info
 // 008EF310  apply_ballistic_target  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_util.cpp:28)
 
 void __cdecl
-nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3,float *param_4)
+nuge::apply_ballistic_target
+          (rigid_body **list_rigid_body,int rbodies_count,phys_vec3 *target,float *dist_sq)
 
 {
   float fVar1;
@@ -146,19 +148,19 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
   float local_8c;
   float local_88;
   
-  get_ballistic_info(param_1,param_2,local_b0,&local_c0,&local_d4);
+  get_ballistic_info(list_rigid_body,rbodies_count,local_b0,&local_c0,&local_d4);
   local_88 = 1.0 / local_d4;
   local_90 = local_88 * local_c0.x;
   local_8c = local_c0.y * local_88;
   local_88 = local_88 * local_c0.z;
-  local_d0 = param_3->x - local_b0[0].x;
-  fStack_cc = param_3->y - local_b0[0].y;
-  local_c8 = param_3->z - local_b0[0].z;
-  *param_4 = fStack_cc * fStack_cc + local_d0 * local_d0 + local_c8 * local_c8;
+  local_d0 = target->x - local_b0[0].x;
+  fStack_cc = target->y - local_b0[0].y;
+  local_c8 = target->z - local_b0[0].z;
+  *dist_sq = fStack_cc * fStack_cc + local_d0 * local_d0 + local_c8 * local_c8;
   _CIsqrt();
   fVar1 = (float)extraout_ST0;
   if (0.001 <= fVar1) {
-    fVar4 = ((*param_1)->m_gravity_acc_vec).y * 0.5 * fVar1;
+    fVar4 = ((*list_rigid_body)->m_gravity_acc_vec).y * 0.5 * fVar1;
     iVar9 = 0;
     bVar7 = false;
     fStack_cc = fStack_cc / fVar1;
@@ -189,9 +191,9 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
     }
     iVar9 = 0;
     local_d8 = 0.0;
-    if (3 < param_2) {
-      iVar10 = (param_2 - 4U >> 2) + 1;
-      pprVar8 = param_1 + 2;
+    if (3 < rbodies_count) {
+      iVar10 = (rbodies_count - 4U >> 2) + 1;
+      pprVar8 = list_rigid_body + 2;
       iVar9 = iVar10 * 4;
       do {
         if (pprVar8[-2] != (rigid_body *)0x0) {
@@ -214,9 +216,9 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
         iVar10 = iVar10 + -1;
       } while (iVar10 != 0);
     }
-    for (; iVar9 < param_2; iVar9 = iVar9 + 1) {
-      if (param_1[iVar9] != (rigid_body *)0x0) {
-        fVar2 = param_1[iVar9]->m_inv_mass;
+    for (; iVar9 < rbodies_count; iVar9 = iVar9 + 1) {
+      if (list_rigid_body[iVar9] != (rigid_body *)0x0) {
+        fVar2 = list_rigid_body[iVar9]->m_inv_mass;
         local_d8 = 1.0 / (fVar2 * fVar2) + local_d8;
       }
     }
@@ -226,9 +228,9 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
     fVar4 = ((fVar1 * 0.0 * local_e0 + (local_e0 * fStack_cc - fVar4 / local_e0)) - local_8c) *
             local_d4;
     local_d4 = local_d4 * ((local_e0 * local_c8 * fVar1 + 0.0) - local_88);
-    if (3 < param_2) {
-      iVar10 = (param_2 - 4U >> 2) + 1;
-      pprVar8 = param_1 + 2;
+    if (3 < rbodies_count) {
+      iVar10 = (rbodies_count - 4U >> 2) + 1;
+      pprVar8 = list_rigid_body + 2;
       iVar9 = iVar10 * 4;
       do {
         if (pprVar8[-2] != (rigid_body *)0x0) {
@@ -263,9 +265,9 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
         iVar10 = iVar10 + -1;
       } while (iVar10 != 0);
     }
-    for (; iVar9 < param_2; iVar9 = iVar9 + 1) {
-      if (param_1[iVar9] != (rigid_body *)0x0) {
-        prVar3 = param_1[iVar9];
+    for (; iVar9 < rbodies_count; iVar9 = iVar9 + 1) {
+      if (list_rigid_body[iVar9] != (rigid_body *)0x0) {
+        prVar3 = list_rigid_body[iVar9];
         fVar1 = 1.0 / (prVar3->m_inv_mass * prVar3->m_inv_mass);
         (prVar3->m_force_sum).x = (prVar3->m_force_sum).x + fVar1 * fVar2;
         (prVar3->m_force_sum).y = fVar4 * fVar1 + (prVar3->m_force_sum).y;
@@ -281,8 +283,7 @@ nuge::apply_ballistic_target(rigid_body **param_1,int param_2,phys_vec3 *param_3
 
 void __cdecl
 nuge::calc_velocities
-          (phys_mat44 *param_1,phys_mat44 *param_2,float param_3,phys_vec3 *param_4,
-          phys_vec3 *param_5)
+          (phys_mat44 *mat0,phys_mat44 *mat1,float delta_t,phys_vec3 *t_vel,phys_vec3 *a_vel)
 
 {
   float fVar1;
@@ -296,9 +297,9 @@ nuge::calc_velocities
   Phys_UnitQuaternion local_60;
   phys_mat44 local_50;
   
-  fVar5 = 1.0 / param_3;
-  phys_transpose(&local_50,param_1);
-  phys_multiply_mat(&local_50,param_2,&local_50);
+  fVar5 = 1.0 / delta_t;
+  phys_transpose(&local_50,mat0);
+  phys_multiply_mat(&local_50,mat1,&local_50);
   pPVar6 = Phys_GetQuaternion(&local_60,&local_50);
   fVar2 = pPVar6->x;
   fVar3 = pPVar6->y;
@@ -317,24 +318,24 @@ nuge::calc_velocities
   }
   _CIsqrt();
   if ((float)extraout_ST0_00 <= 0.0001) {
-    param_5->x = ::PHYS_ZERO_VEC.x;
-    param_5->y = ::PHYS_ZERO_VEC.y;
+    a_vel->x = ::PHYS_ZERO_VEC.x;
+    a_vel->y = ::PHYS_ZERO_VEC.y;
     fVar2 = ::PHYS_ZERO_VEC.z;
   }
   else {
     fVar1 = (fVar1 + fVar1) * (fVar5 / (float)extraout_ST0_00);
-    param_5->x = fVar1 * fVar2;
-    param_5->y = fVar3 * fVar1;
+    a_vel->x = fVar1 * fVar2;
+    a_vel->y = fVar3 * fVar1;
     fVar2 = fVar1 * fVar4;
   }
-  param_5->z = fVar2;
-  fVar2 = (param_2->w).y;
-  fVar3 = (param_1->w).y;
-  fVar4 = (param_2->w).z;
-  fVar1 = (param_1->w).z;
-  param_4->x = ((param_2->w).x - (param_1->w).x) * fVar5;
-  param_4->y = (fVar2 - fVar3) * fVar5;
-  param_4->z = fVar5 * (fVar4 - fVar1);
+  a_vel->z = fVar2;
+  fVar2 = (mat1->w).y;
+  fVar3 = (mat0->w).y;
+  fVar4 = (mat1->w).z;
+  fVar1 = (mat0->w).z;
+  t_vel->x = ((mat1->w).x - (mat0->w).x) * fVar5;
+  t_vel->y = (fVar2 - fVar3) * fVar5;
+  t_vel->z = fVar5 * (fVar4 - fVar1);
   return;
 }
 
@@ -343,8 +344,8 @@ nuge::calc_velocities
 
 void __cdecl
 nuge::calc_velocities
-          (phys_mat44 *param_1,phys_mat44 *param_2,phys_vec3 *param_3,float param_4,
-          phys_vec3 *param_5,phys_vec3 *param_6)
+          (phys_mat44 *mat0,phys_mat44 *mat1,phys_vec3 *center_offset_loc,float delta_t,
+          phys_vec3 *t_vel,phys_vec3 *a_vel)
 
 {
   float fVar1;
@@ -358,58 +359,58 @@ nuge::calc_velocities
   phys_vec3 *ppVar9;
   phys_vec3 local_20;
   
-  calc_velocities(param_1,param_2,param_4,param_5,param_6);
-  ppVar9 = phys_multiply33(&local_20,param_2,param_3);
-  fVar1 = param_6->z;
+  calc_velocities(mat0,mat1,delta_t,t_vel,a_vel);
+  ppVar9 = phys_multiply33(&local_20,mat1,center_offset_loc);
+  fVar1 = a_vel->z;
   fVar2 = ppVar9->x;
-  fVar3 = param_6->x;
+  fVar3 = a_vel->x;
   fVar4 = ppVar9->z;
   fVar5 = ppVar9->y;
-  fVar6 = param_6->x;
+  fVar6 = a_vel->x;
   fVar7 = ppVar9->x;
-  fVar8 = param_6->y;
-  param_5->x = param_5->x + (ppVar9->z * param_6->y - ppVar9->y * param_6->z);
-  param_5->y = (fVar1 * fVar2 - fVar3 * fVar4) + param_5->y;
-  param_5->z = param_5->z + (fVar5 * fVar6 - fVar7 * fVar8);
+  fVar8 = a_vel->y;
+  t_vel->x = t_vel->x + (ppVar9->z * a_vel->y - ppVar9->y * a_vel->z);
+  t_vel->y = (fVar1 * fVar2 - fVar3 * fVar4) + t_vel->y;
+  t_vel->z = t_vel->z + (fVar5 * fVar6 - fVar7 * fVar8);
   return;
 }
 
 
 // 008EFA90  calc_sphere_inertia  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_util.cpp:126)
 
-void __cdecl nuge::calc_sphere_inertia(float param_1,phys_vec3 *param_2,float *param_3)
+void __cdecl nuge::calc_sphere_inertia(float radius,phys_vec3 *unit_inertia,float *volume)
 
 {
   float fVar1;
   
-  fVar1 = (param_1 * 3.1415925 * param_1 * param_1 * 4.0) / 3.0;
-  *param_3 = fVar1;
-  fVar1 = fVar1 * param_1 * param_1;
+  fVar1 = (radius * 3.1415925 * radius * radius * 4.0) / 3.0;
+  *volume = fVar1;
+  fVar1 = fVar1 * radius * radius;
   fVar1 = (fVar1 + fVar1) / 5.0;
-  param_2->x = fVar1;
-  param_2->y = fVar1;
-  param_2->z = fVar1;
+  unit_inertia->x = fVar1;
+  unit_inertia->y = fVar1;
+  unit_inertia->z = fVar1;
   return;
 }
 
 
 // 008EFAF0  calc_box_inertia  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_util.cpp:135)
 
-void __cdecl nuge::calc_box_inertia(phys_vec3 *param_1,phys_vec3 *param_2,float *param_3)
+void __cdecl nuge::calc_box_inertia(phys_vec3 *dim,phys_vec3 *unit_inertia,float *volume)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  *param_3 = param_1->x * param_1->y * param_1->z;
-  fVar1 = param_1->x * 0.083333336 * param_1->y * param_1->z;
-  fVar3 = fVar1 * param_1->x * param_1->x;
-  fVar2 = param_1->y * param_1->y * fVar1;
-  fVar1 = fVar1 * param_1->z * param_1->z;
-  param_2->x = fVar1 + fVar2;
-  param_2->y = fVar3 + fVar1;
-  param_2->z = fVar3 + fVar2;
+  *volume = dim->x * dim->y * dim->z;
+  fVar1 = dim->x * 0.083333336 * dim->y * dim->z;
+  fVar3 = fVar1 * dim->x * dim->x;
+  fVar2 = dim->y * dim->y * fVar1;
+  fVar1 = fVar1 * dim->z * dim->z;
+  unit_inertia->x = fVar1 + fVar2;
+  unit_inertia->y = fVar3 + fVar1;
+  unit_inertia->z = fVar3 + fVar2;
   return;
 }
 
@@ -417,7 +418,7 @@ void __cdecl nuge::calc_box_inertia(phys_vec3 *param_1,phys_vec3 *param_2,float 
 // 008EFBB0  calc_bound_sphere  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_util.cpp:147)
 
 void __cdecl
-nuge::calc_bound_sphere(phys_vec3 *param_1,int param_2,float *param_3,phys_vec3 *param_4)
+nuge::calc_bound_sphere(phys_vec3 *vert_list,int vert_count,float *radius,phys_vec3 *com)
 
 {
   float fVar1;
@@ -434,10 +435,10 @@ nuge::calc_bound_sphere(phys_vec3 *param_1,int param_2,float *param_3,phys_vec3 
   local_28 = ::PHYS_ZERO_VEC.z;
   iVar5 = 0;
   local_2c = ::PHYS_ZERO_VEC.y;
-  if (3 < param_2) {
-    iVar4 = (param_2 - 4U >> 2) + 1;
+  if (3 < vert_count) {
+    iVar4 = (vert_count - 4U >> 2) + 1;
     iVar5 = iVar4 * 4;
-    pfVar3 = &param_1[1].z;
+    pfVar3 = &vert_list[1].z;
     do {
       iVar4 = iVar4 + -1;
       local_30 = pfVar3[6] + pfVar3[2] + ((phys_vec3 *)(pfVar3 + -2))->x + pfVar3[-6] + local_30;
@@ -446,9 +447,9 @@ nuge::calc_bound_sphere(phys_vec3 *param_1,int param_2,float *param_3,phys_vec3 
       pfVar3 = pfVar3 + 0x10;
     } while (iVar4 != 0);
   }
-  if (iVar5 < param_2) {
-    iVar4 = param_2 - iVar5;
-    pfVar3 = &param_1[iVar5].z;
+  if (iVar5 < vert_count) {
+    iVar4 = vert_count - iVar5;
+    pfVar3 = &vert_list[iVar5].z;
     do {
       iVar4 = iVar4 + -1;
       local_30 = ((phys_vec3 *)(pfVar3 + -2))->x + local_30;
@@ -458,71 +459,70 @@ nuge::calc_bound_sphere(phys_vec3 *param_1,int param_2,float *param_3,phys_vec3 
     } while (iVar4 != 0);
   }
   iVar5 = 0;
-  fVar1 = 1.0 / (float)param_2;
+  fVar1 = 1.0 / (float)vert_count;
   local_30 = fVar1 * local_30;
   local_2c = local_2c * fVar1;
   fVar1 = fVar1 * local_28;
-  *param_3 = 0.0;
-  if (3 < param_2) {
-    pfVar3 = &param_1[1].z;
-    iVar4 = (param_2 - 4U >> 2) + 1;
+  *radius = 0.0;
+  if (3 < vert_count) {
+    pfVar3 = &vert_list[1].z;
+    iVar4 = (vert_count - 4U >> 2) + 1;
     iVar5 = iVar4 * 4;
     do {
       fVar2 = (pfVar3[-4] - fVar1) * (pfVar3[-4] - fVar1) +
               (pfVar3[-6] - local_30) * (pfVar3[-6] - local_30) +
               (pfVar3[-5] - local_2c) * (pfVar3[-5] - local_2c);
-      if (*param_3 < fVar2) {
-        *param_3 = fVar2;
+      if (*radius < fVar2) {
+        *radius = fVar2;
       }
       fVar2 = ((phys_vec3 *)(pfVar3 + -2))->x - local_30;
       fVar2 = (*pfVar3 - fVar1) * (*pfVar3 - fVar1) +
               fVar2 * fVar2 + (pfVar3[-1] - local_2c) * (pfVar3[-1] - local_2c);
-      if (*param_3 < fVar2) {
-        *param_3 = fVar2;
+      if (*radius < fVar2) {
+        *radius = fVar2;
       }
       fVar2 = (pfVar3[4] - fVar1) * (pfVar3[4] - fVar1) +
               (pfVar3[2] - local_30) * (pfVar3[2] - local_30) +
               (pfVar3[3] - local_2c) * (pfVar3[3] - local_2c);
-      if (*param_3 < fVar2) {
-        *param_3 = fVar2;
+      if (*radius < fVar2) {
+        *radius = fVar2;
       }
       fVar2 = (pfVar3[8] - fVar1) * (pfVar3[8] - fVar1) +
               (pfVar3[6] - local_30) * (pfVar3[6] - local_30) +
               (pfVar3[7] - local_2c) * (pfVar3[7] - local_2c);
-      if (*param_3 < fVar2) {
-        *param_3 = fVar2;
+      if (*radius < fVar2) {
+        *radius = fVar2;
       }
       pfVar3 = pfVar3 + 0x10;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
   }
-  if (iVar5 < param_2) {
-    pfVar3 = &param_1[iVar5].z;
-    iVar5 = param_2 - iVar5;
+  if (iVar5 < vert_count) {
+    pfVar3 = &vert_list[iVar5].z;
+    iVar5 = vert_count - iVar5;
     do {
       fVar2 = ((phys_vec3 *)(pfVar3 + -2))->x - local_30;
       fVar2 = (*pfVar3 - fVar1) * (*pfVar3 - fVar1) +
               fVar2 * fVar2 + (pfVar3[-1] - local_2c) * (pfVar3[-1] - local_2c);
-      if (*param_3 < fVar2) {
-        *param_3 = fVar2;
+      if (*radius < fVar2) {
+        *radius = fVar2;
       }
       pfVar3 = pfVar3 + 4;
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
   }
   _CIsqrt();
-  *param_3 = (float)extraout_ST0;
-  param_4->x = local_30;
-  param_4->y = local_2c;
-  param_4->z = fVar1;
+  *radius = (float)extraout_ST0;
+  com->x = local_30;
+  com->y = local_2c;
+  com->z = fVar1;
   return;
 }
 
 
 // 008EFF20  calc_bound_box  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_util.cpp:169)
 
-void __cdecl
-nuge::calc_bound_box(phys_vec3 *param_1,int param_2,phys_vec3 *param_3,phys_vec3 *param_4)
+void __cdecl nuge::calc_bound_box(phys_vec3 *vert_list,int vert_count,phys_vec3 *dim,phys_vec3 *com)
 
 {
   float fVar1;
@@ -545,9 +545,9 @@ nuge::calc_bound_box(phys_vec3 *param_1,int param_2,phys_vec3 *param_3,phys_vec3
   iVar6 = 0;
   local_3c = -1e+07;
   local_38 = -1e+07;
-  if (3 < param_2) {
-    iVar5 = (param_2 - 4U >> 2) + 1;
-    ppVar4 = param_1 + 2;
+  if (3 < vert_count) {
+    iVar5 = (vert_count - 4U >> 2) + 1;
+    ppVar4 = vert_list + 2;
     iVar6 = iVar5 * 4;
     do {
       fVar1 = ppVar4[-2].x;
@@ -638,9 +638,9 @@ nuge::calc_bound_box(phys_vec3 *param_1,int param_2,phys_vec3 *param_3,phys_vec3
       iVar5 = iVar5 + -1;
     } while (iVar5 != 0);
   }
-  if (iVar6 < param_2) {
-    ppVar4 = param_1 + iVar6;
-    iVar6 = param_2 - iVar6;
+  if (iVar6 < vert_count) {
+    ppVar4 = vert_list + iVar6;
+    iVar6 = vert_count - iVar6;
     do {
       fVar1 = ppVar4->x;
       fVar2 = ppVar4->y;
@@ -667,12 +667,12 @@ nuge::calc_bound_box(phys_vec3 *param_1,int param_2,phys_vec3 *param_3,phys_vec3
       iVar6 = iVar6 + -1;
     } while (iVar6 != 0);
   }
-  param_4->x = (local_30 + local_40) * 0.5;
-  param_4->y = (local_2c + local_3c) * 0.5;
-  param_4->z = (local_28 + local_38) * 0.5;
-  param_3->x = local_40 - local_30;
-  param_3->y = local_3c - local_2c;
-  param_3->z = local_38 - local_28;
+  com->x = (local_30 + local_40) * 0.5;
+  com->y = (local_2c + local_3c) * 0.5;
+  com->z = (local_28 + local_38) * 0.5;
+  dim->x = local_40 - local_30;
+  dim->y = local_3c - local_2c;
+  dim->z = local_38 - local_28;
   return;
 }
 
@@ -689,6 +689,8 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 008F0590  Phys_GetQuaternion  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:471)
 
+/* WARNING: Variable defined which should be unmapped: c */
+
 Phys_UnitQuaternion * __cdecl
 Phys_GetQuaternion(Phys_UnitQuaternion *__return_storage_ptr__,phys_mat44 *param_1)
 
@@ -700,8 +702,10 @@ Phys_GetQuaternion(Phys_UnitQuaternion *__return_storage_ptr__,phys_mat44 *param
   uint uVar5;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float local_1c;
-  float local_14;
+  float c;
+  float d;
+  float a;
+  float q;
   phys_mat44 *local_c;
   float local_8;
   float local_4;
@@ -726,7 +730,7 @@ Phys_GetQuaternion(Phys_UnitQuaternion *__return_storage_ptr__,phys_mat44 *param
     if (fVar1 != 0.0) {
       fVar1 = 0.5 / fVar1;
     }
-    local_14 = ((&(&param_1->x)[iVar4].x)[iVar3] - (&(&param_1->x)[iVar3].x)[iVar4]) * fVar1;
+    q = ((&(&param_1->x)[iVar4].x)[iVar3] - (&(&param_1->x)[iVar3].x)[iVar4]) * fVar1;
     (&local_c)[iVar3] =
          (phys_mat44 *)
          (((&(&param_1->x)[iVar3].x)[uVar5] + (&(&param_1->x)[uVar5].x)[iVar3]) * fVar1);
@@ -734,20 +738,20 @@ Phys_GetQuaternion(Phys_UnitQuaternion *__return_storage_ptr__,phys_mat44 *param
          (phys_mat44 *)
          (((&(&param_1->x)[iVar4].x)[uVar5] + (&(&param_1->x)[uVar5].x)[iVar4]) * fVar1);
     param_1 = local_c;
-    local_1c = local_8;
+    d = local_8;
   }
   else {
     _CIsqrt();
-    local_14 = (float)extraout_ST0 * 0.5;
+    q = (float)extraout_ST0 * 0.5;
     fVar1 = 0.5 / (float)extraout_ST0;
-    local_1c = ((param_1->x).z - (param_1->z).x) * fVar1;
+    d = ((param_1->x).z - (param_1->z).x) * fVar1;
     local_4 = ((param_1->y).x - (param_1->x).y) * fVar1;
     param_1 = (phys_mat44 *)(fVar1 * ((param_1->z).y - (param_1->y).z));
   }
   __return_storage_ptr__->x = -(float)param_1;
-  __return_storage_ptr__->y = -local_1c;
+  __return_storage_ptr__->y = -d;
   __return_storage_ptr__->z = -local_4;
-  __return_storage_ptr__->w = local_14;
+  __return_storage_ptr__->w = q;
   return __return_storage_ptr__;
 }
 

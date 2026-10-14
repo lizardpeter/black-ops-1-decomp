@@ -7,15 +7,19 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_HandleSpectatorInput(int param_1,bitarray<51> *param_2)
+void __cdecl CG_HandleSpectatorInput(int localClientNum,bitarray<51> *button_bits)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   cg_s *pcVar4;
+  bool thirdPerson;
+  cg_s *cgameGlob;
+  bool nextSpecMode;
+  int ps_otherFlags;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if ((((pcVar4->predictedPlayerState).pm_type != 4) &&
       (((pcVar4->predictedPlayerState).otherFlags & 2U) == 0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_gamepad.cpp",0x1b,0,
@@ -25,9 +29,9 @@ void __cdecl CG_HandleSpectatorInput(int param_1,bitarray<51> *param_2)
     return;
   }
   uVar1 = (pcVar4->predictedPlayerState).otherFlags;
-  bVar3 = CL_KeyActiveOrPressed(param_1,0xe);
+  bVar3 = CL_KeyActiveOrPressed(localClientNum,0xe);
   if (bVar3) {
-    CG_ResetSpectatorViewAngles(param_1);
+    CG_ResetSpectatorViewAngles(localClientNum);
   }
   if ((uVar1 & 0x10) == 0) {
     if ((uVar1 & 2) == 0) {
@@ -35,7 +39,7 @@ void __cdecl CG_HandleSpectatorInput(int param_1,bitarray<51> *param_2)
         CG_SetThirdPerson(1);
         Dvar_SetBool(cg_spectateThirdPerson,true);
       }
-      CL_UpdateCmdButton(param_1,param_2,0xe,0,1);
+      CL_UpdateCmdButton(localClientNum,button_bits,0xe,0,1);
     }
     else {
       if (bVar3) {
@@ -49,30 +53,30 @@ void __cdecl CG_HandleSpectatorInput(int param_1,bitarray<51> *param_2)
       else {
         CG_SetThirdPerson(0);
       }
-      CL_UpdateCmdButton(param_1,param_2,0xe,-1,1);
+      CL_UpdateCmdButton(localClientNum,button_bits,0xe,-1,1);
     }
   }
   else if ((bVar3) && (pcVar4->renderingThirdPerson == TP_FOR_MODEL)) {
     CG_SetThirdPerson(0);
-    CL_UpdateCmdButton(param_1,param_2,0xe,0,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0xe,0,1);
     Dvar_SetBool(cg_spectateThirdPerson,false);
   }
   else {
-    CL_UpdateCmdButton(param_1,param_2,0xe,2,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0xe,2,1);
   }
   if ((uVar1 & 10) == 0) {
-    CL_UpdateCmdButton(param_1,param_2,0x10,0,1);
-    CL_UpdateCmdButton(param_1,param_2,0xf,0,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0x10,0,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0xf,0,1);
   }
   else {
-    bVar3 = CL_KeyActiveOrPressed(param_1,0x10);
-    if ((bVar3) || (bVar3 = CL_KeyActiveOrPressed(param_1,0xf), bVar3)) {
-      CG_ResetSpectatorViewAngles(param_1);
+    bVar3 = CL_KeyActiveOrPressed(localClientNum,0x10);
+    if ((bVar3) || (bVar3 = CL_KeyActiveOrPressed(localClientNum,0xf), bVar3)) {
+      CG_ResetSpectatorViewAngles(localClientNum);
     }
-    CL_UpdateCmdButton(param_1,param_2,0x10,0xb,1);
-    CL_UpdateCmdButton(param_1,param_2,0xf,0,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0x10,0xb,1);
+    CL_UpdateCmdButton(localClientNum,button_bits,0xf,0,1);
     if (pcVar4->renderingThirdPerson == TP_FOR_MODEL) {
-      CL_ClampViewAngle(param_1,0,-90.0,90.0);
+      CL_ClampViewAngle(localClientNum,0,-90.0,90.0);
     }
   }
   return;
@@ -86,15 +90,16 @@ void __cdecl CG_HandleSpectatorInput(int param_1,bitarray<51> *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_HandleSpecialStateInput(int param_1,bitarray<51> *param_2)
+void __cdecl CG_HandleSpecialStateInput(int localClientNum,bitarray<51> *button_bits)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar1->predictedPlayerState).pm_type == 4) ||
      (((pcVar1->predictedPlayerState).otherFlags & 2U) != 0)) {
-    CG_HandleSpectatorInput(param_1,param_2);
+    CG_HandleSpectatorInput(localClientNum,button_bits);
   }
   return;
 }
@@ -102,7 +107,7 @@ void __cdecl CG_HandleSpecialStateInput(int param_1,bitarray<51> *param_2)
 
 // 004B84F0  CG_ShouldUpdateViewAngles  (cgame_mp/cg_gamepad.cpp:129)
 
-bool __cdecl CG_ShouldUpdateViewAngles(int param_1)
+bool __cdecl CG_ShouldUpdateViewAngles(int localClientNum)
 
 {
   bool bVar1;
@@ -111,11 +116,11 @@ bool __cdecl CG_ShouldUpdateViewAngles(int param_1)
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_8 = Demo_ShouldUpdateViewAngles(param_1);
+    local_8 = Demo_ShouldUpdateViewAngles(localClientNum);
   }
   else {
-    bVar1 = Key_IsCatcherActive(param_1,-1);
-    if ((bVar1) && (uVar2 = UI_GetActiveMenu(param_1), uVar2 != UIMENU_SCOREBOARD)) {
+    bVar1 = Key_IsCatcherActive(localClientNum,-1);
+    if ((bVar1) && (uVar2 = UI_GetActiveMenu(localClientNum), uVar2 != UIMENU_SCOREBOARD)) {
       local_8 = false;
     }
     else {
@@ -128,20 +133,20 @@ bool __cdecl CG_ShouldUpdateViewAngles(int param_1)
 
 // 004B8860  CG_GamepadCheckStartAndBack  (cgame_mp/cg_gamepad.cpp:140)
 
-bool __cdecl CG_GamepadCheckStartAndBack(int param_1,int param_2,char *param_3)
+bool __cdecl CG_GamepadCheckStartAndBack(int localClientNum,int button,char *cmd)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  if ((param_2 == 0xe) && (*param_3 != '\0')) {
+  if ((button == 0xe) && (*cmd != '\0')) {
     pcVar2 = va("%s %i\n");
-    Cbuf_AddText(param_1,pcVar2);
+    Cbuf_AddText(localClientNum,pcVar2);
     bVar1 = true;
   }
-  else if ((param_2 == 0xf) && (*param_3 != '\0')) {
+  else if ((button == 0xf) && (*cmd != '\0')) {
     pcVar2 = va("%s %i\n");
-    Cbuf_AddText(param_1,pcVar2);
+    Cbuf_AddText(localClientNum,pcVar2);
     bVar1 = true;
   }
   else {
@@ -158,7 +163,7 @@ bool __cdecl CG_GamepadCheckStartAndBack(int param_1,int param_2,char *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_GamepadSpectatorInput(int param_1,int param_2,char *param_3)
+bool __cdecl CG_GamepadSpectatorInput(int localClientNum,int button,char *cmd)
 
 {
   code *pcVar1;
@@ -166,8 +171,9 @@ bool __cdecl CG_GamepadSpectatorInput(int param_1,int param_2,char *param_3)
   undefined1 uVar3;
   cg_s *pcVar4;
   char *pcVar5;
+  cg_s *cgameGlob;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar4->predictedPlayerState).pm_type != 4) &&
      (((pcVar4->predictedPlayerState).otherFlags & 2U) == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_gamepad.cpp",0xa7,0,
@@ -178,32 +184,32 @@ bool __cdecl CG_GamepadSpectatorInput(int param_1,int param_2,char *param_3)
       return (bool)uVar3;
     }
   }
-  if (param_2 == 5) {
+  if (button == 5) {
     pcVar5 = va("+specPrev %i\n-specPrev %i\n");
-    Cbuf_AddText(param_1,pcVar5);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","CyclePrev","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpectatorName","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"spectatingPlayerCard","spectatingPlayerSlide",
-                   "StartRight",1);
+    Cbuf_AddText(localClientNum,pcVar5);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","CyclePrev","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpectatorName","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"spectatingPlayerCard",
+                   "spectatingPlayerSlide","StartRight",1);
     bVar2 = true;
   }
-  else if (param_2 == 6) {
+  else if (button == 6) {
     pcVar5 = va("+specNext %i\n-specNext %i\n");
-    Cbuf_AddText(param_1,pcVar5);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","CycleNext","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpectatorName","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"spectatingPlayerCard","spectatingPlayerSlide","StartLeft"
-                   ,1);
+    Cbuf_AddText(localClientNum,pcVar5);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","CycleNext","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpectatorName","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"spectatingPlayerCard",
+                   "spectatingPlayerSlide","StartLeft",1);
     bVar2 = true;
   }
-  else if (param_2 == 4) {
+  else if (button == 4) {
     pcVar5 = va("+toggleSpec %i\n-toggleSpec %i\n");
-    Cbuf_AddText(param_1,pcVar5);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpecViewToggle","Flash",1);
+    Cbuf_AddText(localClientNum,pcVar5);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpecViewToggle","Flash",1);
     bVar2 = true;
   }
   else {
-    bVar2 = CG_GamepadCheckStartAndBack(param_1,param_2,param_3);
+    bVar2 = CG_GamepadCheckStartAndBack(localClientNum,button,cmd);
   }
   return bVar2;
 }
@@ -211,19 +217,19 @@ bool __cdecl CG_GamepadSpectatorInput(int param_1,int param_2,char *param_3)
 
 // 004B88E0  CG_GamepadKillCamInput  (cgame_mp/cg_gamepad.cpp:196)
 
-bool __cdecl CG_GamepadKillCamInput(int param_1,int param_2,char *param_3)
+bool __cdecl CG_GamepadKillCamInput(int localClientNum,int button,char *cmd)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *text;
   
-  if (param_2 == 3) {
-    pcVar2 = va("+usereload %i\n-usereload %i\n");
-    Cbuf_AddText(param_1,pcVar2);
+  if (button == 3) {
+    text = va("+usereload %i\n-usereload %i\n");
+    Cbuf_AddText(localClientNum,text);
     bVar1 = true;
   }
   else {
-    bVar1 = CG_GamepadCheckStartAndBack(param_1,param_2,param_3);
+    bVar1 = CG_GamepadCheckStartAndBack(localClientNum,button,cmd);
   }
   return bVar1;
 }
@@ -236,15 +242,16 @@ bool __cdecl CG_GamepadKillCamInput(int param_1,int param_2,char *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_TranslateGamepadButton(int param_1,int param_2,char *param_3)
+bool __cdecl CG_TranslateGamepadButton(int localClientNum,int button,char *cmd)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   cg_s *pcVar4;
+  cg_s *cgameGlob;
   
-  if (param_2 == 0) {
+  if (button == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_gamepad.cpp",0xd3,0,
                              "%s");
     if (!bVar2) {
@@ -253,7 +260,7 @@ bool __cdecl CG_TranslateGamepadButton(int param_1,int param_2,char *param_3)
       return (bool)uVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (cmd == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_gamepad.cpp",0xd4,0,
                              "%s");
     if (!bVar2) {
@@ -262,18 +269,18 @@ bool __cdecl CG_TranslateGamepadButton(int param_1,int param_2,char *param_3)
       return (bool)uVar3;
     }
   }
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar4->inKillCam == 0) {
     if (((pcVar4->predictedPlayerState).pm_type == 4) ||
        (((pcVar4->predictedPlayerState).otherFlags & 2U) != 0)) {
-      bVar2 = CG_GamepadSpectatorInput(param_1,param_2,param_3);
+      bVar2 = CG_GamepadSpectatorInput(localClientNum,button,cmd);
     }
     else {
       bVar2 = false;
     }
   }
   else {
-    bVar2 = CG_GamepadKillCamInput(param_1,param_2,param_3);
+    bVar2 = CG_GamepadKillCamInput(localClientNum,button,cmd);
   }
   return bVar2;
 }

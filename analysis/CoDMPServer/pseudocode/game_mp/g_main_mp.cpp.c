@@ -139,15 +139,15 @@ void __cdecl G_RegisterRegisterToolDvars(void)
 
 {
   bool bVar1;
-  ushort uVar2;
-  char *pcVar3;
+  ushort flags;
+  char *description;
   
   G_RegisterConnectPaths();
   R_ReflectionProbeRegisterDvars();
-  pcVar3 = "Disable scripts from loading";
-  uVar2 = 0;
+  description = "Disable scripts from loading";
+  flags = 0;
   bVar1 = G_ExitAfterToolComplete();
-  g_loadScripts = _Dvar_RegisterBool("g_loadScripts",!bVar1,uVar2,pcVar3);
+  g_loadScripts = _Dvar_RegisterBool("g_loadScripts",!bVar1,flags,description);
   return;
 }
 
@@ -763,10 +763,10 @@ int __cdecl G_GetSavePersist(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SetSavePersist(int param_1)
+void __cdecl G_SetSavePersist(int savepersist)
 
 {
-  level.savepersist = param_1;
+  level.savepersist = savepersist;
   return;
 }
 
@@ -792,14 +792,14 @@ float __cdecl G_GetFogOpaqueDistSqrd(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientScore(int param_1)
+int __cdecl G_GetClientScore(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x560,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -808,7 +808,7 @@ int __cdecl G_GetClientScore(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.score.score;
+  return level.clients[clientNum].sess.cs.score.score;
 }
 
 
@@ -819,14 +819,14 @@ int __cdecl G_GetClientScore(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientKills(int param_1)
+int __cdecl G_GetClientKills(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x56c,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -835,7 +835,7 @@ int __cdecl G_GetClientKills(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.score.kills;
+  return level.clients[clientNum].sess.cs.score.kills;
 }
 
 
@@ -846,14 +846,14 @@ int __cdecl G_GetClientKills(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientAssists(int param_1)
+int __cdecl G_GetClientAssists(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x578,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -862,7 +862,7 @@ int __cdecl G_GetClientAssists(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.score.assists;
+  return level.clients[clientNum].sess.cs.score.assists;
 }
 
 
@@ -873,14 +873,14 @@ int __cdecl G_GetClientAssists(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientRank(int param_1)
+int __cdecl G_GetClientRank(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x584,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -889,7 +889,7 @@ int __cdecl G_GetClientRank(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.rank;
+  return level.clients[clientNum].sess.cs.rank;
 }
 
 
@@ -900,14 +900,14 @@ int __cdecl G_GetClientRank(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientPrestige(int param_1)
+int __cdecl G_GetClientPrestige(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x590,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -916,7 +916,7 @@ int __cdecl G_GetClientPrestige(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.prestige;
+  return level.clients[clientNum].sess.cs.prestige;
 }
 
 
@@ -927,14 +927,14 @@ int __cdecl G_GetClientPrestige(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientTeam(int param_1)
+int __cdecl G_GetClientTeam(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x59c,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -943,7 +943,7 @@ int __cdecl G_GetClientTeam(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.team;
+  return level.clients[clientNum].sess.cs.team;
 }
 
 
@@ -954,14 +954,14 @@ int __cdecl G_GetClientTeam(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientDeaths(int param_1)
+int __cdecl G_GetClientDeaths(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x5a9,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -970,7 +970,7 @@ int __cdecl G_GetClientDeaths(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.cs.score.deaths;
+  return level.clients[clientNum].sess.cs.score.deaths;
 }
 
 
@@ -981,14 +981,14 @@ int __cdecl G_GetClientDeaths(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetClientArchiveTime(int param_1)
+int __cdecl G_GetClientArchiveTime(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x5b6,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -997,7 +997,7 @@ int __cdecl G_GetClientArchiveTime(int param_1)
       return iVar3;
     }
   }
-  return level.clients[param_1].sess.archiveTime;
+  return level.clients[clientNum].sess.archiveTime;
 }
 
 
@@ -1008,13 +1008,13 @@ int __cdecl G_GetClientArchiveTime(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SetClientArchiveTime(int param_1,int param_2)
+void __cdecl G_SetClientArchiveTime(int clientNum,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x5c3,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1023,7 +1023,7 @@ void __cdecl G_SetClientArchiveTime(int param_1,int param_2)
       return;
     }
   }
-  level.clients[param_1].sess.archiveTime = param_2;
+  level.clients[clientNum].sess.archiveTime = time;
   return;
 }
 
@@ -1049,7 +1049,7 @@ MatchState * __cdecl G_GetMatchState(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-clientState_s * __cdecl G_GetClientState(int param_1)
+clientState_s * __cdecl G_GetClientState(int clientNum)
 
 {
   code *pcVar1;
@@ -1057,7 +1057,7 @@ clientState_s * __cdecl G_GetClientState(int param_1)
   clientState_s *pcVar3;
   
   bVar2 = Demo_IsPlaying();
-  if ((!bVar2) && ((uint)level.maxclients <= (uint)param_1)) {
+  if ((!bVar2) && ((uint)level.maxclients <= (uint)clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x5dd,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1066,7 +1066,7 @@ clientState_s * __cdecl G_GetClientState(int param_1)
       return pcVar3;
     }
   }
-  return &level.clients[param_1].sess.cs;
+  return &level.clients[clientNum].sess.cs;
 }
 
 
@@ -1077,7 +1077,7 @@ clientState_s * __cdecl G_GetClientState(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-playerState_s * __cdecl G_GetPlayerState(int param_1)
+playerState_s * __cdecl G_GetPlayerState(int clientNum)
 
 {
   code *pcVar1;
@@ -1085,7 +1085,7 @@ playerState_s * __cdecl G_GetPlayerState(int param_1)
   playerState_s *ppVar3;
   
   bVar2 = Demo_IsPlaying();
-  if ((!bVar2) && ((uint)level.maxclients <= (uint)param_1)) {
+  if ((!bVar2) && ((uint)level.maxclients <= (uint)clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x5ee,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1094,7 +1094,7 @@ playerState_s * __cdecl G_GetPlayerState(int param_1)
       return ppVar3;
     }
   }
-  return &level.clients[param_1].ps;
+  return &level.clients[clientNum].ps;
 }
 
 
@@ -1109,41 +1109,43 @@ int __cdecl G_GetClientSize(void)
 
 // 006263B0  G_FreeEntities  (game_mp/g_main_mp.cpp:1542)
 
+/* WARNING: Variable defined which should be unmapped: e */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_FreeEntities(bool param_1)
+void __cdecl G_FreeEntities(bool clearTargets)
 
 {
   code *pcVar1;
   bool bVar2;
-  gentity_s *pgVar3;
-  int local_8;
+  gentity_s *e;
+  actor_s *pActor;
+  int i;
   
-  pgVar3 = g_entities;
-  for (local_8 = 0; local_8 < level.num_entities; local_8 = local_8 + 1) {
-    if ((uchar)((actor_s *)pgVar3)->lastShotTime != '\0') {
-      G_FreeEntity(pgVar3);
+  e = g_entities;
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    if ((e->r).inuse != '\0') {
+      G_FreeEntity(e);
     }
-    pgVar3 = (gentity_s *)((((actor_s *)pgVar3)->Physics).iTouchEnts + 0x14);
+    e = e + 1;
   }
   if (g_entities[0x3fe].r.inuse != '\0') {
     G_FreeEntity(g_entities + 0x3fe);
   }
-  if (param_1) {
+  if (clearTargets) {
     Targ_RemoveAll();
   }
   if (level.actors != (actor_s *)0x0) {
-    for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-      if (level.actors[local_8].inuse != 0) {
-        Actor_ClearPileUp((actor_s *)pgVar3);
+    for (i = 0; i < 0x10; i = i + 1) {
+      if (level.actors[i].inuse != 0) {
+        Actor_ClearPileUp((actor_s *)e);
       }
     }
   }
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    EntHandle::setEnt(level.droppedWeaponCue + local_8,(gentity_s *)0x0);
+  for (i = 0; i < 0x20; i = i + 1) {
+    EntHandle::setEnt(level.droppedWeaponCue + i,(gentity_s *)0x0);
   }
   if ((g_entities[0x3ff].r.inuse != '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x62e,0,
@@ -1166,14 +1168,14 @@ void __cdecl G_FreeEntities(bool param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-G_CreateDObj(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,int param_4,int param_5,
-            clientInfo_t *param_6)
+G_CreateDObj(DObjModel_s *dobjModels,ushort numModels,XAnimTree_s *tree,int handle,
+            int unusedLocalClientNum,clientInfo_t *ci)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_5 != -1) {
+  if (unusedLocalClientNum != -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x640,0,
                              "unusedLocalClientNum == INVALID_CLIENT_NUMBER\n\t%i, %i");
     if (!bVar2) {
@@ -1182,21 +1184,21 @@ G_CreateDObj(DObjModel_s *param_1,ushort param_2,XAnimTree_s *param_3,int param_
       return;
     }
   }
-  Com_ServerDObjCreate(param_1,param_2,param_3,param_4);
+  Com_ServerDObjCreate(dobjModels,numModels,tree,handle);
   return;
 }
 
 
 // 00629620  G_GetDObj  (game_mp/g_main_mp.cpp:1606)
 
-DObj * __cdecl G_GetDObj(int param_1,int param_2)
+DObj * __cdecl G_GetDObj(int handle,int unusedLocalClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   DObj *pDVar3;
   
-  if (param_2 != -1) {
+  if (unusedLocalClientNum != -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x647,0,
                              "unusedLocalClientNum == INVALID_CLIENT_NUMBER\n\t%i, %i");
     if (!bVar2) {
@@ -1205,20 +1207,20 @@ DObj * __cdecl G_GetDObj(int param_1,int param_2)
       return pDVar3;
     }
   }
-  pDVar3 = Com_GetServerDObj(param_1);
+  pDVar3 = Com_GetServerDObj(handle);
   return pDVar3;
 }
 
 
 // 00629660  G_SafeDObjFree  (game_mp/g_main_mp.cpp:1613)
 
-void __cdecl G_SafeDObjFree(int param_1,int param_2)
+void __cdecl G_SafeDObjFree(int handle,int unusedLocalClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 != -1) {
+  if (unusedLocalClientNum != -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x64e,0,
                              "unusedLocalClientNum == INVALID_CLIENT_NUMBER\n\t%i, %i");
     if (!bVar2) {
@@ -1227,19 +1229,19 @@ void __cdecl G_SafeDObjFree(int param_1,int param_2)
       return;
     }
   }
-  Com_SafeServerDObjFree(param_1);
+  Com_SafeServerDObjFree(handle);
   return;
 }
 
 
 // 006297C0  Hunk_AllocActorXAnimServer  (game_mp/g_main_mp.cpp:1626)
 
-void * __cdecl Hunk_AllocActorXAnimServer(int param_1)
+void * __cdecl Hunk_AllocActorXAnimServer(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocLow(param_1,"Hunk_AllocActorXAnimServer",5);
+  pvVar1 = Hunk_AllocLow(size,"Hunk_AllocActorXAnimServer",5);
   return pvVar1;
 }
 
@@ -1255,16 +1257,18 @@ void __cdecl G_LoadAnimTreeInstances(void)
   bool bVar2;
   XAnimTree_s *pXVar3;
   XAnim_s *pXVar4;
-  int local_c;
+  scr_animtree_t generic_human;
+  int i;
+  XAnim_s *anims;
   
   pXVar4 = ((level_bgs.animData)->generic_human).tree.anims;
-  for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
     pXVar3 = XAnimCreateTree(pXVar4,Hunk_AllocXAnimServer);
-    *(XAnimTree_s **)(level_bgs.clientinfo + local_c * 0x5c8 + 0x534) = pXVar3;
+    *(XAnimTree_s **)(level_bgs.clientinfo + i * 0x5c8 + 0x534) = pXVar3;
   }
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
+  for (i = 0; i < 4; i = i + 1) {
     pXVar3 = XAnimCreateTree(pXVar4,Hunk_AllocXAnimServer);
-    *(XAnimTree_s **)(g_scr_data.playerCorpseInfo + local_c * 0x5e0) = pXVar3;
+    *(XAnimTree_s **)(g_scr_data.playerCorpseInfo + i * 0x5e0) = pXVar3;
   }
   pXVar4 = Dog_GetAnims();
   if (pXVar4 == (XAnim_s *)0x0) {
@@ -1276,10 +1280,10 @@ void __cdecl G_LoadAnimTreeInstances(void)
       return;
     }
   }
-  for (local_c = 0; local_c < 8; local_c = local_c + 1) {
+  for (i = 0; i < 8; i = i + 1) {
     pXVar3 = XAnimCreateTree(pXVar4,Hunk_AllocActorXAnimServer);
-    *(XAnimTree_s **)(g_scr_data.actorCorpseInfo + local_c * 0x5e0) = pXVar3;
-    *(undefined4 *)(g_scr_data.actorCorpseInfo + local_c * 0x5e0 + 4) = 0xffffffff;
+    *(XAnimTree_s **)(g_scr_data.actorCorpseInfo + i * 0x5e0) = pXVar3;
+    *(undefined4 *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4) = 0xffffffff;
   }
   return;
 }
@@ -1292,27 +1296,27 @@ void __cdecl G_LoadAnimTreeInstances(void)
 void __cdecl G_FreeAnimTreeInstances(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (*(int *)(level_bgs.clientinfo + local_8 * 0x5c8 + 0x534) != 0) {
-      XAnimFreeTree(*(XAnimTree_s **)(level_bgs.clientinfo + local_8 * 0x5c8 + 0x534),
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (*(int *)(level_bgs.clientinfo + i * 0x5c8 + 0x534) != 0) {
+      XAnimFreeTree(*(XAnimTree_s **)(level_bgs.clientinfo + i * 0x5c8 + 0x534),
                     (_func___cdecl_void_void_ptr_int_scriptInstance_t *)0x0,SCRIPTINSTANCE_SERVER);
-      *(undefined4 *)(level_bgs.clientinfo + local_8 * 0x5c8 + 0x534) = 0;
+      *(undefined4 *)(level_bgs.clientinfo + i * 0x5c8 + 0x534) = 0;
     }
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if (*(int *)(g_scr_data.playerCorpseInfo + local_8 * 0x5e0) != 0) {
-      XAnimFreeTree(*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + local_8 * 0x5e0),
+  for (i = 0; i < 4; i = i + 1) {
+    if (*(int *)(g_scr_data.playerCorpseInfo + i * 0x5e0) != 0) {
+      XAnimFreeTree(*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + i * 0x5e0),
                     (_func___cdecl_void_void_ptr_int_scriptInstance_t *)0x0,SCRIPTINSTANCE_SERVER);
-      *(undefined4 *)(g_scr_data.playerCorpseInfo + local_8 * 0x5e0) = 0;
+      *(undefined4 *)(g_scr_data.playerCorpseInfo + i * 0x5e0) = 0;
     }
   }
-  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    if (*(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0) != 0) {
-      XAnimFreeTree(*(XAnimTree_s **)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0),
+  for (i = 0; i < 8; i = i + 1) {
+    if (*(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0) != 0) {
+      XAnimFreeTree(*(XAnimTree_s **)(g_scr_data.actorCorpseInfo + i * 0x5e0),
                     (_func___cdecl_void_void_ptr_int_scriptInstance_t *)0x0,SCRIPTINSTANCE_SERVER);
-      *(undefined4 *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0) = 0;
+      *(undefined4 *)(g_scr_data.actorCorpseInfo + i * 0x5e0) = 0;
     }
   }
   return;
@@ -1321,12 +1325,12 @@ void __cdecl G_FreeAnimTreeInstances(void)
 
 // 00626500  Hunk_AllocXAnimServer  (game_mp/g_main_mp.cpp:1747)
 
-void * __cdecl Hunk_AllocXAnimServer(int param_1)
+void * __cdecl Hunk_AllocXAnimServer(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocLow(param_1,"Hunk_AllocXAnimServer",0xd);
+  pvVar1 = Hunk_AllocLow(size,"Hunk_AllocXAnimServer",0xd);
   return pvVar1;
 }
 
@@ -1374,14 +1378,14 @@ bool __cdecl G_ExitAfterToolComplete(void)
 
 // 00626570  G_ExitOnComError  (game_mp/g_main_mp.cpp:1778)
 
-bool __cdecl G_ExitOnComError(int param_1)
+bool __cdecl G_ExitOnComError(int code)
 
 {
   bool bVar1;
   
-  if (((g_connectpaths == (dvar_s *)0x0) || ((g_connectpaths->current).integer != 3)) ||
-     (param_1 != 0)) {
-    if (((g_connectpaths->current).integer < 2) || (param_1 != 1)) {
+  if (((g_connectpaths == (dvar_s *)0x0) || ((g_connectpaths->current).integer != 3)) || (code != 0)
+     ) {
+    if (((g_connectpaths->current).integer < 2) || (code != 1)) {
       if ((r_reflectionProbeGenerate == (dvar_s *)0x0) ||
          ((r_reflectionProbeGenerate->current).enabled == false)) {
         bVar1 = false;
@@ -1408,7 +1412,7 @@ bool __cdecl G_ExitOnComError(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_IsServerGameSystem(int param_1)
+int __cdecl G_IsServerGameSystem(int clientNum)
 
 {
   int iVar1;
@@ -1416,7 +1420,7 @@ int __cdecl G_IsServerGameSystem(int param_1)
   if (g_debugPlayerAnimScript == (dvar_s *)0x0) {
     iVar1 = 0;
   }
-  else if (param_1 == (g_debugPlayerAnimScript->current).integer) {
+  else if (clientNum == (g_debugPlayerAnimScript->current).integer) {
     if (*(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) ==
         &level_bgs) {
       Com_Printf(0x13,"(%i) ");
@@ -1438,21 +1442,22 @@ int __cdecl G_IsServerGameSystem(int param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_PrintFastFileErrors(char *param_1)
+void __cdecl G_PrintFastFileErrors(char *fastfile)
 
 {
   code *pcVar1;
   bool bVar2;
   XAssetHeader XVar3;
+  RawFile *rawfile;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((fastfile == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x72c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,param_1,true,-1);
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,fastfile,true,-1);
   if ((XVar3.xmodelPieces == (XModelPieces *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x72f,1,
                                "%s"), !bVar2)) {
@@ -1497,22 +1502,22 @@ void __cdecl G_PrintAllFastFileErrors(void)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 ushort __cdecl
-G_GetWeaponAttachBone(clientInfo_t *param_1,weapType_t param_2,weapInventoryType_t param_3)
+G_GetWeaponAttachBone(clientInfo_t *ci,weapType_t weapType,weapInventoryType_t invType)
 
 {
   ushort uVar1;
   uint uVar2;
   char *local_c;
   
-  if ((param_2 == WEAPTYPE_GRENADE) || (param_2 == WEAPTYPE_MINE)) {
+  if ((weapType == WEAPTYPE_GRENADE) || (weapType == WEAPTYPE_MINE)) {
     uVar1 = scr_const.tag_inhand;
-    if (param_3 == WEAPINVENTORY_ITEM) {
+    if (invType == WEAPINVENTORY_ITEM) {
       uVar2 = SL_FindString((bg_weaponrightbone->current).string,SCRIPTINSTANCE_SERVER);
       uVar1 = (ushort)uVar2;
     }
   }
   else {
-    if (param_1->leftHandGun == 0) {
+    if (ci->leftHandGun == 0) {
       local_c = (bg_weaponrightbone->current).string;
     }
     else {
@@ -1529,7 +1534,7 @@ G_GetWeaponAttachBone(clientInfo_t *param_1,weapType_t param_2,weapInventoryType
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-ushort __cdecl G_AttachWeapon(DObjModel_s *param_1,ushort param_2,clientInfo_t *param_3)
+ushort __cdecl G_AttachWeapon(DObjModel_s *dobjModels,ushort numModels,clientInfo_t *ci)
 
 {
   byte bVar1;
@@ -1538,93 +1543,94 @@ ushort __cdecl G_AttachWeapon(DObjModel_s *param_1,ushort param_2,clientInfo_t *
   bool bVar4;
   ushort uVar5;
   WeaponDef *pWVar6;
-  WeaponDef *local_8;
+  int oldLeftHand;
+  uchar weaponModel;
+  WeaponDef *weapDef;
   
-  if (param_3->iDObjWeapon != 0) {
-    local_8 = BG_GetWeaponDef(param_3->iDObjWeapon);
-    bVar1 = param_3->weaponModel;
+  if (ci->iDObjWeapon != 0) {
+    weapDef = BG_GetWeaponDef(ci->iDObjWeapon);
+    bVar1 = ci->weaponModel;
     if ((g_enableAttachWeaponFix->current).enabled == false) {
-      if (local_8->worldModel[bVar1] != (XModel *)0x0) {
-        if ((0x1f < param_2) &&
+      if (weapDef->worldModel[bVar1] != (XModel *)0x0) {
+        if ((0x1f < numModels) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                      0x777,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           uVar5 = (*pcVar3)();
           return uVar5;
         }
-        param_1[param_2].model = local_8->worldModel[bVar1];
-        uVar5 = G_GetWeaponAttachBone(param_3,local_8->weapType,local_8->inventoryType);
-        param_1[param_2].boneName = uVar5;
-        param_1[param_2].ignoreCollision = true;
-        param_2 = param_2 + 1;
+        dobjModels[numModels].model = weapDef->worldModel[bVar1];
+        uVar5 = G_GetWeaponAttachBone(ci,weapDef->weapType,weapDef->inventoryType);
+        dobjModels[numModels].boneName = uVar5;
+        dobjModels[numModels].ignoreCollision = true;
+        numModels = numModels + 1;
       }
     }
-    else if ((local_8->worldModel[bVar1] != (XModel *)0x0) && (local_8->bHideThirdPerson == false))
+    else if ((weapDef->worldModel[bVar1] != (XModel *)0x0) && (weapDef->bHideThirdPerson == false))
     {
-      if ((0x1f < param_2) &&
+      if ((0x1f < numModels) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x76a
                                    ,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         uVar5 = (*pcVar3)();
         return uVar5;
       }
-      param_1[param_2].model = local_8->worldModel[bVar1];
-      uVar5 = G_GetWeaponAttachBone(param_3,local_8->weapType,local_8->inventoryType);
-      param_1[param_2].boneName = uVar5;
-      param_1[param_2].ignoreCollision = true;
-      param_2 = param_2 + 1;
+      dobjModels[numModels].model = weapDef->worldModel[bVar1];
+      uVar5 = G_GetWeaponAttachBone(ci,weapDef->weapType,weapDef->inventoryType);
+      dobjModels[numModels].boneName = uVar5;
+      dobjModels[numModels].ignoreCollision = true;
+      numModels = numModels + 1;
     }
-    if (((local_8->bDualWield != false) && (param_3->usingKnife == false)) &&
-       (local_8 = BG_GetWeaponDef(local_8->dualWieldWeaponIndex),
-       local_8->worldModel[bVar1] != (XModel *)0x0)) {
-      if ((0x1f < param_2) &&
+    if (((weapDef->bDualWield != false) && (ci->usingKnife == false)) &&
+       (weapDef = BG_GetWeaponDef(weapDef->dualWieldWeaponIndex),
+       weapDef->worldModel[bVar1] != (XModel *)0x0)) {
+      if ((0x1f < numModels) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x789
                                    ,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         uVar5 = (*pcVar3)();
         return uVar5;
       }
-      param_1[param_2].model = local_8->worldModel[bVar1];
-      iVar2 = param_3->leftHandGun;
-      param_3->leftHandGun = 1;
-      param_3->leftHandGun = iVar2;
-      uVar5 = G_GetWeaponAttachBone(param_3,local_8->weapType,local_8->inventoryType);
-      param_1[param_2].boneName = uVar5;
-      param_1[param_2].ignoreCollision = true;
-      param_2 = param_2 + 1;
+      dobjModels[numModels].model = weapDef->worldModel[bVar1];
+      iVar2 = ci->leftHandGun;
+      ci->leftHandGun = 1;
+      ci->leftHandGun = iVar2;
+      uVar5 = G_GetWeaponAttachBone(ci,weapDef->weapType,weapDef->inventoryType);
+      dobjModels[numModels].boneName = uVar5;
+      dobjModels[numModels].ignoreCollision = true;
+      numModels = numModels + 1;
     }
-    if (local_8->additionalMeleeModel == (XModel *)0x0) {
-      if (((param_3->usingKnife != false) && (param_3->iDObjMeleeWeapon != 0)) &&
-         (pWVar6 = BG_GetWeaponDef(param_3->iDObjMeleeWeapon), pWVar6->worldModel != (XModel **)0x0)
-         ) {
-        if ((0x1f < param_2) &&
+    if (weapDef->additionalMeleeModel == (XModel *)0x0) {
+      if (((ci->usingKnife != false) && (ci->iDObjMeleeWeapon != 0)) &&
+         (pWVar6 = BG_GetWeaponDef(ci->iDObjMeleeWeapon), pWVar6->worldModel != (XModel **)0x0)) {
+        if ((0x1f < numModels) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                      0x7a5,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           uVar5 = (*pcVar3)();
           return uVar5;
         }
-        param_1[param_2].model = pWVar6->worldModel[param_3->meleeWeaponModel];
-        param_1[param_2].boneName = scr_const.tag_weapon_left;
-        param_1[param_2].ignoreCollision = false;
-        param_2 = param_2 + 1;
+        dobjModels[numModels].model = pWVar6->worldModel[ci->meleeWeaponModel];
+        dobjModels[numModels].boneName = scr_const.tag_weapon_left;
+        dobjModels[numModels].ignoreCollision = false;
+        numModels = numModels + 1;
       }
     }
     else {
-      if ((0x1f < param_2) &&
+      if ((0x1f < numModels) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x798
                                    ,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         uVar5 = (*pcVar3)();
         return uVar5;
       }
-      param_1[param_2].model = local_8->additionalMeleeModel;
-      param_1[param_2].boneName = scr_const.tag_weapon_left;
-      param_1[param_2].ignoreCollision = false;
-      param_2 = param_2 + 1;
+      dobjModels[numModels].model = weapDef->additionalMeleeModel;
+      dobjModels[numModels].boneName = scr_const.tag_weapon_left;
+      dobjModels[numModels].ignoreCollision = false;
+      numModels = numModels + 1;
     }
   }
-  return param_2;
+  return numModels;
 }
 
 
@@ -1635,20 +1641,24 @@ ushort __cdecl G_AttachWeapon(DObjModel_s *param_1,ushort param_2,clientInfo_t *
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int param_5)
+void __cdecl G_InitGame(int levelTime,int randomSeed,int restart,int registerDvars,int savegame)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  DWORD DVar4;
+  char *levelName;
+  DWORD DVar3;
   int in_stack_fffff79c;
-  char local_81c [1028];
-  int local_418;
-  char local_414 [1028];
+  char *mapname;
+  char serverinfo [1028];
+  int file;
+  char cs [1028];
   uint local_10;
-  int local_8;
+  PIXProfile pp;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = Sys_IsMainThread();
@@ -1671,13 +1681,13 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   level.initializing = 1;
   level.currentEntityThink = -1;
   level.scriptPrintChannel = 0x19;
-  srand(param_2);
-  Rand_Init(param_2);
-  if (param_4 != 0) {
+  srand(randomSeed);
+  Rand_Init(randomSeed);
+  if (registerDvars != 0) {
     G_RegisterDvars();
   }
   bVar2 = Dvar_GetBool("sv_cheats");
-  if ((!bVar2) && (param_3 == 0)) {
+  if ((!bVar2) && (restart == 0)) {
     Dvar_SetCheatState();
   }
   GScr_LoadConsts();
@@ -1697,9 +1707,9 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   level_bgsAnim.done_notify = (uint)scr_const.done;
   G_InitDestructibles();
   CM_LinkWorld();
-  level.time = param_1;
-  level.startTime = param_1;
-  G_srand(param_2);
+  level.time = levelTime;
+  level.startTime = levelTime;
+  G_srand(randomSeed);
   if (*(g_log->current).string == '\0') {
     Com_Printf(0xf,"Not logging to disk.\n");
   }
@@ -1714,20 +1724,20 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
       Com_PrintWarning(0xf,"WARNING: Couldn\'t open logfile: %s\n");
     }
     else {
-      SV_GetServerinfo(local_81c,0x400);
+      SV_GetServerinfo(serverinfo,0x400);
       G_LogPrintf("------------------------------------------------------------\n");
       G_LogPrintf("InitGame: %s\n");
       G_LogPrintf("InitGame: %s\\g_logTimeStampInSeconds\\%d\n");
     }
   }
-  for (local_418 = 0; local_418 < 1; local_418 = local_418 + 1) {
-    level.openScriptIOFileHandles[local_418] = 0;
-    level.openScriptIOFileBuffers[local_418] = (char *)0x0;
-    level.currentScriptIOLineMark[local_418].lines = 0;
-    level.currentScriptIOLineMark[local_418].text = (char *)0x0;
-    level.currentScriptIOLineMark[local_418].ungetToken = 0;
-    level.currentScriptIOLineMark[local_418].backup_lines = 0;
-    level.currentScriptIOLineMark[local_418].backup_text = (char *)0x0;
+  for (file = 0; file < 1; file = file + 1) {
+    level.openScriptIOFileHandles[file] = 0;
+    level.openScriptIOFileBuffers[file] = (char *)0x0;
+    level.currentScriptIOLineMark[file].lines = 0;
+    level.currentScriptIOLineMark[file].text = (char *)0x0;
+    level.currentScriptIOLineMark[file].ungetToken = 0;
+    level.currentScriptIOLineMark[file].backup_lines = 0;
+    level.currentScriptIOLineMark[file].backup_text = (char *)0x0;
   }
   Mantle_CreateAnims(Hunk_AllocXAnimServer);
   level.actorCorpseCount = (ai_corpseCount->current).integer;
@@ -1739,9 +1749,9 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
     return;
   }
   Dog_CreateAnims(Hunk_AllocXAnimServer);
-  SpawnSystem_Init(param_3 == 1);
+  SpawnSystem_Init(restart == 1);
   VehAnim_Init();
-  if (param_3 == 0) {
+  if (restart == 0) {
     G_ParseScrVehicleInfo();
   }
   else {
@@ -1755,31 +1765,31 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
     return;
   }
   *(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = &level_bgs;
-  if (param_3 == 0) {
+  if (restart == 0) {
     memset((uchar *)**(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
            ,'\0',0x8d388);
     *(code **)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d37c)
          = SND_FindAlias;
     *(code **)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d380)
          = G_AnimScriptSound;
-    pcVar3 = Dvar_GetString("mapname");
+    levelName = Dvar_GetString("mapname");
     PIXBeginNamedEvent(-1,"GScr_LoadScripts");
     bVar2 = G_ExitAfterToolComplete();
     if (!bVar2) {
       DB_SyncXAssets();
     }
     GScr_LoadScripts(SCRIPTINSTANCE_SERVER);
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    BG_LoadAnim(pcVar3);
-    BG_PostLoadAnim(pcVar3);
+    BG_LoadAnim(levelName);
+    BG_PostLoadAnim(levelName);
     G_LoadAnimTreeInstances();
   }
-  SV_GetConfigstring(0x15,local_414,0x400);
-  Info_SetValueForKey(local_414,"winner","0");
-  SV_SetConfigstring(0x15,local_414);
+  SV_GetConfigstring(0x15,cs,0x400);
+  Info_SetValueForKey(cs,"winner","0");
+  SV_SetConfigstring(0x15,cs);
   memset((uchar *)g_entities,'\0',0xbe000);
   level.gentities = g_entities;
   g_entities[0x3ff].flags = g_entities[0x3ff].flags | 0x4000000;
@@ -1787,13 +1797,13 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   memset((uchar *)g_clients,'\0',0x53c00);
   level.clients = g_clients;
   memset((uchar *)g_timed_radius_damage,'\0',0x5800);
-  Path_Init(param_3);
+  Path_Init(restart);
   level.sentients = g_sentients;
   level.actors = g_actors;
   G_InitSentients();
   G_InitActors();
-  for (local_8 = 0; local_8 < level.maxclients; local_8 = local_8 + 1) {
-    g_entities[local_8].client = level.clients + local_8;
+  for (i = 0; i < level.maxclients; i = i + 1) {
+    g_entities[i].client = level.clients + i;
   }
   level.num_entities = 0x2c;
   level.firstFreeEnt = (gentity_s *)0x0;
@@ -1807,12 +1817,12 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   GlassSv_Init();
   DynEntSv_InitEntities();
   Path_PreSpawnInitPaths();
-  if (param_3 == 0) {
+  if (restart == 0) {
     G_DropPathnodesToFloor();
   }
   G_SpawnEntitiesFromString();
   G_setfog("0");
-  if ((param_3 == 0) && ((useFastFile->current).enabled == false)) {
+  if ((restart == 0) && ((useFastFile->current).enabled == false)) {
     G_DropPathnodesToFloor();
   }
   G_SetupVehiclePaths();
@@ -1820,11 +1830,11 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   G_InitObjectives();
   Missile_InitAttractors();
   Path_PreSpawnInitPaths();
-  if (param_3 == 0) {
+  if (restart == 0) {
     G_DropPathnodesToFloor();
   }
   G_UpdateTrackExtraNodes();
-  if ((param_3 == 0) && ((useFastFile->current).enabled == false)) {
+  if ((restart == 0) && ((useFastFile->current).enabled == false)) {
     G_DropPathnodesToFloor();
   }
   G_DropActorSpawnersToFloor();
@@ -1844,8 +1854,8 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   if (bVar2) {
     PIXBeginNamedEvent(-1,"Load Structs");
     G_LoadStructs();
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     if ((r_reflectionProbeGenerate->current).enabled == false) {
@@ -1862,29 +1872,29 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
     else {
       Scr_LoadGameType();
     }
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"Load Level");
     Scr_LoadLevel();
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"Startup Gametype");
     Scr_StartupGameType();
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    *(undefined4 *)(g_scr_data.playerCorpseInfo + local_8 * 0x5e0 + 4) = 0xffffffff;
+  for (i = 0; i < 4; i = i + 1) {
+    *(undefined4 *)(g_scr_data.playerCorpseInfo + i * 0x5e0 + 4) = 0xffffffff;
   }
   if ((useFastFile->current).enabled != false) {
     G_PrintAllFastFileErrors();
@@ -1902,12 +1912,12 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
   level.initializing = 0;
   SaveRegisteredWeapons();
   SaveRegisteredItems();
-  if (param_3 == 0) {
+  if (restart == 0) {
     RadiantRemoteInit();
   }
   RunSavedRadiantCmds();
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1920,18 +1930,19 @@ void __cdecl G_InitGame(int param_1,int param_2,int param_3,int param_4,int para
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl G_ShutdownGame(int param_1)
+void __cdecl G_ShutdownGame(int freeScripts)
 
 {
   int iVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int file;
   
-  local_c = 0;
-  while (local_c < 0x20) {
-    iVar1 = local_c * 0x910;
-    local_c = local_c + 1;
+  i = 0;
+  while (i < 0x20) {
+    iVar1 = i * 0x910;
+    i = i + 1;
     colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)(&DAT_03cbf210 + iVar1))
     ;
   }
@@ -1954,7 +1965,7 @@ void __cdecl G_ShutdownGame(int param_1)
     SV_FreeClientScriptPers();
   }
   Scr_ShutdownSystem(SCRIPTINSTANCE_SERVER,'\x01',(uint)(level.savepersist == 0));
-  if (param_1 != 0) {
+  if (freeScripts != 0) {
     Mantle_ShutdownAnims();
     Dog_ShutdownAnims();
     GScr_FreeScripts(SCRIPTINSTANCE_SERVER);
@@ -1964,15 +1975,15 @@ void __cdecl G_ShutdownGame(int param_1)
     Com_FreeWeaponInfoMemory(1);
     Hunk_ClearToMarkLow(0);
   }
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    if (level.openScriptIOFileBuffers[local_8] != (char *)0x0) {
-      Z_VirtualFree(level.openScriptIOFileBuffers[local_8],0xb);
+  for (file = 0; file < 1; file = file + 1) {
+    if (level.openScriptIOFileBuffers[file] != (char *)0x0) {
+      Z_VirtualFree(level.openScriptIOFileBuffers[file],0xb);
     }
-    level.openScriptIOFileBuffers[local_8] = (char *)0x0;
-    if (level.openScriptIOFileHandles[local_8] != 0) {
-      FS_FCloseFile(level.openScriptIOFileHandles[local_8]);
+    level.openScriptIOFileBuffers[file] = (char *)0x0;
+    if (level.openScriptIOFileHandles[file] != 0) {
+      FS_FCloseFile(level.openScriptIOFileHandles[file]);
     }
-    level.openScriptIOFileHandles[local_8] = 0;
+    level.openScriptIOFileHandles[file] = 0;
   }
   EntHandle::Shutdown();
   SV_track_shutdown();
@@ -1987,7 +1998,7 @@ void __cdecl G_ShutdownGame(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SortRanks(void *param_1,void *param_2)
+int __cdecl SortRanks(void *a,void *b)
 
 {
   code *pcVar1;
@@ -1995,8 +2006,10 @@ int __cdecl SortRanks(void *param_1,void *param_2)
   int iVar3;
   gclient_s *pgVar4;
   gclient_s *pgVar5;
+  gclient_s *cb;
+  gclient_s *ca;
   
-  if ((uint)level.maxclients <= *(uint *)param_1) {
+  if ((uint)level.maxclients <= *(uint *)a) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x9e6,0,
                              "*(int *)a doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2005,7 +2018,7 @@ int __cdecl SortRanks(void *param_1,void *param_2)
       return iVar3;
     }
   }
-  if ((uint)level.maxclients <= *(uint *)param_2) {
+  if ((uint)level.maxclients <= *(uint *)b) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0x9e7,0,
                              "*(int *)b doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2014,8 +2027,8 @@ int __cdecl SortRanks(void *param_1,void *param_2)
       return iVar3;
     }
   }
-  pgVar4 = level.clients + *(int *)param_1;
-  pgVar5 = level.clients + *(int *)param_2;
+  pgVar4 = level.clients + *(int *)a;
+  pgVar5 = level.clients + *(int *)b;
   if ((pgVar4->sess).connected == CON_CONNECTING) {
     iVar3 = 1;
   }
@@ -2072,34 +2085,35 @@ void __cdecl CalculateRanks(void)
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  int local_8;
+  int clientNum;
+  int i;
   
   level.numConnectedClients = 0;
   level.numVotingClients = 0;
-  for (local_8 = 0; local_8 < level.maxclients; local_8 = local_8 + 1) {
-    if (level.clients[local_8].sess.connected != CON_DISCONNECTED) {
-      level.sortedClients[level.numConnectedClients] = local_8;
+  for (i = 0; i < level.maxclients; i = i + 1) {
+    if (level.clients[i].sess.connected != CON_DISCONNECTED) {
+      level.sortedClients[level.numConnectedClients] = i;
       level.numConnectedClients = level.numConnectedClients + 1;
-      if ((level.clients[local_8].sess.cs.team != TEAM_SPECTATOR) &&
-         (level.clients[local_8].sess.connected == CON_CONNECTED)) {
+      if ((level.clients[i].sess.cs.team != TEAM_SPECTATOR) &&
+         (level.clients[i].sess.connected == CON_CONNECTED)) {
         level.numVotingClients = level.numVotingClients + 1;
       }
     }
   }
   qsort(level.sortedClients,level.numConnectedClients,4,SortRanks);
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (level.numConnectedClients <= local_8) {
+    if (level.numConnectedClients <= i) {
       level.bUpdateScoresForIntermission = 1;
       return;
     }
-    uVar1 = level.sortedClients[local_8];
+    uVar1 = level.sortedClients[i];
     if (((uint)level.maxclients <= uVar1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xa35,0
                                  ,"clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)"),
        !bVar3)) break;
-    level.clients[uVar1].sess.cs.score.place = local_8 + 1;
-    local_8 = local_8 + 1;
+    level.clients[uVar1].sess.cs.score.place = i + 1;
+    i = i + 1;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -2117,12 +2131,12 @@ void __cdecl CalculateRanks(void)
 void __cdecl ExitLevel(void)
 
 {
-  int local_8;
+  int i;
   
   Cbuf_AddText(0,"map_rotate\n");
-  for (local_8 = 0; local_8 < level.maxclients; local_8 = local_8 + 1) {
-    if (level.clients[local_8].sess.connected == CON_CONNECTED) {
-      level.clients[local_8].sess.connected = CON_CONNECTING;
+  for (i = 0; i < level.maxclients; i = i + 1) {
+    if (level.clients[i].sess.connected == CON_CONNECTED) {
+      level.clients[i].sess.connected = CON_CONNECTING;
     }
   }
   G_LogPrintf("ExitLevel: executed\n");
@@ -2138,44 +2152,45 @@ void __cdecl ExitLevel(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_LogPrintf(char *param_1)
+void __cdecl G_LogPrintf(char *fmt)
 
 {
   char cVar1;
+  int iVar2;
   char *local_820;
-  char local_81c;
+  char string;
   undefined1 auStack_81b [1023];
-  char *local_41c;
-  int local_418;
-  char local_414 [1024];
+  char *argptr;
+  int tens;
+  char string2 [1024];
   uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int min;
+  int sec;
+  int time1970;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (level.logFile != 0) {
-    local_41c = &stack0x00000008;
-    _vsnprintf(local_414,0x400,param_1,local_41c);
-    local_41c = (char *)0x0;
+    argptr = &stack0x00000008;
+    _vsnprintf(string2,0x400,fmt,argptr);
+    argptr = (char *)0x0;
     if ((g_logTimeStampInSeconds == (dvar_s *)0x0) ||
        ((g_logTimeStampInSeconds->current).enabled == false)) {
-      local_10 = (level.time / 1000) / 0x3c;
-      local_c = (level.time / 1000) % 0x3c;
-      local_418 = local_c / 10;
-      local_c = local_c % 10;
-      Com_sprintf(&local_81c,0x400,"%3i:%i%i %s");
+      min = (level.time / 1000) / 0x3c;
+      iVar2 = (level.time / 1000) % 0x3c;
+      tens = iVar2 / 10;
+      sec = iVar2 % 10;
+      Com_sprintf(&string,0x400,"%3i:%i%i %s");
     }
     else {
-      local_8 = Com_RealTime((qtime_s *)0x0,true);
-      Com_sprintf(&local_81c,0x400,"%d %s");
+      time1970 = Com_RealTime((qtime_s *)0x0,true);
+      Com_sprintf(&string,0x400,"%d %s");
     }
-    local_820 = &local_81c;
+    local_820 = &string;
     do {
       cVar1 = *local_820;
       local_820 = local_820 + 1;
     } while (cVar1 != '\0');
-    FS_Write(&local_81c,(int)local_820 - (int)auStack_81b,level.logFile);
+    FS_Write(&string,(int)local_820 - (int)auStack_81b,level.logFile);
   }
   return;
 }
@@ -2187,12 +2202,17 @@ void __cdecl G_LogPrintf(char *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl CheckVote(void)
 
 {
   char *pcVar1;
   int iVar2;
+  int noVotes;
+  int numActualVotes;
+  int yesVotes;
+  int passCount;
   
   if ((level.voteExecuteTime != 0) && (level.voteExecuteTime < level.time)) {
     level.voteExecuteTime = 0;
@@ -2251,35 +2271,39 @@ void __cdecl G_UpdateObjectiveToClients(void)
   int iVar6;
   objective_t *poVar7;
   objective_t *poVar8;
-  int local_10;
-  int local_c;
+  objective_t *obj;
+  int team;
+  gentity_s *ent;
+  int clientNum;
+  int objNum;
+  playerState_s *ps;
   
-  local_10 = 0;
+  clientNum = 0;
   do {
     pgVar4 = level.gentities;
-    if (level.maxclients <= local_10) {
+    if (level.maxclients <= clientNum) {
       return;
     }
-    if (level.gentities[local_10].r.inuse != '\0') {
-      if ((level.gentities[local_10].client == (gclient_s *)0x0) &&
+    if (level.gentities[clientNum].r.inuse != '\0') {
+      if ((level.gentities[clientNum].client == (gclient_s *)0x0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xafa
                                    ,0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      pgVar1 = pgVar4[local_10].client;
-      tVar2 = ((pgVar4[local_10].client)->sess).cs.team;
-      for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-        if ((level.objectives[local_c].state == OBJST_EMPTY) ||
-           (((level.objectives[local_c].teamNum != 0 && (level.objectives[local_c].teamNum != tVar2)
-             ) || ((1 << ((byte)local_10 & 0x1f) &
-                   *(uint *)((local_10 >> 5) * 4 + 0x3e518c8 + local_c * 8)) != 0)))) {
-          (pgVar1->ps).objective[local_c].state = OBJST_EMPTY;
+      pgVar1 = pgVar4[clientNum].client;
+      tVar2 = ((pgVar4[clientNum].client)->sess).cs.team;
+      for (objNum = 0; objNum < 0x20; objNum = objNum + 1) {
+        if ((level.objectives[objNum].state == OBJST_EMPTY) ||
+           (((level.objectives[objNum].teamNum != 0 && (level.objectives[objNum].teamNum != tVar2))
+            || ((1 << ((byte)clientNum & 0x1f) &
+                *(uint *)((clientNum >> 5) * 4 + 0x3e518c8 + objNum * 8)) != 0)))) {
+          (pgVar1->ps).objective[objNum].state = OBJST_EMPTY;
         }
         else {
-          poVar7 = level.objectives + local_c;
-          poVar8 = (pgVar1->ps).objective + local_c;
+          poVar7 = level.objectives + objNum;
+          poVar8 = (pgVar1->ps).objective + objNum;
           for (iVar6 = 0xc; iVar6 != 0; iVar6 = iVar6 + -1) {
             poVar8->state = poVar7->state;
             poVar7 = (objective_t *)poVar7->origin;
@@ -2288,7 +2312,7 @@ void __cdecl G_UpdateObjectiveToClients(void)
         }
       }
     }
-    local_10 = local_10 + 1;
+    clientNum = clientNum + 1;
   } while( true );
 }
 
@@ -2306,14 +2330,15 @@ void __cdecl G_UpdateHudElemsToClients(void)
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  int local_8;
+  gentity_s *ent;
+  int clientNum;
   
-  local_8 = 0;
+  clientNum = 0;
   do {
-    if (level.maxclients <= local_8) {
+    if (level.maxclients <= clientNum) {
       return;
     }
-    pgVar3 = level.gentities + local_8;
+    pgVar3 = level.gentities + clientNum;
     if ((pgVar3->r).inuse != '\0') {
       if ((pgVar3->client == (gclient_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb19
@@ -2324,7 +2349,7 @@ void __cdecl G_UpdateHudElemsToClients(void)
       }
       HudElem_UpdateClient(pgVar3->client,(pgVar3->s).number,HUDELEM_UPDATE_ARCHIVAL_AND_CURRENT);
     }
-    local_8 = local_8 + 1;
+    clientNum = clientNum + 1;
   } while( true );
 }
 
@@ -2336,18 +2361,19 @@ void __cdecl G_UpdateHudElemsToClients(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RunThink(gentity_s *param_1)
+void __cdecl G_RunThink(gentity_s *ent)
 
 {
   code *pcVar1;
+  int thinktime;
   
-  if ((0 < param_1->nextthink) && (param_1->nextthink <= level.time)) {
-    param_1->nextthink = 0;
-    pcVar1 = *(code **)(&entityHandlers + (uint)param_1->handler * 0x30);
+  if ((0 < ent->nextthink) && (ent->nextthink <= level.time)) {
+    ent->nextthink = 0;
+    pcVar1 = *(code **)(&entityHandlers + (uint)ent->handler * 0x30);
     if (pcVar1 == (code *)0x0) {
       Com_Error(ERR_DROP,"\x15NULL ent->think");
     }
-    (*pcVar1)(param_1);
+    (*pcVar1)(ent);
   }
   return;
 }
@@ -2399,11 +2425,11 @@ void __cdecl ScriptPump(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_XAnimUpdateEnt(gentity_s *param_1)
+void __cdecl G_XAnimUpdateEnt(gentity_s *ent)
 
 {
-  if (((param_1->r).inuse != '\0') && ((param_1->flags & 0x2000U) == 0)) {
-    G_DObjUpdateServerTime(param_1,1,ScriptPump);
+  if (((ent->r).inuse != '\0') && ((ent->flags & 0x2000U) == 0)) {
+    G_DObjUpdateServerTime(ent,1,ScriptPump);
   }
   return;
 }
@@ -2417,19 +2443,19 @@ void __cdecl G_XAnimUpdateEnt(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-DoPerFrameNotify(gentity_s *param_1,bool param_2,bool param_3,ushort param_4,ushort param_5)
+DoPerFrameNotify(gentity_s *ent,bool isCurrently,bool wasPreviously,ushort begin,ushort end)
 
 {
-  if (param_2 != param_3) {
-    param_3 = param_2;
-    if (param_2) {
-      Scr_Notify(param_1,param_4,0);
+  if (isCurrently != wasPreviously) {
+    wasPreviously = isCurrently;
+    if (isCurrently) {
+      Scr_Notify(ent,begin,0);
     }
     else {
-      Scr_Notify(param_1,param_5,0);
+      Scr_Notify(ent,end,0);
     }
   }
-  return param_3;
+  return wasPreviously;
 }
 
 
@@ -2440,77 +2466,76 @@ DoPerFrameNotify(gentity_s *param_1,bool param_2,bool param_3,ushort param_4,ush
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ClientDoPerFrameNotifies(gentity_s *param_1)
+void __cdecl G_ClientDoPerFrameNotifies(gentity_s *ent)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  bool bVar4;
-  char *pcVar5;
-  ushort uVar6;
-  scriptInstance_t sVar7;
-  ushort uVar8;
+  gclient_s *ps;
+  code *pcVar1;
+  bool bVar2;
+  bool isCurrently;
+  char *value;
+  ushort begin;
+  scriptInstance_t inst;
+  ushort end;
   bool local_9;
+  gclient_s *client;
   
-  if (param_1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb6b,0,
+  if (ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb6b,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = param_1->client;
-  if (pgVar1 == (gclient_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb6f,0,
+  ps = ent->client;
+  if (ps == (gclient_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb6f,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((pgVar1->sess).connected == CON_DISCONNECTED) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb70,0,
+  if ((ps->sess).connected == CON_DISCONNECTED) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xb70,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((pgVar1->ps).weapon != (ushort)pgVar1->lastWeapon) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
-    pcVar5 = BG_WeaponName((uint)(pgVar1->ps).weapon);
-    Scr_AddString(pcVar5,sVar7);
-    Scr_Notify(param_1,scr_const.weapon_change,1);
-    pgVar1->lastWeapon = (uint)(pgVar1->ps).weapon;
+  if ((ps->ps).weapon != (ushort)ps->lastWeapon) {
+    inst = SCRIPTINSTANCE_SERVER;
+    value = BG_WeaponName((uint)(ps->ps).weapon);
+    Scr_AddString(value,inst);
+    Scr_Notify(ent,scr_const.weapon_change,1);
+    ps->lastWeapon = (uint)(ps->ps).weapon;
   }
-  if (((pgVar1->ps).lastDtpEnd != 0) && ((pgVar1->ps).lastDtpEnd == (pgVar1->ps).commandTime)) {
-    Scr_Notify(param_1,scr_const.dtp_end,0);
+  if (((ps->ps).lastDtpEnd != 0) && ((ps->ps).lastDtpEnd == (ps->ps).commandTime)) {
+    Scr_Notify(ent,scr_const.dtp_end,0);
   }
-  if ((((pgVar1->ps).weaponstate == 6) || ((pgVar1->ps).weaponstate == 0x1f)) &&
-     ((pgVar1->ps).pm_type < 9)) {
+  if ((((ps->ps).weaponstate == 6) || ((ps->ps).weaponstate == 0x1f)) && ((ps->ps).pm_type < 9)) {
     local_9 = true;
   }
   else {
     local_9 = false;
   }
-  bVar3 = DoPerFrameNotify(param_1,local_9,pgVar1->previouslyFiring,scr_const.begin_firing,
+  bVar2 = DoPerFrameNotify(ent,local_9,ps->previouslyFiring,scr_const.begin_firing,
                            scr_const.end_firing);
-  pgVar1->previouslyFiring = bVar3;
-  bVar3 = DoPerFrameNotify(param_1,((pgVar1->ps).weapFlags & 0x40U) != 0,
-                           pgVar1->previouslyUsingNightVision,scr_const.night_vision_on,
-                           scr_const.night_vision_off);
-  pgVar1->previouslyUsingNightVision = bVar3;
-  bVar3 = pgVar1->previouslySprinting;
-  uVar6 = scr_const.sprint_begin;
-  uVar8 = scr_const.sprint_end;
-  bVar4 = PM_IsSprinting(&pgVar1->ps);
-  bVar3 = DoPerFrameNotify(param_1,bVar4,bVar3,uVar6,uVar8);
-  pgVar1->previouslySprinting = bVar3;
+  ps->previouslyFiring = bVar2;
+  bVar2 = DoPerFrameNotify(ent,((ps->ps).weapFlags & 0x40U) != 0,ps->previouslyUsingNightVision,
+                           scr_const.night_vision_on,scr_const.night_vision_off);
+  ps->previouslyUsingNightVision = bVar2;
+  bVar2 = ps->previouslySprinting;
+  begin = scr_const.sprint_begin;
+  end = scr_const.sprint_end;
+  isCurrently = PM_IsSprinting(&ps->ps);
+  bVar2 = DoPerFrameNotify(ent,isCurrently,bVar2,begin,end);
+  ps->previouslySprinting = bVar2;
   return;
 }
 
@@ -2527,78 +2552,77 @@ void __cdecl ShowEntityInfo(void)
 
 {
   gclient_s *pgVar1;
-  int local_a0;
-  float local_9c;
+  int contentMask;
+  float vEnd;
   float local_98;
   float local_94;
-  float4 local_90 [3];
+  float4 trace [3];
   uint local_58;
-  float local_54;
+  float vForward;
   float local_50;
   float local_4c;
-  ushort local_48;
-  code *local_44;
-  col_context_t local_40;
-  gentity_s *local_18;
-  int local_14;
-  float local_10;
+  ushort hitEntId;
+  code *entinfo;
+  col_context_t context;
+  gentity_s *ent;
+  int i;
+  float vStart;
   float local_c;
   float local_8;
   
   local_58 = __security_cookie ^ (uint)&stack0xfffffffc;
-  col_context_t::col_context_t(&local_40);
-  CL_GetDebugViewPos(&local_10);
+  col_context_t::col_context_t(&context);
+  CL_GetDebugViewPos(&vStart);
   if (g_radiant_selected_ent != (gentity_s *)0x0) {
-    misc_EntInfo(g_radiant_selected_ent,&local_10);
+    misc_EntInfo(g_radiant_selected_ent,&vStart);
   }
   if ((g_entinfo->current).integer != 0) {
     if (((((g_entinfo->current).integer == 2) || ((g_entinfo->current).integer == 3)) ||
         ((g_entinfo->current).integer == 5)) || ((g_entinfo->current).integer == 7)) {
-      local_90[0].v[0] = 0.0;
-      local_90[0].v[1] = 0.0;
-      local_90[0].v[2] = 0.0;
-      local_90[0].v[3] = 0.0;
-      CL_GetDebugViewForward(&local_54);
-      local_9c = local_54 * 16000.0 + local_10;
+      trace[0].v[0] = 0.0;
+      trace[0].v[1] = 0.0;
+      trace[0].v[2] = 0.0;
+      trace[0].v[3] = 0.0;
+      CL_GetDebugViewForward(&vForward);
+      vEnd = vForward * 16000.0 + vStart;
       local_98 = local_50 * 16000.0 + local_c;
       local_94 = local_4c * 16000.0 + local_8;
       if ((g_entinfo_type->current).integer == 1) {
-        local_a0 = 0x8000;
+        contentMask = 0x8000;
       }
       else if ((g_entinfo_type->current).integer == 2) {
-        local_a0 = 0x800000;
+        contentMask = 0x800000;
       }
       else {
-        local_a0 = 0x80a080;
+        contentMask = 0x80a080;
       }
-      G_TraceCapsule((trace_t *)local_90,&local_10,vec3_origin,vec3_origin,&local_9c,0,local_a0,
-                     &local_40);
-      local_48 = Trace_GetEntityHitId((trace_t *)local_90);
-      local_44 = *(code **)(&DAT_00e07cf0 + (uint)g_entities[local_48].handler * 0x30);
-      if (local_44 != (code *)0x0) {
-        Dvar_SetIntByName("ai_debugEntIndex",(uint)local_48);
+      G_TraceCapsule((trace_t *)trace,&vStart,vec3_origin,vec3_origin,&vEnd,0,contentMask,&context);
+      hitEntId = Trace_GetEntityHitId((trace_t *)trace);
+      entinfo = *(code **)(&DAT_00e07cf0 + (uint)g_entities[hitEntId].handler * 0x30);
+      if (entinfo != (code *)0x0) {
+        Dvar_SetIntByName("ai_debugEntIndex",(uint)hitEntId);
         lastEntTime = level.time;
       }
       if (((ai_debugEntIndex->current).integer != -1) && (level.time < lastEntTime + 30000)) {
-        local_18 = g_entities + (ai_debugEntIndex->current).integer;
+        ent = g_entities + (ai_debugEntIndex->current).integer;
         if ((g_entities[(ai_debugEntIndex->current).integer].actor != (actor_s *)0x0) &&
            (0 < (ai_debugCoverEntityNum->current).integer)) {
-          Dvar_SetInt(ai_debugCoverEntityNum,(local_18->s).number);
+          Dvar_SetInt(ai_debugCoverEntityNum,(ent->s).number);
         }
-        local_44 = *(code **)(&DAT_00e07cf0 + (uint)local_18->handler * 0x30);
-        if (local_44 != (code *)0x0) {
-          (*local_44)(local_18,&local_10);
+        entinfo = *(code **)(&DAT_00e07cf0 + (uint)ent->handler * 0x30);
+        if (entinfo != (code *)0x0) {
+          (*entinfo)(ent,&vStart);
         }
       }
     }
     else {
-      local_18 = g_entities;
-      for (local_14 = 0; local_14 < level.num_entities; local_14 = local_14 + 1) {
-        if (((local_18->r).inuse != '\0') && ((local_18->r).linked != '\0')) {
+      ent = g_entities;
+      for (i = 0; i < level.num_entities; i = i + 1) {
+        if (((ent->r).inuse != '\0') && ((ent->r).linked != '\0')) {
           if ((g_entinfo->current).integer == 6) {
-            if (((local_18->r).svFlags & 1) == 0) {
-              if (local_18->classname != scr_const.script_model) {
-                pgVar1 = local_18->client;
+            if (((ent->r).svFlags & 1) == 0) {
+              if (ent->classname != scr_const.script_model) {
+                pgVar1 = ent->client;
                 goto joined_r0x0062abd0;
               }
               goto LAB_0062abea;
@@ -2606,23 +2630,23 @@ void __cdecl ShowEntityInfo(void)
           }
           else {
             if ((g_entinfo_type->current).integer == 1) {
-              pgVar1 = (gclient_s *)local_18->actor;
+              pgVar1 = (gclient_s *)ent->actor;
             }
             else {
               if ((g_entinfo_type->current).integer != 2) goto LAB_0062abea;
-              pgVar1 = (gclient_s *)local_18->scr_vehicle;
+              pgVar1 = (gclient_s *)ent->scr_vehicle;
             }
 joined_r0x0062abd0:
             if (pgVar1 != (gclient_s *)0x0) {
 LAB_0062abea:
-              local_44 = *(code **)(&DAT_00e07cf0 + (uint)local_18->handler * 0x30);
-              if (local_44 != (code *)0x0) {
-                (*local_44)(local_18,&local_10);
+              entinfo = *(code **)(&DAT_00e07cf0 + (uint)ent->handler * 0x30);
+              if (entinfo != (code *)0x0) {
+                (*entinfo)(ent,&vStart);
               }
             }
           }
         }
-        local_18 = local_18 + 1;
+        ent = ent + 1;
       }
     }
   }
@@ -2637,18 +2661,18 @@ LAB_0062abea:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateIKCulling(gentity_s *param_1)
+void __cdecl G_UpdateIKCulling(gentity_s *ent)
 
 {
-  if (((((param_1->r).inuse != '\0') && (param_1->client != (gclient_s *)0x0)) &&
-      ((param_1->client->ps).eFlags = (param_1->client->ps).eFlags | 0x20000,
-      ((param_1->client->ps).pm_flags & 0x90000cU) == 0)) &&
-     ((((param_1->client->ps).pm_flags & 0x8000U) == 0 ||
-      (*(float *)(&DAT_03cbf148 + (uint)(param_1->client->ps).clientNum * 0x910) <
+  if (((((ent->r).inuse != '\0') && (ent->client != (gclient_s *)0x0)) &&
+      ((ent->client->ps).eFlags = (ent->client->ps).eFlags | 0x20000,
+      ((ent->client->ps).pm_flags & 0x90000cU) == 0)) &&
+     ((((ent->client->ps).pm_flags & 0x8000U) == 0 ||
+      (*(float *)(&DAT_03cbf148 + (uint)(ent->client->ps).clientNum * 0x910) <
        (player_sprintThreshhold->current).value ||
-       *(float *)(&DAT_03cbf148 + (uint)(param_1->client->ps).clientNum * 0x910) ==
+       *(float *)(&DAT_03cbf148 + (uint)(ent->client->ps).clientNum * 0x910) ==
        (player_sprintThreshhold->current).value)))) {
-    (param_1->client->ps).eFlags = (param_1->client->ps).eFlags & 0xfffdffff;
+    (ent->client->ps).eFlags = (ent->client->ps).eFlags & 0xfffdffff;
   }
   return;
 }
@@ -2661,40 +2685,40 @@ void __cdecl G_UpdateIKCulling(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RunFrameForEntity(gentity_s *param_1)
+void __cdecl G_RunFrameForEntity(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (((param_1->r).inuse == '\0') &&
+  if (((ent->r).inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc1e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->processedFrame != level.framenum) {
-    param_1->processedFrame = level.framenum;
-    if (param_1->tagInfo != (tagInfo_s *)0x0) {
-      if ((param_1->tagInfo->parent == (gentity_s *)0x0) &&
+  if (ent->processedFrame != level.framenum) {
+    ent->processedFrame = level.framenum;
+    if (ent->tagInfo != (tagInfo_s *)0x0) {
+      if ((ent->tagInfo->parent == (gentity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc27
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      G_RunFrameForEntity(param_1->tagInfo->parent);
+      G_RunFrameForEntity(ent->tagInfo->parent);
     }
-    if ((((param_1->r).svFlags & 6) == 6) &&
+    if ((((ent->r).svFlags & 6) == 6) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc2b,0
                                  ,"%s\n\t(ent->s.number) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->r).maxs[0] < (param_1->r).mins[0]) {
-      SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+    if ((ent->r).maxs[0] < (ent->r).mins[0]) {
+      SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
       va("entnum: %d, origin: %g %g %g, classname: %s");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc2d,0,
                                "%s\n\t%s");
@@ -2704,8 +2728,8 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
         return;
       }
     }
-    if ((param_1->r).maxs[1] < (param_1->r).mins[1]) {
-      SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+    if ((ent->r).maxs[1] < (ent->r).mins[1]) {
+      SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
       va("entnum: %d, origin: %g %g %g, classname: %s");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc2e,0,
                                "%s\n\t%s");
@@ -2715,8 +2739,8 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
         return;
       }
     }
-    if ((param_1->r).maxs[2] < (param_1->r).mins[2]) {
-      SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+    if ((ent->r).maxs[2] < (ent->r).mins[2]) {
+      SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
       va("entnum: %d, origin: %g %g %g, classname: %s");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc2f,0,
                                "%s\n\t%s");
@@ -2726,15 +2750,15 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
         return;
       }
     }
-    if ((((param_1->s).loopSoundId != 0) && ((param_1->s).loopSoundFade < 0)) &&
-       ((param_1->s).loopSoundFade =
-             (param_1->s).loopSoundFade + ((short)level.time - (short)level.previousTime),
-       -1 < (param_1->s).loopSoundFade)) {
-      (param_1->s).loopSoundId = 0;
-      (param_1->s).loopSoundFade = 0;
+    if ((((ent->s).loopSoundId != 0) && ((ent->s).loopSoundFade < 0)) &&
+       ((ent->s).loopSoundFade =
+             (ent->s).loopSoundFade + ((short)level.time - (short)level.previousTime),
+       -1 < (ent->s).loopSoundFade)) {
+      (ent->s).loopSoundId = 0;
+      (ent->s).loopSoundFade = 0;
     }
-    if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
-      if (((param_1->s).eType == 0xe) &&
+    if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
+      if (((ent->s).eType == 0xe) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc44
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2743,14 +2767,14 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
       }
     }
     else {
-      if ((0xf < (uint)(((int)param_1->scr_vehicle - (int)level.vehicles) / 0xe2c)) &&
+      if ((0xf < (uint)(((int)ent->scr_vehicle - (int)level.vehicles) / 0xe2c)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc3f
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((param_1->scr_vehicle->entNum == 0x3ff) &&
+      if ((ent->scr_vehicle->entNum == 0x3ff) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xc40
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2758,66 +2782,64 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
         return;
       }
     }
-    if ((((param_1->client == (gclient_s *)0x0) && ((param_1->s).eType != 0xe)) &&
-        ((param_1->s).eType != 0xc)) &&
-       ((((param_1->s).eType != 2 && (((param_1->s).lerp.eFlags & 0x4000U) != 0)) &&
-        ((param_1->s).time2 < level.time)))) {
-      Scr_Notify(param_1,scr_const.death,0);
-      G_FreeEntity(param_1);
+    if ((((ent->client == (gclient_s *)0x0) && ((ent->s).eType != 0xe)) && ((ent->s).eType != 0xc))
+       && ((((ent->s).eType != 2 && (((ent->s).lerp.eFlags & 0x4000U) != 0)) &&
+           ((ent->s).time2 < level.time)))) {
+      Scr_Notify(ent,scr_const.death,0);
+      G_FreeEntity(ent);
     }
     else {
-      if (300 < level.time - param_1->eventTime) {
-        if (param_1->freeAfterEvent != 0) {
-          G_FreeEntity(param_1);
+      if (300 < level.time - ent->eventTime) {
+        if (ent->freeAfterEvent != 0) {
+          G_FreeEntity(ent);
           return;
         }
-        if (param_1->unlinkAfterEvent != 0) {
-          param_1->unlinkAfterEvent = 0;
-          SV_UnlinkEntity(param_1);
+        if (ent->unlinkAfterEvent != 0) {
+          ent->unlinkAfterEvent = 0;
+          SV_UnlinkEntity(ent);
         }
       }
-      if (param_1->freeAfterEvent == 0) {
-        if ((param_1->s).eType == 4) {
-          G_RunMissile(param_1);
-          if (param_1->tagInfo != (tagInfo_s *)0x0) {
-            G_GeneralLink(param_1);
+      if (ent->freeAfterEvent == 0) {
+        if ((ent->s).eType == 4) {
+          G_RunMissile(ent);
+          if (ent->tagInfo != (tagInfo_s *)0x0) {
+            G_GeneralLink(ent);
           }
         }
-        else if ((param_1->s).eType == 3) {
-          if (param_1->tagInfo == (tagInfo_s *)0x0) {
-            G_RunItem(param_1);
+        else if ((ent->s).eType == 3) {
+          if (ent->tagInfo == (tagInfo_s *)0x0) {
+            G_RunItem(ent);
           }
           else {
-            G_GeneralLink(param_1);
-            G_RunThink(param_1);
+            G_GeneralLink(ent);
+            G_RunThink(ent);
           }
         }
-        else if ((param_1->s).eType == 2) {
-          G_RunCorpse(param_1);
+        else if ((ent->s).eType == 2) {
+          G_RunCorpse(ent);
         }
-        else if ((param_1->s).eType == 0x13) {
-          G_RunThink(param_1);
+        else if ((ent->s).eType == 0x13) {
+          G_RunThink(ent);
         }
-        else if (param_1->physicsObject == '\0') {
-          if ((((param_1->s).eType == 6) || ((param_1->s).eType == 0xd)) ||
-             ((param_1->s).eType == 10)) {
-            SV_Flame_Apply_Damage(param_1);
-            G_RunMover(param_1);
+        else if (ent->physicsObject == '\0') {
+          if ((((ent->s).eType == 6) || ((ent->s).eType == 0xd)) || ((ent->s).eType == 10)) {
+            SV_Flame_Apply_Damage(ent);
+            G_RunMover(ent);
           }
-          else if (param_1->client == (gclient_s *)0x0) {
-            if ((((param_1->s).eType == 0) || ((param_1->s).eType == 0x14)) &&
-               (param_1->tagInfo != (tagInfo_s *)0x0)) {
-              G_GeneralLink(param_1);
+          else if (ent->client == (gclient_s *)0x0) {
+            if ((((ent->s).eType == 0) || ((ent->s).eType == 0x14)) &&
+               (ent->tagInfo != (tagInfo_s *)0x0)) {
+              G_GeneralLink(ent);
             }
-            SV_Flame_Apply_Damage(param_1);
-            G_RunThink(param_1);
+            SV_Flame_Apply_Damage(ent);
+            G_RunThink(ent);
           }
           else {
-            G_RunClient(param_1);
+            G_RunClient(ent);
           }
         }
         else {
-          G_RunItem(param_1);
+          G_RunItem(ent);
         }
       }
     }
@@ -2833,18 +2855,18 @@ void __cdecl G_RunFrameForEntity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateIKPlayerClipTerrainTimeout(gentity_s *param_1)
+void __cdecl G_UpdateIKPlayerClipTerrainTimeout(gentity_s *ent)
 
 {
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((((param_1->s).lerp.eFlags2 & 0x10000U) != 0) &&
-       (param_1->ikPlayerclipTerrainTime < level.time + -1000)) {
-      (param_1->s).lerp.eFlags2 = (param_1->s).lerp.eFlags2 & 0xfffeffff;
+  if (ent->client == (gclient_s *)0x0) {
+    if ((((ent->s).lerp.eFlags2 & 0x10000U) != 0) &&
+       (ent->ikPlayerclipTerrainTime < level.time + -1000)) {
+      (ent->s).lerp.eFlags2 = (ent->s).lerp.eFlags2 & 0xfffeffff;
     }
   }
-  else if ((((param_1->client->ps).eFlags2 & 0x10000U) != 0) &&
-          (param_1->ikPlayerclipTerrainTime < level.time + -1000)) {
-    (param_1->client->ps).eFlags2 = (param_1->client->ps).eFlags2 & 0xfffeffff;
+  else if ((((ent->client->ps).eFlags2 & 0x10000U) != 0) &&
+          (ent->ikPlayerclipTerrainTime < level.time + -1000)) {
+    (ent->client->ps).eFlags2 = (ent->client->ps).eFlags2 & 0xfffeffff;
   }
   return;
 }
@@ -2857,18 +2879,18 @@ void __cdecl G_UpdateIKPlayerClipTerrainTimeout(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateIKDisableTerrainMappingTimeout(gentity_s *param_1)
+void __cdecl G_UpdateIKDisableTerrainMappingTimeout(gentity_s *ent)
 
 {
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((((param_1->s).lerp.eFlags2 & 0x100000U) != 0) &&
-       (param_1->ikDisableTerrainMappingTime < level.time + -1000)) {
-      (param_1->s).lerp.eFlags2 = (param_1->s).lerp.eFlags2 & 0xffefffff;
+  if (ent->client == (gclient_s *)0x0) {
+    if ((((ent->s).lerp.eFlags2 & 0x100000U) != 0) &&
+       (ent->ikDisableTerrainMappingTime < level.time + -1000)) {
+      (ent->s).lerp.eFlags2 = (ent->s).lerp.eFlags2 & 0xffefffff;
     }
   }
-  else if ((((param_1->client->ps).eFlags2 & 0x100000U) != 0) &&
-          (param_1->ikDisableTerrainMappingTime < level.time + -1000)) {
-    (param_1->client->ps).eFlags2 = (param_1->client->ps).eFlags2 & 0xffefffff;
+  else if ((((ent->client->ps).eFlags2 & 0x100000U) != 0) &&
+          (ent->ikDisableTerrainMappingTime < level.time + -1000)) {
+    (ent->client->ps).eFlags2 = (ent->client->ps).eFlags2 & 0xffefffff;
   }
   return;
 }
@@ -2881,32 +2903,34 @@ void __cdecl G_UpdateIKDisableTerrainMappingTimeout(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateTimedDamage(gentity_s *param_1)
+void __cdecl G_UpdateTimedDamage(gentity_s *ent)
 
 {
   float fVar1;
-  int local_14;
-  int local_c;
+  int max;
+  float dist;
+  int i;
+  gentity_s *fireStarterEnt;
   
-  if (param_1->last_timed_radius_damage <= level.time) {
-    local_14 = 0;
-    for (local_c = 0; local_c < g_timed_radius_damage_count; local_c = local_c + 1) {
-      if (level.time < g_timed_radius_damage[local_c].life) {
-        local_14 = local_c + 1;
-        fVar1 = Vec3DistanceSq(g_timed_radius_damage[local_c].pos,(param_1->r).currentOrigin);
-        if (((fVar1 <= g_timed_radius_damage[local_c].radiusSqr) &&
-            (param_1->last_timed_radius_damage = level.time + g_timed_radius_damage[local_c].rate,
-            -1 < g_timed_radius_damage[local_c].fireStarterClientNum)) &&
-           (g_timed_radius_damage[local_c].fireStarterClientNum < 0x20)) {
-          G_Damage(param_1,g_entities + g_timed_radius_damage[local_c].fireStarterClientNum,
-                   g_entities + g_timed_radius_damage[local_c].fireStarterClientNum,dir,hitPos,
-                   g_timed_radius_damage[local_c].damage,1,g_timed_radius_damage[local_c].mod,
-                   g_timed_radius_damage[local_c].weapon,HITLOC_NONE,0,0,0);
+  if (ent->last_timed_radius_damage <= level.time) {
+    max = 0;
+    for (i = 0; i < g_timed_radius_damage_count; i = i + 1) {
+      if (level.time < g_timed_radius_damage[i].life) {
+        max = i + 1;
+        fVar1 = Vec3DistanceSq(g_timed_radius_damage[i].pos,(ent->r).currentOrigin);
+        if (((fVar1 <= g_timed_radius_damage[i].radiusSqr) &&
+            (ent->last_timed_radius_damage = level.time + g_timed_radius_damage[i].rate,
+            -1 < g_timed_radius_damage[i].fireStarterClientNum)) &&
+           (g_timed_radius_damage[i].fireStarterClientNum < 0x20)) {
+          G_Damage(ent,g_entities + g_timed_radius_damage[i].fireStarterClientNum,
+                   g_entities + g_timed_radius_damage[i].fireStarterClientNum,dir,hitPos,
+                   g_timed_radius_damage[i].damage,1,g_timed_radius_damage[i].mod,
+                   g_timed_radius_damage[i].weapon,HITLOC_NONE,0,0,0);
         }
       }
     }
-    if (local_14 < g_timed_radius_damage_count) {
-      g_timed_radius_damage_count = local_14;
+    if (max < g_timed_radius_damage_count) {
+      g_timed_radius_damage_count = max;
     }
   }
   return;
@@ -2923,13 +2947,12 @@ void __cdecl G_UpdateTimedDamage(gentity_s *param_1)
 void __cdecl G_DebugTimedDamage(void)
 
 {
-  int local_8;
+  int i;
   
   if ((fire_debug->current).enabled != false) {
-    for (local_8 = 0; local_8 < g_timed_radius_damage_count; local_8 = local_8 + 1) {
-      if (level.time < g_timed_radius_damage[local_8].life) {
-        G_DebugCircle(g_timed_radius_damage[local_8].pos,g_timed_radius_damage[local_8].radius,
-                      colorRed,1,0,0);
+    for (i = 0; i < g_timed_radius_damage_count; i = i + 1) {
+      if (level.time < g_timed_radius_damage[i].life) {
+        G_DebugCircle(g_timed_radius_damage[i].pos,g_timed_radius_damage[i].radius,colorRed,1,0,0);
       }
     }
   }
@@ -2944,34 +2967,33 @@ void __cdecl G_DebugTimedDamage(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateWeapons(gentity_s *param_1)
+void __cdecl G_UpdateWeapons(gentity_s *ent)
 
 {
   ushort uVar1;
-  uint local_50;
-  weaponParms local_4c;
+  uint weapon;
+  weaponParms wp;
   
-  if (param_1->client == (gclient_s *)0x0) {
-    if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
+    if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
       return;
     }
-    uVar1 = (param_1->s).weapon;
+    uVar1 = (ent->s).weapon;
   }
   else {
-    if ((param_1->client->sess).sessionState == SESS_STATE_SPECTATOR) {
+    if ((ent->client->sess).sessionState == SESS_STATE_SPECTATOR) {
       return;
     }
-    uVar1 = (param_1->client->ps).weapon;
+    uVar1 = (ent->client->ps).weapon;
   }
-  local_50 = (uint)uVar1;
-  Weapon_SetWeaponParamsWeapon(&local_4c,local_50);
-  if (((local_4c.weapDef)->weapClass == WEAPCLASS_GAS) ||
-     ((local_4c.weapDef)->weapType == WEAPTYPE_GAS)) {
-    G_CalcMuzzlePoints(param_1,&local_4c,0);
-    Weapon_Flamethrower_Update(param_1,&local_4c);
+  weapon = (uint)uVar1;
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  if (((wp.weapDef)->weapClass == WEAPCLASS_GAS) || ((wp.weapDef)->weapType == WEAPTYPE_GAS)) {
+    G_CalcMuzzlePoints(ent,&wp,0);
+    Weapon_Flamethrower_Update(ent,&wp);
   }
-  if (param_1->client != (gclient_s *)0x0) {
-    Weapon_Overheat_Update(param_1);
+  if (ent->client != (gclient_s *)0x0) {
+    Weapon_Overheat_Update(ent);
   }
   return;
 }
@@ -2988,13 +3010,13 @@ void __cdecl G_UpdateWeapons(gentity_s *param_1)
 void __cdecl G_PopulateMatchState(void)
 
 {
-  char *pcVar1;
+  char *dvarName;
   
   level.matchState.index = 0;
   level.matchState.unarchivedState.alliesScore = level.teamScores[2];
   level.matchState.unarchivedState.axisScore = level.teamScores[1];
-  pcVar1 = va("scr_%s_scorelimit");
-  level.matchState.unarchivedState.scoreLimit = Dvar_GetInt(pcVar1);
+  dvarName = va("scr_%s_scorelimit");
+  level.matchState.unarchivedState.scoreLimit = Dvar_GetInt(dvarName);
   level.matchState.unarchivedState.mapCenter[0] = svs.mapCenter[0];
   level.matchState.unarchivedState.mapCenter[1] = svs.mapCenter[1];
   level.matchState.unarchivedState.mapCenter[2] = svs.mapCenter[2];
@@ -3009,17 +3031,18 @@ void __cdecl G_PopulateMatchState(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ResolveParentClientMask(gentity_s *param_1,gentity_s *param_2)
+bool __cdecl ResolveParentClientMask(gentity_s *entChild,gentity_s *entParent)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   uint uVar4;
-  int local_c;
-  bool local_5;
+  int checkBits;
+  int seg;
+  bool changed;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (entChild == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xd7f,0,
                              "%s");
     if (!bVar2) {
@@ -3028,7 +3051,7 @@ bool __cdecl ResolveParentClientMask(gentity_s *param_1,gentity_s *param_2)
       return (bool)uVar3;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (entParent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xd80,0,
                              "%s");
     if (!bVar2) {
@@ -3037,15 +3060,15 @@ bool __cdecl ResolveParentClientMask(gentity_s *param_1,gentity_s *param_2)
       return (bool)uVar3;
     }
   }
-  local_5 = false;
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    uVar4 = ~(param_1->r).clientMask[local_c] & (param_2->r).clientMask[local_c];
+  changed = false;
+  for (seg = 0; seg < 1; seg = seg + 1) {
+    uVar4 = ~(entChild->r).clientMask[seg] & (entParent->r).clientMask[seg];
     if (uVar4 != 0) {
-      local_5 = true;
-      (param_2->r).clientMask[local_c] = ~uVar4 & (param_2->r).clientMask[local_c];
+      changed = true;
+      (entParent->r).clientMask[seg] = ~uVar4 & (entParent->r).clientMask[seg];
     }
   }
-  return local_5;
+  return changed;
 }
 
 
@@ -3056,82 +3079,85 @@ bool __cdecl ResolveParentClientMask(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdateClientLinkInfo(gentity_s *param_1)
+void __cdecl G_UpdateClientLinkInfo(gentity_s *ent)
 
 {
-  gentity_s *pgVar1;
-  tagInfo_s *ptVar2;
-  code *pcVar3;
-  bool bVar4;
-  char *pcVar5;
-  int iVar6;
-  float *pfVar7;
+  gentity_s *entParent_00;
+  tagInfo_s *ptVar1;
+  code *pcVar2;
+  bool bVar3;
+  char *name;
+  int src;
+  float *pfVar4;
+  int tagIndex;
+  gentity_s *entParent;
   
-  if ((param_1 == (gentity_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xd9e,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((ent == (gentity_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xd9e,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if (param_1->tagChildren == (gentity_s *)0x0) {
-    (param_1->s).clientLinkInfo.flags = (param_1->s).clientLinkInfo.flags & 0xfe;
+  if (ent->tagChildren == (gentity_s *)0x0) {
+    (ent->s).clientLinkInfo.flags = (ent->s).clientLinkInfo.flags & 0xfe;
   }
   else {
-    (param_1->s).clientLinkInfo.flags = (param_1->s).clientLinkInfo.flags | 1;
+    (ent->s).clientLinkInfo.flags = (ent->s).clientLinkInfo.flags | 1;
   }
-  if (param_1 != (gentity_s *)0x0) {
-    if (param_1->tagInfo == (tagInfo_s *)0x0) {
-      (param_1->s).clientLinkInfo.parentEnt = 0;
-      (param_1->s).clientLinkInfo.tagIndex = '\0';
+  if (ent != (gentity_s *)0x0) {
+    if (ent->tagInfo == (tagInfo_s *)0x0) {
+      (ent->s).clientLinkInfo.parentEnt = 0;
+      (ent->s).clientLinkInfo.tagIndex = '\0';
     }
     else {
-      if ((param_1->tagInfo->parent == (gentity_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xdaf
-                                   ,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if ((ent->tagInfo->parent == (gentity_s *)0x0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xdaf
+                                   ,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      pgVar1 = param_1->tagInfo->parent;
-      if (((pgVar1->r).svFlags & 1) == 0) {
-        if ((pgVar1->s).number != 0x3fe) {
-          if ((int)(param_1->s).clientLinkInfo.parentEnt != (param_1->tagInfo->parent->s).number + 1
-             ) {
+      entParent_00 = ent->tagInfo->parent;
+      if (((entParent_00->r).svFlags & 1) == 0) {
+        if ((entParent_00->s).number != 0x3fe) {
+          if ((int)(ent->s).clientLinkInfo.parentEnt != (ent->tagInfo->parent->s).number + 1) {
             AssignToSmallerType<short>
-                      (&(param_1->s).clientLinkInfo.parentEnt,
-                       (param_1->tagInfo->parent->s).number + 1);
-            if (param_1->tagInfo->name == 0) {
-              (param_1->s).clientLinkInfo.tagIndex = '\0';
-              (param_1->s).clientLinkInfo.flags = (param_1->s).clientLinkInfo.flags | 2;
+                      (&(ent->s).clientLinkInfo.parentEnt,(ent->tagInfo->parent->s).number + 1);
+            if (ent->tagInfo->name == 0) {
+              (ent->s).clientLinkInfo.tagIndex = '\0';
+              (ent->s).clientLinkInfo.flags = (ent->s).clientLinkInfo.flags | 2;
             }
             else {
-              pcVar5 = SL_ConvertToString((uint)param_1->tagInfo->name,SCRIPTINSTANCE_SERVER);
-              iVar6 = G_TagIndex(pcVar5);
-              AssignToSmallerType<unsigned_char>(&(param_1->s).clientLinkInfo.tagIndex,iVar6);
-              (param_1->s).clientLinkInfo.flags = (param_1->s).clientLinkInfo.flags & 0xfd;
+              name = SL_ConvertToString((uint)ent->tagInfo->name,SCRIPTINSTANCE_SERVER);
+              src = G_TagIndex(name);
+              AssignToSmallerType<unsigned_char>(&(ent->s).clientLinkInfo.tagIndex,src);
+              (ent->s).clientLinkInfo.flags = (ent->s).clientLinkInfo.flags & 0xfd;
             }
           }
-          ptVar2 = param_1->tagInfo;
-          (param_1->s).lerp.pos.trDelta[0] = ptVar2->axis[3][0];
-          (param_1->s).lerp.pos.trDelta[1] = ptVar2->axis[3][1];
-          (param_1->s).lerp.pos.trDelta[2] = ptVar2->axis[3][2];
-          AxisToAngles(param_1->tagInfo->axis,(param_1->s).lerp.apos.trDelta);
-          ResolveParentClientMask(param_1,pgVar1);
+          ptVar1 = ent->tagInfo;
+          (ent->s).lerp.pos.trDelta[0] = ptVar1->axis[3][0];
+          (ent->s).lerp.pos.trDelta[1] = ptVar1->axis[3][1];
+          (ent->s).lerp.pos.trDelta[2] = ptVar1->axis[3][2];
+          AxisToAngles(ent->tagInfo->axis,(ent->s).lerp.apos.trDelta);
+          ResolveParentClientMask(ent,entParent_00);
         }
       }
       else {
-        pfVar7 = (pgVar1->s).lerp.pos.trDelta;
-        if ((*pfVar7 * *pfVar7 + (pgVar1->s).lerp.pos.trDelta[1] * (pgVar1->s).lerp.pos.trDelta[1] +
-             (pgVar1->s).lerp.pos.trDelta[2] * (pgVar1->s).lerp.pos.trDelta[2] != 0.0) ||
-           (pfVar7 = (pgVar1->s).lerp.apos.trDelta,
-           *pfVar7 * *pfVar7 + (pgVar1->s).lerp.apos.trDelta[1] * (pgVar1->s).lerp.apos.trDelta[1] +
-           (pgVar1->s).lerp.apos.trDelta[2] * (pgVar1->s).lerp.apos.trDelta[2] != 0.0)) {
+        pfVar4 = (entParent_00->s).lerp.pos.trDelta;
+        if ((*pfVar4 * *pfVar4 +
+             (entParent_00->s).lerp.pos.trDelta[1] * (entParent_00->s).lerp.pos.trDelta[1] +
+             (entParent_00->s).lerp.pos.trDelta[2] * (entParent_00->s).lerp.pos.trDelta[2] != 0.0)
+           || (pfVar4 = (entParent_00->s).lerp.apos.trDelta,
+              *pfVar4 * *pfVar4 +
+              (entParent_00->s).lerp.apos.trDelta[1] * (entParent_00->s).lerp.apos.trDelta[1] +
+              (entParent_00->s).lerp.apos.trDelta[2] * (entParent_00->s).lerp.apos.trDelta[2] != 0.0
+              )) {
           Com_PrintWarning(0xf,
                            "Ent #%i of type %i is SVF_NOCLIENT, but has children and seems to be moving.  There is a potential optimization here.\n"
                           );
         }
-        (param_1->s).clientLinkInfo.parentEnt = 0;
+        (ent->s).clientLinkInfo.parentEnt = 0;
       }
     }
   }
@@ -3146,25 +3172,28 @@ void __cdecl G_UpdateClientLinkInfo(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl G_RunFrame(int param_1)
+void __cdecl G_RunFrame(int levelTime)
 
 {
   ushort uVar1;
   code *pcVar2;
-  uint uVar3;
+  int iVar3;
   bool bVar4;
   DWORD DVar5;
   int iVar6;
   trigger_info_t *ptVar7;
   int iVar8;
-  uchar local_41d;
-  uchar local_41c [1028];
+  gentity_s *other;
+  trigger_info_t *trigger_info;
+  uchar index;
+  uchar entIndex [1028];
   uint local_18;
-  gentity_s *local_14;
-  int local_10;
-  uint local_c;
-  uint local_8;
+  gentity_s *ent;
+  int bMoreTriggered;
+  int i;
+  int entnum;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   gScrExecuteTime[0] = 0;
@@ -3172,10 +3201,10 @@ void __cdecl G_RunFrame(int param_1)
   iVar6 = level.time;
   level.framenum = level.framenum + 1;
   level.previousTime = level.time;
-  level.time = param_1;
-  level_bgs.frametime = param_1 - iVar6;
-  level_bgs.time = param_1;
-  level_bgs.latestSnapshotTime = param_1;
+  level.time = levelTime;
+  level_bgs.frametime = levelTime - iVar6;
+  level_bgs.time = levelTime;
+  level_bgs.latestSnapshotTime = levelTime;
   level.frametime = level_bgs.frametime;
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xdf7,0,
@@ -3193,26 +3222,26 @@ void __cdecl G_RunFrame(int param_1)
     return;
   }
   PIXBeginNamedEvent(-1,"Update clients");
-  local_14 = g_entities;
-  for (local_c = 0; (int)local_c < level.maxclients; local_c = local_c + 1) {
-    if ((local_14->r).inuse != '\0') {
-      if ((local_14->client == (gclient_s *)0x0) &&
+  ent = g_entities;
+  for (i = 0; i < level.maxclients; i = i + 1) {
+    if ((ent->r).inuse != '\0') {
+      if ((ent->client == (gclient_s *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xe10
                                    ,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((local_14->client->flags & 3U) == 0) {
-        G_DoTouchTriggers(local_14);
+      if ((ent->client->flags & 3U) == 0) {
+        G_DoTouchTriggers(ent);
       }
-      G_UpdateWeapons(local_14);
-      G_UpdateTimedDamage(local_14);
-      G_UpdateIKPlayerClipTerrainTimeout(local_14);
-      G_UpdateIKDisableTerrainMappingTimeout(local_14);
-      G_UpdateIKCulling(local_14);
+      G_UpdateWeapons(ent);
+      G_UpdateTimedDamage(ent);
+      G_UpdateIKPlayerClipTerrainTimeout(ent);
+      G_UpdateIKDisableTerrainMappingTimeout(ent);
+      G_UpdateIKCulling(ent);
     }
-    local_14 = local_14 + 1;
+    ent = ent + 1;
   }
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3229,19 +3258,19 @@ void __cdecl G_RunFrame(int param_1)
   iVar6 = G_GetTime();
   IK_UpdateTimeAll(iVar6,iVar8,bVar4);
   PIXBeginNamedEvent(-1,"G_XAnimUpdate");
-  local_14 = g_entities;
-  for (local_c = 0; (int)local_c < level.num_entities; local_c = local_c + 1) {
-    if ((local_14->r).inuse != '\0') {
-      SV_DObjInitServerTime(local_14,(float)level.frametime * 0.001);
+  ent = g_entities;
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    if ((ent->r).inuse != '\0') {
+      SV_DObjInitServerTime(ent,(float)level.frametime * 0.001);
     }
-    local_14 = local_14 + 1;
+    ent = ent + 1;
   }
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  memset(local_41c,'\0',0x400);
-  local_41d = '\0';
+  memset(entIndex,'\0',0x400);
+  index = '\0';
   PIXBeginNamedEvent(-1,"G_TriggerChecks");
   if ((level.currentTriggerListSize != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xe46,0,
@@ -3254,23 +3283,22 @@ void __cdecl G_RunFrame(int param_1)
   level.currentTriggerListSize = level.pendingTriggerListSize;
   level.pendingTriggerListSize = 0;
   do {
-    local_10 = 0;
-    local_41d = local_41d + '\x01';
-    for (local_c = 0; uVar3 = local_c, (int)local_c < level.currentTriggerListSize;
-        local_c = local_c + 1) {
-      ptVar7 = level.currentTriggerList + local_c;
-      local_8 = (uint)ptVar7->entnum;
-      local_14 = g_entities + local_8;
-      if (g_entities[local_8].useCount == level.currentTriggerList[local_c].useCount) {
-        if ((g_entities[local_8].r.inuse == '\0') &&
+    bMoreTriggered = 0;
+    index = index + '\x01';
+    for (i = 0; iVar6 = i, i < level.currentTriggerListSize; i = i + 1) {
+      ptVar7 = level.currentTriggerList + i;
+      entnum = (int)ptVar7->entnum;
+      ent = g_entities + entnum;
+      if (g_entities[entnum].useCount == level.currentTriggerList[i].useCount) {
+        if ((g_entities[entnum].r.inuse == '\0') &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                      0xe56,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        uVar1 = level.currentTriggerList[uVar3].otherEntnum;
-        if (g_entities[uVar1].useCount != level.currentTriggerList[uVar3].otherUseCount)
+        uVar1 = level.currentTriggerList[iVar6].otherEntnum;
+        if (g_entities[uVar1].useCount != level.currentTriggerList[iVar6].otherUseCount)
         goto LAB_0062b843;
         if ((g_entities[uVar1].r.inuse == '\0') &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
@@ -3279,26 +3307,26 @@ void __cdecl G_RunFrame(int param_1)
           (*pcVar2)();
           return;
         }
-        if (local_41c[local_8] != local_41d) {
-          local_41c[local_8] = local_41d;
+        if (entIndex[entnum] != index) {
+          entIndex[entnum] = index;
           Scr_AddEntity(g_entities + uVar1,SCRIPTINSTANCE_SERVER);
-          Scr_Notify(local_14,scr_const.trigger,1);
+          Scr_Notify(ent,scr_const.trigger,1);
           goto LAB_0062b843;
         }
-        local_10 = 1;
+        bMoreTriggered = 1;
       }
       else {
 LAB_0062b843:
-        iVar8 = level.currentTriggerListSize;
-        local_c = local_c + -1;
-        iVar6 = level.currentTriggerListSize + 0xff;
-        uVar1 = level.pendingTriggerList[iVar6].otherEntnum;
+        iVar3 = level.currentTriggerListSize;
+        i = i + -1;
+        iVar8 = level.currentTriggerListSize + 0xff;
+        uVar1 = level.pendingTriggerList[iVar8].otherEntnum;
         level.currentTriggerListSize = level.currentTriggerListSize + -1;
-        ptVar7->entnum = level.pendingTriggerList[iVar6].entnum;
+        ptVar7->entnum = level.pendingTriggerList[iVar8].entnum;
         ptVar7->otherEntnum = uVar1;
-        level.currentTriggerList[uVar3].useCount = level.pendingTriggerList[iVar8 + 0xff].useCount;
-        level.currentTriggerList[uVar3].otherUseCount =
-             level.pendingTriggerList[iVar8 + 0xff].otherUseCount;
+        level.currentTriggerList[iVar6].useCount = level.pendingTriggerList[iVar3 + 0xff].useCount;
+        level.currentTriggerList[iVar6].otherUseCount =
+             level.pendingTriggerList[iVar3 + 0xff].otherUseCount;
       }
     }
     PIXBeginNamedEvent(-1,"Scr_RunCurrentThreads");
@@ -3307,7 +3335,7 @@ LAB_0062b843:
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    if (local_10 == 0) {
+    if (bMoreTriggered == 0) {
       if ((level.currentTriggerListSize != 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xe72
                                    ,0,"%s"), !bVar4)) {
@@ -3319,18 +3347,18 @@ LAB_0062b843:
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
-      local_14 = g_entities;
-      for (local_c = 0; (int)local_c < level.maxclients; local_c = local_c + 1) {
-        if ((local_14->r).inuse != '\0') {
-          G_ClientDoPerFrameNotifies(local_14);
+      ent = g_entities;
+      for (i = 0; i < level.maxclients; i = i + 1) {
+        if ((ent->r).inuse != '\0') {
+          G_ClientDoPerFrameNotifies(ent);
         }
-        local_14 = local_14 + 1;
+        ent = ent + 1;
       }
       PIXBeginNamedEvent(-1,"G_XAnimUpdate");
-      local_14 = g_entities;
-      for (local_c = 0; (int)local_c < level.num_entities; local_c = local_c + 1) {
-        G_XAnimUpdateEnt(local_14);
-        local_14 = local_14 + 1;
+      ent = g_entities;
+      for (i = 0; i < level.num_entities; i = i + 1) {
+        G_XAnimUpdateEnt(ent);
+        ent = ent + 1;
       }
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3346,14 +3374,14 @@ LAB_0062b843:
         (*pcVar2)();
         return;
       }
-      local_14 = g_entities;
+      ent = g_entities;
       for (level.currentEntityThink = 0; level.currentEntityThink < level.num_entities;
           level.currentEntityThink = level.currentEntityThink + 1) {
-        if ((local_14->r).inuse != '\0') {
-          G_RunFrameForEntity(local_14);
-          G_UpdateClientLinkInfo(local_14);
+        if ((ent->r).inuse != '\0') {
+          G_RunFrameForEntity(ent);
+          G_UpdateClientLinkInfo(ent);
         }
-        local_14 = local_14 + 1;
+        ent = ent + 1;
       }
       level.currentEntityThink = -1;
       DVar5 = GetCurrentThreadId();
@@ -3373,10 +3401,10 @@ LAB_0062b843:
         _D3DPERF_EndEvent_0();
       }
       PIXBeginNamedEvent(-1,"ClientEndFrame");
-      local_14 = g_entities;
-      local_c = 0;
+      ent = g_entities;
+      i = 0;
       do {
-        if (level.maxclients <= (int)local_c) {
+        if (level.maxclients <= i) {
           DVar5 = GetCurrentThreadId();
           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -3391,8 +3419,8 @@ LAB_0062b843:
             CheckVote();
           }
           if ((g_listEntity->current).enabled != false) {
-            for (local_c = 0; (int)local_c < 0x400; local_c = local_c + 1) {
-              SL_ConvertToString((uint)g_entities[local_c].classname,SCRIPTINSTANCE_SERVER);
+            for (i = 0; i < 0x400; i = i + 1) {
+              SL_ConvertToString((uint)g_entities[i].classname,SCRIPTINSTANCE_SERVER);
               Com_Printf(0xf,"%4i: %s\n");
             }
             Dvar_SetBool(g_listEntity,false);
@@ -3424,8 +3452,8 @@ LAB_0062b843:
           LiveSteam_Server_RunCallbacks();
           return;
         }
-        if ((local_14->r).inuse != '\0') {
-          if ((0x1f < local_c) &&
+        if ((ent->r).inuse != '\0') {
+          if ((0x1f < (uint)i) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                        0xeb5,0,"i doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
              !bVar4)) {
@@ -3433,14 +3461,14 @@ LAB_0062b843:
             (*pcVar2)();
             return;
           }
-          if ((*(int *)(level_bgs.clientinfo + local_c * 0x5c8) == 0) &&
+          if ((*(int *)(level_bgs.clientinfo + i * 0x5c8) == 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                        0xeb6,0,"%s"), !bVar4)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if ((((int)local_14->client - (int)level.clients) / 0x29e0 != local_c) &&
+          if ((((int)ent->client - (int)level.clients) / 0x29e0 != i) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",
                                        0xeb7,0,"ent->client - level.clients == i\n\t%i, %i"), !bVar4
              )) {
@@ -3448,10 +3476,10 @@ LAB_0062b843:
             (*pcVar2)();
             return;
           }
-          ClientEndFrame(local_14);
+          ClientEndFrame(ent);
         }
-        local_c = local_c + 1;
-        local_14 = local_14 + 1;
+        i = i + 1;
+        ent = ent + 1;
       } while( true );
     }
   } while( true );
@@ -3465,10 +3493,10 @@ LAB_0062b843:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_IsEntWalkable(int param_1,int param_2)
+int __cdecl G_IsEntWalkable(int localClientNum,int entityNum)
 
 {
-  return (uint)(g_entities[param_2].client == (gclient_s *)0x0);
+  return (uint)(g_entities[entityNum].client == (gclient_s *)0x0);
 }
 
 
@@ -3479,19 +3507,20 @@ int __cdecl G_IsEntWalkable(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl G_GetEntityOriginAngles(int param_1,int param_2,float *param_3,float *param_4)
+bool __cdecl G_GetEntityOriginAngles(int localClientNum,int entityNum,float *origin,float *angles)
 
 {
   bool bVar1;
+  gentity_s *ent;
   
-  bVar1 = g_entities[param_2].r.inuse != '\0';
+  bVar1 = g_entities[entityNum].r.inuse != '\0';
   if (bVar1) {
-    *param_3 = g_entities[param_2].r.currentOrigin[0];
-    param_3[1] = g_entities[param_2].r.currentOrigin[1];
-    param_3[2] = g_entities[param_2].r.currentOrigin[2];
-    *param_4 = g_entities[param_2].r.currentAngles[0];
-    param_4[1] = g_entities[param_2].r.currentAngles[1];
-    param_4[2] = g_entities[param_2].r.currentAngles[2];
+    *origin = g_entities[entityNum].r.currentOrigin[0];
+    origin[1] = g_entities[entityNum].r.currentOrigin[1];
+    origin[2] = g_entities[entityNum].r.currentOrigin[2];
+    *angles = g_entities[entityNum].r.currentAngles[0];
+    angles[1] = g_entities[entityNum].r.currentAngles[1];
+    angles[2] = g_entities[entityNum].r.currentAngles[2];
   }
   return bVar1;
 }
@@ -3504,13 +3533,15 @@ bool __cdecl G_GetEntityOriginAngles(int param_1,int param_2,float *param_3,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_EntityLinkFromPMove(int param_1,int param_2,int param_3)
+void __cdecl G_EntityLinkFromPMove(int entityNum,int parentEntityNum,int tagName)
 
 {
   code *pcVar1;
   bool bVar2;
+  gentity_s *parent;
+  gentity_s *ent;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((entityNum < 0) || (0x1f < entityNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xf0c,0,
                              "%s");
     if (!bVar2) {
@@ -3519,7 +3550,7 @@ void __cdecl G_EntityLinkFromPMove(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if ((param_2 < 0x20) || (0x3ff < param_2)) {
+  if ((parentEntityNum < 0x20) || (0x3ff < parentEntityNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xf0d,0,
                              "%s");
     if (!bVar2) {
@@ -3528,7 +3559,7 @@ void __cdecl G_EntityLinkFromPMove(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (g_entities[param_1].r.inuse == '\0') {
+  if (g_entities[entityNum].r.inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xf12,0,
                              "%s");
     if (!bVar2) {
@@ -3537,7 +3568,7 @@ void __cdecl G_EntityLinkFromPMove(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (g_entities[param_2].r.inuse == '\0') {
+  if (g_entities[parentEntityNum].r.inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_main_mp.cpp",0xf13,0,
                              "%s");
     if (!bVar2) {
@@ -3546,17 +3577,19 @@ void __cdecl G_EntityLinkFromPMove(int param_1,int param_2,int param_3)
       return;
     }
   }
-  G_EntLinkToWithOffset(g_entities + param_1,g_entities + param_2,param_3,vec3_origin,vec3_origin);
+  G_EntLinkToWithOffset
+            (g_entities + entityNum,g_entities + parentEntityNum,tagName,vec3_origin,vec3_origin);
   return;
 }
 
 
 // 0062CB80  G_AddDebugString  (game_mp/g_main_mp.cpp:3866)
 
-void __cdecl G_AddDebugString(float *param_1,float *param_2,float param_3,char *param_4,int param_5)
+void __cdecl
+G_AddDebugString(float *xyz_2,float *color_2,float scale_2,char *pszText,int duration_2)
 
 {
-  CL_AddDebugString(param_1,param_2,param_3,param_4,param_5);
+  CL_AddDebugString(xyz_2,color_2,scale_2,pszText,duration_2);
   return;
 }
 

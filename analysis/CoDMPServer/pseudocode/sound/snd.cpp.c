@@ -2,13 +2,13 @@
 
 // 009320B0  SND_FaderSetRate  (sound/snd_utils.h:32)
 
-void __cdecl SND_FaderSetRate(snd_fader_t *param_1,float param_2)
+void __cdecl SND_FaderSetRate(snd_fader_t *fader,float r)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 < 0.0) {
+  if (r < 0.0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x21,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -16,7 +16,7 @@ void __cdecl SND_FaderSetRate(snd_fader_t *param_1,float param_2)
       return;
     }
   }
-  if (((uint)param_2 & 0x7f800000) == 0x7f800000) {
+  if (((uint)r & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x22,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -24,21 +24,21 @@ void __cdecl SND_FaderSetRate(snd_fader_t *param_1,float param_2)
       return;
     }
   }
-  param_1->rate = param_2;
+  fader->rate = r;
   return;
 }
 
 
 // 00932BF0  SND_FaderSetRateTime  (sound/snd_utils.h:40)
 
-void __cdecl SND_FaderSetRateTime(snd_fader_t *param_1,float param_2)
+void __cdecl SND_FaderSetRateTime(snd_fader_t *fader,float time)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_8;
   
-  if (param_2 < 0.0) {
+  if (time < 0.0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x29,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -46,26 +46,26 @@ void __cdecl SND_FaderSetRateTime(snd_fader_t *param_1,float param_2)
       return;
     }
   }
-  if (param_2 - 1e-05 < 0.0) {
+  if (time - 1e-05 < 0.0) {
     local_8 = 0.0;
   }
   else {
-    local_8 = 1.0 / param_2;
+    local_8 = 1.0 / time;
   }
-  param_1->rate = local_8;
+  fader->rate = local_8;
   return;
 }
 
 
 // 00932C70  SND_FaderSetValue  (sound/snd_utils.h:54)
 
-void __cdecl SND_FaderSetValue(snd_fader_t *param_1,float param_2)
+void __cdecl SND_FaderSetValue(snd_fader_t *fader,float v)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (((uint)param_2 & 0x7f800000) == 0x7f800000) {
+  if (((uint)v & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x37,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -73,8 +73,8 @@ void __cdecl SND_FaderSetValue(snd_fader_t *param_1,float param_2)
       return;
     }
   }
-  param_1->goal = param_2;
-  param_1->value = param_2;
+  fader->goal = v;
+  fader->value = v;
   return;
 }
 
@@ -93,26 +93,26 @@ void __cdecl TRACK_snd(void)
 
 // 00932140  SND_FaderSetGoal  (sound/snd_utils.h:62)
 
-void __cdecl SND_FaderSetGoal(snd_fader_t *param_1,float param_2)
+void __cdecl SND_FaderSetGoal(snd_fader_t *fader,float g)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_18;
   
-  if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)g & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x3f,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->goal = param_2;
-  local_18 = param_1->value;
-  if (0.0 <= -ABS(param_1->rate - 0.0)) {
-    local_18 = param_2;
+  fader->goal = g;
+  local_18 = fader->value;
+  if (0.0 <= -ABS(fader->rate - 0.0)) {
+    local_18 = g;
   }
-  param_1->value = local_18;
+  fader->value = local_18;
   return;
 }
 
@@ -133,7 +133,7 @@ bool __cdecl SND_ShouldInit(void)
 
 // 00932CE0  SND_FaderUpdate  (sound/snd_utils.h:85)
 
-void __cdecl SND_FaderUpdate(snd_fader_t *param_1,float param_2)
+void __cdecl SND_FaderUpdate(snd_fader_t *fader,float dt)
 
 {
   float fVar1;
@@ -143,16 +143,20 @@ void __cdecl SND_FaderUpdate(snd_fader_t *param_1,float param_2)
   float local_30;
   float local_2c;
   float local_28;
+  float rate;
+  float interp;
+  float value;
+  float goal;
   
-  if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)dt & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.h",0x58,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_30 = param_1->value;
-  fVar1 = param_1->goal;
+  local_30 = fader->value;
+  fVar1 = fader->goal;
   if (fVar1 - local_30 < 0.0) {
     local_28 = -1.0;
   }
@@ -160,12 +164,12 @@ void __cdecl SND_FaderUpdate(snd_fader_t *param_1,float param_2)
     local_28 = 1.0;
   }
   local_2c = ABS(fVar1 - local_30);
-  fVar4 = param_1->rate * param_2;
+  fVar4 = fader->rate * dt;
   if (0.0 <= local_2c - fVar4) {
     local_2c = fVar4;
   }
   local_30 = local_28 * local_2c + local_30;
-  if (0.0 <= 0.0 - param_1->rate) {
+  if (0.0 <= 0.0 - fader->rate) {
     local_30 = fVar1;
   }
   if ((((uint)local_30 & 0x7f800000) == 0x7f800000) &&
@@ -175,7 +179,7 @@ void __cdecl SND_FaderUpdate(snd_fader_t *param_1,float param_2)
     (*pcVar2)();
     return;
   }
-  param_1->value = local_30;
+  fader->value = local_30;
   return;
 }
 
@@ -184,22 +188,22 @@ void __cdecl SND_FaderUpdate(snd_fader_t *param_1,float param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl SND_IsOnSameTeam(uint param_1,SndEntHandle param_2)
+bool __cdecl SND_IsOnSameTeam(uint listenerIndex,SndEntHandle entNum)
 
 {
   team_t tVar1;
   bool bVar2;
   
-  if ((param_2.handle & 0xfffU) == 0xfff) {
+  if ((entNum.handle & 0xfffU) == 0xfff) {
     bVar2 = false;
   }
   else {
-    tVar1 = (uint)param_2.handle >> 0x17 & TEAM_SPECTATOR;
+    tVar1 = (uint)entNum.handle >> 0x17 & TEAM_SPECTATOR;
     if (tVar1 == TEAM_BAD) {
       bVar2 = false;
     }
     else {
-      bVar2 = tVar1 == g_snd.listeners[param_1].team;
+      bVar2 = tVar1 == g_snd.listeners[listenerIndex].team;
     }
   }
   return bVar2;
@@ -210,13 +214,13 @@ bool __cdecl SND_IsOnSameTeam(uint param_1,SndEntHandle param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetPosition(int param_1,float *param_2)
+void __cdecl SND_SetPosition(int index,float *org)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0x49 < param_1)) {
+  if ((index < 0) || (0x49 < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x75,0,
                              "%s\n\t(index) = %i");
     if (!bVar2) {
@@ -225,9 +229,9 @@ void __cdecl SND_SetPosition(int param_1,float *param_2)
       return;
     }
   }
-  g_snd.voice[param_1].position[0] = *param_2;
-  g_snd.voice[param_1].position[1] = param_2[1];
-  g_snd.voice[param_1].position[2] = param_2[2];
+  g_snd.voice[index].position[0] = *org;
+  g_snd.voice[index].position[1] = org[1];
+  g_snd.voice[index].position[2] = org[2];
   return;
 }
 
@@ -240,17 +244,18 @@ uint __cdecl SND_ActiveListenerCount(void)
 
 {
   bool bVar1;
-  undefined4 local_8;
+  uint i;
+  uint count;
   
-  local_8 = 0;
+  count = 0;
   bVar1 = false;
   while (!bVar1) {
     if (g_snd.listeners[0].active) {
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
     bVar1 = true;
   }
-  return local_8;
+  return count;
 }
 
 
@@ -258,18 +263,18 @@ uint __cdecl SND_ActiveListenerCount(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_GetListenerIndexNearestToOrigin(float *param_1)
+int __cdecl SND_GetListenerIndexNearestToOrigin(float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float local_20;
-  int local_10;
+  int nearest;
   float fStack_c;
-  int local_8;
+  int i;
   
-  if (param_1 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -277,24 +282,23 @@ int __cdecl SND_GetListenerIndexNearestToOrigin(float *param_1)
       return iVar3;
     }
   }
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    if (g_snd.listeners[local_8].active == false) {
+  for (i = 0; i < 1; i = i + 1) {
+    if (g_snd.listeners[i].active == false) {
       local_20 = 3.4028235e+38;
     }
     else {
-      local_20 = Vec3DistanceSq(param_1,(float *)(g_snd.listeners + local_8));
+      local_20 = Vec3DistanceSq(origin,(float *)(g_snd.listeners + i));
     }
-    (&fStack_c)[local_8] = local_20;
+    (&fStack_c)[i] = local_20;
   }
-  local_10 = 0;
-  for (local_8 = 1; local_8 < 1; local_8 = local_8 + 1) {
-    if ((g_snd.listeners[local_8].active != false) &&
-       ((&fStack_c)[local_8] <= (&fStack_c)[local_10] &&
-        (&fStack_c)[local_10] != (&fStack_c)[local_8])) {
-      local_10 = local_8;
+  nearest = 0;
+  for (i = 1; i < 1; i = i + 1) {
+    if ((g_snd.listeners[i].active != false) &&
+       ((&fStack_c)[i] <= (&fStack_c)[nearest] && (&fStack_c)[nearest] != (&fStack_c)[i])) {
+      nearest = i;
     }
   }
-  return local_10;
+  return nearest;
 }
 
 
@@ -302,15 +306,16 @@ int __cdecl SND_GetListenerIndexNearestToOrigin(float *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_GetNearestListenerPosition(float *param_1,float *param_2)
+void __cdecl SND_GetNearestListenerPosition(float *position,float *listener)
 
 {
   int iVar1;
+  int idx;
   
-  iVar1 = SND_GetListenerIndexNearestToOrigin(param_1);
-  *param_2 = g_snd.listeners[iVar1].orient.origin[0];
-  param_2[1] = g_snd.listeners[iVar1].orient.origin[1];
-  param_2[2] = g_snd.listeners[iVar1].orient.origin[2];
+  iVar1 = SND_GetListenerIndexNearestToOrigin(position);
+  *listener = g_snd.listeners[iVar1].orient.origin[0];
+  listener[1] = g_snd.listeners[iVar1].orient.origin[1];
+  listener[2] = g_snd.listeners[iVar1].orient.origin[2];
   return;
 }
 
@@ -319,14 +324,14 @@ void __cdecl SND_GetNearestListenerPosition(float *param_1,float *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_SetPlaybackIdNotPlayed(int param_1)
+int __cdecl SND_SetPlaybackIdNotPlayed(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0x49 < param_1)) {
+  if ((index < 0) || (0x49 < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xd4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -334,7 +339,7 @@ int __cdecl SND_SetPlaybackIdNotPlayed(int param_1)
       return iVar3;
     }
   }
-  g_snd.voice[param_1].playbackId = -1;
+  g_snd.voice[index].playbackId = -1;
   return -1;
 }
 
@@ -358,22 +363,22 @@ int __cdecl SND_AcquirePlaybackId(void)
 
 // 009314F0  DoLengthNotify  (sound/snd.cpp:227)
 
-void __cdecl DoLengthNotify(int param_1,void *param_2,snd_length_type param_3)
+void __cdecl DoLengthNotify(int msec,void *lengthNotifyData,snd_length_type id)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  if (param_3 == SND_LENGTH_NOTIFY_SCRIPT) {
-    SND_LengthNotify((uint)param_2,param_1);
+  if (id == SND_LENGTH_NOTIFY_SCRIPT) {
+    SND_LengthNotify((uint)lengthNotifyData,msec);
   }
-  else if (param_3 == SND_LENGTH_NOTIFY_SUBTITLE) {
-    SND_SubtitleNotify(param_2,param_1);
+  else if (id == SND_LENGTH_NOTIFY_SUBTITLE) {
+    SND_SubtitleNotify(lengthNotifyData,msec);
   }
   else {
-    pcVar3 = va("Unknown snd length notify id: %i\n");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xef,0,pcVar3);
+    fmt = va("Unknown snd length notify id: %i\n");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xef,0,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -386,16 +391,17 @@ void __cdecl DoLengthNotify(int param_1,void *param_2,snd_length_type param_3)
 
 // 009313A0  SND_AddLengthNotify  (sound/snd.cpp:249)
 
-bool __cdecl SND_AddLengthNotify(int param_1,void *param_2,snd_length_type param_3)
+bool __cdecl SND_AddLengthNotify(int playbackId,void *lengthNotifyData,snd_length_type id)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   snd_voice_t *psVar4;
-  uint local_8;
+  snd_voice_t *voice;
+  int lengthNotifyIndex;
   
-  if ((SND_LENGTH_NOTIFY_SUBTITLE < param_3) &&
+  if ((SND_LENGTH_NOTIFY_SUBTITLE < id) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xfd,0,
                                "id doesn\'t index SND_LENGTH_NOTIFY_COUNT\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -403,24 +409,25 @@ bool __cdecl SND_AddLengthNotify(int param_1,void *param_2,snd_length_type param
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 == -1) {
-    DoLengthNotify(0,param_2,param_3);
+  if (playbackId == -1) {
+    DoLengthNotify(0,lengthNotifyData,id);
     bVar2 = true;
   }
   else {
-    psVar4 = SND_GetPlaybackVoice(param_1);
+    psVar4 = SND_GetPlaybackVoice(playbackId);
     if (psVar4 == (snd_voice_t *)0x0) {
       bVar2 = false;
     }
     else {
       if ((psVar4->totalMsec < 1) && ((psVar4->alias->flags & 1) == 0)) {
-        for (local_8 = 0; (int)local_8 < (psVar4->lengthNotifyInfo).count; local_8 = local_8 + 1) {
-          if (((psVar4->lengthNotifyInfo).id[local_8] == param_3) &&
-             ((psVar4->lengthNotifyInfo).data[local_8] == param_2)) {
+        for (lengthNotifyIndex = 0; lengthNotifyIndex < (psVar4->lengthNotifyInfo).count;
+            lengthNotifyIndex = lengthNotifyIndex + 1) {
+          if (((psVar4->lengthNotifyInfo).id[lengthNotifyIndex] == id) &&
+             ((psVar4->lengthNotifyInfo).data[lengthNotifyIndex] == lengthNotifyData)) {
             return true;
           }
         }
-        if ((3 < local_8) &&
+        if ((3 < (uint)lengthNotifyIndex) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x114,0,
                                      "lengthNotifyIndex doesn\'t index SND_LENGTHNOTIFY_COUNT\n\t%i not in [0, %i)"
                                     ), !bVar2)) {
@@ -429,11 +436,11 @@ bool __cdecl SND_AddLengthNotify(int param_1,void *param_2,snd_length_type param
           return (bool)uVar3;
         }
         (psVar4->lengthNotifyInfo).count = (psVar4->lengthNotifyInfo).count + 1;
-        (psVar4->lengthNotifyInfo).id[local_8] = param_3;
-        (psVar4->lengthNotifyInfo).data[local_8] = param_2;
+        (psVar4->lengthNotifyInfo).id[lengthNotifyIndex] = id;
+        (psVar4->lengthNotifyInfo).data[lengthNotifyIndex] = lengthNotifyData;
       }
       else {
-        DoLengthNotify(psVar4->totalMsec,param_2,param_3);
+        DoLengthNotify(psVar4->totalMsec,lengthNotifyData,id);
       }
       bVar2 = true;
     }
@@ -446,40 +453,42 @@ bool __cdecl SND_AddLengthNotify(int param_1,void *param_2,snd_length_type param
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StartLengthNotify(int param_1,int param_2)
+void __cdecl SND_StartLengthNotify(int index,int totalMsec)
 
 {
-  snd_length_type sVar1;
-  code *pcVar2;
-  bool bVar3;
-  int local_c;
+  snd_length_type id_00;
+  code *pcVar1;
+  bool bVar2;
+  snd_voice_t *voice;
+  int lengthNotifyIndex;
+  snd_length_type id;
   
-  if ((param_1 < 0) || (0x49 < param_1)) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x128,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if ((index < 0) || (0x49 < index)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x128,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_c = 0;
+  lengthNotifyIndex = 0;
   do {
-    if (g_snd.voice[param_1].lengthNotifyInfo.count <= local_c) {
-      g_snd.voice[param_1].lengthNotifyInfo.count = 0;
+    if (g_snd.voice[index].lengthNotifyInfo.count <= lengthNotifyIndex) {
+      g_snd.voice[index].lengthNotifyInfo.count = 0;
       return;
     }
-    sVar1 = *(snd_length_type *)(param_1 * 0x1d8 + 0xa08041c + local_c * 4);
-    if (SND_LENGTH_NOTIFY_SUBTITLE < sVar1) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x130,0,
+    id_00 = *(snd_length_type *)(index * 0x1d8 + 0xa08041c + lengthNotifyIndex * 4);
+    if (SND_LENGTH_NOTIFY_SUBTITLE < id_00) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x130,0,
                                "id doesn\'t index SND_LENGTH_NOTIFY_COUNT\n\t%i not in [0, %i)");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    DoLengthNotify(param_2,*(void **)(param_1 * 0x1d8 + 0xa08042c + local_c * 4),sVar1);
-    local_c = local_c + 1;
+    DoLengthNotify(totalMsec,*(void **)(index * 0x1d8 + 0xa08042c + lengthNotifyIndex * 4),id_00);
+    lengthNotifyIndex = lengthNotifyIndex + 1;
   } while( true );
 }
 
@@ -488,85 +497,85 @@ void __cdecl SND_StartLengthNotify(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_ResetVoiceInfo(int param_1)
+void __cdecl SND_ResetVoiceInfo(int index)
 
 {
-  if (g_snd.voice[param_1].playback != (snd_playback *)0x0) {
-    SND_FreePlaybackNotify(g_snd.voice[param_1].playback);
+  snd_voice_t *voice;
+  
+  if (g_snd.voice[index].playback != (snd_playback *)0x0) {
+    SND_FreePlaybackNotify(g_snd.voice[index].playback);
   }
-  memset((uchar *)(g_snd.voice + param_1),0xff,0x1d8);
-  g_snd.voiceAliasHash[param_1] = 0;
-  g_snd.voice[param_1].soundFileInfo.loadingState = SFLS_UNLOADED;
-  g_snd.voice[param_1].alias = (snd_alias_t *)0x0;
-  g_snd.voice[param_1].playback = (snd_playback *)0x0;
+  memset((uchar *)(g_snd.voice + index),0xff,0x1d8);
+  g_snd.voiceAliasHash[index] = 0;
+  g_snd.voice[index].soundFileInfo.loadingState = SFLS_UNLOADED;
+  g_snd.voice[index].alias = (snd_alias_t *)0x0;
+  g_snd.voice[index].playback = (snd_playback *)0x0;
   return;
 }
 
 
 // 009316A0  SND_GetSeed  (sound/snd.cpp:338)
 
-float __cdecl SND_GetSeed(uint param_1,uint param_2)
+float __cdecl SND_GetSeed(uint key,uint global_age)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i_4;
+  uint oldest_age;
+  uint oldest;
+  uint j;
+  uint free_zone_len;
+  uint i_3;
+  uint max_free_zone_start;
+  uint max_free_zone_len;
+  uint i_2;
+  uint i;
+  int index;
   
-  if (param_1 == 0xffffffff) {
-    param_1 = 0;
+  if (key == 0xffffffff) {
+    key = 0;
   }
-  for (local_c = 0; local_c < 0x94; local_c = local_c + 1) {
-    if (((30000 < param_2 - ages[local_c]) && (keys[local_c] != 0xffffffff)) || (ages[local_c] == 0)
-       ) {
-      keys[local_c] = 0xffffffff;
+  for (i = 0; i < 0x94; i = i + 1) {
+    if (((30000 < global_age - ages[i]) && (keys[i] != 0xffffffff)) || (ages[i] == 0)) {
+      keys[i] = 0xffffffff;
     }
   }
-  local_8 = 0xffffffff;
-  local_10 = 0;
+  index = -1;
+  i_2 = 0;
   do {
-    if (0x93 < local_10) {
+    if (0x93 < i_2) {
 LAB_00931748:
-      if (local_8 == 0xffffffff) {
-        local_18 = 0;
-        local_14 = 0;
-        for (local_1c = 0; local_1c < 0x94; local_1c = local_1c + local_20 + 1) {
-          local_20 = 0;
-          for (local_24 = local_1c; (local_24 < 0x94 && (keys[local_24] == 0xffffffff));
-              local_24 = local_24 + 1) {
-            local_20 = local_20 + 1;
+      if (index == -1) {
+        max_free_zone_start = 0;
+        max_free_zone_len = 0;
+        for (i_3 = 0; i_3 < 0x94; i_3 = i_3 + free_zone_len + 1) {
+          free_zone_len = 0;
+          for (j = i_3; (j < 0x94 && (keys[j] == 0xffffffff)); j = j + 1) {
+            free_zone_len = free_zone_len + 1;
           }
-          if (local_14 < local_20) {
-            local_14 = local_20;
-            local_18 = local_1c;
+          if (max_free_zone_len < free_zone_len) {
+            max_free_zone_len = free_zone_len;
+            max_free_zone_start = i_3;
           }
         }
-        if (local_14 != 0) {
-          local_8 = (local_14 >> 1) + local_18;
+        if (max_free_zone_len != 0) {
+          index = (max_free_zone_len >> 1) + max_free_zone_start;
         }
       }
-      if (local_8 == 0xffffffff) {
-        local_28 = 0;
-        local_2c = ages[0];
-        for (local_30 = 1; local_30 < 0x94; local_30 = local_30 + 1) {
-          if (local_2c < ages[local_30]) {
-            local_28 = local_30;
-            local_2c = ages[local_30];
+      if (index == -1) {
+        oldest = 0;
+        oldest_age = ages[0];
+        for (i_4 = 1; i_4 < 0x94; i_4 = i_4 + 1) {
+          if (oldest_age < ages[i_4]) {
+            oldest = i_4;
+            oldest_age = ages[i_4];
           }
         }
-        local_8 = local_28;
+        index = oldest;
       }
-      if (0x93 < local_8) {
+      if (0x93 < (uint)index) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x198,0,"%s");
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
@@ -574,7 +583,7 @@ LAB_00931748:
           return (float)fVar3;
         }
       }
-      if ((int)local_8 < 0) {
+      if (index < 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x199,0,"%s");
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
@@ -582,122 +591,123 @@ LAB_00931748:
           return (float)fVar3;
         }
       }
-      keys[local_8] = param_1;
-      ages[local_8] = param_2;
-      return (float)(int)local_8 / 147.0;
+      keys[index] = key;
+      ages[index] = global_age;
+      return (float)index / 147.0;
     }
-    if (keys[local_10] == param_1) {
-      local_8 = local_10;
+    if (keys[i_2] == key) {
+      index = i_2;
       goto LAB_00931748;
     }
-    local_10 = local_10 + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
 
 // 00932260  SND_SetVoiceStartFlux  (sound/snd.cpp:420)
 
-void __cdecl SND_SetVoiceStartFlux(snd_voice_t *param_1,float *param_2)
+void __cdecl SND_SetVoiceStartFlux(snd_voice_t *voice,float *player)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_38;
-  float local_34;
-  float local_30;
+  snd_flux_type_t move_type;
+  float separation;
+  float moveBasis;
   float local_2c;
   float local_28;
   float local_24 [3];
-  snd_alias_t *local_18;
-  float local_14;
-  float local_10 [3];
+  snd_alias_t *alias;
+  float speed;
+  float Z [3];
   
-  local_10[0] = 0.0;
-  local_10[1] = 0.0;
-  local_10[2] = 1.0;
-  local_18 = param_1->alias;
-  if ((param_2 == (float *)0x0) &&
+  Z[0] = 0.0;
+  Z[1] = 0.0;
+  Z[2] = 1.0;
+  alias = voice->alias;
+  if ((player == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x1ab,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (snd_voice_t *)0x0) &&
+  if ((voice == (snd_voice_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x1ac,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_38 = (param_1->alias->flags & 0x1c00000) >> 0x16;
-  if (local_38 != 0) {
-    if (local_38 == 4) {
+  move_type = (voice->alias->flags & 0x1c00000) >> 0x16;
+  if (move_type != SND_FLUX_TYPE_NONE) {
+    if (move_type == SND_FLUX_TYPE_RANDOM_PLAYER) {
       iVar3 = rand();
-      local_38 = iVar3 % 3 + 1;
+      move_type = iVar3 % 3 + SND_FLUX_TYPE_LEFT_OF_PLAYER;
     }
-    if ((local_18->flags & 2) == 0) {
+    if ((alias->flags & 2) == 0) {
       Com_PrintError(9,"Alias %s has move_type but is not 3d\n");
     }
     else {
-      if ((param_1->direction[0] * param_1->direction[0] +
-           param_1->direction[1] * param_1->direction[1] +
-           param_1->direction[2] * param_1->direction[2] <= 1.52879e-05) &&
+      if ((voice->direction[0] * voice->direction[0] + voice->direction[1] * voice->direction[1] +
+           voice->direction[2] * voice->direction[2] <= 1.52879e-05) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x1c0,0,"%s")
          , !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((local_38 == 5) || (local_38 == 6)) || (local_38 == 7)) {
-        if ((((((uint)param_1->direction[0] & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_1->direction[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_1->direction[2] & 0x7f800000) == 0x7f800000)) &&
+      if (((move_type == SND_FLUX_TYPE_LEFT_OF_SHOT) || (move_type == SND_FLUX_TYPE_CENTER_OF_SHOT))
+         || (move_type == SND_FLUX_TYPE_RIGHT_OF_SHOT)) {
+        if ((((((uint)voice->direction[0] & 0x7f800000) == 0x7f800000) ||
+             (((uint)voice->direction[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)voice->direction[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x1c6,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (param_1->direction[0] * param_1->direction[0] +
-            param_1->direction[1] * param_1->direction[1] +
-            param_1->direction[2] * param_1->direction[2] < 1.52879e-05) {
+        if (voice->direction[0] * voice->direction[0] + voice->direction[1] * voice->direction[1] +
+            voice->direction[2] * voice->direction[2] < 1.52879e-05) {
           Com_PrintError(9,"Alias %s has move_type of shot but has no direction\n");
           return;
         }
-        local_30 = param_1->direction[0];
-        local_2c = param_1->direction[1];
-        local_28 = param_1->direction[2];
+        moveBasis = voice->direction[0];
+        local_2c = voice->direction[1];
+        local_28 = voice->direction[2];
       }
       else {
-        local_30 = *param_2 - param_1->position[0];
-        local_2c = param_2[1] - param_1->position[1];
-        local_28 = param_2[2] - param_1->position[2];
+        moveBasis = *player - voice->position[0];
+        local_2c = player[1] - voice->position[1];
+        local_28 = player[2] - voice->position[2];
       }
-      Vec3Normalize(&local_30);
-      if ((local_38 == 5) || (local_38 == 1)) {
-        local_10[2] = -1.0;
+      Vec3Normalize(&moveBasis);
+      if ((move_type == SND_FLUX_TYPE_LEFT_OF_SHOT) || (move_type == SND_FLUX_TYPE_LEFT_OF_PLAYER))
+      {
+        Z[2] = -1.0;
       }
-      local_34 = (snd_flux_separation->current).value;
-      if ((local_38 == 6) || (local_38 == 2)) {
-        local_34 = 0.0;
+      separation = (snd_flux_separation->current).value;
+      if ((move_type == SND_FLUX_TYPE_CENTER_OF_SHOT) ||
+         (move_type == SND_FLUX_TYPE_CENTER_OF_PLAYER)) {
+        separation = 0.0;
       }
-      Vec3Cross(&local_30,local_10,local_24);
-      Vec3Lerp(&local_30,local_24,local_34,param_1->fluxVelocity);
-      Vec3Normalize(param_1->fluxVelocity);
-      if ((float)local_18->fluxTime / 1000.0 <= 1.52879e-05) {
-        local_14 = 0.0;
+      Vec3Cross(&moveBasis,Z,local_24);
+      Vec3Lerp(&moveBasis,local_24,separation,voice->fluxVelocity);
+      Vec3Normalize(voice->fluxVelocity);
+      if ((float)alias->fluxTime / 1000.0 <= 1.52879e-05) {
+        speed = 0.0;
       }
       else {
-        local_14 = (float)local_18->distReverbMax / ((float)local_18->fluxTime / 1000.0);
+        speed = (float)alias->distReverbMax / ((float)alias->fluxTime / 1000.0);
       }
-      param_1->fluxVelocity[0] = local_14 * param_1->fluxVelocity[0];
-      param_1->fluxVelocity[1] = local_14 * param_1->fluxVelocity[1];
-      param_1->fluxVelocity[2] = local_14 * param_1->fluxVelocity[2];
-      if ((((((uint)param_1->fluxVelocity[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->fluxVelocity[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->fluxVelocity[2] & 0x7f800000) == 0x7f800000)) &&
+      voice->fluxVelocity[0] = speed * voice->fluxVelocity[0];
+      voice->fluxVelocity[1] = speed * voice->fluxVelocity[1];
+      voice->fluxVelocity[2] = speed * voice->fluxVelocity[2];
+      if ((((((uint)voice->fluxVelocity[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->fluxVelocity[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->fluxVelocity[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x1f1,0,"%s")
          , !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -712,14 +722,14 @@ void __cdecl SND_SetVoiceStartFlux(snd_voice_t *param_1,float *param_2)
 
 // 00938610  SND_IsAliasTimescale  (sound/snd_alias_db.h:422)
 
-bool __cdecl SND_IsAliasTimescale(snd_alias_t *param_1)
+bool __cdecl SND_IsAliasTimescale(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_alias_db.h",0x1a7,0,"%s"
                             );
     if (!bVar2) {
@@ -728,20 +738,20 @@ bool __cdecl SND_IsAliasTimescale(snd_alias_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->flags & 0x400) != 0;
+  return (alias->flags & 0x400) != 0;
 }
 
 
 // 00935E30  SND_IsAliasVoice  (sound/snd_alias_db.h:428)
 
-bool __cdecl SND_IsAliasVoice(snd_alias_t *param_1)
+bool __cdecl SND_IsAliasVoice(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_alias_db.h",0x1ad,0,"%s"
                             );
     if (!bVar2) {
@@ -750,20 +760,20 @@ bool __cdecl SND_IsAliasVoice(snd_alias_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->flags & 0x800) != 0;
+  return (alias->flags & 0x800) != 0;
 }
 
 
 // 00932210  SND_IsAliasPausable  (sound/snd_alias_db.h:469)
 
-bool __cdecl SND_IsAliasPausable(snd_alias_t *param_1)
+bool __cdecl SND_IsAliasPausable(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_alias_db.h",0x1d6,0,"%s"
                             );
     if (!bVar2) {
@@ -772,7 +782,7 @@ bool __cdecl SND_IsAliasPausable(snd_alias_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->flags & 0x80) != 0;
+  return (alias->flags & 0x80) != 0;
 }
 
 
@@ -780,33 +790,38 @@ bool __cdecl SND_IsAliasPausable(snd_alias_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
+void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *alias,snd_voice_t *voice)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   float fVar4;
+  int aliasHash;
+  uint pitchHash;
+  bool randomSeed;
+  uint volumeHash;
+  uint baseHash;
   
-  uVar3 = ((param_2->sndEnt).handle & 0xfffU) + param_1->id * 0x10000;
+  uVar3 = ((voice->sndEnt).handle & 0xfffU) + alias->id * 0x10000;
   bVar2 = (snd_entityRandomize->current).enabled;
-  if (((param_1->flags >> 0x1d & 1) == 0) || (bVar2 == false)) {
+  if (((alias->flags >> 0x1d & 1) == 0) || (bVar2 == false)) {
     fVar4 = random();
-    param_2->volModSeed = fVar4;
+    voice->volModSeed = fVar4;
   }
   else {
     fVar4 = SND_GetSeed(uVar3 | 0x80000000,g_snd.time);
-    param_2->volModSeed = fVar4;
+    voice->volModSeed = fVar4;
   }
-  if (((param_1->flags >> 0x1d & 2) == 0) || (bVar2 == false)) {
+  if (((alias->flags >> 0x1d & 2) == 0) || (bVar2 == false)) {
     fVar4 = random();
-    param_2->pitchModSeed = fVar4;
+    voice->pitchModSeed = fVar4;
   }
   else {
     fVar4 = SND_GetSeed(uVar3 & 0x7fffffff,g_snd.time);
-    param_2->pitchModSeed = fVar4;
+    voice->pitchModSeed = fVar4;
   }
-  if (param_2->volModSeed < 0.0) {
+  if (voice->volModSeed < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x20f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -814,7 +829,7 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
       return;
     }
   }
-  if (1.0 < param_2->volModSeed) {
+  if (1.0 < voice->volModSeed) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x210,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -822,7 +837,7 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
       return;
     }
   }
-  if (((uint)param_2->volModSeed & 0x7f800000) == 0x7f800000) {
+  if (((uint)voice->volModSeed & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x211,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -830,7 +845,7 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
       return;
     }
   }
-  if (param_2->pitchModSeed < 0.0) {
+  if (voice->pitchModSeed < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x212,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -838,7 +853,7 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
       return;
     }
   }
-  if (1.0 < param_2->pitchModSeed) {
+  if (1.0 < voice->pitchModSeed) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x213,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -846,7 +861,7 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
       return;
     }
   }
-  if (((uint)param_2->pitchModSeed & 0x7f800000) == 0x7f800000) {
+  if (((uint)voice->pitchModSeed & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x214,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -860,39 +875,39 @@ void __cdecl SND_SetVoiceStartSeeds(snd_alias_t *param_1,snd_voice_t *param_2)
 
 // 009329F0  SND_SetVoiceStartFades  (sound/snd.cpp:537)
 
-void __cdecl SND_SetVoiceStartFades(float param_1,snd_voice_t *param_2)
+void __cdecl SND_SetVoiceStartFades(float fadetime,snd_voice_t *voice)
 
 {
-  if (param_1 <= 1.52879e-05) {
-    SND_FaderSetValue(&param_2->fade,1.0);
-    SND_FaderSetRate(&param_2->fade,5.0);
-    SND_FaderSetGoal(&param_2->fade,1.0);
+  if (fadetime <= 1.52879e-05) {
+    SND_FaderSetValue(&voice->fade,1.0);
+    SND_FaderSetRate(&voice->fade,5.0);
+    SND_FaderSetGoal(&voice->fade,1.0);
   }
   else {
-    SND_FaderSetValue(&param_2->fade,0.0);
-    SND_FaderSetRateTime(&param_2->fade,param_1 / 1000.0);
-    SND_FaderSetGoal(&param_2->fade,1.0);
-    SND_FaderUpdate(&param_2->fade,0.0);
+    SND_FaderSetValue(&voice->fade,0.0);
+    SND_FaderSetRateTime(&voice->fade,fadetime / 1000.0);
+    SND_FaderSetGoal(&voice->fade,1.0);
+    SND_FaderUpdate(&voice->fade,0.0);
   }
-  SND_FaderSetValue(&param_2->script_fade,1.0);
-  SND_FaderSetGoal(&param_2->script_fade,1.0);
-  SND_FaderSetRateTime(&param_2->script_fade,0.1);
-  SND_FaderSetValue(&param_2->script_pitch,1.0);
-  SND_FaderSetGoal(&param_2->script_pitch,1.0);
-  SND_FaderSetRateTime(&param_2->script_pitch,0.25);
-  SND_FaderSetValue(&param_2->doppler,0.0);
-  SND_FaderSetGoal(&param_2->doppler,0.0);
-  SND_FaderSetRate(&param_2->doppler,(snd_dopplerRate->current).value);
-  SND_FaderSetRate(&param_2->losOcclusion,(snd_occlusion_rate->current).value);
-  SND_FaderSetGoal(&param_2->losOcclusion,0.0);
-  (param_2->losOcclusion).value = (param_2->losOcclusion).goal;
+  SND_FaderSetValue(&voice->script_fade,1.0);
+  SND_FaderSetGoal(&voice->script_fade,1.0);
+  SND_FaderSetRateTime(&voice->script_fade,0.1);
+  SND_FaderSetValue(&voice->script_pitch,1.0);
+  SND_FaderSetGoal(&voice->script_pitch,1.0);
+  SND_FaderSetRateTime(&voice->script_pitch,0.25);
+  SND_FaderSetValue(&voice->doppler,0.0);
+  SND_FaderSetGoal(&voice->doppler,0.0);
+  SND_FaderSetRate(&voice->doppler,(snd_dopplerRate->current).value);
+  SND_FaderSetRate(&voice->losOcclusion,(snd_occlusion_rate->current).value);
+  SND_FaderSetGoal(&voice->losOcclusion,0.0);
+  (voice->losOcclusion).value = (voice->losOcclusion).goal;
   return;
 }
 
 
 // 009397E0  I_fmap  (universal/com_math.h:538)
 
-float __cdecl I_fmap(float param_1,float param_2,float param_3,float param_4,float param_5)
+float __cdecl I_fmap(float minx,float maxx,float miny,float maxy,float x)
 
 {
   code *pcVar1;
@@ -902,17 +917,17 @@ float __cdecl I_fmap(float param_1,float param_2,float param_3,float param_4,flo
   float local_18;
   float local_8;
   
-  if ((param_2 == param_1) &&
+  if ((maxx == minx) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x21b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  fVar4 = param_5 - param_1;
+  fVar4 = x - minx;
   local_8 = fVar4;
-  if (0.0 <= fVar4 - (param_2 - param_1)) {
-    local_8 = param_2 - param_1;
+  if (0.0 <= fVar4 - (maxx - minx)) {
+    local_8 = maxx - minx;
   }
   if (0.0 - fVar4 < 0.0) {
     local_18 = local_8;
@@ -920,8 +935,8 @@ float __cdecl I_fmap(float param_1,float param_2,float param_3,float param_4,flo
   else {
     local_18 = 0.0;
   }
-  local_18 = local_18 / (param_2 - param_1);
-  return (1.0 - local_18) * param_3 + param_4 * local_18;
+  local_18 = local_18 / (maxx - minx);
+  return (1.0 - local_18) * miny + maxy * local_18;
 }
 
 
@@ -929,131 +944,131 @@ float __cdecl I_fmap(float param_1,float param_2,float param_3,float param_4,flo
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateVoicePosition(snd_voice_t *param_1,float *param_2)
+void __cdecl SND_UpdateVoicePosition(snd_voice_t *voice,float *startPosition)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  float local_28;
+  float entityOrigin_2;
   float local_24;
   float local_20;
-  float local_1c;
+  float offset;
   float local_18;
   float local_14;
-  float local_10;
+  float entityOrigin;
   float local_c;
   float local_8;
   
-  if (param_2 != (float *)0x0) {
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if (startPosition != (float *)0x0) {
+    if ((((((uint)*startPosition & 0x7f800000) == 0x7f800000) ||
+         (((uint)startPosition[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)startPosition[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x23f,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_1->alias->flags & 2) == 0) {
-      param_1->entity_update = SND_ENTITY_UPDATE_NEVER;
-      param_1->positionUpdated = true;
-      param_1->position[0] = 0.0;
-      param_1->position[1] = 0.0;
-      param_1->position[2] = 0.0;
-      param_1->offset[0] = 0.0;
-      param_1->offset[1] = 0.0;
-      param_1->offset[2] = 0.0;
-      param_1->velocity[0] = 0.0;
-      param_1->velocity[1] = 0.0;
-      param_1->velocity[2] = 0.0;
-      AxisClear(param_1->orientation);
+    if ((voice->alias->flags & 2) == 0) {
+      voice->entity_update = SND_ENTITY_UPDATE_NEVER;
+      voice->positionUpdated = true;
+      voice->position[0] = 0.0;
+      voice->position[1] = 0.0;
+      voice->position[2] = 0.0;
+      voice->offset[0] = 0.0;
+      voice->offset[1] = 0.0;
+      voice->offset[2] = 0.0;
+      voice->velocity[0] = 0.0;
+      voice->velocity[1] = 0.0;
+      voice->velocity[2] = 0.0;
+      AxisClear(voice->orientation);
       return;
     }
-    if (((((param_1->sndEnt).handle & 0xfffU) == 0xfff) ||
-        (((uint)(param_1->sndEnt).handle >> 0x15 & 1) != 0)) ||
-       ((param_1->alias->flags & 0x1c00000) != 0)) {
-      param_1->entity_update = SND_ENTITY_UPDATE_NEVER;
-      param_1->positionUpdated = true;
-      param_1->position[0] = *param_2;
-      param_1->position[1] = param_2[1];
-      param_1->position[2] = param_2[2];
-      param_1->offset[0] = 0.0;
-      param_1->offset[1] = 0.0;
-      param_1->offset[2] = 0.0;
-      param_1->velocity[0] = 0.0;
-      param_1->velocity[1] = 0.0;
-      param_1->velocity[2] = 0.0;
-      AxisClear(param_1->orientation);
+    if (((((voice->sndEnt).handle & 0xfffU) == 0xfff) ||
+        (((uint)(voice->sndEnt).handle >> 0x15 & 1) != 0)) ||
+       ((voice->alias->flags & 0x1c00000) != 0)) {
+      voice->entity_update = SND_ENTITY_UPDATE_NEVER;
+      voice->positionUpdated = true;
+      voice->position[0] = *startPosition;
+      voice->position[1] = startPosition[1];
+      voice->position[2] = startPosition[2];
+      voice->offset[0] = 0.0;
+      voice->offset[1] = 0.0;
+      voice->offset[2] = 0.0;
+      voice->velocity[0] = 0.0;
+      voice->velocity[1] = 0.0;
+      voice->velocity[2] = 0.0;
+      AxisClear(voice->orientation);
       return;
     }
-    param_1->entity_update = SND_ENTITY_UPDATE_ALWAYS;
-    param_1->position[0] = *param_2;
-    param_1->position[1] = param_2[1];
-    param_1->position[2] = param_2[2];
-    param_1->offset[0] = 0.0;
-    param_1->offset[1] = 0.0;
-    param_1->offset[2] = 0.0;
-    AxisClear(param_1->orientation);
-    param_1->velocity[0] = 0.0;
-    param_1->velocity[1] = 0.0;
-    param_1->velocity[2] = 0.0;
+    voice->entity_update = SND_ENTITY_UPDATE_ALWAYS;
+    voice->position[0] = *startPosition;
+    voice->position[1] = startPosition[1];
+    voice->position[2] = startPosition[2];
+    voice->offset[0] = 0.0;
+    voice->offset[1] = 0.0;
+    voice->offset[2] = 0.0;
+    AxisClear(voice->orientation);
+    voice->velocity[0] = 0.0;
+    voice->velocity[1] = 0.0;
+    voice->velocity[2] = 0.0;
   }
-  if (param_1->entity_update != SND_ENTITY_UPDATE_NEVER) {
-    if (((param_1->alias->flags & 2) == 0) &&
+  if (voice->entity_update != SND_ENTITY_UPDATE_NEVER) {
+    if (((voice->alias->flags & 2) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x266,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((param_1->sndEnt).handle & 0xfffU) == 0xfff) &&
+    if ((((voice->sndEnt).handle & 0xfffU) == 0xfff) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x267,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((uint)(param_1->sndEnt).handle >> 0x15 & 1) != 0) &&
+    if ((((uint)(voice->sndEnt).handle >> 0x15 & 1) != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x268,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_1->entity_update != SND_ENTITY_UPDATE_ALWAYS) &&
+    if ((voice->entity_update != SND_ENTITY_UPDATE_ALWAYS) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x269,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (param_1->positionUpdated == false) {
-      bVar3 = SND_GetEntState(param_1->sndEnt,&local_10,param_1->velocity,param_1->orientation);
+    if (voice->positionUpdated == false) {
+      bVar3 = SND_GetEntState(voice->sndEnt,&entityOrigin,voice->velocity,voice->orientation);
       if (!bVar3) {
         return;
       }
-      local_1c = param_1->position[0] - local_10;
-      local_18 = param_1->position[1] - local_c;
-      local_14 = param_1->position[2] - local_8;
-      param_1->offset[0] =
-           local_1c * param_1->orientation[0][0] + local_18 * param_1->orientation[0][1] +
-           local_14 * param_1->orientation[0][2];
-      param_1->offset[1] =
-           local_1c * param_1->orientation[1][0] + local_18 * param_1->orientation[1][1] +
-           local_14 * param_1->orientation[1][2];
-      param_1->offset[2] =
-           local_1c * param_1->orientation[2][0] + local_18 * param_1->orientation[2][1] +
-           local_14 * param_1->orientation[2][2];
-      param_1->positionUpdated = true;
+      offset = voice->position[0] - entityOrigin;
+      local_18 = voice->position[1] - local_c;
+      local_14 = voice->position[2] - local_8;
+      voice->offset[0] =
+           offset * voice->orientation[0][0] + local_18 * voice->orientation[0][1] +
+           local_14 * voice->orientation[0][2];
+      voice->offset[1] =
+           offset * voice->orientation[1][0] + local_18 * voice->orientation[1][1] +
+           local_14 * voice->orientation[1][2];
+      voice->offset[2] =
+           offset * voice->orientation[2][0] + local_18 * voice->orientation[2][1] +
+           local_14 * voice->orientation[2][2];
+      voice->positionUpdated = true;
     }
     else {
-      bVar3 = SND_GetEntState(param_1->sndEnt,&local_28,param_1->velocity,param_1->orientation);
+      bVar3 = SND_GetEntState(voice->sndEnt,&entityOrigin_2,voice->velocity,voice->orientation);
       if (!bVar3) {
         return;
       }
-      if ((((((uint)local_28 & 0x7f800000) == 0x7f800000) ||
+      if ((((((uint)entityOrigin_2 & 0x7f800000) == 0x7f800000) ||
            (((uint)local_24 & 0x7f800000) == 0x7f800000)) ||
           (((uint)local_20 & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x28a,0,"%s")
@@ -1062,107 +1077,107 @@ void __cdecl SND_UpdateVoicePosition(snd_voice_t *param_1,float *param_2)
         (*pcVar2)();
         return;
       }
-      if ((((((uint)param_1->orientation[0][0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->orientation[0][1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->orientation[0][2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)voice->orientation[0][0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->orientation[0][1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->orientation[0][2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x28b,0,"%s")
          , !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((((uint)param_1->orientation[1][0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->orientation[1][1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->orientation[1][2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)voice->orientation[1][0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->orientation[1][1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->orientation[1][2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x28c,0,"%s")
          , !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((((uint)param_1->orientation[2][0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->orientation[2][1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->orientation[2][2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)voice->orientation[2][0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->orientation[2][1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->orientation[2][2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x28d,0,"%s")
          , !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((((((uint)param_1->velocity[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->velocity[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->velocity[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)voice->velocity[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->velocity[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->velocity[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x28e,0,"%s")
          , !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      param_1->position[0] = local_28;
-      param_1->position[1] = local_24;
-      param_1->position[2] = local_20;
-      fVar1 = param_1->offset[0];
-      param_1->position[0] = fVar1 * param_1->orientation[0][0] + param_1->position[0];
-      param_1->position[1] = fVar1 * param_1->orientation[0][1] + param_1->position[1];
-      param_1->position[2] = fVar1 * param_1->orientation[0][2] + param_1->position[2];
-      fVar1 = param_1->offset[1];
-      param_1->position[0] = fVar1 * param_1->orientation[1][0] + param_1->position[0];
-      param_1->position[1] = fVar1 * param_1->orientation[1][1] + param_1->position[1];
-      param_1->position[2] = fVar1 * param_1->orientation[1][2] + param_1->position[2];
-      fVar1 = param_1->offset[2];
-      param_1->position[0] = fVar1 * param_1->orientation[2][0] + param_1->position[0];
-      param_1->position[1] = fVar1 * param_1->orientation[2][1] + param_1->position[1];
-      param_1->position[2] = fVar1 * param_1->orientation[2][2] + param_1->position[2];
+      voice->position[0] = entityOrigin_2;
+      voice->position[1] = local_24;
+      voice->position[2] = local_20;
+      fVar1 = voice->offset[0];
+      voice->position[0] = fVar1 * voice->orientation[0][0] + voice->position[0];
+      voice->position[1] = fVar1 * voice->orientation[0][1] + voice->position[1];
+      voice->position[2] = fVar1 * voice->orientation[0][2] + voice->position[2];
+      fVar1 = voice->offset[1];
+      voice->position[0] = fVar1 * voice->orientation[1][0] + voice->position[0];
+      voice->position[1] = fVar1 * voice->orientation[1][1] + voice->position[1];
+      voice->position[2] = fVar1 * voice->orientation[1][2] + voice->position[2];
+      fVar1 = voice->offset[2];
+      voice->position[0] = fVar1 * voice->orientation[2][0] + voice->position[0];
+      voice->position[1] = fVar1 * voice->orientation[2][1] + voice->position[1];
+      voice->position[2] = fVar1 * voice->orientation[2][2] + voice->position[2];
     }
-    if ((((((uint)param_1->position[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->position[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->position[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)voice->position[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)voice->position[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)voice->position[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x297,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((uint)param_1->orientation[0][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->orientation[0][1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->orientation[0][2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)voice->orientation[0][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)voice->orientation[0][1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)voice->orientation[0][2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x298,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((uint)param_1->orientation[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->orientation[1][1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->orientation[1][2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)voice->orientation[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)voice->orientation[1][1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)voice->orientation[1][2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x299,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((uint)param_1->orientation[2][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->orientation[2][1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->orientation[2][2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)voice->orientation[2][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)voice->orientation[2][1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)voice->orientation[2][2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x29a,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((uint)param_1->velocity[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->velocity[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->velocity[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)voice->velocity[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)voice->velocity[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)voice->velocity[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x29b,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    iVar4 = (int)&param_1[-0x570d3].voiceStartTime / 0x1d8;
-    g_snd.voicePositionCache[iVar4][0] = param_1->position[0];
-    g_snd.voicePositionCache[iVar4][1] = param_1->position[1];
-    g_snd.voicePositionCache[iVar4][2] = param_1->position[2];
+    iVar4 = (int)&voice[-0x570d3].voiceStartTime / 0x1d8;
+    g_snd.voicePositionCache[iVar4][0] = voice->position[0];
+    g_snd.voicePositionCache[iVar4][1] = voice->position[1];
+    g_snd.voicePositionCache[iVar4][2] = voice->position[2];
   }
   return;
 }
@@ -1172,7 +1187,7 @@ void __cdecl SND_UpdateVoicePosition(snd_voice_t *param_1,float *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetVoiceStartInfo(int param_1,SndStartAliasInfo *param_2)
+void __cdecl SND_SetVoiceStartInfo(int index,SndStartAliasInfo *SndStartAliasInfo)
 
 {
   snd_occlusion_start_cache *psVar1;
@@ -1181,136 +1196,136 @@ void __cdecl SND_SetVoiceStartInfo(int param_1,SndStartAliasInfo *param_2)
   int iVar4;
   float fVar5;
   bool local_78;
-  int local_14;
-  snd_voice_t *local_10;
-  snd_alias_t *local_c;
-  float local_8;
+  int cache;
+  snd_voice_t *voice;
+  snd_alias_t *alias;
+  float occlusionGoal;
   
-  local_c = param_2->alias;
-  if (((param_1 < 0) || (0x49 < param_1)) &&
+  alias = SndStartAliasInfo->alias;
+  if (((index < 0) || (0x49 < index)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x2c4,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2->alias == (snd_alias_t *)0x0) &&
+  if ((SndStartAliasInfo->alias == (snd_alias_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x2c5,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_10 = g_snd.voice + param_1;
-  if ((g_snd.voiceAliasHash[param_1] != 0) &&
+  voice = g_snd.voice + index;
+  if ((g_snd.voiceAliasHash[index] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x2c9,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  g_snd.voiceAliasHash[param_1] = param_2->alias->id;
-  (local_10->lengthNotifyInfo).id[0] = SND_LENGTH_NOTIFY_NONE;
-  (local_10->lengthNotifyInfo).id[1] = SND_LENGTH_NOTIFY_NONE;
-  (local_10->lengthNotifyInfo).id[2] = SND_LENGTH_NOTIFY_NONE;
-  (local_10->lengthNotifyInfo).id[3] = SND_LENGTH_NOTIFY_NONE;
-  (local_10->lengthNotifyInfo).data[0] = (void *)0x0;
-  (local_10->lengthNotifyInfo).data[1] = (void *)0x0;
-  (local_10->lengthNotifyInfo).data[2] = (void *)0x0;
-  (local_10->lengthNotifyInfo).data[3] = (void *)0x0;
-  (local_10->lengthNotifyInfo).count = 0;
-  local_10->sndEnt = param_2->sndEnt;
-  local_10->group = (param_2->alias->flags & 0x3f0000) >> 0x10;
-  local_10->volModStart = param_2->volModStart;
-  local_10->alias = param_2->alias;
-  local_10->startDelay = param_2->startDelay;
-  local_10->looptime = g_snd.looptime;
-  if ((g_snd.paused == 0) || (bVar3 = SND_IsAliasPausable(param_2->alias), !bVar3)) {
+  g_snd.voiceAliasHash[index] = SndStartAliasInfo->alias->id;
+  (voice->lengthNotifyInfo).id[0] = SND_LENGTH_NOTIFY_NONE;
+  (voice->lengthNotifyInfo).id[1] = SND_LENGTH_NOTIFY_NONE;
+  (voice->lengthNotifyInfo).id[2] = SND_LENGTH_NOTIFY_NONE;
+  (voice->lengthNotifyInfo).id[3] = SND_LENGTH_NOTIFY_NONE;
+  (voice->lengthNotifyInfo).data[0] = (void *)0x0;
+  (voice->lengthNotifyInfo).data[1] = (void *)0x0;
+  (voice->lengthNotifyInfo).data[2] = (void *)0x0;
+  (voice->lengthNotifyInfo).data[3] = (void *)0x0;
+  (voice->lengthNotifyInfo).count = 0;
+  voice->sndEnt = SndStartAliasInfo->sndEnt;
+  voice->group = (SndStartAliasInfo->alias->flags & 0x3f0000) >> 0x10;
+  voice->volModStart = SndStartAliasInfo->volModStart;
+  voice->alias = SndStartAliasInfo->alias;
+  voice->startDelay = SndStartAliasInfo->startDelay;
+  voice->looptime = g_snd.looptime;
+  if ((g_snd.paused == 0) || (bVar3 = SND_IsAliasPausable(SndStartAliasInfo->alias), !bVar3)) {
     local_78 = false;
   }
   else {
     local_78 = true;
   }
-  local_10->paused = local_78;
-  local_10->startTime = local_10->startDelay + g_snd.time;
-  local_10->totalMsec = 0;
-  local_10->positionUpdated = false;
-  local_10->playbackId = param_2->playbackId;
-  local_10->firstPlaybackId = param_2->playbackId;
-  local_10->playback = param_2->playback;
-  local_10->direction[0] = param_2->dir[0];
-  local_10->direction[1] = param_2->dir[1];
-  local_10->direction[2] = param_2->dir[2];
-  if ((((((uint)local_10->direction[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)local_10->direction[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)local_10->direction[2] & 0x7f800000) == 0x7f800000)) &&
+  voice->paused = local_78;
+  voice->startTime = voice->startDelay + g_snd.time;
+  voice->totalMsec = 0;
+  voice->positionUpdated = false;
+  voice->playbackId = SndStartAliasInfo->playbackId;
+  voice->firstPlaybackId = SndStartAliasInfo->playbackId;
+  voice->playback = SndStartAliasInfo->playback;
+  voice->direction[0] = SndStartAliasInfo->dir[0];
+  voice->direction[1] = SndStartAliasInfo->dir[1];
+  voice->direction[2] = SndStartAliasInfo->dir[2];
+  if ((((((uint)voice->direction[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)voice->direction[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)voice->direction[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x2dc,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_10->fluxVelocity[0] = 0.0;
-  local_10->fluxVelocity[1] = 0.0;
-  local_10->fluxVelocity[2] = 0.0;
-  local_10->losHitCache = 0;
-  local_10->position[0] = param_2->org[0];
-  local_10->position[1] = param_2->org[1];
-  local_10->position[2] = param_2->org[2];
+  voice->fluxVelocity[0] = 0.0;
+  voice->fluxVelocity[1] = 0.0;
+  voice->fluxVelocity[2] = 0.0;
+  voice->losHitCache = 0;
+  voice->position[0] = SndStartAliasInfo->org[0];
+  voice->position[1] = SndStartAliasInfo->org[1];
+  voice->position[2] = SndStartAliasInfo->org[2];
   iVar4 = Sys_Milliseconds();
-  local_10->voiceStartTime = iVar4;
-  local_10->pitchShift = false;
-  if (((1.52879e-05 < ABS((float)local_c->pitchMin / 32767.0 - 1.0)) ||
-      (1.52879e-05 < ABS((float)local_c->pitchMax / 32767.0 - 1.0))) ||
-     ((local_c->flags & 0x10) != 0)) {
-    local_10->pitchShift = true;
+  voice->voiceStartTime = iVar4;
+  voice->pitchShift = false;
+  if (((1.52879e-05 < ABS((float)alias->pitchMin / 32767.0 - 1.0)) ||
+      (1.52879e-05 < ABS((float)alias->pitchMax / 32767.0 - 1.0))) || ((alias->flags & 0x10) != 0))
+  {
+    voice->pitchShift = true;
   }
-  *(undefined4 *)&local_10->played = 0;
-  *(undefined4 *)((int)&local_10->played + 4) = 0;
-  local_10->futzBlend = 0.0;
-  SND_SetVoiceStartSeeds(local_c,local_10);
-  SND_SetVoiceStartFades(param_2->fadetime,local_10);
-  SND_UpdateVoicePosition(local_10,param_2->org);
-  Snd_SpeakerMapZero(&local_10->pan);
-  Snd_SpeakerMapZero(&local_10->panGoal);
-  SND_UpdateVoice(local_10,0.0);
-  local_8 = 0.0;
+  *(undefined4 *)&voice->played = 0;
+  *(undefined4 *)((int)&voice->played + 4) = 0;
+  voice->futzBlend = 0.0;
+  SND_SetVoiceStartSeeds(alias,voice);
+  SND_SetVoiceStartFades(SndStartAliasInfo->fadetime,voice);
+  SND_UpdateVoicePosition(voice,SndStartAliasInfo->org);
+  Snd_SpeakerMapZero(&voice->pan);
+  Snd_SpeakerMapZero(&voice->panGoal);
+  SND_UpdateVoice(voice,0.0);
+  occlusionGoal = 0.0;
   occlusionTotal = occlusionTotal + 1;
   if ((snd_losOcclusion->current).enabled != false) {
-    if (1.52879e-05 <= (float)local_10->alias->occlusionLevel / 255.0) {
-      if ((((local_10->alias->flags & 2) == 0) ||
-          (param_2->ocache == (snd_occlusion_start_cache *)0x0)) ||
-         (param_2->ocache->valid == false)) {
-        if ((local_10->baseDistance < (snd_occlusion_cull_distance->current).value ||
-             local_10->baseDistance == (snd_occlusion_cull_distance->current).value) ||
-           ((local_10->alias->flags & 8) == 0)) {
-          if ((local_10->alias->flags & 2) != 0) {
+    if (1.52879e-05 <= (float)voice->alias->occlusionLevel / 255.0) {
+      if ((((voice->alias->flags & 2) == 0) ||
+          (SndStartAliasInfo->ocache == (snd_occlusion_start_cache *)0x0)) ||
+         (SndStartAliasInfo->ocache->valid == false)) {
+        if ((voice->baseDistance < (snd_occlusion_cull_distance->current).value ||
+             voice->baseDistance == (snd_occlusion_cull_distance->current).value) ||
+           ((voice->alias->flags & 8) == 0)) {
+          if ((voice->alias->flags & 2) != 0) {
             cache_total = cache_total + 1;
             bVar3 = CL_IsRenderingSplitScreen();
             if (!bVar3) {
               cache_misses = cache_misses + 1;
-              local_14 = 0;
-              local_8 = SND_LosOcclusionTrace
-                                  (false,&local_14,
-                                   (float *)(g_snd.listeners + local_10->closestListenerIndex),
-                                   local_10->position);
+              cache = 0;
+              occlusionGoal =
+                   SND_LosOcclusionTrace
+                             (false,&cache,(float *)(g_snd.listeners + voice->closestListenerIndex),
+                              voice->position);
             }
-            if (param_2->ocache != (snd_occlusion_start_cache *)0x0) {
-              param_2->ocache->valid = true;
-              param_2->ocache->value = local_8;
-              psVar1 = param_2->ocache;
-              psVar1->position[0] = local_10->position[0];
-              psVar1->position[1] = local_10->position[1];
-              psVar1->position[2] = local_10->position[2];
+            if (SndStartAliasInfo->ocache != (snd_occlusion_start_cache *)0x0) {
+              SndStartAliasInfo->ocache->valid = true;
+              SndStartAliasInfo->ocache->value = occlusionGoal;
+              psVar1 = SndStartAliasInfo->ocache;
+              psVar1->position[0] = voice->position[0];
+              psVar1->position[1] = voice->position[1];
+              psVar1->position[2] = voice->position[2];
             }
           }
         }
         else {
-          local_8 = ((float)local_10->alias->occlusionLevel / 255.0) * 0.5;
+          occlusionGoal = ((float)voice->alias->occlusionLevel / 255.0) * 0.5;
         }
       }
       else {
-        local_8 = param_2->ocache->value;
+        occlusionGoal = SndStartAliasInfo->ocache->value;
         occlusionOCacheHits = occlusionOCacheHits + 1;
       }
     }
@@ -1318,32 +1333,32 @@ void __cdecl SND_SetVoiceStartInfo(int param_1,SndStartAliasInfo *param_2)
       occlusionLevelHits = occlusionLevelHits + 1;
     }
   }
-  SND_FaderSetGoal(&local_10->losOcclusion,local_8);
-  (local_10->losOcclusion).value = (local_10->losOcclusion).goal;
-  SND_FaderSetRate(&local_10->losOcclusion,(snd_occlusion_rate->current).value);
-  if ((((uint)(local_10->losOcclusion).goal & 0x7f800000) == 0x7f800000) &&
+  SND_FaderSetGoal(&voice->losOcclusion,occlusionGoal);
+  (voice->losOcclusion).value = (voice->losOcclusion).goal;
+  SND_FaderSetRate(&voice->losOcclusion,(snd_occlusion_rate->current).value);
+  if ((((uint)(voice->losOcclusion).goal & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x33d,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((uint)(local_10->losOcclusion).value & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)(voice->losOcclusion).value & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x33e,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_10->alias->flags & 2) != 0) {
-    iVar4 = SND_GetListenerIndexNearestToOrigin(local_10->position);
-    SND_SetVoiceStartFlux(local_10,(float *)(g_snd.listeners + iVar4));
+  if ((voice->alias->flags & 2) != 0) {
+    iVar4 = SND_GetListenerIndexNearestToOrigin(voice->position);
+    SND_SetVoiceStartFlux(voice,(float *)(g_snd.listeners + iVar4));
   }
-  fVar5 = SND_GetDryLevel(local_10);
-  local_10->dryLevel = fVar5;
-  fVar5 = SND_GetWetLevel(local_10);
-  local_10->wetLevel = fVar5;
-  (local_10->doppler).value = (local_10->doppler).goal;
+  fVar5 = SND_GetDryLevel(voice);
+  voice->dryLevel = fVar5;
+  fVar5 = SND_GetWetLevel(voice);
+  voice->wetLevel = fVar5;
+  (voice->doppler).value = (voice->doppler).goal;
   return;
 }
 
@@ -1354,13 +1369,15 @@ void __cdecl SND_SetVoiceStartInfo(int param_1,SndStartAliasInfo *param_2)
 
 void __cdecl
 SND_SetSoundFileVoiceInfo
-          (int param_1,int param_2,int param_3,int param_4,int param_5,SndFileLoadingState param_6)
+          (int voiceIndex,int srcChannelCount,int baserate,int total_msec,int start_msec,
+          SndFileLoadingState loadingState)
 
 {
   code *pcVar1;
   bool bVar2;
+  snd_voice_t *voice;
   
-  if ((param_1 < 0) || (0x49 < param_1)) {
+  if ((voiceIndex < 0) || (0x49 < voiceIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x354,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1368,141 +1385,141 @@ SND_SetSoundFileVoiceInfo
       return;
     }
   }
-  if ((g_snd.voice[param_1].soundFileInfo.loadingState == SFLS_LOADING) && (param_6 == SFLS_LOADED))
-  {
+  if ((g_snd.voice[voiceIndex].soundFileInfo.loadingState == SFLS_LOADING) &&
+     (loadingState == SFLS_LOADED)) {
     Sys_Milliseconds();
-    GamerProfile_WriteSettings((int)g_snd.voice[param_1].alias);
+    GamerProfile_WriteSettings((int)g_snd.voice[voiceIndex].alias);
   }
-  g_snd.voice[param_1].soundFileInfo.loadingState = param_6;
-  g_snd.voice[param_1].soundFileInfo.srcChannelCount = param_2;
-  g_snd.voice[param_1].soundFileInfo.baserate = param_3;
-  g_snd.voice[param_1].soundFileInfo.endtime = (g_snd.time + param_4) - param_5;
-  g_snd.voice[param_1].soundFileInfo.totalMsec = param_4;
-  SND_StartLengthNotify(param_1,param_4);
+  g_snd.voice[voiceIndex].soundFileInfo.loadingState = loadingState;
+  g_snd.voice[voiceIndex].soundFileInfo.srcChannelCount = srcChannelCount;
+  g_snd.voice[voiceIndex].soundFileInfo.baserate = baserate;
+  g_snd.voice[voiceIndex].soundFileInfo.endtime = (g_snd.time + total_msec) - start_msec;
+  g_snd.voice[voiceIndex].soundFileInfo.totalMsec = total_msec;
+  SND_StartLengthNotify(voiceIndex,total_msec);
   return;
 }
 
 
 // 00933F90  Snd_GetGlobalPriority  (sound/snd.cpp:873)
 
-float __cdecl Snd_GetGlobalPriority(snd_alias_t *param_1,float param_2)
+float __cdecl Snd_GetGlobalPriority(snd_alias_t *alias,float volume)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  float local_c;
+  float t;
+  float p;
   
-  if ((param_1 == (snd_alias_t *)0x0) &&
+  if ((alias == (snd_alias_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x36a,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((uint)(float)param_1->minPriority & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)(float)alias->minPriority & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x36b,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((uint)(float)param_1->maxPriority & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)(float)alias->maxPriority & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x36c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((uint)((float)param_1->minPriorityThreshold / 255.0) & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)((float)alias->minPriorityThreshold / 255.0) & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x36d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((uint)((float)param_1->maxPriorityThreshold / 255.0) & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)((float)alias->maxPriorityThreshold / 255.0) & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x36e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if (((float)param_1->minPriorityThreshold / 255.0 < 0.0) &&
+  if (((float)alias->minPriorityThreshold / 255.0 < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x373,0,
                                "%s\n\t(SND_AliasGetMinPriorityThreshold(alias)) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((1.0 < (float)param_1->minPriorityThreshold / 255.0) &&
+  if ((1.0 < (float)alias->minPriorityThreshold / 255.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x374,0,
                                "%s\n\t(SND_AliasGetMinPriorityThreshold(alias)) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if (((float)param_1->maxPriorityThreshold / 255.0 < 0.0) &&
+  if (((float)alias->maxPriorityThreshold / 255.0 < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x375,0,
                                "%s\n\t(SND_AliasGetMaxPriorityThreshold(alias)) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((1.0 < (float)param_1->maxPriorityThreshold / 255.0) &&
+  if ((1.0 < (float)alias->maxPriorityThreshold / 255.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x376,0,
                                "%s\n\t(SND_AliasGetMaxPriorityThreshold(alias)) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_2 < 0.0) &&
+  if ((volume < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x377,0,
                                "%s\n\t(volume) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((1.0 < param_2) &&
+  if ((1.0 < volume) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x378,0,
                                "%s\n\t(volume) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((float)param_1->minPriorityThreshold / 255.0 < param_2) {
-    if (param_2 < (float)param_1->maxPriorityThreshold / 255.0) {
-      if (((float)param_1->maxPriorityThreshold / 255.0 <
-           (float)param_1->minPriorityThreshold / 255.0) &&
-         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",900,0,"%s"),
-         !bVar2)) {
+  if ((float)alias->minPriorityThreshold / 255.0 < volume) {
+    if (volume < (float)alias->maxPriorityThreshold / 255.0) {
+      if (((float)alias->maxPriorityThreshold / 255.0 < (float)alias->minPriorityThreshold / 255.0)
+         && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",900,0,"%s"
+                                     ), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      local_c = 0.5;
-      if ((float)param_1->maxPriorityThreshold / 255.0 !=
-          (float)param_1->minPriorityThreshold / 255.0) {
-        local_c = (param_2 - (float)param_1->minPriorityThreshold / 255.0) /
-                  ((float)param_1->maxPriorityThreshold / 255.0 -
-                  (float)param_1->minPriorityThreshold / 255.0);
+      t = 0.5;
+      if ((float)alias->maxPriorityThreshold / 255.0 != (float)alias->minPriorityThreshold / 255.0)
+      {
+        t = (volume - (float)alias->minPriorityThreshold / 255.0) /
+            ((float)alias->maxPriorityThreshold / 255.0 - (float)alias->minPriorityThreshold / 255.0
+            );
       }
-      if ((local_c < -1e-05) &&
+      if ((t < -1e-05) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x38c,0,
                                    "%s\n\t(t) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      if ((1.00001 < local_c) &&
+      if ((1.00001 < t) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x38d,0,
                                    "%s\n\t(t) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      fVar4 = local_c * (float)param_1->maxPriority + (1.0 - local_c) * (float)param_1->minPriority;
+      fVar4 = t * (float)alias->maxPriority + (1.0 - t) * (float)alias->minPriority;
       if ((fVar4 < -1e-05) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x391,0,
                                    "%s\n\t(p) = %g"), !bVar2)) {
@@ -1517,15 +1534,15 @@ float __cdecl Snd_GetGlobalPriority(snd_alias_t *param_1,float param_2)
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      if ((float)param_1->maxPriority <= (float)param_1->minPriority) {
-        if (((float)param_1->minPriority < fVar4 - 1e-05) &&
+      if ((float)alias->maxPriority <= (float)alias->minPriority) {
+        if (((float)alias->minPriority < fVar4 - 1e-05) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x39b,0,
                                      "%s\n\t(p) = %g"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           fVar3 = (float10)(*pcVar1)();
           return (float)fVar3;
         }
-        if ((fVar4 + 1e-05 < (float)param_1->maxPriority) &&
+        if ((fVar4 + 1e-05 < (float)alias->maxPriority) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x39c,0,
                                      "%s\n\t(p) = %g"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -1534,14 +1551,14 @@ float __cdecl Snd_GetGlobalPriority(snd_alias_t *param_1,float param_2)
         }
       }
       else {
-        if ((fVar4 + 1e-05 < (float)param_1->minPriority) &&
+        if ((fVar4 + 1e-05 < (float)alias->minPriority) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x396,0,
                                      "%s\n\t(p) = %g"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           fVar3 = (float10)(*pcVar1)();
           return (float)fVar3;
         }
-        if (((float)param_1->maxPriority < fVar4 - 1e-05) &&
+        if (((float)alias->maxPriority < fVar4 - 1e-05) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x397,0,
                                      "%s\n\t(p) = %g"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -1551,11 +1568,11 @@ float __cdecl Snd_GetGlobalPriority(snd_alias_t *param_1,float param_2)
       }
     }
     else {
-      fVar4 = (float)param_1->maxPriority;
+      fVar4 = (float)alias->maxPriority;
     }
   }
   else {
-    fVar4 = (float)param_1->minPriority;
+    fVar4 = (float)alias->minPriority;
   }
   return fVar4;
 }
@@ -1565,28 +1582,30 @@ float __cdecl Snd_GetGlobalPriority(snd_alias_t *param_1,float param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl Snd_GetGlobalPriorityVolume(snd_alias_t *param_1,float *param_2)
+float __cdecl Snd_GetGlobalPriorityVolume(snd_alias_t *alias,float *org)
 
 {
   int iVar1;
-  float local_c;
+  float fVar2;
+  float normDistance;
+  float distance;
   
-  if ((param_1->flags & 2) == 0) {
-    local_c = 0.0;
+  if ((alias->flags & 2) == 0) {
+    fVar2 = 0.0;
   }
   else {
-    iVar1 = SND_GetListenerIndexNearestToOrigin(param_2);
-    local_c = Vec3Distance(param_2,(float *)(g_snd.listeners + iVar1));
-    local_c = local_c / (float)param_1->distReverbMax;
-    if (1.0 < local_c) {
-      local_c = 1.0;
+    iVar1 = SND_GetListenerIndexNearestToOrigin(org);
+    fVar2 = Vec3Distance(org,(float *)(g_snd.listeners + iVar1));
+    normDistance = fVar2 / (float)alias->distReverbMax;
+    if (1.0 < normDistance) {
+      normDistance = 1.0;
     }
-    if (local_c < 0.0) {
-      local_c = 0.0;
+    if (normDistance < 0.0) {
+      normDistance = 0.0;
     }
-    local_c = 1.0 - local_c;
+    fVar2 = 1.0 - normDistance;
   }
-  return local_c;
+  return fVar2;
 }
 
 
@@ -1594,21 +1613,23 @@ float __cdecl Snd_GetGlobalPriorityVolume(snd_alias_t *param_1,float *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Snd_GetLowestPriority(float *param_1,int *param_2,uint param_3,uint param_4)
+void __cdecl Snd_GetLowestPriority(float *priority,int *channel,uint start,uint count)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uint local_8;
+  int i;
+  float p;
+  uint c;
   
-  *param_1 = 1e+10;
-  *param_2 = -1;
-  local_8 = 0;
+  *priority = 1e+10;
+  *channel = -1;
+  c = 0;
   do {
-    if (param_4 <= local_8) {
-      if (*param_2 < 0) {
+    if (count <= c) {
+      if (*channel < 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x3ce,0,"%s");
         if (!bVar3) {
           pcVar2 = (code *)swi(3);
@@ -1618,7 +1639,7 @@ void __cdecl Snd_GetLowestPriority(float *param_1,int *param_2,uint param_3,uint
       }
       return;
     }
-    iVar4 = local_8 + param_3;
+    iVar4 = c + start;
     if (g_snd.voiceAliasHash[iVar4] == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x3c1,0,"%s");
       if (!bVar3) {
@@ -1646,11 +1667,11 @@ void __cdecl Snd_GetLowestPriority(float *param_1,int *param_2,uint param_3,uint
         return;
       }
     }
-    if (fVar1 < *param_1) {
-      *param_2 = iVar4;
-      *param_1 = fVar1;
+    if (fVar1 < *priority) {
+      *channel = iVar4;
+      *priority = fVar1;
     }
-    local_8 = local_8 + 1;
+    c = c + 1;
   } while( true );
 }
 
@@ -1659,53 +1680,54 @@ void __cdecl Snd_GetLowestPriority(float *param_1,int *param_2,uint param_3,uint
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_FindFreeVoice(SndStartAliasInfo *param_1)
+int __cdecl SND_FindFreeVoice(SndStartAliasInfo *startAliasInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_28;
-  float local_24;
-  uint local_20;
-  uint local_1c;
-  float local_18;
-  snd_alias_t *local_14;
-  uint local_10;
-  uint local_c;
-  float local_8;
+  uint i;
+  float thatPriority;
+  int thatVoice;
+  uint start;
+  float thisVolume;
+  snd_alias_t *alias;
+  int replacedVoice;
+  uint count;
+  float thisPriority;
   
-  local_14 = param_1->alias;
-  local_18 = Snd_GetGlobalPriorityVolume(param_1->alias,param_1->org);
-  local_8 = Snd_GetGlobalPriority(param_1->alias,local_18);
-  if ((local_14->flags & 0xc000) == 0x4000) {
-    local_1c = 10;
-    local_c = 0x40;
+  alias = startAliasInfo->alias;
+  thisVolume = Snd_GetGlobalPriorityVolume(startAliasInfo->alias,startAliasInfo->org);
+  thisPriority = Snd_GetGlobalPriority(startAliasInfo->alias,thisVolume);
+  if ((alias->flags & 0xc000) == 0x4000) {
+    start = 10;
+    count = 0x40;
   }
   else {
-    local_1c = 0;
-    local_c = 10;
+    start = 0;
+    count = 10;
   }
-  for (local_28 = local_1c; local_28 < local_1c + local_c; local_28 = local_28 + 1) {
-    if (g_snd.voiceAliasHash[local_28] == 0) {
-      return local_28;
+  for (i = start; i < start + count; i = i + 1) {
+    if (g_snd.voiceAliasHash[i] == 0) {
+      return i;
     }
   }
-  local_10 = 0xffffffff;
-  local_24 = 0.0;
-  local_20 = 0xffffffff;
-  Snd_GetLowestPriority(&local_24,(int *)&local_20,local_1c,local_c);
-  if (local_24 + (snd_playing_priority_boost->current).value < local_8) {
-    local_10 = local_20;
+  replacedVoice = -1;
+  thatPriority = 0.0;
+  thatVoice = -1;
+  Snd_GetLowestPriority(&thatPriority,&thatVoice,start,count);
+  if (thatPriority + (snd_playing_priority_boost->current).value < thisPriority) {
+    replacedVoice = thatVoice;
   }
-  if (((-1 < (int)local_10) && (SND_StopVoice(local_10), g_snd.voiceAliasHash[local_10] != 0)) &&
+  if (((-1 < replacedVoice) &&
+      (SND_StopVoice(replacedVoice), g_snd.voiceAliasHash[replacedVoice] != 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x405,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  return local_10;
+  return replacedVoice;
 }
 
 
@@ -1715,13 +1737,14 @@ int __cdecl SND_FindFreeVoice(SndStartAliasInfo *param_1)
 
 void __cdecl
 SND_ContinueLoopingSound_Internal
-          (int param_1,float param_2,int param_3,float *param_4,snd_playback *param_5)
+          (int voiceIndex,float volumeScale,int fadeTime,float *org,snd_playback *playback)
 
 {
   code *pcVar1;
   bool bVar2;
+  snd_voice_t *voice;
   
-  if (0x49 < (uint)param_1) {
+  if (0x49 < (uint)voiceIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x430,0,
                              "voiceIndex doesn\'t index SND_MAX_VOICES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1730,29 +1753,29 @@ SND_ContinueLoopingSound_Internal
       return;
     }
   }
-  if (param_3 < 0) {
-    if (g_snd.voice[param_1].fade.goal != 0.0) {
-      SND_FaderSetRateTime(&g_snd.voice[param_1].fade,-(float)param_3 / 1000.0);
-      SND_FaderSetGoal(&g_snd.voice[param_1].fade,0.0);
+  if (fadeTime < 0) {
+    if (g_snd.voice[voiceIndex].fade.goal != 0.0) {
+      SND_FaderSetRateTime(&g_snd.voice[voiceIndex].fade,-(float)fadeTime / 1000.0);
+      SND_FaderSetGoal(&g_snd.voice[voiceIndex].fade,0.0);
     }
   }
-  if (0 < param_3) {
-    if (g_snd.voice[param_1].fade.goal != 1.0) {
-      SND_FaderSetRateTime(&g_snd.voice[param_1].fade,(float)param_3 / 1000.0);
-      SND_FaderSetGoal(&g_snd.voice[param_1].fade,1.0);
+  if (0 < fadeTime) {
+    if (g_snd.voice[voiceIndex].fade.goal != 1.0) {
+      SND_FaderSetRateTime(&g_snd.voice[voiceIndex].fade,(float)fadeTime / 1000.0);
+      SND_FaderSetGoal(&g_snd.voice[voiceIndex].fade,1.0);
     }
   }
-  g_snd.voice[param_1].volModStart = param_2;
-  g_snd.voice[param_1].looptime = g_snd.looptime;
-  if (param_5 != (snd_playback *)0x0) {
-    if (g_snd.voice[param_1].playback != (snd_playback *)0x0) {
-      SND_FreePlayback(g_snd.voice[param_1].playback);
+  g_snd.voice[voiceIndex].volModStart = volumeScale;
+  g_snd.voice[voiceIndex].looptime = g_snd.looptime;
+  if (playback != (snd_playback *)0x0) {
+    if (g_snd.voice[voiceIndex].playback != (snd_playback *)0x0) {
+      SND_FreePlayback(g_snd.voice[voiceIndex].playback);
     }
-    g_snd.voice[param_1].playback = param_5;
-    g_snd.voice[param_1].playbackId = param_5->id;
+    g_snd.voice[voiceIndex].playback = playback;
+    g_snd.voice[voiceIndex].playbackId = playback->id;
   }
-  if (param_4 != (float *)0x0) {
-    SND_SetPosition(param_1,param_4);
+  if (org != (float *)0x0) {
+    SND_SetPosition(voiceIndex,org);
   }
   return;
 }
@@ -1764,38 +1787,37 @@ SND_ContinueLoopingSound_Internal
 
 int __cdecl
 SND_ContinueLoopingSound
-          (uint param_1,float param_2,SndEntHandle param_3,float *param_4,int param_5,
-          snd_playback *param_6)
+          (uint aliasId,float volumeScale,SndEntHandle sndEnt,float *org,int fadeTime,
+          snd_playback *playback)
 
 {
   DWORD DVar1;
-  int local_8;
+  int i;
   
   PIXBeginNamedEvent(0xffffff,"SND_ContinueLoopingSound");
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x49 < local_8) {
+    if (0x49 < i) {
       DVar1 = GetCurrentThreadId();
       if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return -1;
     }
-    if ((((g_snd.voiceAliasHash[local_8] != 0) &&
-         (g_snd.voice[local_8].sndEnt.handle == param_3.handle)) &&
-        (((g_snd.voice[local_8].alias)->flags & 1) != 0)) &&
-       ((g_snd.voice[local_8].alias)->id == param_1)) break;
-    local_8 = local_8 + 1;
+    if ((((g_snd.voiceAliasHash[i] != 0) && (g_snd.voice[i].sndEnt.handle == sndEnt.handle)) &&
+        (((g_snd.voice[i].alias)->flags & 1) != 0)) && ((g_snd.voice[i].alias)->id == aliasId))
+    break;
+    i = i + 1;
   }
-  SND_ContinueLoopingSound_Internal(local_8,param_2,param_5,param_4,param_6);
-  if (param_4 != (float *)0x0) {
-    SND_SetPosition(local_8,param_4);
+  SND_ContinueLoopingSound_Internal(i,volumeScale,fadeTime,org,playback);
+  if (org != (float *)0x0) {
+    SND_SetPosition(i,org);
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return g_snd.voice[local_8].playbackId;
+  return g_snd.voice[i].playbackId;
 }
 
 
@@ -1803,13 +1825,14 @@ SND_ContinueLoopingSound
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-uint __cdecl SND_GetCurrentContext(uint param_1)
+uint __cdecl SND_GetCurrentContext(uint type)
 
 {
   int iVar1;
   uint uVar2;
+  int i;
   
-  iVar1 = SND_FindContextIndex(param_1);
+  iVar1 = SND_FindContextIndex(type);
   if (iVar1 < 0) {
     uVar2 = 0;
   }
@@ -1824,7 +1847,7 @@ uint __cdecl SND_GetCurrentContext(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_alias_t * __cdecl SND_PickSoundAliasFromList(snd_alias_list_t *param_1,int param_2)
+snd_alias_t * __cdecl SND_PickSoundAliasFromList(snd_alias_list_t *aliasList,int objectId)
 
 {
   code *pcVar1;
@@ -1832,55 +1855,54 @@ snd_alias_t * __cdecl SND_PickSoundAliasFromList(snd_alias_list_t *param_1,int p
   snd_alias_t *psVar3;
   uint uVar4;
   uint local_128;
-  uint local_124;
-  int local_120;
-  snd_alias_t *local_11c;
-  uint local_118;
-  snd_alias_t *local_114 [65];
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  int seed;
+  snd_alias_t *alias;
+  uint i;
+  snd_alias_t *selectionArray [65];
+  uint actualCount;
+  uint totalCount;
+  int randomIndex;
   
-  if (param_1 == (snd_alias_list_t *)0x0) {
-    local_114[0] = (snd_alias_t *)0x0;
+  if (aliasList == (snd_alias_list_t *)0x0) {
+    selectionArray[0] = (snd_alias_t *)0x0;
   }
-  else if (param_1->count == 0) {
-    local_114[0] = (snd_alias_t *)0x0;
+  else if (aliasList->count == 0) {
+    selectionArray[0] = (snd_alias_t *)0x0;
   }
   else {
-    if ((0x3f < (uint)param_1->count) &&
+    if ((0x3f < (uint)aliasList->count) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x49c,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       psVar3 = (snd_alias_t *)(*pcVar1)();
       return psVar3;
     }
-    if ((uint)param_1->count < 0x40) {
-      local_128 = param_1->count;
+    if ((uint)aliasList->count < 0x40) {
+      local_128 = aliasList->count;
     }
     else {
       local_128 = 0x40;
     }
-    local_c = local_128;
-    local_10 = 0;
-    for (local_118 = 0; local_118 < local_c; local_118 = local_118 + 1) {
-      local_11c = param_1->head + local_118;
-      if (local_11c->contextType == 0) {
-        local_114[local_10] = local_11c;
-        local_10 = local_10 + 1;
+    totalCount = local_128;
+    actualCount = 0;
+    for (i = 0; i < totalCount; i = i + 1) {
+      alias = aliasList->head + i;
+      if (alias->contextType == 0) {
+        selectionArray[actualCount] = alias;
+        actualCount = actualCount + 1;
       }
-      else if ((local_11c->contextValue == 0) ||
-              (uVar4 = SND_GetCurrentContext(local_11c->contextType),
-              local_11c->contextValue == uVar4)) {
-        local_114[local_10] = local_11c;
-        local_10 = local_10 + 1;
+      else if ((alias->contextValue == 0) ||
+              (uVar4 = SND_GetCurrentContext(alias->contextType), alias->contextValue == uVar4)) {
+        selectionArray[actualCount] = alias;
+        actualCount = actualCount + 1;
       }
     }
-    if (local_10 == 0) {
-      local_114[0] = (snd_alias_t *)0x0;
+    if (actualCount == 0) {
+      selectionArray[0] = (snd_alias_t *)0x0;
     }
-    else if (local_10 == 1) {
-      if ((local_114[0] == (snd_alias_t *)0x0) &&
+    else if (actualCount == 1) {
+      if ((selectionArray[0] == (snd_alias_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x4ba,0,"%s")
          , !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1889,46 +1911,47 @@ snd_alias_t * __cdecl SND_PickSoundAliasFromList(snd_alias_list_t *param_1,int p
       }
     }
     else {
-      local_8 = 0xffffffff;
-      if ((local_114[0]->flags >> 0x1d & 4) == 0) {
+      randomIndex = -1;
+      if ((selectionArray[0]->flags >> 0x1d & 4) == 0) {
         if (g_snd.gameState.seed == 0) {
-          local_124 = 0;
-          while ((((local_124 < 100 && (2 < local_10)) && (local_8 == param_1->sequence)) ||
-                 (local_8 == 0xffffffff))) {
+          i_2 = 0;
+          while ((((i_2 < 100 && (2 < actualCount)) && (randomIndex == aliasList->sequence)) ||
+                 (randomIndex == -1))) {
             uVar4 = rand();
-            local_124 = local_124 + 1;
-            local_8 = uVar4 % local_10;
+            i_2 = i_2 + 1;
+            randomIndex = uVar4 % actualCount;
           }
         }
         else {
           uVar4 = RandWithSeed((int *)&g_snd.gameState.seed);
-          local_8 = uVar4 % local_10;
+          randomIndex = uVar4 % actualCount;
         }
       }
       else {
-        local_120 = (int)&param_1->name + param_2;
-        uVar4 = RandWithSeed(&local_120);
-        local_8 = uVar4 % local_10;
+        seed = (int)&aliasList->name + objectId;
+        uVar4 = RandWithSeed(&seed);
+        randomIndex = uVar4 % actualCount;
       }
-      param_1->sequence = local_8;
-      local_114[0] = local_114[local_8];
+      aliasList->sequence = randomIndex;
+      selectionArray[0] = selectionArray[randomIndex];
     }
   }
-  return local_114[0];
+  return selectionArray[0];
 }
 
 
 // 00934F00  SND_PickSoundAlias  (sound/snd.cpp:1244)
 
-snd_alias_t * __cdecl SND_PickSoundAlias(char *param_1,int param_2)
+snd_alias_t * __cdecl SND_PickSoundAlias(char *name,int objectid)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_alias_t *psVar3;
-  snd_alias_list_t *psVar4;
+  snd_alias_list_t *aliasList_00;
+  snd_alias_list_t *aliasList;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x4dd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1936,48 +1959,48 @@ snd_alias_t * __cdecl SND_PickSoundAlias(char *param_1,int param_2)
       return psVar3;
     }
   }
-  psVar4 = SND_FindAlias(param_1);
-  psVar3 = SND_PickSoundAliasFromList(psVar4,param_2);
+  aliasList_00 = SND_FindAlias(name);
+  psVar3 = SND_PickSoundAliasFromList(aliasList_00,objectid);
   return psVar3;
 }
 
 
 // 009359A0  SND_CheckValidSecondary  (sound/snd.cpp:1256)
 
-bool __cdecl SND_CheckValidSecondary(snd_alias_t *param_1,snd_alias_t *param_2)
+bool __cdecl SND_CheckValidSecondary(snd_alias_t *alias,snd_alias_t *secondaryAlias)
 
 {
   bool bVar1;
   int iVar2;
-  snd_alias_t *local_c;
-  int local_8;
+  snd_alias_t *tertiaryAlias;
+  int secondaryAliasRecursionCounter;
   
-  local_8 = 0;
-  if (((param_1->flags & 1) == 0) && ((param_2->flags & 1) != 0)) {
+  secondaryAliasRecursionCounter = 0;
+  if (((alias->flags & 1) == 0) && ((secondaryAlias->flags & 1) != 0)) {
     Com_PrintError(9,
                    "ERROR: a non-looping alias cannot have a looping secondary alias.\nERROR: Alias sequence: \'%s\'->\'%s\'\n"
                   );
     bVar1 = false;
   }
-  else if (((param_1->flags & 1) == 0) || ((param_2->flags & 1) != 0)) {
-    local_c = param_2;
-    while (((local_c != (snd_alias_t *)0x0 && (local_c->secondaryname != (char *)0x0)) &&
-           (local_8 < 10))) {
-      if (10 < local_8) {
+  else if (((alias->flags & 1) == 0) || ((secondaryAlias->flags & 1) != 0)) {
+    tertiaryAlias = secondaryAlias;
+    while (((tertiaryAlias != (snd_alias_t *)0x0 && (tertiaryAlias->secondaryname != (char *)0x0))
+           && (secondaryAliasRecursionCounter < 10))) {
+      if (10 < secondaryAliasRecursionCounter) {
         Com_PrintError(9,
                        "Error: Too many secondary aliases sequenced together, likely infinite recursion.\nAlias sequence start: \'%s\'->\'%s\', max secondary aliases: %d\n"
                       );
         return false;
       }
-      iVar2 = I_stricmp(param_1->name,local_c->secondaryname);
+      iVar2 = I_stricmp(alias->name,tertiaryAlias->secondaryname);
       if (iVar2 == 0) {
         Com_PrintError(9,
                        "Error: Infinite recursion in secondary aliases sequenced together.\nAlias sequence start: \'%s\'->\'%s\'\n"
                       );
         return false;
       }
-      local_8 = local_8 + 1;
-      local_c = SND_PickSoundAlias(local_c->secondaryname,0);
+      secondaryAliasRecursionCounter = secondaryAliasRecursionCounter + 1;
+      tertiaryAlias = SND_PickSoundAlias(tertiaryAlias->secondaryname,0);
     }
     bVar1 = true;
   }
@@ -1996,50 +2019,49 @@ bool __cdecl SND_CheckValidSecondary(snd_alias_t *param_1,snd_alias_t *param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SND_GetPlayingInfo(uint param_1,int *param_2,int *param_3,int *param_4,SndEntHandle param_5,
-                  bool param_6)
+SND_GetPlayingInfo(uint aliasHash,int *pcount,int *poldest,int *least,SndEntHandle ent,bool useEnt)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_18;
-  float local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  uint i;
+  float leastPriority;
+  int oldTime;
+  int oldest;
+  int count;
   
-  local_8 = 0;
-  local_c = 0xffffffff;
-  local_10 = 0x7fffffff;
-  local_14 = 1e+06;
-  if ((param_1 == 0) &&
+  count = 0;
+  oldest = -1;
+  oldTime = 0x7fffffff;
+  leastPriority = 1e+06;
+  if ((aliasHash == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x516,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  for (local_18 = 0; local_18 < 0x4a; local_18 = local_18 + 1) {
-    if ((g_snd.voiceAliasHash[local_18] == param_1) &&
-       ((!param_6 || (g_snd.voice[local_18].sndEnt.handle == param_5.handle)))) {
-      local_8 = local_8 + 1;
-      if (g_snd.voice[local_18].startTime < local_10) {
-        local_10 = g_snd.voice[local_18].startTime;
-        local_c = local_18;
+  for (i = 0; i < 0x4a; i = i + 1) {
+    if ((g_snd.voiceAliasHash[i] == aliasHash) &&
+       ((!useEnt || (g_snd.voice[i].sndEnt.handle == ent.handle)))) {
+      count = count + 1;
+      if (g_snd.voice[i].startTime < oldTime) {
+        oldTime = g_snd.voice[i].startTime;
+        oldest = i;
       }
-      pfVar1 = &g_snd.voice[local_18].globalPriority;
-      if (*pfVar1 <= local_14 && local_14 != *pfVar1) {
-        local_14 = g_snd.voice[local_18].globalPriority;
-        *param_4 = local_18;
+      pfVar1 = &g_snd.voice[i].globalPriority;
+      if (*pfVar1 <= leastPriority && leastPriority != *pfVar1) {
+        leastPriority = g_snd.voice[i].globalPriority;
+        *least = i;
       }
     }
   }
-  if (param_2 != (int *)0x0) {
-    *param_2 = local_8;
+  if (pcount != (int *)0x0) {
+    *pcount = count;
   }
-  if (param_3 != (int *)0x0) {
-    *param_3 = local_c;
+  if (poldest != (int *)0x0) {
+    *poldest = oldest;
   }
   return;
 }
@@ -2050,33 +2072,34 @@ SND_GetPlayingInfo(uint param_1,int *param_2,int *param_3,int *param_4,SndEntHan
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 bool __cdecl
-SND_Limit(char *param_1,int param_2,snd_limit_type_t param_3,int param_4,SndEntHandle param_5,
-         bool param_6,float param_7)
+SND_Limit(char *name,int aliasHash,snd_limit_type_t limitType,int limitCount,SndEntHandle ent,
+         bool useEnt,float priority)
 
 {
-  int local_10;
-  int local_c;
-  int local_8;
+  int oldest;
+  int leastImportant;
+  int count;
   
-  if (param_3 != SND_LIMIT_NONE) {
-    local_8 = 0;
-    local_10 = -1;
-    local_c = -1;
-    SND_GetPlayingInfo(param_2,&local_8,&local_10,&local_c,param_5,param_6);
-    if (param_4 <= local_8) {
-      if (param_3 == SND_LIMIT_REJECT) {
+  if (limitType != SND_LIMIT_NONE) {
+    count = 0;
+    oldest = -1;
+    leastImportant = -1;
+    SND_GetPlayingInfo(aliasHash,&count,&oldest,&leastImportant,ent,useEnt);
+    if (limitCount <= count) {
+      if (limitType == SND_LIMIT_REJECT) {
         return false;
       }
-      if ((param_3 == SND_LIMIT_OLDEST) && (-1 < local_10)) {
-        SND_StopVoice(local_10);
+      if ((limitType == SND_LIMIT_OLDEST) && (-1 < oldest)) {
+        SND_StopVoice(oldest);
       }
-      if (param_3 == SND_LIMIT_PRIORITY) {
-        if ((local_c < 0) ||
-           (param_7 <=
-            g_snd.voice[local_c].globalPriority + (snd_playing_priority_boost->current).value)) {
+      if (limitType == SND_LIMIT_PRIORITY) {
+        if ((leastImportant < 0) ||
+           (priority <=
+            g_snd.voice[leastImportant].globalPriority + (snd_playing_priority_boost->current).value
+           )) {
           return false;
         }
-        SND_StopVoice(local_c);
+        SND_StopVoice(leastImportant);
       }
     }
   }
@@ -2088,27 +2111,26 @@ SND_Limit(char *param_1,int param_2,snd_limit_type_t param_3,int param_4,SndEntH
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl SND_LimitVoice(snd_alias_t *param_1,SndEntHandle param_2)
+bool __cdecl SND_LimitVoice(snd_alias_t *alias,SndEntHandle ent)
 
 {
   bool bVar1;
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  uint i;
   
-  bVar1 = SND_IsAliasVoice(param_1);
+  bVar1 = SND_IsAliasVoice(alias);
   if (bVar1) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      if (((g_snd.voiceAliasHash[local_8] != 0) &&
-          (g_snd.voice[local_8].sndEnt.handle == param_2.handle)) &&
-         (bVar1 = SND_IsAliasVoice(g_snd.voice[local_8].alias), bVar1)) {
-        SND_StopVoice(local_8);
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (((g_snd.voiceAliasHash[i] != 0) && (g_snd.voice[i].sndEnt.handle == ent.handle)) &&
+         (bVar1 = SND_IsAliasVoice(g_snd.voice[i].alias), bVar1)) {
+        SND_StopVoice(i);
       }
     }
   }
-  if ((param_1->flags & 0x3f0000) >> 0x10 == g_snd.announcerGroup) {
-    for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-      if ((g_snd.voiceAliasHash[local_c] != 0) &&
-         (((g_snd.voice[local_c].alias)->flags & 0x3f0000) >> 0x10 == g_snd.announcerGroup)) {
+  if ((alias->flags & 0x3f0000) >> 0x10 == g_snd.announcerGroup) {
+    for (i_2 = 0; i_2 < 0x4a; i_2 = i_2 + 1) {
+      if ((g_snd.voiceAliasHash[i_2] != 0) &&
+         (((g_snd.voice[i_2].alias)->flags & 0x3f0000) >> 0x10 == g_snd.announcerGroup)) {
         return false;
       }
     }
@@ -2119,13 +2141,13 @@ bool __cdecl SND_LimitVoice(snd_alias_t *param_1,SndEntHandle param_2)
 
 // 00934F60  SND_AssertValidData  (sound/snd.cpp:1416)
 
-void __cdecl SND_AssertValidData(snd_alias_t *param_1)
+void __cdecl SND_AssertValidData(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x589,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2133,8 +2155,8 @@ void __cdecl SND_AssertValidData(snd_alias_t *param_1)
       return;
     }
   }
-  if ((param_1->flags & 2) != 0) {
-    if (param_1->distMax < param_1->distMin) {
+  if ((alias->flags & 2) != 0) {
+    if (alias->distMax < alias->distMin) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x58d,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -2142,7 +2164,7 @@ void __cdecl SND_AssertValidData(snd_alias_t *param_1)
         return;
       }
     }
-    if (param_1->distReverbMax < param_1->distMax) {
+    if (alias->distReverbMax < alias->distMax) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x58e,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -2160,9 +2182,9 @@ void __cdecl SND_AssertValidData(snd_alias_t *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 int __cdecl
-SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,float *param_4,
-                  int param_5,int param_6,float *param_7,snd_playback *param_8,
-                  snd_occlusion_start_cache *param_9)
+SND_PlaySoundAlias(snd_alias_list_t *aliasList,float volumeScale,SndEntHandle sndEnt,float *org,
+                  int timeshift,int fadeTime,float *direction,snd_playback *playback,
+                  snd_occlusion_start_cache *ocache)
 
 {
   byte bVar1;
@@ -2171,136 +2193,140 @@ SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,
   bool bVar4;
   int iVar5;
   uint uVar6;
-  snd_alias_list_t *psVar7;
-  snd_group *psVar8;
-  float fVar9;
-  SndStartAliasInfo local_5c;
-  int local_20;
-  float local_1c;
-  uint local_18;
-  snd_alias_t *local_14;
-  float local_10;
+  snd_alias_list_t *aliasList_00;
+  snd_group *psVar7;
+  float fVar8;
+  int playbackId;
+  float distance_2;
+  int loopId;
+  float distance;
+  bool outOfRange;
+  float distMax;
+  snd_alias_list_t *secondaryList;
+  SndStartAliasInfo startAliasInfo;
+  int voiceIndex;
+  float priority;
+  int group;
+  snd_alias_t *alias;
+  float playerPosition;
   float local_c;
   float local_8;
   
-  if ((param_4 == (float *)0x0) &&
+  if ((org == (float *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x5a1,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*org & 0x7f800000) == 0x7f800000) || (((uint)org[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)org[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x5a2,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((uint)param_3.handle >> 0x13 & 3) != 0) &&
+  if ((((uint)sndEnt.handle >> 0x13 & 3) != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x5a3,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if (param_1 == (snd_alias_list_t *)0x0) {
+  if (aliasList == (snd_alias_list_t *)0x0) {
     iVar5 = -1;
   }
   else {
-    SND_LogPlayedAliasId(param_1->id);
+    SND_LogPlayedAliasId(aliasList->id);
     if (((snd_assert_on_play != (dvar_s *)0x0) && ((snd_assert_on_play->current).integer != 0)) &&
        ((*(snd_assert_on_play->current).string != '\0' &&
-        ((iVar5 = _stricmp((snd_assert_on_play->current).string,param_1->name), iVar5 == 0 &&
+        ((iVar5 = _stricmp((snd_assert_on_play->current).string,aliasList->name), iVar5 == 0 &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x5ae,0,"%s")
          , !bVar4)))))) {
       pcVar3 = (code *)swi(3);
       iVar5 = (*pcVar3)();
       return iVar5;
     }
-    if (param_1->head->secondaryname != (char *)0x0) {
-      uVar6 = SND_HashName(param_1->head->secondaryname);
-      psVar7 = SND_FindAliasFromId(uVar6);
-      if ((psVar7 != (snd_alias_list_t *)0x0) &&
-         (bVar4 = SND_CheckValidSecondary(param_1->head,psVar7->head), bVar4)) {
-        SND_PlaySoundAlias(psVar7,param_2,param_3,param_4,param_5,param_6,param_7,
-                           (snd_playback *)0x0,param_9);
+    if (aliasList->head->secondaryname != (char *)0x0) {
+      uVar6 = SND_HashName(aliasList->head->secondaryname);
+      aliasList_00 = SND_FindAliasFromId(uVar6);
+      if ((aliasList_00 != (snd_alias_list_t *)0x0) &&
+         (bVar4 = SND_CheckValidSecondary(aliasList->head,aliasList_00->head), bVar4)) {
+        SND_PlaySoundAlias(aliasList_00,volumeScale,sndEnt,org,timeshift,fadeTime,direction,
+                           (snd_playback *)0x0,ocache);
       }
     }
-    local_14 = SND_PickSoundAliasFromList(param_1,param_3.handle & 0xfff);
-    if (local_14 == (snd_alias_t *)0x0) {
+    alias = SND_PickSoundAliasFromList(aliasList,sndEnt.handle & 0xfff);
+    if (alias == (snd_alias_t *)0x0) {
       iVar5 = -1;
     }
     else {
-      SND_AssertValidData(local_14);
-      if (local_14->soundFile == (SoundFile *)0x0) {
-        if (local_14->subtitle != (char *)0x0) {
-          SND_SubtitleNotify(local_14->subtitle,5000);
+      SND_AssertValidData(alias);
+      if (alias->soundFile == (SoundFile *)0x0) {
+        if (alias->subtitle != (char *)0x0) {
+          SND_SubtitleNotify(alias->subtitle,5000);
         }
         iVar5 = -1;
       }
-      else if ((local_14->soundFile->type == '\x01') &&
-              ((local_14->soundFile->u).loadSnd == (LoadedSound *)0x0)) {
+      else if ((alias->soundFile->type == '\x01') &&
+              ((alias->soundFile->u).loadSnd == (LoadedSound *)0x0)) {
         iVar5 = -1;
       }
       else {
-        if (((local_14->flags & 0xc000) >> 0xe != (uint)local_14->soundFile->type) &&
+        if (((alias->flags & 0xc000) >> 0xe != (uint)alias->soundFile->type) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x5d5,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           iVar5 = (*pcVar3)();
           return iVar5;
         }
-        if ((1.52879e-05 <= (float)local_14->volMin / 65535.0) ||
-           (1.52879e-05 <= (float)local_14->volMax / 65535.0)) {
-          local_18 = (local_14->flags & 0x3f0000) >> 0x10;
+        if ((1.52879e-05 <= (float)alias->volMin / 65535.0) ||
+           (1.52879e-05 <= (float)alias->volMax / 65535.0)) {
+          group = (alias->flags & 0x3f0000) >> 0x10;
           if (((snd_skip_muted_sounds->current).enabled == false) ||
-             (psVar8 = SND_GetGroupByIndex(local_18),
-             1.52879e-05 <= (float)psVar8->attenuationMp / 65535.0)) {
-            if ((local_14->flags & 2) != 0) {
+             (psVar7 = SND_GetGroupByIndex(group),
+             1.52879e-05 <= (float)psVar7->attenuationMp / 65535.0)) {
+            if ((alias->flags & 2) != 0) {
               uVar6 = SND_ActiveListenerCount();
               if (uVar6 == 0) {
                 return -1;
               }
-              iVar5 = SND_GetListenerIndexNearestToOrigin(param_4);
-              local_10 = g_snd.listeners[iVar5].orient.origin[0];
+              iVar5 = SND_GetListenerIndexNearestToOrigin(org);
+              playerPosition = g_snd.listeners[iVar5].orient.origin[0];
               local_c = g_snd.listeners[iVar5].orient.origin[1];
               local_8 = g_snd.listeners[iVar5].orient.origin[2];
-              uVar2 = local_14->distReverbMax;
-              fVar9 = Vec3DistanceSq(param_4,&local_10);
-              if ((float)uVar2 * (float)uVar2 < fVar9) {
+              uVar2 = alias->distReverbMax;
+              fVar8 = Vec3DistanceSq(org,&playerPosition);
+              if ((float)uVar2 * (float)uVar2 < fVar8) {
                 return -1;
               }
             }
-            if (((local_14->flags & 1) == 0) ||
-               (iVar5 = SND_ContinueLoopingSound
-                                  (local_14->id,param_2,param_3,param_4,param_6,param_8),
-               iVar5 == -1)) {
-              if (param_6 < 0) {
+            if (((alias->flags & 1) == 0) ||
+               (iVar5 = SND_ContinueLoopingSound(alias->id,volumeScale,sndEnt,org,fadeTime,playback)
+               , iVar5 == -1)) {
+              if (fadeTime < 0) {
                 iVar5 = -1;
               }
-              else if (local_14->dryCurve == 0xffffffff) {
+              else if (alias->dryCurve == 0xffffffff) {
                 Com_PrintError(9,"Error: \'%s\' had bad volume curve\n");
                 iVar5 = -1;
               }
-              else if (((float)local_14->probability / 255.0 <= 0.0) ||
-                      (bVar1 = local_14->probability, fVar9 = random(),
-                      fVar9 <= (float)bVar1 / 255.0)) {
-                fVar9 = Snd_GetGlobalPriorityVolume(local_14,param_4);
-                local_1c = Snd_GetGlobalPriority(local_14,fVar9);
-                bVar4 = SND_Limit(local_14->name,local_14->id,(local_14->flags & 0x6000000) >> 0x19,
-                                  (uint)local_14->limitCount,param_3,false,local_1c);
+              else if (((float)alias->probability / 255.0 <= 0.0) ||
+                      (bVar1 = alias->probability, fVar8 = random(), fVar8 <= (float)bVar1 / 255.0))
+              {
+                fVar8 = Snd_GetGlobalPriorityVolume(alias,org);
+                priority = Snd_GetGlobalPriority(alias,fVar8);
+                bVar4 = SND_Limit(alias->name,alias->id,(alias->flags & 0x6000000) >> 0x19,
+                                  (uint)alias->limitCount,sndEnt,false,priority);
                 if (bVar4) {
-                  bVar4 = SND_Limit(local_14->name,local_14->id,
-                                    (local_14->flags & 0x18000000) >> 0x1b,
-                                    (uint)local_14->entityLimitCount,param_3,true,local_1c);
+                  bVar4 = SND_Limit(alias->name,alias->id,(alias->flags & 0x18000000) >> 0x1b,
+                                    (uint)alias->entityLimitCount,sndEnt,true,priority);
                   if (bVar4) {
-                    bVar4 = SND_LimitVoice(local_14,param_3);
+                    bVar4 = SND_LimitVoice(alias,sndEnt);
                     if (bVar4) {
-                      memset((uchar *)&local_5c,0xff,0x3c);
-                      if ((1.0 < (float)local_14->volMin / 65535.0) &&
+                      memset((uchar *)&startAliasInfo,0xff,0x3c);
+                      if ((1.0 < (float)alias->volMin / 65535.0) &&
                          (bVar4 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp"
                                                   ,0x62a,0,"%s"), !bVar4)) {
@@ -2308,7 +2334,7 @@ SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,
                         iVar5 = (*pcVar3)();
                         return iVar5;
                       }
-                      if (((float)local_14->volMin / 65535.0 < 0.0) &&
+                      if (((float)alias->volMin / 65535.0 < 0.0) &&
                          (bVar4 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp"
                                                   ,0x62b,0,"%s"), !bVar4)) {
@@ -2316,7 +2342,7 @@ SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,
                         iVar5 = (*pcVar3)();
                         return iVar5;
                       }
-                      if ((1.0 < (float)local_14->volMax / 65535.0) &&
+                      if ((1.0 < (float)alias->volMax / 65535.0) &&
                          (bVar4 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp"
                                                   ,0x62c,0,"%s"), !bVar4)) {
@@ -2324,7 +2350,7 @@ SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,
                         iVar5 = (*pcVar3)();
                         return iVar5;
                       }
-                      if (((float)local_14->volMax / 65535.0 < 0.0) &&
+                      if (((float)alias->volMax / 65535.0 < 0.0) &&
                          (bVar4 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp"
                                                   ,0x62d,0,"%s"), !bVar4)) {
@@ -2332,53 +2358,53 @@ SND_PlaySoundAlias(snd_alias_list_t *param_1,float param_2,SndEntHandle param_3,
                         iVar5 = (*pcVar3)();
                         return iVar5;
                       }
-                      local_5c.volModStart = param_2;
-                      local_5c.alias = local_14;
-                      local_5c.sndEnt = param_3;
-                      local_5c.org[0] = *param_4;
-                      local_5c.org[1] = param_4[1];
-                      local_5c.org[2] = param_4[2];
-                      if (param_7 == (float *)0x0) {
-                        local_5c.dir[0] = 0.0;
-                        local_5c.dir[1] = 0.0;
-                        local_5c.dir[2] = 0.0;
+                      startAliasInfo.volModStart = volumeScale;
+                      startAliasInfo.alias = alias;
+                      startAliasInfo.sndEnt = sndEnt;
+                      startAliasInfo.org[0] = *org;
+                      startAliasInfo.org[1] = org[1];
+                      startAliasInfo.org[2] = org[2];
+                      if (direction == (float *)0x0) {
+                        startAliasInfo.dir[0] = 0.0;
+                        startAliasInfo.dir[1] = 0.0;
+                        startAliasInfo.dir[2] = 0.0;
                       }
                       else {
-                        local_5c.dir[0] = *param_7;
-                        local_5c.dir[1] = param_7[1];
-                        local_5c.dir[2] = param_7[2];
+                        startAliasInfo.dir[0] = *direction;
+                        startAliasInfo.dir[1] = direction[1];
+                        startAliasInfo.dir[2] = direction[2];
                       }
-                      local_5c.timeshift = param_5;
-                      local_5c.startDelay = (int)local_14->startDelay;
-                      local_5c.fadetime = (float)param_6;
-                      local_5c.ocache = param_9;
-                      local_5c.playback = param_8;
-                      if (param_8 == (snd_playback *)0x0) {
-                        local_5c.playbackId = SND_AcquirePlaybackId();
+                      startAliasInfo.timeshift = timeshift;
+                      startAliasInfo.startDelay = (int)alias->startDelay;
+                      startAliasInfo.fadetime = (float)fadeTime;
+                      startAliasInfo.ocache = ocache;
+                      startAliasInfo.playback = playback;
+                      if (playback == (snd_playback *)0x0) {
+                        startAliasInfo.playbackId = SND_AcquirePlaybackId();
                       }
                       else {
-                        local_5c.playbackId = param_8->id;
+                        startAliasInfo.playbackId = playback->id;
                       }
-                      if (((snd_realDelay->current).value != 0.0) && ((local_14->flags & 4) != 0)) {
-                        fVar9 = Vec3Distance(&local_10,param_4);
-                        local_5c.startDelay =
-                             (int)((fVar9 * 1000.0) / (13397.244 / (snd_realDelay->current).value))
-                             + local_5c.startDelay;
-                        if (local_5c.startDelay < 8) {
-                          local_5c.startDelay = 0;
+                      if (((snd_realDelay->current).value != 0.0) && ((alias->flags & 4) != 0)) {
+                        fVar8 = Vec3Distance(&playerPosition,org);
+                        startAliasInfo.startDelay =
+                             (int)((fVar8 * 1000.0) / (13397.244 / (snd_realDelay->current).value))
+                             + startAliasInfo.startDelay;
+                        if (startAliasInfo.startDelay < 8) {
+                          startAliasInfo.startDelay = 0;
                         }
                       }
-                      local_20 = SND_FindFreeVoice(&local_5c);
-                      if (-1 < local_20) {
-                        iVar5 = SD_StartAlias(&local_5c,local_20);
+                      voiceIndex = SND_FindFreeVoice(&startAliasInfo);
+                      if (-1 < voiceIndex) {
+                        iVar5 = SD_StartAlias(&startAliasInfo,voiceIndex);
                         if (iVar5 != -1) {
-                          if (local_14->subtitle == (char *)0x0) {
+                          if (alias->subtitle == (char *)0x0) {
                             return iVar5;
                           }
-                          SND_AddLengthNotify(iVar5,local_14->subtitle,SND_LENGTH_NOTIFY_SUBTITLE);
+                          SND_AddLengthNotify(iVar5,alias->subtitle,SND_LENGTH_NOTIFY_SUBTITLE);
                           return iVar5;
                         }
-                        SND_StopVoice(local_20);
+                        SND_StopVoice(voiceIndex);
                       }
                       iVar5 = -1;
                     }
@@ -2421,14 +2447,14 @@ void __cdecl SND_PauseSounds(void)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-    if (g_snd.voiceAliasHash[local_8] != 0) {
-      bVar1 = SND_IsAliasPausable(g_snd.voice[local_8].alias);
+  for (i = 0; i < 0x4a; i = i + 1) {
+    if (g_snd.voiceAliasHash[i] != 0) {
+      bVar1 = SND_IsAliasPausable(g_snd.voice[i].alias);
       if (bVar1) {
-        SD_PauseVoice(local_8);
-        g_snd.voice[local_8].paused = true;
+        SD_PauseVoice(i);
+        g_snd.voice[i].paused = true;
       }
     }
   }
@@ -2443,17 +2469,17 @@ void __cdecl SND_PauseSounds(void)
 void __cdecl SND_UnpauseSounds(void)
 
 {
-  int iVar1;
-  int local_c;
+  int timeshift_00;
+  int i;
+  int timeshift;
   
-  iVar1 = g_snd.time - g_snd.pausetime;
-  for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-    if ((g_snd.voiceAliasHash[local_c] != 0) && (g_snd.voice[local_c].paused != false)) {
-      g_snd.voice[local_c].startTime = g_snd.voice[local_c].startTime + iVar1;
-      g_snd.voice[local_c].soundFileInfo.endtime =
-           g_snd.voice[local_c].soundFileInfo.endtime + iVar1;
-      g_snd.voice[local_c].paused = false;
-      SD_UnpauseVoice(local_c,iVar1);
+  timeshift_00 = g_snd.time - g_snd.pausetime;
+  for (i = 0; i < 0x4a; i = i + 1) {
+    if ((g_snd.voiceAliasHash[i] != 0) && (g_snd.voice[i].paused != false)) {
+      g_snd.voice[i].startTime = g_snd.voice[i].startTime + timeshift_00;
+      g_snd.voice[i].soundFileInfo.endtime = g_snd.voice[i].soundFileInfo.endtime + timeshift_00;
+      g_snd.voice[i].paused = false;
+      SD_UnpauseVoice(i,timeshift_00);
     }
   }
   return;
@@ -2468,6 +2494,7 @@ void __cdecl SND_UpdatePause(void)
 
 {
   undefined4 local_c;
+  int paused;
   
   if ((g_snd.gameState.gamePaused) || (g_snd.forcePause != 0)) {
     local_c = 1;
@@ -2494,19 +2521,19 @@ void __cdecl SND_UpdatePause(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateMasterVolumes(float param_1)
+void __cdecl SND_UpdateMasterVolumes(float dt)
 
 {
   snd_category_t sVar1;
-  uint local_8;
+  uint i;
   
-  SND_FaderUpdate(&g_snd.volume,param_1);
+  SND_FaderUpdate(&g_snd.volume,dt);
   if ((g_snd.volume.value < 1.52879e-05) && (g_snd.volume.goal < 1.52879e-05)) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      if (g_snd.voiceAliasHash[local_8] != 0) {
-        sVar1 = SND_GroupCategory(((g_snd.voice[local_8].alias)->flags & 0x3f0000) >> 0x10);
-        if ((sVar1 != SND_CATEGORY_UI) || (((g_snd.voice[local_8].alias)->flags & 1) != 0)) {
-          SND_StopVoice(local_8);
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (g_snd.voiceAliasHash[i] != 0) {
+        sVar1 = SND_GroupCategory(((g_snd.voice[i].alias)->flags & 0x3f0000) >> 0x10);
+        if ((sVar1 != SND_CATEGORY_UI) || (((g_snd.voice[i].alias)->flags & 1) != 0)) {
+          SND_StopVoice(i);
         }
       }
     }
@@ -2519,18 +2546,20 @@ void __cdecl SND_UpdateMasterVolumes(float param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateVoices(int param_1)
+void __cdecl SND_UpdateVoices(int frametime)
 
 {
   DWORD DVar1;
   float fVar2;
   float local_3c;
   float local_1c;
-  uint local_18;
-  uint local_14;
-  uint local_10;
+  uint i_3;
+  uint i_2;
+  uint i;
+  float fdt;
+  int count;
   
-  fVar2 = (float)param_1 / 1000.0;
+  fVar2 = (float)frametime / 1000.0;
   local_1c = fVar2;
   if (0.0 <= fVar2 - 0.25) {
     local_1c = 0.25;
@@ -2542,9 +2571,9 @@ void __cdecl SND_UpdateVoices(int param_1)
     local_3c = 0.0;
   }
   PIXBeginNamedEvent(-1,"SND_UpdateVoicePosition");
-  for (local_10 = 0; local_10 < 0x4a; local_10 = local_10 + 1) {
-    if (g_snd.voiceAliasHash[local_10] != 0) {
-      SND_UpdateVoicePosition(g_snd.voice + local_10,(float *)0x0);
+  for (i = 0; i < 0x4a; i = i + 1) {
+    if (g_snd.voiceAliasHash[i] != 0) {
+      SND_UpdateVoicePosition(g_snd.voice + i,(float *)0x0);
     }
   }
   DVar1 = GetCurrentThreadId();
@@ -2552,9 +2581,9 @@ void __cdecl SND_UpdateVoices(int param_1)
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"SND_UpdateVoice");
-  for (local_14 = 0; local_14 < 0x4a; local_14 = local_14 + 1) {
-    if (g_snd.voiceAliasHash[local_14] != 0) {
-      SND_UpdateVoice(g_snd.voice + local_14,local_3c);
+  for (i_2 = 0; i_2 < 0x4a; i_2 = i_2 + 1) {
+    if (g_snd.voiceAliasHash[i_2] != 0) {
+      SND_UpdateVoice(g_snd.voice + i_2,local_3c);
     }
   }
   DVar1 = GetCurrentThreadId();
@@ -2562,9 +2591,9 @@ void __cdecl SND_UpdateVoices(int param_1)
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"SD_UpdateVoice");
-  for (local_18 = 0; local_18 < 0x4a; local_18 = local_18 + 1) {
-    if (g_snd.voiceAliasHash[local_18] != 0) {
-      SD_UpdateVoice(local_18,param_1);
+  for (i_3 = 0; i_3 < 0x4a; i_3 = i_3 + 1) {
+    if (g_snd.voiceAliasHash[i_3] != 0) {
+      SD_UpdateVoice(i_3,frametime);
     }
   }
   DVar1 = GetCurrentThreadId();
@@ -2602,7 +2631,7 @@ uint __cdecl SND_GetCurrentReverb(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateRoomEffects(int param_1)
+void __cdecl SND_UpdateRoomEffects(int frametime)
 
 {
   code *pcVar1;
@@ -2617,8 +2646,8 @@ void __cdecl SND_UpdateRoomEffects(int param_1)
   }
   if (((g_snd.effect)->dryrate != 0.0) || ((g_snd.effect)->wetrate != 0.0)) {
     if ((g_snd.effect)->dryrate != 0.0) {
-      (g_snd.effect)->drylevel = (float)param_1 * (g_snd.effect)->dryrate + (g_snd.effect)->drylevel
-      ;
+      (g_snd.effect)->drylevel =
+           (float)frametime * (g_snd.effect)->dryrate + (g_snd.effect)->drylevel;
       if (0.0 < (g_snd.effect)->dryrate || (g_snd.effect)->dryrate == 0.0) {
         if ((g_snd.effect)->drygoal <= (g_snd.effect)->drylevel) {
           (g_snd.effect)->drylevel = (g_snd.effect)->drygoal;
@@ -2631,8 +2660,8 @@ void __cdecl SND_UpdateRoomEffects(int param_1)
       }
     }
     if ((g_snd.effect)->wetrate != 0.0) {
-      (g_snd.effect)->wetlevel = (float)param_1 * (g_snd.effect)->wetrate + (g_snd.effect)->wetlevel
-      ;
+      (g_snd.effect)->wetlevel =
+           (float)frametime * (g_snd.effect)->wetrate + (g_snd.effect)->wetlevel;
       if (0.0 < (g_snd.effect)->wetrate || (g_snd.effect)->wetrate == 0.0) {
         if ((g_snd.effect)->wetgoal <= (g_snd.effect)->wetlevel) {
           (g_snd.effect)->wetlevel = (g_snd.effect)->wetgoal;
@@ -2660,97 +2689,97 @@ void __cdecl SND_UpdateStaticSounds(void)
   snd_alias_list_t *psVar2;
   SndEntHandle SVar3;
   bool bVar4;
-  snd_occlusion_start_cache local_78;
-  char local_61;
-  float local_60 [3];
-  uint local_54;
-  float local_50 [3];
-  float local_44;
-  uint local_40;
-  float local_3c [3];
-  snd_occlusion_start_cache local_30;
-  char local_19;
-  float local_18;
-  float local_14 [3];
-  uint local_8;
+  snd_occlusion_start_cache cache_2;
+  bool firstUpdate_2;
+  float direction_2 [3];
+  int i_2;
+  float tmpOrigin [3];
+  float tmpDistance;
+  uint l;
+  float origin [3];
+  snd_occlusion_start_cache cache;
+  bool firstUpdate;
+  float distance;
+  float direction [3];
+  int i;
   
   uVar1 = SND_ActiveListenerCount();
   if (uVar1 != 0) {
-    for (local_8 = 0; local_8 < 0x80; local_8 = local_8 + 1) {
-      if (g_snd.lineEmitters[local_8].id != 0) {
-        local_19 = 0;
-        bVar4 = g_snd.lineEmitters[local_8].alias == (snd_alias_list_t *)0x0;
+    for (i = 0; (uint)i < 0x80; i = i + 1) {
+      if (g_snd.lineEmitters[i].id != 0) {
+        firstUpdate = false;
+        bVar4 = g_snd.lineEmitters[i].alias == (snd_alias_list_t *)0x0;
         if (bVar4) {
-          psVar2 = SND_FindAliasFromId(g_snd.lineEmitters[local_8].id);
-          g_snd.lineEmitters[local_8].alias = psVar2;
+          psVar2 = SND_FindAliasFromId(g_snd.lineEmitters[i].id);
+          g_snd.lineEmitters[i].alias = psVar2;
         }
-        local_19 = bVar4;
-        if (g_snd.lineEmitters[local_8].alias == (snd_alias_list_t *)0x0) {
-          SND_LogMissingAliasId(g_snd.lineEmitters[local_8].id);
-          g_snd.lineEmitters[local_8].id = 0;
-          g_snd.lineEmitters[local_8].origin[0][0] = 0.0;
-          g_snd.lineEmitters[local_8].origin[0][1] = 0.0;
-          g_snd.lineEmitters[local_8].origin[0][2] = 0.0;
-          g_snd.lineEmitters[local_8].origin[1][0] = 0.0;
-          g_snd.lineEmitters[local_8].origin[1][1] = 0.0;
-          g_snd.lineEmitters[local_8].origin[1][2] = 0.0;
+        firstUpdate = bVar4;
+        if (g_snd.lineEmitters[i].alias == (snd_alias_list_t *)0x0) {
+          SND_LogMissingAliasId(g_snd.lineEmitters[i].id);
+          g_snd.lineEmitters[i].id = 0;
+          g_snd.lineEmitters[i].origin[0][0] = 0.0;
+          g_snd.lineEmitters[i].origin[0][1] = 0.0;
+          g_snd.lineEmitters[i].origin[0][2] = 0.0;
+          g_snd.lineEmitters[i].origin[1][0] = 0.0;
+          g_snd.lineEmitters[i].origin[1][1] = 0.0;
+          g_snd.lineEmitters[i].origin[1][2] = 0.0;
         }
         else {
-          local_18 = 3.4028235e+38;
-          local_40 = 0;
-          while (uVar1 = SND_ActiveListenerCount(), local_40 < uVar1) {
+          distance = 3.4028235e+38;
+          l = 0;
+          while (uVar1 = SND_ActiveListenerCount(), l < uVar1) {
             SND_GetNearestPointOnSegment
-                      ((float *)(g_snd.listeners + local_40),g_snd.lineEmitters[local_8].origin[0],
-                       g_snd.lineEmitters[local_8].origin[1],local_50);
-            local_44 = Vec3Distance(local_50,(float *)(g_snd.listeners + local_40));
-            if (local_44 < local_18) {
-              local_18 = local_44;
+                      ((float *)(g_snd.listeners + l),g_snd.lineEmitters[i].origin[0],
+                       g_snd.lineEmitters[i].origin[1],tmpOrigin);
+            tmpDistance = Vec3Distance(tmpOrigin,(float *)(g_snd.listeners + l));
+            if (tmpDistance < distance) {
+              distance = tmpDistance;
             }
-            local_40 = local_40 + 1;
+            l = l + 1;
           }
-          local_14[0] = 0.0;
-          local_14[1] = 0.0;
-          local_14[2] = 0.0;
-          local_30.position[0] = 0.0;
-          local_30.position[1] = 0.0;
-          local_30.position[2] = 0.0;
-          local_30.value = 0.0;
-          local_30.valid = false;
-          local_30._17_3_ = 0;
-          SVar3 = SND_EntHandle(0,local_8 + 0xf7e,0,false,true,TEAM_BAD);
-          SND_PlaySoundAlias(g_snd.lineEmitters[local_8].alias,1.0,SVar3,local_3c,0,
-                             -(uint)(local_19 != '\0') & 500,local_14,(snd_playback *)0x0,&local_30)
-          ;
+          direction[0] = 0.0;
+          direction[1] = 0.0;
+          direction[2] = 0.0;
+          cache.position[0] = 0.0;
+          cache.position[1] = 0.0;
+          cache.position[2] = 0.0;
+          cache.value = 0.0;
+          cache.valid = false;
+          cache._17_3_ = 0;
+          SVar3 = SND_EntHandle(0,i + 0xf7e,0,false,true,TEAM_BAD);
+          SND_PlaySoundAlias(g_snd.lineEmitters[i].alias,1.0,SVar3,origin,0,
+                             -(uint)(firstUpdate != false) & 500,direction,(snd_playback *)0x0,
+                             &cache);
         }
       }
     }
-    for (local_54 = 0; local_54 < 0x100; local_54 = local_54 + 1) {
-      if (g_snd.loopEmitters[local_54].id != 0) {
-        local_61 = 0;
-        bVar4 = g_snd.loopEmitters[local_54].alias == (snd_alias_list_t *)0x0;
+    for (i_2 = 0; (uint)i_2 < 0x100; i_2 = i_2 + 1) {
+      if (g_snd.loopEmitters[i_2].id != 0) {
+        firstUpdate_2 = false;
+        bVar4 = g_snd.loopEmitters[i_2].alias == (snd_alias_list_t *)0x0;
         if (bVar4) {
-          psVar2 = SND_FindAliasFromId(g_snd.loopEmitters[local_54].id);
-          g_snd.loopEmitters[local_54].alias = psVar2;
+          psVar2 = SND_FindAliasFromId(g_snd.loopEmitters[i_2].id);
+          g_snd.loopEmitters[i_2].alias = psVar2;
         }
-        local_61 = bVar4;
-        if (g_snd.loopEmitters[local_54].alias == (snd_alias_list_t *)0x0) {
-          SND_LogMissingAliasId(g_snd.loopEmitters[local_54].id);
-          g_snd.loopEmitters[local_54].id = 0;
+        firstUpdate_2 = bVar4;
+        if (g_snd.loopEmitters[i_2].alias == (snd_alias_list_t *)0x0) {
+          SND_LogMissingAliasId(g_snd.loopEmitters[i_2].id);
+          g_snd.loopEmitters[i_2].id = 0;
         }
         else {
-          local_60[0] = 0.0;
-          local_60[1] = 0.0;
-          local_60[2] = 0.0;
-          local_78.position[0] = 0.0;
-          local_78.position[1] = 0.0;
-          local_78.position[2] = 0.0;
-          local_78.value = 0.0;
-          local_78.valid = false;
-          local_78._17_3_ = 0;
-          SVar3 = SND_EntHandle(0,local_54 + 0xe7e,0,false,true,TEAM_BAD);
-          SND_PlaySoundAlias(g_snd.loopEmitters[local_54].alias,1.0,SVar3,
-                             g_snd.loopEmitters[local_54].origin,0,-(uint)(local_61 != '\0') & 500,
-                             local_60,(snd_playback *)0x0,&local_78);
+          direction_2[0] = 0.0;
+          direction_2[1] = 0.0;
+          direction_2[2] = 0.0;
+          cache_2.position[0] = 0.0;
+          cache_2.position[1] = 0.0;
+          cache_2.position[2] = 0.0;
+          cache_2.value = 0.0;
+          cache_2.valid = false;
+          cache_2._17_3_ = 0;
+          SVar3 = SND_EntHandle(0,i_2 + 0xe7e,0,false,true,TEAM_BAD);
+          SND_PlaySoundAlias(g_snd.loopEmitters[i_2].alias,1.0,SVar3,g_snd.loopEmitters[i_2].origin,
+                             0,-(uint)(firstUpdate_2 != false) & 500,direction_2,(snd_playback *)0x0
+                             ,&cache_2);
         }
       }
     }
@@ -2767,18 +2796,17 @@ void __cdecl SND_UpdateDebugAlias(void)
 
 {
   int extraout_EAX;
-  SndEntHandle SVar1;
-  float local_14 [3];
-  uint local_8;
+  SndEntHandle entHandle;
+  float soundDir [3];
+  uint i;
   
   if (((snd_stop_alias != (dvar_s *)0x0) && ((snd_stop_alias->current).integer != 0)) &&
      (*(snd_stop_alias->current).string != '\0')) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      if (g_snd.voiceAliasHash[local_8] != 0) {
-        strstr((uchar *)(g_snd.voice[local_8].alias)->name,(uchar *)(snd_stop_alias->current).string
-              );
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (g_snd.voiceAliasHash[i] != 0) {
+        strstr((uchar *)(g_snd.voice[i].alias)->name,(uchar *)(snd_stop_alias->current).string);
         if (extraout_EAX != 0) {
-          SND_StopVoice(local_8);
+          SND_StopVoice(i);
         }
       }
     }
@@ -2786,11 +2814,12 @@ void __cdecl SND_UpdateDebugAlias(void)
   }
   if (((snd_start_alias != (dvar_s *)0x0) && ((snd_start_alias->current).integer != 0)) &&
      (*(snd_start_alias->current).string != '\0')) {
-    local_14[0] = 1.0;
-    local_14[1] = 0.0;
-    local_14[2] = 0.0;
-    SVar1 = SND_EntHandle(0,0xffe,0,false,true,TEAM_BAD);
-    SND_Play((snd_start_alias->current).string,0,1.0,SVar1,(float *)g_snd.listeners,local_14,false);
+    soundDir[0] = 1.0;
+    soundDir[1] = 0.0;
+    soundDir[2] = 0.0;
+    entHandle = SND_EntHandle(0,0xffe,0,false,true,TEAM_BAD);
+    SND_Play((snd_start_alias->current).string,0,1.0,entHandle,(float *)g_snd.listeners,soundDir,
+             false);
     Dvar_SetString(snd_start_alias,"");
   }
   return;
@@ -2808,6 +2837,8 @@ void __cdecl SNDL_Update(void)
 {
   int iVar1;
   DWORD DVar2;
+  float fdt;
+  int frametime;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
@@ -2886,28 +2917,28 @@ void __cdecl SNDL_Update(void)
 /* WARNING: Removing unreachable block (ram,0x00936e94) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopVoice(int param_1)
+void __cdecl SND_StopVoice(int voiceIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (g_snd.voiceAliasHash[param_1] != 0) {
-    if (((((g_snd.voice[param_1].alias != (snd_alias_t *)0x0) &&
+  if (g_snd.voiceAliasHash[voiceIndex] != 0) {
+    if (((((g_snd.voice[voiceIndex].alias != (snd_alias_t *)0x0) &&
           (snd_assert_on_stop != (dvar_s *)0x0)) && ((snd_assert_on_stop->current).integer != 0)) &&
         ((*(snd_assert_on_stop->current).string != '\0' &&
-         (iVar3 = _stricmp((snd_assert_on_stop->current).string,(g_snd.voice[param_1].alias)->name),
-         iVar3 == 0)))) &&
+         (iVar3 = _stricmp((snd_assert_on_stop->current).string,
+                           (g_snd.voice[voiceIndex].alias)->name), iVar3 == 0)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x822,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    SD_StopVoice(param_1);
-    SND_ResetVoiceInfo(param_1);
-    if ((g_snd.voiceAliasHash[param_1] != 0) &&
+    SD_StopVoice(voiceIndex);
+    SND_ResetVoiceInfo(voiceIndex);
+    if ((g_snd.voiceAliasHash[voiceIndex] != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x82a,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2931,7 +2962,7 @@ void __cdecl SND_InitGroups(void)
   uint uVar3;
   snd_group *psVar4;
   int iVar5;
-  uint local_8;
+  uint i;
   
   if (g_snd.global_constants == (SndDriverGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x830,0,"%s");
@@ -2941,21 +2972,21 @@ void __cdecl SND_InitGroups(void)
       return;
     }
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
     uVar3 = SND_GetGroupCount();
-    if (uVar3 <= local_8) break;
-    psVar4 = SND_GetGroupByIndex(local_8);
+    if (uVar3 <= i) break;
+    psVar4 = SND_GetGroupByIndex(i);
     iVar5 = I_stricmp("voice",psVar4->name);
     if (iVar5 == 0) {
-      g_snd.voiceGroup = local_8;
+      g_snd.voiceGroup = i;
     }
-    psVar4 = SND_GetGroupByIndex(local_8);
+    psVar4 = SND_GetGroupByIndex(i);
     iVar5 = I_stricmp("voice_announcer",psVar4->name);
     if (iVar5 == 0) {
-      g_snd.announcerGroup = local_8;
+      g_snd.announcerGroup = i;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return;
 }
@@ -2984,6 +3015,7 @@ void __cdecl SND_Init(void)
 {
   code *pcVar1;
   bool bVar2;
+  bool initialized;
   
   if ((g_snd.init != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x84a,0,"%s"),
@@ -3106,7 +3138,7 @@ void __cdecl SND_ShutdownVoices(void)
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -3117,8 +3149,8 @@ void __cdecl SND_ShutdownVoices(void)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-    SND_StopVoice(local_8);
+  for (i = 0; i < 0x4a; i = i + 1) {
+    SND_StopVoice(i);
   }
   return;
 }
@@ -3132,20 +3164,22 @@ void __cdecl SND_InitSnapshot(void)
 
 {
   undefined4 *puVar1;
-  uint local_18;
-  uint local_10;
-  uint local_8;
+  uint i;
+  snd_snapshot_category *category_2;
+  uint c_2;
+  snd_snapshot_category *category;
+  uint c;
   
-  for (local_8 = 0; local_8 < 0xb; local_8 = local_8 + 1) {
-    g_snd.snapshotCategories[local_8].length = 0.0;
-    g_snd.snapshotCategories[local_8].snapshot = g_snd.defaultHash;
+  for (c = 0; c < 0xb; c = c + 1) {
+    g_snd.snapshotCategories[c].length = 0.0;
+    g_snd.snapshotCategories[c].snapshot = g_snd.defaultHash;
   }
   SND_UpdateSnapshot(0.0);
-  for (local_10 = 0; local_10 < 0xb; local_10 = local_10 + 1) {
-    for (local_18 = 0; local_18 < (g_snd.global_constants)->groupCount; local_18 = local_18 + 1) {
-      puVar1 = (undefined4 *)(local_18 * 0xc + local_10 * 0x60c + 0xa08b544);
+  for (c_2 = 0; c_2 < 0xb; c_2 = c_2 + 1) {
+    for (i = 0; i < (g_snd.global_constants)->groupCount; i = i + 1) {
+      puVar1 = (undefined4 *)(i * 0xc + c_2 * 0x60c + 0xa08b544);
       *puVar1 = puVar1[1];
-      puVar1 = (undefined4 *)(local_10 * 0x60c + 0xa08b844 + local_18 * 0xc);
+      puVar1 = (undefined4 *)(c_2 * 0x60c + 0xa08b844 + i * 0xc);
       *puVar1 = puVar1[1];
     }
   }
@@ -3157,202 +3191,196 @@ void __cdecl SND_InitSnapshot(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateSnapshot(float param_1)
+void __cdecl SND_UpdateSnapshot(float dt)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
-  uint uVar4;
-  snd_snapshot *psVar5;
-  snd_snapshot *psVar6;
-  int iVar7;
-  int iVar8;
-  float fVar9;
-  float fVar10;
+  uint id;
+  snd_snapshot *snap;
+  snd_snapshot *psVar4;
+  int iVar5;
+  int iVar6;
+  float length;
+  float amount;
   float local_394;
   float local_390;
   float local_38c;
   float local_388;
   float local_384;
-  uint local_278;
-  uint local_274;
-  uint local_270;
-  uint local_260;
-  uint local_25c;
-  uint local_258;
-  float local_254 [3];
-  float local_248;
-  float local_244;
-  float local_240;
-  float local_23c;
-  snd_curve *local_238;
-  snd_curve *local_234;
-  float local_230;
-  snd_snapshot *local_22c;
-  snd_snapshot *local_228;
-  char local_221;
-  snd_voice_t *local_220;
-  uint local_21c;
-  uint local_218;
-  int local_214;
-  uint local_210;
-  int local_20c;
-  snd_curve *local_208;
+  snd_snapshot_category *category_3;
+  uint c_3;
+  uint i_6;
+  uint i_5;
+  snd_snapshot *ss_2;
+  snd_snapshot_category *category_2;
+  snd_snapshot *oss_2;
+  uint c_2;
+  uint i_4;
+  uint i_3;
+  float listner [3];
+  float distance;
+  float dlerp;
+  float timePlayed;
+  float lerp;
+  snd_curve *fadeOutCurve;
+  snd_curve *fadeInCurve;
+  float timeEnd;
+  snd_snapshot *ss;
+  snd_snapshot *oss;
+  bool isLooping;
+  snd_voice_t *voice;
+  uint i_2;
+  uint i;
+  snd_snapshot_category *category;
+  uint c;
+  snd_snapshot_category *aliasCategory;
+  snd_curve *defaultCurve;
   float afStack_204 [64];
   float afStack_104 [64];
   
-  local_208 = g_snd.defaultCurve;
+  defaultCurve = g_snd.defaultCurve;
   if (((snd_debug_snapshot != (dvar_s *)0x0) && ((snd_debug_snapshot->current).integer != 0)) &&
      (*(snd_debug_snapshot->current).string != '\0')) {
-    fVar10 = 1.0;
-    fVar9 = 0.0;
-    uVar4 = SND_HashName((snd_debug_snapshot->current).string);
-    SNDL_SetSnapshot(SND_SNAPSHOT_DEBUG,uVar4,fVar9,fVar10);
+    amount = 1.0;
+    length = 0.0;
+    id = SND_HashName((snd_debug_snapshot->current).string);
+    SNDL_SetSnapshot(SND_SNAPSHOT_DEBUG,id,length,amount);
   }
-  for (local_210 = 0; local_210 < 0xb; local_210 = local_210 + 1) {
-    local_214 = local_210 * 0x60c + 0xa08b544;
-    if (0.0 < g_snd.snapshotCategories[local_210].length) {
-      g_snd.snapshotCategories[local_210].length =
-           g_snd.snapshotCategories[local_210].length - param_1;
+  for (c = 0; c < 0xb; c = c + 1) {
+    category = g_snd.snapshotCategories + c;
+    if (0.0 < g_snd.snapshotCategories[c].length) {
+      g_snd.snapshotCategories[c].length = g_snd.snapshotCategories[c].length - dt;
     }
-    pfVar1 = &g_snd.snapshotCategories[local_210].length;
+    pfVar1 = &g_snd.snapshotCategories[c].length;
     if (*pfVar1 <= 0.0 && *pfVar1 != 0.0) {
-      g_snd.snapshotCategories[local_210].snapshot = 0;
+      g_snd.snapshotCategories[c].snapshot = 0;
     }
-    if (g_snd.snapshotCategories[local_210].snapshot == 0) {
-      g_snd.snapshotCategories[local_210].snapshot = g_snd.defaultHash;
-      g_snd.snapshotCategories[local_210].length = 0.0;
+    if (g_snd.snapshotCategories[c].snapshot == 0) {
+      g_snd.snapshotCategories[c].snapshot = g_snd.defaultHash;
+      g_snd.snapshotCategories[c].length = 0.0;
     }
   }
-  for (local_218 = 0; local_218 < (g_snd.global_constants)->snapshotGroupCount;
-      local_218 = local_218 + 1) {
-    afStack_204[local_218] = 1.0;
-    afStack_104[local_218] = 1.0;
+  for (i = 0; i < (g_snd.global_constants)->snapshotGroupCount; i = i + 1) {
+    afStack_204[i] = 1.0;
+    afStack_104[i] = 1.0;
   }
-  local_21c = 0;
+  i_2 = 0;
   do {
-    if (0x49 < local_21c) {
-      local_20c = 0xa08b544;
-      for (local_25c = 0; local_25c < (g_snd.global_constants)->snapshotGroupCount;
-          local_25c = local_25c + 1) {
-        SND_FaderSetGoal((snd_fader_t *)(local_25c * 0xc + local_20c),afStack_204[local_25c]);
-        SND_FaderSetRate((snd_fader_t *)(local_25c * 0xc + local_20c),30.0);
-        SND_FaderUpdate((snd_fader_t *)(local_25c * 0xc + local_20c),param_1);
-        SND_FaderSetGoal((snd_fader_t *)(local_20c + 0x300 + local_25c * 0xc),afStack_104[local_25c]
-                        );
-        SND_FaderSetRate((snd_fader_t *)(local_20c + 0x300 + local_25c * 0xc),30.0);
-        SND_FaderUpdate((snd_fader_t *)(local_20c + 0x300 + local_25c * 0xc),param_1);
+    if (0x49 < i_2) {
+      aliasCategory = g_snd.snapshotCategories;
+      for (i_4 = 0; i_4 < (g_snd.global_constants)->snapshotGroupCount; i_4 = i_4 + 1) {
+        SND_FaderSetGoal(aliasCategory->attenuation + i_4,afStack_204[i_4]);
+        SND_FaderSetRate(aliasCategory->attenuation + i_4,30.0);
+        SND_FaderUpdate(aliasCategory->attenuation + i_4,dt);
+        SND_FaderSetGoal(aliasCategory->occlusion + i_4,afStack_104[i_4]);
+        SND_FaderSetRate(aliasCategory->occlusion + i_4,30.0);
+        SND_FaderUpdate(aliasCategory->occlusion + i_4,dt);
       }
-      for (local_260 = 0; local_260 < 0xb; local_260 = local_260 + 1) {
-        if (local_260 != 0) {
-          iVar7 = local_260 * 0x60c;
-          iVar8 = iVar7 + 0xa08b544;
-          psVar5 = SND_GetSnapshotById(g_snd.snapshotCategories[local_260].snapshot);
-          psVar6 = SND_GetOcclusionSnapshot(psVar5);
-          for (local_270 = 0; local_270 < (g_snd.global_constants)->snapshotGroupCount;
-              local_270 = local_270 + 1) {
-            SND_FaderSetRateTime((snd_fader_t *)(local_270 * 0xc + iVar8),psVar5->fadeIn);
-            SND_FaderSetGoal((snd_fader_t *)(local_270 * 0xc + iVar8),
-                             1.0 - (1.0 - psVar5->attenuation[local_270]) *
-                                   g_snd.snapshotCategories[local_260].amount);
-            SND_FaderUpdate((snd_fader_t *)(local_270 * 0xc + iVar8),param_1);
-            SND_FaderSetRateTime
-                      ((snd_fader_t *)(iVar7 + 0xa08b844 + local_270 * 0xc),psVar6->fadeIn);
-            SND_FaderSetGoal((snd_fader_t *)(iVar7 + 0xa08b844 + local_270 * 0xc),
-                             1.0 - (1.0 - psVar6->attenuation[local_270]) *
-                                   g_snd.snapshotCategories[local_260].amount);
-            SND_FaderUpdate((snd_fader_t *)(iVar7 + 0xa08b844 + local_270 * 0xc),param_1);
+      for (c_2 = 0; c_2 < 0xb; c_2 = c_2 + 1) {
+        if (c_2 != 0) {
+          iVar5 = c_2 * 0x60c;
+          iVar6 = iVar5 + 0xa08b544;
+          snap = SND_GetSnapshotById(g_snd.snapshotCategories[c_2].snapshot);
+          psVar4 = SND_GetOcclusionSnapshot(snap);
+          for (i_5 = 0; i_5 < (g_snd.global_constants)->snapshotGroupCount; i_5 = i_5 + 1) {
+            SND_FaderSetRateTime((snd_fader_t *)(i_5 * 0xc + iVar6),snap->fadeIn);
+            SND_FaderSetGoal((snd_fader_t *)(i_5 * 0xc + iVar6),
+                             1.0 - (1.0 - snap->attenuation[i_5]) *
+                                   g_snd.snapshotCategories[c_2].amount);
+            SND_FaderUpdate((snd_fader_t *)(i_5 * 0xc + iVar6),dt);
+            SND_FaderSetRateTime((snd_fader_t *)(iVar5 + 0xa08b844 + i_5 * 0xc),psVar4->fadeIn);
+            SND_FaderSetGoal((snd_fader_t *)(iVar5 + 0xa08b844 + i_5 * 0xc),
+                             1.0 - (1.0 - psVar4->attenuation[i_5]) *
+                                   g_snd.snapshotCategories[c_2].amount);
+            SND_FaderUpdate((snd_fader_t *)(iVar5 + 0xa08b844 + i_5 * 0xc),dt);
           }
         }
       }
-      for (local_274 = 0; local_274 < (g_snd.global_constants)->snapshotGroupCount;
-          local_274 = local_274 + 1) {
-        g_snd.snapshotAttenuation[local_274] = 1.0;
-        g_snd.snapshotOcclusion[local_274] = 1.0;
-        for (local_278 = 0; local_278 < 0xb; local_278 = local_278 + 1) {
-          local_390 = *(float *)(local_278 * 0x60c + 0xa08b544 + local_274 * 0xc);
-          if (0.0 <= local_390 - g_snd.snapshotAttenuation[local_274]) {
-            local_390 = g_snd.snapshotAttenuation[local_274];
+      for (i_6 = 0; i_6 < (g_snd.global_constants)->snapshotGroupCount; i_6 = i_6 + 1) {
+        g_snd.snapshotAttenuation[i_6] = 1.0;
+        g_snd.snapshotOcclusion[i_6] = 1.0;
+        for (c_3 = 0; c_3 < 0xb; c_3 = c_3 + 1) {
+          local_390 = *(float *)(c_3 * 0x60c + 0xa08b544 + i_6 * 0xc);
+          if (0.0 <= local_390 - g_snd.snapshotAttenuation[i_6]) {
+            local_390 = g_snd.snapshotAttenuation[i_6];
           }
-          g_snd.snapshotAttenuation[local_274] = local_390;
-          local_394 = *(float *)(local_278 * 0x60c + 0xa08b844 + local_274 * 0xc);
-          if (0.0 <= local_394 - g_snd.snapshotOcclusion[local_274]) {
-            local_394 = g_snd.snapshotOcclusion[local_274];
+          g_snd.snapshotAttenuation[i_6] = local_390;
+          local_394 = *(float *)(c_3 * 0x60c + 0xa08b844 + i_6 * 0xc);
+          if (0.0 <= local_394 - g_snd.snapshotOcclusion[i_6]) {
+            local_394 = g_snd.snapshotOcclusion[i_6];
           }
-          g_snd.snapshotOcclusion[local_274] = local_394;
+          g_snd.snapshotOcclusion[i_6] = local_394;
         }
       }
       return;
     }
-    local_220 = g_snd.voice + local_21c;
-    if (((g_snd.voiceAliasHash[local_21c] != 0) &&
-        ((local_220->soundFileInfo).loadingState == SFLS_LOADED)) &&
-       ((g_snd.voice[local_21c].alias)->duck != 0)) {
-      local_22c = SND_GetSnapshotById((g_snd.voice[local_21c].alias)->duck);
-      local_228 = SND_GetOcclusionSnapshot(local_22c);
-      local_221 = ((g_snd.voice[local_21c].alias)->flags & 1) != 0;
-      if (((local_22c != (snd_snapshot *)0x0) && (local_228 != (snd_snapshot *)0x0)) &&
-         (local_22c != (snd_snapshot *)0x0)) {
-        local_234 = SND_GetCurveById(local_22c->fadeInCurve);
-        local_238 = SND_GetCurveById(local_22c->fadeOutCurve);
-        local_230 = (float)(int)(local_220->totalMsec - (uint)local_220->alias->startDelay) / 1000.0
-        ;
+    voice = g_snd.voice + i_2;
+    if (((g_snd.voiceAliasHash[i_2] != 0) && ((voice->soundFileInfo).loadingState == SFLS_LOADED))
+       && ((g_snd.voice[i_2].alias)->duck != 0)) {
+      ss = SND_GetSnapshotById((g_snd.voice[i_2].alias)->duck);
+      oss = SND_GetOcclusionSnapshot(ss);
+      isLooping = ((g_snd.voice[i_2].alias)->flags & 1) != 0;
+      if (((ss != (snd_snapshot *)0x0) && (oss != (snd_snapshot *)0x0)) &&
+         (ss != (snd_snapshot *)0x0)) {
+        fadeInCurve = SND_GetCurveById(ss->fadeInCurve);
+        fadeOutCurve = SND_GetCurveById(ss->fadeOutCurve);
+        timeEnd = (float)(int)(voice->totalMsec - (uint)voice->alias->startDelay) / 1000.0;
         if (g_snd.pausetime == 0) {
-          iVar7 = (g_snd.time - local_220->startTime) - (uint)local_220->alias->startDelay;
+          iVar5 = (g_snd.time - voice->startTime) - (uint)voice->alias->startDelay;
         }
         else {
-          iVar7 = (g_snd.pausetime - local_220->startTime) - (uint)local_220->alias->startDelay;
+          iVar5 = (g_snd.pausetime - voice->startTime) - (uint)voice->alias->startDelay;
         }
-        local_240 = (float)iVar7 / 1000.0;
-        if ((0.0 <= local_240) &&
-           ((local_221 != '\0' || (local_22c->fadeIn + local_22c->fadeOut <= local_230)))) {
-          local_23c = 1.0;
-          if (local_22c->fadeIn <= local_240) {
-            if (((local_221 == '\0') && (local_230 - local_22c->fadeOut < local_240)) &&
-               (0.0 < local_22c->fadeOut)) {
-              local_23c = (local_230 - local_240) / local_22c->fadeOut;
-              local_23c = Snd_CurveEvalOverRange(local_238,1.0 - local_23c,0.0,1.0);
+        timePlayed = (float)iVar5 / 1000.0;
+        if ((0.0 <= timePlayed) && ((isLooping != false || (ss->fadeIn + ss->fadeOut <= timeEnd))))
+        {
+          lerp = 1.0;
+          if (ss->fadeIn <= timePlayed) {
+            if (((isLooping == false) && (timeEnd - ss->fadeOut < timePlayed)) &&
+               (0.0 < ss->fadeOut)) {
+              lerp = (timeEnd - timePlayed) / ss->fadeOut;
+              lerp = Snd_CurveEvalOverRange(fadeOutCurve,1.0 - lerp,0.0,1.0);
             }
           }
           else {
-            local_23c = local_240 / local_22c->fadeIn;
-            local_23c = Snd_CurveEvalOverRange(local_234,local_23c,0.0,1.0);
+            lerp = timePlayed / ss->fadeIn;
+            lerp = Snd_CurveEvalOverRange(fadeInCurve,lerp,0.0,1.0);
           }
-          if ((((uint)local_23c & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)lerp & 0x7f800000) == 0x7f800000) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x972,0,
                                        "%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if ((1.0 <= local_22c->distance) && ((local_220->alias->flags & 2) != 0)) {
-            SND_GetNearestListenerPosition(local_220->position,local_254);
-            local_248 = Vec3Distance(local_220->position,local_254);
-            local_244 = Snd_CurveEvalOverRange(local_208,local_248,0.0,local_22c->distance);
-            local_384 = local_244;
-            if (0.0 <= local_244 - local_23c) {
-              local_384 = local_23c;
+          if ((1.0 <= ss->distance) && ((voice->alias->flags & 2) != 0)) {
+            SND_GetNearestListenerPosition(voice->position,listner);
+            distance = Vec3Distance(voice->position,listner);
+            dlerp = Snd_CurveEvalOverRange(defaultCurve,distance,0.0,ss->distance);
+            local_384 = dlerp;
+            if (0.0 <= dlerp - lerp) {
+              local_384 = lerp;
             }
-            local_23c = local_384;
+            lerp = local_384;
           }
-          for (local_258 = 0; local_258 < (g_snd.global_constants)->snapshotGroupCount;
-              local_258 = local_258 + 1) {
-            local_388 = (1.0 - local_23c) * 1.0 + local_22c->attenuation[local_258] * local_23c;
-            if (0.0 <= local_388 - afStack_204[local_258]) {
-              local_388 = afStack_204[local_258];
+          for (i_3 = 0; i_3 < (g_snd.global_constants)->snapshotGroupCount; i_3 = i_3 + 1) {
+            local_388 = (1.0 - lerp) * 1.0 + ss->attenuation[i_3] * lerp;
+            if (0.0 <= local_388 - afStack_204[i_3]) {
+              local_388 = afStack_204[i_3];
             }
-            afStack_204[local_258] = local_388;
-            local_38c = (1.0 - local_23c) * 1.0 + local_228->attenuation[local_258] * local_23c;
-            if (0.0 <= local_38c - afStack_104[local_258]) {
-              local_38c = afStack_104[local_258];
+            afStack_204[i_3] = local_388;
+            local_38c = (1.0 - lerp) * 1.0 + oss->attenuation[i_3] * lerp;
+            if (0.0 <= local_38c - afStack_104[i_3]) {
+              local_38c = afStack_104[i_3];
             }
-            afStack_104[local_258] = local_38c;
+            afStack_104[i_3] = local_38c;
           }
         }
       }
     }
-    local_21c = local_21c + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
@@ -3361,7 +3389,7 @@ void __cdecl SND_UpdateSnapshot(float param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl SND_GetPitch(snd_voice_t *param_1)
+float __cdecl SND_GetPitch(snd_voice_t *voice)
 
 {
   snd_alias_t *psVar1;
@@ -3370,16 +3398,17 @@ float __cdecl SND_GetPitch(snd_voice_t *param_1)
   float10 fVar4;
   float local_3c;
   float local_38;
-  float local_c;
+  float pitch;
+  snd_alias_t *alias;
   
-  if ((param_1 == (snd_voice_t *)0x0) &&
+  if ((voice == (snd_voice_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9c5,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  psVar1 = param_1->alias;
+  psVar1 = voice->alias;
   if ((psVar1 == (snd_alias_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9c9,0,"%s"),
      !bVar3)) {
@@ -3391,28 +3420,28 @@ float __cdecl SND_GetPitch(snd_voice_t *param_1)
     local_3c = 1.0;
   }
   else {
-    local_c = (1.0 - param_1->pitchModSeed) * ((float)psVar1->pitchMin / 32767.0) +
-              ((float)psVar1->pitchMax / 32767.0) * param_1->pitchModSeed;
-    if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+    pitch = (1.0 - voice->pitchModSeed) * ((float)psVar1->pitchMin / 32767.0) +
+            ((float)psVar1->pitchMax / 32767.0) * voice->pitchModSeed;
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9d2,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    bVar3 = SND_IsAliasTimescale(param_1->alias);
+    bVar3 = SND_IsAliasTimescale(voice->alias);
     if (bVar3) {
-      local_c = ((g_snd.timescale - 1.0) * (snd_pitch_timescale->current).value + 1.0) * local_c;
+      pitch = ((g_snd.timescale - 1.0) * (snd_pitch_timescale->current).value + 1.0) * pitch;
     }
-    if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9d9,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    local_c = local_c * (param_1->script_pitch).value;
-    if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+    pitch = pitch * (voice->script_pitch).value;
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9dd,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -3420,41 +3449,41 @@ float __cdecl SND_GetPitch(snd_voice_t *param_1)
       return (float)fVar4;
     }
     if (((psVar1->flags & 2) != 0) &&
-       (bVar3 = SND_IsOnSameTeam(param_1->closestListenerIndex,param_1->sndEnt), bVar3)) {
-      local_c = ((float)param_1->alias->teamPitchMod / 32767.0) * local_c;
+       (bVar3 = SND_IsOnSameTeam(voice->closestListenerIndex,voice->sndEnt), bVar3)) {
+      pitch = ((float)voice->alias->teamPitchMod / 32767.0) * pitch;
     }
-    if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9e5,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    if ((param_1->alias->flags & 0x10) != 0) {
-      local_c = local_c + (param_1->doppler).value;
+    if ((voice->alias->flags & 0x10) != 0) {
+      pitch = pitch + (voice->doppler).value;
     }
-    if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0x9ec,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    local_c = local_c * (snd_global_pitch->current).value;
-    if (1.52879e-05 < ABS(local_c - 1.0)) {
-      param_1->pitchShift = true;
+    pitch = pitch * (snd_global_pitch->current).value;
+    if (1.52879e-05 < ABS(pitch - 1.0)) {
+      voice->pitchShift = true;
     }
-    if (ABS(local_c - 1.0) < 1.52879e-05) {
-      local_c = 1.0;
+    if (ABS(pitch - 1.0) < 1.52879e-05) {
+      pitch = 1.0;
     }
-    if (local_c - 1.9 < 0.0) {
-      local_38 = local_c;
+    if (pitch - 1.9 < 0.0) {
+      local_38 = pitch;
     }
     else {
       local_38 = 1.9;
     }
     local_3c = local_38;
-    if (0.0 <= 0.01 - local_c) {
+    if (0.0 <= 0.01 - pitch) {
       local_3c = 0.01;
     }
   }
@@ -3466,7 +3495,7 @@ float __cdecl SND_GetPitch(snd_voice_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl SND_GetBaseLevel(snd_voice_t *param_1)
+float __cdecl SND_GetBaseLevel(snd_voice_t *voice)
 
 {
   snd_alias_t *psVar1;
@@ -3478,13 +3507,17 @@ float __cdecl SND_GetBaseLevel(snd_voice_t *param_1)
   snd_group *psVar5;
   snd_category_t sVar6;
   float10 fVar7;
+  float fVar8;
   float local_7c;
   float local_74;
-  uint local_18;
-  float local_14;
-  uint local_c;
+  uint i;
+  float attenuation;
+  bool looping;
+  bool isUi;
+  int group;
+  snd_alias_t *alias;
   
-  psVar1 = param_1->alias;
+  psVar1 = voice->alias;
   if ((psVar1 == (snd_alias_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa00,0,"%s"),
      !bVar4)) {
@@ -3500,123 +3533,126 @@ float __cdecl SND_GetBaseLevel(snd_voice_t *param_1)
         (*(snd_mute_alias_substring->current).string == '\0')) ||
        (strstr((uchar *)psVar1->name,(uchar *)(snd_mute_alias_substring->current).string),
        extraout_EAX_00 == 0)) {
-      local_14 = ((1.0 - param_1->volModSeed) * ((float)psVar1->volMin / 65535.0) +
-                 ((float)psVar1->volMax / 65535.0) * param_1->volModSeed) * 1.0;
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      fVar8 = ((1.0 - voice->volModSeed) * ((float)psVar1->volMin / 65535.0) +
+              ((float)psVar1->volMax / 65535.0) * voice->volModSeed) * 1.0;
+      if ((((uint)fVar8 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa15,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      local_14 = local_14 * param_1->volModStart;
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      attenuation = fVar8 * voice->volModStart;
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa18,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      local_c = param_1->group;
-      for (local_18 = 0; (local_c != 0xffffffff && (local_18 < 100)); local_18 = local_18 + 1) {
-        psVar5 = SND_GetGroupByIndex(local_c);
-        local_14 = ((float)psVar5->attenuationMp / 65535.0) * local_14;
-        if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      group = voice->group;
+      for (i = 0; (group != -1 && (i < 100)); i = i + 1) {
+        psVar5 = SND_GetGroupByIndex(group);
+        attenuation = ((float)psVar5->attenuationMp / 65535.0) * attenuation;
+        if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa1f,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           fVar7 = (float10)(*pcVar3)();
           return (float)fVar7;
         }
-        psVar5 = SND_GetGroupByIndex(local_c);
-        local_c = psVar5->parentIndex;
+        psVar5 = SND_GetGroupByIndex(group);
+        group = psVar5->parentIndex;
       }
-      local_14 = local_14 * g_snd.snapshotAttenuation[psVar1->snapshotGroup];
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      fVar8 = attenuation * g_snd.snapshotAttenuation[psVar1->snapshotGroup];
+      if ((((uint)fVar8 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa24,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      local_14 = (param_1->fade).value * (param_1->fade).value * local_14;
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      attenuation = (voice->fade).value * (voice->fade).value * fVar8;
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa27,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      uVar2 = param_1->alias->flags;
-      sVar6 = SND_GroupCategory((param_1->alias->flags & 0x3f0000) >> 0x10);
+      uVar2 = voice->alias->flags;
+      sVar6 = SND_GroupCategory((voice->alias->flags & 0x3f0000) >> 0x10);
       if ((sVar6 != SND_CATEGORY_UI) || ((uVar2 & 1) != 0)) {
-        local_14 = g_snd.volume.value * g_snd.volume.value * local_14;
+        attenuation = g_snd.volume.value * g_snd.volume.value * attenuation;
       }
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa30,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      local_14 = local_14 * (param_1->script_fade).value;
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      attenuation = attenuation * (voice->script_fade).value;
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa33,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      sVar6 = SND_GroupCategory((param_1->alias->flags & 0x3f0000) >> 0x10);
+      sVar6 = SND_GroupCategory((voice->alias->flags & 0x3f0000) >> 0x10);
       if (((sVar6 == SND_CATEGORY_UI) && ((psVar1->flags & 2) != 0)) &&
-         (bVar4 = SND_IsOnSameTeam(param_1->closestListenerIndex,param_1->sndEnt), bVar4)) {
-        local_14 = ((float)param_1->alias->teamVolMod / 65535.0) * local_14;
+         (bVar4 = SND_IsOnSameTeam(voice->closestListenerIndex,voice->sndEnt), bVar4)) {
+        attenuation = ((float)voice->alias->teamVolMod / 65535.0) * attenuation;
       }
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa3b,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      sVar6 = SND_GroupCategory(param_1->group);
+      sVar6 = SND_GroupCategory(voice->group);
       switch(sVar6) {
       case SND_CATEGORY_SFX:
       case SND_CATEGORY_UI:
-        local_14 = (snd_menu_sfx->current).value * (snd_menu_sfx->current).value * local_14;
+        attenuation = (snd_menu_sfx->current).value * (snd_menu_sfx->current).value * attenuation;
         break;
       case SND_CATEGORY_MUSIC:
-        local_14 = (snd_menu_music->current).value * (snd_menu_music->current).value * local_14;
+        attenuation = (snd_menu_music->current).value * (snd_menu_music->current).value *
+                      attenuation;
         break;
       case SND_CATEGORY_VOICE:
-        local_14 = (snd_menu_voice->current).value * (snd_menu_voice->current).value * local_14;
+        attenuation = (snd_menu_voice->current).value * (snd_menu_voice->current).value *
+                      attenuation;
       }
-      local_14 = (snd_menu_master->current).value * (snd_menu_master->current).value * local_14;
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      attenuation = (snd_menu_master->current).value * (snd_menu_master->current).value *
+                    attenuation;
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa4c,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      if (local_14 < 1.52879e-05) {
-        local_14 = 0.0;
+      if (attenuation < 1.52879e-05) {
+        attenuation = 0.0;
       }
-      if ((((uint)local_14 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa54,0,"%s")
          , !bVar4)) {
         pcVar3 = (code *)swi(3);
         fVar7 = (float10)(*pcVar3)();
         return (float)fVar7;
       }
-      if (local_14 - 1.0 < 0.0) {
-        local_74 = local_14;
+      if (attenuation - 1.0 < 0.0) {
+        local_74 = attenuation;
       }
       else {
         local_74 = 1.0;
       }
       local_7c = local_74;
-      if (0.0 <= 0.0 - local_14) {
+      if (0.0 <= 0.0 - attenuation) {
         local_7c = 0.0;
       }
     }
@@ -3635,7 +3671,7 @@ float __cdecl SND_GetBaseLevel(snd_voice_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl SND_GetDryLevel(snd_voice_t *param_1)
+float __cdecl SND_GetDryLevel(snd_voice_t *voice)
 
 {
   snd_alias_t *psVar1;
@@ -3643,13 +3679,16 @@ float __cdecl SND_GetDryLevel(snd_voice_t *param_1)
   bool bVar3;
   float10 fVar4;
   float fVar5;
+  float fVar6;
   float local_40;
   float local_3c;
   float local_38;
   float local_1c;
-  float local_10;
+  float attenuation;
+  snd_alias_t *alias;
+  float change;
   
-  psVar1 = param_1->alias;
+  psVar1 = voice->alias;
   if ((psVar1 == (snd_alias_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa5d,0,"%s"),
      !bVar3)) {
@@ -3657,9 +3696,9 @@ float __cdecl SND_GetDryLevel(snd_voice_t *param_1)
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  local_10 = SND_GetBaseLevel(param_1);
-  local_10 = local_10 * param_1->distanceAttenuation;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
+  fVar6 = SND_GetBaseLevel(voice);
+  fVar6 = fVar6 * voice->distanceAttenuation;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa62,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -3678,48 +3717,48 @@ float __cdecl SND_GetDryLevel(snd_voice_t *param_1)
   else {
     local_3c = 0.0;
   }
-  fVar5 = 1.0 - (param_1->losOcclusion).value;
-  local_10 = ((1.0 - fVar5) * 1.0 + local_3c * fVar5) * local_10;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
+  fVar5 = 1.0 - (voice->losOcclusion).value;
+  fVar6 = ((1.0 - fVar5) * 1.0 + local_3c * fVar5) * fVar6;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa67,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  local_10 = local_10 * (g_snd.effect)->drylevel;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
+  fVar6 = fVar6 * (g_snd.effect)->drylevel;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa6a,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  local_10 = local_10 * (snd_dry_scale->current).value;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
+  attenuation = fVar6 * (snd_dry_scale->current).value;
+  if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa6d,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  if (local_10 < 1.52879e-05) {
-    local_10 = 0.0;
+  if (attenuation < 1.52879e-05) {
+    attenuation = 0.0;
   }
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa74,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  if (local_10 - 1.0 < 0.0) {
-    local_38 = local_10;
+  if (attenuation - 1.0 < 0.0) {
+    local_38 = attenuation;
   }
   else {
     local_38 = 1.0;
   }
-  if (0.0 - local_10 < 0.0) {
+  if (0.0 - attenuation < 0.0) {
     local_40 = local_38;
   }
   else {
@@ -3733,103 +3772,105 @@ float __cdecl SND_GetDryLevel(snd_voice_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl SND_GetWetLevel(snd_voice_t *param_1)
+float __cdecl SND_GetWetLevel(snd_voice_t *voice)
 
 {
-  float fVar1;
-  code *pcVar2;
-  bool bVar3;
-  float10 fVar4;
-  float fVar5;
-  double dVar6;
+  code *pcVar1;
+  bool bVar2;
+  float10 fVar3;
+  float fVar4;
+  double dVar5;
+  float fVar6;
   undefined4 in_stack_ffffffb8;
   float local_40;
   float local_3c;
   float local_30;
   float local_1c;
-  float local_10;
+  float attenuation;
+  float dm;
+  float change;
   
-  if ((param_1->alias == (snd_alias_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa7c,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  if ((voice->alias == (snd_alias_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa7c,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  local_10 = SND_GetBaseLevel(param_1);
-  local_10 = local_10 * param_1->reverbAttenuation;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa81,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  fVar6 = SND_GetBaseLevel(voice);
+  fVar6 = fVar6 * voice->reverbAttenuation;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa81,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  fVar5 = (((float)param_1->alias->occlusionLevel / 255.0) *
-           ((float)param_1->alias->occlusionWetDry / 255.0) + 1.0) - 0.25;
-  local_1c = fVar5;
-  if (0.0 <= fVar5 - 1.0) {
+  fVar4 = (((float)voice->alias->occlusionLevel / 255.0) *
+           ((float)voice->alias->occlusionWetDry / 255.0) + 1.0) - 0.25;
+  local_1c = fVar4;
+  if (0.0 <= fVar4 - 1.0) {
     local_1c = 1.0;
   }
-  if (0.0 - fVar5 < 0.0) {
+  if (0.0 - fVar4 < 0.0) {
     local_40 = local_1c;
   }
   else {
     local_40 = 0.0;
   }
-  fVar5 = (param_1->losOcclusion).value;
-  local_10 = ((1.0 - fVar5) * 1.0 + local_40 * fVar5) * local_10;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa87,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  fVar4 = (voice->losOcclusion).value;
+  fVar6 = ((1.0 - fVar4) * 1.0 + local_40 * fVar4) * fVar6;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa87,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  local_10 = local_10 * (g_snd.effect)->wetlevel;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa8a,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  fVar6 = fVar6 * (g_snd.effect)->wetlevel;
+  if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa8a,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  local_10 = local_10 * (snd_wet_scale->current).value;
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa8e,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  attenuation = fVar6 * (snd_wet_scale->current).value;
+  if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa8e,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  fVar5 = (snd_reverb_proximity_distance->current).value;
-  if (((param_1->alias->flags & 2) != 0) && (1.52879e-05 < fVar5)) {
-    fVar1 = param_1->baseDistance;
-    local_30 = fVar1;
-    if (0.0 <= fVar1 - fVar5) {
-      local_30 = fVar5;
+  fVar6 = (snd_reverb_proximity_distance->current).value;
+  if (((voice->alias->flags & 2) != 0) && (1.52879e-05 < fVar6)) {
+    fVar4 = voice->baseDistance;
+    local_30 = fVar4;
+    if (0.0 <= fVar4 - fVar6) {
+      local_30 = fVar6;
     }
-    if (0.0 <= 0.0 - fVar1) {
+    if (0.0 <= 0.0 - fVar4) {
       local_30 = 0.0;
     }
-    dVar6 = (double)((local_30 / fVar5) * 1.5707964);
+    dVar5 = (double)((local_30 / fVar6) * 1.5707964);
     __libm_sse2_sin((double)CONCAT44(local_30,in_stack_ffffffb8));
-    local_10 = (float)dVar6 * local_10;
+    attenuation = (float)dVar5 * attenuation;
   }
-  if ((((uint)local_10 & 0x7f800000) == 0x7f800000) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa97,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    fVar4 = (float10)(*pcVar2)();
-    return (float)fVar4;
+  if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xa97,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    fVar3 = (float10)(*pcVar1)();
+    return (float)fVar3;
   }
-  if (local_10 - 1.0 < 0.0) {
-    local_3c = local_10;
+  if (attenuation - 1.0 < 0.0) {
+    local_3c = attenuation;
   }
   else {
     local_3c = 1.0;
   }
-  if (0.0 <= 0.0 - local_10) {
+  if (0.0 <= 0.0 - attenuation) {
     local_3c = 0.0;
   }
   return local_3c;
@@ -3838,10 +3879,10 @@ float __cdecl SND_GetWetLevel(snd_voice_t *param_1)
 
 // 00939540  SND_GetDistance  (sound/snd.cpp:2718)
 
-float __cdecl SND_GetDistance(snd_voice_t *param_1)
+float __cdecl SND_GetDistance(snd_voice_t *channel)
 
 {
-  return param_1->baseDistance;
+  return channel->baseDistance;
 }
 
 
@@ -3849,73 +3890,80 @@ float __cdecl SND_GetDistance(snd_voice_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl SND_GetLpfLevel(snd_voice_t *param_1)
+float __cdecl SND_GetLpfLevel(snd_voice_t *voice)
 
 {
   float fVar1;
-  float fVar2;
-  code *pcVar3;
-  bool bVar4;
-  float10 fVar5;
+  float maxy;
+  code *pcVar2;
+  bool bVar3;
+  float10 fVar4;
+  float fVar5;
+  float x;
   float fVar6;
-  float fVar7;
-  float fVar8;
   float local_5c;
-  float local_14;
+  float ISBIG_DISTANCE;
+  float distanceOcclusion;
+  float MIN_DISTANCE;
+  float MAX_DISTANCE;
+  float DISTANCE_ATTENUATION;
+  float occlusion;
+  float OCCLUSION_ATTENUATION;
+  float ALIAS_OCCLUSION;
+  float snapshotOcclusion;
   
-  if ((param_1 == (snd_voice_t *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xaa5,0,"%s"),
-     !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    fVar5 = (float10)(*pcVar3)();
-    return (float)fVar5;
+  if ((voice == (snd_voice_t *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xaa5,0,"%s"),
+     !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    fVar4 = (float10)(*pcVar2)();
+    return (float)fVar4;
   }
-  fVar6 = (1.0 - g_snd.snapshotOcclusion[param_1->alias->snapshotGroup]) *
+  fVar5 = (1.0 - g_snd.snapshotOcclusion[voice->alias->snapshotGroup]) *
           (snd_occlusion_attenuation->current).value +
-          g_snd.snapshotOcclusion[param_1->alias->snapshotGroup] * 0.0;
-  if (((param_1->alias->flags & 2) != 0) && ((param_1->alias->flags & 0x40) == 0)) {
-    fVar1 = (param_1->losOcclusion).value;
-    local_14 = (1.0 - fVar1) * 0.0 +
-               ((float)param_1->alias->occlusionLevel / 255.0) *
-               (snd_occlusion_attenuation->current).value * fVar1;
-    if ((param_1->alias->flags & 8) != 0) {
+          g_snd.snapshotOcclusion[voice->alias->snapshotGroup] * 0.0;
+  if (((voice->alias->flags & 2) != 0) && ((voice->alias->flags & 0x40) == 0)) {
+    fVar1 = (voice->losOcclusion).value;
+    occlusion = (1.0 - fVar1) * 0.0 +
+                ((float)voice->alias->occlusionLevel / 255.0) *
+                (snd_occlusion_attenuation->current).value * fVar1;
+    if ((voice->alias->flags & 8) != 0) {
       fVar1 = (snd_dlpf_max_distance->current).value;
-      fVar8 = (snd_dlpf_min_distance->current).value;
-      fVar2 = (snd_dlpf_attenuation->current).value;
-      fVar7 = SND_GetDistance(param_1);
-      local_5c = I_fmap(fVar8,fVar1,0.0,fVar2,fVar7);
-      if (0.0 <= local_5c - local_14) {
-        local_5c = local_14;
+      fVar6 = (snd_dlpf_min_distance->current).value;
+      maxy = (snd_dlpf_attenuation->current).value;
+      x = SND_GetDistance(voice);
+      local_5c = I_fmap(fVar6,fVar1,0.0,maxy,x);
+      if (0.0 <= local_5c - occlusion) {
+        local_5c = occlusion;
       }
-      local_14 = local_5c;
+      occlusion = local_5c;
     }
-    if (((param_1->alias->flags & 0x20) != 0) && ((param_1->losOcclusion).value < 1.0)) {
+    if (((voice->alias->flags & 0x20) != 0) && ((voice->losOcclusion).value < 1.0)) {
       fVar1 = (snd_isbig_distance->current).value;
-      fVar8 = SND_GetDistance(param_1);
-      local_14 = I_fmap(0.0,fVar1,0.0,local_14,fVar8);
+      fVar6 = SND_GetDistance(voice);
+      occlusion = I_fmap(0.0,fVar1,0.0,occlusion,fVar6);
     }
-    if (0.0 <= fVar6 - local_14) {
-      fVar6 = local_14;
+    if (0.0 <= fVar5 - occlusion) {
+      fVar5 = occlusion;
     }
   }
-  return fVar6;
+  return fVar5;
 }
 
 
 // 0093B7C0  Snd_DistanceCurveEval  (sound/snd.cpp:2767)
 
 float __cdecl
-Snd_DistanceCurveEval
-          (snd_curve *param_1,snd_curve *param_2,float param_3,float param_4,float param_5)
+Snd_DistanceCurveEval(snd_curve *minCurve,snd_curve *curve,float minDist,float maxDist,float dist)
 
 {
   float fVar1;
   
-  if (param_3 <= param_5) {
-    fVar1 = Snd_CurveEvalOverRange(param_2,param_5,param_3,param_4);
+  if (minDist <= dist) {
+    fVar1 = Snd_CurveEvalOverRange(curve,dist,minDist,maxDist);
   }
   else {
-    fVar1 = Snd_CurveEvalOverRange(param_1,param_5,0.0,param_3);
+    fVar1 = Snd_CurveEvalOverRange(minCurve,dist,0.0,minDist);
   }
   return fVar1;
 }
@@ -3925,14 +3973,14 @@ Snd_DistanceCurveEval
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_GetVoiceLength(int param_1)
+int __cdecl SND_GetVoiceLength(int voiceIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (0x49 < (uint)param_1) {
+  if (0x49 < (uint)voiceIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xad9,0,
                              "voiceIndex doesn\'t index SND_MAX_VOICES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3941,20 +3989,20 @@ int __cdecl SND_GetVoiceLength(int param_1)
       return iVar3;
     }
   }
-  return g_snd.voice[param_1].soundFileInfo.totalMsec;
+  return g_snd.voice[voiceIndex].soundFileInfo.totalMsec;
 }
 
 
 // 00939910  SND_FixupStereoPan  (sound/snd.cpp:2782)
 
-void __cdecl SND_FixupStereoPan(snd_speaker_map *param_1)
+void __cdecl SND_FixupStereoPan(snd_speaker_map *pan)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   
-  if (param_1->input_channel_count != 2) {
+  if (pan->input_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xadf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3962,29 +4010,29 @@ void __cdecl SND_FixupStereoPan(snd_speaker_map *param_1)
       return;
     }
   }
-  if (1 < param_1->output_channel_count) {
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,0);
-    Snd_SpeakerMapSetVolume(param_1,0,0,fVar3);
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,1);
-    Snd_SpeakerMapSetVolume(param_1,1,1,fVar3);
-    Snd_SpeakerMapSetVolume(param_1,1,0,0.0);
-    Snd_SpeakerMapSetVolume(param_1,0,1,0.0);
+  if (1 < pan->output_channel_count) {
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,0);
+    Snd_SpeakerMapSetVolume(pan,0,0,fVar3);
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,1);
+    Snd_SpeakerMapSetVolume(pan,1,1,fVar3);
+    Snd_SpeakerMapSetVolume(pan,1,0,0.0);
+    Snd_SpeakerMapSetVolume(pan,0,1,0.0);
   }
-  if (5 < param_1->output_channel_count) {
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,4);
-    Snd_SpeakerMapSetVolume(param_1,1,4,fVar3);
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,5);
-    Snd_SpeakerMapSetVolume(param_1,0,5,fVar3);
-    Snd_SpeakerMapSetVolume(param_1,0,4,0.0);
-    Snd_SpeakerMapSetVolume(param_1,1,5,0.0);
+  if (5 < pan->output_channel_count) {
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,4);
+    Snd_SpeakerMapSetVolume(pan,1,4,fVar3);
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,5);
+    Snd_SpeakerMapSetVolume(pan,0,5,fVar3);
+    Snd_SpeakerMapSetVolume(pan,0,4,0.0);
+    Snd_SpeakerMapSetVolume(pan,1,5,0.0);
   }
-  if (param_1->output_channel_count == 8) {
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,7);
-    Snd_SpeakerMapSetVolume(param_1,1,7,fVar3);
-    fVar3 = Snd_SpeakerMapGetVolume(param_1,0,6);
-    Snd_SpeakerMapSetVolume(param_1,0,6,fVar3);
-    Snd_SpeakerMapSetVolume(param_1,1,6,0.0);
-    Snd_SpeakerMapSetVolume(param_1,0,7,0.0);
+  if (pan->output_channel_count == 8) {
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,7);
+    Snd_SpeakerMapSetVolume(pan,1,7,fVar3);
+    fVar3 = Snd_SpeakerMapGetVolume(pan,0,6);
+    Snd_SpeakerMapSetVolume(pan,0,6,fVar3);
+    Snd_SpeakerMapSetVolume(pan,1,6,0.0);
+    Snd_SpeakerMapSetVolume(pan,0,7,0.0);
   }
   return;
 }
@@ -3992,7 +4040,7 @@ void __cdecl SND_FixupStereoPan(snd_speaker_map *param_1)
 
 // 00939AB0  SND_UpdatePanFilter  (sound/snd.cpp:2887)
 
-void __cdecl SND_UpdatePanFilter(float param_1,snd_voice_t *param_2)
+void __cdecl SND_UpdatePanFilter(float dt,snd_voice_t *voice)
 
 {
   int iVar1;
@@ -4002,32 +4050,33 @@ void __cdecl SND_UpdatePanFilter(float param_1,snd_voice_t *param_2)
   float fVar5;
   float local_20;
   float local_18;
-  uint local_c;
+  uint i;
+  uint count;
   
-  (param_2->pan).input_channel_count = (param_2->panGoal).input_channel_count;
-  (param_2->pan).output_channel_count = (param_2->panGoal).output_channel_count;
-  iVar1 = (param_2->pan).input_channel_count;
-  iVar2 = (param_2->pan).output_channel_count;
-  local_c = 0;
+  (voice->pan).input_channel_count = (voice->panGoal).input_channel_count;
+  (voice->pan).output_channel_count = (voice->panGoal).output_channel_count;
+  iVar1 = (voice->pan).input_channel_count;
+  iVar2 = (voice->pan).output_channel_count;
+  i = 0;
   while( true ) {
-    if ((uint)(iVar1 * iVar2) <= local_c) {
+    if ((uint)(iVar1 * iVar2) <= i) {
       return;
     }
-    if ((((uint)(param_2->panGoal).volumes[local_c] & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)(voice->panGoal).volumes[i] & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb4d,0,"%s"),
        !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((((uint)(param_2->pan).volumes[local_c] & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)(voice->pan).volumes[i] & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb4e,0,"%s"),
        !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    fVar5 = (snd_pan_filter->current).value * param_1;
+    fVar5 = (snd_pan_filter->current).value * dt;
     local_18 = fVar5;
     if (0.0 <= fVar5 - 1.0) {
       local_18 = 1.0;
@@ -4038,13 +4087,12 @@ void __cdecl SND_UpdatePanFilter(float param_1,snd_voice_t *param_2)
     else {
       local_20 = 0.0;
     }
-    (param_2->pan).volumes[local_c] =
-         (1.0 - local_20) * (param_2->panGoal).volumes[local_c] +
-         (param_2->pan).volumes[local_c] * local_20;
-    if ((((uint)(param_2->pan).volumes[local_c] & 0x7f800000) == 0x7f800000) &&
+    (voice->pan).volumes[i] =
+         (1.0 - local_20) * (voice->panGoal).volumes[i] + (voice->pan).volumes[i] * local_20;
+    if ((((uint)(voice->pan).volumes[i] & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb53,0,"%s"),
        !bVar4)) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -4056,7 +4104,7 @@ void __cdecl SND_UpdatePanFilter(float param_1,snd_voice_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
+void __cdecl SND_UpdateVoice(snd_voice_t *voice,float dt)
 
 {
   byte bVar1;
@@ -4069,176 +4117,177 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
   uint uVar8;
   snd_curve *psVar9;
   snd_curve *psVar10;
-  snd_speaker_config *psVar11;
+  snd_speaker_config *config;
+  float fVar11;
   float fVar12;
   float fVar13;
-  float fVar14;
-  float *pfVar15;
-  float (*pafVar16) [3];
-  snd_listener *psVar17;
-  snd_speaker_map *psVar18;
-  char *pcVar19;
+  float *position;
+  float (*forward) [3];
+  snd_listener *listener;
+  snd_speaker_map *psVar14;
+  char *s1;
   float local_360;
   float local_358;
-  char local_354;
-  char local_350;
+  bool local_354;
+  bool local_350;
   int local_34c;
   float local_324;
-  int local_104;
-  float local_100;
-  float local_fc;
-  float local_f8;
-  snd_speaker_map local_f4;
-  float local_a8;
-  int local_a4;
-  float local_a0;
-  float local_9c;
-  float local_98;
-  float local_94;
-  float local_90;
-  snd_speaker_map local_8c;
-  char local_3d;
-  uint local_3c;
-  char local_37;
-  char local_36;
-  char local_35;
-  float local_34;
+  float baseR;
+  float baseL;
+  int i_3;
+  float blendL_3;
+  float ndist_2;
+  float blendR_3;
+  snd_speaker_map futzPan_2;
+  float atten;
+  int i_2;
+  float blendL_2;
+  float ndist;
+  float neard;
+  float fard;
+  float blendR_2;
+  snd_speaker_map futzPan;
+  bool is3d;
+  uint src_channel_count_2;
+  bool isSpatialized;
+  bool isDefault;
+  bool is2dFalloff;
+  float toListner;
   float local_30;
   float local_2c;
-  float local_28;
-  int local_24;
-  float local_20;
-  float local_1c;
-  uint local_18;
-  float local_14;
-  int local_10;
-  float local_c;
-  snd_alias_t *local_8;
+  float base;
+  int i;
+  float blendL;
+  float blendR;
+  uint src_channel_count;
+  float thisVolume_2;
+  int li;
+  float thisVolume;
+  snd_alias_t *alias;
   
-  local_8 = param_1->alias;
-  if ((local_8 == (snd_alias_t *)0x0) &&
+  alias = voice->alias;
+  if ((alias == (snd_alias_t *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb5b,0,"%s"),
      !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((((param_2 <= 0.0) || (0 < param_1->startDelay)) ||
-      ((param_1->soundFileInfo).loadingState == SFLS_LOADING)) ||
-     ((SND_FaderUpdate(&param_1->fade,param_2), 1.52879e-05 <= (param_1->fade).value ||
-      (1.52879e-05 <= (param_1->fade).goal)))) {
-    if ((param_1->totalMsec == 0) && ((param_1->alias->flags & 1) == 0)) {
-      iVar6 = SND_GetVoiceLength((int)&param_1[-0x570d3].voiceStartTime / 0x1d8);
-      param_1->totalMsec = iVar6;
-      if (param_1->playback != (snd_playback *)0x0) {
-        param_1->playback->lengthMs = param_1->totalMsec;
+  if ((((dt <= 0.0) || (0 < voice->startDelay)) ||
+      ((voice->soundFileInfo).loadingState == SFLS_LOADING)) ||
+     ((SND_FaderUpdate(&voice->fade,dt), 1.52879e-05 <= (voice->fade).value ||
+      (1.52879e-05 <= (voice->fade).goal)))) {
+    if ((voice->totalMsec == 0) && ((voice->alias->flags & 1) == 0)) {
+      iVar6 = SND_GetVoiceLength((int)&voice[-0x570d3].voiceStartTime / 0x1d8);
+      voice->totalMsec = iVar6;
+      if (voice->playback != (snd_playback *)0x0) {
+        voice->playback->lengthMs = voice->totalMsec;
       }
     }
-    if (param_1->playback != (snd_playback *)0x0) {
-      if ((param_1->playback->id != param_1->playbackId) &&
+    if (voice->playback != (snd_playback *)0x0) {
+      if ((voice->playback->id != voice->playbackId) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb75,0,"%s")
          , !bVar5)) {
         pcVar4 = (code *)swi(3);
         (*pcVar4)();
         return;
       }
-      iVar6 = SNDL_GetPlaybackTime(param_1->playbackId);
-      param_1->playback->playedMs = iVar6;
+      iVar6 = SNDL_GetPlaybackTime(voice->playbackId);
+      voice->playback->playedMs = iVar6;
     }
-    if ((param_1->startDelay < 0) &&
+    if ((voice->startDelay < 0) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb79,0,"%s"),
        !bVar5)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    if ((param_1->startDelay != 0) && (g_snd.pausetime == 0)) {
-      local_34c = param_1->startDelay - (int)(param_2 * 1000.0);
+    if ((voice->startDelay != 0) && (g_snd.pausetime == 0)) {
+      local_34c = voice->startDelay - (int)(dt * 1000.0);
       if (local_34c < 1) {
         local_34c = 0;
       }
-      param_1->startDelay = local_34c;
+      voice->startDelay = local_34c;
     }
-    SND_FaderUpdate(&param_1->script_fade,param_2);
-    SND_FaderUpdate(&param_1->script_pitch,param_2);
-    param_1->baseDistance = -1.0;
-    param_1->cylinderAttenuation = 1.0;
-    if ((local_8->flags & 2) == 0) {
-      param_1->distanceAttenuation = 1.0;
-      param_1->reverbAttenuation = (float)local_8->reverbSend / 65535.0;
-      param_1->baseDistance = 0.0;
-      SND_FaderSetGoal(&param_1->losOcclusion,0.0);
-      (param_1->losOcclusion).value = (param_1->losOcclusion).goal;
-      param_1->closestListenerIndex = 0;
-      if ((param_1->soundFileInfo).loadingState == SFLS_LOADED) {
-        local_18 = (param_1->soundFileInfo).srcChannelCount;
-        if (((local_18 != 1) && (local_18 != 2)) &&
+    SND_FaderUpdate(&voice->script_fade,dt);
+    SND_FaderUpdate(&voice->script_pitch,dt);
+    voice->baseDistance = -1.0;
+    voice->cylinderAttenuation = 1.0;
+    if ((alias->flags & 2) == 0) {
+      voice->distanceAttenuation = 1.0;
+      voice->reverbAttenuation = (float)alias->reverbSend / 65535.0;
+      voice->baseDistance = 0.0;
+      SND_FaderSetGoal(&voice->losOcclusion,0.0);
+      (voice->losOcclusion).value = (voice->losOcclusion).goal;
+      voice->closestListenerIndex = 0;
+      if ((voice->soundFileInfo).loadingState == SFLS_LOADED) {
+        src_channel_count = (voice->soundFileInfo).srcChannelCount;
+        if (((src_channel_count != 1) && (src_channel_count != 2)) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xb93,0,
                                      "%s\n\t(src_channel_count) = %i"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if (((local_8->flags & 0x40) == 0) || (local_18 != 2)) {
-          if ((local_8->flags & 0x40) != 0) {
+        if (((alias->flags & 0x40) == 0) || (src_channel_count != 2)) {
+          if ((alias->flags & 0x40) != 0) {
             Com_PrintError(9,"ERROR: alias %s has mono asset but is marked as futz\n");
           }
-          fVar12 = (float)param_1->alias->centerSend / 65535.0;
-          psVar18 = &param_1->panGoal;
-          psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
+          fVar11 = (float)voice->alias->centerSend / 65535.0;
+          psVar14 = &voice->panGoal;
+          psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
           uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-          SND_PanToSpeakermap(local_18,uVar8,psVar7,fVar12,psVar18);
+          SND_PanToSpeakermap(src_channel_count,uVar8,psVar7,fVar11,psVar14);
         }
         else {
-          fVar12 = (float)param_1->alias->centerSend / 65535.0;
-          psVar18 = &param_1->panGoal;
-          psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
+          fVar11 = (float)voice->alias->centerSend / 65535.0;
+          psVar14 = &voice->panGoal;
+          psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
           uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-          SND_PanToSpeakermap(1,uVar8,psVar7,fVar12,psVar18);
-          (param_1->panGoal).input_channel_count = 2;
-          SND_EqualPowerFadeCoefs((snd_futz->current).value,&local_20,&local_1c);
-          for (local_24 = 0; local_24 < (param_1->panGoal).output_channel_count;
-              local_24 = local_24 + 1) {
-            local_28 = Snd_SpeakerMapGetVolume(&param_1->panGoal,0,local_24);
-            Snd_SpeakerMapSetVolume(&param_1->panGoal,0,local_24,local_28 * local_20);
-            Snd_SpeakerMapSetVolume(&param_1->panGoal,1,local_24,local_28 * local_1c);
+          SND_PanToSpeakermap(1,uVar8,psVar7,fVar11,psVar14);
+          (voice->panGoal).input_channel_count = 2;
+          SND_EqualPowerFadeCoefs((snd_futz->current).value,&blendL,&blendR);
+          for (i = 0; i < (voice->panGoal).output_channel_count; i = i + 1) {
+            base = Snd_SpeakerMapGetVolume(&voice->panGoal,0,i);
+            Snd_SpeakerMapSetVolume(&voice->panGoal,0,i,base * blendL);
+            Snd_SpeakerMapSetVolume(&voice->panGoal,1,i,base * blendR);
           }
         }
       }
-      fVar12 = SND_GetDryLevel(param_1);
-      param_1->dryLevel = fVar12;
-      fVar12 = SND_GetWetLevel(param_1);
-      param_1->wetLevel = fVar12;
-      local_14 = Snd_GetGlobalPriorityVolume(param_1->alias,param_1->position);
-      fVar12 = Snd_GetGlobalPriority(param_1->alias,local_14);
-      param_1->globalPriority = fVar12;
-      SND_UpdatePanFilter(param_2,param_1);
+      fVar11 = SND_GetDryLevel(voice);
+      voice->dryLevel = fVar11;
+      fVar11 = SND_GetWetLevel(voice);
+      voice->wetLevel = fVar11;
+      thisVolume_2 = Snd_GetGlobalPriorityVolume(voice->alias,voice->position);
+      fVar11 = Snd_GetGlobalPriority(voice->alias,thisVolume_2);
+      voice->globalPriority = fVar11;
+      SND_UpdatePanFilter(dt,voice);
     }
     else {
-      if (param_1->entity_update != SND_ENTITY_UPDATE_NEVER) {
-        if ((((((uint)param_1->position[0] & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_1->position[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_1->position[2] & 0x7f800000) == 0x7f800000)) &&
+      if (voice->entity_update != SND_ENTITY_UPDATE_NEVER) {
+        if ((((((uint)voice->position[0] & 0x7f800000) == 0x7f800000) ||
+             (((uint)voice->position[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)voice->position[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbc9,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if ((((((uint)param_1->velocity[0] & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_1->velocity[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_1->velocity[2] & 0x7f800000) == 0x7f800000)) &&
+        if ((((((uint)voice->velocity[0] & 0x7f800000) == 0x7f800000) ||
+             (((uint)voice->velocity[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)voice->velocity[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbca,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if ((((((uint)g_snd.listeners[param_1->closestListenerIndex].orient.origin[0] & 0x7f800000)
-               == 0x7f800000) ||
-             (((uint)g_snd.listeners[param_1->closestListenerIndex].orient.origin[1] & 0x7f800000)
-              == 0x7f800000)) ||
-            (((uint)g_snd.listeners[param_1->closestListenerIndex].orient.origin[2] & 0x7f800000) ==
+        if ((((((uint)g_snd.listeners[voice->closestListenerIndex].orient.origin[0] & 0x7f800000) ==
+               0x7f800000) ||
+             (((uint)g_snd.listeners[voice->closestListenerIndex].orient.origin[1] & 0x7f800000) ==
+              0x7f800000)) ||
+            (((uint)g_snd.listeners[voice->closestListenerIndex].orient.origin[2] & 0x7f800000) ==
              0x7f800000)) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbcb,0,
                                      "%s"), !bVar5)) {
@@ -4246,12 +4295,12 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
           (*pcVar4)();
           return;
         }
-        iVar6 = param_1->closestListenerIndex;
-        local_34 = g_snd.listeners[iVar6].orient.origin[0] - param_1->position[0];
-        local_30 = g_snd.listeners[iVar6].orient.origin[1] - param_1->position[1];
-        local_2c = g_snd.listeners[iVar6].orient.origin[2] - param_1->position[2];
-        if (1.52879e-05 < local_34 * local_34 + local_30 * local_30 + local_2c * local_2c) {
-          if ((((((uint)local_34 & 0x7f800000) == 0x7f800000) ||
+        iVar6 = voice->closestListenerIndex;
+        toListner = g_snd.listeners[iVar6].orient.origin[0] - voice->position[0];
+        local_30 = g_snd.listeners[iVar6].orient.origin[1] - voice->position[1];
+        local_2c = g_snd.listeners[iVar6].orient.origin[2] - voice->position[2];
+        if (1.52879e-05 < toListner * toListner + local_30 * local_30 + local_2c * local_2c) {
+          if ((((((uint)toListner & 0x7f800000) == 0x7f800000) ||
                (((uint)local_30 & 0x7f800000) == 0x7f800000)) ||
               (((uint)local_2c & 0x7f800000) == 0x7f800000)) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbd0,0,
@@ -4260,46 +4309,45 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
             (*pcVar4)();
             return;
           }
-          Vec3Normalize(&local_34);
-          if (param_1->fluxVelocity[0] * param_1->fluxVelocity[0] +
-              param_1->fluxVelocity[1] * param_1->fluxVelocity[1] +
-              param_1->fluxVelocity[2] * param_1->fluxVelocity[2] <= 1.52879e-05) {
-            SND_FaderSetGoal(&param_1->doppler,
-                             ((param_1->velocity[0] * local_34 + param_1->velocity[1] * local_30 +
-                              param_1->velocity[2] * local_2c) / 13397.244) *
+          Vec3Normalize(&toListner);
+          if (voice->fluxVelocity[0] * voice->fluxVelocity[0] +
+              voice->fluxVelocity[1] * voice->fluxVelocity[1] +
+              voice->fluxVelocity[2] * voice->fluxVelocity[2] <= 1.52879e-05) {
+            SND_FaderSetGoal(&voice->doppler,
+                             ((voice->velocity[0] * toListner + voice->velocity[1] * local_30 +
+                              voice->velocity[2] * local_2c) / 13397.244) *
                              (snd_dopplerScale->current).value);
           }
           else {
-            SND_FaderSetGoal(&param_1->doppler,
-                             ((param_1->fluxVelocity[0] * local_34 +
-                               param_1->fluxVelocity[1] * local_30 +
-                              param_1->fluxVelocity[2] * local_2c) / 13397.244) *
-                             (snd_dopplerScale->current).value);
+            SND_FaderSetGoal(&voice->doppler,
+                             ((voice->fluxVelocity[0] * toListner +
+                               voice->fluxVelocity[1] * local_30 + voice->fluxVelocity[2] * local_2c
+                              ) / 13397.244) * (snd_dopplerScale->current).value);
           }
         }
-        if ((((uint)(param_1->doppler).goal & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)(voice->doppler).goal & 0x7f800000) == 0x7f800000) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbdb,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if ((((uint)(param_1->doppler).value & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)(voice->doppler).value & 0x7f800000) == 0x7f800000) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbdc,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        SND_FaderUpdate(&param_1->doppler,param_2);
-        if ((((uint)(param_1->doppler).goal & 0x7f800000) == 0x7f800000) &&
+        SND_FaderUpdate(&voice->doppler,dt);
+        if ((((uint)(voice->doppler).goal & 0x7f800000) == 0x7f800000) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbde,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if ((((uint)(param_1->doppler).value & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)(voice->doppler).value & 0x7f800000) == 0x7f800000) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbdf,0,
                                      "%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
@@ -4307,175 +4355,173 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
           return;
         }
       }
-      if (param_1->paused == false) {
-        param_1->position[0] = param_2 * param_1->fluxVelocity[0] + param_1->position[0];
-        param_1->position[1] = param_2 * param_1->fluxVelocity[1] + param_1->position[1];
-        param_1->position[2] = param_2 * param_1->fluxVelocity[2] + param_1->position[2];
+      if (voice->paused == false) {
+        voice->position[0] = dt * voice->fluxVelocity[0] + voice->position[0];
+        voice->position[1] = dt * voice->fluxVelocity[1] + voice->position[1];
+        voice->position[2] = dt * voice->fluxVelocity[2] + voice->position[2];
       }
-      if (param_1->direction[0] * param_1->direction[0] +
-          param_1->direction[1] * param_1->direction[1] +
-          param_1->direction[2] * param_1->direction[2] < 1.52879e-05) {
-        param_1->direction[0] = param_1->orientation[0][0];
-        param_1->direction[1] = param_1->orientation[0][1];
-        param_1->direction[2] = param_1->orientation[0][2];
+      if (voice->direction[0] * voice->direction[0] + voice->direction[1] * voice->direction[1] +
+          voice->direction[2] * voice->direction[2] < 1.52879e-05) {
+        voice->direction[0] = voice->orientation[0][0];
+        voice->direction[1] = voice->orientation[0][1];
+        voice->direction[2] = voice->orientation[0][2];
       }
-      if ((((((uint)param_1->direction[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->direction[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->direction[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)voice->direction[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->direction[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->direction[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbec,0,"%s")
          , !bVar5)) {
         pcVar4 = (code *)swi(3);
         (*pcVar4)();
         return;
       }
-      local_10 = SND_GetListenerIndexNearestToOrigin(param_1->position);
-      param_1->closestListenerIndex = local_10;
-      if ((((((uint)param_1->position[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_1->position[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_1->position[2] & 0x7f800000) == 0x7f800000)) &&
+      li = SND_GetListenerIndexNearestToOrigin(voice->position);
+      voice->closestListenerIndex = li;
+      if ((((((uint)voice->position[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)voice->position[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)voice->position[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbf2,0,"%s")
          , !bVar5)) {
         pcVar4 = (code *)swi(3);
         (*pcVar4)();
         return;
       }
-      if ((((((uint)g_snd.listeners[local_10].orient.origin[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)g_snd.listeners[local_10].orient.origin[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)g_snd.listeners[local_10].orient.origin[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)g_snd.listeners[li].orient.origin[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)g_snd.listeners[li].orient.origin[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)g_snd.listeners[li].orient.origin[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xbf3,0,"%s")
          , !bVar5)) {
         pcVar4 = (code *)swi(3);
         (*pcVar4)();
         return;
       }
-      fVar12 = Vec3Distance((float *)(g_snd.listeners + local_10),param_1->position);
-      param_1->baseDistance = fVar12;
-      fVar12 = (float)local_8->distMax;
-      fVar13 = (float)local_8->distMin;
-      bVar1 = local_8->dryCurve;
-      bVar2 = local_8->dryMinCurve;
-      fVar14 = SND_GetDistance(param_1);
+      fVar11 = Vec3Distance((float *)(g_snd.listeners + li),voice->position);
+      voice->baseDistance = fVar11;
+      fVar11 = (float)alias->distMax;
+      fVar12 = (float)alias->distMin;
+      bVar1 = alias->dryCurve;
+      bVar2 = alias->dryMinCurve;
+      fVar13 = SND_GetDistance(voice);
       psVar9 = SND_GetCurveByIndex((uint)bVar1);
       psVar10 = SND_GetCurveByIndex((uint)bVar2);
-      fVar12 = Snd_DistanceCurveEval(psVar10,psVar9,fVar13,fVar12,fVar14);
-      param_1->distanceAttenuation = fVar12;
-      fVar12 = (float)local_8->distReverbMax;
-      fVar13 = (float)local_8->distMin;
-      bVar1 = local_8->wetCurve;
-      bVar2 = local_8->wetMinCurve;
-      uVar3 = local_8->reverbSend;
-      fVar14 = SND_GetDistance(param_1);
+      fVar11 = Snd_DistanceCurveEval(psVar10,psVar9,fVar12,fVar11,fVar13);
+      voice->distanceAttenuation = fVar11;
+      fVar11 = (float)alias->distReverbMax;
+      fVar12 = (float)alias->distMin;
+      bVar1 = alias->wetCurve;
+      bVar2 = alias->wetMinCurve;
+      uVar3 = alias->reverbSend;
+      fVar13 = SND_GetDistance(voice);
       psVar9 = SND_GetCurveByIndex((uint)bVar1);
       psVar10 = SND_GetCurveByIndex((uint)bVar2);
-      fVar12 = Snd_DistanceCurveEval(psVar10,psVar9,fVar13,fVar12,fVar14);
-      param_1->reverbAttenuation = fVar12 * ((float)uVar3 / 65535.0);
-      SND_FaderSetRate(&param_1->losOcclusion,(snd_occlusion_rate->current).value);
-      SND_FaderUpdate(&param_1->losOcclusion,param_2);
-      local_c = Snd_GetGlobalPriorityVolume(param_1->alias,param_1->position);
-      fVar12 = Snd_GetGlobalPriority(param_1->alias,local_c);
-      param_1->globalPriority = fVar12;
-      if ((param_1->soundFileInfo).loadingState == SFLS_LOADED) {
-        local_3c = (param_1->soundFileInfo).srcChannelCount;
-        if (((local_3c != 1) && (local_3c != 2)) &&
+      fVar11 = Snd_DistanceCurveEval(psVar10,psVar9,fVar12,fVar11,fVar13);
+      voice->reverbAttenuation = fVar11 * ((float)uVar3 / 65535.0);
+      SND_FaderSetRate(&voice->losOcclusion,(snd_occlusion_rate->current).value);
+      SND_FaderUpdate(&voice->losOcclusion,dt);
+      thisVolume = Snd_GetGlobalPriorityVolume(voice->alias,voice->position);
+      fVar11 = Snd_GetGlobalPriority(voice->alias,thisVolume);
+      voice->globalPriority = fVar11;
+      if ((voice->soundFileInfo).loadingState == SFLS_LOADED) {
+        src_channel_count_2 = (voice->soundFileInfo).srcChannelCount;
+        if (((src_channel_count_2 != 1) && (src_channel_count_2 != 2)) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc1c,0,
                                      "%s\n\t(src_channel_count) = %i"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        pcVar19 = "default";
-        psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
-        iVar6 = I_stricmp(psVar7->name,pcVar19);
-        local_36 = '\x01' - (iVar6 != 0);
-        local_37 = (local_8->flags & 2) != 0;
-        if ((local_36 == '\0') && ((bool)local_37)) {
-          local_350 = '\x01';
+        s1 = "default";
+        psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
+        iVar6 = I_stricmp(psVar7->name,s1);
+        isDefault = (bool)('\x01' - (iVar6 != 0));
+        isSpatialized = (alias->flags & 2) != 0;
+        if ((isDefault == false) && (isSpatialized)) {
+          local_350 = true;
         }
         else {
-          local_350 = '\0';
+          local_350 = false;
         }
-        local_35 = local_350;
-        if (((bool)local_37) && (local_350 == '\0')) {
-          local_354 = '\x01';
+        is2dFalloff = local_350;
+        if ((isSpatialized) && (local_350 == false)) {
+          local_354 = true;
         }
         else {
-          local_354 = '\0';
+          local_354 = false;
         }
-        local_3d = local_354;
-        Snd_SpeakerMapZero(&param_1->panGoal);
-        if (local_3d == '\0') {
-          if (((local_37 != '\0') && (local_35 == '\0')) &&
+        is3d = local_354;
+        Snd_SpeakerMapZero(&voice->panGoal);
+        if (is3d == false) {
+          if (((isSpatialized != false) && (is2dFalloff == false)) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc7c,0,
                                        "%s"), !bVar5)) {
             pcVar4 = (code *)swi(3);
             (*pcVar4)();
             return;
           }
-          fVar12 = (float)local_8->centerSend / 65535.0;
-          psVar18 = &param_1->panGoal;
-          psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
+          fVar11 = (float)alias->centerSend / 65535.0;
+          psVar14 = &voice->panGoal;
+          psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
           uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-          SND_PanToSpeakermap(local_3c,uVar8,psVar7,fVar12,psVar18);
+          SND_PanToSpeakermap(src_channel_count_2,uVar8,psVar7,fVar11,psVar14);
         }
         else {
-          (param_1->panGoal).input_channel_count = 1;
+          (voice->panGoal).input_channel_count = 1;
           uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-          (param_1->panGoal).output_channel_count = uVar8;
-          fVar12 = (float)param_1->alias->centerSend / 65535.0;
-          psVar18 = &param_1->panGoal;
-          fVar13 = SND_GetOmni(param_1);
-          fVar14 = 0.0;
-          psVar17 = g_snd.listeners + local_10;
-          pafVar16 = g_snd.listeners[local_10].orient.axis;
-          pfVar15 = param_1->position;
-          psVar11 = Snd_GetSpeakerConfig((snd_speakerConfiguration->current).unsignedInt);
-          Snd_Pan3d(psVar11,pfVar15,*pafVar16,(float *)psVar17,fVar12,fVar14,fVar13,psVar18);
-          (param_1->panGoal).input_channel_count = local_3c;
-          if (((local_8->flags & 0x40) == 0) || ((snd_dsp_futz->current).enabled == false)) {
-            if (((local_8->flags & 0x40) == 0) || (local_3c != 2)) {
-              if ((local_3c == 2) && ((snd_stereo_3d->current).enabled != false)) {
-                SND_FixupStereoPan(&param_1->panGoal);
+          (voice->panGoal).output_channel_count = uVar8;
+          fVar11 = (float)voice->alias->centerSend / 65535.0;
+          psVar14 = &voice->panGoal;
+          fVar12 = SND_GetOmni(voice);
+          fVar13 = 0.0;
+          listener = g_snd.listeners + li;
+          forward = g_snd.listeners[li].orient.axis;
+          position = voice->position;
+          config = Snd_GetSpeakerConfig((snd_speakerConfiguration->current).unsignedInt);
+          Snd_Pan3d(config,position,*forward,(float *)listener,fVar11,fVar13,fVar12,psVar14);
+          (voice->panGoal).input_channel_count = src_channel_count_2;
+          if (((alias->flags & 0x40) == 0) || ((snd_dsp_futz->current).enabled == false)) {
+            if (((alias->flags & 0x40) == 0) || (src_channel_count_2 != 2)) {
+              if ((src_channel_count_2 == 2) && ((snd_stereo_3d->current).enabled != false)) {
+                SND_FixupStereoPan(&voice->panGoal);
               }
             }
             else {
-              fVar12 = (float)local_8->centerSend / 65535.0;
-              psVar18 = &local_f4;
-              psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
+              fVar11 = (float)alias->centerSend / 65535.0;
+              psVar14 = &futzPan_2;
+              psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
               uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-              SND_PanToSpeakermap(1,uVar8,psVar7,fVar12,psVar18);
-              uVar3 = local_8->distMin;
-              fVar12 = SND_GetDistance(param_1);
-              local_fc = I_fmap((snd_futz_min->current).value,(float)uVar3,0.0,1.0,fVar12);
-              SND_EqualPowerFadeCoefs(local_fc,&local_100,&local_f8);
-              for (local_104 = 0; local_104 < (param_1->panGoal).output_channel_count;
-                  local_104 = local_104 + 1) {
-                fVar12 = Snd_SpeakerMapGetVolume(&param_1->panGoal,0,local_104);
-                fVar13 = Snd_SpeakerMapGetVolume(&local_f4,0,local_104);
-                Snd_SpeakerMapSetVolume(&param_1->panGoal,0,local_104,fVar12 * local_100);
-                Snd_SpeakerMapSetVolume(&param_1->panGoal,1,local_104,fVar13 * local_f8);
+              SND_PanToSpeakermap(1,uVar8,psVar7,fVar11,psVar14);
+              uVar3 = alias->distMin;
+              fVar11 = SND_GetDistance(voice);
+              ndist_2 = I_fmap((snd_futz_min->current).value,(float)uVar3,0.0,1.0,fVar11);
+              SND_EqualPowerFadeCoefs(ndist_2,&blendL_3,&blendR_3);
+              for (i_3 = 0; i_3 < (voice->panGoal).output_channel_count; i_3 = i_3 + 1) {
+                fVar11 = Snd_SpeakerMapGetVolume(&voice->panGoal,0,i_3);
+                fVar12 = Snd_SpeakerMapGetVolume(&futzPan_2,0,i_3);
+                Snd_SpeakerMapSetVolume(&voice->panGoal,0,i_3,fVar11 * blendL_3);
+                Snd_SpeakerMapSetVolume(&voice->panGoal,1,i_3,fVar12 * blendR_3);
               }
-              param_1->distanceAttenuation = 1.0;
-              param_1->reverbAttenuation = param_1->reverbAttenuation * local_100;
+              voice->distanceAttenuation = 1.0;
+              voice->reverbAttenuation = voice->reverbAttenuation * blendL_3;
             }
           }
           else {
-            fVar12 = (float)local_8->centerSend / 65535.0;
-            psVar18 = &local_8c;
-            psVar7 = SND_GetPanByIndex((uint)param_1->alias->pan);
+            fVar11 = (float)alias->centerSend / 65535.0;
+            psVar14 = &futzPan;
+            psVar7 = SND_GetPanByIndex((uint)voice->alias->pan);
             uVar8 = Snd_GetMixChannelCount((snd_speakerConfiguration->current).unsignedInt);
-            SND_PanToSpeakermap(1,uVar8,psVar7,fVar12,psVar18);
-            local_98 = (snd_futz_min->current).value;
-            local_94 = (float)local_8->distMin;
-            if (local_94 <= local_98) {
+            SND_PanToSpeakermap(1,uVar8,psVar7,fVar11,psVar14);
+            neard = (snd_futz_min->current).value;
+            fard = (float)alias->distMin;
+            if (fard <= neard) {
               Com_PrintError(9,"Alias %s had invalid dist min %f. needs to be > than %f\n");
-              local_94 = local_98 + 1.0;
+              fard = neard + 1.0;
             }
-            fVar12 = SND_GetDistance(param_1);
-            local_358 = I_fmap(local_98,local_94,0.0,1.0,fVar12);
+            fVar11 = SND_GetDistance(voice);
+            local_358 = I_fmap(neard,fard,0.0,1.0,fVar11);
             if (0.0 <= (snd_futz_force->current).value - local_358) {
               local_358 = (snd_futz_force->current).value;
             }
-            local_9c = local_358;
+            ndist = local_358;
             if ((((uint)local_358 & 0x7f800000) == 0x7f800000) &&
                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc4a,0
                                          ,"%s"), !bVar5)) {
@@ -4483,57 +4529,56 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
               (*pcVar4)();
               return;
             }
-            SND_EqualPowerFadeCoefs(local_9c,&local_a0,&local_90);
-            if ((((uint)local_a0 & 0x7f800000) == 0x7f800000) &&
+            SND_EqualPowerFadeCoefs(ndist,&blendL_2,&blendR_2);
+            if ((((uint)blendL_2 & 0x7f800000) == 0x7f800000) &&
                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc4d,0
                                          ,"%s"), !bVar5)) {
               pcVar4 = (code *)swi(3);
               (*pcVar4)();
               return;
             }
-            if ((((uint)local_90 & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)blendR_2 & 0x7f800000) == 0x7f800000) &&
                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc4e,0
                                          ,"%s"), !bVar5)) {
               pcVar4 = (code *)swi(3);
               (*pcVar4)();
               return;
             }
-            for (local_a4 = 0; local_a4 < (param_1->panGoal).output_channel_count;
-                local_a4 = local_a4 + 1) {
-              fVar12 = Snd_SpeakerMapGetVolume(&param_1->panGoal,0,local_a4);
-              fVar12 = fVar12 * local_90;
-              fVar13 = Snd_SpeakerMapGetVolume(&local_8c,0,local_a4);
-              fVar12 = fVar13 * local_a0 + fVar12;
-              local_324 = fVar12;
-              if (0.0 <= fVar12 - 1.0) {
+            for (i_2 = 0; i_2 < (voice->panGoal).output_channel_count; i_2 = i_2 + 1) {
+              fVar11 = Snd_SpeakerMapGetVolume(&voice->panGoal,0,i_2);
+              fVar11 = fVar11 * blendR_2;
+              fVar12 = Snd_SpeakerMapGetVolume(&futzPan,0,i_2);
+              fVar11 = fVar12 * blendL_2 + fVar11;
+              local_324 = fVar11;
+              if (0.0 <= fVar11 - 1.0) {
                 local_324 = 1.0;
               }
-              if (0.0 - fVar12 < 0.0) {
+              if (0.0 - fVar11 < 0.0) {
                 local_360 = local_324;
               }
               else {
                 local_360 = 0.0;
               }
-              local_a8 = local_360;
-              Snd_SpeakerMapSetVolume(&param_1->panGoal,0,local_a4,local_360);
+              atten = local_360;
+              Snd_SpeakerMapSetVolume(&voice->panGoal,0,i_2,local_360);
             }
-            if (0.0 < local_9c) {
-              param_1->distanceAttenuation = 1.0;
+            if (0.0 < ndist) {
+              voice->distanceAttenuation = 1.0;
             }
-            param_1->reverbAttenuation = param_1->reverbAttenuation * local_a0;
-            param_1->futzBlend = local_90;
+            voice->reverbAttenuation = voice->reverbAttenuation * blendL_2;
+            voice->futzBlend = blendR_2;
           }
         }
-        fVar12 = SND_GetDryLevel(param_1);
-        param_1->dryLevel = fVar12;
-        fVar12 = SND_GetWetLevel(param_1);
-        param_1->wetLevel = fVar12;
-        SND_UpdatePanFilter(param_2,param_1);
+        fVar11 = SND_GetDryLevel(voice);
+        voice->dryLevel = fVar11;
+        fVar11 = SND_GetWetLevel(voice);
+        voice->wetLevel = fVar11;
+        SND_UpdatePanFilter(dt,voice);
       }
     }
   }
   else {
-    SND_StopVoice((int)&param_1[-0x570d3].voiceStartTime / 0x1d8);
+    SND_StopVoice((int)&voice[-0x570d3].voiceStartTime / 0x1d8);
   }
   return;
 }
@@ -4541,7 +4586,7 @@ void __cdecl SND_UpdateVoice(snd_voice_t *param_1,float param_2)
 
 // 0093B820  SND_GetOmni  (sound/snd.cpp:3217)
 
-float __cdecl SND_GetOmni(snd_voice_t *param_1)
+float __cdecl SND_GetOmni(snd_voice_t *voice)
 
 {
   float fVar1;
@@ -4551,10 +4596,13 @@ float __cdecl SND_GetOmni(snd_voice_t *param_1)
   bool bVar5;
   float10 fVar6;
   float fVar7;
-  float local_18;
-  float local_10;
+  float farPercentage;
+  float dist;
+  float nearPercentage;
+  snd_alias_t *alias;
+  float globalOmni;
   
-  psVar3 = param_1->alias;
+  psVar3 = voice->alias;
   fVar1 = (snd_omnidirectionalPercentage->current).value;
   if ((psVar3 == (snd_alias_t *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd.cpp",0xc99,0,"%s"),
@@ -4565,21 +4613,21 @@ float __cdecl SND_GetOmni(snd_voice_t *param_1)
   }
   if (fVar1 < ABS((float)psVar3->envelopPercentage / 65535.0)) {
     if (0.0 <= (float)psVar3->envelopPercentage / 65535.0) {
-      local_10 = (float)psVar3->envelopPercentage / 65535.0;
-      local_18 = fVar1;
+      nearPercentage = (float)psVar3->envelopPercentage / 65535.0;
+      farPercentage = fVar1;
     }
     else {
-      local_18 = -((float)psVar3->envelopPercentage / 65535.0);
-      local_10 = fVar1;
+      farPercentage = -((float)psVar3->envelopPercentage / 65535.0);
+      nearPercentage = fVar1;
     }
     uVar2 = psVar3->envelopMin;
-    fVar7 = SND_GetDistance(param_1);
+    fVar7 = SND_GetDistance(voice);
     fVar7 = fVar7 - (float)uVar2;
-    fVar1 = local_10;
-    if (((0.0 < fVar7) && (fVar1 = local_18, (float)psVar3->envelopMax != (float)psVar3->envelopMin)
-        ) && (fVar7 = fVar7 / ((float)psVar3->envelopMax - (float)psVar3->envelopMin), fVar7 < 1.0))
-    {
-      fVar1 = (1.0 - fVar7) * local_10 + local_18 * fVar7;
+    fVar1 = nearPercentage;
+    if (((0.0 < fVar7) &&
+        (fVar1 = farPercentage, (float)psVar3->envelopMax != (float)psVar3->envelopMin)) &&
+       (fVar7 = fVar7 / ((float)psVar3->envelopMax - (float)psVar3->envelopMin), fVar7 < 1.0)) {
+      fVar1 = (1.0 - fVar7) * nearPercentage + farPercentage * fVar7;
     }
   }
   return fVar1;
@@ -4590,15 +4638,15 @@ float __cdecl SND_GetOmni(snd_voice_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_voice_t * __cdecl SND_GetPlaybackVoice(int param_1)
+snd_voice_t * __cdecl SND_GetPlaybackVoice(int playbackId)
 
 {
-  uint local_8;
+  uint i;
   
-  if (param_1 != -1) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      if (g_snd.voice[local_8].playbackId == param_1) {
-        return g_snd.voice + local_8;
+  if (playbackId != -1) {
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (g_snd.voice[i].playbackId == playbackId) {
+        return g_snd.voice + i;
       }
     }
   }
@@ -4608,12 +4656,12 @@ snd_voice_t * __cdecl SND_GetPlaybackVoice(int param_1)
 
 // 0093BA30  SND_IsStream  (sound/snd.cpp:3348)
 
-bool __cdecl SND_IsStream(int param_1)
+bool __cdecl SND_IsStream(int index)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0) || (9 < param_1)) {
+  if ((index < 0) || (9 < index)) {
     local_8 = false;
   }
   else {

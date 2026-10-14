@@ -2,13 +2,18 @@
 
 // 0072B5B0  UI_SetClanName_f  (ui/ui_commands.cpp:182)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl UI_SetClanName_f(void)
 
 {
-  char *pcVar1;
+  char *value;
   
-  pcVar1 = Dvar_GetString("ui_clantag_new");
-  Dvar_SetStringByName("clanName",pcVar1);
+  value = Dvar_GetString("ui_clantag_new");
+  Dvar_SetStringByName("clanName",value);
   Dvar_SetStringByName("ui_clantag_new","");
   CL_SanitizeClanName();
   GamerProfile_UpdateProfileFromDvars(0,PROFILE_WRITE_IF_CHANGED);

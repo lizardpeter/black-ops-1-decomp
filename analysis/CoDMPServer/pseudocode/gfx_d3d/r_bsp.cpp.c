@@ -2,22 +2,23 @@
 
 // 00AB9370  R_GetMaterialUsageData  (gfx_d3d/r_bsp.cpp:43)
 
-MaterialUsage * __cdecl R_GetMaterialUsageData(Material *param_1)
+MaterialUsage * __cdecl R_GetMaterialUsageData(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialUsage *pMVar3;
-  bool local_9;
-  ushort local_8 [2];
+  MaterialUsage *materialUsage;
+  bool exists;
+  ushort hashIndex;
   
-  Material_GetHashIndex((param_1->info).name,local_8,&local_9);
-  if (local_9 == false) {
+  Material_GetHashIndex((material->info).name,&hashIndex,&exists);
+  if (exists == false) {
     pMVar3 = (MaterialUsage *)0x0;
   }
   else {
-    pMVar3 = rg.materialUsage + local_8[0];
-    if (param_1 != rg.materialHashTable[local_8[0]]) {
+    pMVar3 = rg.materialUsage + hashIndex;
+    if (material != rg.materialHashTable[hashIndex]) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x34,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -25,7 +26,7 @@ MaterialUsage * __cdecl R_GetMaterialUsageData(Material *param_1)
         return pMVar3;
       }
     }
-    rg.materialUsage[local_8[0]].material = param_1;
+    rg.materialUsage[hashIndex].material = material;
   }
   return pMVar3;
 }
@@ -40,36 +41,39 @@ void __cdecl R_CreateMaterialList(void)
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  ushort local_10;
-  int local_8;
+  MaterialUsage *materialUsage;
+  int memory;
+  ushort hashIndex;
+  MaterialMemory *materialMemory;
+  int index;
   
   s_world.materialMemoryCount = 0;
-  for (local_10 = 0; local_10 < 0x1000; local_10 = local_10 + 1) {
-    if (rg.materialUsage[local_10].memory != 0) {
+  for (hashIndex = 0; hashIndex < 0x1000; hashIndex = hashIndex + 1) {
+    if (rg.materialUsage[hashIndex].memory != 0) {
       s_world.materialMemoryCount = s_world.materialMemoryCount + 1;
     }
   }
   if (s_world.materialMemoryCount != 0) {
     s_world.materialMemory =
          Hunk_Alloc(s_world.materialMemoryCount << 3,"R_CreateMaterialList",0x15);
-    local_8 = 0;
-    for (local_10 = 0; local_10 < 0x1000; local_10 = local_10 + 1) {
-      iVar2 = rg.materialUsage[local_10].memory;
+    index = 0;
+    for (hashIndex = 0; hashIndex < 0x1000; hashIndex = hashIndex + 1) {
+      iVar2 = rg.materialUsage[hashIndex].memory;
       if (iVar2 != 0) {
-        if ((s_world.materialMemoryCount <= local_8) &&
+        if ((s_world.materialMemoryCount <= index) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x59,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        pMVar1 = s_world.materialMemory + local_8;
-        pMVar1->material = rg.materialUsage[local_10].material;
+        pMVar1 = s_world.materialMemory + index;
+        pMVar1->material = rg.materialUsage[hashIndex].material;
         pMVar1->memory = iVar2;
-        local_8 = local_8 + 1;
+        index = index + 1;
       }
     }
-    if ((local_8 != s_world.materialMemoryCount) &&
+    if ((index != s_world.materialMemoryCount) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x60,0,"%s"
                                 ), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -87,17 +91,18 @@ void __cdecl R_ShutdownMaterialUsage(void)
 
 {
   VertUsage *pVVar1;
-  VertUsage *local_10;
-  ushort local_c;
+  VertUsage *vertUsage;
+  ushort hashIndex;
+  VertUsage *nextVertUsage;
   
-  for (local_c = 0; local_c < 0x1000; local_c = local_c + 1) {
-    local_10 = rg.materialUsage[local_c].verts;
-    while (local_10 != (VertUsage *)0x0) {
-      pVVar1 = local_10->next;
-      Z_Free(local_10,0);
-      local_10 = pVVar1;
+  for (hashIndex = 0; hashIndex < 0x1000; hashIndex = hashIndex + 1) {
+    vertUsage = rg.materialUsage[hashIndex].verts;
+    while (vertUsage != (VertUsage *)0x0) {
+      pVVar1 = vertUsage->next;
+      Z_Free(vertUsage,0);
+      vertUsage = pVVar1;
     }
-    rg.materialUsage[local_c].verts = (VertUsage *)0x0;
+    rg.materialUsage[hashIndex].verts = (VertUsage *)0x0;
   }
   return;
 }
@@ -105,7 +110,7 @@ void __cdecl R_ShutdownMaterialUsage(void)
 
 // 00AB97A0  R_CopyParseParamsFromDvars  (gfx_d3d/r_bsp.cpp:137)
 
-void __cdecl R_CopyParseParamsFromDvars(SunLightParseParams *param_1)
+void __cdecl R_CopyParseParamsFromDvars(SunLightParseParams *sunParse)
 
 {
   code *pcVar1;
@@ -116,16 +121,16 @@ void __cdecl R_CopyParseParamsFromDvars(SunLightParseParams *param_1)
   SunLightParseParams *pSVar6;
   
   pSVar5 = &(rgp.world)->sunParse;
-  pSVar6 = param_1;
+  pSVar6 = sunParse;
   for (iVar4 = 0x2d; iVar4 != 0; iVar4 = iVar4 + -1) {
     *(undefined4 *)pSVar6->name = *(undefined4 *)pSVar5->name;
     pSVar5 = (SunLightParseParams *)(pSVar5->name + 4);
     pSVar6 = (SunLightParseParams *)(pSVar6->name + 4);
   }
-  param_1->sunSettings[0].sunDiffuseColor[0] = (float)(r_lightTweakSunColor->current).integer;
-  param_1->sunSettings[0].sunDiffuseColor[1] = (r_lightTweakSunColor->current).vector[1];
-  param_1->sunSettings[0].sunDiffuseColor[2] = (r_lightTweakSunColor->current).vector[2];
-  param_1->sunSettings[0].sunDiffuseColor[3] = (float)(r_lightTweakSunLight->current).integer;
+  sunParse->sunSettings[0].sunDiffuseColor[0] = (float)(r_lightTweakSunColor->current).integer;
+  sunParse->sunSettings[0].sunDiffuseColor[1] = (r_lightTweakSunColor->current).vector[1];
+  sunParse->sunSettings[0].sunDiffuseColor[2] = (r_lightTweakSunColor->current).vector[2];
+  sunParse->sunSettings[0].sunDiffuseColor[3] = (float)(r_lightTweakSunLight->current).integer;
   if (r_lightTweakSunDirection == (dvar_s *)0xffffffe8) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x91,0,"%s");
     if (!bVar3) {
@@ -135,16 +140,16 @@ void __cdecl R_CopyParseParamsFromDvars(SunLightParseParams *param_1)
     }
   }
   pdVar2 = r_lightTweakSunDirection;
-  param_1->sunSettings[0].angles[0] = (float)(r_lightTweakSunDirection->current).integer;
-  param_1->sunSettings[0].angles[1] = (pdVar2->current).vector[1];
-  param_1->sunSettings[0].angles[2] = (pdVar2->current).vector[2];
+  sunParse->sunSettings[0].angles[0] = (float)(r_lightTweakSunDirection->current).integer;
+  sunParse->sunSettings[0].angles[1] = (pdVar2->current).vector[1];
+  sunParse->sunSettings[0].angles[2] = (pdVar2->current).vector[2];
   return;
 }
 
 
 // 00AB95E0  R_InterpretSunLightParseParams  (gfx_d3d/r_bsp.cpp:176)
 
-void __cdecl R_InterpretSunLightParseParams(SunLightParseParams *param_1)
+void __cdecl R_InterpretSunLightParseParams(SunLightParseParams *sunParse)
 
 {
   GfxLight *pGVar1;
@@ -168,7 +173,7 @@ void __cdecl R_InterpretSunLightParseParams(SunLightParseParams *param_1)
       return;
     }
   }
-  R_InterpretSunLightParseParamsIntoLights(param_1,(rgp.world)->sunLight);
+  R_InterpretSunLightParseParamsIntoLights(sunParse,(rgp.world)->sunLight);
   pGVar3 = rgp.world;
   pGVar1 = (rgp.world)->sunLight;
   (rgp.world)->sunColorFromBsp[0] = pGVar1->color[0];
@@ -186,7 +191,7 @@ void __cdecl R_UpdateLightsFromDvars(void)
 
 {
   bool bVar1;
-  SunLightParseParams local_c4;
+  SunLightParseParams sunParse;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -205,77 +210,77 @@ void __cdecl R_UpdateLightsFromDvars(void)
       Dvar_SetFloat(sm_sunSampleSizeNear,1.0);
     }
   }
-  R_CopyParseParamsFromDvars(&local_c4);
-  R_InterpretSunLightParseParams(&local_c4);
+  R_CopyParseParamsFromDvars(&sunParse);
+  R_InterpretSunLightParseParams(&sunParse);
   return;
 }
 
 
 // 00AB9AA0  R_CopyParseParamsToDvars  (gfx_d3d/r_bsp.cpp:259)
 
-void __cdecl R_CopyParseParamsToDvars(SunLightParseParams *param_1,int param_2)
+void __cdecl R_CopyParseParamsToDvars(SunLightParseParams *sunParse,int savegame)
 
 {
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  code *pcVar4;
+  float x;
+  float y;
+  float z;
+  code *pcVar1;
+  DvarValue DVar2;
+  DvarValue DVar3;
+  DvarValue DVar4;
   DvarValue DVar5;
   DvarValue DVar6;
   DvarValue DVar7;
   DvarValue DVar8;
-  DvarValue DVar9;
-  DvarValue DVar10;
-  DvarValue DVar11;
-  bool bVar12;
-  DvarValue *pDVar13;
+  bool bVar9;
+  DvarValue *pDVar10;
   
   if ((*(uint *)&r_lightTweakSunDirection->flags & 0x1000) == 0) {
-    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x106,0,
-                              "%s\n\t(r_lightTweakSunDirection->name) = %s");
-    if (!bVar12) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x106,0,
+                             "%s\n\t(r_lightTweakSunDirection->name) = %s");
+    if (!bVar9) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pDVar13 = &r_lightTweakSunDirection->current;
-  fVar1 = pDVar13->value;
-  fVar2 = (r_lightTweakSunDirection->current).vector[1];
-  fVar3 = (r_lightTweakSunDirection->current).vector[2];
-  Dvar_SetFloat(r_lightTweakSunLight,param_1->sunSettings[0].sunDiffuseColor[3]);
-  Dvar_SetVec3(r_lightTweakSunColor,param_1->sunSettings[0].sunDiffuseColor[0],
-               param_1->sunSettings[0].sunDiffuseColor[1],param_1->sunSettings[0].sunDiffuseColor[2]
-              );
-  Dvar_SetVec3(r_lightTweakSunDirection,param_1->sunSettings[0].angles[0],
-               param_1->sunSettings[0].angles[1],param_1->sunSettings[0].angles[2]);
-  DVar5.vector[3] = (float)pDVar13;
-  DVar5._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunLight->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakSunLight,DVar5);
-  DVar6.vector[3] = (float)pDVar13;
-  DVar6._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunColor->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakSunColor,DVar6);
-  DVar7.vector[3] = (float)pDVar13;
-  DVar7._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunDirection->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakSunDirection,DVar7);
-  if (param_2 != 0) {
-    Dvar_SetVec3(r_lightTweakSunDirection,fVar1,fVar2,fVar3);
+  pDVar10 = &r_lightTweakSunDirection->current;
+  x = pDVar10->value;
+  y = (r_lightTweakSunDirection->current).vector[1];
+  z = (r_lightTweakSunDirection->current).vector[2];
+  Dvar_SetFloat(r_lightTweakSunLight,sunParse->sunSettings[0].sunDiffuseColor[3]);
+  Dvar_SetVec3(r_lightTweakSunColor,sunParse->sunSettings[0].sunDiffuseColor[0],
+               sunParse->sunSettings[0].sunDiffuseColor[1],
+               sunParse->sunSettings[0].sunDiffuseColor[2]);
+  Dvar_SetVec3(r_lightTweakSunDirection,sunParse->sunSettings[0].angles[0],
+               sunParse->sunSettings[0].angles[1],sunParse->sunSettings[0].angles[2]);
+  DVar2.vector[3] = (float)pDVar10;
+  DVar2._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunLight->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakSunLight,DVar2);
+  DVar3.vector[3] = (float)pDVar10;
+  DVar3._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunColor->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakSunColor,DVar3);
+  DVar4.vector[3] = (float)pDVar10;
+  DVar4._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunDirection->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakSunDirection,DVar4);
+  if (savegame != 0) {
+    Dvar_SetVec3(r_lightTweakSunDirection,x,y,z);
   }
   Dvar_SetFloat(r_lightTweakAmbient,0.0);
   Dvar_SetFloat(r_lightTweakDiffuseFraction,0.0);
   Dvar_SetColor(r_lightTweakSunDiffuseColor,0.0,0.0,0.0,1.0);
-  DVar8.vector[3] = (float)pDVar13;
-  DVar8._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakAmbient->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakAmbient,DVar8);
-  DVar9.vector[3] = (float)pDVar13;
-  DVar9._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakDiffuseFraction->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakDiffuseFraction,DVar9);
-  DVar10.vector[3] = (float)pDVar13;
-  DVar10._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakAmbientColor->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakAmbientColor,DVar10);
-  DVar11.vector[3] = (float)pDVar13;
-  DVar11._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunDiffuseColor->current + 4);
-  Dvar_ChangeResetValue(r_lightTweakSunDiffuseColor,DVar11);
+  DVar5.vector[3] = (float)pDVar10;
+  DVar5._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakAmbient->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakAmbient,DVar5);
+  DVar6.vector[3] = (float)pDVar10;
+  DVar6._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakDiffuseFraction->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakDiffuseFraction,DVar6);
+  DVar7.vector[3] = (float)pDVar10;
+  DVar7._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakAmbientColor->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakAmbientColor,DVar7);
+  DVar8.vector[3] = (float)pDVar10;
+  DVar8._0_12_ = *(undefined1 (*) [12])((int)&r_lightTweakSunDiffuseColor->current + 4);
+  Dvar_ChangeResetValue(r_lightTweakSunDiffuseColor,DVar8);
   return;
 }
 
@@ -292,7 +297,9 @@ void __cdecl R_InitDynamicData(void)
 
 // 00AB9D90  R_SetWorldPtr_LoadObj  (gfx_d3d/r_bsp.cpp:305)
 
-void __cdecl R_SetWorldPtr_LoadObj(char *param_1)
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+
+void __cdecl R_SetWorldPtr_LoadObj(char *name)
 
 {
   code *pcVar1;
@@ -306,7 +313,7 @@ void __cdecl R_SetWorldPtr_LoadObj(char *param_1)
       return;
     }
   }
-  rgp.world = R_LoadWorldInternal(param_1);
+  rgp.world = R_LoadWorldInternal(name);
   if (rgp.world == (GfxWorld *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x13d,0,"%s");
     if (!bVar2) {
@@ -324,10 +331,10 @@ void __cdecl R_SetWorldPtr_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_SetWorldPtr_FastFile(char *param_1)
+void __cdecl R_SetWorldPtr_FastFile(char *name)
 
 {
-  rgp.world = (GfxWorld *)DB_FindXAssetHeader(ASSET_TYPE_GFXWORLD,param_1,true,-1);
+  rgp.world = (GfxWorld *)DB_FindXAssetHeader(ASSET_TYPE_GFXWORLD,name,true,-1);
   rgp.needSortMaterials = 1;
   return;
 }
@@ -347,7 +354,7 @@ void __cdecl R_RegisterSkyboxModel(void)
 
 // 00AB9870  R_LoadWorld  (gfx_d3d/r_bsp.cpp:346)
 
-void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
+void __cdecl R_LoadWorld(char *name,int *checksum,int savegame,int location)
 
 {
   code *pcVar1;
@@ -356,8 +363,8 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
   float (*pafVar4) [4];
   GfxDrawConsts *pGVar5;
   code *local_14;
-  uint local_c;
-  int local_8;
+  uint reflectionProbeIndex;
+  int lightmapIndex;
   
   if (rgp.world != (GfxWorld *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp.cpp",0x15e,0,"%s");
@@ -367,14 +374,14 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
       return;
     }
   }
-  R_InitLightVisHistory(param_1);
+  R_InitLightVisHistory(name);
   if ((useFastFile->current).enabled == false) {
     local_14 = R_SetWorldPtr_LoadObj;
   }
   else {
     local_14 = R_SetWorldPtr_FastFile;
   }
-  (*local_14)(param_1);
+  (*local_14)(name);
   R_WorldLod_Init();
   R_FoliageInitModels(rgp.world);
   g_worldDpvsPlanes = &(rgp.world)->dpvsPlanes;
@@ -387,10 +394,10 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
     pafVar4 = (float (*) [4])(*pafVar4 + 1);
     pGVar5 = (GfxDrawConsts *)(pGVar5->outdoorLookupMatrix[0] + 1);
   }
-  if (param_2 != (int *)0x0) {
-    *param_2 = (rgp.world)->checksum;
+  if (checksum != (int *)0x0) {
+    *checksum = (rgp.world)->checksum;
   }
-  R_CopyParseParamsToDvars(&(rgp.world)->sunParse,param_3);
+  R_CopyParseParamsToDvars(&(rgp.world)->sunParse,savegame);
   R_UpdateLightsFromDvars();
   R_FlushSun();
   R_ClearSkyboxModel();
@@ -401,20 +408,22 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
   RB_SetBspImages();
   DynEntCl_InitFilter();
   R_GenerateShadowMapCasterCells();
-  for (local_c = 0; local_c < g_worldDraw->reflectionProbeCount; local_c = local_c + 1) {
-    g_worldDraw->reflectionProbeTextures[local_c] =
-         (g_worldDraw->reflectionProbes[local_c].reflectionImage)->texture;
+  for (reflectionProbeIndex = 0; reflectionProbeIndex < g_worldDraw->reflectionProbeCount;
+      reflectionProbeIndex = reflectionProbeIndex + 1) {
+    g_worldDraw->reflectionProbeTextures[reflectionProbeIndex] =
+         (g_worldDraw->reflectionProbes[reflectionProbeIndex].reflectionImage)->texture;
   }
-  for (local_8 = 0; local_8 < g_worldDraw->lightmapCount; local_8 = local_8 + 1) {
-    g_worldDraw->lightmapPrimaryTextures[local_8] =
-         (g_worldDraw->lightmaps[local_8].primary)->texture;
-    g_worldDraw->lightmapSecondaryTextures[local_8] =
-         (g_worldDraw->lightmaps[local_8].secondary)->texture;
-    g_worldDraw->lightmapSecondaryTexturesB[local_8] =
-         (g_worldDraw->lightmaps[local_8].secondaryB)->texture;
+  for (lightmapIndex = 0; lightmapIndex < g_worldDraw->lightmapCount;
+      lightmapIndex = lightmapIndex + 1) {
+    g_worldDraw->lightmapPrimaryTextures[lightmapIndex] =
+         (g_worldDraw->lightmaps[lightmapIndex].primary)->texture;
+    g_worldDraw->lightmapSecondaryTextures[lightmapIndex] =
+         (g_worldDraw->lightmaps[lightmapIndex].secondary)->texture;
+    g_worldDraw->lightmapSecondaryTexturesB[lightmapIndex] =
+         (g_worldDraw->lightmaps[lightmapIndex].secondaryB)->texture;
   }
-  g_pmemLocation = param_4;
-  R_VertexStream2_Init(g_worldDraw->vertexStream2DataSize,param_4);
+  g_pmemLocation = location;
+  R_VertexStream2_Init(g_worldDraw->vertexStream2DataSize,location);
   return;
 }
 
@@ -553,26 +562,26 @@ void __cdecl R_ReloadWorld(void)
 
 // 00ABA120  R_GetDebugReflectionProbeLocs  (gfx_d3d/r_bsp.cpp:488)
 
-uint __cdecl R_GetDebugReflectionProbeLocs(float (*param_1) [3],uint param_2)
+uint __cdecl R_GetDebugReflectionProbeLocs(float (*locArray) [3],uint maxCount)
 
 {
   float (*pafVar1) [3];
   GfxReflectionProbe *pGVar2;
-  uint local_c;
-  uint local_8;
+  uint reflectionIndex;
+  uint count;
   
-  local_8 = param_2;
-  if (s_world.draw.reflectionProbeCount - 1 < param_2) {
-    local_8 = s_world.draw.reflectionProbeCount - 1;
+  count = maxCount;
+  if (s_world.draw.reflectionProbeCount - 1 < maxCount) {
+    count = s_world.draw.reflectionProbeCount - 1;
   }
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    pGVar2 = s_world.draw.reflectionProbes + local_c + 1;
-    pafVar1 = param_1 + local_c;
+  for (reflectionIndex = 0; reflectionIndex < count; reflectionIndex = reflectionIndex + 1) {
+    pGVar2 = s_world.draw.reflectionProbes + reflectionIndex + 1;
+    pafVar1 = locArray + reflectionIndex;
     (*pafVar1)[0] = pGVar2->origin[0];
     (*pafVar1)[1] = pGVar2->origin[1];
     (*pafVar1)[2] = pGVar2->origin[2];
   }
-  return local_8;
+  return count;
 }
 
 

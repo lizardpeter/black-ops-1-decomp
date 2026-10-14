@@ -13,14 +13,14 @@ char ** __cdecl BG_GetAttachmentNames(void)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentName(eAttachment param_1)
+char * __cdecl BG_GetAttachmentName(eAttachment index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (ATTACHMENT_COUNT < param_1) {
+  if (ATTACHMENT_COUNT < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x59,0,"index doesn\'t index ATTACHMENT_COUNT + 1\n\t%i not in [0, %i)"
                             );
@@ -30,11 +30,11 @@ char * __cdecl BG_GetAttachmentName(eAttachment param_1)
       return pcVar3;
     }
   }
-  if (param_1 == ATTACHMENT_COUNT) {
+  if (index == ATTACHMENT_COUNT) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_attachmentNames[param_1];
+    pcVar3 = s_attachmentNames[index];
   }
   return pcVar3;
 }
@@ -44,17 +44,17 @@ char * __cdecl BG_GetAttachmentName(eAttachment param_1)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-eAttachment __cdecl BG_GetAttachmentIndex(char *param_1)
+eAttachment __cdecl BG_GetAttachmentIndex(char *name)
 
 {
   int iVar1;
-  eAttachment local_8;
+  int index;
   
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    for (local_8 = ATTACHMENT_NONE; (int)local_8 < 0x18; local_8 = local_8 + ATTACHMENT_REFLEX) {
-      iVar1 = I_strcmp(param_1,s_attachmentNames[local_8]);
+  if ((name != (char *)0x0) && (*name != '\0')) {
+    for (index = 0; index < 0x18; index = index + 1) {
+      iVar1 = I_strcmp(name,s_attachmentNames[index]);
       if (iVar1 == 0) {
-        return local_8;
+        return index;
       }
     }
   }
@@ -66,14 +66,14 @@ eAttachment __cdecl BG_GetAttachmentIndex(char *param_1)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentPointName(eAttachmentPoint param_1)
+char * __cdecl BG_GetAttachmentPointName(eAttachmentPoint index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (ATTACHMENT_POINT_COUNT < param_1) {
+  if (ATTACHMENT_POINT_COUNT < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x70,0,
                              "index doesn\'t index ATTACHMENT_POINT_COUNT + 1\n\t%i not in [0, %i)")
@@ -84,11 +84,11 @@ char * __cdecl BG_GetAttachmentPointName(eAttachmentPoint param_1)
       return pcVar3;
     }
   }
-  if (param_1 == ATTACHMENT_POINT_COUNT) {
+  if (index == ATTACHMENT_POINT_COUNT) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_attachmentPointNames[param_1];
+    pcVar3 = s_attachmentPointNames[index];
   }
   return pcVar3;
 }
@@ -98,18 +98,17 @@ char * __cdecl BG_GetAttachmentPointName(eAttachmentPoint param_1)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-eAttachmentPoint __cdecl BG_GetAttachmentPointIndex(char *param_1)
+eAttachmentPoint __cdecl BG_GetAttachmentPointIndex(char *name)
 
 {
   int iVar1;
-  eAttachmentPoint local_8;
+  int index;
   
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    for (local_8 = ATTACHMENT_POINT_NONE; (int)local_8 < 5;
-        local_8 = local_8 + ATTACHMENT_POINT_FIRST) {
-      iVar1 = I_strcmp(param_1,s_attachmentPointNames[local_8]);
+  if ((name != (char *)0x0) && (*name != '\0')) {
+    for (index = 0; index < 5; index = index + 1) {
+      iVar1 = I_strcmp(name,s_attachmentPointNames[index]);
       if (iVar1 == 0) {
-        return local_8;
+        return index;
       }
     }
   }
@@ -121,18 +120,17 @@ eAttachmentPoint __cdecl BG_GetAttachmentPointIndex(char *param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(char *param_1)
+eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(char *name)
 
 {
   int iVar1;
-  eWeaponOptionGroup local_8;
+  int index;
   
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    for (local_8 = WEAPONOPTION_GROUP_CAMO; (int)local_8 < 6;
-        local_8 = local_8 + WEAPONOPTION_GROUP_RETICLE) {
-      iVar1 = I_stricmp(param_1,s_weaponOptionGroupNames[local_8]);
+  if ((name != (char *)0x0) && (*name != '\0')) {
+    for (index = 0; index < 6; index = index + 1) {
+      iVar1 = I_stricmp(name,s_weaponOptionGroupNames[index]);
       if (iVar1 == 0) {
-        return local_8;
+        return index;
       }
     }
   }
@@ -145,21 +143,21 @@ eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(char *param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_GetAttachmentArrayIndex(eAttachment param_1)
+int __cdecl BG_GetAttachmentArrayIndex(eAttachment attachment)
 
 {
-  int local_8;
+  int attachmentIndex;
   
-  local_8 = 0;
+  attachmentIndex = 0;
   while( true ) {
-    if (s_numWeaponTableAttachments <= local_8) {
+    if (s_numWeaponTableAttachments <= attachmentIndex) {
       return 0x18;
     }
-    if ((s_weaponTableAttachments[local_8].isValid != false) &&
-       (s_weaponTableAttachments[local_8].attachmentIndex == param_1)) break;
-    local_8 = local_8 + 1;
+    if ((s_weaponTableAttachments[attachmentIndex].isValid != false) &&
+       (s_weaponTableAttachments[attachmentIndex].attachmentIndex == attachment)) break;
+    attachmentIndex = attachmentIndex + 1;
   }
-  return local_8;
+  return attachmentIndex;
 }
 
 
@@ -168,13 +166,14 @@ int __cdecl BG_GetAttachmentArrayIndex(eAttachment param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentDisplayName(eAttachment param_1)
+char * __cdecl BG_GetAttachmentDisplayName(eAttachment attachment)
 
 {
   int iVar1;
   char *pcVar2;
+  int attachmentArrayIndex;
   
-  iVar1 = BG_GetAttachmentArrayIndex(param_1);
+  iVar1 = BG_GetAttachmentArrayIndex(attachment);
   if (iVar1 == 0x18) {
     pcVar2 = (char *)0x0;
   }
@@ -193,13 +192,14 @@ char * __cdecl BG_GetAttachmentDisplayName(eAttachment param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentReference(eAttachment param_1)
+char * __cdecl BG_GetAttachmentReference(eAttachment attachment)
 
 {
   int iVar1;
   char *pcVar2;
+  int attachmentArrayIndex;
   
-  iVar1 = BG_GetAttachmentArrayIndex(param_1);
+  iVar1 = BG_GetAttachmentArrayIndex(attachment);
   if (iVar1 == 0x18) {
     pcVar2 = (char *)0x0;
   }
@@ -218,13 +218,14 @@ char * __cdecl BG_GetAttachmentReference(eAttachment param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentImage(eAttachment param_1)
+char * __cdecl BG_GetAttachmentImage(eAttachment attachment)
 
 {
   int iVar1;
   char *pcVar2;
+  int attachmentArrayIndex;
   
-  iVar1 = BG_GetAttachmentArrayIndex(param_1);
+  iVar1 = BG_GetAttachmentArrayIndex(attachment);
   if (iVar1 == 0x18) {
     pcVar2 = (char *)0x0;
   }
@@ -243,13 +244,14 @@ char * __cdecl BG_GetAttachmentImage(eAttachment param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-char * __cdecl BG_GetAttachmentDesc(eAttachment param_1)
+char * __cdecl BG_GetAttachmentDesc(eAttachment attachment)
 
 {
   int iVar1;
   char *pcVar2;
+  int attachmentArrayIndex;
   
-  iVar1 = BG_GetAttachmentArrayIndex(param_1);
+  iVar1 = BG_GetAttachmentArrayIndex(attachment);
   if (iVar1 == 0x18) {
     pcVar2 = (char *)0x0;
   }
@@ -268,12 +270,13 @@ char * __cdecl BG_GetAttachmentDesc(eAttachment param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_GetAttachmentCost(eAttachment param_1)
+int __cdecl BG_GetAttachmentCost(eAttachment attachment)
 
 {
   int iVar1;
+  int attachmentArrayIndex;
   
-  iVar1 = BG_GetAttachmentArrayIndex(param_1);
+  iVar1 = BG_GetAttachmentArrayIndex(attachment);
   if (iVar1 == 0x18) {
     iVar1 = 0;
   }
@@ -291,17 +294,17 @@ int __cdecl BG_GetAttachmentCost(eAttachment param_1)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_GetAttachmentPointCost(eAttachmentPoint param_1)
+int __cdecl BG_GetAttachmentPointCost(eAttachmentPoint attachmentPoint)
 
 {
   int iVar1;
   
-  if ((int)param_1 < 5) {
-    if (s_weaponTableAttachmentPoints[param_1].isValid == false) {
+  if ((int)attachmentPoint < 5) {
+    if (s_weaponTableAttachmentPoints[attachmentPoint].isValid == false) {
       iVar1 = 0;
     }
     else {
-      iVar1 = s_weaponTableAttachmentPoints[param_1].values.cost;
+      iVar1 = s_weaponTableAttachmentPoints[attachmentPoint].values.cost;
     }
   }
   else {
@@ -316,21 +319,21 @@ int __cdecl BG_GetAttachmentPointCost(eAttachmentPoint param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-eAttachmentPoint __cdecl BG_GetAttachmentPointIndexFromAttachment(eAttachment param_1)
+eAttachmentPoint __cdecl BG_GetAttachmentPointIndexFromAttachment(eAttachment attachment)
 
 {
-  int local_8;
+  int attachmentIndex;
   
-  local_8 = 0;
+  attachmentIndex = 0;
   while( true ) {
-    if (s_numWeaponTableAttachments <= local_8) {
+    if (s_numWeaponTableAttachments <= attachmentIndex) {
       return ATTACHMENT_POINT_COUNT;
     }
-    if ((s_weaponTableAttachments[local_8].isValid != false) &&
-       (s_weaponTableAttachments[local_8].attachmentIndex == param_1)) break;
-    local_8 = local_8 + 1;
+    if ((s_weaponTableAttachments[attachmentIndex].isValid != false) &&
+       (s_weaponTableAttachments[attachmentIndex].attachmentIndex == attachment)) break;
+    attachmentIndex = attachmentIndex + 1;
   }
-  return s_weaponTableAttachments[local_8].attachmentPointIndex;
+  return s_weaponTableAttachments[attachmentIndex].attachmentPointIndex;
 }
 
 
@@ -339,36 +342,37 @@ eAttachmentPoint __cdecl BG_GetAttachmentPointIndexFromAttachment(eAttachment pa
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-bool __cdecl BG_AreAttachmentsCompatible(eAttachment param_1,eAttachment param_2)
+bool __cdecl BG_AreAttachmentsCompatible(eAttachment attachment1,eAttachment attachment2)
 
 {
   bool bVar1;
-  int local_10;
-  int local_c;
-  int local_8;
+  int currAttachment;
+  int attachment1Index;
+  int attachment2Index;
   
-  if ((param_1 == ATTACHMENT_COUNT) || (param_2 == ATTACHMENT_COUNT)) {
+  if ((attachment1 == ATTACHMENT_COUNT) || (attachment2 == ATTACHMENT_COUNT)) {
     bVar1 = false;
   }
-  else if ((param_1 == ATTACHMENT_NONE) || (param_2 == ATTACHMENT_NONE)) {
+  else if ((attachment1 == ATTACHMENT_NONE) || (attachment2 == ATTACHMENT_NONE)) {
     bVar1 = true;
   }
   else {
-    local_c = -1;
-    local_8 = -1;
-    for (local_10 = 0; local_10 < s_numWeaponTableAttachments; local_10 = local_10 + 1) {
-      if (s_weaponTableAttachments[local_10].attachmentIndex == param_1) {
-        local_c = local_10;
+    attachment1Index = -1;
+    attachment2Index = -1;
+    for (currAttachment = 0; currAttachment < s_numWeaponTableAttachments;
+        currAttachment = currAttachment + 1) {
+      if (s_weaponTableAttachments[currAttachment].attachmentIndex == attachment1) {
+        attachment1Index = currAttachment;
       }
-      if (s_weaponTableAttachments[local_10].attachmentIndex == param_2) {
-        local_8 = local_10;
+      if (s_weaponTableAttachments[currAttachment].attachmentIndex == attachment2) {
+        attachment2Index = currAttachment;
       }
     }
-    if ((local_c == -1) || (local_8 == -1)) {
+    if ((attachment1Index == -1) || (attachment2Index == -1)) {
       bVar1 = false;
     }
-    else if ((*(char *)(local_c * 0x48 + 0xe7d3a4 + param_2) == '\0') ||
-            (*(char *)(local_8 * 0x48 + 0xe7d3a4 + param_1) == '\0')) {
+    else if ((*(char *)(attachment1Index * 0x48 + 0xe7d3a4 + attachment2) == '\0') ||
+            (*(char *)(attachment2Index * 0x48 + 0xe7d3a4 + attachment1) == '\0')) {
       bVar1 = false;
     }
     else {
@@ -384,14 +388,14 @@ bool __cdecl BG_AreAttachmentsCompatible(eAttachment param_1,eAttachment param_2
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-AttachmentTableEntry * __cdecl BG_GetAttachmentTableEntry(int param_1)
+AttachmentTableEntry * __cdecl BG_GetAttachmentTableEntry(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   AttachmentTableEntry *pAVar3;
   
-  if (0x17 < (uint)param_1) {
+  if (0x17 < (uint)index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x15a,0,"index doesn\'t index ATTACHMENT_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -400,7 +404,7 @@ AttachmentTableEntry * __cdecl BG_GetAttachmentTableEntry(int param_1)
       return pAVar3;
     }
   }
-  return s_weaponTableAttachments + param_1;
+  return s_weaponTableAttachments + index;
 }
 
 
@@ -408,14 +412,14 @@ AttachmentTableEntry * __cdecl BG_GetAttachmentTableEntry(int param_1)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-AttachmentPointTableEntry * __cdecl BG_GetAttachmentPointTableEntry(int param_1)
+AttachmentPointTableEntry * __cdecl BG_GetAttachmentPointTableEntry(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   AttachmentPointTableEntry *pAVar3;
   
-  if (4 < (uint)param_1) {
+  if (4 < (uint)index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x161,0,
                              "index doesn\'t index ATTACHMENT_POINT_COUNT\n\t%i not in [0, %i)");
@@ -425,7 +429,7 @@ AttachmentPointTableEntry * __cdecl BG_GetAttachmentPointTableEntry(int param_1)
       return pAVar3;
     }
   }
-  return s_weaponTableAttachmentPoints + param_1;
+  return s_weaponTableAttachmentPoints + index;
 }
 
 
@@ -442,17 +446,17 @@ int __cdecl BG_GetWeaponAttachmentCount(void)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionCountForGroup(eWeaponOptionGroup param_1)
+int __cdecl BG_GetWeaponOptionCountForGroup(eWeaponOptionGroup optionGroup)
 
 {
   int iVar1;
   
-  if (((int)param_1 < 0) || (5 < (int)param_1)) {
+  if (((int)optionGroup < 0) || (5 < (int)optionGroup)) {
     Com_PrintWarning(0x11,"Unrecognized weapongroup %d\n");
     iVar1 = 0;
   }
   else {
-    iVar1 = s_numweaponTableWeaponOptionsForGroup[param_1];
+    iVar1 = s_numweaponTableWeaponOptionsForGroup[optionGroup];
   }
   return iVar1;
 }
@@ -463,14 +467,14 @@ int __cdecl BG_GetWeaponOptionCountForGroup(eWeaponOptionGroup param_1)
 int __cdecl BG_GetWeaponOptionCount(void)
 
 {
-  int local_c;
-  int local_8;
+  int optionGroup;
+  int weaponOptionCount;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    local_8 = local_8 + s_numweaponTableWeaponOptionsForGroup[local_c];
+  weaponOptionCount = 0;
+  for (optionGroup = 0; optionGroup < 6; optionGroup = optionGroup + 1) {
+    weaponOptionCount = weaponOptionCount + s_numweaponTableWeaponOptionsForGroup[optionGroup];
   }
-  return local_8;
+  return weaponOptionCount;
 }
 
 
@@ -478,18 +482,19 @@ int __cdecl BG_GetWeaponOptionCount(void)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionArrayIndex(int param_1)
+int __cdecl BG_GetWeaponOptionArrayIndex(int weaponOption)
 
 {
   int iVar1;
-  int local_8;
+  int optionIndex;
   
   iVar1 = BG_GetWeaponOptionCount();
-  if (param_1 <= iVar1) {
-    for (local_8 = 0; local_8 < s_numweaponTableWeaponOptions; local_8 = local_8 + 1) {
-      if ((s_weaponTableWeaponOptions[local_8].isValid != false) &&
-         (s_weaponTableWeaponOptions[local_8].weaponOptionIndex == param_1)) {
-        return local_8;
+  if (weaponOption <= iVar1) {
+    for (optionIndex = 0; optionIndex < s_numweaponTableWeaponOptions; optionIndex = optionIndex + 1
+        ) {
+      if ((s_weaponTableWeaponOptions[optionIndex].isValid != false) &&
+         (s_weaponTableWeaponOptions[optionIndex].weaponOptionIndex == weaponOption)) {
+        return optionIndex;
       }
     }
   }
@@ -501,13 +506,14 @@ int __cdecl BG_GetWeaponOptionArrayIndex(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-char * __cdecl BG_GetWeaponOptionDisplayName(int param_1)
+char * __cdecl BG_GetWeaponOptionDisplayName(int weaponOption)
 
 {
   int iVar1;
   char *pcVar2;
+  int weaponOptionArrayIndex;
   
-  iVar1 = BG_GetWeaponOptionArrayIndex(param_1);
+  iVar1 = BG_GetWeaponOptionArrayIndex(weaponOption);
   if (iVar1 == -1) {
     pcVar2 = (char *)0x0;
   }
@@ -525,13 +531,14 @@ char * __cdecl BG_GetWeaponOptionDisplayName(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-char * __cdecl BG_GetWeaponOptionReference(int param_1)
+char * __cdecl BG_GetWeaponOptionReference(int weaponOption)
 
 {
   int iVar1;
   char *pcVar2;
+  int weaponOptionArrayIndex;
   
-  iVar1 = BG_GetWeaponOptionArrayIndex(param_1);
+  iVar1 = BG_GetWeaponOptionArrayIndex(weaponOption);
   if (iVar1 == -1) {
     pcVar2 = (char *)0x0;
   }
@@ -549,13 +556,14 @@ char * __cdecl BG_GetWeaponOptionReference(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-char * __cdecl BG_GetWeaponOptionImage(int param_1)
+char * __cdecl BG_GetWeaponOptionImage(int weaponOption)
 
 {
   int iVar1;
   char *pcVar2;
+  int weaponOptionArrayIndex;
   
-  iVar1 = BG_GetWeaponOptionArrayIndex(param_1);
+  iVar1 = BG_GetWeaponOptionArrayIndex(weaponOption);
   if (iVar1 == -1) {
     pcVar2 = (char *)0x0;
   }
@@ -573,12 +581,13 @@ char * __cdecl BG_GetWeaponOptionImage(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionCost(int param_1)
+int __cdecl BG_GetWeaponOptionCost(int weaponOption)
 
 {
   int iVar1;
+  int weaponOptionArrayIndex;
   
-  iVar1 = BG_GetWeaponOptionArrayIndex(param_1);
+  iVar1 = BG_GetWeaponOptionArrayIndex(weaponOption);
   if (iVar1 == -1) {
     iVar1 = 0;
   }
@@ -596,13 +605,14 @@ int __cdecl BG_GetWeaponOptionCost(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(int param_1)
+eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(int weaponOption)
 
 {
   int iVar1;
   eWeaponOptionGroup eVar2;
+  int weaponOptionArrayIndex;
   
-  iVar1 = BG_GetWeaponOptionArrayIndex(param_1);
+  iVar1 = BG_GetWeaponOptionArrayIndex(weaponOption);
   if (iVar1 == -1) {
     eVar2 = WEAPONOPTION_GROUP_COUNT;
   }
@@ -620,18 +630,19 @@ eWeaponOptionGroup __cdecl BG_GetWeaponOptionGroup(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionUnlockLvl(int param_1)
+int __cdecl BG_GetWeaponOptionUnlockLvl(int weaponOption)
 
 {
   bool bVar1;
   int iVar2;
+  int weaponOptionArrayIndex;
   
   bVar1 = BG_UnlockablesAllItemsUnlocked();
   if (bVar1) {
     iVar2 = 0;
   }
   else {
-    iVar2 = BG_GetWeaponOptionArrayIndex(param_1);
+    iVar2 = BG_GetWeaponOptionArrayIndex(weaponOption);
     if (iVar2 == -1) {
       iVar2 = 0;
     }
@@ -650,18 +661,19 @@ int __cdecl BG_GetWeaponOptionUnlockLvl(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionUnlockPLevel(int param_1)
+int __cdecl BG_GetWeaponOptionUnlockPLevel(int weaponOption)
 
 {
   bool bVar1;
   int iVar2;
+  int weaponOptionArrayIndex;
   
   bVar1 = BG_UnlockablesAllItemsUnlocked();
   if (bVar1) {
     iVar2 = 0;
   }
   else {
-    iVar2 = BG_GetWeaponOptionArrayIndex(param_1);
+    iVar2 = BG_GetWeaponOptionArrayIndex(weaponOption);
     if (iVar2 == -1) {
       iVar2 = 0;
     }
@@ -680,14 +692,15 @@ int __cdecl BG_GetWeaponOptionUnlockPLevel(int param_1)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionNumFromIndexAndGroup(int param_1,eWeaponOptionGroup param_2)
+int __cdecl BG_GetWeaponOptionNumFromIndexAndGroup(int index,eWeaponOptionGroup weaponOptionGroup)
 
 {
   int iVar1;
+  int numWeaponOptionsinGroup;
   
-  iVar1 = BG_GetWeaponOptionCountForGroup(param_2);
-  if (param_1 < iVar1) {
-    iVar1 = s_weaponOptionListForGroup[param_2][param_1];
+  iVar1 = BG_GetWeaponOptionCountForGroup(weaponOptionGroup);
+  if (index < iVar1) {
+    iVar1 = s_weaponOptionListForGroup[weaponOptionGroup][index];
   }
   else {
     iVar1 = -1;
@@ -700,23 +713,23 @@ int __cdecl BG_GetWeaponOptionNumFromIndexAndGroup(int param_1,eWeaponOptionGrou
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-int __cdecl BG_GetWeaponOptionFromName(char *param_1)
+int __cdecl BG_GetWeaponOptionFromName(char *optionName)
 
 {
   int iVar1;
-  int local_8;
+  int optionIndex;
   
-  local_8 = 0;
+  optionIndex = 0;
   while( true ) {
-    if (s_numweaponTableWeaponOptions <= local_8) {
+    if (s_numweaponTableWeaponOptions <= optionIndex) {
       return -1;
     }
-    if ((s_weaponTableWeaponOptions[local_8].isValid != false) &&
-       (iVar1 = I_stricmp(s_weaponTableWeaponOptions[local_8].values.referenceName,param_1),
+    if ((s_weaponTableWeaponOptions[optionIndex].isValid != false) &&
+       (iVar1 = I_stricmp(s_weaponTableWeaponOptions[optionIndex].values.referenceName,optionName),
        iVar1 == 0)) break;
-    local_8 = local_8 + 1;
+    optionIndex = optionIndex + 1;
   }
-  return s_weaponTableWeaponOptions[local_8].weaponOptionIndex;
+  return s_weaponTableWeaponOptions[optionIndex].weaponOptionIndex;
 }
 
 
@@ -724,34 +737,34 @@ int __cdecl BG_GetWeaponOptionFromName(char *param_1)
 
 void __cdecl
 BG_LoadWeaponAttachmentTableRow
-          (StringTable *param_1,int param_2,WeaponAttachmentTableEntry *param_3)
+          (StringTable *attachmentTable,int row,WeaponAttachmentTableEntry *entry)
 
 {
   char *pcVar1;
   int iVar2;
   
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,4);
-  param_3->referenceName = pcVar1;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,1);
-  param_3->pointName = pcVar1;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,3);
-  param_3->displayName = pcVar1;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,6);
-  param_3->imageName = pcVar1;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,7);
-  param_3->description = pcVar1;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,0xc);
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,4);
+  entry->referenceName = pcVar1;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,1);
+  entry->pointName = pcVar1;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,3);
+  entry->displayName = pcVar1;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,6);
+  entry->imageName = pcVar1;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,7);
+  entry->description = pcVar1;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,0xc);
   iVar2 = atoi(pcVar1);
-  param_3->cost = iVar2;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,5);
+  entry->cost = iVar2;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,5);
   iVar2 = atoi(pcVar1);
-  param_3->count = iVar2;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,0xd);
+  entry->count = iVar2;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,0xd);
   iVar2 = atoi(pcVar1);
-  param_3->unlockLvl = iVar2;
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,0xe);
+  entry->unlockLvl = iVar2;
+  pcVar1 = StringTable_GetColumnValueForRow(attachmentTable,row,0xe);
   iVar2 = atoi(pcVar1);
-  param_3->unlockPLevel = iVar2;
+  entry->unlockPLevel = iVar2;
   return;
 }
 
@@ -762,7 +775,7 @@ BG_LoadWeaponAttachmentTableRow
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl
-BG_LoadAttachmentRow(StringTable *param_1,int param_2,AttachmentTableEntry *param_3,int *param_4)
+BG_LoadAttachmentRow(StringTable *attachmentTable,int row,AttachmentTableEntry *entry,int *count)
 
 {
   code *pcVar1;
@@ -770,10 +783,12 @@ BG_LoadAttachmentRow(StringTable *param_1,int param_2,AttachmentTableEntry *para
   eAttachment eVar3;
   eAttachmentPoint eVar4;
   char *pcVar5;
-  char *local_c;
-  char *local_8;
+  eAttachment attachmentNum;
+  char *attachmentName;
+  char *parseLocation;
+  char *compatibleAttachmentList;
   
-  if (param_3 == (AttachmentTableEntry *)0x0) {
+  if (entry == (AttachmentTableEntry *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x22e,0,"%s");
     if (!bVar2) {
@@ -782,7 +797,7 @@ BG_LoadAttachmentRow(StringTable *param_1,int param_2,AttachmentTableEntry *para
       return;
     }
   }
-  if (param_4 == (int *)0x0) {
+  if (count == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x22f,0,"%s");
     if (!bVar2) {
@@ -791,36 +806,36 @@ BG_LoadAttachmentRow(StringTable *param_1,int param_2,AttachmentTableEntry *para
       return;
     }
   }
-  BG_LoadWeaponAttachmentTableRow(param_1,param_2,&param_3->values);
-  eVar3 = BG_GetAttachmentIndex((param_3->values).referenceName);
-  param_3->attachmentIndex = eVar3;
-  eVar4 = BG_GetAttachmentPointIndex((param_3->values).pointName);
-  param_3->attachmentPointIndex = eVar4;
-  pcVar5 = BG_GetAttachmentName(param_3->attachmentIndex);
-  (param_3->values).referenceName = pcVar5;
-  pcVar5 = BG_GetAttachmentPointName(param_3->attachmentPointIndex);
-  (param_3->values).pointName = pcVar5;
-  local_8 = StringTable_GetColumnValueForRow(param_1,param_2,0xb);
-  if (local_8 != (char *)0x0) {
+  BG_LoadWeaponAttachmentTableRow(attachmentTable,row,&entry->values);
+  eVar3 = BG_GetAttachmentIndex((entry->values).referenceName);
+  entry->attachmentIndex = eVar3;
+  eVar4 = BG_GetAttachmentPointIndex((entry->values).pointName);
+  entry->attachmentPointIndex = eVar4;
+  pcVar5 = BG_GetAttachmentName(entry->attachmentIndex);
+  (entry->values).referenceName = pcVar5;
+  pcVar5 = BG_GetAttachmentPointName(entry->attachmentPointIndex);
+  (entry->values).pointName = pcVar5;
+  compatibleAttachmentList = StringTable_GetColumnValueForRow(attachmentTable,row,0xb);
+  if (compatibleAttachmentList != (char *)0x0) {
     Com_BeginParseSession("compatibleAttachments");
     Com_SetSpaceDelimited(0);
-    local_c = local_8;
+    parseLocation = compatibleAttachmentList;
     while( true ) {
-      pcVar5 = Com_ParseOnLine(&local_c);
-      if ((local_c == (char *)0x0) || (pcVar5 == (char *)0x0)) break;
+      pcVar5 = Com_ParseOnLine(&parseLocation);
+      if ((parseLocation == (char *)0x0) || (pcVar5 == (char *)0x0)) break;
       eVar3 = BG_GetAttachmentIndex(pcVar5);
       if (eVar3 == ATTACHMENT_COUNT) {
         Com_PrintError(0x11,"Invalid attachment name \'%s\' in table \'%s\'");
       }
-      param_3->compatibleAttachments[eVar3] = true;
+      entry->compatibleAttachments[eVar3] = true;
     }
     Com_EndParseSession();
   }
-  param_3->isValid = true;
-  if (param_3->attachmentPointIndex == ATTACHMENT_POINT_COUNT) {
+  entry->isValid = true;
+  if (entry->attachmentPointIndex == ATTACHMENT_POINT_COUNT) {
     Com_PrintWarning(0x11,"Unrecognized attachpoint name \'%s\' in %s row %i.\n");
   }
-  *param_4 = *param_4 + 1;
+  *count = *count + 1;
   return;
 }
 
@@ -831,14 +846,14 @@ BG_LoadAttachmentRow(StringTable *param_1,int param_2,AttachmentTableEntry *para
 
 void __cdecl
 BG_LoadWeaponOptionRow
-          (StringTable *param_1,int param_2,WeaponOptionTableEntry *param_3,int *param_4)
+          (StringTable *attachmentTable,int row,WeaponOptionTableEntry *entry,int *count)
 
 {
   code *pcVar1;
   bool bVar2;
   eWeaponOptionGroup eVar3;
   
-  if (param_3 == (WeaponOptionTableEntry *)0x0) {
+  if (entry == (WeaponOptionTableEntry *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x25f,0,"%s");
     if (!bVar2) {
@@ -847,7 +862,7 @@ BG_LoadWeaponOptionRow
       return;
     }
   }
-  if (param_4 == (int *)0x0) {
+  if (count == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x260,0,"%s");
     if (!bVar2) {
@@ -856,17 +871,17 @@ BG_LoadWeaponOptionRow
       return;
     }
   }
-  BG_LoadWeaponAttachmentTableRow(param_1,param_2,&param_3->values);
-  param_3->weaponOptionIndex = *param_4;
-  eVar3 = BG_GetWeaponOptionGroup((param_3->values).pointName);
-  param_3->weaponOptionGroup = eVar3;
-  if (param_3->weaponOptionGroup == WEAPONOPTION_GROUP_COUNT) {
+  BG_LoadWeaponAttachmentTableRow(attachmentTable,row,&entry->values);
+  entry->weaponOptionIndex = *count;
+  eVar3 = BG_GetWeaponOptionGroup((entry->values).pointName);
+  entry->weaponOptionGroup = eVar3;
+  if (entry->weaponOptionGroup == WEAPONOPTION_GROUP_COUNT) {
     Com_PrintWarning(0x11,"Unrecognized weaponoption name \'%s\' in %s row %i.\n");
   }
   else {
-    param_3->isValid = true;
+    entry->isValid = true;
   }
-  *param_4 = *param_4 + 1;
+  *count = *count + 1;
   return;
 }
 
@@ -877,14 +892,14 @@ BG_LoadWeaponOptionRow
 
 void __cdecl
 BG_LoadAttachmentPointRow
-          (StringTable *param_1,int param_2,AttachmentPointTableEntry *param_3,int *param_4)
+          (StringTable *attachmentTable,int row,AttachmentPointTableEntry *entry,int *count)
 
 {
   code *pcVar1;
   bool bVar2;
   eAttachmentPoint eVar3;
   
-  if (param_3 == (AttachmentPointTableEntry *)0x0) {
+  if (entry == (AttachmentPointTableEntry *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x274,0,"%s");
     if (!bVar2) {
@@ -893,7 +908,7 @@ BG_LoadAttachmentPointRow
       return;
     }
   }
-  if (param_4 == (int *)0x0) {
+  if (count == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp",
                              0x275,0,"%s");
     if (!bVar2) {
@@ -902,11 +917,11 @@ BG_LoadAttachmentPointRow
       return;
     }
   }
-  BG_LoadWeaponAttachmentTableRow(param_1,param_2,&param_3->values);
-  eVar3 = BG_GetAttachmentPointIndex((param_3->values).referenceName);
-  param_3->attachmentPointIndex = eVar3;
-  param_3->isValid = true;
-  *param_4 = *param_4 + 1;
+  BG_LoadWeaponAttachmentTableRow(attachmentTable,row,&entry->values);
+  eVar3 = BG_GetAttachmentPointIndex((entry->values).referenceName);
+  entry->attachmentPointIndex = eVar3;
+  entry->isValid = true;
+  *count = *count + 1;
   return;
 }
 
@@ -915,45 +930,48 @@ BG_LoadAttachmentPointRow
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-void __cdecl BG_LoadWeaponOptions(StringTable *param_1)
+void __cdecl BG_LoadWeaponOptions(StringTable *attachmentTable)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  char *pcVar5;
-  int local_18;
-  int local_14;
-  eWeaponOptionGroup local_10;
-  int local_8;
+  char *value2;
+  int iVar3;
+  char *value3;
+  WeaponOptionTableEntry *currentWeaponOption;
+  int weaponOptionNum;
+  int currentOptionCount;
+  int weaponOptionGroup;
+  int row;
+  int count;
   
-  if ((param_1 == (StringTable *)0x0) &&
+  if ((attachmentTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp"
                                ,0x281,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (StringTable *)0x0) {
-    local_8 = 0;
+  if (attachmentTable != (StringTable *)0x0) {
+    count = 0;
     while( true ) {
-      pcVar5 = (char *)0x0;
-      iVar4 = -1;
-      pcVar3 = va("%d");
-      iVar4 = StringTable_LookupRowNumForValue
-                        (param_1,2,s_attachmentGroupNames[1],0,pcVar3,iVar4,pcVar5);
-      if (iVar4 == -1) break;
-      if ((0x5f < local_8) &&
+      value3 = (char *)0x0;
+      iVar3 = -1;
+      value2 = va("%d");
+      iVar3 = StringTable_LookupRowNumForValue
+                        (attachmentTable,2,s_attachmentGroupNames[1],0,value2,iVar3,value3);
+      if (iVar3 == -1) break;
+      if ((0x5f < count) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp"
                                    ,0x292,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (0x5f < local_8) break;
+      if (0x5f < count) break;
       BG_LoadWeaponOptionRow
-                (param_1,iVar4,s_weaponTableWeaponOptions + s_numweaponTableWeaponOptions,&local_8);
+                (attachmentTable,iVar3,s_weaponTableWeaponOptions + s_numweaponTableWeaponOptions,
+                 &count);
       s_numweaponTableWeaponOptions = s_numweaponTableWeaponOptions + 1;
     }
     memset((uchar *)s_weaponOptionListForGroup,'\0',0x900);
@@ -963,17 +981,17 @@ void __cdecl BG_LoadWeaponOptions(StringTable *param_1)
     s_numweaponTableWeaponOptionsForGroup[3] = 0;
     s_numweaponTableWeaponOptionsForGroup[4] = 0;
     s_numweaponTableWeaponOptionsForGroup[5] = 0;
-    for (local_10 = WEAPONOPTION_GROUP_CAMO; (int)local_10 < 6;
-        local_10 = local_10 + WEAPONOPTION_GROUP_RETICLE) {
-      local_14 = 0;
-      for (local_18 = 0; local_18 < s_numweaponTableWeaponOptions; local_18 = local_18 + 1) {
-        if ((s_weaponTableWeaponOptions[local_18].isValid != false) &&
-           (s_weaponTableWeaponOptions[local_18].weaponOptionGroup == local_10)) {
-          s_weaponOptionListForGroup[local_10][local_14] = local_18;
-          local_14 = local_14 + 1;
+    for (weaponOptionGroup = 0; weaponOptionGroup < 6; weaponOptionGroup = weaponOptionGroup + 1) {
+      currentOptionCount = 0;
+      for (weaponOptionNum = 0; weaponOptionNum < s_numweaponTableWeaponOptions;
+          weaponOptionNum = weaponOptionNum + 1) {
+        if ((s_weaponTableWeaponOptions[weaponOptionNum].isValid != false) &&
+           (s_weaponTableWeaponOptions[weaponOptionNum].weaponOptionGroup == weaponOptionGroup)) {
+          s_weaponOptionListForGroup[weaponOptionGroup][currentOptionCount] = weaponOptionNum;
+          currentOptionCount = currentOptionCount + 1;
         }
       }
-      s_numweaponTableWeaponOptionsForGroup[local_10] = local_14;
+      s_numweaponTableWeaponOptionsForGroup[weaponOptionGroup] = currentOptionCount;
     }
   }
   return;
@@ -982,6 +1000,7 @@ void __cdecl BG_LoadWeaponOptions(StringTable *param_1)
 
 // 0045DFD0  BG_LoadWeaponAttachmentTable  (bgame/bg_weapons_attachment.cpp:687)
 
+/* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
@@ -993,54 +1012,57 @@ void __cdecl BG_LoadWeaponAttachmentTable(void)
   char *pcVar3;
   int iVar4;
   char *pcVar5;
-  StringTable *local_c;
-  int local_8;
+  int row_2;
+  int row;
+  StringTable *attachmentTable;
+  int count;
   
   s_numWeaponTableAttachments = 0;
   s_numweaponTableWeaponOptions = 0;
   s_numweaponTableAttachmentPoints = 0;
   bVar2 = G_ExitAfterToolComplete();
   if (!bVar2) {
-    local_c = (StringTable *)0x0;
-    StringTable_GetAsset("mp/attachmenttable.csv",&local_c);
-    if ((local_c->columnCount == 0) || (local_c->rowCount == 0)) {
+    attachmentTable = (StringTable *)0x0;
+    StringTable_GetAsset("mp/attachmenttable.csv",&attachmentTable);
+    if ((attachmentTable->columnCount == 0) || (attachmentTable->rowCount == 0)) {
       Com_Error(ERR_DROP,"\x15Couldn\'t load file or file is invalid \'%s\'");
     }
-    local_8 = 0;
+    count = 0;
     while( true ) {
       pcVar5 = (char *)0x0;
       iVar4 = -1;
       pcVar3 = va("%d");
       iVar4 = StringTable_LookupRowNumForValue
-                        (local_c,2,s_attachmentGroupNames[0],0,pcVar3,iVar4,pcVar5);
+                        (attachmentTable,2,s_attachmentGroupNames[0],0,pcVar3,iVar4,pcVar5);
       if (iVar4 == -1) break;
-      if ((0x17 < local_8) &&
+      if ((0x17 < count) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_attachment.cpp"
                                    ,0x2d3,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (0x17 < local_8) break;
+      if (0x17 < count) break;
       BG_LoadAttachmentRow
-                (local_c,iVar4,s_weaponTableAttachments + s_numWeaponTableAttachments,&local_8);
+                (attachmentTable,iVar4,s_weaponTableAttachments + s_numWeaponTableAttachments,&count
+                );
       if (s_weaponTableAttachments[s_numWeaponTableAttachments].attachmentIndex != ATTACHMENT_COUNT)
       {
         s_numWeaponTableAttachments = s_numWeaponTableAttachments + 1;
       }
     }
-    BG_LoadWeaponOptions(local_c);
-    local_8 = 0;
+    BG_LoadWeaponOptions(attachmentTable);
+    count = 0;
     while( true ) {
       pcVar5 = (char *)0x0;
       iVar4 = -1;
       pcVar3 = va("%d");
       iVar4 = StringTable_LookupRowNumForValue
-                        (local_c,2,s_attachmentGroupNames[2],0,pcVar3,iVar4,pcVar5);
-      if ((iVar4 == -1) || (4 < local_8)) break;
+                        (attachmentTable,2,s_attachmentGroupNames[2],0,pcVar3,iVar4,pcVar5);
+      if ((iVar4 == -1) || (4 < count)) break;
       BG_LoadAttachmentPointRow
-                (local_c,iVar4,s_weaponTableAttachmentPoints + s_numweaponTableAttachmentPoints,
-                 &local_8);
+                (attachmentTable,iVar4,
+                 s_weaponTableAttachmentPoints + s_numweaponTableAttachmentPoints,&count);
       if (s_weaponTableAttachmentPoints[s_numweaponTableAttachmentPoints].attachmentPointIndex !=
           ATTACHMENT_POINT_COUNT) {
         s_numweaponTableAttachmentPoints = s_numweaponTableAttachmentPoints + 1;

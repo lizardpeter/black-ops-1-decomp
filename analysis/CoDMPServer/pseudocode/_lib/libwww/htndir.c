@@ -8,7 +8,7 @@ undefined4 * _HTNewsDir_new(int param_1,char *param_2,int param_3,int param_4)
   int *piVar1;
   undefined4 *puVar2;
   undefined4 uVar3;
-  uchar *puVar4;
+  uchar *buf;
   int extraout_EAX;
   char *local_2c;
   int local_28;
@@ -37,11 +37,11 @@ undefined4 * _HTNewsDir_new(int param_1,char *param_2,int param_3,int param_4)
     puVar2[2] = param_3;
     puVar2[6] = 0xffffffff;
     uVar3 = _HTRequest_anchor(param_1);
-    puVar4 = (uchar *)_HTAnchor_physical(uVar3);
-    strlen(puVar4);
-    for (local_c = puVar4 + extraout_EAX;
-        (((puVar4 < local_c && (local_c[-1] != ':')) && (local_c[-1] != '/')) &&
-        (local_c[-1] != '\\')); local_c = local_c + -1) {
+    buf = (uchar *)_HTAnchor_physical(uVar3);
+    strlen(buf);
+    for (local_c = buf + extraout_EAX;
+        (((buf < local_c && (local_c[-1] != ':')) && (local_c[-1] != '/')) && (local_c[-1] != '\\'))
+        ; local_c = local_c + -1) {
     }
     _HTSACopy(puVar2 + 3,local_c);
     if (param_3 != 0) {

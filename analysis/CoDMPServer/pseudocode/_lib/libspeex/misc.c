@@ -331,11 +331,11 @@ void __cdecl speex_error(void)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "Fatal error: %s\n";
+  format = "Fatal error: %s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
                     /* WARNING: Subroutine does not return */
   exit(1);
 }
@@ -349,11 +349,11 @@ void __cdecl speex_warning(void)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "warning: %s\n";
+  format = "warning: %s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
   return;
 }
 
@@ -366,11 +366,11 @@ void __cdecl speex_warning_int(void)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "warning: %s %d\n";
+  format = "warning: %s %d\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
   return;
 }
 

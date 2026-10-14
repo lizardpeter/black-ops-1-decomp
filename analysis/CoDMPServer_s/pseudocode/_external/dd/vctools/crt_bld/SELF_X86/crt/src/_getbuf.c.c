@@ -2,25 +2,25 @@
 
 // 00975C5B  _getbuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_getbuf.c:43)
 
-void __cdecl _getbuf(_iobuf *param_1)
+void __cdecl _getbuf(_iobuf *str)
 
 {
   char *pcVar1;
   
   _cflush = _cflush + 1;
   pcVar1 = _malloc_crt(0x1000);
-  param_1->_base = pcVar1;
+  str->_base = pcVar1;
   if (pcVar1 == (char *)0x0) {
-    param_1->_flag = param_1->_flag | 4;
-    param_1->_base = (char *)&param_1->_charbuf;
-    param_1->_bufsiz = 2;
+    str->_flag = str->_flag | 4;
+    str->_base = (char *)&str->_charbuf;
+    str->_bufsiz = 2;
   }
   else {
-    param_1->_flag = param_1->_flag | 8;
-    param_1->_bufsiz = 0x1000;
+    str->_flag = str->_flag | 8;
+    str->_bufsiz = 0x1000;
   }
-  param_1->_cnt = 0;
-  param_1->_ptr = param_1->_base;
+  str->_cnt = 0;
+  str->_ptr = str->_base;
   return;
 }
 

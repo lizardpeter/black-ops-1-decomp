@@ -7,14 +7,14 @@
 int __cdecl BuildAabbTree(GenericAabbTreeOptions *param_1)
 
 {
-  ulong uVar1;
-  int iVar2;
-  longlong lVar3;
-  undefined1 *puVar4;
-  int iVar5;
-  uchar *puVar6;
-  undefined4 *puVar7;
-  int iVar8;
+  ulong count;
+  int iVar1;
+  longlong lVar2;
+  undefined1 *p;
+  int iVar3;
+  uchar *puVar4;
+  undefined4 *puVar5;
+  int iVar6;
   int *unaff_ESI;
   undefined1 local_404 [256];
   undefined1 local_304 [256];
@@ -25,11 +25,11 @@ int __cdecl BuildAabbTree(GenericAabbTreeOptions *param_1)
     DAT_01f3b108 = local_304;
     DAT_01f39104 = local_204;
     DAT_01f3b10c = local_104;
-    puVar4 = local_404;
+    p = local_404;
   }
   else {
-    lVar3 = (ulonglong)(uint)unaff_ESI[1] * 4;
-    puVar4 = operator_new(-(uint)((int)((ulonglong)lVar3 >> 0x20) != 0) | (uint)lVar3);
+    lVar2 = (ulonglong)(uint)unaff_ESI[1] * 4;
+    p = operator_new(-(uint)((int)((ulonglong)lVar2 >> 0x20) != 0) | (uint)lVar2);
     DAT_01f3b108 = operator_new(-(uint)((int)((ulonglong)(uint)unaff_ESI[1] * 4 >> 0x20) != 0) |
                                 (uint)((ulonglong)(uint)unaff_ESI[1] * 4));
     DAT_01f39104 = operator_new(-(uint)((int)((ulonglong)(uint)unaff_ESI[1] * 4 >> 0x20) != 0) |
@@ -37,66 +37,65 @@ int __cdecl BuildAabbTree(GenericAabbTreeOptions *param_1)
     DAT_01f3b10c = operator_new(-(uint)((int)((ulonglong)(uint)unaff_ESI[1] * 4 >> 0x20) != 0) |
                                 (uint)((ulonglong)(uint)unaff_ESI[1] * 4));
   }
-  iVar5 = 0;
+  iVar3 = 0;
   if (0 < unaff_ESI[1]) {
     do {
-      *(int *)(puVar4 + iVar5 * 4) = iVar5;
-      iVar5 = iVar5 + 1;
-    } while (iVar5 < unaff_ESI[1]);
+      *(int *)(p + iVar3 * 4) = iVar3;
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < unaff_ESI[1]);
   }
   *(undefined4 *)unaff_ESI[6] = 0;
   *(int *)(unaff_ESI[6] + 4) = unaff_ESI[1];
   DAT_01f36ce4 = 1;
   FUN_00671c90(unaff_ESI[6]);
-  puVar6 = operator_new(unaff_ESI[2] * unaff_ESI[1]);
-  memcpy(puVar6,(uchar *)*unaff_ESI,unaff_ESI[2] * unaff_ESI[1]);
-  iVar5 = 0;
+  puVar4 = operator_new(unaff_ESI[2] * unaff_ESI[1]);
+  memcpy(puVar4,(uchar *)*unaff_ESI,unaff_ESI[2] * unaff_ESI[1]);
+  iVar3 = 0;
   if (0 < unaff_ESI[1]) {
     do {
-      uVar1 = unaff_ESI[2];
-      memcpy((uchar *)(uVar1 * iVar5 + *unaff_ESI),puVar6 + *(int *)(puVar4 + iVar5 * 4) * uVar1,
-             uVar1);
-      iVar5 = iVar5 + 1;
-    } while (iVar5 < unaff_ESI[1]);
+      count = unaff_ESI[2];
+      memcpy((uchar *)(count * iVar3 + *unaff_ESI),puVar4 + *(int *)(p + iVar3 * 4) * count,count);
+      iVar3 = iVar3 + 1;
+    } while (iVar3 < unaff_ESI[1]);
   }
-  operator_delete(puVar6);
+  operator_delete(puVar4);
   if (unaff_ESI[3] != 0) {
-    lVar3 = (ulonglong)
+    lVar2 = (ulonglong)
             (-(uint)((int)((ulonglong)(uint)unaff_ESI[1] * 3 >> 0x20) != 0) |
             (uint)((ulonglong)(uint)unaff_ESI[1] * 3)) * 4;
-    puVar6 = operator_new(-(uint)((int)((ulonglong)lVar3 >> 0x20) != 0) | (uint)lVar3);
-    memcpy(puVar6,(uchar *)unaff_ESI[4],unaff_ESI[1] * 0xc);
-    iVar5 = 0;
+    puVar4 = operator_new(-(uint)((int)((ulonglong)lVar2 >> 0x20) != 0) | (uint)lVar2);
+    memcpy(puVar4,(uchar *)unaff_ESI[4],unaff_ESI[1] * 0xc);
+    iVar3 = 0;
     if (0 < unaff_ESI[1]) {
-      iVar8 = 0;
+      iVar6 = 0;
       do {
-        iVar2 = *(int *)(puVar4 + iVar5 * 4);
-        puVar7 = (undefined4 *)(unaff_ESI[4] + iVar8);
-        *puVar7 = *(undefined4 *)(puVar6 + iVar2 * 0xc);
-        iVar5 = iVar5 + 1;
-        iVar8 = iVar8 + 0xc;
-        puVar7[1] = *(undefined4 *)(puVar6 + iVar2 * 0xc + 4);
-        puVar7[2] = *(undefined4 *)(puVar6 + iVar2 * 0xc + 8);
-      } while (iVar5 < unaff_ESI[1]);
+        iVar1 = *(int *)(p + iVar3 * 4);
+        puVar5 = (undefined4 *)(unaff_ESI[4] + iVar6);
+        *puVar5 = *(undefined4 *)(puVar4 + iVar1 * 0xc);
+        iVar3 = iVar3 + 1;
+        iVar6 = iVar6 + 0xc;
+        puVar5[1] = *(undefined4 *)(puVar4 + iVar1 * 0xc + 4);
+        puVar5[2] = *(undefined4 *)(puVar4 + iVar1 * 0xc + 8);
+      } while (iVar3 < unaff_ESI[1]);
     }
-    memcpy(puVar6,(uchar *)unaff_ESI[5],unaff_ESI[1] * 0xc);
-    iVar5 = 0;
+    memcpy(puVar4,(uchar *)unaff_ESI[5],unaff_ESI[1] * 0xc);
+    iVar3 = 0;
     if (0 < unaff_ESI[1]) {
-      iVar8 = 0;
+      iVar6 = 0;
       do {
-        iVar2 = *(int *)(puVar4 + iVar5 * 4);
-        puVar7 = (undefined4 *)(unaff_ESI[5] + iVar8);
-        *puVar7 = *(undefined4 *)(puVar6 + iVar2 * 0xc);
-        iVar5 = iVar5 + 1;
-        iVar8 = iVar8 + 0xc;
-        puVar7[1] = *(undefined4 *)(puVar6 + iVar2 * 0xc + 4);
-        puVar7[2] = *(undefined4 *)(puVar6 + iVar2 * 0xc + 8);
-      } while (iVar5 < unaff_ESI[1]);
+        iVar1 = *(int *)(p + iVar3 * 4);
+        puVar5 = (undefined4 *)(unaff_ESI[5] + iVar6);
+        *puVar5 = *(undefined4 *)(puVar4 + iVar1 * 0xc);
+        iVar3 = iVar3 + 1;
+        iVar6 = iVar6 + 0xc;
+        puVar5[1] = *(undefined4 *)(puVar4 + iVar1 * 0xc + 4);
+        puVar5[2] = *(undefined4 *)(puVar4 + iVar1 * 0xc + 8);
+      } while (iVar3 < unaff_ESI[1]);
     }
-    operator_delete(puVar6);
-  }
-  if (puVar4 != local_404) {
     operator_delete(puVar4);
+  }
+  if (p != local_404) {
+    operator_delete(p);
     operator_delete(DAT_01f3b108);
     operator_delete(DAT_01f39104);
     operator_delete(DAT_01f3b10c);

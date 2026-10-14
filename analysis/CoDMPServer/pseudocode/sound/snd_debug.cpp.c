@@ -2,6 +2,8 @@
 
 // 0093CF80  SND_DebugInit  (sound/snd_debug.cpp:20)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl SND_DebugInit(void)
 
 {
@@ -25,43 +27,43 @@ void __cdecl SND_DebugFini(void)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-RelativeToListener(snd_listener *param_1,float param_2,float param_3,float param_4,float *param_5)
+RelativeToListener(snd_listener *listener,float yaw,float pitch,float dist,float *result)
 
 {
-  float local_28;
+  float inputAngles;
   float local_24;
   undefined4 local_20;
-  float local_1c;
+  float sndDir;
   float local_18;
   float local_14;
-  float local_10;
+  float clientAngles;
   float local_c;
   
-  local_24 = -param_2;
-  local_28 = -param_3;
+  local_24 = -yaw;
+  inputAngles = -pitch;
   local_20 = 0;
-  AxisToAngles((param_1->orient).axis,&local_10);
+  AxisToAngles((listener->orient).axis,&clientAngles);
   local_24 = local_24 + local_c;
-  AngleVectors(&local_28,&local_1c,(float *)0x0,(float *)0x0);
-  *param_5 = param_4 * local_1c;
-  param_5[1] = param_4 * local_18;
-  param_5[2] = param_4 * local_14;
-  *param_5 = (param_1->orient).origin[0] + *param_5;
-  param_5[1] = (param_1->orient).origin[1] + param_5[1];
-  param_5[2] = (param_1->orient).origin[2] + param_5[2];
+  AngleVectors(&inputAngles,&sndDir,(float *)0x0,(float *)0x0);
+  *result = dist * sndDir;
+  result[1] = dist * local_18;
+  result[2] = dist * local_14;
+  *result = (listener->orient).origin[0] + *result;
+  result[1] = (listener->orient).origin[1] + result[1];
+  result[2] = (listener->orient).origin[2] + result[2];
   return;
 }
 
 
 // 0093D8A0  FontSizeForDistance  (sound/snd_debug.cpp:52)
 
-float __cdecl FontSizeForDistance(float param_1)
+float __cdecl FontSizeForDistance(float distance)
 
 {
   float fVar1;
   
-  if (10.0 <= param_1) {
-    fVar1 = (param_1 / 2000.0) * 3.5;
+  if (10.0 <= distance) {
+    fVar1 = (distance / 2000.0) * 3.5;
   }
   else {
     fVar1 = 0.05;
@@ -75,7 +77,9 @@ float __cdecl FontSizeForDistance(float param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl DebugDrawWorldSound3D(int param_1,int param_2,int *param_3,int *param_4,float *param_5)
+void __cdecl
+DebugDrawWorldSound3D
+          (int idx,int debugDrawStyle,int *offsets,int *closestId,float *closestIdDotProd)
 
 {
   char cVar1;
@@ -84,149 +88,146 @@ void __cdecl DebugDrawWorldSound3D(int param_1,int param_2,int *param_3,int *par
   bool bVar4;
   char *local_190;
   char *local_180;
-  float local_14c;
+  float sndDir;
   float local_148;
   float local_144;
-  int local_140;
-  float local_13c;
-  int local_138;
-  char local_134 [260];
+  int listenerId;
+  float dot;
+  snd_voice_t *voice;
+  char buffer [260];
   uint local_30;
-  float local_2c;
-  int local_28;
-  float *local_24;
-  float local_20;
+  float dist;
+  int time;
+  float *starColor;
+  float org;
   float local_1c;
   float local_18;
-  uint local_14;
-  float local_10;
-  float local_c;
-  char *local_8;
+  int entNum;
+  float fontsize;
+  float origZ;
+  char *text;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_1 < 0) || (0x49 < param_1)) &&
+  if (((idx < 0) || (0x49 < idx)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x4a,0,
                                "%s\n\t(idx) = %i"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_138 = param_1 * 0x1d8 + 0xa0803e0;
-  if ((g_snd.voice[param_1].alias == (snd_alias_t *)0x0) &&
+  voice = g_snd.voice + idx;
+  if ((g_snd.voice[idx].alias == (snd_alias_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x4d,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_14 = *(uint *)(local_138 + 0x14) & 0xfff;
-  if (0x3fe < local_14) {
-    local_14 = 0x3fe;
+  entNum = (voice->sndEnt).handle & 0xfff;
+  if (0x3fe < (uint)entNum) {
+    entNum = 0x3fe;
   }
-  local_20 = *(float *)(local_138 + 0x70);
-  local_1c = *(float *)(local_138 + 0x74);
-  local_18 = *(float *)(local_138 + 0x78);
-  local_2c = *(float *)(local_138 + 0xc4);
-  local_10 = FontSizeForDistance(local_2c);
+  org = voice->position[0];
+  local_1c = voice->position[1];
+  local_18 = voice->position[2];
+  dist = voice->baseDistance;
+  fontsize = FontSizeForDistance(dist);
   if (g_snd.pausetime == 0) {
-    local_28 = g_snd.time - *(int *)(local_138 + 0x24);
+    time = g_snd.time - voice->startTime;
   }
   else {
-    local_28 = g_snd.pausetime - *(int *)(local_138 + 0x24);
+    time = g_snd.pausetime - voice->startTime;
   }
-  if (param_2 != 3) {
-    local_140 = g_snd.voice[param_1].closestListenerIndex;
-    if ((param_4 == (int *)0x0) &&
+  if (debugDrawStyle != 3) {
+    listenerId = g_snd.voice[idx].closestListenerIndex;
+    if ((closestId == (int *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x66,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_5 == (float *)0x0) &&
+    if ((closestIdDotProd == (float *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x67,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_14c = local_20 - g_snd.listeners[local_140].orient.origin[0];
-    local_148 = local_1c - g_snd.listeners[local_140].orient.origin[1];
-    local_144 = local_18 - g_snd.listeners[local_140].orient.origin[2];
-    Vec3Normalize(&local_14c);
-    local_13c = local_14c * g_snd.listeners[local_140].orient.axis[0][0] +
-                local_148 * g_snd.listeners[local_140].orient.axis[0][1] +
-                local_144 * g_snd.listeners[local_140].orient.axis[0][2];
-    if (*param_5 <= local_13c && local_13c != *param_5) {
-      *param_4 = param_1;
-      *param_5 = local_13c;
+    sndDir = org - g_snd.listeners[listenerId].orient.origin[0];
+    local_148 = local_1c - g_snd.listeners[listenerId].orient.origin[1];
+    local_144 = local_18 - g_snd.listeners[listenerId].orient.origin[2];
+    Vec3Normalize(&sndDir);
+    dot = sndDir * g_snd.listeners[listenerId].orient.axis[0][0] +
+          local_148 * g_snd.listeners[listenerId].orient.axis[0][1] +
+          local_144 * g_snd.listeners[listenerId].orient.axis[0][2];
+    if (*closestIdDotProd <= dot && dot != *closestIdDotProd) {
+      *closestId = idx;
+      *closestIdDotProd = dot;
     }
   }
-  local_c = local_18;
-  if (local_14 == 0x3fe) {
-    local_24 = colorOrange;
+  origZ = local_18;
+  if (entNum == 0x3fe) {
+    starColor = colorOrange;
   }
   else {
-    local_24 = colorMagenta;
+    starColor = colorMagenta;
   }
-  if (param_2 != 1) {
-    if (param_2 != 2) {
-      if (param_2 != 3) {
+  if (debugDrawStyle != 1) {
+    if (debugDrawStyle != 2) {
+      if (debugDrawStyle != 3) {
         return;
       }
-      local_10 = local_10 * 0.85;
-      local_8 = va("Details: %s %d");
-      if (param_3[local_14] == 0) {
-        CL_AddDebugStarWithText(&local_20,local_24,colorWhiteFaded,local_8,local_10,1);
+      fontsize = fontsize * 0.85;
+      text = va("Details: %s %d");
+      if (offsets[entNum] == 0) {
+        CL_AddDebugStarWithText(&org,starColor,colorWhiteFaded,text,fontsize,1);
       }
       else {
-        CL_AddDebugStarWithText(&local_20,local_24,colorWhiteFaded,(char *)0x0,local_10,1);
+        CL_AddDebugStarWithText(&org,starColor,colorWhiteFaded,(char *)0x0,fontsize,1);
       }
-      if ((*(int *)(*(int *)(local_138 + 0x60) + 0x10) == 0) &&
+      if ((voice->alias->soundFile == (SoundFile *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x90,0,
                                    "%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_18 = local_18 - local_10 * 12.0;
-      builtin_strncpy(local_134,"File: ",7);
-      local_180 = local_134;
+      local_18 = local_18 - fontsize * 12.0;
+      builtin_strncpy(buffer,"File: ",7);
+      local_180 = buffer;
       do {
         cVar1 = *local_180;
         local_180 = local_180 + 1;
       } while (cVar1 != '\0');
-      pcVar3 = local_134;
+      pcVar3 = buffer;
       do {
         local_190 = pcVar3;
         pcVar3 = local_190 + 1;
       } while (*local_190 != '\0');
-      SND_AliasGetFileName
-                (*(snd_alias_t **)(local_138 + 0x60),local_190,
-                 0x100 - ((int)local_180 - (int)(local_134 + 1)));
-      CL_AddDebugString(&local_20,colorWhiteFaded,local_10,local_134,1);
-      if (local_14 == 0x3fe) {
-        local_18 = local_18 - local_10 * 12.0;
-        local_8 = va("Owner: World");
-        CL_AddDebugString(&local_20,colorWhiteFaded,local_10,local_8,1);
+      SND_AliasGetFileName(voice->alias,local_190,0x100 - ((int)local_180 - (int)(buffer + 1)));
+      CL_AddDebugString(&org,colorWhiteFaded,fontsize,buffer,1);
+      if (entNum == 0x3fe) {
+        local_18 = local_18 - fontsize * 12.0;
+        text = va("Owner: World");
+        CL_AddDebugString(&org,colorWhiteFaded,fontsize,text,1);
       }
       else {
-        local_18 = local_18 - local_10 * 12.0;
-        local_8 = va("Owner: entity #%i");
-        CL_AddDebugString(&local_20,colorWhiteFaded,local_10,local_8,1);
+        local_18 = local_18 - fontsize * 12.0;
+        text = va("Owner: entity #%i");
+        CL_AddDebugString(&org,colorWhiteFaded,fontsize,text,1);
       }
-      local_18 = local_18 - local_10 * 12.0;
-      local_8 = va("Distance: %.0f / %.0f");
-      CL_AddDebugString(&local_20,colorWhiteFaded,local_10,local_8,1);
-      local_18 = local_18 - local_10 * 12.0;
-      local_8 = va("Time: %.3f");
-      CL_AddDebugString(&local_20,colorWhiteFaded,local_10,local_8,1);
+      local_18 = local_18 - fontsize * 12.0;
+      text = va("Distance: %.0f / %.0f");
+      CL_AddDebugString(&org,colorWhiteFaded,fontsize,text,1);
+      local_18 = local_18 - fontsize * 12.0;
+      text = va("Time: %.3f");
+      CL_AddDebugString(&org,colorWhiteFaded,fontsize,text,1);
       return;
     }
-    CL_AddDebugString(&local_20,colorWhiteFaded,local_10,(char *)**(undefined4 **)(local_138 + 0x60)
-                      ,1);
+    CL_AddDebugString(&org,colorWhiteFaded,fontsize,voice->alias->name,1);
   }
-  CL_AddDebugStarWithText(&local_20,local_24,colorWhiteFaded,(char *)0x0,local_10,1);
+  CL_AddDebugStarWithText(&org,starColor,colorWhiteFaded,(char *)0x0,fontsize,1);
   return;
 }
 
@@ -236,46 +237,48 @@ void __cdecl DebugDrawWorldSound3D(int param_1,int param_2,int *param_3,int *par
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_DebugDrawWorldSounds(int param_1)
+void __cdecl SND_DebugDrawWorldSounds(int debugDrawStyle)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
   int extraout_EAX_00;
-  int local_1810;
-  int local_180c [1536];
-  int local_c;
-  float local_8;
+  int idxClosestToCenter;
+  int offsets [1536];
+  int idx;
+  float idxClosestToCenterDotProd;
   
-  if (param_1 != 0) {
-    local_1810 = -1;
-    local_8 = -2.0;
-    memset((uchar *)local_180c,'\0',0x1800);
-    for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-      if (g_snd.voiceAliasHash[local_c] != 0) {
-        if ((g_snd.voice[local_c].alias == (snd_alias_t *)0x0) &&
+  if (debugDrawStyle != 0) {
+    idxClosestToCenter = -1;
+    idxClosestToCenterDotProd = -2.0;
+    memset((uchar *)offsets,'\0',0x1800);
+    for (idx = 0; idx < 0x4a; idx = idx + 1) {
+      if (g_snd.voiceAliasHash[idx] != 0) {
+        if ((g_snd.voice[idx].alias == (snd_alias_t *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",199,0
                                      ,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (((((g_snd.voice[local_c].alias)->flags & 2) != 0) &&
+        if (((((g_snd.voice[idx].alias)->flags & 2) != 0) &&
             ((((snd_solo_alias_substring->current).integer == 0 ||
               (*(snd_solo_alias_substring->current).string == '\0')) ||
-             (strstr((uchar *)(g_snd.voice[local_c].alias)->name,
+             (strstr((uchar *)(g_snd.voice[idx].alias)->name,
                      (uchar *)(snd_solo_alias_substring->current).string), extraout_EAX != 0)))) &&
            ((((snd_mute_alias_substring->current).integer == 0 ||
              (*(snd_mute_alias_substring->current).string == '\0')) ||
-            (strstr((uchar *)(g_snd.voice[local_c].alias)->name,
+            (strstr((uchar *)(g_snd.voice[idx].alias)->name,
                     (uchar *)(snd_mute_alias_substring->current).string), extraout_EAX_00 == 0)))) {
-          DebugDrawWorldSound3D(local_c,param_1,local_180c,&local_1810,&local_8);
+          DebugDrawWorldSound3D
+                    (idx,debugDrawStyle,offsets,&idxClosestToCenter,&idxClosestToCenterDotProd);
         }
       }
     }
-    if (((local_1810 != -1) && (0.93 <= local_8)) && (param_1 == 1)) {
-      DebugDrawWorldSound3D(local_1810,3,local_180c,(int *)0x0,(float *)0x0);
+    if (((idxClosestToCenter != -1) && (0.93 <= idxClosestToCenterDotProd)) && (debugDrawStyle == 1)
+       ) {
+      DebugDrawWorldSound3D(idxClosestToCenter,3,offsets,(int *)0x0,(float *)0x0);
     }
   }
   return;
@@ -291,44 +294,49 @@ void __cdecl SND_PlayLocal_f(void)
 {
   int iVar1;
   char *pcVar2;
-  SndEntHandle SVar3;
-  double dVar4;
-  float fVar5;
-  float *pfVar6;
-  float *pfVar7;
-  bool bVar8;
-  float local_28 [9];
+  SndEntHandle entHandle;
+  double dVar3;
+  float attenuation;
+  float *position;
+  float *direction;
+  bool notify;
+  snd_listener *listener;
+  float soundDir [3];
+  float dist;
+  float yaw;
+  float pitch;
+  float soundPos [3];
   
-  local_28[3] = 100.0;
-  local_28[4] = 0.0;
-  local_28[5] = 0.0;
+  dist = 100.0;
+  yaw = 0.0;
+  pitch = 0.0;
   iVar1 = Cmd_Argc();
   switch(iVar1) {
   case 5:
     pcVar2 = Cmd_Argv(4);
-    dVar4 = atof(pcVar2);
-    local_28[5] = (float)dVar4;
+    dVar3 = atof(pcVar2);
+    pitch = (float)dVar3;
   case 4:
     pcVar2 = Cmd_Argv(3);
-    dVar4 = atof(pcVar2);
-    local_28[4] = (float)dVar4;
+    dVar3 = atof(pcVar2);
+    yaw = (float)dVar3;
   case 3:
     pcVar2 = Cmd_Argv(2);
-    dVar4 = atof(pcVar2);
-    local_28[3] = (float)dVar4;
+    dVar3 = atof(pcVar2);
+    dist = (float)dVar3;
   case 2:
-    local_28[0] = 1.0;
-    local_28[1] = 0.0;
-    local_28[2] = 0.0;
-    RelativeToListener(g_snd.listeners,local_28[4],local_28[5],local_28[3],local_28 + 6);
-    SVar3 = SND_EntHandle(0,0xffe,0,false,true,TEAM_BAD);
-    bVar8 = false;
-    pfVar7 = local_28;
-    pfVar6 = local_28 + 6;
-    fVar5 = 1.0;
+    soundDir[0] = 1.0;
+    soundDir[1] = 0.0;
+    soundDir[2] = 0.0;
+    RelativeToListener(g_snd.listeners,yaw,pitch,dist,soundPos);
+    entHandle = SND_EntHandle(0,0xffe,0,false,true,TEAM_BAD);
+    notify = false;
+    direction = soundDir;
+    position = soundPos;
+    attenuation = 1.0;
     iVar1 = 0;
     pcVar2 = Cmd_Argv(1);
-    SND_Play(pcVar2,iVar1,fVar5,SVar3,pfVar6,pfVar7,bVar8);
+    SND_Play(pcVar2,iVar1,attenuation,entHandle,position,direction,notify);
     break;
   default:
     Cmd_Argv(0);
@@ -342,72 +350,72 @@ void __cdecl SND_PlayLocal_f(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_GetSoundOverlay(snd_overlay_info *param_1,int param_2,int param_3)
+int __cdecl SND_GetSoundOverlay(snd_overlay_info *info,int start,int count)
 
 {
-  snd_voice_t *psVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  float fVar5;
-  int local_8;
+  snd_voice_t *voice_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  float fVar4;
+  snd_voice_t *voice;
+  snd_alias_type_t aliasType;
+  int i;
   
-  if ((0x4a < param_2 + param_3) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x116,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((0x4a < start + count) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x116,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  memset((uchar *)param_1,'\0',param_3 * 0xf0);
-  local_8 = 0;
+  memset((uchar *)info,'\0',count * 0xf0);
+  i = 0;
   do {
-    if (param_3 <= local_8) {
-      return param_3;
+    if (count <= i) {
+      return count;
     }
-    psVar1 = (snd_voice_t *)(param_2 * 0x1d8 + 0xa0803e0 + local_8 * 0x1d8);
-    param_1[local_8].channel = local_8;
-    param_1[local_8].fGlobalPriority = -1.0;
-    param_1[local_8].pszSampleName[0] = '\0';
-    if ((g_snd.voiceAliasHash[param_2 + local_8] != 0) &&
-       (fVar5 = SND_GroupGetAttenuation(psVar1->group), 1.52879e-05 <= fVar5)) {
-      if ((psVar1->alias == (snd_alias_t *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x12d,0
-                                   ,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+    voice_00 = (snd_voice_t *)(start * 0x1d8 + 0xa0803e0 + i * 0x1d8);
+    info[i].channel = i;
+    info[i].fGlobalPriority = -1.0;
+    info[i].pszSampleName[0] = '\0';
+    if ((g_snd.voiceAliasHash[start + i] != 0) &&
+       (fVar4 = SND_GroupGetAttenuation(voice_00->group), 1.52879e-05 <= fVar4)) {
+      if ((voice_00->alias == (snd_alias_t *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x12d,0
+                                   ,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      SND_AliasGetFileName(psVar1->alias,param_1[local_8].pszSampleName,0x80);
-      Com_sprintf(param_1[local_8].name,0x40,"%s");
-      param_1[local_8].channel =
-           ((psVar1->alias->flags & 0xc000) >> 0xe) << 0x1e | param_1[local_8].channel;
-      fVar5 = SND_GetPitch(psVar1);
-      param_1[local_8].fPitch = fVar5;
-      fVar5 = SND_LinearToDbSpl(psVar1->dryLevel);
-      param_1[local_8].fDry = fVar5;
-      fVar5 = SND_LinearToDbSpl(psVar1->wetLevel);
-      param_1[local_8].fWet = fVar5;
-      fVar5 = SND_GetDistance(psVar1);
-      param_1[local_8].fDistance = fVar5;
-      param_1[local_8].iEntity = (psVar1->sndEnt).handle & 0xfff;
-      fVar5 = SND_GetLpfLevel(psVar1);
-      param_1[local_8].fLosOcclusion = fVar5;
-      param_1[local_8].fGlobalPriority = psVar1->globalPriority;
-      param_1[local_8].group = psVar1->group;
-      param_1[local_8].pan = (uint)psVar1->alias->pan;
-      *(int *)&param_1[local_8].played = (int)psVar1->played;
-      *(undefined4 *)((int)&param_1[local_8].played + 4) = *(undefined4 *)((int)&psVar1->played + 4)
-      ;
+      SND_AliasGetFileName(voice_00->alias,info[i].pszSampleName,0x80);
+      Com_sprintf(info[i].name,0x40,"%s");
+      info[i].channel = ((voice_00->alias->flags & 0xc000) >> 0xe) << 0x1e | info[i].channel;
+      fVar4 = SND_GetPitch(voice_00);
+      info[i].fPitch = fVar4;
+      fVar4 = SND_LinearToDbSpl(voice_00->dryLevel);
+      info[i].fDry = fVar4;
+      fVar4 = SND_LinearToDbSpl(voice_00->wetLevel);
+      info[i].fWet = fVar4;
+      fVar4 = SND_GetDistance(voice_00);
+      info[i].fDistance = fVar4;
+      info[i].iEntity = (voice_00->sndEnt).handle & 0xfff;
+      fVar4 = SND_GetLpfLevel(voice_00);
+      info[i].fLosOcclusion = fVar4;
+      info[i].fGlobalPriority = voice_00->globalPriority;
+      info[i].group = voice_00->group;
+      info[i].pan = (uint)voice_00->alias->pan;
+      *(int *)&info[i].played = (int)voice_00->played;
+      *(undefined4 *)((int)&info[i].played + 4) = *(undefined4 *)((int)&voice_00->played + 4);
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0093DE50  SND_GetSoundOverlay  (sound/snd_debug.cpp:327)
 
-int __cdecl SND_GetSoundOverlay(snd_overlay_type param_1,snd_overlay_info *param_2,int param_3)
+int __cdecl SND_GetSoundOverlay(snd_overlay_type type,snd_overlay_info *info,int maxcount)
 
 {
   code *pcVar1;
@@ -416,7 +424,7 @@ int __cdecl SND_GetSoundOverlay(snd_overlay_type param_1,snd_overlay_info *param
   int local_10;
   int local_c;
   
-  if (param_2 == (snd_overlay_info *)0x0) {
+  if (info == (snd_overlay_info *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x148,0,"%s")
     ;
     if (!bVar2) {
@@ -425,7 +433,7 @@ int __cdecl SND_GetSoundOverlay(snd_overlay_type param_1,snd_overlay_info *param
       return iVar3;
     }
   }
-  if (param_3 < 1) {
+  if (maxcount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_debug.cpp",0x149,0,"%s")
     ;
     if (!bVar2) {
@@ -434,23 +442,23 @@ int __cdecl SND_GetSoundOverlay(snd_overlay_type param_1,snd_overlay_info *param
       return iVar3;
     }
   }
-  if (param_1 == SND_OVERLAY_3D) {
-    if (param_3 < 0x41) {
-      local_c = param_3;
+  if (type == SND_OVERLAY_3D) {
+    if (maxcount < 0x41) {
+      local_c = maxcount;
     }
     else {
       local_c = 0x40;
     }
-    iVar3 = SND_GetSoundOverlay(param_2,10,local_c);
+    iVar3 = SND_GetSoundOverlay(info,10,local_c);
   }
-  else if (param_1 == SND_OVERLAY_STREAM) {
-    if (param_3 < 0xb) {
-      local_10 = param_3;
+  else if (type == SND_OVERLAY_STREAM) {
+    if (maxcount < 0xb) {
+      local_10 = maxcount;
     }
     else {
       local_10 = 10;
     }
-    iVar3 = SND_GetSoundOverlay(param_2,0,local_10);
+    iVar3 = SND_GetSoundOverlay(info,0,local_10);
   }
   else {
     iVar3 = 0;

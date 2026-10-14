@@ -3,7 +3,7 @@
 // 00861310  R_SetDrawLitConstants  (gfx_d3d/r_draw_lit.cpp:44)
 
 void __cdecl
-R_SetDrawLitConstants(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxViewParms *param_3)
+R_SetDrawLitConstants(GfxCmdBufSourceState *viewParms,GfxViewInfo *param_2,GfxViewParms *param_3)
 
 {
   float fVar1;
@@ -33,8 +33,8 @@ R_SetDrawLitConstants(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxView
   R_SetSunConstants((GfxCmdBufInput *)unaff_ESI,unaff_EBX);
   fVar4 = r_cloudArea[3];
   fVar1 = r_cloudArea[2];
-  fVar6 = r_cloudArea[0] - (param_1->matrices).matrix[4].m[0][0];
-  *(float *)(unaff_EDI + 0xf34) = r_cloudArea[1] - (param_1->matrices).matrix[4].m[0][1];
+  fVar6 = r_cloudArea[0] - (viewParms->matrices).matrix[4].m[0][0];
+  *(float *)(unaff_EDI + 0xf34) = r_cloudArea[1] - (viewParms->matrices).matrix[4].m[0][1];
   *(float *)(unaff_EDI + 0xf30) = fVar6;
   *(float *)(unaff_EDI + 0xf38) = fVar1;
   *(float *)(unaff_EDI + 0xf3c) = fVar4;
@@ -82,32 +82,34 @@ R_SetDrawLitConstants(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxView
 // 008616C0  R_DrawCloakHDR  (gfx_d3d/r_draw_lit.cpp:411)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
-void __cdecl R_DrawCloakHDR(GfxViewInfo *param_1,GfxCmdBuf *param_2,CloakPhaseID param_3)
+void __cdecl R_DrawCloakHDR(GfxViewInfo *phase,GfxCmdBuf *param_2,CloakPhaseID param_3)
 
 {
   void *in_ECX;
   GfxDrawSurfListInfo *unaff_EBX;
   GfxViewInfo *unaff_EDI;
-  code *pcVar1;
+  code *callback;
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&stack0xffffe560,(GfxCmdBufInput *)((int)in_ECX + 0x2690),1);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)unaff_EDI,(uchar)unaff_EBX);
   R_SetWindShaderConstants((GfxCmdBufSourceState *)unaff_EDI);
-  if (param_1 == (GfxViewInfo *)0x0) {
-    pcVar1 = R_DrawCloakPrePassCallbackHDR;
+  if (phase == (GfxViewInfo *)0x0) {
+    callback = R_DrawCloakPrePassCallbackHDR;
   }
   else {
-    if (param_1 != (GfxViewInfo *)&DAT_00000001) {
+    if (phase != (GfxViewInfo *)&DAT_00000001) {
       return;
     }
-    pcVar1 = R_DrawCloakPostEmissiveCallbackHDR;
+    callback = R_DrawCloakPostEmissiveCallbackHDR;
   }
-  R_DrawCall(pcVar1,in_ECX,in_ECX,unaff_EDI,unaff_EBX,in_stack_ffffe558,in_stack_ffffe55c,
+  R_DrawCall(callback,in_ECX,in_ECX,unaff_EDI,unaff_EBX,in_stack_ffffe558,in_stack_ffffe55c,
              in_stack_ffffe560);
   return;
 }
@@ -116,9 +118,9 @@ void __cdecl R_DrawCloakHDR(GfxViewInfo *param_1,GfxCmdBuf *param_2,CloakPhaseID
 // 00861E10  R_DrawLit  (gfx_d3d/r_draw_lit.cpp:703)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
-void __cdecl
-R_DrawLit(GfxViewInfo *param_1,GfxCmdBuf *param_2,GfxCmdBuf *param_3,LitPhaseID param_4)
+void __cdecl R_DrawLit(GfxViewInfo *phase,GfxCmdBuf *param_2,GfxCmdBuf *param_3,LitPhaseID param_4)
 
 {
   GfxCmdBufSourceState *unaff_ESI;
@@ -127,25 +129,26 @@ R_DrawLit(GfxViewInfo *param_1,GfxCmdBuf *param_2,GfxCmdBuf *param_3,LitPhaseID 
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&stack0xffffe560,
              (GfxCmdBufInput *)(unaff_ESI[1].input.consts + 0x40),1);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)unaff_EDI,(uchar)in_stack_ffffe554);
   R_SetDrawLitConstants(unaff_ESI,unaff_EDI,in_stack_ffffe554);
-  if (param_1 == (GfxViewInfo *)0x0) {
+  if (phase == (GfxViewInfo *)0x0) {
     R_DrawCall(R_DrawLitCallback,unaff_ESI,unaff_ESI,unaff_EDI,
                (GfxDrawSurfListInfo *)in_stack_ffffe554,in_stack_ffffe558,in_stack_ffffe55c,
                in_stack_ffffe560);
   }
   else {
-    if (param_1 == (GfxViewInfo *)&DAT_00000001) {
+    if (phase == (GfxViewInfo *)&DAT_00000001) {
       R_DrawCall(R_DrawLitPostResolveCallback,unaff_ESI,unaff_ESI,unaff_EDI,
                  (GfxDrawSurfListInfo *)in_stack_ffffe554,in_stack_ffffe558,in_stack_ffffe55c,
                  in_stack_ffffe560);
       return;
     }
-    if (param_1 == (GfxViewInfo *)&DAT_00000003) {
+    if (phase == (GfxViewInfo *)&DAT_00000003) {
       R_DrawCall(R_DrawLitPreloadCallback,unaff_ESI,unaff_ESI,unaff_EDI,
                  (GfxDrawSurfListInfo *)in_stack_ffffe554,in_stack_ffffe558,in_stack_ffffe55c,
                  in_stack_ffffe560);
@@ -159,6 +162,7 @@ R_DrawLit(GfxViewInfo *param_1,GfxCmdBuf *param_2,GfxCmdBuf *param_3,LitPhaseID 
 // 00861FC0  R_DrawDecal  (gfx_d3d/r_draw_lit.cpp:793)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
 void __cdecl R_DrawDecal(GfxViewInfo *param_1,GfxCmdBuf *param_2,GfxCmdBuf *param_3)
 
@@ -169,6 +173,7 @@ void __cdecl R_DrawDecal(GfxViewInfo *param_1,GfxCmdBuf *param_2,GfxCmdBuf *para
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&stack0xffffe560,(GfxCmdBufInput *)((int)in_ECX + 0x2690),1);

@@ -5,49 +5,49 @@
 int _HTDNS_add(undefined4 param_1,int param_2,undefined4 param_3,int *param_4)
 
 {
-  uchar *puVar1;
-  int *piVar2;
+  uchar *src;
+  int *piVar1;
+  int iVar2;
   int iVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
-  long64 lVar7;
+  long64 lVar6;
   
-  piVar2 = *(int **)(param_2 + 0xc);
-  iVar3 = *piVar2;
-  while (iVar3 != 0) {
-    piVar2 = piVar2 + 1;
-    iVar3 = *piVar2;
+  piVar1 = *(int **)(param_2 + 0xc);
+  iVar2 = *piVar1;
+  while (iVar2 != 0) {
+    piVar1 = piVar1 + 1;
+    iVar2 = *piVar1;
   }
-  iVar3 = _HTMemory_calloc(1);
-  if (iVar3 != 0) {
-    iVar4 = _HTMemory_calloc(1);
-    *(int *)(iVar3 + 0x18) = iVar4;
-    if ((iVar4 != 0) && (iVar4 = _HTMemory_calloc(1), iVar4 != 0)) {
+  iVar2 = _HTMemory_calloc(1);
+  if (iVar2 != 0) {
+    iVar3 = _HTMemory_calloc(1);
+    *(int *)(iVar2 + 0x18) = iVar3;
+    if ((iVar3 != 0) && (iVar3 = _HTMemory_calloc(1), iVar3 != 0)) {
       _HTSACopy(param_3);
-      lVar7 = _time64((long64 *)0x0);
-      *(long64 *)(iVar3 + 8) = lVar7;
-      piVar2 = *(int **)(param_2 + 0xc);
-      iVar6 = 0;
-      iVar5 = *piVar2;
-      while (iVar5 != 0) {
-        iVar5 = *(short *)(param_2 + 10) * iVar6;
-        iVar6 = iVar6 + 1;
-        *(int *)(*(int *)(iVar3 + 0x18) + -4 + iVar6 * 4) = iVar5 + iVar4;
-        puVar1 = (uchar *)*piVar2;
-        piVar2 = piVar2 + 1;
-        memcpy(*(uchar **)(*(int *)(iVar3 + 0x18) + -4 + iVar6 * 4),puVar1,
+      lVar6 = _time64((long64 *)0x0);
+      *(long64 *)(iVar2 + 8) = lVar6;
+      piVar1 = *(int **)(param_2 + 0xc);
+      iVar5 = 0;
+      iVar4 = *piVar1;
+      while (iVar4 != 0) {
+        iVar4 = *(short *)(param_2 + 10) * iVar5;
+        iVar5 = iVar5 + 1;
+        *(int *)(*(int *)(iVar2 + 0x18) + -4 + iVar5 * 4) = iVar4 + iVar3;
+        src = (uchar *)*piVar1;
+        piVar1 = piVar1 + 1;
+        memcpy(*(uchar **)(*(int *)(iVar2 + 0x18) + -4 + iVar5 * 4),src,
                (int)*(short *)(param_2 + 10));
-        iVar5 = *piVar2;
+        iVar4 = *piVar1;
       }
-      *(int *)(iVar3 + 0x14) = iVar6;
-      *param_4 = iVar6;
-      iVar4 = _HTMemory_calloc(iVar6);
-      *(int *)(iVar3 + 0x1c) = iVar4;
-      if (iVar4 != 0) {
-        *(int *)(iVar3 + 0x10) = (int)*(short *)(param_2 + 10);
-        _HTList_addObject(iVar3);
-        return iVar3;
+      *(int *)(iVar2 + 0x14) = iVar5;
+      *param_4 = iVar5;
+      iVar3 = _HTMemory_calloc(iVar5);
+      *(int *)(iVar2 + 0x1c) = iVar3;
+      if (iVar3 != 0) {
+        *(int *)(iVar2 + 0x10) = (int)*(short *)(param_2 + 10);
+        _HTList_addObject(iVar2);
+        return iVar2;
       }
       if (DAT_03547718 != (code *)0x0) {
         (*DAT_03547718)("HTDNS_add",
@@ -173,35 +173,35 @@ undefined4 _HTDNS_deleteAll(void)
 
 {
   void *pvVar1;
-  void *pvVar2;
-  int iVar3;
-  void *pvVar4;
-  int *piVar5;
+  void *pBlock;
+  int iVar2;
+  void *pBlock_00;
+  int *piVar3;
   
   if (DAT_03547818 == (void *)0x0) {
     return 0;
   }
-  iVar3 = 0;
-  pvVar4 = DAT_03547818;
+  iVar2 = 0;
+  pBlock_00 = DAT_03547818;
   do {
-    piVar5 = *(int **)(iVar3 + (int)pvVar4);
-    if (piVar5 != (int *)0x0) {
-      while ((piVar5 = (int *)piVar5[1], pvVar4 = DAT_03547818, piVar5 != (int *)0x0 &&
-             (*piVar5 != 0))) {
+    piVar3 = *(int **)(iVar2 + (int)pBlock_00);
+    if (piVar3 != (int *)0x0) {
+      while ((piVar3 = (int *)piVar3[1], pBlock_00 = DAT_03547818, piVar3 != (int *)0x0 &&
+             (*piVar3 != 0))) {
         FUN_0089fcf0();
       }
     }
-    pvVar2 = *(void **)(iVar3 + (int)pvVar4);
-    while (pvVar2 != (void *)0x0) {
-      pvVar1 = *(void **)((int)pvVar2 + 4);
-      free(pvVar2);
-      pvVar2 = pvVar1;
+    pBlock = *(void **)(iVar2 + (int)pBlock_00);
+    while (pBlock != (void *)0x0) {
+      pvVar1 = *(void **)((int)pBlock + 4);
+      free(pBlock);
+      pBlock = pvVar1;
     }
-    *(undefined4 *)(iVar3 + (int)pvVar4) = 0;
-    iVar3 = iVar3 + 4;
-  } while (iVar3 < 0x10c);
-  if (pvVar4 != (void *)0x0) {
-    free(pvVar4);
+    *(undefined4 *)(iVar2 + (int)pBlock_00) = 0;
+    iVar2 = iVar2 + 4;
+  } while (iVar2 < 0x10c);
+  if (pBlock_00 != (void *)0x0) {
+    free(pBlock_00);
   }
   DAT_03547818 = (void *)0x0;
   return 1;

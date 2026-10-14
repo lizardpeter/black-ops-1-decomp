@@ -2,7 +2,7 @@
 
 // 0095EC94  xtoa  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:93)
 
-void __cdecl xtoa(ulong param_1,char *param_2,uint param_3,int param_4)
+void __cdecl xtoa(ulong radix,char *is_neg,uint param_3,int param_4)
 
 {
   ulonglong uVar1;
@@ -13,7 +13,7 @@ void __cdecl xtoa(ulong param_1,char *param_2,uint param_3,int param_4)
   char cVar4;
   
   pcVar2 = in_ECX;
-  if (param_2 != (char *)0x0) {
+  if (is_neg != (char *)0x0) {
     *in_ECX = '-';
     in_ECX = in_ECX + 1;
     in_EAX = -in_EAX;
@@ -22,9 +22,9 @@ void __cdecl xtoa(ulong param_1,char *param_2,uint param_3,int param_4)
   do {
     pcVar3 = pcVar2;
     uVar1 = (ulonglong)in_EAX;
-    in_EAX = in_EAX / param_1;
-    cVar4 = (char)(uVar1 % (ulonglong)param_1);
-    if ((uint)(uVar1 % (ulonglong)param_1) < 10) {
+    in_EAX = in_EAX / radix;
+    cVar4 = (char)(uVar1 % (ulonglong)radix);
+    if ((uint)(uVar1 % (ulonglong)radix) < 10) {
       cVar4 = cVar4 + '0';
     }
     else {
@@ -47,28 +47,28 @@ void __cdecl xtoa(ulong param_1,char *param_2,uint param_3,int param_4)
 
 // 0095ECD8  _itoa  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:235)
 
-char * __cdecl _itoa(int param_1,char *param_2,int param_3)
+char * __cdecl _itoa(int val,char *buf,int radix)
 
 {
   uint unaff_EBP;
   int unaff_retaddr;
-  char *pcVar1;
+  char *is_neg;
   
-  if ((param_3 == 10) && (param_1 < 0)) {
-    pcVar1 = &DAT_00000001;
-    param_3 = 10;
+  if ((radix == 10) && (val < 0)) {
+    is_neg = &DAT_00000001;
+    radix = 10;
   }
   else {
-    pcVar1 = (char *)0x0;
+    is_neg = (char *)0x0;
   }
-  xtoa(param_3,pcVar1,unaff_EBP,unaff_retaddr);
-  return param_2;
+  xtoa(radix,is_neg,unaff_EBP,unaff_retaddr);
+  return buf;
 }
 
 
 // 0095ED02  x64toa  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:309)
 
-void __cdecl x64toa(ulong64 param_1,char *param_2,uint param_3,int param_4)
+void __cdecl x64toa(ulong64 val,char *radix,uint is_neg,int param_4)
 
 {
   char *in_EAX;
@@ -80,7 +80,7 @@ void __cdecl x64toa(ulong64 param_1,char *param_2,uint param_3,int param_4)
   char *pcVar3;
   
   pcVar2 = in_EAX;
-  if (param_3 != 0) {
+  if (is_neg != 0) {
     *in_EAX = '-';
     in_EAX = in_EAX + 1;
     pcVar2 = in_EAX;
@@ -111,12 +111,12 @@ void __cdecl x64toa(ulong64 param_1,char *param_2,uint param_3,int param_4)
 
 // 0095ED71  _ui64toa  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/xtoa.c:446)
 
-char * __cdecl _ui64toa(ulong64 param_1,char *param_2,int param_3)
+char * __cdecl _ui64toa(ulong64 val,char *buf,int radix)
 
 {
   int unaff_EBP;
   
-  x64toa(param_1,(char *)param_3,0,unaff_EBP);
-  return param_2;
+  x64toa(val,(char *)radix,0,unaff_EBP);
+  return buf;
 }
 

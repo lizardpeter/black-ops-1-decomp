@@ -941,7 +941,7 @@ void __thiscall bdContentStreamingBase::swapURLInfo(bdContentStreamingBase *this
   int extraout_EAX_00;
   int extraout_EAX_01;
   int extraout_EAX_02;
-  ulong uVar1;
+  ulong count;
   uchar auStack_31c [384];
   ulong uStack_19c;
   uint uStack_194;
@@ -963,10 +963,10 @@ void __thiscall bdContentStreamingBase::swapURLInfo(bdContentStreamingBase *this
         strchr((uchar *)param_1,'\0');
         uStack_19c = extraout_EAX_01 - iStack_8;
         strchr((uchar *)(*(int *)(this + 0x213c) + 4 + (uStack_194 + 1) * 0x210),'\0');
-        uVar1 = extraout_EAX_02 - (*(int *)(this + 0x213c) + 4 + (uStack_194 + 1) * 0x210);
-        memcpy(auStack_31c,(uchar *)(*(int *)(this + 0x213c) + 4 + (uStack_194 + 1) * 0x210),uVar1);
-        memcpy(auStack_31c + uVar1,(uchar *)(param_1 + uStack_190),uStack_19c);
-        auStack_31c[uVar1 + uStack_19c] = '\0';
+        count = extraout_EAX_02 - (*(int *)(this + 0x213c) + 4 + (uStack_194 + 1) * 0x210);
+        memcpy(auStack_31c,(uchar *)(*(int *)(this + 0x213c) + 4 + (uStack_194 + 1) * 0x210),count);
+        memcpy(auStack_31c + count,(uchar *)(param_1 + uStack_190),uStack_19c);
+        auStack_31c[count + uStack_19c] = '\0';
         memcpy((uchar *)param_1,auStack_31c,0x180);
         return;
       }

@@ -4,31 +4,32 @@
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl RB_GaussianFilterImage(float param_1,uchar param_2,uchar param_3,int param_4)
+void __cdecl RB_GaussianFilterImage(float srcRenderTargetId,uchar param_2,uchar param_3,int param_4)
 
 {
   float fVar1;
   uint uVar2;
   byte in_DL;
   GfxImageFilterPass *unaff_EDI;
-  GfxImageFilter GStack_1390;
-  undefined4 uStack_4;
+  float radius;
+  GfxImageFilter filter;
+  int registerCount;
   
-  uStack_4 = 0x864c5a;
   fVar1 = (float)(int)vidConfig.sceneHeight;
   if ((int)vidConfig.sceneHeight < 0) {
     fVar1 = fVar1 + 4.2949673e+09;
   }
   uVar2 = (uint)param_2;
-  fVar1 = fVar1 * param_1 * 0.0020833334;
-  GStack_1390.sourceImage = gfxRenderTargets[uVar2].image;
-  GStack_1390.passCount =
+  fVar1 = fVar1 * srcRenderTargetId * 0.0020833334;
+  filter._5000_4_ = gfxRenderTargets[uVar2].image;
+  filter.passes[0].material =
+       (Material *)
        RB_GenerateGaussianFilterChain
                  (vidConfig.aspectRatioScenePixel * fVar1,fVar1,(uint)gfxRenderTargets[uVar2].width,
                   (uint)gfxRenderTargets[uVar2].height,(uint)gfxRenderTargets[in_DL].width,
-                  (uint)gfxRenderTargets[in_DL].height,(int)GStack_1390.passes,unaff_EDI);
-  if (GStack_1390.passCount != 0) {
-    RB_FilterImage(&GStack_1390);
+                  (uint)gfxRenderTargets[in_DL].height,(int)&filter.passes[0].srcWidth,unaff_EDI);
+  if (filter.passes[0].material != (Material *)0x0) {
+    RB_FilterImage((GfxImageFilter *)filter.passes);
   }
   return;
 }

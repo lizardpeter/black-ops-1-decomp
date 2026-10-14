@@ -6,11 +6,12 @@ bool __cdecl Voice_Init(void)
 
 {
   int iVar1;
-  HWND pHVar2;
-  dsound_sample_t *pdVar3;
+  HWND handle_00;
+  dsound_sample_t *pdVar2;
+  char *pcVar3;
   char *pcVar4;
-  char *pcVar5;
-  int local_8;
+  HWND__ *handle;
+  int client;
   
   Com_Printf(0x10,"--- Initializing Voice ---\n");
   winvoice_mic_mute = _Dvar_RegisterBool("winvoice_mic_mute",true,1,"Mute the microphone");
@@ -23,15 +24,15 @@ bool __cdecl Voice_Init(void)
        _Dvar_RegisterFloat("winvoice_mic_scaler",1.0,0.25,2.0,1,"Microphone scaler value");
   iVar1 = mixerGetRecordSource(old_rec_source);
   if (iVar1 == 0) {
-    pcVar4 = "microphone-not-present";
-    pcVar5 = old_rec_source;
+    pcVar3 = "microphone-not-present";
+    pcVar4 = old_rec_source;
     for (iVar1 = 5; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)pcVar5 = *(undefined4 *)pcVar4;
+      *(undefined4 *)pcVar4 = *(undefined4 *)pcVar3;
+      pcVar3 = pcVar3 + 4;
       pcVar4 = pcVar4 + 4;
-      pcVar5 = pcVar5 + 4;
     }
-    *(undefined2 *)pcVar5 = *(undefined2 *)pcVar4;
-    pcVar5[2] = pcVar4[2];
+    *(undefined2 *)pcVar4 = *(undefined2 *)pcVar3;
+    pcVar4[2] = pcVar3[2];
   }
   mixerSetRecordSource(old_rec_source);
   mic_old_reclevel = mixerGetRecordLevel(old_rec_source);
@@ -39,18 +40,18 @@ bool __cdecl Voice_Init(void)
   mixerSetRecordLevel(old_rec_source,(ushort)(int)(winvoice_mic_reclevel->current).value);
   mixerSetMicrophoneMute((winvoice_mic_mute->current).color[0]);
   g_current_bandwidth_setting = 0;
-  pHVar2 = GetDesktopWindow();
-  Record_Init(false,pHVar2);
+  handle_00 = GetDesktopWindow();
+  Record_Init(false,handle_00);
   Decode_Init(g_current_bandwidth_setting);
   Encode_Init(g_current_bandwidth_setting);
-  iVar1 = Sound_Init(pHVar2);
+  iVar1 = Sound_Init(handle_00);
   if (iVar1 != 0) {
     g_voice_initialized = 1;
   }
   memset((uchar *)s_clientTalkTime,'\0',0x80);
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    pdVar3 = Sound_NewSample();
-    s_clientSamples[local_8] = pdVar3;
+  for (client = 0; client < 0x20; client = client + 1) {
+    pdVar2 = Sound_NewSample();
+    s_clientSamples[client] = pdVar2;
   }
   return false;
 }
@@ -61,10 +62,10 @@ bool __cdecl Voice_Init(void)
 void __cdecl Voice_StopClientSamples(void)
 
 {
-  int local_8;
+  int client;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    Sound_StopSample(s_clientSamples[local_8]);
+  for (client = 0; client < 0x20; client = client + 1) {
+    Sound_StopSample(s_clientSamples[client]);
   }
   return;
 }
@@ -75,11 +76,11 @@ void __cdecl Voice_StopClientSamples(void)
 void __cdecl Voice_Shutdown(void)
 
 {
-  int local_8;
+  int client;
   
   if (g_voice_initialized != 0) {
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-      Sound_DestroySample(s_clientSamples[local_8]);
+    for (client = 0; client < 0x20; client = client + 1) {
+      Sound_DestroySample(s_clientSamples[client]);
     }
     Voice_StopRecording();
     Record_Shutdown();
@@ -100,21 +101,21 @@ void __cdecl Voice_Shutdown(void)
 float __cdecl Voice_GetVoiceLevel(void)
 
 {
-  int local_c;
-  float local_8;
+  int ii;
+  float avgLvl;
   
   if (g_voice_initialized == 0) {
-    local_8 = 0.0;
+    avgLvl = 0.0;
   }
   else {
     levelSamples[sampleCount % 6] = (voice_current_voicelevel / 32767.0) / 6.0;
     sampleCount = sampleCount + 1;
-    local_8 = 0.0;
-    for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-      local_8 = local_8 + levelSamples[local_c];
+    avgLvl = 0.0;
+    for (ii = 0; ii < 6; ii = ii + 1) {
+      avgLvl = avgLvl + levelSamples[ii];
     }
   }
-  return local_8;
+  return avgLvl;
 }
 
 
@@ -123,15 +124,15 @@ float __cdecl Voice_GetVoiceLevel(void)
 void __cdecl Voice_Playback(void)
 
 {
-  int local_8;
+  int client;
   
   if (g_voice_initialized != 0) {
     if (mic_current_reclevel != ((int)(winvoice_mic_reclevel->current).value & 0xffffU)) {
       mic_current_reclevel = (int)(winvoice_mic_reclevel->current).value & 0xffff;
       mixerSetRecordLevel(old_rec_source,(ushort)(int)(winvoice_mic_reclevel->current).value);
     }
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-      Sound_SampleFrame(s_clientSamples[local_8]);
+    for (client = 0; client < 0x20; client = client + 1) {
+      Sound_SampleFrame(s_clientSamples[client]);
     }
     Sound_Frame();
   }
@@ -141,7 +142,7 @@ void __cdecl Voice_Playback(void)
 
 // 007DF6C0  Voice_GetLocalVoiceData  (win32/win_voice.cpp:199)
 
-int __cdecl Voice_GetLocalVoiceData(ClientVoicePacket_t *param_1)
+int __cdecl Voice_GetLocalVoiceData(ClientVoicePacket_t *voiceData)
 
 {
   if (g_voice_initialized != 0) {
@@ -170,27 +171,29 @@ int __cdecl Voice_GetLocalVoiceData(ClientVoicePacket_t *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
+void __cdecl Voice_IncomingVoiceData(uchar talker,uchar *data,int packetDataSize)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  _iobuf *p_Var4;
+  _iobuf *stream;
   int local_2020;
-  int local_2010;
-  short local_200c [4096];
+  _iobuf *fptr;
+  int bytesToProcess;
+  int processedBytes;
+  short decodedData [4096];
   uint local_c;
-  uint local_8;
+  int decodedLen;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (g_voice_initialized != 0) {
     if (!playing) {
       playing = true;
     }
-    local_8 = 0;
-    local_2010 = 0;
-    if ((0x1f < param_1) &&
+    decodedLen = 0;
+    processedBytes = 0;
+    if ((0x1f < talker) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_voice.cpp",0xf3,0,
                                  "%s\n\t(talker) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -198,22 +201,22 @@ void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
       return;
     }
     iVar3 = Sys_Milliseconds();
-    s_clientTalkTime[param_1] = iVar3;
-    for (; local_2010 < param_3; local_2010 = local_2010 + local_2020) {
-      local_2020 = param_3 - local_2010;
+    s_clientTalkTime[talker] = iVar3;
+    for (; processedBytes < packetDataSize; processedBytes = processedBytes + local_2020) {
+      local_2020 = packetDataSize - processedBytes;
       if (g_decode_frame_size <= local_2020) {
         local_2020 = g_decode_frame_size;
       }
-      local_8 = Decode_Sample((char *)(param_2 + local_2010),local_2020,local_200c,
-                              g_decode_frame_size);
-      if (0 < (int)local_8) {
-        Sound_UpdateSample(s_clientSamples[param_1],(char *)local_200c,local_8);
+      decodedLen = Decode_Sample((char *)(data + processedBytes),local_2020,decodedData,
+                                 g_decode_frame_size);
+      if (0 < decodedLen) {
+        Sound_UpdateSample(s_clientSamples[talker],(char *)decodedData,decodedLen);
       }
     }
     if (((winvoice_save_voice->current).enabled != false) &&
-       (p_Var4 = fopen("voice.wav","ab"), p_Var4 != (_iobuf *)0x0)) {
-      fwrite(local_200c,local_8,1,p_Var4);
-      fclose(p_Var4);
+       (stream = fopen("voice.wav","ab"), stream != (_iobuf *)0x0)) {
+      fwrite(decodedData,decodedLen,1,stream);
+      fclose(stream);
     }
   }
   return;
@@ -222,7 +225,7 @@ void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
 
 // 007DF930  Voice_IsClientTalking  (win32/win_voice.cpp:271)
 
-bool __cdecl Voice_IsClientTalking(int param_1)
+bool __cdecl Voice_IsClientTalking(int clientNum)
 
 {
   code *pcVar1;
@@ -230,7 +233,7 @@ bool __cdecl Voice_IsClientTalking(int param_1)
   undefined1 uVar3;
   int iVar4;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((clientNum < 0) || (0x1f < clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_voice.cpp",0x110,0,
                              "%s\n\t(clientNum) = %i");
     if (!bVar2) {
@@ -240,7 +243,7 @@ bool __cdecl Voice_IsClientTalking(int param_1)
     }
   }
   iVar4 = Sys_Milliseconds();
-  return iVar4 - s_clientTalkTime[param_1] < 300;
+  return iVar4 - s_clientTalkTime[clientNum] < 300;
 }
 
 
@@ -280,61 +283,61 @@ bool __cdecl Voice_StopRecording(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl mixerGetRecordLevel(char *param_1)
+int __cdecl mixerGetRecordLevel(char *SrcName)
 
 {
   UINT UVar1;
   MMRESULT MVar2;
   int iVar3;
-  tagMIXERCONTROLA local_18c;
-  uint local_f4;
-  tagMIXERLINECONTROLSA local_f0;
-  MMRESULT local_d8;
-  HMIXEROBJ local_d4;
-  uint local_d0;
-  tagMIXERLINEA local_cc;
+  tagMIXERCONTROLA mxc;
+  ulong jj;
+  tagMIXERLINECONTROLSA mxlc;
+  uint err;
+  HMIXEROBJ phmx;
+  ulong ii;
+  tagMIXERLINEA mixerline;
   uint local_24;
-  int local_20;
-  tMIXERCONTROLDETAILS local_1c;
+  tMIXERCONTROLDETAILS_UNSIGNED newSetting;
+  tMIXERCONTROLDETAILS mxcd;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   UVar1 = waveInGetNumDevs();
   if (((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) &&
-     (MVar2 = mixerOpen((LPHMIXER)&local_d4,0,0,0,0), MVar2 == 0)) {
-    memset((uchar *)&local_cc,'\0',0xa8);
-    local_cc.cbStruct = 0xa8;
-    local_cc.dwComponentType = 7;
-    mixerGetLineInfoA(local_d4,&local_cc,3);
-    local_f4 = local_cc.cConnections;
-    for (local_d0 = 0; local_d0 < local_f4; local_d0 = local_d0 + 1) {
-      local_cc.dwSource = local_d0;
-      mixerGetLineInfoA(local_d4,&local_cc,1);
-      iVar3 = I_stricmp(local_cc.szName,param_1);
+     (MVar2 = mixerOpen((LPHMIXER)&phmx,0,0,0,0), MVar2 == 0)) {
+    memset((uchar *)&mixerline,'\0',0xa8);
+    mixerline.cbStruct = 0xa8;
+    mixerline.dwComponentType = 7;
+    mixerGetLineInfoA(phmx,&mixerline,3);
+    jj = mixerline.cConnections;
+    for (ii = 0; ii < jj; ii = ii + 1) {
+      mixerline.dwSource = ii;
+      mixerGetLineInfoA(phmx,&mixerline,1);
+      iVar3 = I_stricmp(mixerline.szName,SrcName);
       if (iVar3 == 0) {
-        local_f0.cbStruct = 0x18;
-        local_f0.dwLineID = local_cc.dwLineID;
-        local_f0.u.dwControlID = 0x50030001;
-        local_f0.cControls = 1;
-        local_f0.cbmxctrl = 0x94;
-        local_f0.pamxctrl = &local_18c;
-        local_d8 = mixerGetLineControlsA(local_d4,&local_f0,2);
-        if (local_d8 == 0) {
-          local_1c.cbStruct = 0x18;
-          local_1c.cChannels = 1;
-          local_1c.cbDetails = 4;
-          local_1c.paDetails = &local_20;
-          local_1c.u.hwndOwner = (HWND)0x0;
-          local_1c.dwControlID = local_18c.dwControlID;
-          mixerGetControlDetailsA(local_d4,&local_1c,0);
+        mxlc.cbStruct = 0x18;
+        mxlc.dwLineID = mixerline.dwLineID;
+        mxlc.u.dwControlID = 0x50030001;
+        mxlc.cControls = 1;
+        mxlc.cbmxctrl = 0x94;
+        mxlc.pamxctrl = &mxc;
+        err = mixerGetLineControlsA(phmx,&mxlc,2);
+        if (err == 0) {
+          mxcd.cbStruct = 0x18;
+          mxcd.cChannels = 1;
+          mxcd.cbDetails = 4;
+          mxcd.paDetails = &newSetting;
+          mxcd.u.hwndOwner = (HWND)0x0;
+          mxcd.dwControlID = mxc.dwControlID;
+          mixerGetControlDetailsA(phmx,&mxcd,0);
           Com_Printf(0x10,"Line Control %3d: %22s");
           Com_Printf(0x10,"\tcur: %6d\tbounds (%6d-%6d)\n");
-          mixerClose((HMIXER)local_d4);
-          return local_20;
+          mixerClose((HMIXER)phmx);
+          return newSetting.dwValue;
         }
         break;
       }
     }
-    mixerClose((HMIXER)local_d4);
+    mixerClose((HMIXER)phmx);
   }
   return -1;
 }
@@ -344,62 +347,62 @@ int __cdecl mixerGetRecordLevel(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl mixerSetRecordLevel(char *param_1,ushort param_2)
+int __cdecl mixerSetRecordLevel(char *SrcName,ushort newLevel)
 
 {
   UINT UVar1;
   MMRESULT MVar2;
   int iVar3;
-  tagMIXERCONTROLA local_18c;
-  uint local_f4;
-  tagMIXERLINECONTROLSA local_f0;
-  MMRESULT local_d8;
-  HMIXEROBJ local_d4;
-  uint local_d0;
-  tagMIXERLINEA local_cc;
+  tagMIXERCONTROLA mxc;
+  ulong jj;
+  tagMIXERLINECONTROLSA mxlc;
+  uint err;
+  HMIXEROBJ phmx;
+  ulong ii;
+  tagMIXERLINEA mixerline;
   uint local_24;
-  uint local_20;
-  tMIXERCONTROLDETAILS local_1c;
+  tMIXERCONTROLDETAILS_UNSIGNED newSetting;
+  tMIXERCONTROLDETAILS mxcd;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   UVar1 = waveInGetNumDevs();
   if (((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) &&
-     (MVar2 = mixerOpen((LPHMIXER)&local_d4,0,0,0,0), MVar2 == 0)) {
-    local_cc.cbStruct = 0xa8;
-    local_cc.dwComponentType = 7;
-    MVar2 = mixerGetLineInfoA(local_d4,&local_cc,3);
+     (MVar2 = mixerOpen((LPHMIXER)&phmx,0,0,0,0), MVar2 == 0)) {
+    mixerline.cbStruct = 0xa8;
+    mixerline.dwComponentType = 7;
+    MVar2 = mixerGetLineInfoA(phmx,&mixerline,3);
     if (MVar2 == 0) {
-      local_f4 = local_cc.cConnections;
-      for (local_d0 = 0; local_d0 < local_f4; local_d0 = local_d0 + 1) {
-        local_cc.dwSource = local_d0;
-        MVar2 = mixerGetLineInfoA(local_d4,&local_cc,1);
-        if ((MVar2 == 0) && (iVar3 = I_stricmp(local_cc.szName,param_1), iVar3 == 0)) {
-          local_f0.cbStruct = 0x18;
-          local_f0.dwLineID = local_cc.dwLineID;
-          local_f0.u.dwControlID = 0x50030001;
-          local_f0.cControls = 1;
-          local_f0.cbmxctrl = 0x94;
-          local_f0.pamxctrl = &local_18c;
-          local_d8 = mixerGetLineControlsA(local_d4,&local_f0,2);
-          if (local_d8 == 0) {
-            local_1c.cbStruct = 0x18;
-            local_1c.cChannels = 1;
-            local_1c.cbDetails = 4;
-            local_1c.paDetails = &local_20;
-            local_1c.u.hwndOwner = (HWND)0x0;
-            local_1c.dwControlID = local_18c.dwControlID;
-            local_d8 = mixerGetControlDetailsA(local_d4,&local_1c,0);
-            if (local_d8 == 0) {
-              local_20 = (uint)param_2;
-              mixerSetControlDetails(local_d4,&local_1c,0);
+      jj = mixerline.cConnections;
+      for (ii = 0; ii < jj; ii = ii + 1) {
+        mixerline.dwSource = ii;
+        MVar2 = mixerGetLineInfoA(phmx,&mixerline,1);
+        if ((MVar2 == 0) && (iVar3 = I_stricmp(mixerline.szName,SrcName), iVar3 == 0)) {
+          mxlc.cbStruct = 0x18;
+          mxlc.dwLineID = mixerline.dwLineID;
+          mxlc.u.dwControlID = 0x50030001;
+          mxlc.cControls = 1;
+          mxlc.cbmxctrl = 0x94;
+          mxlc.pamxctrl = &mxc;
+          err = mixerGetLineControlsA(phmx,&mxlc,2);
+          if (err == 0) {
+            mxcd.cbStruct = 0x18;
+            mxcd.cChannels = 1;
+            mxcd.cbDetails = 4;
+            mxcd.paDetails = &newSetting;
+            mxcd.u.hwndOwner = (HWND)0x0;
+            mxcd.dwControlID = mxc.dwControlID;
+            err = mixerGetControlDetailsA(phmx,&mxcd,0);
+            if (err == 0) {
+              newSetting.dwValue = (ulong)newLevel;
+              mixerSetControlDetails(phmx,&mxcd,0);
             }
-            mixerClose((HMIXER)local_d4);
+            mixerClose((HMIXER)phmx);
             return 0;
           }
           break;
         }
       }
-      mixerClose((HMIXER)local_d4);
+      mixerClose((HMIXER)phmx);
     }
   }
   return 0;
@@ -410,86 +413,87 @@ int __cdecl mixerSetRecordLevel(char *param_1,ushort param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl mixerGetRecordSource(char *param_1)
+int __cdecl mixerGetRecordSource(char *srcName)
 
 {
   UINT UVar1;
   MMRESULT MVar2;
-  int local_104;
-  tagMIXERLINECONTROLSA local_100;
-  MMRESULT local_e8;
-  DWORD local_e4;
-  DWORD local_e0;
-  HMIXEROBJ local_dc;
-  void *local_d8;
-  int local_d4;
-  void *local_d0;
-  tagMIXERLINEA local_cc;
+  int sourceIndex;
+  int jj;
+  tagMIXERLINECONTROLSA mxlc;
+  uint err;
+  int iNumChannels;
+  int iMultipleItems;
+  HMIXEROBJ phmx;
+  tMIXERCONTROLDETAILS_BOOLEAN *lpListBool;
+  int ii;
+  tMIXERCONTROLDETAILS_BOOLEAN *lpListText;
+  tagMIXERLINEA mixerline;
   uint local_24;
-  tMIXERCONTROLDETAILS local_20;
-  LPMIXERCONTROLA local_8;
+  tMIXERCONTROLDETAILS mxcd;
+  LPMIXERCONTROLA lpmxc;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   UVar1 = waveInGetNumDevs();
   if (((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) &&
-     (MVar2 = mixerOpen((LPHMIXER)&local_dc,0,0,0,0), MVar2 == 0)) {
-    local_8 = (LPMIXERCONTROLA)0x0;
-    local_d0 = (void *)0x0;
-    local_d8 = (void *)0x0;
-    local_cc.cbStruct = 0xa8;
-    local_cc.dwComponentType = 7;
-    mixerGetLineInfoA(local_dc,&local_cc,3);
-    local_100.pamxctrl = calloc(local_cc.cControls * 0x94,1);
-    local_100.cbStruct = 0x18;
-    local_100.dwLineID = local_cc.dwLineID;
-    local_100.u.dwControlID = 0;
-    local_100.cControls = local_cc.cControls;
-    local_100.cbmxctrl = 0x94;
-    local_8 = local_100.pamxctrl;
-    local_e8 = mixerGetLineControlsA(local_dc,&local_100,0);
-    if (local_e8 == 0) {
-      for (local_d4 = 0; local_d4 < (int)local_cc.cControls; local_d4 = local_d4 + 1) {
-        if ((local_8[local_d4].dwControlType & 0xf0000000) == 0x70000000) {
-          local_e4 = local_cc.cChannels;
-          local_e0 = 0;
-          if ((local_8[local_d4].fdwControl & 1) != 0) {
-            local_e4 = 1;
+     (MVar2 = mixerOpen((LPHMIXER)&phmx,0,0,0,0), MVar2 == 0)) {
+    lpmxc = (LPMIXERCONTROLA)0x0;
+    lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    lpListBool = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    mixerline.cbStruct = 0xa8;
+    mixerline.dwComponentType = 7;
+    mixerGetLineInfoA(phmx,&mixerline,3);
+    mxlc.pamxctrl = calloc(mixerline.cControls * 0x94,1);
+    mxlc.cbStruct = 0x18;
+    mxlc.dwLineID = mixerline.dwLineID;
+    mxlc.u.dwControlID = 0;
+    mxlc.cControls = mixerline.cControls;
+    mxlc.cbmxctrl = 0x94;
+    lpmxc = mxlc.pamxctrl;
+    err = mixerGetLineControlsA(phmx,&mxlc,0);
+    if (err == 0) {
+      for (ii = 0; ii < (int)mixerline.cControls; ii = ii + 1) {
+        if ((lpmxc[ii].dwControlType & 0xf0000000) == 0x70000000) {
+          iNumChannels = mixerline.cChannels;
+          iMultipleItems = 0;
+          if ((lpmxc[ii].fdwControl & 1) != 0) {
+            iNumChannels = 1;
           }
-          if ((local_8[local_d4].fdwControl & 2) != 0) {
-            local_e0 = local_8[local_d4].cMultipleItems;
+          if ((lpmxc[ii].fdwControl & 2) != 0) {
+            iMultipleItems = lpmxc[ii].cMultipleItems;
           }
-          local_d0 = calloc(local_e4 * local_e0 * 0x48,1);
-          local_20.cbStruct = 0x18;
-          local_20.dwControlID = local_8[local_d4].dwControlID;
-          local_20.cChannels = local_e4;
-          local_20.u.cMultipleItems = local_e0;
-          local_20.cbDetails = 0x48;
-          local_20.paDetails = local_d0;
-          local_e8 = mixerGetControlDetailsA(local_dc,&local_20,1);
-          if (local_e8 == 0) {
-            local_d8 = calloc(local_e4 * local_e0 * 4,1);
-            local_20.cbDetails = 4;
-            local_20.paDetails = local_d8;
-            local_e8 = mixerGetControlDetailsA(local_dc,&local_20,0);
-            if (local_e8 == 0) {
-              for (local_104 = 0; local_104 < (int)local_e0; local_104 = local_104 + 1) {
-                if (*(int *)((int)local_d8 + local_104 * 4) == 1) {
-                  strncpy((uchar *)param_1,(uchar *)((int)local_d0 + local_104 * 0x48 + 8),0xff);
+          lpListText = calloc(iNumChannels * iMultipleItems * 0x48,1);
+          mxcd.cbStruct = 0x18;
+          mxcd.dwControlID = lpmxc[ii].dwControlID;
+          mxcd.cChannels = iNumChannels;
+          mxcd.u.cMultipleItems = iMultipleItems;
+          mxcd.cbDetails = 0x48;
+          mxcd.paDetails = lpListText;
+          err = mixerGetControlDetailsA(phmx,&mxcd,1);
+          if (err == 0) {
+            lpListBool = calloc(iNumChannels * iMultipleItems * 4,1);
+            mxcd.cbDetails = 4;
+            mxcd.paDetails = lpListBool;
+            err = mixerGetControlDetailsA(phmx,&mxcd,0);
+            if (err == 0) {
+              for (jj = 0; jj < iMultipleItems; jj = jj + 1) {
+                if (lpListBool[jj].fValue == 1) {
+                  strncpy((uchar *)srcName,(uchar *)(lpListText + jj * 0x12 + 2),0xff);
                 }
               }
-              if (local_8 != (LPMIXERCONTROLA)0x0) {
-                free(local_8);
+              if (lpmxc != (LPMIXERCONTROLA)0x0) {
+                free(lpmxc);
               }
-              local_8 = (LPMIXERCONTROLA)0x0;
-              if (local_d0 != (void *)0x0) {
-                free(local_d0);
+              lpmxc = (LPMIXERCONTROLA)0x0;
+              if (lpListText != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+                free(lpListText);
               }
-              local_d0 = (void *)0x0;
-              if (local_d8 != (void *)0x0) {
-                free(local_d8);
+              lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+              if (lpListBool != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+                free(lpListBool);
               }
-              local_d8 = (void *)0x0;
-              if (local_e8 == 0) {
+              lpListBool = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+              if (err == 0) {
                 return 1;
               }
             }
@@ -497,16 +501,16 @@ int __cdecl mixerGetRecordSource(char *param_1)
         }
       }
     }
-    if (local_8 != (LPMIXERCONTROLA)0x0) {
-      free(local_8);
+    if (lpmxc != (LPMIXERCONTROLA)0x0) {
+      free(lpmxc);
     }
-    local_8 = (LPMIXERCONTROLA)0x0;
-    if (local_d0 != (void *)0x0) {
-      free(local_d0);
+    lpmxc = (LPMIXERCONTROLA)0x0;
+    if (lpListText != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+      free(lpListText);
     }
-    local_d0 = (void *)0x0;
-    if (local_d8 != (void *)0x0) {
-      free(local_d8);
+    lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    if (lpListBool != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+      free(lpListBool);
     }
   }
   return 0;
@@ -517,93 +521,93 @@ int __cdecl mixerGetRecordSource(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl mixerSetRecordSource(char *param_1)
+int __cdecl mixerSetRecordSource(char *SrcName)
 
 {
   UINT UVar1;
   MMRESULT MVar2;
   int iVar3;
-  int local_104;
-  tagMIXERLINECONTROLSA local_100;
-  MMRESULT local_e8;
-  DWORD local_e4;
-  DWORD local_e0;
-  HMIXEROBJ local_dc;
-  void *local_d8;
-  int local_d4;
-  void *local_d0;
-  tagMIXERLINEA local_cc;
+  int jj;
+  tagMIXERLINECONTROLSA mxlc;
+  uint err;
+  int iNumChannels;
+  int iMultipleItems;
+  HMIXEROBJ phmx;
+  tMIXERCONTROLDETAILS_BOOLEAN *lpListBool;
+  int ii;
+  tMIXERCONTROLDETAILS_BOOLEAN *lpListText;
+  tagMIXERLINEA mixerline;
   uint local_24;
-  tMIXERCONTROLDETAILS local_20;
-  LPMIXERCONTROLA local_8;
+  tMIXERCONTROLDETAILS mxcd;
+  LPMIXERCONTROLA lpmxc;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   UVar1 = waveInGetNumDevs();
   if (((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) &&
-     (MVar2 = mixerOpen((LPHMIXER)&local_dc,0,0,0,0), MVar2 == 0)) {
-    local_8 = (LPMIXERCONTROLA)0x0;
-    local_d0 = (void *)0x0;
-    local_d8 = (void *)0x0;
-    local_cc.cbStruct = 0xa8;
-    local_cc.dwComponentType = 7;
-    mixerGetLineInfoA(local_dc,&local_cc,3);
-    local_100.pamxctrl = calloc(local_cc.cControls * 0x94,1);
-    local_100.cbStruct = 0x18;
-    local_100.dwLineID = local_cc.dwLineID;
-    local_100.u.dwControlID = 0;
-    local_100.cControls = local_cc.cControls;
-    local_100.cbmxctrl = 0x94;
-    local_8 = local_100.pamxctrl;
-    local_e8 = mixerGetLineControlsA(local_dc,&local_100,0);
-    if (local_e8 == 0) {
-      for (local_d4 = 0; local_d4 < (int)local_cc.cControls; local_d4 = local_d4 + 1) {
-        if ((local_8[local_d4].dwControlType & 0xf0000000) == 0x70000000) {
-          local_e4 = local_cc.cChannels;
-          local_e0 = 0;
-          if ((local_8[local_d4].fdwControl & 1) != 0) {
-            local_e4 = 1;
+     (MVar2 = mixerOpen((LPHMIXER)&phmx,0,0,0,0), MVar2 == 0)) {
+    lpmxc = (LPMIXERCONTROLA)0x0;
+    lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    lpListBool = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    mixerline.cbStruct = 0xa8;
+    mixerline.dwComponentType = 7;
+    mixerGetLineInfoA(phmx,&mixerline,3);
+    mxlc.pamxctrl = calloc(mixerline.cControls * 0x94,1);
+    mxlc.cbStruct = 0x18;
+    mxlc.dwLineID = mixerline.dwLineID;
+    mxlc.u.dwControlID = 0;
+    mxlc.cControls = mixerline.cControls;
+    mxlc.cbmxctrl = 0x94;
+    lpmxc = mxlc.pamxctrl;
+    err = mixerGetLineControlsA(phmx,&mxlc,0);
+    if (err == 0) {
+      for (ii = 0; ii < (int)mixerline.cControls; ii = ii + 1) {
+        if ((lpmxc[ii].dwControlType & 0xf0000000) == 0x70000000) {
+          iNumChannels = mixerline.cChannels;
+          iMultipleItems = 0;
+          if ((lpmxc[ii].fdwControl & 1) != 0) {
+            iNumChannels = 1;
           }
-          if ((local_8[local_d4].fdwControl & 2) != 0) {
-            local_e0 = local_8[local_d4].cMultipleItems;
+          if ((lpmxc[ii].fdwControl & 2) != 0) {
+            iMultipleItems = lpmxc[ii].cMultipleItems;
           }
-          local_d0 = calloc(local_e4 * local_e0 * 0x48,1);
-          local_20.cbStruct = 0x18;
-          local_20.dwControlID = local_8[local_d4].dwControlID;
-          local_20.cChannels = local_e4;
-          local_20.u.cMultipleItems = local_e0;
-          local_20.cbDetails = 0x48;
-          local_20.paDetails = local_d0;
-          local_e8 = mixerGetControlDetailsA(local_dc,&local_20,1);
-          if (local_e8 == 0) {
-            local_d8 = calloc(local_e4 * local_e0 * 4,1);
-            local_20.cbDetails = 4;
-            local_20.paDetails = local_d8;
-            local_e8 = mixerGetControlDetailsA(local_dc,&local_20,0);
-            if (local_e8 == 0) {
-              local_e8 = 0;
-              for (local_104 = 0; local_104 < (int)local_e0; local_104 = local_104 + 1) {
-                iVar3 = I_stricmp((char *)((int)local_d0 + local_104 * 0x48 + 8),param_1);
+          lpListText = calloc(iNumChannels * iMultipleItems * 0x48,1);
+          mxcd.cbStruct = 0x18;
+          mxcd.dwControlID = lpmxc[ii].dwControlID;
+          mxcd.cChannels = iNumChannels;
+          mxcd.u.cMultipleItems = iMultipleItems;
+          mxcd.cbDetails = 0x48;
+          mxcd.paDetails = lpListText;
+          err = mixerGetControlDetailsA(phmx,&mxcd,1);
+          if (err == 0) {
+            lpListBool = calloc(iNumChannels * iMultipleItems * 4,1);
+            mxcd.cbDetails = 4;
+            mxcd.paDetails = lpListBool;
+            err = mixerGetControlDetailsA(phmx,&mxcd,0);
+            if (err == 0) {
+              err = 0;
+              for (jj = 0; jj < iMultipleItems; jj = jj + 1) {
+                iVar3 = I_stricmp((char *)(lpListText + jj * 0x12 + 2),SrcName);
                 if (iVar3 == 0) {
-                  *(undefined4 *)((int)local_d8 + local_104 * 4) = 1;
+                  lpListBool[jj].fValue = 1;
                 }
                 else {
-                  *(undefined4 *)((int)local_d8 + local_104 * 4) = 0;
+                  lpListBool[jj].fValue = 0;
                 }
               }
-              local_e8 = mixerSetControlDetails(local_dc,&local_20,0);
-              if (local_8 != (LPMIXERCONTROLA)0x0) {
-                free(local_8);
+              err = mixerSetControlDetails(phmx,&mxcd,0);
+              if (lpmxc != (LPMIXERCONTROLA)0x0) {
+                free(lpmxc);
               }
-              local_8 = (LPMIXERCONTROLA)0x0;
-              if (local_d0 != (void *)0x0) {
-                free(local_d0);
+              lpmxc = (LPMIXERCONTROLA)0x0;
+              if (lpListText != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+                free(lpListText);
               }
-              local_d0 = (void *)0x0;
-              if (local_d8 != (void *)0x0) {
-                free(local_d8);
+              lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+              if (lpListBool != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+                free(lpListBool);
               }
-              local_d8 = (void *)0x0;
-              if (local_e8 == 0) {
+              lpListBool = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+              if (err == 0) {
                 return 1;
               }
             }
@@ -611,16 +615,16 @@ int __cdecl mixerSetRecordSource(char *param_1)
         }
       }
     }
-    if (local_8 != (LPMIXERCONTROLA)0x0) {
-      free(local_8);
+    if (lpmxc != (LPMIXERCONTROLA)0x0) {
+      free(lpmxc);
     }
-    local_8 = (LPMIXERCONTROLA)0x0;
-    if (local_d0 != (void *)0x0) {
-      free(local_d0);
+    lpmxc = (LPMIXERCONTROLA)0x0;
+    if (lpListText != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+      free(lpListText);
     }
-    local_d0 = (void *)0x0;
-    if (local_d8 != (void *)0x0) {
-      free(local_d8);
+    lpListText = (tMIXERCONTROLDETAILS_BOOLEAN *)0x0;
+    if (lpListBool != (tMIXERCONTROLDETAILS_BOOLEAN *)0x0) {
+      free(lpListBool);
     }
   }
   return 0;
@@ -631,62 +635,62 @@ int __cdecl mixerSetRecordSource(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl mixerSetMicrophoneMute(uchar param_1)
+int __cdecl mixerSetMicrophoneMute(uchar bMute)
 
 {
   UINT UVar1;
   MMRESULT MVar2;
   int iVar3;
-  tagMIXERCONTROLA local_18c;
-  uint local_f4;
-  tagMIXERLINECONTROLSA local_f0;
-  MMRESULT local_d8;
-  HMIXEROBJ local_d4;
-  uint local_d0;
-  tagMIXERLINEA local_cc;
+  tagMIXERCONTROLA mxc;
+  ulong jj;
+  tagMIXERLINECONTROLSA mxlc;
+  uint err;
+  HMIXEROBJ phmx;
+  ulong ii;
+  tagMIXERLINEA mixerline;
   uint local_24;
-  uint local_20;
-  tMIXERCONTROLDETAILS local_1c;
+  tMIXERCONTROLDETAILS_BOOLEAN newSetting;
+  tMIXERCONTROLDETAILS mxcd;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   UVar1 = waveInGetNumDevs();
   if (((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) &&
-     (MVar2 = mixerOpen((LPHMIXER)&local_d4,0,0,0,0), MVar2 == 0)) {
-    local_cc.cbStruct = 0xa8;
-    local_cc.dwComponentType = 4;
-    local_d8 = mixerGetLineInfoA(local_d4,&local_cc,3);
-    if (local_d8 == 0) {
-      local_f4 = local_cc.cConnections;
-      for (local_d0 = 0; local_d0 < local_f4; local_d0 = local_d0 + 1) {
-        local_cc.dwSource = local_d0;
-        mixerGetLineInfoA(local_d4,&local_cc,1);
-        iVar3 = I_stricmp(local_cc.szName,old_rec_source);
+     (MVar2 = mixerOpen((LPHMIXER)&phmx,0,0,0,0), MVar2 == 0)) {
+    mixerline.cbStruct = 0xa8;
+    mixerline.dwComponentType = 4;
+    err = mixerGetLineInfoA(phmx,&mixerline,3);
+    if (err == 0) {
+      jj = mixerline.cConnections;
+      for (ii = 0; ii < jj; ii = ii + 1) {
+        mixerline.dwSource = ii;
+        mixerGetLineInfoA(phmx,&mixerline,1);
+        iVar3 = I_stricmp(mixerline.szName,old_rec_source);
         if (iVar3 == 0) {
-          local_f0.cbStruct = 0x18;
-          local_f0.dwLineID = local_cc.dwLineID;
-          local_f0.u.dwControlID = 0x20010002;
-          local_f0.cControls = 1;
-          local_f0.cbmxctrl = 0x94;
-          local_f0.pamxctrl = &local_18c;
-          local_d8 = mixerGetLineControlsA(local_d4,&local_f0,2);
-          if (local_d8 == 0) {
-            local_1c.cbStruct = 0x18;
-            local_1c.cChannels = 1;
-            local_1c.cbDetails = 4;
-            local_1c.paDetails = &local_20;
-            local_1c.u.hwndOwner = (HWND)0x0;
-            local_1c.dwControlID = local_18c.dwControlID;
-            local_d8 = mixerGetControlDetailsA(local_d4,&local_1c,0);
-            if (local_d8 == 0) {
-              local_20 = (uint)param_1;
-              local_d8 = mixerSetControlDetails(local_d4,&local_1c,0);
+          mxlc.cbStruct = 0x18;
+          mxlc.dwLineID = mixerline.dwLineID;
+          mxlc.u.dwControlID = 0x20010002;
+          mxlc.cControls = 1;
+          mxlc.cbmxctrl = 0x94;
+          mxlc.pamxctrl = &mxc;
+          err = mixerGetLineControlsA(phmx,&mxlc,2);
+          if (err == 0) {
+            mxcd.cbStruct = 0x18;
+            mxcd.cChannels = 1;
+            mxcd.cbDetails = 4;
+            mxcd.paDetails = &newSetting;
+            mxcd.u.hwndOwner = (HWND)0x0;
+            mxcd.dwControlID = mxc.dwControlID;
+            err = mixerGetControlDetailsA(phmx,&mxcd,0);
+            if (err == 0) {
+              newSetting.fValue = (long)bMute;
+              err = mixerSetControlDetails(phmx,&mxcd,0);
             }
           }
           break;
         }
       }
     }
-    mixerClose((HMIXER)local_d4);
+    mixerClose((HMIXER)phmx);
   }
   return 0;
 }
@@ -694,13 +698,13 @@ int __cdecl mixerSetMicrophoneMute(uchar param_1)
 
 // 007E08C0  Live_GetClientNumForXuid  (win32/win_voice.cpp:807)
 
-int __cdecl Live_GetClientNumForXuid(SessionData_s *param_1,ulong64 param_2)
+int __cdecl Live_GetClientNumForXuid(SessionData_s *session,ulong64 param_2)
 
 {
   int iVar1;
   undefined4 unaff_EBP;
   
-  iVar1 = Session_FindRegisteredUser(param_1,CONCAT44(unaff_EBP,(undefined4)param_2));
+  iVar1 = Session_FindRegisteredUser(session,CONCAT44(unaff_EBP,(undefined4)param_2));
   return iVar1;
 }
 

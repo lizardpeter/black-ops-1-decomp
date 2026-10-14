@@ -5,45 +5,45 @@
 undefined4 _HTEventList_unregister(uint param_1,int param_2)
 
 {
-  uint *puVar1;
+  uint *pBlock;
+  undefined4 uVar1;
   undefined4 uVar2;
-  undefined4 uVar3;
-  int iVar4;
-  undefined4 *puVar5;
+  int iVar3;
+  undefined4 *puVar4;
   
-  puVar5 = (undefined4 *)(&DAT_034f8318)[param_1 % 0x43];
-  uVar3 = 0xffffffff;
+  puVar4 = (undefined4 *)(&DAT_034f8318)[param_1 % 0x43];
+  uVar2 = 0xffffffff;
   if (param_1 == 0xffffffff) {
     return 0;
   }
-  if (puVar5 != (undefined4 *)0x0) {
+  if (puVar4 != (undefined4 *)0x0) {
     do {
-      puVar5 = (undefined4 *)puVar5[1];
-      if (puVar5 == (undefined4 *)0x0) {
+      puVar4 = (undefined4 *)puVar4[1];
+      if (puVar4 == (undefined4 *)0x0) {
         return 0xffffffff;
       }
-      puVar1 = (uint *)*puVar5;
-      if (puVar1 == (uint *)0x0) {
+      pBlock = (uint *)*puVar4;
+      if (pBlock == (uint *)0x0) {
         return 0xffffffff;
       }
-    } while (*puVar1 != param_1);
+    } while (*pBlock != param_1);
     param_2 = param_2 >> 0x10;
-    puVar1[param_2 + 1] = 0;
-    iVar4 = FUN_00883c30();
-    if (puVar1[param_2 + 7] != 0) {
+    pBlock[param_2 + 1] = 0;
+    iVar3 = FUN_00883c30();
+    if (pBlock[param_2 + 7] != 0) {
       _HTTimer_delete();
     }
-    uVar2 = DAT_034f8424;
-    uVar3 = DAT_034f8308;
-    puVar1[param_2 + 7] = 0;
-    _WSAAsyncSelect_16(param_1,uVar3,uVar2,iVar4);
-    if (iVar4 == 0) {
-      free(puVar1);
+    uVar1 = DAT_034f8424;
+    uVar2 = DAT_034f8308;
+    pBlock[param_2 + 7] = 0;
+    _WSAAsyncSelect_16(param_1,uVar2,uVar1,iVar3);
+    if (iVar3 == 0) {
+      free(pBlock);
       _HTList_quickRemoveElement();
     }
-    uVar3 = 0;
+    uVar2 = 0;
   }
-  return uVar3;
+  return uVar2;
 }
 
 
@@ -52,41 +52,41 @@ undefined4 _HTEventList_unregister(uint param_1,int param_2)
 void _HTEventList_unregisterAll(void)
 
 {
-  undefined4 *puVar1;
-  void *pvVar2;
-  void *pvVar3;
-  undefined4 *puVar4;
-  undefined4 *puVar5;
+  undefined4 *pBlock;
+  void *pvVar1;
+  void *pBlock_00;
+  undefined4 *puVar2;
+  undefined4 *puVar3;
   
-  puVar4 = &DAT_034f8318;
+  puVar2 = &DAT_034f8318;
   do {
-    puVar5 = (undefined4 *)*puVar4;
-    while (((puVar5 != (undefined4 *)0x0 &&
-            (puVar5 = (undefined4 *)puVar5[1], puVar5 != (undefined4 *)0x0)) &&
-           (puVar1 = (undefined4 *)*puVar5, puVar1 != (undefined4 *)0x0))) {
-      _WSAAsyncSelect_16(*puVar1,DAT_034f8308,DAT_034f8424,0);
-      free(puVar1);
+    puVar3 = (undefined4 *)*puVar2;
+    while (((puVar3 != (undefined4 *)0x0 &&
+            (puVar3 = (undefined4 *)puVar3[1], puVar3 != (undefined4 *)0x0)) &&
+           (pBlock = (undefined4 *)*puVar3, pBlock != (undefined4 *)0x0))) {
+      _WSAAsyncSelect_16(*pBlock,DAT_034f8308,DAT_034f8424,0);
+      free(pBlock);
     }
-    pvVar3 = (void *)*puVar4;
-    while (pvVar3 != (void *)0x0) {
-      pvVar2 = *(void **)((int)pvVar3 + 4);
-      free(pvVar3);
-      pvVar3 = pvVar2;
+    pBlock_00 = (void *)*puVar2;
+    while (pBlock_00 != (void *)0x0) {
+      pvVar1 = *(void **)((int)pBlock_00 + 4);
+      free(pBlock_00);
+      pBlock_00 = pvVar1;
     }
-    *puVar4 = 0;
-    puVar5 = DAT_035476fc;
-    puVar4 = puVar4 + 1;
-  } while ((int)puVar4 < 0x34f8424);
-  puVar4 = DAT_035476fc;
+    *puVar2 = 0;
+    puVar3 = DAT_035476fc;
+    puVar2 = puVar2 + 1;
+  } while ((int)puVar2 < 0x34f8424);
+  puVar2 = DAT_035476fc;
   if (DAT_035476fc != (undefined4 *)0x0) {
-    while ((puVar4 = (undefined4 *)puVar4[1], puVar4 != (undefined4 *)0x0 &&
-           ((void *)*puVar4 != (void *)0x0))) {
-      free((void *)*puVar4);
+    while ((puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0 &&
+           ((void *)*puVar2 != (void *)0x0))) {
+      free((void *)*puVar2);
     }
-    while (puVar4 = puVar5, puVar4 != (undefined4 *)0x0) {
-      puVar5 = (undefined4 *)puVar4[1];
-      if (puVar4 != (undefined4 *)0x0) {
-        free(puVar4);
+    while (puVar2 = puVar3, puVar2 != (undefined4 *)0x0) {
+      puVar3 = (undefined4 *)puVar2[1];
+      if (puVar2 != (undefined4 *)0x0) {
+        free(puVar2);
       }
     }
   }

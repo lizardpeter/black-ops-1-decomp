@@ -421,21 +421,21 @@ void __cdecl LiveSteam_Server_Init(void)
 void __cdecl LiveSteam_Server_Shutdown(void)
 
 {
-  void *pvVar1;
-  undefined4 *puVar2;
-  int *piVar3;
+  void *p;
+  undefined4 *puVar1;
+  int *piVar2;
   LiveSteamServer *this;
   
   if (DAT_0350b43c != (void *)0x0) {
-    puVar2 = (undefined4 *)SteamMasterServerUpdater();
-    (**(code **)*puVar2)(0);
-    piVar3 = (int *)SteamGameServer();
-    (**(code **)(*piVar3 + 4))();
+    puVar1 = (undefined4 *)SteamMasterServerUpdater();
+    (**(code **)*puVar1)(0);
+    piVar2 = (int *)SteamGameServer();
+    (**(code **)(*piVar2 + 4))();
     SteamGameServer_Shutdown();
-    pvVar1 = DAT_0350b43c;
+    p = DAT_0350b43c;
     if (DAT_0350b43c != (void *)0x0) {
       LiveSteamServer::~LiveSteamServer(this);
-      operator_delete(pvVar1);
+      operator_delete(p);
     }
     DAT_0350b43c = (void *)0x0;
   }

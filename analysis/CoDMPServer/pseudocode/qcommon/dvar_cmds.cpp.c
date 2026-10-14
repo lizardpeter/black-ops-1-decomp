@@ -13,39 +13,41 @@ void __cdecl TRACK_dvar_cmds(void)
 
 // 006D9120  Dvar_GetCombinedString  (qcommon/dvar_cmds.cpp:86)
 
-void __cdecl Dvar_GetCombinedString(char *param_1,int param_2)
+void __cdecl Dvar_GetCombinedString(char *combined,int first)
 
 {
   char cVar1;
   int iVar2;
+  char *src;
   char *pcVar3;
-  char *pcVar4;
   char *local_30;
-  char *local_10;
-  int local_8;
+  int c;
+  int l;
+  int len;
+  int i;
   
   iVar2 = Cmd_Argc();
-  *param_1 = '\0';
-  local_10 = (char *)0x0;
-  local_8 = param_2;
+  *combined = '\0';
+  l = 0;
+  i = first;
   while( true ) {
-    if (iVar2 <= local_8) {
+    if (iVar2 <= i) {
       return;
     }
-    local_30 = Cmd_Argv(local_8);
-    pcVar4 = local_30 + 1;
+    local_30 = Cmd_Argv(i);
+    pcVar3 = local_30 + 1;
     do {
       cVar1 = *local_30;
       local_30 = local_30 + 1;
     } while (cVar1 != '\0');
-    if (0xffd < (int)(local_30 + (int)(local_10 + (1 - (int)pcVar4)))) break;
-    pcVar3 = Cmd_Argv(local_8);
-    I_strncat(param_1,0x1000,pcVar3);
-    if (local_8 != iVar2 + -1) {
-      I_strncat(param_1,0x1000," ");
+    if (0xffd < (int)(local_30 + l + (1 - (int)pcVar3))) break;
+    src = Cmd_Argv(i);
+    I_strncat(combined,0x1000,src);
+    if (i != iVar2 + -1) {
+      I_strncat(combined,0x1000," ");
     }
-    local_10 = local_30 + (int)(local_10 + (1 - (int)pcVar4));
-    local_8 = local_8 + 1;
+    l = (int)(local_30 + l + (1 - (int)pcVar3));
+    i = i + 1;
   }
   return;
 }
@@ -56,53 +58,53 @@ void __cdecl Dvar_GetCombinedString(char *param_1,int param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Dvar_Command(bool param_1)
+int __cdecl Dvar_Command(bool restricted)
 
 {
   DvarLimits DVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  char *pcVar5;
+  char *dvarName;
   undefined4 in_stack_ffffefdc;
-  char local_100c [4096];
+  char combined [4096];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
-  local_8 = (dvar_s *)0x6d8fcd;
+  dvar = (dvar_s *)0x6d8fcd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   pcVar3 = Cmd_Argv(0);
-  local_8 = Dvar_FindVar(pcVar3);
-  if (local_8 == (dvar_s *)0x0) {
+  dvar = Dvar_FindVar(pcVar3);
+  if (dvar == (dvar_s *)0x0) {
     iVar4 = 0;
   }
   else {
     bVar2 = Dvar_GetBool("con_restricted_access");
-    if (((bVar2) && (param_1)) && ((*(uint *)&local_8->flags & 0x10000) == 0)) {
+    if (((bVar2) && (restricted)) && ((*(uint *)&dvar->flags & 0x10000) == 0)) {
       Com_DPrintf(0x10,"ConAccess: dvar not set: %s.\n");
       iVar4 = 0;
     }
     else {
       iVar4 = Cmd_Argc();
       if (iVar4 == 1) {
-        Dvar_DisplayableResetValue(local_8);
-        Dvar_DisplayableValue(local_8);
+        Dvar_DisplayableResetValue(dvar);
+        Dvar_DisplayableValue(dvar);
         Com_Printf(0,"\"%s\" is: \"%s^7\" default: \"%s^7\"\n");
-        bVar2 = Dvar_HasLatchedValue(local_8);
+        bVar2 = Dvar_HasLatchedValue(dvar);
         if (bVar2) {
-          Dvar_DisplayableLatchedValue(local_8);
+          Dvar_DisplayableLatchedValue(dvar);
           Com_Printf(0,"latched: \"%s\"\n");
         }
         DVar1.integer64.max._4_4_ = in_stack_ffffefdc;
-        DVar1._0_12_ = *(undefined1 (*) [12])((int)&local_8->domain + 4);
-        Dvar_PrintDomain(local_8->type,DVar1);
+        DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
+        Dvar_PrintDomain(dvar->type,DVar1);
         iVar4 = 1;
       }
       else {
-        Dvar_GetCombinedString(local_100c,1);
-        pcVar3 = local_100c;
-        pcVar5 = Cmd_Argv(0);
-        Dvar_SetCommand(pcVar5,pcVar3);
+        Dvar_GetCombinedString(combined,1);
+        pcVar3 = combined;
+        dvarName = Cmd_Argv(0);
+        Dvar_SetCommand(dvarName,pcVar3);
         iVar4 = 1;
       }
     }
@@ -113,42 +115,42 @@ int __cdecl Dvar_Command(bool param_1)
 
 // 006D9440  Dvar_ToggleSimple  (qcommon/dvar_cmds.cpp:157)
 
-bool __cdecl Dvar_ToggleSimple(dvar_s *param_1)
+bool __cdecl Dvar_ToggleSimple(dvar_s *dvar)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  char *pcVar5;
+  char *fmt;
   DvarSetSource in_stack_ffffffe4;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0x9e,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_BOOL:
-    Dvar_SetBoolFromSource(param_1,(param_1->current).enabled == false,DVAR_SOURCE_EXTERNAL);
+    Dvar_SetBoolFromSource(dvar,(dvar->current).enabled == false,DVAR_SOURCE_EXTERNAL);
     bVar3 = true;
     break;
   case DVAR_TYPE_FLOAT:
-    if ((0.0 < (param_1->domain).value.min) || ((param_1->domain).value.max < 1.0)) {
-      if ((param_1->current).value == (param_1->domain).value.min) {
-        Dvar_SetFloatFromSource(param_1,(param_1->domain).value.max,DVAR_SOURCE_EXTERNAL);
+    if ((0.0 < (dvar->domain).value.min) || ((dvar->domain).value.max < 1.0)) {
+      if ((dvar->current).value == (dvar->domain).value.min) {
+        Dvar_SetFloatFromSource(dvar,(dvar->domain).value.max,DVAR_SOURCE_EXTERNAL);
       }
       else {
-        Dvar_SetFloatFromSource(param_1,(param_1->domain).value.min,DVAR_SOURCE_EXTERNAL);
+        Dvar_SetFloatFromSource(dvar,(dvar->domain).value.min,DVAR_SOURCE_EXTERNAL);
       }
     }
-    else if ((param_1->current).value == 0.0) {
-      Dvar_SetFloatFromSource(param_1,1.0,DVAR_SOURCE_EXTERNAL);
+    else if ((dvar->current).value == 0.0) {
+      Dvar_SetFloatFromSource(dvar,1.0,DVAR_SOURCE_EXTERNAL);
     }
     else {
-      Dvar_SetFloatFromSource(param_1,0.0,DVAR_SOURCE_EXTERNAL);
+      Dvar_SetFloatFromSource(dvar,0.0,DVAR_SOURCE_EXTERNAL);
     }
     bVar3 = true;
     break;
@@ -163,59 +165,58 @@ bool __cdecl Dvar_ToggleSimple(dvar_s *param_1)
     bVar3 = false;
     break;
   case DVAR_TYPE_INT:
-    if (((param_1->domain).enumeration.stringCount < 1) && (0 < (param_1->domain).integer.max)) {
-      if ((param_1->current).integer == 0) {
-        Dvar_SetIntFromSource(param_1,1,DVAR_SOURCE_EXTERNAL);
+    if (((dvar->domain).enumeration.stringCount < 1) && (0 < (dvar->domain).integer.max)) {
+      if ((dvar->current).integer == 0) {
+        Dvar_SetIntFromSource(dvar,1,DVAR_SOURCE_EXTERNAL);
       }
       else {
-        Dvar_SetIntFromSource(param_1,0,DVAR_SOURCE_EXTERNAL);
+        Dvar_SetIntFromSource(dvar,0,DVAR_SOURCE_EXTERNAL);
       }
     }
-    else if ((param_1->current).integer == (param_1->domain).enumeration.stringCount) {
-      Dvar_SetIntFromSource(param_1,(param_1->domain).integer.max,DVAR_SOURCE_EXTERNAL);
+    else if ((dvar->current).integer == (dvar->domain).enumeration.stringCount) {
+      Dvar_SetIntFromSource(dvar,(dvar->domain).integer.max,DVAR_SOURCE_EXTERNAL);
     }
     else {
-      Dvar_SetIntFromSource(param_1,(param_1->domain).enumeration.stringCount,DVAR_SOURCE_EXTERNAL);
+      Dvar_SetIntFromSource(dvar,(dvar->domain).enumeration.stringCount,DVAR_SOURCE_EXTERNAL);
     }
     bVar3 = true;
     break;
   case DVAR_TYPE_ENUM:
-    if ((param_1->domain).enumeration.stringCount != 0) {
+    if ((dvar->domain).enumeration.stringCount != 0) {
       Dvar_SetIntFromSource
-                (param_1,((param_1->current).integer + 1) %
-                         (param_1->domain).enumeration.stringCount,DVAR_SOURCE_EXTERNAL);
+                (dvar,((dvar->current).integer + 1) % (dvar->domain).enumeration.stringCount,
+                 DVAR_SOURCE_EXTERNAL);
     }
     bVar3 = true;
     break;
   case DVAR_TYPE_INT64:
-    iVar1 = (param_1->domain).integer.max;
+    iVar1 = (dvar->domain).integer.max;
     if ((iVar1 < 1) &&
-       ((((iVar1 < 0 || ((param_1->domain).enumeration.stringCount == 0)) &&
-         (iVar1 = *(int *)((int)&param_1->domain + 0xc), -1 < iVar1)) &&
-        ((0 < iVar1 || (*(int *)((int)&param_1->domain + 8) != 0)))))) {
-      if ((param_1->current).integer == 0 && (param_1->current).vector[1] == 0.0) {
-        Dvar_SetInt64FromSource(param_1,0x100000000,in_stack_ffffffe4);
+       ((((iVar1 < 0 || ((dvar->domain).enumeration.stringCount == 0)) &&
+         (iVar1 = *(int *)((int)&dvar->domain + 0xc), -1 < iVar1)) &&
+        ((0 < iVar1 || (*(int *)((int)&dvar->domain + 8) != 0)))))) {
+      if ((dvar->current).integer == 0 && (dvar->current).vector[1] == 0.0) {
+        Dvar_SetInt64FromSource(dvar,0x100000000,in_stack_ffffffe4);
       }
       else {
-        Dvar_SetInt64FromSource(param_1,0x100000000,in_stack_ffffffe4);
+        Dvar_SetInt64FromSource(dvar,0x100000000,in_stack_ffffffe4);
       }
     }
-    else if (((param_1->current).integer == (param_1->domain).enumeration.stringCount) &&
-            ((char **)(param_1->current).vector[1] == (param_1->domain).enumeration.strings)) {
+    else if (((dvar->current).integer == (dvar->domain).enumeration.stringCount) &&
+            ((char **)(dvar->current).vector[1] == (dvar->domain).enumeration.strings)) {
       Dvar_SetInt64FromSource
-                (param_1,CONCAT44(1,*(undefined4 *)((int)&param_1->domain + 0xc)),
-                 (DvarSetSource)param_1);
+                (dvar,CONCAT44(1,*(undefined4 *)((int)&dvar->domain + 0xc)),(DvarSetSource)dvar);
     }
     else {
       Dvar_SetInt64FromSource
-                (param_1,CONCAT44(1,(param_1->domain).enumeration.strings),(DvarSetSource)param_1);
+                (dvar,CONCAT44(1,(dvar->domain).enumeration.strings),(DvarSetSource)dvar);
     }
     bVar3 = true;
     break;
   default:
-    pcVar5 = va("unhandled case %i");
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0xea,1,
-                             pcVar5);
+    fmt = va("unhandled case %i");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0xea,1,fmt)
+    ;
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
@@ -238,13 +239,17 @@ bool __cdecl Dvar_ToggleInternal(void)
   undefined1 uVar4;
   int iVar5;
   char *pcVar6;
-  dvar_s *pdVar7;
+  dvar_s *dvar_00;
+  char *pcVar7;
   char *pcVar8;
-  char *pcVar9;
   char *local_78;
   char *local_68;
-  int local_18;
-  char *local_14;
+  char *string;
+  int argIndex;
+  char *argString;
+  char *dvarName;
+  dvar_s *dvar;
+  char *enumString;
   
   iVar5 = Cmd_Argc();
   if (iVar5 < 2) {
@@ -269,51 +274,51 @@ bool __cdecl Dvar_ToggleInternal(void)
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    pdVar7 = Dvar_FindVar(pcVar6);
-    if (pdVar7 == (dvar_s *)0x0) {
+    dvar_00 = Dvar_FindVar(pcVar6);
+    if (dvar_00 == (dvar_s *)0x0) {
       Com_Printf(0,"toggle failed: dvar \'%s\' not found.\n");
       bVar3 = false;
     }
     else {
       iVar5 = Cmd_Argc();
       if (iVar5 == 2) {
-        bVar3 = Dvar_ToggleSimple(pdVar7);
+        bVar3 = Dvar_ToggleSimple(dvar_00);
       }
       else {
-        pcVar8 = Dvar_DisplayableValue(pdVar7);
-        for (local_18 = 2; iVar5 = Cmd_Argc(), local_18 + 1 < iVar5; local_18 = local_18 + 1) {
-          local_14 = Cmd_Argv(local_18);
-          if (pdVar7->type == DVAR_TYPE_ENUM) {
-            pcVar9 = Dvar_IndexStringToEnumString(pdVar7,local_14);
-            local_68 = pcVar9;
+        pcVar7 = Dvar_DisplayableValue(dvar_00);
+        for (argIndex = 2; iVar5 = Cmd_Argc(), argIndex + 1 < iVar5; argIndex = argIndex + 1) {
+          argString = Cmd_Argv(argIndex);
+          if (dvar_00->type == DVAR_TYPE_ENUM) {
+            pcVar8 = Dvar_IndexStringToEnumString(dvar_00,argString);
+            local_68 = pcVar8;
             do {
               cVar1 = *local_68;
               local_68 = local_68 + 1;
             } while (cVar1 != '\0');
-            if (local_68 != pcVar9 + 1) {
-              local_14 = pcVar9;
+            if (local_68 != pcVar8 + 1) {
+              argString = pcVar8;
             }
           }
-          iVar5 = I_stricmp(pcVar8,local_14);
+          iVar5 = I_stricmp(pcVar7,argString);
           if (iVar5 == 0) {
-            pcVar8 = Cmd_Argv(local_18 + 1);
-            Dvar_SetCommand(pcVar6,pcVar8);
+            pcVar7 = Cmd_Argv(argIndex + 1);
+            Dvar_SetCommand(pcVar6,pcVar7);
             return true;
           }
         }
-        local_14 = Cmd_Argv(2);
-        if (pdVar7->type == DVAR_TYPE_ENUM) {
-          pcVar8 = Dvar_IndexStringToEnumString(pdVar7,local_14);
-          local_78 = pcVar8;
+        argString = Cmd_Argv(2);
+        if (dvar_00->type == DVAR_TYPE_ENUM) {
+          pcVar7 = Dvar_IndexStringToEnumString(dvar_00,argString);
+          local_78 = pcVar7;
           do {
             cVar1 = *local_78;
             local_78 = local_78 + 1;
           } while (cVar1 != '\0');
-          if (local_78 != pcVar8 + 1) {
-            local_14 = pcVar8;
+          if (local_78 != pcVar7 + 1) {
+            argString = pcVar7;
           }
         }
-        Dvar_SetCommand(pcVar6,local_14);
+        Dvar_SetCommand(pcVar6,argString);
         bVar3 = true;
       }
     }
@@ -341,7 +346,10 @@ void __cdecl Dvar_TogglePrint_f(void)
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  dvar_s *pdVar5;
+  dvar_s *dvar_00;
+  char *string;
+  char *dvarName;
+  dvar_s *dvar;
   
   bVar2 = Dvar_ToggleInternal();
   if (bVar2) {
@@ -364,15 +372,15 @@ void __cdecl Dvar_TogglePrint_f(void)
       (*pcVar1)();
       return;
     }
-    pdVar5 = Dvar_FindVar(pcVar4);
-    if ((pdVar5 == (dvar_s *)0x0) &&
+    dvar_00 = Dvar_FindVar(pcVar4);
+    if ((dvar_00 == (dvar_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0x14f,1
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pcVar4 = Dvar_DisplayableValue(pdVar5);
+    pcVar4 = Dvar_DisplayableValue(dvar_00);
     if ((pcVar4 == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0x151,1
                                  ,"%s"), !bVar2)) {
@@ -396,26 +404,27 @@ void __cdecl Dvar_Set_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char *pcVar4;
-  char local_100c [4096];
+  char *dvarName_00;
+  char *string;
+  int c;
+  char combined [4096];
   uint local_c;
-  char *local_8;
+  char *dvarName;
   
-  local_8 = (char *)0x6d989d;
+  dvarName = (char *)0x6d989d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = Cmd_Argc();
   if (iVar2 < 3) {
     Com_Printf(0,"USAGE: set <variable> <value>\n");
   }
   else {
-    local_8 = Cmd_Argv(1);
-    bVar1 = Dvar_IsValidName(local_8);
+    dvarName = Cmd_Argv(1);
+    bVar1 = Dvar_IsValidName(dvarName);
     if (bVar1) {
-      Dvar_GetCombinedString(local_100c,2);
-      pcVar4 = local_100c;
-      pcVar3 = Cmd_Argv(1);
-      Dvar_SetCommand(pcVar3,pcVar4);
+      Dvar_GetCombinedString(combined,2);
+      string = combined;
+      dvarName_00 = Cmd_Argv(1);
+      Dvar_SetCommand(dvarName_00,string);
     }
     else {
       Cmd_Argv(1);
@@ -432,21 +441,25 @@ void __cdecl Dvar_RegisterBool_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
-  dvar_s *pdVar4;
+  char *dvarName_00;
+  char *nptr;
+  dvar_s *pdVar2;
+  char *dvarName;
+  dvar_s *dvar;
+  int argc;
+  bool value;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    iVar1 = atoi(pcVar3);
-    pdVar4 = Dvar_FindVar(pcVar2);
-    if ((pdVar4 == (dvar_s *)0x0) ||
-       ((pdVar4->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar4->flags & 0x4000) != 0)))) {
-      _Dvar_RegisterBool(pcVar2,iVar1 != 0,0x4000,"External Dvar");
+    dvarName_00 = Cmd_Argv(1);
+    nptr = Cmd_Argv(2);
+    iVar1 = atoi(nptr);
+    pdVar2 = Dvar_FindVar(dvarName_00);
+    if ((pdVar2 == (dvar_s *)0x0) ||
+       ((pdVar2->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar2->flags & 0x4000) != 0)))) {
+      _Dvar_RegisterBool(dvarName_00,iVar1 != 0,0x4000,"External Dvar");
     }
-    else if (pdVar4->type != DVAR_TYPE_BOOL) {
+    else if (pdVar2->type != DVAR_TYPE_BOOL) {
       Com_Printf(0,"dvar \'%s\' is not a boolean dvar\n");
     }
   }
@@ -464,31 +477,37 @@ void __cdecl Dvar_RegisterInt_f(void)
 
 {
   int iVar1;
+  char *dvarName_00;
   char *pcVar2;
-  char *pcVar3;
-  int iVar4;
-  int iVar5;
-  dvar_s *pdVar6;
+  int min_00;
+  int max_00;
+  dvar_s *pdVar3;
+  int max;
+  char *dvarName;
+  int min;
+  dvar_s *dvar;
+  int argc;
+  int value;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 5) {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    iVar1 = atoi(pcVar3);
-    pcVar3 = Cmd_Argv(3);
-    iVar4 = atoi(pcVar3);
-    pcVar3 = Cmd_Argv(4);
-    iVar5 = atoi(pcVar3);
-    if (iVar5 < iVar4) {
+    dvarName_00 = Cmd_Argv(1);
+    pcVar2 = Cmd_Argv(2);
+    iVar1 = atoi(pcVar2);
+    pcVar2 = Cmd_Argv(3);
+    min_00 = atoi(pcVar2);
+    pcVar2 = Cmd_Argv(4);
+    max_00 = atoi(pcVar2);
+    if (max_00 < min_00) {
       Com_Printf(0,"dvar %s: min %i should not be greater than max %i\n");
     }
     else {
-      pdVar6 = Dvar_FindVar(pcVar2);
-      if ((pdVar6 == (dvar_s *)0x0) ||
-         ((pdVar6->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar6->flags & 0x4000) != 0)))) {
-        _Dvar_RegisterInt(pcVar2,iVar1,iVar4,iVar5,0x4000,"External Dvar");
+      pdVar3 = Dvar_FindVar(dvarName_00);
+      if ((pdVar3 == (dvar_s *)0x0) ||
+         ((pdVar3->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar3->flags & 0x4000) != 0)))) {
+        _Dvar_RegisterInt(dvarName_00,iVar1,min_00,max_00,0x4000,"External Dvar");
       }
-      else if ((pdVar6->type != DVAR_TYPE_INT) && (pdVar6->type != DVAR_TYPE_ENUM)) {
+      else if ((pdVar3->type != DVAR_TYPE_INT) && (pdVar3->type != DVAR_TYPE_ENUM)) {
         Com_Printf(0,"dvar \'%s\' is not an integer dvar\n");
       }
     }
@@ -507,29 +526,36 @@ void __cdecl Dvar_RegisterFloat_f(void)
 
 {
   int iVar1;
+  char *dvarName_00;
   char *pcVar2;
-  char *pcVar3;
-  dvar_s *pdVar4;
+  dvar_s *pdVar3;
+  double dVar4;
   double dVar5;
   double dVar6;
-  double dVar7;
+  float max;
+  char *dvarName;
+  float min;
+  dvar_s *dvar;
+  int argc;
+  float value;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 5) {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    dVar5 = atof(pcVar3);
-    pcVar3 = Cmd_Argv(3);
-    dVar6 = atof(pcVar3);
-    pcVar3 = Cmd_Argv(4);
-    dVar7 = atof(pcVar3);
-    if ((float)dVar6 <= (float)dVar7) {
-      pdVar4 = Dvar_FindVar(pcVar2);
-      if ((pdVar4 == (dvar_s *)0x0) ||
-         ((pdVar4->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar4->flags & 0x4000) != 0)))) {
-        _Dvar_RegisterFloat(pcVar2,(float)dVar5,(float)dVar6,(float)dVar7,0x4000,"External Dvar");
+    dvarName_00 = Cmd_Argv(1);
+    pcVar2 = Cmd_Argv(2);
+    dVar4 = atof(pcVar2);
+    pcVar2 = Cmd_Argv(3);
+    dVar5 = atof(pcVar2);
+    pcVar2 = Cmd_Argv(4);
+    dVar6 = atof(pcVar2);
+    if ((float)dVar5 <= (float)dVar6) {
+      pdVar3 = Dvar_FindVar(dvarName_00);
+      if ((pdVar3 == (dvar_s *)0x0) ||
+         ((pdVar3->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar3->flags & 0x4000) != 0)))) {
+        _Dvar_RegisterFloat(dvarName_00,(float)dVar4,(float)dVar5,(float)dVar6,0x4000,
+                            "External Dvar");
       }
-      else if (pdVar4->type != DVAR_TYPE_FLOAT) {
+      else if (pdVar3->type != DVAR_TYPE_FLOAT) {
         Com_Printf(0,"dvar \'%s\' is not an integer dvar\n");
       }
     }
@@ -551,36 +577,42 @@ void __cdecl Dvar_RegisterColor_f(void)
 
 {
   int iVar1;
+  char *dvarName_00;
   char *pcVar2;
-  char *pcVar3;
-  dvar_s *pdVar4;
+  dvar_s *pdVar3;
+  double dVar4;
   double dVar5;
   double dVar6;
   double dVar7;
-  double dVar8;
-  float local_c;
+  float r;
+  float g;
+  float b;
+  char *dvarName;
+  dvar_s *dvar;
+  float a;
+  int argc;
   
   iVar1 = Cmd_Argc();
   if ((iVar1 == 5) || (iVar1 == 6)) {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    dVar5 = atof(pcVar3);
-    pcVar3 = Cmd_Argv(3);
-    dVar6 = atof(pcVar3);
-    pcVar3 = Cmd_Argv(4);
-    dVar7 = atof(pcVar3);
+    dvarName_00 = Cmd_Argv(1);
+    pcVar2 = Cmd_Argv(2);
+    dVar4 = atof(pcVar2);
+    pcVar2 = Cmd_Argv(3);
+    dVar5 = atof(pcVar2);
+    pcVar2 = Cmd_Argv(4);
+    dVar6 = atof(pcVar2);
     if (iVar1 == 6) {
-      pcVar3 = Cmd_Argv(5);
-      dVar8 = atof(pcVar3);
-      local_c = (float)dVar8;
+      pcVar2 = Cmd_Argv(5);
+      dVar7 = atof(pcVar2);
+      a = (float)dVar7;
     }
     else {
-      local_c = 1.0;
+      a = 1.0;
     }
-    pdVar4 = Dvar_FindVar(pcVar2);
-    if ((pdVar4 == (dvar_s *)0x0) ||
-       ((pdVar4->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar4->flags & 0x4000) != 0)))) {
-      _Dvar_RegisterColor(pcVar2,(float)dVar5,(float)dVar6,(float)dVar7,local_c,0x4000,
+    pdVar3 = Dvar_FindVar(dvarName_00);
+    if ((pdVar3 == (dvar_s *)0x0) ||
+       ((pdVar3->type == DVAR_TYPE_STRING && ((*(uint *)&pdVar3->flags & 0x4000) != 0)))) {
+      _Dvar_RegisterColor(dvarName_00,(float)dVar4,(float)dVar5,(float)dVar6,a,0x4000,
                           "External Dvar");
     }
   }
@@ -598,8 +630,9 @@ void __cdecl Dvar_SetU_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -607,10 +640,10 @@ void __cdecl Dvar_SetU_f(void)
   }
   else {
     Dvar_Set_f();
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 != (dvar_s *)0x0) {
-      Dvar_AddFlags(pdVar3,2);
+    dvarName = Cmd_Argv(1);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 != (dvar_s *)0x0) {
+      Dvar_AddFlags(dvar_00,2);
     }
   }
   return;
@@ -623,8 +656,9 @@ void __cdecl Dvar_SetS_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -632,10 +666,10 @@ void __cdecl Dvar_SetS_f(void)
   }
   else {
     Dvar_Set_f();
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 != (dvar_s *)0x0) {
-      Dvar_AddFlags(pdVar3,4);
+    dvarName = Cmd_Argv(1);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 != (dvar_s *)0x0) {
+      Dvar_AddFlags(dvar_00,4);
     }
   }
   return;
@@ -648,8 +682,9 @@ void __cdecl Dvar_SetA_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -657,10 +692,10 @@ void __cdecl Dvar_SetA_f(void)
   }
   else {
     Dvar_Set_f();
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 != (dvar_s *)0x0) {
-      Dvar_AddFlags(pdVar3,1);
+    dvarName = Cmd_Argv(1);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 != (dvar_s *)0x0) {
+      Dvar_AddFlags(dvar_00,1);
     }
   }
   return;
@@ -673,23 +708,24 @@ void __cdecl Dvar_SetAdmin_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
     Com_Printf(0,"USAGE: setadmindvar <variable> <value>\n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 == (dvar_s *)0x0) {
+    dvarName = Cmd_Argv(1);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 == (dvar_s *)0x0) {
       Cmd_Argv(1);
       Com_Printf(0,"setadmindvar failed: dvar \'%s\' not found.\n");
     }
     else {
-      if ((*(uint *)&pdVar3->flags & 0x10000) != 0) {
-        Dvar_AddFlags(pdVar3,1);
+      if ((*(uint *)&dvar_00->flags & 0x10000) != 0) {
+        Dvar_AddFlags(dvar_00,1);
       }
       Dvar_Set_f();
     }
@@ -705,21 +741,22 @@ void __cdecl Dvar_SetFromDvar_f(void)
 {
   int iVar1;
   char *pcVar2;
-  dvar_s *pdVar3;
-  char *pcVar4;
+  dvar_s *dvar;
+  char *dvarName;
+  dvar_s *dvarSrc;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
     pcVar2 = Cmd_Argv(2);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 == (dvar_s *)0x0) {
+    dvar = Dvar_FindVar(pcVar2);
+    if (dvar == (dvar_s *)0x0) {
       Cmd_Argv(2);
       Com_Printf(0,"dvar \'%s\' doesn\'t exist\n");
     }
     else {
-      pcVar2 = Dvar_DisplayableValue(pdVar3);
-      pcVar4 = Cmd_Argv(1);
-      Dvar_SetCommand(pcVar4,pcVar2);
+      pcVar2 = Dvar_DisplayableValue(dvar);
+      dvarName = Cmd_Argv(1);
+      Dvar_SetCommand(dvarName,pcVar2);
     }
   }
   else {
@@ -739,34 +776,35 @@ void __cdecl Dvar_SetFromLocalizedStr_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char *pcVar4;
-  char local_1014;
+  char *dvarName_00;
+  char *string;
+  int c;
+  char combined;
   char local_1013 [4099];
   uint local_10;
-  char *local_c;
-  char *local_8;
+  char *dvarName;
+  char *localizedText;
   
-  local_8 = (char *)0x6dad1d;
+  localizedText = (char *)0x6dad1d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = Cmd_Argc();
   if (iVar2 < 3) {
     Com_Printf(0,"USAGE: setFromLocalizedString <variable> <string>\n");
   }
   else {
-    local_c = Cmd_Argv(1);
-    bVar1 = Dvar_IsValidName(local_c);
+    dvarName = Cmd_Argv(1);
+    bVar1 = Dvar_IsValidName(dvarName);
     if (bVar1) {
-      Dvar_GetCombinedString(&local_1014,2);
-      if (local_1014 == '@') {
-        local_8 = SEH_LocalizeTextMessage(local_1013,"dvar string",LOCMSG_NOERR);
-        if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-          I_strncpyz(&local_1014,local_8,0x1000);
+      Dvar_GetCombinedString(&combined,2);
+      if (combined == '@') {
+        localizedText = SEH_LocalizeTextMessage(local_1013,"dvar string",LOCMSG_NOERR);
+        if ((localizedText != (char *)0x0) && (*localizedText != '\0')) {
+          I_strncpyz(&combined,localizedText,0x1000);
         }
       }
-      pcVar4 = &local_1014;
-      pcVar3 = Cmd_Argv(1);
-      Dvar_SetCommand(pcVar3,pcVar4);
+      string = &combined;
+      dvarName_00 = Cmd_Argv(1);
+      Dvar_SetCommand(dvarName_00,string);
     }
     else {
       Cmd_Argv(1);
@@ -785,7 +823,9 @@ void __cdecl Dvar_SetToTime_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char *pcVar4;
+  char *dvarName_00;
+  int c;
+  char *dvarName;
   
   iVar2 = Cmd_Argc();
   if (iVar2 < 2) {
@@ -797,8 +837,8 @@ void __cdecl Dvar_SetToTime_f(void)
     if (bVar1) {
       Sys_Milliseconds();
       pcVar3 = va("%i");
-      pcVar4 = Cmd_Argv(1);
-      Dvar_SetCommand(pcVar4,pcVar3);
+      dvarName_00 = Cmd_Argv(1);
+      Dvar_SetCommand(dvarName_00,pcVar3);
     }
     else {
       Cmd_Argv(1);
@@ -815,15 +855,16 @@ void __cdecl Dvar_Reset_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    pdVar3 = Dvar_FindVar(pcVar2);
-    if (pdVar3 != (dvar_s *)0x0) {
-      Dvar_Reset(pdVar3,DVAR_SOURCE_EXTERNAL);
+    dvarName = Cmd_Argv(1);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 != (dvar_s *)0x0) {
+      Dvar_Reset(dvar_00,DVAR_SOURCE_EXTERNAL);
     }
   }
   else {
@@ -835,15 +876,16 @@ void __cdecl Dvar_Reset_f(void)
 
 // 006D9BF0  Dvar_WriteSingleVariable  (qcommon/dvar_cmds.cpp:721)
 
-void __cdecl Dvar_WriteSingleVariable(dvar_s *param_1,void *param_2)
+void __cdecl Dvar_WriteSingleVariable(dvar_s *dvar,void *userData)
 
 {
   int iVar1;
+  int f;
   
-  iVar1 = I_stricmp(param_1->name,"cl_cdkey");
-  if ((iVar1 != 0) && ((*(uint *)&param_1->flags & 1) != 0)) {
-    iVar1 = *(int *)param_2;
-    Dvar_DisplayableLatchedValue(param_1);
+  iVar1 = I_stricmp(dvar->name,"cl_cdkey");
+  if ((iVar1 != 0) && ((*(uint *)&dvar->flags & 1) != 0)) {
+    iVar1 = *(int *)userData;
+    Dvar_DisplayableLatchedValue(dvar);
     FS_Printf(iVar1,"seta %s \"%s\"\n");
   }
   return;
@@ -852,25 +894,26 @@ void __cdecl Dvar_WriteSingleVariable(dvar_s *param_1,void *param_2)
 
 // 006D9BD0  Dvar_WriteVariables  (qcommon/dvar_cmds.cpp:740)
 
-void __cdecl Dvar_WriteVariables(int param_1)
+void __cdecl Dvar_WriteVariables(int f)
 
 {
-  Dvar_ForEach(Dvar_WriteSingleVariable,&param_1);
+  Dvar_ForEach(Dvar_WriteSingleVariable,&f);
   return;
 }
 
 
 // 006D9C70  Dvar_WriteSingleDefault  (qcommon/dvar_cmds.cpp:746)
 
-void __cdecl Dvar_WriteSingleDefault(dvar_s *param_1,void *param_2)
+void __cdecl Dvar_WriteSingleDefault(dvar_s *dvar,void *userData)
 
 {
   int iVar1;
+  int f;
   
-  iVar1 = I_stricmp(param_1->name,"cl_cdkey");
-  if ((iVar1 != 0) && ((*(uint *)&param_1->flags & 0x40c0) == 0)) {
-    iVar1 = *(int *)param_2;
-    Dvar_DisplayableResetValue(param_1);
+  iVar1 = I_stricmp(dvar->name,"cl_cdkey");
+  if ((iVar1 != 0) && ((*(uint *)&dvar->flags & 0x40c0) == 0)) {
+    iVar1 = *(int *)userData;
+    Dvar_DisplayableResetValue(dvar);
     FS_Printf(iVar1,"set %s \"%s\"\n");
   }
   return;
@@ -879,10 +922,10 @@ void __cdecl Dvar_WriteSingleDefault(dvar_s *param_1,void *param_2)
 
 // 006D9C50  Dvar_WriteDefaults  (qcommon/dvar_cmds.cpp:762)
 
-void __cdecl Dvar_WriteDefaults(int param_1)
+void __cdecl Dvar_WriteDefaults(int f)
 
 {
-  Dvar_ForEach(Dvar_WriteSingleDefault,&param_1);
+  Dvar_ForEach(Dvar_WriteSingleDefault,&f);
   return;
 }
 
@@ -891,88 +934,89 @@ void __cdecl Dvar_WriteDefaults(int param_1)
 
 /* WARNING: Removing unreachable block (ram,0x006d9f1c) */
 
-void __cdecl Dvar_ListSingle(dvar_s *param_1,void *param_2)
+void __cdecl Dvar_ListSingle(dvar_s *dvar,void *userData)
 
 {
   bool bVar1;
+  char *match;
   
-  if ((((*(uint *)&param_1->flags & 0x10000) != 0) ||
+  if ((((*(uint *)&dvar->flags & 0x10000) != 0) ||
       (bVar1 = Dvar_GetBool("con_restricted_access"), !bVar1)) &&
-     ((param_2 == (void *)0x0 || (bVar1 = Com_Filter(param_2,param_1->name,0), bVar1)))) {
-    if ((*(uint *)&param_1->flags & 0x404) == 0) {
+     ((userData == (void *)0x0 || (bVar1 = Com_Filter(userData,dvar->name,0), bVar1)))) {
+    if ((*(uint *)&dvar->flags & 0x404) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"S");
     }
-    if ((*(uint *)&param_1->flags & 2) == 0) {
+    if ((*(uint *)&dvar->flags & 2) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"U");
     }
-    if ((*(uint *)&param_1->flags & 0x40) == 0) {
+    if ((*(uint *)&dvar->flags & 0x40) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"R");
     }
-    if ((*(uint *)&param_1->flags & 0x10) == 0) {
+    if ((*(uint *)&dvar->flags & 0x10) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"I");
     }
-    if ((*(uint *)&param_1->flags & 1) == 0) {
+    if ((*(uint *)&dvar->flags & 1) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"A");
     }
-    if ((*(uint *)&param_1->flags & 0x20) == 0) {
+    if ((*(uint *)&dvar->flags & 0x20) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"L");
     }
-    if ((*(uint *)&param_1->flags & 0x80) == 0) {
+    if ((*(uint *)&dvar->flags & 0x80) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"C");
     }
-    if ((*(uint *)&param_1->flags & 8) == 0) {
+    if ((*(uint *)&dvar->flags & 8) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"Y");
     }
-    if ((*(uint *)&param_1->flags & 0x100) == 0) {
+    if ((*(uint *)&dvar->flags & 0x100) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"D");
     }
     Com_Printf(0," ");
-    if ((*(uint *)&param_1->flags & 0x8000) == 0) {
+    if ((*(uint *)&dvar->flags & 0x8000) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"X");
     }
-    if ((*(uint *)&param_1->flags & 0x4000) == 0) {
+    if ((*(uint *)&dvar->flags & 0x4000) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"E");
     }
-    if ((*(uint *)&param_1->flags & 0x1000) == 0) {
+    if ((*(uint *)&dvar->flags & 0x1000) == 0) {
       Com_Printf(0," ");
     }
     else {
       Com_Printf(0,"V");
     }
-    Dvar_DisplayableValue(param_1);
+    Dvar_DisplayableValue(dvar);
     Com_Printf(0," %s \"%s\"\n");
     dvar_count_local = dvar_count_local + 1;
   }
@@ -986,17 +1030,17 @@ void __cdecl Dvar_List_f(void)
 
 {
   int iVar1;
-  char *local_8;
+  char *match;
   
   dvar_count_local = 0;
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
-    local_8 = (char *)0x0;
+    match = (char *)0x0;
   }
   else {
-    local_8 = Cmd_Argv(1);
+    match = Cmd_Argv(1);
   }
-  Dvar_ForEach(Dvar_ListSingle,local_8);
+  Dvar_ForEach(Dvar_ListSingle,match);
   Com_Printf(0,"\n%i total dvars\n");
   return;
 }
@@ -1006,28 +1050,29 @@ void __cdecl Dvar_List_f(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_DvarDumpSingle(dvar_s *param_1,void *param_2)
+void __cdecl Com_DvarDumpSingle(dvar_s *dvar,void *userData)
 
 {
   bool bVar1;
-  char local_80c [2052];
+  DvarDumpInfo *dumpInfo;
+  char message [2052];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  *(int *)param_2 = *(int *)param_2 + 1;
-  if ((*(int *)((int)param_2 + 8) == 0) ||
-     (bVar1 = Com_Filter(*(char **)((int)param_2 + 8),param_1->name,0), bVar1)) {
-    bVar1 = Dvar_HasLatchedValue(param_1);
+  *(int *)userData = *(int *)userData + 1;
+  if ((*(int *)((int)userData + 8) == 0) ||
+     (bVar1 = Com_Filter(*(char **)((int)userData + 8),dvar->name,0), bVar1)) {
+    bVar1 = Dvar_HasLatchedValue(dvar);
     if (bVar1) {
-      Dvar_DisplayableLatchedValue(param_1);
-      Dvar_DisplayableValue(param_1);
-      Com_sprintf(local_80c,0x800,"      %s \"%s\" -- latched \"%s\"\n");
+      Dvar_DisplayableLatchedValue(dvar);
+      Dvar_DisplayableValue(dvar);
+      Com_sprintf(message,0x800,"      %s \"%s\" -- latched \"%s\"\n");
     }
     else {
-      Dvar_DisplayableValue(param_1);
-      Com_sprintf(local_80c,0x800,"      %s \"%s\"\n");
+      Dvar_DisplayableValue(dvar);
+      Com_sprintf(message,0x800,"      %s \"%s\"\n");
     }
-    Com_PrintMessage(*(int *)((int)param_2 + 4),local_80c,0);
+    Com_PrintMessage(*(int *)((int)userData + 4),message,0);
   }
   return;
 }
@@ -1037,27 +1082,27 @@ void __cdecl Com_DvarDumpSingle(dvar_s *param_1,void *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_DvarDump(int param_1,char *param_2)
+void __cdecl Com_DvarDump(int channel,char *match)
 
 {
-  undefined4 local_98;
+  undefined4 dumpInfo;
   int local_94;
   char *local_90;
-  char local_8c [132];
+  char summary [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != 6) || ((com_logfile != (dvar_s *)0x0 && ((com_logfile->current).integer != 0)))) {
-    Com_PrintMessage(param_1,
+  if ((channel != 6) || ((com_logfile != (dvar_s *)0x0 && ((com_logfile->current).integer != 0)))) {
+    Com_PrintMessage(channel,
                      "=============================== DVAR DUMP ========================================\n"
                      ,0);
-    local_98 = 0;
-    local_94 = param_1;
-    local_90 = param_2;
-    Dvar_ForEach(Com_DvarDumpSingle,&local_98);
-    Com_sprintf(local_8c,0x80,"\n%i total dvars\n%i dvar indexes\n");
-    Com_PrintMessage(param_1,local_8c,0);
-    Com_PrintMessage(param_1,
+    dumpInfo = 0;
+    local_94 = channel;
+    local_90 = match;
+    Dvar_ForEach(Com_DvarDumpSingle,&dumpInfo);
+    Com_sprintf(summary,0x80,"\n%i total dvars\n%i dvar indexes\n");
+    Com_PrintMessage(channel,summary,0);
+    Com_PrintMessage(channel,
                      "=============================== END DVAR DUMP =====================================\n"
                      ,0);
   }
@@ -1071,30 +1116,31 @@ void __cdecl Dvar_Dump_f(void)
 
 {
   int iVar1;
-  undefined4 local_8;
+  char *match;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
-    local_8 = (char *)0x0;
+    match = (char *)0x0;
   }
   else {
-    local_8 = Cmd_Argv(1);
+    match = Cmd_Argv(1);
   }
-  Com_DvarDump(0,local_8);
+  Com_DvarDump(0,match);
   return;
 }
 
 
 // 006DA260  SV_SetConfigDvar  (qcommon/dvar_cmds.cpp:1006)
 
-void __cdecl SV_SetConfigDvar(dvar_s *param_1,void *param_2)
+void __cdecl SV_SetConfigDvar(dvar_s *dvar,void *userData)
 
 {
-  char *pcVar1;
+  char *value;
+  DvarSetConfigInfo *info;
   
-  if ((*(uint *)&param_1->flags & *(uint *)((int)param_2 + 8)) != 0) {
-    pcVar1 = Dvar_DisplayableValue(param_1);
-    SV_SetConfigValueForKey(*(int *)param_2,*(int *)((int)param_2 + 4),param_1->name,pcVar1);
+  if ((*(uint *)&dvar->flags & *(uint *)((int)userData + 8)) != 0) {
+    value = Dvar_DisplayableValue(dvar);
+    SV_SetConfigValueForKey(*(int *)userData,*(int *)((int)userData + 4),dvar->name,value);
   }
   return;
 }
@@ -1102,31 +1148,32 @@ void __cdecl SV_SetConfigDvar(dvar_s *param_1,void *param_2)
 
 // 006DA230  SV_SetConfig  (qcommon/dvar_cmds.cpp:1015)
 
-void __cdecl SV_SetConfig(int param_1,int param_2,int param_3)
+void __cdecl SV_SetConfig(int start,int max,int bit)
 
 {
-  int local_10;
+  int info;
   int local_c;
   int local_8;
   
-  local_10 = param_1;
-  local_c = param_2;
-  local_8 = param_3;
-  Dvar_ForEach(SV_SetConfigDvar,&local_10);
+  info = start;
+  local_c = max;
+  local_8 = bit;
+  Dvar_ForEach(SV_SetConfigDvar,&info);
   return;
 }
 
 
 // 006DA650  Dvar_InfoStringSingle  (qcommon/dvar_cmds.cpp:1026)
 
-void __cdecl Dvar_InfoStringSingle(dvar_s *param_1,void *param_2)
+void __cdecl Dvar_InfoStringSingle(dvar_s *dvar,void *userData)
 
 {
-  char *pcVar1;
+  char *value;
+  int bit;
   
-  if ((*(uint *)&param_1->flags & *(uint *)param_2) != 0) {
-    pcVar1 = Dvar_DisplayableValue(param_1);
-    Info_SetValueForKey(info1,param_1->name,pcVar1);
+  if ((*(uint *)&dvar->flags & *(uint *)userData) != 0) {
+    value = Dvar_DisplayableValue(dvar);
+    Info_SetValueForKey(info1,dvar->name,value);
   }
   return;
 }
@@ -1134,14 +1181,15 @@ void __cdecl Dvar_InfoStringSingle(dvar_s *param_1,void *param_2)
 
 // 006DA6C0  Dvar_InfoStringSingle_Big  (qcommon/dvar_cmds.cpp:1036)
 
-void __cdecl Dvar_InfoStringSingle_Big(dvar_s *param_1,void *param_2)
+void __cdecl Dvar_InfoStringSingle_Big(dvar_s *dvar,void *userData)
 
 {
-  char *pcVar1;
+  char *value;
+  int bit;
   
-  if ((*(uint *)&param_1->flags & *(uint *)param_2) != 0) {
-    pcVar1 = Dvar_DisplayableValue(param_1);
-    Info_SetValueForKey_Big(info2,param_1->name,pcVar1);
+  if ((*(uint *)&dvar->flags & *(uint *)userData) != 0) {
+    value = Dvar_DisplayableValue(dvar);
+    Info_SetValueForKey_Big(info2,dvar->name,value);
   }
   return;
 }
@@ -1152,7 +1200,7 @@ void __cdecl Dvar_InfoStringSingle_Big(dvar_s *param_1,void *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-char * __cdecl Dvar_InfoString(int param_1,int param_2)
+char * __cdecl Dvar_InfoString(int localClientNum,int bit)
 
 {
   code *pcVar1;
@@ -1163,54 +1211,54 @@ char * __cdecl Dvar_InfoString(int param_1,int param_2)
   ulong64 uVar6;
   undefined4 uVar7;
   int in_stack_fffffcf4;
-  ulong64 local_28c [2];
-  char local_27c [8];
-  uchar local_274 [184];
-  char local_1bc [32];
+  ulong64 ourUserID;
+  PCache_ScopedLock __pcache_lock;
+  char tempbuf [8];
+  uchar temp64buff [184];
+  char clientSteamIDStr [32];
   uint local_19c;
-  PCachePublicProfile *local_198;
-  CompositeEmblemLayer local_194 [12];
-  short local_10 [2];
-  clientConnection_t *local_c;
-  int local_8;
+  PCachePublicProfile *profile;
+  CompositeEmblemLayer layers [12];
+  short backgroundID;
+  clientConnection_t *clc;
+  int index;
   
   local_19c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = CL_GetLocalClientConnection(param_1);
+  clc = CL_GetLocalClientConnection(localClientNum);
   info1[0] = '\0';
-  Dvar_ForEach(Dvar_InfoStringSingle,&param_2);
-  if ((param_2 & 2U) != 0) {
-    local_8 = param_1;
-    pcVar3 = CL_ControllerIndex_GetUsername(param_1);
+  Dvar_ForEach(Dvar_InfoStringSingle,&bit);
+  if ((bit & 2U) != 0) {
+    index = localClientNum;
+    pcVar3 = CL_ControllerIndex_GetUsername(localClientNum);
     Info_SetValueForKey(info1,"name",pcVar3);
     if ((clanName == (dvar_s *)0x0) || (*(clanName->current).string == '\0')) {
       Info_SetValueForKey(info1,"clanAbbrev","");
     }
     else {
-      I_strncpyz(local_27c,(clanName->current).string,5);
-      I_CleanStr(local_27c);
-      Info_SetValueForKey(info1,"clanAbbrev",local_27c);
+      I_strncpyz(tempbuf,(clanName->current).string,5);
+      I_CleanStr(tempbuf);
+      Info_SetValueForKey(info1,"clanAbbrev",tempbuf);
     }
-    bVar2 = Live_IsSignedInToLive(local_8);
+    bVar2 = Live_IsSignedInToLive(index);
     if (bVar2) {
       PCache_Lock();
       uVar7 = 0;
-      uVar6 = Live_GetXuid(local_8);
-      local_198 = (PCachePublicProfile *)
-                  PCache_GetComponent(local_8,CONCAT44(uVar7,(int)(uVar6 >> 0x20)),in_stack_fffffcf4
-                                     );
-      bVar2 = PCache_TouchComponent((PCacheComponent *)local_198);
+      uVar6 = Live_GetXuid(index);
+      profile = (PCachePublicProfile *)
+                PCache_GetComponent(index,CONCAT44(uVar7,(int)(uVar6 >> 0x20)),in_stack_fffffcf4);
+      bVar2 = PCache_TouchComponent((PCacheComponent *)profile);
       if (bVar2) {
-        PCache_GetProfileEmblem(local_198,local_194,0xc,local_10);
-        pcVar3 = BG_EmblemsWriteString(local_10[0],local_194,0xc);
+        PCache_GetProfileEmblem(profile,layers,0xc,&backgroundID);
+        pcVar3 = BG_EmblemsWriteString(backgroundID,layers,0xc);
         Info_SetValueForKey(info1,"emblem",pcVar3);
       }
       PCache_Unlock();
     }
-    pcVar3 = local_1bc;
+    pcVar3 = clientSteamIDStr;
     uVar6 = LiveSteam_GetUid();
     Int64ToString(uVar6,pcVar3);
-    Info_SetValueForKey(info1,"steamid",local_1bc);
-    if (local_c->qport == 0) {
+    Info_SetValueForKey(info1,"steamid",clientSteamIDStr);
+    if (clc->qport == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dvar_cmds.cpp",0x465,0,
                                "%s");
       if (!bVar2) {
@@ -1222,24 +1270,24 @@ char * __cdecl Dvar_InfoString(int param_1,int param_2)
     pcVar3 = va("%i");
     Info_SetValueForKey(info1,"qport",pcVar3);
     if ((live_service != (dvar_s *)0x0) && ((live_service->current).enabled != false)) {
-      memset(local_274,'\0',0xb1);
-      dwGetOnlineUserID(0,local_28c);
+      memset(temp64buff,'\0',0xb1);
+      dwGetOnlineUserID(0,&ourUserID);
       Com_DPrintf(0xe,"CHALLENGERESPONSE: Sending bdOnlineUserID %llu to server\n");
-      XUIDToString(local_28c,(char *)local_274);
-      Info_SetValueForKey(info1,"bdOnlineUserID",(char *)local_274);
-      memset(local_274,'\0',0xb1);
-      if (local_c->nonce == 0) {
+      XUIDToString(&ourUserID,(char *)temp64buff);
+      Info_SetValueForKey(info1,"bdOnlineUserID",(char *)temp64buff);
+      memset(temp64buff,'\0',0xb1);
+      if (clc->nonce == 0) {
         pbVar4 = bdSingleton<bdTrulyRandomImpl>::getInstance();
         uVar5 = bdTrulyRandomImpl::getRandomUInt(pbVar4);
-        local_c->nonce = uVar5;
+        clc->nonce = uVar5;
         pbVar4 = bdSingleton<bdTrulyRandomImpl>::getInstance();
         uVar5 = bdTrulyRandomImpl::getRandomUInt(pbVar4);
-        *(uint *)&local_c->field_0xaff44 = uVar5;
+        *(uint *)&clc->field_0xaff44 = uVar5;
       }
-      Com_sprintf((char *)local_274,0xb1,"%u");
-      Info_SetValueForKey(info1,"nonce",(char *)local_274);
-      Com_sprintf((char *)local_274,0xb1,"%u");
-      Info_SetValueForKey(info1,"challengeNum",(char *)local_274);
+      Com_sprintf((char *)temp64buff,0xb1,"%u");
+      Info_SetValueForKey(info1,"nonce",(char *)temp64buff);
+      Com_sprintf((char *)temp64buff,0xb1,"%u");
+      Info_SetValueForKey(info1,"challengeNum",(char *)temp64buff);
       Com_DPrintf(0xe,"CHALLENGERESPONSE: Sending nonce %u, challengeNum %u to server\n");
     }
   }
@@ -1249,11 +1297,11 @@ char * __cdecl Dvar_InfoString(int param_1,int param_2)
 
 // 006DA690  Dvar_InfoString_Big  (qcommon/dvar_cmds.cpp:1167)
 
-char * __cdecl Dvar_InfoString_Big(int param_1)
+char * __cdecl Dvar_InfoString_Big(int bit)
 
 {
   info2[0] = '\0';
-  Dvar_ForEach(Dvar_InfoStringSingle_Big,&param_1);
+  Dvar_ForEach(Dvar_InfoStringSingle_Big,&bit);
   return info2;
 }
 

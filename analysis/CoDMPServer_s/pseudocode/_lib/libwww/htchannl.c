@@ -85,32 +85,32 @@ undefined4 _HTChannel_deleteAll(void)
 
 {
   void *pvVar1;
-  void *pvVar2;
-  int iVar3;
-  void *pvVar4;
-  int *piVar5;
+  void *pBlock;
+  int iVar2;
+  void *pBlock_00;
+  int *piVar3;
   
   if (DAT_03547790 != (void *)0x0) {
-    iVar3 = 0;
-    pvVar4 = DAT_03547790;
+    iVar2 = 0;
+    pBlock_00 = DAT_03547790;
     do {
-      piVar5 = *(int **)(iVar3 + (int)pvVar4);
-      if (piVar5 != (int *)0x0) {
-        while ((piVar5 = (int *)piVar5[1], pvVar4 = DAT_03547790, piVar5 != (int *)0x0 &&
-               (*piVar5 != 0))) {
+      piVar3 = *(int **)(iVar2 + (int)pBlock_00);
+      if (piVar3 != (int *)0x0) {
+        while ((piVar3 = (int *)piVar3[1], pBlock_00 = DAT_03547790, piVar3 != (int *)0x0 &&
+               (*piVar3 != 0))) {
           FUN_0088a700();
         }
       }
-      pvVar2 = *(void **)(iVar3 + (int)pvVar4);
-      while (pvVar2 != (void *)0x0) {
-        pvVar1 = *(void **)((int)pvVar2 + 4);
-        free(pvVar2);
-        pvVar2 = pvVar1;
+      pBlock = *(void **)(iVar2 + (int)pBlock_00);
+      while (pBlock != (void *)0x0) {
+        pvVar1 = *(void **)((int)pBlock + 4);
+        free(pBlock);
+        pBlock = pvVar1;
       }
-      iVar3 = iVar3 + 4;
-    } while (iVar3 < 0x10c);
-    if (pvVar4 != (void *)0x0) {
-      free(pvVar4);
+      iVar2 = iVar2 + 4;
+    } while (iVar2 < 0x10c);
+    if (pBlock_00 != (void *)0x0) {
+      free(pBlock_00);
     }
     DAT_03547790 = (void *)0x0;
   }

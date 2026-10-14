@@ -2,7 +2,7 @@
 
 // 00B6C110  select_ncolors  (jpeg-6/jquant1.c:190)
 
-int __cdecl select_ncolors(jpeg_decompress_struct *param_1,int *param_2)
+int __cdecl select_ncolors(jpeg_decompress_struct *cinfo,int *Ncolors)
 
 {
   int iVar1;
@@ -10,50 +10,54 @@ int __cdecl select_ncolors(jpeg_decompress_struct *param_1,int *param_2)
   bool bVar3;
   int iVar4;
   int local_28;
-  int local_1c;
-  int local_18;
-  int local_10;
-  int local_c;
+  int j;
+  int nc;
+  int iroot;
+  long temp;
+  int max_colors;
+  int i;
+  int total_colors;
+  uchar changed;
   
-  iVar1 = param_1->out_color_components;
-  iVar2 = param_1->desired_number_of_colors;
-  local_1c = 1;
-  iVar4 = local_1c;
+  iVar1 = cinfo->out_color_components;
+  iVar2 = cinfo->desired_number_of_colors;
+  iroot = 1;
+  iVar4 = iroot;
   do {
-    local_1c = iVar4;
-    iVar4 = local_1c + 1;
-    local_18 = iVar4;
-    for (local_10 = 1; local_10 < iVar1; local_10 = local_10 + 1) {
-      local_18 = local_18 * iVar4;
+    iroot = iVar4;
+    iVar4 = iroot + 1;
+    temp = iVar4;
+    for (i = 1; i < iVar1; i = i + 1) {
+      temp = temp * iVar4;
     }
-  } while (local_18 <= iVar2);
-  if (local_1c < 2) {
-    param_1->err->msg_code = 0x38;
-    (param_1->err->msg_parm).i[0] = local_18;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  } while (temp <= iVar2);
+  if (iroot < 2) {
+    cinfo->err->msg_code = 0x38;
+    (cinfo->err->msg_parm).i[0] = temp;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  local_c = 1;
-  for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {
-    param_2[local_10] = local_1c;
-    local_c = local_c * local_1c;
+  total_colors = 1;
+  for (i = 0; i < iVar1; i = i + 1) {
+    Ncolors[i] = iroot;
+    total_colors = total_colors * iroot;
   }
   do {
     bVar3 = false;
-    for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {
-      if (param_1->out_color_space == JCS_RGB) {
-        local_28 = RGB_order[local_10];
+    for (i = 0; i < iVar1; i = i + 1) {
+      if (cinfo->out_color_space == JCS_RGB) {
+        local_28 = RGB_order[i];
       }
       else {
-        local_28 = local_10;
+        local_28 = i;
       }
-      iVar4 = (param_2[local_28] + 1) * (local_c / param_2[local_28]);
+      iVar4 = (Ncolors[local_28] + 1) * (total_colors / Ncolors[local_28]);
       if (iVar2 < iVar4) break;
-      param_2[local_28] = param_2[local_28] + 1;
+      Ncolors[local_28] = Ncolors[local_28] + 1;
       bVar3 = true;
-      local_c = iVar4;
+      total_colors = iVar4;
     }
     if (!bVar3) {
-      return local_c;
+      return total_colors;
     }
   } while( true );
 }
@@ -61,27 +65,25 @@ int __cdecl select_ncolors(jpeg_decompress_struct *param_1,int *param_2)
 
 // 00B6C290  output_value  (jpeg-6/jquant1.c:248)
 
-int __cdecl output_value(jpeg_decompress_struct *param_1,int param_2,int param_3,int param_4)
+int __cdecl output_value(jpeg_decompress_struct *cinfo,int ci,int j,int maxj)
 
 {
-  return (param_4 / 2 + param_3 * 0xff) / param_4;
+  return (maxj / 2 + j * 0xff) / maxj;
 }
 
 
 // 00B6C460  largest_input_value  (jpeg-6/jquant1.c:262)
 
-int __cdecl largest_input_value(jpeg_decompress_struct *param_1,int param_2,int param_3,int param_4)
+int __cdecl largest_input_value(jpeg_decompress_struct *cinfo,int ci,int j,int maxj)
 
 {
-  return ((param_3 * 2 + 1) * 0xff + param_4) / (param_4 << 1);
+  return ((j * 2 + 1) * 0xff + maxj) / (maxj << 1);
 }
 
 
 // 00B6BF40  create_colormap  (jpeg-6/jquant1.c:274)
 
-/* WARNING: Type propagation algorithm not settling */
-
-void __cdecl create_colormap(jpeg_decompress_struct *param_1)
+void __cdecl create_colormap(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
@@ -89,51 +91,54 @@ void __cdecl create_colormap(jpeg_decompress_struct *param_1)
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var3;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var4;
   uchar **ppuVar5;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var6;
+  int iVar6;
   int iVar7;
-  int local_30;
-  int local_2c;
-  uchar local_28;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *local_1c;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *local_18;
-  int local_14;
+  int *_mp;
+  int j;
+  int k;
+  int val;
+  int nci;
+  my_cquantizer *cquantize;
+  int blkdist;
+  int ptr;
+  int i;
+  uchar **colormap;
+  int total_colors;
+  int blksize;
   
-  pjVar1 = param_1->cquantize;
+  pjVar1 = cinfo->cquantize;
   p_Var4 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)
-           select_ncolors(param_1,(int *)(pjVar1 + 2));
-  if (param_1->out_color_components == 3) {
-    pjVar2 = param_1->err;
+           select_ncolors(cinfo,(int *)(pjVar1 + 2));
+  if (cinfo->out_color_components == 3) {
+    pjVar2 = cinfo->err;
     (pjVar2->msg_parm).i[0] = (int)p_Var4;
     (pjVar2->msg_parm).i[1] = (int)pjVar1[2].start_pass;
     (pjVar2->msg_parm).i[2] = (int)pjVar1[2].color_quantize;
     (pjVar2->msg_parm).i[3] = (int)pjVar1[2].finish_pass;
-    param_1->err->msg_code = 0x5e;
-    (*param_1->err->emit_message)((jpeg_common_struct *)param_1,1);
+    cinfo->err->msg_code = 0x5e;
+    (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,1);
   }
   else {
-    param_1->err->msg_code = 0x5f;
-    (param_1->err->msg_parm).i[0] = (int)p_Var4;
-    (*param_1->err->emit_message)((jpeg_common_struct *)param_1,1);
+    cinfo->err->msg_code = 0x5f;
+    (cinfo->err->msg_parm).i[0] = (int)p_Var4;
+    (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,1);
   }
-  ppuVar5 = (*param_1->mem->alloc_sarray)
-                      ((jpeg_common_struct *)param_1,1,(uint)p_Var4,param_1->out_color_components);
-  local_1c = p_Var4;
-  for (local_14 = 0; local_14 < param_1->out_color_components; local_14 = local_14 + 1) {
-    p_Var3 = (&pjVar1[2].start_pass)[local_14];
-    p_Var6 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)
-             ((int)local_1c / (int)p_Var3);
-    for (local_30 = 0; local_30 < (int)p_Var3; local_30 = local_30 + 1) {
-      iVar7 = output_value(param_1,local_14,local_30,(int)(p_Var3 + -1));
-      for (local_18 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int
-                       *)(local_30 * (int)p_Var6); (int)local_18 < (int)p_Var4;
-          local_18 = local_18 + (int)local_1c) {
-        for (local_2c = 0; local_2c < (int)p_Var6; local_2c = local_2c + 1) {
-          local_28 = (uchar)iVar7;
-          ppuVar5[local_14][(int)(local_18 + local_2c)] = local_28;
+  ppuVar5 = (*cinfo->mem->alloc_sarray)
+                      ((jpeg_common_struct *)cinfo,1,(uint)p_Var4,cinfo->out_color_components);
+  blkdist = (int)p_Var4;
+  for (i = 0; i < cinfo->out_color_components; i = i + 1) {
+    p_Var3 = (&pjVar1[2].start_pass)[i];
+    iVar6 = blkdist / (int)p_Var3;
+    for (j = 0; j < (int)p_Var3; j = j + 1) {
+      iVar7 = output_value(cinfo,i,j,(int)(p_Var3 + -1));
+      for (ptr = j * iVar6; ptr < (int)p_Var4; ptr = ptr + blkdist) {
+        for (k = 0; k < iVar6; k = k + 1) {
+          val._0_1_ = (uchar)iVar7;
+          ppuVar5[i][ptr + k] = (uchar)val;
         }
       }
     }
-    local_1c = p_Var6;
+    blkdist = iVar6;
   }
   pjVar1[1].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)ppuVar5;
   pjVar1[1].color_quantize = p_Var4;
@@ -143,56 +148,56 @@ void __cdecl create_colormap(jpeg_decompress_struct *param_1)
 
 // 00B6C2B0  create_colorindex  (jpeg-6/jquant1.c:334)
 
-void __cdecl create_colorindex(jpeg_decompress_struct *param_1)
+void __cdecl create_colorindex(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var2;
   undefined1 *puVar3;
   uchar **ppuVar4;
-  int local_28;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_c;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *local_8;
+  int j;
+  uchar *indexptr;
+  int k;
+  int val;
+  int pad;
+  int nci;
+  my_cquantizer *cquantize;
+  int i;
+  int blksize;
   
-  pjVar1 = param_1->cquantize;
-  if (param_1->dither_mode == JDITHER_ORDERED) {
-    local_18 = 0x1fe;
+  pjVar1 = cinfo->cquantize;
+  if (cinfo->dither_mode == JDITHER_ORDERED) {
+    pad = 0x1fe;
     *(undefined1 *)&pjVar1[1].new_color_map = 1;
   }
   else {
-    local_18 = 0;
+    pad = 0;
     *(undefined1 *)&pjVar1[1].new_color_map = 0;
   }
-  ppuVar4 = (*param_1->mem->alloc_sarray)
-                      ((jpeg_common_struct *)param_1,1,local_18 + 0x100,
-                       param_1->out_color_components);
+  ppuVar4 = (*cinfo->mem->alloc_sarray)
+                      ((jpeg_common_struct *)cinfo,1,pad + 0x100,cinfo->out_color_components);
   pjVar1[1].finish_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)ppuVar4;
-  local_8 = pjVar1[1].color_quantize;
-  for (local_c = 0; local_c < param_1->out_color_components; local_c = local_c + 1) {
-    p_Var2 = (&pjVar1[2].start_pass)[local_c];
-    local_8 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)
-              ((int)local_8 / (int)p_Var2);
-    if (local_18 != 0) {
-      *(int *)(pjVar1[1].finish_pass + local_c * 4) =
-           *(int *)(pjVar1[1].finish_pass + local_c * 4) + 0xff;
+  blksize = (int)pjVar1[1].color_quantize;
+  for (i = 0; i < cinfo->out_color_components; i = i + 1) {
+    p_Var2 = (&pjVar1[2].start_pass)[i];
+    blksize = blksize / (int)p_Var2;
+    if (pad != 0) {
+      *(int *)(pjVar1[1].finish_pass + i * 4) = *(int *)(pjVar1[1].finish_pass + i * 4) + 0xff;
     }
-    puVar3 = *(undefined1 **)(pjVar1[1].finish_pass + local_c * 4);
-    local_1c = 0;
-    local_20 = largest_input_value(param_1,local_c,0,(int)(p_Var2 + -1));
-    for (local_28 = 0; local_28 < 0x100; local_28 = local_28 + 1) {
-      while (local_20 < local_28) {
-        local_1c = local_1c + 1;
-        local_20 = largest_input_value(param_1,local_c,local_1c,(int)(p_Var2 + -1));
+    puVar3 = *(undefined1 **)(pjVar1[1].finish_pass + i * 4);
+    val = 0;
+    k = largest_input_value(cinfo,i,0,(int)(p_Var2 + -1));
+    for (j = 0; j < 0x100; j = j + 1) {
+      while (k < j) {
+        val = val + 1;
+        k = largest_input_value(cinfo,i,val,(int)(p_Var2 + -1));
       }
-      puVar3[local_28] = (char)local_1c * (char)local_8;
+      puVar3[j] = (char)val * (char)blksize;
     }
-    if (local_18 != 0) {
-      for (local_28 = 1; local_28 < 0x100; local_28 = local_28 + 1) {
-        puVar3[-local_28] = *puVar3;
-        puVar3[local_28 + 0xff] = puVar3[0xff];
+    if (pad != 0) {
+      for (j = 1; j < 0x100; j = j + 1) {
+        puVar3[-j] = *puVar3;
+        puVar3[j + 0xff] = puVar3[0xff];
       }
     }
   }
@@ -202,21 +207,23 @@ void __cdecl create_colorindex(jpeg_decompress_struct *param_1)
 
 // 00B6C700  make_odither_array  (jpeg-6/jquant1.c:397)
 
-int (*) [16] __cdecl make_odither_array(jpeg_decompress_struct *param_1,int param_2)
+int (*) [16] __cdecl make_odither_array(jpeg_decompress_struct *cinfo,int ncolors)
 
 {
   int (*paiVar1) [16];
   int iVar2;
   int iVar3;
   int local_1c;
-  int local_18;
-  int local_14;
+  int j;
+  int k;
+  long num;
+  long den;
   
-  paiVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x400);
-  iVar2 = (param_2 + -1) * 0x200;
-  for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1) {
-    for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
-      iVar3 = (uint)base_dither_matrix[local_18][local_14] * -2 + 0xff;
+  paiVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x400);
+  iVar2 = (ncolors + -1) * 0x200;
+  for (j = 0; j < 0x10; j = j + 1) {
+    for (k = 0; k < 0x10; k = k + 1) {
+      iVar3 = (uint)base_dither_matrix[j][k] * -2 + 0xff;
       local_1c = iVar3 * 0xff;
       if (local_1c < 0) {
         local_1c = -((iVar3 * -0xff) / iVar2);
@@ -224,7 +231,7 @@ int (*) [16] __cdecl make_odither_array(jpeg_decompress_struct *param_1,int para
       else {
         local_1c = local_1c / iVar2;
       }
-      paiVar1[local_18][local_14] = local_1c;
+      paiVar1[j][k] = local_1c;
     }
   }
   return paiVar1;
@@ -233,33 +240,35 @@ int (*) [16] __cdecl make_odither_array(jpeg_decompress_struct *param_1,int para
 
 // 00B6C650  create_odither_tables  (jpeg-6/jquant1.c:433)
 
-void __cdecl create_odither_tables(jpeg_decompress_struct *param_1)
+void __cdecl create_odither_tables(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
-  int local_18;
-  int (*local_c) [16];
-  int local_8;
+  int j;
+  int nci;
+  my_cquantizer *cquantize;
+  int (*odither) [16];
+  int i;
   
-  pjVar1 = param_1->cquantize;
-  local_8 = 0;
+  pjVar1 = cinfo->cquantize;
+  i = 0;
   do {
-    if (param_1->out_color_components <= local_8) {
+    if (cinfo->out_color_components <= i) {
       return;
     }
-    local_c = (int (*) [16])0x0;
-    for (local_18 = 0; local_18 < local_8; local_18 = local_18 + 1) {
-      if ((&pjVar1[2].start_pass)[local_8] == (&pjVar1[2].start_pass)[local_18]) {
-        local_c = (int (*) [16])(&pjVar1[3].color_quantize)[local_18];
+    odither = (int (*) [16])0x0;
+    for (j = 0; j < i; j = j + 1) {
+      if ((&pjVar1[2].start_pass)[i] == (&pjVar1[2].start_pass)[j]) {
+        odither = (int (*) [16])(&pjVar1[3].color_quantize)[j];
         break;
       }
     }
-    if (local_c == (int (*) [16])0x0) {
-      local_c = make_odither_array(param_1,(int)(&pjVar1[2].start_pass)[local_8]);
+    if (odither == (int (*) [16])0x0) {
+      odither = make_odither_array(cinfo,(int)(&pjVar1[2].start_pass)[i]);
     }
-    (&pjVar1[3].color_quantize)[local_8] =
-         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)local_c;
-    local_8 = local_8 + 1;
+    (&pjVar1[3].color_quantize)[i] =
+         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)odither;
+    i = i + 1;
   } while( true );
 }
 
@@ -267,33 +276,37 @@ void __cdecl create_odither_tables(jpeg_decompress_struct *param_1)
 // 00B6C7C0  color_quantize  (jpeg-6/jquant1.c:462)
 
 void __cdecl
-color_quantize(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+color_quantize(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var1;
   uint uVar2;
   int iVar3;
-  uchar uVar4;
-  uchar *local_18;
-  int local_14;
-  int local_10;
-  byte *local_c;
-  uint local_8;
+  uchar **colorindex;
+  int nc;
+  int pixcode;
+  uint width;
+  my_cquantizer *cquantize;
+  uchar *ptrout;
+  int row;
+  int ci;
+  uchar *ptrin;
+  uint col;
   
-  p_Var1 = param_1->cquantize[1].finish_pass;
-  uVar2 = param_1->output_width;
-  iVar3 = param_1->out_color_components;
-  for (local_14 = 0; local_14 < param_4; local_14 = local_14 + 1) {
-    local_c = param_2[local_14];
-    local_18 = param_3[local_14];
-    for (local_8 = uVar2; local_8 != 0; local_8 = local_8 - 1) {
-      uVar4 = '\0';
-      for (local_10 = 0; local_10 < iVar3; local_10 = local_10 + 1) {
-        uVar4 = *(char *)(*(int *)(p_Var1 + local_10 * 4) + (uint)*local_c) + uVar4;
-        local_c = local_c + 1;
+  p_Var1 = cinfo->cquantize[1].finish_pass;
+  uVar2 = cinfo->output_width;
+  iVar3 = cinfo->out_color_components;
+  for (row = 0; row < num_rows; row = row + 1) {
+    ptrin = input_buf[row];
+    ptrout = output_buf[row];
+    for (col = uVar2; col != 0; col = col - 1) {
+      pixcode = 0;
+      for (ci = 0; ci < iVar3; ci = ci + 1) {
+        pixcode = (uint)*(byte *)(*(int *)(p_Var1 + ci * 4) + (uint)*ptrin) + pixcode;
+        ptrin = ptrin + 1;
       }
-      *local_18 = uVar4;
-      local_18 = local_18 + 1;
+      *ptrout = (uchar)pixcode;
+      ptrout = ptrout + 1;
     }
   }
   return;
@@ -303,38 +316,40 @@ color_quantize(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,i
 // 00B6C8A0  color_quantize3  (jpeg-6/jquant1.c:490)
 
 void __cdecl
-color_quantize3(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+color_quantize3(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
-  byte bVar1;
-  jpeg_color_quantizer *pjVar2;
+  jpeg_color_quantizer *pjVar1;
+  int iVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
-  byte *pbVar7;
-  byte *pbVar8;
-  uchar *local_18;
-  int local_14;
-  byte *local_10;
-  uint local_8;
+  uint uVar5;
+  uchar *colorindex2;
+  uchar *colorindex1;
+  int pixcode;
+  uint width;
+  my_cquantizer *cquantize;
+  uchar *ptrout;
+  int row;
+  uchar *ptrin;
+  uchar *colorindex0;
+  uint col;
   
-  pjVar2 = param_1->cquantize;
-  iVar3 = *(int *)pjVar2[1].finish_pass;
-  iVar4 = *(int *)(pjVar2[1].finish_pass + 4);
-  iVar5 = *(int *)(pjVar2[1].finish_pass + 8);
-  uVar6 = param_1->output_width;
-  for (local_14 = 0; local_14 < param_4; local_14 = local_14 + 1) {
-    local_10 = param_2[local_14];
-    local_18 = param_3[local_14];
-    for (local_8 = uVar6; local_8 != 0; local_8 = local_8 - 1) {
-      bVar1 = *local_10;
-      pbVar7 = local_10 + 1;
-      pbVar8 = local_10 + 2;
-      local_10 = local_10 + 3;
-      *local_18 = *(char *)(iVar5 + (uint)*pbVar8) +
-                  *(char *)(iVar4 + (uint)*pbVar7) + *(char *)(iVar3 + (uint)bVar1);
-      local_18 = local_18 + 1;
+  pjVar1 = cinfo->cquantize;
+  iVar2 = *(int *)pjVar1[1].finish_pass;
+  iVar3 = *(int *)(pjVar1[1].finish_pass + 4);
+  iVar4 = *(int *)(pjVar1[1].finish_pass + 8);
+  uVar5 = cinfo->output_width;
+  for (row = 0; row < num_rows; row = row + 1) {
+    ptrin = input_buf[row];
+    ptrout = output_buf[row];
+    for (col = uVar5; col != 0; col = col - 1) {
+      pixcode._0_1_ =
+           *(char *)(iVar4 + (uint)ptrin[2]) +
+           *(char *)(iVar3 + (uint)ptrin[1]) + *(char *)(iVar2 + (uint)*ptrin);
+      ptrin = ptrin + 3;
+      *ptrout = (uchar)pixcode;
+      ptrout = ptrout + 1;
     }
   }
   return;
@@ -344,45 +359,51 @@ color_quantize3(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,
 // 00B6C9A0  quantize_ord_dither  (jpeg-6/jquant1.c:518)
 
 void __cdecl
-quantize_ord_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+quantize_ord_dither(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   jpeg_color_quantizer *pjVar1;
   int iVar2;
-  uint uVar3;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var4;
-  int iVar5;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var6;
-  uchar *local_34;
-  int local_1c;
-  int local_18;
-  byte *local_14;
-  uint local_c;
-  uint local_8;
+  uint bytestozero;
+  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var3;
+  int iVar4;
+  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var5;
+  uchar *output_ptr;
+  int *dither;
+  int nc;
+  uint width;
+  uchar *colorindex_ci;
+  my_cquantizer *cquantize;
+  int row;
+  int ci;
+  uchar *input_ptr;
+  int row_index;
+  int col_index;
+  uint col;
   
-  pjVar1 = param_1->cquantize;
-  iVar2 = param_1->out_color_components;
-  uVar3 = param_1->output_width;
-  for (local_1c = 0; local_1c < param_4; local_1c = local_1c + 1) {
-    R_SetBlackProbe(param_3[local_1c],uVar3);
-    p_Var4 = pjVar1[3].start_pass;
-    for (local_18 = 0; local_18 < iVar2; local_18 = local_18 + 1) {
-      local_14 = param_2[local_1c] + local_18;
-      local_34 = param_3[local_1c];
-      iVar5 = *(int *)(pjVar1[1].finish_pass + local_18 * 4);
-      p_Var6 = (&pjVar1[3].color_quantize)[local_18];
-      local_c = 0;
-      for (local_8 = uVar3; local_8 != 0; local_8 = local_8 - 1) {
-        *local_34 = *local_34 +
-                    *(char *)(iVar5 + (uint)*local_14 +
-                                      *(int *)(p_Var6 + local_c * 4 + (int)p_Var4 * 0x40));
-        local_14 = local_14 + iVar2;
-        local_34 = local_34 + 1;
-        local_c = local_c + 1 & 0xf;
+  pjVar1 = cinfo->cquantize;
+  iVar2 = cinfo->out_color_components;
+  bytestozero = cinfo->output_width;
+  for (row = 0; row < num_rows; row = row + 1) {
+    R_SetBlackProbe(output_buf[row],bytestozero);
+    p_Var3 = pjVar1[3].start_pass;
+    for (ci = 0; ci < iVar2; ci = ci + 1) {
+      input_ptr = input_buf[row] + ci;
+      output_ptr = output_buf[row];
+      iVar4 = *(int *)(pjVar1[1].finish_pass + ci * 4);
+      p_Var5 = (&pjVar1[3].color_quantize)[ci];
+      col_index = 0;
+      for (col = bytestozero; col != 0; col = col - 1) {
+        *output_ptr = *output_ptr +
+                      *(char *)(iVar4 + (uint)*input_ptr +
+                                        *(int *)(p_Var5 + col_index * 4 + (int)p_Var3 * 0x40));
+        input_ptr = input_ptr + iVar2;
+        output_ptr = output_ptr + 1;
+        col_index = col_index + 1U & 0xf;
       }
     }
     pjVar1[3].start_pass =
-         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)((uint)(p_Var4 + 1) & 0xf);
+         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)((uint)(p_Var3 + 1) & 0xf);
   }
   return;
 }
@@ -391,56 +412,63 @@ quantize_ord_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **para
 // 00B6CAE0  quantize3_ord_dither  (jpeg-6/jquant1.c:568)
 
 void __cdecl
-quantize3_ord_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+quantize3_ord_dither
+          (jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
-  byte bVar1;
-  jpeg_color_quantizer *pjVar2;
+  jpeg_color_quantizer *pjVar1;
+  int iVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var7;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var8;
+  uint uVar5;
+  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var6;
+  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var7;
+  _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var8;
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var9;
-  _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var10;
-  byte *pbVar11;
-  byte *pbVar12;
-  uchar *local_40;
-  int local_20;
-  byte *local_18;
-  uint local_c;
-  uint local_8;
+  uchar *output_ptr;
+  uchar *colorindex2;
+  uchar *colorindex1;
+  int pixcode;
+  uint width;
+  my_cquantizer *cquantize;
+  int *dither1;
+  int *dither2;
+  int row;
+  int *dither0;
+  uchar *input_ptr;
+  uchar *colorindex0;
+  int row_index;
+  int col_index;
+  uint col;
   
-  pjVar2 = param_1->cquantize;
-  iVar3 = *(int *)pjVar2[1].finish_pass;
-  iVar4 = *(int *)(pjVar2[1].finish_pass + 4);
-  iVar5 = *(int *)(pjVar2[1].finish_pass + 8);
-  uVar6 = param_1->output_width;
-  for (local_20 = 0; local_20 < param_4; local_20 = local_20 + 1) {
-    p_Var7 = pjVar2[3].start_pass;
-    local_18 = param_2[local_20];
-    local_40 = param_3[local_20];
-    p_Var8 = pjVar2[3].color_quantize;
-    p_Var9 = pjVar2[3].finish_pass;
-    p_Var10 = pjVar2[3].new_color_map;
-    local_c = 0;
-    for (local_8 = uVar6; local_8 != 0; local_8 = local_8 - 1) {
-      bVar1 = *local_18;
-      pbVar12 = local_18 + 1;
-      pbVar11 = local_18 + 2;
-      local_18 = local_18 + 3;
-      *local_40 = *(char *)(iVar5 + (uint)*pbVar11 +
-                                    *(int *)(p_Var10 + local_c * 4 + (int)p_Var7 * 0x40)) +
-                  *(char *)(iVar4 + (uint)*pbVar12 +
-                                    *(int *)(p_Var9 + local_c * 4 + (int)p_Var7 * 0x40)) +
-                  *(char *)(iVar3 + (uint)bVar1 +
-                                    *(int *)(p_Var8 + local_c * 4 + (int)p_Var7 * 0x40));
-      local_40 = local_40 + 1;
-      local_c = local_c + 1 & 0xf;
+  pjVar1 = cinfo->cquantize;
+  iVar2 = *(int *)pjVar1[1].finish_pass;
+  iVar3 = *(int *)(pjVar1[1].finish_pass + 4);
+  iVar4 = *(int *)(pjVar1[1].finish_pass + 8);
+  uVar5 = cinfo->output_width;
+  for (row = 0; row < num_rows; row = row + 1) {
+    p_Var6 = pjVar1[3].start_pass;
+    input_ptr = input_buf[row];
+    output_ptr = output_buf[row];
+    p_Var7 = pjVar1[3].color_quantize;
+    p_Var8 = pjVar1[3].finish_pass;
+    p_Var9 = pjVar1[3].new_color_map;
+    col_index = 0;
+    for (col = uVar5; col != 0; col = col - 1) {
+      pixcode._0_1_ =
+           *(char *)(iVar4 + (uint)input_ptr[2] +
+                             *(int *)(p_Var9 + col_index * 4 + (int)p_Var6 * 0x40)) +
+           *(char *)(iVar3 + (uint)input_ptr[1] +
+                             *(int *)(p_Var8 + col_index * 4 + (int)p_Var6 * 0x40)) +
+           *(char *)(iVar2 + (uint)*input_ptr +
+                             *(int *)(p_Var7 + col_index * 4 + (int)p_Var6 * 0x40));
+      input_ptr = input_ptr + 3;
+      *output_ptr = (uchar)pixcode;
+      output_ptr = output_ptr + 1;
+      col_index = col_index + 1U & 0xf;
     }
-    pjVar2[3].start_pass =
-         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)((uint)(p_Var7 + 1) & 0xf);
+    pjVar1[3].start_pass =
+         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)((uint)(p_Var6 + 1) & 0xf);
   }
   return;
 }
@@ -449,71 +477,79 @@ quantize3_ord_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **par
 // 00B6CC60  quantize_fs_dither  (jpeg-6/jquant1.c:613)
 
 void __cdecl
-quantize_fs_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+quantize_fs_dither(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   byte bVar1;
   byte bVar2;
   jpeg_color_quantizer *pjVar3;
   int iVar4;
-  uint uVar5;
-  uchar *puVar6;
+  uint bytestozero;
+  uchar *puVar5;
+  int iVar6;
   int iVar7;
   int iVar8;
-  int iVar9;
-  uchar *local_54;
-  int local_4c;
-  int local_48;
-  int local_40;
-  int local_28;
-  int local_20;
-  int local_1c;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *local_18;
-  byte *local_14;
-  int local_10;
-  uint local_8;
+  uchar *output_ptr;
+  int delta;
+  int dir;
+  int belowerr;
+  int nc;
+  int dirnc;
+  int pixcode;
+  uint width;
+  uchar *colorindex_ci;
+  uchar *range_limit;
+  my_cquantizer *cquantize;
+  int row;
+  uchar *colormap_ci;
+  int ci;
+  int cur;
+  short *errorptr;
+  uchar *input_ptr;
+  int bpreverr;
+  int bnexterr;
+  uint col;
   
-  pjVar3 = param_1->cquantize;
-  iVar4 = param_1->out_color_components;
-  uVar5 = param_1->output_width;
-  puVar6 = param_1->sample_range_limit;
-  for (local_28 = 0; local_28 < param_4; local_28 = local_28 + 1) {
-    R_SetBlackProbe(param_3[local_28],uVar5);
-    for (local_20 = 0; local_20 < iVar4; local_20 = local_20 + 1) {
-      local_14 = param_2[local_28] + local_20;
-      local_54 = param_3[local_28];
+  pjVar3 = cinfo->cquantize;
+  iVar4 = cinfo->out_color_components;
+  bytestozero = cinfo->output_width;
+  puVar5 = cinfo->sample_range_limit;
+  for (row = 0; row < num_rows; row = row + 1) {
+    R_SetBlackProbe(output_buf[row],bytestozero);
+    for (ci = 0; ci < iVar4; ci = ci + 1) {
+      input_ptr = input_buf[row] + ci;
+      output_ptr = output_buf[row];
       if (*(char *)&pjVar3[5].color_quantize == '\0') {
-        local_4c = 1;
-        local_18 = (&pjVar3[4].color_quantize)[local_20];
-        local_40 = iVar4;
+        dir = 1;
+        errorptr = (short *)(&pjVar3[4].color_quantize)[ci];
+        dirnc = iVar4;
       }
       else {
-        local_14 = local_14 + (uVar5 - 1) * iVar4;
-        local_54 = local_54 + (uVar5 - 1);
-        local_4c = -1;
-        local_18 = (&pjVar3[4].color_quantize)[local_20] + uVar5 * 2 + 2;
-        local_40 = -iVar4;
+        input_ptr = input_ptr + (bytestozero - 1) * iVar4;
+        output_ptr = output_ptr + (bytestozero - 1);
+        dir = -1;
+        errorptr = (short *)((&pjVar3[4].color_quantize)[ci] + bytestozero * 2 + 2);
+        dirnc = -iVar4;
       }
-      iVar7 = *(int *)(pjVar3[1].finish_pass + local_20 * 4);
-      iVar8 = *(int *)(pjVar3[1].start_pass + local_20 * 4);
-      local_1c = 0;
-      local_10 = 0;
-      local_48 = 0;
-      for (local_8 = uVar5; local_8 != 0; local_8 = local_8 - 1) {
-        bVar1 = puVar6[(uint)*local_14 +
-                       (local_1c + 8 + (int)*(short *)(local_18 + local_4c * 2) >> 4)];
-        bVar2 = *(byte *)(iVar7 + (uint)bVar1);
-        *local_54 = *local_54 + bVar2;
-        iVar9 = (uint)bVar1 - (uint)*(byte *)(iVar8 + (uint)bVar2);
-        *(short *)local_18 = (short)local_10 + (short)iVar9 * 3;
-        local_10 = local_48 + iVar9 * 5;
-        local_1c = iVar9 * 7;
-        local_14 = local_14 + local_40;
-        local_54 = local_54 + local_4c;
-        local_18 = local_18 + local_4c * 2;
-        local_48 = iVar9;
+      iVar6 = *(int *)(pjVar3[1].finish_pass + ci * 4);
+      iVar7 = *(int *)(pjVar3[1].start_pass + ci * 4);
+      cur = 0;
+      bpreverr = 0;
+      belowerr = 0;
+      for (col = bytestozero; col != 0; col = col - 1) {
+        bVar1 = puVar5[(uint)*input_ptr + (cur + 8 + (int)errorptr[dir] >> 4)];
+        bVar2 = *(byte *)(iVar6 + (uint)bVar1);
+        *output_ptr = *output_ptr + bVar2;
+        iVar8 = (uint)bVar1 - (uint)*(byte *)(iVar7 + (uint)bVar2);
+        *errorptr = (short)bpreverr + (short)iVar8 * 3;
+        bpreverr = belowerr + iVar8 * 5;
+        cur = iVar8 * 7;
+        input_ptr = input_ptr + dirnc;
+        output_ptr = output_ptr + dir;
+        errorptr = errorptr + dir;
+        belowerr = iVar8;
       }
-      *(short *)local_18 = (short)local_10;
+      *errorptr = (short)bpreverr;
     }
     *(char *)&pjVar3[5].color_quantize = '\x01' - (*(char *)&pjVar3[5].color_quantize != '\0');
   }
@@ -523,19 +559,21 @@ quantize_fs_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param
 
 // 00B6C480  alloc_fs_workspace  (jpeg-6/jquant1.c:723)
 
-void __cdecl alloc_fs_workspace(jpeg_decompress_struct *param_1)
+void __cdecl alloc_fs_workspace(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
   uint uVar2;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var3;
-  int local_8;
+  uint arraysize;
+  my_cquantizer *cquantize;
+  int i;
   
-  pjVar1 = param_1->cquantize;
-  uVar2 = param_1->output_width;
-  for (local_8 = 0; local_8 < param_1->out_color_components; local_8 = local_8 + 1) {
-    p_Var3 = (*param_1->mem->alloc_large)((jpeg_common_struct *)param_1,1,uVar2 * 2 + 4);
-    (&pjVar1[4].color_quantize)[local_8] = p_Var3;
+  pjVar1 = cinfo->cquantize;
+  uVar2 = cinfo->output_width;
+  for (i = 0; i < cinfo->out_color_components; i = i + 1) {
+    p_Var3 = (*cinfo->mem->alloc_large)((jpeg_common_struct *)cinfo,1,uVar2 * 2 + 4);
+    (&pjVar1[4].color_quantize)[i] = p_Var3;
   }
   return;
 }
@@ -543,20 +581,22 @@ void __cdecl alloc_fs_workspace(jpeg_decompress_struct *param_1)
 
 // 00B6C4F0  start_pass_1_quant  (jpeg-6/jquant1.c:742)
 
-void __cdecl start_pass_1_quant(jpeg_decompress_struct *param_1,uchar param_2)
+void __cdecl start_pass_1_quant(jpeg_decompress_struct *cinfo,uchar is_pre_scan)
 
 {
   jpeg_color_quantizer *pjVar1;
   J_DITHER_MODE JVar2;
   uint uVar3;
-  int local_8;
+  uint arraysize;
+  my_cquantizer *cquantize;
+  int i;
   
-  pjVar1 = param_1->cquantize;
-  param_1->colormap = (uchar **)pjVar1[1].start_pass;
-  param_1->actual_number_of_colors = (int)pjVar1[1].color_quantize;
-  JVar2 = param_1->dither_mode;
+  pjVar1 = cinfo->cquantize;
+  cinfo->colormap = (uchar **)pjVar1[1].start_pass;
+  cinfo->actual_number_of_colors = (int)pjVar1[1].color_quantize;
+  JVar2 = cinfo->dither_mode;
   if (JVar2 == JDITHER_NONE) {
-    if (param_1->out_color_components == 3) {
+    if (cinfo->out_color_components == 3) {
       pjVar1->color_quantize = color_quantize3;
     }
     else {
@@ -564,7 +604,7 @@ void __cdecl start_pass_1_quant(jpeg_decompress_struct *param_1,uchar param_2)
     }
   }
   else if (JVar2 == JDITHER_ORDERED) {
-    if (param_1->out_color_components == 3) {
+    if (cinfo->out_color_components == 3) {
       pjVar1->color_quantize = quantize3_ord_dither;
     }
     else {
@@ -572,11 +612,11 @@ void __cdecl start_pass_1_quant(jpeg_decompress_struct *param_1,uchar param_2)
     }
     pjVar1[3].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)0x0;
     if (*(char *)&pjVar1[1].new_color_map == '\0') {
-      create_colorindex(param_1);
+      create_colorindex(cinfo);
     }
     if (pjVar1[3].color_quantize ==
         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)0x0) {
-      create_odither_tables(param_1);
+      create_odither_tables(cinfo);
     }
   }
   else if (JVar2 == JDITHER_FS) {
@@ -584,16 +624,16 @@ void __cdecl start_pass_1_quant(jpeg_decompress_struct *param_1,uchar param_2)
     *(undefined1 *)&pjVar1[5].color_quantize = 0;
     if (pjVar1[4].color_quantize ==
         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)0x0) {
-      alloc_fs_workspace(param_1);
+      alloc_fs_workspace(cinfo);
     }
-    uVar3 = param_1->output_width;
-    for (local_8 = 0; local_8 < param_1->out_color_components; local_8 = local_8 + 1) {
-      R_SetBlackProbe((uchar *)(&pjVar1[4].color_quantize)[local_8],uVar3 * 2 + 4);
+    uVar3 = cinfo->output_width;
+    for (i = 0; i < cinfo->out_color_components; i = i + 1) {
+      R_SetBlackProbe((uchar *)(&pjVar1[4].color_quantize)[i],uVar3 * 2 + 4);
     }
   }
   else {
-    param_1->err->msg_code = 0x30;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 0x30;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   return;
 }
@@ -601,24 +641,25 @@ void __cdecl start_pass_1_quant(jpeg_decompress_struct *param_1,uchar param_2)
 
 // 00B6CEB0  new_color_map_1_quant  (jpeg-6/jquant1.c:811)
 
-void __cdecl new_color_map_1_quant(jpeg_decompress_struct *param_1)
+void __cdecl new_color_map_1_quant(jpeg_decompress_struct *cinfo)
 
 {
-  param_1->err->msg_code = 0x2e;
-  (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  cinfo->err->msg_code = 0x2e;
+  (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   return;
 }
 
 
 // 00B6BE50  jinit_1pass_quantizer  (jpeg-6/jquant1.c:822)
 
-void __cdecl jinit_1pass_quantizer(jpeg_decompress_struct *param_1)
+void __cdecl jinit_1pass_quantizer(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
+  my_cquantizer *cquantize;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x58);
-  param_1->cquantize = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x58);
+  cinfo->cquantize = pjVar1;
   pjVar1->start_pass = start_pass_1_quant;
   pjVar1->finish_pass = GamerProfile_WriteSettings;
   pjVar1->new_color_map = new_color_map_1_quant;
@@ -626,20 +667,20 @@ void __cdecl jinit_1pass_quantizer(jpeg_decompress_struct *param_1)
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)0x0;
   pjVar1[3].color_quantize =
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)0x0;
-  if (4 < param_1->out_color_components) {
-    param_1->err->msg_code = 0x37;
-    (param_1->err->msg_parm).i[0] = 4;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (4 < cinfo->out_color_components) {
+    cinfo->err->msg_code = 0x37;
+    (cinfo->err->msg_parm).i[0] = 4;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (0x100 < param_1->desired_number_of_colors) {
-    param_1->err->msg_code = 0x39;
-    (param_1->err->msg_parm).i[0] = 0x100;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (0x100 < cinfo->desired_number_of_colors) {
+    cinfo->err->msg_code = 0x39;
+    (cinfo->err->msg_parm).i[0] = 0x100;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  create_colormap(param_1);
-  create_colorindex(param_1);
-  if (param_1->dither_mode == JDITHER_FS) {
-    alloc_fs_workspace(param_1);
+  create_colormap(cinfo);
+  create_colorindex(cinfo);
+  if (cinfo->dither_mode == JDITHER_FS) {
+    alloc_fs_workspace(cinfo);
   }
   return;
 }

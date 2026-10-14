@@ -29,13 +29,13 @@ void __cdecl Dvar_Sort(void)
 
 // 007BD350  Sys_UnlockRead  (qcommon/threads_interlock.h:76)
 
-void __cdecl Sys_UnlockRead(FastCriticalSection *param_1)
+void __cdecl Sys_UnlockRead(FastCriticalSection *critSect)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readCount < 1) {
+  if (critSect->readCount < 1) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/threads_interlock.h"
                              ,0x4e,0,"%s");
     if (!bVar2) {
@@ -45,7 +45,7 @@ void __cdecl Sys_UnlockRead(FastCriticalSection *param_1)
     }
   }
   LOCK();
-  param_1->readCount = param_1->readCount + -1;
+  critSect->readCount = critSect->readCount + -1;
   UNLOCK();
   return;
 }
@@ -53,14 +53,14 @@ void __cdecl Sys_UnlockRead(FastCriticalSection *param_1)
 
 // 007BBE50  Dvar_ForEach  (universal/dvar.cpp:79)
 
-void __cdecl Dvar_ForEach(_func___cdecl_void_dvar_s_ptr_void_ptr *param_1,void *param_2)
+void __cdecl Dvar_ForEach(_func___cdecl_void_dvar_s_ptr_void_ptr *callback,void *userData)
 
 {
-  int local_8;
+  int dvarIter;
   
   Dvar_Sort();
-  for (local_8 = 0; local_8 < dvarCount; local_8 = local_8 + 1) {
-    (*param_1)(sortedDvars[local_8],param_2);
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    (*callback)(sortedDvars[dvarIter],userData);
   }
   return;
 }
@@ -68,14 +68,14 @@ void __cdecl Dvar_ForEach(_func___cdecl_void_dvar_s_ptr_void_ptr *param_1,void *
 
 // 007BBEA0  Dvar_ForEachName  (universal/dvar.cpp:90)
 
-void __cdecl Dvar_ForEachName(_func___cdecl_void_char_ptr *param_1)
+void __cdecl Dvar_ForEachName(_func___cdecl_void_char_ptr *callback)
 
 {
-  int local_8;
+  int dvarIter;
   
   Dvar_Sort();
-  for (local_8 = 0; local_8 < dvarCount; local_8 = local_8 + 1) {
-    (*param_1)(sortedDvars[local_8]->name);
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    (*callback)(sortedDvars[dvarIter]->name);
   }
   return;
 }
@@ -83,10 +83,10 @@ void __cdecl Dvar_ForEachName(_func___cdecl_void_char_ptr *param_1)
 
 // 007BBEE0  Dvar_SetInAutoExec  (universal/dvar.cpp:120)
 
-void __cdecl Dvar_SetInAutoExec(bool param_1)
+void __cdecl Dvar_SetInAutoExec(bool inAutoExec)
 
 {
-  isLoadingAutoExecGlobalFlag = param_1;
+  isLoadingAutoExecGlobalFlag = inAutoExec;
   return;
 }
 
@@ -102,20 +102,21 @@ bool __cdecl Dvar_IsSystemActive(void)
 
 // 007BBF00  Dvar_IsValidName  (universal/dvar.cpp:132)
 
-bool __cdecl Dvar_IsValidName(char *param_1)
+bool __cdecl Dvar_IsValidName(char *dvarName)
 
 {
   char cVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  char nameChar;
+  int index;
   
-  if (param_1 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-      cVar1 = param_1[local_8];
+    for (index = 0; dvarName[index] != '\0'; index = index + 1) {
+      cVar1 = dvarName[index];
       iVar3 = isalnum((int)cVar1);
       if ((iVar3 == 0) && (cVar1 != '_')) {
         return false;
@@ -129,36 +130,36 @@ bool __cdecl Dvar_IsValidName(char *param_1)
 
 // 007C0D90  Dvar_AllocNameString  (universal/dvar.cpp:150)
 
-char * __cdecl Dvar_AllocNameString(char *param_1)
+char * __cdecl Dvar_AllocNameString(char *name)
 
 {
   char *pcVar1;
   
-  pcVar1 = CopyString(param_1,"Dvar_AllocNameString",0xb,SCRIPTINSTANCE_SERVER);
+  pcVar1 = CopyString(name,"Dvar_AllocNameString",0xb,SCRIPTINSTANCE_SERVER);
   return pcVar1;
 }
 
 
 // 007BE740  Dvar_FreeNameString  (universal/dvar.cpp:156)
 
-void __cdecl Dvar_FreeNameString(char *param_1)
+void __cdecl Dvar_FreeNameString(char *name)
 
 {
-  FreeString(param_1,0xb,SCRIPTINSTANCE_SERVER);
+  FreeString(name,0xb,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 007BEC30  Dvar_CopyString  (universal/dvar.cpp:162)
 
-void __cdecl Dvar_CopyString(char *param_1,DvarValue *param_2)
+void __cdecl Dvar_CopyString(char *string,DvarValue *value)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xa3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -166,21 +167,21 @@ void __cdecl Dvar_CopyString(char *param_1,DvarValue *param_2)
       return;
     }
   }
-  pcVar3 = CopyString(param_1,"Dvar_CopyString",0xb,SCRIPTINSTANCE_SERVER);
-  param_2->string = pcVar3;
+  pcVar3 = CopyString(string,"Dvar_CopyString",0xb,SCRIPTINSTANCE_SERVER);
+  value->string = pcVar3;
   return;
 }
 
 
 // 007BEC80  Dvar_WeakCopyString  (universal/dvar.cpp:170)
 
-void __cdecl Dvar_WeakCopyString(char *param_1,DvarValue *param_2)
+void __cdecl Dvar_WeakCopyString(char *string,DvarValue *value)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xab,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -188,21 +189,20 @@ void __cdecl Dvar_WeakCopyString(char *param_1,DvarValue *param_2)
       return;
     }
   }
-  param_2->string = param_1;
+  value->string = string;
   return;
 }
 
 
 // 007BE760  Dvar_ShouldFreeCurrentString  (universal/dvar.cpp:177)
 
-bool __cdecl Dvar_ShouldFreeCurrentString(dvar_s *param_1)
+bool __cdecl Dvar_ShouldFreeCurrentString(dvar_s *dvar)
 
 {
   bool local_8;
   
-  if ((((param_1->current).integer == 0) ||
-      ((param_1->current).integer == (param_1->latched).integer)) ||
-     ((param_1->current).integer == (param_1->reset).integer)) {
+  if ((((dvar->current).integer == 0) || ((dvar->current).integer == (dvar->latched).integer)) ||
+     ((dvar->current).integer == (dvar->reset).integer)) {
     local_8 = false;
   }
   else {
@@ -214,14 +214,13 @@ bool __cdecl Dvar_ShouldFreeCurrentString(dvar_s *param_1)
 
 // 007BE7A0  Dvar_ShouldFreeLatchedString  (universal/dvar.cpp:183)
 
-bool __cdecl Dvar_ShouldFreeLatchedString(dvar_s *param_1)
+bool __cdecl Dvar_ShouldFreeLatchedString(dvar_s *dvar)
 
 {
   bool local_8;
   
-  if ((((param_1->latched).integer == 0) ||
-      ((param_1->latched).integer == (param_1->current).integer)) ||
-     ((param_1->latched).integer == (param_1->reset).integer)) {
+  if ((((dvar->latched).integer == 0) || ((dvar->latched).integer == (dvar->current).integer)) ||
+     ((dvar->latched).integer == (dvar->reset).integer)) {
     local_8 = false;
   }
   else {
@@ -233,13 +232,13 @@ bool __cdecl Dvar_ShouldFreeLatchedString(dvar_s *param_1)
 
 // 007BE7E0  Dvar_ShouldFreeResetString  (universal/dvar.cpp:189)
 
-bool __cdecl Dvar_ShouldFreeResetString(dvar_s *param_1)
+bool __cdecl Dvar_ShouldFreeResetString(dvar_s *dvar)
 
 {
   bool local_8;
   
-  if ((((param_1->reset).integer == 0) || ((param_1->reset).integer == (param_1->current).integer))
-     || ((param_1->reset).integer == (param_1->latched).integer)) {
+  if ((((dvar->reset).integer == 0) || ((dvar->reset).integer == (dvar->current).integer)) ||
+     ((dvar->reset).integer == (dvar->latched).integer)) {
     local_8 = false;
   }
   else {
@@ -251,18 +250,18 @@ bool __cdecl Dvar_ShouldFreeResetString(dvar_s *param_1)
 
 // 007BE820  Dvar_FreeString  (universal/dvar.cpp:194)
 
-void __cdecl Dvar_FreeString(DvarValue *param_1)
+void __cdecl Dvar_FreeString(DvarValue *value)
 
 {
-  FreeString(param_1->string,0xb,SCRIPTINSTANCE_SERVER);
-  param_1->integer = 0;
+  FreeString(value->string,0xb,SCRIPTINSTANCE_SERVER);
+  value->integer = 0;
   return;
 }
 
 
 // 007BF4D0  Dvar_AssignCurrentStringValue  (universal/dvar.cpp:201)
 
-void __cdecl Dvar_AssignCurrentStringValue(dvar_s *param_1,DvarValue *param_2,char *param_3)
+void __cdecl Dvar_AssignCurrentStringValue(dvar_s *dvar,DvarValue *dest,char *string)
 
 {
   byte bVar1;
@@ -275,21 +274,21 @@ void __cdecl Dvar_AssignCurrentStringValue(dvar_s *param_1,DvarValue *param_2,ch
   byte *local_c;
   byte *local_8;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xca,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->latched).integer != 0) {
-    if (param_3 == (char *)(param_1->latched).integer) {
+  if ((dvar->latched).integer != 0) {
+    if (string == (char *)(dvar->latched).integer) {
 LAB_007bf57a:
-      Dvar_WeakCopyString((param_1->latched).string,param_2);
+      Dvar_WeakCopyString((dvar->latched).string,dest);
       return;
     }
-    local_8 = (byte *)(param_1->latched).string;
-    local_c = (byte *)param_3;
+    local_8 = (byte *)(dvar->latched).string;
+    local_c = (byte *)string;
     do {
       bVar1 = *local_c;
       bVar3 = bVar1 < *local_8;
@@ -309,14 +308,14 @@ LAB_007bf566:
 LAB_007bf56e:
     if (local_14 == 0) goto LAB_007bf57a;
   }
-  if ((param_1->reset).integer == 0) {
+  if ((dvar->reset).integer == 0) {
 LAB_007bf61f:
-    Dvar_CopyString(param_3,param_2);
+    Dvar_CopyString(string,dest);
   }
   else {
-    if (param_3 != (char *)(param_1->reset).integer) {
-      local_1c = (byte *)(param_1->reset).string;
-      local_20 = (byte *)param_3;
+    if (string != (char *)(dvar->reset).integer) {
+      local_1c = (byte *)(dvar->reset).string;
+      local_20 = (byte *)string;
       do {
         bVar1 = *local_20;
         bVar3 = bVar1 < *local_1c;
@@ -336,7 +335,7 @@ LAB_007bf5f6:
 LAB_007bf5fe:
       if (local_28 != 0) goto LAB_007bf61f;
     }
-    Dvar_WeakCopyString((param_1->reset).string,param_2);
+    Dvar_WeakCopyString((dvar->reset).string,dest);
   }
   return;
 }
@@ -344,7 +343,7 @@ LAB_007bf5fe:
 
 // 007BF7C0  Dvar_AssignLatchedStringValue  (universal/dvar.cpp:213)
 
-void __cdecl Dvar_AssignLatchedStringValue(dvar_s *param_1,DvarValue *param_2,char *param_3)
+void __cdecl Dvar_AssignLatchedStringValue(dvar_s *dvar,DvarValue *dest,char *string)
 
 {
   byte bVar1;
@@ -357,21 +356,21 @@ void __cdecl Dvar_AssignLatchedStringValue(dvar_s *param_1,DvarValue *param_2,ch
   byte *local_c;
   byte *local_8;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xd6,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->current).integer != 0) {
-    if (param_3 == (char *)(param_1->current).integer) {
+  if ((dvar->current).integer != 0) {
+    if (string == (char *)(dvar->current).integer) {
 LAB_007bf86a:
-      Dvar_WeakCopyString((param_1->current).string,param_2);
+      Dvar_WeakCopyString((dvar->current).string,dest);
       return;
     }
-    local_8 = (byte *)(param_1->current).string;
-    local_c = (byte *)param_3;
+    local_8 = (byte *)(dvar->current).string;
+    local_c = (byte *)string;
     do {
       bVar1 = *local_c;
       bVar3 = bVar1 < *local_8;
@@ -391,14 +390,14 @@ LAB_007bf856:
 LAB_007bf85e:
     if (local_14 == 0) goto LAB_007bf86a;
   }
-  if ((param_1->reset).integer == 0) {
+  if ((dvar->reset).integer == 0) {
 LAB_007bf90f:
-    Dvar_CopyString(param_3,param_2);
+    Dvar_CopyString(string,dest);
   }
   else {
-    if (param_3 != (char *)(param_1->reset).integer) {
-      local_1c = (byte *)(param_1->reset).string;
-      local_20 = (byte *)param_3;
+    if (string != (char *)(dvar->reset).integer) {
+      local_1c = (byte *)(dvar->reset).string;
+      local_20 = (byte *)string;
       do {
         bVar1 = *local_20;
         bVar3 = bVar1 < *local_1c;
@@ -418,7 +417,7 @@ LAB_007bf8e6:
 LAB_007bf8ee:
       if (local_28 != 0) goto LAB_007bf90f;
     }
-    Dvar_WeakCopyString((param_1->reset).string,param_2);
+    Dvar_WeakCopyString((dvar->reset).string,dest);
   }
   return;
 }
@@ -426,7 +425,7 @@ LAB_007bf8ee:
 
 // 007BEAC0  Dvar_AssignResetStringValue  (universal/dvar.cpp:225)
 
-void __cdecl Dvar_AssignResetStringValue(dvar_s *param_1,DvarValue *param_2,char *param_3)
+void __cdecl Dvar_AssignResetStringValue(dvar_s *dvar,DvarValue *dest,char *string)
 
 {
   byte bVar1;
@@ -439,21 +438,21 @@ void __cdecl Dvar_AssignResetStringValue(dvar_s *param_1,DvarValue *param_2,char
   byte *local_c;
   byte *local_8;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xe2,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->current).integer != 0) {
-    if (param_3 == (char *)(param_1->current).integer) {
+  if ((dvar->current).integer != 0) {
+    if (string == (char *)(dvar->current).integer) {
 LAB_007beb6a:
-      Dvar_WeakCopyString((param_1->current).string,param_2);
+      Dvar_WeakCopyString((dvar->current).string,dest);
       return;
     }
-    local_8 = (byte *)(param_1->current).string;
-    local_c = (byte *)param_3;
+    local_8 = (byte *)(dvar->current).string;
+    local_c = (byte *)string;
     do {
       bVar1 = *local_c;
       bVar3 = bVar1 < *local_8;
@@ -473,14 +472,14 @@ LAB_007beb56:
 LAB_007beb5e:
     if (local_14 == 0) goto LAB_007beb6a;
   }
-  if ((param_1->latched).integer == 0) {
+  if ((dvar->latched).integer == 0) {
 LAB_007bec0f:
-    Dvar_CopyString(param_3,param_2);
+    Dvar_CopyString(string,dest);
   }
   else {
-    if (param_3 != (char *)(param_1->latched).integer) {
-      local_1c = (byte *)(param_1->latched).string;
-      local_20 = (byte *)param_3;
+    if (string != (char *)(dvar->latched).integer) {
+      local_1c = (byte *)(dvar->latched).string;
+      local_20 = (byte *)string;
       do {
         bVar1 = *local_20;
         bVar3 = bVar1 < *local_1c;
@@ -500,7 +499,7 @@ LAB_007bebe6:
 LAB_007bebee:
       if (local_28 != 0) goto LAB_007bec0f;
     }
-    Dvar_WeakCopyString((param_1->latched).string,param_2);
+    Dvar_WeakCopyString((dvar->latched).string,dest);
   }
   return;
 }
@@ -508,14 +507,14 @@ LAB_007bebee:
 
 // 007BBF60  Dvar_EnumToString  (universal/dvar.cpp:237)
 
-char * __cdecl Dvar_EnumToString(dvar_s *param_1)
+char * __cdecl Dvar_EnumToString(dvar_s *dvar)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xee,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -523,7 +522,7 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
       return pcVar3;
     }
   }
-  if (param_1->name == (char *)0x0) {
+  if (dvar->name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -531,7 +530,7 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
       return pcVar3;
     }
   }
-  if (param_1->type != DVAR_TYPE_ENUM) {
+  if (dvar->type != DVAR_TYPE_ENUM) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xf0,0,
                              "%s\n\t(dvar->name) = %s");
     if (!bVar2) {
@@ -540,7 +539,7 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
       return pcVar3;
     }
   }
-  if ((param_1->domain).enumeration.strings == (char **)0x0) {
+  if ((dvar->domain).enumeration.strings == (char **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xf1,0,
                              "%s\n\t(dvar->name) = %s");
     if (!bVar2) {
@@ -549,9 +548,9 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
       return pcVar3;
     }
   }
-  if ((((param_1->current).integer < 0) ||
-      ((param_1->domain).enumeration.stringCount <= (param_1->current).integer)) &&
-     ((param_1->current).integer != 0)) {
+  if ((((dvar->current).integer < 0) ||
+      ((dvar->domain).enumeration.stringCount <= (dvar->current).integer)) &&
+     ((dvar->current).integer != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xf2,0,
                              "%s\n\t(dvar->current.integer) = %i");
     if (!bVar2) {
@@ -560,11 +559,11 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
       return pcVar3;
     }
   }
-  if ((param_1->domain).enumeration.stringCount == 0) {
+  if ((dvar->domain).enumeration.stringCount == 0) {
     pcVar3 = "";
   }
   else {
-    pcVar3 = (param_1->domain).enumeration.strings[(param_1->current).integer];
+    pcVar3 = (dvar->domain).enumeration.strings[(dvar->current).integer];
   }
   return pcVar3;
 }
@@ -572,7 +571,7 @@ char * __cdecl Dvar_EnumToString(dvar_s *param_1)
 
 // 007BC0A0  Dvar_IndexStringToEnumString  (universal/dvar.cpp:250)
 
-char * __cdecl Dvar_IndexStringToEnumString(dvar_s *param_1,char *param_2)
+char * __cdecl Dvar_IndexStringToEnumString(dvar_s *dvar,char *indexString)
 
 {
   char cVar1;
@@ -581,64 +580,67 @@ char * __cdecl Dvar_IndexStringToEnumString(dvar_s *param_1,char *param_2)
   char *pcVar4;
   int iVar5;
   char *local_14;
-  int local_8;
+  int indexStringLength;
+  int enumIndex;
+  int indexStringIndex;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x100,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x101,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if ((param_1->type != DVAR_TYPE_ENUM) &&
+  if ((dvar->type != DVAR_TYPE_ENUM) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x102,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if (((param_1->domain).enumeration.strings == (char **)0x0) &&
+  if (((dvar->domain).enumeration.strings == (char **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x103,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((indexString == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x104,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if ((param_1->domain).enumeration.stringCount == 0) {
+  if ((dvar->domain).enumeration.stringCount == 0) {
     pcVar4 = "";
   }
   else {
-    local_14 = param_2;
+    local_14 = indexString;
     do {
       cVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (cVar1 != '\0');
-    for (local_8 = 0; local_8 < (int)local_14 - (int)(param_2 + 1); local_8 = local_8 + 1) {
-      iVar5 = isdigit((int)param_2[local_8]);
+    for (indexStringIndex = 0; indexStringIndex < (int)local_14 - (int)(indexString + 1);
+        indexStringIndex = indexStringIndex + 1) {
+      iVar5 = isdigit((int)indexString[indexStringIndex]);
       if (iVar5 == 0) {
         return "";
       }
     }
-    iVar5 = atoi(param_2);
-    if ((iVar5 < 0) || ((param_1->domain).enumeration.stringCount <= iVar5)) {
+    iVar5 = atoi(indexString);
+    if ((iVar5 < 0) || ((dvar->domain).enumeration.stringCount <= iVar5)) {
       pcVar4 = "";
     }
     else {
-      pcVar4 = (param_1->domain).enumeration.strings[iVar5];
+      pcVar4 = (dvar->domain).enumeration.strings[iVar5];
     }
   }
   return pcVar4;
@@ -647,7 +649,7 @@ char * __cdecl Dvar_IndexStringToEnumString(dvar_s *param_1,char *param_2)
 
 // 007BC2B0  Dvar_ValueToString  (universal/dvar.cpp:281)
 
-char * __cdecl Dvar_ValueToString(dvar_s *param_1,DvarValue param_2)
+char * __cdecl Dvar_ValueToString(dvar_s *dvar,DvarValue param_2)
 
 {
   code *pcVar1;
@@ -656,7 +658,7 @@ char * __cdecl Dvar_ValueToString(dvar_s *param_1,DvarValue param_2)
   char cStack00000008;
   char *local_10;
   
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_BOOL:
     if (cStack00000008 == '\0') {
       local_10 = "0";
@@ -683,19 +685,19 @@ char * __cdecl Dvar_ValueToString(dvar_s *param_1,DvarValue param_2)
     local_10 = va("%i");
     break;
   case DVAR_TYPE_ENUM:
-    if ((((_cStack00000008 < 0) || ((param_1->domain).enumeration.stringCount <= _cStack00000008))
-        && (_cStack00000008 != 0)) &&
+    if ((((_cStack00000008 < 0) || ((dvar->domain).enumeration.stringCount <= _cStack00000008)) &&
+        (_cStack00000008 != 0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x137,0,
                                  "%s\n\t(value.integer) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pcVar3 = (char *)(*pcVar1)();
       return pcVar3;
     }
-    if ((param_1->domain).enumeration.stringCount == 0) {
+    if ((dvar->domain).enumeration.stringCount == 0) {
       local_10 = "";
     }
     else {
-      local_10 = (param_1->domain).enumeration.strings[_cStack00000008];
+      local_10 = (dvar->domain).enumeration.strings[_cStack00000008];
     }
     break;
   case DVAR_TYPE_STRING:
@@ -731,7 +733,7 @@ char * __cdecl Dvar_ValueToString(dvar_s *param_1,DvarValue param_2)
 
 // 007BD9F0  Dvar_StringToBool  (universal/dvar.cpp:329)
 
-bool __cdecl Dvar_StringToBool(char *param_1)
+bool __cdecl Dvar_StringToBool(char *string)
 
 {
   code *pcVar1;
@@ -739,7 +741,7 @@ bool __cdecl Dvar_StringToBool(char *param_1)
   undefined1 uVar3;
   int iVar4;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x14a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -747,21 +749,21 @@ bool __cdecl Dvar_StringToBool(char *param_1)
       return (bool)uVar3;
     }
   }
-  iVar4 = atoi(param_1);
+  iVar4 = atoi(string);
   return iVar4 != 0;
 }
 
 
 // 007BDB20  Dvar_StringToInt  (universal/dvar.cpp:336)
 
-int __cdecl Dvar_StringToInt(char *param_1)
+int __cdecl Dvar_StringToInt(char *string)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x151,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -769,21 +771,21 @@ int __cdecl Dvar_StringToInt(char *param_1)
       return iVar3;
     }
   }
-  iVar3 = atoi(param_1);
+  iVar3 = atoi(string);
   return iVar3;
 }
 
 
 // 007BDD10  Dvar_StringToInt64  (universal/dvar.cpp:342)
 
-long64 __cdecl Dvar_StringToInt64(char *param_1)
+long64 __cdecl Dvar_StringToInt64(char *string)
 
 {
   code *pcVar1;
   bool bVar2;
   long64 lVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x157,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -791,14 +793,14 @@ long64 __cdecl Dvar_StringToInt64(char *param_1)
       return lVar3;
     }
   }
-  lVar3 = _atoi64(param_1);
+  lVar3 = _atoi64(string);
   return lVar3;
 }
 
 
 // 007BDE00  Dvar_StringToFloat  (universal/dvar.cpp:354)
 
-float __cdecl Dvar_StringToFloat(char *param_1)
+float __cdecl Dvar_StringToFloat(char *string)
 
 {
   code *pcVar1;
@@ -806,7 +808,7 @@ float __cdecl Dvar_StringToFloat(char *param_1)
   float10 fVar3;
   double dVar4;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x163,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -814,20 +816,20 @@ float __cdecl Dvar_StringToFloat(char *param_1)
       return (float)fVar3;
     }
   }
-  dVar4 = atof(param_1);
+  dVar4 = atof(string);
   return (float)dVar4;
 }
 
 
 // 007C04F0  Dvar_StringToVec2  (universal/dvar.cpp:361)
 
-void __cdecl Dvar_StringToVec2(char *param_1,float *param_2)
+void __cdecl Dvar_StringToVec2(char *string,float *vector)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x16a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -835,22 +837,22 @@ void __cdecl Dvar_StringToVec2(char *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  sscanf(param_1,"%g %g");
+  *vector = 0.0;
+  vector[1] = 0.0;
+  sscanf(string,"%g %g");
   return;
 }
 
 
 // 007C0560  Dvar_StringToVec3  (universal/dvar.cpp:370)
 
-void __cdecl Dvar_StringToVec3(char *param_1,float *param_2)
+void __cdecl Dvar_StringToVec3(char *string,float *vector)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x173,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -858,14 +860,14 @@ void __cdecl Dvar_StringToVec3(char *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  param_2[2] = 0.0;
-  if (*param_1 == '(') {
-    sscanf(param_1,"( %g, %g, %g )");
+  *vector = 0.0;
+  vector[1] = 0.0;
+  vector[2] = 0.0;
+  if (*string == '(') {
+    sscanf(string,"( %g, %g, %g )");
   }
   else {
-    sscanf(param_1,"%g %g %g");
+    sscanf(string,"%g %g %g");
   }
   return;
 }
@@ -873,13 +875,13 @@ void __cdecl Dvar_StringToVec3(char *param_1,float *param_2)
 
 // 007C0620  Dvar_StringToVec4  (universal/dvar.cpp:382)
 
-void __cdecl Dvar_StringToVec4(char *param_1,float *param_2)
+void __cdecl Dvar_StringToVec4(char *string,float *vector)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x17f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -887,18 +889,18 @@ void __cdecl Dvar_StringToVec4(char *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  param_2[2] = 0.0;
-  param_2[3] = 0.0;
-  sscanf(param_1,"%g %g %g %g");
+  *vector = 0.0;
+  vector[1] = 0.0;
+  vector[2] = 0.0;
+  vector[3] = 0.0;
+  sscanf(string,"%g %g %g %g");
   return;
 }
 
 
 // 007C06C0  Dvar_StringToEnum  (universal/dvar.cpp:391)
 
-int __cdecl Dvar_StringToEnum(DvarLimits *param_1,char *param_2)
+int __cdecl Dvar_StringToEnum(DvarLimits *domain,char *string)
 
 {
   char cVar1;
@@ -906,53 +908,56 @@ int __cdecl Dvar_StringToEnum(DvarLimits *param_1,char *param_2)
   bool bVar3;
   int iVar4;
   char *local_14;
-  int local_c;
-  char *local_8;
+  int len;
+  int stringIndex;
+  char *digit;
   
-  if ((param_1 == (DvarLimits *)0x0) &&
+  if ((domain == (DvarLimits *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x18c,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x18d,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  for (local_c = 0; local_c < (param_1->enumeration).stringCount; local_c = local_c + 1) {
-    iVar4 = I_stricmp(param_2,(param_1->enumeration).strings[local_c]);
+  for (stringIndex = 0; stringIndex < (domain->enumeration).stringCount;
+      stringIndex = stringIndex + 1) {
+    iVar4 = I_stricmp(string,(domain->enumeration).strings[stringIndex]);
     if (iVar4 == 0) {
-      return local_c;
+      return stringIndex;
     }
   }
-  local_c = 0;
-  local_8 = param_2;
+  stringIndex = 0;
+  digit = string;
   while( true ) {
-    if (*local_8 == '\0') {
-      if ((local_c < 0) || ((param_1->enumeration).stringCount <= local_c)) {
-        local_14 = param_2;
+    if (*digit == '\0') {
+      if ((stringIndex < 0) || ((domain->enumeration).stringCount <= stringIndex)) {
+        local_14 = string;
         do {
           cVar1 = *local_14;
           local_14 = local_14 + 1;
         } while (cVar1 != '\0');
-        for (local_c = 0; local_c < (param_1->enumeration).stringCount; local_c = local_c + 1) {
-          iVar4 = I_strnicmp(param_2,(param_1->enumeration).strings[local_c],
-                             (int)local_14 - (int)(param_2 + 1));
+        for (stringIndex = 0; stringIndex < (domain->enumeration).stringCount;
+            stringIndex = stringIndex + 1) {
+          iVar4 = I_strnicmp(string,(domain->enumeration).strings[stringIndex],
+                             (int)local_14 - (int)(string + 1));
           if (iVar4 == 0) {
-            return local_c;
+            return stringIndex;
           }
         }
-        local_c = -0x539;
+        stringIndex = -0x539;
       }
-      return local_c;
+      return stringIndex;
     }
-    if ((*local_8 < '0') || ('9' < *local_8)) break;
-    local_c = local_c * 10 + -0x30 + (int)*local_8;
-    local_8 = local_8 + 1;
+    if ((*digit < '0') || ('9' < *digit)) break;
+    stringIndex = stringIndex * 10 + -0x30 + (int)*digit;
+    digit = digit + 1;
   }
   return -0x539;
 }
@@ -969,14 +974,14 @@ int __cdecl Dvar_StringToEnum(DvarLimits *param_1,char *param_2)
 /* WARNING: Removing unreachable block (ram,0x007be296) */
 /* WARNING: Removing unreachable block (ram,0x007be3c0) */
 
-void __cdecl Dvar_StringToColor(char *param_1,uchar *param_2)
+void __cdecl Dvar_StringToColor(char *string,uchar *color)
 
 {
-  sscanf(param_1,"%g %g %g %g");
-  *param_2 = '\0';
-  param_2[1] = '\0';
-  param_2[2] = '\0';
-  param_2[3] = '\0';
+  sscanf(string,"%g %g %g %g");
+  *color = '\0';
+  color[1] = '\0';
+  color[2] = '\0';
+  color[3] = '\0';
   return;
 }
 
@@ -986,79 +991,77 @@ void __cdecl Dvar_StringToColor(char *param_1,uchar *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 DvarValue * __cdecl
-Dvar_StringToValue(DvarValue *__return_storage_ptr__,dvarType_t param_1,DvarLimits param_2,
-                  char *param_3)
+Dvar_StringToValue(DvarValue *__return_storage_ptr__,dvarType_t type,DvarLimits domain,char *string)
 
 {
   code *pcVar1;
   bool bVar2;
   DvarValue *pDVar3;
   int iVar4;
-  char *pcVar5;
-  float fVar6;
-  undefined8 local_1c;
+  char *fmt;
+  float fVar5;
+  undefined8 value;
   float local_14;
   float local_10;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x1ba,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pDVar3 = (DvarValue *)(*pcVar1)();
     return pDVar3;
   }
-  switch(param_1) {
+  switch(type) {
   case DVAR_TYPE_BOOL:
-    bVar2 = Dvar_StringToBool(param_3);
-    local_1c = CONCAT71(local_1c._1_7_,bVar2);
+    bVar2 = Dvar_StringToBool(string);
+    value = CONCAT71(value._1_7_,bVar2);
     break;
   case DVAR_TYPE_FLOAT:
-    fVar6 = Dvar_StringToFloat(param_3);
-    local_1c = CONCAT44(local_1c._4_4_,fVar6);
+    fVar5 = Dvar_StringToFloat(string);
+    value = CONCAT44(value._4_4_,fVar5);
     break;
   case DVAR_TYPE_FLOAT_2:
-    Dvar_StringToVec2(param_3,(float *)&local_1c);
+    Dvar_StringToVec2(string,(float *)&value);
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    Dvar_StringToVec3(param_3,(float *)&local_1c);
+    Dvar_StringToVec3(string,(float *)&value);
     break;
   case DVAR_TYPE_FLOAT_4:
-    Dvar_StringToVec4(param_3,(float *)&local_1c);
+    Dvar_StringToVec4(string,(float *)&value);
     break;
   case DVAR_TYPE_INT:
-    iVar4 = Dvar_StringToInt(param_3);
-    local_1c = CONCAT44(local_1c._4_4_,iVar4);
+    iVar4 = Dvar_StringToInt(string);
+    value = CONCAT44(value._4_4_,iVar4);
     break;
   case DVAR_TYPE_ENUM:
-    iVar4 = Dvar_StringToEnum(&param_2,param_3);
-    local_1c = CONCAT44(local_1c._4_4_,iVar4);
+    iVar4 = Dvar_StringToEnum(&domain,string);
+    value = CONCAT44(value._4_4_,iVar4);
     break;
   case DVAR_TYPE_STRING:
-    local_1c = CONCAT44(local_1c._4_4_,param_3);
+    value = CONCAT44(value._4_4_,string);
     break;
   case DVAR_TYPE_COLOR:
-    Dvar_StringToColor(param_3,(uchar *)&local_1c);
+    Dvar_StringToColor(string,(uchar *)&value);
     break;
   case DVAR_TYPE_INT64:
-    local_1c = Dvar_StringToInt64(param_3);
+    value = Dvar_StringToInt64(string);
     break;
   default:
-    pcVar5 = va("unhandled dvar type \'%i\'");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x1ea,1,pcVar5
-                            );
+    fmt = va("unhandled dvar type \'%i\'");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x1ea,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       pDVar3 = (DvarValue *)(*pcVar1)();
       return pDVar3;
     }
-    local_1c = (ulonglong)(uint)local_1c._4_4_ << 0x20;
+    value = (ulonglong)(uint)value._4_4_ << 0x20;
   }
-  __return_storage_ptr__->integer = (int)(float)local_1c;
-  __return_storage_ptr__->vector[1] = local_1c._4_4_;
+  __return_storage_ptr__->integer = (int)(float)value;
+  __return_storage_ptr__->vector[1] = value._4_4_;
   __return_storage_ptr__->vector[2] = local_14;
   __return_storage_ptr__->vector[3] = local_10;
   return __return_storage_ptr__;
@@ -1067,7 +1070,7 @@ Dvar_StringToValue(DvarValue *__return_storage_ptr__,dvarType_t param_1,DvarLimi
 
 // 007BC250  Dvar_DisplayableValue  (universal/dvar.cpp:500)
 
-char * __cdecl Dvar_DisplayableValue(dvar_s *param_1)
+char * __cdecl Dvar_DisplayableValue(dvar_s *dvar)
 
 {
   code *pcVar1;
@@ -1076,7 +1079,7 @@ char * __cdecl Dvar_DisplayableValue(dvar_s *param_1)
   char *pcVar4;
   undefined4 unaff_EBP;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x1f5,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -1085,15 +1088,15 @@ char * __cdecl Dvar_DisplayableValue(dvar_s *param_1)
     }
   }
   DVar2.vector[3] = (float)unaff_EBP;
-  DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4);
-  pcVar4 = Dvar_ValueToString(param_1,DVar2);
+  DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4);
+  pcVar4 = Dvar_ValueToString(dvar,DVar2);
   return pcVar4;
 }
 
 
 // 007BC580  Dvar_DisplayableResetValue  (universal/dvar.cpp:508)
 
-char * __cdecl Dvar_DisplayableResetValue(dvar_s *param_1)
+char * __cdecl Dvar_DisplayableResetValue(dvar_s *dvar)
 
 {
   code *pcVar1;
@@ -1102,7 +1105,7 @@ char * __cdecl Dvar_DisplayableResetValue(dvar_s *param_1)
   char *pcVar4;
   undefined4 unaff_EBP;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x1fd,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -1111,15 +1114,15 @@ char * __cdecl Dvar_DisplayableResetValue(dvar_s *param_1)
     }
   }
   DVar2.vector[3] = (float)unaff_EBP;
-  DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-  pcVar4 = Dvar_ValueToString(param_1,DVar2);
+  DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+  pcVar4 = Dvar_ValueToString(dvar,DVar2);
   return pcVar4;
 }
 
 
 // 007BC5E0  Dvar_DisplayableLatchedValue  (universal/dvar.cpp:516)
 
-char * __cdecl Dvar_DisplayableLatchedValue(dvar_s *param_1)
+char * __cdecl Dvar_DisplayableLatchedValue(dvar_s *dvar)
 
 {
   code *pcVar1;
@@ -1128,7 +1131,7 @@ char * __cdecl Dvar_DisplayableLatchedValue(dvar_s *param_1)
   char *pcVar4;
   undefined4 unaff_EBP;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x205,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -1137,27 +1140,27 @@ char * __cdecl Dvar_DisplayableLatchedValue(dvar_s *param_1)
     }
   }
   DVar2.vector[3] = (float)unaff_EBP;
-  DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->latched + 4);
-  pcVar4 = Dvar_ValueToString(param_1,DVar2);
+  DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->latched + 4);
+  pcVar4 = Dvar_ValueToString(dvar,DVar2);
   return pcVar4;
 }
 
 
 // 007BD8F0  Dvar_ClampVectorToDomain  (universal/dvar.cpp:524)
 
-void __cdecl Dvar_ClampVectorToDomain(float *param_1,int param_2,float param_3,float param_4)
+void __cdecl Dvar_ClampVectorToDomain(float *vector,int components,float min,float max)
 
 {
-  int local_8;
+  int channel;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    if (param_3 < param_1[local_8] || param_3 == param_1[local_8]) {
-      if (param_4 < param_1[local_8]) {
-        param_1[local_8] = param_4;
+  for (channel = 0; channel < components; channel = channel + 1) {
+    if (min < vector[channel] || min == vector[channel]) {
+      if (max < vector[channel]) {
+        vector[channel] = max;
       }
     }
     else {
-      param_1[local_8] = param_3;
+      vector[channel] = min;
     }
   }
   return;
@@ -1166,21 +1169,21 @@ void __cdecl Dvar_ClampVectorToDomain(float *param_1,int param_2,float param_3,f
 
 // 007BC890  Dvar_VectorInDomain  (universal/dvar.cpp:538)
 
-bool __cdecl Dvar_VectorInDomain(float *param_1,int param_2,float param_3,float param_4)
+bool __cdecl Dvar_VectorInDomain(float *vector,int components,float min,float max)
 
 {
-  int local_8;
+  int channel;
   
-  local_8 = 0;
+  channel = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (components <= channel) {
       return true;
     }
-    if (param_1[local_8] <= param_3 && param_3 != param_1[local_8]) break;
-    if (param_4 < param_1[local_8]) {
+    if (vector[channel] <= min && min != vector[channel]) break;
+    if (max < vector[channel]) {
       return false;
     }
-    local_8 = local_8 + 1;
+    channel = channel + 1;
   }
   return false;
 }
@@ -1190,65 +1193,65 @@ bool __cdecl Dvar_VectorInDomain(float *param_1,int param_2,float param_3,float 
 
 DvarValue * __cdecl
 Dvar_ClampValueToDomain
-          (DvarValue *__return_storage_ptr__,dvarType_t param_1,DvarValue param_2,DvarValue param_3,
-          DvarLimits param_4)
+          (DvarValue *__return_storage_ptr__,dvarType_t type,DvarValue value,DvarValue resetValue,
+          DvarLimits domain)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  DvarValue *pDVar4;
+  char *fmt;
+  DvarValue *pDVar3;
   
-  switch(param_1) {
+  switch(type) {
   case DVAR_TYPE_BOOL:
-    param_2.enabled = param_2.enabled != false;
+    value.enabled = value.enabled != false;
     break;
   case DVAR_TYPE_FLOAT:
-    if (param_4.value.min <= param_2.value) {
-      if (param_4.value.max < param_2.value) {
-        param_2.integer = (int)param_4.enumeration.strings;
+    if (domain.value.min <= value.value) {
+      if (domain.value.max < value.value) {
+        value.integer = (int)domain.enumeration.strings;
       }
     }
     else {
-      param_2.integer = param_4.enumeration.stringCount;
+      value.integer = domain.enumeration.stringCount;
     }
     break;
   case DVAR_TYPE_FLOAT_2:
-    Dvar_ClampVectorToDomain(&param_2.value,2,param_4.value.min,param_4.value.max);
+    Dvar_ClampVectorToDomain(&value.value,2,domain.value.min,domain.value.max);
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    Dvar_ClampVectorToDomain(&param_2.value,3,param_4.value.min,param_4.value.max);
+    Dvar_ClampVectorToDomain(&value.value,3,domain.value.min,domain.value.max);
     break;
   case DVAR_TYPE_FLOAT_4:
-    Dvar_ClampVectorToDomain(&param_2.value,4,param_4.value.min,param_4.value.max);
+    Dvar_ClampVectorToDomain(&value.value,4,domain.value.min,domain.value.max);
     break;
   case DVAR_TYPE_INT:
-    if ((param_4.integer.max < param_4.enumeration.stringCount) &&
+    if ((domain.integer.max < domain.enumeration.stringCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x231,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DvarValue *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DvarValue *)(*pcVar1)();
+      return pDVar3;
     }
-    if (param_2._0_4_ < (int)param_4._0_4_) {
-      param_2.integer = param_4.enumeration.stringCount;
+    if (value._0_4_ < (int)domain._0_4_) {
+      value.integer = domain.enumeration.stringCount;
     }
-    else if (param_4.integer.max < param_2.integer) {
-      param_2.integer = (int)param_4.enumeration.strings;
+    else if (domain.integer.max < value.integer) {
+      value.integer = (int)domain.enumeration.strings;
     }
     break;
   case DVAR_TYPE_ENUM:
-    if ((((param_2.integer < 0) || (param_4.enumeration.stringCount <= param_2.integer)) &&
-        ((param_2.integer = param_3.integer, param_3.integer < 0 ||
-         (param_4.enumeration.stringCount <= param_3.integer)))) &&
-       ((param_3.integer != 0 &&
+    if ((((value.integer < 0) || (domain.enumeration.stringCount <= value.integer)) &&
+        ((value.integer = resetValue.integer, resetValue.integer < 0 ||
+         (domain.enumeration.stringCount <= resetValue.integer)))) &&
+       ((resetValue.integer != 0 &&
         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x25d,0,
                                   "%s\n\t(value.integer) = %i"), !bVar2)))) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DvarValue *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DvarValue *)(*pcVar1)();
+      return pDVar3;
     }
     break;
   case DVAR_TYPE_STRING:
@@ -1256,61 +1259,60 @@ Dvar_ClampValueToDomain
   case DVAR_TYPE_COLOR:
     break;
   case DVAR_TYPE_INT64:
-    if (((int)param_4.integer64.max._4_4_ <= param_4.integer.max) &&
-       ((((int)param_4.integer64.max._4_4_ < param_4.integer.max ||
-         ((uint)param_4.integer64.max._0_4_ < (uint)param_4.enumeration.stringCount)) &&
+    if (((int)domain.integer64.max._4_4_ <= domain.integer.max) &&
+       ((((int)domain.integer64.max._4_4_ < domain.integer.max ||
+         ((uint)domain.integer64.max._0_4_ < (uint)domain.enumeration.stringCount)) &&
         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x239,0,
                                   "%s"), !bVar2)))) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DvarValue *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DvarValue *)(*pcVar1)();
+      return pDVar3;
     }
-    if ((param_4.integer.max < param_2._4_4_) ||
-       ((param_4.integer.max <= param_2._4_4_ &&
-        ((uint)param_4.enumeration.stringCount <= param_2.unsignedInt)))) {
-      if (((int)param_4.integer64.max._4_4_ <= param_2._4_4_) &&
-         (((int)param_4.integer64.max._4_4_ < param_2._4_4_ ||
-          ((uint)param_4.integer64.max._0_4_ < param_2.unsignedInt)))) {
-        param_2.integer = param_4.integer64.max._0_4_;
-        param_2.vector[1] = (float)param_4.integer64.max._4_4_;
+    if ((domain.integer.max < value._4_4_) ||
+       ((domain.integer.max <= value._4_4_ &&
+        ((uint)domain.enumeration.stringCount <= value.unsignedInt)))) {
+      if (((int)domain.integer64.max._4_4_ <= value._4_4_) &&
+         (((int)domain.integer64.max._4_4_ < value._4_4_ ||
+          ((uint)domain.integer64.max._0_4_ < value.unsignedInt)))) {
+        value.integer = domain.integer64.max._0_4_;
+        value.vector[1] = (float)domain.integer64.max._4_4_;
       }
     }
     else {
-      param_2.integer = param_4.enumeration.stringCount;
-      param_2.vector[1] = (float)param_4.enumeration.strings;
+      value.integer = domain.enumeration.stringCount;
+      value.vector[1] = (float)domain.enumeration.strings;
     }
     break;
   default:
-    pcVar3 = va("unhandled dvar type \'%i\'");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x267,1,pcVar3
-                            );
+    fmt = va("unhandled dvar type \'%i\'");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x267,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DvarValue *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DvarValue *)(*pcVar1)();
+      return pDVar3;
     }
   }
-  __return_storage_ptr__->integer = param_2.integer;
-  __return_storage_ptr__->vector[1] = param_2.vector[1];
-  __return_storage_ptr__->vector[2] = param_2.vector[2];
-  __return_storage_ptr__->vector[3] = param_2.vector[3];
+  __return_storage_ptr__->integer = value.integer;
+  __return_storage_ptr__->vector[1] = value.vector[1];
+  __return_storage_ptr__->vector[2] = value.vector[2];
+  __return_storage_ptr__->vector[3] = value.vector[3];
   return __return_storage_ptr__;
 }
 
 
 // 007BC640  Dvar_ValueInDomain  (universal/dvar.cpp:624)
 
-bool __cdecl Dvar_ValueInDomain(dvarType_t param_1,DvarValue param_2,DvarLimits param_3)
+bool __cdecl Dvar_ValueInDomain(dvarType_t type,DvarValue param_2,DvarLimits param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
+  char *fmt;
   char cStack00000008;
   bool local_10;
   
-  switch(param_1) {
+  switch(type) {
   case DVAR_TYPE_BOOL:
     if (((cStack00000008 != '\x01') && (cStack00000008 != '\0')) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x274,0,
@@ -1405,9 +1407,8 @@ bool __cdecl Dvar_ValueInDomain(dvarType_t param_1,DvarValue param_2,DvarLimits 
     }
     break;
   default:
-    pcVar4 = va("unhandled dvar type \'%i\'");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x2a6,1,pcVar4
-                            );
+    fmt = va("unhandled dvar type \'%i\'");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x2a6,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
@@ -1421,26 +1422,27 @@ bool __cdecl Dvar_ValueInDomain(dvarType_t param_1,DvarValue param_2,DvarLimits 
 
 // 007BCD70  Dvar_VectorDomainToString  (universal/dvar.cpp:685)
 
-void __cdecl Dvar_VectorDomainToString(int param_1,DvarLimits param_2,char *param_3,int param_4)
+void __cdecl
+Dvar_VectorDomainToString(int components,DvarLimits param_2,char *outBufferLen,int param_4)
 
 {
   float in_stack_00000008;
   
   if (in_stack_00000008 == -3.4028235e+38) {
     if (param_2.value.min == 3.4028235e+38) {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is any %iD vector");
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is any %iD vector");
     }
     else {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any %iD vector with components %g or smaller");
     }
   }
   else if (param_2.value.min == 3.4028235e+38) {
-    _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+    _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
               "Domain is any %iD vector with components %g or bigger");
   }
   else {
-    _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+    _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
               "Domain is any %iD vector with components from %g to %g");
   }
   return;
@@ -1451,7 +1453,7 @@ void __cdecl Dvar_VectorDomainToString(int param_1,DvarLimits param_2,char *para
 
 char * __cdecl
 Dvar_DomainToString_Internal
-          (dvarType_t param_1,DvarLimits param_2,char *param_3,int param_4,int *param_5)
+          (dvarType_t type,DvarLimits param_2,char *outBufferLen,int outLineCount,int *param_5)
 
 {
   code *pcVar1;
@@ -1459,114 +1461,117 @@ Dvar_DomainToString_Internal
   char *pcVar3;
   int iVar4;
   float in_stack_00000008;
-  char *local_10;
-  int local_8;
+  char *outBufferEnd;
+  char *outBufferWalk;
+  int charsWritten;
+  int stringIndex;
   
-  if (((int)param_3 < 1) &&
+  if (((int)outBufferLen < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x2c6,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (param_4 != 0) {
-    *(undefined4 *)param_4 = 0;
+  if (outLineCount != 0) {
+    *(undefined4 *)outLineCount = 0;
   }
-  switch(param_1) {
+  switch(type) {
   case DVAR_TYPE_BOOL:
-    _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is 0 or 1");
+    _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is 0 or 1");
     break;
   case DVAR_TYPE_FLOAT:
     if (in_stack_00000008 == -3.4028235e+38) {
       if (param_2.value.min == 3.4028235e+38) {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is any number");
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is any number");
       }
       else {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                   "Domain is any number %g or smaller");
       }
     }
     else if (param_2.value.min == 3.4028235e+38) {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any number %g or bigger");
     }
     else {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any number from %g to %g");
     }
     break;
   case DVAR_TYPE_FLOAT_2:
-    Dvar_VectorDomainToString(2,param_2,param_3,param_1);
+    Dvar_VectorDomainToString(2,param_2,outBufferLen,type);
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    Dvar_VectorDomainToString(3,param_2,param_3,param_1);
+    Dvar_VectorDomainToString(3,param_2,outBufferLen,type);
     break;
   case DVAR_TYPE_FLOAT_4:
-    Dvar_VectorDomainToString(4,param_2,param_3,param_1);
+    Dvar_VectorDomainToString(4,param_2,outBufferLen,type);
     break;
   case DVAR_TYPE_INT:
     if (in_stack_00000008 == -0.0) {
       if (param_2.enumeration.stringCount == 0x7fffffff) {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is any integer");
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is any integer");
       }
       else {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                   "Domain is any integer %i or smaller");
       }
     }
     else if (param_2.enumeration.stringCount == 0x7fffffff) {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any integer %i or bigger");
     }
     else {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any integer from %i to %i");
     }
     break;
   case DVAR_TYPE_ENUM:
-    iVar4 = _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+    iVar4 = _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                       "Domain is one of the following:");
     if (-1 < iVar4) {
-      local_10 = (char *)(param_2.integer64.max._4_4_ + iVar4);
-      local_8 = 0;
-      while ((local_8 < (int)in_stack_00000008 &&
-             (iVar4 = _snprintf(local_10,(uint)(param_3 + (param_2._12_4_ - (int)local_10)),
+      outBufferWalk = (char *)(param_2.integer64.max._4_4_ + iVar4);
+      stringIndex = 0;
+      while ((stringIndex < (int)in_stack_00000008 &&
+             (iVar4 = _snprintf(outBufferWalk,
+                                (uint)(outBufferLen + (param_2._12_4_ - (int)outBufferWalk)),
                                 "\n  %2i: %s"), -1 < iVar4))) {
-        if (param_4 != 0) {
-          *(int *)param_4 = *(int *)param_4 + 1;
+        if (outLineCount != 0) {
+          *(int *)outLineCount = *(int *)outLineCount + 1;
         }
-        local_10 = local_10 + iVar4;
-        local_8 = local_8 + 1;
+        outBufferWalk = outBufferWalk + iVar4;
+        stringIndex = stringIndex + 1;
       }
     }
     break;
   case DVAR_TYPE_STRING:
-    _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is any text");
+    _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is any text");
     break;
   case DVAR_TYPE_COLOR:
-    _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+    _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
               "Domain is any 4-component color, in RGBA format");
     break;
   case DVAR_TYPE_INT64:
     if ((in_stack_00000008 == 0.0) && (param_2.enumeration.stringCount == -0x80000000)) {
       if ((param_2.enumeration.strings == (char **)0xffffffff) &&
          (param_2.integer64.max._0_4_ == 0x7fffffff)) {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,"Domain is any integer");
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,"Domain is any integer");
       }
       else {
-        _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+        _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                   "Domain is any integer %lli or smaller");
       }
     }
     else if ((param_2.enumeration.strings == (char **)0xffffffff) &&
             (param_2.integer64.max._0_4_ == 0x7fffffff)) {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any integer %lli or bigger");
     }
     else {
-      _snprintf((char *)param_2.integer64.max._4_4_,(uint)param_3,
+      _snprintf((char *)param_2.integer64.max._4_4_,(uint)outBufferLen,
                 "Domain is any integer from %lli to %lli");
     }
     break;
@@ -1581,20 +1586,21 @@ Dvar_DomainToString_Internal
     }
     *(undefined1 *)param_2.integer64.max._4_4_ = 0;
   }
-  param_3[param_2.integer64.max._4_4_ + -1] = '\0';
+  outBufferLen[param_2.integer64.max._4_4_ + -1] = '\0';
   return (char *)param_2.integer64.max._4_4_;
 }
 
 
 // 007BC8E0  Dvar_DomainToString  (universal/dvar.cpp:826)
 
-char * __cdecl Dvar_DomainToString(dvarType_t param_1,DvarLimits param_2,char *param_3,int param_4)
+char * __cdecl
+Dvar_DomainToString(dvarType_t type,DvarLimits param_2,char *outBufferLen,int param_4)
 
 {
   char *pcVar1;
   int *unaff_EBP;
   
-  pcVar1 = Dvar_DomainToString_Internal(param_1,param_2,param_3,0,unaff_EBP);
+  pcVar1 = Dvar_DomainToString_Internal(type,param_2,outBufferLen,0,unaff_EBP);
   return pcVar1;
 }
 
@@ -1603,7 +1609,7 @@ char * __cdecl Dvar_DomainToString(dvarType_t param_1,DvarLimits param_2,char *p
 
 char * __cdecl
 Dvar_DomainToString_GetLines
-          (dvarType_t param_1,DvarLimits param_2,char *param_3,int param_4,int *param_5)
+          (dvarType_t type,DvarLimits param_2,char *outBufferLen,int outLineCount,int *param_5)
 
 {
   code *pcVar1;
@@ -1611,7 +1617,7 @@ Dvar_DomainToString_GetLines
   char *pcVar3;
   int *unaff_EBP;
   
-  if (param_4 == 0) {
+  if (outLineCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x341,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1619,7 +1625,7 @@ Dvar_DomainToString_GetLines
       return pcVar3;
     }
   }
-  pcVar3 = Dvar_DomainToString_Internal(param_1,param_2,param_3,param_4,unaff_EBP);
+  pcVar3 = Dvar_DomainToString_Internal(type,param_2,outBufferLen,outLineCount,unaff_EBP);
   return pcVar3;
 }
 
@@ -1628,7 +1634,7 @@ Dvar_DomainToString_GetLines
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_PrintDomain(dvarType_t param_1,DvarLimits param_2)
+void __cdecl Dvar_PrintDomain(dvarType_t type,DvarLimits param_2)
 
 {
   DvarLimits DVar1;
@@ -1636,7 +1642,7 @@ void __cdecl Dvar_PrintDomain(dvarType_t param_1,DvarLimits param_2)
   
   DVar1.integer64.max._4_4_ = &stack0xfffffbf4;
   DVar1._0_12_ = param_2._0_12_;
-  Dvar_DomainToString(param_1,DVar1,(char *)0x400,in_stack_fffffbf4);
+  Dvar_DomainToString(type,DVar1,(char *)0x400,in_stack_fffffbf4);
   Com_Printf(0x10,"  %s\n");
   return;
 }
@@ -1644,14 +1650,14 @@ void __cdecl Dvar_PrintDomain(dvarType_t param_1,DvarLimits param_2)
 
 // 007BCF90  Dvar_ValuesEqual  (universal/dvar.cpp:846)
 
-int __cdecl Dvar_ValuesEqual(dvarType_t param_1,DvarValue param_2,DvarValue param_3)
+int __cdecl Dvar_ValuesEqual(dvarType_t type,DvarValue param_2,DvarValue param_3)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  int iVar5;
+  char *fmt;
+  int iVar4;
   byte *in_stack_00000008;
   int local_30;
   byte *local_28;
@@ -1662,7 +1668,7 @@ int __cdecl Dvar_ValuesEqual(dvarType_t param_1,DvarValue param_2,DvarValue para
   uint local_14;
   uint local_10;
   
-  switch(param_1) {
+  switch(type) {
   case DVAR_TYPE_BOOL:
     local_14 = (uint)(((uint)in_stack_00000008 & 0xff) == (param_2._12_4_ & 0xff));
     break;
@@ -1714,15 +1720,15 @@ int __cdecl Dvar_ValuesEqual(dvarType_t param_1,DvarValue param_2,DvarValue para
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x36f,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if ((param_2.vector[3] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x370,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     local_24 = (byte *)param_2.vector[3];
     local_28 = in_stack_00000008;
@@ -1759,13 +1765,12 @@ LAB_007bd1c0:
     }
     break;
   default:
-    pcVar4 = va("unhandled dvar type \'%i\'");
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x375,1,pcVar4
-                            );
+    fmt = va("unhandled dvar type \'%i\'");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x375,1,fmt);
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     local_14 = 0;
   }
@@ -1777,50 +1782,50 @@ LAB_007bd1c0:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetLatchedValue(dvar_s *param_1,DvarValue param_2)
+void __cdecl Dvar_SetLatchedValue(dvar_s *dvar,DvarValue param_2)
 
 {
   char *in_stack_00000008;
-  DvarValue local_2c;
-  DvarValue local_1c;
-  char local_9;
+  DvarValue latchedString;
+  DvarValue oldString;
+  bool shouldFree;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_FLOAT_2:
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
     break;
   case DVAR_TYPE_FLOAT_4:
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
-    (param_1->latched).vector[3] = param_2.vector[2];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
+    (dvar->latched).vector[3] = param_2.vector[2];
     break;
   default:
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
-    (param_1->latched).vector[3] = param_2.vector[2];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
+    (dvar->latched).vector[3] = param_2.vector[2];
     break;
   case DVAR_TYPE_STRING:
-    if ((char *)(param_1->latched).integer != in_stack_00000008) {
-      local_9 = Dvar_ShouldFreeLatchedString(param_1);
-      if ((bool)local_9) {
-        local_1c.integer = (param_1->latched).integer;
+    if ((char *)(dvar->latched).integer != in_stack_00000008) {
+      shouldFree = Dvar_ShouldFreeLatchedString(dvar);
+      if (shouldFree) {
+        oldString.integer = (dvar->latched).integer;
       }
-      Dvar_AssignLatchedStringValue(param_1,&local_2c,in_stack_00000008);
-      (param_1->latched).integer = local_2c.integer;
-      if (local_9 != '\0') {
-        Dvar_FreeString(&local_1c);
+      Dvar_AssignLatchedStringValue(dvar,&latchedString,in_stack_00000008);
+      (dvar->latched).integer = latchedString.integer;
+      if (shouldFree != false) {
+        Dvar_FreeString(&oldString);
       }
     }
   }
@@ -1830,7 +1835,7 @@ void __cdecl Dvar_SetLatchedValue(dvar_s *param_1,DvarValue param_2)
 
 // 007BCF30  Dvar_HasLatchedValue  (universal/dvar.cpp:937)
 
-bool __cdecl Dvar_HasLatchedValue(dvar_s *param_1)
+bool __cdecl Dvar_HasLatchedValue(dvar_s *dvar)
 
 {
   DvarValue DVar1;
@@ -1838,15 +1843,15 @@ bool __cdecl Dvar_HasLatchedValue(dvar_s *param_1)
   undefined4 unaff_EBP;
   
   DVar1.vector[3] = (float)unaff_EBP;
-  DVar1._0_12_ = *(undefined1 (*) [12])((int)&param_1->latched + 4);
-  iVar2 = Dvar_ValuesEqual(param_1->type,*(DvarValue *)((int)&param_1->current + 4),DVar1);
+  DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar->latched + 4);
+  iVar2 = Dvar_ValuesEqual(dvar->type,*(DvarValue *)((int)&dvar->current + 4),DVar1);
   return (bool)('\x01' - (iVar2 != 0));
 }
 
 
 // 007BF930  Dvar_CanChangeValue  (universal/dvar.cpp:942)
 
-bool __cdecl Dvar_CanChangeValue(dvar_s *param_1,DvarValue param_2,DvarSetSource param_3)
+bool __cdecl Dvar_CanChangeValue(dvar_s *dvar,DvarValue param_2,DvarSetSource param_3)
 
 {
   code *pcVar1;
@@ -1856,9 +1861,10 @@ bool __cdecl Dvar_CanChangeValue(dvar_s *param_1,DvarValue param_2,DvarSetSource
   undefined1 uVar5;
   int iVar6;
   undefined4 in_stack_ffffffec;
-  char *local_c;
+  bool validSource;
+  char *reason;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x3af,0,"%s");
     if (!bVar4) {
       pcVar1 = (code *)swi(3);
@@ -1866,21 +1872,20 @@ bool __cdecl Dvar_CanChangeValue(dvar_s *param_1,DvarValue param_2,DvarSetSource
       return (bool)uVar5;
     }
   }
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar4 = false;
   }
   else {
-    DVar2._12_4_ = (param_1->reset).integer;
+    DVar2._12_4_ = (dvar->reset).integer;
     DVar2._0_12_ = param_2._0_12_;
     DVar3.vector[3] = (float)in_stack_ffffffec;
-    DVar3._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-    iVar6 = Dvar_ValuesEqual(param_1->type,DVar2,DVar3);
+    DVar3._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+    iVar6 = Dvar_ValuesEqual(dvar->type,DVar2,DVar3);
     if (iVar6 == 0) {
-      local_c = (char *)0x0;
-      if ((*(uint *)&param_1->flags & 0x40) == 0) {
-        if ((*(uint *)&param_1->flags & 0x10) == 0) {
-          if (((*(uint *)&param_1->flags & 0x80) != 0) && ((dvar_cheats->current).enabled == false))
-          {
+      reason = (char *)0x0;
+      if ((*(uint *)&dvar->flags & 0x40) == 0) {
+        if ((*(uint *)&dvar->flags & 0x10) == 0) {
+          if (((*(uint *)&dvar->flags & 0x80) != 0) && ((dvar_cheats->current).enabled == false)) {
             if ((param_2.vector[3] == 1.4013e-45) || (param_2.vector[3] == 2.8026e-45)) {
               bVar4 = true;
             }
@@ -1888,22 +1893,22 @@ bool __cdecl Dvar_CanChangeValue(dvar_s *param_1,DvarValue param_2,DvarSetSource
               bVar4 = false;
             }
             if (bVar4) {
-              local_c = va("%s is cheat protected.\n");
+              reason = va("%s is cheat protected.\n");
             }
           }
         }
         else {
-          local_c = va("%s is write protected.\n");
+          reason = va("%s is write protected.\n");
         }
       }
       else {
-        local_c = va("%s is read only.\n");
+        reason = va("%s is read only.\n");
       }
-      if (local_c == (char *)0x0) {
+      if (reason == (char *)0x0) {
         bVar4 = true;
       }
       else {
-        Com_Printf(1,local_c);
+        Com_Printf(1,reason);
         bVar4 = false;
       }
     }
@@ -1919,7 +1924,7 @@ bool __cdecl Dvar_CanChangeValue(dvar_s *param_1,DvarValue param_2,DvarSetSource
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetVariant(dvar_s *param_1,DvarValue param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetVariant(dvar_s *dvar,DvarValue param_2,DvarSetSource param_3)
 
 {
   code *pcVar1;
@@ -1946,60 +1951,61 @@ void __cdecl Dvar_SetVariant(dvar_s *param_1,DvarValue param_2,DvarSetSource par
   int iVar22;
   char *in_stack_00000008;
   DvarSetSource in_stack_fffffbb4;
-  char local_42c [1024];
-  DvarValue local_2c;
-  DvarValue local_1c;
+  bool shouldFreeString;
+  char string [1024];
+  DvarValue oldString;
+  DvarValue currentString;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x3ed,0,
                                 "%s"), !bVar20)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x3ee,0,
                                 "%s"), !bVar20)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) && (*param_1->name != '\0')) {
+  if (((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) && (*dvar->name != '\0')) {
     bVar20 = Com_LogFileOpen();
     auVar10 = param_2._0_12_;
     if ((bVar20) &&
        (DVar2._12_4_ = in_stack_00000008,
-       DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4),
+       DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4),
        DVar9.vector[3] = (float)in_stack_fffffbb4, DVar9._0_12_ = auVar10,
-       iVar22 = Dvar_ValuesEqual(param_1->type,DVar2,DVar9), iVar22 == 0)) {
+       iVar22 = Dvar_ValuesEqual(dvar->type,DVar2,DVar9), iVar22 == 0)) {
       DVar11.vector[3] = (float)in_stack_fffffbb4;
       DVar11._0_12_ = auVar10;
-      Dvar_ValueToString(param_1,DVar11);
-      Com_sprintf(local_42c,0x400,"      dvar set %s %s\n");
-      Com_PrintMessage(6,local_42c,0);
+      Dvar_ValueToString(dvar,DVar11);
+      Com_sprintf(string,0x400,"      dvar set %s %s\n");
+      Com_PrintMessage(6,string,0);
     }
-    DVar3._12_4_ = (param_1->domain).enumeration.stringCount;
+    DVar3._12_4_ = (dvar->domain).enumeration.stringCount;
     DVar3._0_12_ = auVar10;
     DVar12.integer64.max._4_4_ = in_stack_fffffbb4;
-    DVar12._0_12_ = *(undefined1 (*) [12])((int)&param_1->domain + 4);
-    bVar20 = Dvar_ValueInDomain(param_1->type,DVar3,DVar12);
+    DVar12._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
+    bVar20 = Dvar_ValueInDomain(dvar->type,DVar3,DVar12);
     if (bVar20) {
       if ((param_2.vector[3] == 1.4013e-45) || (param_2.vector[3] == 2.8026e-45)) {
-        bVar20 = Dvar_CanChangeValue(param_1,param_2,in_stack_fffffbb4);
+        bVar20 = Dvar_CanChangeValue(dvar,param_2,in_stack_fffffbb4);
         if (!bVar20) {
           return;
         }
-        if ((*(uint *)&param_1->flags & 0x20) != 0) {
+        if ((*(uint *)&dvar->flags & 0x20) != 0) {
           DVar15.vector[3] = (float)in_stack_fffffbb4;
           DVar15._0_12_ = auVar10;
-          Dvar_SetLatchedValue(param_1,DVar15);
-          DVar5._12_4_ = (param_1->current).integer;
-          DVar5._0_12_ = *(undefined1 (*) [12])((int)&param_1->latched + 4);
+          Dvar_SetLatchedValue(dvar,DVar15);
+          DVar5._12_4_ = (dvar->current).integer;
+          DVar5._0_12_ = *(undefined1 (*) [12])((int)&dvar->latched + 4);
           DVar16.vector[3] = (float)in_stack_fffffbb4;
-          DVar16._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4);
-          iVar22 = Dvar_ValuesEqual(param_1->type,DVar5,DVar16);
+          DVar16._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4);
+          iVar22 = Dvar_ValuesEqual(dvar->type,DVar5,DVar16);
           if (iVar22 != 0) {
             return;
           }
@@ -2007,111 +2013,111 @@ void __cdecl Dvar_SetVariant(dvar_s *param_1,DvarValue param_2,DvarSetSource par
           return;
         }
       }
-      else if ((param_2.vector[3] == 4.2039e-45) && ((*(uint *)&param_1->flags & 0x800) != 0)) {
+      else if ((param_2.vector[3] == 4.2039e-45) && ((*(uint *)&dvar->flags & 0x800) != 0)) {
         DVar17.vector[3] = (float)in_stack_fffffbb4;
         DVar17._0_12_ = auVar10;
-        Dvar_SetLatchedValue(param_1,DVar17);
+        Dvar_SetLatchedValue(dvar,DVar17);
         return;
       }
       DVar6._12_4_ = in_stack_00000008;
-      DVar6._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4);
+      DVar6._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4);
       DVar18.vector[3] = (float)in_stack_fffffbb4;
       DVar18._0_12_ = auVar10;
-      iVar22 = Dvar_ValuesEqual(param_1->type,DVar6,DVar18);
+      iVar22 = Dvar_ValuesEqual(dvar->type,DVar6,DVar18);
       if (iVar22 == 0) {
-        dvar_modifiedFlags = dvar_modifiedFlags | *(uint *)&param_1->flags;
-        switch(param_1->type) {
+        dvar_modifiedFlags = dvar_modifiedFlags | *(uint *)&dvar->flags;
+        switch(dvar->type) {
         case DVAR_TYPE_FLOAT_2:
-          (param_1->current).string = in_stack_00000008;
-          (param_1->current).vector[1] = (float)param_2.integer;
-          (param_1->latched).string = in_stack_00000008;
-          (param_1->latched).vector[1] = (float)param_2.integer;
+          (dvar->current).string = in_stack_00000008;
+          (dvar->current).vector[1] = (float)param_2.integer;
+          (dvar->latched).string = in_stack_00000008;
+          (dvar->latched).vector[1] = (float)param_2.integer;
           break;
         case DVAR_TYPE_FLOAT_3:
         case DVAR_TYPE_LINEAR_COLOR_RGB:
         case DVAR_TYPE_COLOR_XYZ:
-          (param_1->current).string = in_stack_00000008;
-          (param_1->current).vector[1] = (float)param_2.integer;
-          (param_1->current).vector[2] = param_2.vector[1];
-          (param_1->latched).string = in_stack_00000008;
-          (param_1->latched).vector[1] = (float)param_2.integer;
-          (param_1->latched).vector[2] = param_2.vector[1];
+          (dvar->current).string = in_stack_00000008;
+          (dvar->current).vector[1] = (float)param_2.integer;
+          (dvar->current).vector[2] = param_2.vector[1];
+          (dvar->latched).string = in_stack_00000008;
+          (dvar->latched).vector[1] = (float)param_2.integer;
+          (dvar->latched).vector[2] = param_2.vector[1];
           break;
         case DVAR_TYPE_FLOAT_4:
-          (param_1->current).string = in_stack_00000008;
-          (param_1->current).vector[1] = (float)param_2.integer;
-          (param_1->current).vector[2] = param_2.vector[1];
-          (param_1->current).vector[3] = param_2.vector[2];
-          (param_1->latched).string = in_stack_00000008;
-          (param_1->latched).vector[1] = (float)param_2.integer;
-          (param_1->latched).vector[2] = param_2.vector[1];
-          (param_1->latched).vector[3] = param_2.vector[2];
+          (dvar->current).string = in_stack_00000008;
+          (dvar->current).vector[1] = (float)param_2.integer;
+          (dvar->current).vector[2] = param_2.vector[1];
+          (dvar->current).vector[3] = param_2.vector[2];
+          (dvar->latched).string = in_stack_00000008;
+          (dvar->latched).vector[1] = (float)param_2.integer;
+          (dvar->latched).vector[2] = param_2.vector[1];
+          (dvar->latched).vector[3] = param_2.vector[2];
           break;
         default:
-          (param_1->current).string = in_stack_00000008;
-          (param_1->current).vector[1] = (float)param_2.integer;
-          (param_1->current).vector[2] = param_2.vector[1];
-          (param_1->current).vector[3] = param_2.vector[2];
-          (param_1->latched).string = in_stack_00000008;
-          (param_1->latched).vector[1] = (float)param_2.integer;
-          (param_1->latched).vector[2] = param_2.vector[1];
-          (param_1->latched).vector[3] = param_2.vector[2];
+          (dvar->current).string = in_stack_00000008;
+          (dvar->current).vector[1] = (float)param_2.integer;
+          (dvar->current).vector[2] = param_2.vector[1];
+          (dvar->current).vector[3] = param_2.vector[2];
+          (dvar->latched).string = in_stack_00000008;
+          (dvar->latched).vector[1] = (float)param_2.integer;
+          (dvar->latched).vector[2] = param_2.vector[1];
+          (dvar->latched).vector[3] = param_2.vector[2];
           break;
         case DVAR_TYPE_STRING:
-          if ((param_1->name == (char *)0x0) &&
+          if ((dvar->name == (char *)0x0) &&
              (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                                         0x44c,0,"%s"), !bVar20)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if ((((in_stack_00000008 == (char *)(param_1->current).integer) &&
-               (in_stack_00000008 != (char *)(param_1->latched).integer)) &&
-              (in_stack_00000008 != (char *)(param_1->reset).integer)) &&
+          if ((((in_stack_00000008 == (char *)(dvar->current).integer) &&
+               (in_stack_00000008 != (char *)(dvar->latched).integer)) &&
+              (in_stack_00000008 != (char *)(dvar->reset).integer)) &&
              (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                                         0x44d,0,"%s\n\t(dvar->name) = %s"), !bVar20)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          bVar20 = Dvar_ShouldFreeCurrentString(param_1);
+          bVar20 = Dvar_ShouldFreeCurrentString(dvar);
           if (bVar20) {
-            local_2c.integer = (param_1->current).integer;
+            oldString.integer = (dvar->current).integer;
           }
-          Dvar_AssignCurrentStringValue(param_1,&local_1c,in_stack_00000008);
-          (param_1->current).integer = local_1c.integer;
-          bVar21 = Dvar_ShouldFreeLatchedString(param_1);
+          Dvar_AssignCurrentStringValue(dvar,&currentString,in_stack_00000008);
+          (dvar->current).integer = currentString.integer;
+          bVar21 = Dvar_ShouldFreeLatchedString(dvar);
           if (bVar21) {
-            Dvar_FreeString(&param_1->latched);
+            Dvar_FreeString(&dvar->latched);
           }
-          (param_1->latched).integer = 0;
-          Dvar_WeakCopyString((param_1->current).string,&param_1->latched);
+          (dvar->latched).integer = 0;
+          Dvar_WeakCopyString((dvar->current).string,&dvar->latched);
           if (bVar20) {
-            Dvar_FreeString(&local_2c);
+            Dvar_FreeString(&oldString);
           }
         }
-        param_1->modified = true;
+        dvar->modified = true;
       }
       else {
         DVar19.vector[3] = (float)in_stack_fffffbb4;
-        DVar19._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4);
-        Dvar_SetLatchedValue(param_1,DVar19);
+        DVar19._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4);
+        Dvar_SetLatchedValue(dvar,DVar19);
       }
     }
     else {
-      DVar7._12_4_ = param_1->name;
+      DVar7._12_4_ = dvar->name;
       DVar7._0_12_ = auVar10;
-      Dvar_ValueToString(param_1,DVar7);
+      Dvar_ValueToString(dvar,DVar7);
       Com_Printf(1,"\'%s\' is not a valid value for dvar \'%s\'\n");
       DVar13.integer64.max._4_4_ = in_stack_fffffbb4;
-      DVar13._0_12_ = *(undefined1 (*) [12])((int)&param_1->domain + 4);
-      Dvar_PrintDomain(param_1->type,DVar13);
-      if (param_1->type == DVAR_TYPE_ENUM) {
-        DVar4._12_4_ = (param_1->domain).enumeration.stringCount;
-        DVar4._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
+      DVar13._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
+      Dvar_PrintDomain(dvar->type,DVar13);
+      if (dvar->type == DVAR_TYPE_ENUM) {
+        DVar4._12_4_ = (dvar->domain).enumeration.stringCount;
+        DVar4._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
         DVar14.integer64.max._4_4_ = in_stack_fffffbb4;
-        DVar14._0_12_ = *(undefined1 (*) [12])((int)&param_1->domain + 4);
-        bVar20 = Dvar_ValueInDomain(param_1->type,DVar4,DVar14);
+        DVar14._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
+        bVar20 = Dvar_ValueInDomain(dvar->type,DVar4,DVar14);
         if ((!bVar20) &&
            (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x420
                                       ,0,"%s\n\t(dvar->name) = %s"), !bVar20)) {
@@ -2120,8 +2126,8 @@ void __cdecl Dvar_SetVariant(dvar_s *param_1,DvarValue param_2,DvarSetSource par
           return;
         }
         DVar8.vector[3] = param_2.vector[3];
-        DVar8._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-        Dvar_SetVariant(param_1,DVar8,in_stack_fffffbb4);
+        DVar8._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+        Dvar_SetVariant(dvar,DVar8,in_stack_fffffbb4);
       }
     }
   }
@@ -2131,10 +2137,10 @@ void __cdecl Dvar_SetVariant(dvar_s *param_1,DvarValue param_2,DvarSetSource par
 
 // 007BD2D0  Dvar_FindMalleableVar  (universal/dvar.cpp:1146)
 
-dvar_s * __cdecl Dvar_FindMalleableVar(long param_1)
+dvar_s * __cdecl Dvar_FindMalleableVar(long dvarHash)
 
 {
-  dvar_s *local_8;
+  dvar_s *var;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -2142,44 +2148,45 @@ dvar_s * __cdecl Dvar_FindMalleableVar(long param_1)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  local_8 = dvarHashTable[param_1 & 0x3ff];
+  var = dvarHashTable[dvarHash & 0x3ff];
   while( true ) {
-    if (local_8 == (dvar_s *)0x0) {
+    if (var == (dvar_s *)0x0) {
       Sys_UnlockRead(&g_dvarCritSect);
       return (dvar_s *)0x0;
     }
-    if (local_8->hash == param_1) break;
-    local_8 = local_8->hashNext;
+    if (var->hash == dvarHash) break;
+    var = var->hashNext;
   }
   Sys_UnlockRead(&g_dvarCritSect);
-  return local_8;
+  return var;
 }
 
 
 // 007BD2A0  Dvar_FindMalleableVar  (universal/dvar.cpp:1175)
 
-dvar_s * __cdecl Dvar_FindMalleableVar(char *param_1)
+dvar_s * __cdecl Dvar_FindMalleableVar(char *dvarName)
 
 {
-  int iVar1;
-  dvar_s *pdVar2;
+  int dvarHash;
+  dvar_s *pdVar1;
+  long hash;
   
-  iVar1 = Com_HashString(param_1,0);
-  pdVar2 = Dvar_FindMalleableVar(iVar1);
-  return pdVar2;
+  dvarHash = Com_HashString(dvarName,0);
+  pdVar1 = Dvar_FindMalleableVar(dvarHash);
+  return pdVar1;
 }
 
 
 // 007BD240  Dvar_FindVar  (universal/dvar.cpp:1183)
 
-dvar_s * __cdecl Dvar_FindVar(char *param_1)
+dvar_s * __cdecl Dvar_FindVar(char *dvarName)
 
 {
   code *pcVar1;
   bool bVar2;
   dvar_s *pdVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4a0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2187,11 +2194,11 @@ dvar_s * __cdecl Dvar_FindVar(char *param_1)
       return pdVar3;
     }
   }
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((dvarName == (char *)0x0) || (*dvarName == '\0')) {
     pdVar3 = (dvar_s *)0x0;
   }
   else {
-    pdVar3 = Dvar_FindMalleableVar(param_1);
+    pdVar3 = Dvar_FindMalleableVar(dvarName);
   }
   return pdVar3;
 }
@@ -2199,25 +2206,25 @@ dvar_s * __cdecl Dvar_FindVar(char *param_1)
 
 // 007BD390  Dvar_FindVar  (universal/dvar.cpp:1194)
 
-dvar_s * __cdecl Dvar_FindVar(long param_1)
+dvar_s * __cdecl Dvar_FindVar(long dvarHash)
 
 {
   dvar_s *pdVar1;
   
-  pdVar1 = Dvar_FindMalleableVar(param_1);
+  pdVar1 = Dvar_FindMalleableVar(dvarHash);
   return pdVar1;
 }
 
 
 // 007BD3B0  Dvar_ClearModified  (universal/dvar.cpp:1200)
 
-void __cdecl Dvar_ClearModified(dvar_s *param_1)
+void __cdecl Dvar_ClearModified(dvar_s *dvar)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4b1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2225,20 +2232,20 @@ void __cdecl Dvar_ClearModified(dvar_s *param_1)
       return;
     }
   }
-  param_1->modified = false;
+  dvar->modified = false;
   return;
 }
 
 
 // 007BD3F0  Dvar_SetModified  (universal/dvar.cpp:1207)
 
-void __cdecl Dvar_SetModified(dvar_s *param_1)
+void __cdecl Dvar_SetModified(dvar_s *dvar)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4b8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2246,14 +2253,14 @@ void __cdecl Dvar_SetModified(dvar_s *param_1)
       return;
     }
   }
-  param_1->modified = true;
+  dvar->modified = true;
   return;
 }
 
 
 // 007BD430  Dvar_UpdateEnumDomain  (universal/dvar.cpp:1214)
 
-void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
+void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar,char **stringTable)
 
 {
   float fVar1;
@@ -2263,10 +2270,10 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
   bool bVar5;
   DvarValue *pDVar6;
   DvarValue local_2c [2];
-  int local_c;
-  dvar_s *local_8;
+  int stringCount;
+  dvar_s *malleableDvar;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4c2,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -2274,7 +2281,7 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
       return;
     }
   }
-  if (param_1->name == (char *)0x0) {
+  if (dvar->name == (char *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4c3,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -2282,7 +2289,7 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
       return;
     }
   }
-  if (param_2 == (char **)0x0) {
+  if (stringTable == (char **)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4c4,0,
                              "%s\n\t(dvar->name) = %s");
     if (!bVar5) {
@@ -2291,7 +2298,7 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
       return;
     }
   }
-  if (param_1->type != DVAR_TYPE_ENUM) {
+  if (dvar->type != DVAR_TYPE_ENUM) {
     va("dvar %s type %i");
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4c5,0,
                              "%s\n\t%s");
@@ -2301,10 +2308,10 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
       return;
     }
   }
-  for (local_c = 0; param_2[local_c] != (char *)0x0; local_c = local_c + 1) {
+  for (stringCount = 0; stringTable[stringCount] != (char *)0x0; stringCount = stringCount + 1) {
   }
-  if (((param_1->reset).integer < 0) ||
-     ((local_c <= (param_1->reset).integer && ((param_1->reset).integer != 0)))) {
+  if (((dvar->reset).integer < 0) ||
+     ((stringCount <= (dvar->reset).integer && ((dvar->reset).integer != 0)))) {
     va("name %s reset %i count %i");
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4ca,0,
                              "%s\n\t%s");
@@ -2314,37 +2321,37 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *param_1,char **param_2)
       return;
     }
   }
-  local_8 = param_1;
-  (param_1->domain).enumeration.stringCount = local_c;
-  (param_1->domain).enumeration.strings = param_2;
-  pDVar6 = Dvar_ClampValueToDomain
-                     (local_2c,param_1->type,param_1->current,param_1->reset,param_1->domain);
+  malleableDvar = dvar;
+  (dvar->domain).enumeration.stringCount = stringCount;
+  (dvar->domain).enumeration.strings = stringTable;
+  pDVar6 = Dvar_ClampValueToDomain(local_2c,dvar->type,dvar->current,dvar->reset,dvar->domain);
   fVar1 = pDVar6->vector[1];
   fVar2 = pDVar6->vector[2];
   fVar3 = pDVar6->vector[3];
-  (local_8->current).vector[0] = (float)pDVar6->integer;
-  (local_8->current).vector[1] = fVar1;
-  (local_8->current).vector[2] = fVar2;
-  (local_8->current).vector[3] = fVar3;
-  (local_8->latched).integer = (param_1->current).integer;
-  (local_8->latched).vector[1] = (param_1->current).vector[1];
-  (local_8->latched).vector[2] = (param_1->current).vector[2];
-  (local_8->latched).vector[3] = (param_1->current).vector[3];
+  (malleableDvar->current).vector[0] = (float)pDVar6->integer;
+  (malleableDvar->current).vector[1] = fVar1;
+  (malleableDvar->current).vector[2] = fVar2;
+  (malleableDvar->current).vector[3] = fVar3;
+  (malleableDvar->latched).integer = (dvar->current).integer;
+  (malleableDvar->latched).vector[1] = (dvar->current).vector[1];
+  (malleableDvar->latched).vector[2] = (dvar->current).vector[2];
+  (malleableDvar->latched).vector[3] = (dvar->current).vector[3];
   return;
 }
 
 
 // 007BD960  Dvar_GetBool  (universal/dvar.cpp:1237)
 
-bool __cdecl Dvar_GetBool(char *param_1)
+bool __cdecl Dvar_GetBool(char *dvarName)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   dvar_s *pdVar4;
+  dvar_s *dvar;
   
-  pdVar4 = Dvar_FindVar(param_1);
+  pdVar4 = Dvar_FindVar(dvarName);
   if (pdVar4 == (dvar_s *)0x0) {
     uVar3 = 0;
   }
@@ -2372,7 +2379,7 @@ bool __cdecl Dvar_GetBool(char *param_1)
 
 // 007BDA40  Dvar_GetInt  (universal/dvar.cpp:1253)
 
-int __cdecl Dvar_GetInt(char *param_1)
+int __cdecl Dvar_GetInt(char *dvarName)
 
 {
   code *pcVar1;
@@ -2380,8 +2387,9 @@ int __cdecl Dvar_GetInt(char *param_1)
   dvar_s *pdVar3;
   uint uVar4;
   int iVar5;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_1);
+  pdVar3 = Dvar_FindVar(dvarName);
   if (pdVar3 == (dvar_s *)0x0) {
     uVar4 = 0;
   }
@@ -2416,7 +2424,7 @@ int __cdecl Dvar_GetInt(char *param_1)
 
 // 007BDB60  Dvar_GetInt  (universal/dvar.cpp:1274)
 
-int __cdecl Dvar_GetInt(dvar_s *param_1)
+int __cdecl Dvar_GetInt(dvar_s *dvar)
 
 {
   code *pcVar1;
@@ -2424,13 +2432,13 @@ int __cdecl Dvar_GetInt(dvar_s *param_1)
   uint uVar3;
   int iVar4;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     uVar3 = 0;
   }
   else {
-    if (((((param_1->type != DVAR_TYPE_BOOL) && (param_1->type != DVAR_TYPE_INT)) &&
-         (param_1->type != DVAR_TYPE_FLOAT)) && (param_1->type != DVAR_TYPE_ENUM)) &&
-       ((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)))) {
+    if (((((dvar->type != DVAR_TYPE_BOOL) && (dvar->type != DVAR_TYPE_INT)) &&
+         (dvar->type != DVAR_TYPE_FLOAT)) && (dvar->type != DVAR_TYPE_ENUM)) &&
+       ((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)))) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x4fe,0,
                                "%s\n\t(dvar->type) = %i");
       if (!bVar2) {
@@ -2439,17 +2447,17 @@ int __cdecl Dvar_GetInt(dvar_s *param_1)
         return iVar4;
       }
     }
-    if ((param_1->type == DVAR_TYPE_INT) || (param_1->type == DVAR_TYPE_ENUM)) {
-      uVar3 = (param_1->current).integer;
+    if ((dvar->type == DVAR_TYPE_INT) || (dvar->type == DVAR_TYPE_ENUM)) {
+      uVar3 = (dvar->current).integer;
     }
-    else if (param_1->type == DVAR_TYPE_BOOL) {
-      uVar3 = (uint)((param_1->current).enabled != false);
+    else if (dvar->type == DVAR_TYPE_BOOL) {
+      uVar3 = (uint)((dvar->current).enabled != false);
     }
-    else if (param_1->type == DVAR_TYPE_FLOAT) {
-      uVar3 = (uint)(param_1->current).value;
+    else if (dvar->type == DVAR_TYPE_FLOAT) {
+      uVar3 = (uint)(dvar->current).value;
     }
     else {
-      uVar3 = Dvar_StringToInt((param_1->current).string);
+      uVar3 = Dvar_StringToInt((dvar->current).string);
     }
   }
   return uVar3;
@@ -2458,7 +2466,7 @@ int __cdecl Dvar_GetInt(dvar_s *param_1)
 
 // 007BDC30  Dvar_GetInt  (universal/dvar.cpp:1292)
 
-int __cdecl Dvar_GetInt(long param_1)
+int __cdecl Dvar_GetInt(long dvarHash)
 
 {
   code *pcVar1;
@@ -2466,8 +2474,9 @@ int __cdecl Dvar_GetInt(long param_1)
   dvar_s *pdVar3;
   uint uVar4;
   int iVar5;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_1);
+  pdVar3 = Dvar_FindVar(dvarHash);
   if (pdVar3 == (dvar_s *)0x0) {
     uVar4 = 0;
   }
@@ -2502,7 +2511,7 @@ int __cdecl Dvar_GetInt(long param_1)
 
 // 007BDD50  Dvar_GetFloat  (universal/dvar.cpp:1333)
 
-float __cdecl Dvar_GetFloat(char *param_1)
+float __cdecl Dvar_GetFloat(char *dvarName)
 
 {
   code *pcVar1;
@@ -2510,8 +2519,9 @@ float __cdecl Dvar_GetFloat(char *param_1)
   dvar_s *pdVar3;
   float10 fVar4;
   float fVar5;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_1);
+  pdVar3 = Dvar_FindVar(dvarName);
   if (pdVar3 == (dvar_s *)0x0) {
     fVar5 = 0.0;
   }
@@ -2542,7 +2552,7 @@ float __cdecl Dvar_GetFloat(char *param_1)
 
 // 007BDE50  Dvar_GetFloat  (universal/dvar.cpp:1351)
 
-float __cdecl Dvar_GetFloat(long param_1)
+float __cdecl Dvar_GetFloat(long dvarHash)
 
 {
   code *pcVar1;
@@ -2550,8 +2560,9 @@ float __cdecl Dvar_GetFloat(long param_1)
   dvar_s *pdVar3;
   float10 fVar4;
   float fVar5;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_1);
+  pdVar3 = Dvar_FindVar(dvarHash);
   if (pdVar3 == (dvar_s *)0x0) {
     fVar5 = 0.0;
   }
@@ -2582,93 +2593,100 @@ float __cdecl Dvar_GetFloat(long param_1)
 
 // 007BDF00  Dvar_GetString  (universal/dvar.cpp:1386)
 
-char * __cdecl Dvar_GetString(char *param_1)
+char * __cdecl Dvar_GetString(char *dvarName)
 
 {
   code *pcVar1;
   bool bVar2;
-  dvar_s *pdVar3;
-  char *pcVar4;
+  dvar_s *dvar_00;
+  char *pcVar3;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_1);
-  if (pdVar3 == (dvar_s *)0x0) {
-    pcVar4 = "";
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
+    pcVar3 = "";
   }
   else {
-    if ((pdVar3->type != DVAR_TYPE_STRING) && (pdVar3->type != DVAR_TYPE_ENUM)) {
+    if ((dvar_00->type != DVAR_TYPE_STRING) && (dvar_00->type != DVAR_TYPE_ENUM)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x571,0,
                                "%s\n\t(dvar->type) = %i");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        pcVar4 = (char *)(*pcVar1)();
-        return pcVar4;
+        pcVar3 = (char *)(*pcVar1)();
+        return pcVar3;
       }
     }
-    if (pdVar3->type == DVAR_TYPE_ENUM) {
-      pcVar4 = Dvar_EnumToString(pdVar3);
+    if (dvar_00->type == DVAR_TYPE_ENUM) {
+      pcVar3 = Dvar_EnumToString(dvar_00);
     }
     else {
-      pcVar4 = (char *)(pdVar3->current).integer;
+      pcVar3 = (char *)(dvar_00->current).integer;
     }
   }
-  return pcVar4;
+  return pcVar3;
 }
 
 
 // 007BDF80  Dvar_GetVariantString  (universal/dvar.cpp:1401)
 
-char * __cdecl Dvar_GetVariantString(char *param_1)
+/* WARNING: Variable defined which should be unmapped: dvar */
+
+char * __cdecl Dvar_GetVariantString(char *dvarName)
 
 {
   DvarValue DVar1;
-  dvar_s *pdVar2;
-  char *pcVar3;
+  dvar_s *dvar_00;
+  char *pcVar2;
+  dvar_s *dvar;
   
-  pdVar2 = Dvar_FindVar(param_1);
-  if (pdVar2 == (dvar_s *)0x0) {
-    pcVar3 = "";
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
+    pcVar2 = "";
   }
   else {
-    DVar1.vector[3] = (float)pdVar2;
-    DVar1._0_12_ = *(undefined1 (*) [12])((int)&pdVar2->current + 4);
-    pcVar3 = Dvar_ValueToString(pdVar2,DVar1);
+    DVar1.vector[3] = (float)dvar_00;
+    DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar_00->current + 4);
+    pcVar2 = Dvar_ValueToString(dvar_00,DVar1);
   }
-  return pcVar3;
+  return pcVar2;
 }
 
 
 // 007BDFE0  Dvar_GetVariantString  (universal/dvar.cpp:1412)
 
-char * __cdecl Dvar_GetVariantString(long param_1)
+/* WARNING: Variable defined which should be unmapped: dvar */
+
+char * __cdecl Dvar_GetVariantString(long dvarHash)
 
 {
   DvarValue DVar1;
-  dvar_s *pdVar2;
-  char *pcVar3;
+  dvar_s *dvar_00;
+  char *pcVar2;
+  dvar_s *dvar;
   
-  pdVar2 = Dvar_FindVar(param_1);
-  if (pdVar2 == (dvar_s *)0x0) {
-    pcVar3 = "";
+  dvar_00 = Dvar_FindVar(dvarHash);
+  if (dvar_00 == (dvar_s *)0x0) {
+    pcVar2 = "";
   }
   else {
-    DVar1.vector[3] = (float)pdVar2;
-    DVar1._0_12_ = *(undefined1 (*) [12])((int)&pdVar2->current + 4);
-    pcVar3 = Dvar_ValueToString(pdVar2,DVar1);
+    DVar1.vector[3] = (float)dvar_00;
+    DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar_00->current + 4);
+    pcVar2 = Dvar_ValueToString(dvar_00,DVar1);
   }
-  return pcVar3;
+  return pcVar2;
 }
 
 
 // 007BE040  Dvar_GetUnpackedColor  (universal/dvar.cpp:1423)
 
-void __cdecl Dvar_GetUnpackedColor(dvar_s *param_1,float *param_2)
+void __cdecl Dvar_GetUnpackedColor(dvar_s *dvar,float *expandedColor)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint color;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x592,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2676,8 +2694,8 @@ void __cdecl Dvar_GetUnpackedColor(dvar_s *param_1,float *param_2)
       return;
     }
   }
-  if ((param_1->type != DVAR_TYPE_COLOR) &&
-     ((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)))) {
+  if ((dvar->type != DVAR_TYPE_COLOR) &&
+     ((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)))) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x593,0,
                              "%s\n\t(dvar->type) = %i");
     if (!bVar2) {
@@ -2686,36 +2704,37 @@ void __cdecl Dvar_GetUnpackedColor(dvar_s *param_1,float *param_2)
       return;
     }
   }
-  if (param_1->type == DVAR_TYPE_COLOR) {
-    local_8 = (param_1->current).unsignedInt;
+  if (dvar->type == DVAR_TYPE_COLOR) {
+    color = (dvar->current).unsignedInt;
   }
   else {
-    Dvar_StringToColor((param_1->current).string,(uchar *)&local_8);
+    Dvar_StringToColor((dvar->current).string,(uchar *)&color);
   }
-  *param_2 = (float)(local_8 & 0xff) * 0.003921569;
-  param_2[1] = (float)(local_8 >> 8 & 0xff) * 0.003921569;
-  param_2[2] = (float)(local_8 >> 0x10 & 0xff) * 0.003921569;
-  param_2[3] = (float)(local_8 >> 0x18) * 0.003921569;
+  *expandedColor = (float)(color & 0xff) * 0.003921569;
+  expandedColor[1] = (float)(color >> 8 & 0xff) * 0.003921569;
+  expandedColor[2] = (float)(color >> 0x10 & 0xff) * 0.003921569;
+  expandedColor[3] = (float)(color >> 0x18) * 0.003921569;
   return;
 }
 
 
 // 007BE410  Dvar_GetUnpackedColorByName  (universal/dvar.cpp:1441)
 
-void __cdecl Dvar_GetUnpackedColorByName(char *param_1,float *param_2)
+void __cdecl Dvar_GetUnpackedColorByName(char *dvarName,float *expandedColor)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
-  pdVar1 = Dvar_FindVar(param_1);
-  if (pdVar1 == (dvar_s *)0x0) {
-    *param_2 = 1.0;
-    param_2[1] = 1.0;
-    param_2[2] = 1.0;
-    param_2[3] = 1.0;
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
+    *expandedColor = 1.0;
+    expandedColor[1] = 1.0;
+    expandedColor[2] = 1.0;
+    expandedColor[3] = 1.0;
   }
   else {
-    Dvar_GetUnpackedColor(pdVar1,param_2);
+    Dvar_GetUnpackedColor(dvar_00,expandedColor);
   }
   return;
 }
@@ -2723,20 +2742,21 @@ void __cdecl Dvar_GetUnpackedColorByName(char *param_1,float *param_2)
 
 // 007BE480  Dvar_GetUnpackedColor  (universal/dvar.cpp:1452)
 
-void __cdecl Dvar_GetUnpackedColor(long param_1,float *param_2)
+void __cdecl Dvar_GetUnpackedColor(long dvarHash,float *expandedColor)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
-  pdVar1 = Dvar_FindVar(param_1);
-  if (pdVar1 == (dvar_s *)0x0) {
-    *param_2 = 1.0;
-    param_2[1] = 1.0;
-    param_2[2] = 1.0;
-    param_2[3] = 1.0;
+  dvar_00 = Dvar_FindVar(dvarHash);
+  if (dvar_00 == (dvar_s *)0x0) {
+    *expandedColor = 1.0;
+    expandedColor[1] = 1.0;
+    expandedColor[2] = 1.0;
+    expandedColor[3] = 1.0;
   }
   else {
-    Dvar_GetUnpackedColor(pdVar1,param_2);
+    Dvar_GetUnpackedColor(dvar_00,expandedColor);
   }
   return;
 }
@@ -2744,102 +2764,102 @@ void __cdecl Dvar_GetUnpackedColor(long param_1,float *param_2)
 
 // 007BE4F0  Dvar_GetColorRed  (universal/dvar.cpp:1463)
 
-float __cdecl Dvar_GetColorRed(char *param_1)
+float __cdecl Dvar_GetColorRed(char *dvarName)
 
 {
-  float local_14 [4];
+  float expandedColor [4];
   
-  Dvar_GetUnpackedColorByName(param_1,local_14);
-  return local_14[0];
+  Dvar_GetUnpackedColorByName(dvarName,expandedColor);
+  return expandedColor[0];
 }
 
 
 // 007BE510  Dvar_GetColorRed  (universal/dvar.cpp:1470)
 
-float __cdecl Dvar_GetColorRed(long param_1)
+float __cdecl Dvar_GetColorRed(long dvarHash)
 
 {
-  float local_14 [4];
+  float expandedColor [4];
   
-  Dvar_GetUnpackedColor(param_1,local_14);
-  return local_14[0];
+  Dvar_GetUnpackedColor(dvarHash,expandedColor);
+  return expandedColor[0];
 }
 
 
 // 007BE530  Dvar_GetColorGreen  (universal/dvar.cpp:1477)
 
-float __cdecl Dvar_GetColorGreen(char *param_1)
+float __cdecl Dvar_GetColorGreen(char *dvarName)
 
 {
-  float local_14;
+  float expandedColor;
   float local_10;
   
-  Dvar_GetUnpackedColorByName(param_1,&local_14);
+  Dvar_GetUnpackedColorByName(dvarName,&expandedColor);
   return local_10;
 }
 
 
 // 007BE550  Dvar_GetColorGreen  (universal/dvar.cpp:1484)
 
-float __cdecl Dvar_GetColorGreen(long param_1)
+float __cdecl Dvar_GetColorGreen(long dvarHash)
 
 {
-  float local_14;
+  float expandedColor;
   float local_10;
   
-  Dvar_GetUnpackedColor(param_1,&local_14);
+  Dvar_GetUnpackedColor(dvarHash,&expandedColor);
   return local_10;
 }
 
 
 // 007BE570  Dvar_GetColorBlue  (universal/dvar.cpp:1491)
 
-float __cdecl Dvar_GetColorBlue(char *param_1)
+float __cdecl Dvar_GetColorBlue(char *dvarName)
 
 {
-  float local_14 [2];
+  float expandedColor [2];
   float local_c;
   
-  Dvar_GetUnpackedColorByName(param_1,local_14);
+  Dvar_GetUnpackedColorByName(dvarName,expandedColor);
   return local_c;
 }
 
 
 // 007BE590  Dvar_GetColorBlue  (universal/dvar.cpp:1498)
 
-float __cdecl Dvar_GetColorBlue(long param_1)
+float __cdecl Dvar_GetColorBlue(long dvarHash)
 
 {
-  float local_14 [2];
+  float expandedColor [2];
   float local_c;
   
-  Dvar_GetUnpackedColor(param_1,local_14);
+  Dvar_GetUnpackedColor(dvarHash,expandedColor);
   return local_c;
 }
 
 
 // 007BE5B0  Dvar_GetColorAlpha  (universal/dvar.cpp:1505)
 
-float __cdecl Dvar_GetColorAlpha(char *param_1)
+float __cdecl Dvar_GetColorAlpha(char *dvarName)
 
 {
-  float local_14 [3];
+  float expandedColor [3];
   float local_8;
   
-  Dvar_GetUnpackedColorByName(param_1,local_14);
+  Dvar_GetUnpackedColorByName(dvarName,expandedColor);
   return local_8;
 }
 
 
 // 007BE5D0  Dvar_GetColorAlpha  (universal/dvar.cpp:1512)
 
-float __cdecl Dvar_GetColorAlpha(long param_1)
+float __cdecl Dvar_GetColorAlpha(long dvarHash)
 
 {
-  float local_14 [3];
+  float expandedColor [3];
   float local_8;
   
-  Dvar_GetUnpackedColor(param_1,local_14);
+  Dvar_GetUnpackedColor(dvarHash,expandedColor);
   return local_8;
 }
 
@@ -2850,32 +2870,33 @@ void __cdecl Dvar_Shutdown(void)
 
 {
   bool bVar1;
-  dvar_s *pdVar2;
-  int local_c;
+  dvar_s *dvar_00;
+  int dvarIter;
+  dvar_s *dvar;
   
   Sys_LockWrite(&g_dvarCritSect);
   isDvarSystemActive = false;
-  for (local_c = 0; local_c < dvarCount; local_c = local_c + 1) {
-    pdVar2 = dvarPool + local_c;
-    if (dvarPool[local_c].type == DVAR_TYPE_STRING) {
-      bVar1 = Dvar_ShouldFreeCurrentString(pdVar2);
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    dvar_00 = dvarPool + dvarIter;
+    if (dvarPool[dvarIter].type == DVAR_TYPE_STRING) {
+      bVar1 = Dvar_ShouldFreeCurrentString(dvar_00);
       if (bVar1) {
-        Dvar_FreeString(&dvarPool[local_c].current);
+        Dvar_FreeString(&dvarPool[dvarIter].current);
       }
-      dvarPool[local_c].current.integer = 0;
-      bVar1 = Dvar_ShouldFreeResetString(pdVar2);
+      dvarPool[dvarIter].current.integer = 0;
+      bVar1 = Dvar_ShouldFreeResetString(dvar_00);
       if (bVar1) {
-        Dvar_FreeString(&dvarPool[local_c].reset);
+        Dvar_FreeString(&dvarPool[dvarIter].reset);
       }
-      dvarPool[local_c].reset.integer = 0;
-      bVar1 = Dvar_ShouldFreeLatchedString(pdVar2);
+      dvarPool[dvarIter].reset.integer = 0;
+      bVar1 = Dvar_ShouldFreeLatchedString(dvar_00);
       if (bVar1) {
-        Dvar_FreeString(&dvarPool[local_c].latched);
+        Dvar_FreeString(&dvarPool[dvarIter].latched);
       }
-      dvarPool[local_c].latched.integer = 0;
+      dvarPool[dvarIter].latched.integer = 0;
     }
-    if ((*(uint *)&dvarPool[local_c].flags & 0x4000) != 0) {
-      Dvar_FreeNameString(pdVar2->name);
+    if ((*(uint *)&dvarPool[dvarIter].flags & 0x4000) != 0) {
+      Dvar_FreeNameString(dvar_00->name);
     }
   }
   dvarCount = 0;
@@ -2892,48 +2913,48 @@ void __cdecl Dvar_Shutdown(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_PerformUnregistration(dvar_s *param_1)
+void __cdecl Dvar_PerformUnregistration(dvar_s *dvar)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  DvarValue *pDVar4;
-  DvarValue local_1c;
+  DvarValue *value;
+  DvarValue resetString;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x621,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*(uint *)&param_1->flags & 0x4000) == 0) {
-    *(uint *)&param_1->flags = *(uint *)&param_1->flags | 0x4000;
-    pcVar3 = Dvar_AllocNameString(param_1->name);
-    param_1->name = pcVar3;
+  if ((*(uint *)&dvar->flags & 0x4000) == 0) {
+    *(uint *)&dvar->flags = *(uint *)&dvar->flags | 0x4000;
+    pcVar3 = Dvar_AllocNameString(dvar->name);
+    dvar->name = pcVar3;
   }
-  if (param_1->type != DVAR_TYPE_STRING) {
-    pDVar4 = &param_1->current;
-    pcVar3 = Dvar_DisplayableLatchedValue(param_1);
-    Dvar_CopyString(pcVar3,pDVar4);
-    bVar2 = Dvar_ShouldFreeLatchedString(param_1);
+  if (dvar->type != DVAR_TYPE_STRING) {
+    value = &dvar->current;
+    pcVar3 = Dvar_DisplayableLatchedValue(dvar);
+    Dvar_CopyString(pcVar3,value);
+    bVar2 = Dvar_ShouldFreeLatchedString(dvar);
     if (bVar2) {
-      Dvar_FreeString(&param_1->latched);
+      Dvar_FreeString(&dvar->latched);
     }
-    (param_1->latched).integer = 0;
-    Dvar_WeakCopyString((param_1->current).string,&param_1->latched);
-    bVar2 = Dvar_ShouldFreeResetString(param_1);
+    (dvar->latched).integer = 0;
+    Dvar_WeakCopyString((dvar->current).string,&dvar->latched);
+    bVar2 = Dvar_ShouldFreeResetString(dvar);
     if (bVar2) {
-      Dvar_FreeString(&param_1->reset);
+      Dvar_FreeString(&dvar->reset);
     }
-    (param_1->reset).integer = 0;
-    pcVar3 = Dvar_DisplayableResetValue(param_1);
-    Dvar_AssignResetStringValue(param_1,&local_1c,pcVar3);
-    (param_1->reset).integer = local_1c.integer;
-    param_1->type = DVAR_TYPE_STRING;
+    (dvar->reset).integer = 0;
+    pcVar3 = Dvar_DisplayableResetValue(dvar);
+    Dvar_AssignResetStringValue(dvar,&resetString,pcVar3);
+    (dvar->reset).integer = resetString.integer;
+    dvar->type = DVAR_TYPE_STRING;
   }
   return;
 }
@@ -2943,59 +2964,59 @@ void __cdecl Dvar_PerformUnregistration(dvar_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_UpdateResetValue(dvar_s *param_1,DvarValue param_2)
+void __cdecl Dvar_UpdateResetValue(dvar_s *dvar,DvarValue param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   char *in_stack_00000008;
-  DvarValue local_34;
-  char local_1d;
-  DvarValue local_1c;
+  DvarValue oldString;
+  bool shouldFree;
+  DvarValue resetString;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x644,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_FLOAT_2:
-    (param_1->reset).string = in_stack_00000008;
-    (param_1->reset).vector[1] = (float)param_2.integer;
+    (dvar->reset).string = in_stack_00000008;
+    (dvar->reset).vector[1] = (float)param_2.integer;
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    (param_1->reset).string = in_stack_00000008;
-    (param_1->reset).vector[1] = (float)param_2.integer;
-    (param_1->reset).vector[2] = param_2.vector[1];
+    (dvar->reset).string = in_stack_00000008;
+    (dvar->reset).vector[1] = (float)param_2.integer;
+    (dvar->reset).vector[2] = param_2.vector[1];
     break;
   case DVAR_TYPE_FLOAT_4:
-    (param_1->reset).string = in_stack_00000008;
-    (param_1->reset).vector[1] = (float)param_2.integer;
-    (param_1->reset).vector[2] = param_2.vector[1];
-    (param_1->reset).vector[3] = param_2.vector[2];
+    (dvar->reset).string = in_stack_00000008;
+    (dvar->reset).vector[1] = (float)param_2.integer;
+    (dvar->reset).vector[2] = param_2.vector[1];
+    (dvar->reset).vector[3] = param_2.vector[2];
     break;
   default:
-    (param_1->reset).string = in_stack_00000008;
-    (param_1->reset).vector[1] = (float)param_2.integer;
-    (param_1->reset).vector[2] = param_2.vector[1];
-    (param_1->reset).vector[3] = param_2.vector[2];
+    (dvar->reset).string = in_stack_00000008;
+    (dvar->reset).vector[1] = (float)param_2.integer;
+    (dvar->reset).vector[2] = param_2.vector[1];
+    (dvar->reset).vector[3] = param_2.vector[2];
     break;
   case DVAR_TYPE_STRING:
-    if ((char *)(param_1->reset).integer != in_stack_00000008) {
-      local_1d = Dvar_ShouldFreeResetString(param_1);
-      if ((bool)local_1d) {
-        local_34.integer = (param_1->reset).integer;
+    if ((char *)(dvar->reset).integer != in_stack_00000008) {
+      shouldFree = Dvar_ShouldFreeResetString(dvar);
+      if (shouldFree) {
+        oldString.integer = (dvar->reset).integer;
       }
-      Dvar_AssignResetStringValue(param_1,&local_1c,in_stack_00000008);
-      (param_1->reset).integer = local_1c.integer;
-      if (local_1d != '\0') {
-        Dvar_FreeString(&local_34);
+      Dvar_AssignResetStringValue(dvar,&resetString,in_stack_00000008);
+      (dvar->reset).integer = resetString.integer;
+      if (shouldFree != false) {
+        Dvar_FreeString(&oldString);
       }
     }
   }
@@ -3005,7 +3026,7 @@ void __cdecl Dvar_UpdateResetValue(dvar_s *param_1,DvarValue param_2)
 
 // 007BE840  Dvar_ChangeResetValue  (universal/dvar.cpp:1645)
 
-void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
+void __cdecl Dvar_ChangeResetValue(dvar_s *dvar,DvarValue param_2)
 
 {
   code *pcVar1;
@@ -3013,7 +3034,7 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
   bool bVar3;
   undefined4 in_ECX;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x66e,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -3021,7 +3042,7 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
       return;
     }
   }
-  if (param_1->name == (char *)0x0) {
+  if (dvar->name == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x66f,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -3029,7 +3050,7 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
       return;
     }
   }
-  if ((*(uint *)&param_1->flags & 0x200) == 0) {
+  if ((*(uint *)&dvar->flags & 0x200) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x670,0,
                              "%s\n\t(dvar->name) = %s");
     if (!bVar3) {
@@ -3040,7 +3061,7 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
   }
   DVar2.vector[3] = (float)in_ECX;
   DVar2._0_12_ = param_2._0_12_;
-  Dvar_UpdateResetValue(param_1,DVar2);
+  Dvar_UpdateResetValue(dvar,DVar2);
   return;
 }
 
@@ -3049,78 +3070,78 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *param_1,DvarValue param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_UpdateValue(dvar_s *param_1,DvarValue param_2)
+void __cdecl Dvar_UpdateValue(dvar_s *dvar,DvarValue param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   char *in_stack_00000008;
-  DvarValue local_34;
-  char local_1d;
-  DvarValue local_1c;
+  DvarValue oldString;
+  bool shouldFree;
+  DvarValue currentString;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x67c,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_FLOAT_2:
-    (param_1->current).string = in_stack_00000008;
-    (param_1->current).vector[1] = (float)param_2.integer;
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
+    (dvar->current).string = in_stack_00000008;
+    (dvar->current).vector[1] = (float)param_2.integer;
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    (param_1->current).string = in_stack_00000008;
-    (param_1->current).vector[1] = (float)param_2.integer;
-    (param_1->current).vector[2] = param_2.vector[1];
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
+    (dvar->current).string = in_stack_00000008;
+    (dvar->current).vector[1] = (float)param_2.integer;
+    (dvar->current).vector[2] = param_2.vector[1];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
     break;
   case DVAR_TYPE_FLOAT_4:
-    (param_1->current).string = in_stack_00000008;
-    (param_1->current).vector[1] = (float)param_2.integer;
-    (param_1->current).vector[2] = param_2.vector[1];
-    (param_1->current).vector[3] = param_2.vector[2];
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
-    (param_1->latched).vector[3] = param_2.vector[2];
+    (dvar->current).string = in_stack_00000008;
+    (dvar->current).vector[1] = (float)param_2.integer;
+    (dvar->current).vector[2] = param_2.vector[1];
+    (dvar->current).vector[3] = param_2.vector[2];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
+    (dvar->latched).vector[3] = param_2.vector[2];
     break;
   default:
-    (param_1->current).string = in_stack_00000008;
-    (param_1->current).vector[1] = (float)param_2.integer;
-    (param_1->current).vector[2] = param_2.vector[1];
-    (param_1->current).vector[3] = param_2.vector[2];
-    (param_1->latched).string = in_stack_00000008;
-    (param_1->latched).vector[1] = (float)param_2.integer;
-    (param_1->latched).vector[2] = param_2.vector[1];
-    (param_1->latched).vector[3] = param_2.vector[2];
+    (dvar->current).string = in_stack_00000008;
+    (dvar->current).vector[1] = (float)param_2.integer;
+    (dvar->current).vector[2] = param_2.vector[1];
+    (dvar->current).vector[3] = param_2.vector[2];
+    (dvar->latched).string = in_stack_00000008;
+    (dvar->latched).vector[1] = (float)param_2.integer;
+    (dvar->latched).vector[2] = param_2.vector[1];
+    (dvar->latched).vector[3] = param_2.vector[2];
     break;
   case DVAR_TYPE_STRING:
-    if (in_stack_00000008 != (char *)(param_1->current).integer) {
-      local_1d = Dvar_ShouldFreeCurrentString(param_1);
-      if ((bool)local_1d) {
-        local_34.integer = (param_1->current).integer;
+    if (in_stack_00000008 != (char *)(dvar->current).integer) {
+      shouldFree = Dvar_ShouldFreeCurrentString(dvar);
+      if (shouldFree) {
+        oldString.integer = (dvar->current).integer;
       }
-      Dvar_AssignCurrentStringValue(param_1,&local_1c,in_stack_00000008);
-      (param_1->current).integer = local_1c.integer;
-      bVar2 = Dvar_ShouldFreeLatchedString(param_1);
+      Dvar_AssignCurrentStringValue(dvar,&currentString,in_stack_00000008);
+      (dvar->current).integer = currentString.integer;
+      bVar2 = Dvar_ShouldFreeLatchedString(dvar);
       if (bVar2) {
-        Dvar_FreeString(&param_1->latched);
+        Dvar_FreeString(&dvar->latched);
       }
-      (param_1->latched).integer = 0;
-      Dvar_WeakCopyString((param_1->current).string,&param_1->latched);
-      if (local_1d != '\0') {
-        Dvar_FreeString(&local_34);
+      (dvar->latched).integer = 0;
+      Dvar_WeakCopyString((dvar->current).string,&dvar->latched);
+      if (shouldFree != false) {
+        Dvar_FreeString(&oldString);
       }
     }
   }
@@ -3134,8 +3155,8 @@ void __cdecl Dvar_UpdateValue(dvar_s *param_1,DvarValue param_2)
 
 void __cdecl
 Dvar_MakeExplicitType
-          (dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,DvarValue param_5,
-          DvarLimits param_6)
+          (dvar_s *dvar,char *dvarName,dvarType_t type,ushort flags,DvarValue resetValue,
+          DvarLimits domain)
 
 {
   code *pcVar1;
@@ -3154,15 +3175,15 @@ Dvar_MakeExplicitType
   float local_30;
   float local_2c;
   float local_28;
-  char local_1d;
-  char *local_1c;
+  bool wasString;
+  char *castValue;
   float local_18;
   float local_14;
   float local_10;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->type != DVAR_TYPE_STRING) {
+  if (dvar->type != DVAR_TYPE_STRING) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x6b3,0,
                              "%s\n\t(dvar->type) = %i");
     if (!bVar4) {
@@ -3171,78 +3192,78 @@ Dvar_MakeExplicitType
       return;
     }
   }
-  param_1->type = param_3;
-  (param_1->domain).enumeration.stringCount = param_6.enumeration.stringCount;
-  (param_1->domain).enumeration.strings = param_6.enumeration.strings;
-  *(undefined4 *)((int)&param_1->domain + 8) = param_6.integer64.max._0_4_;
-  *(undefined4 *)((int)&param_1->domain + 0xc) = param_6.integer64.max._4_4_;
-  if (((param_4 & 0x40) == 0) &&
-     ((((param_4 & 0x80) == 0 || (dvar_cheats == (dvar_s *)0x0)) ||
+  dvar->type = type;
+  (dvar->domain).enumeration.stringCount = domain.enumeration.stringCount;
+  (dvar->domain).enumeration.strings = domain.enumeration.strings;
+  *(undefined4 *)((int)&dvar->domain + 8) = domain.integer64.max._0_4_;
+  *(undefined4 *)((int)&dvar->domain + 0xc) = domain.integer64.max._4_4_;
+  if (((flags & 0x40) == 0) &&
+     ((((flags & 0x80) == 0 || (dvar_cheats == (dvar_s *)0x0)) ||
       ((dvar_cheats->current).enabled != false)))) {
-    pDVar5 = Dvar_StringToValue(&local_44,param_1->type,param_1->domain,(param_1->current).string);
+    pDVar5 = Dvar_StringToValue(&local_44,dvar->type,dvar->domain,(dvar->current).string);
     local_34 = pDVar5->integer;
     local_30 = pDVar5->vector[1];
     local_2c = pDVar5->vector[2];
     local_28 = pDVar5->vector[3];
-    local_1c = (char *)local_34;
+    castValue = (char *)local_34;
     local_18 = local_30;
     local_14 = local_2c;
     local_10 = local_28;
     pDVar5 = Dvar_ClampValueToDomain
-                       (&local_64,param_3,(DvarValue)*(float (*) [4])pDVar5,param_5,param_6);
+                       (&local_64,type,(DvarValue)*(float (*) [4])pDVar5,resetValue,domain);
     local_54 = pDVar5->string;
     local_50 = pDVar5->vector[1];
     local_4c = pDVar5->vector[2];
     local_48 = pDVar5->vector[3];
-    local_1c = local_54;
+    castValue = local_54;
     local_18 = local_50;
     local_14 = local_4c;
     local_10 = local_48;
   }
   else {
-    local_1c = param_5.string;
-    local_18 = param_5.vector[1];
-    local_14 = param_5.vector[2];
-    local_10 = param_5.vector[3];
+    castValue = resetValue.string;
+    local_18 = resetValue.vector[1];
+    local_14 = resetValue.vector[2];
+    local_10 = resetValue.vector[3];
   }
-  if ((param_1->type == DVAR_TYPE_STRING) && (local_1c != (char *)0x0)) {
+  if ((dvar->type == DVAR_TYPE_STRING) && (castValue != (char *)0x0)) {
     uVar6 = 1;
   }
   else {
     uVar6 = 0;
   }
-  local_1d = (char)uVar6;
-  if (local_1d != '\0') {
-    local_1c = CopyString(local_1c,"Dvar_MakeExplicitType",0xb,SCRIPTINSTANCE_SERVER);
+  wasString = SUB41(uVar6,0);
+  if (wasString != false) {
+    castValue = CopyString(castValue,"Dvar_MakeExplicitType",0xb,SCRIPTINSTANCE_SERVER);
   }
-  if (param_1->type != DVAR_TYPE_STRING) {
-    bVar4 = Dvar_ShouldFreeCurrentString(param_1);
+  if (dvar->type != DVAR_TYPE_STRING) {
+    bVar4 = Dvar_ShouldFreeCurrentString(dvar);
     if (bVar4) {
-      Dvar_FreeString(&param_1->current);
+      Dvar_FreeString(&dvar->current);
     }
   }
-  (param_1->current).integer = 0;
-  bVar4 = Dvar_ShouldFreeLatchedString(param_1);
+  (dvar->current).integer = 0;
+  bVar4 = Dvar_ShouldFreeLatchedString(dvar);
   if (bVar4) {
-    Dvar_FreeString(&param_1->latched);
+    Dvar_FreeString(&dvar->latched);
   }
-  (param_1->latched).integer = 0;
-  bVar4 = Dvar_ShouldFreeResetString(param_1);
+  (dvar->latched).integer = 0;
+  bVar4 = Dvar_ShouldFreeResetString(dvar);
   if (bVar4) {
-    Dvar_FreeString(&param_1->reset);
+    Dvar_FreeString(&dvar->reset);
   }
-  (param_1->reset).integer = 0;
+  (dvar->reset).integer = 0;
   DVar2.vector[3] = (float)uVar6;
-  DVar2._0_12_ = param_5._4_12_;
-  Dvar_UpdateResetValue(param_1,DVar2);
+  DVar2._0_12_ = resetValue._4_12_;
+  Dvar_UpdateResetValue(dvar,DVar2);
   DVar3.vector[1] = local_14;
   DVar3.value = local_18;
   DVar3.vector[2] = local_10;
   DVar3.vector[3] = (float)uVar6;
-  Dvar_UpdateValue(param_1,DVar3);
-  dvar_modifiedFlags = (uint)param_4 | dvar_modifiedFlags;
-  if (local_1d != '\0') {
-    FreeString(local_1c,0xb,SCRIPTINSTANCE_SERVER);
+  Dvar_UpdateValue(dvar,DVar3);
+  dvar_modifiedFlags = (uint)flags | dvar_modifiedFlags;
+  if (wasString != false) {
+    FreeString(castValue,0xb,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -3252,14 +3273,14 @@ Dvar_MakeExplicitType
 
 DvarValue * __cdecl
 Dvar_GetReinterpretedResetValue
-          (DvarValue *__return_storage_ptr__,dvar_s *param_1,DvarValue param_2,dvarType_t param_3,
-          ushort param_4,DvarLimits param_5)
+          (DvarValue *__return_storage_ptr__,dvar_s *__formal,DvarValue value,dvarType_t type,
+          ushort flags,DvarLimits domain)
 
 {
-  __return_storage_ptr__->integer = param_2.integer;
-  __return_storage_ptr__->vector[1] = param_2.vector[1];
-  __return_storage_ptr__->vector[2] = param_2.vector[2];
-  __return_storage_ptr__->vector[3] = param_2.vector[3];
+  __return_storage_ptr__->integer = value.integer;
+  __return_storage_ptr__->vector[1] = value.vector[1];
+  __return_storage_ptr__->vector[2] = value.vector[2];
+  __return_storage_ptr__->vector[3] = value.vector[3];
   return __return_storage_ptr__;
 }
 
@@ -3270,44 +3291,44 @@ Dvar_GetReinterpretedResetValue
 
 void __cdecl
 Dvar_ReinterpretDvar
-          (dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,DvarValue param_5,
-          DvarLimits param_6)
+          (dvar_s *dvar,char *dvarName,dvarType_t type,ushort flags,DvarValue value,
+          DvarLimits domain)
 
 {
-  DvarValue DVar1;
-  DvarValue *pDVar2;
+  DvarValue resetValue_00;
+  DvarValue *pDVar1;
   DvarValue local_3c;
   int local_2c;
   float local_28;
   float local_24;
   undefined4 local_20;
-  int local_1c;
+  int resetValue;
   float local_18;
   float local_14;
   undefined4 local_10;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((*(uint *)&param_1->flags & 0x4000) != 0) && ((param_4 & 0x4000) == 0)) {
-    pDVar2 = Dvar_GetReinterpretedResetValue(&local_3c,param_1,param_5,param_3,param_4,param_6);
-    local_2c = pDVar2->integer;
-    local_28 = pDVar2->vector[1];
-    local_24 = pDVar2->vector[2];
-    local_20 = *(undefined4 *)(pDVar2->color + 0xc);
-    local_1c = local_2c;
+  if (((*(uint *)&dvar->flags & 0x4000) != 0) && ((flags & 0x4000) == 0)) {
+    pDVar1 = Dvar_GetReinterpretedResetValue(&local_3c,dvar,value,type,flags,domain);
+    local_2c = pDVar1->integer;
+    local_28 = pDVar1->vector[1];
+    local_24 = pDVar1->vector[2];
+    local_20 = *(undefined4 *)(pDVar1->color + 0xc);
+    resetValue = local_2c;
     local_18 = local_28;
     local_14 = local_24;
     local_10 = local_20;
-    Dvar_PerformUnregistration(param_1);
-    Dvar_FreeNameString(param_1->name);
-    param_1->name = param_2;
-    *(uint *)&param_1->flags = *(uint *)&param_1->flags & 0xffffbfff;
-    DVar1.vector[1] = local_18;
-    DVar1.integer = local_1c;
-    DVar1.vector[2] = local_14;
-    DVar1._12_2_ = (short)local_10;
-    DVar1._14_2_ = (short)((uint)local_10 >> 0x10);
-    Dvar_MakeExplicitType(param_1,param_2,param_3,param_4,DVar1,param_6);
+    Dvar_PerformUnregistration(dvar);
+    Dvar_FreeNameString(dvar->name);
+    dvar->name = dvarName;
+    *(uint *)&dvar->flags = *(uint *)&dvar->flags & 0xffffbfff;
+    resetValue_00.vector[1] = local_18;
+    resetValue_00.integer = resetValue;
+    resetValue_00.vector[2] = local_14;
+    resetValue_00._12_2_ = (short)local_10;
+    resetValue_00._14_2_ = (short)((uint)local_10 >> 0x10);
+    Dvar_MakeExplicitType(dvar,dvarName,type,flags,resetValue_00,domain);
   }
   return;
 }
@@ -3315,33 +3336,33 @@ Dvar_ReinterpretDvar
 
 // 007BECC0  Dvar_MakeLatchedValueCurrent  (universal/dvar.cpp:1801)
 
-void __cdecl Dvar_MakeLatchedValueCurrent(dvar_s *param_1)
+void __cdecl Dvar_MakeLatchedValueCurrent(dvar_s *dvar)
 
 {
   DvarValue DVar1;
   DvarSetSource unaff_EBP;
   
   DVar1.vector[3] = 0.0;
-  DVar1._0_12_ = *(undefined1 (*) [12])((int)&param_1->latched + 4);
-  Dvar_SetVariant(param_1,DVar1,unaff_EBP);
+  DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar->latched + 4);
+  Dvar_SetVariant(dvar,DVar1,unaff_EBP);
   return;
 }
 
 
 // 007BFAA0  Dvar_ClearLatchedValue  (universal/dvar.cpp:1807)
 
-void __cdecl Dvar_ClearLatchedValue(dvar_s *param_1)
+void __cdecl Dvar_ClearLatchedValue(dvar_s *dvar)
 
 {
   DvarValue DVar1;
   bool bVar2;
   undefined4 unaff_EBP;
   
-  bVar2 = Dvar_HasLatchedValue(param_1);
+  bVar2 = Dvar_HasLatchedValue(dvar);
   if (bVar2) {
     DVar1.vector[3] = (float)unaff_EBP;
-    DVar1._0_12_ = *(undefined1 (*) [12])((int)&param_1->current + 4);
-    Dvar_SetLatchedValue(param_1,DVar1);
+    DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar->current + 4);
+    Dvar_SetLatchedValue(dvar,DVar1);
   }
   return;
 }
@@ -3350,8 +3371,8 @@ void __cdecl Dvar_ClearLatchedValue(dvar_s *param_1)
 // 007BFC90  Dvar_Reregister  (universal/dvar.cpp:1816)
 
 void __cdecl
-Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,DvarValue param_5,
-               DvarLimits param_6,char *param_7)
+Dvar_Reregister(dvar_s *dvar,char *dvarName,dvarType_t type,ushort flags,DvarValue resetValue,
+               DvarLimits domain,char *description)
 
 {
   code *pcVar1;
@@ -3364,7 +3385,7 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
   int iVar8;
   DvarSetSource in_ECX;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x719,0,"%s");
     if (!bVar7) {
       pcVar1 = (code *)swi(3);
@@ -3372,7 +3393,7 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x71a,0,"%s");
     if (!bVar7) {
       pcVar1 = (code *)swi(3);
@@ -3380,7 +3401,7 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
       return;
     }
   }
-  if ((param_1->type != param_3) && ((*(uint *)&param_1->flags & 0x4000) == 0)) {
+  if ((dvar->type != type) && ((*(uint *)&dvar->flags & 0x4000) == 0)) {
     va("%s: %i != %i");
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x71b,0,
                              "%s\n\t%s");
@@ -3390,11 +3411,11 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
       return;
     }
   }
-  if ((((uint)param_4 ^ *(uint *)&param_1->flags) & 0x4000) != 0) {
-    Dvar_ReinterpretDvar(param_1,param_2,param_3,param_4,param_5,param_6);
+  if ((((uint)flags ^ *(uint *)&dvar->flags) & 0x4000) != 0) {
+    Dvar_ReinterpretDvar(dvar,dvarName,type,flags,resetValue,domain);
   }
-  if (((*(uint *)&param_1->flags & 0x4000) != 0) && (param_1->type != param_3)) {
-    if (param_1->type != DVAR_TYPE_STRING) {
+  if (((*(uint *)&dvar->flags & 0x4000) != 0) && (dvar->type != type)) {
+    if (dvar->type != DVAR_TYPE_STRING) {
       va("dvar %s, type %i");
       bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x722,0,
                                "%s\n\t%s");
@@ -3404,9 +3425,9 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
         return;
       }
     }
-    Dvar_MakeExplicitType(param_1,param_2,param_3,param_4,param_5,param_6);
+    Dvar_MakeExplicitType(dvar,dvarName,type,flags,resetValue,domain);
   }
-  if (param_1->type != param_3) {
+  if (dvar->type != type) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x726,0,
                              "%s\n\t(dvarName) = %s");
     if (!bVar7) {
@@ -3415,17 +3436,17 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
       return;
     }
   }
-  if ((*(uint *)&param_1->flags & 0x9200) == 0) {
-    DVar2._12_4_ = param_5.integer;
-    DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
+  if ((*(uint *)&dvar->flags & 0x9200) == 0) {
+    DVar2._12_4_ = resetValue.integer;
+    DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
     DVar4.vector[3] = (float)in_ECX;
-    DVar4._0_12_ = param_5._4_12_;
-    iVar8 = Dvar_ValuesEqual(param_3,DVar2,DVar4);
+    DVar4._0_12_ = resetValue._4_12_;
+    iVar8 = Dvar_ValuesEqual(type,DVar2,DVar4);
     if (iVar8 == 0) {
       DVar5.vector[3] = (float)in_ECX;
-      DVar5._0_12_ = param_5._4_12_;
-      Dvar_ValueToString(param_1,DVar5);
-      Dvar_DisplayableResetValue(param_1);
+      DVar5._0_12_ = resetValue._4_12_;
+      Dvar_ValueToString(dvar,DVar5);
+      Dvar_DisplayableResetValue(dvar);
       va("dvar %s, %s != %s");
       bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x727,0,
                                "%s\n\t%s");
@@ -3436,21 +3457,21 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
       }
     }
   }
-  *(uint *)&param_1->flags = (uint)param_4 | *(uint *)&param_1->flags;
-  if (param_7 != (char *)0x0) {
-    param_1->description = param_7;
+  *(uint *)&dvar->flags = (uint)flags | *(uint *)&dvar->flags;
+  if (description != (char *)0x0) {
+    dvar->description = description;
   }
-  if ((((*(uint *)&param_1->flags & 0x80) != 0) && (dvar_cheats != (dvar_s *)0x0)) &&
+  if ((((*(uint *)&dvar->flags & 0x80) != 0) && (dvar_cheats != (dvar_s *)0x0)) &&
      ((dvar_cheats->current).enabled == false)) {
     DVar3.vector[3] = 0.0;
-    DVar3._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-    Dvar_SetVariant(param_1,DVar3,in_ECX);
+    DVar3._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+    Dvar_SetVariant(dvar,DVar3,in_ECX);
     DVar6.vector[3] = (float)in_ECX;
-    DVar6._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-    Dvar_SetLatchedValue(param_1,DVar6);
+    DVar6._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+    Dvar_SetLatchedValue(dvar,DVar6);
   }
-  if ((*(uint *)&param_1->flags & 0x20) != 0) {
-    Dvar_MakeLatchedValueCurrent(param_1);
+  if ((*(uint *)&dvar->flags & 0x20) != 0) {
+    Dvar_MakeLatchedValueCurrent(dvar);
   }
   return;
 }
@@ -3459,8 +3480,8 @@ Dvar_Reregister(dvar_s *param_1,char *param_2,dvarType_t param_3,ushort param_4,
 // 007C0DE0  Dvar_RegisterNew  (universal/dvar.cpp:1850)
 
 dvar_s * __cdecl
-Dvar_RegisterNew(char *param_1,dvarType_t param_2,ushort param_3,DvarValue param_4,
-                DvarLimits param_5,char *param_6)
+Dvar_RegisterNew(char *dvarName,dvarType_t type,ushort flags,DvarValue param_4,DvarLimits param_5,
+                char *param_6)
 
 {
   int iVar1;
@@ -3469,7 +3490,9 @@ Dvar_RegisterNew(char *param_1,dvarType_t param_2,ushort param_3,DvarValue param
   int iVar4;
   dvar_s *pdVar5;
   char *in_stack_00000010;
-  dvar_s *local_14;
+  dvar_s *var;
+  long hash;
+  dvar_s *dvar;
   
   Sys_LockWrite(&g_dvarCritSect);
   if (0xfff < dvarCount) {
@@ -3481,15 +3504,15 @@ Dvar_RegisterNew(char *param_1,dvarType_t param_2,ushort param_3,DvarValue param
   sortedDvars[dvarCount] = pdVar5;
   areDvarsSorted = false;
   dvarCount = dvarCount + 1;
-  dvarPool[iVar1].type = param_2;
-  if ((param_3 & 0x4000) == 0) {
-    pdVar5->name = param_1;
+  dvarPool[iVar1].type = type;
+  if ((flags & 0x4000) == 0) {
+    pdVar5->name = dvarName;
   }
   else {
-    pcVar2 = Dvar_AllocNameString(param_1);
+    pcVar2 = Dvar_AllocNameString(dvarName);
     pdVar5->name = pcVar2;
   }
-  switch(param_2) {
+  switch(type) {
   case DVAR_TYPE_FLOAT_2:
     dvarPool[iVar1].current.string = in_stack_00000010;
     dvarPool[iVar1].current.vector[1] = (float)param_4.integer;
@@ -3549,14 +3572,13 @@ Dvar_RegisterNew(char *param_1,dvarType_t param_2,ushort param_3,DvarValue param
   *(char ***)((int)&dvarPool[iVar1].domain + 8) = param_5.enumeration.strings;
   *(undefined4 *)((int)&dvarPool[iVar1].domain + 0xc) = param_5.integer64.max._0_4_;
   dvarPool[iVar1].modified = false;
-  *(uint *)&dvarPool[iVar1].flags = (uint)param_3;
+  *(uint *)&dvarPool[iVar1].flags = (uint)flags;
   dvarPool[iVar1].description = (char *)param_5.integer64.max._4_4_;
-  uVar3 = Com_HashString(param_1,0);
+  uVar3 = Com_HashString(dvarName,0);
   dvarPool[iVar1].hash = uVar3;
-  for (local_14 = dvarHashTable[uVar3 & 0x3ff]; local_14 != (dvar_s *)0x0;
-      local_14 = local_14->hashNext) {
-    iVar4 = I_stricmp(param_1,local_14->name);
-    if ((iVar4 != 0) && (uVar3 == local_14->hash)) {
+  for (var = dvarHashTable[uVar3 & 0x3ff]; var != (dvar_s *)0x0; var = var->hashNext) {
+    iVar4 = I_stricmp(dvarName,var->name);
+    if ((iVar4 != 0) && (uVar3 == var->hash)) {
       Com_Error(ERR_FATAL,
                 "dvar name hash collision between \'%s\' and \'%s\' Please change one of these names to remove the hash collision\n"
                );
@@ -3571,48 +3593,52 @@ Dvar_RegisterNew(char *param_1,dvarType_t param_2,ushort param_3,DvarValue param
 
 // 007BFB80  Dvar_RegisterVariant  (universal/dvar.cpp:1939)
 
+/* WARNING: Variable defined which should be unmapped: dvar */
+
 dvar_s * __cdecl
 Dvar_RegisterVariant
-          (char *param_1,dvarType_t param_2,ushort param_3,DvarValue param_4,DvarLimits param_5,
+          (char *dvarName,dvarType_t type,ushort flags,DvarValue param_4,DvarLimits param_5,
           char *param_6)
 
 {
   code *pcVar1;
-  DvarValue DVar2;
-  DvarLimits DVar3;
-  bool bVar4;
-  int iVar5;
-  dvar_s *pdVar6;
+  DvarValue resetValue;
+  DvarLimits domain;
+  bool bVar2;
+  int iVar3;
+  dvar_s *pdVar4;
   undefined4 in_stack_00000010;
+  dvar_s *dvar;
   
-  if ((param_3 & 0x4000) == 0) {
-    iVar5 = CanKeepStringPointer(param_1);
-    if (iVar5 == 0) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x796,0,
+  if ((flags & 0x4000) == 0) {
+    iVar3 = CanKeepStringPointer(dvarName);
+    if (iVar3 == 0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x796,0,
                                "%s\n\t(dvarName) = %s");
-      if (!bVar4) {
+      if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        pdVar6 = (dvar_s *)(*pcVar1)();
-        return pdVar6;
+        pdVar4 = (dvar_s *)(*pcVar1)();
+        return pdVar4;
       }
     }
   }
-  pdVar6 = Dvar_FindMalleableVar(param_1);
-  if (pdVar6 == (dvar_s *)0x0) {
-    pdVar6 = Dvar_RegisterNew(param_1,param_2,param_3,param_4,param_5,(char *)0x0);
+  pdVar4 = Dvar_FindMalleableVar(dvarName);
+  if (pdVar4 == (dvar_s *)0x0) {
+    pdVar4 = Dvar_RegisterNew(dvarName,type,flags,param_4,param_5,(char *)0x0);
   }
   else {
-    DVar2._4_4_ = param_4.integer;
-    DVar2.integer = in_stack_00000010;
-    DVar2.vector[2] = param_4.vector[1];
-    DVar2.vector[3] = param_4.vector[2];
-    DVar3.enumeration.strings = (char **)param_5.enumeration.stringCount;
-    DVar3.enumeration.stringCount = (int)param_4.vector[3];
-    DVar3.integer64.max._0_4_ = param_5.enumeration.strings;
-    DVar3.integer64.max._4_4_ = param_5.integer64.max._0_4_;
-    Dvar_Reregister(pdVar6,param_1,param_2,param_3,DVar2,DVar3,(char *)param_5.integer64.max._4_4_);
+    resetValue._4_4_ = param_4.integer;
+    resetValue.integer = in_stack_00000010;
+    resetValue.vector[2] = param_4.vector[1];
+    resetValue.vector[3] = param_4.vector[2];
+    domain.enumeration.strings = (char **)param_5.enumeration.stringCount;
+    domain.enumeration.stringCount = (int)param_4.vector[3];
+    domain.integer64.max._0_4_ = param_5.enumeration.strings;
+    domain.integer64.max._4_4_ = param_5.integer64.max._0_4_;
+    Dvar_Reregister(pdVar4,dvarName,type,flags,resetValue,domain,(char *)param_5.integer64.max._4_4_
+                   );
   }
-  return pdVar6;
+  return pdVar4;
 }
 
 
@@ -3620,7 +3646,7 @@ Dvar_RegisterVariant
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-dvar_s * __cdecl _Dvar_RegisterBool(char *param_1,bool param_2,ushort param_3,char *param_4)
+dvar_s * __cdecl _Dvar_RegisterBool(char *dvarName,bool value,ushort flags,char *description)
 
 {
   DvarValue DVar1;
@@ -3634,9 +3660,9 @@ dvar_s * __cdecl _Dvar_RegisterBool(char *param_1,bool param_2,ushort param_3,ch
   DVar1.integer = local_18;
   DVar1.vector[2] = (float)local_10;
   DVar1.vector[3] = 0.0;
-  DVar2.integer64.max._4_4_ = param_4;
+  DVar2.integer64.max._4_4_ = description;
   DVar2._0_12_ = ZEXT812(0);
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_BOOL,param_3,DVar1,DVar2,(char *)0x0);
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_BOOL,flags,DVar1,DVar2,(char *)0x0);
   return pdVar3;
 }
 
@@ -3646,7 +3672,7 @@ dvar_s * __cdecl _Dvar_RegisterBool(char *param_1,bool param_2,ushort param_3,ch
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterInt(char *param_1,int param_2,int param_3,int param_4,ushort param_5,char *param_6)
+_Dvar_RegisterInt(char *dvarName,int value,int min,int max,ushort flags,char *description)
 
 {
   DvarValue DVar1;
@@ -3661,12 +3687,12 @@ _Dvar_RegisterInt(char *param_1,int param_2,int param_3,int param_4,ushort param
   DVar1.vector[1] = (float)local_14;
   DVar1.integer = local_18;
   DVar1.vector[2] = (float)local_10;
-  DVar1._12_4_ = param_3;
+  DVar1._12_4_ = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.enumeration.stringCount = param_4;
+  DVar2.enumeration.stringCount = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_6;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_INT,param_5,DVar1,DVar2,(char *)param_3);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_INT,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -3676,7 +3702,7 @@ _Dvar_RegisterInt(char *param_1,int param_2,int param_3,int param_4,ushort param
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterInt64(char *param_1,long64 param_2,long64 param_3,long64 param_4,ushort param_5,
+_Dvar_RegisterInt64(char *dvarName,long64 param_2,long64 param_3,long64 param_4,ushort description,
                    char *param_6)
 
 {
@@ -3694,8 +3720,8 @@ _Dvar_RegisterInt64(char *param_1,long64 param_2,long64 param_3,long64 param_4,u
   DVar1.vector[2] = (float)local_10;
   DVar1._12_4_ = param_2._4_4_;
   DVar2.enumeration.stringCount = (undefined4)param_3;
-  DVar2.integer64.max._4_4_ = _param_5;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_INT64,param_4._4_2_,DVar1,DVar2,param_2._4_4_);
+  DVar2.integer64.max._4_4_ = _description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_INT64,param_4._4_2_,DVar1,DVar2,param_2._4_4_);
   return pdVar3;
 }
 
@@ -3705,8 +3731,7 @@ _Dvar_RegisterInt64(char *param_1,long64 param_2,long64 param_3,long64 param_4,u
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterFloat(char *param_1,float param_2,float param_3,float param_4,ushort param_5,
-                   char *param_6)
+_Dvar_RegisterFloat(char *dvarName,float value,float min,float max,ushort flags,char *description)
 
 {
   DvarValue DVar1;
@@ -3721,12 +3746,12 @@ _Dvar_RegisterFloat(char *param_1,float param_2,float param_3,float param_4,usho
   DVar1.vector[1] = (float)local_14;
   DVar1.integer = local_18;
   DVar1.vector[2] = (float)local_10;
-  DVar1.vector[3] = param_3;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_4;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_6;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_FLOAT,param_5,DVar1,DVar2,(char *)param_3);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_FLOAT,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -3736,8 +3761,8 @@ _Dvar_RegisterFloat(char *param_1,float param_2,float param_3,float param_4,usho
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterVec2(char *param_1,float param_2,float param_3,float param_4,float param_5,
-                  ushort param_6,char *param_7)
+_Dvar_RegisterVec2(char *dvarName,float x,float y,float min,float max,ushort flags,char *description
+                  )
 
 {
   DvarValue DVar1;
@@ -3749,14 +3774,14 @@ _Dvar_RegisterVec2(char *param_1,float param_2,float param_3,float param_4,float
   undefined4 local_10;
   
   DVar1.vector[1] = (float)local_14;
-  DVar1.value = param_3;
+  DVar1.value = y;
   DVar1.vector[2] = (float)local_10;
-  DVar1.vector[3] = param_4;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_5;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_7;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_FLOAT_2,param_6,DVar1,DVar2,(char *)param_4);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_FLOAT_2,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -3766,8 +3791,8 @@ _Dvar_RegisterVec2(char *param_1,float param_2,float param_3,float param_4,float
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterVec3(char *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,ushort param_7,char *param_8)
+_Dvar_RegisterVec3(char *dvarName,float x,float y,float z,float min,float max,ushort flags,
+                  char *description)
 
 {
   DvarValue DVar1;
@@ -3777,15 +3802,15 @@ _Dvar_RegisterVec3(char *param_1,float param_2,float param_3,float param_4,float
   undefined4 local_20;
   undefined4 local_10;
   
-  DVar1.vector[1] = param_4;
-  DVar1.value = param_3;
+  DVar1.vector[1] = z;
+  DVar1.value = y;
   DVar1.vector[2] = (float)local_10;
-  DVar1.vector[3] = param_5;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_6;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_8;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_FLOAT_3,param_7,DVar1,DVar2,(char *)param_5);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_FLOAT_3,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -3795,8 +3820,8 @@ _Dvar_RegisterVec3(char *param_1,float param_2,float param_3,float param_4,float
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterVec4(char *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,float param_7,ushort param_8,char *param_9)
+_Dvar_RegisterVec4(char *dvarName,float x,float y,float z,float w,float min,float max,ushort flags,
+                  char *description)
 
 {
   DvarValue DVar1;
@@ -3805,15 +3830,15 @@ _Dvar_RegisterVec4(char *param_1,float param_2,float param_3,float param_4,float
   undefined4 local_24;
   undefined4 local_20;
   
-  DVar1.vector[1] = param_4;
-  DVar1.value = param_3;
-  DVar1.vector[2] = param_5;
-  DVar1.vector[3] = param_6;
+  DVar1.vector[1] = z;
+  DVar1.value = y;
+  DVar1.vector[2] = w;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_7;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_9;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_FLOAT_4,param_8,DVar1,DVar2,(char *)param_6);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_FLOAT_4,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -3822,7 +3847,7 @@ _Dvar_RegisterVec4(char *param_1,float param_2,float param_3,float param_4,float
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3,char *param_4)
+dvar_s * __cdecl _Dvar_RegisterString(char *dvarName,char *value,ushort flags,char *description)
 
 {
   code *pcVar1;
@@ -3835,7 +3860,7 @@ dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3
   undefined4 local_14;
   undefined4 local_10;
   
-  if (param_1 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x7fb,0,"%s");
     if (!bVar4) {
       pcVar1 = (code *)swi(3);
@@ -3843,7 +3868,7 @@ dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3
       return pdVar5;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (value == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x7fc,0,"%s");
     if (!bVar4) {
       pcVar1 = (code *)swi(3);
@@ -3851,8 +3876,8 @@ dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3
       return pdVar5;
     }
   }
-  if ((param_3 & 0x4000) == 0) {
-    iVar6 = CanKeepStringPointer(param_2);
+  if ((flags & 0x4000) == 0) {
+    iVar6 = CanKeepStringPointer(value);
     if (iVar6 == 0) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x7fd,0,
                                "%s\n\t(dvarName) = %s");
@@ -3867,9 +3892,9 @@ dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3
   DVar2.integer = local_18;
   DVar2.vector[2] = (float)local_10;
   DVar2.vector[3] = 0.0;
-  DVar3.integer64.max._4_4_ = param_4;
+  DVar3.integer64.max._4_4_ = description;
   DVar3._0_12_ = ZEXT812(0);
-  pdVar5 = Dvar_RegisterVariant(param_1,DVAR_TYPE_STRING,param_3,DVar2,DVar3,(char *)0x0);
+  pdVar5 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_STRING,flags,DVar2,DVar3,(char *)0x0);
   return pdVar5;
 }
 
@@ -3879,7 +3904,7 @@ dvar_s * __cdecl _Dvar_RegisterString(char *param_1,char *param_2,ushort param_3
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char *param_5)
+_Dvar_RegisterEnum(char *dvarName,char **valueList,int defaultIndex,ushort flags,char *description)
 
 {
   code *pcVar1;
@@ -3894,7 +3919,7 @@ _Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char 
   undefined4 local_14;
   undefined4 local_10;
   
-  if (param_1 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x80a,0,"%s");
     if (!bVar4) {
       pcVar1 = (code *)swi(3);
@@ -3902,7 +3927,7 @@ _Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char 
       return pdVar5;
     }
   }
-  if (param_2 == (char **)0x0) {
+  if (valueList == (char **)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x80b,0,"%s");
     if (!bVar4) {
       pcVar1 = (code *)swi(3);
@@ -3910,9 +3935,9 @@ _Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char 
       return pdVar5;
     }
   }
-  for (pcVar6 = (char *)0x0; param_2[(int)pcVar6] != (char *)0x0; pcVar6 = pcVar6 + 1) {
+  for (pcVar6 = (char *)0x0; valueList[(int)pcVar6] != (char *)0x0; pcVar6 = pcVar6 + 1) {
   }
-  if (((param_3 < 0) || ((int)pcVar6 <= param_3)) && (param_3 != 0)) {
+  if (((defaultIndex < 0) || ((int)pcVar6 <= defaultIndex)) && (defaultIndex != 0)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x811,0,
                              "%s\n\t(dvarName) = %s");
     if (!bVar4) {
@@ -3926,10 +3951,10 @@ _Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char 
   DVar2.vector[2] = (float)local_10;
   DVar2._12_4_ = pcVar6;
   DVar3.enumeration.strings = (char **)local_24;
-  DVar3.enumeration.stringCount = (int)param_2;
+  DVar3.enumeration.stringCount = (int)valueList;
   DVar3.integer64.max._0_4_ = local_20;
-  DVar3.integer64.max._4_4_ = param_5;
-  pdVar5 = Dvar_RegisterVariant(param_1,DVAR_TYPE_ENUM,param_4,DVar2,DVar3,pcVar6);
+  DVar3.integer64.max._4_4_ = description;
+  pdVar5 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_ENUM,flags,DVar2,DVar3,pcVar6);
   return pdVar5;
 }
 
@@ -3939,8 +3964,7 @@ _Dvar_RegisterEnum(char *param_1,char **param_2,int param_3,ushort param_4,char 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 dvar_s * __cdecl
-_Dvar_RegisterColor(char *param_1,float param_2,float param_3,float param_4,float param_5,
-                   ushort param_6,char *param_7)
+_Dvar_RegisterColor(char *dvarName,float r,float g,float b,float a,ushort flags,char *description)
 
 {
   DvarValue DVar1;
@@ -3951,8 +3975,8 @@ _Dvar_RegisterColor(char *param_1,float param_2,float param_3,float param_4,floa
   undefined4 local_14;
   undefined4 local_10;
   
-  if (param_5 - 1.0 < 0.0) {
-    local_78 = (char *)param_5;
+  if (a - 1.0 < 0.0) {
+    local_78 = (char *)a;
   }
   else {
     local_78 = &DAT_3f800000;
@@ -3964,9 +3988,9 @@ _Dvar_RegisterColor(char *param_1,float param_2,float param_3,float param_4,floa
   DVar1.integer = local_18;
   DVar1.vector[2] = (float)local_10;
   DVar1.vector[3] = 0.0;
-  DVar2.integer64.max._4_4_ = param_7;
+  DVar2.integer64.max._4_4_ = description;
   DVar2._0_12_ = ZEXT812(0);
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_COLOR,param_6,DVar1,DVar2,local_78);
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_COLOR,flags,DVar1,DVar2,local_78);
   return pdVar3;
 }
 
@@ -3977,8 +4001,8 @@ _Dvar_RegisterColor(char *param_1,float param_2,float param_3,float param_4,floa
 
 dvar_s * __cdecl
 _Dvar_RegisterLinearRGB
-          (char *param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          ushort param_7,char *param_8)
+          (char *dvarName,float x,float y,float z,float min,float max,ushort flags,char *description
+          )
 
 {
   DvarValue DVar1;
@@ -3988,16 +4012,15 @@ _Dvar_RegisterLinearRGB
   undefined4 local_20;
   undefined4 local_10;
   
-  DVar1.vector[1] = param_4;
-  DVar1.value = param_3;
+  DVar1.vector[1] = z;
+  DVar1.value = y;
   DVar1.vector[2] = (float)local_10;
-  DVar1.vector[3] = param_5;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_6;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_8;
-  pdVar3 = Dvar_RegisterVariant
-                     (param_1,DVAR_TYPE_LINEAR_COLOR_RGB,param_7,DVar1,DVar2,(char *)param_5);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_LINEAR_COLOR_RGB,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -4008,8 +4031,8 @@ _Dvar_RegisterLinearRGB
 
 dvar_s * __cdecl
 _Dvar_RegisterColorXYZ
-          (char *param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          ushort param_7,char *param_8)
+          (char *dvarName,float x,float y,float z,float min,float max,ushort flags,char *description
+          )
 
 {
   DvarValue DVar1;
@@ -4019,15 +4042,15 @@ _Dvar_RegisterColorXYZ
   undefined4 local_20;
   undefined4 local_10;
   
-  DVar1.vector[1] = param_4;
-  DVar1.value = param_3;
+  DVar1.vector[1] = z;
+  DVar1.value = y;
   DVar1.vector[2] = (float)local_10;
-  DVar1.vector[3] = param_5;
+  DVar1.vector[3] = min;
   DVar2.enumeration.strings = (char **)local_24;
-  DVar2.value.min = param_6;
+  DVar2.value.min = max;
   DVar2.integer64.max._0_4_ = local_20;
-  DVar2.integer64.max._4_4_ = param_8;
-  pdVar3 = Dvar_RegisterVariant(param_1,DVAR_TYPE_COLOR_XYZ,param_7,DVar1,DVar2,(char *)param_5);
+  DVar2.integer64.max._4_4_ = description;
+  pdVar3 = Dvar_RegisterVariant(dvarName,DVAR_TYPE_COLOR_XYZ,flags,DVar1,DVar2,(char *)min);
   return pdVar3;
 }
 
@@ -4037,67 +4060,68 @@ _Dvar_RegisterColorXYZ
 void __cdecl
 std::
 _Adjust_heap<dvar_s_const_*_*,int,dvar_s_const_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,int param_2,int param_3,dvar_s *param_4,
-          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_5)
+          (dvar_s **_First_4,int _Hole_4,int _Bottom_4,dvar_s *_Val_4,
+          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
   int iVar1;
   int iVar2;
   bool bVar3;
   int local_10;
-  int local_c;
+  int _Idx_4;
+  int _Top_4;
   
-  iVar2 = param_2;
+  iVar2 = _Hole_4;
   while( true ) {
-    iVar1 = param_2 * 2;
-    local_c = iVar1 + 2;
-    if (param_3 <= local_c) break;
-    bVar3 = (*param_5)(param_1[local_c],param_1[iVar1 + 1]);
+    iVar1 = _Hole_4 * 2;
+    _Idx_4 = iVar1 + 2;
+    if (_Bottom_4 <= _Idx_4) break;
+    bVar3 = (*_Pred_4)(_First_4[_Idx_4],_First_4[iVar1 + 1]);
     if (bVar3) {
-      local_c = iVar1 + 1;
+      _Idx_4 = iVar1 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First_4[_Hole_4] = _First_4[_Idx_4];
+    _Hole_4 = _Idx_4;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx_4 == _Bottom_4) {
+    _First_4[_Hole_4] = _First_4[_Bottom_4 + -1];
+    _Hole_4 = _Bottom_4 + -1;
   }
-  while ((local_10 = (param_2 + -1) / 2, iVar2 < param_2 &&
-         (bVar3 = (*param_5)(param_1[local_10],param_4), bVar3))) {
-    param_1[param_2] = param_1[local_10];
-    param_2 = local_10;
+  while ((local_10 = (_Hole_4 + -1) / 2, iVar2 < _Hole_4 &&
+         (bVar3 = (*_Pred_4)(_First_4[local_10],_Val_4), bVar3))) {
+    _First_4[_Hole_4] = _First_4[local_10];
+    _Hole_4 = local_10;
   }
-  param_1[param_2] = param_4;
+  _First_4[_Hole_4] = _Val_4;
   return;
 }
 
 
 // 007C1C50  Dvar_SetDvarValueFromSource  (universal/dvar.cpp:2110)
 
-void __cdecl Dvar_SetDvarValueFromSource(dvar_s *param_1,DvarValue param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetDvarValueFromSource(dvar_s *dvar,DvarValue param_2,DvarSetSource param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   DvarSetSource in_ECX;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x83f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x840,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    Dvar_SetVariant(param_1,param_2,in_ECX);
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    Dvar_SetVariant(dvar,param_2,in_ECX);
   }
   return;
 }
@@ -4107,7 +4131,7 @@ void __cdecl Dvar_SetDvarValueFromSource(dvar_s *param_1,DvarValue param_2,DvarS
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetBoolFromSource(dvar_s *param_1,bool param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetBoolFromSource(dvar_s *dvar,bool value,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4118,31 +4142,31 @@ void __cdecl Dvar_SetBoolFromSource(dvar_s *param_1,bool param_2,DvarSetSource p
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x84e,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x84f,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_BOOL) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_BOOL) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x850,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type != DVAR_TYPE_BOOL) {
-      if (param_2) {
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type != DVAR_TYPE_BOOL) {
+      if (value) {
         in_stack_ffffffe0 = &s_1;
       }
       else {
@@ -4152,8 +4176,8 @@ void __cdecl Dvar_SetBoolFromSource(dvar_s *param_1,bool param_2,DvarSetSource p
     DVar2.vector[1] = (float)local_14;
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_3;
-    Dvar_SetVariant(param_1,DVar2,(DvarSetSource)in_stack_ffffffe0);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,(DvarSetSource)in_stack_ffffffe0);
   }
   return;
 }
@@ -4163,7 +4187,7 @@ void __cdecl Dvar_SetBoolFromSource(dvar_s *param_1,bool param_2,DvarSetSource p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetIntFromSource(dvar_s *param_1,int param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetIntFromSource(dvar_s *dvar,int value,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4174,37 +4198,37 @@ void __cdecl Dvar_SetIntFromSource(dvar_s *param_1,int param_2,DvarSetSource par
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x865,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x866,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_1->type != DVAR_TYPE_INT) && (param_1->type != DVAR_TYPE_ENUM)) &&
-      ((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)))) &&
+  if ((((dvar->type != DVAR_TYPE_INT) && (dvar->type != DVAR_TYPE_ENUM)) &&
+      ((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)))) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x867,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if ((param_1->type != DVAR_TYPE_INT) && (param_1->type != DVAR_TYPE_ENUM)) {
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if ((dvar->type != DVAR_TYPE_INT) && (dvar->type != DVAR_TYPE_ENUM)) {
       Com_sprintf(&stack0xffffffc4,0x20,"%i");
     }
     DVar2.vector[1] = (float)local_14;
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_3;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffffc4);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffffc4);
   }
   return;
 }
@@ -4214,16 +4238,16 @@ void __cdecl Dvar_SetIntFromSource(dvar_s *param_1,int param_2,DvarSetSource par
 
 void __cdecl
 std::pop_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_3)
+          (dvar_s **_First_4,dvar_s **_Last_4,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *_Val_4;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    pdVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last_4 - (int)_First_4 >> 2) {
+    _Val_4 = _Last_4[-1];
+    _Last_4[-1] = *_First_4;
     _Adjust_heap<dvar_s_const_*_*,int,dvar_s_const_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,pdVar1,param_3);
+              (_First_4,0,(int)_Last_4 + (-4 - (int)_First_4) >> 2,_Val_4,_Pred_4);
   }
   return;
 }
@@ -4233,7 +4257,7 @@ std::pop_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetInt64FromSource(dvar_s *param_1,long64 param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetInt64FromSource(dvar_s *dvar,long64 param_2,DvarSetSource param_3)
 
 {
   code *pcVar1;
@@ -4244,30 +4268,30 @@ void __cdecl Dvar_SetInt64FromSource(dvar_s *param_1,long64 param_2,DvarSetSourc
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x880,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x881,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_INT64) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_INT64) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x882,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type == DVAR_TYPE_INT64) {
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type == DVAR_TYPE_INT64) {
       local_18 = (undefined4)param_2;
     }
     else {
@@ -4277,7 +4301,7 @@ void __cdecl Dvar_SetInt64FromSource(dvar_s *param_1,long64 param_2,DvarSetSourc
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
     DVar2.vector[3] = (float)param_2._4_4_;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffffc4);
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffffc4);
   }
   return;
 }
@@ -4287,7 +4311,7 @@ void __cdecl Dvar_SetInt64FromSource(dvar_s *param_1,long64 param_2,DvarSetSourc
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetFloatFromSource(dvar_s *param_1,float param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetFloatFromSource(dvar_s *dvar,float value,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4298,37 +4322,37 @@ void __cdecl Dvar_SetFloatFromSource(dvar_s *param_1,float param_2,DvarSetSource
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x89d,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x89e,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_FLOAT) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_FLOAT) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x89f,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type != DVAR_TYPE_FLOAT) {
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type != DVAR_TYPE_FLOAT) {
       Com_sprintf(&stack0xffffffc4,0x20,"%g");
     }
     DVar2.vector[1] = (float)local_14;
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_3;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffffc4);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffffc4);
   }
   return;
 }
@@ -4338,19 +4362,19 @@ void __cdecl Dvar_SetFloatFromSource(dvar_s *param_1,float param_2,DvarSetSource
 
 void __cdecl
 std::make_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_3)
+          (dvar_s **_First_4,dvar_s **_Last_4,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
-  int iVar1;
+  int _Bottom_4;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last_4 - (int)_First_4 >> 2) {
+    _Bottom_4 = (int)_Last_4 - (int)_First_4 >> 2;
+    local_18 = _Bottom_4 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<dvar_s_const_*_*,int,dvar_s_const_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First_4,local_18,_Bottom_4,_First_4[local_18],_Pred_4);
     }
   }
   return;
@@ -4361,8 +4385,7 @@ std::make_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Dvar_SetVec2FromSource(dvar_s *param_1,float param_2,float param_3,DvarSetSource param_4)
+void __cdecl Dvar_SetVec2FromSource(dvar_s *dvar,float x,float y,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4373,31 +4396,31 @@ Dvar_SetVec2FromSource(dvar_s *param_1,float param_2,float param_3,DvarSetSource
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8b9,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8ba,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_FLOAT_2) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_FLOAT_2) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8bb,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type == DVAR_TYPE_FLOAT_2) {
-      local_18 = param_3;
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type == DVAR_TYPE_FLOAT_2) {
+      local_18 = y;
     }
     else {
       Com_sprintf(&stack0xffffffa4,0x40,"%g %g");
@@ -4405,8 +4428,8 @@ Dvar_SetVec2FromSource(dvar_s *param_1,float param_2,float param_3,DvarSetSource
     DVar2.vector[1] = (float)local_14;
     DVar2.value = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_4;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffffa4);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffffa4);
   }
   return;
 }
@@ -4416,9 +4439,7 @@ Dvar_SetVec2FromSource(dvar_s *param_1,float param_2,float param_3,DvarSetSource
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Dvar_SetVec3FromSource
-          (dvar_s *param_1,float param_2,float param_3,float param_4,DvarSetSource param_5)
+void __cdecl Dvar_SetVec3FromSource(dvar_s *dvar,float x,float y,float z,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4429,34 +4450,34 @@ Dvar_SetVec3FromSource
   float local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8d5,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8d6,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((((param_1->type != DVAR_TYPE_FLOAT_3) && (param_1->type != DVAR_TYPE_COLOR_XYZ)) &&
-       (param_1->type != DVAR_TYPE_LINEAR_COLOR_RGB)) &&
-      ((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)))) &&
+  if (((((dvar->type != DVAR_TYPE_FLOAT_3) && (dvar->type != DVAR_TYPE_COLOR_XYZ)) &&
+       (dvar->type != DVAR_TYPE_LINEAR_COLOR_RGB)) &&
+      ((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)))) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8d7,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if ((param_1->type == DVAR_TYPE_FLOAT_3) ||
-       ((param_1->type == DVAR_TYPE_LINEAR_COLOR_RGB || (param_1->type == DVAR_TYPE_COLOR_XYZ)))) {
-      local_18 = param_3;
-      local_14 = param_4;
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if ((dvar->type == DVAR_TYPE_FLOAT_3) ||
+       ((dvar->type == DVAR_TYPE_LINEAR_COLOR_RGB || (dvar->type == DVAR_TYPE_COLOR_XYZ)))) {
+      local_18 = y;
+      local_14 = z;
     }
     else {
       Com_sprintf(&stack0xffffff84,0x60,"%g %g %g");
@@ -4464,8 +4485,8 @@ Dvar_SetVec3FromSource
     DVar2.vector[1] = local_14;
     DVar2.value = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_5;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffff84);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffff84);
   }
   return;
 }
@@ -4476,9 +4497,7 @@ Dvar_SetVec3FromSource
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Dvar_SetVec4FromSource
-          (dvar_s *param_1,float param_2,float param_3,float param_4,float param_5,
-          DvarSetSource param_6)
+Dvar_SetVec4FromSource(dvar_s *dvar,float x,float y,float z,float w,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4489,33 +4508,33 @@ Dvar_SetVec4FromSource
   float local_14;
   float local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8f1,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8f2,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_FLOAT_4) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_FLOAT_4) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x8f3,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type == DVAR_TYPE_FLOAT_4) {
-      local_18 = param_3;
-      local_14 = param_4;
-      local_10 = param_5;
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type == DVAR_TYPE_FLOAT_4) {
+      local_18 = y;
+      local_14 = z;
+      local_10 = w;
     }
     else {
       Com_sprintf(&stack0xffffff64,0x80,"%g %g %g %g");
@@ -4523,8 +4542,8 @@ Dvar_SetVec4FromSource
     DVar2.vector[1] = local_14;
     DVar2.value = local_18;
     DVar2.vector[2] = local_10;
-    DVar2.vector[3] = (float)param_6;
-    Dvar_SetVariant(param_1,DVar2,in_stack_ffffff64);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_ffffff64);
   }
   return;
 }
@@ -4534,7 +4553,7 @@ Dvar_SetVec4FromSource
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetStringFromSource(dvar_s *param_1,char *param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetStringFromSource(dvar_s *dvar,char *string,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4546,40 +4565,40 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *param_1,char *param_2,DvarSetSourc
   undefined4 local_14;
   undefined4 local_10;
   
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x90d,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x90e,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->type != DVAR_TYPE_STRING) && (param_1->type != DVAR_TYPE_ENUM)) &&
+  if (((dvar->type != DVAR_TYPE_STRING) && (dvar->type != DVAR_TYPE_ENUM)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x90f,0,
                                "%s\n\t(dvar->name) = %s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((string == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x910,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type == DVAR_TYPE_STRING) {
-      I_strncpyz(&stack0xfffffbe4,param_2,0x400);
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type == DVAR_TYPE_STRING) {
+      I_strncpyz(&stack0xfffffbe4,string,0x400);
     }
     else {
-      iVar4 = Dvar_StringToEnum(&param_1->domain,param_2);
+      iVar4 = Dvar_StringToEnum(&dvar->domain,string);
       if (iVar4 == -0x539) {
         va("%s doesn\'t include %s");
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x91f,0,
@@ -4594,8 +4613,8 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *param_1,char *param_2,DvarSetSourc
     DVar2.vector[1] = (float)local_14;
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_3;
-    Dvar_SetVariant(param_1,DVar2,in_stack_fffffbe4);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,in_stack_fffffbe4);
   }
   return;
 }
@@ -4606,9 +4625,7 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *param_1,char *param_2,DvarSetSourc
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Dvar_SetColorFromSource
-          (dvar_s *param_1,float param_2,float param_3,float param_4,float param_5,
-          DvarSetSource param_6)
+Dvar_SetColorFromSource(dvar_s *dvar,float r,float g,float b,float a,DvarSetSource source)
 
 {
   code *pcVar1;
@@ -4625,8 +4642,8 @@ Dvar_SetColorFromSource
   undefined1 local_cc;
   float local_b8;
   float local_a0;
-  char local_9c [128];
-  char *local_1c;
+  char string [128];
+  char *newValue;
   undefined4 local_18;
   undefined4 local_14;
   undefined4 local_10;
@@ -4634,32 +4651,32 @@ Dvar_SetColorFromSource
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_e8 = in_stack_fffffef4;
-  if ((param_1 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x92b,0,"%s"
                               ), local_e8 = in_stack_fffffef4, !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->name == (char *)0x0) &&
+  if ((dvar->name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x92c,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->type != DVAR_TYPE_COLOR) &&
-     (((param_1->type != DVAR_TYPE_STRING || ((*(uint *)&param_1->flags & 0x4000) == 0)) &&
+  if ((dvar->type != DVAR_TYPE_COLOR) &&
+     (((dvar->type != DVAR_TYPE_STRING || ((*(uint *)&dvar->flags & 0x4000) == 0)) &&
       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0x92d,0,
                                 "%s\n\t(dvar->name) = %s"), !bVar3)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    if (param_1->type == DVAR_TYPE_COLOR) {
-      if (param_2 - 1.0 < 0.0) {
-        local_a0 = param_2;
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    if (dvar->type == DVAR_TYPE_COLOR) {
+      if (r - 1.0 < 0.0) {
+        local_a0 = r;
       }
       else {
         local_a0 = 1.0;
@@ -4670,8 +4687,8 @@ Dvar_SetColorFromSource
       else {
         local_100 = 0.0;
       }
-      if (param_3 - 1.0 < 0.0) {
-        local_b8 = param_3;
+      if (g - 1.0 < 0.0) {
+        local_b8 = g;
       }
       else {
         local_b8 = 1.0;
@@ -4683,8 +4700,8 @@ Dvar_SetColorFromSource
         local_104 = 0.0;
       }
       local_cc = (undefined1)(int)ROUND(local_104 * 255.0 + 9.313226e-10);
-      if (param_4 - 1.0 < 0.0) {
-        local_d0 = param_4;
+      if (b - 1.0 < 0.0) {
+        local_d0 = b;
       }
       else {
         local_d0 = 1.0;
@@ -4696,8 +4713,8 @@ Dvar_SetColorFromSource
         local_108 = 0.0;
       }
       local_e4 = (undefined1)(int)ROUND(local_108 * 255.0 + 9.313226e-10);
-      if (param_5 - 1.0 < 0.0) {
-        local_e8 = param_5;
+      if (a - 1.0 < 0.0) {
+        local_e8 = a;
       }
       else {
         local_e8 = 1.0;
@@ -4706,18 +4723,18 @@ Dvar_SetColorFromSource
         local_e8 = 0.0;
       }
       local_fc = (undefined1)(int)ROUND(local_e8 * 255.0 + 9.313226e-10);
-      local_1c = (char *)CONCAT13(local_fc,CONCAT12(local_e4,CONCAT11(local_cc,(char)(int)ROUND(
+      newValue = (char *)CONCAT13(local_fc,CONCAT12(local_e4,CONCAT11(local_cc,(char)(int)ROUND(
                                                   local_100 * 255.0 + 9.313226e-10))));
     }
     else {
-      Com_sprintf(local_9c,0x80,"%g %g %g %g");
-      local_1c = local_9c;
+      Com_sprintf(string,0x80,"%g %g %g %g");
+      newValue = string;
     }
     DVar2.vector[1] = (float)local_14;
     DVar2.integer = local_18;
     DVar2.vector[2] = (float)local_10;
-    DVar2.vector[3] = (float)param_6;
-    Dvar_SetVariant(param_1,DVar2,(DvarSetSource)local_e8);
+    DVar2.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar2,(DvarSetSource)local_e8);
   }
   return;
 }
@@ -4725,92 +4742,92 @@ Dvar_SetColorFromSource
 
 // 007C2AD0  Dvar_SetBool  (universal/dvar.cpp:2375)
 
-void __cdecl Dvar_SetBool(dvar_s *param_1,bool param_2)
+void __cdecl Dvar_SetBool(dvar_s *dvar,bool value)
 
 {
-  Dvar_SetBoolFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL);
+  Dvar_SetBoolFromSource(dvar,value,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2AF0  Dvar_SetInt  (universal/dvar.cpp:2381)
 
-void __cdecl Dvar_SetInt(dvar_s *param_1,int param_2)
+void __cdecl Dvar_SetInt(dvar_s *dvar,int value)
 
 {
-  Dvar_SetIntFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL);
+  Dvar_SetIntFromSource(dvar,value,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2B10  Dvar_SetInt64  (universal/dvar.cpp:2386)
 
-void __cdecl Dvar_SetInt64(dvar_s *param_1,long64 param_2)
+void __cdecl Dvar_SetInt64(dvar_s *dvar,long64 param_2)
 
 {
   DvarSetSource unaff_EBP;
   
-  Dvar_SetInt64FromSource(param_1,param_2 & 0xffffffff,unaff_EBP);
+  Dvar_SetInt64FromSource(dvar,param_2 & 0xffffffff,unaff_EBP);
   return;
 }
 
 
 // 007C2B30  Dvar_SetFloat  (universal/dvar.cpp:2392)
 
-void __cdecl Dvar_SetFloat(dvar_s *param_1,float param_2)
+void __cdecl Dvar_SetFloat(dvar_s *dvar,float value)
 
 {
-  Dvar_SetFloatFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL);
+  Dvar_SetFloatFromSource(dvar,value,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2B50  Dvar_SetVec2  (universal/dvar.cpp:2398)
 
-void __cdecl Dvar_SetVec2(dvar_s *param_1,float param_2,float param_3)
+void __cdecl Dvar_SetVec2(dvar_s *dvar,float x,float y)
 
 {
-  Dvar_SetVec2FromSource(param_1,param_2,param_3,DVAR_SOURCE_INTERNAL);
+  Dvar_SetVec2FromSource(dvar,x,y,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2B80  Dvar_SetVec3  (universal/dvar.cpp:2404)
 
-void __cdecl Dvar_SetVec3(dvar_s *param_1,float param_2,float param_3,float param_4)
+void __cdecl Dvar_SetVec3(dvar_s *dvar,float x,float y,float z)
 
 {
-  Dvar_SetVec3FromSource(param_1,param_2,param_3,param_4,DVAR_SOURCE_INTERNAL);
+  Dvar_SetVec3FromSource(dvar,x,y,z,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2BB0  Dvar_SetVec4  (universal/dvar.cpp:2410)
 
-void __cdecl Dvar_SetVec4(dvar_s *param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Dvar_SetVec4(dvar_s *dvar,float x,float y,float z,float w)
 
 {
-  Dvar_SetVec4FromSource(param_1,param_2,param_3,param_4,param_5,DVAR_SOURCE_INTERNAL);
+  Dvar_SetVec4FromSource(dvar,x,y,z,w,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2BE0  Dvar_SetString  (universal/dvar.cpp:2416)
 
-void __cdecl Dvar_SetString(dvar_s *param_1,char *param_2)
+void __cdecl Dvar_SetString(dvar_s *dvar,char *value)
 
 {
-  Dvar_SetStringFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL);
+  Dvar_SetStringFromSource(dvar,value,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2DB0  Dvar_SetColor  (universal/dvar.cpp:2422)
 
-void __cdecl Dvar_SetColor(dvar_s *param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Dvar_SetColor(dvar_s *dvar,float r,float g,float b,float a)
 
 {
-  Dvar_SetColorFromSource(param_1,param_2,param_3,param_4,param_5,DVAR_SOURCE_INTERNAL);
+  Dvar_SetColorFromSource(dvar,r,g,b,a,DVAR_SOURCE_INTERNAL);
   return;
 }
 
@@ -4819,44 +4836,43 @@ void __cdecl Dvar_SetColor(dvar_s *param_1,float param_2,float param_3,float par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetFromStringFromSource(dvar_s *param_1,char *param_2,DvarSetSource param_3)
+void __cdecl Dvar_SetFromStringFromSource(dvar_s *dvar,char *string,DvarSetSource source)
 
 {
   DvarValue DVar1;
   DvarLimits DVar2;
   DvarValue *pDVar3;
   undefined4 in_stack_fffffbc4;
-  char local_41c [1024];
-  int local_1c;
+  char buf [1024];
+  int newValue;
   float local_18;
   float local_14;
   float local_10;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != (dvar_s *)0x0) && (param_1->name != (char *)0x0)) {
-    I_strncpyz(local_41c,param_2,0x400);
-    pDVar3 = Dvar_StringToValue((DvarValue *)&stack0xfffffbc4,param_1->type,param_1->domain,
-                                local_41c);
-    local_1c = pDVar3->integer;
+  if ((dvar != (dvar_s *)0x0) && (dvar->name != (char *)0x0)) {
+    I_strncpyz(buf,string,0x400);
+    pDVar3 = Dvar_StringToValue((DvarValue *)&stack0xfffffbc4,dvar->type,dvar->domain,buf);
+    newValue = pDVar3->integer;
     local_18 = pDVar3->vector[1];
     local_14 = pDVar3->vector[2];
     local_10 = pDVar3->vector[3];
-    if ((param_1->type == DVAR_TYPE_ENUM) && (local_1c == -0x539)) {
+    if ((dvar->type == DVAR_TYPE_ENUM) && (newValue == -0x539)) {
       Com_Printf(0x10,"\'%s\' is not a valid value for dvar \'%s\'\n");
       DVar2.integer64.max._4_4_ = in_stack_fffffbc4;
-      DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->domain + 4);
-      Dvar_PrintDomain(param_1->type,DVar2);
-      local_1c = (param_1->reset).integer;
-      local_18 = (param_1->reset).vector[1];
-      local_14 = (param_1->reset).vector[2];
-      local_10 = (param_1->reset).vector[3];
+      DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
+      Dvar_PrintDomain(dvar->type,DVar2);
+      newValue = (dvar->reset).integer;
+      local_18 = (dvar->reset).vector[1];
+      local_14 = (dvar->reset).vector[2];
+      local_10 = (dvar->reset).vector[3];
     }
     DVar1.vector[1] = local_14;
     DVar1.value = local_18;
     DVar1.vector[2] = local_10;
-    DVar1.vector[3] = (float)param_3;
-    Dvar_SetVariant(param_1,DVar1,in_stack_fffffbc4);
+    DVar1.vector[3] = (float)source;
+    Dvar_SetVariant(dvar,DVar1,in_stack_fffffbc4);
   }
   return;
 }
@@ -4864,34 +4880,35 @@ void __cdecl Dvar_SetFromStringFromSource(dvar_s *param_1,char *param_2,DvarSetS
 
 // 007C2DE0  Dvar_SetFromString  (universal/dvar.cpp:2452)
 
-void __cdecl Dvar_SetFromString(dvar_s *param_1,char *param_2)
+void __cdecl Dvar_SetFromString(dvar_s *dvar,char *string)
 
 {
-  Dvar_SetFromStringFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL);
+  Dvar_SetFromStringFromSource(dvar,string,DVAR_SOURCE_INTERNAL);
   return;
 }
 
 
 // 007C2F80  Dvar_SetBoolByName  (universal/dvar.cpp:2458)
 
-void __cdecl Dvar_SetBoolByName(char *param_1,bool param_2)
+void __cdecl Dvar_SetBoolByName(char *dvarName,bool value)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *dvar_00;
   char *local_c;
+  dvar_s *dvar;
   
-  pdVar1 = Dvar_FindVar(param_1);
-  if (pdVar1 == (dvar_s *)0x0) {
-    if (param_2) {
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
+    if (value) {
       local_c = "1";
     }
     else {
       local_c = "0";
     }
-    _Dvar_RegisterString(param_1,local_c,0x4000,"External Dvar");
+    _Dvar_RegisterString(dvarName,local_c,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetBool(pdVar1,param_2);
+    Dvar_SetBool(dvar_00,value);
   }
   return;
 }
@@ -4901,21 +4918,21 @@ void __cdecl Dvar_SetBoolByName(char *param_1,bool param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetIntByName(char *param_1,int param_2)
+void __cdecl Dvar_SetIntByName(char *dvarName,int value)
 
 {
-  char local_2c [32];
+  char string [32];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_2c,0x20,"%i");
-    _Dvar_RegisterString(param_1,local_2c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x20,"%i");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetInt(local_8,param_2);
+    Dvar_SetInt(dvar,value);
   }
   return;
 }
@@ -4925,19 +4942,20 @@ void __cdecl Dvar_SetIntByName(char *param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetInt64ByName(char *param_1,long64 param_2)
+void __cdecl Dvar_SetInt64ByName(char *dvarName,long64 param_2)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *dvar_00;
   undefined4 in_stack_ffffffd4;
+  dvar_s *dvar;
   
-  pdVar1 = Dvar_FindVar(param_1);
-  if (pdVar1 == (dvar_s *)0x0) {
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
     Com_sprintf(&stack0xffffffd4,0x20,"%lli");
-    _Dvar_RegisterString(param_1,&stack0xffffffd4,0x4000,"External Dvar");
+    _Dvar_RegisterString(dvarName,&stack0xffffffd4,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetInt64(pdVar1,CONCAT44(in_stack_ffffffd4,(undefined4)param_2));
+    Dvar_SetInt64(dvar_00,CONCAT44(in_stack_ffffffd4,(undefined4)param_2));
   }
   return;
 }
@@ -4947,21 +4965,21 @@ void __cdecl Dvar_SetInt64ByName(char *param_1,long64 param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetFloatByName(char *param_1,float param_2)
+void __cdecl Dvar_SetFloatByName(char *dvarName,float value)
 
 {
-  char local_2c [32];
+  char string [32];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_2c,0x20,"%g");
-    _Dvar_RegisterString(param_1,local_2c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x20,"%g");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetFloat(local_8,param_2);
+    Dvar_SetFloat(dvar,value);
   }
   return;
 }
@@ -4971,21 +4989,21 @@ void __cdecl Dvar_SetFloatByName(char *param_1,float param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetVec2ByName(char *param_1,float param_2,float param_3)
+void __cdecl Dvar_SetVec2ByName(char *dvarName,float x,float y)
 
 {
-  char local_4c [64];
+  char string [64];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_4c,0x40,"%g %g");
-    _Dvar_RegisterString(param_1,local_4c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x40,"%g %g");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetVec2(local_8,param_2,param_3);
+    Dvar_SetVec2(dvar,x,y);
   }
   return;
 }
@@ -4995,21 +5013,21 @@ void __cdecl Dvar_SetVec2ByName(char *param_1,float param_2,float param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Dvar_SetVec3ByName(char *param_1,float param_2,float param_3,float param_4)
+void __cdecl Dvar_SetVec3ByName(char *dvarName,float x,float y,float z)
 
 {
-  char local_8c [128];
+  char string [128];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_8c,0x80,"%g %g %g");
-    _Dvar_RegisterString(param_1,local_8c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x80,"%g %g %g");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetVec3(local_8,param_2,param_3,param_4);
+    Dvar_SetVec3(dvar,x,y,z);
   }
   return;
 }
@@ -5019,22 +5037,21 @@ void __cdecl Dvar_SetVec3ByName(char *param_1,float param_2,float param_3,float 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Dvar_SetVec4ByName(char *param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Dvar_SetVec4ByName(char *dvarName,float x,float y,float z,float w)
 
 {
-  char local_8c [128];
+  char string [128];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_8c,0x80,"%g %g %g %g");
-    _Dvar_RegisterString(param_1,local_8c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x80,"%g %g %g %g");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetVec4(local_8,param_2,param_3,param_4,param_5);
+    Dvar_SetVec4(dvar,x,y,z,w);
   }
   return;
 }
@@ -5042,17 +5059,18 @@ Dvar_SetVec4ByName(char *param_1,float param_2,float param_3,float param_4,float
 
 // 007C33B0  Dvar_SetStringByName  (universal/dvar.cpp:2579)
 
-void __cdecl Dvar_SetStringByName(char *param_1,char *param_2)
+void __cdecl Dvar_SetStringByName(char *dvarName,char *value)
 
 {
-  dvar_s *pdVar1;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
-  pdVar1 = Dvar_FindVar(param_1);
-  if (pdVar1 == (dvar_s *)0x0) {
-    _Dvar_RegisterString(param_1,param_2,0x4000,"External Dvar");
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
+    _Dvar_RegisterString(dvarName,value,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetString(pdVar1,param_2);
+    Dvar_SetString(dvar_00,value);
   }
   return;
 }
@@ -5062,22 +5080,21 @@ void __cdecl Dvar_SetStringByName(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Dvar_SetColorByName(char *param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Dvar_SetColorByName(char *dvarName,float r,float g,float b,float a)
 
 {
-  char local_8c [128];
+  char string [128];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *dvar;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    Com_sprintf(local_8c,0x80,"%g %g %g %g");
-    _Dvar_RegisterString(param_1,local_8c,0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    Com_sprintf(string,0x80,"%g %g %g %g");
+    _Dvar_RegisterString(dvarName,string,0x4000,"External Dvar");
   }
   else {
-    Dvar_SetColor(local_8,param_2,param_3,param_4,param_5);
+    Dvar_SetColor(dvar,r,g,b,a);
   }
   return;
 }
@@ -5086,47 +5103,50 @@ Dvar_SetColorByName(char *param_1,float param_2,float param_3,float param_4,floa
 // 007C34D0  Dvar_SetFromStringByNameFromSource  (universal/dvar.cpp:2609)
 
 dvar_s * __cdecl
-Dvar_SetFromStringByNameFromSource(char *param_1,char *param_2,DvarSetSource param_3,ushort param_4)
+Dvar_SetFromStringByNameFromSource(char *dvarName,char *string,DvarSetSource source,ushort flags)
 
 {
-  dvar_s *local_8;
+  dvar_s *dvar;
   
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    local_8 = _Dvar_RegisterString(param_1,param_2,param_4 | 0x4000,"External Dvar");
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    dvar = _Dvar_RegisterString(dvarName,string,flags | 0x4000,"External Dvar");
   }
   else {
-    Dvar_SetFromStringFromSource(local_8,param_2,param_3);
+    Dvar_SetFromStringFromSource(dvar,string,source);
   }
-  return local_8;
+  return dvar;
 }
 
 
 // 007C3530  Dvar_SetFromStringByName  (universal/dvar.cpp:2624)
 
-void __cdecl Dvar_SetFromStringByName(char *param_1,char *param_2)
+void __cdecl Dvar_SetFromStringByName(char *dvarName,char *string)
 
 {
-  Dvar_SetFromStringByNameFromSource(param_1,param_2,DVAR_SOURCE_INTERNAL,0);
+  Dvar_SetFromStringByNameFromSource(dvarName,string,DVAR_SOURCE_INTERNAL,0);
   return;
 }
 
 
 // 007C3550  Dvar_SetCommand  (universal/dvar.cpp:2635)
 
-void __cdecl Dvar_SetCommand(char *param_1,char *param_2)
+/* WARNING: Variable defined which should be unmapped: dvar */
+
+void __cdecl Dvar_SetCommand(char *dvarName,char *string)
 
 {
   DvarValue DVar1;
-  dvar_s *pdVar2;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
-  pdVar2 = Dvar_SetFromStringByNameFromSource(param_1,param_2,DVAR_SOURCE_EXTERNAL,0);
-  if ((pdVar2 != (dvar_s *)0x0) && (isLoadingAutoExecGlobalFlag != false)) {
-    Dvar_AddFlags(pdVar2,0x8000);
-    DVar1._10_2_ = (short)((uint)*(undefined4 *)((int)&pdVar2->current + 0xc) >> 0x10);
-    DVar1._0_10_ = *(unkbyte10 *)((int)&pdVar2->current + 4);
-    DVar1.vector[3] = (float)pdVar2;
-    Dvar_UpdateResetValue(pdVar2,DVar1);
+  dvar_00 = Dvar_SetFromStringByNameFromSource(dvarName,string,DVAR_SOURCE_EXTERNAL,0);
+  if ((dvar_00 != (dvar_s *)0x0) && (isLoadingAutoExecGlobalFlag != false)) {
+    Dvar_AddFlags(dvar_00,0x8000);
+    DVar1._10_2_ = (short)((uint)*(undefined4 *)((int)&dvar_00->current + 0xc) >> 0x10);
+    DVar1._0_10_ = *(unkbyte10 *)((int)&dvar_00->current + 4);
+    DVar1.vector[3] = (float)dvar_00;
+    Dvar_UpdateResetValue(dvar_00,DVar1);
   }
   return;
 }
@@ -5134,13 +5154,13 @@ void __cdecl Dvar_SetCommand(char *param_1,char *param_2)
 
 // 007C35C0  Dvar_AddFlags  (universal/dvar.cpp:2651)
 
-void __cdecl Dvar_AddFlags(dvar_s *param_1,int param_2)
+void __cdecl Dvar_AddFlags(dvar_s *dvar,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xa5c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -5148,7 +5168,7 @@ void __cdecl Dvar_AddFlags(dvar_s *param_1,int param_2)
       return;
     }
   }
-  if ((param_2 & 0x40f0U) != 0) {
+  if ((flags & 0x40f0U) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xa5d,0,
                              "%s\n\t(flags) = %i");
     if (!bVar2) {
@@ -5157,14 +5177,14 @@ void __cdecl Dvar_AddFlags(dvar_s *param_1,int param_2)
       return;
     }
   }
-  *(uint *)&param_1->flags = *(uint *)&param_1->flags | param_2;
+  *(uint *)&dvar->flags = *(uint *)&dvar->flags | flags;
   return;
 }
 
 
 // 007C3640  Dvar_Reset  (universal/dvar.cpp:2659)
 
-void __cdecl Dvar_Reset(dvar_s *param_1,DvarSetSource param_2)
+void __cdecl Dvar_Reset(dvar_s *dvar,DvarSetSource setSource)
 
 {
   code *pcVar1;
@@ -5172,7 +5192,7 @@ void __cdecl Dvar_Reset(dvar_s *param_1,DvarSetSource param_2)
   bool bVar3;
   DvarSetSource unaff_EBP;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (dvar == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xa64,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -5180,20 +5200,23 @@ void __cdecl Dvar_Reset(dvar_s *param_1,DvarSetSource param_2)
       return;
     }
   }
-  DVar2.vector[3] = (float)param_2;
-  DVar2._0_12_ = *(undefined1 (*) [12])((int)&param_1->reset + 4);
-  Dvar_SetVariant(param_1,DVar2,unaff_EBP);
+  DVar2.vector[3] = (float)setSource;
+  DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->reset + 4);
+  Dvar_SetVariant(dvar,DVar2,unaff_EBP);
   return;
 }
 
 
 // 007C36B0  Dvar_SetCheatState  (universal/dvar.cpp:2674)
 
+/* WARNING: Variable defined which should be unmapped: dvarIter */
+
 void __cdecl Dvar_SetCheatState(void)
 
 {
   DvarValue DVar1;
-  DvarSetSource DVar2;
+  int dvarIter;
+  dvar_s *dvar;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -5201,11 +5224,11 @@ void __cdecl Dvar_SetCheatState(void)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  for (DVar2 = DVAR_SOURCE_INTERNAL; (int)DVar2 < dvarCount; DVar2 = DVar2 + DVAR_SOURCE_EXTERNAL) {
-    if ((*(uint *)&dvarPool[DVar2].flags & 0x80) != 0) {
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    if ((*(uint *)&dvarPool[dvarIter].flags & 0x80) != 0) {
       DVar1.vector[3] = 0.0;
-      DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvarPool[DVar2].reset + 4);
-      Dvar_SetVariant(dvarPool + DVar2,DVar1,DVar2);
+      DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvarPool[dvarIter].reset + 4);
+      Dvar_SetVariant(dvarPool + dvarIter,DVar1,dvarIter);
     }
   }
   Sys_UnlockRead(&g_dvarCritSect);
@@ -5233,7 +5256,7 @@ void __cdecl Dvar_Init(void)
 void __cdecl Dvar_ResetScriptInfo(void)
 
 {
-  int local_8;
+  int dvarIter;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -5241,8 +5264,8 @@ void __cdecl Dvar_ResetScriptInfo(void)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  for (local_8 = 0; local_8 < dvarCount; local_8 = local_8 + 1) {
-    *(uint *)&dvarPool[local_8].flags = *(uint *)&dvarPool[local_8].flags & 0xfffffbff;
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    *(uint *)&dvarPool[dvarIter].flags = *(uint *)&dvarPool[dvarIter].flags & 0xfffffbff;
   }
   Sys_UnlockRead(&g_dvarCritSect);
   return;
@@ -5255,7 +5278,7 @@ bool __cdecl Dvar_AnyLatchedValues(void)
 
 {
   bool bVar1;
-  int local_8;
+  int dvarIter;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -5263,15 +5286,15 @@ bool __cdecl Dvar_AnyLatchedValues(void)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  local_8 = 0;
+  dvarIter = 0;
   while( true ) {
-    if (dvarCount <= local_8) {
+    if (dvarCount <= dvarIter) {
       Sys_UnlockRead(&g_dvarCritSect);
       return false;
     }
-    bVar1 = Dvar_HasLatchedValue(dvarPool + local_8);
+    bVar1 = Dvar_HasLatchedValue(dvarPool + dvarIter);
     if (bVar1) break;
-    local_8 = local_8 + 1;
+    dvarIter = dvarIter + 1;
   }
   Sys_UnlockRead(&g_dvarCritSect);
   return true;
@@ -5280,12 +5303,14 @@ bool __cdecl Dvar_AnyLatchedValues(void)
 
 // 007C38C0  Dvar_RestoreDvars  (universal/dvar.cpp:2812)
 
+/* WARNING: Variable defined which should be unmapped: dvar */
+
 void __cdecl Dvar_RestoreDvars(void)
 
 {
   DvarValue DVar1;
-  dvar_s *pdVar2;
-  uint local_8;
+  dvar_s *dvar;
+  uint hash;
   
   if ((dvar_restoreDvarsOnLive != (dvar_s *)0x0) &&
      ((dvar_restoreDvarsOnLive->current).enabled != false)) {
@@ -5295,15 +5320,15 @@ void __cdecl Dvar_RestoreDvars(void)
     while (g_dvarCritSect.writeCount != 0) {
       NET_Sleep(0);
     }
-    for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-      for (pdVar2 = dvarHashTable[local_8]; pdVar2 != (dvar_s *)0x0; pdVar2 = pdVar2->hashNext) {
-        if (pdVar2->loadedFromSaveGame != false) {
-          pdVar2->loadedFromSaveGame = false;
+    for (hash = 0; hash < 0x400; hash = hash + 1) {
+      for (dvar = dvarHashTable[hash]; dvar != (dvar_s *)0x0; dvar = dvar->hashNext) {
+        if (dvar->loadedFromSaveGame != false) {
+          dvar->loadedFromSaveGame = false;
           DVar1.vector[3] = 0.0;
-          DVar1._0_12_ = *(undefined1 (*) [12])((int)&pdVar2->saved + 4);
-          Dvar_SetVariant(pdVar2,DVar1,(DvarSetSource)pdVar2);
-          if (pdVar2->type == DVAR_TYPE_STRING) {
-            Dvar_FreeString(&pdVar2->saved);
+          DVar1._0_12_ = *(undefined1 (*) [12])((int)&dvar->saved + 4);
+          Dvar_SetVariant(dvar,DVar1,(DvarSetSource)dvar);
+          if (dvar->type == DVAR_TYPE_STRING) {
+            Dvar_FreeString(&dvar->saved);
           }
         }
       }
@@ -5316,10 +5341,11 @@ void __cdecl Dvar_RestoreDvars(void)
 
 // 007C39B0  Dvar_ResetDvars  (universal/dvar.cpp:2935)
 
-void __cdecl Dvar_ResetDvars(uint param_1,DvarSetSource param_2)
+void __cdecl Dvar_ResetDvars(uint filter,DvarSetSource setSource)
 
 {
-  int local_c;
+  int dvarIter;
+  dvar_s *dvar;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -5327,9 +5353,9 @@ void __cdecl Dvar_ResetDvars(uint param_1,DvarSetSource param_2)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  for (local_c = 0; local_c < dvarCount; local_c = local_c + 1) {
-    if ((*(uint *)&dvarPool[local_c].flags & param_1) != 0) {
-      Dvar_Reset(dvarPool + local_c,param_2);
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    if ((*(uint *)&dvarPool[dvarIter].flags & filter) != 0) {
+      Dvar_Reset(dvarPool + dvarIter,setSource);
     }
   }
   Sys_UnlockRead(&g_dvarCritSect);
@@ -5339,23 +5365,23 @@ void __cdecl Dvar_ResetDvars(uint param_1,DvarSetSource param_2)
 
 // 007C3A40  Dvar_ForEachConsoleAccessName  (universal/dvar.cpp:2957)
 
-void __cdecl Dvar_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *param_1)
+void __cdecl Dvar_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *callback)
 
 {
   bool bVar1;
-  int local_8;
+  int dvarIter;
   
   bVar1 = Dvar_GetBool("con_restricted_access");
   if (bVar1) {
     Dvar_Sort();
-    for (local_8 = 0; local_8 < dvarCount; local_8 = local_8 + 1) {
-      if ((*(uint *)&sortedDvars[local_8]->flags & 0x10000) != 0) {
-        (*param_1)(sortedDvars[local_8]->name);
+    for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+      if ((*(uint *)&sortedDvars[dvarIter]->flags & 0x10000) != 0) {
+        (*callback)(sortedDvars[dvarIter]->name);
       }
     }
   }
   else {
-    Dvar_ForEachName(param_1);
+    Dvar_ForEachName(callback);
   }
   return;
 }
@@ -5366,7 +5392,8 @@ void __cdecl Dvar_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *param_1)
 void __cdecl Dvar_ResetConAccessDvars(void)
 
 {
-  int local_c;
+  int dvarIter;
+  dvar_s *dvar;
   
   LOCK();
   g_dvarCritSect.readCount = g_dvarCritSect.readCount + 1;
@@ -5374,8 +5401,8 @@ void __cdecl Dvar_ResetConAccessDvars(void)
   while (g_dvarCritSect.writeCount != 0) {
     NET_Sleep(0);
   }
-  for (local_c = 0; local_c < dvarCount; local_c = local_c + 1) {
-    *(uint *)&dvarPool[local_c].flags = *(uint *)&dvarPool[local_c].flags & 0xfffeffff;
+  for (dvarIter = 0; dvarIter < dvarCount; dvarIter = dvarIter + 1) {
+    *(uint *)&dvarPool[dvarIter].flags = *(uint *)&dvarPool[dvarIter].flags & 0xfffeffff;
   }
   Sys_UnlockRead(&g_dvarCritSect);
   return;
@@ -5384,47 +5411,51 @@ void __cdecl Dvar_ResetConAccessDvars(void)
 
 // 007C3B40  Com_SaveDvarsToBuffer  (universal/dvar.cpp:3008)
 
-int __cdecl Com_SaveDvarsToBuffer(char **param_1,uint param_2,char *param_3,uint param_4)
+int __cdecl Com_SaveDvarsToBuffer(char **dvarnames,uint numDvars,char *buffer,uint bufsize)
 
 {
   code *pcVar1;
   bool bVar2;
-  dvar_s *pdVar3;
-  int iVar4;
-  uint local_c;
+  dvar_s *dvar_00;
+  int iVar3;
+  char *string;
+  int ret;
+  int written;
+  uint i;
+  dvar_s *dvar;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (param_2 <= local_c) {
+    if (numDvars <= i) {
       return 1;
     }
-    pdVar3 = Dvar_FindVar(param_1[local_c]);
-    if ((pdVar3 == (dvar_s *)0x0) &&
+    dvar_00 = Dvar_FindVar(dvarnames[i]);
+    if ((dvar_00 == (dvar_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xbcf,0,
                                  "%s"), !bVar2)) break;
-    Dvar_DisplayableValue(pdVar3);
-    iVar4 = _snprintf(param_3,param_4,"%s \"%s\"\n");
-    if (iVar4 < 0) {
+    Dvar_DisplayableValue(dvar_00);
+    iVar3 = _snprintf(buffer,bufsize,"%s \"%s\"\n");
+    if (iVar3 < 0) {
       return 0;
     }
-    param_3 = param_3 + iVar4;
-    param_4 = param_4 - iVar4;
-    local_c = local_c + 1;
+    buffer = buffer + iVar3;
+    bufsize = bufsize - iVar3;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
-  iVar4 = (*pcVar1)();
-  return iVar4;
+  iVar3 = (*pcVar1)();
+  return iVar3;
 }
 
 
 // 007C3C10  Com_LoadDvarsFromBuffer  (universal/dvar.cpp:3045)
 
-int __cdecl Com_LoadDvarsFromBuffer(char **param_1,uint param_2,char *param_3,char *param_4)
+int __cdecl Com_LoadDvarsFromBuffer(char **dvarnames,uint numDvars,char *buffer,char *filename)
 
 {
   int iVar1;
   
-  iVar1 = Com_LoadDvarsFromBufferOptional(param_1,(bool *)0x0,param_2,param_3,param_4);
+  iVar1 = Com_LoadDvarsFromBufferOptional(dvarnames,(bool *)0x0,numDvars,buffer,filename);
   return iVar1;
 }
 
@@ -5436,34 +5467,34 @@ int __cdecl Com_LoadDvarsFromBuffer(char **param_1,uint param_2,char *param_3,ch
 
 int __cdecl
 Com_LoadDvarsFromBufferOptional
-          (char **param_1,bool *param_2,uint param_3,char *param_4,char *param_5)
+          (char **dvarnames,bool *isOptional,uint numDvars,char *buffer,char *filename)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar local_401c [16384];
+  uchar wasRead [16384];
   uint local_1c;
-  uint local_18;
-  char *local_14;
-  char local_d;
-  dvar_s *local_c;
-  int local_8;
+  uint i;
+  char *token;
+  bool missing;
+  dvar_s *dvar;
+  uint numRead;
   
-  local_8 = 0x7c3c3d;
+  numRead = 0x7c3c3d;
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((0x3fff < param_3) &&
+  if ((0x3fff < numDvars) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xbf5,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  memset(local_401c,'\0',param_3);
-  local_8 = 0;
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    local_c = Dvar_FindVar(param_1[local_18]);
-    if (local_c == (dvar_s *)0x0) {
+  memset(wasRead,'\0',numDvars);
+  numRead = 0;
+  for (i = 0; i < numDvars; i = i + 1) {
+    dvar = Dvar_FindVar(dvarnames[i]);
+    if (dvar == (dvar_s *)0x0) {
       va("Unable to find dvar \'%s\'");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xbfc,0,
                                "%s\n\t%s");
@@ -5473,48 +5504,47 @@ Com_LoadDvarsFromBufferOptional
         return iVar3;
       }
     }
-    Dvar_Reset(local_c,DVAR_SOURCE_INTERNAL);
+    Dvar_Reset(dvar,DVAR_SOURCE_INTERNAL);
   }
-  Com_BeginParseSession(param_5);
-  while (local_14 = Com_Parse(&param_4), *local_14 != '\0') {
-    for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-      iVar3 = I_stricmp(local_14,param_1[local_18]);
+  Com_BeginParseSession(filename);
+  while (token = Com_Parse(&buffer), *token != '\0') {
+    for (i = 0; i < numDvars; i = i + 1) {
+      iVar3 = I_stricmp(token,dvarnames[i]);
       if (iVar3 == 0) {
-        local_c = Dvar_FindVar(param_1[local_18]);
-        if ((local_c == (dvar_s *)0x0) &&
+        dvar = Dvar_FindVar(dvarnames[i]);
+        if ((dvar == (dvar_s *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",0xc0c,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        local_14 = Com_ParseOnLine(&param_4);
-        Dvar_SetFromString(local_c,local_14);
-        if (local_401c[local_18] == '\0') {
-          local_401c[local_18] = '\x01';
-          local_8 = local_8 + 1;
+        token = Com_ParseOnLine(&buffer);
+        Dvar_SetFromString(dvar,token);
+        if (wasRead[i] == '\0') {
+          wasRead[i] = '\x01';
+          numRead = numRead + 1;
         }
         goto LAB_007c3e1e;
       }
     }
     Com_PrintWarning(0x10,"WARNING: unknown dvar \'%s\' in file \'%s\'\n");
 LAB_007c3e1e:
-    Com_SkipRestOfLine(&param_4);
+    Com_SkipRestOfLine(&buffer);
   }
   Com_EndParseSession();
-  local_d = '\0';
-  local_18 = 0;
+  missing = false;
+  i = 0;
   do {
-    if (param_3 <= local_18) {
+    if (numDvars <= i) {
 LAB_007c3e7c:
-      if (local_d == '\0') {
+      if (missing == false) {
         iVar3 = 1;
       }
       else {
         Com_PrintError(0x10,"ERROR: the following dvars were not specified in file \'%s\'\n");
-        for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-          if (((local_401c[local_18] == '\0') && (param_2 != (bool *)0x0)) &&
-             (param_2[local_18] == false)) {
+        for (i = 0; i < numDvars; i = i + 1) {
+          if (((wasRead[i] == '\0') && (isOptional != (bool *)0x0)) && (isOptional[i] == false)) {
             Com_PrintError(0x10,"  %s\n");
           }
         }
@@ -5522,12 +5552,11 @@ LAB_007c3e7c:
       }
       return iVar3;
     }
-    if (((local_401c[local_18] == '\0') && (param_2 != (bool *)0x0)) && (param_2[local_18] == false)
-       ) {
-      local_d = '\x01';
+    if (((wasRead[i] == '\0') && (isOptional != (bool *)0x0)) && (isOptional[i] == false)) {
+      missing = true;
       goto LAB_007c3e7c;
     }
-    local_18 = local_18 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -5537,40 +5566,42 @@ LAB_007c3e7c:
 void __cdecl
 std::
 _Insertion_sort1<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*),dvar_s_const_*>
-          (dvar_s **param_1,dvar_s **param_2,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_3,
-          dvar_s **param_4)
+          (dvar_s **_First_4,dvar_s **_Last_4,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4,
+          dvar_s **__formal_4)
 
 {
   dvar_s *pdVar1;
   bool bVar2;
-  dvar_s **ppdVar3;
-  dvar_s **ppdVar4;
-  dvar_s **local_14;
-  dvar_s **local_8;
+  GfxStaticModelDrawInst **ppGVar3;
+  dvar_s **_Last_10;
+  GfxStaticModelDrawInst **_First1_4;
+  GfxStaticModelDrawInst *_Val_4;
+  GfxStaticModelDrawInst **_Next1_4;
+  GfxStaticModelDrawInst **_Next_4;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (ppdVar4 = local_8 + 1, ppdVar4 != param_2) {
-      pdVar1 = *ppdVar4;
-      bVar2 = (*param_3)(pdVar1,*param_1);
-      local_14 = ppdVar4;
+  if (_First_4 != _Last_4) {
+    _Next_4 = (GfxStaticModelDrawInst **)_First_4;
+    while (_Last_10 = (dvar_s **)(_Next_4 + 1), _Last_10 != _Last_4) {
+      pdVar1 = *_Last_10;
+      bVar2 = (*_Pred_4)(pdVar1,*_First_4);
+      _First1_4 = (GfxStaticModelDrawInst **)_Last_10;
       if (bVar2) {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,(flameGeneric_s **)ppdVar4,
-                   (flameGeneric_s **)(local_8 + 2));
-        *param_1 = pdVar1;
-        local_8 = ppdVar4;
+                  ((flameGeneric_s **)_First_4,(flameGeneric_s **)_Last_10,
+                   (flameGeneric_s **)(_Next_4 + 2));
+        *_First_4 = pdVar1;
+        _Next_4 = (GfxStaticModelDrawInst **)_Last_10;
       }
       else {
         while( true ) {
-          ppdVar3 = local_14 + -1;
-          bVar2 = (*param_3)(pdVar1,*ppdVar3);
+          ppGVar3 = _First1_4 + -1;
+          bVar2 = (*_Pred_4)(pdVar1,(dvar_s *)*ppGVar3);
           if (!bVar2) break;
-          *local_14 = *ppdVar3;
-          local_14 = ppdVar3;
+          *_First1_4 = *ppGVar3;
+          _First1_4 = ppGVar3;
         }
-        *local_14 = pdVar1;
-        local_8 = ppdVar4;
+        *_First1_4 = (GfxStaticModelDrawInst *)pdVar1;
+        _Next_4 = (GfxStaticModelDrawInst **)_Last_10;
       }
     }
   }
@@ -5580,11 +5611,11 @@ _Insertion_sort1<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)
 
 // 007C3F10  Dvar_SetBoolIfChanged  (universal/dvar.cpp:3128)
 
-void __cdecl Dvar_SetBoolIfChanged(dvar_s *param_1,bool param_2)
+void __cdecl Dvar_SetBoolIfChanged(dvar_s *dvar,bool value)
 
 {
-  if ((param_1 != (dvar_s *)0x0) && ((param_1->current).enabled != param_2)) {
-    Dvar_SetBool(param_1,param_2);
+  if ((dvar != (dvar_s *)0x0) && ((dvar->current).enabled != value)) {
+    Dvar_SetBool(dvar,value);
   }
   return;
 }
@@ -5592,11 +5623,11 @@ void __cdecl Dvar_SetBoolIfChanged(dvar_s *param_1,bool param_2)
 
 // 007C3F40  Dvar_SetIntIfChanged  (universal/dvar.cpp:3136)
 
-void __cdecl Dvar_SetIntIfChanged(dvar_s *param_1,int param_2)
+void __cdecl Dvar_SetIntIfChanged(dvar_s *dvar,int value)
 
 {
-  if ((param_1 != (dvar_s *)0x0) && ((param_1->current).integer != param_2)) {
-    Dvar_SetInt(param_1,param_2);
+  if ((dvar != (dvar_s *)0x0) && ((dvar->current).integer != value)) {
+    Dvar_SetInt(dvar,value);
   }
   return;
 }
@@ -5604,11 +5635,11 @@ void __cdecl Dvar_SetIntIfChanged(dvar_s *param_1,int param_2)
 
 // 007C3F70  Dvar_SetFloatIfChanged  (universal/dvar.cpp:3144)
 
-void __cdecl Dvar_SetFloatIfChanged(dvar_s *param_1,float param_2)
+void __cdecl Dvar_SetFloatIfChanged(dvar_s *dvar,float value)
 
 {
-  if ((param_1 != (dvar_s *)0x0) && ((param_1->current).value != param_2)) {
-    Dvar_SetFloat(param_1,param_2);
+  if ((dvar != (dvar_s *)0x0) && ((dvar->current).value != value)) {
+    Dvar_SetFloat(dvar,value);
   }
   return;
 }
@@ -5618,30 +5649,30 @@ void __cdecl Dvar_SetFloatIfChanged(dvar_s *param_1,float param_2)
 
 void __cdecl
 std::_Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,dvar_s **param_3,
-          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_4)
+          (dvar_s **_First_4,dvar_s **_Mid_4,dvar_s **_Last_4,
+          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
   dvar_s *pdVar1;
   bool bVar2;
   
-  bVar2 = (*param_4)(*param_2,*param_1);
-  if ((bVar2) && (param_2 != param_1)) {
-    pdVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pdVar1;
+  bVar2 = (*_Pred_4)(*_Mid_4,*_First_4);
+  if ((bVar2) && (_Mid_4 != _First_4)) {
+    pdVar1 = *_Mid_4;
+    *_Mid_4 = *_First_4;
+    *_First_4 = pdVar1;
   }
-  bVar2 = (*param_4)(*param_3,*param_2);
-  if ((bVar2) && (param_3 != param_2)) {
-    pdVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = pdVar1;
+  bVar2 = (*_Pred_4)(*_Last_4,*_Mid_4);
+  if ((bVar2) && (_Last_4 != _Mid_4)) {
+    pdVar1 = *_Last_4;
+    *_Last_4 = *_Mid_4;
+    *_Mid_4 = pdVar1;
   }
-  bVar2 = (*param_4)(*param_2,*param_1);
-  if ((bVar2) && (param_2 != param_1)) {
-    pdVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pdVar1;
+  bVar2 = (*_Pred_4)(*_Mid_4,*_First_4);
+  if ((bVar2) && (_Mid_4 != _First_4)) {
+    pdVar1 = *_Mid_4;
+    *_Mid_4 = *_First_4;
+    *_First_4 = pdVar1;
   }
   return;
 }
@@ -5651,27 +5682,28 @@ std::_Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
 
 void __cdecl
 std::_Median<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,dvar_s **param_3,
-          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_4)
+          (dvar_s **_First_4,dvar_s **_Mid_4,dvar_s **_Last_4,
+          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
   int iVar1;
+  uint _Step_4;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
+  if ((int)_Last_4 - (int)_First_4 >> 2 < 0x29) {
     _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_1,param_2,param_3,param_4);
+              (_First_4,_Mid_4,_Last_4,_Pred_4);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last_4 - (int)_First_4 >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
+              (_First_4,_First_4 + iVar1,_First_4 + iVar1 * 2,_Pred_4);
     _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
+              (_Mid_4 + -iVar1,_Mid_4,_Mid_4 + iVar1,_Pred_4);
     _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
+              (_Last_4 + iVar1 * -2,_Last_4 + -iVar1,_Last_4,_Pred_4);
     _Med3<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+              (_First_4 + iVar1,_Mid_4,_Last_4 + -iVar1,_Pred_4);
   }
   return;
 }
@@ -5681,128 +5713,122 @@ std::_Median<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
 
 pair<dvar_s_const_*_*,dvar_s_const_*_*> __cdecl
 std::_Unguarded_partition<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_3)
+          (dvar_s **param_1,dvar_s **_First_4,_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Last_4)
 
 {
-  dvar_s *pdVar1;
-  dvar_s *pdVar2;
-  undefined4 uVar3;
-  bool bVar4;
-  undefined1 *puVar5;
-  dvar_s *pdVar6;
-  pair<dvar_s_const_*_*,dvar_s_const_*_*> pVar7;
+  GfxStaticModelDrawInst *pGVar1;
+  bool bVar2;
+  GfxStaticModelDrawInst **ppGVar3;
+  GfxStaticModelDrawInst **ppGVar4;
+  pair<dvar_s_const_*_*,dvar_s_const_*_*> pVar5;
   _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *in_stack_00000010;
-  dvar_s *local_18;
-  dvar_s *local_14;
-  dvar_s *local_10;
-  dvar_s *local_c;
+  GfxStaticModelDrawInst **_Plast_4;
+  GfxStaticModelDrawInst **_Glast_4;
+  GfxStaticModelDrawInst **_Pfirst_4;
+  GfxStaticModelDrawInst **_Gfirst_4;
+  GfxStaticModelDrawInst **_Mid_4;
   
-  local_10 = (dvar_s *)
-             (param_2 +
-             (((int)param_3 - (int)param_2 >> 2) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Pfirst_4 = (GfxStaticModelDrawInst **)
+              (_First_4 +
+              (((int)_Last_4 - (int)_First_4 >> 2) - ((int)_Last_4 - (int)_First_4 >> 0x1f) >> 1));
   _Median<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-            (param_2,(dvar_s **)local_10,(dvar_s **)(param_3 + -4),in_stack_00000010);
-  local_18 = (dvar_s *)&local_10->description;
-  while (((param_2 < local_10 &&
-          (bVar4 = (*in_stack_00000010)
-                             (*(dvar_s **)&local_10[-1].field_0x6c,(dvar_s *)local_10->name), !bVar4
-          )) && (bVar4 = (*in_stack_00000010)
-                                   ((dvar_s *)local_10->name,*(dvar_s **)&local_10[-1].field_0x6c),
-                !bVar4))) {
-    local_10 = (dvar_s *)&local_10[-1].field_0x6c;
+            (_First_4,(dvar_s **)_Pfirst_4,(dvar_s **)(_Last_4 + -4),in_stack_00000010);
+  _Plast_4 = _Pfirst_4 + 1;
+  while (((_First_4 < _Pfirst_4 &&
+          (bVar2 = (*in_stack_00000010)((dvar_s *)_Pfirst_4[-1],(dvar_s *)*_Pfirst_4), !bVar2)) &&
+         (bVar2 = (*in_stack_00000010)((dvar_s *)*_Pfirst_4,(dvar_s *)_Pfirst_4[-1]), !bVar2))) {
+    _Pfirst_4 = _Pfirst_4 + -1;
   }
-  while (((local_18 < param_3 &&
-          (bVar4 = (*in_stack_00000010)((dvar_s *)local_18->name,(dvar_s *)local_10->name), !bVar4))
-         && (bVar4 = (*in_stack_00000010)((dvar_s *)local_10->name,(dvar_s *)local_18->name), !bVar4
-            ))) {
-    local_18 = (dvar_s *)&local_18->description;
+  while (((_Plast_4 < _Last_4 &&
+          (bVar2 = (*in_stack_00000010)((dvar_s *)*_Plast_4,(dvar_s *)*_Pfirst_4), !bVar2)) &&
+         (bVar2 = (*in_stack_00000010)((dvar_s *)*_Pfirst_4,(dvar_s *)*_Plast_4), !bVar2))) {
+    _Plast_4 = _Plast_4 + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pdVar1 = local_c;
-  pdVar6 = local_10;
+  _Gfirst_4 = _Plast_4;
+  _Glast_4 = _Pfirst_4;
+  ppGVar3 = _Gfirst_4;
+  ppGVar4 = _Pfirst_4;
   do {
-    while (local_10 = pdVar6, local_c = pdVar1, param_3 <= local_c) {
+    while (_Pfirst_4 = ppGVar4, _Gfirst_4 = ppGVar3, _Last_4 <= _Gfirst_4) {
 LAB_00b07ab8:
-      for (; param_2 < local_14; local_14 = (dvar_s *)&local_14[-1].field_0x6c) {
-        bVar4 = (*in_stack_00000010)(*(dvar_s **)&local_14[-1].field_0x6c,(dvar_s *)local_10->name);
-        if (!bVar4) {
-          bVar4 = (*in_stack_00000010)
-                            ((dvar_s *)local_10->name,*(dvar_s **)&local_14[-1].field_0x6c);
-          if (bVar4) break;
-          local_10 = (dvar_s *)&local_10[-1].field_0x6c;
-          puVar5 = &local_14[-1].field_0x6c;
-          if (local_10 != (dvar_s *)puVar5) {
-            uVar3 = *(undefined4 *)local_10;
-            *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-            *(undefined4 *)puVar5 = uVar3;
+      for (; _First_4 < _Glast_4; _Glast_4 = _Glast_4 + -1) {
+        bVar2 = (*in_stack_00000010)((dvar_s *)_Glast_4[-1],(dvar_s *)*_Pfirst_4);
+        if (!bVar2) {
+          bVar2 = (*in_stack_00000010)((dvar_s *)*_Pfirst_4,(dvar_s *)_Glast_4[-1]);
+          if (bVar2) break;
+          _Pfirst_4 = _Pfirst_4 + -1;
+          ppGVar3 = _Glast_4 + -1;
+          if (_Pfirst_4 != ppGVar3) {
+            pGVar1 = *_Pfirst_4;
+            *_Pfirst_4 = *ppGVar3;
+            *ppGVar3 = pGVar1;
           }
         }
       }
-      if ((local_14 == (dvar_s *)param_2) && (local_c == (dvar_s *)param_3)) {
-        *param_1 = local_10;
-        param_1[1] = local_18;
-        pVar7.second = (dvar_s **)local_10;
-        pVar7.first = param_1;
-        return pVar7;
+      if (((dvar_s **)_Glast_4 == _First_4) && (_Gfirst_4 == (GfxStaticModelDrawInst **)_Last_4)) {
+        *param_1 = (dvar_s *)_Pfirst_4;
+        param_1[1] = (dvar_s *)_Plast_4;
+        pVar5.second = (dvar_s **)_Pfirst_4;
+        pVar5.first = param_1;
+        return pVar5;
       }
-      if (local_14 == (dvar_s *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          pdVar1 = (dvar_s *)local_10->name;
-          local_10->name = (char *)local_18->name;
-          local_18->name = (char *)pdVar1;
+      if ((dvar_s **)_Glast_4 == _First_4) {
+        if ((_Plast_4 != _Gfirst_4) && (_Pfirst_4 != _Plast_4)) {
+          pGVar1 = *_Pfirst_4;
+          *_Pfirst_4 = *_Plast_4;
+          *_Plast_4 = pGVar1;
         }
-        local_18 = (dvar_s *)&local_18->description;
-        pdVar1 = (dvar_s *)&local_c->description;
-        pdVar6 = (dvar_s *)&local_10->description;
-        if (local_10 != local_c) {
-          pdVar2 = (dvar_s *)local_10->name;
-          local_10->name = (char *)local_c->name;
-          local_c->name = (char *)pdVar2;
+        _Plast_4 = _Plast_4 + 1;
+        ppGVar3 = _Gfirst_4 + 1;
+        ppGVar4 = _Pfirst_4 + 1;
+        if (_Pfirst_4 != _Gfirst_4) {
+          pGVar1 = *_Pfirst_4;
+          *_Pfirst_4 = *_Gfirst_4;
+          *_Gfirst_4 = pGVar1;
         }
       }
-      else if (local_c == (dvar_s *)param_3) {
-        local_14 = (dvar_s *)&local_14[-1].field_0x6c;
-        pdVar6 = (dvar_s *)&local_10[-1].field_0x6c;
-        if ((local_14 != pdVar6) && (local_14 != pdVar6)) {
-          uVar3 = *(undefined4 *)local_14;
-          *(undefined4 *)local_14 = *(undefined4 *)pdVar6;
-          *(undefined4 *)pdVar6 = uVar3;
+      else if (_Gfirst_4 == (GfxStaticModelDrawInst **)_Last_4) {
+        _Glast_4 = _Glast_4 + -1;
+        ppGVar4 = _Pfirst_4 + -1;
+        if ((_Glast_4 != ppGVar4) && (_Glast_4 != ppGVar4)) {
+          pGVar1 = *_Glast_4;
+          *_Glast_4 = *ppGVar4;
+          *ppGVar4 = pGVar1;
         }
-        local_18 = (dvar_s *)&local_18[-1].field_0x6c;
-        pdVar1 = local_c;
-        if (pdVar6 != local_18) {
-          uVar3 = *(undefined4 *)pdVar6;
-          *(undefined4 *)pdVar6 = *(undefined4 *)local_18;
-          *(undefined4 *)local_18 = uVar3;
+        _Plast_4 = _Plast_4 + -1;
+        ppGVar3 = _Gfirst_4;
+        if (ppGVar4 != _Plast_4) {
+          pGVar1 = *ppGVar4;
+          *ppGVar4 = *_Plast_4;
+          *_Plast_4 = pGVar1;
         }
       }
       else {
-        local_14 = (dvar_s *)&local_14[-1].field_0x6c;
-        if (local_c != local_14) {
-          pdVar1 = (dvar_s *)local_c->name;
-          local_c->name = (char *)*(dvar_s **)local_14;
-          *(dvar_s **)local_14 = pdVar1;
+        _Glast_4 = _Glast_4 + -1;
+        if (_Gfirst_4 != _Glast_4) {
+          pGVar1 = *_Gfirst_4;
+          *_Gfirst_4 = *_Glast_4;
+          *_Glast_4 = pGVar1;
         }
-        pdVar1 = (dvar_s *)&local_c->description;
-        pdVar6 = local_10;
+        ppGVar3 = _Gfirst_4 + 1;
+        ppGVar4 = _Pfirst_4;
       }
     }
-    bVar4 = (*in_stack_00000010)((dvar_s *)local_10->name,(dvar_s *)local_c->name);
-    pdVar1 = local_18;
-    if (!bVar4) {
-      bVar4 = (*in_stack_00000010)((dvar_s *)local_c->name,(dvar_s *)local_10->name);
-      if (bVar4) goto LAB_00b07ab8;
-      pdVar1 = (dvar_s *)&local_18->description;
-      if (local_18 != local_c) {
-        pdVar6 = (dvar_s *)local_18->name;
-        local_18->name = (char *)local_c->name;
-        local_c->name = (char *)pdVar6;
+    bVar2 = (*in_stack_00000010)((dvar_s *)*_Pfirst_4,(dvar_s *)*_Gfirst_4);
+    ppGVar3 = _Plast_4;
+    if (!bVar2) {
+      bVar2 = (*in_stack_00000010)((dvar_s *)*_Gfirst_4,(dvar_s *)*_Pfirst_4);
+      if (bVar2) goto LAB_00b07ab8;
+      ppGVar3 = _Plast_4 + 1;
+      if (_Plast_4 != _Gfirst_4) {
+        pGVar1 = *_Plast_4;
+        *_Plast_4 = *_Gfirst_4;
+        *_Gfirst_4 = pGVar1;
       }
     }
-    local_18 = pdVar1;
-    pdVar1 = (dvar_s *)&local_c->description;
-    pdVar6 = local_10;
+    _Plast_4 = ppGVar3;
+    ppGVar3 = _Gfirst_4 + 1;
+    ppGVar4 = _Pfirst_4;
   } while( true );
 }
 
@@ -5811,42 +5837,42 @@ LAB_00b07ab8:
 
 void __cdecl
 std::_Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-          (dvar_s **param_1,dvar_s **param_2,int param_3,
-          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *param_4)
+          (dvar_s **_First_4,dvar_s **_Last_4,int _Ideal_4,
+          _func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *_Pred_4)
 
 {
   dvar_s **local_ac;
-  dvar_s *local_10;
+  dvar_s *_Mid_4;
   dvar_s **local_c;
-  int local_8;
+  int _Count_4;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count_4 = (int)_Last_4 - (int)_First_4 >> 2, 0x20 < _Count_4 && (0 < _Ideal_4))) {
     _Unguarded_partition<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (&local_10,param_1,(_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
+              (&_Mid_4,_First_4,(_func___cdecl_bool_dvar_s_ptr_dvar_s_ptr *)_Last_4);
+    _Ideal_4 = (_Ideal_4 / 2) / 2 + _Ideal_4 / 2;
+    if ((int)_Mid_4 - (int)_First_4 >> 2 < (int)_Last_4 - (int)local_c >> 2) {
       _Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-                (param_1,(dvar_s **)local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First_4,(dvar_s **)_Mid_4,_Ideal_4,_Pred_4);
+      _First_4 = local_c;
     }
     else {
       _Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = (dvar_s **)local_10;
+                (local_c,_Last_4,_Ideal_4,_Pred_4);
+      _Last_4 = (dvar_s **)_Mid_4;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count_4 < 0x21) {
+    if (1 < _Count_4) {
       _Insertion_sort1<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*),dvar_s_const_*>
-                (param_1,param_2,param_4,(dvar_s **)0x0);
+                (_First_4,_Last_4,_Pred_4,(dvar_s **)0x0);
     }
   }
   else {
     make_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
+              (_First_4,_Last_4,_Pred_4);
+    for (local_ac = _Last_4; 1 < (int)local_ac - (int)_First_4 >> 2; local_ac = local_ac + -1) {
       pop_heap<dvar_s_const_*_*,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-                (param_1,local_ac,param_4);
+                (_First_4,local_ac,_Pred_4);
     }
   }
   return;

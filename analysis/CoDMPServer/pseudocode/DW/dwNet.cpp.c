@@ -15,42 +15,42 @@ SecID * __thiscall SecID::SecID(SecID *this)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl checkRconAddr(bdAddr param_1)
+bool __cdecl checkRconAddr(bdAddr fromAddr)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  bdAddr local_24;
-  clientConnection_t *local_1c;
-  char *local_18;
-  bdAddr local_14;
-  netadr_t *local_c;
-  char *local_8;
+  bdAddr serverbdAddr_2;
+  clientConnection_t *clc;
+  char *serveradrstring;
+  bdAddr serverbdAddr;
+  netadr_t *serveraddr;
+  char *adrstring;
   
   cVar2 = CL_GetLocalClientConnectionState(0);
   if (cVar2 == CA_ACTIVE) {
-    local_1c = CL_GetLocalClientConnection(0);
-    local_18 = NET_AdrToString((local_1c->netchan).remoteAddress);
-    bdAddr::bdAddr(&local_24,local_18);
-    bVar1 = bdAddr::operator==(&local_24,&param_1);
+    clc = CL_GetLocalClientConnection(0);
+    serveradrstring = NET_AdrToString((clc->netchan).remoteAddress);
+    bdAddr::bdAddr(&serverbdAddr_2,serveradrstring);
+    bVar1 = bdAddr::operator==(&serverbdAddr_2,&fromAddr);
     if (bVar1) {
-      bdInetAddr::~bdInetAddr(&local_24.m_address);
-      bdInetAddr::~bdInetAddr(&param_1.m_address);
+      bdInetAddr::~bdInetAddr(&serverbdAddr_2.m_address);
+      bdInetAddr::~bdInetAddr(&fromAddr.m_address);
       return true;
     }
-    bdInetAddr::~bdInetAddr(&local_24.m_address);
+    bdInetAddr::~bdInetAddr(&serverbdAddr_2.m_address);
   }
-  local_c = CL_GetLastRconAddress();
-  local_8 = NET_AdrToString(*local_c);
-  bdAddr::bdAddr(&local_14,local_8);
-  bVar1 = bdAddr::operator==(&local_14,&param_1);
+  serveraddr = CL_GetLastRconAddress();
+  adrstring = NET_AdrToString(*serveraddr);
+  bdAddr::bdAddr(&serverbdAddr,adrstring);
+  bVar1 = bdAddr::operator==(&serverbdAddr,&fromAddr);
   if (!bVar1) {
-    bdInetAddr::~bdInetAddr(&local_14.m_address);
-    bdInetAddr::~bdInetAddr(&param_1.m_address);
+    bdInetAddr::~bdInetAddr(&serverbdAddr.m_address);
+    bdInetAddr::~bdInetAddr(&fromAddr.m_address);
   }
   else {
-    bdInetAddr::~bdInetAddr(&local_14.m_address);
-    bdInetAddr::~bdInetAddr(&param_1.m_address);
+    bdInetAddr::~bdInetAddr(&serverbdAddr.m_address);
+    bdInetAddr::~bdInetAddr(&fromAddr.m_address);
   }
   return bVar1;
 }
@@ -60,7 +60,7 @@ bool __cdecl checkRconAddr(bdAddr param_1)
 
 /* WARNING: Removing unreachable block (ram,0x005a467f) */
 
-void __thiscall bdArray<bdString>::increaseCapacity(bdArray<bdString> *this,uint param_1)
+void __thiscall bdArray<bdString>::increaseCapacity(bdArray<bdString> *this,uint increase)
 
 {
   uint uVar1;
@@ -68,23 +68,24 @@ void __thiscall bdArray<bdString>::increaseCapacity(bdArray<bdString> *this,uint
   uint local_40;
   uint local_28;
   uint local_10;
-  bdString *local_c;
+  bdString *newData;
+  uint newCapacity;
   
-  if (this->m_capacity < param_1) {
-    local_40 = param_1;
+  if (this->m_capacity < increase) {
+    local_40 = increase;
   }
   else {
     local_40 = this->m_capacity;
   }
   local_40 = this->m_capacity + local_40;
-  local_c = (bdString *)0x0;
+  newData = (bdString *)0x0;
   if (local_40 != 0) {
-    local_c = bdMemory::allocate(local_40 * 4);
+    newData = bdMemory::allocate(local_40 * 4);
     uVar1 = this->m_size;
     pbVar2 = this->m_data;
     for (local_10 = 0; local_10 < uVar1; local_10 = local_10 + 1) {
-      if (local_c + local_10 != (bdString *)0x0) {
-        bdString::bdString(local_c + local_10,pbVar2 + local_10);
+      if (newData + local_10 != (bdString *)0x0) {
+        bdString::bdString(newData + local_10,pbVar2 + local_10);
       }
     }
   }
@@ -94,7 +95,7 @@ void __thiscall bdArray<bdString>::increaseCapacity(bdArray<bdString> *this,uint
     bdString::~bdString(pbVar2 + local_28);
   }
   bdMemory::deallocate(this->m_data);
-  this->m_data = local_c;
+  this->m_data = newData;
   this->m_capacity = local_40;
   return;
 }
@@ -104,7 +105,7 @@ void __thiscall bdArray<bdString>::increaseCapacity(bdArray<bdString> *this,uint
 
 /* WARNING: Removing unreachable block (ram,0x005a47bf) */
 
-void __thiscall bdArray<bdInetAddr>::increaseCapacity(bdArray<bdInetAddr> *this,uint param_1)
+void __thiscall bdArray<bdInetAddr>::increaseCapacity(bdArray<bdInetAddr> *this,uint increase)
 
 {
   uint uVar1;
@@ -112,23 +113,24 @@ void __thiscall bdArray<bdInetAddr>::increaseCapacity(bdArray<bdInetAddr> *this,
   uint local_40;
   uint local_28;
   uint local_10;
-  bdInetAddr *local_c;
+  bdInetAddr *newData;
+  uint newCapacity;
   
-  if (this->m_capacity < param_1) {
-    local_40 = param_1;
+  if (this->m_capacity < increase) {
+    local_40 = increase;
   }
   else {
     local_40 = this->m_capacity;
   }
   local_40 = this->m_capacity + local_40;
-  local_c = (bdInetAddr *)0x0;
+  newData = (bdInetAddr *)0x0;
   if (local_40 != 0) {
-    local_c = bdMemory::allocate(local_40 * 4);
+    newData = bdMemory::allocate(local_40 * 4);
     uVar1 = this->m_size;
     pbVar2 = this->m_data;
     for (local_10 = 0; local_10 < uVar1; local_10 = local_10 + 1) {
-      if (local_c + local_10 != (bdInetAddr *)0x0) {
-        bdInetAddr::bdInetAddr(local_c + local_10,pbVar2 + local_10);
+      if (newData + local_10 != (bdInetAddr *)0x0) {
+        bdInetAddr::bdInetAddr(newData + local_10,pbVar2 + local_10);
       }
     }
   }
@@ -138,7 +140,7 @@ void __thiscall bdArray<bdInetAddr>::increaseCapacity(bdArray<bdInetAddr> *this,
     bdInetAddr::~bdInetAddr(pbVar2 + local_28);
   }
   bdMemory::deallocate(this->m_data);
-  this->m_data = local_c;
+  this->m_data = newData;
   this->m_capacity = local_40;
   return;
 }
@@ -148,392 +150,397 @@ void __thiscall bdArray<bdInetAddr>::increaseCapacity(bdArray<bdInetAddr> *this,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __thiscall
 dwRawInterceptor::acceptPacket
-          (dwRawInterceptor *this,bdSocket *param_1,bdAddr param_2,void *param_3,uint param_4,
-          uchar param_5)
+          (dwRawInterceptor *this,bdSocket *socket,bdAddr addr,void *data,uint size,uchar type)
 
 {
   uchar uVar1;
   char cVar2;
-  netadr_t nVar3;
-  netadr_t nVar4;
-  netadr_t nVar5;
-  netadr_t nVar6;
-  netadr_t nVar7;
-  netadr_t nVar8;
-  bdAddr bVar9;
-  undefined1 uVar10;
-  bool bVar11;
-  ushort uVar12;
-  int iVar13;
-  bdSecurityID *pbVar14;
-  bdInetAddr *pbVar15;
-  char *pcVar16;
+  netadr_t from_00;
+  netadr_t from_01;
+  netadr_t from_02;
+  netadr_t from_03;
+  netadr_t a;
+  netadr_t a_00;
+  bdAddr fromAddr;
+  bool bVar3;
+  ushort uVar4;
+  int time;
+  bdSecurityID *pbVar5;
+  bdInetAddr *pbVar6;
+  char *pcVar7;
   <unnamed_type_inUn> in_stack_fffffd1c;
   undefined4 in_stack_fffffd20;
-  bdSecurityID *pbVar17;
+  bdSecurityID *pbVar8;
   char *local_2d0;
   char *local_2c0;
   uchar *local_2b0;
   uchar *local_2a0;
-  msg_t local_23c;
-  char local_20c [24];
-  bdSecurityID local_1f4;
-  uchar *local_1ec;
-  int local_1e8;
-  undefined4 local_1e4;
+  msg_t serverinfo_4;
+  char from_9 [24];
+  bdSecurityID remoteID_8;
+  uchar *serverinfo_p_4;
+  int serverinfo_size_4;
+  undefined4 from_8;
   uint local_1e0;
   undefined4 local_1dc;
   int local_1d8;
-  bdSecurityID local_1d4;
-  uint local_1cc;
-  msg_t local_1c8;
-  char local_198 [24];
-  bdSecurityID local_180;
-  uchar *local_178;
-  int local_174;
-  undefined4 local_170;
+  bdSecurityID remoteID_7;
+  uint ip32_5;
+  msg_t serverinfo_3;
+  char from_7 [24];
+  bdSecurityID remoteID_6;
+  uchar *serverinfo_p_3;
+  int serverinfo_size_3;
+  undefined4 from_6;
   uint local_16c;
   undefined4 local_168;
   int local_164;
-  bdSecurityID local_160;
-  uint local_158;
-  msg_t local_154;
-  char local_124 [24];
-  bdSecurityID local_10c;
-  uchar *local_104;
-  int local_100;
-  undefined4 local_fc;
+  bdSecurityID remoteID_5;
+  uint ip32_4;
+  msg_t serverinfo_2;
+  char from_5 [24];
+  bdSecurityID remoteID_4;
+  uchar *serverinfo_p_2;
+  int serverinfo_size_2;
+  undefined4 from_4;
   uint local_f8;
   undefined4 local_f4;
   int local_f0;
-  bdSecurityID local_ec;
-  uint local_e4;
-  msg_t local_e0;
-  char local_b0 [24];
-  bdSecurityID local_98;
-  uchar *local_90;
-  int local_8c;
-  undefined4 local_88;
+  bdSecurityID remoteID_3;
+  uint ip32_3;
+  msg_t serverinfo;
+  char from_3 [24];
+  bdSecurityID remoteID_2;
+  uchar *serverinfo_p;
+  int serverinfo_size;
+  undefined4 from_2;
   uint local_84;
   undefined4 local_80;
   int local_7c;
-  bdSecurityID local_78;
-  uint local_70;
-  char local_6c [8];
-  char *local_64;
-  netadr_t local_60;
-  uchar local_50 [8];
+  bdSecurityID remoteID;
+  uint ip32_2;
+  char printcmd [8];
+  char *buffptr;
+  netadr_t from;
+  uchar rconcmd [8];
   uint local_48;
-  ulong local_44;
-  msg_t local_40;
-  uchar local_10 [4];
-  uchar *local_c;
-  undefined1 local_5;
+  int messagelen;
+  msg_t msg;
+  uint ip32;
+  char *pkt;
+  bool retval;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = 0;
-  if (param_5 == 0xff) {
-    local_c = param_3;
-    local_5 = 1;
-    if (param_4 < 0xd) {
+  retval = false;
+  if (type == 0xff) {
+    pkt = data;
+    retval = true;
+    if (size < 0xd) {
       Com_DPrintf(0,"Disregarding runt packet\n");
-      uVar10 = local_5;
-      bdInetAddr::~bdInetAddr(&param_2.m_address);
-      return (bool)uVar10;
+      bVar3 = retval;
+      bdInetAddr::~bdInetAddr(&addr.m_address);
+      return bVar3;
     }
-    if (0x4ef < param_4) {
+    if (0x4ef < size) {
       Com_DPrintf(0,"Disregarding jumbo packet. Hax?\n");
-      uVar10 = local_5;
-      bdInetAddr::~bdInetAddr(&param_2.m_address);
-      return (bool)uVar10;
+      bVar3 = retval;
+      bdInetAddr::~bdInetAddr(&addr.m_address);
+      return bVar3;
     }
-    switch(*(undefined1 *)((int)param_3 + 4)) {
+    switch(*(undefined1 *)((int)data + 4)) {
     case 0:
-      bVar11 = Sys_IsServerThread();
-      if ((bVar11) && ((com_sv_running->current).enabled != false)) {
-        pbVar15 = bdAddr::getAddress(&param_2);
-        local_60.ip = (uchar  [4])bdInetAddr::toUInt32(pbVar15);
-        local_10 = local_60.ip;
-        local_60.port = bdAddr::getPort(&param_2);
-        local_60.type = NA_IP;
-        builtin_memcpy(local_50,"rcon ",6);
-        local_44 = param_4 - 5;
+      bVar3 = Sys_IsServerThread();
+      if ((bVar3) && ((com_sv_running->current).enabled != false)) {
+        pbVar6 = bdAddr::getAddress(&addr);
+        from.ip = (uchar  [4])bdInetAddr::toUInt32(pbVar6);
+        ip32 = (uint)from.ip;
+        from.port = bdAddr::getPort(&addr);
+        from.type = NA_IP;
+        builtin_memcpy(rconcmd,"rcon ",6);
+        messagelen = size - 5;
         memset(s_rconbuffer,'\0',0x4f0);
-        s_rconbuffer._0_4_ = *(undefined4 *)local_c;
-        local_2a0 = local_50;
+        s_rconbuffer._0_4_ = *(undefined4 *)pkt;
+        local_2a0 = rconcmd;
         do {
           uVar1 = *local_2a0;
           local_2a0 = local_2a0 + 1;
         } while (uVar1 != '\0');
-        memcpy(s_rconbuffer + 4,local_50,(int)local_2a0 - (int)(local_50 + 1));
-        local_2b0 = local_50;
+        memcpy(s_rconbuffer + 4,rconcmd,(int)local_2a0 - (int)(rconcmd + 1));
+        local_2b0 = rconcmd;
         do {
           uVar1 = *local_2b0;
           local_2b0 = local_2b0 + 1;
         } while (uVar1 != '\0');
-        memcpy(local_2b0 + (int)(s_rconbuffer + (4 - (int)(local_50 + 1))),local_c + 5,local_44);
-        MSG_InitReadOnly(&local_40,s_rconbuffer,local_44 + 9);
-        NET_DeferPacketToClient(&local_60,&local_40);
+        memcpy(local_2b0 + (int)(s_rconbuffer + (4 - (int)(rconcmd + 1))),(uchar *)(pkt + 5),
+               messagelen);
+        MSG_InitReadOnly(&msg,s_rconbuffer,messagelen + 9);
+        NET_DeferPacketToClient(&from,&msg);
       }
       break;
     case 1:
-      bdAddr::bdAddr((bdAddr *)&stack0xfffffd1c,&param_2);
-      bVar9.m_port = (ushort)in_stack_fffffd20;
-      bVar9._6_2_ = SUB42(in_stack_fffffd20,2);
-      bVar9.m_address.m_addr.inUn = (bdInAddr)(bdInAddr)in_stack_fffffd1c.m_iaddr;
-      bVar11 = checkRconAddr(bVar9);
-      if (bVar11) {
-        builtin_strncpy(local_6c,"print ",7);
-        local_2c0 = local_6c;
+      bdAddr::bdAddr((bdAddr *)&stack0xfffffd1c,&addr);
+      fromAddr.m_port = (ushort)in_stack_fffffd20;
+      fromAddr._6_2_ = SUB42(in_stack_fffffd20,2);
+      fromAddr.m_address.m_addr.inUn = (bdInAddr)(bdInAddr)in_stack_fffffd1c.m_iaddr;
+      bVar3 = checkRconAddr(fromAddr);
+      if (bVar3) {
+        builtin_strncpy(printcmd,"print ",7);
+        local_2c0 = printcmd;
         do {
           cVar2 = *local_2c0;
           local_2c0 = local_2c0 + 1;
         } while (cVar2 != '\0');
-        local_64 = local_2c0 + (int)param_3 + (5 - (int)(local_6c + 1));
+        buffptr = local_2c0 + (int)data + (5 - (int)(printcmd + 1));
         Com_Printf(0,"%s");
       }
       break;
     case 2:
       if (((com_sv_running->current).enabled != false) &&
          ((xblive_basictraining->current).enabled == false)) {
-        bdSecurityID::bdSecurityID(&local_78);
-        local_78.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-        local_78.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
+        bdSecurityID::bdSecurityID(&remoteID);
+        remoteID.ab._0_4_ = *(undefined4 *)((int)data + 5);
+        remoteID.ab._4_4_ = *(undefined4 *)((int)data + 9);
         Com_DPrintf(0xf,"GOT RAWPING PACKET!\n");
-        pbVar17 = &local_78;
-        pbVar14 = dwGetSessionSecID();
-        bVar11 = bdSecurityID::operator!=(pbVar14,pbVar17);
-        if (bVar11) {
+        pbVar8 = &remoteID;
+        pbVar5 = dwGetSessionSecID();
+        bVar3 = bdSecurityID::operator!=(pbVar5,pbVar8);
+        if (bVar3) {
           Com_DPrintf(0xf,"Rawping: Got secid that doesn\'t match, dropping\n");
-          bdInetAddr::~bdInetAddr(&param_2.m_address);
+          bdInetAddr::~bdInetAddr(&addr.m_address);
           return true;
         }
-        pbVar15 = bdAddr::getAddress(&param_2);
-        local_84 = bdInetAddr::toUInt32(pbVar15);
-        local_70 = local_84;
-        uVar12 = bdAddr::getPort(&param_2);
-        local_80 = CONCAT22(local_80._2_2_,uVar12);
-        nVar3.ip[0] = (undefined1)local_84;
-        nVar3.ip[1] = local_84._1_1_;
-        nVar3.ip[2] = local_84._2_1_;
-        nVar3.ip[3] = local_84._3_1_;
-        nVar3.type = local_88;
-        nVar3._8_4_ = local_80;
-        nVar3.addrHandleIndex = local_7c;
-        SVC_Info(nVar3,&local_78,false);
+        pbVar6 = bdAddr::getAddress(&addr);
+        local_84 = bdInetAddr::toUInt32(pbVar6);
+        ip32_2 = local_84;
+        uVar4 = bdAddr::getPort(&addr);
+        local_80 = CONCAT22(local_80._2_2_,uVar4);
+        from_00.ip[0] = (undefined1)local_84;
+        from_00.ip[1] = local_84._1_1_;
+        from_00.ip[2] = local_84._2_1_;
+        from_00.ip[3] = local_84._3_1_;
+        from_00.type = from_2;
+        from_00._8_4_ = local_80;
+        from_00.addrHandleIndex = local_7c;
+        SVC_Info(from_00,&remoteID,false);
       }
       break;
     case 3:
       if ((com_sv_running->current).enabled != false) {
-        bdAddr::toString(&param_2,local_b0,0x16);
+        bdAddr::toString(&addr,from_3,0x16);
         Com_PrintWarning(0xf,"Got ping ack when I\'m a server -  packet from %s\n");
-        bdInetAddr::~bdInetAddr(&param_2.m_address);
+        bdInetAddr::~bdInetAddr(&addr.m_address);
         return true;
       }
       Com_DPrintf(0xf,"GOT RAWPING RESPONSE!\n");
-      bdSecurityID::bdSecurityID(&local_98);
-      local_98.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-      local_98.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
-      local_90 = local_c + 0xd;
-      local_8c = param_4 + 5;
-      if ((0 < local_8c) && (local_8c < 0x400)) {
-        MSG_InitReadOnly(&local_e0,local_90,local_8c);
-        MSG_BeginReading(&local_e0);
-        iVar13 = Sys_Milliseconds();
-        CL_ServerInfoPacket(&local_98,&local_e0,iVar13);
+      bdSecurityID::bdSecurityID(&remoteID_2);
+      remoteID_2.ab._0_4_ = *(undefined4 *)((int)data + 5);
+      remoteID_2.ab._4_4_ = *(undefined4 *)((int)data + 9);
+      serverinfo_p = (uchar *)(pkt + 0xd);
+      serverinfo_size = size + 5;
+      if ((0 < serverinfo_size) && (serverinfo_size < 0x400)) {
+        MSG_InitReadOnly(&serverinfo,serverinfo_p,serverinfo_size);
+        MSG_BeginReading(&serverinfo);
+        time = Sys_Milliseconds();
+        CL_ServerInfoPacket(&remoteID_2,&serverinfo,time);
         UI_RefreshServers();
       }
       break;
     case 4:
       if ((com_sv_running->current).enabled != false) {
-        bdSecurityID::bdSecurityID(&local_ec);
-        local_ec.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-        local_ec.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
+        bdSecurityID::bdSecurityID(&remoteID_3);
+        remoteID_3.ab._0_4_ = *(undefined4 *)((int)data + 5);
+        remoteID_3.ab._4_4_ = *(undefined4 *)((int)data + 9);
         Com_DPrintf(0xf,"GOT RAWSTATUS PACKET!\n");
-        pbVar17 = &local_ec;
-        pbVar14 = dwGetSessionSecID();
-        bVar11 = bdSecurityID::operator!=(pbVar14,pbVar17);
-        if (bVar11) {
+        pbVar8 = &remoteID_3;
+        pbVar5 = dwGetSessionSecID();
+        bVar3 = bdSecurityID::operator!=(pbVar5,pbVar8);
+        if (bVar3) {
           Com_DPrintf(0xf,"Rawping: Got secid that doesn\'t match, dropping\n");
-          bdInetAddr::~bdInetAddr(&param_2.m_address);
+          bdInetAddr::~bdInetAddr(&addr.m_address);
           return true;
         }
-        pbVar15 = bdAddr::getAddress(&param_2);
-        local_f8 = bdInetAddr::toUInt32(pbVar15);
-        local_e4 = local_f8;
-        uVar12 = bdAddr::getPort(&param_2);
-        local_f4 = CONCAT22(local_f4._2_2_,uVar12);
-        nVar7.ip[0] = (undefined1)local_f8;
-        nVar7.ip[1] = local_f8._1_1_;
-        nVar7.ip[2] = local_f8._2_1_;
-        nVar7.ip[3] = local_f8._3_1_;
-        nVar7.type = local_fc;
-        nVar7._8_4_ = local_f4;
-        nVar7.addrHandleIndex = local_f0;
-        NET_AdrToString(nVar7);
+        pbVar6 = bdAddr::getAddress(&addr);
+        local_f8 = bdInetAddr::toUInt32(pbVar6);
+        ip32_3 = local_f8;
+        uVar4 = bdAddr::getPort(&addr);
+        local_f4 = CONCAT22(local_f4._2_2_,uVar4);
+        a.ip[0] = (undefined1)local_f8;
+        a.ip[1] = local_f8._1_1_;
+        a.ip[2] = local_f8._2_1_;
+        a.ip[3] = local_f8._3_1_;
+        a.type = from_4;
+        a._8_4_ = local_f4;
+        a.addrHandleIndex = local_f0;
+        NET_AdrToString(a);
         Com_DPrintf(0xf,"Got status request from %s\n");
-        nVar5.ip[0] = (undefined1)local_f8;
-        nVar5.ip[1] = local_f8._1_1_;
-        nVar5.ip[2] = local_f8._2_1_;
-        nVar5.ip[3] = local_f8._3_1_;
-        nVar5.type = local_fc;
-        nVar5._8_4_ = local_f4;
-        nVar5.addrHandleIndex = local_f0;
-        SVC_Status(nVar5,&local_ec);
+        from_02.ip[0] = (undefined1)local_f8;
+        from_02.ip[1] = local_f8._1_1_;
+        from_02.ip[2] = local_f8._2_1_;
+        from_02.ip[3] = local_f8._3_1_;
+        from_02.type = from_4;
+        from_02._8_4_ = local_f4;
+        from_02.addrHandleIndex = local_f0;
+        SVC_Status(from_02,&remoteID_3);
       }
       break;
     case 5:
       if ((com_sv_running->current).enabled != false) {
-        bdAddr::toString(&param_2,local_124,0x16);
+        bdAddr::toString(&addr,from_5,0x16);
         Com_PrintWarning(0xf,"Got ping ack when I\'m a server -  packet from %s\n");
-        bdInetAddr::~bdInetAddr(&param_2.m_address);
+        bdInetAddr::~bdInetAddr(&addr.m_address);
         return true;
       }
-      bdSecurityID::bdSecurityID(&local_10c);
-      local_10c.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-      local_10c.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
-      local_104 = local_c + 0xd;
-      local_100 = param_4 + 5;
-      if ((0 < local_100) && (local_100 < 0x400)) {
-        MSG_InitReadOnly(&local_154,local_104,local_100);
-        MSG_BeginReading(&local_154);
-        CL_ServerStatusResponse(&local_154,&local_10c);
+      bdSecurityID::bdSecurityID(&remoteID_4);
+      remoteID_4.ab._0_4_ = *(undefined4 *)((int)data + 5);
+      remoteID_4.ab._4_4_ = *(undefined4 *)((int)data + 9);
+      serverinfo_p_2 = (uchar *)(pkt + 0xd);
+      serverinfo_size_2 = size + 5;
+      if ((0 < serverinfo_size_2) && (serverinfo_size_2 < 0x400)) {
+        MSG_InitReadOnly(&serverinfo_2,serverinfo_p_2,serverinfo_size_2);
+        MSG_BeginReading(&serverinfo_2);
+        CL_ServerStatusResponse(&serverinfo_2,&remoteID_4);
       }
       break;
     case 6:
       if ((com_sv_running->current).enabled != false) {
-        bdSecurityID::bdSecurityID(&local_160);
-        local_160.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-        local_160.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
+        bdSecurityID::bdSecurityID(&remoteID_5);
+        remoteID_5.ab._0_4_ = *(undefined4 *)((int)data + 5);
+        remoteID_5.ab._4_4_ = *(undefined4 *)((int)data + 9);
         Com_DPrintf(0xf,"GOT RAWSCORE PACKET!\n");
-        pbVar17 = &local_160;
-        pbVar14 = dwGetSessionSecID();
-        bVar11 = bdSecurityID::operator!=(pbVar14,pbVar17);
-        if (bVar11) {
+        pbVar8 = &remoteID_5;
+        pbVar5 = dwGetSessionSecID();
+        bVar3 = bdSecurityID::operator!=(pbVar5,pbVar8);
+        if (bVar3) {
           Com_DPrintf(0xf,"Rawping: Got secid that doesn\'t match, dropping\n");
-          bdInetAddr::~bdInetAddr(&param_2.m_address);
+          bdInetAddr::~bdInetAddr(&addr.m_address);
           return true;
         }
-        pbVar15 = bdAddr::getAddress(&param_2);
-        local_16c = bdInetAddr::toUInt32(pbVar15);
-        local_158 = local_16c;
-        uVar12 = bdAddr::getPort(&param_2);
-        local_168 = CONCAT22(local_168._2_2_,uVar12);
-        nVar8.ip[0] = (undefined1)local_16c;
-        nVar8.ip[1] = local_16c._1_1_;
-        nVar8.ip[2] = local_16c._2_1_;
-        nVar8.ip[3] = local_16c._3_1_;
-        nVar8.type = local_170;
-        nVar8._8_4_ = local_168;
-        nVar8.addrHandleIndex = local_164;
-        NET_AdrToString(nVar8);
+        pbVar6 = bdAddr::getAddress(&addr);
+        local_16c = bdInetAddr::toUInt32(pbVar6);
+        ip32_4 = local_16c;
+        uVar4 = bdAddr::getPort(&addr);
+        local_168 = CONCAT22(local_168._2_2_,uVar4);
+        a_00.ip[0] = (undefined1)local_16c;
+        a_00.ip[1] = local_16c._1_1_;
+        a_00.ip[2] = local_16c._2_1_;
+        a_00.ip[3] = local_16c._3_1_;
+        a_00.type = from_6;
+        a_00._8_4_ = local_168;
+        a_00.addrHandleIndex = local_164;
+        NET_AdrToString(a_00);
         Com_DPrintf(0xf,"Got status scoreboard request from %s\n");
-        nVar6.ip[0] = (undefined1)local_16c;
-        nVar6.ip[1] = local_16c._1_1_;
-        nVar6.ip[2] = local_16c._2_1_;
-        nVar6.ip[3] = local_16c._3_1_;
-        nVar6.type = local_170;
-        nVar6._8_4_ = local_168;
-        nVar6.addrHandleIndex = local_164;
-        SVC_StatusScoreBoard(nVar6,&local_160);
+        from_03.ip[0] = (undefined1)local_16c;
+        from_03.ip[1] = local_16c._1_1_;
+        from_03.ip[2] = local_16c._2_1_;
+        from_03.ip[3] = local_16c._3_1_;
+        from_03.type = from_6;
+        from_03._8_4_ = local_168;
+        from_03.addrHandleIndex = local_164;
+        SVC_StatusScoreBoard(from_03,&remoteID_5);
       }
       break;
     case 7:
       if ((com_sv_running->current).enabled != false) {
-        bdAddr::toString(&param_2,local_198,0x16);
+        bdAddr::toString(&addr,from_7,0x16);
         Com_PrintWarning(0xf,"Got ping ack when I\'m a server -  packet from %s\n");
-        bdInetAddr::~bdInetAddr(&param_2.m_address);
+        bdInetAddr::~bdInetAddr(&addr.m_address);
         return true;
       }
-      bdSecurityID::bdSecurityID(&local_180);
-      local_180.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-      local_180.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
-      local_178 = local_c + 0xd;
-      local_174 = param_4 + 5;
-      if ((0 < local_174) && (local_174 < 0x4000)) {
-        MSG_InitReadOnly(&local_1c8,local_178,local_174);
-        MSG_BeginReading(&local_1c8);
-        CL_ServerStatusScoreBoardResponse(&local_1c8,&local_180);
+      bdSecurityID::bdSecurityID(&remoteID_6);
+      remoteID_6.ab._0_4_ = *(undefined4 *)((int)data + 5);
+      remoteID_6.ab._4_4_ = *(undefined4 *)((int)data + 9);
+      serverinfo_p_3 = (uchar *)(pkt + 0xd);
+      serverinfo_size_3 = size + 5;
+      if ((0 < serverinfo_size_3) && (serverinfo_size_3 < 0x4000)) {
+        MSG_InitReadOnly(&serverinfo_3,serverinfo_p_3,serverinfo_size_3);
+        MSG_BeginReading(&serverinfo_3);
+        CL_ServerStatusScoreBoardResponse(&serverinfo_3,&remoteID_6);
       }
       break;
     case 8:
       if ((com_sv_running->current).enabled != false) {
         local_2d0 = (g_password->current).string;
-        pcVar16 = local_2d0 + 1;
+        pcVar7 = local_2d0 + 1;
         do {
           cVar2 = *local_2d0;
           local_2d0 = local_2d0 + 1;
         } while (cVar2 != '\0');
-        if (local_2d0 == pcVar16) {
-          bdSecurityID::bdSecurityID(&local_1d4);
-          local_1d4.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-          local_1d4.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
+        if (local_2d0 == pcVar7) {
+          bdSecurityID::bdSecurityID(&remoteID_7);
+          remoteID_7.ab._0_4_ = *(undefined4 *)((int)data + 5);
+          remoteID_7.ab._4_4_ = *(undefined4 *)((int)data + 9);
           Com_DPrintf(0xf,"Got quickmatch ping!\n");
-          pbVar17 = &local_1d4;
-          pbVar14 = dwGetSessionSecID();
-          bVar11 = bdSecurityID::operator!=(pbVar14,pbVar17);
-          if (bVar11) {
+          pbVar8 = &remoteID_7;
+          pbVar5 = dwGetSessionSecID();
+          bVar3 = bdSecurityID::operator!=(pbVar5,pbVar8);
+          if (bVar3) {
             Com_DPrintf(0xf,"Rawping: Got secid that doesn\'t match, dropping\n");
-            bdInetAddr::~bdInetAddr(&param_2.m_address);
+            bdInetAddr::~bdInetAddr(&addr.m_address);
             return true;
           }
-          pbVar15 = bdAddr::getAddress(&param_2);
-          local_1e0 = bdInetAddr::toUInt32(pbVar15);
-          local_1cc = local_1e0;
-          uVar12 = bdAddr::getPort(&param_2);
-          local_1dc = CONCAT22(local_1dc._2_2_,uVar12);
-          nVar4.ip[0] = (undefined1)local_1e0;
-          nVar4.ip[1] = local_1e0._1_1_;
-          nVar4.ip[2] = local_1e0._2_1_;
-          nVar4.ip[3] = local_1e0._3_1_;
-          nVar4.type = local_1e4;
-          nVar4._8_4_ = local_1dc;
-          nVar4.addrHandleIndex = local_1d8;
-          SVC_Info(nVar4,&local_1d4,true);
+          pbVar6 = bdAddr::getAddress(&addr);
+          local_1e0 = bdInetAddr::toUInt32(pbVar6);
+          ip32_5 = local_1e0;
+          uVar4 = bdAddr::getPort(&addr);
+          local_1dc = CONCAT22(local_1dc._2_2_,uVar4);
+          from_01.ip[0] = (undefined1)local_1e0;
+          from_01.ip[1] = local_1e0._1_1_;
+          from_01.ip[2] = local_1e0._2_1_;
+          from_01.ip[3] = local_1e0._3_1_;
+          from_01.type = from_8;
+          from_01._8_4_ = local_1dc;
+          from_01.addrHandleIndex = local_1d8;
+          SVC_Info(from_01,&remoteID_7,true);
         }
       }
       break;
     case 9:
       if ((com_sv_running->current).enabled != false) {
-        bdAddr::toString(&param_2,local_20c,0x16);
+        bdAddr::toString(&addr,from_9,0x16);
         Com_PrintWarning(0xf,"Got ping ack when I\'m a server -  packet from %s\n");
-        bdInetAddr::~bdInetAddr(&param_2.m_address);
+        bdInetAddr::~bdInetAddr(&addr.m_address);
         return true;
       }
       Com_DPrintf(0xf,"Got quickmatch response!\n");
-      bdSecurityID::bdSecurityID(&local_1f4);
-      local_1f4.ab._0_4_ = *(undefined4 *)((int)param_3 + 5);
-      local_1f4.ab._4_4_ = *(undefined4 *)((int)param_3 + 9);
-      local_1ec = local_c + 0xd;
-      local_1e8 = param_4 + 5;
-      if ((0 < local_1e8) && (local_1e8 < 0x400)) {
-        MSG_InitReadOnly(&local_23c,local_1ec,local_1e8);
-        MSG_BeginReading(&local_23c);
-        CL_QuickMatch_PingResponse(&local_1f4,&local_23c);
+      bdSecurityID::bdSecurityID(&remoteID_8);
+      remoteID_8.ab._0_4_ = *(undefined4 *)((int)data + 5);
+      remoteID_8.ab._4_4_ = *(undefined4 *)((int)data + 9);
+      serverinfo_p_4 = (uchar *)(pkt + 0xd);
+      serverinfo_size_4 = size + 5;
+      if ((0 < serverinfo_size_4) && (serverinfo_size_4 < 0x400)) {
+        MSG_InitReadOnly(&serverinfo_4,serverinfo_p_4,serverinfo_size_4);
+        MSG_BeginReading(&serverinfo_4);
+        CL_QuickMatch_PingResponse(&remoteID_8,&serverinfo_4);
       }
       break;
     default:
       Com_Printf(0xf,"Got unknown raw packet: %u\n");
     }
   }
-  uVar10 = local_5;
-  bdInetAddr::~bdInetAddr(&param_2.m_address);
-  return (bool)uVar10;
+  bVar3 = retval;
+  bdInetAddr::~bdInetAddr(&addr.m_address);
+  return bVar3;
 }
 
 
 // 005A4270  bdSnprintf  (<external>/projects_pc/cod/codsrc/DemonWare/bdplatform/bdplatformstring/bdplatformstring.inl:188)
 
-int __cdecl bdSnprintf(char *param_1,uint param_2,char *param_3)
+int __cdecl bdSnprintf(char *buf,uint maxlen,char *format)
 
 {
   int iVar1;
+  int ret;
+  char *argPtr;
   
-  iVar1 = _vscprintf(param_3,&stack0x00000010);
-  _vsnprintf_s(param_1,param_2,0xffffffff,param_3,&stack0x00000010);
+  iVar1 = _vscprintf(format,&stack0x00000010);
+  _vsnprintf_s(buf,maxlen,0xffffffff,format,&stack0x00000010);
   return iVar1;
 }
 
@@ -588,14 +595,14 @@ void __thiscall bdArray<bdInetAddr>::clear(bdArray<bdInetAddr> *this)
 
 // 005A44A0  pushBack  (<external>/projects_pc/cod/codsrc/DemonWare/bdcore/bdcontainers/bdarray.inl:288)
 
-void __thiscall bdArray<bdString>::pushBack(bdArray<bdString> *this,bdString *param_1)
+void __thiscall bdArray<bdString>::pushBack(bdArray<bdString> *this,bdString *value)
 
 {
   if (this->m_size == this->m_capacity) {
     increaseCapacity(this,1);
   }
   if (this->m_data + this->m_size != (bdString *)0x0) {
-    bdString::bdString(this->m_data + this->m_size,param_1);
+    bdString::bdString(this->m_data + this->m_size,value);
   }
   this->m_size = this->m_size + 1;
   return;
@@ -604,14 +611,14 @@ void __thiscall bdArray<bdString>::pushBack(bdArray<bdString> *this,bdString *pa
 
 // 005A4510  pushBack  (<external>/projects_pc/cod/codsrc/DemonWare/bdcore/bdcontainers/bdarray.inl:288)
 
-void __thiscall bdArray<bdInetAddr>::pushBack(bdArray<bdInetAddr> *this,bdInetAddr *param_1)
+void __thiscall bdArray<bdInetAddr>::pushBack(bdArray<bdInetAddr> *this,bdInetAddr *value)
 
 {
   if (this->m_size == this->m_capacity) {
     increaseCapacity(this,1);
   }
   if (this->m_data + this->m_size != (bdInetAddr *)0x0) {
-    bdInetAddr::bdInetAddr(this->m_data + this->m_size,param_1);
+    bdInetAddr::bdInetAddr(this->m_data + this->m_size,value);
   }
   this->m_size = this->m_size + 1;
   return;
@@ -632,14 +639,14 @@ void __cdecl _dynamic_initializer_for__rawlistener__(void)
 
 // 005A2650  dwRegisterRawInterceptor  (DW/dwNet.cpp:407)
 
-void __cdecl dwRegisterRawInterceptor(bdPacketInterceptor *param_1)
+void __cdecl dwRegisterRawInterceptor(bdPacketInterceptor *rawinterceptor)
 
 {
   bdSocketRouter *this;
   
   this = dwGetSocketRouter();
   if (this != (bdSocketRouter *)0x0) {
-    bdSocketRouter::registerInterceptor(this,param_1);
+    bdSocketRouter::registerInterceptor(this,rawinterceptor);
     Com_DPrintf(0xf,"Registered raw interceptor\n");
     s_interceptorStarted = true;
   }
@@ -649,7 +656,7 @@ void __cdecl dwRegisterRawInterceptor(bdPacketInterceptor *param_1)
 
 // 005A2690  dwRawSendTo  (DW/dwNet.cpp:421)
 
-int __cdecl dwRawSendTo(netadr_t *param_1,void *param_2,uint param_3)
+int __cdecl dwRawSendTo(netadr_t *adr,void *data,uint size)
 
 {
   code *pcVar1;
@@ -657,10 +664,10 @@ int __cdecl dwRawSendTo(netadr_t *param_1,void *param_2,uint param_3)
   int iVar3;
   bdNetImpl *this;
   bdNetStartParams *pbVar4;
-  bdAddr local_18;
-  bdSocket *local_10;
-  undefined1 *local_c;
-  int local_8;
+  bdAddr newaddr;
+  bdSocket *socket;
+  uchar *newbuf;
+  int retval;
   
   if (!s_interceptorStarted) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x1a6,0,"%s");
@@ -673,53 +680,53 @@ int __cdecl dwRawSendTo(netadr_t *param_1,void *param_2,uint param_3)
   if (s_interceptorStarted == false) {
     Com_PrintError(0,"sendto before interceptor started, show this to Ewan!\n");
   }
-  local_8 = 0;
-  if (param_3 < 0x4f0) {
-    local_c = operator_new__(param_3 + 4);
-    if (local_c != (undefined1 *)0x0) {
-      local_c[3] = 0xff;
-      local_c[2] = 0xff;
-      local_c[1] = 0xff;
-      *local_c = 0xff;
-      memcpy(local_c + 4,param_2,param_3);
+  retval = 0;
+  if (size < 0x4f0) {
+    newbuf = operator_new__(size + 4);
+    if (newbuf != (uchar *)0x0) {
+      newbuf[3] = 0xff;
+      newbuf[2] = 0xff;
+      newbuf[1] = 0xff;
+      *newbuf = 0xff;
+      memcpy(newbuf + 4,data,size);
       this = bdSingleton<bdNetImpl>::getInstance();
       pbVar4 = bdNetImpl::getParams(this);
-      local_10 = pbVar4->m_socket;
-      bdAddr::bdAddr(&local_18);
+      socket = pbVar4->m_socket;
+      bdAddr::bdAddr(&newaddr);
       Com_sprintf(s,0x40,"%i.%i.%i.%i:%i");
-      bdAddr::set(&local_18,s);
-      local_8 = (**(code **)(local_10->_padding_ + 0x10))(&local_18,local_c,param_3 + 4);
-      operator_delete__(local_c);
-      bdInetAddr::~bdInetAddr(&local_18.m_address);
+      bdAddr::set(&newaddr,s);
+      retval = (**(code **)(socket->_padding_ + 0x10))(&newaddr,newbuf,size + 4);
+      operator_delete__(newbuf);
+      bdInetAddr::~bdInetAddr(&newaddr.m_address);
     }
   }
-  return local_8;
+  return retval;
 }
 
 
 // 005A27F0  dwSendSysLogPacket  (DW/dwNet.cpp:455)
 
-int __cdecl dwSendSysLogPacket(netadr_t *param_1,void *param_2,uint param_3)
+int __cdecl dwSendSysLogPacket(netadr_t *adr,void *data,uint size)
 
 {
   bdNetImpl *this;
   bdNetStartParams *pbVar1;
-  bdAddr local_14;
-  bdSocket *local_c;
-  int local_8;
+  bdAddr newaddr;
+  bdSocket *socket;
+  int retval;
   
-  local_8 = 0;
-  if (param_3 < 0x4f0) {
+  retval = 0;
+  if (size < 0x4f0) {
     this = bdSingleton<bdNetImpl>::getInstance();
     pbVar1 = bdNetImpl::getParams(this);
-    local_c = pbVar1->m_socket;
-    bdAddr::bdAddr(&local_14);
+    socket = pbVar1->m_socket;
+    bdAddr::bdAddr(&newaddr);
     Com_sprintf(s,0x40,"%i.%i.%i.%i:%i");
-    bdAddr::set(&local_14,s);
-    local_8 = (**(code **)(local_c->_padding_ + 0x10))(&local_14,param_2,param_3);
-    bdInetAddr::~bdInetAddr(&local_14.m_address);
+    bdAddr::set(&newaddr,s);
+    retval = (**(code **)(socket->_padding_ + 0x10))(&newaddr,data,size);
+    bdInetAddr::~bdInetAddr(&newaddr.m_address);
   }
-  return local_8;
+  return retval;
 }
 
 
@@ -728,17 +735,17 @@ int __cdecl dwSendSysLogPacket(netadr_t *param_1,void *param_2,uint param_3)
 void __cdecl _dynamic_initializer_for__g_addrHandles__(void)
 
 {
-  SecID *pSVar1;
-  CountedAddrHandle *pCVar2;
+  SecID *__t;
+  CountedAddrHandle *pCVar1;
   
-  pSVar1 = (SecID *)0x120;
-  pCVar2 = g_addrHandles;
-  while (-1 < (int)(pSVar1 + -1) + 8) {
-    (pCVar2->m_addrHandle).m_ptr = (bdAddrHandle *)0x0;
-    pSVar1 = pCVar2->m_secIDs;
-    _vector_constructor_iterator_(pSVar1,9,3,SecID::SecID);
-    pCVar2->m_primaryIndex = -1;
-    pCVar2 = pCVar2 + 1;
+  __t = (SecID *)0x120;
+  pCVar1 = g_addrHandles;
+  while (-1 < (int)(__t + -1) + 8) {
+    (pCVar1->m_addrHandle).m_ptr = (bdAddrHandle *)0x0;
+    __t = pCVar1->m_secIDs;
+    _vector_constructor_iterator_(__t,9,3,SecID::SecID);
+    pCVar1->m_primaryIndex = -1;
+    pCVar1 = pCVar1 + 1;
   }
   atexit(_dynamic_atexit_destructor_for__g_addrHandles__);
   return;
@@ -747,59 +754,59 @@ void __cdecl _dynamic_initializer_for__g_addrHandles__(void)
 
 // 005A28A0  dwNetStart  (DW/dwNet.cpp:503)
 
-void __cdecl dwNetStart(bool param_1)
+void __cdecl dwNetStart(bool online)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  bdInetAddr *pbVar5;
+  bdInetAddr *value;
   bdString local_70;
   bdString local_6c;
   bdString local_68;
   bdString local_64;
   bdInetAddr local_60;
-  bdNetStartParams local_5c;
-  undefined4 local_10;
-  bdNetImpl *local_c;
-  bool local_5;
+  bdNetStartParams startParams;
+  int memoryAllocation;
+  bdNetImpl *net;
+  bool restart;
   
-  local_5 = true;
+  restart = true;
   if (g_dwNetOnlineFailed) {
-    param_1 = false;
+    online = false;
   }
   switch(g_dwNetStatus) {
   case DW_NET_ERROR_START_FAILED:
   case DW_NET_ERROR_NO_LOCAL_IP:
   case DW_NET_NOT_STARTED:
-    local_5 = true;
+    restart = true;
     break;
   case DW_NET_STARTING_LAN:
-    local_5 = param_1 != false;
+    restart = online != false;
     break;
   case DW_NET_STARTED_LAN:
-    local_5 = param_1 != false;
+    restart = online != false;
     break;
   case DW_NET_STARTING_ONLINE:
-    local_5 = param_1 == false;
+    restart = online == false;
     break;
   case DW_NET_STARTED_ONLINE:
-    local_5 = false;
+    restart = false;
   }
-  if (local_5 != false) {
+  if (restart != false) {
     uVar3 = dwGetNumAddrHandles();
-    local_5 = (bool)('\x01' - (uVar3 != 0));
-    local_10 = 1;
-    local_c = bdSingleton<bdNetImpl>::getInstance();
-    if ((local_c == (bdNetImpl *)0x0) &&
+    restart = (bool)('\x01' - (uVar3 != 0));
+    memoryAllocation = 1;
+    net = bdSingleton<bdNetImpl>::getInstance();
+    if ((net == (bdNetImpl *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x23a,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_c == (bdNetImpl *)0x0) {
+    if (net == (bdNetImpl *)0x0) {
       if (g_dwNetStatus != DW_NET_ERROR_NO_LOCAL_IP) {
         Com_Printf(0x10,"Could not obtain local IP address.\n");
         g_dwNetStatus = DW_NET_ERROR_NO_LOCAL_IP;
@@ -807,31 +814,31 @@ void __cdecl dwNetStart(bool param_1)
     }
     else {
       dwNetStop();
-      bdNetStartParams::bdNetStartParams(&local_5c);
-      iVar4 = dwPlatformInit(&local_5c);
+      bdNetStartParams::bdNetStartParams(&startParams);
+      iVar4 = dwPlatformInit(&startParams);
       if (iVar4 != 0) {
-        pbVar5 = (bdInetAddr *)bdInetAddr::bdInetAddr(&local_60,"127.0.0.1");
-        bdArray<bdInetAddr>::pushBack(&local_5c.m_localAddresses,pbVar5);
+        value = (bdInetAddr *)bdInetAddr::bdInetAddr(&local_60,"127.0.0.1");
+        bdArray<bdInetAddr>::pushBack(&startParams.m_localAddresses,value);
         bdInetAddr::~bdInetAddr(&local_60);
       }
-      bdArray<bdString>::clear(&local_5c.m_natTravHosts);
+      bdArray<bdString>::clear(&startParams.m_natTravHosts);
       bdString::bdString(&local_64,"cod7-stun.us.demonware.net");
-      bdArray<bdString>::pushBack(&local_5c.m_natTravHosts,&local_64);
+      bdArray<bdString>::pushBack(&startParams.m_natTravHosts,&local_64);
       bdString::~bdString(&local_64);
       bdString::bdString(&local_68,"cod7-stun.eu.demonware.net");
-      bdArray<bdString>::pushBack(&local_5c.m_natTravHosts,&local_68);
+      bdArray<bdString>::pushBack(&startParams.m_natTravHosts,&local_68);
       bdString::~bdString(&local_68);
       bdString::bdString(&local_6c,"cod7-stun.jp.demonware.net");
-      bdArray<bdString>::pushBack(&local_5c.m_natTravHosts,&local_6c);
+      bdArray<bdString>::pushBack(&startParams.m_natTravHosts,&local_6c);
       bdString::~bdString(&local_6c);
       bdString::bdString(&local_70,"cod7-stun.au.demonware.net");
-      bdArray<bdString>::pushBack(&local_5c.m_natTravHosts,&local_70);
+      bdArray<bdString>::pushBack(&startParams.m_natTravHosts,&local_70);
       bdString::~bdString(&local_70);
-      local_5c.m_onlineGame = param_1;
-      local_5c.m_UPnPConfig.m_discoveryTimeout = 1.0;
-      bVar2 = bdNetImpl::start(local_c,&local_5c);
+      startParams.m_onlineGame = online;
+      startParams.m_UPnPConfig.m_discoveryTimeout = 1.0;
+      bVar2 = bdNetImpl::start(net,&startParams);
       if (bVar2) {
-        if (param_1 == false) {
+        if (online == false) {
           g_dwNetStatus = DW_NET_STARTING_LAN;
         }
         else {
@@ -842,7 +849,7 @@ void __cdecl dwNetStart(bool param_1)
         Com_Printf(0x10,"Failed to start network system.\n");
         g_dwNetStatus = DW_NET_ERROR_START_FAILED;
       }
-      bdNetStartParams::~bdNetStartParams(&local_5c);
+      bdNetStartParams::~bdNetStartParams(&startParams);
     }
   }
   return;
@@ -851,7 +858,7 @@ void __cdecl dwNetStart(bool param_1)
 
 // 005A2F50  dwClearAddrHandle  (DW/dwNet.cpp:652)
 
-void __cdecl dwClearAddrHandle(CountedAddrHandle *param_1)
+void __cdecl dwClearAddrHandle(CountedAddrHandle *countedAddrHandle)
 
 {
   SecID *pSVar1;
@@ -868,32 +875,33 @@ void __cdecl dwClearAddrHandle(CountedAddrHandle *param_1)
       Com_Printf(0,"Clearing addrhandle on server thread\n");
     }
   }
-  bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,(bdCommonAddr *)0x0);
-  param_1->m_primaryIndex = -1;
-  param_1->m_secIDs[0].m_secID.ab[0] = '\0';
-  param_1->m_secIDs[0].m_secID.ab[1] = '\0';
-  param_1->m_secIDs[0].m_secID.ab[2] = '\0';
-  param_1->m_secIDs[0].m_secID.ab[3] = '\0';
-  pSVar1 = param_1->m_secIDs;
+  bdReference<bdCommonAddr>::operator=
+            ((bdReference<bdCommonAddr> *)countedAddrHandle,(bdCommonAddr *)0x0);
+  countedAddrHandle->m_primaryIndex = -1;
+  countedAddrHandle->m_secIDs[0].m_secID.ab[0] = '\0';
+  countedAddrHandle->m_secIDs[0].m_secID.ab[1] = '\0';
+  countedAddrHandle->m_secIDs[0].m_secID.ab[2] = '\0';
+  countedAddrHandle->m_secIDs[0].m_secID.ab[3] = '\0';
+  pSVar1 = countedAddrHandle->m_secIDs;
   (pSVar1->m_secID).ab[4] = '\0';
   (pSVar1->m_secID).ab[5] = '\0';
   (pSVar1->m_secID).ab[6] = '\0';
   (pSVar1->m_secID).ab[7] = '\0';
-  *(undefined4 *)&param_1->m_secIDs[0].m_active = 0;
-  pSVar1 = param_1->m_secIDs + 1;
+  *(undefined4 *)&countedAddrHandle->m_secIDs[0].m_active = 0;
+  pSVar1 = countedAddrHandle->m_secIDs + 1;
   (pSVar1->m_secID).ab[3] = '\0';
   (pSVar1->m_secID).ab[4] = '\0';
   (pSVar1->m_secID).ab[5] = '\0';
   (pSVar1->m_secID).ab[6] = '\0';
-  *(undefined4 *)(param_1->m_secIDs[1].m_secID.ab + 7) = 0;
-  pSVar1 = param_1->m_secIDs + 2;
+  *(undefined4 *)(countedAddrHandle->m_secIDs[1].m_secID.ab + 7) = 0;
+  pSVar1 = countedAddrHandle->m_secIDs + 2;
   (pSVar1->m_secID).ab[2] = '\0';
   (pSVar1->m_secID).ab[3] = '\0';
   (pSVar1->m_secID).ab[4] = '\0';
   (pSVar1->m_secID).ab[5] = '\0';
-  param_1->m_secIDs[2].m_secID.ab[6] = '\0';
-  param_1->m_secIDs[2].m_secID.ab[7] = '\0';
-  param_1->m_secIDs[2].m_active = false;
+  countedAddrHandle->m_secIDs[2].m_secID.ab[6] = '\0';
+  countedAddrHandle->m_secIDs[2].m_secID.ab[7] = '\0';
+  countedAddrHandle->m_secIDs[2].m_active = false;
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
   return;
 }
@@ -901,16 +909,17 @@ void __cdecl dwClearAddrHandle(CountedAddrHandle *param_1)
 
 // 005A2E40  dwHandleLostConnection  (DW/dwNet.cpp:675)
 
-void __cdecl dwHandleLostConnection(bdReference<bdAddrHandle> param_1)
+void __cdecl dwHandleLostConnection(bdReference<bdAddrHandle> addrHandle)
 
 {
   code *pcVar1;
   bool bVar2;
   bdSocketRouter *pbVar3;
-  int local_c;
-  bool local_5;
+  uint index;
+  int i;
+  bool found;
   
-  if (param_1.m_ptr == (bdAddrHandle *)0x0) {
+  if (addrHandle.m_ptr == (bdAddrHandle *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x2a4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -918,20 +927,20 @@ void __cdecl dwHandleLostConnection(bdReference<bdAddrHandle> param_1)
       return;
     }
   }
-  if (param_1.m_ptr != (bdAddrHandle *)0x0) {
-    local_5 = false;
-    for (local_c = 0; (local_5 == false && (local_c < maxAddrHandles)); local_c = local_c + 1) {
-      if (g_addrHandles[local_c].m_addrHandle.m_ptr != (bdAddrHandle *)0x0) {
-        local_5 = bdAddrHandle::operator==(param_1.m_ptr,g_addrHandles[local_c].m_addrHandle.m_ptr);
+  if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+    found = false;
+    for (i = 0; (found == false && (i < maxAddrHandles)); i = i + 1) {
+      if (g_addrHandles[i].m_addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+        found = bdAddrHandle::operator==(addrHandle.m_ptr,g_addrHandles[i].m_addrHandle.m_ptr);
       }
     }
-    if (local_5 != false) {
+    if (found != false) {
       pbVar3 = dwGetSocketRouter();
-      (**(code **)(pbVar3->_padding_ + 0x18))(g_addrHandles + local_c + -1);
-      dwClearAddrHandle(g_addrHandles + local_c + -1);
+      (**(code **)(pbVar3->_padding_ + 0x18))(g_addrHandles + i + -1);
+      dwClearAddrHandle(g_addrHandles + i + -1);
     }
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&param_1);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
   return;
 }
 
@@ -943,39 +952,40 @@ void __cdecl dwHandleLostConnection(bdReference<bdAddrHandle> param_1)
 void __cdecl dwCheckConnections(void)
 
 {
-  int iVar1;
-  bdReference<bdAddrHandle> bVar2;
-  bdReference<bdByteBuffer> local_14;
-  CountedAddrHandle *local_10;
-  int local_c;
-  bdSocketRouter *local_8;
+  bdSocketRouter *pbVar1;
+  int iVar2;
+  bdReference<bdAddrHandle> addrHandle_00;
+  bdDTLSAssociationStatus status;
+  bdReference<bdAddrHandle> addrHandle;
+  int i;
+  bdSocketRouter *socketRouter;
   
-  local_8 = dwGetSocketRouter();
-  if (local_8 == (bdSocketRouter *)0x0) {
+  pbVar1 = dwGetSocketRouter();
+  if (pbVar1 == (bdSocketRouter *)0x0) {
     Com_Printf(0x10,"dwCheckConnections():No socket router.\n");
   }
   else {
-    for (local_c = 0; local_c < maxAddrHandles; local_c = local_c + 1) {
-      local_10 = g_addrHandles + local_c;
-      local_14.m_ptr = (bdByteBuffer *)(local_10->m_addrHandle).m_ptr;
-      if ((bdAddrHandle *)local_14.m_ptr != (bdAddrHandle *)0x0) {
-        InterlockedIncrement(&((bdAddrHandle *)local_14.m_ptr)->_padding_);
+    for (i = 0; i < maxAddrHandles; i = i + 1) {
+      addrHandle.m_ptr = g_addrHandles[i].m_addrHandle.m_ptr;
+      if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+        InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
       }
-      if ((bdAddrHandle *)local_14.m_ptr != (bdAddrHandle *)0x0) {
-        if ((bdAddrHandle *)local_14.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(local_14.m_ptr)->_padding_);
+      if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+        if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
         }
-        iVar1 = (**(code **)(local_8->_padding_ + 0x1c))();
-        if (iVar1 == 3) {
+        iVar2 = (**(code **)(pbVar1->_padding_ + 0x1c))();
+        if (iVar2 == 3) {
           Com_Printf(0x10,"Secure socket timed out.\n");
-          bVar2.m_ptr = (bdAddrHandle *)local_14.m_ptr;
-          if ((bdAddrHandle *)local_14.m_ptr != (bdAddrHandle *)0x0) {
-            InterlockedIncrement(&(local_14.m_ptr)->_padding_);
+          addrHandle_00 = addrHandle;
+          if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+            InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
           }
-          dwHandleLostConnection(bVar2);
+          dwHandleLostConnection(addrHandle_00);
         }
       }
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&addrHandle);
     }
   }
   return;
@@ -991,6 +1001,7 @@ void __cdecl dwNetStop(void)
   bdNetImpl *this_00;
   bdNetStatus bVar1;
   int in_stack_ffffffac;
+  bdAddressMap *addressMap;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
   this = dwGetAddressMap();
@@ -1071,7 +1082,7 @@ void __cdecl dwNetPump(void)
 
 // 005A2FE0  dwCreateSecIDAndKey  (DW/dwNet.cpp:878)
 
-void __cdecl dwCreateSecIDAndKey(bdSecurityID *param_1,bdSecurityKey *param_2)
+void __cdecl dwCreateSecIDAndKey(bdSecurityID *id,bdSecurityKey *key)
 
 {
   bdSecurityKeyMap *pbVar1;
@@ -1079,7 +1090,7 @@ void __cdecl dwCreateSecIDAndKey(bdSecurityID *param_1,bdSecurityKey *param_2)
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
   pbVar1 = dwGetSecurityKeyMap();
   if (pbVar1 != (bdSecurityKeyMap *)0x0) {
-    bdSecurityKeyMap::initKey(param_1,param_2);
+    bdSecurityKeyMap::initKey(id,key);
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
   return;
@@ -1088,20 +1099,20 @@ void __cdecl dwCreateSecIDAndKey(bdSecurityID *param_1,bdSecurityKey *param_2)
 
 // 005A3020  dwRegisterSecIDAndKey  (DW/dwNet.cpp:893)
 
-bool __cdecl dwRegisterSecIDAndKey(bdSecurityID *param_1,bdSecurityKey *param_2)
+bool __cdecl dwRegisterSecIDAndKey(bdSecurityID *id,bdSecurityKey *key)
 
 {
   bdSecurityKeyMap *this;
-  undefined1 local_5;
+  bool registered;
   
-  local_5 = false;
+  registered = false;
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
   this = dwGetSecurityKeyMap();
   if (this != (bdSecurityKeyMap *)0x0) {
-    local_5 = bdSecurityKeyMap::registerKey(this,param_1,param_2);
+    registered = bdSecurityKeyMap::registerKey(this,id,key);
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  return local_5;
+  return registered;
 }
 
 
@@ -1113,17 +1124,17 @@ uint __cdecl dwGetNumFreeAddrHandleSlots(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int local_c;
-  uint local_8;
+  int i;
+  uint numFreeSlots;
   
-  local_8 = 0;
-  local_c = 0;
+  numFreeSlots = 0;
+  i = 0;
   do {
-    if (maxAddrHandles <= local_c) {
-      return local_8;
+    if (maxAddrHandles <= i) {
+      return numFreeSlots;
     }
-    if (g_addrHandles[local_c].m_addrHandle.m_ptr == (bdAddrHandle *)0x0) {
-      if (g_addrHandles[local_c].m_primaryIndex != -1) {
+    if (g_addrHandles[i].m_addrHandle.m_ptr == (bdAddrHandle *)0x0) {
+      if (g_addrHandles[i].m_primaryIndex != -1) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x398,0,"%s");
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
@@ -1131,9 +1142,9 @@ uint __cdecl dwGetNumFreeAddrHandleSlots(void)
           return uVar3;
         }
       }
-      local_8 = local_8 + 1;
+      numFreeSlots = numFreeSlots + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1144,174 +1155,172 @@ uint __cdecl dwGetNumFreeAddrHandleSlots(void)
 
 bool __cdecl
 dwRegisterAddrHandle
-          (bdReference<bdAddrHandle> param_1,bdSecurityID *param_2,uint *param_3,bool *param_4)
+          (bdReference<bdAddrHandle> addrHandle,bdSecurityID *secID,uint *index,bool *newHandle)
 
 {
   undefined4 uVar1;
   code *pcVar2;
-  char cVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  char local_54 [32];
+  bool bVar3;
+  undefined1 uVar4;
+  char addrStr [32];
   uint local_34;
-  uint local_30;
-  CountedAddrHandle *local_2c;
-  uint local_28;
-  uint local_24;
-  char local_1e;
-  bool local_1d;
-  undefined4 local_1c;
-  CountedAddrHandle *local_18;
-  char local_11;
-  uint local_10;
-  uint local_c;
-  bool local_6;
-  char local_5;
+  uint numFreeSlots;
+  CountedAddrHandle *countedAddrHandle_2;
+  uint i_2;
+  uint secIDGapIndex;
+  bool secIDFoundGap;
+  bool existingSecID;
+  uint numSecIDSlots;
+  CountedAddrHandle *countedAddrHandle;
+  bool foundGap;
+  int i;
+  uint gapIndex;
+  bool found;
+  bool ok;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_5 = '\0';
-  *param_4 = false;
-  if (param_1.m_ptr != (bdAddrHandle *)0x0) {
-    local_6 = false;
-    local_11 = '\0';
-    local_c = 0;
-    for (local_10 = 0; (local_6 == false && ((int)local_10 < maxAddrHandles));
-        local_10 = local_10 + 1) {
-      if (g_addrHandles[local_10].m_addrHandle.m_ptr == (bdAddrHandle *)0x0) {
-        if (local_11 == '\0') {
-          local_c = local_10;
-          local_11 = '\x01';
+  ok = false;
+  *newHandle = false;
+  if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+    found = false;
+    foundGap = false;
+    gapIndex = 0;
+    for (i = 0; (found == false && (i < maxAddrHandles)); i = i + 1) {
+      if (g_addrHandles[i].m_addrHandle.m_ptr == (bdAddrHandle *)0x0) {
+        if (foundGap == false) {
+          gapIndex = i;
+          foundGap = true;
         }
       }
       else {
-        local_6 = bdAddrHandle::operator==(param_1.m_ptr,g_addrHandles[local_10].m_addrHandle.m_ptr)
-        ;
+        found = bdAddrHandle::operator==(addrHandle.m_ptr,g_addrHandles[i].m_addrHandle.m_ptr);
       }
     }
-    if (((local_6 == false) && (local_11 == '\0')) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3c0,0,"%s"),
-       !bVar4)) {
+    if (((found == false) && (foundGap == false)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3c0,0,"%s"),
+       !bVar3)) {
       pcVar2 = (code *)swi(3);
-      uVar5 = (*pcVar2)();
-      return (bool)uVar5;
+      uVar4 = (*pcVar2)();
+      return (bool)uVar4;
     }
-    if (local_6 == false) {
-      if (local_11 != '\0') {
-        local_2c = g_addrHandles + local_c;
-        if ((g_addrHandles[local_c].m_primaryIndex != -1) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x403,0,"%s"
-                                    ), !bVar4)) {
+    if (found == false) {
+      if (foundGap != false) {
+        countedAddrHandle_2 = g_addrHandles + gapIndex;
+        if ((g_addrHandles[gapIndex].m_primaryIndex != -1) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x403,0,"%s"
+                                    ), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          uVar5 = (*pcVar2)();
-          return (bool)uVar5;
+          uVar4 = (*pcVar2)();
+          return (bool)uVar4;
         }
-        local_2c->m_primaryIndex = 0;
-        uVar1 = *(undefined4 *)(param_2->ab + 4);
-        *(undefined4 *)local_2c->m_secIDs[0].m_secID.ab = *(undefined4 *)param_2->ab;
-        *(undefined4 *)(local_2c->m_secIDs[0].m_secID.ab + 4) = uVar1;
-        local_2c->m_secIDs[0].m_active = true;
-        bdReference<bdAddrHandle>::operator=(&local_2c->m_addrHandle,&param_1);
-        *param_3 = local_c;
-        local_5 = '\x01';
-        *param_4 = true;
+        countedAddrHandle_2->m_primaryIndex = 0;
+        uVar1 = *(undefined4 *)(secID->ab + 4);
+        *(undefined4 *)countedAddrHandle_2->m_secIDs[0].m_secID.ab = *(undefined4 *)secID->ab;
+        *(undefined4 *)(countedAddrHandle_2->m_secIDs[0].m_secID.ab + 4) = uVar1;
+        countedAddrHandle_2->m_secIDs[0].m_active = true;
+        bdReference<bdAddrHandle>::operator=(&countedAddrHandle_2->m_addrHandle,&addrHandle);
+        *index = gapIndex;
+        ok = true;
+        *newHandle = true;
       }
     }
     else {
-      *param_3 = local_10 - 1;
-      local_18 = g_addrHandles + *param_3;
-      local_1c = 3;
-      if ((0x7fffffff < (uint)g_addrHandles[*param_3].m_primaryIndex) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3cf,0,"%s"),
-         !bVar4)) {
+      *index = i - 1;
+      countedAddrHandle = g_addrHandles + *index;
+      numSecIDSlots = 3;
+      if ((0x7fffffff < (uint)g_addrHandles[*index].m_primaryIndex) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3cf,0,"%s"),
+         !bVar3)) {
         pcVar2 = (code *)swi(3);
-        uVar5 = (*pcVar2)();
-        return (bool)uVar5;
+        uVar4 = (*pcVar2)();
+        return (bool)uVar4;
       }
-      local_1d = false;
-      local_1e = '\0';
-      local_24 = 0;
-      for (local_28 = 0; (local_1d == false && (local_28 < 3)); local_28 = local_28 + 1) {
-        if (local_18->m_secIDs[local_28].m_active == false) {
-          if (local_1e == '\0') {
-            local_1e = '\x01';
-            local_24 = local_28;
+      existingSecID = false;
+      secIDFoundGap = false;
+      secIDGapIndex = 0;
+      for (i_2 = 0; (existingSecID == false && (i_2 < 3)); i_2 = i_2 + 1) {
+        if (countedAddrHandle->m_secIDs[i_2].m_active == false) {
+          if (secIDFoundGap == false) {
+            secIDFoundGap = true;
+            secIDGapIndex = i_2;
           }
         }
         else {
-          local_1d = bdSecurityID::operator==(&local_18->m_secIDs[local_28].m_secID,param_2);
+          existingSecID = bdSecurityID::operator==(&countedAddrHandle->m_secIDs[i_2].m_secID,secID);
         }
       }
-      if (((local_1d == false) && (local_1e == '\0')) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3e2,0,"%s"),
-         !bVar4)) {
+      if (((existingSecID == false) && (secIDFoundGap == false)) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3e2,0,"%s"),
+         !bVar3)) {
         pcVar2 = (code *)swi(3);
-        uVar5 = (*pcVar2)();
-        return (bool)uVar5;
+        uVar4 = (*pcVar2)();
+        return (bool)uVar4;
       }
-      if (local_1d == false) {
-        if ((local_1e == '\0') &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3e6,0,"%s"
-                                    ), !bVar4)) {
+      if (existingSecID == false) {
+        if ((secIDFoundGap == false) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3e6,0,"%s"
+                                    ), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          uVar5 = (*pcVar2)();
-          return (bool)uVar5;
+          uVar4 = (*pcVar2)();
+          return (bool)uVar4;
         }
-        if (local_1e != '\0') {
-          if ((2 < local_24) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3eb,0,
-                                       "%s"), !bVar4)) {
+        if (secIDFoundGap != false) {
+          if ((2 < secIDGapIndex) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3eb,0,
+                                       "%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
-            uVar5 = (*pcVar2)();
-            return (bool)uVar5;
+            uVar4 = (*pcVar2)();
+            return (bool)uVar4;
           }
-          if ((local_18->m_secIDs[local_24].m_active != false) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3ec,0,
-                                       "%s"), !bVar4)) {
+          if ((countedAddrHandle->m_secIDs[secIDGapIndex].m_active != false) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3ec,0,
+                                       "%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
-            uVar5 = (*pcVar2)();
-            return (bool)uVar5;
+            uVar4 = (*pcVar2)();
+            return (bool)uVar4;
           }
-          if (local_24 < 3) {
-            local_18->m_secIDs[local_24].m_active = true;
-            uVar1 = *(undefined4 *)(param_2->ab + 4);
-            *(undefined4 *)local_18->m_secIDs[local_24].m_secID.ab = *(undefined4 *)param_2->ab;
-            *(undefined4 *)(local_18->m_secIDs[local_24].m_secID.ab + 4) = uVar1;
-            local_5 = '\x01';
+          if (secIDGapIndex < 3) {
+            countedAddrHandle->m_secIDs[secIDGapIndex].m_active = true;
+            uVar1 = *(undefined4 *)(secID->ab + 4);
+            *(undefined4 *)countedAddrHandle->m_secIDs[secIDGapIndex].m_secID.ab =
+                 *(undefined4 *)secID->ab;
+            *(undefined4 *)(countedAddrHandle->m_secIDs[secIDGapIndex].m_secID.ab + 4) = uVar1;
+            ok = true;
           }
         }
       }
       else {
-        if ((local_18->m_primaryIndex == -1) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3fb,0,"%s"
-                                    ), !bVar4)) {
+        if ((countedAddrHandle->m_primaryIndex == -1) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3fb,0,"%s"
+                                    ), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          uVar5 = (*pcVar2)();
-          return (bool)uVar5;
+          uVar4 = (*pcVar2)();
+          return (bool)uVar4;
         }
-        if ((local_18->m_secIDs[local_18->m_primaryIndex].m_active == false) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3fc,0,"%s"
-                                    ), !bVar4)) {
+        if ((countedAddrHandle->m_secIDs[countedAddrHandle->m_primaryIndex].m_active == false) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x3fc,0,"%s"
+                                    ), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          uVar5 = (*pcVar2)();
-          return (bool)uVar5;
+          uVar4 = (*pcVar2)();
+          return (bool)uVar4;
         }
-        local_5 = '\x01';
+        ok = true;
       }
     }
-    if (local_5 == '\0') {
+    if (ok == false) {
       Com_PrintWarning(0x10,"WARNING: Out of security associations\n");
     }
-    if ((local_5 != '\0') && (*param_4 != false)) {
-      dwAddrIndexToAddrString(*param_3,local_54,0x20);
-      local_30 = dwGetNumFreeAddrHandleSlots();
+    if ((ok != false) && (*newHandle != false)) {
+      dwAddrIndexToAddrString(*index,addrStr,0x20);
+      numFreeSlots = dwGetNumFreeAddrHandleSlots();
       Com_Printf(0x10,"Registered new address handle (%s) in slot %u of %u, %u remain\n");
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  cVar3 = local_5;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&param_1);
-  return (bool)cVar3;
+  bVar3 = ok;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
+  return bVar3;
 }
 
 
@@ -1320,50 +1329,42 @@ dwRegisterAddrHandle
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-int __cdecl dwSendTo(uint param_1,void *param_2,netadr_t param_3)
+int __cdecl dwSendTo(uint length,void *data,netadr_t to)
 
 {
-  undefined4 uVar1;
-  uchar auVar2 [4];
+  bdSocketRouter *pbVar1;
+  ushort swappedDataLength;
   uchar local_50a [1262];
-  undefined2 local_1c;
-  int local_18;
-  undefined1 local_14 [12];
-  uint local_8;
+  ushort dataLength;
+  bdDTLSAssociationStatus status;
+  bdReference<bdAddrHandle> addrHandle;
+  int bytesSent;
   
-  local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_14[4] = 0xf7;
-  local_14[5] = 0xff;
-  local_14[6] = 0xff;
-  local_14[7] = 0xff;
-  dwNetadrToAddrHandle((netadr_t *)local_14);
-  local_14._8_4_ = dwGetSocketRouter();
-  if (((bdByteBuffer *)local_14._0_4_ == (bdByteBuffer *)0x0) ||
-     ((bdSocketRouter *)local_14._8_4_ == (bdSocketRouter *)0x0)) {
+  bytesSent = -9;
+  dwNetadrToAddrHandle((netadr_t *)&addrHandle);
+  pbVar1 = dwGetSocketRouter();
+  if ((addrHandle.m_ptr == (bdAddrHandle *)0x0) || (pbVar1 == (bdSocketRouter *)0x0)) {
     Com_PrintError(0x10,
                    "DROPPING %i byte packet because we\'re still connecting to the remote address (addrHandle=%d, socketRouter=%d)\n"
                   );
   }
   else {
-    if ((bdByteBuffer *)local_14._0_4_ != (bdByteBuffer *)0x0) {
-      InterlockedIncrement((int *)(local_14._0_4_ + 4));
+    if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+      InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
     }
-    local_18 = (**(code **)(*(int *)local_14._8_4_ + 0x1c))();
-    if (local_18 == 2) {
-      if (param_1 < 0x4ef) {
-        local_1c = (undefined2)param_1;
-        memcpy(local_50a,param_2,param_1);
-        if ((bdByteBuffer *)local_14._0_4_ != (bdByteBuffer *)0x0) {
-          InterlockedIncrement((int *)(local_14._0_4_ + 4));
+    status = (**(code **)(pbVar1->_padding_ + 0x1c))();
+    if (status == BD_SOCKET_CONNECTED) {
+      if (length < 0x4ef) {
+        dataLength = (ushort)length;
+        memcpy(local_50a,data,length);
+        if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
         }
-        local_14._4_4_ = (**(code **)(*(int *)local_14._8_4_ + 0x20))();
+        bytesSent = (**(code **)(pbVar1->_padding_ + 0x20))();
       }
       else {
-        local_14[4] = 0xfa;
-        local_14[5] = 0xff;
-        local_14[6] = 0xff;
-        local_14[7] = 0xff;
+        bytesSent = -6;
       }
     }
     else {
@@ -1373,17 +1374,8 @@ int __cdecl dwSendTo(uint param_1,void *param_2,netadr_t param_3)
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  uVar1 = local_14._4_4_;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_14);
-  local_14[4] = (undefined1)uVar1;
-  local_14[5] = SUB41(uVar1,1);
-  local_14[6] = SUB41(uVar1,2);
-  local_14[7] = SUB41(uVar1,3);
-  auVar2[0] = local_14[4];
-  auVar2[1] = local_14[5];
-  auVar2[2] = local_14[6];
-  auVar2[3] = local_14[7];
-  return (int)auVar2;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
+  return bytesSent;
 }
 
 
@@ -1392,71 +1384,71 @@ int __cdecl dwSendTo(uint param_1,void *param_2,netadr_t param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
+int __cdecl dwRecvFrom(netadr_t *from,void *data,uint size)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  bdSocketRouter *this;
   bdSocketRouterStatus bVar4;
-  bdInetAddr *this;
+  bdInetAddr *this_00;
   int iVar5;
   bdAddr bVar6;
-  bdReference<bdAddrHandle> bVar7;
-  bdSecurityID *pbVar8;
-  uint *puVar9;
-  bool *pbVar10;
+  bdReference<bdAddrHandle> addrHandle_00;
+  bdSecurityID *secID_00;
+  uint *index_00;
+  bool *newHandle_00;
   bdInetAddr local_3c [2];
   bdInetAddr local_34 [3];
-  uint local_28;
-  bool local_21;
-  bdSecurityID local_20;
+  uint ip32;
+  bool newHandle;
+  bdSecurityID secID;
   uint local_18;
-  uint local_14;
-  bdReference<bdByteBuffer> local_10;
-  bdSocketRouter *local_c;
-  ulong local_8;
+  uint index;
+  bdReference<bdAddrHandle> addrHandle;
+  int bytesRecv;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = G_ExitAfterToolComplete();
   if (bVar2) {
-    local_8 = 0;
+    bytesRecv = 0;
   }
   else {
     Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-    local_8 = 0xfffffff7;
-    local_c = dwGetSocketRouter();
-    if ((local_c != (bdSocketRouter *)0x0) &&
-       (bVar4 = bdSocketRouter::getStatus(local_c), bVar4 == BD_SOCKET_ROUTER_INITIALIZED)) {
-      local_10.m_ptr = (bdByteBuffer *)0x0;
-      local_8 = (**(code **)(local_c->_padding_ + 0x24))();
-      if ((0 < (int)local_8) && ((bdAddrHandle *)local_10.m_ptr != (bdAddrHandle *)0x0)) {
-        local_14 = 0;
-        bdSecurityID::bdSecurityID(&local_20);
-        bdAddrHandle::getSecID((bdAddrHandle *)local_10.m_ptr,&local_20);
-        pbVar10 = &local_21;
-        puVar9 = &local_14;
-        pbVar8 = &local_20;
-        bVar7.m_ptr = (bdAddrHandle *)local_10.m_ptr;
-        if ((bdAddrHandle *)local_10.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(local_10.m_ptr)->_padding_);
+    bytesRecv = -9;
+    this = dwGetSocketRouter();
+    if ((this != (bdSocketRouter *)0x0) &&
+       (bVar4 = bdSocketRouter::getStatus(this), bVar4 == BD_SOCKET_ROUTER_INITIALIZED)) {
+      addrHandle.m_ptr = (bdAddrHandle *)0x0;
+      bytesRecv = (**(code **)(this->_padding_ + 0x24))();
+      if ((0 < bytesRecv) && (addrHandle.m_ptr != (bdAddrHandle *)0x0)) {
+        index = 0;
+        bdSecurityID::bdSecurityID(&secID);
+        bdAddrHandle::getSecID(addrHandle.m_ptr,&secID);
+        newHandle_00 = &newHandle;
+        index_00 = &index;
+        secID_00 = &secID;
+        addrHandle_00 = addrHandle;
+        if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
         }
-        bVar2 = dwRegisterAddrHandle(bVar7,pbVar8,puVar9,pbVar10);
+        bVar2 = dwRegisterAddrHandle(addrHandle_00,secID_00,index_00,newHandle_00);
         if (bVar2) {
-          local_8 = local_8 - 2;
-          memmove(param_2,(uchar *)((int)param_2 + 2),local_8);
-          bVar6 = bdAddrHandle::getRealAddr((bdAddrHandle *)local_10.m_ptr);
-          this = bdAddr::getAddress((bdAddr *)bVar6.m_address.m_addr.inUn.m_addr);
-          local_28 = bdInetAddr::toUInt32(this);
+          bytesRecv = bytesRecv - 2;
+          memmove(data,(uchar *)((int)data + 2),bytesRecv);
+          bVar6 = bdAddrHandle::getRealAddr(addrHandle.m_ptr);
+          this_00 = bdAddr::getAddress((bdAddr *)bVar6.m_address.m_addr.inUn.m_addr);
+          ip32 = bdInetAddr::toUInt32(this_00);
           bdInetAddr::~bdInetAddr(local_34);
-          *(uint *)param_1->ip = local_28;
-          bVar6 = bdAddrHandle::getRealAddr((bdAddrHandle *)local_10.m_ptr);
+          *(uint *)from->ip = ip32;
+          bVar6 = bdAddrHandle::getRealAddr(addrHandle.m_ptr);
           uVar3 = bdAddr::getPort((bdAddr *)bVar6.m_address.m_addr.inUn.m_addr);
-          param_1->port = uVar3;
+          from->port = uVar3;
           bdInetAddr::~bdInetAddr(local_3c);
-          param_1->type = NA_IP;
-          param_1->addrHandleIndex = local_14;
-          if ((maxAddrHandles < param_1->addrHandleIndex) &&
+          from->type = NA_IP;
+          from->addrHandleIndex = index;
+          if ((maxAddrHandles < from->addrHandleIndex) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x486,0,
                                        "%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -1471,14 +1463,15 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
             iVar5 = (*pcVar1)();
             return iVar5;
           }
-          local_8 = 0;
+          bytesRecv = 0;
         }
       }
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&addrHandle);
     }
     Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
   }
-  return local_8;
+  return bytesRecv;
 }
 
 
@@ -1486,7 +1479,7 @@ int __cdecl dwRecvFrom(netadr_t *param_1,void *param_2,uint param_3)
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-bool __cdecl dwCommonAddrToNetadr(netadr_t *param_1,uchar *param_2,bdSecurityID *param_3)
+bool __cdecl dwCommonAddrToNetadr(netadr_t *adr,uchar *commonAddrBuf,bdSecurityID *secID)
 
 {
   code *pcVar1;
@@ -1498,41 +1491,41 @@ bool __cdecl dwCommonAddrToNetadr(netadr_t *param_1,uchar *param_2,bdSecurityID 
   bdAddressMap *this;
   bdInetAddr *this_00;
   bdAddr bVar7;
-  bdReference<bdAddrHandle> bVar8;
-  bdReference<bdCommonAddr> bVar9;
-  bdSecurityID *pbVar10;
-  uint *puVar11;
-  bdReference<bdAddrHandle> *pbVar12;
-  bool *pbVar13;
+  bdReference<bdAddrHandle> addrHandle_00;
+  bdReference<bdCommonAddr> bVar8;
+  bdSecurityID *pbVar9;
+  uint *index_00;
+  bdReference<bdAddrHandle> *pbVar10;
+  bool *newHandle_00;
   bdCommonAddr *local_58;
   bdInetAddr local_50 [2];
   bdInetAddr local_48 [7];
   bdCommonAddr *local_2c;
-  bdSocketRouter *local_28;
-  uint local_24;
-  bool local_1d;
-  uint local_1c;
-  bdNetImpl *local_18;
-  bdReference<bdByteBuffer> local_14;
-  bdReference<bdAddrHandle> local_10;
-  bdReference<bdByteBuffer> local_c;
-  char local_5;
+  bdSocketRouter *socketRouter;
+  uint ip32;
+  bool newHandle;
+  uint index;
+  bdNetImpl *net;
+  bdReference<bdCommonAddr> commonAddr;
+  bdReference<bdAddrHandle> addrHandle;
+  bdReference<bdCommonAddr> localCommonAddr;
+  bool ok;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_5 = '\0';
-  if (param_1 == (netadr_t *)0x0) goto LAB_005a3e7c;
+  ok = false;
+  if (adr == (netadr_t *)0x0) goto LAB_005a3e7c;
   dwCheckConnections();
-  param_1->type = NA_BOT;
-  param_1->ip[0] = '\0';
-  param_1->ip[1] = '\0';
-  param_1->ip[2] = '\0';
-  param_1->ip[3] = '\0';
-  *(undefined4 *)&param_1->port = 0;
-  param_1->addrHandleIndex = 0;
-  param_1->addrHandleIndex = -1;
-  local_10.m_ptr = (bdAddrHandle *)0x0;
+  adr->type = NA_BOT;
+  adr->ip[0] = '\0';
+  adr->ip[1] = '\0';
+  adr->ip[2] = '\0';
+  adr->ip[3] = '\0';
+  *(undefined4 *)&adr->port = 0;
+  adr->addrHandleIndex = 0;
+  adr->addrHandleIndex = -1;
+  addrHandle.m_ptr = (bdAddrHandle *)0x0;
   dwGetLocalCommonAddr();
-  if ((bdCommonAddr *)local_c.m_ptr != (bdCommonAddr *)0x0) {
+  if (localCommonAddr.m_ptr != (bdCommonAddr *)0x0) {
     local_2c = bdMemory::allocate(0x28);
     if (local_2c == (bdCommonAddr *)0x0) {
       local_58 = (bdCommonAddr *)0x0;
@@ -1540,121 +1533,119 @@ bool __cdecl dwCommonAddrToNetadr(netadr_t *param_1,uchar *param_2,bdSecurityID 
     else {
       local_58 = (bdCommonAddr *)bdCommonAddr::bdCommonAddr(local_2c);
     }
-    local_14.m_ptr = (bdByteBuffer *)local_58;
+    commonAddr.m_ptr = local_58;
     if (local_58 != (bdCommonAddr *)0x0) {
       InterlockedIncrement(&local_58->_padding_);
     }
-    if ((bdCommonAddr *)local_c.m_ptr != (bdCommonAddr *)0x0) {
-      InterlockedIncrement(&(local_c.m_ptr)->_padding_);
+    if (localCommonAddr.m_ptr != (bdCommonAddr *)0x0) {
+      InterlockedIncrement(&(localCommonAddr.m_ptr)->_padding_);
     }
-    local_5 = bdCommonAddr::deserialize
-                        ((bdCommonAddr *)local_14.m_ptr,(bdReference<bdCommonAddr>)local_c.m_ptr,
-                         param_2);
-    if (((bool)local_5) && (bVar2 = bdCommonAddr::isLoopback((bdCommonAddr *)local_14.m_ptr), bVar2)
-       ) {
-      param_1->ip[0] = '\x7f';
-      param_1->ip[1] = '\0';
-      param_1->ip[2] = '\0';
-      param_1->ip[3] = '\x01';
-      param_1->type = NA_IP;
+    ok = bdCommonAddr::deserialize(commonAddr.m_ptr,localCommonAddr,commonAddrBuf);
+    if ((ok) && (bVar2 = bdCommonAddr::isLoopback(commonAddr.m_ptr), bVar2)) {
+      adr->ip[0] = '\x7f';
+      adr->ip[1] = '\0';
+      adr->ip[2] = '\0';
+      adr->ip[3] = '\x01';
+      adr->type = NA_IP;
       iVar5 = dwGetLoopbackIndex();
-      param_1->addrHandleIndex = iVar5;
-      if ((maxAddrHandles < param_1->addrHandleIndex) &&
+      adr->addrHandleIndex = iVar5;
+      if ((maxAddrHandles < adr->addrHandleIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x4b7,0,"%s"),
          !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      local_18 = bdSingleton<bdNetImpl>::getInstance();
-      if ((local_18 == (bdNetImpl *)0x0) &&
+      net = bdSingleton<bdNetImpl>::getInstance();
+      if ((net == (bdNetImpl *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x4ba,0,"%s"),
          !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (local_18 != (bdNetImpl *)0x0) {
-        pbVar6 = bdNetImpl::getParams(local_18);
-        param_1->port = pbVar6->m_gamePort;
+      if (net != (bdNetImpl *)0x0) {
+        pbVar6 = bdNetImpl::getParams(net);
+        adr->port = pbVar6->m_gamePort;
       }
     }
-    else if (local_5 != '\0') {
-      pbVar12 = &local_10;
-      bVar9.m_ptr = (bdCommonAddr *)local_14.m_ptr;
-      pbVar10 = param_3;
-      if ((bdCommonAddr *)local_14.m_ptr != (bdCommonAddr *)0x0) {
-        InterlockedIncrement(&(local_14.m_ptr)->_padding_);
+    else if (ok) {
+      pbVar10 = &addrHandle;
+      bVar8.m_ptr = commonAddr.m_ptr;
+      pbVar9 = secID;
+      if (commonAddr.m_ptr != (bdCommonAddr *)0x0) {
+        InterlockedIncrement(&(commonAddr.m_ptr)->_padding_);
       }
       this = dwGetAddressMap();
-      bVar2 = bdAddressMap::getAddrHandle(this,bVar9,pbVar10,pbVar12);
-      if ((bVar2) && (local_10.m_ptr != (bdAddrHandle *)0x0)) {
-        pbVar13 = &local_1d;
-        puVar11 = &local_1c;
-        bVar8.m_ptr = local_10.m_ptr;
-        if (local_10.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(local_10.m_ptr)->_padding_);
+      bVar2 = bdAddressMap::getAddrHandle(this,bVar8,pbVar9,pbVar10);
+      if ((bVar2) && (addrHandle.m_ptr != (bdAddrHandle *)0x0)) {
+        newHandle_00 = &newHandle;
+        index_00 = &index;
+        addrHandle_00 = addrHandle;
+        if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
         }
-        bVar2 = dwRegisterAddrHandle(bVar8,param_3,puVar11,pbVar13);
+        bVar2 = dwRegisterAddrHandle(addrHandle_00,secID,index_00,newHandle_00);
         if (bVar2) {
-          local_28 = dwGetSocketRouter();
-          if ((local_28 == (bdSocketRouter *)0x0) &&
+          socketRouter = dwGetSocketRouter();
+          if ((socketRouter == (bdSocketRouter *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x4c7,0,
                                        "%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if (local_28 != (bdSocketRouter *)0x0) {
-            if (local_1d == false) {
-              if (local_10.m_ptr != (bdAddrHandle *)0x0) {
-                InterlockedIncrement(&(local_10.m_ptr)->_padding_);
+          if (socketRouter != (bdSocketRouter *)0x0) {
+            if (newHandle == false) {
+              if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+                InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
               }
-              iVar5 = (**(code **)(local_28->_padding_ + 0x1c))();
+              iVar5 = (**(code **)(socketRouter->_padding_ + 0x1c))();
               if (iVar5 != 3) goto LAB_005a3d30;
             }
-            (**(code **)(local_28->_padding_ + 0x14))();
+            (**(code **)(socketRouter->_padding_ + 0x14))();
           }
 LAB_005a3d30:
-          (**(code **)(local_28->_padding_ + 0xc))();
-          if (local_10.m_ptr != (bdAddrHandle *)0x0) {
-            InterlockedIncrement(&(local_10.m_ptr)->_padding_);
+          (**(code **)(socketRouter->_padding_ + 0xc))();
+          if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+            InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
           }
-          iVar5 = (**(code **)(local_28->_padding_ + 0x1c))();
+          iVar5 = (**(code **)(socketRouter->_padding_ + 0x1c))();
           if (iVar5 != 2) {
             Com_DPrintf(0,
                         "We\'re doing commonaddrtonetadr before the socket is BD_SOCKET_CONNECTED. Bad and wrong.\n"
                        );
           }
-          bVar7 = bdAddrHandle::getRealAddr(local_10.m_ptr);
+          bVar7 = bdAddrHandle::getRealAddr(addrHandle.m_ptr);
           this_00 = bdAddr::getAddress((bdAddr *)bVar7.m_address.m_addr.inUn.m_addr);
-          local_24 = bdInetAddr::toUInt32(this_00);
+          ip32 = bdInetAddr::toUInt32(this_00);
           bdInetAddr::~bdInetAddr(local_48);
-          *(uint *)param_1->ip = local_24;
-          bVar7 = bdAddrHandle::getRealAddr(local_10.m_ptr);
+          *(uint *)adr->ip = ip32;
+          bVar7 = bdAddrHandle::getRealAddr(addrHandle.m_ptr);
           uVar4 = bdAddr::getPort((bdAddr *)bVar7.m_address.m_addr.inUn.m_addr);
-          param_1->port = uVar4;
+          adr->port = uVar4;
           bdInetAddr::~bdInetAddr(local_50);
-          param_1->type = NA_IP;
-          param_1->addrHandleIndex = local_1c;
-          if ((maxAddrHandles < param_1->addrHandleIndex) &&
+          adr->type = NA_IP;
+          adr->addrHandleIndex = index;
+          if ((maxAddrHandles < adr->addrHandleIndex) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x4d6,0,
                                        "%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          local_5 = '\x01';
+          ok = true;
         }
       }
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&commonAddr);
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_10);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+            ((bdReference<bdByteBuffer> *)&localCommonAddr);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
 LAB_005a3e7c:
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  return (bool)local_5;
+  return ok;
 }
 
 
@@ -1667,10 +1658,10 @@ bdReference<bdAddrHandle> __cdecl dwAddrHandleIndexToAddrHandle(int param_1)
   bool bVar2;
   bdReference<bdAddrHandle> bVar3;
   int in_stack_00000008;
-  bdReference<bdAddrHandle> local_8;
+  bdReference<bdAddrHandle> addrHandle;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_8.m_ptr = (bdAddrHandle *)0x0;
+  addrHandle.m_ptr = (bdAddrHandle *)0x0;
   if ((in_stack_00000008 < 0) || (maxAddrHandles < in_stack_00000008)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x4ff,0,"%s");
     if (!bVar2) {
@@ -1680,14 +1671,15 @@ bdReference<bdAddrHandle> __cdecl dwAddrHandleIndexToAddrHandle(int param_1)
     }
   }
   if ((-1 < in_stack_00000008) && (in_stack_00000008 < maxAddrHandles)) {
-    bdReference<bdAddrHandle>::operator=(&local_8,&g_addrHandles[in_stack_00000008].m_addrHandle);
+    bdReference<bdAddrHandle>::operator=(&addrHandle,&g_addrHandles[in_stack_00000008].m_addrHandle)
+    ;
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  *(bdAddrHandle **)param_1 = local_8.m_ptr;
+  *(bdAddrHandle **)param_1 = addrHandle.m_ptr;
   if (*(int *)param_1 != 0) {
     InterlockedIncrement((LONG *)(*(int *)param_1 + 4));
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_8);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
   return (bdReference<bdAddrHandle>)(bdAddrHandle *)param_1;
 }
 
@@ -1698,15 +1690,15 @@ bdReference<bdAddrHandle> __cdecl dwNetadrToAddrHandle(netadr_t *param_1)
 
 {
   int in_stack_00000008;
-  bdReference<bdByteBuffer> local_8;
+  bdReference<bdAddrHandle> addrHandle;
   
   if (in_stack_00000008 == 0) {
-    local_8.m_ptr = (bdByteBuffer *)0x0;
+    addrHandle.m_ptr = (bdAddrHandle *)0x0;
     param_1->type = NA_BOT;
     if (param_1->type != NA_BOT) {
       InterlockedIncrement((LONG *)(param_1->type + NA_IP));
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_8);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
   }
   else {
     dwAddrHandleIndexToAddrHandle((int)param_1);
@@ -1720,16 +1712,16 @@ bdReference<bdAddrHandle> __cdecl dwNetadrToAddrHandle(netadr_t *param_1)
 uint __cdecl dwGetNumAddrHandles(void)
 
 {
-  int local_c;
-  uint local_8;
+  int i;
+  uint numConnections;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < maxAddrHandles; local_c = local_c + 1) {
-    if (g_addrHandles[local_c].m_addrHandle.m_ptr != (bdAddrHandle *)0x0) {
-      local_8 = local_8 + 1;
+  numConnections = 0;
+  for (i = 0; i < maxAddrHandles; i = i + 1) {
+    if (g_addrHandles[i].m_addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+      numConnections = numConnections + 1;
     }
   }
-  return local_8;
+  return numConnections;
 }
 
 
@@ -1737,31 +1729,31 @@ uint __cdecl dwGetNumAddrHandles(void)
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-bool __cdecl dwCloseConnection(netadr_t *param_1)
+bool __cdecl dwCloseConnection(netadr_t *adr)
 
 {
-  bdReference<bdByteBuffer> local_c;
-  uchar local_5;
+  bdReference<bdAddrHandle> addrHandle;
+  bool killed;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_5 = '\0';
-  if (param_1 != (netadr_t *)0x0) {
-    NET_AdrToString(*param_1);
+  killed = false;
+  if (adr != (netadr_t *)0x0) {
+    NET_AdrToString(*adr);
     Com_DPrintf(0x17,"Attempting to close socketrouter connection to %s\n");
-    dwNetadrToAddrHandle((netadr_t *)&local_c);
-    if ((bdAddrHandle *)local_c.m_ptr != (bdAddrHandle *)0x0) {
-      NET_AdrToString(*param_1);
+    dwNetadrToAddrHandle((netadr_t *)&addrHandle);
+    if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+      NET_AdrToString(*adr);
       Com_DPrintf(0x17,"Closed socketrouter connection to %s\n");
-      if ((bdAddrHandle *)local_c.m_ptr != (bdAddrHandle *)0x0) {
-        InterlockedIncrement(&(local_c.m_ptr)->_padding_);
+      if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+        InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
       }
-      dwHandleLostConnection((bdReference<bdAddrHandle>)local_c.m_ptr);
-      local_5 = '\x01';
+      dwHandleLostConnection(addrHandle);
+      killed = true;
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  return (bool)local_5;
+  return killed;
 }
 
 
@@ -1776,19 +1768,19 @@ int __cdecl dwGetLoopbackIndex(void)
 
 // 005A4140  dwAddrIndexToAddrString  (DW/dwNet.cpp:1542)
 
-bool __cdecl dwAddrIndexToAddrString(int param_1,char *param_2,uint param_3)
+bool __cdecl dwAddrIndexToAddrString(int addrHandleIndex,char *str,uint size)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  bdReference<bdAddrHandle> local_c;
-  undefined1 local_5;
+  bdReference<bdAddrHandle> addrHandle;
+  bool ok;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_5 = 0;
-  if (maxAddrHandles < param_1) {
+  ok = false;
+  if (maxAddrHandles < addrHandleIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x609,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1796,29 +1788,30 @@ bool __cdecl dwAddrIndexToAddrString(int param_1,char *param_2,uint param_3)
       return (bool)uVar3;
     }
   }
-  memset((uchar *)param_2,'\0',param_3);
+  memset((uchar *)str,'\0',size);
   iVar4 = dwGetLoopbackIndex();
-  if (param_1 == iVar4) {
-    bdSnprintf(param_2,param_3,"loopback");
-    local_5 = 1;
+  if (addrHandleIndex == iVar4) {
+    bdSnprintf(str,size,"loopback");
+    ok = true;
   }
-  else if (param_1 < maxAddrHandles) {
-    local_c.m_ptr = g_addrHandles[param_1].m_addrHandle.m_ptr;
-    if (local_c.m_ptr != (bdAddrHandle *)0x0) {
-      InterlockedIncrement(&(local_c.m_ptr)->_padding_);
+  else if (addrHandleIndex < maxAddrHandles) {
+    addrHandle.m_ptr = g_addrHandles[addrHandleIndex].m_addrHandle.m_ptr;
+    if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+      InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
     }
-    if (local_c.m_ptr == (bdAddrHandle *)0x0) {
-      bdSnprintf(param_2,param_3,"unregistered address");
+    bVar2 = addrHandle.m_ptr == (bdAddrHandle *)0x0;
+    if (bVar2) {
+      bdSnprintf(str,size,"unregistered address");
     }
     else {
       dwGetAddressMap();
-      bdAddressMap::addrToString(&local_c,param_2,param_3);
-      local_5 = 1;
+      bdAddressMap::addrToString(&addrHandle,str,size);
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_c);
+    ok = !bVar2;
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  return (bool)local_5;
+  return ok;
 }
 
 
@@ -1826,50 +1819,52 @@ bool __cdecl dwAddrIndexToAddrString(int param_1,char *param_2,uint param_3)
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-taskCompleteResults __cdecl dwGetAddrHandleConnectionTaskStatus(int param_1)
+taskCompleteResults __cdecl dwGetAddrHandleConnectionTaskStatus(int addrHandleIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  taskCompleteResults tVar3;
-  undefined4 uVar4;
-  taskCompleteResults local_10;
-  bdReference<bdByteBuffer> local_c;
-  bdSocketRouter *local_8;
+  bdSocketRouter *pbVar3;
+  taskCompleteResults tVar4;
+  undefined4 uVar5;
+  bdDTLSAssociationStatus status;
+  taskCompleteResults connected;
+  bdReference<bdAddrHandle> addrHandle;
+  bdSocketRouter *socketRouter;
   
   Sys_EnterCriticalSection(CRITSECT_DEMONWARE);
-  local_10 = TASK_ERROR;
-  local_8 = dwGetSocketRouter();
-  dwAddrHandleIndexToAddrHandle((int)&local_c);
-  if ((local_8 == (bdSocketRouter *)0x0) &&
+  connected = TASK_ERROR;
+  pbVar3 = dwGetSocketRouter();
+  dwAddrHandleIndexToAddrHandle((int)&addrHandle);
+  if ((pbVar3 == (bdSocketRouter *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwNet.cpp",0x62c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar3 = (*pcVar1)();
-    return tVar3;
+    tVar4 = (*pcVar1)();
+    return tVar4;
   }
-  if ((local_8 != (bdSocketRouter *)0x0) && (local_c.m_ptr != (bdByteBuffer *)0x0)) {
-    if (local_c.m_ptr != (bdByteBuffer *)0x0) {
-      InterlockedIncrement(&(local_c.m_ptr)->_padding_);
+  if ((pbVar3 != (bdSocketRouter *)0x0) && (addrHandle.m_ptr != (bdAddrHandle *)0x0)) {
+    if (addrHandle.m_ptr != (bdAddrHandle *)0x0) {
+      InterlockedIncrement(&(addrHandle.m_ptr)->_padding_);
     }
-    uVar4 = (**(code **)(local_8->_padding_ + 0x1c))();
-    switch(uVar4) {
+    uVar5 = (**(code **)(pbVar3->_padding_ + 0x1c))();
+    switch(uVar5) {
     case 0:
-      local_10 = TASK_ERROR;
+      connected = TASK_ERROR;
       break;
     case 1:
-      local_10 = TASK_NOTCOMPLETE;
+      connected = TASK_NOTCOMPLETE;
       break;
     case 2:
-      local_10 = TASK_COMPLETE;
+      connected = TASK_COMPLETE;
       break;
     case 3:
-      local_10 = TASK_ERROR;
+      connected = TASK_ERROR;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_DEMONWARE);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
-  return local_10;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addrHandle);
+  return connected;
 }
 
 

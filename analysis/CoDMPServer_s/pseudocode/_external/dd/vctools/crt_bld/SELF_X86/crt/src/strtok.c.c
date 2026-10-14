@@ -4,19 +4,20 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl strtok(char *param_1,char *param_2)
+char * __cdecl strtok(char *string,char *control)
 
 {
   byte bVar1;
   _tiddata *p_Var2;
   int iVar3;
   byte *pbVar4;
-  byte local_28 [32];
+  _tiddata *ptd;
+  byte map [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   p_Var2 = _getptd();
-  pbVar4 = local_28;
+  pbVar4 = map;
   for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
     pbVar4[0] = 0;
     pbVar4[1] = 0;
@@ -25,24 +26,23 @@ char * __cdecl strtok(char *param_1,char *param_2)
     pbVar4 = pbVar4 + 4;
   }
   do {
-    bVar1 = *param_2;
-    local_28[bVar1 >> 3] = local_28[bVar1 >> 3] | '\x01' << (bVar1 & 7);
-    param_2 = param_2 + 1;
+    bVar1 = *control;
+    map[bVar1 >> 3] = map[bVar1 >> 3] | '\x01' << (bVar1 & 7);
+    control = control + 1;
   } while (bVar1 != 0);
-  if (param_1 == (char *)0x0) {
-    param_1 = p_Var2->_token;
+  if (string == (char *)0x0) {
+    string = p_Var2->_token;
   }
-  for (; (bVar1 = *param_1, pbVar4 = (byte *)param_1,
-         (local_28[bVar1 >> 3] & (byte)(1 << (bVar1 & 7))) != 0 && (bVar1 != 0));
-      param_1 = param_1 + 1) {
+  for (; (bVar1 = *string, pbVar4 = (byte *)string,
+         (map[bVar1 >> 3] & (byte)(1 << (bVar1 & 7))) != 0 && (bVar1 != 0)); string = string + 1) {
   }
   do {
     if (*pbVar4 == 0) {
 LAB_0095f5ac:
       p_Var2->_token = (char *)pbVar4;
-      return (char *)(-(uint)((byte *)param_1 != pbVar4) & (uint)param_1);
+      return (char *)(-(uint)((byte *)string != pbVar4) & (uint)string);
     }
-    if ((local_28[*pbVar4 >> 3] & (byte)(1 << (*pbVar4 & 7))) != 0) {
+    if ((map[*pbVar4 >> 3] & (byte)(1 << (*pbVar4 & 7))) != 0) {
       *pbVar4 = 0;
       pbVar4 = pbVar4 + 1;
       goto LAB_0095f5ac;

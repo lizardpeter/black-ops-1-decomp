@@ -3,10 +3,10 @@
 // 009418D0  SDXA2Effect  (sound/snd_driver_xaudio2_dsp.cpp:24)
 
 SDXA2Effect * __thiscall
-SDXA2Effect::SDXA2Effect(SDXA2Effect *this,XAPO_REGISTRATION_PROPERTIES *param_1)
+SDXA2Effect::SDXA2Effect(SDXA2Effect *this,XAPO_REGISTRATION_PROPERTIES *props)
 
 {
-  CXAPOBase::CXAPOBase((CXAPOBase *)this,param_1);
+  CXAPOBase::CXAPOBase((CXAPOBase *)this,props);
   this->_padding_ = (int)vftable_for_CXAPOBase_;
   this->_padding_ = (int)vftable_for_IXAPOParameters_;
   this->locked = 0;
@@ -30,7 +30,7 @@ void __thiscall SDXA2Effect::~SDXA2Effect(SDXA2Effect *this)
 
 // 009419B0  GetParameters  (sound/snd_driver_xaudio2_dsp.cpp:35)
 
-void __thiscall SDXA2Effect::GetParameters(SDXA2Effect *this,void *param_1,uint param_2)
+void __thiscall SDXA2Effect::GetParameters(SDXA2Effect *this,void *this,uint pParameters)
 
 {
   code *pcVar1;
@@ -51,8 +51,9 @@ void __thiscall SDXA2Effect::GetParameters(SDXA2Effect *this,void *param_1,uint 
 
 undefined4 __thiscall
 SDXA2Effect::LockForProcess
-          (SDXA2Effect *this,uint param_1,XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *param_2,
-          uint param_3,XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *param_4)
+          (SDXA2Effect *this,uint this,
+          XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *InputLockedParameterCount,uint in,
+          XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS *OutputLockedParameterCount)
 
 {
   code *pcVar1;
@@ -60,7 +61,7 @@ SDXA2Effect::LockForProcess
   undefined4 uVar3;
   int *in_stack_00000014;
   
-  if (*(int *)(param_1 + 0x24) != 0) {
+  if (*(int *)(this + 0x24) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x2e,0,"%s");
     if (!bVar2) {
@@ -69,9 +70,9 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  *(undefined4 *)(param_1 + 0x24) = 1;
-  *(undefined4 *)(param_1 + 0x28) = 0;
-  if (*(int *)(param_3 + 4) != in_stack_00000014[1]) {
+  *(undefined4 *)(this + 0x24) = 1;
+  *(undefined4 *)(this + 0x28) = 0;
+  if (*(int *)(in + 4) != in_stack_00000014[1]) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x32,0,"%s");
     if (!bVar2) {
@@ -80,7 +81,7 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  if (*(short *)(*(int *)param_3 + 0xe) != *(short *)(*in_stack_00000014 + 0xe)) {
+  if (*(short *)(*(int *)in + 0xe) != *(short *)(*in_stack_00000014 + 0xe)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x33,0,"%s");
     if (!bVar2) {
@@ -89,7 +90,7 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  if (**(short **)param_3 != *(short *)*in_stack_00000014) {
+  if (**(short **)in != *(short *)*in_stack_00000014) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x34,0,"%s");
     if (!bVar2) {
@@ -98,7 +99,7 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  if (*(int *)(*(int *)param_3 + 4) != *(int *)(*in_stack_00000014 + 4)) {
+  if (*(int *)(*(int *)in + 4) != *(int *)(*in_stack_00000014 + 4)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x35,0,"%s");
     if (!bVar2) {
@@ -107,7 +108,7 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  if (**(short **)param_3 != -2) {
+  if (**(short **)in != -2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x36,0,"%s");
     if (!bVar2) {
@@ -116,7 +117,7 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  if (*(short *)(*(int *)param_3 + 0xe) != 0x20) {
+  if (*(short *)(*(int *)in + 0xe) != 0x20) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x37,0,"%s");
     if (!bVar2) {
@@ -125,16 +126,16 @@ SDXA2Effect::LockForProcess
       return uVar3;
     }
   }
-  *(undefined4 *)(param_1 + 0x2c) = *(undefined4 *)(*(int *)param_3 + 4);
-  *(undefined4 *)(param_1 + 0x30) = *(undefined4 *)(param_3 + 4);
-  *(uint *)(param_1 + 0x34) = (uint)*(ushort *)(*(int *)param_3 + 2);
+  *(undefined4 *)(this + 0x2c) = *(undefined4 *)(*(int *)in + 4);
+  *(undefined4 *)(this + 0x30) = *(undefined4 *)(in + 4);
+  *(uint *)(this + 0x34) = (uint)*(ushort *)(*(int *)in + 2);
   return 0;
 }
 
 
 // 00941B90  QueryInterface  (sound/snd_driver_xaudio2_dsp.cpp:66)
 
-undefined4 __thiscall SDXA2Effect::QueryInterface(SDXA2Effect *this,_GUID *param_1,void **param_2)
+HRESULT __thiscall SDXA2Effect::QueryInterface(SDXA2Effect *this,_GUID *this,void **riid)
 
 {
   int iVar1;
@@ -145,14 +146,14 @@ undefined4 __thiscall SDXA2Effect::QueryInterface(SDXA2Effect *this,_GUID *param
   int *in_stack_0000000c;
   _GUID *local_18;
   int local_10;
-  undefined4 local_8;
+  HRESULT hr;
   
-  local_8 = 0;
+  hr = 0;
   iVar1 = 0x10;
   bVar4 = false;
   bVar5 = true;
   local_10 = 0;
-  ppvVar2 = param_2;
+  ppvVar2 = riid;
   pbVar3 = &__GUID_a90bc001_e897_e897_55e4_9e4700000001;
   do {
     if (iVar1 == 0) break;
@@ -166,19 +167,19 @@ undefined4 __thiscall SDXA2Effect::QueryInterface(SDXA2Effect *this,_GUID *param
     local_10 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
   }
   if (local_10 == 0) {
-    if (param_1 == (_GUID *)0x0) {
+    if (this == (_GUID *)0x0) {
       local_18 = (_GUID *)0x0;
     }
     else {
-      local_18 = param_1 + 2;
+      local_18 = this + 2;
     }
     *in_stack_0000000c = (int)local_18;
-    InterlockedIncrement((LONG *)(param_1[1].Data4 + 4));
+    InterlockedIncrement((LONG *)(this[1].Data4 + 4));
   }
   else {
-    local_8 = CXAPOBase::QueryInterface((CXAPOBase *)param_1,param_1,param_2);
+    hr = CXAPOBase::QueryInterface((CXAPOBase *)this,this,riid);
   }
-  return local_8;
+  return hr;
 }
 
 
@@ -258,88 +259,90 @@ void __thiscall SDXA2Effect::UnlockForProcess(SDXA2Effect *this)
 
 void __thiscall
 SDXA2Effect::Process
-          (SDXA2Effect *this,uint param_1,XAPO_PROCESS_BUFFER_PARAMETERS *param_2,uint param_3,
-          XAPO_PROCESS_BUFFER_PARAMETERS *param_4,int param_5)
+          (SDXA2Effect *this,uint this,XAPO_PROCESS_BUFFER_PARAMETERS *InputProcessParameterCount,
+          uint pInputProcessParameters,XAPO_PROCESS_BUFFER_PARAMETERS *OutputProcessParameterCount,
+          int pOutputProcessParameters)
 
 {
-  float *pfVar1;
-  float *pfVar2;
-  code *pcVar3;
-  bool bVar4;
+  float *in;
+  float *out;
+  code *pcVar1;
+  bool bVar2;
+  float *input;
+  float *output;
   
-  if (*(int *)(param_1 + 0x24) == 0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  if (*(int *)(this + 0x24) == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x74,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_2 != (XAPO_PROCESS_BUFFER_PARAMETERS *)&DAT_00000001) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  if (InputProcessParameterCount != (XAPO_PROCESS_BUFFER_PARAMETERS *)&DAT_00000001) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x75,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_4 != (XAPO_PROCESS_BUFFER_PARAMETERS *)&DAT_00000001) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  if (OutputProcessParameterCount != (XAPO_PROCESS_BUFFER_PARAMETERS *)&DAT_00000001) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x76,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (*(int *)(param_3 + 8) != *(int *)(param_1 + 0x30)) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  if (*(int *)(pInputProcessParameters + 8) != *(int *)(this + 0x30)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x77,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (0x1e0 < *(uint *)(param_1 + 0x30)) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  if (0x1e0 < *(uint *)(this + 0x30)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x78,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (*(int *)(param_3 + 4) == 0) {
-    memset(*(uchar **)param_3,'\0',*(int *)(param_1 + 0x34) * *(int *)(param_1 + 0x30) * 4);
+  if (*(int *)(pInputProcessParameters + 4) == 0) {
+    memset(*(uchar **)pInputProcessParameters,'\0',*(int *)(this + 0x34) * *(int *)(this + 0x30) * 4
+          );
   }
-  *(undefined4 *)(param_5 + 4) = 1;
-  pfVar1 = *(float **)param_3;
-  pfVar2 = *(float **)param_5;
-  if (*(int *)(param_1 + 0x30) != 0x1e0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
+  *(undefined4 *)(pOutputProcessParameters + 4) = 1;
+  in = *(float **)pInputProcessParameters;
+  out = *(float **)pOutputProcessParameters;
+  if (*(int *)(this + 0x30) != 0x1e0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x84,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  SND_DspUninterleave(*(uint *)(param_1 + 0x34),*(uint *)(param_1 + 0x30),pfVar1,
-                      (float *)(param_1 + 0x80));
-  (**(code **)(*(int *)param_1 + 0x3c))
-            (*(undefined4 *)(param_1 + 0x34),*(undefined4 *)(param_1 + 0x30),param_1 + 0x80);
-  SND_DspInterleave(*(uint *)(param_1 + 0x34),*(uint *)(param_1 + 0x30),(float *)(param_1 + 0x80),
-                    pfVar2);
+  SND_DspUninterleave(*(uint *)(this + 0x34),*(uint *)(this + 0x30),in,(float *)(this + 0x80));
+  (**(code **)(*(int *)this + 0x3c))
+            (*(undefined4 *)(this + 0x34),*(undefined4 *)(this + 0x30),this + 0x80);
+  SND_DspInterleave(*(uint *)(this + 0x34),*(uint *)(this + 0x30),(float *)(this + 0x80),out);
   return;
 }
 
 
 // 00941C20  QueryInterface  (<external>/projects_pc/cod/sdk/directx_jun10/include/xapobase.h:159)
 
-undefined4 __thiscall CXAPOBase::QueryInterface(CXAPOBase *this,_GUID *param_1,void **param_2)
+HRESULT __thiscall CXAPOBase::QueryInterface(CXAPOBase *this,_GUID *this,void **riid)
 
 {
   int iVar1;
@@ -350,14 +353,14 @@ undefined4 __thiscall CXAPOBase::QueryInterface(CXAPOBase *this,_GUID *param_1,v
   undefined4 *in_stack_0000000c;
   int local_14;
   int local_c;
-  undefined4 local_8;
+  HRESULT hr;
   
-  local_8 = 0;
+  hr = 0;
   iVar1 = 0x10;
   bVar4 = false;
   bVar5 = true;
   local_c = 0;
-  ppvVar2 = param_2;
+  ppvVar2 = riid;
   pbVar3 = &__GUID_a90bc001_e897_e897_55e4_9e4700000000;
   do {
     if (iVar1 == 0) break;
@@ -371,8 +374,8 @@ undefined4 __thiscall CXAPOBase::QueryInterface(CXAPOBase *this,_GUID *param_1,v
     local_c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
   }
   if (local_c == 0) {
-    *in_stack_0000000c = param_1;
-    (**(code **)(param_1->Data1 + 4))(param_1);
+    *in_stack_0000000c = this;
+    (**(code **)(this->Data1 + 4))(this);
   }
   else {
     iVar1 = 0x10;
@@ -383,24 +386,24 @@ undefined4 __thiscall CXAPOBase::QueryInterface(CXAPOBase *this,_GUID *param_1,v
     do {
       if (iVar1 == 0) break;
       iVar1 = iVar1 + -1;
-      bVar4 = *(byte *)param_2 < *pbVar3;
-      bVar5 = *(byte *)param_2 == *pbVar3;
-      param_2 = (void **)((int)param_2 + 1);
+      bVar4 = *(byte *)riid < *pbVar3;
+      bVar5 = *(byte *)riid == *pbVar3;
+      riid = (void **)((int)riid + 1);
       pbVar3 = pbVar3 + 1;
     } while (bVar5);
     if (!bVar5) {
       local_14 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
     }
     if (local_14 == 0) {
-      *in_stack_0000000c = param_1;
-      (**(code **)(param_1->Data1 + 4))(param_1);
+      *in_stack_0000000c = this;
+      (**(code **)(this->Data1 + 4))(this);
     }
     else {
       *in_stack_0000000c = 0;
-      local_8 = 0x80004002;
+      hr = -0x7fffbffe;
     }
   }
-  return local_8;
+  return hr;
 }
 
 
@@ -452,14 +455,14 @@ void __thiscall SDXA2SourceEffect::Clear(SDXA2SourceEffect *this)
 // 009420C0  Process  (sound/snd_driver_xaudio2_dsp.cpp:173)
 
 void __thiscall
-SDXA2SourceEffect::Process(SDXA2SourceEffect *this,uint param_1,uint param_2,float *param_3)
+SDXA2SourceEffect::Process(SDXA2SourceEffect *this,uint channelCount,uint frameCount,float *data)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
-  if (2 < param_1) {
+  if (2 < channelCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0xae,0,"%s");
     if (!bVar2) {
@@ -468,9 +471,9 @@ SDXA2SourceEffect::Process(SDXA2SourceEffect *this,uint param_1,uint param_2,flo
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    SND_DspFxSourceMono(&this->params,this->state + local_8,param_2,param_3 + local_8 * param_2,
-                        this->tempa,this->tempb);
+  for (i = 0; i < channelCount; i = i + 1) {
+    SND_DspFxSourceMono(&this->params,this->state + i,frameCount,data + i * frameCount,this->tempa,
+                        this->tempb);
   }
   return;
 }
@@ -483,6 +486,7 @@ ulong __thiscall CXAPOBase::Release(CXAPOBase *this)
 {
   ulong uVar1;
   int *in_stack_00000004;
+  ulong uTmpReferenceCount;
   
   uVar1 = InterlockedDecrement(in_stack_00000004 + 7);
   if ((uVar1 == 0) && (in_stack_00000004 != (int *)0x0)) {
@@ -494,7 +498,7 @@ ulong __thiscall CXAPOBase::Release(CXAPOBase *this)
 
 // 00942160  SetParameters  (sound/snd_driver_xaudio2_dsp.cpp:190)
 
-void __thiscall SDXA2SourceEffect::SetParameters(SDXA2SourceEffect *this,void *param_1,uint param_2)
+void __thiscall SDXA2SourceEffect::SetParameters(SDXA2SourceEffect *this,void *this,uint pParams)
 
 {
   code *pcVar1;
@@ -512,10 +516,10 @@ void __thiscall SDXA2SourceEffect::SetParameters(SDXA2SourceEffect *this,void *p
       return;
     }
   }
-  puVar4 = (undefined4 *)((int)param_1 + 0x3c60);
+  puVar4 = (undefined4 *)((int)this + 0x3c60);
   for (iVar3 = 0x10; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = *(undefined4 *)param_2;
-    param_2 = (uint)(param_2 + 4);
+    *puVar4 = *(undefined4 *)pParams;
+    pParams = (uint)(pParams + 4);
     puVar4 = puVar4 + 1;
   }
   return;
@@ -524,7 +528,7 @@ void __thiscall SDXA2SourceEffect::SetParameters(SDXA2SourceEffect *this,void *p
 
 // 00941930  Initialize  (<external>/projects_pc/cod/sdk/directx_jun10/include/xapobase.h:212)
 
-undefined4 __thiscall CXAPOBase::Initialize(CXAPOBase *this,void *param_1,uint param_2)
+undefined4 __thiscall CXAPOBase::Initialize(CXAPOBase *this,void *this,uint __formal)
 
 {
   return 0;
@@ -550,15 +554,15 @@ SDXA2MasterNoVoiceBusEffect::SDXA2MasterNoVoiceBusEffect(SDXA2MasterNoVoiceBusEf
 
 void __thiscall
 SDXA2MasterNoVoiceBusEffect::Process
-          (SDXA2MasterNoVoiceBusEffect *this,uint param_1,uint param_2,float *param_3)
+          (SDXA2MasterNoVoiceBusEffect *this,uint channelCount,uint frameCount,float *data)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
+  for (i = 0; i < channelCount; i = i + 1) {
     SND_DspFxMasterNoVoiceSingleChannel
-              (param_2,(float)(uint)this->_padding_,param_3 + local_8 * param_2,&this->params,
-               this->state + local_8,g_snd.meters + local_8);
+              (frameCount,(float)(uint)this->_padding_,data + i * frameCount,&this->params,
+               this->state + i,g_snd.meters + i);
   }
   return;
 }
@@ -566,7 +570,7 @@ SDXA2MasterNoVoiceBusEffect::Process
 
 // 00941940  CalcInputFrames  (<external>/projects_pc/cod/sdk/directx_jun10/include/xapobase.h:234)
 
-uint __thiscall CXAPOBase::CalcInputFrames(CXAPOBase *this,uint param_1)
+uint __thiscall CXAPOBase::CalcInputFrames(CXAPOBase *this,uint this_2)
 
 {
   uint in_stack_00000008;
@@ -579,7 +583,7 @@ uint __thiscall CXAPOBase::CalcInputFrames(CXAPOBase *this,uint param_1)
 
 void __thiscall
 SDXA2MasterNoVoiceBusEffect::SetParameters
-          (SDXA2MasterNoVoiceBusEffect *this,void *param_1,uint param_2)
+          (SDXA2MasterNoVoiceBusEffect *this,void *this,uint pParams)
 
 {
   code *pcVar1;
@@ -597,10 +601,10 @@ SDXA2MasterNoVoiceBusEffect::SetParameters
       return;
     }
   }
-  puVar4 = (undefined4 *)((int)param_1 + 0x3c60);
+  puVar4 = (undefined4 *)((int)this + 0x3c60);
   for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = *(undefined4 *)param_2;
-    param_2 = (uint)(param_2 + 4);
+    *puVar4 = *(undefined4 *)pParams;
+    pParams = (uint)(pParams + 4);
     puVar4 = puVar4 + 1;
   }
   return;
@@ -628,46 +632,49 @@ SDXA2MasterBusEffect::SDXA2MasterBusEffect(SDXA2MasterBusEffect *this)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __thiscall
-SDXA2MasterBusEffect::Process(SDXA2MasterBusEffect *this,uint param_1,uint param_2,float *param_3)
+SDXA2MasterBusEffect::Process
+          (SDXA2MasterBusEffect *this,uint channelCount,uint frameCount,float *data)
 
 {
   bool bVar1;
   float local_23c;
   float local_238;
   uint local_234;
-  uint local_224;
-  float local_220;
-  uint local_21c;
-  short local_214 [258];
+  uint channel;
+  float frameSample;
+  uint frame;
+  uint framesToProcess;
+  short shorts [258];
   uint local_10;
-  uint local_c;
-  uint local_8;
+  uint framesProcessed;
+  uint i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
+  for (i = 0; i < channelCount; i = i + 1) {
     SND_DspFxMasterSingleChannel
-              (param_2,(float)(uint)this->_padding_,param_3 + local_8 * param_2,&this->params,
-               this->state + local_8,g_snd.meters + local_8);
+              (frameCount,(float)(uint)this->_padding_,data + i * frameCount,&this->params,
+               this->state + i,g_snd.meters + i);
   }
   bVar1 = mjpeg_is_encoding();
   if (bVar1) {
-    for (local_c = 0; local_c < param_2; local_c = local_c + local_234) {
-      if (param_2 - local_c < 0x100) {
-        local_234 = param_2 - local_c;
+    for (framesProcessed = 0; framesProcessed < frameCount;
+        framesProcessed = framesProcessed + local_234) {
+      if (frameCount - framesProcessed < 0x100) {
+        local_234 = frameCount - framesProcessed;
       }
       else {
         local_234 = 0x100;
       }
-      for (local_21c = 0; local_21c < local_234; local_21c = local_21c + 1) {
-        local_220 = 0.0;
-        for (local_224 = 0; local_224 < param_1; local_224 = local_224 + 1) {
-          local_220 = local_220 + param_3[local_21c + local_c + local_224 * param_2];
+      for (frame = 0; frame < local_234; frame = frame + 1) {
+        frameSample = 0.0;
+        for (channel = 0; channel < channelCount; channel = channel + 1) {
+          frameSample = frameSample + data[frame + framesProcessed + channel * frameCount];
         }
-        if (1.0 <= local_220) {
+        if (1.0 <= frameSample) {
           local_238 = 1.0;
         }
         else {
-          local_238 = local_220;
+          local_238 = frameSample;
         }
         if (local_238 <= -1.0) {
           local_23c = -1.0;
@@ -675,9 +682,9 @@ SDXA2MasterBusEffect::Process(SDXA2MasterBusEffect *this,uint param_1,uint param
         else {
           local_23c = local_238;
         }
-        local_214[local_21c] = (short)(int)(local_23c * 32767.0);
+        shorts[frame] = (short)(int)(local_23c * 32767.0);
       }
-      mjpeg_add_samples(local_214,local_234);
+      mjpeg_add_samples(shorts,local_234);
     }
   }
   return;
@@ -687,7 +694,7 @@ SDXA2MasterBusEffect::Process(SDXA2MasterBusEffect *this,uint param_1,uint param
 // 00942590  SetParameters  (sound/snd_driver_xaudio2_dsp.cpp:314)
 
 void __thiscall
-SDXA2MasterBusEffect::SetParameters(SDXA2MasterBusEffect *this,void *param_1,uint param_2)
+SDXA2MasterBusEffect::SetParameters(SDXA2MasterBusEffect *this,void *this,uint pParams)
 
 {
   code *pcVar1;
@@ -705,10 +712,10 @@ SDXA2MasterBusEffect::SetParameters(SDXA2MasterBusEffect *this,void *param_1,uin
       return;
     }
   }
-  puVar4 = (undefined4 *)((int)param_1 + 0x3c60);
+  puVar4 = (undefined4 *)((int)this + 0x3c60);
   for (iVar3 = 0x18; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = *(undefined4 *)param_2;
-    param_2 = (uint)(param_2 + 4);
+    *puVar4 = *(undefined4 *)pParams;
+    pParams = (uint)(pParams + 4);
     puVar4 = puVar4 + 1;
   }
   return;
@@ -731,13 +738,13 @@ SDXA2RadverbEffect * __thiscall SDXA2RadverbEffect::SDXA2RadverbEffect(SDXA2Radv
 // 00942620  Process  (sound/snd_driver_xaudio2_dsp.cpp:343)
 
 void __thiscall
-SDXA2RadverbEffect::Process(SDXA2RadverbEffect *this,uint param_1,uint param_2,float *param_3)
+SDXA2RadverbEffect::Process(SDXA2RadverbEffect *this,uint channelCount,uint frameCount,float *data)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 4) {
+  if (channelCount != 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x158,0,"%s");
     if (!bVar2) {
@@ -755,18 +762,17 @@ SDXA2RadverbEffect::Process(SDXA2RadverbEffect *this,uint param_1,uint param_2,f
       return;
     }
   }
-  SND_RvFrame(&this->params,&this->state,param_2,param_3 + param_2 * 3,param_3 + param_2,param_3,
-              param_3 + param_2 * 2,this->temp + param_2 * 3,this->temp + param_2,this->temp,
-              this->temp + param_2 * 2);
-  memcpy((uchar *)param_3,(uchar *)this->temp,param_1 * 4 * param_2);
+  SND_RvFrame(&this->params,&this->state,frameCount,data + frameCount * 3,data + frameCount,data,
+              data + frameCount * 2,this->temp + frameCount * 3,this->temp + frameCount,this->temp,
+              this->temp + frameCount * 2);
+  memcpy((uchar *)data,(uchar *)this->temp,channelCount * 4 * frameCount);
   return;
 }
 
 
 // 00942750  SetParameters  (sound/snd_driver_xaudio2_dsp.cpp:367)
 
-void __thiscall
-SDXA2RadverbEffect::SetParameters(SDXA2RadverbEffect *this,void *param_1,uint param_2)
+void __thiscall SDXA2RadverbEffect::SetParameters(SDXA2RadverbEffect *this,void *this,uint pParams)
 
 {
   code *pcVar1;
@@ -784,13 +790,13 @@ SDXA2RadverbEffect::SetParameters(SDXA2RadverbEffect *this,void *param_1,uint pa
       return;
     }
   }
-  puVar4 = (undefined4 *)((int)param_1 + 0x83ee0);
+  puVar4 = (undefined4 *)((int)this + 0x83ee0);
   for (iVar3 = 0x19; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = *(undefined4 *)param_2;
-    param_2 = (uint)(param_2 + 4);
+    *puVar4 = *(undefined4 *)pParams;
+    pParams = (uint)(pParams + 4);
     puVar4 = puVar4 + 1;
   }
-  if (*(float *)((int)param_1 + 0x83ee0) <= 1000.0) {
+  if (*(float *)((int)this + 0x83ee0) <= 1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x172,0,"%s");
     if (!bVar2) {
@@ -799,8 +805,7 @@ SDXA2RadverbEffect::SetParameters(SDXA2RadverbEffect *this,void *param_1,uint pa
       return;
     }
   }
-  if (100000.0 < *(float *)((int)param_1 + 0x83ee0) ||
-      *(float *)((int)param_1 + 0x83ee0) == 100000.0) {
+  if (100000.0 < *(float *)((int)this + 0x83ee0) || *(float *)((int)this + 0x83ee0) == 100000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_driver_xaudio2_dsp.cpp",
                              0x173,0,"%s");
     if (!bVar2) {

@@ -8,30 +8,31 @@
 int __cdecl _fcloseall(void)
 
 {
-  _iobuf *p_Var1;
+  _iobuf *stream;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  int local_20;
+  int i;
+  int count;
   
-  local_20 = 0;
+  count = 0;
   _lock(1);
-  for (iVar3 = 3; iVar3 < _nstream; iVar3 = iVar3 + 1) {
-    if (__piob[iVar3] != (void *)0x0) {
-      p_Var1 = __piob[iVar3];
-      if ((p_Var1->_flag & 0x83) != 0) {
-        iVar2 = fclose(p_Var1);
-        if (iVar2 != -1) {
-          local_20 = local_20 + 1;
+  for (iVar2 = 3; iVar2 < _nstream; iVar2 = iVar2 + 1) {
+    if (__piob[iVar2] != (void *)0x0) {
+      stream = __piob[iVar2];
+      if ((stream->_flag & 0x83) != 0) {
+        iVar1 = fclose(stream);
+        if (iVar1 != -1) {
+          count = count + 1;
         }
       }
-      if (0x13 < iVar3) {
-        DeleteCriticalSection((LPCRITICAL_SECTION)((int)__piob[iVar3] + 0x20));
-        free(__piob[iVar3]);
-        __piob[iVar3] = (void *)0x0;
+      if (0x13 < iVar2) {
+        DeleteCriticalSection((LPCRITICAL_SECTION)((int)__piob[iVar2] + 0x20));
+        free(__piob[iVar2]);
+        __piob[iVar2] = (void *)0x0;
       }
     }
   }
   FUN_00c23feb();
-  return local_20;
+  return count;
 }
 

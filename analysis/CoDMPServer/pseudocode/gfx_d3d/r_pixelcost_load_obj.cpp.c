@@ -2,7 +2,7 @@
 
 // 00B403B0  RB_PixelCost_BuildColorCodeMap  (gfx_d3d/r_pixelcost_load_obj.cpp:32)
 
-void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
+void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*pixels) [4],int pixelCount)
 
 {
   code *pcVar1;
@@ -11,10 +11,15 @@ void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
   uchar local_6c;
   uchar local_58;
   uchar local_44;
-  int local_c;
-  uint local_8;
+  GfxPixelCostColorCode *codeTo;
+  float lerp;
+  int pixelDelta;
+  int shadeDelta;
+  GfxPixelCostColorCode *codeFrom;
+  int codeIndex;
+  int pixelIndex;
   
-  if (param_2 != 0x100) {
+  if (pixelCount != 0x100) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pixelcost_load_obj.cpp",
                              0x29,0,"%s\n\t(pixelCount) = %i");
     if (!bVar2) {
@@ -23,36 +28,36 @@ void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
       return;
     }
   }
-  local_c = -1;
-  for (local_8 = 0; (int)local_8 < 0x100; local_8 = local_8 + 1) {
-    if (s_pixelCostColorCodeTable[local_c + 1].count == local_8) {
-      local_c = local_c + 1;
-      param_1[local_8] =
+  codeIndex = -1;
+  for (pixelIndex = 0; pixelIndex < 0x100; pixelIndex = pixelIndex + 1) {
+    if ((uint)s_pixelCostColorCodeTable[codeIndex + 1].count == pixelIndex) {
+      codeIndex = codeIndex + 1;
+      pixels[pixelIndex] =
            (uchar  [4])
-           ((uint)s_pixelCostColorCodeTable[local_c].r << 0x10 |
-            (uint)s_pixelCostColorCodeTable[local_c].g << 8 |
-            (uint)s_pixelCostColorCodeTable[local_c].b | 0xff000000);
+           ((uint)s_pixelCostColorCodeTable[codeIndex].r << 0x10 |
+            (uint)s_pixelCostColorCodeTable[codeIndex].g << 8 |
+            (uint)s_pixelCostColorCodeTable[codeIndex].b | 0xff000000);
     }
     else {
-      fVar3 = (float)(int)(local_8 - s_pixelCostColorCodeTable[local_c].count) /
-              (float)(int)((uint)s_pixelCostColorCodeTable[local_c + 1].count -
-                          (uint)s_pixelCostColorCodeTable[local_c].count);
-      local_44 = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[local_c].b +
-                                   (float)(int)((uint)s_pixelCostColorCodeTable[local_c + 1].b -
-                                               (uint)s_pixelCostColorCodeTable[local_c].b) * fVar3 +
-                                   9.313226e-10);
-      param_1[local_8][0] = local_44;
-      local_58 = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[local_c].g +
-                                   (float)(int)((uint)s_pixelCostColorCodeTable[local_c + 1].g -
-                                               (uint)s_pixelCostColorCodeTable[local_c].g) * fVar3 +
-                                   9.313226e-10);
-      param_1[local_8][1] = local_58;
-      local_6c = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[local_c].r +
-                                   (float)(int)((uint)s_pixelCostColorCodeTable[local_c + 1].r -
-                                               (uint)s_pixelCostColorCodeTable[local_c].r) * fVar3 +
-                                   9.313226e-10);
-      param_1[local_8][2] = local_6c;
-      param_1[local_8][3] = 0xff;
+      fVar3 = (float)(int)(pixelIndex - (uint)s_pixelCostColorCodeTable[codeIndex].count) /
+              (float)(int)((uint)s_pixelCostColorCodeTable[codeIndex + 1].count -
+                          (uint)s_pixelCostColorCodeTable[codeIndex].count);
+      local_44 = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[codeIndex].b +
+                                   (float)(int)((uint)s_pixelCostColorCodeTable[codeIndex + 1].b -
+                                               (uint)s_pixelCostColorCodeTable[codeIndex].b) * fVar3
+                                   + 9.313226e-10);
+      pixels[pixelIndex][0] = local_44;
+      local_58 = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[codeIndex].g +
+                                   (float)(int)((uint)s_pixelCostColorCodeTable[codeIndex + 1].g -
+                                               (uint)s_pixelCostColorCodeTable[codeIndex].g) * fVar3
+                                   + 9.313226e-10);
+      pixels[pixelIndex][1] = local_58;
+      local_6c = (uchar)(int)ROUND((float)s_pixelCostColorCodeTable[codeIndex].r +
+                                   (float)(int)((uint)s_pixelCostColorCodeTable[codeIndex + 1].r -
+                                               (uint)s_pixelCostColorCodeTable[codeIndex].r) * fVar3
+                                   + 9.313226e-10);
+      pixels[pixelIndex][2] = local_6c;
+      pixels[pixelIndex][3] = 0xff;
     }
   }
   return;
@@ -64,10 +69,11 @@ void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
 void __cdecl R_PixelCost_PrintColorCodeKey(void)
 
 {
-  uint local_8;
+  float percentage;
+  uint codeIndex;
   
   Com_Printf(8,"\n---- PIXEL COST KEY ----\n");
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+  for (codeIndex = 0; codeIndex < 6; codeIndex = codeIndex + 1) {
     Com_Printf(8,"  %3.0f%%: %s\n");
   }
   Com_Printf(8,"----------------------\n\n");

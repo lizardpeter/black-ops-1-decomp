@@ -5,15 +5,14 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl
-__ArrayUnwind(void *param_1,uint param_2,int param_3,_func___thiscall_void_void_ptr *param_4)
+void __cdecl __ArrayUnwind(void *ptr,uint size,int count,_func___thiscall_void_void_ptr *pDtor)
 
 {
   while( true ) {
-    param_3 = param_3 + -1;
-    if (param_3 < 0) break;
-    param_1 = (void *)((int)param_1 - param_2);
-    (*param_4)(param_1);
+    count = count + -1;
+    if (count < 0) break;
+    ptr = (void *)((int)ptr - size);
+    (*pDtor)(ptr);
   }
   return;
 }
@@ -25,16 +24,17 @@ __ArrayUnwind(void *param_1,uint param_2,int param_3,_func___thiscall_void_void_
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
 void __cdecl
-_eh_vector_destructor_iterator_
-          (void *param_1,uint param_2,int param_3,_func___thiscall_void_void_ptr *param_4)
+_eh_vector_destructor_iterator_(void *ptr,uint size,int count,_func___thiscall_void_void_ptr *pDtor)
 
 {
-  param_1 = (void *)((int)param_1 + param_2 * param_3);
+  int success;
+  
+  ptr = (void *)((int)ptr + size * count);
   while( true ) {
-    param_3 = param_3 + -1;
-    if (param_3 < 0) break;
-    param_1 = (void *)((int)param_1 - param_2);
-    (*param_4)(param_1);
+    count = count + -1;
+    if (count < 0) break;
+    ptr = (void *)((int)ptr - size);
+    (*pDtor)(ptr);
   }
   FUN_00c179af();
   return;

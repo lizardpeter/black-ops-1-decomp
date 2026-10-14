@@ -5,14 +5,14 @@
 logic_error * __thiscall
 std::logic_error::logic_error
           (logic_error *this,
-          basic_string<char,std::char_traits<char>,std::allocator<char>_> *param_1)
+          basic_string<char,std::char_traits<char>,std::allocator<char>_> *_Message)
 
 {
   exception::exception((exception *)this);
   this->_padding_ = (int)vftable;
   basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Tidy(&this->_Str,false,0);
   basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
-            (&this->_Str,param_1,0,0xffffffff);
+            (&this->_Str,_Message,0,0xffffffff);
   return this;
 }
 
@@ -36,24 +36,24 @@ char * __thiscall std::logic_error::what(logic_error *this)
 
 // 0072A790  _Allocate<char>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xmemory:36)
 
-char * __cdecl std::_Allocate<char>(uint param_1,char *param_2)
+char * __cdecl std::_Allocate<char>(uint _Count,char *__formal)
 
 {
   char *pcVar1;
   char *local_14;
   exception local_10;
   
-  if (param_1 == 0) {
-    param_1 = 0;
+  if (_Count == 0) {
+    _Count = 0;
   }
-  else if ((int)(0xffffffff / (ulonglong)param_1) == 0) {
+  else if ((int)(0xffffffff / (ulonglong)_Count) == 0) {
     local_14 = (char *)0x0;
     exception::exception(&local_10,&local_14);
     local_10._padding_ = (int)bad_alloc::vftable;
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_10,(_s__ThrowInfo *)&__TI2_AVbad_alloc_std__);
   }
-  pcVar1 = operator_new(param_1);
+  pcVar1 = operator_new(_Count);
   return pcVar1;
 }
 
@@ -138,12 +138,12 @@ void __thiscall std::out_of_range::~out_of_range(out_of_range *this)
 
 // 0072A690  allocate  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xmemory:144)
 
-char * __thiscall std::allocator<char>::allocate(allocator<char> *this,uint param_1)
+char * __thiscall std::allocator<char>::allocate(allocator<char> *this,uint _Count)
 
 {
   char *pcVar1;
   
-  pcVar1 = _Allocate<char>(param_1,(char *)0x0);
+  pcVar1 = _Allocate<char>(_Count,(char *)0x0);
   return pcVar1;
 }
 
@@ -155,7 +155,7 @@ std::
 map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
 ::operator[](map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
              *this,basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                   *param_1)
+                   *_Keyval)
 
 {
   const_iterator cVar1;
@@ -171,17 +171,17 @@ map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringN
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_30;
   _Node *local_14;
   _Node *local_10;
-  const_iterator local_c;
+  const_iterator _Where;
   
-  local_c._Ptr = _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-                 ::_Lbound((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-                            *)this,param_1);
-  local_c._padding_ = 0;
+  _Where._Ptr = _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
+                ::_Lbound((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
+                           *)this,_Keyval);
+  _Where._padding_ = 0;
   if (this == (map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
                *)0x0) {
     _invalid_parameter_noinfo();
   }
-  local_c._padding_ = *(int *)this;
+  _Where._padding_ = *(int *)this;
   local_10 = *(_Node **)&this->field_0x18;
   local_14 = (_Node *)0x0;
   if (this == (map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
@@ -189,22 +189,22 @@ map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringN
     _invalid_parameter_noinfo();
   }
   local_14 = *(_Node **)this;
-  if (((_Node *)local_c._padding_ == (_Node *)0x0) || ((_Node *)local_c._padding_ != local_14)) {
+  if (((_Node *)_Where._padding_ == (_Node *)0x0) || ((_Node *)_Where._padding_ != local_14)) {
     _invalid_parameter_noinfo();
   }
-  if (local_c._Ptr != local_10) {
+  if (_Where._Ptr != local_10) {
     iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
-                      (param_1,&((local_c._Ptr)->_Myval).first);
+                      (_Keyval,&((_Where._Ptr)->_Myval).first);
     if (-1 < iVar2) goto LAB_00727528;
   }
-  local_70 = (_Node *)local_c._padding_;
-  local_6c = local_c._Ptr;
+  local_70 = (_Node *)_Where._padding_;
+  local_6c = _Where._Ptr;
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_68,false,0);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_4c,false,0);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_4c,param_1,0,0xffffffff);
+            (&local_4c,_Keyval,0,0xffffffff);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>(&local_30,&local_68)
   ;
@@ -215,8 +215,8 @@ map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringN
                     *)this,cVar1,
                    (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
                     *)local_6c);
-  local_c._padding_ = *iVar4._0_4_;
-  local_c._Ptr = (_Node *)iVar4._0_4_[1];
+  _Where._padding_ = *iVar4._0_4_;
+  _Where._Ptr = (_Node *)iVar4._0_4_[1];
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_30,true,0);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
@@ -225,7 +225,7 @@ map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringN
             (&local_68,true,0);
 LAB_00727528:
   ppVar3 = _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-           ::const_iterator::operator*(&local_c);
+           ::const_iterator::operator*(&_Where);
   return &ppVar3->second;
 }
 
@@ -236,19 +236,18 @@ const_iterator * __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::const_iterator::const_iterator
-          (const_iterator *this,_Node *param_1,
+          (const_iterator *this,_Node *_Pnode,
           _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-          *param_2)
+          *_Plist)
 
 {
   this->_padding_ = 0;
-  this->_Ptr = param_1;
-  if (param_2 ==
-      (_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-       *)0x0) {
+  this->_Ptr = _Pnode;
+  if (_Plist == (_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
+                 *)0x0) {
     _invalid_parameter_noinfo();
   }
-  this->_padding_ = param_2->_padding_;
+  this->_padding_ = _Plist->_padding_;
   return this;
 }
 
@@ -316,7 +315,7 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
 
 // 00725320  Filename_WithoutExt  (stringed/stringed_ingame.cpp:284)
 
-char * __thiscall CStringEdPackage::Filename_WithoutExt(CStringEdPackage *this,char *param_1)
+char * __thiscall CStringEdPackage::Filename_WithoutExt(CStringEdPackage *this,char *psFilename)
 
 {
   char cVar1;
@@ -325,8 +324,11 @@ char * __thiscall CStringEdPackage::Filename_WithoutExt(CStringEdPackage *this,c
   undefined1 *extraout_EAX_01;
   char *local_1c;
   char *local_18;
+  char *p3;
+  char *p2;
+  char *p;
   
-  local_18 = param_1;
+  local_18 = psFilename;
   local_1c = sString;
   do {
     cVar1 = *local_18;
@@ -353,33 +355,33 @@ char * __thiscall CStringEdPackage::Filename_WithoutExt(CStringEdPackage *this,c
 bool __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-::const_iterator::operator==(const_iterator *this,const_iterator *param_1)
+::const_iterator::operator==(const_iterator *this,const_iterator *_Right)
 
 {
-  if ((this->_padding_ == 0) || (this->_padding_ != param_1->_padding_)) {
+  if ((this->_padding_ == 0) || (this->_padding_ != _Right->_padding_)) {
     _invalid_parameter_noinfo();
   }
-  return this->_Ptr == param_1->_Ptr;
+  return this->_Ptr == _Right->_Ptr;
 }
 
 
 // 007253E0  Filename_WithoutPath  (stringed/stringed_ingame.cpp:309)
 
-char * __thiscall CStringEdPackage::Filename_WithoutPath(CStringEdPackage *this,char *param_1)
+char * __thiscall CStringEdPackage::Filename_WithoutPath(CStringEdPackage *this,char *psFilename)
 
 {
   char cVar1;
   char *local_14;
   char *local_10;
-  char *local_8;
+  char *psCopyPos;
   
-  local_8 = param_1;
-  for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-    if ((*param_1 == '/') || (*param_1 == '\\')) {
-      local_8 = param_1 + 1;
+  psCopyPos = psFilename;
+  for (; *psFilename != '\0'; psFilename = psFilename + 1) {
+    if ((*psFilename == '/') || (*psFilename == '\\')) {
+      psCopyPos = psFilename + 1;
     }
   }
-  local_10 = local_8;
+  local_10 = psCopyPos;
   local_14 = sString;
   do {
     cVar1 = *local_10;
@@ -396,13 +398,13 @@ char * __thiscall CStringEdPackage::Filename_WithoutPath(CStringEdPackage *this,
 bool __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-::const_iterator::operator!=(const_iterator *this,const_iterator *param_1)
+::const_iterator::operator!=(const_iterator *this,const_iterator *_Right)
 
 {
-  if ((this->_padding_ == 0) || (this->_padding_ != param_1->_padding_)) {
+  if ((this->_padding_ == 0) || (this->_padding_ != _Right->_padding_)) {
     _invalid_parameter_noinfo();
   }
-  return (bool)('\x01' - (this->_Ptr == param_1->_Ptr));
+  return (bool)('\x01' - (this->_Ptr == _Right->_Ptr));
 }
 
 
@@ -455,35 +457,35 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall CStringEdPackage::SetupNewFileParse(CStringEdPackage *this,char *param_1)
+void __thiscall CStringEdPackage::SetupNewFileParse(CStringEdPackage *this,char *psFileName)
 
 {
   char cVar1;
-  char *pcVar2;
+  char *psFilename;
   char *local_a4;
   char *local_98;
   char *local_94;
-  char local_4c [68];
+  char sString [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar2 = Filename_WithoutExt(this,param_1);
-  local_94 = Filename_WithoutPath(this,pcVar2);
-  local_98 = local_4c;
+  psFilename = Filename_WithoutExt(this,psFileName);
+  local_94 = Filename_WithoutPath(this,psFilename);
+  local_98 = sString;
   do {
     cVar1 = *local_94;
     *local_98 = cVar1;
     local_94 = local_94 + 1;
     local_98 = local_98 + 1;
   } while (cVar1 != '\0');
-  I_strupr(local_4c);
-  local_a4 = local_4c;
+  I_strupr(sString);
+  local_a4 = sString;
   do {
     cVar1 = *local_a4;
     local_a4 = local_a4 + 1;
   } while (cVar1 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&this->m_strCurrentFileRef_ParseOnly,local_4c,(int)local_a4 - (int)(local_4c + 1));
+            (&this->m_strCurrentFileRef_ParseOnly,sString,(int)local_a4 - (int)(sString + 1));
   return;
 }
 
@@ -491,7 +493,7 @@ void __thiscall CStringEdPackage::SetupNewFileParse(CStringEdPackage *this,char 
 // 00725580  CheckLineForKeyword  (stringed/stringed_ingame.cpp:349)
 
 int __thiscall
-CStringEdPackage::CheckLineForKeyword(CStringEdPackage *this,char *param_1,char **param_2)
+CStringEdPackage::CheckLineForKeyword(CStringEdPackage *this,char *psKeyword,char **psLine)
 
 {
   char cVar1;
@@ -499,21 +501,21 @@ CStringEdPackage::CheckLineForKeyword(CStringEdPackage *this,char *param_1,char 
   char *local_1c;
   char *local_c;
   
-  local_c = param_1;
+  local_c = psKeyword;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  iVar2 = I_strnicmp(param_1,*param_2,(int)local_c - (int)(param_1 + 1));
+  iVar2 = I_strnicmp(psKeyword,*psLine,(int)local_c - (int)(psKeyword + 1));
   if (iVar2 == 0) {
-    local_1c = param_1;
+    local_1c = psKeyword;
     do {
       cVar1 = *local_1c;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    *param_2 = *param_2 + ((int)local_1c - (int)(param_1 + 1));
-    while ((**param_2 == '\t' || (**param_2 == ' '))) {
-      *param_2 = *param_2 + 1;
+    *psLine = *psLine + ((int)local_1c - (int)(psKeyword + 1));
+    while ((**psLine == '\t' || (**psLine == ' '))) {
+      *psLine = *psLine + 1;
     }
     iVar2 = 1;
   }
@@ -528,34 +530,35 @@ CStringEdPackage::CheckLineForKeyword(CStringEdPackage *this,char *param_1,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __thiscall CStringEdPackage::IsStringFormatCorrect(CStringEdPackage *this,char *param_1)
+bool __thiscall CStringEdPackage::IsStringFormatCorrect(CStringEdPackage *this,char *string)
 
 {
   char cVar1;
-  int extraout_EAX;
+  char *extraout_EAX;
   int iVar2;
-  int extraout_EAX_00;
+  char *extraout_EAX_00;
   char acStackY_45 [25];
   undefined4 uStackY_2c;
-  int local_18;
+  int argIndex;
+  char *convString;
   
   uStackY_2c = 0x72566c;
-  strstr((uchar *)param_1,"&&");
-  local_18 = extraout_EAX;
+  strstr((uchar *)string,"&&");
+  convString = extraout_EAX;
   while( true ) {
-    if (local_18 == 0) {
+    if (convString == (char *)0x0) {
       return true;
     }
-    iVar2 = isdigit((int)*(char *)(local_18 + 2));
+    iVar2 = isdigit((int)convString[2]);
     if (iVar2 == 0) break;
-    cVar1 = *(char *)(local_18 + 2);
+    cVar1 = convString[2];
     if (acStackY_45[cVar1] != '\0') {
       return false;
     }
     acStackY_45[cVar1] = '\x01';
     uStackY_2c = 0x7256dc;
-    strstr((uchar *)(local_18 + 3),"&&");
-    local_18 = extraout_EAX_00;
+    strstr((uchar *)(convString + 3),"&&");
+    convString = extraout_EAX_00;
   }
   return false;
 }
@@ -618,7 +621,7 @@ CStringEdPackage::ConvertCRLiterals_Read
           (CStringEdPackage *this,
           basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
           *__return_storage_ptr__,
-          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> param_1)
+          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> string)
 
 {
   byte bVar1;
@@ -633,19 +636,19 @@ CStringEdPackage::ConvertCRLiterals_Read
   char *local_dc;
   _Bxty *local_d8;
   char *local_c8;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_54;
-  char local_35;
-  uint local_34;
-  byte local_30 [32];
-  int local_10;
-  uint local_c;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> str;
+  bool validButton;
+  int loc;
+  byte buttonName [32];
+  int nameLen;
+  int i;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-            (&local_54,false,0);
+            (&str,false,0);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_54,&param_1,0,0xffffffff);
+            (&str,&string,0,0xffffffff);
   while( true ) {
     local_c8 = "\\n";
     pcVar2 = local_c8;
@@ -653,21 +656,21 @@ CStringEdPackage::ConvertCRLiterals_Read
       local_c8 = pcVar2;
       pcVar2 = local_c8 + 1;
     } while (*local_c8 != '\0');
-    local_34 = std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
-               find(&local_54,"\\n",0,(uint)(local_c8 + -0xcf1570));
-    if (local_34 == 0xffffffff) break;
-    if (local_54._Mysize < local_34) {
+    loc = std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::find
+                    (&str,"\\n",0,(uint)(local_c8 + -0xcf1570));
+    if (loc == 0xffffffff) break;
+    if (str._Mysize < (uint)loc) {
       _invalid_parameter_noinfo();
     }
-    if (local_54._Myres < 0x10) {
-      local_d8 = &local_54._Bx;
+    if (str._Myres < 0x10) {
+      local_d8 = &str._Bx;
     }
     else {
-      local_d8 = (_Bxty *)local_54._Bx._Ptr;
+      local_d8 = (_Bxty *)str._Bx._Ptr;
     }
-    local_d8->_Buf[local_34] = '\n';
+    local_d8->_Buf[loc] = '\n';
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-              (&local_54,local_34 + 1,1);
+              (&str,loc + 1,1);
   }
   do {
     local_dc = "&&\"";
@@ -676,40 +679,40 @@ CStringEdPackage::ConvertCRLiterals_Read
       local_dc = pcVar2;
       pcVar2 = local_dc + 1;
     } while (*local_dc != '\0');
-    local_34 = std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
-               find(&local_54,"&&\"",0,(uint)(local_dc + -0xcf156c));
-    if (local_34 == 0xffffffff) goto LAB_00725a9c;
-    local_35 = '\0';
-    local_10 = 0;
-    local_c = local_34 + 3;
-    if (local_54._Mysize < local_34 + 3) {
+    loc = std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::find
+                    (&str,"&&\"",0,(uint)(local_dc + -0xcf156c));
+    if (loc == 0xffffffff) goto LAB_00725a9c;
+    validButton = false;
+    nameLen = 0;
+    i = loc + 3U;
+    if (str._Mysize < loc + 3U) {
       _invalid_parameter_noinfo();
     }
-    if (local_54._Myres < 0x10) {
-      local_ec = &local_54._Bx;
+    if (str._Myres < 0x10) {
+      local_ec = &str._Bx;
     }
     else {
-      local_ec = (_Bxty *)local_54._Bx._Ptr;
+      local_ec = (_Bxty *)str._Bx._Ptr;
     }
-    local_30[local_10] = local_ec->_Buf[local_c];
-    while (local_30[local_10] != 0x22) {
-      local_c = local_c + 1;
-      local_10 = local_10 + 1;
-      if (local_54._Mysize < local_c) {
+    buttonName[nameLen] = local_ec->_Buf[i];
+    while (buttonName[nameLen] != 0x22) {
+      i = i + 1;
+      nameLen = nameLen + 1;
+      if (str._Mysize < (uint)i) {
         _invalid_parameter_noinfo();
       }
-      if (local_54._Myres < 0x10) {
-        local_f0 = &local_54._Bx;
+      if (str._Myres < 0x10) {
+        local_f0 = &str._Bx;
       }
       else {
-        local_f0 = (_Bxty *)local_54._Bx._Ptr;
+        local_f0 = (_Bxty *)str._Bx._Ptr;
       }
-      local_30[local_10] = local_f0->_Buf[local_c];
+      buttonName[nameLen] = local_f0->_Buf[i];
     }
-    local_30[local_10] = 0;
-    for (local_c = 0; btnMapping[local_c].btnString != (char *)0x0; local_c = local_c + 1) {
-      local_f4 = (byte *)btnMapping[local_c].btnString;
-      local_f8 = local_30;
+    buttonName[nameLen] = 0;
+    for (i = 0; btnMapping[i].btnString != (char *)0x0; i = i + 1) {
+      local_f4 = (byte *)btnMapping[i].btnString;
+      local_f8 = buttonName;
       do {
         bVar1 = *local_f8;
         bVar3 = bVar1 < *local_f4;
@@ -728,23 +731,23 @@ LAB_0072599f:
       local_100 = 0;
 LAB_007259aa:
       if (local_100 == 0) {
-        if (local_54._Mysize < local_34) {
+        if (str._Mysize < (uint)loc) {
           _invalid_parameter_noinfo();
         }
-        if (local_54._Myres < 0x10) {
-          local_108 = &local_54._Bx;
+        if (str._Myres < 0x10) {
+          local_108 = &str._Bx;
         }
         else {
-          local_108 = (_Bxty *)local_54._Bx._Ptr;
+          local_108 = (_Bxty *)str._Bx._Ptr;
         }
-        local_108->_Buf[local_34] = (char)btnMapping[local_c].btnVal;
+        local_108->_Buf[loc] = (char)btnMapping[i].btnVal;
         std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-                  (&local_54,local_34 + 1,local_10 + 3);
-        local_35 = '\x01';
+                  (&str,loc + 1,nameLen + 3);
+        validButton = true;
         break;
       }
     }
-    if (local_35 == '\0') {
+    if (validButton == false) {
       Com_PrintError(0x10,
                      "ERROR: Localized string \'%s\' has an invalid button-to-font mapping: \'%s\'\n"
                     );
@@ -752,14 +755,14 @@ LAB_00725a9c:
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
                 (__return_storage_ptr__,false,0);
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-                (__return_storage_ptr__,&local_54,0,0xffffffff);
+                (__return_storage_ptr__,&str,0,0xffffffff);
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-                (&local_54,true,0);
+                (&str,true,0);
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-                (&param_1,true,0);
+                (&string,true,0);
       return __return_storage_ptr__;
     }
-    if (btnMapping[local_c].btnVal != 0x1a) {
+    if (btnMapping[i].btnVal != 0x1a) {
       Com_PrintWarning(0x10,
                        "WARNING: btnMapping in localized string \'%s\' will not work with button binds\n"
                       );
@@ -778,14 +781,14 @@ _Container_base_aux_alloc_real<Allocator<std::pair<std::basic_string<char,std::c
 _Container_base_aux_alloc_real<Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
           (_Container_base_aux_alloc_real<Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
            *this,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>
-                 param_1)
+                 _Al)
 
 {
-  int iVar1;
+  int type;
   undefined4 *local_14;
   
-  iVar1 = LocalizeName::GetType();
-  local_14 = Z_Malloc(4,"mapStringEntries_t",iVar1);
+  type = LocalizeName::GetType();
+  local_14 = Z_Malloc(4,"mapStringEntries_t",type);
   if (local_14 == (undefined4 *)0x0) {
     local_14 = (undefined4 *)0x0;
   }
@@ -799,51 +802,54 @@ _Container_base_aux_alloc_real<Allocator<std::pair<std::basic_string<char,std::c
 
 // 00725AF0  REMKill  (stringed/stringed_ingame.cpp:468)
 
-void __thiscall CStringEdPackage::REMKill(CStringEdPackage *this,char *param_1)
+void __thiscall CStringEdPackage::REMKill(CStringEdPackage *this,char *psBuffer)
 
 {
-  uchar uVar1;
+  char cVar1;
   byte bVar2;
   undefined1 *extraout_EAX;
   int iVar3;
-  uchar *local_24;
-  int local_1c;
-  int local_18;
-  uchar *local_c;
+  char *local_24;
+  int iWhiteSpaceScanPos;
+  int i;
+  int iDoubleQuoteCount;
+  int iDoubleQuotesSoFar;
+  char *psScanPos;
+  char *p;
   
-  local_c = (uchar *)param_1;
+  psScanPos = psBuffer;
   bVar2 = 0;
   while( true ) {
-    strstr(local_c,(uchar *)"//");
+    strstr((uchar *)psScanPos,(uchar *)"//");
     if (extraout_EAX == (undefined1 *)0x0) {
       return;
     }
-    for (local_18 = 0; local_18 < (int)extraout_EAX - (int)local_c; local_18 = local_18 + 1) {
-      if (local_c[local_18] == '\"') {
+    for (i = 0; i < (int)extraout_EAX - (int)psScanPos; i = i + 1) {
+      if (psScanPos[i] == '\"') {
         bVar2 = bVar2 + 1;
       }
     }
     if (!(bool)(bVar2 & 1)) break;
-    local_c = extraout_EAX + 1;
+    psScanPos = extraout_EAX + 1;
   }
   *extraout_EAX = 0;
-  if (*local_c == '\0') {
+  if (*psScanPos == '\0') {
     return;
   }
-  local_24 = local_c;
+  local_24 = psScanPos;
   do {
-    uVar1 = *local_24;
+    cVar1 = *local_24;
     local_24 = local_24 + 1;
-  } while (uVar1 != '\0');
-  local_1c = (int)local_24 - (int)(local_c + 1);
+  } while (cVar1 != '\0');
+  iWhiteSpaceScanPos = (int)local_24 - (int)(psScanPos + 1);
   while( true ) {
-    local_1c = local_1c + -1;
-    if (local_1c < 0) {
+    iWhiteSpaceScanPos = iWhiteSpaceScanPos + -1;
+    if (iWhiteSpaceScanPos < 0) {
       return;
     }
-    iVar3 = isspace((int)(char)local_c[local_1c]);
+    iVar3 = isspace((int)psScanPos[iWhiteSpaceScanPos]);
     if (iVar3 == 0) break;
-    local_c[local_1c] = '\0';
+    psScanPos[iWhiteSpaceScanPos] = '\0';
   }
   return;
 }
@@ -851,68 +857,71 @@ void __thiscall CStringEdPackage::REMKill(CStringEdPackage *this,char *param_1)
 
 // 00725C00  ReadLine  (stringed/stringed_ingame.cpp:518)
 
-int __thiscall CStringEdPackage::ReadLine(CStringEdPackage *this,char **param_1,char *param_2)
+int __thiscall CStringEdPackage::ReadLine(CStringEdPackage *this,char **psParsePos,char *psDest)
 
 {
   char cVar1;
   int extraout_EAX;
-  ulong uVar2;
+  ulong count;
   int extraout_EAX_00;
-  char *pcVar3;
-  int iVar4;
+  char *pcVar2;
+  int iVar3;
   char *local_38;
   char *local_28;
   char *local_1c;
   char *local_18;
-  int local_10;
+  int iWhiteSpaceScanPos;
+  int iCharsToCopy;
+  char *psLineEnd;
   
-  if (**param_1 == '\0') {
-    iVar4 = 0;
+  if (**psParsePos == '\0') {
+    iVar3 = 0;
   }
   else {
-    strchr((uchar *)*param_1,'\n');
+    strchr((uchar *)*psParsePos,'\n');
     if (extraout_EAX == 0) {
-      local_18 = *param_1;
-      local_1c = param_2;
+      local_18 = *psParsePos;
+      local_1c = psDest;
       do {
         cVar1 = *local_18;
         *local_1c = cVar1;
         local_18 = local_18 + 1;
         local_1c = local_1c + 1;
       } while (cVar1 != '\0');
-      local_28 = *param_1;
-      pcVar3 = local_28 + 1;
+      local_28 = *psParsePos;
+      pcVar2 = local_28 + 1;
       do {
         cVar1 = *local_28;
         local_28 = local_28 + 1;
       } while (cVar1 != '\0');
-      *param_1 = *param_1 + ((int)local_28 - (int)pcVar3);
+      *psParsePos = *psParsePos + ((int)local_28 - (int)pcVar2);
     }
     else {
-      uVar2 = extraout_EAX - (int)*param_1;
-      strncpy((uchar *)param_2,(uchar *)*param_1,uVar2);
-      param_2[uVar2] = '\0';
-      *param_1 = *param_1 + uVar2;
-      while ((**param_1 != '\0' && (strchr((uchar *)"\r\n",**param_1), extraout_EAX_00 != 0))) {
-        *param_1 = *param_1 + 1;
+      count = extraout_EAX - (int)*psParsePos;
+      strncpy((uchar *)psDest,(uchar *)*psParsePos,count);
+      psDest[count] = '\0';
+      *psParsePos = *psParsePos + count;
+      while ((**psParsePos != '\0' && (strchr((uchar *)"\r\n",**psParsePos), extraout_EAX_00 != 0)))
+      {
+        *psParsePos = *psParsePos + 1;
       }
     }
-    if (*param_2 != '\0') {
-      local_38 = param_2;
+    if (*psDest != '\0') {
+      local_38 = psDest;
       do {
         cVar1 = *local_38;
         local_38 = local_38 + 1;
       } while (cVar1 != '\0');
-      local_10 = (int)local_38 - (int)(param_2 + 1);
-      while ((local_10 = local_10 + -1, -1 < local_10 &&
-             (iVar4 = isspace((int)param_2[local_10]), iVar4 != 0))) {
-        param_2[local_10] = '\0';
+      iWhiteSpaceScanPos = (int)local_38 - (int)(psDest + 1);
+      while ((iWhiteSpaceScanPos = iWhiteSpaceScanPos + -1, -1 < iWhiteSpaceScanPos &&
+             (iVar3 = isspace((int)psDest[iWhiteSpaceScanPos]), iVar3 != 0))) {
+        psDest[iWhiteSpaceScanPos] = '\0';
       }
-      REMKill(this,param_2);
+      REMKill(this,psDest);
     }
-    iVar4 = 1;
+    iVar3 = 1;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
@@ -924,7 +933,7 @@ basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * 
 CStringEdPackage::InsideQuotes
           (CStringEdPackage *this,
           basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-          *__return_storage_ptr__,char *param_1)
+          *__return_storage_ptr__,char *psLine)
 
 {
   char cVar1;
@@ -944,12 +953,12 @@ CStringEdPackage::InsideQuotes
   _Bxty *local_c4;
   char *local_b4;
   char *local_a4;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_24;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> str;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-            (&local_24,false,0);
+            (&str,false,0);
   local_a4 = "";
   pcVar2 = local_a4;
   do {
@@ -957,64 +966,64 @@ CStringEdPackage::InsideQuotes
     pcVar2 = local_a4 + 1;
   } while (*local_a4 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_24,"",(uint)(local_a4 + -0xc60bf9));
-  for (; (*param_1 == ' ' || (*param_1 == '\t')); param_1 = param_1 + 1) {
+            (&str,"",(uint)(local_a4 + -0xc60bf9));
+  for (; (*psLine == ' ' || (*psLine == '\t')); psLine = psLine + 1) {
   }
-  if (*param_1 == '\"') {
-    param_1 = param_1 + 1;
+  if (*psLine == '\"') {
+    psLine = psLine + 1;
   }
-  local_b4 = param_1;
+  local_b4 = psLine;
   do {
     cVar1 = *local_b4;
     local_b4 = local_b4 + 1;
   } while (cVar1 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_24,param_1,(int)local_b4 - (int)(param_1 + 1));
-  if (*param_1 != '\0') {
+            (&str,psLine,(int)local_b4 - (int)(psLine + 1));
+  if (*psLine != '\0') {
     do {
-      if (local_24._Myres < 0x10) {
-        local_c4 = &local_24._Bx;
+      if (str._Myres < 0x10) {
+        local_c4 = &str._Bx;
       }
       else {
-        local_c4 = (_Bxty *)local_24._Bx._Ptr;
+        local_c4 = (_Bxty *)str._Bx._Ptr;
       }
       local_c8 = local_c4;
       do {
         cVar1 = local_c8->_Buf[0];
         local_c8 = (_Bxty *)(local_c8->_Buf + 1);
       } while (cVar1 != '\0');
-      if (local_24._Myres < 0x10) {
-        local_d8 = &local_24._Bx;
+      if (str._Myres < 0x10) {
+        local_d8 = &str._Bx;
       }
       else {
-        local_d8 = (_Bxty *)local_24._Bx._Ptr;
+        local_d8 = (_Bxty *)str._Bx._Ptr;
       }
       if (local_d8->_Buf[(int)((int)local_c8 + (-1 - (int)(local_c4->_Buf + 1)))] != ' ') {
-        if (local_24._Myres < 0x10) {
-          local_dc = &local_24._Bx;
+        if (str._Myres < 0x10) {
+          local_dc = &str._Bx;
         }
         else {
-          local_dc = (_Bxty *)local_24._Bx._Ptr;
+          local_dc = (_Bxty *)str._Bx._Ptr;
         }
         local_e0 = local_dc;
         do {
           cVar1 = local_e0->_Buf[0];
           local_e0 = (_Bxty *)(local_e0->_Buf + 1);
         } while (cVar1 != '\0');
-        if (local_24._Myres < 0x10) {
-          local_f0 = &local_24._Bx;
+        if (str._Myres < 0x10) {
+          local_f0 = &str._Bx;
         }
         else {
-          local_f0 = (_Bxty *)local_24._Bx._Ptr;
+          local_f0 = (_Bxty *)str._Bx._Ptr;
         }
         if (local_f0->_Buf[(int)((int)local_e0 + (-1 - (int)(local_dc->_Buf + 1)))] != '\t')
         goto LAB_0072606a;
       }
-      if (local_24._Myres < 0x10) {
-        local_f4 = &local_24._Bx;
+      if (str._Myres < 0x10) {
+        local_f4 = &str._Bx;
       }
       else {
-        local_f4 = (_Bxty *)local_24._Bx._Ptr;
+        local_f4 = (_Bxty *)str._Bx._Ptr;
       }
       local_f8 = local_f4;
       do {
@@ -1022,41 +1031,41 @@ CStringEdPackage::InsideQuotes
         local_f8 = (_Bxty *)(local_f8->_Buf + 1);
       } while (cVar1 != '\0');
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-                (&local_24,(uint)((int)local_f8 + (-1 - (int)(local_f4->_Buf + 1))),1);
+                (&str,(uint)((int)local_f8 + (-1 - (int)(local_f4->_Buf + 1))),1);
     } while( true );
   }
 LAB_00726177:
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (__return_storage_ptr__,false,0);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (__return_storage_ptr__,&local_24,0,0xffffffff);
+            (__return_storage_ptr__,&str,0,0xffffffff);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-            (&local_24,true,0);
+            (&str,true,0);
   return __return_storage_ptr__;
 LAB_0072606a:
-  if (local_24._Myres < 0x10) {
-    local_108 = &local_24._Bx;
+  if (str._Myres < 0x10) {
+    local_108 = &str._Bx;
   }
   else {
-    local_108 = (_Bxty *)local_24._Bx._Ptr;
+    local_108 = (_Bxty *)str._Bx._Ptr;
   }
   local_10c = local_108;
   do {
     cVar1 = local_10c->_Buf[0];
     local_10c = (_Bxty *)(local_10c->_Buf + 1);
   } while (cVar1 != '\0');
-  if (local_24._Myres < 0x10) {
-    local_11c = &local_24._Bx;
+  if (str._Myres < 0x10) {
+    local_11c = &str._Bx;
   }
   else {
-    local_11c = (_Bxty *)local_24._Bx._Ptr;
+    local_11c = (_Bxty *)str._Bx._Ptr;
   }
   if (local_11c->_Buf[(int)((int)local_10c + (-1 - (int)(local_108->_Buf + 1)))] == '\"') {
-    if (local_24._Myres < 0x10) {
-      local_120 = &local_24._Bx;
+    if (str._Myres < 0x10) {
+      local_120 = &str._Bx;
     }
     else {
-      local_120 = (_Bxty *)local_24._Bx._Ptr;
+      local_120 = (_Bxty *)str._Bx._Ptr;
     }
     local_124 = local_120;
     do {
@@ -1064,7 +1073,7 @@ LAB_0072606a:
       local_124 = (_Bxty *)(local_124->_Buf + 1);
     } while (cVar1 != '\0');
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-              (&local_24,(uint)((int)local_124 + (-1 - (int)(local_120->_Buf + 1))),1);
+              (&str,(uint)((int)local_124 + (-1 - (int)(local_120->_Buf + 1))),1);
   }
   goto LAB_00726177;
 }
@@ -1074,110 +1083,112 @@ LAB_0072606a:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param_1,bool param_2)
+char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *psLine,bool forceEnglish)
 
 {
   uchar uVar1;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> bVar2;
-  bool bVar3;
-  int iVar4;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> string;
+  bool bVar2;
+  int iVar3;
   undefined1 in_stack_fffffb04 [12];
-  undefined4 uVar5;
-  undefined4 uVar6;
-  char *pcVar7;
-  ulong uVar8;
+  undefined4 uVar4;
+  undefined4 dest;
+  char *pcVar5;
+  uint uVar6;
   _Bxty *local_4e0;
   _Bxty *local_4d8;
   uchar *local_4c8;
   _Bxty *local_4c4;
   _Bxty *local_4c0;
-  uchar local_474 [1028];
-  char *local_70;
-  ulong local_6c;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_68;
-  char *local_4c;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_48;
-  int local_2c;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_28;
+  int bSentenceIsEnglish;
+  uchar sThisLanguage [1028];
+  char *psWordEnd;
+  int iCharsToCopy;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> sentence;
+  char *psReference;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> localReference;
+  int iVersionNumber;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> versionNumber;
   uint local_c;
-  char *local_8;
+  char *psErrorMessage;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (char *)0x0;
-  if (param_1 != (char *)0x0) {
-    iVar4 = CheckLineForKeyword(this,"VERSION",&param_1);
-    if (iVar4 == 0) {
-      iVar4 = CheckLineForKeyword(this,"CONFIG",&param_1);
-      if ((((iVar4 == 0) && (iVar4 = CheckLineForKeyword(this,"FILENOTES",&param_1), iVar4 == 0)) &&
-          (iVar4 = CheckLineForKeyword(this,"NOTES",&param_1), iVar4 == 0)) &&
-         (iVar4 = CheckLineForKeyword(this,"FLAGS",&param_1), iVar4 == 0)) {
-        iVar4 = CheckLineForKeyword(this,"REFERENCE",&param_1);
-        if (iVar4 == 0) {
-          iVar4 = CheckLineForKeyword(this,"ENDMARKER",&param_1);
-          if (iVar4 == 0) {
-            iVar4 = I_strnicmp("LANG_",param_1,5);
-            if (iVar4 == 0) {
-              local_4c = GetCurrentReference_ParseOnly(this);
-              if (*local_4c == '\0') {
-                local_8 = "Error parsing file: Unexpected \"LANG_\"";
+  psErrorMessage = (char *)0x0;
+  if (psLine != (char *)0x0) {
+    iVar3 = CheckLineForKeyword(this,"VERSION",&psLine);
+    if (iVar3 == 0) {
+      iVar3 = CheckLineForKeyword(this,"CONFIG",&psLine);
+      if ((((iVar3 == 0) && (iVar3 = CheckLineForKeyword(this,"FILENOTES",&psLine), iVar3 == 0)) &&
+          (iVar3 = CheckLineForKeyword(this,"NOTES",&psLine), iVar3 == 0)) &&
+         (iVar3 = CheckLineForKeyword(this,"FLAGS",&psLine), iVar3 == 0)) {
+        iVar3 = CheckLineForKeyword(this,"REFERENCE",&psLine);
+        if (iVar3 == 0) {
+          iVar3 = CheckLineForKeyword(this,"ENDMARKER",&psLine);
+          if (iVar3 == 0) {
+            iVar3 = I_strnicmp("LANG_",psLine,5);
+            if (iVar3 == 0) {
+              psReference = GetCurrentReference_ParseOnly(this);
+              if (*psReference == '\0') {
+                psErrorMessage = "Error parsing file: Unexpected \"LANG_\"";
               }
               else {
-                param_1 = param_1 + 5;
-                for (local_70 = param_1;
-                    ((*local_70 != '\0' && (*local_70 != ' ')) && (*local_70 != '\t'));
-                    local_70 = local_70 + 1) {
+                psLine = psLine + 5;
+                for (psWordEnd = psLine;
+                    ((*psWordEnd != '\0' && (*psWordEnd != ' ')) && (*psWordEnd != '\t'));
+                    psWordEnd = psWordEnd + 1) {
                 }
-                local_474[0] = '\0';
-                memset(local_474 + 1,'\0',0x3ff);
-                local_6c = (int)local_70 - (int)param_1;
-                if (0x3ff < local_6c) {
-                  local_6c = 0x3ff;
+                sThisLanguage[0] = '\0';
+                memset(sThisLanguage + 1,'\0',0x3ff);
+                iCharsToCopy = (int)psWordEnd - (int)psLine;
+                if (0x3ff < (uint)iCharsToCopy) {
+                  iCharsToCopy = 0x3ff;
                 }
-                uVar6 = local_474;
-                uVar5 = 0x726424;
-                pcVar7 = param_1;
-                uVar8 = local_6c;
-                strncpy((uchar *)uVar6,(uchar *)param_1,local_6c);
-                local_4c8 = local_474;
+                dest = sThisLanguage;
+                uVar4 = 0x726424;
+                pcVar5 = psLine;
+                uVar6 = iCharsToCopy;
+                strncpy((uchar *)dest,(uchar *)psLine,iCharsToCopy);
+                local_4c8 = sThisLanguage;
                 do {
                   uVar1 = *local_4c8;
                   local_4c8 = local_4c8 + 1;
                 } while (uVar1 != '\0');
-                param_1 = param_1 + ((int)local_4c8 - (int)(local_474 + 1));
+                psLine = psLine + ((int)local_4c8 - (int)(sThisLanguage + 1));
                 InsideQuotes(this,(basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                                   *)&stack0xfffffb04,param_1);
-                bVar2._Bx._8_4_ = uVar5;
-                bVar2._0_12_ = in_stack_fffffb04;
-                bVar2._Bx._12_4_ = uVar6;
-                bVar2._Mysize = (uint)pcVar7;
-                bVar2._Myres = uVar8;
-                ConvertCRLiterals_Read(this,&local_68,bVar2);
-                if (local_68._Myres < 0x10) {
-                  local_4d8 = &local_68._Bx;
+                                   *)&stack0xfffffb04,psLine);
+                string._Bx._8_4_ = uVar4;
+                string._0_12_ = in_stack_fffffb04;
+                string._Bx._12_4_ = dest;
+                string._Mysize = (uint)pcVar5;
+                string._Myres = uVar6;
+                ConvertCRLiterals_Read(this,&sentence,string);
+                if (sentence._Myres < 0x10) {
+                  local_4d8 = &sentence._Bx;
                 }
                 else {
-                  local_4d8 = (_Bxty *)local_68._Bx._Ptr;
+                  local_4d8 = (_Bxty *)sentence._Bx._Ptr;
                 }
-                bVar3 = IsStringFormatCorrect(this,local_4d8->_Buf);
-                if (!bVar3) {
-                  local_8 = va("Illegal string format \"%s\"");
+                bVar2 = IsStringFormatCorrect(this,local_4d8->_Buf);
+                if (!bVar2) {
+                  psErrorMessage = va("Illegal string format \"%s\"");
                 }
-                iVar4 = I_stricmp((char *)local_474,"english");
-                if ((local_8 == (char *)0x0) && (((iVar4 == 0) != 0 || (param_2 == false)))) {
-                  if (local_68._Myres < 0x10) {
-                    local_4e0 = &local_68._Bx;
+                iVar3 = I_stricmp((char *)sThisLanguage,"english");
+                if ((psErrorMessage == (char *)0x0) &&
+                   (((iVar3 == 0) != 0 || (forceEnglish == false)))) {
+                  if (sentence._Myres < 0x10) {
+                    local_4e0 = &sentence._Bx;
                   }
                   else {
-                    local_4e0 = (_Bxty *)local_68._Bx._Ptr;
+                    local_4e0 = (_Bxty *)sentence._Bx._Ptr;
                   }
-                  SetString(this,local_4c,local_4e0->_Buf,(uint)(iVar4 == 0));
+                  SetString(this,psReference,local_4e0->_Buf,(uint)(iVar3 == 0));
                 }
                 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
-                _Tidy(&local_68,true,0);
+                _Tidy(&sentence,true,0);
               }
             }
             else {
-              local_8 = va("Unknown keyword at linestart: \"%s\"");
+              psErrorMessage = va("Unknown keyword at linestart: \"%s\"");
             }
           }
           else {
@@ -1185,36 +1196,36 @@ char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param
           }
         }
         else {
-          InsideQuotes(this,&local_48,param_1);
-          if (local_48._Myres < 0x10) {
-            local_4c4 = &local_48._Bx;
+          InsideQuotes(this,&localReference,psLine);
+          if (localReference._Myres < 0x10) {
+            local_4c4 = &localReference._Bx;
           }
           else {
-            local_4c4 = (_Bxty *)local_48._Bx._Ptr;
+            local_4c4 = (_Bxty *)localReference._Bx._Ptr;
           }
           AddEntry(this,local_4c4->_Buf);
           std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-                    (&local_48,true,0);
+                    (&localReference,true,0);
         }
       }
     }
     else {
-      InsideQuotes(this,&local_28,param_1);
-      if (local_28._Myres < 0x10) {
-        local_4c0 = &local_28._Bx;
+      InsideQuotes(this,&versionNumber,psLine);
+      if (versionNumber._Myres < 0x10) {
+        local_4c0 = &versionNumber._Bx;
       }
       else {
-        local_4c0 = (_Bxty *)local_28._Bx._Ptr;
+        local_4c0 = (_Bxty *)versionNumber._Bx._Ptr;
       }
-      local_2c = atoi(local_4c0->_Buf);
-      if (local_2c != 1) {
-        local_8 = va("Unexpected version number %d, expecting %d!");
+      iVersionNumber = atoi(local_4c0->_Buf);
+      if (iVersionNumber != 1) {
+        psErrorMessage = va("Unexpected version number %d, expecting %d!");
       }
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-                (&local_28,true,0);
+                (&versionNumber,true,0);
     }
   }
-  return local_8;
+  return psErrorMessage;
 }
 
 
@@ -1230,7 +1241,7 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
          *this,pair<std::_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>::iterator,bool>
                *__return_storage_ptr__,
         pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-        *param_1)
+        *_Val)
 
 {
   undefined4 uVar1;
@@ -1242,61 +1253,61 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   undefined1 local_38 [11];
   bool local_2d;
   const_iterator local_2c [2];
-  const_iterator local_18;
-  _Node *local_10;
-  _Node *local_c;
-  bool local_5;
+  const_iterator _Where;
+  _Node *_Trynode;
+  _Node *_Wherenode;
+  bool _Addleft;
   
-  local_10 = this->_Myhead->_Parent;
-  local_c = this->_Myhead;
-  local_5 = true;
-  while (local_10->_Isnil == '\0') {
-    local_c = local_10;
+  _Trynode = this->_Myhead->_Parent;
+  _Wherenode = this->_Myhead;
+  _Addleft = true;
+  while (_Trynode->_Isnil == '\0') {
+    _Wherenode = _Trynode;
     iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
-                      (&param_1->first,&(local_10->_Myval).first);
-    local_5 = iVar2 < 0;
-    if (local_5) {
-      local_f4 = local_10->_Left;
+                      (&_Val->first,&(_Trynode->_Myval).first);
+    _Addleft = iVar2 < 0;
+    if (_Addleft) {
+      local_f4 = _Trynode->_Left;
     }
     else {
-      local_f4 = local_10->_Right;
+      local_f4 = _Trynode->_Right;
     }
-    local_10 = local_f4;
+    _Trynode = local_f4;
   }
-  const_iterator::const_iterator(&local_18,local_c,this);
-  if (local_5 != false) {
+  const_iterator::const_iterator(&_Where,_Wherenode,this);
+  if (_Addleft != false) {
     const_iterator::const_iterator(local_2c,this->_Myhead->_Left,this);
-    if ((local_18._padding_ == 0) || (local_18._padding_ != local_2c[0]._padding_)) {
+    if ((_Where._padding_ == 0) || (_Where._padding_ != local_2c[0]._padding_)) {
       _invalid_parameter_noinfo();
     }
-    if (local_18._Ptr == local_2c[0]._Ptr) {
+    if (_Where._Ptr == local_2c[0]._Ptr) {
       local_2d = true;
       iVar3 = _Insert(this,SUB41(local_38,0),(_Node *)&DAT_00000001,
                       (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                       *)local_c);
+                       *)_Wherenode);
       uVar1 = iVar3._0_4_[1];
       *(undefined4 *)&__return_storage_ptr__->first = *iVar3._0_4_;
       *(undefined4 *)&(__return_storage_ptr__->first).field_0x4 = uVar1;
       __return_storage_ptr__->second = local_2d;
       return __return_storage_ptr__;
     }
-    const_iterator::_Dec(&local_18);
+    const_iterator::_Dec(&_Where);
   }
   iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
-                    (&((local_18._Ptr)->_Myval).first,&param_1->first);
+                    (&((_Where._Ptr)->_Myval).first,&_Val->first);
   if (iVar2 < 0) {
     local_39 = true;
-    iVar3 = _Insert(this,SUB41(local_44,0),(_Node *)(uint)local_5,
+    iVar3 = _Insert(this,SUB41(local_44,0),(_Node *)(uint)_Addleft,
                     (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                     *)local_c);
+                     *)_Wherenode);
     uVar1 = iVar3._0_4_[1];
     *(undefined4 *)&__return_storage_ptr__->first = *iVar3._0_4_;
     *(undefined4 *)&(__return_storage_ptr__->first).field_0x4 = uVar1;
     __return_storage_ptr__->second = local_39;
   }
   else {
-    *(int *)&__return_storage_ptr__->first = local_18._padding_;
-    *(_Node **)&(__return_storage_ptr__->first).field_0x4 = local_18._Ptr;
+    *(int *)&__return_storage_ptr__->first = _Where._padding_;
+    *(_Node **)&(__return_storage_ptr__->first).field_0x4 = _Where._Ptr;
     __return_storage_ptr__->second = false;
   }
   return __return_storage_ptr__;
@@ -1356,11 +1367,11 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   const_iterator local_3c;
   const_iterator local_34;
   const_iterator local_2c [4];
-  const_iterator local_c;
+  const_iterator _Next;
   undefined4 uVar4;
   
-  local_c._padding_ = 0;
-  local_c._Ptr = (_Node *)0x0;
+  _Next._padding_ = 0;
+  _Next._Ptr = (_Node *)0x0;
   if (this->_Mysize == 0) {
     iVar5 = _Insert(this,param_1._padding_._0_1_,(_Node *)&DAT_00000001,
                     (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
@@ -1401,20 +1412,20 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
                         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
                          *)((int)&(param_2->first)._Bx + 8));
         if (iVar2 < 0) {
-          local_c._padding_ = (int)param_1._Ptr;
-          local_c._Ptr = (_Node *)param_2;
-          const_iterator::_Dec(&local_c);
+          _Next._padding_ = (int)param_1._Ptr;
+          _Next._Ptr = (_Node *)param_2;
+          const_iterator::_Dec(&_Next);
           iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
-                  compare(&((local_c._Ptr)->_Myval).first,&in_stack_00000010->first);
+                  compare(&((_Next._Ptr)->_Myval).first,&in_stack_00000010->first);
           if (iVar2 < 0) {
-            if ((local_c._Ptr)->_Right->_Isnil == '\0') {
+            if ((_Next._Ptr)->_Right->_Isnil == '\0') {
               iVar5 = _Insert(this,SUB41(param_1._padding_,0),(_Node *)&DAT_00000001,param_2);
               uVar4 = iVar5._4_4_;
             }
             else {
               iVar5 = _Insert(this,SUB41(param_1._padding_,0),(_Node *)0x0,
                               (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                               *)local_c._Ptr);
+                               *)_Next._Ptr);
               uVar4 = iVar5._4_4_;
             }
             goto LAB_007281e1;
@@ -1424,19 +1435,19 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
                 compare((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
                          *)((int)&(param_2->first)._Bx + 8),&in_stack_00000010->first);
         if (iVar2 < 0) {
-          local_c._padding_ = (int)param_1._Ptr;
-          local_c._Ptr = (_Node *)param_2;
+          _Next._padding_ = (int)param_1._Ptr;
+          _Next._Ptr = (_Node *)param_2;
           const_iterator::const_iterator(&local_3c,this->_Myhead,this);
-          const_iterator::_Inc(&local_c);
-          bVar1 = const_iterator::operator==(&local_c,&local_3c);
+          const_iterator::_Inc(&_Next);
+          bVar1 = const_iterator::operator==(&_Next,&local_3c);
           if ((bVar1) ||
              (iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                      ::compare(&in_stack_00000010->first,&((local_c._Ptr)->_Myval).first),
-             iVar2 < 0)) {
+                      ::compare(&in_stack_00000010->first,&((_Next._Ptr)->_Myval).first), iVar2 < 0)
+             ) {
             if (*(char *)(*(int *)((int)&(param_2->first)._Bx + 4) + 0x45) == '\0') {
               iVar5 = _Insert(this,SUB41(param_1._padding_,0),(_Node *)&DAT_00000001,
                               (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                               *)local_c._Ptr);
+                               *)_Next._Ptr);
               uVar4 = iVar5._4_4_;
             }
             else {
@@ -1481,7 +1492,7 @@ char * __thiscall CStringEdPackage::GetCurrentReference_ParseOnly(CStringEdPacka
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *param_1)
+void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *psLocalReference)
 
 {
   char cVar1;
@@ -1494,9 +1505,9 @@ void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *param_1)
   int local_50;
   char *local_4c;
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_48;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_2c;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> SE_Entry;
   uint local_10;
-  int local_c;
+  int itEntry;
   undefined4 local_8;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1514,7 +1525,7 @@ void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *param_1)
   _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
   ::find((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
           *)&this->m_StringEntries,
-         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&local_c);
+         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&itEntry);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_48,true,0);
   local_4c = *(char **)&(this->m_StringEntries).field_0x18;
@@ -1525,12 +1536,12 @@ void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *param_1)
     _invalid_parameter_noinfo();
   }
   local_50 = *(int *)&this->m_StringEntries;
-  if ((local_c == 0) || (local_c != local_50)) {
+  if ((itEntry == 0) || (itEntry != local_50)) {
     _invalid_parameter_noinfo();
   }
   if ((char *)local_8 == local_4c) {
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-              (&local_2c,false,0);
+              (&SE_Entry,false,0);
     pcVar2 = va("%s_%s");
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
               (&local_6c,false,0);
@@ -1545,19 +1556,20 @@ void __thiscall CStringEdPackage::AddEntry(CStringEdPackage *this,char *param_1)
               map<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>_>
               ::operator[](&this->m_StringEntries,&local_6c);
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-              (this_00,&local_2c,0,0xffffffff);
+              (this_00,&SE_Entry,0,0xffffffff);
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
               (&local_6c,true,0);
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-              (&local_2c,true,0);
+              (&SE_Entry,true,0);
   }
-  local_1a0 = param_1;
+  local_1a0 = psLocalReference;
   do {
     cVar1 = *local_1a0;
     local_1a0 = local_1a0 + 1;
   } while (cVar1 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&this->m_strCurrentEntryRef_ParseOnly,param_1,(int)local_1a0 - (int)(param_1 + 1));
+            (&this->m_strCurrentEntryRef_ParseOnly,psLocalReference,
+             (int)local_1a0 - (int)(psLocalReference + 1));
   return;
 }
 
@@ -1568,11 +1580,11 @@ basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * 
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *param_1)
+          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *_Right)
 
 {
   _Tidy(this,false,0);
-  assign(this,param_1,0,0xffffffff);
+  assign(this,_Right,0,0xffffffff);
   return this;
 }
 
@@ -1580,41 +1592,41 @@ basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
 // 00726900  SetString  (stringed/stringed_ingame.cpp:725)
 
 void __thiscall
-CStringEdPackage::SetString(CStringEdPackage *this,char *param_1,char *param_2,int param_3)
+CStringEdPackage::SetString
+          (CStringEdPackage *this,char *psLocalReference,char *psNewString,int bSentenceIsEnglish)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
+  char *_Ptr;
   pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-  *ppVar5;
-  int iVar6;
+  *ppVar4;
+  int iVar5;
   char *local_f0;
   char *local_e0;
   char *local_d0;
   char *local_c0;
   const_iterator local_34;
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_2c;
-  const_iterator local_10;
-  undefined4 local_8;
+  const_iterator itEntry;
+  undefined4 Entry;
   
-  pcVar4 = va("%s_%s");
+  _Ptr = va("%s_%s");
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_2c,false,0);
-  local_c0 = pcVar4;
+  local_c0 = _Ptr;
   do {
     cVar1 = *local_c0;
     local_c0 = local_c0 + 1;
   } while (cVar1 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_2c,pcVar4,(int)local_c0 - (int)(pcVar4 + 1));
+            (&local_2c,_Ptr,(int)local_c0 - (int)(_Ptr + 1));
   std::
   _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
   ::find((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
           *)&this->m_StringEntries,
-         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&local_10)
-  ;
+         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&itEntry);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_2c,true,0);
   local_34._Ptr = *(_Node **)&(this->m_StringEntries).field_0x18;
@@ -1627,7 +1639,7 @@ CStringEdPackage::SetString(CStringEdPackage *this,char *param_1,char *param_2,i
   local_34._padding_ = *(int *)&this->m_StringEntries;
   bVar3 = std::
           _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-          ::const_iterator::operator!=(&local_10,&local_34);
+          ::const_iterator::operator!=(&itEntry,&local_34);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_ingame.cpp",
                                0x2d7,0,"%s"), !bVar3)) {
@@ -1635,45 +1647,45 @@ CStringEdPackage::SetString(CStringEdPackage *this,char *param_1,char *param_2,i
     (*pcVar2)();
     return;
   }
-  ppVar5 = std::
+  ppVar4 = std::
            _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-           ::const_iterator::operator*(&local_10);
-  local_8 = &ppVar5->second;
-  if (param_3 == 0) {
-    iVar6 = I_stricmp(param_2,"#same");
-    if (iVar6 == 0) {
+           ::const_iterator::operator*(&itEntry);
+  Entry = &ppVar4->second;
+  if (bSentenceIsEnglish == 0) {
+    iVar5 = I_stricmp(psNewString,"#same");
+    if (iVar5 == 0) {
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
                 ((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)
-                 local_8,&this->m_strCurrentEntryEnglish_ParseOnly,0,0xffffffff);
+                 Entry,&this->m_strCurrentEntryEnglish_ParseOnly,0,0xffffffff);
     }
     else {
-      local_f0 = param_2;
+      local_f0 = psNewString;
       do {
         cVar1 = *local_f0;
         local_f0 = local_f0 + 1;
       } while (cVar1 != '\0');
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
                 ((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)
-                 local_8,param_2,(int)local_f0 - (int)(param_2 + 1));
+                 Entry,psNewString,(int)local_f0 - (int)(psNewString + 1));
     }
   }
   else {
-    local_d0 = param_2;
+    local_d0 = psNewString;
     do {
       cVar1 = *local_d0;
       local_d0 = local_d0 + 1;
     } while (cVar1 != '\0');
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
               ((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)
-               local_8,param_2,(int)local_d0 - (int)(param_2 + 1));
-    local_e0 = param_2;
+               Entry,psNewString,(int)local_d0 - (int)(psNewString + 1));
+    local_e0 = psNewString;
     do {
       cVar1 = *local_e0;
       local_e0 = local_e0 + 1;
     } while (cVar1 != '\0');
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-              (&this->m_strCurrentEntryEnglish_ParseOnly,param_2,(int)local_e0 - (int)(param_2 + 1))
-    ;
+              (&this->m_strCurrentEntryEnglish_ParseOnly,psNewString,
+               (int)local_e0 - (int)(psNewString + 1));
   }
   return;
 }
@@ -1683,7 +1695,7 @@ CStringEdPackage::SetString(CStringEdPackage *this,char *param_1,char *param_2,i
 
 char * __cdecl
 SE_GetFoundFile(basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                *param_1)
+                *strResult)
 
 {
   char cVar1;
@@ -1692,12 +1704,13 @@ SE_GetFoundFile(basic_string<char,std::char_traits<char>,Allocator<char,Localize
   _Bxty *local_50;
   _Bxty *local_40;
   _Bxty *local_3c;
+  char *psSemiColon;
   
-  if (param_1->_Myres < 0x10) {
-    local_3c = &param_1->_Bx;
+  if (strResult->_Myres < 0x10) {
+    local_3c = &strResult->_Bx;
   }
   else {
-    local_3c = (_Bxty *)(param_1->_Bx)._Ptr;
+    local_3c = (_Bxty *)(strResult->_Bx)._Ptr;
   }
   local_40 = local_3c;
   do {
@@ -1708,23 +1721,23 @@ SE_GetFoundFile(basic_string<char,std::char_traits<char>,Allocator<char,Localize
     pcVar2 = (char *)0x0;
   }
   else {
-    if (param_1->_Myres < 0x10) {
-      local_50 = &param_1->_Bx;
+    if (strResult->_Myres < 0x10) {
+      local_50 = &strResult->_Bx;
     }
     else {
-      local_50 = (_Bxty *)(param_1->_Bx)._Ptr;
+      local_50 = (_Bxty *)(strResult->_Bx)._Ptr;
     }
     strncpy((uchar *)sTemp,(uchar *)local_50->_Buf,0x3f);
     sTemp[0x3f] = '\0';
     strchr((uchar *)sTemp,';');
     if (extraout_EAX == (undefined1 *)0x0) {
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-                (param_1,0,0xffffffff);
+                (strResult,0,0xffffffff);
     }
     else {
       *extraout_EAX = 0;
       std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
-                (param_1,0,(uint)(extraout_EAX + -0x98a388f));
+                (strResult,0,(uint)(extraout_EAX + -0x98a388f));
     }
     pcVar2 = sTemp;
   }
@@ -1745,9 +1758,9 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
 {
   char cVar1;
   char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  iterator iVar5;
+  int type;
+  char *pcVar3;
+  iterator iVar4;
   _Node *in_stack_0000000c;
   _Node *local_120;
   _Node *local_11c;
@@ -1758,10 +1771,10 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   undefined1 *local_64;
   basic_string<char,std::char_traits<char>,std::allocator<char>_> local_58;
   logic_error local_3c;
-  _Node *local_14;
-  _Node *local_10;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Fixnodeparent;
+  _Node *_Pnode;
+  _Node *_Fixnode;
+  _Node *_Erasednode;
   
   if (in_stack_0000000c->_Isnil != '\0') {
     local_64 = &local_65;
@@ -1779,39 +1792,39 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_3c,(_s__ThrowInfo *)&__TI3_AVout_of_range_std__);
   }
-  local_8 = in_stack_0000000c;
+  _Erasednode = in_stack_0000000c;
   const_iterator::_Inc((const_iterator *)&param_1._Ptr);
-  local_10 = local_8;
-  if (local_8->_Left->_Isnil == '\0') {
-    if (local_8->_Right->_Isnil == '\0') {
-      local_10 = in_stack_0000000c;
-      local_c = in_stack_0000000c->_Right;
+  _Pnode = _Erasednode;
+  if (_Erasednode->_Left->_Isnil == '\0') {
+    if (_Erasednode->_Right->_Isnil == '\0') {
+      _Pnode = in_stack_0000000c;
+      _Fixnode = in_stack_0000000c->_Right;
     }
     else {
-      local_c = local_8->_Left;
+      _Fixnode = _Erasednode->_Left;
     }
   }
   else {
-    local_c = local_8->_Right;
+    _Fixnode = _Erasednode->_Right;
   }
-  if (local_10 == local_8) {
-    local_14 = local_8->_Parent;
-    if (local_c->_Isnil == '\0') {
-      local_c->_Parent = local_14;
+  if (_Pnode == _Erasednode) {
+    _Fixnodeparent = _Erasednode->_Parent;
+    if (_Fixnode->_Isnil == '\0') {
+      _Fixnode->_Parent = _Fixnodeparent;
     }
-    if (this->_Myhead->_Parent == local_8) {
-      this->_Myhead->_Parent = local_c;
+    if (this->_Myhead->_Parent == _Erasednode) {
+      this->_Myhead->_Parent = _Fixnode;
     }
-    else if (local_14->_Left == local_8) {
-      local_14->_Left = local_c;
+    else if (_Fixnodeparent->_Left == _Erasednode) {
+      _Fixnodeparent->_Left = _Fixnode;
     }
     else {
-      local_14->_Right = local_c;
+      _Fixnodeparent->_Right = _Fixnode;
     }
-    if (this->_Myhead->_Left == local_8) {
-      local_11c = local_14;
-      if (local_c->_Isnil == '\0') {
-        local_70 = local_c;
+    if (this->_Myhead->_Left == _Erasednode) {
+      local_11c = _Fixnodeparent;
+      if (_Fixnode->_Isnil == '\0') {
+        local_70 = _Fixnode;
         while (local_70->_Left->_Isnil == '\0') {
           local_70 = local_70->_Left;
         }
@@ -1819,10 +1832,10 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
       }
       this->_Myhead->_Left = local_11c;
     }
-    if (this->_Myhead->_Right == local_8) {
-      local_120 = local_14;
-      if (local_c->_Isnil == '\0') {
-        local_78 = local_c;
+    if (this->_Myhead->_Right == _Erasednode) {
+      local_120 = _Fixnodeparent;
+      if (_Fixnode->_Isnil == '\0') {
+        local_78 = _Fixnode;
         while (local_78->_Right->_Isnil == '\0') {
           local_78 = local_78->_Right;
         }
@@ -1832,106 +1845,106 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
     }
   }
   else {
-    local_8->_Left->_Parent = local_10;
-    local_10->_Left = local_8->_Left;
-    if (local_10 == local_8->_Right) {
-      local_14 = local_10;
+    _Erasednode->_Left->_Parent = _Pnode;
+    _Pnode->_Left = _Erasednode->_Left;
+    if (_Pnode == _Erasednode->_Right) {
+      _Fixnodeparent = _Pnode;
     }
     else {
-      local_14 = local_10->_Parent;
-      if (local_c->_Isnil == '\0') {
-        local_c->_Parent = local_14;
+      _Fixnodeparent = _Pnode->_Parent;
+      if (_Fixnode->_Isnil == '\0') {
+        _Fixnode->_Parent = _Fixnodeparent;
       }
-      local_14->_Left = local_c;
-      local_10->_Right = local_8->_Right;
-      local_8->_Right->_Parent = local_10;
+      _Fixnodeparent->_Left = _Fixnode;
+      _Pnode->_Right = _Erasednode->_Right;
+      _Erasednode->_Right->_Parent = _Pnode;
     }
-    if (this->_Myhead->_Parent == local_8) {
-      this->_Myhead->_Parent = local_10;
+    if (this->_Myhead->_Parent == _Erasednode) {
+      this->_Myhead->_Parent = _Pnode;
     }
-    else if (local_8->_Parent->_Left == local_8) {
-      local_8->_Parent->_Left = local_10;
+    else if (_Erasednode->_Parent->_Left == _Erasednode) {
+      _Erasednode->_Parent->_Left = _Pnode;
     }
     else {
-      local_8->_Parent->_Right = local_10;
+      _Erasednode->_Parent->_Right = _Pnode;
     }
-    local_10->_Parent = local_8->_Parent;
-    pcVar4 = &local_8->_Color;
-    pcVar2 = &local_10->_Color;
-    if (pcVar2 != pcVar4) {
+    _Pnode->_Parent = _Erasednode->_Parent;
+    pcVar3 = &_Erasednode->_Color;
+    pcVar2 = &_Pnode->_Color;
+    if (pcVar2 != pcVar3) {
       cVar1 = *pcVar2;
-      *pcVar2 = *pcVar4;
-      *pcVar4 = cVar1;
+      *pcVar2 = *pcVar3;
+      *pcVar3 = cVar1;
     }
   }
-  if (local_8->_Color == '\x01') {
+  if (_Erasednode->_Color == '\x01') {
 LAB_00729da6:
-    if ((local_c == this->_Myhead->_Parent) || (local_c->_Color != '\x01')) goto LAB_00729fa4;
-    if (local_c == local_14->_Left) {
-      local_10 = local_14->_Right;
-      if (local_10->_Color == '\0') {
-        local_10->_Color = '\x01';
-        local_14->_Color = '\0';
-        _Lrotate(this,local_14);
-        local_10 = local_14->_Right;
+    if ((_Fixnode == this->_Myhead->_Parent) || (_Fixnode->_Color != '\x01')) goto LAB_00729fa4;
+    if (_Fixnode == _Fixnodeparent->_Left) {
+      _Pnode = _Fixnodeparent->_Right;
+      if (_Pnode->_Color == '\0') {
+        _Pnode->_Color = '\x01';
+        _Fixnodeparent->_Color = '\0';
+        _Lrotate(this,_Fixnodeparent);
+        _Pnode = _Fixnodeparent->_Right;
       }
-      if (local_10->_Isnil == '\0') {
-        if ((local_10->_Left->_Color != '\x01') || (local_10->_Right->_Color != '\x01')) {
-          if (local_10->_Right->_Color == '\x01') {
-            local_10->_Left->_Color = '\x01';
-            local_10->_Color = '\0';
-            _Rrotate(this,local_10);
-            local_10 = local_14->_Right;
+      if (_Pnode->_Isnil == '\0') {
+        if ((_Pnode->_Left->_Color != '\x01') || (_Pnode->_Right->_Color != '\x01')) {
+          if (_Pnode->_Right->_Color == '\x01') {
+            _Pnode->_Left->_Color = '\x01';
+            _Pnode->_Color = '\0';
+            _Rrotate(this,_Pnode);
+            _Pnode = _Fixnodeparent->_Right;
           }
-          local_10->_Color = local_14->_Color;
-          local_14->_Color = '\x01';
-          local_10->_Right->_Color = '\x01';
-          _Lrotate(this,local_14);
+          _Pnode->_Color = _Fixnodeparent->_Color;
+          _Fixnodeparent->_Color = '\x01';
+          _Pnode->_Right->_Color = '\x01';
+          _Lrotate(this,_Fixnodeparent);
 LAB_00729fa4:
-          local_c->_Color = '\x01';
+          _Fixnode->_Color = '\x01';
           goto LAB_00729fab;
         }
-        local_10->_Color = '\0';
+        _Pnode->_Color = '\0';
       }
-      local_c = local_14;
+      _Fixnode = _Fixnodeparent;
     }
     else {
-      local_10 = local_14->_Left;
-      if (local_10->_Color == '\0') {
-        local_10->_Color = '\x01';
-        local_14->_Color = '\0';
-        _Rrotate(this,local_14);
-        local_10 = local_14->_Left;
+      _Pnode = _Fixnodeparent->_Left;
+      if (_Pnode->_Color == '\0') {
+        _Pnode->_Color = '\x01';
+        _Fixnodeparent->_Color = '\0';
+        _Rrotate(this,_Fixnodeparent);
+        _Pnode = _Fixnodeparent->_Left;
       }
-      if (local_10->_Isnil == '\0') {
-        if ((local_10->_Right->_Color != '\x01') || (local_10->_Left->_Color != '\x01')) {
-          if (local_10->_Left->_Color == '\x01') {
-            local_10->_Right->_Color = '\x01';
-            local_10->_Color = '\0';
-            _Lrotate(this,local_10);
-            local_10 = local_14->_Left;
+      if (_Pnode->_Isnil == '\0') {
+        if ((_Pnode->_Right->_Color != '\x01') || (_Pnode->_Left->_Color != '\x01')) {
+          if (_Pnode->_Left->_Color == '\x01') {
+            _Pnode->_Right->_Color = '\x01';
+            _Pnode->_Color = '\0';
+            _Lrotate(this,_Pnode);
+            _Pnode = _Fixnodeparent->_Left;
           }
-          local_10->_Color = local_14->_Color;
-          local_14->_Color = '\x01';
-          local_10->_Left->_Color = '\x01';
-          _Rrotate(this,local_14);
+          _Pnode->_Color = _Fixnodeparent->_Color;
+          _Fixnodeparent->_Color = '\x01';
+          _Pnode->_Left->_Color = '\x01';
+          _Rrotate(this,_Fixnodeparent);
           goto LAB_00729fa4;
         }
-        local_10->_Color = '\0';
-        local_c = local_14;
+        _Pnode->_Color = '\0';
+        _Fixnode = _Fixnodeparent;
       }
       else {
-        local_c = local_14;
+        _Fixnode = _Fixnodeparent;
       }
     }
-    local_14 = local_c->_Parent;
+    _Fixnodeparent = _Fixnode->_Parent;
     goto LAB_00729da6;
   }
 LAB_00729fab:
   _Tree_nod<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-  ::_Node::~_Node(local_8);
-  iVar3 = LocalizeName::GetType();
-  Z_Free(local_8,iVar3);
+  ::_Node::~_Node(_Erasednode);
+  type = LocalizeName::GetType();
+  Z_Free(_Erasednode,type);
   if (this->_Mysize != 0) {
     this->_Mysize = this->_Mysize - 1;
   }
@@ -1941,9 +1954,9 @@ LAB_00729fab:
   }
   *(int *)param_1._padding_ = this->_padding_;
   *(_Node **)(param_1._padding_ + 4) = in_stack_0000000c;
-  iVar5._4_4_ = param_1._padding_;
-  iVar5._0_4_ = param_1._padding_;
-  return iVar5;
+  iVar4._4_4_ = param_1._padding_;
+  iVar4._0_4_ = param_1._padding_;
+  return iVar4;
 }
 
 
@@ -1952,7 +1965,7 @@ LAB_00729fab:
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl SE_Load(char *param_1,bool param_2)
+char * __cdecl SE_Load(char *psFileName,bool forceEnglish)
 
 {
   char cVar1;
@@ -1961,31 +1974,31 @@ char * __cdecl SE_Load(char *param_1,bool param_2)
   char *pcVar4;
   bool bVar5;
   char *local_4020;
-  int *local_4018;
-  char local_4014;
+  char *psParsePos;
+  char sLineBuffer;
   char acStack_4013 [16387];
   uint local_10;
-  char *local_c;
-  int *local_8;
+  char *psErrorMessage;
+  uchar *psLoadedData;
   
-  local_8 = (int *)0x726bcd;
+  psLoadedData = (uchar *)0x726bcd;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (char *)0x0;
-  local_8 = (int *)SE_LoadFileData(param_1);
-  if (local_8 == (int *)0x0) {
-    local_c = va("Unable to load \"%s\"!");
+  psErrorMessage = (char *)0x0;
+  psLoadedData = SE_LoadFileData(psFileName);
+  if ((int *)psLoadedData == (int *)0x0) {
+    psErrorMessage = va("Unable to load \"%s\"!");
   }
   else {
-    if ((*local_8 == -0x20000) || (*local_8 == 0xfeff)) {
-      local_4018 = local_8 + 1;
+    if ((*(int *)psLoadedData == -0x20000) || (*(int *)psLoadedData == 0xfeff)) {
+      psParsePos = (char *)((int)psLoadedData + 4);
     }
-    else if (((short)*local_8 == 0xfffe) || ((short)*local_8 == 0xfeff)) {
-      local_4018 = (int *)((int)local_8 + 2);
+    else if (((short)*(int *)psLoadedData == 0xfffe) || ((short)*(int *)psLoadedData == 0xfeff)) {
+      psParsePos = (char *)((int)psLoadedData + 2);
     }
     else {
       iVar2 = 3;
       bVar5 = true;
-      piVar3 = local_8;
+      piVar3 = (int *)psLoadedData;
       pcVar4 = &s__;
       do {
         if (iVar2 == 0) break;
@@ -1994,39 +2007,39 @@ char * __cdecl SE_Load(char *param_1,bool param_2)
         piVar3 = (int *)((int)piVar3 + 1);
         pcVar4 = pcVar4 + 1;
       } while (bVar5);
-      local_4018 = local_8;
+      psParsePos = (char *)psLoadedData;
       if (bVar5) {
-        local_4018 = (int *)((int)local_8 + 3);
+        psParsePos = (char *)((int)psLoadedData + 3);
       }
     }
-    CStringEdPackage::SetupNewFileParse(TheStringPackage,param_1);
-    while ((local_c == (char *)0x0 &&
-           (iVar2 = CStringEdPackage::ReadLine(TheStringPackage,(char **)&local_4018,&local_4014),
+    CStringEdPackage::SetupNewFileParse(TheStringPackage,psFileName);
+    while ((psErrorMessage == (char *)0x0 &&
+           (iVar2 = CStringEdPackage::ReadLine(TheStringPackage,&psParsePos,&sLineBuffer),
            iVar2 != 0))) {
-      local_4020 = &local_4014;
+      local_4020 = &sLineBuffer;
       do {
         cVar1 = *local_4020;
         local_4020 = local_4020 + 1;
       } while (cVar1 != '\0');
       if (local_4020 != acStack_4013) {
-        local_c = CStringEdPackage::ParseLine(TheStringPackage,&local_4014,param_2);
+        psErrorMessage = CStringEdPackage::ParseLine(TheStringPackage,&sLineBuffer,forceEnglish);
       }
     }
-    if (local_c != (char *)0x0) {
-      local_c = va("%s in %s");
+    if (psErrorMessage != (char *)0x0) {
+      psErrorMessage = va("%s in %s");
     }
-    SE_FreeFileDataAfterLoad((uchar *)local_8);
-    if ((local_c == (char *)0x0) && (TheStringPackage->m_bEndMarkerFound_ParseOnly == 0)) {
-      local_c = va("Truncated file, failed to find \"%s\" at file end in file %s");
+    SE_FreeFileDataAfterLoad(psLoadedData);
+    if ((psErrorMessage == (char *)0x0) && (TheStringPackage->m_bEndMarkerFound_ParseOnly == 0)) {
+      psErrorMessage = va("Truncated file, failed to find \"%s\" at file end in file %s");
     }
   }
-  return local_c;
+  return psErrorMessage;
 }
 
 
 // 00726DB0  SE_GetString_LoadObj  (stringed/stringed_ingame.cpp:842)
 
-char * __cdecl SE_GetString_LoadObj(char *param_1)
+char * __cdecl SE_GetString_LoadObj(char *psPackageAndStringReference)
 
 {
   char cVar1;
@@ -2039,22 +2052,23 @@ char * __cdecl SE_GetString_LoadObj(char *param_1)
   char *local_94;
   const_iterator local_34;
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_2c;
-  const_iterator local_c;
+  const_iterator itEntry;
   
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_2c,false,0);
-  local_94 = param_1;
+  local_94 = psPackageAndStringReference;
   do {
     cVar1 = *local_94;
     local_94 = local_94 + 1;
   } while (cVar1 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&local_2c,param_1,(int)local_94 - (int)(param_1 + 1));
+            (&local_2c,psPackageAndStringReference,
+             (int)local_94 - (int)(psPackageAndStringReference + 1));
   std::
   _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
   ::find((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
           *)&TheStringPackage->m_StringEntries,
-         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&local_c);
+         (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)&itEntry);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&local_2c,true,0);
   pmVar3 = &TheStringPackage->m_StringEntries;
@@ -2067,11 +2081,11 @@ char * __cdecl SE_GetString_LoadObj(char *param_1)
   local_34._padding_ = *(int *)pmVar3;
   bVar2 = std::
           _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-          ::const_iterator::operator!=(&local_c,&local_34);
+          ::const_iterator::operator!=(&itEntry,&local_34);
   if (bVar2) {
     ppVar4 = std::
              _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-             ::const_iterator::operator*(&local_c);
+             ::const_iterator::operator*(&itEntry);
     if ((ppVar4->second)._Myres < 0x10) {
       p_Var5 = &(ppVar4->second)._Bx;
     }
@@ -2145,14 +2159,14 @@ void __cdecl SE_Init(void)
 void __cdecl SE_ShutDown(void)
 
 {
-  CStringEdPackage *pCVar1;
+  CStringEdPackage *ptr;
   
   if (TheStringPackage != (CStringEdPackage *)0x0) {
     CStringEdPackage::Clear(TheStringPackage);
-    pCVar1 = TheStringPackage;
+    ptr = TheStringPackage;
     if (TheStringPackage != (CStringEdPackage *)0x0) {
       CStringEdPackage::~CStringEdPackage(TheStringPackage);
-      Z_Free(pCVar1,0x22);
+      Z_Free(ptr,0x22);
     }
     TheStringPackage = (CStringEdPackage *)0x0;
   }
@@ -2164,28 +2178,28 @@ void __cdecl SE_ShutDown(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl SE_LoadLanguage(bool param_1)
+char * __cdecl SE_LoadLanguage(bool forceEnglish)
 
 {
-  char *local_2c;
-  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> local_28;
+  char *psErrorMessage;
+  basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> strResults;
   uint local_c;
-  char *local_8;
+  char *p;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c = (char *)0x0;
+  psErrorMessage = (char *)0x0;
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-            (&local_28,false,0);
+            (&strResults,false,0);
   SE_NewLanguage();
-  SE_BuildFileList("localizedstrings",&local_28);
+  SE_BuildFileList("localizedstrings",&strResults);
   while( true ) {
-    local_8 = SE_GetFoundFile(&local_28);
-    if ((local_8 == (char *)0x0) || (local_2c != (char *)0x0)) break;
-    local_2c = SE_Load(local_8,param_1);
+    p = SE_GetFoundFile(&strResults);
+    if ((p == (char *)0x0) || (psErrorMessage != (char *)0x0)) break;
+    psErrorMessage = SE_Load(p,forceEnglish);
   }
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
-            (&local_28,true,0);
-  return local_2c;
+            (&strResults,true,0);
+  return psErrorMessage;
 }
 
 
@@ -2308,10 +2322,10 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   const_iterator local_20;
   int local_18;
   _Node *local_14;
-  const_iterator local_c;
+  const_iterator _Where;
   
   p_Var1 = _Lbound(this,in_stack_00000008);
-  const_iterator::const_iterator(&local_c,p_Var1,this);
+  const_iterator::const_iterator(&_Where,p_Var1,this);
   local_14 = this->_Myhead;
   local_18 = 0;
   if (this == (_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
@@ -2319,14 +2333,14 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
     _invalid_parameter_noinfo();
   }
   local_18 = this->_padding_;
-  if ((local_c._padding_ == 0) || (local_c._padding_ != local_18)) {
+  if ((_Where._padding_ == 0) || (_Where._padding_ != local_18)) {
     _invalid_parameter_noinfo();
   }
-  if (local_c._Ptr != local_14) {
+  if (_Where._Ptr != local_14) {
     iVar2 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
-                      (in_stack_00000008,&((local_c._Ptr)->_Myval).first);
+                      (in_stack_00000008,&((_Where._Ptr)->_Myval).first);
     if (-1 < iVar2) {
-      local_4c = &local_c;
+      local_4c = &_Where;
       goto LAB_007276c4;
     }
   }
@@ -2352,36 +2366,36 @@ LAB_007276c4:
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *param_1,
-          uint param_2,uint param_3)
+          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *_Right,
+          uint _Roff,uint _Count)
 
 {
   bool bVar1;
   _Bxty *local_60;
   _Bxty *local_5c;
   _Bxty *local_4c;
-  uint local_8;
+  uint _Num;
   
-  if (param_1->_Mysize < param_2) {
+  if (_Right->_Mysize < _Roff) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  local_8 = param_1->_Mysize - param_2;
-  if (param_3 < local_8) {
-    local_8 = param_3;
+  _Num = _Right->_Mysize - _Roff;
+  if (_Count < _Num) {
+    _Num = _Count;
   }
-  if (this == param_1) {
-    erase(this,param_2 + local_8,0xffffffff);
-    erase(this,0,param_2);
+  if (this == _Right) {
+    erase(this,_Roff + _Num,0xffffffff);
+    erase(this,0,_Roff);
   }
   else {
-    bVar1 = _Grow(this,local_8,false);
+    bVar1 = _Grow(this,_Num,false);
     if (bVar1) {
-      if (param_1->_Myres < 0x10) {
-        local_5c = &param_1->_Bx;
+      if (_Right->_Myres < 0x10) {
+        local_5c = &_Right->_Bx;
       }
       else {
-        local_5c = (_Bxty *)(param_1->_Bx)._Ptr;
+        local_5c = (_Bxty *)(_Right->_Bx)._Ptr;
       }
       if (this->_Myres < 0x10) {
         local_4c = &this->_Bx;
@@ -2389,15 +2403,15 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
       else {
         local_4c = (_Bxty *)(this->_Bx)._Ptr;
       }
-      memcpy_s(local_4c,this->_Myres,(char *)((int)local_5c + param_2),local_8);
-      this->_Mysize = local_8;
+      memcpy_s(local_4c,this->_Myres,(char *)((int)local_5c + _Roff),_Num);
+      this->_Mysize = _Num;
       if (this->_Myres < 0x10) {
         local_60 = &this->_Bx;
       }
       else {
         local_60 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_60->_Buf[local_8] = '\0';
+      local_60->_Buf[_Num] = '\0';
     }
   }
   return this;
@@ -2409,40 +2423,40 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 basic_string<char,std::char_traits<char>,std::allocator<char>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
           (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,
-          basic_string<char,std::char_traits<char>,std::allocator<char>_> *param_1,uint param_2,
-          uint param_3)
+          basic_string<char,std::char_traits<char>,std::allocator<char>_> *_Right,uint _Roff,
+          uint _Count)
 
 {
   bool bVar1;
   _Bxty *local_64;
   _Bxty *local_60;
   _Bxty *local_50;
-  uint local_8;
+  uint _Num;
   
-  if (param_1->_Mysize < param_2) {
+  if (_Right->_Mysize < _Roff) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  local_8 = param_1->_Mysize - param_2;
-  if (param_3 < local_8) {
-    local_8 = param_3;
+  _Num = _Right->_Mysize - _Roff;
+  if (_Count < _Num) {
+    _Num = _Count;
   }
-  if (this == param_1) {
+  if (this == _Right) {
     basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
               ((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)this
-               ,param_2 + local_8,0xffffffff);
+               ,_Roff + _Num,0xffffffff);
     basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
               ((basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *)this
-               ,0,param_2);
+               ,0,_Roff);
   }
   else {
-    bVar1 = _Grow(this,local_8,false);
+    bVar1 = _Grow(this,_Num,false);
     if (bVar1) {
-      if (param_1->_Myres < 0x10) {
-        local_60 = &param_1->_Bx;
+      if (_Right->_Myres < 0x10) {
+        local_60 = &_Right->_Bx;
       }
       else {
-        local_60 = (_Bxty *)(param_1->_Bx)._Ptr;
+        local_60 = (_Bxty *)(_Right->_Bx)._Ptr;
       }
       if (this->_Myres < 0x10) {
         local_50 = &this->_Bx;
@@ -2450,15 +2464,15 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
       else {
         local_50 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      memcpy_s(local_50,this->_Myres,(char *)((int)local_60 + param_2),local_8);
-      this->_Mysize = local_8;
+      memcpy_s(local_50,this->_Myres,(char *)((int)local_60 + _Roff),_Num);
+      this->_Mysize = _Num;
       if (this->_Myres < 0x10) {
         local_64 = &this->_Bx;
       }
       else {
         local_64 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_64->_Buf[local_8] = '\0';
+      local_64->_Buf[_Num] = '\0';
     }
   }
   return this;
@@ -2470,7 +2484,7 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          char *param_1,uint param_2)
+          char *_Ptr,uint _Count)
 
 {
   bool bVar1;
@@ -2479,8 +2493,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   _Bxty *local_4c;
   
   bVar1 = basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Inside
-                    ((basic_string<char,std::char_traits<char>,std::allocator<char>_> *)this,param_1
-                    );
+                    ((basic_string<char,std::char_traits<char>,std::allocator<char>_> *)this,_Ptr);
   if (bVar1) {
     if (this->_Myres < 0x10) {
       local_5c = &this->_Bx;
@@ -2488,10 +2501,10 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
     else {
       local_5c = (_Bxty *)(this->_Bx)._Ptr;
     }
-    this = assign(this,this,(int)param_1 - (int)local_5c,param_2);
+    this = assign(this,this,(int)_Ptr - (int)local_5c,_Count);
   }
   else {
-    bVar1 = _Grow(this,param_2,false);
+    bVar1 = _Grow(this,_Count,false);
     if (bVar1) {
       if (this->_Myres < 0x10) {
         local_4c = &this->_Bx;
@@ -2499,15 +2512,15 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
       else {
         local_4c = (_Bxty *)(this->_Bx)._Ptr;
       }
-      memcpy_s(local_4c,this->_Myres,param_1,param_2);
-      this->_Mysize = param_2;
+      memcpy_s(local_4c,this->_Myres,_Ptr,_Count);
+      this->_Mysize = _Count;
       if (this->_Myres < 0x10) {
         local_60 = &this->_Bx;
       }
       else {
         local_60 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_60->_Buf[param_2] = '\0';
+      local_60->_Buf[_Count] = '\0';
     }
   }
   return this;
@@ -2518,8 +2531,8 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 
 basic_string<char,std::char_traits<char>,std::allocator<char>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *param_1,
-          uint param_2)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *_Ptr,
+          uint _Count)
 
 {
   bool bVar1;
@@ -2527,7 +2540,7 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
   _Bxty *local_60;
   _Bxty *local_50;
   
-  bVar1 = _Inside(this,param_1);
+  bVar1 = _Inside(this,_Ptr);
   if (bVar1) {
     if (this->_Myres < 0x10) {
       local_60 = &this->_Bx;
@@ -2535,10 +2548,10 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
     else {
       local_60 = (_Bxty *)(this->_Bx)._Ptr;
     }
-    this = assign(this,this,(int)param_1 - (int)local_60,param_2);
+    this = assign(this,this,(int)_Ptr - (int)local_60,_Count);
   }
   else {
-    bVar1 = _Grow(this,param_2,false);
+    bVar1 = _Grow(this,_Count,false);
     if (bVar1) {
       if (this->_Myres < 0x10) {
         local_50 = &this->_Bx;
@@ -2546,15 +2559,15 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
       else {
         local_50 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      memcpy_s(local_50,this->_Myres,param_1,param_2);
-      this->_Mysize = param_2;
+      memcpy_s(local_50,this->_Myres,_Ptr,_Count);
+      this->_Mysize = _Count;
       if (this->_Myres < 0x10) {
         local_64 = &this->_Bx;
       }
       else {
         local_64 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_64->_Buf[param_2] = '\0';
+      local_64->_Buf[_Count] = '\0';
     }
   }
   return this;
@@ -2569,20 +2582,20 @@ void __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Erase(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-         *this,_Node *param_1)
+         *this,_Node *_Rootnode)
 
 {
   _Node *p_Var1;
-  int iVar2;
+  int type;
   
-  while (param_1->_Isnil == '\0') {
-    _Erase(this,param_1->_Right);
-    p_Var1 = param_1->_Left;
+  while (_Rootnode->_Isnil == '\0') {
+    _Erase(this,_Rootnode->_Right);
+    p_Var1 = _Rootnode->_Left;
     _Tree_nod<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-    ::_Node::~_Node(param_1);
-    iVar2 = LocalizeName::GetType();
-    Z_Free(param_1,iVar2);
-    param_1 = p_Var1;
+    ::_Node::~_Node(_Rootnode);
+    type = LocalizeName::GetType();
+    Z_Free(_Rootnode,type);
+    _Rootnode = p_Var1;
   }
   return;
 }
@@ -2616,9 +2629,9 @@ iterator __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Insert(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-          *this,bool param_1,_Node *param_2,
+          *this,bool param_1,_Node *_Addleft,
          pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-         *param_3)
+         *_Wherenode)
 
 {
   _Node *p_Var1;
@@ -2632,71 +2645,71 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   undefined1 *local_58;
   basic_string<char,std::char_traits<char>,std::allocator<char>_> local_50;
   logic_error local_34;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Pnode;
+  _Node *_Newnode;
   
   if (this->_Mysize < 0x7ffffffe) {
-    local_c = _Buynode(this,this->_Myhead,(_Node *)param_3,this->_Myhead,in_stack_00000010,'\0');
+    _Pnode = _Buynode(this,this->_Myhead,(_Node *)_Wherenode,this->_Myhead,in_stack_00000010,'\0');
     this->_Mysize = this->_Mysize + 1;
-    local_8 = local_c;
-    if ((_Node *)param_3 == this->_Myhead) {
-      this->_Myhead->_Parent = local_c;
-      this->_Myhead->_Left = local_c;
-      this->_Myhead->_Right = local_c;
+    _Newnode = _Pnode;
+    if ((_Node *)_Wherenode == this->_Myhead) {
+      this->_Myhead->_Parent = _Pnode;
+      this->_Myhead->_Left = _Pnode;
+      this->_Myhead->_Right = _Pnode;
     }
-    else if ((char)param_2 == '\0') {
-      *(_Node **)((int)&(param_3->first)._Bx + 4) = local_c;
-      if ((_Node *)param_3 == this->_Myhead->_Right) {
-        this->_Myhead->_Right = local_c;
+    else if ((char)_Addleft == '\0') {
+      *(_Node **)((int)&(_Wherenode->first)._Bx + 4) = _Pnode;
+      if ((_Node *)_Wherenode == this->_Myhead->_Right) {
+        this->_Myhead->_Right = _Pnode;
       }
     }
     else {
-      (param_3->first)._padding_ = (int)local_c;
-      if ((_Node *)param_3 == this->_Myhead->_Left) {
-        this->_Myhead->_Left = local_c;
+      (_Wherenode->first)._padding_ = (int)_Pnode;
+      if ((_Node *)_Wherenode == this->_Myhead->_Left) {
+        this->_Myhead->_Left = _Pnode;
       }
     }
-    while (local_c->_Parent->_Color == '\0') {
-      if (local_c->_Parent == local_c->_Parent->_Parent->_Left) {
-        p_Var1 = local_c->_Parent->_Parent->_Right;
+    while (_Pnode->_Parent->_Color == '\0') {
+      if (_Pnode->_Parent == _Pnode->_Parent->_Parent->_Left) {
+        p_Var1 = _Pnode->_Parent->_Parent->_Right;
         if (p_Var1->_Color == '\0') {
-          local_c->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Color = '\x01';
           p_Var1->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          local_c = local_c->_Parent->_Parent;
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Pnode = _Pnode->_Parent->_Parent;
         }
         else {
-          if (local_c == local_c->_Parent->_Right) {
-            local_c = local_c->_Parent;
-            _Lrotate(this,local_c);
+          if (_Pnode == _Pnode->_Parent->_Right) {
+            _Pnode = _Pnode->_Parent;
+            _Lrotate(this,_Pnode);
           }
-          local_c->_Parent->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          _Rrotate(this,local_c->_Parent->_Parent);
+          _Pnode->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Rrotate(this,_Pnode->_Parent->_Parent);
         }
       }
       else {
-        p_Var1 = local_c->_Parent->_Parent->_Left;
+        p_Var1 = _Pnode->_Parent->_Parent->_Left;
         if (p_Var1->_Color == '\0') {
-          local_c->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Color = '\x01';
           p_Var1->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          local_c = local_c->_Parent->_Parent;
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Pnode = _Pnode->_Parent->_Parent;
         }
         else {
-          if (local_c == local_c->_Parent->_Left) {
-            local_c = local_c->_Parent;
-            _Rrotate(this,local_c);
+          if (_Pnode == _Pnode->_Parent->_Left) {
+            _Pnode = _Pnode->_Parent;
+            _Rrotate(this,_Pnode);
           }
-          local_c->_Parent->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          _Lrotate(this,local_c->_Parent->_Parent);
+          _Pnode->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Lrotate(this,_Pnode->_Parent->_Parent);
         }
       }
     }
     this->_Myhead->_Parent->_Color = '\x01';
     *_param_1 = 0;
-    _param_1[1] = (int)local_8;
+    _param_1[1] = (int)_Newnode;
     if (this == (_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
                  *)0x0) {
       _invalid_parameter_noinfo();
@@ -2728,22 +2741,23 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::erase
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,uint param_2)
+          uint _Off_2,uint _Count_2)
 
 {
   uint uVar1;
   _Bxty *local_2c;
   _Bxty *local_28;
   _Bxty *local_24;
+  uint _Newsize_2;
   
-  if (this->_Mysize < param_1) {
+  if (this->_Mysize < _Off_2) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  if (this->_Mysize - param_1 < param_2) {
-    param_2 = this->_Mysize - param_1;
+  if (this->_Mysize - _Off_2 < _Count_2) {
+    _Count_2 = this->_Mysize - _Off_2;
   }
-  if (param_2 != 0) {
+  if (_Count_2 != 0) {
     if (this->_Myres < 0x10) {
       local_24 = &this->_Bx;
     }
@@ -2756,9 +2770,9 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
     else {
       local_28 = (_Bxty *)(this->_Bx)._Ptr;
     }
-    memmove_s((char *)((int)local_28 + param_1),this->_Myres - param_1,
-              (char *)((int)local_24 + param_2 + param_1),(this->_Mysize - param_1) - param_2);
-    uVar1 = this->_Mysize - param_2;
+    memmove_s((char *)((int)local_28 + _Off_2),this->_Myres - _Off_2,
+              (char *)((int)local_24 + _Count_2 + _Off_2),(this->_Mysize - _Off_2) - _Count_2);
+    uVar1 = this->_Mysize - _Count_2;
     this->_Mysize = uVar1;
     if (this->_Myres < 0x10) {
       local_2c = &this->_Bx;
@@ -2779,27 +2793,27 @@ std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Lbound(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
           *this,basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                *param_1)
+                *_Keyval)
 
 {
   int iVar1;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Pnode;
+  _Node *_Wherenode;
   
-  local_c = this->_Myhead->_Parent;
-  local_8 = this->_Myhead;
-  while (local_c->_Isnil == '\0') {
+  _Pnode = this->_Myhead->_Parent;
+  _Wherenode = this->_Myhead;
+  while (_Pnode->_Isnil == '\0') {
     iVar1 = basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
-                      (&(local_c->_Myval).first,param_1);
+                      (&(_Pnode->_Myval).first,_Keyval);
     if (iVar1 < 0) {
-      local_c = local_c->_Right;
+      _Pnode = _Pnode->_Right;
     }
     else {
-      local_8 = local_c;
-      local_c = local_c->_Left;
+      _Wherenode = _Pnode;
+      _Pnode = _Pnode->_Left;
     }
   }
-  return local_8;
+  return _Wherenode;
 }
 
 
@@ -2809,28 +2823,28 @@ void __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Lrotate(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-           *this,_Node *param_1)
+           *this,_Node *_Wherenode)
 
 {
   _Node *p_Var1;
   
-  p_Var1 = param_1->_Right;
-  param_1->_Right = p_Var1->_Left;
+  p_Var1 = _Wherenode->_Right;
+  _Wherenode->_Right = p_Var1->_Left;
   if (p_Var1->_Left->_Isnil == '\0') {
-    p_Var1->_Left->_Parent = param_1;
+    p_Var1->_Left->_Parent = _Wherenode;
   }
-  p_Var1->_Parent = param_1->_Parent;
-  if (param_1 == this->_Myhead->_Parent) {
+  p_Var1->_Parent = _Wherenode->_Parent;
+  if (_Wherenode == this->_Myhead->_Parent) {
     this->_Myhead->_Parent = p_Var1;
   }
-  else if (param_1 == param_1->_Parent->_Left) {
-    param_1->_Parent->_Left = p_Var1;
+  else if (_Wherenode == _Wherenode->_Parent->_Left) {
+    _Wherenode->_Parent->_Left = p_Var1;
   }
   else {
-    param_1->_Parent->_Right = p_Var1;
+    _Wherenode->_Parent->_Right = p_Var1;
   }
-  p_Var1->_Left = param_1;
-  param_1->_Parent = p_Var1;
+  p_Var1->_Left = _Wherenode;
+  _Wherenode->_Parent = p_Var1;
   return;
 }
 
@@ -2841,28 +2855,28 @@ void __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Rrotate(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-           *this,_Node *param_1)
+           *this,_Node *_Wherenode)
 
 {
   _Node *p_Var1;
   
-  p_Var1 = param_1->_Left;
-  param_1->_Left = p_Var1->_Right;
+  p_Var1 = _Wherenode->_Left;
+  _Wherenode->_Left = p_Var1->_Right;
   if (p_Var1->_Right->_Isnil == '\0') {
-    p_Var1->_Right->_Parent = param_1;
+    p_Var1->_Right->_Parent = _Wherenode;
   }
-  p_Var1->_Parent = param_1->_Parent;
-  if (param_1 == this->_Myhead->_Parent) {
+  p_Var1->_Parent = _Wherenode->_Parent;
+  if (_Wherenode == this->_Myhead->_Parent) {
     this->_Myhead->_Parent = p_Var1;
   }
-  else if (param_1 == param_1->_Parent->_Right) {
-    param_1->_Parent->_Right = p_Var1;
+  else if (_Wherenode == _Wherenode->_Parent->_Right) {
+    _Wherenode->_Parent->_Right = p_Var1;
   }
   else {
-    param_1->_Parent->_Left = p_Var1;
+    _Wherenode->_Parent->_Left = p_Var1;
   }
-  p_Var1->_Right = param_1;
-  param_1->_Parent = p_Var1;
+  p_Var1->_Right = _Wherenode;
+  _Wherenode->_Parent = p_Var1;
   return;
 }
 
@@ -2876,9 +2890,10 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
            *this)
 
 {
-  int iVar1;
-  undefined4 *puVar2;
-  _Node *p_Var3;
+  int type;
+  undefined4 *puVar1;
+  _Node *p_Var2;
+  int _Linkcnt;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -2889,20 +2904,20 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   ;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  iVar1 = LocalizeName::GetType();
-  puVar2 = Z_Malloc(0x48,"mapStringEntries_t",iVar1);
+  type = LocalizeName::GetType();
+  puVar1 = Z_Malloc(0x48,"mapStringEntries_t",type);
   local_8 = 0;
-  if (puVar2 != (undefined4 *)0x0) {
-    *puVar2 = 0;
+  if (puVar1 != (undefined4 *)0x0) {
+    *puVar1 = 0;
   }
-  if (puVar2 + 1 != (undefined4 *)0x0) {
-    puVar2[1] = 0;
+  if (puVar1 + 1 != (undefined4 *)0x0) {
+    puVar1[1] = 0;
   }
-  if (puVar2 + 2 != (undefined4 *)0x0) {
-    puVar2[2] = 0;
+  if (puVar1 + 2 != (undefined4 *)0x0) {
+    puVar1[2] = 0;
   }
-  p_Var3 = (_Node *)FUN_0072a394();
-  return p_Var3;
+  p_Var2 = (_Node *)FUN_0072a394();
+  return p_Var2;
 }
 
 
@@ -2912,14 +2927,14 @@ _Node * __thiscall
 std::
 _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
 ::_Buynode(_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
-           *this,_Node *param_1,_Node *param_2,_Node *param_3,
+           *this,_Node *_Larg,_Node *_Parg,_Node *_Rarg,
           pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-          *param_4,char param_5)
+          *_Val,char _Carg)
 
 {
-  int iVar1;
-  undefined4 *puVar2;
-  _Node *p_Var3;
+  int type;
+  undefined4 *puVar1;
+  _Node *p_Var2;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -2930,23 +2945,23 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   ;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  iVar1 = LocalizeName::GetType();
-  puVar2 = Z_Malloc(0x48,"mapStringEntries_t",iVar1);
+  type = LocalizeName::GetType();
+  puVar1 = Z_Malloc(0x48,"mapStringEntries_t",type);
   local_8 = 0;
-  if (puVar2 != (undefined4 *)0x0) {
-    *puVar2 = param_1;
-    puVar2[1] = param_2;
-    puVar2[2] = param_3;
+  if (puVar1 != (undefined4 *)0x0) {
+    *puVar1 = _Larg;
+    puVar1[1] = _Parg;
+    puVar1[2] = _Rarg;
     pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
     ::
     pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
               ((pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                *)(puVar2 + 3),param_4);
-    *(char *)(puVar2 + 0x11) = param_5;
-    *(undefined1 *)((int)puVar2 + 0x45) = 0;
+                *)(puVar1 + 3),_Val);
+    *(char *)(puVar1 + 0x11) = _Carg;
+    *(undefined1 *)((int)puVar1 + 0x45) = 0;
   }
-  p_Var3 = (_Node *)FUN_0072a493();
-  return p_Var3;
+  p_Var2 = (_Node *)FUN_0072a493();
+  return p_Var2;
 }
 
 
@@ -2959,10 +2974,10 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
         *this)
 
 {
-  _Node *p_Var1;
+  _Node *ptr;
+  const_iterator cVar1;
   const_iterator cVar2;
-  const_iterator cVar3;
-  int iVar4;
+  int type;
   undefined1 local_2c [8];
   _Node *local_24;
   _Node *local_20;
@@ -2990,15 +3005,15 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
   }
   local_24 = (_Node *)this->_padding_;
   local_18 = local_20;
-  cVar2._Ptr = local_24;
-  cVar2._padding_ = (int)local_2c;
-  cVar3._Ptr = local_c;
-  cVar3._padding_ = (int)local_20;
+  cVar1._Ptr = local_24;
+  cVar1._padding_ = (int)local_2c;
+  cVar2._Ptr = local_c;
+  cVar2._padding_ = (int)local_20;
   local_1c = local_24;
-  erase(this,cVar2,cVar3);
-  p_Var1 = this->_Myhead;
-  iVar4 = LocalizeName::GetType();
-  Z_Free(p_Var1,iVar4);
+  erase(this,cVar1,cVar2);
+  ptr = this->_Myhead;
+  type = LocalizeName::GetType();
+  Z_Free(ptr,type);
   this->_Myhead = (_Node *)0x0;
   this->_Mysize = 0;
   return;
@@ -3010,7 +3025,7 @@ _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<
 uint __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::find
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          char *param_1,uint param_2,uint param_3)
+          char *_Ptr,uint _Off,uint _Count)
 
 {
   byte *extraout_EAX;
@@ -3022,26 +3037,27 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   _Bxty *local_24;
   int local_1c;
   _Bxty *local_18;
-  byte *local_10;
-  ulong local_8;
+  char *_Vptr;
+  char *_Uptr;
+  uint _Nm;
   
-  if ((param_3 != 0) || (this->_Mysize < param_2)) {
-    if ((param_2 < this->_Mysize) && (uVar1 = this->_Mysize - param_2, param_3 <= uVar1)) {
-      local_8 = uVar1 - (param_3 - 1);
+  if ((_Count != 0) || (this->_Mysize < _Off)) {
+    if ((_Off < this->_Mysize) && (uVar1 = this->_Mysize - _Off, _Count <= uVar1)) {
+      _Nm = uVar1 - (_Count - 1);
       if (this->_Myres < 0x10) {
         local_18 = &this->_Bx;
       }
       else {
         local_18 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_10 = (byte *)(local_18->_Buf + param_2);
-      while (memchr(local_10,*param_1,local_8), extraout_EAX != (byte *)0x0) {
+      _Vptr = local_18->_Buf + _Off;
+      while (memchr((uchar *)_Vptr,*_Ptr,_Nm), extraout_EAX != (byte *)0x0) {
         bVar4 = false;
         bVar5 = true;
         local_1c = 0;
-        uVar1 = param_3;
+        uVar1 = _Count;
         pbVar2 = extraout_EAX;
-        pbVar3 = (byte *)param_1;
+        pbVar3 = (byte *)_Ptr;
         do {
           if (uVar1 == 0) break;
           uVar1 = uVar1 - 1;
@@ -3062,13 +3078,13 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
           }
           return (int)extraout_EAX - (int)local_24;
         }
-        local_8 = local_8 - (int)(extraout_EAX + (1 - (int)local_10));
-        local_10 = extraout_EAX + 1;
+        _Nm = _Nm - (int)(extraout_EAX + (1 - (int)_Vptr));
+        _Vptr = (char *)(extraout_EAX + 1);
       }
     }
-    param_2 = 0xffffffff;
+    _Off = 0xffffffff;
   }
-  return param_2;
+  return _Off;
 }
 
 
@@ -3077,19 +3093,19 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 int __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *param_1)
+          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *_Right)
 
 {
   int iVar1;
   _Bxty *local_18;
   
-  if (param_1->_Myres < 0x10) {
-    local_18 = &param_1->_Bx;
+  if (_Right->_Myres < 0x10) {
+    local_18 = &_Right->_Bx;
   }
   else {
-    local_18 = (_Bxty *)(param_1->_Bx)._Ptr;
+    local_18 = (_Bxty *)(_Right->_Bx)._Ptr;
   }
-  iVar1 = compare(this,0,this->_Mysize,local_18->_Buf,param_1->_Mysize);
+  iVar1 = compare(this,0,this->_Mysize,local_18->_Buf,_Right->_Mysize);
   return iVar1;
 }
 
@@ -3099,7 +3115,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 int __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::compare
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,uint param_2,char *param_3,uint param_4)
+          uint _Off,uint _N0,char *_Ptr,uint _Count)
 
 {
   byte *pbVar1;
@@ -3110,19 +3126,20 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   uint local_18;
   _Bxty *local_14;
   uint local_c;
+  uint _Ans;
   
-  if (this->_Mysize < param_1) {
+  if (this->_Mysize < _Off) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  if (this->_Mysize - param_1 < param_2) {
-    param_2 = this->_Mysize - param_1;
+  if (this->_Mysize - _Off < _N0) {
+    _N0 = this->_Mysize - _Off;
   }
-  if (param_2 < param_4) {
-    local_c = param_2;
+  if (_N0 < _Count) {
+    local_c = _N0;
   }
   else {
-    local_c = param_4;
+    local_c = _Count;
   }
   if (this->_Myres < 0x10) {
     local_14 = &this->_Bx;
@@ -3133,24 +3150,24 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   bVar2 = false;
   bVar3 = true;
   local_18 = 0;
-  pbVar1 = (byte *)(local_14->_Buf + param_1);
+  pbVar1 = (byte *)(local_14->_Buf + _Off);
   do {
     if (local_c == 0) break;
     local_c = local_c - 1;
-    bVar2 = *pbVar1 < (byte)*param_3;
-    bVar3 = *pbVar1 == *param_3;
+    bVar2 = *pbVar1 < (byte)*_Ptr;
+    bVar3 = *pbVar1 == *_Ptr;
     pbVar1 = pbVar1 + 1;
-    param_3 = param_3 + 1;
+    _Ptr = _Ptr + 1;
   } while (bVar3);
   if (!bVar3) {
     local_18 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
   }
   if (local_18 == 0) {
-    if (param_2 < param_4) {
+    if (_N0 < _Count) {
       local_24 = 0xffffffff;
     }
     else {
-      local_24 = (uint)(param_2 != param_4);
+      local_24 = (uint)(_N0 != _Count);
     }
     local_20 = local_24;
   }
@@ -3170,11 +3187,12 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 
 void __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Copy
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint param_1,
-          uint param_2)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint _Newsize,
+          uint _Oldlen)
 
 {
-  uint local_1c;
+  uint _Newres;
+  char *_Ptr;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -3184,15 +3202,15 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Copy
   ;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  local_1c = param_1 | 0xf;
-  if (local_1c == 0xffffffff) {
-    local_1c = param_1;
+  _Newres = _Newsize | 0xf;
+  if (_Newres == 0xffffffff) {
+    _Newres = _Newsize;
   }
-  else if ((local_1c / 3 < this->_Myres >> 1) && (this->_Myres <= -(this->_Myres >> 1) - 2)) {
-    local_1c = (this->_Myres >> 1) + this->_Myres;
+  else if ((_Newres / 3 < this->_Myres >> 1) && (this->_Myres <= -(this->_Myres >> 1) - 2)) {
+    _Newres = (this->_Myres >> 1) + this->_Myres;
   }
   local_8 = 0;
-  allocator<char>::allocate((allocator<char> *)this,local_1c + 1);
+  allocator<char>::allocate((allocator<char> *)this,_Newres + 1);
   FUN_007296e6();
   return;
 }
@@ -3206,12 +3224,13 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Copy
 void __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Copy
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,uint param_2)
+          uint _Newsize,uint _Oldlen)
 
 {
-  int iVar1;
-  char *pcVar2;
-  uint local_1c;
+  int type;
+  char *name;
+  uint _Newres;
+  char *_Ptr;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -3221,19 +3240,19 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   ;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  local_1c = param_1 | 0xf;
-  if (local_1c < 0x7fffffff) {
-    if ((local_1c / 3 < this->_Myres >> 1) && (this->_Myres <= 0x7ffffffe - (this->_Myres >> 1))) {
-      local_1c = (this->_Myres >> 1) + this->_Myres;
+  _Newres = _Newsize | 0xf;
+  if (_Newres < 0x7fffffff) {
+    if ((_Newres / 3 < this->_Myres >> 1) && (this->_Myres <= 0x7ffffffe - (this->_Myres >> 1))) {
+      _Newres = (this->_Myres >> 1) + this->_Myres;
     }
   }
   else {
-    local_1c = param_1;
+    _Newres = _Newsize;
   }
   local_8 = 0;
-  iVar1 = LocalizeName::GetType();
-  pcVar2 = LocalizeStringName::GetName();
-  Z_Malloc(local_1c + 1,pcVar2,iVar1);
+  type = LocalizeName::GetType();
+  name = LocalizeStringName::GetName();
+  Z_Malloc(_Newres + 1,name,type);
   FUN_00729905();
   return;
 }
@@ -3246,26 +3265,26 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 bool __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Grow
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,bool param_2)
+          uint _Newsize,bool _Trim)
 
 {
   _Bxty *local_2c;
   uint local_28;
   
-  if (param_1 < 0x7fffffff) {
-    if (this->_Myres < param_1) {
-      _Copy(this,param_1,this->_Mysize);
+  if (_Newsize < 0x7fffffff) {
+    if (this->_Myres < _Newsize) {
+      _Copy(this,_Newsize,this->_Mysize);
     }
-    else if ((param_2) && (param_1 < 0x10)) {
-      if (param_1 < this->_Mysize) {
-        local_28 = param_1;
+    else if ((_Trim) && (_Newsize < 0x10)) {
+      if (_Newsize < this->_Mysize) {
+        local_28 = _Newsize;
       }
       else {
         local_28 = this->_Mysize;
       }
       _Tidy(this,true,local_28);
     }
-    else if (param_1 == 0) {
+    else if (_Newsize == 0) {
       this->_Mysize = 0;
       if (this->_Myres < 0x10) {
         local_2c = &this->_Bx;
@@ -3275,7 +3294,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
       }
       local_2c->_Buf[0] = '\0';
     }
-    return param_1 != 0;
+    return _Newsize != 0;
   }
                     /* WARNING: Subroutine does not return */
   _String_base::_Xlen();
@@ -3289,30 +3308,30 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 
 bool __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Grow
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint param_1,
-          bool param_2)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint _Newsize,
+          bool _Trim)
 
 {
   _Bxty *local_34;
   uint local_30;
   
-  if (param_1 == 0xffffffff) {
+  if (_Newsize == 0xffffffff) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xlen();
   }
-  if (this->_Myres < param_1) {
-    _Copy(this,param_1,this->_Mysize);
+  if (this->_Myres < _Newsize) {
+    _Copy(this,_Newsize,this->_Mysize);
   }
-  else if ((param_2) && (param_1 < 0x10)) {
-    if (param_1 < this->_Mysize) {
-      local_30 = param_1;
+  else if ((_Trim) && (_Newsize < 0x10)) {
+    if (_Newsize < this->_Mysize) {
+      local_30 = _Newsize;
     }
     else {
       local_30 = this->_Mysize;
     }
     _Tidy(this,true,local_30);
   }
-  else if (param_1 == 0) {
+  else if (_Newsize == 0) {
     this->_Mysize = 0;
     if (this->_Myres < 0x10) {
       local_34 = &this->_Bx;
@@ -3322,7 +3341,7 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Grow
     }
     local_34->_Buf[0] = '\0';
   }
-  return param_1 != 0;
+  return _Newsize != 0;
 }
 
 
@@ -3330,27 +3349,27 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Grow
 
 bool __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Inside
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *param_1)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *_Ptr_2)
 
 {
   _Bxty *local_10;
   _Bxty *local_c;
   
-  if (param_1 != (char *)0x0) {
+  if (_Ptr_2 != (char *)0x0) {
     if (this->_Myres < 0x10) {
       local_c = &this->_Bx;
     }
     else {
       local_c = (_Bxty *)(this->_Bx)._Ptr;
     }
-    if (local_c <= param_1) {
+    if (local_c <= _Ptr_2) {
       if (this->_Myres < 0x10) {
         local_10 = &this->_Bx;
       }
       else {
         local_10 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      if (param_1 < local_10->_Buf + this->_Mysize) {
+      if (_Ptr_2 < local_10->_Buf + this->_Mysize) {
         return true;
       }
     }
@@ -3364,30 +3383,31 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Inside
 void __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          bool param_1,uint param_2)
+          bool _Built,uint _Newsize)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *src;
+  int type;
   _Bxty *local_20;
+  char *_Ptr;
   
-  if ((param_1) && (0xf < this->_Myres)) {
-    pcVar1 = (this->_Bx)._Ptr;
-    if (param_2 != 0) {
-      memcpy_s(&this->_Bx,0x10,pcVar1,param_2);
+  if ((_Built) && (0xf < this->_Myres)) {
+    src = (this->_Bx)._Ptr;
+    if (_Newsize != 0) {
+      memcpy_s(&this->_Bx,0x10,src,_Newsize);
     }
-    iVar2 = LocalizeName::GetType();
-    Z_Free(pcVar1,iVar2);
+    type = LocalizeName::GetType();
+    Z_Free(src,type);
   }
   this->_Myres = 0xf;
-  this->_Mysize = param_2;
+  this->_Mysize = _Newsize;
   if (this->_Myres < 0x10) {
     local_20 = &this->_Bx;
   }
   else {
     local_20 = (_Bxty *)(this->_Bx)._Ptr;
   }
-  local_20->_Buf[param_2] = '\0';
+  local_20->_Buf[_Newsize] = '\0';
   return;
 }
 
@@ -3396,29 +3416,30 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 
 void __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Tidy
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,bool param_1,
-          uint param_2)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,bool _Built,
+          uint _Newsize)
 
 {
-  char *pcVar1;
+  char *src;
   _Bxty *local_20;
+  char *_Ptr;
   
-  if ((param_1) && (0xf < this->_Myres)) {
-    pcVar1 = (this->_Bx)._Ptr;
-    if (param_2 != 0) {
-      memcpy_s(&this->_Bx,0x10,pcVar1,param_2);
+  if ((_Built) && (0xf < this->_Myres)) {
+    src = (this->_Bx)._Ptr;
+    if (_Newsize != 0) {
+      memcpy_s(&this->_Bx,0x10,src,_Newsize);
     }
-    operator_delete(pcVar1);
+    operator_delete(src);
   }
   this->_Myres = 0xf;
-  this->_Mysize = param_2;
+  this->_Mysize = _Newsize;
   if (this->_Myres < 0x10) {
     local_20 = &this->_Bx;
   }
   else {
     local_20 = (_Bxty *)(this->_Bx)._Ptr;
   }
-  local_20->_Buf[param_2] = '\0';
+  local_20->_Buf[_Newsize] = '\0';
   return;
 }
 
@@ -3448,16 +3469,16 @@ CStringEdPackage * __thiscall CStringEdPackage::CStringEdPackage(CStringEdPackag
 void __thiscall CStringEdPackage::~CStringEdPackage(CStringEdPackage *this)
 
 {
-  void *pvVar1;
-  int iVar2;
+  void *ptr;
+  int type;
   
   std::
   _Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
   ::_Tidy((_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::less<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,Allocator<std::pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>,mapStringEntriesName_t>,0>_>
            *)&this->m_StringEntries);
-  pvVar1 = *(void **)&(this->m_StringEntries).field_0x0;
-  iVar2 = LocalizeName::GetType();
-  Z_Free(pvVar1,iVar2);
+  ptr = *(void **)&(this->m_StringEntries).field_0x0;
+  type = LocalizeName::GetType();
+  Z_Free(ptr,type);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&this->m_strCurrentFileRef_ParseOnly,true,0);
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
@@ -3503,24 +3524,24 @@ void * __thiscall std::length_error::_scalar_deleting_destructor_(length_error *
 
 // 00728F90  logic_error  (line unknown)
 
-logic_error * __thiscall std::logic_error::logic_error(logic_error *this,logic_error *param_1)
+logic_error * __thiscall std::logic_error::logic_error(logic_error *this,logic_error *__that)
 
 {
-  exception::exception((exception *)this,(exception *)param_1);
+  exception::exception((exception *)this,(exception *)__that);
   this->_padding_ = (int)vftable;
   basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Tidy(&this->_Str,false,0);
   basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
-            (&this->_Str,&param_1->_Str,0,0xffffffff);
+            (&this->_Str,&__that->_Str,0,0xffffffff);
   return this;
 }
 
 
 // 007294E0  length_error  (line unknown)
 
-length_error * __thiscall std::length_error::length_error(length_error *this,length_error *param_1)
+length_error * __thiscall std::length_error::length_error(length_error *this,length_error *__that)
 
 {
-  logic_error::logic_error((logic_error *)this,(logic_error *)param_1);
+  logic_error::logic_error((logic_error *)this,(logic_error *)__that);
   *(undefined ***)this = vftable;
   return this;
 }
@@ -3562,10 +3583,10 @@ void * __thiscall std::out_of_range::_scalar_deleting_destructor_(out_of_range *
 
 // 0072A0F0  out_of_range  (line unknown)
 
-out_of_range * __thiscall std::out_of_range::out_of_range(out_of_range *this,out_of_range *param_1)
+out_of_range * __thiscall std::out_of_range::out_of_range(out_of_range *this,out_of_range *__that)
 
 {
-  logic_error::logic_error((logic_error *)this,(logic_error *)param_1);
+  logic_error::logic_error((logic_error *)this,(logic_error *)__that);
   *(undefined ***)this = vftable;
   return this;
 }
@@ -3581,17 +3602,17 @@ pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeString
 pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
           (pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
            *this,pair<std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_const_,std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>_>
-                 *param_1)
+                 *__that)
 
 {
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&this->first,false,0);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&this->first,&param_1->first,0,0xffffffff);
+            (&this->first,&__that->first,0,0xffffffff);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Tidy
             (&this->second,false,0);
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (&this->second,&param_1->second,0,0xffffffff);
+            (&this->second,&__that->second,0,0xffffffff);
   return this;
 }
 
@@ -3612,10 +3633,10 @@ void * __thiscall std::bad_alloc::_scalar_deleting_destructor_(bad_alloc *this,u
 
 // 0072A850  bad_alloc  (line unknown)
 
-bad_alloc * __thiscall std::bad_alloc::bad_alloc(bad_alloc *this,bad_alloc *param_1)
+bad_alloc * __thiscall std::bad_alloc::bad_alloc(bad_alloc *this,bad_alloc *__that)
 
 {
-  exception::exception((exception *)this,(exception *)param_1);
+  exception::exception((exception *)this,(exception *)__that);
   *(undefined ***)this = vftable;
   return this;
 }

@@ -2,52 +2,52 @@
 
 // 006EB650  GetPairValue  (qcommon/radiant_remote.cpp:16)
 
-char * __cdecl GetPairValue(SpawnVar *param_1,char *param_2)
+char * __cdecl GetPairValue(SpawnVar *spawnVar,char *key)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->numSpawnVars <= local_8) {
+    if (spawnVar->numSpawnVars <= i) {
       return (char *)0x0;
     }
-    iVar1 = I_stricmp(param_2,param_1->spawnVars[local_8][0]);
+    iVar1 = I_stricmp(key,spawnVar->spawnVars[i][0]);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return param_1->spawnVars[local_8][1];
+  return spawnVar->spawnVars[i][1];
 }
 
 
 // 006EB6A0  AddSavedCommand  (qcommon/radiant_remote.cpp:79)
 
-void __cdecl AddSavedCommand(RadiantCommand *param_1)
+void __cdecl AddSavedCommand(RadiantCommand *command)
 
 {
-  int local_8;
+  int i;
   
-  if ((param_1->liveUpdateId != 0) && (!runningSavedCommands)) {
-    if (param_1->type != RADIANT_COMMAND_DELETE) {
-      for (local_8 = 0; local_8 < savedCommandCount; local_8 = local_8 + 1) {
-        if (savedCommands[local_8].liveUpdateId == param_1->liveUpdateId) {
-          I_strncpyz(savedCommands[local_8].strCommand,param_1->strCommand,0x200);
-          if (savedCommands[local_8].type != RADIANT_COMMAND_CREATE) {
-            savedCommands[local_8].type = param_1->type;
+  if ((command->liveUpdateId != 0) && (!runningSavedCommands)) {
+    if (command->type != RADIANT_COMMAND_DELETE) {
+      for (i = 0; i < savedCommandCount; i = i + 1) {
+        if (savedCommands[i].liveUpdateId == command->liveUpdateId) {
+          I_strncpyz(savedCommands[i].strCommand,command->strCommand,0x200);
+          if (savedCommands[i].type != RADIANT_COMMAND_CREATE) {
+            savedCommands[i].type = command->type;
           }
-          if (savedCommands[local_8].type != RADIANT_COMMAND_UPDATE_SELECTED) {
+          if (savedCommands[i].type != RADIANT_COMMAND_UPDATE_SELECTED) {
             return;
           }
-          savedCommands[local_8].type = RADIANT_COMMAND_UPDATE;
+          savedCommands[i].type = RADIANT_COMMAND_UPDATE;
           return;
         }
       }
     }
     if (savedCommandCount < 0x80) {
-      I_strncpyz(savedCommands[savedCommandCount].strCommand,param_1->strCommand,0x200);
-      savedCommands[savedCommandCount].liveUpdateId = param_1->liveUpdateId;
-      savedCommands[savedCommandCount].type = param_1->type;
+      I_strncpyz(savedCommands[savedCommandCount].strCommand,command->strCommand,0x200);
+      savedCommands[savedCommandCount].liveUpdateId = command->liveUpdateId;
+      savedCommands[savedCommandCount].type = command->type;
       savedCommandCount = savedCommandCount + 1;
     }
     else {
@@ -65,11 +65,11 @@ void __cdecl AddSavedCommand(RadiantCommand *param_1)
 void __cdecl RunSavedRadiantCmds(void)
 
 {
-  int local_8;
+  int i;
   
   runningSavedCommands = true;
-  for (local_8 = 0; local_8 < savedCommandCount; local_8 = local_8 + 1) {
-    G_ProcessRadiantCmd(savedCommands + local_8);
+  for (i = 0; i < savedCommandCount; i = i + 1) {
+    G_ProcessRadiantCmd(savedCommands + i);
   }
   runningSavedCommands = false;
   return;
@@ -78,11 +78,11 @@ void __cdecl RunSavedRadiantCmds(void)
 
 // 006EB850  G_AssignGameIdMapping  (qcommon/radiant_remote.cpp:176)
 
-void __cdecl G_AssignGameIdMapping(int param_1,int param_2)
+void __cdecl G_AssignGameIdMapping(int liveUpdateId,int gameId)
 
 {
-  if (0 < param_1) {
-    gObjectMapping[param_1 + -1].gameId = param_2;
+  if (0 < liveUpdateId) {
+    gObjectMapping[liveUpdateId + -1].gameId = gameId;
   }
   return;
 }
@@ -90,16 +90,16 @@ void __cdecl G_AssignGameIdMapping(int param_1,int param_2)
 
 // 006EB870  G_GetGameIdMapping  (qcommon/radiant_remote.cpp:182)
 
-int __cdecl G_GetGameIdMapping(int param_1)
+int __cdecl G_GetGameIdMapping(int liveUpdateId)
 
 {
   int iVar1;
   
-  if (param_1 < 1) {
+  if (liveUpdateId < 1) {
     iVar1 = -1;
   }
   else {
-    iVar1 = gObjectMapping[param_1 + -1].gameId;
+    iVar1 = gObjectMapping[liveUpdateId + -1].gameId;
   }
   return iVar1;
 }
@@ -107,11 +107,11 @@ int __cdecl G_GetGameIdMapping(int param_1)
 
 // 006EB890  CG_AssignGameIdMapping  (qcommon/radiant_remote.cpp:189)
 
-void __cdecl CG_AssignGameIdMapping(int param_1,int param_2)
+void __cdecl CG_AssignGameIdMapping(int liveUpdateId,int gameId)
 
 {
-  if (0 < param_1) {
-    gObjectMapping[param_1 + -1].cg_gameId = param_2;
+  if (0 < liveUpdateId) {
+    gObjectMapping[liveUpdateId + -1].cg_gameId = gameId;
   }
   return;
 }
@@ -119,16 +119,16 @@ void __cdecl CG_AssignGameIdMapping(int param_1,int param_2)
 
 // 006EB8B0  CG_GetGameIdMapping  (qcommon/radiant_remote.cpp:195)
 
-int __cdecl CG_GetGameIdMapping(int param_1)
+int __cdecl CG_GetGameIdMapping(int liveUpdateId)
 
 {
   int iVar1;
   
-  if (param_1 < 1) {
+  if (liveUpdateId < 1) {
     iVar1 = -1;
   }
   else {
-    iVar1 = gObjectMapping[param_1 + -1].cg_gameId;
+    iVar1 = gObjectMapping[liveUpdateId + -1].cg_gameId;
   }
   return iVar1;
 }
@@ -152,7 +152,7 @@ void __cdecl RadiantRemoteInit(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl FindEntity(SpawnVar *param_1,int param_2)
+gentity_s * __cdecl FindEntity(SpawnVar *spawnVar,int gameId)
 
 {
   gentity_s *pgVar1;
@@ -162,77 +162,79 @@ gentity_s * __cdecl FindEntity(SpawnVar *param_1,int param_2)
   gentity_s *pgVar5;
   float fVar6;
   float fVar7;
-  int local_2c;
-  float local_24;
+  gentity_s *ent;
+  int i;
+  ushort classname_hash;
+  float origin;
   float local_20;
-  uint local_18;
-  char *local_14;
-  uint local_10;
-  char *local_c;
-  gentity_s *local_8;
+  int twodimcheck;
+  char *classname;
+  int actor;
+  char *origin_string;
+  gentity_s *bestEnt;
   
-  local_14 = GetPairValue(param_1,"classname");
-  pcVar2 = I_stristr(local_14,"actor_");
-  local_10 = (uint)(pcVar2 != (char *)0x0);
-  pcVar2 = I_stristr(local_14,"spawn");
-  local_18 = (uint)(pcVar2 != (char *)0x0);
-  pcVar2 = I_stristr(local_14,"start");
-  local_18 = pcVar2 != (char *)0x0 | local_18;
-  uVar3 = SL_GetLowercaseString(local_14,0,SCRIPTINSTANCE_SERVER);
-  local_c = GetPairValue(param_1,"origin");
-  if (local_c != (char *)0x0) {
-    sscanf(local_c,"%f %f %f");
+  classname = GetPairValue(spawnVar,"classname");
+  pcVar2 = I_stristr(classname,"actor_");
+  actor = (int)(pcVar2 != (char *)0x0);
+  pcVar2 = I_stristr(classname,"spawn");
+  twodimcheck = (int)(pcVar2 != (char *)0x0);
+  pcVar2 = I_stristr(classname,"start");
+  twodimcheck = (uint)(pcVar2 != (char *)0x0) | twodimcheck;
+  uVar3 = SL_GetLowercaseString(classname,0,SCRIPTINSTANCE_SERVER);
+  origin_string = GetPairValue(spawnVar,"origin");
+  if (origin_string != (char *)0x0) {
+    sscanf(origin_string,"%f %f %f");
   }
-  local_8 = (gentity_s *)0x0;
-  for (local_2c = 0; local_2c < 0x400; local_2c = local_2c + 1) {
-    pgVar5 = g_entities + local_2c;
-    pgVar1 = local_8;
-    if (g_entities[local_2c].r.inuse != '\0') {
-      if (local_10 == 0) {
-        if ((((g_entities[local_2c].classname == (ushort)uVar3) && (local_c != (char *)0x0)) &&
-            ((local_18 == 0 ||
-             (iVar4 = VecNCompareCustomEpsilon(&local_24,g_entities[local_2c].r.currentOrigin,0.1,2)
-             , pgVar1 = pgVar5, iVar4 == 0)))) &&
-           (iVar4 = VecNCompareCustomEpsilon(&local_24,g_entities[local_2c].r.currentOrigin,0.1,3),
-           pgVar1 = local_8, iVar4 != 0)) {
+  bestEnt = (gentity_s *)0x0;
+  for (i = 0; i < 0x400; i = i + 1) {
+    pgVar5 = g_entities + i;
+    pgVar1 = bestEnt;
+    if (g_entities[i].r.inuse != '\0') {
+      if (actor == 0) {
+        if ((((g_entities[i].classname == (ushort)uVar3) && (origin_string != (char *)0x0)) &&
+            ((twodimcheck == 0 ||
+             (iVar4 = VecNCompareCustomEpsilon(&origin,g_entities[i].r.currentOrigin,0.1,2),
+             pgVar1 = pgVar5, iVar4 == 0)))) &&
+           (iVar4 = VecNCompareCustomEpsilon(&origin,g_entities[i].r.currentOrigin,0.1,3),
+           pgVar1 = bestEnt, iVar4 != 0)) {
           pgVar1 = pgVar5;
         }
       }
-      else if (((local_c != (char *)0x0) &&
-               (fVar6 = g_entities[local_2c].r.currentOrigin[0] - local_24,
-               fVar7 = g_entities[local_2c].r.currentOrigin[1] - local_20,
+      else if (((origin_string != (char *)0x0) &&
+               (fVar6 = g_entities[i].r.currentOrigin[0] - origin,
+               fVar7 = g_entities[i].r.currentOrigin[1] - local_20,
                fVar6 * fVar6 + fVar7 * fVar7 < 0.1)) &&
-              ((g_entities[local_2c].s.eType == 0x11 ||
-               ((g_entities[local_2c].s.eType == 0x12 || (g_entities[local_2c].s.eType == 0x13))))))
-      {
+              ((g_entities[i].s.eType == 0x11 ||
+               ((g_entities[i].s.eType == 0x12 || (g_entities[i].s.eType == 0x13)))))) {
         pgVar1 = pgVar5;
       }
     }
-    local_8 = pgVar1;
+    bestEnt = pgVar1;
   }
-  if (((0 < param_2) && (local_8 == (gentity_s *)0x0)) &&
-     (local_8 = g_entities + param_2, g_entities[param_2].r.inuse == '\0')) {
-    local_8 = (gentity_s *)0x0;
+  if (((0 < gameId) && (bestEnt == (gentity_s *)0x0)) &&
+     (bestEnt = g_entities + gameId, g_entities[gameId].r.inuse == '\0')) {
+    bestEnt = (gentity_s *)0x0;
   }
-  return local_8;
+  return bestEnt;
 }
 
 
 // 006EBB40  IsEntityType  (qcommon/radiant_remote.cpp:282)
 
-bool __cdecl IsEntityType(SpawnVar *param_1)
+bool __cdecl IsEntityType(SpawnVar *spawnVar)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *classname;
   
-  pcVar1 = GetPairValue(param_1,"classname");
-  iVar2 = I_stricmp(pcVar1,"worldspawn");
-  if ((((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"misc_prefab"), iVar2 != 0)) &&
-      (iVar2 = I_stricmp(pcVar1,"script_brushmodel"), iVar2 != 0)) &&
-     (((iVar2 = I_stricmp(pcVar1,"rope"), iVar2 != 0 &&
-       (iVar2 = I_stricmp(pcVar1,"spawn_manager"), iVar2 != 0)) &&
-      (iVar2 = I_strncmp(pcVar1,"dyn_",4), iVar2 != 0)))) {
+  s0 = GetPairValue(spawnVar,"classname");
+  iVar1 = I_stricmp(s0,"worldspawn");
+  if ((((iVar1 != 0) && (iVar1 = I_stricmp(s0,"misc_prefab"), iVar1 != 0)) &&
+      (iVar1 = I_stricmp(s0,"script_brushmodel"), iVar1 != 0)) &&
+     (((iVar1 = I_stricmp(s0,"rope"), iVar1 != 0 &&
+       (iVar1 = I_stricmp(s0,"spawn_manager"), iVar1 != 0)) &&
+      (iVar1 = I_strncmp(s0,"dyn_",4), iVar1 != 0)))) {
     return true;
   }
   return false;
@@ -256,20 +258,20 @@ void __cdecl G_ClearSelectedEntity(void)
 
 // 006EBF50  G_IsSpawnPoint  (qcommon/radiant_remote.cpp:305)
 
-bool __cdecl G_IsSpawnPoint(char *param_1)
+bool __cdecl G_IsSpawnPoint(char *classname)
 
 {
   int iVar1;
   
-  iVar1 = I_stricmp("mp_dm_spawn",param_1);
-  if ((((((iVar1 == 0) && (iVar1 = I_strnicmp("mp_wager_spawn",param_1,0xe), iVar1 == 0)) &&
-        (iVar1 = I_strnicmp("mp_tdm_spawn",param_1,0xc), iVar1 == 0)) &&
-       ((iVar1 = I_strnicmp("mp_ctf_spawn",param_1,0xc), iVar1 == 0 &&
-        (iVar1 = I_strnicmp("mp_dom_spawn",param_1,0xc), iVar1 == 0)))) &&
-      ((iVar1 = I_strnicmp("mp_sab_spawn",param_1,0xc), iVar1 == 0 &&
-       ((iVar1 = I_strnicmp("mp_sd_spawn",param_1,0xb), iVar1 == 0 &&
-        (iVar1 = I_strnicmp("mp_twar_spawn",param_1,0xd), iVar1 == 0)))))) &&
-     (iVar1 = I_stricmp("mp_uspawn_point",param_1), iVar1 == 0)) {
+  iVar1 = I_stricmp("mp_dm_spawn",classname);
+  if ((((((iVar1 == 0) && (iVar1 = I_strnicmp("mp_wager_spawn",classname,0xe), iVar1 == 0)) &&
+        (iVar1 = I_strnicmp("mp_tdm_spawn",classname,0xc), iVar1 == 0)) &&
+       ((iVar1 = I_strnicmp("mp_ctf_spawn",classname,0xc), iVar1 == 0 &&
+        (iVar1 = I_strnicmp("mp_dom_spawn",classname,0xc), iVar1 == 0)))) &&
+      ((iVar1 = I_strnicmp("mp_sab_spawn",classname,0xc), iVar1 == 0 &&
+       ((iVar1 = I_strnicmp("mp_sd_spawn",classname,0xb), iVar1 == 0 &&
+        (iVar1 = I_strnicmp("mp_twar_spawn",classname,0xd), iVar1 == 0)))))) &&
+     (iVar1 = I_stricmp("mp_uspawn_point",classname), iVar1 == 0)) {
     return false;
   }
   return true;
@@ -278,61 +280,68 @@ bool __cdecl G_IsSpawnPoint(char *param_1)
 
 // 006EBC00  G_ProcessEntityCommand  (qcommon/radiant_remote.cpp:324)
 
+/* WARNING: Variable defined which should be unmapped: obj */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessEntityCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
   bool bVar2;
-  uchar *puVar3;
-  int iVar4;
-  gentity_s *pgVar5;
-  char *pcVar6;
+  uchar *str1;
+  int gameId_00;
+  gentity_s *pgVar3;
+  char *pcVar4;
   int extraout_EAX;
-  DObj *pDVar7;
-  uint uVar8;
-  actor_s *in_stack_ffffffdc;
-  gentity_s *local_c;
+  DObj *obj_00;
+  uint uVar5;
+  DObj *obj;
+  bool bShouldUpdateSpawns;
+  RadiantCommandType commandType;
+  char *classname;
+  int actor;
+  int ignoreModel;
+  gentity_s *ent;
+  int gameId;
   
-  local_c = (gentity_s *)0x0;
-  RVar1 = param_1->type;
-  puVar3 = (uchar *)GetPairValue(param_2,"classname");
-  iVar4 = G_GetGameIdMapping(param_1->liveUpdateId);
+  ent = (gentity_s *)0x0;
+  RVar1 = command->type;
+  str1 = (uchar *)GetPairValue(spawnVar,"classname");
+  gameId_00 = G_GetGameIdMapping(command->liveUpdateId);
   if (RVar1 == RADIANT_COMMAND_CREATE) {
-    G_CallSpawn(param_2);
-    pgVar5 = FindEntity(param_2,iVar4);
-    g_radiant_selected_ent = pgVar5;
-    if (pgVar5 != (gentity_s *)0x0) {
-      G_AssignGameIdMapping(param_1->liveUpdateId,(pgVar5->s).number);
-      AddSavedCommand(param_1);
-      if (pgVar5->actor != (actor_s *)0x0) {
-        Actor_FinishSpawning(pgVar5->actor);
-        Actor_InitAnimScript(pgVar5->actor);
+    G_CallSpawn(spawnVar);
+    pgVar3 = FindEntity(spawnVar,gameId_00);
+    g_radiant_selected_ent = pgVar3;
+    if (pgVar3 != (gentity_s *)0x0) {
+      G_AssignGameIdMapping(command->liveUpdateId,(pgVar3->s).number);
+      AddSavedCommand(command);
+      if (pgVar3->actor != (actor_s *)0x0) {
+        Actor_FinishSpawning(pgVar3->actor);
+        Actor_InitAnimScript(pgVar3->actor);
       }
-      bVar2 = G_IsSpawnPoint((char *)puVar3);
+      bVar2 = G_IsSpawnPoint((char *)str1);
       if (bVar2) {
         Scr_UpdateSpawnPoints();
       }
     }
   }
   else if (RVar1 == RADIANT_COMMAND_DELETE) {
-    pgVar5 = FindEntity(param_2,iVar4);
-    if (pgVar5 != (gentity_s *)0x0) {
-      G_AssignGameIdMapping(param_1->liveUpdateId,(pgVar5->s).number);
-      AddSavedCommand(param_1);
-      pcVar6 = SL_ConvertToString((uint)pgVar5->classname,SCRIPTINSTANCE_SERVER);
-      bVar2 = G_IsSpawnPoint(pcVar6);
-      if (pgVar5->actor == (actor_s *)0x0) {
-        G_FreeEntity(pgVar5);
+    pgVar3 = FindEntity(spawnVar,gameId_00);
+    if (pgVar3 != (gentity_s *)0x0) {
+      G_AssignGameIdMapping(command->liveUpdateId,(pgVar3->s).number);
+      AddSavedCommand(command);
+      pcVar4 = SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
+      bVar2 = G_IsSpawnPoint(pcVar4);
+      if (pgVar3->actor == (actor_s *)0x0) {
+        G_FreeEntity(pgVar3);
       }
       else {
-        Actor_ClearPath(in_stack_ffffffdc);
-        Scr_Notify(pgVar5,scr_const.death,0);
-        G_FreeEntityDelay(pgVar5);
+        Actor_ClearPath((actor_s *)obj);
+        Scr_Notify(pgVar3,scr_const.death,0);
+        G_FreeEntityDelay(pgVar3);
       }
       if (bVar2) {
         Scr_UpdateSpawnPoints();
@@ -341,39 +350,39 @@ void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
   }
   else {
     if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_c = FindEntity(param_2,iVar4);
+      ent = FindEntity(spawnVar,gameId_00);
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_c = g_radiant_selected_ent;
+      ent = g_radiant_selected_ent;
     }
     else if ((RVar1 == RADIANT_COMMAND_SELECT) &&
-            (local_c = FindEntity(param_2,iVar4), g_radiant_selected_ent = local_c,
-            local_c == (gentity_s *)0x0)) {
+            (ent = FindEntity(spawnVar,gameId_00), g_radiant_selected_ent = ent,
+            ent == (gentity_s *)0x0)) {
       Com_Printf(5,
                  "Radiant Live Update: Can\'t find entity %s.  Maps out of sync (Radiant/Game), re-bsp!\n"
                 );
     }
-    strstr(puVar3,(uchar *)"actor_");
-    if (local_c != (gentity_s *)0x0) {
-      G_ParseEntityFields(param_2,local_c,(uint)(extraout_EAX != 0));
-      if (((local_c->s).eType == 0x11) || ((local_c->s).eType == 0x12)) {
-        Actor_droptofloor(local_c);
+    strstr(str1,(uchar *)"actor_");
+    if (ent != (gentity_s *)0x0) {
+      G_ParseEntityFields(spawnVar,ent,(uint)(extraout_EAX != 0));
+      if (((ent->s).eType == 0x11) || ((ent->s).eType == 0x12)) {
+        Actor_droptofloor(ent);
       }
-      G_SetupDestructible(local_c,param_2);
-      G_DObjUpdate(local_c);
-      pDVar7 = Com_GetServerDObj((local_c->s).number);
-      if ((pDVar7 != (DObj *)0x0) && (local_c->sentient == (sentient_s *)0x0)) {
-        uVar8 = DObjGetContents(pDVar7);
-        (local_c->r).contents = uVar8 | (local_c->r).contents;
-        DObjCalcBounds(pDVar7,(local_c->r).mins,(local_c->r).maxs);
+      G_SetupDestructible(ent,spawnVar);
+      G_DObjUpdate(ent);
+      obj_00 = Com_GetServerDObj((ent->s).number);
+      if ((obj_00 != (DObj *)0x0) && (ent->sentient == (sentient_s *)0x0)) {
+        uVar5 = DObjGetContents(obj_00);
+        (ent->r).contents = uVar5 | (ent->r).contents;
+        DObjCalcBounds(obj_00,(ent->r).mins,(ent->r).maxs);
       }
-      G_AssignGameIdMapping(param_1->liveUpdateId,(local_c->s).number);
-      pcVar6 = SL_ConvertToString((uint)local_c->classname,SCRIPTINSTANCE_SERVER);
-      bVar2 = G_IsSpawnPoint(pcVar6);
+      G_AssignGameIdMapping(command->liveUpdateId,(ent->s).number);
+      pcVar4 = SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
+      bVar2 = G_IsSpawnPoint(pcVar4);
       if (bVar2) {
         Scr_UpdateSpawnPoints();
       }
-      AddSavedCommand(param_1);
+      AddSavedCommand(command);
     }
   }
   return;
@@ -387,27 +396,30 @@ void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ProcessCameraCommand(SpawnVar *param_1)
+void __cdecl G_ProcessCameraCommand(SpawnVar *spawnVar)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  cg_s *pcVar4;
+  char *string;
+  char *string_00;
+  int localClientNum;
+  cg_s *pcVar1;
+  cg_s *cgameGlob;
+  char *angles_string;
+  char *origin_string;
   
-  pcVar1 = GetPairValue(param_1,"origin");
-  pcVar2 = GetPairValue(param_1,"angles");
-  iVar3 = CL_GetFirstActiveLocalClient();
-  pcVar4 = CG_GetLocalClientGlobals(iVar3);
-  if (pcVar4 != (cg_s *)0x0) {
-    if (pcVar1 != (char *)0x0) {
-      sscanf(pcVar1,"%f %f %f");
+  string = GetPairValue(spawnVar,"origin");
+  string_00 = GetPairValue(spawnVar,"angles");
+  localClientNum = CL_GetFirstActiveLocalClient();
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if (pcVar1 != (cg_s *)0x0) {
+    if (string != (char *)0x0) {
+      sscanf(string,"%f %f %f");
     }
-    if (pcVar2 != (char *)0x0) {
-      sscanf(pcVar2,"%f %f %f");
+    if (string_00 != (char *)0x0) {
+      sscanf(string_00,"%f %f %f");
     }
-    pcVar4->radiantCameraAngles[0] = -pcVar4->radiantCameraAngles[0];
-    pcVar4->radiantCamInUse = 1;
+    pcVar1->radiantCameraAngles[0] = -pcVar1->radiantCameraAngles[0];
+    pcVar1->radiantCamInUse = 1;
   }
   return;
 }
@@ -415,19 +427,19 @@ void __cdecl G_ProcessCameraCommand(SpawnVar *param_1)
 
 // 006EC120  G_FindMiscModel  (qcommon/radiant_remote.cpp:498)
 
-int __cdecl G_FindMiscModel(float *param_1,int param_2)
+int __cdecl G_FindMiscModel(float *origin,int gameId)
 
 {
   int iVar1;
   uint uVar2;
-  uint local_8;
+  uint i;
   
-  local_8 = 0;
-  while ((uVar2 = param_2, local_8 < ((rgp.world)->dpvs).smodelCount &&
+  i = 0;
+  while ((uVar2 = gameId, i < ((rgp.world)->dpvs).smodelCount &&
          (iVar1 = VecNCompareCustomEpsilon
-                            (((rgp.world)->dpvs).smodelDrawInsts[local_8].placement.origin,param_1,
-                             0.1,3), uVar2 = local_8, iVar1 == 0))) {
-    local_8 = local_8 + 1;
+                            (((rgp.world)->dpvs).smodelDrawInsts[i].placement.origin,origin,0.1,3),
+         uVar2 = i, iVar1 == 0))) {
+    i = i + 1;
   }
   return uVar2;
 }
@@ -440,23 +452,24 @@ int __cdecl G_FindMiscModel(float *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessMiscModelCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
   GfxStaticModelDrawInst *pGVar2;
   int iVar3;
   double dVar4;
-  float local_5c;
+  RadiantCommandType commandType;
+  float origin;
   float local_58;
   float local_54;
-  cg_s *local_50;
-  char *local_4c;
-  char *local_48;
-  float local_44 [3];
-  char *local_38;
-  float local_34;
-  float local_30;
+  cg_s *cgameGlob;
+  char *angles_string;
+  char *scale_string;
+  float angles [3];
+  char *origin_string;
+  float scale;
+  float axis;
   float local_2c;
   float local_28;
   float local_24;
@@ -465,62 +478,62 @@ void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  int local_8;
+  int gameId;
+  int misc_model_index;
   
-  local_38 = GetPairValue(param_2,"origin");
-  local_4c = GetPairValue(param_2,"angles");
-  local_48 = GetPairValue(param_2,"modelscale");
-  local_34 = 1.0;
-  local_5c = 0.0;
+  origin_string = GetPairValue(spawnVar,"origin");
+  angles_string = GetPairValue(spawnVar,"angles");
+  scale_string = GetPairValue(spawnVar,"modelscale");
+  scale = 1.0;
+  origin = 0.0;
   local_58 = 0.0;
   local_54 = 0.0;
-  local_44[0] = 0.0;
-  local_44[1] = 0.0;
-  local_44[2] = 0.0;
+  angles[0] = 0.0;
+  angles[1] = 0.0;
+  angles[2] = 0.0;
   iVar3 = CL_GetFirstActiveLocalClient();
-  local_50 = CG_GetLocalClientGlobals(iVar3);
-  if ((local_50 != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
-    if (local_38 != (char *)0x0) {
-      sscanf(local_38,"%f %f %f");
+  cgameGlob = CG_GetLocalClientGlobals(iVar3);
+  if ((cgameGlob != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
+    if (origin_string != (char *)0x0) {
+      sscanf(origin_string,"%f %f %f");
     }
-    if (local_4c != (char *)0x0) {
-      sscanf(local_4c,"%f %f %f");
+    if (angles_string != (char *)0x0) {
+      sscanf(angles_string,"%f %f %f");
     }
-    if (local_48 != (char *)0x0) {
-      dVar4 = atof(local_48);
-      local_34 = (float)dVar4;
+    if (scale_string != (char *)0x0) {
+      dVar4 = atof(scale_string);
+      scale = (float)dVar4;
     }
-    RVar1 = param_1->type;
-    local_c = G_GetGameIdMapping(param_1->liveUpdateId);
+    RVar1 = command->type;
+    gameId = G_GetGameIdMapping(command->liveUpdateId);
     if (RVar1 == RADIANT_COMMAND_SELECT) {
-      g_selected_misc_model = G_FindMiscModel(&local_5c,local_c);
+      g_selected_misc_model = G_FindMiscModel(&origin,gameId);
       if (g_selected_misc_model < 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find misc_model.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
       else {
-        G_AssignGameIdMapping(param_1->liveUpdateId,g_selected_misc_model);
+        G_AssignGameIdMapping(command->liveUpdateId,g_selected_misc_model);
       }
     }
     if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_8 = g_selected_misc_model;
+      misc_model_index = g_selected_misc_model;
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_8 = G_FindMiscModel(&local_5c,local_c);
+      misc_model_index = G_FindMiscModel(&origin,gameId);
     }
     else {
-      local_8 = -1;
+      misc_model_index = -1;
     }
-    iVar3 = local_8;
-    if (-1 < local_8) {
+    iVar3 = misc_model_index;
+    if (-1 < misc_model_index) {
       pGVar2 = ((rgp.world)->dpvs).smodelDrawInsts;
-      pGVar2[local_8].placement.origin[0] = local_5c;
-      pGVar2[local_8].placement.origin[1] = local_58;
-      pGVar2[local_8].placement.origin[2] = local_54;
-      AnglesToAxis(local_44,(float (*) [3])&local_30);
-      pGVar2[iVar3].placement.axis[0][0] = local_30;
+      pGVar2[misc_model_index].placement.origin[0] = origin;
+      pGVar2[misc_model_index].placement.origin[1] = local_58;
+      pGVar2[misc_model_index].placement.origin[2] = local_54;
+      AnglesToAxis(angles,(float (*) [3])&axis);
+      pGVar2[iVar3].placement.axis[0][0] = axis;
       pGVar2[iVar3].placement.axis[0][1] = local_2c;
       pGVar2[iVar3].placement.axis[0][2] = local_28;
       pGVar2[iVar3].placement.axis[1][0] = local_24;
@@ -529,7 +542,7 @@ void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2
       pGVar2[iVar3].placement.axis[2][0] = local_18;
       pGVar2[iVar3].placement.axis[2][1] = local_14;
       pGVar2[iVar3].placement.axis[2][2] = local_10;
-      pGVar2[iVar3].placement.scale = local_34;
+      pGVar2[iVar3].placement.scale = scale;
       Dvar_SetBool(r_cacheSModelLighting,true);
     }
   }
@@ -550,18 +563,18 @@ void __cdecl G_ClearSelectedMiscModel(void)
 
 // 006EC480  G_FindCorona  (qcommon/radiant_remote.cpp:623)
 
-int __cdecl G_FindCorona(float *param_1,int param_2)
+int __cdecl G_FindCorona(float *origin,int gameId)
 
 {
   int iVar1;
   uint uVar2;
-  uint local_8;
+  uint i;
   
-  local_8 = 0;
-  while ((uVar2 = param_2, local_8 < (rgp.world)->coronaCount &&
-         (iVar1 = VecNCompareCustomEpsilon((rgp.world)->coronas[local_8].origin,param_1,0.1,3),
-         uVar2 = local_8, iVar1 == 0))) {
-    local_8 = local_8 + 1;
+  i = 0;
+  while ((uVar2 = gameId, i < (rgp.world)->coronaCount &&
+         (iVar1 = VecNCompareCustomEpsilon((rgp.world)->coronas[i].origin,origin,0.1,3), uVar2 = i,
+         iVar1 == 0))) {
+    i = i + 1;
   }
   return uVar2;
 }
@@ -574,91 +587,92 @@ int __cdecl G_FindCorona(float *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ProcessCoronaCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessCoronaCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
-  int iVar2;
-  GfxLightCorona *pGVar3;
-  double dVar4;
-  int local_44;
-  float local_3c;
+  int localClientNum;
+  GfxLightCorona *pGVar2;
+  double dVar3;
+  int corona_index;
+  RadiantCommandType commandType;
+  float origin;
   float local_38;
   float local_34;
-  cg_s *local_30;
-  char *local_2c;
-  float local_28;
-  char *local_24;
-  float local_20;
-  char *local_1c;
-  char *local_18;
-  float local_14;
+  cg_s *cgameGlob;
+  char *intensity_string;
+  float radius;
+  char *color_string;
+  float intensity;
+  char *radius_string;
+  char *origin_string;
+  float color;
   float local_10;
   float local_c;
-  int local_8;
+  int gameId;
   
-  local_18 = GetPairValue(param_2,"origin");
-  local_24 = GetPairValue(param_2,"color");
-  local_1c = GetPairValue(param_2,"radius");
-  local_2c = GetPairValue(param_2,"intensity");
-  local_28 = 20.0;
-  local_20 = 1.0;
-  local_3c = 0.0;
+  origin_string = GetPairValue(spawnVar,"origin");
+  color_string = GetPairValue(spawnVar,"color");
+  radius_string = GetPairValue(spawnVar,"radius");
+  intensity_string = GetPairValue(spawnVar,"intensity");
+  radius = 20.0;
+  intensity = 1.0;
+  origin = 0.0;
   local_38 = 0.0;
   local_34 = 0.0;
-  local_14 = 0.0;
+  color = 0.0;
   local_10 = 0.0;
   local_c = 0.0;
-  iVar2 = CL_GetFirstActiveLocalClient();
-  local_30 = CG_GetLocalClientGlobals(iVar2);
-  if ((local_30 != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
-    if (local_18 != (char *)0x0) {
-      sscanf(local_18,"%f %f %f");
+  localClientNum = CL_GetFirstActiveLocalClient();
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
+    if (origin_string != (char *)0x0) {
+      sscanf(origin_string,"%f %f %f");
     }
-    if (local_24 != (char *)0x0) {
-      sscanf(local_24,"%f %f %f");
+    if (color_string != (char *)0x0) {
+      sscanf(color_string,"%f %f %f");
     }
-    if (local_1c != (char *)0x0) {
-      dVar4 = atof(local_1c);
-      local_28 = (float)dVar4;
+    if (radius_string != (char *)0x0) {
+      dVar3 = atof(radius_string);
+      radius = (float)dVar3;
     }
-    if (local_2c != (char *)0x0) {
-      dVar4 = atof(local_2c);
-      local_20 = (float)dVar4;
+    if (intensity_string != (char *)0x0) {
+      dVar3 = atof(intensity_string);
+      intensity = (float)dVar3;
     }
-    RVar1 = param_1->type;
-    local_8 = G_GetGameIdMapping(param_1->liveUpdateId);
+    RVar1 = command->type;
+    gameId = G_GetGameIdMapping(command->liveUpdateId);
     if (RVar1 == RADIANT_COMMAND_SELECT) {
-      local_44 = G_FindCorona(&local_3c,local_8);
-      g_selected_corona = local_44;
-      if (local_44 < 0) {
+      corona_index = G_FindCorona(&origin,gameId);
+      g_selected_corona = corona_index;
+      if (corona_index < 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find misc_model.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
       else {
-        G_AssignGameIdMapping(param_1->liveUpdateId,local_44);
+        G_AssignGameIdMapping(command->liveUpdateId,corona_index);
       }
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_44 = g_selected_corona;
+      corona_index = g_selected_corona;
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_44 = G_FindCorona(&local_3c,local_8);
+      corona_index = G_FindCorona(&origin,gameId);
     }
     else {
-      local_44 = -1;
+      corona_index = -1;
     }
-    if (-1 < local_44) {
-      pGVar3 = (rgp.world)->coronas + local_44;
-      pGVar3->origin[0] = local_3c;
-      pGVar3->origin[1] = local_38;
-      pGVar3->origin[2] = local_34;
-      pGVar3->color[0] = local_14;
-      pGVar3->color[1] = local_10;
-      pGVar3->color[2] = local_c;
-      pGVar3->radius = local_28;
-      pGVar3->intensity = local_20;
+    if (-1 < corona_index) {
+      pGVar2 = (rgp.world)->coronas + corona_index;
+      pGVar2->origin[0] = origin;
+      pGVar2->origin[1] = local_38;
+      pGVar2->origin[2] = local_34;
+      pGVar2->color[0] = color;
+      pGVar2->color[1] = local_10;
+      pGVar2->color[2] = local_c;
+      pGVar2->radius = radius;
+      pGVar2->intensity = intensity;
     }
   }
   return;
@@ -677,40 +691,41 @@ void __cdecl G_ClearSelectedCorona(void)
 
 // 006EC790  G_NotifyScriptsOfSelectedScriptStruct  (qcommon/radiant_remote.cpp:729)
 
-void __cdecl G_NotifyScriptsOfSelectedScriptStruct(uint param_1)
+void __cdecl G_NotifyScriptsOfSelectedScriptStruct(uint structId)
 
 {
-  ushort uVar1;
-  undefined4 local_c;
+  ushort handle;
+  int numparams;
+  ushort t;
   
-  gSelectedScriptStruct = param_1;
-  local_c = 1;
-  if (param_1 != 0) {
-    Scr_AddObject(param_1,SCRIPTINSTANCE_SERVER);
-    local_c = 2;
+  gSelectedScriptStruct = structId;
+  numparams = 1;
+  if (structId != 0) {
+    Scr_AddObject(structId,SCRIPTINSTANCE_SERVER);
+    numparams = 2;
   }
   Scr_AddConstString((uint)scr_const.obstacle,SCRIPTINSTANCE_SERVER);
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelnotify,local_c);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelnotify,numparams);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 006EC800  G_FindStruct  (qcommon/radiant_remote.cpp:744)
 
-uint __cdecl G_FindStruct(SpawnVar *param_1,int param_2)
+uint __cdecl G_FindStruct(SpawnVar *spawnVar,int gameId)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  float local_1c [3];
-  char *local_10;
-  char *local_c;
-  uint local_8;
+  float origin [3];
+  char *origin_string;
+  char *scriptLabel;
+  uint structId;
   
-  if ((param_1->spawnVarsValid == false) &&
+  if ((spawnVar->spawnVarsValid == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\radiant_remote.cpp",
                                0x2ee,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -724,29 +739,29 @@ uint __cdecl G_FindStruct(SpawnVar *param_1,int param_2)
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  G_SpawnString(param_1,"script_label","",&local_c);
-  iVar4 = I_stricmp(local_c,"random");
-  if (((iVar4 != 0) && (iVar4 = I_stricmp(local_c,"looper"), iVar4 != 0)) &&
-     (iVar4 = I_stricmp(local_c,"line_emitter"), iVar4 != 0)) {
-    local_1c[0] = 0.0;
-    local_1c[1] = 0.0;
-    local_1c[2] = 0.0;
-    local_10 = GetPairValue(param_1,"origin");
-    if (local_10 != (char *)0x0) {
-      sscanf(local_10,"%f %f %f");
+  G_SpawnString(spawnVar,"script_label","",&scriptLabel);
+  iVar4 = I_stricmp(scriptLabel,"random");
+  if (((iVar4 != 0) && (iVar4 = I_stricmp(scriptLabel,"looper"), iVar4 != 0)) &&
+     (iVar4 = I_stricmp(scriptLabel,"line_emitter"), iVar4 != 0)) {
+    origin[0] = 0.0;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    origin_string = GetPairValue(spawnVar,"origin");
+    if (origin_string != (char *)0x0) {
+      sscanf(origin_string,"%f %f %f");
     }
-    Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(origin,SCRIPTINSTANCE_SERVER);
     Scr_AddExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.findstruct,1);
-    local_8 = 0;
-    if (0 < param_2) {
-      local_8 = param_2;
+    structId = 0;
+    if (0 < gameId) {
+      structId = gameId;
     }
     iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
     if (iVar4 != 0) {
-      local_8 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+      structId = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
     }
     Scr_ClearOutParams(SCRIPTINSTANCE_SERVER);
-    return local_8;
+    return structId;
   }
   return 0;
 }
@@ -754,60 +769,63 @@ uint __cdecl G_FindStruct(SpawnVar *param_1,int param_2)
 
 // 006EC990  G_ProcessScriptStructCommand  (qcommon/radiant_remote.cpp:785)
 
-void __cdecl G_ProcessScriptStructCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessScriptStructCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
-  int iVar2;
-  uint uVar3;
-  int local_10;
-  uint local_8;
+  int gameId_00;
+  uint uVar2;
+  RadiantCommandType commandType;
+  uint index;
+  int i;
+  int gameId;
+  uint script_struct;
   
-  RVar1 = param_1->type;
-  local_8 = 0;
-  iVar2 = G_GetGameIdMapping(param_1->liveUpdateId);
+  RVar1 = command->type;
+  script_struct = 0;
+  gameId_00 = G_GetGameIdMapping(command->liveUpdateId);
   if (RVar1 == RADIANT_COMMAND_CREATE) {
-    uVar3 = G_SpawnStruct(param_2);
-    if (uVar3 != 0) {
-      G_NotifyScriptsOfSelectedScriptStruct(uVar3);
-      G_AssignGameIdMapping(param_1->liveUpdateId,uVar3);
-      AddSavedCommand(param_1);
+    uVar2 = G_SpawnStruct(spawnVar);
+    if (uVar2 != 0) {
+      G_NotifyScriptsOfSelectedScriptStruct(uVar2);
+      G_AssignGameIdMapping(command->liveUpdateId,uVar2);
+      AddSavedCommand(command);
     }
   }
   else if (RVar1 == RADIANT_COMMAND_DELETE) {
-    uVar3 = G_FindStruct(param_2,iVar2);
-    if (uVar3 != 0) {
-      G_AssignGameIdMapping(param_1->liveUpdateId,uVar3);
-      AddSavedCommand(param_1);
+    uVar2 = G_FindStruct(spawnVar,gameId_00);
+    if (uVar2 != 0) {
+      G_AssignGameIdMapping(command->liveUpdateId,uVar2);
+      AddSavedCommand(command);
     }
     G_NotifyScriptsOfSelectedScriptStruct(0);
   }
   else {
     if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_8 = G_FindStruct(param_2,iVar2);
+      script_struct = G_FindStruct(spawnVar,gameId_00);
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_8 = gSelectedScriptStruct;
+      script_struct = gSelectedScriptStruct;
     }
     else if (RVar1 == RADIANT_COMMAND_SELECT) {
-      local_8 = G_FindStruct(param_2,iVar2);
-      G_NotifyScriptsOfSelectedScriptStruct(local_8);
-      if (local_8 == 0) {
+      script_struct = G_FindStruct(spawnVar,gameId_00);
+      G_NotifyScriptsOfSelectedScriptStruct(script_struct);
+      if (script_struct == 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find server script_struct.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
     }
-    if (local_8 != 0) {
-      for (local_10 = 0; local_10 < param_2->numSpawnVars; local_10 = local_10 + 1) {
-        uVar3 = G_SetEntityScriptVariableInternal
-                          (param_2->spawnVars[local_10][0],param_2->spawnVars[local_10][1]);
-        if (uVar3 != 0) {
-          Scr_SetStructField(local_8,uVar3,SCRIPTINSTANCE_SERVER);
+    if (script_struct != 0) {
+      for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+        uVar2 = G_SetEntityScriptVariableInternal
+                          (spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1]);
+        if (uVar2 != 0) {
+          Scr_SetStructField(script_struct,uVar2,SCRIPTINSTANCE_SERVER);
         }
       }
-      G_AssignGameIdMapping(param_1->liveUpdateId,local_8);
-      AddSavedCommand(param_1);
+      G_AssignGameIdMapping(command->liveUpdateId,script_struct);
+      AddSavedCommand(command);
     }
   }
   return;
@@ -826,39 +844,40 @@ void __cdecl G_ClearSelectedScriptStruct(void)
 
 // 006ECB60  CG_NotifyScriptsOfSelectedScriptStruct  (qcommon/radiant_remote.cpp:875)
 
-void __cdecl CG_NotifyScriptsOfSelectedScriptStruct(uint param_1)
+void __cdecl CG_NotifyScriptsOfSelectedScriptStruct(uint structId)
 
 {
-  ushort uVar1;
-  undefined4 local_c;
+  ushort handle;
+  int numparams;
+  ushort t;
   
-  cgSelectedScriptStruct = param_1;
-  local_c = 1;
-  if (param_1 != 0) {
-    Scr_AddObject(param_1,SCRIPTINSTANCE_CLIENT);
-    local_c = 2;
+  cgSelectedScriptStruct = structId;
+  numparams = 1;
+  if (structId != 0) {
+    Scr_AddObject(structId,SCRIPTINSTANCE_CLIENT);
+    numparams = 2;
   }
   Scr_AddConstString((uint)cscr_const.liveupdate,SCRIPTINSTANCE_CLIENT);
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_data.levelnotify,local_c);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_CLIENT);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_data.levelnotify,numparams);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
 
 // 006ECBE0  CG_FindStruct  (qcommon/radiant_remote.cpp:890)
 
-uint __cdecl CG_FindStruct(SpawnVar *param_1,int param_2)
+uint __cdecl CG_FindStruct(SpawnVar *spawnVar,int gameId)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  float local_18 [3];
-  char *local_c;
-  uint local_8;
+  float origin [3];
+  char *origin_string;
+  uint structId;
   
-  if (param_1->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\radiant_remote.cpp",0x37f,
                              0,"%s");
     if (!bVar2) {
@@ -876,81 +895,84 @@ uint __cdecl CG_FindStruct(SpawnVar *param_1,int param_2)
       return uVar3;
     }
   }
-  local_18[0] = 0.0;
-  local_18[1] = 0.0;
-  local_18[2] = 0.0;
-  local_c = GetPairValue(param_1,"origin");
-  if (local_c != (char *)0x0) {
-    sscanf(local_c,"%f %f %f");
+  origin[0] = 0.0;
+  origin[1] = 0.0;
+  origin[2] = 0.0;
+  origin_string = GetPairValue(spawnVar,"origin");
+  if (origin_string != (char *)0x0) {
+    sscanf(origin_string,"%f %f %f");
   }
-  Scr_AddVector(local_18,SCRIPTINSTANCE_CLIENT);
+  Scr_AddVector(origin,SCRIPTINSTANCE_CLIENT);
   Scr_AddExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_data.findstruct,1);
-  local_8 = 0;
-  if (0 < param_2) {
-    local_8 = param_2;
+  structId = 0;
+  if (0 < gameId) {
+    structId = gameId;
   }
   iVar4 = Scr_GetType(0,SCRIPTINSTANCE_CLIENT);
   if (iVar4 != 0) {
-    local_8 = Scr_GetObject(0,SCRIPTINSTANCE_CLIENT);
+    structId = Scr_GetObject(0,SCRIPTINSTANCE_CLIENT);
   }
   Scr_ClearOutParams(SCRIPTINSTANCE_CLIENT);
-  return local_8;
+  return structId;
 }
 
 
 // 006ECD10  CG_ProcessScriptStructCommand  (qcommon/radiant_remote.cpp:923)
 
-void __cdecl CG_ProcessScriptStructCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl CG_ProcessScriptStructCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
-  int iVar2;
-  uint uVar3;
-  int local_10;
-  uint local_8;
+  int gameId_00;
+  uint uVar2;
+  RadiantCommandType commandType;
+  uint index;
+  int i;
+  int gameId;
+  uint script_struct;
   
-  RVar1 = param_1->type;
-  local_8 = 0;
-  iVar2 = CG_GetGameIdMapping(param_1->liveUpdateId);
+  RVar1 = command->type;
+  script_struct = 0;
+  gameId_00 = CG_GetGameIdMapping(command->liveUpdateId);
   if (RVar1 == RADIANT_COMMAND_CREATE) {
-    uVar3 = CG_SpawnStruct(param_2);
-    if (uVar3 != 0) {
-      CG_NotifyScriptsOfSelectedScriptStruct(uVar3);
-      CG_AssignGameIdMapping(param_1->liveUpdateId,uVar3);
+    uVar2 = CG_SpawnStruct(spawnVar);
+    if (uVar2 != 0) {
+      CG_NotifyScriptsOfSelectedScriptStruct(uVar2);
+      CG_AssignGameIdMapping(command->liveUpdateId,uVar2);
     }
   }
   else if (RVar1 == RADIANT_COMMAND_DELETE) {
-    uVar3 = CG_FindStruct(param_2,iVar2);
-    if (uVar3 != 0) {
-      CG_AssignGameIdMapping(param_1->liveUpdateId,uVar3);
+    uVar2 = CG_FindStruct(spawnVar,gameId_00);
+    if (uVar2 != 0) {
+      CG_AssignGameIdMapping(command->liveUpdateId,uVar2);
     }
     CG_NotifyScriptsOfSelectedScriptStruct(0);
   }
   else {
     if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_8 = CG_FindStruct(param_2,iVar2);
+      script_struct = CG_FindStruct(spawnVar,gameId_00);
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_8 = cgSelectedScriptStruct;
+      script_struct = cgSelectedScriptStruct;
     }
     else if (RVar1 == RADIANT_COMMAND_SELECT) {
-      local_8 = CG_FindStruct(param_2,iVar2);
-      CG_NotifyScriptsOfSelectedScriptStruct(local_8);
-      if (local_8 == 0) {
+      script_struct = CG_FindStruct(spawnVar,gameId_00);
+      CG_NotifyScriptsOfSelectedScriptStruct(script_struct);
+      if (script_struct == 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find client script_struct.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
     }
-    if (local_8 != 0) {
-      for (local_10 = 0; local_10 < param_2->numSpawnVars; local_10 = local_10 + 1) {
-        uVar3 = CG_SetEntityScriptVariableInternal
-                          (param_2->spawnVars[local_10][0],param_2->spawnVars[local_10][1]);
-        if (uVar3 != 0) {
-          Scr_SetStructField(local_8,uVar3,SCRIPTINSTANCE_CLIENT);
+    if (script_struct != 0) {
+      for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+        uVar2 = CG_SetEntityScriptVariableInternal
+                          (spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1]);
+        if (uVar2 != 0) {
+          Scr_SetStructField(script_struct,uVar2,SCRIPTINSTANCE_CLIENT);
         }
       }
-      CG_AssignGameIdMapping(param_1->liveUpdateId,local_8);
+      CG_AssignGameIdMapping(command->liveUpdateId,script_struct);
     }
   }
   return;
@@ -979,24 +1001,24 @@ void __cdecl G_RadiantDebugDraw(void)
 
 {
   XModel *pXVar1;
-  int iVar2;
-  float local_68;
+  int localClientNum;
+  float dir;
   float local_64;
   float local_60;
-  cg_s *local_5c;
-  GfxLightCorona *local_58;
-  float local_54;
+  cg_s *cgameGlob;
+  GfxLightCorona *corona;
+  float color;
   float local_50;
   float local_4c;
   float local_48;
-  GfxStaticModelDrawInst *local_44;
-  float local_40;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  float mins;
   float local_3c;
   float local_38;
-  float local_34;
+  float maxs;
   float local_30;
   float local_2c;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -1007,42 +1029,42 @@ void __cdecl G_RadiantDebugDraw(void)
   float local_8;
   
   if (-1 < g_selected_misc_model) {
-    local_44 = ((rgp.world)->dpvs).smodelDrawInsts + g_selected_misc_model;
-    local_38 = (local_44->placement).scale;
-    pXVar1 = local_44->model;
-    local_40 = local_38 * pXVar1->mins[0];
+    smodelDrawInst = ((rgp.world)->dpvs).smodelDrawInsts + g_selected_misc_model;
+    local_38 = (smodelDrawInst->placement).scale;
+    pXVar1 = smodelDrawInst->model;
+    mins = local_38 * pXVar1->mins[0];
     local_3c = local_38 * pXVar1->mins[1];
     local_38 = local_38 * pXVar1->mins[2];
-    local_2c = (local_44->placement).scale;
-    pXVar1 = local_44->model;
-    local_34 = local_2c * pXVar1->maxs[0];
+    local_2c = (smodelDrawInst->placement).scale;
+    pXVar1 = smodelDrawInst->model;
+    maxs = local_2c * pXVar1->maxs[0];
     local_30 = local_2c * pXVar1->maxs[1];
     local_2c = local_2c * pXVar1->maxs[2];
-    local_28 = (local_44->placement).axis[0][0];
-    local_24 = (local_44->placement).axis[0][1];
-    local_20 = (local_44->placement).axis[0][2];
-    local_1c = (local_44->placement).axis[1][0];
-    local_18 = (local_44->placement).axis[1][1];
-    local_14 = (local_44->placement).axis[1][2];
-    local_10 = (local_44->placement).axis[2][0];
-    local_c = (local_44->placement).axis[2][1];
-    local_8 = (local_44->placement).axis[2][2];
-    CG_DebugBoxOriented((local_44->placement).origin,&local_40,&local_34,(float (*) [3])&local_28,
+    axis = (smodelDrawInst->placement).axis[0][0];
+    local_24 = (smodelDrawInst->placement).axis[0][1];
+    local_20 = (smodelDrawInst->placement).axis[0][2];
+    local_1c = (smodelDrawInst->placement).axis[1][0];
+    local_18 = (smodelDrawInst->placement).axis[1][1];
+    local_14 = (smodelDrawInst->placement).axis[1][2];
+    local_10 = (smodelDrawInst->placement).axis[2][0];
+    local_c = (smodelDrawInst->placement).axis[2][1];
+    local_8 = (smodelDrawInst->placement).axis[2][2];
+    CG_DebugBoxOriented((smodelDrawInst->placement).origin,&mins,&maxs,(float (*) [3])&axis,
                         colorWhite,1,0);
   }
   if (-1 < g_selected_corona) {
-    local_58 = (rgp.world)->coronas + g_selected_corona;
-    local_54 = local_58->color[0];
-    local_50 = local_58->color[1];
-    local_4c = local_58->color[2];
-    local_48 = local_58->intensity;
-    iVar2 = CL_GetFirstActiveLocalClient();
-    local_5c = CG_GetLocalClientGlobals(iVar2);
-    if (local_5c != (cg_s *)0x0) {
-      local_68 = local_58->origin[0] - (local_5c->cameraData).lastViewOrg[0];
-      local_64 = local_58->origin[1] - (local_5c->cameraData).lastViewOrg[1];
-      local_60 = local_58->origin[2] - (local_5c->cameraData).lastViewOrg[2];
-      G_DebugCircleEx(local_58->origin,local_58->radius,&local_68,&local_54,0,1);
+    corona = (rgp.world)->coronas + g_selected_corona;
+    color = corona->color[0];
+    local_50 = corona->color[1];
+    local_4c = corona->color[2];
+    local_48 = corona->intensity;
+    localClientNum = CL_GetFirstActiveLocalClient();
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    if (cgameGlob != (cg_s *)0x0) {
+      dir = corona->origin[0] - (cgameGlob->cameraData).lastViewOrg[0];
+      local_64 = corona->origin[1] - (cgameGlob->cameraData).lastViewOrg[1];
+      local_60 = corona->origin[2] - (cgameGlob->cameraData).lastViewOrg[2];
+      G_DebugCircleEx(corona->origin,corona->radius,&dir,&color,0,1);
     }
   }
   return;
@@ -1051,17 +1073,16 @@ void __cdecl G_RadiantDebugDraw(void)
 
 // 006ED290  G_ClearSelection  (qcommon/radiant_remote.cpp:1078)
 
-void __cdecl G_ClearSelection(_func___cdecl_void *param_1)
+void __cdecl G_ClearSelection(_func___cdecl_void *ignoreFunc)
 
 {
-  RadiantCommandProcessor *local_8;
+  RadiantCommandProcessor *p;
   
-  for (local_8 = gCommandProcessors;
-      local_8->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0;
-      local_8 = local_8 + 1) {
-    if ((local_8->clearSelectionFunc != (_func___cdecl_void *)0x0) &&
-       (local_8->clearSelectionFunc != param_1)) {
-      (*local_8->clearSelectionFunc)();
+  for (p = gCommandProcessors;
+      p->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0; p = p + 1) {
+    if ((p->clearSelectionFunc != (_func___cdecl_void *)0x0) &&
+       (p->clearSelectionFunc != ignoreFunc)) {
+      (*p->clearSelectionFunc)();
     }
   }
   return;
@@ -1070,17 +1091,16 @@ void __cdecl G_ClearSelection(_func___cdecl_void *param_1)
 
 // 006ED2D0  CG_ClearSelection  (qcommon/radiant_remote.cpp:1096)
 
-void __cdecl CG_ClearSelection(_func___cdecl_void *param_1)
+void __cdecl CG_ClearSelection(_func___cdecl_void *ignoreFunc)
 
 {
-  RadiantCommandProcessor *local_8;
+  RadiantCommandProcessor *p;
   
-  for (local_8 = cgCommandProcessors;
-      local_8->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0;
-      local_8 = local_8 + 1) {
-    if ((local_8->clearSelectionFunc != (_func___cdecl_void *)0x0) &&
-       (local_8->clearSelectionFunc != param_1)) {
-      (*local_8->clearSelectionFunc)();
+  for (p = cgCommandProcessors;
+      p->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0; p = p + 1) {
+    if ((p->clearSelectionFunc != (_func___cdecl_void *)0x0) &&
+       (p->clearSelectionFunc != ignoreFunc)) {
+      (*p->clearSelectionFunc)();
     }
   }
   return;
@@ -1090,51 +1110,56 @@ void __cdecl CG_ClearSelection(_func___cdecl_void *param_1)
 // 006ED310  CG_ProcessRadiantCmd  (qcommon/radiant_remote.cpp:1112)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ProcessRadiantCmd(RadiantCommand *param_1)
+void __cdecl CG_ProcessRadiantCmd(RadiantCommand *command)
 
 {
   char cVar1;
   RadiantCommandType RVar2;
   bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  char *pcVar6;
+  char *s0;
+  int iVar4;
+  char *pcVar5;
   char *local_a2c;
-  RadiantCommandProcessor *local_a24;
-  SpawnVar local_a1c;
+  char *classname;
+  RadiantCommandProcessor *p;
+  RadiantCommandType commandType;
+  SpawnVar spawnVar;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  RVar2 = param_1->type;
-  G_SetEntityParsePoint(param_1->strCommand);
-  G_ParseSpawnVars(&local_a1c);
+  RVar2 = command->type;
+  G_SetEntityParsePoint(command->strCommand);
+  G_ParseSpawnVars(&spawnVar);
   if (RVar2 == RADIANT_COMMAND_CAMERA) {
-    G_ProcessCameraCommand(&local_a1c);
+    G_ProcessCameraCommand(&spawnVar);
   }
   else if ((((RVar2 == RADIANT_COMMAND_SELECT) || (RVar2 == RADIANT_COMMAND_UPDATE)) ||
            (RVar2 == RADIANT_COMMAND_UPDATE_SELECTED)) ||
           ((RVar2 == RADIANT_COMMAND_DELETE || (RVar2 == RADIANT_COMMAND_CREATE)))) {
-    pcVar4 = GetPairValue(&local_a1c,"classname");
-    for (local_a24 = cgCommandProcessors;
-        local_a24->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0;
-        local_a24 = local_a24 + 1) {
-      if ((local_a24->conditionFunc != (_func___cdecl_bool_SpawnVar_ptr *)0x0) &&
-         (bVar3 = (*local_a24->conditionFunc)(&local_a1c), bVar3)) {
+    s0 = GetPairValue(&spawnVar,"classname");
+    for (p = cgCommandProcessors;
+        p->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0; p = p + 1) {
+      if ((p->conditionFunc != (_func___cdecl_bool_SpawnVar_ptr *)0x0) &&
+         (bVar3 = (*p->conditionFunc)(&spawnVar), bVar3)) {
 LAB_006ed48c:
-        (*local_a24->processorFunc)(param_1,&local_a1c);
-        CG_ClearSelection(local_a24->clearSelectionFunc);
+        (*p->processorFunc)(command,&spawnVar);
+        CG_ClearSelection(p->clearSelectionFunc);
         return;
       }
-      if (local_a24->conditionFunc == (_func___cdecl_bool_SpawnVar_ptr *)0x0) {
-        local_a2c = local_a24->classname;
-        pcVar6 = local_a2c + 1;
+      if (p->conditionFunc == (_func___cdecl_bool_SpawnVar_ptr *)0x0) {
+        local_a2c = p->classname;
+        pcVar5 = local_a2c + 1;
         do {
           cVar1 = *local_a2c;
           local_a2c = local_a2c + 1;
         } while (cVar1 != '\0');
-        iVar5 = I_strncmp(pcVar4,local_a24->classname,(int)local_a2c - (int)pcVar6);
-        if (iVar5 == 0) goto LAB_006ed48c;
+        iVar4 = I_strncmp(s0,p->classname,(int)local_a2c - (int)pcVar5);
+        if (iVar4 == 0) goto LAB_006ed48c;
       }
     }
   }
@@ -1150,11 +1175,11 @@ LAB_006ed48c:
 bool __cdecl CG_ProcessRadiantCmds(void)
 
 {
-  int local_8;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_RADIANT_CLIENT_COMMAND);
-  for (local_8 = 0; local_8 < cgCommandCount; local_8 = local_8 + 1) {
-    CG_ProcessRadiantCmd(cgCommands + local_8);
+  for (i = 0; i < cgCommandCount; i = i + 1) {
+    CG_ProcessRadiantCmd(cgCommands + i);
   }
   cgCommandCount = 0;
   Sys_LeaveCriticalSection(CRITSECT_RADIANT_CLIENT_COMMAND);
@@ -1164,59 +1189,66 @@ bool __cdecl CG_ProcessRadiantCmds(void)
 
 // 006ED540  GetCommandProcessorType  (qcommon/radiant_remote.cpp:1180)
 
-CommandProcessorType __cdecl GetCommandProcessorType(SpawnVar *param_1)
+CommandProcessorType __cdecl GetCommandProcessorType(SpawnVar *spawnVar)
 
 {
   bool bVar1;
-  char *pcVar2;
-  CommandProcessorType CVar3;
-  int iVar4;
+  char *s0;
+  CommandProcessorType CVar2;
+  int iVar3;
+  char *classname;
   
-  pcVar2 = GetPairValue(param_1,"classname");
-  bVar1 = IsClientOnlyEntity(param_1);
+  s0 = GetPairValue(spawnVar,"classname");
+  bVar1 = IsClientOnlyEntity(spawnVar);
   if (bVar1) {
-    CVar3 = COMMAND_CLIENT;
+    CVar2 = COMMAND_CLIENT;
   }
   else {
-    if ((pcVar2 != (char *)0x0) && (iVar4 = I_strcmp(pcVar2,"script_struct"), iVar4 == 0)) {
+    if ((s0 != (char *)0x0) && (iVar3 = I_strcmp(s0,"script_struct"), iVar3 == 0)) {
       return COMMAND_BOTH;
     }
-    CVar3 = COMMAND_SERVER;
+    CVar2 = COMMAND_SERVER;
   }
-  return CVar3;
+  return CVar2;
 }
 
 
 // 006ED5A0  G_ProcessRadiantCmd  (qcommon/radiant_remote.cpp:1197)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ProcessRadiantCmd(RadiantCommand *param_1)
+void __cdecl G_ProcessRadiantCmd(RadiantCommand *command)
 
 {
   char cVar1;
   RadiantCommandType RVar2;
   bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  char *pcVar6;
+  char *s0;
+  int iVar4;
+  char *pcVar5;
   char *local_a2c;
-  RadiantCommandProcessor *local_a24;
-  SpawnVar local_a1c;
+  char *classname;
+  RadiantCommandProcessor *p;
+  RadiantCommandType commandType;
+  SpawnVar spawnVar;
   uint local_c;
-  CommandProcessorType local_8;
+  CommandProcessorType commandProcessorType;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  RVar2 = param_1->type;
-  G_SetEntityParsePoint(param_1->strCommand);
-  G_ParseSpawnVars(&local_a1c);
-  local_8 = GetCommandProcessorType(&local_a1c);
-  if ((local_8 == COMMAND_CLIENT) || (local_8 == COMMAND_BOTH)) {
+  RVar2 = command->type;
+  G_SetEntityParsePoint(command->strCommand);
+  G_ParseSpawnVars(&spawnVar);
+  commandProcessorType = GetCommandProcessorType(&spawnVar);
+  if ((commandProcessorType == COMMAND_CLIENT) || (commandProcessorType == COMMAND_BOTH)) {
     Sys_EnterCriticalSection(CRITSECT_RADIANT_CLIENT_COMMAND);
     if (cgCommandCount < 0x18) {
-      I_strncpyz(cgCommands[cgCommandCount].strCommand,param_1->strCommand,0x200);
-      cgCommands[cgCommandCount].type = param_1->type;
-      cgCommands[cgCommandCount].liveUpdateId = param_1->liveUpdateId;
+      I_strncpyz(cgCommands[cgCommandCount].strCommand,command->strCommand,0x200);
+      cgCommands[cgCommandCount].type = command->type;
+      cgCommands[cgCommandCount].liveUpdateId = command->liveUpdateId;
       cgCommandCount = cgCommandCount + 1;
     }
     else {
@@ -1224,33 +1256,33 @@ void __cdecl G_ProcessRadiantCmd(RadiantCommand *param_1)
     }
     Sys_LeaveCriticalSection(CRITSECT_RADIANT_CLIENT_COMMAND);
   }
-  if ((local_8 == COMMAND_SERVER) || (local_8 == COMMAND_BOTH)) {
+  if ((commandProcessorType == COMMAND_SERVER) || (commandProcessorType == COMMAND_BOTH)) {
     if (RVar2 == RADIANT_COMMAND_CAMERA) {
-      G_ProcessCameraCommand(&local_a1c);
+      G_ProcessCameraCommand(&spawnVar);
     }
     else if ((((RVar2 == RADIANT_COMMAND_SELECT) || (RVar2 == RADIANT_COMMAND_UPDATE)) ||
              (RVar2 == RADIANT_COMMAND_UPDATE_SELECTED)) ||
             ((RVar2 == RADIANT_COMMAND_DELETE || (RVar2 == RADIANT_COMMAND_CREATE)))) {
-      pcVar4 = GetPairValue(&local_a1c,"classname");
-      for (local_a24 = gCommandProcessors;
-          local_a24->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0;
-          local_a24 = local_a24 + 1) {
-        if ((local_a24->conditionFunc != (_func___cdecl_bool_SpawnVar_ptr *)0x0) &&
-           (bVar3 = (*local_a24->conditionFunc)(&local_a1c), bVar3)) {
+      s0 = GetPairValue(&spawnVar,"classname");
+      for (p = gCommandProcessors;
+          p->processorFunc != (_func___cdecl_void_RadiantCommand_ptr_SpawnVar_ptr *)0x0; p = p + 1)
+      {
+        if ((p->conditionFunc != (_func___cdecl_bool_SpawnVar_ptr *)0x0) &&
+           (bVar3 = (*p->conditionFunc)(&spawnVar), bVar3)) {
 LAB_006ed7df:
-          (*local_a24->processorFunc)(param_1,&local_a1c);
-          G_ClearSelection(local_a24->clearSelectionFunc);
+          (*p->processorFunc)(command,&spawnVar);
+          G_ClearSelection(p->clearSelectionFunc);
           return;
         }
-        if (local_a24->conditionFunc == (_func___cdecl_bool_SpawnVar_ptr *)0x0) {
-          local_a2c = local_a24->classname;
-          pcVar6 = local_a2c + 1;
+        if (p->conditionFunc == (_func___cdecl_bool_SpawnVar_ptr *)0x0) {
+          local_a2c = p->classname;
+          pcVar5 = local_a2c + 1;
           do {
             cVar1 = *local_a2c;
             local_a2c = local_a2c + 1;
           } while (cVar1 != '\0');
-          iVar5 = I_strncmp(pcVar4,local_a24->classname,(int)local_a2c - (int)pcVar6);
-          if (iVar5 == 0) goto LAB_006ed7df;
+          iVar4 = I_strncmp(s0,p->classname,(int)local_a2c - (int)pcVar5);
+          if (iVar4 == 0) goto LAB_006ed7df;
         }
       }
     }
@@ -1264,14 +1296,19 @@ LAB_006ed7df:
 
 // 006ED830  G_ProcessRadiantCmds  (qcommon/radiant_remote.cpp:1262)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 bool __cdecl G_ProcessRadiantCmds(void)
 
 {
-  int local_8;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_RADIANT_SERVER_COMMAND);
-  for (local_8 = 0; local_8 < gCommandCount; local_8 = local_8 + 1) {
-    G_ProcessRadiantCmd(gCommands + local_8);
+  for (i = 0; i < gCommandCount; i = i + 1) {
+    G_ProcessRadiantCmd(gCommands + i);
   }
   gCommandCount = 0;
   Sys_LeaveCriticalSection(CRITSECT_RADIANT_SERVER_COMMAND);

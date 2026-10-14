@@ -2,6 +2,8 @@
 
 // 00871DA0  R_SkinXSurfaceSkinnedSse  (gfx_d3d/r_model_skin.cpp:4196)
 
+/* WARNING: Variable defined which should be unmapped: xsurf */
+
 void __cdecl
 R_SkinXSurfaceSkinnedSse
           (XSurface *param_1,DObjSkelMat *param_2,GfxPackedVertexNormal *param_3,
@@ -12,7 +14,7 @@ R_SkinXSurfaceSkinnedSse
   GfxPackedVertexNormal *in_ECX;
   DObjSkelMat *unaff_ESI;
   GfxPackedVertexNormal *unaff_EDI;
-  DObjSkelMat *unaff_retaddr;
+  XSurface *xsurf;
   
   if (unaff_ESI == (DObjSkelMat *)0x0) {
     if ((param_1->flags & 0x80) == 0) {
@@ -20,31 +22,30 @@ R_SkinXSurfaceSkinnedSse
       return;
     }
     R_SkinXSurfaceWeightSse
-              (param_1->verts0,&param_1->vertInfo,(DObjSkelMat *)in_EAX,
-               (GfxPackedVertex *)unaff_retaddr);
+              (param_1->verts0,&param_1->vertInfo,(DObjSkelMat *)in_EAX,(GfxPackedVertex *)xsurf);
     return;
   }
   if (unaff_EDI != (GfxPackedVertexNormal *)0x0) {
     if ((param_1->flags & 0x80) == 0) {
       R_SkinXSurfaceRigidSseInOut
-                (param_1,(int)in_EAX,unaff_ESI,(GfxPackedVertexNormal *)unaff_retaddr,
+                (param_1,(int)in_EAX,unaff_ESI,(GfxPackedVertexNormal *)xsurf,
                  (GfxPackedVertexNormal *)param_1,(GfxPackedVertex *)param_2);
       return;
     }
     R_SkinXSurfaceWeightSseInOut
               (param_1->verts0,&param_1->vertInfo,(DObjSkelMat *)in_EAX,unaff_EDI,in_ECX,
-               (GfxPackedVertex *)unaff_retaddr);
+               (GfxPackedVertex *)xsurf);
     return;
   }
   if ((param_1->flags & 0x80) == 0) {
     R_SkinXSurfaceRigidSseOut
-              (in_EAX,(int)unaff_ESI,unaff_retaddr,(GfxPackedVertexNormal *)param_1,
+              (in_EAX,(int)unaff_ESI,(DObjSkelMat *)xsurf,(GfxPackedVertexNormal *)param_1,
                (GfxPackedVertex *)param_2);
     return;
   }
   R_SkinXSurfaceWeightSseOut
             (param_1->verts0,&param_1->vertInfo,(DObjSkelMat *)in_EAX,
-             (GfxPackedVertexNormal *)unaff_ESI,(GfxPackedVertex *)unaff_retaddr);
+             (GfxPackedVertexNormal *)unaff_ESI,(GfxPackedVertex *)xsurf);
   return;
 }
 
@@ -53,21 +54,21 @@ R_SkinXSurfaceSkinnedSse
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_SkinXModelCmd(void *param_1)
+void __cdecl R_SkinXModelCmd(void *data)
 
 {
-  XSurface *pXVar1;
+  XSurface *boneMatrix;
+  bool bVar1;
   bool bVar2;
-  bool bVar3;
-  DWORD DVar4;
-  int *piVar5;
-  XSurfaceVertexInfo *pXVar6;
+  DWORD DVar3;
+  int *piVar4;
+  XSurfaceVertexInfo *pXVar5;
   GfxPackedVertexNormal *unaff_EBX;
   DObjSkelMat *unaff_ESI;
-  uint uVar7;
-  float *pfVar8;
+  uint uVar6;
+  float *pfVar7;
   DObjSkelMat *unaff_EDI;
-  uint uVar9;
+  uint uVar8;
   void *in_stack_ffffd74c;
   int *local_28ac;
   uint local_28a8;
@@ -77,79 +78,79 @@ void __cdecl R_SkinXModelCmd(void *param_1)
   undefined4 uStack_14;
   
   uStack_14 = 0x872080;
-  DVar4 = WaitForSingleObject(DAT_01da4a34,0);
-  if (DVar4 == 0) {
+  DVar3 = WaitForSingleObject(DAT_01da4a34,0);
+  if (DVar3 == 0) {
     if (((sys_SSE->current).enabled == false) ||
-       (bVar2 = true, (r_sse_skinning->current).enabled == false)) {
-      bVar2 = false;
+       (bVar1 = true, (r_sse_skinning->current).enabled == false)) {
+      bVar1 = false;
     }
-    local_28ac = *(int **)param_1;
-    bVar3 = false;
+    local_28ac = *(int **)data;
+    bVar2 = false;
     local_28a8 = 0xffffffff;
     local_28a4 = 0;
-    if (*(short *)((int)param_1 + 0x28) != 0) {
+    if (*(short *)((int)data + 0x28) != 0) {
       do {
         if (*local_28ac == -3) {
           local_28ac = local_28ac + 1;
         }
         else {
-          uVar9 = (uint)*(byte *)(local_28ac + 3);
-          if ((local_28a8 != uVar9) &&
-             (uVar7 = *(byte *)((int)local_28ac + 0xd) + uVar9, local_28a8 = uVar9, uVar9 < uVar7))
+          uVar8 = (uint)*(byte *)(local_28ac + 3);
+          if ((local_28a8 != uVar8) &&
+             (uVar6 = *(byte *)((int)local_28ac + 0xd) + uVar8, local_28a8 = uVar8, uVar8 < uVar6))
           {
-            pfVar8 = &aGStack_2810[uVar9 * 2].binormalSign;
+            pfVar7 = &aGStack_2810[uVar8 * 2].binormalSign;
             do {
-              if ((*(uint *)((int)param_1 + ((int)uVar9 >> 5) * 4 + 8) &
-                  0x80000000U >> ((byte)uVar9 & 0x1f)) != 0) {
-                if (bVar3) {
-                  bVar3 = false;
+              if ((*(uint *)((int)data + ((int)uVar8 >> 5) * 4 + 8) &
+                  0x80000000U >> ((byte)uVar8 & 0x1f)) != 0) {
+                if (bVar2) {
+                  bVar2 = false;
                 }
                 ConvertQuatToInverseSkelMat((DObjAnimMat *)unaff_EDI,unaff_ESI);
                 ConvertQuatToSkelMat((DObjAnimMat *)unaff_EDI,unaff_ESI);
                 R_MultiplySkelMat(&local_2850,unaff_EDI,unaff_ESI);
-                *pfVar8 = 0.0;
-                ((PackedUnitVec *)(pfVar8 + 4))->packed = 0;
-                pfVar8[8] = 0.0;
-                pfVar8[0xc] = 1.0;
+                *pfVar7 = 0.0;
+                ((PackedUnitVec *)(pfVar7 + 4))->packed = 0;
+                pfVar7[8] = 0.0;
+                pfVar7[0xc] = 1.0;
               }
-              uVar9 = uVar9 + 1;
-              pfVar8 = pfVar8 + 0x10;
-            } while ((int)uVar9 < (int)uVar7);
+              uVar8 = uVar8 + 1;
+              pfVar7 = pfVar7 + 0x10;
+            } while ((int)uVar8 < (int)uVar6);
           }
           if (*local_28ac == -2) {
             local_28ac = local_28ac + 0xe;
           }
           else {
-            piVar5 = local_28ac + 6;
-            pXVar1 = (XSurface *)local_28ac[1];
+            piVar4 = local_28ac + 6;
+            boneMatrix = (XSurface *)local_28ac[1];
             if (*local_28ac < 0) {
-              pXVar6 = (XSurfaceVertexInfo *)local_28ac[5];
+              pXVar5 = (XSurfaceVertexInfo *)local_28ac[5];
             }
             else {
-              pXVar6 = (XSurfaceVertexInfo *)(gfxBuf.skinnedCacheLockAddr + *local_28ac);
+              pXVar5 = (XSurfaceVertexInfo *)(gfxBuf.skinnedCacheLockAddr + *local_28ac);
             }
-            local_28ac = piVar5;
-            if (bVar2) {
-              if (!bVar3) {
-                bVar3 = true;
+            local_28ac = piVar4;
+            if (bVar1) {
+              if (!bVar2) {
+                bVar2 = true;
               }
               R_SkinXSurfaceSkinnedSse
-                        (pXVar1,unaff_EDI,(GfxPackedVertexNormal *)unaff_ESI,unaff_EBX,
+                        (boneMatrix,unaff_EDI,(GfxPackedVertexNormal *)unaff_ESI,unaff_EBX,
                          in_stack_ffffd74c);
             }
-            else if ((pXVar1->flags & 0x80) == 0) {
-              R_SkinXSurfaceRigid(pXVar1,(int)(aGStack_2810 + local_28a8 * 2),unaff_EDI,
+            else if ((boneMatrix->flags & 0x80) == 0) {
+              R_SkinXSurfaceRigid(boneMatrix,(int)(aGStack_2810 + local_28a8 * 2),unaff_EDI,
                                   (GfxPackedVertex *)unaff_ESI);
             }
             else {
               R_SkinXSurfaceWeight
-                        ((XSurface *)pXVar1->verts0,aGStack_2810 + local_28a8 * 2,pXVar6,unaff_EDI,
-                         (GfxPackedVertex *)unaff_ESI);
+                        ((XSurface *)boneMatrix->verts0,aGStack_2810 + local_28a8 * 2,pXVar5,
+                         unaff_EDI,(GfxPackedVertex *)unaff_ESI);
             }
           }
         }
         local_28a4 = local_28a4 + 1;
-      } while (local_28a4 < *(ushort *)((int)param_1 + 0x28));
+      } while (local_28a4 < *(ushort *)((int)data + 0x28));
     }
   }
   return;

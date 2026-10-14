@@ -7,18 +7,18 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl OnSameTeam(gentity_s *param_1,gentity_s *param_2)
+int __cdecl OnSameTeam(gentity_s *ent1,gentity_s *ent2)
 
 {
   int iVar1;
   
-  if ((param_1->client == (gclient_s *)0x0) || (param_2->client == (gclient_s *)0x0)) {
+  if ((ent1->client == (gclient_s *)0x0) || (ent2->client == (gclient_s *)0x0)) {
     iVar1 = 0;
   }
-  else if ((param_1->client->sess).cs.team == TEAM_BAD) {
+  else if ((ent1->client->sess).cs.team == TEAM_BAD) {
     iVar1 = 0;
   }
-  else if ((param_1->client->sess).cs.team == (param_2->client->sess).cs.team) {
+  else if ((ent1->client->sess).cs.team == (ent2->client->sess).cs.team) {
     iVar1 = 1;
   }
   else {
@@ -35,10 +35,10 @@ int __cdecl OnSameTeam(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl TeamplayInfoMessage(gentity_s *param_1)
+void __cdecl TeamplayInfoMessage(gentity_s *ent)
 
 {
-  (param_1->client->ps).stats[3] = -1;
+  (ent->client->ps).stats[3] = -1;
   return;
 }
 
@@ -53,14 +53,15 @@ void __cdecl TeamplayInfoMessage(gentity_s *param_1)
 void __cdecl CheckTeamStatus(void)
 
 {
-  int local_8;
+  gentity_s *ent;
+  int i;
   
   if (0 < level.time - level.lastTeammateHealthTime) {
     level.lastTeammateHealthTime = level.time;
-    for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-      if ((g_entities[local_8].r.inuse != '\0') &&
-         ((((g_entities[local_8].client)->ps).otherFlags & 2U) == 0)) {
-        TeamplayInfoMessage(g_entities + local_8);
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if ((g_entities[i].r.inuse != '\0') && ((((g_entities[i].client)->ps).otherFlags & 2U) == 0))
+      {
+        TeamplayInfoMessage(g_entities + i);
       }
     }
   }

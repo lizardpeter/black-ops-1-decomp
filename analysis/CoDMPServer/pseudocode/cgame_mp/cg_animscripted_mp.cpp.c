@@ -7,14 +7,16 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObj * __cdecl GetLinkEntDObj(int param_1,centity_s *param_2)
+DObj * __cdecl GetLinkEntDObj(int localClientNum,centity_s *centLink)
 
 {
   code *pcVar1;
   bool bVar2;
   DObj *pDVar3;
+  DObj *result;
+  entityState_s *ns;
   
-  if (param_2->nextValid == 0) {
+  if (centLink->nextValid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0xc,0,"%s");
     if (!bVar2) {
@@ -23,7 +25,7 @@ DObj * __cdecl GetLinkEntDObj(int param_1,centity_s *param_2)
       return pDVar3;
     }
   }
-  pDVar3 = Com_GetClientDObj((param_2->nextState).number,param_1);
+  pDVar3 = Com_GetClientDObj((centLink->nextState).number,localClientNum);
   return pDVar3;
 }
 
@@ -35,38 +37,42 @@ DObj * __cdecl GetLinkEntDObj(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_GetTagMatrix(int param_1,int param_2,ushort param_3,float (*param_4) [3])
+void __cdecl
+CG_GetTagMatrix(int localClientNum,int linkEntNum,ushort tagName,float (*resultTagMat) [3])
 
 {
-  centity_s *pcVar1;
-  DObj *pDVar2;
-  int iVar3;
+  centity_s *centLink_00;
+  DObj *obj;
+  int iVar1;
+  centity_s *centLink;
+  DObj *objLink;
   
-  pcVar1 = CG_GetEntity(param_1,param_2);
-  if (pcVar1->nextValid == 0) {
+  centLink_00 = CG_GetEntity(localClientNum,linkEntNum);
+  if (centLink_00->nextValid == 0) {
     Com_PrintWarning(0xe,
                      "An actor is linking to an entity that was not included in latest snapshot.\n")
     ;
-    MatrixIdentity33(param_4);
-    param_4[3][0] = 0.0;
-    param_4[3][1] = 0.0;
-    param_4[3][2] = 0.0;
+    MatrixIdentity33(resultTagMat);
+    resultTagMat[3][0] = 0.0;
+    resultTagMat[3][1] = 0.0;
+    resultTagMat[3][2] = 0.0;
   }
   else {
-    pDVar2 = GetLinkEntDObj(param_1,pcVar1);
-    if (pDVar2 == (DObj *)0x0) {
-      MatrixIdentity33(param_4);
-      param_4[3][0] = 0.0;
-      param_4[3][1] = 0.0;
-      param_4[3][2] = 0.0;
+    obj = GetLinkEntDObj(localClientNum,centLink_00);
+    if (obj == (DObj *)0x0) {
+      MatrixIdentity33(resultTagMat);
+      resultTagMat[3][0] = 0.0;
+      resultTagMat[3][1] = 0.0;
+      resultTagMat[3][2] = 0.0;
     }
     else {
-      iVar3 = CG_DObjGetWorldTagMatrix(&pcVar1->pose,pDVar2,(uint)param_3,param_4,param_4[3]);
-      if (iVar3 == 0) {
-        MatrixIdentity33(param_4);
-        param_4[3][0] = 0.0;
-        param_4[3][1] = 0.0;
-        param_4[3][2] = 0.0;
+      iVar1 = CG_DObjGetWorldTagMatrix
+                        (&centLink_00->pose,obj,(uint)tagName,resultTagMat,resultTagMat[3]);
+      if (iVar1 == 0) {
+        MatrixIdentity33(resultTagMat);
+        resultTagMat[3][0] = 0.0;
+        resultTagMat[3][1] = 0.0;
+        resultTagMat[3][2] = 0.0;
       }
     }
   }
@@ -81,15 +87,17 @@ void __cdecl CG_GetTagMatrix(int param_1,int param_2,ushort param_3,float (*para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3) [3])
+void __cdecl CG_CalcTagParentAxis(int localClientNum,centity_s *cent,float (*parentAxis) [3])
 
 {
   cLinkInfo_s *pcVar1;
   code *pcVar2;
   bool bVar3;
   centity_s *pcVar4;
+  centity_s *centLink;
+  cLinkInfo_s *linkInfo;
   
-  if (param_2 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x36,0,"%s");
     if (!bVar3) {
@@ -98,7 +106,7 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
       return;
     }
   }
-  pcVar1 = param_2->linkInfo;
+  pcVar1 = cent->linkInfo;
   if (pcVar1 == (cLinkInfo_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x39,0,"%s");
@@ -109,18 +117,18 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
     }
   }
   if (pcVar1->linkTag < 1) {
-    pcVar4 = CG_GetEntity(param_1,pcVar1->linkEnt);
-    AnglesToAxis((pcVar4->pose).angles,param_3);
-    param_3[3][0] = (pcVar4->pose).origin[0];
-    param_3[3][1] = (pcVar4->pose).origin[1];
-    param_3[3][2] = (pcVar4->pose).origin[2];
+    pcVar4 = CG_GetEntity(localClientNum,pcVar1->linkEnt);
+    AnglesToAxis((pcVar4->pose).angles,parentAxis);
+    parentAxis[3][0] = (pcVar4->pose).origin[0];
+    parentAxis[3][1] = (pcVar4->pose).origin[1];
+    parentAxis[3][2] = (pcVar4->pose).origin[2];
   }
   else {
-    CG_GetTagMatrix(param_1,pcVar1->linkEnt,(ushort)pcVar1->linkTag,param_3);
+    CG_GetTagMatrix(localClientNum,pcVar1->linkEnt,(ushort)pcVar1->linkTag,parentAxis);
   }
-  if (((((uint)(*param_3)[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)(*param_3)[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)(*param_3)[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)(*parentAxis)[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)(*parentAxis)[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)(*parentAxis)[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x47,0,"%s");
     if (!bVar3) {
@@ -129,9 +137,9 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
       return;
     }
   }
-  if (((((uint)param_3[1][0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1][1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[1][2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)parentAxis[1][0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)parentAxis[1][1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)parentAxis[1][2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x48,0,"%s");
     if (!bVar3) {
@@ -140,9 +148,9 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
       return;
     }
   }
-  if (((((uint)param_3[2][0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[2][1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2][2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)parentAxis[2][0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)parentAxis[2][1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)parentAxis[2][2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x49,0,"%s");
     if (!bVar3) {
@@ -151,9 +159,9 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
       return;
     }
   }
-  if (((((uint)param_3[3][0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[3][1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[3][2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)parentAxis[3][0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)parentAxis[3][1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)parentAxis[3][2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x4a,0,"%s");
     if (!bVar3) {
@@ -173,22 +181,24 @@ void __cdecl CG_CalcTagParentAxis(int param_1,centity_s *param_2,float (*param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_LinkTransformForEntity(int param_1,centity_s *param_2,float *param_3,float *param_4)
+void __cdecl
+CG_LinkTransformForEntity
+          (int localClientNum,centity_s *cent,float *resultOrigin,float *resultAngles)
 
 {
   cLinkInfo_s *pcVar1;
   code *pcVar2;
   bool bVar3;
-  float local_7c [9];
+  float matrix [9];
   float local_58;
   float local_54;
   float local_50;
-  float local_40;
+  float angles;
   float local_3c;
   float local_38;
-  float local_34 [12];
+  float parentAxis [12];
   
-  if (param_2 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0x59,0,"%s");
     if (!bVar3) {
@@ -197,26 +207,25 @@ void __cdecl CG_LinkTransformForEntity(int param_1,centity_s *param_2,float *par
       return;
     }
   }
-  CG_CalcTagParentAxis(param_1,param_2,(float (*) [3])local_34);
-  if ((param_2->nextState).clientLinkInfo.parentEnt != 0) {
-    AnglesToAxis((param_2->nextState).lerp.apos.trDelta,(float (*) [3])param_2->linkInfo);
-    pcVar1 = param_2->linkInfo;
-    pcVar1->axis[3][0] = (param_2->nextState).lerp.pos.trDelta[0];
-    pcVar1->axis[3][1] = (param_2->nextState).lerp.pos.trDelta[1];
-    pcVar1->axis[3][2] = (param_2->nextState).lerp.pos.trDelta[2];
+  CG_CalcTagParentAxis(localClientNum,cent,(float (*) [3])parentAxis);
+  if ((cent->nextState).clientLinkInfo.parentEnt != 0) {
+    AnglesToAxis((cent->nextState).lerp.apos.trDelta,(float (*) [3])cent->linkInfo);
+    pcVar1 = cent->linkInfo;
+    pcVar1->axis[3][0] = (cent->nextState).lerp.pos.trDelta[0];
+    pcVar1->axis[3][1] = (cent->nextState).lerp.pos.trDelta[1];
+    pcVar1->axis[3][2] = (cent->nextState).lerp.pos.trDelta[2];
   }
-  MatrixMultiply43((float (*) [3])param_2->linkInfo,(float (*) [3])local_34,(float (*) [3])local_7c)
-  ;
-  AxisToAngles((float (*) [3])local_7c,&local_40);
-  if (param_3 != (float *)0x0) {
-    *param_3 = local_58;
-    param_3[1] = local_54;
-    param_3[2] = local_50;
+  MatrixMultiply43((float (*) [3])cent->linkInfo,(float (*) [3])parentAxis,(float (*) [3])matrix);
+  AxisToAngles((float (*) [3])matrix,&angles);
+  if (resultOrigin != (float *)0x0) {
+    *resultOrigin = local_58;
+    resultOrigin[1] = local_54;
+    resultOrigin[2] = local_50;
   }
-  if (param_4 != (float *)0x0) {
-    *param_4 = local_40;
-    param_4[1] = local_3c;
-    param_4[2] = local_38;
+  if (resultAngles != (float *)0x0) {
+    *resultAngles = angles;
+    resultAngles[1] = local_3c;
+    resultAngles[2] = local_38;
   }
   return;
 }
@@ -229,52 +238,53 @@ void __cdecl CG_LinkTransformForEntity(int param_1,centity_s *param_2,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_GenerateLinkInfo(int param_1,centity_s *param_2,int param_3,int param_4)
+void __cdecl
+CG_GenerateLinkInfo(int localClientNum,centity_s *cent,int attachedEntNum,int attachedTagIndex)
 
 {
   cLinkInfo_s *pcVar1;
-  float local_94 [12];
-  float local_64 [12];
-  float local_34 [9];
+  float invParentAxis [12];
+  float parentAxis [12];
+  float axis [9];
   float local_10;
   float local_c;
   float local_8;
   
-  if (param_2->linkInfo == (cLinkInfo_s *)0x0) {
+  if (cent->linkInfo == (cLinkInfo_s *)0x0) {
     pcVar1 = MT_Alloc(0x48,0x12,SCRIPTINSTANCE_SERVER);
-    param_2->linkInfo = pcVar1;
-    param_2->linkInfo->linkEnt = 0x3ff;
-    pcVar1 = param_2->linkInfo;
+    cent->linkInfo = pcVar1;
+    cent->linkInfo->linkEnt = 0x3ff;
+    pcVar1 = cent->linkInfo;
     pcVar1->relative_angles[0] = 0.0;
     pcVar1->relative_angles[1] = 0.0;
     pcVar1->relative_angles[2] = 0.0;
-    param_2->linkInfo->angles_set = false;
+    cent->linkInfo->angles_set = false;
   }
-  if (param_2->linkInfo->linkEnt != param_3) {
-    param_2->linkInfo->linkEnt = param_3;
-    if (param_4 == 0) {
-      param_2->linkInfo->linkTag = -1;
+  if (cent->linkInfo->linkEnt != attachedEntNum) {
+    cent->linkInfo->linkEnt = attachedEntNum;
+    if (attachedTagIndex == 0) {
+      cent->linkInfo->linkTag = -1;
     }
     else {
-      param_2->linkInfo->linkTag = param_4;
+      cent->linkInfo->linkTag = attachedTagIndex;
     }
-    if (param_2->linkInfo->linkTag < 1) {
-      pcVar1 = param_2->linkInfo;
-      pcVar1->axis[3][0] = (param_2->nextState).lerp.pos.trBase[0];
-      pcVar1->axis[3][1] = (param_2->nextState).lerp.pos.trBase[1];
-      pcVar1->axis[3][2] = (param_2->nextState).lerp.pos.trBase[2];
-      AnglesToAxis((param_2->nextState).lerp.apos.trBase,(float (*) [3])param_2->linkInfo);
+    if (cent->linkInfo->linkTag < 1) {
+      pcVar1 = cent->linkInfo;
+      pcVar1->axis[3][0] = (cent->nextState).lerp.pos.trBase[0];
+      pcVar1->axis[3][1] = (cent->nextState).lerp.pos.trBase[1];
+      pcVar1->axis[3][2] = (cent->nextState).lerp.pos.trBase[2];
+      AnglesToAxis((cent->nextState).lerp.apos.trBase,(float (*) [3])cent->linkInfo);
     }
     else {
-      AnglesToAxis((param_2->nextState).lerp.apos.trBase,(float (*) [3])local_34);
-      local_10 = (param_2->nextState).lerp.pos.trBase[0];
-      local_c = (param_2->nextState).lerp.pos.trBase[1];
-      local_8 = (param_2->nextState).lerp.pos.trBase[2];
-      CG_GetTagMatrix(param_1,param_2->linkInfo->linkEnt,(ushort)param_2->linkInfo->linkTag,
-                      (float (*) [3])local_64);
-      MatrixInverseOrthogonal43((float (*) [3])local_64,(float (*) [3])local_94);
-      MatrixMultiply43((float (*) [3])local_34,(float (*) [3])local_94,
-                       (float (*) [3])param_2->linkInfo);
+      AnglesToAxis((cent->nextState).lerp.apos.trBase,(float (*) [3])axis);
+      local_10 = (cent->nextState).lerp.pos.trBase[0];
+      local_c = (cent->nextState).lerp.pos.trBase[1];
+      local_8 = (cent->nextState).lerp.pos.trBase[2];
+      CG_GetTagMatrix(localClientNum,cent->linkInfo->linkEnt,(ushort)cent->linkInfo->linkTag,
+                      (float (*) [3])parentAxis);
+      MatrixInverseOrthogonal43((float (*) [3])parentAxis,(float (*) [3])invParentAxis);
+      MatrixMultiply43((float (*) [3])axis,(float (*) [3])invParentAxis,
+                       (float (*) [3])cent->linkInfo);
     }
   }
   return;
@@ -288,39 +298,41 @@ void __cdecl CG_GenerateLinkInfo(int param_1,centity_s *param_2,int param_3,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateEntityLink(int param_1,centity_s *param_2)
+void __cdecl CG_UpdateEntityLink(int localClientNum,centity_s *cent)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  short sVar4;
-  uint local_8;
+  char *str;
+  short sVar3;
+  char *tagName;
+  short parentEnt;
+  int tagIndex;
   
-  if ((param_2->nextState).number < 0x400) {
-    sVar4 = (param_2->nextState).clientLinkInfo.parentEnt;
-    if (sVar4 == 0) {
-      if (param_2->linkInfo != (cLinkInfo_s *)0x0) {
-        param_2->linkInfo->linkEnt = 0x3ff;
+  if ((cent->nextState).number < 0x400) {
+    sVar3 = (cent->nextState).clientLinkInfo.parentEnt;
+    if (sVar3 == 0) {
+      if (cent->linkInfo != (cLinkInfo_s *)0x0) {
+        cent->linkInfo->linkEnt = 0x3ff;
       }
     }
     else {
-      sVar4 = sVar4 + -1;
-      if ((0x1f < (param_2->nextState).clientLinkInfo.tagIndex) &&
+      sVar3 = sVar3 + -1;
+      if ((0x1f < (cent->nextState).clientLinkInfo.tagIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp"
                                    ,0xac,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = 0;
-      if ((param_2->nextState).clientLinkInfo.tagIndex != '\0') {
-        pcVar3 = CL_GetConfigString((param_2->nextState).clientLinkInfo.tagIndex + 0xc2b);
-        local_8 = SL_FindString(pcVar3,SCRIPTINSTANCE_SERVER);
+      tagIndex = 0;
+      if ((cent->nextState).clientLinkInfo.tagIndex != '\0') {
+        str = CL_GetConfigString((cent->nextState).clientLinkInfo.tagIndex + 0xc2b);
+        tagIndex = SL_FindString(str,SCRIPTINSTANCE_SERVER);
       }
-      if (((param_2->linkInfo == (cLinkInfo_s *)0x0) || (param_2->linkInfo->linkEnt != (int)sVar4))
-         || (param_2->linkInfo->linkTag != local_8)) {
-        CG_GenerateLinkInfo(param_1,param_2,(int)sVar4,local_8);
+      if (((cent->linkInfo == (cLinkInfo_s *)0x0) || (cent->linkInfo->linkEnt != (int)sVar3)) ||
+         (cent->linkInfo->linkTag != tagIndex)) {
+        CG_GenerateLinkInfo(localClientNum,cent,(int)sVar3,tagIndex);
       }
     }
   }
@@ -335,20 +347,21 @@ void __cdecl CG_UpdateEntityLink(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateFakeEntityLink(int param_1,centity_s *param_2,int param_3,int param_4)
+void __cdecl CG_UpdateFakeEntityLink(int localClientNum,centity_s *cent,int parentNum,int tagIndex)
 
 {
   code *pcVar1;
   bool bVar2;
+  cLinkInfo_s *linkInfo;
   
-  if ((param_2 == (centity_s *)0x0) &&
+  if ((cent == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp"
                                ,0xbc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x5ff < (uint)(param_2->nextState).number) &&
+  if ((0x5ff < (uint)(cent->nextState).number) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp"
                                ,0xbd,0,
                                "cent->nextState.number doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
@@ -357,14 +370,14 @@ void __cdecl CG_UpdateFakeEntityLink(int param_1,centity_s *param_2,int param_3,
     (*pcVar1)();
     return;
   }
-  if (param_3 == 0x3ff) {
-    if (param_2->linkInfo != (cLinkInfo_s *)0x0) {
-      MT_Free(param_2->linkInfo,0x48,SCRIPTINSTANCE_SERVER);
-      param_2->linkInfo = (cLinkInfo_s *)0x0;
+  if (parentNum == 0x3ff) {
+    if (cent->linkInfo != (cLinkInfo_s *)0x0) {
+      MT_Free(cent->linkInfo,0x48,SCRIPTINSTANCE_SERVER);
+      cent->linkInfo = (cLinkInfo_s *)0x0;
     }
   }
   else {
-    CG_GenerateLinkInfo(param_1,param_2,param_3,param_4);
+    CG_GenerateLinkInfo(localClientNum,cent,parentNum,tagIndex);
   }
   return;
 }
@@ -377,40 +390,42 @@ void __cdecl CG_UpdateFakeEntityLink(int param_1,centity_s *param_2,int param_3,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateFakeEntityLink(int param_1,centity_s *param_2)
+void __cdecl CG_UpdateFakeEntityLink(int localClientNum,centity_s *cent)
 
 {
-  cLinkInfo_s *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  centity_s *pcVar4;
+  cLinkInfo_s *p;
+  code *pcVar1;
+  bool bVar2;
+  centity_s *pcVar3;
+  centity_s *centParent;
+  cLinkInfo_s *linkInfo;
   
-  if (param_2 == (centity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
+  if (cent == (centity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0xcf,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (0x5ff < (uint)(param_2->nextState).number) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
+  if (0x5ff < (uint)(cent->nextState).number) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp",
                              0xd0,0,
                              "cent->nextState.number doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pcVar1 = param_2->linkInfo;
-  if ((pcVar1 != (cLinkInfo_s *)0x0) && (pcVar1->linkEnt != 0x3ff)) {
-    pcVar4 = CG_GetEntity(param_1,param_2->linkInfo->linkEnt);
-    if (pcVar4->nextValid == 0) {
-      MT_Free(pcVar1,0x48,SCRIPTINSTANCE_SERVER);
-      param_2->linkInfo = (cLinkInfo_s *)0x0;
+  p = cent->linkInfo;
+  if ((p != (cLinkInfo_s *)0x0) && (p->linkEnt != 0x3ff)) {
+    pcVar3 = CG_GetEntity(localClientNum,cent->linkInfo->linkEnt);
+    if (pcVar3->nextValid == 0) {
+      MT_Free(p,0x48,SCRIPTINSTANCE_SERVER);
+      cent->linkInfo = (cLinkInfo_s *)0x0;
     }
   }
   return;
@@ -424,12 +439,12 @@ void __cdecl CG_UpdateFakeEntityLink(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_EntityLinked(int param_1,centity_s *param_2)
+bool __cdecl CG_EntityLinked(int localClientNum,centity_s *cent)
 
 {
   centity_s *pcVar1;
   
-  pcVar1 = CG_EntGetLinkToParent(param_1,param_2);
+  pcVar1 = CG_EntGetLinkToParent(localClientNum,cent);
   return pcVar1 != (centity_s *)0x0;
 }
 
@@ -441,25 +456,26 @@ bool __cdecl CG_EntityLinked(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-centity_s * __cdecl CG_EntGetLinkToParent(int param_1,centity_s *param_2)
+centity_s * __cdecl CG_EntGetLinkToParent(int localClientNum,centity_s *cent)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
+  centity_s *centParent;
   
-  if ((param_2->linkInfo == (cLinkInfo_s *)0x0) || (param_2->linkInfo->linkEnt == 0x3ff)) {
+  if ((cent->linkInfo == (cLinkInfo_s *)0x0) || (cent->linkInfo->linkEnt == 0x3ff)) {
     pcVar3 = (centity_s *)0x0;
   }
   else {
-    if (((param_2->linkInfo->linkEnt < 0) || (0x5ff < param_2->linkInfo->linkEnt)) &&
+    if (((cent->linkInfo->linkEnt < 0) || (0x5ff < cent->linkInfo->linkEnt)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp"
                                  ,0xea,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pcVar3 = (centity_s *)(*pcVar1)();
       return pcVar3;
     }
-    pcVar3 = CG_GetEntity(param_1,param_2->linkInfo->linkEnt);
+    pcVar3 = CG_GetEntity(localClientNum,cent->linkInfo->linkEnt);
     if ((pcVar3 == (centity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_animscripted_mp.cpp"
                                  ,0xec,0,"%s"), !bVar2)) {

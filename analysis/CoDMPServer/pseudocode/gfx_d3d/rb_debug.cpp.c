@@ -15,39 +15,39 @@ void __cdecl TRACK_rb_debug(void)
 // 00AEF3D0  RB_AddDebugLine  (gfx_d3d/rb_debug.cpp:41)
 
 int __cdecl
-RB_AddDebugLine(float *param_1,float *param_2,float *param_3,bool param_4,int param_5,int param_6,
-               GfxPointVertex *param_7)
+RB_AddDebugLine(float *start,float *end,float *color,bool depthTest,int vertCount,int vertLimit,
+               GfxPointVertex *verts)
 
 {
   GfxPointVertex *pGVar1;
   
-  if ((param_6 < param_5 + 2) || ((s_addingDebugLines && (s_lastDepthTest != param_4)))) {
-    RB_DrawLines3D(param_5 / 2,1,param_7,s_lastDepthTest);
-    param_5 = 0;
+  if ((vertLimit < vertCount + 2) || ((s_addingDebugLines && (s_lastDepthTest != depthTest)))) {
+    RB_DrawLines3D(vertCount / 2,1,verts,s_lastDepthTest);
+    vertCount = 0;
   }
-  s_lastDepthTest = param_4;
+  s_lastDepthTest = depthTest;
   s_addingDebugLines = true;
-  R_ConvertColorToBytes(param_3,param_7[param_5].color);
-  *(undefined4 *)param_7[param_5 + 1].color = *(undefined4 *)param_7[param_5].color;
-  pGVar1 = param_7 + param_5;
-  pGVar1->xyz[0] = *param_1;
-  pGVar1->xyz[1] = param_1[1];
-  pGVar1->xyz[2] = param_1[2];
-  pGVar1 = param_7 + param_5 + 1;
-  pGVar1->xyz[0] = *param_2;
-  pGVar1->xyz[1] = param_2[1];
-  pGVar1->xyz[2] = param_2[2];
-  return param_5 + 2;
+  R_ConvertColorToBytes(color,verts[vertCount].color);
+  *(undefined4 *)verts[vertCount + 1].color = *(undefined4 *)verts[vertCount].color;
+  pGVar1 = verts + vertCount;
+  pGVar1->xyz[0] = *start;
+  pGVar1->xyz[1] = start[1];
+  pGVar1->xyz[2] = start[2];
+  pGVar1 = verts + vertCount + 1;
+  pGVar1->xyz[0] = *end;
+  pGVar1->xyz[1] = end[1];
+  pGVar1->xyz[2] = end[2];
+  return vertCount + 2;
 }
 
 
 // 00AEF4E0  RB_EndDebugLines  (gfx_d3d/rb_debug.cpp:61)
 
-int __cdecl RB_EndDebugLines(int param_1,GfxPointVertex *param_2)
+int __cdecl RB_EndDebugLines(int vertCount,GfxPointVertex *verts)
 
 {
-  if (param_1 != 0) {
-    RB_DrawLines3D(param_1,1,param_2,s_lastDepthTest);
+  if (vertCount != 0) {
+    RB_DrawLines3D(vertCount,1,verts,s_lastDepthTest);
     s_addingDebugLines = false;
   }
   return 0;
@@ -56,31 +56,31 @@ int __cdecl RB_EndDebugLines(int param_1,GfxPointVertex *param_2)
 
 // 00AEF510  RB_SetPolyVert  (gfx_d3d/rb_debug.cpp:71)
 
-void __cdecl RB_SetPolyVert(float *param_1,GfxColor param_2,int param_3)
+void __cdecl RB_SetPolyVert(float *xyz,GfxColor color,int tessVertIndex)
 
 {
-  tess.verts[param_3].xyzw[0] = *param_1;
-  tess.verts[param_3].xyzw[1] = param_1[1];
-  tess.verts[param_3].xyzw[2] = param_1[2];
-  tess.verts[param_3].xyzw[3] = 1.0;
-  tess.verts[param_3].normal.packed = 0x3ffe7f7f;
-  tess.verts[param_3].color = param_2;
-  tess.verts[param_3].texCoord[0] = 0.0;
-  tess.verts[param_3].texCoord[1] = 0.0;
+  tess.verts[tessVertIndex].xyzw[0] = *xyz;
+  tess.verts[tessVertIndex].xyzw[1] = xyz[1];
+  tess.verts[tessVertIndex].xyzw[2] = xyz[2];
+  tess.verts[tessVertIndex].xyzw[3] = 1.0;
+  tess.verts[tessVertIndex].normal.packed = 0x3ffe7f7f;
+  tess.verts[tessVertIndex].color = color;
+  tess.verts[tessVertIndex].texCoord[0] = 0.0;
+  tess.verts[tessVertIndex].texCoord[1] = 0.0;
   return;
 }
 
 
 // 00AEF950  RB_DebugPolyGetMaterialByDepthTest  (gfx_d3d/rb_debug.cpp:83)
 
-Material * __cdecl RB_DebugPolyGetMaterialByDepthTest(bool param_1,bool param_2)
+Material * __cdecl RB_DebugPolyGetMaterialByDepthTest(bool depthTest,bool blend)
 
 {
   Material *pMVar1;
   
-  if ((((!param_1) || (pMVar1 = rgp.blendMaterial, !param_2)) &&
-      ((!param_1 || (pMVar1 = rgp.lineMaterial, param_2)))) &&
-     ((pMVar1 = rgp.lineMaterialNoDepth, !param_1 && (param_2)))) {
+  if ((((!depthTest) || (pMVar1 = rgp.blendMaterial, !blend)) &&
+      ((!depthTest || (pMVar1 = rgp.lineMaterial, blend)))) &&
+     ((pMVar1 = rgp.lineMaterialNoDepth, !depthTest && (blend)))) {
     pMVar1 = rgp.blendMaterialNoDepth;
   }
   return pMVar1;
@@ -89,47 +89,50 @@ Material * __cdecl RB_DebugPolyGetMaterialByDepthTest(bool param_1,bool param_2)
 
 // 00AEF780  RB_DrawPolyInteriors  (gfx_d3d/rb_debug.cpp:95)
 
-void __cdecl RB_DrawPolyInteriors(PolySet *param_1)
+void __cdecl RB_DrawPolyInteriors(PolySet *polySet)
 
 {
   int iVar1;
   float (*pafVar2) [3];
   code *pcVar3;
   bool bVar4;
-  GfxDebugPoly *pGVar5;
-  Material *pMVar6;
+  GfxDebugPoly *colorFloat;
+  Material *material_00;
   bool local_21;
-  int local_14;
-  int local_c;
-  GfxColor local_8;
+  Material *material;
+  GfxDebugPoly *poly;
+  int polyIndex;
+  int tessVertIndex;
+  int vertIndex;
+  GfxColor color;
   
-  if ((param_1->polyCount < 1) &&
+  if ((polySet->polyCount < 1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0x67,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  for (local_14 = 0; local_14 < param_1->polyCount; local_14 = local_14 + 1) {
-    pGVar5 = param_1->polys + local_14;
-    iVar1 = pGVar5->firstVert;
-    pafVar2 = param_1->verts;
-    local_21 = pGVar5->faceColor[3] <= 1.0 && pGVar5->faceColor[3] != 1.0;
-    pMVar6 = RB_DebugPolyGetMaterialByDepthTest(pGVar5->faceDepthTest,local_21);
-    RB_BeginSurface(pMVar6,'\x04');
+  for (polyIndex = 0; polyIndex < polySet->polyCount; polyIndex = polyIndex + 1) {
+    colorFloat = polySet->polys + polyIndex;
+    iVar1 = colorFloat->firstVert;
+    pafVar2 = polySet->verts;
+    local_21 = colorFloat->faceColor[3] <= 1.0 && colorFloat->faceColor[3] != 1.0;
+    material_00 = RB_DebugPolyGetMaterialByDepthTest(colorFloat->faceDepthTest,local_21);
+    RB_BeginSurface(material_00,'\x04');
     R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_DEBUG);
-    R_ConvertColorToBytes(pGVar5->faceColor,local_8.array);
-    RB_CheckTessOverflow(pGVar5->vertCount,(pGVar5->vertCount + -2) * 3);
-    for (local_c = 0; local_c < pGVar5->vertCount; local_c = local_c + 1) {
-      RB_SetPolyVert(pafVar2[iVar1 + local_c],local_8,tess.vertexCount + local_c);
+    R_ConvertColorToBytes(colorFloat->faceColor,color.array);
+    RB_CheckTessOverflow(colorFloat->vertCount,(colorFloat->vertCount + -2) * 3);
+    for (vertIndex = 0; vertIndex < colorFloat->vertCount; vertIndex = vertIndex + 1) {
+      RB_SetPolyVert(pafVar2[iVar1 + vertIndex],color,tess.vertexCount + vertIndex);
     }
-    for (local_c = 2; local_c < pGVar5->vertCount; local_c = local_c + 1) {
+    for (vertIndex = 2; vertIndex < colorFloat->vertCount; vertIndex = vertIndex + 1) {
       tess.indices[tess.indexCount] = (ushort)tess.vertexCount;
-      tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)local_c;
-      tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)local_c;
+      tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)vertIndex;
+      tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)vertIndex;
       tess.indexCount = tess.indexCount + 3;
     }
-    tess.vertexCount = tess.vertexCount + pGVar5->vertCount;
+    tess.vertexCount = tess.vertexCount + colorFloat->vertCount;
     RB_EndTessSurface();
   }
   return;
@@ -138,7 +141,7 @@ void __cdecl RB_DrawPolyInteriors(PolySet *param_1)
 
 // 00AEF9B0  RB_DrawPolyOutlines  (gfx_d3d/rb_debug.cpp:135)
 
-void __cdecl RB_DrawPolyOutlines(PolySet *param_1)
+void __cdecl RB_DrawPolyOutlines(PolySet *polySet)
 
 {
   GfxDebugPoly *pGVar1;
@@ -146,12 +149,14 @@ void __cdecl RB_DrawPolyOutlines(PolySet *param_1)
   float (*pafVar3) [3];
   code *pcVar4;
   bool bVar5;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  GfxDebugPoly *poly;
+  GfxPointVertex *verts;
+  int polyIndex;
+  int vertCount;
+  int vertIndex;
+  int vertIndexPrev;
   
-  if (param_1->polyCount < 1) {
+  if (polySet->polyCount < 1) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0x90,0,"%s")
     ;
     if (!bVar5) {
@@ -160,20 +165,20 @@ void __cdecl RB_DrawPolyOutlines(PolySet *param_1)
       return;
     }
   }
-  local_10 = 0;
-  for (local_14 = 0; local_14 < param_1->polyCount; local_14 = local_14 + 1) {
-    pGVar1 = param_1->polys;
-    iVar2 = pGVar1[local_14].firstVert;
-    pafVar3 = param_1->verts;
-    local_8 = pGVar1[local_14].vertCount + -1;
-    for (local_c = 0; local_c < pGVar1[local_14].vertCount; local_c = local_c + 1) {
-      local_10 = RB_AddDebugLine(pafVar3[iVar2 + local_8],pafVar3[iVar2 + local_c],
-                                 pGVar1[local_14].edgeColor,pGVar1[local_14].edgeDepthTest,local_10,
-                                 0xaa5,g_debugPolyVerts);
-      local_8 = local_c;
+  vertCount = 0;
+  for (polyIndex = 0; polyIndex < polySet->polyCount; polyIndex = polyIndex + 1) {
+    pGVar1 = polySet->polys;
+    iVar2 = pGVar1[polyIndex].firstVert;
+    pafVar3 = polySet->verts;
+    vertIndexPrev = pGVar1[polyIndex].vertCount + -1;
+    for (vertIndex = 0; vertIndex < pGVar1[polyIndex].vertCount; vertIndex = vertIndex + 1) {
+      vertCount = RB_AddDebugLine(pafVar3[iVar2 + vertIndexPrev],pafVar3[iVar2 + vertIndex],
+                                  pGVar1[polyIndex].edgeColor,pGVar1[polyIndex].edgeDepthTest,
+                                  vertCount,0xaa5,g_debugPolyVerts);
+      vertIndexPrev = vertIndex;
     }
   }
-  RB_EndDebugLines(local_10 / 2,g_debugPolyVerts);
+  RB_EndDebugLines(vertCount / 2,g_debugPolyVerts);
   return;
 }
 
@@ -201,7 +206,7 @@ void __cdecl RB_DrawDebugPolys(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl RB_DrawDebugSphere(trDebugSphere_t *param_1)
+void __cdecl RB_DrawDebugSphere(trDebugSphere_t *sphere)
 
 {
   float fVar1;
@@ -215,215 +220,216 @@ void __cdecl RB_DrawDebugSphere(trDebugSphere_t *param_1)
   float10 fVar9;
   PackedUnitVec local_6578;
   float afStack_64e4 [33];
-  uint local_6460;
+  int sideCount;
   float afStack_645c [1928];
   float afStack_463c [1447];
-  float local_2fa0;
-  Material *local_2f9c;
-  int local_2f98;
-  float local_2f94;
-  GfxColor local_2f90;
-  undefined1 local_2f89;
-  float local_2f88;
-  float local_2f84;
+  float dist;
+  Material *material;
+  int angleIndex;
+  float angleDelta;
+  GfxColor sphereColor;
+  bool cameraInsideSphere;
+  float radius;
+  float floatColor;
   float local_2f80;
   float local_2f7c;
   float local_2f78;
   float afStack_2f74 [965];
-  int local_2060;
-  int local_205c;
-  undefined4 local_2058;
-  short local_2054 [3072];
-  float local_854;
-  int local_850;
-  int local_84c;
+  int indexCount;
+  int row;
+  int MAX_POINTS;
+  short indices [3072];
+  float brightness;
+  int tessVertIndex;
+  int index;
   int local_848;
   int local_844;
   int local_840;
   float afStack_83c [33];
-  int local_7b8;
+  int vertCount;
   GfxColor aGStack_7b4 [482];
   uint local_2c;
-  float local_28;
+  float fakeLightDir;
   float local_24;
   float local_20;
-  int local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
+  int vertIndex;
+  int col;
+  float stScale;
+  float center;
   float local_c;
   float local_8;
   
   local_8 = 1.606993e-38;
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2058 = 0x1e2;
-  local_28 = 0.577;
+  MAX_POINTS = 0x1e2;
+  fakeLightDir = 0.577;
   local_24 = 0.577;
   local_20 = 0.577;
-  local_854 = 0.0;
-  local_2f89 = 0;
-  local_2fa0 = Vec3DistanceSq(gfxCmdBufSourceState.viewParms.origin,param_1->center);
-  if (local_2fa0 < param_1->radius * param_1->radius) {
-    local_2f89 = 1;
+  brightness = 0.0;
+  cameraInsideSphere = false;
+  dist = Vec3DistanceSq(gfxCmdBufSourceState.viewParms.origin,sphere->center);
+  if (dist < sphere->radius * sphere->radius) {
+    cameraInsideSphere = true;
   }
-  local_10 = param_1->center[0];
-  local_c = param_1->center[1];
-  local_8 = param_1->center[2];
-  local_2f88 = param_1->radius;
-  local_6460 = param_1->sideCount;
-  if ((0.001 < local_2f88) && (1 < (int)local_6460)) {
-    if (0x20 < (int)local_6460) {
-      local_6460 = 0x20;
+  center = sphere->center[0];
+  local_c = sphere->center[1];
+  local_8 = sphere->center[2];
+  radius = sphere->radius;
+  sideCount = sphere->sideCount;
+  if ((0.001 < radius) && (1 < sideCount)) {
+    if (0x20 < sideCount) {
+      sideCount = 0x20;
     }
-    local_6460 = local_6460 & 0xfffffffe;
-    local_14 = 1.0 / (float)(int)local_6460;
-    local_2f94 = local_14 * 6.2831855;
-    for (local_2f98 = 0; local_2f98 < (int)local_6460; local_2f98 = local_2f98 + 1) {
-      fVar5 = (float10)fcos((float10)((float)local_2f98 * local_2f94));
-      fVar9 = (float10)fsin((float10)((float)local_2f98 * local_2f94));
-      afStack_83c[local_2f98] = (float)fVar5;
-      afStack_64e4[local_2f98] = (float)fVar9;
+    sideCount = sideCount & 0xfffffffe;
+    stScale = 1.0 / (float)sideCount;
+    angleDelta = stScale * 6.2831855;
+    for (angleIndex = 0; angleIndex < sideCount; angleIndex = angleIndex + 1) {
+      fVar5 = (float10)fcos((float10)((float)angleIndex * angleDelta));
+      fVar9 = (float10)fsin((float10)((float)angleIndex * angleDelta));
+      afStack_83c[angleIndex] = (float)fVar5;
+      afStack_64e4[angleIndex] = (float)fVar9;
     }
-    local_2f84 = param_1->color[0];
-    local_2f80 = param_1->color[1];
-    local_2f7c = param_1->color[2];
-    local_2f78 = param_1->color[3];
-    local_7b8 = 0;
-    for (local_205c = 1; local_205c < (int)local_6460 / 2; local_205c = local_205c + 1) {
-      for (local_18 = 0; local_18 < (int)local_6460; local_18 = local_18 + 1) {
-        if ((local_7b8 != (local_205c + -1) * local_6460 + local_18) &&
+    floatColor = sphere->color[0];
+    local_2f80 = sphere->color[1];
+    local_2f7c = sphere->color[2];
+    local_2f78 = sphere->color[3];
+    vertCount = 0;
+    for (row = 1; row < sideCount / 2; row = row + 1) {
+      for (col = 0; col < sideCount; col = col + 1) {
+        if ((vertCount != (row + -1) * sideCount + col) &&
            (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0xf3
                                      ,1,"%s"), !bVar8)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        fVar1 = afStack_64e4[local_205c];
-        fVar2 = afStack_64e4[local_18];
-        fVar3 = afStack_83c[local_205c];
-        afStack_463c[local_7b8 * 3] = afStack_64e4[local_205c] * afStack_83c[local_18];
-        afStack_463c[local_7b8 * 3 + 1] = fVar1 * fVar2;
-        afStack_463c[local_7b8 * 3 + 2] = fVar3;
-        afStack_645c[local_7b8 * 4] = local_2f88 * afStack_463c[local_7b8 * 3] + local_10;
-        afStack_645c[local_7b8 * 4 + 1] = local_2f88 * afStack_463c[local_7b8 * 3 + 1] + local_c;
-        afStack_645c[local_7b8 * 4 + 2] = local_2f88 * afStack_463c[local_7b8 * 3 + 2] + local_8;
-        local_854 = (afStack_463c[local_7b8 * 3] * local_28 +
-                     afStack_463c[local_7b8 * 3 + 1] * local_24 +
-                     afStack_463c[local_7b8 * 3 + 2] * local_20 + 1.0) * 0.5;
-        local_2f84 = local_854 * param_1->color[0];
-        local_2f80 = local_854 * param_1->color[1];
-        local_2f7c = local_854 * param_1->color[2];
-        R_ConvertColorToBytes(&local_2f84,local_2f90.array);
-        afStack_645c[local_7b8 * 4 + 3] = 1.0;
-        aGStack_7b4[local_7b8] = local_2f90;
-        afStack_2f74[local_7b8 * 2] = (float)local_205c * local_14;
-        afStack_2f74[local_7b8 * 2 + 1] = (float)local_18 * local_14;
-        local_7b8 = local_7b8 + 1;
+        fVar1 = afStack_64e4[row];
+        fVar2 = afStack_64e4[col];
+        fVar3 = afStack_83c[row];
+        afStack_463c[vertCount * 3] = afStack_64e4[row] * afStack_83c[col];
+        afStack_463c[vertCount * 3 + 1] = fVar1 * fVar2;
+        afStack_463c[vertCount * 3 + 2] = fVar3;
+        afStack_645c[vertCount * 4] = radius * afStack_463c[vertCount * 3] + center;
+        afStack_645c[vertCount * 4 + 1] = radius * afStack_463c[vertCount * 3 + 1] + local_c;
+        afStack_645c[vertCount * 4 + 2] = radius * afStack_463c[vertCount * 3 + 2] + local_8;
+        brightness = (afStack_463c[vertCount * 3] * fakeLightDir +
+                      afStack_463c[vertCount * 3 + 1] * local_24 +
+                      afStack_463c[vertCount * 3 + 2] * local_20 + 1.0) * 0.5;
+        floatColor = brightness * sphere->color[0];
+        local_2f80 = brightness * sphere->color[1];
+        local_2f7c = brightness * sphere->color[2];
+        R_ConvertColorToBytes(&floatColor,sphereColor.array);
+        afStack_645c[vertCount * 4 + 3] = 1.0;
+        aGStack_7b4[vertCount] = sphereColor;
+        afStack_2f74[vertCount * 2] = (float)row * stScale;
+        afStack_2f74[vertCount * 2 + 1] = (float)col * stScale;
+        vertCount = vertCount + 1;
       }
     }
-    if ((local_7b8 != ((int)local_6460 / 2 + -1) * local_6460) &&
+    if ((vertCount != (sideCount / 2 + -1) * sideCount) &&
        (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0x100,1,
                                  "%s"), !bVar8)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    afStack_463c[local_7b8 * 3] = 0.0;
-    afStack_463c[local_7b8 * 3 + 1] = 0.0;
-    afStack_463c[local_7b8 * 3 + 2] = 1.0;
-    afStack_645c[local_7b8 * 4] = local_2f88 * afStack_463c[local_7b8 * 3] + local_10;
-    afStack_645c[local_7b8 * 4 + 1] = local_2f88 * afStack_463c[local_7b8 * 3 + 1] + local_c;
-    afStack_645c[local_7b8 * 4 + 2] = local_2f88 * afStack_463c[local_7b8 * 3 + 2] + local_8;
-    afStack_645c[local_7b8 * 4 + 3] = 1.0;
-    local_854 = (afStack_463c[local_7b8 * 3] * local_28 + afStack_463c[local_7b8 * 3 + 1] * local_24
-                 + afStack_463c[local_7b8 * 3 + 2] * local_20 + 1.0) * 0.5;
-    local_2f84 = local_854 * param_1->color[0];
-    local_2f80 = local_854 * param_1->color[1];
-    local_2f7c = local_854 * param_1->color[2];
-    R_ConvertColorToBytes(&local_2f84,local_2f90.array);
-    aGStack_7b4[local_7b8] = local_2f90;
-    afStack_2f74[local_7b8 * 2] = 0.0;
-    afStack_2f74[local_7b8 * 2 + 1] = 1.0;
-    local_7b8 = local_7b8 + 1;
-    afStack_463c[local_7b8 * 3] = 0.0;
-    afStack_463c[local_7b8 * 3 + 1] = 0.0;
-    afStack_463c[local_7b8 * 3 + 2] = -1.0;
-    afStack_645c[local_7b8 * 4] = local_2f88 * afStack_463c[local_7b8 * 3] + local_10;
-    afStack_645c[local_7b8 * 4 + 1] = local_2f88 * afStack_463c[local_7b8 * 3 + 1] + local_c;
-    afStack_645c[local_7b8 * 4 + 2] = local_2f88 * afStack_463c[local_7b8 * 3 + 2] + local_8;
-    afStack_645c[local_7b8 * 4 + 3] = 1.0;
-    local_854 = (afStack_463c[local_7b8 * 3] * local_28 + afStack_463c[local_7b8 * 3 + 1] * local_24
-                 + afStack_463c[local_7b8 * 3 + 2] * local_20 + 1.0) * 0.5;
-    local_2f84 = local_854 * param_1->color[0];
-    local_2f80 = local_854 * param_1->color[1];
-    local_2f7c = local_854 * param_1->color[2];
-    R_ConvertColorToBytes(&local_2f84,local_2f90.array);
-    aGStack_7b4[local_7b8] = local_2f90;
-    afStack_2f74[local_7b8 * 2] = 0.0;
-    afStack_2f74[local_7b8 * 2 + 1] = 0.0;
-    local_7b8 = local_7b8 + 1;
-    iVar7 = local_7b8;
-    local_2060 = 0;
-    for (local_205c = 1; local_205c < (int)local_6460 / 2 + -1; local_205c = local_205c + 1) {
-      for (local_18 = 0; local_18 < (int)local_6460; local_18 = local_18 + 1) {
-        local_84c = (local_205c + -1) * local_6460 + local_18;
-        local_848 = local_84c + 1;
-        local_844 = local_84c + local_6460;
-        local_840 = local_84c + 1 + local_6460;
-        if (local_18 == local_6460 - 1) {
-          local_848 = local_848 - local_6460;
-          local_840 = local_840 - local_6460;
+    afStack_463c[vertCount * 3] = 0.0;
+    afStack_463c[vertCount * 3 + 1] = 0.0;
+    afStack_463c[vertCount * 3 + 2] = 1.0;
+    afStack_645c[vertCount * 4] = radius * afStack_463c[vertCount * 3] + center;
+    afStack_645c[vertCount * 4 + 1] = radius * afStack_463c[vertCount * 3 + 1] + local_c;
+    afStack_645c[vertCount * 4 + 2] = radius * afStack_463c[vertCount * 3 + 2] + local_8;
+    afStack_645c[vertCount * 4 + 3] = 1.0;
+    brightness = (afStack_463c[vertCount * 3] * fakeLightDir +
+                  afStack_463c[vertCount * 3 + 1] * local_24 +
+                  afStack_463c[vertCount * 3 + 2] * local_20 + 1.0) * 0.5;
+    floatColor = brightness * sphere->color[0];
+    local_2f80 = brightness * sphere->color[1];
+    local_2f7c = brightness * sphere->color[2];
+    R_ConvertColorToBytes(&floatColor,sphereColor.array);
+    aGStack_7b4[vertCount] = sphereColor;
+    afStack_2f74[vertCount * 2] = 0.0;
+    afStack_2f74[vertCount * 2 + 1] = 1.0;
+    vertCount = vertCount + 1;
+    afStack_463c[vertCount * 3] = 0.0;
+    afStack_463c[vertCount * 3 + 1] = 0.0;
+    afStack_463c[vertCount * 3 + 2] = -1.0;
+    afStack_645c[vertCount * 4] = radius * afStack_463c[vertCount * 3] + center;
+    afStack_645c[vertCount * 4 + 1] = radius * afStack_463c[vertCount * 3 + 1] + local_c;
+    afStack_645c[vertCount * 4 + 2] = radius * afStack_463c[vertCount * 3 + 2] + local_8;
+    afStack_645c[vertCount * 4 + 3] = 1.0;
+    brightness = (afStack_463c[vertCount * 3] * fakeLightDir +
+                  afStack_463c[vertCount * 3 + 1] * local_24 +
+                  afStack_463c[vertCount * 3 + 2] * local_20 + 1.0) * 0.5;
+    floatColor = brightness * sphere->color[0];
+    local_2f80 = brightness * sphere->color[1];
+    local_2f7c = brightness * sphere->color[2];
+    R_ConvertColorToBytes(&floatColor,sphereColor.array);
+    aGStack_7b4[vertCount] = sphereColor;
+    afStack_2f74[vertCount * 2] = 0.0;
+    afStack_2f74[vertCount * 2 + 1] = 0.0;
+    vertCount = vertCount + 1;
+    iVar7 = vertCount;
+    indexCount = 0;
+    for (row = 1; row < sideCount / 2 + -1; row = row + 1) {
+      for (col = 0; col < sideCount; col = col + 1) {
+        index = (row + -1) * sideCount + col;
+        local_848 = index + 1;
+        local_844 = index + sideCount;
+        local_840 = index + 1 + sideCount;
+        if (col == sideCount + -1) {
+          local_848 = local_848 - sideCount;
+          local_840 = local_840 - sideCount;
         }
-        local_2054[local_2060] = (short)local_84c;
-        local_2054[local_2060 + 1] = (short)local_848;
-        local_2054[local_2060 + 2] = (short)local_844;
-        local_2054[local_2060 + 3] = (short)local_844;
-        local_2054[local_2060 + 4] = (short)local_848;
-        local_2054[local_2060 + 5] = (short)local_840;
-        local_2060 = local_2060 + 6;
+        indices[indexCount] = (short)index;
+        indices[indexCount + 1] = (short)local_848;
+        indices[indexCount + 2] = (short)local_844;
+        indices[indexCount + 3] = (short)local_844;
+        indices[indexCount + 4] = (short)local_848;
+        indices[indexCount + 5] = (short)local_840;
+        indexCount = indexCount + 6;
       }
     }
-    for (local_18 = 0; local_18 < (int)local_6460; local_18 = local_18 + 1) {
-      local_2054[local_2060] = (short)local_7b8 + -2;
-      local_2054[local_2060 + 1] = (short)local_18 + 1;
-      local_2054[local_2060 + 2] = (short)local_18;
-      local_2054[local_2060 + 3] = (short)local_7b8 + -1;
-      sVar6 = (short)local_6460;
-      local_2054[local_2060 + 4] = ((short)((int)local_6460 / 2) + -2) * sVar6 + (short)local_18;
-      local_2054[local_2060 + 5] = (short)local_18 + 1 + ((short)((int)local_6460 / 2) + -2) * sVar6
-      ;
-      if (local_18 == local_6460 - 1) {
-        local_2054[local_2060 + 1] = local_2054[local_2060 + 1] - sVar6;
-        local_2054[local_2060 + 5] = local_2054[local_2060 + 5] - sVar6;
+    for (col = 0; col < sideCount; col = col + 1) {
+      indices[indexCount] = (short)vertCount + -2;
+      indices[indexCount + 1] = (short)col + 1;
+      indices[indexCount + 2] = (short)col;
+      indices[indexCount + 3] = (short)vertCount + -1;
+      sVar6 = (short)sideCount;
+      indices[indexCount + 4] = ((short)(sideCount / 2) + -2) * sVar6 + (short)col;
+      indices[indexCount + 5] = (short)col + 1 + ((short)(sideCount / 2) + -2) * sVar6;
+      if (col == sideCount + -1) {
+        indices[indexCount + 1] = indices[indexCount + 1] - sVar6;
+        indices[indexCount + 5] = indices[indexCount + 5] - sVar6;
       }
-      local_2060 = local_2060 + 6;
+      indexCount = indexCount + 6;
     }
-    local_2f9c = rgp.whiteDebugExteriorMaterial;
-    if (local_2fa0 < param_1->radius * param_1->radius) {
-      local_2f9c = rgp.whiteDepthInteriorMaterial;
+    material = rgp.whiteDebugExteriorMaterial;
+    if (dist < sphere->radius * sphere->radius) {
+      material = rgp.whiteDepthInteriorMaterial;
     }
-    local_7b8 = iVar7;
-    RB_BeginSurface(local_2f9c,tech);
+    vertCount = iVar7;
+    RB_BeginSurface(material,tech);
     R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_DEBUG);
-    RB_CheckTessOverflow(local_7b8,local_2060);
-    for (local_1c = 0; local_1c < local_7b8; local_1c = local_1c + 1) {
-      local_850 = tess.vertexCount + local_1c;
-      tess.verts[local_850].xyzw[0] = afStack_645c[local_1c * 4];
-      tess.verts[local_850].xyzw[1] = afStack_645c[local_1c * 4 + 1];
-      tess.verts[local_850].xyzw[2] = afStack_645c[local_1c * 4 + 2];
-      tess.verts[local_850].xyzw[3] = afStack_645c[local_1c * 4 + 3];
-      local_6578.array[1] = (char)(int)(afStack_463c[local_1c * 3 + 1] * 127.0 + 127.5);
-      local_6578.array[0] = (char)(int)(afStack_463c[local_1c * 3] * 127.0 + 127.5);
-      local_6578.array[2] = (char)(int)(afStack_463c[local_1c * 3 + 2] * 127.0 + 127.5);
+    RB_CheckTessOverflow(vertCount,indexCount);
+    for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+      tessVertIndex = tess.vertexCount + vertIndex;
+      tess.verts[tessVertIndex].xyzw[0] = afStack_645c[vertIndex * 4];
+      tess.verts[tessVertIndex].xyzw[1] = afStack_645c[vertIndex * 4 + 1];
+      tess.verts[tessVertIndex].xyzw[2] = afStack_645c[vertIndex * 4 + 2];
+      tess.verts[tessVertIndex].xyzw[3] = afStack_645c[vertIndex * 4 + 3];
+      local_6578.array[1] = (char)(int)(afStack_463c[vertIndex * 3 + 1] * 127.0 + 127.5);
+      local_6578.array[0] = (char)(int)(afStack_463c[vertIndex * 3] * 127.0 + 127.5);
+      local_6578.array[2] = (char)(int)(afStack_463c[vertIndex * 3 + 2] * 127.0 + 127.5);
       local_6578.array[3] = 0x3f;
-      tess.verts[local_850].normal = local_6578;
-      tess.verts[local_850].color = aGStack_7b4[local_1c];
-      tess.verts[local_850].texCoord[0] = afStack_2f74[local_1c * 2];
-      tess.verts[local_850].texCoord[1] = afStack_2f74[local_1c * 2 + 1];
+      tess.verts[tessVertIndex].normal = local_6578;
+      tess.verts[tessVertIndex].color = aGStack_7b4[vertIndex];
+      tess.verts[tessVertIndex].texCoord[0] = afStack_2f74[vertIndex * 2];
+      tess.verts[tessVertIndex].texCoord[1] = afStack_2f74[vertIndex * 2 + 1];
     }
-    tess.vertexCount = tess.vertexCount + local_7b8;
-    memcpy((uchar *)(tess.indices + tess.indexCount),(uchar *)local_2054,local_2060 << 1);
-    tess.indexCount = tess.indexCount + local_2060;
+    tess.vertexCount = tess.vertexCount + vertCount;
+    memcpy((uchar *)(tess.indices + tess.indexCount),(uchar *)indices,indexCount << 1);
+    tess.indexCount = tess.indexCount + indexCount;
     RB_EndTessSurface();
   }
   return;
@@ -434,42 +440,44 @@ void __cdecl RB_DrawDebugSphere(trDebugSphere_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl RB_DrawDebugSpheres(trDebugSphere_t *param_1,int param_2)
+void __cdecl RB_DrawDebugSpheres(trDebugSphere_t *spheres,int sphereCount)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  int local_520;
+  int j;
+  float dist;
+  int MAX_SORTED_SPHERES;
   int aiStack_514 [256];
-  int local_114;
-  float local_110;
-  uchar local_10c [260];
+  int i;
+  float furthest;
+  uchar usedList [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((0x100 < param_2) &&
+  if ((0x100 < sphereCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0x16d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  memset(local_10c,'\0',0x100);
-  for (local_520 = 0; local_520 < param_2; local_520 = local_520 + 1) {
-    local_110 = -1.0;
-    for (local_114 = 0; local_114 < param_2; local_114 = local_114 + 1) {
-      if ((local_10c[local_114] == '\0') &&
-         (fVar3 = Vec3Distance(gfxCmdBufSourceState.viewParms.origin,param_1[local_114].center),
-         local_110 < fVar3)) {
-        local_110 = fVar3;
-        aiStack_514[local_520] = local_114;
+  memset(usedList,'\0',0x100);
+  for (j = 0; j < sphereCount; j = j + 1) {
+    furthest = -1.0;
+    for (i = 0; i < sphereCount; i = i + 1) {
+      if ((usedList[i] == '\0') &&
+         (fVar3 = Vec3Distance(gfxCmdBufSourceState.viewParms.origin,spheres[i].center),
+         furthest < fVar3)) {
+        furthest = fVar3;
+        aiStack_514[j] = i;
       }
     }
-    local_10c[aiStack_514[local_520]] = '\x01';
+    usedList[aiStack_514[j]] = '\x01';
   }
-  for (local_114 = 0; local_114 < param_2; local_114 = local_114 + 1) {
-    RB_DrawDebugSphere(param_1 + aiStack_514[local_114]);
+  for (i = 0; i < sphereCount; i = i + 1) {
+    RB_DrawDebugSphere(spheres + aiStack_514[i]);
   }
   return;
 }
@@ -477,33 +485,35 @@ void __cdecl RB_DrawDebugSpheres(trDebugSphere_t *param_1,int param_2)
 
 // 00AF0BC0  RB_DrawDebugLines  (gfx_d3d/rb_debug.cpp:393)
 
-void __cdecl RB_DrawDebugLines(trDebugLine_t *param_1,int param_2,GfxPointVertex *param_3)
+void __cdecl RB_DrawDebugLines(trDebugLine_t *lines,int lineCount,GfxPointVertex *verts)
 
 {
-  trDebugLine_t *ptVar1;
-  bool bVar2;
-  int local_14;
-  int local_c;
-  bool local_5;
+  trDebugLine_t *start;
+  bool bVar1;
+  bool lineDepthTest;
+  int vertCount;
+  trDebugLine_t *line;
+  int lineIndex;
+  bool depthTest;
   
-  if (param_2 != 0) {
+  if (lineCount != 0) {
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
     R_Set3D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-    local_5 = param_1->depthTest != 0;
-    local_14 = 0;
-    for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-      ptVar1 = param_1 + local_c;
-      bVar2 = ptVar1->depthTest != 0;
-      if (local_5 != bVar2) {
-        local_14 = RB_EndDebugLines(local_14 / 2,param_3);
-        local_5 = bVar2;
+    depthTest = lines->depthTest != 0;
+    vertCount = 0;
+    for (lineIndex = 0; lineIndex < lineCount; lineIndex = lineIndex + 1) {
+      start = lines + lineIndex;
+      bVar1 = start->depthTest != 0;
+      if (depthTest != bVar1) {
+        vertCount = RB_EndDebugLines(vertCount / 2,verts);
+        depthTest = bVar1;
       }
-      local_14 = RB_AddDebugLine(ptVar1->start,ptVar1->end,ptVar1->color,local_5,local_14,0xaa5,
-                                 param_3);
+      vertCount = RB_AddDebugLine(start->start,start->end,start->color,depthTest,vertCount,0xaa5,
+                                  verts);
     }
-    RB_EndDebugLines(local_14 / 2,param_3);
+    RB_EndDebugLines(vertCount / 2,verts);
   }
   return;
 }
@@ -511,35 +521,35 @@ void __cdecl RB_DrawDebugLines(trDebugLine_t *param_1,int param_2,GfxPointVertex
 
 // 00AF0CC0  RB_DrawDebugStrings  (gfx_d3d/rb_debug.cpp:433)
 
-void __cdecl RB_DrawDebugStrings(trDebugString_t *param_1,int param_2)
+void __cdecl RB_DrawDebugStrings(trDebugString_t *strings,int stringCount)
 
 {
-  float local_24;
+  float xStep;
   float local_20;
   float local_1c;
-  float local_18;
+  float yStep;
   float local_14;
   float local_10;
-  int local_c;
-  ulong local_8;
+  int stringIndex;
+  GfxColor color;
   
-  if (param_2 != 0) {
+  if (stringCount != 0) {
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
     R_Set3D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-    for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-      R_ConvertColorToBytes(param_1[local_c].color,(uchar *)&local_8);
-      local_1c = -param_1[local_c].scale;
-      local_24 = local_1c * gfxCmdBufSourceState.viewParms.axis[1][0];
+    for (stringIndex = 0; stringIndex < stringCount; stringIndex = stringIndex + 1) {
+      R_ConvertColorToBytes(strings[stringIndex].color,color.array);
+      local_1c = -strings[stringIndex].scale;
+      xStep = local_1c * gfxCmdBufSourceState.viewParms.axis[1][0];
       local_20 = local_1c * gfxCmdBufSourceState.viewParms.axis[1][1];
       local_1c = local_1c * gfxCmdBufSourceState.viewParms.axis[1][2];
-      local_10 = -param_1[local_c].scale;
-      local_18 = local_10 * gfxCmdBufSourceState.viewParms.axis[2][0];
+      local_10 = -strings[stringIndex].scale;
+      yStep = local_10 * gfxCmdBufSourceState.viewParms.axis[2][0];
       local_14 = local_10 * gfxCmdBufSourceState.viewParms.axis[2][1];
       local_10 = local_10 * gfxCmdBufSourceState.viewParms.axis[2][2];
-      RB_DrawTextInSpace(param_1[local_c].text,backEnd.debugFont,param_1[local_c].xyz,&local_24,
-                         &local_18,local_8);
+      RB_DrawTextInSpace(strings[stringIndex].text,backEnd.debugFont,strings[stringIndex].xyz,&xStep
+                         ,&yStep,color.packed);
     }
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
@@ -551,44 +561,46 @@ void __cdecl RB_DrawDebugStrings(trDebugString_t *param_1,int param_2)
 
 // 00AF0E20  RB_AddPlumeStrings  (gfx_d3d/rb_debug.cpp:456)
 
-void __cdecl RB_AddPlumeStrings(GfxViewParms *param_1)
+void __cdecl RB_AddPlumeStrings(GfxViewParms *viewParms)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
-  double dVar4;
+  char *string;
+  int iVar2;
+  double dVar3;
   float (*in_stack_ffffffdc) [3];
   GfxDebugPlume *in_stack_ffffffe0;
-  float local_18;
+  int dt;
+  float org;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int plumeIndex;
+  float wiggle;
   
-  for (local_c = 0; local_c < (backEndData->debugGlobals).plumeCount; local_c = local_c + 1) {
-    iVar3 = gfxCmdBufSourceState.sceneDef.time -
-            (backEndData->debugGlobals).plumes[local_c].startTime;
-    if ((-1 < iVar3) && (iVar3 <= (backEndData->debugGlobals).plumes[local_c].duration)) {
-      (backEndData->debugGlobals).plumes[local_c].color[3] = 1.0;
-      iVar1 = (backEndData->debugGlobals).plumes[local_c].duration;
-      if (iVar3 * 2 - iVar1 != 0 && iVar1 <= iVar3 * 2) {
-        (backEndData->debugGlobals).plumes[local_c].color[3] =
-             2.0 - ((float)iVar3 * 2.0) /
-                   (float)(backEndData->debugGlobals).plumes[local_c].duration;
+  for (plumeIndex = 0; plumeIndex < (backEndData->debugGlobals).plumeCount;
+      plumeIndex = plumeIndex + 1) {
+    iVar2 = gfxCmdBufSourceState.sceneDef.time -
+            (backEndData->debugGlobals).plumes[plumeIndex].startTime;
+    if ((-1 < iVar2) && (iVar2 <= (backEndData->debugGlobals).plumes[plumeIndex].duration)) {
+      (backEndData->debugGlobals).plumes[plumeIndex].color[3] = 1.0;
+      iVar1 = (backEndData->debugGlobals).plumes[plumeIndex].duration;
+      if (iVar2 * 2 - iVar1 != 0 && iVar1 <= iVar2 * 2) {
+        (backEndData->debugGlobals).plumes[plumeIndex].color[3] =
+             2.0 - ((float)iVar2 * 2.0) /
+                   (float)(backEndData->debugGlobals).plumes[plumeIndex].duration;
       }
-      dVar4 = (double)((float)iVar3 * 0.012566371 + (float)local_c);
+      dVar3 = (double)((float)iVar2 * 0.012566371 + (float)plumeIndex);
       __libm_sse2_sin((double)CONCAT44(in_stack_ffffffe0,in_stack_ffffffdc));
-      local_8 = (float)dVar4 * 4.0;
-      in_stack_ffffffdc = param_1->axis + 1;
-      in_stack_ffffffe0 = (backEndData->debugGlobals).plumes + local_c;
-      local_18 = local_8 * (*in_stack_ffffffdc)[0] + in_stack_ffffffe0->origin[0];
-      local_14 = local_8 * param_1->axis[1][1] + in_stack_ffffffe0->origin[1];
-      local_10 = (float)iVar3 * 0.064 + local_8 * param_1->axis[1][2] + in_stack_ffffffe0->origin[2]
-      ;
-      pcVar2 = va("%i");
-      R_AddDebugString(&backEndData->debugGlobals,&local_18,
-                       (backEndData->debugGlobals).plumes[local_c].color,0.5,pcVar2);
+      wiggle = (float)dVar3 * 4.0;
+      in_stack_ffffffdc = viewParms->axis + 1;
+      in_stack_ffffffe0 = (backEndData->debugGlobals).plumes + plumeIndex;
+      org = wiggle * (*in_stack_ffffffdc)[0] + in_stack_ffffffe0->origin[0];
+      local_14 = wiggle * viewParms->axis[1][1] + in_stack_ffffffe0->origin[1];
+      local_10 = (float)iVar2 * 0.064 +
+                 wiggle * viewParms->axis[1][2] + in_stack_ffffffe0->origin[2];
+      string = va("%i");
+      R_AddDebugString(&backEndData->debugGlobals,&org,
+                       (backEndData->debugGlobals).plumes[plumeIndex].color,0.5,string);
     }
   }
   return;
@@ -597,10 +609,10 @@ void __cdecl RB_AddPlumeStrings(GfxViewParms *param_1)
 
 // 00AEF5B0  RB_SetDebugBrushesAndPatchesCallback  (gfx_d3d/rb_debug.cpp:486)
 
-void __cdecl RB_SetDebugBrushesAndPatchesCallback(_func___cdecl_void *param_1)
+void __cdecl RB_SetDebugBrushesAndPatchesCallback(_func___cdecl_void *callback)
 
 {
-  s_DebugBrushesAndPatchesCallback = param_1;
+  s_DebugBrushesAndPatchesCallback = callback;
   return;
 }
 
@@ -633,13 +645,13 @@ void __cdecl RB_DrawDebugBrushesAndPatches(void)
 
 // 00AEF5C0  RB_DrawDebug  (gfx_d3d/rb_debug.cpp:500)
 
-void __cdecl RB_DrawDebug(GfxViewParms *param_1)
+void __cdecl RB_DrawDebug(GfxViewParms *viewParms)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxViewParms *)0x0) {
+  if (viewParms == (GfxViewParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_debug.cpp",0x1f5,0,"%s"
                             );
     if (!bVar2) {
@@ -648,7 +660,7 @@ void __cdecl RB_DrawDebug(GfxViewParms *param_1)
       return;
     }
   }
-  RB_AddPlumeStrings(param_1);
+  RB_AddPlumeStrings(viewParms);
   RB_DrawDebugBrushesAndPatches();
   RB_DrawDebugPolys();
   RB_DrawDebugSpheres((backEndData->debugGlobals).spheres,(backEndData->debugGlobals).sphereCount);
@@ -672,66 +684,67 @@ void __cdecl RB_DrawDebug(GfxViewParms *param_1)
 
 // 00AF1090  RB_ApplySunLight  (gfx_d3d/rb_debug.cpp:527)
 
-void __cdecl RB_ApplySunLight(float (*param_1) [3],float *param_2,float *param_3)
+void __cdecl RB_ApplySunLight(float (*verts) [3],float *color,float *out_color)
 
 {
   float fVar1;
-  float local_48;
+  float normal;
   float local_44;
   float local_40;
-  float local_3c;
+  float triPos;
   float local_38;
   float local_34;
-  float local_30;
-  float local_28;
+  float intensity;
+  float minInt;
+  float v01;
   float local_24;
   float local_20;
-  float local_1c;
+  float v02;
   float local_18;
   float local_14;
-  float local_10;
+  float lightDirUnit;
   float local_c;
   float local_8;
   
-  *param_3 = *param_2;
-  param_3[1] = param_2[1];
-  param_3[2] = param_2[2];
-  param_3[3] = param_2[3];
-  local_28 = param_1[1][0] - (*param_1)[0];
-  local_24 = param_1[1][1] - (*param_1)[1];
-  local_20 = param_1[1][2] - (*param_1)[2];
-  local_1c = param_1[2][0] - (*param_1)[0];
-  local_18 = param_1[2][1] - (*param_1)[1];
-  local_14 = param_1[2][2] - (*param_1)[2];
-  Vec3Cross(&local_28,&local_1c,&local_48);
-  Vec3Normalize(&local_48);
-  local_3c = ((*param_1)[0] + param_1[1][0] + param_1[2][0]) * 0.33333334;
-  local_38 = ((*param_1)[1] + param_1[1][1] + param_1[2][1]) * 0.33333334;
-  local_34 = ((*param_1)[2] + param_1[1][2] + param_1[2][2]) * 0.33333334;
-  local_10 = (frontEndDataOut->sunLight).dir[0];
+  *out_color = *color;
+  out_color[1] = color[1];
+  out_color[2] = color[2];
+  out_color[3] = color[3];
+  v01 = verts[1][0] - (*verts)[0];
+  local_24 = verts[1][1] - (*verts)[1];
+  local_20 = verts[1][2] - (*verts)[2];
+  v02 = verts[2][0] - (*verts)[0];
+  local_18 = verts[2][1] - (*verts)[1];
+  local_14 = verts[2][2] - (*verts)[2];
+  Vec3Cross(&v01,&v02,&normal);
+  Vec3Normalize(&normal);
+  triPos = ((*verts)[0] + verts[1][0] + verts[2][0]) * 0.33333334;
+  local_38 = ((*verts)[1] + verts[1][1] + verts[2][1]) * 0.33333334;
+  local_34 = ((*verts)[2] + verts[1][2] + verts[2][2]) * 0.33333334;
+  lightDirUnit = (frontEndDataOut->sunLight).dir[0];
   local_c = (frontEndDataOut->sunLight).dir[1];
   local_8 = (frontEndDataOut->sunLight).dir[2];
-  Vec3Normalize(&local_10);
-  local_30 = local_48 * local_10 + local_44 * local_c + local_40 * local_8;
-  if (local_30 < 0.2) {
-    local_30 = 0.2;
+  Vec3Normalize(&lightDirUnit);
+  intensity = normal * lightDirUnit + local_44 * local_c + local_40 * local_8;
+  if (intensity < 0.2) {
+    intensity = 0.2;
   }
-  fVar1 = (local_30 - 1.0) * 0.75 + 1.0;
-  *param_3 = fVar1 * *param_3;
-  param_3[1] = fVar1 * param_3[1];
-  param_3[2] = fVar1 * param_3[2];
+  fVar1 = (intensity - 1.0) * 0.75 + 1.0;
+  *out_color = fVar1 * *out_color;
+  out_color[1] = fVar1 * out_color[1];
+  out_color[2] = fVar1 * out_color[2];
   return;
 }
 
 
 // 00AF1320  RB_BeginCollisionPolygons  (gfx_d3d/rb_debug.cpp:554)
 
-void __cdecl RB_BeginCollisionPolygons(bool param_1,bool param_2)
+void __cdecl RB_BeginCollisionPolygons(bool faceDepthTest,bool faceBlend)
 
 {
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;
-    material = RB_DebugPolyGetMaterialByDepthTest(param_1,param_2);
+    material = RB_DebugPolyGetMaterialByDepthTest(faceDepthTest,faceBlend);
   }
   RB_BeginSurface(material,'\x04');
   R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_DEBUG);
@@ -742,35 +755,37 @@ void __cdecl RB_BeginCollisionPolygons(bool param_1,bool param_2)
 // 00AF1380  RB_DrawCollisionPolygon  (gfx_d3d/rb_debug.cpp:561)
 
 void __cdecl
-RB_DrawCollisionPolygon(int param_1,float (*param_2) [3],float *param_3,bool param_4,int param_5)
+RB_DrawCollisionPolygon
+          (int vertCount,float (*verts) [3],float *faceColor,bool faceDepthTest,int debug_partition)
 
 {
-  float local_18;
+  int tessVertIndex;
+  float litColor;
   float local_14;
   float local_10;
-  int local_c;
-  GfxColor local_8;
+  int vertIndex;
+  GfxColor color;
   
-  RB_CheckTessOverflow(param_1,(param_1 + -2) * 3);
-  if ((param_1 == 3) && (param_5 == 0)) {
-    RB_ApplySunLight(param_2,param_3,&local_18);
+  RB_CheckTessOverflow(vertCount,(vertCount + -2) * 3);
+  if ((vertCount == 3) && (debug_partition == 0)) {
+    RB_ApplySunLight(verts,faceColor,&litColor);
   }
   else {
-    local_18 = *param_3;
-    local_14 = param_3[1];
-    local_10 = param_3[2];
+    litColor = *faceColor;
+    local_14 = faceColor[1];
+    local_10 = faceColor[2];
   }
-  R_ConvertColorToBytes(&local_18,local_8.array);
-  for (local_c = 0; local_c < param_1; local_c = local_c + 1) {
-    RB_SetPolyVert(param_2[local_c],local_8,tess.vertexCount + local_c);
+  R_ConvertColorToBytes(&litColor,color.array);
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+    RB_SetPolyVert(verts[vertIndex],color,tess.vertexCount + vertIndex);
   }
-  for (local_c = 2; local_c < param_1; local_c = local_c + 1) {
+  for (vertIndex = 2; vertIndex < vertCount; vertIndex = vertIndex + 1) {
     tess.indices[tess.indexCount] = (ushort)tess.vertexCount;
-    tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)local_c;
-    tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)local_c;
+    tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)vertIndex;
+    tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)vertIndex;
     tess.indexCount = tess.indexCount + 3;
   }
-  tess.vertexCount = tess.vertexCount + param_1;
+  tess.vertexCount = tess.vertexCount + vertCount;
   return;
 }
 

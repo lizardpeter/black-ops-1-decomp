@@ -2,47 +2,47 @@
 
 // 00C195D4  _forcdecpt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:133)
 
-void __cdecl _forcdecpt(char *param_1)
+void __cdecl _forcdecpt(char *buffer)
 
 {
-  _forcdecpt_l(param_1,(localeinfo_struct *)0x0);
+  _forcdecpt_l(buffer,(localeinfo_struct *)0x0);
   return;
 }
 
 
 // 00C19448  _forcdecpt_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:138)
 
-void __cdecl _forcdecpt_l(char *param_1,localeinfo_struct *param_2)
+void __cdecl _forcdecpt_l(char *buffer,localeinfo_struct *_Locale)
 
 {
   byte bVar1;
   byte bVar2;
   int iVar3;
   bool bVar4;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  iVar3 = tolower((int)*param_1);
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,_Locale);
+  iVar3 = tolower((int)*buffer);
   bVar4 = iVar3 == 0x65;
   while (!bVar4) {
-    param_1 = param_1 + 1;
-    iVar3 = isdigit((uint)(byte)*param_1);
+    buffer = buffer + 1;
+    iVar3 = isdigit((uint)(byte)*buffer);
     bVar4 = iVar3 == 0;
   }
-  iVar3 = tolower((int)*param_1);
+  iVar3 = tolower((int)*buffer);
   if (iVar3 == 0x78) {
-    param_1 = param_1 + 2;
+    buffer = buffer + 2;
   }
-  bVar2 = *param_1;
-  *param_1 = *(local_14.localeinfo.locinfo)->lconv->decimal_point;
+  bVar2 = *buffer;
+  *buffer = *(_loc_update.localeinfo.locinfo)->lconv->decimal_point;
   do {
-    param_1 = param_1 + 1;
-    bVar1 = *param_1;
-    *param_1 = bVar2;
+    buffer = buffer + 1;
+    bVar1 = *buffer;
+    *buffer = bVar2;
     bVar2 = bVar1;
-  } while (*param_1 != 0);
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  } while (*buffer != 0);
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return;
 }
@@ -50,56 +50,56 @@ void __cdecl _forcdecpt_l(char *param_1,localeinfo_struct *param_2)
 
 // 00C195E7  _cropzeros  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:199)
 
-void __cdecl _cropzeros(char *param_1)
+void __cdecl _cropzeros(char *buf)
 
 {
-  _cropzeros_l(param_1,(localeinfo_struct *)0x0);
+  _cropzeros_l(buf,(localeinfo_struct *)0x0);
   return;
 }
 
 
 // 00C194BB  _cropzeros_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:204)
 
-void __cdecl _cropzeros_l(char *param_1,localeinfo_struct *param_2)
+void __cdecl _cropzeros_l(char *buf,localeinfo_struct *_Locale)
 
 {
   char *pcVar1;
   char cVar3;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   char *pcVar2;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  cVar3 = *param_1;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,_Locale);
+  cVar3 = *buf;
   if (cVar3 != '\0') {
     do {
-      if (cVar3 == *(local_14.localeinfo.locinfo)->lconv->decimal_point) break;
-      param_1 = param_1 + 1;
-      cVar3 = *param_1;
+      if (cVar3 == *(_loc_update.localeinfo.locinfo)->lconv->decimal_point) break;
+      buf = buf + 1;
+      cVar3 = *buf;
     } while (cVar3 != '\0');
   }
-  if (*param_1 != '\0') {
+  if (*buf != '\0') {
     do {
-      param_1 = param_1 + 1;
-      cVar3 = *param_1;
-      pcVar1 = param_1;
+      buf = buf + 1;
+      cVar3 = *buf;
+      pcVar1 = buf;
       if ((cVar3 == '\0') || (cVar3 == 'e')) break;
     } while (cVar3 != 'E');
     do {
       pcVar2 = pcVar1;
       pcVar1 = pcVar2 + -1;
     } while (*pcVar1 == '0');
-    if (*pcVar1 == *(local_14.localeinfo.locinfo)->lconv->decimal_point) {
+    if (*pcVar1 == *(_loc_update.localeinfo.locinfo)->lconv->decimal_point) {
       pcVar1 = pcVar2 + -2;
     }
     do {
-      cVar3 = *param_1;
+      cVar3 = *buf;
       pcVar1 = pcVar1 + 1;
-      param_1 = param_1 + 1;
+      buf = buf + 1;
       *pcVar1 = cVar3;
     } while (cVar3 != '\0');
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return;
 }
@@ -107,12 +107,12 @@ void __cdecl _cropzeros_l(char *param_1,localeinfo_struct *param_2)
 
 // 00C1953D  _positive  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:229)
 
-int __cdecl _positive(double *param_1)
+int __cdecl _positive(double *arg)
 
 {
   double dVar1;
   
-  dVar1 = *param_1;
+  dVar1 = *arg;
   if (!NAN(dVar1) && 0.0 < dVar1 != (dVar1 == 0.0)) {
     return 1;
   }
@@ -122,19 +122,19 @@ int __cdecl _positive(double *param_1)
 
 // 00C19559  _fassign_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:235)
 
-void __cdecl _fassign_l(int param_1,char *param_2,char *param_3,localeinfo_struct *param_4)
+void __cdecl _fassign_l(int flag,char *argument,char *number,localeinfo_struct *plocinfo)
 
 {
-  _CRT_DOUBLE local_c;
+  _CRT_DOUBLE doubletemp;
   
-  if (param_1 == 0) {
-    _atoflt_l((_CRT_FLOAT *)&param_1,param_3,param_4);
-    *(int *)param_2 = param_1;
+  if (flag == 0) {
+    _atoflt_l((_CRT_FLOAT *)&flag,number,plocinfo);
+    *(int *)argument = flag;
   }
   else {
-    _atodbl_l(&local_c,param_3,param_4);
-    *(undefined4 *)param_2 = local_c.x._0_4_;
-    *(undefined4 *)(param_2 + 4) = local_c.x._4_4_;
+    _atodbl_l(&doubletemp,number,plocinfo);
+    *(undefined4 *)argument = doubletemp.x._0_4_;
+    *(undefined4 *)(argument + 4) = doubletemp.x._4_4_;
   }
   return;
 }
@@ -142,10 +142,10 @@ void __cdecl _fassign_l(int param_1,char *param_2,char *param_3,localeinfo_struc
 
 // 00C1959B  _fassign  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:274)
 
-void __cdecl _fassign(int param_1,char *param_2,char *param_3)
+void __cdecl _fassign(int flag,char *argument,char *number)
 
 {
-  _fassign_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+  _fassign_l(flag,argument,number,(localeinfo_struct *)0x0);
   return;
 }
 
@@ -153,7 +153,7 @@ void __cdecl _fassign(int param_1,char *param_2,char *param_3)
 // 00C195FA  _cftoe2_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:318)
 
 int __cdecl
-_cftoe2_l(char *param_1,uint param_2,int param_3,int param_4,_strflt *param_5,char param_6,
+_cftoe2_l(char *sizeInBytes,uint ndec,int caps,int pflt,_strflt *g_fmt,char plocinfo,
          localeinfo_struct *param_7)
 
 {
@@ -167,49 +167,49 @@ _cftoe2_l(char *param_1,uint param_2,int param_3,int param_4,_strflt *param_5,ch
   char *unaff_EDI;
   undefined3 in_stack_00000019;
   int iVar6;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,_param_6);
-  if ((in_EAX == (char *)0x0) || (param_1 == (char *)0x0)) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,_plocinfo);
+  if ((in_EAX == (char *)0x0) || (sizeInBytes == (char *)0x0)) {
     piVar1 = _errno();
     iVar6 = 0x16;
   }
   else {
-    uVar2 = param_2;
-    if ((int)param_2 < 1) {
+    uVar2 = ndec;
+    if ((int)ndec < 1) {
       uVar2 = 0;
     }
-    if ((char *)(uVar2 + 9) < param_1) {
-      if ((char)param_5 != '\0') {
+    if ((char *)(uVar2 + 9) < sizeInBytes) {
+      if ((char)g_fmt != '\0') {
         _shift(unaff_EDI,unaff_ESI);
       }
       pcVar4 = in_EAX;
-      if (*(int *)param_4 == 0x2d) {
+      if (*(int *)pflt == 0x2d) {
         *in_EAX = '-';
         pcVar4 = in_EAX + 1;
       }
       pcVar5 = pcVar4;
-      if (0 < (int)param_2) {
+      if (0 < (int)ndec) {
         pcVar5 = pcVar4 + 1;
         *pcVar4 = *pcVar5;
-        *pcVar5 = *(local_14.localeinfo.locinfo)->lconv->decimal_point;
+        *pcVar5 = *(_loc_update.localeinfo.locinfo)->lconv->decimal_point;
       }
-      pcVar5 = pcVar5 + ((char)param_5 == '\0') + param_2;
-      if (param_1 == (char *)0xffffffff) {
+      pcVar5 = pcVar5 + ((char)g_fmt == '\0') + ndec;
+      if (sizeInBytes == (char *)0xffffffff) {
         pcVar4 = (char *)0xffffffff;
       }
       else {
-        pcVar4 = param_1 + ((int)in_EAX - (int)pcVar5);
+        pcVar4 = sizeInBytes + ((int)in_EAX - (int)pcVar5);
       }
       iVar6 = strcpy_s(pcVar5,(uint)pcVar4,"e+000");
       if (iVar6 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      if (param_3 != 0) {
+      if (caps != 0) {
         *pcVar5 = 'E';
       }
-      if (**(char **)(param_4 + 0xc) != '0') {
-        iVar6 = *(int *)(param_4 + 4) + -1;
+      if (**(char **)(pflt + 0xc) != '0') {
+        iVar6 = *(int *)(pflt + 4) + -1;
         if (iVar6 < 0) {
           iVar6 = -iVar6;
           pcVar5[1] = '-';
@@ -229,8 +229,8 @@ _cftoe2_l(char *param_1,uint param_2,int param_3,int param_4,_strflt *param_5,ch
       if ((((byte)_outputformat & 1) != 0) && (pcVar5[2] == '0')) {
         memmove((uchar *)(pcVar5 + 2),(uchar *)(pcVar5 + 3),3);
       }
-      if (local_14.updated != false) {
-        (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 0;
     }
@@ -239,8 +239,8 @@ _cftoe2_l(char *param_1,uint param_2,int param_3,int param_4,_strflt *param_5,ch
   }
   *piVar1 = iVar6;
   _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return iVar6;
 }
@@ -251,55 +251,54 @@ _cftoe2_l(char *param_1,uint param_2,int param_3,int param_4,_strflt *param_5,ch
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-_cftoe_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,
-        localeinfo_struct *param_6)
+_cftoe_l(double *pvalue,char *buf,uint sizeInBytes,int ndec,int caps,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
-  uint uVar2;
-  int iVar3;
+  uint sizeInBytes_00;
+  int iVar2;
   localeinfo_struct *unaff_EDI;
-  _strflt local_30;
-  char local_20 [24];
+  _strflt retstrflt;
+  char resstr [24];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = 0x16;
-  _fltout2((_CRT_DOUBLE)*param_1,&local_30,local_20,0x16);
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  iVar2 = 0x16;
+  _fltout2((_CRT_DOUBLE)*pvalue,&retstrflt,resstr,0x16);
+  if ((buf == (char *)0x0) || (sizeInBytes == 0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
-    if (param_3 == 0xffffffff) {
-      uVar2 = 0xffffffff;
+    if (sizeInBytes == 0xffffffff) {
+      sizeInBytes_00 = 0xffffffff;
     }
     else {
-      uVar2 = (param_3 - (local_30.sign == 0x2d)) - (uint)(0 < param_4);
+      sizeInBytes_00 = (sizeInBytes - (retstrflt.sign == 0x2d)) - (uint)(0 < ndec);
     }
-    iVar3 = _fptostr(param_2 + (uint)(0 < param_4) + (uint)(local_30.sign == 0x2d),uVar2,param_4 + 1
-                     ,&local_30);
-    if (iVar3 == 0) {
-      iVar3 = _cftoe2_l((char *)param_3,param_4,param_5,(int)&local_30,(_strflt *)0x0,(char)param_6,
+    iVar2 = _fptostr(buf + (uint)(0 < ndec) + (uint)(retstrflt.sign == 0x2d),sizeInBytes_00,ndec + 1
+                     ,&retstrflt);
+    if (iVar2 == 0) {
+      iVar2 = _cftoe2_l((char *)sizeInBytes,ndec,caps,(int)&retstrflt,(_strflt *)0x0,(char)plocinfo,
                         unaff_EDI);
     }
     else {
-      *param_2 = '\0';
+      *buf = '\0';
     }
   }
-  return iVar3;
+  return iVar2;
 }
 
 
 // 00C19839  _cftoe  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:489)
 
-int __cdecl _cftoe(double *param_1,char *param_2,uint param_3,int param_4,int param_5)
+int __cdecl _cftoe(double *pvalue,char *buf,uint sizeInBytes,int ndec,int caps)
 
 {
   int iVar1;
   
-  iVar1 = _cftoe_l(param_1,param_2,param_3,param_4,param_5,(localeinfo_struct *)0x0);
+  iVar1 = _cftoe_l(pvalue,buf,sizeInBytes,ndec,caps,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
@@ -307,8 +306,7 @@ int __cdecl _cftoe(double *param_1,char *param_2,uint param_3,int param_4,int pa
 // 00C19859  _cftoa_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:531)
 
 int __cdecl
-_cftoa_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,
-        localeinfo_struct *param_6)
+_cftoa_l(double *pvalue,char *buf,uint sizeInBytes,int ndec,int caps,localeinfo_struct *plocinfo)
 
 {
   char extraout_AL;
@@ -326,123 +324,123 @@ _cftoa_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,
   uint extraout_ECX_00;
   uint extraout_ECX_01;
   short sVar5;
+  uchar *dst;
   uchar *puVar6;
   uchar *puVar7;
-  uchar *puVar8;
-  bool bVar9;
-  int iVar10;
-  _LocaleUpdate local_28;
-  uint local_18;
-  uint local_10;
+  bool bVar8;
+  int iVar9;
+  _LocaleUpdate _loc_update;
+  uint debias;
+  uint mask;
   uint local_c;
-  int local_8;
+  short maskpos;
   
-  local_18 = 0x3ff;
-  local_8 = 0x30;
-  _LocaleUpdate::_LocaleUpdate(&local_28,param_6);
-  if (param_4 < 0) {
-    param_4 = 0;
+  debias = 0x3ff;
+  _maskpos = 0x30;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (ndec < 0) {
+    ndec = 0;
   }
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  if ((buf == (char *)0x0) || (sizeInBytes == 0)) {
     piVar2 = _errno();
-    iVar10 = 0x16;
+    iVar9 = 0x16;
 LAB_00c19894:
-    *piVar2 = iVar10;
+    *piVar2 = iVar9;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_28.updated != false) {
-      (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
-    return iVar10;
+    return iVar9;
   }
-  *param_2 = '\0';
-  if (param_3 <= param_4 + 0xbU) {
+  *buf = '\0';
+  if (sizeInBytes <= ndec + 0xbU) {
     piVar2 = _errno();
-    iVar10 = 0x22;
+    iVar9 = 0x22;
     goto LAB_00c19894;
   }
-  local_10 = *(uint *)param_1;
-  if ((*(uint *)((int)param_1 + 4) >> 0x14 & 0x7ff) == 0x7ff) {
-    if (param_3 == 0xffffffff) {
+  mask = *(uint *)pvalue;
+  if ((*(uint *)((int)pvalue + 4) >> 0x14 & 0x7ff) == 0x7ff) {
+    if (sizeInBytes == 0xffffffff) {
       uVar3 = 0xffffffff;
     }
     else {
-      uVar3 = param_3 - 2;
+      uVar3 = sizeInBytes - 2;
     }
-    iVar10 = _cftoe(param_1,param_2 + 2,uVar3,param_4,0);
-    if (iVar10 != 0) {
-      *param_2 = '\0';
-      if (local_28.updated == false) {
-        return iVar10;
+    iVar9 = _cftoe(pvalue,buf + 2,uVar3,ndec,0);
+    if (iVar9 != 0) {
+      *buf = '\0';
+      if (_loc_update.updated == false) {
+        return iVar9;
       }
-      (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
-      return iVar10;
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
+      return iVar9;
     }
-    if (param_2[2] == '-') {
-      *param_2 = '-';
-      param_2 = param_2 + 1;
+    if (buf[2] == '-') {
+      *buf = '-';
+      buf = buf + 1;
     }
-    *param_2 = '0';
-    param_2[1] = ((param_5 == 0) - 1U & 0xe0) + 0x78;
-    strrchr((uchar *)(param_2 + 2),'e');
+    *buf = '0';
+    buf[1] = ((caps == 0) - 1U & 0xe0) + 0x78;
+    strrchr((uchar *)(buf + 2),'e');
     if (extraout_EAX != (char *)0x0) {
-      *extraout_EAX = ((param_5 == 0) - 1U & 0xe0) + 0x70;
+      *extraout_EAX = ((caps == 0) - 1U & 0xe0) + 0x70;
       extraout_EAX[3] = '\0';
     }
     goto LAB_00c19bb8;
   }
-  if ((*(uint *)((int)param_1 + 4) & 0x80000000) != 0) {
-    *param_2 = '-';
-    param_2 = param_2 + 1;
+  if ((*(uint *)((int)pvalue + 4) & 0x80000000) != 0) {
+    *buf = '-';
+    buf = buf + 1;
   }
-  *param_2 = '0';
-  param_2[1] = ((param_5 == 0) - 1U & 0xe0) + 0x78;
-  sVar5 = (-(ushort)(param_5 != 0) & 0xffe0) + 0x27;
-  if (((ulonglong)*param_1 & 0x7ff0000000000000) == 0) {
-    param_2[2] = '0';
-    if (*(int *)param_1 == 0 && ((ulonglong)*param_1 & 0xfffff00000000) == 0) {
-      local_18 = 0;
+  *buf = '0';
+  buf[1] = ((caps == 0) - 1U & 0xe0) + 0x78;
+  sVar5 = (-(ushort)(caps != 0) & 0xffe0) + 0x27;
+  if (((ulonglong)*pvalue & 0x7ff0000000000000) == 0) {
+    buf[2] = '0';
+    if (*(int *)pvalue == 0 && ((ulonglong)*pvalue & 0xfffff00000000) == 0) {
+      debias = 0;
     }
     else {
-      local_18 = 0x3fe;
+      debias = 0x3fe;
     }
   }
   else {
-    param_2[2] = '1';
+    buf[2] = '1';
   }
-  puVar8 = (uchar *)(param_2 + 3);
-  puVar6 = (uchar *)(param_2 + 4);
-  if (param_4 == 0) {
-    *puVar8 = '\0';
+  puVar7 = (uchar *)(buf + 3);
+  dst = (uchar *)(buf + 4);
+  if (ndec == 0) {
+    *puVar7 = '\0';
   }
   else {
-    *puVar8 = *(local_28.localeinfo.locinfo)->lconv->decimal_point;
+    *puVar7 = *(_loc_update.localeinfo.locinfo)->lconv->decimal_point;
   }
-  if ((((ulonglong)*param_1 & 0xfffff00000000) != 0) || (local_c = 0, *(int *)param_1 != 0)) {
-    local_10 = 0;
+  if ((((ulonglong)*pvalue & 0xfffff00000000) != 0) || (local_c = 0, *(int *)pvalue != 0)) {
+    mask = 0;
     local_c = 0xf0000;
     do {
-      if (param_4 < 1) break;
+      if (ndec < 1) break;
       _aullshr();
       uVar1 = extraout_AX + 0x30;
       if (0x39 < uVar1) {
         uVar1 = uVar1 + sVar5;
       }
-      local_8 = local_8 + -4;
-      *puVar6 = (uchar)uVar1;
-      local_10 = local_10 >> 4 | local_c << 0x1c;
+      _maskpos = _maskpos + -4;
+      *dst = (uchar)uVar1;
+      mask = mask >> 4 | local_c << 0x1c;
       local_c = local_c >> 4;
-      puVar6 = puVar6 + 1;
-      param_4 = param_4 + -1;
-    } while (-1 < (short)local_8);
-    if ((-1 < (short)local_8) && (_aullshr(), puVar7 = puVar6, 8 < extraout_AX_00)) {
+      dst = dst + 1;
+      ndec = ndec + -1;
+    } while (-1 < maskpos);
+    if ((-1 < maskpos) && (_aullshr(), puVar6 = dst, 8 < extraout_AX_00)) {
       while( true ) {
-        puVar4 = puVar7 + -1;
+        puVar4 = puVar6 + -1;
         if ((*puVar4 != 'f') && (*puVar4 != 'F')) break;
         *puVar4 = '0';
-        puVar7 = puVar4;
+        puVar6 = puVar4;
       }
-      if (puVar4 == puVar8) {
-        puVar7[-2] = puVar7[-2] + '\x01';
+      if (puVar4 == puVar7) {
+        puVar6[-2] = puVar6[-2] + '\x01';
       }
       else if (*puVar4 == '9') {
         *puVar4 = (char)sVar5 + ':';
@@ -452,58 +450,58 @@ LAB_00c19894:
       }
     }
   }
-  if (0 < param_4) {
-    memset(puVar6,'0',param_4);
-    puVar6 = puVar6 + param_4;
+  if (0 < ndec) {
+    memset(dst,'0',ndec);
+    dst = dst + ndec;
   }
-  if (*puVar8 == '\0') {
-    puVar6 = puVar8;
+  if (*puVar7 == '\0') {
+    dst = puVar7;
   }
-  *puVar6 = ((param_5 == 0) - 1U & 0xe0) + 0x70;
+  *dst = ((caps == 0) - 1U & 0xe0) + 0x70;
   _aullshr();
-  uVar3 = (extraout_EAX_00 & 0x7ff) - local_18;
-  iVar10 = -(uint)((extraout_EAX_00 & 0x7ff) < local_18);
-  if (iVar10 < 0) {
-    puVar6[1] = '-';
-    bVar9 = uVar3 != 0;
+  uVar3 = (extraout_EAX_00 & 0x7ff) - debias;
+  iVar9 = -(uint)((extraout_EAX_00 & 0x7ff) < debias);
+  if (iVar9 < 0) {
+    dst[1] = '-';
+    bVar8 = uVar3 != 0;
     uVar3 = -uVar3;
-    iVar10 = -(iVar10 + (uint)bVar9);
+    iVar9 = -(iVar9 + (uint)bVar8);
   }
   else {
-    puVar6[1] = '+';
+    dst[1] = '+';
   }
-  puVar7 = puVar6 + 2;
-  *puVar7 = '0';
-  puVar8 = puVar7;
-  if ((iVar10 < 0) || ((iVar10 < 1 && (uVar3 < 1000)))) {
+  puVar6 = dst + 2;
+  *puVar6 = '0';
+  puVar7 = puVar6;
+  if ((iVar9 < 0) || ((iVar9 < 1 && (uVar3 < 1000)))) {
 LAB_00c19b67:
-    if ((-1 < iVar10) && ((0 < iVar10 || (99 < uVar3)))) goto LAB_00c19b72;
+    if ((-1 < iVar9) && ((0 < iVar9 || (99 < uVar3)))) goto LAB_00c19b72;
   }
   else {
     _alldvrm();
-    *puVar7 = extraout_AL + '0';
-    puVar8 = puVar6 + 3;
-    iVar10 = 0;
+    *puVar6 = extraout_AL + '0';
+    puVar7 = dst + 3;
+    iVar9 = 0;
     uVar3 = extraout_ECX;
-    if (puVar8 == puVar7) goto LAB_00c19b67;
+    if (puVar7 == puVar6) goto LAB_00c19b67;
 LAB_00c19b72:
     _alldvrm();
-    *puVar8 = extraout_AL_00 + '0';
-    puVar8 = puVar8 + 1;
-    iVar10 = 0;
+    *puVar7 = extraout_AL_00 + '0';
+    puVar7 = puVar7 + 1;
+    iVar9 = 0;
     uVar3 = extraout_ECX_00;
   }
-  if ((puVar8 != puVar7) || ((-1 < iVar10 && ((0 < iVar10 || (9 < uVar3)))))) {
+  if ((puVar7 != puVar6) || ((-1 < iVar9 && ((0 < iVar9 || (9 < uVar3)))))) {
     _alldvrm();
-    *puVar8 = extraout_AL_01 + '0';
-    puVar8 = puVar8 + 1;
+    *puVar7 = extraout_AL_01 + '0';
+    puVar7 = puVar7 + 1;
     uVar3 = extraout_ECX_01;
   }
-  *puVar8 = (char)uVar3 + '0';
-  puVar8[1] = '\0';
+  *puVar7 = (char)uVar3 + '0';
+  puVar7[1] = '\0';
 LAB_00c19bb8:
-  if (local_28.updated != false) {
-    (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return 0;
 }
@@ -512,7 +510,7 @@ LAB_00c19bb8:
 // 00C19BCC  _cftof2_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:762)
 
 int __cdecl
-_cftof2_l(char *param_1,uint param_2,int param_3,_strflt *param_4,char param_5,
+_cftof2_l(char *sizeInBytes,uint ndec,int g_fmt,_strflt *plocinfo,char param_5,
          localeinfo_struct *param_6)
 
 {
@@ -525,21 +523,21 @@ _cftof2_l(char *param_1,uint param_2,int param_3,_strflt *param_4,char param_5,
   int unaff_ESI;
   char *pcVar5;
   char *unaff_EDI;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
   iVar3 = in_EAX[1];
-  _LocaleUpdate::_LocaleUpdate(&local_14,(localeinfo_struct *)param_4);
-  if ((in_ECX == (undefined1 *)0x0) || (param_1 == (char *)0x0)) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,(localeinfo_struct *)plocinfo);
+  if ((in_ECX == (undefined1 *)0x0) || (sizeInBytes == (char *)0x0)) {
     piVar2 = _errno();
     iVar3 = 0x16;
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   else {
-    if (((char)param_3 != '\0') && (iVar3 - 1U == param_2)) {
+    if (((char)g_fmt != '\0') && (iVar3 - 1U == ndec)) {
       iVar1 = *in_EAX;
       in_ECX[(uint)(iVar1 == 0x2d) + (iVar3 - 1U)] = 0x30;
       (in_ECX + (uint)(iVar1 == 0x2d) + (iVar3 - 1U))[1] = 0;
@@ -556,20 +554,20 @@ _cftof2_l(char *param_1,uint param_2,int param_3,_strflt *param_4,char param_5,
     else {
       pcVar5 = in_ECX + in_EAX[1];
     }
-    if (0 < (int)param_2) {
+    if (0 < (int)ndec) {
       _shift(unaff_EDI,unaff_ESI);
-      *pcVar5 = *(local_14.localeinfo.locinfo)->lconv->decimal_point;
+      *pcVar5 = *(_loc_update.localeinfo.locinfo)->lconv->decimal_point;
       if (in_EAX[1] < 0) {
         uVar4 = -in_EAX[1];
-        if (((char)param_3 != '\0') || ((int)uVar4 <= (int)param_2)) {
-          param_2 = uVar4;
+        if (((char)g_fmt != '\0') || ((int)uVar4 <= (int)ndec)) {
+          ndec = uVar4;
         }
         _shift(unaff_EDI,unaff_ESI);
-        memset((uchar *)(pcVar5 + 1),'0',param_2);
+        memset((uchar *)(pcVar5 + 1),'0',ndec);
       }
     }
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar3 = 0;
   }
@@ -581,43 +579,43 @@ _cftof2_l(char *param_1,uint param_2,int param_3,_strflt *param_4,char param_5,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl
-_cftof_l(double *param_1,char *param_2,uint param_3,int param_4,localeinfo_struct *param_5)
+int __cdecl _cftof_l(double *pvalue,char *buf,uint sizeInBytes,int ndec,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
-  uint uVar2;
-  int iVar3;
+  uint sizeInBytes_00;
+  int iVar2;
   localeinfo_struct *unaff_ESI;
   char unaff_DI;
-  _strflt local_30;
-  char local_20 [24];
+  _strflt retstrflt;
+  char resstr [24];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = 0x16;
-  _fltout2((_CRT_DOUBLE)*param_1,&local_30,local_20,0x16);
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  iVar2 = 0x16;
+  _fltout2((_CRT_DOUBLE)*pvalue,&retstrflt,resstr,0x16);
+  if ((buf == (char *)0x0) || (sizeInBytes == 0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
-    if (param_3 == 0xffffffff) {
-      uVar2 = 0xffffffff;
+    if (sizeInBytes == 0xffffffff) {
+      sizeInBytes_00 = 0xffffffff;
     }
     else {
-      uVar2 = param_3 - (local_30.sign == 0x2d);
+      sizeInBytes_00 = sizeInBytes - (retstrflt.sign == 0x2d);
     }
-    iVar3 = _fptostr(param_2 + (local_30.sign == 0x2d),uVar2,local_30.decpt + param_4,&local_30);
-    if (iVar3 == 0) {
-      iVar3 = _cftof2_l((char *)param_3,param_4,0,(_strflt *)param_5,unaff_DI,unaff_ESI);
+    iVar2 = _fptostr(buf + (retstrflt.sign == 0x2d),sizeInBytes_00,retstrflt.decpt + ndec,&retstrflt
+                    );
+    if (iVar2 == 0) {
+      iVar2 = _cftof2_l((char *)sizeInBytes,ndec,0,(_strflt *)plocinfo,unaff_DI,unaff_ESI);
     }
     else {
-      *param_2 = '\0';
+      *buf = '\0';
     }
   }
-  return iVar3;
+  return iVar2;
 }
 
 
@@ -626,59 +624,58 @@ _cftof_l(double *param_1,char *param_2,uint param_3,int param_4,localeinfo_struc
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-_cftog_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,
-        localeinfo_struct *param_6)
+_cftog_l(double *pvalue,char *buf,uint sizeInBytes,int ndec,int caps,localeinfo_struct *plocinfo)
 
 {
   char *pcVar1;
   int *piVar2;
   int iVar3;
-  uint uVar4;
+  uint sizeInBytes_00;
   localeinfo_struct *unaff_ESI;
   localeinfo_struct *unaff_EDI;
-  char *pcVar5;
-  _strflt local_34;
-  int local_24;
-  char local_20 [24];
+  char *pcVar4;
+  _strflt retstrflt;
+  int g_magnitude;
+  char resstr [24];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar3 = 0x16;
-  _fltout2((_CRT_DOUBLE)*param_1,&local_34,local_20,0x16);
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  _fltout2((_CRT_DOUBLE)*pvalue,&retstrflt,resstr,0x16);
+  if ((buf == (char *)0x0) || (sizeInBytes == 0)) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
-    local_24 = local_34.decpt + -1;
-    if (param_3 == 0xffffffff) {
-      uVar4 = 0xffffffff;
+    g_magnitude = retstrflt.decpt + -1;
+    if (sizeInBytes == 0xffffffff) {
+      sizeInBytes_00 = 0xffffffff;
     }
     else {
-      uVar4 = param_3 - (local_34.sign == 0x2d);
+      sizeInBytes_00 = sizeInBytes - (retstrflt.sign == 0x2d);
     }
-    iVar3 = _fptostr(param_2 + (local_34.sign == 0x2d),uVar4,param_4,&local_34);
+    iVar3 = _fptostr(buf + (retstrflt.sign == 0x2d),sizeInBytes_00,ndec,&retstrflt);
     if (iVar3 == 0) {
-      local_34.decpt = local_34.decpt + -1;
-      if ((local_34.decpt < -4) || (param_4 <= local_34.decpt)) {
-        iVar3 = _cftoe2_l((char *)param_3,param_4,param_5,(int)&local_34,(_strflt *)&DAT_00000001,
-                          (char)param_6,unaff_EDI);
+      retstrflt.decpt = retstrflt.decpt + -1;
+      if ((retstrflt.decpt < -4) || (ndec <= retstrflt.decpt)) {
+        iVar3 = _cftoe2_l((char *)sizeInBytes,ndec,caps,(int)&retstrflt,(_strflt *)&DAT_00000001,
+                          (char)plocinfo,unaff_EDI);
       }
       else {
-        pcVar1 = param_2 + (local_34.sign == 0x2d);
-        if (local_24 < local_34.decpt) {
+        pcVar1 = buf + (retstrflt.sign == 0x2d);
+        if (g_magnitude < retstrflt.decpt) {
           do {
-            pcVar5 = pcVar1;
-            pcVar1 = pcVar5 + 1;
-          } while (*pcVar5 != '\0');
-          pcVar5[-1] = '\0';
+            pcVar4 = pcVar1;
+            pcVar1 = pcVar4 + 1;
+          } while (*pcVar4 != '\0');
+          pcVar4[-1] = '\0';
         }
-        iVar3 = _cftof2_l((char *)param_3,param_4,1,(_strflt *)param_6,(char)unaff_EDI,unaff_ESI);
+        iVar3 = _cftof2_l((char *)sizeInBytes,ndec,1,(_strflt *)plocinfo,(char)unaff_EDI,unaff_ESI);
       }
     }
     else {
-      *param_2 = '\0';
+      *buf = '\0';
     }
   }
   return iVar3;
@@ -688,25 +685,25 @@ _cftog_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,
 // 00C19E78  _cfltcvt_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:1092)
 
 int __cdecl
-_cfltcvt_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,int param_6,
-          localeinfo_struct *param_7)
+_cfltcvt_l(double *arg,char *buffer,uint sizeInBytes,int format,int precision,int caps,
+          localeinfo_struct *plocinfo)
 
 {
   int iVar1;
   
-  if ((param_4 == 0x65) || (param_4 == 0x45)) {
-    iVar1 = _cftoe_l(param_1,param_2,param_3,param_5,param_6,param_7);
+  if ((format == 0x65) || (format == 0x45)) {
+    iVar1 = _cftoe_l(arg,buffer,sizeInBytes,precision,caps,plocinfo);
   }
   else {
-    if (param_4 == 0x66) {
-      iVar1 = _cftof_l(param_1,param_2,param_3,param_5,param_7);
+    if (format == 0x66) {
+      iVar1 = _cftof_l(arg,buffer,sizeInBytes,precision,plocinfo);
       return iVar1;
     }
-    if ((param_4 == 0x61) || (param_4 == 0x41)) {
-      iVar1 = _cftoa_l(param_1,param_2,param_3,param_5,param_6,param_7);
+    if ((format == 0x61) || (format == 0x41)) {
+      iVar1 = _cftoa_l(arg,buffer,sizeInBytes,precision,caps,plocinfo);
     }
     else {
-      iVar1 = _cftog_l(param_1,param_2,param_3,param_5,param_6,param_7);
+      iVar1 = _cftog_l(arg,buffer,sizeInBytes,precision,caps,plocinfo);
     }
   }
   return iVar1;
@@ -715,12 +712,12 @@ _cfltcvt_l(double *param_1,char *param_2,uint param_3,int param_4,int param_5,in
 
 // 00C19F00  _cfltcvt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/conv/cvt.c:1108)
 
-int __cdecl _cfltcvt(double *param_1,char *param_2,uint param_3,int param_4,int param_5,int param_6)
+int __cdecl _cfltcvt(double *arg,char *buffer,uint sizeInBytes,int format,int precision,int caps)
 
 {
   int iVar1;
   
-  iVar1 = _cfltcvt_l(param_1,param_2,param_3,param_4,param_5,param_6,(localeinfo_struct *)0x0);
+  iVar1 = _cfltcvt_l(arg,buffer,sizeInBytes,format,precision,caps,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

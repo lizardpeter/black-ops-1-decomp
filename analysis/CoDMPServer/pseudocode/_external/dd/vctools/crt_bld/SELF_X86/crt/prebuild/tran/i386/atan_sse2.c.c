@@ -2,7 +2,7 @@
 
 // 00C104FB  __libm_sse2_atan  (line unknown)
 
-double __cdecl __libm_sse2_atan(double param_1)
+double __cdecl __libm_sse2_atan(double x)
 
 {
   uint uVar1;

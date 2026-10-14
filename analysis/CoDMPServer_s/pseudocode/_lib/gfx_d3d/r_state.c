@@ -2,12 +2,17 @@
 
 // 0084DFE0  R_HW_SetSamplerState  (gfx_d3d/r_setstate_d3d.h:188)
 
-uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+/* WARNING: Variable defined which should be unmapped: finalSamplerState */
+
+uint __cdecl
+R_HW_SetSamplerState(IDirect3DDevice9 *oldSamplerState,uint param_2,uint param_3,uint param_4)
 
 {
   uint in_EAX;
   uint uVar1;
   int *unaff_EDI;
+  uint samplerIndex;
+  uint finalSamplerState;
   undefined4 uStack_4;
   
   uVar1 = in_EAX ^ param_2;
@@ -48,13 +53,14 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
 
 /* WARNING: Removing unreachable block (ram,0x0084e15a) */
 
-void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,uint param_4)
+void __cdecl R_HW_SetBlend(IDirect3DDevice9 *changedBits,bool param_2,uint param_3,uint param_4)
 
 {
   int *unaff_ESI;
+  bool blendWasEnabled;
   uint3 in_stack_00000009;
   
-  if ((char)param_1 == '\0') {
+  if ((char)changedBits == '\0') {
     (**(code **)(*unaff_ESI + 0xe4))();
   }
   if ((in_stack_00000009 & 7) != 0) {
@@ -135,10 +141,11 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
 // 0084E1F0  R_HW_SetFrontStencilOp  (gfx_d3d/r_setstate_d3d.h:633)
 
 void __cdecl
-R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+R_HW_SetFrontStencilOp(IDirect3DDevice9 *stencilOpZFail,uint param_2,uint param_3,uint param_4)
 
 {
   int *unaff_ESI;
+  uint stencilOpFail;
   
   (**(code **)(*unaff_ESI + 0xe4))();
   (**(code **)(*unaff_ESI + 0xe4))();
@@ -149,10 +156,12 @@ R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint 
 
 // 0084E240  R_HW_SetBackStencilOp  (gfx_d3d/r_setstate_d3d.h:641)
 
-void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl
+R_HW_SetBackStencilOp(IDirect3DDevice9 *stencilOpZFail,uint param_2,uint param_3,uint param_4)
 
 {
   int *unaff_ESI;
+  uint stencilOpFail;
   
   (**(code **)(*unaff_ESI + 0xe4))();
   (**(code **)(*unaff_ESI + 0xe4))();
@@ -163,6 +172,8 @@ void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint p
 
 // 0084E590  R_SetTexFilter  (gfx_d3d/r_state.cpp:775)
 
+/* WARNING: Variable defined which should be unmapped: anisotropyFor2x */
+
 void __cdecl R_SetTexFilter(void)
 
 {
@@ -172,9 +183,10 @@ void __cdecl R_SetTexFilter(void)
   uint uVar4;
   uint uVar5;
   uint uVar6;
-  uint uStack_10;
-  uint uStack_c;
-  uint uStack_8;
+  int anisotropyFor2x;
+  int linearMippedFilter;
+  int anisotropicFilter;
+  int linearMippedAnisotropy;
   uint uStack_4;
   
   uVar1 = (r_texFilterAnisoMax->current).integer;
@@ -184,27 +196,28 @@ void __cdecl R_SetTexFilter(void)
   uVar5 = 0x2200;
   if ((int)uVar1 < 2) {
     uVar1 = 1;
-    uStack_8 = 0x2200;
+    linearMippedAnisotropy = 0x2200;
   }
   else {
-    uStack_8 = (-(uint)gfxMetrics.hasAnisotropicMagFilter & 0x1000) + 0x2000 |
-               (-(uint)gfxMetrics.hasAnisotropicMinFilter & 0x100) + 0x200;
+    linearMippedAnisotropy =
+         (-(uint)gfxMetrics.hasAnisotropicMagFilter & 0x1000) + 0x2000 |
+         (-(uint)gfxMetrics.hasAnisotropicMinFilter & 0x100) + 0x200;
   }
   uStack_4 = (r_texFilterAnisoMin->current).integer;
   if ((int)uVar1 < (r_texFilterAnisoMin->current).integer) {
     uStack_4 = uVar1;
   }
-  uStack_c = 0x2200;
+  anisotropicFilter = 0x2200;
   if (uStack_4 != 1) {
-    uStack_c = uStack_8;
+    anisotropicFilter = linearMippedAnisotropy;
   }
   uVar4 = uVar1;
   if (1 < (int)uVar1) {
     uVar4 = 2;
   }
-  uStack_10 = uStack_4;
-  if (((int)uStack_4 <= (int)uVar4) && (uStack_10 = uVar1, 1 < (int)uVar1)) {
-    uStack_10 = 2;
+  linearMippedFilter = uStack_4;
+  if (((int)uStack_4 <= (int)uVar4) && (linearMippedFilter = uVar1, 1 < (int)uVar1)) {
+    linearMippedFilter = 2;
   }
   uVar4 = uVar1;
   if (3 < (int)uVar1) {
@@ -219,10 +232,10 @@ void __cdecl R_SetTexFilter(void)
   }
   else {
     uStack_4 = 1;
-    uStack_10 = 1;
+    linearMippedFilter = 1;
     uVar6 = 1;
-    uStack_8 = 0x1100;
-    uStack_c = 0x1100;
+    linearMippedAnisotropy = 0x1100;
+    anisotropicFilter = 0x1100;
     uVar5 = 0x1100;
     iVar2 = 3;
   }
@@ -235,14 +248,14 @@ void __cdecl R_SetTexFilter(void)
         uVar4 = uVar5 | 1;
       }
       else {
-        uVar4 = uVar4 | uStack_c | uStack_4;
+        uVar4 = uVar4 | anisotropicFilter | uStack_4;
       }
     }
     else if (uVar3 == 3) {
-      uVar4 = uVar4 | uStack_10 | uStack_8;
+      uVar4 = uVar4 | linearMippedFilter | linearMippedAnisotropy;
     }
     else if (uVar3 == 4) {
-      uVar4 = uVar4 | uVar6 | uStack_8;
+      uVar4 = uVar4 | uVar6 | linearMippedAnisotropy;
     }
     else {
       uVar4 = uVar4 | 0x1101;
@@ -257,7 +270,7 @@ void __cdecl R_SetTexFilter(void)
 
 // 0084F190  R_GetCodeMatrix  (gfx_d3d/r_state.cpp:1269)
 
-float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint param_3)
+float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *source,uint sourceIndex,uint firstRow)
 
 {
   uint uVar1;
@@ -265,24 +278,25 @@ float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint 
   int extraout_EDX;
   float *unaff_ESI;
   GfxCodeMatrices *unaff_EDI;
+  uint baseIndex;
   
-  uVar1 = param_2 - 0xc5;
-  uVar2 = param_1->matrixVersions[uVar1 >> 2];
-  if ((param_1->constVersions[param_2] != uVar2) &&
-     ((param_1->constVersions[(uVar1 & 0xfffffffc) + 0xc5] == uVar2 ||
-      (R_DeriveCodeMatrix(param_1,unaff_EDI,(uint)unaff_ESI), uVar1 != (uVar1 & 0xfffffffc))))) {
-    param_1->constVersions[param_2] = uVar2;
-    if (param_1->constVersions[(uVar1 ^ 2) + 0xc5] != uVar2) {
-      if (param_1->constVersions[(uVar1 ^ 1) + 0xc5] != uVar2) {
+  uVar1 = sourceIndex - 0xc5;
+  uVar2 = source->matrixVersions[uVar1 >> 2];
+  if ((source->constVersions[sourceIndex] != uVar2) &&
+     ((source->constVersions[(uVar1 & 0xfffffffc) + 0xc5] == uVar2 ||
+      (R_DeriveCodeMatrix(source,unaff_EDI,(uint)unaff_ESI), uVar1 != (uVar1 & 0xfffffffc))))) {
+    source->constVersions[sourceIndex] = uVar2;
+    if (source->constVersions[(uVar1 ^ 2) + 0xc5] != uVar2) {
+      if (source->constVersions[(uVar1 ^ 1) + 0xc5] != uVar2) {
         MatrixTranspose44((float *)unaff_EDI,unaff_ESI);
-        param_1->constVersions[extraout_EDX + 0xc5] = uVar2;
+        source->constVersions[extraout_EDX + 0xc5] = uVar2;
       }
       MatrixInverse44((float *)unaff_EDI,unaff_ESI);
-      return (float *)((param_3 + uVar1 * 4) * 0x10 + (int)param_1);
+      return (float *)((firstRow + uVar1 * 4) * 0x10 + (int)source);
     }
     MatrixTranspose44((float *)unaff_EDI,unaff_ESI);
   }
-  return (float *)((param_3 + uVar1 * 4) * 0x10 + (int)param_1);
+  return (float *)((firstRow + uVar1 * 4) * 0x10 + (int)source);
 }
 
 
@@ -291,6 +305,8 @@ float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint 
 void __cdecl R_TextureFromCodeError(GfxCmdBufContext *param_1,uint param_2)
 
 {
+  GfxCmdBufContext *context;
+  
   Com_Error(ERR_DROP,
             "Code texture %u \'%s\' isn\'t valid. Material=\'%s\', tech=\'%s\', techType=%d\n");
   return;
@@ -299,36 +315,36 @@ void __cdecl R_TextureFromCodeError(GfxCmdBufContext *param_1,uint param_2)
 
 // 0084F2E0  R_SetLightmap  (gfx_d3d/r_state.cpp:1365)
 
-void __cdecl R_SetLightmap(GfxCmdBufContext param_1,uint param_2)
+void __cdecl R_SetLightmap(void)
 
 {
-  MaterialPass *pMVar1;
+  int iVar1;
   int in_EAX;
-  GfxImage *unaff_ESI;
-  uchar unaff_DI;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
+  iVar1 = *(int *)(in_stack_00000008 + 0xd0);
   if (in_EAX != 0x1f) {
     if ((r_lightMap->current).integer == 1) {
-      if ((pMVar1->customSamplerFlags & 2) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 2) != 0) {
+        R_SetSampler();
       }
-      if ((pMVar1->customSamplerFlags & 4) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 4) != 0) {
+        R_SetSampler();
       }
-      if ((pMVar1->customSamplerFlags & 8) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 8) != 0) {
+        R_SetSampler();
       }
     }
     else {
-      if ((pMVar1->customSamplerFlags & 2) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 2) != 0) {
+        R_SetSampler();
       }
-      if ((pMVar1->customSamplerFlags & 4) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 4) != 0) {
+        R_SetSampler();
       }
-      if ((pMVar1->customSamplerFlags & 8) != 0) {
-        R_SetSampler(param_1,0x62,unaff_DI,unaff_ESI);
+      if ((*(byte *)(iVar1 + 0xf) & 8) != 0) {
+        R_SetSampler();
         return;
       }
     }
@@ -377,41 +393,42 @@ void __cdecl R_ChangeDepthRange(GfxCmdBufState *param_1,GfxDepthRangeType param_
 
 void __cdecl
 R_SetTripleStreamSource
-          (GfxCmdBufPrimState *param_1,IDirect3DVertexBuffer9 *param_2,uint param_3,uint param_4,
-          IDirect3DVertexBuffer9 *param_5,uint param_6,uint param_7,IDirect3DVertexBuffer9 *param_8,
-          uint param_9,uint param_10)
+          (GfxCmdBufPrimState *vertexOffset0,IDirect3DVertexBuffer9 *vb1,uint vertexOffset1,
+          uint vertexStride1,IDirect3DVertexBuffer9 *vb2,uint vertexOffset2,uint vertexStride2,
+          IDirect3DVertexBuffer9 *param_8,uint param_9,uint param_10)
 
 {
   IDirect3DDevice9 *pIVar1;
   IDirect3DVertexBuffer9 *in_EAX;
   uint in_EDX;
+  GfxCmdBufPrimState *state;
   
-  if (((param_1->streams[0].vb != in_EAX) ||
-      ((IDirect3DVertexBuffer9 *)param_1->streams[0].offset != param_2)) ||
-     (param_1->streams[0].stride != in_EDX)) {
-    pIVar1 = (param_1->field0_0x0).device;
-    param_1->streams[0].vb = in_EAX;
-    param_1->streams[0].offset = (uint)param_2;
-    param_1->streams[0].stride = in_EDX;
+  if (((vertexOffset0->streams[0].vb != in_EAX) ||
+      ((IDirect3DVertexBuffer9 *)vertexOffset0->streams[0].offset != vb1)) ||
+     (vertexOffset0->streams[0].stride != in_EDX)) {
+    pIVar1 = (vertexOffset0->field0_0x0).device;
+    vertexOffset0->streams[0].vb = in_EAX;
+    vertexOffset0->streams[0].offset = (uint)vb1;
+    vertexOffset0->streams[0].stride = in_EDX;
     (**(code **)((int)*pIVar1 + 400))(pIVar1,0);
   }
-  if (((param_1->streams[1].vb != (IDirect3DVertexBuffer9 *)param_3) ||
-      (param_1->streams[1].offset != param_4)) ||
-     ((IDirect3DVertexBuffer9 *)param_1->streams[1].stride != param_5)) {
-    pIVar1 = (param_1->field0_0x0).device;
-    param_1->streams[1].vb = (IDirect3DVertexBuffer9 *)param_3;
-    param_1->streams[1].offset = param_4;
-    param_1->streams[1].stride = (uint)param_5;
-    (**(code **)((int)*pIVar1 + 400))(pIVar1,1,param_3,param_4,param_5);
+  if (((vertexOffset0->streams[1].vb != (IDirect3DVertexBuffer9 *)vertexOffset1) ||
+      (vertexOffset0->streams[1].offset != vertexStride1)) ||
+     ((IDirect3DVertexBuffer9 *)vertexOffset0->streams[1].stride != vb2)) {
+    pIVar1 = (vertexOffset0->field0_0x0).device;
+    vertexOffset0->streams[1].vb = (IDirect3DVertexBuffer9 *)vertexOffset1;
+    vertexOffset0->streams[1].offset = vertexStride1;
+    vertexOffset0->streams[1].stride = (uint)vb2;
+    (**(code **)((int)*pIVar1 + 400))(pIVar1,1,vertexOffset1,vertexStride1,vb2);
   }
-  if (((param_1->streams[2].vb != (IDirect3DVertexBuffer9 *)param_6) ||
-      (param_1->streams[2].offset != param_7)) ||
-     ((IDirect3DVertexBuffer9 *)param_1->streams[2].stride != param_8)) {
-    pIVar1 = (param_1->field0_0x0).device;
-    param_1->streams[2].offset = param_7;
-    param_1->streams[2].vb = (IDirect3DVertexBuffer9 *)param_6;
-    param_1->streams[2].stride = (uint)param_8;
-    (**(code **)((int)*pIVar1 + 400))(pIVar1,2,param_6,param_7,param_8);
+  if (((vertexOffset0->streams[2].vb != (IDirect3DVertexBuffer9 *)vertexOffset2) ||
+      (vertexOffset0->streams[2].offset != vertexStride2)) ||
+     ((IDirect3DVertexBuffer9 *)vertexOffset0->streams[2].stride != param_8)) {
+    pIVar1 = (vertexOffset0->field0_0x0).device;
+    vertexOffset0->streams[2].offset = vertexStride2;
+    vertexOffset0->streams[2].vb = (IDirect3DVertexBuffer9 *)vertexOffset2;
+    vertexOffset0->streams[2].stride = (uint)param_8;
+    (**(code **)((int)*pIVar1 + 400))(pIVar1,2,vertexOffset2,vertexStride2,param_8);
   }
   return;
 }
@@ -423,6 +440,7 @@ void __cdecl R_SetAlphaAntiAliasingState(IDirect3DDevice9 *param_1,int param_2)
 
 {
   int *in_ECX;
+  int stateBits0;
   
   if (((uint)param_1 & 0xf00) != 0) {
     (**(code **)(*in_ECX + 0xe4))();
@@ -479,6 +497,7 @@ void __cdecl R_ChangeState_0(GfxCmdBufState *param_1,uint param_2)
   GfxCmdBufState *unaff_ESI;
   uint unaff_EDI;
   bool bVar4;
+  uint stateBits0;
   
   uVar3 = *(uint *)(in_EAX + 0x10f4) ^ (uint)param_1;
   if ((uVar3 != 0) || (((*(uint *)(in_EAX + 0x10ec) ^ (uint)param_1) & 0x7000700) != 0)) {
@@ -545,6 +564,7 @@ void __cdecl R_ChangeState_1(GfxCmdBufState *param_1,uint param_2)
   GfxCmdBufState *pGVar3;
   IDirect3DDevice9 *unaff_ESI;
   int unaff_EDI;
+  uint stateBits1;
   
   pGVar2 = (GfxCmdBufState *)(*(uint *)(unaff_EDI + 0x10f8) ^ (uint)param_1);
   if (pGVar2 != (GfxCmdBufState *)0x0) {
@@ -611,25 +631,26 @@ void __cdecl R_ChangeState_1(GfxCmdBufState *param_1,uint param_2)
 
 // 0084F950  R_SetTextureSamplerCodeImageRenderTarget  (gfx_d3d/r_state.cpp:2259)
 
-void __cdecl
-R_SetTextureSamplerCodeImageRenderTarget
-          (GfxCmdBufContext param_1,uint param_2,GfxCodeImageRenderTarget param_3)
+/* WARNING: Variable defined which should be unmapped: context */
+
+void __cdecl R_SetTextureSamplerCodeImageRenderTarget(void)
 
 {
   uint uVar1;
+  uint uVar2;
   IDirect3DDevice9 *unaff_ESI;
   uint unaff_EDI;
-  uint unaff_retaddr;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
+  uint in_stack_0000000c;
   
-  (param_1.field0_0x0._s_0.state)->samplerTexture[(int)unaff_ESI] = (GfxTexture *)0x0;
-  uVar1 = param_2 >> 0xc;
-  if ((param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI] !=
-      ((((uVar1 & 0x80 | 0x54) * 2 | uVar1 & 0x40) * 2 | uVar1 & 0x20) << 0x10 |
-      s_decodeSamplerFilterState[uVar1 & 0x1f])) {
-    uVar1 = R_HW_SetSamplerState
-                      (unaff_ESI,(param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI],
-                       unaff_EDI,unaff_retaddr);
-    (param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI] = uVar1;
+  *(undefined4 *)(in_stack_00000008 + 0x50 + (int)unaff_ESI * 4) = 0;
+  uVar1 = in_stack_0000000c >> 0xc;
+  uVar2 = *(uint *)(in_stack_00000008 + 0x10 + (int)unaff_ESI * 4);
+  if (uVar2 != ((((uVar1 & 0x80 | 0x54) * 2 | uVar1 & 0x40) * 2 | uVar1 & 0x20) << 0x10 |
+               s_decodeSamplerFilterState[uVar1 & 0x1f])) {
+    uVar2 = R_HW_SetSamplerState(unaff_ESI,uVar2,unaff_EDI,(uint)context.field0_0x0._s_0.source);
+    *(uint *)(in_stack_00000008 + 0x10 + (int)unaff_ESI * 4) = uVar2;
   }
   return;
 }
@@ -671,31 +692,32 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
 
 // 0084F9C0  R_SetSampler  (gfx_d3d/r_state.cpp:2313)
 
-void __cdecl R_SetSampler(GfxCmdBufContext param_1,uint param_2,uchar param_3,GfxImage *param_4)
+void __cdecl R_SetSampler(void)
 
 {
-  IDirect3DDevice9 *pIVar1;
+  uint uVar1;
+  int in_ECX;
   uint uVar2;
-  GfxTexture *in_ECX;
   uint unaff_EBX;
   IDirect3DDevice9 *unaff_ESI;
   uint unaff_EDI;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
+  byte in_stack_0000000c;
   
-  if ((param_1.field0_0x0._s_0.state)->samplerTexture[(int)unaff_ESI] != in_ECX) {
-    (param_1.field0_0x0._s_0.state)->samplerTexture[(int)unaff_ESI] = in_ECX;
-    pIVar1 = ((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device;
-    (**(code **)((int)*pIVar1 + 0x104))(pIVar1);
+  if (*(int *)(in_stack_00000008 + 0x50 + (int)unaff_ESI * 4) != in_ECX) {
+    *(int *)(in_stack_00000008 + 0x50 + (int)unaff_ESI * 4) = in_ECX;
+    (**(code **)(**(int **)(in_stack_00000008 + 0x90) + 0x104))(*(int **)(in_stack_00000008 + 0x90))
+    ;
   }
-  if ((&unaff_ESI->field_0x0)[(int)(param_1.field0_0x0._s_0.state)->refSamplerState] !=
-      (char)param_2) {
-    (&unaff_ESI->field_0x0)[(int)(param_1.field0_0x0._s_0.state)->refSamplerState] = (char)param_2;
-    if ((param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI] !=
-        ((((param_2 & 0x80 | 0x54) * 2 | param_2 & 0x40) * 2 | param_2 & 0x20) << 0x10 |
-        s_decodeSamplerFilterState[param_2 & 0x1f])) {
-      uVar2 = R_HW_SetSamplerState
-                        (unaff_ESI,(param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI],
-                         unaff_EDI,unaff_EBX);
-      (param_1.field0_0x0._s_0.state)->samplerState[(int)unaff_ESI] = uVar2;
+  if ((&unaff_ESI->field_0x0)[in_stack_00000008] != in_stack_0000000c) {
+    (&unaff_ESI->field_0x0)[in_stack_00000008] = in_stack_0000000c;
+    uVar2 = (uint)in_stack_0000000c;
+    uVar1 = *(uint *)(in_stack_00000008 + 0x10 + (int)unaff_ESI * 4);
+    if (uVar1 != ((((uVar2 & 0x80 | 0x54) * 2 | uVar2 & 0x40) * 2 | uVar2 & 0x20) << 0x10 |
+                 s_decodeSamplerFilterState[uVar2 & 0x1f])) {
+      uVar1 = R_HW_SetSamplerState(unaff_ESI,uVar1,unaff_EDI,unaff_EBX);
+      *(uint *)(in_stack_00000008 + 0x10 + (int)unaff_ESI * 4) = uVar1;
     }
   }
   return;
@@ -712,6 +734,7 @@ void __cdecl R_SetSamplerState(GfxCmdBufState *param_1,uint param_2,uchar param_
   uint unaff_EBX;
   IDirect3DDevice9 *unaff_ESI;
   uint unaff_EDI;
+  GfxCmdBufState *state;
   
   param_1->samplerTexture[(int)unaff_ESI] = (GfxTexture *)0x0;
   if ((&unaff_ESI->field_0x0)[(int)param_1->refSamplerState] != in_AL) {
@@ -731,8 +754,10 @@ void __cdecl R_SetSamplerState(GfxCmdBufState *param_1,uint param_2,uchar param_
 
 // 0084FCB0  R_TextureOverride  (gfx_d3d/r_state.cpp:2469)
 
+/* WARNING: Variable defined which should be unmapped: material */
+
 void __cdecl
-R_TextureOverride(GfxBackEndData *param_1,GfxCmdBufContext param_2,uint param_3,int param_4)
+R_TextureOverride(GfxBackEndData *context,GfxCmdBufContext param_2,uint param_3,int param_4)
 
 {
   GfxTextureOverride *pGVar1;
@@ -742,10 +767,12 @@ R_TextureOverride(GfxBackEndData *param_1,GfxCmdBufContext param_2,uint param_3,
   byte in_CL;
   int iVar4;
   int iVar5;
+  Material *material;
+  ushort modelMask;
   
   pMVar2 = (param_2.field0_0x0._s_0.state)->material;
   while (-1 < in_EAX) {
-    pGVar1 = param_1->textureOverrides + in_EAX;
+    pGVar1 = context->textureOverrides + in_EAX;
     if ((((pGVar1->material == (Material *)0x0) || (pGVar1->material == pMVar2)) &&
         ((pGVar1->dobjModelMask & (ushort)(1 << (in_CL & 0x1f))) != 0)) &&
        (pGVar1->img2 != (GfxImage *)0x0)) {
@@ -840,6 +867,8 @@ void __cdecl R_SetViewport(GfxCmdBufState *param_1,GfxViewport *param_2)
 
 // 0084FEE0  R_SetScissor  (gfx_d3d/r_state.cpp:2620)
 
+/* WARNING: Variable defined which should be unmapped: scissor */
+
 void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
 
 {
@@ -852,63 +881,63 @@ void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
   uint uVar5;
   uint uVar6;
   int iVar7;
-  undefined8 local_14;
-  undefined8 local_c;
+  GfxViewport scissor;
+  int iStack_8;
   
-  local_14 = *in_EAX;
-  local_c = in_EAX[1];
-  uVar6 = (uint)local_14;
-  if ((int)(uint)local_14 < 0) {
-    iVar3 = (int)local_c + (uint)local_14;
-    local_c._4_4_ = (int)(local_c >> 0x20);
-    local_c._0_4_ = iVar3;
+  scissor._4_8_ = *in_EAX;
+  unique0x0000a400 = in_EAX[1];
+  uVar6 = scissor.y;
+  if (scissor.y < 0) {
+    iVar3 = scissor.height + scissor.y;
+    iStack_8 = (int)(unique0x0000a400 >> 0x20);
+    scissor.height = iVar3;
     if (iVar3 < 1) {
-      local_c._0_4_ = 0;
+      scissor.height = 0;
     }
     uVar6 = 0;
-    local_14 = local_14 & 0xffffffff00000000;
+    scissor._4_8_ = scissor._4_8_ & 0xffffffff00000000;
   }
-  uVar2 = local_c;
-  uVar5 = local_14._4_4_;
-  iVar3 = local_c._4_4_;
-  if ((longlong)local_14 < 0) {
-    iVar3 = local_c._4_4_ + local_14._4_4_;
-    local_c = CONCAT44(iVar3,(int)local_c);
+  uVar2 = stack0xfffffff4;
+  uVar5 = scissor.width;
+  iVar3 = iStack_8;
+  if ((longlong)scissor._4_8_ < 0) {
+    iVar3 = iStack_8 + scissor.width;
+    stack0xfffffff4 = CONCAT44(iVar3,scissor.height);
     if (iVar3 < 1) {
       iVar3 = 0;
-      local_c = uVar2 & 0xffffffff;
+      stack0xfffffff4 = uVar2 & 0xffffffff;
     }
     uVar5 = 0;
-    local_14 = local_14 & 0xffffffff;
+    scissor._4_8_ = scissor._4_8_ & 0xffffffff;
   }
   uVar4 = (uint)gfxRenderTargets[*(byte *)(in_ECX + 0x1128)].width;
   if ((int)uVar4 < (int)uVar6) {
-    local_14 = CONCAT44(local_14._4_4_,uVar4);
-    local_c = local_c & 0xffffffff00000000;
+    scissor.y = uVar4;
+    stack0xfffffff4 = stack0xfffffff4 & 0xffffffff00000000;
     uVar6 = uVar4;
   }
-  iVar7 = (int)local_c;
-  if ((int)uVar4 < (int)((int)local_c + uVar6)) {
-    local_c = CONCAT44(local_c._4_4_,uVar4 - uVar6);
+  iVar7 = scissor.height;
+  if ((int)uVar4 < (int)(scissor.height + uVar6)) {
+    stack0xfffffff4 = CONCAT44(iStack_8,uVar4 - uVar6);
     iVar7 = uVar4 - uVar6;
   }
   uVar4 = (uint)gfxRenderTargets[*(byte *)(in_ECX + 0x1128)].height;
   if ((int)uVar4 < (int)uVar5) {
     iVar3 = 0;
-    local_14 = (ulonglong)
-               CONCAT24(gfxRenderTargets[*(byte *)(in_ECX + 0x1128)].height,(uint)local_14);
-    local_c = local_c & 0xffffffff;
+    scissor.width._0_2_ = gfxRenderTargets[*(byte *)(in_ECX + 0x1128)].height;
+    scissor.width._2_2_ = 0;
+    stack0xfffffff4 = stack0xfffffff4 & 0xffffffff;
     uVar5 = uVar4;
   }
   if ((int)uVar4 < (int)(iVar3 + uVar5)) {
     iVar3 = uVar4 - uVar5;
-    local_c = CONCAT44(iVar3,(int)local_c);
+    stack0xfffffff4 = CONCAT44(iVar3,scissor.height);
   }
   if ((((*(int *)(in_ECX + 0x1124) == 0) || (uVar6 != *(uint *)(in_ECX + 0x1114))) ||
       (uVar5 != *(uint *)(in_ECX + 0x1118))) ||
      ((iVar7 != *(int *)(in_ECX + 0x111c) || (iVar3 != *(int *)(in_ECX + 0x1120))))) {
-    *(ulonglong *)(in_ECX + 0x1114) = local_14;
-    *(ulonglong *)(in_ECX + 0x111c) = local_c;
+    *(undefined8 *)(in_ECX + 0x1114) = scissor._4_8_;
+    *(ulonglong *)(in_ECX + 0x111c) = stack0xfffffff4;
     *(undefined4 *)(in_ECX + 0x1124) = 1;
     piVar1 = *(int **)(in_ECX + 0x90);
     (**(code **)(*piVar1 + 0xe4))(piVar1,0xae,1);
@@ -962,6 +991,8 @@ void __cdecl R_UpdateViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2
 
 // 008501D0  UpdateVPosToWorld  (gfx_d3d/r_state.cpp:2790)
 
+/* WARNING: Variable defined which should be unmapped: invWidth */
+
 void __cdecl UpdateVPosToWorld(GfxCmdBufSourceState *param_1)
 
 {
@@ -994,6 +1025,8 @@ void __cdecl UpdateVPosToWorld(GfxCmdBufSourceState *param_1)
   float fVar26;
   float fVar27;
   float fVar28;
+  float invWidth;
+  float invHeight;
   
   if (*(int *)&unaff_ESI->viewMode == 1) {
     iVar21 = unaff_ESI->renderTargetWidth;
@@ -1077,28 +1110,31 @@ void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *param_1,uchar param_2)
 
 // 008504E0  R_SetRenderTarget  (gfx_d3d/r_state.cpp:2859)
 
-void __cdecl R_SetRenderTarget(GfxCmdBufContext param_1,uchar param_2)
+void __cdecl R_SetRenderTarget(void)
 
 {
   uchar unaff_BL;
   GfxCmdBufState *unaff_ESI;
+  GfxCmdBufContext context;
+  GfxCmdBufState *in_stack_00000008;
+  byte in_stack_0000000c;
   
   if (2 < (int)pixelCostMode) {
-    if (param_2 < 3) {
-      param_2 = 2;
+    if (in_stack_0000000c < 3) {
+      in_stack_0000000c = 2;
     }
-    else if (param_2 < 10) {
-      param_2 = 3;
+    else if (in_stack_0000000c < 10) {
+      in_stack_0000000c = 3;
     }
   }
-  if (param_2 != (param_1.field0_0x0._s_0.state)->renderTargetId) {
-    if (gfxRenderTargets[param_2].image != (GfxImage *)0x0) {
-      R_UnbindImage(param_1.field0_0x0._s_0.state,gfxRenderTargets[param_2].image);
+  if (in_stack_0000000c != in_stack_00000008->renderTargetId) {
+    if (gfxRenderTargets[in_stack_0000000c].image != (GfxImage *)0x0) {
+      R_UnbindImage(in_stack_00000008,gfxRenderTargets[in_stack_0000000c].image);
     }
     R_HW_SetRenderTarget(unaff_ESI,unaff_BL);
-    (param_1.field0_0x0._s_0.state)->renderTargetId = param_2;
-    *(undefined4 *)&(param_1.field0_0x0._s_0.source)->viewMode = 0;
-    (param_1.field0_0x0._s_0.source)->viewportIsDirty = true;
+    in_stack_00000008->renderTargetId = in_stack_0000000c;
+    *(undefined4 *)((int)context.field0_0x0._s_0.state[1].pixelShaderConstState + 0xc) = 0;
+    *(undefined1 *)(context.field0_0x0._s_0.state[1].pixelShaderConstState + 0xc) = 1;
   }
   return;
 }
@@ -1106,15 +1142,16 @@ void __cdecl R_SetRenderTarget(GfxCmdBufContext param_1,uchar param_2)
 
 // 00850560  R_ClearRenderTargetForMultiGpu  (gfx_d3d/r_state.cpp:2929)
 
-void __cdecl R_ClearRenderTargetForMultiGpu(GfxCmdBufContext param_1,uchar param_2)
+void __cdecl R_ClearRenderTargetForMultiGpu(void)
 
 {
-  IDirect3DDevice9 *pIVar1;
   uint in_EAX;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
   if ((1 < dx.gpuCount) && (gfxRenderTargets[in_EAX & 0xff].cleared == false)) {
-    pIVar1 = ((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device;
-    (**(code **)((int)*pIVar1 + 0xac))(pIVar1,0,0,1,0,0,0);
+    (**(code **)(**(int **)(in_stack_00000008 + 0x90) + 0xac))
+              (*(int **)(in_stack_00000008 + 0x90),0,0,1,0,0,0);
     gfxRenderTargets[in_EAX & 0xff].cleared = true;
   }
   return;
@@ -1123,15 +1160,19 @@ void __cdecl R_ClearRenderTargetForMultiGpu(GfxCmdBufContext param_1,uchar param
 
 // 008505B0  R_ClearScreenInternal  (gfx_d3d/r_state.cpp:3015)
 
+/* WARNING: Variable defined which should be unmapped: nativeColor */
+
 void __cdecl
 R_ClearScreenInternal
-          (IDirect3DDevice9 *param_1,uchar param_2,float *param_3,float param_4,uchar param_5,
+          (IDirect3DDevice9 *depth,uchar stencil,float *param_3,float param_4,uchar param_5,
           GfxViewport *param_6)
 
 {
   float *unaff_EBX;
   int unaff_ESI;
   int *unaff_EDI;
+  uchar whichToClear;
+  GfxColor nativeColor;
   uchar *in_stack_ffffffec;
   
   Byte4PackPixelColor(unaff_EBX,in_stack_ffffffec);
@@ -1174,10 +1215,11 @@ void __cdecl R_SetCompleteState(IDirect3DDevice9 *param_1,uint *param_2)
 // 00850730  R_DrawCall  (gfx_d3d/r_state.cpp:3227)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBufEA */
 
 void __cdecl
-R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_1,void *param_2,
-          GfxCmdBufSourceState *param_3,GfxViewInfo *param_4,GfxDrawSurfListInfo *param_5,
+R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *callback,void *userData,
+          GfxCmdBufSourceState *viewParms,GfxViewInfo *param_4,GfxDrawSurfListInfo *param_5,
           GfxViewParms *param_6,GfxCmdBuf *param_7,GfxCmdBuf *param_8)
 
 {
@@ -1192,6 +1234,7 @@ R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_
   uchar local_1068 [2048];
   uchar local_868 [2132];
   undefined4 uStack_14;
+  GfxCmdBuf *cmdBufEA;
   
   uStack_14 = 0x850740;
   if (in_ECX != 0) {
@@ -1214,7 +1257,7 @@ R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_
   *(undefined4 *)(in_EDX + 0x1668) = 0;
   GVar1.field0_0x0._s_0.state = (GfxCmdBufState *)local_1150;
   GVar1.field0_0x0._s_0.source = (GfxCmdBufSourceState *)in_EDX;
-  (*param_1)(param_2,GVar1,(GfxCmdBufContext)0x0);
+  (*callback)(userData,GVar1,(GfxCmdBufContext)0x0);
   memcpy(gfxCmdBufState.refSamplerState,local_1150,0x1140);
   return;
 }

@@ -9,18 +9,18 @@ sentient_s * __cdecl Sentient_Alloc(void)
 {
   int iVar1;
   char *unaff_ESI;
-  sentient_s *psVar2;
+  sentient_s *dst;
   
   iVar1 = 0;
-  psVar2 = DAT_01c57828;
+  dst = DAT_01c57828;
   do {
-    if (psVar2[0x84] == (sentient_s)0x0) {
-      memset((uchar *)psVar2,'\0',0x90);
-      psVar2[0x84] = (sentient_s)0x1;
-      return psVar2;
+    if (dst[0x84] == (sentient_s)0x0) {
+      memset((uchar *)dst,'\0',0x90);
+      dst[0x84] = (sentient_s)0x1;
+      return dst;
     }
     iVar1 = iVar1 + 1;
-    psVar2 = psVar2 + 0x90;
+    dst = dst + 0x90;
   } while (iVar1 < 0x30);
   Com_DPrintf(0xa7a794,unaff_ESI);
   return (sentient_s *)0x0;

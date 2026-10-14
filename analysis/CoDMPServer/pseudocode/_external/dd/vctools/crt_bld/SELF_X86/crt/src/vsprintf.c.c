@@ -2,31 +2,31 @@
 
 // 00C11A6A  _vsprintf_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:107)
 
-int __cdecl _vsprintf_l(char *param_1,char *param_2,localeinfo_struct *param_3,char *param_4)
+int __cdecl _vsprintf_l(char *string,char *format,localeinfo_struct *plocinfo,char *ap)
 
 {
   int *piVar1;
   int iVar2;
-  _iobuf local_24;
+  _iobuf str;
   
-  if ((param_2 == (char *)0x0) || (param_1 == (char *)0x0)) {
+  if ((format == (char *)0x0) || (string == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    local_24._base = param_1;
-    local_24._ptr = param_1;
-    local_24._cnt = 0x7fffffff;
-    local_24._flag = 0x42;
-    iVar2 = _output_l(&local_24,param_2,param_3,param_4);
-    local_24._cnt = local_24._cnt + -1;
-    if (local_24._cnt < 0) {
-      _flsbuf(0,&local_24);
+    str._base = string;
+    str._ptr = string;
+    str._cnt = 0x7fffffff;
+    str._flag = 0x42;
+    iVar2 = _output_l(&str,format,plocinfo,ap);
+    str._cnt = str._cnt + -1;
+    if (str._cnt < 0) {
+      _flsbuf(0,&str);
     }
     else {
-      *local_24._ptr = '\0';
+      *str._ptr = '\0';
     }
   }
   return iVar2;
@@ -35,12 +35,12 @@ int __cdecl _vsprintf_l(char *param_1,char *param_2,localeinfo_struct *param_3,c
 
 // 00C11AE8  vsprintf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:172)
 
-int __cdecl vsprintf(char *param_1,char *param_2,char *param_3)
+int __cdecl vsprintf(char *string,char *format,char *ap)
 
 {
   int iVar1;
   
-  iVar1 = _vsprintf_l(param_1,param_2,(localeinfo_struct *)0x0,param_3);
+  iVar1 = _vsprintf_l(string,format,(localeinfo_struct *)0x0,ap);
   return iVar1;
 }
 
@@ -48,26 +48,26 @@ int __cdecl vsprintf(char *param_1,char *param_2,char *param_3)
 // 00C11B02  _vscprintf_helper  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:394)
 
 int __cdecl
-_vscprintf_helper(_func___cdecl_int__iobuf_ptr_char_ptr_localeinfo_struct_ptr_char_ptr *param_1,
-                 char *param_2,localeinfo_struct *param_3,char *param_4)
+_vscprintf_helper(_func___cdecl_int__iobuf_ptr_char_ptr_localeinfo_struct_ptr_char_ptr *outfn,
+                 char *format,localeinfo_struct *plocinfo,char *ap)
 
 {
   int *piVar1;
   int iVar2;
-  _iobuf local_24;
+  _iobuf str;
   
-  if (param_2 == (char *)0x0) {
+  if (format == (char *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    local_24._cnt = 0x7fffffff;
-    local_24._flag = 0x42;
-    local_24._base = (char *)0x0;
-    local_24._ptr = (char *)0x0;
-    iVar2 = (*param_1)(&local_24,param_2,param_3,param_4);
+    str._cnt = 0x7fffffff;
+    str._flag = 0x42;
+    str._base = (char *)0x0;
+    str._ptr = (char *)0x0;
+    iVar2 = (*outfn)(&str,format,plocinfo,ap);
   }
   return iVar2;
 }
@@ -75,12 +75,12 @@ _vscprintf_helper(_func___cdecl_int__iobuf_ptr_char_ptr_localeinfo_struct_ptr_ch
 
 // 00C11B59  _vscprintf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:413)
 
-int __cdecl _vscprintf(char *param_1,char *param_2)
+int __cdecl _vscprintf(char *format,char *ap)
 
 {
   int iVar1;
   
-  iVar1 = _vscprintf_helper(_output_l,param_1,(localeinfo_struct *)0x0,param_2);
+  iVar1 = _vscprintf_helper(_output_l,format,(localeinfo_struct *)0x0,ap);
   return iVar1;
 }
 

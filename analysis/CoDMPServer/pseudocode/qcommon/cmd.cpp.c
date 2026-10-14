@@ -21,12 +21,12 @@ void __cdecl Cmd_Wait_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    cmd_wait = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    cmd_wait = atoi(nptr);
   }
   else {
     cmd_wait = 1;
@@ -40,14 +40,14 @@ void __cdecl Cmd_Wait_f(void)
 void __cdecl Cbuf_Init(void)
 
 {
-  int local_8;
+  int client;
   
   Sys_EnterCriticalSection(CRITSECT_CBUF);
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    cmd_textArray[local_8].data = cmd_text_buf[local_8];
-    cmd_textArray[local_8].maxsize = 0x10000;
-    cmd_textArray[local_8].cmdsize = 0;
-    cmd_insideCBufExecute[local_8] = false;
+  for (client = 0; client < 1; client = client + 1) {
+    cmd_textArray[client].data = cmd_text_buf[client];
+    cmd_textArray[client].maxsize = 0x10000;
+    cmd_textArray[client].cmdsize = 0;
+    cmd_insideCBufExecute[client] = false;
   }
   sv_cmd_text.data = sv_cmd_text_buf;
   sv_cmd_text.maxsize = 0x10000;
@@ -59,18 +59,18 @@ void __cdecl Cbuf_Init(void)
 
 // 006C7D10  memcpy_noncrt  (qcommon/cmd.cpp:175)
 
-void __cdecl memcpy_noncrt(void *param_1,void *param_2,uint param_3)
+void __cdecl memcpy_noncrt(void *dst,void *src,uint length)
 
 {
-  undefined1 *local_c;
-  undefined1 *local_8;
+  char *ddst;
+  char *ssrc;
   
-  local_c = param_1;
-  local_8 = param_2;
-  for (; param_3 != 0; param_3 = param_3 - 1) {
-    *local_c = *local_8;
-    local_c = local_c + 1;
-    local_8 = local_8 + 1;
+  ddst = dst;
+  ssrc = src;
+  for (; length != 0; length = length - 1) {
+    *ddst = *ssrc;
+    ddst = ddst + 1;
+    ssrc = ssrc + 1;
   }
   return;
 }
@@ -78,51 +78,54 @@ void __cdecl memcpy_noncrt(void *param_1,void *param_2,uint param_3)
 
 // 006C8000  Cmd_ShiftArgs  (qcommon/cmd.cpp:204)
 
-void __cdecl Cmd_ShiftArgs(int param_1,CmdArgs *param_2)
+void __cdecl Cmd_ShiftArgs(int count,CmdArgs *args)
 
 {
   int local_14;
-  int local_c;
-  int local_8;
+  int dest_arg;
+  int src_arg;
   
-  local_14 = param_2->argc[param_2->nesting];
-  if (param_1 <= local_14) {
-    local_14 = param_1;
+  local_14 = args->argc[args->nesting];
+  if (count <= local_14) {
+    local_14 = count;
   }
-  local_8 = local_14;
-  for (local_c = 0; local_c < param_2->argc[param_2->nesting]; local_c = local_c + 1) {
-    if (local_8 < param_2->argc[param_2->nesting]) {
-      param_2->argv[param_2->nesting][local_c] = param_2->argv[param_2->nesting][local_8];
+  src_arg = local_14;
+  for (dest_arg = 0; dest_arg < args->argc[args->nesting]; dest_arg = dest_arg + 1) {
+    if (src_arg < args->argc[args->nesting]) {
+      args->argv[args->nesting][dest_arg] = args->argv[args->nesting][src_arg];
     }
     else {
-      param_2->argv[param_2->nesting][local_c] = (char *)0x0;
+      args->argv[args->nesting][dest_arg] = (char *)0x0;
     }
-    local_8 = local_8 + 1;
+    src_arg = src_arg + 1;
   }
-  param_2->argshift[param_2->nesting] = param_2->argshift[param_2->nesting] + local_14;
-  param_2->argc[param_2->nesting] = param_2->argc[param_2->nesting] - local_14;
+  args->argshift[args->nesting] = args->argshift[args->nesting] + local_14;
+  args->argc[args->nesting] = args->argc[args->nesting] - local_14;
   return;
 }
 
 
 // 006C7C10  Cbuf_AddText  (qcommon/cmd.cpp:231)
 
-void __cdecl Cbuf_AddText(int param_1,char *param_2)
+void __cdecl Cbuf_AddText(int localClientNum,char *text)
 
 {
   int iVar1;
+  CmdText *cmd_text;
+  int length;
   
   Sys_EnterCriticalSection(CRITSECT_CBUF);
-  if ((((*param_2 == 'p') || (*param_2 == 'P')) && ('/' < param_2[1])) && (param_2[1] < '1')) {
-    param_1 = param_2[1] + -0x30;
-    for (param_2 = param_2 + 2; *param_2 == ' '; param_2 = param_2 + 1) {
+  if ((((*text == 'p') || (*text == 'P')) && ('/' < text[1])) && (text[1] < '1')) {
+    localClientNum = text[1] + -0x30;
+    for (text = text + 2; *text == ' '; text = text + 1) {
     }
   }
-  iVar1 = strlen_noncrt(param_2);
-  if (iVar1 + cmd_textArray[param_1].cmdsize < cmd_textArray[param_1].maxsize) {
-    memcpy_noncrt(cmd_textArray[param_1].data + cmd_textArray[param_1].cmdsize,param_2,iVar1 + 1);
-    cmd_textArray[param_1].cmdsize = cmd_textArray[param_1].cmdsize + iVar1;
-    Scr_MonitorCommand(param_2,SCRIPTINSTANCE_SERVER);
+  iVar1 = strlen_noncrt(text);
+  if (iVar1 + cmd_textArray[localClientNum].cmdsize < cmd_textArray[localClientNum].maxsize) {
+    memcpy_noncrt(cmd_textArray[localClientNum].data + cmd_textArray[localClientNum].cmdsize,text,
+                  iVar1 + 1);
+    cmd_textArray[localClientNum].cmdsize = cmd_textArray[localClientNum].cmdsize + iVar1;
+    Scr_MonitorCommand(text,SCRIPTINSTANCE_SERVER);
     Sys_LeaveCriticalSection(CRITSECT_CBUF);
   }
   else {
@@ -142,6 +145,7 @@ itemDef_s * __cdecl Cmd_ItemDef(void)
   bool bVar2;
   CmdArgs *pCVar3;
   itemDef_s *piVar4;
+  CmdArgs *cmd_args;
   
   pCVar3 = Cmd_Args();
   if (7 < (uint)pCVar3->nesting) {
@@ -160,7 +164,7 @@ itemDef_s * __cdecl Cmd_ItemDef(void)
 
 // 006C7D90  Cbuf_InsertText  (qcommon/cmd.cpp:279)
 
-void __cdecl Cbuf_InsertText(int param_1,char *param_2)
+void __cdecl Cbuf_InsertText(int localClientNum,char *text)
 
 {
   char cVar1;
@@ -168,11 +172,13 @@ void __cdecl Cbuf_InsertText(int param_1,char *param_2)
   bool bVar3;
   CmdText *pCVar4;
   int iVar5;
-  ulong uVar6;
+  ulong count;
   char *local_14;
-  int local_c;
+  CmdText *cmd_text;
+  int i;
+  int length;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x11c,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -183,26 +189,26 @@ void __cdecl Cbuf_InsertText(int param_1,char *param_2)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_CBUF);
-  pCVar4 = cmd_textArray + param_1;
-  local_14 = param_2;
+  pCVar4 = cmd_textArray + localClientNum;
+  local_14 = text;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  uVar6 = (int)local_14 - (int)(param_2 + 1);
-  iVar5 = uVar6 + 1;
-  if (cmd_textArray[param_1].maxsize < iVar5 + cmd_textArray[param_1].cmdsize) {
+  count = (int)local_14 - (int)(text + 1);
+  iVar5 = count + 1;
+  if (cmd_textArray[localClientNum].maxsize < iVar5 + cmd_textArray[localClientNum].cmdsize) {
     Com_PrintError(1,"Cbuf_InsertText overflowed\n");
     Sys_LeaveCriticalSection(CRITSECT_CBUF);
   }
   else {
-    local_c = cmd_textArray[param_1].cmdsize;
-    while (local_c = local_c + -1, -1 < local_c) {
-      pCVar4->data[local_c + iVar5] = pCVar4->data[local_c];
+    i = cmd_textArray[localClientNum].cmdsize;
+    while (i = i + -1, -1 < i) {
+      pCVar4->data[i + iVar5] = pCVar4->data[i];
     }
-    memcpy(pCVar4->data,(uchar *)param_2,uVar6);
-    pCVar4->data[uVar6] = '\n';
-    cmd_textArray[param_1].cmdsize = cmd_textArray[param_1].cmdsize + iVar5;
+    memcpy(pCVar4->data,(uchar *)text,count);
+    pCVar4->data[count] = '\n';
+    cmd_textArray[localClientNum].cmdsize = cmd_textArray[localClientNum].cmdsize + iVar5;
     Sys_LeaveCriticalSection(CRITSECT_CBUF);
   }
   return;
@@ -230,23 +236,26 @@ void __cdecl Cbuf_AddServerText_f(void)
 
 // 006C7EF0  Cmd_ExecuteServerString  (qcommon/cmd.cpp:342)
 
-void __cdecl Cmd_ExecuteServerString(char *param_1)
+void __cdecl Cmd_ExecuteServerString(char *text)
 
 {
   cmd_function_s *pcVar1;
   int iVar2;
   char *pcVar3;
-  char *pcVar4;
-  cmd_function_s *local_c;
+  char *s1;
+  char *arg0;
+  char *predicate;
+  cmd_function_s **prev;
+  cmd_function_s *cmd;
   
-  iVar2 = PbTrapPreExecCmd(param_1);
+  iVar2 = PbTrapPreExecCmd(text);
   if (iVar2 == 0) {
-    SV_Cmd_TokenizeString(param_1);
+    SV_Cmd_TokenizeString(text);
     iVar2 = SV_Cmd_Argc();
     if (iVar2 != 0) {
-      pcVar4 = "if";
+      s1 = "if";
       pcVar3 = SV_Cmd_Argv(0);
-      iVar2 = I_stricmp(pcVar3,pcVar4);
+      iVar2 = I_stricmp(pcVar3,s1);
       if ((iVar2 == 0) && (iVar2 = SV_Cmd_Argc(), 2 < iVar2)) {
         pcVar3 = SV_Cmd_Argv(1);
         iVar2 = atoi(pcVar3);
@@ -257,15 +266,15 @@ void __cdecl Cmd_ExecuteServerString(char *param_1)
         Cmd_ShiftArgs(2,&sv_cmd_args);
       }
       pcVar3 = SV_Cmd_Argv(0);
-      local_c = (cmd_function_s *)&sv_cmd_functions;
-      pcVar1 = local_c;
+      prev = &sv_cmd_functions;
+      pcVar1 = (cmd_function_s *)prev;
       do {
-        local_c = pcVar1;
-        if (local_c->next == (cmd_function_s *)0x0) goto LAB_006c7ff5;
-        pcVar1 = local_c->next;
+        prev = &pcVar1->next;
+        if (*prev == (cmd_function_s *)0x0) goto LAB_006c7ff5;
+        pcVar1 = *prev;
         iVar2 = I_stricmp(pcVar3,pcVar1->name);
       } while (iVar2 != 0);
-      local_c->next = pcVar1->next;
+      *prev = pcVar1->next;
       pcVar1->next = sv_cmd_functions;
       sv_cmd_functions = pcVar1;
       if (pcVar1->function != (_func___cdecl_void *)0x0) {
@@ -289,36 +298,37 @@ void __cdecl Cbuf_SV_Execute(void)
 {
   code *pcVar1;
   bool bVar2;
-  ulong local_1010;
-  uchar local_100c [4096];
+  int quotes;
+  int i;
+  uchar line [4096];
   uint local_c;
-  uchar *local_8;
+  char *text;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   do {
     if (sv_cmd_text.cmdsize == 0) {
       return;
     }
-    local_8 = sv_cmd_text.data;
+    text = (char *)sv_cmd_text.data;
     bVar2 = false;
-    for (local_1010 = 0; (int)local_1010 < sv_cmd_text.cmdsize; local_1010 = local_1010 + 1) {
-      if (sv_cmd_text.data[local_1010] == '\"') {
+    for (i = 0; i < sv_cmd_text.cmdsize; i = i + 1) {
+      if (sv_cmd_text.data[i] == '\"') {
         bVar2 = (bool)(bVar2 ^ 1);
       }
-      if ((((!bVar2) && (sv_cmd_text.data[local_1010] == ';')) ||
-          (sv_cmd_text.data[local_1010] == '\n')) || (sv_cmd_text.data[local_1010] == '\r')) break;
+      if ((((!bVar2) && (sv_cmd_text.data[i] == ';')) || (sv_cmd_text.data[i] == '\n')) ||
+         (sv_cmd_text.data[i] == '\r')) break;
     }
-    if (0xffe < (int)local_1010) {
-      local_1010 = 0xfff;
+    if (0xffe < i) {
+      i = 0xfff;
     }
-    memcpy(local_100c,sv_cmd_text.data,local_1010);
-    local_100c[local_1010] = '\0';
-    if (local_1010 == sv_cmd_text.cmdsize) {
+    memcpy(line,sv_cmd_text.data,i);
+    line[i] = '\0';
+    if (i == sv_cmd_text.cmdsize) {
       sv_cmd_text.cmdsize = 0;
     }
     else {
-      sv_cmd_text.cmdsize = sv_cmd_text.cmdsize - (local_1010 + 1);
-      memmove(local_8,local_8 + local_1010 + 1,sv_cmd_text.cmdsize);
+      sv_cmd_text.cmdsize = sv_cmd_text.cmdsize - (i + 1);
+      memmove((uchar *)text,(uchar *)(text + i + 1),sv_cmd_text.cmdsize);
     }
     SV_WaitServer();
     if ((com_inServerFrame != 0) &&
@@ -328,7 +338,7 @@ void __cdecl Cbuf_SV_Execute(void)
       (*pcVar1)();
       return;
     }
-    Cmd_ExecuteServerString((char *)local_100c);
+    Cmd_ExecuteServerString((char *)line);
   } while( true );
 }
 
@@ -336,7 +346,7 @@ void __cdecl Cbuf_SV_Execute(void)
 // 006C82D0  Cmd_AddServerCommandInternal  (qcommon/cmd.cpp:468)
 
 void __cdecl
-Cmd_AddServerCommandInternal(char *param_1,_func___cdecl_void *param_2,cmd_function_s *param_3)
+Cmd_AddServerCommandInternal(char *cmdName,_func___cdecl_void *function,cmd_function_s *allocedCmd)
 
 {
   byte bVar1;
@@ -345,26 +355,26 @@ Cmd_AddServerCommandInternal(char *param_1,_func___cdecl_void *param_2,cmd_funct
   int local_18;
   byte *local_10;
   byte *local_c;
-  cmd_function_s *local_8;
+  cmd_function_s *cmd;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((cmdName == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x1d7,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8 = sv_cmd_functions;
+  cmd = sv_cmd_functions;
   do {
-    if (local_8 == (cmd_function_s *)0x0) {
-      param_3->name = param_1;
-      param_3->function = param_2;
-      param_3->next = sv_cmd_functions;
-      sv_cmd_functions = param_3;
+    if (cmd == (cmd_function_s *)0x0) {
+      allocedCmd->name = cmdName;
+      allocedCmd->function = function;
+      allocedCmd->next = sv_cmd_functions;
+      sv_cmd_functions = allocedCmd;
       return;
     }
-    local_c = (byte *)local_8->name;
-    local_10 = (byte *)param_1;
+    local_c = (byte *)cmd->name;
+    local_10 = (byte *)cmdName;
     do {
       bVar1 = *local_10;
       bVar3 = bVar1 < *local_c;
@@ -383,20 +393,20 @@ LAB_006c836b:
     local_18 = 0;
 LAB_006c8373:
     if (local_18 == 0) {
-      if ((local_8 != param_3) &&
+      if ((cmd != allocedCmd) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x1de,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (param_2 == (_func___cdecl_void *)0x0) {
+      if (function == (_func___cdecl_void *)0x0) {
         return;
       }
       Com_Printf(0x10,"Cmd_AddServerCommand: %s already defined\n");
       return;
     }
-    local_8 = local_8->next;
+    cmd = cmd->next;
   } while( true );
 }
 
@@ -407,43 +417,47 @@ LAB_006c8373:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Cmd_ExecSafeDvarSingleCommmandOnly(int param_1,int param_2,char *param_3,char ***param_4)
+Cmd_ExecSafeDvarSingleCommmandOnly
+          (int localClientNum,int controllerIndex,char *singleCommand,char ***dvarWhitelistArray)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_3014;
-  int local_3010;
-  char local_300c [4096];
+  int dvarWhitelistCount;
+  int dvarWhiteListArrayCount;
+  char arguments [4096];
   char local_200c [4096];
   char local_100c;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_4 == (char ***)0x0) &&
+  if ((dvarWhitelistArray == (char ***)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x1f1,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_4 != (char ***)0x0) {
+  if (dvarWhitelistArray != (char ***)0x0) {
     local_100c = '\0';
     local_200c[0] = '\0';
-    local_300c[0] = '\0';
-    sscanf(param_3,"%s %s %s");
-    if ((((local_300c[0] == '\0') || (local_200c[0] == '\0')) || (local_100c == '\0')) ||
-       (iVar3 = I_stricmp(local_300c,"set"), iVar3 != 0)) {
+    arguments[0] = '\0';
+    sscanf(singleCommand,"%s %s %s");
+    if ((((arguments[0] == '\0') || (local_200c[0] == '\0')) || (local_100c == '\0')) ||
+       (iVar3 = I_stricmp(arguments,"set"), iVar3 != 0)) {
       Com_Printf(0x10,"did not execute command %s from - not a Dvar set\n");
     }
     else {
-      for (local_3010 = 0; param_4[local_3010] != (char **)0x0; local_3010 = local_3010 + 1) {
-        for (local_3014 = 0; param_4[local_3010][local_3014] != (char *)0x0;
-            local_3014 = local_3014 + 1) {
-          iVar3 = I_stricmp(param_4[local_3010][local_3014],local_200c);
+      for (dvarWhiteListArrayCount = 0; dvarWhitelistArray[dvarWhiteListArrayCount] != (char **)0x0;
+          dvarWhiteListArrayCount = dvarWhiteListArrayCount + 1) {
+        for (dvarWhitelistCount = 0;
+            dvarWhitelistArray[dvarWhiteListArrayCount][dvarWhitelistCount] != (char *)0x0;
+            dvarWhitelistCount = dvarWhitelistCount + 1) {
+          iVar3 = I_stricmp(dvarWhitelistArray[dvarWhiteListArrayCount][dvarWhitelistCount],
+                            local_200c);
           if (iVar3 == 0) {
-            Cmd_ExecuteSingleCommand(param_1,param_2,param_3);
+            Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,singleCommand);
             return;
           }
         }
@@ -462,62 +476,64 @@ Cmd_ExecSafeDvarSingleCommmandOnly(int param_1,int param_2,char *param_3,char **
 
 void __cdecl
 Cbuf_ExecuteBufferInternal
-          (int param_1,int param_2,itemDef_s *param_3,char *param_4,char ***param_5,bool param_6)
+          (int localClientNum,int controllerIndex,itemDef_s *item,char *buffer,
+          char ***dvarWhitelistArray,bool restrict)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *local_1020;
-  ulong local_1018;
-  uchar local_1014 [4100];
+  int quotes;
+  int textLen;
+  uchar line [4100];
   uint local_10;
-  ulong local_c;
-  uchar *local_8;
+  int i;
+  char *text;
   
-  local_8 = (uchar *)0x6c842d;
+  text = (char *)0x6c842d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_4 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x23b,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8 = (uchar *)param_4;
-  local_1020 = param_4;
+  text = buffer;
+  local_1020 = buffer;
   do {
     cVar1 = *local_1020;
     local_1020 = local_1020 + 1;
   } while (cVar1 != '\0');
-  local_1018 = (int)local_1020 - (int)(param_4 + 1);
+  textLen = (int)local_1020 - (int)(buffer + 1);
   do {
-    if (local_1018 == 0) {
+    if (textLen == 0) {
       return;
     }
     bVar3 = false;
-    for (local_c = 0; (int)local_c < (int)local_1018; local_c = local_c + 1) {
-      if (local_8[local_c] == '\"') {
+    for (i = 0; i < textLen; i = i + 1) {
+      if (text[i] == '\"') {
         bVar3 = (bool)(bVar3 ^ 1);
       }
-      if ((((!bVar3) && (local_8[local_c] == ';')) || (local_8[local_c] == '\n')) ||
-         (local_8[local_c] == '\r')) break;
+      if ((((!bVar3) && (text[i] == ';')) || (text[i] == '\n')) || (text[i] == '\r')) break;
     }
-    if (0xffe < (int)local_c) {
-      local_c = 0xfff;
+    if (0xffe < i) {
+      i = 0xfff;
     }
-    memcpy(local_1014,local_8,local_c);
-    local_1014[local_c] = '\0';
-    if (local_c != local_1018) {
-      local_c = local_c + 1;
+    memcpy(line,(uchar *)text,i);
+    line[i] = '\0';
+    if (i != textLen) {
+      i = i + 1;
     }
-    local_8 = local_8 + local_c;
-    local_1018 = local_1018 - local_c;
-    if (param_5 == (char ***)0x0) {
-      Cmd_ExecuteSingleCommandInternal(param_1,param_2,param_3,(char *)local_1014,param_6);
+    text = text + i;
+    textLen = textLen - i;
+    if (dvarWhitelistArray == (char ***)0x0) {
+      Cmd_ExecuteSingleCommandInternal(localClientNum,controllerIndex,item,(char *)line,restrict);
     }
     else {
-      Cmd_ExecSafeDvarSingleCommmandOnly(param_1,param_2,(char *)local_1014,param_5);
+      Cmd_ExecSafeDvarSingleCommmandOnly
+                (localClientNum,controllerIndex,(char *)line,dvarWhitelistArray);
     }
   } while( true );
 }
@@ -525,30 +541,33 @@ Cbuf_ExecuteBufferInternal
 
 // 006C8400  Cbuf_ExecuteBuffer_Restricted  (qcommon/cmd.cpp:615)
 
-void __cdecl Cbuf_ExecuteBuffer_Restricted(int param_1,int param_2,char *param_3)
+void __cdecl Cbuf_ExecuteBuffer_Restricted(int localClientNum,int controllerIndex,char *buffer)
 
 {
-  Cbuf_ExecuteBufferInternal(param_1,param_2,(itemDef_s *)0x0,param_3,(char ***)0x0,true);
+  Cbuf_ExecuteBufferInternal
+            (localClientNum,controllerIndex,(itemDef_s *)0x0,buffer,(char ***)0x0,true);
   return;
 }
 
 
 // 006C87B0  Cbuf_ExecuteBuffer  (qcommon/cmd.cpp:621)
 
-void __cdecl Cbuf_ExecuteBuffer(int param_1,int param_2,char *param_3)
+void __cdecl Cbuf_ExecuteBuffer(int localClientNum,int controllerIndex,char *buffer)
 
 {
-  Cbuf_ExecuteBufferInternal(param_1,param_2,(itemDef_s *)0x0,param_3,(char ***)0x0,false);
+  Cbuf_ExecuteBufferInternal
+            (localClientNum,controllerIndex,(itemDef_s *)0x0,buffer,(char ***)0x0,false);
   return;
 }
 
 
 // 006C87D0  Cbuf_ExecuteBufferUI  (qcommon/cmd.cpp:626)
 
-void __cdecl Cbuf_ExecuteBufferUI(int param_1,int param_2,itemDef_s *param_3,char *param_4)
+void __cdecl
+Cbuf_ExecuteBufferUI(int localClientNum,int controllerIndex,itemDef_s *item,char *buffer)
 
 {
-  Cbuf_ExecuteBufferInternal(param_1,param_2,param_3,param_4,(char ***)0x0,false);
+  Cbuf_ExecuteBufferInternal(localClientNum,controllerIndex,item,buffer,(char ***)0x0,false);
   return;
 }
 
@@ -558,20 +577,22 @@ void __cdecl Cbuf_ExecuteBufferUI(int param_1,int param_2,itemDef_s *param_3,cha
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Cbuf_ExecuteInternal(int param_1,int param_2)
+void __cdecl Cbuf_ExecuteInternal(int localClientNum,int controllerIndex)
 
 {
   bool bVar1;
-  ulong local_1010;
-  uchar local_100c [4096];
+  int quotes;
+  CmdText *cmd_text;
+  int i;
+  uchar line [4096];
   uint local_c;
-  uchar *local_8;
+  char *text;
   
-  local_8 = (uchar *)0x6c88bd;
+  text = (char *)0x6c88bd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   Sys_EnterCriticalSection(CRITSECT_CBUF);
   do {
-    if (cmd_textArray[param_1].cmdsize == 0) {
+    if (cmd_textArray[localClientNum].cmdsize == 0) {
 LAB_006c8a8c:
       Sys_LeaveCriticalSection(CRITSECT_CBUF);
       return;
@@ -580,30 +601,28 @@ LAB_006c8a8c:
       cmd_wait = cmd_wait + -1;
       goto LAB_006c8a8c;
     }
-    local_8 = cmd_textArray[param_1].data;
+    text = (char *)cmd_textArray[localClientNum].data;
     bVar1 = false;
-    for (local_1010 = 0; (int)local_1010 < cmd_textArray[param_1].cmdsize;
-        local_1010 = local_1010 + 1) {
-      if (local_8[local_1010] == '\"') {
+    for (i = 0; i < cmd_textArray[localClientNum].cmdsize; i = i + 1) {
+      if (text[i] == '\"') {
         bVar1 = (bool)(bVar1 ^ 1);
       }
-      if ((((!bVar1) && (local_8[local_1010] == ';')) || (local_8[local_1010] == '\n')) ||
-         (local_8[local_1010] == '\r')) break;
+      if ((((!bVar1) && (text[i] == ';')) || (text[i] == '\n')) || (text[i] == '\r')) break;
     }
-    if (0xffe < (int)local_1010) {
-      local_1010 = 0xfff;
+    if (0xffe < i) {
+      i = 0xfff;
     }
-    memcpy(local_100c,local_8,local_1010);
-    local_100c[local_1010] = '\0';
-    if (local_1010 == cmd_textArray[param_1].cmdsize) {
-      cmd_textArray[param_1].cmdsize = 0;
+    memcpy(line,(uchar *)text,i);
+    line[i] = '\0';
+    if (i == cmd_textArray[localClientNum].cmdsize) {
+      cmd_textArray[localClientNum].cmdsize = 0;
     }
     else {
-      cmd_textArray[param_1].cmdsize = cmd_textArray[param_1].cmdsize - (local_1010 + 1);
-      memmove(local_8,local_8 + local_1010 + 1,cmd_textArray[param_1].cmdsize);
+      cmd_textArray[localClientNum].cmdsize = cmd_textArray[localClientNum].cmdsize - (i + 1);
+      memmove((uchar *)text,(uchar *)(text + i + 1),cmd_textArray[localClientNum].cmdsize);
     }
     Sys_LeaveCriticalSection(CRITSECT_CBUF);
-    Cmd_ExecuteSingleCommand(param_1,param_2,(char *)local_100c);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,(char *)line);
     Sys_EnterCriticalSection(CRITSECT_CBUF);
   } while( true );
 }
@@ -611,24 +630,25 @@ LAB_006c8a8c:
 
 // 006C8800  Cbuf_Execute  (qcommon/cmd.cpp:713)
 
-void __cdecl Cbuf_Execute(int param_1,int param_2)
+void __cdecl Cbuf_Execute(int localClientNum,int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"Cbuf_Execute");
-  if ((cmd_insideCBufExecute[param_1] != false) &&
+  if ((cmd_insideCBufExecute[localClientNum] != false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x2cd,0,
                                "%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  cmd_insideCBufExecute[param_1] = true;
-  Cbuf_ExecuteInternal(param_1,param_2);
-  cmd_insideCBufExecute[param_1] = false;
+  cmd_insideCBufExecute[localClientNum] = true;
+  Cbuf_ExecuteInternal(localClientNum,controllerIndex);
+  cmd_insideCBufExecute[localClientNum] = false;
   Cbuf_SV_Execute();
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -640,18 +660,18 @@ void __cdecl Cbuf_Execute(int param_1,int param_2)
 
 // 006CA660  Cmd_ExecFromDisk  (qcommon/cmd.cpp:738)
 
-bool __cdecl Cmd_ExecFromDisk(int param_1,int param_2,char *param_3)
+bool __cdecl Cmd_ExecFromDisk(int localClientNum,int controllerIndex,char *filename)
 
 {
   bool bVar1;
-  char *local_8;
+  char *text;
   
-  FS_ReadFile(param_3,&local_8);
-  bVar1 = local_8 != (char *)0x0;
+  FS_ReadFile(filename,&text);
+  bVar1 = text != (char *)0x0;
   if (bVar1) {
     Com_Printf(0x10,"execing %s from disk\n");
-    Con_Restricted_ExecuteBuf(param_1,param_2,local_8);
-    FS_FreeFile(local_8);
+    Con_Restricted_ExecuteBuf(localClientNum,controllerIndex,text);
+    FS_FreeFile(text);
   }
   else {
     Com_Printf(0x10,"Exec From Disk failed to open %s\n");
@@ -662,18 +682,18 @@ bool __cdecl Cmd_ExecFromDisk(int param_1,int param_2,char *param_3)
 
 // 006CA6D0  Cmd_ExecFromDiskAddText  (qcommon/cmd.cpp:763)
 
-bool __cdecl Cmd_ExecFromDiskAddText(int param_1,int param_2,char *param_3)
+bool __cdecl Cmd_ExecFromDiskAddText(int localClientNum,int controllerIndex,char *filename)
 
 {
   bool bVar1;
-  char *local_8;
+  char *text;
   
-  FS_ReadFile(param_3,&local_8);
-  bVar1 = local_8 != (char *)0x0;
+  FS_ReadFile(filename,&text);
+  bVar1 = text != (char *)0x0;
   if (bVar1) {
     Com_Printf(0x10,"execing %s from disk to command buffer\n");
-    Cbuf_AddText(param_1,local_8);
-    FS_FreeFile(local_8);
+    Cbuf_AddText(localClientNum,text);
+    FS_FreeFile(text);
   }
   else {
     Com_Printf(0x10,"Exec From Disk failed to open %s\n");
@@ -687,21 +707,22 @@ bool __cdecl Cmd_ExecFromDiskAddText(int param_1,int param_2,char *param_3)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Cmd_ExecFromFastFile(int param_1,int param_2,char *param_3)
+bool __cdecl Cmd_ExecFromFastFile(int localClientNum,int controllerIndex,char *filename)
 
 {
   bool bVar1;
   XAssetHeader XVar2;
+  RawFile *rawfile;
   
   bVar1 = DB_IsMinimumFastFileLoaded();
   if (bVar1) {
-    XVar2 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,param_3,true,-1);
+    XVar2 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,filename,true,-1);
     if (XVar2.xmodelPieces == (XModelPieces *)0x0) {
       bVar1 = false;
     }
     else {
       Com_Printf(0x10,"execing %s from fastfile\n");
-      Cbuf_ExecuteBuffer(param_1,param_2,*(char **)&((XVar2.material)->info).pad);
+      Cbuf_ExecuteBuffer(localClientNum,controllerIndex,*(char **)&((XVar2.material)->info).pad);
       bVar1 = true;
     }
   }
@@ -722,36 +743,37 @@ void __cdecl Cmd_Exec_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char local_94 [132];
+  char filename [132];
   uint local_10;
-  char local_9;
-  int local_8;
+  bool bAddText;
+  int localClientNum;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    local_9 = '\0';
+    bAddText = false;
     iVar2 = 0x80;
     pcVar3 = Cmd_Argv(0);
-    I_strncpyz(local_94,pcVar3,iVar2);
-    iVar2 = I_strcmp(local_94,"exec_addtext");
+    I_strncpyz(filename,pcVar3,iVar2);
+    iVar2 = I_strcmp(filename,"exec_addtext");
     if (iVar2 == 0) {
-      local_9 = '\x01';
+      bAddText = true;
     }
     iVar2 = 0x80;
     pcVar3 = Cmd_Argv(1);
-    I_strncpyz(local_94,pcVar3,iVar2);
-    Com_DefaultExtension(local_94,0x80,".cfg");
-    local_8 = 0;
-    pcVar3 = Com_GetFilenameSubString(local_94);
+    I_strncpyz(filename,pcVar3,iVar2);
+    Com_DefaultExtension(filename,0x80,".cfg");
+    localClientNum = 0;
+    pcVar3 = Com_GetFilenameSubString(filename);
     iVar2 = I_stricmp(pcVar3,"config_mp.cfg");
     if (iVar2 == 0) {
-      Cmd_ExecFromDisk(local_8,0,local_94);
+      Cmd_ExecFromDisk(localClientNum,0,filename);
     }
     else if (((((useFastFile->current).enabled == false) ||
-              (bVar1 = Cmd_ExecFromFastFile(local_8,0,local_94), !bVar1)) &&
-             ((local_9 == '\0' || (bVar1 = Cmd_ExecFromDiskAddText(local_8,0,local_94), !bVar1))))
-            && (bVar1 = Cmd_ExecFromDisk(local_8,0,local_94), !bVar1)) {
+              (bVar1 = Cmd_ExecFromFastFile(localClientNum,0,filename), !bVar1)) &&
+             ((bAddText == false ||
+              (bVar1 = Cmd_ExecFromDiskAddText(localClientNum,0,filename), !bVar1)))) &&
+            (bVar1 = Cmd_ExecFromDisk(localClientNum,0,filename), !bVar1)) {
       Cmd_Argv(1);
       Com_PrintError(1,"couldn\'t exec %s\n");
     }
@@ -772,20 +794,20 @@ void __cdecl Cmd_ExecAddText_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char local_8c [128];
+  char *src;
+  char filename [128];
   uint local_c;
-  undefined4 local_8;
+  int localClientNum;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
     iVar2 = 0x80;
-    pcVar3 = Cmd_Argv(1);
-    I_strncpyz(local_8c,pcVar3,iVar2);
-    Com_DefaultExtension(local_8c,0x80,".cfg");
-    local_8 = 0;
-    bVar1 = Cmd_ExecFromDiskAddText(0,0,local_8c);
+    src = Cmd_Argv(1);
+    I_strncpyz(filename,src,iVar2);
+    Com_DefaultExtension(filename,0x80,".cfg");
+    localClientNum = 0;
+    bVar1 = Cmd_ExecFromDiskAddText(0,0,filename);
     if (!bVar1) {
       Cmd_Argv(1);
       Com_PrintError(1,"couldn\'t exec %s\n");
@@ -808,6 +830,8 @@ void __cdecl Cmd_Vstr_f(void)
   int iVar1;
   char *pcVar2;
   dvar_s *pdVar3;
+  char *dvarName;
+  dvar_s *dvar;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
@@ -833,20 +857,20 @@ void __cdecl Cmd_Vstr_f(void)
 
 // 006C8B60  SV_Cmd_ArgvBuffer  (qcommon/cmd.cpp:985)
 
-void __cdecl SV_Cmd_ArgvBuffer(int param_1,char *param_2,int param_3)
+void __cdecl SV_Cmd_ArgvBuffer(int arg,char *buffer,int bufferLength)
 
 {
-  char *pcVar1;
+  char *src;
   
-  pcVar1 = SV_Cmd_Argv(param_1);
-  I_strncpyz(param_2,pcVar1,param_3);
+  src = SV_Cmd_Argv(arg);
+  I_strncpyz(buffer,src,bufferLength);
   return;
 }
 
 
 // 006C8B90  Cmd_ArgsBuffer  (qcommon/cmd.cpp:991)
 
-void __cdecl Cmd_ArgsBuffer(int param_1,char *param_2,int param_3)
+void __cdecl Cmd_ArgsBuffer(int start,char *buffer,int bufLength)
 
 {
   int iVar1;
@@ -854,9 +878,12 @@ void __cdecl Cmd_ArgsBuffer(int param_1,char *param_2,int param_3)
   code *pcVar3;
   bool bVar4;
   CmdArgs *pCVar5;
-  char *local_18;
-  int local_14;
-  char *local_c;
+  CmdArgs *cmd_args;
+  char *src;
+  int argIndex;
+  char **argv;
+  char *dst;
+  int argc;
   
   pCVar5 = Cmd_Args();
   bVar4 = Sys_IsMainThread();
@@ -867,7 +894,7 @@ void __cdecl Cmd_ArgsBuffer(int param_1,char *param_2,int param_3)
     (*pcVar3)();
     return;
   }
-  if ((param_1 < 0) &&
+  if ((start < 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",1000,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -882,64 +909,64 @@ void __cdecl Cmd_ArgsBuffer(int param_1,char *param_2,int param_3)
     (*pcVar3)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x3ea,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_3 < 2) &&
+  if ((bufLength < 2) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x3eb,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_c = param_2;
-  param_3 = param_3 + -1;
+  dst = buffer;
+  bufLength = bufLength + -1;
   iVar1 = pCVar5->argc[pCVar5->nesting];
   ppcVar2 = pCVar5->argv[pCVar5->nesting];
-  local_14 = param_1;
+  argIndex = start;
   while( true ) {
-    if (iVar1 <= local_14) {
-      *local_c = '\0';
+    if (iVar1 <= argIndex) {
+      *dst = '\0';
       return;
     }
-    local_18 = ppcVar2[local_14];
-    while (*local_18 != '\0') {
-      *local_c = *local_18;
-      local_c = local_c + 1;
-      local_18 = local_18 + 1;
-      param_3 = param_3 + -1;
-      if (param_3 == 0) {
-        *local_c = '\0';
+    src = ppcVar2[argIndex];
+    while (*src != '\0') {
+      *dst = *src;
+      dst = dst + 1;
+      src = src + 1;
+      bufLength = bufLength + -1;
+      if (bufLength == 0) {
+        *dst = '\0';
         return;
       }
     }
-    if (param_3 == 1) break;
-    if (local_14 != iVar1 + -1) {
-      *local_c = ' ';
-      local_c = local_c + 1;
-      param_3 = param_3 + -1;
+    if (bufLength == 1) break;
+    if (argIndex != iVar1 + -1) {
+      *dst = ' ';
+      dst = dst + 1;
+      bufLength = bufLength + -1;
     }
-    local_14 = local_14 + 1;
+    argIndex = argIndex + 1;
   }
-  *local_c = '\0';
+  *dst = '\0';
   return;
 }
 
 
 // 006C9460  Cmd_IsWhiteSpaceChar  (qcommon/cmd.cpp:1040)
 
-bool __cdecl Cmd_IsWhiteSpaceChar(char param_1)
+bool __cdecl Cmd_IsWhiteSpaceChar(char letter)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == '\0') {
+  if (letter == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x411,1,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -947,11 +974,11 @@ bool __cdecl Cmd_IsWhiteSpaceChar(char param_1)
       return (bool)uVar3;
     }
   }
-  if (((param_1 == '\x14') || (param_1 == '\x15')) || (param_1 == '\x16')) {
+  if (((letter == '\x14') || (letter == '\x15')) || (letter == '\x16')) {
     bVar2 = false;
   }
-  else if ((byte)param_1 < 0x21) {
-    bVar2 = Key_IsValidGamePadChar(param_1);
+  else if ((byte)letter < 0x21) {
+    bVar2 = Key_IsValidGamePadChar(letter);
     if (bVar2) {
       bVar2 = false;
     }
@@ -968,16 +995,16 @@ bool __cdecl Cmd_IsWhiteSpaceChar(char param_1)
 
 // 006C94E0  Cmd_EmitString  (qcommon/cmd.cpp:1069)
 
-void __cdecl Cmd_EmitString(char *param_1,CmdArgs *param_2)
+void __cdecl Cmd_EmitString(char *str,CmdArgs *argsPriv)
 
 {
-  while ((*param_1 != '\0' && ((uint)param_2->totalUsedTextPool < 0x1fff))) {
-    param_2->textPool[param_2->totalUsedTextPool] = *param_1;
-    param_1 = param_1 + 1;
-    param_2->totalUsedTextPool = param_2->totalUsedTextPool + 1;
+  while ((*str != '\0' && ((uint)argsPriv->totalUsedTextPool < 0x1fff))) {
+    argsPriv->textPool[argsPriv->totalUsedTextPool] = *str;
+    str = str + 1;
+    argsPriv->totalUsedTextPool = argsPriv->totalUsedTextPool + 1;
   }
-  param_2->textPool[param_2->totalUsedTextPool] = '\0';
-  param_2->totalUsedTextPool = param_2->totalUsedTextPool + 1;
+  argsPriv->textPool[argsPriv->totalUsedTextPool] = '\0';
+  argsPriv->totalUsedTextPool = argsPriv->totalUsedTextPool + 1;
   return;
 }
 
@@ -986,53 +1013,53 @@ void __cdecl Cmd_EmitString(char *param_1,CmdArgs *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Cmd_EvaluateExpression(char **param_1,CmdArgs *param_2)
+void __cdecl Cmd_EvaluateExpression(char **text_in,CmdArgs *argsPriv)
 
 {
   code *pcVar1;
   bool bVar2;
-  itemDef_s *piVar3;
-  undefined1 *puVar4;
-  int iVar5;
+  itemDef_s *item;
+  undefined1 *compileBuffer_00;
+  int compileBufferSize;
   int local_c28;
   int local_c24;
-  undefined1 local_c0c [3072];
+  undefined1 compileBuffer [3072];
   uint local_c;
-  char *local_8;
+  char *result;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char **)0x0) &&
+  if ((text_in == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x43c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*param_1 == (char *)0x0) &&
+  if ((*text_in == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x43d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar5 = 0xc00;
-  puVar4 = local_c0c;
-  piVar3 = Cmd_ItemDef();
-  for (local_8 = GetExpressionResultStringCompile(0,piVar3,param_1,puVar4,iVar5); *local_8 != '\0';
-      local_8 = local_8 + 1) {
-    param_2->textPool[param_2->totalUsedTextPool] = *local_8;
-    local_c24 = param_2->totalUsedTextPool + 1;
+  compileBufferSize = 0xc00;
+  compileBuffer_00 = compileBuffer;
+  item = Cmd_ItemDef();
+  for (result = GetExpressionResultStringCompile(0,item,text_in,compileBuffer_00,compileBufferSize);
+      *result != '\0'; result = result + 1) {
+    argsPriv->textPool[argsPriv->totalUsedTextPool] = *result;
+    local_c24 = argsPriv->totalUsedTextPool + 1;
     if (0x1ffd < local_c24) {
       local_c24 = 0x1ffe;
     }
-    param_2->totalUsedTextPool = local_c24;
+    argsPriv->totalUsedTextPool = local_c24;
   }
-  param_2->textPool[param_2->totalUsedTextPool] = '\0';
-  local_c28 = param_2->totalUsedTextPool + 1;
+  argsPriv->textPool[argsPriv->totalUsedTextPool] = '\0';
+  local_c28 = argsPriv->totalUsedTextPool + 1;
   if (0x1ffd < local_c28) {
     local_c28 = 0x1ffe;
   }
-  param_2->totalUsedTextPool = local_c28;
+  argsPriv->totalUsedTextPool = local_c28;
   return;
 }
 
@@ -1042,7 +1069,8 @@ void __cdecl Cmd_EvaluateExpression(char **param_1,CmdArgs *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-Cmd_TokenizeStringInternal(char *param_1,int param_2,bool param_3,char **param_4,CmdArgs *param_5)
+Cmd_TokenizeStringInternal
+          (char *text_in,int max_tokens,bool evalExpressions,char **argv,CmdArgs *argsPriv)
 
 {
   char cVar1;
@@ -1056,145 +1084,146 @@ Cmd_TokenizeStringInternal(char *param_1,int param_2,bool param_3,char **param_4
   int local_78;
   int local_74;
   int local_70;
-  uint local_48;
-  char local_40 [48];
+  int locCharCount;
+  char *translatedString;
+  char locToken [48];
   uint local_10;
-  char *local_c;
-  int local_8;
+  char *text;
+  int argc;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((text_in == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x45f,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_8 = 0;
-  local_c = param_1;
+  argc = 0;
+  text = text_in;
 LAB_006c8f7c:
   do {
     while( true ) {
       while( true ) {
         while( true ) {
-          if (*local_c == '\0') {
-            return local_8;
+          if (*text == '\0') {
+            return argc;
           }
-          bVar3 = Cmd_IsWhiteSpaceChar(*local_c);
+          bVar3 = Cmd_IsWhiteSpaceChar(*text);
           if (!bVar3) break;
-          local_c = local_c + 1;
+          text = text + 1;
         }
-        if ((*local_c == '/') && (local_c[1] == '/')) {
-          return local_8;
+        if ((*text == '/') && (text[1] == '/')) {
+          return argc;
         }
-        if ((*local_c != '/') || (local_c[1] != '*')) break;
-        for (local_c = local_c + 2; (*local_c != '\0' && ((*local_c != '*' || (local_c[1] != '/'))))
-            ; local_c = local_c + 1) {
+        if ((*text != '/') || (text[1] != '*')) break;
+        for (text = text + 2; (*text != '\0' && ((*text != '*' || (text[1] != '/'))));
+            text = text + 1) {
         }
-        if (*local_c == '\0') {
-          return local_8;
+        if (*text == '\0') {
+          return argc;
         }
-        local_c = local_c + 2;
+        text = text + 2;
       }
-      param_4[local_8] = param_5->textPool + param_5->totalUsedTextPool;
-      local_8 = local_8 + 1;
-      param_2 = param_2 + -1;
-      if (param_2 == 0) {
+      argv[argc] = argsPriv->textPool + argsPriv->totalUsedTextPool;
+      argc = argc + 1;
+      max_tokens = max_tokens + -1;
+      if (max_tokens == 0) {
         while( true ) {
-          param_5->textPool[param_5->totalUsedTextPool] = *local_c;
-          local_70 = param_5->totalUsedTextPool + 1;
+          argsPriv->textPool[argsPriv->totalUsedTextPool] = *text;
+          local_70 = argsPriv->totalUsedTextPool + 1;
           if (0x1ffd < local_70) {
             local_70 = 0x1ffe;
           }
-          param_5->totalUsedTextPool = local_70;
-          if (*local_c == '\0') break;
-          local_c = local_c + 1;
+          argsPriv->totalUsedTextPool = local_70;
+          if (*text == '\0') break;
+          text = text + 1;
         }
-        return local_8;
+        return argc;
       }
-      if ((!param_3) || (*local_c != '(')) break;
-      Cmd_EvaluateExpression(&local_c,param_5);
-      if (local_c == (char *)0x0) {
-        return local_8;
+      if ((!evalExpressions) || (*text != '(')) break;
+      Cmd_EvaluateExpression(&text,argsPriv);
+      if (text == (char *)0x0) {
+        return argc;
       }
-      cVar1 = *local_c;
+      cVar1 = *text;
 joined_r0x006c92f9:
       if (cVar1 == '\0') {
-        return local_8;
+        return argc;
       }
     }
-    if ((!param_3) || (*local_c != '@')) {
-      pcVar5 = local_c;
-      if (*local_c == '\"') {
-        while ((local_c = pcVar5 + 1, *local_c != '\0' && (*local_c != '\"'))) {
-          if ((*local_c == '\\') && (pcVar5[2] == '\"')) {
-            local_c = pcVar5 + 2;
+    if ((!evalExpressions) || (*text != '@')) {
+      pcVar5 = text;
+      if (*text == '\"') {
+        while ((text = pcVar5 + 1, *text != '\0' && (*text != '\"'))) {
+          if ((*text == '\\') && (pcVar5[2] == '\"')) {
+            text = pcVar5 + 2;
           }
-          param_5->textPool[param_5->totalUsedTextPool] = *local_c;
-          local_74 = param_5->totalUsedTextPool + 1;
+          argsPriv->textPool[argsPriv->totalUsedTextPool] = *text;
+          local_74 = argsPriv->totalUsedTextPool + 1;
           if (0x1ffd < local_74) {
             local_74 = 0x1ffe;
           }
-          param_5->totalUsedTextPool = local_74;
-          pcVar5 = local_c;
+          argsPriv->totalUsedTextPool = local_74;
+          pcVar5 = text;
         }
-        param_5->textPool[param_5->totalUsedTextPool] = '\0';
-        local_78 = param_5->totalUsedTextPool + 1;
+        argsPriv->textPool[argsPriv->totalUsedTextPool] = '\0';
+        local_78 = argsPriv->totalUsedTextPool + 1;
         if (0x1ffd < local_78) {
           local_78 = 0x1ffe;
         }
-        param_5->totalUsedTextPool = local_78;
-        if (*local_c == '\0') {
-          return local_8;
+        argsPriv->totalUsedTextPool = local_78;
+        if (*text == '\0') {
+          return argc;
         }
-        local_c = pcVar5 + 2;
-        cVar1 = *local_c;
+        text = pcVar5 + 2;
+        cVar1 = *text;
         goto joined_r0x006c92f9;
       }
       do {
-        param_5->textPool[param_5->totalUsedTextPool] = *local_c;
-        local_7c = param_5->totalUsedTextPool + 1;
+        argsPriv->textPool[argsPriv->totalUsedTextPool] = *text;
+        local_7c = argsPriv->totalUsedTextPool + 1;
         if (0x1ffd < local_7c) {
           local_7c = 0x1ffe;
         }
-        param_5->totalUsedTextPool = local_7c;
-        local_c = local_c + 1;
-        if (*local_c == '\0') {
-          param_5->textPool[param_5->totalUsedTextPool] = '\0';
-          local_80 = param_5->totalUsedTextPool + 1;
+        argsPriv->totalUsedTextPool = local_7c;
+        text = text + 1;
+        if (*text == '\0') {
+          argsPriv->textPool[argsPriv->totalUsedTextPool] = '\0';
+          local_80 = argsPriv->totalUsedTextPool + 1;
           if (0x1ffd < local_80) {
             local_80 = 0x1ffe;
           }
-          param_5->totalUsedTextPool = local_80;
-          return local_8;
+          argsPriv->totalUsedTextPool = local_80;
+          return argc;
         }
-        bVar3 = Cmd_IsWhiteSpaceChar(*local_c);
-      } while ((!bVar3) && ((*local_c != '/' || ((local_c[1] != '/' && (local_c[1] != '*'))))));
-      param_5->textPool[param_5->totalUsedTextPool] = '\0';
-      local_84 = param_5->totalUsedTextPool + 1;
+        bVar3 = Cmd_IsWhiteSpaceChar(*text);
+      } while ((!bVar3) && ((*text != '/' || ((text[1] != '/' && (text[1] != '*'))))));
+      argsPriv->textPool[argsPriv->totalUsedTextPool] = '\0';
+      local_84 = argsPriv->totalUsedTextPool + 1;
       if (0x1ffd < local_84) {
         local_84 = 0x1ffe;
       }
-      param_5->totalUsedTextPool = local_84;
+      argsPriv->totalUsedTextPool = local_84;
       goto LAB_006c8f7c;
     }
-    local_48 = 0;
-    while (((local_48 < 0x30 && (*local_c != '\0')) &&
-           (bVar3 = Cmd_IsWhiteSpaceChar(*local_c), !bVar3))) {
-      local_40[local_48] = *local_c;
-      local_48 = local_48 + 1;
-      local_c = local_c + 1;
+    locCharCount = 0;
+    while ((((uint)locCharCount < 0x30 && (*text != '\0')) &&
+           (bVar3 = Cmd_IsWhiteSpaceChar(*text), !bVar3))) {
+      locToken[locCharCount] = *text;
+      locCharCount = locCharCount + 1;
+      text = text + 1;
     }
-    local_40[local_48] = '\0';
-    pcVar5 = SEH_StringEd_GetString(local_40 + 1);
+    locToken[locCharCount] = '\0';
+    pcVar5 = SEH_StringEd_GetString(locToken + 1);
     if (pcVar5 == (char *)0x0) {
-      Cmd_EmitString(local_40,param_5);
+      Cmd_EmitString(locToken,argsPriv);
     }
     else {
-      Cmd_EmitString(pcVar5,param_5);
+      Cmd_EmitString(pcVar5,argsPriv);
     }
-    if (*local_c == '\0') {
-      return local_8;
+    if (*text == '\0') {
+      return argc;
     }
   } while( true );
 }
@@ -1202,31 +1231,31 @@ joined_r0x006c92f9:
 
 // 006C9730  AssertCmdArgsConsistency  (qcommon/cmd.cpp:1253)
 
-void __cdecl AssertCmdArgsConsistency(CmdArgs *param_1)
+void __cdecl AssertCmdArgsConsistency(CmdArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int totalUsedTextPool;
+  int totalUsedArgvPool;
+  int arg;
+  int nesting;
   
-  local_10 = 0;
-  local_14 = 0;
-  for (local_8 = 0; local_8 <= param_1->nesting; local_8 = local_8 + 1) {
-    local_10 = local_10 + param_1->argc[local_8] + param_1->argshift[local_8];
-    local_14 = local_14 + param_1->usedTextPool[local_8];
+  totalUsedArgvPool = 0;
+  totalUsedTextPool = 0;
+  for (nesting = 0; nesting <= args->nesting; nesting = nesting + 1) {
+    totalUsedArgvPool = totalUsedArgvPool + args->argc[nesting] + args->argshift[nesting];
+    totalUsedTextPool = totalUsedTextPool + args->usedTextPool[nesting];
   }
-  if (local_10 != param_1->totalUsedArgvPool) {
+  if (totalUsedArgvPool != args->totalUsedArgvPool) {
     Com_Printf(0x10,"About to assert totalUsedArgvPool\n");
-    for (local_8 = 0; local_8 <= param_1->nesting; local_8 = local_8 + 1) {
-      for (local_c = 0; local_c < param_1->argc[local_8]; local_c = local_c + 1) {
+    for (nesting = 0; nesting <= args->nesting; nesting = nesting + 1) {
+      for (arg = 0; arg < args->argc[nesting]; arg = arg + 1) {
         Com_Printf(0x10,"nesting %i, arg %i: \'%s\'\n");
       }
     }
   }
-  if (local_10 != param_1->totalUsedArgvPool) {
+  if (totalUsedArgvPool != args->totalUsedArgvPool) {
     va(
       "totalUsedArgvPool is %i, args->totalUsedArgvPool is %i, args->nesting is %i, args->argc[0] is %i, args->argc[1] is %i, args->argc[2] is %i, args->argc[3] is %i"
       );
@@ -1238,7 +1267,7 @@ void __cdecl AssertCmdArgsConsistency(CmdArgs *param_1)
       return;
     }
   }
-  if (local_14 != param_1->totalUsedTextPool) {
+  if (totalUsedTextPool != args->totalUsedTextPool) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x4fd,0,
                              "totalUsedTextPool == args->totalUsedTextPool\n\t%i, %i");
     if (!bVar2) {
@@ -1255,15 +1284,15 @@ void __cdecl AssertCmdArgsConsistency(CmdArgs *param_1)
 
 void __cdecl
 Cmd_TokenizeStringKernel
-          (int param_1,int param_2,itemDef_s *param_3,char *param_4,int param_5,bool param_6,
-          CmdArgs *param_7)
+          (int localClientNum,int localControllerIndex,itemDef_s *item,char *text_in,int max_tokens,
+          bool evalExpressions,CmdArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (0x200 - param_7->totalUsedArgvPool < param_5) {
+  if (0x200 - args->totalUsedArgvPool < max_tokens) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x506,0,
                              "max_tokens <= MAX_TOKENS_SIZE - args->totalUsedArgvPool\n\t%i, %i");
     if (!bVar2) {
@@ -1272,9 +1301,9 @@ Cmd_TokenizeStringKernel
       return;
     }
   }
-  AssertCmdArgsConsistency(param_7);
-  param_7->nesting = param_7->nesting + 1;
-  if (7 < (uint)param_7->nesting) {
+  AssertCmdArgsConsistency(args);
+  args->nesting = args->nesting + 1;
+  if (7 < (uint)args->nesting) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x50b,0,
                              "args->nesting doesn\'t index CMD_MAX_NESTING\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1283,34 +1312,33 @@ Cmd_TokenizeStringKernel
       return;
     }
   }
-  param_7->usedTextPool[param_7->nesting] = -param_7->totalUsedTextPool;
-  param_7->itemDef[param_7->nesting] = param_3;
-  param_7->localClientNum[param_7->nesting] = param_1;
-  param_7->controllerIndex[param_7->nesting] = param_2;
-  param_7->argv[param_7->nesting] = param_7->argvPool + param_7->totalUsedArgvPool;
-  param_7->argshift[param_7->nesting] = 0;
+  args->usedTextPool[args->nesting] = -args->totalUsedTextPool;
+  args->itemDef[args->nesting] = item;
+  args->localClientNum[args->nesting] = localClientNum;
+  args->controllerIndex[args->nesting] = localControllerIndex;
+  args->argv[args->nesting] = args->argvPool + args->totalUsedArgvPool;
+  args->argshift[args->nesting] = 0;
   iVar3 = Cmd_TokenizeStringInternal
-                    (param_4,param_5,param_6,param_7->argv[param_7->nesting],param_7);
-  param_7->argc[param_7->nesting] = iVar3;
-  param_7->totalUsedArgvPool = param_7->totalUsedArgvPool + param_7->argc[param_7->nesting];
-  param_7->usedTextPool[param_7->nesting] =
-       param_7->usedTextPool[param_7->nesting] + param_7->totalUsedTextPool;
-  AssertCmdArgsConsistency(param_7);
+                    (text_in,max_tokens,evalExpressions,args->argv[args->nesting],args);
+  args->argc[args->nesting] = iVar3;
+  args->totalUsedArgvPool = args->totalUsedArgvPool + args->argc[args->nesting];
+  args->usedTextPool[args->nesting] = args->usedTextPool[args->nesting] + args->totalUsedTextPool;
+  AssertCmdArgsConsistency(args);
   return;
 }
 
 
 // 006C99A0  Cmd_EndTokenizedStringKernel  (qcommon/cmd.cpp:1310)
 
-void __cdecl Cmd_EndTokenizedStringKernel(CmdArgs *param_1)
+void __cdecl Cmd_EndTokenizedStringKernel(CmdArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  AssertCmdArgsConsistency(param_1);
-  if (param_1->nesting != -1) {
-    if ((7 < (uint)param_1->nesting) &&
+  AssertCmdArgsConsistency(args);
+  if (args->nesting != -1) {
+    if ((7 < (uint)args->nesting) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x524,0,
                                  "args->nesting doesn\'t index CMD_MAX_NESTING\n\t%i not in [0, %i)"
                                 ), !bVar2)) {
@@ -1318,12 +1346,11 @@ void __cdecl Cmd_EndTokenizedStringKernel(CmdArgs *param_1)
       (*pcVar1)();
       return;
     }
-    param_1->totalUsedArgvPool = param_1->totalUsedArgvPool - param_1->argc[param_1->nesting];
-    param_1->totalUsedArgvPool = param_1->totalUsedArgvPool - param_1->argshift[param_1->nesting];
-    param_1->totalUsedTextPool =
-         param_1->totalUsedTextPool - param_1->usedTextPool[param_1->nesting];
-    param_1->nesting = param_1->nesting + -1;
-    AssertCmdArgsConsistency(param_1);
+    args->totalUsedArgvPool = args->totalUsedArgvPool - args->argc[args->nesting];
+    args->totalUsedArgvPool = args->totalUsedArgvPool - args->argshift[args->nesting];
+    args->totalUsedTextPool = args->totalUsedTextPool - args->usedTextPool[args->nesting];
+    args->nesting = args->nesting + -1;
+    AssertCmdArgsConsistency(args);
   }
   return;
 }
@@ -1331,52 +1358,52 @@ void __cdecl Cmd_EndTokenizedStringKernel(CmdArgs *param_1)
 
 // 006C8D60  Cmd_TokenizeStringWithLimit  (qcommon/cmd.cpp:1337)
 
-void __cdecl Cmd_TokenizeStringWithLimit(char *param_1,int param_2)
+void __cdecl Cmd_TokenizeStringWithLimit(char *text_in,int max_tokens)
 
 {
-  CmdArgs *pCVar1;
+  CmdArgs *args;
   
-  pCVar1 = Cmd_Args();
-  Cmd_TokenizeStringKernel(-1,0,(itemDef_s *)0x0,param_1,param_2,true,pCVar1);
+  args = Cmd_Args();
+  Cmd_TokenizeStringKernel(-1,0,(itemDef_s *)0x0,text_in,max_tokens,true,args);
   return;
 }
 
 
 // 006C98F0  Cmd_TokenizeStringWithLimitNoEval  (qcommon/cmd.cpp:1342)
 
-void __cdecl Cmd_TokenizeStringWithLimitNoEval(char *param_1,int param_2)
+void __cdecl Cmd_TokenizeStringWithLimitNoEval(char *text_in,int max_tokens)
 
 {
-  CmdArgs *pCVar1;
+  CmdArgs *args;
   
-  pCVar1 = Cmd_Args();
-  Cmd_TokenizeStringKernel(-1,0,(itemDef_s *)0x0,param_1,param_2,false,pCVar1);
+  args = Cmd_Args();
+  Cmd_TokenizeStringKernel(-1,0,(itemDef_s *)0x0,text_in,max_tokens,false,args);
   return;
 }
 
 
 // 006C9920  Cmd_TokenizeString  (qcommon/cmd.cpp:1353)
 
-void __cdecl Cmd_TokenizeString(char *param_1)
+void __cdecl Cmd_TokenizeString(char *text_in)
 
 {
   CmdArgs *pCVar1;
   
   pCVar1 = Cmd_Args();
-  Cmd_TokenizeStringWithLimit(param_1,0x200 - pCVar1->totalUsedArgvPool);
+  Cmd_TokenizeStringWithLimit(text_in,0x200 - pCVar1->totalUsedArgvPool);
   return;
 }
 
 
 // 006C9950  Cmd_TokenizeStringNoEval  (qcommon/cmd.cpp:1358)
 
-void __cdecl Cmd_TokenizeStringNoEval(char *param_1)
+void __cdecl Cmd_TokenizeStringNoEval(char *text_in)
 
 {
   CmdArgs *pCVar1;
   
   pCVar1 = Cmd_Args();
-  Cmd_TokenizeStringWithLimitNoEval(param_1,0x200 - pCVar1->totalUsedArgvPool);
+  Cmd_TokenizeStringWithLimitNoEval(text_in,0x200 - pCVar1->totalUsedArgvPool);
   return;
 }
 
@@ -1386,21 +1413,21 @@ void __cdecl Cmd_TokenizeStringNoEval(char *param_1)
 void __cdecl Cmd_EndTokenizedString(void)
 
 {
-  CmdArgs *pCVar1;
+  CmdArgs *args;
   
-  pCVar1 = Cmd_Args();
-  Cmd_EndTokenizedStringKernel(pCVar1);
+  args = Cmd_Args();
+  Cmd_EndTokenizedStringKernel(args);
   return;
 }
 
 
 // 006C9A70  SV_Cmd_TokenizeString  (qcommon/cmd.cpp:1375)
 
-void __cdecl SV_Cmd_TokenizeString(char *param_1)
+void __cdecl SV_Cmd_TokenizeString(char *text_in)
 
 {
   Cmd_TokenizeStringKernel
-            (-1,0,(itemDef_s *)0x0,param_1,0x200 - sv_cmd_args.totalUsedArgvPool,true,&sv_cmd_args);
+            (-1,0,(itemDef_s *)0x0,text_in,0x200 - sv_cmd_args.totalUsedArgvPool,true,&sv_cmd_args);
   return;
 }
 
@@ -1417,7 +1444,7 @@ void __cdecl SV_Cmd_EndTokenizedString(void)
 
 // 006C9AC0  Cmd_FindCommand  (qcommon/cmd.cpp:1387)
 
-cmd_function_s * __cdecl Cmd_FindCommand(char *param_1)
+cmd_function_s * __cdecl Cmd_FindCommand(char *cmdName)
 
 {
   byte bVar1;
@@ -1425,15 +1452,15 @@ cmd_function_s * __cdecl Cmd_FindCommand(char *param_1)
   int local_18;
   byte *local_10;
   byte *local_c;
-  cmd_function_s *local_8;
+  cmd_function_s *cmd;
   
-  local_8 = cmd_functions;
+  cmd = cmd_functions;
   do {
-    if (local_8 == (cmd_function_s *)0x0) {
+    if (cmd == (cmd_function_s *)0x0) {
       return (cmd_function_s *)0x0;
     }
-    local_c = (byte *)local_8->name;
-    local_10 = (byte *)param_1;
+    local_c = (byte *)cmd->name;
+    local_10 = (byte *)cmdName;
     do {
       bVar1 = *local_10;
       bVar2 = bVar1 < *local_c;
@@ -1452,9 +1479,9 @@ LAB_006c9b2a:
     local_18 = 0;
 LAB_006c9b32:
     if (local_18 == 0) {
-      return local_8;
+      return cmd;
     }
-    local_8 = local_8->next;
+    cmd = cmd->next;
   } while( true );
 }
 
@@ -1462,37 +1489,38 @@ LAB_006c9b32:
 // 006C9B50  Cmd_AddCommandInternal  (qcommon/cmd.cpp:1400)
 
 void __cdecl
-Cmd_AddCommandInternal(char *param_1,_func___cdecl_void *param_2,cmd_function_s *param_3)
+Cmd_AddCommandInternal(char *cmdName,_func___cdecl_void *function,cmd_function_s *allocedCmd)
 
 {
   code *pcVar1;
   bool bVar2;
   cmd_function_s *pcVar3;
+  cmd_function_s *cmd;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((cmdName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x57b,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = Cmd_FindCommand(param_1);
+  pcVar3 = Cmd_FindCommand(cmdName);
   if (pcVar3 == (cmd_function_s *)0x0) {
-    param_3->name = param_1;
-    param_3->function = param_2;
-    param_3->next = cmd_functions;
-    *(undefined1 *)&param_3[1].next = 0;
-    cmd_functions = param_3;
+    allocedCmd->name = cmdName;
+    allocedCmd->function = function;
+    allocedCmd->next = cmd_functions;
+    *(undefined1 *)&allocedCmd[1].next = 0;
+    cmd_functions = allocedCmd;
   }
   else {
-    if ((pcVar3 != param_3) &&
+    if ((pcVar3 != allocedCmd) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x580,0,"%s")
        , !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_2 != (_func___cdecl_void *)0x0) {
+    if (function != (_func___cdecl_void *)0x0) {
       Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n");
     }
   }
@@ -1502,7 +1530,7 @@ Cmd_AddCommandInternal(char *param_1,_func___cdecl_void *param_2,cmd_function_s 
 
 // 006C9C10  Cmd_RemoveCommand  (qcommon/cmd.cpp:1426)
 
-void __cdecl Cmd_RemoveCommand(char *param_1)
+void __cdecl Cmd_RemoveCommand(char *cmdName)
 
 {
   byte bVar1;
@@ -1511,18 +1539,19 @@ void __cdecl Cmd_RemoveCommand(char *param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  cmd_function_s *local_c;
+  cmd_function_s **back;
+  cmd_function_s *cmd;
   
-  local_c = (cmd_function_s *)&cmd_functions;
-  pcVar2 = local_c;
+  back = &cmd_functions;
+  pcVar2 = (cmd_function_s *)back;
   do {
-    local_c = pcVar2;
-    pcVar2 = local_c->next;
+    back = &pcVar2->next;
+    pcVar2 = *back;
     if (pcVar2 == (cmd_function_s *)0x0) {
       return;
     }
     local_10 = (byte *)pcVar2->name;
-    local_14 = (byte *)param_1;
+    local_14 = (byte *)cmdName;
     do {
       bVar1 = *local_14;
       bVar3 = bVar1 < *local_10;
@@ -1541,7 +1570,7 @@ LAB_006c9c79:
     local_1c = 0;
 LAB_006c9c81:
     if (local_1c == 0) {
-      local_c->next = pcVar2->next;
+      *back = pcVar2->next;
       return;
     }
   } while( true );
@@ -1550,14 +1579,15 @@ LAB_006c9c81:
 
 // 006C9CB0  Cmd_SetAutoComplete  (qcommon/cmd.cpp:1449)
 
-void __cdecl Cmd_SetAutoComplete(char *param_1,char *param_2,char *param_3)
+void __cdecl Cmd_SetAutoComplete(char *cmdName,char *dir,char *ext)
 
 {
   code *pcVar1;
   bool bVar2;
   cmd_function_s *pcVar3;
+  cmd_function_s *cmd;
   
-  if (param_1 == (char *)0x0) {
+  if (cmdName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x5ac,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1565,7 +1595,7 @@ void __cdecl Cmd_SetAutoComplete(char *param_1,char *param_2,char *param_3)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (dir == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x5ad,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1573,7 +1603,7 @@ void __cdecl Cmd_SetAutoComplete(char *param_1,char *param_2,char *param_3)
       return;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (ext == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x5ae,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1581,7 +1611,7 @@ void __cdecl Cmd_SetAutoComplete(char *param_1,char *param_2,char *param_3)
       return;
     }
   }
-  pcVar3 = Cmd_FindCommand(param_1);
+  pcVar3 = Cmd_FindCommand(cmdName);
   if (pcVar3 == (cmd_function_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x5b2,0,"%s");
     if (!bVar2) {
@@ -1606,8 +1636,8 @@ void __cdecl Cmd_SetAutoComplete(char *param_1,char *param_2,char *param_3)
       return;
     }
   }
-  pcVar3->autoCompleteDir = param_2;
-  pcVar3->autoCompleteExt = param_3;
+  pcVar3->autoCompleteDir = dir;
+  pcVar3->autoCompleteExt = ext;
   return;
 }
 
@@ -1625,13 +1655,13 @@ void __cdecl Cmd_Shutdown(void)
 
 // 006C9E10  Cmd_ForEach  (qcommon/cmd.cpp:1480)
 
-void __cdecl Cmd_ForEach(_func___cdecl_void_char_ptr *param_1)
+void __cdecl Cmd_ForEach(_func___cdecl_void_char_ptr *callback)
 
 {
-  cmd_function_s *local_8;
+  cmd_function_s *cmd;
   
-  for (local_8 = cmd_functions; local_8 != (cmd_function_s *)0x0; local_8 = local_8->next) {
-    (*param_1)(local_8->name);
+  for (cmd = cmd_functions; cmd != (cmd_function_s *)0x0; cmd = cmd->next) {
+    (*callback)(cmd->name);
   }
   return;
 }
@@ -1642,10 +1672,10 @@ void __cdecl Cmd_ForEach(_func___cdecl_void_char_ptr *param_1)
 void __cdecl Cmd_ResetConAccessCommands(void)
 
 {
-  cmd_function_s *local_8;
+  cmd_function_s *cmd;
   
-  for (local_8 = cmd_functions; local_8 != (cmd_function_s *)0x0; local_8 = local_8->next) {
-    *(undefined1 *)&local_8[1].next = 0;
+  for (cmd = cmd_functions; cmd != (cmd_function_s *)0x0; cmd = cmd->next) {
+    *(undefined1 *)&cmd[1].next = 0;
   }
   return;
 }
@@ -1653,43 +1683,44 @@ void __cdecl Cmd_ResetConAccessCommands(void)
 
 // 006C9E70  Cmd_SetConAccess  (qcommon/cmd.cpp:1497)
 
-bool __cdecl Cmd_SetConAccess(char *param_1)
+bool __cdecl Cmd_SetConAccess(char *str)
 
 {
   int iVar1;
-  cmd_function_s *local_c;
+  cmd_function_s **prev;
+  cmd_function_s *cmd;
   
-  local_c = (cmd_function_s *)&cmd_functions;
+  prev = &cmd_functions;
   do {
-    if (local_c->next == (cmd_function_s *)0x0) {
+    if (*prev == (cmd_function_s *)0x0) {
       return false;
     }
-    local_c = local_c->next;
-    iVar1 = I_stricmp(param_1,local_c->name);
+    prev = &(*prev)->next;
+    iVar1 = I_stricmp(str,((cmd_function_s *)prev)->name);
   } while (iVar1 != 0);
-  *(undefined1 *)&local_c[1].next = 1;
+  *(undefined1 *)&((cmd_function_s *)((int)prev + 0x14))->next = 1;
   return true;
 }
 
 
 // 006C9EC0  Cmd_ForEachConsoleAccessName  (qcommon/cmd.cpp:1514)
 
-void __cdecl Cmd_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *param_1)
+void __cdecl Cmd_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *callback)
 
 {
   bool bVar1;
-  cmd_function_s *local_8;
+  cmd_function_s *cmd;
   
   bVar1 = Dvar_GetBool("con_restricted_access");
   if (bVar1) {
-    for (local_8 = cmd_functions; local_8 != (cmd_function_s *)0x0; local_8 = local_8->next) {
-      if (*(char *)&local_8[1].next != '\0') {
-        (*param_1)(local_8->name);
+    for (cmd = cmd_functions; cmd != (cmd_function_s *)0x0; cmd = cmd->next) {
+      if (*(char *)&cmd[1].next != '\0') {
+        (*callback)(cmd->name);
       }
     }
   }
   else {
-    Cmd_ForEach(param_1);
+    Cmd_ForEach(callback);
   }
   return;
 }
@@ -1697,15 +1728,16 @@ void __cdecl Cmd_ForEachConsoleAccessName(_func___cdecl_void_char_ptr *param_1)
 
 // 006C9F20  Cmd_GetAutoCompleteFileList  (qcommon/cmd.cpp:1538)
 
-char ** __cdecl Cmd_GetAutoCompleteFileList(char *param_1,int *param_2,int param_3)
+char ** __cdecl Cmd_GetAutoCompleteFileList(char *cmdName,int *fileCount,int allocTrackType)
 
 {
   code *pcVar1;
   bool bVar2;
   char **ppcVar3;
   cmd_function_s *pcVar4;
+  cmd_function_s *cmd;
   
-  if (param_1 == (char *)0x0) {
+  if (cmdName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x605,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1713,7 +1745,7 @@ char ** __cdecl Cmd_GetAutoCompleteFileList(char *param_1,int *param_2,int param
       return ppcVar3;
     }
   }
-  if (param_2 == (int *)0x0) {
+  if (fileCount == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x606,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1721,15 +1753,15 @@ char ** __cdecl Cmd_GetAutoCompleteFileList(char *param_1,int *param_2,int param
       return ppcVar3;
     }
   }
-  *param_2 = 0;
-  pcVar4 = Cmd_FindCommand(param_1);
+  *fileCount = 0;
+  pcVar4 = Cmd_FindCommand(cmdName);
   if (((pcVar4 == (cmd_function_s *)0x0) || (pcVar4->autoCompleteDir == (char *)0x0)) ||
      (pcVar4->autoCompleteExt == (char *)0x0)) {
     ppcVar3 = (char **)0x0;
   }
   else {
-    ppcVar3 = FS_ListFiles(pcVar4->autoCompleteDir,pcVar4->autoCompleteExt,FS_LIST_PURE_ONLY,param_2
-                           ,param_3);
+    ppcVar3 = FS_ListFiles(pcVar4->autoCompleteDir,pcVar4->autoCompleteExt,FS_LIST_PURE_ONLY,
+                           fileCount,allocTrackType);
   }
   return ppcVar3;
 }
@@ -1737,12 +1769,12 @@ char ** __cdecl Cmd_GetAutoCompleteFileList(char *param_1,int *param_2,int param
 
 // 006CA030  Cmd_ResetArgs  (qcommon/cmd.cpp:1557)
 
-void __cdecl Cmd_ResetArgs(CmdArgs *param_1)
+void __cdecl Cmd_ResetArgs(CmdArgs *args)
 
 {
-  param_1->nesting = -1;
-  param_1->totalUsedArgvPool = 0;
-  param_1->totalUsedTextPool = 0;
+  args->nesting = -1;
+  args->totalUsedArgvPool = 0;
+  args->totalUsedTextPool = 0;
   return;
 }
 
@@ -1752,14 +1784,14 @@ void __cdecl Cmd_ResetArgs(CmdArgs *param_1)
 void __cdecl Cmd_ComErrorCleanup(void)
 
 {
-  CmdArgs *pCVar1;
-  int local_8;
+  CmdArgs *args;
+  int client;
   
-  pCVar1 = Cmd_Args();
-  Cmd_ResetArgs(pCVar1);
+  args = Cmd_Args();
+  Cmd_ResetArgs(args);
   Cmd_ResetArgs(&sv_cmd_args);
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    cmd_insideCBufExecute[local_8] = false;
+  for (client = 0; client < 1; client = client + 1) {
+    cmd_insideCBufExecute[client] = false;
   }
   return;
 }
@@ -1767,9 +1799,11 @@ void __cdecl Cmd_ComErrorCleanup(void)
 
 // 006CA060  Cmd_ExecuteSingleCommandInternal  (qcommon/cmd.cpp:1583)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 void __cdecl
 Cmd_ExecuteSingleCommandInternal
-          (int param_1,int param_2,itemDef_s *param_3,char *param_4,bool param_5)
+          (int localClientNum,int controllerIndex,itemDef_s *item,char *text,bool restrict)
 
 {
   cmd_function_s *pcVar1;
@@ -1779,40 +1813,45 @@ Cmd_ExecuteSingleCommandInternal
   CmdArgs *pCVar5;
   CmdArgs *pCVar6;
   char *pcVar7;
-  uchar *puVar8;
+  uchar *string;
   int extraout_EAX;
-  bool bVar9;
-  char *pcVar10;
+  bool evalExpressions;
+  char *s1;
   bool local_4d;
-  cmd_function_s *local_c;
+  char *arg0;
+  char *predicate;
+  bool restricted;
+  cmd_function_s **prev;
+  cmd_function_s *cmd;
   
-  if (((param_1 < -1) || (0 < param_1)) &&
+  if (((localClientNum < -1) || (0 < localClientNum)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp",0x638,0,
                                "%s\n\t(localClientNum) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = PbTrapPreExecCmd(param_4);
+  iVar4 = PbTrapPreExecCmd(text);
   if (iVar4 == 0) {
-    iVar4 = I_strnicmp(param_4,"#dcr#",5);
+    iVar4 = I_strnicmp(text,"#dcr#",5);
     bVar3 = iVar4 == 0;
     if (bVar3) {
-      param_4 = param_4 + 5;
+      text = text + 5;
     }
     pCVar5 = Cmd_Args();
-    bVar9 = true;
+    evalExpressions = true;
     pCVar6 = Cmd_Args();
     Cmd_TokenizeStringKernel
-              (param_1,param_2,param_3,param_4,0x200 - pCVar6->totalUsedArgvPool,bVar9,pCVar5);
+              (localClientNum,controllerIndex,item,text,0x200 - pCVar6->totalUsedArgvPool,
+               evalExpressions,pCVar5);
     iVar4 = Cmd_Argc();
     if (iVar4 == 0) {
       Cmd_EndTokenizedString();
     }
     else {
-      pcVar10 = "if";
+      s1 = "if";
       pcVar7 = Cmd_Argv(0);
-      iVar4 = I_stricmp(pcVar7,pcVar10);
+      iVar4 = I_stricmp(pcVar7,s1);
       if ((iVar4 == 0) && (iVar4 = Cmd_Argc(), 2 < iVar4)) {
         pcVar7 = Cmd_Argv(1);
         iVar4 = atoi(pcVar7);
@@ -1823,22 +1862,22 @@ Cmd_ExecuteSingleCommandInternal
         pCVar5 = Cmd_Args();
         Cmd_ShiftArgs(2,pCVar5);
       }
-      puVar8 = (uchar *)Cmd_Argv(0);
-      strchr(puVar8,' ');
+      string = (uchar *)Cmd_Argv(0);
+      strchr(string,' ');
       if (extraout_EAX == 0) {
-        local_c = (cmd_function_s *)&cmd_functions;
-        pcVar1 = local_c;
+        prev = &cmd_functions;
+        pcVar1 = (cmd_function_s *)prev;
         do {
-          local_c = pcVar1;
-          if (local_c->next == (cmd_function_s *)0x0) goto LAB_006ca2ba;
-          pcVar1 = local_c->next;
-          iVar4 = I_stricmp((char *)puVar8,pcVar1->name);
+          prev = &pcVar1->next;
+          if (*prev == (cmd_function_s *)0x0) goto LAB_006ca2ba;
+          pcVar1 = *prev;
+          iVar4 = I_stricmp((char *)string,pcVar1->name);
         } while (iVar4 != 0);
-        if (((bVar3) || (param_5)) && (*(char *)&pcVar1[1].next == '\0')) {
+        if (((bVar3) || (restrict)) && (*(char *)&pcVar1[1].next == '\0')) {
           Com_DPrintf(0x10,"ConAccess: cmd not executed: %s.\n");
         }
         else {
-          local_c->next = pcVar1->next;
+          *prev = pcVar1->next;
           pcVar1->next = cmd_functions;
           cmd_functions = pcVar1;
           if (pcVar1->function != (_func___cdecl_void *)0x0) {
@@ -1851,7 +1890,7 @@ Cmd_ExecuteSingleCommandInternal
                 (*pcVar2)();
                 return;
               }
-              Cmd_ExecuteServerString(param_4);
+              Cmd_ExecuteServerString(text);
             }
             else {
               (*pcVar1->function)();
@@ -1861,7 +1900,7 @@ Cmd_ExecuteSingleCommandInternal
           }
         }
 LAB_006ca2ba:
-        if ((bVar3) || (param_5)) {
+        if ((bVar3) || (restrict)) {
           local_4d = true;
         }
         else {
@@ -1871,8 +1910,8 @@ LAB_006ca2ba:
         if (iVar4 == 0) {
           if (((com_sv_running == (dvar_s *)0x0) || ((com_sv_running->current).enabled == false)) ||
              (iVar4 = SV_GameCommand(), iVar4 == 0)) {
-            if (-1 < param_1) {
-              CL_ForwardCommandToServer(param_1,param_4);
+            if (-1 < localClientNum) {
+              CL_ForwardCommandToServer(localClientNum,text);
             }
             Cmd_EndTokenizedString();
           }
@@ -1896,10 +1935,10 @@ LAB_006ca2ba:
 
 // 006CA340  Cmd_ExecuteSingleCommand  (qcommon/cmd.cpp:1742)
 
-void __cdecl Cmd_ExecuteSingleCommand(int param_1,int param_2,char *param_3)
+void __cdecl Cmd_ExecuteSingleCommand(int localClientNum,int controllerIndex,char *text)
 
 {
-  Cmd_ExecuteSingleCommandInternal(param_1,param_2,(itemDef_s *)0x0,param_3,false);
+  Cmd_ExecuteSingleCommandInternal(localClientNum,controllerIndex,(itemDef_s *)0x0,text,false);
   return;
 }
 
@@ -1911,18 +1950,19 @@ void __cdecl Cmd_List_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *local_10;
-  cmd_function_s *local_8;
+  char *match;
+  int i;
+  cmd_function_s *cmd;
   
   iVar2 = Cmd_Argc();
   if (iVar2 < 2) {
-    local_10 = (char *)0x0;
+    match = (char *)0x0;
   }
   else {
-    local_10 = Cmd_Argv(1);
+    match = Cmd_Argv(1);
   }
-  for (local_8 = cmd_functions; local_8 != (cmd_function_s *)0x0; local_8 = local_8->next) {
-    if ((local_10 == (char *)0x0) || (bVar1 = Com_Filter(local_10,local_8->name,0), bVar1)) {
+  for (cmd = cmd_functions; cmd != (cmd_function_s *)0x0; cmd = cmd->next) {
+    if ((match == (char *)0x0) || (bVar1 = Com_Filter(match,cmd->name,0), bVar1)) {
       Com_Printf(0,"%s\n");
     }
   }

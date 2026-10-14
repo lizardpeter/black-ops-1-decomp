@@ -2,8 +2,7 @@
 
 // 0095BBB0  qsort  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/qsort.c:105)
 
-void __cdecl
-qsort(void *param_1,uint param_2,uint param_3,_func___cdecl_int_void_ptr_void_ptr *param_4)
+void __cdecl qsort(void *base,uint num,uint width,_func___cdecl_int_void_ptr_void_ptr *comp)
 
 {
   char cVar1;
@@ -20,67 +19,66 @@ qsort(void *param_1,uint param_2,uint param_3,_func___cdecl_int_void_ptr_void_pt
   undefined4 auStack_104 [30];
   undefined4 auStack_8c [30];
   uint local_14;
-  int local_10;
-  char *local_c;
-  char *local_8;
+  int stkptr;
+  char *hi;
+  char *lo;
   
-  if ((param_1 == (void *)0x0) && (param_2 != 0)) {
+  if ((base == (void *)0x0) && (num != 0)) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return;
   }
-  if ((param_3 == 0) || (param_4 == (_func___cdecl_int_void_ptr_void_ptr *)0x0)) {
+  if ((width == 0) || (comp == (_func___cdecl_int_void_ptr_void_ptr *)0x0)) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  else if (1 < param_2) {
-    local_10 = 0;
-    local_8 = param_1;
-    local_c = (char *)((param_2 - 1) * param_3 + (int)param_1);
+  else if (1 < num) {
+    stkptr = 0;
+    lo = base;
+    hi = (char *)((num - 1) * width + (int)base);
 LAB_0095bc38:
-    while (pcVar7 = local_8, pcVar8 = local_c,
-          uVar3 = (uint)((int)local_c - (int)local_8) / param_3 + 1, 8 < uVar3) {
-      pcVar4 = local_8 + (uVar3 >> 1) * param_3;
-      iVar5 = (*param_4)(local_8,pcVar4);
+    while (pcVar7 = lo, pcVar8 = hi, uVar3 = (uint)((int)hi - (int)lo) / width + 1, 8 < uVar3) {
+      pcVar4 = lo + (uVar3 >> 1) * width;
+      iVar5 = (*comp)(lo,pcVar4);
       if (0 < iVar5) {
         swap((char *)unaff_EDI,unaff_ESI,unaff_EBX);
       }
-      iVar5 = (*param_4)(pcVar7,pcVar8);
+      iVar5 = (*comp)(pcVar7,pcVar8);
       if (0 < iVar5) {
         swap((char *)unaff_EDI,unaff_ESI,unaff_EBX);
       }
-      iVar5 = (*param_4)(pcVar4,pcVar8);
+      iVar5 = (*comp)(pcVar4,pcVar8);
       if (0 < iVar5) {
         swap((char *)unaff_EDI,unaff_ESI,unaff_EBX);
       }
 LAB_0095bcb0:
       if (pcVar7 < pcVar4) {
         do {
-          pcVar7 = pcVar7 + param_3;
+          pcVar7 = pcVar7 + width;
           if (pcVar4 <= pcVar7) goto LAB_0095bcd0;
-          iVar5 = (*param_4)(pcVar7,pcVar4);
+          iVar5 = (*comp)(pcVar7,pcVar4);
         } while (iVar5 < 1);
         if (pcVar4 <= pcVar7) goto LAB_0095bcd0;
       }
       else {
 LAB_0095bcd0:
         do {
-          pcVar7 = pcVar7 + param_3;
-          if (local_c < pcVar7) break;
-          iVar5 = (*param_4)(pcVar7,pcVar4);
+          pcVar7 = pcVar7 + width;
+          if (hi < pcVar7) break;
+          iVar5 = (*comp)(pcVar7,pcVar4);
         } while (iVar5 < 1);
       }
       do {
-        pcVar8 = pcVar8 + -param_3;
+        pcVar8 = pcVar8 + -width;
         if (pcVar8 <= pcVar4) break;
-        iVar5 = (*param_4)(pcVar8,pcVar4);
+        iVar5 = (*comp)(pcVar8,pcVar4);
       } while (0 < iVar5);
       if (pcVar7 <= pcVar8) {
         if (pcVar7 != pcVar8) {
           pcVar6 = pcVar8;
-          local_14 = param_3;
+          local_14 = width;
           do {
             local_14 = local_14 - 1;
             cVar1 = pcVar6[(int)pcVar7 - (int)pcVar8];
@@ -94,53 +92,53 @@ LAB_0095bcd0:
         }
         goto LAB_0095bcb0;
       }
-      pcVar8 = pcVar8 + param_3;
+      pcVar8 = pcVar8 + width;
       if (pcVar4 < pcVar8) {
         do {
-          pcVar8 = pcVar8 + -param_3;
+          pcVar8 = pcVar8 + -width;
           if (pcVar8 <= pcVar4) goto LAB_0095bd50;
-          iVar5 = (*param_4)(pcVar8,pcVar4);
+          iVar5 = (*comp)(pcVar8,pcVar4);
         } while (iVar5 == 0);
         if (pcVar8 <= pcVar4) goto LAB_0095bd50;
       }
       else {
 LAB_0095bd50:
         do {
-          pcVar8 = pcVar8 + -param_3;
-          if (pcVar8 <= local_8) break;
-          iVar5 = (*param_4)(pcVar8,pcVar4);
+          pcVar8 = pcVar8 + -width;
+          if (pcVar8 <= lo) break;
+          iVar5 = (*comp)(pcVar8,pcVar4);
         } while (iVar5 == 0);
       }
-      pcVar6 = local_8;
-      pcVar4 = local_c;
-      if ((int)pcVar8 - (int)local_8 < (int)local_c - (int)pcVar7) goto LAB_0095bda3;
-      if (local_8 < pcVar8) {
-        auStack_8c[local_10] = local_8;
-        auStack_104[local_10] = pcVar8;
-        local_10 = local_10 + 1;
+      pcVar6 = lo;
+      pcVar4 = hi;
+      if ((int)pcVar8 - (int)lo < (int)hi - (int)pcVar7) goto LAB_0095bda3;
+      if (lo < pcVar8) {
+        auStack_8c[stkptr] = lo;
+        auStack_104[stkptr] = pcVar8;
+        stkptr = stkptr + 1;
       }
-      local_8 = pcVar7;
+      lo = pcVar7;
       if (pcVar4 <= pcVar7) goto LAB_0095bdd1;
     }
-    shortsort(local_8,(char *)param_3,(uint)param_4,unaff_EDI);
+    shortsort(lo,(char *)width,(uint)comp,unaff_EDI);
     goto LAB_0095bdd1;
   }
   return;
 LAB_0095bda3:
-  if (pcVar7 < local_c) {
-    auStack_8c[local_10] = pcVar7;
-    auStack_104[local_10] = local_c;
-    local_10 = local_10 + 1;
+  if (pcVar7 < hi) {
+    auStack_8c[stkptr] = pcVar7;
+    auStack_104[stkptr] = hi;
+    stkptr = stkptr + 1;
   }
-  local_c = pcVar8;
+  hi = pcVar8;
   if (pcVar8 <= pcVar6) {
 LAB_0095bdd1:
-    local_10 = local_10 + -1;
-    if (local_10 < 0) {
+    stkptr = stkptr + -1;
+    if (stkptr < 0) {
       return;
     }
-    local_c = (char *)auStack_104[local_10];
-    local_8 = (char *)auStack_8c[local_10];
+    hi = (char *)auStack_104[stkptr];
+    lo = (char *)auStack_8c[stkptr];
   }
   goto LAB_0095bc38;
 }
@@ -148,8 +146,7 @@ LAB_0095bdd1:
 
 // 0095BB20  shortsort  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/qsort.c:342)
 
-void __cdecl
-shortsort(char *param_1,char *param_2,uint param_3,_func___cdecl_int_void_ptr_void_ptr *param_4)
+void __cdecl shortsort(char *lo,char *width,uint comp,_func___cdecl_int_void_ptr_void_ptr *param_4)
 
 {
   char cVar1;
@@ -159,16 +156,16 @@ shortsort(char *param_1,char *param_2,uint param_3,_func___cdecl_int_void_ptr_vo
   char *pcVar4;
   char *pcVar5;
   
-  for (; pcVar2 = param_1, pcVar4 = param_1, param_1 < in_EAX; in_EAX = in_EAX + -(int)param_2) {
-    while (pcVar4 = param_2 + (int)pcVar4, pcVar4 <= in_EAX) {
-      iVar3 = (*(code *)param_3)(pcVar4,pcVar2);
+  for (; pcVar2 = lo, pcVar4 = lo, lo < in_EAX; in_EAX = in_EAX + -(int)width) {
+    while (pcVar4 = width + (int)pcVar4, pcVar4 <= in_EAX) {
+      iVar3 = (*(code *)comp)(pcVar4,pcVar2);
       if (0 < iVar3) {
         pcVar2 = pcVar4;
       }
     }
-    if ((pcVar2 != in_EAX) && (param_2 != (char *)0x0)) {
+    if ((pcVar2 != in_EAX) && (width != (char *)0x0)) {
       pcVar4 = in_EAX;
-      pcVar5 = param_2;
+      pcVar5 = width;
       do {
         cVar1 = pcVar4[(int)pcVar2 - (int)in_EAX];
         pcVar4[(int)pcVar2 - (int)in_EAX] = *pcVar4;

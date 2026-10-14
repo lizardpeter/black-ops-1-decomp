@@ -2,12 +2,15 @@
 
 // 0086F750  jpeg_CreateCompress  (jpeg-6/jcapimin.c:34)
 
+/* WARNING: Variable defined which should be unmapped: version */
+
 void __cdecl jpeg_CreateCompress(jpeg_compress_struct *param_1,int param_2,uint param_3)
 
 {
   void *pvVar1;
   jpeg_error_mgr *pjVar2;
   jpeg_common_struct *unaff_ESI;
+  int version;
   
   pvVar1 = unaff_ESI->client_data;
   pjVar2 = unaff_ESI->err;
@@ -43,12 +46,15 @@ void __cdecl jpeg_CreateCompress(jpeg_compress_struct *param_1,int param_2,uint 
 
 // 0086F7E0  jpeg_suppress_tables  (jpeg-6/jcapimin.c:136)
 
+/* WARNING: Variable defined which should be unmapped: suppress */
+
 void __cdecl jpeg_suppress_tables(jpeg_compress_struct *param_1,uchar param_2)
 
 {
   int in_EAX;
   int *piVar1;
   int iVar2;
+  uchar suppress;
   
   if (*(int *)(in_EAX + 0x50) != 0) {
     *(undefined1 *)(*(int *)(in_EAX + 0x50) + 0x80) = 0;

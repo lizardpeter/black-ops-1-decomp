@@ -2,19 +2,19 @@
 
 // 00974460  _access  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/access.c:45)
 
-int __cdecl _access(char *param_1,int param_2)
+int __cdecl _access(char *path,int amode)
 
 {
   int iVar1;
   
-  iVar1 = _access_s(param_1,param_2);
+  iVar1 = _access_s(path,amode);
   return -(uint)(iVar1 != 0);
 }
 
 
 // 009743D7  _access_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/access.c:76)
 
-int __cdecl _access_s(char *param_1,int param_2)
+int __cdecl _access_s(char *path,int amode)
 
 {
   ulong *puVar1;
@@ -22,7 +22,7 @@ int __cdecl _access_s(char *param_1,int param_2)
   DWORD DVar3;
   int iVar4;
   
-  if ((param_1 == (char *)0x0) || ((param_2 & 0xfffffff9U) != 0)) {
+  if ((path == (char *)0x0) || ((amode & 0xfffffff9U) != 0)) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
@@ -31,13 +31,13 @@ int __cdecl _access_s(char *param_1,int param_2)
     iVar4 = 0x16;
   }
   else {
-    DVar3 = GetFileAttributesA(param_1);
+    DVar3 = GetFileAttributesA(path);
     if (DVar3 == 0xffffffff) {
       DVar3 = GetLastError();
       _dosmaperr(DVar3);
     }
     else {
-      if ((((DVar3 & 0x10) != 0) || ((DVar3 & 1) == 0)) || ((param_2 & 2U) == 0)) {
+      if ((((DVar3 & 0x10) != 0) || ((DVar3 & 1) == 0)) || ((amode & 2U) == 0)) {
         return 0;
       }
       puVar1 = __doserrno();

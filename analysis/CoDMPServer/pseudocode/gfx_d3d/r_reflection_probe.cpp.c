@@ -2,14 +2,14 @@
 
 // 00A71140  R_GetReflectionProbePosition  (gfx_d3d/r_reflection_probe.cpp:31)
 
-void __cdecl R_GetReflectionProbePosition(uint param_1,float *param_2)
+void __cdecl R_GetReflectionProbePosition(uint index,float *pos)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxReflectionProbe *pGVar3;
   
-  if (s_world.draw.reflectionProbeCount <= param_1) {
+  if (s_world.draw.reflectionProbeCount <= index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp",
                              0x20,0,"%s");
     if (!bVar2) {
@@ -18,10 +18,10 @@ void __cdecl R_GetReflectionProbePosition(uint param_1,float *param_2)
       return;
     }
   }
-  pGVar3 = s_world.draw.reflectionProbes + param_1;
-  *param_2 = pGVar3->origin[0];
-  param_2[1] = pGVar3->origin[1];
-  param_2[2] = pGVar3->origin[2];
+  pGVar3 = s_world.draw.reflectionProbes + index;
+  *pos = pGVar3->origin[0];
+  pos[1] = pGVar3->origin[1];
+  pos[2] = pGVar3->origin[2];
   return;
 }
 
@@ -49,92 +49,92 @@ void __cdecl R_ReflectionProbeRegisterDvars(void)
 
 // 00A71220  R_CalcCubeMapViewValues  (gfx_d3d/r_reflection_probe.cpp:53)
 
-void __cdecl R_CalcCubeMapViewValues(refdef_s *param_1,CubemapShot param_2,int param_3)
+void __cdecl R_CalcCubeMapViewValues(refdef_s *refdef,CubemapShot cubemapShot,int cubemapSize)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  param_1->x = 0;
-  param_1->y = 0;
-  param_1->width = param_3 + 2;
-  param_1->height = param_3 + 2;
-  param_1->tanHalfFovX = (float)(param_3 + 2) / (float)param_3;
-  param_1->tanHalfFovY = param_1->tanHalfFovX;
-  param_1->zNear = 0.0;
-  switch(param_2) {
+  refdef->x = 0;
+  refdef->y = 0;
+  refdef->width = cubemapSize + 2;
+  refdef->height = cubemapSize + 2;
+  refdef->tanHalfFovX = (float)(cubemapSize + 2) / (float)cubemapSize;
+  refdef->tanHalfFovY = refdef->tanHalfFovX;
+  refdef->zNear = 0.0;
+  switch(cubemapShot) {
   case CUBEMAPSHOT_RIGHT:
-    param_1->viewaxis[0][0] = 1.0;
-    param_1->viewaxis[0][1] = 0.0;
-    param_1->viewaxis[0][2] = 0.0;
-    param_1->viewaxis[1][0] = 0.0;
-    param_1->viewaxis[1][1] = 1.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = 0.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 1.0;
+    refdef->viewaxis[0][0] = 1.0;
+    refdef->viewaxis[0][1] = 0.0;
+    refdef->viewaxis[0][2] = 0.0;
+    refdef->viewaxis[1][0] = 0.0;
+    refdef->viewaxis[1][1] = 1.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = 0.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 1.0;
     break;
   case CUBEMAPSHOT_LEFT:
-    param_1->viewaxis[0][0] = -1.0;
-    param_1->viewaxis[0][1] = 0.0;
-    param_1->viewaxis[0][2] = 0.0;
-    param_1->viewaxis[1][0] = 0.0;
-    param_1->viewaxis[1][1] = -1.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = 0.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 1.0;
+    refdef->viewaxis[0][0] = -1.0;
+    refdef->viewaxis[0][1] = 0.0;
+    refdef->viewaxis[0][2] = 0.0;
+    refdef->viewaxis[1][0] = 0.0;
+    refdef->viewaxis[1][1] = -1.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = 0.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 1.0;
     break;
   default:
-    if ((param_2 != CUBEMAPSHOT_BACK) &&
+    if ((cubemapShot != CUBEMAPSHOT_BACK) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp"
                                  ,0x5a,1,"%s\n\t(cubemapShot) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->viewaxis[0][0] = 0.0;
-    param_1->viewaxis[0][1] = 1.0;
-    param_1->viewaxis[0][2] = 0.0;
-    param_1->viewaxis[1][0] = -1.0;
-    param_1->viewaxis[1][1] = 0.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = 0.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 1.0;
+    refdef->viewaxis[0][0] = 0.0;
+    refdef->viewaxis[0][1] = 1.0;
+    refdef->viewaxis[0][2] = 0.0;
+    refdef->viewaxis[1][0] = -1.0;
+    refdef->viewaxis[1][1] = 0.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = 0.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 1.0;
     break;
   case CUBEMAPSHOT_FRONT:
-    param_1->viewaxis[0][0] = 0.0;
-    param_1->viewaxis[0][1] = -1.0;
-    param_1->viewaxis[0][2] = 0.0;
-    param_1->viewaxis[1][0] = 1.0;
-    param_1->viewaxis[1][1] = 0.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = 0.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 1.0;
+    refdef->viewaxis[0][0] = 0.0;
+    refdef->viewaxis[0][1] = -1.0;
+    refdef->viewaxis[0][2] = 0.0;
+    refdef->viewaxis[1][0] = 1.0;
+    refdef->viewaxis[1][1] = 0.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = 0.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 1.0;
     break;
   case CUBEMAPSHOT_UP:
-    param_1->viewaxis[0][0] = 0.0;
-    param_1->viewaxis[0][1] = 0.0;
-    param_1->viewaxis[0][2] = 1.0;
-    param_1->viewaxis[1][0] = 0.0;
-    param_1->viewaxis[1][1] = 1.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = -1.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 0.0;
+    refdef->viewaxis[0][0] = 0.0;
+    refdef->viewaxis[0][1] = 0.0;
+    refdef->viewaxis[0][2] = 1.0;
+    refdef->viewaxis[1][0] = 0.0;
+    refdef->viewaxis[1][1] = 1.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = -1.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 0.0;
     break;
   case CUBEMAPSHOT_DOWN:
-    param_1->viewaxis[0][0] = 0.0;
-    param_1->viewaxis[0][1] = 0.0;
-    param_1->viewaxis[0][2] = -1.0;
-    param_1->viewaxis[1][0] = 0.0;
-    param_1->viewaxis[1][1] = 1.0;
-    param_1->viewaxis[1][2] = 0.0;
-    param_1->viewaxis[2][0] = 1.0;
-    param_1->viewaxis[2][1] = 0.0;
-    param_1->viewaxis[2][2] = 0.0;
+    refdef->viewaxis[0][0] = 0.0;
+    refdef->viewaxis[0][1] = 0.0;
+    refdef->viewaxis[0][2] = -1.0;
+    refdef->viewaxis[1][0] = 0.0;
+    refdef->viewaxis[1][1] = 1.0;
+    refdef->viewaxis[1][2] = 0.0;
+    refdef->viewaxis[2][0] = 1.0;
+    refdef->viewaxis[2][1] = 0.0;
+    refdef->viewaxis[2][2] = 0.0;
   }
   return;
 }
@@ -144,10 +144,10 @@ void __cdecl R_CalcCubeMapViewValues(refdef_s *param_1,CubemapShot param_2,int p
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_GenerateReflectionRawData(DiskGfxReflectionProbe *param_1)
+void __cdecl R_GenerateReflectionRawData(DiskGfxReflectionProbe *probeRawData)
 
 {
-  float fVar1;
+  float zfar;
   FxCmd FStack_185a4;
   FxCameraUpdate FStack_18570;
   CubemapShot CStack_18534;
@@ -165,8 +165,8 @@ void __cdecl R_GenerateReflectionRawData(DiskGfxReflectionProbe *param_1)
     FX_BeginUpdate(0);
     R_CalcCubeMapViewValues(&rStack_18530,CStack_18534,0x100);
     R_SetLodOrigin(&rStack_18530);
-    fVar1 = R_GetFarPlaneDist();
-    FX_GetCameraUpdateFromRefdefAndZFar(&FStack_18570,&rStack_18530,fVar1);
+    zfar = R_GetFarPlaneDist();
+    FX_GetCameraUpdateFromRefdefAndZFar(&FStack_18570,&rStack_18530,zfar);
     FX_SetNextUpdateCamera(0,&FStack_18570);
     FX_FillUpdateCmd(0,&FStack_185a4);
     R_UpdateSpotLightEffect(&FStack_185a4);
@@ -177,7 +177,7 @@ void __cdecl R_GenerateReflectionRawData(DiskGfxReflectionProbe *param_1)
     R_IssueRenderCommands(3);
     R_EndCubemapShot(CStack_18534);
   }
-  R_CreateReflectionRawDataFromCubemapShot(param_1,0x100);
+  R_CreateReflectionRawDataFromCubemapShot(probeRawData,0x100);
   return;
 }
 
@@ -185,14 +185,15 @@ void __cdecl R_GenerateReflectionRawData(DiskGfxReflectionProbe *param_1)
 // 00A71990  R_GenerateReflectionRawDataAll  (gfx_d3d/r_reflection_probe.cpp:158)
 
 void __cdecl
-R_GenerateReflectionRawDataAll(DiskGfxReflectionProbe *param_1,int param_2,bool *param_3)
+R_GenerateReflectionRawDataAll
+          (DiskGfxReflectionProbe *probeRawData,int probeCount,bool *generateProbe)
 
 {
-  int local_8;
+  int probeIndex;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    if (param_3[local_8] != false) {
-      R_GenerateReflectionRawData(param_1 + local_8);
+  for (probeIndex = 0; probeIndex < probeCount; probeIndex = probeIndex + 1) {
+    if (generateProbe[probeIndex] != false) {
+      R_GenerateReflectionRawData(probeRawData + probeIndex);
     }
   }
   return;
@@ -203,30 +204,32 @@ R_GenerateReflectionRawDataAll(DiskGfxReflectionProbe *param_1,int param_2,bool 
 
 bool __cdecl
 R_CopyReflectionsFromLumpData
-          (DiskGfxReflectionProbe *param_1,DiskGfxReflectionProbe *param_2,int param_3)
+          (DiskGfxReflectionProbe *probeRawData,DiskGfxReflectionProbe *probeRawLumpData,
+          int lumpProbeCount)
 
 {
   bool bVar1;
   DiskGfxReflectionProbe *pDVar2;
-  int local_8;
+  int probeIndex;
   
-  local_8 = 0;
+  probeIndex = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (lumpProbeCount <= probeIndex) {
       return false;
     }
-    pDVar2 = param_2 + local_8;
-    if (((param_1->origin[0] == pDVar2->origin[0]) && (param_1->origin[1] == pDVar2->origin[1])) &&
-       (param_1->origin[2] == pDVar2->origin[2])) {
+    pDVar2 = probeRawLumpData + probeIndex;
+    if (((probeRawData->origin[0] == pDVar2->origin[0]) &&
+        (probeRawData->origin[1] == pDVar2->origin[1])) &&
+       (probeRawData->origin[2] == pDVar2->origin[2])) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
     if (bVar1) break;
-    local_8 = local_8 + 1;
+    probeIndex = probeIndex + 1;
   }
-  memcpy(param_1->pixels,param_2[local_8].pixels,0x40050);
+  memcpy(probeRawData->pixels,probeRawLumpData[probeIndex].pixels,0x40050);
   return true;
 }
 
@@ -235,7 +238,7 @@ R_CopyReflectionsFromLumpData
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uint param_3)
+void __cdecl R_GenerateReflections(char *mapname,GfxReflectionProbe *probes,uint probeCount)
 
 {
   code *pcVar1;
@@ -245,14 +248,14 @@ void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uin
   GfxReflectionProbe *pGVar5;
   char *pcVar6;
   char *pcVar7;
-  uint local_28;
-  uint local_24;
-  DiskGfxReflectionProbe *local_20;
-  DiskGfxReflectionProbe *local_1c;
-  uint local_18;
-  bool local_14 [8];
+  uint lumpProbeCount;
+  uint version;
+  DiskGfxReflectionProbe *probeRawLumpData;
+  DiskGfxReflectionProbe *probeRawGeneratedData;
+  uint probeIndex;
+  bool generateProbe [8];
   uint local_c;
-  uint local_8;
+  uint lumpSize;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((r_reflectionProbeGenerate == (dvar_s *)0x0) &&
@@ -262,7 +265,7 @@ void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uin
     (*pcVar1)();
     return;
   }
-  if ((7 < param_3) &&
+  if ((7 < probeCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp",
                                0xc3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -270,52 +273,53 @@ void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uin
     return;
   }
   if ((r_reflectionProbeGenerate->current).enabled != false) {
-    Com_LoadBsp(param_1);
-    local_24 = Com_GetBspVersion();
-    if (local_24 != 0x2d) {
+    Com_LoadBsp(mapname);
+    version = Com_GetBspVersion();
+    if (version != 0x2d) {
       Com_Error(ERR_DROP,
                 "You can only generate reflections for BSP version %i, but the BSP is version %i.  You need to recompile the map."
                );
     }
-    local_20 = Com_GetBspLump(LUMP_REFLECTION_PROBES,0x406e0,&local_28);
-    if ((param_3 != local_28) &&
+    probeRawLumpData = Com_GetBspLump(LUMP_REFLECTION_PROBES,0x406e0,&lumpProbeCount);
+    if ((probeCount != lumpProbeCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp"
                                  ,0xcf,0,"probeCount == lumpProbeCount\n\t%i, %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3 == 0) {
+    if (probeCount == 0) {
       Com_SaveLump(LUMP_REFLECTION_PROBES,(void *)0x0,0,COM_SAVE_LUMP_AND_CLOSE);
     }
     else {
-      local_8 = param_3 * 0x406e0;
-      local_1c = Z_Malloc(local_8,"R_GenerateReflections",0);
-      for (local_18 = 0; local_18 < local_28; local_18 = local_18 + 1) {
-        pcVar6 = local_20[local_18].colorCorrectionFilename;
-        pcVar7 = local_1c[local_18].colorCorrectionFilename;
+      lumpSize = probeCount * 0x406e0;
+      probeRawGeneratedData = Z_Malloc(lumpSize,"R_GenerateReflections",0);
+      for (probeIndex = 0; probeIndex < lumpProbeCount; probeIndex = probeIndex + 1) {
+        pcVar6 = probeRawLumpData[probeIndex].colorCorrectionFilename;
+        pcVar7 = probeRawGeneratedData[probeIndex].colorCorrectionFilename;
         for (iVar3 = 0x10; iVar3 != 0; iVar3 = iVar3 + -1) {
           *(undefined4 *)pcVar7 = *(undefined4 *)pcVar6;
           pcVar6 = pcVar6 + 4;
           pcVar7 = pcVar7 + 4;
         }
-        pDVar4 = local_1c + local_18;
-        pGVar5 = param_2 + local_18;
+        pDVar4 = probeRawGeneratedData + probeIndex;
+        pGVar5 = probes + probeIndex;
         pDVar4->origin[0] = pGVar5->origin[0];
         pDVar4->origin[1] = pGVar5->origin[1];
         pDVar4->origin[2] = pGVar5->origin[2];
         if ((r_reflectionProbeRegenerateAll->current).enabled == false) {
-          bVar2 = R_CopyReflectionsFromLumpData(local_1c + local_18,local_20,param_3);
-          local_14[local_18] = (bool)('\x01' - bVar2);
+          bVar2 = R_CopyReflectionsFromLumpData
+                            (probeRawGeneratedData + probeIndex,probeRawLumpData,probeCount);
+          generateProbe[probeIndex] = (bool)('\x01' - bVar2);
         }
         else {
-          local_14[local_18] = true;
+          generateProbe[probeIndex] = true;
         }
       }
-      R_GenerateReflectionRawDataAll(local_1c,local_28,local_14);
-      Com_SaveLump(LUMP_REFLECTION_PROBES,local_1c,local_8,COM_SAVE_LUMP_AND_CLOSE);
-      R_GenerateReflectionImages(param_2,local_1c,param_3,0,0x100);
-      Z_Free(local_1c,0);
+      R_GenerateReflectionRawDataAll(probeRawGeneratedData,lumpProbeCount,generateProbe);
+      Com_SaveLump(LUMP_REFLECTION_PROBES,probeRawGeneratedData,lumpSize,COM_SAVE_LUMP_AND_CLOSE);
+      R_GenerateReflectionImages(probes,probeRawGeneratedData,probeCount,0,0x100);
+      Z_Free(probeRawGeneratedData,0);
     }
     bVar2 = R_ReflectionProbeGenerateExitWhenDone();
     if (bVar2) {
@@ -351,92 +355,95 @@ bool __cdecl R_ReflectionProbeGenerateExitWhenDone(void)
 
 // 00A71DF0  R_GenerateReflectionImageFromRawData  (gfx_d3d/r_reflection_probe.cpp:400)
 
-GfxImage * __cdecl R_GenerateReflectionImageFromRawData(uchar *param_1,int param_2,int param_3)
+GfxImage * __cdecl
+R_GenerateReflectionImageFromRawData(uchar *rawPixels,int probeIndex,int probeHighMipSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  GfxImage *pGVar4;
-  uchar uVar5;
-  uchar uVar6;
-  int iVar7;
-  float fVar8;
+  char *name;
+  GfxImage *pGVar3;
+  uchar category;
+  uchar semantic;
+  int imageTrack;
+  float gamma;
   int local_198;
   int local_190;
-  uchar *local_184 [90];
-  int local_1c;
-  int local_18;
-  GfxImage *local_14;
-  _D3DFORMAT local_10;
-  int local_c;
-  uint local_8;
+  int edge;
+  uchar *pixels [90];
+  int imgIndex;
+  int mipmapLevelSize;
+  GfxImage *reflectionImage;
+  _D3DFORMAT imageFormat;
+  int scaledSize;
+  int mipLevel;
   
-  local_10 = D3DFMT_DXT1;
-  local_8 = 0;
-  local_18 = (param_3 * param_3) / 2;
-  for (local_1c = 0; local_1c < 6; local_1c = local_1c + 1) {
-    local_184[local_1c * 0xf] = param_1;
-    param_1 = param_1 + local_18;
+  imageFormat = D3DFMT_DXT1;
+  mipLevel = 0;
+  mipmapLevelSize = (probeHighMipSize * probeHighMipSize) / 2;
+  for (imgIndex = 0; imgIndex < 6; imgIndex = imgIndex + 1) {
+    pixels[imgIndex * 0xf] = rawPixels;
+    rawPixels = rawPixels + mipmapLevelSize;
   }
-  for (local_1c = 0; local_1c < 6; local_1c = local_1c + 1) {
-    local_c = param_3;
-    local_8 = 1;
+  for (imgIndex = 0; imgIndex < 6; imgIndex = imgIndex + 1) {
+    scaledSize = probeHighMipSize;
+    mipLevel = 1;
     do {
-      local_190 = local_c >> 1;
+      local_190 = scaledSize >> 1;
       if (local_190 < 2) {
         local_190 = 1;
       }
-      local_c = local_190;
+      scaledSize = local_190;
       if (local_190 < 5) {
         local_198 = 4;
       }
       else {
         local_198 = local_190;
       }
-      local_18 = (local_198 * local_198) / 2;
-      local_184[local_1c * 0xf + local_8] = param_1;
-      param_1 = param_1 + local_18;
-      local_8 = local_8 + 1;
-    } while (local_c != 1);
+      mipmapLevelSize = (local_198 * local_198) / 2;
+      pixels[imgIndex * 0xf + mipLevel] = rawPixels;
+      rawPixels = rawPixels + mipmapLevelSize;
+      mipLevel = mipLevel + 1;
+    } while (scaledSize != 1);
   }
-  fVar8 = 1.0;
-  iVar7 = 0;
-  uVar6 = '\x01';
-  uVar5 = '\x01';
-  pcVar3 = va("*reflection_probe%i");
-  local_14 = Image_Alloc(pcVar3,uVar5,uVar6,iVar7,fVar8);
-  if ((local_14 == (GfxImage *)0x0) &&
+  gamma = 1.0;
+  imageTrack = 0;
+  semantic = '\x01';
+  category = '\x01';
+  name = va("*reflection_probe%i");
+  reflectionImage = Image_Alloc(name,category,semantic,imageTrack,gamma);
+  if ((reflectionImage == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp",
                                0x1c8,1,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    pGVar4 = (GfxImage *)(*pcVar1)();
-    return pGVar4;
+    pGVar3 = (GfxImage *)(*pcVar1)();
+    return pGVar3;
   }
-  Image_GenerateCube(local_14,(uchar *(*) [15])local_184,param_3,local_10,local_8);
-  return local_14;
+  Image_GenerateCube(reflectionImage,(uchar *(*) [15])pixels,probeHighMipSize,imageFormat,mipLevel);
+  return reflectionImage;
 }
 
 
 // 00A72240  R_VerifyFieldNames  (gfx_d3d/r_reflection_probe.cpp:468)
 
-bool __cdecl R_VerifyFieldNames(char **param_1,char *param_2)
+bool __cdecl R_VerifyFieldNames(char **buf,char *filename)
 
 {
-  char *pcVar1;
-  int iVar2;
-  int local_c;
+  char *s1;
+  int iVar1;
+  int fieldIndex;
+  char *token;
   
-  local_c = 0;
+  fieldIndex = 0;
   while( true ) {
-    if (fields[local_c] == (char *)0x0) {
-      Com_SkipRestOfLine(param_1);
+    if (fields[fieldIndex] == (char *)0x0) {
+      Com_SkipRestOfLine(buf);
       return true;
     }
-    pcVar1 = Com_Parse(param_1);
-    iVar2 = I_stricmp(fields[local_c],pcVar1);
-    if (iVar2 != 0) break;
-    local_c = local_c + 1;
+    s1 = Com_Parse(buf);
+    iVar1 = I_stricmp(fields[fieldIndex],s1);
+    if (iVar1 != 0) break;
+    fieldIndex = fieldIndex + 1;
   }
   Com_PrintError(1,
                  "\x15R_ParseColorCorrectionData: file \'%s\' column header %d was \'%s\' instead of \'%s\'\n"
@@ -447,17 +454,19 @@ bool __cdecl R_VerifyFieldNames(char **param_1,char *param_2)
 
 // 00A72080  R_ParseColorCorrectionData  (gfx_d3d/r_reflection_probe.cpp:488)
 
-void __cdecl R_ParseColorCorrectionData(char *param_1,char *param_2)
+void __cdecl R_ParseColorCorrectionData(char *buf,char *filename)
 
 {
   char cVar1;
   code *pcVar2;
   int iVar3;
   bool bVar4;
-  char *pcVar5;
-  ColorCorrectionData *pCVar6;
-  float fVar7;
+  char *src;
+  ColorCorrectionData *dest;
+  float fVar5;
   char *local_10;
+  ColorCorrectionData *ccd;
+  char *token;
   
   if ((s_numColorCorrectionDataEntries != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp",
@@ -466,48 +475,47 @@ void __cdecl R_ParseColorCorrectionData(char *param_1,char *param_2)
     (*pcVar2)();
     return;
   }
-  bVar4 = R_VerifyFieldNames(&param_1,param_2);
+  bVar4 = R_VerifyFieldNames(&buf,filename);
   if (bVar4) {
-    while (pcVar5 = Com_Parse(&param_1), iVar3 = s_numColorCorrectionDataEntries,
-          param_1 != (char *)0x0) {
+    while (src = Com_Parse(&buf), iVar3 = s_numColorCorrectionDataEntries, buf != (char *)0x0) {
       if (s_numColorCorrectionDataEntries == 0x400) {
         Com_PrintError(1,
                        "\x15R_ParseColorCorrectionData: file \'%s\' max color correction entires [%d] exceeded.  Ignoring the rest of the file \'%s\'\n"
                       );
         return;
       }
-      pCVar6 = s_colorCorrectionDataEntries + s_numColorCorrectionDataEntries;
+      dest = s_colorCorrectionDataEntries + s_numColorCorrectionDataEntries;
       s_numColorCorrectionDataEntries = s_numColorCorrectionDataEntries + 1;
-      if ((pcVar5 == (char *)0x0) &&
+      if ((src == (char *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp"
                                    ,0x1ff,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_10 = pcVar5;
+      local_10 = src;
       do {
         cVar1 = *local_10;
         local_10 = local_10 + 1;
       } while (cVar1 != '\0');
-      if (0x3f < (uint)((int)local_10 - (int)(pcVar5 + 1))) {
+      if (0x3f < (uint)((int)local_10 - (int)(src + 1))) {
         Com_PrintError(1,
                        "\x15R_ParseColorCorrectionData: file \'%s\' truncating name because \'%s\' is too longer than %d.\n"
                       );
       }
-      I_strncpyz(pCVar6->name,pcVar5,0x40);
-      fVar7 = Com_ParseFloatOnLine(&param_1);
-      s_colorCorrectionDataEntries[iVar3].black_level = fVar7;
-      fVar7 = Com_ParseFloatOnLine(&param_1);
-      s_colorCorrectionDataEntries[iVar3].white_level = fVar7;
-      fVar7 = Com_ParseFloatOnLine(&param_1);
-      s_colorCorrectionDataEntries[iVar3].gamma = fVar7;
-      fVar7 = Com_ParseFloatOnLine(&param_1);
-      s_colorCorrectionDataEntries[iVar3].saturation = fVar7;
+      I_strncpyz(dest->name,src,0x40);
+      fVar5 = Com_ParseFloatOnLine(&buf);
+      s_colorCorrectionDataEntries[iVar3].black_level = fVar5;
+      fVar5 = Com_ParseFloatOnLine(&buf);
+      s_colorCorrectionDataEntries[iVar3].white_level = fVar5;
+      fVar5 = Com_ParseFloatOnLine(&buf);
+      s_colorCorrectionDataEntries[iVar3].gamma = fVar5;
+      fVar5 = Com_ParseFloatOnLine(&buf);
+      s_colorCorrectionDataEntries[iVar3].saturation = fVar5;
       s_colorCorrectionDataEntries[iVar3].range =
            s_colorCorrectionDataEntries[iVar3].white_level -
            s_colorCorrectionDataEntries[iVar3].black_level;
-      Com_SkipRestOfLine(&param_1);
+      Com_SkipRestOfLine(&buf);
     }
   }
   return;
@@ -519,23 +527,26 @@ void __cdecl R_ParseColorCorrectionData(char *param_1,char *param_2)
 void __cdecl R_LoadColorCorrectionData(void)
 
 {
-  int iVar1;
-  char *pcVar2;
-  int local_8;
+  int len;
+  char *buf;
+  char *filename;
+  char *filebuf;
+  int fileSize;
+  int f;
   
-  iVar1 = FS_FOpenFileByMode("reflections/reflections.csv",&local_8,FS_READ);
-  if (iVar1 < 0) {
+  len = FS_FOpenFileByMode("reflections/reflections.csv",&f,FS_READ);
+  if (len < 0) {
     Com_PrintError(1,"\x15R_LoadColorCorrectionData: failed to open \'%s\'\n");
   }
   else {
     Hunk_CheckTempMemoryHighClear();
-    pcVar2 = Hunk_AllocateTempMemoryHigh(iVar1 + 1,"R_LoadColorCorrectionData");
-    FS_Read(pcVar2,iVar1,local_8);
-    FS_FCloseFile(local_8);
-    pcVar2[iVar1] = '\0';
+    buf = Hunk_AllocateTempMemoryHigh(len + 1,"R_LoadColorCorrectionData");
+    FS_Read(buf,len,f);
+    FS_FCloseFile(f);
+    buf[len] = '\0';
     Com_BeginParseSession("reflections/reflections.csv");
     Com_SetCSV(1);
-    R_ParseColorCorrectionData(pcVar2,"reflections/reflections.csv");
+    R_ParseColorCorrectionData(buf,"reflections/reflections.csv");
     Com_EndParseSession();
     Hunk_ClearTempMemoryHigh();
   }
@@ -551,7 +562,8 @@ void __cdecl R_CreateDefaultColorCorrectionEntry(void)
   code *pcVar1;
   int iVar2;
   bool bVar3;
-  ColorCorrectionData *pCVar4;
+  ColorCorrectionData *dest;
+  ColorCorrectionData *ccd;
   
   if (s_numColorCorrectionDataEntries != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_reflection_probe.cpp",
@@ -563,9 +575,9 @@ void __cdecl R_CreateDefaultColorCorrectionEntry(void)
     }
   }
   iVar2 = s_numColorCorrectionDataEntries;
-  pCVar4 = s_colorCorrectionDataEntries + s_numColorCorrectionDataEntries;
+  dest = s_colorCorrectionDataEntries + s_numColorCorrectionDataEntries;
   s_numColorCorrectionDataEntries = s_numColorCorrectionDataEntries + 1;
-  I_strncpyz(pCVar4->name,"default",0x40);
+  I_strncpyz(dest->name,"default",0x40);
   s_colorCorrectionDataEntries[iVar2].black_level = 0.0;
   s_colorCorrectionDataEntries[iVar2].white_level = 1.0;
   s_colorCorrectionDataEntries[iVar2].gamma = 1.0;
@@ -581,18 +593,19 @@ void __cdecl R_CreateDefaultColorCorrectionEntry(void)
 
 void __cdecl
 R_GenerateDummyReflectionImages
-          (GfxReflectionProbe *param_1,DiskGfxDummyReflectionProbe *param_2,int param_3,int param_4,
-          int param_5)
+          (GfxReflectionProbe *probes,DiskGfxDummyReflectionProbe *probeRawData,int probeCount,
+          int probeBaseIndex,int probeHighMipSize)
 
 {
-  uchar *puVar1;
-  DiskGfxDummyReflectionProbe *pDVar2;
-  GfxImage *pGVar3;
-  int iVar4;
-  GfxReflectionProbe *pGVar5;
+  uchar *rawPixels;
+  DiskGfxDummyReflectionProbe *pDVar1;
+  GfxImage *pGVar2;
+  int iVar3;
+  GfxReflectionProbe *pGVar4;
+  uchar *puVar5;
   uchar *puVar6;
-  uchar *puVar7;
-  int local_8;
+  uchar *pixels;
+  int probeIndex;
   
   if (s_numColorCorrectionDataEntries == 0) {
     R_LoadColorCorrectionData();
@@ -600,25 +613,26 @@ R_GenerateDummyReflectionImages
   if (s_numColorCorrectionDataEntries == 0) {
     R_CreateDefaultColorCorrectionEntry();
   }
-  puVar1 = Hunk_AllocateTempMemory(0x90,"R_GenerateReflectionImages");
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    pGVar5 = param_1 + local_8;
-    pDVar2 = param_2 + local_8;
-    pGVar5->origin[0] = pDVar2->origin[0];
-    pGVar5->origin[1] = pDVar2->origin[1];
-    pGVar5->origin[2] = pDVar2->origin[2];
-    param_1[local_8].probeVolumeCount = 0;
-    puVar6 = param_2[local_8].pixels;
-    puVar7 = puVar1;
-    for (iVar4 = 0x24; iVar4 != 0; iVar4 = iVar4 + -1) {
-      *(undefined4 *)puVar7 = *(undefined4 *)puVar6;
+  rawPixels = Hunk_AllocateTempMemory(0x90,"R_GenerateReflectionImages");
+  for (probeIndex = 0; probeIndex < probeCount; probeIndex = probeIndex + 1) {
+    pGVar4 = probes + probeIndex;
+    pDVar1 = probeRawData + probeIndex;
+    pGVar4->origin[0] = pDVar1->origin[0];
+    pGVar4->origin[1] = pDVar1->origin[1];
+    pGVar4->origin[2] = pDVar1->origin[2];
+    probes[probeIndex].probeVolumeCount = 0;
+    puVar5 = probeRawData[probeIndex].pixels;
+    puVar6 = rawPixels;
+    for (iVar3 = 0x24; iVar3 != 0; iVar3 = iVar3 + -1) {
+      *(undefined4 *)puVar6 = *(undefined4 *)puVar5;
+      puVar5 = puVar5 + 4;
       puVar6 = puVar6 + 4;
-      puVar7 = puVar7 + 4;
     }
-    pGVar3 = R_GenerateReflectionImageFromRawData(puVar1,local_8 + param_4,param_5);
-    param_1[local_8].reflectionImage = pGVar3;
+    pGVar2 = R_GenerateReflectionImageFromRawData
+                       (rawPixels,probeIndex + probeBaseIndex,probeHighMipSize);
+    probes[probeIndex].reflectionImage = pGVar2;
   }
-  Hunk_FreeTempMemory(puVar1);
+  Hunk_FreeTempMemory(rawPixels);
   return;
 }
 
@@ -627,20 +641,22 @@ R_GenerateDummyReflectionImages
 
 void __cdecl
 R_GenerateReflectionImages
-          (GfxReflectionProbe *param_1,DiskGfxReflectionProbe *param_2,int param_3,int param_4,
-          int param_5)
+          (GfxReflectionProbe *probes,DiskGfxReflectionProbe *probeRawData,int probeCount,
+          int probeBaseIndex,int probeHighMipSize)
 
 {
-  uchar *puVar1;
-  DiskGfxReflectionProbe *pDVar2;
-  GfxReflectionProbeVolumeData *pGVar3;
-  float (*pafVar4) [4];
-  GfxImage *pGVar5;
-  GfxReflectionProbe *pGVar6;
-  float (*pafVar7) [4];
-  int local_1c;
-  uint local_10;
-  int local_8;
+  uchar *dst;
+  DiskGfxReflectionProbe *pDVar1;
+  GfxReflectionProbeVolumeData *pGVar2;
+  float (*pafVar3) [4];
+  GfxImage *pGVar4;
+  GfxReflectionProbe *pGVar5;
+  float (*pafVar6) [4];
+  int sideIndex;
+  GfxReflectionProbeVolumeData *probeVolumeData;
+  uint probeVolumeCount;
+  uchar *pixels;
+  int probeIndex;
   
   if (s_numColorCorrectionDataEntries == 0) {
     R_LoadColorCorrectionData();
@@ -648,35 +664,37 @@ R_GenerateReflectionImages
   if (s_numColorCorrectionDataEntries == 0) {
     R_CreateDefaultColorCorrectionEntry();
   }
-  puVar1 = Hunk_AllocateTempMemory(0x40050,"R_GenerateReflectionImages");
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    pGVar6 = param_1 + local_8;
-    pDVar2 = param_2 + local_8;
-    pGVar6->origin[0] = pDVar2->origin[0];
-    pGVar6->origin[1] = pDVar2->origin[1];
-    pGVar6->origin[2] = pDVar2->origin[2];
-    param_1[local_8].probeVolumeCount = param_2[local_8].probeVolumeCount;
-    if (param_1[local_8].probeVolumeCount != 0) {
-      pGVar3 = Hunk_Alloc(param_2[local_8].probeVolumeCount * 0x60,"R_GenerateReflectionImages",0x15
-                         );
-      param_1[local_8].probeVolumes = pGVar3;
-      for (local_10 = 0; local_10 < param_2[local_8].probeVolumeCount; local_10 = local_10 + 1) {
-        pGVar3 = param_1[local_8].probeVolumes;
-        for (local_1c = 0; local_1c < 6; local_1c = local_1c + 1) {
-          pafVar7 = pGVar3[local_10].volumePlanes + local_1c;
-          pafVar4 = param_2[local_8].probeVolumes[local_10].volumePlanes + local_1c;
-          (*pafVar7)[0] = (*pafVar4)[0];
-          (*pafVar7)[1] = (*pafVar4)[1];
-          (*pafVar7)[2] = (*pafVar4)[2];
-          (*pafVar7)[3] = (*pafVar4)[3];
+  dst = Hunk_AllocateTempMemory(0x40050,"R_GenerateReflectionImages");
+  for (probeIndex = 0; probeIndex < probeCount; probeIndex = probeIndex + 1) {
+    pGVar5 = probes + probeIndex;
+    pDVar1 = probeRawData + probeIndex;
+    pGVar5->origin[0] = pDVar1->origin[0];
+    pGVar5->origin[1] = pDVar1->origin[1];
+    pGVar5->origin[2] = pDVar1->origin[2];
+    probes[probeIndex].probeVolumeCount = probeRawData[probeIndex].probeVolumeCount;
+    if (probes[probeIndex].probeVolumeCount != 0) {
+      pGVar2 = Hunk_Alloc(probeRawData[probeIndex].probeVolumeCount * 0x60,
+                          "R_GenerateReflectionImages",0x15);
+      probes[probeIndex].probeVolumes = pGVar2;
+      for (probeVolumeCount = 0; probeVolumeCount < probeRawData[probeIndex].probeVolumeCount;
+          probeVolumeCount = probeVolumeCount + 1) {
+        pGVar2 = probes[probeIndex].probeVolumes;
+        for (sideIndex = 0; sideIndex < 6; sideIndex = sideIndex + 1) {
+          pafVar6 = pGVar2[probeVolumeCount].volumePlanes + sideIndex;
+          pafVar3 = probeRawData[probeIndex].probeVolumes[probeVolumeCount].volumePlanes + sideIndex
+          ;
+          (*pafVar6)[0] = (*pafVar3)[0];
+          (*pafVar6)[1] = (*pafVar3)[1];
+          (*pafVar6)[2] = (*pafVar3)[2];
+          (*pafVar6)[3] = (*pafVar3)[3];
         }
       }
     }
-    memcpy(puVar1,param_2[local_8].pixels,0x40050);
-    pGVar5 = R_GenerateReflectionImageFromRawData(puVar1,local_8 + param_4,param_5);
-    param_1[local_8].reflectionImage = pGVar5;
+    memcpy(dst,probeRawData[probeIndex].pixels,0x40050);
+    pGVar4 = R_GenerateReflectionImageFromRawData(dst,probeIndex + probeBaseIndex,probeHighMipSize);
+    probes[probeIndex].reflectionImage = pGVar4;
   }
-  Hunk_FreeTempMemory(puVar1);
+  Hunk_FreeTempMemory(dst);
   return;
 }
 

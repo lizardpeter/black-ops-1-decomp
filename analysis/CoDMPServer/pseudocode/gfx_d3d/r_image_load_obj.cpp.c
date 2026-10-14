@@ -2,41 +2,42 @@
 
 // 00B2A860  Image_GetPcStreamedMips  (gfx_d3d/r_image_load_obj.cpp:103)
 
-uchar __cdecl Image_GetPcStreamedMips(GfxImageFileHeader *param_1)
+uchar __cdecl Image_GetPcStreamedMips(GfxImageFileHeader *fileHeader)
 
 {
-  short sVar1;
-  uchar local_5;
+  int local_18;
+  int minDimension;
+  uchar streamedMipLevels;
   
-  local_5 = '\0';
-  if ((param_1->flags & 0x10) == 0) {
-    local_5 = '\0';
+  streamedMipLevels = '\0';
+  if ((fileHeader->flags & 0x10) == 0) {
+    streamedMipLevels = '\0';
   }
-  else if ((param_1->flags & 0xc) == 0) {
-    sVar1 = param_1->dimensions[1];
-    if (param_1->dimensions[0] <= sVar1) {
-      sVar1 = param_1->dimensions[0];
+  else if ((fileHeader->flags & 0xc) == 0) {
+    local_18 = (int)fileHeader->dimensions[1];
+    if (fileHeader->dimensions[0] <= local_18) {
+      local_18 = (int)fileHeader->dimensions[0];
     }
-    for (; 0x80 < sVar1; sVar1 = sVar1 >> 1) {
-      local_5 = local_5 + '\x01';
+    for (minDimension = local_18; 0x80 < minDimension; minDimension = minDimension >> 1) {
+      streamedMipLevels = streamedMipLevels + '\x01';
     }
   }
   else {
-    local_5 = '\0';
+    streamedMipLevels = '\0';
   }
-  return local_5;
+  return streamedMipLevels;
 }
 
 
 // 00B295B0  Image_ValidateHeader  (gfx_d3d/r_image_load_obj.cpp:127)
 
-bool __cdecl Image_ValidateHeader(GfxImageFileHeader *param_1,char *param_2)
+bool __cdecl Image_ValidateHeader(GfxImageFileHeader *imageFile,char *filepath)
 
 {
   bool bVar1;
   
-  if (((param_1->tag[0] == 'I') && (param_1->tag[1] == 'W')) && (param_1->tag[2] == 'i')) {
-    if (param_1->version == '\r') {
+  if (((imageFile->tag[0] == 'I') && (imageFile->tag[1] == 'W')) && (imageFile->tag[2] == 'i')) {
+    if (imageFile->version == '\r') {
       bVar1 = true;
     }
     else {
@@ -55,7 +56,8 @@ bool __cdecl Image_ValidateHeader(GfxImageFileHeader *param_1,char *param_2)
 // 00B29BD0  Image_SetupFromFile  (gfx_d3d/r_image_load_obj.cpp:187)
 
 void __cdecl
-Image_SetupFromFile(GfxImage *param_1,GfxImageFileHeader *param_2,_D3DFORMAT param_3,uint param_4)
+Image_SetupFromFile(GfxImage *image,GfxImageFileHeader *fileHeader,_D3DFORMAT imageFormat,
+                   uint allocFlags)
 
 {
   byte bVar1;
@@ -64,36 +66,42 @@ Image_SetupFromFile(GfxImage *param_1,GfxImageFileHeader *param_2,_D3DFORMAT par
   uint local_30;
   uint local_2c;
   uint local_28;
+  uint depth;
+  uint width;
+  uint height;
+  int fileHeaderFlags;
+  int picmip;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0xc2,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (GfxImageFileHeader *)0x0) &&
+  if ((fileHeader == (GfxImageFileHeader *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0xc3,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  bVar1 = (param_1->picmip).platform[(useFastFile->current).enabled == false];
-  local_28 = (uint)(int)param_2->dimensions[0] >> (bVar1 & 0x1f);
+  bVar1 = (image->picmip).platform[(useFastFile->current).enabled == false];
+  local_28 = (uint)(int)fileHeader->dimensions[0] >> (bVar1 & 0x1f);
   if ((int)local_28 < 2) {
     local_28 = 1;
   }
-  local_2c = (uint)(int)param_2->dimensions[1] >> (bVar1 & 0x1f);
+  local_2c = (uint)(int)fileHeader->dimensions[1] >> (bVar1 & 0x1f);
   if ((int)local_2c < 2) {
     local_2c = 1;
   }
-  local_30 = (uint)(int)param_2->dimensions[2] >> (bVar1 & 0x1f);
+  local_30 = (uint)(int)fileHeader->dimensions[2] >> (bVar1 & 0x1f);
   if ((int)local_30 < 2) {
     local_30 = 1;
   }
-  Image_Setup(param_1,local_28,local_2c,local_30,(uint)param_2->flags,param_3,"<file>",param_4);
-  if (((param_1->cardMemory).platform[0] < 1) &&
+  Image_Setup(image,local_28,local_2c,local_30,(uint)fileHeader->flags,imageFormat,"<file>",
+              allocFlags);
+  if (((image->cardMemory).platform[0] < 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0xcd,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -106,26 +114,27 @@ Image_SetupFromFile(GfxImage *param_1,GfxImageFileHeader *param_2,_D3DFORMAT par
 
 // 00B29D40  Image_CountMipmapsForFile  (gfx_d3d/r_image_load_obj.cpp:210)
 
-int __cdecl Image_CountMipmapsForFile(GfxImageFileHeader *param_1)
+int __cdecl Image_CountMipmapsForFile(GfxImageFileHeader *fileHeader)
 
 {
   uint uVar1;
+  int fileHeaderFlags;
   
-  uVar1 = Image_CountMipmaps((uint)param_1->flags,(int)param_1->dimensions[0],
-                             (int)param_1->dimensions[1],(int)param_1->dimensions[2]);
+  uVar1 = Image_CountMipmaps((uint)fileHeader->flags,(int)fileHeader->dimensions[0],
+                             (int)fileHeader->dimensions[1],(int)fileHeader->dimensions[2]);
   return uVar1;
 }
 
 
 // 00B2A170  Image_ExpandBgr  (gfx_d3d/r_image_load_obj.cpp:221)
 
-void __cdecl Image_ExpandBgr(uchar *param_1,uint param_2,uchar *param_3)
+void __cdecl Image_ExpandBgr(uchar *src,uint count,uchar *dst)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (uchar *)0x0) {
+  if (src == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",0xde
                              ,0,"%s");
     if (!bVar2) {
@@ -134,7 +143,7 @@ void __cdecl Image_ExpandBgr(uchar *param_1,uint param_2,uchar *param_3)
       return;
     }
   }
-  if (param_3 == (uchar *)0x0) {
+  if (dst == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",0xdf
                              ,0,"%s");
     if (!bVar2) {
@@ -143,7 +152,7 @@ void __cdecl Image_ExpandBgr(uchar *param_1,uint param_2,uchar *param_3)
       return;
     }
   }
-  if (param_2 == 0) {
+  if (count == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",0xe0
                              ,0,"%s\n\t(count) = %i");
     if (!bVar2) {
@@ -153,29 +162,30 @@ void __cdecl Image_ExpandBgr(uchar *param_1,uint param_2,uchar *param_3)
     }
   }
   do {
-    *param_3 = *param_1;
-    param_3[1] = param_1[1];
-    param_3[2] = param_1[2];
-    param_3[3] = 0xff;
-    param_3 = param_3 + 4;
-    param_1 = param_1 + 3;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+    *dst = *src;
+    dst[1] = src[1];
+    dst[2] = src[2];
+    dst[3] = 0xff;
+    dst = dst + 4;
+    src = src + 3;
+    count = count - 1;
+  } while (count != 0);
   return;
 }
 
 
 // 00B29D80  Image_AllocTempMemory  (gfx_d3d/r_image_load_obj.cpp:257)
 
-uchar * __cdecl Image_AllocTempMemory(int param_1)
+uchar * __cdecl Image_AllocTempMemory(int bytes)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   uchar *puVar4;
+  uchar *mem;
   
-  uVar3 = param_1 + 3U & 0xfffffffc;
+  uVar3 = bytes + 3U & 0xfffffffc;
   if (0x1000000 < s_imageLoadBytesUsed + uVar3) {
     Com_Error(ERR_DROP,"Needed to allocate at least %.1f MB to load images");
   }
@@ -199,15 +209,15 @@ uchar * __cdecl Image_AllocTempMemory(int param_1)
 
 // 00B29E50  Image_FreeTempMemory  (gfx_d3d/r_image_load_obj.cpp:280)
 
-void __cdecl Image_FreeTempMemory(uchar *param_1,int param_2)
+void __cdecl Image_FreeTempMemory(uchar *mem,int bytes)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  uVar3 = param_2 + 3U & 0xfffffffc;
-  if (param_1 + uVar3 != s_imageLoadBuf + s_imageLoadBytesUsed) {
+  uVar3 = bytes + 3U & 0xfffffffc;
+  if (mem + uVar3 != s_imageLoadBuf + s_imageLoadBytesUsed) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x11b,0,"%s");
     if (!bVar2) {
@@ -224,8 +234,8 @@ void __cdecl Image_FreeTempMemory(uchar *param_1,int param_2)
 // 00B298E0  Image_LoadWavelet  (gfx_d3d/r_image_load_obj.cpp:293)
 
 void __cdecl
-Image_LoadWavelet(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_D3DFORMAT param_4,
-                 int param_5,uint param_6)
+Image_LoadWavelet(GfxImage *image,GfxImageFileHeader *fileHeader,uchar *data,_D3DFORMAT format,
+                 int bytesPerPixel,uint allocFlags)
 
 {
   code *pcVar1;
@@ -236,92 +246,91 @@ Image_LoadWavelet(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_
   uint local_9c;
   int aiStack_8c [6];
   int aiStack_74 [6];
-  int local_5c;
-  uint local_58;
-  uint local_54;
-  _D3DCUBEMAP_FACES local_50;
-  uint local_4c;
-  uint local_48;
-  WaveletDecode local_44;
+  int sizeForLevel;
+  int width;
+  int height;
+  _D3DCUBEMAP_FACES face;
+  uint faceCount;
+  uint faceIndex;
+  WaveletDecode decode;
   int aiStack_24 [6];
-  uint local_c;
-  int local_8;
+  int picmip;
+  int totalSize;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x133,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (GfxImageFileHeader *)0x0) &&
+  if ((fileHeader == (GfxImageFileHeader *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x134,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (uchar *)0x0) &&
+  if ((data == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x135,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Image_SetupFromFile(param_1,param_2,param_4,param_6);
-  local_44.value = 0;
-  local_44.bit = 0;
-  local_44.width = (int)param_2->dimensions[0];
-  local_44.height = (int)param_2->dimensions[1];
-  iVar3 = Image_CountMipmapsForFile(param_2);
-  local_44.mipLevel = iVar3 + -1;
-  local_44.channels = param_5;
-  local_44.bpp = param_5;
-  local_44.dataInitialized = false;
-  if (param_5 == 3) {
-    local_44.bpp = 4;
+  Image_SetupFromFile(image,fileHeader,format,allocFlags);
+  decode.value = 0;
+  decode.bit = 0;
+  decode.width = (int)fileHeader->dimensions[0];
+  decode.height = (int)fileHeader->dimensions[1];
+  iVar3 = Image_CountMipmapsForFile(fileHeader);
+  decode.mipLevel = iVar3 + -1;
+  decode.channels = bytesPerPixel;
+  decode.bpp = bytesPerPixel;
+  decode.dataInitialized = false;
+  if (bytesPerPixel == 3) {
+    decode.bpp = 4;
   }
-  if (param_1->mapType == '\x05') {
-    local_4c = 6;
+  if (image->mapType == '\x05') {
+    faceCount = 6;
   }
   else {
-    local_4c = 1;
+    faceCount = 1;
   }
-  local_8 = (int)param_2->dimensions[0] * (int)param_2->dimensions[1] * local_44.bpp;
-  for (local_48 = 0; local_48 < local_4c; local_48 = local_48 + 1) {
-    puVar4 = Image_AllocTempMemory(local_8);
-    aiStack_74[local_48] = (int)puVar4;
-    aiStack_24[local_48] = 0;
+  totalSize = (int)fileHeader->dimensions[0] * (int)fileHeader->dimensions[1] * decode.bpp;
+  for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+    puVar4 = Image_AllocTempMemory(totalSize);
+    aiStack_74[faceIndex] = (int)puVar4;
+    aiStack_24[faceIndex] = 0;
   }
-  local_c = (uint)(param_1->picmip).platform[(useFastFile->current).enabled == false];
-  local_44.data = param_3;
-  for (; (int)local_c <= local_44.mipLevel; local_44.mipLevel = local_44.mipLevel + -1) {
-    local_9c = (uint)local_44.width >> ((byte)local_44.mipLevel & 0x1f);
+  picmip = (uint)(image->picmip).platform[(useFastFile->current).enabled == false];
+  decode.data = data;
+  for (; picmip <= decode.mipLevel; decode.mipLevel = decode.mipLevel + -1) {
+    local_9c = (uint)decode.width >> ((byte)decode.mipLevel & 0x1f);
     if ((int)local_9c < 2) {
       local_9c = 1;
     }
-    local_58 = local_9c;
-    local_a0 = (uint)local_44.height >> ((byte)local_44.mipLevel & 0x1f);
+    width = local_9c;
+    local_a0 = (uint)decode.height >> ((byte)decode.mipLevel & 0x1f);
     if ((int)local_a0 < 2) {
       local_a0 = 1;
     }
-    local_54 = local_a0;
-    local_5c = local_9c * local_a0 * local_44.bpp;
-    for (local_48 = 0; local_48 < local_4c; local_48 = local_48 + 1) {
-      aiStack_8c[local_48] = aiStack_24[local_48];
-      aiStack_24[local_48] = (aiStack_74[local_48] + local_8) - local_5c;
-      Wavelet_DecompressLevel((uchar *)aiStack_8c[local_48],(uchar *)aiStack_24[local_48],&local_44)
+    height = local_a0;
+    sizeForLevel = local_9c * local_a0 * decode.bpp;
+    for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+      aiStack_8c[faceIndex] = aiStack_24[faceIndex];
+      aiStack_24[faceIndex] = (aiStack_74[faceIndex] + totalSize) - sizeForLevel;
+      Wavelet_DecompressLevel((uchar *)aiStack_8c[faceIndex],(uchar *)aiStack_24[faceIndex],&decode)
       ;
-      local_50 = Image_CubemapFace(local_48);
-      Image_UploadData(param_1,param_4,local_50,local_44.mipLevel - local_c,
-                       (uchar *)aiStack_24[local_48]);
+      face = Image_CubemapFace(faceIndex);
+      Image_UploadData(image,format,face,decode.mipLevel - picmip,(uchar *)aiStack_24[faceIndex]);
     }
   }
-  local_48 = local_4c;
+  faceIndex = faceCount;
   do {
-    local_48 = local_48 - 1;
-    Image_FreeTempMemory((uchar *)aiStack_74[local_48],local_8);
-  } while (local_48 != 0);
+    faceIndex = faceIndex - 1;
+    Image_FreeTempMemory((uchar *)aiStack_74[faceIndex],totalSize);
+  } while (faceIndex != 0);
   return;
 }
 
@@ -329,90 +338,97 @@ Image_LoadWavelet(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_
 // 00B29EB0  Image_LoadBitmap  (gfx_d3d/r_image_load_obj.cpp:365)
 
 void __cdecl
-Image_LoadBitmap(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_D3DFORMAT param_4,
-                int param_5,int param_6)
+Image_LoadBitmap(GfxImage *image,GfxImageFileHeader *fileHeader,uchar *data,_D3DFORMAT format,
+                int bytesPerPixel,int allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
-  _D3DCUBEMAP_FACES _Var3;
-  byte bVar4;
-  int iVar5;
-  uint uVar6;
+  _D3DCUBEMAP_FACES face_00;
+  byte bVar3;
+  int bytes;
+  uint uVar4;
   uint local_4c;
   uint local_48;
   uint local_44;
-  uint local_1c;
-  uint local_18;
-  uchar *local_14;
-  int local_10;
+  int depth;
+  int mipCount;
+  int width;
+  int height;
+  _D3DCUBEMAP_FACES face;
+  uint faceCount;
+  uint faceIndex;
+  uchar *expandedData;
+  int mipLevel;
+  int picmip;
+  uint expandedSize;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x17a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (GfxImageFileHeader *)0x0) &&
+  if ((fileHeader == (GfxImageFileHeader *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x17b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (uchar *)0x0) &&
+  if ((data == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x17c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Image_SetupFromFile(param_1,param_2,param_4,param_6);
-  if (param_1->mapType == '\x05') {
-    local_1c = 6;
+  Image_SetupFromFile(image,fileHeader,format,allocFlags);
+  if (image->mapType == '\x05') {
+    faceCount = 6;
   }
   else {
-    local_1c = 1;
+    faceCount = 1;
   }
-  local_14 = (uchar *)0x0;
-  iVar5 = (uint)param_1->depth * (uint)param_1->width * (uint)param_1->height * 4;
-  if (param_4 == D3DFMT_X8R8G8B8) {
-    local_14 = Image_AllocTempMemory(iVar5);
+  expandedData = (uchar *)0x0;
+  bytes = (uint)image->depth * (uint)image->width * (uint)image->height * 4;
+  if (format == D3DFMT_X8R8G8B8) {
+    expandedData = Image_AllocTempMemory(bytes);
   }
-  local_10 = Image_CountMipmapsForFile(param_2);
-  uVar6 = (uint)(param_1->picmip).platform[(useFastFile->current).enabled == false];
-  while (local_10 = local_10 + -1, (int)uVar6 <= local_10) {
-    bVar4 = (byte)local_10;
-    local_44 = (uint)(int)param_2->dimensions[0] >> (bVar4 & 0x1f);
+  mipLevel = Image_CountMipmapsForFile(fileHeader);
+  uVar4 = (uint)(image->picmip).platform[(useFastFile->current).enabled == false];
+  while (mipLevel = mipLevel + -1, (int)uVar4 <= mipLevel) {
+    bVar3 = (byte)mipLevel;
+    local_44 = (uint)(int)fileHeader->dimensions[0] >> (bVar3 & 0x1f);
     if ((int)local_44 < 2) {
       local_44 = 1;
     }
-    local_48 = (uint)(int)param_2->dimensions[1] >> (bVar4 & 0x1f);
+    local_48 = (uint)(int)fileHeader->dimensions[1] >> (bVar3 & 0x1f);
     if ((int)local_48 < 2) {
       local_48 = 1;
     }
-    local_4c = (uint)(int)param_2->dimensions[2] >> (bVar4 & 0x1f);
+    local_4c = (uint)(int)fileHeader->dimensions[2] >> (bVar3 & 0x1f);
     if ((int)local_4c < 2) {
       local_4c = 1;
     }
-    for (local_18 = 0; local_18 < local_1c; local_18 = local_18 + 1) {
-      _Var3 = Image_CubemapFace(local_18);
-      if (param_4 == D3DFMT_X8R8G8B8) {
-        Image_ExpandBgr(param_3,local_44 * local_48 * local_4c,local_14);
-        Image_UploadData(param_1,D3DFMT_X8R8G8B8,_Var3,local_10 - uVar6,local_14);
+    for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+      face_00 = Image_CubemapFace(faceIndex);
+      if (format == D3DFMT_X8R8G8B8) {
+        Image_ExpandBgr(data,local_44 * local_48 * local_4c,expandedData);
+        Image_UploadData(image,D3DFMT_X8R8G8B8,face_00,mipLevel - uVar4,expandedData);
       }
       else {
-        if (param_4 == D3DFMT_A8R8G8B8) {
-          GamerProfile_WriteSettings((int)param_3);
+        if (format == D3DFMT_A8R8G8B8) {
+          GamerProfile_WriteSettings((int)data);
         }
-        Image_UploadData(param_1,param_4,_Var3,local_10 - uVar6,param_3);
+        Image_UploadData(image,format,face_00,mipLevel - uVar4,data);
       }
-      param_3 = param_3 + local_4c * local_44 * local_48 * param_5;
+      data = data + local_4c * local_44 * local_48 * bytesPerPixel;
     }
   }
-  if (local_14 != (uchar *)0x0) {
-    Image_FreeTempMemory(local_14,iVar5);
+  if (expandedData != (uchar *)0x0) {
+    Image_FreeTempMemory(expandedData,bytes);
   }
   return;
 }
@@ -421,71 +437,76 @@ Image_LoadBitmap(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_D
 // 00B2A250  Image_LoadDxtc  (gfx_d3d/r_image_load_obj.cpp:429)
 
 void __cdecl
-Image_LoadDxtc(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_D3DFORMAT param_4,
-              int param_5,uint param_6)
+Image_LoadDxtc(GfxImage *image,GfxImageFileHeader *fileHeader,uchar *data,_D3DFORMAT format,
+              int bytesPerBlock,uint allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
-  _D3DCUBEMAP_FACES _Var3;
-  uint uVar4;
+  _D3DCUBEMAP_FACES face_00;
+  uint uVar3;
   uint local_38;
   uint local_34;
-  uint local_20;
-  int local_1c;
-  uint local_c;
+  _D3DCUBEMAP_FACES face;
+  uint faceIndex;
+  int mipLevel;
+  int mipCount;
+  int width;
+  int height;
+  uint faceCount;
+  int picmip;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x1b4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (GfxImageFileHeader *)0x0) &&
+  if ((fileHeader == (GfxImageFileHeader *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x1b5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (uchar *)0x0) &&
+  if ((data == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x1b6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_4 != D3DFMT_A16B16G16R16F) && (param_4 != D3DFMT_DXT1)) && (param_4 != D3DFMT_DXT3))
-     && ((param_4 != D3DFMT_DXT5 &&
-         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp"
-                                   ,0x1ba,0,"%s"), !bVar2)))) {
+  if ((((format != D3DFMT_A16B16G16R16F) && (format != D3DFMT_DXT1)) && (format != D3DFMT_DXT3)) &&
+     ((format != D3DFMT_DXT5 &&
+      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
+                                0x1ba,0,"%s"), !bVar2)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Image_SetupFromFile(param_1,param_2,param_4,param_6);
-  if (param_1->mapType == '\x05') {
-    local_c = 6;
+  Image_SetupFromFile(image,fileHeader,format,allocFlags);
+  if (image->mapType == '\x05') {
+    faceCount = 6;
   }
   else {
-    local_c = 1;
+    faceCount = 1;
   }
-  local_1c = Image_CountMipmapsForFile(param_2);
-  uVar4 = (uint)(param_1->picmip).platform[(useFastFile->current).enabled == false];
-  while (local_1c = local_1c + -1, (int)uVar4 <= local_1c) {
-    local_34 = (uint)(int)param_2->dimensions[0] >> ((byte)local_1c & 0x1f);
+  mipLevel = Image_CountMipmapsForFile(fileHeader);
+  uVar3 = (uint)(image->picmip).platform[(useFastFile->current).enabled == false];
+  while (mipLevel = mipLevel + -1, (int)uVar3 <= mipLevel) {
+    local_34 = (uint)(int)fileHeader->dimensions[0] >> ((byte)mipLevel & 0x1f);
     if ((int)local_34 < 2) {
       local_34 = 1;
     }
-    local_38 = (uint)(int)param_2->dimensions[1] >> ((byte)local_1c & 0x1f);
+    local_38 = (uint)(int)fileHeader->dimensions[1] >> ((byte)mipLevel & 0x1f);
     if ((int)local_38 < 2) {
       local_38 = 1;
     }
-    for (local_20 = 0; local_20 < local_c; local_20 = local_20 + 1) {
-      _Var3 = Image_CubemapFace(local_20);
-      Image_UploadData(param_1,param_4,_Var3,local_1c - uVar4,param_3);
-      param_3 = param_3 + ((int)(local_34 + 3) >> 2) * ((int)(local_38 + 3) >> 2) * param_5;
+    for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+      face_00 = Image_CubemapFace(faceIndex);
+      Image_UploadData(image,format,face_00,mipLevel - uVar3,data);
+      data = data + ((int)(local_34 + 3) >> 2) * ((int)(local_38 + 3) >> 2) * bytesPerBlock;
     }
   }
   return;
@@ -495,61 +516,61 @@ Image_LoadDxtc(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,_D3D
 // 00B29620  Image_LoadFromData  (gfx_d3d/r_image_load_obj.cpp:536)
 
 void __cdecl
-Image_LoadFromData(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,uint param_4)
+Image_LoadFromData(GfxImage *image,GfxImageFileHeader *fileHeader,uchar *srcData,uint allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  param_1->loadedSize = param_2->fileSizeForPicmip[param_1->skippedMipLevels] - 0x30;
-  param_1->baseSize = param_2->fileSizeForPicmip[0] - 0x30;
-  Image_TrackBytes = Image_TrackBytes + param_1->loadedSize;
-  (param_1->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
-  switch(param_2->format) {
+  image->loadedSize = fileHeader->fileSizeForPicmip[image->skippedMipLevels] - 0x30;
+  image->baseSize = fileHeader->fileSizeForPicmip[0] - 0x30;
+  Image_TrackBytes = Image_TrackBytes + image->loadedSize;
+  (image->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
+  switch(fileHeader->format) {
   case '\x01':
-    Image_LoadBitmap(param_1,param_2,param_3,D3DFMT_A8R8G8B8,4,param_4);
+    Image_LoadBitmap(image,fileHeader,srcData,D3DFMT_A8R8G8B8,4,allocFlags);
     break;
   case '\x02':
-    Image_LoadBitmap(param_1,param_2,param_3,D3DFMT_X8R8G8B8,3,param_4);
+    Image_LoadBitmap(image,fileHeader,srcData,D3DFMT_X8R8G8B8,3,allocFlags);
     break;
   case '\x03':
-    Image_LoadBitmap(param_1,param_2,param_3,D3DFMT_A8L8,2,param_4);
+    Image_LoadBitmap(image,fileHeader,srcData,D3DFMT_A8L8,2,allocFlags);
     break;
   case '\x04':
-    Image_LoadBitmap(param_1,param_2,param_3,D3DFMT_L8,1,param_4);
+    Image_LoadBitmap(image,fileHeader,srcData,D3DFMT_L8,1,allocFlags);
     break;
   case '\x05':
-    Image_LoadBitmap(param_1,param_2,param_3,D3DFMT_A8,1,param_4);
+    Image_LoadBitmap(image,fileHeader,srcData,D3DFMT_A8,1,allocFlags);
     break;
   case '\x06':
-    Image_LoadWavelet(param_1,param_2,param_3,D3DFMT_A8R8G8B8,4,param_4);
+    Image_LoadWavelet(image,fileHeader,srcData,D3DFMT_A8R8G8B8,4,allocFlags);
     break;
   case '\a':
-    Image_LoadWavelet(param_1,param_2,param_3,D3DFMT_X8R8G8B8,3,param_4);
+    Image_LoadWavelet(image,fileHeader,srcData,D3DFMT_X8R8G8B8,3,allocFlags);
     break;
   case '\b':
-    Image_LoadWavelet(param_1,param_2,param_3,D3DFMT_A8L8,2,param_4);
+    Image_LoadWavelet(image,fileHeader,srcData,D3DFMT_A8L8,2,allocFlags);
     break;
   case '\t':
-    Image_LoadWavelet(param_1,param_2,param_3,D3DFMT_L8,1,param_4);
+    Image_LoadWavelet(image,fileHeader,srcData,D3DFMT_L8,1,allocFlags);
     break;
   case '\n':
-    Image_LoadWavelet(param_1,param_2,param_3,D3DFMT_A8,1,param_4);
+    Image_LoadWavelet(image,fileHeader,srcData,D3DFMT_A8,1,allocFlags);
     break;
   case '\v':
-    Image_LoadDxtc(param_1,param_2,param_3,D3DFMT_DXT1,8,param_4);
+    Image_LoadDxtc(image,fileHeader,srcData,D3DFMT_DXT1,8,allocFlags);
     break;
   case '\f':
-    Image_LoadDxtc(param_1,param_2,param_3,D3DFMT_DXT3,0x10,param_4);
+    Image_LoadDxtc(image,fileHeader,srcData,D3DFMT_DXT3,0x10,allocFlags);
     break;
   case '\r':
-    Image_LoadDxtc(param_1,param_2,param_3,D3DFMT_DXT5,0x10,param_4);
+    Image_LoadDxtc(image,fileHeader,srcData,D3DFMT_DXT5,0x10,allocFlags);
     break;
   default:
-    pcVar3 = va("unhandled case: %d");
+    fmt = va("unhandled case: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
-                             0x26c,1,pcVar3);
+                             0x26c,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -557,7 +578,7 @@ Image_LoadFromData(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,
     }
     break;
   case '\x13':
-    Image_LoadDxtc(param_1,param_2,param_3,D3DFMT_A16B16G16R16F,0x80,param_4);
+    Image_LoadDxtc(image,fileHeader,srcData,D3DFMT_A16B16G16R16F,0x80,allocFlags);
   }
   return;
 }
@@ -565,7 +586,7 @@ Image_LoadFromData(GfxImage *param_1,GfxImageFileHeader *param_2,uchar *param_3,
 
 // 00B2A8E0  Image_PrintTruncatedFileError  (gfx_d3d/r_image_load_obj.cpp:627)
 
-void __cdecl Image_PrintTruncatedFileError(char *param_1)
+void __cdecl Image_PrintTruncatedFileError(char *filepath)
 
 {
   Com_PrintError(8,"ERROR: image \'%s\' is truncated.  Delete the file and run converter to fix.\n")
@@ -578,7 +599,8 @@ void __cdecl Image_PrintTruncatedFileError(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Image_LoadToBuffer(GfxImage *param_1,bool param_2,uchar **param_3,int *param_4)
+bool __cdecl
+Image_LoadToBuffer(GfxImage *image,bool loadHighmip,uchar **imageBuffer,int *bufferSize)
 
 {
   code *pcVar1;
@@ -590,74 +612,75 @@ bool __cdecl Image_LoadToBuffer(GfxImage *param_1,bool param_2,uchar **param_3,i
   int iVar7;
   uchar *puVar8;
   GfxImageFileHeader *pGVar9;
-  GfxImageFileHeader local_8c;
-  uint local_5c;
-  int local_58;
-  char local_54 [64];
+  uchar *imageData;
+  GfxImageFileHeader fileHeader;
+  int fileSize;
+  int fileHandle;
+  char filepath [64];
   uint local_14;
-  bool local_d;
-  uint local_c;
-  int local_8;
+  uchar streamedMipLevels;
+  int picmip;
+  int readSize;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_d = false;
-  if ((param_1 == (GfxImage *)0x0) &&
+  streamedMipLevels = '\0';
+  if ((image == (GfxImage *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x523,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     uVar5 = (*pcVar1)();
     return (bool)uVar5;
   }
-  if ((param_1->category != '\x03') &&
+  if ((image->category != '\x03') &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x524,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     uVar5 = (*pcVar1)();
     return (bool)uVar5;
   }
-  *param_3 = (uchar *)0x0;
-  *param_4 = 0;
-  iVar7 = Com_sprintf(local_54,0x40,"%s%s%s");
+  *imageBuffer = (uchar *)0x0;
+  *bufferSize = 0;
+  iVar7 = Com_sprintf(filepath,0x40,"%s%s%s");
   if (iVar7 < 0) {
     Com_PrintError(8,"ERROR: filename \'%s\' too long\n");
     return false;
   }
-  local_5c = FS_FOpenFileRead(local_54,&local_58);
-  if ((int)local_5c < 0) {
+  fileSize = FS_FOpenFileRead(filepath,&fileHandle);
+  if (fileSize < 0) {
     Com_PrintError(8,"ERROR: image \'%s\' is missing\n");
     return false;
   }
-  if ((local_5c < 0x30) &&
+  if (((uint)fileSize < 0x30) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x536,0,"%s\n\t(filepath) = %s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     uVar5 = (*pcVar1)();
     return (bool)uVar5;
   }
-  iVar7 = FS_Read(&local_8c,0x30,local_58);
+  iVar7 = FS_Read(&fileHeader,0x30,fileHandle);
   if (iVar7 != 0x30) {
-    Image_PrintTruncatedFileError(local_54);
-    FS_FCloseFile(local_58);
+    Image_PrintTruncatedFileError(filepath);
+    FS_FCloseFile(fileHandle);
     return false;
   }
-  bVar4 = Image_ValidateHeader(&local_8c,local_54);
+  bVar4 = Image_ValidateHeader(&fileHeader,filepath);
   if (!bVar4) {
-    FS_FCloseFile(local_58);
+    FS_FCloseFile(fileHandle);
     return false;
   }
-  if ((local_8c.flags & 3) == 0) {
-    if (local_8c.dimensions[0] <= local_8c.dimensions[1]) {
-      local_8c.dimensions[1] = local_8c.dimensions[0];
+  if ((fileHeader.flags & 3) == 0) {
+    if (fileHeader.dimensions[0] <= fileHeader.dimensions[1]) {
+      fileHeader.dimensions[1] = fileHeader.dimensions[0];
     }
-    if (0x1f < local_8c.dimensions[1]) goto LAB_00b2a65f;
+    if (0x1f < fileHeader.dimensions[1]) goto LAB_00b2a65f;
   }
-  param_1->noPicmip = true;
+  image->noPicmip = true;
 LAB_00b2a65f:
-  Image_GetPicmip(param_1,&param_1->picmip);
-  if (local_8c.fileSizeForPicmip[0] == local_5c) {
-    local_c = (uint)(param_1->picmip).platform[(useFastFile->current).enabled == false];
-    local_d = local_c != 0;
-    if ((7 < (local_c != 0)) &&
+  Image_GetPicmip(image,&image->picmip);
+  if (fileHeader.fileSizeForPicmip[0] == fileSize) {
+    picmip = (int)(image->picmip).platform[(useFastFile->current).enabled == false];
+    streamedMipLevels = picmip != 0U;
+    if ((7 < (picmip != 0U)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                  0x55d,0,
                                  "streamedMipLevels doesn\'t index PICMIP_SIZES_STORED\n\t%i not in [0, %i)"
@@ -666,18 +689,18 @@ LAB_00b2a65f:
       uVar5 = (*pcVar1)();
       return (bool)uVar5;
     }
-    local_8 = local_8c.fileSizeForPicmip[0 < (int)local_c] + -0x30;
-    *param_4 = local_8c.fileSizeForPicmip[0 < (int)local_c];
-    puVar8 = Z_TryVirtualAlloc(*param_4,"Image_AllocTempMemory",0x14);
-    *param_3 = puVar8;
-    if (*param_3 == (uchar *)0x0) {
-      Image_PrintTruncatedFileError(local_54);
-      FS_FCloseFile(local_58);
+    readSize = fileHeader.fileSizeForPicmip[0 < picmip] + -0x30;
+    *bufferSize = fileHeader.fileSizeForPicmip[0 < picmip];
+    puVar8 = Z_TryVirtualAlloc(*bufferSize,"Image_AllocTempMemory",0x14);
+    *imageBuffer = puVar8;
+    if (*imageBuffer == (uchar *)0x0) {
+      Image_PrintTruncatedFileError(filepath);
+      FS_FCloseFile(fileHandle);
       bVar4 = false;
     }
     else {
-      pGVar9 = &local_8c;
-      puVar8 = *param_3;
+      pGVar9 = &fileHeader;
+      puVar8 = *imageBuffer;
       for (iVar7 = 0xc; iVar7 != 0; iVar7 = iVar7 + -1) {
         cVar2 = pGVar9->tag[1];
         cVar3 = pGVar9->tag[2];
@@ -689,23 +712,23 @@ LAB_00b2a65f:
         pGVar9 = (GfxImageFileHeader *)&pGVar9->format;
         puVar8 = puVar8 + 4;
       }
-      iVar7 = FS_Read(*param_3 + 0x30,local_8,local_58);
-      if (iVar7 == local_8) {
-        FS_FCloseFile(local_58);
-        uVar6 = Image_GetPcStreamedMips(&local_8c);
-        param_1->streaming = uVar6 != '\0';
-        if ((param_1->streaming == '\0') || (param_2)) {
-          param_1->skippedMipLevels = '\0';
+      iVar7 = FS_Read(*imageBuffer + 0x30,readSize,fileHandle);
+      if (iVar7 == readSize) {
+        FS_FCloseFile(fileHandle);
+        uVar6 = Image_GetPcStreamedMips(&fileHeader);
+        image->streaming = uVar6 != '\0';
+        if ((image->streaming == '\0') || (loadHighmip)) {
+          image->skippedMipLevels = '\0';
         }
         else {
-          param_1->skippedMipLevels = uVar6;
+          image->skippedMipLevels = uVar6;
         }
         bVar4 = true;
       }
       else {
-        Image_PrintTruncatedFileError(local_54);
-        Z_VirtualFree(*param_3,0x14);
-        FS_FCloseFile(local_58);
+        Image_PrintTruncatedFileError(filepath);
+        Z_VirtualFree(*imageBuffer,0x14);
+        FS_FCloseFile(fileHandle);
         bVar4 = false;
       }
     }
@@ -714,7 +737,7 @@ LAB_00b2a65f:
     Com_PrintError(8,
                    "ERROR: image \'%s\' is invalid. fileHeader.fileSizeForPicmip[0] != fileSize (%d != %d)\n"
                   );
-    FS_FCloseFile(local_58);
+    FS_FCloseFile(fileHandle);
     bVar4 = false;
   }
   return bVar4;
@@ -737,7 +760,7 @@ void __cdecl readCallback(void)
 
 bool __cdecl
 Image_LoadFromFileWithReader
-          (GfxImage *param_1,bool param_2,_func___cdecl_int_char_ptr_int_ptr *param_3)
+          (GfxImage *image,bool loadHighmip,_func___cdecl_int_char_ptr_int_ptr *OpenFileRead)
 
 {
   bool bVar1;
@@ -745,12 +768,12 @@ Image_LoadFromFileWithReader
   
   bVar1 = Sys_IsRenderThread();
   if (bVar1) {
-    uVar2 = _Image_LoadFromFileWithReader(param_1,param_2,param_3);
+    uVar2 = _Image_LoadFromFileWithReader(image,loadHighmip,OpenFileRead);
   }
   else {
-    callbackParams.image = param_1;
-    callbackParams.loadHighmip = param_2;
-    callbackParams.OpenFileRead = param_3;
+    callbackParams.image = image;
+    callbackParams.loadHighmip = loadHighmip;
+    callbackParams.OpenFileRead = OpenFileRead;
     RB_Resource_Callback(readCallback);
     RB_Resource_Flush();
     uVar2 = callbackParams.ret;
@@ -765,7 +788,7 @@ Image_LoadFromFileWithReader
 
 bool __cdecl
 _Image_LoadFromFileWithReader
-          (GfxImage *param_1,bool param_2,_func___cdecl_int_char_ptr_int_ptr *param_3)
+          (GfxImage *image,bool loadHighmip,_func___cdecl_int_char_ptr_int_ptr *OpenFileRead)
 
 {
   code *pcVar1;
@@ -773,81 +796,82 @@ _Image_LoadFromFileWithReader
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  uchar *puVar6;
-  GfxImageFileHeader local_8c;
-  uint local_5c;
-  int local_58;
-  char local_54 [64];
+  uchar *srcData;
+  uchar *imageData;
+  GfxImageFileHeader fileHeader;
+  int fileSize;
+  int fileHandle;
+  char filepath [64];
   uint local_14;
-  bool local_d;
-  uint local_c;
-  int local_8;
+  uchar streamedMipLevels;
+  int picmip;
+  int readSize;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_d = false;
-  if ((param_1 == (GfxImage *)0x0) &&
+  streamedMipLevels = '\0';
+  if ((image == (GfxImage *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x5cd,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if ((param_1->category != '\x03') &&
+  if ((image->category != '\x03') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x5cf,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if (((param_1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x5d1,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  iVar5 = Com_sprintf(local_54,0x40,"%s%s%s");
+  iVar5 = Com_sprintf(filepath,0x40,"%s%s%s");
   if (iVar5 < 0) {
     Com_PrintError(8,"ERROR: filename \'%s\' too long\n");
     return false;
   }
-  local_5c = (*param_3)(local_54,&local_58);
-  if ((int)local_5c < 0) {
+  fileSize = (*OpenFileRead)(filepath,&fileHandle);
+  if (fileSize < 0) {
     Com_PrintError(8,"ERROR: image \'%s\' is missing\n");
     return false;
   }
-  if ((local_5c < 0x30) &&
+  if (((uint)fileSize < 0x30) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                0x5e1,0,"%s\n\t(filepath) = %s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  iVar5 = FS_Read(&local_8c,0x30,local_58);
+  iVar5 = FS_Read(&fileHeader,0x30,fileHandle);
   if (iVar5 != 0x30) {
-    Image_PrintTruncatedFileError(local_54);
-    FS_FCloseFile(local_58);
+    Image_PrintTruncatedFileError(filepath);
+    FS_FCloseFile(fileHandle);
     return false;
   }
-  bVar3 = Image_ValidateHeader(&local_8c,local_54);
+  bVar3 = Image_ValidateHeader(&fileHeader,filepath);
   if (!bVar3) {
-    FS_FCloseFile(local_58);
+    FS_FCloseFile(fileHandle);
     return false;
   }
-  if ((local_8c.flags & 3) == 0) {
-    sVar2 = local_8c.dimensions[1];
-    if (local_8c.dimensions[0] <= local_8c.dimensions[1]) {
-      sVar2 = local_8c.dimensions[0];
+  if ((fileHeader.flags & 3) == 0) {
+    sVar2 = fileHeader.dimensions[1];
+    if (fileHeader.dimensions[0] <= fileHeader.dimensions[1]) {
+      sVar2 = fileHeader.dimensions[0];
     }
     if (0x1f < sVar2) goto LAB_00b2ab37;
   }
-  param_1->noPicmip = true;
+  image->noPicmip = true;
 LAB_00b2ab37:
-  Image_GetPicmip(param_1,&param_1->picmip);
-  if (local_8c.fileSizeForPicmip[0] == local_5c) {
-    local_c = (uint)(param_1->picmip).platform[(useFastFile->current).enabled == false];
-    local_d = local_c != 0;
-    if ((7 < (local_c != 0)) &&
+  Image_GetPicmip(image,&image->picmip);
+  if (fileHeader.fileSizeForPicmip[0] == fileSize) {
+    picmip = (int)(image->picmip).platform[(useFastFile->current).enabled == false];
+    streamedMipLevels = picmip != 0U;
+    if ((7 < (picmip != 0U)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                  0x686,0,
                                  "streamedMipLevels doesn\'t index PICMIP_SIZES_STORED\n\t%i not in [0, %i)"
@@ -856,32 +880,32 @@ LAB_00b2ab37:
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    local_8 = local_8c.fileSizeForPicmip[0 < (int)local_c] + -0x30;
-    puVar6 = Image_AllocTempMemory(local_8);
-    iVar5 = FS_Read(puVar6,local_8,local_58);
-    if (iVar5 == local_8) {
-      FS_FCloseFile(local_58);
-      local_d = (bool)Image_GetPcStreamedMips(&local_8c);
-      param_1->streaming = local_d != false;
-      if ((param_1->streaming == '\0') || (param_2)) {
-        param_1->skippedMipLevels = '\0';
-        local_d = false;
+    readSize = fileHeader.fileSizeForPicmip[0 < picmip] + -0x30;
+    srcData = Image_AllocTempMemory(readSize);
+    iVar5 = FS_Read(srcData,readSize,fileHandle);
+    if (iVar5 == readSize) {
+      FS_FCloseFile(fileHandle);
+      streamedMipLevels = Image_GetPcStreamedMips(&fileHeader);
+      image->streaming = streamedMipLevels != 0;
+      if ((image->streaming == '\0') || (loadHighmip)) {
+        image->skippedMipLevels = '\0';
+        streamedMipLevels = '\0';
       }
       else {
-        local_8c.dimensions[0] = local_8c.dimensions[0] >> (local_d & 0x1fU);
-        local_8c.dimensions[1] = local_8c.dimensions[1] >> (local_d & 0x1fU);
-        param_1->skippedMipLevels = local_d;
+        fileHeader.dimensions[0] = fileHeader.dimensions[0] >> (streamedMipLevels & 0x1f);
+        fileHeader.dimensions[1] = fileHeader.dimensions[1] >> (streamedMipLevels & 0x1f);
+        image->skippedMipLevels = streamedMipLevels;
       }
-      param_1->loadedSize = local_8c.fileSizeForPicmip[local_d] - 0x30;
-      param_1->baseSize = local_8c.fileSizeForPicmip[0] - 0x30;
-      Image_LoadFromData(param_1,&local_8c,puVar6,2);
-      Image_FreeTempMemory(puVar6,local_8);
+      image->loadedSize = fileHeader.fileSizeForPicmip[streamedMipLevels] - 0x30;
+      image->baseSize = fileHeader.fileSizeForPicmip[0] - 0x30;
+      Image_LoadFromData(image,&fileHeader,srcData,2);
+      Image_FreeTempMemory(srcData,readSize);
       bVar3 = true;
     }
     else {
-      Image_PrintTruncatedFileError(local_54);
-      Image_FreeTempMemory(puVar6,local_8);
-      FS_FCloseFile(local_58);
+      Image_PrintTruncatedFileError(filepath);
+      Image_FreeTempMemory(srcData,readSize);
+      FS_FCloseFile(fileHandle);
       bVar3 = false;
     }
   }
@@ -889,7 +913,7 @@ LAB_00b2ab37:
     Com_PrintError(8,
                    "ERROR: image \'%s\' is invalid. fileHeader.fileSizeForPicmip[0] != fileSize (%d != %d)\n"
                   );
-    FS_FCloseFile(local_58);
+    FS_FCloseFile(fileHandle);
     bVar3 = false;
   }
   return bVar3;
@@ -898,13 +922,14 @@ LAB_00b2ab37:
 
 // 00B2AD30  Image_LoadFromFile  (gfx_d3d/r_image_load_obj.cpp:1834)
 
-bool __cdecl Image_LoadFromFile(GfxImage *param_1,bool param_2)
+bool __cdecl Image_LoadFromFile(GfxImage *image_2,bool loadHighmip_2)
 
 {
   bool bVar1;
+  bool ret_2;
   
   Sys_LockWrite(&s_imageLoadLock);
-  bVar1 = Image_LoadFromFileWithReader(param_1,param_2,FS_FOpenFileRead);
+  bVar1 = Image_LoadFromFileWithReader(image_2,loadHighmip_2,FS_FOpenFileRead);
   Sys_UnlockWrite(&s_imageLoadLock);
   return bVar1;
 }
@@ -913,13 +938,13 @@ bool __cdecl Image_LoadFromFile(GfxImage *param_1,bool param_2)
 // 00B2ADD0  Image_Generate2D  (gfx_d3d/r_image_load_obj.cpp:1897)
 
 void __cdecl
-Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFORMAT param_5)
+Image_Generate2D(GfxImage *image,uchar *pixels,int width,int height,_D3DFORMAT imageFormat)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (uchar *)0x0) {
+  if (pixels == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x76a,0,"%s");
     if (!bVar2) {
@@ -928,7 +953,7 @@ Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFO
       return;
     }
   }
-  if ((param_3 < 1) || ((param_3 - 1U & param_3) != 0)) {
+  if ((width < 1) || ((width - 1U & width) != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x76b,0,"%s\n\t(width) = %i");
     if (!bVar2) {
@@ -937,7 +962,7 @@ Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFO
       return;
     }
   }
-  if ((param_4 < 1) || ((param_4 - 1U & param_4) != 0)) {
+  if ((height < 1) || ((height - 1U & height) != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x76c,0,"%s\n\t(height) = %i");
     if (!bVar2) {
@@ -946,8 +971,8 @@ Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFO
       return;
     }
   }
-  Image_Setup(param_1,param_3,param_4,1,3,param_5,"<2d>",0);
-  if ((param_1->cardMemory).platform[0] < 1) {
+  Image_Setup(image,width,height,1,3,imageFormat,"<2d>",0);
+  if ((image->cardMemory).platform[0] < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x771,0,"%s");
     if (!bVar2) {
@@ -956,7 +981,7 @@ Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFO
       return;
     }
   }
-  Image_UploadData(param_1,param_5,D3DCUBEMAP_FACE_POSITIVE_X,0,param_2);
+  Image_UploadData(image,imageFormat,D3DCUBEMAP_FACE_POSITIVE_X,0,pixels);
   return;
 }
 
@@ -964,18 +989,19 @@ Image_Generate2D(GfxImage *param_1,uchar *param_2,int param_3,int param_4,_D3DFO
 // 00B2AEF0  Image_GenerateCube  (gfx_d3d/r_image_load_obj.cpp:1947)
 
 void __cdecl
-Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORMAT param_4,
-                  uint param_5)
+Image_GenerateCube(GfxImage *image,uchar *(*pixels) [15],int edgeLen,_D3DFORMAT imageFormat,
+                  uint mipCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  _D3DCUBEMAP_FACES _Var3;
-  uint local_10;
-  uint local_c;
-  byte local_5;
+  _D3DCUBEMAP_FACES face_00;
+  _D3DCUBEMAP_FACES face;
+  uint mipIndex;
+  uint faceIndex;
+  uchar imageFlags;
   
-  if (param_2 == (uchar *(*) [15])0x0) {
+  if (pixels == (uchar *(*) [15])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x7a1,0,"%s");
     if (!bVar2) {
@@ -984,7 +1010,7 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
       return;
     }
   }
-  if (param_3 < 1) {
+  if (edgeLen < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x7a2,0,"%s");
     if (!bVar2) {
@@ -993,7 +1019,7 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
       return;
     }
   }
-  if ((param_3 - 1U & param_3) != 0) {
+  if ((edgeLen - 1U & edgeLen) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x7a3,0,"%s");
     if (!bVar2) {
@@ -1002,7 +1028,7 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
       return;
     }
   }
-  if (0xf < param_5) {
+  if (0xf < mipCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x7a4,0,"%s");
     if (!bVar2) {
@@ -1011,12 +1037,12 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
       return;
     }
   }
-  local_5 = 5;
-  if (param_5 == 1) {
-    local_5 = 7;
+  imageFlags = '\x05';
+  if (mipCount == 1) {
+    imageFlags = '\a';
   }
-  Image_Setup(param_1,param_3,param_3,1,(uint)local_5,param_4,"<cube>",0);
-  if ((param_1->cardMemory).platform[0] < 1) {
+  Image_Setup(image,edgeLen,edgeLen,1,(uint)imageFlags,imageFormat,"<cube>",0);
+  if ((image->cardMemory).platform[0] < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x7ad,0,"%s");
     if (!bVar2) {
@@ -1025,10 +1051,10 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
       return;
     }
   }
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    _Var3 = Image_CubemapFace(local_c);
-    for (local_10 = 0; local_10 < param_5; local_10 = local_10 + 1) {
-      Image_UploadData(param_1,param_4,_Var3,local_10,param_2[local_c][local_10]);
+  for (faceIndex = 0; faceIndex < 6; faceIndex = faceIndex + 1) {
+    face_00 = Image_CubemapFace(faceIndex);
+    for (mipIndex = 0; mipIndex < mipCount; mipIndex = mipIndex + 1) {
+      Image_UploadData(image,imageFormat,face_00,mipIndex,pixels[faceIndex][mipIndex]);
     }
   }
   return;
@@ -1037,118 +1063,114 @@ Image_GenerateCube(GfxImage *param_1,uchar *(*param_2) [15],int param_3,_D3DFORM
 
 // 00B2B0C0  Image_LoadSolid  (gfx_d3d/r_image_load_obj.cpp:2013)
 
-void __cdecl
-Image_LoadSolid(GfxImage *param_1,uchar param_2,uchar param_3,uchar param_4,uchar param_5)
+void __cdecl Image_LoadSolid(GfxImage *image,uchar r,uchar g,uchar b,uchar a)
 
 {
-  uint local_8;
+  uint pic;
   
-  local_8 = (uint)param_2 << 0x10 | (uint)param_3 << 8 | (uint)param_4 | (uint)param_5 << 0x18;
-  Image_Generate2D(param_1,(uchar *)&local_8,1,1,D3DFMT_A8R8G8B8);
+  pic = (uint)r << 0x10 | (uint)g << 8 | (uint)b | (uint)a << 0x18;
+  Image_Generate2D(image,(uchar *)&pic,1,1,D3DFMT_A8R8G8B8);
   return;
 }
 
 
 // 00B2B090  Image_LoadWhite  (gfx_d3d/r_image_load_obj.cpp:2022)
 
-void __cdecl Image_LoadWhite(GfxImage *param_1)
+void __cdecl Image_LoadWhite(GfxImage *image)
 
 {
-  Image_LoadSolid(param_1,0xff,0xff,0xff,0xff);
+  Image_LoadSolid(image,0xff,0xff,0xff,0xff);
   return;
 }
 
 
 // 00B2B120  Image_LoadWhiteR32F  (gfx_d3d/r_image_load_obj.cpp:2028)
 
-void __cdecl Image_LoadWhiteR32F(GfxImage *param_1)
+void __cdecl Image_LoadWhiteR32F(GfxImage *image)
 
 {
-  uchar local_8 [4];
+  float pic;
   
-  local_8[0] = 0xff;
-  local_8[1] = 0xff;
-  local_8[2] = '\x7f';
-  local_8[3] = '\x7f';
-  Image_Generate2D(param_1,local_8,1,1,D3DFMT_R32F);
+  pic = 3.4028235e+38;
+  Image_Generate2D(image,(uchar *)&pic,1,1,D3DFMT_R32F);
   return;
 }
 
 
 // 00B2B150  Image_LoadG16R16  (gfx_d3d/r_image_load_obj.cpp:2035)
 
-void __cdecl Image_LoadG16R16(GfxImage *param_1)
+void __cdecl Image_LoadG16R16(GfxImage *image)
 
 {
-  float local_8;
+  float pic;
   
-  local_8 = 1.0;
-  Image_Generate2D(param_1,(uchar *)&local_8,1,1,D3DFMT_G16R16);
+  pic = 1.0;
+  Image_Generate2D(image,(uchar *)&pic,1,1,D3DFMT_G16R16);
   return;
 }
 
 
 // 00B2B180  Image_LoadR5G6B5  (gfx_d3d/r_image_load_obj.cpp:2042)
 
-void __cdecl Image_LoadR5G6B5(GfxImage *param_1)
+void __cdecl Image_LoadR5G6B5(GfxImage *image)
 
 {
-  undefined2 local_c [2];
-  undefined2 local_8;
+  ushort pic;
+  ushort col;
   
-  local_8 = 8;
-  local_c[0] = 0x4008;
-  Image_Generate2D(param_1,(uchar *)local_c,1,1,D3DFMT_R5G6B5);
+  col = 8;
+  pic = 0x4008;
+  Image_Generate2D(image,(uchar *)&pic,1,1,D3DFMT_R5G6B5);
   return;
 }
 
 
 // 00B2B1C0  Image_LoadBlack  (gfx_d3d/r_image_load_obj.cpp:2050)
 
-void __cdecl Image_LoadBlack(GfxImage *param_1)
+void __cdecl Image_LoadBlack(GfxImage *image)
 
 {
-  Image_LoadSolid(param_1,'\0','\0','\0',0xff);
+  Image_LoadSolid(image,'\0','\0','\0',0xff);
   return;
 }
 
 
 // 00B2B1E0  Image_LoadBlank  (gfx_d3d/r_image_load_obj.cpp:2056)
 
-void __cdecl Image_LoadBlank(GfxImage *param_1)
+void __cdecl Image_LoadBlank(GfxImage *image_2)
 
 {
-  Image_LoadSolid(param_1,'\0','\0','\0','\0');
+  Image_LoadSolid(image_2,'\0','\0','\0','\0');
   return;
 }
 
 
 // 00B2B200  Image_LoadGray  (gfx_d3d/r_image_load_obj.cpp:2062)
 
-void __cdecl Image_LoadGray(GfxImage *param_1)
+void __cdecl Image_LoadGray(GfxImage *image)
 
 {
-  Image_LoadSolid(param_1,0x80,0x80,0x80,0x80);
+  Image_LoadSolid(image,0x80,0x80,0x80,0x80);
   return;
 }
 
 
 // 00B2B230  Image_LoadIdentityNormalMap  (gfx_d3d/r_image_load_obj.cpp:2068)
 
-void __cdecl Image_LoadIdentityNormalMap(GfxImage *param_1)
+void __cdecl Image_LoadIdentityNormalMap(GfxImage *image)
 
 {
-  Image_LoadSolid(param_1,0x80,0x80,0xff,0x80);
+  Image_LoadSolid(image,0x80,0x80,0xff,0x80);
   return;
 }
 
 
 // 00B2B260  Image_LoadWhiteTransparent  (gfx_d3d/r_image_load_obj.cpp:2074)
 
-void __cdecl Image_LoadWhiteTransparent(GfxImage *param_1)
+void __cdecl Image_LoadWhiteTransparent(GfxImage *image)
 
 {
-  Image_LoadSolid(param_1,0xff,0xff,0xff,'\0');
+  Image_LoadSolid(image,0xff,0xff,0xff,'\0');
   return;
 }
 
@@ -1157,22 +1179,22 @@ void __cdecl Image_LoadWhiteTransparent(GfxImage *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Image_LoadPixelCostColorCode(GfxImage *param_1)
+void __cdecl Image_LoadPixelCostColorCode(GfxImage *image)
 
 {
-  uchar local_40c [1028];
+  uchar pic [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  RB_PixelCost_BuildColorCodeMap((uchar (*) [4])local_40c,0x100);
-  Image_Generate2D(param_1,local_40c,0x100,1,D3DFMT_X8R8G8B8);
+  RB_PixelCost_BuildColorCodeMap((uchar (*) [4])pic,0x100);
+  Image_Generate2D(image,pic,0x100,1,D3DFMT_X8R8G8B8);
   return;
 }
 
 
 // 00B2B3C0  Image_LoadBuiltin  (gfx_d3d/r_image_load_obj.cpp:2172)
 
-GfxImage * __cdecl Image_LoadBuiltin(char *param_1,uchar param_2,int param_3)
+GfxImage * __cdecl Image_LoadBuiltin(char *name,uchar semantic,int imageTrack)
 
 {
   byte bVar1;
@@ -1182,16 +1204,17 @@ GfxImage * __cdecl Image_LoadBuiltin(char *param_1,uchar param_2,int param_3)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  GfxImage *image;
+  int tableIndex;
   
-  local_8 = 0;
+  tableIndex = 0;
   do {
-    if (0xb < local_8) {
+    if (0xb < (uint)tableIndex) {
       Com_PrintError(8,"ERROR: Unknown built-in image \'%s\'");
       return (GfxImage *)0x0;
     }
-    local_10 = (byte *)param_1;
-    local_14 = (byte *)constructorTable[local_8].name;
+    local_10 = (byte *)name;
+    local_14 = (byte *)constructorTable[tableIndex].name;
     do {
       bVar1 = *local_14;
       bVar4 = bVar1 < *local_10;
@@ -1210,7 +1233,7 @@ LAB_00b2b432:
     local_1c = 0;
 LAB_00b2b43a:
     if (local_1c == 0) {
-      pGVar3 = Image_Alloc(param_1,'\x01',param_2,param_3,1.0);
+      pGVar3 = Image_Alloc(name,'\x01',semantic,imageTrack,1.0);
       if ((pGVar3 == (GfxImage *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp"
                                    ,0x885,1,"%s"), !bVar4)) {
@@ -1218,28 +1241,29 @@ LAB_00b2b43a:
         pGVar3 = (GfxImage *)(*pcVar2)();
         return pGVar3;
       }
-      (*constructorTable[local_8].LoadCallback)(pGVar3);
+      (*constructorTable[tableIndex].LoadCallback)(pGVar3);
       return pGVar3;
     }
-    local_8 = local_8 + 1;
+    tableIndex = tableIndex + 1;
   } while( true );
 }
 
 
 // 00B2B2F0  Image_Load  (gfx_d3d/r_image_load_obj.cpp:2193)
 
-GfxImage * __cdecl Image_Load(char *param_1,uchar param_2,int param_3)
+GfxImage * __cdecl Image_Load(char *name,uchar semantic,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
+  GfxImage *image;
   
-  if (*param_1 == '$') {
-    pGVar3 = Image_LoadBuiltin(param_1,param_2,param_3);
+  if (*name == '$') {
+    pGVar3 = Image_LoadBuiltin(name,semantic,imageTrack);
   }
   else {
-    pGVar3 = Image_Alloc(param_1,'\x03',param_2,param_3,1.0);
+    pGVar3 = Image_Alloc(name,'\x03',semantic,imageTrack,1.0);
     if ((pGVar3 == (GfxImage *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                                  0x898,1,"%s"), !bVar2)) {
@@ -1265,13 +1289,13 @@ GfxImage * __cdecl Image_Load(char *param_1,uchar param_2,int param_3)
 
 // 00B2B4D0  Image_BuildWaterMap  (gfx_d3d/r_image_load_obj.cpp:2211)
 
-void __cdecl Image_BuildWaterMap(GfxImage *param_1)
+void __cdecl Image_BuildWaterMap(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x8a4,0,"%s");
     if (!bVar2) {
@@ -1280,22 +1304,22 @@ void __cdecl Image_BuildWaterMap(GfxImage *param_1)
       return;
     }
   }
-  Image_SetupAndLoad(param_1,(uint)param_1->width,(uint)param_1->height,1,0x10001,D3DFMT_L8,
-                     "<water>",2);
+  Image_SetupAndLoad(image,(uint)image->width,(uint)image->height,1,0x10001,D3DFMT_L8,"<water>",2);
   return;
 }
 
 
 // 00B2B530  R_CreateWaterMap  (gfx_d3d/r_image_load_obj.cpp:2218)
 
-GfxImage * __cdecl R_CreateWaterMap(char *param_1,ushort param_2,ushort param_3)
+GfxImage * __cdecl R_CreateWaterMap(char *name,ushort imageWidth,ushort imageHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
+  GfxImage *image;
   
-  pGVar3 = Image_Alloc(param_1,'\x05','\v',9,1.0);
+  pGVar3 = Image_Alloc(name,'\x05','\v',9,1.0);
   if (pGVar3 == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image_load_obj.cpp",
                              0x8ae,1,"%s");
@@ -1305,8 +1329,8 @@ GfxImage * __cdecl R_CreateWaterMap(char *param_1,ushort param_2,ushort param_3)
       return pGVar3;
     }
   }
-  pGVar3->width = param_2;
-  pGVar3->height = param_3;
+  pGVar3->width = imageWidth;
+  pGVar3->height = imageHeight;
   Image_BuildWaterMap(pGVar3);
   return pGVar3;
 }

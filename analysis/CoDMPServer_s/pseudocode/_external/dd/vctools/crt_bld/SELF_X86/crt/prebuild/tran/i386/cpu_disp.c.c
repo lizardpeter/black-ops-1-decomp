@@ -8,6 +8,8 @@
 int __cdecl has_osfxsr_set(void)
 
 {
+  int ret;
+  
   return 1;
 }
 
@@ -31,9 +33,11 @@ int __cdecl _get_sse2_info(void)
   byte in_VIP;
   byte in_ID;
   uint uVar3;
-  undefined4 uStack_8;
+  int dwMax;
+  int Signature;
+  int cpu_feature;
   
-  uStack_8 = 0;
+  cpu_feature = 0;
   uVar3 = (uint)(in_NT & 1) * 0x4000 | (uint)(in_IF & 1) * 0x200 | (uint)(in_TF & 1) * 0x100 | 0x40
           | (uint)(in_AF & 1) * 0x10 | 4 | (uint)(in_ID & 1) * 0x200000 |
           (uint)(in_VIP & 1) * 0x100000 | (uint)(in_VIF & 1) * 0x80000 | (uint)(in_AC & 1) * 0x40000
@@ -46,9 +50,9 @@ int __cdecl _get_sse2_info(void)
       uVar3) {
     cpuid_basic_info(0);
     iVar2 = cpuid_Version_info(1);
-    uStack_8 = *(uint *)(iVar2 + 8);
+    cpu_feature = *(int *)(iVar2 + 8);
   }
-  if (((uStack_8 & 0x4000000) == 0) || (iVar2 = has_osfxsr_set(), iVar2 == 0)) {
+  if (((cpu_feature & 0x4000000U) == 0) || (iVar2 = has_osfxsr_set(), iVar2 == 0)) {
     iVar2 = 0;
   }
   else {

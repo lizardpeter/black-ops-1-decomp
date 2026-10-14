@@ -5,13 +5,14 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _putenv(char *param_1)
+int __cdecl _putenv(char *option)
 
 {
   int iVar1;
+  int retval;
   
   _lock(7);
-  iVar1 = _putenv_helper(param_1,(char *)0x0);
+  iVar1 = _putenv_helper(option,(char *)0x0);
   FUN_00c110e6();
   return iVar1;
 }
@@ -19,103 +20,103 @@ int __cdecl _putenv(char *param_1)
 
 // 00C10E98  _putenv_helper  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/putenv.c:116)
 
-int __cdecl _putenv_helper(char *param_1,char *param_2)
+int __cdecl _putenv_helper(char *name,char *value)
 
 {
-  wchar_t *pwVar1;
-  int *piVar2;
-  uchar *puVar3;
-  uint uVar4;
+  ushort *pBlock;
+  int *piVar1;
+  uchar *puVar2;
+  uint uVar3;
   int extraout_EAX;
-  int iVar5;
-  uint uVar6;
-  wchar_t *local_c;
-  wchar_t *local_8;
+  int iVar4;
+  uint uVar5;
+  char *newoption;
+  ushort *woption;
   
-  local_c = (wchar_t *)0x0;
+  newoption = (char *)0x0;
   if (__env_initialized == 0) {
     return -1;
   }
-  if (param_1 == (char *)0x0) {
-    piVar2 = _errno();
-    *piVar2 = 0x16;
+  if (name == (char *)0x0) {
+    piVar1 = _errno();
+    *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  if (param_2 == (char *)0x0) {
-    puVar3 = _mbschr((uchar *)param_1,0x3d);
-    if ((puVar3 != (uchar *)0x0) &&
-       ((0x7ffe < (int)puVar3 - (int)param_1 ||
-        (uVar4 = strnlen((char *)(puVar3 + 1),0x7fff), 0x7ffe < uVar4)))) {
+  if (value == (char *)0x0) {
+    puVar2 = _mbschr((uchar *)name,0x3d);
+    if ((puVar2 != (uchar *)0x0) &&
+       ((0x7ffe < (int)puVar2 - (int)name ||
+        (uVar3 = strnlen((char *)(puVar2 + 1),0x7fff), 0x7ffe < uVar3)))) {
 LAB_00c10f5d:
-      piVar2 = _errno();
-      *piVar2 = 0x16;
+      piVar1 = _errno();
+      *piVar1 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       return -1;
     }
-    strlen((uchar *)param_1);
-    local_c = _calloc_crt(extraout_EAX + 1U,1);
-    if (local_c == (wchar_t *)0x0) {
+    strlen((uchar *)name);
+    newoption = _calloc_crt(extraout_EAX + 1U,1);
+    if (newoption == (char *)0x0) {
       return -1;
     }
-    strcpy_s((char *)local_c,extraout_EAX + 1U,param_1);
+    strcpy_s(newoption,extraout_EAX + 1U,name);
   }
   else {
-    uVar4 = strnlen(param_1,0x7fff);
-    uVar6 = strnlen(param_2,0x7fff);
-    if ((0x7ffe < uVar4) || (0x7ffe < uVar6)) goto LAB_00c10f5d;
-    uVar6 = uVar6 + 2 + uVar4;
-    local_c = _calloc_crt(uVar6,1);
-    if (local_c == (wchar_t *)0x0) {
+    uVar3 = strnlen(name,0x7fff);
+    uVar5 = strnlen(value,0x7fff);
+    if ((0x7ffe < uVar3) || (0x7ffe < uVar5)) goto LAB_00c10f5d;
+    uVar5 = uVar5 + 2 + uVar3;
+    newoption = _calloc_crt(uVar5,1);
+    if (newoption == (char *)0x0) {
       return -1;
     }
-    strcpy_s((char *)local_c,uVar6,param_1);
-    *(char *)(uVar4 + (int)local_c) = '=';
-    strcpy_s((char *)(uVar4 + 1 + (int)local_c),uVar6 - (uVar4 + 1),param_2);
+    strcpy_s(newoption,uVar5,name);
+    newoption[uVar3] = '=';
+    strcpy_s(newoption + uVar3 + 1,uVar5 - (uVar3 + 1),value);
   }
-  iVar5 = __crtsetenv((char **)&local_c,1);
-  pwVar1 = local_c;
-  if (iVar5 != 0) goto joined_r0x00c10fd0;
+  iVar4 = __crtsetenv(&newoption,1);
+  pBlock = (ushort *)newoption;
+  if (iVar4 != 0) goto joined_r0x00c10fd0;
   if (_wenviron == (ushort **)0x0) {
     return 0;
   }
-  local_8 = (wchar_t *)0x0;
-  uVar4 = MultiByteToWideChar(0,0,param_1,-1,(LPWSTR)0x0,0);
-  if (uVar4 == 0) goto LAB_00c11073;
-  if (param_2 != (char *)0x0) {
-    iVar5 = MultiByteToWideChar(0,0,param_2,-1,(LPWSTR)0x0,0);
-    if (iVar5 == 0) goto LAB_00c11073;
-    uVar4 = uVar4 + 1 + iVar5;
+  woption = (ushort *)0x0;
+  uVar3 = MultiByteToWideChar(0,0,name,-1,(LPWSTR)0x0,0);
+  if (uVar3 == 0) goto LAB_00c11073;
+  if (value != (char *)0x0) {
+    iVar4 = MultiByteToWideChar(0,0,value,-1,(LPWSTR)0x0,0);
+    if (iVar4 == 0) goto LAB_00c11073;
+    uVar3 = uVar3 + 1 + iVar4;
   }
-  local_8 = _calloc_crt(uVar4,2);
-  if (local_8 == (LPWSTR)0x0) {
+  woption = _calloc_crt(uVar3,2);
+  if ((LPWSTR)woption == (LPWSTR)0x0) {
     return -1;
   }
-  iVar5 = MultiByteToWideChar(0,0,param_1,-1,local_8,uVar4);
-  if (iVar5 == 0) {
+  iVar4 = MultiByteToWideChar(0,0,name,-1,(LPWSTR)woption,uVar3);
+  if (iVar4 == 0) {
 LAB_00c1106a:
-    free(local_8);
+    free(woption);
 LAB_00c11073:
-    piVar2 = _errno();
-    *piVar2 = 0x2a;
+    piVar1 = _errno();
+    *piVar1 = 0x2a;
     return -1;
   }
-  if (param_2 != (char *)0x0) {
-    uVar6 = wcslen(local_8);
-    local_8[uVar6] = L'=';
-    iVar5 = MultiByteToWideChar(0,0,param_2,-1,local_8 + uVar6 + 1,uVar4 - (uVar6 + 1));
-    if (iVar5 == 0) goto LAB_00c1106a;
+  if (value != (char *)0x0) {
+    uVar5 = wcslen((wchar_t *)woption);
+    woption[uVar5] = 0x3d;
+    iVar4 = MultiByteToWideChar(0,0,value,-1,(LPWSTR)(woption + uVar5 + 1),uVar3 - (uVar5 + 1));
+    if (iVar4 == 0) goto LAB_00c1106a;
   }
-  iVar5 = __crtwsetenv((ushort **)&local_8,0);
-  pwVar1 = local_8;
-  if (iVar5 == 0) {
+  iVar4 = __crtwsetenv(&woption,0);
+  pBlock = woption;
+  if (iVar4 == 0) {
     return 0;
   }
 joined_r0x00c10fd0:
-  if (pwVar1 == (wchar_t *)0x0) {
+  if (pBlock == (ushort *)0x0) {
     return -1;
   }
-  free(pwVar1);
+  free(pBlock);
   return -1;
 }
 

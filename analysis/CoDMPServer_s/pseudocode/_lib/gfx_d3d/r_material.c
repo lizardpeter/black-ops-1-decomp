@@ -107,7 +107,7 @@ void __cdecl Load_BuildVertexDecl(MaterialVertexDeclaration **param_1)
 
 // 007E5DE0  Material_RegisterTechniqueSet  (gfx_d3d/r_material.cpp:1148)
 
-MaterialTechniqueSet * __cdecl Material_RegisterTechniqueSet(char *param_1)
+MaterialTechniqueSet * __cdecl Material_RegisterTechniqueSet(char *name)
 
 {
   code *pcVar1;
@@ -119,9 +119,9 @@ MaterialTechniqueSet * __cdecl Material_RegisterTechniqueSet(char *param_1)
   if ((useFastFile->current).enabled == false) {
     pcVar1 = Material_FindTechniqueSet_LoadObj;
   }
-  pMVar2 = (MaterialTechniqueSet *)(*pcVar1)(param_1,0);
+  pMVar2 = (MaterialTechniqueSet *)(*pcVar1)(name,0);
   if (pMVar2 == (MaterialTechniqueSet *)0x0) {
-    pMVar2 = Material_LoadTechniqueSet(param_1);
+    pMVar2 = Material_LoadTechniqueSet(name);
     if (pMVar2 == (MaterialTechniqueSet *)0x0) {
       return (MaterialTechniqueSet *)0x0;
     }
@@ -141,6 +141,7 @@ void __cdecl Material_ReleaseTechniqueSetResources(MaterialTechniqueSet *param_1
   MaterialTechnique **ppMVar2;
   MaterialPass *unaff_EDI;
   int iVar3;
+  MaterialTechniqueSet *techniqueSet;
   int iStack_4;
   
   ppMVar2 = param_1->techniques;
@@ -162,40 +163,45 @@ void __cdecl Material_ReleaseTechniqueSetResources(MaterialTechniqueSet *param_1
 
 // 007E6020  Material_Duplicate  (gfx_d3d/r_material.cpp:1396)
 
-Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
+/* WARNING: Variable defined which should be unmapped: exists */
+
+Material * __cdecl Material_Duplicate(Material *name,char *param_2)
 
 {
   char cVar1;
   char *pcVar2;
   Material *pMVar3;
-  GfxStateBits *pGVar4;
-  MaterialTextureDef *pMVar5;
-  MaterialConstantDef *pMVar6;
-  int iVar7;
+  GfxStateBits *dst;
+  MaterialTextureDef *dst_00;
+  MaterialConstantDef *dst_01;
+  int iVar4;
   Material *unaff_EBX;
-  Material *pMVar8;
-  ulong uVar9;
+  Material *pMVar5;
+  ulong uVar6;
   bool *unaff_EDI;
-  Material *pMVar10;
-  ushort uVar11;
+  Material *pMVar7;
+  Material *mtlCopy;
+  ushort uVar8;
+  bool exists;
+  ushort hashIndex;
   char cStack_9;
-  ushort uStack_8;
+  int nameSize;
   char *pcStack_4;
   
   Material_GetHashIndex(param_2,(ushort *)&cStack_9,unaff_EDI);
-  uVar11 = (ushort)unaff_EDI;
+  uVar8 = (ushort)unaff_EDI;
   if (cStack_9 != '\0') {
-    pMVar8 = rg.materialHashTable[uStack_8];
-    pcVar2 = (pMVar8->info).name;
-    pMVar10 = pMVar8;
-    for (iVar7 = 0x30; iVar7 != 0; iVar7 = iVar7 + -1) {
-      (pMVar10->info).name = (param_1->info).name;
-      param_1 = (Material *)&(param_1->info).gameFlags;
-      pMVar10 = (Material *)&(pMVar10->info).gameFlags;
+    pMVar5 = rg.materialHashTable[(ushort)nameSize];
+    pcVar2 = (pMVar5->info).name;
+    pMVar7 = pMVar5;
+    for (iVar4 = 0x30; iVar4 != 0; iVar4 = iVar4 + -1) {
+      (pMVar7->info).name = (name->info).name;
+      name = (Material *)&(name->info).gameFlags;
+      pMVar7 = (Material *)&(pMVar7->info).gameFlags;
     }
-    (pMVar8->info).name = pcVar2;
+    (pMVar5->info).name = pcVar2;
     rgp.needSortMaterials = 1;
-    return pMVar8;
+    return pMVar5;
   }
   pcVar2 = param_2;
   do {
@@ -204,33 +210,33 @@ Material * __cdecl Material_Duplicate(Material *param_1,char *param_2)
   } while (cVar1 != '\0');
   pcStack_4 = pcVar2 + (1 - (int)(param_2 + 1));
   pMVar3 = Hunk_AllocAlignInternal((int)(pcVar2 + (0xc1 - (int)(param_2 + 1))),(int)unaff_EBX);
-  pMVar8 = param_1;
-  pMVar10 = pMVar3;
-  for (iVar7 = 0x30; iVar7 != 0; iVar7 = iVar7 + -1) {
-    (pMVar10->info).name = (pMVar8->info).name;
-    pMVar8 = (Material *)&(pMVar8->info).gameFlags;
-    pMVar10 = (Material *)&(pMVar10->info).gameFlags;
+  pMVar5 = name;
+  pMVar7 = pMVar3;
+  for (iVar4 = 0x30; iVar4 != 0; iVar4 = iVar4 + -1) {
+    (pMVar7->info).name = (pMVar5->info).name;
+    pMVar5 = (Material *)&(pMVar5->info).gameFlags;
+    pMVar7 = (Material *)&(pMVar7->info).gameFlags;
   }
-  pMVar8 = pMVar3 + 1;
-  (pMVar3->info).name = (char *)pMVar8;
-  memcpy((uchar *)pMVar8,(uchar *)param_2,(ulong)pcStack_4);
-  uVar9 = (uint)param_1->stateBitsCount * 8;
-  pGVar4 = Hunk_AllocAlignInternal(uVar9,(int)pMVar8);
-  pMVar3->stateBitsTable = pGVar4;
-  memcpy((uchar *)pGVar4,(uchar *)param_1->stateBitsTable,uVar9);
-  if (param_1->textureTable != (MaterialTextureDef *)0x0) {
-    uVar9 = (uint)param_1->textureCount << 4;
-    pMVar5 = Hunk_AllocAlignInternal(uVar9,(int)unaff_EBX);
-    pMVar3->textureTable = pMVar5;
-    memcpy((uchar *)pMVar5,(uchar *)param_1->textureTable,uVar9);
+  pMVar5 = pMVar3 + 1;
+  (pMVar3->info).name = (char *)pMVar5;
+  memcpy((uchar *)pMVar5,(uchar *)param_2,(ulong)pcStack_4);
+  uVar6 = (uint)name->stateBitsCount * 8;
+  dst = Hunk_AllocAlignInternal(uVar6,(int)pMVar5);
+  pMVar3->stateBitsTable = dst;
+  memcpy((uchar *)dst,(uchar *)name->stateBitsTable,uVar6);
+  if (name->textureTable != (MaterialTextureDef *)0x0) {
+    uVar6 = (uint)name->textureCount << 4;
+    dst_00 = Hunk_AllocAlignInternal(uVar6,(int)unaff_EBX);
+    pMVar3->textureTable = dst_00;
+    memcpy((uchar *)dst_00,(uchar *)name->textureTable,uVar6);
   }
-  if ((param_1->field10_0xb8).localConstantTable != (MaterialConstantDef *)0x0) {
-    uVar9 = (uint)param_1->constantCount << 5;
-    pMVar6 = Hunk_AllocAlignInternal(uVar9,(int)unaff_EBX);
-    (pMVar3->field10_0xb8).localConstantTable = pMVar6;
-    memcpy((uchar *)pMVar6,(uchar *)(param_1->field10_0xb8).localConstantTable,uVar9);
+  if ((name->field10_0xb8).localConstantTable != (MaterialConstantDef *)0x0) {
+    uVar6 = (uint)name->constantCount << 5;
+    dst_01 = Hunk_AllocAlignInternal(uVar6,(int)unaff_EBX);
+    (pMVar3->field10_0xb8).localConstantTable = dst_01;
+    memcpy((uchar *)dst_01,(uchar *)(name->field10_0xb8).localConstantTable,uVar6);
   }
-  Material_Add(unaff_EBX,uVar11);
+  Material_Add(unaff_EBX,uVar8);
   return pMVar3;
 }
 
@@ -259,7 +265,7 @@ bool __cdecl Material_IsDefault(Material *param_1)
 
 // 007E6200  Material_GetHashIndex  (gfx_d3d/r_material.cpp:1494)
 
-void __cdecl Material_GetHashIndex(char *param_1,ushort *param_2,bool *param_3)
+void __cdecl Material_GetHashIndex(char *exists,ushort *param_2,bool *param_3)
 
 {
   byte bVar1;
@@ -274,6 +280,7 @@ void __cdecl Material_GetHashIndex(char *param_1,ushort *param_2,bool *param_3)
   ushort *unaff_ESI;
   char *unaff_EDI;
   bool bVar9;
+  char *name;
   
   uVar4 = Material_HashName(unaff_EDI);
   pMVar2 = rg.materialHashTable[uVar4];
@@ -285,7 +292,7 @@ void __cdecl Material_GetHashIndex(char *param_1,ushort *param_2,bool *param_3)
     }
     uVar7 = *unaff_ESI;
     pbVar5 = (byte *)(rg.materialHashTable[uVar7]->info).name;
-    pbVar8 = (byte *)param_1;
+    pbVar8 = (byte *)exists;
     do {
       bVar1 = *pbVar5;
       bVar9 = bVar1 < *pbVar8;
@@ -392,6 +399,7 @@ int __cdecl Material_LoadFile(char *param_1,int *param_2)
   int in_EAX;
   int iVar1;
   char *unaff_EDI;
+  int *file;
   undefined1 auStack_40 [64];
   
   Com_sprintf("materials/%s",in_EAX,unaff_EDI);

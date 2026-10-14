@@ -2,10 +2,10 @@
 
 // 006A8550  Record_SetRecordingCallback  (groupvoice/record.cpp:45)
 
-void __cdecl Record_SetRecordingCallback(_func___cdecl_int_audioSample_t_ptr *param_1)
+void __cdecl Record_SetRecordingCallback(_func___cdecl_int_audioSample_t_ptr *new_audioCallback)
 
 {
-  current_audioCallback = param_1;
+  current_audioCallback = new_audioCallback;
   return;
 }
 
@@ -15,7 +15,7 @@ void __cdecl Record_SetRecordingCallback(_func___cdecl_int_audioSample_t_ptr *pa
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Record_QueueAudioDataForEncoding(audioSample_t *param_1)
+int __cdecl Record_QueueAudioDataForEncoding(audioSample_t *sample)
 
 {
   code *pcVar1;
@@ -23,138 +23,138 @@ int __cdecl Record_QueueAudioDataForEncoding(audioSample_t *param_1)
   int iVar3;
   uint uVar4;
   int local_202c;
-  int local_2024;
-  int local_2020;
-  short local_2014 [4098];
+  int total_bytes;
+  int samples_in_our_buffer;
+  int bytes;
+  int samples_copied;
+  short audio_buffer [4098];
   uint local_10;
-  int local_c;
-  int local_8;
+  int ii;
+  int encode_frame_size;
   
-  local_8 = 0x6a856d;
+  encode_frame_size = 0x6a856d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   voice_current_voicelevel = 0.0;
-  if ((param_1->bytesPerSample == 2) && (0 < param_1->lengthInSamples)) {
-    for (local_c = 0; local_c < param_1->lengthInSamples; local_c = local_c + 1) {
-      *(short *)(param_1->buffer + local_c * 2) =
-           (short)(int)((float)(int)*(short *)(param_1->buffer + local_c * 2) * voice_current_scaler
-                       );
-      uVar4 = (int)*(short *)(param_1->buffer + local_c * 2) >> 0x1f;
+  if ((sample->bytesPerSample == 2) && (0 < sample->lengthInSamples)) {
+    for (ii = 0; ii < sample->lengthInSamples; ii = ii + 1) {
+      *(short *)(sample->buffer + ii * 2) =
+           (short)(int)((float)(int)*(short *)(sample->buffer + ii * 2) * voice_current_scaler);
+      uVar4 = (int)*(short *)(sample->buffer + ii * 2) >> 0x1f;
       voice_current_voicelevel =
-           (float)(int)(((int)*(short *)(param_1->buffer + local_c * 2) ^ uVar4) - uVar4) +
+           (float)(int)(((int)*(short *)(sample->buffer + ii * 2) ^ uVar4) - uVar4) +
            voice_current_voicelevel;
     }
-    voice_current_voicelevel = voice_current_voicelevel / (float)param_1->lengthInSamples;
+    voice_current_voicelevel = voice_current_voicelevel / (float)sample->lengthInSamples;
   }
   bVar2 = Voice_SendVoiceData();
   if (bVar2) {
     bVar2 = IN_IsTalkKeyHeld();
     if (bVar2) {
-      local_8 = Encode_GetFrameSize();
-      param_1->sampleOffset = 0;
-      local_2024 = 0;
-      if (local_8 < 1) {
+      encode_frame_size = Encode_GetFrameSize();
+      sample->sampleOffset = 0;
+      total_bytes = 0;
+      if (encode_frame_size < 1) {
         Com_Printf(9,"Invalid encode frame size of %i\n");
-        local_2024 = 0;
+        total_bytes = 0;
       }
-      else if (param_1->lengthInBytes < 1) {
+      else if (sample->lengthInBytes < 1) {
         Com_Printf(9,"Invalid sample length of %i samples\n");
-        local_2024 = 0;
+        total_bytes = 0;
       }
-      else if (param_1->sampleOffset < 0) {
+      else if (sample->sampleOffset < 0) {
         Com_Printf(9,"Invalid sample offset of %i\n");
-        local_2024 = 0;
+        total_bytes = 0;
       }
       else {
-        while (local_8 <=
-               (param_1->lengthInSamples - param_1->sampleOffset) + samples_in_partial_audio_buffer)
-        {
-          local_2020 = 0;
+        while (encode_frame_size <=
+               (sample->lengthInSamples - sample->sampleOffset) + samples_in_partial_audio_buffer) {
+          samples_in_our_buffer = 0;
           if (samples_in_partial_audio_buffer != 0) {
-            local_202c = local_8 + -4;
+            local_202c = encode_frame_size + -4;
             if (samples_in_partial_audio_buffer < local_202c) {
               local_202c = samples_in_partial_audio_buffer;
             }
             samples_in_partial_audio_buffer = local_202c;
-            if ((0x2000 < local_202c * param_1->bytesPerSample) &&
+            if ((0x2000 < local_202c * sample->bytesPerSample) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\record.cpp"
                                          ,0x77,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            if ((0x500 < local_202c * param_1->bytesPerSample) &&
+            if ((0x500 < local_202c * sample->bytesPerSample) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\record.cpp"
                                          ,0x78,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            memcpy((uchar *)local_2014,(uchar *)partial_audio_buffer,
-                   local_202c * param_1->bytesPerSample);
-            local_2020 = local_202c;
+            memcpy((uchar *)audio_buffer,(uchar *)partial_audio_buffer,
+                   local_202c * sample->bytesPerSample);
+            samples_in_our_buffer = local_202c;
             samples_in_partial_audio_buffer = samples_in_partial_audio_buffer - local_202c;
           }
-          memcpy((uchar *)(local_2014 + local_2020),
-                 param_1->buffer + param_1->sampleOffset * param_1->bytesPerSample,
-                 (local_8 - local_2020) * param_1->bytesPerSample);
-          param_1->sampleOffset = (local_8 - local_2020) + param_1->sampleOffset;
-          iVar3 = Encode_Sample(local_2014,enc_buffer + enc_buffer_pos,0x1000 - enc_buffer_pos);
-          local_2024 = local_2024 + iVar3;
+          memcpy((uchar *)(audio_buffer + samples_in_our_buffer),
+                 sample->buffer + sample->sampleOffset * sample->bytesPerSample,
+                 (encode_frame_size - samples_in_our_buffer) * sample->bytesPerSample);
+          sample->sampleOffset = (encode_frame_size - samples_in_our_buffer) + sample->sampleOffset;
+          iVar3 = Encode_Sample(audio_buffer,enc_buffer + enc_buffer_pos,0x1000 - enc_buffer_pos);
+          total_bytes = total_bytes + iVar3;
           Client_SendVoiceData(iVar3,enc_buffer + enc_buffer_pos);
         }
-        if (param_1->sampleOffset < param_1->lengthInSamples) {
+        if (sample->sampleOffset < sample->lengthInSamples) {
           memcpy((uchar *)(partial_audio_buffer + samples_in_partial_audio_buffer),
-                 param_1->buffer + param_1->sampleOffset * param_1->bytesPerSample,
-                 (param_1->lengthInSamples - param_1->sampleOffset) * param_1->bytesPerSample);
+                 sample->buffer + sample->sampleOffset * sample->bytesPerSample,
+                 (sample->lengthInSamples - sample->sampleOffset) * sample->bytesPerSample);
           samples_in_partial_audio_buffer =
-               (param_1->lengthInSamples - param_1->sampleOffset) + samples_in_partial_audio_buffer;
+               (sample->lengthInSamples - sample->sampleOffset) + samples_in_partial_audio_buffer;
         }
       }
     }
     else {
       CL_VoiceTransmit(0);
-      local_2024 = 0;
+      total_bytes = 0;
     }
   }
   else {
-    local_2024 = 0;
+    total_bytes = 0;
   }
-  return local_2024;
+  return total_bytes;
 }
 
 
 // 006A8940  Record_AudioCallback  (groupvoice/record.cpp:152)
 
-int __cdecl Record_AudioCallback(audioSample_t *param_1)
+int __cdecl Record_AudioCallback(audioSample_t *sample)
 
 {
   int iVar1;
   
-  iVar1 = Record_QueueAudioDataForEncoding(param_1);
+  iVar1 = Record_QueueAudioDataForEncoding(sample);
   return iVar1;
 }
 
 
 // 006A8960  Record_Start  (groupvoice/record.cpp:157)
 
-int __cdecl Record_Start(dsound_sample_t *param_1)
+int __cdecl Record_Start(dsound_sample_t *sample)
 
 {
   int iVar1;
   
-  iVar1 = DSOUNDRecord_Start(param_1);
+  iVar1 = DSOUNDRecord_Start(sample);
   return iVar1;
 }
 
 
 // 006A8980  Record_Stop  (groupvoice/record.cpp:168)
 
-int __cdecl Record_Stop(dsound_sample_t *param_1)
+int __cdecl Record_Stop(dsound_sample_t *sample)
 
 {
   int iVar1;
   
-  iVar1 = DSOUNDRecord_Stop(param_1);
+  iVar1 = DSOUNDRecord_Stop(sample);
   return iVar1;
 }
 
@@ -173,12 +173,12 @@ dsound_sample_t * __cdecl Record_NewSample(void)
 
 // 006A89B0  Record_DestroySample  (groupvoice/record.cpp:190)
 
-int __cdecl Record_DestroySample(dsound_sample_t *param_1)
+int __cdecl Record_DestroySample(dsound_sample_t *sample)
 
 {
   int iVar1;
   
-  iVar1 = DSOUNDRecord_DestroySample(param_1);
+  iVar1 = DSOUNDRecord_DestroySample(sample);
   return iVar1;
 }
 
@@ -206,13 +206,13 @@ void __cdecl Record_Frame(void)
 
 // 006A89F0  Record_Init  (groupvoice/record.cpp:229)
 
-int __cdecl Record_Init(bool param_1,void *param_2)
+int __cdecl Record_Init(bool callInit,void *handle)
 
 {
   int iVar1;
   
   Record_SetRecordingCallback(Record_AudioCallback);
-  iVar1 = DSOUNDRecord_Init(true,param_2);
+  iVar1 = DSOUNDRecord_Init(true,handle);
   return iVar1;
 }
 

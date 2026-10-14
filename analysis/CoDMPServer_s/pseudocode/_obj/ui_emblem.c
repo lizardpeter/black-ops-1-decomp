@@ -28,16 +28,15 @@ void __cdecl
 UI_DrawEmblemSelector(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
 
 {
-  char *pcVar1;
+  char *nptr;
   int in_ECX;
   itemDef_s *in_stack_ffffffdc;
   ExpressionStatement *in_stack_ffffffe0;
   
   if (*(int *)(in_ECX + 0xa8) == 6) {
     if (*(int *)(in_ECX + 0xc0) != 0) {
-      pcVar1 = GetExpressionResultString
-                         (*(int *)(in_ECX + 0xc0),in_stack_ffffffdc,in_stack_ffffffe0);
-      atoi(pcVar1);
+      nptr = GetExpressionResultString(*(int *)(in_ECX + 0xc0),in_stack_ffffffdc,in_stack_ffffffe0);
+      atoi(nptr);
       FUN_00624340(param_4,&stack0xffffffdc,1,0);
     }
     return;
@@ -57,34 +56,34 @@ UI_DrawPlayerEmblemServer
           (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
 
 {
-  float fVar1;
-  float fVar2;
-  float fVar3;
+  float w;
+  float h;
+  float s0;
   int in_EAX;
-  char *pcVar4;
-  GfxImage *pGVar5;
+  char *nptr;
+  GfxImage *pGVar1;
   int in_ECX;
   int unaff_EBX;
   int unaff_EBP;
   GfxImage *unaff_ESI;
   itemDef_s *unaff_EDI;
-  long64 lVar6;
+  long64 lVar2;
   
   if (*(int *)(in_ECX + 0xa8) == 6) {
     if (*(int *)(in_ECX + 0xc0) != 0) {
-      pcVar4 = GetExpressionResultString
-                         (*(int *)(in_ECX + 0xc0),unaff_EDI,(ExpressionStatement *)unaff_ESI);
-      lVar6 = _atoi64(pcVar4);
-      fVar1 = *(float *)(in_EAX + 4);
-      fVar2 = *(float *)(in_EAX + 8);
-      fVar3 = *(float *)(in_EAX + 0xc);
+      nptr = GetExpressionResultString
+                       (*(int *)(in_ECX + 0xc0),unaff_EDI,(ExpressionStatement *)unaff_ESI);
+      lVar2 = _atoi64(nptr);
+      w = *(float *)(in_EAX + 4);
+      h = *(float *)(in_EAX + 8);
+      s0 = *(float *)(in_EAX + 0xc);
       ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_2 * 0x1e),
                          *(float **)(in_EAX + 0x10),*(float **)(in_EAX + 0x14),(float *)unaff_EDI,
                          (float *)unaff_ESI,unaff_EBP,unaff_EBX);
-      pGVar5 = PCache_GetPlayerEmblem(-1,CONCAT44(unaff_EDI,(int)((ulonglong)lVar6 >> 0x20)));
-      if (pGVar5 != (GfxImage *)0x0) {
+      pGVar1 = PCache_GetPlayerEmblem(-1,CONCAT44(unaff_EDI,(int)((ulonglong)lVar2 >> 0x20)));
+      if (pGVar1 != (GfxImage *)0x0) {
         R_AddCmdDrawStretchComposite
-                  (fVar1,fVar2,fVar3,0.0,0.0,1.0,1.0,(float)pGVar5,(float *)unaff_EDI,unaff_ESI);
+                  (w,h,s0,0.0,0.0,1.0,1.0,(float)pGVar1,(float *)unaff_EDI,unaff_ESI);
       }
     }
     return;
@@ -103,18 +102,18 @@ void __cdecl
 UI_DrawPlayerEmblem(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
 
 {
-  char *pcVar1;
+  char *nptr;
   int unaff_ESI;
-  long64 lVar2;
+  long64 lVar1;
   itemDef_s *unaff_retaddr;
   
   if (*(int *)(unaff_ESI + 0xa8) == 6) {
     if (*(int *)(unaff_ESI + 0xc0) != 0) {
-      pcVar1 = GetExpressionResultString
-                         (*(int *)(unaff_ESI + 0xc0),unaff_retaddr,(ExpressionStatement *)param_1);
-      lVar2 = _atoi64(pcVar1);
+      nptr = GetExpressionResultString
+                       (*(int *)(unaff_ESI + 0xc0),unaff_retaddr,(ExpressionStatement *)param_1);
+      lVar1 = _atoi64(nptr);
       UI_DrawPlayerEmblemByXuid
-                (param_1,unaff_ESI,param_3,(rectDef_s *)lVar2,(float *)((ulonglong)lVar2 >> 0x20),
+                (param_1,unaff_ESI,param_3,(rectDef_s *)lVar1,(float *)((ulonglong)lVar1 >> 0x20),
                  CONCAT44(param_2,param_1));
     }
     return;
@@ -136,79 +135,78 @@ UI_DrawPlayerEmblemByXuid
 
 {
   float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
-  bool bVar5;
+  float w;
+  float h;
+  float s0;
+  bool bVar2;
   float *in_EAX;
-  int *piVar6;
+  int *piVar3;
+  int iVar4;
+  GfxImage *pGVar5;
+  PCacheComponent *pPVar6;
   int iVar7;
-  GfxImage *pGVar8;
-  PCacheComponent *pPVar9;
-  int iVar10;
   int in_EDX;
   int unaff_EBX;
   int unaff_EBP;
   GfxImage *unaff_ESI;
   FastCriticalSection *unaff_EDI;
   
-  iVar10 = 0;
-  piVar6 = &DAT_01cac1e8;
+  iVar7 = 0;
+  piVar3 = &DAT_01cac1e8;
   do {
-    if (*piVar6 == in_EDX) {
-      iVar10 = (&DAT_01cac1ec)[iVar10 * 5];
+    if (*piVar3 == in_EDX) {
+      iVar7 = (&DAT_01cac1ec)[iVar7 * 5];
       goto LAB_00624666;
     }
-    piVar6 = piVar6 + 5;
-    iVar10 = iVar10 + 1;
-  } while ((int)piVar6 < 0x1cac1fc);
-  iVar10 = -1;
+    piVar3 = piVar3 + 5;
+    iVar7 = iVar7 + 1;
+  } while ((int)piVar3 < 0x1cac1fc);
+  iVar7 = -1;
 LAB_00624666:
   if (param_4 != (rectDef_s *)0x0 || param_5 != (float *)0x0) {
-    bVar5 = Menu_DoesMenuOrParentsHaveControlFlag
+    bVar2 = Menu_DoesMenuOrParentsHaveControlFlag
                       ((UiContext *)unaff_EDI,(menuDef_t *)unaff_ESI,unaff_EBP);
-    if (bVar5) {
-      iVar7 = Menus_MenuInStackLocalClientNum((UiContext *)unaff_EDI,(menuDef_t *)unaff_ESI);
-      if (iVar7 != -1) {
-        iVar10 = Com_LocalClient_GetControllerIndex((int)unaff_EDI);
+    if (bVar2) {
+      iVar4 = Menus_MenuInStackLocalClientNum((UiContext *)unaff_EDI,(menuDef_t *)unaff_ESI);
+      if (iVar4 != -1) {
+        iVar7 = Com_LocalClient_GetControllerIndex((int)unaff_EDI);
       }
     }
     fVar1 = *in_EAX;
-    fVar2 = in_EAX[1];
-    fVar3 = in_EAX[2];
-    fVar4 = in_EAX[3];
+    w = in_EAX[1];
+    h = in_EAX[2];
+    s0 = in_EAX[3];
     ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x1e),(float *)in_EAX[4],
                        (float *)in_EAX[5],(float *)unaff_EDI,(float *)unaff_ESI,unaff_EBP,unaff_EBX)
     ;
-    if ((fVar3 <= 192.0) && (fVar4 <= 192.0)) {
-      pGVar8 = PCache_GetPlayerEmblem(iVar10,CONCAT44(unaff_EDI,param_5));
-      if (pGVar8 != (GfxImage *)0x0) {
+    if ((h <= 192.0) && (s0 <= 192.0)) {
+      pGVar5 = PCache_GetPlayerEmblem(iVar7,CONCAT44(unaff_EDI,param_5));
+      if (pGVar5 != (GfxImage *)0x0) {
         R_AddCmdDrawStretchComposite
-                  (fVar2,fVar3,fVar4,0.0,0.0,1.0,1.0,(float)pGVar8,(float *)unaff_EDI,unaff_ESI);
+                  (w,h,s0,0.0,0.0,1.0,1.0,(float)pGVar5,(float *)unaff_EDI,unaff_ESI);
         return;
       }
     }
     Sys_LockWrite(unaff_EDI);
-    pPVar9 = PCache_GetComponent((int)param_4,CONCAT44(unaff_ESI,unaff_EDI),unaff_EBP);
-    bVar5 = PCache_TouchComponent((PCacheComponent *)unaff_EDI);
-    if (bVar5) {
-      bVar5 = CL_CompositeDrawEmblemPhysical
-                        (fVar1,fVar2,fVar3,fVar4,(float *)param_3,
-                         (CompositeEmblemLayer *)(pPVar9 + 0x20),0xc);
-      if (bVar5) {
+    pPVar6 = PCache_GetComponent((int)param_4,CONCAT44(unaff_ESI,unaff_EDI),unaff_EBP);
+    bVar2 = PCache_TouchComponent((PCacheComponent *)unaff_EDI);
+    if (bVar2) {
+      bVar2 = CL_CompositeDrawEmblemPhysical
+                        (fVar1,w,h,s0,(float *)param_3,(CompositeEmblemLayer *)(pPVar6 + 0x20),0xc);
+      if (bVar2) {
         LOCK();
         DAT_02534458 = DAT_02534458 + -1;
         UNLOCK();
         return;
       }
     }
-    if (((byte)pPVar9[0x18] & 0x20) != 0) {
+    if (((byte)pPVar6[0x18] & 0x20) != 0) {
       LOCK();
       DAT_02534458 = DAT_02534458 + -1;
       UNLOCK();
       return;
     }
-    CL_DrawSpinnerPhysical(fVar1,fVar2,fVar3,fVar4,(float *)unaff_EDI);
+    CL_DrawSpinnerPhysical(fVar1,w,h,s0,(float *)unaff_EDI);
     LOCK();
     DAT_02534458 = DAT_02534458 + -1;
     UNLOCK();
@@ -257,21 +255,21 @@ void __cdecl UI_DrawEmblemColors(int param_1,rectDef_s *param_2,float *param_3)
   float fVar2;
   float fVar3;
   int iVar4;
-  float fVar5;
+  float s1;
   float *in_EAX;
-  code *pcVar6;
-  Material *pMVar7;
-  int *piVar8;
+  code *pcVar5;
+  Material *pMVar6;
+  int *piVar7;
   int in_ECX;
-  int iVar9;
+  int iVar8;
   int unaff_ESI;
   int unaff_EDI;
+  float fVar9;
+  float y;
   float fVar10;
   float fVar11;
-  float fVar12;
-  float fVar13;
-  char *pcVar14;
-  float *pfVar15;
+  char *pcVar12;
+  float *pfVar13;
   float fStack_34;
   float fStack_2c;
   float fStack_28;
@@ -281,59 +279,58 @@ void __cdecl UI_DrawEmblemColors(int param_1,rectDef_s *param_2,float *param_3)
   iVar4 = *DAT_034f8f60;
   fVar2 = *in_EAX;
   fVar3 = in_EAX[1];
-  fVar10 = in_EAX[2];
-  iVar9 = (int)(iVar4 + (iVar4 >> 0x1f & 3U)) >> 2;
-  pcVar6 = Material_Register_FastFile;
+  fVar9 = in_EAX[2];
+  iVar8 = (int)(iVar4 + (iVar4 >> 0x1f & 3U)) >> 2;
+  pcVar5 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar6 = Material_Register_LoadObj;
+    pcVar5 = Material_Register_LoadObj;
   }
-  pfVar15 = (float *)&DAT_00000003;
-  pcVar14 = "emblem_lut_2d";
-  pMVar7 = (Material *)(*pcVar6)();
+  pfVar13 = (float *)&DAT_00000003;
+  pcVar12 = "emblem_lut_2d";
+  pMVar6 = (Material *)(*pcVar5)();
   iVar1 = in_ECX * 0x78;
   ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + in_ECX * 0x1e),(float *)in_EAX[4],
-                     (float *)in_EAX[5],(float *)pcVar14,pfVar15,unaff_EDI,unaff_ESI);
-  piVar8 = &DAT_01cac1e8;
+                     (float *)in_EAX[5],(float *)pcVar12,pfVar13,unaff_EDI,unaff_ESI);
+  piVar7 = &DAT_01cac1e8;
   do {
-    if (*piVar8 == 0) break;
-    piVar8 = piVar8 + 5;
-  } while ((int)piVar8 < 0x1cac1fc);
+    if (*piVar7 == 0) break;
+    piVar7 = piVar7 + 5;
+  } while ((int)piVar7 < 0x1cac1fc);
   fStack_34 = *(float *)(&DAT_00c8cdb8 + iVar1) * DAT_01eb5028 + *(float *)(&DAT_00c8cde8 + iVar1);
   if (rg.renderHiResShot != 0) {
-    fVar12 = (float)DAT_047aaae4;
+    fVar10 = (float)DAT_047aaae4;
     if (DAT_047aaae4 < 0) {
-      fVar12 = fVar12 + 4.2949673e+09;
+      fVar10 = fVar10 + 4.2949673e+09;
     }
-    fStack_34 = (float)rg.hiResShotTiles * fStack_34 - fVar12 * rg.hiResShotRow;
+    fStack_34 = (float)rg.hiResShotTiles * fStack_34 - fVar10 * rg.hiResShotRow;
   }
   fStack_2c = *(float *)(&DAT_00c8cdbc + iVar1) * DAT_01eb502c + *(float *)(&DAT_00c8cdec + iVar1);
   if (rg.renderHiResShot != 0) {
-    fVar12 = (float)DAT_047aaae8;
+    fVar10 = (float)DAT_047aaae8;
     if (DAT_047aaae8 < 0) {
-      fVar12 = fVar12 + 4.2949673e+09;
+      fVar10 = fVar10 + 4.2949673e+09;
     }
-    fStack_2c = (float)rg.hiResShotTiles * fStack_2c - fVar12 * rg.hiResShotCol;
+    fStack_2c = (float)rg.hiResShotTiles * fStack_2c - fVar10 * rg.hiResShotCol;
   }
-  fVar12 = (fVar10 * 0.8) / (float)iVar9;
-  fVar10 = fVar10 / (float)iVar9 - fVar12;
-  fVar13 = fVar10 * 0.5;
+  fVar10 = (fVar9 * 0.8) / (float)iVar8;
+  fVar9 = fVar9 / (float)iVar8 - fVar10;
+  fVar11 = fVar9 * 0.5;
   iStack_14 = 0;
   if (0 < iVar4) {
-    fVar10 = fVar10 + fVar12;
+    fVar9 = fVar9 + fVar10;
     do {
-      fVar11 = (float)(iStack_14 % iVar9) * fVar10 + fVar2;
-      fStack_28 = (float)(iStack_14 / iVar9) * fVar10 + fVar3;
-      fStack_24 = fVar12;
+      y = (float)(iStack_14 % iVar8) * fVar9 + fVar2;
+      fStack_28 = (float)(iStack_14 / iVar8) * fVar9 + fVar3;
+      fStack_24 = fVar10;
       if ((DAT_03507b70 != 0) && (iStack_14 == *(int *)(DAT_03507b70 + 4))) {
-        fStack_24 = fVar13 + fVar12;
-        fStack_28 = fStack_28 - fVar13;
+        fStack_24 = fVar11 + fVar10;
+        fStack_28 = fStack_28 - fVar11;
       }
-      fVar5 = (float)iStack_14 * 0.0078125 + 0.00390625;
+      s1 = (float)iStack_14 * 0.0078125 + 0.00390625;
       R_AddCmdDrawStretchPicW
-                (fVar11,fStack_28,1.0,fStack_24,fStack_24,0.625,fVar5,0.625,fVar5,
-                 (float *)&colorWhite,pMVar7);
-      if ((((fVar11 <= fStack_34) && (fStack_34 < fStack_24 + fVar11)) && (fStack_28 <= fStack_2c))
-         && (fStack_2c < fStack_24 + fStack_28)) {
+                (y,fStack_28,1.0,fStack_24,fStack_24,0.625,s1,0.625,s1,(float *)&colorWhite,pMVar6);
+      if ((((y <= fStack_34) && (fStack_34 < fStack_24 + y)) && (fStack_28 <= fStack_2c)) &&
+         (fStack_2c < fStack_24 + fStack_28)) {
         DAT_03507b80 = iStack_14;
       }
       iStack_14 = iStack_14 + 1;
@@ -867,16 +864,16 @@ void __cdecl UI_EmblemSelect_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
+  char *nptr;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  DAT_03507b74 = atoi(pcVar2);
+  DAT_03507b74 = atoi(nptr);
   if (DAT_03507b74 < 0xc) {
     DAT_03507b70 = &DAT_01eaa848 + DAT_03507b74 * 4;
     return;
@@ -969,20 +966,20 @@ void __cdecl UI_EmblemRotate_f(void)
 {
   float *pfVar1;
   int *piVar2;
-  char *pcVar3;
-  double dVar4;
+  char *nptr;
+  double dVar3;
   
   if (DAT_03507b70 != 0) {
     piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar2[*piVar2 + 0x21] < 2) {
-      pcVar3 = "";
+      nptr = "";
     }
     else {
-      pcVar3 = *(char **)(piVar2[*piVar2 + 0x29] + 4);
+      nptr = *(char **)(piVar2[*piVar2 + 0x29] + 4);
     }
     pfVar1 = (float *)(DAT_03507b70 + 0x18);
-    dVar4 = atof(pcVar3);
-    *pfVar1 = (float)dVar4 + *pfVar1;
+    dVar3 = atof(nptr);
+    *pfVar1 = (float)dVar3 + *pfVar1;
     FUN_00624220();
     return;
   }
@@ -1080,23 +1077,23 @@ void __cdecl UI_EmblemIcon_f(void)
   float *pfVar1;
   int *piVar2;
   short *psVar3;
-  char *pcVar4;
-  int iVar5;
-  short sVar6;
+  char *nptr;
+  int iVar4;
+  short sVar5;
   
   if (DAT_03507b70 != (short *)0x0) {
     piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar2[*piVar2 + 0x21] < 2) {
-      pcVar4 = "";
+      nptr = "";
     }
     else {
-      pcVar4 = *(char **)(piVar2[*piVar2 + 0x29] + 4);
+      nptr = *(char **)(piVar2[*piVar2 + 0x29] + 4);
     }
-    iVar5 = atoi(pcVar4);
+    iVar4 = atoi(nptr);
     psVar3 = DAT_03507b70;
     pfVar1 = (float *)(DAT_03507b70 + 8);
-    sVar6 = (short)iVar5;
-    *DAT_03507b70 = sVar6;
+    sVar5 = (short)iVar4;
+    *DAT_03507b70 = sVar5;
     if ((*pfVar1 == 0.0) || (*(float *)(psVar3 + 10) == 0.0)) {
       psVar3[4] = 0;
       psVar3[5] = 0;
@@ -1111,10 +1108,10 @@ void __cdecl UI_EmblemIcon_f(void)
       *(undefined1 *)(psVar3 + 0xe) = 0;
       *(undefined1 *)((int)psVar3 + 0x1d) = 0;
     }
-    if (-1 < sVar6) {
-      if ((int)sVar6 < *(int *)(DAT_034f8f60 + 0x14)) {
+    if (-1 < sVar5) {
+      if ((int)sVar5 < *(int *)(DAT_034f8f60 + 0x14)) {
         *(undefined4 *)(psVar3 + 2) =
-             *(undefined4 *)(*(int *)(DAT_034f8f60 + 0x18) + 0xc + sVar6 * 0x28);
+             *(undefined4 *)(*(int *)(DAT_034f8f60 + 0x18) + 0xc + sVar5 * 0x28);
         return;
       }
     }
@@ -1157,23 +1154,23 @@ void __cdecl UI_EmblemPaletteCycle_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   if (DAT_03507b70 != 0) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar2 = "";
+      nptr = "";
     }
     else {
-      pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar3 = atoi(pcVar2);
-    iVar3 = *(int *)(DAT_03507b70 + 4) + iVar3;
-    if (iVar3 < 0) {
-      iVar3 = iVar3 + *DAT_034f8f60;
+    iVar2 = atoi(nptr);
+    iVar2 = *(int *)(DAT_03507b70 + 4) + iVar2;
+    if (iVar2 < 0) {
+      iVar2 = iVar2 + *DAT_034f8f60;
     }
-    *(int *)(DAT_03507b70 + 4) = iVar3 % *DAT_034f8f60;
+    *(int *)(DAT_03507b70 + 4) = iVar2 % *DAT_034f8f60;
   }
   return;
 }
@@ -1201,19 +1198,19 @@ void __cdecl UI_EmblemOutline_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   if (DAT_03507b70 != 0) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar2 = "";
+      nptr = "";
     }
     else {
-      pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar3 = atoi(pcVar2);
-    *(bool *)(DAT_03507b70 + 0x1c) = 0 < iVar3;
+    iVar2 = atoi(nptr);
+    *(bool *)(DAT_03507b70 + 0x1c) = 0 < iVar2;
   }
   return;
 }
@@ -1241,19 +1238,19 @@ void __cdecl UI_EmblemFlip_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   if (DAT_03507b70 != 0) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar2 = "";
+      nptr = "";
     }
     else {
-      pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar3 = atoi(pcVar2);
-    *(bool *)(DAT_03507b70 + 0x1d) = 0 < iVar3;
+    iVar2 = atoi(nptr);
+    *(bool *)(DAT_03507b70 + 0x1d) = 0 < iVar2;
   }
   return;
 }
@@ -1302,16 +1299,16 @@ void __cdecl UI_EmblemMoveLayerRelative_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
+  char *nptr;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  atoi(pcVar2);
+  atoi(nptr);
   FUN_00625dd0();
   return;
 }
@@ -1326,32 +1323,32 @@ void __cdecl UI_EmblemCopy_f(void)
 {
   int *piVar1;
   undefined8 *puVar2;
-  char *pcVar3;
-  int iVar4;
+  char *nptr;
+  int iVar3;
   
   if (DAT_03507b70 != (undefined8 *)0x0) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar3 = "";
+      nptr = "";
     }
     else {
-      pcVar3 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar4 = atoi(pcVar3);
+    iVar3 = atoi(nptr);
     puVar2 = DAT_03507b70;
-    if (iVar4 < 0xb) {
-      if (iVar4 < 1) {
-        iVar4 = 0;
+    if (iVar3 < 0xb) {
+      if (iVar3 < 1) {
+        iVar3 = 0;
       }
     }
     else {
-      iVar4 = 0xb;
+      iVar3 = 0xb;
     }
-    if (iVar4 != DAT_03507b74) {
-      *DAT_03507b70 = (&DAT_01eaa848)[iVar4 * 4];
-      puVar2[1] = (&DAT_01eaa850)[iVar4 * 4];
-      puVar2[2] = (&DAT_01eaa858)[iVar4 * 4];
-      puVar2[3] = (&DAT_01eaa860)[iVar4 * 4];
+    if (iVar3 != DAT_03507b74) {
+      *DAT_03507b70 = (&DAT_01eaa848)[iVar3 * 4];
+      puVar2[1] = (&DAT_01eaa850)[iVar3 * 4];
+      puVar2[2] = (&DAT_01eaa858)[iVar3 * 4];
+      puVar2[3] = (&DAT_01eaa860)[iVar3 * 4];
     }
   }
   return;
@@ -1444,19 +1441,19 @@ void __cdecl UI_EmblemSelectBackground_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  if ((-1 < iVar3) && (iVar3 < *(int *)(DAT_034f8f60 + 0x24))) {
-    DAT_00adf574 = *(undefined2 *)(*(int *)(DAT_034f8f60 + 0x28) + iVar3 * 2);
+  iVar2 = atoi(nptr);
+  if ((-1 < iVar2) && (iVar2 < *(int *)(DAT_034f8f60 + 0x24))) {
+    DAT_00adf574 = *(undefined2 *)(*(int *)(DAT_034f8f60 + 0x28) + iVar2 * 2);
     return;
   }
   DAT_00adf574 = 0xffff;
@@ -1507,27 +1504,27 @@ void __cdecl UI_EmblemSetAsDefault_f(void)
   int iVar2;
   int iVar3;
   int unaff_ESI;
-  CompositeEmblemLayer *pCVar4;
-  char *pcVar5;
+  CompositeEmblemLayer *nptr;
+  char *pcVar4;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar5 = "";
+    pcVar4 = "";
   }
   else {
-    pcVar5 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    pcVar4 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar2 = atoi(pcVar5);
+  iVar2 = atoi(pcVar4);
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (2 < piVar1[*piVar1 + 0x21]) {
-    pCVar4 = *(CompositeEmblemLayer **)(piVar1[*piVar1 + 0x29] + 8);
-    iVar3 = atoi((char *)pCVar4);
-    BG_EmblemsSetDefaultForLevel(iVar2,iVar3,pCVar4,unaff_ESI);
+    nptr = *(CompositeEmblemLayer **)(piVar1[*piVar1 + 0x29] + 8);
+    iVar3 = atoi((char *)nptr);
+    BG_EmblemsSetDefaultForLevel(iVar2,iVar3,nptr,unaff_ESI);
     return;
   }
-  pcVar5 = "";
+  pcVar4 = "";
   iVar3 = atoi("");
-  BG_EmblemsSetDefaultForLevel(iVar2,iVar3,(CompositeEmblemLayer *)pcVar5,unaff_ESI);
+  BG_EmblemsSetDefaultForLevel(iVar2,iVar3,(CompositeEmblemLayer *)pcVar4,unaff_ESI);
   return;
 }
 
@@ -1540,20 +1537,20 @@ void __cdecl UI_EmblemSetFromDefault_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   CompositeEmblemLayer *unaff_EDI;
   int unaff_retaddr;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  BG_EmblemsGenerateDefault(iVar3,(int)pcVar2,unaff_EDI,unaff_retaddr);
+  iVar2 = atoi(nptr);
+  BG_EmblemsGenerateDefault(iVar2,(int)nptr,unaff_EDI,unaff_retaddr);
   return;
 }
 

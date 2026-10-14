@@ -2,14 +2,14 @@
 
 // 0057A040  DB_AuthLoad_InflateInit  (database/db_auth.cpp:943)
 
-int __cdecl DB_AuthLoad_InflateInit(z_stream_s *param_1,bool param_2,char *param_3)
+int __cdecl DB_AuthLoad_InflateInit(z_stream_s *stream,bool isSecure,char *__formal)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2) {
+  if (isSecure) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_auth.cpp",0x3b0,0,"%s"
                             );
     if (!bVar2) {
@@ -18,75 +18,75 @@ int __cdecl DB_AuthLoad_InflateInit(z_stream_s *param_1,bool param_2,char *param
       return iVar3;
     }
   }
-  iVar3 = inflateInit_(param_1,"1.2.3",0x34);
+  iVar3 = inflateInit_(stream,"1.2.3",0x34);
   return iVar3;
 }
 
 
 // 0057A090  DB_AuthLoad_InflateEnd  (database/db_auth.cpp:950)
 
-void __cdecl DB_AuthLoad_InflateEnd(z_stream_s *param_1)
+void __cdecl DB_AuthLoad_InflateEnd(z_stream_s *stream)
 
 {
-  inflateEnd(param_1);
+  inflateEnd(stream);
   return;
 }
 
 
 // 0057A0B0  DB_AuthLoad_Inflate  (database/db_auth.cpp:956)
 
-int __cdecl DB_AuthLoad_Inflate(z_stream_s *param_1,int param_2)
+int __cdecl DB_AuthLoad_Inflate(z_stream_s *stream,int flush)
 
 {
   int iVar1;
   
-  iVar1 = inflate(param_1,param_2);
+  iVar1 = inflate(stream,flush);
   return iVar1;
 }
 
 
 // 0057A0D0  tom_game_malloc  (database/db_auth.cpp:968)
 
-void * __cdecl tom_game_malloc(uint param_1)
+void * __cdecl tom_game_malloc(uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Com_LiveAllocate(param_1);
+  pvVar1 = Com_LiveAllocate(size);
   return pvVar1;
 }
 
 
 // 0057A0F0  tom_game_realloc  (database/db_auth.cpp:975)
 
-void * __cdecl tom_game_realloc(void *param_1,uint param_2)
+void * __cdecl tom_game_realloc(void *ptr,uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Com_LiveRealloc(param_1,param_2);
+  pvVar1 = Com_LiveRealloc(ptr,size);
   return pvVar1;
 }
 
 
 // 0057A110  tom_game_calloc  (database/db_auth.cpp:981)
 
-void * __cdecl tom_game_calloc(uint param_1,uint param_2)
+void * __cdecl tom_game_calloc(uint num,uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Com_LiveCalloc(param_1,param_2);
+  pvVar1 = Com_LiveCalloc(num,size);
   return pvVar1;
 }
 
 
 // 0057A130  tom_game_free  (database/db_auth.cpp:988)
 
-void __cdecl tom_game_free(void *param_1)
+void __cdecl tom_game_free(void *ptr)
 
 {
-  Com_LiveDeallocate(param_1);
+  Com_LiveDeallocate(ptr);
   return;
 }
 

@@ -2,15 +2,15 @@
 
 // 008F0880  set_inertia  (<external>/projects_pc/cod/codsrc/tl/physics/source/rigid_body.cpp:6)
 
-void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *inertia)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_1->y;
-  fVar2 = param_1->z;
-  (this->m_inv_inertia).x = 1.0 / param_1->x;
+  fVar1 = inertia->y;
+  fVar2 = inertia->z;
+  (this->m_inv_inertia).x = 1.0 / inertia->x;
   (this->m_inv_inertia).y = 1.0 / fVar1;
   (this->m_inv_inertia).z = 1.0 / fVar2;
   return;
@@ -22,6 +22,8 @@ void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *param_1)
 void __thiscall rigid_body::set_mass(rigid_body *this,float param_1)
 
 {
+  float mass;
+  
   this->m_inv_mass = 1.0 / param_1;
   return;
 }
@@ -30,31 +32,31 @@ void __thiscall rigid_body::set_mass(rigid_body *this,float param_1)
 // 008F08F0  set  (<external>/projects_pc/cod/codsrc/tl/physics/source/rigid_body.cpp:24)
 
 void __thiscall
-rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *param_3,
-               phys_vec3 *param_4,phys_vec3 *param_5,int param_6)
+rigid_body::set(rigid_body *this,float mass,phys_vec3 *inertia,phys_mat44 *mat,phys_vec3 *t_vel,
+               phys_vec3 *a_vel,int stable_min_contact_count)
 
 {
   float fVar1;
   float fVar2;
   
-  this->m_inv_mass = 1.0 / param_1;
-  fVar1 = param_2->y;
-  fVar2 = param_2->z;
-  (this->m_inv_inertia).x = 1.0 / param_2->x;
+  this->m_inv_mass = 1.0 / mass;
+  fVar1 = inertia->y;
+  fVar2 = inertia->z;
+  (this->m_inv_inertia).x = 1.0 / inertia->x;
   (this->m_inv_inertia).y = 1.0 / fVar1;
   (this->m_inv_inertia).z = 1.0 / fVar2;
-  (this->m_mat).x.x = (param_3->x).x;
-  (this->m_mat).x.y = (param_3->x).y;
-  (this->m_mat).x.z = (param_3->x).z;
-  (this->m_mat).y.x = (param_3->y).x;
-  (this->m_mat).y.y = (param_3->y).y;
-  (this->m_mat).y.z = (param_3->y).z;
-  (this->m_mat).z.x = (param_3->z).x;
-  (this->m_mat).z.y = (param_3->z).y;
-  (this->m_mat).z.z = (param_3->z).z;
-  (this->m_mat).w.x = (param_3->w).x;
-  (this->m_mat).w.y = (param_3->w).y;
-  (this->m_mat).w.z = (param_3->w).z;
+  (this->m_mat).x.x = (mat->x).x;
+  (this->m_mat).x.y = (mat->x).y;
+  (this->m_mat).x.z = (mat->x).z;
+  (this->m_mat).y.x = (mat->y).x;
+  (this->m_mat).y.y = (mat->y).y;
+  (this->m_mat).y.z = (mat->y).z;
+  (this->m_mat).z.x = (mat->z).x;
+  (this->m_mat).z.y = (mat->z).y;
+  (this->m_mat).z.z = (mat->z).z;
+  (this->m_mat).w.x = (mat->w).x;
+  (this->m_mat).w.y = (mat->w).y;
+  (this->m_mat).w.z = (mat->w).z;
   (this->m_last_position).x = (this->m_mat).w.x;
   (this->m_last_position).y = (this->m_mat).w.y;
   (this->m_last_position).z = (this->m_mat).w.z;
@@ -62,13 +64,13 @@ rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *pa
   (this->m_moved_vec).y = ::PHYS_ZERO_VEC.y;
   (this->m_moved_vec).z = ::PHYS_ZERO_VEC.z;
   this->m_smallest_lambda = 0.0;
-  (this->m_t_vel).x = param_4->x;
-  (this->m_t_vel).y = param_4->y;
-  (this->m_t_vel).z = param_4->z;
-  (this->m_a_vel).x = param_5->x;
-  (this->m_a_vel).y = param_5->y;
-  (this->m_a_vel).z = param_5->z;
-  this->m_stable_min_contact_count = param_6;
+  (this->m_t_vel).x = t_vel->x;
+  (this->m_t_vel).y = t_vel->y;
+  (this->m_t_vel).z = t_vel->z;
+  (this->m_a_vel).x = a_vel->x;
+  (this->m_a_vel).y = a_vel->y;
+  (this->m_a_vel).z = a_vel->z;
+  this->m_stable_min_contact_count = stable_min_contact_count;
   (this->m_force_sum).x = ::PHYS_ZERO_VEC.x;
   (this->m_force_sum).y = ::PHYS_ZERO_VEC.y;
   (this->m_force_sum).z = ::PHYS_ZERO_VEC.z;
@@ -102,13 +104,13 @@ rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *pa
 
 // 008F0740  collision_prolog  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body_internal.h:45)
 
-void __cdecl rbint::collision_prolog(user_rigid_body *param_1,float param_2)
+void __cdecl rbint::collision_prolog(user_rigid_body *rb,float delta_t)
 
 {
-  param_1->_padding_ = (int)(param_2 * (float)param_1->_padding_);
-  param_1->_padding_ = (int)((float)param_1->_padding_ * param_2);
-  param_1->_padding_ = (int)(param_2 * (float)param_1->_padding_);
-  param_1->_padding_ = 0;
+  rb->_padding_ = (int)(delta_t * (float)rb->_padding_);
+  rb->_padding_ = (int)((float)rb->_padding_ * delta_t);
+  rb->_padding_ = (int)(delta_t * (float)rb->_padding_);
+  rb->_padding_ = 0;
   return;
 }
 
@@ -116,7 +118,7 @@ void __cdecl rbint::collision_prolog(user_rigid_body *param_1,float param_2)
 // 008F0B10  add_force  (<external>/projects_pc/cod/codsrc/tl/physics/source/rigid_body.cpp:75)
 
 void __thiscall
-rigid_body::add_force(rigid_body *this,phys_vec3 *param_1,phys_vec3 *param_2,float param_3)
+rigid_body::add_force(rigid_body *this,phys_vec3 *force,phys_vec3 *point,float torque_mult)
 
 {
   float fVar1;
@@ -127,20 +129,20 @@ rigid_body::add_force(rigid_body *this,phys_vec3 *param_1,phys_vec3 *param_2,flo
   float fVar6;
   float fVar7;
   
-  (this->m_force_sum).x = param_1->x + (this->m_force_sum).x;
-  (this->m_force_sum).y = (this->m_force_sum).y + param_1->y;
-  (this->m_force_sum).z = (this->m_force_sum).z + param_1->z;
-  fVar5 = param_2->x - (this->m_mat).w.x;
-  fVar6 = param_2->y - (this->m_mat).w.y;
-  fVar7 = param_2->z - (this->m_mat).w.z;
-  fVar1 = param_1->x;
-  fVar2 = param_1->z;
-  fVar3 = param_1->y;
-  fVar4 = param_1->x;
+  (this->m_force_sum).x = force->x + (this->m_force_sum).x;
+  (this->m_force_sum).y = (this->m_force_sum).y + force->y;
+  (this->m_force_sum).z = (this->m_force_sum).z + force->z;
+  fVar5 = point->x - (this->m_mat).w.x;
+  fVar6 = point->y - (this->m_mat).w.y;
+  fVar7 = point->z - (this->m_mat).w.z;
+  fVar1 = force->x;
+  fVar2 = force->z;
+  fVar3 = force->y;
+  fVar4 = force->x;
   (this->m_torque_sum).x =
-       (this->m_torque_sum).x + param_3 * (fVar6 * param_1->z - fVar7 * param_1->y);
-  (this->m_torque_sum).y = (this->m_torque_sum).y + (fVar1 * fVar7 - fVar5 * fVar2) * param_3;
-  (this->m_torque_sum).z = (this->m_torque_sum).z + param_3 * (fVar3 * fVar5 - fVar6 * fVar4);
+       (this->m_torque_sum).x + torque_mult * (fVar6 * force->z - fVar7 * force->y);
+  (this->m_torque_sum).y = (this->m_torque_sum).y + (fVar1 * fVar7 - fVar5 * fVar2) * torque_mult;
+  (this->m_torque_sum).z = (this->m_torque_sum).z + torque_mult * (fVar3 * fVar5 - fVar6 * fVar4);
   return;
 }
 
@@ -230,7 +232,7 @@ void __thiscall user_rigid_body::set(user_rigid_body *this,phys_mat44 *param_1)
 
 // 008F07A0  collision_prolog  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body_internal.h:95)
 
-void __cdecl rbint::collision_prolog(rigid_body *param_1,float param_2)
+void __cdecl rbint::collision_prolog(rigid_body *rb,float delta_t)
 
 {
   float fVar1;
@@ -240,27 +242,26 @@ void __cdecl rbint::collision_prolog(rigid_body *param_1,float param_2)
   float fVar5;
   float fVar6;
   
-  fVar1 = (param_1->m_t_vel).y;
-  fVar2 = (param_1->m_t_vel).z;
-  fVar3 = (param_1->m_mat).w.y;
-  fVar4 = (param_1->m_mat).w.z;
-  fVar5 = (param_1->m_last_position).y;
-  fVar6 = (param_1->m_last_position).z;
-  (param_1->m_moved_vec).x =
-       (param_2 * (param_1->m_t_vel).x + (param_1->m_mat).w.x) - (param_1->m_last_position).x;
-  (param_1->m_moved_vec).y = (fVar3 + fVar1 * param_2) - fVar5;
-  (param_1->m_moved_vec).z = (fVar4 + param_2 * fVar2) - fVar6;
-  fVar1 = (param_1->m_last_position).x;
-  fVar2 = (param_1->m_last_position).y;
-  param_1->m_smallest_lambda = 1.0;
-  fVar3 = (param_1->m_last_position).z;
-  (param_1->m_last_position).x = (param_1->m_mat).w.x;
-  (param_1->m_last_position).y = (param_1->m_mat).w.y;
-  (param_1->m_last_position).z = (param_1->m_mat).w.z;
-  (param_1->m_mat).w.x = fVar1;
-  (param_1->m_mat).w.y = fVar2;
-  (param_1->m_mat).w.z = fVar3;
-  param_1->m_largest_vel_sq = 0.0;
+  fVar1 = (rb->m_t_vel).y;
+  fVar2 = (rb->m_t_vel).z;
+  fVar3 = (rb->m_mat).w.y;
+  fVar4 = (rb->m_mat).w.z;
+  fVar5 = (rb->m_last_position).y;
+  fVar6 = (rb->m_last_position).z;
+  (rb->m_moved_vec).x = (delta_t * (rb->m_t_vel).x + (rb->m_mat).w.x) - (rb->m_last_position).x;
+  (rb->m_moved_vec).y = (fVar3 + fVar1 * delta_t) - fVar5;
+  (rb->m_moved_vec).z = (fVar4 + delta_t * fVar2) - fVar6;
+  fVar1 = (rb->m_last_position).x;
+  fVar2 = (rb->m_last_position).y;
+  rb->m_smallest_lambda = 1.0;
+  fVar3 = (rb->m_last_position).z;
+  (rb->m_last_position).x = (rb->m_mat).w.x;
+  (rb->m_last_position).y = (rb->m_mat).w.y;
+  (rb->m_last_position).z = (rb->m_mat).w.z;
+  (rb->m_mat).w.x = fVar1;
+  (rb->m_mat).w.y = fVar2;
+  (rb->m_mat).w.z = fVar3;
+  rb->m_largest_vel_sq = 0.0;
   return;
 }
 

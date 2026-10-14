@@ -369,10 +369,10 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
   rigid_body *prVar5;
   gentity_s *pgVar6;
   rigid_body *prVar7;
-  rigid_body *prVar8;
+  rigid_body *no_error;
   rigid_body_constraint_distance *this;
   ushort *unaff_ESI;
-  undefined4 *puVar9;
+  undefined4 *puVar8;
   int unaff_EDI;
   rigid_body *local_44;
   phys_vec3 local_40;
@@ -380,27 +380,27 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
   float local_1c;
   float local_18;
   
-  puVar9 = (undefined4 *)0x0;
+  puVar8 = (undefined4 *)0x0;
   local_44 = (rigid_body *)phys_sys::get_environment_rigid_body();
   prVar5 = (rigid_body *)phys_sys::get_environment_rigid_body();
   if (*(int *)(unaff_EDI + 4) == 8) {
     if (*(int *)(unaff_EDI + 8) == 2) {
       pgVar6 = GetEntity(unaff_ESI);
       *(undefined4 *)(unaff_EDI + 0xc) = *(undefined4 *)pgVar6;
-      puVar9 = *(undefined4 **)(pgVar6 + 0x2e4);
+      puVar8 = *(undefined4 **)(pgVar6 + 0x2e4);
       fVar1 = *(float *)(unaff_EDI + 0x3c);
       fVar2 = *(float *)(unaff_EDI + 0x38);
       fVar3 = *(float *)(unaff_EDI + 0x34);
-      local_44 = (rigid_body *)*puVar9;
-      local_1c = (float)puVar9[0xd] * fVar2;
-      local_18 = (float)puVar9[0xe] * fVar2;
-      local_30.x = (float)puVar9[0x14] +
-                   (float)puVar9[8] * fVar3 + (float)puVar9[0xc] * fVar2 +
-                   (float)puVar9[0x10] * fVar1;
-      local_30.y = (float)puVar9[0x15] +
-                   (float)puVar9[9] * fVar3 + local_1c + (float)puVar9[0x11] * fVar1;
-      local_30.z = (float)puVar9[0x16] +
-                   (float)puVar9[10] * fVar3 + local_18 + (float)puVar9[0x12] * fVar1;
+      local_44 = (rigid_body *)*puVar8;
+      local_1c = (float)puVar8[0xd] * fVar2;
+      local_18 = (float)puVar8[0xe] * fVar2;
+      local_30.x = (float)puVar8[0x14] +
+                   (float)puVar8[8] * fVar3 + (float)puVar8[0xc] * fVar2 +
+                   (float)puVar8[0x10] * fVar1;
+      local_30.y = (float)puVar8[0x15] +
+                   (float)puVar8[9] * fVar3 + local_1c + (float)puVar8[0x11] * fVar1;
+      local_30.z = (float)puVar8[0x16] +
+                   (float)puVar8[10] * fVar3 + local_18 + (float)puVar8[0x12] * fVar1;
     }
     else {
       local_30.x = *(float *)(unaff_EDI + 0x34);
@@ -414,7 +414,7 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
       fVar1 = *(float *)(unaff_EDI + 0x48);
       fVar2 = *(float *)(unaff_EDI + 0x44);
       fVar3 = *(float *)(unaff_EDI + 0x40);
-      prVar5 = (rigid_body *)*puVar9;
+      prVar5 = (rigid_body *)*puVar8;
       local_1c = *(float *)(iVar4 + 0x34) * fVar2;
       local_18 = *(float *)(iVar4 + 0x38) * fVar2;
       local_40.x = *(float *)(iVar4 + 0x50) +
@@ -431,12 +431,12 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
       local_40.z = *(float *)(unaff_EDI + 0x48);
     }
     prVar7 = (rigid_body *)phys_sys::get_environment_rigid_body();
-    prVar8 = prVar5;
+    no_error = prVar5;
     if (local_44 == prVar7) {
-      prVar8 = (rigid_body *)phys_sys::get_environment_rigid_body();
+      no_error = (rigid_body *)phys_sys::get_environment_rigid_body();
       local_44 = prVar5;
     }
-    this = phys_sys::create_rbc_dist(local_44,prVar8,1);
+    this = phys_sys::create_rbc_dist(local_44,no_error,1);
     if (this != (rigid_body_constraint_distance *)0x0) {
       rigid_body_constraint_distance::set(this,&local_30,&local_40,0.0,*(float *)(unaff_EDI + 0x68))
       ;

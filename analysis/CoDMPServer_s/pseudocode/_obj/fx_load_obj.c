@@ -274,31 +274,31 @@ FxEffectDef * __cdecl FX_Load(char *param_1)
 {
   char cVar1;
   bool bVar2;
-  FxEditorEffectDef *pFVar3;
-  char *pcVar4;
-  FxEffectDef *pFVar5;
+  FxEditorEffectDef *p;
+  char *pcVar3;
+  FxEffectDef *pFVar4;
   _func_void_ptr_int *unaff_EDI;
   
-  pFVar3 = operator_new(0x12ee0);
-  pcVar4 = param_1;
+  p = operator_new(0x12ee0);
+  pcVar3 = param_1;
   do {
-    cVar1 = *pcVar4;
-    pcVar4[(int)pFVar3 - (int)param_1] = cVar1;
-    pcVar4 = pcVar4 + 1;
+    cVar1 = *pcVar3;
+    pcVar3[(int)p - (int)param_1] = cVar1;
+    pcVar3 = pcVar3 + 1;
   } while (cVar1 != '\0');
-  bVar2 = FX_LoadEditorEffect(param_1,pFVar3);
+  bVar2 = FX_LoadEditorEffect(param_1,p);
   if (bVar2) {
-    pFVar5 = FX_Convert(pFVar3,unaff_EDI);
-    operator_delete(pFVar3);
-    if (pFVar5 != (FxEffectDef *)0x0) {
-      return pFVar5;
+    pFVar4 = FX_Convert(p,unaff_EDI);
+    operator_delete(p);
+    if (pFVar4 != (FxEffectDef *)0x0) {
+      return pFVar4;
     }
   }
   else {
-    operator_delete(pFVar3);
+    operator_delete(p);
   }
-  pFVar5 = (FxEffectDef *)FUN_0053dc60(param_1);
-  return pFVar5;
+  pFVar4 = (FxEffectDef *)FUN_0053dc60(param_1);
+  return pFVar4;
 }
 
 

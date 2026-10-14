@@ -7,16 +7,16 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl SV_ClipHandleForEntity(gentity_s *param_1)
+uint __cdecl SV_ClipHandleForEntity(gentity_s *ent)
 
 {
   uint uVar1;
   
-  if ((param_1->r).bmodel == '\0') {
-    uVar1 = CM_TempBoxModel((param_1->r).mins,(param_1->r).maxs,(param_1->r).contents);
+  if ((ent->r).bmodel == '\0') {
+    uVar1 = CM_TempBoxModel((ent->r).mins,(ent->r).maxs,(ent->r).contents);
   }
   else {
-    uVar1 = (uint)(param_1->s).index.brushmodel;
+    uVar1 = (uint)(ent->s).index.brushmodel;
   }
   return uVar1;
 }
@@ -29,30 +29,33 @@ uint __cdecl SV_ClipHandleForEntity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UnlinkEntity(gentity_s *param_1)
+void __cdecl SV_UnlinkEntity(gentity_s *gEnt)
 
 {
-  svEntity_s *psVar1;
+  svEntity_s *ent_00;
+  svEntity_s *ent;
   
-  psVar1 = SV_SvEntityForGentity(param_1);
-  (param_1->r).linked = '\0';
-  CM_UnlinkEntity(psVar1);
+  ent_00 = SV_SvEntityForGentity(gEnt);
+  (gEnt->r).linked = '\0';
+  CM_UnlinkEntity(ent_00);
   return;
 }
 
 
 // 00720490  SnapAngles  (server/sv_world.cpp:57)
 
-void __cdecl SnapAngles(float *param_1)
+void __cdecl SnapAngles(float *vAngles)
 
 {
   float fVar1;
-  int local_8;
+  float delta;
+  int rounded;
+  int i;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    fVar1 = (float)(int)ROUND(param_1[local_8] + 9.313226e-10) - param_1[local_8];
+  for (i = 0; i < 3; i = i + 1) {
+    fVar1 = (float)(int)ROUND(vAngles[i] + 9.313226e-10) - vAngles[i];
     if (fVar1 * fVar1 < 1.0000001e-06) {
-      param_1[local_8] = (float)(int)ROUND(param_1[local_8] + 9.313226e-10);
+      vAngles[i] = (float)(int)ROUND(vAngles[i] + 9.313226e-10);
     }
   }
   return;
@@ -67,7 +70,7 @@ void __cdecl SnapAngles(float *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_LinkEntity(gentity_s *param_1)
+void __cdecl SV_LinkEntity(gentity_s *gEnt)
 
 {
   code *pcVar1;
@@ -139,55 +142,55 @@ void __cdecl SV_LinkEntity(gentity_s *param_1)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if (((param_1->r).inuse == '\0') &&
+  if (((gEnt->r).inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x53,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_18 = SV_SvEntityForGentity(param_1);
-  if ((param_1->r).bmodel == '\0') {
-    if (((param_1->r).contents & 0x2008001U) == 0) {
-      (param_1->s).solid = 0;
+  local_18 = SV_SvEntityForGentity(gEnt);
+  if ((gEnt->r).bmodel == '\0') {
+    if (((gEnt->r).contents & 0x2008001U) == 0) {
+      (gEnt->s).solid = 0;
     }
     else {
-      local_1c = (uint)(param_1->r).maxs[0];
+      local_1c = (uint)(gEnt->r).maxs[0];
       if ((int)local_1c < 1) {
         local_1c = 1;
       }
       if (0xff < (int)local_1c) {
         local_1c = 0xff;
       }
-      local_20 = (int)(-(param_1->r).mins[2] + 1.0);
+      local_20 = (int)(-(gEnt->r).mins[2] + 1.0);
       if (local_20 < 1) {
         local_20 = 1;
       }
       if (0xff < local_20) {
         local_20 = 0xff;
       }
-      local_24 = (int)((param_1->r).maxs[2] + 32.0);
+      local_24 = (int)((gEnt->r).maxs[2] + 32.0);
       if (local_24 < 1) {
         local_24 = 1;
       }
       if (0xff < local_24) {
         local_24 = 0xff;
       }
-      (param_1->s).solid = local_24 << 0x10 | local_20 << 8 | local_1c;
-      if ((param_1->s).solid == 0xffffff) {
-        (param_1->s).solid = 1;
+      (gEnt->s).solid = local_24 << 0x10 | local_20 << 8 | local_1c;
+      if ((gEnt->s).solid == 0xffffff) {
+        (gEnt->s).solid = 1;
       }
     }
   }
   else {
-    (param_1->s).solid = 0xffffff;
+    (gEnt->s).solid = 0xffffff;
   }
-  local_28 = (param_1->r).currentAngles;
-  local_2c = (param_1->r).currentOrigin;
+  local_28 = (gEnt->r).currentAngles;
+  local_2c = (gEnt->r).currentOrigin;
   local_30 = *local_28;
   if ((((((uint)local_30 & 0x7f800000) == 0x7f800000) ||
-       (local_34 = (param_1->r).currentAngles[1], ((uint)local_34 & 0x7f800000) == 0x7f800000)) ||
-      (local_38 = (param_1->r).currentAngles[2], ((uint)local_38 & 0x7f800000) == 0x7f800000)) &&
+       (local_34 = (gEnt->r).currentAngles[1], ((uint)local_34 & 0x7f800000) == 0x7f800000)) ||
+      (local_38 = (gEnt->r).currentAngles[2], ((uint)local_38 & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x83,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -205,30 +208,30 @@ void __cdecl SV_LinkEntity(gentity_s *param_1)
     return;
   }
   SnapAngles(local_28);
-  if ((param_1->r).bmodel == '\0') {
-    if (param_1->sentient == (sentient_s *)0x0) {
-      local_1b4 = RadiusFromBounds((param_1->r).mins,(param_1->r).maxs);
+  if ((gEnt->r).bmodel == '\0') {
+    if (gEnt->sentient == (sentient_s *)0x0) {
+      local_1b4 = RadiusFromBounds((gEnt->r).mins,(gEnt->r).maxs);
       for (local_1b8 = 0; local_1b8 < 3; local_1b8 = local_1b8 + 1) {
-        (param_1->r).absmin[local_1b8] = local_2c[local_1b8] - local_1b4;
-        (param_1->r).absmax[local_1b8] = local_2c[local_1b8] + local_1b4;
+        (gEnt->r).absmin[local_1b8] = local_2c[local_1b8] - local_1b4;
+        (gEnt->r).absmax[local_1b8] = local_2c[local_1b8] + local_1b4;
       }
     }
     else {
-      local_1a4 = (param_1->r).absmin;
-      local_1a8 = (param_1->r).mins;
+      local_1a4 = (gEnt->r).absmin;
+      local_1a8 = (gEnt->r).mins;
       *local_1a4 = *local_2c + *local_1a8;
-      (param_1->r).absmin[1] = local_2c[1] + (param_1->r).mins[1];
-      (param_1->r).absmin[2] = local_2c[2] + (param_1->r).mins[2];
-      local_1ac = (param_1->r).absmax;
-      local_1b0 = (param_1->r).maxs;
+      (gEnt->r).absmin[1] = local_2c[1] + (gEnt->r).mins[1];
+      (gEnt->r).absmin[2] = local_2c[2] + (gEnt->r).mins[2];
+      local_1ac = (gEnt->r).absmax;
+      local_1b0 = (gEnt->r).maxs;
       *local_1ac = *local_2c + *local_1b0;
-      (param_1->r).absmax[1] = local_2c[1] + (param_1->r).maxs[1];
-      (param_1->r).absmax[2] = local_2c[2] + (param_1->r).maxs[2];
+      (gEnt->r).absmax[1] = local_2c[1] + (gEnt->r).maxs[1];
+      (gEnt->r).absmax[2] = local_2c[2] + (gEnt->r).maxs[2];
     }
   }
   else {
-    Phys_Vec3ToNitrousVec((param_1->r).mins,&local_60);
-    Phys_Vec3ToNitrousVec((param_1->r).maxs,&local_70);
+    Phys_Vec3ToNitrousVec((gEnt->r).mins,&local_60);
+    Phys_Vec3ToNitrousVec((gEnt->r).maxs,&local_70);
     local_90 = local_70.x - local_60.x;
     local_8c = local_70.y - local_60.y;
     local_88 = local_70.z - local_60.z;
@@ -259,23 +262,23 @@ void __cdecl SV_LinkEntity(gentity_s *param_1)
     local_7c = local_88;
     local_78 = local_8c;
     local_74 = local_90;
-    AnglesToAxis((param_1->r).currentAngles,(float (*) [3])local_134);
+    AnglesToAxis((gEnt->r).currentAngles,(float (*) [3])local_134);
     Phys_AxisToNitrousMat((float (*) [3])local_134,&local_180);
-    Phys_Vec3ToNitrousVec((param_1->r).currentOrigin,&local_180.w);
+    Phys_Vec3ToNitrousVec((gEnt->r).currentOrigin,&local_180.w);
     phys_calc_world_aabb(&local_110,&local_c0,&local_180,&local_1a0,&local_190);
-    Phys_NitrousVecToVec3(&local_1a0,(param_1->r).absmin);
-    Phys_NitrousVecToVec3(&local_190,(param_1->r).absmax);
+    Phys_NitrousVecToVec3(&local_1a0,(gEnt->r).absmin);
+    Phys_NitrousVecToVec3(&local_190,(gEnt->r).absmax);
   }
-  (param_1->r).absmin[0] = (param_1->r).absmin[0] - 1.0;
-  (param_1->r).absmin[1] = (param_1->r).absmin[1] - 1.0;
-  (param_1->r).absmin[2] = (param_1->r).absmin[2] - 1.0;
-  (param_1->r).absmax[0] = (param_1->r).absmax[0] + 1.0;
-  (param_1->r).absmax[1] = (param_1->r).absmax[1] + 1.0;
-  (param_1->r).absmax[2] = (param_1->r).absmax[2] + 1.0;
+  (gEnt->r).absmin[0] = (gEnt->r).absmin[0] - 1.0;
+  (gEnt->r).absmin[1] = (gEnt->r).absmin[1] - 1.0;
+  (gEnt->r).absmin[2] = (gEnt->r).absmin[2] - 1.0;
+  (gEnt->r).absmax[0] = (gEnt->r).absmax[0] + 1.0;
+  (gEnt->r).absmax[1] = (gEnt->r).absmax[1] + 1.0;
+  (gEnt->r).absmax[2] = (gEnt->r).absmax[2] + 1.0;
   local_18->numClusters = 0;
   local_18->lastCluster = 0;
-  if (((param_1->r).svFlags & 0x19) == 0) {
-    local_2c4 = CM_BoxLeafnums((param_1->r).absmin,(param_1->r).absmax,local_2c0,0x80,&local_1bc);
+  if (((gEnt->r).svFlags & 0x19) == 0) {
+    local_2c4 = CM_BoxLeafnums((gEnt->r).absmin,(gEnt->r).absmax,local_2c0,0x80,&local_1bc);
     if (local_2c4 == 0) {
       CM_UnlinkEntity(local_18);
       return;
@@ -293,18 +296,18 @@ void __cdecl SV_LinkEntity(gentity_s *param_1)
       local_18->lastCluster = iVar3;
     }
   }
-  (param_1->r).linked = '\x01';
-  if ((param_1->r).contents == 0) {
+  (gEnt->r).linked = '\x01';
+  if ((gEnt->r).contents == 0) {
     CM_UnlinkEntity(local_18);
   }
   else {
-    local_2d0 = SV_ClipHandleForEntity(param_1);
-    local_2d4 = Com_GetServerDObj((param_1->s).number);
-    if ((local_2d4 == (DObj *)0x0) || (((param_1->r).svFlags & 6) == 0)) {
-      CM_LinkEntity(local_18,(param_1->r).absmin,(param_1->r).absmax,local_2d0);
+    local_2d0 = SV_ClipHandleForEntity(gEnt);
+    local_2d4 = Com_GetServerDObj((gEnt->s).number);
+    if ((local_2d4 == (DObj *)0x0) || (((gEnt->r).svFlags & 6) == 0)) {
+      CM_LinkEntity(local_18,(gEnt->r).absmin,(gEnt->r).absmax,local_2d0);
     }
     else {
-      if (((param_1->r).svFlags & 2) == 0) {
+      if (((gEnt->r).svFlags & 2) == 0) {
         DObjGetBounds(local_2d4,&local_2e0,&local_2ec);
         local_2e0 = *local_2c + local_2e0;
         local_2dc = local_2c[1] + local_2dc;
@@ -408,114 +411,114 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_TraceCapsuleToEntity(moveclip_t *param_1,svEntity_s *param_2,trace_t *param_3)
+void __cdecl SV_TraceCapsuleToEntity(moveclip_t *clip,svEntity_s *check,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  PhysGeomList *pPVar5;
-  gentity_s *pgVar6;
+  PhysGeomList *geoms_00;
+  gentity_s *ent;
   DObj *local_50;
-  float local_2c;
+  PhysGeomList *geoms;
+  gentity_s *touch;
+  uint clipHandle;
+  float absmin;
   float local_28;
   float local_24;
-  DObj *local_20;
-  float *local_1c;
-  float local_18;
+  DObj *dobj;
+  float *angles;
+  float absmax;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int entnum;
+  float oldFraction;
   
-  local_c = (int)&param_2[-0x6c063].baseline.s.lerp.pos / 0x168;
-  pgVar6 = (gentity_s *)
-           ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_c + -0x18);
-  if (((param_1->contentmask & (pgVar6->r).contents) != 0) &&
-     ((param_1->passEntityNum == 0x3ff ||
-      ((local_c != param_1->passEntityNum &&
-       ((iVar3 = EntHandle::isDefined(&(pgVar6->r).ownerNum), iVar3 == 0 ||
-        ((uVar4 = EntHandle::entnum(&(pgVar6->r).ownerNum), uVar4 != param_1->passEntityNum &&
-         (uVar4 = EntHandle::entnum(&(pgVar6->r).ownerNum), uVar4 != param_1->passOwnerNum))))))))))
-  {
-    local_2c = (pgVar6->r).absmin[0] + param_1->mins[0];
-    local_28 = (pgVar6->r).absmin[1] + param_1->mins[1];
-    local_24 = (pgVar6->r).absmin[2] + param_1->mins[2];
-    local_18 = (pgVar6->r).absmax[0] + param_1->maxs[0];
-    local_14 = (pgVar6->r).absmax[1] + param_1->maxs[1];
-    local_10 = (pgVar6->r).absmax[2] + param_1->maxs[2];
-    iVar3 = intersect_extents_aabb(&param_1->extents,&local_2c,&local_18,param_3->fraction);
+  entnum = (int)&check[-0x6c063].baseline.s.lerp.pos / 0x168;
+  ent = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * entnum + -0x18);
+  if (((clip->contentmask & (ent->r).contents) != 0) &&
+     ((clip->passEntityNum == 0x3ff ||
+      ((entnum != clip->passEntityNum &&
+       ((iVar3 = EntHandle::isDefined(&(ent->r).ownerNum), iVar3 == 0 ||
+        ((uVar4 = EntHandle::entnum(&(ent->r).ownerNum), uVar4 != clip->passEntityNum &&
+         (uVar4 = EntHandle::entnum(&(ent->r).ownerNum), uVar4 != clip->passOwnerNum)))))))))) {
+    absmin = (ent->r).absmin[0] + clip->mins[0];
+    local_28 = (ent->r).absmin[1] + clip->mins[1];
+    local_24 = (ent->r).absmin[2] + clip->mins[2];
+    absmax = (ent->r).absmax[0] + clip->maxs[0];
+    local_14 = (ent->r).absmax[1] + clip->maxs[1];
+    local_10 = (ent->r).absmax[2] + clip->maxs[2];
+    iVar3 = intersect_extents_aabb(&clip->extents,&absmin,&absmax,trace->fraction);
     if (iVar3 != 0) {
-      bVar2 = BG_ClipMoveToDobj((entityState_s *)pgVar6);
+      bVar2 = BG_ClipMoveToDobj((entityState_s *)ent);
       if (bVar2) {
-        local_50 = Com_GetServerDObj((pgVar6->s).number);
+        local_50 = Com_GetServerDObj((ent->s).number);
       }
       else {
         local_50 = (DObj *)0x0;
       }
-      local_20 = local_50;
+      dobj = local_50;
       if (local_50 == (DObj *)0x0) {
-        if (((pgVar6->r).bmodel != '\0') || ((pgVar6->s).eType != 6)) {
-          uVar4 = SV_ClipHandleForEntity(pgVar6);
-          local_1c = (pgVar6->r).currentAngles;
-          if ((pgVar6->r).bmodel == '\0') {
-            local_1c = vec3_origin;
+        if (((ent->r).bmodel != '\0') || ((ent->s).eType != 6)) {
+          uVar4 = SV_ClipHandleForEntity(ent);
+          angles = (ent->r).currentAngles;
+          if ((ent->r).bmodel == '\0') {
+            angles = vec3_origin;
           }
-          local_8 = param_3->fraction;
+          oldFraction = trace->fraction;
           CM_TransformedBoxTrace
-                    (param_3,(float *)&param_1->extents,(float *)&(param_1->extents).end,
-                     param_1->mins,param_1->maxs,uVar4,param_1->contentmask,
-                     (pgVar6->r).currentOrigin,local_1c);
-          if (param_3->fraction < local_8) {
-            if (((pgVar6->s).number != (uint)(ushort)(pgVar6->s).number) &&
+                    (trace,(float *)&clip->extents,(float *)&(clip->extents).end,clip->mins,
+                     clip->maxs,uVar4,clip->contentmask,(ent->r).currentOrigin,angles);
+          if (trace->fraction < oldFraction) {
+            if (((ent->s).number != (uint)(ushort)(ent->s).number) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",
                                          0x178,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            iVar3 = (pgVar6->s).number;
-            if ((param_3 == (trace_t *)0x0) &&
+            iVar3 = (ent->s).number;
+            if ((trace == (trace_t *)0x0) &&
                (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                          ,0xaf,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            param_3->hitType = TRACE_HITTYPE_ENTITY;
-            param_3->hitId = (ushort)iVar3;
+            trace->hitType = TRACE_HITTYPE_ENTITY;
+            trace->hitId = (ushort)iVar3;
           }
         }
       }
       else {
         iVar3 = DObjHasCollmap(local_50);
-        if (((iVar3 != 0) && (iVar3 = DObjHasContents(local_20,param_1->contentmask), iVar3 != 0))
-           && (pPVar5 = DObjGetCollmap(local_20), pPVar5 != (PhysGeomList *)0x0)) {
-          uVar4 = CM_TempBrushModel(pPVar5);
-          local_8 = param_3->fraction;
+        if (((iVar3 != 0) && (iVar3 = DObjHasContents(dobj,clip->contentmask), iVar3 != 0)) &&
+           (geoms_00 = DObjGetCollmap(dobj), geoms_00 != (PhysGeomList *)0x0)) {
+          uVar4 = CM_TempBrushModel(geoms_00);
+          oldFraction = trace->fraction;
           CM_TransformedBoxTrace
-                    (param_3,(float *)&param_1->extents,(float *)&(param_1->extents).end,
-                     param_1->mins,param_1->maxs,uVar4,param_1->contentmask,
-                     (pgVar6->r).currentOrigin,(pgVar6->r).currentAngles);
-          if (param_3->fraction < local_8) {
-            if (((pgVar6->s).number != (uint)(ushort)(pgVar6->s).number) &&
+                    (trace,(float *)&clip->extents,(float *)&(clip->extents).end,clip->mins,
+                     clip->maxs,uVar4,clip->contentmask,(ent->r).currentOrigin,
+                     (ent->r).currentAngles);
+          if (trace->fraction < oldFraction) {
+            if (((ent->s).number != (uint)(ushort)(ent->s).number) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",
                                          0x15e,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            iVar3 = (pgVar6->s).number;
-            if ((param_3 == (trace_t *)0x0) &&
+            iVar3 = (ent->s).number;
+            if ((trace == (trace_t *)0x0) &&
                (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                          ,0xaf,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            param_3->hitType = TRACE_HITTYPE_ENTITY;
-            param_3->hitId = (ushort)iVar3;
+            trace->hitType = TRACE_HITTYPE_ENTITY;
+            trace->hitId = (ushort)iVar3;
           }
         }
       }
@@ -532,19 +535,19 @@ void __cdecl SV_TraceCapsuleToEntity(moveclip_t *param_1,svEntity_s *param_2,tra
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObj * __cdecl SV_LocationalTraceDObj(pointtrace_t *param_1,gentity_s *param_2)
+DObj * __cdecl SV_LocationalTraceDObj(pointtrace_t *clip,gentity_s *touch)
 
 {
   DObj *pDVar1;
   
-  if (param_1->bLocational == 0) {
+  if (clip->bLocational == 0) {
     pDVar1 = (DObj *)0x0;
   }
-  else if (((param_2->r).svFlags & 6) == 0) {
+  else if (((touch->r).svFlags & 6) == 0) {
     pDVar1 = (DObj *)0x0;
   }
-  else if ((((param_2->r).svFlags & 2) == 0) || (param_1->priorityMap != (uchar *)0x0)) {
-    pDVar1 = Com_GetServerDObj((param_2->s).number);
+  else if ((((touch->r).svFlags & 2) == 0) || (clip->priorityMap != (uchar *)0x0)) {
+    pDVar1 = Com_GetServerDObj((touch->s).number);
   }
   else {
     pDVar1 = (DObj *)0x0;
@@ -580,19 +583,19 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObj * __cdecl SV_LocationalSightTraceDObj(sightpointtrace_t *param_1,gentity_s *param_2)
+DObj * __cdecl SV_LocationalSightTraceDObj(sightpointtrace_t *clip,gentity_s *touch)
 
 {
   DObj *pDVar1;
   
-  if (param_1->locational == 0) {
+  if (clip->locational == 0) {
     pDVar1 = (DObj *)0x0;
   }
-  else if (((param_2->r).svFlags & 6) == 0) {
+  else if (((touch->r).svFlags & 6) == 0) {
     pDVar1 = (DObj *)0x0;
   }
-  else if ((((param_2->r).svFlags & 2) == 0) || (param_1->priorityMap != (uchar *)0x0)) {
-    pDVar1 = Com_GetServerDObj((param_2->s).number);
+  else if ((((touch->r).svFlags & 2) == 0) || (clip->priorityMap != (uchar *)0x0)) {
+    pDVar1 = Com_GetServerDObj((touch->s).number);
   }
   else {
     pDVar1 = (DObj *)0x0;
@@ -609,7 +612,7 @@ DObj * __cdecl SV_LocationalSightTraceDObj(sightpointtrace_t *param_1,gentity_s 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,trace_t *param_3)
+void __cdecl SV_TracePointToEntity(pointtrace_t *clip,svEntity_s *check,trace_t *trace)
 
 {
   code *pcVar1;
@@ -617,53 +620,56 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
   int iVar3;
   uint uVar4;
   DWORD DVar5;
-  gentity_s *pgVar6;
-  float fVar7;
+  gentity_s *touch_00;
+  float fVar6;
   float *local_e8;
   float *local_e0;
-  float local_ac [9];
+  PIXProfile pixProfile_2;
+  PIXProfile pixProfile;
+  gentity_s *touch;
+  float entAxis [9];
   float local_88;
   float local_84;
   float local_80;
-  uint local_7c;
-  DObj *local_78;
-  float local_74;
+  uint clipHandle;
+  DObj *obj;
+  float absmin;
   float local_70;
   float local_6c;
-  float local_68 [3];
-  float *local_5c;
-  DObjTrace_s local_58;
-  float local_38 [3];
-  float local_2c;
+  float localStart [3];
+  float *angles;
+  DObjTrace_s objTrace;
+  float localEnd [3];
+  float absmax;
   float local_28;
   float local_24;
-  int local_20;
-  int local_1c [5];
-  float local_8;
+  int entnum;
+  int partBits [5];
+  float oldFraction;
   
-  local_20 = (int)&param_2[-0x6c063].baseline.s.lerp.pos / 0x168;
-  pgVar6 = (gentity_s *)
-           ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_20 + -0x18);
-  if (((param_1->contentmask & (pgVar6->r).contents) != 0) &&
-     (((param_1->ignoreEntParams == (IgnoreEntParams *)0x0 ||
-       (param_1->ignoreEntParams->baseEntity == 0x3ff)) ||
-      ((((param_1->ignoreEntParams->ignoreSelf == false ||
-         (local_20 != param_1->ignoreEntParams->baseEntity)) &&
-        ((param_1->ignoreEntParams->ignoreParent == false ||
-         (local_20 != param_1->ignoreEntParams->parentEntity)))) &&
-       ((iVar3 = EntHandle::isDefined(&(pgVar6->r).ownerNum), iVar3 == 0 ||
-        ((((param_1->ignoreEntParams->ignoreSiblings == false ||
-           (uVar4 = EntHandle::entnum(&(pgVar6->r).ownerNum),
-           uVar4 != param_1->ignoreEntParams->parentEntity)) ||
-          (local_20 == param_1->ignoreEntParams->baseEntity)) &&
-         ((param_1->ignoreEntParams->ignoreChildren == false ||
-          (uVar4 = EntHandle::entnum(&(pgVar6->r).ownerNum),
-          uVar4 != param_1->ignoreEntParams->baseEntity)))))))))))) {
-    local_78 = SV_LocationalTraceDObj(param_1,pgVar6);
-    if (local_78 == (DObj *)0x0) {
+  entnum = (int)&check[-0x6c063].baseline.s.lerp.pos / 0x168;
+  touch_00 = (gentity_s *)
+             ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * entnum + -0x18);
+  if (((clip->contentmask & (touch_00->r).contents) != 0) &&
+     (((clip->ignoreEntParams == (IgnoreEntParams *)0x0 ||
+       (clip->ignoreEntParams->baseEntity == 0x3ff)) ||
+      ((((clip->ignoreEntParams->ignoreSelf == false ||
+         (entnum != clip->ignoreEntParams->baseEntity)) &&
+        ((clip->ignoreEntParams->ignoreParent == false ||
+         (entnum != clip->ignoreEntParams->parentEntity)))) &&
+       ((iVar3 = EntHandle::isDefined(&(touch_00->r).ownerNum), iVar3 == 0 ||
+        ((((clip->ignoreEntParams->ignoreSiblings == false ||
+           (uVar4 = EntHandle::entnum(&(touch_00->r).ownerNum),
+           uVar4 != clip->ignoreEntParams->parentEntity)) ||
+          (entnum == clip->ignoreEntParams->baseEntity)) &&
+         ((clip->ignoreEntParams->ignoreChildren == false ||
+          (uVar4 = EntHandle::entnum(&(touch_00->r).ownerNum),
+          uVar4 != clip->ignoreEntParams->baseEntity)))))))))))) {
+    obj = SV_LocationalTraceDObj(clip,touch_00);
+    if (obj == (DObj *)0x0) {
       PIXBeginNamedEvent(-1,"SV_TracePointToEntity 2");
-      if (((pgVar6->r).bmodel != '\0') || ((pgVar6->s).eType != 6)) {
-        if ((param_1->contentmask & param_2->linkcontents) == 0) {
+      if (((touch_00->r).bmodel != '\0') || ((touch_00->s).eType != 6)) {
+        if ((clip->contentmask & check->linkcontents) == 0) {
           DVar5 = GetCurrentThreadId();
           if (DVar5 != (DWORD)g_DXDeviceThread) {
             return;
@@ -675,8 +681,8 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
           return;
         }
         iVar3 = intersect_extents_aabb
-                          (&param_1->extents,(pgVar6->r).absmin,(pgVar6->r).absmax,param_3->fraction
-                          );
+                          (&clip->extents,(touch_00->r).absmin,(touch_00->r).absmax,trace->fraction)
+        ;
         if (iVar3 == 0) {
           DVar5 = GetCurrentThreadId();
           if (DVar5 != (DWORD)g_DXDeviceThread) {
@@ -688,16 +694,16 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
           _D3DPERF_EndEvent_0();
           return;
         }
-        local_7c = SV_ClipHandleForEntity(pgVar6);
-        local_5c = (pgVar6->r).currentAngles;
-        if ((pgVar6->r).bmodel == '\0') {
-          local_5c = vec3_origin;
+        clipHandle = SV_ClipHandleForEntity(touch_00);
+        angles = (touch_00->r).currentAngles;
+        if ((touch_00->r).bmodel == '\0') {
+          angles = vec3_origin;
         }
-        local_8 = param_3->fraction;
+        oldFraction = trace->fraction;
         CM_TransformedBoxTrace
-                  (param_3,(float *)param_1,(float *)&(param_1->extents).end,vec3_origin,vec3_origin
-                   ,local_7c,param_1->contentmask,(pgVar6->r).currentOrigin,local_5c);
-        if (local_8 <= param_3->fraction) {
+                  (trace,(float *)clip,(float *)&(clip->extents).end,vec3_origin,vec3_origin,
+                   clipHandle,clip->contentmask,(touch_00->r).currentOrigin,angles);
+        if (oldFraction <= trace->fraction) {
           DVar5 = GetCurrentThreadId();
           if (DVar5 != (DWORD)g_DXDeviceThread) {
             return;
@@ -708,28 +714,28 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
           _D3DPERF_EndEvent_0();
           return;
         }
-        param_3->modelIndex = 0;
-        param_3->partName = 0;
-        param_3->boneIndex = 0;
-        param_3->partGroup = 0;
-        if (((pgVar6->s).number != (uint)(ushort)(pgVar6->s).number) &&
+        trace->modelIndex = 0;
+        trace->partName = 0;
+        trace->boneIndex = 0;
+        trace->partGroup = 0;
+        if (((touch_00->s).number != (uint)(ushort)(touch_00->s).number) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x241
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        iVar3 = (pgVar6->s).number;
-        if ((param_3 == (trace_t *)0x0) &&
+        iVar3 = (touch_00->s).number;
+        if ((trace == (trace_t *)0x0) &&
            (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                      ,0xaf,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        param_3->hitType = TRACE_HITTYPE_ENTITY;
-        param_3->hitId = (ushort)iVar3;
-        param_3->cflags = (pgVar6->r).contents;
+        trace->hitType = TRACE_HITTYPE_ENTITY;
+        trace->hitId = (ushort)iVar3;
+        trace->cflags = (touch_00->r).contents;
       }
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -738,38 +744,38 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
     }
     else {
       PIXBeginNamedEvent(-1,"SV_TracePointToEntity 1");
-      if (((pgVar6->r).svFlags & 4) == 0) {
-        if ((param_1->priorityMap == (uchar *)0x0) &&
+      if (((touch_00->r).svFlags & 4) == 0) {
+        if ((clip->priorityMap == (uchar *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x1e5
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_88 = (pgVar6->r).currentOrigin[0];
-        local_84 = (pgVar6->r).currentOrigin[1];
-        local_80 = (pgVar6->r).currentOrigin[2];
-        if (pgVar6->client == (gclient_s *)0x0) {
+        local_88 = (touch_00->r).currentOrigin[0];
+        local_84 = (touch_00->r).currentOrigin[1];
+        local_80 = (touch_00->r).currentOrigin[2];
+        if (touch_00->client == (gclient_s *)0x0) {
           local_e0 = actorLocationalMins;
         }
         else {
           local_e0 = actorLocationalMinsBig;
         }
-        local_74 = local_88 + *local_e0;
+        absmin = local_88 + *local_e0;
         local_70 = local_84 + local_e0[1];
         local_6c = local_80 + local_e0[2];
-        if (pgVar6->client == (gclient_s *)0x0) {
+        if (touch_00->client == (gclient_s *)0x0) {
           local_e8 = actorLocationalMaxs;
         }
         else {
           local_e8 = actorLocationalMaxsBig;
         }
-        local_2c = local_88 + *local_e8;
+        absmax = local_88 + *local_e8;
         local_28 = local_84 + local_e8[1];
         local_24 = local_80 + local_e8[2];
       }
       else {
-        iVar3 = DObjHasContents(local_78,param_1->contentmask);
+        iVar3 = DObjHasContents(obj,clip->contentmask);
         if (iVar3 == 0) {
           DVar5 = GetCurrentThreadId();
           if (DVar5 != (DWORD)g_DXDeviceThread) {
@@ -781,17 +787,17 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
           _D3DPERF_EndEvent_0();
           return;
         }
-        local_74 = (pgVar6->r).absmin[0];
-        local_70 = (pgVar6->r).absmin[1];
-        local_6c = (pgVar6->r).absmin[2];
-        local_2c = (pgVar6->r).absmax[0];
-        local_28 = (pgVar6->r).absmax[1];
-        local_24 = (pgVar6->r).absmax[2];
-        local_88 = (pgVar6->r).currentOrigin[0];
-        local_84 = (pgVar6->r).currentOrigin[1];
-        local_80 = (pgVar6->r).currentOrigin[2];
+        absmin = (touch_00->r).absmin[0];
+        local_70 = (touch_00->r).absmin[1];
+        local_6c = (touch_00->r).absmin[2];
+        absmax = (touch_00->r).absmax[0];
+        local_28 = (touch_00->r).absmax[1];
+        local_24 = (touch_00->r).absmax[2];
+        local_88 = (touch_00->r).currentOrigin[0];
+        local_84 = (touch_00->r).currentOrigin[1];
+        local_80 = (touch_00->r).currentOrigin[2];
       }
-      iVar3 = intersect_extents_aabb(&param_1->extents,&local_74,&local_2c,param_3->fraction);
+      iVar3 = intersect_extents_aabb(&clip->extents,&absmin,&absmax,trace->fraction);
       if (iVar3 == 0) {
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -799,41 +805,41 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
         }
       }
       else {
-        AnglesToAxis((pgVar6->r).currentAngles,(float (*) [3])local_ac);
-        MatrixTransposeTransformVector43((float *)param_1,(float (*) [3])local_ac,local_68);
+        AnglesToAxis((touch_00->r).currentAngles,(float (*) [3])entAxis);
+        MatrixTransposeTransformVector43((float *)clip,(float (*) [3])entAxis,localStart);
         MatrixTransposeTransformVector43
-                  ((float *)&(param_1->extents).end,(float (*) [3])local_ac,local_38);
-        local_58.fraction = param_3->fraction;
-        if (((pgVar6->r).svFlags & 4) == 0) {
-          DObjTracelinePartBits(local_78,local_1c);
-          G_DObjCalcPose(pgVar6,local_1c);
-          DObjTraceline(local_78,local_68,local_38,param_1->priorityMap,&local_58);
+                  ((float *)&(clip->extents).end,(float (*) [3])entAxis,localEnd);
+        objTrace.fraction = trace->fraction;
+        if (((touch_00->r).svFlags & 4) == 0) {
+          DObjTracelinePartBits(obj,partBits);
+          G_DObjCalcPose(touch_00,partBits);
+          DObjTraceline(obj,localStart,localEnd,clip->priorityMap,&objTrace);
         }
         else {
-          DObjGeomTracelinePartBits(local_78,param_1->contentmask,local_1c);
-          G_DObjCalcPose(pgVar6,local_1c);
-          DObjGeomTraceline(local_78,local_68,local_38,param_1->contentmask,&local_58);
+          DObjGeomTracelinePartBits(obj,clip->contentmask,partBits);
+          G_DObjCalcPose(touch_00,partBits);
+          DObjGeomTraceline(obj,localStart,localEnd,clip->contentmask,&objTrace);
         }
         if ((g_debugLocDamage->current).integer == 2) {
-          SV_XModelDebugBoxes(pgVar6,colorWhite,local_1c,0x32);
+          SV_XModelDebugBoxes(touch_00,colorWhite,partBits,0x32);
         }
-        if (local_58.fraction < param_3->fraction) {
-          if (((1.0 <= local_58.fraction) || (local_58.fraction < 0.0)) &&
+        if (objTrace.fraction < trace->fraction) {
+          if (((1.0 <= objTrace.fraction) || (objTrace.fraction < 0.0)) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",
                                        0x20e,0,"%s\n\t(objTrace.fraction) = %g"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          param_3->fraction = local_58.fraction;
-          param_3->sflags = local_58.sflags;
-          param_3->modelIndex = local_58.modelIndex;
-          param_3->partName = local_58.partName;
-          param_3->boneIndex = (ushort)local_58.localBoneIndex;
-          param_3->partGroup = local_58.partGroup;
-          MatrixTransformVector(local_58.normal,(float (*) [3])local_ac,(float *)param_3);
-          fVar7 = Abs((phys_vec3 *)param_3);
-          if ((0.01 <= ABS(fVar7 - 1.0)) && (fVar7 = Abs((phys_vec3 *)param_3), 0.01 <= fVar7)) {
+          trace->fraction = objTrace.fraction;
+          trace->sflags = objTrace.sflags;
+          trace->modelIndex = objTrace.modelIndex;
+          trace->partName = objTrace.partName;
+          trace->boneIndex = (ushort)objTrace.localBoneIndex;
+          trace->partGroup = objTrace.partGroup;
+          MatrixTransformVector(objTrace.normal,(float (*) [3])entAxis,(float *)trace);
+          fVar6 = Abs((phys_vec3 *)trace);
+          if ((0.01 <= ABS(fVar6 - 1.0)) && (fVar6 = Abs((phys_vec3 *)trace), 0.01 <= fVar6)) {
             va("%g %g %g");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x217
                                      ,0,"%s\n\t%s");
@@ -843,25 +849,25 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
               return;
             }
           }
-          param_3->walkable = 0.7 <= (param_3->normal).vec.v[2];
-          if (((pgVar6->s).number != (uint)(ushort)(pgVar6->s).number) &&
+          trace->walkable = 0.7 <= (trace->normal).vec.v[2];
+          if (((touch_00->s).number != (uint)(ushort)(touch_00->s).number) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",
                                        0x21a,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          iVar3 = (pgVar6->s).number;
-          if ((param_3 == (trace_t *)0x0) &&
+          iVar3 = (touch_00->s).number;
+          if ((trace == (trace_t *)0x0) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                        ,0xaf,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          param_3->hitType = TRACE_HITTYPE_ENTITY;
-          param_3->hitId = (ushort)iVar3;
-          param_3->cflags = (pgVar6->r).contents;
+          trace->hitType = TRACE_HITTYPE_ENTITY;
+          trace->hitId = (ushort)iVar3;
+          trace->cflags = (touch_00->r).contents;
           DVar5 = GetCurrentThreadId();
           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -887,110 +893,111 @@ void __cdecl SV_TracePointToEntity(pointtrace_t *param_1,svEntity_s *param_2,tra
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_SightTraceCapsuleToEntity(sightclip_t *param_1,int param_2)
+int __cdecl SV_SightTraceCapsuleToEntity(sightclip_t *clip,int entnum)
 
 {
   float *pfVar1;
   bool bVar2;
-  gentity_s *pgVar3;
-  int iVar4;
-  uint uVar5;
-  PhysGeomList *pPVar6;
+  gentity_s *ent;
+  int iVar3;
+  uint uVar4;
+  PhysGeomList *geoms_00;
   DObj *local_40;
-  int local_34;
-  uint local_28;
-  float local_24 [3];
-  DObj *local_18;
-  float local_14 [3];
-  float *local_8;
+  PhysGeomList *geoms;
+  int i;
+  gentity_s *touch;
+  int hitnum;
+  uint clipHandle;
+  float boxmins [3];
+  DObj *dobj;
+  float boxmaxs [3];
+  float *angles;
   
-  pgVar3 = (gentity_s *)
-           ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * param_2 + -0x18);
-  if ((param_1->contentmask & (pgVar3->r).contents) == 0) {
-    iVar4 = 0;
+  ent = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * entnum + -0x18);
+  if ((clip->contentmask & (ent->r).contents) == 0) {
+    iVar3 = 0;
   }
   else {
-    if (param_1->passEntityNum[0] != 0x3ff) {
-      if (param_2 == param_1->passEntityNum[0]) {
+    if (clip->passEntityNum[0] != 0x3ff) {
+      if (entnum == clip->passEntityNum[0]) {
         return 0;
       }
-      iVar4 = EntHandle::isDefined(&(pgVar3->r).ownerNum);
-      if ((iVar4 != 0) &&
-         (uVar5 = EntHandle::entnum(&(pgVar3->r).ownerNum), uVar5 == param_1->passEntityNum[0])) {
-        return 0;
-      }
-    }
-    if (param_1->passEntityNum[1] != 0x3ff) {
-      if (param_2 == param_1->passEntityNum[1]) {
-        return 0;
-      }
-      iVar4 = EntHandle::isDefined(&(pgVar3->r).ownerNum);
-      if ((iVar4 != 0) &&
-         (uVar5 = EntHandle::entnum(&(pgVar3->r).ownerNum), uVar5 == param_1->passEntityNum[1])) {
+      iVar3 = EntHandle::isDefined(&(ent->r).ownerNum);
+      if ((iVar3 != 0) &&
+         (uVar4 = EntHandle::entnum(&(ent->r).ownerNum), uVar4 == clip->passEntityNum[0])) {
         return 0;
       }
     }
-    for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-      if (param_1->end[local_34] < param_1->start[local_34] ||
-          param_1->end[local_34] == param_1->start[local_34]) {
-        local_24[local_34] = (param_1->end[local_34] + param_1->mins[local_34]) - 1.0;
-        local_14[local_34] = param_1->start[local_34] + param_1->maxs[local_34] + 1.0;
+    if (clip->passEntityNum[1] != 0x3ff) {
+      if (entnum == clip->passEntityNum[1]) {
+        return 0;
+      }
+      iVar3 = EntHandle::isDefined(&(ent->r).ownerNum);
+      if ((iVar3 != 0) &&
+         (uVar4 = EntHandle::entnum(&(ent->r).ownerNum), uVar4 == clip->passEntityNum[1])) {
+        return 0;
+      }
+    }
+    for (i = 0; i < 3; i = i + 1) {
+      if (clip->end[i] < clip->start[i] || clip->end[i] == clip->start[i]) {
+        boxmins[i] = (clip->end[i] + clip->mins[i]) - 1.0;
+        boxmaxs[i] = clip->start[i] + clip->maxs[i] + 1.0;
       }
       else {
-        local_24[local_34] = (param_1->start[local_34] + param_1->mins[local_34]) - 1.0;
-        local_14[local_34] = param_1->end[local_34] + param_1->maxs[local_34] + 1.0;
+        boxmins[i] = (clip->start[i] + clip->mins[i]) - 1.0;
+        boxmaxs[i] = clip->end[i] + clip->maxs[i] + 1.0;
       }
     }
-    if ((((local_14[0] < (pgVar3->r).absmin[0]) || (local_14[1] < (pgVar3->r).absmin[1])) ||
-        (local_14[2] < (pgVar3->r).absmin[2])) ||
-       (((pfVar1 = (pgVar3->r).absmax, *pfVar1 <= local_24[0] && local_24[0] != *pfVar1 ||
-         (pfVar1 = (pgVar3->r).absmax + 1, *pfVar1 <= local_24[1] && local_24[1] != *pfVar1)) ||
-        (pfVar1 = (pgVar3->r).absmax + 2, *pfVar1 <= local_24[2] && local_24[2] != *pfVar1)))) {
-      iVar4 = 0;
+    if ((((boxmaxs[0] < (ent->r).absmin[0]) || (boxmaxs[1] < (ent->r).absmin[1])) ||
+        (boxmaxs[2] < (ent->r).absmin[2])) ||
+       (((pfVar1 = (ent->r).absmax, *pfVar1 <= boxmins[0] && boxmins[0] != *pfVar1 ||
+         (pfVar1 = (ent->r).absmax + 1, *pfVar1 <= boxmins[1] && boxmins[1] != *pfVar1)) ||
+        (pfVar1 = (ent->r).absmax + 2, *pfVar1 <= boxmins[2] && boxmins[2] != *pfVar1)))) {
+      iVar3 = 0;
     }
     else {
-      local_8 = (pgVar3->r).currentAngles;
-      bVar2 = BG_ClipMoveToDobj((entityState_s *)pgVar3);
+      angles = (ent->r).currentAngles;
+      bVar2 = BG_ClipMoveToDobj((entityState_s *)ent);
       if (bVar2) {
-        local_40 = Com_GetServerDObj((pgVar3->s).number);
+        local_40 = Com_GetServerDObj((ent->s).number);
       }
       else {
         local_40 = (DObj *)0x0;
       }
-      local_18 = local_40;
+      dobj = local_40;
       if (local_40 == (DObj *)0x0) {
-        local_28 = SV_ClipHandleForEntity(pgVar3);
-        if ((pgVar3->r).bmodel == '\0') {
-          local_8 = vec3_origin;
+        clipHandle = SV_ClipHandleForEntity(ent);
+        if ((ent->r).bmodel == '\0') {
+          angles = vec3_origin;
         }
       }
       else {
-        iVar4 = DObjHasCollmap(local_40);
-        if (iVar4 == 0) {
+        iVar3 = DObjHasCollmap(local_40);
+        if (iVar3 == 0) {
           return 0;
         }
-        iVar4 = DObjHasContents(local_18,param_1->contentmask);
-        if (iVar4 == 0) {
+        iVar3 = DObjHasContents(dobj,clip->contentmask);
+        if (iVar3 == 0) {
           return 0;
         }
-        pPVar6 = DObjGetCollmap(local_18);
-        if (pPVar6 == (PhysGeomList *)0x0) {
+        geoms_00 = DObjGetCollmap(dobj);
+        if (geoms_00 == (PhysGeomList *)0x0) {
           return 0;
         }
-        local_28 = CM_TempBrushModel(pPVar6);
+        clipHandle = CM_TempBrushModel(geoms_00);
       }
-      iVar4 = CM_TransformedBoxSightTrace
-                        (0,param_1->start,param_1->end,param_1->mins,param_1->maxs,local_28,
-                         param_1->contentmask,(pgVar3->r).currentOrigin,local_8);
-      if (iVar4 == 0) {
-        iVar4 = 0;
+      iVar3 = CM_TransformedBoxSightTrace
+                        (0,clip->start,clip->end,clip->mins,clip->maxs,clipHandle,clip->contentmask,
+                         (ent->r).currentOrigin,angles);
+      if (iVar3 == 0) {
+        iVar3 = 0;
       }
       else {
-        iVar4 = -1;
+        iVar3 = -1;
       }
     }
   }
-  return iVar4;
+  return iVar3;
 }
 
 
@@ -1003,169 +1010,173 @@ int __cdecl SV_SightTraceCapsuleToEntity(sightclip_t *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_SightTracePointToEntity(sightpointtrace_t *param_1,int param_2)
+int __cdecl SV_SightTracePointToEntity(sightpointtrace_t *clip,int entnum)
 
 {
   code *pcVar1;
   bool bVar2;
-  gentity_s *pgVar3;
-  int iVar4;
-  uint uVar5;
-  PhysGeomList *pPVar6;
+  gentity_s *touch_00;
+  int iVar3;
+  uint uVar4;
+  PhysGeomList *geoms_00;
   DObj *local_128;
   float *local_120;
   float *local_118;
-  float local_dc [9];
+  PhysGeomList *geoms;
+  DObj *dobj;
+  gentity_s *touch;
+  int hitnum;
+  float entAxis [9];
   float local_b8;
   float local_b4;
   float local_b0;
-  uint local_ac;
-  float4 local_a8;
+  uint clipHandle;
+  float4 extents;
   float4 local_98 [2];
   uint local_78;
-  DObj *local_74;
-  float local_70;
+  DObj *obj;
+  float absmin;
   float local_6c;
   float local_68;
-  float local_64 [3];
-  float *local_58;
-  DObjTrace_s local_54;
-  float local_34 [3];
-  float local_28;
+  float localStart [3];
+  float *angles;
+  DObjTrace_s objTrace;
+  float localEnd [3];
+  float absmax;
   float local_24;
   float local_20;
-  int local_1c;
-  int local_18 [5];
+  int passEntityIdx;
+  int partBits [5];
   
   local_78 = __security_cookie ^ (uint)&stack0xfffffffc;
-  TraceExtents::TraceExtents((TraceExtents *)&local_a8);
-  pgVar3 = (gentity_s *)
-           ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * param_2 + -0x18);
-  if ((param_1->contentmask & (pgVar3->r).contents) == 0) {
+  TraceExtents::TraceExtents((TraceExtents *)&extents);
+  touch_00 = (gentity_s *)
+             ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * entnum + -0x18);
+  if ((clip->contentmask & (touch_00->r).contents) == 0) {
     return 0;
   }
-  for (local_1c = 0; local_1c < 2; local_1c = local_1c + 1) {
-    if (param_1->passEntityNum[local_1c] != 0x3ff) {
-      if (param_2 == param_1->passEntityNum[local_1c]) {
+  for (passEntityIdx = 0; passEntityIdx < 2; passEntityIdx = passEntityIdx + 1) {
+    if (clip->passEntityNum[passEntityIdx] != 0x3ff) {
+      if (entnum == clip->passEntityNum[passEntityIdx]) {
         return 0;
       }
-      iVar4 = EntHandle::isDefined(&(pgVar3->r).ownerNum);
-      if ((iVar4 != 0) &&
-         (uVar5 = EntHandle::entnum(&(pgVar3->r).ownerNum),
-         uVar5 == param_1->passEntityNum[local_1c])) {
+      iVar3 = EntHandle::isDefined(&(touch_00->r).ownerNum);
+      if ((iVar3 != 0) &&
+         (uVar4 = EntHandle::entnum(&(touch_00->r).ownerNum),
+         uVar4 == clip->passEntityNum[passEntityIdx])) {
         return 0;
       }
     }
   }
-  local_74 = SV_LocationalSightTraceDObj(param_1,pgVar3);
-  if (local_74 == (DObj *)0x0) {
-    if (((pgVar3->r).bmodel != '\0') || ((pgVar3->s).eType != 6)) {
-      if ((pgVar3->s).eType == 0xe) {
-        local_128 = Com_GetServerDObj((pgVar3->s).number);
+  obj = SV_LocationalSightTraceDObj(clip,touch_00);
+  if (obj == (DObj *)0x0) {
+    if (((touch_00->r).bmodel != '\0') || ((touch_00->s).eType != 6)) {
+      if ((touch_00->s).eType == 0xe) {
+        local_128 = Com_GetServerDObj((touch_00->s).number);
       }
       else {
         local_128 = (DObj *)0x0;
       }
       if (local_128 == (DObj *)0x0) {
-        local_ac = SV_ClipHandleForEntity(pgVar3);
-        local_58 = (pgVar3->r).currentAngles;
-        if ((pgVar3->r).bmodel == '\0') {
-          local_58 = vec3_origin;
+        clipHandle = SV_ClipHandleForEntity(touch_00);
+        angles = (touch_00->r).currentAngles;
+        if ((touch_00->r).bmodel == '\0') {
+          angles = vec3_origin;
         }
       }
       else {
-        iVar4 = DObjHasCollmap(local_128);
-        if (iVar4 == 0) {
+        iVar3 = DObjHasCollmap(local_128);
+        if (iVar3 == 0) {
           return 0;
         }
-        pPVar6 = DObjGetCollmap(local_128);
-        if (pPVar6 == (PhysGeomList *)0x0) {
+        geoms_00 = DObjGetCollmap(local_128);
+        if (geoms_00 == (PhysGeomList *)0x0) {
           return 0;
         }
-        local_ac = CM_TempBrushModel(pPVar6);
-        local_58 = (pgVar3->r).currentAngles;
+        clipHandle = CM_TempBrushModel(geoms_00);
+        angles = (touch_00->r).currentAngles;
       }
-      iVar4 = CM_TransformedBoxSightTrace
-                        (0,param_1->start,param_1->end,vec3_origin,vec3_origin,local_ac,
-                         param_1->contentmask,(pgVar3->r).currentOrigin,local_58);
-      if (iVar4 != 0) {
+      iVar3 = CM_TransformedBoxSightTrace
+                        (0,clip->start,clip->end,vec3_origin,vec3_origin,clipHandle,
+                         clip->contentmask,(touch_00->r).currentOrigin,angles);
+      if (iVar3 != 0) {
         return -1;
       }
     }
   }
   else {
-    if (((pgVar3->r).svFlags & 4) == 0) {
-      if ((param_1->priorityMap == (uchar *)0x0) &&
+    if (((touch_00->r).svFlags & 4) == 0) {
+      if ((clip->priorityMap == (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x2d1,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        iVar4 = (*pcVar1)();
-        return iVar4;
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      local_b8 = (pgVar3->r).currentOrigin[0];
-      local_b4 = (pgVar3->r).currentOrigin[1];
-      local_b0 = (pgVar3->r).currentOrigin[2];
-      if (pgVar3->client == (gclient_s *)0x0) {
+      local_b8 = (touch_00->r).currentOrigin[0];
+      local_b4 = (touch_00->r).currentOrigin[1];
+      local_b0 = (touch_00->r).currentOrigin[2];
+      if (touch_00->client == (gclient_s *)0x0) {
         local_118 = actorLocationalMins;
       }
       else {
         local_118 = actorLocationalMinsBig;
       }
-      local_70 = local_b8 + *local_118;
+      absmin = local_b8 + *local_118;
       local_6c = local_b4 + local_118[1];
       local_68 = local_b0 + local_118[2];
-      if (pgVar3->client == (gclient_s *)0x0) {
+      if (touch_00->client == (gclient_s *)0x0) {
         local_120 = actorLocationalMaxs;
       }
       else {
         local_120 = actorLocationalMaxsBig;
       }
-      local_28 = local_b8 + *local_120;
+      absmax = local_b8 + *local_120;
       local_24 = local_b4 + local_120[1];
       local_20 = local_b0 + local_120[2];
     }
     else {
-      iVar4 = DObjHasContents(local_74,param_1->contentmask);
-      if (iVar4 == 0) {
+      iVar3 = DObjHasContents(obj,clip->contentmask);
+      if (iVar3 == 0) {
         return 0;
       }
-      local_b8 = (pgVar3->r).currentOrigin[0];
-      local_b4 = (pgVar3->r).currentOrigin[1];
-      local_b0 = (pgVar3->r).currentOrigin[2];
-      DObjGetBounds(local_74,&local_70,&local_28);
-      local_70 = local_b8 + local_70;
+      local_b8 = (touch_00->r).currentOrigin[0];
+      local_b4 = (touch_00->r).currentOrigin[1];
+      local_b0 = (touch_00->r).currentOrigin[2];
+      DObjGetBounds(obj,&absmin,&absmax);
+      absmin = local_b8 + absmin;
       local_6c = local_b4 + local_6c;
       local_68 = local_b0 + local_68;
-      local_28 = local_b8 + local_28;
+      absmax = local_b8 + absmax;
       local_24 = local_b4 + local_24;
       local_20 = local_b0 + local_20;
     }
-    local_a8.v[0] = param_1->start[0];
-    local_a8.v[1] = param_1->start[1];
-    local_a8.v[2] = param_1->start[2];
-    local_98[0]._0_4_ = param_1->end[0];
-    local_98[0]._4_4_ = param_1->end[1];
-    local_98[0]._8_4_ = param_1->end[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_a8);
-    iVar4 = intersect_extents_aabb((TraceExtents *)&local_a8,&local_70,&local_28,1.0);
-    if (iVar4 == 0) {
+    extents.v[0] = clip->start[0];
+    extents.v[1] = clip->start[1];
+    extents.v[2] = clip->start[2];
+    local_98[0]._0_4_ = clip->end[0];
+    local_98[0]._4_4_ = clip->end[1];
+    local_98[0]._8_4_ = clip->end[2];
+    CM_CalcTraceExtents((TraceExtents *)&extents);
+    iVar3 = intersect_extents_aabb((TraceExtents *)&extents,&absmin,&absmax,1.0);
+    if (iVar3 == 0) {
       return 0;
     }
-    AnglesToAxis((pgVar3->r).currentAngles,(float (*) [3])local_dc);
-    MatrixTransposeTransformVector43(local_a8.v,(float (*) [3])local_dc,local_64);
-    MatrixTransposeTransformVector43(local_98[0].v,(float (*) [3])local_dc,local_34);
-    local_54.fraction = 1.0;
-    if (((pgVar3->r).svFlags & 4) == 0) {
-      DObjTracelinePartBits(local_74,local_18);
-      G_DObjCalcPose(pgVar3,local_18);
-      DObjTraceline(local_74,local_64,local_34,param_1->priorityMap,&local_54);
+    AnglesToAxis((touch_00->r).currentAngles,(float (*) [3])entAxis);
+    MatrixTransposeTransformVector43(extents.v,(float (*) [3])entAxis,localStart);
+    MatrixTransposeTransformVector43(local_98[0].v,(float (*) [3])entAxis,localEnd);
+    objTrace.fraction = 1.0;
+    if (((touch_00->r).svFlags & 4) == 0) {
+      DObjTracelinePartBits(obj,partBits);
+      G_DObjCalcPose(touch_00,partBits);
+      DObjTraceline(obj,localStart,localEnd,clip->priorityMap,&objTrace);
     }
     else {
-      DObjGeomTracelinePartBits(local_74,param_1->contentmask,local_18);
-      G_DObjCalcPose(pgVar3,local_18);
-      DObjGeomTraceline(local_74,local_64,local_34,param_1->contentmask,&local_54);
+      DObjGeomTracelinePartBits(obj,clip->contentmask,partBits);
+      G_DObjCalcPose(touch_00,partBits);
+      DObjGeomTraceline(obj,localStart,localEnd,clip->contentmask,&objTrace);
     }
-    if (local_54.fraction < 1.0) {
+    if (objTrace.fraction < 1.0) {
       return -1;
     }
   }
@@ -1180,35 +1191,36 @@ int __cdecl SV_SightTracePointToEntity(sightpointtrace_t *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetupIgnoreEntParams(IgnoreEntParams *param_1,int param_2)
+void __cdecl SV_SetupIgnoreEntParams(IgnoreEntParams *ignoreEntParams,int baseEntity)
 
 {
   gentity_s *pgVar1;
   int iVar2;
   uint uVar3;
   int iVar4;
+  gentity_s *base;
   
-  param_1->baseEntity = param_2;
+  ignoreEntParams->baseEntity = baseEntity;
   pgVar1 = sv.gentities;
-  if (param_2 == 0x3ff) {
-    param_1->parentEntity = -1;
+  if (baseEntity == 0x3ff) {
+    ignoreEntParams->parentEntity = -1;
   }
   else {
-    iVar4 = sv.gentitySize * param_2;
+    iVar4 = sv.gentitySize * baseEntity;
     iVar2 = EntHandle::isDefined
                       ((EntHandle *)((int)((sv.gentities)->r).currentAngles + iVar4 + 0xc));
     if (iVar2 == 0) {
-      param_1->parentEntity = -1;
+      ignoreEntParams->parentEntity = -1;
     }
     else {
       uVar3 = EntHandle::entnum((EntHandle *)((int)(pgVar1->r).currentAngles + iVar4 + 0xc));
-      param_1->parentEntity = uVar3;
+      ignoreEntParams->parentEntity = uVar3;
     }
   }
-  param_1->ignoreSelf = true;
-  param_1->ignoreChildren = true;
-  param_1->ignoreSiblings = true;
-  param_1->ignoreParent = false;
+  ignoreEntParams->ignoreSelf = true;
+  ignoreEntParams->ignoreChildren = true;
+  ignoreEntParams->ignoreSiblings = true;
+  ignoreEntParams->ignoreParent = false;
   return;
 }
 
@@ -1221,7 +1233,7 @@ void __cdecl SV_SetupIgnoreEntParams(IgnoreEntParams *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_context_t *param_4)
+void __cdecl SV_TracePoint(trace_t *results,float *start,float *end,col_context_t *context)
 
 {
   IgnoreEntParams *pIVar1;
@@ -1230,7 +1242,7 @@ void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_co
   DWORD DVar4;
   int iVar5;
   uint uVar6;
-  float4 local_4c;
+  float4 clip;
   float local_3c;
   float local_38;
   float local_34;
@@ -1239,75 +1251,74 @@ void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_co
   int local_14;
   uchar *local_10;
   uint local_c;
+  PIXProfile pixProfile;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"SV_TracePoint");
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x340,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x341,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  CM_BoxTrace(param_1,param_2,param_3,vec3_origin,vec3_origin,param_4->mask,param_4);
-  if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+  CM_BoxTrace(results,start,end,vec3_origin,vec3_origin,context->mask,context);
+  if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x346,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (results->fraction == 1.0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    results->hitType = TRACE_HITTYPE_NONE;
+    results->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  if (param_1->fraction == 0.0) {
+  if (results->fraction == 0.0) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    TraceExtents::TraceExtents((TraceExtents *)&local_4c);
-    if (param_4->staticmodels != 0) {
-      CM_PointTraceStaticModels(param_1,param_2,param_3,param_4->mask);
-      if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+    TraceExtents::TraceExtents((TraceExtents *)&clip);
+    if (context->staticmodels != 0) {
+      CM_PointTraceStaticModels(results,start,end,context->mask);
+      if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x356,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (param_1->fraction == 0.0) {
+      if (results->fraction == 0.0) {
         DVar4 = GetCurrentThreadId();
         if (DVar4 != (DWORD)g_DXDeviceThread) {
           return;
@@ -1319,40 +1330,40 @@ void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_co
         return;
       }
     }
-    local_18 = param_4->mask;
-    local_4c.v[0] = *param_2;
-    local_4c.v[1] = param_2[1];
-    local_4c.v[2] = param_2[2];
-    local_3c = *param_3;
-    local_38 = param_3[1];
-    local_34 = param_3[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_4c);
-    local_1c = param_4->ignoreEntParams;
-    local_14 = param_4->locational;
-    local_10 = param_4->priorityMap;
-    if (((param_4->ignoreEntParams->baseEntity != 0x3ff) &&
-        (param_4->ignoreEntParams->parentEntity != -1)) &&
+    local_18 = context->mask;
+    clip.v[0] = *start;
+    clip.v[1] = start[1];
+    clip.v[2] = start[2];
+    local_3c = *end;
+    local_38 = end[1];
+    local_34 = end[2];
+    CM_CalcTraceExtents((TraceExtents *)&clip);
+    local_1c = context->ignoreEntParams;
+    local_14 = context->locational;
+    local_10 = context->priorityMap;
+    if (((context->ignoreEntParams->baseEntity != 0x3ff) &&
+        (context->ignoreEntParams->parentEntity != -1)) &&
        ((iVar5 = EntHandle::isDefined
                            ((EntHandle *)
                             ((int)((sv.gentities)->r).currentAngles +
-                            sv.gentitySize * param_4->ignoreEntParams->baseEntity + 0xc)),
+                            sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc)),
         iVar5 == 0 ||
-        (pIVar1 = param_4->ignoreEntParams,
+        (pIVar1 = context->ignoreEntParams,
         uVar6 = EntHandle::entnum((EntHandle *)
                                   ((int)((sv.gentities)->r).currentAngles +
-                                  sv.gentitySize * param_4->ignoreEntParams->baseEntity + 0xc)),
+                                  sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc)),
         pIVar1->parentEntity != uVar6)))) {
       iVar5 = EntHandle::isDefined
                         ((EntHandle *)
                          ((int)((sv.gentities)->r).currentAngles +
-                         sv.gentitySize * param_4->ignoreEntParams->baseEntity + 0xc));
+                         sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc));
       if (iVar5 == 0) {
         uVar6 = 0x3ff;
       }
       else {
         uVar6 = EntHandle::entnum((EntHandle *)
                                   ((int)((sv.gentities)->r).currentAngles +
-                                  sv.gentitySize * param_4->ignoreEntParams->baseEntity + 0xc));
+                                  sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc));
       }
       va("base: %d; parent: %d; base\'s parent: %d\n");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x363,0,
@@ -1363,9 +1374,9 @@ void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_co
         return;
       }
     }
-    CM_PointTraceToEntities((pointtrace_t *)&local_4c,param_1,param_4);
-    DynEntSv_PointTrace((pointtrace_t *)&local_4c,param_1);
-    GlassSv_PointTrace((pointtrace_t *)&local_4c,param_1);
+    CM_PointTraceToEntities((pointtrace_t *)&clip,results,context);
+    DynEntSv_PointTrace((pointtrace_t *)&clip,results);
+    GlassSv_PointTrace((pointtrace_t *)&clip,results);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1384,8 +1395,8 @@ void __cdecl SV_TracePoint(trace_t *param_1,float *param_2,float *param_3,col_co
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-SV_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-               col_context_t *param_6)
+SV_TraceCapsule(trace_t *results,float *start,float *mins,float *maxs,float *end,
+               col_context_t *context)
 
 {
   IgnoreEntParams *pIVar1;
@@ -1394,148 +1405,145 @@ SV_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,fl
   DWORD DVar4;
   int iVar5;
   uint uVar6;
-  moveclip_t local_7c;
+  float fVar7;
+  float fVar8;
+  float fVar9;
+  moveclip_t clip;
   uint local_18;
-  float local_10;
-  float local_c;
-  float local_8;
+  PIXProfile pixProfile;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"SV_TraceCapsule");
-  if ((param_3 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((*param_4 < *param_3) &&
+  if ((*maxs < *mins) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4[1] < param_3[1]) &&
+  if ((maxs[1] < mins[1]) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4[2] < param_3[2]) &&
+  if ((maxs[2] < mins[2]) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*mins & 0x7f800000) == 0x7f800000) || (((uint)mins[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)mins[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*maxs & 0x7f800000) == 0x7f800000) || (((uint)maxs[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)maxs[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x375,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x376,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_5 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x377,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  CM_BoxTrace(param_1,param_2,param_5,param_3,param_4,param_6->mask,param_6);
-  if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+  CM_BoxTrace(results,start,end,mins,maxs,context->mask,context);
+  if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x37c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (results->fraction == 1.0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    results->hitType = TRACE_HITTYPE_NONE;
+    results->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\server_mp\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  if (param_1->fraction == 0.0) {
+  if (results->fraction == 0.0) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    TraceExtents::TraceExtents(&local_7c.extents);
-    local_7c.contentmask = param_6->mask;
-    local_7c.passEntityNum = param_6->ignoreEntParams->baseEntity;
-    if (((param_6->ignoreEntParams->baseEntity != 0x3ff) &&
-        (param_6->ignoreEntParams->parentEntity != -1)) &&
+    TraceExtents::TraceExtents(&clip.extents);
+    clip.contentmask = context->mask;
+    clip.passEntityNum = context->ignoreEntParams->baseEntity;
+    if (((context->ignoreEntParams->baseEntity != 0x3ff) &&
+        (context->ignoreEntParams->parentEntity != -1)) &&
        ((iVar5 = EntHandle::isDefined
                            ((EntHandle *)
                             ((int)((sv.gentities)->r).currentAngles +
-                            sv.gentitySize * param_6->ignoreEntParams->baseEntity + 0xc)),
+                            sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc)),
         iVar5 == 0 ||
-        (pIVar1 = param_6->ignoreEntParams,
+        (pIVar1 = context->ignoreEntParams,
         uVar6 = EntHandle::entnum((EntHandle *)
                                   ((int)((sv.gentities)->r).currentAngles +
-                                  sv.gentitySize * param_6->ignoreEntParams->baseEntity + 0xc)),
+                                  sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc)),
         pIVar1->parentEntity != uVar6)))) {
       iVar5 = EntHandle::isDefined
                         ((EntHandle *)
                          ((int)((sv.gentities)->r).currentAngles +
-                         sv.gentitySize * param_6->ignoreEntParams->baseEntity + 0xc));
+                         sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc));
       if (iVar5 == 0) {
         uVar6 = 0x3ff;
       }
       else {
         uVar6 = EntHandle::entnum((EntHandle *)
                                   ((int)((sv.gentities)->r).currentAngles +
-                                  sv.gentitySize * param_6->ignoreEntParams->baseEntity + 0xc));
+                                  sv.gentitySize * context->ignoreEntParams->baseEntity + 0xc));
       }
       va("base: %d; parent: %d; base\'s parent: %d\n");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x38b,0,
@@ -1546,29 +1554,29 @@ SV_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,fl
         return;
       }
     }
-    local_7c.passOwnerNum = param_6->ignoreEntParams->parentEntity;
-    local_7c.maxs[0] = (*param_4 - *param_3) * 0.5;
-    local_7c.maxs[1] = (param_4[1] - param_3[1]) * 0.5;
-    local_7c.maxs[2] = (param_4[2] - param_3[2]) * 0.5;
-    local_7c.mins[0] = local_7c.maxs[0] * -1.0;
-    local_7c.mins[1] = local_7c.maxs[1] * -1.0;
-    local_7c.mins[2] = local_7c.maxs[2] * -1.0;
-    local_7c.outerSize[0] = local_7c.maxs[0] + 1.0;
-    local_7c.outerSize[1] = local_7c.maxs[1] + 1.0;
-    local_7c.outerSize[2] = local_7c.maxs[2] + 1.0;
-    local_10 = (*param_4 + *param_3) * 0.5;
-    local_c = (param_4[1] + param_3[1]) * 0.5;
-    local_8 = (param_4[2] + param_3[2]) * 0.5;
-    local_7c.extents.start.vec.v[0] = *param_2 + local_10;
-    local_7c.extents.start.vec.v[1] = param_2[1] + local_c;
-    local_7c.extents.start.vec.v[2] = param_2[2] + local_8;
-    local_7c.extents.end.vec.v[0] = *param_5 + local_10;
-    local_7c.extents.end.vec.v[1] = param_5[1] + local_c;
-    local_7c.extents.end.vec.v[2] = param_5[2] + local_8;
-    CM_CalcTraceExtents(&local_7c.extents);
-    CM_ClipMoveToEntities(&local_7c,param_1);
-    DynEntSv_ClipMoveTrace(&local_7c,param_1);
-    GlassSv_ClipMoveTrace(&local_7c,param_1);
+    clip.passOwnerNum = context->ignoreEntParams->parentEntity;
+    clip.maxs[0] = (*maxs - *mins) * 0.5;
+    clip.maxs[1] = (maxs[1] - mins[1]) * 0.5;
+    clip.maxs[2] = (maxs[2] - mins[2]) * 0.5;
+    clip.mins[0] = clip.maxs[0] * -1.0;
+    clip.mins[1] = clip.maxs[1] * -1.0;
+    clip.mins[2] = clip.maxs[2] * -1.0;
+    clip.outerSize[0] = clip.maxs[0] + 1.0;
+    clip.outerSize[1] = clip.maxs[1] + 1.0;
+    clip.outerSize[2] = clip.maxs[2] + 1.0;
+    fVar7 = (*maxs + *mins) * 0.5;
+    fVar8 = (maxs[1] + mins[1]) * 0.5;
+    fVar9 = (maxs[2] + mins[2]) * 0.5;
+    clip.extents.start.vec.v[0] = *start + fVar7;
+    clip.extents.start.vec.v[1] = start[1] + fVar8;
+    clip.extents.start.vec.v[2] = start[2] + fVar9;
+    clip.extents.end.vec.v[0] = *end + fVar7;
+    clip.extents.end.vec.v[1] = end[1] + fVar8;
+    clip.extents.end.vec.v[2] = end[2] + fVar9;
+    CM_CalcTraceExtents(&clip.extents);
+    CM_ClipMoveToEntities(&clip,results);
+    DynEntSv_ClipMoveTrace(&clip,results);
+    GlassSv_ClipMoveTrace(&clip,results);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1582,8 +1590,7 @@ SV_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,fl
 
 int __cdecl
 SV_SightTraceCapsule
-          (int *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-          col_context_t *param_6)
+          (int *hitNum,float *start,float *mins,float *maxs,float *end,col_context_t *context)
 
 {
   code *pcVar1;
@@ -1591,117 +1598,111 @@ SV_SightTraceCapsule
   int iVar3;
   DWORD DVar4;
   uint local_60;
-  sightclip_t local_5c;
-  float local_10;
-  float local_c;
-  float local_8;
+  sightclip_t clip;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"SV_SightTrace");
-  if ((param_3 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((*param_4 < *param_3) &&
+  if ((*maxs < *mins) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4[1] < param_3[1]) &&
+  if ((maxs[1] < mins[1]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4[2] < param_3[2]) &&
+  if ((maxs[2] < mins[2]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*mins & 0x7f800000) == 0x7f800000) || (((uint)mins[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)mins[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*maxs & 0x7f800000) == 0x7f800000) || (((uint)maxs[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)maxs[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3ae,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_5 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3af,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = CM_BoxSightTrace(*param_1,param_2,param_5,param_3,param_4,0,param_6->mask);
-  *param_1 = iVar3;
-  if (*param_1 == 0) {
-    if ((((((*param_4 - *param_3) + param_4[1]) - param_3[1]) + param_4[2]) - param_3[2] == 0.0) &&
+  iVar3 = CM_BoxSightTrace(*hitNum,start,end,mins,maxs,0,context->mask);
+  *hitNum = iVar3;
+  if (*hitNum == 0) {
+    if ((((((*maxs - *mins) + maxs[1]) - mins[1]) + maxs[2]) - mins[2] == 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3b6,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_5c.contentmask = param_6->mask;
-    local_5c.passEntityNum[0] = param_6->passEntityNum0;
-    local_5c.passEntityNum[1] = param_6->passEntityNum1;
-    local_5c.maxs[0] = (*param_4 - *param_3) * 0.5;
-    local_5c.maxs[1] = (param_4[1] - param_3[1]) * 0.5;
-    local_5c.maxs[2] = (param_4[2] - param_3[2]) * 0.5;
-    local_5c.mins[0] = local_5c.maxs[0] * -1.0;
-    local_5c.mins[1] = local_5c.maxs[1] * -1.0;
-    local_5c.mins[2] = local_5c.maxs[2] * -1.0;
-    local_5c.outerSize[0] = local_5c.maxs[0] + 1.0;
-    local_5c.outerSize[1] = local_5c.maxs[1] + 1.0;
-    local_5c.outerSize[2] = local_5c.maxs[2] + 1.0;
-    local_10 = (*param_4 + *param_3) * 0.5;
-    local_c = (param_4[1] + param_3[1]) * 0.5;
-    local_8 = (param_4[2] + param_3[2]) * 0.5;
-    local_5c.start[0] = *param_2 + local_10;
-    local_5c.start[1] = param_2[1] + local_c;
-    local_5c.start[2] = param_2[2] + local_8;
-    local_5c.end[0] = *param_5 + local_10;
-    local_5c.end[1] = param_5[1] + local_c;
-    local_5c.end[2] = param_5[2] + local_8;
-    iVar3 = CM_ClipSightTraceToEntities(&local_5c);
-    *param_1 = iVar3;
-    local_60 = (uint)(*param_1 == 0);
+    clip.contentmask = context->mask;
+    clip.passEntityNum[0] = context->passEntityNum0;
+    clip.passEntityNum[1] = context->passEntityNum1;
+    clip.maxs[0] = (*maxs - *mins) * 0.5;
+    clip.maxs[1] = (maxs[1] - mins[1]) * 0.5;
+    clip.maxs[2] = (maxs[2] - mins[2]) * 0.5;
+    clip.mins[0] = clip.maxs[0] * -1.0;
+    clip.mins[1] = clip.maxs[1] * -1.0;
+    clip.mins[2] = clip.maxs[2] * -1.0;
+    clip.outerSize[0] = clip.maxs[0] + 1.0;
+    clip.outerSize[1] = clip.maxs[1] + 1.0;
+    clip.outerSize[2] = clip.maxs[2] + 1.0;
+    clip.end[0] = (*maxs + *mins) * 0.5;
+    clip.end[1] = (maxs[1] + mins[1]) * 0.5;
+    clip.end[2] = (maxs[2] + mins[2]) * 0.5;
+    clip.start[0] = *start + clip.end[0];
+    clip.start[1] = start[1] + clip.end[1];
+    clip.start[2] = start[2] + clip.end[2];
+    clip.end[0] = *end + clip.end[0];
+    clip.end[1] = end[1] + clip.end[1];
+    clip.end[2] = end[2] + clip.end[2];
+    iVar3 = CM_ClipSightTraceToEntities(&clip);
+    *hitNum = iVar3;
+    local_60 = (uint)(*hitNum == 0);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1720,7 +1721,7 @@ SV_SightTraceCapsule
 
 // 007234E0  SV_SightTracePoint  (server/sv_world.cpp:980)
 
-int __cdecl SV_SightTracePoint(int *param_1,float *param_2,float *param_3,col_context_t *param_4)
+int __cdecl SV_SightTracePoint(int *hitNum,float *start,float *end,col_context_t *context)
 
 {
   code *pcVar1;
@@ -1728,46 +1729,45 @@ int __cdecl SV_SightTracePoint(int *param_1,float *param_2,float *param_3,col_co
   int iVar3;
   DWORD DVar4;
   uint local_38;
-  sightpointtrace_t local_34;
+  sightpointtrace_t clip;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"SV_SightTracePoint");
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3d7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_world.cpp",0x3d8,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = CM_SightTracePoint(*param_1,param_2,param_3,param_4);
-  *param_1 = iVar3;
-  if (*param_1 == 0) {
-    if ((param_4->staticmodels == 0) ||
-       (iVar3 = CM_PointTraceStaticModelsComplete(param_2,param_3,param_4->mask), iVar3 != 0)) {
-      local_34.contentmask = param_4->mask;
-      local_34.start[0] = *param_2;
-      local_34.start[1] = param_2[1];
-      local_34.start[2] = param_2[2];
-      local_34.end[0] = *param_3;
-      local_34.end[1] = param_3[1];
-      local_34.end[2] = param_3[2];
-      local_34.passEntityNum[0] = param_4->passEntityNum0;
-      local_34.passEntityNum[1] = param_4->passEntityNum1;
-      local_34.locational = param_4->locational;
-      local_34.priorityMap = param_4->priorityMap;
-      iVar3 = CM_PointSightTraceToEntities(&local_34);
-      *param_1 = iVar3;
-      local_38 = (uint)(*param_1 == 0);
+  iVar3 = CM_SightTracePoint(*hitNum,start,end,context);
+  *hitNum = iVar3;
+  if (*hitNum == 0) {
+    if ((context->staticmodels == 0) ||
+       (iVar3 = CM_PointTraceStaticModelsComplete(start,end,context->mask), iVar3 != 0)) {
+      clip.contentmask = context->mask;
+      clip.start[0] = *start;
+      clip.start[1] = start[1];
+      clip.start[2] = start[2];
+      clip.end[0] = *end;
+      clip.end[1] = end[1];
+      clip.end[2] = end[2];
+      clip.passEntityNum[0] = context->passEntityNum0;
+      clip.passEntityNum[1] = context->passEntityNum1;
+      clip.locational = context->locational;
+      clip.priorityMap = context->priorityMap;
+      iVar3 = CM_PointSightTraceToEntities(&clip);
+      *hitNum = iVar3;
+      local_38 = (uint)(*hitNum == 0);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1800,50 +1800,55 @@ int __cdecl SV_SightTracePoint(int *param_1,float *param_2,float *param_3,col_co
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_PointContents(float *param_1,int param_2,int param_3)
+int __cdecl SV_PointContents(float *p,int passEntityNum,int contentmask)
 
 {
   uint uVar1;
-  int local_101c [1025];
-  uint local_18;
-  uint local_14;
-  gentity_s *local_10;
-  int local_c;
-  int local_8;
+  int touch [1025];
+  int contents;
+  uint clipHandle;
+  gentity_s *hit;
+  int num;
+  int i;
   
-  local_8 = 0x7237ad;
-  local_18 = CM_PointContents(param_1,0);
-  local_c = CM_AreaEntities(param_1,param_1,local_101c,0x400,param_3);
-  for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-    if (local_101c[local_8] != param_2) {
-      local_10 = (gentity_s *)
-                 ((int)((sv.gentities)->s).lerp.pos.trBase +
-                 sv.gentitySize * local_101c[local_8] + -0x18);
-      local_14 = SV_ClipHandleForEntity(local_10);
+  i = 0x7237ad;
+  contents = CM_PointContents(p,0);
+  num = CM_AreaEntities(p,p,touch,0x400,contentmask);
+  for (i = 0; i < num; i = i + 1) {
+    if (touch[i] != passEntityNum) {
+      hit = (gentity_s *)
+            ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * touch[i] + -0x18);
+      clipHandle = SV_ClipHandleForEntity(hit);
       uVar1 = CM_TransformedPointContents
-                        (param_1,local_14,(local_10->r).currentOrigin,(local_10->r).currentAngles);
-      local_18 = uVar1 | local_18;
+                        (p,clipHandle,(hit->r).currentOrigin,(hit->r).currentAngles);
+      contents = uVar1 | contents;
     }
   }
-  return local_18 & param_3;
+  return contents & contentmask;
 }
 
 
 // 00723880  G_TraceCapsule  (server/sv_world.cpp:1041)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-G_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-              int param_6,int param_7,col_context_t *param_8)
+G_TraceCapsule(trace_t *results,float *start,float *mins,float *maxs,float *end,int passEntityNum,
+              int contentmask,col_context_t *context)
 
 {
   DWORD DVar1;
-  IgnoreEntParams local_14;
+  IgnoreEntParams ignoreEntParams;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"G_TraceCapsule");
-  SV_SetupIgnoreEntParams(&local_14,param_6);
-  param_8->ignoreEntParams = &local_14;
-  param_8->mask = param_7;
-  SV_TraceCapsule(param_1,param_2,param_3,param_4,param_5,param_8);
+  SV_SetupIgnoreEntParams(&ignoreEntParams,passEntityNum);
+  context->ignoreEntParams = &ignoreEntParams;
+  context->mask = contentmask;
+  SV_TraceCapsule(results,start,mins,maxs,end,context);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1854,42 +1859,53 @@ G_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,flo
 
 // 00723910  G_LocationalTrace  (server/sv_world.cpp:1052)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-G_LocationalTrace(trace_t *param_1,float *param_2,float *param_3,int param_4,int param_5,
-                 uchar *param_6,_func___cdecl_int_int_col_context_t_ptr *param_7)
+G_LocationalTrace(trace_t *results,float *start,float *end,int passEntityNum,int contentmask,
+                 uchar *priorityMap,_func___cdecl_int_int_col_context_t_ptr *collide_entity_func)
 
 {
-  IgnoreEntParams local_38;
-  col_context_t local_2c;
+  IgnoreEntParams ignoreEntParams;
+  col_context_t context;
   
-  SV_SetupIgnoreEntParams(&local_38,param_4);
-  col_context_t::col_context_t(&local_2c,param_5);
-  local_2c.ignoreEntParams = &local_38;
-  col_context_t::init_locational(&local_2c,param_4);
-  local_2c.priorityMap = param_6;
-  local_2c.collide_entity_func = param_7;
-  SV_TracePoint(param_1,param_2,param_3,&local_2c);
+  SV_SetupIgnoreEntParams(&ignoreEntParams,passEntityNum);
+  col_context_t::col_context_t(&context,contentmask);
+  context.ignoreEntParams = &ignoreEntParams;
+  col_context_t::init_locational(&context,passEntityNum);
+  context.priorityMap = priorityMap;
+  context.collide_entity_func = collide_entity_func;
+  SV_TracePoint(results,start,end,&context);
   return;
 }
 
 
 // 00723970  G_LocationalTraceAllowChildren  (server/sv_world.cpp:1064)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
 G_LocationalTraceAllowChildren
-          (trace_t *param_1,float *param_2,float *param_3,int param_4,int param_5,uchar *param_6)
+          (trace_t *results,float *start,float *end,int passEntityNum,int contentmask,
+          uchar *priorityMap)
 
 {
-  IgnoreEntParams local_38;
-  col_context_t local_2c;
+  IgnoreEntParams ignoreEntParams;
+  col_context_t context;
   
-  SV_SetupIgnoreEntParams(&local_38,param_4);
-  local_38.ignoreChildren = false;
-  col_context_t::col_context_t(&local_2c,param_5);
-  local_2c.ignoreEntParams = &local_38;
-  col_context_t::init_locational(&local_2c,param_4);
-  local_2c.priorityMap = param_6;
-  SV_TracePoint(param_1,param_2,param_3,&local_2c);
+  SV_SetupIgnoreEntParams(&ignoreEntParams,passEntityNum);
+  ignoreEntParams.ignoreChildren = false;
+  col_context_t::col_context_t(&context,contentmask);
+  context.ignoreEntParams = &ignoreEntParams;
+  col_context_t::init_locational(&context,passEntityNum);
+  context.priorityMap = priorityMap;
+  SV_TracePoint(results,start,end,&context);
   return;
 }
 

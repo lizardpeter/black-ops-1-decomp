@@ -425,8 +425,8 @@ _HTBind_getFormat(undefined4 param_1,undefined4 *param_2,undefined4 *param_3,und
 
 {
   char *pcVar1;
-  byte *pbVar2;
-  int iVar3;
+  byte *str2;
+  int iVar2;
   int extraout_EAX;
   undefined4 *local_24;
   undefined4 *local_20;
@@ -448,13 +448,13 @@ _HTBind_getFormat(undefined4 param_1,undefined4 *param_2,undefined4 *param_3,und
   _HTUnEscape(local_8);
   pcVar1 = strtok(local_8,DAT_0b54809c);
   if (pcVar1 != (char *)0x0) {
-    while (pbVar2 = (byte *)strtok((char *)0x0,DAT_0b54809c), pbVar2 != (byte *)0x0) {
+    while (str2 = (byte *)strtok((char *)0x0,DAT_0b54809c), str2 != (byte *)0x0) {
       local_18 = (undefined4 *)0x0;
       local_c = local_c + 1;
       local_1c = 0;
-      for (local_14 = pbVar2; *local_14 != 0; local_14 = local_14 + 1) {
-        iVar3 = tolower((uint)*local_14);
-        local_1c = (iVar3 + local_1c * 3) % 0x65;
+      for (local_14 = str2; *local_14 != 0; local_14 = local_14 + 1) {
+        iVar2 = tolower((uint)*local_14);
+        local_1c = (iVar2 + local_1c * 3) % 0x65;
       }
       if (*(int *)(DAT_0b5480a0 + local_1c * 4) != 0) {
         local_20 = *(undefined4 **)(DAT_0b5480a0 + local_1c * 4);
@@ -468,8 +468,8 @@ _HTBind_getFormat(undefined4 param_1,undefined4 *param_2,undefined4 *param_3,und
           }
           local_18 = local_24;
           if (local_24 == (undefined4 *)0x0) goto LAB_00bc7ff9;
-        } while (((DAT_00e1bba0 == 0) || (strcmp((uchar *)*local_24,pbVar2), extraout_EAX != 0)) &&
-                (iVar3 = strcasecomp(*local_24,pbVar2), iVar3 != 0));
+        } while (((DAT_00e1bba0 == 0) || (strcmp((uchar *)*local_24,str2), extraout_EAX != 0)) &&
+                (iVar2 = strcasecomp(*local_24,str2), iVar2 != 0));
         if ((local_24[1] != 0) && (param_2 != (undefined4 *)0x0)) {
           *param_2 = local_24[1];
         }

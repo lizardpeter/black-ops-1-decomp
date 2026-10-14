@@ -10,16 +10,18 @@
 
 void __cdecl
 SV_EmitPacketEntities_GetNewEnt
-          (int param_1,int param_2,int param_3,entityState_s **param_4,int *param_5)
+          (int oldindex,int from_num_entities,int from_first_entity,entityState_s **oldent,
+          int *oldnum)
 
 {
-  if (param_1 < param_2) {
-    *param_4 = svsHeader.snapshotEntities + (param_3 + param_1) % svsHeader.numSnapshotEntities;
-    *param_5 = (*param_4)->number;
+  if (oldindex < from_num_entities) {
+    *oldent = svsHeader.snapshotEntities +
+              (from_first_entity + oldindex) % svsHeader.numSnapshotEntities;
+    *oldnum = (*oldent)->number;
   }
   else {
-    *param_4 = (entityState_s *)0x0;
-    *param_5 = 9999;
+    *oldent = (entityState_s *)0x0;
+    *oldnum = 9999;
   }
   return;
 }
@@ -29,13 +31,13 @@ SV_EmitPacketEntities_GetNewEnt
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_EmitPacketEntities_DebugStart(int *param_1,msg_t *param_2)
+void __cdecl SV_EmitPacketEntities_DebugStart(int *quickBits,msg_t *msg)
 
 {
   int iVar1;
   
-  iVar1 = MSG_GetUsedBitCount(param_2);
-  *param_1 = iVar1;
+  iVar1 = MSG_GetUsedBitCount(msg);
+  *quickBits = iVar1;
   return;
 }
 
@@ -46,23 +48,24 @@ void __cdecl SV_EmitPacketEntities_DebugStart(int *param_1,msg_t *param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-SV_EmitPacketEntities_Debug(SnapshotInfo_s *param_1,int *param_2,msg_t *param_3,char *param_4)
+SV_EmitPacketEntities_Debug(SnapshotInfo_s *snapInfo,int *quickBits,msg_t *msg,char *str)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char *ap;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = MSG_GetUsedBitCount(param_3);
-  *param_2 = iVar1 - *param_2;
-  if ((((param_2 != (int *)0x0) && (0 < (sv_debugPacketContentsQuick->current).integer)) &&
-      (param_1->archived == false)) &&
-     (sv_quickBitsTotal = sv_quickBitsTotal + *param_2, param_3 != (msg_t *)0x0)) {
-    _vsnprintf(local_40c,0x400,param_4,&stack0x00000014);
-    CG_QuickPrint(local_40c);
+  iVar1 = MSG_GetUsedBitCount(msg);
+  *quickBits = iVar1 - *quickBits;
+  if ((((quickBits != (int *)0x0) && (0 < (sv_debugPacketContentsQuick->current).integer)) &&
+      (snapInfo->archived == false)) &&
+     (sv_quickBitsTotal = sv_quickBitsTotal + *quickBits, msg != (msg_t *)0x0)) {
+    _vsnprintf(text,0x400,str,&stack0x00000014);
+    CG_QuickPrint(text);
   }
-  if (*param_2 != 0) {
+  if (*quickBits != 0) {
     g_entsTransmitted = g_entsTransmitted + 1;
   }
   return;
@@ -80,50 +83,54 @@ SV_EmitPacketEntities_Debug(SnapshotInfo_s *param_1,int *param_2,msg_t *param_3,
 
 void __cdecl
 SV_EmitPacketEntities
-          (SnapshotInfo_s *param_1,int param_2,int param_3,int param_4,int param_5,msg_t *param_6)
+          (SnapshotInfo_s *snapInfo,int from_num_entities,int from_first_entity,int to_num_entities,
+          int to_first_entity,msg_t *msg)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  int local_430;
-  entityState_s *local_42c;
-  int local_428;
-  int local_424;
-  int local_420;
-  uchar local_41c [1024];
+  int number;
+  DeltaFlags flags;
+  int bitsUsed;
+  int newnum;
+  entityState_s *oldent;
+  int oldindex;
+  int oldnum;
+  int newindex;
+  uchar entityFound [1024];
   uint local_1c;
-  entityState_s *local_18;
-  entityState_s *local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  entityState_s *baseline;
+  entityState_s *newent;
+  int bitsStart;
+  int quickBits;
+  int total_bits;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = MSG_GetUsedBitCount(param_6);
-  local_c = 0;
-  local_8 = 0;
-  local_8 = MSG_GetUsedBitCount(param_6);
-  MSG_ClearLastReferencedEntity(param_6);
-  memset(local_41c,'\0',0x400);
+  bitsStart = MSG_GetUsedBitCount(msg);
+  quickBits = 0;
+  total_bits = 0;
+  total_bits = MSG_GetUsedBitCount(msg);
+  MSG_ClearLastReferencedEntity(msg);
+  memset(entityFound,'\0',0x400);
   g_entsTransmitted = 0;
   g_entsDeltaCompared = 0;
   g_entsClientOnce = 0;
-  local_14 = (entityState_s *)0x0;
-  local_42c = (entityState_s *)0x0;
-  local_420 = 0;
-  local_428 = 0;
+  newent = (entityState_s *)0x0;
+  oldent = (entityState_s *)0x0;
+  newindex = 0;
+  oldindex = 0;
   do {
-    if ((param_4 <= local_420) && (param_2 <= local_428)) {
-      MSG_WriteEntityIndex(param_1,param_6,0x3ff,10);
-      MSG_GetUsedBitCount(param_6);
+    if ((to_num_entities <= newindex) && (from_num_entities <= oldindex)) {
+      MSG_WriteEntityIndex(snapInfo,msg,0x3ff,10);
+      MSG_GetUsedBitCount(msg);
       return;
     }
-    SV_EmitPacketEntities_GetNewEnt(local_420,param_4,param_5,&local_14,&local_430);
-    SV_EmitPacketEntities_GetNewEnt(local_428,param_2,param_3,&local_42c,&local_424);
-    GamerProfile_WriteSettings((int)local_42c);
-    if (local_430 <= local_424) {
-      iVar1 = local_14->number;
+    SV_EmitPacketEntities_GetNewEnt(newindex,to_num_entities,to_first_entity,&newent,&newnum);
+    SV_EmitPacketEntities_GetNewEnt(oldindex,from_num_entities,from_first_entity,&oldent,&oldnum);
+    GamerProfile_WriteSettings((int)oldent);
+    if (newnum <= oldnum) {
+      iVar1 = newent->number;
       if (((iVar1 < 0) || (0x3ff < iVar1)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x199,0,"%s\n\t(number) = %i"), !bVar3)) {
@@ -131,7 +138,7 @@ SV_EmitPacketEntities
         (*pcVar2)();
         return;
       }
-      if (local_41c[iVar1] != '\0') {
+      if (entityFound[iVar1] != '\0') {
         va(
           "number is %i, oldnum is %i, newnum is %i, to_first is %i, from_first is %i, newindex is %i, oldindex is %i"
           );
@@ -143,35 +150,34 @@ SV_EmitPacketEntities
           return;
         }
       }
-      local_41c[iVar1] = '\x01';
+      entityFound[iVar1] = '\x01';
     }
-    SV_EmitPacketEntities_DebugStart(&local_c,param_6);
-    if (local_430 == local_424) {
-      MSG_WriteEntity(param_1,param_6,svsHeader.time,local_42c,local_14,DELTA_FLAGS_NONE);
-      SV_EmitPacketEntities_Debug(param_1,&local_c,param_6,"Entity %d delta %d bits%s\n");
-      local_428 = local_428 + 1;
-      local_420 = local_420 + 1;
+    SV_EmitPacketEntities_DebugStart(&quickBits,msg);
+    if (newnum == oldnum) {
+      MSG_WriteEntity(snapInfo,msg,svsHeader.time,oldent,newent,DELTA_FLAGS_NONE);
+      SV_EmitPacketEntities_Debug(snapInfo,&quickBits,msg,"Entity %d delta %d bits%s\n");
+      oldindex = oldindex + 1;
+      newindex = newindex + 1;
     }
-    else if (local_430 < local_424) {
-      local_18 = &svsHeader.svEntities[local_430].baseline.s;
-      if (((archivedEntity_s *)local_18 == (archivedEntity_s *)0x0) &&
+    else if (newnum < oldnum) {
+      baseline = &svsHeader.svEntities[newnum].baseline.s;
+      if (((archivedEntity_s *)baseline == (archivedEntity_s *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x1ce,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      param_1->fromBaseline = true;
-      MSG_WriteEntity(param_1,param_6,svsHeader.time,local_18,local_14,DELTA_FLAGS_FORCE);
-      param_1->fromBaseline = false;
-      SV_EmitPacketEntities_Debug(param_1,&local_c,param_6,"Entity %d delta %d bits%s\n");
-      local_420 = local_420 + 1;
+      snapInfo->fromBaseline = true;
+      MSG_WriteEntity(snapInfo,msg,svsHeader.time,baseline,newent,DELTA_FLAGS_FORCE);
+      snapInfo->fromBaseline = false;
+      SV_EmitPacketEntities_Debug(snapInfo,&quickBits,msg,"Entity %d delta %d bits%s\n");
+      newindex = newindex + 1;
     }
-    else if (local_424 < local_430) {
-      MSG_WriteEntity(param_1,param_6,svsHeader.time,local_42c,(entityState_s *)0x0,
-                      DELTA_FLAGS_FORCE);
-      SV_EmitPacketEntities_Debug(param_1,&local_c,param_6,(char *)0x0);
-      local_428 = local_428 + 1;
+    else if (oldnum < newnum) {
+      MSG_WriteEntity(snapInfo,msg,svsHeader.time,oldent,(entityState_s *)0x0,DELTA_FLAGS_FORCE);
+      SV_EmitPacketEntities_Debug(snapInfo,&quickBits,msg,(char *)0x0);
+      oldindex = oldindex + 1;
     }
   } while( true );
 }
@@ -187,16 +193,18 @@ SV_EmitPacketEntities
 
 void __cdecl
 SV_EmitPacketClients_GetNewClient
-          (int param_1,int param_2,int param_3,clientState_s **param_4,int *param_5)
+          (int oldindex,int from_num_clients,int from_first_client,clientState_s **oldclient,
+          int *oldnum)
 
 {
-  if (param_1 < param_2) {
-    *param_4 = svsHeader.snapshotClients + (param_3 + param_1) % svsHeader.numSnapshotClients;
-    *param_5 = (*param_4)->clientIndex;
+  if (oldindex < from_num_clients) {
+    *oldclient = svsHeader.snapshotClients +
+                 (from_first_client + oldindex) % svsHeader.numSnapshotClients;
+    *oldnum = (*oldclient)->clientIndex;
   }
   else {
-    *param_4 = (clientState_s *)0x0;
-    *param_5 = 9999;
+    *oldclient = (clientState_s *)0x0;
+    *oldnum = 9999;
   }
   return;
 }
@@ -204,28 +212,30 @@ SV_EmitPacketClients_GetNewClient
 
 // 007189C0  SV_EmitPacketClients  (server_mp/sv_snapshot_mp.cpp:635)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
 SV_EmitPacketClients
-          (SnapshotInfo_s *param_1,int param_2,int param_3,int param_4,int param_5,msg_t *param_6)
+          (SnapshotInfo_s *snapInfo,int from_num_clients,int from_first_client,int to_num_clients,
+          int to_first_client,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_20;
-  clientState_s *local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  clientState_s *local_c;
-  int local_8;
+  int bitsUsed;
+  int newnum;
+  clientState_s *oldclient;
+  int oldindex;
+  int oldnum;
+  int newindex;
+  clientState_s *newclient;
+  int bitsStart;
   
-  local_8 = MSG_GetUsedBitCount(param_6);
+  bitsStart = MSG_GetUsedBitCount(msg);
   if ((svsHeaderValid == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0x286,0,"%s"), !bVar2)) {
@@ -233,36 +243,38 @@ SV_EmitPacketClients
     (*pcVar1)();
     return;
   }
-  MSG_ClearLastReferencedEntity(param_6);
-  local_c = (clientState_s *)0x0;
-  local_1c = (clientState_s *)0x0;
-  local_10 = 0;
-  local_18 = 0;
+  MSG_ClearLastReferencedEntity(msg);
+  newclient = (clientState_s *)0x0;
+  oldclient = (clientState_s *)0x0;
+  newindex = 0;
+  oldindex = 0;
   while( true ) {
     do {
       while( true ) {
         while( true ) {
-          if ((param_4 <= local_10) && (param_2 <= local_18)) {
-            MSG_WriteBit0(param_6);
+          if ((to_num_clients <= newindex) && (from_num_clients <= oldindex)) {
+            MSG_WriteBit0(msg);
             return;
           }
-          SV_EmitPacketClients_GetNewClient(local_10,param_4,param_5,&local_c,&local_20);
-          SV_EmitPacketClients_GetNewClient(local_18,param_2,param_3,&local_1c,&local_14);
-          GamerProfile_WriteSettings((int)local_1c);
-          if (local_20 != local_14) break;
-          MSG_WriteDeltaClient(param_1,param_6,svsHeader.time,local_1c,local_c,0);
-          local_18 = local_18 + 1;
-          local_10 = local_10 + 1;
+          SV_EmitPacketClients_GetNewClient
+                    (newindex,to_num_clients,to_first_client,&newclient,&newnum);
+          SV_EmitPacketClients_GetNewClient
+                    (oldindex,from_num_clients,from_first_client,&oldclient,&oldnum);
+          GamerProfile_WriteSettings((int)oldclient);
+          if (newnum != oldnum) break;
+          MSG_WriteDeltaClient(snapInfo,msg,svsHeader.time,oldclient,newclient,0);
+          oldindex = oldindex + 1;
+          newindex = newindex + 1;
         }
-        if (local_14 <= local_20) break;
-        MSG_WriteDeltaClient(param_1,param_6,svsHeader.time,(clientState_s *)0x0,local_c,1);
-        local_10 = local_10 + 1;
+        if (oldnum <= newnum) break;
+        MSG_WriteDeltaClient(snapInfo,msg,svsHeader.time,(clientState_s *)0x0,newclient,1);
+        newindex = newindex + 1;
       }
-    } while (local_20 <= local_14);
-    if ((local_1c == (clientState_s *)0x0) &&
+    } while (newnum <= oldnum);
+    if ((oldclient == (clientState_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x2c4,0,"%s"), !bVar2)) break;
-    if (local_1c->clientIndex <= param_6->lastEntityRef) {
+    if (oldclient->clientIndex <= msg->lastEntityRef) {
       Com_PrintError(0xf,
                      "** Client index LE msg->lastEntityRef:\n**   lastEntityRef is %d  clientIndex is %d\n**   newnum %d  oldnum %d  from_num_clients %d  to_num_clients %d\n**   from_first_client %d  to_first_client %d  numSnapshotClients %d\n"
                     );
@@ -271,8 +283,8 @@ SV_EmitPacketClients
                                "oldclient->clientIndex <= msg->lastEntityRef (please attach console log to bug)"
                               );
       if (bVar2) {
-        MSG_WriteBit0(param_6);
-        SV_DropClient((client_t *)(param_1->clientNum * 0x84d00 + (int)svs.clients),
+        MSG_WriteBit0(msg);
+        SV_DropClient((client_t *)(snapInfo->clientNum * 0x84d00 + (int)svs.clients),
                       "EXE_TRANSMITERROR",true,true);
         return;
       }
@@ -280,8 +292,8 @@ SV_EmitPacketClients
       (*pcVar1)();
       return;
     }
-    MSG_WriteDeltaClient(param_1,param_6,svsHeader.time,local_1c,(clientState_s *)0x0,1);
-    local_18 = local_18 + 1;
+    MSG_WriteDeltaClient(snapInfo,msg,svsHeader.time,oldclient,(clientState_s *)0x0,1);
+    oldindex = oldindex + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -297,175 +309,184 @@ SV_EmitPacketClients
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WriteSnapshotToClient(client_t *param_1,msg_t *param_2)
+void __cdecl SV_WriteSnapshotToClient(client_t *client,msg_t *msg)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int local_5c;
-  int local_54;
-  int local_4c;
-  SnapshotInfo_s local_48;
-  int local_30;
-  int local_2c;
-  MatchState *local_28;
-  playerState_s *local_24;
-  int local_20;
-  int local_1c;
-  MatchState *local_18;
-  playerState_s *local_14;
-  uint local_10;
-  int local_c;
-  int local_8;
+  clientSnapshot_t *to_00;
+  code *pcVar1;
+  bool bVar2;
+  MatchState *from;
+  MatchState *fromEA;
+  clientSnapshot_t *frame;
+  int bitsUsed;
+  int lastframe;
+  int from_match_state;
+  int from_num_entities;
+  clientHeader_t *localClient;
+  int from_first_entity;
+  SnapshotInfo_s snapInfo;
+  int sendAsActive;
+  int from_num_clients;
+  MatchState *toEA;
+  clientSnapshot_t *remoteFrame;
+  int lastServerTime;
+  int i;
+  MatchState *to;
+  clientSnapshot_t *oldframe;
+  int snapFlags;
+  int clientNum;
+  int from_first_client;
   
   if (svsHeaderValid == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0x351,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1 == (client_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
+  if (client == (client_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0x358,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_c = ((int)param_1 - (int)svsHeader.clients) / 0x84d00;
-  if ((local_c < 0) || (0x1f < local_c)) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
+  clientNum = ((int)client - (int)svsHeader.clients) / 0x84d00;
+  if ((clientNum < 0) || (0x1f < clientNum)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0x35c,0,"%s\n\t(clientNum) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_48.snapshotDeltaTime = 0;
-  local_48.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
-  local_48.packetEntityTypeArchived = false;
-  local_48._21_3_ = 0;
-  local_48.clientNum = local_c;
-  local_48.client = &param_1->header;
-  local_48.fromBaseline = false;
-  local_48.archived = false;
-  local_48.entJustUnlinked = false;
-  local_48.demoSnapshot = false;
-  ppVar1 = &param_1->frames[(param_1->header).netchan.outgoingSequence & 0x1f].ps;
-  ppVar1[1].loopSoundFade = svsHeader.time;
-  ppVar1[1].origin[0] = (float)svsHeader.physicsTime;
-  local_24 = ppVar1;
-  if (ppVar1 == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
+  snapInfo.snapshotDeltaTime = 0;
+  snapInfo.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
+  snapInfo.packetEntityTypeArchived = false;
+  snapInfo._21_3_ = 0;
+  snapInfo.clientNum = clientNum;
+  snapInfo.client = &client->header;
+  snapInfo.fromBaseline = false;
+  snapInfo.archived = false;
+  snapInfo.entJustUnlinked = false;
+  snapInfo.demoSnapshot = false;
+  to_00 = client->frames + ((client->header).netchan.outgoingSequence & 0x1f);
+  to_00->serverTime = svsHeader.time;
+  to_00->physicsTime = svsHeader.physicsTime;
+  remoteFrame = to_00;
+  if (to_00 == (clientSnapshot_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0x36a,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (((param_1->header).deltaMessage < 1) || ((param_1->header).state != 5)) {
-    local_14 = (playerState_s *)0x0;
-    local_5c = 0;
-    local_20 = 0;
+  if (((client->header).deltaMessage < 1) || ((client->header).state != 5)) {
+    oldframe = (clientSnapshot_t *)0x0;
+    lastframe = 0;
+    lastServerTime = 0;
   }
-  else if ((param_1->header).netchan.outgoingSequence - (param_1->header).deltaMessage < 0x1d) {
-    local_14 = &param_1->frames[(param_1->header).deltaMessage & 0x1f].ps;
-    if (local_14 == (playerState_s *)0x0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
+  else if ((client->header).netchan.outgoingSequence - (client->header).deltaMessage < 0x1d) {
+    oldframe = client->frames + ((client->header).deltaMessage & 0x1f);
+    if (oldframe == (clientSnapshot_t *)0x0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0x38f,0,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    local_5c = (param_1->header).netchan.outgoingSequence - (param_1->header).deltaMessage;
-    local_20 = local_14[1].loopSoundFade;
-    if (local_14[1].pm_flags < svsHeader.nextSnapshotEntities - svsHeader.numSnapshotEntities) {
+    lastframe = (client->header).netchan.outgoingSequence - (client->header).deltaMessage;
+    lastServerTime = oldframe->serverTime;
+    if (oldframe->first_entity < svsHeader.nextSnapshotEntities - svsHeader.numSnapshotEntities) {
       Com_PrintWarning(0xf,
                        "%s: Delta request from out of date entities - delta against entity %i, oldest is %i, current is %i.  Their old snapshot had %i entities in it\n"
                       );
-      local_14 = (playerState_s *)0x0;
-      local_5c = 0;
-      local_20 = 0;
+      oldframe = (clientSnapshot_t *)0x0;
+      lastframe = 0;
+      lastServerTime = 0;
     }
   }
   else {
     Com_DPrintf(0xf,"%s: Delta request from out of date packet.\n");
-    local_14 = (playerState_s *)0x0;
-    local_5c = 0;
-    local_20 = 0;
+    oldframe = (clientSnapshot_t *)0x0;
+    lastframe = 0;
+    lastServerTime = 0;
   }
-  MSG_WriteByte(param_2,0xc);
-  MSG_WriteLong(param_2,svsHeader.time);
-  MSG_WriteLong(param_2,svsHeader.physicsTime);
-  MSG_WriteByte(param_2,local_5c);
-  local_48.snapshotDeltaTime = local_20;
-  local_10 = svsHeader.snapFlagServerBit;
-  if ((param_1->header).rateDelayed != 0) {
-    local_10 = svsHeader.snapFlagServerBit | 1;
+  MSG_WriteByte(msg,0xc);
+  MSG_WriteLong(msg,svsHeader.time);
+  MSG_WriteLong(msg,svsHeader.physicsTime);
+  MSG_WriteByte(msg,lastframe);
+  snapInfo.snapshotDeltaTime = lastServerTime;
+  snapFlags = svsHeader.snapFlagServerBit;
+  if ((client->header).rateDelayed != 0) {
+    snapFlags = svsHeader.snapFlagServerBit | 1;
   }
-  local_30 = (param_1->header).sendAsActive;
-  if ((param_1->header).state == 5) {
-    local_30 = 1;
+  sendAsActive = (client->header).sendAsActive;
+  if ((client->header).state == 5) {
+    sendAsActive = 1;
   }
-  else if ((param_1->header).state != 1) {
-    local_30 = 0;
+  else if ((client->header).state != 1) {
+    sendAsActive = 0;
   }
-  if ((param_1->header).sendAsActive != local_30) {
-    (param_1->header).sendAsActive = local_30;
+  if ((client->header).sendAsActive != sendAsActive) {
+    (client->header).sendAsActive = sendAsActive;
   }
-  if (local_30 == 0) {
-    local_10 = local_10 | 2;
+  if (sendAsActive == 0) {
+    snapFlags = snapFlags | 2;
   }
-  MSG_WriteByte(param_2,local_10);
-  MSG_GetUsedBitCount(param_2);
-  MSG_ClearLastReferencedEntity(param_2);
-  local_28 = svsHeader.snapshotMatchStates + ppVar1[1].bobCycle % svsHeader.numSnapshotMatchStates;
-  local_18 = local_28;
-  if (local_14 == (playerState_s *)0x0) {
-    MSG_WriteDeltaMatchState(&local_48,param_2,svsHeader.time,(MatchState *)0x0,local_28);
+  MSG_WriteByte(msg,snapFlags);
+  MSG_GetUsedBitCount(msg);
+  MSG_ClearLastReferencedEntity(msg);
+  toEA = svsHeader.snapshotMatchStates + to_00->matchState % svsHeader.numSnapshotMatchStates;
+  to = toEA;
+  if (oldframe == (clientSnapshot_t *)0x0) {
+    MSG_WriteDeltaMatchState(&snapInfo,msg,svsHeader.time,(MatchState *)0x0,toEA);
   }
   else {
     MSG_WriteDeltaMatchState
-              (&local_48,param_2,svsHeader.time,
+              (&snapInfo,msg,svsHeader.time,
                svsHeader.snapshotMatchStates +
-               local_14[1].bobCycle % svsHeader.numSnapshotMatchStates,local_28);
+               oldframe->matchState % svsHeader.numSnapshotMatchStates,toEA);
   }
-  MSG_ClearLastReferencedEntity(param_2);
-  if (local_14 == (playerState_s *)0x0) {
-    MSG_WriteDeltaPlayerstate(&local_48,param_2,svsHeader.time,(playerState_s *)0x0,ppVar1);
-    local_54 = 0;
-    local_4c = 0;
-    local_2c = 0;
-    local_8 = 0;
+  MSG_ClearLastReferencedEntity(msg);
+  if (oldframe == (clientSnapshot_t *)0x0) {
+    MSG_WriteDeltaPlayerstate(&snapInfo,msg,svsHeader.time,(playerState_s *)0x0,&to_00->ps);
+    from_num_entities = 0;
+    from_first_entity = 0;
+    from_num_clients = 0;
+    from_first_client = 0;
   }
   else {
-    MSG_WriteDeltaPlayerstate(&local_48,param_2,svsHeader.time,local_14,ppVar1);
-    local_54 = local_14[1].commandTime;
-    local_4c = local_14[1].pm_flags;
-    local_2c = local_14[1].pm_type;
-    local_8 = local_14[1].weapFlags;
+    MSG_WriteDeltaPlayerstate(&snapInfo,msg,svsHeader.time,&oldframe->ps,&to_00->ps);
+    from_num_entities = oldframe->num_entities;
+    from_first_entity = oldframe->first_entity;
+    from_num_clients = oldframe->num_clients;
+    from_first_client = oldframe->first_client;
   }
-  MSG_ClearLastReferencedEntity(param_2);
+  MSG_ClearLastReferencedEntity(msg);
   SV_EmitPacketEntities
-            (&local_48,local_54,local_4c,ppVar1[1].commandTime,ppVar1[1].pm_flags,param_2);
-  SV_EmitPacketClients(&local_48,local_2c,local_8,ppVar1[1].pm_type,ppVar1[1].weapFlags,param_2);
-  if (local_14 == (playerState_s *)0x0) {
-    GlassSv_WriteSnapshotToClient(param_2,0);
+            (&snapInfo,from_num_entities,from_first_entity,to_00->num_entities,to_00->first_entity,
+             msg);
+  SV_EmitPacketClients
+            (&snapInfo,from_num_clients,from_first_client,to_00->num_clients,to_00->first_client,msg
+            );
+  if (oldframe == (clientSnapshot_t *)0x0) {
+    GlassSv_WriteSnapshotToClient(msg,0);
   }
   else {
-    GlassSv_WriteSnapshotToClient(param_2,local_14[1].loopSoundFade);
+    GlassSv_WriteSnapshotToClient(msg,oldframe->serverTime);
   }
-  for (local_1c = 0; local_1c < (sv_padPackets->current).integer; local_1c = local_1c + 1) {
-    MSG_WriteByte(param_2,0);
+  for (i = 0; i < (sv_padPackets->current).integer; i = i + 1) {
+    MSG_WriteByte(msg,0);
   }
   return;
 }
@@ -479,16 +500,17 @@ void __cdecl SV_WriteSnapshotToClient(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UpdateServerCommandsToClient(client_t *param_1,msg_t *param_2)
+void __cdecl SV_UpdateServerCommandsToClient(client_t *client,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  uint local_8;
+  int bitsUsed;
+  int i;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)client - (int)svs.clients) / 0x84d00))
      && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                   ,0x558,0,
                                   "client - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -497,16 +519,16 @@ void __cdecl SV_UpdateServerCommandsToClient(client_t *param_1,msg_t *param_2)
     (*pcVar1)();
     return;
   }
-  if ((param_1->reliableAcknowledge + 1 < param_1->reliableSequence) &&
+  if ((client->reliableAcknowledge + 1 < client->reliableSequence) &&
      ((sv_debugReliableCmds->current).enabled != false)) {
     Com_Printf(0xf,"Client %s has the following un-ack\'d reliable commands:\n");
   }
-  iVar3 = MSG_GetUsedBitCount(param_2);
-  local_8 = param_1->reliableAcknowledge;
-  while (local_8 = local_8 + 1, (int)local_8 <= param_1->reliableSequence) {
-    MSG_WriteByte(param_2,10);
-    MSG_WriteLong(param_2,local_8);
-    MSG_WriteString(param_2,param_1->reliableCommandInfo[local_8 & 0x7f].cmd);
+  iVar3 = MSG_GetUsedBitCount(msg);
+  i = client->reliableAcknowledge;
+  while (i = i + 1, i <= client->reliableSequence) {
+    MSG_WriteByte(msg,10);
+    MSG_WriteLong(msg,i);
+    MSG_WriteString(msg,client->reliableCommandInfo[i & 0x7f].cmd);
     if ((sv_debugReliableCmds->current).enabled != false) {
       Com_Printf(0xf,"%i: %s\n");
     }
@@ -514,13 +536,13 @@ void __cdecl SV_UpdateServerCommandsToClient(client_t *param_1,msg_t *param_2)
       CG_QuickPrint("ServerCmd: %i: %s\n");
     }
   }
-  iVar4 = MSG_GetUsedBitCount(param_2);
+  iVar4 = MSG_GetUsedBitCount(msg);
   if ((iVar4 - iVar3 != 0) &&
      (sv_quickBitsTotal = sv_quickBitsTotal + (iVar4 - iVar3),
      0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("ServerCmd bits %d\n");
   }
-  param_1->reliableSent = param_1->reliableSequence;
+  client->reliableSent = client->reliableSequence;
   return;
 }
 
@@ -534,31 +556,32 @@ void __cdecl SV_UpdateServerCommandsToClient(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-SV_UpdateServerCommandsToClient_PreventOverflow(client_t *param_1,msg_t *param_2,int param_3)
+SV_UpdateServerCommandsToClient_PreventOverflow(client_t *client,msg_t *msg,int iMsgSize)
 
 {
   char cVar1;
-  uint uVar2;
+  int iVar2;
   char *pcVar3;
   char *local_10;
-  uint local_8;
+  int iCommandLength;
+  int i;
   
-  uVar2 = param_1->reliableAcknowledge;
-  while (local_8 = uVar2 + 1, (int)local_8 <= param_1->reliableSequence) {
-    local_10 = param_1->reliableCommandInfo[local_8 & 0x7f].cmd;
+  iVar2 = client->reliableAcknowledge;
+  while (i = iVar2 + 1, i <= client->reliableSequence) {
+    local_10 = client->reliableCommandInfo[i & 0x7f].cmd;
     pcVar3 = local_10 + 1;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    if (param_3 <= (int)(local_10 + param_2->cursize + (6 - (int)pcVar3))) break;
-    MSG_WriteByte(param_2,10);
-    MSG_WriteLong(param_2,local_8);
-    MSG_WriteString(param_2,param_1->reliableCommandInfo[local_8 & 0x7f].cmd);
-    uVar2 = local_8;
+    if (iMsgSize <= (int)(local_10 + msg->cursize + (6 - (int)pcVar3))) break;
+    MSG_WriteByte(msg,10);
+    MSG_WriteLong(msg,i);
+    MSG_WriteString(msg,client->reliableCommandInfo[i & 0x7f].cmd);
+    iVar2 = i;
   }
-  if (param_1->reliableSent < (int)uVar2) {
-    param_1->reliableSent = uVar2;
+  if (client->reliableSent < iVar2) {
+    client->reliableSent = iVar2;
   }
   return;
 }
@@ -572,14 +595,14 @@ SV_UpdateServerCommandsToClient_PreventOverflow(client_t *param_1,msg_t *param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_PrintServerCommandsForClient(client_t *param_1)
+void __cdecl SV_PrintServerCommandsForClient(client_t *client)
 
 {
-  int local_8;
+  int i;
   
   Com_Printf(0xf,"-- Unacknowledged Server Commands for client %i:%s --\n");
-  local_8 = param_1->reliableAcknowledge;
-  while (local_8 = local_8 + 1, local_8 <= param_1->reliableSequence) {
+  i = client->reliableAcknowledge;
+  while (i = i + 1, i <= client->reliableSequence) {
     Com_Printf(0xf,"cmd %5d: %8d: %s\n");
   }
   Com_Printf(0xf,"----------");
@@ -589,12 +612,12 @@ void __cdecl SV_PrintServerCommandsForClient(client_t *param_1)
 
 // 0071CA60  SV_AddEntToSnapshot  (server_mp/sv_snapshot_mp.cpp:1507)
 
-void __cdecl SV_AddEntToSnapshot(int param_1,snapshotEntityNumbers_t *param_2)
+void __cdecl SV_AddEntToSnapshot(int e,snapshotEntityNumbers_t *eNums_2)
 
 {
-  if (param_2->numSnapshotEntities != 0x400) {
-    param_2->snapshotEntities[param_2->numSnapshotEntities] = param_1;
-    param_2->numSnapshotEntities = param_2->numSnapshotEntities + 1;
+  if (eNums_2->numSnapshotEntities != 0x400) {
+    eNums_2->snapshotEntities[eNums_2->numSnapshotEntities] = e;
+    eNums_2->numSnapshotEntities = eNums_2->numSnapshotEntities + 1;
   }
   return;
 }
@@ -608,20 +631,24 @@ void __cdecl SV_AddEntToSnapshot(int param_1,snapshotEntityNumbers_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-SV_AddEntitiesVisibleFromPoint(float *param_1,int param_2,snapshotEntityNumbers_t *param_3)
+void __cdecl SV_AddEntitiesVisibleFromPoint(float *org,int clientNum,snapshotEntityNumbers_t *eNums)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   svEntity_s *psVar4;
-  gentity_s *pgVar5;
-  int local_2c;
-  float local_24;
-  int local_1c;
-  int local_10;
-  uchar *local_8;
+  gentity_s *gEnt;
+  int e;
+  int clientcluster;
+  float fogOpaqueDistSqrd;
+  svEntity_s *svEnt;
+  int l;
+  int leafnum;
+  gentity_s *ent;
+  int i;
+  uchar *bitvector;
+  uchar *clientpvs;
   
   bVar2 = SV_Loaded();
   if ((!bVar2) &&
@@ -631,27 +658,26 @@ SV_AddEntitiesVisibleFromPoint(float *param_1,int param_2,snapshotEntityNumbers_
     (*pcVar1)();
     return;
   }
-  iVar3 = CM_PointLeafnum(param_1);
+  iVar3 = CM_PointLeafnum(org);
   iVar3 = CM_LeafCluster(iVar3);
   if (iVar3 < 0) {
-    local_8 = (uchar *)0x0;
+    clientpvs = (uchar *)0x0;
   }
   else {
-    local_8 = CM_ClusterPVS(iVar3);
+    clientpvs = CM_ClusterPVS(iVar3);
   }
-  local_24 = G_GetFogOpaqueDistSqrd();
-  if (local_24 == 3.4028235e+38) {
-    local_24 = 0.0;
+  fogOpaqueDistSqrd = G_GetFogOpaqueDistSqrd();
+  if (fogOpaqueDistSqrd == 3.4028235e+38) {
+    fogOpaqueDistSqrd = 0.0;
   }
-  local_2c = 0;
+  e = 0;
   do {
-    if (sv.num_entities <= local_2c) {
+    if (sv.num_entities <= e) {
       return;
     }
-    pgVar5 = (gentity_s *)
-             ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_2c + -0x18);
-    if ((pgVar5->r).linked != '\0') {
-      if ((pgVar5->s).number != local_2c) {
+    gEnt = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * e + -0x18);
+    if ((gEnt->r).linked != '\0') {
+      if ((gEnt->s).number != e) {
         va("entnum: %d vs %d, eType: %d, origin: %f %f %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x62a,0,"%s\n\t%s");
@@ -661,61 +687,61 @@ SV_AddEntitiesVisibleFromPoint(float *param_1,int param_2,snapshotEntityNumbers_
           return;
         }
       }
-      if (local_2c != param_2) {
-        if ((pgVar5->r).broadcastTime == 0) {
-          if ((((pgVar5->r).svFlags & 1) == 0) &&
-             ((1 << ((byte)param_2 & 0x1f) & (pgVar5->r).clientMask[param_2 >> 5]) == 0)) {
+      if (e != clientNum) {
+        if ((gEnt->r).broadcastTime == 0) {
+          if ((((gEnt->r).svFlags & 1) == 0) &&
+             ((1 << ((byte)clientNum & 0x1f) & (gEnt->r).clientMask[clientNum >> 5]) == 0)) {
 LAB_0071c8c7:
-            if (((pgVar5->r).svFlags & 0x18) == 0) {
-              psVar4 = SV_SvEntityForGentity(pgVar5);
+            if (((gEnt->r).svFlags & 0x18) == 0) {
+              psVar4 = SV_SvEntityForGentity(gEnt);
               if (psVar4->numClusters == 0) {
-                SV_AddEntToSnapshot(local_2c,param_3);
+                SV_AddEntToSnapshot(e,eNums);
               }
-              else if (local_8 == (uchar *)0x0) {
-                SV_AddEntToSnapshot(local_2c,param_3);
+              else if (clientpvs == (uchar *)0x0) {
+                SV_AddEntToSnapshot(e,eNums);
               }
               else {
-                local_1c = 0;
-                local_10 = 0;
-                while ((local_10 < psVar4->numClusters &&
-                       (local_1c = psVar4->clusternums[local_10],
-                       ((uint)local_8[local_1c >> 3] & 1 << ((byte)local_1c & 7)) == 0))) {
-                  local_10 = local_10 + 1;
+                l = 0;
+                i = 0;
+                while ((i < psVar4->numClusters &&
+                       (l = psVar4->clusternums[i],
+                       ((uint)clientpvs[l >> 3] & 1 << ((byte)l & 7)) == 0))) {
+                  i = i + 1;
                 }
-                if (local_10 == psVar4->numClusters) {
+                if (i == psVar4->numClusters) {
                   if (psVar4->lastCluster != 0) {
-                    while ((local_1c <= psVar4->lastCluster &&
-                           (((uint)local_8[local_1c >> 3] & 1 << ((byte)local_1c & 7)) == 0))) {
-                      local_1c = local_1c + 1;
+                    while ((l <= psVar4->lastCluster &&
+                           (((uint)clientpvs[l >> 3] & 1 << ((byte)l & 7)) == 0))) {
+                      l = l + 1;
                     }
-                    if (local_1c != psVar4->lastCluster) goto LAB_0071ca02;
+                    if (l != psVar4->lastCluster) goto LAB_0071ca02;
                   }
                 }
                 else {
 LAB_0071ca02:
-                  if ((local_24 == 0.0) ||
-                     (iVar3 = BoxDistSqrdExceeds((pgVar5->r).absmin,(pgVar5->r).absmax,param_1,
-                                                 local_24), iVar3 == 0)) {
-                    SV_AddEntToSnapshot(local_2c,param_3);
+                  if ((fogOpaqueDistSqrd == 0.0) ||
+                     (iVar3 = BoxDistSqrdExceeds((gEnt->r).absmin,(gEnt->r).absmax,org,
+                                                 fogOpaqueDistSqrd), iVar3 == 0)) {
+                    SV_AddEntToSnapshot(e,eNums);
                   }
                 }
               }
             }
             else {
-              SV_AddEntToSnapshot(local_2c,param_3);
+              SV_AddEntToSnapshot(e,eNums);
             }
           }
         }
         else {
-          if ((-1 < (pgVar5->r).broadcastTime) && ((pgVar5->r).broadcastTime - svs.time < 0)) {
-            (pgVar5->r).broadcastTime = 0;
+          if ((-1 < (gEnt->r).broadcastTime) && ((gEnt->r).broadcastTime - svs.time < 0)) {
+            (gEnt->r).broadcastTime = 0;
             goto LAB_0071c8c7;
           }
-          SV_AddEntToSnapshot(local_2c,param_3);
+          SV_AddEntToSnapshot(e,eNums);
         }
       }
     }
-    local_2c = local_2c + 1;
+    e = e + 1;
   } while( true );
 }
 
@@ -732,27 +758,28 @@ LAB_0071ca02:
 
 void __cdecl
 SV_AddCachedEntitiesVisibleFromPoint
-          (int param_1,int param_2,float *param_3,int param_4,snapshotEntityNumbers_t *param_5,
-          playerState_s *param_6)
+          (int from_num_entities,int from_first_entity,float *org,int clientNum,
+          snapshotEntityNumbers_t *eNums,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_1134;
-  int local_112c;
-  float local_1128;
-  int local_1124 [1025];
-  int local_120;
-  ushort local_11c [128];
+  int e;
+  int clientcluster;
+  int lastLeaf;
+  float fogOpaqueDistSqrd;
+  int entityIndex [1025];
+  int cluster;
+  ushort leafs [128];
   uint local_1c;
-  int local_18;
-  archivedEntity_s *local_14;
-  int local_10;
-  int local_c;
-  uchar *local_8;
+  int leafnum;
+  archivedEntity_s *ent;
+  int num_leafs;
+  int i;
+  uchar *clientpvs;
   
-  local_8 = (uchar *)0x71ca9d;
+  clientpvs = (uchar *)0x71ca9d;
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = SV_Loaded();
   if ((!bVar2) &&
@@ -762,20 +789,19 @@ SV_AddCachedEntitiesVisibleFromPoint
     (*pcVar1)();
     return;
   }
-  local_18 = CM_PointLeafnum(param_3);
-  iVar3 = CM_LeafCluster(local_18);
+  leafnum = CM_PointLeafnum(org);
+  iVar3 = CM_LeafCluster(leafnum);
   if (-1 < iVar3) {
-    local_8 = CM_ClusterPVS(iVar3);
-    local_1128 = G_GetFogOpaqueDistSqrd();
-    if (local_1128 == 3.4028235e+38) {
-      local_1128 = 0.0;
+    clientpvs = CM_ClusterPVS(iVar3);
+    fogOpaqueDistSqrd = G_GetFogOpaqueDistSqrd();
+    if (fogOpaqueDistSqrd == 3.4028235e+38) {
+      fogOpaqueDistSqrd = 0.0;
     }
-    memset((uchar *)local_1124,'\0',0x1000);
-    for (local_1134 = 0; local_1134 < param_1; local_1134 = local_1134 + 1) {
-      local_14 = svs.cachedSnapshotEntities + (param_2 + local_1134) % svs.numCachedSnapshotEntities
-      ;
-      if ((local_1124
-           [svs.cachedSnapshotEntities[(param_2 + local_1134) % svs.numCachedSnapshotEntities].s.
+    memset((uchar *)entityIndex,'\0',0x1000);
+    for (e = 0; e < from_num_entities; e = e + 1) {
+      ent = svs.cachedSnapshotEntities + (from_first_entity + e) % svs.numCachedSnapshotEntities;
+      if ((entityIndex
+           [svs.cachedSnapshotEntities[(from_first_entity + e) % svs.numCachedSnapshotEntities].s.
             number] != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x6ae,0,"%s"), !bVar2)) {
@@ -783,11 +809,11 @@ SV_AddCachedEntitiesVisibleFromPoint
         (*pcVar1)();
         return;
       }
-      local_1124[(local_14->s).number] = 1;
-      if ((1 << ((byte)param_4 & 0x1f) & (local_14->r).clientMask[param_4 >> 5]) == 0) {
-        if ((local_14->s).number == param_4) {
-          if ((param_6->otherFlags & 2U) != 0) goto LAB_0071cb6c;
-          if (((param_6->otherFlags & 4U) != 0) &&
+      entityIndex[(ent->s).number] = 1;
+      if ((1 << ((byte)clientNum & 0x1f) & (ent->r).clientMask[clientNum >> 5]) == 0) {
+        if ((ent->s).number == clientNum) {
+          if ((ps->otherFlags & 2U) != 0) goto LAB_0071cb6c;
+          if (((ps->otherFlags & 4U) != 0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x6ba,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -795,26 +821,25 @@ SV_AddCachedEntitiesVisibleFromPoint
             return;
           }
         }
-        if (((local_14->r).svFlags & 0x18U) == 0) {
-          local_10 = CM_BoxLeafnums((local_14->r).absmin,(local_14->r).absmax,local_11c,0x80,
-                                    &local_112c);
-          if (local_10 != 0) {
-            local_c = 0;
-            while ((local_c < local_10 &&
-                   ((local_120 = CM_LeafCluster((uint)local_11c[local_c]), local_120 == -1 ||
-                    (((uint)local_8[local_120 >> 3] & 1 << ((byte)local_120 & 7)) == 0))))) {
-              local_c = local_c + 1;
+        if (((ent->r).svFlags & 0x18U) == 0) {
+          num_leafs = CM_BoxLeafnums((ent->r).absmin,(ent->r).absmax,leafs,0x80,&lastLeaf);
+          if (num_leafs != 0) {
+            i = 0;
+            while ((i < num_leafs &&
+                   ((cluster = CM_LeafCluster((uint)leafs[i]), cluster == -1 ||
+                    (((uint)clientpvs[cluster >> 3] & 1 << ((byte)cluster & 7)) == 0))))) {
+              i = i + 1;
             }
-            if (((local_c != local_10) || (((local_14->s).clientLinkInfo.flags & 1) != 0)) &&
-               ((local_1128 == 0.0 ||
-                (iVar3 = BoxDistSqrdExceeds((local_14->r).absmin,(local_14->r).absmax,param_3,
-                                            local_1128), iVar3 == 0)))) {
-              SV_AddEntToSnapshot(local_1134,param_5);
+            if (((i != num_leafs) || (((ent->s).clientLinkInfo.flags & 1) != 0)) &&
+               ((fogOpaqueDistSqrd == 0.0 ||
+                (iVar3 = BoxDistSqrdExceeds((ent->r).absmin,(ent->r).absmax,org,fogOpaqueDistSqrd),
+                iVar3 == 0)))) {
+              SV_AddEntToSnapshot(e,eNums);
             }
           }
         }
         else {
-          SV_AddEntToSnapshot(local_1134,param_5);
+          SV_AddEntToSnapshot(e,eNums);
         }
       }
 LAB_0071cb6c:
@@ -832,15 +857,16 @@ LAB_0071cb6c:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_FrameIsStillInArchivedSnapshotBuffer(int param_1)
+bool __cdecl SV_FrameIsStillInArchivedSnapshotBuffer(int frameStart)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   bool local_c;
+  int bufferStart;
   
-  if ((param_1 < 0) &&
+  if ((frameStart < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0x6e0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -848,15 +874,15 @@ bool __cdecl SV_FrameIsStillInArchivedSnapshotBuffer(int param_1)
     return (bool)uVar3;
   }
   if (svs.nextArchivedSnapshotBuffer + -0x1000000 < 0) {
-    if (param_1 < svs.nextArchivedSnapshotBuffer) {
+    if (frameStart < svs.nextArchivedSnapshotBuffer) {
       local_c = true;
     }
     else {
-      local_c = svs.nextArchivedSnapshotBuffer + 0x27000000 <= param_1;
+      local_c = svs.nextArchivedSnapshotBuffer + 0x27000000 <= frameStart;
     }
   }
-  else if ((param_1 < svs.nextArchivedSnapshotBuffer + -0x1000000) ||
-          (svs.nextArchivedSnapshotBuffer <= param_1)) {
+  else if ((frameStart < svs.nextArchivedSnapshotBuffer + -0x1000000) ||
+          (svs.nextArchivedSnapshotBuffer <= frameStart)) {
     local_c = false;
   }
   else {
@@ -874,7 +900,7 @@ bool __cdecl SV_FrameIsStillInArchivedSnapshotBuffer(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_HasCachedSnapshotInternal(int param_1,int param_2)
+bool __cdecl SV_HasCachedSnapshotInternal(int archivedFrame,int callDepth)
 
 {
   archivedSnapshot_s *paVar1;
@@ -884,42 +910,45 @@ bool __cdecl SV_HasCachedSnapshotInternal(int param_1,int param_2)
   uint uVar5;
   int iVar6;
   cachedSnapshot_t *pcVar7;
-  msg_t local_44;
-  cachedSnapshot_t *local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  archivedSnapshot_s *frame;
+  int oldArchivedFrame;
+  int startIndex;
+  msg_t msg;
+  cachedSnapshot_t *cachedFrame;
+  int partSize;
+  int firstCachedSnapshotFrame;
+  int i;
   
-  paVar1 = svs.archivedSnapshotFrames + param_1 % 0x4b0;
+  paVar1 = svs.archivedSnapshotFrames + archivedFrame % 0x4b0;
   bVar3 = SV_FrameIsStillInArchivedSnapshotBuffer(paVar1->start);
   if (bVar3) {
-    local_c = svs.nextCachedSnapshotFrames + -0x200;
-    local_8 = svs.nextCachedSnapshotFrames;
-    if (local_c < 0) {
-      local_c = 0;
+    firstCachedSnapshotFrame = svs.nextCachedSnapshotFrames + -0x200;
+    i = svs.nextCachedSnapshotFrames;
+    if (firstCachedSnapshotFrame < 0) {
+      firstCachedSnapshotFrame = 0;
     }
     do {
-      local_8 = local_8 - 1;
-      if ((int)local_8 < local_c) goto LAB_0071af36;
-      uVar5 = local_8 & 0x800001ff;
+      i = i + -1;
+      if (i < firstCachedSnapshotFrame) goto LAB_0071af36;
+      uVar5 = i & 0x800001ff;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xfffffe00) + 1;
       }
-      local_14 = svs.cachedSnapshotFrames + uVar5;
-    } while (local_14->archivedFrame != param_1);
-    if ((local_14->first_entity < 0) &&
+      cachedFrame = svs.cachedSnapshotFrames + uVar5;
+    } while (cachedFrame->archivedFrame != archivedFrame);
+    if ((cachedFrame->first_entity < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x75a,0,"%s\n\t(cachedFrame->first_entity) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    if ((((svs.nextCachedSnapshotMatchStates - svs.numCachedSnapshotMatchStates) + param_2 <
-          local_14->matchState) &&
-        ((svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities) + param_2 * 0xa0 <=
-         local_14->first_entity)) &&
-       ((svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients) + param_2 * 0x20 <=
-        local_14->first_client)) {
+    if ((((svs.nextCachedSnapshotMatchStates - svs.numCachedSnapshotMatchStates) + callDepth <
+          cachedFrame->matchState) &&
+        ((svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities) + callDepth * 0xa0 <=
+         cachedFrame->first_entity)) &&
+       ((svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients) + callDepth * 0x20 <=
+        cachedFrame->first_client)) {
       bVar3 = true;
     }
     else {
@@ -928,19 +957,19 @@ LAB_0071af36:
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xff000000) + 1;
       }
-      local_10 = 0x1000000 - uVar5;
-      if (local_10 < paVar1->size) {
+      partSize = 0x1000000 - uVar5;
+      if (partSize < paVar1->size) {
         MSG_InitReadOnlySplit
-                  (&local_44,svs.archivedSnapshotBuffer + uVar5,local_10,svs.archivedSnapshotBuffer,
-                   paVar1->size - local_10);
+                  (&msg,svs.archivedSnapshotBuffer + uVar5,partSize,svs.archivedSnapshotBuffer,
+                   paVar1->size - partSize);
       }
       else {
-        MSG_InitReadOnly(&local_44,svs.archivedSnapshotBuffer + uVar5,paVar1->size);
+        MSG_InitReadOnly(&msg,svs.archivedSnapshotBuffer + uVar5,paVar1->size);
       }
-      MSG_BeginReading(&local_44);
-      iVar6 = MSG_ReadBit(&local_44);
+      MSG_BeginReading(&msg);
+      iVar6 = MSG_ReadBit(&msg);
       if (iVar6 == 0) {
-        iVar6 = MSG_ReadLong(&local_44);
+        iVar6 = MSG_ReadLong(&msg);
         if (iVar6 < svs.nextArchivedSnapshotFrames + -0x4b0) {
           return false;
         }
@@ -949,8 +978,8 @@ LAB_0071af36:
         if (!bVar3) {
           return false;
         }
-        bVar3 = SV_HasCachedSnapshotInternal(iVar6,param_2 + 1);
-        pcVar7 = SV_GetCachedSnapshotInternal(iVar6,param_2 + 1,false);
+        bVar3 = SV_HasCachedSnapshotInternal(iVar6,callDepth + 1);
+        pcVar7 = SV_GetCachedSnapshotInternal(iVar6,callDepth + 1,false);
         if ((bVar3 != (pcVar7 != (cachedSnapshot_t *)0x0)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x791,0,"%s"), !bVar3)) {
@@ -958,7 +987,7 @@ LAB_0071af36:
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        bVar3 = SV_HasCachedSnapshotInternal(iVar6,param_2 + 1);
+        bVar3 = SV_HasCachedSnapshotInternal(iVar6,callDepth + 1);
         if (!bVar3) {
           return false;
         }
@@ -975,13 +1004,14 @@ LAB_0071af36:
 
 // 00719E30  SV_GetCachedSnapshotInternal  (server_mp/sv_snapshot_mp.cpp:1952)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-cachedSnapshot_t * __cdecl SV_GetCachedSnapshotInternal(int param_1,int param_2,bool param_3)
+cachedSnapshot_t * __cdecl
+SV_GetCachedSnapshotInternal(int archivedFrame,int depth,bool expectedToSucceed)
 
 {
   archivedSnapshot_s *paVar1;
@@ -990,18 +1020,23 @@ cachedSnapshot_t * __cdecl SV_GetCachedSnapshotInternal(int param_1,int param_2,
   cachedSnapshot_t *pcVar4;
   uint uVar5;
   int iVar6;
-  int local_58;
-  int local_54;
-  msg_t local_50;
-  cachedSnapshot_t *local_20;
-  cachedClient_s *local_1c;
-  int local_18;
-  int local_14;
-  uint local_10;
-  cachedSnapshot_t *local_c;
-  cachedClient_s *local_8;
+  archivedSnapshot_s *frame;
+  int oldArchivedFrame;
+  int newnum;
+  archivedEntity_s *cachedEnt;
+  int startIndex;
+  int oldindex;
+  int oldnum;
+  msg_t msg;
+  cachedSnapshot_t *cachedFrame;
+  cachedClient_s *oldCachedClient;
+  int partSize;
+  int firstCachedSnapshotFrame;
+  int i;
+  cachedSnapshot_t *oldCachedFrame;
+  cachedClient_s *cachedClient;
   
-  paVar1 = svs.archivedSnapshotFrames + param_1 % 0x4b0;
+  paVar1 = svs.archivedSnapshotFrames + archivedFrame % 0x4b0;
   if ((paVar1->size == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0x7b2,0,"%s\n\t(archivedFrame) = %i"), !bVar3)) {
@@ -1011,60 +1046,60 @@ cachedSnapshot_t * __cdecl SV_GetCachedSnapshotInternal(int param_1,int param_2,
   }
   bVar3 = SV_FrameIsStillInArchivedSnapshotBuffer(paVar1->start);
   if (bVar3) {
-    local_14 = svs.nextCachedSnapshotFrames + -0x200;
-    local_10 = svs.nextCachedSnapshotFrames;
-    if (local_14 < 0) {
-      local_14 = 0;
+    firstCachedSnapshotFrame = svs.nextCachedSnapshotFrames + -0x200;
+    i = svs.nextCachedSnapshotFrames;
+    if (firstCachedSnapshotFrame < 0) {
+      firstCachedSnapshotFrame = 0;
     }
     do {
-      local_10 = local_10 - 1;
-      if ((int)local_10 < local_14) goto LAB_00719fc6;
-      uVar5 = local_10 & 0x800001ff;
+      i = i + -1;
+      if (i < firstCachedSnapshotFrame) goto LAB_00719fc6;
+      uVar5 = i & 0x800001ff;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xfffffe00) + 1;
       }
-      local_20 = svs.cachedSnapshotFrames + uVar5;
-    } while (local_20->archivedFrame != param_1);
-    if ((local_20->first_entity < 0) &&
+      cachedFrame = svs.cachedSnapshotFrames + uVar5;
+    } while (cachedFrame->archivedFrame != archivedFrame);
+    if ((cachedFrame->first_entity < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x7c4,0,"%s\n\t(cachedFrame->first_entity) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
       return pcVar4;
     }
-    if (((local_20->matchState <=
-          (svs.nextCachedSnapshotMatchStates - svs.numCachedSnapshotMatchStates) + param_2) ||
-        (local_20->first_entity <=
-         (svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities) + param_2 * 0xa0)) ||
-       (local_20->first_client <=
-        (svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients) + param_2 * 0x20)) {
+    if (((cachedFrame->matchState <=
+          (svs.nextCachedSnapshotMatchStates - svs.numCachedSnapshotMatchStates) + depth) ||
+        (cachedFrame->first_entity <=
+         (svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities) + depth * 0xa0)) ||
+       (cachedFrame->first_client <=
+        (svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients) + depth * 0x20)) {
 LAB_00719fc6:
       uVar5 = paVar1->start & 0x80ffffff;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xff000000) + 1;
       }
-      local_18 = 0x1000000 - uVar5;
-      if (local_18 < paVar1->size) {
+      partSize = 0x1000000 - uVar5;
+      if (partSize < paVar1->size) {
         MSG_InitReadOnlySplit
-                  (&local_50,svs.archivedSnapshotBuffer + uVar5,local_18,svs.archivedSnapshotBuffer,
-                   paVar1->size - local_18);
+                  (&msg,svs.archivedSnapshotBuffer + uVar5,partSize,svs.archivedSnapshotBuffer,
+                   paVar1->size - partSize);
       }
       else {
-        MSG_InitReadOnly(&local_50,svs.archivedSnapshotBuffer + uVar5,paVar1->size);
+        MSG_InitReadOnly(&msg,svs.archivedSnapshotBuffer + uVar5,paVar1->size);
       }
-      MSG_BeginReading(&local_50);
-      iVar6 = MSG_ReadBit(&local_50);
+      MSG_BeginReading(&msg);
+      iVar6 = MSG_ReadBit(&msg);
       if (iVar6 == 0) {
-        if ((local_50.overflowed != 0) &&
+        if ((msg.overflowed != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x7f3,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
           return pcVar4;
         }
-        iVar6 = MSG_ReadLong(&local_50);
+        iVar6 = MSG_ReadLong(&msg);
         if (iVar6 < svs.nextArchivedSnapshotFrames + -0x4b0) {
-          if (param_3) {
+          if (expectedToSucceed) {
             Com_Printf(0xf,
                        "getting archive snapshot failed for time %i - oldArchiveFrame(%i) < svs.nextArchivedSnapshotFrames(%i) - NUM_ARCHIVED_FRAMES(%i)\n"
                       );
@@ -1074,23 +1109,23 @@ LAB_00719fc6:
         bVar3 = SV_FrameIsStillInArchivedSnapshotBuffer
                           (svs.archivedSnapshotFrames[iVar6 % 0x4b0].start);
         if (!bVar3) {
-          if (param_3) {
+          if (expectedToSucceed) {
             Com_Printf(0xf,
                        "getting archive snapshot failed for time %i - frame->start(%i) < svs.nextArchivedSnapshotBuffer(%i) - ARCHIVED_SNAPSHOT_BUFFER_SIZE(%i)\n"
                       );
           }
           return (cachedSnapshot_t *)0x0;
         }
-        local_c = SV_GetCachedSnapshotInternal(iVar6,param_2 + 1,param_3);
-        if (local_c == (cachedSnapshot_t *)0x0) {
-          if (param_3) {
+        oldCachedFrame = SV_GetCachedSnapshotInternal(iVar6,depth + 1,expectedToSucceed);
+        if (oldCachedFrame == (cachedSnapshot_t *)0x0) {
+          if (expectedToSucceed) {
             Com_Printf(0xf,
                        "failed to get snapshot for time %i - it was delta\'d off time %i, and we couldn\'t get that snapshot\n"
                       );
           }
           return (cachedSnapshot_t *)0x0;
         }
-        if ((local_c->usesDelta != 0) &&
+        if ((oldCachedFrame->usesDelta != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x80d,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1101,39 +1136,40 @@ LAB_00719fc6:
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xfffffe00) + 1;
         }
-        local_20 = svs.cachedSnapshotFrames + uVar5;
-        local_20->archivedFrame = param_1;
-        local_20->matchState = svs.nextCachedSnapshotMatchStates;
-        local_20->num_entities = 0;
-        local_20->first_entity = svs.nextCachedSnapshotEntities;
-        local_20->num_clients = 0;
-        local_20->first_client = svs.nextCachedSnapshotClients;
-        local_20->usesDelta = 1;
-        iVar6 = MSG_ReadLong(&local_50);
-        local_20->time = iVar6;
-        iVar6 = MSG_ReadLong(&local_50);
-        local_20->physicsTime = iVar6;
-        MSG_ClearLastReferencedEntity(&local_50);
+        cachedFrame = svs.cachedSnapshotFrames + uVar5;
+        cachedFrame->archivedFrame = archivedFrame;
+        cachedFrame->matchState = svs.nextCachedSnapshotMatchStates;
+        cachedFrame->num_entities = 0;
+        cachedFrame->first_entity = svs.nextCachedSnapshotEntities;
+        cachedFrame->num_clients = 0;
+        cachedFrame->first_client = svs.nextCachedSnapshotClients;
+        cachedFrame->usesDelta = 1;
+        iVar6 = MSG_ReadLong(&msg);
+        cachedFrame->time = iVar6;
+        iVar6 = MSG_ReadLong(&msg);
+        cachedFrame->physicsTime = iVar6;
+        MSG_ClearLastReferencedEntity(&msg);
         MSG_ReadDeltaMatchState
-                  (&local_50,local_20->time,
+                  (&msg,cachedFrame->time,
                    svs.cachedSnapshotMatchStates +
-                   local_c->matchState % svs.numCachedSnapshotMatchStates,
+                   oldCachedFrame->matchState % svs.numCachedSnapshotMatchStates,
                    svs.cachedSnapshotMatchStates +
                    svs.nextCachedSnapshotMatchStates % svs.numCachedSnapshotMatchStates);
         svs.nextCachedSnapshotMatchStates = svs.nextCachedSnapshotMatchStates + 1;
-        MSG_ClearLastReferencedEntity(&local_50);
-        local_58 = 0;
-        local_1c = (cachedClient_s *)0x0;
-        if (local_c->num_clients < 1) {
-          local_54 = 99999;
+        MSG_ClearLastReferencedEntity(&msg);
+        oldindex = 0;
+        oldCachedClient = (cachedClient_s *)0x0;
+        if (oldCachedFrame->num_clients < 1) {
+          oldnum = 99999;
         }
         else {
-          local_1c = svs.cachedSnapshotClients +
-                     local_c->first_client % svs.numCachedSnapshotClients;
-          local_54 = (local_1c->cs).clientIndex;
+          oldCachedClient =
+               svs.cachedSnapshotClients +
+               oldCachedFrame->first_client % svs.numCachedSnapshotClients;
+          oldnum = (oldCachedClient->cs).clientIndex;
         }
-        while (iVar6 = MSG_ReadBit(&local_50), iVar6 != 0) {
-          iVar6 = MSG_ReadEntityIndex(&local_50,5);
+        while (iVar6 = MSG_ReadBit(&msg), iVar6 != 0) {
+          iVar6 = MSG_ReadEntityIndex(&msg,5);
           if ((iVar6 < 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x841,0,"%s\n\t(newnum) = %i"), !bVar3)) {
@@ -1141,41 +1177,43 @@ LAB_00719fc6:
             pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
             return pcVar4;
           }
-          if (local_50.overflowed != 0) {
+          if (msg.overflowed != 0) {
             Com_Error(ERR_DROP,"\x15SV_GetCachedSnapshot: end of message");
           }
-          while (local_54 < iVar6) {
-            local_58 = local_58 + 1;
-            if (local_58 < local_c->num_clients) {
-              local_1c = svs.cachedSnapshotClients +
-                         (local_c->first_client + local_58) % svs.numCachedSnapshotClients;
-              local_54 = (local_1c->cs).clientIndex;
+          while (oldnum < iVar6) {
+            oldindex = oldindex + 1;
+            if (oldindex < oldCachedFrame->num_clients) {
+              oldCachedClient =
+                   svs.cachedSnapshotClients +
+                   (oldCachedFrame->first_client + oldindex) % svs.numCachedSnapshotClients;
+              oldnum = (oldCachedClient->cs).clientIndex;
             }
             else {
-              local_54 = 99999;
+              oldnum = 99999;
             }
           }
-          if (local_54 == iVar6) {
-            local_8 = svs.cachedSnapshotClients +
-                      svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
-            if ((local_8 == local_1c) &&
+          if (oldnum == iVar6) {
+            cachedClient = svs.cachedSnapshotClients +
+                           svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
+            if ((cachedClient == oldCachedClient) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x859,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
               return pcVar4;
             }
-            MSG_ReadDeltaClient(&local_50,local_20->time,&local_1c->cs,&local_8->cs,iVar6);
-            iVar6 = MSG_ReadBit(&local_50);
-            local_8->playerStateExists = iVar6;
-            if (local_8->playerStateExists != 0) {
-              if (local_1c->playerStateExists == 0) {
+            MSG_ReadDeltaClient(&msg,cachedFrame->time,&oldCachedClient->cs,&cachedClient->cs,iVar6)
+            ;
+            iVar6 = MSG_ReadBit(&msg);
+            cachedClient->playerStateExists = iVar6;
+            if (cachedClient->playerStateExists != 0) {
+              if (oldCachedClient->playerStateExists == 0) {
                 MSG_ReadDeltaPlayerstate
-                          (0,&local_50,local_20->time,(playerState_s *)0x0,&local_8->ps,false);
+                          (0,&msg,cachedFrame->time,(playerState_s *)0x0,&cachedClient->ps,false);
               }
               else {
                 MSG_ReadDeltaPlayerstate
-                          (0,&local_50,local_20->time,&local_1c->ps,&local_8->ps,false);
+                          (0,&msg,cachedFrame->time,&oldCachedClient->ps,&cachedClient->ps,false);
               }
             }
             if ((svsHeaderValid != 0) &&
@@ -1189,33 +1227,35 @@ LAB_00719fc6:
             if (0x7ffffffd < svs.nextCachedSnapshotClients) {
               Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotClients wrapped");
             }
-            local_20->num_clients = local_20->num_clients + 1;
-            local_58 = local_58 + 1;
-            if (local_58 < local_c->num_clients) {
-              local_1c = svs.cachedSnapshotClients +
-                         (local_c->first_client + local_58) % svs.numCachedSnapshotClients;
-              local_54 = (local_1c->cs).clientIndex;
+            cachedFrame->num_clients = cachedFrame->num_clients + 1;
+            oldindex = oldindex + 1;
+            if (oldindex < oldCachedFrame->num_clients) {
+              oldCachedClient =
+                   svs.cachedSnapshotClients +
+                   (oldCachedFrame->first_client + oldindex) % svs.numCachedSnapshotClients;
+              oldnum = (oldCachedClient->cs).clientIndex;
             }
             else {
-              local_54 = 99999;
+              oldnum = 99999;
             }
           }
           else {
-            if ((local_54 <= iVar6) &&
+            if ((oldnum <= iVar6) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x879,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
               return pcVar4;
             }
-            local_8 = svs.cachedSnapshotClients +
-                      svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
-            MSG_ReadDeltaClient(&local_50,local_20->time,(clientState_s *)0x0,&local_8->cs,iVar6);
-            iVar6 = MSG_ReadBit(&local_50);
-            local_8->playerStateExists = iVar6;
-            if (local_8->playerStateExists != 0) {
+            cachedClient = svs.cachedSnapshotClients +
+                           svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
+            MSG_ReadDeltaClient(&msg,cachedFrame->time,(clientState_s *)0x0,&cachedClient->cs,iVar6)
+            ;
+            iVar6 = MSG_ReadBit(&msg);
+            cachedClient->playerStateExists = iVar6;
+            if (cachedClient->playerStateExists != 0) {
               MSG_ReadDeltaPlayerstate
-                        (0,&local_50,local_20->time,(playerState_s *)0x0,&local_8->ps,false);
+                        (0,&msg,cachedFrame->time,(playerState_s *)0x0,&cachedClient->ps,false);
             }
             if ((svsHeaderValid != 0) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
@@ -1228,23 +1268,23 @@ LAB_00719fc6:
             if (0x7ffffffd < svs.nextCachedSnapshotClients) {
               Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotClients wrapped");
             }
-            local_20->num_clients = local_20->num_clients + 1;
+            cachedFrame->num_clients = cachedFrame->num_clients + 1;
           }
         }
-        MSG_ClearLastReferencedEntity(&local_50);
-        while (iVar6 = MSG_ReadEntityIndex(&local_50,10), iVar6 != 0x3ff) {
-          if (local_50.overflowed != 0) {
+        MSG_ClearLastReferencedEntity(&msg);
+        while (iVar6 = MSG_ReadEntityIndex(&msg,10), iVar6 != 0x3ff) {
+          if (msg.overflowed != 0) {
             Com_Error(ERR_DROP,"\x15SV_GetCachedSnapshot: end of message");
           }
           MSG_ReadDeltaArchivedEntity
-                    (&local_50,local_20->time,&sv.svEntities[iVar6].baseline,
+                    (&msg,cachedFrame->time,&sv.svEntities[iVar6].baseline,
                      svs.cachedSnapshotEntities +
                      svs.nextCachedSnapshotEntities % svs.numCachedSnapshotEntities,iVar6);
           svs.nextCachedSnapshotEntities = svs.nextCachedSnapshotEntities + 1;
           if (0x7ffffffd < svs.nextCachedSnapshotEntities) {
             Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotEntities wrapped");
           }
-          local_20->num_entities = local_20->num_entities + 1;
+          cachedFrame->num_entities = cachedFrame->num_entities + 1;
         }
         svs.nextCachedSnapshotFrames = svs.nextCachedSnapshotFrames + 1;
         if (0x7ffffffd < svs.nextCachedSnapshotFrames) {
@@ -1252,7 +1292,7 @@ LAB_00719fc6:
         }
       }
       else {
-        if ((local_50.overflowed != 0) &&
+        if ((msg.overflowed != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x8b2,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1263,38 +1303,38 @@ LAB_00719fc6:
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xfffffe00) + 1;
         }
-        local_20 = svs.cachedSnapshotFrames + uVar5;
-        local_20->archivedFrame = param_1;
-        local_20->matchState = svs.nextCachedSnapshotMatchStates;
-        local_20->num_entities = 0;
-        local_20->first_entity = svs.nextCachedSnapshotEntities;
-        local_20->num_clients = 0;
-        local_20->first_client = svs.nextCachedSnapshotClients;
-        local_20->usesDelta = 0;
-        iVar6 = MSG_ReadLong(&local_50);
-        local_20->time = iVar6;
-        iVar6 = MSG_ReadLong(&local_50);
-        local_20->physicsTime = iVar6;
-        MSG_ClearLastReferencedEntity(&local_50);
+        cachedFrame = svs.cachedSnapshotFrames + uVar5;
+        cachedFrame->archivedFrame = archivedFrame;
+        cachedFrame->matchState = svs.nextCachedSnapshotMatchStates;
+        cachedFrame->num_entities = 0;
+        cachedFrame->first_entity = svs.nextCachedSnapshotEntities;
+        cachedFrame->num_clients = 0;
+        cachedFrame->first_client = svs.nextCachedSnapshotClients;
+        cachedFrame->usesDelta = 0;
+        iVar6 = MSG_ReadLong(&msg);
+        cachedFrame->time = iVar6;
+        iVar6 = MSG_ReadLong(&msg);
+        cachedFrame->physicsTime = iVar6;
+        MSG_ClearLastReferencedEntity(&msg);
         MSG_ReadDeltaMatchState
-                  (&local_50,local_20->time,(MatchState *)0x0,
+                  (&msg,cachedFrame->time,(MatchState *)0x0,
                    svs.cachedSnapshotMatchStates +
                    svs.nextCachedSnapshotMatchStates % svs.numCachedSnapshotMatchStates);
         svs.nextCachedSnapshotMatchStates = svs.nextCachedSnapshotMatchStates + 1;
-        MSG_ClearLastReferencedEntity(&local_50);
-        while (iVar6 = MSG_ReadBit(&local_50), iVar6 != 0) {
-          iVar6 = MSG_ReadEntityIndex(&local_50,5);
-          if (local_50.overflowed != 0) {
+        MSG_ClearLastReferencedEntity(&msg);
+        while (iVar6 = MSG_ReadBit(&msg), iVar6 != 0) {
+          iVar6 = MSG_ReadEntityIndex(&msg,5);
+          if (msg.overflowed != 0) {
             Com_Error(ERR_DROP,"\x15SV_GetCachedSnapshot: end of message");
           }
-          local_8 = svs.cachedSnapshotClients +
-                    svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
-          MSG_ReadDeltaClient(&local_50,local_20->time,(clientState_s *)0x0,&local_8->cs,iVar6);
-          iVar6 = MSG_ReadBit(&local_50);
-          local_8->playerStateExists = iVar6;
-          if (local_8->playerStateExists != 0) {
+          cachedClient = svs.cachedSnapshotClients +
+                         svs.nextCachedSnapshotClients % svs.numCachedSnapshotClients;
+          MSG_ReadDeltaClient(&msg,cachedFrame->time,(clientState_s *)0x0,&cachedClient->cs,iVar6);
+          iVar6 = MSG_ReadBit(&msg);
+          cachedClient->playerStateExists = iVar6;
+          if (cachedClient->playerStateExists != 0) {
             MSG_ReadDeltaPlayerstate
-                      (0,&local_50,local_20->time,(playerState_s *)0x0,&local_8->ps,false);
+                      (0,&msg,cachedFrame->time,(playerState_s *)0x0,&cachedClient->ps,false);
           }
           if ((svsHeaderValid != 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
@@ -1307,43 +1347,43 @@ LAB_00719fc6:
           if (0x7ffffffd < svs.nextCachedSnapshotClients) {
             Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotClients wrapped");
           }
-          local_20->num_clients = local_20->num_clients + 1;
+          cachedFrame->num_clients = cachedFrame->num_clients + 1;
         }
-        MSG_ClearLastReferencedEntity(&local_50);
-        while (iVar6 = MSG_ReadEntityIndex(&local_50,10), iVar6 != 0x3ff) {
-          if (local_50.overflowed != 0) {
+        MSG_ClearLastReferencedEntity(&msg);
+        while (iVar6 = MSG_ReadEntityIndex(&msg,10), iVar6 != 0x3ff) {
+          if (msg.overflowed != 0) {
             Com_Error(ERR_DROP,"\x15SV_GetCachedSnapshot: end of message");
           }
           MSG_ReadDeltaArchivedEntity
-                    (&local_50,local_20->time,&sv.svEntities[iVar6].baseline,
+                    (&msg,cachedFrame->time,&sv.svEntities[iVar6].baseline,
                      svs.cachedSnapshotEntities +
                      svs.nextCachedSnapshotEntities % svs.numCachedSnapshotEntities,iVar6);
           svs.nextCachedSnapshotEntities = svs.nextCachedSnapshotEntities + 1;
           if (0x7ffffffd < svs.nextCachedSnapshotEntities) {
             Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotEntities wrapped");
           }
-          local_20->num_entities = local_20->num_entities + 1;
+          cachedFrame->num_entities = cachedFrame->num_entities + 1;
         }
         svs.nextCachedSnapshotFrames = svs.nextCachedSnapshotFrames + 1;
         if (0x7ffffffd < svs.nextCachedSnapshotFrames) {
           Com_Error(ERR_FATAL,"\x15svs.nextCachedSnapshotFrames wrapped");
         }
       }
-      if ((svs.numCachedSnapshotEntities <= local_20->num_entities) &&
+      if ((svs.numCachedSnapshotEntities <= cachedFrame->num_entities) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x914,1,"%s\n\t(cachedFrame->num_entities) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
         return pcVar4;
       }
-      if ((svs.numCachedSnapshotClients <= local_20->num_clients) &&
+      if ((svs.numCachedSnapshotClients <= cachedFrame->num_clients) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x915,1,"%s\n\t(cachedFrame->num_clients) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
         return pcVar4;
       }
-      if ((local_20->matchState <
+      if ((cachedFrame->matchState <
            svs.nextCachedSnapshotMatchStates - svs.numCachedSnapshotMatchStates) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x916,1,"%s"), !bVar3)) {
@@ -1351,16 +1391,17 @@ LAB_00719fc6:
         pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
         return pcVar4;
       }
-      if ((local_20->first_entity < svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities)
-         && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
-                                      ,0x917,1,"%s"), !bVar3)) {
+      if ((cachedFrame->first_entity <
+           svs.nextCachedSnapshotEntities - svs.numCachedSnapshotEntities) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
+                                   ,0x917,1,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
         return pcVar4;
       }
-      if ((local_20->first_client < svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
-                                   ,0x918,1,"%s"), !bVar3)) {
+      if ((cachedFrame->first_client < svs.nextCachedSnapshotClients - svs.numCachedSnapshotClients)
+         && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
+                                      ,0x918,1,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         pcVar4 = (cachedSnapshot_t *)(*pcVar2)();
         return pcVar4;
@@ -1368,14 +1409,14 @@ LAB_00719fc6:
     }
   }
   else {
-    if (param_3) {
+    if (expectedToSucceed) {
       Com_Printf(0xf,
                  "Failed to get archived snapshot for archived frame %i - frame->start is too old - %i < %i - %i\n"
                 );
     }
-    local_20 = (cachedSnapshot_t *)0x0;
+    cachedFrame = (cachedSnapshot_t *)0x0;
   }
-  return local_20;
+  return cachedFrame;
 }
 
 
@@ -1387,13 +1428,15 @@ LAB_00719fc6:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-cachedSnapshot_t * __cdecl SV_GetCachedSnapshot(int *param_1)
+cachedSnapshot_t * __cdecl SV_GetCachedSnapshot(int *pArchiveTime)
 
 {
   code *pcVar1;
   bool bVar2;
   cachedSnapshot_t *pcVar3;
-  int local_c;
+  int archiveTime;
+  int archivedFrame;
+  cachedSnapshot_t *cachedFrame;
   
   bVar2 = SV_Loaded();
   if ((!bVar2) &&
@@ -1410,25 +1453,27 @@ cachedSnapshot_t * __cdecl SV_GetCachedSnapshot(int *param_1)
     pcVar3 = (cachedSnapshot_t *)(*pcVar1)();
     return pcVar3;
   }
-  if (0 < *param_1) {
-    local_c = svs.nextArchivedSnapshotFrames - (*param_1 * (sv_fps->current).integer) / 1000;
-    if (local_c < svs.nextArchivedSnapshotFrames + -0x4b0) {
-      local_c = svs.nextArchivedSnapshotFrames + -0x4b0;
-      *param_1 = ((svs.nextArchivedSnapshotFrames - local_c) * 1000) / (sv_fps->current).integer;
+  if (0 < *pArchiveTime) {
+    archivedFrame =
+         svs.nextArchivedSnapshotFrames - (*pArchiveTime * (sv_fps->current).integer) / 1000;
+    if (archivedFrame < svs.nextArchivedSnapshotFrames + -0x4b0) {
+      archivedFrame = svs.nextArchivedSnapshotFrames + -0x4b0;
+      *pArchiveTime =
+           ((svs.nextArchivedSnapshotFrames - archivedFrame) * 1000) / (sv_fps->current).integer;
     }
-    if (local_c < 0) {
-      local_c = 0;
-      *param_1 = (svs.nextArchivedSnapshotFrames * 1000) / (sv_fps->current).integer;
+    if (archivedFrame < 0) {
+      archivedFrame = 0;
+      *pArchiveTime = (svs.nextArchivedSnapshotFrames * 1000) / (sv_fps->current).integer;
     }
-    while (local_c < svs.nextArchivedSnapshotFrames) {
-      pcVar3 = SV_GetCachedSnapshotInternal(local_c,0,true);
+    while (archivedFrame < svs.nextArchivedSnapshotFrames) {
+      pcVar3 = SV_GetCachedSnapshotInternal(archivedFrame,0,true);
       if (pcVar3 != (cachedSnapshot_t *)0x0) {
         return pcVar3;
       }
-      local_c = local_c + 1;
-      *param_1 = (svs.nextArchivedSnapshotFrames - local_c) * 0x32;
+      archivedFrame = archivedFrame + 1;
+      *pArchiveTime = (svs.nextArchivedSnapshotFrames - archivedFrame) * 0x32;
     }
-    *param_1 = 0;
+    *pArchiveTime = 0;
   }
   return (cachedSnapshot_t *)0x0;
 }
@@ -1436,21 +1481,22 @@ cachedSnapshot_t * __cdecl SV_GetCachedSnapshot(int *param_1)
 
 // 0071B620  SV_GetCurrentClientInfo  (server_mp/sv_snapshot_mp.cpp:2386)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_GetCurrentClientInfo(int param_1,playerState_s *param_2,clientState_s *param_3)
+int __cdecl SV_GetCurrentClientInfo(int clientNum,playerState_s *ps,clientState_s *cs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   clientState_s *pcVar4;
+  client_t *client;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0x955,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -1461,17 +1507,17 @@ int __cdecl SV_GetCurrentClientInfo(int param_1,playerState_s *param_2,clientSta
       return iVar3;
     }
   }
-  if (*(int *)(param_1 * 0x84d00 + (int)svs.clients) == 5) {
-    iVar3 = GetFollowPlayerState(param_1,param_2);
+  if (*(int *)(clientNum * 0x84d00 + (int)svs.clients) == 5) {
+    iVar3 = GetFollowPlayerState(clientNum,ps);
     if (iVar3 == 0) {
       iVar3 = 0;
     }
     else {
-      pcVar4 = G_GetClientState(param_1);
+      pcVar4 = G_GetClientState(clientNum);
       for (iVar3 = 0x34; iVar3 != 0; iVar3 = iVar3 + -1) {
-        param_3->clientIndex = pcVar4->clientIndex;
+        cs->clientIndex = pcVar4->clientIndex;
         pcVar4 = (clientState_s *)&pcVar4->team;
-        param_3 = (clientState_s *)&param_3->team;
+        cs = (clientState_s *)&cs->team;
       }
       iVar3 = 1;
     }
@@ -1493,35 +1539,37 @@ int __cdecl SV_GetCurrentClientInfo(int param_1,playerState_s *param_2,clientSta
 
 void __cdecl
 SV_GetClientPositionsFromCachedSnap
-          (cachedSnapshot_t *param_1,float (*param_2) [3],float (*param_3) [3],bool *param_4)
+          (cachedSnapshot_t *cachedFrame,float (*pos) [3],float (*angles) [3],bool *success)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   archivedEntity_s *paVar4;
-  uint local_c;
+  archivedEntity_s *cachedEnt;
+  uint i;
+  int clientNum;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if ((uint)param_1->num_entities <= local_c) {
+    if ((uint)cachedFrame->num_entities <= i) {
       return;
     }
-    if ((param_1->first_entity < 0) &&
+    if ((cachedFrame->first_entity < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x968,0,"%s\n\t(cachedFrame->first_entity) = %i"), !bVar3)) break;
     paVar4 = svs.cachedSnapshotEntities +
-             (param_1->first_entity + local_c) % (uint)svs.numCachedSnapshotEntities;
+             (cachedFrame->first_entity + i) % (uint)svs.numCachedSnapshotEntities;
     iVar1 = (paVar4->s).number;
     if (0x1f < iVar1) {
       return;
     }
-    param_4[iVar1] = true;
-    BG_EvaluateTrajectory(&(paVar4->s).lerp.pos,param_1->time,param_2[iVar1]);
-    param_3[iVar1][0] = 0.0;
-    param_3[iVar1][1] = (paVar4->s).lerp.apos.trBase[1];
-    param_3[iVar1][2] = 0.0;
-    local_c = local_c + 1;
+    success[iVar1] = true;
+    BG_EvaluateTrajectory(&(paVar4->s).lerp.pos,cachedFrame->time,pos[iVar1]);
+    angles[iVar1][0] = 0.0;
+    angles[iVar1][1] = (paVar4->s).lerp.apos.trBase[1];
+    angles[iVar1][2] = 0.0;
+    i = i + 1;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -1539,129 +1587,129 @@ SV_GetClientPositionsFromCachedSnap
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3],bool *param_4)
+SV_GetClientPositionsAtTime(int gametime,float (*pos) [3],float (*angles) [3],bool *success)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float (*pafVar4) [3];
-  float local_674 [96];
-  int local_4f4;
-  int local_4f0;
-  float local_4ec [97];
-  bool local_365;
-  int local_364;
-  float local_360;
-  float local_35c [96];
-  bool local_1dc [64];
+  float endPos [96];
+  int startOffset;
+  int rewindDeltaTime;
+  float startAngles [97];
+  bool foundStart;
+  int endOffset;
+  float progress;
+  float startPos [96];
+  bool startSuccess [64];
   uint local_19c;
-  cachedSnapshot_t *local_198;
-  float local_194 [96];
-  bool local_11;
-  int local_10;
-  cachedSnapshot_t *local_c;
-  int local_8;
+  cachedSnapshot_t *frameStart;
+  float endAngles [96];
+  bool foundEnd;
+  int clientNum;
+  cachedSnapshot_t *frameEnd;
+  int snapOffset;
   
   local_19c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4f0 = svs.time - param_1;
-  local_4f4 = (local_4f0 / 0x32 + 2) * 0x32;
-  local_364 = (local_4f0 / 0x32 + 1) * 0x32;
-  local_198 = SV_GetCachedSnapshot(&local_4f4);
-  local_c = SV_GetCachedSnapshot(&local_364);
-  if ((local_198 == (cachedSnapshot_t *)0x0) && (local_c == (cachedSnapshot_t *)0x0)) {
+  rewindDeltaTime = svs.time - gametime;
+  startOffset = (rewindDeltaTime / 0x32 + 2) * 0x32;
+  endOffset = (rewindDeltaTime / 0x32 + 1) * 0x32;
+  frameStart = SV_GetCachedSnapshot(&startOffset);
+  frameEnd = SV_GetCachedSnapshot(&endOffset);
+  if ((frameStart == (cachedSnapshot_t *)0x0) && (frameEnd == (cachedSnapshot_t *)0x0)) {
     Com_Printf(0xf,"Failed to get a cached snapshot for antilag - offset is %i\n");
     bVar2 = false;
   }
   else {
-    local_8 = 1;
-    while ((local_c != (cachedSnapshot_t *)0x0 && (local_c->time < param_1))) {
-      local_198 = local_c;
-      local_8 = local_8 + -1;
-      local_364 = (local_4f0 / 0x32 + local_8) * 0x32;
-      local_c = SV_GetCachedSnapshot(&local_364);
+    snapOffset = 1;
+    while ((frameEnd != (cachedSnapshot_t *)0x0 && (frameEnd->time < gametime))) {
+      frameStart = frameEnd;
+      snapOffset = snapOffset + -1;
+      endOffset = (rewindDeltaTime / 0x32 + snapOffset) * 0x32;
+      frameEnd = SV_GetCachedSnapshot(&endOffset);
     }
-    if ((local_c != (cachedSnapshot_t *)0x0) && (local_8 != 1)) {
+    if ((frameEnd != (cachedSnapshot_t *)0x0) && (snapOffset != 1)) {
       Com_Printf(0xf,"Adjusted frameEnd by %i snaps\n");
     }
-    local_8 = 2;
-    while ((local_198 != (cachedSnapshot_t *)0x0 && (param_1 < local_198->time))) {
-      local_198 = local_c;
-      local_8 = local_8 + 1;
-      local_4f4 = (local_4f0 / 0x32 + local_8) * 0x32;
-      local_198 = SV_GetCachedSnapshot(&local_4f4);
+    snapOffset = 2;
+    while ((frameStart != (cachedSnapshot_t *)0x0 && (gametime < frameStart->time))) {
+      frameStart = frameEnd;
+      snapOffset = snapOffset + 1;
+      startOffset = (rewindDeltaTime / 0x32 + snapOffset) * 0x32;
+      frameStart = SV_GetCachedSnapshot(&startOffset);
     }
-    if ((local_198 != (cachedSnapshot_t *)0x0) && (local_8 != 2)) {
+    if ((frameStart != (cachedSnapshot_t *)0x0) && (snapOffset != 2)) {
       Com_Printf(0xf,"Adjusted frameStart by %i snaps\n");
     }
-    local_365 = local_198 != (cachedSnapshot_t *)0x0;
-    local_11 = local_c != (cachedSnapshot_t *)0x0;
-    local_1dc[0] = false;
-    local_1dc[1] = false;
-    local_1dc[2] = false;
-    local_1dc[3] = false;
-    local_1dc[4] = false;
-    local_1dc[5] = false;
-    local_1dc[6] = false;
-    local_1dc[7] = false;
-    local_1dc[8] = false;
-    local_1dc[9] = false;
-    local_1dc[10] = false;
-    local_1dc[0xb] = false;
-    local_1dc[0xc] = false;
-    local_1dc[0xd] = false;
-    local_1dc[0xe] = false;
-    local_1dc[0xf] = false;
-    local_1dc[0x10] = false;
-    local_1dc[0x11] = false;
-    local_1dc[0x12] = false;
-    local_1dc[0x13] = false;
-    local_1dc[0x14] = false;
-    local_1dc[0x15] = false;
-    local_1dc[0x16] = false;
-    local_1dc[0x17] = false;
-    local_1dc[0x18] = false;
-    local_1dc[0x19] = false;
-    local_1dc[0x1a] = false;
-    local_1dc[0x1b] = false;
-    local_1dc[0x1c] = false;
-    local_1dc[0x1d] = false;
-    local_1dc[0x1e] = false;
-    local_1dc[0x1f] = false;
-    local_1dc[0x20] = false;
-    local_1dc[0x21] = false;
-    local_1dc[0x22] = false;
-    local_1dc[0x23] = false;
-    local_1dc[0x24] = false;
-    local_1dc[0x25] = false;
-    local_1dc[0x26] = false;
-    local_1dc[0x27] = false;
-    local_1dc[0x28] = false;
-    local_1dc[0x29] = false;
-    local_1dc[0x2a] = false;
-    local_1dc[0x2b] = false;
-    local_1dc[0x2c] = false;
-    local_1dc[0x2d] = false;
-    local_1dc[0x2e] = false;
-    local_1dc[0x2f] = false;
-    local_1dc[0x30] = false;
-    local_1dc[0x31] = false;
-    local_1dc[0x32] = false;
-    local_1dc[0x33] = false;
-    local_1dc[0x34] = false;
-    local_1dc[0x35] = false;
-    local_1dc[0x36] = false;
-    local_1dc[0x37] = false;
-    local_1dc[0x38] = false;
-    local_1dc[0x39] = false;
-    local_1dc[0x3a] = false;
-    local_1dc[0x3b] = false;
-    local_1dc[0x3c] = false;
-    local_1dc[0x3d] = false;
-    local_1dc[0x3e] = false;
-    local_1dc[0x3f] = false;
-    if (local_198 != (cachedSnapshot_t *)0x0) {
-      if (param_1 < local_198->time) {
+    foundStart = frameStart != (cachedSnapshot_t *)0x0;
+    foundEnd = frameEnd != (cachedSnapshot_t *)0x0;
+    startSuccess[0] = false;
+    startSuccess[1] = false;
+    startSuccess[2] = false;
+    startSuccess[3] = false;
+    startSuccess[4] = false;
+    startSuccess[5] = false;
+    startSuccess[6] = false;
+    startSuccess[7] = false;
+    startSuccess[8] = false;
+    startSuccess[9] = false;
+    startSuccess[10] = false;
+    startSuccess[0xb] = false;
+    startSuccess[0xc] = false;
+    startSuccess[0xd] = false;
+    startSuccess[0xe] = false;
+    startSuccess[0xf] = false;
+    startSuccess[0x10] = false;
+    startSuccess[0x11] = false;
+    startSuccess[0x12] = false;
+    startSuccess[0x13] = false;
+    startSuccess[0x14] = false;
+    startSuccess[0x15] = false;
+    startSuccess[0x16] = false;
+    startSuccess[0x17] = false;
+    startSuccess[0x18] = false;
+    startSuccess[0x19] = false;
+    startSuccess[0x1a] = false;
+    startSuccess[0x1b] = false;
+    startSuccess[0x1c] = false;
+    startSuccess[0x1d] = false;
+    startSuccess[0x1e] = false;
+    startSuccess[0x1f] = false;
+    startSuccess[0x20] = false;
+    startSuccess[0x21] = false;
+    startSuccess[0x22] = false;
+    startSuccess[0x23] = false;
+    startSuccess[0x24] = false;
+    startSuccess[0x25] = false;
+    startSuccess[0x26] = false;
+    startSuccess[0x27] = false;
+    startSuccess[0x28] = false;
+    startSuccess[0x29] = false;
+    startSuccess[0x2a] = false;
+    startSuccess[0x2b] = false;
+    startSuccess[0x2c] = false;
+    startSuccess[0x2d] = false;
+    startSuccess[0x2e] = false;
+    startSuccess[0x2f] = false;
+    startSuccess[0x30] = false;
+    startSuccess[0x31] = false;
+    startSuccess[0x32] = false;
+    startSuccess[0x33] = false;
+    startSuccess[0x34] = false;
+    startSuccess[0x35] = false;
+    startSuccess[0x36] = false;
+    startSuccess[0x37] = false;
+    startSuccess[0x38] = false;
+    startSuccess[0x39] = false;
+    startSuccess[0x3a] = false;
+    startSuccess[0x3b] = false;
+    startSuccess[0x3c] = false;
+    startSuccess[0x3d] = false;
+    startSuccess[0x3e] = false;
+    startSuccess[0x3f] = false;
+    if (frameStart != (cachedSnapshot_t *)0x0) {
+      if (gametime < frameStart->time) {
         va("frameStart->time is %i for gametime %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x9bb,0,"%s\n\t%s");
@@ -1672,10 +1720,10 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
         }
       }
       SV_GetClientPositionsFromCachedSnap
-                (local_198,(float (*) [3])local_35c,(float (*) [3])local_4ec,local_1dc);
+                (frameStart,(float (*) [3])startPos,(float (*) [3])startAngles,startSuccess);
     }
-    if (local_11 != false) {
-      if (local_c->time < param_1) {
+    if (foundEnd != false) {
+      if (frameEnd->time < gametime) {
         va("frameEnd->time is %i for gametime %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0x9c0,0,"%s\n\t%s");
@@ -1686,26 +1734,27 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
         }
       }
       SV_GetClientPositionsFromCachedSnap
-                (local_c,(float (*) [3])local_674,(float (*) [3])local_194,local_1dc + 0x20);
+                (frameEnd,(float (*) [3])endPos,(float (*) [3])endAngles,startSuccess + 0x20);
     }
-    if ((local_365 == false) || (local_11 == false)) {
-      local_360 = 0.0;
+    if ((foundStart == false) || (foundEnd == false)) {
+      progress = 0.0;
     }
     else {
-      if (local_4f4 == local_364) {
-        local_360 = 0.0;
+      if (startOffset == endOffset) {
+        progress = 0.0;
       }
       else {
-        local_360 = (float)(param_1 - local_198->time) / (float)(local_c->time - local_198->time);
+        progress = (float)(gametime - frameStart->time) / (float)(frameEnd->time - frameStart->time)
+        ;
       }
-      if ((local_360 < 0.0) &&
+      if ((progress < 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x9d1,0,"%s\n\t(progress) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if ((1.0 < local_360) &&
+      if ((1.0 < progress) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x9d2,0,"%s\n\t(progress) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1713,55 +1762,55 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
         return (bool)uVar3;
       }
     }
-    for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {
-      if ((local_1dc[local_10] == false) || (local_1dc[local_10 + 0x20] == false)) {
-        if (local_1dc[local_10] == false) {
-          if (local_1dc[local_10 + 0x20] != false) {
-            param_4[local_10] = true;
-            pafVar4 = param_2 + local_10;
-            (*pafVar4)[0] = local_674[local_10 * 3];
-            (*pafVar4)[1] = local_674[local_10 * 3 + 1];
-            (*pafVar4)[2] = local_674[local_10 * 3 + 2];
-            pafVar4 = param_3 + local_10;
-            (*pafVar4)[0] = local_194[local_10 * 3];
-            (*pafVar4)[1] = local_194[local_10 * 3 + 1];
-            (*pafVar4)[2] = local_194[local_10 * 3 + 2];
-            if ((((uint)param_2[local_10][0] & 0x7f800000) == 0x7f800000) &&
+    for (clientNum = 0; clientNum < 0x20; clientNum = clientNum + 1) {
+      if ((startSuccess[clientNum] == false) || (startSuccess[clientNum + 0x20] == false)) {
+        if (startSuccess[clientNum] == false) {
+          if (startSuccess[clientNum + 0x20] != false) {
+            success[clientNum] = true;
+            pafVar4 = pos + clientNum;
+            (*pafVar4)[0] = endPos[clientNum * 3];
+            (*pafVar4)[1] = endPos[clientNum * 3 + 1];
+            (*pafVar4)[2] = endPos[clientNum * 3 + 2];
+            pafVar4 = angles + clientNum;
+            (*pafVar4)[0] = endAngles[clientNum * 3];
+            (*pafVar4)[1] = endAngles[clientNum * 3 + 1];
+            (*pafVar4)[2] = endAngles[clientNum * 3 + 2];
+            if ((((uint)pos[clientNum][0] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x9fc,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar3 = (*pcVar1)();
               return (bool)uVar3;
             }
-            if ((((uint)param_2[local_10][1] & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)pos[clientNum][1] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x9fd,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar3 = (*pcVar1)();
               return (bool)uVar3;
             }
-            if ((((uint)param_2[local_10][2] & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)pos[clientNum][2] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x9fe,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar3 = (*pcVar1)();
               return (bool)uVar3;
             }
-            if ((((uint)param_3[local_10][0] & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)angles[clientNum][0] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0x9ff,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar3 = (*pcVar1)();
               return (bool)uVar3;
             }
-            if ((((uint)param_3[local_10][1] & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)angles[clientNum][1] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0xa00,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar3 = (*pcVar1)();
               return (bool)uVar3;
             }
-            if ((((uint)param_3[local_10][2] & 0x7f800000) == 0x7f800000) &&
+            if ((((uint)angles[clientNum][2] & 0x7f800000) == 0x7f800000) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0xa01,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
@@ -1771,51 +1820,51 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
           }
         }
         else {
-          param_4[local_10] = true;
-          pafVar4 = param_2 + local_10;
-          (*pafVar4)[0] = local_35c[local_10 * 3];
-          (*pafVar4)[1] = local_35c[local_10 * 3 + 1];
-          (*pafVar4)[2] = local_35c[local_10 * 3 + 2];
-          pafVar4 = param_3 + local_10;
-          (*pafVar4)[0] = local_4ec[local_10 * 3];
-          (*pafVar4)[1] = local_4ec[local_10 * 3 + 1];
-          (*pafVar4)[2] = local_4ec[local_10 * 3 + 2];
-          if ((((uint)param_2[local_10][0] & 0x7f800000) == 0x7f800000) &&
+          success[clientNum] = true;
+          pafVar4 = pos + clientNum;
+          (*pafVar4)[0] = startPos[clientNum * 3];
+          (*pafVar4)[1] = startPos[clientNum * 3 + 1];
+          (*pafVar4)[2] = startPos[clientNum * 3 + 2];
+          pafVar4 = angles + clientNum;
+          (*pafVar4)[0] = startAngles[clientNum * 3];
+          (*pafVar4)[1] = startAngles[clientNum * 3 + 1];
+          (*pafVar4)[2] = startAngles[clientNum * 3 + 2];
+          if ((((uint)pos[clientNum][0] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f0,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if ((((uint)param_2[local_10][1] & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)pos[clientNum][1] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f1,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if ((((uint)param_2[local_10][2] & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)pos[clientNum][2] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f2,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if ((((uint)param_3[local_10][0] & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)angles[clientNum][0] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f3,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if ((((uint)param_3[local_10][1] & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)angles[clientNum][1] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f4,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          if ((((uint)param_3[local_10][2] & 0x7f800000) == 0x7f800000) &&
+          if ((((uint)angles[clientNum][2] & 0x7f800000) == 0x7f800000) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0x9f5,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -1825,7 +1874,7 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
         }
       }
       else {
-        if (param_1 < local_198->time) {
+        if (gametime < frameStart->time) {
           va("%i > %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x9df,0,"%s\n\t%s");
@@ -1835,7 +1884,7 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
             return (bool)uVar3;
           }
         }
-        if (local_c->time < param_1) {
+        if (frameEnd->time < gametime) {
           va("%i < %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0x9e0,0,"%s\n\t%s");
@@ -1845,45 +1894,45 @@ SV_GetClientPositionsAtTime(int param_1,float (*param_2) [3],float (*param_3) [3
             return (bool)uVar3;
           }
         }
-        param_4[local_10] = true;
-        Vec3Lerp(local_35c + local_10 * 3,local_674 + local_10 * 3,local_360,param_2[local_10]);
-        Vec3Lerp(local_4ec + local_10 * 3,local_194 + local_10 * 3,local_360,param_3[local_10]);
-        if ((((uint)param_2[local_10][0] & 0x7f800000) == 0x7f800000) &&
+        success[clientNum] = true;
+        Vec3Lerp(startPos + clientNum * 3,endPos + clientNum * 3,progress,pos[clientNum]);
+        Vec3Lerp(startAngles + clientNum * 3,endAngles + clientNum * 3,progress,angles[clientNum]);
+        if ((((uint)pos[clientNum][0] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e4,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if ((((uint)param_2[local_10][1] & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)pos[clientNum][1] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e5,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if ((((uint)param_2[local_10][2] & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)pos[clientNum][2] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e6,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if ((((uint)param_3[local_10][0] & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)angles[clientNum][0] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e7,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if ((((uint)param_3[local_10][1] & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)angles[clientNum][1] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e8,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if ((((uint)param_3[local_10][2] & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)angles[clientNum][2] & 0x7f800000) == 0x7f800000) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                      ,0x9e9,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -1913,7 +1962,7 @@ int __cdecl SV_GetEarliestArchivedClientInfoTime(void)
   bool bVar2;
   int iVar3;
   cachedSnapshot_t *pcVar4;
-  int local_8;
+  int archivedFrame;
   
   bVar2 = SV_Loaded();
   if ((!bVar2) &&
@@ -1923,13 +1972,13 @@ int __cdecl SV_GetEarliestArchivedClientInfoTime(void)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = svs.nextArchivedSnapshotFrames + -0x4b0;
-  if (local_8 < 0) {
-    local_8 = 0;
+  archivedFrame = svs.nextArchivedSnapshotFrames + -0x4b0;
+  if (archivedFrame < 0) {
+    archivedFrame = 0;
   }
-  for (; local_8 < svs.nextArchivedSnapshotFrames; local_8 = local_8 + 1) {
-    bVar2 = SV_HasCachedSnapshotInternal(local_8,0);
-    pcVar4 = SV_GetCachedSnapshotInternal(local_8,0,false);
+  for (; archivedFrame < svs.nextArchivedSnapshotFrames; archivedFrame = archivedFrame + 1) {
+    bVar2 = SV_HasCachedSnapshotInternal(archivedFrame,0);
+    pcVar4 = SV_GetCachedSnapshotInternal(archivedFrame,0,false);
     if ((bVar2 != (pcVar4 != (cachedSnapshot_t *)0x0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xa19,0,"%s"), !bVar2)) {
@@ -1937,10 +1986,10 @@ int __cdecl SV_GetEarliestArchivedClientInfoTime(void)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    bVar2 = SV_HasCachedSnapshotInternal(local_8,0);
+    bVar2 = SV_HasCachedSnapshotInternal(archivedFrame,0);
     if (bVar2) break;
   }
-  svs.oldestArchiveTime = (svs.nextArchivedSnapshotFrames - local_8) * 0x32;
+  svs.oldestArchiveTime = (svs.nextArchivedSnapshotFrames - archivedFrame) * 0x32;
   return svs.oldestArchiveTime;
 }
 
@@ -1957,41 +2006,42 @@ int __cdecl SV_GetEarliestArchivedClientInfoTime(void)
 
 int __cdecl
 SV_GetArchivedClientInfo
-          (int param_1,int *param_2,playerState_s *param_3,clientState_s *param_4,float *param_5,
-          int *param_6,int *param_7)
+          (int clientNum,int *pArchiveTime,playerState_s *ps,clientState_s *cs,float *origin,
+          int *health,int *otherFlags)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  playerState_s local_2744;
+  playerState_s *backupPs;
+  playerState_s bufForbackupPs;
   uint local_18;
-  cachedSnapshot_t *local_14;
-  uint local_10;
-  int local_c;
-  cachedClient_s *local_8;
+  cachedSnapshot_t *cachedFrame;
+  uint i;
+  int deltaTime;
+  cachedClient_s *cachedClient;
   
-  local_8 = (cachedClient_s *)0x71b0bd;
+  cachedClient = (cachedClient_s *)0x71b0bd;
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_6 == (int *)0x0) &&
+  if ((health == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xa32,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_7 == (int *)0x0) &&
+  if ((otherFlags == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xa33,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_14 = SV_GetCachedSnapshot(param_2);
-  if (local_14 == (cachedSnapshot_t *)0x0) {
+  cachedFrame = SV_GetCachedSnapshot(pArchiveTime);
+  if (cachedFrame == (cachedSnapshot_t *)0x0) {
     ppVar1 = (playerState_s *)
-             ((int)local_2744.origin + ((0x80 - ((uint)&local_2744 & 0x7f) & 0x7f) - 0x24));
+             ((int)bufForbackupPs.origin + ((0x80 - ((uint)&bufForbackupPs & 0x7f) & 0x7f) - 0x24));
     if ((((uint)ppVar1 & 0x7f) != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xa3e,0,"%s"), !bVar3)) {
@@ -1999,23 +2049,23 @@ SV_GetArchivedClientInfo
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    if (param_3 == (playerState_s *)0x0) {
-      param_3 = ppVar1;
+    if (ps == (playerState_s *)0x0) {
+      ps = ppVar1;
     }
-    if ((param_3 == (playerState_s *)0x0) &&
+    if ((ps == (playerState_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xa43,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    if ((*param_2 < 1) && (iVar4 = SV_GetCurrentClientInfo(param_1,param_3,param_4), iVar4 != 0)) {
-      *param_6 = param_3->stats[0];
-      *param_7 = param_3->otherFlags;
-      if (param_5 != (float *)0x0) {
-        *param_5 = param_3->origin[0];
-        param_5[1] = param_3->origin[1];
-        param_5[2] = param_3->origin[2];
+    if ((*pArchiveTime < 1) && (iVar4 = SV_GetCurrentClientInfo(clientNum,ps,cs), iVar4 != 0)) {
+      *health = ps->stats[0];
+      *otherFlags = ps->otherFlags;
+      if (origin != (float *)0x0) {
+        *origin = ps->origin[0];
+        origin[1] = ps->origin[1];
+        origin[2] = ps->origin[2];
       }
       iVar4 = 1;
     }
@@ -2024,73 +2074,71 @@ SV_GetArchivedClientInfo
     }
   }
   else {
-    if ((*param_2 < 1) &&
+    if ((*pArchiveTime < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xa4f,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    local_c = svs.time - local_14->time;
-    for (local_10 = 0; local_10 < (uint)local_14->num_clients; local_10 = local_10 + 1) {
-      local_8 = svs.cachedSnapshotClients +
-                (local_14->first_client + local_10) % (uint)svs.numCachedSnapshotClients;
-      if ((local_8->cs).clientIndex == param_1) {
-        if (local_8->playerStateExists != 0) {
-          if ((local_8 == (cachedClient_s *)0x0) &&
+    deltaTime = svs.time - cachedFrame->time;
+    for (i = 0; i < (uint)cachedFrame->num_clients; i = i + 1) {
+      cachedClient = svs.cachedSnapshotClients +
+                     (cachedFrame->first_client + i) % (uint)svs.numCachedSnapshotClients;
+      if ((cachedClient->cs).clientIndex == clientNum) {
+        if (cachedClient->playerStateExists != 0) {
+          if ((cachedClient == (cachedClient_s *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0xa64,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          if ((((local_8->ps).otherFlags & 4U) == 0) &&
+          if ((((cachedClient->ps).otherFlags & 4U) == 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0xa65,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          if (param_5 != (float *)0x0) {
-            *param_5 = (local_8->ps).origin[0];
-            param_5[1] = (local_8->ps).origin[1];
-            param_5[2] = (local_8->ps).origin[2];
+          if (origin != (float *)0x0) {
+            *origin = (cachedClient->ps).origin[0];
+            origin[1] = (cachedClient->ps).origin[1];
+            origin[2] = (cachedClient->ps).origin[2];
           }
-          if (param_4 != (clientState_s *)0x0) {
-            Com_Memcpy(param_4,&local_8->cs,0xd0);
+          if (cs != (clientState_s *)0x0) {
+            Com_Memcpy(cs,&cachedClient->cs,0xd0);
           }
-          *param_6 = (local_8->ps).stats[0];
-          *param_7 = (local_8->ps).otherFlags;
-          if (param_3 != (playerState_s *)0x0) {
-            Com_Memcpy(param_3,&local_8->ps,0x26a4);
-            if (param_3->commandTime != 0) {
-              param_3->commandTime = param_3->commandTime + local_c;
+          *health = (cachedClient->ps).stats[0];
+          *otherFlags = (cachedClient->ps).otherFlags;
+          if (ps != (playerState_s *)0x0) {
+            Com_Memcpy(ps,&cachedClient->ps,0x26a4);
+            if (ps->commandTime != 0) {
+              ps->commandTime = ps->commandTime + deltaTime;
             }
-            if (param_3->pm_time != 0) {
-              param_3->pm_time = param_3->pm_time + local_c;
+            if (ps->pm_time != 0) {
+              ps->pm_time = ps->pm_time + deltaTime;
             }
-            if (param_3->foliageSoundTime != 0) {
-              param_3->foliageSoundTime = param_3->foliageSoundTime + local_c;
+            if (ps->foliageSoundTime != 0) {
+              ps->foliageSoundTime = ps->foliageSoundTime + deltaTime;
             }
-            if (param_3->jumpTime != 0) {
-              param_3->jumpTime = param_3->jumpTime + local_c;
+            if (ps->jumpTime != 0) {
+              ps->jumpTime = ps->jumpTime + deltaTime;
             }
-            if (param_3->viewHeightLerpTime != 0) {
-              param_3->viewHeightLerpTime = param_3->viewHeightLerpTime + local_c;
+            if (ps->viewHeightLerpTime != 0) {
+              ps->viewHeightLerpTime = ps->viewHeightLerpTime + deltaTime;
             }
-            if (param_3->shellshockTime != 0) {
-              param_3->shellshockTime = param_3->shellshockTime + local_c;
+            if (ps->shellshockTime != 0) {
+              ps->shellshockTime = ps->shellshockTime + deltaTime;
             }
-            for (local_10 = 0; (local_10 < 0x1f && ((param_3->hud).archival[local_10].type != '\0'))
-                ; local_10 = local_10 + 1) {
-              if ((param_3->hud).archival[local_10].time != 0) {
-                (param_3->hud).archival[local_10].time =
-                     (param_3->hud).archival[local_10].time + local_c;
+            for (i = 0; (i < 0x1f && ((ps->hud).archival[i].type != '\0')); i = i + 1) {
+              if ((ps->hud).archival[i].time != 0) {
+                (ps->hud).archival[i].time = (ps->hud).archival[i].time + deltaTime;
               }
-              if ((((param_3->hud).archival[local_10].fadeStartTime != 0) &&
-                  ((param_3->hud).archival[local_10].fadeStartTime =
-                        (param_3->hud).archival[local_10].fadeStartTime + local_c,
-                  svs.time < (param_3->hud).archival[local_10].fadeStartTime)) &&
+              if ((((ps->hud).archival[i].fadeStartTime != 0) &&
+                  ((ps->hud).archival[i].fadeStartTime =
+                        (ps->hud).archival[i].fadeStartTime + deltaTime,
+                  svs.time < (ps->hud).archival[i].fadeStartTime)) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                            ,0xa8f,0,
                                            "ps->hud.archival[i].fadeStartTime <= svs.time\n\t%i, %i"
@@ -2099,16 +2147,16 @@ SV_GetArchivedClientInfo
                 iVar4 = (*pcVar2)();
                 return iVar4;
               }
-              if ((param_3->hud).archival[local_10].scaleStartTime != 0) {
-                (param_3->hud).archival[local_10].scaleStartTime =
-                     (param_3->hud).archival[local_10].scaleStartTime + local_c;
+              if ((ps->hud).archival[i].scaleStartTime != 0) {
+                (ps->hud).archival[i].scaleStartTime =
+                     (ps->hud).archival[i].scaleStartTime + deltaTime;
               }
-              if ((param_3->hud).archival[local_10].moveStartTime != 0) {
-                (param_3->hud).archival[local_10].moveStartTime =
-                     (param_3->hud).archival[local_10].moveStartTime + local_c;
+              if ((ps->hud).archival[i].moveStartTime != 0) {
+                (ps->hud).archival[i].moveStartTime =
+                     (ps->hud).archival[i].moveStartTime + deltaTime;
               }
             }
-            param_3->deltaTime = param_3->deltaTime + local_c;
+            ps->deltaTime = ps->deltaTime + deltaTime;
           }
           return 1;
         }
@@ -2123,38 +2171,38 @@ SV_GetArchivedClientInfo
 
 // 0071B6C0  SV_DecToHex  (server_mp/sv_snapshot_mp.cpp:2721)
 
-void __cdecl SV_DecToHex(int param_1,char *param_2,int param_3)
+void __cdecl SV_DecToHex(int decValue,char *hexValue,int hexLength)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if ((1 << ((byte)(param_3 << 2) & 0x1f) <= param_1) &&
+  if ((1 << ((byte)(hexLength << 2) & 0x1f) <= decValue) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xaa2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 < 0) &&
+  if ((decValue < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xaa3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  while (local_8 = param_3 + -1, -1 < local_8) {
-    param_3 = local_8;
-    if (param_1 == 0) {
-      param_2[local_8] = '0';
+  while (i = hexLength + -1, -1 < i) {
+    hexLength = i;
+    if (decValue == 0) {
+      hexValue[i] = '0';
     }
     else {
-      param_2[local_8] = ((byte)param_1 & 0xf) + 0x30;
-      if ('9' < param_2[local_8]) {
-        param_2[local_8] = param_2[local_8] + '\a';
+      hexValue[i] = ((byte)decValue & 0xf) + 0x30;
+      if ('9' < hexValue[i]) {
+        hexValue[i] = hexValue[i] + '\a';
       }
-      param_1 = param_1 >> 4;
+      decValue = decValue >> 4;
     }
   }
   return;
@@ -2163,14 +2211,14 @@ void __cdecl SV_DecToHex(int param_1,char *param_2,int param_3)
 
 // 0071B7A0  SV_AppendToBuffer  (server_mp/sv_snapshot_mp.cpp:2744)
 
-int __cdecl SV_AppendToBuffer(char *param_1,int *param_2,char *param_3,int param_4)
+int __cdecl SV_AppendToBuffer(char *msgBuffer,int *msgBufferIndex,char *data,int dataSize)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    param_1[*param_2] = param_3[local_8];
-    *param_2 = *param_2 + 1;
+  for (i = 0; i < dataSize; i = i + 1) {
+    msgBuffer[*msgBufferIndex] = data[i];
+    *msgBufferIndex = *msgBufferIndex + 1;
   }
   return 1;
 }
@@ -2186,29 +2234,30 @@ int __cdecl SV_AppendToBuffer(char *param_1,int *param_2,char *param_3,int param
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-SV_AddModifiedStatsWithinOffset(int param_1,int param_2,int *param_3,char *param_4,int *param_5)
+SV_AddModifiedStatsWithinOffset
+          (int clientNum,int startOffset,int *endOffset,char *msgBuff,int *msgBuffIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_24;
-  int local_20;
-  char *local_1c;
-  char local_18 [4];
-  char local_14 [7];
-  char local_d;
-  int local_c;
-  uint local_8;
+  int i;
+  int byteSize;
+  char *buffer;
+  char buffHexByte [4];
+  char buffHexShort [7];
+  char buffHexCharacter;
+  int isMsgWithinMaxSize;
+  uint value;
   
-  if ((*param_3 < param_2) &&
+  if ((*endOffset < startOffset) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xacc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xacd,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2217,34 +2266,34 @@ SV_AddModifiedStatsWithinOffset(int param_1,int param_2,int *param_3,char *param
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_20 = (*param_3 - param_2) + 1;
-  local_c = 1;
-  if ((0x10 < local_20) &&
+  byteSize = (*endOffset - startOffset) + 1;
+  isMsgWithinMaxSize = 1;
+  if ((0x10 < byteSize) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xad2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (0x3f < *param_5 + 5 + local_20 * 2) {
-    if (0x3f < *param_5 + 5) {
+  if (0x3f < *msgBuffIndex + 5 + byteSize * 2) {
+    if (0x3f < *msgBuffIndex + 5) {
       return 0;
     }
-    local_20 = (0x3b - *param_5) / 2;
-    if (local_20 < 1) {
+    byteSize = (0x3b - *msgBuffIndex) / 2;
+    if (byteSize < 1) {
       return 0;
     }
-    *param_3 = param_2 + -1 + local_20;
-    local_c = 0;
+    *endOffset = startOffset + -1 + byteSize;
+    isMsgWithinMaxSize = 0;
   }
-  if ((*param_3 < param_2) &&
+  if ((*endOffset < startOffset) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xaea,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((0x40 < *param_5 + 5 + local_20 * 2) &&
+  if ((0x40 < *msgBuffIndex + 5 + byteSize * 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xaeb,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2252,25 +2301,25 @@ SV_AddModifiedStatsWithinOffset(int param_1,int param_2,int *param_3,char *param
     return iVar3;
   }
   if ((xblive_basictraining->current).enabled == false) {
-    iVar3 = param_1 * 0x84d00 + 0x6ff11;
+    iVar3 = clientNum * 0x84d00 + 0x6ff11;
   }
   else {
-    iVar3 = param_1 * 0x84d00 + 0x66209;
+    iVar3 = clientNum * 0x84d00 + 0x66209;
   }
-  local_1c = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar3);
-  SV_DecToHex(param_2,local_14,4);
-  SV_AppendToBuffer(param_4,param_5,local_14,4);
-  SV_DecToHex(local_20 + -1,&local_d,1);
-  SV_AppendToBuffer(param_4,param_5,&local_d,1);
-  for (local_24 = param_2; local_24 <= *param_3; local_24 = local_24 + 1) {
-    DDL_GetBits(local_1c,local_24 << 3,8,&local_8);
-    SV_DecToHex(local_8,local_18,2);
-    SV_AppendToBuffer(param_4,param_5,local_18,2);
-    *(byte *)((int)svs.clients + (local_24 >> 3) + param_1 * 0x84d00 + 0x838e1) =
-         *(byte *)((int)svs.clients + (local_24 >> 3) + param_1 * 0x84d00 + 0x838e1) &
-         ~(byte)(1 << ((byte)local_24 & 7));
+  buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar3);
+  SV_DecToHex(startOffset,buffHexShort,4);
+  SV_AppendToBuffer(msgBuff,msgBuffIndex,buffHexShort,4);
+  SV_DecToHex(byteSize + -1,&buffHexCharacter,1);
+  SV_AppendToBuffer(msgBuff,msgBuffIndex,&buffHexCharacter,1);
+  for (i = startOffset; i <= *endOffset; i = i + 1) {
+    DDL_GetBits(buffer,i << 3,8,&value);
+    SV_DecToHex(value,buffHexByte,2);
+    SV_AppendToBuffer(msgBuff,msgBuffIndex,buffHexByte,2);
+    *(byte *)((int)svs.clients + (i >> 3) + clientNum * 0x84d00 + 0x838e1) =
+         *(byte *)((int)svs.clients + (i >> 3) + clientNum * 0x84d00 + 0x838e1) &
+         ~(byte)(1 << ((byte)i & 7));
   }
-  return local_c;
+  return isMsgWithinMaxSize;
 }
 
 
@@ -2283,25 +2332,25 @@ SV_AddModifiedStatsWithinOffset(int param_1,int param_2,int *param_3,char *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_AddModifiedStats(int param_1)
+void __cdecl SV_AddModifiedStats(int clientNum)
 
 {
   byte *pbVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uint local_70;
-  uint local_68;
-  uchar local_64 [72];
+  int j;
+  int startOffset;
+  uchar msgBuff [72];
   uint local_1c;
-  int local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int isMessageFull;
+  int endOffset;
+  int i;
+  int msgBuffIndex;
+  int isRunningStatBlock;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xb13,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2310,88 +2359,87 @@ void __cdecl SV_AddModifiedStats(int param_1)
     (*pcVar2)();
     return;
   }
-  local_c = 0;
-  local_18 = 0;
-  if (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c84) != 0) {
-    local_8 = 0;
-    local_68 = 0;
-    local_14 = 0;
-    memset(local_64,'\0',0x41);
-    if ((0x139c < *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80)) &&
+  msgBuffIndex = 0;
+  isMessageFull = 0;
+  if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c84) != 0) {
+    isRunningStatBlock = 0;
+    startOffset = 0;
+    endOffset = 0;
+    memset(msgBuff,'\0',0x41);
+    if ((0x139c < *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xb22,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (0x139c < *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80)) {
-      *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80) = 0;
+    if (0x139c < *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80)) {
+      *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80) = 0;
     }
-    for (local_10 = *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80); local_10 < 0x139d;
-        local_10 = local_10 + 1) {
-      pbVar1 = (byte *)((int)svs.clients + local_10 + param_1 * 0x84d00 + 0x838e1);
+    for (i = *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80); i < 0x139d; i = i + 1) {
+      pbVar1 = (byte *)((int)svs.clients + i + clientNum * 0x84d00 + 0x838e1);
       if (*pbVar1 == 0) {
-        if (local_8 != 0) {
+        if (isRunningStatBlock != 0) {
           iVar4 = SV_AddModifiedStatsWithinOffset
-                            (param_1,local_68,(int *)&local_14,(char *)local_64,&local_c);
+                            (clientNum,startOffset,&endOffset,(char *)msgBuff,&msgBuffIndex);
           if (iVar4 == 0) {
-            local_18 = 1;
+            isMessageFull = 1;
             break;
           }
-          local_8 = 0;
+          isRunningStatBlock = 0;
         }
       }
       else {
-        for (local_70 = 0; (int)local_70 < 8; local_70 = local_70 + 1) {
-          if (((uint)*pbVar1 & 1 << ((byte)local_70 & 0x1f)) == 0) {
-            if (local_8 != 0) {
+        for (j = 0; j < 8; j = j + 1) {
+          if (((uint)*pbVar1 & 1 << ((byte)j & 0x1f)) == 0) {
+            if (isRunningStatBlock != 0) {
               iVar4 = SV_AddModifiedStatsWithinOffset
-                                (param_1,local_68,(int *)&local_14,(char *)local_64,&local_c);
+                                (clientNum,startOffset,&endOffset,(char *)msgBuff,&msgBuffIndex);
               if (iVar4 == 0) {
-                local_18 = 1;
+                isMessageFull = 1;
                 break;
               }
-              local_8 = 0;
+              isRunningStatBlock = 0;
             }
           }
-          else if (local_8 == 0) {
-            local_68 = local_10 << 3 | local_70 & 7;
-            local_8 = 1;
-            local_14 = local_68;
+          else if (isRunningStatBlock == 0) {
+            startOffset = i << 3 | j & 7U;
+            isRunningStatBlock = 1;
+            endOffset = startOffset;
           }
           else {
-            local_14 = local_10 << 3 | local_70 & 7;
-            if (local_14 - local_68 == 0xf) {
+            endOffset = i << 3 | j & 7U;
+            if (endOffset - startOffset == 0xf) {
               iVar4 = SV_AddModifiedStatsWithinOffset
-                                (param_1,local_68,(int *)&local_14,(char *)local_64,&local_c);
+                                (clientNum,startOffset,&endOffset,(char *)msgBuff,&msgBuffIndex);
               if (iVar4 == 0) {
-                local_18 = 1;
+                isMessageFull = 1;
                 break;
               }
-              local_8 = 0;
+              isRunningStatBlock = 0;
             }
           }
         }
-        if (local_18 != 0) break;
+        if (isMessageFull != 0) break;
       }
     }
-    local_64[local_c] = '\0';
-    SV_SendServerCommand((client_t *)(param_1 * 0x84d00 + (int)svs.clients),SV_CMD_RELIABLE,"%c %s")
-    ;
-    if (local_18 == 0) {
-      if (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80) == 0) {
-        *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c84) = 0;
-        if ((*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x63914) == 0) &&
-           (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x63910) == 0)) {
-          SV_UpdatePersonalBestsForClient(param_1);
+    msgBuff[msgBuffIndex] = '\0';
+    SV_SendServerCommand
+              ((client_t *)(clientNum * 0x84d00 + (int)svs.clients),SV_CMD_RELIABLE,"%c %s");
+    if (isMessageFull == 0) {
+      if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80) == 0) {
+        *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c84) = 0;
+        if ((*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63914) == 0) &&
+           (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63910) == 0)) {
+          SV_UpdatePersonalBestsForClient(clientNum);
         }
       }
       else {
-        *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80) = 0;
+        *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80) = 0;
       }
     }
     else {
-      *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c80) = local_10;
+      *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c80) = i;
     }
   }
   return;
@@ -2401,64 +2449,66 @@ void __cdecl SV_AddModifiedStats(int param_1)
 // 0071BE50  SV_BuildClientSnapshot  (server_mp/sv_snapshot_mp.cpp:2958)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BuildClientSnapshot(client_t *param_1)
+void __cdecl SV_BuildClientSnapshot(client_t *client)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
-  playerState_s *ppVar4;
-  MatchState *pMVar5;
-  clientState_s *pcVar6;
-  int iVar7;
-  entityState_s *peVar8;
-  int *piVar9;
-  UnarchivedMatchState *pUVar10;
-  archivedEntity_s *paVar11;
-  MatchState *pMVar12;
-  clientState_s *pcVar13;
-  UnarchivedMatchState *pUVar14;
-  entityState_s *peVar15;
+  playerState_s *src;
+  MatchState *pMVar4;
+  clientState_s *pcVar5;
+  int iVar6;
+  entityState_s *peVar7;
+  gentity_s *pgVar8;
+  UnarchivedMatchState *pUVar9;
+  archivedEntity_s *paVar10;
+  MatchState *pMVar11;
+  clientState_s *pcVar12;
+  UnarchivedMatchState *pUVar13;
+  entityState_s *peVar14;
   int local_10e4;
-  int local_10d0;
-  snapshotEntityNumbers_t local_10cc;
-  MatchState *local_c0;
-  archivedEntity_s *local_bc;
-  clientState_s *local_b8;
-  gentity_s *local_b4;
-  cachedSnapshot_t *local_b0;
-  int local_ac [32];
-  float local_2c;
+  entityState_s *state;
+  clientSnapshot_t *frame;
+  int archiveTime;
+  snapshotEntityNumbers_t entityNumbers;
+  MatchState *matchState;
+  archivedEntity_s *cachedEnt;
+  clientState_s *clientState;
+  gentity_s *clent;
+  cachedSnapshot_t *cachedFrame;
+  int clientIndex [32];
+  float org;
   float local_28;
   float local_24;
-  int *local_20;
-  int local_1c;
-  MatchState *local_18;
-  uint local_14;
-  playerState_s *local_10;
-  int local_c;
-  cachedClient_s *local_8;
+  gentity_s *ent;
+  int i;
+  MatchState *cachedMatchState;
+  int clientNum;
+  playerState_s *ps;
+  int deltaTime;
+  cachedClient_s *cachedClient;
   
-  local_8 = (cachedClient_s *)0x71be5d;
-  ppVar1 = &param_1->frames[(param_1->header).netchan.outgoingSequence & 0x1f].ps;
+  cachedClient = (cachedClient_s *)0x71be5d;
+  ppVar1 = &client->frames[(client->header).netchan.outgoingSequence & 0x1f].ps;
   ppVar1[1].origin[0] = (float)sv.physicsTime;
   ppVar1[1].commandTime = 0;
   ppVar1[1].pm_type = 0;
-  local_b4 = param_1->gentity;
-  if ((local_b4 != (gentity_s *)0x0) && ((param_1->header).state != 1)) {
+  clent = client->gentity;
+  if ((clent != (gentity_s *)0x0) && ((client->header).state != 1)) {
     ppVar1[1].bobCycle = svs.nextSnapshotMatchStates;
     ppVar1[1].pm_flags = svs.nextSnapshotEntities;
     ppVar1[1].weapFlags = svs.nextSnapshotClients;
     if (sv.state == SS_GAME) {
-      local_10cc.numSnapshotEntities = 0;
-      local_14 = ((int)param_1 - (int)svs.clients) / 0x84d00;
-      if (((com_maxclients->current).unsignedInt <= local_14) &&
+      entityNumbers.numSnapshotEntities = 0;
+      clientNum = ((int)client - (int)svs.clients) / 0x84d00;
+      if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                    ,0xbc0,0,
                                    "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2467,52 +2517,53 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
         (*pcVar2)();
         return;
       }
-      local_10d0 = G_GetClientArchiveTime(local_14);
-      local_b0 = SV_GetCachedSnapshot(&local_10d0);
-      G_SetClientArchiveTime(local_14,local_10d0);
-      if (local_b0 == (cachedSnapshot_t *)0x0) {
+      archiveTime = G_GetClientArchiveTime(clientNum);
+      cachedFrame = SV_GetCachedSnapshot(&archiveTime);
+      G_SetClientArchiveTime(clientNum,archiveTime);
+      if (cachedFrame == (cachedSnapshot_t *)0x0) {
         local_10e4 = 0;
       }
       else {
-        local_10e4 = svs.time - local_b0->time;
+        local_10e4 = svs.time - cachedFrame->time;
       }
-      local_c = local_10e4;
-      local_10 = ppVar1;
-      ppVar4 = SV_GameClientNum(local_14);
-      memcpy((uchar *)local_10,(uchar *)ppVar4,0x26a4);
-      local_14 = (uint)local_10->clientNum;
-      if (0x3ff < local_14) {
+      deltaTime = local_10e4;
+      ps = ppVar1;
+      src = SV_GameClientNum(clientNum);
+      memcpy((uchar *)ps,(uchar *)src,0x26a4);
+      clientNum = (int)ps->clientNum;
+      if (0x3ff < (uint)clientNum) {
         Com_Error(ERR_DROP,"\x15SV_BuildClientSnapshot: bad gEnt");
       }
-      local_2c = local_10->origin[0];
-      local_28 = local_10->origin[1];
-      local_24 = local_10->origin[2] + local_10->viewHeightCurrent;
-      AddLeanToPosition(&local_2c,local_10->viewangles[1],local_10->leanf,16.0,20.0);
-      memset((uchar *)local_ac,'\0',0x80);
-      if (local_b0 == (cachedSnapshot_t *)0x0) {
-        SV_AddEntitiesVisibleFromPoint(&local_2c,local_14,&local_10cc);
-        local_c0 = svs.snapshotMatchStates +
-                   svs.nextSnapshotMatchStates % svs.numSnapshotMatchStates;
-        pMVar5 = G_GetMatchState();
-        pMVar12 = local_c0;
-        for (iVar7 = 0x20; iVar7 != 0; iVar7 = iVar7 + -1) {
-          pMVar12->index = pMVar5->index;
-          pMVar5 = (MatchState *)&pMVar5->archivedState;
-          pMVar12 = (MatchState *)&pMVar12->archivedState;
+      org = ps->origin[0];
+      local_28 = ps->origin[1];
+      local_24 = ps->origin[2] + ps->viewHeightCurrent;
+      AddLeanToPosition(&org,ps->viewangles[1],ps->leanf,16.0,20.0);
+      memset((uchar *)clientIndex,'\0',0x80);
+      if (cachedFrame == (cachedSnapshot_t *)0x0) {
+        SV_AddEntitiesVisibleFromPoint(&org,clientNum,&entityNumbers);
+        matchState = svs.snapshotMatchStates +
+                     svs.nextSnapshotMatchStates % svs.numSnapshotMatchStates;
+        pMVar4 = G_GetMatchState();
+        pMVar11 = matchState;
+        for (iVar6 = 0x20; iVar6 != 0; iVar6 = iVar6 + -1) {
+          pMVar11->index = pMVar4->index;
+          pMVar4 = (MatchState *)&pMVar4->archivedState;
+          pMVar11 = (MatchState *)&pMVar11->archivedState;
         }
         svs.nextSnapshotMatchStates = svs.nextSnapshotMatchStates + 1;
         if (0x7ffffffd < svs.nextSnapshotMatchStates) {
           Com_Error(ERR_FATAL,"\x15svs.nextSnapshotMatchStates wrapped");
         }
-        for (local_1c = 0; local_1c < local_10cc.numSnapshotEntities; local_1c = local_1c + 1) {
-          local_20 = (int *)((int)((sv.gentities)->s).lerp.pos.trBase +
-                            sv.gentitySize * local_10cc.snapshotEntities[local_1c] + -0x18);
-          piVar9 = local_20;
-          peVar15 = svs.snapshotEntities + svs.nextSnapshotEntities % svs.numSnapshotEntities;
-          for (iVar7 = 0x38; iVar7 != 0; iVar7 = iVar7 + -1) {
-            peVar15->number = *piVar9;
-            piVar9 = piVar9 + 1;
-            peVar15 = (entityState_s *)&peVar15->lerp;
+        for (i = 0; i < entityNumbers.numSnapshotEntities; i = i + 1) {
+          ent = (gentity_s *)
+                ((int)((sv.gentities)->s).lerp.pos.trBase +
+                sv.gentitySize * entityNumbers.snapshotEntities[i] + -0x18);
+          pgVar8 = ent;
+          peVar14 = svs.snapshotEntities + svs.nextSnapshotEntities % svs.numSnapshotEntities;
+          for (iVar6 = 0x38; iVar6 != 0; iVar6 = iVar6 + -1) {
+            peVar14->number = (pgVar8->s).number;
+            pgVar8 = (gentity_s *)&(pgVar8->s).lerp;
+            peVar14 = (entityState_s *)&peVar14->lerp;
           }
           svs.nextSnapshotEntities = svs.nextSnapshotEntities + 1;
           if (0x7ffffffd < svs.nextSnapshotEntities) {
@@ -2520,91 +2571,92 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
           }
           ppVar1[1].commandTime = ppVar1[1].commandTime + 1;
         }
-        param_1 = svs.clients;
-        for (local_1c = 0; local_1c < (com_maxclients->current).integer; local_1c = local_1c + 1) {
-          if (2 < (param_1->header).state) {
-            local_b8 = svs.snapshotClients + svs.nextSnapshotClients % svs.numSnapshotClients;
-            pcVar6 = G_GetClientState(local_1c);
-            pcVar13 = local_b8;
-            for (iVar7 = 0x34; iVar7 != 0; iVar7 = iVar7 + -1) {
-              pcVar13->clientIndex = pcVar6->clientIndex;
-              pcVar6 = (clientState_s *)&pcVar6->team;
-              pcVar13 = (clientState_s *)&pcVar13->team;
+        client = svs.clients;
+        for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+          if (2 < (client->header).state) {
+            clientState = svs.snapshotClients + svs.nextSnapshotClients % svs.numSnapshotClients;
+            pcVar5 = G_GetClientState(i);
+            pcVar12 = clientState;
+            for (iVar6 = 0x34; iVar6 != 0; iVar6 = iVar6 + -1) {
+              pcVar12->clientIndex = pcVar5->clientIndex;
+              pcVar5 = (clientState_s *)&pcVar5->team;
+              pcVar12 = (clientState_s *)&pcVar12->team;
             }
-            if ((local_b8->clientIndex != local_1c) &&
+            if ((clientState->clientIndex != i) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0xc04,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            if ((local_ac[local_b8->clientIndex] != 0) &&
+            if ((clientIndex[clientState->clientIndex] != 0) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                          ,0xc07,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            local_ac[local_b8->clientIndex] = 1;
+            clientIndex[clientState->clientIndex] = 1;
             svs.nextSnapshotClients = svs.nextSnapshotClients + 1;
             if (0x7ffffffd < svs.nextSnapshotClients) {
               Com_Error(ERR_FATAL,"\x15svs.nextSnapshotClients wrapped");
             }
             ppVar1[1].pm_type = ppVar1[1].pm_type + 1;
           }
-          param_1 = (client_t *)(param_1[1].userinfo + 0x3d8);
+          client = (client_t *)(client[1].userinfo + 0x3d8);
         }
       }
       else {
         SV_AddCachedEntitiesVisibleFromPoint
-                  (local_b0->num_entities,local_b0->first_entity,&local_2c,local_14,&local_10cc,
-                   local_10);
-        local_18 = svs.cachedSnapshotMatchStates +
-                   local_b0->matchState % svs.numCachedSnapshotMatchStates;
-        local_c0 = svs.snapshotMatchStates +
-                   svs.nextSnapshotMatchStates % svs.numSnapshotMatchStates;
-        (local_c0->archivedState).matchUIVisibilityFlags =
-             (local_18->archivedState).matchUIVisibilityFlags;
-        (local_c0->archivedState).bombTimer[0] = (local_18->archivedState).bombTimer[0];
-        (local_c0->archivedState).bombTimer[1] = (local_18->archivedState).bombTimer[1];
-        pMVar5 = G_GetMatchState();
-        pUVar10 = &pMVar5->unarchivedState;
-        pUVar14 = &local_c0->unarchivedState;
-        for (iVar7 = 0xc; iVar7 != 0; iVar7 = iVar7 + -1) {
-          pUVar14->alliesScore = pUVar10->alliesScore;
-          pUVar10 = (UnarchivedMatchState *)&pUVar10->axisScore;
-          pUVar14 = (UnarchivedMatchState *)&pUVar14->axisScore;
+                  (cachedFrame->num_entities,cachedFrame->first_entity,&org,clientNum,&entityNumbers
+                   ,ps);
+        cachedMatchState =
+             svs.cachedSnapshotMatchStates +
+             cachedFrame->matchState % svs.numCachedSnapshotMatchStates;
+        matchState = svs.snapshotMatchStates +
+                     svs.nextSnapshotMatchStates % svs.numSnapshotMatchStates;
+        (matchState->archivedState).matchUIVisibilityFlags =
+             (cachedMatchState->archivedState).matchUIVisibilityFlags;
+        (matchState->archivedState).bombTimer[0] = (cachedMatchState->archivedState).bombTimer[0];
+        (matchState->archivedState).bombTimer[1] = (cachedMatchState->archivedState).bombTimer[1];
+        pMVar4 = G_GetMatchState();
+        pUVar9 = &pMVar4->unarchivedState;
+        pUVar13 = &matchState->unarchivedState;
+        for (iVar6 = 0xc; iVar6 != 0; iVar6 = iVar6 + -1) {
+          pUVar13->alliesScore = pUVar9->alliesScore;
+          pUVar9 = (UnarchivedMatchState *)&pUVar9->axisScore;
+          pUVar13 = (UnarchivedMatchState *)&pUVar13->axisScore;
         }
         svs.nextSnapshotMatchStates = svs.nextSnapshotMatchStates + 1;
         if (0x7ffffffd < svs.nextSnapshotMatchStates) {
           Com_Error(ERR_FATAL,"\x15svs.nextSnapshotMatchStates wrapped");
         }
-        for (local_1c = 0; local_1c < local_10cc.numSnapshotEntities; local_1c = local_1c + 1) {
-          local_bc = svs.cachedSnapshotEntities +
-                     (local_b0->first_entity + local_10cc.snapshotEntities[local_1c]) %
-                     svs.numCachedSnapshotEntities;
-          peVar8 = svs.snapshotEntities + svs.nextSnapshotEntities % svs.numSnapshotEntities;
-          paVar11 = local_bc;
-          peVar15 = peVar8;
-          for (iVar7 = 0x38; iVar7 != 0; iVar7 = iVar7 + -1) {
-            peVar15->number = (paVar11->s).number;
-            paVar11 = (archivedEntity_s *)&(paVar11->s).lerp;
-            peVar15 = (entityState_s *)&peVar15->lerp;
+        for (i = 0; i < entityNumbers.numSnapshotEntities; i = i + 1) {
+          cachedEnt = svs.cachedSnapshotEntities +
+                      (cachedFrame->first_entity + entityNumbers.snapshotEntities[i]) %
+                      svs.numCachedSnapshotEntities;
+          peVar7 = svs.snapshotEntities + svs.nextSnapshotEntities % svs.numSnapshotEntities;
+          paVar10 = cachedEnt;
+          peVar14 = peVar7;
+          for (iVar6 = 0x38; iVar6 != 0; iVar6 = iVar6 + -1) {
+            peVar14->number = (paVar10->s).number;
+            paVar10 = (archivedEntity_s *)&(paVar10->s).lerp;
+            peVar14 = (entityState_s *)&peVar14->lerp;
           }
-          if ((peVar8->lerp).pos.trTime != 0) {
-            (peVar8->lerp).pos.trTime = (peVar8->lerp).pos.trTime + local_c;
+          if ((peVar7->lerp).pos.trTime != 0) {
+            (peVar7->lerp).pos.trTime = (peVar7->lerp).pos.trTime + deltaTime;
           }
-          if ((peVar8->lerp).apos.trTime != 0) {
-            (peVar8->lerp).apos.trTime = (peVar8->lerp).apos.trTime + local_c;
+          if ((peVar7->lerp).apos.trTime != 0) {
+            (peVar7->lerp).apos.trTime = (peVar7->lerp).apos.trTime + deltaTime;
           }
-          if (peVar8->time2 != 0) {
-            peVar8->time2 = peVar8->time2 + local_c;
+          if (peVar7->time2 != 0) {
+            peVar7->time2 = peVar7->time2 + deltaTime;
           }
-          if (peVar8->eType == 4) {
-            (peVar8->lerp).u.missile.launchTime = (peVar8->lerp).u.missile.launchTime + local_c;
+          if (peVar7->eType == 4) {
+            (peVar7->lerp).u.missile.launchTime = (peVar7->lerp).u.missile.launchTime + deltaTime;
           }
-          else if ((peVar8->eType == 0) || (peVar8->eType == 0x52)) {
-            (peVar8->lerp).u.missile.launchTime = (peVar8->lerp).u.missile.launchTime + local_c;
+          else if ((peVar7->eType == 0) || (peVar7->eType == 0x52)) {
+            (peVar7->lerp).u.missile.launchTime = (peVar7->lerp).u.missile.launchTime + deltaTime;
           }
           svs.nextSnapshotEntities = svs.nextSnapshotEntities + 1;
           if (0x7ffffffd < svs.nextSnapshotEntities) {
@@ -2612,26 +2664,26 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
           }
           ppVar1[1].commandTime = ppVar1[1].commandTime + 1;
         }
-        for (local_1c = 0; local_1c < local_b0->num_clients; local_1c = local_1c + 1) {
-          local_8 = svs.cachedSnapshotClients +
-                    (local_b0->first_client + local_1c) % svs.numCachedSnapshotClients;
-          local_b8 = svs.snapshotClients + svs.nextSnapshotClients % svs.numSnapshotClients;
-          pcVar6 = &svs.cachedSnapshotClients
-                    [(local_b0->first_client + local_1c) % svs.numCachedSnapshotClients].cs;
-          pcVar13 = local_b8;
-          for (iVar7 = 0x34; iVar7 != 0; iVar7 = iVar7 + -1) {
-            pcVar13->clientIndex = pcVar6->clientIndex;
-            pcVar6 = (clientState_s *)&pcVar6->team;
-            pcVar13 = (clientState_s *)&pcVar13->team;
+        for (i = 0; i < cachedFrame->num_clients; i = i + 1) {
+          cachedClient = svs.cachedSnapshotClients +
+                         (cachedFrame->first_client + i) % svs.numCachedSnapshotClients;
+          clientState = svs.snapshotClients + svs.nextSnapshotClients % svs.numSnapshotClients;
+          pcVar5 = &svs.cachedSnapshotClients
+                    [(cachedFrame->first_client + i) % svs.numCachedSnapshotClients].cs;
+          pcVar12 = clientState;
+          for (iVar6 = 0x34; iVar6 != 0; iVar6 = iVar6 + -1) {
+            pcVar12->clientIndex = pcVar5->clientIndex;
+            pcVar5 = (clientState_s *)&pcVar5->team;
+            pcVar12 = (clientState_s *)&pcVar12->team;
           }
-          if ((local_ac[local_b8->clientIndex] != 0) &&
+          if ((clientIndex[clientState->clientIndex] != 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                        ,0xc47,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          local_ac[local_b8->clientIndex] = 1;
+          clientIndex[clientState->clientIndex] = 1;
           svs.nextSnapshotClients = svs.nextSnapshotClients + 1;
           if (0x7ffffffd < svs.nextSnapshotClients) {
             Com_Error(ERR_FATAL,"\x15svs.nextSnapshotClients wrapped");
@@ -2639,7 +2691,7 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
           ppVar1[1].pm_type = ppVar1[1].pm_type + 1;
         }
       }
-      svs.activeEntities = local_10cc.numSnapshotEntities;
+      svs.activeEntities = entityNumbers.numSnapshotEntities;
     }
   }
   return;
@@ -2654,45 +2706,49 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_WindowedRateMsec(client_t *param_1)
+int __cdecl SV_WindowedRateMsec(client_t *client)
 
 {
   int iVar1;
   uint uVar2;
-  int local_20;
-  int local_10;
-  int local_8;
+  int rate;
+  int messageSize;
+  clientSnapshot_t *frame;
+  int msec;
+  int history;
+  int rateTime;
+  int accumSize;
   
   iVar1 = Sys_Milliseconds();
-  local_8 = 0;
-  local_20 = param_1->rate;
+  accumSize = 0;
+  rate = client->rate;
   if ((sv_maxRate->current).integer != 0) {
     if ((sv_maxRate->current).integer < 1000) {
       Dvar_SetInt(sv_maxRate,1000);
     }
-    if ((sv_maxRate->current).integer < local_20) {
-      local_20 = (sv_maxRate->current).integer;
+    if ((sv_maxRate->current).integer < rate) {
+      rate = (sv_maxRate->current).integer;
     }
   }
-  local_10 = 0;
-  while (((local_10 < 0x20 && (local_10 < (param_1->header).netchan.outgoingSequence)) &&
-         ((uVar2 = (param_1->header).netchan.outgoingSequence - local_10 & 0x1f,
-          param_1->frames[uVar2].messageSize < 1 ||
-          (iVar1 + -1000 < param_1->frames[uVar2].messageSent))))) {
-    local_8 = local_8 + param_1->frames[uVar2].messageSize + 0x30;
-    local_10 = local_10 + 1;
+  history = 0;
+  while (((history < 0x20 && (history < (client->header).netchan.outgoingSequence)) &&
+         ((uVar2 = (client->header).netchan.outgoingSequence - history & 0x1f,
+          client->frames[uVar2].messageSize < 1 ||
+          (iVar1 + -1000 < client->frames[uVar2].messageSent))))) {
+    accumSize = accumSize + client->frames[uVar2].messageSize + 0x30;
+    history = history + 1;
   }
   if ((sv_debugRate->current).enabled != false) {
     printf("Accumulated send window to client %s: %dbytes\n");
   }
-  local_20 = ((local_8 - local_20) * 1000) / local_20;
-  if (local_20 < 0) {
-    local_20 = -1;
+  iVar1 = ((accumSize - rate) * 1000) / rate;
+  if (iVar1 < 0) {
+    iVar1 = -1;
   }
   else if ((sv_debugRate->current).enabled != false) {
     printf("Send to client %s throttled for %dmsec. (rate %i)\n");
   }
-  return local_20;
+  return iVar1;
 }
 
 
@@ -2704,16 +2760,18 @@ int __cdecl SV_WindowedRateMsec(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SendMessageToClient(msg_t *param_1,client_t *param_2,bool param_3)
+void __cdecl SV_SendMessageToClient(msg_t *msg,client_t *client,bool reliable)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_8;
+  int lowest_send_count;
+  int compressedSize;
+  int rateMsec;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_2 - (int)svs.clients) / 0x84d00))
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)client - (int)svs.clients) / 0x84d00))
      && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                   ,0xcb0,0,
                                   "client - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2722,17 +2780,17 @@ void __cdecl SV_SendMessageToClient(msg_t *param_1,client_t *param_2,bool param_
     (*pcVar1)();
     return;
   }
-  if ((param_1->cursize < 4) &&
+  if ((msg->cursize < 4) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                0xcb2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  svCompressedBuf._0_4_ = *(undefined4 *)param_1->data;
+  svCompressedBuf._0_4_ = *(undefined4 *)msg->data;
   iVar3 = MSG_WriteBitsCompress
-                    ((param_2->header).state == 5,param_1->data + 4,param_1->cursize + -4,
-                     svCompressedBuf + 4,0xfffc);
+                    ((client->header).state == 5,msg->data + 4,msg->cursize + -4,svCompressedBuf + 4
+                     ,0xfffc);
   iVar3 = iVar3 + 4;
   if ((sv_showHuffmanData->current).enabled != false) {
     showHuffmanData();
@@ -2743,20 +2801,20 @@ void __cdecl SV_SendMessageToClient(msg_t *param_1,client_t *param_2,bool param_
     CG_QuickPrint(">>> MESSAGE: %d %s %d/%d %2.2f%% %d/%d <<<\n");
   }
   CG_QuickPrintFlush();
-  if ((param_2->header).netchan.remoteAddress.type != NA_LOOPBACK) {
+  if ((client->header).netchan.remoteAddress.type != NA_LOOPBACK) {
     SV_PacketAnalyze_TrackPacketCompression
-              (((int)param_2 - (int)svs.clients) / 0x84d00,param_1->cursize,iVar3);
+              (((int)client - (int)svs.clients) / 0x84d00,msg->cursize,iVar3);
   }
-  if (param_2->dropReason != (char *)0x0) {
-    SV_DropClient(param_2,param_2->dropReason,true,true);
-    if ((param_2->dropReason != (char *)0x0) &&
+  if (client->dropReason != (char *)0x0) {
+    SV_DropClient(client,client->dropReason,true,true);
+    if ((client->dropReason != (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xccf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_2->header).state != 1) &&
+    if (((client->header).state != 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                                  0xcd0,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2764,56 +2822,56 @@ void __cdecl SV_SendMessageToClient(msg_t *param_1,client_t *param_2,bool param_
       return;
     }
   }
-  param_2->frames[(param_2->header).netchan.outgoingSequence & 0x1f].messageSize = iVar3;
+  client->frames[(client->header).netchan.outgoingSequence & 0x1f].messageSize = iVar3;
   iVar4 = Sys_Milliseconds();
-  param_2->frames[(param_2->header).netchan.outgoingSequence & 0x1f].messageSent = iVar4;
-  param_2->frames[(param_2->header).netchan.outgoingSequence & 0x1f].messageAcked = -1;
-  SV_Netchan_Transmit(param_2,svCompressedBuf,iVar3,param_3);
-  if ((param_1->flush == 0) || ((param_2->header).netchan.unsentFragments == 0)) {
-    if (((param_2->header).netchan.remoteAddress.type == NA_LOOPBACK) ||
-       (iVar4 = Sys_IsLANAddress((param_2->header).netchan.remoteAddress), iVar4 != 0)) {
-      param_2->nextSnapshotTime = svs.time + -1;
-      param_2->lastSnapshotTime = svs.time;
+  client->frames[(client->header).netchan.outgoingSequence & 0x1f].messageSent = iVar4;
+  client->frames[(client->header).netchan.outgoingSequence & 0x1f].messageAcked = -1;
+  SV_Netchan_Transmit(client,svCompressedBuf,iVar3,reliable);
+  if ((msg->flush == 0) || ((client->header).netchan.unsentFragments == 0)) {
+    if (((client->header).netchan.remoteAddress.type == NA_LOOPBACK) ||
+       (iVar4 = Sys_IsLANAddress((client->header).netchan.remoteAddress), iVar4 != 0)) {
+      client->nextSnapshotTime = svs.time + -1;
+      client->lastSnapshotTime = svs.time;
     }
     else {
-      local_8 = SV_WindowedRateMsec(param_2);
-      if (local_8 < param_2->snapshotMsec) {
-        local_8 = param_2->snapshotMsec;
-        (param_2->header).rateDelayed = 0;
+      rateMsec = SV_WindowedRateMsec(client);
+      if (rateMsec < client->snapshotMsec) {
+        rateMsec = client->snapshotMsec;
+        (client->header).rateDelayed = 0;
       }
       else {
-        (param_2->header).rateDelayed = 1;
+        (client->header).rateDelayed = 1;
       }
-      param_2->nextSnapshotTime = svs.time + local_8;
-      param_2->lastSnapshotTime = svs.time;
-      if ((((param_2->header).state != 5) && (param_2->downloadName[0] == '\0')) &&
-         (param_2->nextSnapshotTime < svs.time + 1000)) {
-        param_2->nextSnapshotTime = svs.time + 1000;
+      client->nextSnapshotTime = svs.time + rateMsec;
+      client->lastSnapshotTime = svs.time;
+      if ((((client->header).state != 5) && (client->downloadName[0] == '\0')) &&
+         (client->nextSnapshotTime < svs.time + 1000)) {
+        client->nextSnapshotTime = svs.time + 1000;
       }
       sv.bpsTotalBytes = sv.bpsTotalBytes + iVar3;
     }
   }
   else {
-    if (param_3) {
-      iVar3 = (param_2->header).netchan.lowest_send_count;
-      while (((param_2->header).state != 0 && (iVar3 == (param_2->header).netchan.lowest_send_count)
-             )) {
-        SV_Netchan_TransmitNextFragment(param_2,&(param_2->header).netchan);
+    if (reliable) {
+      iVar3 = (client->header).netchan.lowest_send_count;
+      while (((client->header).state != 0 && (iVar3 == (client->header).netchan.lowest_send_count)))
+      {
+        SV_Netchan_TransmitNextFragment(client,&(client->header).netchan);
       }
     }
     else {
-      while (((param_2->header).state != 0 && ((param_2->header).netchan.unsentFragments != 0))) {
-        SV_Netchan_TransmitNextFragment(param_2,&(param_2->header).netchan);
+      while (((client->header).state != 0 && ((client->header).netchan.unsentFragments != 0))) {
+        SV_Netchan_TransmitNextFragment(client,&(client->header).netchan);
       }
     }
-    if (((param_2->header).netchan.remoteAddress.type == NA_LOOPBACK) ||
-       (iVar3 = Sys_IsLANAddress((param_2->header).netchan.remoteAddress), iVar3 != 0)) {
-      param_2->nextSnapshotTime = svs.time + -1;
+    if (((client->header).netchan.remoteAddress.type == NA_LOOPBACK) ||
+       (iVar3 = Sys_IsLANAddress((client->header).netchan.remoteAddress), iVar3 != 0)) {
+      client->nextSnapshotTime = svs.time + -1;
     }
     else {
-      iVar3 = SV_WindowedRateMsec(param_2);
-      param_2->nextSnapshotTime = svs.time + iVar3;
-      param_2->lastSnapshotTime = svs.time;
+      iVar3 = SV_WindowedRateMsec(client);
+      client->nextSnapshotTime = svs.time + iVar3;
+      client->lastSnapshotTime = svs.time;
     }
   }
   return;
@@ -2828,16 +2886,17 @@ void __cdecl SV_SendMessageToClient(msg_t *param_1,client_t *param_2,bool param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BeginClientSnapshot(client_t *param_1,msg_t *param_2)
+void __cdecl SV_BeginClientSnapshot(client_t *client,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint clientNum_00;
+  int clientNum;
   
-  param_1[1].userinfo[0x3b8] = '\0';
+  client[1].userinfo[0x3b8] = '\0';
   if ((sv_debugPacketContentsForClientThisFrame->current).enabled != false) {
-    param_1[1].userinfo[0x3b8] = '\x01';
+    client[1].userinfo[0x3b8] = '\x01';
     Dvar_SetBool(sv_debugPacketContentsForClientThisFrame,false);
     Dvar_SetBool(sv_debugPacketContents,true);
   }
@@ -2848,8 +2907,8 @@ void __cdecl SV_BeginClientSnapshot(client_t *param_1,msg_t *param_2)
   if (0 < (sv_debugPacketContentsQuick->current).integer) {
     CG_QuickPrint("-- Quick Packet Inspect Start Snap --\n");
   }
-  uVar3 = ((int)param_1 - (int)svs.clients) / 0x84d00;
-  if ((com_maxclients->current).unsignedInt <= uVar3) {
+  clientNum_00 = ((int)client - (int)svs.clients) / 0x84d00;
+  if ((com_maxclients->current).unsignedInt <= clientNum_00) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp",
                              0xd55,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2860,12 +2919,12 @@ void __cdecl SV_BeginClientSnapshot(client_t *param_1,msg_t *param_2)
       return;
     }
   }
-  SV_AddModifiedStats(uVar3);
-  MSG_Init(param_2,tempSnapshotMsgBuf,0x10000);
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_WriteLong(param_2,param_1->lastClientCommand);
-  if (((param_1->header).state == 5) || ((param_1->header).state == 1)) {
-    SV_UpdateServerCommandsToClient(param_1,param_2);
+  SV_AddModifiedStats(clientNum_00);
+  MSG_Init(msg,tempSnapshotMsgBuf,0x10000);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteLong(msg,client->lastClientCommand);
+  if (((client->header).state == 5) || ((client->header).state == 1)) {
+    SV_UpdateServerCommandsToClient(client,msg);
   }
   return;
 }
@@ -2879,14 +2938,17 @@ void __cdecl SV_BeginClientSnapshot(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_EndClientSnapshot(client_t *param_1,msg_t *param_2)
+void __cdecl SV_EndClientSnapshot(client_t *client,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int bit_count;
+  bool reliable;
+  int clientNum;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)client - (int)svs.clients) / 0x84d00))
      && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_mp.cpp"
                                   ,0xd7b,0,
                                   "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2895,39 +2957,39 @@ void __cdecl SV_EndClientSnapshot(client_t *param_1,msg_t *param_2)
     (*pcVar1)();
     return;
   }
-  if ((param_1->header).state != 1) {
-    SV_WriteDownloadToClient(param_1,param_2);
+  if ((client->header).state != 1) {
+    SV_WriteDownloadToClient(client,msg);
   }
-  MSG_WriteByte(param_2,0xe);
-  if (param_2->overflowed != 0) {
+  MSG_WriteByte(msg,0xe);
+  if (msg->overflowed != 0) {
     Com_PrintWarning(0xf,"WARNING: msg overflowed for %s, trying to recover\n");
-    if (((param_1->header).state == 5) || ((param_1->header).state == 1)) {
-      SV_PrintServerCommandsForClient(param_1);
-      MSG_Init(param_2,tempSnapshotMsgBuf,0x10000);
-      MSG_WriteLong(param_2,param_1->lastClientCommand);
-      SV_UpdateServerCommandsToClient_PreventOverflow(param_1,param_2,0x10000);
-      MSG_WriteByte(param_2,0xe);
+    if (((client->header).state == 5) || ((client->header).state == 1)) {
+      SV_PrintServerCommandsForClient(client);
+      MSG_Init(msg,tempSnapshotMsgBuf,0x10000);
+      MSG_WriteLong(msg,client->lastClientCommand);
+      SV_UpdateServerCommandsToClient_PreventOverflow(client,msg,0x10000);
+      MSG_WriteByte(msg,0xe);
     }
-    if (param_2->overflowed != 0) {
+    if (msg->overflowed != 0) {
       Com_PrintWarning(0xf,"WARNING: client disconnected for msg overflow: %s\n");
-      NET_OutOfBandPrint(NS_MAXCLIENTS,(param_1->header).netchan.remoteAddress,"disconnect");
-      SV_DropClient(param_1,"EXE_SERVERMESSAGEOVERFLOW",true,true);
+      NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,"disconnect");
+      SV_DropClient(client,"EXE_SERVERMESSAGEOVERFLOW",true,true);
     }
   }
   if ((sv_debugPacketContents->current).enabled != false) {
     Com_Printf(0xf,"Snapshot finished for %s\n");
   }
-  if (param_1[1].userinfo[0x3b8] != '\0') {
+  if (client[1].userinfo[0x3b8] != '\0') {
     Dvar_SetBool(sv_debugPacketContents,false);
   }
-  if ((param_1->header).netchan.remoteAddress.type != NA_LOOPBACK) {
-    SV_PacketAnalyze_TrackSnapshotSize(param_2->cursize);
+  if ((client->header).netchan.remoteAddress.type != NA_LOOPBACK) {
+    SV_PacketAnalyze_TrackSnapshotSize(msg->cursize);
   }
-  iVar3 = MSG_GetUsedBitCount(param_2);
+  iVar3 = MSG_GetUsedBitCount(msg);
   if (0x2460 < iVar3) {
-    param_2->flush = 1;
+    msg->flush = 1;
   }
-  SV_SendMessageToClient(param_2,param_1,false);
+  SV_SendMessageToClient(msg,client,false);
   return;
 }
 
@@ -3319,11 +3381,11 @@ void __cdecl SV_GetServerStaticHeader(void)
 // 0071E100  SV_SendClientMessages  (server_mp/sv_snapshot_mp.cpp:3629)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl SV_SendClientMessages(void)
 
@@ -3332,84 +3394,95 @@ void __cdecl SV_SendClientMessages(void)
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  DWORD DVar5;
-  char *pcVar6;
+  int iVar5;
+  DWORD DVar6;
+  char *Name;
   int iVar7;
   int *piVar8;
   client_t *pcVar9;
-  int iVar10;
-  float local_94;
-  int local_90;
-  int local_74;
-  char local_70 [32];
+  PIXProfile pixProfile_4;
+  float comp_ratio;
+  float ave;
+  float uave;
+  int total;
+  PIXProfile pp;
+  PIXProfile pixProfile_3;
+  PIXProfile pixProfile_2;
+  archivedSnapshot_s *frame;
+  client_t *c;
+  PIXProfile pixProfile;
+  int maxclients;
+  int startClient;
+  int numclients;
+  char valid [32];
   uint local_50;
-  uint local_4c;
-  msg_t local_48;
-  ulong local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int startIndex;
+  msg_t msg;
+  int partSize;
+  int clientCounter;
+  int i;
+  int clientNum;
+  int maxBytesPerFrame;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_74 = 0;
+  numclients = 0;
   PIXBeginNamedEvent(-1,"SV_SendClientMessages");
   sv.bpsTotalBytes = 0;
   sv.ubpsTotalBytes = 0;
-  local_70[0] = '\0';
-  local_70[1] = '\0';
-  local_70[2] = '\0';
-  local_70[3] = '\0';
-  local_70[4] = '\0';
-  local_70[5] = '\0';
-  local_70[6] = '\0';
-  local_70[7] = '\0';
-  local_70[8] = '\0';
-  local_70[9] = '\0';
-  local_70[10] = '\0';
-  local_70[0xb] = '\0';
-  local_70[0xc] = '\0';
-  local_70[0xd] = '\0';
-  local_70[0xe] = '\0';
-  local_70[0xf] = '\0';
-  local_70[0x10] = '\0';
-  local_70[0x11] = '\0';
-  local_70[0x12] = '\0';
-  local_70[0x13] = '\0';
-  local_70[0x14] = '\0';
-  local_70[0x15] = '\0';
-  local_70[0x16] = '\0';
-  local_70[0x17] = '\0';
-  local_70[0x18] = '\0';
-  local_70[0x19] = '\0';
-  local_70[0x1a] = '\0';
-  local_70[0x1b] = '\0';
-  local_70[0x1c] = '\0';
-  local_70[0x1d] = '\0';
-  local_70[0x1e] = '\0';
-  local_70[0x1f] = '\0';
+  valid[0] = '\0';
+  valid[1] = '\0';
+  valid[2] = '\0';
+  valid[3] = '\0';
+  valid[4] = '\0';
+  valid[5] = '\0';
+  valid[6] = '\0';
+  valid[7] = '\0';
+  valid[8] = '\0';
+  valid[9] = '\0';
+  valid[10] = '\0';
+  valid[0xb] = '\0';
+  valid[0xc] = '\0';
+  valid[0xd] = '\0';
+  valid[0xe] = '\0';
+  valid[0xf] = '\0';
+  valid[0x10] = '\0';
+  valid[0x11] = '\0';
+  valid[0x12] = '\0';
+  valid[0x13] = '\0';
+  valid[0x14] = '\0';
+  valid[0x15] = '\0';
+  valid[0x16] = '\0';
+  valid[0x17] = '\0';
+  valid[0x18] = '\0';
+  valid[0x19] = '\0';
+  valid[0x1a] = '\0';
+  valid[0x1b] = '\0';
+  valid[0x1c] = '\0';
+  valid[0x1d] = '\0';
+  valid[0x1e] = '\0';
+  valid[0x1f] = '\0';
   iVar7 = (com_maxclients->current).integer;
-  local_8 = Live_GetNecessaryBandwidth(iVar7);
-  local_8 = local_8 / 0xa0;
-  iVar10 = (lastClientSent + 1) % iVar7;
+  iVar4 = Live_GetNecessaryBandwidth(iVar7);
+  maxBytesPerFrame = iVar4 / 0xa0;
+  iVar4 = (lastClientSent + 1) % iVar7;
   PIXBeginNamedEvent(-1,"extra messages");
-  for (local_14 = 0; local_14 < iVar7; local_14 = local_14 + 1) {
-    local_c = (iVar10 + local_14) % iVar7;
-    pcVar9 = (client_t *)(local_c * 0x84d00 + (int)svs.clients);
+  for (clientCounter = 0; clientCounter < iVar7; clientCounter = clientCounter + 1) {
+    clientNum = (iVar4 + clientCounter) % iVar7;
+    pcVar9 = (client_t *)(clientNum * 0x84d00 + (int)svs.clients);
     if ((((pcVar9->header).state != 0) && (pcVar9->nextSnapshotTime <= svs.time)) &&
        ((pcVar9->bIsTestClient == 0 ||
         (((pcVar9->header).netchan.remoteAddress.type != NA_BOT ||
          ((sv_botSnapshotDebug->current).enabled != false)))))) {
-      if (local_8 < sv.bpsTotalBytes) break;
-      local_74 = local_74 + 1;
+      if (maxBytesPerFrame < sv.bpsTotalBytes) break;
+      numclients = numclients + 1;
       if ((pcVar9->header).netchan.unsentFragments == 0) {
-        local_70[local_c] = '\x01';
-        if ((sv.bpsTotalBytes < local_8) &&
+        valid[clientNum] = '\x01';
+        if ((sv.bpsTotalBytes < maxBytesPerFrame) &&
            (((pcVar9->header).state == 5 || ((pcVar9->header).state == 1)))) {
           PIXBeginNamedEvent(-1,"SV_BuildClientSnapshot");
           SV_BuildClientSnapshot(pcVar9);
-          DVar5 = GetCurrentThreadId();
-          if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          DVar6 = GetCurrentThreadId();
+          if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
@@ -3419,52 +3492,52 @@ void __cdecl SV_SendClientMessages(void)
           pcVar9->nextSnapshotTime = svs.time + -1;
         }
         else {
-          iVar4 = SV_WindowedRateMsec(pcVar9);
+          iVar5 = SV_WindowedRateMsec(pcVar9);
           pcVar9->nextSnapshotTime =
-               iVar4 + svs.time + (pcVar9->header).netchan.lowest_send_count * 0x32;
+               iVar5 + svs.time + (pcVar9->header).netchan.lowest_send_count * 0x32;
         }
         pcVar9->lastSnapshotTime = svs.time;
         SV_Netchan_TransmitNextFragment(pcVar9,&(pcVar9->header).netchan);
-        lastClientSent = local_c;
+        lastClientSent = clientNum;
       }
     }
   }
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   SV_SetServerStaticHeader();
   PIXBeginNamedEvent(-1,"SV_SendClientSnapshot");
-  for (local_14 = 0; local_14 < iVar7; local_14 = local_14 + 1) {
-    local_c = (iVar10 + local_14) % iVar7;
-    pcVar9 = (client_t *)(local_c * 0x84d00 + (int)svs.clients);
-    if (local_70[local_c] != '\0') {
-      if (local_8 <= sv.bpsTotalBytes) break;
-      lastClientSent = local_c;
-      pcVar6 = va("SV_SendClientSnapshot %d");
-      PIXBeginNamedEvent(-1,pcVar6);
-      SV_BeginClientSnapshot(pcVar9,&local_48);
+  for (clientCounter = 0; clientCounter < iVar7; clientCounter = clientCounter + 1) {
+    clientNum = (iVar4 + clientCounter) % iVar7;
+    pcVar9 = (client_t *)(clientNum * 0x84d00 + (int)svs.clients);
+    if (valid[clientNum] != '\0') {
+      if (maxBytesPerFrame <= sv.bpsTotalBytes) break;
+      lastClientSent = clientNum;
+      Name = va("SV_SendClientSnapshot %d");
+      PIXBeginNamedEvent(-1,Name);
+      SV_BeginClientSnapshot(pcVar9,&msg);
       if (((pcVar9->header).state == 5) || ((pcVar9->header).state == 1)) {
         PIXBeginNamedEvent(-1,"SV_WriteSnapshotToClient");
-        SV_WriteSnapshotToClient(pcVar9,&local_48);
-        DVar5 = GetCurrentThreadId();
-        if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        SV_WriteSnapshotToClient(pcVar9,&msg);
+        DVar6 = GetCurrentThreadId();
+        if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
-      SV_EndClientSnapshot(pcVar9,&local_48);
-      DVar5 = GetCurrentThreadId();
-      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      SV_EndClientSnapshot(pcVar9,&msg);
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       SV_SendClientVoiceData(pcVar9);
     }
   }
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (sv.bpsTotalBytes < local_8) {
+  if (sv.bpsTotalBytes < maxBytesPerFrame) {
     lastClientSent = -1;
   }
   else {
@@ -3485,19 +3558,19 @@ void __cdecl SV_SendClientMessages(void)
     if ((*piVar8 == 5) || (*piVar8 == 1)) {
       Demo_BuildDemoSnapshot();
     }
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  if (0 < local_74) {
-    local_94 = 0.0;
-    local_90 = 0;
-    for (local_10 = 0; local_10 < 0x13; local_10 = local_10 + 1) {
-      sv.bpsWindow[local_10] = sv.bpsWindow[local_10 + 1];
-      local_90 = local_90 + sv.bpsTotalBytes;
-      sv.ubpsWindow[local_10] = sv.ubpsWindow[local_10 + 1];
-      local_94 = (float)sv.ubpsWindow[local_10] + local_94;
+  if (0 < numclients) {
+    uave = 0.0;
+    total = 0;
+    for (i = 0; i < 0x13; i = i + 1) {
+      sv.bpsWindow[i] = sv.bpsWindow[i + 1];
+      total = total + sv.bpsTotalBytes;
+      sv.ubpsWindow[i] = sv.ubpsWindow[i + 1];
+      uave = (float)sv.ubpsWindow[i] + uave;
     }
     sv.bpsWindow[0x13] = sv.bpsTotalBytes;
     sv.ubpsWindow[0x13] = sv.ubpsTotalBytes;
@@ -3511,8 +3584,8 @@ void __cdecl SV_SendClientMessages(void)
     if ((0x13 < sv.bpsWindowSteps) && ((sv_showAverageBPS->current).enabled != false)) {
       sv.bpsWindowSteps = 0;
       sv.ucompAve = sv.ucompAve +
-                    (1.0 - ((float)(local_90 + sv.bpsTotalBytes) / 20.0) /
-                           (((float)sv.ubpsTotalBytes + local_94) / 20.0)) * 100.0;
+                    (1.0 - ((float)(total + sv.bpsTotalBytes) / 20.0) /
+                           (((float)sv.ubpsTotalBytes + uave) / 20.0)) * 100.0;
       sv.ucompNum = sv.ucompNum + 1;
       Com_DPrintf(0xf,"bpspc(%2.0f) bps(%2.0f) pk(%i) ubps(%2.0f) upk(%i) cr(%2.2f) acr(%2.2f)\n");
     }
@@ -3522,8 +3595,8 @@ void __cdecl SV_SendClientMessages(void)
     PIXBeginNamedEvent(-1,"SV_ArchiveSnapshot");
     MSG_Init(&g_archiveMsg,tempServerMsgBuf,0x10000);
     SV_ArchiveSnapshot(&g_archiveMsg);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -3540,20 +3613,20 @@ void __cdecl SV_SendClientMessages(void)
       paVar1 = svs.archivedSnapshotFrames + svs.nextArchivedSnapshotFrames % 0x4b0;
       paVar1->start = svs.nextArchivedSnapshotBuffer;
       paVar1->size = g_archiveMsg.cursize;
-      local_4c = svs.nextArchivedSnapshotBuffer & 0x80ffffff;
-      if ((int)local_4c < 0) {
-        local_4c = (local_4c - 1 | 0xff000000) + 1;
+      startIndex = svs.nextArchivedSnapshotBuffer & 0x80ffffff;
+      if (startIndex < 0) {
+        startIndex = (startIndex - 1U | 0xff000000) + 1;
       }
       svs.nextArchivedSnapshotBuffer =
            (svs.nextArchivedSnapshotBuffer + g_archiveMsg.cursize) % 0x28000000;
-      local_18 = 0x1000000 - local_4c;
-      if ((int)local_18 < g_archiveMsg.cursize) {
-        memcpy(svs.archivedSnapshotBuffer + local_4c,g_archiveMsg.data,local_18);
-        memcpy(svs.archivedSnapshotBuffer,g_archiveMsg.data + local_18,
-               g_archiveMsg.cursize - local_18);
+      partSize = 0x1000000 - startIndex;
+      if (partSize < g_archiveMsg.cursize) {
+        memcpy(svs.archivedSnapshotBuffer + startIndex,g_archiveMsg.data,partSize);
+        memcpy(svs.archivedSnapshotBuffer,g_archiveMsg.data + partSize,
+               g_archiveMsg.cursize - partSize);
       }
       else {
-        memcpy(svs.archivedSnapshotBuffer + local_4c,g_archiveMsg.data,g_archiveMsg.cursize);
+        memcpy(svs.archivedSnapshotBuffer + startIndex,g_archiveMsg.data,g_archiveMsg.cursize);
       }
       svs.nextArchivedSnapshotFrames = svs.nextArchivedSnapshotFrames + 1;
       if (0x7ffffffd < svs.nextArchivedSnapshotFrames) {
@@ -3565,8 +3638,8 @@ void __cdecl SV_SendClientMessages(void)
     }
   }
   g_archivingSnapshot = false;
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;

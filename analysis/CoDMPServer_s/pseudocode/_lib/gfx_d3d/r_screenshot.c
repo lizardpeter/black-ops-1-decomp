@@ -3,7 +3,7 @@
 // 0082C5A0  R_ResampleImage  (gfx_d3d/r_screenshot.cpp:279)
 
 void __cdecl
-R_ResampleImage(int param_1,int param_2,int param_3,int param_4,int param_5,uchar *param_6)
+R_ResampleImage(int oldWidth,int oldHeight,int newHeight,int data,int param_5,uchar *param_6)
 
 {
   int iVar1;
@@ -13,44 +13,47 @@ R_ResampleImage(int param_1,int param_2,int param_3,int param_4,int param_5,ucha
   int unaff_EDI;
   uchar *in_stack_ffffffe4;
   int iStack_18;
+  uchar *dst;
+  uchar *src;
+  int row;
   
-  if (unaff_EDI < param_1) {
-    iStack_18 = param_4;
-    if (0 < param_2) {
-      iVar1 = param_2;
+  if (unaff_EDI < oldWidth) {
+    iStack_18 = data;
+    if (0 < oldHeight) {
+      iVar1 = oldHeight;
       do {
-        R_DownsamplePixelData(param_1,unaff_EDI,unaff_ESI,iStack_18,unaff_EBX,in_stack_ffffffe4);
+        R_DownsamplePixelData(oldWidth,unaff_EDI,unaff_ESI,iStack_18,unaff_EBX,in_stack_ffffffe4);
         iStack_18 = iStack_18 + unaff_EDI * unaff_ESI;
         iVar1 = iVar1 + -1;
       } while (iVar1 != 0);
     }
   }
-  else if (param_1 < unaff_EDI) {
-    iVar1 = param_2 + -1;
-    iVar2 = iVar1 * param_1 * unaff_ESI + param_4;
+  else if (oldWidth < unaff_EDI) {
+    iVar1 = oldHeight + -1;
+    iVar2 = iVar1 * oldWidth * unaff_ESI + data;
     if (-1 < iVar1) {
       do {
-        R_UpsamplePixelData(param_1,unaff_EDI,unaff_ESI,iVar2,unaff_EBX,in_stack_ffffffe4);
-        iVar2 = iVar2 - param_1 * unaff_ESI;
+        R_UpsamplePixelData(oldWidth,unaff_EDI,unaff_ESI,iVar2,unaff_EBX,in_stack_ffffffe4);
+        iVar2 = iVar2 - oldWidth * unaff_ESI;
         iVar1 = iVar1 + -1;
       } while (-1 < iVar1);
     }
   }
-  if (param_3 < param_2) {
+  if (newHeight < oldHeight) {
     if (0 < unaff_EDI) {
       do {
-        R_DownsamplePixelData(param_2,param_3,unaff_ESI,param_4,unaff_EBX,in_stack_ffffffe4);
-        param_4 = param_4 + unaff_ESI;
+        R_DownsamplePixelData(oldHeight,newHeight,unaff_ESI,data,unaff_EBX,in_stack_ffffffe4);
+        data = data + unaff_ESI;
         unaff_EDI = unaff_EDI + -1;
       } while (unaff_EDI != 0);
       return;
     }
   }
-  else if (param_2 < param_3) {
+  else if (oldHeight < newHeight) {
     iVar1 = unaff_EDI + -1;
-    iVar2 = param_4 + iVar1 * unaff_ESI;
+    iVar2 = data + iVar1 * unaff_ESI;
     for (; -1 < iVar1; iVar1 = iVar1 + -1) {
-      R_UpsamplePixelData(param_2,param_3,unaff_ESI,iVar2,unaff_EBX,in_stack_ffffffe4);
+      R_UpsamplePixelData(oldHeight,newHeight,unaff_ESI,iVar2,unaff_EBX,in_stack_ffffffe4);
       iVar2 = iVar2 - unaff_ESI;
     }
   }
@@ -65,35 +68,38 @@ R_ResampleImage(int param_1,int param_2,int param_3,int param_4,int param_5,ucha
 ulong __cdecl jpeg_thread(void *param_1)
 
 {
-  uint uVar1;
-  int iVar2;
-  int iVar3;
-  uchar *puVar4;
-  uchar *puVar5;
+  uint size;
+  int image_width;
+  int iVar1;
+  uchar *pBlock;
+  uchar *output_buffer;
   uchar *unaff_ESI;
   int *unaff_EDI;
+  void *context;
+  uchar *buffer;
   uchar *puStack_4;
   
-  iVar3 = s_jpegParams.height;
-  iVar2 = s_jpegParams.width;
+  iVar1 = s_jpegParams.height;
+  image_width = s_jpegParams.width;
   puStack_4 = s_jpegParams.buffer;
   R_ResampleImage(vidConfig.displayWidth,vidConfig.displayHeight,s_jpegParams.height,
                   (int)s_jpegParams.buffer,(int)unaff_EDI,unaff_ESI);
-  uVar1 = iVar3 * iVar2 * 3;
-  puVar5 = malloc(uVar1);
-  if (puVar5 != (uchar *)0x0) {
-    Com_Memset(puVar5,0,uVar1);
-    puVar4 = puStack_4;
-    R_SaveJpg((char *)0x0,0x46,iVar2,(int)puStack_4,puVar5,(uchar *)&puStack_4,unaff_EDI);
-    free(puVar4);
+  size = iVar1 * image_width * 3;
+  output_buffer = malloc(size);
+  if (output_buffer != (uchar *)0x0) {
+    Com_Memset(output_buffer,0,size);
+    pBlock = puStack_4;
+    R_SaveJpg((char *)0x0,0x46,image_width,(int)puStack_4,output_buffer,(uchar *)&puStack_4,
+              unaff_EDI);
+    free(pBlock);
     if ((int)puStack_4 < 0x10001) {
       _DAT_0354762c = puStack_4;
-      memcpy(&DAT_025f8f78,puVar5,(ulong)puStack_4);
+      memcpy(&DAT_025f8f78,output_buffer,(ulong)puStack_4);
     }
     LOCK();
     UNLOCK();
     _DAT_03547634 = _DAT_03547634 + 1;
-    free(puVar5);
+    free(output_buffer);
     return 0;
   }
                     /* WARNING: Subroutine does not return */
@@ -125,10 +131,12 @@ void __cdecl R_CheatScreenshot(void)
 
 // 0082DDB0  R_BeginCubemapShot  (gfx_d3d/r_screenshot.cpp:1572)
 
-void __cdecl R_BeginCubemapShot(int param_1,int param_2)
+void __cdecl R_BeginCubemapShot(int pixelBorder,int param_2)
 
 {
-  gfxMetrics.cubemapShotRes = (ushort)param_1;
+  int pixelWidthHeight;
+  
+  gfxMetrics.cubemapShotRes = (ushort)pixelBorder;
   gfxMetrics.cubemapShotPixelBorder = (ushort)param_2;
   R_CubemapShotSetInitialState();
   return;
@@ -145,22 +153,23 @@ void __cdecl R_CreateReflectionRawDataFromCubemapShot(DiskGfxReflectionProbe *pa
   uchar *puVar1;
   float *unaff_EBP;
   int iVar2;
-  CImageSurface *pCVar3;
+  int *piVar3;
   int unaff_ESI;
   int iVar4;
   float **ppfVar5;
   float *unaff_EDI;
   uint uVar6;
+  DiskGfxReflectionProbe *probeRawData;
   float *pfVar7;
   float *pfVar8;
+  int imgIndex;
   int iStack_2744;
   float fStack_2740;
   float fStack_273c;
   float fStack_2738;
-  CImageSurface *pCStack_2734;
-  CCubeMapProcessor CStack_2730;
+  CCubeMapProcessor cubeMapProcessor;
+  int downSampleRes;
   
-  CStack_2730.m_OutputSurface[0xf][5].m_ImgData = (float *)0x82ddda;
   uVar6 = (uint)gfxMetrics.cubemapShotRes;
   puVar1 = param_1->pixels;
   pfVar7 = cubeShotGlob.pixelsHDR[0];
@@ -206,63 +215,70 @@ void __cdecl R_CreateReflectionRawDataFromCubemapShot(DiskGfxReflectionProbe *pa
     R_CubemapFaceNormalize(unaff_EDI,unaff_ESI,unaff_EBP);
     iVar2 = iVar2 + 4;
   } while (iVar2 < 0x3020f00);
-  CCubeMapProcessor::CCubeMapProcessor(&CStack_2730);
-  CCubeMapProcessor::Init(&CStack_2730,uVar6,0x100,0x10,4);
+  CCubeMapProcessor::CCubeMapProcessor((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads);
+  CCubeMapProcessor::Init
+            ((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads,uVar6,0x100,0x10,4);
   iVar2 = 0;
   do {
     CCubeMapProcessor::SetInputFaceData
-              (&CStack_2730,iVar2,0x1e,4,uVar6 << 4,cubeShotGlob.pixelsHDR[iVar2],63.9,1.0,1.0);
+              ((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads,iVar2,0x1e,4,uVar6 << 4,
+               cubeShotGlob.pixelsHDR[iVar2],63.9,1.0,1.0);
     iVar2 = iVar2 + 1;
   } while (iVar2 < 6);
-  CCubeMapProcessor::InitiateFiltering(&CStack_2730,0.352,0.704,2.0,3,2,3,'\x01');
-  iVar2 = CCubeMapProcessor::GetStatus(&CStack_2730);
+  CCubeMapProcessor::InitiateFiltering
+            ((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads,0.352,0.704,2.0,3,2,3,'\x01')
+  ;
+  iVar2 = CCubeMapProcessor::GetStatus((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads);
   while (iVar2 == 1) {
     Sleep(200);
-    iVar2 = CCubeMapProcessor::GetStatus(&CStack_2730);
+    iVar2 = CCubeMapProcessor::GetStatus((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads);
   }
   iVar2 = 0;
-  pCVar3 = CStack_2730.m_OutputSurface[0];
+  piVar3 = &cubeMapProcessor.m_OutputSurface[0][0].m_Height;
   do {
-    iVar4 = ((CImageSurface *)&pCVar3->m_Width)->m_Width;
+    iVar4 = *piVar3;
     if (iVar4 < 5) {
       iVar4 = 4;
     }
-    CCubeMapProcessor::GetOutputFaceData(&CStack_2730,iVar2,0,100,4,iVar4,puVar1,0.125,2.0);
+    CCubeMapProcessor::GetOutputFaceData
+              ((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads,iVar2,0,100,4,iVar4,puVar1,
+               0.125,2.0);
     iVar2 = iVar2 + 1;
     puVar1 = puVar1 + (iVar4 * iVar4) / 2;
-    pCVar3 = pCVar3 + 1;
+    piVar3 = piVar3 + 4;
   } while (iVar2 < 6);
-  pCVar3 = CStack_2730.m_OutputSurface[1];
+  piVar3 = &cubeMapProcessor.m_OutputSurface[1][0].m_Height;
   iStack_2744 = 0;
-  iVar2 = CStack_2730.m_NumMipLevels;
+  iVar2 = cubeMapProcessor.m_NumChannels;
   do {
     iVar4 = 1;
-    pCStack_2734 = pCVar3;
+    cubeMapProcessor.m_Status = (int)piVar3;
     if (1 < iVar2) {
       do {
-        iVar2 = ((CImageSurface *)&pCVar3->m_Width)->m_Width;
+        iVar2 = *piVar3;
         if (iVar2 < 5) {
           iVar2 = 4;
         }
         CCubeMapProcessor::GetOutputFaceData
-                  (&CStack_2730,iStack_2744,iVar4,100,4,iVar2,puVar1,0.125,2.0);
+                  ((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads,iStack_2744,iVar4,100,4
+                   ,iVar2,puVar1,0.125,2.0);
         puVar1 = puVar1 + (iVar2 * iVar2) / 2;
         iVar4 = iVar4 + 1;
-        pCVar3 = pCVar3 + 6;
-        iVar2 = CStack_2730.m_NumMipLevels;
-      } while (iVar4 < CStack_2730.m_NumMipLevels);
+        piVar3 = piVar3 + 0x18;
+        iVar2 = cubeMapProcessor.m_NumChannels;
+      } while (iVar4 < cubeMapProcessor.m_NumChannels);
     }
     iStack_2744 = iStack_2744 + 1;
-    pCVar3 = pCStack_2734 + 1;
+    piVar3 = (int *)(cubeMapProcessor.m_Status + 0x10);
   } while (iStack_2744 < 6);
   ppfVar5 = cubeShotGlob.pixelsHDRcorrected;
-  pCStack_2734 = pCVar3;
+  cubeMapProcessor.m_Status = (int)piVar3;
   do {
     VirtualFree(ppfVar5[-6],0,0x8000);
     VirtualFree(*ppfVar5,0,0x8000);
     ppfVar5 = ppfVar5 + 1;
   } while ((int)ppfVar5 < 0x3020f18);
-  CCubeMapProcessor::~CCubeMapProcessor(&CStack_2730);
+  CCubeMapProcessor::~CCubeMapProcessor((CCubeMapProcessor *)&cubeMapProcessor.m_NumFilterThreads);
   return;
 }
 
@@ -275,9 +291,10 @@ void __cdecl R_LightingFromCubemapShots(float *param_1)
   float (**unaff_ESI) [3];
   int iVar1;
   int unaff_EDI;
+  uchar **height;
+  float *baseColor;
   uchar **ppuVar2;
   uchar **ppuVar3;
-  uchar **ppuVar4;
   float (*local_18) [3];
   float (*local_14) [3];
   float (*local_10) [3];
@@ -291,16 +308,16 @@ void __cdecl R_LightingFromCubemapShots(float *param_1)
                     /* WARNING: Subroutine does not return */
     Sys_OutOfMemErrorInternal("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x860);
   }
-  ppuVar2 = (uchar **)(uint)gfxMetrics.cubemapShotRes;
+  height = (uchar **)(uint)gfxMetrics.cubemapShotRes;
   local_14 = local_18 + iVar1;
   local_10 = local_14 + iVar1;
   local_c = local_10 + iVar1;
   local_8 = local_c + iVar1;
   local_4 = local_8 + iVar1;
-  ppuVar3 = ppuVar2;
-  ppuVar4 = ppuVar2;
-  R_CubemapShotExtractLinearLight(ppuVar2,(int)ppuVar2,unaff_EDI,unaff_ESI);
-  R_CubemapLighting(&local_18,(int)ppuVar2,(int)param_1,(float *)ppuVar3,ppuVar4);
+  ppuVar2 = height;
+  ppuVar3 = height;
+  R_CubemapShotExtractLinearLight(height,(int)height,unaff_EDI,unaff_ESI);
+  R_CubemapLighting(&local_18,(int)height,(int)param_1,(float *)ppuVar2,ppuVar3);
   VirtualFree(local_18,0,0x8000);
   return;
 }

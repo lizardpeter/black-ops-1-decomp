@@ -2,7 +2,7 @@
 
 // 00960B00  memcpy  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/MEMCPY.ASM:101)
 
-void __cdecl memcpy(uchar *param_1,uchar *param_2,ulong param_3)
+void __cdecl memcpy(uchar *dst,uchar *src,ulong count)
 
 {
   uint uVar1;
@@ -10,12 +10,12 @@ void __cdecl memcpy(uchar *param_1,uchar *param_2,ulong param_3)
   uchar *puVar3;
   uchar *puVar4;
   
-  if ((param_2 < param_1) && (param_1 < param_2 + param_3)) {
-    puVar3 = param_2 + (param_3 - 4);
-    puVar4 = param_1 + (param_3 - 4);
+  if ((src < dst) && (dst < src + count)) {
+    puVar3 = src + (count - 4);
+    puVar4 = dst + (count - 4);
     if (((uint)puVar4 & 3) == 0) {
-      uVar1 = param_3 >> 2;
-      uVar2 = param_3 & 3;
+      uVar1 = count >> 2;
+      uVar2 = count & 3;
       if (7 < uVar1) {
         for (; uVar1 != 0; uVar1 = uVar1 - 1) {
           *(undefined4 *)puVar4 = *(undefined4 *)puVar3;
@@ -34,7 +34,7 @@ void __cdecl memcpy(uchar *param_1,uchar *param_2,ulong param_3)
       }
     }
     else {
-      switch(param_3) {
+      switch(count) {
       case 0:
         goto switchD_00960ce3_caseD_0;
       case 1:
@@ -44,7 +44,7 @@ void __cdecl memcpy(uchar *param_1,uchar *param_2,ulong param_3)
       case 3:
         goto switchD_00960ce3_caseD_3;
       default:
-        uVar1 = param_3 - ((uint)puVar4 & 3);
+        uVar1 = count - ((uint)puVar4 & 3);
         switch((uint)puVar4 & 3) {
         case 1:
           uVar2 = uVar1 & 3;
@@ -158,19 +158,18 @@ switchD_00960ce3_caseD_3:
 switchD_00960ce3_caseD_0:
     return;
   }
-  if (((0xff < param_3) && (__sse2_available != 0)) &&
-     (((uint)param_1 & 0xf) == ((uint)param_2 & 0xf))) {
-    _VEC_memcpy(param_1,param_2,param_3);
+  if (((0xff < count) && (__sse2_available != 0)) && (((uint)dst & 0xf) == ((uint)src & 0xf))) {
+    _VEC_memcpy(dst,src,count);
     return;
   }
-  if (((uint)param_1 & 3) == 0) {
-    uVar1 = param_3 >> 2;
-    uVar2 = param_3 & 3;
+  if (((uint)dst & 3) == 0) {
+    uVar1 = count >> 2;
+    uVar2 = count & 3;
     if (7 < uVar1) {
       for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-        *(undefined4 *)param_1 = *(undefined4 *)param_2;
-        param_2 = param_2 + 4;
-        param_1 = param_1 + 4;
+        *(undefined4 *)dst = *(undefined4 *)src;
+        src = src + 4;
+        dst = dst + 4;
       }
       switch(uVar2) {
       case 0:
@@ -184,7 +183,7 @@ switchD_00960ce3_caseD_0:
     }
   }
   else {
-    switch(param_3) {
+    switch(count) {
     case 0:
       goto switchD_00960b5c_caseD_0;
     case 1:
@@ -194,21 +193,21 @@ switchD_00960ce3_caseD_0:
     case 3:
       goto switchD_00960b5c_caseD_3;
     default:
-      uVar1 = (param_3 - 4) + ((uint)param_1 & 3);
-      switch((uint)param_1 & 3) {
+      uVar1 = (count - 4) + ((uint)dst & 3);
+      switch((uint)dst & 3) {
       case 1:
         uVar2 = uVar1 & 3;
-        *param_1 = *param_2;
-        param_1[1] = param_2[1];
+        *dst = *src;
+        dst[1] = src[1];
         uVar1 = uVar1 >> 2;
-        param_1[2] = param_2[2];
-        param_2 = param_2 + 3;
-        param_1 = param_1 + 3;
+        dst[2] = src[2];
+        src = src + 3;
+        dst = dst + 3;
         if (7 < uVar1) {
           for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-            *(undefined4 *)param_1 = *(undefined4 *)param_2;
-            param_2 = param_2 + 4;
-            param_1 = param_1 + 4;
+            *(undefined4 *)dst = *(undefined4 *)src;
+            src = src + 4;
+            dst = dst + 4;
           }
           switch(uVar2) {
           case 0:
@@ -223,16 +222,16 @@ switchD_00960ce3_caseD_0:
         break;
       case 2:
         uVar2 = uVar1 & 3;
-        *param_1 = *param_2;
+        *dst = *src;
         uVar1 = uVar1 >> 2;
-        param_1[1] = param_2[1];
-        param_2 = param_2 + 2;
-        param_1 = param_1 + 2;
+        dst[1] = src[1];
+        src = src + 2;
+        dst = dst + 2;
         if (7 < uVar1) {
           for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-            *(undefined4 *)param_1 = *(undefined4 *)param_2;
-            param_2 = param_2 + 4;
-            param_1 = param_1 + 4;
+            *(undefined4 *)dst = *(undefined4 *)src;
+            src = src + 4;
+            dst = dst + 4;
           }
           switch(uVar2) {
           case 0:
@@ -247,15 +246,15 @@ switchD_00960ce3_caseD_0:
         break;
       case 3:
         uVar2 = uVar1 & 3;
-        *param_1 = *param_2;
-        param_2 = param_2 + 1;
+        *dst = *src;
+        src = src + 1;
         uVar1 = uVar1 >> 2;
-        param_1 = param_1 + 1;
+        dst = dst + 1;
         if (7 < uVar1) {
           for (; uVar1 != 0; uVar1 = uVar1 - 1) {
-            *(undefined4 *)param_1 = *(undefined4 *)param_2;
-            param_2 = param_2 + 4;
-            param_1 = param_1 + 4;
+            *(undefined4 *)dst = *(undefined4 *)src;
+            src = src + 4;
+            dst = dst + 4;
           }
           switch(uVar2) {
           case 0:
@@ -272,37 +271,37 @@ switchD_00960ce3_caseD_0:
   }
   switch(uVar1) {
   case 7:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -0x1c) = *(undefined4 *)(param_2 + uVar1 * 4 + -0x1c);
+    *(undefined4 *)(dst + uVar1 * 4 + -0x1c) = *(undefined4 *)(src + uVar1 * 4 + -0x1c);
   case 6:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -0x18) = *(undefined4 *)(param_2 + uVar1 * 4 + -0x18);
+    *(undefined4 *)(dst + uVar1 * 4 + -0x18) = *(undefined4 *)(src + uVar1 * 4 + -0x18);
   case 5:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -0x14) = *(undefined4 *)(param_2 + uVar1 * 4 + -0x14);
+    *(undefined4 *)(dst + uVar1 * 4 + -0x14) = *(undefined4 *)(src + uVar1 * 4 + -0x14);
   case 4:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -0x10) = *(undefined4 *)(param_2 + uVar1 * 4 + -0x10);
+    *(undefined4 *)(dst + uVar1 * 4 + -0x10) = *(undefined4 *)(src + uVar1 * 4 + -0x10);
   case 3:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -0xc) = *(undefined4 *)(param_2 + uVar1 * 4 + -0xc);
+    *(undefined4 *)(dst + uVar1 * 4 + -0xc) = *(undefined4 *)(src + uVar1 * 4 + -0xc);
   case 2:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -8) = *(undefined4 *)(param_2 + uVar1 * 4 + -8);
+    *(undefined4 *)(dst + uVar1 * 4 + -8) = *(undefined4 *)(src + uVar1 * 4 + -8);
   case 1:
-    *(undefined4 *)(param_1 + uVar1 * 4 + -4) = *(undefined4 *)(param_2 + uVar1 * 4 + -4);
-    param_2 = param_2 + uVar1 * 4;
-    param_1 = param_1 + uVar1 * 4;
+    *(undefined4 *)(dst + uVar1 * 4 + -4) = *(undefined4 *)(src + uVar1 * 4 + -4);
+    src = src + uVar1 * 4;
+    dst = dst + uVar1 * 4;
   }
   switch(uVar2) {
   case 1:
 switchD_00960b5c_caseD_1:
-    *param_1 = *param_2;
+    *dst = *src;
     return;
   case 2:
 switchD_00960b5c_caseD_2:
-    *param_1 = *param_2;
-    param_1[1] = param_2[1];
+    *dst = *src;
+    dst[1] = src[1];
     return;
   case 3:
 switchD_00960b5c_caseD_3:
-    *param_1 = *param_2;
-    param_1[1] = param_2[1];
-    param_1[2] = param_2[2];
+    *dst = *src;
+    dst[1] = src[1];
+    dst[2] = src[2];
     return;
   }
 switchD_00960b5c_caseD_0:

@@ -2,22 +2,23 @@
 
 // 0080E010  inflateReset  (zlib/inflate.cpp:108)
 
-int __cdecl inflateReset(z_stream_s *param_1)
+int __cdecl inflateReset(z_stream_s *strm)
 
 {
   internal_state *piVar1;
   int iVar2;
+  inflate_state *state;
   
-  if ((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) {
+  if ((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) {
     iVar2 = -2;
   }
   else {
-    piVar1 = param_1->state;
+    piVar1 = strm->state;
     piVar1->gzhead = (gz_header_s *)0x0;
-    param_1->total_out = 0;
-    param_1->total_in = 0;
-    param_1->msg = (char *)0x0;
-    param_1->adler = 1;
+    strm->total_out = 0;
+    strm->total_in = 0;
+    strm->msg = (char *)0x0;
+    strm->adler = 1;
     piVar1->strm = (z_stream_s *)0x0;
     piVar1->status = 0;
     piVar1->pending_buf_size = 0;
@@ -39,49 +40,50 @@ int __cdecl inflateReset(z_stream_s *param_1)
 
 // 0080E100  inflateInit2_  (zlib/inflate.cpp:147)
 
-int __cdecl inflateInit2_(z_stream_s *param_1,int param_2,char *param_3,int param_4)
+int __cdecl inflateInit2_(z_stream_s *strm,int windowBits,char *version,int stream_size)
 
 {
   int iVar1;
   internal_state *piVar2;
+  inflate_state *state;
   
-  if (((param_3 == (char *)0x0) || (*param_3 != '1')) || (param_4 != 0x34)) {
+  if (((version == (char *)0x0) || (*version != '1')) || (stream_size != 0x34)) {
     iVar1 = -6;
   }
-  else if (param_1 == (z_stream_s *)0x0) {
+  else if (strm == (z_stream_s *)0x0) {
     iVar1 = -2;
   }
   else {
-    param_1->msg = (char *)0x0;
-    if (param_1->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0) {
-      param_1->zalloc = zcalloc;
-      param_1->opaque = (uchar *)0x0;
+    strm->msg = (char *)0x0;
+    if (strm->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0) {
+      strm->zalloc = zcalloc;
+      strm->opaque = (uchar *)0x0;
     }
-    if (param_1->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0) {
-      param_1->zfree = zcfree;
+    if (strm->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0) {
+      strm->zfree = zcfree;
     }
-    piVar2 = (internal_state *)(*param_1->zalloc)(param_1->opaque,1,0x2530);
+    piVar2 = (internal_state *)(*strm->zalloc)(strm->opaque,1,0x2530);
     if (piVar2 == (internal_state *)0x0) {
       iVar1 = -4;
     }
     else {
-      param_1->state = piVar2;
-      if (param_2 < 0) {
+      strm->state = piVar2;
+      if (windowBits < 0) {
         piVar2->pending_buf = (uchar *)0x0;
-        param_2 = -param_2;
+        windowBits = -windowBits;
       }
       else {
-        piVar2->pending_buf = (uchar *)((param_2 >> 4) + 1);
+        piVar2->pending_buf = (uchar *)((windowBits >> 4) + 1);
       }
-      if ((param_2 < 8) || (0xf < param_2)) {
-        (*param_1->zfree)(param_1->opaque,(uchar *)piVar2);
-        param_1->state = (internal_state *)0x0;
+      if ((windowBits < 8) || (0xf < windowBits)) {
+        (*strm->zfree)(strm->opaque,(uchar *)piVar2);
+        strm->state = (internal_state *)0x0;
         iVar1 = -2;
       }
       else {
-        *(int *)&piVar2->method = param_2;
+        *(int *)&piVar2->method = windowBits;
         piVar2->w_mask = 0;
-        iVar1 = inflateReset(param_1);
+        iVar1 = inflateReset(strm);
       }
     }
   }
@@ -91,44 +93,45 @@ int __cdecl inflateInit2_(z_stream_s *param_1,int param_2,char *param_3,int para
 
 // 0080E230  inflateInit_  (zlib/inflate.cpp:186)
 
-int __cdecl inflateInit_(z_stream_s *param_1,char *param_2,int param_3)
+int __cdecl inflateInit_(z_stream_s *strm,char *version,int stream_size)
 
 {
   int iVar1;
   
-  iVar1 = inflateInit2_(param_1,0xf,param_2,param_3);
+  iVar1 = inflateInit2_(strm,0xf,version,stream_size);
   return iVar1;
 }
 
 
 // 0080F8C0  fixedtables  (zlib/inflate.cpp:201)
 
-void __cdecl fixedtables(inflate_state *param_1)
+void __cdecl fixedtables(inflate_state *state)
 
 {
-  param_1->lencode = lenfix;
-  param_1->lenbits = 9;
-  param_1->distcode = distfix;
-  param_1->distbits = 5;
+  state->lencode = lenfix;
+  state->lenbits = 9;
+  state->distcode = distfix;
+  state->distbits = 5;
   return;
 }
 
 
 // 0080F8F0  updatewindow  (zlib/inflate.cpp:318)
 
-int __cdecl updatewindow(z_stream_s *param_1,uint param_2)
+int __cdecl updatewindow(z_stream_s *strm,uint out)
 
 {
   internal_state *piVar1;
   uchar *puVar2;
   uint uVar3;
-  ulong uVar4;
-  ulong local_8;
+  ulong count;
+  inflate_state *state;
+  uint copy;
+  uint dist;
   
-  piVar1 = param_1->state;
+  piVar1 = strm->state;
   if (piVar1->w_mask == 0) {
-    puVar2 = (*param_1->zalloc)(param_1->opaque,1 << ((byte)*(undefined4 *)&piVar1->method & 0x1f),1
-                               );
+    puVar2 = (*strm->zalloc)(strm->opaque,1 << ((byte)*(undefined4 *)&piVar1->method & 0x1f),1);
     piVar1->w_mask = (uint)puVar2;
     if (piVar1->w_mask == 0) {
       return 1;
@@ -139,31 +142,31 @@ int __cdecl updatewindow(z_stream_s *param_1,uint param_2)
     piVar1->w_bits = 0;
     piVar1->w_size = 0;
   }
-  uVar3 = param_2 - param_1->avail_out;
+  uVar3 = out - strm->avail_out;
   if (uVar3 < (uint)piVar1->last_flush) {
-    local_8 = piVar1->last_flush - piVar1->w_bits;
-    if (uVar3 < local_8) {
-      local_8 = uVar3;
+    dist = piVar1->last_flush - piVar1->w_bits;
+    if (uVar3 < dist) {
+      dist = uVar3;
     }
-    memcpy((uchar *)(piVar1->w_mask + piVar1->w_bits),param_1->next_out + -uVar3,local_8);
-    uVar4 = uVar3 - local_8;
-    if (uVar4 == 0) {
-      piVar1->w_bits = piVar1->w_bits + local_8;
+    memcpy((uchar *)(piVar1->w_mask + piVar1->w_bits),strm->next_out + -uVar3,dist);
+    count = uVar3 - dist;
+    if (count == 0) {
+      piVar1->w_bits = piVar1->w_bits + dist;
       if (piVar1->w_bits == piVar1->last_flush) {
         piVar1->w_bits = 0;
       }
       if (piVar1->w_size < (uint)piVar1->last_flush) {
-        piVar1->w_size = piVar1->w_size + local_8;
+        piVar1->w_size = piVar1->w_size + dist;
       }
     }
     else {
-      memcpy((uchar *)piVar1->w_mask,param_1->next_out + -uVar4,uVar4);
-      piVar1->w_bits = uVar4;
+      memcpy((uchar *)piVar1->w_mask,strm->next_out + -count,count);
+      piVar1->w_bits = count;
       piVar1->w_size = piVar1->last_flush;
     }
   }
   else {
-    memcpy((uchar *)piVar1->w_mask,param_1->next_out + -piVar1->last_flush,piVar1->last_flush);
+    memcpy((uchar *)piVar1->w_mask,strm->next_out + -piVar1->last_flush,piVar1->last_flush);
     piVar1->w_bits = 0;
     piVar1->w_size = piVar1->last_flush;
   }
@@ -173,153 +176,154 @@ int __cdecl updatewindow(z_stream_s *param_1,uint param_2)
 
 // 0080E250  inflate  (zlib/inflate.cpp:553)
 
-int __cdecl inflate(z_stream_s *param_1,int param_2)
+int __cdecl inflate(z_stream_s *strm,int flush)
 
 {
-  ushort uVar1;
-  inflate_state *piVar2;
+  inflate_state *state_00;
+  code cVar1;
+  int iVar2;
   uint uVar3;
-  code cVar4;
+  ulong uVar4;
   uint uVar5;
-  int iVar6;
-  ulong uVar7;
-  uint local_3c;
-  uchar *local_38;
-  uint local_34;
-  uint local_30;
-  int local_2c;
-  byte *local_28;
-  uint local_24;
-  uint local_20;
-  uint local_14;
-  byte bStack_f;
-  uchar *local_c;
-  code local_8;
+  inflate_state *state;
+  uint out;
+  uchar *from;
+  uint copy;
+  ulong hold;
+  int ret;
+  uchar *next;
+  uint left;
+  uint bits;
+  uint len;
+  uint in;
+  uint have;
+  code last;
+  uchar *put;
+  code current;
   
-  if ((((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) ||
-      (param_1->next_out == (uchar *)0x0)) ||
-     ((param_1->next_in == (uchar *)0x0 && (param_1->avail_in != 0)))) {
+  if ((((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) ||
+      (strm->next_out == (uchar *)0x0)) ||
+     ((strm->next_in == (uchar *)0x0 && (strm->avail_in != 0)))) {
     return -2;
   }
-  piVar2 = (inflate_state *)param_1->state;
-  if (piVar2->mode == TYPE) {
-    piVar2->mode = TYPEDO;
+  state_00 = (inflate_state *)strm->state;
+  if (state_00->mode == TYPE) {
+    state_00->mode = TYPEDO;
   }
-  local_c = param_1->next_out;
-  local_3c = param_1->avail_out;
-  local_28 = param_1->next_in;
-  uVar3 = param_1->avail_in;
-  local_30 = piVar2->hold;
-  local_20 = piVar2->bits;
-  local_2c = 0;
-  local_24 = local_3c;
-  local_14 = uVar3;
+  put = strm->next_out;
+  out = strm->avail_out;
+  next = strm->next_in;
+  uVar3 = strm->avail_in;
+  hold = state_00->hold;
+  bits = state_00->bits;
+  ret = 0;
+  left = out;
+  have = uVar3;
 LAB_0080e2ef:
-  switch(piVar2->mode) {
+  switch(state_00->mode) {
   case HEAD:
-    if (piVar2->wrap == 0) {
-      piVar2->mode = TYPEDO;
+    if (state_00->wrap == 0) {
+      state_00->mode = TYPEDO;
     }
     else {
-      for (; local_20 < 0x10; local_20 = local_20 + 8) {
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
+      for (; bits < 0x10; bits = bits + 8) {
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
       }
-      if (((local_30 & 0xff) * 0x100 + (local_30 >> 8)) % 0x1f == 0) {
-        if ((local_30 & 0xf) == 8) {
-          local_30 = local_30 >> 4;
-          local_20 = local_20 - 4;
-          uVar5 = (local_30 & 0xf) + 8;
-          if (piVar2->wbits < uVar5) {
-            param_1->msg = "invalid window size";
-            piVar2->mode = BAD;
+      if (((hold & 0xff) * 0x100 + (hold >> 8)) % 0x1f == 0) {
+        if ((hold & 0xf) == 8) {
+          hold = hold >> 4;
+          bits = bits - 4;
+          uVar5 = (hold & 0xf) + 8;
+          if (state_00->wbits < uVar5) {
+            strm->msg = "invalid window size";
+            state_00->mode = BAD;
           }
           else {
-            piVar2->dmax = 1 << (sbyte)uVar5;
-            uVar7 = adler32(0,(uchar *)0x0,0);
-            piVar2->check = uVar7;
-            param_1->adler = piVar2->check;
-            piVar2->mode = (-(uint)((local_30 & 0x200) != 0) & 0xfffffffe) + TYPE;
-            local_30 = 0;
-            local_20 = 0;
+            state_00->dmax = 1 << (sbyte)uVar5;
+            uVar4 = adler32(0,(uchar *)0x0,0);
+            state_00->check = uVar4;
+            strm->adler = state_00->check;
+            state_00->mode = (-(uint)((hold & 0x200) != 0) & 0xfffffffe) + TYPE;
+            hold = 0;
+            bits = 0;
           }
         }
         else {
-          param_1->msg = "unknown compression method";
-          piVar2->mode = BAD;
+          strm->msg = "unknown compression method";
+          state_00->mode = BAD;
         }
       }
       else {
-        param_1->msg = "incorrect header check";
-        piVar2->mode = BAD;
+        strm->msg = "incorrect header check";
+        state_00->mode = BAD;
       }
     }
     goto LAB_0080e2ef;
   default:
     goto LAB_0080f836;
   case DICTID:
-    for (; local_20 < 0x20; local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    for (; bits < 0x20; bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    piVar2->check =
-         (local_30 >> 0x18) + (local_30 >> 8 & 0xff00) + (local_30 & 0xff00) * 0x100 +
-         local_30 * 0x1000000;
-    param_1->adler = piVar2->check;
-    local_30 = 0;
-    local_20 = 0;
-    piVar2->mode = DICT;
+    state_00->check =
+         (hold >> 0x18) + (hold >> 8 & 0xff00) + (hold & 0xff00) * 0x100 + hold * 0x1000000;
+    strm->adler = state_00->check;
+    hold = 0;
+    bits = 0;
+    state_00->mode = DICT;
   case DICT:
-    if (piVar2->havedict == 0) {
-      param_1->next_out = local_c;
-      param_1->avail_out = local_24;
-      param_1->next_in = local_28;
-      param_1->avail_in = local_14;
-      piVar2->hold = local_30;
-      piVar2->bits = local_20;
+    if (state_00->havedict == 0) {
+      strm->next_out = put;
+      strm->avail_out = left;
+      strm->next_in = next;
+      strm->avail_in = have;
+      state_00->hold = hold;
+      state_00->bits = bits;
       return 2;
     }
-    uVar7 = adler32(0,(uchar *)0x0,0);
-    piVar2->check = uVar7;
-    param_1->adler = piVar2->check;
-    piVar2->mode = TYPE;
+    uVar4 = adler32(0,(uchar *)0x0,0);
+    state_00->check = uVar4;
+    strm->adler = state_00->check;
+    state_00->mode = TYPE;
 switchD_0080e304_caseD_b:
-    if (param_2 != 5) {
+    if (flush != 5) {
 switchD_0080e304_caseD_c:
-      if (piVar2->last == 0) {
-        for (; local_20 < 3; local_20 = local_20 + 8) {
-          if (local_14 == 0) goto LAB_0080f6e4;
-          local_14 = local_14 - 1;
-          local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-          local_28 = local_28 + 1;
+      if (state_00->last == 0) {
+        for (; bits < 3; bits = bits + 8) {
+          if (have == 0) goto LAB_0080f6e4;
+          have = have - 1;
+          hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+          next = next + 1;
         }
-        piVar2->last = local_30 & 1;
-        switch(local_30 >> 1 & 3) {
+        state_00->last = hold & 1;
+        switch(hold >> 1 & 3) {
         case 0:
-          piVar2->mode = STORED;
+          state_00->mode = STORED;
           break;
         case 1:
-          fixedtables(piVar2);
-          piVar2->mode = LEN;
+          fixedtables(state_00);
+          state_00->mode = LEN;
           break;
         case 2:
-          piVar2->mode = TABLE;
+          state_00->mode = TABLE;
           break;
         case 3:
-          param_1->msg = "invalid block type";
-          piVar2->mode = BAD;
+          strm->msg = "invalid block type";
+          state_00->mode = BAD;
         }
-        local_30 = local_30 >> 3;
-        local_20 = local_20 - 3;
+        hold = hold >> 3;
+        bits = bits - 3;
       }
       else {
-        local_30 = local_30 >> ((byte)local_20 & 7);
-        local_20 = local_20 - (local_20 & 7);
-        piVar2->mode = CHECK;
+        hold = hold >> ((byte)bits & 7);
+        bits = bits - (bits & 7);
+        state_00->mode = CHECK;
       }
       goto LAB_0080e2ef;
     }
@@ -329,359 +333,360 @@ switchD_0080e304_caseD_c:
   case TYPEDO:
     goto switchD_0080e304_caseD_c;
   case STORED:
-    local_30 = local_30 >> ((byte)local_20 & 7);
-    for (local_20 = local_20 - (local_20 & 7); local_20 < 0x20; local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    hold = hold >> ((byte)bits & 7);
+    for (bits = bits - (bits & 7); bits < 0x20; bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    if ((local_30 & 0xffff) == (local_30 >> 0x10 ^ 0xffff)) {
-      piVar2->length = local_30 & 0xffff;
-      local_30 = 0;
-      local_20 = 0;
-      piVar2->mode = COPY;
+    if ((hold & 0xffff) == (hold >> 0x10 ^ 0xffff)) {
+      state_00->length = hold & 0xffff;
+      hold = 0;
+      bits = 0;
+      state_00->mode = COPY;
       goto switchD_0080e304_caseD_e;
     }
-    param_1->msg = "invalid stored block lengths";
-    piVar2->mode = BAD;
+    strm->msg = "invalid stored block lengths";
+    state_00->mode = BAD;
     goto LAB_0080e2ef;
   case COPY:
 switchD_0080e304_caseD_e:
-    local_34 = piVar2->length;
-    if (local_34 == 0) {
-      piVar2->mode = TYPE;
+    copy = state_00->length;
+    if (copy == 0) {
+      state_00->mode = TYPE;
       goto LAB_0080e2ef;
     }
-    if (local_14 < local_34) {
-      local_34 = local_14;
+    if (have < copy) {
+      copy = have;
     }
-    if (local_24 < local_34) {
-      local_34 = local_24;
+    if (left < copy) {
+      copy = left;
     }
-    if (local_34 != 0) {
-      memcpy(local_c,local_28,local_34);
-      local_14 = local_14 - local_34;
-      local_28 = local_28 + local_34;
-      local_24 = local_24 - local_34;
-      local_c = local_c + local_34;
-      piVar2->length = piVar2->length - local_34;
+    if (copy != 0) {
+      memcpy(put,next,copy);
+      have = have - copy;
+      next = next + copy;
+      left = left - copy;
+      put = put + copy;
+      state_00->length = state_00->length - copy;
       goto LAB_0080e2ef;
     }
     break;
   case TABLE:
-    for (; local_20 < 0xe; local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    for (; bits < 0xe; bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    piVar2->nlen = (local_30 & 0x1f) + 0x101;
-    piVar2->ndist = (local_30 >> 5 & 0x1f) + 1;
-    piVar2->ncode = (local_30 >> 10 & 0xf) + 4;
-    local_30 = local_30 >> 0xe;
-    local_20 = local_20 - 0xe;
-    if ((piVar2->nlen < 0x11f) && (piVar2->ndist < 0x1f)) {
-      piVar2->have = 0;
-      piVar2->mode = LENLENS;
+    state_00->nlen = (hold & 0x1f) + 0x101;
+    state_00->ndist = (hold >> 5 & 0x1f) + 1;
+    state_00->ncode = (hold >> 10 & 0xf) + 4;
+    hold = hold >> 0xe;
+    bits = bits - 0xe;
+    if ((state_00->nlen < 0x11f) && (state_00->ndist < 0x1f)) {
+      state_00->have = 0;
+      state_00->mode = LENLENS;
       goto switchD_0080e304_caseD_10;
     }
-    param_1->msg = "too many length or distance symbols";
-    piVar2->mode = BAD;
+    strm->msg = "too many length or distance symbols";
+    state_00->mode = BAD;
     goto LAB_0080e2ef;
   case LENLENS:
 switchD_0080e304_caseD_10:
-    while (piVar2->have < piVar2->ncode) {
-      for (; local_20 < 3; local_20 = local_20 + 8) {
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
+    while (state_00->have < state_00->ncode) {
+      for (; bits < 3; bits = bits + 8) {
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
       }
-      piVar2->lens[order[piVar2->have]] = (ushort)local_30 & 7;
-      piVar2->have = piVar2->have + 1;
-      local_30 = local_30 >> 3;
-      local_20 = local_20 - 3;
+      state_00->lens[order[state_00->have]] = (ushort)hold & 7;
+      state_00->have = state_00->have + 1;
+      hold = hold >> 3;
+      bits = bits - 3;
     }
-    while (piVar2->have < 0x13) {
-      piVar2->lens[order[piVar2->have]] = 0;
-      piVar2->have = piVar2->have + 1;
+    while (state_00->have < 0x13) {
+      state_00->lens[order[state_00->have]] = 0;
+      state_00->have = state_00->have + 1;
     }
-    piVar2->next = piVar2->codes;
-    piVar2->lencode = piVar2->next;
-    piVar2->lenbits = 7;
-    local_2c = inflate_table(CODES,piVar2->lens,0x13,&piVar2->next,&piVar2->lenbits,piVar2->work);
-    if (local_2c != 0) {
-      param_1->msg = "invalid code lengths set";
-      piVar2->mode = BAD;
+    state_00->next = state_00->codes;
+    state_00->lencode = state_00->next;
+    state_00->lenbits = 7;
+    ret = inflate_table(CODES,state_00->lens,0x13,&state_00->next,&state_00->lenbits,state_00->work)
+    ;
+    if (ret != 0) {
+      strm->msg = "invalid code lengths set";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->have = 0;
-    piVar2->mode = CODELENS;
+    state_00->have = 0;
+    state_00->mode = CODELENS;
 switchD_0080e304_caseD_11:
-    while (piVar2->have < piVar2->nlen + piVar2->ndist) {
+    while (state_00->have < state_00->nlen + state_00->ndist) {
       while( true ) {
-        local_8.bits = piVar2->lencode[(1 << ((byte)piVar2->lenbits & 0x1f)) - 1U & local_30].bits;
-        if (local_8.bits <= local_20) break;
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
-        local_20 = local_20 + 8;
+        current.bits = state_00->lencode[(1 << ((byte)state_00->lenbits & 0x1f)) - 1U & hold].bits;
+        if (current.bits <= bits) break;
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
+        bits = bits + 8;
       }
-      local_8.val = piVar2->lencode[(1 << ((byte)piVar2->lenbits & 0x1f)) - 1U & local_30].val;
-      if (local_8.val < 0x10) {
-        for (; local_20 < local_8.bits; local_20 = local_20 + 8) {
-          if (local_14 == 0) goto LAB_0080f6e4;
-          local_14 = local_14 - 1;
-          local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-          local_28 = local_28 + 1;
+      current.val = state_00->lencode[(1 << ((byte)state_00->lenbits & 0x1f)) - 1U & hold].val;
+      if (current.val < 0x10) {
+        for (; bits < current.bits; bits = bits + 8) {
+          if (have == 0) goto LAB_0080f6e4;
+          have = have - 1;
+          hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+          next = next + 1;
         }
-        local_30 = local_30 >> (local_8.bits & 0x1f);
-        local_20 = local_20 - local_8.bits;
-        piVar2->lens[piVar2->have] = local_8.val;
-        piVar2->have = piVar2->have + 1;
+        hold = hold >> (current.bits & 0x1f);
+        bits = bits - current.bits;
+        state_00->lens[state_00->have] = current.val;
+        state_00->have = state_00->have + 1;
       }
       else {
-        if (local_8.val == 0x10) {
-          for (; local_20 < local_8.bits + 2; local_20 = local_20 + 8) {
-            if (local_14 == 0) goto LAB_0080f6e4;
-            local_14 = local_14 - 1;
-            local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-            local_28 = local_28 + 1;
+        if (current.val == 0x10) {
+          for (; bits < current.bits + 2; bits = bits + 8) {
+            if (have == 0) goto LAB_0080f6e4;
+            have = have - 1;
+            hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+            next = next + 1;
           }
-          local_30 = local_30 >> (local_8.bits & 0x1f);
-          local_20 = local_20 - local_8.bits;
-          if (piVar2->have == 0) {
-            param_1->msg = "invalid bit length repeat";
-            piVar2->mode = BAD;
+          hold = hold >> (current.bits & 0x1f);
+          bits = bits - current.bits;
+          if (state_00->have == 0) {
+            strm->msg = "invalid bit length repeat";
+            state_00->mode = BAD;
             break;
           }
-          uVar1 = piVar2->lens[piVar2->have - 1];
-          local_34 = (local_30 & 3) + 3;
-          local_30 = local_30 >> 2;
-          local_20 = local_20 - 2;
+          len._0_2_ = state_00->lens[state_00->have - 1];
+          copy = (hold & 3) + 3;
+          hold = hold >> 2;
+          bits = bits - 2;
         }
-        else if (local_8.val == 0x11) {
-          for (; local_20 < local_8.bits + 3; local_20 = local_20 + 8) {
-            if (local_14 == 0) goto LAB_0080f6e4;
-            local_14 = local_14 - 1;
-            local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-            local_28 = local_28 + 1;
+        else if (current.val == 0x11) {
+          for (; bits < current.bits + 3; bits = bits + 8) {
+            if (have == 0) goto LAB_0080f6e4;
+            have = have - 1;
+            hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+            next = next + 1;
           }
-          uVar5 = local_30 >> (local_8.bits & 0x1f);
-          uVar1 = 0;
-          local_34 = (uVar5 & 7) + 3;
-          local_30 = uVar5 >> 3;
-          local_20 = (local_20 - local_8.bits) - 3;
+          uVar5 = hold >> (current.bits & 0x1f);
+          len._0_2_ = 0;
+          copy = (uVar5 & 7) + 3;
+          hold = uVar5 >> 3;
+          bits = (bits - current.bits) - 3;
         }
         else {
-          for (; local_20 < local_8.bits + 7; local_20 = local_20 + 8) {
-            if (local_14 == 0) goto LAB_0080f6e4;
-            local_14 = local_14 - 1;
-            local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-            local_28 = local_28 + 1;
+          for (; bits < current.bits + 7; bits = bits + 8) {
+            if (have == 0) goto LAB_0080f6e4;
+            have = have - 1;
+            hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+            next = next + 1;
           }
-          uVar5 = local_30 >> (local_8.bits & 0x1f);
-          uVar1 = 0;
-          local_34 = (uVar5 & 0x7f) + 0xb;
-          local_30 = uVar5 >> 7;
-          local_20 = (local_20 - local_8.bits) - 7;
+          uVar5 = hold >> (current.bits & 0x1f);
+          len._0_2_ = 0;
+          copy = (uVar5 & 0x7f) + 0xb;
+          hold = uVar5 >> 7;
+          bits = (bits - current.bits) - 7;
         }
-        if (piVar2->nlen + piVar2->ndist < piVar2->have + local_34) {
-          param_1->msg = "invalid bit length repeat";
-          piVar2->mode = BAD;
+        if (state_00->nlen + state_00->ndist < state_00->have + copy) {
+          strm->msg = "invalid bit length repeat";
+          state_00->mode = BAD;
           break;
         }
-        while (local_34 != 0) {
-          piVar2->lens[piVar2->have] = uVar1;
-          piVar2->have = piVar2->have + 1;
-          local_34 = local_34 + -1;
+        while (copy != 0) {
+          state_00->lens[state_00->have] = (ushort)len;
+          state_00->have = state_00->have + 1;
+          copy = copy - 1;
         }
       }
     }
-    if (piVar2->mode == BAD) goto LAB_0080e2ef;
-    piVar2->next = piVar2->codes;
-    piVar2->lencode = piVar2->next;
-    piVar2->lenbits = 9;
-    local_2c = inflate_table(LENS,piVar2->lens,piVar2->nlen,&piVar2->next,&piVar2->lenbits,
-                             piVar2->work);
-    if (local_2c != 0) {
-      param_1->msg = "invalid literal/lengths set";
-      piVar2->mode = BAD;
+    if (state_00->mode == BAD) goto LAB_0080e2ef;
+    state_00->next = state_00->codes;
+    state_00->lencode = state_00->next;
+    state_00->lenbits = 9;
+    ret = inflate_table(LENS,state_00->lens,state_00->nlen,&state_00->next,&state_00->lenbits,
+                        state_00->work);
+    if (ret != 0) {
+      strm->msg = "invalid literal/lengths set";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->distcode = piVar2->next;
-    piVar2->distbits = 6;
-    local_2c = inflate_table(DISTS,piVar2->lens + piVar2->nlen,piVar2->ndist,&piVar2->next,
-                             &piVar2->distbits,piVar2->work);
-    if (local_2c != 0) {
-      param_1->msg = "invalid distances set";
-      piVar2->mode = BAD;
+    state_00->distcode = state_00->next;
+    state_00->distbits = 6;
+    ret = inflate_table(DISTS,state_00->lens + state_00->nlen,state_00->ndist,&state_00->next,
+                        &state_00->distbits,state_00->work);
+    if (ret != 0) {
+      strm->msg = "invalid distances set";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->mode = LEN;
+    state_00->mode = LEN;
 switchD_0080e304_caseD_12:
-    if ((5 < local_14) && (0x101 < local_24)) {
-      param_1->next_out = local_c;
-      param_1->avail_out = local_24;
-      param_1->next_in = local_28;
-      param_1->avail_in = local_14;
-      piVar2->hold = local_30;
-      piVar2->bits = local_20;
-      inflate_fast(param_1,local_3c);
-      local_c = param_1->next_out;
-      local_24 = param_1->avail_out;
-      local_28 = param_1->next_in;
-      local_14 = param_1->avail_in;
-      local_30 = piVar2->hold;
-      local_20 = piVar2->bits;
+    if ((5 < have) && (0x101 < left)) {
+      strm->next_out = put;
+      strm->avail_out = left;
+      strm->next_in = next;
+      strm->avail_in = have;
+      state_00->hold = hold;
+      state_00->bits = bits;
+      inflate_fast(strm,out);
+      put = strm->next_out;
+      left = strm->avail_out;
+      next = strm->next_in;
+      have = strm->avail_in;
+      hold = state_00->hold;
+      bits = state_00->bits;
       goto LAB_0080e2ef;
     }
-    for (; cVar4 = piVar2->lencode[(1 << ((byte)piVar2->lenbits & 0x1f)) - 1U & local_30],
-        local_20 < ((uint)cVar4 >> 8 & 0xff); local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    for (; cVar1 = state_00->lencode[(1 << ((byte)state_00->lenbits & 0x1f)) - 1U & hold],
+        bits < ((uint)cVar1 >> 8 & 0xff); bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    local_8.op = cVar4.op;
-    if ((local_8.op != '\0') && (((uint)cVar4 & 0xf0) == 0)) {
+    current.op = cVar1.op;
+    if ((current.op != '\0') && (((uint)cVar1 & 0xf0) == 0)) {
       while( true ) {
-        bStack_f = cVar4.bits;
-        uVar5 = (1 << (bStack_f + local_8.op & 0x1f)) - 1U & local_30;
-        if ((uint)bStack_f +
-            ((uint)piVar2->lencode[((uint)cVar4 >> 0x10) + (uVar5 >> (bStack_f & 0x1f))] >> 8 & 0xff
-            ) <= local_20) break;
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
-        local_20 = local_20 + 8;
+        last.bits = cVar1.bits;
+        uVar5 = (1 << (last.bits + current.op & 0x1f)) - 1U & hold;
+        if ((uint)last.bits +
+            ((uint)state_00->lencode[((uint)cVar1 >> 0x10) + (uVar5 >> (last.bits & 0x1f))] >> 8 &
+            0xff) <= bits) break;
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
+        bits = bits + 8;
       }
-      local_30 = local_30 >> (bStack_f & 0x1f);
-      local_20 = local_20 - bStack_f;
-      cVar4 = piVar2->lencode[((uint)cVar4 >> 0x10) + (uVar5 >> (bStack_f & 0x1f))];
+      hold = hold >> (last.bits & 0x1f);
+      bits = bits - last.bits;
+      cVar1 = state_00->lencode[((uint)cVar1 >> 0x10) + (uVar5 >> (last.bits & 0x1f))];
     }
-    local_8 = cVar4;
-    local_30 = local_30 >> (local_8.bits & 0x1f);
-    local_20 = local_20 - local_8.bits;
-    piVar2->length = (uint)local_8 >> 0x10;
-    if (local_8.op == '\0') {
-      piVar2->mode = LIT;
+    current = cVar1;
+    hold = hold >> (current.bits & 0x1f);
+    bits = bits - current.bits;
+    state_00->length = (uint)current >> 0x10;
+    if (current.op == '\0') {
+      state_00->mode = LIT;
       goto LAB_0080e2ef;
     }
-    if (((uint)local_8 & 0x20) != 0) {
-      piVar2->mode = TYPE;
+    if (((uint)current & 0x20) != 0) {
+      state_00->mode = TYPE;
       goto LAB_0080e2ef;
     }
-    if (((uint)local_8 & 0x40) != 0) {
-      param_1->msg = "invalid literal/length code";
-      piVar2->mode = BAD;
+    if (((uint)current & 0x40) != 0) {
+      strm->msg = "invalid literal/length code";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->extra = (uint)local_8 & 0xf;
-    piVar2->mode = LENEXT;
+    state_00->extra = (uint)current & 0xf;
+    state_00->mode = LENEXT;
 switchD_0080e304_caseD_13:
-    if (piVar2->extra != 0) {
-      for (; local_20 < piVar2->extra; local_20 = local_20 + 8) {
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
+    if (state_00->extra != 0) {
+      for (; bits < state_00->extra; bits = bits + 8) {
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
       }
-      piVar2->length = ((1 << ((byte)piVar2->extra & 0x1f)) - 1U & local_30) + piVar2->length;
-      local_30 = local_30 >> ((byte)piVar2->extra & 0x1f);
-      local_20 = local_20 - piVar2->extra;
+      state_00->length = ((1 << ((byte)state_00->extra & 0x1f)) - 1U & hold) + state_00->length;
+      hold = hold >> ((byte)state_00->extra & 0x1f);
+      bits = bits - state_00->extra;
     }
-    piVar2->mode = DIST;
+    state_00->mode = DIST;
 switchD_0080e304_caseD_14:
-    for (; cVar4 = piVar2->distcode[(1 << ((byte)piVar2->distbits & 0x1f)) - 1U & local_30],
-        local_20 < ((uint)cVar4 >> 8 & 0xff); local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    for (; cVar1 = state_00->distcode[(1 << ((byte)state_00->distbits & 0x1f)) - 1U & hold],
+        bits < ((uint)cVar1 >> 8 & 0xff); bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    local_8.op = cVar4.op;
-    if (((uint)cVar4 & 0xf0) == 0) {
+    current.op = cVar1.op;
+    if (((uint)cVar1 & 0xf0) == 0) {
       while( true ) {
-        bStack_f = cVar4.bits;
-        uVar5 = (1 << (bStack_f + local_8.op & 0x1f)) - 1U & local_30;
-        if ((uint)bStack_f +
-            ((uint)piVar2->distcode[((uint)cVar4 >> 0x10) + (uVar5 >> (bStack_f & 0x1f))] >> 8 &
-            0xff) <= local_20) break;
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
-        local_20 = local_20 + 8;
+        last.bits = cVar1.bits;
+        uVar5 = (1 << (last.bits + current.op & 0x1f)) - 1U & hold;
+        if ((uint)last.bits +
+            ((uint)state_00->distcode[((uint)cVar1 >> 0x10) + (uVar5 >> (last.bits & 0x1f))] >> 8 &
+            0xff) <= bits) break;
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
+        bits = bits + 8;
       }
-      local_30 = local_30 >> (bStack_f & 0x1f);
-      local_20 = local_20 - bStack_f;
-      cVar4 = piVar2->distcode[((uint)cVar4 >> 0x10) + (uVar5 >> (bStack_f & 0x1f))];
+      hold = hold >> (last.bits & 0x1f);
+      bits = bits - last.bits;
+      cVar1 = state_00->distcode[((uint)cVar1 >> 0x10) + (uVar5 >> (last.bits & 0x1f))];
     }
-    local_8 = cVar4;
-    local_30 = local_30 >> (local_8.bits & 0x1f);
-    local_20 = local_20 - local_8.bits;
-    if (((uint)local_8 & 0x40) != 0) {
-      param_1->msg = "invalid distance code";
-      piVar2->mode = BAD;
+    current = cVar1;
+    hold = hold >> (current.bits & 0x1f);
+    bits = bits - current.bits;
+    if (((uint)current & 0x40) != 0) {
+      strm->msg = "invalid distance code";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->offset = (uint)local_8 >> 0x10;
-    piVar2->extra = (uint)local_8 & 0xf;
-    piVar2->mode = DISTEXT;
+    state_00->offset = (uint)current >> 0x10;
+    state_00->extra = (uint)current & 0xf;
+    state_00->mode = DISTEXT;
 switchD_0080e304_caseD_15:
-    if (piVar2->extra != 0) {
-      for (; local_20 < piVar2->extra; local_20 = local_20 + 8) {
-        if (local_14 == 0) goto LAB_0080f6e4;
-        local_14 = local_14 - 1;
-        local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-        local_28 = local_28 + 1;
+    if (state_00->extra != 0) {
+      for (; bits < state_00->extra; bits = bits + 8) {
+        if (have == 0) goto LAB_0080f6e4;
+        have = have - 1;
+        hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+        next = next + 1;
       }
-      piVar2->offset = ((1 << ((byte)piVar2->extra & 0x1f)) - 1U & local_30) + piVar2->offset;
-      local_30 = local_30 >> ((byte)piVar2->extra & 0x1f);
-      local_20 = local_20 - piVar2->extra;
+      state_00->offset = ((1 << ((byte)state_00->extra & 0x1f)) - 1U & hold) + state_00->offset;
+      hold = hold >> ((byte)state_00->extra & 0x1f);
+      bits = bits - state_00->extra;
     }
-    if ((piVar2->whave + local_3c) - local_24 < piVar2->offset) {
-      param_1->msg = "invalid distance too far back";
-      piVar2->mode = BAD;
+    if ((state_00->whave + out) - left < state_00->offset) {
+      strm->msg = "invalid distance too far back";
+      state_00->mode = BAD;
       goto LAB_0080e2ef;
     }
-    piVar2->mode = MATCH;
+    state_00->mode = MATCH;
 switchD_0080e304_caseD_16:
-    if (local_24 != 0) {
-      if (local_3c - local_24 < piVar2->offset) {
-        local_34 = piVar2->offset - (local_3c - local_24);
-        if (piVar2->write < local_34) {
-          local_34 = local_34 - piVar2->write;
-          local_38 = piVar2->window + (piVar2->wsize - local_34);
+    if (left != 0) {
+      if (out - left < state_00->offset) {
+        copy = state_00->offset - (out - left);
+        if (state_00->write < copy) {
+          copy = copy - state_00->write;
+          from = state_00->window + (state_00->wsize - copy);
         }
         else {
-          local_38 = piVar2->window + (piVar2->write - local_34);
+          from = state_00->window + (state_00->write - copy);
         }
-        if (piVar2->length < local_34) {
-          local_34 = piVar2->length;
+        if (state_00->length < copy) {
+          copy = state_00->length;
         }
       }
       else {
-        local_38 = local_c + -piVar2->offset;
-        local_34 = piVar2->length;
+        from = put + -state_00->offset;
+        copy = state_00->length;
       }
-      if (local_24 < local_34) {
-        local_34 = local_24;
+      if (left < copy) {
+        copy = left;
       }
-      local_24 = local_24 - local_34;
-      piVar2->length = piVar2->length - local_34;
+      left = left - copy;
+      state_00->length = state_00->length - copy;
       do {
-        *local_c = *local_38;
-        local_c = local_c + 1;
-        local_38 = local_38 + 1;
-        local_34 = local_34 - 1;
-      } while (local_34 != 0);
-      if (piVar2->length == 0) {
-        piVar2->mode = LEN;
+        *put = *from;
+        put = put + 1;
+        from = from + 1;
+        copy = copy - 1;
+      } while (copy != 0);
+      if (state_00->length == 0) {
+        state_00->mode = LEN;
       }
       goto LAB_0080e2ef;
     }
@@ -699,83 +704,84 @@ switchD_0080e304_caseD_16:
   case MATCH:
     goto switchD_0080e304_caseD_16;
   case LIT:
-    if (local_24 != 0) {
-      *local_c = (uchar)piVar2->length;
-      local_c = local_c + 1;
-      local_24 = local_24 - 1;
-      piVar2->mode = LEN;
+    if (left != 0) {
+      *put = (uchar)state_00->length;
+      put = put + 1;
+      left = left - 1;
+      state_00->mode = LEN;
       goto LAB_0080e2ef;
     }
     break;
   case CHECK:
-    if (piVar2->wrap == 0) {
+    if (state_00->wrap == 0) {
 LAB_0080f69c:
-      piVar2->mode = DONE;
+      state_00->mode = DONE;
       goto switchD_0080e304_caseD_1a;
     }
-    for (; local_20 < 0x20; local_20 = local_20 + 8) {
-      if (local_14 == 0) goto LAB_0080f6e4;
-      local_14 = local_14 - 1;
-      local_30 = ((uint)*local_28 << ((byte)local_20 & 0x1f)) + local_30;
-      local_28 = local_28 + 1;
+    for (; bits < 0x20; bits = bits + 8) {
+      if (have == 0) goto LAB_0080f6e4;
+      have = have - 1;
+      hold = ((uint)*next << ((byte)bits & 0x1f)) + hold;
+      next = next + 1;
     }
-    local_3c = local_3c - local_24;
-    param_1->total_out = param_1->total_out + local_3c;
-    piVar2->total = piVar2->total + local_3c;
-    if (local_3c != 0) {
-      uVar7 = adler32(piVar2->check,local_c + -local_3c,local_3c);
-      piVar2->check = uVar7;
-      param_1->adler = piVar2->check;
+    uVar5 = out - left;
+    strm->total_out = strm->total_out + uVar5;
+    state_00->total = state_00->total + uVar5;
+    if (uVar5 != 0) {
+      uVar4 = adler32(state_00->check,put + -uVar5,uVar5);
+      state_00->check = uVar4;
+      strm->adler = state_00->check;
     }
-    local_3c = local_24;
-    if ((local_30 >> 0x18) + (local_30 >> 8 & 0xff00) + (local_30 & 0xff00) * 0x100 +
-        local_30 * 0x1000000 == piVar2->check) {
-      local_30 = 0;
-      local_20 = 0;
+    out = left;
+    if ((hold >> 0x18) + (hold >> 8 & 0xff00) + (hold & 0xff00) * 0x100 + hold * 0x1000000 ==
+        state_00->check) {
+      hold = 0;
+      bits = 0;
       goto LAB_0080f69c;
     }
-    param_1->msg = "incorrect data check";
-    piVar2->mode = BAD;
+    strm->msg = "incorrect data check";
+    state_00->mode = BAD;
     goto LAB_0080e2ef;
   case DONE:
 switchD_0080e304_caseD_1a:
-    local_2c = 1;
+    ret = 1;
     break;
   case BAD:
-    local_2c = -3;
+    ret = -3;
     break;
   case MEM:
     return -4;
   }
 LAB_0080f6e4:
-  param_1->next_out = local_c;
-  param_1->avail_out = local_24;
-  param_1->next_in = local_28;
-  param_1->avail_in = local_14;
-  piVar2->hold = local_30;
-  piVar2->bits = local_20;
-  if (((piVar2->wsize != 0) || (((int)piVar2->mode < 0x18 && (local_3c != param_1->avail_out)))) &&
-     (iVar6 = updatewindow(param_1,local_3c), iVar6 != 0)) {
-    piVar2->mode = MEM;
+  strm->next_out = put;
+  strm->avail_out = left;
+  strm->next_in = next;
+  strm->avail_in = have;
+  state_00->hold = hold;
+  state_00->bits = bits;
+  if (((state_00->wsize != 0) || (((int)state_00->mode < 0x18 && (out != strm->avail_out)))) &&
+     (iVar2 = updatewindow(strm,out), iVar2 != 0)) {
+    state_00->mode = MEM;
     return -4;
   }
-  iVar6 = uVar3 - param_1->avail_in;
-  local_3c = local_3c - param_1->avail_out;
-  param_1->total_in = param_1->total_in + iVar6;
-  param_1->total_out = param_1->total_out + local_3c;
-  piVar2->total = piVar2->total + local_3c;
-  if ((piVar2->wrap != 0) && (local_3c != 0)) {
-    uVar7 = adler32(piVar2->check,param_1->next_out + -local_3c,local_3c);
-    piVar2->check = uVar7;
-    param_1->adler = piVar2->check;
+  iVar2 = uVar3 - strm->avail_in;
+  uVar3 = out - strm->avail_out;
+  strm->total_in = strm->total_in + iVar2;
+  strm->total_out = strm->total_out + uVar3;
+  state_00->total = state_00->total + uVar3;
+  if ((state_00->wrap != 0) && (uVar3 != 0)) {
+    uVar4 = adler32(state_00->check,strm->next_out + -uVar3,uVar3);
+    state_00->check = uVar4;
+    strm->adler = state_00->check;
   }
-  param_1->data_type =
-       piVar2->bits + (-(uint)(piVar2->last != 0) & 0x40) + ((piVar2->mode != TYPE) - 1 & 0x80);
-  if (((iVar6 != 0) || (local_3c != 0)) && (param_2 != 4)) {
-    return local_2c;
+  strm->data_type =
+       state_00->bits + (-(uint)(state_00->last != 0) & 0x40) +
+       ((state_00->mode != TYPE) - 1 & 0x80);
+  if (((iVar2 != 0) || (uVar3 != 0)) && (flush != 4)) {
+    return ret;
   }
-  if (local_2c != 0) {
-    return local_2c;
+  if (ret != 0) {
+    return ret;
   }
   return -5;
 LAB_0080f836:
@@ -785,21 +791,22 @@ LAB_0080f836:
 
 // 0080FAA0  inflateEnd  (zlib/inflate.cpp:1172)
 
-int __cdecl inflateEnd(z_stream_s *param_1)
+int __cdecl inflateEnd(z_stream_s *strm)
 
 {
   int iVar1;
+  inflate_state *state;
   
-  if (((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) ||
-     (param_1->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0)) {
+  if (((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) ||
+     (strm->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0)) {
     iVar1 = -2;
   }
   else {
-    if (param_1->state->w_mask != 0) {
-      (*param_1->zfree)(param_1->opaque,(uchar *)param_1->state->w_mask);
+    if (strm->state->w_mask != 0) {
+      (*strm->zfree)(strm->opaque,(uchar *)strm->state->w_mask);
     }
-    (*param_1->zfree)(param_1->opaque,(uchar *)param_1->state);
-    param_1->state = (internal_state *)0x0;
+    (*strm->zfree)(strm->opaque,(uchar *)strm->state);
+    strm->state = (internal_state *)0x0;
     iVar1 = 0;
   }
   return iVar1;

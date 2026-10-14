@@ -3,7 +3,7 @@
 // 00847510  R_InitCmdBufSourceState  (gfx_d3d/r_state_utils.cpp:30)
 
 void __cdecl
-R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,int param_3)
+R_InitCmdBufSourceState(GfxCmdBufSourceState *input,GfxCmdBufInput *cameraView,int param_3)
 
 {
   uint uVar1;
@@ -12,20 +12,21 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
   ushort *puVar4;
   GfxCmdBufInput *pGVar5;
   GfxCmdBufInput *pGVar6;
+  GfxCmdBufSourceState *source;
   
-  memset((uchar *)param_1,'\0',0x1a90);
-  pGVar5 = param_2;
-  pGVar6 = &param_1->input;
+  memset((uchar *)input,'\0',0x1a90);
+  pGVar5 = cameraView;
+  pGVar6 = &input->input;
   for (iVar2 = 0x3a4; iVar2 != 0; iVar2 = iVar2 + -1) {
     pGVar6->consts[0][0] = pGVar5->consts[0][0];
     pGVar5 = (GfxCmdBufInput *)(pGVar5->consts[0] + 1);
     pGVar6 = (GfxCmdBufInput *)(pGVar6->consts[0] + 1);
   }
   uVar1 = 0;
-  puVar4 = param_1->constVersions;
-  pfVar3 = (param_1->input).consts[0] + 2;
+  puVar4 = input->constVersions;
+  pfVar3 = (input->input).consts[0] + 2;
   do {
-    if (((param_2 == &gfxCmdBufInput) || (s_codeConstUpdateFreq[uVar1] != MTL_UPDATE_RARELY)) ||
+    if (((cameraView == &gfxCmdBufInput) || (s_codeConstUpdateFreq[uVar1] != MTL_UPDATE_RARELY)) ||
        (uVar1 < 0x2f)) {
       (*(float (*) [4])(pfVar3 + -2))[0] = 3.4028235e+38;
       pfVar3[-1] = 3.4028235e+38;
@@ -39,14 +40,16 @@ R_InitCmdBufSourceState(GfxCmdBufSourceState *param_1,GfxCmdBufInput *param_2,in
     puVar4 = puVar4 + 1;
     pfVar3 = pfVar3 + 4;
   } while (uVar1 < 0xc5);
-  (param_1->skinnedPlacement).base.quat[3] = 1.0;
-  (param_1->skinnedPlacement).scale = 1.0;
-  param_1->cameraView = param_3;
+  (input->skinnedPlacement).base.quat[3] = 1.0;
+  (input->skinnedPlacement).scale = 1.0;
+  input->cameraView = param_3;
   return;
 }
 
 
 // 008475C0  R_InitCmdBufState  (gfx_d3d/r_state_utils.cpp:121)
+
+/* WARNING: Variable defined which should be unmapped: state */
 
 void __cdecl R_InitCmdBufState(GfxCmdBufState *param_1)
 
@@ -58,6 +61,7 @@ void __cdecl R_InitCmdBufState(GfxCmdBufState *param_1)
   uint uVar3;
   GfxCmdBufPrimState_u_0 GVar4;
   uint uVar5;
+  GfxCmdBufState *state;
   
   GVar4 = gfxCmdBufState.prim.field0_0x0;
   memset(gfxCmdBufState.refSamplerState,'\0',0x1140);
@@ -95,6 +99,8 @@ void __cdecl R_InitCmdBufState(GfxCmdBufState *param_1)
 
 // 008476C0  R_InitCmdBufSamplerState  (gfx_d3d/r_state_utils.cpp:201)
 
+/* WARNING: Variable defined which should be unmapped: state */
+
 void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *param_1)
 
 {
@@ -103,6 +109,7 @@ void __cdecl R_InitCmdBufSamplerState(GfxCmdBufState *param_1)
   uint unaff_ESI;
   uint unaff_EDI;
   IDirect3DDevice9 *pIVar3;
+  GfxCmdBufState *state;
   
   uVar1 = s_decodeSamplerFilterState[1] | 0x1500000;
   pIVar3 = (IDirect3DDevice9 *)0x0;
@@ -125,6 +132,7 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
 {
   byte in_AL;
   int *unaff_ESI;
+  uint samplerIndex;
   
   (**(code **)(*unaff_ESI + 0x114))();
   (**(code **)(*unaff_ESI + 0x114))();
@@ -141,12 +149,14 @@ void __cdecl R_HW_ForceSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint 
 
 // 00847870  R_Set2D  (gfx_d3d/r_state_utils.cpp:318)
 
+/* WARNING: Variable defined which should be unmapped: viewport */
+
 void __cdecl R_Set2D(GfxCmdBufSourceState *param_1)
 
 {
   GfxCmdBufSourceState *unaff_ESI;
   GfxCmdBufSourceState *in_stack_ffffffe8;
-  GfxViewport *in_stack_ffffffec;
+  GfxViewport viewport;
   
   if (*(int *)&unaff_ESI->viewMode != 2) {
     *(undefined4 *)&unaff_ESI->viewMode = 2;
@@ -155,7 +165,7 @@ void __cdecl R_Set2D(GfxCmdBufSourceState *param_1)
     unaff_ESI->eyeOffset[1] = 0.0;
     unaff_ESI->eyeOffset[2] = 0.0;
     unaff_ESI->eyeOffset[3] = 1.0;
-    R_GetViewport(in_stack_ffffffe8,in_stack_ffffffec);
+    R_GetViewport(in_stack_ffffffe8,(GfxViewport *)viewport.x);
     R_CmdBufSet2D(unaff_ESI,(GfxViewport *)in_stack_ffffffe8);
   }
   return;
@@ -204,6 +214,7 @@ void __cdecl R_Set3D(GfxCmdBufSourceState *param_1)
   GfxViewParms *pGVar2;
   GfxCmdBufSourceState *unaff_EDI;
   GfxViewParms *pGVar3;
+  GfxCmdBufSourceState *source;
   
   if (*(int *)&param_1->viewMode != 1) {
     *(undefined4 *)&param_1->viewMode = 1;

@@ -669,10 +669,10 @@ int __cdecl PS_ReadPunctuation(script_s *param_1,token_s *param_2)
 {
   uchar uVar1;
   undefined4 *puVar2;
+  uchar *source;
   uchar *puVar3;
-  uchar *puVar4;
-  uint uVar5;
-  int iVar6;
+  uint count;
+  int iVar4;
   int unaff_EDI;
   
   puVar2 = *(undefined4 **)(*(int *)(unaff_EDI + 0x70) + **(char **)(unaff_EDI + 0x44) * 4);
@@ -680,19 +680,19 @@ int __cdecl PS_ReadPunctuation(script_s *param_1,token_s *param_2)
     if (puVar2 == (undefined4 *)0x0) {
       return 0;
     }
-    puVar3 = (uchar *)*puVar2;
-    puVar4 = puVar3;
+    source = (uchar *)*puVar2;
+    puVar3 = source;
     do {
-      uVar1 = *puVar4;
-      puVar4 = puVar4 + 1;
+      uVar1 = *puVar3;
+      puVar3 = puVar3 + 1;
     } while (uVar1 != '\0');
-    uVar5 = (int)puVar4 - (int)(puVar3 + 1);
-    if ((*(char **)(unaff_EDI + 0x44) + uVar5 <= *(char **)(unaff_EDI + 0x48)) &&
-       (iVar6 = strncmp(*(char **)(unaff_EDI + 0x44),(char *)puVar3,uVar5), iVar6 == 0)) break;
+    count = (int)puVar3 - (int)(source + 1);
+    if ((*(char **)(unaff_EDI + 0x44) + count <= *(char **)(unaff_EDI + 0x48)) &&
+       (iVar4 = strncmp(*(char **)(unaff_EDI + 0x44),(char *)source,count), iVar4 == 0)) break;
     puVar2 = (undefined4 *)puVar2[2];
   }
-  strncpy((uchar *)param_1,puVar3,0x400);
-  *(int *)(unaff_EDI + 0x44) = *(int *)(unaff_EDI + 0x44) + uVar5;
+  strncpy((uchar *)param_1,source,0x400);
+  *(int *)(unaff_EDI + 0x44) = *(int *)(unaff_EDI + 0x44) + count;
   *(undefined4 *)(param_1 + 0x400) = 5;
   *(undefined4 *)(param_1 + 0x404) = puVar2[1];
   return 1;

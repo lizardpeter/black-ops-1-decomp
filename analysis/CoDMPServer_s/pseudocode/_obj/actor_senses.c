@@ -285,18 +285,18 @@ void __fastcall Actor_UpdateSight(actor_s *param_1)
   sentient_s *extraout_EDX_00;
   sentient_s *extraout_EDX_01;
   sentient_s *psVar8;
-  uint uVar9;
+  uint num;
+  float fVar9;
   float fVar10;
   float fVar11;
   float fVar12;
-  float fVar13;
   undefined4 *in_stack_00000004;
   actor_s *local_1ac;
   int local_198 [5];
   float afStack_184 [96];
   
   iVar2 = in_stack_00000004[1];
-  uVar9 = 0;
+  num = 0;
   local_198[2] = 1;
   local_198[0] = 0;
   local_198[1] = 2;
@@ -305,9 +305,9 @@ void __fastcall Actor_UpdateSight(actor_s *param_1)
   psVar8 = extraout_EDX;
   if (psVar4 != (sentient_s *)0x0) {
     piVar3 = (int *)*in_stack_00000004;
-    fVar11 = 0.0;
-    fVar12 = 0.5;
-    fVar13 = DAT_00af3e58;
+    fVar10 = 0.0;
+    fVar11 = 0.5;
+    fVar12 = DAT_00af3e58;
     do {
       psVar8 = *(sentient_s **)psVar4;
       pgVar6 = *(gentity_s **)psVar8;
@@ -316,34 +316,34 @@ void __fastcall Actor_UpdateSight(actor_s *param_1)
          (((uVar1 = *(ushort *)(iVar2 + 8), pgVar6 = (gentity_s *)(uint)uVar1, uVar1 == 0 ||
            (pgVar6 = (gentity_s *)(&g_entities + (int)(pgVar6 + -1) * 0xbe),
            psVar8 != (sentient_s *)pgVar6)) &&
-          (fVar10 = ((float)*(gentity_s **)(psVar8 + 300) - (float)piVar3[0x4b]) *
-                    ((float)*(gentity_s **)(psVar8 + 300) - (float)piVar3[0x4b]) +
-                    ((float)*(gentity_s **)(psVar8 + 0x124) - (float)piVar3[0x49]) *
-                    ((float)*(gentity_s **)(psVar8 + 0x124) - (float)piVar3[0x49]) +
-                    ((float)*(gentity_s **)(psVar8 + 0x128) - (float)piVar3[0x4a]) *
-                    ((float)*(gentity_s **)(psVar8 + 0x128) - (float)piVar3[0x4a]), fVar10 != fVar11
-          )))) {
-        piVar7 = (int *)(0x5f3759df - ((int)fVar10 >> 1));
+          (fVar9 = ((float)*(gentity_s **)(psVar8 + 300) - (float)piVar3[0x4b]) *
+                   ((float)*(gentity_s **)(psVar8 + 300) - (float)piVar3[0x4b]) +
+                   ((float)*(gentity_s **)(psVar8 + 0x124) - (float)piVar3[0x49]) *
+                   ((float)*(gentity_s **)(psVar8 + 0x124) - (float)piVar3[0x49]) +
+                   ((float)*(gentity_s **)(psVar8 + 0x128) - (float)piVar3[0x4a]) *
+                   ((float)*(gentity_s **)(psVar8 + 0x128) - (float)piVar3[0x4a]), fVar9 != fVar10))
+         )) {
+        piVar7 = (int *)(0x5f3759df - ((int)fVar9 >> 1));
         uVar5 = (DAT_01c57f4c -
                 in_stack_00000004[(((int)psVar4 - DAT_01c57828) / 0x90) * 10 + 0x3c9]) - 100;
         pgVar6 = (gentity_s *)(~((int)uVar5 >> 0x1f) & uVar5);
-        afStack_184[uVar9 * 2] =
-             (fVar13 - fVar10 * fVar12 * (float)piVar7 * (float)piVar7) * (float)piVar7 *
+        afStack_184[num * 2] =
+             (fVar12 - fVar9 * fVar11 * (float)piVar7 * (float)piVar7) * (float)piVar7 *
              (float)(int)pgVar6;
-        afStack_184[uVar9 * 2 + -1] = (float)psVar4;
-        uVar9 = uVar9 + 1;
+        afStack_184[num * 2 + -1] = (float)psVar4;
+        num = num + 1;
       }
       psVar4 = Sentient_NextSentient((sentient_s *)pgVar6,(int)piVar7);
     } while (psVar4 != (sentient_s *)0x0);
     psVar8 = extraout_EDX_00;
-    if (1 < (int)uVar9) {
-      qsort(local_198 + 4,uVar9,8,FUN_007594d0);
+    if (1 < (int)num) {
+      qsort(local_198 + 4,num,8,FUN_007594d0);
       psVar8 = extraout_EDX_01;
     }
   }
   psVar4 = (sentient_s *)in_stack_00000004[0x7b];
   local_1ac = (actor_s *)0x0;
-  if (0 < (int)uVar9) {
+  if (0 < (int)num) {
     do {
       Actor_CanSeeSentient(local_1ac,psVar8,0);
       if ((sentient_s *)in_stack_00000004[0x7b] != psVar4) {
@@ -351,7 +351,7 @@ void __fastcall Actor_UpdateSight(actor_s *param_1)
       }
       local_1ac = local_1ac + 1;
       psVar8 = psVar4;
-    } while ((int)local_1ac < (int)uVar9);
+    } while ((int)local_1ac < (int)num);
   }
   return;
 }

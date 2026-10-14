@@ -2,7 +2,7 @@
 
 // 00C1B684  _encode_pointer  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:86)
 
-void * __cdecl _encode_pointer(void *param_1)
+void * __cdecl _encode_pointer(void *ptr)
 
 {
   LPVOID pvVar1;
@@ -25,14 +25,14 @@ void * __cdecl _encode_pointer(void *param_1)
   hModule = GetModuleHandleW(L"KERNEL32.DLL");
   if ((hModule == (HMODULE)0x0) &&
      (hModule = (HMODULE)_crt_waiting_on_module_handle(L"KERNEL32.DLL"), hModule == (HMODULE)0x0)) {
-    return param_1;
+    return ptr;
   }
   pFVar4 = GetProcAddress(hModule,"EncodePointer");
 LAB_00c1b6e4:
   if (pFVar4 != (FARPROC)0x0) {
-    param_1 = (void *)(*pFVar4)(param_1);
+    ptr = (void *)(*pFVar4)(ptr);
   }
-  return param_1;
+  return ptr;
 }
 
 
@@ -50,7 +50,7 @@ void * __cdecl _encoded_null(void)
 
 // 00C1B6FF  _decode_pointer  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:161)
 
-void * __cdecl _decode_pointer(void *param_1)
+void * __cdecl _decode_pointer(void *codedptr)
 
 {
   LPVOID pvVar1;
@@ -73,20 +73,20 @@ void * __cdecl _decode_pointer(void *param_1)
   hModule = GetModuleHandleW(L"KERNEL32.DLL");
   if ((hModule == (HMODULE)0x0) &&
      (hModule = (HMODULE)_crt_waiting_on_module_handle(L"KERNEL32.DLL"), hModule == (HMODULE)0x0)) {
-    return param_1;
+    return codedptr;
   }
   pFVar4 = GetProcAddress(hModule,"DecodePointer");
 LAB_00c1b75f:
   if (pFVar4 != (FARPROC)0x0) {
-    param_1 = (void *)(*pFVar4)(param_1);
+    codedptr = (void *)(*pFVar4)(codedptr);
   }
-  return param_1;
+  return codedptr;
 }
 
 
 // 00C1B771  __crtTlsAlloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:208)
 
-ulong __cdecl __crtTlsAlloc(_func___cdecl_void_void_ptr *param_1)
+ulong __cdecl __crtTlsAlloc(_func___cdecl_void_void_ptr *lpCallBack)
 
 {
   DWORD DVar1;
@@ -98,14 +98,14 @@ ulong __cdecl __crtTlsAlloc(_func___cdecl_void_void_ptr *param_1)
 
 // 00C1B77A  __fls_getvalue  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:226)
 
-void * __cdecl __fls_getvalue(ulong param_1)
+void * __cdecl __fls_getvalue(ulong dwFlsIndex)
 
 {
   code *pcVar1;
   void *pvVar2;
   
   pcVar1 = TlsGetValue(__getvalueindex);
-  pvVar2 = (void *)(*pcVar1)(param_1);
+  pvVar2 = (void *)(*pcVar1)(dwFlsIndex);
   return pvVar2;
 }
 
@@ -137,14 +137,14 @@ _func___cdecl_void_ptr_ulong * __cdecl __set_flsgetvalue(void)
 
 // 00C1B7CE  __fls_setvalue  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:283)
 
-int __cdecl __fls_setvalue(ulong param_1,void *param_2)
+int __cdecl __fls_setvalue(ulong dwFlsIndex,void *lpFlsData)
 
 {
   code *pcVar1;
   int iVar2;
   
   pcVar1 = _decode_pointer(gpFlsSetValue);
-  iVar2 = (*pcVar1)(param_1,param_2);
+  iVar2 = (*pcVar1)(dwFlsIndex,lpFlsData);
   return iVar2;
 }
 
@@ -158,11 +158,11 @@ int __cdecl _mtinit(void)
   BOOL BVar1;
   int iVar2;
   code *pcVar3;
-  _tiddata *p_Var4;
-  DWORD DVar5;
-  ulong uVar6;
-  code *pcVar7;
-  _tiddata *p_Var8;
+  _tiddata *ptd;
+  DWORD DVar4;
+  ulong uVar5;
+  code *pcVar6;
+  _tiddata *p_Var7;
   
   hModule = GetModuleHandleW(L"KERNEL32.DLL");
   if (hModule == (HMODULE)0x0) {
@@ -198,20 +198,19 @@ int __cdecl _mtinit(void)
     gpFlsFree = _encode_pointer(gpFlsFree);
     iVar2 = _mtinitlocks();
     if (iVar2 != 0) {
-      pcVar7 = _freefls;
+      pcVar6 = _freefls;
       pcVar3 = _decode_pointer(gpFlsAlloc);
-      __flsindex = (*pcVar3)(pcVar7);
-      if ((__flsindex != 0xffffffff) && (p_Var4 = _calloc_crt(1,0x214), p_Var4 != (_tiddata *)0x0))
-      {
-        uVar6 = __flsindex;
-        p_Var8 = p_Var4;
+      __flsindex = (*pcVar3)(pcVar6);
+      if ((__flsindex != 0xffffffff) && (ptd = _calloc_crt(1,0x214), ptd != (_tiddata *)0x0)) {
+        uVar5 = __flsindex;
+        p_Var7 = ptd;
         pcVar3 = _decode_pointer(gpFlsSetValue);
-        iVar2 = (*pcVar3)(uVar6,p_Var8);
+        iVar2 = (*pcVar3)(uVar5,p_Var7);
         if (iVar2 != 0) {
-          _initptd(p_Var4,(threadlocaleinfostruct *)0x0);
-          DVar5 = GetCurrentThreadId();
-          p_Var4->_thandle = 0xffffffff;
-          p_Var4->_tid = DVar5;
+          _initptd(ptd,(threadlocaleinfostruct *)0x0);
+          DVar4 = GetCurrentThreadId();
+          ptd->_thandle = 0xffffffff;
+          ptd->_tid = DVar4;
           return 1;
         }
       }
@@ -250,37 +249,38 @@ void __cdecl _mtterm(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl _initptd(_tiddata *param_1,threadlocaleinfostruct *param_2)
+void __cdecl _initptd(_tiddata *ptd,threadlocaleinfostruct *ptloci)
 
 {
   HMODULE hModule;
   FARPROC pFVar1;
+  HINSTANCE__ *hKernel32;
   
   hModule = GetModuleHandleW(L"KERNEL32.DLL");
   if (hModule == (HMODULE)0x0) {
     hModule = (HMODULE)_crt_waiting_on_module_handle(L"KERNEL32.DLL");
   }
-  param_1->_pxcptacttab = &_XcptActTab;
-  param_1->_holdrand = 1;
+  ptd->_pxcptacttab = &_XcptActTab;
+  ptd->_holdrand = 1;
   if (hModule != (HMODULE)0x0) {
     pFVar1 = GetProcAddress(hModule,"EncodePointer");
-    param_1->_encode_ptr = pFVar1;
+    ptd->_encode_ptr = pFVar1;
     pFVar1 = GetProcAddress(hModule,"DecodePointer");
-    param_1->_decode_ptr = pFVar1;
+    ptd->_decode_ptr = pFVar1;
   }
-  param_1->_ownlocale = 1;
-  (param_1->_setloc_data)._cachein[0] = 'C';
-  (param_1->_setloc_data)._cacheout[0] = 'C';
-  param_1->ptmbcinfo = &__initialmbcinfo;
+  ptd->_ownlocale = 1;
+  (ptd->_setloc_data)._cachein[0] = 'C';
+  (ptd->_setloc_data)._cacheout[0] = 'C';
+  ptd->ptmbcinfo = &__initialmbcinfo;
   _lock(0xd);
-  InterlockedIncrement(&param_1->ptmbcinfo->refcount);
+  InterlockedIncrement(&ptd->ptmbcinfo->refcount);
   FUN_00c1b8fd();
   _lock(0xc);
-  param_1->ptlocinfo = param_2;
-  if (param_2 == (threadlocaleinfostruct *)0x0) {
-    param_1->ptlocinfo = __ptlocinfo;
+  ptd->ptlocinfo = ptloci;
+  if (ptloci == (threadlocaleinfostruct *)0x0) {
+    ptd->ptlocinfo = __ptlocinfo;
   }
-  __addlocaleref(param_1->ptlocinfo);
+  __addlocaleref(ptd->ptlocinfo);
   FUN_00c1b906();
   return;
 }
@@ -293,38 +293,38 @@ _tiddata * __cdecl _getptd_noexit(void)
 {
   DWORD dwErrCode;
   _func___cdecl_void_ptr_ulong *p_Var1;
-  _tiddata *p_Var2;
-  code *pcVar3;
-  int iVar4;
-  DWORD DVar5;
-  ulong uVar6;
-  _tiddata *p_Var7;
+  _tiddata *ptd;
+  code *pcVar2;
+  int iVar3;
+  DWORD DVar4;
+  ulong uVar5;
+  _tiddata *p_Var6;
   
   dwErrCode = GetLastError();
-  uVar6 = __flsindex;
+  uVar5 = __flsindex;
   p_Var1 = __set_flsgetvalue();
-  p_Var2 = (*p_Var1)(uVar6);
-  if (p_Var2 == (_tiddata *)0x0) {
-    p_Var2 = _calloc_crt(1,0x214);
-    if (p_Var2 != (_tiddata *)0x0) {
-      uVar6 = __flsindex;
-      p_Var7 = p_Var2;
-      pcVar3 = _decode_pointer(gpFlsSetValue);
-      iVar4 = (*pcVar3)(uVar6,p_Var7);
-      if (iVar4 == 0) {
-        free(p_Var2);
-        p_Var2 = (_tiddata *)0x0;
+  ptd = (*p_Var1)(uVar5);
+  if (ptd == (_tiddata *)0x0) {
+    ptd = _calloc_crt(1,0x214);
+    if (ptd != (_tiddata *)0x0) {
+      uVar5 = __flsindex;
+      p_Var6 = ptd;
+      pcVar2 = _decode_pointer(gpFlsSetValue);
+      iVar3 = (*pcVar2)(uVar5,p_Var6);
+      if (iVar3 == 0) {
+        free(ptd);
+        ptd = (_tiddata *)0x0;
       }
       else {
-        _initptd(p_Var2,(threadlocaleinfostruct *)0x0);
-        DVar5 = GetCurrentThreadId();
-        p_Var2->_thandle = 0xffffffff;
-        p_Var2->_tid = DVar5;
+        _initptd(ptd,(threadlocaleinfostruct *)0x0);
+        DVar4 = GetCurrentThreadId();
+        ptd->_thandle = 0xffffffff;
+        ptd->_tid = DVar4;
       }
     }
   }
   SetLastError(dwErrCode);
-  return p_Var2;
+  return ptd;
 }
 
 
@@ -348,58 +348,58 @@ _tiddata * __cdecl _getptd(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl _freefls(void *param_1)
+void __cdecl _freefls(void *data)
 
 {
   threadmbcinfostruct *lpAddend;
-  threadlocaleinfostruct *ptVar1;
-  LONG LVar2;
+  threadlocaleinfostruct *ptloci;
+  LONG LVar1;
   
-  if (param_1 != (void *)0x0) {
-    if (*(void **)((int)param_1 + 0x24) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x24));
+  if (data != (void *)0x0) {
+    if (*(void **)((int)data + 0x24) != (void *)0x0) {
+      free(*(void **)((int)data + 0x24));
     }
-    if (*(void **)((int)param_1 + 0x2c) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x2c));
+    if (*(void **)((int)data + 0x2c) != (void *)0x0) {
+      free(*(void **)((int)data + 0x2c));
     }
-    if (*(void **)((int)param_1 + 0x34) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x34));
+    if (*(void **)((int)data + 0x34) != (void *)0x0) {
+      free(*(void **)((int)data + 0x34));
     }
-    if (*(void **)((int)param_1 + 0x3c) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x3c));
+    if (*(void **)((int)data + 0x3c) != (void *)0x0) {
+      free(*(void **)((int)data + 0x3c));
     }
-    if (*(void **)((int)param_1 + 0x40) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x40));
+    if (*(void **)((int)data + 0x40) != (void *)0x0) {
+      free(*(void **)((int)data + 0x40));
     }
-    if (*(void **)((int)param_1 + 0x44) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x44));
+    if (*(void **)((int)data + 0x44) != (void *)0x0) {
+      free(*(void **)((int)data + 0x44));
     }
-    if (*(void **)((int)param_1 + 0x48) != (void *)0x0) {
-      free(*(void **)((int)param_1 + 0x48));
+    if (*(void **)((int)data + 0x48) != (void *)0x0) {
+      free(*(void **)((int)data + 0x48));
     }
-    if (*(_XCPT_ACTION_0_ **)((int)param_1 + 0x5c) != &_XcptActTab) {
-      free(*(_XCPT_ACTION_0_ **)((int)param_1 + 0x5c));
+    if (*(_XCPT_ACTION_0_ **)((int)data + 0x5c) != &_XcptActTab) {
+      free(*(_XCPT_ACTION_0_ **)((int)data + 0x5c));
     }
     _lock(0xd);
-    lpAddend = *(threadmbcinfostruct **)((int)param_1 + 0x68);
+    lpAddend = *(threadmbcinfostruct **)((int)data + 0x68);
     if (lpAddend != (threadmbcinfostruct *)0x0) {
-      LVar2 = InterlockedDecrement(&lpAddend->refcount);
-      if ((LVar2 == 0) && (lpAddend != &__initialmbcinfo)) {
+      LVar1 = InterlockedDecrement(&lpAddend->refcount);
+      if ((LVar1 == 0) && (lpAddend != &__initialmbcinfo)) {
         free(lpAddend);
       }
     }
     FUN_00c1babc();
     _lock(0xc);
-    ptVar1 = *(threadlocaleinfostruct **)((int)param_1 + 0x6c);
-    if (ptVar1 != (threadlocaleinfostruct *)0x0) {
-      __removelocaleref(ptVar1);
-      if (((ptVar1 != __ptlocinfo) && (ptVar1 != (threadlocaleinfostruct *)&__initiallocinfo)) &&
-         (ptVar1->refcount == 0)) {
-        __freetlocinfo(ptVar1);
+    ptloci = *(threadlocaleinfostruct **)((int)data + 0x6c);
+    if (ptloci != (threadlocaleinfostruct *)0x0) {
+      __removelocaleref(ptloci);
+      if (((ptloci != __ptlocinfo) && (ptloci != (threadlocaleinfostruct *)&__initiallocinfo)) &&
+         (ptloci->refcount == 0)) {
+        __freetlocinfo(ptloci);
       }
     }
     FUN_00c1bac8();
-    free(param_1);
+    free(data);
   }
   return;
 }
@@ -407,7 +407,7 @@ void __cdecl _freefls(void *param_1)
 
 // 00C1BAD1  _freeptd  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tidtable.c:764)
 
-void __cdecl _freeptd(_tiddata *param_1)
+void __cdecl _freeptd(_tiddata *ptd)
 
 {
   LPVOID pvVar1;
@@ -416,17 +416,17 @@ void __cdecl _freeptd(_tiddata *param_1)
   undefined4 uVar4;
   
   if (__flsindex != 0xffffffff) {
-    if ((param_1 == (_tiddata *)0x0) &&
-       (pvVar1 = TlsGetValue(__getvalueindex), pvVar1 != (LPVOID)0x0)) {
+    if ((ptd == (_tiddata *)0x0) && (pvVar1 = TlsGetValue(__getvalueindex), pvVar1 != (LPVOID)0x0))
+    {
       uVar3 = __flsindex;
       pcVar2 = TlsGetValue(__getvalueindex);
-      param_1 = (_tiddata *)(*pcVar2)(uVar3);
+      ptd = (_tiddata *)(*pcVar2)(uVar3);
     }
     uVar4 = 0;
     uVar3 = __flsindex;
     pcVar2 = _decode_pointer(gpFlsSetValue);
     (*pcVar2)(uVar3,uVar4);
-    _freefls(param_1);
+    _freefls(ptd);
   }
   if (__getvalueindex != 0xffffffff) {
     TlsSetValue(__getvalueindex,(LPVOID)0x0);

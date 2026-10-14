@@ -124,44 +124,44 @@ void __cdecl vp8_yv12_extend_frame_borders_yonly(int *param_1)
 
 {
   int iVar1;
-  ulong uVar2;
-  ulong uVar3;
-  int iVar4;
-  uchar *puVar5;
-  uchar *puVar6;
+  ulong count;
+  ulong count_00;
+  int iVar2;
+  uchar *dst;
+  uchar *puVar3;
   uchar *local_10;
   uchar *local_c;
   ulong local_8;
   
   iVar1 = param_1[1];
-  puVar6 = (uchar *)param_1[6];
-  uVar2 = param_1[2];
-  local_10 = puVar6 + *param_1 + -1;
-  uVar3 = param_1[10];
+  puVar3 = (uchar *)param_1[6];
+  count = param_1[2];
+  local_10 = puVar3 + *param_1 + -1;
+  count_00 = param_1[10];
   local_c = local_10 + 1;
-  puVar5 = puVar6 + -uVar3;
+  dst = puVar3 + -count_00;
   local_8 = iVar1;
   if (0 < iVar1) {
     do {
-      memset(puVar5,*puVar6,uVar3);
-      memset(local_c,*local_10,uVar3);
-      local_10 = local_10 + uVar2;
-      local_c = local_c + uVar2;
-      puVar6 = puVar6 + uVar2;
-      puVar5 = puVar5 + uVar2;
+      memset(dst,*puVar3,count_00);
+      memset(local_c,*local_10,count_00);
+      local_10 = local_10 + count;
+      local_c = local_c + count;
+      puVar3 = puVar3 + count;
+      dst = dst + count;
       local_8 = local_8 + -1;
     } while (local_8 != 0);
   }
-  puVar6 = (uchar *)(param_1[6] - uVar3);
-  param_1 = (int *)(puVar6 + -(uVar2 * uVar3));
-  if (0 < (int)uVar3) {
-    iVar4 = uVar2 - (int)param_1;
-    local_8 = uVar3;
+  puVar3 = (uchar *)(param_1[6] - count_00);
+  param_1 = (int *)(puVar3 + -(count * count_00));
+  if (0 < (int)count_00) {
+    iVar2 = count - (int)param_1;
+    local_8 = count_00;
     do {
-      memcpy((uchar *)param_1,puVar6,uVar2);
-      memcpy((uchar *)((int)param_1 + (int)(puVar6 + (iVar1 + -1) * uVar2 + iVar4)),
-             puVar6 + (iVar1 + -1) * uVar2,uVar2);
-      param_1 = (int *)((int)param_1 + uVar2);
+      memcpy((uchar *)param_1,puVar3,count);
+      memcpy((uchar *)((int)param_1 + (int)(puVar3 + (iVar1 + -1) * count + iVar2)),
+             puVar3 + (iVar1 + -1) * count,count);
+      param_1 = (int *)((int)param_1 + count);
       local_8 = local_8 - 1;
     } while (local_8 != 0);
   }

@@ -126,7 +126,7 @@ char * __thiscall stPbCl::LoadClientDll(stPbCl *this)
 
 {
   char *pcVar1;
-  _iobuf *p_Var2;
+  _iobuf *stream;
   stPbCl *this_00;
   stPbCl *extraout_ECX;
   stPbCl *this_01;
@@ -137,32 +137,32 @@ char * __thiscall stPbCl::LoadClientDll(stPbCl *this)
   stPbCl *extraout_ECX_00;
   stPbCl *this_06;
   stPbCl *this_07;
-  char *pcVar3;
+  char *pcVar2;
   stPbCl asStack_400 [512];
   stPbCl asStack_200 [512];
   
   if (DAT_04a598d8 == (HMODULE)0x0) {
     UnloadClientDll(this);
-    pcVar3 = "rb";
+    pcVar2 = "rb";
     pcVar1 = makefn(this_00,(char *)asStack_400,"pbclnew.dll");
-    p_Var2 = fopen(pcVar1,pcVar3);
+    stream = fopen(pcVar1,pcVar2);
     this_06 = extraout_ECX;
-    if (p_Var2 != (_iobuf *)0x0) {
-      fclose(p_Var2);
+    if (stream != (_iobuf *)0x0) {
+      fclose(stream);
       pcVar1 = makefn(asStack_400,(char *)asStack_400,"pbclold.dll");
       _chmod(pcVar1,0x180);
       pcVar1 = makefn(this_01,(char *)asStack_400,"pbclold.dll");
       ::remove(pcVar1);
       pcVar1 = makefn(this_02,(char *)asStack_200,"pbclold.dll");
-      pcVar3 = makefn(asStack_400,(char *)asStack_400,"pbcl.dll");
-      rename(pcVar3,pcVar1);
+      pcVar2 = makefn(asStack_400,(char *)asStack_400,"pbcl.dll");
+      rename(pcVar2,pcVar1);
       pcVar1 = makefn(this_03,(char *)asStack_400,"pbcl.dll");
       _chmod(pcVar1,0x180);
       pcVar1 = makefn(this_04,(char *)asStack_400,"pbcl.dll");
       ::remove(pcVar1);
       pcVar1 = makefn(asStack_200,(char *)asStack_200,"pbcl.dll");
-      pcVar3 = makefn(this_05,(char *)asStack_400,"pbclnew.dll");
-      rename(pcVar3,pcVar1);
+      pcVar2 = makefn(this_05,(char *)asStack_400,"pbclnew.dll");
+      rename(pcVar2,pcVar1);
       this_06 = extraout_ECX_00;
     }
     pcVar1 = makefn(this_06,(char *)asStack_400,"pbcl.dll");

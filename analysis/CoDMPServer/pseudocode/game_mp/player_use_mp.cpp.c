@@ -7,57 +7,57 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_UseEntity(gentity_s *param_1,gentity_s *param_2)
+void __cdecl Player_UseEntity(gentity_s *playerEnt,gentity_s *useEnt)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((playerEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x28,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((playerEnt->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x29,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((useEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2a,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->r).inuse == '\0') &&
+  if (((useEnt->r).inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2c,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->s).eType == 3) {
-    Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(param_2,scr_const.touch,1);
-    param_2->active = '\x01';
-    if (*(code **)(&DAT_00e07cdc + (uint)param_2->handler * 0x30) != (code *)0x0) {
-      (**(code **)(&DAT_00e07cdc + (uint)param_2->handler * 0x30))(param_2,param_1,0);
+  if ((useEnt->s).eType == 3) {
+    Scr_AddEntity(playerEnt,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(useEnt,scr_const.touch,1);
+    useEnt->active = '\x01';
+    if (*(code **)(&DAT_00e07cdc + (uint)useEnt->handler * 0x30) != (code *)0x0) {
+      (**(code **)(&DAT_00e07cdc + (uint)useEnt->handler * 0x30))(useEnt,playerEnt,0);
     }
   }
-  else if (((param_2->s).eType != 0xb) || (iVar3 = G_IsTurretUsable(param_2,param_1), iVar3 != 0)) {
-    Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(param_2,scr_const.trigger,1);
-    if (*(code **)(&DAT_00e07ce0 + (uint)param_2->handler * 0x30) != (code *)0x0) {
-      (**(code **)(&DAT_00e07ce0 + (uint)param_2->handler * 0x30))(param_2,param_1,param_1);
+  else if (((useEnt->s).eType != 0xb) || (iVar3 = G_IsTurretUsable(useEnt,playerEnt), iVar3 != 0)) {
+    Scr_AddEntity(playerEnt,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(useEnt,scr_const.trigger,1);
+    if (*(code **)(&DAT_00e07ce0 + (uint)useEnt->handler * 0x30) != (code *)0x0) {
+      (**(code **)(&DAT_00e07ce0 + (uint)useEnt->handler * 0x30))(useEnt,playerEnt,playerEnt);
     }
   }
-  EntHandle::setEnt(&param_1->client->useHoldEntity,(gentity_s *)0x0);
+  EntHandle::setEnt(&playerEnt->client->useHoldEntity,(gentity_s *)0x0);
   return;
 }
 
@@ -69,7 +69,7 @@ void __cdecl Player_UseEntity(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Player_ActivateCmd(gentity_s *param_1)
+bool __cdecl Player_ActivateCmd(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -77,7 +77,7 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
   undefined1 uVar3;
   int iVar4;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x51,0,
                              "%s");
     if (!bVar2) {
@@ -86,7 +86,7 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x52,0,
                              "%s");
     if (!bVar2) {
@@ -95,7 +95,7 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x53,0,
                              "%s");
     if (!bVar2) {
@@ -109,27 +109,26 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
     bVar2 = false;
   }
   else {
-    EntHandle::setEnt(&param_1->client->useHoldEntity,(gentity_s *)0x0);
-    if (param_1->active == '\0') {
-      if (((param_1->client->ps).eFlags & 0x14000U) != 0) {
-        param_1->client->useButtonDone = 1;
+    EntHandle::setEnt(&ent->client->useHoldEntity,(gentity_s *)0x0);
+    if (ent->active == '\0') {
+      if (((ent->client->ps).eFlags & 0x14000U) != 0) {
+        ent->client->useButtonDone = 1;
       }
-      if (((param_1->client->ps).pm_flags & 4U) == 0) {
-        if (((param_1->client->ps).pm_flags & 0x8000U) == 0) {
-          if (((param_1->client->ps).pm_flags & 0x400000U) == 0) {
-            if (((param_1->client->ps).weaponstate < 0x14) ||
-               (0x19 < (param_1->client->ps).weaponstate)) {
-              if (((param_1->client->ps).cursorHint == 0) &&
-                 ((param_1->client->ps).mountAvailable == false)) {
+      if (((ent->client->ps).pm_flags & 4U) == 0) {
+        if (((ent->client->ps).pm_flags & 0x8000U) == 0) {
+          if (((ent->client->ps).pm_flags & 0x400000U) == 0) {
+            if (((ent->client->ps).weaponstate < 0x14) || (0x19 < (ent->client->ps).weaponstate)) {
+              if (((ent->client->ps).cursorHint == 0) && ((ent->client->ps).mountAvailable == false)
+                 ) {
                 bVar2 = false;
               }
-              else if (((param_1->client->ps).cursorHintEntIndex == 0x3ff) &&
-                      ((param_1->client->ps).mountAvailable == false)) {
+              else if (((ent->client->ps).cursorHintEntIndex == 0x3ff) &&
+                      ((ent->client->ps).mountAvailable == false)) {
                 bVar2 = false;
               }
               else {
-                if ((param_1->client->ps).cursorHintEntIndex != 0x3ff) {
-                  if (g_entities[(param_1->client->ps).cursorHintEntIndex].r.inuse == '\0') {
+                if ((ent->client->ps).cursorHintEntIndex != 0x3ff) {
+                  if (g_entities[(ent->client->ps).cursorHintEntIndex].r.inuse == '\0') {
                     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp"
                                              ,0x7e,0,"%s");
                     if (!bVar2) {
@@ -138,10 +137,10 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
                       return (bool)uVar3;
                     }
                   }
-                  EntHandle::setEnt(&param_1->client->useHoldEntity,
-                                    g_entities + (param_1->client->ps).cursorHintEntIndex);
+                  EntHandle::setEnt(&ent->client->useHoldEntity,
+                                    g_entities + (ent->client->ps).cursorHintEntIndex);
                 }
-                param_1->client->useHoldTime = level.time;
+                ent->client->useHoldTime = level.time;
                 bVar2 = true;
               }
             }
@@ -162,11 +161,11 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
       }
     }
     else {
-      if (((param_1->client->ps).eFlags & 0x300U) == 0) {
-        param_1->active = '\0';
+      if (((ent->client->ps).eFlags & 0x300U) == 0) {
+        ent->active = '\0';
       }
       else {
-        param_1->active = '\x02';
+        ent->active = '\x02';
       }
       bVar2 = true;
     }
@@ -182,28 +181,27 @@ bool __cdecl Player_ActivateCmd(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Player_IsPlayerUsingTurretNearby(gentity_s *param_1)
+bool __cdecl Player_IsPlayerUsingTurretNearby(gentity_s *ent)
 
 {
   float fVar1;
-  gentity_s *local_c;
-  int local_8;
+  gentity_s *clEnt;
+  int i;
   
-  local_8 = 0;
-  local_c = g_entities;
+  i = 0;
+  clEnt = g_entities;
   while( true ) {
-    if ((com_maxclients->current).integer <= local_8) {
+    if ((com_maxclients->current).integer <= i) {
       return false;
     }
-    if ((((local_c->client != (gclient_s *)0x0) &&
-         ((local_c->client->sess).connected == CON_CONNECTED)) &&
-        ((((local_c->client->ps).eFlags & 0x300U) != 0 ||
-         ((((local_c->client->ps).weapFlags & 0x800U) != 0 ||
-          ((local_c->client->ps).weaponstate == 0x23)))))) &&
-       (fVar1 = Vec3DistanceSq((param_1->client->ps).origin,(local_c->client->ps).origin),
+    if ((((clEnt->client != (gclient_s *)0x0) && ((clEnt->client->sess).connected == CON_CONNECTED))
+        && ((((clEnt->client->ps).eFlags & 0x300U) != 0 ||
+            ((((clEnt->client->ps).weapFlags & 0x800U) != 0 ||
+             ((clEnt->client->ps).weaponstate == 0x23)))))) &&
+       (fVar1 = Vec3DistanceSq((ent->client->ps).origin,(clEnt->client->ps).origin),
        fVar1 <= turretScanRadiusSq)) break;
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    clEnt = clEnt + 1;
   }
   return true;
 }
@@ -216,23 +214,24 @@ bool __cdecl Player_IsPlayerUsingTurretNearby(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_ActivateHoldCmd(gentity_s *param_1)
+void __cdecl Player_ActivateHoldCmd(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
+  gentity_s *useEnt_00;
+  uint uVar4;
+  gentity_s *useEnt;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0xaa,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0xab,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -241,24 +240,22 @@ void __cdecl Player_ActivateHoldCmd(gentity_s *param_1)
   }
   iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
   if ((iVar3 != 0) &&
-     ((((iVar3 = EntHandle::isDefined(&param_1->client->useHoldEntity), iVar3 != 0 ||
-        ((param_1->client->ps).mountAvailable != false)) &&
-       ((g_useholdspawndelay->current).integer <= level.time - param_1->client->lastSpawnTime)) &&
-      ((bVar2 = bitarray<51>::testBit(&param_1->client->button_bits,5), !bVar2 ||
-       ((g_useholdtime->current).integer <= level.time - param_1->client->useHoldTime)))))) {
-    if ((param_1->client->ps).mountAvailable == false) {
-      if ((((((param_1->client->ps).weaponstate != 0x23) &&
-            ((param_1->client->ps).weaponstate != 0x24)) &&
-           (((param_1->client->ps).weaponstate != 0x25 &&
-            (((((param_1->client->ps).eFlags & 0x300U) == 0 &&
-              (((param_1->client->ps).pm_flags & 4U) == 0)) &&
-             ((param_1->client->ps).weaponstate != 1)))))) &&
-          (((param_1->client->ps).weaponstate != 2 && ((param_1->client->ps).weaponstate != 3)))) &&
-         (((param_1->client->ps).weaponstate != 4 && ((param_1->client->ps).weaponstate != 5)))) {
-        pgVar4 = EntHandle::ent(&param_1->client->useHoldEntity);
-        uVar5 = EntHandle::entnum(&param_1->client->useHoldEntity);
-        if ((pgVar4->s).number != uVar5) {
-          EntHandle::entnum(&param_1->client->useHoldEntity);
+     ((((iVar3 = EntHandle::isDefined(&ent->client->useHoldEntity), iVar3 != 0 ||
+        ((ent->client->ps).mountAvailable != false)) &&
+       ((g_useholdspawndelay->current).integer <= level.time - ent->client->lastSpawnTime)) &&
+      ((bVar2 = bitarray<51>::testBit(&ent->client->button_bits,5), !bVar2 ||
+       ((g_useholdtime->current).integer <= level.time - ent->client->useHoldTime)))))) {
+    if ((ent->client->ps).mountAvailable == false) {
+      if ((((((ent->client->ps).weaponstate != 0x23) && ((ent->client->ps).weaponstate != 0x24)) &&
+           (((ent->client->ps).weaponstate != 0x25 &&
+            (((((ent->client->ps).eFlags & 0x300U) == 0 && (((ent->client->ps).pm_flags & 4U) == 0))
+             && ((ent->client->ps).weaponstate != 1)))))) &&
+          (((ent->client->ps).weaponstate != 2 && ((ent->client->ps).weaponstate != 3)))) &&
+         (((ent->client->ps).weaponstate != 4 && ((ent->client->ps).weaponstate != 5)))) {
+        useEnt_00 = EntHandle::ent(&ent->client->useHoldEntity);
+        uVar4 = EntHandle::entnum(&ent->client->useHoldEntity);
+        if ((useEnt_00->s).number != uVar4) {
+          EntHandle::entnum(&ent->client->useHoldEntity);
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",
                                    0xcd,0,
                                    "useEnt->s.number == (int)ent->client->useHoldEntity.entnum()\n\t%i, %i"
@@ -269,21 +266,21 @@ void __cdecl Player_ActivateHoldCmd(gentity_s *param_1)
             return;
           }
         }
-        if (((pgVar4->r).inuse == '\0') &&
+        if (((useEnt_00->r).inuse == '\0') &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp"
                                      ,0xce,0,"%s\n\t(useEnt->s.number) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        Player_UseEntity(param_1,pgVar4);
+        Player_UseEntity(ent,useEnt_00);
       }
     }
     else {
-      bVar2 = Mount_CanPlayerDeployTurret(&param_1->client->ps);
-      if ((bVar2) && (bVar2 = Player_IsPlayerUsingTurretNearby(param_1), !bVar2)) {
-        (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags | 0x800;
-        BG_AddPredictableEventToPlayerstate(0x25,0,&param_1->client->ps);
+      bVar2 = Mount_CanPlayerDeployTurret(&ent->client->ps);
+      if ((bVar2) && (bVar2 = Player_IsPlayerUsingTurretNearby(ent), !bVar2)) {
+        (ent->client->ps).weapFlags = (ent->client->ps).weapFlags | 0x800;
+        BG_AddPredictableEventToPlayerstate(0x25,0,&ent->client->ps);
       }
     }
   }
@@ -298,23 +295,24 @@ void __cdecl Player_ActivateHoldCmd(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_ActivateDoubleTapCmd(gentity_s *param_1)
+void __cdecl Player_ActivateDoubleTapCmd(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
+  gentity_s *ent_00;
+  uint uVar4;
+  gentity_s *useEnt;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0xdc,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0xdd,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -322,17 +320,15 @@ void __cdecl Player_ActivateDoubleTapCmd(gentity_s *param_1)
     return;
   }
   iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
-  if (((((iVar3 != 0) && (iVar3 = EntHandle::isDefined(&param_1->client->useHoldEntity), iVar3 != 0)
-        ) && ((g_useholdspawndelay->current).integer <= level.time - param_1->client->lastSpawnTime)
-       ) && (((param_1->client->ps).weaponstate != 0x23 &&
-             ((param_1->client->ps).weaponstate != 0x24)))) &&
-     (((param_1->client->ps).weaponstate != 0x25 &&
-      ((((param_1->client->ps).eFlags & 0x300U) == 0 && (((param_1->client->ps).pm_flags & 4U) == 0)
-       ))))) {
-    pgVar4 = EntHandle::ent(&param_1->client->useHoldEntity);
-    uVar5 = EntHandle::entnum(&param_1->client->useHoldEntity);
-    if ((pgVar4->s).number != uVar5) {
-      EntHandle::entnum(&param_1->client->useHoldEntity);
+  if (((((iVar3 != 0) && (iVar3 = EntHandle::isDefined(&ent->client->useHoldEntity), iVar3 != 0)) &&
+       ((g_useholdspawndelay->current).integer <= level.time - ent->client->lastSpawnTime)) &&
+      (((ent->client->ps).weaponstate != 0x23 && ((ent->client->ps).weaponstate != 0x24)))) &&
+     (((ent->client->ps).weaponstate != 0x25 &&
+      ((((ent->client->ps).eFlags & 0x300U) == 0 && (((ent->client->ps).pm_flags & 4U) == 0)))))) {
+    ent_00 = EntHandle::ent(&ent->client->useHoldEntity);
+    uVar4 = EntHandle::entnum(&ent->client->useHoldEntity);
+    if ((ent_00->s).number != uVar4) {
+      EntHandle::entnum(&ent->client->useHoldEntity);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0xf4,
                                0,
                                "useEnt->s.number == (int)ent->client->useHoldEntity.entnum()\n\t%i, %i"
@@ -343,15 +339,15 @@ void __cdecl Player_ActivateDoubleTapCmd(gentity_s *param_1)
         return;
       }
     }
-    if (((pgVar4->r).inuse == '\0') &&
+    if (((ent_00->r).inuse == '\0') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",
                                  0xf5,0,"%s\n\t(useEnt->s.number) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(pgVar4,scr_const.trigger_use_doubletap,1);
+    Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(ent_00,scr_const.trigger_use_doubletap,1);
   }
   return;
 }
@@ -364,65 +360,65 @@ void __cdecl Player_ActivateDoubleTapCmd(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_UpdateActivate(gentity_s *param_1)
+void __cdecl Player_UpdateActivate(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  bool local_5;
+  bool useSucceeded;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x103
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x104
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags & 0xfffffffe;
-  (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags & 0xfffeffff;
-  local_5 = false;
-  bVar2 = bitarray<51>::testBit(&param_1->client->button_bits,0x32);
+  (ent->client->ps).weapFlags = (ent->client->ps).weapFlags & 0xfffffffe;
+  (ent->client->ps).weapFlags = (ent->client->ps).weapFlags & 0xfffeffff;
+  useSucceeded = false;
+  bVar2 = bitarray<51>::testBit(&ent->client->button_bits,0x32);
   if (bVar2) {
-    Player_ActivateDoubleTapCmd(param_1);
+    Player_ActivateDoubleTapCmd(ent);
   }
   else {
-    iVar3 = EntHandle::isDefined(&param_1->client->useHoldEntity);
-    if ((((iVar3 == 0) && ((param_1->client->ps).mountAvailable == false)) ||
-        (bVar2 = bitarray<51>::testBit(&param_1->client->oldbutton_bits,5), !bVar2)) ||
-       (bVar2 = bitarray<51>::testBit(&param_1->client->button_bits,5), bVar2)) {
-      bVar2 = bitarray<51>::testBit(&param_1->client->latched_button_bits,3);
-      if (((bVar2) ||
-          (bVar2 = bitarray<51>::testBit(&param_1->client->latched_button_bits,5), bVar2)) ||
-         (bVar2 = bitarray<51>::testBit(&param_1->client->latched_button_bits,4), bVar2)) {
-        local_5 = Player_ActivateCmd(param_1);
+    iVar3 = EntHandle::isDefined(&ent->client->useHoldEntity);
+    if ((((iVar3 == 0) && ((ent->client->ps).mountAvailable == false)) ||
+        (bVar2 = bitarray<51>::testBit(&ent->client->oldbutton_bits,5), !bVar2)) ||
+       (bVar2 = bitarray<51>::testBit(&ent->client->button_bits,5), bVar2)) {
+      bVar2 = bitarray<51>::testBit(&ent->client->latched_button_bits,3);
+      if (((bVar2) || (bVar2 = bitarray<51>::testBit(&ent->client->latched_button_bits,5), bVar2))
+         || (bVar2 = bitarray<51>::testBit(&ent->client->latched_button_bits,4), bVar2)) {
+        useSucceeded = Player_ActivateCmd(ent);
       }
-      iVar3 = EntHandle::isDefined(&param_1->client->useHoldEntity);
-      if (((iVar3 == 0) && (local_5 == false)) && ((param_1->client->ps).mountAvailable == false)) {
-        bVar2 = bitarray<51>::testBit(&param_1->client->latched_button_bits,5);
+      iVar3 = EntHandle::isDefined(&ent->client->useHoldEntity);
+      if (((iVar3 == 0) && (useSucceeded == false)) && ((ent->client->ps).mountAvailable == false))
+      {
+        bVar2 = bitarray<51>::testBit(&ent->client->latched_button_bits,5);
         if (bVar2) {
-          (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags | 1;
-          (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags | 0x10000;
+          (ent->client->ps).weapFlags = (ent->client->ps).weapFlags | 1;
+          (ent->client->ps).weapFlags = (ent->client->ps).weapFlags | 0x10000;
         }
       }
       else {
-        bVar2 = bitarray<51>::testBit(&param_1->client->button_bits,3);
-        if ((bVar2) || (bVar2 = bitarray<51>::testBit(&param_1->client->button_bits,5), bVar2)) {
-          Player_ActivateHoldCmd(param_1);
+        bVar2 = bitarray<51>::testBit(&ent->client->button_bits,3);
+        if ((bVar2) || (bVar2 = bitarray<51>::testBit(&ent->client->button_bits,5), bVar2)) {
+          Player_ActivateHoldCmd(ent);
         }
-        param_1->client->useButtonDone = 1;
+        ent->client->useButtonDone = 1;
       }
     }
     else {
-      (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags | 1;
-      (param_1->client->ps).weapFlags = (param_1->client->ps).weapFlags | 0x10000;
+      (ent->client->ps).weapFlags = (ent->client->ps).weapFlags | 1;
+      (ent->client->ps).weapFlags = (ent->client->ps).weapFlags | 0x10000;
     }
   }
   return;
@@ -436,12 +432,12 @@ void __cdecl Player_UpdateActivate(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl compare_use(useList_t *param_1,useList_t *param_2)
+bool __cdecl compare_use(useList_t *a,useList_t *b)
 
 {
   bool local_8;
   
-  local_8 = param_1->score <= param_2->score && param_2->score != param_1->score;
+  local_8 = a->score <= b->score && b->score != a->score;
   return local_8;
 }
 
@@ -456,84 +452,84 @@ bool __cdecl compare_use(useList_t *param_1,useList_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Player_GetUseList(gentity_s *param_1,useList_t *param_2,int param_3)
+int __cdecl Player_GetUseList(gentity_s *ent,useList_t *useList,int prevHintEntIndex)
 
 {
   short sVar1;
-  gentity_s *pgVar2;
-  playerState_s *ppVar3;
-  gclient_s *pgVar4;
-  int iVar5;
-  WeaponDef *pWVar6;
+  gentity_s *ent_00;
+  playerState_s *ppVar2;
+  int iVar3;
+  WeaponDef *pWVar4;
   uint extraout_EAX;
+  uint *puVar5;
   uint extraout_EDX;
-  float *pfVar7;
+  float *pfVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
   float local_1398;
   float local_1394;
   float local_1390;
-  float local_1108;
+  float vMins;
   float local_1104;
   float local_1100;
-  int local_10fc;
-  float local_10f8;
+  int bTouching;
+  float vMaxs;
   float local_10f4;
   float local_10f0;
-  float local_10ec;
-  int local_10e8;
-  float local_10e4;
-  gentity_s *local_10e0;
-  float local_10dc;
-  float local_10d8;
+  float innerRadius;
+  int team;
+  float height;
+  gentity_s *hitParentEnt;
+  float dot;
+  float useDir;
   float local_10d4;
   float local_10d0;
-  int local_10cc [1025];
-  int local_c8;
-  col_context_t local_c4;
-  float local_9c;
+  int touch [1025];
+  int hitnum;
+  col_context_t context;
+  float origin;
   float local_98;
   float local_94;
-  float local_90;
+  float playerAbsMaxs;
   float local_8c;
   float local_88;
-  float local_84;
-  float local_80;
+  float CENTER_LINE_BIAS;
+  float mins;
   float local_7c;
   float local_78;
-  float local_74;
-  float local_70;
+  float dist;
+  float range;
   float local_6c;
   float local_68;
-  undefined4 local_64;
-  float local_60;
-  gentity_s *local_5c;
-  float local_58;
+  int bIgnoreSightTrace;
+  float radius;
+  gentity_s *hit;
+  float forward;
   float local_54;
   float local_50;
-  float local_4c;
-  int local_48;
-  int local_44;
-  float local_40;
+  float centerBias;
+  int curUse;
+  int invalidUseCount;
+  float maxs;
   float local_3c;
   float local_38;
-  float local_34;
+  float usePos;
   float local_30;
   float local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  gclient_s *local_1c;
-  uint local_18;
-  float local_14;
-  float local_10;
+  int ignoredFullItems;
+  int num;
+  int i;
+  playerState_s *ps;
+  int playersTeam;
+  float horizontalDot;
+  float playerAbsMins;
   float local_c;
   float local_8;
   
   local_8 = 9.70873e-39;
-  local_84 = 256.0;
-  local_14 = 0.76;
-  local_28 = 0;
+  CENTER_LINE_BIAS = 256.0;
+  horizontalDot = 0.76;
+  ignoredFullItems = 0;
   local_1390 = (player_throwbackOuterRadius->current).value;
   if (0.0 <= 192.0 - local_1390) {
     local_1390 = 192.0;
@@ -546,118 +542,117 @@ int __cdecl Player_GetUseList(gentity_s *param_1,useList_t *param_2,int param_3)
   if (0.0 <= local_1394 - local_1398) {
     local_1398 = local_1394;
   }
-  local_70 = local_1398;
+  range = local_1398;
   local_6c = local_1398;
   local_68 = 96.0;
-  local_1c = param_1->client;
-  local_64 = 0;
-  G_GetPlayerViewOrigin(&local_1c->ps,&local_9c);
-  BG_GetPlayerViewDirection(&local_1c->ps,&local_58,(float *)0x0,(float *)0x0);
-  local_10 = (local_1c->ps).origin[0] + -15.0;
-  local_c = (local_1c->ps).origin[1] + -15.0;
-  local_8 = (local_1c->ps).origin[2] + 0.0;
-  local_90 = (local_1c->ps).origin[0] + 15.0;
-  local_8c = (local_1c->ps).origin[1] + 15.0;
-  local_88 = (local_1c->ps).origin[2] + 70.0;
-  local_80 = local_9c - local_70;
+  ps = &ent->client->ps;
+  bIgnoreSightTrace = 0;
+  G_GetPlayerViewOrigin(ps,&origin);
+  BG_GetPlayerViewDirection(ps,&forward,(float *)0x0,(float *)0x0);
+  playerAbsMins = ps->origin[0] + -15.0;
+  local_c = ps->origin[1] + -15.0;
+  local_8 = ps->origin[2] + 0.0;
+  playerAbsMaxs = ps->origin[0] + 15.0;
+  local_8c = ps->origin[1] + 15.0;
+  local_88 = ps->origin[2] + 70.0;
+  mins = origin - range;
   local_7c = local_98 - local_6c;
   local_78 = local_94 - local_68;
-  local_40 = local_9c + local_70;
+  maxs = origin + range;
   local_3c = local_98 + local_6c;
   local_38 = local_94 + local_68;
-  local_24 = CM_AreaEntities(&local_80,&local_40,local_10cc,0x400,0x200000);
-  local_48 = 0;
-  local_20 = 0;
+  num = CM_AreaEntities(&mins,&maxs,touch,0x400,0x200000);
+  curUse = 0;
+  i = 0;
   do {
-    if (local_24 <= local_20) {
+    if (num <= i) {
       std::
       _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                ((RagdollSortStruct *)param_2,(RagdollSortStruct *)(param_2 + local_48),
-                 (int)(param_2 + local_48) - (int)param_2 >> 3,compare_use);
-      local_48 = local_48 - local_28;
-      local_44 = 0;
-      col_context_t::col_context_t(&local_c4,0x11);
-      local_c4.passEntityNum0 = (int)(local_1c->ps).clientNum;
-      local_c4.passEntityNum1 = (int)(local_1c->ps).clientNum;
-      local_c8 = -1;
-      for (local_20 = 0; local_20 < local_48; local_20 = local_20 + 1) {
-        pgVar2 = param_2[local_20].ent;
-        if ((pgVar2->classname != scr_const.trigger_use_touch) &&
-           (pgVar2->classname != scr_const.trigger_radius)) {
-          local_34 = ((pgVar2->r).absmin[0] + (pgVar2->r).absmax[0]) * 0.5;
-          local_30 = ((pgVar2->r).absmin[1] + (pgVar2->r).absmax[1]) * 0.5;
-          local_2c = ((pgVar2->r).absmin[2] + (pgVar2->r).absmax[2]) * 0.5;
-          if ((pgVar2->s).eType == 0xe) {
-            local_2c = (pgVar2->r).maxs[2] * 0.5 + local_2c;
+                ((RagdollSortStruct *)useList,(RagdollSortStruct *)(useList + curUse),
+                 (int)(useList + curUse) - (int)useList >> 3,compare_use);
+      curUse = curUse - ignoredFullItems;
+      invalidUseCount = 0;
+      col_context_t::col_context_t(&context,0x11);
+      context.passEntityNum0 = (int)ps->clientNum;
+      context.passEntityNum1 = (int)ps->clientNum;
+      hitnum = -1;
+      for (i = 0; i < curUse; i = i + 1) {
+        ent_00 = useList[i].ent;
+        if ((ent_00->classname != scr_const.trigger_use_touch) &&
+           (ent_00->classname != scr_const.trigger_radius)) {
+          usePos = ((ent_00->r).absmin[0] + (ent_00->r).absmax[0]) * 0.5;
+          local_30 = ((ent_00->r).absmin[1] + (ent_00->r).absmax[1]) * 0.5;
+          local_2c = ((ent_00->r).absmin[2] + (ent_00->r).absmax[2]) * 0.5;
+          if ((ent_00->s).eType == 0xe) {
+            local_2c = (ent_00->r).maxs[2] * 0.5 + local_2c;
           }
-          if ((pgVar2->s).eType == 0xb) {
-            G_DObjGetWorldTagPos(pgVar2,(uint)scr_const.tag_aim,&local_34);
+          if ((ent_00->s).eType == 0xb) {
+            G_DObjGetWorldTagPos(ent_00,(uint)scr_const.tag_aim,&usePos);
           }
-          if ((pgVar2->classname == scr_const.trigger_radius_use) &&
-             ((pgVar2->s).otherEntityNum != 0x3ff)) {
-            local_c4.passEntityNum1 = (int)(pgVar2->s).otherEntityNum;
+          if ((ent_00->classname == scr_const.trigger_radius_use) &&
+             ((ent_00->s).otherEntityNum != 0x3ff)) {
+            context.passEntityNum1 = (int)(ent_00->s).otherEntityNum;
           }
           else {
-            local_c4.passEntityNum1 = (pgVar2->s).number;
+            context.passEntityNum1 = (ent_00->s).number;
           }
-          iVar5 = SV_SightTracePoint(&local_c8,&local_9c,&local_34,&local_c4);
-          if (iVar5 == 0) {
-            param_2[local_20].score = param_2[local_20].score + 10000.0;
-            local_44 = local_44 + 1;
+          iVar3 = SV_SightTracePoint(&hitnum,&origin,&usePos,&context);
+          if (iVar3 == 0) {
+            useList[i].score = useList[i].score + 10000.0;
+            invalidUseCount = invalidUseCount + 1;
           }
         }
       }
       std::
       _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                ((RagdollSortStruct *)param_2,(RagdollSortStruct *)(param_2 + local_48),
-                 (int)(param_2 + local_48) - (int)param_2 >> 3,compare_use);
-      return local_48 - local_44;
+                ((RagdollSortStruct *)useList,(RagdollSortStruct *)(useList + curUse),
+                 (int)(useList + curUse) - (int)useList >> 3,compare_use);
+      return curUse - invalidUseCount;
     }
-    iVar5 = local_10cc[local_20];
-    local_5c = g_entities + iVar5;
-    if ((param_1 != local_5c) &&
-       ((g_entities[iVar5].s.eType == 3 || ((g_entities[iVar5].r.contents & 0x200000U) != 0)))) {
-      if (g_entities[iVar5].classname == scr_const.trigger_use_touch) {
-        if (((((g_entities[iVar5].r.absmin[0] <= local_90) &&
-              (pfVar7 = g_entities[iVar5].r.absmax, local_10 < *pfVar7 || local_10 == *pfVar7)) &&
-             (g_entities[iVar5].r.absmin[1] <= local_8c)) &&
-            ((pfVar7 = g_entities[iVar5].r.absmax + 1, local_c < *pfVar7 || local_c == *pfVar7 &&
-             (g_entities[iVar5].r.absmin[2] <= local_88)))) &&
-           ((pfVar7 = g_entities[iVar5].r.absmax + 2, local_8 < *pfVar7 || local_8 == *pfVar7 &&
-            (iVar5 = SV_EntityContact(&local_10,&local_90,local_5c), iVar5 != 0)))) {
-          param_2[local_48].score = -256.0;
-          param_2[local_48].ent = local_5c;
-          local_48 = local_48 + 1;
+    iVar3 = touch[i];
+    hit = g_entities + iVar3;
+    if ((ent != hit) &&
+       ((g_entities[iVar3].s.eType == 3 || ((g_entities[iVar3].r.contents & 0x200000U) != 0)))) {
+      if (g_entities[iVar3].classname == scr_const.trigger_use_touch) {
+        if (((((g_entities[iVar3].r.absmin[0] <= playerAbsMaxs) &&
+              (pfVar6 = g_entities[iVar3].r.absmax,
+              playerAbsMins < *pfVar6 || playerAbsMins == *pfVar6)) &&
+             (g_entities[iVar3].r.absmin[1] <= local_8c)) &&
+            ((pfVar6 = g_entities[iVar3].r.absmax + 1, local_c < *pfVar6 || local_c == *pfVar6 &&
+             (g_entities[iVar3].r.absmin[2] <= local_88)))) &&
+           ((pfVar6 = g_entities[iVar3].r.absmax + 2, local_8 < *pfVar6 || local_8 == *pfVar6 &&
+            (iVar3 = SV_EntityContact(&playerAbsMins,&playerAbsMaxs,hit), iVar3 != 0)))) {
+          useList[curUse].score = -256.0;
+          useList[curUse].ent = hit;
+          curUse = curUse + 1;
         }
       }
-      else if (g_entities[iVar5].s.eType == 4) {
-        if (((((local_1c->ps).waterlevel < 3) &&
-             (pWVar6 = BG_GetWeaponDef((uint)g_entities[iVar5].s.weapon),
-             pWVar6->bThrowBack != false)) && ((local_5c->s).lerp.u.turret.ownerNum == 0)) &&
-           (iVar5 = EntHandle::isDefined(&local_5c->parent), iVar5 != 0)) {
-          local_10e0 = EntHandle::ent(&local_5c->parent);
-          local_10e8 = OnSameTeam(local_10e0,param_1);
-          if ((((local_10e8 == 0) || ((param_1->client->sess).cs.team == TEAM_BAD)) ||
-              (((local_10e0->s).clientNum == (param_1->s).clientNum ||
-               (iVar5 = BG_GetFriendlyFireStatus(), iVar5 != 0)))) &&
-             (pgVar4 = local_1c, local_5c->tagInfo == (tagInfo_s *)0x0)) {
-            local_10e4 = (local_5c->r).currentOrigin[2] - (param_1->r).currentOrigin[2];
-            if (param_3 != (local_5c->s).number) {
-              local_10ec = (player_throwbackInnerRadius->current).value;
-              ppVar3 = &local_1c->ps;
+      else if (g_entities[iVar3].s.eType == 4) {
+        if ((((ps->waterlevel < 3) &&
+             (pWVar4 = BG_GetWeaponDef((uint)g_entities[iVar3].s.weapon),
+             pWVar4->bThrowBack != false)) && ((hit->s).lerp.u.turret.ownerNum == 0)) &&
+           (iVar3 = EntHandle::isDefined(&hit->parent), iVar3 != 0)) {
+          hitParentEnt = EntHandle::ent(&hit->parent);
+          team = OnSameTeam(hitParentEnt,ent);
+          if ((((team == 0) || ((ent->client->sess).cs.team == TEAM_BAD)) ||
+              (((hitParentEnt->s).clientNum == (ent->s).clientNum ||
+               (iVar3 = BG_GetFriendlyFireStatus(), iVar3 != 0)))) &&
+             (ppVar2 = ps, hit->tagInfo == (tagInfo_s *)0x0)) {
+            height = (hit->r).currentOrigin[2] - (ent->r).currentOrigin[2];
+            if (prevHintEntIndex != (hit->s).number) {
+              innerRadius = (player_throwbackInnerRadius->current).value;
+              puVar5 = ps->perks;
               _allshl();
-              if ((extraout_EAX & ppVar3->perks[0]) != 0 ||
-                  (extraout_EDX & (pgVar4->ps).perks[1]) != 0) {
-                local_10ec = (perk_throwbackInnerRadius->current).value;
+              if ((extraout_EAX & *puVar5) != 0 || (extraout_EDX & ppVar2->perks[1]) != 0) {
+                innerRadius = (perk_throwbackInnerRadius->current).value;
               }
-              fVar8 = (param_1->r).currentOrigin[0] - (local_5c->r).currentOrigin[0];
-              fVar9 = (param_1->r).currentOrigin[1] - (local_5c->r).currentOrigin[1];
-              if (local_10ec * local_10ec < fVar8 * fVar8 + fVar9 * fVar9) goto LAB_0069bac2;
+              fVar7 = (ent->r).currentOrigin[0] - (hit->r).currentOrigin[0];
+              fVar8 = (ent->r).currentOrigin[1] - (hit->r).currentOrigin[1];
+              if (innerRadius * innerRadius < fVar7 * fVar7 + fVar8 * fVar8) goto LAB_0069bac2;
             }
-            pfVar7 = (local_5c->s).lerp.pos.trDelta;
-            if (*pfVar7 * *pfVar7 +
-                (local_5c->s).lerp.pos.trDelta[1] * (local_5c->s).lerp.pos.trDelta[1] +
-                (local_5c->s).lerp.pos.trDelta[2] * (local_5c->s).lerp.pos.trDelta[2] <=
+            pfVar6 = (hit->s).lerp.pos.trDelta;
+            if (*pfVar6 * *pfVar6 + (hit->s).lerp.pos.trDelta[1] * (hit->s).lerp.pos.trDelta[1] +
+                (hit->s).lerp.pos.trDelta[2] * (hit->s).lerp.pos.trDelta[2] <=
                 (bg_maxGrenadeIndicatorSpeed->current).value *
                 (bg_maxGrenadeIndicatorSpeed->current).value) goto LAB_0069becc;
           }
@@ -665,110 +660,108 @@ int __cdecl Player_GetUseList(gentity_s *param_1,useList_t *param_2,int param_3)
       }
       else {
 LAB_0069becc:
-        sVar1 = (local_5c->s).eType;
+        sVar1 = (hit->s).eType;
         if (sVar1 == 4) {
-          local_60 = (player_throwbackOuterRadius->current).value;
+          radius = (player_throwbackOuterRadius->current).value;
         }
         else if (sVar1 == 0xb) {
-          local_60 = (player_MGUseRadius->current).value;
+          radius = (player_MGUseRadius->current).value;
         }
         else if (sVar1 == 0xe) {
-          local_60 = (vehicle_useRadius->current).value;
+          radius = (vehicle_useRadius->current).value;
         }
         else {
-          local_60 = (player_useRadius->current).value;
+          radius = (player_useRadius->current).value;
         }
-        local_34 = ((local_5c->r).absmin[0] + (local_5c->r).absmax[0]) * 0.5;
-        local_30 = ((local_5c->r).absmin[1] + (local_5c->r).absmax[1]) * 0.5;
-        local_2c = ((local_5c->r).absmin[2] + (local_5c->r).absmax[2]) * 0.5;
-        local_10d8 = local_34 - local_9c;
+        usePos = ((hit->r).absmin[0] + (hit->r).absmax[0]) * 0.5;
+        local_30 = ((hit->r).absmin[1] + (hit->r).absmax[1]) * 0.5;
+        local_2c = ((hit->r).absmin[2] + (hit->r).absmax[2]) * 0.5;
+        useDir = usePos - origin;
         local_10d4 = local_30 - local_98;
         local_10d0 = local_2c - local_94;
-        local_74 = Vec3Normalize(&local_10d8);
-        if ((local_74 <= local_60) &&
-           ((((local_10dc = local_10d8 * local_58 + local_10d4 * local_54 + local_10d0 * local_50,
-              local_5c->classname != scr_const.trigger_use &&
-              (local_5c->classname != scr_const.trigger_radius)) &&
-             (local_5c->classname != scr_const.trigger_radius_use)) ||
-            (((local_5c->field36_0x21c).trigger.requireLookAt == false || (local_14 <= local_10dc)))
-            ))) {
-          if ((local_5c->classname == scr_const.trigger_radius) ||
-             (local_5c->classname == scr_const.trigger_radius_use)) {
-            local_18 = *(uint *)(level_bgs.clientinfo +
-                                (uint)(param_1->client->ps).clientNum * 0x5c8 + 0x2c);
-            if ((local_5c->team != 0xff) && (local_5c->team == local_18)) {
-              local_10fc = 0;
-              local_1108 = (local_5c->r).currentOrigin[0] + (local_5c->r).mins[0];
-              local_1104 = (local_5c->r).currentOrigin[1] + (local_5c->r).mins[1];
-              local_1100 = (local_5c->r).currentOrigin[2] + (local_5c->r).mins[2];
-              local_10f8 = (local_5c->r).currentOrigin[0] + (local_5c->r).maxs[0];
-              local_10f4 = (local_5c->r).currentOrigin[1] + (local_5c->r).maxs[1];
-              local_10f0 = (local_5c->r).currentOrigin[2] + (local_5c->r).maxs[2];
-              ExpandBoundsToWidth(&local_1108,&local_10f8);
-              local_10fc = SV_EntityContact(&local_1108,&local_10f8,param_1);
-              if (local_10fc != 0) goto LAB_0069c282;
+        dist = Vec3Normalize(&useDir);
+        if ((dist <= radius) &&
+           ((((dot = useDir * forward + local_10d4 * local_54 + local_10d0 * local_50,
+              hit->classname != scr_const.trigger_use &&
+              (hit->classname != scr_const.trigger_radius)) &&
+             (hit->classname != scr_const.trigger_radius_use)) ||
+            (((hit->field36_0x21c).trigger.requireLookAt == false || (horizontalDot <= dot)))))) {
+          if ((hit->classname == scr_const.trigger_radius) ||
+             (hit->classname == scr_const.trigger_radius_use)) {
+            playersTeam = *(int *)(level_bgs.clientinfo +
+                                  (uint)(ent->client->ps).clientNum * 0x5c8 + 0x2c);
+            if ((hit->team != 0xff) && ((uint)hit->team == playersTeam)) {
+              bTouching = 0;
+              vMins = (hit->r).currentOrigin[0] + (hit->r).mins[0];
+              local_1104 = (hit->r).currentOrigin[1] + (hit->r).mins[1];
+              local_1100 = (hit->r).currentOrigin[2] + (hit->r).mins[2];
+              vMaxs = (hit->r).currentOrigin[0] + (hit->r).maxs[0];
+              local_10f4 = (hit->r).currentOrigin[1] + (hit->r).maxs[1];
+              local_10f0 = (hit->r).currentOrigin[2] + (hit->r).maxs[2];
+              ExpandBoundsToWidth(&vMins,&vMaxs);
+              bTouching = SV_EntityContact(&vMins,&vMaxs,ent);
+              if (bTouching != 0) goto LAB_0069c282;
             }
           }
           else {
 LAB_0069c282:
-            local_4c = 1.0 - (local_10dc + 1.0) * 0.5;
-            param_2[local_48].score = local_4c * local_84;
-            if ((local_5c->flags & 0x200U) == 0) {
-              if ((local_5c->s).eType == 4) {
-                param_2[local_48].score = param_2[local_48].score - local_84 * 2.0;
+            centerBias = 1.0 - (dot + 1.0) * 0.5;
+            useList[curUse].score = centerBias * CENTER_LINE_BIAS;
+            if ((hit->flags & 0x200U) == 0) {
+              if ((hit->s).eType == 4) {
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 2.0;
               }
-              if ((local_5c->s).eType == 0xe) {
-                param_2[local_48].score = param_2[local_48].score - local_84 * 2.0;
+              if ((hit->s).eType == 0xe) {
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 2.0;
               }
-              if ((local_5c->classname == scr_const.trigger_radius) ||
-                 ((local_5c->classname == scr_const.trigger_radius_use &&
-                  (0 < (local_5c->s).un3.item)))) {
-                param_2[local_48].score = param_2[local_48].score - local_84 * 1.5;
+              if ((hit->classname == scr_const.trigger_radius) ||
+                 ((hit->classname == scr_const.trigger_radius_use && (0 < (hit->s).un3.item)))) {
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 1.5;
               }
-              if ((local_5c->classname == scr_const.trigger_use) ||
-                 (local_5c->classname == scr_const.trigger_radius)) {
-                param_2[local_48].score = param_2[local_48].score - local_84;
+              if ((hit->classname == scr_const.trigger_use) ||
+                 (hit->classname == scr_const.trigger_radius)) {
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS;
               }
-              if ((local_5c->s).eType == 6) {
-                param_2[local_48].score = param_2[local_48].score - local_84 * 0.75;
+              if ((hit->s).eType == 6) {
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 0.75;
               }
             }
             else {
-              param_2[local_48].score = param_2[local_48].score - local_84 * 0.55;
+              useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 0.55;
             }
-            if ((local_5c->s).eType == 0xb) {
-              iVar5 = G_IsTurretUsable(local_5c,param_1);
-              if (iVar5 == 0) {
-                param_2[local_48].score = param_2[local_48].score + 10000.0;
+            if ((hit->s).eType == 0xb) {
+              iVar3 = G_IsTurretUsable(hit,ent);
+              if (iVar3 == 0) {
+                useList[curUse].score = useList[curUse].score + 10000.0;
               }
               else {
-                param_2[local_48].score = param_2[local_48].score - local_84 * 0.5;
+                useList[curUse].score = useList[curUse].score - CENTER_LINE_BIAS * 0.5;
               }
             }
-            if (((local_5c->s).eType == 3) &&
-               ((iVar5 = BG_CanItemBeGrabbed(&local_5c->s,&param_1->client->ps,0), iVar5 == 0 ||
-                (iVar5 = BG_PlayerWeaponBlockPickupWeapon
-                                   (&param_1->client->ps,(uint)(param_1->client->ps).weapon),
-                iVar5 != 0)))) {
-              param_2[local_48].score = param_2[local_48].score + 10000.0;
-              local_28 = local_28 + 1;
+            if (((hit->s).eType == 3) &&
+               ((iVar3 = BG_CanItemBeGrabbed(&hit->s,&ent->client->ps,0), iVar3 == 0 ||
+                (iVar3 = BG_PlayerWeaponBlockPickupWeapon
+                                   (&ent->client->ps,(uint)(ent->client->ps).weapon), iVar3 != 0))))
+            {
+              useList[curUse].score = useList[curUse].score + 10000.0;
+              ignoredFullItems = ignoredFullItems + 1;
             }
-            param_2[local_48].ent = local_5c;
-            param_2[local_48].score = param_2[local_48].score + local_74;
-            local_48 = local_48 + 1;
+            useList[curUse].ent = hit;
+            useList[curUse].score = useList[curUse].score + dist;
+            curUse = curUse + 1;
           }
         }
       }
     }
 LAB_0069bac2:
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0069C850  BG_PlayerWeaponBlockPickupWeapon  (bgame/bg_weapons.h:393)
 
-int __cdecl BG_PlayerWeaponBlockPickupWeapon(playerState_s *param_1,uint param_2)
+int __cdecl BG_PlayerWeaponBlockPickupWeapon(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
@@ -776,8 +769,9 @@ int __cdecl BG_PlayerWeaponBlockPickupWeapon(playerState_s *param_1,uint param_2
   int iVar3;
   PlayerHeldWeapon *pPVar4;
   uint uVar5;
+  PlayerHeldWeapon *heldWeapon;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",0x18a
                              ,0,"%s");
     if (!bVar2) {
@@ -786,7 +780,7 @@ int __cdecl BG_PlayerWeaponBlockPickupWeapon(playerState_s *param_1,uint param_2
       return iVar3;
     }
   }
-  pPVar4 = BG_GetHeldWeaponConst(param_1,param_2);
+  pPVar4 = BG_GetHeldWeaponConst(ps,weaponIndex);
   if (pPVar4 == (PlayerHeldWeapon *)0x0) {
     uVar5 = 0;
   }
@@ -804,7 +798,7 @@ int __cdecl BG_PlayerWeaponBlockPickupWeapon(playerState_s *param_1,uint param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Player_GetItemCursorHint(gclient_s *param_1,gentity_s *param_2)
+int __cdecl Player_GetItemCursorHint(gclient_s *client,gentity_s *traceEnt)
 
 {
   code *pcVar1;
@@ -813,22 +807,27 @@ int __cdecl Player_GetItemCursorHint(gclient_s *param_1,gentity_s *param_2)
   WeaponDef *pWVar4;
   WeaponDef *pWVar5;
   uint uVar6;
+  WeaponDef *weapDefItem;
+  gitem_s *item;
+  WeaponDef *weapDefPlayer;
+  int index;
+  int weapIndex;
   
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((traceEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x28e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x28f
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  uVar6 = (param_2->s).un3.item;
+  uVar6 = (traceEnt->s).un3.item;
   if ((((int)uVar6 < 0) || (0x7ff < (int)uVar6)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x293
                                ,0,"%s\n\t(index) = %i"), !bVar2)) {
@@ -848,14 +847,14 @@ int __cdecl Player_GetItemCursorHint(gclient_s *param_1,gentity_s *param_2)
     uVar6 = (uVar6 - 1 | 0xfffff800) + 1;
   }
   pWVar4 = BG_GetWeaponDef(uVar6);
-  pWVar5 = BG_GetWeaponDef((uint)(param_1->ps).weapon);
-  iVar3 = BG_PlayerHasWeapon(&param_1->ps,uVar6);
+  pWVar5 = BG_GetWeaponDef((uint)(client->ps).weapon);
+  iVar3 = BG_PlayerHasWeapon(&client->ps,uVar6);
   if (iVar3 == 0) {
     if ((((pWVar5->inventoryType != WEAPINVENTORY_PRIMARY) &&
          (pWVar5->inventoryType != WEAPINVENTORY_ALTMODE)) &&
         ((pWVar4->inventoryType == WEAPINVENTORY_PRIMARY ||
          (pWVar4->inventoryType == WEAPINVENTORY_ALTMODE)))) &&
-       (iVar3 = BG_PlayerWeaponCountPrimaryTypes(&param_1->ps), 1 < iVar3)) {
+       (iVar3 = BG_PlayerWeaponCountPrimaryTypes(&client->ps), 1 < iVar3)) {
       return 0;
     }
     iVar3 = uVar6 + 7;
@@ -874,7 +873,7 @@ int __cdecl Player_GetItemCursorHint(gclient_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
+void __cdecl Player_SetTurretDropHint(gentity_s *ent)
 
 {
   short sVar1;
@@ -883,8 +882,10 @@ void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
   gentity_s *pgVar4;
   bool bVar5;
   WeaponDef *pWVar6;
+  gentity_s *turret;
+  playerState_s *ps;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2b1,0
                              ,"%s");
     if (!bVar5) {
@@ -893,7 +894,7 @@ void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2b2,0
                              ,"%s");
     if (!bVar5) {
@@ -902,7 +903,7 @@ void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->active == '\0') {
+  if (ent->active == '\0') {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2b3,0
                              ,"%s");
     if (!bVar5) {
@@ -911,7 +912,7 @@ void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
       return;
     }
   }
-  pgVar2 = param_1->client;
+  pgVar2 = ent->client;
   if (((pgVar2->ps).eFlags & 0x300U) == 0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2b7,0
                              ,"%s");
@@ -960,7 +961,7 @@ void __cdecl Player_SetTurretDropHint(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Player_UpdateCursorHints(gentity_s *param_1)
+void __cdecl Player_UpdateCursorHints(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -968,174 +969,179 @@ void __cdecl Player_UpdateCursorHints(gentity_s *param_1)
   int iVar3;
   WeaponDef *pWVar4;
   uint uVar5;
-  team_t tVar6;
-  uint local_2028;
-  int local_2018;
-  useList_t local_2014 [1024];
-  int local_14;
-  int local_10;
-  gclient_s *local_c;
-  gentity_s *local_8;
+  int iVar6;
+  team_t tVar7;
+  uint perk;
+  int team;
+  int vehUseableHint;
+  int hintString;
+  int itemHintType;
+  int mtlIndex;
+  int locationSelectorActive;
+  int hintType;
+  useList_t useList [1024];
+  int numUsable;
+  int i;
+  playerState_s *ps;
+  gentity_s *traceEnt;
   
-  local_8 = (gentity_s *)0x0;
-  if ((param_1->client == (gclient_s *)0x0) &&
+  traceEnt = (gentity_s *)0x0;
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp",0x2d6
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = param_1->client;
-  (local_c->ps).cursorHint = 0;
-  bVar2 = BG_ThrowingBackGrenade(&local_c->ps);
+  ps = &ent->client->ps;
+  (((gclient_s *)ps)->ps).cursorHint = 0;
+  bVar2 = BG_ThrowingBackGrenade(ps);
   if (!bVar2) {
-    (local_c->ps).throwBackGrenadeTimeLeft = 0;
+    ps->throwBackGrenadeTimeLeft = 0;
   }
-  if (0 < param_1->health) {
-    if (param_1->active == '\0') {
-      if ((((((param_1->client->ps).pm_flags & 4U) == 0) &&
-           (((param_1->client->ps).pm_flags & 0x8000U) == 0)) &&
-          (((param_1->client->ps).pm_flags & 0x400000U) == 0)) &&
-         (((((param_1->client->ps).pm_flags & 8U) == 0 &&
-           (((local_c->ps).eFlags2 & 0x10000000U) == 0)) &&
-          ((((local_c->ps).weapFlags & 0x100000U) == 0 &&
-           (((local_c->ps).weaponstate < 0x14 || (0x18 < (local_c->ps).weaponstate)))))))) {
-        bVar2 = Player_IsPlayerUsingTurretNearby(param_1);
+  if (0 < ent->health) {
+    if (ent->active == '\0') {
+      if ((((((ent->client->ps).pm_flags & 4U) == 0) &&
+           (((ent->client->ps).pm_flags & 0x8000U) == 0)) &&
+          (((ent->client->ps).pm_flags & 0x400000U) == 0)) &&
+         (((((ent->client->ps).pm_flags & 8U) == 0 && ((ps->eFlags2 & 0x10000000U) == 0)) &&
+          (((ps->weapFlags & 0x100000U) == 0 &&
+           ((ps->weaponstate < 0x14 || (0x18 < ps->weaponstate)))))))) {
+        bVar2 = Player_IsPlayerUsingTurretNearby(ent);
         if ((bVar2) ||
-           (((((param_1->client->ps).mountAvailable == false && ((local_c->ps).weaponstate != 0x23))
-             && ((local_c->ps).weaponstate != 0x24)) && ((local_c->ps).weaponstate != 0x25)))) {
-          if ((local_c->ps).pm_type == 6) {
-            (local_c->ps).cursorHintEntIndex = 0x3ff;
+           (((((ent->client->ps).mountAvailable == false && (ps->weaponstate != 0x23)) &&
+             (ps->weaponstate != 0x24)) && (ps->weaponstate != 0x25)))) {
+          if (ps->pm_type == 6) {
+            ps->cursorHintEntIndex = 0x3ff;
           }
-          else if (((local_c->ps).weapFlags & 0x400000U) == 0) {
-            if ((((local_c->ps).locationSelectionInfo & 0xfU) < 0xf) &&
-               ((local_c->ps).locationSelectionInfo != 0)) {
+          else if ((ps->weapFlags & 0x400000U) == 0) {
+            if (((ps->locationSelectionInfo & 0xfU) < 0xf) && (ps->locationSelectionInfo != 0)) {
               bVar2 = true;
             }
             else {
               bVar2 = false;
             }
-            if (((!bVar2) && (((local_c->ps).eFlags & 0x4000U) == 0)) &&
-               (((param_1->client->flags & 4U) == 0 &&
-                (((param_1->client->flags & 8U) == 0 &&
-                 (local_14 = Player_GetUseList(param_1,local_2014,(local_c->ps).cursorHintEntIndex),
-                 local_14 != 0)))))) {
-              local_2018 = 0;
-              local_2028 = 0xffffffff;
-              local_10 = 0;
+            if (((!bVar2) && ((ps->eFlags & 0x4000U) == 0)) &&
+               (((ent->client->flags & 4U) == 0 &&
+                (((ent->client->flags & 8U) == 0 &&
+                 (numUsable = Player_GetUseList(ent,useList,ps->cursorHintEntIndex), numUsable != 0)
+                 ))))) {
+              hintType = 0;
+              hintString = -1;
+              i = 0;
 LAB_0069b26b:
-              if (local_14 <= local_10) {
+              if (numUsable <= i) {
                 return;
               }
-              local_8 = local_2014[local_10].ent;
-              if ((local_8 == (gentity_s *)0x0) &&
+              traceEnt = useList[i].ent;
+              if ((traceEnt == (gentity_s *)0x0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp"
                                            ,0x349,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              if (((local_8->r).inuse == '\0') &&
+              if (((traceEnt->r).inuse == '\0') &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp"
                                            ,0x34a,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              switch((local_8->s).eType) {
+              switch((traceEnt->s).eType) {
               case 0:
-                if ((((local_8->classname == scr_const.trigger_use) ||
-                     (local_8->classname == scr_const.trigger_use_touch)) ||
-                    (local_8->classname == scr_const.trigger_radius)) ||
-                   (iVar3 = local_2018, local_8->classname == scr_const.trigger_radius_use)) {
-                  if (((((local_8->team != '\0') &&
-                        ((uint)local_8->team != (param_1->client->sess).cs.team)) ||
-                       (((local_8->field36_0x21c).trigger.perk != '4' &&
-                        (bVar2 = BG_HasPerk((param_1->client->ps).perks,
-                                            (uint)(local_8->field36_0x21c).trigger.perk), !bVar2))))
-                      || (((local_8->field36_0x21c).item[1].ammoCount != 0x3ff &&
-                          ((local_8->field36_0x21c).item[1].ammoCount !=
-                           (uint)(param_1->client->ps).clientNum)))) ||
-                     ((1 << ((local_c->ps).clientNum & 0x1f) &
-                      (local_8->r).clientMask[(int)(uint)(local_c->ps).clientNum >> 5]) != 0))
+                if ((((traceEnt->classname == scr_const.trigger_use) ||
+                     (traceEnt->classname == scr_const.trigger_use_touch)) ||
+                    (traceEnt->classname == scr_const.trigger_radius)) ||
+                   (iVar3 = hintType, traceEnt->classname == scr_const.trigger_radius_use)) {
+                  if (((((traceEnt->team != '\0') &&
+                        ((uint)traceEnt->team != (ent->client->sess).cs.team)) ||
+                       (((traceEnt->field36_0x21c).trigger.perk != '4' &&
+                        (bVar2 = BG_HasPerk((ent->client->ps).perks,
+                                            (uint)(traceEnt->field36_0x21c).trigger.perk), !bVar2)))
+                       ) || (((traceEnt->field36_0x21c).item[1].ammoCount != 0x3ff &&
+                             ((traceEnt->field36_0x21c).item[1].ammoCount !=
+                              (uint)(ent->client->ps).clientNum)))) ||
+                     ((1 << (ps->clientNum & 0x1f) &
+                      (traceEnt->r).clientMask[(int)(uint)ps->clientNum >> 5]) != 0))
                   goto LAB_0069b262;
-                  iVar3 = (local_8->s).un3.item;
-                  if (((local_8->s).un3.item != 0) && ((local_8->s).un1.scale != 0xff)) {
-                    local_2028 = (uint)(local_8->s).un1.scale;
+                  iVar3 = (traceEnt->s).un3.item;
+                  if (((traceEnt->s).un3.item != 0) && ((traceEnt->s).un1.scale != 0xff)) {
+                    hintString = (int)(traceEnt->s).un1.scale;
                   }
                 }
                 break;
               default:
                 goto LAB_0069b262;
               case 3:
-                if ((((local_8->s).lerp.eFlags2 & 0x800000U) != 0) ||
-                   (iVar3 = Player_GetItemCursorHint(param_1->client,local_8), iVar3 == 0))
+                if ((((traceEnt->s).lerp.eFlags2 & 0x800000U) != 0) ||
+                   (iVar3 = Player_GetItemCursorHint(ent->client,traceEnt), iVar3 == 0))
                 goto LAB_0069b262;
                 break;
               case 4:
-                uVar5 = (local_8->s).un3.secondBcAlias & 0x800007ff;
+                uVar5 = (traceEnt->s).un3.secondBcAlias & 0x800007ff;
                 if ((int)uVar5 < 0) {
                   uVar5 = (uVar5 - 1 | 0xfffff800) + 1;
                 }
-                (local_c->ps).throwBackGrenadeTimeLeft = local_8->nextthink - level.time;
+                ps->throwBackGrenadeTimeLeft = traceEnt->nextthink - level.time;
                 iVar3 = uVar5 + 7;
                 break;
               case 6:
-                iVar3 = (local_8->s).un3.item;
-                if (((local_8->s).un3.item != 0) && ((local_8->s).un1.scale != 0xff)) {
-                  local_2028 = (uint)(local_8->s).un1.scale;
+                iVar3 = (traceEnt->s).un3.item;
+                if (((traceEnt->s).un3.item != 0) && ((traceEnt->s).un1.scale != 0xff)) {
+                  hintString = (int)(traceEnt->s).un1.scale;
                 }
-                if ((local_8->s).un3.item != 0) {
-                  tVar6 = (int)((local_8->s).eventParm & 0xc000) >> 0xe;
-                  if ((tVar6 != TEAM_BAD) && (tVar6 != (param_1->client->sess).cs.team)) {
-                    local_2018 = 0;
-                    local_2028 = 0xffffffff;
+                if ((traceEnt->s).un3.item != 0) {
+                  tVar7 = (int)((traceEnt->s).eventParm & 0xc000) >> 0xe;
+                  if ((tVar7 != TEAM_BAD) && (tVar7 != (ent->client->sess).cs.team)) {
+                    hintType = 0;
+                    hintString = -1;
                     goto LAB_0069b262;
                   }
-                  if ((((local_8->s).eventParm & 0x3fff) != 0) &&
-                     (bVar2 = BG_HasPerk((local_c->ps).perks,
-                                         (int)((local_8->s).eventParm & 0x3fff) >> 8), bVar2)) {
-                    local_2028 = (local_8->s).eventParm & 0xff;
+                  if ((((traceEnt->s).eventParm & 0x3fff) != 0) &&
+                     (bVar2 = BG_HasPerk(ps->perks,(int)((traceEnt->s).eventParm & 0x3fff) >> 8),
+                     bVar2)) {
+                    hintString = (traceEnt->s).eventParm & 0xff;
                   }
                 }
                 break;
               case 0xb:
-                iVar3 = G_IsTurretUsable(local_8,param_1);
-                if (iVar3 == 0) goto LAB_0069b262;
-                iVar3 = (local_8->s).weapon + 7;
-                pWVar4 = BG_GetWeaponDef((uint)(local_8->s).weapon);
+                iVar6 = G_IsTurretUsable(traceEnt,ent);
+                if (iVar6 == 0) goto LAB_0069b262;
+                iVar3 = (traceEnt->s).weapon + 7;
+                pWVar4 = BG_GetWeaponDef((uint)(traceEnt->s).weapon);
                 if (*pWVar4->szUseHintString != '\0') {
-                  pWVar4 = BG_GetWeaponDef((uint)(local_8->s).weapon);
-                  local_2028 = pWVar4->iUseHintStringIndex;
+                  pWVar4 = BG_GetWeaponDef((uint)(traceEnt->s).weapon);
+                  hintString = pWVar4->iUseHintStringIndex;
                 }
                 break;
               case 0xe:
-                uVar5 = G_IsVehicleUsable(local_8,param_1);
-                if (uVar5 != 0xffffffff) {
-                  local_2018 = 1;
-                  local_2028 = uVar5;
-                  iVar3 = local_2018;
-                  if (param_1->client->disallowVehicleUsage == 0) break;
-                  (local_c->ps).cursorHintEntIndex = 0x3ff;
-                  (local_c->ps).cursorHint = 1;
-                  (local_c->ps).cursorHintString = uVar5;
+                iVar6 = G_IsVehicleUsable(traceEnt,ent);
+                if (iVar6 != -1) {
+                  hintType = 1;
+                  hintString = iVar6;
+                  iVar3 = hintType;
+                  if (ent->client->disallowVehicleUsage == 0) break;
+                  ps->cursorHintEntIndex = 0x3ff;
+                  ps->cursorHint = 1;
+                  ps->cursorHintString = iVar6;
                 }
 LAB_0069b262:
-                local_10 = local_10 + 1;
+                i = i + 1;
                 goto LAB_0069b26b;
               }
-              local_2018 = iVar3;
-              if (local_2018 == 0) {
-                (local_c->ps).cursorHintEntIndex = 0x3ff;
+              hintType = iVar3;
+              if (hintType == 0) {
+                ps->cursorHintEntIndex = 0x3ff;
               }
               else {
-                (local_c->ps).cursorHintEntIndex = (local_8->s).number;
-                local_8->flags = local_8->flags | 0x200000;
-                (local_c->ps).cursorHint = local_2018;
-                (local_c->ps).cursorHintString = local_2028;
+                ps->cursorHintEntIndex = (traceEnt->s).number;
+                traceEnt->flags = traceEnt->flags | 0x200000;
+                ps->cursorHint = hintType;
+                ps->cursorHintString = hintString;
               }
-              if ((((local_c->ps).cursorHintEntIndex != 0x3ff) &&
-                  (g_entities[(local_c->ps).cursorHintEntIndex].r.inuse == '\0')) &&
+              if (((ps->cursorHintEntIndex != 0x3ff) &&
+                  (g_entities[ps->cursorHintEntIndex].r.inuse == '\0')) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\player_use_mp.cpp"
                                            ,0x3c1,1,"%s\n\t(ps->cursorHintEntIndex) = %i"), !bVar2))
               {
@@ -1147,12 +1153,12 @@ LAB_0069b262:
           }
         }
         else {
-          (local_c->ps).cursorHintEntIndex = 0x3ff;
+          ps->cursorHintEntIndex = 0x3ff;
         }
       }
     }
-    else if (((local_c->ps).eFlags & 0x300U) != 0) {
-      Player_SetTurretDropHint(param_1);
+    else if ((ps->eFlags & 0x300U) != 0) {
+      Player_SetTurretDropHint(ent);
     }
   }
   return;
@@ -1164,8 +1170,8 @@ LAB_0069b262:
 void __cdecl
 std::
 _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,int param_2,int param_3,RagdollSortStruct param_4,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_5)
+          (RagdollSortStruct *_First_4,int _Hole_4,int _Bottom_4,RagdollSortStruct _Val_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4)
 
 {
   RagdollBody *pRVar1;
@@ -1173,39 +1179,39 @@ _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSo
   RagdollSortStruct local_1c;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int _Idx_4;
+  int _Top_4;
   
-  local_8 = param_2;
-  while (local_c = param_2 * 2 + 2, local_c < param_3) {
-    bVar2 = (*param_5)(param_1 + local_c,param_1 + param_2 * 2 + 1);
+  _Top_4 = _Hole_4;
+  while (_Idx_4 = _Hole_4 * 2 + 2, _Idx_4 < _Bottom_4) {
+    bVar2 = (*_Pred_4)(_First_4 + _Idx_4,_First_4 + _Hole_4 * 2 + 1);
     if (bVar2) {
-      local_c = local_c + -1;
+      _Idx_4 = _Idx_4 + -1;
     }
-    pRVar1 = param_1[local_c].body;
-    param_1[param_2].distSq = param_1[local_c].distSq;
-    param_1[param_2].body = pRVar1;
-    param_2 = local_c;
+    pRVar1 = _First_4[_Idx_4].body;
+    _First_4[_Hole_4].distSq = _First_4[_Idx_4].distSq;
+    _First_4[_Hole_4].body = pRVar1;
+    _Hole_4 = _Idx_4;
   }
-  if (local_c == param_3) {
-    pRVar1 = param_1[param_3 + -1].body;
-    param_1[param_2].distSq = param_1[param_3 + -1].distSq;
-    param_1[param_2].body = pRVar1;
-    param_2 = param_3 + -1;
+  if (_Idx_4 == _Bottom_4) {
+    pRVar1 = _First_4[_Bottom_4 + -1].body;
+    _First_4[_Hole_4].distSq = _First_4[_Bottom_4 + -1].distSq;
+    _First_4[_Hole_4].body = pRVar1;
+    _Hole_4 = _Bottom_4 + -1;
   }
-  local_1c.distSq = param_4.distSq;
-  local_1c.body = param_4.body;
-  local_14 = param_2;
-  while (local_10 = (local_14 + -1) / 2, local_8 < local_14) {
-    bVar2 = (*param_5)(param_1 + local_10,&local_1c);
+  local_1c.distSq = _Val_4.distSq;
+  local_1c.body = _Val_4.body;
+  local_14 = _Hole_4;
+  while (local_10 = (local_14 + -1) / 2, _Top_4 < local_14) {
+    bVar2 = (*_Pred_4)(_First_4 + local_10,&local_1c);
     if (!bVar2) break;
-    pRVar1 = param_1[local_10].body;
-    param_1[local_14].distSq = param_1[local_10].distSq;
-    param_1[local_14].body = pRVar1;
+    pRVar1 = _First_4[local_10].body;
+    _First_4[local_14].distSq = _First_4[local_10].distSq;
+    _First_4[local_14].body = pRVar1;
     local_14 = local_10;
   }
-  param_1[local_14].distSq = local_1c.distSq;
-  param_1[local_14].body = local_1c.body;
+  _First_4[local_14].distSq = local_1c.distSq;
+  _First_4[local_14].body = local_1c.body;
   return;
 }
 
@@ -1215,23 +1221,23 @@ _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSo
 void __cdecl
 std::
 make_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_3)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Last_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4)
 
 {
-  RagdollSortStruct RVar1;
-  int iVar2;
+  RagdollSortStruct _Val_4;
+  int _Bottom_4;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 3) {
-    iVar2 = (int)param_2 - (int)param_1 >> 3;
-    local_18 = iVar2 / 2;
+  if (1 < (int)_Last_4 - (int)_First_4 >> 3) {
+    _Bottom_4 = (int)_Last_4 - (int)_First_4 >> 3;
+    local_18 = _Bottom_4 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
-      RVar1.body = param_1[local_18].body;
-      RVar1.distSq = param_1[local_18].distSq;
+      _Val_4.body = _First_4[local_18].body;
+      _Val_4.distSq = _First_4[local_18].distSq;
       _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                (param_1,local_18,iVar2,RVar1,param_3);
+                (_First_4,local_18,_Bottom_4,_Val_4,_Pred_4);
     }
   }
   return;
@@ -1243,21 +1249,21 @@ make_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollS
 void __cdecl
 std::
 _Sort_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_3)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Last_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4)
 
 {
   RagdollBody *pRVar1;
-  RagdollSortStruct RVar2;
+  RagdollSortStruct _Val_4;
   
-  for (; 1 < (int)param_2 - (int)param_1 >> 3; param_2 = param_2 + -1) {
-    if (1 < (int)param_2 - (int)param_1 >> 3) {
-      RVar2 = param_2[-1];
-      pRVar1 = param_1->body;
-      param_2[-1].distSq = param_1->distSq;
-      param_2[-1].body = pRVar1;
+  for (; 1 < (int)_Last_4 - (int)_First_4 >> 3; _Last_4 = _Last_4 + -1) {
+    if (1 < (int)_Last_4 - (int)_First_4 >> 3) {
+      _Val_4 = _Last_4[-1];
+      pRVar1 = _First_4->body;
+      _Last_4[-1].distSq = _First_4->distSq;
+      _Last_4[-1].body = pRVar1;
       _Adjust_heap<RagdollSortStruct_*,int,RagdollSortStruct,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                (param_1,0,(int)param_2 + (-8 - (int)param_1) >> 3,RVar2,param_3);
+                (_First_4,0,(int)_Last_4 + (-8 - (int)_First_4) >> 3,_Val_4,_Pred_4);
     }
   }
   return;
@@ -1269,46 +1275,47 @@ _Sort_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,Ragdoll
 void __cdecl
 std::
 _Insertion_sort1<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&),RagdollSortStruct>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_3,
-          RagdollSortStruct *param_4)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Last_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4,
+          RagdollSortStruct *__formal_4)
 
 {
-  RagdollBody *pRVar1;
-  RagdollSortStruct *pRVar2;
+  int iVar1;
+  MaterialMemory *pMVar2;
   bool bVar3;
   RagdollSortStruct *pRVar4;
-  RagdollSortStruct local_14;
-  RagdollSortStruct *local_c;
-  RagdollSortStruct *local_8;
+  MaterialMemory *_First1_4;
+  RagdollSortStruct _Val_4;
+  MaterialMemory *_Next1_4;
+  MaterialMemory *_Next_4;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (local_c = local_8 + 1, local_c != param_2) {
-      local_14.distSq = local_c->distSq;
-      local_14.body = local_8[1].body;
-      local_8 = local_c;
-      bVar3 = (*param_3)(&local_14,param_1);
+  if (_First_4 != _Last_4) {
+    _Next_4 = (MaterialMemory *)_First_4;
+    while (_Next1_4 = _Next_4 + 1, (RagdollSortStruct *)_Next1_4 != _Last_4) {
+      _Val_4.distSq = ((RagdollSortStruct *)_Next1_4)->distSq;
+      _Val_4.body = (RagdollBody *)_Next_4[1].memory;
+      _Next_4 = _Next1_4;
+      bVar3 = (*_Pred_4)(&_Val_4,_First_4);
       if (bVar3) {
-        local_c = local_c + 1;
+        _Next1_4 = _Next1_4 + 1;
         stdext::unchecked_copy_backward<RagdollSortStruct_*,RagdollSortStruct_*>
-                  (param_1,local_8,local_c);
-        param_1->distSq = local_14.distSq;
-        param_1->body = local_14.body;
+                  (_First_4,(RagdollSortStruct *)_Next_4,(RagdollSortStruct *)_Next1_4);
+        _First_4->distSq = _Val_4.distSq;
+        _First_4->body = _Val_4.body;
       }
       else {
         while( true ) {
-          pRVar2 = local_c;
-          pRVar4 = local_c + -1;
-          bVar3 = (*param_3)(&local_14,pRVar4);
+          pMVar2 = _Next1_4;
+          pRVar4 = (RagdollSortStruct *)(_Next1_4 + -1);
+          bVar3 = (*_Pred_4)(&_Val_4,pRVar4);
           if (!bVar3) break;
-          pRVar1 = pRVar2[-1].body;
-          local_c->distSq = pRVar4->distSq;
-          local_c->body = pRVar1;
-          local_c = pRVar4;
+          iVar1 = pMVar2[-1].memory;
+          _Next1_4->material = (Material *)pRVar4->distSq;
+          _Next1_4->memory = iVar1;
+          _Next1_4 = (MaterialMemory *)pRVar4;
         }
-        local_c->distSq = local_14.distSq;
-        local_c->body = local_14.body;
+        _Next1_4->material = (Material *)_Val_4.distSq;
+        _Next1_4->memory = (int)_Val_4.body;
       }
     }
   }
@@ -1321,8 +1328,8 @@ _Insertion_sort1<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,R
 void __cdecl
 std::
 _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,RagdollSortStruct *param_3,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_4)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Mid_4,RagdollSortStruct *_Last_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4)
 
 {
   float fVar1;
@@ -1332,55 +1339,56 @@ _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSor
   int iVar5;
   RagdollSortStruct *pRVar6;
   RagdollSortStruct *pRVar7;
+  uint _Step_4;
   
-  if ((int)param_3 - (int)param_1 >> 3 < 0x29) {
-    bVar4 = (*param_4)(param_2,param_1);
-    if ((bVar4) && (param_2 != param_1)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
-      pRVar3 = param_1->body;
-      param_2->distSq = param_1->distSq;
-      param_2->body = pRVar3;
-      param_1->distSq = fVar1;
-      param_1->body = pRVar2;
+  if ((int)_Last_4 - (int)_First_4 >> 3 < 0x29) {
+    bVar4 = (*_Pred_4)(_Mid_4,_First_4);
+    if ((bVar4) && (_Mid_4 != _First_4)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
+      pRVar3 = _First_4->body;
+      _Mid_4->distSq = _First_4->distSq;
+      _Mid_4->body = pRVar3;
+      _First_4->distSq = fVar1;
+      _First_4->body = pRVar2;
     }
-    bVar4 = (*param_4)(param_3,param_2);
-    if ((bVar4) && (param_3 != param_2)) {
-      fVar1 = param_3->distSq;
-      pRVar2 = param_3->body;
-      pRVar3 = param_2->body;
-      param_3->distSq = param_2->distSq;
-      param_3->body = pRVar3;
-      param_2->distSq = fVar1;
-      param_2->body = pRVar2;
+    bVar4 = (*_Pred_4)(_Last_4,_Mid_4);
+    if ((bVar4) && (_Last_4 != _Mid_4)) {
+      fVar1 = _Last_4->distSq;
+      pRVar2 = _Last_4->body;
+      pRVar3 = _Mid_4->body;
+      _Last_4->distSq = _Mid_4->distSq;
+      _Last_4->body = pRVar3;
+      _Mid_4->distSq = fVar1;
+      _Mid_4->body = pRVar2;
     }
-    bVar4 = (*param_4)(param_2,param_1);
-    if ((bVar4) && (param_2 != param_1)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
-      pRVar3 = param_1->body;
-      param_2->distSq = param_1->distSq;
-      param_2->body = pRVar3;
-      param_1->distSq = fVar1;
-      param_1->body = pRVar2;
+    bVar4 = (*_Pred_4)(_Mid_4,_First_4);
+    if ((bVar4) && (_Mid_4 != _First_4)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
+      pRVar3 = _First_4->body;
+      _Mid_4->distSq = _First_4->distSq;
+      _Mid_4->body = pRVar3;
+      _First_4->distSq = fVar1;
+      _First_4->body = pRVar2;
     }
   }
   else {
-    iVar5 = ((int)param_3 - (int)param_1 >> 3) + 1;
+    iVar5 = ((int)_Last_4 - (int)_First_4 >> 3) + 1;
     iVar5 = (int)(iVar5 + (iVar5 >> 0x1f & 7U)) >> 3;
-    pRVar6 = param_1 + iVar5 * 2;
-    pRVar7 = param_1 + iVar5;
-    bVar4 = (*param_4)(pRVar7,param_1);
-    if ((bVar4) && (pRVar7 != param_1)) {
+    pRVar6 = _First_4 + iVar5 * 2;
+    pRVar7 = _First_4 + iVar5;
+    bVar4 = (*_Pred_4)(pRVar7,_First_4);
+    if ((bVar4) && (pRVar7 != _First_4)) {
       fVar1 = pRVar7->distSq;
       pRVar2 = pRVar7->body;
-      pRVar3 = param_1->body;
-      pRVar7->distSq = param_1->distSq;
+      pRVar3 = _First_4->body;
+      pRVar7->distSq = _First_4->distSq;
       pRVar7->body = pRVar3;
-      param_1->distSq = fVar1;
-      param_1->body = pRVar2;
+      _First_4->distSq = fVar1;
+      _First_4->body = pRVar2;
     }
-    bVar4 = (*param_4)(pRVar6,pRVar7);
+    bVar4 = (*_Pred_4)(pRVar6,pRVar7);
     if ((bVar4) && (pRVar6 != pRVar7)) {
       fVar1 = pRVar6->distSq;
       pRVar2 = pRVar6->body;
@@ -1390,51 +1398,51 @@ _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSor
       pRVar7->distSq = fVar1;
       pRVar7->body = pRVar2;
     }
-    bVar4 = (*param_4)(pRVar7,param_1);
-    if ((bVar4) && (pRVar7 != param_1)) {
+    bVar4 = (*_Pred_4)(pRVar7,_First_4);
+    if ((bVar4) && (pRVar7 != _First_4)) {
       fVar1 = pRVar7->distSq;
       pRVar2 = pRVar7->body;
-      pRVar3 = param_1->body;
-      pRVar7->distSq = param_1->distSq;
+      pRVar3 = _First_4->body;
+      pRVar7->distSq = _First_4->distSq;
       pRVar7->body = pRVar3;
-      param_1->distSq = fVar1;
-      param_1->body = pRVar2;
+      _First_4->distSq = fVar1;
+      _First_4->body = pRVar2;
     }
-    pRVar6 = param_2 + iVar5;
-    pRVar7 = param_2 + -iVar5;
-    bVar4 = (*param_4)(param_2,pRVar7);
-    if ((bVar4) && (param_2 != pRVar7)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
+    pRVar6 = _Mid_4 + iVar5;
+    pRVar7 = _Mid_4 + -iVar5;
+    bVar4 = (*_Pred_4)(_Mid_4,pRVar7);
+    if ((bVar4) && (_Mid_4 != pRVar7)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
       pRVar3 = pRVar7->body;
-      param_2->distSq = pRVar7->distSq;
-      param_2->body = pRVar3;
+      _Mid_4->distSq = pRVar7->distSq;
+      _Mid_4->body = pRVar3;
       pRVar7->distSq = fVar1;
       pRVar7->body = pRVar2;
     }
-    bVar4 = (*param_4)(pRVar6,param_2);
-    if ((bVar4) && (pRVar6 != param_2)) {
+    bVar4 = (*_Pred_4)(pRVar6,_Mid_4);
+    if ((bVar4) && (pRVar6 != _Mid_4)) {
       fVar1 = pRVar6->distSq;
       pRVar2 = pRVar6->body;
-      pRVar3 = param_2->body;
-      pRVar6->distSq = param_2->distSq;
+      pRVar3 = _Mid_4->body;
+      pRVar6->distSq = _Mid_4->distSq;
       pRVar6->body = pRVar3;
-      param_2->distSq = fVar1;
-      param_2->body = pRVar2;
+      _Mid_4->distSq = fVar1;
+      _Mid_4->body = pRVar2;
     }
-    bVar4 = (*param_4)(param_2,pRVar7);
-    if ((bVar4) && (param_2 != pRVar7)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
+    bVar4 = (*_Pred_4)(_Mid_4,pRVar7);
+    if ((bVar4) && (_Mid_4 != pRVar7)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
       pRVar3 = pRVar7->body;
-      param_2->distSq = pRVar7->distSq;
-      param_2->body = pRVar3;
+      _Mid_4->distSq = pRVar7->distSq;
+      _Mid_4->body = pRVar3;
       pRVar7->distSq = fVar1;
       pRVar7->body = pRVar2;
     }
-    pRVar7 = param_3 + -iVar5;
-    pRVar6 = param_3 + iVar5 * -2;
-    bVar4 = (*param_4)(pRVar7,pRVar6);
+    pRVar7 = _Last_4 + -iVar5;
+    pRVar6 = _Last_4 + iVar5 * -2;
+    bVar4 = (*_Pred_4)(pRVar7,pRVar6);
     if ((bVar4) && (pRVar7 != pRVar6)) {
       fVar1 = pRVar7->distSq;
       pRVar2 = pRVar7->body;
@@ -1444,17 +1452,17 @@ _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSor
       pRVar6->distSq = fVar1;
       pRVar6->body = pRVar2;
     }
-    bVar4 = (*param_4)(param_3,pRVar7);
-    if ((bVar4) && (param_3 != pRVar7)) {
-      fVar1 = param_3->distSq;
-      pRVar2 = param_3->body;
+    bVar4 = (*_Pred_4)(_Last_4,pRVar7);
+    if ((bVar4) && (_Last_4 != pRVar7)) {
+      fVar1 = _Last_4->distSq;
+      pRVar2 = _Last_4->body;
       pRVar3 = pRVar7->body;
-      param_3->distSq = pRVar7->distSq;
-      param_3->body = pRVar3;
+      _Last_4->distSq = pRVar7->distSq;
+      _Last_4->body = pRVar3;
       pRVar7->distSq = fVar1;
       pRVar7->body = pRVar2;
     }
-    bVar4 = (*param_4)(pRVar7,pRVar6);
+    bVar4 = (*_Pred_4)(pRVar7,pRVar6);
     if ((bVar4) && (pRVar7 != pRVar6)) {
       fVar1 = pRVar7->distSq;
       pRVar2 = pRVar7->body;
@@ -1464,35 +1472,35 @@ _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSor
       pRVar6->distSq = fVar1;
       pRVar6->body = pRVar2;
     }
-    pRVar7 = param_3 + -iVar5;
-    pRVar6 = param_1 + iVar5;
-    bVar4 = (*param_4)(param_2,pRVar6);
-    if ((bVar4) && (param_2 != pRVar6)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
+    pRVar7 = _Last_4 + -iVar5;
+    pRVar6 = _First_4 + iVar5;
+    bVar4 = (*_Pred_4)(_Mid_4,pRVar6);
+    if ((bVar4) && (_Mid_4 != pRVar6)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
       pRVar3 = pRVar6->body;
-      param_2->distSq = pRVar6->distSq;
-      param_2->body = pRVar3;
+      _Mid_4->distSq = pRVar6->distSq;
+      _Mid_4->body = pRVar3;
       pRVar6->distSq = fVar1;
       pRVar6->body = pRVar2;
     }
-    bVar4 = (*param_4)(pRVar7,param_2);
-    if ((bVar4) && (pRVar7 != param_2)) {
+    bVar4 = (*_Pred_4)(pRVar7,_Mid_4);
+    if ((bVar4) && (pRVar7 != _Mid_4)) {
       fVar1 = pRVar7->distSq;
       pRVar2 = pRVar7->body;
-      pRVar3 = param_2->body;
-      pRVar7->distSq = param_2->distSq;
+      pRVar3 = _Mid_4->body;
+      pRVar7->distSq = _Mid_4->distSq;
       pRVar7->body = pRVar3;
-      param_2->distSq = fVar1;
-      param_2->body = pRVar2;
+      _Mid_4->distSq = fVar1;
+      _Mid_4->body = pRVar2;
     }
-    bVar4 = (*param_4)(param_2,pRVar6);
-    if ((bVar4) && (param_2 != pRVar6)) {
-      fVar1 = param_2->distSq;
-      pRVar2 = param_2->body;
+    bVar4 = (*_Pred_4)(_Mid_4,pRVar6);
+    if ((bVar4) && (_Mid_4 != pRVar6)) {
+      fVar1 = _Mid_4->distSq;
+      pRVar2 = _Mid_4->body;
       pRVar3 = pRVar6->body;
-      param_2->distSq = pRVar6->distSq;
-      param_2->body = pRVar3;
+      _Mid_4->distSq = pRVar6->distSq;
+      _Mid_4->body = pRVar3;
       pRVar6->distSq = fVar1;
       pRVar6->body = pRVar2;
     }
@@ -1506,174 +1514,172 @@ _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSor
 pair<RagdollSortStruct_*,RagdollSortStruct_*> __cdecl
 std::
 _Unguarded_partition<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_3)
+          (RagdollSortStruct *param_1,RagdollSortStruct *_First_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Last_4)
 
 {
-  int iVar1;
+  Material *pMVar1;
   int iVar2;
   int iVar3;
-  void *pvVar4;
-  void *pvVar5;
-  RagdollBody *pRVar6;
-  bool bVar7;
-  int *piVar8;
-  RagdollBody *pRVar9;
-  RagdollBody *pRVar10;
-  pair<RagdollSortStruct_*,RagdollSortStruct_*> pVar11;
+  bool bVar4;
+  MaterialMemory *pMVar5;
+  MaterialMemory *pMVar6;
+  MaterialMemory *pMVar7;
+  MaterialMemory *pMVar8;
+  pair<RagdollSortStruct_*,RagdollSortStruct_*> pVar9;
   _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *in_stack_00000010;
-  RagdollBody *local_18;
-  RagdollBody *local_14;
-  RagdollBody *local_10;
-  RagdollBody *local_c;
+  MaterialMemory *_Plast_4;
+  MaterialMemory *_Glast_4;
+  MaterialMemory *_Pfirst_4;
+  MaterialMemory *_Gfirst_4;
+  MaterialMemory *_Mid_4;
   
-  local_10 = (RagdollBody *)
-             (param_2 +
-             (((int)param_3 - (int)param_2 >> 3) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Pfirst_4 = (MaterialMemory *)
+              (_First_4 +
+              (((int)_Last_4 - (int)_First_4 >> 3) - ((int)_Last_4 - (int)_First_4 >> 0x1f) >> 1));
   _Median<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-            (param_2,(RagdollSortStruct *)local_10,(RagdollSortStruct *)(param_3 + -8),
+            (_First_4,(RagdollSortStruct *)_Pfirst_4,(RagdollSortStruct *)(_Last_4 + -8),
              in_stack_00000010);
-  local_18 = (RagdollBody *)&local_10->dobj;
-  while (((param_2 < local_10 &&
-          (bVar7 = (*in_stack_00000010)
-                             ((RagdollSortStruct *)&local_10[-1].rope_id,
-                              (RagdollSortStruct *)local_10), !bVar7)) &&
-         (bVar7 = (*in_stack_00000010)
-                            ((RagdollSortStruct *)local_10,
-                             (RagdollSortStruct *)&local_10[-1].rope_id), !bVar7))) {
-    local_10 = (RagdollBody *)&local_10[-1].rope_id;
+  _Plast_4 = _Pfirst_4 + 1;
+  while (((_First_4 < _Pfirst_4 &&
+          (bVar4 = (*in_stack_00000010)
+                             ((RagdollSortStruct *)(_Pfirst_4 + -1),(RagdollSortStruct *)_Pfirst_4),
+          !bVar4)) &&
+         (bVar4 = (*in_stack_00000010)
+                            ((RagdollSortStruct *)_Pfirst_4,(RagdollSortStruct *)(_Pfirst_4 + -1)),
+         !bVar4))) {
+    _Pfirst_4 = _Pfirst_4 + -1;
   }
-  while (((local_18 < param_3 &&
-          (bVar7 = (*in_stack_00000010)((RagdollSortStruct *)local_18,(RagdollSortStruct *)local_10)
-          , !bVar7)) &&
-         (bVar7 = (*in_stack_00000010)((RagdollSortStruct *)local_10,(RagdollSortStruct *)local_18),
-         !bVar7))) {
-    local_18 = (RagdollBody *)&local_18->dobj;
+  while (((_Plast_4 < _Last_4 &&
+          (bVar4 = (*in_stack_00000010)
+                             ((RagdollSortStruct *)_Plast_4,(RagdollSortStruct *)_Pfirst_4), !bVar4)
+          ) && (bVar4 = (*in_stack_00000010)
+                                  ((RagdollSortStruct *)_Pfirst_4,(RagdollSortStruct *)_Plast_4),
+               !bVar4))) {
+    _Plast_4 = _Plast_4 + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pRVar10 = local_18;
-  pRVar6 = local_c;
-  pRVar9 = local_10;
+  _Gfirst_4 = _Plast_4;
+  _Glast_4 = _Pfirst_4;
+  pMVar8 = _Plast_4;
+  pMVar5 = _Gfirst_4;
+  pMVar7 = _Pfirst_4;
   do {
-    while (local_10 = pRVar9, local_c = pRVar6, local_18 = pRVar10, param_3 <= local_c) {
+    while (_Pfirst_4 = pMVar7, _Gfirst_4 = pMVar5, _Plast_4 = pMVar8, _Last_4 <= _Gfirst_4) {
 LAB_005b5d4c:
-      for (; param_2 < local_14; local_14 = (RagdollBody *)&local_14[-1].rope_id) {
-        bVar7 = (*in_stack_00000010)
-                          ((RagdollSortStruct *)&local_14[-1].rope_id,(RagdollSortStruct *)local_10)
-        ;
-        pRVar10 = local_10;
-        if (!bVar7) {
-          bVar7 = (*in_stack_00000010)
-                            ((RagdollSortStruct *)local_10,
-                             (RagdollSortStruct *)&local_14[-1].rope_id);
-          if (bVar7) break;
-          pRVar10 = (RagdollBody *)&local_10[-1].rope_id;
-          piVar8 = &local_14[-1].rope_id;
-          if (pRVar10 != (RagdollBody *)piVar8) {
-            iVar1 = *(int *)pRVar10;
-            pvVar4 = local_10[-1].rbc_dist;
-            pvVar5 = local_14[-1].rbc_dist;
-            *(int *)pRVar10 = *piVar8;
-            local_10[-1].rbc_dist = pvVar5;
-            *piVar8 = iVar1;
-            local_14[-1].rbc_dist = pvVar4;
+      for (; _First_4 < _Glast_4; _Glast_4 = _Glast_4 + -1) {
+        bVar4 = (*in_stack_00000010)
+                          ((RagdollSortStruct *)(_Glast_4 + -1),(RagdollSortStruct *)_Pfirst_4);
+        pMVar8 = _Pfirst_4;
+        if (!bVar4) {
+          bVar4 = (*in_stack_00000010)
+                            ((RagdollSortStruct *)_Pfirst_4,(RagdollSortStruct *)(_Glast_4 + -1));
+          if (bVar4) break;
+          pMVar8 = _Pfirst_4 + -1;
+          pMVar5 = _Glast_4 + -1;
+          if (pMVar8 != pMVar5) {
+            pMVar1 = pMVar8->material;
+            iVar2 = _Pfirst_4[-1].memory;
+            iVar3 = _Glast_4[-1].memory;
+            pMVar8->material = pMVar5->material;
+            _Pfirst_4[-1].memory = iVar3;
+            pMVar5->material = pMVar1;
+            _Glast_4[-1].memory = iVar2;
           }
         }
-        local_10 = pRVar10;
+        _Pfirst_4 = pMVar8;
       }
-      if ((local_14 == (RagdollBody *)param_2) && (local_c == (RagdollBody *)param_3)) {
-        param_1->distSq = (float)local_10;
-        param_1->body = local_18;
-        pVar11.second = param_1;
-        pVar11.first = param_1;
-        return pVar11;
+      if (((RagdollSortStruct *)_Glast_4 == _First_4) && (_Gfirst_4 == (MaterialMemory *)_Last_4)) {
+        param_1->distSq = (float)_Pfirst_4;
+        param_1->body = (RagdollBody *)_Plast_4;
+        pVar9.second = param_1;
+        pVar9.first = param_1;
+        return pVar9;
       }
-      if (local_14 == (RagdollBody *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          iVar1 = local_10->references;
-          iVar2 = local_10->ragdollDef;
-          iVar3 = local_18->ragdollDef;
-          local_10->references = local_18->references;
-          local_10->ragdollDef = iVar3;
-          local_18->references = iVar1;
-          local_18->ragdollDef = iVar2;
+      if ((RagdollSortStruct *)_Glast_4 == _First_4) {
+        if ((_Plast_4 != _Gfirst_4) && (_Pfirst_4 != _Plast_4)) {
+          pMVar1 = _Pfirst_4->material;
+          iVar2 = _Pfirst_4->memory;
+          iVar3 = _Plast_4->memory;
+          _Pfirst_4->material = _Plast_4->material;
+          _Pfirst_4->memory = iVar3;
+          _Plast_4->material = pMVar1;
+          _Plast_4->memory = iVar2;
         }
-        pRVar10 = (RagdollBody *)&local_18->dobj;
-        pRVar6 = (RagdollBody *)&local_c->dobj;
-        pRVar9 = (RagdollBody *)&local_10->dobj;
-        if (local_10 != local_c) {
-          iVar1 = local_10->references;
-          iVar2 = local_10->ragdollDef;
-          iVar3 = local_c->ragdollDef;
-          local_10->references = local_c->references;
-          local_10->ragdollDef = iVar3;
-          local_c->references = iVar1;
-          local_c->ragdollDef = iVar2;
+        pMVar8 = _Plast_4 + 1;
+        pMVar5 = _Gfirst_4 + 1;
+        pMVar7 = _Pfirst_4 + 1;
+        if (_Pfirst_4 != _Gfirst_4) {
+          pMVar1 = _Pfirst_4->material;
+          iVar2 = _Pfirst_4->memory;
+          iVar3 = _Gfirst_4->memory;
+          _Pfirst_4->material = _Gfirst_4->material;
+          _Pfirst_4->memory = iVar3;
+          _Gfirst_4->material = pMVar1;
+          _Gfirst_4->memory = iVar2;
         }
       }
-      else if (local_c == (RagdollBody *)param_3) {
-        piVar8 = &local_14[-1].rope_id;
-        pRVar9 = (RagdollBody *)&local_10[-1].rope_id;
-        if (((RagdollBody *)piVar8 != pRVar9) && ((RagdollBody *)piVar8 != pRVar9)) {
-          iVar1 = *piVar8;
-          pvVar4 = local_14[-1].rbc_dist;
-          pvVar5 = local_10[-1].rbc_dist;
-          *piVar8 = *(int *)pRVar9;
-          local_14[-1].rbc_dist = pvVar5;
-          *(int *)pRVar9 = iVar1;
-          local_10[-1].rbc_dist = pvVar4;
+      else if (_Gfirst_4 == (MaterialMemory *)_Last_4) {
+        pMVar6 = _Glast_4 + -1;
+        pMVar7 = _Pfirst_4 + -1;
+        if ((pMVar6 != pMVar7) && (pMVar6 != pMVar7)) {
+          pMVar1 = pMVar6->material;
+          iVar2 = _Glast_4[-1].memory;
+          iVar3 = _Pfirst_4[-1].memory;
+          pMVar6->material = pMVar7->material;
+          _Glast_4[-1].memory = iVar3;
+          pMVar7->material = pMVar1;
+          _Pfirst_4[-1].memory = iVar2;
         }
-        pRVar10 = (RagdollBody *)&local_18[-1].rope_id;
-        pRVar6 = local_c;
-        local_14 = (RagdollBody *)piVar8;
-        if (pRVar9 != pRVar10) {
-          iVar1 = *(int *)pRVar9;
-          pvVar4 = local_10[-1].rbc_dist;
-          pvVar5 = local_18[-1].rbc_dist;
-          *(int *)pRVar9 = *(int *)pRVar10;
-          local_10[-1].rbc_dist = pvVar5;
-          *(int *)pRVar10 = iVar1;
-          local_18[-1].rbc_dist = pvVar4;
+        pMVar8 = _Plast_4 + -1;
+        pMVar5 = _Gfirst_4;
+        _Glast_4 = pMVar6;
+        if (pMVar7 != pMVar8) {
+          pMVar1 = pMVar7->material;
+          iVar2 = _Pfirst_4[-1].memory;
+          iVar3 = _Plast_4[-1].memory;
+          pMVar7->material = pMVar8->material;
+          _Pfirst_4[-1].memory = iVar3;
+          pMVar8->material = pMVar1;
+          _Plast_4[-1].memory = iVar2;
         }
       }
       else {
-        piVar8 = &local_14[-1].rope_id;
-        if (local_c != (RagdollBody *)piVar8) {
-          iVar1 = local_c->references;
-          pvVar4 = (void *)local_c->ragdollDef;
-          pvVar5 = local_14[-1].rbc_dist;
-          local_c->references = *piVar8;
-          local_c->ragdollDef = (int)pvVar5;
-          *piVar8 = iVar1;
-          local_14[-1].rbc_dist = pvVar4;
+        pMVar6 = _Glast_4 + -1;
+        if (_Gfirst_4 != pMVar6) {
+          pMVar1 = _Gfirst_4->material;
+          iVar2 = _Gfirst_4->memory;
+          iVar3 = _Glast_4[-1].memory;
+          _Gfirst_4->material = pMVar6->material;
+          _Gfirst_4->memory = iVar3;
+          pMVar6->material = pMVar1;
+          _Glast_4[-1].memory = iVar2;
         }
-        pRVar10 = local_18;
-        pRVar6 = (RagdollBody *)&local_c->dobj;
-        pRVar9 = local_10;
-        local_14 = (RagdollBody *)piVar8;
+        pMVar8 = _Plast_4;
+        pMVar5 = _Gfirst_4 + 1;
+        pMVar7 = _Pfirst_4;
+        _Glast_4 = pMVar6;
       }
     }
-    bVar7 = (*in_stack_00000010)((RagdollSortStruct *)local_10,(RagdollSortStruct *)local_c);
-    pRVar10 = local_18;
-    if (!bVar7) {
-      bVar7 = (*in_stack_00000010)((RagdollSortStruct *)local_c,(RagdollSortStruct *)local_10);
-      if (bVar7) goto LAB_005b5d4c;
-      pRVar10 = (RagdollBody *)&local_18->dobj;
-      if (local_18 != local_c) {
-        iVar1 = local_18->references;
-        iVar2 = local_18->ragdollDef;
-        iVar3 = local_c->ragdollDef;
-        local_18->references = local_c->references;
-        local_18->ragdollDef = iVar3;
-        local_c->references = iVar1;
-        local_c->ragdollDef = iVar2;
+    bVar4 = (*in_stack_00000010)((RagdollSortStruct *)_Pfirst_4,(RagdollSortStruct *)_Gfirst_4);
+    pMVar8 = _Plast_4;
+    if (!bVar4) {
+      bVar4 = (*in_stack_00000010)((RagdollSortStruct *)_Gfirst_4,(RagdollSortStruct *)_Pfirst_4);
+      if (bVar4) goto LAB_005b5d4c;
+      pMVar8 = _Plast_4 + 1;
+      if (_Plast_4 != _Gfirst_4) {
+        pMVar1 = _Plast_4->material;
+        iVar2 = _Plast_4->memory;
+        iVar3 = _Gfirst_4->memory;
+        _Plast_4->material = _Gfirst_4->material;
+        _Plast_4->memory = iVar3;
+        _Gfirst_4->material = pMVar1;
+        _Gfirst_4->memory = iVar2;
       }
     }
-    local_18 = pRVar10;
-    pRVar10 = local_18;
-    pRVar6 = (RagdollBody *)&local_c->dobj;
-    pRVar9 = local_10;
+    _Plast_4 = pMVar8;
+    pMVar8 = _Plast_4;
+    pMVar5 = _Gfirst_4 + 1;
+    pMVar7 = _Pfirst_4;
   } while( true );
 }
 
@@ -1683,40 +1689,40 @@ LAB_005b5d4c:
 void __cdecl
 std::
 _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,int param_3,
-          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *param_4)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Last_4,int _Ideal_4,
+          _func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *_Pred_4)
 
 {
-  RagdollSortStruct local_10;
-  int local_8;
+  RagdollSortStruct _Mid_4;
+  int _Count_4;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 3, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count_4 = (int)_Last_4 - (int)_First_4 >> 3, 0x20 < _Count_4 && (0 < _Ideal_4))) {
     _Unguarded_partition<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-              (&local_10,param_1,
-               (_func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10.distSq - (int)param_1 >> 3 < (int)param_2 - (int)local_10.body >> 3) {
+              (&_Mid_4,_First_4,
+               (_func___cdecl_bool_RagdollSortStruct_ptr_RagdollSortStruct_ptr *)_Last_4);
+    _Ideal_4 = (_Ideal_4 / 2) / 2 + _Ideal_4 / 2;
+    if ((int)_Mid_4.distSq - (int)_First_4 >> 3 < (int)_Last_4 - (int)_Mid_4.body >> 3) {
       _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                (param_1,(RagdollSortStruct *)local_10.distSq,param_3,param_4);
-      param_1 = (RagdollSortStruct *)local_10.body;
+                (_First_4,(RagdollSortStruct *)_Mid_4.distSq,_Ideal_4,_Pred_4);
+      _First_4 = (RagdollSortStruct *)_Mid_4.body;
     }
     else {
       _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-                ((RagdollSortStruct *)local_10.body,param_2,param_3,param_4);
-      param_2 = (RagdollSortStruct *)local_10.distSq;
+                ((RagdollSortStruct *)_Mid_4.body,_Last_4,_Ideal_4,_Pred_4);
+      _Last_4 = (RagdollSortStruct *)_Mid_4.distSq;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count_4 < 0x21) {
+    if (1 < _Count_4) {
       _Insertion_sort1<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&),RagdollSortStruct>
-                (param_1,param_2,param_4,(RagdollSortStruct *)0x0);
+                (_First_4,_Last_4,_Pred_4,(RagdollSortStruct *)0x0);
     }
   }
   else {
     make_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-              (param_1,param_2,param_4);
+              (_First_4,_Last_4,_Pred_4);
     _Sort_heap<RagdollSortStruct_*,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-              (param_1,param_2,param_4);
+              (_First_4,_Last_4,_Pred_4);
   }
   return;
 }
@@ -1726,22 +1732,22 @@ _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollS
 
 RagdollSortStruct * __cdecl
 stdext::unchecked_copy_backward<RagdollSortStruct_*,RagdollSortStruct_*>
-          (RagdollSortStruct *param_1,RagdollSortStruct *param_2,RagdollSortStruct *param_3)
+          (RagdollSortStruct *_First_4,RagdollSortStruct *_Last_4,RagdollSortStruct *_Dest_4)
 
 {
   RagdollBody *pRVar1;
   RagdollSortStruct *local_28;
   RagdollSortStruct *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest_4;
+  local_24 = _Last_4;
+  while (_First_4 != local_24) {
     pRVar1 = local_24[-1].body;
     local_28[-1].distSq = local_24[-1].distSq;
     local_28[-1].body = pRVar1;
     local_28 = local_28 + -1;
     local_24 = local_24 + -1;
   }
-  return param_3 + -((int)param_2 - (int)param_1 >> 3);
+  return _Dest_4 + -((int)_Last_4 - (int)_First_4 >> 3);
 }
 

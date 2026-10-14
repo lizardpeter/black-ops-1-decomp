@@ -337,11 +337,12 @@ void __cdecl CG_UpdateBModelWorldBounds(int param_1,centity_s *param_2,int param
 
 {
   float *pfVar1;
-  GfxBrushModel *pGVar2;
+  GfxBrushModel *maxs;
+  undefined8 uVar2;
   undefined8 uVar3;
   undefined8 uVar4;
   undefined8 uVar5;
-  undefined8 uVar6;
+  uint uVar6;
   uint uVar7;
   uint uVar8;
   uint uVar9;
@@ -351,11 +352,11 @@ void __cdecl CG_UpdateBModelWorldBounds(int param_1,centity_s *param_2,int param
   uint uVar13;
   uint uVar14;
   uint uVar15;
-  uint uVar16;
   GfxBrushModel *unaff_ESI;
+  uint uVar16;
   uint uVar17;
-  uint uVar18;
   float *unaff_EDI;
+  float fVar18;
   float fVar19;
   float fVar20;
   float fVar21;
@@ -363,7 +364,6 @@ void __cdecl CG_UpdateBModelWorldBounds(int param_1,centity_s *param_2,int param
   float fVar23;
   float fVar24;
   float fVar25;
-  float fVar26;
   uint local_c8;
   uint local_90;
   uint uStack_8c;
@@ -381,132 +381,132 @@ void __cdecl CG_UpdateBModelWorldBounds(int param_1,centity_s *param_2,int param
   float local_48;
   float local_44;
   
-  uVar3 = *(undefined8 *)(rgp.world)->models[*(short *)(param_2 + 0x2aa)].bounds[0];
-  pGVar2 = (rgp.world)->models + *(short *)(param_2 + 0x2aa);
-  uVar4 = *(undefined8 *)(pGVar2->bounds[0] + 2);
-  uVar5 = *(undefined8 *)pGVar2->bounds[1];
-  uVar6 = *(undefined8 *)(pGVar2->bounds[1] + 2);
+  uVar2 = *(undefined8 *)(rgp.world)->models[*(short *)(param_2 + 0x2aa)].bounds[0];
+  maxs = (rgp.world)->models + *(short *)(param_2 + 0x2aa);
+  uVar3 = *(undefined8 *)(maxs->bounds[0] + 2);
+  uVar4 = *(undefined8 *)maxs->bounds[1];
+  uVar5 = *(undefined8 *)(maxs->bounds[1] + 2);
   AnglesToAxis(unaff_EDI,(float *)unaff_ESI);
-  local_90 = (uint)uVar3;
-  local_80 = (uint)uVar5;
+  local_90 = (uint)uVar2;
+  local_80 = (uint)uVar4;
   if (0.0 <= local_64) {
-    uVar7 = 0;
+    uVar6 = 0;
   }
   else {
-    uVar7 = 0xffffffff;
+    uVar6 = 0xffffffff;
   }
   if (0.0 <= local_60) {
-    uVar10 = 0;
+    uVar9 = 0;
   }
   else {
-    uVar10 = 0xffffffff;
+    uVar9 = 0xffffffff;
   }
   local_c8 = 0xffffffff;
   if (0.0 <= local_5c) {
     local_c8 = 0;
   }
-  uStack_8c = (uint)((ulonglong)uVar3 >> 0x20);
-  uVar15 = local_80 & local_c8;
-  uVar11 = ~local_c8;
-  uVar8 = local_90 & local_c8;
-  uStack_7c = (uint)((ulonglong)uVar5 >> 0x20);
+  uStack_8c = (uint)((ulonglong)uVar2 >> 0x20);
+  uVar14 = local_80 & local_c8;
+  uVar10 = ~local_c8;
+  uVar7 = local_90 & local_c8;
+  uStack_7c = (uint)((ulonglong)uVar4 >> 0x20);
   if (0.0 <= local_58) {
-    uVar17 = 0;
+    uVar16 = 0;
   }
   else {
-    uVar17 = 0xffffffff;
+    uVar16 = 0xffffffff;
   }
   if (0.0 <= local_54) {
-    uVar12 = 0;
+    uVar11 = 0;
   }
   else {
-    uVar12 = 0xffffffff;
+    uVar11 = 0xffffffff;
   }
   local_c8 = 0xffffffff;
   if (0.0 <= local_50) {
     local_c8 = 0;
   }
-  uVar16 = local_c8 & uStack_7c;
-  local_88 = (uint)uVar4;
-  uVar13 = ~local_c8;
-  uVar9 = local_c8 & uStack_8c;
-  local_78 = (uint)uVar6;
+  uVar15 = local_c8 & uStack_7c;
+  local_88 = (uint)uVar3;
+  uVar12 = ~local_c8;
+  uVar8 = local_c8 & uStack_8c;
+  local_78 = (uint)uVar5;
   if (0.0 <= local_4c) {
-    uVar18 = 0;
+    uVar17 = 0;
   }
   else {
-    uVar18 = 0xffffffff;
+    uVar17 = 0xffffffff;
   }
   if (0.0 <= local_48) {
-    uVar14 = 0;
+    uVar13 = 0;
   }
   else {
-    uVar14 = 0xffffffff;
+    uVar13 = 0xffffffff;
   }
   local_c8 = 0xffffffff;
   if (0.0 <= local_44) {
     local_c8 = 0;
   }
-  fVar23 = local_4c * (float)(uVar18 & local_78 | ~uVar18 & local_88) +
-           local_58 * (float)(uVar17 & uStack_7c | ~uVar17 & uStack_8c) +
-           (float)(local_80 & uVar7 | ~uVar7 & local_90) * local_64 + *(float *)(param_2 + 0x30);
-  fVar19 = local_48 * (float)(~uVar14 & local_88 | uVar14 & local_78) +
-           local_54 * (float)(~uVar12 & uStack_8c | uVar12 & uStack_7c) +
-           (float)(~uVar10 & local_90 | local_80 & uVar10) * local_60 + *(float *)(param_2 + 0x34);
-  fVar20 = local_44 * (float)(~local_c8 & local_88 | local_c8 & local_78) +
-           local_50 * (float)(uVar13 & uStack_8c | uVar16) +
-           (float)(uVar11 & local_90 | uVar15) * local_5c + *(float *)(param_2 + 0x38);
-  fVar25 = local_4c * (float)(uVar18 & local_88 | ~uVar18 & local_78) +
-           local_58 * (float)(uVar17 & uStack_8c | ~uVar17 & uStack_7c) +
-           (float)(local_90 & uVar7 | ~uVar7 & local_80) * local_64 + *(float *)(param_2 + 0x30);
-  fVar26 = local_48 * (float)(~uVar14 & local_78 | uVar14 & local_88) +
-           local_54 * (float)(~uVar12 & uStack_7c | uVar12 & uStack_8c) +
-           (float)(~uVar10 & local_80 | local_90 & uVar10) * local_60 + *(float *)(param_2 + 0x34);
-  fVar24 = local_44 * (float)(~local_c8 & local_78 | local_c8 & local_88) +
-           local_50 * (float)(uVar13 & uStack_7c | uVar9) +
-           (float)(uVar11 & local_80 | uVar8) * local_5c + *(float *)(param_2 + 0x38);
+  fVar22 = local_4c * (float)(uVar17 & local_78 | ~uVar17 & local_88) +
+           local_58 * (float)(uVar16 & uStack_7c | ~uVar16 & uStack_8c) +
+           (float)(local_80 & uVar6 | ~uVar6 & local_90) * local_64 + *(float *)(param_2 + 0x30);
+  fVar18 = local_48 * (float)(~uVar13 & local_88 | uVar13 & local_78) +
+           local_54 * (float)(~uVar11 & uStack_8c | uVar11 & uStack_7c) +
+           (float)(~uVar9 & local_90 | local_80 & uVar9) * local_60 + *(float *)(param_2 + 0x34);
+  fVar19 = local_44 * (float)(~local_c8 & local_88 | local_c8 & local_78) +
+           local_50 * (float)(uVar12 & uStack_8c | uVar15) +
+           (float)(uVar10 & local_90 | uVar14) * local_5c + *(float *)(param_2 + 0x38);
+  fVar24 = local_4c * (float)(uVar17 & local_88 | ~uVar17 & local_78) +
+           local_58 * (float)(uVar16 & uStack_8c | ~uVar16 & uStack_7c) +
+           (float)(local_90 & uVar6 | ~uVar6 & local_80) * local_64 + *(float *)(param_2 + 0x30);
+  fVar25 = local_48 * (float)(~uVar13 & local_78 | uVar13 & local_88) +
+           local_54 * (float)(~uVar11 & uStack_7c | uVar11 & uStack_8c) +
+           (float)(~uVar9 & local_80 | local_90 & uVar9) * local_60 + *(float *)(param_2 + 0x34);
+  fVar23 = local_44 * (float)(~local_c8 & local_78 | local_c8 & local_88) +
+           local_50 * (float)(uVar12 & uStack_7c | uVar8) +
+           (float)(uVar10 & local_80 | uVar7) * local_5c + *(float *)(param_2 + 0x38);
   if (param_3 == 0) {
-    fVar22 = (pGVar2->writable).mins[1] - fVar19;
-    fVar21 = (pGVar2->writable).mins[0] - fVar23;
-    if (fVar21 - fVar22 < 0.0) {
-      fVar21 = fVar22;
+    fVar21 = (maxs->writable).mins[1] - fVar18;
+    fVar20 = (maxs->writable).mins[0] - fVar22;
+    if (fVar20 - fVar21 < 0.0) {
+      fVar20 = fVar21;
     }
-    fVar22 = (pGVar2->writable).mins[2] - fVar20;
-    if (0.0 <= fVar21 - fVar22) {
-      fVar22 = fVar21;
+    fVar21 = (maxs->writable).mins[2] - fVar19;
+    if (0.0 <= fVar20 - fVar21) {
+      fVar21 = fVar20;
     }
-    if (fVar22 <= 0.0) {
-      fVar22 = fVar26 - (pGVar2->writable).maxs[1];
-      fVar21 = fVar25 - (pGVar2->writable).maxs[0];
-      if (fVar21 - fVar22 < 0.0) {
-        fVar21 = fVar22;
+    if (fVar21 <= 0.0) {
+      fVar21 = fVar25 - (maxs->writable).maxs[1];
+      fVar20 = fVar24 - (maxs->writable).maxs[0];
+      if (fVar20 - fVar21 < 0.0) {
+        fVar20 = fVar21;
       }
-      fVar22 = fVar24 - (pGVar2->writable).maxs[2];
-      if (fVar21 - fVar22 < 0.0) {
-        fVar21 = fVar22;
+      fVar21 = fVar23 - (maxs->writable).maxs[2];
+      if (fVar20 - fVar21 < 0.0) {
+        fVar20 = fVar21;
       }
-      if (fVar21 <= 0.0) {
+      if (fVar20 <= 0.0) {
         return;
       }
     }
-    fVar19 = fVar19 - DAT_00ae779c;
-    fVar26 = fVar26 + DAT_00ae779c;
-    fVar23 = fVar23 - DAT_00ae7798;
-    fVar20 = fVar20 - DAT_00ae77a0;
-    fVar25 = fVar25 + DAT_00ae7798;
-    fVar24 = fVar24 + DAT_00ae77a0;
+    fVar18 = fVar18 - DAT_00ae779c;
+    fVar25 = fVar25 + DAT_00ae779c;
+    fVar22 = fVar22 - DAT_00ae7798;
+    fVar19 = fVar19 - DAT_00ae77a0;
+    fVar24 = fVar24 + DAT_00ae7798;
+    fVar23 = fVar23 + DAT_00ae77a0;
   }
-  (pGVar2->writable).mip1radiusSq = 10000.0;
-  pfVar1 = (pGVar2->writable).maxs;
-  (pGVar2->writable).mins[0] = fVar23 - 100.0;
-  (pGVar2->writable).mins[1] = fVar19 - 100.0;
-  (pGVar2->writable).mins[2] = fVar20 - 100.0;
-  *pfVar1 = fVar25 + 100.0;
-  (pGVar2->writable).maxs[1] = fVar26 + 100.0;
-  (pGVar2->writable).maxs[2] = fVar24 + 100.0;
-  uVar7 = *(uint *)(param_2 + 0x1e8);
+  (maxs->writable).mip1radiusSq = 10000.0;
+  pfVar1 = (maxs->writable).maxs;
+  (maxs->writable).mins[0] = fVar22 - 100.0;
+  (maxs->writable).mins[1] = fVar18 - 100.0;
+  (maxs->writable).mins[2] = fVar19 - 100.0;
+  *pfVar1 = fVar24 + 100.0;
+  (maxs->writable).maxs[1] = fVar25 + 100.0;
+  (maxs->writable).maxs[2] = fVar23 + 100.0;
+  uVar6 = *(uint *)(param_2 + 0x1e8);
   R_FilterBModelIntoCells(param_1,(uint)unaff_EDI,unaff_ESI);
-  R_LinkBoxEntityToPrimaryLights(param_1,uVar7,(float *)pGVar2,pfVar1);
+  R_LinkBoxEntityToPrimaryLights(param_1,uVar6,(float *)maxs,pfVar1);
   return;
 }
 

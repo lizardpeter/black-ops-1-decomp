@@ -11,7 +11,9 @@ int __cdecl speex_encode_int(void *param_1,short *param_2,SpeexBits *param_3)
   int *piVar2;
   int iVar3;
   int unaff_ESI;
-  float afStack_a04 [641];
+  int N;
+  float afStack_a04 [640];
+  SpeexBits *bits;
   
   piVar2 = DAT_03501044;
   (**(code **)(*DAT_03501044 + 0x2c))(DAT_03501044,3,afStack_a04);
@@ -30,21 +32,22 @@ int __cdecl speex_encode_int(void *param_1,short *param_2,SpeexBits *param_3)
 
 // 007CE4C0  nb_mode_query  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex.c:188)
 
-int __cdecl nb_mode_query(void *param_1,int param_2,void *param_3)
+int __cdecl nb_mode_query(void *request,int ptr,void *param_3)
 
 {
   int iVar1;
   _iobuf *p_Var2;
-  char *pcVar3;
+  void *mode;
+  char *format;
   
-  if (param_2 == 0) {
-    *(undefined4 *)param_3 = *(undefined4 *)param_1;
+  if (ptr == 0) {
+    *(undefined4 *)param_3 = *(undefined4 *)request;
     return 0;
   }
-  if (param_2 != 1) {
-    pcVar3 = "warning: %s %d\n";
+  if (ptr != 1) {
+    format = "warning: %s %d\n";
     p_Var2 = __iob_func();
-    fprintf(p_Var2 + 2,pcVar3);
+    fprintf(p_Var2 + 2,format);
     return -1;
   }
   iVar1 = *(int *)param_3;
@@ -52,32 +55,33 @@ int __cdecl nb_mode_query(void *param_1,int param_2,void *param_3)
     *(undefined4 *)param_3 = 5;
     return 0;
   }
-  if (*(int *)((int)param_1 + iVar1 * 4 + 0x24) == 0) {
+  if (*(int *)((int)request + iVar1 * 4 + 0x24) == 0) {
     *(undefined4 *)param_3 = 0xffffffff;
     return 0;
   }
-  *(undefined4 *)param_3 = *(undefined4 *)(*(int *)((int)param_1 + iVar1 * 4 + 0x24) + 0x40);
+  *(undefined4 *)param_3 = *(undefined4 *)(*(int *)((int)request + iVar1 * 4 + 0x24) + 0x40);
   return 0;
 }
 
 
 // 007CE530  wb_mode_query  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex.c:212)
 
-int __cdecl wb_mode_query(void *param_1,int param_2,void *param_3)
+int __cdecl wb_mode_query(void *request,int ptr,void *param_3)
 
 {
   int iVar1;
   _iobuf *p_Var2;
-  char *pcVar3;
+  void *mode;
+  char *format;
   
-  if (param_2 == 0) {
-    *(int *)param_3 = *(int *)((int)param_1 + 4) * 2;
+  if (ptr == 0) {
+    *(int *)param_3 = *(int *)((int)request + 4) * 2;
     return 0;
   }
-  if (param_2 != 1) {
-    pcVar3 = "warning: %s %d\n";
+  if (ptr != 1) {
+    format = "warning: %s %d\n";
     p_Var2 = __iob_func();
-    fprintf(p_Var2 + 2,pcVar3);
+    fprintf(p_Var2 + 2,format);
     return -1;
   }
   iVar1 = *(int *)param_3;
@@ -85,11 +89,11 @@ int __cdecl wb_mode_query(void *param_1,int param_2,void *param_3)
     *(undefined4 *)param_3 = 4;
     return 0;
   }
-  if (*(int *)((int)param_1 + iVar1 * 4 + 0x28) == 0) {
+  if (*(int *)((int)request + iVar1 * 4 + 0x28) == 0) {
     *(undefined4 *)param_3 = 0xffffffff;
     return 0;
   }
-  *(undefined4 *)param_3 = *(undefined4 *)(*(int *)((int)param_1 + iVar1 * 4 + 0x28) + 0x40);
+  *(undefined4 *)param_3 = *(undefined4 *)(*(int *)((int)request + iVar1 * 4 + 0x28) + 0x40);
   return 0;
 }
 

@@ -2,26 +2,28 @@
 
 // 00910710  Actor_Negotiation_Start  (game/actor_negotiation.cpp:18)
 
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: ePrevState */
+/* WARNING: Variable defined which should be unmapped: pSelf */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_Negotiation_Start(actor_s *param_1,ai_state_t param_2)
 
 {
   bool bVar1;
+  ai_orient_mode_t in_ECX;
   actor_s *in_EDX;
-  ai_orient_mode_t extraout_var;
-  ai_orient_mode_t aVar2;
+  ai_state_t ePrevState;
+  actor_s *pSelf;
   
   bVar1 = Path_HasNegotiationNode((path_t *)in_EDX);
   if (bVar1) {
-    aVar2 = extraout_var;
-    Actor_SetOrientMode(in_EDX,extraout_var);
-    *(undefined4 *)(aVar2 + 0x220) = 2;
-    *(undefined4 *)(aVar2 + 0xe20) = 0;
-    *(undefined4 *)(aVar2 + 0xe24) = 0;
+    Actor_SetOrientMode(in_EDX,in_ECX);
+    *(undefined4 *)(in_ECX + 0x220) = 2;
+    *(undefined4 *)(in_ECX + 0xe20) = 0;
+    *(undefined4 *)(in_ECX + 0xe24) = 0;
   }
   return bVar1;
 }
@@ -29,6 +31,7 @@ bool __cdecl Actor_Negotiation_Start(actor_s *param_1,ai_state_t param_2)
 
 // 00910780  Actor_Negotiation_Think  (game/actor_negotiation.cpp:39)
 
+/* WARNING: Variable defined which should be unmapped: pSelf */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -39,97 +42,97 @@ actor_think_result_t __cdecl Actor_Negotiation_Think(actor_s *param_1)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  actor_think_result_t aVar4;
-  int iVar5;
-  pathnode_t *ppVar6;
-  DWORD DVar7;
-  undefined4 *extraout_var;
-  undefined4 *puVar8;
+  char *fmt;
+  actor_think_result_t aVar3;
+  int iVar4;
+  pathnode_t *ppVar5;
+  DWORD DVar6;
+  undefined4 *in_ECX;
+  actor_s *pSelf;
   undefined1 in_stack_ffffffd4;
   actor_think_result_t local_10;
-  actor_s *local_8;
+  PIXProfile pixProfile;
+  ai_animmode_t eAnimMode;
   
   PIXBeginNamedEvent(-1,"negotiationthink");
-  local_8 = (actor_s *)&DAT_00000006;
-  puVar8 = extraout_var;
-  if (extraout_var[0x88] == 1) {
-    local_8 = (actor_s *)&DAT_00000004;
+  eAnimMode = AI_ANIM_USE_BOTH_DELTAS_NOGRAVITY;
+  if (in_ECX[0x88] == 1) {
+    eAnimMode = AI_ANIM_USE_BOTH_DELTAS;
   }
-  else if (extraout_var[0x88] == 3) {
-    local_8 = (actor_s *)&DAT_00000005;
+  else if (in_ECX[0x88] == 3) {
+    eAnimMode = AI_ANIM_USE_BOTH_DELTAS_NOCLIP;
   }
-  else if (extraout_var[0x88] != 2) {
-    pcVar3 = va("pSelf->eTraverseMode is unhandled %i");
+  else if (in_ECX[0x88] != 2) {
+    fmt = va("pSelf->eTraverseMode is unhandled %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_negotiation.cpp",0x37,0
-                             ,pcVar3);
+                             ,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      aVar4 = (*pcVar1)();
-      return aVar4;
+      aVar3 = (*pcVar1)();
+      return aVar3;
     }
   }
-  if (puVar8[0x86] == 0) {
-    SL_ConvertToString((uint)*(ushort *)(puVar8 + 0x87),SCRIPTINSTANCE_SERVER);
+  if (in_ECX[0x86] == 0) {
+    SL_ConvertToString((uint)*(ushort *)(in_ECX + 0x87),SCRIPTINSTANCE_SERVER);
     va("Invalid negotiation script %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_negotiation.cpp",0x3a,0
                              ,"%s\n\t%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      aVar4 = (*pcVar1)();
-      return aVar4;
+      aVar3 = (*pcVar1)();
+      return aVar3;
     }
   }
-  Actor_AnimSpecific(local_8,(scr_animscript_t *)&DAT_00000001,(ai_animmode_t)puVar8,
+  Actor_AnimSpecific((actor_s *)eAnimMode,(scr_animscript_t *)&DAT_00000001,(ai_animmode_t)in_ECX,
                      (bool)in_stack_ffffffd4);
-  *(undefined1 *)((int)puVar8 + 0x1749) = 0;
-  iVar5 = Actor_IsAnimScriptAlive(local_8);
-  if (iVar5 == 0) {
-    bVar2 = Path_HasNegotiationNode((path_t *)local_8);
+  *(undefined1 *)((int)in_ECX + 0x1749) = 0;
+  iVar4 = Actor_IsAnimScriptAlive((actor_s *)eAnimMode);
+  if (iVar4 == 0) {
+    bVar2 = Path_HasNegotiationNode((path_t *)eAnimMode);
     if (bVar2) {
-      if ((*(short *)(puVar8 + 0x361) <= *(short *)((int)puVar8 + 0xd8a)) &&
+      if ((*(short *)(in_ECX + 0x361) <= *(short *)((int)in_ECX + 0xd8a)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_negotiation.cpp",
                                    0x44,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        aVar4 = (*pcVar1)();
-        return aVar4;
+        aVar3 = (*pcVar1)();
+        return aVar3;
       }
-      if (((int)puVar8[(*(short *)((int)puVar8 + 0xd8a) + -1) * 7 + 0x287] < 0) &&
+      if (((int)in_ECX[(*(short *)((int)in_ECX + 0xd8a) + -1) * 7 + 0x287] < 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_negotiation.cpp",
                                    0x45,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        aVar4 = (*pcVar1)();
-        return aVar4;
+        aVar3 = (*pcVar1)();
+        return aVar3;
       }
-      ppVar6 = Path_ConvertIndexToNode(puVar8[(*(short *)((int)puVar8 + 0xd8a) + -1) * 7 + 0x287]);
-      *(pathnode_t **)(puVar8[1] + 0x70) = ppVar6;
-      *(undefined1 *)(puVar8[1] + 0x75) = 0;
-      *(undefined1 *)(puVar8[1] + 0x74) = 1;
+      ppVar5 = Path_ConvertIndexToNode(in_ECX[(*(short *)((int)in_ECX + 0xd8a) + -1) * 7 + 0x287]);
+      *(pathnode_t **)(in_ECX[1] + 0x70) = ppVar5;
+      *(undefined1 *)(in_ECX[1] + 0x75) = 0;
+      *(undefined1 *)(in_ECX[1] + 0x74) = 1;
     }
-    puVar8[0x98] = 0;
-    puVar8[0x99] = 0;
-    puVar8[0x9a] = 0;
-    puVar8[0x90] = 0;
-    puVar8[0x91] = 0;
-    puVar8[0x92] = 0;
-    YawVectors2D((float)puVar8[0x4f],(float *)(puVar8 + 0x388),(float *)0x0);
-    Actor_RecalcPath(local_8);
-    Actor_PopState(local_8);
+    in_ECX[0x98] = 0;
+    in_ECX[0x99] = 0;
+    in_ECX[0x9a] = 0;
+    in_ECX[0x90] = 0;
+    in_ECX[0x91] = 0;
+    in_ECX[0x92] = 0;
+    YawVectors2D((float)in_ECX[0x4f],(float *)(in_ECX + 0x388),(float *)0x0);
+    Actor_RecalcPath((actor_s *)eAnimMode);
+    Actor_PopState((actor_s *)eAnimMode);
     local_10 = ACTOR_THINK_REPEAT;
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    puVar8[0x5f6] = "negotiation";
-    Actor_PreThink(local_8);
-    Actor_UpdateOriginAndAngles(local_8);
+    in_ECX[0x5f6] = "negotiation";
+    Actor_PreThink((actor_s *)eAnimMode);
+    Actor_UpdateOriginAndAngles((actor_s *)eAnimMode);
     BG_Dog_UpdateAnimationState
-              (-1,(entityState_s *)*puVar8,
-               level_bgs.actorinfo + ((int)puVar8 - (int)level.actors) / 0x2780);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              (-1,(entityState_s *)*in_ECX,
+               level_bgs.actorinfo + ((int)in_ECX - (int)level.actors) / 0x2780);
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     local_10 = ACTOR_THINK_DONE;

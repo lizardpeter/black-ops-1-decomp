@@ -9,30 +9,30 @@ void __cdecl CL_BuildRankXPTable(void)
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  int local_c;
-  StringTable *local_8;
+  int row;
+  StringTable *table;
   
   memset((uchar *)&s_rankData,'\0',0x488);
-  StringTable_GetAsset("mp/rankTable.csv",&local_8);
-  s_rankData.topRow = local_8->rowCount + -1;
-  if ((0x5f < local_8->rowCount) &&
+  StringTable_GetAsset("mp/rankTable.csv",&table);
+  s_rankData.topRow = table->rowCount + -1;
+  if ((0x5f < table->rowCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0x22,0,
                                "%s\n\t(table->rowCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_8->rowCount < 0x61) {
-    for (local_c = 0; local_c < local_8->rowCount; local_c = local_c + 1) {
-      pcVar3 = StringTable_GetColumnValueForRow(local_8,local_c,2);
+  if (table->rowCount < 0x61) {
+    for (row = 0; row < table->rowCount; row = row + 1) {
+      pcVar3 = StringTable_GetColumnValueForRow(table,row,2);
       iVar4 = atoi(pcVar3);
-      s_rankData.minxp[local_c] = iVar4;
-      pcVar3 = StringTable_GetColumnValueForRow(local_8,local_c,7);
+      s_rankData.minxp[row] = iVar4;
+      pcVar3 = StringTable_GetColumnValueForRow(table,row,7);
       iVar4 = atoi(pcVar3);
-      s_rankData.maxxp[local_c] = iVar4;
-      pcVar3 = StringTable_GetColumnValueForRow(local_8,local_c,0);
+      s_rankData.maxxp[row] = iVar4;
+      pcVar3 = StringTable_GetColumnValueForRow(table,row,0);
       iVar4 = atoi(pcVar3);
-      s_rankData.rankId[local_c] = iVar4;
+      s_rankData.rankId[row] = iVar4;
     }
     s_rankData.isValid = true;
   }
@@ -45,13 +45,13 @@ void __cdecl CL_BuildRankXPTable(void)
 int __cdecl CL_GetMaxXP(void)
 
 {
-  char *pcVar1;
-  StringTable *local_8;
+  char *nptr;
+  StringTable *table;
   
   if (s_maxxp == 0) {
-    StringTable_GetAsset("mp/rankTable.csv",&local_8);
-    pcVar1 = StringTable_GetColumnValueForRow(local_8,s_rankData.topRow,7);
-    s_maxxp = atoi(pcVar1);
+    StringTable_GetAsset("mp/rankTable.csv",&table);
+    nptr = StringTable_GetColumnValueForRow(table,s_rankData.topRow,7);
+    s_maxxp = atoi(nptr);
   }
   return s_maxxp;
 }
@@ -62,13 +62,13 @@ int __cdecl CL_GetMaxXP(void)
 int __cdecl CL_GetMaxPrestige(void)
 
 {
-  char *pcVar1;
-  StringTable *local_8;
+  char *nptr;
+  StringTable *table;
   
   if (s_maxprestige == 0) {
-    StringTable_GetAsset("mp/rankIconTable.csv",&local_8);
-    pcVar1 = StringTable_Lookup(local_8,0,"maxprestige",1);
-    s_maxprestige = atoi(pcVar1);
+    StringTable_GetAsset("mp/rankIconTable.csv",&table);
+    nptr = StringTable_Lookup(table,0,"maxprestige",1);
+    s_maxprestige = atoi(nptr);
   }
   return s_maxprestige;
 }
@@ -76,16 +76,18 @@ int __cdecl CL_GetMaxPrestige(void)
 
 // 005732D0  CL_GetRankForXp  (client_mp/cl_rank.cpp:84)
 
-int __cdecl CL_GetRankForXp(int param_1)
+int __cdecl CL_GetRankForXp(int xp)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int local_18;
-  int local_10;
-  int local_c;
+  int toprow;
+  int maxxp;
+  int row;
+  int bottomrow;
+  int minxp;
   
   if ((!s_rankData.isValid) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0x57,0,
@@ -98,12 +100,12 @@ int __cdecl CL_GetRankForXp(int param_1)
     iVar4 = 0;
   }
   else {
-    local_18 = s_rankData.topRow;
-    local_c = 0;
-    local_10 = s_rankData.topRow / 2;
-    while (local_c < local_18) {
-      iVar4 = s_rankData.minxp[local_10];
-      iVar1 = s_rankData.maxxp[local_10];
+    toprow = s_rankData.topRow;
+    bottomrow = 0;
+    row = s_rankData.topRow / 2;
+    while (bottomrow < toprow) {
+      iVar4 = s_rankData.minxp[row];
+      iVar1 = s_rankData.maxxp[row];
       if ((iVar1 < iVar4) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0x70,
                                    0,"%s"), !bVar3)) {
@@ -111,16 +113,16 @@ int __cdecl CL_GetRankForXp(int param_1)
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-      if (param_1 < iVar4) {
-        local_18 = local_10 + -1;
+      if (xp < iVar4) {
+        toprow = row + -1;
       }
       else {
-        if (param_1 < iVar1) break;
-        local_c = local_10 + 1;
+        if (xp < iVar1) break;
+        bottomrow = row + 1;
       }
-      local_10 = (local_18 - local_c) / 2 + local_c;
+      row = (toprow - bottomrow) / 2 + bottomrow;
     }
-    iVar4 = s_rankData.rankId[local_10];
+    iVar4 = s_rankData.rankId[row];
   }
   return iVar4;
 }
@@ -128,16 +130,17 @@ int __cdecl CL_GetRankForXp(int param_1)
 
 // 005733E0  CL_GetRankData  (client_mp/cl_rank.cpp:132)
 
-char * __cdecl CL_GetRankData(int param_1,rankTableColumns_t param_2)
+char * __cdecl CL_GetRankData(int rank,rankTableColumns_t column)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_c;
-  char local_8 [4];
+  char *data;
+  StringTable *table;
+  char level [4];
   
-  if (MP_RANKTABLE_CP < param_2) {
+  if (MP_RANKTABLE_CP < column) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0x8a,0,
                              "column doesn\'t index MP_RANKTABLE_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -146,8 +149,8 @@ char * __cdecl CL_GetRankData(int param_1,rankTableColumns_t param_2)
       return pcVar3;
     }
   }
-  StringTable_GetAsset("mp/rankTable.csv",&local_c);
-  if (local_c == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/rankTable.csv",&table);
+  if (table == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0x8e,0,"%s"
                             );
     if (!bVar2) {
@@ -156,61 +159,61 @@ char * __cdecl CL_GetRankData(int param_1,rankTableColumns_t param_2)
       return pcVar3;
     }
   }
-  Com_sprintf(local_8,4,"%i");
-  pcVar3 = StringTable_Lookup(local_c,0,local_8,param_2);
+  Com_sprintf(level,4,"%i");
+  pcVar3 = StringTable_Lookup(table,0,level,column);
   return pcVar3;
 }
 
 
 // 00573490  CL_GetRankIcon  (client_mp/cl_rank.cpp:155)
 
-void __cdecl CL_GetRankIcon(int param_1,int param_2,Material **param_3)
+void __cdecl CL_GetRankIcon(int rank,int prestige,Material **handle)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
-  StringTable *local_10;
-  char *local_c;
-  char local_8 [4];
+  StringTable *table;
+  char *rankIconName;
+  char id [4];
   
   if ((useFastFile->current).enabled != false) {
-    if ((param_1 < 0) &&
+    if ((rank < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xa4,0,
                                  "%s\n\t(rank) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 < 0) &&
+    if ((prestige < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xa5,0,
                                  "%s\n\t(prestige) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 == (Material **)0x0) &&
+    if ((handle == (Material **)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xa6,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    StringTable_GetAsset("mp/rankIconTable.csv",&local_10);
-    if ((local_10 == (StringTable *)0x0) &&
+    StringTable_GetAsset("mp/rankIconTable.csv",&table);
+    if ((table == (StringTable *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xaa,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Com_sprintf(local_8,4,"%i");
-    local_c = StringTable_Lookup(local_10,0,local_8,param_2 + 1);
-    pMVar3 = Material_RegisterHandle(local_c,7);
-    *param_3 = pMVar3;
-    bVar2 = Material_IsDefault(*param_3);
+    Com_sprintf(id,4,"%i");
+    rankIconName = StringTable_Lookup(table,0,id,prestige + 1);
+    pMVar3 = Material_RegisterHandle(rankIconName,7);
+    *handle = pMVar3;
+    bVar2 = Material_IsDefault(*handle);
     if (bVar2) {
-      *param_3 = (Material *)0x0;
+      *handle = (Material *)0x0;
     }
   }
   return;
@@ -219,22 +222,22 @@ void __cdecl CL_GetRankIcon(int param_1,int param_2,Material **param_3)
 
 // 005735E0  CL_GetRankIconName  (client_mp/cl_rank.cpp:182)
 
-char * __cdecl CL_GetRankIconName(int param_1,int param_2)
+char * __cdecl CL_GetRankIconName(int rank,int prestige)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_10;
-  undefined4 local_c;
-  char local_8 [4];
+  StringTable *table;
+  char *rankIconName;
+  char id [4];
   
-  local_c = 0;
+  rankIconName = (char *)0x0;
   if ((useFastFile->current).enabled == false) {
     pcVar3 = (char *)0x0;
   }
   else {
-    if (param_1 < 0) {
+    if (rank < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xbf,0,
                                "%s\n\t(rank) = %i");
       if (!bVar2) {
@@ -243,7 +246,7 @@ char * __cdecl CL_GetRankIconName(int param_1,int param_2)
         return pcVar3;
       }
     }
-    if (param_2 < 0) {
+    if (prestige < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xc0,0,
                                "%s\n\t(prestige) = %i");
       if (!bVar2) {
@@ -252,8 +255,8 @@ char * __cdecl CL_GetRankIconName(int param_1,int param_2)
         return pcVar3;
       }
     }
-    StringTable_GetAsset("mp/rankIconTable.csv",&local_10);
-    if (local_10 == (StringTable *)0x0) {
+    StringTable_GetAsset("mp/rankIconTable.csv",&table);
+    if (table == (StringTable *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_rank.cpp",0xc4,0,
                                "%s");
       if (!bVar2) {
@@ -262,8 +265,8 @@ char * __cdecl CL_GetRankIconName(int param_1,int param_2)
         return pcVar3;
       }
     }
-    Com_sprintf(local_8,4,"%i");
-    pcVar3 = StringTable_Lookup(local_10,0,local_8,param_2 + 1);
+    Com_sprintf(id,4,"%i");
+    pcVar3 = StringTable_Lookup(table,0,id,prestige + 1);
   }
   return pcVar3;
 }

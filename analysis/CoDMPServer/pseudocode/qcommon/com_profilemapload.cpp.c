@@ -21,14 +21,14 @@ bool __cdecl ProfLoad_IsActive(void)
 
 // 006CE310  ProfLoad_BeginTrackedValueTicks  (qcommon/com_profilemapload.cpp:107)
 
-void __cdecl ProfLoad_BeginTrackedValueTicks(MapProfileElement *param_1,ulong64 param_2)
+void __cdecl ProfLoad_BeginTrackedValueTicks(MapProfileElement *value,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined4 in_stack_00000008;
   
-  if ((int)param_1->ticksStart != 0 || *(int *)((int)&param_1->ticksStart + 4) != 0) {
+  if ((int)value->ticksStart != 0 || *(int *)((int)&value->ticksStart + 4) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_profilemapload.cpp",
                              0x6c,0,"%s");
     if (!bVar2) {
@@ -37,33 +37,33 @@ void __cdecl ProfLoad_BeginTrackedValueTicks(MapProfileElement *param_1,ulong64 
       return;
     }
   }
-  *(undefined4 *)&param_1->ticksStart = in_stack_00000008;
-  *(undefined4 *)((int)&param_1->ticksStart + 4) = (undefined4)param_2;
+  *(undefined4 *)&value->ticksStart = in_stack_00000008;
+  *(undefined4 *)((int)&value->ticksStart + 4) = (undefined4)param_2;
   return;
 }
 
 
 // 006CE250  ProfLoad_BeginTrackedValue  (qcommon/com_profilemapload.cpp:114)
 
-void __cdecl ProfLoad_BeginTrackedValue(MapProfileTrackedValue param_1)
+void __cdecl ProfLoad_BeginTrackedValue(MapProfileTrackedValue type)
 
 {
   bool bVar1;
   undefined4 in_stack_ffffffe8;
   undefined4 local_14;
-  MapProfileEntry *local_10;
+  MapProfileEntry *entry;
   
   if ((mapLoadProfile.isLoading) && (mapLoadProfile.currentEntry != (MapProfileEntry *)0x0)) {
     bVar1 = Sys_IsMainThread();
     if (bVar1) {
       QueryPerformanceCounter((LARGE_INTEGER *)&stack0xffffffe8);
       ProfLoad_BeginTrackedValueTicks
-                (mapLoadProfile.elements + param_1,CONCAT44(in_stack_ffffffe8,local_14));
-      mapLoadProfile.elementAccessCount[param_1] = mapLoadProfile.elementAccessCount[param_1] + 1;
-      for (local_10 = mapLoadProfile.currentEntry; local_10 != (MapProfileEntry *)0x0;
-          local_10 = local_10->parent) {
-        ProfLoad_BeginTrackedValueTicks
-                  (local_10->elements + param_1,CONCAT44(in_stack_ffffffe8,local_14));
+                (mapLoadProfile.elements + type,CONCAT44(in_stack_ffffffe8,local_14));
+      mapLoadProfile.elementAccessCount[type] = mapLoadProfile.elementAccessCount[type] + 1;
+      for (entry = mapLoadProfile.currentEntry; entry != (MapProfileEntry *)0x0;
+          entry = entry->parent) {
+        ProfLoad_BeginTrackedValueTicks(entry->elements + type,CONCAT44(in_stack_ffffffe8,local_14))
+        ;
       }
     }
   }
@@ -73,7 +73,7 @@ void __cdecl ProfLoad_BeginTrackedValue(MapProfileTrackedValue param_1)
 
 // 006CE400  ProfLoad_EndTrackedValueTicks  (qcommon/com_profilemapload.cpp:136)
 
-void __cdecl ProfLoad_EndTrackedValueTicks(MapProfileElement *param_1,ulong64 param_2)
+void __cdecl ProfLoad_EndTrackedValueTicks(MapProfileElement *value,ulong64 param_2)
 
 {
   int iVar1;
@@ -84,7 +84,7 @@ void __cdecl ProfLoad_EndTrackedValueTicks(MapProfileElement *param_1,ulong64 pa
   uint uVar6;
   uint in_stack_00000008;
   
-  if ((int)param_1->ticksStart == 0 && *(int *)((int)&param_1->ticksStart + 4) == 0) {
+  if ((int)value->ticksStart == 0 && *(int *)((int)&value->ticksStart + 4) == 0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_profilemapload.cpp",
                              0x89,0,"%s");
     if (!bVar5) {
@@ -93,40 +93,39 @@ void __cdecl ProfLoad_EndTrackedValueTicks(MapProfileElement *param_1,ulong64 pa
       return;
     }
   }
-  uVar6 = in_stack_00000008 - (int)param_1->ticksStart;
-  iVar1 = *(int *)((int)&param_1->ticksStart + 4);
-  uVar4 = param_1->ticksTotal;
-  iVar2 = *(int *)((int)&param_1->ticksTotal + 4);
-  *(uint *)&param_1->ticksTotal = uVar6 + (int)param_1->ticksTotal;
-  *(uint *)((int)&param_1->ticksTotal + 4) =
-       iVar2 + (((int)param_2 - iVar1) - (uint)(in_stack_00000008 < (uint)param_1->ticksStart)) +
+  uVar6 = in_stack_00000008 - (int)value->ticksStart;
+  iVar1 = *(int *)((int)&value->ticksStart + 4);
+  uVar4 = value->ticksTotal;
+  iVar2 = *(int *)((int)&value->ticksTotal + 4);
+  *(uint *)&value->ticksTotal = uVar6 + (int)value->ticksTotal;
+  *(uint *)((int)&value->ticksTotal + 4) =
+       iVar2 + (((int)param_2 - iVar1) - (uint)(in_stack_00000008 < (uint)value->ticksStart)) +
        (uint)CARRY4(uVar6,(uint)uVar4);
-  *(undefined4 *)&param_1->ticksStart = 0;
-  *(undefined4 *)((int)&param_1->ticksStart + 4) = 0;
+  *(undefined4 *)&value->ticksStart = 0;
+  *(undefined4 *)((int)&value->ticksStart + 4) = 0;
   return;
 }
 
 
 // 006CE360  ProfLoad_EndTrackedValue  (qcommon/com_profilemapload.cpp:144)
 
-void __cdecl ProfLoad_EndTrackedValue(MapProfileTrackedValue param_1)
+void __cdecl ProfLoad_EndTrackedValue(MapProfileTrackedValue type)
 
 {
   bool bVar1;
   undefined4 in_stack_ffffffe8;
   undefined4 local_14;
-  MapProfileEntry *local_10;
+  MapProfileEntry *entry;
   
   if ((mapLoadProfile.isLoading) && (mapLoadProfile.currentEntry != (MapProfileEntry *)0x0)) {
     bVar1 = Sys_IsMainThread();
     if (bVar1) {
       QueryPerformanceCounter((LARGE_INTEGER *)&stack0xffffffe8);
       ProfLoad_EndTrackedValueTicks
-                (mapLoadProfile.elements + param_1,CONCAT44(in_stack_ffffffe8,local_14));
-      for (local_10 = mapLoadProfile.currentEntry; local_10 != (MapProfileEntry *)0x0;
-          local_10 = local_10->parent) {
-        ProfLoad_EndTrackedValueTicks
-                  (local_10->elements + param_1,CONCAT44(in_stack_ffffffe8,local_14));
+                (mapLoadProfile.elements + type,CONCAT44(in_stack_ffffffe8,local_14));
+      for (entry = mapLoadProfile.currentEntry; entry != (MapProfileEntry *)0x0;
+          entry = entry->parent) {
+        ProfLoad_EndTrackedValueTicks(entry->elements + type,CONCAT44(in_stack_ffffffe8,local_14));
       }
     }
   }
@@ -204,25 +203,27 @@ void __cdecl ProfLoad_Deactivate(void)
 
 // 006CF110  Com_GetEntryForNewLabel  (qcommon/com_profilemapload.cpp:196)
 
-MapProfileEntry * __cdecl Com_GetEntryForNewLabel(char *param_1)
+MapProfileEntry * __cdecl Com_GetEntryForNewLabel(char *label)
 
 {
   code *pcVar1;
   bool bVar2;
   MapProfileEntry *pMVar3;
-  int local_c;
-  int local_8;
+  MapProfileEntry *entry;
+  int entryIndex;
+  int firstEntry;
   
   if (mapLoadProfile.currentEntry == (MapProfileEntry *)0x0) {
-    local_8 = 0;
+    firstEntry = 0;
   }
   else {
-    local_8 = (int)(mapLoadProfile.currentEntry[-0x90fda].elements + 2) / 0x70 + 1;
+    firstEntry = (int)(mapLoadProfile.currentEntry[-0x90fda].elements + 2) / 0x70 + 1;
   }
-  for (local_c = local_8; local_c < mapLoadProfile.profileEntryCount; local_c = local_c + 1) {
-    if ((mapLoadProfile.profileEntries[local_c].parent == mapLoadProfile.currentEntry) &&
-       (mapLoadProfile.profileEntries[local_c].label == param_1)) {
-      return mapLoadProfile.profileEntries + local_c;
+  for (entryIndex = firstEntry; entryIndex < mapLoadProfile.profileEntryCount;
+      entryIndex = entryIndex + 1) {
+    if ((mapLoadProfile.profileEntries[entryIndex].parent == mapLoadProfile.currentEntry) &&
+       (mapLoadProfile.profileEntries[entryIndex].label == label)) {
+      return mapLoadProfile.profileEntries + entryIndex;
     }
   }
   if ((0x17f < mapLoadProfile.profileEntryCount) &&
@@ -251,40 +252,42 @@ void __cdecl ProfLoad_CalculateSelfTicks(void)
   uint uVar6;
   ulong64 uVar7;
   int iVar8;
-  int local_c;
-  int local_8;
+  MapProfileEntry *parentEntry;
+  MapProfileEntry *entry;
+  int entryIndex;
+  int elemIndex;
   
-  for (local_c = 0; local_c < mapLoadProfile.profileEntryCount; local_c = local_c + 1) {
-    iVar8 = local_c * 0x70;
-    *(int *)&mapLoadProfile.profileEntries[local_c].ticksSelf =
-         (int)mapLoadProfile.profileEntries[local_c].ticksTotal;
-    *(undefined4 *)((int)&mapLoadProfile.profileEntries[local_c].ticksSelf + 4) =
-         *(undefined4 *)((int)&mapLoadProfile.profileEntries[local_c].ticksTotal + 4);
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      *(undefined4 *)(iVar8 + 0x3f6ef40 + local_8 * 0x18) =
-           *(undefined4 *)(iVar8 + 0x3f6ef38 + local_8 * 0x18);
-      *(undefined4 *)(iVar8 + 0x3f6ef44 + local_8 * 0x18) =
-           *(undefined4 *)(iVar8 + 0x3f6ef3c + local_8 * 0x18);
+  for (entryIndex = 0; entryIndex < mapLoadProfile.profileEntryCount; entryIndex = entryIndex + 1) {
+    iVar8 = entryIndex * 0x70;
+    *(int *)&mapLoadProfile.profileEntries[entryIndex].ticksSelf =
+         (int)mapLoadProfile.profileEntries[entryIndex].ticksTotal;
+    *(undefined4 *)((int)&mapLoadProfile.profileEntries[entryIndex].ticksSelf + 4) =
+         *(undefined4 *)((int)&mapLoadProfile.profileEntries[entryIndex].ticksTotal + 4);
+    for (elemIndex = 0; elemIndex < 3; elemIndex = elemIndex + 1) {
+      *(undefined4 *)(iVar8 + 0x3f6ef40 + elemIndex * 0x18) =
+           *(undefined4 *)(iVar8 + 0x3f6ef38 + elemIndex * 0x18);
+      *(undefined4 *)(iVar8 + 0x3f6ef44 + elemIndex * 0x18) =
+           *(undefined4 *)(iVar8 + 0x3f6ef3c + elemIndex * 0x18);
     }
   }
-  for (local_c = 0; local_c < mapLoadProfile.profileEntryCount; local_c = local_c + 1) {
-    pMVar3 = mapLoadProfile.profileEntries[local_c].parent;
+  for (entryIndex = 0; entryIndex < mapLoadProfile.profileEntryCount; entryIndex = entryIndex + 1) {
+    pMVar3 = mapLoadProfile.profileEntries[entryIndex].parent;
     if (pMVar3 != (MapProfileEntry *)0x0) {
       uVar4 = (uint)pMVar3->ticksSelf;
-      puVar1 = &mapLoadProfile.profileEntries[local_c].ticksTotal;
+      puVar1 = &mapLoadProfile.profileEntries[entryIndex].ticksTotal;
       uVar7 = *puVar1;
       iVar8 = *(int *)((int)&pMVar3->ticksSelf + 4);
-      iVar5 = *(int *)((int)&mapLoadProfile.profileEntries[local_c].ticksTotal + 4);
+      iVar5 = *(int *)((int)&mapLoadProfile.profileEntries[entryIndex].ticksTotal + 4);
       *(uint *)&pMVar3->ticksSelf = uVar4 - (int)*puVar1;
       *(uint *)((int)&pMVar3->ticksSelf + 4) = (iVar8 - iVar5) - (uint)(uVar4 < (uint)uVar7);
-      for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-        uVar4 = (uint)pMVar3->elements[local_8].ticksSelf;
-        puVar2 = (uint *)(local_c * 0x70 + 0x3f6ef38 + local_8 * 0x18);
+      for (elemIndex = 0; elemIndex < 3; elemIndex = elemIndex + 1) {
+        uVar4 = (uint)pMVar3->elements[elemIndex].ticksSelf;
+        puVar2 = (uint *)(entryIndex * 0x70 + 0x3f6ef38 + elemIndex * 0x18);
         uVar6 = *puVar2;
-        iVar8 = *(int *)((int)&pMVar3->elements[local_8].ticksSelf + 4);
-        iVar5 = *(int *)(local_c * 0x70 + 0x3f6ef3c + local_8 * 0x18);
-        *(uint *)&pMVar3->elements[local_8].ticksSelf = uVar4 - *puVar2;
-        *(uint *)((int)&pMVar3->elements[local_8].ticksSelf + 4) =
+        iVar8 = *(int *)((int)&pMVar3->elements[elemIndex].ticksSelf + 4);
+        iVar5 = *(int *)(entryIndex * 0x70 + 0x3f6ef3c + elemIndex * 0x18);
+        *(uint *)&pMVar3->elements[elemIndex].ticksSelf = uVar4 - *puVar2;
+        *(uint *)((int)&pMVar3->elements[elemIndex].ticksSelf + 4) =
              (iVar8 - iVar5) - (uint)(uVar4 < uVar6);
       }
     }
@@ -295,10 +298,14 @@ void __cdecl ProfLoad_CalculateSelfTicks(void)
 
 // 006CEA20  ProfLoad_GetEntryRowText  (qcommon/com_profilemapload.cpp:250)
 
-void __cdecl ProfLoad_GetEntryRowText(MapProfileEntry *param_1,char *param_2,int param_3)
+void __cdecl ProfLoad_GetEntryRowText(MapProfileEntry *entry,char *rowText,int sizeofRowText)
 
 {
-  Com_sprintf(param_2,param_3,"%s - %5.3f total, %5.3f self, %5.3f file, %i hits");
+  double totalTimeInSec;
+  double fileTimeInSec;
+  double selfTimeInSec;
+  
+  Com_sprintf(rowText,sizeofRowText,"%s - %5.3f total, %5.3f self, %5.3f file, %i hits");
   return;
 }
 
@@ -310,13 +317,15 @@ void __cdecl ProfLoad_GetEntryRowText(MapProfileEntry *param_1,char *param_2,int
 void __cdecl ProfLoad_PrintTree(void)
 
 {
-  char local_10c [256];
+  MapProfileEntry *entry;
+  char rowText [256];
   uint local_c;
-  int local_8;
+  int profileIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < mapLoadProfile.profileEntryCount; local_8 = local_8 + 1) {
-    ProfLoad_GetEntryRowText(mapLoadProfile.profileEntries + local_8,local_10c,0x100);
+  for (profileIndex = 0; profileIndex < mapLoadProfile.profileEntryCount;
+      profileIndex = profileIndex + 1) {
+    ProfLoad_GetEntryRowText(mapLoadProfile.profileEntries + profileIndex,rowText,0x100);
     Com_Printf(0xc,"^6%*c %s\n");
   }
   return;
@@ -325,26 +334,26 @@ void __cdecl ProfLoad_PrintTree(void)
 
 // 006CEFF0  ProfLoad_CompareHotSpotNames  (qcommon/com_profilemapload.cpp:285)
 
-bool __cdecl ProfLoad_CompareHotSpotNames(MapProfileHotSpot *param_1,MapProfileHotSpot *param_2)
+bool __cdecl ProfLoad_CompareHotSpotNames(MapProfileHotSpot *hotSpot0,MapProfileHotSpot *hotSpot1)
 
 {
-  return param_2->label < param_1->label;
+  return hotSpot1->label < hotSpot0->label;
 }
 
 
 // 006CF010  ProfLoad_CompareHotSpotTicks  (qcommon/com_profilemapload.cpp:291)
 
-bool __cdecl ProfLoad_CompareHotSpotTicks(MapProfileHotSpot *param_1,MapProfileHotSpot *param_2)
+bool __cdecl ProfLoad_CompareHotSpotTicks(MapProfileHotSpot *hotSpot0,MapProfileHotSpot *hotSpot1)
 
 {
   int iVar1;
   int iVar2;
   bool local_10;
   
-  iVar2 = *(int *)((int)&param_1->ticksSelf + 4);
-  iVar1 = *(int *)((int)&param_2->ticksSelf + 4);
+  iVar2 = *(int *)((int)&hotSpot0->ticksSelf + 4);
+  iVar1 = *(int *)((int)&hotSpot1->ticksSelf + 4);
   if ((iVar2 < iVar1) ||
-     ((iVar2 <= iVar1 && ((uint)param_1->ticksSelf <= (uint)param_2->ticksSelf)))) {
+     ((iVar2 <= iVar1 && ((uint)hotSpot0->ticksSelf <= (uint)hotSpot1->ticksSelf)))) {
     local_10 = false;
   }
   else {
@@ -371,98 +380,102 @@ void __cdecl ProfLoad_PrintHotSpots(void)
   long64 lVar8;
   uint uVar9;
   int local_24a8;
-  MapProfileHotSpot local_243c [384];
-  MapProfileEntry *local_38;
-  int local_34;
-  int local_30;
-  double local_2c;
-  double local_24;
-  double local_1c;
-  double local_14;
-  int local_8;
+  MapProfileHotSpot hotSpots [384];
+  MapProfileEntry *entry;
+  int hotSpotIndex;
+  int hotSpotCount;
+  double selfTimeInSecSum;
+  double fileTimeInSecSum;
+  double fileTimeInSec;
+  double selfTimeInSec;
+  int profileIndex;
   
-  for (local_8 = 0; local_8 < mapLoadProfile.profileEntryCount; local_8 = local_8 + 1) {
-    local_38 = mapLoadProfile.profileEntries + local_8;
-    local_243c[local_8].label = local_38->label;
-    local_243c[local_8].accessCount = mapLoadProfile.profileEntries[local_8].accessCount;
-    *(int *)&local_243c[local_8].ticksSelf = (int)mapLoadProfile.profileEntries[local_8].ticksSelf;
-    *(undefined4 *)((int)&local_243c[local_8].ticksSelf + 4) =
-         *(undefined4 *)((int)&mapLoadProfile.profileEntries[local_8].ticksSelf + 4);
-    uVar5 = (uint)mapLoadProfile.profileEntries[local_8].elements[0].ticksSelf;
-    puVar1 = &mapLoadProfile.profileEntries[local_8].elements[1].ticksSelf;
+  for (profileIndex = 0; profileIndex < mapLoadProfile.profileEntryCount;
+      profileIndex = profileIndex + 1) {
+    entry = mapLoadProfile.profileEntries + profileIndex;
+    hotSpots[profileIndex].label = entry->label;
+    hotSpots[profileIndex].accessCount = mapLoadProfile.profileEntries[profileIndex].accessCount;
+    *(int *)&hotSpots[profileIndex].ticksSelf =
+         (int)mapLoadProfile.profileEntries[profileIndex].ticksSelf;
+    *(undefined4 *)((int)&hotSpots[profileIndex].ticksSelf + 4) =
+         *(undefined4 *)((int)&mapLoadProfile.profileEntries[profileIndex].ticksSelf + 4);
+    uVar5 = (uint)mapLoadProfile.profileEntries[profileIndex].elements[0].ticksSelf;
+    puVar1 = &mapLoadProfile.profileEntries[profileIndex].elements[1].ticksSelf;
     uVar6 = *puVar1;
     uVar9 = uVar5 + (int)*puVar1;
-    iVar2 = *(int *)((int)&mapLoadProfile.profileEntries[local_8].elements[0].ticksSelf + 4);
-    iVar3 = *(int *)((int)&mapLoadProfile.profileEntries[local_8].elements[1].ticksSelf + 4);
-    puVar1 = &mapLoadProfile.profileEntries[local_8].elements[2].ticksSelf;
+    iVar2 = *(int *)((int)&mapLoadProfile.profileEntries[profileIndex].elements[0].ticksSelf + 4);
+    iVar3 = *(int *)((int)&mapLoadProfile.profileEntries[profileIndex].elements[1].ticksSelf + 4);
+    puVar1 = &mapLoadProfile.profileEntries[profileIndex].elements[2].ticksSelf;
     uVar7 = *puVar1;
-    iVar4 = *(int *)((int)&mapLoadProfile.profileEntries[local_8].elements[2].ticksSelf + 4);
-    *(uint *)&local_243c[local_8].ticksFile = uVar9 + (int)*puVar1;
-    *(uint *)((int)&local_243c[local_8].ticksFile + 4) =
+    iVar4 = *(int *)((int)&mapLoadProfile.profileEntries[profileIndex].elements[2].ticksSelf + 4);
+    *(uint *)&hotSpots[profileIndex].ticksFile = uVar9 + (int)*puVar1;
+    *(uint *)((int)&hotSpots[profileIndex].ticksFile + 4) =
          iVar2 + iVar3 + (uint)CARRY4(uVar5,(uint)uVar6) + iVar4 + (uint)CARRY4(uVar9,(uint)uVar7);
   }
   std::
   _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-            (local_243c,local_243c + mapLoadProfile.profileEntryCount,
-             ((int)(local_243c + mapLoadProfile.profileEntryCount) - (int)local_243c) / 0x18,
+            (hotSpots,hotSpots + mapLoadProfile.profileEntryCount,
+             ((int)(hotSpots + mapLoadProfile.profileEntryCount) - (int)hotSpots) / 0x18,
              ProfLoad_CompareHotSpotNames);
-  local_30 = 0;
-  local_8 = 0;
-  while (local_8 != mapLoadProfile.profileEntryCount) {
-    local_243c[local_30].label = local_243c[local_8].label;
-    local_243c[local_30].accessCount = local_243c[local_8].accessCount;
-    *(int *)&local_243c[local_30].ticksSelf = (int)local_243c[local_8].ticksSelf;
-    *(undefined4 *)((int)&local_243c[local_30].ticksSelf + 4) =
-         *(undefined4 *)((int)&local_243c[local_8].ticksSelf + 4);
-    *(int *)&local_243c[local_30].ticksFile = (int)local_243c[local_8].ticksFile;
-    *(undefined4 *)((int)&local_243c[local_30].ticksFile + 4) =
-         *(undefined4 *)((int)&local_243c[local_8].ticksFile + 4);
-    while ((local_8 = local_8 + 1, local_8 != mapLoadProfile.profileEntryCount &&
-           (local_243c[local_8].label == local_243c[local_30].label))) {
-      local_243c[local_30].accessCount =
-           local_243c[local_30].accessCount + local_243c[local_8].accessCount;
-      uVar5 = (uint)local_243c[local_30].ticksSelf;
-      lVar8 = local_243c[local_8].ticksSelf;
-      iVar2 = *(int *)((int)&local_243c[local_30].ticksSelf + 4);
-      iVar3 = *(int *)((int)&local_243c[local_8].ticksSelf + 4);
-      *(uint *)&local_243c[local_30].ticksSelf = uVar5 + (int)local_243c[local_8].ticksSelf;
-      *(uint *)((int)&local_243c[local_30].ticksSelf + 4) =
+  hotSpotCount = 0;
+  profileIndex = 0;
+  while (profileIndex != mapLoadProfile.profileEntryCount) {
+    hotSpots[hotSpotCount].label = hotSpots[profileIndex].label;
+    hotSpots[hotSpotCount].accessCount = hotSpots[profileIndex].accessCount;
+    *(int *)&hotSpots[hotSpotCount].ticksSelf = (int)hotSpots[profileIndex].ticksSelf;
+    *(undefined4 *)((int)&hotSpots[hotSpotCount].ticksSelf + 4) =
+         *(undefined4 *)((int)&hotSpots[profileIndex].ticksSelf + 4);
+    *(int *)&hotSpots[hotSpotCount].ticksFile = (int)hotSpots[profileIndex].ticksFile;
+    *(undefined4 *)((int)&hotSpots[hotSpotCount].ticksFile + 4) =
+         *(undefined4 *)((int)&hotSpots[profileIndex].ticksFile + 4);
+    while ((profileIndex = profileIndex + 1, profileIndex != mapLoadProfile.profileEntryCount &&
+           (hotSpots[profileIndex].label == hotSpots[hotSpotCount].label))) {
+      hotSpots[hotSpotCount].accessCount =
+           hotSpots[hotSpotCount].accessCount + hotSpots[profileIndex].accessCount;
+      uVar5 = (uint)hotSpots[hotSpotCount].ticksSelf;
+      lVar8 = hotSpots[profileIndex].ticksSelf;
+      iVar2 = *(int *)((int)&hotSpots[hotSpotCount].ticksSelf + 4);
+      iVar3 = *(int *)((int)&hotSpots[profileIndex].ticksSelf + 4);
+      *(uint *)&hotSpots[hotSpotCount].ticksSelf = uVar5 + (int)hotSpots[profileIndex].ticksSelf;
+      *(uint *)((int)&hotSpots[hotSpotCount].ticksSelf + 4) =
            iVar2 + iVar3 + (uint)CARRY4(uVar5,(uint)lVar8);
-      uVar5 = (uint)local_243c[local_30].ticksFile;
-      lVar8 = local_243c[local_8].ticksFile;
-      iVar2 = *(int *)((int)&local_243c[local_30].ticksFile + 4);
-      iVar3 = *(int *)((int)&local_243c[local_8].ticksFile + 4);
-      *(uint *)&local_243c[local_30].ticksFile = uVar5 + (int)local_243c[local_8].ticksFile;
-      *(uint *)((int)&local_243c[local_30].ticksFile + 4) =
+      uVar5 = (uint)hotSpots[hotSpotCount].ticksFile;
+      lVar8 = hotSpots[profileIndex].ticksFile;
+      iVar2 = *(int *)((int)&hotSpots[hotSpotCount].ticksFile + 4);
+      iVar3 = *(int *)((int)&hotSpots[profileIndex].ticksFile + 4);
+      *(uint *)&hotSpots[hotSpotCount].ticksFile = uVar5 + (int)hotSpots[profileIndex].ticksFile;
+      *(uint *)((int)&hotSpots[hotSpotCount].ticksFile + 4) =
            iVar2 + iVar3 + (uint)CARRY4(uVar5,(uint)lVar8);
     }
-    local_30 = local_30 + 1;
+    hotSpotCount = hotSpotCount + 1;
   }
   std::
   _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-            (local_243c,local_243c + local_30,
-             ((int)(local_243c + local_30) - (int)local_243c) / 0x18,ProfLoad_CompareHotSpotTicks);
+            (hotSpots,hotSpots + hotSpotCount,
+             ((int)(hotSpots + hotSpotCount) - (int)hotSpots) / 0x18,ProfLoad_CompareHotSpotTicks);
   Com_Printf(0xc,"\n\n^6---------- Load time hot spots ----------\n");
-  if (local_30 < 0x11) {
-    local_24a8 = local_30;
+  if (hotSpotCount < 0x11) {
+    local_24a8 = hotSpotCount;
   }
   else {
     local_24a8 = 0x10;
   }
-  local_30 = local_24a8;
-  local_2c = 0.0;
-  local_24 = 0.0;
-  for (local_34 = 0; local_34 < local_30; local_34 = local_34 + 1) {
-    uVar5 = *(uint *)((int)&local_243c[local_34].ticksSelf + 4);
-    local_14 = (-(double)(longlong)(((ulonglong)uVar5 & 0x80000000) << 0x20) +
-               (double)(CONCAT44(uVar5,(int)local_243c[local_34].ticksSelf) & 0x7fffffffffffffff)) *
-               msecPerRawTimerTick * 0.0010000000474974513;
-    uVar5 = *(uint *)((int)&local_243c[local_34].ticksFile + 4);
-    local_1c = (-(double)(longlong)(((ulonglong)uVar5 & 0x80000000) << 0x20) +
-               (double)(CONCAT44(uVar5,(int)local_243c[local_34].ticksFile) & 0x7fffffffffffffff)) *
-               msecPerRawTimerTick * 0.0010000000474974513;
-    local_2c = local_2c + local_14;
-    local_24 = local_24 + local_1c;
+  hotSpotCount = local_24a8;
+  selfTimeInSecSum = 0.0;
+  fileTimeInSecSum = 0.0;
+  for (hotSpotIndex = 0; hotSpotIndex < hotSpotCount; hotSpotIndex = hotSpotIndex + 1) {
+    uVar5 = *(uint *)((int)&hotSpots[hotSpotIndex].ticksSelf + 4);
+    selfTimeInSec =
+         (-(double)(longlong)(((ulonglong)uVar5 & 0x80000000) << 0x20) +
+         (double)(CONCAT44(uVar5,(int)hotSpots[hotSpotIndex].ticksSelf) & 0x7fffffffffffffff)) *
+         msecPerRawTimerTick * 0.0010000000474974513;
+    uVar5 = *(uint *)((int)&hotSpots[hotSpotIndex].ticksFile + 4);
+    fileTimeInSec =
+         (-(double)(longlong)(((ulonglong)uVar5 & 0x80000000) << 0x20) +
+         (double)(CONCAT44(uVar5,(int)hotSpots[hotSpotIndex].ticksFile) & 0x7fffffffffffffff)) *
+         msecPerRawTimerTick * 0.0010000000474974513;
+    selfTimeInSecSum = selfTimeInSecSum + selfTimeInSec;
+    fileTimeInSecSum = fileTimeInSecSum + fileTimeInSec;
     Com_Printf(0xc,"^6%s: %5.3f self, %5.3f file, %i hits\n");
   }
   Com_Printf(0xc,"\n^6Hot spot total time: %5.3f self, %5.3f file\n\n");
@@ -475,6 +488,13 @@ void __cdecl ProfLoad_PrintHotSpots(void)
 void __cdecl ProfLoad_Print(void)
 
 {
+  int fileReadCount;
+  MapProfileElement *fileReadElement;
+  int fileOpenCount;
+  MapProfileElement *fileSeekElement;
+  MapProfileElement *fileOpenElement;
+  int fileSeekCount;
+  
   ProfLoad_CalculateSelfTicks();
   ProfLoad_PrintTree();
   ProfLoad_PrintHotSpots();
@@ -490,30 +510,30 @@ void __cdecl ProfLoad_Print(void)
 
 // 006CF060  ProfLoad_Begin  (qcommon/com_profilemapload.cpp:390)
 
-void __cdecl ProfLoad_Begin(char *param_1)
+void __cdecl ProfLoad_Begin(char *label)
 
 {
   bool bVar1;
   int local_14;
   LARGE_INTEGER local_10;
-  MapProfileEntry *local_8;
+  MapProfileEntry *entry;
   
   if ((mapLoadProfile.isLoading) && (bVar1 = Sys_IsMainThread(), bVar1)) {
-    local_8 = Com_GetEntryForNewLabel(param_1);
-    local_8->accessCount = local_8->accessCount + 1;
-    local_8->parent = mapLoadProfile.currentEntry;
-    if (local_8->parent == (MapProfileEntry *)0x0) {
+    entry = Com_GetEntryForNewLabel(label);
+    entry->accessCount = entry->accessCount + 1;
+    entry->parent = mapLoadProfile.currentEntry;
+    if (entry->parent == (MapProfileEntry *)0x0) {
       local_14 = 0;
     }
     else {
-      local_14 = local_8->parent->indent + 1;
+      local_14 = entry->parent->indent + 1;
     }
-    local_8->indent = local_14;
-    mapLoadProfile.currentEntry = local_8;
+    entry->indent = local_14;
+    mapLoadProfile.currentEntry = entry;
     QueryPerformanceCounter(&local_10);
-    *(DWORD *)&local_8->ticksStart = local_10.s.LowPart;
-    *(LONG *)((int)&local_8->ticksStart + 4) = local_10.s.HighPart;
-    local_8->label = param_1;
+    *(DWORD *)&entry->ticksStart = local_10.s.LowPart;
+    *(LONG *)((int)&entry->ticksStart + 4) = local_10.s.HighPart;
+    entry->label = label;
   }
   return;
 }
@@ -531,10 +551,10 @@ void __cdecl ProfLoad_End(void)
   int iVar5;
   uint uVar6;
   LARGE_INTEGER local_20;
-  MapProfileEntry *local_18;
+  MapProfileEntry *entry;
   
   if ((mapLoadProfile.isLoading) && (bVar4 = Sys_IsMainThread(), bVar4)) {
-    local_18 = mapLoadProfile.currentEntry;
+    entry = mapLoadProfile.currentEntry;
     if ((mapLoadProfile.currentEntry == (MapProfileEntry *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_profilemapload.cpp"
                                  ,0x1a2,0,"%s"), !bVar4)) {
@@ -542,7 +562,7 @@ void __cdecl ProfLoad_End(void)
       (*pcVar3)();
       return;
     }
-    if ((local_18->label == (char *)0x0) &&
+    if ((entry->label == (char *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_profilemapload.cpp"
                                  ,0x1a3,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -552,19 +572,19 @@ void __cdecl ProfLoad_End(void)
     QueryPerformanceCounter(&local_20);
     mapLoadProfile.ticksFinish._0_4_ = local_20.s.LowPart;
     mapLoadProfile.ticksFinish._4_4_ = local_20.s.HighPart;
-    uVar6 = local_20.s.LowPart - (int)local_18->ticksStart;
-    iVar5 = (local_20.s.HighPart - *(int *)((int)&local_18->ticksStart + 4)) -
-            (uint)(local_20.s.LowPart < (uint)local_18->ticksStart);
-    uVar1 = (uint)local_18->ticksTotal;
-    iVar2 = *(int *)((int)&local_18->ticksTotal + 4);
-    *(uint *)&local_18->ticksTotal = uVar1 + uVar6;
-    *(uint *)((int)&local_18->ticksTotal + 4) = iVar2 + iVar5 + (uint)CARRY4(uVar1,uVar6);
-    if (local_18->parent == (MapProfileEntry *)0x0) {
+    uVar6 = local_20.s.LowPart - (int)entry->ticksStart;
+    iVar5 = (local_20.s.HighPart - *(int *)((int)&entry->ticksStart + 4)) -
+            (uint)(local_20.s.LowPart < (uint)entry->ticksStart);
+    uVar1 = (uint)entry->ticksTotal;
+    iVar2 = *(int *)((int)&entry->ticksTotal + 4);
+    *(uint *)&entry->ticksTotal = uVar1 + uVar6;
+    *(uint *)((int)&entry->ticksTotal + 4) = iVar2 + iVar5 + (uint)CARRY4(uVar1,uVar6);
+    if (entry->parent == (MapProfileEntry *)0x0) {
       bVar4 = CARRY4((uint)mapLoadProfile.ticksProfiled,uVar6);
       mapLoadProfile.ticksProfiled._0_4_ = (uint)mapLoadProfile.ticksProfiled + uVar6;
       mapLoadProfile.ticksProfiled._4_4_ = mapLoadProfile.ticksProfiled._4_4_ + iVar5 + (uint)bVar4;
     }
-    mapLoadProfile.currentEntry = local_18->parent;
+    mapLoadProfile.currentEntry = entry->parent;
   }
   return;
 }
@@ -580,27 +600,31 @@ void __cdecl ProfLoad_DrawTree(void)
   int iVar1;
   int iVar2;
   int local_128;
-  char local_114 [256];
+  float textx;
+  float texty;
+  MapProfileEntry *entry;
+  char rowText [256];
   uint local_14;
-  Font_s *local_10;
-  int local_c;
-  int local_8;
+  Font_s *profileFont;
+  int textIndex;
+  int profileIndex;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   ProfLoad_CalculateSelfTicks();
-  local_c = 0;
-  local_10 = UI_GetFontHandle(&scrPlaceFull,0,0.36);
+  textIndex = 0;
+  profileFont = UI_GetFontHandle(&scrPlaceFull,0,0.36);
   local_128 = mapLoadProfile.profileEntryCount + -0x10;
   if (local_128 < 1) {
     local_128 = 0;
   }
-  for (local_8 = local_128; local_8 < mapLoadProfile.profileEntryCount; local_8 = local_8 + 1) {
-    iVar1 = mapLoadProfile.profileEntries[local_8].indent;
-    iVar2 = local_c * 0x10;
-    ProfLoad_GetEntryRowText(mapLoadProfile.profileEntries + local_8,local_114,0x100);
-    UI_DrawText(&scrPlaceFull,local_114,0x100,local_10,(float)(iVar1 * 5 + 0x3c),
+  for (profileIndex = local_128; profileIndex < mapLoadProfile.profileEntryCount;
+      profileIndex = profileIndex + 1) {
+    iVar1 = mapLoadProfile.profileEntries[profileIndex].indent;
+    iVar2 = textIndex * 0x10;
+    ProfLoad_GetEntryRowText(mapLoadProfile.profileEntries + profileIndex,rowText,0x100);
+    UI_DrawText(&scrPlaceFull,rowText,0x100,profileFont,(float)(iVar1 * 5 + 0x3c),
                 (float)(iVar2 + 0x46),0,0,0.36,PROFLOAD_TEXT_COLOR,0);
-    local_c = local_c + 1;
+    textIndex = textIndex + 1;
   }
   return;
 }
@@ -610,45 +634,51 @@ void __cdecl ProfLoad_DrawTree(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl ProfLoad_DrawOverlay(rectDef_s *param_1)
+void __cdecl ProfLoad_DrawOverlay(rectDef_s *rect)
 
 {
-  Font_s *pFVar1;
-  char local_114 [256];
+  Font_s *font;
+  int fileReadCount;
+  int lineHeight;
+  MapProfileElement *fileReadElement;
+  Font_s *profileFont;
+  int fileOpenCount;
+  MapProfileElement *fileSeekElement;
+  char line [256];
   uint local_14;
-  float local_10;
-  undefined4 local_c;
-  int local_8;
+  float y;
+  MapProfileElement *fileOpenElement;
+  int fileSeekCount;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((com_profileLoading->current).enabled != false) {
-    local_10 = 395.0;
-    pFVar1 = UI_GetFontHandle(&scrPlaceFull,0,0.36);
-    UI_FillRect(&scrPlaceFull,param_1->x,param_1->y,param_1->w,param_1->h,param_1->horzAlign,
-                param_1->vertAlign,PROFLOAD_BACKGROUND_COLOR);
+    y = 395.0;
+    font = UI_GetFontHandle(&scrPlaceFull,0,0.36);
+    UI_FillRect(&scrPlaceFull,rect->x,rect->y,rect->w,rect->h,rect->horzAlign,rect->vertAlign,
+                PROFLOAD_BACKGROUND_COLOR);
     ProfLoad_DrawTree();
-    local_c = 0x3f79738;
-    local_8 = mapLoadProfile.elementAccessCount[1];
-    sprintf(local_114,"Total Load Time: %5.4f");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,60.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
-    sprintf(local_114,"File Open Time: %5.4f, Accessed %d times");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,250.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
-    local_10 = local_10 + 15.0;
-    sprintf(local_114,"Profiled Time: %5.4f");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,60.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
-    sprintf(local_114,"File Seek Time: %5.4f, Accessed %d times");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,250.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
-    local_10 = local_10 + 15.0;
-    sprintf(local_114,"Unprofiled Time: %5.4f");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,60.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
-    sprintf(local_114,"File Read Time: %5.4f, Accessed %d times");
-    UI_DrawText(&scrPlaceFull,local_114,0x100,pFVar1,250.0,local_10,param_1->horzAlign,
-                param_1->vertAlign,0.36,PROFLOAD_TEXT_COLOR,0);
+    fileOpenElement = mapLoadProfile.elements;
+    fileSeekCount = mapLoadProfile.elementAccessCount[1];
+    sprintf(line,"Total Load Time: %5.4f");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,60.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
+    sprintf(line,"File Open Time: %5.4f, Accessed %d times");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,250.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
+    y = y + 15.0;
+    sprintf(line,"Profiled Time: %5.4f");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,60.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
+    sprintf(line,"File Seek Time: %5.4f, Accessed %d times");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,250.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
+    y = y + 15.0;
+    sprintf(line,"Unprofiled Time: %5.4f");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,60.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
+    sprintf(line,"File Read Time: %5.4f, Accessed %d times");
+    UI_DrawText(&scrPlaceFull,line,0x100,font,250.0,y,rect->horzAlign,rect->vertAlign,0.36,
+                PROFLOAD_TEXT_COLOR,0);
   }
   return;
 }
@@ -659,7 +689,7 @@ void __cdecl ProfLoad_DrawOverlay(rectDef_s *param_1)
 void __cdecl
 std::
 _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,int param_2,int param_3,MapProfileHotSpot param_4,
+          (MapProfileHotSpot *_First,int _Hole,int _Bottom,MapProfileHotSpot param_4,
           _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_5)
 
 {
@@ -675,35 +705,35 @@ _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfil
   undefined4 local_18;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int _Idx;
+  int _Top;
   
-  local_8 = param_2;
-  while (local_c = param_2 * 2 + 2, local_c < param_3) {
-    cVar1 = (*param_4.ticksFile._4_4_)(param_1 + local_c,param_1 + param_2 * 2 + 1);
+  _Top = _Hole;
+  while (_Idx = _Hole * 2 + 2, _Idx < _Bottom) {
+    cVar1 = (*param_4.ticksFile._4_4_)(_First + _Idx,_First + _Hole * 2 + 1);
     if (cVar1 != '\0') {
-      local_c = local_c + -1;
+      _Idx = _Idx + -1;
     }
-    pMVar2 = param_1 + local_c;
-    pMVar3 = param_1 + param_2;
+    pMVar2 = _First + _Idx;
+    pMVar3 = _First + _Hole;
     pMVar3->label = pMVar2->label;
     pMVar3->accessCount = pMVar2->accessCount;
     *(int *)&pMVar3->ticksSelf = (int)pMVar2->ticksSelf;
     *(undefined4 *)((int)&pMVar3->ticksSelf + 4) = *(undefined4 *)((int)&pMVar2->ticksSelf + 4);
     *(int *)&pMVar3->ticksFile = (int)pMVar2->ticksFile;
     *(undefined4 *)((int)&pMVar3->ticksFile + 4) = *(undefined4 *)((int)&pMVar2->ticksFile + 4);
-    param_2 = local_c;
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    pMVar2 = param_1 + param_3 + -1;
-    pMVar3 = param_1 + param_2;
+  if (_Idx == _Bottom) {
+    pMVar2 = _First + _Bottom + -1;
+    pMVar3 = _First + _Hole;
     pMVar3->label = pMVar2->label;
     pMVar3->accessCount = pMVar2->accessCount;
     *(int *)&pMVar3->ticksSelf = (int)pMVar2->ticksSelf;
     *(undefined4 *)((int)&pMVar3->ticksSelf + 4) = *(undefined4 *)((int)&pMVar2->ticksSelf + 4);
     *(int *)&pMVar3->ticksFile = (int)pMVar2->ticksFile;
     *(undefined4 *)((int)&pMVar3->ticksFile + 4) = *(undefined4 *)((int)&pMVar2->ticksFile + 4);
-    param_2 = param_3 + -1;
+    _Hole = _Bottom + -1;
   }
   local_2c = in_stack_00000010;
   local_28 = param_4.label;
@@ -711,12 +741,12 @@ _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfil
   local_20 = (undefined4)param_4.ticksSelf;
   local_1c = param_4.ticksSelf._4_4_;
   local_18 = (undefined4)param_4.ticksFile;
-  local_14 = param_2;
-  while (local_10 = (local_14 + -1) / 2, local_8 < local_14) {
-    cVar1 = (*param_4.ticksFile._4_4_)(param_1 + local_10,&local_2c);
+  local_14 = _Hole;
+  while (local_10 = (local_14 + -1) / 2, _Top < local_14) {
+    cVar1 = (*param_4.ticksFile._4_4_)(_First + local_10,&local_2c);
     if (cVar1 == '\0') break;
-    pMVar3 = param_1 + local_10;
-    pMVar2 = param_1 + local_14;
+    pMVar3 = _First + local_10;
+    pMVar2 = _First + local_14;
     pMVar2->label = pMVar3->label;
     pMVar2->accessCount = pMVar3->accessCount;
     *(int *)&pMVar2->ticksSelf = (int)pMVar3->ticksSelf;
@@ -725,7 +755,7 @@ _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfil
     *(undefined4 *)((int)&pMVar2->ticksFile + 4) = *(undefined4 *)((int)&pMVar3->ticksFile + 4);
     local_14 = local_10;
   }
-  pMVar2 = param_1 + local_14;
+  pMVar2 = _First + local_14;
   pMVar2->label = local_2c;
   pMVar2->accessCount = (int)local_28;
   *(int *)&pMVar2->ticksSelf = local_24;
@@ -741,8 +771,8 @@ _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfil
 void __cdecl
 std::
 make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_3)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Last,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Pred)
 
 {
   MapProfileHotSpot MVar1;
@@ -750,25 +780,25 @@ make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfi
   undefined8 uVar3;
   undefined8 uVar4;
   MapProfileHotSpot *pMVar5;
-  int iVar6;
+  int _Bottom;
   int local_18;
   
-  if (1 < ((int)param_2 - (int)param_1) / 0x18) {
-    iVar6 = ((int)param_2 - (int)param_1) / 0x18;
-    local_18 = iVar6 / 2;
+  if (1 < ((int)_Last - (int)_First) / 0x18) {
+    _Bottom = ((int)_Last - (int)_First) / 0x18;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
-      pMVar5 = param_1 + local_18;
+      pMVar5 = _First + local_18;
       uVar2 = pMVar5->accessCount;
       uVar3 = pMVar5->ticksSelf;
       uVar4 = pMVar5->ticksFile;
       MVar1._12_8_ = uVar4;
       MVar1._4_8_ = uVar3;
       MVar1.label = (char *)uVar2;
-      MVar1.ticksFile._4_4_ = param_3;
+      MVar1.ticksFile._4_4_ = _Pred;
       _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-                (param_1,local_18,iVar6,MVar1,
-                 (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)param_1);
+                (_First,local_18,_Bottom,MVar1,
+                 (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)_First);
     }
   }
   return;
@@ -780,8 +810,8 @@ make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfi
 void __cdecl
 std::
 _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_3)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Last,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Pred)
 
 {
   MapProfileHotSpot MVar1;
@@ -789,26 +819,24 @@ _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProf
   undefined8 uVar3;
   undefined8 uVar4;
   
-  for (; 1 < ((int)param_2 - (int)param_1) / 0x18; param_2 = param_2 + -1) {
-    if (1 < ((int)param_2 - (int)param_1) / 0x18) {
-      uVar2 = param_2[-0xffffffff00000001].accessCount;
-      uVar3 = param_2[-0xffffffff00000001].ticksSelf;
-      uVar4 = param_2[-0xffffffff00000001].ticksFile;
+  for (; 1 < ((int)_Last - (int)_First) / 0x18; _Last = _Last + -1) {
+    if (1 < ((int)_Last - (int)_First) / 0x18) {
+      uVar2 = _Last[-0xffffffff00000001].accessCount;
+      uVar3 = _Last[-0xffffffff00000001].ticksSelf;
+      uVar4 = _Last[-0xffffffff00000001].ticksFile;
       MVar1._12_8_ = uVar4;
       MVar1._4_8_ = uVar3;
       MVar1.label = (char *)uVar2;
-      param_2[-1].label = param_1->label;
-      param_2[-1].accessCount = param_1->accessCount;
-      *(int *)&param_2[-1].ticksSelf = (int)param_1->ticksSelf;
-      *(undefined4 *)((int)&param_2[-1].ticksSelf + 4) =
-           *(undefined4 *)((int)&param_1->ticksSelf + 4);
-      *(int *)&param_2[-1].ticksFile = (int)param_1->ticksFile;
-      *(undefined4 *)((int)&param_2[-1].ticksFile + 4) =
-           *(undefined4 *)((int)&param_1->ticksFile + 4);
-      MVar1.ticksFile._4_4_ = param_3;
+      _Last[-1].label = _First->label;
+      _Last[-1].accessCount = _First->accessCount;
+      *(int *)&_Last[-1].ticksSelf = (int)_First->ticksSelf;
+      *(undefined4 *)((int)&_Last[-1].ticksSelf + 4) = *(undefined4 *)((int)&_First->ticksSelf + 4);
+      *(int *)&_Last[-1].ticksFile = (int)_First->ticksFile;
+      *(undefined4 *)((int)&_Last[-1].ticksFile + 4) = *(undefined4 *)((int)&_First->ticksFile + 4);
+      MVar1.ticksFile._4_4_ = _Pred;
       _Adjust_heap<MapProfileHotSpot_*,int,MapProfileHotSpot,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-                (param_1,0,((int)param_2 + (-0x18 - (int)param_1)) / 0x18,MVar1,
-                 (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)param_2);
+                (_First,0,((int)_Last + (-0x18 - (int)_First)) / 0x18,MVar1,
+                 (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)_Last);
     }
   }
   return;
@@ -820,62 +848,63 @@ _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProf
 void __cdecl
 std::
 _Insertion_sort1<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&),MapProfileHotSpot>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_3,
-          MapProfileHotSpot *param_4)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Last,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Pred,
+          MapProfileHotSpot *__formal)
 
 {
   MapProfileHotSpot *pMVar1;
   bool bVar2;
   MapProfileHotSpot *pMVar3;
-  MapProfileHotSpot local_24;
-  MapProfileHotSpot *local_c;
-  MapProfileHotSpot *local_8;
+  MapProfileHotSpot *_First1;
+  MapProfileHotSpot _Val;
+  MapProfileHotSpot *_Next1;
+  MapProfileHotSpot *_Next;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (local_c = local_8 + 1, local_c != param_2) {
-      local_24.label = local_c->label;
-      local_24.accessCount = local_8[1].accessCount;
-      local_24.ticksSelf._0_4_ = (undefined4)local_8[1].ticksSelf;
-      local_24.ticksSelf._4_4_ = *(undefined4 *)((int)&local_8[1].ticksSelf + 4);
-      local_24.ticksFile._0_4_ = (undefined4)local_8[1].ticksFile;
-      local_24.ticksFile._4_4_ = *(undefined4 *)((int)&local_8[1].ticksFile + 4);
-      local_8 = local_c;
-      bVar2 = (*param_3)(&local_24,param_1);
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Next1 = _Next + 1, _Next1 != _Last) {
+      _Val.label = _Next1->label;
+      _Val.accessCount = _Next[1].accessCount;
+      _Val.ticksSelf._0_4_ = (undefined4)_Next[1].ticksSelf;
+      _Val.ticksSelf._4_4_ = *(undefined4 *)((int)&_Next[1].ticksSelf + 4);
+      _Val.ticksFile._0_4_ = (undefined4)_Next[1].ticksFile;
+      _Val.ticksFile._4_4_ = *(undefined4 *)((int)&_Next[1].ticksFile + 4);
+      _Next = _Next1;
+      bVar2 = (*_Pred)(&_Val,_First);
       if (bVar2) {
-        local_c = local_c + 1;
+        _Next1 = _Next1 + 1;
         stdext::unchecked_copy_backward<MapProfileHotSpot_*,MapProfileHotSpot_*>
-                  (param_1,local_8,local_c);
-        param_1->label = local_24.label;
-        param_1->accessCount = local_24.accessCount;
-        *(undefined4 *)&param_1->ticksSelf = (undefined4)local_24.ticksSelf;
-        *(undefined4 *)((int)&param_1->ticksSelf + 4) = local_24.ticksSelf._4_4_;
-        *(undefined4 *)&param_1->ticksFile = (undefined4)local_24.ticksFile;
-        *(undefined4 *)((int)&param_1->ticksFile + 4) = local_24.ticksFile._4_4_;
+                  (_First,_Next,_Next1);
+        _First->label = _Val.label;
+        _First->accessCount = _Val.accessCount;
+        *(undefined4 *)&_First->ticksSelf = (undefined4)_Val.ticksSelf;
+        *(undefined4 *)((int)&_First->ticksSelf + 4) = _Val.ticksSelf._4_4_;
+        *(undefined4 *)&_First->ticksFile = (undefined4)_Val.ticksFile;
+        *(undefined4 *)((int)&_First->ticksFile + 4) = _Val.ticksFile._4_4_;
       }
       else {
         while( true ) {
-          pMVar1 = local_c;
-          pMVar3 = local_c + -1;
-          bVar2 = (*param_3)(&local_24,pMVar3);
+          pMVar1 = _Next1;
+          pMVar3 = _Next1 + -1;
+          bVar2 = (*_Pred)(&_Val,pMVar3);
           if (!bVar2) break;
-          local_c->label = pMVar3->label;
-          local_c->accessCount = pMVar1[-1].accessCount;
-          *(int *)&local_c->ticksSelf = (int)pMVar1[-1].ticksSelf;
-          *(undefined4 *)((int)&local_c->ticksSelf + 4) =
+          _Next1->label = pMVar3->label;
+          _Next1->accessCount = pMVar1[-1].accessCount;
+          *(int *)&_Next1->ticksSelf = (int)pMVar1[-1].ticksSelf;
+          *(undefined4 *)((int)&_Next1->ticksSelf + 4) =
                *(undefined4 *)((int)&pMVar1[-1].ticksSelf + 4);
-          *(int *)&local_c->ticksFile = (int)pMVar1[-1].ticksFile;
-          *(undefined4 *)((int)&local_c->ticksFile + 4) =
+          *(int *)&_Next1->ticksFile = (int)pMVar1[-1].ticksFile;
+          *(undefined4 *)((int)&_Next1->ticksFile + 4) =
                *(undefined4 *)((int)&pMVar1[-1].ticksFile + 4);
-          local_c = pMVar3;
+          _Next1 = pMVar3;
         }
-        local_c->label = local_24.label;
-        local_c->accessCount = local_24.accessCount;
-        *(undefined4 *)&local_c->ticksSelf = (undefined4)local_24.ticksSelf;
-        *(undefined4 *)((int)&local_c->ticksSelf + 4) = local_24.ticksSelf._4_4_;
-        *(undefined4 *)&local_c->ticksFile = (undefined4)local_24.ticksFile;
-        *(undefined4 *)((int)&local_c->ticksFile + 4) = local_24.ticksFile._4_4_;
+        _Next1->label = _Val.label;
+        _Next1->accessCount = _Val.accessCount;
+        *(undefined4 *)&_Next1->ticksSelf = (undefined4)_Val.ticksSelf;
+        *(undefined4 *)((int)&_Next1->ticksSelf + 4) = _Val.ticksSelf._4_4_;
+        *(undefined4 *)&_Next1->ticksFile = (undefined4)_Val.ticksFile;
+        *(undefined4 *)((int)&_Next1->ticksFile + 4) = _Val.ticksFile._4_4_;
       }
     }
   }
@@ -888,8 +917,8 @@ _Insertion_sort1<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,M
 void __cdecl
 std::
 _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,MapProfileHotSpot *param_3,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_4)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Mid,MapProfileHotSpot *_Last,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Pred)
 
 {
   char *pcVar1;
@@ -902,99 +931,100 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
   int iVar8;
   MapProfileHotSpot *pMVar9;
   MapProfileHotSpot *pMVar10;
+  uint _Step;
   
-  if (((int)param_3 - (int)param_1) / 0x18 < 0x29) {
-    bVar7 = (*param_4)(param_2,param_1);
-    if ((bVar7) && (param_2 != param_1)) {
-      pcVar1 = param_2->label;
-      iVar8 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = param_1->label;
-      param_2->accessCount = param_1->accessCount;
-      *(int *)&param_2->ticksSelf = (int)param_1->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&param_1->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)param_1->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&param_1->ticksFile + 4);
-      param_1->label = pcVar1;
-      param_1->accessCount = iVar8;
-      *(int *)&param_1->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_1->ticksSelf + 4) = uVar3;
-      *(int *)&param_1->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_1->ticksFile + 4) = uVar4;
+  if (((int)_Last - (int)_First) / 0x18 < 0x29) {
+    bVar7 = (*_Pred)(_Mid,_First);
+    if ((bVar7) && (_Mid != _First)) {
+      pcVar1 = _Mid->label;
+      iVar8 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = _First->label;
+      _Mid->accessCount = _First->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)_First->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&_First->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)_First->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&_First->ticksFile + 4);
+      _First->label = pcVar1;
+      _First->accessCount = iVar8;
+      *(int *)&_First->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_First->ticksSelf + 4) = uVar3;
+      *(int *)&_First->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_First->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(param_3,param_2);
-    if ((bVar7) && (param_3 != param_2)) {
-      pcVar1 = param_3->label;
-      iVar8 = param_3->accessCount;
-      lVar5 = param_3->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_3->ticksSelf + 4);
-      lVar6 = param_3->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_3->ticksFile + 4);
-      param_3->label = param_2->label;
-      param_3->accessCount = param_2->accessCount;
-      *(int *)&param_3->ticksSelf = (int)param_2->ticksSelf;
-      *(undefined4 *)((int)&param_3->ticksSelf + 4) = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      *(int *)&param_3->ticksFile = (int)param_2->ticksFile;
-      *(undefined4 *)((int)&param_3->ticksFile + 4) = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pcVar1;
-      param_2->accessCount = iVar8;
-      *(int *)&param_2->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = uVar3;
-      *(int *)&param_2->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = uVar4;
+    bVar7 = (*_Pred)(_Last,_Mid);
+    if ((bVar7) && (_Last != _Mid)) {
+      pcVar1 = _Last->label;
+      iVar8 = _Last->accessCount;
+      lVar5 = _Last->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Last->ticksSelf + 4);
+      lVar6 = _Last->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Last->ticksFile + 4);
+      _Last->label = _Mid->label;
+      _Last->accessCount = _Mid->accessCount;
+      *(int *)&_Last->ticksSelf = (int)_Mid->ticksSelf;
+      *(undefined4 *)((int)&_Last->ticksSelf + 4) = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      *(int *)&_Last->ticksFile = (int)_Mid->ticksFile;
+      *(undefined4 *)((int)&_Last->ticksFile + 4) = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pcVar1;
+      _Mid->accessCount = iVar8;
+      *(int *)&_Mid->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = uVar3;
+      *(int *)&_Mid->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(param_2,param_1);
-    if ((bVar7) && (param_2 != param_1)) {
-      pcVar1 = param_2->label;
-      iVar8 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = param_1->label;
-      param_2->accessCount = param_1->accessCount;
-      *(int *)&param_2->ticksSelf = (int)param_1->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&param_1->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)param_1->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&param_1->ticksFile + 4);
-      param_1->label = pcVar1;
-      param_1->accessCount = iVar8;
-      *(int *)&param_1->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_1->ticksSelf + 4) = uVar3;
-      *(int *)&param_1->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_1->ticksFile + 4) = uVar4;
+    bVar7 = (*_Pred)(_Mid,_First);
+    if ((bVar7) && (_Mid != _First)) {
+      pcVar1 = _Mid->label;
+      iVar8 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = _First->label;
+      _Mid->accessCount = _First->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)_First->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&_First->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)_First->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&_First->ticksFile + 4);
+      _First->label = pcVar1;
+      _First->accessCount = iVar8;
+      *(int *)&_First->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_First->ticksSelf + 4) = uVar3;
+      *(int *)&_First->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_First->ticksFile + 4) = uVar4;
     }
   }
   else {
-    iVar8 = ((int)param_3 - (int)param_1) / 0x18 + 1;
+    iVar8 = ((int)_Last - (int)_First) / 0x18 + 1;
     iVar8 = (int)(iVar8 + (iVar8 >> 0x1f & 7U)) >> 3;
-    pMVar10 = param_1 + iVar8 * 2;
-    pMVar9 = param_1 + iVar8;
-    bVar7 = (*param_4)(pMVar9,param_1);
-    if ((bVar7) && (pMVar9 != param_1)) {
+    pMVar10 = _First + iVar8 * 2;
+    pMVar9 = _First + iVar8;
+    bVar7 = (*_Pred)(pMVar9,_First);
+    if ((bVar7) && (pMVar9 != _First)) {
       pcVar1 = pMVar9->label;
       iVar2 = pMVar9->accessCount;
       lVar5 = pMVar9->ticksSelf;
       uVar3 = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
       lVar6 = pMVar9->ticksFile;
       uVar4 = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
-      pMVar9->label = param_1->label;
-      pMVar9->accessCount = param_1->accessCount;
-      *(int *)&pMVar9->ticksSelf = (int)param_1->ticksSelf;
-      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&param_1->ticksSelf + 4);
-      *(int *)&pMVar9->ticksFile = (int)param_1->ticksFile;
-      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&param_1->ticksFile + 4);
-      param_1->label = pcVar1;
-      param_1->accessCount = iVar2;
-      *(int *)&param_1->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_1->ticksSelf + 4) = uVar3;
-      *(int *)&param_1->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_1->ticksFile + 4) = uVar4;
+      pMVar9->label = _First->label;
+      pMVar9->accessCount = _First->accessCount;
+      *(int *)&pMVar9->ticksSelf = (int)_First->ticksSelf;
+      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&_First->ticksSelf + 4);
+      *(int *)&pMVar9->ticksFile = (int)_First->ticksFile;
+      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&_First->ticksFile + 4);
+      _First->label = pcVar1;
+      _First->accessCount = iVar2;
+      *(int *)&_First->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_First->ticksSelf + 4) = uVar3;
+      *(int *)&_First->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_First->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(pMVar10,pMVar9);
+    bVar7 = (*_Pred)(pMVar10,pMVar9);
     if ((bVar7) && (pMVar10 != pMVar9)) {
       pcVar1 = pMVar10->label;
       iVar2 = pMVar10->accessCount;
@@ -1015,43 +1045,43 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar9->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar9->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(pMVar9,param_1);
-    if ((bVar7) && (pMVar9 != param_1)) {
+    bVar7 = (*_Pred)(pMVar9,_First);
+    if ((bVar7) && (pMVar9 != _First)) {
       pcVar1 = pMVar9->label;
       iVar2 = pMVar9->accessCount;
       lVar5 = pMVar9->ticksSelf;
       uVar3 = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
       lVar6 = pMVar9->ticksFile;
       uVar4 = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
-      pMVar9->label = param_1->label;
-      pMVar9->accessCount = param_1->accessCount;
-      *(int *)&pMVar9->ticksSelf = (int)param_1->ticksSelf;
-      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&param_1->ticksSelf + 4);
-      *(int *)&pMVar9->ticksFile = (int)param_1->ticksFile;
-      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&param_1->ticksFile + 4);
-      param_1->label = pcVar1;
-      param_1->accessCount = iVar2;
-      *(int *)&param_1->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_1->ticksSelf + 4) = uVar3;
-      *(int *)&param_1->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_1->ticksFile + 4) = uVar4;
+      pMVar9->label = _First->label;
+      pMVar9->accessCount = _First->accessCount;
+      *(int *)&pMVar9->ticksSelf = (int)_First->ticksSelf;
+      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&_First->ticksSelf + 4);
+      *(int *)&pMVar9->ticksFile = (int)_First->ticksFile;
+      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&_First->ticksFile + 4);
+      _First->label = pcVar1;
+      _First->accessCount = iVar2;
+      *(int *)&_First->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_First->ticksSelf + 4) = uVar3;
+      *(int *)&_First->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_First->ticksFile + 4) = uVar4;
     }
-    pMVar10 = param_2 + iVar8;
-    pMVar9 = param_2 + -iVar8;
-    bVar7 = (*param_4)(param_2,pMVar9);
-    if ((bVar7) && (param_2 != pMVar9)) {
-      pcVar1 = param_2->label;
-      iVar2 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pMVar9->label;
-      param_2->accessCount = pMVar9->accessCount;
-      *(int *)&param_2->ticksSelf = (int)pMVar9->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)pMVar9->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
+    pMVar10 = _Mid + iVar8;
+    pMVar9 = _Mid + -iVar8;
+    bVar7 = (*_Pred)(_Mid,pMVar9);
+    if ((bVar7) && (_Mid != pMVar9)) {
+      pcVar1 = _Mid->label;
+      iVar2 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pMVar9->label;
+      _Mid->accessCount = pMVar9->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)pMVar9->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)pMVar9->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
       pMVar9->label = pcVar1;
       pMVar9->accessCount = iVar2;
       *(int *)&pMVar9->ticksSelf = (int)lVar5;
@@ -1059,41 +1089,41 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar9->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar9->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(pMVar10,param_2);
-    if ((bVar7) && (pMVar10 != param_2)) {
+    bVar7 = (*_Pred)(pMVar10,_Mid);
+    if ((bVar7) && (pMVar10 != _Mid)) {
       pcVar1 = pMVar10->label;
       iVar2 = pMVar10->accessCount;
       lVar5 = pMVar10->ticksSelf;
       uVar3 = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
       lVar6 = pMVar10->ticksFile;
       uVar4 = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
-      pMVar10->label = param_2->label;
-      pMVar10->accessCount = param_2->accessCount;
-      *(int *)&pMVar10->ticksSelf = (int)param_2->ticksSelf;
-      *(undefined4 *)((int)&pMVar10->ticksSelf + 4) = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      *(int *)&pMVar10->ticksFile = (int)param_2->ticksFile;
-      *(undefined4 *)((int)&pMVar10->ticksFile + 4) = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pcVar1;
-      param_2->accessCount = iVar2;
-      *(int *)&param_2->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = uVar3;
-      *(int *)&param_2->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = uVar4;
+      pMVar10->label = _Mid->label;
+      pMVar10->accessCount = _Mid->accessCount;
+      *(int *)&pMVar10->ticksSelf = (int)_Mid->ticksSelf;
+      *(undefined4 *)((int)&pMVar10->ticksSelf + 4) = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      *(int *)&pMVar10->ticksFile = (int)_Mid->ticksFile;
+      *(undefined4 *)((int)&pMVar10->ticksFile + 4) = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pcVar1;
+      _Mid->accessCount = iVar2;
+      *(int *)&_Mid->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = uVar3;
+      *(int *)&_Mid->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(param_2,pMVar9);
-    if ((bVar7) && (param_2 != pMVar9)) {
-      pcVar1 = param_2->label;
-      iVar2 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pMVar9->label;
-      param_2->accessCount = pMVar9->accessCount;
-      *(int *)&param_2->ticksSelf = (int)pMVar9->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)pMVar9->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
+    bVar7 = (*_Pred)(_Mid,pMVar9);
+    if ((bVar7) && (_Mid != pMVar9)) {
+      pcVar1 = _Mid->label;
+      iVar2 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pMVar9->label;
+      _Mid->accessCount = pMVar9->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)pMVar9->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)pMVar9->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
       pMVar9->label = pcVar1;
       pMVar9->accessCount = iVar2;
       *(int *)&pMVar9->ticksSelf = (int)lVar5;
@@ -1101,9 +1131,9 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar9->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar9->ticksFile + 4) = uVar4;
     }
-    pMVar10 = param_3 + -iVar8;
-    pMVar9 = param_3 + iVar8 * -2;
-    bVar7 = (*param_4)(pMVar10,pMVar9);
+    pMVar10 = _Last + -iVar8;
+    pMVar9 = _Last + iVar8 * -2;
+    bVar7 = (*_Pred)(pMVar10,pMVar9);
     if ((bVar7) && (pMVar10 != pMVar9)) {
       pcVar1 = pMVar10->label;
       iVar2 = pMVar10->accessCount;
@@ -1124,20 +1154,20 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar9->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar9->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(param_3,pMVar10);
-    if ((bVar7) && (param_3 != pMVar10)) {
-      pcVar1 = param_3->label;
-      iVar2 = param_3->accessCount;
-      lVar5 = param_3->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_3->ticksSelf + 4);
-      lVar6 = param_3->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_3->ticksFile + 4);
-      param_3->label = pMVar10->label;
-      param_3->accessCount = pMVar10->accessCount;
-      *(int *)&param_3->ticksSelf = (int)pMVar10->ticksSelf;
-      *(undefined4 *)((int)&param_3->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
-      *(int *)&param_3->ticksFile = (int)pMVar10->ticksFile;
-      *(undefined4 *)((int)&param_3->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
+    bVar7 = (*_Pred)(_Last,pMVar10);
+    if ((bVar7) && (_Last != pMVar10)) {
+      pcVar1 = _Last->label;
+      iVar2 = _Last->accessCount;
+      lVar5 = _Last->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Last->ticksSelf + 4);
+      lVar6 = _Last->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Last->ticksFile + 4);
+      _Last->label = pMVar10->label;
+      _Last->accessCount = pMVar10->accessCount;
+      *(int *)&_Last->ticksSelf = (int)pMVar10->ticksSelf;
+      *(undefined4 *)((int)&_Last->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
+      *(int *)&_Last->ticksFile = (int)pMVar10->ticksFile;
+      *(undefined4 *)((int)&_Last->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
       pMVar10->label = pcVar1;
       pMVar10->accessCount = iVar2;
       *(int *)&pMVar10->ticksSelf = (int)lVar5;
@@ -1145,7 +1175,7 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar10->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar10->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(pMVar10,pMVar9);
+    bVar7 = (*_Pred)(pMVar10,pMVar9);
     if ((bVar7) && (pMVar10 != pMVar9)) {
       pcVar1 = pMVar10->label;
       iVar2 = pMVar10->accessCount;
@@ -1166,22 +1196,22 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar9->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar9->ticksFile + 4) = uVar4;
     }
-    pMVar9 = param_3 + -iVar8;
-    pMVar10 = param_1 + iVar8;
-    bVar7 = (*param_4)(param_2,pMVar10);
-    if ((bVar7) && (param_2 != pMVar10)) {
-      pcVar1 = param_2->label;
-      iVar8 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pMVar10->label;
-      param_2->accessCount = pMVar10->accessCount;
-      *(int *)&param_2->ticksSelf = (int)pMVar10->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)pMVar10->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
+    pMVar9 = _Last + -iVar8;
+    pMVar10 = _First + iVar8;
+    bVar7 = (*_Pred)(_Mid,pMVar10);
+    if ((bVar7) && (_Mid != pMVar10)) {
+      pcVar1 = _Mid->label;
+      iVar8 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pMVar10->label;
+      _Mid->accessCount = pMVar10->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)pMVar10->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)pMVar10->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
       pMVar10->label = pcVar1;
       pMVar10->accessCount = iVar8;
       *(int *)&pMVar10->ticksSelf = (int)lVar5;
@@ -1189,41 +1219,41 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
       *(int *)&pMVar10->ticksFile = (int)lVar6;
       *(undefined4 *)((int)&pMVar10->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(pMVar9,param_2);
-    if ((bVar7) && (pMVar9 != param_2)) {
+    bVar7 = (*_Pred)(pMVar9,_Mid);
+    if ((bVar7) && (pMVar9 != _Mid)) {
       pcVar1 = pMVar9->label;
       iVar8 = pMVar9->accessCount;
       lVar5 = pMVar9->ticksSelf;
       uVar3 = *(undefined4 *)((int)&pMVar9->ticksSelf + 4);
       lVar6 = pMVar9->ticksFile;
       uVar4 = *(undefined4 *)((int)&pMVar9->ticksFile + 4);
-      pMVar9->label = param_2->label;
-      pMVar9->accessCount = param_2->accessCount;
-      *(int *)&pMVar9->ticksSelf = (int)param_2->ticksSelf;
-      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      *(int *)&pMVar9->ticksFile = (int)param_2->ticksFile;
-      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pcVar1;
-      param_2->accessCount = iVar8;
-      *(int *)&param_2->ticksSelf = (int)lVar5;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = uVar3;
-      *(int *)&param_2->ticksFile = (int)lVar6;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = uVar4;
+      pMVar9->label = _Mid->label;
+      pMVar9->accessCount = _Mid->accessCount;
+      *(int *)&pMVar9->ticksSelf = (int)_Mid->ticksSelf;
+      *(undefined4 *)((int)&pMVar9->ticksSelf + 4) = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      *(int *)&pMVar9->ticksFile = (int)_Mid->ticksFile;
+      *(undefined4 *)((int)&pMVar9->ticksFile + 4) = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pcVar1;
+      _Mid->accessCount = iVar8;
+      *(int *)&_Mid->ticksSelf = (int)lVar5;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = uVar3;
+      *(int *)&_Mid->ticksFile = (int)lVar6;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = uVar4;
     }
-    bVar7 = (*param_4)(param_2,pMVar10);
-    if ((bVar7) && (param_2 != pMVar10)) {
-      pcVar1 = param_2->label;
-      iVar8 = param_2->accessCount;
-      lVar5 = param_2->ticksSelf;
-      uVar3 = *(undefined4 *)((int)&param_2->ticksSelf + 4);
-      lVar6 = param_2->ticksFile;
-      uVar4 = *(undefined4 *)((int)&param_2->ticksFile + 4);
-      param_2->label = pMVar10->label;
-      param_2->accessCount = pMVar10->accessCount;
-      *(int *)&param_2->ticksSelf = (int)pMVar10->ticksSelf;
-      *(undefined4 *)((int)&param_2->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
-      *(int *)&param_2->ticksFile = (int)pMVar10->ticksFile;
-      *(undefined4 *)((int)&param_2->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
+    bVar7 = (*_Pred)(_Mid,pMVar10);
+    if ((bVar7) && (_Mid != pMVar10)) {
+      pcVar1 = _Mid->label;
+      iVar8 = _Mid->accessCount;
+      lVar5 = _Mid->ticksSelf;
+      uVar3 = *(undefined4 *)((int)&_Mid->ticksSelf + 4);
+      lVar6 = _Mid->ticksFile;
+      uVar4 = *(undefined4 *)((int)&_Mid->ticksFile + 4);
+      _Mid->label = pMVar10->label;
+      _Mid->accessCount = pMVar10->accessCount;
+      *(int *)&_Mid->ticksSelf = (int)pMVar10->ticksSelf;
+      *(undefined4 *)((int)&_Mid->ticksSelf + 4) = *(undefined4 *)((int)&pMVar10->ticksSelf + 4);
+      *(int *)&_Mid->ticksFile = (int)pMVar10->ticksFile;
+      *(undefined4 *)((int)&_Mid->ticksFile + 4) = *(undefined4 *)((int)&pMVar10->ticksFile + 4);
       pMVar10->label = pcVar1;
       pMVar10->accessCount = iVar8;
       *(int *)&pMVar10->ticksSelf = (int)lVar5;
@@ -1241,8 +1271,8 @@ _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfile
 pair<MapProfileHotSpot_*,MapProfileHotSpot_*> __cdecl
 std::
 _Unguarded_partition<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_3)
+          (MapProfileHotSpot *param_1,MapProfileHotSpot *_First,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Last)
 
 {
   char *pcVar1;
@@ -1258,234 +1288,235 @@ _Unguarded_partition<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const
   MapProfileHotSpot *pMVar11;
   pair<MapProfileHotSpot_*,MapProfileHotSpot_*> pVar12;
   _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *in_stack_00000010;
-  MapProfileHotSpot *local_18;
-  MapProfileHotSpot *local_14;
-  MapProfileHotSpot *local_10;
-  MapProfileHotSpot *local_c;
+  MapProfileHotSpot *_Plast;
+  MapProfileHotSpot *_Glast;
+  MapProfileHotSpot *_Pfirst;
+  MapProfileHotSpot *_Gfirst;
+  MapProfileHotSpot *_Mid;
   
-  local_10 = param_2 + ((int)param_3 - (int)param_2) / 0x30;
+  _Pfirst = _First + ((int)_Last - (int)_First) / 0x30;
   _Median<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-            (param_2,local_10,(MapProfileHotSpot *)(param_3 + -0x18),in_stack_00000010);
-  local_18 = local_10 + 1;
-  while (((param_2 < local_10 && (bVar7 = (*in_stack_00000010)(local_10 + -1,local_10), !bVar7)) &&
-         (bVar7 = (*in_stack_00000010)(local_10,local_10 + -1), !bVar7))) {
-    local_10 = local_10 + -1;
+            (_First,_Pfirst,(MapProfileHotSpot *)(_Last + -0x18),in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst && (bVar7 = (*in_stack_00000010)(_Pfirst + -1,_Pfirst), !bVar7)) &&
+         (bVar7 = (*in_stack_00000010)(_Pfirst,_Pfirst + -1), !bVar7))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < param_3 && (bVar7 = (*in_stack_00000010)(local_18,local_10), !bVar7)) &&
-         (bVar7 = (*in_stack_00000010)(local_10,local_18), !bVar7))) {
-    local_18 = local_18 + 1;
+  while (((_Plast < _Last && (bVar7 = (*in_stack_00000010)(_Plast,_Pfirst), !bVar7)) &&
+         (bVar7 = (*in_stack_00000010)(_Pfirst,_Plast), !bVar7))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pMVar9 = local_18;
-  pMVar10 = local_c;
-  pMVar8 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  pMVar9 = _Plast;
+  pMVar10 = _Gfirst;
+  pMVar8 = _Pfirst;
   do {
-    while (local_10 = pMVar8, local_c = pMVar10, local_18 = pMVar9, param_3 <= local_c) {
+    while (_Pfirst = pMVar8, _Gfirst = pMVar10, _Plast = pMVar9, _Last <= _Gfirst) {
 LAB_006cfd62:
-      for (; param_2 < local_14; local_14 = local_14 + -1) {
-        bVar7 = (*in_stack_00000010)(local_14 + -1,local_10);
-        pMVar9 = local_10;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        bVar7 = (*in_stack_00000010)(_Glast + -1,_Pfirst);
+        pMVar9 = _Pfirst;
         if (!bVar7) {
-          bVar7 = (*in_stack_00000010)(local_10,local_14 + -1);
+          bVar7 = (*in_stack_00000010)(_Pfirst,_Glast + -1);
           if (bVar7) break;
-          pMVar9 = local_10 + -1;
-          pMVar10 = local_14 + -1;
+          pMVar9 = _Pfirst + -1;
+          pMVar10 = _Glast + -1;
           if (pMVar9 != pMVar10) {
             pcVar1 = pMVar9->label;
-            iVar2 = local_10[-1].accessCount;
-            lVar5 = local_10[-1].ticksSelf;
-            uVar3 = *(undefined4 *)((int)&local_10[-1].ticksSelf + 4);
-            lVar6 = local_10[-1].ticksFile;
-            uVar4 = *(undefined4 *)((int)&local_10[-1].ticksFile + 4);
+            iVar2 = _Pfirst[-1].accessCount;
+            lVar5 = _Pfirst[-1].ticksSelf;
+            uVar3 = *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4);
+            lVar6 = _Pfirst[-1].ticksFile;
+            uVar4 = *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4);
             pMVar9->label = pMVar10->label;
-            local_10[-1].accessCount = local_14[-1].accessCount;
-            *(int *)&local_10[-1].ticksSelf = (int)local_14[-1].ticksSelf;
-            *(undefined4 *)((int)&local_10[-1].ticksSelf + 4) =
-                 *(undefined4 *)((int)&local_14[-1].ticksSelf + 4);
-            *(int *)&local_10[-1].ticksFile = (int)local_14[-1].ticksFile;
-            *(undefined4 *)((int)&local_10[-1].ticksFile + 4) =
-                 *(undefined4 *)((int)&local_14[-1].ticksFile + 4);
+            _Pfirst[-1].accessCount = _Glast[-1].accessCount;
+            *(int *)&_Pfirst[-1].ticksSelf = (int)_Glast[-1].ticksSelf;
+            *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4) =
+                 *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4);
+            *(int *)&_Pfirst[-1].ticksFile = (int)_Glast[-1].ticksFile;
+            *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4) =
+                 *(undefined4 *)((int)&_Glast[-1].ticksFile + 4);
             pMVar10->label = pcVar1;
-            local_14[-1].accessCount = iVar2;
-            *(int *)&local_14[-1].ticksSelf = (int)lVar5;
-            *(undefined4 *)((int)&local_14[-1].ticksSelf + 4) = uVar3;
-            *(int *)&local_14[-1].ticksFile = (int)lVar6;
-            *(undefined4 *)((int)&local_14[-1].ticksFile + 4) = uVar4;
+            _Glast[-1].accessCount = iVar2;
+            *(int *)&_Glast[-1].ticksSelf = (int)lVar5;
+            *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4) = uVar3;
+            *(int *)&_Glast[-1].ticksFile = (int)lVar6;
+            *(undefined4 *)((int)&_Glast[-1].ticksFile + 4) = uVar4;
           }
         }
-        local_10 = pMVar9;
+        _Pfirst = pMVar9;
       }
-      if ((local_14 == param_2) && (local_c == (MapProfileHotSpot *)param_3)) {
-        param_1->label = (char *)local_10;
-        param_1->accessCount = (int)local_18;
-        pVar12.second = local_18;
+      if ((_Glast == _First) && (_Gfirst == (MapProfileHotSpot *)_Last)) {
+        param_1->label = (char *)_Pfirst;
+        param_1->accessCount = (int)_Plast;
+        pVar12.second = _Plast;
         pVar12.first = param_1;
         return pVar12;
       }
-      if (local_14 == param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          pcVar1 = local_10->label;
-          iVar2 = local_10->accessCount;
-          lVar5 = local_10->ticksSelf;
-          uVar3 = *(undefined4 *)((int)&local_10->ticksSelf + 4);
-          lVar6 = local_10->ticksFile;
-          uVar4 = *(undefined4 *)((int)&local_10->ticksFile + 4);
-          local_10->label = local_18->label;
-          local_10->accessCount = local_18->accessCount;
-          *(int *)&local_10->ticksSelf = (int)local_18->ticksSelf;
-          *(undefined4 *)((int)&local_10->ticksSelf + 4) =
-               *(undefined4 *)((int)&local_18->ticksSelf + 4);
-          *(int *)&local_10->ticksFile = (int)local_18->ticksFile;
-          *(undefined4 *)((int)&local_10->ticksFile + 4) =
-               *(undefined4 *)((int)&local_18->ticksFile + 4);
-          local_18->label = pcVar1;
-          local_18->accessCount = iVar2;
-          *(int *)&local_18->ticksSelf = (int)lVar5;
-          *(undefined4 *)((int)&local_18->ticksSelf + 4) = uVar3;
-          *(int *)&local_18->ticksFile = (int)lVar6;
-          *(undefined4 *)((int)&local_18->ticksFile + 4) = uVar4;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          pcVar1 = _Pfirst->label;
+          iVar2 = _Pfirst->accessCount;
+          lVar5 = _Pfirst->ticksSelf;
+          uVar3 = *(undefined4 *)((int)&_Pfirst->ticksSelf + 4);
+          lVar6 = _Pfirst->ticksFile;
+          uVar4 = *(undefined4 *)((int)&_Pfirst->ticksFile + 4);
+          _Pfirst->label = _Plast->label;
+          _Pfirst->accessCount = _Plast->accessCount;
+          *(int *)&_Pfirst->ticksSelf = (int)_Plast->ticksSelf;
+          *(undefined4 *)((int)&_Pfirst->ticksSelf + 4) =
+               *(undefined4 *)((int)&_Plast->ticksSelf + 4);
+          *(int *)&_Pfirst->ticksFile = (int)_Plast->ticksFile;
+          *(undefined4 *)((int)&_Pfirst->ticksFile + 4) =
+               *(undefined4 *)((int)&_Plast->ticksFile + 4);
+          _Plast->label = pcVar1;
+          _Plast->accessCount = iVar2;
+          *(int *)&_Plast->ticksSelf = (int)lVar5;
+          *(undefined4 *)((int)&_Plast->ticksSelf + 4) = uVar3;
+          *(int *)&_Plast->ticksFile = (int)lVar6;
+          *(undefined4 *)((int)&_Plast->ticksFile + 4) = uVar4;
         }
-        pMVar9 = local_18 + 1;
-        pMVar10 = local_c + 1;
-        pMVar8 = local_10 + 1;
-        if (local_10 != local_c) {
-          pcVar1 = local_10->label;
-          iVar2 = local_10->accessCount;
-          lVar5 = local_10->ticksSelf;
-          uVar3 = *(undefined4 *)((int)&local_10->ticksSelf + 4);
-          lVar6 = local_10->ticksFile;
-          uVar4 = *(undefined4 *)((int)&local_10->ticksFile + 4);
-          local_10->label = local_c->label;
-          local_10->accessCount = local_c->accessCount;
-          *(int *)&local_10->ticksSelf = (int)local_c->ticksSelf;
-          *(undefined4 *)((int)&local_10->ticksSelf + 4) =
-               *(undefined4 *)((int)&local_c->ticksSelf + 4);
-          *(int *)&local_10->ticksFile = (int)local_c->ticksFile;
-          *(undefined4 *)((int)&local_10->ticksFile + 4) =
-               *(undefined4 *)((int)&local_c->ticksFile + 4);
-          local_c->label = pcVar1;
-          local_c->accessCount = iVar2;
-          *(int *)&local_c->ticksSelf = (int)lVar5;
-          *(undefined4 *)((int)&local_c->ticksSelf + 4) = uVar3;
-          *(int *)&local_c->ticksFile = (int)lVar6;
-          *(undefined4 *)((int)&local_c->ticksFile + 4) = uVar4;
+        pMVar9 = _Plast + 1;
+        pMVar10 = _Gfirst + 1;
+        pMVar8 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          pcVar1 = _Pfirst->label;
+          iVar2 = _Pfirst->accessCount;
+          lVar5 = _Pfirst->ticksSelf;
+          uVar3 = *(undefined4 *)((int)&_Pfirst->ticksSelf + 4);
+          lVar6 = _Pfirst->ticksFile;
+          uVar4 = *(undefined4 *)((int)&_Pfirst->ticksFile + 4);
+          _Pfirst->label = _Gfirst->label;
+          _Pfirst->accessCount = _Gfirst->accessCount;
+          *(int *)&_Pfirst->ticksSelf = (int)_Gfirst->ticksSelf;
+          *(undefined4 *)((int)&_Pfirst->ticksSelf + 4) =
+               *(undefined4 *)((int)&_Gfirst->ticksSelf + 4);
+          *(int *)&_Pfirst->ticksFile = (int)_Gfirst->ticksFile;
+          *(undefined4 *)((int)&_Pfirst->ticksFile + 4) =
+               *(undefined4 *)((int)&_Gfirst->ticksFile + 4);
+          _Gfirst->label = pcVar1;
+          _Gfirst->accessCount = iVar2;
+          *(int *)&_Gfirst->ticksSelf = (int)lVar5;
+          *(undefined4 *)((int)&_Gfirst->ticksSelf + 4) = uVar3;
+          *(int *)&_Gfirst->ticksFile = (int)lVar6;
+          *(undefined4 *)((int)&_Gfirst->ticksFile + 4) = uVar4;
         }
       }
-      else if (local_c == (MapProfileHotSpot *)param_3) {
-        pMVar11 = local_14 + -1;
-        pMVar8 = local_10 + -1;
+      else if (_Gfirst == (MapProfileHotSpot *)_Last) {
+        pMVar11 = _Glast + -1;
+        pMVar8 = _Pfirst + -1;
         if ((pMVar11 != pMVar8) && (pMVar11 != pMVar8)) {
           pcVar1 = pMVar11->label;
-          iVar2 = local_14[-1].accessCount;
-          lVar5 = local_14[-1].ticksSelf;
-          uVar3 = *(undefined4 *)((int)&local_14[-1].ticksSelf + 4);
-          lVar6 = local_14[-1].ticksFile;
-          uVar4 = *(undefined4 *)((int)&local_14[-1].ticksFile + 4);
+          iVar2 = _Glast[-1].accessCount;
+          lVar5 = _Glast[-1].ticksSelf;
+          uVar3 = *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4);
+          lVar6 = _Glast[-1].ticksFile;
+          uVar4 = *(undefined4 *)((int)&_Glast[-1].ticksFile + 4);
           pMVar11->label = pMVar8->label;
-          local_14[-1].accessCount = local_10[-1].accessCount;
-          *(int *)&local_14[-1].ticksSelf = (int)local_10[-1].ticksSelf;
-          *(undefined4 *)((int)&local_14[-1].ticksSelf + 4) =
-               *(undefined4 *)((int)&local_10[-1].ticksSelf + 4);
-          *(int *)&local_14[-1].ticksFile = (int)local_10[-1].ticksFile;
-          *(undefined4 *)((int)&local_14[-1].ticksFile + 4) =
-               *(undefined4 *)((int)&local_10[-1].ticksFile + 4);
+          _Glast[-1].accessCount = _Pfirst[-1].accessCount;
+          *(int *)&_Glast[-1].ticksSelf = (int)_Pfirst[-1].ticksSelf;
+          *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4) =
+               *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4);
+          *(int *)&_Glast[-1].ticksFile = (int)_Pfirst[-1].ticksFile;
+          *(undefined4 *)((int)&_Glast[-1].ticksFile + 4) =
+               *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4);
           pMVar8->label = pcVar1;
-          local_10[-1].accessCount = iVar2;
-          *(int *)&local_10[-1].ticksSelf = (int)lVar5;
-          *(undefined4 *)((int)&local_10[-1].ticksSelf + 4) = uVar3;
-          *(int *)&local_10[-1].ticksFile = (int)lVar6;
-          *(undefined4 *)((int)&local_10[-1].ticksFile + 4) = uVar4;
+          _Pfirst[-1].accessCount = iVar2;
+          *(int *)&_Pfirst[-1].ticksSelf = (int)lVar5;
+          *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4) = uVar3;
+          *(int *)&_Pfirst[-1].ticksFile = (int)lVar6;
+          *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4) = uVar4;
         }
-        pMVar9 = local_18 + -1;
-        pMVar10 = local_c;
-        local_14 = pMVar11;
+        pMVar9 = _Plast + -1;
+        pMVar10 = _Gfirst;
+        _Glast = pMVar11;
         if (pMVar8 != pMVar9) {
           pcVar1 = pMVar8->label;
-          iVar2 = local_10[-1].accessCount;
-          lVar5 = local_10[-1].ticksSelf;
-          uVar3 = *(undefined4 *)((int)&local_10[-1].ticksSelf + 4);
-          lVar6 = local_10[-1].ticksFile;
-          uVar4 = *(undefined4 *)((int)&local_10[-1].ticksFile + 4);
+          iVar2 = _Pfirst[-1].accessCount;
+          lVar5 = _Pfirst[-1].ticksSelf;
+          uVar3 = *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4);
+          lVar6 = _Pfirst[-1].ticksFile;
+          uVar4 = *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4);
           pMVar8->label = pMVar9->label;
-          local_10[-1].accessCount = local_18[-1].accessCount;
-          *(int *)&local_10[-1].ticksSelf = (int)local_18[-1].ticksSelf;
-          *(undefined4 *)((int)&local_10[-1].ticksSelf + 4) =
-               *(undefined4 *)((int)&local_18[-1].ticksSelf + 4);
-          *(int *)&local_10[-1].ticksFile = (int)local_18[-1].ticksFile;
-          *(undefined4 *)((int)&local_10[-1].ticksFile + 4) =
-               *(undefined4 *)((int)&local_18[-1].ticksFile + 4);
+          _Pfirst[-1].accessCount = _Plast[-1].accessCount;
+          *(int *)&_Pfirst[-1].ticksSelf = (int)_Plast[-1].ticksSelf;
+          *(undefined4 *)((int)&_Pfirst[-1].ticksSelf + 4) =
+               *(undefined4 *)((int)&_Plast[-1].ticksSelf + 4);
+          *(int *)&_Pfirst[-1].ticksFile = (int)_Plast[-1].ticksFile;
+          *(undefined4 *)((int)&_Pfirst[-1].ticksFile + 4) =
+               *(undefined4 *)((int)&_Plast[-1].ticksFile + 4);
           pMVar9->label = pcVar1;
-          local_18[-1].accessCount = iVar2;
-          *(int *)&local_18[-1].ticksSelf = (int)lVar5;
-          *(undefined4 *)((int)&local_18[-1].ticksSelf + 4) = uVar3;
-          *(int *)&local_18[-1].ticksFile = (int)lVar6;
-          *(undefined4 *)((int)&local_18[-1].ticksFile + 4) = uVar4;
+          _Plast[-1].accessCount = iVar2;
+          *(int *)&_Plast[-1].ticksSelf = (int)lVar5;
+          *(undefined4 *)((int)&_Plast[-1].ticksSelf + 4) = uVar3;
+          *(int *)&_Plast[-1].ticksFile = (int)lVar6;
+          *(undefined4 *)((int)&_Plast[-1].ticksFile + 4) = uVar4;
         }
       }
       else {
-        pMVar11 = local_14 + -1;
-        if (local_c != pMVar11) {
-          pcVar1 = local_c->label;
-          iVar2 = local_c->accessCount;
-          lVar5 = local_c->ticksSelf;
-          uVar3 = *(undefined4 *)((int)&local_c->ticksSelf + 4);
-          lVar6 = local_c->ticksFile;
-          uVar4 = *(undefined4 *)((int)&local_c->ticksFile + 4);
-          local_c->label = pMVar11->label;
-          local_c->accessCount = local_14[-1].accessCount;
-          *(int *)&local_c->ticksSelf = (int)local_14[-1].ticksSelf;
-          *(undefined4 *)((int)&local_c->ticksSelf + 4) =
-               *(undefined4 *)((int)&local_14[-1].ticksSelf + 4);
-          *(int *)&local_c->ticksFile = (int)local_14[-1].ticksFile;
-          *(undefined4 *)((int)&local_c->ticksFile + 4) =
-               *(undefined4 *)((int)&local_14[-1].ticksFile + 4);
+        pMVar11 = _Glast + -1;
+        if (_Gfirst != pMVar11) {
+          pcVar1 = _Gfirst->label;
+          iVar2 = _Gfirst->accessCount;
+          lVar5 = _Gfirst->ticksSelf;
+          uVar3 = *(undefined4 *)((int)&_Gfirst->ticksSelf + 4);
+          lVar6 = _Gfirst->ticksFile;
+          uVar4 = *(undefined4 *)((int)&_Gfirst->ticksFile + 4);
+          _Gfirst->label = pMVar11->label;
+          _Gfirst->accessCount = _Glast[-1].accessCount;
+          *(int *)&_Gfirst->ticksSelf = (int)_Glast[-1].ticksSelf;
+          *(undefined4 *)((int)&_Gfirst->ticksSelf + 4) =
+               *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4);
+          *(int *)&_Gfirst->ticksFile = (int)_Glast[-1].ticksFile;
+          *(undefined4 *)((int)&_Gfirst->ticksFile + 4) =
+               *(undefined4 *)((int)&_Glast[-1].ticksFile + 4);
           pMVar11->label = pcVar1;
-          local_14[-1].accessCount = iVar2;
-          *(int *)&local_14[-1].ticksSelf = (int)lVar5;
-          *(undefined4 *)((int)&local_14[-1].ticksSelf + 4) = uVar3;
-          *(int *)&local_14[-1].ticksFile = (int)lVar6;
-          *(undefined4 *)((int)&local_14[-1].ticksFile + 4) = uVar4;
+          _Glast[-1].accessCount = iVar2;
+          *(int *)&_Glast[-1].ticksSelf = (int)lVar5;
+          *(undefined4 *)((int)&_Glast[-1].ticksSelf + 4) = uVar3;
+          *(int *)&_Glast[-1].ticksFile = (int)lVar6;
+          *(undefined4 *)((int)&_Glast[-1].ticksFile + 4) = uVar4;
         }
-        pMVar9 = local_18;
-        pMVar10 = local_c + 1;
-        pMVar8 = local_10;
-        local_14 = pMVar11;
+        pMVar9 = _Plast;
+        pMVar10 = _Gfirst + 1;
+        pMVar8 = _Pfirst;
+        _Glast = pMVar11;
       }
     }
-    bVar7 = (*in_stack_00000010)(local_10,local_c);
-    pMVar9 = local_18;
+    bVar7 = (*in_stack_00000010)(_Pfirst,_Gfirst);
+    pMVar9 = _Plast;
     if (!bVar7) {
-      bVar7 = (*in_stack_00000010)(local_c,local_10);
+      bVar7 = (*in_stack_00000010)(_Gfirst,_Pfirst);
       if (bVar7) goto LAB_006cfd62;
-      pMVar9 = local_18 + 1;
-      if (local_18 != local_c) {
-        pcVar1 = local_18->label;
-        iVar2 = local_18->accessCount;
-        lVar5 = local_18->ticksSelf;
-        uVar3 = *(undefined4 *)((int)&local_18->ticksSelf + 4);
-        lVar6 = local_18->ticksFile;
-        uVar4 = *(undefined4 *)((int)&local_18->ticksFile + 4);
-        local_18->label = local_c->label;
-        local_18->accessCount = local_c->accessCount;
-        *(int *)&local_18->ticksSelf = (int)local_c->ticksSelf;
-        *(undefined4 *)((int)&local_18->ticksSelf + 4) =
-             *(undefined4 *)((int)&local_c->ticksSelf + 4);
-        *(int *)&local_18->ticksFile = (int)local_c->ticksFile;
-        *(undefined4 *)((int)&local_18->ticksFile + 4) =
-             *(undefined4 *)((int)&local_c->ticksFile + 4);
-        local_c->label = pcVar1;
-        local_c->accessCount = iVar2;
-        *(int *)&local_c->ticksSelf = (int)lVar5;
-        *(undefined4 *)((int)&local_c->ticksSelf + 4) = uVar3;
-        *(int *)&local_c->ticksFile = (int)lVar6;
-        *(undefined4 *)((int)&local_c->ticksFile + 4) = uVar4;
+      pMVar9 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        pcVar1 = _Plast->label;
+        iVar2 = _Plast->accessCount;
+        lVar5 = _Plast->ticksSelf;
+        uVar3 = *(undefined4 *)((int)&_Plast->ticksSelf + 4);
+        lVar6 = _Plast->ticksFile;
+        uVar4 = *(undefined4 *)((int)&_Plast->ticksFile + 4);
+        _Plast->label = _Gfirst->label;
+        _Plast->accessCount = _Gfirst->accessCount;
+        *(int *)&_Plast->ticksSelf = (int)_Gfirst->ticksSelf;
+        *(undefined4 *)((int)&_Plast->ticksSelf + 4) = *(undefined4 *)((int)&_Gfirst->ticksSelf + 4)
+        ;
+        *(int *)&_Plast->ticksFile = (int)_Gfirst->ticksFile;
+        *(undefined4 *)((int)&_Plast->ticksFile + 4) = *(undefined4 *)((int)&_Gfirst->ticksFile + 4)
+        ;
+        _Gfirst->label = pcVar1;
+        _Gfirst->accessCount = iVar2;
+        *(int *)&_Gfirst->ticksSelf = (int)lVar5;
+        *(undefined4 *)((int)&_Gfirst->ticksSelf + 4) = uVar3;
+        *(int *)&_Gfirst->ticksFile = (int)lVar6;
+        *(undefined4 *)((int)&_Gfirst->ticksFile + 4) = uVar4;
       }
     }
-    local_18 = pMVar9;
-    pMVar9 = local_18;
-    pMVar10 = local_c + 1;
-    pMVar8 = local_10;
+    _Plast = pMVar9;
+    pMVar9 = _Plast;
+    pMVar10 = _Gfirst + 1;
+    pMVar8 = _Pfirst;
   } while( true );
 }
 
@@ -1495,41 +1526,41 @@ LAB_006cfd62:
 void __cdecl
 std::
 _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,int param_3,
-          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *param_4)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Last,int _Ideal,
+          _func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *_Pred)
 
 {
-  MapProfileHotSpot *local_10;
+  MapProfileHotSpot *_Mid;
   MapProfileHotSpot *local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = ((int)param_2 - (int)param_1) / 0x18, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = ((int)_Last - (int)_First) / 0x18, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-              ((MapProfileHotSpot *)&local_10,param_1,
-               (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if (((int)local_10 - (int)param_1) / 0x18 < ((int)param_2 - (int)local_c) / 0x18) {
+              ((MapProfileHotSpot *)&_Mid,_First,
+               (_func___cdecl_bool_MapProfileHotSpot_ptr_MapProfileHotSpot_ptr *)_Last);
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if (((int)_Mid - (int)_First) / 0x18 < ((int)_Last - (int)local_c) / 0x18) {
       _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
       _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&),MapProfileHotSpot>
-                (param_1,param_2,param_4,(MapProfileHotSpot *)0x0);
+                (_First,_Last,_Pred,(MapProfileHotSpot *)0x0);
     }
   }
   else {
     make_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-              (param_1,param_2,param_4);
+              (_First,_Last,_Pred);
     _Sort_heap<MapProfileHotSpot_*,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfileHotSpot_const_&)>
-              (param_1,param_2,param_4);
+              (_First,_Last,_Pred);
   }
   return;
 }
@@ -1539,15 +1570,15 @@ _Sort<MapProfileHotSpot_*,int,bool_(__cdecl*)(MapProfileHotSpot_const_&,MapProfi
 
 MapProfileHotSpot * __cdecl
 stdext::unchecked_copy_backward<MapProfileHotSpot_*,MapProfileHotSpot_*>
-          (MapProfileHotSpot *param_1,MapProfileHotSpot *param_2,MapProfileHotSpot *param_3)
+          (MapProfileHotSpot *_First,MapProfileHotSpot *_Last,MapProfileHotSpot *_Dest)
 
 {
   MapProfileHotSpot *local_28;
   MapProfileHotSpot *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest;
+  local_24 = _Last;
+  while (_First != local_24) {
     local_28[-1].label = local_24[-1].label;
     local_28[-1].accessCount = local_24[-1].accessCount;
     *(int *)&local_28[-1].ticksSelf = (int)local_24[-1].ticksSelf;
@@ -1559,6 +1590,6 @@ stdext::unchecked_copy_backward<MapProfileHotSpot_*,MapProfileHotSpot_*>
     local_28 = local_28 + -1;
     local_24 = local_24 + -1;
   }
-  return param_3 + -(((int)param_2 - (int)param_1) / 0x18);
+  return _Dest + -(((int)_Last - (int)_First) / 0x18);
 }
 

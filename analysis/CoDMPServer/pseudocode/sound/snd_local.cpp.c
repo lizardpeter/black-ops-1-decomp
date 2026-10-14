@@ -5,10 +5,10 @@
 /* WARNING: Removing unreachable block (ram,0x0094723c) */
 /* WARNING: Removing unreachable block (ram,0x0094725e) */
 
-void __cdecl SNDL_AliasName(char *param_1,uint param_2)
+void __cdecl SNDL_AliasName(char *name,uint id)
 
 {
-  SND_LogRegisterString(param_1,param_2);
+  SND_LogRegisterString(name,id);
   return;
 }
 
@@ -19,77 +19,78 @@ void __cdecl SNDL_AliasName(char *param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x009472b1) */
 
 int __cdecl
-SNDL_Play(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *param_5,float *param_6,
-         bool param_7,snd_playback *param_8)
+SNDL_Play(uint aliasHash,int fadeTimeMs,float attenuation,SndEntHandle entHandle,float *position,
+         float *direction,bool notify,snd_playback *playback)
 
 {
   code *pcVar1;
   bool bVar2;
-  snd_alias_list_t *psVar3;
-  int iVar4;
-  float local_28 [3];
-  snd_occlusion_start_cache local_1c;
-  int local_8;
+  snd_alias_list_t *aliasList;
+  int iVar3;
+  snd_alias_list_t *list;
+  float temp [3];
+  snd_occlusion_start_cache ocache;
+  int pId;
   
-  if (param_1 == 0) {
-    local_8 = -1;
+  if (aliasHash == 0) {
+    pId = -1;
   }
   else {
-    local_8 = -1;
-    local_1c.position[0] = 0.0;
-    local_1c.position[1] = 0.0;
-    local_1c.position[2] = 0.0;
-    local_1c.value = 0.0;
-    local_1c.valid = false;
-    local_1c._17_3_ = 0;
-    if (param_1 == 0) {
-      local_8 = -1;
+    pId = -1;
+    ocache.position[0] = 0.0;
+    ocache.position[1] = 0.0;
+    ocache.position[2] = 0.0;
+    ocache.value = 0.0;
+    ocache.valid = false;
+    ocache._17_3_ = 0;
+    if (aliasHash == 0) {
+      pId = -1;
     }
     else {
-      if (param_5 == (float *)0x0) {
-        local_28[0] = 0.0;
-        local_28[1] = 0.0;
-        local_28[2] = 0.0;
-        param_5 = local_28;
+      if (position == (float *)0x0) {
+        temp[0] = 0.0;
+        temp[1] = 0.0;
+        temp[2] = 0.0;
+        position = temp;
       }
-      psVar3 = SND_FindAliasFromId(param_1);
-      if (psVar3 == (snd_alias_list_t *)0x0) {
-        SND_LogMissingAliasId(param_1);
+      aliasList = SND_FindAliasFromId(aliasHash);
+      if (aliasList == (snd_alias_list_t *)0x0) {
+        SND_LogMissingAliasId(aliasHash);
       }
       else {
-        if ((((((uint)*param_5 & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_5[2] & 0x7f800000) == 0x7f800000)) &&
+        if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+             (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x3f,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          iVar4 = (*pcVar1)();
-          return iVar4;
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
-        local_8 = SND_PlaySoundAlias(psVar3,param_3,param_4,param_5,0,param_2,param_6,param_8,
-                                     &local_1c);
-        if (param_7) {
-          SND_AddLengthNotify(local_8,(void *)(param_4.handle & 0xfff),SND_LENGTH_NOTIFY_SCRIPT);
+        pId = SND_PlaySoundAlias(aliasList,attenuation,entHandle,position,0,fadeTimeMs,direction,
+                                 playback,&ocache);
+        if (notify) {
+          SND_AddLengthNotify(pId,(void *)(entHandle.handle & 0xfff),SND_LENGTH_NOTIFY_SCRIPT);
         }
       }
-      if (local_8 != -1) {
-        if (param_7) {
-          SND_AddLengthNotify(local_8,(void *)(param_4.handle & 0xfff),SND_LENGTH_NOTIFY_SCRIPT);
+      if (pId != -1) {
+        if (notify) {
+          SND_AddLengthNotify(pId,(void *)(entHandle.handle & 0xfff),SND_LENGTH_NOTIFY_SCRIPT);
         }
-        if (((param_8 != (snd_playback *)0x0) && (param_8->id != local_8)) &&
+        if (((playback != (snd_playback *)0x0) && (playback->id != pId)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x55,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          iVar4 = (*pcVar1)();
-          return iVar4;
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
       }
-      if ((local_8 == -1) && (param_8 != (snd_playback *)0x0)) {
-        SND_FreePlaybackNotify(param_8);
+      if ((pId == -1) && (playback != (snd_playback *)0x0)) {
+        SND_FreePlaybackNotify(playback);
       }
     }
   }
-  return local_8;
+  return pId;
 }
 
 
@@ -97,19 +98,19 @@ SNDL_Play(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *par
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl StopSoundAliasesOnEnt(SndEntHandle param_1,uint param_2)
+void __cdecl StopSoundAliasesOnEnt(SndEntHandle sndEnt,uint name)
 
 {
   bool bVar1;
-  int local_8;
+  snd_voice_t *voice;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-    if ((((g_snd.voiceAliasHash[local_8] != 0) &&
-         (g_snd.voice[local_8].sndEnt.handle == param_1.handle)) &&
-        ((((g_snd.voice[local_8].alias)->flags & 1) != 0 ||
-         ((param_2 != 0 || (bVar1 = SND_IsAliasStopOnDeath(g_snd.voice[local_8].alias), bVar1))))))
-       && ((param_2 == 0 || (param_2 == g_snd.voiceAliasHash[local_8])))) {
-      SND_StopVoice(local_8);
+  for (i = 0; i < 0x4a; i = i + 1) {
+    if ((((g_snd.voiceAliasHash[i] != 0) && (g_snd.voice[i].sndEnt.handle == sndEnt.handle)) &&
+        ((((g_snd.voice[i].alias)->flags & 1) != 0 ||
+         ((name != 0 || (bVar1 = SND_IsAliasStopOnDeath(g_snd.voice[i].alias), bVar1)))))) &&
+       ((name == 0 || (name == g_snd.voiceAliasHash[i])))) {
+      SND_StopVoice(i);
     }
   }
   return;
@@ -121,10 +122,10 @@ void __cdecl StopSoundAliasesOnEnt(SndEntHandle param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x009474bc) */
 /* WARNING: Removing unreachable block (ram,0x009474e1) */
 
-void __cdecl SNDL_StopSoundAliasOnEnt(SndEntHandle param_1,uint param_2)
+void __cdecl SNDL_StopSoundAliasOnEnt(SndEntHandle sndEnt,uint name)
 
 {
-  StopSoundAliasesOnEnt(param_1,param_2);
+  StopSoundAliasesOnEnt(sndEnt,name);
   return;
 }
 
@@ -134,10 +135,10 @@ void __cdecl SNDL_StopSoundAliasOnEnt(SndEntHandle param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x0094762c) */
 /* WARNING: Removing unreachable block (ram,0x00947651) */
 
-void __cdecl SNDL_StopSoundsOnEnt(SndEntHandle param_1)
+void __cdecl SNDL_StopSoundsOnEnt(SndEntHandle sndEnt)
 
 {
-  StopSoundAliasesOnEnt(param_1,0);
+  StopSoundAliasesOnEnt(sndEnt,0);
   return;
 }
 
@@ -148,10 +149,10 @@ void __cdecl SNDL_StopSoundsOnEnt(SndEntHandle param_1)
 /* WARNING: Removing unreachable block (ram,0x009476a1) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_NotifyCinematicStart(float param_1)
+void __cdecl SNDL_NotifyCinematicStart(float volume)
 
 {
-  if ((g_snd.inCinematic == 0) && (1.52879e-05 < param_1)) {
+  if ((g_snd.inCinematic == 0) && (1.52879e-05 < volume)) {
     g_snd.inCinematic = 1;
     g_snd.cinematicUpdate = 1;
     g_snd.cinematicTimestamp = Sys_Milliseconds();
@@ -184,15 +185,17 @@ void __cdecl SNDL_NotifyCinematicEnd(void)
 /* WARNING: Removing unreachable block (ram,0x00947774) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_DisconnectListener(int param_1)
+void __cdecl SNDL_DisconnectListener(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
-  int local_10;
+  int i_2;
+  uint i;
+  bool kill;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xb6,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -202,11 +205,11 @@ void __cdecl SNDL_DisconnectListener(int param_1)
       return;
     }
   }
-  memset((uchar *)(g_snd.listeners + param_1),'\0',0x3c);
-  AxisClear(g_snd.listeners[param_1].orient.axis);
-  g_snd.listeners[param_1].orient.origin[0] = 0.0;
-  g_snd.listeners[param_1].orient.origin[1] = 0.0;
-  g_snd.listeners[param_1].orient.origin[2] = 0.0;
+  memset((uchar *)(g_snd.listeners + localClientNum),'\0',0x3c);
+  AxisClear(g_snd.listeners[localClientNum].orient.axis);
+  g_snd.listeners[localClientNum].orient.origin[0] = 0.0;
+  g_snd.listeners[localClientNum].orient.origin[1] = 0.0;
+  g_snd.listeners[localClientNum].orient.origin[2] = 0.0;
   bVar3 = true;
   bVar2 = false;
   while (!bVar2) {
@@ -219,10 +222,9 @@ void __cdecl SNDL_DisconnectListener(int param_1)
     bVar2 = true;
   }
   if (bVar3) {
-    for (local_10 = 0; local_10 < 0x4a; local_10 = local_10 + 1) {
-      if ((g_snd.voiceAliasHash[local_10] != 0) && (((g_snd.voice[local_10].alias)->flags & 2) != 0)
-         ) {
-        SND_StopVoice(local_10);
+    for (i_2 = 0; i_2 < 0x4a; i_2 = i_2 + 1) {
+      if ((g_snd.voiceAliasHash[i_2] != 0) && (((g_snd.voice[i_2].alias)->flags & 2) != 0)) {
+        SND_StopVoice(i_2);
       }
     }
   }
@@ -238,14 +240,15 @@ void __cdecl SNDL_DisconnectListener(int param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SNDL_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*param_5) [3])
+SNDL_SetListener(int localClientNum,int clientNum,team_t team,float *origin,float (*inAxis) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   float (*pafVar3) [3];
   float fVar4;
-  float local_30;
+  float b;
+  float axis;
   float local_2c;
   float local_28;
   float local_24;
@@ -254,24 +257,24 @@ SNDL_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*p
   undefined4 local_18;
   undefined4 local_14;
   float local_10;
-  float local_c;
-  undefined1 local_5;
+  float a;
+  bool independant;
   
-  if ((param_4 == (float *)0x0) &&
+  if ((origin == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xd5,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float (*) [3])0x0) &&
+  if ((inAxis == (float (*) [3])0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xd6,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xd7,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -279,51 +282,51 @@ SNDL_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*p
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+       (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xdb,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)(*param_5)[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(*param_5)[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(*param_5)[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(*inAxis)[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(*inAxis)[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(*inAxis)[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xdc,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)param_5[1][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[1][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[1][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)inAxis[1][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)inAxis[1][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)inAxis[1][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xdd,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)param_5[2][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[2][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[2][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)inAxis[2][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)inAxis[2][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)inAxis[2][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xde,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Vec3PackNormAxis(param_5,(float (*) [3])&local_30);
+  Vec3PackNormAxis(inAxis,(float (*) [3])&axis);
   local_28 = 0.0;
   local_1c = 0.0;
   local_18 = 0;
   local_14 = 0;
   local_10 = 1.0;
-  local_c = Vec3Normalize(&local_30);
+  a = Vec3Normalize(&axis);
   fVar4 = Vec3Normalize(&local_24);
-  if ((((uint)local_c & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)a & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xeb,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -337,51 +340,54 @@ SNDL_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*p
     (*pcVar1)();
     return;
   }
-  local_5 = local_30 * local_24 + local_2c * local_20 + local_28 * local_1c < 0.99998474;
-  if (((1.52879e-05 < local_c) && (1.52879e-05 < fVar4)) && ((bool)local_5)) {
-    Vec3PackNormAxis((float (*) [3])&local_30,g_snd.listeners[param_1].orient.axis);
-    g_snd.listeners[param_1].orient.origin[0] = *param_4;
-    g_snd.listeners[param_1].orient.origin[1] = param_4[1];
-    g_snd.listeners[param_1].orient.origin[2] = param_4[2];
-    g_snd.listeners[param_1].clientNum = param_2;
-    g_snd.listeners[param_1].active = true;
+  independant = axis * local_24 + local_2c * local_20 + local_28 * local_1c < 0.99998474;
+  if (((1.52879e-05 < a) && (1.52879e-05 < fVar4)) && (independant)) {
+    Vec3PackNormAxis((float (*) [3])&axis,g_snd.listeners[localClientNum].orient.axis);
+    g_snd.listeners[localClientNum].orient.origin[0] = *origin;
+    g_snd.listeners[localClientNum].orient.origin[1] = origin[1];
+    g_snd.listeners[localClientNum].orient.origin[2] = origin[2];
+    g_snd.listeners[localClientNum].clientNum = clientNum;
+    g_snd.listeners[localClientNum].active = true;
   }
-  pafVar3 = g_snd.listeners[param_1].orient.axis;
+  pafVar3 = g_snd.listeners[localClientNum].orient.axis;
   if (((*pafVar3)[0] * (*pafVar3)[0] +
-       g_snd.listeners[param_1].orient.axis[0][1] * g_snd.listeners[param_1].orient.axis[0][1] +
-       g_snd.listeners[param_1].orient.axis[0][2] * g_snd.listeners[param_1].orient.axis[0][2] <=
-       0.99998474) &&
+       g_snd.listeners[localClientNum].orient.axis[0][1] *
+       g_snd.listeners[localClientNum].orient.axis[0][1] +
+       g_snd.listeners[localClientNum].orient.axis[0][2] *
+       g_snd.listeners[localClientNum].orient.axis[0][2] <= 0.99998474) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xfa,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pafVar3 = g_snd.listeners[param_1].orient.axis + 1;
+  pafVar3 = g_snd.listeners[localClientNum].orient.axis + 1;
   if (((*pafVar3)[0] * (*pafVar3)[0] +
-       g_snd.listeners[param_1].orient.axis[1][1] * g_snd.listeners[param_1].orient.axis[1][1] +
-       g_snd.listeners[param_1].orient.axis[1][2] * g_snd.listeners[param_1].orient.axis[1][2] <=
-       0.99998474) &&
+       g_snd.listeners[localClientNum].orient.axis[1][1] *
+       g_snd.listeners[localClientNum].orient.axis[1][1] +
+       g_snd.listeners[localClientNum].orient.axis[1][2] *
+       g_snd.listeners[localClientNum].orient.axis[1][2] <= 0.99998474) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xfb,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pafVar3 = g_snd.listeners[param_1].orient.axis + 2;
+  pafVar3 = g_snd.listeners[localClientNum].orient.axis + 2;
   if (((*pafVar3)[0] * (*pafVar3)[0] +
-       g_snd.listeners[param_1].orient.axis[2][1] * g_snd.listeners[param_1].orient.axis[2][1] +
-       g_snd.listeners[param_1].orient.axis[2][2] * g_snd.listeners[param_1].orient.axis[2][2] <=
-       0.99998474) &&
+       g_snd.listeners[localClientNum].orient.axis[2][1] *
+       g_snd.listeners[localClientNum].orient.axis[2][1] +
+       g_snd.listeners[localClientNum].orient.axis[2][2] *
+       g_snd.listeners[localClientNum].orient.axis[2][2] <= 0.99998474) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0xfc,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  g_snd.listeners[param_1].clientNum = param_2;
-  g_snd.listeners[param_1].active = true;
-  g_snd.listeners[param_1].team = param_3;
+  g_snd.listeners[localClientNum].clientNum = clientNum;
+  g_snd.listeners[localClientNum].active = true;
+  g_snd.listeners[localClientNum].team = team;
   return;
 }
 
@@ -390,21 +396,21 @@ SNDL_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*p
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_StopSounds(snd_stop_sound_flags param_1)
+void __cdecl SNDL_StopSounds(snd_stop_sound_flags which)
 
 {
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  uint i;
   
-  if ((param_1 == SND_EVERY_SINGLE_ONE_DONT_ASK_ANY_QUESTIONS) || (param_1 == SND_STOP_ALL)) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      SND_StopVoice(local_8);
+  if ((which == SND_EVERY_SINGLE_ONE_DONT_ASK_ANY_QUESTIONS) || (which == SND_STOP_ALL)) {
+    for (i = 0; i < 0x4a; i = i + 1) {
+      SND_StopVoice(i);
     }
   }
-  else if (param_1 == SND_STOP_STREAMED) {
-    for (local_c = 10; local_c < 0x4a; local_c = local_c + 1) {
-      if (g_snd.voiceAliasHash[local_c] != 0) {
-        SND_StopVoice(local_c);
+  else if (which == SND_STOP_STREAMED) {
+    for (i_2 = 10; i_2 < 0x4a; i_2 = i_2 + 1) {
+      if (g_snd.voiceAliasHash[i_2] != 0) {
+        SND_StopVoice(i_2);
       }
     }
   }
@@ -450,7 +456,7 @@ void __cdecl SNDL_FadeIn(void)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SNDL_SetEnvironmentEffects(int param_1,uint param_2,float param_3,float param_4,int param_5)
+SNDL_SetEnvironmentEffects(int priority,uint roomstring,float drylevel,float wetlevel,int fademsec)
 
 {
   code *pcVar1;
@@ -458,66 +464,67 @@ SNDL_SetEnvironmentEffects(int param_1,uint param_2,float param_3,float param_4,
   bool bVar3;
   uint uVar4;
   snd_enveffect *psVar5;
-  int local_8;
+  snd_enveffect *effect;
+  int i;
   
   uVar4 = SND_ActiveListenerCount();
   if (uVar4 == 1) {
-    if (((param_1 < 1) || (2 < param_1)) &&
+    if (((priority < 1) || (2 < priority)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x13e,0,
                                  "%s\n\t(priority) = %i"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 == 0) &&
+    if ((roomstring == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x13f,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_5 < 0) &&
+    if ((fademsec < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x140,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_3 < 0.0) || (1.0 < param_3)) &&
+    if (((drylevel < 0.0) || (1.0 < drylevel)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x141,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_4 < 0.0) || (1.0 < param_4)) &&
+    if (((wetlevel < 0.0) || (1.0 < wetlevel)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x142,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar5 = g_snd.envEffects + param_1;
-    g_snd.envEffects[param_1].active = true;
-    if (param_5 < 1) {
-      param_5 = 1;
+    psVar5 = g_snd.envEffects + priority;
+    g_snd.envEffects[priority].active = true;
+    if (fademsec < 1) {
+      fademsec = 1;
     }
-    g_snd.envEffects[param_1].drygoal = param_3;
-    g_snd.envEffects[param_1].drylevel = (g_snd.effect)->drylevel;
-    g_snd.envEffects[param_1].dryrate = (param_3 - (g_snd.effect)->drylevel) / (float)param_5;
-    g_snd.envEffects[param_1].wetgoal = param_4;
-    g_snd.envEffects[param_1].wetlevel = (g_snd.effect)->wetlevel;
-    g_snd.envEffects[param_1].wetrate = (param_4 - (g_snd.effect)->wetlevel) / (float)param_5;
-    psVar5->reverbId = param_2;
+    g_snd.envEffects[priority].drygoal = drylevel;
+    g_snd.envEffects[priority].drylevel = (g_snd.effect)->drylevel;
+    g_snd.envEffects[priority].dryrate = (drylevel - (g_snd.effect)->drylevel) / (float)fademsec;
+    g_snd.envEffects[priority].wetgoal = wetlevel;
+    g_snd.envEffects[priority].wetlevel = (g_snd.effect)->wetlevel;
+    g_snd.envEffects[priority].wetrate = (wetlevel - (g_snd.effect)->wetlevel) / (float)fademsec;
+    psVar5->reverbId = roomstring;
     if (psVar5 != g_snd.effect) {
       do {
-        local_8 = param_1 + 1;
-        if (2 < local_8) {
+        i = priority + 1;
+        if (2 < i) {
           g_snd.effect = psVar5;
           return;
         }
-        iVar2 = param_1 + 1;
-        param_1 = local_8;
+        iVar2 = priority + 1;
+        priority = i;
       } while (g_snd.envEffects[iVar2].active == false);
     }
   }
@@ -531,7 +538,7 @@ SNDL_SetEnvironmentEffects(int param_1,uint param_2,float param_3,float param_4,
 /* WARNING: Removing unreachable block (ram,0x009483a4) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_DeactivateEnvironmentEffects(int param_1,int param_2)
+void __cdecl SNDL_DeactivateEnvironmentEffects(int priority,int fademsec)
 
 {
   code *pcVar1;
@@ -539,50 +546,51 @@ void __cdecl SNDL_DeactivateEnvironmentEffects(int param_1,int param_2)
   int iVar3;
   bool bVar4;
   uint uVar5;
-  int local_8;
+  snd_enveffect *effect;
+  int i;
   
   uVar5 = SND_ActiveListenerCount();
   if (uVar5 == 1) {
-    if (((param_1 < 1) || (2 < param_1)) &&
+    if (((priority < 1) || (2 < priority)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x16f,0,
                                  "%s\n\t(priority) = %i"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 < 0) &&
+    if ((fademsec < 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x170,0,
                                  "%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    g_snd.envEffects[param_1].active = false;
-    iVar3 = param_1;
-    if (g_snd.envEffects + param_1 == g_snd.effect) {
+    g_snd.envEffects[priority].active = false;
+    iVar3 = priority;
+    if (g_snd.envEffects + priority == g_snd.effect) {
       do {
         iVar2 = iVar3;
-        local_8 = iVar2 + -1;
-        if (local_8 < 0) break;
-        iVar3 = local_8;
+        i = iVar2 + -1;
+        if (i < 0) break;
+        iVar3 = i;
       } while (g_snd.envEffects[iVar2 + -1].active == false);
-      if ((local_8 < 0) &&
+      if ((i < 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x17d,0
                                    ,"%s"), !bVar4)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_2 < 1) {
-        param_2 = 1;
+      if (fademsec < 1) {
+        fademsec = 1;
       }
       g_snd.effect = g_snd.envEffects + iVar2 + -1;
-      g_snd.envEffects[iVar2 + -1].drylevel = g_snd.envEffects[param_1].drylevel;
+      g_snd.envEffects[iVar2 + -1].drylevel = g_snd.envEffects[priority].drylevel;
       (g_snd.effect)->dryrate =
-           ((g_snd.effect)->drygoal - g_snd.envEffects[param_1].drylevel) / (float)param_2;
-      (g_snd.effect)->wetlevel = g_snd.envEffects[param_1].wetlevel;
+           ((g_snd.effect)->drygoal - g_snd.envEffects[priority].drylevel) / (float)fademsec;
+      (g_snd.effect)->wetlevel = g_snd.envEffects[priority].wetlevel;
       (g_snd.effect)->wetrate =
-           ((g_snd.effect)->wetgoal - g_snd.envEffects[param_1].wetlevel) / (float)param_2;
+           ((g_snd.effect)->wetgoal - g_snd.envEffects[priority].wetlevel) / (float)fademsec;
     }
   }
   return;
@@ -594,22 +602,23 @@ void __cdecl SNDL_DeactivateEnvironmentEffects(int param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x0094853f) */
 /* WARNING: Removing unreachable block (ram,0x00948564) */
 
-void __cdecl SNDL_SetPlaybackAttenuation(int param_1,float param_2)
+void __cdecl SNDL_SetPlaybackAttenuation(int playbackId,float attenuation)
 
 {
   snd_voice_t *psVar1;
   float local_20;
   float local_c;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 != (snd_voice_t *)0x0) {
-    if (param_2 - 1.0 < 0.0) {
-      local_c = param_2;
+    if (attenuation - 1.0 < 0.0) {
+      local_c = attenuation;
     }
     else {
       local_c = 1.0;
     }
-    if (0.0 - param_2 < 0.0) {
+    if (0.0 - attenuation < 0.0) {
       local_20 = local_c;
     }
     else {
@@ -626,14 +635,15 @@ void __cdecl SNDL_SetPlaybackAttenuation(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094860f) */
 /* WARNING: Removing unreachable block (ram,0x00948634) */
 
-void __cdecl SNDL_SetPlaybackAttenuationRate(int param_1,float param_2)
+void __cdecl SNDL_SetPlaybackAttenuationRate(int playbackId,float rate)
 
 {
   snd_voice_t *psVar1;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 != (snd_voice_t *)0x0) {
-    SND_FaderSetRate(&psVar1->script_fade,param_2);
+    SND_FaderSetRate(&psVar1->script_fade,rate);
   }
   return;
 }
@@ -641,14 +651,14 @@ void __cdecl SNDL_SetPlaybackAttenuationRate(int param_1,float param_2)
 
 // 00949240  SND_IsAliasMusic  (sound/snd_alias_db.h:416)
 
-bool __cdecl SND_IsAliasMusic(snd_alias_t *param_1)
+bool __cdecl SND_IsAliasMusic(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_alias_db.h",0x1a1,0,"%s"
                             );
     if (!bVar2) {
@@ -657,7 +667,7 @@ bool __cdecl SND_IsAliasMusic(snd_alias_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->flags & 0x100) != 0;
+  return (alias->flags & 0x100) != 0;
 }
 
 
@@ -666,22 +676,23 @@ bool __cdecl SND_IsAliasMusic(snd_alias_t *param_1)
 /* WARNING: Removing unreachable block (ram,0x0094867f) */
 /* WARNING: Removing unreachable block (ram,0x009486a4) */
 
-void __cdecl SNDL_SetPlaybackPitch(int param_1,float param_2)
+void __cdecl SNDL_SetPlaybackPitch(int playbackId,float pitch)
 
 {
   snd_voice_t *psVar1;
   float local_20;
   float local_c;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 != (snd_voice_t *)0x0) {
-    if (param_2 - 2.0 < 0.0) {
-      local_c = param_2;
+    if (pitch - 2.0 < 0.0) {
+      local_c = pitch;
     }
     else {
       local_c = 2.0;
     }
-    if (0.1 - param_2 < 0.0) {
+    if (0.1 - pitch < 0.0) {
       local_20 = local_c;
     }
     else {
@@ -698,14 +709,15 @@ void __cdecl SNDL_SetPlaybackPitch(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094874f) */
 /* WARNING: Removing unreachable block (ram,0x00948774) */
 
-void __cdecl SNDL_SetPlaybackPitchRate(int param_1,float param_2)
+void __cdecl SNDL_SetPlaybackPitchRate(int playbackId,float rate)
 
 {
   snd_voice_t *psVar1;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 != (snd_voice_t *)0x0) {
-    SND_FaderSetRate(&psVar1->script_pitch,param_2);
+    SND_FaderSetRate(&psVar1->script_pitch,rate);
   }
   return;
 }
@@ -716,12 +728,13 @@ void __cdecl SNDL_SetPlaybackPitchRate(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x009487bd) */
 /* WARNING: Removing unreachable block (ram,0x009487e2) */
 
-void __cdecl SNDL_StopPlayback(int param_1)
+void __cdecl SNDL_StopPlayback(int playbackId)
 
 {
   snd_voice_t *psVar1;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 != (snd_voice_t *)0x0) {
     SND_StopVoice((int)&psVar1[-0x570d3].voiceStartTime / 0x1d8);
   }
@@ -735,14 +748,15 @@ void __cdecl SNDL_StopPlayback(int param_1)
 /* WARNING: Removing unreachable block (ram,0x00948852) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_SetSnapshot(snd_snapshot_type param_1,uint param_2,float param_3,float param_4)
+void __cdecl SNDL_SetSnapshot(snd_snapshot_type type,uint id,float length,float amount)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_snapshot *psVar3;
+  snd_snapshot *snapshot;
   
-  if ((SND_SNAPSHOT_LEVELFADE < param_1) &&
+  if ((SND_SNAPSHOT_LEVELFADE < type) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x1d0,0,
                                "type doesn\'t index SND_SNAPSHOT_COUNT\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -750,16 +764,16 @@ void __cdecl SNDL_SetSnapshot(snd_snapshot_type param_1,uint param_2,float param
     (*pcVar1)();
     return;
   }
-  psVar3 = SND_GetSnapshotById(param_2);
+  psVar3 = SND_GetSnapshotById(id);
   if (psVar3 == (snd_snapshot *)0x0) {
-    g_snd.snapshotCategories[param_1].snapshot = g_snd.defaultHash;
-    g_snd.snapshotCategories[param_1].length = param_3;
-    g_snd.snapshotCategories[param_1].amount = param_4;
+    g_snd.snapshotCategories[type].snapshot = g_snd.defaultHash;
+    g_snd.snapshotCategories[type].length = length;
+    g_snd.snapshotCategories[type].amount = amount;
   }
   else {
-    g_snd.snapshotCategories[param_1].snapshot = param_2;
-    g_snd.snapshotCategories[param_1].length = param_3;
-    g_snd.snapshotCategories[param_1].amount = param_4;
+    g_snd.snapshotCategories[type].snapshot = id;
+    g_snd.snapshotCategories[type].length = length;
+    g_snd.snapshotCategories[type].amount = amount;
   }
   return;
 }
@@ -767,14 +781,14 @@ void __cdecl SNDL_SetSnapshot(snd_snapshot_type param_1,uint param_2,float param
 
 // 009475D0  SND_IsAliasStopOnDeath  (sound/snd_alias_db.h:475)
 
-bool __cdecl SND_IsAliasStopOnDeath(snd_alias_t *param_1)
+bool __cdecl SND_IsAliasStopOnDeath(snd_alias_t *alias)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_alias_db.h",0x1dc,0,"%s"
                             );
     if (!bVar2) {
@@ -783,7 +797,7 @@ bool __cdecl SND_IsAliasStopOnDeath(snd_alias_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->flags & 0x200) != 0;
+  return (alias->flags & 0x200) != 0;
 }
 
 
@@ -793,20 +807,20 @@ bool __cdecl SND_IsAliasStopOnDeath(snd_alias_t *param_1)
 /* WARNING: Removing unreachable block (ram,0x00948951) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_SetGameState(bool param_1,bool param_2,float param_3,uint param_4,uint param_5)
+void __cdecl SNDL_SetGameState(bool isMature,bool isPaused,float timescale,uint cg_time,uint seed)
 
 {
   uint uVar1;
   uint uVar2;
   
-  g_snd.gameState.mature = param_1;
-  g_snd.gameState.gamePaused = param_2;
-  g_snd.gameState.timescale = param_3;
-  g_snd.gameState.cgTime = param_4;
-  if (param_5 != 0) {
-    g_snd.gameState.seed = param_5;
+  g_snd.gameState.mature = isMature;
+  g_snd.gameState.gamePaused = isPaused;
+  g_snd.gameState.timescale = timescale;
+  g_snd.gameState.cgTime = cg_time;
+  if (seed != 0) {
+    g_snd.gameState.seed = seed;
   }
-  if (param_1) {
+  if (isMature) {
     uVar1 = SND_HashName("explicit");
     uVar2 = SND_HashName("mature");
     SNDL_SetContext(uVar2,uVar1);
@@ -824,10 +838,10 @@ void __cdecl SNDL_SetGameState(bool param_1,bool param_2,float param_3,uint para
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_SetScriptTimescale(float param_1)
+void __cdecl SNDL_SetScriptTimescale(float value)
 
 {
-  g_snd.scriptTimescale = param_1;
+  g_snd.scriptTimescale = value;
   return;
 }
 
@@ -838,32 +852,33 @@ void __cdecl SNDL_SetScriptTimescale(float param_1)
 /* WARNING: Removing unreachable block (ram,0x00948a34) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_PlayLoopAt(uint param_1,float *param_2)
+void __cdecl SNDL_PlayLoopAt(uint id,float *origin)
 
 {
   bool bVar1;
-  uint local_c;
+  uint i;
+  bool gotIt;
   
   bVar1 = false;
-  local_c = 0;
+  i = 0;
   do {
-    if (0xff < local_c) {
+    if (0xff < i) {
 LAB_00948abb:
       if (!bVar1) {
         Com_PrintError(9,"ERROR: Sound ran out of loop emitters\n");
       }
       return;
     }
-    if (g_snd.loopEmitters[local_c].id == 0) {
-      g_snd.loopEmitters[local_c].id = param_1;
-      g_snd.loopEmitters[local_c].alias = (snd_alias_list_t *)0x0;
-      g_snd.loopEmitters[local_c].origin[0] = *param_2;
-      g_snd.loopEmitters[local_c].origin[1] = param_2[1];
-      g_snd.loopEmitters[local_c].origin[2] = param_2[2];
+    if (g_snd.loopEmitters[i].id == 0) {
+      g_snd.loopEmitters[i].id = id;
+      g_snd.loopEmitters[i].alias = (snd_alias_list_t *)0x0;
+      g_snd.loopEmitters[i].origin[0] = *origin;
+      g_snd.loopEmitters[i].origin[1] = origin[1];
+      g_snd.loopEmitters[i].origin[2] = origin[2];
       bVar1 = true;
       goto LAB_00948abb;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -874,39 +889,39 @@ LAB_00948abb:
 /* WARNING: Removing unreachable block (ram,0x00948b14) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_StopLoopAt(uint param_1,float *param_2)
+void __cdecl SNDL_StopLoopAt(uint id,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  SndEntHandle SVar3;
-  float fVar4;
-  uint local_8;
+  SndEntHandle sndEnt;
+  float fVar3;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0xff < local_8) {
+    if (0xff < i) {
       return;
     }
-    if ((g_snd.loopEmitters[local_8].id == param_1) &&
-       (fVar4 = Vec3DistanceSq(param_2,g_snd.loopEmitters[local_8].origin), fVar4 < 1.52879e-05)) {
-      if ((g_snd.loopEmitters[local_8].alias == (snd_alias_list_t *)0x0) &&
+    if ((g_snd.loopEmitters[i].id == id) &&
+       (fVar3 = Vec3DistanceSq(origin,g_snd.loopEmitters[i].origin), fVar3 < 1.52879e-05)) {
+      if ((g_snd.loopEmitters[i].alias == (snd_alias_list_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_local.cpp",0x224,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      SVar3 = SND_EntHandle(0,local_8 + 0xe7e,0,false,true,TEAM_BAD);
+      sndEnt = SND_EntHandle(0,i + 0xe7e,0,false,true,TEAM_BAD);
       SND_ContinueLoopingSound
-                (g_snd.loopEmitters[local_8].id,1.0,SVar3,(float *)0x0,-500,(snd_playback *)0x0);
-      g_snd.loopEmitters[local_8].id = 0;
-      g_snd.loopEmitters[local_8].alias = (snd_alias_list_t *)0x0;
-      g_snd.loopEmitters[local_8].origin[0] = 0.0;
-      g_snd.loopEmitters[local_8].origin[1] = 0.0;
-      g_snd.loopEmitters[local_8].origin[2] = 0.0;
+                (g_snd.loopEmitters[i].id,1.0,sndEnt,(float *)0x0,-500,(snd_playback *)0x0);
+      g_snd.loopEmitters[i].id = 0;
+      g_snd.loopEmitters[i].alias = (snd_alias_list_t *)0x0;
+      g_snd.loopEmitters[i].origin[0] = 0.0;
+      g_snd.loopEmitters[i].origin[1] = 0.0;
+      g_snd.loopEmitters[i].origin[2] = 0.0;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -917,25 +932,27 @@ void __cdecl SNDL_StopLoopAt(uint param_1,float *param_2)
 /* WARNING: Removing unreachable block (ram,0x00948c94) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_PlayLineAt(uint param_1,float *param_2,float *param_3)
+void __cdecl SNDL_PlayLineAt(uint id,float *origin0,float *origin1)
 
 {
   bool bVar1;
   snd_alias_list_t *psVar2;
-  uint local_10;
+  uint i;
+  snd_alias_list_t *list;
+  bool gotIt;
   
-  psVar2 = SND_FindAliasFromId(param_1);
+  psVar2 = SND_FindAliasFromId(id);
   if ((psVar2 != (snd_alias_list_t *)0x0) && (psVar2->head != (snd_alias_t *)0x0)) {
     bVar1 = false;
-    for (local_10 = 0; local_10 < 0x80; local_10 = local_10 + 1) {
-      if (g_snd.lineEmitters[local_10].id == 0) {
-        g_snd.lineEmitters[local_10].id = param_1;
-        g_snd.lineEmitters[local_10].origin[0][0] = *param_2;
-        g_snd.lineEmitters[local_10].origin[0][1] = param_2[1];
-        g_snd.lineEmitters[local_10].origin[0][2] = param_2[2];
-        g_snd.lineEmitters[local_10].origin[1][0] = *param_3;
-        g_snd.lineEmitters[local_10].origin[1][1] = param_3[1];
-        g_snd.lineEmitters[local_10].origin[1][2] = param_3[2];
+    for (i = 0; i < 0x80; i = i + 1) {
+      if (g_snd.lineEmitters[i].id == 0) {
+        g_snd.lineEmitters[i].id = id;
+        g_snd.lineEmitters[i].origin[0][0] = *origin0;
+        g_snd.lineEmitters[i].origin[0][1] = origin0[1];
+        g_snd.lineEmitters[i].origin[0][2] = origin0[2];
+        g_snd.lineEmitters[i].origin[1][0] = *origin1;
+        g_snd.lineEmitters[i].origin[1][1] = origin1[1];
+        g_snd.lineEmitters[i].origin[1][2] = origin1[2];
         bVar1 = true;
         break;
       }
@@ -954,29 +971,28 @@ void __cdecl SNDL_PlayLineAt(uint param_1,float *param_2,float *param_3)
 /* WARNING: Removing unreachable block (ram,0x00948db4) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_StopLineAt(uint param_1,float *param_2,float *param_3)
+void __cdecl SNDL_StopLineAt(uint id,float *origin0,float *origin1)
 
 {
-  SndEntHandle SVar1;
-  float fVar2;
-  uint local_8;
+  SndEntHandle sndEnt;
+  float fVar1;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x80; local_8 = local_8 + 1) {
-    if (((g_snd.lineEmitters[local_8].id == param_1) &&
-        (fVar2 = Vec3DistanceSq(param_2,g_snd.lineEmitters[local_8].origin[0]), fVar2 < 1.52879e-05)
-        ) && (fVar2 = Vec3DistanceSq(param_3,g_snd.lineEmitters[local_8].origin[1]),
-             fVar2 < 1.52879e-05)) {
-      SVar1 = SND_EntHandle(0,local_8 + 0xf7e,0,false,true,TEAM_BAD);
+  for (i = 0; i < 0x80; i = i + 1) {
+    if (((g_snd.lineEmitters[i].id == id) &&
+        (fVar1 = Vec3DistanceSq(origin0,g_snd.lineEmitters[i].origin[0]), fVar1 < 1.52879e-05)) &&
+       (fVar1 = Vec3DistanceSq(origin1,g_snd.lineEmitters[i].origin[1]), fVar1 < 1.52879e-05)) {
+      sndEnt = SND_EntHandle(0,i + 0xf7e,0,false,true,TEAM_BAD);
       SND_ContinueLoopingSound
-                (g_snd.lineEmitters[local_8].id,1.0,SVar1,(float *)0x0,-500,(snd_playback *)0x0);
-      g_snd.lineEmitters[local_8].id = 0;
-      g_snd.lineEmitters[local_8].alias = (snd_alias_list_t *)0x0;
-      g_snd.lineEmitters[local_8].origin[0][0] = 0.0;
-      g_snd.lineEmitters[local_8].origin[0][1] = 0.0;
-      g_snd.lineEmitters[local_8].origin[0][2] = 0.0;
-      g_snd.lineEmitters[local_8].origin[1][0] = 0.0;
-      g_snd.lineEmitters[local_8].origin[1][1] = 0.0;
-      g_snd.lineEmitters[local_8].origin[1][2] = 0.0;
+                (g_snd.lineEmitters[i].id,1.0,sndEnt,(float *)0x0,-500,(snd_playback *)0x0);
+      g_snd.lineEmitters[i].id = 0;
+      g_snd.lineEmitters[i].alias = (snd_alias_list_t *)0x0;
+      g_snd.lineEmitters[i].origin[0][0] = 0.0;
+      g_snd.lineEmitters[i].origin[0][1] = 0.0;
+      g_snd.lineEmitters[i].origin[0][2] = 0.0;
+      g_snd.lineEmitters[i].origin[1][0] = 0.0;
+      g_snd.lineEmitters[i].origin[1][1] = 0.0;
+      g_snd.lineEmitters[i].origin[1][2] = 0.0;
     }
   }
   return;
@@ -987,13 +1003,14 @@ void __cdecl SNDL_StopLineAt(uint param_1,float *param_2,float *param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SNDL_GetPlaybackTime(int param_1)
+int __cdecl SNDL_GetPlaybackTime(int playbackId)
 
 {
   snd_voice_t *psVar1;
   int iVar2;
+  snd_voice_t *voice;
   
-  psVar1 = SND_GetPlaybackVoice(param_1);
+  psVar1 = SND_GetPlaybackVoice(playbackId);
   if (psVar1 == (snd_voice_t *)0x0) {
     iVar2 = 0;
   }
@@ -1018,7 +1035,9 @@ void __cdecl SNDL_GameReset(void)
   bool bVar2;
   int iVar3;
   uint uVar4;
-  uint local_c;
+  snd_voice_t *voice;
+  uint i;
+  int fadetime;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
@@ -1027,19 +1046,19 @@ void __cdecl SNDL_GameReset(void)
     memset((uchar *)g_snd.loopEmitters,'\0',0x1400);
     memset((uchar *)g_snd.lineEmitters,'\0',0x1000);
     memset((uchar *)g_snd.currentContexts,'\0',0x40);
-    for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-      if (g_snd.voiceAliasHash[local_c] != 0) {
-        psVar1 = g_snd.voice[local_c].alias;
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (g_snd.voiceAliasHash[i] != 0) {
+        psVar1 = g_snd.voice[i].alias;
         uVar4 = SND_HashName("mus_mp_frontend");
         if (psVar1->id == uVar4) {
-          if ((((g_snd.voice[local_c].alias)->flags & 1) != 0) &&
-             (bVar2 = SND_IsAliasMusic(g_snd.voice[local_c].alias), bVar2)) {
-            SND_FaderSetRateTime(&g_snd.voice[local_c].fade,4.0);
-            SND_FaderSetGoal(&g_snd.voice[local_c].fade,0.0);
+          if ((((g_snd.voice[i].alias)->flags & 1) != 0) &&
+             (bVar2 = SND_IsAliasMusic(g_snd.voice[i].alias), bVar2)) {
+            SND_FaderSetRateTime(&g_snd.voice[i].fade,4.0);
+            SND_FaderSetGoal(&g_snd.voice[i].fade,0.0);
           }
         }
         else {
-          SND_StopVoice(local_c);
+          SND_StopVoice(i);
         }
       }
     }
@@ -1073,14 +1092,15 @@ void __cdecl SNDL_GameReset(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SNDL_SetContext(uint param_1,uint param_2)
+void __cdecl SNDL_SetContext(uint type,uint value)
 
 {
   int iVar1;
+  int index;
   
-  iVar1 = SND_FindContextIndex(param_1);
+  iVar1 = SND_FindContextIndex(type);
   if (-1 < iVar1) {
-    g_snd.currentContexts[iVar1] = param_2;
+    g_snd.currentContexts[iVar1] = value;
   }
   return;
 }
@@ -1093,15 +1113,16 @@ void __cdecl SNDL_SetContext(uint param_1,uint param_2)
 void __cdecl SNDL_UpdateLoopingSounds(void)
 
 {
-  uint local_8;
+  snd_voice_t *voice;
+  uint i;
   
   if (g_snd.paused == 0) {
-    for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-      if ((((g_snd.voiceAliasHash[local_8] != 0) && (((g_snd.voice[local_8].alias)->flags & 1) != 0)
-           ) && (g_snd.voice[local_8].fade.goal != 0.0)) &&
-         ((g_snd.voice[local_8].looptime != g_snd.looptime &&
-          ((g_snd.voice[local_8].sndEnt.handle & 0xfffU) != 0xffe)))) {
-        SND_StopVoice(local_8);
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if ((((g_snd.voiceAliasHash[i] != 0) && (((g_snd.voice[i].alias)->flags & 1) != 0)) &&
+          (g_snd.voice[i].fade.goal != 0.0)) &&
+         ((g_snd.voice[i].looptime != g_snd.looptime &&
+          ((g_snd.voice[i].sndEnt.handle & 0xfffU) != 0xffe)))) {
+        SND_StopVoice(i);
       }
     }
     g_snd.looptime = g_snd.looptime + 1;

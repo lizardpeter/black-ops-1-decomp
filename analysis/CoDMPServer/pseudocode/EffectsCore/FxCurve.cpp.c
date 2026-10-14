@@ -2,13 +2,13 @@
 
 // 005F2880  FxCurveIterator_Create  (EffectsCore/FxCurve.cpp:61)
 
-void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
+void __cdecl FxCurveIterator_Create(FxCurveIterator *createe,FxCurve *master)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (FxCurveIterator *)0x0) {
+  if (createe == (FxCurveIterator *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x3e,0,
                              "%s");
     if (!bVar2) {
@@ -17,7 +17,7 @@ void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
       return;
     }
   }
-  if (param_2 == (FxCurve *)0x0) {
+  if (master == (FxCurve *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x40,0,
                              "%s");
     if (!bVar2) {
@@ -26,7 +26,7 @@ void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
       return;
     }
   }
-  if (param_2->keyCount < 1) {
+  if (master->keyCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x41,0,
                              "%s\n\t(master->keyCount) = %i");
     if (!bVar2) {
@@ -35,7 +35,7 @@ void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
       return;
     }
   }
-  if (param_2->dimensionCount < 1) {
+  if (master->dimensionCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x42,0,
                              "%s\n\t(master->dimensionCount) = %i");
     if (!bVar2) {
@@ -44,7 +44,7 @@ void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
       return;
     }
   }
-  if (param_2 == (FxCurve *)0xfffffff8) {
+  if (master == (FxCurve *)0xfffffff8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x43,0,
                              "%s");
     if (!bVar2) {
@@ -53,21 +53,21 @@ void __cdecl FxCurveIterator_Create(FxCurveIterator *param_1,FxCurve *param_2)
       return;
     }
   }
-  param_1->master = param_2;
-  param_1->currentKeyIndex = 0;
+  createe->master = master;
+  createe->currentKeyIndex = 0;
   return;
 }
 
 
 // 005F2980  FxCurveIterator_Release  (EffectsCore/FxCurve.cpp:81)
 
-void __cdecl FxCurveIterator_Release(FxCurveIterator *param_1)
+void __cdecl FxCurveIterator_Release(FxCurveIterator *releasee)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (FxCurveIterator *)0x0) {
+  if (releasee == (FxCurveIterator *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x53,0,
                              "%s");
     if (!bVar2) {
@@ -76,7 +76,7 @@ void __cdecl FxCurveIterator_Release(FxCurveIterator *param_1)
       return;
     }
   }
-  if (param_1->master == (FxCurve *)0x0) {
+  if (releasee->master == (FxCurve *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve.cpp",0x54,0,
                              "%s");
     if (!bVar2) {
@@ -85,7 +85,7 @@ void __cdecl FxCurveIterator_Release(FxCurveIterator *param_1)
       return;
     }
   }
-  param_1->master = (FxCurve *)0x0;
+  releasee->master = (FxCurve *)0x0;
   return;
 }
 

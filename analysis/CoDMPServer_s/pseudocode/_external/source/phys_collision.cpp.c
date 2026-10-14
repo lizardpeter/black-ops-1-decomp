@@ -4,7 +4,7 @@
 
 void __thiscall
 phys_contact_manifold_process::process
-          (phys_contact_manifold_process *this,phys_collision_pair *param_1,phys_gjk_info *param_2)
+          (phys_contact_manifold_process *this,phys_collision_pair *pcp,phys_gjk_info *gjk_info)
 
 {
   phys_contact_manifold *this_00;
@@ -73,43 +73,42 @@ phys_contact_manifold_process::process
   phys_vec3 apStack_28 [2];
   
   (this->m_allocator).m_buffer_cur = (this->m_allocator).m_buffer_start;
-  ppStack_d0 = param_1->m_bpi1->m_cg_to_world_xform;
+  ppStack_d0 = pcp->m_bpi1->m_cg_to_world_xform;
   this->m_cpi = (contact_point_info *)0x0;
   pStack_a8.y = (float)this;
-  phys_full_inv_multiply_mat
-            (&this->cg1_to_rb2_xform,param_1->m_bpi2->m_rb_to_world_xform,ppStack_d0);
-  pStack_f8.z = (param_2->cg1_cinfo_loc).m_p1.x;
-  pStack_f8.w = (param_2->cg1_cinfo_loc).m_p1.y;
-  fVar11 = (param_2->cg1_cinfo_loc).m_n.x * 0.34;
-  pStack_e8.x = (param_2->cg1_cinfo_loc).m_p1.z;
-  pStack_e8.y = (param_2->cg1_cinfo_loc).m_p1.w;
-  pStack_e8.z = (param_2->cg1_cinfo_loc).m_p2.x;
-  fVar2 = (param_2->cg1_cinfo_loc).m_n.y * 0.34;
-  pStack_e8.w = (param_2->cg1_cinfo_loc).m_p2.y;
-  rStack_d8.m_b2 = (rigid_body *)(param_2->cg1_cinfo_loc).m_p2.w;
-  fVar3 = (param_2->cg1_cinfo_loc).m_n.z * 0.34;
-  rStack_d8.m_b1 = (rigid_body *)(param_2->cg1_cinfo_loc).m_p2.z;
-  (param_2->cg1_cinfo_loc).m_p1.x = fVar11 + (param_2->cg1_cinfo_loc).m_p1.x;
-  (param_2->cg1_cinfo_loc).m_p1.y = fVar2 + (param_2->cg1_cinfo_loc).m_p1.y;
-  (param_2->cg1_cinfo_loc).m_p1.z = fVar3 + (param_2->cg1_cinfo_loc).m_p1.z;
-  (param_2->cg1_cinfo_loc).m_p2.x = (param_2->cg1_cinfo_loc).m_p2.x - fVar11;
-  (param_2->cg1_cinfo_loc).m_p2.y = (param_2->cg1_cinfo_loc).m_p2.y - fVar2;
-  (param_2->cg1_cinfo_loc).m_p2.z = (param_2->cg1_cinfo_loc).m_p2.z - fVar3;
-  fStack_c4 = (param_2->cg1_cinfo_loc).m_n.z * (pStack_e8.x - (float)rStack_d8.m_b1) +
-              (param_2->cg1_cinfo_loc).m_n.x * (pStack_f8.z - pStack_e8.z) +
-              (param_2->cg1_cinfo_loc).m_n.y * (pStack_f8.w - pStack_e8.w);
+  phys_full_inv_multiply_mat(&this->cg1_to_rb2_xform,pcp->m_bpi2->m_rb_to_world_xform,ppStack_d0);
+  pStack_f8.z = (gjk_info->cg1_cinfo_loc).m_p1.x;
+  pStack_f8.w = (gjk_info->cg1_cinfo_loc).m_p1.y;
+  fVar11 = (gjk_info->cg1_cinfo_loc).m_n.x * 0.34;
+  pStack_e8.x = (gjk_info->cg1_cinfo_loc).m_p1.z;
+  pStack_e8.y = (gjk_info->cg1_cinfo_loc).m_p1.w;
+  pStack_e8.z = (gjk_info->cg1_cinfo_loc).m_p2.x;
+  fVar2 = (gjk_info->cg1_cinfo_loc).m_n.y * 0.34;
+  pStack_e8.w = (gjk_info->cg1_cinfo_loc).m_p2.y;
+  rStack_d8.m_b2 = (rigid_body *)(gjk_info->cg1_cinfo_loc).m_p2.w;
+  fVar3 = (gjk_info->cg1_cinfo_loc).m_n.z * 0.34;
+  rStack_d8.m_b1 = (rigid_body *)(gjk_info->cg1_cinfo_loc).m_p2.z;
+  (gjk_info->cg1_cinfo_loc).m_p1.x = fVar11 + (gjk_info->cg1_cinfo_loc).m_p1.x;
+  (gjk_info->cg1_cinfo_loc).m_p1.y = fVar2 + (gjk_info->cg1_cinfo_loc).m_p1.y;
+  (gjk_info->cg1_cinfo_loc).m_p1.z = fVar3 + (gjk_info->cg1_cinfo_loc).m_p1.z;
+  (gjk_info->cg1_cinfo_loc).m_p2.x = (gjk_info->cg1_cinfo_loc).m_p2.x - fVar11;
+  (gjk_info->cg1_cinfo_loc).m_p2.y = (gjk_info->cg1_cinfo_loc).m_p2.y - fVar2;
+  (gjk_info->cg1_cinfo_loc).m_p2.z = (gjk_info->cg1_cinfo_loc).m_p2.z - fVar3;
+  fStack_c4 = (gjk_info->cg1_cinfo_loc).m_n.z * (pStack_e8.x - (float)rStack_d8.m_b1) +
+              (gjk_info->cg1_cinfo_loc).m_n.x * (pStack_f8.z - pStack_e8.z) +
+              (gjk_info->cg1_cinfo_loc).m_n.y * (pStack_f8.w - pStack_e8.w);
   pStack_f8.y = fStack_c4 / -10.200001;
   fVar11 = 0.0;
   if ((0.0 <= pStack_f8.y) && (fVar11 = pStack_f8.y, 1.0 < pStack_f8.y)) {
     fVar11 = 1.0;
   }
   ppVar18 = (phys_mat44 *)(fVar11 * 0.4698463 + 0.03015369);
-  (this->cman1).m_feature_hitp.x = (param_2->cg1_cinfo_loc).m_p1.x;
-  (this->cman1).m_feature_hitp.y = (param_2->cg1_cinfo_loc).m_p1.y;
-  (this->cman1).m_feature_hitp.z = (param_2->cg1_cinfo_loc).m_p1.z;
-  (this->cman1).m_feature_hitn.x = (param_2->cg1_cinfo_loc).m_n.x;
-  (this->cman1).m_feature_hitn.y = (param_2->cg1_cinfo_loc).m_n.y;
-  (this->cman1).m_feature_hitn.z = (param_2->cg1_cinfo_loc).m_n.z;
+  (this->cman1).m_feature_hitp.x = (gjk_info->cg1_cinfo_loc).m_p1.x;
+  (this->cman1).m_feature_hitp.y = (gjk_info->cg1_cinfo_loc).m_p1.y;
+  (this->cman1).m_feature_hitp.z = (gjk_info->cg1_cinfo_loc).m_p1.z;
+  (this->cman1).m_feature_hitn.x = (gjk_info->cg1_cinfo_loc).m_n.x;
+  (this->cman1).m_feature_hitn.y = (gjk_info->cg1_cinfo_loc).m_n.y;
+  (this->cman1).m_feature_hitn.z = (gjk_info->cg1_cinfo_loc).m_n.z;
   ppVar12 = (this->cman1).m_allocator;
   (this->cman1).m_feature_distance_eps = fVar11 * 5.1000004 + 1.7;
   (this->cman1).m_sin_feautre_angular_eps_sq = (float)ppVar18;
@@ -120,23 +119,23 @@ phys_contact_manifold_process::process
   (this->cman1).m_close_mesh_point_count = 0;
   (this->cman1).m_list_sorted_mesh_point = (contact_manifold_mesh_point **)0x0;
   (this->cman1).m_list_contact_point = (contact_manifold_mesh_point **)0x0;
-  (**(code **)((int)*param_1->m_bpi1->m_gjk_geom + 0x10))(&this->cman1);
-  fVar19 = -(param_2->cg1_cinfo_loc).m_n.x;
-  fVar20 = -(param_2->cg1_cinfo_loc).m_n.y;
-  fVar21 = -(param_2->cg1_cinfo_loc).m_n.z;
-  fVar2 = (param_2->cg2_to_cg1_xform).x.y;
-  fVar3 = (param_2->cg2_to_cg1_xform).x.x;
-  fVar4 = (param_2->cg2_to_cg1_xform).x.z;
-  fVar5 = (param_2->cg2_to_cg1_xform).y.y;
-  fVar6 = (param_2->cg2_to_cg1_xform).y.x;
-  fVar7 = (param_2->cg2_to_cg1_xform).y.z;
-  fVar8 = (param_2->cg2_to_cg1_xform).z.y;
-  fVar9 = (param_2->cg2_to_cg1_xform).z.x;
-  fVar10 = (param_2->cg2_to_cg1_xform).z.z;
+  (**(code **)((int)*pcp->m_bpi1->m_gjk_geom + 0x10))(&this->cman1);
+  fVar19 = -(gjk_info->cg1_cinfo_loc).m_n.x;
+  fVar20 = -(gjk_info->cg1_cinfo_loc).m_n.y;
+  fVar21 = -(gjk_info->cg1_cinfo_loc).m_n.z;
+  fVar2 = (gjk_info->cg2_to_cg1_xform).x.y;
+  fVar3 = (gjk_info->cg2_to_cg1_xform).x.x;
+  fVar4 = (gjk_info->cg2_to_cg1_xform).x.z;
+  fVar5 = (gjk_info->cg2_to_cg1_xform).y.y;
+  fVar6 = (gjk_info->cg2_to_cg1_xform).y.x;
+  fVar7 = (gjk_info->cg2_to_cg1_xform).y.z;
+  fVar8 = (gjk_info->cg2_to_cg1_xform).z.y;
+  fVar9 = (gjk_info->cg2_to_cg1_xform).z.x;
+  fVar10 = (gjk_info->cg2_to_cg1_xform).z.z;
   this_00 = &this->cman2;
   ppVar24 = phys_full_inv_multiply
-                      ((phys_vec3 *)(auStack_78 + 4),&param_2->cg2_to_cg1_xform,
-                       &(param_2->cg1_cinfo_loc).m_p2);
+                      ((phys_vec3 *)(auStack_78 + 4),&gjk_info->cg2_to_cg1_xform,
+                       &(gjk_info->cg1_cinfo_loc).m_p2);
   (this->cman2).m_feature_hitp.x = ppVar24->x;
   (this->cman2).m_feature_hitp.y = ppVar24->y;
   (this->cman2).m_feature_hitp.z = ppVar24->z;
@@ -153,12 +152,12 @@ phys_contact_manifold_process::process
   (this->cman2).m_close_mesh_point_count = 0;
   (this->cman2).m_list_sorted_mesh_point = (contact_manifold_mesh_point **)0x0;
   (this->cman2).m_list_contact_point = (contact_manifold_mesh_point **)0x0;
-  (**(code **)((int)*param_1->m_bpi2->m_gjk_geom + 0x10))(this_00);
-  fVar11 = param_2->m_continuous_collision_lambda;
+  (**(code **)((int)*pcp->m_bpi2->m_gjk_geom + 0x10))(this_00);
+  fVar11 = gjk_info->m_continuous_collision_lambda;
   iVar33 = (this->cman1).m_list_mesh_point_count;
-  fVar3 = fVar11 * (param_2->m_cg1_relative_translation_loc).x;
-  fVar2 = (param_2->m_cg1_relative_translation_loc).y * fVar11;
-  fVar11 = fVar11 * (param_2->m_cg1_relative_translation_loc).z;
+  fVar3 = fVar11 * (gjk_info->m_cg1_relative_translation_loc).x;
+  fVar2 = (gjk_info->m_cg1_relative_translation_loc).y * fVar11;
+  fVar11 = fVar11 * (gjk_info->m_cg1_relative_translation_loc).z;
   ppVar35 = this;
   if (((1 < iVar33) && (iVar13 = (this->cman2).m_list_mesh_point_count, 1 < iVar13)) &&
      ((iVar33 != 2 || (iVar13 != 2)))) {
@@ -173,13 +172,13 @@ phys_contact_manifold_process::process
     iVar33 = (this->cman1).m_list_mesh_point_count;
     if (((1 < iVar33) && (iVar13 = (this->cman2).m_list_mesh_point_count, 1 < iVar13)) &&
        ((iVar33 != 2 || (iVar13 != 2)))) {
-      comp_contact_mat(this,&(param_2->cg1_cinfo_loc).m_n);
+      comp_contact_mat(this,&(gjk_info->cg1_cinfo_loc).m_n);
       phys_contact_manifold::generate_convex_poly(&this->cman1,&this->contact_mat);
       pStack_a8.x = -fVar3;
       pStack_a8.y = -fVar2;
       pStack_a8.z = -fVar11;
       phys_contact_manifold::xform_and_translate_mesh_points
-                (this_00,&param_2->cg2_to_cg1_xform,&pStack_a8);
+                (this_00,&gjk_info->cg2_to_cg1_xform,&pStack_a8);
       phys_contact_manifold::generate_convex_poly(this_00,&this->contact_mat);
       iVar33 = (this->cman1).m_list_contact_point_count;
       if (((1 < iVar33) && (iVar13 = (this->cman2).m_list_contact_point_count, 1 < iVar13)) &&
@@ -187,12 +186,12 @@ phys_contact_manifold_process::process
         intersect_poly_poly(this);
         iVar33 = this->m_contact_point_count;
         if (iVar33 != 0) {
-          fStack_7c = (param_2->cg1_cinfo_loc).m_n.z * (this->cman1).m_feature_normal.z +
-                      (param_2->cg1_cinfo_loc).m_n.x * (this->cman1).m_feature_normal.x +
-                      (param_2->cg1_cinfo_loc).m_n.y * (this->cman1).m_feature_normal.y;
-          fVar4 = (param_2->cg1_cinfo_loc).m_n.z * (this->cman2).m_feature_normal.z +
-                  (param_2->cg1_cinfo_loc).m_n.x * (this_00->m_feature_normal).x +
-                  (param_2->cg1_cinfo_loc).m_n.y * (this->cman2).m_feature_normal.y;
+          fStack_7c = (gjk_info->cg1_cinfo_loc).m_n.z * (this->cman1).m_feature_normal.z +
+                      (gjk_info->cg1_cinfo_loc).m_n.x * (this->cman1).m_feature_normal.x +
+                      (gjk_info->cg1_cinfo_loc).m_n.y * (this->cman1).m_feature_normal.y;
+          fVar4 = (gjk_info->cg1_cinfo_loc).m_n.z * (this->cman2).m_feature_normal.z +
+                  (gjk_info->cg1_cinfo_loc).m_n.x * (this_00->m_feature_normal).x +
+                  (gjk_info->cg1_cinfo_loc).m_n.y * (this->cman2).m_feature_normal.y;
           fStack_60 = (this->cman1).m_feature_normal.z * pStack_f8.z +
                       (this->cman1).m_feature_normal.x * pStack_f8.x +
                       (this->cman1).m_feature_normal.y * pStack_f8.y;
@@ -329,9 +328,9 @@ phys_contact_manifold_process::process
                             (pStack_f8.z * (ppVar35->cman1).m_feature_normal.z +
                             pStack_f8.y * (ppVar35->cman1).m_feature_normal.y +
                             pStack_f8.x * (ppVar35->cman1).m_feature_normal.x)) / fStack_7c;
-              pStack_e8.x = pStack_e8.z * (param_2->cg1_cinfo_loc).m_n.x;
-              pStack_e8.y = (param_2->cg1_cinfo_loc).m_n.y * pStack_e8.z;
-              pStack_e8.z = pStack_e8.z * (param_2->cg1_cinfo_loc).m_n.z;
+              pStack_e8.x = pStack_e8.z * (gjk_info->cg1_cinfo_loc).m_n.x;
+              pStack_e8.y = (gjk_info->cg1_cinfo_loc).m_n.y * pStack_e8.z;
+              pStack_e8.z = pStack_e8.z * (gjk_info->cg1_cinfo_loc).m_n.z;
               pStack_48.x = pStack_e8.x + pStack_f8.x;
               pStack_48.y = pStack_e8.y + pStack_f8.y;
               pStack_48.z = pStack_f8.z + pStack_e8.z;
@@ -349,9 +348,9 @@ phys_contact_manifold_process::process
                           (fStack_90 * (this->cman2).m_feature_normal.z +
                           fStack_94 * (this->cman2).m_feature_normal.y +
                           fStack_98 * (this_00->m_feature_normal).x)) / fVar4;
-              fStack_58 = fStack_50 * (param_2->cg1_cinfo_loc).m_n.x;
-              fStack_54 = fStack_50 * (param_2->cg1_cinfo_loc).m_n.y;
-              fStack_50 = fStack_50 * (param_2->cg1_cinfo_loc).m_n.z;
+              fStack_58 = fStack_50 * (gjk_info->cg1_cinfo_loc).m_n.x;
+              fStack_54 = fStack_50 * (gjk_info->cg1_cinfo_loc).m_n.y;
+              fStack_50 = fStack_50 * (gjk_info->cg1_cinfo_loc).m_n.z;
               auStack_78._0_4_ = fStack_98 + fStack_58;
               auStack_78._4_4_ = fStack_94 + fStack_54;
               fStack_70 = fStack_90 + fStack_50;
@@ -390,9 +389,9 @@ phys_contact_manifold_process::process
   ppVar24->z = ppVar26->z;
   this->m_contact_point_count = 1;
 LAB_008fd4c1:
-  auStack_78._0_4_ = -(param_2->cg1_cinfo_loc).m_n.x;
-  auStack_78._4_4_ = -(param_2->cg1_cinfo_loc).m_n.y;
-  fStack_70 = -(param_2->cg1_cinfo_loc).m_n.z;
+  auStack_78._0_4_ = -(gjk_info->cg1_cinfo_loc).m_n.x;
+  auStack_78._4_4_ = -(gjk_info->cg1_cinfo_loc).m_n.y;
+  fStack_70 = -(gjk_info->cg1_cinfo_loc).m_n.z;
   ppVar24 = phys_multiply33(&pStack_38,(phys_mat44 *)rStack_d8.m_b1,(phys_vec3 *)auStack_78);
   pcVar25 = ppVar35->m_cpi;
   (pcVar25->m_normal).x = ppVar24->x;
@@ -400,9 +399,9 @@ LAB_008fd4c1:
   (pcVar25->m_normal).z = ppVar24->z;
   rStack_d8.m_b1 =
        (rigid_body *)
-       ((param_2->cg1_cinfo_loc).m_n.z * (param_2->m_cg1_relative_translation_loc).z +
-       (param_2->cg1_cinfo_loc).m_n.x * (param_2->m_cg1_relative_translation_loc).x +
-       (param_2->cg1_cinfo_loc).m_n.y * (param_2->m_cg1_relative_translation_loc).y);
+       ((gjk_info->cg1_cinfo_loc).m_n.z * (gjk_info->m_cg1_relative_translation_loc).z +
+       (gjk_info->cg1_cinfo_loc).m_n.x * (gjk_info->m_cg1_relative_translation_loc).x +
+       (gjk_info->cg1_cinfo_loc).m_n.y * (gjk_info->m_cg1_relative_translation_loc).y);
   if (-0.17 <= (float)rStack_d8.m_b1) {
     ppVar35->m_cpi->m_translation_lambda = 1.0;
   }
@@ -416,16 +415,16 @@ LAB_008fd4c1:
       ppVar35->m_cpi->m_translation_lambda = 1.0;
     }
   }
-  set_cpi_params(ppVar35->m_cpi,param_1);
+  set_cpi_params(ppVar35->m_cpi,pcp);
   pcVar25 = ppVar35->m_cpi;
   pcVar25->m_next_link = (contact_point_info *)0x0;
   piVar1 = &(ppVar35->m_list_cpi).m_alloc_count;
   *piVar1 = *piVar1 + 1;
   *(ppVar35->m_list_cpi).m_last_next_ptr = pcVar25;
   (ppVar35->m_list_cpi).m_last_next_ptr = &pcVar25->m_next_link;
-  prVar36 = param_1->m_bpi1->m_rb;
-  prVar17 = param_1->m_bpi2->m_rb;
-  ppVar35->m_cpi->m_pcp = param_1;
+  prVar36 = pcp->m_bpi1->m_rb;
+  prVar17 = pcp->m_bpi2->m_rb;
+  ppVar35->m_cpi->m_pcp = pcp;
   rStack_d8.m_b1 = prVar17;
   rStack_d8.m_b2 = prVar36;
   if (prVar36 < prVar17) {
@@ -476,8 +475,8 @@ LAB_008fd4c1:
 
 void __thiscall
 contact_point_info::get_closest_psc
-          (contact_point_info *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,
-          float *param_4,pulse_sum_cache_info **param_5)
+          (contact_point_info *this,phys_vec3 *normal,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc,
+          float *closest_error,pulse_sum_cache_info **closest_psc)
 
 {
   float fVar1;
@@ -495,28 +494,28 @@ contact_point_info::get_closest_psc
   int iStack_38;
   
   ppVar10 = this->m_list_b1_r_loc;
-  fVar1 = param_1->x - (this->m_normal).x;
+  fVar1 = normal->x - (this->m_normal).x;
   ppVar11 = this->m_list_b2_r_loc;
   iVar12 = 0;
-  fVar2 = param_1->y - (this->m_normal).y;
-  fVar3 = param_1->z - (this->m_normal).z;
+  fVar2 = normal->y - (this->m_normal).y;
+  fVar3 = normal->z - (this->m_normal).z;
   if (0 < this->m_point_pair_count) {
     iStack_38 = 0;
     do {
-      fVar4 = ppVar10->x - param_2->x;
-      fVar5 = ppVar10->y - param_2->y;
-      fVar6 = ppVar10->z - param_2->z;
-      fVar7 = ppVar11->x - param_3->x;
-      fVar8 = ppVar11->y - param_3->y;
-      fVar9 = ppVar11->z - param_3->z;
+      fVar4 = ppVar10->x - b1_r_loc->x;
+      fVar5 = ppVar10->y - b1_r_loc->y;
+      fVar6 = ppVar10->z - b1_r_loc->z;
+      fVar7 = ppVar11->x - b2_r_loc->x;
+      fVar8 = ppVar11->y - b2_r_loc->y;
+      fVar9 = ppVar11->z - b2_r_loc->z;
       fVar4 = fVar5 * fVar5 + fVar4 * fVar4 + fVar6 * fVar6 +
               fVar3 * fVar3 + fVar2 * fVar2 + fVar1 * fVar1 +
               fVar7 * fVar7 + fVar8 * fVar8 + fVar9 * fVar9;
-      if (fVar4 < *param_4) {
-        *param_4 = fVar4;
-        *param_5 = (pulse_sum_cache_info *)
-                   ((int)&this->m_list_pulse_sum_cache_info->m_ps_cache_list[0].m_pulse_sum +
-                   iStack_38);
+      if (fVar4 < *closest_error) {
+        *closest_error = fVar4;
+        *closest_psc = (pulse_sum_cache_info *)
+                       ((int)&this->m_list_pulse_sum_cache_info->m_ps_cache_list[0].m_pulse_sum +
+                       iStack_38);
       }
       iStack_38 = iStack_38 + 0xc;
       iVar12 = iVar12 + 1;
@@ -531,20 +530,21 @@ contact_point_info::get_closest_psc
 // 008FC790  create_cpi  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_contact.h:158)
 
 contact_point_info * __cdecl
-contact_point_info::create_cpi(int param_1,bool param_2,phys_transient_allocator *param_3)
+contact_point_info::create_cpi(int no_error,bool allocator,phys_transient_allocator *param_3)
 
 {
   contact_point_info *pcVar1;
+  int point_pair_count;
   
   pcVar1 = phys_transient_allocator::mt_allocate
-                     (param_3,(param_1 * 0xc + 0xfU & 0xfffffff0) + param_1 * 0x20 + 0x50,0x10,1,"")
-  ;
+                     (param_3,(no_error * 0xc + 0xfU & 0xfffffff0) + no_error * 0x20 + 0x50,0x10,1,
+                      "");
   if (pcVar1 != (contact_point_info *)0x0) {
     pcVar1->m_list_b1_r_loc = &pcVar1[1].m_normal;
-    pcVar1->m_list_b2_r_loc = &pcVar1[1].m_normal + param_1;
+    pcVar1->m_list_b2_r_loc = &pcVar1[1].m_normal + no_error;
     pcVar1->m_list_pulse_sum_cache_info =
-         (pulse_sum_cache_info *)(&pcVar1[1].m_normal + param_1 * 2);
-    pcVar1->m_point_pair_count = param_1;
+         (pulse_sum_cache_info *)(&pcVar1[1].m_normal + no_error * 2);
+    pcVar1->m_point_pair_count = no_error;
     pcVar1->m_flags = 0;
   }
   return pcVar1;
@@ -555,24 +555,26 @@ contact_point_info::create_cpi(int param_1,bool param_2,phys_transient_allocator
 
 void __cdecl
 contact_point_info::set_closest_cached_psc
-          (contact_point_info *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4,
+          (contact_point_info *normal,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc,phys_vec3 *psc,
           pulse_sum_cache_info *param_5)
 
 {
-  pulse_sum_cache_info *ppStack_8;
+  contact_point_info *cached_cpi;
+  float closest_error;
   float fStack_4;
   
   fStack_4 = 1e+07;
-  ppStack_8 = (pulse_sum_cache_info *)0x0;
-  if (param_1 != (contact_point_info *)0x0) {
+  closest_error = 0.0;
+  if (normal != (contact_point_info *)0x0) {
     do {
-      get_closest_psc(param_1,param_2,param_3,param_4,&fStack_4,&ppStack_8);
-      param_1 = param_1->m_next_link;
-    } while (param_1 != (contact_point_info *)0x0);
-    if (ppStack_8 != (pulse_sum_cache_info *)0x0) {
-      param_5->m_ps_cache_list[0].m_pulse_sum = ppStack_8->m_ps_cache_list[0].m_pulse_sum;
-      param_5->m_ps_cache_list[1].m_pulse_sum = ppStack_8->m_ps_cache_list[1].m_pulse_sum;
-      param_5->m_ps_cache_list[2].m_pulse_sum = ppStack_8->m_ps_cache_list[2].m_pulse_sum;
+      get_closest_psc(normal,b1_r_loc,b2_r_loc,psc,&fStack_4,(pulse_sum_cache_info **)&closest_error
+                     );
+      normal = normal->m_next_link;
+    } while (normal != (contact_point_info *)0x0);
+    if (closest_error != 0.0) {
+      param_5->m_ps_cache_list[0].m_pulse_sum = *(float *)closest_error;
+      param_5->m_ps_cache_list[1].m_pulse_sum = *(float *)((int)closest_error + 4);
+      param_5->m_ps_cache_list[2].m_pulse_sum = *(float *)((int)closest_error + 8);
       return;
     }
   }
@@ -589,7 +591,7 @@ contact_point_info::set_closest_cached_psc
 
 void __thiscall
 phys_contact_manifold::xform_and_translate_mesh_points
-          (phys_contact_manifold *this,phys_mat44 *param_1,phys_vec3 *param_2)
+          (phys_contact_manifold *this,phys_mat44 *xform,phys_vec3 *translation)
 
 {
   contact_manifold_mesh_point **ppcVar1;
@@ -608,18 +610,18 @@ phys_contact_manifold::xform_and_translate_mesh_points
   ppcVar1 = ppcVar10 + this->m_list_mesh_point_count;
   for (; ppcVar10 != ppcVar1; ppcVar10 = ppcVar10 + 1) {
     pcVar8 = *ppcVar10;
-    ppVar9 = phys_multiply33(&pStack_20,param_1,&pcVar8->m_p);
+    ppVar9 = phys_multiply33(&pStack_20,xform,&pcVar8->m_p);
     fVar2 = ppVar9->y;
-    fVar3 = (param_1->w).y;
+    fVar3 = (xform->w).y;
     fVar4 = ppVar9->z;
-    fVar5 = (param_1->w).z;
-    fVar6 = param_2->y;
-    fVar7 = param_2->z;
-    (pcVar8->m_p).x = param_2->x + ppVar9->x + (param_1->w).x;
+    fVar5 = (xform->w).z;
+    fVar6 = translation->y;
+    fVar7 = translation->z;
+    (pcVar8->m_p).x = translation->x + ppVar9->x + (xform->w).x;
     (pcVar8->m_p).y = fVar6 + fVar2 + fVar3;
     (pcVar8->m_p).z = fVar7 + fVar4 + fVar5;
   }
-  ppVar9 = phys_multiply33(&pStack_20,param_1,&this->m_feature_normal);
+  ppVar9 = phys_multiply33(&pStack_20,xform,&this->m_feature_normal);
   (this->m_feature_normal).x = ppVar9->x;
   (this->m_feature_normal).y = ppVar9->y;
   (this->m_feature_normal).z = ppVar9->z;
@@ -641,31 +643,32 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 rigid_body_constraint_contact * __cdecl
 avl_tree_find<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-          (rigid_body_constraint_contact *param_1,rigid_body_pair_key *param_2)
+          (rigid_body_constraint_contact *key,rigid_body_pair_key *param_2)
 
 {
   rigid_body *prVar1;
   rigid_body *prVar2;
   bool bVar3;
+  rigid_body_constraint_contact *tree_root;
   
-  if (param_1 != (rigid_body_constraint_contact *)0x0) {
+  if (key != (rigid_body_constraint_contact *)0x0) {
     prVar1 = param_2->m_b1;
     do {
-      if ((prVar1 == (param_1->m_avl_key).m_b1) && (param_2->m_b2 == (param_1->m_avl_key).m_b2)) {
-        return param_1;
+      if ((prVar1 == (key->m_avl_key).m_b1) && (param_2->m_b2 == (key->m_avl_key).m_b2)) {
+        return key;
       }
-      prVar2 = (param_1->m_avl_key).m_b1;
+      prVar2 = (key->m_avl_key).m_b1;
       bVar3 = prVar1 < prVar2;
       if (prVar1 == prVar2) {
-        bVar3 = param_2->m_b2 < (param_1->m_avl_key).m_b2;
+        bVar3 = param_2->m_b2 < (key->m_avl_key).m_b2;
       }
       if (bVar3) {
-        param_1 = (param_1->m_avl_tree_node).m_left;
+        key = (key->m_avl_tree_node).m_left;
       }
       else {
-        param_1 = (param_1->m_avl_tree_node).m_right;
+        key = (key->m_avl_tree_node).m_right;
       }
-    } while (param_1 != (rigid_body_constraint_contact *)0x0);
+    } while (key != (rigid_body_constraint_contact *)0x0);
   }
   return (rigid_body_constraint_contact *)0x0;
 }
@@ -675,7 +678,7 @@ avl_tree_find<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_const
 
 void __thiscall
 phys_contact_manifold_process::comp_contact_mat
-          (phys_contact_manifold_process *this,phys_vec3 *param_1)
+          (phys_contact_manifold_process *this,phys_vec3 *contact_normal)
 
 {
   float fVar1;
@@ -689,17 +692,17 @@ phys_contact_manifold_process::comp_contact_mat
   float fStack_28;
   float fStack_20;
   
-  if (0.8 <= ABS(param_1->x)) {
-    fVar1 = param_1->y;
-    fStack_28 = fVar1 * param_1->z;
-    fStack_20 = 0.0 - fVar1 * param_1->x;
-    fVar1 = 1.0 - param_1->y * fVar1;
+  if (0.8 <= ABS(contact_normal->x)) {
+    fVar1 = contact_normal->y;
+    fStack_28 = fVar1 * contact_normal->z;
+    fStack_20 = 0.0 - fVar1 * contact_normal->x;
+    fVar1 = 1.0 - contact_normal->y * fVar1;
   }
   else {
-    fVar1 = param_1->x;
-    fStack_28 = fVar1 * param_1->z;
-    fStack_20 = 1.0 - fVar1 * param_1->x;
-    fVar1 = 0.0 - param_1->y * fVar1;
+    fVar1 = contact_normal->x;
+    fStack_28 = fVar1 * contact_normal->z;
+    fStack_20 = 1.0 - fVar1 * contact_normal->x;
+    fVar1 = 0.0 - contact_normal->y * fVar1;
   }
   _CIsqrt();
   fVar2 = 1.0 / (float)extraout_ST0;
@@ -707,19 +710,19 @@ phys_contact_manifold_process::comp_contact_mat
   (this->contact_mat).y.y = fVar1 * fVar2;
   (this->contact_mat).y.z = fVar2 * (0.0 - fStack_28);
   fVar1 = (this->contact_mat).y.z;
-  fVar2 = param_1->x;
-  fVar3 = param_1->z;
+  fVar2 = contact_normal->x;
+  fVar3 = contact_normal->z;
   fVar4 = (this->contact_mat).y.x;
-  fVar5 = param_1->y;
+  fVar5 = contact_normal->y;
   fVar6 = (this->contact_mat).y.y;
-  fVar7 = param_1->x;
+  fVar7 = contact_normal->x;
   (this->contact_mat).x.x =
-       (this->contact_mat).y.y * param_1->z - (this->contact_mat).y.z * param_1->y;
+       (this->contact_mat).y.y * contact_normal->z - (this->contact_mat).y.z * contact_normal->y;
   (this->contact_mat).x.y = fVar1 * fVar2 - fVar3 * (this->contact_mat).y.x;
   (this->contact_mat).x.z = fVar4 * fVar5 - fVar6 * fVar7;
-  (this->contact_mat).z.x = param_1->x;
-  (this->contact_mat).z.y = param_1->y;
-  (this->contact_mat).z.z = param_1->z;
+  (this->contact_mat).z.x = contact_normal->x;
+  (this->contact_mat).z.y = contact_normal->y;
+  (this->contact_mat).z.z = contact_normal->z;
   return;
 }
 

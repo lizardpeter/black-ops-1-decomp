@@ -167,9 +167,9 @@ undefined4 _HTDialog_errorMessage(int param_1,int *param_2)
   char *pcVar5;
   undefined4 uVar6;
   int *piVar7;
-  void *pvVar8;
+  void *pBlock;
+  int iVar8;
   int iVar9;
-  int iVar10;
   int *local_20;
   int local_1c;
   int *local_18;
@@ -178,7 +178,7 @@ undefined4 _HTDialog_errorMessage(int param_1,int *param_2)
   uint local_4;
   
   local_4 = __security_cookie ^ (uint)&local_20;
-  pvVar8 = (void *)0x0;
+  pBlock = (void *)0x0;
   local_18 = param_2;
   if ((param_1 == 0) || (param_2 == (int *)0x0)) {
     return 0;
@@ -190,30 +190,30 @@ undefined4 _HTDialog_errorMessage(int param_1,int *param_2)
         if ((local_18 == (int *)0x0) ||
            (piVar7 = (int *)*local_18, local_20 = piVar7, piVar7 == (int *)0x0)) {
           uVar6 = 0;
-          if (pvVar8 != (void *)0x0) {
-            uVar6 = *(undefined4 *)((int)pvVar8 + 0xc);
-            free(pvVar8);
+          if (pBlock != (void *)0x0) {
+            uVar6 = *(undefined4 *)((int)pBlock + 0xc);
+            free(pBlock);
           }
           return uVar6;
         }
         uVar2 = piVar7[1];
-        iVar9 = *piVar7;
-        local_1c = iVar9;
+        iVar8 = *piVar7;
+        local_1c = iVar8;
       } while (((uVar2 & 0x13) == 0) || (piVar7[2] != 0));
-      if (pvVar8 == (void *)0x0) {
-        pvVar8 = (void *)_HTChunk_new();
+      if (pBlock == (void *)0x0) {
+        pBlock = (void *)_HTChunk_new();
         if (uVar2 == 4) {
-          _HTChunk_putb(pvVar8,"Warning: ",9);
+          _HTChunk_putb(pBlock,"Warning: ",9);
         }
         else {
           if (((uVar2 != 2) && (uVar2 != 1)) && (uVar2 != 8)) {
-            _HTChunk_puts(pvVar8);
+            _HTChunk_puts(pBlock);
             uVar6 = _HTChunk_toCString();
             return uVar6;
           }
-          _HTChunk_puts(pvVar8);
+          _HTChunk_puts(pBlock);
         }
-        iVar9 = local_1c;
+        iVar8 = local_1c;
         if (0 < *(int *)(&DAT_00ac0fc0 + local_1c * 0xc)) {
           sprintf(local_10,"%d ");
           pcVar4 = local_10;
@@ -221,63 +221,63 @@ undefined4 _HTDialog_errorMessage(int param_1,int *param_2)
             cVar1 = *pcVar4;
             pcVar4 = pcVar4 + 1;
           } while (cVar1 != '\0');
-          _HTChunk_putb(pvVar8,local_10,(int)pcVar4 - (int)(local_10 + 1));
-          iVar9 = local_1c;
+          _HTChunk_putb(pBlock,local_10,(int)pcVar4 - (int)(local_10 + 1));
+          iVar8 = local_1c;
         }
       }
       else {
-        _HTChunk_putb(pvVar8,"\nReason: ",9);
+        _HTChunk_putb(pBlock,"\nReason: ",9);
       }
-      if (iVar9 != 0x49) break;
+      if (iVar8 != 0x49) break;
       local_20 = (int *)piVar7[3];
-      iVar9 = piVar7[4];
+      iVar8 = piVar7[4];
       pcVar4 = (char *)piVar7[5];
       pcVar5 = pcVar4;
       do {
         cVar1 = *pcVar5;
         pcVar5 = pcVar5 + 1;
       } while (cVar1 != '\0');
-      _HTChunk_putb(pvVar8,pcVar4,(int)pcVar5 - (int)(pcVar4 + 1));
-      _HTChunk_putb(pvVar8,&s__,1);
+      _HTChunk_putb(pBlock,pcVar4,(int)pcVar5 - (int)(pcVar4 + 1));
+      _HTChunk_putb(pBlock,&s__,1);
       pcVar4 = PTR_s_operation_failed_00ac1330;
       do {
         cVar1 = *pcVar4;
         pcVar4 = pcVar4 + 1;
       } while (cVar1 != '\0');
-      _HTChunk_putb(pvVar8,PTR_s_operation_failed_00ac1330,
+      _HTChunk_putb(pBlock,PTR_s_operation_failed_00ac1330,
                     (int)pcVar4 - (int)(PTR_s_operation_failed_00ac1330 + 1));
-      if ((iVar9 == 0) || (local_20 == (int *)0x0)) goto LAB_0088eb4e;
-      _HTChunk_puts(pvVar8);
-      _HTChunk_puts(pvVar8);
-      _HTChunk_puts(pvVar8);
+      if ((iVar8 == 0) || (local_20 == (int *)0x0)) goto LAB_0088eb4e;
+      _HTChunk_puts(pBlock);
+      _HTChunk_puts(pBlock);
+      _HTChunk_puts(pBlock);
       piVar7[2] = 1;
     }
-    pcVar4 = (&PTR_s_Continue_00ac0fc4)[iVar9 * 3];
+    pcVar4 = (&PTR_s_Continue_00ac0fc4)[iVar8 * 3];
     pcVar5 = pcVar4;
     do {
       cVar1 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar1 != '\0');
-    _HTChunk_putb(pvVar8,pcVar4,(int)pcVar5 - (int)(pcVar4 + 1));
-    iVar9 = piVar7[4];
+    _HTChunk_putb(pBlock,pcVar4,(int)pcVar5 - (int)(pcVar4 + 1));
+    iVar8 = piVar7[4];
     iVar3 = piVar7[3];
     piVar7 = local_20;
-    if ((iVar9 != 0) && (iVar3 != 0)) {
-      _HTChunk_puts(pvVar8);
-      iVar10 = 0;
-      if (0 < iVar9) {
+    if ((iVar8 != 0) && (iVar3 != 0)) {
+      _HTChunk_puts(pBlock);
+      iVar9 = 0;
+      if (0 < iVar8) {
         do {
-          cVar1 = *(char *)(iVar10 + iVar3);
+          cVar1 = *(char *)(iVar9 + iVar3);
           local_14 = CONCAT31(local_14._1_3_,cVar1);
           uVar6 = local_14;
           if (0x5e < (byte)(cVar1 - 0x20U)) {
             uVar6 = 0x23;
           }
-          _HTChunk_putc(pvVar8,uVar6);
-          iVar10 = iVar10 + 1;
-        } while (iVar10 < iVar9);
+          _HTChunk_putc(pBlock,uVar6);
+          iVar9 = iVar9 + 1;
+        } while (iVar9 < iVar8);
       }
-      _HTChunk_putb(pvVar8,") ",2);
+      _HTChunk_putb(pBlock,") ",2);
       piVar7 = local_20;
     }
 LAB_0088eb4e:
@@ -294,9 +294,9 @@ undefined4
 _HTPrompt(undefined4 param_1,undefined4 param_2,int param_3,int param_4,int param_5,int param_6)
 
 {
-  _iobuf *p_Var1;
+  _iobuf *str;
+  char *pcVar1;
   char *pcVar2;
-  char *pcVar3;
   char acStack_cc [200];
   uint uStack_4;
   
@@ -309,15 +309,15 @@ _HTPrompt(undefined4 param_1,undefined4 param_2,int param_3,int param_4,int para
     _HTPrint();
   }
   if ((param_6 != 0) && (-1 < param_3)) {
-    p_Var1 = __iob_func();
-    pcVar2 = fgets(acStack_cc,200,p_Var1);
-    if (pcVar2 != (char *)0x0) {
-      pcVar2 = acStack_cc;
+    str = __iob_func();
+    pcVar1 = fgets(acStack_cc,200,str);
+    if (pcVar1 != (char *)0x0) {
+      pcVar1 = acStack_cc;
       do {
-        pcVar3 = pcVar2;
-        pcVar2 = pcVar3 + 1;
-      } while (*pcVar3 != '\0');
-      pcVar3[-1] = '\0';
+        pcVar2 = pcVar1;
+        pcVar1 = pcVar2 + 1;
+      } while (*pcVar2 != '\0');
+      pcVar2[-1] = '\0';
       if (acStack_cc[0] != '\0') {
         _HTAlert_setReplyMessage();
         return 1;
@@ -342,9 +342,9 @@ _HTPromptPassword(undefined4 param_1,undefined4 param_2,int param_3,undefined4 p
 
 {
   uchar *puVar1;
-  _iobuf *p_Var2;
-  char *pcVar3;
-  uchar *puVar4;
+  _iobuf *str;
+  char *pcVar2;
+  uchar *puVar3;
   uchar auStack_68 [100];
   uint uStack_4;
   
@@ -352,15 +352,15 @@ _HTPromptPassword(undefined4 param_1,undefined4 param_2,int param_3,undefined4 p
   if ((param_6 != 0) && (-1 < param_3)) {
     memset(auStack_68,'\0',100);
     _HTPrint();
-    p_Var2 = __iob_func();
-    pcVar3 = fgets((char *)auStack_68,99,p_Var2);
-    if (pcVar3 != (char *)0x0) {
+    str = __iob_func();
+    pcVar2 = fgets((char *)auStack_68,99,str);
+    if (pcVar2 != (char *)0x0) {
       puVar1 = auStack_68;
       do {
-        puVar4 = puVar1;
-        puVar1 = puVar4 + 1;
-      } while (*puVar4 != '\0');
-      puVar4[-1] = '\0';
+        puVar3 = puVar1;
+        puVar1 = puVar3 + 1;
+      } while (*puVar3 != '\0');
+      puVar3[-1] = '\0';
       if (auStack_68[0] != '\0') {
         _HTSACopy();
         return 1;

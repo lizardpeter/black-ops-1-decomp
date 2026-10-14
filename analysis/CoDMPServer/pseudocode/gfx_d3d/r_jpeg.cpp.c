@@ -2,12 +2,13 @@
 
 // 00ADE620  init_destination  (gfx_d3d/r_jpeg.cpp:30)
 
-void __cdecl init_destination(jpeg_compress_struct *param_1)
+void __cdecl init_destination(jpeg_compress_struct *cinfo)
 
 {
   jpeg_destination_mgr *pjVar1;
+  my_destination_mgr *dest;
   
-  pjVar1 = param_1->dest;
+  pjVar1 = cinfo->dest;
   pjVar1->next_output_byte = pjVar1[1].next_output_byte;
   pjVar1->free_in_buffer = pjVar1[1].free_in_buffer;
   return;
@@ -16,43 +17,47 @@ void __cdecl init_destination(jpeg_compress_struct *param_1)
 
 // 00ADE650  term_destination  (gfx_d3d/r_jpeg.cpp:78)
 
-void __cdecl term_destination(jpeg_compress_struct *param_1)
+void __cdecl term_destination(jpeg_compress_struct *cinfo)
 
 {
-  hackSize = param_1->dest[1].free_in_buffer - param_1->dest->free_in_buffer;
+  uint datacount;
+  my_destination_mgr *dest;
+  
+  hackSize = cinfo->dest[1].free_in_buffer - cinfo->dest->free_in_buffer;
   return;
 }
 
 
 // 00ADE5B0  jpegDest  (gfx_d3d/r_jpeg.cpp:92)
 
-void __cdecl jpegDest(jpeg_compress_struct *param_1,uchar *param_2,int param_3)
+void __cdecl jpegDest(jpeg_compress_struct *cinfo,uchar *outfile,int size)
 
 {
   jpeg_destination_mgr *pjVar1;
+  my_destination_mgr *dest;
   
-  if (param_1->dest == (jpeg_destination_mgr *)0x0) {
-    pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,0,0x1c);
-    param_1->dest = pjVar1;
+  if (cinfo->dest == (jpeg_destination_mgr *)0x0) {
+    pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,0,0x1c);
+    cinfo->dest = pjVar1;
   }
-  pjVar1 = param_1->dest;
+  pjVar1 = cinfo->dest;
   pjVar1->init_destination = init_destination;
   pjVar1->empty_output_buffer = CL_IsLastActiveLocalClient;
   pjVar1->term_destination = term_destination;
-  pjVar1[1].next_output_byte = param_2;
-  pjVar1[1].free_in_buffer = param_3;
+  pjVar1[1].next_output_byte = outfile;
+  pjVar1[1].free_in_buffer = size;
   return;
 }
 
 
 // 00ADE680  Z_MallocJpeg  (gfx_d3d/r_jpeg.cpp:117)
 
-void * __cdecl Z_MallocJpeg(uint param_1)
+void * __cdecl Z_MallocJpeg(uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Z_Malloc(param_1,"Z_MallocJpeg",0xb);
+  pvVar1 = Z_Malloc(size,"Z_MallocJpeg",0xb);
   return pvVar1;
 }
 
@@ -69,7 +74,7 @@ void __cdecl ExitJpeg(void)
 
 // 00ADE6A0  PrintfJpeg  (gfx_d3d/r_jpeg.cpp:136)
 
-void __cdecl PrintfJpeg(char *param_1)
+void __cdecl PrintfJpeg(char *message_2)
 
 {
   Com_Printf(8,"%s\n");
@@ -82,43 +87,45 @@ void __cdecl PrintfJpeg(char *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_SaveJpg(char *param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar *param_6)
+R_SaveJpg(char *filename,int quality,int image_width,int image_height,uchar *image_buffer,
+         uchar *output_buffer)
 
 {
-  uchar *local_218;
-  uchar *local_210;
-  jpeg_compress_struct local_20c;
-  jpeg_error_mgr local_9c;
+  uchar *out;
+  int row_stride;
+  uchar *row_pointer;
+  jpeg_compress_struct cinfo;
+  jpeg_error_mgr jerr;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20c.err = jpeg_std_error(&local_9c,ExitJpeg,PrintfJpeg);
+  cinfo.err = jpeg_std_error(&jerr,ExitJpeg,PrintfJpeg);
   jpeg_set_jpeg_alloc(Z_MallocJpeg,Sys_FreeClipboardData);
-  jpeg_CreateCompress(&local_20c,0x3e,0x170);
-  if (param_6 == (uchar *)0x0) {
-    local_218 = Hunk_AllocateTempMemory(param_3 * param_4 * 3,"SaveJPG");
+  jpeg_CreateCompress(&cinfo,0x3e,0x170);
+  if (output_buffer == (uchar *)0x0) {
+    out = Hunk_AllocateTempMemory(image_width * image_height * 3,"SaveJPG");
   }
   else {
-    local_218 = param_6;
+    out = output_buffer;
   }
-  jpegDest(&local_20c,local_218,param_3 * param_4 * 3);
-  local_20c.image_width = param_3;
-  local_20c.image_height = param_4;
-  local_20c.input_components = 3;
-  local_20c.in_color_space = JCS_RGB;
-  jpeg_set_defaults(&local_20c);
-  jpeg_set_quality(&local_20c,param_2,'\x01');
-  jpeg_start_compress(&local_20c,'\x01');
-  while (local_20c.next_scanline < local_20c.image_height) {
-    local_210 = param_5 + local_20c.next_scanline * param_3 * 3;
-    jpeg_write_scanlines(&local_20c,&local_210,1);
+  jpegDest(&cinfo,out,image_width * image_height * 3);
+  cinfo.image_width = image_width;
+  cinfo.image_height = image_height;
+  cinfo.input_components = 3;
+  cinfo.in_color_space = JCS_RGB;
+  jpeg_set_defaults(&cinfo);
+  jpeg_set_quality(&cinfo,quality,'\x01');
+  jpeg_start_compress(&cinfo,'\x01');
+  while (cinfo.next_scanline < cinfo.image_height) {
+    row_pointer = image_buffer + cinfo.next_scanline * image_width * 3;
+    jpeg_write_scanlines(&cinfo,&row_pointer,1);
   }
-  jpeg_finish_compress(&local_20c);
-  FS_WriteFile(param_1,local_218,hackSize);
-  if (param_6 == (uchar *)0x0) {
-    Hunk_FreeTempMemory(local_218);
+  jpeg_finish_compress(&cinfo);
+  FS_WriteFile(filename,out,hackSize);
+  if (output_buffer == (uchar *)0x0) {
+    Hunk_FreeTempMemory(out);
   }
-  jpeg_destroy_compress(&local_20c);
+  jpeg_destroy_compress(&cinfo);
   jpeg_set_jpeg_alloc((_func___cdecl_void_ptr_uint *)0x0,(_func___cdecl_void_void_ptr *)0x0);
   return;
 }
@@ -126,7 +133,7 @@ R_SaveJpg(char *param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar
 
 // 00894990  CL_IsLastActiveLocalClient  (client/splitscreen.cpp:325)
 
-bool __cdecl CL_IsLastActiveLocalClient(int param_1)
+bool __cdecl CL_IsLastActiveLocalClient(int cinfo)
 
 {
   return true;
@@ -135,20 +142,19 @@ bool __cdecl CL_IsLastActiveLocalClient(int param_1)
 
 // 00ADE7F0  Jpeg_HunkAlloc  (gfx_d3d/r_jpeg.cpp:458)
 
-void * __cdecl Jpeg_HunkAlloc(uint param_1)
+void * __cdecl Jpeg_HunkAlloc(uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"ReadJpg",0xb);
+  pvVar1 = Hunk_Alloc(size,"ReadJpg",0xb);
   return pvVar1;
 }
 
 
 // 00ADE6C0  R_ReadJpgSetup  (gfx_d3d/r_jpeg.cpp:477)
 
-void * __cdecl
-R_ReadJpgSetup(void *param_1,int param_2,int *param_3,int *param_4,_D3DFORMAT *param_5)
+void * __cdecl R_ReadJpgSetup(void *data,int dataLen,int *width,int *height,_D3DFORMAT *imageFormat)
 
 {
   code *pcVar1;
@@ -168,13 +174,13 @@ R_ReadJpgSetup(void *param_1,int param_2,int *param_3,int *param_4,_D3DFORMAT *p
   jpeg_set_jpeg_alloc(Jpeg_HunkAlloc,GamerProfile_WriteSettings);
   s_hunk_mark = Hunk_SetMark();
   jpeg_CreateDecompress(&s_read_cinfo,0x3e,0x1b8);
-  jpeg_memory_src(&s_read_cinfo,param_1,param_2);
+  jpeg_memory_src(&s_read_cinfo,data,dataLen);
   jpeg_read_header(&s_read_cinfo,'\x01');
   jpeg_start_decompress(&s_read_cinfo);
   if (s_read_cinfo.output_components == 3) {
-    *param_3 = s_read_cinfo.output_width;
-    *param_4 = s_read_cinfo.output_height;
-    *param_5 = D3DFMT_A8R8G8B8;
+    *width = s_read_cinfo.output_width;
+    *height = s_read_cinfo.output_height;
+    *imageFormat = D3DFMT_A8R8G8B8;
     pjVar4 = &s_read_cinfo;
   }
   else {
@@ -191,18 +197,18 @@ R_ReadJpgSetup(void *param_1,int param_2,int *param_3,int *param_4,_D3DFORMAT *p
 
 // 00ADE830  R_ReadJpg  (gfx_d3d/r_jpeg.cpp:509)
 
-bool __cdecl R_ReadJpg(void *param_1,uchar *param_2,int param_3,int param_4)
+bool __cdecl R_ReadJpg(void *context,uchar *pixels,int pitch,int height)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uchar *local_14;
-  uchar *local_10;
-  jpeg_decompress_struct *local_c;
-  uint local_8;
+  uchar *out;
+  uchar *scanline;
+  jpeg_decompress_struct *cinfo;
+  uint i;
   
-  local_c = param_1;
+  cinfo = context;
   if ((s_hunk_mark == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_jpeg.cpp",0x203,0,"%s"
                               ), !bVar2)) {
@@ -210,24 +216,22 @@ bool __cdecl R_ReadJpg(void *param_1,uchar *param_2,int param_3,int param_4)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_10 = Hunk_AllocateTempMemory(local_c->output_width * local_c->output_components,"R_ReadJpg")
-  ;
-  local_14 = param_2;
-  while ((local_c->output_scanline < local_c->output_height && (local_c->output_scanline != param_4)
-         )) {
-    jpeg_read_scanlines(local_c,&local_10,1);
-    for (local_8 = 0; local_8 < local_c->output_width; local_8 = local_8 + 1) {
-      local_14[local_8 * 4] = local_10[local_8 * local_c->output_components];
-      local_14[local_8 * 4 + 1] = local_10[local_8 * local_c->output_components + 1];
-      local_14[local_8 * 4 + 2] = local_10[local_8 * local_c->output_components + 2];
-      local_14[local_8 * 4 + 3] = 0xff;
+  scanline = Hunk_AllocateTempMemory(cinfo->output_width * cinfo->output_components,"R_ReadJpg");
+  out = pixels;
+  while ((cinfo->output_scanline < cinfo->output_height && (cinfo->output_scanline != height))) {
+    jpeg_read_scanlines(cinfo,&scanline,1);
+    for (i = 0; i < cinfo->output_width; i = i + 1) {
+      out[i * 4] = scanline[i * cinfo->output_components];
+      out[i * 4 + 1] = scanline[i * cinfo->output_components + 1];
+      out[i * 4 + 2] = scanline[i * cinfo->output_components + 2];
+      out[i * 4 + 3] = 0xff;
     }
-    local_14 = local_14 + param_3;
+    out = out + pitch;
   }
-  jpeg_finish_decompress(local_c);
-  jpeg_destroy_compress((jpeg_compress_struct *)local_c);
+  jpeg_finish_decompress(cinfo);
+  jpeg_destroy_compress((jpeg_compress_struct *)cinfo);
   jpeg_set_jpeg_alloc((_func___cdecl_void_ptr_uint *)0x0,(_func___cdecl_void_void_ptr *)0x0);
-  Hunk_FreeTempMemory(local_10);
+  Hunk_FreeTempMemory(scanline);
   Hunk_ClearToMark(s_hunk_mark);
   s_hunk_mark = 0;
   return true;
@@ -236,10 +240,10 @@ bool __cdecl R_ReadJpg(void *param_1,uchar *param_2,int param_3,int param_4)
 
 // 006D2DA0  Sys_FreeClipboardData  (win32/win_main.cpp:653)
 
-void __cdecl Sys_FreeClipboardData(char *param_1)
+void __cdecl Sys_FreeClipboardData(char *ptr_2)
 
 {
-  Z_Free(param_1,0xb);
+  Z_Free(ptr_2,0xb);
   return;
 }
 

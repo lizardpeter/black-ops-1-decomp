@@ -73,10 +73,12 @@ float __cdecl R_CalculateTriangleArea3D(float (*param_1) [3])
 
 // 008440D0  R_CalculateTriangleTopMipAabb  (gfx_d3d/r_stream_util.cpp:125)
 
+/* WARNING: Variable defined which should be unmapped: MAX_RADIUS */
+
 bool __cdecl
 R_CalculateTriangleTopMipAabb
-          (float (*param_1) [3],float (*param_2) [2],float *param_3,uint param_4,float *param_5,
-          float *param_6,float *param_7)
+          (float (*textureSize) [3],float (*outMins) [2],float *outMaxs,uint outRadius,
+          float *param_5,float *param_6,float *param_7)
 
 {
   byte in_AL;
@@ -90,6 +92,7 @@ R_CalculateTriangleTopMipAabb
   float10 fVar5;
   float *pfVar6;
   float (*pafVar7) [3];
+  float MAX_RADIUS;
   float *pfVar8;
   float in_stack_ffffffb8;
   float fStack_44;
@@ -106,7 +109,7 @@ R_CalculateTriangleTopMipAabb
   fVar5 = (float10)sqrtf();
   pfVar8 = (float *)(float)(fVar5 * (float10)0.99);
   bVar1 = R_CalculateTriangleTextureGradient
-                    (param_1,(float (*) [2])&stack0xffffffb8,pafVar7,*unaff_EDI);
+                    (textureSize,(float (*) [2])&stack0xffffffb8,pafVar7,*unaff_EDI);
   if ((!bVar1) ||
      ((fStack_44 * fStack_44 + fStack_40 * fStack_40 + in_stack_ffffffb8 * in_stack_ffffffb8 <= 0.0
       && (in_stack_ffffffb8 = fStack_34,
@@ -154,7 +157,7 @@ LAB_0084427d:
     pfVar6 = pfVar8;
   }
   *param_5 = (float)pfVar6;
-  if (param_3 != (float *)0x0) {
+  if (outMaxs != (float *)0x0) {
     R_CalculateMinimalAabbForSpheres
               ((float (*) [3])&stack0xffffffb8,*unaff_EDI,(int)unaff_EBX,pfVar8,pfVar6);
   }

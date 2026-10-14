@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _stat64i32(char *param_1,_stat64i32 *param_2)
+int __cdecl _stat64i32(char *name,_stat64i32 *buf)
 
 {
   ushort uVar1;
@@ -17,19 +17,20 @@ int __cdecl _stat64i32(char *param_1,_stat64i32 *param_2)
   int iVar7;
   UINT UVar8;
   BOOL BVar9;
-  DWORD DVar10;
+  DWORD oserrno;
   char *unaff_EDI;
-  long64 lVar11;
+  long64 lVar10;
+  int drive;
   _FILETIME _Stack_268;
   _SYSTEMTIME _Stack_260;
-  char *pcStack_250;
+  void *findhandle;
   _WIN32_FIND_DATAA _Stack_24c;
   char acStack_10c [260];
   uint uStack_8;
   
   uStack_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _Stack_268.dwHighDateTime = (DWORD)param_1;
-  if ((param_1 == (char *)0x0) || (param_2 == (_stat64i32 *)0x0)) {
+  _Stack_268.dwHighDateTime = (DWORD)name;
+  if ((name == (char *)0x0) || (buf == (_stat64i32 *)0x0)) {
     puVar2 = __doserrno();
     *puVar2 = 0;
     piVar3 = _errno();
@@ -37,20 +38,20 @@ int __cdecl _stat64i32(char *param_1,_stat64i32 *param_2)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  puVar4 = _mbspbrk((uchar *)param_1,(uchar *)"?*");
+  puVar4 = _mbspbrk((uchar *)name,(uchar *)"?*");
   if (puVar4 != (uchar *)0x0) goto LAB_00965475;
-  if (param_1[1] == ':') {
-    if ((*param_1 != '\0') && (param_1[2] == '\0')) goto LAB_00965475;
-    uVar5 = _mbctolower((int)*param_1);
+  if (name[1] == ':') {
+    if ((*name != '\0') && (name[2] == '\0')) goto LAB_00965475;
+    uVar5 = _mbctolower((int)*name);
     iVar6 = uVar5 - 0x60;
   }
   else {
     iVar6 = _getdrive();
   }
-  pcStack_250 = FindFirstFileA(param_1,&_Stack_24c);
-  if (pcStack_250 == (char *)0xffffffff) {
-    pcStack_250 = (char *)0x0;
-    puVar4 = _mbspbrk((uchar *)param_1,(uchar *)"./\\");
+  findhandle = FindFirstFileA(name,&_Stack_24c);
+  if (findhandle == (HANDLE)0xffffffff) {
+    findhandle = (void *)0x0;
+    puVar4 = _mbspbrk((uchar *)name,(uchar *)"./\\");
     if (puVar4 == (uchar *)0x0) {
 LAB_00965475:
       piVar3 = _errno();
@@ -59,97 +60,97 @@ LAB_00965475:
       *puVar2 = 2;
       return -1;
     }
-    puVar4 = (uchar *)_fullpath_helper(acStack_10c,param_1,0x104,&pcStack_250);
+    puVar4 = (uchar *)_fullpath_helper(acStack_10c,name,0x104,&findhandle);
     if ((puVar4 == (uchar *)0x0) ||
        (((strlen(puVar4), extraout_EAX != 3 && (iVar7 = IsRootUNCName(unaff_EDI), iVar7 == 0)) ||
         (UVar8 = GetDriveTypeA((LPCSTR)puVar4), UVar8 < 2)))) {
-      if (pcStack_250 != (char *)0x0) {
-        free(pcStack_250);
+      if (findhandle != (void *)0x0) {
+        free(findhandle);
       }
       goto LAB_00965475;
     }
-    if (pcStack_250 != (char *)0x0) {
-      free(pcStack_250);
+    if (findhandle != (void *)0x0) {
+      free(findhandle);
     }
     _Stack_24c.dwFileAttributes = 0x10;
     _Stack_24c.nFileSizeHigh = 0;
     _Stack_24c.nFileSizeLow = 0;
     _Stack_24c.cFileName[0] = '\0';
-    lVar11 = __loctotime64_t(0x7bc,1,1,0,0,0,-1);
-    param_2->st_mtime = lVar11;
-    param_2->st_atime = lVar11;
-    param_2->st_ctime = lVar11;
-    param_1 = (char *)_Stack_268.dwHighDateTime;
+    lVar10 = __loctotime64_t(0x7bc,1,1,0,0,0,-1);
+    buf->st_mtime = lVar10;
+    buf->st_atime = lVar10;
+    buf->st_ctime = lVar10;
+    name = (char *)_Stack_268.dwHighDateTime;
   }
   else {
     if (((_Stack_24c.dwFileAttributes & 0x400) != 0) && (_Stack_24c.dwReserved0 == 0xa000000c)) {
-      pcStack_250 = (char *)0xffffffff;
-      iVar6 = _sopen_s((int *)&pcStack_250,param_1,0,0x40,0);
-      if ((iVar6 == 0) && (pcStack_250 != (char *)0xffffffff)) {
-        iVar6 = _fstat64i32((int)pcStack_250,param_2);
-        _close((int)pcStack_250);
+      findhandle = (void *)0xffffffff;
+      iVar6 = _sopen_s((int *)&findhandle,name,0,0x40,0);
+      if ((iVar6 == 0) && (findhandle != (void *)0xffffffff)) {
+        iVar6 = _fstat64i32((int)findhandle,buf);
+        _close((int)findhandle);
         return iVar6;
       }
       goto LAB_00965475;
     }
     if ((_Stack_24c.ftLastWriteTime.dwLowDateTime == 0) &&
        (_Stack_24c.ftLastWriteTime.dwHighDateTime == 0)) {
-      *(undefined4 *)&param_2->st_mtime = 0;
-      *(undefined4 *)((int)&param_2->st_mtime + 4) = 0;
+      *(undefined4 *)&buf->st_mtime = 0;
+      *(undefined4 *)((int)&buf->st_mtime + 4) = 0;
     }
     else {
       BVar9 = FileTimeToLocalFileTime(&_Stack_24c.ftLastWriteTime,&_Stack_268);
       if ((BVar9 == 0) || (BVar9 = FileTimeToSystemTime(&_Stack_268,&_Stack_260), BVar9 == 0))
       goto LAB_00965826;
-      lVar11 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
+      lVar10 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
                                (uint)_Stack_260.wHour,(uint)_Stack_260.wMinute,
                                (uint)_Stack_260.wSecond,-1);
-      param_2->st_mtime = lVar11;
+      buf->st_mtime = lVar10;
     }
     if ((_Stack_24c.ftLastAccessTime.dwLowDateTime == 0) &&
        (_Stack_24c.ftLastAccessTime.dwHighDateTime == 0)) {
-      *(int *)&param_2->st_atime = (int)param_2->st_mtime;
-      *(undefined4 *)((int)&param_2->st_atime + 4) = *(undefined4 *)((int)&param_2->st_mtime + 4);
+      *(int *)&buf->st_atime = (int)buf->st_mtime;
+      *(undefined4 *)((int)&buf->st_atime + 4) = *(undefined4 *)((int)&buf->st_mtime + 4);
     }
     else {
       BVar9 = FileTimeToLocalFileTime(&_Stack_24c.ftLastAccessTime,&_Stack_268);
       if ((BVar9 == 0) || (BVar9 = FileTimeToSystemTime(&_Stack_268,&_Stack_260), BVar9 == 0))
       goto LAB_00965826;
-      lVar11 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
+      lVar10 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
                                (uint)_Stack_260.wHour,(uint)_Stack_260.wMinute,
                                (uint)_Stack_260.wSecond,-1);
-      param_2->st_atime = lVar11;
+      buf->st_atime = lVar10;
     }
     if ((_Stack_24c.ftCreationTime.dwLowDateTime == 0) &&
        (_Stack_24c.ftCreationTime.dwHighDateTime == 0)) {
-      *(int *)&param_2->st_ctime = (int)param_2->st_mtime;
-      *(undefined4 *)((int)&param_2->st_ctime + 4) = *(undefined4 *)((int)&param_2->st_mtime + 4);
+      *(int *)&buf->st_ctime = (int)buf->st_mtime;
+      *(undefined4 *)((int)&buf->st_ctime + 4) = *(undefined4 *)((int)&buf->st_mtime + 4);
     }
     else {
       BVar9 = FileTimeToLocalFileTime(&_Stack_24c.ftCreationTime,&_Stack_268);
       if ((BVar9 == 0) || (BVar9 = FileTimeToSystemTime(&_Stack_268,&_Stack_260), BVar9 == 0)) {
 LAB_00965826:
-        DVar10 = GetLastError();
-        _dosmaperr(DVar10);
-        FindClose(pcStack_250);
+        oserrno = GetLastError();
+        _dosmaperr(oserrno);
+        FindClose(findhandle);
         return -1;
       }
-      lVar11 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
+      lVar10 = __loctotime64_t((uint)_Stack_260.wYear,(uint)_Stack_260.wMonth,(uint)_Stack_260.wDay,
                                (uint)_Stack_260.wHour,(uint)_Stack_260.wMinute,
                                (uint)_Stack_260.wSecond,-1);
-      param_2->st_ctime = lVar11;
+      buf->st_ctime = lVar10;
     }
-    FindClose(pcStack_250);
+    FindClose(findhandle);
   }
-  uVar1 = __dtoxmode(_Stack_24c.dwFileAttributes,param_1);
-  param_2->st_mode = uVar1;
-  param_2->st_nlink = 1;
-  param_2->st_size = _Stack_24c.nFileSizeLow;
-  param_2->st_ino = 0;
-  param_2->st_gid = 0;
-  param_2->st_uid = 0;
-  param_2->st_dev = iVar6 - 1U;
-  param_2->st_rdev = iVar6 - 1U;
+  uVar1 = __dtoxmode(_Stack_24c.dwFileAttributes,name);
+  buf->st_mode = uVar1;
+  buf->st_nlink = 1;
+  buf->st_size = _Stack_24c.nFileSizeLow;
+  buf->st_ino = 0;
+  buf->st_gid = 0;
+  buf->st_uid = 0;
+  buf->st_dev = iVar6 - 1U;
+  buf->st_rdev = iVar6 - 1U;
   return 0;
 }
 
@@ -198,7 +199,7 @@ int __cdecl IsRootUNCName(char *param_1)
 
 // 009653B2  _fullpath_helper  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat64.c:369)
 
-char * __cdecl _fullpath_helper(char *param_1,char *param_2,uint param_3,char **param_4)
+char * __cdecl _fullpath_helper(char *buf,char *path,uint sz,char **pBuf)
 
 {
   int iVar1;
@@ -209,14 +210,14 @@ char * __cdecl _fullpath_helper(char *param_1,char *param_2,uint param_3,char **
   iVar1 = *piVar2;
   piVar2 = _errno();
   *piVar2 = 0;
-  pcVar3 = _fullpath(param_1,param_2,param_3);
+  pcVar3 = _fullpath(buf,path,sz);
   piVar2 = _errno();
   if (pcVar3 == (char *)0x0) {
     if (*piVar2 == 0x22) {
       piVar2 = _errno();
       *piVar2 = iVar1;
-      pcVar3 = _fullpath((char *)0x0,param_2,0);
-      *param_4 = pcVar3;
+      pcVar3 = _fullpath((char *)0x0,path,0);
+      *pBuf = pcVar3;
     }
     else {
       pcVar3 = (char *)0x0;

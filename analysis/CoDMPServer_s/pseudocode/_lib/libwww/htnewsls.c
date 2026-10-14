@@ -6,69 +6,69 @@ undefined4 _HTNewsCache_before(void)
 
 {
   int iVar1;
-  uchar *puVar2;
-  void *pvVar3;
+  uchar *string;
+  void *pvVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
-  int *piVar6;
+  int *piVar5;
   int extraout_EAX;
+  int iVar6;
   int iVar7;
-  int iVar8;
   int local_18;
   
-  pvVar3 = (void *)_HTAnchor_address();
-  iVar4 = FUN_008931e0();
-  if (pvVar3 != (void *)0x0) {
-    free(pvVar3);
+  pvVar2 = (void *)_HTAnchor_address();
+  iVar3 = FUN_008931e0();
+  if (pvVar2 != (void *)0x0) {
+    free(pvVar2);
   }
-  if (iVar4 == 0) {
+  if (iVar3 == 0) {
     return 0;
   }
-  pvVar3 = (void *)FUN_00892d70();
-  iVar5 = _HTNewsDir_new(pvVar3,5,0);
-  if ((*(int *)(iVar4 + 4) != 0) &&
-     (piVar6 = *(int **)(*(int *)(iVar4 + 4) + 0xc), piVar6 != (int *)0x0)) {
-    iVar1 = *piVar6;
+  pvVar2 = (void *)FUN_00892d70();
+  iVar4 = _HTNewsDir_new(pvVar2,5,0);
+  if ((*(int *)(iVar3 + 4) != 0) &&
+     (piVar5 = *(int **)(*(int *)(iVar3 + 4) + 0xc), piVar5 != (int *)0x0)) {
+    iVar1 = *piVar5;
     while (iVar1 != 0) {
-      piVar6 = piVar6 + 1;
-      iVar8 = 0;
-      if (iVar5 != 0) {
-        puVar2 = *(uchar **)(iVar5 + 0xc);
-        if ((puVar2 == (uchar *)0x0) || (*puVar2 == '\0')) {
+      piVar5 = piVar5 + 1;
+      iVar7 = 0;
+      if (iVar4 != 0) {
+        string = *(uchar **)(iVar4 + 0xc);
+        if ((string == (uchar *)0x0) || (*string == '\0')) {
 LAB_008934f5:
-          iVar8 = _HTNewsDir_addElement(iVar5,0,iVar1,0,0,0,0);
+          iVar7 = _HTNewsDir_addElement(iVar4,0,iVar1,0,0,0,0);
         }
         else {
-          strrchr(puVar2,'*');
+          strrchr(string,'*');
           if (extraout_EAX == 0) {
-            iVar7 = strcasecomp();
+            iVar6 = strcasecomp();
           }
           else {
-            iVar7 = strncasecomp(puVar2);
+            iVar6 = strncasecomp(string);
           }
-          if (iVar7 == 0) goto LAB_008934f5;
+          if (iVar6 == 0) goto LAB_008934f5;
         }
-        iVar7 = *(int *)(iVar5 + 0x20);
-        if (iVar7 != 0) {
-          if (iVar8 == 0) {
+        iVar6 = *(int *)(iVar4 + 0x20);
+        if (iVar6 != 0) {
+          if (iVar7 == 0) {
             local_18 = 0;
 LAB_0089352d:
             _HTSACopy(iVar1);
           }
           else {
-            local_18 = *(int *)(iVar8 + 4);
+            local_18 = *(int *)(iVar7 + 4);
             if (local_18 == 0) goto LAB_0089352d;
           }
-          _HTArray_addObject(iVar7,local_18);
+          _HTArray_addObject(iVar6,local_18);
         }
       }
-      if ((*(int *)(iVar4 + 4) == 0) || (piVar6 == (int *)0x0)) break;
-      iVar1 = *piVar6;
+      if ((*(int *)(iVar3 + 4) == 0) || (piVar5 == (int *)0x0)) break;
+      iVar1 = *piVar5;
     }
   }
-  _HTNewsDir_free(iVar5);
-  if (pvVar3 != (void *)0x0) {
-    free(pvVar3);
+  _HTNewsDir_free(iVar4);
+  if (pvVar2 != (void *)0x0) {
+    free(pvVar2);
   }
   return 200;
 }
@@ -79,13 +79,13 @@ LAB_0089352d:
 undefined4 _HTNewsCache_after(int param_1)
 
 {
-  void *pvVar1;
+  void *pBlock;
   
   if (param_1 != 0) {
-    pvVar1 = (void *)_HTAnchor_address();
-    FUN_008932e0(pvVar1,param_1);
-    if (pvVar1 != (void *)0x0) {
-      free(pvVar1);
+    pBlock = (void *)_HTAnchor_address();
+    FUN_008932e0(pBlock,param_1);
+    if (pBlock != (void *)0x0) {
+      free(pBlock);
     }
     return 0;
   }

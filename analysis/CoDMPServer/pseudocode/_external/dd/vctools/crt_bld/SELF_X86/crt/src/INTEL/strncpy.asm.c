@@ -2,7 +2,7 @@
 
 // 00C0E0F0  strncpy  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strncpy.asm:62)
 
-void __cdecl strncpy(uchar *param_1,uchar *param_2,ulong param_3)
+void __cdecl strncpy(uchar *dest,uchar *source,ulong count)
 
 {
   uint uVar1;
@@ -10,98 +10,98 @@ void __cdecl strncpy(uchar *param_1,uchar *param_2,ulong param_3)
   char cVar3;
   uint uVar4;
   
-  if (param_3 == 0) {
+  if (count == 0) {
     return;
   }
-  if (((uint)param_2 & 3) != 0) {
+  if (((uint)source & 3) != 0) {
     while( true ) {
-      uVar4 = *(uint *)param_2;
-      param_2 = (uchar *)((int)param_2 + 1);
-      *param_1 = (char)uVar4;
-      param_1 = (uchar *)((int)param_1 + 1);
-      param_3 = param_3 - 1;
-      if (param_3 == 0) {
+      uVar4 = *(uint *)source;
+      source = (uchar *)((int)source + 1);
+      *dest = (char)uVar4;
+      dest = (uchar *)((int)dest + 1);
+      count = count - 1;
+      if (count == 0) {
         return;
       }
       if ((char)uVar4 == '\0') break;
-      if (((uint)param_2 & 3) == 0) {
-        uVar4 = param_3 >> 2;
+      if (((uint)source & 3) == 0) {
+        uVar4 = count >> 2;
         goto joined_r0x00c0e13c;
       }
     }
     do {
-      if (((uint)param_1 & 3) == 0) {
-        uVar4 = param_3 >> 2;
+      if (((uint)dest & 3) == 0) {
+        uVar4 = count >> 2;
         cVar3 = '\0';
         if (uVar4 == 0) goto LAB_00c0e183;
         goto LAB_00c0e1f9;
       }
-      *param_1 = '\0';
-      param_1 = (uchar *)((int)param_1 + 1);
-      param_3 = param_3 - 1;
-    } while (param_3 != 0);
+      *dest = '\0';
+      dest = (uchar *)((int)dest + 1);
+      count = count - 1;
+    } while (count != 0);
     return;
   }
-  uVar4 = param_3 >> 2;
+  uVar4 = count >> 2;
   if (uVar4 != 0) {
     do {
-      uVar1 = *(uint *)param_2;
-      uVar2 = *(uint *)param_2;
-      param_2 = (uchar *)((int)param_2 + 4);
+      uVar1 = *(uint *)source;
+      uVar2 = *(uint *)source;
+      source = (uchar *)((int)source + 4);
       if (((uVar1 ^ 0xffffffff ^ uVar1 + 0x7efefeff) & 0x81010100) != 0) {
         if ((char)uVar2 == '\0') {
-          *(uint *)param_1 = 0;
+          *(uint *)dest = 0;
 joined_r0x00c0e1f5:
           while( true ) {
             uVar4 = uVar4 - 1;
-            param_1 = (uchar *)((int)param_1 + 4);
+            dest = (uchar *)((int)dest + 4);
             if (uVar4 == 0) break;
 LAB_00c0e1f9:
-            *(uint *)param_1 = 0;
+            *(uint *)dest = 0;
           }
           cVar3 = '\0';
-          param_3 = param_3 & 3;
-          if (param_3 != 0) goto LAB_00c0e183;
+          count = count & 3;
+          if (count != 0) goto LAB_00c0e183;
           return;
         }
         if ((char)(uVar2 >> 8) == '\0') {
-          *(uint *)param_1 = uVar2 & 0xff;
+          *(uint *)dest = uVar2 & 0xff;
           goto joined_r0x00c0e1f5;
         }
         if ((uVar2 & 0xff0000) == 0) {
-          *(uint *)param_1 = uVar2 & 0xffff;
+          *(uint *)dest = uVar2 & 0xffff;
           goto joined_r0x00c0e1f5;
         }
         if ((uVar2 & 0xff000000) == 0) {
-          *(uint *)param_1 = uVar2;
+          *(uint *)dest = uVar2;
           goto joined_r0x00c0e1f5;
         }
       }
-      *(uint *)param_1 = uVar2;
-      param_1 = (uchar *)((int)param_1 + 4);
+      *(uint *)dest = uVar2;
+      dest = (uchar *)((int)dest + 4);
       uVar4 = uVar4 - 1;
 joined_r0x00c0e13c:
     } while (uVar4 != 0);
-    param_3 = param_3 & 3;
-    if (param_3 == 0) {
+    count = count & 3;
+    if (count == 0) {
       return;
     }
   }
   do {
-    cVar3 = (char)*(uint *)param_2;
-    param_2 = (uchar *)((int)param_2 + 1);
-    *param_1 = cVar3;
-    param_1 = (uchar *)((int)param_1 + 1);
+    cVar3 = (char)*(uint *)source;
+    source = (uchar *)((int)source + 1);
+    *dest = cVar3;
+    dest = (uchar *)((int)dest + 1);
     if (cVar3 == '\0') {
-      while (param_3 = param_3 - 1, param_3 != 0) {
+      while (count = count - 1, count != 0) {
 LAB_00c0e183:
-        *param_1 = cVar3;
-        param_1 = (uchar *)((int)param_1 + 1);
+        *dest = cVar3;
+        dest = (uchar *)((int)dest + 1);
       }
       return;
     }
-    param_3 = param_3 - 1;
-  } while (param_3 != 0);
+    count = count - 1;
+  } while (count != 0);
   return;
 }
 

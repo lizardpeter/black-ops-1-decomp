@@ -2,50 +2,56 @@
 
 // 00C21E03  __crtwsetenv  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c:76)
 
-int __cdecl __crtwsetenv(ushort **param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: retval */
+
+int __cdecl __crtwsetenv(ushort **poption,int primary)
 
 {
-  wchar_t *pwVar1;
-  int *piVar2;
-  wchar_t *pwVar3;
-  int iVar4;
-  uint uVar5;
-  ushort **ppuVar6;
+  wchar_t *string;
+  int *piVar1;
+  wchar_t *pwVar2;
+  int iVar3;
+  uint uVar4;
+  ushort **ppuVar5;
   LPCWSTR lpName;
-  BOOL BVar7;
-  DWORD DVar8;
+  BOOL BVar6;
+  DWORD DVar7;
   LPCWSTR lpWideCharStr;
   ushort **unaff_EDI;
-  ushort **ppuVar9;
-  bool bVar10;
-  uint uVar11;
-  wchar_t *pwVar12;
-  LPCSTR local_1c;
-  LPSTR local_18;
-  int iVar13;
+  ushort **ppuVar8;
+  bool bVar9;
+  uint uVar10;
+  wchar_t *_Src;
+  ushort *name;
+  ushort **env;
+  char *c_value;
+  int size;
+  ushort *option;
+  int remove;
+  int retval;
   
-  iVar13 = 0;
-  if (param_1 == (ushort **)0x0) {
-    piVar2 = _errno();
-    *piVar2 = 0x16;
+  retval = 0;
+  if (poption == (ushort **)0x0) {
+    piVar1 = _errno();
+    *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  pwVar1 = (wchar_t *)*param_1;
-  if (((pwVar1 == (wchar_t *)0x0) ||
-      (pwVar3 = (wchar_t *)wcschr(pwVar1,L'='), pwVar3 == (wchar_t *)0x0)) || (pwVar1 == pwVar3)) {
+  string = (wchar_t *)*poption;
+  if (((string == (wchar_t *)0x0) ||
+      (pwVar2 = (wchar_t *)wcschr(string,L'='), pwVar2 == (wchar_t *)0x0)) || (string == pwVar2)) {
 LAB_00c21ea8:
-    piVar2 = _errno();
-    *piVar2 = 0x16;
+    piVar1 = _errno();
+    *piVar1 = 0x16;
     return -1;
   }
-  bVar10 = pwVar3[1] == L'\0';
+  bVar9 = pwVar2[1] == L'\0';
   if (_wenviron == __winitenv) {
     _wenviron = copy_environ(unaff_EDI);
   }
   if (_wenviron == (ushort **)0x0) {
-    if ((param_2 == 0) || (_environ == (char **)0x0)) {
-      if (bVar10) {
+    if ((primary == 0) || (_environ == (char **)0x0)) {
+      if (bVar9) {
         return 0;
       }
       if (_environ == (char **)0x0) {
@@ -64,129 +70,129 @@ LAB_00c21ea8:
     }
     else {
       _wenvptr = __crtGetEnvironmentStringsW();
-      iVar4 = _wsetenvp();
-      if ((iVar4 < 0) && (iVar4 = __mbtow_environ(), iVar4 != 0)) goto LAB_00c21ea8;
+      iVar3 = _wsetenvp();
+      if ((iVar3 < 0) && (iVar3 = __mbtow_environ(), iVar3 != 0)) goto LAB_00c21ea8;
     }
   }
 LAB_00c21ef6:
-  ppuVar6 = _wenviron;
+  ppuVar5 = _wenviron;
   if (_wenviron == (ushort **)0x0) {
     return -1;
   }
-  uVar5 = wfindenv(pwVar1,(int)unaff_EDI);
-  if (((int)uVar5 < 0) || (*ppuVar6 == (ushort *)0x0)) {
-    if (bVar10) {
-      free(pwVar1);
-      *param_1 = (ushort *)0x0;
+  uVar4 = wfindenv(string,(int)unaff_EDI);
+  if (((int)uVar4 < 0) || (*ppuVar5 == (ushort *)0x0)) {
+    if (bVar9) {
+      free(string);
+      *poption = (ushort *)0x0;
       return 0;
     }
-    if ((int)uVar5 < 0) {
-      uVar5 = -uVar5;
+    if ((int)uVar4 < 0) {
+      uVar4 = -uVar4;
     }
-    uVar11 = uVar5 + 2;
-    if ((int)uVar11 < (int)uVar5) {
+    uVar10 = uVar4 + 2;
+    if ((int)uVar10 < (int)uVar4) {
       return -1;
     }
-    if (0x3ffffffe < uVar11) {
+    if (0x3ffffffe < uVar10) {
       return -1;
     }
-    ppuVar6 = _recalloc_crt(_wenviron,4,uVar11);
-    if (ppuVar6 == (ushort **)0x0) {
+    ppuVar5 = _recalloc_crt(_wenviron,4,uVar10);
+    if (ppuVar5 == (ushort **)0x0) {
       return -1;
     }
-    ppuVar6[uVar5] = (ushort *)pwVar1;
-    (ppuVar6 + uVar5)[1] = (ushort *)0x0;
-    *param_1 = (ushort *)0x0;
+    ppuVar5[uVar4] = (ushort *)string;
+    (ppuVar5 + uVar4)[1] = (ushort *)0x0;
+    *poption = (ushort *)0x0;
 LAB_00c21fb9:
-    _wenviron = ppuVar6;
+    _wenviron = ppuVar5;
   }
   else {
-    ppuVar9 = ppuVar6 + uVar5;
-    free(*ppuVar9);
-    if (bVar10) {
-      while (*ppuVar9 != (ushort *)0x0) {
-        *ppuVar9 = ppuVar9[1];
-        uVar5 = uVar5 + 1;
-        ppuVar9 = ppuVar6 + uVar5;
+    ppuVar8 = ppuVar5 + uVar4;
+    free(*ppuVar8);
+    if (bVar9) {
+      while (*ppuVar8 != (ushort *)0x0) {
+        *ppuVar8 = ppuVar8[1];
+        uVar4 = uVar4 + 1;
+        ppuVar8 = ppuVar5 + uVar4;
       }
-      if ((uVar5 < 0x3fffffff) &&
-         (ppuVar6 = _recalloc_crt(_wenviron,uVar5,4), ppuVar6 != (ushort **)0x0)) goto LAB_00c21fb9;
+      if ((uVar4 < 0x3fffffff) &&
+         (ppuVar5 = _recalloc_crt(_wenviron,uVar4,4), ppuVar5 != (ushort **)0x0)) goto LAB_00c21fb9;
     }
     else {
-      *ppuVar9 = (ushort *)pwVar1;
-      *param_1 = (ushort *)0x0;
+      *ppuVar8 = (ushort *)string;
+      *poption = (ushort *)0x0;
     }
   }
-  if (param_2 == 0) goto LAB_00c22136;
-  uVar11 = 2;
-  uVar5 = wcslen(pwVar1);
-  lpName = _calloc_crt(uVar5 + 2,uVar11);
+  if (primary == 0) goto LAB_00c22136;
+  uVar10 = 2;
+  uVar4 = wcslen(string);
+  lpName = _calloc_crt(uVar4 + 2,uVar10);
   if (lpName == (LPCWSTR)0x0) goto LAB_00c22136;
-  pwVar12 = pwVar1;
-  uVar5 = wcslen(pwVar1);
-  iVar4 = wcscpy_s((ushort *)lpName,uVar5 + 2,pwVar12);
-  if (iVar4 != 0) {
+  _Src = string;
+  uVar4 = wcslen(string);
+  iVar3 = wcscpy_s((ushort *)lpName,uVar4 + 2,_Src);
+  if (iVar3 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  lpName[(int)pwVar3 - (int)pwVar1 >> 1] = L'\0';
-  lpWideCharStr = lpName + ((int)pwVar3 - (int)pwVar1 >> 1) + 1;
+  lpName[(int)pwVar2 - (int)string >> 1] = L'\0';
+  lpWideCharStr = lpName + ((int)pwVar2 - (int)string >> 1) + 1;
   if ((f_use == 1) &&
-     (BVar7 = SetEnvironmentVariableW(lpName,(LPCWSTR)(~-(uint)bVar10 & (uint)lpWideCharStr)),
-     BVar7 == 0)) {
-    DVar8 = GetLastError();
-    if (DVar8 != 0x78) {
-      iVar13 = -1;
+     (BVar6 = SetEnvironmentVariableW(lpName,(LPCWSTR)(~-(uint)bVar9 & (uint)lpWideCharStr)),
+     BVar6 == 0)) {
+    DVar7 = GetLastError();
+    if (DVar7 != 0x78) {
+      retval = -1;
       goto LAB_00c22056;
     }
     f_use = 0;
 LAB_00c22062:
-    local_1c = (LPCSTR)0x0;
-    local_18 = (LPSTR)0x0;
-    uVar5 = WideCharToMultiByte(0,0,lpName,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
-    if (((uVar5 == 0) || (local_1c = _calloc_crt(uVar5,1), local_1c == (LPCSTR)0x0)) ||
-       (iVar4 = WideCharToMultiByte(0,0,lpName,-1,local_1c,uVar5,(LPCSTR)0x0,(LPBOOL)0x0),
-       iVar4 == 0)) {
+    env = (ushort **)0x0;
+    c_value = (char *)0x0;
+    uVar4 = WideCharToMultiByte(0,0,lpName,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+    if (((uVar4 == 0) || (env = _calloc_crt(uVar4,1), env == (ushort **)0x0)) ||
+       (iVar3 = WideCharToMultiByte(0,0,lpName,-1,(LPSTR)env,uVar4,(LPCSTR)0x0,(LPBOOL)0x0),
+       iVar3 == 0)) {
 LAB_00c22105:
-      iVar13 = -1;
+      retval = -1;
     }
     else {
-      if (!bVar10) {
-        uVar5 = WideCharToMultiByte(0,0,lpWideCharStr,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
-        if ((uVar5 == 0) || (local_18 = _calloc_crt(uVar5,1), local_18 == (LPSTR)0x0))
+      if (!bVar9) {
+        uVar4 = WideCharToMultiByte(0,0,lpWideCharStr,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+        if ((uVar4 == 0) || (c_value = _calloc_crt(uVar4,1), c_value == (LPSTR)0x0))
         goto LAB_00c22105;
-        iVar4 = WideCharToMultiByte(0,0,lpWideCharStr,-1,local_18,uVar5,(LPCSTR)0x0,(LPBOOL)0x0);
-        if (iVar4 == 0) {
-          iVar13 = -1;
+        iVar3 = WideCharToMultiByte(0,0,lpWideCharStr,-1,c_value,uVar4,(LPCSTR)0x0,(LPBOOL)0x0);
+        if (iVar3 == 0) {
+          retval = -1;
         }
       }
-      if ((iVar13 != -1) &&
-         (BVar7 = SetEnvironmentVariableA(local_1c,(LPCSTR)(~-(uint)bVar10 & (uint)local_18)),
-         BVar7 == 0)) goto LAB_00c22105;
+      if ((retval != -1) &&
+         (BVar6 = SetEnvironmentVariableA((LPCSTR)env,(LPCSTR)(~-(uint)bVar9 & (uint)c_value)),
+         BVar6 == 0)) goto LAB_00c22105;
     }
-    free(local_18);
-    free(local_1c);
+    free(c_value);
+    free(env);
   }
   else {
 LAB_00c22056:
     if (f_use == 0) goto LAB_00c22062;
   }
-  if (iVar13 == -1) {
-    piVar2 = _errno();
-    *piVar2 = 0x2a;
+  if (retval == -1) {
+    piVar1 = _errno();
+    *piVar1 = 0x2a;
   }
   free(lpName);
 LAB_00c22136:
-  if (bVar10) {
-    free(pwVar1);
-    *param_1 = (ushort *)0x0;
+  if (bVar9) {
+    free(string);
+    *poption = (ushort *)0x0;
   }
-  return iVar13;
+  return retval;
 }
 
 
 // 00C21D53  wfindenv  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setenv.c:387)
 
-int __cdecl wfindenv(wchar_t *param_1,int param_2)
+int __cdecl wfindenv(wchar_t *name,int param_2)
 
 {
   int iVar1;
@@ -198,7 +204,7 @@ int __cdecl wfindenv(wchar_t *param_1,int param_2)
     if ((wchar_t *)*ppuVar2 == (wchar_t *)0x0) {
       return -((int)ppuVar2 - (int)_wenviron >> 2);
     }
-    iVar1 = _wcsnicoll(param_1,(wchar_t *)*ppuVar2,unaff_EDI);
+    iVar1 = _wcsnicoll(name,(wchar_t *)*ppuVar2,unaff_EDI);
     if ((iVar1 == 0) && (((*ppuVar2)[unaff_EDI] == 0x3d || ((*ppuVar2)[unaff_EDI] == 0)))) break;
     ppuVar2 = ppuVar2 + 1;
   }
@@ -217,6 +223,7 @@ ushort ** __cdecl copy_environ(ushort **param_1)
   ushort *puVar3;
   int *piVar4;
   ushort **ppuVar5;
+  ushort **newenviron;
   
   ppuVar2 = (ushort **)0x0;
   if (in_EAX != (int *)0x0) {

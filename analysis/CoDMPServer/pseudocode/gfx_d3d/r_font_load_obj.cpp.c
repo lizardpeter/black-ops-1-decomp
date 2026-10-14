@@ -4,58 +4,58 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-Font_s * __cdecl R_LoadFont(char *param_1,int param_2)
+Font_s * __cdecl R_LoadFont(char *fontName,int imageTrack)
 
 {
   Material *pMVar1;
-  char local_6c [64];
+  char glowMaterialName [64];
   uint local_2c;
-  Font_s *local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  char *local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  Glyph *local_8;
+  Font_s *font;
+  int totalMemSize;
+  int file;
+  int materialNameOffset;
+  char *materialName;
+  int fileLen;
+  int varMemSize;
+  int fontNameOffset;
+  char *variableFontData;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = FS_FOpenFileReadCurrentThread(param_1,&local_20);
-  if (local_14 < 0) {
-    if (local_14 == -2) {
+  fileLen = FS_FOpenFileReadCurrentThread(fontName,&file);
+  if (fileLen < 0) {
+    if (fileLen == -2) {
       Com_PrintError(8,"ERROR: Couldn\'t find font in iwd files or localized directories \'%s\'\n");
     }
     else {
       Com_PrintError(8,"ERROR: Couldn\'t find font \'%s\'\n");
     }
-    local_28 = (Font_s *)0x0;
+    font = (Font_s *)0x0;
   }
-  else if (local_14 < 0x10) {
-    FS_FCloseFile(local_20);
+  else if (fileLen < 0x10) {
+    FS_FCloseFile(file);
     Com_PrintError(8,"ERROR: Font file \'%s\' too small\n");
-    local_28 = (Font_s *)0x0;
+    font = (Font_s *)0x0;
   }
   else {
-    local_10 = local_14 + -0x10;
-    local_24 = local_14 + 8;
-    local_28 = Hunk_Alloc(local_24,"R_LoadFont",0x17);
-    local_8 = (Glyph *)(local_28 + 1);
-    FS_Read(&local_c,4,local_20);
-    FS_Read(&local_28->pixelHeight,4,local_20);
-    FS_Read(&local_28->glyphCount,4,local_20);
-    FS_Read(&local_1c,4,local_20);
-    FS_Read(local_8,local_10,local_20);
-    FS_FCloseFile(local_20);
-    local_28->glyphs = local_8;
-    local_28->fontName = (char *)((int)local_8 + local_c + -0x10);
-    local_18 = (char *)((int)local_8 + local_1c + -0x10);
-    pMVar1 = Material_RegisterHandle(local_18,param_2);
-    local_28->material = pMVar1;
-    Com_sprintf(local_6c,0x3f,"%s_glow");
-    pMVar1 = Material_RegisterHandle(local_6c,param_2);
-    local_28->glowMaterial = pMVar1;
+    varMemSize = fileLen + -0x10;
+    totalMemSize = fileLen + 8;
+    font = Hunk_Alloc(totalMemSize,"R_LoadFont",0x17);
+    variableFontData = (char *)(font + 1);
+    FS_Read(&fontNameOffset,4,file);
+    FS_Read(&font->pixelHeight,4,file);
+    FS_Read(&font->glyphCount,4,file);
+    FS_Read(&materialNameOffset,4,file);
+    FS_Read(variableFontData,varMemSize,file);
+    FS_FCloseFile(file);
+    font->glyphs = (Glyph *)variableFontData;
+    font->fontName = variableFontData + fontNameOffset + -0x10;
+    materialName = variableFontData + materialNameOffset + -0x10;
+    pMVar1 = Material_RegisterHandle(materialName,imageTrack);
+    font->material = pMVar1;
+    Com_sprintf(glowMaterialName,0x3f,"%s_glow");
+    pMVar1 = Material_RegisterHandle(glowMaterialName,imageTrack);
+    font->glowMaterial = pMVar1;
   }
-  return local_28;
+  return font;
 }
 

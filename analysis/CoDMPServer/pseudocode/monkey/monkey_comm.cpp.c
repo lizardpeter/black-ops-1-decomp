@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Monkey_InitCommunication(char *param_1)
+bool __cdecl Monkey_InitCommunication(char *server)
 
 {
   code *pcVar1;
@@ -13,9 +13,12 @@ bool __cdecl Monkey_InitCommunication(char *param_1)
   undefined2 uVar4;
   int iVar5;
   undefined4 uVar6;
-  undefined1 local_1ac [400];
-  int local_1c;
-  undefined4 local_18;
+  int err;
+  in_addr addr;
+  int iResult;
+  undefined1 wsaData [400];
+  int res;
+  undefined4 zookeeper;
   undefined4 local_14;
   undefined4 local_10;
   undefined4 local_c;
@@ -31,7 +34,7 @@ bool __cdecl Monkey_InitCommunication(char *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((server == (char *)0x0) || (*server == '\0')) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\monkey\\monkey_comm.cpp",0x3c,0,
                              "%s");
     if (!bVar2) {
@@ -40,9 +43,9 @@ bool __cdecl Monkey_InitCommunication(char *param_1)
       return (bool)uVar3;
     }
   }
-  iVar5 = Ordinal_115(0x202,local_1ac);
+  iVar5 = Ordinal_115(0x202,wsaData);
   if (iVar5 == 0) {
-    uVar6 = Ordinal_10(param_1);
+    uVar6 = Ordinal_10(server);
     g_MonkeySock = Ordinal_23(2,1,6);
     if (g_MonkeySock == 0xffffffff) {
       Com_Error(ERR_FATAL,"Error creating socket for monkey");
@@ -52,12 +55,12 @@ bool __cdecl Monkey_InitCommunication(char *param_1)
       local_14 = 0;
       local_10 = 0;
       local_c = 0;
-      local_18 = 2;
+      zookeeper = 2;
       uVar4 = Ordinal_9(7000);
-      local_18 = CONCAT22(uVar4,(undefined2)local_18);
+      zookeeper = CONCAT22(uVar4,(undefined2)zookeeper);
       local_14 = uVar6;
-      local_1c = Ordinal_4(g_MonkeySock,&local_18,0x10);
-      if (local_1c == 0) {
+      res = Ordinal_4(g_MonkeySock,&zookeeper,0x10);
+      if (res == 0) {
         g_MonkeyConnected = true;
         bVar2 = true;
       }
@@ -86,14 +89,15 @@ void __cdecl Monkey_ShutdownCommunication(void)
 
 {
   int iVar1;
-  undefined1 local_8c [132];
+  int ret;
+  undefined1 buf [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (g_MonkeyConnected) {
     Ordinal_22(g_MonkeySock,1);
     do {
-      iVar1 = Ordinal_16(g_MonkeySock,local_8c,0x80,0);
+      iVar1 = Ordinal_16(g_MonkeySock,buf,0x80,0);
       if (iVar1 == 0) break;
     } while (iVar1 != -1);
     Ordinal_3(g_MonkeySock);
@@ -116,36 +120,36 @@ void __cdecl Monkey_DisconnectAndExit(void)
 
 // 009AE890  Monkey_SendString  (monkey/monkey_comm.cpp:165)
 
-void __cdecl Monkey_SendString(char *param_1)
+void __cdecl Monkey_SendString(char *string)
 
 {
   char cVar1;
   char *local_18;
-  undefined4 local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int nlength;
+  int bytesLeft;
+  int sent;
+  int length;
   
-  local_18 = param_1;
+  local_18 = string;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_18 - (int)(param_1 + 1);
-  local_14 = Ordinal_8(local_8);
-  local_c = Ordinal_19(g_MonkeySock,&local_14,4,0);
-  if (local_c == 0) {
+  length = (int)local_18 - (int)(string + 1);
+  nlength = Ordinal_8(length);
+  sent = Ordinal_19(g_MonkeySock,&nlength,4,0);
+  if (sent == 0) {
     Monkey_DisconnectAndExit();
   }
   else {
-    local_10 = local_8;
+    bytesLeft = length;
     do {
-      if (local_10 < 1) {
+      if (bytesLeft < 1) {
         return;
       }
-      local_c = Ordinal_19(g_MonkeySock,param_1 + (local_8 - local_10),local_10,0);
-      local_10 = local_10 - local_c;
-    } while (local_c != 0);
+      sent = Ordinal_19(g_MonkeySock,string + (length - bytesLeft),bytesLeft,0);
+      bytesLeft = bytesLeft - sent;
+    } while (sent != 0);
     Monkey_DisconnectAndExit();
   }
   return;
@@ -154,12 +158,12 @@ void __cdecl Monkey_SendString(char *param_1)
 
 // 009AE860  Monkey_Send  (monkey/monkey_comm.cpp:193)
 
-void __cdecl Monkey_Send(char *param_1,char *param_2)
+void __cdecl Monkey_Send(char *type,char *string)
 
 {
   if (g_MonkeyConnected) {
-    Monkey_SendString(param_1);
-    Monkey_SendString(param_2);
+    Monkey_SendString(type);
+    Monkey_SendString(string);
   }
   return;
 }
@@ -180,27 +184,30 @@ bool __cdecl Monkey_SocketHasData(void)
   bool bVar1;
   int iVar2;
   int iVar3;
-  undefined4 local_21c;
+  uint __i_2;
+  uint __i;
+  int avail;
+  undefined4 readfds;
   uint uStack_218;
-  undefined4 local_114;
+  undefined4 timeout;
   undefined4 local_110;
-  undefined4 local_10c;
+  undefined4 errorfds;
   uint uStack_108;
   
   if (g_MonkeyConnected) {
-    local_10c = 0;
+    errorfds = 0;
     uStack_218 = g_MonkeySock;
-    local_21c = 1;
+    readfds = 1;
     uStack_108 = g_MonkeySock;
-    local_10c = 1;
-    local_114 = 0;
+    errorfds = 1;
+    timeout = 0;
     local_110 = 0;
-    iVar2 = Ordinal_18(g_MonkeySock + 1,&local_21c,0,&local_10c,&local_114);
+    iVar2 = Ordinal_18(g_MonkeySock + 1,&readfds,0,&errorfds,&timeout);
     if ((iVar2 == -1) ||
-       ((iVar2 != 0 && (iVar3 = ___WSAFDIsSet_8(g_MonkeySock,&local_10c), iVar3 != 0)))) {
+       ((iVar2 != 0 && (iVar3 = ___WSAFDIsSet_8(g_MonkeySock,&errorfds), iVar3 != 0)))) {
       Monkey_DisconnectAndExit();
     }
-    if ((iVar2 == 0) || (iVar2 = ___WSAFDIsSet_8(g_MonkeySock,&local_21c), iVar2 == 0)) {
+    if ((iVar2 == 0) || (iVar2 = ___WSAFDIsSet_8(g_MonkeySock,&readfds), iVar2 == 0)) {
       bVar1 = false;
     }
     else {
@@ -216,16 +223,17 @@ bool __cdecl Monkey_SocketHasData(void)
 
 // 009AE990  Monkey_RecvString  (monkey/monkey_comm.cpp:241)
 
-bool __cdecl Monkey_RecvString(char *param_1,int param_2)
+bool __cdecl Monkey_RecvString(char *data,int data_size)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  int local_8;
+  int received;
+  int length;
   
-  if (param_1 == (char *)0x0) {
+  if (data == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\monkey\\monkey_comm.cpp",0xf2,0,
                              "%s");
     if (!bVar2) {
@@ -234,7 +242,7 @@ bool __cdecl Monkey_RecvString(char *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (param_2 < 1) {
+  if (data_size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\monkey\\monkey_comm.cpp",0xf3,0,
                              "%s");
     if (!bVar2) {
@@ -245,12 +253,12 @@ bool __cdecl Monkey_RecvString(char *param_1,int param_2)
   }
   bVar2 = Monkey_SocketHasData();
   if (bVar2) {
-    iVar4 = Ordinal_16(g_MonkeySock,&local_8,4,0);
+    iVar4 = Ordinal_16(g_MonkeySock,&length,4,0);
     if (iVar4 < 1) {
       Monkey_DisconnectAndExit();
     }
-    local_8 = Ordinal_14(local_8);
-    if (param_2 < local_8 + 1) {
+    length = Ordinal_14(length);
+    if (data_size < length + 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\monkey\\monkey_comm.cpp",0x102,0,
                                "%s");
       if (!bVar2) {
@@ -259,11 +267,11 @@ bool __cdecl Monkey_RecvString(char *param_1,int param_2)
         return (bool)uVar3;
       }
     }
-    iVar4 = Ordinal_16(g_MonkeySock,param_1,local_8,0);
+    iVar4 = Ordinal_16(g_MonkeySock,data,length,0);
     if (iVar4 == 0) {
       Monkey_DisconnectAndExit();
     }
-    param_1[local_8] = '\0';
+    data[length] = '\0';
     bVar2 = true;
   }
   else {
@@ -275,13 +283,13 @@ bool __cdecl Monkey_RecvString(char *param_1,int param_2)
 
 // 009AE940  Monkey_Recv  (monkey/monkey_comm.cpp:274)
 
-bool __cdecl Monkey_Recv(char *param_1,int param_2,char *param_3,int param_4)
+bool __cdecl Monkey_Recv(char *type,int type_size,char *string,int string_size)
 
 {
   bool bVar1;
   
-  bVar1 = Monkey_RecvString(param_1,param_2);
-  if ((bVar1) && (bVar1 = Monkey_RecvString(param_3,param_4), bVar1)) {
+  bVar1 = Monkey_RecvString(type,type_size);
+  if ((bVar1) && (bVar1 = Monkey_RecvString(string,string_size), bVar1)) {
     return true;
   }
   return false;

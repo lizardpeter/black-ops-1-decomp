@@ -2,7 +2,7 @@
 
 // 0097525A  _mbspbrk_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbscspn.c:75)
 
-uchar * __cdecl _mbspbrk_l(uchar *param_1,uchar *param_2,localeinfo_struct *param_3)
+uchar * __cdecl _mbspbrk_l(uchar *string,uchar *charset,localeinfo_struct *plocinfo)
 
 {
   byte bVar1;
@@ -11,34 +11,34 @@ uchar * __cdecl _mbspbrk_l(uchar *param_1,uchar *param_2,localeinfo_struct *para
   byte *pbVar3;
   byte *pbVar4;
   uchar *puVar5;
-  _LocaleUpdate _Stack_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&_Stack_14,param_3);
-  if ((_Stack_14.localeinfo.mbcinfo)->ismbcodepage == 0) {
-    strpbrk(param_1,param_2);
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.mbcinfo)->ismbcodepage == 0) {
+    strpbrk(string,charset);
     puVar5 = extraout_EAX;
   }
   else {
-    if ((param_1 == (uchar *)0x0) || (param_2 == (uchar *)0x0)) {
+    if ((string == (uchar *)0x0) || (charset == (uchar *)0x0)) {
       piVar2 = _errno();
       *piVar2 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-      if (_Stack_14.updated != false) {
-        (_Stack_14.ptd)->_ownlocale = (_Stack_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return (uchar *)0x0;
     }
-    pbVar4 = param_2;
-    if (*param_1 != '\0') {
+    pbVar4 = charset;
+    if (*string != '\0') {
 LAB_009752f1:
       do {
         if (*pbVar4 != 0) {
           bVar1 = *pbVar4;
-          if (((_Stack_14.localeinfo.mbcinfo)->mbctype[bVar1 + 1] & 4) == 0) {
+          if (((_loc_update.localeinfo.mbcinfo)->mbctype[bVar1 + 1] & 4) == 0) {
             pbVar3 = pbVar4;
-            if (bVar1 != *param_1) goto LAB_009752f0;
+            if (bVar1 != *string) goto LAB_009752f0;
           }
-          else if (((bVar1 != *param_1) || (pbVar4[1] != param_1[1])) &&
+          else if (((bVar1 != *string) || (pbVar4[1] != string[1])) &&
                   (pbVar3 = pbVar4 + 1, *pbVar3 != 0)) {
 LAB_009752f0:
             pbVar4 = pbVar3 + 1;
@@ -46,15 +46,15 @@ LAB_009752f0:
           }
         }
         if (((*pbVar4 != 0) ||
-            ((((_Stack_14.localeinfo.mbcinfo)->mbctype[*param_1 + 1] & 4) != 0 &&
-             (param_1 = param_1 + 1, *param_1 == 0)))) ||
-           (param_1 = param_1 + 1, pbVar4 = param_2, *param_1 == 0)) break;
+            ((((_loc_update.localeinfo.mbcinfo)->mbctype[*string + 1] & 4) != 0 &&
+             (string = string + 1, *string == 0)))) ||
+           (string = string + 1, pbVar4 = charset, *string == 0)) break;
       } while( true );
     }
-    puVar5 = (uchar *)(-(uint)(*param_1 != 0) & (uint)param_1);
+    puVar5 = (uchar *)(-(uint)(*string != 0) & (uint)string);
   }
-  if (_Stack_14.updated != false) {
-    (_Stack_14.ptd)->_ownlocale = (_Stack_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return puVar5;
 }
@@ -62,12 +62,12 @@ LAB_009752f0:
 
 // 00975327  _mbspbrk  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbscspn.c:141)
 
-uchar * __cdecl _mbspbrk(uchar *param_1,uchar *param_2)
+uchar * __cdecl _mbspbrk(uchar *string,uchar *charset)
 
 {
   uchar *puVar1;
   
-  puVar1 = _mbspbrk_l(param_1,param_2,(localeinfo_struct *)0x0);
+  puVar1 = _mbspbrk_l(string,charset,(localeinfo_struct *)0x0);
   return puVar1;
 }
 

@@ -13,6 +13,7 @@ void __cdecl Actor_InitAnim(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  actor_s *self;
   
   if (*(short *)(in_ECX + 0x210) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_animapi.cpp",0x18,0,
@@ -57,6 +58,7 @@ int __cdecl Actor_IsAnimScriptAlive(actor_s *param_1)
 {
   int iVar1;
   int in_ECX;
+  actor_s *self;
   
   if (*(short *)(in_ECX + 0x210) == 0) {
     iVar1 = 0;
@@ -82,6 +84,7 @@ void __cdecl Actor_KillAnimScript(actor_s *param_1)
   bool bVar2;
   int iVar3;
   undefined4 *in_ECX;
+  actor_s *self;
   
   iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
   if ((iVar3 == 0) &&
@@ -104,14 +107,15 @@ void __cdecl Actor_KillAnimScript(actor_s *param_1)
 
 // 008E94B0  Actor_SetAnimScript  (game/actor_animapi.cpp:79)
 
+/* WARNING: Variable defined which should be unmapped: pAnimScriptFunc */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_SetAnimScript(actor_s *param_1,scr_animscript_t *param_2,uchar param_3,ai_animmode_t param_4,
-                   scriptAnimAIFunctionTypes_t param_5)
+Actor_SetAnimScript(actor_s *moveMode,scr_animscript_t *animMode,uchar animScript,
+                   ai_animmode_t param_4,scriptAnimAIFunctionTypes_t param_5)
 
 {
   code *pcVar1;
@@ -120,6 +124,9 @@ Actor_SetAnimScript(actor_s *param_1,scr_animscript_t *param_2,uchar param_3,ai_
   DWORD DVar4;
   int *in_ECX;
   actor_s *in_EDX;
+  scr_animscript_t *pAnimScriptFunc;
+  actor_s *self;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"setanimscript");
   if ((in_ECX == (int *)0x0) &&
@@ -138,19 +145,19 @@ Actor_SetAnimScript(actor_s *param_1,scr_animscript_t *param_2,uchar param_3,ai_
   }
   if ((actor_s *)in_ECX[0x85] == in_EDX) {
     if (in_ECX[0x8b] == 0) {
-      in_ECX[0x8a] = (int)param_2;
+      in_ECX[0x8a] = (int)animMode;
     }
     else {
       in_ECX[0x8a] = in_ECX[0x8b];
     }
-    if ((char)in_ECX[0x89] == (char)param_1) {
+    if ((char)in_ECX[0x89] == (char)moveMode) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      *(char *)(in_ECX + 0x89) = (char)param_1;
+      *(char *)(in_ECX + 0x89) = (char)moveMode;
       Scr_Notify((gentity_s *)*in_ECX,scr_const.movemode,0);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -170,8 +177,8 @@ Actor_SetAnimScript(actor_s *param_1,scr_animscript_t *param_2,uchar param_3,ai_
     Scr_SetString((ushort *)(in_ECX + 0x5da),0,SCRIPTINSTANCE_SERVER);
     Scr_SetString((ushort *)(in_ECX + 0x5db),0,SCRIPTINSTANCE_SERVER);
     in_ECX[0x85] = (int)in_EDX;
-    in_ECX[0x8a] = (int)param_2;
-    *(char *)(in_ECX + 0x89) = (char)param_1;
+    in_ECX[0x8a] = (int)animMode;
+    *(char *)(in_ECX + 0x89) = (char)moveMode;
     *(undefined1 *)((int)in_ECX + 0x1749) = 1;
     Actor_ClearKeepClaimedNode(in_EDX);
     uVar3 = Scr_ExecEntThread((gentity_s *)*in_ECX,(int)in_EDX->ent,0);
@@ -196,6 +203,8 @@ Actor_SetAnimScript(actor_s *param_1,scr_animscript_t *param_2,uchar param_3,ai_
 
 // 008E9810  Actor_AnimMoveAway  (game/actor_animapi.cpp:175)
 
+/* WARNING: Variable defined which should be unmapped: pAnimScriptFunc */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -208,6 +217,8 @@ void __cdecl Actor_AnimMoveAway(actor_s *param_1,scr_animscript_t *param_2)
   bool bVar2;
   scriptAnimAIFunctionTypes_t in_ECX;
   ai_animmode_t in_EDX;
+  scr_animscript_t *pAnimScriptFunc;
+  actor_s *self;
   
   if (in_EDX == AI_ANIM_UNKNOWN) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_animapi.cpp",0xb0,0,
@@ -234,6 +245,8 @@ void __cdecl Actor_AnimMoveAway(actor_s *param_1,scr_animscript_t *param_2)
 
 // 008E9760  Actor_AnimStop  (game/actor_animapi.cpp:191)
 
+/* WARNING: Variable defined which should be unmapped: pAnimScriptFunc */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -245,9 +258,10 @@ void __cdecl Actor_AnimStop(actor_s *param_1,scr_animscript_t *param_2)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  scr_animscript_t *in_ECX;
   actor_s *in_EDX;
-  scr_animscript_t *extraout_var;
-  scr_animscript_t *psVar4;
+  scr_animscript_t *pAnimScriptFunc;
+  actor_s *self;
   
   if (in_EDX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_animapi.cpp",0xc2,0,
@@ -259,8 +273,7 @@ void __cdecl Actor_AnimStop(actor_s *param_1,scr_animscript_t *param_2)
     }
   }
   Actor_CheckCollisions(in_EDX);
-  psVar4 = extraout_var;
-  iVar3 = EntHandle::isDefined((EntHandle *)&extraout_var[0x2ed].field_0x6);
+  iVar3 = EntHandle::isDefined((EntHandle *)&in_ECX[0x2ed].field_0x6);
   if (iVar3 == 0) {
     if (in_EDX == (actor_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_animapi.cpp",200,0,
@@ -272,11 +285,11 @@ void __cdecl Actor_AnimStop(actor_s *param_1,scr_animscript_t *param_2)
       }
     }
     Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)&DAT_00000001,'\0',(ai_animmode_t)in_EDX,
-                        (scriptAnimAIFunctionTypes_t)psVar4);
-    psVar4[0x44].field_0x6 = 0;
+                        (scriptAnimAIFunctionTypes_t)in_ECX);
+    in_ECX[0x44].field_0x6 = 0;
   }
   else {
-    Actor_AnimMoveAway(in_EDX,psVar4);
+    Actor_AnimMoveAway(in_EDX,in_ECX);
   }
   return;
 }
@@ -297,6 +310,8 @@ scr_animscript_t * __cdecl Actor_GetStopAnim(actor_s *param_1)
 
 {
   int in_ECX;
+  actor_s *self;
+  pathnode_t *node;
   
   return &g_animScriptTable[*(int *)(in_ECX + 8)]->stop;
 }
@@ -304,6 +319,7 @@ scr_animscript_t * __cdecl Actor_GetStopAnim(actor_s *param_1)
 
 // 008E9940  Actor_AnimTryWalk  (game/actor_animapi.cpp:278)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -317,9 +333,10 @@ void __cdecl Actor_AnimTryWalk(actor_s *param_1)
   int iVar3;
   actor_s *in_ECX;
   scr_animscript_t *unaff_EBP;
-  actor_s *paVar4;
-  scr_animscript_t *psVar5;
-  uchar uVar6;
+  actor_s *moveMode;
+  scr_animscript_t *animMode;
+  uchar animScript;
+  actor_s *self;
   
   iVar3 = EntHandle::isDefined(&in_ECX->pCloseEnt);
   if (iVar3 == 0) {
@@ -338,11 +355,11 @@ void __cdecl Actor_AnimTryWalk(actor_s *param_1)
                           (ai_animmode_t)in_ECX,(scriptAnimAIFunctionTypes_t)unaff_EBP);
     }
     else {
-      uVar6 = '\x01';
-      psVar5 = (scr_animscript_t *)&DAT_00000001;
-      paVar4 = (actor_s *)&DAT_00000001;
+      animScript = '\x01';
+      animMode = (scr_animscript_t *)&DAT_00000001;
+      moveMode = (actor_s *)&DAT_00000001;
       Actor_GetStopAnim((actor_s *)&DAT_00000001);
-      Actor_SetAnimScript(paVar4,psVar5,uVar6,(ai_animmode_t)in_ECX,
+      Actor_SetAnimScript(moveMode,animMode,animScript,(ai_animmode_t)in_ECX,
                           (scriptAnimAIFunctionTypes_t)unaff_EBP);
     }
     in_ECX->bUseGoalWeight = false;
@@ -356,6 +373,7 @@ void __cdecl Actor_AnimTryWalk(actor_s *param_1)
 
 // 008E9A20  Actor_AnimTryRun  (game/actor_animapi.cpp:323)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -369,9 +387,10 @@ void __cdecl Actor_AnimTryRun(actor_s *param_1)
   int iVar3;
   actor_s *in_ECX;
   scr_animscript_t *unaff_EBP;
-  actor_s *paVar4;
-  scr_animscript_t *psVar5;
-  uchar uVar6;
+  actor_s *moveMode;
+  scr_animscript_t *animMode;
+  uchar animScript;
+  actor_s *self;
   
   iVar3 = EntHandle::isDefined(&in_ECX->pCloseEnt);
   if (iVar3 == 0) {
@@ -390,11 +409,11 @@ void __cdecl Actor_AnimTryRun(actor_s *param_1)
                           (ai_animmode_t)in_ECX,(scriptAnimAIFunctionTypes_t)unaff_EBP);
     }
     else {
-      uVar6 = '\x01';
-      psVar5 = (scr_animscript_t *)&DAT_00000001;
-      paVar4 = (actor_s *)&DAT_00000001;
+      animScript = '\x01';
+      animMode = (scr_animscript_t *)&DAT_00000001;
+      moveMode = (actor_s *)&DAT_00000001;
       Actor_GetStopAnim((actor_s *)&DAT_00000001);
-      Actor_SetAnimScript(paVar4,psVar5,uVar6,(ai_animmode_t)in_ECX,
+      Actor_SetAnimScript(moveMode,animMode,animScript,(ai_animmode_t)in_ECX,
                           (scriptAnimAIFunctionTypes_t)unaff_EBP);
     }
     in_ECX->bUseGoalWeight = false;
@@ -408,6 +427,7 @@ void __cdecl Actor_AnimTryRun(actor_s *param_1)
 
 // 008E9B00  Actor_AnimPain  (game/actor_animapi.cpp:407)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -418,6 +438,7 @@ void __cdecl Actor_AnimPain(actor_s *param_1)
 {
   ai_animmode_t in_ECX;
   scriptAnimAIFunctionTypes_t unaff_EBP;
+  actor_s *self;
   
   Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)&DAT_00000004,'\x03',in_ECX,unaff_EBP);
   *(undefined1 *)(in_ECX + 0x226) = 0;
@@ -427,6 +448,7 @@ void __cdecl Actor_AnimPain(actor_s *param_1)
 
 // 008E9B40  Actor_AnimDeath  (game/actor_animapi.cpp:437)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -437,6 +459,7 @@ void __cdecl Actor_AnimDeath(actor_s *param_1)
 {
   ai_animmode_t in_ECX;
   scriptAnimAIFunctionTypes_t unaff_EBP;
+  actor_s *self;
   
   if (*(int *)(in_ECX + 0x22c) == 0) {
     Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)&DAT_00000004,'\x05',in_ECX,unaff_EBP);
@@ -452,19 +475,24 @@ void __cdecl Actor_AnimDeath(actor_s *param_1)
 
 // 008E9BB0  Actor_AnimSpecific  (game/actor_animapi.cpp:454)
 
+/* WARNING: Variable defined which should be unmapped: func */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_AnimSpecific(actor_s *param_1,scr_animscript_t *param_2,ai_animmode_t param_3,bool param_4)
+Actor_AnimSpecific(actor_s *eAnimMode,scr_animscript_t *bUseGoalWeight,ai_animmode_t param_3,
+                  bool param_4)
 
 {
   code *pcVar1;
   bool bVar2;
   scriptAnimAIFunctionTypes_t in_ECX;
   ai_animmode_t in_EDX;
+  scr_animscript_t *func;
+  actor_s *self;
   
   if (in_EDX == AI_ANIM_UNKNOWN) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_animapi.cpp",0x1c9,0,
@@ -476,12 +504,12 @@ Actor_AnimSpecific(actor_s *param_1,scr_animscript_t *param_2,ai_animmode_t para
     }
   }
   if (*(int *)(in_ECX + 0x22c) == 0) {
-    Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)param_1,'\0',in_EDX,in_ECX);
+    Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)eAnimMode,'\0',in_EDX,in_ECX);
   }
   else {
     Actor_SetAnimScript((actor_s *)0x0,*(scr_animscript_t **)(in_ECX + 0x22c),'\0',in_EDX,in_ECX);
   }
-  *(undefined1 *)(in_ECX + 0x226) = param_2._0_1_;
+  *(undefined1 *)(in_ECX + 0x226) = bUseGoalWeight._0_1_;
   return;
 }
 
@@ -495,10 +523,13 @@ Actor_AnimSpecific(actor_s *param_1,scr_animscript_t *param_2,ai_animmode_t para
 
 void __cdecl
 Actor_AnimSetCompleteGoalWeight
-          (actor_s *param_1,DObj *param_2,XAnimTree_s *param_3,uint param_4,float param_5,
-          float param_6,float param_7,uint param_8,uint param_9,int param_10)
+          (actor_s *tree,DObj *animIndex,XAnimTree_s *goalWeight,uint goalTime,float rate,
+          float notifyName,float notifyType,uint bRestart,uint param_9,int param_10)
 
 {
+  DObj *obj;
+  actor_s *self;
+  
   return;
 }
 
@@ -511,9 +542,12 @@ Actor_AnimSetCompleteGoalWeight
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_AnimClearGoalWeight(actor_s *param_1,XAnimTree_s *param_2,uint param_3,float param_4)
+Actor_AnimClearGoalWeight(actor_s *animIndex,XAnimTree_s *blendTime,uint param_3,float param_4)
 
 {
+  XAnimTree_s *tree;
+  actor_s *self;
+  
   return;
 }
 

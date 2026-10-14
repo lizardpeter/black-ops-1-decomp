@@ -324,7 +324,7 @@ void __cdecl _dynamic_initializer_for__r_skin_cached_staticmodelModule__(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl R_FXSpotLightPending(void *param_1)
+int __cdecl R_FXSpotLightPending(void *data)
 
 {
   bool bVar1;
@@ -338,7 +338,7 @@ int __cdecl R_FXSpotLightPending(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl R_FXDependentPending(void *param_1)
+int __cdecl R_FXDependentPending(void *data)
 
 {
   bool bVar1;
@@ -350,7 +350,7 @@ int __cdecl R_FXDependentPending(void *param_1)
 
 // 00ADEF40  R_EndFenceBusy  (gfx_d3d/r_workercmds.cpp:144)
 
-int __cdecl R_EndFenceBusy(void *param_1)
+int __cdecl R_EndFenceBusy(void *data)
 
 {
   int iVar1;
@@ -362,7 +362,7 @@ int __cdecl R_EndFenceBusy(void *param_1)
 
 // 00ADEBC0  R_DynamicFenceBusy  (gfx_d3d/r_workercmds.cpp:149)
 
-int __cdecl R_DynamicFenceBusy(void *param_1)
+int __cdecl R_DynamicFenceBusy(void *data)
 
 {
   int iVar1;
@@ -374,24 +374,24 @@ int __cdecl R_DynamicFenceBusy(void *param_1)
 
 // 00ADF100  R_FXUpdateRemainingWait  (gfx_d3d/r_workercmds.cpp:154)
 
-int __cdecl R_FXUpdateRemainingWait(void *param_1)
+int __cdecl R_FXUpdateRemainingWait(void *data)
 
 {
   int iVar1;
   
-  iVar1 = R_FXSpotLightPending(param_1);
+  iVar1 = R_FXSpotLightPending(data);
   return iVar1;
 }
 
 
 // 00ADF1F0  R_FXUpdateRemainingPPUWait  (gfx_d3d/r_workercmds.cpp:159)
 
-int __cdecl R_FXUpdateRemainingPPUWait(void *param_1)
+int __cdecl R_FXUpdateRemainingPPUWait(void *data)
 
 {
   int iVar1;
   
-  iVar1 = R_FXDependentPending(param_1);
+  iVar1 = R_FXDependentPending(data);
   return iVar1;
 }
 
@@ -400,18 +400,20 @@ int __cdecl R_FXUpdateRemainingPPUWait(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_dpvs_entityCallback(jqBatch *param_1)
+int __cdecl r_dpvs_entityCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_dpvs_entity");
-  pvVar1 = jqLockData(param_1);
-  R_AddEntitySurfacesInFrustumCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddEntitySurfacesInFrustumCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -422,24 +424,26 @@ int __cdecl r_dpvs_entityCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_model_skinCallback(jqBatch *param_1)
+int __cdecl r_model_skinCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  int iVar2;
-  DWORD DVar3;
+  void *data_00;
+  int iVar1;
+  DWORD DVar2;
   int local_10;
+  PIXProfile pixProfile;
+  void *data;
   
-  pvVar1 = jqLockData(param_1);
-  iVar2 = R_DynamicFenceBusy(pvVar1);
-  if (iVar2 == 0) {
+  data_00 = jqLockData(batch);
+  iVar1 = R_DynamicFenceBusy(data_00);
+  if (iVar1 == 0) {
     *frontEndDataOut->dynamicBufferCurrentFrame = frontEndDataOut->frameCount;
     PIXBeginNamedEvent(-1,"r_model_skin");
-    R_SkinXModelCmd(pvVar1);
-    jqUnlockData(param_1,pvVar1);
+    R_SkinXModelCmd(data_00);
+    jqUnlockData(batch,data_00);
     local_10 = 0;
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -454,18 +458,20 @@ int __cdecl r_model_skinCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_dpvs_staticCallback(jqBatch *param_1)
+int __cdecl r_dpvs_staticCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_dpvs_static");
-  pvVar1 = jqLockData(param_1);
-  R_AddCellStaticSurfacesInFrustumCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddCellStaticSurfacesInFrustumCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -476,18 +482,20 @@ int __cdecl r_dpvs_staticCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_dpvs_dynmodelCallback(jqBatch *param_1)
+int __cdecl r_dpvs_dynmodelCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_dpvs_dynmodel");
-  pvVar1 = jqLockData(param_1);
-  R_AddCellDynModelSurfacesInFrustumCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddCellDynModelSurfacesInFrustumCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -498,18 +506,20 @@ int __cdecl r_dpvs_dynmodelCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_dpvs_sceneentCallback(jqBatch *param_1)
+int __cdecl r_dpvs_sceneentCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_dpvs_sceneent");
-  pvVar1 = jqLockData(param_1);
-  R_AddCellSceneEntSurfacesInFrustumCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddCellSceneEntSurfacesInFrustumCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -520,18 +530,20 @@ int __cdecl r_dpvs_sceneentCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_dpvs_dynbrushCallback(jqBatch *param_1)
+int __cdecl r_dpvs_dynbrushCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_dpvs_dynbrush");
-  pvVar1 = jqLockData(param_1);
-  R_AddCellDynBrushSurfacesInFrustumCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddCellDynBrushSurfacesInFrustumCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -552,7 +564,7 @@ void __cdecl R_ExecWaterFailed(void)
 
 // 00ADEE60  R_UploadWaterPending  (gfx_d3d/r_workercmds.cpp:545)
 
-int __cdecl R_UploadWaterPending(void *param_1)
+int __cdecl R_UploadWaterPending(void *data)
 
 {
   int iVar1;
@@ -574,23 +586,25 @@ int __cdecl R_UploadWaterPending(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_waterCallback(jqBatch *param_1)
+int __cdecl r_waterCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  int iVar2;
-  DWORD DVar3;
+  void *data_00;
+  int iVar1;
+  DWORD DVar2;
   int local_10;
+  PIXProfile pixProfile;
+  void *data;
   
-  pvVar1 = jqLockData(param_1);
-  iVar2 = R_UploadWaterPending(pvVar1);
-  if (iVar2 == 0) {
+  data_00 = jqLockData(batch);
+  iVar1 = R_UploadWaterPending(data_00);
+  if (iVar1 == 0) {
     PIXBeginNamedEvent(-1,"r_water");
-    R_UploadWaterTextureInternal(pvVar1);
-    jqUnlockData(param_1,pvVar1);
+    R_UploadWaterTextureInternal(data_00);
+    jqUnlockData(batch,data_00);
     local_10 = 0;
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -605,23 +619,25 @@ int __cdecl r_waterCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_water_simCallback(jqBatch *param_1)
+int __cdecl r_water_simCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  int iVar2;
-  DWORD DVar3;
+  void *data_00;
+  int iVar1;
+  DWORD DVar2;
   int local_10;
+  PIXProfile pixProfile;
+  void *data;
   
-  pvVar1 = jqLockData(param_1);
-  iVar2 = R_EndFenceBusy(pvVar1);
-  if (iVar2 == 0) {
+  data_00 = jqLockData(batch);
+  iVar1 = R_EndFenceBusy(data_00);
+  if (iVar1 == 0) {
     PIXBeginNamedEvent(-1,"r_water_sim");
-    R_WaterSimulationCmd(pvVar1);
-    jqUnlockData(param_1,pvVar1);
+    R_WaterSimulationCmd(data_00);
+    jqUnlockData(batch,data_00);
     local_10 = 0;
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -636,18 +652,20 @@ int __cdecl r_water_simCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_spot_shadow_entCallback(jqBatch *param_1)
+int __cdecl r_spot_shadow_entCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"r_spot_shadow_ent");
-  pvVar1 = jqLockData(param_1);
-  R_AddSpotShadowEntCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_AddSpotShadowEntCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -658,18 +676,20 @@ int __cdecl r_spot_shadow_entCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_updateCallback(jqBatch *param_1)
+int __cdecl fx_updateCallback(jqBatch *batch)
 
 {
-  FxCmd *pFVar1;
-  DWORD DVar2;
+  FxCmd *cmd;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"fx_update");
-  pFVar1 = jqLockData(param_1);
-  R_ProcessCmd_UpdateFxNonDependent(pFVar1);
-  jqUnlockData(param_1,pFVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  cmd = jqLockData(batch);
+  R_ProcessCmd_UpdateFxNonDependent(cmd);
+  jqUnlockData(batch,cmd);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -680,25 +700,27 @@ int __cdecl fx_updateCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_update_remainingCallback(jqBatch *param_1)
+int __cdecl fx_update_remainingCallback(jqBatch *batch)
 
 {
-  FxCmd *pFVar1;
-  int iVar2;
-  char *pcVar3;
-  DWORD DVar4;
+  FxCmd *cmd;
+  int iVar1;
+  char *Name;
+  DWORD DVar2;
   int local_10;
+  PIXProfile pixProfile;
+  void *data;
   
-  pFVar1 = jqLockData(param_1);
-  iVar2 = R_FXUpdateRemainingWait(pFVar1);
-  if (iVar2 == 0) {
-    pcVar3 = va("fx_update_remaining cl=%d");
-    PIXBeginNamedEvent(-1,pcVar3);
-    FX_UpdateRemaining(pFVar1);
-    jqUnlockData(param_1,pFVar1);
+  cmd = jqLockData(batch);
+  iVar1 = R_FXUpdateRemainingWait(cmd);
+  if (iVar1 == 0) {
+    Name = va("fx_update_remaining cl=%d");
+    PIXBeginNamedEvent(-1,Name);
+    FX_UpdateRemaining(cmd);
+    jqUnlockData(batch,cmd);
     local_10 = 0;
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -713,25 +735,27 @@ int __cdecl fx_update_remainingCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_update_remaining_ppuCallback(jqBatch *param_1)
+int __cdecl fx_update_remaining_ppuCallback(jqBatch *batch)
 
 {
-  FxCmd *pFVar1;
-  int iVar2;
-  char *pcVar3;
-  DWORD DVar4;
+  FxCmd *cmd;
+  int iVar1;
+  char *Name;
+  DWORD DVar2;
   int local_10;
+  PIXProfile pixProfile;
+  void *data;
   
-  pFVar1 = jqLockData(param_1);
-  iVar2 = R_FXUpdateRemainingPPUWait(pFVar1);
-  if (iVar2 == 0) {
-    pcVar3 = va("fx_update_remaining_ppu cl=%d");
-    PIXBeginNamedEvent(-1,pcVar3);
-    R_ProcessCmd_UpdateFxRemaining(pFVar1);
-    jqUnlockData(param_1,pFVar1);
+  cmd = jqLockData(batch);
+  iVar1 = R_FXUpdateRemainingPPUWait(cmd);
+  if (iVar1 == 0) {
+    Name = va("fx_update_remaining_ppu cl=%d");
+    PIXBeginNamedEvent(-1,Name);
+    R_ProcessCmd_UpdateFxRemaining(cmd);
+    jqUnlockData(batch,cmd);
     local_10 = 0;
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -746,27 +770,29 @@ int __cdecl fx_update_remaining_ppuCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_drawCallback(jqBatch *param_1)
+int __cdecl fx_drawCallback(jqBatch *batch)
 
 {
-  FxGenerateVertsCmd *pFVar1;
-  int iVar2;
-  DWORD DVar3;
+  FxGenerateVertsCmd *cmd;
+  int iVar1;
+  DWORD DVar2;
   int local_10;
+  void *data;
+  PIXProfile pp;
   
-  pFVar1 = jqLockData(param_1);
+  cmd = jqLockData(batch);
   if ((*frontEndDataOut->dynamicBufferCurrentFrame == 0) ||
      (frontEndDataOut->frameCount <= *frontEndDataOut->dynamicBufferCurrentFrame)) {
     *frontEndDataOut->dynamicBufferCurrentFrame = frontEndDataOut->frameCount;
     PIXBeginNamedEvent(-1,"fx_draw");
-    iVar2 = Sys_QueryD3DDeviceOKEvent();
-    if (iVar2 != 0) {
-      FX_GenerateVerts(pFVar1);
+    iVar1 = Sys_QueryD3DDeviceOKEvent();
+    if (iVar1 != 0) {
+      FX_GenerateVerts(cmd);
     }
-    jqUnlockData(param_1,pFVar1);
+    jqUnlockData(batch,cmd);
     local_10 = 0;
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -781,18 +807,20 @@ int __cdecl fx_drawCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl dobj_skelCallback(jqBatch *param_1)
+int __cdecl dobj_skelCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"dobj_skel");
-  pvVar1 = jqLockData(param_1);
-  R_UpdateGfxEntityBoundsCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_UpdateGfxEntityBoundsCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -803,18 +831,20 @@ int __cdecl dobj_skelCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl dobj_skinCallback(jqBatch *param_1)
+int __cdecl dobj_skinCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
   
   PIXBeginNamedEvent(-1,"dobj_skin");
-  pvVar1 = jqLockData(param_1);
-  R_SkinGfxEntityCmd(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  R_SkinGfxEntityCmd(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -825,20 +855,21 @@ int __cdecl dobj_skinCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_model_lightingCallback(jqBatch *param_1)
+int __cdecl r_model_lightingCallback(jqBatch *batch)
 
 {
-  CalcLightingCmd *pCVar1;
-  DWORD DVar2;
+  CalcLightingCmd *data_00;
+  DWORD DVar1;
+  void *data;
   
-  pCVar1 = jqLockData(param_1);
+  data_00 = jqLockData(batch);
   PIXBeginNamedEvent(-1,"r_model_lighting");
-  R_CalcModelLightingCmd(pCVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_CalcModelLightingCmd(data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  jqUnlockData(param_1,pCVar1);
+  jqUnlockData(batch,data_00);
   return 0;
 }
 
@@ -847,20 +878,21 @@ int __cdecl r_model_lightingCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_add_sceneentCallback(jqBatch *param_1)
+int __cdecl r_add_sceneentCallback(jqBatch *batch)
 
 {
-  undefined4 *puVar1;
-  DWORD DVar2;
+  undefined4 *data_00;
+  DWORD DVar1;
+  void *data;
   
-  puVar1 = jqLockData(param_1);
+  data_00 = jqLockData(batch);
   PIXBeginNamedEvent(-1,"r_add_sceneent");
-  R_AddAllSceneEntSurfacesCamera((GfxViewInfo *)*puVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_AddAllSceneEntSurfacesCamera((GfxViewInfo *)*data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  jqUnlockData(param_1,puVar1);
+  jqUnlockData(batch,data_00);
   return 0;
 }
 
@@ -869,35 +901,37 @@ int __cdecl r_add_sceneentCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_marks_drawCallback(jqBatch *param_1)
+int __cdecl fx_marks_drawCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  int iVar2;
-  DWORD DVar3;
+  void *data_00;
+  int iVar1;
+  DWORD DVar2;
+  FxCmd *cmd;
+  void *data;
   
-  pvVar1 = jqLockData(param_1);
+  data_00 = jqLockData(batch);
   if ((*frontEndDataOut->dynamicBufferCurrentFrame == 0) ||
      (frontEndDataOut->frameCount <= *frontEndDataOut->dynamicBufferCurrentFrame)) {
     *frontEndDataOut->dynamicBufferCurrentFrame = frontEndDataOut->frameCount;
-    iVar2 = Sys_QueryD3DDeviceOKEvent();
-    if (iVar2 != 0) {
+    iVar1 = Sys_QueryD3DDeviceOKEvent();
+    if (iVar1 != 0) {
       PIXBeginNamedEvent(-1,"fx_marks_draw");
       FX_GenerateMarkVertsForWorld
-                (*(int *)((int)pvVar1 + 4),*(GfxLight **)((int)pvVar1 + 0x24),
-                 *(int *)((int)pvVar1 + 0x28));
-      DVar3 = GetCurrentThreadId();
-      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                (*(int *)((int)data_00 + 4),*(GfxLight **)((int)data_00 + 0x24),
+                 *(int *)((int)data_00 + 0x28));
+      DVar2 = GetCurrentThreadId();
+      if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
-    jqUnlockData(param_1,pvVar1);
-    iVar2 = 0;
+    jqUnlockData(batch,data_00);
+    iVar1 = 0;
   }
   else {
-    iVar2 = 1;
+    iVar1 = 1;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -905,20 +939,21 @@ int __cdecl fx_marks_drawCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_update_spotCallback(jqBatch *param_1)
+int __cdecl fx_update_spotCallback(jqBatch *batch)
 
 {
-  FxCmd *pFVar1;
-  DWORD DVar2;
+  FxCmd *cmd;
+  DWORD DVar1;
+  void *data;
   
-  pFVar1 = jqLockData(param_1);
+  cmd = jqLockData(batch);
   PIXBeginNamedEvent(-1,"fx_update_spot");
-  R_ProcessCmd_UpdateFxSpotLight(pFVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_ProcessCmd_UpdateFxSpotLight(cmd);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  jqUnlockData(param_1,pFVar1);
+  jqUnlockData(batch,cmd);
   return 0;
 }
 
@@ -927,23 +962,24 @@ int __cdecl fx_update_spotCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_skin_cached_staticmodelCallback(jqBatch *param_1)
+int __cdecl r_skin_cached_staticmodelCallback(jqBatch *batch)
 
 {
-  SkinCachedStaticModelCmd *pSVar1;
-  int iVar2;
+  SkinCachedStaticModelCmd *skinCmd;
+  int iVar1;
+  void *data;
   
-  pSVar1 = jqLockData(param_1);
+  skinCmd = jqLockData(batch);
   if ((*frontEndDataOut->dynamicBufferCurrentFrame == 0) ||
      (frontEndDataOut->frameCount <= *frontEndDataOut->dynamicBufferCurrentFrame)) {
     *frontEndDataOut->dynamicBufferCurrentFrame = frontEndDataOut->frameCount;
-    R_SkinCachedStaticModelCmd(pSVar1);
-    jqUnlockData(param_1,pSVar1);
-    iVar2 = 0;
+    R_SkinCachedStaticModelCmd(skinCmd);
+    jqUnlockData(batch,skinCmd);
+    iVar1 = 0;
   }
   else {
-    iVar2 = 1;
+    iVar1 = 1;
   }
-  return iVar2;
+  return iVar1;
 }
 

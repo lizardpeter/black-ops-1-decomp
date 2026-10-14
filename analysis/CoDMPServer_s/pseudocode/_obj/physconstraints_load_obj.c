@@ -14,10 +14,10 @@ PhysConstraints * __cdecl PhysConstraintsLoadFile(char *param_1,_func_void_ptr_i
   char *pcVar4;
   int iVar5;
   int iVar6;
-  PhysConstraints *pPVar7;
-  AttachPointType *pAVar8;
+  PhysConstraints *dst;
+  AttachPointType *pAVar7;
   char *unaff_ESI;
-  undefined **ppuVar9;
+  undefined **ppuVar8;
   char *unaff_EDI;
   int local_404c;
   int local_4048 [16];
@@ -63,35 +63,35 @@ PhysConstraints * __cdecl PhysConstraintsLoadFile(char *param_1,_func_void_ptr_i
             Com_PrintError(0x14,"ERROR: physics constraints file [%s] is not valid\n");
             return (PhysConstraints *)0x0;
           }
-          pPVar7 = (*param_2)(0xa88);
-          memset((uchar *)pPVar7,'\0',0xa88);
-          pAVar8 = &pPVar7->data[0].attach_point_type1;
+          dst = (*param_2)(0xa88);
+          memset((uchar *)dst,'\0',0xa88);
+          pAVar7 = &dst->data[0].attach_point_type1;
           iVar5 = 0x10;
           do {
-            pAVar8[3] = (AttachPointType)"";
-            *pAVar8 = ATTACH_POINT_BONE;
-            pAVar8[7] = (AttachPointType)"";
-            pAVar8[4] = ATTACH_POINT_BONE;
-            pAVar8 = pAVar8 + 0x2a;
+            pAVar7[3] = (AttachPointType)"";
+            *pAVar7 = ATTACH_POINT_BONE;
+            pAVar7[7] = (AttachPointType)"";
+            pAVar7[4] = ATTACH_POINT_BONE;
+            pAVar7 = pAVar7 + 0x2a;
             iVar5 = iVar5 + -1;
           } while (iVar5 != 0);
           bVar2 = false;
-          ppuVar9 = &PTR_s_c1_type_00ad9120;
+          ppuVar8 = &PTR_s_c1_type_00ad9120;
           local_4048[0] = 0x3a;
           do {
-            pcVar4 = Info_ValueForKey(*ppuVar9,unaff_ESI);
+            pcVar4 = Info_ValueForKey(*ppuVar8,unaff_ESI);
             if (*pcVar4 != '\0') {
               iVar5 = FUN_006abf60();
               bVar2 = (bool)(bVar2 | iVar5 == 0);
             }
-            ppuVar9 = ppuVar9 + 3;
+            ppuVar8 = ppuVar8 + 3;
             local_4048[0] = local_4048[0] + -1;
           } while (local_4048[0] != 0);
           if (bVar2) {
             return (PhysConstraints *)0x0;
           }
           FUN_006f1b40();
-          return pPVar7;
+          return dst;
         }
         pcVar4 = "ERROR: physics constraints file [%s] is to big\n";
       }

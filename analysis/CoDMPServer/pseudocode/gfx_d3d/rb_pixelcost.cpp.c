@@ -4,93 +4,94 @@
 
 /* WARNING: Removing unreachable block (ram,0x00b08def) */
 
-void __cdecl R_PixelCost_SetConstant(GfxCmdBufSourceState *param_1,int param_2)
+void __cdecl R_PixelCost_SetConstant(GfxCmdBufSourceState *source,int cost)
 
 {
-  float local_14;
+  float weights;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = ((float)(param_2 >> 6) + 0.01) * 0.003921569;
-  local_10 = ((float)(param_2 >> 4 & 3) + 0.01) * 0.003921569;
-  local_c = ((float)(param_2 >> 2 & 3) + 0.01) * 0.003921569;
-  local_8 = ((float)(param_2 & 3) + 0.01) * 0.003921569;
-  R_SetCodeConstantFromVec4(param_1,0x22,&local_14);
+  weights = ((float)(cost >> 6) + 0.01) * 0.003921569;
+  local_10 = ((float)(cost >> 4 & 3) + 0.01) * 0.003921569;
+  local_c = ((float)(cost >> 2 & 3) + 0.01) * 0.003921569;
+  local_8 = ((float)(cost & 3) + 0.01) * 0.003921569;
+  R_SetCodeConstantFromVec4(source,0x22,&weights);
   return;
 }
 
 
 // 00B08B30  R_PixelCost_GetAccumulationMaterial  (gfx_d3d/rb_pixelcost.cpp:137)
 
-Material * __cdecl R_PixelCost_GetAccumulationMaterial(Material *param_1)
+Material * __cdecl R_PixelCost_GetAccumulationMaterial(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  Material *pMVar4;
+  char *fmt;
+  Material *pMVar3;
   uint local_c;
+  uint entry;
   
-  pMVar4 = rgp.pixelCostAddDepthDisableMaterial;
+  pMVar3 = rgp.pixelCostAddDepthDisableMaterial;
   if ((pixelCostMode != GFX_PIXEL_COST_MODE_ADD_COST_IGNORE_DEPTH) &&
      (pixelCostMode != GFX_PIXEL_COST_MODE_ADD_PASSES_IGNORE_DEPTH)) {
-    if (((param_1->field8_0xb0).localTechniqueSet)->techniques[4] == (MaterialTechnique *)0x0) {
+    if (((material->field8_0xb0).localTechniqueSet)->techniques[4] == (MaterialTechnique *)0x0) {
       local_c = 0;
     }
     else {
-      local_c = (uint)param_1->stateBitsEntry[4];
+      local_c = (uint)material->stateBitsEntry[4];
     }
-    switch(param_1->stateBitsTable[local_c].loadBits[1] & 0xf) {
+    switch(material->stateBitsTable[local_c].loadBits[1] & 0xf) {
     case 0:
     case 1:
-      pMVar4 = rgp.pixelCostAddDepthAlwaysMaterial;
+      pMVar3 = rgp.pixelCostAddDepthAlwaysMaterial;
       break;
     case 2:
     case 3:
       break;
     case 4:
     case 5:
-      pMVar4 = rgp.pixelCostAddDepthLessMaterial;
+      pMVar3 = rgp.pixelCostAddDepthLessMaterial;
       break;
     case 6:
     case 7:
       break;
     case 8:
     case 9:
-      pMVar4 = rgp.pixelCostAddDepthEqualMaterial;
+      pMVar3 = rgp.pixelCostAddDepthEqualMaterial;
       break;
     case 10:
     case 0xb:
       break;
     case 0xc:
-      pMVar4 = rgp.pixelCostAddNoDepthWriteMaterial;
+      pMVar3 = rgp.pixelCostAddNoDepthWriteMaterial;
       break;
     case 0xd:
-      pMVar4 = rgp.pixelCostAddDepthWriteMaterial;
+      pMVar3 = rgp.pixelCostAddDepthWriteMaterial;
       break;
     case 0xe:
     case 0xf:
       break;
     default:
-      pcVar3 = va("unhandled case %i");
+      fmt = va("unhandled case %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_pixelcost.cpp",0xb9,1
-                               ,pcVar3);
-      pMVar4 = rgp.pixelCostAddNoDepthWriteMaterial;
+                               ,fmt);
+      pMVar3 = rgp.pixelCostAddNoDepthWriteMaterial;
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        pMVar4 = (Material *)(*pcVar1)();
-        return pMVar4;
+        pMVar3 = (Material *)(*pcVar1)();
+        return pMVar3;
       }
     }
   }
-  return pMVar4;
+  return pMVar3;
 }
 
 
 // 00B08EC0  RB_PixelCost_GetCostForRecordIndex  (gfx_d3d/rb_pixelcost.cpp:191)
 
-int __cdecl RB_PixelCost_GetCostForRecordIndex(int param_1)
+int __cdecl RB_PixelCost_GetCostForRecordIndex(int recordIndex)
 
 {
   code *pcVar1;
@@ -101,76 +102,80 @@ int __cdecl RB_PixelCost_GetCostForRecordIndex(int param_1)
   double dVar6;
   int local_68;
   uint local_64;
-  int local_50;
-  int local_4c;
-  int local_48;
-  double local_3c;
-  uint local_34 [12];
+  int outlierDist;
+  int avgCost;
+  int cost;
+  int frameIndex;
+  int totalCost;
+  int validCount;
+  double costDelta;
+  double standardDeviationSum;
+  uint costHistory [12];
   
-  local_4c = 0;
-  local_48 = 0;
-  for (local_50 = 0; local_50 < 0xc; local_50 = local_50 + 1) {
-    uVar3 = (uint)*(ushort *)(param_1 * 0x20 + 0xb50f698 + local_50 * 2);
+  totalCost = 0;
+  validCount = 0;
+  for (frameIndex = 0; frameIndex < 0xc; frameIndex = frameIndex + 1) {
+    uVar3 = (uint)*(ushort *)(recordIndex * 0x20 + 0xb50f698 + frameIndex * 2);
     if (uVar3 != 0) {
-      local_4c = local_4c + uVar3;
-      local_34[local_48] = uVar3;
-      local_48 = local_48 + 1;
+      totalCost = totalCost + uVar3;
+      costHistory[validCount] = uVar3;
+      validCount = validCount + 1;
     }
   }
-  if (local_48 != 1) {
-    if (local_48 == 2) {
-      if ((int)local_34[0] < (int)local_34[1]) {
-        local_64 = local_34[1];
+  if (validCount != 1) {
+    if (validCount == 2) {
+      if ((int)costHistory[0] < (int)costHistory[1]) {
+        local_64 = costHistory[1];
       }
       else {
-        local_64 = local_34[0];
+        local_64 = costHistory[0];
       }
-      local_4c = local_4c - local_64;
+      totalCost = totalCost - local_64;
     }
     else {
-      if ((local_48 < 1) &&
+      if ((validCount < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_pixelcost.cpp",
                                    0xdc,0,"%s\n\t(validCount) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      local_3c = 0.0;
-      iVar4 = local_4c / local_48;
-      for (local_50 = 0; local_50 < local_48; local_50 = local_50 + 1) {
-        dVar6 = (double)(int)(local_34[local_50] - iVar4);
-        local_3c = dVar6 * dVar6 + local_3c;
+      standardDeviationSum = 0.0;
+      iVar4 = totalCost / validCount;
+      for (frameIndex = 0; frameIndex < validCount; frameIndex = frameIndex + 1) {
+        dVar6 = (double)(int)(costHistory[frameIndex] - iVar4);
+        standardDeviationSum = dVar6 * dVar6 + standardDeviationSum;
       }
-      local_68 = (int)(SQRT(local_3c / (double)local_48) * 1.5);
-      local_50 = local_48;
+      local_68 = (int)(SQRT(standardDeviationSum / (double)validCount) * 1.5);
+      frameIndex = validCount;
       if (local_68 < 0xb) {
         local_68 = 10;
       }
-      while (local_50 = local_50 + -1, -1 < local_50) {
-        uVar3 = local_34[local_50] - iVar4;
+      while (frameIndex = frameIndex + -1, -1 < frameIndex) {
+        uVar3 = costHistory[frameIndex] - iVar4;
         uVar5 = (int)uVar3 >> 0x1f;
         if ((double)local_68 < (double)(int)((uVar3 ^ uVar5) - uVar5)) {
-          local_4c = local_4c - local_34[local_50];
-          local_48 = local_48 + -1;
+          totalCost = totalCost - costHistory[frameIndex];
+          validCount = validCount + -1;
         }
       }
-      if ((local_48 < 2) &&
+      if ((validCount < 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_pixelcost.cpp",
                                    0xf0,0,"%s\n\t(validCount) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      local_4c = local_4c / local_48;
+      totalCost = totalCost / validCount;
     }
   }
-  return local_4c;
+  return totalCost;
 }
 
 
 // 00B090C0  R_PixelCost_PackedKeyForMaterial  (gfx_d3d/rb_pixelcost.cpp:251)
 
-ulong64 __cdecl R_PixelCost_PackedKeyForMaterial(Material *param_1,uchar param_2)
+ulong64 __cdecl R_PixelCost_PackedKeyForMaterial(Material *material,uchar techType)
 
 {
   code *pcVar1;
@@ -178,7 +183,7 @@ ulong64 __cdecl R_PixelCost_PackedKeyForMaterial(Material *param_1,uchar param_2
   ulong64 uVar3;
   undefined4 local_8;
   
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_pixelcost.cpp",0xfe,0,
                              "%s");
     if (!bVar2) {
@@ -187,20 +192,21 @@ ulong64 __cdecl R_PixelCost_PackedKeyForMaterial(Material *param_1,uchar param_2
       return uVar3;
     }
   }
-  local_8 = CONCAT31(local_8._1_3_,param_2);
-  return CONCAT44(local_8,param_1);
+  local_8 = CONCAT31(local_8._1_3_,techType);
+  return CONCAT44(local_8,material);
 }
 
 
 // 00B09110  RB_PixelCost_DoesPrimMatch  (gfx_d3d/rb_pixelcost.cpp:261)
 
-bool __cdecl RB_PixelCost_DoesPrimMatch(ulong64 param_1)
+bool __cdecl RB_PixelCost_DoesPrimMatch(ulong64 packedKey)
 
 {
   bool local_c;
   
-  if ((pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material == (Material *)param_1) &&
-     (*(int *)((int)&pixelCostGlob.records[pixelCostGlob.recordCount].key + 4) == param_1._4_4_)) {
+  if ((pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material == (Material *)packedKey)
+     && (*(int *)((int)&pixelCostGlob.records[pixelCostGlob.recordCount].key + 4) == packedKey._4_4_
+        )) {
     local_c = true;
   }
   else {
@@ -212,15 +218,16 @@ bool __cdecl RB_PixelCost_DoesPrimMatch(ulong64 param_1)
 
 // 00B09160  RB_PixelCost_ResetPrim  (gfx_d3d/rb_pixelcost.cpp:266)
 
-void __cdecl RB_PixelCost_ResetPrim(ulong64 param_1)
+void __cdecl RB_PixelCost_ResetPrim(ulong64 packedKey)
 
 {
   int iVar1;
   GfxPixelCostRecord *pGVar2;
+  GfxPixelCostRecord *record;
   
   iVar1 = pixelCostGlob.expectedCount;
   pGVar2 = pixelCostGlob.records + pixelCostGlob.expectedCount;
-  pixelCostGlob.records[pixelCostGlob.expectedCount].key.packed = param_1;
+  pixelCostGlob.records[pixelCostGlob.expectedCount].key.packed = packedKey;
   pGVar2->costHistory[0] = 0;
   pGVar2->costHistory[1] = 0;
   pixelCostGlob.records[iVar1].costHistory[2] = 0;
@@ -245,6 +252,7 @@ void __cdecl RB_PixelCost_AccumulateMsec(void)
   int extraout_EAX;
   undefined2 local_10;
   int local_c;
+  int timeQuantized;
   
   ceil();
   _ftol2_sse();
@@ -267,44 +275,45 @@ void __cdecl RB_PixelCost_AccumulateMsec(void)
 
 // 00B08C70  R_PixelCost_BeginSurface  (gfx_d3d/rb_pixelcost.cpp:327)
 
-void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext param_1)
+void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext context)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uint uVar4;
-  ulong64 uVar5;
-  GfxPixelCostMode GVar6;
+  int cost_00;
+  uint uVar3;
+  ulong64 uVar4;
+  GfxPixelCostMode GVar5;
+  int cost;
   
   if (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_COST) {
-    GVar6 = pixelCostMode;
-    uVar5 = R_PixelCost_PackedKeyForMaterial
-                      ((param_1.field0_0x0._s_0.state)->material,
-                       (param_1.field0_0x0._s_0.state)->techType);
-    bVar2 = RB_PixelCost_DoesPrimMatch(uVar5);
+    GVar5 = pixelCostMode;
+    uVar4 = R_PixelCost_PackedKeyForMaterial
+                      ((context.field0_0x0._s_0.state)->material,
+                       (context.field0_0x0._s_0.state)->techType);
+    bVar2 = RB_PixelCost_DoesPrimMatch(uVar4);
     if (!bVar2) {
-      RB_PixelCost_ResetPrim(uVar5);
+      RB_PixelCost_ResetPrim(uVar4);
     }
     pixelCostGlob.expectedCount = pixelCostGlob.expectedCount + 1;
-    GamerProfile_WriteSettings(GVar6);
-    uVar4 = r_glob.backEndFrameCount & 0x80000003;
-    if ((int)uVar4 < 0) {
-      uVar4 = (uVar4 - 1 | 0xfffffffc) + 1;
+    GamerProfile_WriteSettings(GVar5);
+    uVar3 = r_glob.backEndFrameCount & 0x80000003;
+    if ((int)uVar3 < 0) {
+      uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
     }
-    RB_HW_BeginOcclusionQuery(gfxAssets.pixelCountQuery[uVar4],(void *)0x0);
+    RB_HW_BeginOcclusionQuery(gfxAssets.pixelCountQuery[uVar3],(void *)0x0);
   }
   else if (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_MSEC) {
-    GVar6 = pixelCostMode;
-    uVar5 = R_PixelCost_PackedKeyForMaterial
-                      ((param_1.field0_0x0._s_0.state)->material,
-                       (param_1.field0_0x0._s_0.state)->techType);
-    bVar2 = RB_PixelCost_DoesPrimMatch(uVar5);
+    GVar5 = pixelCostMode;
+    uVar4 = R_PixelCost_PackedKeyForMaterial
+                      ((context.field0_0x0._s_0.state)->material,
+                       (context.field0_0x0._s_0.state)->techType);
+    bVar2 = RB_PixelCost_DoesPrimMatch(uVar4);
     if (!bVar2) {
-      RB_PixelCost_ResetPrim(uVar5);
+      RB_PixelCost_ResetPrim(uVar4);
     }
     pixelCostGlob.expectedCount = pixelCostGlob.expectedCount + 1;
-    GamerProfile_WriteSettings(GVar6);
+    GamerProfile_WriteSettings(GVar5);
   }
   else {
     if ((int)pixelCostMode < 3) {
@@ -316,8 +325,8 @@ void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext param_1)
         return;
       }
     }
-    iVar3 = RB_PixelCost_GetCostForRecordIndex(pixelCostGlob.recordCount);
-    R_PixelCost_SetConstant(param_1.field0_0x0._s_0.source,iVar3);
+    cost_00 = RB_PixelCost_GetCostForRecordIndex(pixelCostGlob.recordCount);
+    R_PixelCost_SetConstant(context.field0_0x0._s_0.source,cost_00);
   }
   return;
 }
@@ -325,33 +334,35 @@ void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext param_1)
 
 // 00B091A0  R_PixelCost_EndSurface  (gfx_d3d/rb_pixelcost.cpp:362)
 
-void __cdecl R_PixelCost_EndSurface(GfxCmdBufContext param_1)
+void __cdecl R_PixelCost_EndSurface(GfxCmdBufContext context)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
   uint uVar3;
-  IDirect3DQuery9 *pIVar4;
+  IDirect3DQuery9 *cinfo_8;
   int in_stack_ffffffc4;
   int local_38;
-  int local_c;
+  double msecPerScreen;
+  int cost;
+  uint pixelCount;
   
   if (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_COST) {
     uVar3 = r_glob.backEndFrameCount & 0x80000003;
     if ((int)uVar3 < 0) {
       uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
     }
-    pIVar4 = gfxAssets.pixelCountQuery[uVar3];
-    (**(code **)((int)*pIVar4 + 0x18))(pIVar4,1);
-    GamerProfile_WriteSettings((int)pIVar4);
+    cinfo_8 = gfxAssets.pixelCountQuery[uVar3];
+    (**(code **)((int)*cinfo_8 + 0x18))(cinfo_8,1);
+    GamerProfile_WriteSettings((int)cinfo_8);
     uVar3 = r_glob.backEndFrameCount & 0x80000003;
     if ((int)uVar3 < 0) {
       uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
     }
     uVar3 = RB_HW_ReadOcclusionQuery(gfxAssets.pixelCountQuery[uVar3]);
     if (uVar3 == 0) {
-      local_c = 1;
+      cost = 1;
     }
     else {
       ceil();
@@ -360,13 +371,13 @@ void __cdecl R_PixelCost_EndSurface(GfxCmdBufContext param_1)
       if (extraout_EAX < 2) {
         local_38 = 1;
       }
-      local_c = local_38;
+      cost = local_38;
     }
-    if (0xffff < local_c) {
-      local_c = 0xffff;
+    if (0xffff < cost) {
+      cost = 0xffff;
     }
     *(short *)(pixelCostGlob.recordCount * 0x20 + 0xb50f698 + pixelCostGlob.frameIndex * 2) =
-         (short)local_c;
+         (short)cost;
     pixelCostGlob.recordCount = pixelCostGlob.recordCount + 1;
   }
   else if (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_MSEC) {
@@ -389,15 +400,15 @@ void __cdecl R_PixelCost_EndSurface(GfxCmdBufContext param_1)
 
 // 00B093D0  RB_PixelCost_OverrideRenderTarget  (gfx_d3d/rb_pixelcost.cpp:409)
 
-uchar __cdecl RB_PixelCost_OverrideRenderTarget(uchar param_1)
+uchar __cdecl RB_PixelCost_OverrideRenderTarget(uchar targetId)
 
 {
-  if (param_1 < 3) {
-    param_1 = '\x02';
+  if (targetId < 3) {
+    targetId = '\x02';
   }
-  else if (param_1 < 10) {
-    param_1 = '\x03';
+  else if (targetId < 10) {
+    targetId = '\x03';
   }
-  return param_1;
+  return targetId;
 }
 

@@ -2,7 +2,7 @@
 
 // 0080BB40  adler32  (zlib/adler32.cpp:63)
 
-ulong __cdecl adler32(ulong param_1,uchar *param_2,uint param_3)
+ulong __cdecl adler32(ulong adler,uchar *buf,uint len)
 
 {
   ulong uVar1;
@@ -21,98 +21,98 @@ ulong __cdecl adler32(ulong param_1,uchar *param_2,uint param_3)
   int iVar14;
   int iVar15;
   int iVar16;
-  uint local_c;
-  int local_8;
+  ulong sum2;
+  uint n;
   
-  local_c = param_1 >> 0x10;
-  param_1 = param_1 & 0xffff;
-  if (param_3 == 1) {
-    param_1 = *param_2 + param_1;
-    if (0xfff0 < param_1) {
-      param_1 = param_1 - 0xfff1;
+  sum2 = adler >> 0x10;
+  adler = adler & 0xffff;
+  if (len == 1) {
+    adler = *buf + adler;
+    if (0xfff0 < adler) {
+      adler = adler - 0xfff1;
     }
-    local_c = local_c + param_1;
-    if (0xfff0 < local_c) {
-      local_c = local_c - 0xfff1;
+    sum2 = sum2 + adler;
+    if (0xfff0 < sum2) {
+      sum2 = sum2 - 0xfff1;
     }
-    uVar1 = local_c << 0x10 | param_1;
+    uVar1 = sum2 << 0x10 | adler;
   }
-  else if (param_2 == (uchar *)0x0) {
+  else if (buf == (uchar *)0x0) {
     uVar1 = 1;
   }
-  else if (param_3 < 0x10) {
-    while (param_3 != 0) {
-      param_1 = *param_2 + param_1;
-      param_2 = param_2 + 1;
-      local_c = local_c + param_1;
-      param_3 = param_3 - 1;
+  else if (len < 0x10) {
+    while (len != 0) {
+      adler = *buf + adler;
+      buf = buf + 1;
+      sum2 = sum2 + adler;
+      len = len - 1;
     }
-    if (0xfff0 < param_1) {
-      param_1 = param_1 - 0xfff1;
+    if (0xfff0 < adler) {
+      adler = adler - 0xfff1;
     }
-    uVar1 = local_c % 0xfff1 << 0x10 | param_1;
+    uVar1 = sum2 % 0xfff1 << 0x10 | adler;
   }
   else {
-    while (0x15af < param_3) {
-      param_3 = param_3 - 0x15b0;
-      local_8 = 0x15b;
+    while (0x15af < len) {
+      len = len - 0x15b0;
+      n = 0x15b;
       do {
-        iVar2 = *param_2 + param_1;
-        iVar3 = (uint)param_2[1] + iVar2;
-        iVar4 = (uint)param_2[2] + iVar3;
-        iVar5 = (uint)param_2[3] + iVar4;
-        iVar6 = (uint)param_2[4] + iVar5;
-        iVar7 = (uint)param_2[5] + iVar6;
-        iVar8 = (uint)param_2[6] + iVar7;
-        iVar9 = (uint)param_2[7] + iVar8;
-        iVar10 = (uint)param_2[8] + iVar9;
-        iVar11 = (uint)param_2[9] + iVar10;
-        iVar12 = (uint)param_2[10] + iVar11;
-        iVar13 = (uint)param_2[0xb] + iVar12;
-        iVar14 = (uint)param_2[0xc] + iVar13;
-        iVar15 = (uint)param_2[0xd] + iVar14;
-        iVar16 = (uint)param_2[0xe] + iVar15;
-        param_1 = (uint)param_2[0xf] + iVar16;
-        local_c = local_c + iVar2 + iVar3 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 +
-                  iVar11 + iVar12 + iVar13 + iVar14 + iVar15 + iVar16 + param_1;
-        param_2 = param_2 + 0x10;
-        local_8 = local_8 + -1;
-      } while (local_8 != 0);
-      param_1 = param_1 % 0xfff1;
-      local_c = local_c % 0xfff1;
+        iVar2 = *buf + adler;
+        iVar3 = (uint)buf[1] + iVar2;
+        iVar4 = (uint)buf[2] + iVar3;
+        iVar5 = (uint)buf[3] + iVar4;
+        iVar6 = (uint)buf[4] + iVar5;
+        iVar7 = (uint)buf[5] + iVar6;
+        iVar8 = (uint)buf[6] + iVar7;
+        iVar9 = (uint)buf[7] + iVar8;
+        iVar10 = (uint)buf[8] + iVar9;
+        iVar11 = (uint)buf[9] + iVar10;
+        iVar12 = (uint)buf[10] + iVar11;
+        iVar13 = (uint)buf[0xb] + iVar12;
+        iVar14 = (uint)buf[0xc] + iVar13;
+        iVar15 = (uint)buf[0xd] + iVar14;
+        iVar16 = (uint)buf[0xe] + iVar15;
+        adler = (uint)buf[0xf] + iVar16;
+        sum2 = sum2 + iVar2 + iVar3 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 +
+               iVar11 + iVar12 + iVar13 + iVar14 + iVar15 + iVar16 + adler;
+        buf = buf + 0x10;
+        n = n - 1;
+      } while (n != 0);
+      adler = adler % 0xfff1;
+      sum2 = sum2 % 0xfff1;
     }
-    if (param_3 != 0) {
-      for (; 0xf < param_3; param_3 = param_3 - 0x10) {
-        iVar2 = *param_2 + param_1;
-        iVar3 = (uint)param_2[1] + iVar2;
-        iVar4 = (uint)param_2[2] + iVar3;
-        iVar5 = (uint)param_2[3] + iVar4;
-        iVar6 = (uint)param_2[4] + iVar5;
-        iVar7 = (uint)param_2[5] + iVar6;
-        iVar8 = (uint)param_2[6] + iVar7;
-        iVar9 = (uint)param_2[7] + iVar8;
-        iVar10 = (uint)param_2[8] + iVar9;
-        iVar11 = (uint)param_2[9] + iVar10;
-        iVar12 = (uint)param_2[10] + iVar11;
-        iVar13 = (uint)param_2[0xb] + iVar12;
-        iVar14 = (uint)param_2[0xc] + iVar13;
-        iVar15 = (uint)param_2[0xd] + iVar14;
-        iVar16 = (uint)param_2[0xe] + iVar15;
-        param_1 = (uint)param_2[0xf] + iVar16;
-        local_c = local_c + iVar2 + iVar3 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 +
-                  iVar11 + iVar12 + iVar13 + iVar14 + iVar15 + iVar16 + param_1;
-        param_2 = param_2 + 0x10;
+    if (len != 0) {
+      for (; 0xf < len; len = len - 0x10) {
+        iVar2 = *buf + adler;
+        iVar3 = (uint)buf[1] + iVar2;
+        iVar4 = (uint)buf[2] + iVar3;
+        iVar5 = (uint)buf[3] + iVar4;
+        iVar6 = (uint)buf[4] + iVar5;
+        iVar7 = (uint)buf[5] + iVar6;
+        iVar8 = (uint)buf[6] + iVar7;
+        iVar9 = (uint)buf[7] + iVar8;
+        iVar10 = (uint)buf[8] + iVar9;
+        iVar11 = (uint)buf[9] + iVar10;
+        iVar12 = (uint)buf[10] + iVar11;
+        iVar13 = (uint)buf[0xb] + iVar12;
+        iVar14 = (uint)buf[0xc] + iVar13;
+        iVar15 = (uint)buf[0xd] + iVar14;
+        iVar16 = (uint)buf[0xe] + iVar15;
+        adler = (uint)buf[0xf] + iVar16;
+        sum2 = sum2 + iVar2 + iVar3 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 +
+               iVar11 + iVar12 + iVar13 + iVar14 + iVar15 + iVar16 + adler;
+        buf = buf + 0x10;
       }
-      while (param_3 != 0) {
-        param_1 = *param_2 + param_1;
-        param_2 = param_2 + 1;
-        local_c = local_c + param_1;
-        param_3 = param_3 - 1;
+      while (len != 0) {
+        adler = *buf + adler;
+        buf = buf + 1;
+        sum2 = sum2 + adler;
+        len = len - 1;
       }
-      param_1 = param_1 % 0xfff1;
-      local_c = local_c % 0xfff1;
+      adler = adler % 0xfff1;
+      sum2 = sum2 % 0xfff1;
     }
-    uVar1 = local_c << 0x10 | param_1;
+    uVar1 = sum2 << 0x10 | adler;
   }
   return uVar1;
 }

@@ -9,6 +9,7 @@ void __cdecl ValidateGameModes(void)
   bool bVar2;
   bool bVar3;
   bool bVar4;
+  bool anySet;
   
   bVar2 = G_ExitAfterToolComplete();
   if (!bVar2) {
@@ -147,13 +148,13 @@ bool __cdecl Com_GameMode_IsPublicOnlineGame(void)
 
 /* WARNING: Enum "eGameModes": Some values do not have unique names */
 
-bool __cdecl Com_GameMode_IsGameMode(eGameModes param_1)
+bool __cdecl Com_GameMode_IsGameMode(eGameModes mode)
 
 {
   bool bVar1;
   
   ValidateGameModes();
-  switch(param_1) {
+  switch(mode) {
   case GAMEMODE_SYSTEMLINK:
     bVar1 = false;
     break;

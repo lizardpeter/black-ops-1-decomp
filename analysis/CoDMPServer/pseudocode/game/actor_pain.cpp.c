@@ -14,6 +14,7 @@ bool __cdecl Actor_InPain(actor_s *param_1)
   bool bVar2;
   undefined1 uVar3;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_pain.cpp",0x16,0,"%s");
@@ -29,6 +30,7 @@ bool __cdecl Actor_InPain(actor_s *param_1)
 
 // 009125B0  Actor_Pain_Start  (game/actor_pain.cpp:33)
 
+/* WARNING: Variable defined which should be unmapped: ePrevState */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -42,6 +44,8 @@ bool __cdecl Actor_Pain_Start(actor_s *param_1,ai_state_t param_2)
   undefined1 uVar3;
   undefined4 *in_ECX;
   actor_s *in_EDX;
+  ai_state_t ePrevState;
+  actor_s *self;
   
   if (in_ECX == (undefined4 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_pain.cpp",0x25,0,"%s");
@@ -61,6 +65,8 @@ bool __cdecl Actor_Pain_Start(actor_s *param_1,ai_state_t param_2)
 
 // 00912630  Actor_Pain_Finish  (game/actor_pain.cpp:57)
 
+/* WARNING: Variable defined which should be unmapped: eNextState */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -74,6 +80,8 @@ void __cdecl Actor_Pain_Finish(actor_s *param_1,ai_state_t param_2)
   int iVar3;
   int *in_ECX;
   sentient_s *in_EDX;
+  ai_state_t eNextState;
+  actor_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_pain.cpp",0x3d,0,"%s");
@@ -102,6 +110,7 @@ void __cdecl Actor_Pain_Finish(actor_s *param_1,ai_state_t param_2)
 
 // 009126D0  Actor_Pain_Think  (game/actor_pain.cpp:78)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -115,30 +124,30 @@ actor_think_result_t __cdecl Actor_Pain_Think(actor_s *param_1)
   actor_think_result_t aVar3;
   int iVar4;
   DWORD DVar5;
-  actor_s *extraout_var;
-  actor_s *paVar6;
+  actor_s *in_ECX;
+  actor_s *self;
   ai_orient_mode_t in_stack_ffffffe0;
   actor_think_result_t local_c;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"painthink");
-  paVar6 = extraout_var;
-  if ((extraout_var == (actor_s *)0x0) &&
+  if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_pain.cpp",0x53,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     aVar3 = (*pcVar1)();
     return aVar3;
   }
-  if ((paVar6->ent == (gentity_s *)0x0) &&
+  if ((in_ECX->ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_pain.cpp",0x54,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     aVar3 = (*pcVar1)();
     return aVar3;
   }
-  paVar6->pszDebugInfo = "pain";
-  if ((paVar6->iPainTime < level.time) && (iVar4 = Actor_IsAnimScriptAlive(paVar6), iVar4 == 0)) {
-    Actor_PopState(paVar6);
+  in_ECX->pszDebugInfo = "pain";
+  if ((in_ECX->iPainTime < level.time) && (iVar4 = Actor_IsAnimScriptAlive(in_ECX), iVar4 == 0)) {
+    Actor_PopState(in_ECX);
     local_c = ACTOR_THINK_REPEAT;
     DVar5 = GetCurrentThreadId();
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -146,15 +155,15 @@ actor_think_result_t __cdecl Actor_Pain_Think(actor_s *param_1)
     }
   }
   else {
-    iVar4 = EntHandle::isDefined(&paVar6->sentient->lastAttacker);
-    if ((iVar4 != 0) && (499 < level.time - paVar6->iPainTime)) {
-      Actor_BroadcastTeamEvent((sentient_s *)paVar6,in_stack_ffffffe0);
-      EntHandle::setEnt(&paVar6->sentient->lastAttacker,(gentity_s *)0x0);
+    iVar4 = EntHandle::isDefined(&in_ECX->sentient->lastAttacker);
+    if ((iVar4 != 0) && (499 < level.time - in_ECX->iPainTime)) {
+      Actor_BroadcastTeamEvent((sentient_s *)in_ECX,in_stack_ffffffe0);
+      EntHandle::setEnt(&in_ECX->sentient->lastAttacker,(gentity_s *)0x0);
     }
-    Actor_PreThink(paVar6);
-    Actor_SetOrientMode(paVar6,in_stack_ffffffe0);
-    Actor_AnimPain(paVar6);
-    Actor_PostThink(paVar6);
+    Actor_PreThink(in_ECX);
+    Actor_SetOrientMode(in_ECX,in_stack_ffffffe0);
+    Actor_AnimPain(in_ECX);
+    Actor_PostThink(in_ECX);
     DVar5 = GetCurrentThreadId();
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();

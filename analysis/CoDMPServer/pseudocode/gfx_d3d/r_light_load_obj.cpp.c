@@ -2,33 +2,35 @@
 
 // 00B53350  R_LoadLightImage  (gfx_d3d/r_light_load_obj.cpp:22)
 
-uchar * __cdecl R_LoadLightImage(uchar *param_1,GfxLightImage *param_2)
+uchar * __cdecl R_LoadLightImage(uchar *readPos,GfxLightImage *lightImage)
 
 {
   uchar uVar1;
   GfxImage *pGVar2;
   uchar *local_10;
+  char *imageName;
+  int nameLen;
   
-  param_2->samplerState = *param_1;
-  local_10 = param_1 + 1;
+  lightImage->samplerState = *readPos;
+  local_10 = readPos + 1;
   do {
     uVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (uVar1 != '\0');
-  if ((int)local_10 - (int)(param_1 + 2) == 0) {
-    param_2->image = (GfxImage *)0x0;
+  if ((int)local_10 - (int)(readPos + 2) == 0) {
+    lightImage->image = (GfxImage *)0x0;
   }
   else {
-    pGVar2 = Image_Register((char *)(param_1 + 1),'\x01',5);
-    param_2->image = pGVar2;
+    pGVar2 = Image_Register((char *)(readPos + 1),'\x01',5);
+    lightImage->image = pGVar2;
   }
-  return param_1 + ((int)local_10 - (int)(param_1 + 2)) + 2;
+  return readPos + ((int)local_10 - (int)(readPos + 2)) + 2;
 }
 
 
 // 00B531C0  R_LoadLightDef  (gfx_d3d/r_light_load_obj.cpp:88)
 
-GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
+GfxLightDef * __cdecl R_LoadLightDef(char *name)
 
 {
   char cVar1;
@@ -39,11 +41,13 @@ GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
   char *local_30;
   char *local_2c;
   char *local_1c;
-  uchar *local_10;
-  int local_c;
-  uchar *local_8;
+  char *filename;
+  GfxLightDef *def;
+  uchar *file;
+  int fileSize;
+  uchar *readPos;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_light_load_obj.cpp",0x5f
                              ,0,"%s");
     if (!bVar3) {
@@ -53,22 +57,22 @@ GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
     }
   }
   pcVar5 = va("lights/%s");
-  local_c = FS_ReadFile(pcVar5,&local_10);
-  if (local_c < 0) {
+  fileSize = FS_ReadFile(pcVar5,&file);
+  if (fileSize < 0) {
     pGVar4 = (GfxLightDef *)0x0;
   }
-  else if (local_c == 0) {
-    FS_FreeFile(local_10);
+  else if (fileSize == 0) {
+    FS_FreeFile(file);
     pGVar4 = (GfxLightDef *)0x0;
   }
   else {
     pGVar4 = Hunk_Alloc(0x10,"R_RegisterLightDef",0x15);
-    local_1c = param_1;
+    local_1c = name;
     do {
       cVar1 = *local_1c;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    pcVar5 = Hunk_Alloc((int)(local_1c + (1 - (int)(param_1 + 1))),"R_RegisterLightDef",0x15);
+    pcVar5 = Hunk_Alloc((int)(local_1c + (1 - (int)(name + 1))),"R_RegisterLightDef",0x15);
     pGVar4->name = pcVar5;
     if (pGVar4 == (GfxLightDef *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_light_load_obj.cpp",
@@ -79,9 +83,9 @@ GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
         return pGVar4;
       }
     }
-    local_8 = local_10;
-    local_8 = R_LoadLightImage(local_10,&pGVar4->attenuation);
-    local_2c = param_1;
+    readPos = file;
+    readPos = R_LoadLightImage(file,&pGVar4->attenuation);
+    local_2c = name;
     local_30 = pGVar4->name;
     do {
       cVar1 = *local_2c;
@@ -90,7 +94,7 @@ GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
       local_30 = local_30 + 1;
     } while (cVar1 != '\0');
     I_strlwr(pGVar4->name);
-    FS_FreeFile(local_10);
+    FS_FreeFile(file);
     pGVar4->lmapLookupStart = 0;
   }
   return pGVar4;

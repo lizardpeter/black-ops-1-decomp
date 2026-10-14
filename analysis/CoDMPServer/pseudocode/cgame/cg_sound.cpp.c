@@ -7,15 +7,18 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_ShouldPlaySoundOnLocalClient(int param_1,int param_2,float *param_3,uint param_4)
+bool __cdecl
+CG_ShouldPlaySoundOnLocalClient(int localClientNum,int entitynum,float *origin,uint aliasname)
 
 {
   bool bVar1;
   int iVar2;
   cg_s *pcVar3;
   float fVar4;
-  int local_10;
-  int local_c;
+  cg_s *cgameGlob;
+  int trackingIndex;
+  int clientIndex;
+  CgSoundPlaybackTrackingInfo *trackingInfo;
   
   iVar2 = CL_LocalClient_GetActiveCount();
   if (1 < iVar2) {
@@ -23,37 +26,38 @@ bool __cdecl CG_ShouldPlaySoundOnLocalClient(int param_1,int param_2,float *para
     if (iVar2 == 1) {
       return true;
     }
-    if (param_4 == 0) {
+    if (aliasname == 0) {
       return false;
     }
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
     if (pcVar3->inKillCam == 0) {
-      for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-        bVar1 = CL_LocalClient_IsActive(local_c);
-        if ((bVar1) && (iVar2 = CG_GetClientNumForLocalClient(local_c), iVar2 == param_2)) {
-          return local_c == param_1;
+      for (clientIndex = 0; clientIndex < 1; clientIndex = clientIndex + 1) {
+        bVar1 = CL_LocalClient_IsActive(clientIndex);
+        if ((bVar1) && (iVar2 = CG_GetClientNumForLocalClient(clientIndex), iVar2 == entitynum)) {
+          return clientIndex == localClientNum;
         }
       }
     }
-    for (local_10 = 0; (local_10 < 0x100 && (cg_SoundPlaybackTracking[local_10].aliasname != 0));
-        local_10 = local_10 + 1) {
-      if ((param_2 == cg_SoundPlaybackTracking[local_10].entitynum) &&
-         (((pcVar3->inKillCam == cg_SoundPlaybackTracking[local_10].wasInKillcam &&
-           (fVar4 = Vec3DistanceSq(param_3,cg_SoundPlaybackTracking[local_10].origin), fVar4 < 3.0))
-          && (param_4 == cg_SoundPlaybackTracking[local_10].aliasname)))) {
+    for (trackingIndex = 0;
+        (trackingIndex < 0x100 && (cg_SoundPlaybackTracking[trackingIndex].aliasname != 0));
+        trackingIndex = trackingIndex + 1) {
+      if ((entitynum == cg_SoundPlaybackTracking[trackingIndex].entitynum) &&
+         (((pcVar3->inKillCam == cg_SoundPlaybackTracking[trackingIndex].wasInKillcam &&
+           (fVar4 = Vec3DistanceSq(origin,cg_SoundPlaybackTracking[trackingIndex].origin),
+           fVar4 < 3.0)) && (aliasname == cg_SoundPlaybackTracking[trackingIndex].aliasname)))) {
         return false;
       }
     }
-    if (0xff < local_10) {
+    if (0xff < trackingIndex) {
       Com_Printf(9,"ERROR: not enough sound tracking entries for splitscreen\n");
       return false;
     }
-    cg_SoundPlaybackTracking[local_10].entitynum = param_2;
-    cg_SoundPlaybackTracking[local_10].aliasname = param_4;
-    cg_SoundPlaybackTracking[local_10].wasInKillcam = pcVar3->inKillCam;
-    cg_SoundPlaybackTracking[local_10].origin[0] = *param_3;
-    cg_SoundPlaybackTracking[local_10].origin[1] = param_3[1];
-    cg_SoundPlaybackTracking[local_10].origin[2] = param_3[2];
+    cg_SoundPlaybackTracking[trackingIndex].entitynum = entitynum;
+    cg_SoundPlaybackTracking[trackingIndex].aliasname = aliasname;
+    cg_SoundPlaybackTracking[trackingIndex].wasInKillcam = pcVar3->inKillCam;
+    cg_SoundPlaybackTracking[trackingIndex].origin[0] = *origin;
+    cg_SoundPlaybackTracking[trackingIndex].origin[1] = origin[1];
+    cg_SoundPlaybackTracking[trackingIndex].origin[2] = origin[2];
   }
   return true;
 }
@@ -64,12 +68,15 @@ bool __cdecl CG_ShouldPlaySoundOnLocalClient(int param_1,int param_2,float *para
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 SndEntHandle __cdecl
-SND_EntHandle(int param_1,int param_2,int param_3,bool param_4,bool param_5,team_t param_6)
+SND_EntHandle(int localClientNum,int entIndex,int useCount,bool isInKillCam,bool isStationary,
+             team_t team)
 
 {
+  SndEntHandle sndEnt;
+  
   return (SndEntHandle)
-         ((param_1 & 3U) << 0x13 | param_2 & 0xfffU | (param_3 & 0x7fU) << 0xc |
-          (uint)param_4 << 0x16 | (uint)param_5 << 0x15 | (param_6 & TEAM_SPECTATOR) << 0x17);
+         ((localClientNum & 3U) << 0x13 | entIndex & 0xfffU | (useCount & 0x7fU) << 0xc |
+          (uint)isInKillCam << 0x16 | (uint)isStationary << 0x15 | (team & TEAM_SPECTATOR) << 0x17);
 }
 
 
@@ -80,34 +87,36 @@ SND_EntHandle(int param_1,int param_2,int param_3,bool param_4,bool param_5,team
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-SndEntHandle __cdecl CG_SndEntHandle(int param_1,int param_2)
+SndEntHandle __cdecl CG_SndEntHandle(int localClientNum,int entIndex)
 
 {
   cg_s *pcVar1;
   centity_s *pcVar2;
   SndEntHandle SVar3;
   bool local_25;
-  bool local_11;
-  team_t local_10;
+  bool isInKillCam;
+  team_t team;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  local_11 = false;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  isInKillCam = false;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar1->inKillCam != 0) || (((pcVar1->predictedPlayerState).otherFlags & 2U) != 0)) {
-    local_11 = true;
+    isInKillCam = true;
   }
-  pcVar2 = CG_GetEntity(param_1,param_2);
-  local_10 = TEAM_BAD;
+  pcVar2 = CG_GetEntity(localClientNum,entIndex);
+  team = TEAM_BAD;
   if ((pcVar2->nextState).eType == 1) {
-    local_10 = *(team_t *)
-                ((int)(pcVar1->bgs).clientinfo + (pcVar2->nextState).number * 0x5c8 + 0x2c);
+    team = *(team_t *)((int)(pcVar1->bgs).clientinfo + (pcVar2->nextState).number * 0x5c8 + 0x2c);
   }
-  if ((param_2 == 0x3fe) || (0x14 < (pcVar2->nextState).eType)) {
+  if ((entIndex == 0x3fe) || (0x14 < (pcVar2->nextState).eType)) {
     local_25 = true;
   }
   else {
     local_25 = false;
   }
-  SVar3 = SND_EntHandle(param_1,param_2,(pcVar2->currentState).useCount,local_11,local_25,local_10);
+  SVar3 = SND_EntHandle(localClientNum,entIndex,(pcVar2->currentState).useCount,isInKillCam,local_25
+                        ,team);
   return (SndEntHandle)SVar3.handle;
 }
 
@@ -120,37 +129,39 @@ SndEntHandle __cdecl CG_SndEntHandle(int param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_PlaySound(int param_1,int param_2,float *param_3,int param_4,bool param_5,float param_6,
-            uint param_7)
+CG_PlaySound(int localClientNum,int entitynum,float *origin,int fadeMs,bool doNotify,
+            float attenuation,uint id)
 
 {
   bool bVar1;
   centity_s *pcVar2;
   GfxBrushModel *pGVar3;
-  SndEntHandle SVar4;
-  float local_10;
+  SndEntHandle entHandle;
+  GfxBrushModel *bmodel;
+  centity_s *cent;
+  float tmpOrigin;
   float local_c;
   float local_8;
   
-  if (param_3 == (float *)0x0) {
-    pcVar2 = CG_GetEntity(param_1,param_2);
-    param_3 = &local_10;
+  if (origin == (float *)0x0) {
+    pcVar2 = CG_GetEntity(localClientNum,entitynum);
+    origin = &tmpOrigin;
     if ((pcVar2->nextState).solid == 0xffffff) {
       pGVar3 = R_GetBrushModel((int)(pcVar2->nextState).index.brushmodel);
-      local_10 = (pcVar2->pose).origin[0] + (pGVar3->bounds[0][0] + pGVar3->bounds[1][0]) * 0.5;
+      tmpOrigin = (pcVar2->pose).origin[0] + (pGVar3->bounds[0][0] + pGVar3->bounds[1][0]) * 0.5;
       local_c = (pcVar2->pose).origin[1] + (pGVar3->bounds[0][1] + pGVar3->bounds[1][1]) * 0.5;
       local_8 = (pcVar2->pose).origin[2] + (pGVar3->bounds[0][2] + pGVar3->bounds[1][2]) * 0.5;
     }
     else {
-      local_10 = (pcVar2->pose).origin[0];
+      tmpOrigin = (pcVar2->pose).origin[0];
       local_c = (pcVar2->pose).origin[1];
       local_8 = (pcVar2->pose).origin[2];
     }
   }
-  if ((param_7 != 0) &&
-     (bVar1 = CG_ShouldPlaySoundOnLocalClient(param_1,param_2,param_3,param_7), bVar1)) {
-    SVar4 = CG_SndEntHandle(param_1,param_2);
-    SND_Play(param_7,param_4,param_6,SVar4,param_3,(float *)0x0,param_5);
+  if ((id != 0) &&
+     (bVar1 = CG_ShouldPlaySoundOnLocalClient(localClientNum,entitynum,origin,id), bVar1)) {
+    entHandle = CG_SndEntHandle(localClientNum,entitynum);
+    SND_Play(id,fadeMs,attenuation,entHandle,origin,(float *)0x0,doNotify);
   }
   return;
 }
@@ -158,15 +169,20 @@ CG_PlaySound(int param_1,int param_2,float *param_3,int param_4,bool param_5,flo
 
 // 00508780  CG_PlaySound  (cgame/cg_sound.cpp:207)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-CG_PlaySound(int param_1,int param_2,float *param_3,int param_4,bool param_5,float param_6,
-            char *param_7)
+CG_PlaySound(int localClientNum,int entitynum,float *origin,int fadeMs,bool doNotify,
+            float attenuation,char *name)
 
 {
-  uint uVar1;
+  uint id;
   
-  uVar1 = SND_FindAliasId(param_7);
-  CG_PlaySound(param_1,param_2,param_3,param_4,param_5,param_6,uVar1);
+  id = SND_FindAliasId(name);
+  CG_PlaySound(localClientNum,entitynum,origin,fadeMs,doNotify,attenuation,id);
   return;
 }
 
@@ -174,10 +190,10 @@ CG_PlaySound(int param_1,int param_2,float *param_3,int param_4,bool param_5,flo
 // 005087C0  CG_PlaySound  (cgame/cg_sound.cpp:217)
 
 void __cdecl
-CG_PlaySound(int param_1,float *param_2,int param_3,bool param_4,float param_5,char *param_6)
+CG_PlaySound(int localClientNum,float *origin,int fadeMs,bool doNotify,float attenuation,char *name)
 
 {
-  CG_PlaySound(param_1,0x3fe,param_2,param_3,param_4,param_5,param_6);
+  CG_PlaySound(localClientNum,0x3fe,origin,fadeMs,doNotify,attenuation,name);
   return;
 }
 
@@ -191,39 +207,41 @@ CG_PlaySound(int param_1,float *param_2,int param_3,bool param_4,float param_5,c
 
 int __cdecl
 CG_PlaySoundWithHandle
-          (int param_1,int param_2,float *param_3,int param_4,bool param_5,float param_6,
-          uint param_7)
+          (int localClientNum,int entitynum,float *origin,int fadeMs,bool doNotify,float volume,
+          uint id)
 
 {
   bool bVar1;
   centity_s *pcVar2;
   GfxBrushModel *pGVar3;
-  SndEntHandle SVar4;
-  int iVar5;
-  float local_10;
+  SndEntHandle entHandle;
+  int iVar4;
+  GfxBrushModel *bmodel;
+  centity_s *cent;
+  float tmpOrigin;
   float local_c;
   float local_8;
   
-  if (param_3 == (float *)0x0) {
-    pcVar2 = CG_GetEntity(param_1,param_2);
-    param_3 = &local_10;
+  if (origin == (float *)0x0) {
+    pcVar2 = CG_GetEntity(localClientNum,entitynum);
+    origin = &tmpOrigin;
     if ((pcVar2->nextState).solid == 0xffffff) {
       pGVar3 = R_GetBrushModel((int)(pcVar2->nextState).index.brushmodel);
-      local_10 = (pcVar2->pose).origin[0] + (pGVar3->bounds[0][0] + pGVar3->bounds[1][0]) * 0.5;
+      tmpOrigin = (pcVar2->pose).origin[0] + (pGVar3->bounds[0][0] + pGVar3->bounds[1][0]) * 0.5;
       local_c = (pcVar2->pose).origin[1] + (pGVar3->bounds[0][1] + pGVar3->bounds[1][1]) * 0.5;
       local_8 = (pcVar2->pose).origin[2] + (pGVar3->bounds[0][2] + pGVar3->bounds[1][2]) * 0.5;
     }
     else {
-      local_10 = (pcVar2->pose).origin[0];
+      tmpOrigin = (pcVar2->pose).origin[0];
       local_c = (pcVar2->pose).origin[1];
       local_8 = (pcVar2->pose).origin[2];
     }
   }
-  if ((param_7 != 0) &&
-     (bVar1 = CG_ShouldPlaySoundOnLocalClient(param_1,param_2,param_3,param_7), bVar1)) {
-    SVar4 = CG_SndEntHandle(param_1,param_2);
-    iVar5 = SND_Playback(param_7,param_4,param_6,SVar4,param_3,(float *)0x0,param_5);
-    return iVar5;
+  if ((id != 0) &&
+     (bVar1 = CG_ShouldPlaySoundOnLocalClient(localClientNum,entitynum,origin,id), bVar1)) {
+    entHandle = CG_SndEntHandle(localClientNum,entitynum);
+    iVar4 = SND_Playback(id,fadeMs,volume,entHandle,origin,(float *)0x0,doNotify);
+    return iVar4;
   }
   return -1;
 }
@@ -231,18 +249,23 @@ CG_PlaySoundWithHandle
 
 // 00508980  CG_PlaySoundWithHandle  (cgame/cg_sound.cpp:269)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 int __cdecl
 CG_PlaySoundWithHandle
-          (int param_1,int param_2,float *param_3,int param_4,bool param_5,float param_6,
-          char *param_7)
+          (int localClientNum,int entitynum,float *origin,int fadeMs,bool doNotify,float attenuation
+          ,char *name)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint id;
+  int iVar1;
   
-  uVar1 = SND_FindAliasId(param_7);
-  iVar2 = CG_PlaySoundWithHandle(param_1,param_2,param_3,param_4,param_5,param_6,uVar1);
-  return iVar2;
+  id = SND_FindAliasId(name);
+  iVar1 = CG_PlaySoundWithHandle(localClientNum,entitynum,origin,fadeMs,doNotify,attenuation,id);
+  return iVar1;
 }
 
 
@@ -253,40 +276,45 @@ CG_PlaySoundWithHandle
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PumpEntityLoopSound(int param_1,centity_s *param_2)
+void __cdecl CG_PumpEntityLoopSound(int localClientNum,centity_s *cent)
 
 {
-  CG_PlaySound(param_1,(param_2->nextState).number,(float *)0x0,
-               (int)(param_2->nextState).loopSoundFade,false,1.0,(param_2->nextState).loopSoundId);
+  CG_PlaySound(localClientNum,(cent->nextState).number,(float *)0x0,
+               (int)(cent->nextState).loopSoundFade,false,1.0,(cent->nextState).loopSoundId);
   return;
 }
 
 
 // 00508A00  CG_PlayAnimScriptSoundAlias  (cgame/cg_sound.cpp:291)
 
-void __cdecl CG_PlayAnimScriptSoundAlias(int param_1,snd_alias_list_t *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_PlayAnimScriptSoundAlias(int clientIndex,snd_alias_list_t *aliasList)
 
 {
   bool bVar1;
   int iVar2;
-  uint uVar3;
-  float *pfVar4;
-  int iVar5;
-  float fVar6;
-  undefined4 local_8;
+  uint id;
+  float *origin;
+  int fadeMs;
+  float attenuation;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    bVar1 = CL_LocalClient_IsActive(local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar1 = CL_LocalClient_IsActive(localClientNum);
     if (bVar1) {
-      iVar2 = CG_GetClientNumForLocalClient(local_8);
-      if (iVar2 == param_1) {
-        uVar3 = SND_HashAlias(param_2);
-        fVar6 = 1.0;
+      iVar2 = CG_GetClientNumForLocalClient(localClientNum);
+      if (iVar2 == clientIndex) {
+        id = SND_HashAlias(aliasList);
+        attenuation = 1.0;
         bVar1 = false;
-        iVar5 = 0;
-        pfVar4 = (float *)0x0;
-        iVar2 = CG_GetClientNumForLocalClient(local_8);
-        CG_PlaySound(local_8,iVar2,pfVar4,iVar5,bVar1,fVar6,uVar3);
+        fadeMs = 0;
+        origin = (float *)0x0;
+        iVar2 = CG_GetClientNumForLocalClient(localClientNum);
+        CG_PlaySound(localClientNum,iVar2,origin,fadeMs,bVar1,attenuation,id);
       }
     }
   }
@@ -298,7 +326,7 @@ void __cdecl CG_PlayAnimScriptSoundAlias(int param_1,snd_alias_list_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_SubtitlePrint(int param_1,char *param_2)
+void __cdecl CG_SubtitlePrint(int msec,char *subtitle)
 
 {
   code *pcVar1;
@@ -306,8 +334,10 @@ void __cdecl CG_SubtitlePrint(int param_1,char *param_2)
   cgs_t *pcVar3;
   int local_28;
   int local_24;
+  int charWidth;
+  cgs_t *cgs;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((subtitle == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x135,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -335,7 +365,7 @@ void __cdecl CG_SubtitlePrint(int param_1,char *param_2)
     (*pcVar1)();
     return;
   }
-  if ((param_1 != 0) && (param_2 != (char *)0x0)) {
+  if ((msec != 0) && (subtitle != (char *)0x0)) {
     pcVar3 = CG_GetLocalClientStaticGlobals(0);
     if (pcVar3->viewAspect <= 1.3333334) {
       local_24 = (cg_subtitleWidthStandard->current).integer;
@@ -344,10 +374,10 @@ void __cdecl CG_SubtitlePrint(int param_1,char *param_2)
       local_24 = (cg_subtitleWidthWidescreen->current).integer;
     }
     local_28 = (int)ROUND((cg_subtitleMinTime->current).value * 1000.0 + 9.313226e-10);
-    if (local_28 < param_1) {
-      local_28 = param_1;
+    if (local_28 < msec) {
+      local_28 = msec;
     }
-    CL_SubtitlePrint(0,param_2,local_28,local_24);
+    CL_SubtitlePrint(0,subtitle,local_28,local_24);
   }
   return;
 }
@@ -355,10 +385,12 @@ void __cdecl CG_SubtitlePrint(int param_1,char *param_2)
 
 // 00508C00  CG_SubtitleSndLengthNotify  (cgame/cg_sound.cpp:329)
 
-void __cdecl CG_SubtitleSndLengthNotify(int param_1,char *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_SubtitleSndLengthNotify(int msec,char *lengthNotifyData)
 
 {
-  CG_SubtitlePrint(param_1,param_2);
+  CG_SubtitlePrint(msec,lengthNotifyData);
   return;
 }
 
@@ -371,14 +403,16 @@ void __cdecl CG_SubtitleSndLengthNotify(int param_1,char *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*param_4) [3])
+CG_CopySoundEntityOrientation
+          (int localClientNum,int entIndex,float *origin_out,float (*axis_out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
+  centity_s *cent;
   
-  if (param_3 == (float *)0x0) {
+  if (origin_out == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x162,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -386,7 +420,7 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
       return;
     }
   }
-  if (param_4 == (float (*) [3])0x0) {
+  if (axis_out == (float (*) [3])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x163,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -394,14 +428,14 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
       return;
     }
   }
-  pcVar3 = CG_GetEntity(param_1,param_2);
-  *param_3 = (pcVar3->pose).origin[0];
-  param_3[1] = (pcVar3->pose).origin[1];
-  param_3[2] = (pcVar3->pose).origin[2];
-  AnglesToAxis((pcVar3->pose).angles,param_4);
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  pcVar3 = CG_GetEntity(localClientNum,entIndex);
+  *origin_out = (pcVar3->pose).origin[0];
+  origin_out[1] = (pcVar3->pose).origin[1];
+  origin_out[2] = (pcVar3->pose).origin[2];
+  AnglesToAxis((pcVar3->pose).angles,axis_out);
+  if (((((uint)*origin_out & 0x7f800000) == 0x7f800000) ||
+      (((uint)origin_out[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)origin_out[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x169,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -409,9 +443,9 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
       return;
     }
   }
-  if (((((uint)(*param_4)[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)(*param_4)[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)(*param_4)[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)(*axis_out)[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)(*axis_out)[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)(*axis_out)[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x16a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -419,9 +453,9 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
       return;
     }
   }
-  if (((((uint)param_4[1][0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_4[1][1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_4[1][2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)axis_out[1][0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)axis_out[1][1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)axis_out[1][2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x16b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -429,9 +463,9 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
       return;
     }
   }
-  if (((((uint)param_4[2][0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_4[2][1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_4[2][2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)axis_out[2][0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)axis_out[2][1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)axis_out[2][2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x16c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -450,12 +484,13 @@ CG_CopySoundEntityOrientation(int param_1,int param_2,float *param_3,float (*par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl CG_SoundGetUseCount(SndEntHandle param_1)
+uint __cdecl CG_SoundGetUseCount(SndEntHandle sndEnt)
 
 {
   centity_s *pcVar1;
+  centity_s *cent;
   
-  pcVar1 = CG_GetEntity((uint)param_1.handle >> 0x13 & 3,param_1.handle & 0xfff);
+  pcVar1 = CG_GetEntity((uint)sndEnt.handle >> 0x13 & 3,sndEnt.handle & 0xfff);
   return (pcVar1->currentState).useCount;
 }
 
@@ -467,22 +502,23 @@ uint __cdecl CG_SoundGetUseCount(SndEntHandle param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_SoundEntInUse(SndEntHandle param_1)
+bool __cdecl CG_SoundEntInUse(SndEntHandle sndEnt)
 
 {
   uint uVar1;
   bool local_14;
+  fake_centity_s *cent;
   
-  if ((param_1.handle & 0xfffU) < 0x401) {
+  if ((sndEnt.handle & 0xfffU) < 0x401) {
     local_14 = true;
   }
   else if (((cg_fakeEntitiesArray
-             [((uint)param_1.handle >> 0x13 & 3) * 0x200 + -0x400 + (param_1.handle & 0xfffU)].flags
-            & 4) == 0) &&
-          (uVar1 = (uint)param_1.handle >> 0x13 & 3,
+             [((uint)sndEnt.handle >> 0x13 & 3) * 0x200 + -0x400 + (sndEnt.handle & 0xfffU)].flags &
+            4) == 0) &&
+          (uVar1 = (uint)sndEnt.handle >> 0x13 & 3,
           cg_fakeEntitiesInuseArray
           [((int)(cg_fakeEntitiesArray +
-                 ((uint)param_1.handle >> 0x13 & 3) * 0x200 + -0x400 + (param_1.handle & 0xfffU)) -
+                 ((uint)sndEnt.handle >> 0x13 & 3) * 0x200 + -0x400 + (sndEnt.handle & 0xfffU)) -
            (int)(cg_fakeEntitiesArray + uVar1 * 0x200)) / 0x32c + uVar1 * 0x200] != false)) {
     local_14 = true;
   }
@@ -502,49 +538,51 @@ bool __cdecl CG_SoundEntInUse(SndEntHandle param_1)
 
 void __cdecl
 CG_GetSoundEntityOrientation
-          (SndEntHandle param_1,float *param_2,float (*param_3) [3],float *param_4)
+          (SndEntHandle sndEnt,float *origin_out,float (*axis_out) [3],float *velocity_out)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
-  float local_20;
+  centity_s *parentEnt;
+  centity_s *cent;
+  float next;
   float local_1c;
   float local_18;
-  float local_14;
+  float current;
   float local_10;
   float local_c;
-  cg_s *local_8;
+  cg_s *cgameGlob;
   
-  local_8 = CG_GetLocalClientGlobals((uint)param_1.handle >> 0x13 & 3);
-  if (((param_4 == (float *)0x0) || (local_8->snap == (snapshot_s *)0x0)) ||
-     (local_8->nextSnap == (snapshot_s *)0x0)) {
-    if (param_4 != (float *)0x0) {
-      *param_4 = 0.0;
-      param_4[1] = 0.0;
-      param_4[2] = 0.0;
+  cgameGlob = CG_GetLocalClientGlobals((uint)sndEnt.handle >> 0x13 & 3);
+  if (((velocity_out == (float *)0x0) || (cgameGlob->snap == (snapshot_s *)0x0)) ||
+     (cgameGlob->nextSnap == (snapshot_s *)0x0)) {
+    if (velocity_out != (float *)0x0) {
+      *velocity_out = 0.0;
+      velocity_out[1] = 0.0;
+      velocity_out[2] = 0.0;
     }
   }
   else {
-    pcVar3 = CG_GetEntity((uint)param_1.handle >> 0x13 & 3,param_1.handle & 0xfff);
-    bVar2 = CG_EntityLinked((uint)param_1.handle >> 0x13 & 3,pcVar3);
+    pcVar3 = CG_GetEntity((uint)sndEnt.handle >> 0x13 & 3,sndEnt.handle & 0xfff);
+    bVar2 = CG_EntityLinked((uint)sndEnt.handle >> 0x13 & 3,pcVar3);
     if (bVar2) {
-      pcVar3 = CG_GetEntity((uint)param_1.handle >> 0x13 & 3,pcVar3->linkInfo->linkEnt);
-      BG_EvaluateTrajectory(&(pcVar3->currentState).pos,local_8->snap->serverTime,&local_14);
-      BG_EvaluateTrajectory(&(pcVar3->nextState).lerp.pos,local_8->nextSnap->serverTime,&local_20);
+      pcVar3 = CG_GetEntity((uint)sndEnt.handle >> 0x13 & 3,pcVar3->linkInfo->linkEnt);
+      BG_EvaluateTrajectory(&(pcVar3->currentState).pos,cgameGlob->snap->serverTime,&current);
+      BG_EvaluateTrajectory(&(pcVar3->nextState).lerp.pos,cgameGlob->nextSnap->serverTime,&next);
     }
     else {
-      BG_EvaluateTrajectory(&(pcVar3->currentState).pos,local_8->snap->serverTime,&local_14);
-      BG_EvaluateTrajectory(&(pcVar3->nextState).lerp.pos,local_8->nextSnap->serverTime,&local_20);
+      BG_EvaluateTrajectory(&(pcVar3->currentState).pos,cgameGlob->snap->serverTime,&current);
+      BG_EvaluateTrajectory(&(pcVar3->nextState).lerp.pos,cgameGlob->nextSnap->serverTime,&next);
     }
-    *param_4 = local_20 - local_14;
-    param_4[1] = local_1c - local_10;
-    param_4[2] = local_18 - local_c;
+    *velocity_out = next - current;
+    velocity_out[1] = local_1c - local_10;
+    velocity_out[2] = local_18 - local_c;
   }
-  if ((param_4 != (float *)0x0) &&
-     (((((uint)*param_4 & 0x7f800000) == 0x7f800000 ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)))) {
+  if ((velocity_out != (float *)0x0) &&
+     (((((uint)*velocity_out & 0x7f800000) == 0x7f800000 ||
+       (((uint)velocity_out[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)velocity_out[2] & 0x7f800000) == 0x7f800000)))) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x1a7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -552,21 +590,26 @@ CG_GetSoundEntityOrientation
       return;
     }
   }
-  CG_CopySoundEntityOrientation(0,param_1.handle & 0xfff,param_2,param_3);
+  CG_CopySoundEntityOrientation(0,sndEnt.handle & 0xfff,origin_out,axis_out);
   return;
 }
 
 
 // 00509260  CG_StopSoundAlias  (cgame/cg_sound.cpp:453)
 
-void __cdecl CG_StopSoundAlias(int param_1,int param_2,uint param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_StopSoundAlias(int localClientNum,int entityNum,uint aliasName)
 
 {
-  SndEntHandle SVar1;
+  SndEntHandle ent;
   
-  if (param_3 != 0) {
-    SVar1 = CG_SndEntHandle(param_1,param_2);
-    SND_StopSoundAliasOnEnt(SVar1,param_3);
+  if (aliasName != 0) {
+    ent = CG_SndEntHandle(localClientNum,entityNum);
+    SND_StopSoundAliasOnEnt(ent,aliasName);
   }
   return;
 }
@@ -574,14 +617,15 @@ void __cdecl CG_StopSoundAlias(int param_1,int param_2,uint param_3)
 
 // 005092A0  CG_FireManagerUpdate  (cgame/cg_sound.cpp:462)
 
-void __cdecl CG_FireManagerUpdate(uint param_1,uint param_2,float *param_3,float param_4)
+void __cdecl CG_FireManagerUpdate(uint listener,uint index,float *location,float level)
 
 {
   snd_fire_manager *psVar1;
   code *pcVar2;
   bool bVar3;
+  snd_fire_manager *fire;
   
-  if (param_1 != 0) {
+  if (listener != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x1cf,0,
                              "listener doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -590,7 +634,7 @@ void __cdecl CG_FireManagerUpdate(uint param_1,uint param_2,float *param_3,float
       return;
     }
   }
-  if (7 < param_2) {
+  if (7 < index) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_sound.cpp",0x1d0,0,
                              "index doesn\'t index SND_FIRE_COUNT\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -599,12 +643,12 @@ void __cdecl CG_FireManagerUpdate(uint param_1,uint param_2,float *param_3,float
       return;
     }
   }
-  psVar1 = g_snd_fires[param_1] + param_2;
+  psVar1 = g_snd_fires[listener] + index;
   psVar1->active = 1;
-  psVar1->location[0] = *param_3;
-  psVar1->location[1] = param_3[1];
-  psVar1->location[2] = param_3[2];
-  psVar1->level = param_4;
+  psVar1->location[0] = *location;
+  psVar1->location[1] = location[1];
+  psVar1->location[2] = location[2];
+  psVar1->level = level;
   return;
 }
 
@@ -615,12 +659,13 @@ void __cdecl CG_SndFireReset(void)
 
 {
   snd_fire_manager *psVar1;
-  uint local_c;
-  int local_8;
+  snd_fire_manager *fire;
+  uint f;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      psVar1 = g_snd_fires[local_8] + local_c;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    for (f = 0; f < 8; f = f + 1) {
+      psVar1 = g_snd_fires[localClientNum] + f;
       psVar1->active = 0;
       psVar1->location[0] = 0.0;
       psVar1->location[1] = 0.0;
@@ -645,17 +690,19 @@ void __cdecl CG_SndUpdateFire(void)
 {
   snd_fire_manager *psVar1;
   cg_s *pcVar2;
-  uint uVar3;
-  uint local_10;
-  int local_8;
+  uint id;
+  snd_fire_manager *fire;
+  uint f;
+  cg_s *cgameGlob;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    pcVar2 = CG_GetLocalClientGlobals(local_8);
-    for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
-      psVar1 = g_snd_fires[local_8] + local_10;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+    for (f = 0; f < 8; f = f + 1) {
+      psVar1 = g_snd_fires[localClientNum] + f;
       if ((psVar1->active != 0) && (1.52879e-05 < psVar1->level || psVar1->level == 1.52879e-05)) {
-        uVar3 = SND_FindAliasId(g_snd_fire_names[local_10 % 8]);
-        CG_PlaySound(local_8,pcVar2->clientNum,psVar1->location,0,false,psVar1->level,uVar3);
+        id = SND_FindAliasId(g_snd_fire_names[f % 8]);
+        CG_PlaySound(localClientNum,pcVar2->clientNum,psVar1->location,0,false,psVar1->level,id);
       }
     }
   }
@@ -665,33 +712,39 @@ void __cdecl CG_SndUpdateFire(void)
 
 // 00509510  CG_FlameSourceUpdate  (cgame/cg_sound.cpp:517)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
 CG_FlameSourceUpdate
-          (int param_1,int param_2,float *param_3,float *param_4,snd_flame_source_flags param_5,
-          char *param_6,char *param_7,char *param_8,char *param_9)
+          (int localClientNum,int entityNum,float *sourcePosition,float *flamePosition,
+          snd_flame_source_flags flags,char *flameOffLoopSound,char *flameIgniteSound,
+          char *flameOnLoopSound,char *flameCooldownSound)
 
 {
   uint uVar1;
   
-  if ((param_5 & SND_FLAME_SOURCE_TURN_ON) != SND_FLAME_SOURCE_NONE) {
-    uVar1 = SND_FindAliasId(param_9);
-    CG_StopSoundAlias(param_1,param_2,uVar1);
-    uVar1 = SND_FindAliasId(param_7);
-    CG_PlaySound(param_1,param_2,param_3,0,false,1.0,uVar1);
+  if ((flags & SND_FLAME_SOURCE_TURN_ON) != SND_FLAME_SOURCE_NONE) {
+    uVar1 = SND_FindAliasId(flameCooldownSound);
+    CG_StopSoundAlias(localClientNum,entityNum,uVar1);
+    uVar1 = SND_FindAliasId(flameIgniteSound);
+    CG_PlaySound(localClientNum,entityNum,sourcePosition,0,false,1.0,uVar1);
   }
-  if ((param_5 & SND_FLAME_SOURCE_TURN_OFF) != SND_FLAME_SOURCE_NONE) {
-    uVar1 = SND_FindAliasId(param_7);
-    CG_StopSoundAlias(param_1,param_2,uVar1);
-    uVar1 = SND_FindAliasId(param_9);
-    CG_PlaySound(param_1,param_2,param_3,0,false,1.0,uVar1);
+  if ((flags & SND_FLAME_SOURCE_TURN_OFF) != SND_FLAME_SOURCE_NONE) {
+    uVar1 = SND_FindAliasId(flameIgniteSound);
+    CG_StopSoundAlias(localClientNum,entityNum,uVar1);
+    uVar1 = SND_FindAliasId(flameCooldownSound);
+    CG_PlaySound(localClientNum,entityNum,sourcePosition,0,false,1.0,uVar1);
   }
-  if ((param_5 & SND_FLAME_SOURCE_IS_FIRING) != SND_FLAME_SOURCE_NONE) {
-    uVar1 = SND_FindAliasId(param_8);
-    CG_PlaySound(param_1,param_2,param_4,0x15e,false,1.0,uVar1);
+  if ((flags & SND_FLAME_SOURCE_IS_FIRING) != SND_FLAME_SOURCE_NONE) {
+    uVar1 = SND_FindAliasId(flameOnLoopSound);
+    CG_PlaySound(localClientNum,entityNum,flamePosition,0x15e,false,1.0,uVar1);
   }
-  if ((param_5 & SND_FLAME_SOURCE_IS_FIRING) == SND_FLAME_SOURCE_NONE) {
-    uVar1 = SND_FindAliasId(param_6);
-    CG_PlaySound(param_1,param_2,param_4,0x15e,false,1.0,uVar1);
+  if ((flags & SND_FLAME_SOURCE_IS_FIRING) == SND_FLAME_SOURCE_NONE) {
+    uVar1 = SND_FindAliasId(flameOffLoopSound);
+    CG_PlaySound(localClientNum,entityNum,flamePosition,0x15e,false,1.0,uVar1);
   }
   return;
 }
@@ -699,9 +752,7 @@ CG_FlameSourceUpdate
 
 // 00509870  CG_SoundWhizbyPath  (cgame/cg_sound.cpp:549)
 
-bool __cdecl
-CG_SoundWhizbyPath(float *param_1,float *param_2,float *param_3,float param_4,float *param_5,
-                  float *param_6)
+bool __cdecl CG_SoundWhizbyPath(float *p1,float *p2,float *p3,float r,float *start,float *end)
 
 {
   bool bVar1;
@@ -713,17 +764,20 @@ CG_SoundWhizbyPath(float *param_1,float *param_2,float *param_3,float param_4,fl
   float local_54;
   float local_50;
   float local_4c;
+  float t0;
+  float c;
+  float d;
+  float t1;
+  float b;
+  float a;
   
-  fVar5 = Vec3DistanceSq(param_2,param_1);
-  fVar4 = ((*param_2 - *param_1) * (*param_1 - *param_3) +
-           (param_2[1] - param_1[1]) * (param_1[1] - param_3[1]) +
-          (param_2[2] - param_1[2]) * (param_1[2] - param_3[2])) * 2.0;
+  fVar5 = Vec3DistanceSq(p2,p1);
+  fVar4 = ((*p2 - *p1) * (*p1 - *p3) + (p2[1] - p1[1]) * (p1[1] - p3[1]) +
+          (p2[2] - p1[2]) * (p1[2] - p3[2])) * 2.0;
   fVar2 = fVar4 * fVar4 -
           fVar5 * 4.0 *
-          (((*param_3 * *param_3 + param_3[1] * param_3[1] + param_3[2] * param_3[2] +
-            *param_1 * *param_1 + param_1[1] * param_1[1] + param_1[2] * param_1[2]) -
-           (*param_3 * *param_1 + param_3[1] * param_1[1] + param_3[2] * param_1[2]) * 2.0) -
-          param_4 * param_4);
+          (((*p3 * *p3 + p3[1] * p3[1] + p3[2] * p3[2] + *p1 * *p1 + p1[1] * p1[1] + p1[2] * p1[2])
+           - (*p3 * *p1 + p3[1] * p1[1] + p3[2] * p1[2]) * 2.0) - r * r);
   if (0.0 < fVar2) {
     fVar2 = SQRT(fVar2);
     fVar3 = (-fVar4 + fVar2) / (fVar5 * 2.0);
@@ -753,12 +807,12 @@ CG_SoundWhizbyPath(float *param_1,float *param_2,float *param_3,float param_4,fl
     }
     else {
       if (local_58 <= local_54) {
-        Vec3Lerp(param_1,param_2,local_58,param_5);
-        Vec3Lerp(param_1,param_2,local_54,param_6);
+        Vec3Lerp(p1,p2,local_58,start);
+        Vec3Lerp(p1,p2,local_54,end);
       }
       else {
-        Vec3Lerp(param_1,param_2,local_54,param_5);
-        Vec3Lerp(param_1,param_2,local_58,param_6);
+        Vec3Lerp(p1,p2,local_54,start);
+        Vec3Lerp(p1,p2,local_58,end);
       }
       bVar1 = true;
     }
@@ -778,7 +832,8 @@ CG_SoundWhizbyPath(float *param_1,float *param_2,float *param_3,float param_4,fl
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_SoundWhizby(int param_1,WeaponDef *param_2,float *param_3,float *param_4,float *param_5)
+CG_SoundWhizby(int localClientNum,WeaponDef *weapDef,float *shotPosition,float *shotDirection,
+              float *position)
 
 {
   float fVar1;
@@ -789,45 +844,49 @@ CG_SoundWhizby(int param_1,WeaponDef *param_2,float *param_3,float *param_4,floa
   uint local_60;
   uint local_5c;
   uint local_54;
-  float local_28 [3];
-  float local_1c [3];
-  float local_10;
+  uint whizbySnd;
+  uint crackSnd;
+  bool isUnderwater;
+  cg_s *cgameGlob;
+  float startPosition [3];
+  float endPosition [3];
+  float toShot;
   float local_c;
   float local_8;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_10 = *param_3 - (pcVar3->refdef).vieworg[0];
-  local_c = param_3[1] - (pcVar3->refdef).vieworg[1];
-  local_8 = param_3[2] - (pcVar3->refdef).vieworg[2];
-  Vec3Normalize(&local_10);
-  if ((local_10 * *param_4 + local_c * param_4[1] + local_8 * param_4[2] < 0.0) &&
-     (bVar2 = CG_SoundWhizbyPath(param_3,param_5,(pcVar3->refdef).vieworg,250.0,local_28,local_1c),
-     bVar2)) {
-    if ((param_2->whizbySound == (char *)0x0) || (*param_2->whizbySound == '\0')) {
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  toShot = *shotPosition - (pcVar3->refdef).vieworg[0];
+  local_c = shotPosition[1] - (pcVar3->refdef).vieworg[1];
+  local_8 = shotPosition[2] - (pcVar3->refdef).vieworg[2];
+  Vec3Normalize(&toShot);
+  if ((toShot * *shotDirection + local_c * shotDirection[1] + local_8 * shotDirection[2] < 0.0) &&
+     (bVar2 = CG_SoundWhizbyPath(shotPosition,position,(pcVar3->refdef).vieworg,250.0,startPosition,
+                                 endPosition), bVar2)) {
+    if ((weapDef->whizbySound == (char *)0x0) || (*weapDef->whizbySound == '\0')) {
       local_54 = cgMedia.bulletWhizby;
     }
     else {
-      local_54 = SND_FindAliasId(param_2->whizbySound);
+      local_54 = SND_FindAliasId(weapDef->whizbySound);
     }
     fVar5 = CM_GetWaterHeight((pcVar3->refdef).vieworg,200.0,-200.0);
     fVar1 = (pcVar3->refdef).vieworg[2];
-    SVar4 = CG_SndEntHandle(param_1,0x3fe);
+    SVar4 = CG_SndEntHandle(localClientNum,0x3fe);
     if (fVar5 <= fVar1) {
       local_5c = local_54;
     }
     else {
       local_5c = cgMedia.underwaterWhizby;
     }
-    SND_Play(local_5c,0,1.0,SVar4,local_28,param_4,false);
-    if ((param_2->crackSound == (char *)0x0) || (*param_2->crackSound == '\0')) {
+    SND_Play(local_5c,0,1.0,SVar4,startPosition,shotDirection,false);
+    if ((weapDef->crackSound == (char *)0x0) || (*weapDef->crackSound == '\0')) {
       local_60 = 0;
     }
     else {
-      local_60 = SND_FindAliasId(param_2->crackSound);
+      local_60 = SND_FindAliasId(weapDef->crackSound);
     }
     if (local_60 != 0) {
-      SVar4 = CG_SndEntHandle(param_1,0x3fe);
-      SND_Play(local_60,0,1.0,SVar4,local_28,param_4,false);
+      SVar4 = CG_SndEntHandle(localClientNum,0x3fe);
+      SND_Play(local_60,0,1.0,SVar4,startPosition,shotDirection,false);
     }
   }
   return;
@@ -835,6 +894,11 @@ CG_SoundWhizby(int param_1,WeaponDef *param_2,float *param_3,float *param_4,floa
 
 
 // 00509C00  CG_SndUpdate  (cgame/cg_sound.cpp:661)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_SndUpdate(void)
 

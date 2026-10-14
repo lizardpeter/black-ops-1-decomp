@@ -45,28 +45,30 @@ void __cdecl MatchRecorder_ClearDWOverlappedTasks(void)
 
 // 005AAB90  CompressBuffer  (DW/MatchRecorder.cpp:98)
 
-bool __cdecl CompressBuffer(char *param_1,int *param_2,char *param_3,int param_4)
+bool __cdecl
+CompressBuffer(char *destBuffer,int *destBufferLen,char *sourceBuffer,int sourceBufferLen)
 
 {
   int iVar1;
   
-  iVar1 = MSG_CompressWithZLib((uchar *)param_3,param_4,(uchar *)param_1,*param_2);
-  *param_2 = iVar1;
-  return *param_2 != 0;
+  iVar1 = MSG_CompressWithZLib
+                    ((uchar *)sourceBuffer,sourceBufferLen,(uchar *)destBuffer,*destBufferLen);
+  *destBufferLen = iVar1;
+  return *destBufferLen != 0;
 }
 
 
 // 005AA7A0  MatchRecorderDDLSetInt  (DW/MatchRecorder.cpp:210)
 
-void __cdecl MatchRecorderDDLSetInt(ddlState_t *param_1,char *param_2,uint param_3)
+void __cdecl MatchRecorderDDLSetInt(ddlState_t *searchState,char *name,uint value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0xd3,0,"%s")
     ;
     if (!bVar2) {
@@ -75,16 +77,16 @@ void __cdecl MatchRecorderDDLSetInt(ddlState_t *param_1,char *param_2,uint param
       return;
     }
   }
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     Com_PrintError(0x10,"received NULL search state");
   }
   else {
-    iVar3 = DDL_MoveToName(param_1,&local_14,param_2);
+    iVar3 = DDL_MoveToName(searchState,&tempState,name);
     if (iVar3 == 0) {
       Com_PrintError(0x10,"Unable to navigate to correct leaf in matchrecorder");
     }
     else {
-      DDL_SetInt(&local_14,param_3,s_matchRecorderBuffer);
+      DDL_SetInt(&tempState,value,s_matchRecorderBuffer);
     }
   }
   return;
@@ -93,16 +95,16 @@ void __cdecl MatchRecorderDDLSetInt(ddlState_t *param_1,char *param_2,uint param
 
 // 005AACF0  MatchRecorderDDLGetInt  (DW/MatchRecorder.cpp:229)
 
-uint __cdecl MatchRecorderDDLGetInt(ddlState_t *param_1,char *param_2)
+uint __cdecl MatchRecorderDDLGetInt(ddlState_t *searchState,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0xe7,0,"%s")
     ;
     if (!bVar2) {
@@ -111,18 +113,18 @@ uint __cdecl MatchRecorderDDLGetInt(ddlState_t *param_1,char *param_2)
       return uVar3;
     }
   }
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     Com_PrintError(0x10,"received NULL search state");
     uVar3 = 0;
   }
   else {
-    iVar4 = DDL_MoveToName(param_1,&local_14,param_2);
+    iVar4 = DDL_MoveToName(searchState,&tempState,name);
     if (iVar4 == 0) {
       Com_PrintError(0x10,"Unable to navigate to correct leaf in matchrecorder");
       uVar3 = 0;
     }
     else {
-      uVar3 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+      uVar3 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
     }
   }
   return uVar3;
@@ -131,7 +133,7 @@ uint __cdecl MatchRecorderDDLGetInt(ddlState_t *param_1,char *param_2)
 
 // 005AC3C0  MatchRecorderDDLSetInt64  (DW/MatchRecorder.cpp:249)
 
-void __cdecl MatchRecorderDDLSetInt64(ddlState_t *param_1,char *param_2,ulong64 param_3)
+void __cdecl MatchRecorderDDLSetInt64(ddlState_t *searchState,char *name,ulong64 value)
 
 {
   code *pcVar1;
@@ -139,7 +141,7 @@ void __cdecl MatchRecorderDDLSetInt64(ddlState_t *param_1,char *param_2,ulong64 
   int iVar3;
   char *in_stack_ffffffec;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0xfa,0,"%s")
     ;
     if (!bVar2) {
@@ -148,16 +150,16 @@ void __cdecl MatchRecorderDDLSetInt64(ddlState_t *param_1,char *param_2,ulong64 
       return;
     }
   }
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     Com_PrintError(0x10,"received NULL search state");
   }
   else {
-    iVar3 = DDL_MoveToName(param_1,(ddlState_t *)&stack0xffffffec,param_2);
+    iVar3 = DDL_MoveToName(searchState,(ddlState_t *)&stack0xffffffec,name);
     if (iVar3 == 0) {
       Com_PrintError(0x10,"Unable to navigate to correct leaf in matchrecorder");
     }
     else {
-      DDL_SetInt64((ddlState_t *)&stack0xffffffec,CONCAT44(s_matchRecorderBuffer,param_3._4_4_),
+      DDL_SetInt64((ddlState_t *)&stack0xffffffec,CONCAT44(s_matchRecorderBuffer,value._4_4_),
                    in_stack_ffffffec);
     }
   }
@@ -167,16 +169,16 @@ void __cdecl MatchRecorderDDLSetInt64(ddlState_t *param_1,char *param_2,ulong64 
 
 // 005AA910  MatchRecorderDDLGetInt64  (DW/MatchRecorder.cpp:269)
 
-ulong64 __cdecl MatchRecorderDDLGetInt64(ddlState_t *param_1,char *param_2)
+ulong64 __cdecl MatchRecorderDDLGetInt64(ddlState_t *searchState,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   ulong64 uVar4;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x10e,0,"%s"
                             );
     if (!bVar2) {
@@ -185,18 +187,18 @@ ulong64 __cdecl MatchRecorderDDLGetInt64(ddlState_t *param_1,char *param_2)
       return uVar4;
     }
   }
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     Com_PrintError(0x10,"received NULL search state");
     uVar4 = 0;
   }
   else {
-    iVar3 = DDL_MoveToName(param_1,&local_14,param_2);
+    iVar3 = DDL_MoveToName(searchState,&tempState,name);
     if (iVar3 == 0) {
       Com_PrintError(0x10,"Unable to navigate to correct leaf in matchrecorder");
       uVar4 = 0;
     }
     else {
-      uVar4 = DDL_GetInt64(&local_14,s_matchRecorderBuffer);
+      uVar4 = DDL_GetInt64(&tempState,s_matchRecorderBuffer);
     }
   }
   return uVar4;
@@ -205,15 +207,15 @@ ulong64 __cdecl MatchRecorderDDLGetInt64(ddlState_t *param_1,char *param_2)
 
 // 005ACA00  MatchRecorderDDLSetString  (DW/MatchRecorder.cpp:290)
 
-void __cdecl MatchRecorderDDLSetString(ddlState_t *param_1,char *param_2,char *param_3)
+void __cdecl MatchRecorderDDLSetString(ddlState_t *searchState,char *name,char *value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x123,0,"%s"
                             );
     if (!bVar2) {
@@ -222,16 +224,16 @@ void __cdecl MatchRecorderDDLSetString(ddlState_t *param_1,char *param_2,char *p
       return;
     }
   }
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchState == (ddlState_t *)0x0) {
     Com_PrintError(0x10,"received NULL search state");
   }
   else {
-    iVar3 = DDL_MoveToName(param_1,&local_14,param_2);
+    iVar3 = DDL_MoveToName(searchState,&tempState,name);
     if (iVar3 == 0) {
       Com_PrintError(0x10,"Unable to navigate to correct leaf in matchrecorder");
     }
     else {
-      DDL_SetString(&local_14,param_3,s_matchRecorderBuffer);
+      DDL_SetString(&tempState,value,s_matchRecorderBuffer);
     }
   }
   return;
@@ -240,33 +242,34 @@ void __cdecl MatchRecorderDDLSetString(ddlState_t *param_1,char *param_2,char *p
 
 // 005AC450  MatchRecordCopyExternalIP  (DW/MatchRecorder.cpp:310)
 
-void __cdecl MatchRecordCopyExternalIP(ddlState_t param_1,int param_2)
+void __cdecl MatchRecordCopyExternalIP(ddlState_t playerState,int clientNum)
 
 {
-  uint uVar1;
-  ddlState_t local_34;
-  ddlState_t local_24;
-  uint local_14;
+  uint arrayIndex;
+  int lastConsoleSave;
+  ddlState_t tempState;
+  ddlState_t tempIPState;
+  uint externalIP;
   uint local_10;
   uint local_c;
   uint local_8;
   
-  uVar1 = SV_GetClientDIntStat(param_2,&g_LastConsoleSave);
-  DDL_MoveToIndex(&g_ConsoleInfo,&local_34,uVar1,1);
-  DDL_MoveToName(&local_34,&local_34,"ConsoleIPExternal");
-  DDL_MoveToName(&local_34,&local_24,"a");
-  local_14 = SV_GetClientDIntStat(param_2,&local_24);
-  DDL_MoveToName(&local_34,&local_24,"b");
-  local_10 = SV_GetClientDIntStat(param_2,&local_24);
-  DDL_MoveToName(&local_34,&local_24,"c");
-  local_c = SV_GetClientDIntStat(param_2,&local_24);
-  DDL_MoveToName(&local_34,&local_24,"d");
-  local_8 = SV_GetClientDIntStat(param_2,&local_24);
-  DDL_MoveToName(&param_1,&local_34,"externalIP");
-  MatchRecorderDDLSetInt(&local_34,"a",local_14);
-  MatchRecorderDDLSetInt(&local_34,"b",local_10);
-  MatchRecorderDDLSetInt(&local_34,"c",local_c);
-  MatchRecorderDDLSetInt(&local_34,"d",local_8);
+  arrayIndex = SV_GetClientDIntStat(clientNum,&g_LastConsoleSave);
+  DDL_MoveToIndex(&g_ConsoleInfo,&tempState,arrayIndex,1);
+  DDL_MoveToName(&tempState,&tempState,"ConsoleIPExternal");
+  DDL_MoveToName(&tempState,&tempIPState,"a");
+  externalIP = SV_GetClientDIntStat(clientNum,&tempIPState);
+  DDL_MoveToName(&tempState,&tempIPState,"b");
+  local_10 = SV_GetClientDIntStat(clientNum,&tempIPState);
+  DDL_MoveToName(&tempState,&tempIPState,"c");
+  local_c = SV_GetClientDIntStat(clientNum,&tempIPState);
+  DDL_MoveToName(&tempState,&tempIPState,"d");
+  local_8 = SV_GetClientDIntStat(clientNum,&tempIPState);
+  DDL_MoveToName(&playerState,&tempState,"externalIP");
+  MatchRecorderDDLSetInt(&tempState,"a",externalIP);
+  MatchRecorderDDLSetInt(&tempState,"b",local_10);
+  MatchRecorderDDLSetInt(&tempState,"c",local_c);
+  MatchRecorderDDLSetInt(&tempState,"d",local_8);
   Com_Printf(0x10,"MatchRecord: recording ip for %i - %u.%u.%u.%u\n");
   return;
 }
@@ -274,51 +277,56 @@ void __cdecl MatchRecordCopyExternalIP(ddlState_t param_1,int param_2)
 
 // 005AC5D0  MatchRecordWriteItemStatsStart  (DW/MatchRecorder.cpp:340)
 
-void __cdecl MatchRecordWriteItemStatsStart(ddlState_t param_1,int param_2)
+void __cdecl MatchRecordWriteItemStatsStart(ddlState_t playerState,int clientNum)
 
 {
   byte bVar1;
-  ddlState_t *pdVar2;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  char *pcVar8;
-  uint local_48;
-  ddlState_t local_44;
-  ddlState_t local_34;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  ddlState_t *searchState;
+  uint value;
+  uint value_00;
+  uint value_01;
+  uint value_02;
+  ddlState_t *resultState;
+  char *name;
+  int statsItemIndex;
+  uint used;
+  uint kills;
+  uint shots;
+  uint hits;
+  uint itemIndex;
+  ddlState_t tempStatsState;
+  ddlState_t tempState;
+  ddlState_t tempWeaponState;
+  ddlState_t tempItemState;
   
-  pcVar8 = "ItemStats";
-  pdVar7 = &local_44;
-  pdVar2 = LiveStats_GetRootDDLState();
-  DDL_MoveToName(pdVar2,pdVar7,pcVar8);
-  for (local_48 = 0; local_48 < 0x55; local_48 = local_48 + 1) {
-    bVar1 = s_itemIndexes[local_48];
-    DDL_MoveToIndex(&local_44,&local_24,(uint)bVar1,1);
-    DDL_MoveToName(&local_24,&local_24,"stats");
-    DDL_MoveToName(&local_24,&local_14,"kills");
-    DDL_MoveToName(&local_14,&local_34,"statValue");
-    uVar3 = SV_GetClientDIntStat(param_2,&local_34);
-    DDL_MoveToName(&local_24,&local_14,"shots");
-    DDL_MoveToName(&local_14,&local_34,"statValue");
-    uVar4 = SV_GetClientDIntStat(param_2,&local_34);
-    DDL_MoveToName(&local_24,&local_14,"hits");
-    DDL_MoveToName(&local_14,&local_34,"statValue");
-    uVar5 = SV_GetClientDIntStat(param_2,&local_34);
-    DDL_MoveToName(&local_24,&local_14,"used");
-    DDL_MoveToName(&local_14,&local_34,"statValue");
-    uVar6 = SV_GetClientDIntStat(param_2,&local_34);
-    if ((((uVar3 != 0) || (uVar4 != 0)) || (uVar5 != 0)) || (uVar6 != 0)) {
-      DDL_MoveToName(&param_1,&local_34,"itemBuffer");
-      DDL_MoveToIndex(&local_34,&local_24,local_48,1);
-      MatchRecorderDDLSetInt(&local_24,"index",(uint)bVar1);
-      MatchRecorderDDLSetInt(&local_24,"kills",uVar3);
-      MatchRecorderDDLSetInt(&local_24,"shots",uVar4);
-      MatchRecorderDDLSetInt(&local_24,"hits",uVar5);
-      MatchRecorderDDLSetInt(&local_24,"used",uVar6);
+  name = "ItemStats";
+  resultState = &tempStatsState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveToName(searchState,resultState,name);
+  for (itemIndex = 0; itemIndex < 0x55; itemIndex = itemIndex + 1) {
+    bVar1 = s_itemIndexes[itemIndex];
+    DDL_MoveToIndex(&tempStatsState,&tempWeaponState,(uint)bVar1,1);
+    DDL_MoveToName(&tempWeaponState,&tempWeaponState,"stats");
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"kills");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    value = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"shots");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    value_00 = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"hits");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    value_01 = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"used");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    value_02 = SV_GetClientDIntStat(clientNum,&tempState);
+    if ((((value != 0) || (value_00 != 0)) || (value_01 != 0)) || (value_02 != 0)) {
+      DDL_MoveToName(&playerState,&tempState,"itemBuffer");
+      DDL_MoveToIndex(&tempState,&tempWeaponState,itemIndex,1);
+      MatchRecorderDDLSetInt(&tempWeaponState,"index",(uint)bVar1);
+      MatchRecorderDDLSetInt(&tempWeaponState,"kills",value);
+      MatchRecorderDDLSetInt(&tempWeaponState,"shots",value_00);
+      MatchRecorderDDLSetInt(&tempWeaponState,"hits",value_01);
+      MatchRecorderDDLSetInt(&tempWeaponState,"used",value_02);
     }
   }
   return;
@@ -327,69 +335,74 @@ void __cdecl MatchRecordWriteItemStatsStart(ddlState_t param_1,int param_2)
 
 // 005AD240  MatchRecordWriteItemStatsEnd  (DW/MatchRecorder.cpp:382)
 
-void __cdecl MatchRecordWriteItemStatsEnd(ddlState_t param_1,int param_2)
+void __cdecl MatchRecordWriteItemStatsEnd(ddlState_t playerState,int clientNum)
 
 {
-  ddlState_t *pdVar1;
-  uint uVar2;
-  ddlState_t *pdVar3;
-  char *pcVar4;
-  uint local_60;
-  uint local_5c;
-  uint local_58;
-  uint local_54;
-  uint local_50;
-  ddlState_t local_4c;
-  ddlState_t local_3c;
-  ddlState_t local_2c;
-  ddlState_t local_1c;
-  ulong64 local_c;
+  ddlState_t *searchState;
+  uint uVar1;
+  ddlState_t *resultState;
+  char *name;
+  uint oldShots;
+  uint oldKills;
+  uint oldUsed;
+  uint oldHits;
+  int statsItemIndex;
+  uint used;
+  uint kills;
+  uint shots;
+  uint hits;
+  uint itemIndex;
+  ddlState_t tempStatsState;
+  ddlState_t tempState;
+  ddlState_t tempWeaponState;
+  ddlState_t tempItemState;
+  ulong64 xuid;
   
-  local_c = SV_GetPlayerXuid(param_2);
+  xuid = SV_GetPlayerXuid(clientNum);
   Com_Printf(0x10,"MatchRecord: Writing final stats for %llu\n");
-  pcVar4 = "ItemStats";
-  pdVar3 = &local_4c;
-  pdVar1 = LiveStats_GetRootDDLState();
-  DDL_MoveToName(pdVar1,pdVar3,pcVar4);
-  for (local_50 = 0; local_50 < 0x55; local_50 = local_50 + 1) {
-    DDL_MoveToIndex(&local_4c,&local_2c,(uint)s_itemIndexes[local_50],1);
-    DDL_MoveToName(&local_2c,&local_2c,"stats");
-    DDL_MoveToName(&local_2c,&local_1c,"kills");
-    DDL_MoveToName(&local_1c,&local_3c,"statValue");
-    local_5c = SV_GetClientDIntStat(param_2,&local_3c);
-    DDL_MoveToName(&local_2c,&local_1c,"shots");
-    DDL_MoveToName(&local_1c,&local_3c,"statValue");
-    local_58 = SV_GetClientDIntStat(param_2,&local_3c);
-    DDL_MoveToName(&local_2c,&local_1c,"hits");
-    DDL_MoveToName(&local_1c,&local_3c,"statValue");
-    local_54 = SV_GetClientDIntStat(param_2,&local_3c);
-    DDL_MoveToName(&local_2c,&local_1c,"used");
-    DDL_MoveToName(&local_1c,&local_3c,"statValue");
-    local_60 = SV_GetClientDIntStat(param_2,&local_3c);
-    if ((((local_5c != 0) || (local_58 != 0)) || (local_54 != 0)) || (local_60 != 0)) {
-      DDL_MoveToName(&param_1,&local_3c,"itemBuffer");
-      DDL_MoveToIndex(&local_3c,&local_2c,local_50,1);
-      uVar2 = MatchRecorderDDLGetInt(&local_2c,"kills");
-      if (uVar2 <= local_5c) {
-        local_5c = local_5c - uVar2;
+  name = "ItemStats";
+  resultState = &tempStatsState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveToName(searchState,resultState,name);
+  for (itemIndex = 0; itemIndex < 0x55; itemIndex = itemIndex + 1) {
+    DDL_MoveToIndex(&tempStatsState,&tempWeaponState,(uint)s_itemIndexes[itemIndex],1);
+    DDL_MoveToName(&tempWeaponState,&tempWeaponState,"stats");
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"kills");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    kills = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"shots");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    shots = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"hits");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    hits = SV_GetClientDIntStat(clientNum,&tempState);
+    DDL_MoveToName(&tempWeaponState,&tempItemState,"used");
+    DDL_MoveToName(&tempItemState,&tempState,"statValue");
+    used = SV_GetClientDIntStat(clientNum,&tempState);
+    if ((((kills != 0) || (shots != 0)) || (hits != 0)) || (used != 0)) {
+      DDL_MoveToName(&playerState,&tempState,"itemBuffer");
+      DDL_MoveToIndex(&tempState,&tempWeaponState,itemIndex,1);
+      uVar1 = MatchRecorderDDLGetInt(&tempWeaponState,"kills");
+      if (uVar1 <= kills) {
+        kills = kills - uVar1;
       }
-      MatchRecorderDDLSetInt(&local_2c,"kills",local_5c);
+      MatchRecorderDDLSetInt(&tempWeaponState,"kills",kills);
       Com_Printf(0x10,"MatchRecord: \tWriting %i kills for %i\n");
-      uVar2 = MatchRecorderDDLGetInt(&local_2c,"shots");
-      if (uVar2 <= local_58) {
-        local_58 = local_58 - uVar2;
+      uVar1 = MatchRecorderDDLGetInt(&tempWeaponState,"shots");
+      if (uVar1 <= shots) {
+        shots = shots - uVar1;
       }
-      MatchRecorderDDLSetInt(&local_2c,"shots",local_58);
-      uVar2 = MatchRecorderDDLGetInt(&local_2c,"hits");
-      if (uVar2 <= local_54) {
-        local_54 = local_54 - uVar2;
+      MatchRecorderDDLSetInt(&tempWeaponState,"shots",shots);
+      uVar1 = MatchRecorderDDLGetInt(&tempWeaponState,"hits");
+      if (uVar1 <= hits) {
+        hits = hits - uVar1;
       }
-      MatchRecorderDDLSetInt(&local_2c,"hits",local_54);
-      uVar2 = MatchRecorderDDLGetInt(&local_2c,"used");
-      if (uVar2 <= local_60) {
-        local_60 = local_60 - uVar2;
+      MatchRecorderDDLSetInt(&tempWeaponState,"hits",hits);
+      uVar1 = MatchRecorderDDLGetInt(&tempWeaponState,"used");
+      if (uVar1 <= used) {
+        used = used - uVar1;
       }
-      MatchRecorderDDLSetInt(&local_2c,"used",local_60);
+      MatchRecorderDDLSetInt(&tempWeaponState,"used",used);
     }
   }
   return;
@@ -399,8 +412,11 @@ void __cdecl MatchRecordWriteItemStatsEnd(ddlState_t param_1,int param_2)
 // 005AA4A0  MatchRecord_InitMatchDataInternal  (DW/MatchRecorder.cpp:453)
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
-int __cdecl MatchRecord_InitMatchDataInternal(char *param_1,int param_2)
+int __cdecl MatchRecord_InitMatchDataInternal(char *inputBuffer,int buffSize)
 
 {
   bool bVar1;
@@ -408,31 +424,32 @@ int __cdecl MatchRecord_InitMatchDataInternal(char *param_1,int param_2)
   loadoutSlot_t lVar3;
   ddlState_t *pdVar4;
   char *pcVar5;
-  int local_10;
-  int local_c;
-  int local_8;
+  loadoutSlot_t loadoutSlot;
+  int i;
+  int itemIndex;
+  int res;
   
-  local_8 = 0;
-  if ((param_1 == (char *)0x0) || (param_2 == 0)) {
+  res = 0;
+  if ((inputBuffer == (char *)0x0) || (buffSize == 0)) {
     Com_Printf(0x10,
                "Received NULL inputBuffer in MatchRecord_InitMatchData setting static buffer to 0\n"
               );
     memset((uchar *)s_matchRecorderBuffer,'\0',0x10400);
   }
   else {
-    if (param_2 < 0x10400) {
+    if (buffSize < 0x10400) {
       Com_PrintError(0x10,"Match data is %d bytes and supplied buffer is only %d bytes\n");
       return 0;
     }
-    memcpy((uchar *)s_matchRecorderBuffer,(uchar *)param_1,0x10400);
+    memcpy((uchar *)s_matchRecorderBuffer,(uchar *)inputBuffer,0x10400);
   }
   if ((useFastFile->current).enabled == false) {
-    local_8 = 0;
+    res = 0;
   }
   else {
     g_matchRecorderDDL = DDL_LoadAsset("ddl_mp/match_record.ddl");
     if (g_matchRecorderDDL != (ddlDef_t *)0x0) {
-      local_8 = DDL_AssociateBuffer(s_matchRecorderBuffer,0x10400,g_matchRecorderDDL);
+      res = DDL_AssociateBuffer(s_matchRecorderBuffer,0x10400,g_matchRecorderDDL);
       DDL_Reset(&g_RootState,g_matchRecorderDDL);
       DDL_Reset(&g_HeaderState,g_matchRecorderDDL);
       DDL_Reset(&g_playerBufferState,g_matchRecorderDDL);
@@ -468,30 +485,32 @@ int __cdecl MatchRecord_InitMatchDataInternal(char *param_1,int param_2)
       pdVar2 = LiveStats_GetRootDDLState();
       DDL_MoveToName(pdVar2,pdVar4,pcVar5);
     }
-    if ((param_1 == (char *)0x0) || (param_2 == 0)) {
+    if ((inputBuffer == (char *)0x0) || (buffSize == 0)) {
       MatchRecorderDDLSetInt(&g_HeaderState,"titleID",0);
-      local_c = 0;
-      local_10 = 0;
-      while ((local_10 < 0x100 && (local_c < 0x55))) {
-        bVar1 = BG_UnlockablesIsItemValidNotNull(local_10);
+      itemIndex = 0;
+      i = 0;
+      while ((i < 0x100 && (itemIndex < 0x55))) {
+        bVar1 = BG_UnlockablesIsItemValidNotNull(i);
         if ((bVar1) &&
-           ((((lVar3 = BG_UnlockablesGetItemLoadoutSlot(local_10), lVar3 == LOADOUTSLOT_FIRST ||
+           ((((lVar3 = BG_UnlockablesGetItemLoadoutSlot(i), lVar3 == LOADOUTSLOT_FIRST ||
               (lVar3 == LOADOUTSLOT_SECONDARY_WEAPON)) || (lVar3 == LOADOUTSLOT_GLOBAL_ITEMS_START))
             || (((lVar3 == LOADOUTSLOT_KILLSTREAK2 || (lVar3 == LOADOUTSLOT_KILLSTREAK3)) ||
                 ((lVar3 == LOADOUTSLOT_PRIMARY_GRENADE || (lVar3 == LOADOUTSLOT_SPECIAL_GRENADE)))))
             ))) {
-          s_itemIndexes[local_c] = (uchar)local_10;
-          local_c = local_c + 1;
+          s_itemIndexes[itemIndex] = (uchar)i;
+          itemIndex = itemIndex + 1;
         }
-        local_10 = local_10 + 1;
+        i = i + 1;
       }
     }
   }
-  return local_8;
+  return res;
 }
 
 
 // 005AA480  MatchRecord_InitMatchData  (DW/MatchRecorder.cpp:533)
+
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl MatchRecord_InitMatchData(void)
 
@@ -508,14 +527,15 @@ bool __cdecl MatchRecord_IsHeatMapDataGenerated(void)
 {
   bool bVar1;
   uint uVar2;
-  ddlState_t local_14;
+  uint res;
+  ddlState_t tempState;
   
   if (g_matchRecorderDDL == (ddlDef_t *)0x0) {
     bVar1 = false;
   }
   else {
-    DDL_MoveToName(&g_RootState,&local_14,"heatMapDataGenerated");
-    uVar2 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+    DDL_MoveToName(&g_RootState,&tempState,"heatMapDataGenerated");
+    uVar2 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
     if (uVar2 == 1) {
       bVar1 = true;
     }
@@ -533,10 +553,10 @@ uchar __cdecl MatchRecord_GetMapIndex(void)
 
 {
   uint uVar1;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  DDL_MoveToName(&g_HeaderState,&local_14,"mapID");
-  uVar1 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+  DDL_MoveToName(&g_HeaderState,&tempState,"mapID");
+  uVar1 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
   return (uchar)uVar1;
 }
 
@@ -547,24 +567,24 @@ short __cdecl MatchRecord_GetPlayerCount(void)
 
 {
   uint uVar1;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  DDL_MoveToName(&g_HeaderState,&local_14,"playerCount");
-  uVar1 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+  DDL_MoveToName(&g_HeaderState,&tempState,"playerCount");
+  uVar1 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
   return (short)uVar1;
 }
 
 
 // 005ACA90  MatchRecord_SetPlayerCount  (DW/MatchRecorder.cpp:581)
 
-void __cdecl MatchRecord_SetPlayerCount(short param_1)
+void __cdecl MatchRecord_SetPlayerCount(short currentPlayers)
 
 {
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 < 0x33) {
-    DDL_MoveToName(&g_HeaderState,&local_14,"playerCount");
-    DDL_SetInt(&local_14,(int)param_1,s_matchRecorderBuffer);
+  if (currentPlayers < 0x33) {
+    DDL_MoveToName(&g_HeaderState,&tempState,"playerCount");
+    DDL_SetInt(&tempState,(int)currentPlayers,s_matchRecorderBuffer);
   }
   return;
 }
@@ -576,24 +596,24 @@ short __cdecl MatchRecord_GetLifeCount(void)
 
 {
   uint uVar1;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  DDL_MoveToName(&g_HeaderState,&local_14,"lifeCount");
-  uVar1 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+  DDL_MoveToName(&g_HeaderState,&tempState,"lifeCount");
+  uVar1 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
   return (short)uVar1;
 }
 
 
 // 005AC7F0  MatchRecord_SetLifeCount  (DW/MatchRecorder.cpp:597)
 
-void __cdecl MatchRecord_SetLifeCount(short param_1)
+void __cdecl MatchRecord_SetLifeCount(short currentLives)
 
 {
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  if (param_1 < 0x3e9) {
-    DDL_MoveToName(&g_HeaderState,&local_14,"lifeCount");
-    DDL_SetInt(&local_14,(int)param_1,s_matchRecorderBuffer);
+  if (currentLives < 0x3e9) {
+    DDL_MoveToName(&g_HeaderState,&tempState,"lifeCount");
+    DDL_SetInt(&tempState,(int)currentLives,s_matchRecorderBuffer);
   }
   return;
 }
@@ -601,14 +621,14 @@ void __cdecl MatchRecord_SetLifeCount(short param_1)
 
 // 005AA9B0  MatchRecord_GetPlayerInSlot  (DW/MatchRecorder.cpp:607)
 
-bool __cdecl MatchRecord_GetPlayerInSlot(int param_1,ddlState_t *param_2)
+bool __cdecl MatchRecord_GetPlayerInSlot(int playerSlot,ddlState_t *playerSlotState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (0x31 < param_1) {
+  if (0x31 < playerSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x260,0,"%s"
                             );
     if (!bVar2) {
@@ -617,8 +637,8 @@ bool __cdecl MatchRecord_GetPlayerInSlot(int param_1,ddlState_t *param_2)
       return (bool)uVar3;
     }
   }
-  if ((param_1 < 0x32) && (-1 < param_1)) {
-    DDL_MoveToIndex(&g_playerBufferState,param_2,param_1,1);
+  if ((playerSlot < 0x32) && (-1 < playerSlot)) {
+    DDL_MoveToIndex(&g_playerBufferState,playerSlotState,playerSlot,1);
     bVar2 = true;
   }
   else {
@@ -630,49 +650,48 @@ bool __cdecl MatchRecord_GetPlayerInSlot(int param_1,ddlState_t *param_2)
 
 // 005ACAD0  MatchRecord_SearchForPlayerSlotByXUID  (DW/MatchRecorder.cpp:620)
 
-int __cdecl MatchRecord_SearchForPlayerSlotByXUID(ulong64 param_1)
+int __cdecl MatchRecord_SearchForPlayerSlotByXUID(ulong64 xuid)
 
 {
   bool bVar1;
   short sVar2;
   ulong64 uVar3;
-  int local_24;
+  int playerXuid;
   int local_20;
-  ddlState_t local_18;
-  int local_8;
+  ddlState_t tempState;
+  int playerSlot;
   
-  local_8 = 0;
+  playerSlot = 0;
   do {
     sVar2 = MatchRecord_GetPlayerCount();
-    if (sVar2 <= local_8) {
+    if (sVar2 <= playerSlot) {
       return -1;
     }
-    bVar1 = MatchRecord_GetPlayerInSlot(local_8,&local_18);
+    bVar1 = MatchRecord_GetPlayerInSlot(playerSlot,&tempState);
     if (bVar1) {
-      uVar3 = MatchRecorderDDLGetInt64(&local_18,"xuid");
-      local_24 = (int)uVar3;
-      if ((local_24 == (int)param_1) && (local_20 = (int)(uVar3 >> 0x20), local_20 == param_1._4_4_)
-         ) {
-        return local_8;
+      uVar3 = MatchRecorderDDLGetInt64(&tempState,"xuid");
+      playerXuid = (int)uVar3;
+      if ((playerXuid == (int)xuid) && (local_20 = (int)(uVar3 >> 0x20), local_20 == xuid._4_4_)) {
+        return playerSlot;
       }
     }
-    local_8 = local_8 + 1;
+    playerSlot = playerSlot + 1;
   } while( true );
 }
 
 
 // 005AA8D0  MatchRecord_GetXUIDForPlayerSlot  (DW/MatchRecorder.cpp:637)
 
-ulong64 __cdecl MatchRecord_GetXUIDForPlayerSlot(int param_1)
+ulong64 __cdecl MatchRecord_GetXUIDForPlayerSlot(int playerSlot)
 
 {
   bool bVar1;
   ulong64 uVar2;
-  ddlState_t local_14;
+  ddlState_t tempState;
   
-  bVar1 = MatchRecord_GetPlayerInSlot(param_1,&local_14);
+  bVar1 = MatchRecord_GetPlayerInSlot(playerSlot,&tempState);
   if (bVar1) {
-    uVar2 = MatchRecorderDDLGetInt64(&local_14,"xuid");
+    uVar2 = MatchRecorderDDLGetInt64(&tempState,"xuid");
   }
   else {
     uVar2 = 0;
@@ -683,14 +702,14 @@ ulong64 __cdecl MatchRecord_GetXUIDForPlayerSlot(int param_1)
 
 // 005AB0A0  MatchRecord_GetLifeInSlot  (DW/MatchRecorder.cpp:647)
 
-bool __cdecl MatchRecord_GetLifeInSlot(int param_1,ddlState_t *param_2)
+bool __cdecl MatchRecord_GetLifeInSlot(int lifeSlot,ddlState_t *lifeSlotState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (999 < param_1) {
+  if (999 < lifeSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x288,0,"%s"
                             );
     if (!bVar2) {
@@ -699,8 +718,8 @@ bool __cdecl MatchRecord_GetLifeInSlot(int param_1,ddlState_t *param_2)
       return (bool)uVar3;
     }
   }
-  if ((param_1 < 1000) && (-1 < param_1)) {
-    DDL_MoveToIndex(&g_lifeBufState,param_2,param_1,1);
+  if ((lifeSlot < 1000) && (-1 < lifeSlot)) {
+    DDL_MoveToIndex(&g_lifeBufState,lifeSlotState,lifeSlot,1);
     bVar2 = true;
   }
   else {
@@ -718,55 +737,58 @@ bool __cdecl MatchRecord_GetLifeInSlot(int param_1,ddlState_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl MatchRecord_SearchCreateForPlayer(gclient_s *param_1,ddlState_t *param_2)
+int __cdecl MatchRecord_SearchCreateForPlayer(gclient_s *client,ddlState_t *playerState)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  int local_28;
-  undefined4 local_1c [2];
-  uint local_14;
-  short local_10;
-  ulong64 local_c;
+  short sVar2;
+  int playerSlot_00;
+  int controllerIndex_00;
+  int i;
+  int controllerIndex;
+  int playerSlot;
+  undefined4 dwid [2];
+  int connectedBits;
+  short playerCount;
+  ulong64 xuid;
   
-  local_c = SV_GetPlayerXuid((uint)(param_1->ps).clientNum);
-  local_14 = 0;
-  iVar2 = MatchRecord_SearchForPlayerSlotByXUID(local_c);
-  if ((iVar2 == -1) || (bVar1 = MatchRecord_GetPlayerInSlot(iVar2,param_2), !bVar1)) {
-    local_10 = MatchRecord_GetPlayerCount();
-    if (local_10 < 0x32) {
-      local_10 = local_10 + 1;
-      MatchRecord_SetPlayerCount(local_10);
+  xuid = SV_GetPlayerXuid((uint)(client->ps).clientNum);
+  connectedBits = 0;
+  playerSlot_00 = MatchRecord_SearchForPlayerSlotByXUID(xuid);
+  if ((playerSlot_00 == -1) ||
+     (bVar1 = MatchRecord_GetPlayerInSlot(playerSlot_00,playerState), !bVar1)) {
+    sVar2 = MatchRecord_GetPlayerCount();
+    if (sVar2 < 0x32) {
+      playerCount = sVar2 + 1;
+      MatchRecord_SetPlayerCount(playerCount);
       Com_Printf(0x10,"MatchRecord: Creating player. xuid = %lli clientnum = %i numplayers = %i\n");
-      bVar1 = MatchRecord_GetPlayerInSlot(local_10 + -1,param_2);
+      bVar1 = MatchRecord_GetPlayerInSlot(playerCount + -1,playerState);
       if (bVar1) {
-        iVar3 = Live_GetControllerFromXUID(local_c);
-        dwGetOnlineUserID(iVar3,(ulong64 *)local_1c);
-        MatchRecorderDDLSetInt64(param_2,"xuid",local_c);
+        controllerIndex_00 = Live_GetControllerFromXUID(xuid);
+        dwGetOnlineUserID(controllerIndex_00,(ulong64 *)dwid);
+        MatchRecorderDDLSetInt64(playerState,"xuid",xuid);
         MatchRecorderDDLSetInt64
-                  (param_2,"dwid",
-                   CONCAT26((short)((uint)local_1c[1] >> 0x10),
-                            CONCAT24((short)local_1c[1],local_1c[0])));
-        if ((param_1->sess).cs.name[0] != '\0') {
-          MatchRecorderDDLSetString(param_2,"gamertag",(param_1->sess).cs.name);
+                  (playerState,"dwid",
+                   CONCAT26((short)((uint)dwid[1] >> 0x10),CONCAT24((short)dwid[1],dwid[0])));
+        if ((client->sess).cs.name[0] != '\0') {
+          MatchRecorderDDLSetString(playerState,"gamertag",(client->sess).cs.name);
         }
-        for (local_28 = 0; local_28 < (com_maxclients->current).integer; local_28 = local_28 + 1) {
-          if (2 < *(int *)((int)svs.clients + local_28 * 0x84d00)) {
-            local_14 = 1 << ((byte)local_28 & 0x1f) | local_14;
+        for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+          if (2 < *(int *)((int)svs.clients + i * 0x84d00)) {
+            connectedBits = 1 << ((byte)i & 0x1f) | connectedBits;
           }
         }
-        MatchRecorderDDLSetInt(param_2,"connectedBits",local_14);
+        MatchRecorderDDLSetInt(playerState,"connectedBits",connectedBits);
       }
       else {
-        iVar2 = -1;
+        playerSlot_00 = -1;
       }
     }
     else {
-      iVar2 = -1;
+      playerSlot_00 = -1;
     }
   }
-  return iVar2;
+  return playerSlot_00;
 }
 
 
@@ -778,13 +800,13 @@ int __cdecl GetCurrentMapIndex(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  char *nptr;
+  StringTable *mapTable;
+  int row;
+  char *mapname;
   
-  StringTable_GetAsset("mp/mapsTable.csv",&local_10);
-  if (local_10 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/mapsTable.csv",&mapTable);
+  if (mapTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x2d6,0,"%s"
                             );
     if (!bVar2) {
@@ -793,14 +815,14 @@ int __cdecl GetCurrentMapIndex(void)
       return iVar3;
     }
   }
-  local_8 = Dvar_GetString("mapname");
-  local_c = StringTable_LookupRowNumForValue(local_10,0,local_8);
-  if (local_c < 0) {
+  mapname = Dvar_GetString("mapname");
+  row = StringTable_LookupRowNumForValue(mapTable,0,mapname);
+  if (row < 0) {
     iVar3 = -1;
   }
   else {
-    pcVar4 = StringTable_GetColumnValueForRow(local_10,local_c,5);
-    iVar3 = atoi(pcVar4);
+    nptr = StringTable_GetColumnValueForRow(mapTable,row,5);
+    iVar3 = atoi(nptr);
   }
   return iVar3;
 }
@@ -820,54 +842,55 @@ int __cdecl GetCurrentPlaylistIndex(void)
 
 // 005AAE80  FindBitchForPlayer  (DW/MatchRecorder.cpp:746)
 
-void __cdecl FindBitchForPlayer(int param_1)
+void __cdecl FindBitchForPlayer(int attackingPlayerSlot)
 
 {
   bool bVar1;
   short sVar2;
   uint uVar3;
   uint uVar4;
-  uint local_110;
-  ddlState_t local_108;
-  char local_f5;
-  int local_f4;
-  int local_f0;
-  uint local_ec [50];
-  uint local_24;
-  short local_20;
-  uint local_1c;
-  short local_18;
-  ddlState_t local_14;
+  int playerNum_2;
+  short playerFromState;
+  ddlState_t lifeState;
+  char attackerFromState;
+  int lifeNum;
+  int playerNum;
+  int playerKills [50];
+  int maxPlayerKills;
+  short playerCount;
+  int playerBitch;
+  short lifeCount;
+  ddlState_t playerState;
   
-  memset((uchar *)local_ec,'\0',200);
-  local_20 = MatchRecord_GetPlayerCount();
-  local_18 = MatchRecord_GetLifeCount();
-  for (local_f0 = 0; local_f0 < local_20; local_f0 = local_f0 + 1) {
-    if (local_f0 != param_1) {
-      for (local_f4 = 0; local_f4 < local_18; local_f4 = local_f4 + 1) {
-        MatchRecord_GetLifeInSlot(local_f4,&local_108);
-        uVar3 = MatchRecorderDDLGetInt(&local_108,"player");
-        uVar4 = MatchRecorderDDLGetInt(&local_108,"attacker");
-        local_f5 = (char)uVar4;
-        if (((short)uVar3 == local_f0) && (local_f5 == param_1)) {
-          local_ec[local_f0] = local_ec[local_f0] + 1;
+  memset((uchar *)playerKills,'\0',200);
+  playerCount = MatchRecord_GetPlayerCount();
+  lifeCount = MatchRecord_GetLifeCount();
+  for (playerNum = 0; playerNum < playerCount; playerNum = playerNum + 1) {
+    if (playerNum != attackingPlayerSlot) {
+      for (lifeNum = 0; lifeNum < lifeCount; lifeNum = lifeNum + 1) {
+        MatchRecord_GetLifeInSlot(lifeNum,&lifeState);
+        uVar3 = MatchRecorderDDLGetInt(&lifeState,"player");
+        uVar4 = MatchRecorderDDLGetInt(&lifeState,"attacker");
+        attackerFromState = (char)uVar4;
+        if (((short)uVar3 == playerNum) && (attackerFromState == attackingPlayerSlot)) {
+          playerKills[playerNum] = playerKills[playerNum] + 1;
         }
       }
     }
   }
-  local_1c = 0xffffffff;
-  local_24 = 0;
-  for (local_110 = 0; sVar2 = MatchRecord_GetPlayerCount(), (int)local_110 < (int)sVar2;
-      local_110 = local_110 + 1) {
-    if ((int)local_24 < (int)local_ec[local_110]) {
-      local_1c = local_110;
-      local_24 = local_ec[local_110];
+  playerBitch = -1;
+  maxPlayerKills = 0;
+  for (playerNum_2 = 0; sVar2 = MatchRecord_GetPlayerCount(), playerNum_2 < sVar2;
+      playerNum_2 = playerNum_2 + 1) {
+    if (maxPlayerKills < playerKills[playerNum_2]) {
+      playerBitch = playerNum_2;
+      maxPlayerKills = playerKills[playerNum_2];
     }
   }
-  bVar1 = MatchRecord_GetPlayerInSlot(param_1,&local_14);
-  if ((bVar1) && (local_1c != 0xffffffff)) {
-    MatchRecorderDDLSetInt(&local_14,"bitch",local_1c);
-    MatchRecorderDDLSetInt(&local_14,"bitchKills",local_24);
+  bVar1 = MatchRecord_GetPlayerInSlot(attackingPlayerSlot,&playerState);
+  if ((bVar1) && (playerBitch != -1)) {
+    MatchRecorderDDLSetInt(&playerState,"bitch",playerBitch);
+    MatchRecorderDDLSetInt(&playerState,"bitchKills",maxPlayerKills);
   }
   return;
 }
@@ -875,67 +898,68 @@ void __cdecl FindBitchForPlayer(int param_1)
 
 // 005AB100  FindNemesisForPlayer  (DW/MatchRecorder.cpp:798)
 
-void __cdecl FindNemesisForPlayer(int param_1)
+void __cdecl FindNemesisForPlayer(int attackingPlayerSlot)
 
 {
   bool bVar1;
   uint uVar2;
   uint uVar3;
-  uint local_2b4;
-  ddlState_t local_2ac;
-  char local_299;
-  int local_298;
-  int local_294;
-  float local_290;
-  uint local_28c [50];
-  uint local_1c4 [51];
-  ddlState_t local_f8;
-  short local_e8;
-  float local_e4 [50];
-  short local_1c;
-  uint local_18;
-  ddlState_t local_14;
+  int playerNum_2;
+  short playerFromState;
+  ddlState_t lifeState;
+  char attackerFromState;
+  int lifeNum;
+  int playerNum;
+  float maxNemesisScore;
+  uint nemesisDeaths [50];
+  uint nemesisKills [51];
+  ddlState_t nemesisState;
+  short playerCount;
+  float nemesisScore [50];
+  short lifeCount;
+  int playerNemesis;
+  ddlState_t playerState;
   
-  memset((uchar *)local_e4,'\0',200);
-  memset((uchar *)local_28c,'\0',200);
-  memset((uchar *)local_1c4,'\0',200);
-  local_e8 = MatchRecord_GetPlayerCount();
-  local_1c = MatchRecord_GetLifeCount();
-  for (local_294 = 0; local_294 < local_e8; local_294 = local_294 + 1) {
-    for (local_298 = 0; local_298 < local_1c; local_298 = local_298 + 1) {
-      MatchRecord_GetLifeInSlot(local_298,&local_2ac);
-      bVar1 = MatchRecord_GetLifeInSlot(local_298,&local_2ac);
+  memset((uchar *)nemesisScore,'\0',200);
+  memset((uchar *)nemesisDeaths,'\0',200);
+  memset((uchar *)nemesisKills,'\0',200);
+  playerCount = MatchRecord_GetPlayerCount();
+  lifeCount = MatchRecord_GetLifeCount();
+  for (playerNum = 0; playerNum < playerCount; playerNum = playerNum + 1) {
+    for (lifeNum = 0; lifeNum < lifeCount; lifeNum = lifeNum + 1) {
+      MatchRecord_GetLifeInSlot(lifeNum,&lifeState);
+      bVar1 = MatchRecord_GetLifeInSlot(lifeNum,&lifeState);
       if (bVar1) {
-        uVar2 = MatchRecorderDDLGetInt(&local_2ac,"player");
-        uVar3 = MatchRecorderDDLGetInt(&local_2ac,"attacker");
-        local_299 = (char)uVar3;
-        if (((short)uVar2 == param_1) && (local_299 == local_294)) {
-          local_e4[local_294] = local_e4[local_294] + 1.5;
-          local_28c[local_294] = local_28c[local_294] + 1;
+        uVar2 = MatchRecorderDDLGetInt(&lifeState,"player");
+        uVar3 = MatchRecorderDDLGetInt(&lifeState,"attacker");
+        attackerFromState = (char)uVar3;
+        if (((short)uVar2 == attackingPlayerSlot) && (attackerFromState == playerNum)) {
+          nemesisScore[playerNum] = nemesisScore[playerNum] + 1.5;
+          nemesisDeaths[playerNum] = nemesisDeaths[playerNum] + 1;
         }
-        if (((short)uVar2 == local_294) && (local_299 == param_1)) {
-          local_e4[local_294] = local_e4[local_294] + 1.0;
-          local_1c4[local_294] = local_1c4[local_294] + 1;
+        if (((short)uVar2 == playerNum) && (attackerFromState == attackingPlayerSlot)) {
+          nemesisScore[playerNum] = nemesisScore[playerNum] + 1.0;
+          nemesisKills[playerNum] = nemesisKills[playerNum] + 1;
         }
       }
     }
   }
-  local_18 = 0xffffffff;
-  local_290 = 0.0;
-  for (local_2b4 = 0; (int)local_2b4 < (int)local_e8; local_2b4 = local_2b4 + 1) {
-    if ((local_2b4 != param_1) && (local_290 < local_e4[local_2b4])) {
-      local_18 = local_2b4;
-      local_290 = local_e4[local_2b4];
+  playerNemesis = -1;
+  maxNemesisScore = 0.0;
+  for (playerNum_2 = 0; playerNum_2 < playerCount; playerNum_2 = playerNum_2 + 1) {
+    if ((playerNum_2 != attackingPlayerSlot) && (maxNemesisScore < nemesisScore[playerNum_2])) {
+      playerNemesis = playerNum_2;
+      maxNemesisScore = nemesisScore[playerNum_2];
     }
   }
-  bVar1 = MatchRecord_GetPlayerInSlot(param_1,&local_14);
+  bVar1 = MatchRecord_GetPlayerInSlot(attackingPlayerSlot,&playerState);
   if (bVar1) {
-    MatchRecorderDDLSetInt(&local_14,"nemesis",local_18);
+    MatchRecorderDDLSetInt(&playerState,"nemesis",playerNemesis);
   }
-  bVar1 = MatchRecord_GetPlayerInSlot(local_18,&local_f8);
-  if ((bVar1) && (local_18 != 0xffffffff)) {
-    MatchRecorderDDLSetInt(&local_f8,"nemesisDeaths",local_28c[local_18]);
-    MatchRecorderDDLSetInt(&local_f8,"nemesisKills",local_1c4[local_18]);
+  bVar1 = MatchRecord_GetPlayerInSlot(playerNemesis,&nemesisState);
+  if ((bVar1) && (playerNemesis != -1)) {
+    MatchRecorderDDLSetInt(&nemesisState,"nemesisDeaths",nemesisDeaths[playerNemesis]);
+    MatchRecorderDDLSetInt(&nemesisState,"nemesisKills",nemesisKills[playerNemesis]);
   }
   return;
 }
@@ -948,16 +972,21 @@ void __cdecl FindNemesisForPlayer(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GenerateBinaryMatchSummary(uint param_1)
+void __cdecl GenerateBinaryMatchSummary(uint titleID)
 
 {
   short sVar1;
   uint uVar2;
   uint uVar3;
   uint uVar4;
-  int local_1c;
+  int playerSlot;
+  uint start;
+  uint end;
+  uint left;
+  short playerCount;
+  uint joined;
   
-  MatchRecorderDDLSetInt(&g_HeaderState,"titleID",param_1);
+  MatchRecorderDDLSetInt(&g_HeaderState,"titleID",titleID);
   uVar2 = GetCurrentMapIndex();
   MatchRecorderDDLSetInt(&g_HeaderState,"mapID",uVar2);
   MatchRecorderDDLSetInt(&g_HeaderState,"mapDuration",level.time / 1000);
@@ -969,9 +998,9 @@ void __cdecl GenerateBinaryMatchSummary(uint param_1)
   MatchRecorderDDLSetInt(&g_HeaderState,"playerCountEnd",(uVar2 + uVar3) - uVar4);
   SaveTeamScores();
   sVar1 = MatchRecord_GetPlayerCount();
-  for (local_1c = 0; local_1c < sVar1; local_1c = local_1c + 1) {
-    FindBitchForPlayer(local_1c);
-    FindNemesisForPlayer(local_1c);
+  for (playerSlot = 0; playerSlot < sVar1; playerSlot = playerSlot + 1) {
+    FindBitchForPlayer(playerSlot);
+    FindNemesisForPlayer(playerSlot);
   }
   return;
 }
@@ -987,13 +1016,13 @@ void __cdecl GenerateBinaryMatchSummary(uint param_1)
 void __cdecl GenerateBinaryBreadcrumbData(void)
 
 {
-  ddlState_t local_18;
-  uint local_8;
+  ddlState_t breadCrumbHeaderState;
+  int breadcrumbDataLength;
   
-  DDL_MoveToName(&g_RootState,&local_18,"breadCrumbHeader");
-  MatchRecorderDDLSetInt(&local_18,"frequency",0xb4);
-  local_8 = level.time / 18000 << 6;
-  MatchRecorderDDLSetInt(&local_18,"dataLength",local_8);
+  DDL_MoveToName(&g_RootState,&breadCrumbHeaderState,"breadCrumbHeader");
+  MatchRecorderDDLSetInt(&breadCrumbHeaderState,"frequency",0xb4);
+  breadcrumbDataLength = level.time / 18000 << 6;
+  MatchRecorderDDLSetInt(&breadCrumbHeaderState,"dataLength",breadcrumbDataLength);
   return;
 }
 
@@ -1029,47 +1058,48 @@ void __cdecl ClearTeamScores(void)
 
 // 005AAA60  GenerateRecordedMatchData  (DW/MatchRecorder.cpp:944)
 
-void __cdecl GenerateRecordedMatchData(int param_1,char **param_2,int *param_3)
+void __cdecl
+GenerateRecordedMatchData(int controllerIndex,char **matchRecordBuffer,int *matchRecordBufferSize)
 
 {
   bool bVar1;
   char *pcVar2;
-  ulong local_1c;
-  int local_18;
-  uchar *local_14;
-  bdLobbyService *local_10;
-  LargeLocal local_c;
+  int compressedSize;
+  int bufferSize;
+  uchar *tempBuffer;
+  bdLobbyService *lobby;
+  LargeLocal tempBuffer_large_local;
   
   if (g_matchRecorderDDL != (ddlDef_t *)0x0) {
-    *param_2 = (char *)0x0;
-    *param_3 = 0;
-    LargeLocal::LargeLocal(&local_c,0x10400);
-    local_14 = LargeLocal::GetBuf(&local_c);
+    *matchRecordBuffer = (char *)0x0;
+    *matchRecordBufferSize = 0;
+    LargeLocal::LargeLocal(&tempBuffer_large_local,0x10400);
+    tempBuffer = LargeLocal::GetBuf(&tempBuffer_large_local);
     Com_Printf(0x10,"Generating COD7 match data.\n");
-    local_10 = dwGetLobby(param_1);
-    GenerateBinaryMatchSummary(local_10->m_titleID);
+    lobby = dwGetLobby(controllerIndex);
+    GenerateBinaryMatchSummary(lobby->m_titleID);
     GenerateBinaryBreadcrumbData();
     SaveTeamScores();
-    local_1c = 0x10400;
-    bVar1 = CompressBuffer((char *)local_14,(int *)&local_1c,s_matchRecorderBuffer,0x10400);
+    compressedSize = 0x10400;
+    bVar1 = CompressBuffer((char *)tempBuffer,&compressedSize,s_matchRecorderBuffer,0x10400);
     if (!bVar1) {
       Com_Printf(0x10,"Compression of COD7 xml match data failed.\n");
     }
     pcVar2 = LiveStorage_GetMatchRecordBuffer();
-    *param_2 = pcVar2;
-    local_18 = LiveStorage_GetMatchRecordBufferSize();
-    if (*param_2 == (char *)0x0) {
+    *matchRecordBuffer = pcVar2;
+    bufferSize = LiveStorage_GetMatchRecordBufferSize();
+    if (*matchRecordBuffer == (char *)0x0) {
       Com_PrintError(0x10,"Content Server already in use - cannot upload match data\n");
     }
-    else if (local_18 < (int)local_1c) {
+    else if (bufferSize < compressedSize) {
       Com_PrintError(0x10,"Compressed Match Data is %d and buffer is %d - not enough space\n");
     }
     else {
-      memcpy((uchar *)*param_2,local_14,local_1c);
-      *param_3 = local_1c;
+      memcpy((uchar *)*matchRecordBuffer,tempBuffer,compressedSize);
+      *matchRecordBufferSize = compressedSize;
     }
     ClearTeamScores();
-    LargeLocal::~LargeLocal(&local_c);
+    LargeLocal::~LargeLocal(&tempBuffer_large_local);
   }
   return;
 }
@@ -1078,18 +1108,20 @@ void __cdecl GenerateRecordedMatchData(int param_1,char **param_2,int *param_3)
 // 005AB4A0  MatchRecord_NormaliseHeatMap  (DW/MatchRecorder.cpp:1021)
 
 void __cdecl
-MatchRecord_NormaliseHeatMap(int param_1,int param_2,uchar *param_3,uchar *param_4,float param_5)
+MatchRecord_NormaliseHeatMap(int width,int height,uchar *heatMap,uchar *buffer,float maxVal)
 
 {
   uchar uVar1;
-  int local_10;
-  int local_8;
+  uchar value;
+  int xPos;
+  int yOffset;
+  int yPos;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {
-      uVar1 = (uchar)(int)(((float)param_3[local_8 * param_1 + local_10] / param_5) * 255.0);
+  for (yPos = 0; yPos < height; yPos = yPos + 1) {
+    for (xPos = 0; xPos < width; xPos = xPos + 1) {
+      uVar1 = (uchar)(int)(((float)heatMap[yPos * width + xPos] / maxVal) * 255.0);
       if (uVar1 != '\0') {
-        param_4[local_8 * param_1 + local_10] = uVar1;
+        buffer[yPos * width + xPos] = uVar1;
       }
     }
   }
@@ -1099,14 +1131,13 @@ MatchRecord_NormaliseHeatMap(int param_1,int param_2,uchar *param_3,uchar *param
 
 // 005AB530  MatchRecord_ReadHeatMapPixel  (DW/MatchRecorder.cpp:1037)
 
-uchar __cdecl
-MatchRecord_ReadHeatMapPixel(int param_1,int param_2,int param_3,int param_4,uchar *param_5)
+uchar __cdecl MatchRecord_ReadHeatMapPixel(int xPos,int yPos,int width,int height,uchar *buffer)
 
 {
   uchar uVar1;
   
-  if ((((param_1 < param_3) && (-1 < param_1)) && (param_2 < param_4)) && (-1 < param_2)) {
-    uVar1 = param_5[param_2 * param_3 + param_1];
+  if ((((xPos < width) && (-1 < xPos)) && (yPos < height)) && (-1 < yPos)) {
+    uVar1 = buffer[yPos * width + xPos];
   }
   else {
     uVar1 = '\0';
@@ -1118,13 +1149,11 @@ MatchRecord_ReadHeatMapPixel(int param_1,int param_2,int param_3,int param_4,uch
 // 005AB570  MatchRecord_WriteHeatMapPixel  (DW/MatchRecorder.cpp:1047)
 
 void __cdecl
-MatchRecord_WriteHeatMapPixel
-          (int param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar param_6)
+MatchRecord_WriteHeatMapPixel(int xPos,int yPos,int width,int height,uchar *buffer,uchar pixelVal)
 
 {
-  if ((((param_6 != '\0') && (param_1 < param_3)) && (-1 < param_1)) &&
-     ((param_2 < param_4 && (-1 < param_2)))) {
-    param_5[param_2 * param_3 + param_1] = param_6;
+  if ((((pixelVal != '\0') && (xPos < width)) && (-1 < xPos)) && ((yPos < height && (-1 < yPos)))) {
+    buffer[yPos * width + xPos] = pixelVal;
   }
   return;
 }
@@ -1132,73 +1161,74 @@ MatchRecord_WriteHeatMapPixel
 
 // 005AB920  MatchRecord_BlurHeatMap  (DW/MatchRecorder.cpp:1062)
 
-uchar __cdecl MatchRecord_BlurHeatMap(int param_1,int param_2,uchar *param_3,int param_4)
+uchar __cdecl MatchRecord_BlurHeatMap(int width,int height,uchar *buffer,int bufferSize)
 
 {
-  byte bVar1;
-  uchar *puVar2;
-  byte local_50;
+  uchar uVar1;
+  byte bVar2;
+  uchar *dst;
+  uchar local_50;
   int local_4c;
-  byte local_48;
+  uchar local_48;
   int local_44;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  LargeLocal local_10;
-  byte local_5;
+  int yOffset;
+  int pixelVal_2;
+  int yPos_2;
+  int xPos_2;
+  int xOffset;
+  int pixelVal;
+  int xPos;
+  int yPos;
+  LargeLocal tempHeatMap_large_local;
+  uchar maxVal;
   
-  LargeLocal::LargeLocal(&local_10,0x10000);
-  puVar2 = LargeLocal::GetBuf(&local_10);
-  local_5 = 0;
-  memset(puVar2,'\0',0x10000);
-  for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {
-    for (local_1c = 0; local_1c < param_1; local_1c = local_1c + 1) {
-      local_20 = 0;
-      for (local_24 = -1; local_24 < 2; local_24 = local_24 + 1) {
-        bVar1 = MatchRecord_ReadHeatMapPixel(local_1c + local_24,local_18,param_1,param_2,param_3);
-        local_20 = (uint)bVar1 + local_20;
+  LargeLocal::LargeLocal(&tempHeatMap_large_local,0x10000);
+  dst = LargeLocal::GetBuf(&tempHeatMap_large_local);
+  maxVal = '\0';
+  memset(dst,'\0',0x10000);
+  for (yPos = 0; yPos < height; yPos = yPos + 1) {
+    for (xPos = 0; xPos < width; xPos = xPos + 1) {
+      pixelVal = 0;
+      for (xOffset = -1; xOffset < 2; xOffset = xOffset + 1) {
+        bVar2 = MatchRecord_ReadHeatMapPixel(xPos + xOffset,yPos,width,height,buffer);
+        pixelVal = (uint)bVar2 + pixelVal;
       }
-      local_44 = local_20 / 2;
+      local_44 = pixelVal / 2;
       if (0xfe < local_44) {
         local_44 = 0xff;
       }
-      local_48 = (byte)local_44;
-      if (local_44 <= (int)(uint)local_5) {
-        local_48 = local_5;
+      local_48 = (uchar)local_44;
+      if (local_44 <= (int)(uint)maxVal) {
+        local_48 = maxVal;
       }
-      local_5 = local_48;
-      MatchRecord_WriteHeatMapPixel(local_1c,local_18,param_1,param_2,puVar2,(byte)local_44);
+      maxVal = local_48;
+      MatchRecord_WriteHeatMapPixel(xPos,yPos,width,height,dst,(uchar)local_44);
     }
   }
-  memcpy(param_3,puVar2,param_4);
-  for (local_28 = 0; local_28 < param_1; local_28 = local_28 + 1) {
-    for (local_2c = 0; local_2c < param_2; local_2c = local_2c + 1) {
-      local_30 = 0;
-      for (local_34 = -1; local_34 < 2; local_34 = local_34 + 1) {
-        bVar1 = MatchRecord_ReadHeatMapPixel(local_28,local_2c + local_34,param_1,param_2,param_3);
-        local_30 = (uint)bVar1 + local_30;
+  memcpy(buffer,dst,bufferSize);
+  for (xPos_2 = 0; xPos_2 < width; xPos_2 = xPos_2 + 1) {
+    for (yPos_2 = 0; yPos_2 < height; yPos_2 = yPos_2 + 1) {
+      pixelVal_2 = 0;
+      for (yOffset = -1; yOffset < 2; yOffset = yOffset + 1) {
+        bVar2 = MatchRecord_ReadHeatMapPixel(xPos_2,yPos_2 + yOffset,width,height,buffer);
+        pixelVal_2 = (uint)bVar2 + pixelVal_2;
       }
-      local_4c = local_30 / 2;
+      local_4c = pixelVal_2 / 2;
       if (0xfe < local_4c) {
         local_4c = 0xff;
       }
-      local_50 = (byte)local_4c;
-      if (local_4c <= (int)(uint)local_5) {
-        local_50 = local_5;
+      local_50 = (uchar)local_4c;
+      if (local_4c <= (int)(uint)maxVal) {
+        local_50 = maxVal;
       }
-      local_5 = local_50;
-      MatchRecord_WriteHeatMapPixel(local_28,local_2c,param_1,param_2,puVar2,(byte)local_4c);
+      maxVal = local_50;
+      MatchRecord_WriteHeatMapPixel(xPos_2,yPos_2,width,height,dst,(uchar)local_4c);
     }
   }
-  memcpy(param_3,puVar2,param_4);
-  bVar1 = local_5;
-  LargeLocal::~LargeLocal(&local_10);
-  return bVar1;
+  memcpy(buffer,dst,bufferSize);
+  uVar1 = maxVal;
+  LargeLocal::~LargeLocal(&tempHeatMap_large_local);
+  return uVar1;
 }
 
 
@@ -1206,15 +1236,17 @@ uchar __cdecl MatchRecord_BlurHeatMap(int param_1,int param_2,uchar *param_3,int
 
 void __cdecl
 MatchRecord_SetPlayerDeathPosition
-          (uchar *param_1,int param_2,int param_3,float param_4,float param_5,int param_6,
-          int param_7)
+          (uchar *buffer,int width,int height,float xScale,float yScale,int xPos,int yPos)
 
 {
   int iVar1;
+  int newY;
+  int newX;
+  int arrayIndex;
   
-  iVar1 = (int)((float)param_7 / param_5) * param_2 + (int)((float)param_6 / param_4);
-  if ((-1 < iVar1) || (iVar1 <= param_2 * param_3)) {
-    param_1[iVar1] = 0xff;
+  iVar1 = (int)((float)yPos / yScale) * width + (int)((float)xPos / xScale);
+  if ((-1 < iVar1) || (iVar1 <= width * height)) {
+    buffer[iVar1] = 0xff;
   }
   return;
 }
@@ -1223,7 +1255,7 @@ MatchRecord_SetPlayerDeathPosition
 // 005AB5B0  MatchRecord_GenerateHeatMapData  (DW/MatchRecorder.cpp:1222)
 
 void __cdecl
-MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param_4,ulong64 param_5)
+MatchRecord_GenerateHeatMapData(uchar *buffer,int buffSize,int width,int height,ulong64 xuid)
 
 {
   code *pcVar1;
@@ -1232,98 +1264,100 @@ MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param
   short sVar4;
   uint uVar5;
   uint uVar6;
-  uint uVar7;
-  ulong64 uVar8;
+  uint playerSlot;
+  ulong64 uVar7;
   float local_60;
   int local_5c;
   int local_58;
-  int local_4c;
-  int local_48;
-  ddlState_t local_3c;
-  int local_2c;
-  float local_28;
-  float local_24;
-  LargeLocal local_20;
-  float local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  uchar *local_8;
+  uchar blurMaxVal;
+  int numBlurs;
+  int j;
+  uchar victimY;
+  uchar victimX;
+  int player;
+  ddlState_t lifeState;
+  int i;
+  float xScale;
+  float yScale;
+  LargeLocal heatMap_large_local;
+  float maxKills;
+  int newY;
+  int arrayIndex;
+  int newX;
+  uchar *heatMap;
   
   if (g_matchRecorderDDL != (ddlDef_t *)0x0) {
-    LargeLocal::LargeLocal(&local_20,0x10000);
-    local_8 = LargeLocal::GetBuf(&local_20);
-    memset(local_8,'\0',0x10000);
-    if ((param_2 < param_3 * param_4) &&
+    LargeLocal::LargeLocal(&heatMap_large_local,0x10000);
+    heatMap = LargeLocal::GetBuf(&heatMap_large_local);
+    memset(heatMap,'\0',0x10000);
+    if ((buffSize < width * height) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x4d1,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    memset(param_1,'\0',param_2);
-    local_18 = 0.0;
-    local_10 = 0;
-    local_c = 0;
-    local_14 = 0;
+    memset(buffer,'\0',buffSize);
+    maxKills = 0.0;
+    arrayIndex = 0;
+    newX = 0;
+    newY = 0;
     sVar4 = MatchRecord_GetLifeCount();
     if (0 < sVar4) {
-      local_28 = 256.0 / (float)param_3;
-      local_24 = 256.0 / (float)param_4;
-      local_2c = 0;
+      xScale = 256.0 / (float)width;
+      yScale = 256.0 / (float)height;
+      i = 0;
       while( true ) {
         sVar4 = MatchRecord_GetLifeCount();
-        if (sVar4 <= local_2c) break;
-        bVar2 = MatchRecord_GetLifeInSlot(local_2c,&local_3c);
+        if (sVar4 <= i) break;
+        bVar2 = MatchRecord_GetLifeInSlot(i,&lifeState);
         if (bVar2) {
-          uVar5 = MatchRecorderDDLGetInt(&local_3c,"victimX");
-          uVar6 = MatchRecorderDDLGetInt(&local_3c,"victimY");
-          uVar7 = MatchRecorderDDLGetInt(&local_3c,"player");
+          uVar5 = MatchRecorderDDLGetInt(&lifeState,"victimX");
+          uVar6 = MatchRecorderDDLGetInt(&lifeState,"victimY");
+          playerSlot = MatchRecorderDDLGetInt(&lifeState,"player");
           if (((char)uVar6 != -1) && ((char)uVar5 != -1)) {
-            if (param_5 == 0) {
+            if (xuid == 0) {
 LAB_005ab766:
-              if (param_5 == 0) {
-                local_c = (int)((float)(uVar5 & 0xff) / local_28);
-                local_14 = (int)((float)(uVar6 & 0xff) / local_24);
-                local_10 = local_14 * param_3 + local_c;
-                local_8[local_10] = local_8[local_10] + '\x01';
-                local_60 = (float)local_8[local_10];
-                if (0.0 <= local_18 - local_60) {
-                  local_60 = local_18;
+              if (xuid == 0) {
+                newX = (int)((float)(uVar5 & 0xff) / xScale);
+                newY = (int)((float)(uVar6 & 0xff) / yScale);
+                arrayIndex = newY * width + newX;
+                heatMap[arrayIndex] = heatMap[arrayIndex] + '\x01';
+                local_60 = (float)heatMap[arrayIndex];
+                if (0.0 <= maxKills - local_60) {
+                  local_60 = maxKills;
                 }
-                local_18 = local_60;
+                maxKills = local_60;
               }
               else {
-                for (local_48 = -1; local_48 < 2; local_48 = local_48 + 1) {
+                for (j = -1; j < 2; j = j + 1) {
                   MatchRecord_SetPlayerDeathPosition
-                            (param_1,param_3,param_4,local_28,local_24,uVar5 & 0xff,
-                             (uVar6 & 0xff) + local_48);
+                            (buffer,width,height,xScale,yScale,uVar5 & 0xff,(uVar6 & 0xff) + j);
                   MatchRecord_SetPlayerDeathPosition
-                            (param_1,param_3,param_4,local_28,local_24,(uVar5 & 0xff) + local_48,
-                             uVar6 & 0xff);
+                            (buffer,width,height,xScale,yScale,(uVar5 & 0xff) + j,uVar6 & 0xff);
                 }
               }
             }
-            else if (param_5 != 0) {
-              uVar8 = MatchRecord_GetXUIDForPlayerSlot(uVar7);
-              local_5c = (int)uVar8;
-              if (((int)param_5 == local_5c) &&
-                 (local_58 = (int)(uVar8 >> 0x20), param_5._4_4_ == local_58)) goto LAB_005ab766;
+            else if (xuid != 0) {
+              uVar7 = MatchRecord_GetXUIDForPlayerSlot(playerSlot);
+              local_5c = (int)uVar7;
+              if (((int)xuid == local_5c) &&
+                 (local_58 = (int)(uVar7 >> 0x20), xuid._4_4_ == local_58)) goto LAB_005ab766;
             }
           }
         }
-        local_2c = local_2c + 1;
+        i = i + 1;
       }
-      if (param_5 == 0) {
-        MatchRecord_NormaliseHeatMap(param_3,param_4,local_8,param_1,local_18);
-        for (local_4c = 0; local_4c < 3; local_4c = local_4c + 1) {
-          bVar3 = MatchRecord_BlurHeatMap(param_3,param_4,param_1,param_2);
-          MatchRecord_NormaliseHeatMap(param_3,param_4,param_1,param_1,(float)bVar3);
+      if (xuid == 0) {
+        MatchRecord_NormaliseHeatMap(width,height,heatMap,buffer,maxKills);
+        for (numBlurs = 0; numBlurs < 3; numBlurs = numBlurs + 1) {
+          bVar3 = MatchRecord_BlurHeatMap(width,height,buffer,buffSize);
+          MatchRecord_NormaliseHeatMap(width,height,buffer,buffer,(float)bVar3);
         }
       }
     }
     MatchRecorderDDLSetInt(&g_RootState,"heatMapDataGenerated",1);
-    LargeLocal::~LargeLocal(&local_20);
+    LargeLocal::~LargeLocal(&heatMap_large_local);
   }
   return;
 }
@@ -1331,7 +1365,7 @@ LAB_005ab766:
 
 // 005ABBE0  MatchRecord_GeneratePooledFileDetails  (DW/MatchRecorder.cpp:1302)
 
-void __cdecl MatchRecord_GeneratePooledFileDetails(int param_1)
+void __cdecl MatchRecord_GeneratePooledFileDetails(int controllerIndex)
 
 {
   int iVar1;
@@ -1339,101 +1373,101 @@ void __cdecl MatchRecord_GeneratePooledFileDetails(int param_1)
   ulong64 uVar3;
   int local_54;
   int local_50;
-  ddlState_t local_4c;
-  ddlState_t local_3c;
-  int local_2c;
-  fileSharePooledFileContext_t local_28;
-  fileSharePooledDetails_t *local_24;
-  ddlState_t local_20;
-  uint local_10;
-  undefined8 local_c;
+  ddlState_t playerState;
+  ddlState_t playerItemState;
+  int i;
+  fileSharePooledFileContext_t context;
+  fileSharePooledDetails_t *fileDetails;
+  ddlState_t headerItemState;
+  int numPlayers;
+  undefined8 xuid;
   
-  local_24 = Live_FileShare_GetFilePooledDetailsBuffer();
-  local_c = 0;
-  if (local_24->context == FILESHARE_POOLEDFILEDETAILS_SELF) {
-    local_c = Live_GetXuid(param_1);
+  fileDetails = Live_FileShare_GetFilePooledDetailsBuffer();
+  xuid = 0;
+  if (fileDetails->context == FILESHARE_POOLEDFILEDETAILS_SELF) {
+    xuid = Live_GetXuid(controllerIndex);
   }
-  else if ((((local_24->context == FILESHARE_POOLEDFILEDETAILS_FRIEND) &&
+  else if ((((fileDetails->context == FILESHARE_POOLEDFILEDETAILS_FRIEND) &&
             (selectedPlayerXuid != (dvar_s *)0x0)) && ((selectedPlayerXuid->current).integer != 0))
           && (*(selectedPlayerXuid->current).string != '\0')) {
-    local_c = I_atoi64((selectedPlayerXuid->current).string);
+    xuid = I_atoi64((selectedPlayerXuid->current).string);
   }
-  if ((int)local_c == 0 && local_c._4_4_ == 0) {
+  if ((int)xuid == 0 && xuid._4_4_ == 0) {
     Com_PrintError(1,"Invalid XUID for generating pooled file details.\n");
   }
   else {
-    local_28 = local_24->context;
-    memset((uchar *)local_24,'\0',0x34);
-    local_24->context = local_28;
-    local_10 = 0;
-    iVar1 = DDL_MoveToName(&g_HeaderState,&local_20,"mapID");
+    context = fileDetails->context;
+    memset((uchar *)fileDetails,'\0',0x34);
+    fileDetails->context = context;
+    numPlayers = 0;
+    iVar1 = DDL_MoveToName(&g_HeaderState,&headerItemState,"mapID");
     if (iVar1 != 0) {
-      uVar2 = DDL_GetInt(&local_20,s_matchRecorderBuffer);
-      local_24->mapID = uVar2;
+      uVar2 = DDL_GetInt(&headerItemState,s_matchRecorderBuffer);
+      fileDetails->mapID = uVar2;
     }
-    iVar1 = DDL_MoveToName(&g_HeaderState,&local_20,"playerCount");
+    iVar1 = DDL_MoveToName(&g_HeaderState,&headerItemState,"playerCount");
     if (iVar1 != 0) {
-      local_10 = DDL_GetInt(&local_20,s_matchRecorderBuffer);
+      numPlayers = DDL_GetInt(&headerItemState,s_matchRecorderBuffer);
     }
-    iVar1 = DDL_MoveToName(&g_HeaderState,&local_20,"alliesScore");
+    iVar1 = DDL_MoveToName(&g_HeaderState,&headerItemState,"alliesScore");
     if (iVar1 != 0) {
-      uVar2 = DDL_GetInt(&local_20,s_matchRecorderBuffer);
-      local_24->alliesScore = uVar2;
+      uVar2 = DDL_GetInt(&headerItemState,s_matchRecorderBuffer);
+      fileDetails->alliesScore = uVar2;
     }
-    iVar1 = DDL_MoveToName(&g_HeaderState,&local_20,"axisScore");
+    iVar1 = DDL_MoveToName(&g_HeaderState,&headerItemState,"axisScore");
     if (iVar1 != 0) {
-      uVar2 = DDL_GetInt(&local_20,s_matchRecorderBuffer);
-      local_24->axisScore = uVar2;
+      uVar2 = DDL_GetInt(&headerItemState,s_matchRecorderBuffer);
+      fileDetails->axisScore = uVar2;
     }
-    iVar1 = DDL_MoveToName(&g_HeaderState,&local_20,"isWager");
+    iVar1 = DDL_MoveToName(&g_HeaderState,&headerItemState,"isWager");
     if (iVar1 != 0) {
-      uVar2 = DDL_GetInt(&local_20,s_matchRecorderBuffer);
-      local_24->isWager = uVar2;
+      uVar2 = DDL_GetInt(&headerItemState,s_matchRecorderBuffer);
+      fileDetails->isWager = uVar2;
     }
-    for (local_2c = 0; local_2c < (int)local_10; local_2c = local_2c + 1) {
-      DDL_MoveToName(&g_RootState,&local_4c,"playerBuffer");
-      DDL_MoveToIndex(&local_4c,&local_4c,local_2c,1);
-      iVar1 = DDL_MoveToName(&local_4c,&local_3c,"xuid");
+    for (i = 0; i < numPlayers; i = i + 1) {
+      DDL_MoveToName(&g_RootState,&playerState,"playerBuffer");
+      DDL_MoveToIndex(&playerState,&playerState,i,1);
+      iVar1 = DDL_MoveToName(&playerState,&playerItemState,"xuid");
       if (iVar1 == 0) {
 LAB_005abe24:
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"team");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"team");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->team = uVar2;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->team = uVar2;
         }
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"kills");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"kills");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->kills = uVar2;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->kills = uVar2;
         }
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"deaths");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"deaths");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->deaths = uVar2;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->deaths = uVar2;
         }
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"wagerPayout");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"wagerPayout");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->wagerPayout = uVar2;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->wagerPayout = uVar2;
         }
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"score");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"score");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->score = uVar2;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->score = uVar2;
         }
-        iVar1 = DDL_MoveToName(&local_4c,&local_3c,"position");
+        iVar1 = DDL_MoveToName(&playerState,&playerItemState,"position");
         if (iVar1 != 0) {
-          uVar2 = DDL_GetInt(&local_3c,s_matchRecorderBuffer);
-          local_24->position = uVar2 + 1;
+          uVar2 = DDL_GetInt(&playerItemState,s_matchRecorderBuffer);
+          fileDetails->position = uVar2 + 1;
         }
-        local_24->isValid = true;
+        fileDetails->isValid = true;
       }
       else {
-        uVar3 = DDL_GetInt64(&local_3c,s_matchRecorderBuffer);
+        uVar3 = DDL_GetInt64(&playerItemState,s_matchRecorderBuffer);
         local_54 = (int)uVar3;
-        if ((int)local_c == local_54) {
+        if ((int)xuid == local_54) {
           local_50 = (int)(uVar3 >> 0x20);
-          if (local_c._4_4_ == local_50) goto LAB_005abe24;
+          if (xuid._4_4_ == local_50) goto LAB_005abe24;
         }
       }
     }
@@ -1444,18 +1478,20 @@ LAB_005abe24:
 
 // 005ABF60  MatchRecord_ParseDownloadedMatchData  (DW/MatchRecorder.cpp:1406)
 
-int __cdecl MatchRecord_ParseDownloadedMatchData(int param_1,char *param_2,int param_3)
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+int __cdecl MatchRecord_ParseDownloadedMatchData(int controllerIndex,char *inputBuffer,int buffsize)
 
 {
   int iVar1;
   
-  if (param_3 == 0x10400) {
-    iVar1 = MatchRecord_InitMatchDataInternal(param_2,0x10400);
+  if (buffsize == 0x10400) {
+    iVar1 = MatchRecord_InitMatchDataInternal(inputBuffer,0x10400);
     if (iVar1 == 0) {
       iVar1 = 0;
     }
     else {
-      MatchRecord_GeneratePooledFileDetails(param_1);
+      MatchRecord_GeneratePooledFileDetails(controllerIndex);
       iVar1 = 1;
     }
   }
@@ -1477,33 +1513,32 @@ int __cdecl MatchRecord_ParseDownloadedMatchData(int param_1,char *param_2,int p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-GetWorldLocation(float param_1,float param_2,float param_3,uchar *param_4,uchar *param_5,
-                uchar *param_6)
+GetWorldLocation(float xPos,float yPos,float zPos,uchar *xWorld,uchar *yWorld,uchar *zWorld)
 
 {
   float local_34;
   float local_30;
   float local_2c;
   
-  local_2c = ((level.compassNorth[1] * (param_1 - level.compassMapUpperLeft[0]) -
-              level.compassNorth[0] * (param_2 - level.compassMapUpperLeft[1])) /
+  local_2c = ((level.compassNorth[1] * (xPos - level.compassMapUpperLeft[0]) -
+              level.compassNorth[0] * (yPos - level.compassMapUpperLeft[1])) /
               level.compassMapWorldSize[0] - 0.5) * 255.0 + 127.0;
-  local_30 = ((-level.compassNorth[1] * (param_2 - level.compassMapUpperLeft[1]) -
-              level.compassNorth[0] * (param_1 - level.compassMapUpperLeft[0])) /
+  local_30 = ((-level.compassNorth[1] * (yPos - level.compassMapUpperLeft[1]) -
+              level.compassNorth[0] * (xPos - level.compassMapUpperLeft[0])) /
               level.compassMapWorldSize[1] - 0.5) * 255.0 + 127.0;
-  local_34 = (((param_3 - level.compassMapWorldSize[0]) + 10000.0) / 20000.0 - 0.5) * 255.0 + 127.0;
+  local_34 = (((zPos - level.compassMapWorldSize[0]) + 10000.0) / 20000.0 - 0.5) * 255.0 + 127.0;
   if (255.0 < local_2c) {
     local_2c = 255.0;
   }
-  *param_4 = (uchar)(int)local_2c;
+  *xWorld = (uchar)(int)local_2c;
   if (255.0 < local_30) {
     local_30 = 255.0;
   }
-  *param_5 = (uchar)(int)local_30;
+  *yWorld = (uchar)(int)local_30;
   if (255.0 < local_34) {
     local_34 = 255.0;
   }
-  *param_6 = (uchar)(int)local_34;
+  *zWorld = (uchar)(int)local_34;
   return;
 }
 
@@ -1515,82 +1550,88 @@ GetWorldLocation(float param_1,float param_2,float param_3,uchar *param_4,uchar 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl MatchRecordSpawn(gclient_s *param_1)
+void __cdecl MatchRecordSpawn(gclient_s *client)
 
 {
-  ddlState_t dVar1;
-  ddlState_t dVar2;
-  bool bVar3;
-  short sVar4;
-  int iVar5;
-  uint uVar6;
-  ulong64 uVar7;
-  short local_38;
-  byte local_32;
-  byte local_31;
-  ddlState_t local_30;
-  short local_20;
-  ddlState_t local_1c;
-  uint local_c;
-  byte local_5;
+  ddlState_t playerState_00;
+  ddlState_t playerState_01;
+  bool bVar1;
+  short sVar2;
+  int iVar3;
+  uint uVar4;
+  ulong64 value;
+  uint playerCountJoined;
+  uint upload;
+  uint playerCountStart;
+  uint rank;
+  uint playtime;
+  int natType;
+  int playerSlot;
+  uchar spawnZ;
+  uchar spawnX;
+  ddlState_t lifeState;
+  short lifeCount;
+  ddlState_t playerState;
+  int numLives;
+  uchar spawnY;
   
   if (g_matchRecorderDDL != (ddlDef_t *)0x0) {
-    local_20 = MatchRecord_GetLifeCount();
-    sVar4 = MatchRecord_GetPlayerCount();
-    if ((sVar4 < 0x32) && (local_20 < 1000)) {
-      iVar5 = MatchRecord_SearchCreateForPlayer(param_1,&local_1c);
-      if (iVar5 != -1) {
-        MatchRecorderDDLSetInt(&local_1c,"team",(uint)(byte)(char)(param_1->sess).cs.team);
-        local_c = MatchRecorderDDLGetInt(&local_1c,"num_lives");
-        if (local_c == 0) {
-          dVar1.arrayIndex = local_1c.arrayIndex;
-          dVar1.absoluteOffset = local_1c.absoluteOffset;
-          dVar1.member = local_1c.member;
-          dVar1.ddl = local_1c.ddl;
-          MatchRecordCopyExternalIP(dVar1,(uint)(param_1->ps).clientNum);
-          uVar7 = SV_GetClientDInt64Stat((uint)(param_1->ps).clientNum,&g_ConnectionID);
-          MatchRecorderDDLSetInt64(&local_1c,"connectionid",uVar7);
-          uVar6 = SV_GetClientDIntStat((uint)(param_1->ps).clientNum,&g_UploadBandwitdh);
-          MatchRecorderDDLSetInt(&local_1c,"upload",uVar6 / 0x2090);
-          uVar6 = LiveStorage_GetUTC();
-          MatchRecorderDDLSetInt(&local_1c,"UTCStartTime",uVar6);
-          uVar6 = SV_GetClientDIntStat((uint)(param_1->ps).clientNum,&g_TimePlayedTotal);
-          MatchRecorderDDLSetInt(&local_1c,"totalPlaytime",uVar6);
-          uVar6 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountStart");
-          if (uVar6 != 0) {
-            uVar6 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountJoined");
-            MatchRecorderDDLSetInt(&g_HeaderState,"playerCountJoined",uVar6 + 1);
+    lifeCount = MatchRecord_GetLifeCount();
+    sVar2 = MatchRecord_GetPlayerCount();
+    if ((sVar2 < 0x32) && (lifeCount < 1000)) {
+      iVar3 = MatchRecord_SearchCreateForPlayer(client,&playerState);
+      if (iVar3 != -1) {
+        MatchRecorderDDLSetInt(&playerState,"team",(uint)(byte)(char)(client->sess).cs.team);
+        numLives = MatchRecorderDDLGetInt(&playerState,"num_lives");
+        if (numLives == 0) {
+          playerState_00.arrayIndex = playerState.arrayIndex;
+          playerState_00.absoluteOffset = playerState.absoluteOffset;
+          playerState_00.member = playerState.member;
+          playerState_00.ddl = playerState.ddl;
+          MatchRecordCopyExternalIP(playerState_00,(uint)(client->ps).clientNum);
+          value = SV_GetClientDInt64Stat((uint)(client->ps).clientNum,&g_ConnectionID);
+          MatchRecorderDDLSetInt64(&playerState,"connectionid",value);
+          uVar4 = SV_GetClientDIntStat((uint)(client->ps).clientNum,&g_UploadBandwitdh);
+          MatchRecorderDDLSetInt(&playerState,"upload",uVar4 / 0x2090);
+          uVar4 = LiveStorage_GetUTC();
+          MatchRecorderDDLSetInt(&playerState,"UTCStartTime",uVar4);
+          uVar4 = SV_GetClientDIntStat((uint)(client->ps).clientNum,&g_TimePlayedTotal);
+          MatchRecorderDDLSetInt(&playerState,"totalPlaytime",uVar4);
+          uVar4 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountStart");
+          if (uVar4 != 0) {
+            uVar4 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountJoined");
+            MatchRecorderDDLSetInt(&g_HeaderState,"playerCountJoined",uVar4 + 1);
           }
-          uVar6 = SV_GetClientDIntStat((uint)(param_1->ps).clientNum,&g_Rank);
-          MatchRecorderDDLSetInt(&local_1c,"rankAtStart",uVar6);
-          MatchRecorderDDLSetInt(&local_1c,"natType",0);
-          dVar2.arrayIndex = local_1c.arrayIndex;
-          dVar2.absoluteOffset = local_1c.absoluteOffset;
-          dVar2.member = local_1c.member;
-          dVar2.ddl = local_1c.ddl;
-          MatchRecordWriteItemStatsStart(dVar2,(uint)(param_1->ps).clientNum);
+          uVar4 = SV_GetClientDIntStat((uint)(client->ps).clientNum,&g_Rank);
+          MatchRecorderDDLSetInt(&playerState,"rankAtStart",uVar4);
+          MatchRecorderDDLSetInt(&playerState,"natType",0);
+          playerState_01.arrayIndex = playerState.arrayIndex;
+          playerState_01.absoluteOffset = playerState.absoluteOffset;
+          playerState_01.member = playerState.member;
+          playerState_01.ddl = playerState.ddl;
+          MatchRecordWriteItemStatsStart(playerState_01,(uint)(client->ps).clientNum);
         }
-        local_c = local_c + 1;
-        MatchRecorderDDLSetInt(&local_1c,"num_lives",local_c);
-        MatchRecorderDDLSetInt(&local_1c,"currentLife",(int)local_20);
-        bVar3 = MatchRecord_GetLifeInSlot((int)local_20,&local_30);
-        if (bVar3) {
-          local_20 = local_20 + 1;
-          MatchRecord_SetLifeCount(local_20);
-          local_38 = (short)iVar5;
-          MatchRecorderDDLSetInt(&local_30,"player",(int)local_38);
-          MatchRecorderDDLSetInt(&local_30,"spawn_time",(int)(short)(level.time / 1000));
-          GetWorldLocation((param_1->ps).origin[0],(param_1->ps).origin[1],(param_1->ps).origin[2],
-                           &local_31,&local_5,&local_32);
-          MatchRecorderDDLSetInt(&local_30,"spawnX",(uint)local_31);
-          MatchRecorderDDLSetInt(&local_30,"spawnY",(uint)local_5);
-          MatchRecorderDDLSetInt(&local_30,"spawnZ",(uint)local_32);
-          MatchRecorderDDLSetInt(&local_30,"weapon",0);
-          MatchRecorderDDLSetInt(&local_30,"attacker",0xff);
-          MatchRecorderDDLSetInt(&local_30,"death_time",0xffff);
-          MatchRecorderDDLSetInt(&local_30,"victimX",0xff);
-          MatchRecorderDDLSetInt(&local_30,"victimY",0xff);
-          MatchRecorderDDLSetInt(&local_30,"victimZ",0xff);
+        numLives = numLives + 1;
+        MatchRecorderDDLSetInt(&playerState,"num_lives",numLives);
+        MatchRecorderDDLSetInt(&playerState,"currentLife",(int)lifeCount);
+        bVar1 = MatchRecord_GetLifeInSlot((int)lifeCount,&lifeState);
+        if (bVar1) {
+          lifeCount = lifeCount + 1;
+          MatchRecord_SetLifeCount(lifeCount);
+          playerSlot._0_2_ = (short)iVar3;
+          MatchRecorderDDLSetInt(&lifeState,"player",(int)(short)playerSlot);
+          MatchRecorderDDLSetInt(&lifeState,"spawn_time",(int)(short)(level.time / 1000));
+          GetWorldLocation((client->ps).origin[0],(client->ps).origin[1],(client->ps).origin[2],
+                           &spawnX,&spawnY,&spawnZ);
+          MatchRecorderDDLSetInt(&lifeState,"spawnX",(uint)spawnX);
+          MatchRecorderDDLSetInt(&lifeState,"spawnY",(uint)spawnY);
+          MatchRecorderDDLSetInt(&lifeState,"spawnZ",(uint)spawnZ);
+          MatchRecorderDDLSetInt(&lifeState,"weapon",0);
+          MatchRecorderDDLSetInt(&lifeState,"attacker",0xff);
+          MatchRecorderDDLSetInt(&lifeState,"death_time",0xffff);
+          MatchRecorderDDLSetInt(&lifeState,"victimX",0xff);
+          MatchRecorderDDLSetInt(&lifeState,"victimY",0xff);
+          MatchRecorderDDLSetInt(&lifeState,"victimZ",0xff);
         }
       }
     }
@@ -1605,32 +1646,38 @@ void __cdecl MatchRecordSpawn(gclient_s *param_1)
 // 005ACDA0  MatchRecordSetHitStat  (DW/MatchRecorder.cpp:1570)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-MatchRecordSetHitStat(ddlState_t param_1,gclient_s *param_2,hitLocation_t param_3,char *param_4)
+MatchRecordSetHitStat
+          (ddlState_t playerState,gclient_s *attackerClient,hitLocation_t hitLocation,
+          char *hitLocStatName)
 
 {
   uint uVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_28;
-  byte local_15;
-  ddlState_t local_14;
+  ddlState_t *searchState;
+  ddlState_t *resultState;
+  int argNum;
+  ddlState_t hitLocState;
+  uchar hitLocationValue;
+  ddlState_t tempState;
   
-  DDL_MoveToName(&param_1,&local_14,param_4);
-  DDL_MoveToIndex(&local_14,&local_14,param_3,1);
-  uVar1 = DDL_GetInt(&local_14,s_matchRecorderBuffer);
+  DDL_MoveToName(&playerState,&tempState,hitLocStatName);
+  DDL_MoveToIndex(&tempState,&tempState,hitLocation,1);
+  uVar1 = DDL_GetInt(&tempState,s_matchRecorderBuffer);
   if ((char)uVar1 != -1) {
-    local_15 = (char)uVar1 + 1;
-    DDL_SetInt(&local_14,(uint)local_15,s_matchRecorderBuffer);
+    hitLocationValue = (char)uVar1 + 1;
+    DDL_SetInt(&tempState,(uint)hitLocationValue,s_matchRecorderBuffer);
     va("%d");
     va("%d");
-    iVar4 = 4;
-    pdVar3 = &local_28;
-    pdVar2 = LiveStats_GetRootDDLState();
-    DDL_MoveTo(pdVar2,pdVar3,iVar4);
-    SV_SetClientDIntStat((uint)(param_2->ps).clientNum,&local_28,(uint)local_15);
+    argNum = 4;
+    resultState = &hitLocState;
+    searchState = LiveStats_GetRootDDLState();
+    DDL_MoveTo(searchState,resultState,argNum);
+    SV_SetClientDIntStat((uint)(attackerClient->ps).clientNum,&hitLocState,(uint)hitLocationValue);
   }
   return;
 }
@@ -1640,21 +1687,21 @@ MatchRecordSetHitStat(ddlState_t param_1,gclient_s *param_2,hitLocation_t param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl MatchRecordHit(gclient_s *param_1,hitLocation_t param_2)
+void __cdecl MatchRecordHit(gclient_s *attackerClient,hitLocation_t hitLocation)
 
 {
-  ddlState_t dVar1;
-  int iVar2;
-  ddlState_t local_14;
+  ddlState_t playerState_00;
+  int iVar1;
+  ddlState_t playerState;
   
-  if (param_1 != (gclient_s *)0x0) {
-    iVar2 = MatchRecord_SearchCreateForPlayer(param_1,&local_14);
-    if (iVar2 != -1) {
-      dVar1.arrayIndex = local_14.arrayIndex;
-      dVar1.absoluteOffset = local_14.absoluteOffset;
-      dVar1.member = local_14.member;
-      dVar1.ddl = local_14.ddl;
-      MatchRecordSetHitStat(dVar1,param_1,param_2,"hitLocations");
+  if (attackerClient != (gclient_s *)0x0) {
+    iVar1 = MatchRecord_SearchCreateForPlayer(attackerClient,&playerState);
+    if (iVar1 != -1) {
+      playerState_00.arrayIndex = playerState.arrayIndex;
+      playerState_00.absoluteOffset = playerState.absoluteOffset;
+      playerState_00.member = playerState.member;
+      playerState_00.ddl = playerState.ddl;
+      MatchRecordSetHitStat(playerState_00,attackerClient,hitLocation,"hitLocations");
     }
   }
   return;
@@ -1669,72 +1716,74 @@ void __cdecl MatchRecordHit(gclient_s *param_1,hitLocation_t param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-MatchRecordDeath(gclient_s *param_1,gclient_s *param_2,char *param_3,hitLocation_t param_4)
+MatchRecordDeath(gclient_s *client,gclient_s *attackerClient,char *weaponName,
+                hitLocation_t hitLocation)
 
 {
-  ddlState_t dVar1;
-  bool bVar2;
-  short sVar3;
-  int iVar4;
-  uint uVar5;
-  WeaponVariantDef *pWVar6;
+  ddlState_t playerState_00;
+  bool bVar1;
+  short sVar2;
+  int iVar3;
+  uint uVar4;
+  WeaponVariantDef *pWVar5;
   uint local_58;
-  byte local_4b;
-  byte local_4a;
-  byte local_49;
-  ddlState_t local_48;
-  uint local_38;
-  byte local_32;
-  byte local_31;
-  ddlState_t local_30;
-  byte local_1d;
-  uint local_1c;
-  short local_18;
-  ddlState_t local_14;
+  int attacker;
+  uchar killerY;
+  uchar killerX;
+  uchar killerZ;
+  ddlState_t playerState2;
+  uint iWeaponIndex;
+  uchar victimY;
+  uchar victimX;
+  ddlState_t lifeState;
+  uchar victimZ;
+  uint baseWeaponIndex;
+  short currentLife;
+  ddlState_t playerState;
   
   if ((((g_matchRecorderDDL != (ddlDef_t *)0x0) &&
-       (sVar3 = MatchRecord_GetPlayerCount(), sVar3 < 0x31)) &&
-      (sVar3 = MatchRecord_GetLifeCount(), sVar3 < 999)) &&
-     (iVar4 = MatchRecord_SearchCreateForPlayer(param_1,&local_14), iVar4 != -1)) {
-    uVar5 = MatchRecorderDDLGetInt(&local_14,"currentLife");
-    local_18 = (short)uVar5;
-    bVar2 = MatchRecord_GetLifeInSlot((int)local_18,&local_30);
-    if (bVar2) {
-      MatchRecorderDDLSetInt(&local_30,"death_time",(int)(short)(level.time / 1000));
-      local_38 = G_GetWeaponIndexForName(param_3);
-      local_1c = local_38;
-      if (local_38 != 0) {
-        pWVar6 = BG_GetWeaponVariantDef(local_38);
-        if (pWVar6->iVariantCount < 0) {
-          local_58 = -pWVar6->iVariantCount;
+       (sVar2 = MatchRecord_GetPlayerCount(), sVar2 < 0x31)) &&
+      (sVar2 = MatchRecord_GetLifeCount(), sVar2 < 999)) &&
+     (iVar3 = MatchRecord_SearchCreateForPlayer(client,&playerState), iVar3 != -1)) {
+    uVar4 = MatchRecorderDDLGetInt(&playerState,"currentLife");
+    currentLife = (short)uVar4;
+    bVar1 = MatchRecord_GetLifeInSlot((int)currentLife,&lifeState);
+    if (bVar1) {
+      MatchRecorderDDLSetInt(&lifeState,"death_time",(int)(short)(level.time / 1000));
+      iWeaponIndex = G_GetWeaponIndexForName(weaponName);
+      baseWeaponIndex = iWeaponIndex;
+      if (iWeaponIndex != 0) {
+        pWVar5 = BG_GetWeaponVariantDef(iWeaponIndex);
+        if (pWVar5->iVariantCount < 0) {
+          local_58 = -pWVar5->iVariantCount;
         }
         else {
-          local_58 = local_38;
+          local_58 = iWeaponIndex;
         }
-        local_1c = BG_GetWeaponTableItemIndex(local_58);
+        baseWeaponIndex = BG_GetWeaponTableItemIndex(local_58);
       }
-      MatchRecorderDDLSetInt(&local_30,"weapon",(int)(short)local_1c);
-      if (param_2 != (gclient_s *)0x0) {
-        uVar5 = MatchRecord_SearchCreateForPlayer(param_2,&local_48);
-        if (uVar5 != 0xffffffff) {
-          dVar1.arrayIndex = local_48.arrayIndex;
-          dVar1.absoluteOffset = local_48.absoluteOffset;
-          dVar1.member = local_48.member;
-          dVar1.ddl = local_48.ddl;
-          MatchRecordSetHitStat(dVar1,param_2,param_4,"criticalHitLocations");
-          MatchRecorderDDLSetInt(&local_30,"attacker",uVar5);
+      MatchRecorderDDLSetInt(&lifeState,"weapon",(int)(short)baseWeaponIndex);
+      if (attackerClient != (gclient_s *)0x0) {
+        uVar4 = MatchRecord_SearchCreateForPlayer(attackerClient,&playerState2);
+        if (uVar4 != 0xffffffff) {
+          playerState_00.arrayIndex = playerState2.arrayIndex;
+          playerState_00.absoluteOffset = playerState2.absoluteOffset;
+          playerState_00.member = playerState2.member;
+          playerState_00.ddl = playerState2.ddl;
+          MatchRecordSetHitStat(playerState_00,attackerClient,hitLocation,"criticalHitLocations");
+          MatchRecorderDDLSetInt(&lifeState,"attacker",uVar4);
         }
-        GetWorldLocation((param_2->ps).origin[0],(param_2->ps).origin[1],(param_2->ps).origin[2],
-                         &local_4a,&local_4b,&local_49);
-        MatchRecorderDDLSetInt(&local_30,"killerX",(uint)local_4a);
-        MatchRecorderDDLSetInt(&local_30,"killerY",(uint)local_4b);
-        MatchRecorderDDLSetInt(&local_30,"killerZ",(uint)local_49);
+        GetWorldLocation((attackerClient->ps).origin[0],(attackerClient->ps).origin[1],
+                         (attackerClient->ps).origin[2],&killerX,&killerY,&killerZ);
+        MatchRecorderDDLSetInt(&lifeState,"killerX",(uint)killerX);
+        MatchRecorderDDLSetInt(&lifeState,"killerY",(uint)killerY);
+        MatchRecorderDDLSetInt(&lifeState,"killerZ",(uint)killerZ);
       }
-      GetWorldLocation((param_1->ps).origin[0],(param_1->ps).origin[1],(param_1->ps).origin[2],
-                       &local_31,&local_32,&local_1d);
-      MatchRecorderDDLSetInt(&local_30,"victimX",(uint)local_31);
-      MatchRecorderDDLSetInt(&local_30,"victimY",(uint)local_32);
-      MatchRecorderDDLSetInt(&local_30,"victimZ",(uint)local_1d);
+      GetWorldLocation((client->ps).origin[0],(client->ps).origin[1],(client->ps).origin[2],&victimX
+                       ,&victimY,&victimZ);
+      MatchRecorderDDLSetInt(&lifeState,"victimX",(uint)victimX);
+      MatchRecorderDDLSetInt(&lifeState,"victimY",(uint)victimY);
+      MatchRecorderDDLSetInt(&lifeState,"victimZ",(uint)victimZ);
     }
   }
   return;
@@ -1746,35 +1795,37 @@ MatchRecordDeath(gclient_s *param_1,gclient_s *param_2,char *param_3,hitLocation
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl MatchRecordPointsSpent(int param_1,int param_2,pointsSpent_t param_3,int param_4)
+void __cdecl
+MatchRecordPointsSpent(int controllerIndex,int amount,pointsSpent_t reasonType,int reasonIndex)
 
 {
   int *piVar1;
   int iVar2;
-  overlappedTask *poVar3;
-  ulong64 uVar4;
-  int local_28;
-  int local_24 [6];
-  undefined8 local_c;
+  overlappedTask *task;
+  ulong64 uVar3;
+  int buffer;
+  int local_24 [5];
+  int offset;
+  undefined8 xuid;
   
   local_24[4] = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_24[5] = 0;
-  if (param_3 != POINTSSPENT_GUEST_SIGNIN) {
-    uVar4 = Live_GetXuid(param_1);
-    local_c._4_4_ = (int)(uVar4 >> 0x20);
-    local_24[0] = local_c._4_4_;
-    local_28 = param_2;
-    iVar2 = local_24[5] + 8;
-    local_24[5] = local_24[5] + 0xc;
-    local_c = uVar4;
-    *(pointsSpent_t *)((int)local_24 + iVar2) = param_3;
-    piVar1 = (int *)((int)local_24 + local_24[5]);
-    local_24[5] = local_24[5] + 4;
-    *piVar1 = param_4;
-    local_24[5] = local_24[5] + 4;
-    if (local_24[5] < 0x15) {
-      poVar3 = TaskManager_GetOpenTaskSlot(overlappedTasks,param_1,1);
-      dwRecordEvent(poVar3,(char *)&local_28,local_24[5],3);
+  offset = 0;
+  if (reasonType != POINTSSPENT_GUEST_SIGNIN) {
+    uVar3 = Live_GetXuid(controllerIndex);
+    xuid._4_4_ = (int)(uVar3 >> 0x20);
+    local_24[0] = xuid._4_4_;
+    buffer = amount;
+    iVar2 = offset + 8;
+    offset = offset + 0xc;
+    xuid = uVar3;
+    *(pointsSpent_t *)((int)local_24 + iVar2) = reasonType;
+    piVar1 = (int *)((int)local_24 + offset);
+    offset = offset + 4;
+    *piVar1 = reasonIndex;
+    offset = offset + 4;
+    if (offset < 0x15) {
+      task = TaskManager_GetOpenTaskSlot(overlappedTasks,controllerIndex,1);
+      dwRecordEvent(task,(char *)&buffer,offset,3);
     }
   }
   return;
@@ -1785,25 +1836,26 @@ void __cdecl MatchRecordPointsSpent(int param_1,int param_2,pointsSpent_t param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl MatchRecordEnd(gclient_s *param_1)
+void __cdecl MatchRecordEnd(gclient_s *client)
 
 {
-  ddlState_t dVar1;
-  int iVar2;
-  uint uVar3;
-  ddlState_t local_14;
+  ddlState_t playerState_00;
+  int iVar1;
+  uint uVar2;
+  uint rank;
+  ddlState_t playerState;
   
-  iVar2 = MatchRecord_SearchCreateForPlayer(param_1,&local_14);
-  if (iVar2 != -1) {
-    uVar3 = LiveStorage_GetUTC();
-    MatchRecorderDDLSetInt(&local_14,"UTCLeaveTime",uVar3);
-    uVar3 = SV_GetClientDIntStat((uint)(param_1->ps).clientNum,&g_Rank);
-    MatchRecorderDDLSetInt(&local_14,"rankAtEnd",uVar3);
-    dVar1.arrayIndex = local_14.arrayIndex;
-    dVar1.absoluteOffset = local_14.absoluteOffset;
-    dVar1.member = local_14.member;
-    dVar1.ddl = local_14.ddl;
-    MatchRecordWriteItemStatsEnd(dVar1,(uint)(param_1->ps).clientNum);
+  iVar1 = MatchRecord_SearchCreateForPlayer(client,&playerState);
+  if (iVar1 != -1) {
+    uVar2 = LiveStorage_GetUTC();
+    MatchRecorderDDLSetInt(&playerState,"UTCLeaveTime",uVar2);
+    uVar2 = SV_GetClientDIntStat((uint)(client->ps).clientNum,&g_Rank);
+    MatchRecorderDDLSetInt(&playerState,"rankAtEnd",uVar2);
+    playerState_00.arrayIndex = playerState.arrayIndex;
+    playerState_00.absoluteOffset = playerState.absoluteOffset;
+    playerState_00.member = playerState.member;
+    playerState_00.ddl = playerState.ddl;
+    MatchRecordWriteItemStatsEnd(playerState_00,(uint)(client->ps).clientNum);
   }
   return;
 }
@@ -1819,6 +1871,8 @@ void __cdecl MatchRecordBegin(void)
   bool bVar1;
   uint uVar2;
   int iVar3;
+  int playersAtStart;
+  int utcStartTime;
   
   uVar2 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountStart");
   if (uVar2 == 0) {
@@ -1846,45 +1900,48 @@ void __cdecl MatchRecordBegin(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl MatchRecordPlayerDetails(gclient_s *param_1,char *param_2)
+void __cdecl MatchRecordPlayerDetails(gclient_s *client,char *reason)
 
 {
   short sVar1;
   uint uVar2;
   int iVar3;
-  char local_2c [16];
+  uint playerCountLeft;
+  clientSession_t *clSess;
+  int oldStatesValue;
+  char shortReason [16];
   uint local_1c;
-  uint local_18;
-  ddlState_t local_14;
+  uint playerCountEnd;
+  ddlState_t playerState;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((g_matchRecorderDDL != (ddlDef_t *)0x0) &&
      (uVar2 = MatchRecorderDDLGetInt(&g_HeaderState,"titleID"), uVar2 == 0)) {
     sVar1 = MatchRecord_GetPlayerCount();
     if ((sVar1 < 0x31) && (sVar1 = MatchRecord_GetLifeCount(), sVar1 < 999)) {
-      iVar3 = MatchRecord_SearchCreateForPlayer(param_1,&local_14);
+      iVar3 = MatchRecord_SearchCreateForPlayer(client,&playerState);
       if (iVar3 != -1) {
-        uVar2 = MatchRecorderDDLGetInt(&local_14,"deaths");
-        if ((int)uVar2 < (param_1->sess).cs.score.deaths) {
-          MatchRecorderDDLSetInt(&local_14,"deaths",(param_1->sess).cs.score.deaths);
+        uVar2 = MatchRecorderDDLGetInt(&playerState,"deaths");
+        if ((int)uVar2 < (client->sess).cs.score.deaths) {
+          MatchRecorderDDLSetInt(&playerState,"deaths",(client->sess).cs.score.deaths);
         }
-        uVar2 = MatchRecorderDDLGetInt(&local_14,"kills");
-        if ((int)uVar2 < (param_1->sess).cs.score.kills) {
-          MatchRecorderDDLSetInt(&local_14,"kills",(param_1->sess).cs.score.kills);
+        uVar2 = MatchRecorderDDLGetInt(&playerState,"kills");
+        if ((int)uVar2 < (client->sess).cs.score.kills) {
+          MatchRecorderDDLSetInt(&playerState,"kills",(client->sess).cs.score.kills);
         }
-        uVar2 = MatchRecorderDDLGetInt(&local_14,"score");
-        if ((int)uVar2 < (param_1->sess).cs.score.score) {
-          MatchRecorderDDLSetInt(&local_14,"score",(param_1->sess).cs.score.score);
+        uVar2 = MatchRecorderDDLGetInt(&playerState,"score");
+        if ((int)uVar2 < (client->sess).cs.score.score) {
+          MatchRecorderDDLSetInt(&playerState,"score",(client->sess).cs.score.score);
         }
-        MatchRecordEnd(param_1);
-        local_18 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountEnd");
-        if (local_18 == 0) {
+        MatchRecordEnd(client);
+        playerCountEnd = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountEnd");
+        if (playerCountEnd == 0) {
           uVar2 = MatchRecorderDDLGetInt(&g_HeaderState,"playerCountLeft");
           MatchRecorderDDLSetInt(&g_HeaderState,"playerCountLeft",uVar2 + 1);
         }
-        I_strncpyz(local_2c,param_2,0x10);
-        MatchRecorderDDLSetString(&local_14,"gamertag",(param_1->sess).cs.name);
-        MatchRecorderDDLSetString(&local_14,"dropReason",local_2c);
+        I_strncpyz(shortReason,reason,0x10);
+        MatchRecorderDDLSetString(&playerState,"gamertag",(client->sess).cs.name);
+        MatchRecorderDDLSetString(&playerState,"dropReason",shortReason);
       }
     }
     else {
@@ -1899,32 +1956,32 @@ void __cdecl MatchRecordPlayerDetails(gclient_s *param_1,char *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl MatchRecordSetPlayerStat(gclient_s *param_1,char *param_2,int param_3)
+bool __cdecl MatchRecordSetPlayerStat(gclient_s *client,char *statName,int statValue)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  ddlState_t tempState;
+  ddlState_t playerState;
   
   if (g_matchRecorderDDL == (ddlDef_t *)0x0) {
     bVar1 = false;
   }
   else {
-    iVar2 = MatchRecord_SearchCreateForPlayer(param_1,&local_14);
+    iVar2 = MatchRecord_SearchCreateForPlayer(client,&playerState);
     if (iVar2 == -1) {
       bVar1 = false;
     }
     else {
-      iVar2 = DDL_MoveToName(&local_14,&local_24,param_2);
+      iVar2 = DDL_MoveToName(&playerState,&tempState,statName);
       if (iVar2 == 0) {
         pcVar3 = va("Unhandled stat - clientNum %i statName %s statValue %i\n");
         Com_Printf(0x10,pcVar3);
         bVar1 = false;
       }
       else {
-        DDL_SetInt(&local_24,param_3,s_matchRecorderBuffer);
+        DDL_SetInt(&tempState,statValue,s_matchRecorderBuffer);
         pcVar3 = va("MatchRecord: clientNum %i statName %s statValue %i\n");
         Com_Printf(0x10,pcVar3);
         bVar1 = true;
@@ -1949,23 +2006,23 @@ void __cdecl MatchRecordMovement(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_3c;
-  gclient_s *local_2c;
-  uint local_28;
-  ddlState_t local_24;
-  uint local_14;
-  int local_10;
-  byte local_c;
+  ddlState_t movementBufferState;
+  gclient_s *client;
+  uint offset;
+  ddlState_t playerState;
+  int clientNum;
+  int i;
+  byte origin;
   byte local_b;
   uchar local_a [2];
-  gentity_s *local_8;
+  gentity_s *ent;
   
   if (((g_matchRecorderDDL != (ddlDef_t *)0x0) && (level.time < 900000)) &&
      (level.time % 18000 == 0)) {
-    local_8 = g_entities;
-    for (local_10 = 0; local_10 < level.maxclients; local_10 = local_10 + 1) {
-      local_14 = (uint)(local_8->client->ps).clientNum;
-      if (((com_maxclients->current).unsignedInt <= local_14) &&
+    ent = g_entities;
+    for (i = 0; i < level.maxclients; i = i + 1) {
+      clientNum = (int)(ent->client->ps).clientNum;
+      if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x747,
                                    0,
                                    "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -1974,25 +2031,26 @@ void __cdecl MatchRecordMovement(void)
         (*pcVar1)();
         return;
       }
-      if ((local_8->r).inuse != '\0') {
-        local_2c = local_8->client;
-        iVar3 = MatchRecord_SearchCreateForPlayer(local_2c,&local_24);
+      if ((ent->r).inuse != '\0') {
+        client = ent->client;
+        iVar3 = MatchRecord_SearchCreateForPlayer(client,&playerState);
         if ((iVar3 != -1) &&
            ((svs.clients == (client_t *)0x0 ||
-            (*(int *)((int)svs.clients + local_14 * 0x84d00 + 0x63914) == 0)))) {
-          GetWorldLocation(level.clients[local_14].ps.origin[0],level.clients[local_14].ps.origin[1]
-                           ,level.clients[local_14].ps.origin[2],&local_c,&local_b,local_a);
-          local_28 = (level.time / 18000) * level.maxclients * 2 + local_14;
-          if (local_28 < 0xc80) {
-            DDL_MoveToName(&g_RootState,&local_3c,"movementBuffer");
-            DDL_MoveToIndex(&local_3c,&local_3c,local_28,1);
-            DDL_SetInt(&local_3c,(uint)local_c,s_matchRecorderBuffer);
-            DDL_IterateNext(&local_3c,&local_3c);
-            DDL_SetInt(&local_3c,(uint)local_b,s_matchRecorderBuffer);
+            (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63914) == 0)))) {
+          GetWorldLocation(level.clients[clientNum].ps.origin[0],
+                           level.clients[clientNum].ps.origin[1],
+                           level.clients[clientNum].ps.origin[2],&origin,&local_b,local_a);
+          offset = (level.time / 18000) * level.maxclients * 2 + clientNum;
+          if (offset < 0xc80) {
+            DDL_MoveToName(&g_RootState,&movementBufferState,"movementBuffer");
+            DDL_MoveToIndex(&movementBufferState,&movementBufferState,offset,1);
+            DDL_SetInt(&movementBufferState,(uint)origin,s_matchRecorderBuffer);
+            DDL_IterateNext(&movementBufferState,&movementBufferState);
+            DDL_SetInt(&movementBufferState,(uint)local_b,s_matchRecorderBuffer);
           }
         }
       }
-      local_8 = local_8 + 1;
+      ent = ent + 1;
     }
   }
   return;
@@ -2003,14 +2061,16 @@ void __cdecl MatchRecordMovement(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl MatchRecordEventComplete(int param_1)
+taskCompleteResults __cdecl MatchRecordEventComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  taskCompleteResults result;
+  int controllerIndex;
   
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x77c,0,"%s"
                             );
     if (!bVar2) {
@@ -2019,7 +2079,7 @@ taskCompleteResults __cdecl MatchRecordEventComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 1) {
+  if (overlappedTasks[slot].type != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp",0x77d,0,"%s"
                             );
     if (!bVar2) {
@@ -2028,9 +2088,9 @@ taskCompleteResults __cdecl MatchRecordEventComplete(int param_1)
       return tVar3;
     }
   }
-  tVar3 = dwRecordEventComplete(overlappedTasks + param_1,overlappedTasks[param_1].controllerIndex);
+  tVar3 = dwRecordEventComplete(overlappedTasks + slot,overlappedTasks[slot].controllerIndex);
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(overlappedTasks + param_1);
+    TaskManager_ClearTask(overlappedTasks + slot);
   }
   return tVar3;
 }
@@ -2044,11 +2104,11 @@ void __cdecl Live_CheckOngoingMatchRecordingTasks(void)
 
 {
   taskCompleteResults tVar1;
-  int local_8;
+  int tasknum;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if ((overlappedTasks[local_8].active != false) &&
-       (tVar1 = MatchRecordEventComplete(local_8), tVar1 != TASK_NOTCOMPLETE)) {
+  for (tasknum = 0; tasknum < 0x20; tasknum = tasknum + 1) {
+    if ((overlappedTasks[tasknum].active != false) &&
+       (tVar1 = MatchRecordEventComplete(tasknum), tVar1 != TASK_NOTCOMPLETE)) {
       if (tVar1 == TASK_COMPLETE) {
         Com_Printf(0x10,"Upload of COD7 xml match data was a success.\n");
       }

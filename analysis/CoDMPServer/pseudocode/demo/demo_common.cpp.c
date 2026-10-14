@@ -34,6 +34,12 @@ void __cdecl _dynamic_initializer_for__s_demoUploadInfo__(void)
 
 // 009B7360  Demo_AddDemoClient_f  (demo/demo_common.cpp:117)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Demo_AddDemoClient_f(void)
 
 {
@@ -43,6 +49,12 @@ void __cdecl Demo_AddDemoClient_f(void)
 
 
 // 009B7370  Demo_RemoveDemoClient_f  (demo/demo_common.cpp:122)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Demo_RemoveDemoClient_f(void)
 
@@ -138,6 +150,12 @@ void __cdecl Demo_RegisterDvars(void)
 
 
 // 009B6DB0  Demo_RegisterCommands  (demo/demo_common.cpp:191)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_RegisterCommands(void)
 
@@ -298,20 +316,20 @@ void __cdecl Demo_RegisterCommands(void)
 /* WARNING: Enum "fileShareSearchFileType": Some values do not have unique names */
 
 void __cdecl
-Demo_SetTags(int param_1,int *param_2,bdTag *param_3,demoMetaInfo *param_4,
-            fileShareSearchFileType param_5)
+Demo_SetTags(int controllerIndex,int *numTags,bdTag *tags,demoMetaInfo *info,
+            fileShareSearchFileType fileType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int *piVar4;
-  bdTag *pbVar5;
-  int iVar6;
-  int local_18;
-  int local_8;
+  int *numTags_00;
+  bdTag *tags_00;
+  int maxNumTags;
+  int i_2;
+  int i;
   
-  if (param_5 == FILESHARE_FILETYPE_SCREENSHOT) {
+  if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",0x102,0,"%s"
                             );
     if (!bVar2) {
@@ -320,42 +338,40 @@ Demo_SetTags(int param_1,int *param_2,bdTag *param_3,demoMetaInfo *param_4,
       return;
     }
   }
-  *param_2 = 0;
-  local_8 = 0;
+  *numTags = 0;
+  i = 0;
   do {
-    if (DAT_098b9e44 <= local_8) {
+    if (DAT_098b9e44 <= i) {
 LAB_009b741d:
-      iVar6 = 0x28;
-      piVar4 = param_2;
-      pbVar5 = param_3;
-      iVar3 = Live_FileShare_GetIndexFromGameType(param_4->gameType);
-      Live_FileShare_AddTag(1,(longlong)iVar3,piVar4,pbVar5,iVar6);
-      if ((param_5 == FILESHARE_FILETYPE_CLIP) || (param_5 == FILESHARE_FILETYPE_FILM)) {
-        Live_FileShare_AddTag(3,(longlong)(int)((param_4->type != false) + 1),param_2,param_3,0x28);
+      maxNumTags = 0x28;
+      numTags_00 = numTags;
+      tags_00 = tags;
+      iVar3 = Live_FileShare_GetIndexFromGameType(info->gameType);
+      Live_FileShare_AddTag(1,(longlong)iVar3,numTags_00,tags_00,maxNumTags);
+      if ((fileType == FILESHARE_FILETYPE_CLIP) || (fileType == FILESHARE_FILETYPE_FILM)) {
+        Live_FileShare_AddTag(3,(longlong)(int)((info->type != false) + 1),numTags,tags,0x28);
       }
-      else if (param_5 == FILESHARE_FILETYPE_AVI) {
-        Live_FileShare_AddTag(3,0x8000,param_2,param_3,0x28);
+      else if (fileType == FILESHARE_FILETYPE_AVI) {
+        Live_FileShare_AddTag(3,0x8000,numTags,tags,0x28);
       }
-      else if (param_5 == FILESHARE_FILETYPE_SCREENSHOT) {
-        Live_FileShare_AddTag(3,3,param_2,param_3,0x28);
+      else if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+        Live_FileShare_AddTag(3,3,numTags,tags,0x28);
       }
-      if (param_5 != FILESHARE_FILETYPE_SCREENSHOT) {
-        for (local_18 = 0; local_18 < param_4->numConnectedPlayersInfoCount; local_18 = local_18 + 1
-            ) {
+      if (fileType != FILESHARE_FILETYPE_SCREENSHOT) {
+        for (i_2 = 0; i_2 < info->numConnectedPlayersInfoCount; i_2 = i_2 + 1) {
           Live_FileShare_AddTag
-                    (4,CONCAT44(*(undefined4 *)((int)&param_4->connectedPlayers[local_18].xuid + 4),
-                                (int)param_4->connectedPlayers[local_18].xuid),param_2,param_3,0x28)
-          ;
+                    (4,CONCAT44(*(undefined4 *)((int)&info->connectedPlayers[i_2].xuid + 4),
+                                (int)info->connectedPlayers[i_2].xuid),numTags,tags,0x28);
         }
       }
       return;
     }
-    iVar3 = I_strcmp(&DAT_098b9e68 + local_8 * 0x130,param_4->mapName);
+    iVar3 = I_strcmp(&DAT_098b9e68 + i * 0x130,info->mapName);
     if (iVar3 == 0) {
-      Live_FileShare_AddTag(2,(longlong)local_8,param_2,param_3,0x28);
+      Live_FileShare_AddTag(2,(longlong)i,numTags,tags,0x28);
       goto LAB_009b741d;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -367,20 +383,20 @@ LAB_009b741d:
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-Demo_SetTags(int param_1,int *param_2,bdTag *param_3,screenshotMetaInfo *param_4,
-            fileShareSearchFileType param_5)
+Demo_SetTags(int controllerIndex,int *numTags,bdTag *tags,screenshotMetaInfo *info,
+            fileShareSearchFileType fileType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int *piVar4;
-  bdTag *pbVar5;
-  int iVar6;
-  int local_14;
-  int local_10;
+  int *numTags_00;
+  bdTag *tags_00;
+  int maxNumTags;
+  int i_2;
+  int i;
   
-  if (param_5 != FILESHARE_FILETYPE_SCREENSHOT) {
+  if (fileType != FILESHARE_FILETYPE_SCREENSHOT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",0x139,0,"%s"
                             );
     if (!bVar2) {
@@ -389,32 +405,32 @@ Demo_SetTags(int param_1,int *param_2,bdTag *param_3,screenshotMetaInfo *param_4
       return;
     }
   }
-  *param_2 = 0;
-  local_10 = 0;
+  *numTags = 0;
+  i = 0;
   do {
-    if (DAT_098b9e44 <= local_10) {
+    if (DAT_098b9e44 <= i) {
 LAB_009b75cd:
-      iVar6 = 0x28;
-      piVar4 = param_2;
-      pbVar5 = param_3;
-      iVar3 = Live_FileShare_GetIndexFromGameType(param_4->gameType);
-      Live_FileShare_AddTag(1,(longlong)iVar3,piVar4,pbVar5,iVar6);
-      Live_FileShare_AddTag(3,3,param_2,param_3,0x28);
-      for (local_14 = 0; local_14 < ((demo.playback)->screenshotInfo).screenshotPlayers.count;
-          local_14 = local_14 + 1) {
+      maxNumTags = 0x28;
+      numTags_00 = numTags;
+      tags_00 = tags;
+      iVar3 = Live_FileShare_GetIndexFromGameType(info->gameType);
+      Live_FileShare_AddTag(1,(longlong)iVar3,numTags_00,tags_00,maxNumTags);
+      Live_FileShare_AddTag(3,3,numTags,tags,0x28);
+      for (i_2 = 0; i_2 < ((demo.playback)->screenshotInfo).screenshotPlayers.count; i_2 = i_2 + 1)
+      {
         Live_FileShare_AddTag
-                  (4,CONCAT44((demo.playback)->buttonPressTime[local_14 * 2 + 0xf],
+                  (4,CONCAT44((demo.playback)->buttonPressTime[i_2 * 2 + 0xf],
                               (int)((demo.playback)->screenshotInfo).screenshotPlayers.playerXuids
-                                   [local_14]),param_2,param_3,0x28);
+                                   [i_2]),numTags,tags,0x28);
       }
       return;
     }
-    iVar3 = I_strcmp(&DAT_098b9e68 + local_10 * 0x130,param_4->mapName);
+    iVar3 = I_strcmp(&DAT_098b9e68 + i * 0x130,info->mapName);
     if (iVar3 == 0) {
-      Live_FileShare_AddTag(2,(longlong)local_10,param_2,param_3,0x28);
+      Live_FileShare_AddTag(2,(longlong)i,numTags,tags,0x28);
       goto LAB_009b75cd;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -425,31 +441,31 @@ LAB_009b75cd:
 /* WARNING: Enum "fileShareSearchFileType": Some values do not have unique names */
 
 bool __cdecl
-Demo_SetMetaData(int param_1,char *param_2,int *param_3,demoMetaInfo *param_4,
-                screenshotMetaInfo *param_5,fileShareSearchFileType param_6)
+Demo_SetMetaData(int controllerIndex,char *metaData,int *metaDataSize,demoMetaInfo *dInfo,
+                screenshotMetaInfo *sInfo,fileShareSearchFileType fileType)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  uint uVar6;
-  ulong64 uVar7;
-  char *pcVar8;
+  char *value;
+  uint uVar5;
+  ulong64 uVar6;
+  char *pcVar7;
   char *in_stack_fffffed0;
   byte local_129;
   char *local_128;
   byte local_121;
   char *local_120;
-  char local_11c [256];
+  char backup [256];
   uint local_1c;
-  ddlState_t local_18;
-  uint local_8;
+  ddlState_t state;
+  int bitSize;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-    if (param_5 == (screenshotMetaInfo *)0x0) {
+  if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+    if (sInfo == (screenshotMetaInfo *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",0x160,0,
                                "Screenshot info expected while setting meta data.");
       if (!bVar2) {
@@ -460,7 +476,7 @@ Demo_SetMetaData(int param_1,char *param_2,int *param_3,demoMetaInfo *param_4,
       return false;
     }
   }
-  else if (param_4 == (demoMetaInfo *)0x0) {
+  else if (dInfo == (demoMetaInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",0x166,0,
                              "Demo info expected while setting meta data.");
     if (!bVar2) {
@@ -470,88 +486,87 @@ Demo_SetMetaData(int param_1,char *param_2,int *param_3,demoMetaInfo *param_4,
     }
     return false;
   }
-  iVar4 = DDL_AssociateBuffer(param_2,0xff,g_fileshareDDL);
+  iVar4 = DDL_AssociateBuffer(metaData,0xff,g_fileshareDDL);
   if ((iVar4 != 0) ||
-     (iVar4 = DDL_FixBufferVersion(param_2,g_fileshareDDL,"ddl_mp/file_share.ddl",local_11c,0xff),
+     (iVar4 = DDL_FixBufferVersion(metaData,g_fileshareDDL,"ddl_mp/file_share.ddl",backup,0xff),
      iVar4 != 0)) {
-    local_8 = DDL_GetTotalBufferBitSize(g_fileshareDDL);
-    *param_3 = (int)(local_8 + ((int)local_8 >> 0x1f & 7U)) >> 3;
-    uVar6 = local_8 & 0x80000007;
-    if ((int)uVar6 < 0) {
-      uVar6 = (uVar6 - 1 | 0xfffffff8) + 1;
+    bitSize = DDL_GetTotalBufferBitSize(g_fileshareDDL);
+    *metaDataSize = (int)(bitSize + (bitSize >> 0x1f & 7U)) >> 3;
+    uVar5 = bitSize & 0x80000007;
+    if ((int)uVar5 < 0) {
+      uVar5 = (uVar5 - 1 | 0xfffffff8) + 1;
     }
-    if (uVar6 != 0) {
-      *param_3 = *param_3 + 1;
+    if (uVar5 != 0) {
+      *metaDataSize = *metaDataSize + 1;
     }
-    iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"authorName");
+    iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"authorName");
     if (iVar4 != 0) {
-      pcVar8 = param_2;
-      pcVar5 = Live_ControllerIndex_GetClientName(param_1);
-      iVar4 = DDL_SetString(&local_18,pcVar5,pcVar8);
+      pcVar7 = metaData;
+      value = Live_ControllerIndex_GetClientName(controllerIndex);
+      iVar4 = DDL_SetString(&state,value,pcVar7);
       if (iVar4 != 0) {
-        iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"authorXuid");
+        iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"authorXuid");
         if (iVar4 != 0) {
-          pcVar8 = param_2;
-          uVar7 = Live_GetXuid(param_1);
-          iVar4 = DDL_SetInt64(&local_18,CONCAT44(pcVar8,(int)(uVar7 >> 0x20)),in_stack_fffffed0);
+          pcVar7 = metaData;
+          uVar6 = Live_GetXuid(controllerIndex);
+          iVar4 = DDL_SetInt64(&state,CONCAT44(pcVar7,(int)(uVar6 >> 0x20)),in_stack_fffffed0);
           if (iVar4 != 0) {
-            iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"name");
+            iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
             if (iVar4 != 0) {
-              if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-                local_120 = param_5->name;
+              if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+                local_120 = sInfo->name;
               }
               else {
-                local_120 = param_4->name;
+                local_120 = dInfo->name;
               }
-              iVar4 = DDL_SetString(&local_18,local_120,param_2);
+              iVar4 = DDL_SetString(&state,local_120,metaData);
               if (iVar4 != 0) {
-                iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"isModifiedName");
+                iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
                 if (iVar4 != 0) {
-                  if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-                    local_121 = param_5->isModifiedName;
+                  if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+                    local_121 = sInfo->isModifiedName;
                   }
                   else {
-                    local_121 = param_4->isModifiedName;
+                    local_121 = dInfo->isModifiedName;
                   }
-                  iVar4 = DDL_SetInt(&local_18,(uint)local_121,param_2);
+                  iVar4 = DDL_SetInt(&state,(uint)local_121,metaData);
                   if (iVar4 != 0) {
-                    iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"description");
+                    iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
                     if (iVar4 != 0) {
-                      if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-                        local_128 = param_5->description;
+                      if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+                        local_128 = sInfo->description;
                       }
                       else {
-                        local_128 = param_4->description;
+                        local_128 = dInfo->description;
                       }
-                      iVar4 = DDL_SetString(&local_18,local_128,param_2);
+                      iVar4 = DDL_SetString(&state,local_128,metaData);
                       if (iVar4 != 0) {
-                        iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,
-                                               "isModifiedDescription");
+                        iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedDescription")
+                        ;
                         if (iVar4 != 0) {
-                          if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-                            local_129 = param_5->isModifiedDescription;
+                          if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+                            local_129 = sInfo->isModifiedDescription;
                           }
                           else {
-                            local_129 = param_4->isModifiedDescription;
+                            local_129 = dInfo->isModifiedDescription;
                           }
-                          iVar4 = DDL_SetInt(&local_18,(uint)local_129,param_2);
+                          iVar4 = DDL_SetInt(&state,(uint)local_129,metaData);
                           if (iVar4 != 0) {
-                            iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"createTime");
+                            iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime");
                             if (iVar4 != 0) {
-                              if (param_6 == FILESHARE_FILETYPE_SCREENSHOT) {
-                                uVar6 = param_5->createTime;
+                              if (fileType == FILESHARE_FILETYPE_SCREENSHOT) {
+                                uVar5 = sInfo->createTime;
                               }
                               else {
-                                uVar6 = param_4->createTime;
+                                uVar5 = dInfo->createTime;
                               }
-                              iVar4 = DDL_SetInt(&local_18,uVar6,param_2);
+                              iVar4 = DDL_SetInt(&state,uVar5,metaData);
                               if (iVar4 != 0) {
-                                if ((param_6 != FILESHARE_FILETYPE_SCREENSHOT) &&
-                                   ((iVar4 = DDL_MoveToName(&g_fileShareRootState,&local_18,"length"
-                                                           ), iVar4 == 0 ||
-                                    (iVar4 = DDL_SetInt(&local_18,
-                                                        param_4->endTime - param_4->startTime,
-                                                        param_2), iVar4 == 0)))) {
+                                if ((fileType != FILESHARE_FILETYPE_SCREENSHOT) &&
+                                   ((iVar4 = DDL_MoveToName(&g_fileShareRootState,&state,"length"),
+                                    iVar4 == 0 ||
+                                    (iVar4 = DDL_SetInt(&state,dInfo->endTime - dInfo->startTime,
+                                                        metaData), iVar4 == 0)))) {
                                   Com_PrintError(0x10,
                                                  "Could not set \'length\' in the file share ddl.\n"
                                                 );
@@ -603,45 +618,45 @@ Demo_SetMetaData(int param_1,char *param_2,int *param_3,demoMetaInfo *param_4,
 /* WARNING: Enum "fileShareSearchFileType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Demo_StreamingSuccessCallback(int param_1,ulong64 param_2)
+void __cdecl Demo_StreamingSuccessCallback(int controllerIndex,ulong64 param_2)
 
 {
-  ddlState_t *pdVar1;
-  char *pcVar2;
-  bdTag *pbVar3;
+  ddlState_t *searchState;
+  char *pcVar1;
+  bdTag *pbVar2;
   undefined4 unaff_EDI;
-  bdTag *pbVar4;
+  bdTag *pbVar3;
   int in_stack_00000008;
-  ddlState_t *pdVar5;
-  int iVar6;
-  char **ppcVar7;
-  char **ppcVar8;
-  undefined1 uVar9;
+  ddlState_t *resultState;
+  int iVar4;
+  char **matchRecordBuffer_00;
+  int *matchRecordBufferSize_00;
+  undefined1 uVar5;
   char *local_3f8;
   int local_3f4;
   bdTag *local_3f0;
   int local_3ec;
   bdTag *local_3e8;
-  int local_3e4;
-  bdTag *local_3e0;
-  ddlState_t local_3dc;
-  char *local_3cc;
-  char *local_3c8;
-  bdTag local_3c4 [40];
+  int i;
+  int numTags;
+  ddlState_t localState;
+  char *matchRecordBuffer;
+  int matchRecordBufferSize;
+  bdTag tags [40];
   
-  iVar6 = 2;
-  pdVar5 = &local_3dc;
-  pdVar1 = LiveStats_GetRootDDLState();
-  DDL_MoveTo(pdVar1,pdVar5,iVar6);
+  iVar4 = 2;
+  resultState = &localState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveTo(searchState,resultState,iVar4);
   if (svs.clients != (client_t *)0x0) {
-    for (local_3e4 = 0; local_3e4 < demo.header.maxClients; local_3e4 = local_3e4 + 1) {
-      if (*(int *)((int)svs.clients + local_3e4 * 0x84d00) == 5) {
-        SV_SetClientDInt64Stat(local_3e4,&local_3dc,CONCAT44((int)param_2,in_stack_00000008));
+    for (i = 0; i < demo.header.maxClients; i = i + 1) {
+      if (*(int *)((int)svs.clients + i * 0x84d00) == 5) {
+        SV_SetClientDInt64Stat(i,&localState,CONCAT44((int)param_2,in_stack_00000008));
       }
     }
   }
-  local_3cc = (char *)0x0;
-  local_3c8 = (char *)0x0;
+  matchRecordBuffer = (char *)0x0;
+  matchRecordBufferSize = 0;
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
     Com_PrintError(0x10,
                    "Trying to write a summary for a file that didn\'t get uploaded. Bailing out.\n")
@@ -649,42 +664,42 @@ void __cdecl Demo_StreamingSuccessCallback(int param_1,ulong64 param_2)
   }
   else {
     if ((onlinegame->current).enabled == false) {
-      iVar6 = 0x20;
-      pcVar2 = Live_ControllerIndex_GetClientName(param_1);
-      I_strncpyz(gamerTag,pcVar2,iVar6);
-      local_3cc = gamerTag;
+      iVar4 = 0x20;
+      pcVar1 = Live_ControllerIndex_GetClientName(controllerIndex);
+      I_strncpyz(gamerTag,pcVar1,iVar4);
+      matchRecordBuffer = gamerTag;
       local_3f8 = gamerTag;
-      pcVar2 = local_3f8;
+      pcVar1 = local_3f8;
       do {
-        local_3f8 = pcVar2;
-        pcVar2 = local_3f8 + 1;
+        local_3f8 = pcVar1;
+        pcVar1 = local_3f8 + 1;
       } while (*local_3f8 != '\0');
-      local_3c8 = local_3f8 + -0xa7db310;
+      matchRecordBufferSize = (int)(local_3f8 + -0xa7db310);
     }
     else {
-      ppcVar8 = &local_3c8;
-      ppcVar7 = &local_3cc;
-      iVar6 = Com_LocalClient_GetControllerIndex(0);
-      GenerateRecordedMatchData(iVar6,ppcVar7,(int *)ppcVar8);
+      matchRecordBufferSize_00 = &matchRecordBufferSize;
+      matchRecordBuffer_00 = &matchRecordBuffer;
+      iVar4 = Com_LocalClient_GetControllerIndex(0);
+      GenerateRecordedMatchData(iVar4,matchRecordBuffer_00,matchRecordBufferSize_00);
     }
     local_3ec = 0x28;
-    local_3e8 = local_3c4;
-    while (uVar9 = (undefined1)unaff_EDI, local_3ec = local_3ec + -1, -1 < local_3ec) {
+    local_3e8 = tags;
+    while (uVar5 = (undefined1)unaff_EDI, local_3ec = local_3ec + -1, -1 < local_3ec) {
       bdTag::bdTag(local_3e8);
       local_3e8 = local_3e8 + 1;
     }
-    local_3e0 = (bdTag *)0x0;
-    Demo_SetTags(param_1,(int *)&local_3e0,local_3c4,&demo.info,FILESHARE_FILETYPE_FILM);
-    pbVar3 = local_3c4;
-    pbVar4 = s_demoUploadInfo.tags;
-    for (iVar6 = 0xf0; iVar6 != 0; iVar6 = iVar6 + -1) {
-      pbVar4->_padding_ = pbVar3->_padding_;
+    numTags = 0;
+    Demo_SetTags(controllerIndex,&numTags,tags,&demo.info,FILESHARE_FILETYPE_FILM);
+    pbVar2 = tags;
+    pbVar3 = s_demoUploadInfo.tags;
+    for (iVar4 = 0xf0; iVar4 != 0; iVar4 = iVar4 + -1) {
+      pbVar3->_padding_ = pbVar2->_padding_;
+      pbVar2 = (bdTag *)&pbVar2->field_0x4;
       pbVar3 = (bdTag *)&pbVar3->field_0x4;
-      pbVar4 = (bdTag *)&pbVar4->field_0x4;
     }
-    s_demoUploadInfo.numTags = (int)local_3e0;
+    s_demoUploadInfo.numTags = numTags;
     memset((uchar *)s_demoUploadInfo.metaData,'\0',0x200);
-    Live_FileShare_WritePublicMetaDataTags(s_demoUploadInfo.metaData,local_3c4,(int)local_3e0);
+    Live_FileShare_WritePublicMetaDataTags(s_demoUploadInfo.metaData,tags,numTags);
     Live_FileShare_WritePublicMetaDataLength
               (s_demoUploadInfo.metaData,demo.info.endTime - demo.info.startTime);
     Live_FileShare_WritePublicMetaDataCreateTime(s_demoUploadInfo.metaData,demo.info.createTime);
@@ -694,8 +709,9 @@ void __cdecl Demo_StreamingSuccessCallback(int param_1,ulong64 param_2)
     Dvar_SetBool(fsIsSelectedFileNameModified,false);
     Dvar_SetBool(fsIsSelectedFileDescriptionModified,false);
     LiveStorage_FileShare_WriteSummary
-              (param_1,CONCAT44(3,(int)param_2),(fileShareLocation)local_3cc,local_3c8,0xa7da770,
-               (void *)s_demoUploadInfo.metaDataSize,(uint)local_3c4,local_3e0,0,(bool)uVar9);
+              (controllerIndex,CONCAT44(3,(int)param_2),(fileShareLocation)matchRecordBuffer,
+               (void *)matchRecordBufferSize,0xa7da770,(void *)s_demoUploadInfo.metaDataSize,
+               (uint)tags,(bdTag *)numTags,0,(bool)uVar5);
     local_3f4 = 0x28;
     local_3f0 = (bdTag *)&stack0xfffffffc;
     while (local_3f4 = local_3f4 + -1, -1 < local_3f4) {
@@ -709,7 +725,7 @@ void __cdecl Demo_StreamingSuccessCallback(int param_1,ulong64 param_2)
 
 // 009B7E00  Demo_StreamingFailureCallback  (demo/demo_common.cpp:525)
 
-void __cdecl Demo_StreamingFailureCallback(int param_1)
+void __cdecl Demo_StreamingFailureCallback(int controllerIndex)
 
 {
   Demo_StopStreaming();
@@ -731,21 +747,21 @@ void __cdecl Demo_StartRecord_f(void)
 {
   bool bVar1;
   TaskRecord *pTVar2;
-  int iVar3;
-  int local_64;
-  qtime_s local_60;
-  undefined1 local_39;
-  fileShareWriteFileInfo local_38;
+  int index;
+  int i;
+  qtime_s systemTime;
+  bool result;
+  fileShareWriteFileInfo fileInfo;
   
   bVar1 = Demo_IsIdle();
   if (bVar1) {
     Demo_Init();
-    Com_RealTime(&local_60,true);
+    Com_RealTime(&systemTime,true);
     Dvar_GetString("mapname");
     Dvar_GetString("g_gametype");
     Com_sprintf(demo.demoName,0x80,"%s_%s_%d_%d_%d_%d_%d");
-    local_39 = Demo_InitWrite();
-    if ((bool)local_39) {
+    result = Demo_InitWrite();
+    if (result) {
       Demo_PopulateStaticInfoData(&demo.info);
       demo.header.version = 1;
       demo.header.maxClients = (com_maxclients->current).integer;
@@ -755,32 +771,31 @@ void __cdecl Demo_StartRecord_f(void)
       demo.header.settings.systemlink = Dvar_GetBool("systemlink");
       demo.header.settings.combatTraining = Dvar_GetBool("xblive_basictraining");
       demo.header.settings.customGameMode = UI_Gametype_IsUsingCustom();
-      local_38.category = 1;
-      local_38.fileName = va("%s.demo");
-      local_38.numTags = 0;
-      local_38.tags = (bdTag *)0x0;
-      local_38.location = FILESHARE_LOCATION_POOLEDSTORAGE;
-      local_38.fileSlot = 6;
-      local_38.thumbData = (void *)0x0;
-      local_38.thumbDataSize = 0;
-      local_38.fileSize = 0;
-      local_38.dataCallback = Demo_WriteToStream;
-      local_38.successCallback = Demo_StreamingSuccessCallback;
-      local_38.failureCallback = Demo_StreamingFailureCallback;
-      pTVar2 = LiveStorage_FileShare_WriteFile(0,&local_38);
+      fileInfo.category = 1;
+      fileInfo.fileName = va("%s.demo");
+      fileInfo.numTags = 0;
+      fileInfo.tags = (bdTag *)0x0;
+      fileInfo.location = FILESHARE_LOCATION_POOLEDSTORAGE;
+      fileInfo.fileSlot = 6;
+      fileInfo.thumbData = (void *)0x0;
+      fileInfo.thumbDataSize = 0;
+      fileInfo.fileSize = 0;
+      fileInfo.dataCallback = Demo_WriteToStream;
+      fileInfo.successCallback = Demo_StreamingSuccessCallback;
+      fileInfo.failureCallback = Demo_StreamingFailureCallback;
+      pTVar2 = LiveStorage_FileShare_WriteFile(0,&fileInfo);
       if (pTVar2 != (TaskRecord *)0x0) {
         Demo_StartStreaming(0);
       }
-      iVar3 = Session_HostNum(&g_serverSession);
-      Demo_SetDemoClientIndex(iVar3);
+      index = Session_HostNum(&g_serverSession);
+      Demo_SetDemoClientIndex(index);
       Demo_WriteHeader(&demo.msg,false);
       Demo_SetDemoState(1);
       Cbuf_AddText(0,"wait 10; demo_adddemoclient\n");
       if (svs.clients != (client_t *)0x0) {
-        for (local_64 = 0; local_64 < demo.header.maxClients; local_64 = local_64 + 1) {
-          if (*(int *)((int)svs.clients + local_64 * 0x84d00) == 5) {
-            demo.lastReliableCommandRecorded[local_64] =
-                 *(int *)((int)svs.clients + local_64 * 0x84d00 + 0x5120);
+        for (i = 0; i < demo.header.maxClients; i = i + 1) {
+          if (*(int *)((int)svs.clients + i * 0x84d00) == 5) {
+            demo.lastReliableCommandRecorded[i] = *(int *)((int)svs.clients + i * 0x84d00 + 0x5120);
           }
         }
       }
@@ -826,54 +841,55 @@ void __cdecl Demo_Play_f(void)
   char *local_64;
   char *local_54;
   char *local_44;
-  char local_38;
+  bool result;
+  char extension;
   undefined1 auStack_37 [31];
   uint local_18;
-  int local_14;
-  char *local_10;
-  int local_c;
-  char local_5;
+  int len;
+  char *s;
+  int renderMovie;
+  bool sameDemoName;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = '\0';
+  sameDemoName = false;
   iVar4 = SV_Cmd_Argc();
   if ((iVar4 == 2) || (iVar4 = SV_Cmd_Argc(), iVar4 == 3)) {
     cVar5 = CL_GetLocalClientConnectionState(0);
     if ((int)cVar5 < 4) {
-      local_10 = SV_Cmd_Argv(1);
-      Com_sprintf(&local_38,0x20,".demo");
+      s = SV_Cmd_Argv(1);
+      Com_sprintf(&extension,0x20,".demo");
       iVar4 = Demo_GetDemoState();
       if (iVar4 == 1) {
         Com_Printf(0,"You cant play a demo file when it is recording.");
       }
       else {
         if (iVar4 == 2) {
-          local_44 = local_10;
+          local_44 = s;
           pcVar6 = local_44;
           do {
             local_44 = pcVar6;
             pcVar6 = local_44 + 1;
           } while (*local_44 != '\0');
-          local_54 = &local_38;
+          local_54 = &extension;
           do {
             cVar1 = *local_54;
             local_54 = local_54 + 1;
           } while (cVar1 != '\0');
-          iVar4 = I_stricmp(local_44 + -((int)local_54 - (int)auStack_37),&local_38);
+          iVar4 = I_stricmp(local_44 + -((int)local_54 - (int)auStack_37),&extension);
           if (iVar4 == 0) {
             pcVar6 = va("%s.demo");
-            iVar4 = I_stricmp(local_10,pcVar6);
+            iVar4 = I_stricmp(s,pcVar6);
             if (iVar4 == 0) {
-              local_5 = '\x01';
+              sameDemoName = true;
             }
           }
           else {
-            iVar4 = I_stricmp(local_10,demo.demoName);
+            iVar4 = I_stricmp(s,demo.demoName);
             if (iVar4 == 0) {
-              local_5 = '\x01';
+              sameDemoName = true;
             }
           }
-          if (local_5 != '\0') {
+          if (sameDemoName != false) {
             Com_Printf(0,"Already playing demo file %s.");
             return;
           }
@@ -891,31 +907,31 @@ void __cdecl Demo_Play_f(void)
         iVar4 = SV_Cmd_Argc();
         if (iVar4 == 3) {
           pcVar6 = SV_Cmd_Argv(2);
-          local_c = atoi(pcVar6);
-          demo.renderingMovie = local_c != 0;
+          renderMovie = atoi(pcVar6);
+          demo.renderingMovie = renderMovie != 0;
         }
-        local_64 = local_10;
+        local_64 = s;
         do {
           cVar1 = *local_64;
           local_64 = local_64 + 1;
         } while (cVar1 != '\0');
-        local_14 = (int)local_64 - (int)(local_10 + 1);
-        local_74 = &local_38;
+        len = (int)local_64 - (int)(s + 1);
+        local_74 = &extension;
         do {
           cVar1 = *local_74;
           local_74 = local_74 + 1;
         } while (cVar1 != '\0');
-        iVar4 = I_stricmp(local_10 + (local_14 - ((int)local_74 - (int)auStack_37)),&local_38);
+        iVar4 = I_stricmp(s + (len - ((int)local_74 - (int)auStack_37)),&extension);
         if (iVar4 == 0) {
-          local_84 = &local_38;
+          local_84 = &extension;
           do {
             cVar1 = *local_84;
             local_84 = local_84 + 1;
           } while (cVar1 != '\0');
-          I_strncpyz(demo.demoName,local_10,(local_14 - ((int)local_84 - (int)auStack_37)) + 1);
+          I_strncpyz(demo.demoName,s,(len - ((int)local_84 - (int)auStack_37)) + 1);
         }
         else {
-          I_strncpyz(demo.demoName,local_10,local_14 + 1);
+          I_strncpyz(demo.demoName,s,len + 1);
         }
         bVar3 = Demo_InitRead();
         if (bVar3) {
@@ -965,10 +981,10 @@ void __cdecl Demo_Stop_f(void)
 // 009B83E0  Demo_Forward_f  (demo/demo_common.cpp:776)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_Forward_f(void)
 
@@ -981,17 +997,18 @@ void __cdecl Demo_Forward_f(void)
   clientActive_t *pcVar6;
   DWORD DVar7;
   int iVar8;
-  msg_t local_5c;
-  cg_s *local_2c;
-  int local_28;
-  int local_24;
-  clientConnection_t *local_20;
-  cgs_t *local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  clientActive_t *cl;
+  msg_t keyframeMsg;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int keyframeIndex;
+  clientConnection_t *clc;
+  cgs_t *cgs;
+  int newKeyframeIndex;
+  int msgSequence;
+  int msgType;
+  int newServerTime;
+  int preparse;
   
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
@@ -1014,17 +1031,17 @@ void __cdecl Demo_Forward_f(void)
             Com_PrintError(0xe,"We cannot forward a demo that is being previewed\n");
           }
           else {
-            local_28 = 0;
+            localClientNum = 0;
             Demo_SetCmdInProgess();
-            pcVar6 = CL_GetLocalClientGlobals(local_28);
-            local_20 = CL_GetLocalClientConnection(local_28);
-            local_1c = CG_GetLocalClientStaticGlobals(local_28);
-            local_2c = CG_GetLocalClientGlobals(local_28);
+            pcVar6 = CL_GetLocalClientGlobals(localClientNum);
+            clc = CL_GetLocalClientConnection(localClientNum);
+            cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+            cgameGlob = CG_GetLocalClientGlobals(localClientNum);
             iVar5 = Cmd_Argc();
             if (iVar5 == 3) {
               pcVar4 = Cmd_Argv(2);
-              local_c = atoi(pcVar4);
-              if ((local_c < 0) &&
+              newServerTime = atoi(pcVar4);
+              if ((newServerTime < 0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp"
                                            ,0x341,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
@@ -1037,23 +1054,23 @@ void __cdecl Demo_Forward_f(void)
             else {
               pcVar4 = va("DemoForward - We need to jump back to the previous keyframe.\n");
               Demo_Printf(0x80,pcVar4);
-              local_c = -1;
+              newServerTime = -1;
             }
-            local_18 = Demo_GetKeyFrameForJumpForward(local_28,local_c);
-            if (local_18 < 0) {
+            newKeyframeIndex = Demo_GetKeyFrameForJumpForward(localClientNum,newServerTime);
+            if (newKeyframeIndex < 0) {
               pcVar4 = va("DemoForward - We couldnt find a suitable rewind keyframe.\n");
               Demo_Printf(0x80,pcVar4);
               Demo_SetCmdCompleted();
             }
             else {
-              if ((local_18 == -1) &&
+              if ((newKeyframeIndex == -1) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp"
                                            ,0x353,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              if (((demo.playback)->keyFrame[local_18].keyframeSnapshotTime < 0) &&
+              if (((demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime < 0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp"
                                            ,0x354,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
@@ -1062,28 +1079,28 @@ void __cdecl Demo_Forward_f(void)
               }
               pcVar4 = va("DemoForward - newKeyframeIndex: %d currKeyframeIndex: %d\n");
               Demo_Printf(0x80,pcVar4);
-              local_24 = local_18;
+              keyframeIndex = newKeyframeIndex;
               pcVar4 = va("DemoForward - We need to seeking file to %d block\n");
               Demo_Printf(0x80,pcVar4);
               pcVar4 = va("DemoForward - Block\'s servertime is %d seq is %d\n");
               Demo_Printf(0x80,pcVar4);
-              local_8 = Sys_Milliseconds();
+              preparse = Sys_Milliseconds();
               PIXBeginNamedEvent(-0xff0001,"Forward Logic - File Seek");
-              demo.totalSize = (demo.playback)->keyFrame[local_24].demoFileMemoryBlockStart;
+              demo.totalSize = (demo.playback)->keyFrame[keyframeIndex].demoFileMemoryBlockStart;
               Demo_SeekFile(demo.demoFileHandle,
-                            (demo.playback)->keyFrame[local_24].demoFileMemoryBlockStart,2);
+                            (demo.playback)->keyFrame[keyframeIndex].demoFileMemoryBlockStart,2);
               Demo_Load();
-              MSG_GotoBookmark(&demo.msg,&(demo.playback)->keyFrame[local_24].msgBookmark);
-              (demo.playback)->lastJumpedKeyframe = local_24;
+              MSG_GotoBookmark(&demo.msg,&(demo.playback)->keyFrame[keyframeIndex].msgBookmark);
+              (demo.playback)->lastJumpedKeyframe = keyframeIndex;
               DVar7 = GetCurrentThreadId();
               if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
-              MSG_Init(&local_5c,demo.msgBuf1,0xc000);
+              MSG_Init(&keyframeMsg,demo.msgBuf1,0xc000);
               memcpy(demo.msgBuf1,
-                     g_keyframeBuf + (demo.playback)->keyFrame[local_24].keyframeBufferStart,
-                     (demo.playback)->keyFrame[local_24].size);
-              local_5c.cursize = (demo.playback)->keyFrame[local_24].size;
+                     g_keyframeBuf + (demo.playback)->keyFrame[keyframeIndex].keyframeBufferStart,
+                     (demo.playback)->keyFrame[keyframeIndex].size);
+              keyframeMsg.cursize = (demo.playback)->keyFrame[keyframeIndex].size;
               pcVar4 = va("Keyframe r - Time: %d\n");
               Demo_Printf(0x80,pcVar4);
               pcVar4 = va("Keyframe r - File Related: FileStart: %d\n");
@@ -1101,47 +1118,47 @@ void __cdecl Demo_Forward_f(void)
               Demo_SetCompleted(false);
               bVar2 = Demo_IsClipPlaying();
               if (bVar2) {
-                (demo.playback)->clipTime = (demo.playback)->keyFrame[local_24].keyframeSnapshotTime
-                ;
+                (demo.playback)->clipTime =
+                     (demo.playback)->keyFrame[keyframeIndex].keyframeSnapshotTime;
                 (demo.playback)->clipServerTime =
-                     (demo.playback)->keyFrame[local_24].keyframeClipServerTime + -100;
+                     (demo.playback)->keyFrame[keyframeIndex].keyframeClipServerTime + -100;
               }
               PIXBeginNamedEvent(-0xff0001,"Forward Logic - Process Keyframe");
-              MSG_UnEmbed(&local_5c);
-              local_10 = MSG_ReadBits(&local_5c,2);
+              MSG_UnEmbed(&keyframeMsg);
+              msgType = MSG_ReadBits(&keyframeMsg,2);
               Demo_ResetSnapshotData();
-              while (local_10 == 2) {
-                Demo_ParseClipCommand(local_28,&local_5c,true);
-                local_10 = MSG_ReadBits(&local_5c,2);
+              while (msgType == 2) {
+                Demo_ParseClipCommand(localClientNum,&keyframeMsg,true);
+                msgType = MSG_ReadBits(&keyframeMsg,2);
               }
-              local_14 = MSG_ReadLong(&local_5c);
-              Demo_ParseServerMessage(local_28,&local_5c,local_10,local_14);
+              msgSequence = MSG_ReadLong(&keyframeMsg);
+              Demo_ParseServerMessage(localClientNum,&keyframeMsg,msgType,msgSequence);
               DVar7 = GetCurrentThreadId();
               if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
               PIXBeginNamedEvent(-0xff0001,"Forward Logic - Resetting World");
-              Demo_ResetTimeValues(local_28,(pcVar6->snap).serverTime);
-              Demo_ResetSequenceNumbers(local_28,(pcVar6->snap).messageNum + -1);
-              Demo_ResetWorldInformation(local_28,(pcVar6->snap).serverTime);
+              Demo_ResetTimeValues(localClientNum,(pcVar6->snap).serverTime);
+              Demo_ResetSequenceNumbers(localClientNum,(pcVar6->snap).messageNum + -1);
+              Demo_ResetWorldInformation(localClientNum,(pcVar6->snap).serverTime);
               DVar7 = GetCurrentThreadId();
               if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
               PIXBeginNamedEvent(-0xff0001,"Forward Logic - Reading Messages");
-              local_2c->latestSnapshotNum = (pcVar6->snap).messageNum;
+              cgameGlob->latestSnapshotNum = (pcVar6->snap).messageNum;
               iVar8 = (pcVar6->snap).serverTime - cls.realtime;
               iVar5 = Sys_Milliseconds();
-              pcVar6->serverTimeDelta = (iVar8 + -5) - (iVar5 - local_8);
+              pcVar6->serverTimeDelta = (iVar8 + -5) - (iVar5 - preparse);
               Demo_SetJumpTimeFlag(true);
               DVar7 = GetCurrentThreadId();
               if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
-              Con_Close(local_28);
+              Con_Close(localClientNum);
               SND_StopSounds(SND_STOP_ALL);
               (demo.playback)->overridePause = true;
-              CL_SetCGameTime(local_28);
+              CL_SetCGameTime(localClientNum);
               (demo.playback)->overridePause = false;
               (demo.playback)->keyframeJumpCount = (demo.playback)->keyframeJumpCount + 1;
               Demo_SetCmdCompleted();
@@ -1163,8 +1180,8 @@ void __cdecl Demo_Forward_f(void)
 
 // 009B8BB0  Demo_Back_f  (demo/demo_common.cpp:956)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -1180,22 +1197,23 @@ void __cdecl Demo_Back_f(void)
   clientActive_t *pcVar6;
   DWORD DVar7;
   int iVar8;
-  msg_t local_5c;
-  cg_s *local_2c;
-  int local_28;
-  int local_24;
-  clientConnection_t *local_20;
-  cgs_t *local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  clientActive_t *cl;
+  msg_t keyframeMsg;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int keyframeIndex;
+  clientConnection_t *clc;
+  cgs_t *cgs;
+  int newKeyframeIndex;
+  int msgSequence;
+  int msgType;
+  int newServerTime;
+  int preparse;
   
-  local_28 = 0;
+  localClientNum = 0;
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
-    cVar3 = CL_GetLocalClientConnectionState(local_28);
+    cVar3 = CL_GetLocalClientConnectionState(localClientNum);
     if ((int)cVar3 < 4) {
       Com_PrintError(0xe,"We are not playing a demo.\n");
     }
@@ -1210,16 +1228,16 @@ void __cdecl Demo_Back_f(void)
         }
         else {
           Demo_SetCmdInProgess();
-          pcVar6 = CL_GetLocalClientGlobals(local_28);
-          local_20 = CL_GetLocalClientConnection(local_28);
-          local_1c = CG_GetLocalClientStaticGlobals(local_28);
-          local_2c = CG_GetLocalClientGlobals(local_28);
+          pcVar6 = CL_GetLocalClientGlobals(localClientNum);
+          clc = CL_GetLocalClientConnection(localClientNum);
+          cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+          cgameGlob = CG_GetLocalClientGlobals(localClientNum);
           PIXBeginNamedEvent(-0xff0001,"Rewind Logic - Search for Keyframe");
           iVar5 = Cmd_Argc();
           if (iVar5 == 3) {
             pcVar4 = Cmd_Argv(2);
-            local_c = atoi(pcVar4);
-            if ((local_c < 0) &&
+            newServerTime = atoi(pcVar4);
+            if ((newServerTime < 0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",
                                          0x3f0,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
@@ -1232,11 +1250,11 @@ void __cdecl Demo_Back_f(void)
           else {
             pcVar4 = va("DemoBack - We need to jump back to the previous keyframe.\n");
             Demo_Printf(0x80,pcVar4);
-            local_c = -1;
+            newServerTime = -1;
           }
-          local_24 = (demo.playback)->keyframeIndex;
-          local_18 = Demo_GetKeyFrameForJumpBack(local_28,local_c);
-          if (local_18 < 0) {
+          keyframeIndex = (demo.playback)->keyframeIndex;
+          newKeyframeIndex = Demo_GetKeyFrameForJumpBack(localClientNum,newServerTime);
+          if (newKeyframeIndex < 0) {
             pcVar4 = va("DemoBack - Unable to find a proper previous keyframe.\n");
             Demo_Printf(0x80,pcVar4);
             Demo_SetCmdCompleted();
@@ -1244,7 +1262,7 @@ void __cdecl Demo_Back_f(void)
           else {
             pcVar4 = va("DemoBack - newKeyframeIndex: %d currKeyframeIndex: %d\n");
             Demo_Printf(0x80,pcVar4);
-            local_24 = local_18;
+            keyframeIndex = newKeyframeIndex;
             pcVar4 = va("DemoBack - We need to seeking file to %d block\n");
             Demo_Printf(0x80,pcVar4);
             pcVar4 = va("DemoBack - Block\'s servertime is %d seq is %d\n");
@@ -1253,23 +1271,23 @@ void __cdecl Demo_Back_f(void)
             if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
-            local_8 = Sys_Milliseconds();
+            preparse = Sys_Milliseconds();
             PIXBeginNamedEvent(-0xff0001,"Rewind Logic - File Seek");
-            demo.totalSize = (demo.playback)->keyFrame[local_24].demoFileMemoryBlockStart;
+            demo.totalSize = (demo.playback)->keyFrame[keyframeIndex].demoFileMemoryBlockStart;
             Demo_SeekFile(demo.demoFileHandle,
-                          (demo.playback)->keyFrame[local_24].demoFileMemoryBlockStart,2);
+                          (demo.playback)->keyFrame[keyframeIndex].demoFileMemoryBlockStart,2);
             Demo_Load();
-            MSG_GotoBookmark(&demo.msg,&(demo.playback)->keyFrame[local_24].msgBookmark);
-            (demo.playback)->lastJumpedKeyframe = local_24;
+            MSG_GotoBookmark(&demo.msg,&(demo.playback)->keyFrame[keyframeIndex].msgBookmark);
+            (demo.playback)->lastJumpedKeyframe = keyframeIndex;
             DVar7 = GetCurrentThreadId();
             if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
-            MSG_Init(&local_5c,demo.msgBuf1,0xc000);
+            MSG_Init(&keyframeMsg,demo.msgBuf1,0xc000);
             memcpy(demo.msgBuf1,
-                   g_keyframeBuf + (demo.playback)->keyFrame[local_24].keyframeBufferStart,
-                   (demo.playback)->keyFrame[local_24].size);
-            local_5c.cursize = (demo.playback)->keyFrame[local_24].size;
+                   g_keyframeBuf + (demo.playback)->keyFrame[keyframeIndex].keyframeBufferStart,
+                   (demo.playback)->keyFrame[keyframeIndex].size);
+            keyframeMsg.cursize = (demo.playback)->keyFrame[keyframeIndex].size;
             pcVar4 = va("Keyframe r - Time: %d\n");
             Demo_Printf(0x80,pcVar4);
             pcVar4 = va("Keyframe r - File Related: FileStart: %d\n");
@@ -1287,40 +1305,41 @@ void __cdecl Demo_Back_f(void)
             Demo_SetCompleted(false);
             bVar2 = Demo_IsClipPlaying();
             if (bVar2) {
-              (demo.playback)->clipTime = (demo.playback)->keyFrame[local_24].keyframeSnapshotTime;
+              (demo.playback)->clipTime =
+                   (demo.playback)->keyFrame[keyframeIndex].keyframeSnapshotTime;
               (demo.playback)->clipServerTime =
-                   (demo.playback)->keyFrame[local_24].keyframeClipServerTime + -100;
+                   (demo.playback)->keyFrame[keyframeIndex].keyframeClipServerTime + -100;
             }
             PIXBeginNamedEvent(-0xff0001,"Rewind Logic - Process Keyframe");
-            MSG_UnEmbed(&local_5c);
-            local_10 = MSG_ReadBits(&local_5c,2);
+            MSG_UnEmbed(&keyframeMsg);
+            msgType = MSG_ReadBits(&keyframeMsg,2);
             Demo_ResetSnapshotData();
-            while (local_10 == 2) {
-              Demo_ParseClipCommand(local_28,&local_5c,true);
-              local_10 = MSG_ReadBits(&local_5c,2);
+            while (msgType == 2) {
+              Demo_ParseClipCommand(localClientNum,&keyframeMsg,true);
+              msgType = MSG_ReadBits(&keyframeMsg,2);
             }
-            local_14 = MSG_ReadLong(&local_5c);
-            Demo_ParseServerMessage(local_28,&local_5c,local_10,local_14);
+            msgSequence = MSG_ReadLong(&keyframeMsg);
+            Demo_ParseServerMessage(localClientNum,&keyframeMsg,msgType,msgSequence);
             DVar7 = GetCurrentThreadId();
             if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
             PIXBeginNamedEvent(-0xff0001,"Rewind Logic - Rewinding World");
-            Demo_ResetTimeValues(local_28,(pcVar6->snap).serverTime);
-            Demo_ResetSequenceNumbers(local_28,(pcVar6->snap).messageNum + -1);
-            Demo_ResetWorldInformation(local_28,(pcVar6->snap).serverTime);
+            Demo_ResetTimeValues(localClientNum,(pcVar6->snap).serverTime);
+            Demo_ResetSequenceNumbers(localClientNum,(pcVar6->snap).messageNum + -1);
+            Demo_ResetWorldInformation(localClientNum,(pcVar6->snap).serverTime);
             DVar7 = GetCurrentThreadId();
             if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
             iVar8 = (pcVar6->snap).serverTime - cls.realtime;
             iVar5 = Sys_Milliseconds();
-            pcVar6->serverTimeDelta = (iVar8 + -5) - (iVar5 - local_8);
+            pcVar6->serverTimeDelta = (iVar8 + -5) - (iVar5 - preparse);
             Demo_SetJumpTimeFlag(true);
             SND_StopSounds(SND_STOP_ALL);
             PIXBeginNamedEvent(-0xff0001,"Rewind Logic - CL_SetCGameTime()");
             (demo.playback)->overridePause = true;
-            CL_SetCGameTime(local_28);
+            CL_SetCGameTime(localClientNum);
             (demo.playback)->overridePause = false;
             DVar7 = GetCurrentThreadId();
             if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1355,6 +1374,7 @@ void __cdecl Demo_JumpToStart_f(void)
   connstate_t cVar2;
   int iVar3;
   char *pcVar4;
+  int localClientNum;
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
@@ -1395,14 +1415,15 @@ void __cdecl Demo_Pause_f(void)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int cmd;
+  bool result;
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    pcVar2 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar2);
-    bVar1 = Demo_ShouldProcessCmd(iVar3);
+    nptr = Cmd_Argv(1);
+    cmd = atoi(nptr);
+    bVar1 = Demo_ShouldProcessCmd(cmd);
     if (bVar1) {
       Demo_SetCmdInProgess();
       Dvar_SetBool(demo_pause,(demo_pause->current).enabled == false);
@@ -1428,6 +1449,7 @@ void __cdecl Demo_TimeScale_f(void)
   int iVar2;
   char *pcVar3;
   double dVar4;
+  float timeScale;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 3) {
@@ -1484,14 +1506,14 @@ void __cdecl Demo_ToggleGameHud_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = atoi(pcVar3);
+      nptr = Cmd_Argv(1);
+      iVar2 = atoi(nptr);
       bVar1 = Demo_ShouldProcessCmd(iVar2);
       if (bVar1) {
         bVar1 = Demo_IsClipPlaying();
@@ -1526,14 +1548,14 @@ void __cdecl Demo_ToggleDemoHud_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = atoi(pcVar3);
+      nptr = Cmd_Argv(1);
+      iVar2 = atoi(nptr);
       bVar1 = Demo_ShouldProcessCmd(iVar2);
       if (bVar1) {
         Demo_SetCmdInProgess();
@@ -1557,8 +1579,11 @@ void __cdecl Demo_ToggleDemoHud_f(void)
 
 // 009B9730  Demo_SwitchPlayer_f  (demo/demo_common.cpp:1331)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_SwitchPlayer_f(void)
 
@@ -1568,9 +1593,12 @@ void __cdecl Demo_SwitchPlayer_f(void)
   int iVar3;
   char *pcVar4;
   int iVar5;
-  int local_8;
+  bool result;
+  int localClientNum;
+  int direction;
+  int clientNum;
   
-  local_8 = -1;
+  clientNum = -1;
   iVar3 = SV_Cmd_Argc();
   if ((iVar3 == 3) || (iVar3 = SV_Cmd_Argc(), iVar3 == 4)) {
     bVar1 = Demo_IsPlaying();
@@ -1602,9 +1630,9 @@ void __cdecl Demo_SwitchPlayer_f(void)
                 iVar5 = SV_Cmd_Argc();
                 if (iVar5 == 4) {
                   pcVar4 = Cmd_Argv(3);
-                  local_8 = atoi(pcVar4);
+                  clientNum = atoi(pcVar4);
                 }
-                bVar1 = Demo_SwitchPlayer(0,iVar3 != 0,local_8,false);
+                bVar1 = Demo_SwitchPlayer(0,iVar3 != 0,clientNum,false);
                 bVar2 = Demo_IsPaused();
                 if ((bVar2) && (bVar1)) {
                   Demo_UpdateCurrentSnapshot(0,demo.ps + (demo_client->current).integer);
@@ -1636,20 +1664,25 @@ void __cdecl Demo_SwitchPlayer_f(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Demo_SwitchCamera_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
+  int cameraMode;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = atoi(pcVar3);
+      nptr = Cmd_Argv(1);
+      iVar2 = atoi(nptr);
       bVar1 = Demo_ShouldProcessCmd(iVar2);
       if (bVar1) {
         bVar1 = Demo_IsClipPlaying();
@@ -1683,8 +1716,8 @@ void __cdecl Demo_SwitchCamera_f(void)
 
 // 009B99C0  Demo_StartClipRecord_f  (demo/demo_common.cpp:1455)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_StartClipRecord_f(void)
 
@@ -1693,6 +1726,9 @@ void __cdecl Demo_StartClipRecord_f(void)
   bool bVar2;
   int iVar3;
   char *pcVar4;
+  clientActive_t *cl;
+  int localClientNum;
+  bool newClip;
   
   iVar3 = SV_Cmd_Argc();
   if (iVar3 == 2) {
@@ -1793,6 +1829,7 @@ void __cdecl Demo_PauseClipRecord_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
@@ -1837,8 +1874,8 @@ void __cdecl Demo_PauseClipRecord_f(void)
 
 // 009B9E60  Demo_PreviewClip_f  (demo/demo_common.cpp:1618)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_PreviewClip_f(void)
 
@@ -1846,6 +1883,7 @@ void __cdecl Demo_PreviewClip_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 1) {
@@ -1882,14 +1920,14 @@ void __cdecl Demo_DeleteClip_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *string;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 1) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      pcVar3 = va("Clip: Deleting clip\n");
-      Demo_Printf(0x400,pcVar3);
+      string = va("Clip: Deleting clip\n");
+      Demo_Printf(0x400,string);
       (demo.playback)->clipRecordBufIndex = 0;
       (demo.playback)->segmentCount = 0;
     }
@@ -1916,6 +1954,8 @@ void __cdecl Demo_SaveAndUploadClip_f(void)
   int iVar2;
   char *pcVar3;
   int iVar4;
+  uint slot;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 3) {
@@ -1971,6 +2011,9 @@ void __cdecl Demo_SaveAndUploadClip_f(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Demo_SaveSegment_f(void)
 
@@ -1981,6 +2024,9 @@ void __cdecl Demo_SaveSegment_f(void)
   char *pcVar4;
   int iVar5;
   bool bVar6;
+  int localClientNum;
+  bool discard;
+  bool useDefaultTag;
   
   bVar6 = false;
   iVar3 = SV_Cmd_Argc();
@@ -2068,11 +2114,12 @@ void __cdecl Demo_MoveSegment_f(void)
   clipSegment *pcVar5;
   undefined4 *puVar6;
   clipSegment *pcVar7;
-  int local_138;
-  undefined4 local_134 [73];
+  int localClientNum;
+  int newSegmentIndex;
+  undefined4 tempSegment [73];
   uint local_10;
-  char local_9;
-  int local_8;
+  bool direction;
+  int segmentIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar3 = SV_Cmd_Argc();
@@ -2084,26 +2131,26 @@ void __cdecl Demo_MoveSegment_f(void)
       bVar2 = Demo_ShouldProcessCmd(iVar3);
       if (bVar2) {
         pcVar4 = Cmd_Argv(2);
-        local_8 = atoi(pcVar4);
+        segmentIndex = atoi(pcVar4);
         pcVar4 = Cmd_Argv(3);
         iVar3 = atoi(pcVar4);
-        local_9 = iVar3 != 0;
-        if ((local_8 < 0) || ((demo.playback)->segmentCount + -1 < local_8)) {
+        direction = iVar3 != 0;
+        if ((segmentIndex < 0) || ((demo.playback)->segmentCount + -1 < segmentIndex)) {
           Com_PrintError(0xe,"Bad segment index %d\n");
         }
-        else if (((local_8 == 0) && (!(bool)local_9)) ||
-                ((local_8 == (demo.playback)->segmentCount + -1 && ((bool)local_9)))) {
+        else if (((segmentIndex == 0) && (!direction)) ||
+                ((segmentIndex == (demo.playback)->segmentCount + -1 && (direction)))) {
           Com_PrintError(0xe,"Unspported direction %d for index %d\n");
         }
         else {
           Demo_SetCmdInProgess();
-          if (local_9 == '\0') {
-            local_138 = local_8 + -1;
+          if (direction == false) {
+            newSegmentIndex = segmentIndex + -1;
           }
           else {
-            local_138 = local_8 + 1;
+            newSegmentIndex = segmentIndex + 1;
           }
-          if ((local_138 < 0) || ((demo.playback)->segmentCount <= local_138)) {
+          if ((newSegmentIndex < 0) || ((demo.playback)->segmentCount <= newSegmentIndex)) {
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",
                                      0x74d,0,"%s");
             if (!bVar2) {
@@ -2112,22 +2159,22 @@ void __cdecl Demo_MoveSegment_f(void)
               return;
             }
           }
-          pcVar5 = (demo.playback)->segments + local_8;
-          puVar6 = local_134;
+          pcVar5 = (demo.playback)->segments + segmentIndex;
+          puVar6 = tempSegment;
           for (iVar3 = 0x48; iVar3 != 0; iVar3 = iVar3 + -1) {
             *puVar6 = *(undefined4 *)pcVar5->name;
             pcVar5 = (clipSegment *)(pcVar5->name + 4);
             puVar6 = puVar6 + 1;
           }
-          pcVar5 = (demo.playback)->segments + local_138;
-          pcVar7 = (demo.playback)->segments + local_8;
+          pcVar5 = (demo.playback)->segments + newSegmentIndex;
+          pcVar7 = (demo.playback)->segments + segmentIndex;
           for (iVar3 = 0x48; iVar3 != 0; iVar3 = iVar3 + -1) {
             *(undefined4 *)pcVar7->name = *(undefined4 *)pcVar5->name;
             pcVar5 = (clipSegment *)(pcVar5->name + 4);
             pcVar7 = (clipSegment *)(pcVar7->name + 4);
           }
-          puVar6 = local_134;
-          pcVar5 = (demo.playback)->segments + local_138;
+          puVar6 = tempSegment;
+          pcVar5 = (demo.playback)->segments + newSegmentIndex;
           for (iVar3 = 0x48; iVar3 != 0; iVar3 = iVar3 + -1) {
             *(undefined4 *)pcVar5->name = *puVar6;
             puVar6 = puVar6 + 1;
@@ -2169,11 +2216,18 @@ void __cdecl Demo_DeleteSegment_f(void)
   bool bVar3;
   int iVar4;
   char *pcVar5;
-  ulong uVar6;
-  int iVar7;
+  ulong count;
+  int iVar6;
+  clipSegment *pcVar7;
   clipSegment *pcVar8;
-  clipSegment *pcVar9;
-  int local_10;
+  int deletedSegmentSize;
+  int deletedSegmentBufferStartIndex;
+  int localClientNum;
+  int deletedSegmentBufferEndIndex;
+  int index;
+  int i;
+  int sizeOfMemoryBlockToMove;
+  int segmentIndex;
   
   iVar4 = SV_Cmd_Argc();
   if (iVar4 == 3) {
@@ -2192,32 +2246,31 @@ void __cdecl Demo_DeleteSegment_f(void)
           Demo_SetCmdInProgess();
           iVar1 = (demo.playback)->segments[iVar4].clipBufferIndex;
           iVar2 = (demo.playback)->segments[iVar4].size;
-          iVar7 = iVar1 + iVar2;
-          for (local_10 = 0; local_10 < (demo.playback)->segmentCount; local_10 = local_10 + 1) {
-            if ((local_10 != iVar4) &&
-               (iVar7 <= (demo.playback)->segments[local_10].clipBufferIndex)) {
-              (demo.playback)->segments[local_10].clipBufferIndex =
-                   (demo.playback)->segments[local_10].clipBufferIndex - iVar2;
+          iVar6 = iVar1 + iVar2;
+          for (i = 0; i < (demo.playback)->segmentCount; i = i + 1) {
+            if ((i != iVar4) && (iVar6 <= (demo.playback)->segments[i].clipBufferIndex)) {
+              (demo.playback)->segments[i].clipBufferIndex =
+                   (demo.playback)->segments[i].clipBufferIndex - iVar2;
             }
           }
-          uVar6 = (demo.playback)->clipRecordBufIndex - iVar7;
-          local_10 = iVar4;
-          if (0 < (int)uVar6) {
+          count = (demo.playback)->clipRecordBufIndex - iVar6;
+          i = iVar4;
+          if (0 < (int)count) {
             memmove((demo.playback)->mainClipRecordingBuf + iVar1,
-                    (demo.playback)->mainClipRecordingBuf + iVar7,uVar6);
+                    (demo.playback)->mainClipRecordingBuf + iVar6,count);
           }
-          for (; local_10 < (demo.playback)->segmentCount; local_10 = local_10 + 1) {
-            if (local_10 + 1 < (demo.playback)->segmentCount) {
-              pcVar8 = (demo.playback)->segments + local_10 + 1;
-              pcVar9 = (demo.playback)->segments + local_10;
+          for (; i < (demo.playback)->segmentCount; i = i + 1) {
+            if (i + 1 < (demo.playback)->segmentCount) {
+              pcVar7 = (demo.playback)->segments + i + 1;
+              pcVar8 = (demo.playback)->segments + i;
               for (iVar4 = 0x48; iVar4 != 0; iVar4 = iVar4 + -1) {
-                *(undefined4 *)pcVar9->name = *(undefined4 *)pcVar8->name;
+                *(undefined4 *)pcVar8->name = *(undefined4 *)pcVar7->name;
+                pcVar7 = (clipSegment *)(pcVar7->name + 4);
                 pcVar8 = (clipSegment *)(pcVar8->name + 4);
-                pcVar9 = (clipSegment *)(pcVar9->name + 4);
               }
             }
             else {
-              memset((uchar *)((demo.playback)->segments + local_10),'\0',0x120);
+              memset((uchar *)((demo.playback)->segments + i),'\0',0x120);
             }
           }
           (demo.playback)->segmentCount = (demo.playback)->segmentCount + -1;
@@ -2247,11 +2300,11 @@ void __cdecl Demo_DeleteSegment_f(void)
 
 // 009BA8F0  Demo_PreviewSegment_f  (demo/demo_common.cpp:1989)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Demo_PreviewSegment_f(void)
 
@@ -2262,7 +2315,12 @@ void __cdecl Demo_PreviewSegment_f(void)
   char *pcVar4;
   clientActive_t *pcVar5;
   cg_s *pcVar6;
-  int local_8;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  int localClientNum;
+  clientConnection_t *clc;
+  cgs_t *cgs;
+  int segmentIndex;
   
   iVar3 = SV_Cmd_Argc();
   if ((iVar3 == 2) || (iVar3 = SV_Cmd_Argc(), iVar3 == 3)) {
@@ -2282,8 +2340,8 @@ void __cdecl Demo_PreviewSegment_f(void)
             return;
           }
           pcVar4 = Cmd_Argv(2);
-          local_8 = atoi(pcVar4);
-          if ((local_8 < 0) || ((demo.playback)->segmentCount <= local_8)) {
+          segmentIndex = atoi(pcVar4);
+          if ((segmentIndex < 0) || ((demo.playback)->segmentCount <= segmentIndex)) {
             Com_PrintError(0xe,"Bad segment index specified.\n");
             return;
           }
@@ -2299,9 +2357,9 @@ void __cdecl Demo_PreviewSegment_f(void)
             (*pcVar1)();
             return;
           }
-          local_8 = -1;
+          segmentIndex = -1;
         }
-        (demo.playback)->clipPreviewSegmentNumber = local_8;
+        (demo.playback)->clipPreviewSegmentNumber = segmentIndex;
         Demo_SetCmdInProgess();
         pcVar5 = CL_GetLocalClientGlobals(0);
         CL_GetLocalClientConnection(0);
@@ -2314,13 +2372,13 @@ void __cdecl Demo_PreviewSegment_f(void)
         if ((demo.playback)->previewAllSegments == false) {
           Demo_SetCompleted(false);
         }
-        if (local_8 < 0) {
+        if (segmentIndex < 0) {
           (demo.playback)->clipPreviewBufferIndex =
                (demo.playback)->segments[(demo.playback)->segmentCount].clipBufferIndex;
         }
         else {
           (demo.playback)->clipPreviewBufferIndex =
-               (demo.playback)->segments[local_8].clipBufferIndex;
+               (demo.playback)->segments[segmentIndex].clipBufferIndex;
         }
         Demo_SetClipState(4);
         if (((demo.playback)->clipRecordBufIndex == (demo.playback)->clipPreviewBufferIndex) &&
@@ -2368,7 +2426,8 @@ void __cdecl Demo_SwitchDefaultSegmentTag_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *value;
+  bool direction;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
@@ -2389,8 +2448,8 @@ void __cdecl Demo_SwitchDefaultSegmentTag_f(void)
       else {
         (demo.playback)->defaultSegmentTag = (demo.playback)->defaultSegmentTag + -1;
       }
-      pcVar3 = UI_SafeTranslateString(demo_tags_enum_string[(demo.playback)->defaultSegmentTag]);
-      Dvar_SetString(demo_defaultSegmentTag,pcVar3);
+      value = UI_SafeTranslateString(demo_tags_enum_string[(demo.playback)->defaultSegmentTag]);
+      Dvar_SetString(demo_defaultSegmentTag,value);
     }
     else {
       Com_Printf(0,"Error: Demo Playback Buffer is not inited.\n");
@@ -2415,6 +2474,8 @@ void __cdecl Demo_SwitchTransition_f(void)
   int iVar2;
   char *pcVar3;
   int iVar4;
+  int index;
+  bool direction;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 3) {
@@ -2453,18 +2514,19 @@ void __cdecl Demo_Keyboard_f(void)
 {
   bool bVar1;
   int iVar2;
+  char *s0;
   char *pcVar3;
-  char *pcVar4;
-  int local_c;
+  int i;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if ((iVar2 == 2) || (iVar2 = SV_Cmd_Argc(), iVar2 == 3)) {
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      pcVar4 = demoKeyboardModeNames[local_c];
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = I_stricmp(pcVar3,pcVar4);
+    for (i = 0; i < 8; i = i + 1) {
+      pcVar3 = demoKeyboardModeNames[i];
+      s0 = Cmd_Argv(1);
+      iVar2 = I_stricmp(s0,pcVar3);
       if (iVar2 == 0) {
-        demo.keyboard.mode = local_c;
+        demo.keyboard.mode = i;
       }
     }
     if ((demo.keyboard.mode < 1) || (7 < demo.keyboard.mode)) {
@@ -2479,8 +2541,8 @@ void __cdecl Demo_Keyboard_f(void)
         }
         iVar2 = SV_Cmd_Argc();
         if (iVar2 == 3) {
-          pcVar4 = Cmd_Argv(2);
-          demo.keyboard.currentProcessingSegmentIndex = atoi(pcVar4);
+          pcVar3 = Cmd_Argv(2);
+          demo.keyboard.currentProcessingSegmentIndex = atoi(pcVar3);
         }
         else {
           demo.keyboard.currentProcessingSegmentIndex = (demo.playback)->segmentCount;
@@ -2526,8 +2588,8 @@ void __cdecl Demo_Keyboard_f(void)
       }
       demo.keyboard.textSize = 0x16;
       demo.keyboard.defaultText = "";
-      pcVar4 = va("ui_keyboard_new %d\n");
-      Cbuf_AddText(0,pcVar4);
+      pcVar3 = va("ui_keyboard_new %d\n");
+      Cbuf_AddText(0,pcVar3);
     }
   }
   else {
@@ -2542,25 +2604,29 @@ switchD_009baece_default:
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Demo_Screenshot_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  long64 lVar4;
+  char *nptr;
+  long64 lVar3;
   int local_40;
-  qtime_s local_2c;
-  int local_8;
+  int tiles;
+  qtime_s systemTime;
+  int localClientNum;
   
   iVar2 = SV_Cmd_Argc();
   if (iVar2 == 2) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      local_8 = 0;
-      pcVar3 = Cmd_Argv(1);
-      iVar2 = atoi(pcVar3);
+      localClientNum = 0;
+      nptr = Cmd_Argv(1);
+      iVar2 = atoi(nptr);
       I_strncpyz(((demo.playback)->screenshotInfo).name,demo.info.name,0x16);
       ((demo.playback)->screenshotInfo).isModifiedName = false;
       I_strncpyz(((demo.playback)->screenshotInfo).description,demo.info.description,0x16);
@@ -2568,17 +2634,17 @@ void __cdecl Demo_Screenshot_f(void)
       I_strncpyz(((demo.playback)->screenshotInfo).gameType,demo.info.gameType,0x100);
       I_strncpyz(((demo.playback)->screenshotInfo).mapName,demo.info.mapName,0x100);
       Dvar_SetInt(fsSelectedFileTagIndex,0);
-      Com_RealTime(&local_2c,true);
-      ((demo.playback)->screenshotInfo).week = local_2c.tm_yday / 7;
-      ((demo.playback)->screenshotInfo).month = local_2c.tm_mon + 1;
-      ((demo.playback)->screenshotInfo).year = local_2c.tm_year + 0x76c;
-      ((demo.playback)->screenshotInfo).day = local_2c.tm_mday;
-      ((demo.playback)->screenshotInfo).hour = local_2c.tm_hour;
-      ((demo.playback)->screenshotInfo).min = local_2c.tm_min;
-      lVar4 = _time64((long64 *)0x0);
-      local_40 = (int)lVar4;
+      Com_RealTime(&systemTime,true);
+      ((demo.playback)->screenshotInfo).week = systemTime.tm_yday / 7;
+      ((demo.playback)->screenshotInfo).month = systemTime.tm_mon + 1;
+      ((demo.playback)->screenshotInfo).year = systemTime.tm_year + 0x76c;
+      ((demo.playback)->screenshotInfo).day = systemTime.tm_mday;
+      ((demo.playback)->screenshotInfo).hour = systemTime.tm_hour;
+      ((demo.playback)->screenshotInfo).min = systemTime.tm_min;
+      lVar3 = _time64((long64 *)0x0);
+      local_40 = (int)lVar3;
       ((demo.playback)->screenshotInfo).createTime = local_40;
-      Demo_HiResScreenshot(local_8,iVar2);
+      Demo_HiResScreenshot(localClientNum,iVar2);
     }
     else {
       Com_PrintError(0xe,"The demo system not playing a demo. So, cannot take a screenshot\n");
@@ -2604,9 +2670,11 @@ void __cdecl Demo_SaveScreenshot_f(void)
   int iVar3;
   char *pcVar4;
   int iVar5;
-  uint local_10;
+  uint slot;
+  int localClientNum;
+  bool discard;
   
-  local_10 = 0;
+  slot = 0;
   iVar3 = SV_Cmd_Argc();
   if ((iVar3 != 2) && (iVar3 = SV_Cmd_Argc(), iVar3 != 3)) {
     Com_Printf(0,"Usage: demo_savescreenshot <discard> [slot].");
@@ -2626,10 +2694,10 @@ void __cdecl Demo_SaveScreenshot_f(void)
         return;
       }
       pcVar4 = Cmd_Argv(2);
-      local_10 = atoi(pcVar4);
+      slot = atoi(pcVar4);
     }
     if (iVar3 == 0) {
-      Demo_SaveScreenshot(0,local_10);
+      Demo_SaveScreenshot(0,slot);
     }
     (demo.playback)->screenshotSize = 0;
   }
@@ -2647,7 +2715,7 @@ void __cdecl Demo_RenderMovie_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *text;
   uint in_stack_fffffff4;
   
   iVar2 = SV_Cmd_Argc();
@@ -2657,8 +2725,8 @@ void __cdecl Demo_RenderMovie_f(void)
       LiveCounter_IncrementCounterValueByName
                 ("global_fileshare_rendered",(ulonglong)in_stack_fffffff4 << 0x20);
       Cmd_Argv(1);
-      pcVar3 = va("demo_play %s 1\n");
-      Cbuf_AddText(0,pcVar3);
+      text = va("demo_play %s 1\n");
+      Cbuf_AddText(0,text);
     }
     else {
       Com_PrintError(0xe,"The demo system is currently running.\n");
@@ -2679,14 +2747,15 @@ void __cdecl Demo_SwitchControls_f(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *nptr;
+  int currentConfig;
   
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
     iVar3 = SV_Cmd_Argc();
     if (iVar3 == 2) {
-      pcVar4 = Cmd_Argv(1);
-      iVar3 = atoi(pcVar4);
+      nptr = Cmd_Argv(1);
+      iVar3 = atoi(nptr);
       if ((iVar3 < 0) || (2 < iVar3)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_common.cpp",0x97a,0,
                                  "%s");
@@ -2772,10 +2841,10 @@ bool __cdecl Demo_IsEnabled(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetDemoState(int param_1)
+void __cdecl Demo_SetDemoState(int state)
 
 {
-  demo.state = param_1;
+  demo.state = state;
   return;
 }
 
@@ -2794,10 +2863,10 @@ int __cdecl Demo_GetDemoState(void)
 
 // 009BB5B0  Demo_SetDemoClientState  (demo/demo_common.cpp:2525)
 
-void __cdecl Demo_SetDemoClientState(int param_1)
+void __cdecl Demo_SetDemoClientState(int state)
 
 {
-  demoClient.state = param_1;
+  demoClient.state = state;
   return;
 }
 
@@ -2861,11 +2930,11 @@ char * __cdecl Demo_GetDemoName(void)
 
 // 009BB640  Demo_Printf  (demo/demo_common.cpp:2598)
 
-void __cdecl Demo_Printf(int param_1,char *param_2)
+void __cdecl Demo_Printf(int channel,char *string)
 
 {
-  if (((demo_debug->current).unsignedInt & param_1) != 0) {
-    Com_Printf(0xf,param_2);
+  if (((demo_debug->current).unsignedInt & channel) != 0) {
+    Com_Printf(0xf,string);
   }
   return;
 }
@@ -2912,19 +2981,19 @@ void __cdecl Demo_Init(void)
 bool __cdecl Demo_InitWrite(void)
 
 {
-  char *pcVar1;
-  uchar *puVar2;
-  bool bVar3;
-  uchar local_10c [260];
+  char *filename;
+  uchar *dir;
+  bool supressErrors;
+  uchar ospath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_10c,'\0',0x100);
-  Demo_GetDemoPath((char *)local_10c);
-  bVar3 = false;
-  puVar2 = local_10c;
-  pcVar1 = va("%s.demo");
-  demo.demoFileHandle = Demo_OpenFileWrite(pcVar1,(char *)puVar2,bVar3);
+  memset(ospath,'\0',0x100);
+  Demo_GetDemoPath((char *)ospath);
+  supressErrors = false;
+  dir = ospath;
+  filename = va("%s.demo");
+  demo.demoFileHandle = Demo_OpenFileWrite(filename,(char *)dir,supressErrors);
   return demo.demoFileHandle != 0;
 }
 
@@ -2938,19 +3007,19 @@ bool __cdecl Demo_InitWrite(void)
 bool __cdecl Demo_InitRead(void)
 
 {
-  char *pcVar1;
-  uchar *puVar2;
-  bool bVar3;
-  uchar local_10c [260];
+  char *filename;
+  uchar *dir;
+  bool supressErrors;
+  uchar ospath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_10c,'\0',0x100);
-  Demo_GetDemoPath((char *)local_10c);
-  bVar3 = false;
-  puVar2 = local_10c;
-  pcVar1 = va("%s.demo");
-  demo.demoFileHandle = Demo_OpenFileRead(pcVar1,(char *)puVar2,bVar3);
+  memset(ospath,'\0',0x100);
+  Demo_GetDemoPath((char *)ospath);
+  supressErrors = false;
+  dir = ospath;
+  filename = va("%s.demo");
+  demo.demoFileHandle = Demo_OpenFileRead(filename,(char *)dir,supressErrors);
   return demo.demoFileHandle != 0;
 }
 
@@ -2959,26 +3028,30 @@ bool __cdecl Demo_InitRead(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_Frame(int param_1)
+void __cdecl Demo_Frame(int msec)
 
 {
   bool bVar1;
+  int localClientNum_00;
   int iVar2;
-  int iVar3;
+  int localClientNum;
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    iVar2 = Com_LocalClients_GetPrimary();
-    Demo_UpdateClipTime(param_1);
+    localClientNum_00 = Com_LocalClients_GetPrimary();
+    Demo_UpdateClipTime(msec);
     bVar1 = Demo_IsPlaybackInited();
     if ((bVar1) && (((demo.playback)->holdCmd).active != false)) {
-      iVar3 = Sys_Milliseconds();
-      if (0xf9 < iVar3 - ((demo.playback)->holdCmd).activatedTime) {
-        Demo_HandleHoldInput(iVar2,((demo.playback)->holdCmd).key,true);
+      iVar2 = Sys_Milliseconds();
+      if (0xf9 < iVar2 - ((demo.playback)->holdCmd).activatedTime) {
+        Demo_HandleHoldInput(localClientNum_00,((demo.playback)->holdCmd).key,true);
       }
     }
-    Demo_DrawDebugInformation(iVar2);
+    Demo_DrawDebugInformation(localClientNum_00);
   }
   return;
 }
@@ -2993,13 +3066,14 @@ void __cdecl Demo_Frame(int param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl Demo_End(bool param_1)
+void __cdecl Demo_End(bool abnormalTermination)
 
 {
   bool bVar1;
   int iVar2;
-  uchar *puVar3;
-  int iVar4;
+  uchar *data;
+  int size;
+  int state;
   
   iVar2 = Demo_GetDemoState();
   demo.shutdownInProgress = true;
@@ -3007,9 +3081,9 @@ void __cdecl Demo_End(bool param_1)
     MSG_WriteBits(&demo.msg,1,2);
     demo.info.endTime = svs.time;
     bVar1 = true;
-    iVar4 = demo.msg.cursize;
-    puVar3 = Demo_GetActiveMemoryBuffer();
-    Demo_Save(puVar3,iVar4,bVar1);
+    size = demo.msg.cursize;
+    data = Demo_GetActiveMemoryBuffer();
+    Demo_Save(data,size,bVar1);
     Sys_WaitWorkerCmdInternal(&Demo_SaveWorkerCmd);
     Cbuf_AddText(0,"wait 10; demo_removedemoclient\n");
   }
@@ -3023,7 +3097,7 @@ void __cdecl Demo_End(bool param_1)
     bVar1 = mjpeg_is_encoding();
     if (bVar1) {
       mjpeg_close();
-      if (param_1) {
+      if (abnormalTermination) {
         demo.renderingMovie = false;
       }
     }
@@ -3041,45 +3115,45 @@ void __cdecl Demo_End(bool param_1)
 
 // 009BB9D0  Demo_ReadDataCallback  (demo/demo_common.cpp:2839)
 
-void __cdecl Demo_ReadDataCallback(void *param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl Demo_ReadDataCallback(void *data,uint dataSize,uint bytesDownloaded,uint fileSize)
 
 {
-  Demo_Write(param_1,param_2,s_demoFileHandle);
+  Demo_Write(data,dataSize,s_demoFileHandle);
   return;
 }
 
 
 // 009BB9F0  Demo_ReadDataSuccessPlayIt  (demo/demo_common.cpp:2865)
 
-void __cdecl Demo_ReadDataSuccessPlayIt(dwFileShareReadFileTask *param_1)
+void __cdecl Demo_ReadDataSuccessPlayIt(dwFileShareReadFileTask *task)
 
 {
-  char *pcVar1;
+  char *text;
   
   Com_Printf(0x10,"Demo download successful.\n");
-  pcVar1 = va("demo_play %s 0\n");
-  Cbuf_AddText(0,pcVar1);
+  text = va("demo_play %s 0\n");
+  Cbuf_AddText(0,text);
   return;
 }
 
 
 // 009BBA30  Demo_ReadDataSuccessRenderIt  (demo/demo_common.cpp:2878)
 
-void __cdecl Demo_ReadDataSuccessRenderIt(dwFileShareReadFileTask *param_1)
+void __cdecl Demo_ReadDataSuccessRenderIt(dwFileShareReadFileTask *task)
 
 {
-  char *pcVar1;
+  char *text;
   
   Com_Printf(0x10,"Demo download successful.\n");
-  pcVar1 = va("demo_rendermovie %s\n");
-  Cbuf_AddText(0,pcVar1);
+  text = va("demo_rendermovie %s\n");
+  Cbuf_AddText(0,text);
   return;
 }
 
 
 // 009BBA70  Demo_ReadDataFailure  (demo/demo_common.cpp:2910)
 
-void __cdecl Demo_ReadDataFailure(dwFileShareReadFileTask *param_1)
+void __cdecl Demo_ReadDataFailure(dwFileShareReadFileTask *task)
 
 {
   bool bVar1;
@@ -3100,44 +3174,45 @@ void __cdecl Demo_ReadDataFailure(dwFileShareReadFileTask *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-Demo_DownloadFile(int param_1,char *param_2,ulong64 param_3,int param_4,bool param_5,bool param_6)
+Demo_DownloadFile(int controllerIndex,char *filmName,ulong64 fileId,int fileSize,bool isUserFile,
+                 bool renderIt)
 
 {
   bool bVar1;
-  int iVar2;
-  uchar local_13c [260];
+  int size;
+  uchar ospath [260];
   uint local_38;
-  fileShareReadFileInfo local_34;
+  fileShareReadFileInfo fileInfo;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_13c,'\0',0x100);
-  Demo_GetDemoPath((char *)local_13c);
-  s_demoFileHandle = Demo_OpenFileWrite(param_2,(char *)local_13c,false);
+  memset(ospath,'\0',0x100);
+  Demo_GetDemoPath((char *)ospath);
+  s_demoFileHandle = Demo_OpenFileWrite(filmName,(char *)ospath,false);
   bVar1 = Demo_IsStreamBufferAllocated();
   if (bVar1) {
-    iVar2 = Demo_GetCurrentAllocatedFileSize();
-    Demo_ReturnStreamBufferMemory(iVar2);
+    size = Demo_GetCurrentAllocatedFileSize();
+    Demo_ReturnStreamBufferMemory(size);
   }
-  Demo_AllocateMemoryFromStreamBuffer(param_4);
-  if (param_5) {
-    local_34.location = FILESHARE_LOCATION_USERSTORAGE;
-  }
-  else {
-    local_34.location = FILESHARE_LOCATION_POOLEDSTORAGE;
-  }
-  local_34.fileSize = param_4;
-  local_34.isStreamed = true;
-  local_34.dataCallback = Demo_ReadDataCallback;
-  if (param_6) {
-    local_34.successCallback = Demo_ReadDataSuccessRenderIt;
+  Demo_AllocateMemoryFromStreamBuffer(fileSize);
+  if (isUserFile) {
+    fileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
   }
   else {
-    local_34.successCallback = Demo_ReadDataSuccessPlayIt;
+    fileInfo.location = FILESHARE_LOCATION_POOLEDSTORAGE;
   }
-  local_34.failureCallback = Demo_ReadDataFailure;
-  local_34.fileID = param_3;
-  local_34.cacheBuffer = Demo_GetStreamAllocatedBuffer();
-  LiveStorage_FileShare_ReadFile(param_1,&local_34);
+  fileInfo.fileSize = fileSize;
+  fileInfo.isStreamed = true;
+  fileInfo.dataCallback = Demo_ReadDataCallback;
+  if (renderIt) {
+    fileInfo.successCallback = Demo_ReadDataSuccessRenderIt;
+  }
+  else {
+    fileInfo.successCallback = Demo_ReadDataSuccessPlayIt;
+  }
+  fileInfo.failureCallback = Demo_ReadDataFailure;
+  fileInfo.fileID = fileId;
+  fileInfo.cacheBuffer = Demo_GetStreamAllocatedBuffer();
+  LiveStorage_FileShare_ReadFile(controllerIndex,&fileInfo);
   return;
 }
 

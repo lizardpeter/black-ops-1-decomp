@@ -7,57 +7,60 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_SightTrace(actor_s *param_1,float *param_2,float *param_3,int param_4)
+bool __cdecl Actor_SightTrace(actor_s *end,float *passEntNum,float *param_3,int param_4)
 
 {
   DWORD DVar1;
   undefined4 *in_ECX;
   float *in_EDX;
   float fVar2;
+  float *start;
+  actor_s *self;
   bool local_41;
-  float local_40;
+  float foliageIgnorePos;
   float local_3c;
   float local_38;
-  col_context_t local_34;
-  int local_8;
+  col_context_t context;
+  PIXProfile pixProfile;
+  int hitNum;
   
   PIXBeginNamedEvent(-1,"Actor_SightTrace");
-  col_context_t::col_context_t(&local_34);
+  col_context_t::col_context_t(&context);
   in_ECX[0x7b] = in_ECX[0x7b] + 1;
   if (g_visitor != (colgeom_visitor_inlined_t<200> *)0x0) {
-    local_34.prims = g_visitor->prims;
-    local_34.nprims = g_visitor->nprims;
+    context.prims = g_visitor->prims;
+    context.nprims = g_visitor->nprims;
   }
-  local_34.passEntityNum0 = *(int *)*in_ECX;
-  local_34.passEntityNum1 = (int)param_2;
+  context.passEntityNum0 = *(int *)*in_ECX;
+  context.passEntityNum1 = (int)passEntNum;
   if (in_ECX[0x3c7] == 0) {
-    fVar2 = Vec3DistanceSq(in_EDX,(float *)param_1);
+    fVar2 = Vec3DistanceSq(in_EDX,(float *)end);
     if ((ai_foliageIngoreDist->current).value * (ai_foliageIngoreDist->current).value <= fVar2) {
-      local_34.mask = 0x2809803;
-      SV_SightTracePoint(&local_8,in_EDX,(float *)param_1,&local_34);
+      context.mask = 0x2809803;
+      SV_SightTracePoint(&hitNum,in_EDX,(float *)end,&context);
     }
     else {
-      local_34.mask = 0x2809801;
-      SV_SightTracePoint(&local_8,in_EDX,(float *)param_1,&local_34);
+      context.mask = 0x2809801;
+      SV_SightTracePoint(&hitNum,in_EDX,(float *)end,&context);
     }
   }
   else {
-    local_40 = (float)param_1->ent - *in_EDX;
-    local_3c = (float)param_1->sentient - in_EDX[1];
-    local_38 = (float)param_1->species - in_EDX[2];
-    Vec3Normalize(&local_40);
+    foliageIgnorePos = (float)end->ent - *in_EDX;
+    local_3c = (float)end->sentient - in_EDX[1];
+    local_38 = (float)end->species - in_EDX[2];
+    Vec3Normalize(&foliageIgnorePos);
     fVar2 = (ai_foliageIngoreDist->current).value;
-    local_40 = fVar2 * local_40 + *in_EDX;
+    foliageIgnorePos = fVar2 * foliageIgnorePos + *in_EDX;
     local_3c = fVar2 * local_3c + in_EDX[1];
     local_38 = fVar2 * local_38 + in_EDX[2];
-    local_34.mask = 0x2809803;
-    SV_SightTracePoint(&local_8,&local_40,(float *)param_1,&local_34);
-    if (local_8 == 0) {
-      local_34.mask = 0x2809801;
-      SV_SightTracePoint(&local_8,in_EDX,&local_40,&local_34);
+    context.mask = 0x2809803;
+    SV_SightTracePoint(&hitNum,&foliageIgnorePos,(float *)end,&context);
+    if (hitNum == 0) {
+      context.mask = 0x2809801;
+      SV_SightTracePoint(&hitNum,in_EDX,&foliageIgnorePos,&context);
     }
   }
-  if (local_8 == 0) {
+  if (hitNum == 0) {
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -77,13 +80,16 @@ bool __cdecl Actor_SightTrace(actor_s *param_1,float *param_2,float *param_3,int
 
 // 00919B80  Actor_CanSeePointFrom  (game/actor_senses.cpp:119)
 
+/* WARNING: Variable defined which should be unmapped: vStart */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-Actor_CanSeePointFrom(actor_s *param_1,float *param_2,float *param_3,float param_4,int param_5)
+Actor_CanSeePointFrom
+          (actor_s *vEnd,float *fMaxDistSqrd,float *ignoreEntityNum,float param_4,int param_5)
 
 {
   code *pcVar1;
@@ -94,8 +100,11 @@ Actor_CanSeePointFrom(actor_s *param_1,float *param_2,float *param_3,float param
   float fVar4;
   float fVar5;
   float fVar6;
+  float *vStart;
+  actor_s *self;
+  float fDistSqrd;
   
-  if (((float)param_2 < 0.0) &&
+  if (((float)fMaxDistSqrd < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x7a,0,
                                "%s\n\t(fMaxDistSqrd) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -116,27 +125,29 @@ Actor_CanSeePointFrom(actor_s *param_1,float *param_2,float *param_3,float param
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((float)param_2 != 0.0) &&
-     ((fVar4 = (float)param_1->ent - *in_EDX, fVar5 = (float)param_1->sentient - in_EDX[1],
-      fVar6 = (float)param_1->species - in_EDX[2],
-      fVar4 = fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6, (float)param_2 < fVar4 ||
+  if (((float)fMaxDistSqrd != 0.0) &&
+     ((fVar4 = (float)vEnd->ent - *in_EDX, fVar5 = (float)vEnd->sentient - in_EDX[1],
+      fVar6 = (float)vEnd->species - in_EDX[2],
+      fVar4 = fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6, (float)fMaxDistSqrd < fVar4 ||
       (level.fFogOpaqueDistSqrd < fVar4)))) {
     return false;
   }
-  bVar2 = Actor_SightTrace(param_1,param_3,in_EDX,(int)in_ECX);
+  bVar2 = Actor_SightTrace(vEnd,ignoreEntityNum,in_EDX,(int)in_ECX);
   return bVar2;
 }
 
 
 // 0091A0F0  PointInFovAndRange  (game/actor_senses.cpp:151)
 
+/* WARNING: Variable defined which should be unmapped: vEyePos */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-PointInFovAndRange(actor_s *param_1,float *param_2,float *param_3,float param_4,float param_5)
+PointInFovAndRange(actor_s *vPoint,float *fovDot,float *fMaxDistSqrd,float param_4,float param_5)
 
 {
   int iVar1;
@@ -146,20 +157,24 @@ PointInFovAndRange(actor_s *param_1,float *param_2,float *param_3,float param_4,
   float fVar3;
   float fVar4;
   float fVar5;
-  float local_20;
+  float *vEyePos;
+  actor_s *self;
+  float fDistSqrd;
+  float vForward;
   float local_1c;
   float local_18;
+  float fDot;
   
-  fVar2 = (float)param_1->ent - (float)in_EDX->ent;
-  fVar3 = (float)param_1->sentient - (float)in_EDX->sentient;
-  fVar4 = (float)param_1->species - (float)in_EDX->species;
+  fVar2 = (float)vPoint->ent - (float)in_EDX->ent;
+  fVar3 = (float)vPoint->sentient - (float)in_EDX->sentient;
+  fVar4 = (float)vPoint->species - (float)in_EDX->species;
   fVar5 = fVar2 * fVar2 + fVar3 * fVar3 + fVar4 * fVar4;
-  if (((float)param_3 == 0.0) || ((fVar5 <= (float)param_3 && (fVar5 <= level.fFogOpaqueDistSqrd))))
-  {
-    if ((float)param_2 != 0.0) {
+  if (((float)fMaxDistSqrd == 0.0) ||
+     ((fVar5 <= (float)fMaxDistSqrd && (fVar5 <= level.fFogOpaqueDistSqrd)))) {
+    if ((float)fovDot != 0.0) {
       Actor_GetEyeDirection(in_EDX,in_ECX);
-      fVar2 = fVar2 * local_20 + fVar3 * local_1c + fVar4 * local_18;
-      if ((fVar2 < 0.0) || (fVar2 * fVar2 < fVar5 * (float)param_2 * (float)param_2)) {
+      fVar2 = fVar2 * vForward + fVar3 * local_1c + fVar4 * local_18;
+      if ((fVar2 < 0.0) || (fVar2 * fVar2 < fVar5 * (float)fovDot * (float)fovDot)) {
         return 0;
       }
     }
@@ -174,6 +189,8 @@ PointInFovAndRange(actor_s *param_1,float *param_2,float *param_3,float param_4,
 
 // 0091A020  Actor_CanSeePointExInternal  (game/actor_senses.cpp:215)
 
+/* WARNING: Variable defined which should be unmapped: vPoint */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -181,7 +198,8 @@ PointInFovAndRange(actor_s *param_1,float *param_2,float *param_3,float param_4,
 
 bool __cdecl
 Actor_CanSeePointExInternal
-          (actor_s *param_1,float *param_2,float param_3,float param_4,int param_5,float *param_6)
+          (actor_s *fovDot,float *fMaxDistSqrd,float ignoreEntityNum,float vViewPos,int param_5,
+          float *param_6)
 
 {
   code *pcVar1;
@@ -191,8 +209,10 @@ Actor_CanSeePointExInternal
   float in_ECX;
   actor_s *in_EDX;
   actor_s *paVar5;
+  float *vPoint;
+  actor_s *self;
   
-  if ((float)param_1 < 0.0) {
+  if ((float)fovDot < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0xda,0,
                              "%s\n\t(fovDot) = %g");
     if (!bVar2) {
@@ -201,7 +221,7 @@ Actor_CanSeePointExInternal
       return (bool)uVar3;
     }
   }
-  if ((float)param_2 < 0.0) {
+  if ((float)fMaxDistSqrd < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0xdb,0,
                              "%s\n\t(fMaxDistSqrd) = %g");
     if (!bVar2) {
@@ -211,12 +231,12 @@ Actor_CanSeePointExInternal
     }
   }
   paVar5 = in_EDX;
-  iVar4 = PointInFovAndRange(in_EDX,(float *)param_1,param_2,(float)in_EDX,in_ECX);
+  iVar4 = PointInFovAndRange(in_EDX,(float *)fovDot,fMaxDistSqrd,(float)in_EDX,in_ECX);
   if (iVar4 == 0) {
     bVar2 = false;
   }
   else {
-    bVar2 = Actor_SightTrace(paVar5,(float *)param_3,(float *)in_EDX,(int)param_1);
+    bVar2 = Actor_SightTrace(in_EDX,(float *)ignoreEntityNum,(float *)paVar5,(int)fovDot);
   }
   return bVar2;
 }
@@ -224,13 +244,16 @@ Actor_CanSeePointExInternal
 
 // 00919F20  Actor_CanSeePointEx  (game/actor_senses.cpp:239)
 
+/* WARNING: Variable defined which should be unmapped: vPoint */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-Actor_CanSeePointEx(actor_s *param_1,float *param_2,float param_3,float param_4,int param_5)
+Actor_CanSeePointEx(actor_s *fovDot,float *fMaxDistSqrd,float ignoreEntityNum,float param_4,
+                   int param_5)
 
 {
   code *pcVar1;
@@ -238,11 +261,13 @@ Actor_CanSeePointEx(actor_s *param_1,float *param_2,float param_3,float param_4,
   undefined1 uVar3;
   float *in_ECX;
   actor_s *in_EDX;
-  float local_10;
+  float *vPoint;
+  actor_s *self;
+  float vViewPos;
   float local_c;
   float local_8;
   
-  if ((float)param_1 < 0.0) {
+  if ((float)fovDot < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0xf7,0,
                              "%s\n\t(fovDot) = %g");
     if (!bVar2) {
@@ -251,7 +276,7 @@ Actor_CanSeePointEx(actor_s *param_1,float *param_2,float param_3,float param_4,
       return (bool)uVar3;
     }
   }
-  if ((float)param_2 < 0.0) {
+  if ((float)fMaxDistSqrd < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0xf8,0,
                              "%s\n\t(fMaxDistSqrd) = %g");
     if (!bVar2) {
@@ -264,17 +289,20 @@ Actor_CanSeePointEx(actor_s *param_1,float *param_2,float param_3,float param_4,
     Actor_GetEyePosition(in_EDX,in_ECX);
   }
   else {
-    local_10 = g_viewPos[0];
+    vViewPos = g_viewPos[0];
     local_c = g_viewPos[1];
     local_8 = g_viewPos[2];
   }
-  bVar2 = Actor_CanSeePointExInternal(param_1,param_2,param_3,(float)&local_10,(int)in_EDX,in_ECX);
+  bVar2 = Actor_CanSeePointExInternal
+                    (fovDot,fMaxDistSqrd,ignoreEntityNum,(float)&vViewPos,(int)in_EDX,in_ECX);
   return bVar2;
 }
 
 
 // 0091A220  Actor_CanSeeEntity  (game/actor_senses.cpp:274)
 
+/* WARNING: Variable defined which should be unmapped: ent */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -286,6 +314,8 @@ bool __cdecl Actor_CanSeeEntity(actor_s *param_1,gentity_s *param_2)
   bool bVar1;
   float in_ECX;
   float in_EDX;
+  gentity_s *ent;
+  actor_s *self;
   
   bVar1 = Actor_CanSeeEntityEx
                     (*(actor_s **)((int)in_ECX + 0xf14),*(gentity_s **)((int)in_ECX + 0xf18),in_EDX,
@@ -296,13 +326,15 @@ bool __cdecl Actor_CanSeeEntity(actor_s *param_1,gentity_s *param_2)
 
 // 0091A260  Actor_UpdateVisCache  (game/actor_senses.cpp:286)
 
+/* WARNING: Variable defined which should be unmapped: ent */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_UpdateVisCache(actor_s *param_1,gentity_s *param_2,sentient_info_t *param_3,bool param_4)
+Actor_UpdateVisCache(actor_s *pInfo,gentity_s *bVisible,sentient_info_t *param_3,bool param_4)
 
 {
   char cVar1;
@@ -311,6 +343,9 @@ Actor_UpdateVisCache(actor_s *param_1,gentity_s *param_2,sentient_info_t *param_
   actor_s *paVar4;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  gentity_s *ent;
+  actor_s *self;
+  bool wasVisible;
   
   if ((in_ECX == (sentient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x121,0,
@@ -326,16 +361,17 @@ Actor_UpdateVisCache(actor_s *param_1,gentity_s *param_2,sentient_info_t *param_
     (*pcVar2)();
     return;
   }
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((pInfo == (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x123,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  cVar1 = *(char *)&param_1->ent;
-  VisCache_Update((vis_cache_t *)in_EDX,SUB41(in_ECX,0));
-  if ((char)param_2 != '\0') {
+  cVar1 = *(char *)&pInfo->ent;
+  self._0_1_ = SUB41(in_ECX,0);
+  VisCache_Update((vis_cache_t *)in_EDX,self._0_1_);
+  if ((char)bVisible != '\0') {
     if (cVar1 == '\0') {
       if ((g_dumpAIEvents->current).integer == (in_ECX->ent->s).number) {
         Com_Printf(0x12,"%d ^3 visible^7:  entity^5 %d ^7at time^5 %d\n");
@@ -345,7 +381,7 @@ Actor_UpdateVisCache(actor_s *param_1,gentity_s *param_2,sentient_info_t *param_
         Scr_Notify(in_ECX->ent,scr_const.enemy_visible,0);
       }
     }
-    param_1->legsAnimDuration = 0;
+    pInfo->legsAnimDuration = 0;
     Actor_UpdateLastKnownPos(in_EDX,in_ECX);
   }
   return;
@@ -359,7 +395,8 @@ Actor_UpdateVisCache(actor_s *param_1,gentity_s *param_2,sentient_info_t *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_CanSeeEntityEx(actor_s *param_1,gentity_s *param_2,float param_3,float param_4)
+bool __cdecl
+Actor_CanSeeEntityEx(actor_s *fovDot,gentity_s *fMaxDistSqrd,float param_3,float param_4)
 
 {
   code *pcVar1;
@@ -371,22 +408,25 @@ bool __cdecl Actor_CanSeeEntityEx(actor_s *param_1,gentity_s *param_2,float para
   gentity_s *in_EDX;
   actor_s *unaff_ESI;
   float *pfVar6;
-  actor_s *paVar7;
-  gentity_s *pgVar8;
+  actor_s *vPoint;
+  gentity_s *ignoreEntityNum;
   float *in_stack_ffffffa8;
-  float *pfVar9;
-  ai_state_t local_54;
-  ai_state_t local_50;
-  ai_state_t local_4c;
+  float *fMaxDistSqrd_00;
+  int local_54;
+  int local_50;
+  int local_4c;
   actor_s *local_48;
-  bool local_35;
-  undefined1 local_30 [12];
-  sentient_s *local_24;
-  byte local_1d;
-  actor_s *local_1c;
-  actor_s *local_18;
-  float local_14 [3];
-  ai_state_t local_8;
+  gentity_s *ent;
+  actor_s *self;
+  bool bVisible;
+  float visibleDistSq;
+  undefined1 vViewPos [12];
+  sentient_s *sentient;
+  bool bOtherVisible;
+  sentient_info_t *pInfo;
+  float fovDotUse;
+  float vDestPos [3];
+  int bCacheable;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x145,0,
@@ -409,85 +449,87 @@ bool __cdecl Actor_CanSeeEntityEx(actor_s *param_1,gentity_s *param_2,float para
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((float)param_1 < 0.0) &&
+  if (((float)fovDot < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x156,0,
                                "%s\n\t(fovDot) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((float)param_2 < 0.0) &&
+  if (((float)fMaxDistSqrd < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x157,0,
                                "%s\n\t(fMaxDistSqrd) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_24 = in_EDX->sentient;
-  if (local_24 == (sentient_s *)0x0) {
-    iVar5 = G_DObjGetWorldTagPos(in_EDX,(uint)scr_const.tag_eye,local_14);
+  sentient = in_EDX->sentient;
+  if (sentient == (sentient_s *)0x0) {
+    iVar5 = G_DObjGetWorldTagPos(in_EDX,(uint)scr_const.tag_eye,vDestPos);
     if (iVar5 == 0) {
-      G_EntityCentroid(in_EDX,local_14);
+      G_EntityCentroid(in_EDX,vDestPos);
     }
-    local_1c = (actor_s *)0x0;
-    local_48 = param_1;
-    pgVar8 = param_2;
-    local_35 = Actor_CanSeePointEx(param_1,(float *)param_2,(float)(in_EDX->s).number,
+    pInfo = (sentient_info_t *)0x0;
+    local_48 = fovDot;
+    ignoreEntityNum = fMaxDistSqrd;
+    bVisible = Actor_CanSeePointEx(fovDot,(float *)fMaxDistSqrd,(float)(in_EDX->s).number,
                                    (float)unaff_ESI,(int)in_stack_ffffffa8);
   }
   else {
-    local_1c = (actor_s *)(in_ECX + 0xf20 + (((int)local_24 - (int)level.sentients) / 0x90) * 0x28);
+    pInfo = (sentient_info_t *)
+            (in_ECX + 0xf20 + (((int)sentient - (int)level.sentients) / 0x90) * 0x28);
     Sentient_GetEyePosition((sentient_s *)unaff_ESI,in_stack_ffffffa8);
     Actor_GetEyePosition(unaff_ESI,in_stack_ffffffa8);
-    local_18 = param_1;
+    fovDotUse = (float)fovDot;
     psVar4 = Actor_GetTargetSentient(unaff_ESI);
-    if ((psVar4 == local_24) ||
+    if ((psVar4 == sentient) ||
        ((iVar5 = SentientHandle::isDefined((SentientHandle *)(in_ECX + 0x16a0)), iVar5 != 0 &&
-        (psVar4 = SentientHandle::sentient((SentientHandle *)(in_ECX + 0x16a0)), psVar4 == local_24)
+        (psVar4 = SentientHandle::sentient((SentientHandle *)(in_ECX + 0x16a0)), psVar4 == sentient)
         ))) {
-      local_18 = (actor_s *)0x0;
+      fovDotUse = 0.0;
     }
-    local_48 = (actor_s *)(local_24->maxVisibleDist * local_24->maxVisibleDist);
-    if ((float)param_2 - (float)local_48 < 0.0) {
-      local_48 = (actor_s *)param_2;
+    local_48 = (actor_s *)(sentient->maxVisibleDist * sentient->maxVisibleDist);
+    if ((float)fMaxDistSqrd - (float)local_48 < 0.0) {
+      local_48 = (actor_s *)fMaxDistSqrd;
     }
-    param_2 = (gentity_s *)local_48;
-    pgVar8 = (gentity_s *)(in_EDX->s).number;
-    local_35 = Actor_CanSeePointExInternal
-                         (local_18,(float *)local_48,(float)pgVar8,(float)local_30,(int)unaff_ESI,
-                          in_stack_ffffffa8);
+    fMaxDistSqrd = (gentity_s *)local_48;
+    ignoreEntityNum = (gentity_s *)(in_EDX->s).number;
+    bVisible = Actor_CanSeePointExInternal
+                         ((actor_s *)fovDotUse,(float *)local_48,(float)ignoreEntityNum,
+                          (float)vViewPos,(int)unaff_ESI,in_stack_ffffffa8);
   }
-  if (local_35 == false) {
-    if ((*(float *)(in_ECX + 0xf14) < (float)param_1) ||
-       ((float)param_2 < *(float *)(in_ECX + 0xf18))) {
-      local_54 = AIS_INVALID;
+  if (bVisible == false) {
+    if ((*(float *)(in_ECX + 0xf14) < (float)fovDot) ||
+       ((float)fMaxDistSqrd < *(float *)(in_ECX + 0xf18))) {
+      local_54 = 0;
     }
     else {
-      local_54 = AIS_DEFAULT;
+      local_54 = 1;
     }
     local_50 = local_54;
   }
   else {
-    if (((float)param_1 < *(float *)(in_ECX + 0xf14)) ||
-       (*(float *)(in_ECX + 0xf18) < (float)param_2)) {
-      local_4c = AIS_INVALID;
+    if (((float)fovDot < *(float *)(in_ECX + 0xf14)) ||
+       (*(float *)(in_ECX + 0xf18) < (float)fMaxDistSqrd)) {
+      local_4c = 0;
     }
     else {
-      local_4c = AIS_DEFAULT;
+      local_4c = 1;
     }
     local_50 = local_4c;
   }
-  local_8 = local_50;
-  if ((local_50 != AIS_INVALID) && (local_24 != (sentient_s *)0x0)) {
+  bCacheable = local_50;
+  if ((local_50 != 0) && (sentient != (sentient_s *)0x0)) {
     Actor_UpdateVisCache
-              (local_1c,(gentity_s *)(uint)local_35,(sentient_info_t *)local_48,SUB41(pgVar8,0));
+              ((actor_s *)pInfo,(gentity_s *)(uint)bVisible,(sentient_info_t *)local_48,
+               SUB41(ignoreEntityNum,0));
   }
-  if (local_35 == false) {
+  if (bVisible == false) {
     bVar2 = false;
   }
   else {
     if (in_EDX->actor != (actor_s *)0x0) {
-      local_1d = 1;
+      bOtherVisible = true;
       if ((in_EDX->sentient == (sentient_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x198
                                    ,0,"%s"), !bVar2)) {
@@ -497,21 +539,21 @@ bool __cdecl Actor_CanSeeEntityEx(actor_s *param_1,gentity_s *param_2,float para
       }
       pfVar6 = (float *)(*(float *)(*(int *)(in_ECX + 4) + 0x24) *
                         *(float *)(*(int *)(in_ECX + 4) + 0x24));
-      pfVar9 = (float *)in_EDX->actor->fMaxSightDistSqrd;
-      if (0.0 <= (float)pfVar9 - (float)pfVar6) {
-        pfVar9 = pfVar6;
+      fMaxDistSqrd_00 = (float *)in_EDX->actor->fMaxSightDistSqrd;
+      if (0.0 <= (float)fMaxDistSqrd_00 - (float)pfVar6) {
+        fMaxDistSqrd_00 = pfVar6;
       }
       pfVar6 = (float *)in_EDX->actor->fovDot;
-      paVar7 = (actor_s *)local_30;
-      iVar5 = PointInFovAndRange(paVar7,pfVar6,pfVar9,(float)local_48,(float)pgVar8);
+      vPoint = (actor_s *)vViewPos;
+      iVar5 = PointInFovAndRange(vPoint,pfVar6,fMaxDistSqrd_00,(float)local_48,
+                                 (float)ignoreEntityNum);
       if (iVar5 == 0) {
-        local_1d = 0;
+        bOtherVisible = false;
       }
-      local_1c = (actor_s *)
-                 (in_EDX->actor->sentientInfo + (*(int *)(in_ECX + 4) - (int)level.sentients) / 0x90
-                 );
+      pInfo = in_EDX->actor->sentientInfo + (*(int *)(in_ECX + 4) - (int)level.sentients) / 0x90;
       Actor_UpdateVisCache
-                (local_1c,(gentity_s *)(uint)local_1d,(sentient_info_t *)paVar7,SUB41(pfVar6,0));
+                ((actor_s *)pInfo,(gentity_s *)(uint)bOtherVisible,(sentient_info_t *)vPoint,
+                 SUB41(pfVar6,0));
     }
     bVar2 = true;
   }
@@ -521,24 +563,29 @@ bool __cdecl Actor_CanSeeEntityEx(actor_s *param_1,gentity_s *param_2,float para
 
 // 0091A810  Actor_CanSeeSentient  (game/actor_senses.cpp:433)
 
+/* WARNING: Variable defined which should be unmapped: sentient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Actor_CanSeeSentient(actor_s *param_1,sentient_s *param_2,int param_3)
+bool __cdecl Actor_CanSeeSentient(actor_s *iMaxLatency,sentient_s *param_2,int param_3)
 
 {
   undefined1 *puVar1;
   undefined1 uVar2;
   gentity_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *sentient;
+  actor_s *self;
+  vis_cache_t *pCached;
   
   puVar1 = (undefined1 *)
            ((int)&in_ECX[5].s.lerp.apos +
            (((int)in_EDX - (int)level.sentients) / 0x90) * 0x28 + 0x18);
   if ((*(int *)(puVar1 + 4) == 0) ||
-     ((int)param_1->eState + *(int *)(puVar1 + 4) + -0x18 < level.time)) {
+     ((int)iMaxLatency->eState + *(int *)(puVar1 + 4) + -0x18 < level.time)) {
     uVar2 = Actor_CanSeeEntity(in_EDX,in_ECX);
   }
   else {
@@ -550,10 +597,12 @@ bool __cdecl Actor_CanSeeSentient(actor_s *param_1,sentient_s *param_2,int param
 
 // 0091A880  Actor_CanSeeEnemy  (game/actor_senses.cpp:453)
 
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: enemy */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 bool __cdecl Actor_CanSeeEnemy(actor_s *param_1)
 
@@ -562,8 +611,10 @@ bool __cdecl Actor_CanSeeEnemy(actor_s *param_1)
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  gentity_s *pgVar5;
+  sentient_s *psVar5;
   actor_s *in_ECX;
+  actor_s *self;
+  sentient_s *enemy;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x1c8,0,
@@ -593,13 +644,13 @@ bool __cdecl Actor_CanSeeEnemy(actor_s *param_1)
       return (bool)uVar3;
     }
   }
-  pgVar5 = (gentity_s *)Actor_GetTargetSentient(in_ECX);
-  if (pgVar5 == (gentity_s *)0x0) {
+  psVar5 = Actor_GetTargetSentient(in_ECX);
+  if (psVar5 == (sentient_s *)0x0) {
     EntHandle::ent(&in_ECX->sentient->targetEnt);
-    bVar2 = Actor_CanSeeEntity(in_ECX,pgVar5);
+    bVar2 = Actor_CanSeeEntity(in_ECX,(gentity_s *)0x0);
   }
   else {
-    bVar2 = Actor_CanSeeSentient((actor_s *)0xfa,(sentient_s *)in_ECX,(int)pgVar5);
+    bVar2 = Actor_CanSeeSentient((actor_s *)0xfa,(sentient_s *)in_ECX,(int)psVar5);
   }
   return bVar2;
 }
@@ -607,19 +658,28 @@ bool __cdecl Actor_CanSeeEnemy(actor_s *param_1)
 
 // 0091ADE0  compare_sentient_sort  (game/actor_senses.cpp:655)
 
-int __cdecl compare_sentient_sort(void *param_1,void *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+int __cdecl compare_sentient_sort(void *pe1,void *pe2)
 
 {
-  return *(int *)((int)param_2 + 4) - *(int *)((int)param_1 + 4);
+  sentient_sort_t *pss2;
+  sentient_sort_t *pss1;
+  
+  return *(int *)((int)pe2 + 4) - *(int *)((int)pe1 + 4);
 }
 
 
 // 0091A960  Actor_UpdateSight  (game/actor_senses.cpp:670)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Actor_UpdateSight(actor_s *param_1)
 
@@ -629,55 +689,61 @@ void __cdecl Actor_UpdateSight(actor_s *param_1)
   int iVar3;
   gentity_s *pgVar4;
   DWORD DVar5;
+  float *in_ECX;
   uint uVar6;
   float fVar7;
   sentient_s *in_stack_fffffdf4;
-  float *extraout_var;
-  float *pfVar8;
-  sentient_s *local_1a4;
-  int local_19c;
-  float local_198;
+  actor_s *self;
+  int iLastUpdateTime;
+  float fDistSqrd;
+  int iTimeLapse;
+  PIXProfile pixProfile;
+  int iOldTraceCount;
+  int iEnemyTeam;
+  sentient_s *sentient;
+  int iTeamFlags;
+  int i;
+  float v;
   float local_194;
   float local_190;
-  float local_18c [97];
-  uint local_8;
+  float check [97];
+  int iCheckCount;
   
   PIXBeginNamedEvent(-1,"Actor_UpdateSight");
-  pfVar8 = extraout_var;
-  if ((extraout_var == (float *)0x0) &&
+  if ((in_ECX == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x2a3,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((pfVar8[1] == 0.0) &&
+  if ((in_ECX[1] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x2a4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Sentient_EnemyTeam(*(team_t *)((int)pfVar8[1] + 4));
+  Sentient_EnemyTeam(*(team_t *)((int)in_ECX[1] + 4));
   PIXBeginNamedEvent(-1,"sight 1");
-  local_8 = 0;
-  local_1a4 = Sentient_FirstSentient((int)in_stack_fffffdf4);
+  iCheckCount = 0;
+  sentient = Sentient_FirstSentient((int)in_stack_fffffdf4);
   while( true ) {
-    if (local_1a4 == (sentient_s *)0x0) {
-      if (1 < (int)local_8) {
-        qsort(local_18c,local_8,8,compare_sentient_sort);
+    if (sentient == (sentient_s *)0x0) {
+      if (1 < iCheckCount) {
+        qsort(check,iCheckCount,8,compare_sentient_sort);
       }
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       PIXBeginNamedEvent(-1,"sight 2");
-      fVar7 = pfVar8[0x7b];
-      local_19c = 0;
-      while ((local_19c < (int)local_8 &&
-             (Actor_CanSeeSentient((actor_s *)0x0,(sentient_s *)0x0,(int)pfVar8),
-             pfVar8[0x7b] == fVar7))) {
-        local_19c = local_19c + 1;
+      fVar7 = in_ECX[0x7b];
+      i = 0;
+      while ((i < iCheckCount &&
+             (Actor_CanSeeSentient((actor_s *)0x0,(sentient_s *)0x0,(int)in_ECX),
+             in_ECX[0x7b] == fVar7))) {
+        i = i + 1;
       }
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -689,18 +755,18 @@ void __cdecl Actor_UpdateSight(actor_s *param_1)
       }
       return;
     }
-    if ((local_1a4->ent == (gentity_s *)0x0) &&
+    if ((sentient->ent == (gentity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x2c8,0
                                  ,"%s"), !bVar2)) break;
-    if (((local_1a4->ent->s).number != *(int *)*pfVar8) &&
-       ((iVar3 = EntHandle::isDefined((EntHandle *)((int)pfVar8[1] + 8)), iVar3 == 0 ||
-        (pgVar4 = EntHandle::ent((EntHandle *)((int)pfVar8[1] + 8)), local_1a4->ent != pgVar4)))) {
-      Sentient_GetOrigin(in_stack_fffffdf4,pfVar8);
-      fVar7 = *pfVar8;
-      local_198 = local_198 - *(float *)((int)fVar7 + 0x124);
+    if (((sentient->ent->s).number != *(int *)*in_ECX) &&
+       ((iVar3 = EntHandle::isDefined((EntHandle *)((int)in_ECX[1] + 8)), iVar3 == 0 ||
+        (pgVar4 = EntHandle::ent((EntHandle *)((int)in_ECX[1] + 8)), sentient->ent != pgVar4)))) {
+      Sentient_GetOrigin(in_stack_fffffdf4,in_ECX);
+      fVar7 = *in_ECX;
+      v = v - *(float *)((int)fVar7 + 0x124);
       local_194 = local_194 - *(float *)((int)fVar7 + 0x128);
       local_190 = local_190 - *(float *)((int)fVar7 + 300);
-      fVar7 = local_198 * local_198 + local_194 * local_194 + local_190 * local_190;
+      fVar7 = v * v + local_194 * local_194 + local_190 * local_190;
       if ((((uint)fVar7 & 0x7f800000) == 0x7f800000) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x2d8
                                    ,0,"%s"), !bVar2)) {
@@ -710,15 +776,15 @@ void __cdecl Actor_UpdateSight(actor_s *param_1)
       }
       if (fVar7 != 0.0) {
         uVar6 = (level.time -
-                (int)pfVar8[(((int)local_1a4 - (int)level.sentients) / 0x90) * 10 + 0x3c9]) - 100;
+                (int)in_ECX[(((int)sentient - (int)level.sentients) / 0x90) * 10 + 0x3c9]) - 100;
         in_stack_fffffdf4 = (sentient_s *)(float)(int)(~((int)uVar6 >> 0x1f) & uVar6);
         fVar7 = I_rsqrt(fVar7);
-        local_18c[local_8 * 2 + 1] = fVar7 * (float)in_stack_fffffdf4;
-        local_18c[local_8 * 2] = (float)local_1a4;
-        local_8 = local_8 + 1;
+        check[iCheckCount * 2 + 1] = fVar7 * (float)in_stack_fffffdf4;
+        check[iCheckCount * 2] = (float)sentient;
+        iCheckCount = iCheckCount + 1;
       }
     }
-    local_1a4 = Sentient_NextSentient(in_stack_fffffdf4,(int)pfVar8);
+    sentient = Sentient_NextSentient(in_stack_fffffdf4,(int)in_ECX);
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -728,10 +794,12 @@ void __cdecl Actor_UpdateSight(actor_s *param_1)
 
 // 0091AE10  Actor_UpdateLastKnownPos  (game/actor_senses.cpp:773)
 
+/* WARNING: Variable defined which should be unmapped: other */
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Actor_UpdateLastKnownPos(actor_s *param_1,sentient_s *param_2)
 
@@ -741,6 +809,9 @@ void __cdecl Actor_UpdateLastKnownPos(actor_s *param_1,sentient_s *param_2)
   int iVar3;
   float *in_ECX;
   sentient_s *in_EDX;
+  sentient_s *other;
+  actor_s *self;
+  sentient_info_t *pInfo;
   
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x308,0,
@@ -788,6 +859,7 @@ void __cdecl Actor_UpdateLastKnownPos(actor_s *param_1,sentient_s *param_2)
 
 // 0091AF50  Actor_UpdateLastEnemySightPos  (game/actor_senses.cpp:796)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -798,30 +870,32 @@ void __cdecl Actor_UpdateLastEnemySightPos(actor_s *param_1)
 {
   sentient_s *psVar1;
   DWORD DVar2;
-  actor_s *extraout_var;
-  actor_s *paVar3;
+  actor_s *in_ECX;
+  actor_s *self;
   float *in_stack_ffffffd0;
+  PIXProfile pixProfile;
+  sentient_s *enemy;
+  sentient_info_t *pInfo;
   
   PIXBeginNamedEvent(-1,"Actor_UpdateLastEnemySightPos");
-  paVar3 = extraout_var;
-  psVar1 = Actor_GetTargetSentient(extraout_var);
+  psVar1 = Actor_GetTargetSentient(in_ECX);
   if (psVar1 == (sentient_s *)0x0) {
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (paVar3->sentientInfo[((int)psVar1 - (int)level.sentients) / 0x90].VisCache.bVisible ==
+  else if (in_ECX->sentientInfo[((int)psVar1 - (int)level.sentients) / 0x90].VisCache.bVisible ==
            false) {
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (paVar3->sentientInfo[((int)psVar1 - (int)level.sentients) / 0x90].VisCache.iLastVisTime
+  else if (in_ECX->sentientInfo[((int)psVar1 - (int)level.sentients) / 0x90].VisCache.iLastVisTime
            == level.time) {
-    paVar3->lastEnemySightPosValid = true;
-    Sentient_GetEyePosition((sentient_s *)paVar3,in_stack_ffffffd0);
+    in_ECX->lastEnemySightPosValid = true;
+    Sentient_GetEyePosition((sentient_s *)in_ECX,in_stack_ffffffd0);
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -852,7 +926,8 @@ void __cdecl Actor_UpdateEyeInformation(actor_s *param_1)
   int iVar3;
   DObj *pDVar4;
   int *in_ECX;
-  float local_34;
+  actor_s *self;
+  float tagMat;
   float local_30;
   int local_10;
   int local_c;
@@ -879,7 +954,7 @@ void __cdecl Actor_UpdateEyeInformation(actor_s *param_1)
   if (in_ECX[0x5a] != level.time) {
     in_ECX[0x5a] = level.time;
     iVar3 = G_DObjGetWorldTagMatrix
-                      ((gentity_s *)*in_ECX,(uint)scr_const.tag_eye,(float (*) [3])&local_34);
+                      ((gentity_s *)*in_ECX,(uint)scr_const.tag_eye,(float (*) [3])&tagMat);
     if (iVar3 == 0) {
       pDVar4 = Com_GetServerDObj(*(int *)*in_ECX);
       if (pDVar4 != (DObj *)0x0) {
@@ -900,7 +975,7 @@ void __cdecl Actor_UpdateEyeInformation(actor_s *param_1)
       in_ECX[0x5b] = local_10;
       in_ECX[0x5c] = local_c;
       in_ECX[0x5d] = local_8;
-      in_ECX[0x5e] = (int)local_34;
+      in_ECX[0x5e] = (int)tagMat;
       in_ECX[0x5f] = (int)local_30;
       Vec2Normalize((float *)(in_ECX + 0x5e));
       in_ECX[0x60] = 0;
@@ -912,6 +987,7 @@ void __cdecl Actor_UpdateEyeInformation(actor_s *param_1)
 
 // 0091B090  Actor_GetEyePosition  (game/actor_senses.cpp:868)
 
+/* WARNING: Variable defined which should be unmapped: vEyePosOut */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -924,6 +1000,8 @@ void __cdecl Actor_GetEyePosition(actor_s *param_1,float *param_2)
   bool bVar2;
   int in_ECX;
   actor_s *in_EDX;
+  float *vEyePosOut;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x367,0,
@@ -967,7 +1045,9 @@ void __cdecl Actor_GetDebugEyePosition(actor_s *param_1,float *param_2)
   int *in_ECX;
   int *in_EDX;
   float fVar4;
-  int local_8;
+  float *vEyePosOut;
+  actor_s *self;
+  int i;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x380,0,
@@ -986,15 +1066,15 @@ void __cdecl Actor_GetDebugEyePosition(actor_s *param_1,float *param_2)
   *in_EDX = in_ECX[0x5b];
   in_EDX[1] = in_ECX[0x5c];
   in_EDX[2] = in_ECX[0x5d];
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < i) {
       return;
     }
-    fVar4 = *(float *)(*in_ECX + 0x10c + local_8 * 4) - 32.0;
-    if (((float)in_EDX[local_8] <= fVar4 && fVar4 != (float)in_EDX[local_8]) ||
-       (*(float *)(*in_ECX + 0x118 + local_8 * 4) + 32.0 < (float)in_EDX[local_8])) break;
-    local_8 = local_8 + 1;
+    fVar4 = *(float *)(*in_ECX + 0x10c + i * 4) - 32.0;
+    if (((float)in_EDX[i] <= fVar4 && fVar4 != (float)in_EDX[i]) ||
+       (*(float *)(*in_ECX + 0x118 + i * 4) + 32.0 < (float)in_EDX[i])) break;
+    i = i + 1;
   }
   iVar1 = *in_ECX;
   *in_EDX = *(int *)(iVar1 + 0x124);
@@ -1007,6 +1087,7 @@ void __cdecl Actor_GetDebugEyePosition(actor_s *param_1,float *param_2)
 
 // 0091B490  Actor_GetEyeDirection  (game/actor_senses.cpp:919)
 
+/* WARNING: Variable defined which should be unmapped: vEyeDir */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1019,6 +1100,8 @@ void __cdecl Actor_GetEyeDirection(actor_s *param_1,float *param_2)
   bool bVar2;
   int in_ECX;
   actor_s *in_EDX;
+  float *vEyeDir;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x39a,0,
@@ -1060,6 +1143,8 @@ void __cdecl Actor_GetEyeOffset(actor_s *param_1,float *param_2)
   bool bVar2;
   int in_ECX;
   undefined4 *in_EDX;
+  float *vEyePosOut;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_senses.cpp",0x3ab,0,
@@ -1093,7 +1178,7 @@ void __cdecl Actor_GetEyeOffset(actor_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_GetMuzzleInfo(actor_s *param_1,float *param_2,float *param_3)
+int __cdecl Actor_GetMuzzleInfo(actor_s *vForward,float *param_2,float *param_3)
 
 {
   code *pcVar1;
@@ -1101,7 +1186,9 @@ int __cdecl Actor_GetMuzzleInfo(actor_s *param_1,float *param_2,float *param_3)
   int iVar3;
   undefined4 *in_ECX;
   undefined4 *in_EDX;
-  float local_34;
+  float *vOrigin;
+  actor_s *self;
+  float tagMat;
   float local_30;
   float local_2c;
   undefined4 local_10;
@@ -1117,7 +1204,7 @@ int __cdecl Actor_GetMuzzleInfo(actor_s *param_1,float *param_2,float *param_3)
   }
   if (in_ECX[0x61] != level.time) {
     iVar3 = G_DObjGetWorldTagMatrix
-                      ((gentity_s *)*in_ECX,(uint)scr_const.tag_flash,(float (*) [3])&local_34);
+                      ((gentity_s *)*in_ECX,(uint)scr_const.tag_flash,(float (*) [3])&tagMat);
     if (iVar3 == 0) {
       return 0;
     }
@@ -1125,7 +1212,7 @@ int __cdecl Actor_GetMuzzleInfo(actor_s *param_1,float *param_2,float *param_3)
     in_ECX[0x62] = local_10;
     in_ECX[99] = local_c;
     in_ECX[100] = local_8;
-    in_ECX[0x65] = local_34;
+    in_ECX[0x65] = tagMat;
     in_ECX[0x66] = local_30;
     in_ECX[0x67] = local_2c;
   }
@@ -1139,10 +1226,10 @@ int __cdecl Actor_GetMuzzleInfo(actor_s *param_1,float *param_2,float *param_3)
   *in_EDX = in_ECX[0x62];
   in_EDX[1] = in_ECX[99];
   in_EDX[2] = in_ECX[100];
-  if (param_1 != (actor_s *)0x0) {
-    param_1->ent = (gentity_s *)in_ECX[0x65];
-    param_1->sentient = (sentient_s *)in_ECX[0x66];
-    param_1->species = in_ECX[0x67];
+  if (vForward != (actor_s *)0x0) {
+    vForward->ent = (gentity_s *)in_ECX[0x65];
+    vForward->sentient = (sentient_s *)in_ECX[0x66];
+    vForward->species = in_ECX[0x67];
   }
   return 1;
 }

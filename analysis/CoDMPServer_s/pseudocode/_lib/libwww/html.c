@@ -45,8 +45,8 @@ undefined4 _HTML_free(void *param_1)
   char cVar1;
   undefined4 *puVar2;
   char *pcVar3;
-  void *pvVar4;
-  char *pcVar5;
+  void *pBlock;
+  char *pcVar4;
   
   if (((*(int *)((int)param_1 + 0x28) == 0) &&
       (puVar2 = *(undefined4 **)((int)param_1 + 0xc), puVar2 != (undefined4 *)0x0)) &&
@@ -55,12 +55,12 @@ undefined4 _HTML_free(void *param_1)
   }
   pcVar3 = *(char **)((int)param_1 + 0x24);
   if (pcVar3 != (char *)0x0) {
-    pcVar5 = pcVar3;
+    pcVar4 = pcVar3;
     do {
-      cVar1 = *pcVar5;
-      pcVar5 = pcVar5 + 1;
+      cVar1 = *pcVar4;
+      pcVar4 = pcVar4 + 1;
     } while (cVar1 != '\0');
-    FUN_008a5490(param_1,pcVar3,(int)pcVar5 - (int)(pcVar3 + 1));
+    FUN_008a5490(param_1,pcVar3,(int)pcVar4 - (int)(pcVar3 + 1));
   }
   puVar2 = *(undefined4 **)((int)param_1 + 0xc);
   if ((puVar2 != (undefined4 *)0x0) && ((code *)puVar2[3] != (code *)0x0)) {
@@ -69,13 +69,13 @@ undefined4 _HTML_free(void *param_1)
   if (*(void **)((int)param_1 + 0xc) != (void *)0x0) {
     free(*(void **)((int)param_1 + 0xc));
   }
-  pvVar4 = *(void **)((int)param_1 + 0x14);
-  if (pvVar4 != (void *)0x0) {
-    if (*(void **)((int)pvVar4 + 0xc) != (void *)0x0) {
-      free(*(void **)((int)pvVar4 + 0xc));
+  pBlock = *(void **)((int)param_1 + 0x14);
+  if (pBlock != (void *)0x0) {
+    if (*(void **)((int)pBlock + 0xc) != (void *)0x0) {
+      free(*(void **)((int)pBlock + 0xc));
     }
-    *(undefined4 *)((int)pvVar4 + 0xc) = 0;
-    free(pvVar4);
+    *(undefined4 *)((int)pBlock + 0xc) = 0;
+    free(pBlock);
   }
   if (*(int *)((int)param_1 + 0x10) != 0) {
     (**(code **)(**(int **)((int)param_1 + 0x10) + 8))(*(int **)((int)param_1 + 0x10));

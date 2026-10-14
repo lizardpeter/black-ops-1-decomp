@@ -2,33 +2,33 @@
 
 // 005CC040  FX_RegionForReflect  (EffectsCore/fx_draw.cpp:113)
 
-uint __cdecl FX_RegionForReflect(FxReflectParams *param_1)
+uint __cdecl FX_RegionForReflect(FxReflectParams *reflect)
 
 {
-  return (-(uint)(param_1->enabled != false) & 3) + 0xd;
+  return (-(uint)(reflect->enabled != false) & 3) + 0xd;
 }
 
 
 // 005CC060  FX_GetNullReflection  (EffectsCore/fx_draw.cpp:118)
 
-void __cdecl FX_GetNullReflection(FxReflectParams *param_1)
+void __cdecl FX_GetNullReflection(FxReflectParams *params)
 
 {
-  param_1->enabled = false;
-  param_1->zAdd = 0.0;
-  param_1->zScale = 1.0;
+  params->enabled = false;
+  params->zAdd = 0.0;
+  params->zScale = 1.0;
   return;
 }
 
 
 // 005CC090  FX_GetReflection  (EffectsCore/fx_draw.cpp:125)
 
-void __cdecl FX_GetReflection(bool param_1,float param_2,FxReflectParams *param_3)
+void __cdecl FX_GetReflection(bool on,float height,FxReflectParams *params)
 
 {
-  param_3->enabled = param_1;
-  param_3->zScale = -2.0;
-  param_3->zAdd = param_2 - param_2 * param_3->zScale;
+  params->enabled = on;
+  params->zScale = -2.0;
+  params->zAdd = height - height * params->zScale;
   return;
 }
 
@@ -36,17 +36,20 @@ void __cdecl FX_GetReflection(bool param_1,float param_2,FxReflectParams *param_
 // 005CC140  FX_InterpolateColor  (EffectsCore/fx_draw.cpp:133)
 
 uchar __cdecl
-FX_InterpolateColor(FxElemVisStateSample *param_1,float param_2,float param_3,float param_4,
-                   float param_5,int param_6)
+FX_InterpolateColor(FxElemVisStateSample *refState,float valueLerp,float valueLerpInv,
+                   float sampleLerp,float sampleLerpInv,int channel)
 
 {
   uchar local_20;
+  float valueFrom;
+  float valueTo;
   
-  local_20 = (uchar)(int)ROUND(((float)(param_1->base).color[param_6] * param_3 +
-                               (float)(param_1->amplitude).color[param_6] * param_2) * param_5 +
-                               ((float)param_1[1].base.color[param_6] * param_3 +
-                               (float)param_1[1].amplitude.color[param_6] * param_2) * param_4 +
-                               9.313226e-10);
+  local_20 = (uchar)(int)ROUND(((float)(refState->base).color[channel] * valueLerpInv +
+                               (float)(refState->amplitude).color[channel] * valueLerp) *
+                               sampleLerpInv +
+                               ((float)refState[1].base.color[channel] * valueLerpInv +
+                               (float)refState[1].amplitude.color[channel] * valueLerp) * sampleLerp
+                               + 9.313226e-10);
   return local_20;
 }
 
@@ -55,32 +58,39 @@ FX_InterpolateColor(FxElemVisStateSample *param_1,float param_2,float param_3,fl
 
 float __cdecl
 FX_IntegrateRotationFromZero
-          (FxElemVisStateSample *param_1,int param_2,FxRandKey param_3,float param_4,float param_5)
+          (FxElemVisStateSample *refState,int randomSeed,FxRandKey randomKey,float sampleLerp,
+          float msecLifeSpan)
 
 {
   float fVar1;
   float fVar2;
+  float valueLerp;
+  float rotationTotal;
   
-  fVar1 = *(float *)(&fx_randomTable + (param_2 + param_3) * 4);
-  fVar2 = param_4 * param_4 * 0.5;
-  return ((fVar1 * param_1[1].amplitude.rotationDelta + param_1[1].base.rotationDelta) * fVar2 +
-         (fVar1 * (param_1->amplitude).rotationDelta + (param_1->base).rotationDelta) *
-         (param_4 - fVar2) +
-         fVar1 * (param_1->amplitude).rotationTotal + (param_1->base).rotationTotal) * param_5;
+  fVar1 = *(float *)(&fx_randomTable + (randomSeed + randomKey) * 4);
+  fVar2 = sampleLerp * sampleLerp * 0.5;
+  return ((fVar1 * refState[1].amplitude.rotationDelta + refState[1].base.rotationDelta) * fVar2 +
+         (fVar1 * (refState->amplitude).rotationDelta + (refState->base).rotationDelta) *
+         (sampleLerp - fVar2) +
+         fVar1 * (refState->amplitude).rotationTotal + (refState->base).rotationTotal) *
+         msecLifeSpan;
 }
 
 
 // 005CC0D0  FX_EvaluateVisAlpha  (EffectsCore/fx_draw.cpp:161)
 
-void __cdecl FX_EvaluateVisAlpha(FxElemPreVisualState *param_1,FxElemVisualState *param_2)
+void __cdecl FX_EvaluateVisAlpha(FxElemPreVisualState *preVisState,FxElemVisualState *visState)
 
 {
   uchar uVar1;
+  float valueLerpInv;
+  float valueLerp;
   
-  uVar1 = FX_InterpolateColor(param_1->refState,*(float *)(&DAT_00caeb3c + param_1->randomSeed * 4),
-                              1.0 - *(float *)(&DAT_00caeb3c + param_1->randomSeed * 4),
-                              param_1->sampleLerp,param_1->sampleLerpInv,3);
-  param_2->color[3] = uVar1;
+  uVar1 = FX_InterpolateColor(preVisState->refState,
+                              *(float *)(&DAT_00caeb3c + preVisState->randomSeed * 4),
+                              1.0 - *(float *)(&DAT_00caeb3c + preVisState->randomSeed * 4),
+                              preVisState->sampleLerp,preVisState->sampleLerpInv,3);
+  visState->color[3] = uVar1;
   return;
 }
 
@@ -88,50 +98,52 @@ void __cdecl FX_EvaluateVisAlpha(FxElemPreVisualState *param_1,FxElemVisualState
 // 005CC1F0  FX_SetupVisualState  (EffectsCore/fx_draw.cpp:173)
 
 void __cdecl
-FX_SetupVisualState(FxElemDef *param_1,FxEffect *param_2,int param_3,float param_4,
-                   FxElemPreVisualState *param_5)
+FX_SetupVisualState(FxElemDef *elemDef,FxEffect *effect,int randomSeed,float normTimeUpdateEnd,
+                   FxElemPreVisualState *preVisState)
 
 {
   byte bVar1;
   int extraout_EAX;
+  float samplePoint;
+  int sampleIndex;
   
-  bVar1 = param_1->visStateIntervalCount;
+  bVar1 = elemDef->visStateIntervalCount;
   floor();
   _ftol2_sse();
-  param_5->sampleLerp = (float)bVar1 * param_4 - (float)extraout_EAX;
-  param_5->sampleLerpInv = 1.0 - param_5->sampleLerp;
-  param_5->elemDef = param_1;
-  param_5->effect = param_2;
-  param_5->refState = param_1->visSamples + extraout_EAX;
-  param_5->randomSeed = param_3;
-  param_5->distanceFade = 0xff;
+  preVisState->sampleLerp = (float)bVar1 * normTimeUpdateEnd - (float)extraout_EAX;
+  preVisState->sampleLerpInv = 1.0 - preVisState->sampleLerp;
+  preVisState->elemDef = elemDef;
+  preVisState->effect = effect;
+  preVisState->refState = elemDef->visSamples + extraout_EAX;
+  preVisState->randomSeed = randomSeed;
+  preVisState->distanceFade = 0xff;
   return;
 }
 
 
 // 005CC2A0  FX_EvaluateSize  (EffectsCore/fx_draw.cpp:196)
 
-void __cdecl FX_EvaluateSize(FxElemPreVisualState *param_1,FxElemVisualState *param_2)
+void __cdecl FX_EvaluateSize(FxElemPreVisualState *preVisState,FxElemVisualState *visState)
 
 {
   FxElemVisStateSample *pFVar1;
   
-  pFVar1 = param_1->refState;
-  param_2->size[0] =
-       (*(float *)(&DAT_00caeb48 + param_1->randomSeed * 4) * (pFVar1->amplitude).size[0] +
-       (pFVar1->base).size[0]) * param_1->sampleLerpInv +
-       (*(float *)(&DAT_00caeb48 + param_1->randomSeed * 4) * pFVar1[1].amplitude.size[0] +
-       pFVar1[1].base.size[0]) * param_1->sampleLerp;
-  if ((param_1->elemDef->flags & 0x10000000U) == 0) {
-    param_2->size[1] = param_2->size[0];
+  pFVar1 = preVisState->refState;
+  visState->size[0] =
+       (*(float *)(&DAT_00caeb48 + preVisState->randomSeed * 4) * (pFVar1->amplitude).size[0] +
+       (pFVar1->base).size[0]) * preVisState->sampleLerpInv +
+       (*(float *)(&DAT_00caeb48 + preVisState->randomSeed * 4) * pFVar1[1].amplitude.size[0] +
+       pFVar1[1].base.size[0]) * preVisState->sampleLerp;
+  if ((preVisState->elemDef->flags & 0x10000000U) == 0) {
+    visState->size[1] = visState->size[0];
   }
   else {
-    pFVar1 = param_1->refState;
-    param_2->size[1] =
-         (*(float *)(&DAT_00caeb4c + param_1->randomSeed * 4) * (pFVar1->amplitude).size[1] +
-         (pFVar1->base).size[1]) * param_1->sampleLerpInv +
-         (*(float *)(&DAT_00caeb4c + param_1->randomSeed * 4) * pFVar1[1].amplitude.size[1] +
-         pFVar1[1].base.size[1]) * param_1->sampleLerp;
+    pFVar1 = preVisState->refState;
+    visState->size[1] =
+         (*(float *)(&DAT_00caeb4c + preVisState->randomSeed * 4) * (pFVar1->amplitude).size[1] +
+         (pFVar1->base).size[1]) * preVisState->sampleLerpInv +
+         (*(float *)(&DAT_00caeb4c + preVisState->randomSeed * 4) * pFVar1[1].amplitude.size[1] +
+         pFVar1[1].base.size[1]) * preVisState->sampleLerp;
   }
   return;
 }
@@ -139,20 +151,20 @@ void __cdecl FX_EvaluateSize(FxElemPreVisualState *param_1,FxElemVisualState *pa
 
 // 005CC810  FX_LerpFloat  (EffectsCore/fx_draw.cpp:229)
 
-float __cdecl FX_LerpFloat(float param_1,float param_2,float param_3)
+float __cdecl FX_LerpFloat(float grid,float tint,float fraction)
 
 {
-  undefined4 local_8;
+  float result;
   
-  local_8 = ((1.0 - param_3) * (param_2 / 255.0) +
-            SQRT((param_2 / 255.0) * (param_1 / 255.0)) * param_3) * 255.0;
-  if (255.0 < local_8) {
-    local_8 = 255.0;
+  result = ((1.0 - fraction) * (tint / 255.0) + SQRT((tint / 255.0) * (grid / 255.0)) * fraction) *
+           255.0;
+  if (255.0 < result) {
+    result = 255.0;
   }
-  if (local_8 < 0.0) {
-    local_8 = 0.0;
+  if (result < 0.0) {
+    result = 0.0;
   }
-  return local_8;
+  return result;
 }
 
 
@@ -165,88 +177,103 @@ float __cdecl FX_LerpFloat(float param_1,float param_2,float param_3)
 
 void __cdecl
 FX_EvaluateVisualState
-          (int param_1,FxElemPreVisualState *param_2,float param_3,FxElemVisualState *param_4)
+          (int localClientNum,FxElemPreVisualState *preVisState,float msecLifeSpan,
+          FxElemVisualState *visState)
 
 {
-  float fVar1;
+  float sampleLerp_00;
+  byte bVar1;
   byte bVar2;
   byte bVar3;
-  byte bVar4;
+  short sVar4;
   short sVar5;
-  short sVar6;
-  FxElemDef *pFVar7;
-  FxElemVisStateSample *pFVar8;
-  int iVar9;
-  code *pcVar10;
-  bool bVar11;
-  uchar uVar12;
-  cg_s *pcVar13;
+  FxElemDef *pFVar6;
+  FxElemVisStateSample *refState_00;
+  int randomSeed_00;
+  code *pcVar7;
+  bool bVar8;
+  uchar uVar9;
+  cg_s *pcVar10;
+  float fVar11;
+  float fVar12;
+  float fVar13;
   float fVar14;
-  float fVar15;
-  float fVar16;
-  float fVar17;
+  float t;
+  cg_s *cgameGlob;
+  float exposure;
+  float whitePoint;
+  float valueLerpInv;
+  FxElemDef *elemDef;
+  int randomSeed;
+  float valueLerp;
+  float sampleLerpInv;
+  FxElemVisStateSample *refState;
+  float sampleLerp;
+  uint scaledAlpha;
   
-  pFVar7 = param_2->elemDef;
-  if (pFVar7 == (FxElemDef *)0x0) {
-    bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x101,0,
-                              "%s");
-    if (!bVar11) {
-      pcVar10 = (code *)swi(3);
-      (*pcVar10)();
+  pFVar6 = preVisState->elemDef;
+  if (pFVar6 == (FxElemDef *)0x0) {
+    bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x101,0,
+                             "%s");
+    if (!bVar8) {
+      pcVar7 = (code *)swi(3);
+      (*pcVar7)();
       return;
     }
   }
-  pFVar8 = param_2->refState;
-  iVar9 = param_2->randomSeed;
-  fVar17 = *(float *)(&DAT_00caeb3c + iVar9 * 4);
-  fVar14 = 1.0 - fVar17;
-  fVar1 = param_2->sampleLerp;
-  fVar15 = param_2->sampleLerpInv;
-  uVar12 = FX_InterpolateColor(pFVar8,fVar17,fVar14,fVar1,fVar15,0);
-  param_4->color[0] = uVar12;
-  uVar12 = FX_InterpolateColor(pFVar8,fVar17,fVar14,fVar1,fVar15,1);
-  param_4->color[1] = uVar12;
-  uVar12 = FX_InterpolateColor(pFVar8,fVar17,fVar14,fVar1,fVar15,2);
-  param_4->color[2] = uVar12;
-  uVar12 = FX_InterpolateColor(pFVar8,fVar17,fVar14,fVar1,fVar15,3);
-  param_4->color[3] = uVar12;
-  if (pFVar7->lightingFrac != '\0') {
-    bVar2 = param_4->color[2];
-    bVar3 = param_4->color[1];
-    bVar4 = param_4->color[0];
-    pcVar13 = CG_GetLocalClientGlobals(param_1);
-    fVar17 = (pcVar13->refdef).exposureValue.blackPoint[3];
-    sVar5 = param_2->effect->lightG;
-    sVar6 = param_2->effect->lightB;
-    fVar15 = (float)pFVar7->lightingFrac / 255.0;
-    fVar14 = FX_LerpFloat(((float)(int)param_2->effect->lightR / 8.0) * fVar17,(float)bVar2,fVar15);
-    fVar16 = FX_LerpFloat(((float)(int)sVar5 / 8.0) * fVar17,(float)bVar3,fVar15);
-    fVar17 = FX_LerpFloat(((float)(int)sVar6 / 8.0) * fVar17,(float)bVar4,fVar15);
-    param_4->color[2] = (uchar)(int)fVar14;
-    param_4->color[1] = (uchar)(int)fVar16;
-    param_4->color[0] = (uchar)(int)fVar17;
+  refState_00 = preVisState->refState;
+  randomSeed_00 = preVisState->randomSeed;
+  fVar14 = *(float *)(&DAT_00caeb3c + randomSeed_00 * 4);
+  fVar11 = 1.0 - fVar14;
+  sampleLerp_00 = preVisState->sampleLerp;
+  fVar12 = preVisState->sampleLerpInv;
+  uVar9 = FX_InterpolateColor(refState_00,fVar14,fVar11,sampleLerp_00,fVar12,0);
+  visState->color[0] = uVar9;
+  uVar9 = FX_InterpolateColor(refState_00,fVar14,fVar11,sampleLerp_00,fVar12,1);
+  visState->color[1] = uVar9;
+  uVar9 = FX_InterpolateColor(refState_00,fVar14,fVar11,sampleLerp_00,fVar12,2);
+  visState->color[2] = uVar9;
+  uVar9 = FX_InterpolateColor(refState_00,fVar14,fVar11,sampleLerp_00,fVar12,3);
+  visState->color[3] = uVar9;
+  if (pFVar6->lightingFrac != '\0') {
+    bVar1 = visState->color[2];
+    bVar2 = visState->color[1];
+    bVar3 = visState->color[0];
+    pcVar10 = CG_GetLocalClientGlobals(localClientNum);
+    fVar14 = (pcVar10->refdef).exposureValue.blackPoint[3];
+    sVar4 = preVisState->effect->lightG;
+    sVar5 = preVisState->effect->lightB;
+    fVar12 = (float)pFVar6->lightingFrac / 255.0;
+    fVar11 = FX_LerpFloat(((float)(int)preVisState->effect->lightR / 8.0) * fVar14,(float)bVar1,
+                          fVar12);
+    fVar13 = FX_LerpFloat(((float)(int)sVar4 / 8.0) * fVar14,(float)bVar2,fVar12);
+    fVar14 = FX_LerpFloat(((float)(int)sVar5 / 8.0) * fVar14,(float)bVar3,fVar12);
+    visState->color[2] = (uchar)(int)fVar11;
+    visState->color[1] = (uchar)(int)fVar13;
+    visState->color[0] = (uchar)(int)fVar14;
   }
-  param_4->rotationTotal =
-       *(float *)(&DAT_00caeb40 + iVar9 * 4) * (pFVar7->initialRotation).amplitude +
-       (pFVar7->initialRotation).base;
-  fVar17 = FX_IntegrateRotationFromZero(pFVar8,iVar9,FXRAND_ROTATION_DELTA,fVar1,param_3);
-  param_4->rotationTotal = fVar17 + param_4->rotationTotal;
-  param_4->color[3] = (uchar)((uint)param_4->color[3] * param_2->distanceFade >> 8);
+  visState->rotationTotal =
+       *(float *)(&DAT_00caeb40 + randomSeed_00 * 4) * (pFVar6->initialRotation).amplitude +
+       (pFVar6->initialRotation).base;
+  fVar14 = FX_IntegrateRotationFromZero
+                     (refState_00,randomSeed_00,FXRAND_ROTATION_DELTA,sampleLerp_00,msecLifeSpan);
+  visState->rotationTotal = fVar14 + visState->rotationTotal;
+  visState->color[3] = (uchar)((uint)visState->color[3] * preVisState->distanceFade >> 8);
   return;
 }
 
 
 // 005D12C0  FX_TrailElem_UncompressBasis  (EffectsCore/fx_effect_types.h:304)
 
-void __cdecl FX_TrailElem_UncompressBasis(char (*param_1) [3],float (*param_2) [3])
+void __cdecl FX_TrailElem_UncompressBasis(char (*inBasis) [3],float (*basis) [3])
 
 {
-  int local_c;
-  int local_8;
+  int basisVecIter;
+  int dimIter;
   
-  for (local_c = 0; local_c != 2; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-      param_2[local_c][local_8] = (float)(int)param_1[local_c][local_8] * 0.007874016;
+  for (basisVecIter = 0; basisVecIter != 2; basisVecIter = basisVecIter + 1) {
+    for (dimIter = 0; dimIter != 3; dimIter = dimIter + 1) {
+      basis[basisVecIter][dimIter] = (float)(int)inBasis[basisVecIter][dimIter] * 0.007874016;
     }
   }
   return;
@@ -255,9 +282,7 @@ void __cdecl FX_TrailElem_UncompressBasis(char (*param_1) [3],float (*param_2) [
 
 // 005CE530  FX_GetSpriteTexCoords  (EffectsCore/fx_draw.cpp:334)
 
-void __cdecl
-FX_GetSpriteTexCoords
-          (FxDrawState *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+void __cdecl FX_GetSpriteTexCoords(FxDrawState *draw,float *s0,float *ds,float *t0,float *dt)
 
 {
   byte bVar1;
@@ -268,10 +293,20 @@ FX_GetSpriteTexCoords
   byte bVar6;
   float fVar7;
   float fVar8;
-  uint local_24;
-  uint local_10;
+  int wrapAroundIndex;
+  float _s0;
+  float _t0;
+  int colBits;
+  int atlasIndex;
+  FxElemDef *elemDef;
+  float _ds;
+  int startBehavior;
+  int atlasCount;
+  int atlasIndexRange;
+  int rowBits;
+  float _dt;
   
-  if (param_1 == (FxDrawState *)0x0) {
+  if (draw == (FxDrawState *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x157,0,
                              "%s");
     if (!bVar4) {
@@ -280,7 +315,7 @@ FX_GetSpriteTexCoords
       return;
     }
   }
-  pFVar2 = param_1->elemDef;
+  pFVar2 = draw->elemDef;
   if (pFVar2 == (FxElemDef *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x159,0,
                              "%s");
@@ -292,10 +327,10 @@ FX_GetSpriteTexCoords
   }
   uVar5 = (pFVar2->atlas).entryCountAndIndexRange & 0x1ff;
   if (uVar5 == 1) {
-    *param_2 = 0.0;
-    *param_3 = 1.0;
-    *param_4 = 0.0;
-    *param_5 = 1.0;
+    *s0 = 0.0;
+    *ds = 1.0;
+    *t0 = 0.0;
+    *dt = 1.0;
   }
   else {
     if (((uVar5 < 2) || (0x100 < uVar5)) || ((uVar5 - 1 & uVar5) != 0)) {
@@ -309,17 +344,17 @@ FX_GetSpriteTexCoords
     }
     bVar1 = (pFVar2->atlas).behavior;
     bVar6 = bVar1 & 3;
-    local_10 = uVar5;
+    atlasIndexRange = uVar5;
     if ((bVar1 & 3) == 0) {
-      local_24 = (uint)(pFVar2->atlas).index;
+      atlasIndex = (int)(pFVar2->atlas).index;
     }
     else if (bVar6 == 1) {
-      local_24 = (int)(*(ushort *)(&fx_randomTable + (param_1->randomSeed * 2 + 0x2c) * 2) * uVar5)
-                 >> 0x10;
+      atlasIndex = (int)(*(ushort *)(&fx_randomTable + (draw->randomSeed * 2 + 0x2c) * 2) * uVar5)
+                   >> 0x10;
     }
     else if (bVar6 == 3) {
-      local_24 = 0;
-      local_10 = (int)(uint)(pFVar2->atlas).entryCountAndIndexRange >> 9;
+      atlasIndex = 0;
+      atlasIndexRange = (int)(uint)(pFVar2->atlas).entryCountAndIndexRange >> 9;
     }
     else {
       if (bVar6 != 2) {
@@ -331,36 +366,37 @@ FX_GetSpriteTexCoords
           return;
         }
       }
-      local_24 = (uint)param_1->elem->sequence & uVar5 - 1;
+      atlasIndex = (uint)draw->elem->sequence & uVar5 - 1;
     }
     if (((pFVar2->atlas).behavior & 4) == 0) {
       if ((pFVar2->atlas).fps != '\0') {
-        local_24 = (int)((int)param_1->msecElapsed * (uint)(pFVar2->atlas).fps) / 1000 + local_24;
+        atlasIndex = (int)((int)draw->msecElapsed * (uint)(pFVar2->atlas).fps) / 1000 + atlasIndex;
       }
     }
     else {
-      local_24 = (int)((param_1->msecElapsed / param_1->msecLifeSpan) * (float)local_10) + local_24;
+      atlasIndex = (int)((draw->msecElapsed / draw->msecLifeSpan) * (float)atlasIndexRange) +
+                   atlasIndex;
     }
     if (bVar6 == 3) {
       if ((((pFVar2->atlas).behavior & 8) != 0) &&
-         ((int)((pFVar2->atlas).loopCount * local_10) <= (int)local_24)) {
-        local_24 = local_10 - 1;
+         ((int)((uint)(pFVar2->atlas).loopCount * atlasIndexRange) <= atlasIndex)) {
+        atlasIndex = atlasIndexRange + -1;
       }
-      local_24 = (uint)(pFVar2->atlas).index +
-                 (local_24 - ((int)local_24 / (int)local_10) * local_10);
+      atlasIndex = (uint)(pFVar2->atlas).index +
+                   (atlasIndex - (atlasIndex / atlasIndexRange) * atlasIndexRange);
     }
     else if ((((pFVar2->atlas).behavior & 8) != 0) &&
-            ((int)((pFVar2->atlas).loopCount * uVar5) <= (int)local_24)) {
-      local_24 = uVar5 - 1;
+            ((int)((pFVar2->atlas).loopCount * uVar5) <= atlasIndex)) {
+      atlasIndex = uVar5 - 1;
     }
-    local_24 = uVar5 - 1 & local_24;
+    uVar5 = uVar5 - 1 & atlasIndex;
     bVar1 = (pFVar2->atlas).colIndexBits;
     fVar7 = 1.0 / (float)(1 << (bVar1 & 0x1f));
     fVar8 = 1.0 / (float)(1 << ((pFVar2->atlas).rowIndexBits & 0x1f));
-    *param_3 = fVar7;
-    *param_2 = (float)(int)((1 << (bVar1 & 0x1f)) - 1U & local_24) * fVar7;
-    *param_5 = fVar8;
-    *param_4 = (float)((int)local_24 >> (bVar1 & 0x1f)) * fVar8;
+    *ds = fVar7;
+    *s0 = (float)(int)((1 << (bVar1 & 0x1f)) - 1U & uVar5) * fVar7;
+    *dt = fVar8;
+    *t0 = (float)((int)uVar5 >> (bVar1 & 0x1f)) * fVar8;
   }
   return;
 }
@@ -369,8 +405,12 @@ FX_GetSpriteTexCoords
 // 005CCF00  FX_GenSpriteVerts  (EffectsCore/fx_draw.cpp:425)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl FX_GenSpriteVerts(FxDrawState *draw,float *tangent,float *binormal,float *normal)
 
 {
   float fVar1;
@@ -399,72 +439,76 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
   uint local_1bc;
   PackedUnitVec local_19c;
   PackedUnitVec local_180;
-  int local_e0;
-  float local_ac;
-  r_double_index_t *local_a8;
-  float local_a4;
-  FxElemVisuals local_a0;
-  float local_9c;
+  int i;
+  float t0;
+  r_double_index_t *baseIndices;
+  float dt;
+  FxElemVisuals visuals;
+  float leftSide;
   float local_98;
   float local_94;
-  PackedUnitVec local_90;
-  PackedUnitVec local_8c;
-  float local_88;
+  PackedUnitVec packedNormal;
+  PackedUnitVec packedTangent;
+  float rightSide;
   float local_84;
   float local_80;
-  FxSpriteInfo *local_7c;
-  float local_78;
+  FxSpriteInfo *sprite;
+  float testBinormal;
   float local_74;
   float local_70;
-  float local_6c;
-  float local_68;
-  float local_60;
+  float bottomSideWidth;
+  float bottomSideSoffset;
+  float cosRot;
+  float left;
   float local_5c;
   float local_58;
-  float local_54 [3];
-  float local_48;
-  r_double_index_t *local_44;
-  undefined4 local_40;
-  float local_3c;
+  float ds;
+  GfxPackedVertex *verts;
+  float sinRot;
+  float topSideSoffset;
+  r_double_index_t *indices;
+  r_double_index_t index;
+  float rotatedTangent;
   float local_38;
   float local_34;
-  float local_30;
+  float up;
   float local_2c;
   float local_28;
-  FxSystem *local_24;
-  float local_20;
-  float local_1c;
-  ushort local_18 [2];
-  float local_14;
+  FxSystem *system;
+  float s0;
+  float topSideWidth;
+  ushort baseVertex;
+  float rotatedBinormal;
   float local_10;
   float local_c;
+  GfxPackedVertex *baseVerts;
   
-  local_24 = param_1->system;
-  local_7c = &local_24->sprite;
-  local_a0 = FX_GetElemVisuals(param_1->elemDef,param_1->randomSeed);
-  if ((local_a0.anonymous == (void *)0x0) &&
+  system = draw->system;
+  sprite = &system->sprite;
+  visuals = FX_GetElemVisuals(draw->elemDef,draw->randomSeed);
+  if ((visuals.anonymous == (void *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x1d3,0
                                ,"%s"), !bVar5)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((local_7c->material != local_a0.anonymous) && (local_7c->indexCount != 0)) {
-    if ((local_7c->name == (char *)0x0) &&
+  if ((sprite->material != visuals.anonymous) && (sprite->indexCount != 0)) {
+    if ((sprite->name == (char *)0x0) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x1dc
                                  ,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((local_7c->material == (Material *)0x0) &&
+    if ((sprite->material == (Material *)0x0) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x1dd
                                  ,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((local_7c->indices == (r_double_index_t *)0x0) &&
+    if ((sprite->indices == (r_double_index_t *)0x0) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x1de
                                  ,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
@@ -472,123 +516,128 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
       return;
     }
     R_AddCodeMeshDrawSurf
-              (local_7c->material,local_7c->indices,local_7c->indexCount,0,0,local_7c->name,
-               param_1->region);
-    local_7c->indexCount = 0;
+              (sprite->material,sprite->indices,sprite->indexCount,0,0,sprite->name,draw->region);
+    sprite->indexCount = 0;
   }
-  bVar5 = R_ReserveCodeMeshVerts(4,local_18);
-  if ((bVar5) && (bVar5 = R_ReserveCodeMeshIndices(6,&local_a8), bVar5)) {
-    if (local_7c->material != local_a0.anonymous) {
-      local_7c->name = ((param_1->effect->field0_0x0).def)->name;
-      local_7c->material = (Material *)local_a0;
-      local_7c->indices = local_a8;
+  bVar5 = R_ReserveCodeMeshVerts(4,&baseVertex);
+  if ((bVar5) && (bVar5 = R_ReserveCodeMeshIndices(6,&baseIndices), bVar5)) {
+    if (sprite->material != visuals.anonymous) {
+      sprite->name = ((draw->effect->field0_0x0).def)->name;
+      sprite->material = (Material *)visuals;
+      sprite->indices = baseIndices;
     }
-    local_7c->indexCount = local_7c->indexCount + 6;
+    sprite->indexCount = sprite->indexCount + 6;
     FX_EvaluateVisualState
-              ((uint)param_1->system->localClientNum,&param_1->preVisState,param_1->msecLifeSpan,
-               &param_1->visState);
-    fVar7 = (float10)(param_1->visState).rotationTotal;
+              ((uint)draw->system->localClientNum,&draw->preVisState,draw->msecLifeSpan,
+               &draw->visState);
+    fVar7 = (float10)(draw->visState).rotationTotal;
     fVar4 = (float10)fcos(fVar7);
     fVar7 = (float10)fsin(fVar7);
     fVar8 = (float)fVar4;
     fVar2 = (float)fVar7;
-    local_3c = fVar8 * *param_2 + fVar2 * *param_3;
-    local_38 = fVar8 * param_2[1] + fVar2 * param_3[1];
-    local_34 = fVar8 * param_2[2] + fVar2 * param_3[2];
+    rotatedTangent = fVar8 * *tangent + fVar2 * *binormal;
+    local_38 = fVar8 * tangent[1] + fVar2 * binormal[1];
+    local_34 = fVar8 * tangent[2] + fVar2 * binormal[2];
     fVar8 = -fVar8;
-    local_14 = fVar2 * *param_2 + fVar8 * *param_3;
-    local_10 = fVar2 * param_2[1] + fVar8 * param_3[1];
-    local_c = fVar2 * param_2[2] + fVar8 * param_3[2];
-    local_58 = (param_1->visState).size[0];
-    local_60 = local_58 * local_3c;
+    rotatedBinormal = fVar2 * *tangent + fVar8 * *binormal;
+    local_10 = fVar2 * tangent[1] + fVar8 * binormal[1];
+    local_c = fVar2 * tangent[2] + fVar8 * binormal[2];
+    local_58 = (draw->visState).size[0];
+    left = local_58 * rotatedTangent;
     local_5c = local_58 * local_38;
     local_58 = local_58 * local_34;
-    fVar8 = (param_1->visState).size[1];
-    local_30 = fVar8 * local_14;
+    fVar8 = (draw->visState).size[1];
+    up = fVar8 * rotatedBinormal;
     local_2c = fVar8 * local_10;
-    if ((param_1->elemDef->flags & 0x200000U) == 0) {
-      local_9c = param_1->posWorld[0];
-      local_98 = param_1->posWorld[1];
-      local_94 = param_1->posWorld[2];
-      local_88 = param_1->posWorld[0];
-      local_84 = param_1->posWorld[1];
-      local_80 = param_1->posWorld[2];
+    if ((draw->elemDef->flags & 0x200000U) == 0) {
+      leftSide = draw->posWorld[0];
+      local_98 = draw->posWorld[1];
+      local_94 = draw->posWorld[2];
+      rightSide = draw->posWorld[0];
+      local_84 = draw->posWorld[1];
+      local_80 = draw->posWorld[2];
     }
     else {
-      fVar2 = param_1->elemDef->billboardPivot[0];
-      fVar1 = param_1->elemDef->billboardPivot[1];
-      local_9c = param_1->posWorld[0] + fVar2 * local_60 + fVar1 * local_30;
-      local_98 = param_1->posWorld[1] + fVar2 * local_5c + fVar1 * local_2c;
-      local_94 = param_1->posWorld[2] + fVar2 * local_58 + fVar1 * fVar8 * local_c;
-      local_88 = local_9c;
+      fVar2 = draw->elemDef->billboardPivot[0];
+      fVar1 = draw->elemDef->billboardPivot[1];
+      leftSide = draw->posWorld[0] + fVar2 * left + fVar1 * up;
+      local_98 = draw->posWorld[1] + fVar2 * local_5c + fVar1 * local_2c;
+      local_94 = draw->posWorld[2] + fVar2 * local_58 + fVar1 * fVar8 * local_c;
+      rightSide = leftSide;
       local_84 = local_98;
       local_80 = local_94;
     }
     local_80 = local_80 + local_58;
     local_84 = local_84 + local_5c;
-    local_88 = local_88 + local_60;
+    rightSide = rightSide + left;
     local_94 = local_94 - local_58;
     local_98 = local_98 - local_5c;
-    local_9c = local_9c - local_60;
-    if ((param_1->reflect).enabled == false) {
-      local_40 = CONCAT22(local_18[0] + 1,local_18[0]);
-      *(undefined4 *)local_a8->value = local_40;
-      local_40 = CONCAT22(local_18[0] + 2,local_18[0] + 2);
-      *(undefined4 *)local_a8[1].value = local_40;
-      local_40 = CONCAT22(local_18[0],local_18[0] + 3);
-      *(undefined4 *)local_a8[2].value = local_40;
+    leftSide = leftSide - left;
+    if ((draw->reflect).enabled == false) {
+      index.value[1] = baseVertex + 1;
+      index.value[0] = baseVertex;
+      *(r_double_index_t *)baseIndices->value = index;
+      index.value[1] = baseVertex + 2;
+      index.value[0] = baseVertex + 2;
+      *&baseIndices[1].value = index.value;
+      index.value[1] = baseVertex;
+      index.value[0] = baseVertex + 3;
+      *&baseIndices[2].value = index.value;
     }
     else {
-      local_40 = CONCAT22(local_18[0] + 3,local_18[0]);
-      *(undefined4 *)local_a8->value = local_40;
-      local_40 = CONCAT22(local_18[0] + 2,local_18[0] + 2);
-      *(undefined4 *)local_a8[1].value = local_40;
-      local_40 = CONCAT22(local_18[0],local_18[0] + 1);
-      *(undefined4 *)local_a8[2].value = local_40;
+      index.value[1] = baseVertex + 3;
+      index.value[0] = baseVertex;
+      *(r_double_index_t *)baseIndices->value = index;
+      index.value[1] = baseVertex + 2;
+      index.value[0] = baseVertex + 2;
+      *&baseIndices[1].value = index.value;
+      index.value[1] = baseVertex;
+      index.value[0] = baseVertex + 1;
+      *&baseIndices[2].value = index.value;
     }
-    local_44 = local_a8 + 3;
-    local_94 = local_94 * (param_1->reflect).zScale + (param_1->reflect).zAdd;
-    local_80 = local_80 * (param_1->reflect).zScale + (param_1->reflect).zAdd;
-    local_28 = fVar8 * local_c * (param_1->reflect).zScale;
-    FX_GetSpriteTexCoords(param_1,&local_20,local_54,&local_ac,&local_a4);
-    local_180.array[1] = (char)(int)(param_4[1] * 127.0 + 127.5);
-    local_180.array[0] = (char)(int)(*param_4 * 127.0 + 127.5);
-    local_180.array[2] = (char)(int)(param_4[2] * 127.0 + 127.5);
+    indices = baseIndices + 3;
+    local_94 = local_94 * (draw->reflect).zScale + (draw->reflect).zAdd;
+    local_80 = local_80 * (draw->reflect).zScale + (draw->reflect).zAdd;
+    local_28 = fVar8 * local_c * (draw->reflect).zScale;
+    FX_GetSpriteTexCoords(draw,&s0,&ds,&t0,&dt);
+    local_180.array[1] = (char)(int)(normal[1] * 127.0 + 127.5);
+    local_180.array[0] = (char)(int)(*normal * 127.0 + 127.5);
+    local_180.array[2] = (char)(int)(normal[2] * 127.0 + 127.5);
     local_180.array[3] = 0x3f;
-    local_90 = local_180;
+    packedNormal = local_180;
     local_19c.array[1] = (char)(int)(local_38 * 127.0 + 127.5);
-    local_19c.array[0] = (char)(int)(local_3c * 127.0 + 127.5);
+    local_19c.array[0] = (char)(int)(rotatedTangent * 127.0 + 127.5);
     local_19c.array[2] = (char)(int)(local_34 * 127.0 + 127.5);
     local_19c.array[3] = 0x3f;
-    local_8c = local_19c;
-    local_1c = (param_1->elemDef->u).billboard.topWidth;
-    local_48 = (1.0 - local_1c) * 0.5;
-    local_6c = (param_1->elemDef->u).billboard.bottomWidth;
-    local_68 = (1.0 - local_6c) * 0.5;
-    Vec3Cross(param_4,&local_3c,&local_78);
-    if ((0.0 < local_78 * local_14 + local_74 * local_10 + local_70 * local_c) &&
+    packedTangent = local_19c;
+    topSideWidth = (draw->elemDef->u).billboard.topWidth;
+    topSideSoffset = (1.0 - topSideWidth) * 0.5;
+    bottomSideWidth = (draw->elemDef->u).billboard.bottomWidth;
+    bottomSideSoffset = (1.0 - bottomSideWidth) * 0.5;
+    Vec3Cross(normal,&rotatedTangent,&testBinormal);
+    if ((0.0 < testBinormal * rotatedBinormal + local_74 * local_10 + local_70 * local_c) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x249
                                  ,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    pGVar6 = R_GetCodeMeshVerts(local_18[0]);
-    for (local_e0 = 0; local_e0 < 4; local_e0 = local_e0 + 1) {
-      pGVar6[local_e0].binormalSign = -1.0;
-      pGVar6[local_e0].color = *(GfxColor *)(param_1->visState).color;
-      pGVar6[local_e0].normal = local_90;
-      pGVar6[local_e0].tangent = local_8c;
+    pGVar6 = R_GetCodeMeshVerts(baseVertex);
+    for (i = 0; i < 4; i = i + 1) {
+      pGVar6[i].binormalSign = -1.0;
+      pGVar6[i].color = *(GfxColor *)(draw->visState).color;
+      pGVar6[i].normal = packedNormal;
+      pGVar6[i].tangent = packedTangent;
     }
-    pGVar6->xyz[0] = local_9c + local_30;
+    pGVar6->xyz[0] = leftSide + up;
     pGVar6->xyz[1] = local_98 + local_2c;
     pGVar6->xyz[2] = local_94 + local_28;
-    fVar8 = 1.0 - local_6c;
-    pGVar6->xyz[0] = fVar8 * local_60 + pGVar6->xyz[0];
+    fVar8 = 1.0 - bottomSideWidth;
+    pGVar6->xyz[0] = fVar8 * left + pGVar6->xyz[0];
     pGVar6->xyz[1] = fVar8 * local_5c + pGVar6->xyz[1];
     pGVar6->xyz[2] = fVar8 * local_58 + pGVar6->xyz[2];
-    pGVar6->color = *(GfxColor *)(param_1->visState).color;
-    fVar8 = local_54[0] * local_68 + local_20;
+    pGVar6->color = *(GfxColor *)(draw->visState).color;
+    fVar8 = ds * bottomSideSoffset + s0;
     local_1bc = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_1bc) {
       local_1bc = 0x3fff;
@@ -599,7 +648,7 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     else {
       local_2a4 = local_1bc;
     }
-    local_1d0 = (int)((int)(local_ac + local_a4) << 1 ^ 0x80000000U) >> 0xe;
+    local_1d0 = (int)((int)(t0 + dt) << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_1d0) {
       local_1d0 = 0x3fff;
     }
@@ -611,16 +660,16 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     }
     (pGVar6->texCoord).packed =
          ((int)fVar8 >> 0x10 & 0xc000U | local_2a4 & 0x3fff) * 0x10000 +
-         ((int)(local_ac + local_a4) >> 0x10 & 0xc000U | local_2a8 & 0x3fff);
-    pGVar6[1].xyz[0] = local_9c - local_30;
+         ((int)(t0 + dt) >> 0x10 & 0xc000U | local_2a8 & 0x3fff);
+    pGVar6[1].xyz[0] = leftSide - up;
     pGVar6[1].xyz[1] = local_98 - local_2c;
     pGVar6[1].xyz[2] = local_94 - local_28;
-    fVar8 = 1.0 - local_1c;
-    pGVar6[1].xyz[0] = fVar8 * local_60 + pGVar6[1].xyz[0];
+    fVar8 = 1.0 - topSideWidth;
+    pGVar6[1].xyz[0] = fVar8 * left + pGVar6[1].xyz[0];
     pGVar6[1].xyz[1] = fVar8 * local_5c + pGVar6[1].xyz[1];
     pGVar6[1].xyz[2] = fVar8 * local_58 + pGVar6[1].xyz[2];
-    pGVar6[1].color = *(GfxColor *)(param_1->visState).color;
-    fVar8 = local_54[0] * local_48 + local_20;
+    pGVar6[1].color = *(GfxColor *)(draw->visState).color;
+    fVar8 = ds * topSideSoffset + s0;
     local_200 = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_200) {
       local_200 = 0x3fff;
@@ -631,7 +680,7 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     else {
       local_2ac = local_200;
     }
-    local_214 = (int)((int)local_ac << 1 ^ 0x80000000U) >> 0xe;
+    local_214 = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_214) {
       local_214 = 0x3fff;
     }
@@ -643,16 +692,16 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     }
     pGVar6[1].texCoord.packed =
          ((int)fVar8 >> 0x10 & 0xc000U | local_2ac & 0x3fff) * 0x10000 +
-         ((int)local_ac >> 0x10 & 0xc000U | local_2b0 & 0x3fff);
-    pGVar6[2].xyz[0] = local_88 - local_30;
+         ((int)t0 >> 0x10 & 0xc000U | local_2b0 & 0x3fff);
+    pGVar6[2].xyz[0] = rightSide - up;
     pGVar6[2].xyz[1] = local_84 - local_2c;
     pGVar6[2].xyz[2] = local_80 - local_28;
-    fVar8 = -(1.0 - local_1c);
-    pGVar6[2].xyz[0] = fVar8 * local_60 + pGVar6[2].xyz[0];
+    fVar8 = -(1.0 - topSideWidth);
+    pGVar6[2].xyz[0] = fVar8 * left + pGVar6[2].xyz[0];
     pGVar6[2].xyz[1] = fVar8 * local_5c + pGVar6[2].xyz[1];
     pGVar6[2].xyz[2] = fVar8 * local_58 + pGVar6[2].xyz[2];
-    pGVar6[2].color = *(GfxColor *)(param_1->visState).color;
-    fVar8 = (1.0 - local_48) * local_54[0] + local_20;
+    pGVar6[2].color = *(GfxColor *)(draw->visState).color;
+    fVar8 = (1.0 - topSideSoffset) * ds + s0;
     local_244 = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_244) {
       local_244 = 0x3fff;
@@ -663,7 +712,7 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     else {
       local_2b4 = local_244;
     }
-    local_258 = (int)((int)local_ac << 1 ^ 0x80000000U) >> 0xe;
+    local_258 = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_258) {
       local_258 = 0x3fff;
     }
@@ -675,16 +724,16 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     }
     pGVar6[2].texCoord.packed =
          ((int)fVar8 >> 0x10 & 0xc000U | local_2b4 & 0x3fff) * 0x10000 +
-         ((int)local_ac >> 0x10 & 0xc000U | local_2b8 & 0x3fff);
-    pGVar6[3].xyz[0] = local_88 + local_30;
+         ((int)t0 >> 0x10 & 0xc000U | local_2b8 & 0x3fff);
+    pGVar6[3].xyz[0] = rightSide + up;
     pGVar6[3].xyz[1] = local_84 + local_2c;
     pGVar6[3].xyz[2] = local_80 + local_28;
-    fVar8 = -(1.0 - local_6c);
-    pGVar6[3].xyz[0] = fVar8 * local_60 + pGVar6[3].xyz[0];
+    fVar8 = -(1.0 - bottomSideWidth);
+    pGVar6[3].xyz[0] = fVar8 * left + pGVar6[3].xyz[0];
     pGVar6[3].xyz[1] = fVar8 * local_5c + pGVar6[3].xyz[1];
     pGVar6[3].xyz[2] = fVar8 * local_58 + pGVar6[3].xyz[2];
-    local_20 = (1.0 - local_68) * local_54[0] + local_20;
-    local_288 = (int)((int)local_20 << 1 ^ 0x80000000U) >> 0xe;
+    fVar8 = (1.0 - bottomSideSoffset) * ds + s0;
+    local_288 = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_288) {
       local_288 = 0x3fff;
     }
@@ -694,7 +743,7 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
     else {
       local_2bc = local_288;
     }
-    local_29c = (int)((int)(local_ac + local_a4) << 1 ^ 0x80000000U) >> 0xe;
+    local_29c = (int)((int)(t0 + dt) << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_29c) {
       local_29c = 0x3fff;
     }
@@ -705,8 +754,8 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
       local_2c0 = local_29c;
     }
     pGVar6[3].texCoord.packed =
-         ((int)local_20 >> 0x10 & 0xc000U | local_2bc & 0x3fff) * 0x10000 +
-         ((int)(local_ac + local_a4) >> 0x10 & 0xc000U | local_2c0 & 0x3fff);
+         ((int)fVar8 >> 0x10 & 0xc000U | local_2bc & 0x3fff) * 0x10000 +
+         ((int)(t0 + dt) >> 0x10 & 0xc000U | local_2c0 & 0x3fff);
   }
   return;
 }
@@ -716,14 +765,14 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *param_1,float *param_2,float *param_
 
 FxTrailElem * __cdecl
 FX_PoolFromHandle_Generic<FxTrailElem,FxTrailElem,2048>
-          (FxPool<FxTrailElem,FxTrailElem> *param_1,ushort param_2)
+          (FxPool<FxTrailElem,FxTrailElem> *poolArray,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTrailElem *pFVar3;
   
-  if ((0x3fff < param_2) || ((uint)param_2 % 8 != 0)) {
+  if ((0x3fff < handle) || ((uint)handle % 8 != 0)) {
     va("%p %i size=%d limit=%d handlescale=%d");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1d1,0,
                              "%s\n\t%s");
@@ -733,21 +782,21 @@ FX_PoolFromHandle_Generic<FxTrailElem,FxTrailElem,2048>
       return pFVar3;
     }
   }
-  return (FxTrailElem *)((int)&param_1->field0_0x0 + (uint)param_2 * 4);
+  return (FxTrailElem *)((int)&poolArray->field0_0x0 + (uint)handle * 4);
 }
 
 
 // 005D2430  FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>  (EffectsCore/fx_system.h:464)
 
 FxTrail * __cdecl
-FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>(FxPool<FxTrail,FxTrail> *param_1,ushort param_2)
+FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>(FxPool<FxTrail,FxTrail> *poolArray,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTrail *pFVar3;
   
-  if ((0xff < param_2) || ((uint)param_2 % 2 != 0)) {
+  if ((0xff < handle) || ((uint)handle % 2 != 0)) {
     va("%p %i size=%d limit=%d handlescale=%d");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1d1,0,
                              "%s\n\t%s");
@@ -757,20 +806,20 @@ FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>(FxPool<FxTrail,FxTrail> *param_1,
       return pFVar3;
     }
   }
-  return (FxTrail *)((int)&param_1->field0_0x0 + (uint)param_2 * 4);
+  return (FxTrail *)((int)&poolArray->field0_0x0 + (uint)handle * 4);
 }
 
 
 // 005D1330  FX_TrailElemFromHandle  (EffectsCore/fx_system.h:492)
 
-FxTrailElem * __cdecl FX_TrailElemFromHandle(FxSystem *param_1,ushort param_2)
+FxTrailElem * __cdecl FX_TrailElemFromHandle(FxSystem *system,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTrailElem *pFVar3;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1ed,0,
                              "%s");
     if (!bVar2) {
@@ -779,21 +828,21 @@ FxTrailElem * __cdecl FX_TrailElemFromHandle(FxSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  pFVar3 = FX_PoolFromHandle_Generic<FxTrailElem,FxTrailElem,2048>(param_1->trailElems,param_2);
+  pFVar3 = FX_PoolFromHandle_Generic<FxTrailElem,FxTrailElem,2048>(system->trailElems,handle);
   return pFVar3;
 }
 
 
 // 005D0B80  FX_TrailFromHandle  (EffectsCore/fx_system.h:506)
 
-FxTrail * __cdecl FX_TrailFromHandle(FxSystem *param_1,ushort param_2)
+FxTrail * __cdecl FX_TrailFromHandle(FxSystem *system,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTrail *pFVar3;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1fb,0,
                              "%s");
     if (!bVar2) {
@@ -802,7 +851,7 @@ FxTrail * __cdecl FX_TrailFromHandle(FxSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  pFVar3 = FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>(param_1->trails,param_2);
+  pFVar3 = FX_PoolFromHandle_Generic<FxTrail,FxTrail,128>(system->trails,handle);
   return pFVar3;
 }
 
@@ -812,7 +861,7 @@ FxTrail * __cdecl FX_TrailFromHandle(FxSystem *param_1,ushort param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-FX_GenTrail_IndsForSegment(FxDrawState *param_1,ushort param_2,r_double_index_t *param_3)
+FX_GenTrail_IndsForSegment(FxDrawState *draw,ushort reservedBaseVertex,r_double_index_t *outIndices)
 
 {
   ushort uVar1;
@@ -822,12 +871,19 @@ FX_GenTrail_IndsForSegment(FxDrawState *param_1,ushort param_2,r_double_index_t 
   code *pcVar5;
   bool bVar6;
   int iVar7;
-  short sVar8;
+  ushort uVar8;
   short sVar9;
-  undefined4 local_28;
-  int local_c;
+  r_double_index_t index;
+  int indCount;
+  ushort nearBase;
+  FxTrailDef *trailDef;
+  int indPairCount;
+  ushort farBase;
+  ushort *inds;
+  int indPairIter;
+  ushort trailDefVertCount;
   
-  pFVar3 = (param_1->elemDef->field34_0x100).localTrailDef;
+  pFVar3 = (draw->elemDef->field34_0x100).localTrailDef;
   if (pFVar3 == (FxTrailDef *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x283,0,
                              "%s");
@@ -848,18 +904,20 @@ FX_GenTrail_IndsForSegment(FxDrawState *param_1,ushort param_2,r_double_index_t 
       return;
     }
   }
-  sVar9 = param_2 + (short)pFVar3->vertCount;
-  for (local_c = 0; local_c != iVar7; local_c = local_c + 1) {
-    uVar1 = puVar4[local_c * 2 + 1];
-    sVar8 = sVar9 + puVar4[local_c * 2];
-    uVar2 = puVar4[local_c * 2 + 1];
-    local_28 = CONCAT22(param_2 + uVar1,param_2 + puVar4[local_c * 2]);
-    *(undefined4 *)param_3->value = local_28;
-    local_28 = CONCAT22(sVar9 + uVar2,sVar8);
-    *(undefined4 *)param_3[1].value = local_28;
-    local_28 = CONCAT22(param_2 + uVar1,sVar8);
-    *(undefined4 *)param_3[2].value = local_28;
-    param_3 = param_3 + 3;
+  sVar9 = reservedBaseVertex + (short)pFVar3->vertCount;
+  for (indPairIter = 0; indPairIter != iVar7; indPairIter = indPairIter + 1) {
+    uVar1 = puVar4[indPairIter * 2 + 1];
+    uVar8 = sVar9 + puVar4[indPairIter * 2];
+    uVar2 = puVar4[indPairIter * 2 + 1];
+    index.value[1] = reservedBaseVertex + uVar1;
+    index.value[0] = reservedBaseVertex + puVar4[indPairIter * 2];
+    *(r_double_index_t *)outIndices->value = index;
+    index.value[1] = sVar9 + uVar2;
+    index.value[0] = uVar8;
+    *&outIndices[1].value = index.value;
+    index.value[1] = reservedBaseVertex + uVar1;
+    *&outIndices[2].value = index.value;
+    outIndices = outIndices + 3;
   }
   return;
 }
@@ -867,7 +925,7 @@ FX_GenTrail_IndsForSegment(FxDrawState *param_1,ushort param_2,r_double_index_t 
 
 // 005CFD20  FX_BeginIteratingOverEffects_Cooperative  (EffectsCore/fx_system.h:634)
 
-void __cdecl FX_BeginIteratingOverEffects_Cooperative(FxSystem *param_1)
+void __cdecl FX_BeginIteratingOverEffects_Cooperative(FxSystem *system)
 
 {
   code *pcVar1;
@@ -875,8 +933,9 @@ void __cdecl FX_BeginIteratingOverEffects_Cooperative(FxSystem *param_1)
   int iVar3;
   long *plVar4;
   int local_14;
+  int incrementFromCount;
   
-  if ((param_1->isArchiving != false) &&
+  if ((system->isArchiving != false) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x27f,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -884,11 +943,11 @@ void __cdecl FX_BeginIteratingOverEffects_Cooperative(FxSystem *param_1)
     return;
   }
   do {
-    local_14 = param_1->shared->iteratorCount;
+    local_14 = system->shared->iteratorCount;
     if (local_14 < 0) {
       local_14 = 0;
     }
-    plVar4 = &param_1->shared->iteratorCount;
+    plVar4 = &system->shared->iteratorCount;
     LOCK();
     iVar3 = *plVar4;
     if (local_14 == iVar3) {
@@ -905,35 +964,37 @@ void __cdecl FX_BeginIteratingOverEffects_Cooperative(FxSystem *param_1)
 
 void __cdecl
 Fx_GenTrail_PopulateSegmentDrawState
-          (FxDrawState *param_1,float param_2,float param_3,float (*param_4) [3],
-          FxTrailSegmentDrawState *param_5)
+          (FxDrawState *draw,float spawnDist,float uCoordOffset,float (*basis) [3],
+          FxTrailSegmentDrawState *outState)
 
 {
   FxTrailDef *pFVar1;
+  FxElemVisualState *visState;
+  FxTrailDef *trailDef;
   
-  pFVar1 = (param_1->elemDef->field34_0x100).localTrailDef;
-  param_5->trailDef = pFVar1;
-  param_5->posWorld[0] = param_1->posWorld[0];
-  param_5->posWorld[1] = param_1->posWorld[1];
-  param_5->posWorld[2] = param_1->posWorld[2];
-  param_5->basis[0][0] = (*param_4)[0];
-  param_5->basis[0][1] = (*param_4)[1];
-  param_5->basis[0][2] = (*param_4)[2];
-  param_5->basis[1][0] = param_4[1][0];
-  param_5->basis[1][1] = param_4[1][1];
-  param_5->basis[1][2] = param_4[1][2];
-  param_5->rotation = (param_1->visState).rotationTotal;
-  param_5->size[0] = (param_1->visState).size[0];
-  param_5->size[1] = (param_1->visState).size[1];
-  *(undefined4 *)param_5->color = *(undefined4 *)(param_1->visState).color;
-  param_5->uCoord = param_2 / (float)pFVar1->repeatDist + param_3;
+  pFVar1 = (draw->elemDef->field34_0x100).localTrailDef;
+  outState->trailDef = pFVar1;
+  outState->posWorld[0] = draw->posWorld[0];
+  outState->posWorld[1] = draw->posWorld[1];
+  outState->posWorld[2] = draw->posWorld[2];
+  outState->basis[0][0] = (*basis)[0];
+  outState->basis[0][1] = (*basis)[1];
+  outState->basis[0][2] = (*basis)[2];
+  outState->basis[1][0] = basis[1][0];
+  outState->basis[1][1] = basis[1][1];
+  outState->basis[1][2] = basis[1][2];
+  outState->rotation = (draw->visState).rotationTotal;
+  outState->size[0] = (draw->visState).size[0];
+  outState->size[1] = (draw->visState).size[1];
+  *(undefined4 *)outState->color = *(undefined4 *)(draw->visState).color;
+  outState->uCoord = spawnDist / (float)pFVar1->repeatDist + uCoordOffset;
   return;
 }
 
 
 // 005D0300  Vec4Length  (universal/com_vector.h:712)
 
-float __cdecl Vec4Length(float *param_1)
+float __cdecl Vec4Length(float *v)
 
 {
   float10 extraout_ST0;
@@ -947,7 +1008,8 @@ float __cdecl Vec4Length(float *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPackedVertex *param_2)
+void __cdecl
+FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *segmentDrawState,GfxPackedVertex *remoteVerts)
 
 {
   FxTrailDef *pFVar1;
@@ -970,10 +1032,15 @@ void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPac
   PackedUnitVec local_fc;
   uint local_e8;
   uint local_d4;
-  GfxPackedVertex *local_48;
-  int local_8;
+  FxTrailDef *trailDef;
+  GfxPackedVertex *outVerts;
+  float cosRot;
+  float sinRot;
+  float uCoord;
+  int vertCount;
+  int vertIter;
   
-  pFVar1 = param_1->trailDef;
+  pFVar1 = segmentDrawState->trailDef;
   if ((pFVar1 == (FxTrailDef *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x2da,0
                                ,"%s"), !bVar5)) {
@@ -995,27 +1062,27 @@ void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPac
     (*pcVar3)();
     return;
   }
-  fVar4 = (float10)fcos((float10)param_1->rotation);
-  fVar6 = (float10)fsin((float10)param_1->rotation);
+  fVar4 = (float10)fcos((float10)segmentDrawState->rotation);
+  fVar6 = (float10)fsin((float10)segmentDrawState->rotation);
   fVar10 = (float)fVar4;
   fVar13 = (float)fVar6;
-  fVar7 = fVar10 * param_1->basis[0][0] + fVar13 * param_1->basis[1][0];
-  fVar8 = fVar10 * param_1->basis[0][1] + fVar13 * param_1->basis[1][1];
-  fVar9 = fVar10 * param_1->basis[0][2] + fVar13 * param_1->basis[1][2];
+  fVar7 = fVar10 * segmentDrawState->basis[0][0] + fVar13 * segmentDrawState->basis[1][0];
+  fVar8 = fVar10 * segmentDrawState->basis[0][1] + fVar13 * segmentDrawState->basis[1][1];
+  fVar9 = fVar10 * segmentDrawState->basis[0][2] + fVar13 * segmentDrawState->basis[1][2];
   fVar10 = -fVar10;
-  fVar11 = fVar13 * param_1->basis[0][0] + fVar10 * param_1->basis[1][0];
-  fVar12 = fVar13 * param_1->basis[0][1] + fVar10 * param_1->basis[1][1];
-  fVar13 = fVar13 * param_1->basis[0][2] + fVar10 * param_1->basis[1][2];
-  fVar10 = param_1->uCoord;
-  local_48 = param_2;
+  fVar11 = fVar13 * segmentDrawState->basis[0][0] + fVar10 * segmentDrawState->basis[1][0];
+  fVar12 = fVar13 * segmentDrawState->basis[0][1] + fVar10 * segmentDrawState->basis[1][1];
+  fVar13 = fVar13 * segmentDrawState->basis[0][2] + fVar10 * segmentDrawState->basis[1][2];
+  fVar10 = segmentDrawState->uCoord;
+  outVerts = remoteVerts;
   iVar2 = pFVar1->vertCount;
-  for (local_8 = 0; local_8 != iVar2; local_8 = local_8 + 1) {
-    fVar14 = (pFVar1->field4_0x10).vertsEA[local_8].pos[0] * param_1->size[0];
-    fVar15 = (pFVar1->field4_0x10).vertsEA[local_8].pos[1] * param_1->size[1];
-    local_48->xyz[0] = fVar14 * fVar7 + param_1->posWorld[0] + fVar15 * fVar11;
-    local_48->xyz[1] = fVar14 * fVar8 + param_1->posWorld[1] + fVar15 * fVar12;
-    local_48->xyz[2] = fVar14 * fVar9 + param_1->posWorld[2] + fVar15 * fVar13;
-    local_48->color = *(GfxColor *)param_1->color;
+  for (vertIter = 0; vertIter != iVar2; vertIter = vertIter + 1) {
+    fVar14 = (pFVar1->field4_0x10).vertsEA[vertIter].pos[0] * segmentDrawState->size[0];
+    fVar15 = (pFVar1->field4_0x10).vertsEA[vertIter].pos[1] * segmentDrawState->size[1];
+    outVerts->xyz[0] = fVar14 * fVar7 + segmentDrawState->posWorld[0] + fVar15 * fVar11;
+    outVerts->xyz[1] = fVar14 * fVar8 + segmentDrawState->posWorld[1] + fVar15 * fVar12;
+    outVerts->xyz[2] = fVar14 * fVar9 + segmentDrawState->posWorld[2] + fVar15 * fVar13;
+    outVerts->color = *(GfxColor *)segmentDrawState->color;
     local_d4 = (int)((int)fVar10 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_d4) {
       local_d4 = 0x3fff;
@@ -1026,7 +1093,7 @@ void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPac
     else {
       local_100 = local_d4;
     }
-    fVar14 = (pFVar1->field4_0x10).vertsEA[local_8].texCoord;
+    fVar14 = (pFVar1->field4_0x10).vertsEA[vertIter].texCoord;
     local_e8 = (int)((int)fVar14 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_e8) {
       local_e8 = 0x3fff;
@@ -1037,18 +1104,18 @@ void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPac
     else {
       local_104 = local_e8;
     }
-    (local_48->texCoord).packed =
+    (outVerts->texCoord).packed =
          ((int)fVar10 >> 0x10 & 0xc000U | local_100 & 0x3fff) * 0x10000 +
          ((int)fVar14 >> 0x10 & 0xc000U | local_104 & 0x3fff);
-    fVar14 = (pFVar1->field4_0x10).vertsEA[local_8].normal[0];
-    fVar15 = (pFVar1->field4_0x10).vertsEA[local_8].normal[1];
+    fVar14 = (pFVar1->field4_0x10).vertsEA[vertIter].normal[0];
+    fVar15 = (pFVar1->field4_0x10).vertsEA[vertIter].normal[1];
     local_fc.array[1] = (char)(int)((fVar15 * fVar12 + fVar14 * fVar8) * 127.0 + 127.5);
     local_fc.array[0] = (char)(int)((fVar15 * fVar11 + fVar14 * fVar7) * 127.0 + 127.5);
     local_fc.array[2] = (char)(int)((fVar15 * fVar13 + fVar14 * fVar9) * 127.0 + 127.5);
     local_fc.array[3] = 0x3f;
-    local_48->normal = local_fc;
-    (local_48->tangent).packed = 0x3f7f7ffe;
-    local_48 = local_48 + 1;
+    outVerts->normal = local_fc;
+    (outVerts->tangent).packed = 0x3f7f7ffe;
+    outVerts = outVerts + 1;
   }
   return;
 }
@@ -1056,7 +1123,7 @@ void __cdecl FX_GenTrail_VertsForSegment(FxTrailSegmentDrawState *param_1,GfxPac
 
 // 005CCAE0  FX_CullElementForDraw_FrustumPlaneCount  (EffectsCore/fx_draw.cpp:767)
 
-uint __cdecl FX_CullElementForDraw_FrustumPlaneCount(FxDrawState *param_1)
+uint __cdecl FX_CullElementForDraw_FrustumPlaneCount(FxDrawState *draw)
 
 {
   code *pcVar1;
@@ -1064,8 +1131,8 @@ uint __cdecl FX_CullElementForDraw_FrustumPlaneCount(FxDrawState *param_1)
   uint uVar3;
   uint local_8;
   
-  if (((param_1 == (FxDrawState *)0x0) || (param_1->camera == (FxCamera *)0x0)) ||
-     (param_1->camera->frustumPlaneCount < 5)) {
+  if (((draw == (FxDrawState *)0x0) || (draw->camera == (FxCamera *)0x0)) ||
+     (draw->camera->frustumPlaneCount < 5)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x300,0,
                              "%s");
     if (!bVar2) {
@@ -1074,8 +1141,8 @@ uint __cdecl FX_CullElementForDraw_FrustumPlaneCount(FxDrawState *param_1)
       return uVar3;
     }
   }
-  if ((param_1->elemDef->flags & 0x400U) == 0) {
-    local_8 = param_1->camera->frustumPlaneCount;
+  if ((draw->elemDef->flags & 0x400U) == 0) {
+    local_8 = draw->camera->frustumPlaneCount;
   }
   else {
     local_8 = 5;
@@ -1086,7 +1153,7 @@ uint __cdecl FX_CullElementForDraw_FrustumPlaneCount(FxDrawState *param_1)
 
 // 005CC8F0  FX_CullElementForDraw_Sprite  (EffectsCore/fx_draw.cpp:774)
 
-bool __cdecl FX_CullElementForDraw_Sprite(FxDrawState *param_1)
+bool __cdecl FX_CullElementForDraw_Sprite(FxDrawState *draw)
 
 {
   bool bVar1;
@@ -1094,23 +1161,25 @@ bool __cdecl FX_CullElementForDraw_Sprite(FxDrawState *param_1)
   float local_48;
   float local_44;
   float local_40;
-  float local_18;
+  float pivy;
+  float pivx;
+  float pos;
   float local_14;
   float local_10;
-  float local_c;
-  uint local_8;
+  float radius;
+  uint frustumPlaneCount;
   
   if ((fx_cull_elem_draw->current).enabled != false) {
-    local_8 = FX_CullElementForDraw_FrustumPlaneCount(param_1);
-    fVar2 = (param_1->visState).size[0];
-    local_40 = (param_1->visState).size[1];
+    frustumPlaneCount = FX_CullElementForDraw_FrustumPlaneCount(draw);
+    fVar2 = (draw->visState).size[0];
+    local_40 = (draw->visState).size[1];
     if (0.0 <= fVar2 - local_40) {
       local_40 = fVar2;
     }
-    local_c = local_40;
-    if ((param_1->elemDef->flags & 0x200000U) != 0) {
-      fVar2 = ABS(param_1->elemDef->billboardPivot[0]) * (param_1->visState).size[0];
-      local_48 = ABS(param_1->elemDef->billboardPivot[1]) * (param_1->visState).size[1];
+    radius = local_40;
+    if ((draw->elemDef->flags & 0x200000U) != 0) {
+      fVar2 = ABS(draw->elemDef->billboardPivot[0]) * (draw->visState).size[0];
+      local_48 = ABS(draw->elemDef->billboardPivot[1]) * (draw->visState).size[1];
       local_44 = local_48;
       if (0.0 <= fVar2 - local_48) {
         local_44 = fVar2;
@@ -1118,12 +1187,12 @@ bool __cdecl FX_CullElementForDraw_Sprite(FxDrawState *param_1)
       if (0.0 <= local_48 - fVar2) {
         local_48 = fVar2;
       }
-      local_c = local_48 * 0.5 + local_44 + local_40;
+      radius = local_48 * 0.5 + local_44 + local_40;
     }
-    local_18 = param_1->posWorld[0];
-    local_14 = param_1->posWorld[1];
-    local_10 = param_1->posWorld[2] * (param_1->reflect).zScale + (param_1->reflect).zAdd;
-    bVar1 = FX_CullSphere(param_1->camera,local_8,&local_18,local_c);
+    pos = draw->posWorld[0];
+    local_14 = draw->posWorld[1];
+    local_10 = draw->posWorld[2] * (draw->reflect).zScale + (draw->reflect).zAdd;
+    bVar1 = FX_CullSphere(draw->camera,frustumPlaneCount,&pos,radius);
     if (bVar1) {
       return true;
     }
@@ -1134,93 +1203,93 @@ bool __cdecl FX_CullElementForDraw_Sprite(FxDrawState *param_1)
 
 // 005CCB60  FX_DrawElem_BillboardSprite_NoCull  (EffectsCore/fx_draw.cpp:806)
 
-void __cdecl FX_DrawElem_BillboardSprite_NoCull(FxDrawState *param_1)
+void __cdecl FX_DrawElem_BillboardSprite_NoCull(FxDrawState *draw)
 
 {
   FxCamera *pFVar1;
   uint uVar2;
-  float local_28;
+  float normal;
   float local_24;
   float local_20;
-  float local_1c;
+  float tangent;
   float local_18;
   float local_14;
-  float local_10;
+  float binormal;
   float local_c;
   float local_8;
   
-  uVar2 = param_1->elemDef->flags & 0x180000;
+  uVar2 = draw->elemDef->flags & 0x180000;
   if (uVar2 < 0x100001) {
     if (uVar2 == 0x100000) {
-      pFVar1 = param_1->camera;
-      local_28 = pFVar1->origin[0] - param_1->posWorld[0];
-      local_24 = pFVar1->origin[1] - param_1->posWorld[1];
-      local_20 = pFVar1->origin[2] - param_1->posWorld[2];
-      Vec3Normalize(&local_28);
-      pFVar1 = param_1->camera;
-      local_10 = pFVar1->axis[2][0];
+      pFVar1 = draw->camera;
+      normal = pFVar1->origin[0] - draw->posWorld[0];
+      local_24 = pFVar1->origin[1] - draw->posWorld[1];
+      local_20 = pFVar1->origin[2] - draw->posWorld[2];
+      Vec3Normalize(&normal);
+      pFVar1 = draw->camera;
+      binormal = pFVar1->axis[2][0];
       local_c = pFVar1->axis[2][1];
       local_8 = pFVar1->axis[2][2];
-      Vec3Cross(&local_10,&local_28,&local_1c);
-      Vec3Normalize(&local_1c);
+      Vec3Cross(&binormal,&normal,&tangent);
+      Vec3Normalize(&tangent);
     }
     else if (uVar2 == 0) {
-      pFVar1 = param_1->camera;
-      local_28 = -pFVar1->axis[0][0];
+      pFVar1 = draw->camera;
+      normal = -pFVar1->axis[0][0];
       local_24 = -pFVar1->axis[0][1];
       local_20 = -pFVar1->axis[0][2];
-      pFVar1 = param_1->camera;
-      local_1c = -pFVar1->axis[1][0];
+      pFVar1 = draw->camera;
+      tangent = -pFVar1->axis[1][0];
       local_18 = -pFVar1->axis[1][1];
       local_14 = -pFVar1->axis[1][2];
-      pFVar1 = param_1->camera;
-      local_10 = pFVar1->axis[2][0];
+      pFVar1 = draw->camera;
+      binormal = pFVar1->axis[2][0];
       local_c = pFVar1->axis[2][1];
       local_8 = pFVar1->axis[2][2];
     }
     else if (uVar2 == 0x80000) {
-      pFVar1 = param_1->camera;
-      local_28 = -pFVar1->axis[0][0];
-      local_1c = pFVar1->axis[0][1];
-      local_24 = -local_1c;
+      pFVar1 = draw->camera;
+      normal = -pFVar1->axis[0][0];
+      tangent = pFVar1->axis[0][1];
+      local_24 = -tangent;
       local_20 = -pFVar1->axis[0][2];
-      local_10 = 0.0;
+      binormal = 0.0;
       local_c = 0.0;
       local_8 = 1.0;
       local_14 = 0.0;
-      local_18 = local_28;
-      Vec3Normalize(&local_1c);
+      local_18 = normal;
+      Vec3Normalize(&tangent);
     }
   }
   else if (uVar2 == 0x180000) {
-    pFVar1 = param_1->camera;
-    local_28 = pFVar1->origin[0] - param_1->posWorld[0];
-    local_24 = pFVar1->origin[1] - param_1->posWorld[1];
-    local_20 = pFVar1->origin[2] - param_1->posWorld[2];
-    Vec3Normalize(&local_28);
-    local_10 = 0.0;
+    pFVar1 = draw->camera;
+    normal = pFVar1->origin[0] - draw->posWorld[0];
+    local_24 = pFVar1->origin[1] - draw->posWorld[1];
+    local_20 = pFVar1->origin[2] - draw->posWorld[2];
+    Vec3Normalize(&normal);
+    binormal = 0.0;
     local_c = 0.0;
     local_8 = 1.0;
-    local_1c = -local_24;
-    local_18 = local_28;
+    tangent = -local_24;
+    local_18 = normal;
     local_14 = 0.0;
-    Vec3Normalize(&local_1c);
+    Vec3Normalize(&tangent);
   }
-  FX_GenSpriteVerts(param_1,&local_1c,&local_10,&local_28);
+  FX_GenSpriteVerts(draw,&tangent,&binormal,&normal);
   return;
 }
 
 
 // 005CC8C0  FX_DrawElem_BillboardSprite  (EffectsCore/fx_draw.cpp:844)
 
-void __cdecl FX_DrawElem_BillboardSprite(FxDrawState *param_1)
+void __cdecl FX_DrawElem_BillboardSprite(FxDrawState *draw)
 
 {
   bool bVar1;
   
-  bVar1 = FX_CullElementForDraw_Sprite(param_1);
+  bVar1 = FX_CullElementForDraw_Sprite(draw);
   if (!bVar1) {
-    FX_DrawElem_BillboardSprite_NoCull(param_1);
+    FX_DrawElem_BillboardSprite_NoCull(draw);
   }
   return;
 }
@@ -1228,25 +1297,24 @@ void __cdecl FX_DrawElem_BillboardSprite(FxDrawState *param_1)
 
 // 005CE8E0  FX_DrawElem_OrientedSprite_NoCull  (EffectsCore/fx_draw.cpp:852)
 
-void __cdecl FX_DrawElem_OrientedSprite_NoCull(FxDrawState *param_1)
+void __cdecl FX_DrawElem_OrientedSprite_NoCull(FxDrawState *draw)
 
 {
-  FX_GenSpriteVerts(param_1,(param_1->orient).axis[1],(param_1->orient).axis[2],
-                    (param_1->orient).axis[0]);
+  FX_GenSpriteVerts(draw,(draw->orient).axis[1],(draw->orient).axis[2],(draw->orient).axis[0]);
   return;
 }
 
 
 // 005CE8B0  FX_DrawElem_OrientedSprite  (EffectsCore/fx_draw.cpp:857)
 
-void __cdecl FX_DrawElem_OrientedSprite(FxDrawState *param_1)
+void __cdecl FX_DrawElem_OrientedSprite(FxDrawState *draw)
 
 {
   bool bVar1;
   
-  bVar1 = FX_CullElementForDraw_Sprite(param_1);
+  bVar1 = FX_CullElementForDraw_Sprite(draw);
   if (!bVar1) {
-    FX_DrawElem_OrientedSprite_NoCull(param_1);
+    FX_DrawElem_OrientedSprite_NoCull(draw);
   }
   return;
 }
@@ -1254,44 +1322,44 @@ void __cdecl FX_DrawElem_OrientedSprite(FxDrawState *param_1)
 
 // 005CF670  FX_GetMsecForSamplingAxis  (EffectsCore/fx_draw.cpp:866)
 
-float __cdecl FX_GetMsecForSamplingAxis(float param_1,float param_2,int param_3)
+float __cdecl FX_GetMsecForSamplingAxis(float msecElapsed,float msecLifeSpan,int atRestFraction)
 
 {
   float fVar1;
   float fVar2;
+  float msecAtRest;
+  float msecSinceAtRest;
   
-  fVar1 = (float)param_3 * param_2 * 0.003921569;
-  fVar2 = param_1 - fVar1;
+  fVar1 = (float)atRestFraction * msecLifeSpan * 0.003921569;
+  fVar2 = msecElapsed - fVar1;
   if (0.0 < fVar2) {
     if (fVar2 < 300.0) {
-      param_1 = param_1 - fVar2 * fVar2 * 0.0016666667;
+      msecElapsed = msecElapsed - fVar2 * fVar2 * 0.0016666667;
     }
     else {
-      param_1 = fVar1 + 150.0;
+      msecElapsed = fVar1 + 150.0;
     }
   }
-  return param_1;
+  return msecElapsed;
 }
 
 
 // 005CF5C0  FX_SetPlacement  (EffectsCore/fx_draw.cpp:881)
 
-void __cdecl FX_SetPlacement(FxDrawState *param_1,GfxScaledPlacement *param_2)
+void __cdecl FX_SetPlacement(FxDrawState *draw,GfxScaledPlacement *placement)
 
 {
-  float local_2c [9];
-  float local_8;
+  float axis [9];
+  float msecForAxis;
   
-  local_8 = FX_GetMsecForSamplingAxis
-                      (param_1->msecElapsed,param_1->msecLifeSpan,
-                       (uint)param_1->elem->atRestFraction);
-  FX_GetElemAxis(param_1->elemDef,param_1->randomSeed,&param_1->orient,local_8,
-                 (float (*) [3])local_2c);
-  AxisToQuat((float (*) [3])local_2c,(float *)param_2);
-  (param_2->base).origin[0] = param_1->posWorld[0];
-  (param_2->base).origin[1] = param_1->posWorld[1];
-  (param_2->base).origin[2] = param_1->posWorld[2];
-  param_2->scale = (param_1->visState).scale;
+  msecForAxis = FX_GetMsecForSamplingAxis
+                          (draw->msecElapsed,draw->msecLifeSpan,(uint)draw->elem->atRestFraction);
+  FX_GetElemAxis(draw->elemDef,draw->randomSeed,&draw->orient,msecForAxis,(float (*) [3])axis);
+  AxisToQuat((float (*) [3])axis,(float *)placement);
+  (placement->base).origin[0] = draw->posWorld[0];
+  (placement->base).origin[1] = draw->posWorld[1];
+  (placement->base).origin[2] = draw->posWorld[2];
+  placement->scale = (draw->visState).scale;
   return;
 }
 
@@ -1299,7 +1367,8 @@ void __cdecl FX_SetPlacement(FxDrawState *param_1,GfxScaledPlacement *param_2)
 // 005CEA70  FX_CullCylinder  (EffectsCore/fx_draw.cpp:894)
 
 bool __cdecl
-FX_CullCylinder(FxCamera *param_1,uint param_2,float *param_3,float *param_4,float param_5)
+FX_CullCylinder(FxCamera *camera,uint frustumPlaneCount,float *posWorld0,float *posWorld1,
+               float radius)
 
 {
   float (*pafVar1) [4];
@@ -1307,16 +1376,17 @@ FX_CullCylinder(FxCamera *param_1,uint param_2,float *param_3,float *param_4,flo
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  uint local_8;
+  float pointToPlaneDist;
+  uint planeIndex;
   
-  if ((param_1->isValid == 0) &&
+  if ((camera->isValid == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x382,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 != param_1->frustumPlaneCount) && (param_2 != 5)) {
+  if ((frustumPlaneCount != camera->frustumPlaneCount) && (frustumPlaneCount != 5)) {
     va("%i, %i");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",899,0,
                              "%s\n\t%s");
@@ -1326,14 +1396,14 @@ FX_CullCylinder(FxCamera *param_1,uint param_2,float *param_3,float *param_4,flo
       return (bool)uVar4;
     }
   }
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (frustumPlaneCount <= planeIndex) {
       return false;
     }
-    iVar5 = Vec3IsNormalized(param_1->frustum[local_8]);
+    iVar5 = Vec3IsNormalized(camera->frustum[planeIndex]);
     if (iVar5 == 0) {
-      Abs((phys_vec3 *)(param_1->frustum + local_8));
+      Abs((phys_vec3 *)(camera->frustum + planeIndex));
       va("(%g %g %g) len %g");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x387,0
                                ,"%s\n\t%s");
@@ -1343,13 +1413,13 @@ FX_CullCylinder(FxCamera *param_1,uint param_2,float *param_3,float *param_4,flo
         return (bool)uVar4;
       }
     }
-    pafVar1 = param_1->frustum + local_8;
-    if ((((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_3[2]) -
-         param_1->frustum[local_8][3] <= -param_5) &&
-       (pafVar1 = param_1->frustum + local_8,
-       ((*pafVar1)[0] * *param_4 + (*pafVar1)[1] * param_4[1] + (*pafVar1)[2] * param_4[2]) -
-       param_1->frustum[local_8][3] <= -param_5)) break;
-    local_8 = local_8 + 1;
+    pafVar1 = camera->frustum + planeIndex;
+    if ((((*pafVar1)[0] * *posWorld0 + (*pafVar1)[1] * posWorld0[1] + (*pafVar1)[2] * posWorld0[2])
+         - camera->frustum[planeIndex][3] <= -radius) &&
+       (pafVar1 = camera->frustum + planeIndex,
+       ((*pafVar1)[0] * *posWorld1 + (*pafVar1)[1] * posWorld1[1] + (*pafVar1)[2] * posWorld1[2]) -
+       camera->frustum[planeIndex][3] <= -radius)) break;
+    planeIndex = planeIndex + 1;
   }
   return true;
 }
@@ -1357,24 +1427,24 @@ FX_CullCylinder(FxCamera *param_1,uint param_2,float *param_3,float *param_4,flo
 
 // 005CE990  FX_CullElementForDraw_Tail  (EffectsCore/fx_draw.cpp:921)
 
-bool __cdecl FX_CullElementForDraw_Tail(FxDrawState *param_1)
+bool __cdecl FX_CullElementForDraw_Tail(FxDrawState *draw)
 
 {
   bool bVar1;
   float fVar2;
-  float local_14;
+  float endpoint;
   float local_10;
   float local_c;
-  uint local_8;
+  uint frustumPlaneCount;
   
   if ((fx_cull_elem_draw->current).enabled != false) {
-    local_8 = FX_CullElementForDraw_FrustumPlaneCount(param_1);
-    fVar2 = (param_1->visState).size[1] * -2.0;
-    local_14 = fVar2 * param_1->velDirWorld[0] + param_1->posWorld[0];
-    local_10 = fVar2 * param_1->velDirWorld[1] + param_1->posWorld[1];
-    local_c = fVar2 * param_1->velDirWorld[2] + param_1->posWorld[2];
-    bVar1 = FX_CullCylinder(param_1->camera,local_8,param_1->posWorld,&local_14,
-                            (param_1->visState).size[0]);
+    frustumPlaneCount = FX_CullElementForDraw_FrustumPlaneCount(draw);
+    fVar2 = (draw->visState).size[1] * -2.0;
+    endpoint = fVar2 * draw->velDirWorld[0] + draw->posWorld[0];
+    local_10 = fVar2 * draw->velDirWorld[1] + draw->posWorld[1];
+    local_c = fVar2 * draw->velDirWorld[2] + draw->posWorld[2];
+    bVar1 = FX_CullCylinder(draw->camera,frustumPlaneCount,draw->posWorld,&endpoint,
+                            (draw->visState).size[0]);
     if (bVar1) {
       return true;
     }
@@ -1385,47 +1455,47 @@ bool __cdecl FX_CullElementForDraw_Tail(FxDrawState *param_1)
 
 // 005CECD0  FX_DrawElem_Tail_Main  (EffectsCore/fx_draw.cpp:939)
 
-void __cdecl FX_DrawElem_Tail_Main(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Tail_Main(FxDrawState *draw)
 
 {
   FxCamera *pFVar1;
   float fVar2;
-  float local_28 [3];
-  float local_1c;
+  float normal [3];
+  float deltaCamera;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float tangent [3];
   
-  fVar2 = -(param_1->visState).size[1];
-  param_1->posWorld[0] = fVar2 * param_1->velDirWorld[0] + param_1->posWorld[0];
-  param_1->posWorld[1] = fVar2 * param_1->velDirWorld[1] + param_1->posWorld[1];
-  param_1->posWorld[2] = fVar2 * param_1->velDirWorld[2] + param_1->posWorld[2];
-  pFVar1 = param_1->camera;
-  local_1c = pFVar1->origin[0] - param_1->posWorld[0];
-  local_18 = pFVar1->origin[1] - param_1->posWorld[1];
-  local_14 = pFVar1->origin[2] - param_1->posWorld[2];
-  Vec3Cross(param_1->velDirWorld,&local_1c,local_10);
-  Vec3Normalize(local_10);
-  Vec3Cross(local_10,param_1->velDirWorld,local_28);
-  FX_GenSpriteVerts(param_1,local_10,param_1->velDirWorld,local_28);
+  fVar2 = -(draw->visState).size[1];
+  draw->posWorld[0] = fVar2 * draw->velDirWorld[0] + draw->posWorld[0];
+  draw->posWorld[1] = fVar2 * draw->velDirWorld[1] + draw->posWorld[1];
+  draw->posWorld[2] = fVar2 * draw->velDirWorld[2] + draw->posWorld[2];
+  pFVar1 = draw->camera;
+  deltaCamera = pFVar1->origin[0] - draw->posWorld[0];
+  local_18 = pFVar1->origin[1] - draw->posWorld[1];
+  local_14 = pFVar1->origin[2] - draw->posWorld[2];
+  Vec3Cross(draw->velDirWorld,&deltaCamera,tangent);
+  Vec3Normalize(tangent);
+  Vec3Cross(tangent,draw->velDirWorld,normal);
+  FX_GenSpriteVerts(draw,tangent,draw->velDirWorld,normal);
   return;
 }
 
 
 // 005CE910  FX_DrawElem_Tail  (EffectsCore/fx_draw.cpp:966)
 
-void __cdecl FX_DrawElem_Tail(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Tail(FxDrawState *draw)
 
 {
   bool bVar1;
   
   FX_GetVelocityAtTime
-            (param_1->elemDef,param_1->randomSeed,param_1->msecLifeSpan,param_1->msecElapsed,
-             &param_1->orient,param_1->elem->baseVel,param_1->velDirWorld);
-  Vec3Normalize(param_1->velDirWorld);
-  bVar1 = FX_CullElementForDraw_Tail(param_1);
+            (draw->elemDef,draw->randomSeed,draw->msecLifeSpan,draw->msecElapsed,&draw->orient,
+             draw->elem->baseVel,draw->velDirWorld);
+  Vec3Normalize(draw->velDirWorld);
+  bVar1 = FX_CullElementForDraw_Tail(draw);
   if (!bVar1) {
-    FX_DrawElem_Tail_Main(param_1);
+    FX_DrawElem_Tail_Main(draw);
   }
   return;
 }
@@ -1433,24 +1503,24 @@ void __cdecl FX_DrawElem_Tail(FxDrawState *param_1)
 
 // 005CEE90  FX_CullElement_Line  (EffectsCore/fx_draw.cpp:982)
 
-bool __cdecl FX_CullElement_Line(FxDrawState *param_1)
+bool __cdecl FX_CullElement_Line(FxDrawState *draw)
 
 {
   bool bVar1;
   float fVar2;
-  float local_14;
+  float endpoint;
   float local_10;
   float local_c;
-  uint local_8;
+  uint frustumPlaneCount;
   
   if ((fx_cull_elem_draw->current).enabled != false) {
-    local_8 = FX_CullElementForDraw_FrustumPlaneCount(param_1);
-    fVar2 = (param_1->visState).size[1] * 2.0;
-    local_14 = fVar2 * param_1->velDirWorld[0] + param_1->posWorld[0];
-    local_10 = fVar2 * param_1->velDirWorld[1] + param_1->posWorld[1];
-    local_c = fVar2 * param_1->velDirWorld[2] + param_1->posWorld[2];
-    bVar1 = FX_CullCylinder(param_1->camera,local_8,param_1->posWorld,&local_14,
-                            (param_1->visState).size[0]);
+    frustumPlaneCount = FX_CullElementForDraw_FrustumPlaneCount(draw);
+    fVar2 = (draw->visState).size[1] * 2.0;
+    endpoint = fVar2 * draw->velDirWorld[0] + draw->posWorld[0];
+    local_10 = fVar2 * draw->velDirWorld[1] + draw->posWorld[1];
+    local_c = fVar2 * draw->velDirWorld[2] + draw->posWorld[2];
+    bVar1 = FX_CullCylinder(draw->camera,frustumPlaneCount,draw->posWorld,&endpoint,
+                            (draw->visState).size[0]);
     if (bVar1) {
       return true;
     }
@@ -1461,47 +1531,47 @@ bool __cdecl FX_CullElement_Line(FxDrawState *param_1)
 
 // 005CEF70  FX_DrawElem_Line_Main  (EffectsCore/fx_draw.cpp:1000)
 
-void __cdecl FX_DrawElem_Line_Main(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Line_Main(FxDrawState *draw)
 
 {
   float fVar1;
   FxCamera *pFVar2;
-  float local_28 [3];
-  float local_1c;
+  float normal [3];
+  float deltaCamera;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float tangent [3];
   
-  fVar1 = (param_1->visState).size[1];
-  param_1->posWorld[0] = fVar1 * param_1->velDirWorld[0] + param_1->posWorld[0];
-  param_1->posWorld[1] = fVar1 * param_1->velDirWorld[1] + param_1->posWorld[1];
-  param_1->posWorld[2] = fVar1 * param_1->velDirWorld[2] + param_1->posWorld[2];
-  pFVar2 = param_1->camera;
-  local_1c = pFVar2->origin[0] - param_1->posWorld[0];
-  local_18 = pFVar2->origin[1] - param_1->posWorld[1];
-  local_14 = pFVar2->origin[2] - param_1->posWorld[2];
-  Vec3Cross(param_1->velDirWorld,&local_1c,local_10);
-  Vec3Normalize(local_10);
-  Vec3Cross(local_10,param_1->velDirWorld,local_28);
-  FX_GenSpriteVerts(param_1,local_10,param_1->velDirWorld,local_28);
+  fVar1 = (draw->visState).size[1];
+  draw->posWorld[0] = fVar1 * draw->velDirWorld[0] + draw->posWorld[0];
+  draw->posWorld[1] = fVar1 * draw->velDirWorld[1] + draw->posWorld[1];
+  draw->posWorld[2] = fVar1 * draw->velDirWorld[2] + draw->posWorld[2];
+  pFVar2 = draw->camera;
+  deltaCamera = pFVar2->origin[0] - draw->posWorld[0];
+  local_18 = pFVar2->origin[1] - draw->posWorld[1];
+  local_14 = pFVar2->origin[2] - draw->posWorld[2];
+  Vec3Cross(draw->velDirWorld,&deltaCamera,tangent);
+  Vec3Normalize(tangent);
+  Vec3Cross(tangent,draw->velDirWorld,normal);
+  FX_GenSpriteVerts(draw,tangent,draw->velDirWorld,normal);
   return;
 }
 
 
 // 005CEE10  FX_DrawElem_Line  (EffectsCore/fx_draw.cpp:1027)
 
-void __cdecl FX_DrawElem_Line(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Line(FxDrawState *draw)
 
 {
   bool bVar1;
   
   FX_GetVelocityAtTime
-            (param_1->elemDef,param_1->randomSeed,param_1->msecLifeSpan,param_1->msecElapsed,
-             &param_1->orient,param_1->elem->baseVel,param_1->velDirWorld);
-  Vec3Normalize(param_1->velDirWorld);
-  bVar1 = FX_CullElement_Line(param_1);
+            (draw->elemDef,draw->randomSeed,draw->msecLifeSpan,draw->msecElapsed,&draw->orient,
+             draw->elem->baseVel,draw->velDirWorld);
+  Vec3Normalize(draw->velDirWorld);
+  bVar1 = FX_CullElement_Line(draw);
   if (!bVar1) {
-    FX_DrawElem_Line_Main(param_1);
+    FX_DrawElem_Line_Main(draw);
   }
   return;
 }
@@ -1509,13 +1579,13 @@ void __cdecl FX_DrawElem_Line(FxDrawState *param_1)
 
 // 005CF0D0  FX_DrawElem_RotatedSprite_NoCull  (EffectsCore/fx_draw.cpp:1039)
 
-void __cdecl FX_DrawElem_RotatedSprite_NoCull(FxDrawState *param_1)
+void __cdecl FX_DrawElem_RotatedSprite_NoCull(FxDrawState *draw)
 
 {
-  float local_34;
+  float angles;
   float local_30;
   float local_2c;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -1525,38 +1595,37 @@ void __cdecl FX_DrawElem_RotatedSprite_NoCull(FxDrawState *param_1)
   float local_c;
   float local_8;
   
-  local_34 = *(float *)(&DAT_00caeb10 + param_1->randomSeed * 4) *
-             param_1->elemDef->spawnAngles[0].amplitude + param_1->elemDef->spawnAngles[0].base;
-  local_30 = *(float *)(&DAT_00caeb14 + param_1->randomSeed * 4) *
-             param_1->elemDef->spawnAngles[1].amplitude + param_1->elemDef->spawnAngles[1].base;
-  local_2c = *(float *)(&DAT_00caeb18 + param_1->randomSeed * 4) *
-             param_1->elemDef->spawnAngles[2].amplitude + param_1->elemDef->spawnAngles[2].base;
-  FX_AnglesToOrientedAxis(&local_34,&param_1->orient,(float (*) [3])&local_28);
-  (param_1->orient).axis[0][0] = local_28;
-  (param_1->orient).axis[0][1] = local_24;
-  (param_1->orient).axis[0][2] = local_20;
-  (param_1->orient).axis[1][0] = local_1c;
-  (param_1->orient).axis[1][1] = local_18;
-  (param_1->orient).axis[1][2] = local_14;
-  (param_1->orient).axis[2][0] = local_10;
-  (param_1->orient).axis[2][1] = local_c;
-  (param_1->orient).axis[2][2] = local_8;
-  FX_GenSpriteVerts(param_1,(param_1->orient).axis[1],(param_1->orient).axis[2],
-                    (param_1->orient).axis[0]);
+  angles = *(float *)(&DAT_00caeb10 + draw->randomSeed * 4) *
+           draw->elemDef->spawnAngles[0].amplitude + draw->elemDef->spawnAngles[0].base;
+  local_30 = *(float *)(&DAT_00caeb14 + draw->randomSeed * 4) *
+             draw->elemDef->spawnAngles[1].amplitude + draw->elemDef->spawnAngles[1].base;
+  local_2c = *(float *)(&DAT_00caeb18 + draw->randomSeed * 4) *
+             draw->elemDef->spawnAngles[2].amplitude + draw->elemDef->spawnAngles[2].base;
+  FX_AnglesToOrientedAxis(&angles,&draw->orient,(float (*) [3])&axis);
+  (draw->orient).axis[0][0] = axis;
+  (draw->orient).axis[0][1] = local_24;
+  (draw->orient).axis[0][2] = local_20;
+  (draw->orient).axis[1][0] = local_1c;
+  (draw->orient).axis[1][1] = local_18;
+  (draw->orient).axis[1][2] = local_14;
+  (draw->orient).axis[2][0] = local_10;
+  (draw->orient).axis[2][1] = local_c;
+  (draw->orient).axis[2][2] = local_8;
+  FX_GenSpriteVerts(draw,(draw->orient).axis[1],(draw->orient).axis[2],(draw->orient).axis[0]);
   return;
 }
 
 
 // 005CF0A0  FX_DrawElem_RotatedSprite  (EffectsCore/fx_draw.cpp:1057)
 
-void __cdecl FX_DrawElem_RotatedSprite(FxDrawState *param_1)
+void __cdecl FX_DrawElem_RotatedSprite(FxDrawState *draw)
 
 {
   bool bVar1;
   
-  bVar1 = FX_CullElementForDraw_Sprite(param_1);
+  bVar1 = FX_CullElementForDraw_Sprite(draw);
   if (!bVar1) {
-    FX_DrawElem_RotatedSprite_NoCull(param_1);
+    FX_DrawElem_RotatedSprite_NoCull(draw);
   }
   return;
 }
@@ -1564,7 +1633,7 @@ void __cdecl FX_DrawElem_RotatedSprite(FxDrawState *param_1)
 
 // 005D27E0  FX_EvaluateDistanceFade  (EffectsCore/fx_draw.cpp:1097)
 
-void __cdecl FX_EvaluateDistanceFade(FxDrawState *param_1)
+void __cdecl FX_EvaluateDistanceFade(FxDrawState *draw)
 
 {
   FxElemDef *pFVar1;
@@ -1574,14 +1643,16 @@ void __cdecl FX_EvaluateDistanceFade(FxDrawState *param_1)
   float local_40;
   float local_34;
   float local_28;
-  float local_c;
-  float local_8;
+  FxElemDef *def;
+  float dist;
+  float fadeInFrac;
+  float fadeOutFrac;
   
-  pFVar1 = param_1->elemDef;
+  pFVar1 = draw->elemDef;
   if (((pFVar1->fadeInRange).amplitude != 0.0) || ((pFVar1->fadeOutRange).amplitude != 0.0)) {
-    local_c = 1.0;
-    local_8 = 1.0;
-    fVar3 = Vec3Distance(param_1->camera->origin,param_1->posWorld);
+    fadeInFrac = 1.0;
+    fadeOutFrac = 1.0;
+    fVar3 = Vec3Distance(draw->camera->origin,draw->posWorld);
     if ((pFVar1->fadeInRange).amplitude != 0.0) {
       fVar2 = fVar3 - (pFVar1->fadeInRange).base;
       local_28 = 0.0;
@@ -1593,7 +1664,7 @@ void __cdecl FX_EvaluateDistanceFade(FxDrawState *param_1)
       else {
         local_28 = 1.0;
       }
-      local_c = local_28;
+      fadeInFrac = local_28;
     }
     if ((pFVar1->fadeOutRange).amplitude != 0.0) {
       fVar3 = fVar3 - (pFVar1->fadeOutRange).base;
@@ -1606,16 +1677,16 @@ void __cdecl FX_EvaluateDistanceFade(FxDrawState *param_1)
       else {
         local_34 = 1.0;
       }
-      local_8 = 1.0 - local_34;
+      fadeOutFrac = 1.0 - local_34;
     }
-    if (local_8 - local_c < 0.0) {
-      local_40 = local_8;
+    if (fadeOutFrac - fadeInFrac < 0.0) {
+      local_40 = fadeOutFrac;
     }
     else {
-      local_40 = local_c;
+      local_40 = fadeInFrac;
     }
     local_50 = (uint)(longlong)ROUND(local_40 * 255.0 + 0.5);
-    (param_1->preVisState).distanceFade = local_50;
+    (draw->preVisState).distanceFade = local_50;
   }
   return;
 }
@@ -1623,23 +1694,31 @@ void __cdecl FX_EvaluateDistanceFade(FxDrawState *param_1)
 
 // 005CF380  FX_DrawElem_Cloud_Main  (EffectsCore/fx_draw.cpp:1124)
 
-void __cdecl FX_DrawElem_Cloud_Main(FxDrawState *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl FX_DrawElem_Cloud_Main(FxDrawState *draw)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  FxElemVisuals FVar4;
-  GfxParticleCloud *pGVar5;
-  long *plVar6;
+  FxElemVisuals material;
+  GfxParticleCloud *placement;
+  long *plVar4;
   int local_44;
   int local_28;
-  ushort local_10;
-  ushort local_8;
+  GfxParticleCloud *cloud;
+  FxElemVisuals visuals;
+  uint offset;
+  GfxParticleCloud *localCloud;
+  uint count;
   
-  local_28 = ((int)((uint)*(ushort *)(&fx_randomTable + (param_1->randomSeed * 2 + 0x3a) * 2) *
-                   ((param_1->elemDef->u).cloudDensityRange.amplitude + 1)) >> 0x10) +
-             (param_1->elemDef->u).cloudDensityRange.base;
+  local_28 = ((int)((uint)*(ushort *)(&fx_randomTable + (draw->randomSeed * 2 + 0x3a) * 2) *
+                   ((draw->elemDef->u).cloudDensityRange.amplitude + 1)) >> 0x10) +
+             (draw->elemDef->u).cloudDensityRange.base;
   if (0x3ff < local_28) {
     local_28 = 0x400;
   }
@@ -1650,36 +1729,36 @@ void __cdecl FX_DrawElem_Cloud_Main(FxDrawState *param_1)
     local_44 = local_28;
   }
   if (local_44 != 0) {
-    uVar1 = *(ushort *)(&fx_randomTable + (param_1->randomSeed * 2 + 0x3a) * 2);
-    plVar6 = &param_1->system->gfxCloudCount;
+    uVar1 = *(ushort *)(&fx_randomTable + (draw->randomSeed * 2 + 0x3a) * 2);
+    plVar4 = &draw->system->gfxCloudCount;
     LOCK();
-    *plVar6 = *plVar6 + 1;
+    *plVar4 = *plVar4 + 1;
     UNLOCK();
-    FVar4 = FX_GetElemVisuals(param_1->elemDef,param_1->randomSeed);
-    if ((FVar4.anonymous == (void *)0x0) &&
+    material = FX_GetElemVisuals(draw->elemDef,draw->randomSeed);
+    if ((material.anonymous == (void *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x47f
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pGVar5 = R_AddParticleCloudToScene(FVar4.material);
-    if (pGVar5 != (GfxParticleCloud *)0x0) {
+    placement = R_AddParticleCloudToScene(material.material);
+    if (placement != (GfxParticleCloud *)0x0) {
       FX_EvaluateVisualState
-                ((uint)param_1->system->localClientNum,&param_1->preVisState,param_1->msecLifeSpan,
-                 &param_1->visState);
-      FX_SetPlacement(param_1,&pGVar5->placement);
-      pGVar5->color = *(GfxColor *)(param_1->visState).color;
-      pGVar5->radius[0] = (param_1->visState).size[0];
-      pGVar5->radius[1] = (param_1->visState).size[1];
-      local_8 = (ushort)local_44;
-      pGVar5->count = local_8;
-      local_10 = (ushort)((uint)uVar1 * (0x401 - local_44) >> 0x10);
-      pGVar5->offset = local_10;
-      pGVar5->gaussian = (param_1->elemDef->flags & 0x400000U) != 0;
-      pGVar5->endpos[0] = param_1->posWorld[0] - param_1->velDirWorld[0];
-      pGVar5->endpos[1] = param_1->posWorld[1] - param_1->velDirWorld[1];
-      pGVar5->endpos[2] = param_1->posWorld[2] - param_1->velDirWorld[2];
+                ((uint)draw->system->localClientNum,&draw->preVisState,draw->msecLifeSpan,
+                 &draw->visState);
+      FX_SetPlacement(draw,&placement->placement);
+      placement->color = *(GfxColor *)(draw->visState).color;
+      placement->radius[0] = (draw->visState).size[0];
+      placement->radius[1] = (draw->visState).size[1];
+      count._0_2_ = (ushort)local_44;
+      placement->count = (ushort)count;
+      offset._0_2_ = (ushort)((uint)uVar1 * (0x401 - local_44) >> 0x10);
+      placement->offset = (ushort)offset;
+      placement->gaussian = (draw->elemDef->flags & 0x400000U) != 0;
+      placement->endpos[0] = draw->posWorld[0] - draw->velDirWorld[0];
+      placement->endpos[1] = draw->posWorld[1] - draw->velDirWorld[1];
+      placement->endpos[2] = draw->posWorld[2] - draw->velDirWorld[2];
     }
   }
   return;
@@ -1688,23 +1767,25 @@ void __cdecl FX_DrawElem_Cloud_Main(FxDrawState *param_1)
 
 // 005CF6E0  FX_CullElementForDraw_Cloud  (EffectsCore/fx_draw.cpp:1200)
 
-bool __cdecl FX_CullElementForDraw_Cloud(FxDrawState *param_1)
+bool __cdecl FX_CullElementForDraw_Cloud(FxDrawState *draw)
 
 {
   float fVar1;
   bool bVar2;
-  uint uVar3;
+  uint frustumPlaneCount_00;
   float local_18;
+  float radius;
+  uint frustumPlaneCount;
   
   if ((fx_cull_elem_draw->current).enabled != false) {
-    uVar3 = FX_CullElementForDraw_FrustumPlaneCount(param_1);
-    fVar1 = (param_1->visState).size[0];
-    local_18 = (param_1->visState).size[1];
+    frustumPlaneCount_00 = FX_CullElementForDraw_FrustumPlaneCount(draw);
+    fVar1 = (draw->visState).size[0];
+    local_18 = (draw->visState).size[1];
     if (0.0 <= fVar1 - local_18) {
       local_18 = fVar1;
     }
-    bVar2 = FX_CullSphere(param_1->camera,uVar3,param_1->posWorld,
-                          (param_1->visState).scale + local_18);
+    bVar2 = FX_CullSphere(draw->camera,frustumPlaneCount_00,draw->posWorld,
+                          (draw->visState).scale + local_18);
     if (bVar2) {
       return true;
     }
@@ -1715,7 +1796,7 @@ bool __cdecl FX_CullElementForDraw_Cloud(FxDrawState *param_1)
 
 // 005CF250  FX_DrawElem_Cloud  (EffectsCore/fx_draw.cpp:1218)
 
-void __cdecl FX_DrawElem_Cloud(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Cloud(FxDrawState *draw)
 
 {
   FxElemVisStateSample *pFVar1;
@@ -1723,18 +1804,17 @@ void __cdecl FX_DrawElem_Cloud(FxDrawState *param_1)
   
   if ((fx_drawClouds->current).enabled != false) {
     FX_GetVelocityAtTime
-              (param_1->elemDef,param_1->randomSeed,param_1->msecLifeSpan,param_1->msecElapsed,
-               &param_1->orient,param_1->elem->baseVel,param_1->velDirWorld);
-    Vec3Normalize(param_1->velDirWorld);
-    pFVar1 = (param_1->preVisState).refState;
-    (param_1->visState).scale =
-         (*(float *)(&DAT_00caeb50 + (param_1->preVisState).randomSeed * 4) *
-          (pFVar1->amplitude).scale + (pFVar1->base).scale) * (param_1->preVisState).sampleLerpInv +
-         (*(float *)(&DAT_00caeb50 + (param_1->preVisState).randomSeed * 4) *
-          pFVar1[1].amplitude.scale + pFVar1[1].base.scale) * (param_1->preVisState).sampleLerp;
-    if (((param_1->visState).scale != 0.0) && (bVar2 = FX_CullElementForDraw_Cloud(param_1), !bVar2)
-       ) {
-      FX_DrawElem_Cloud_Main(param_1);
+              (draw->elemDef,draw->randomSeed,draw->msecLifeSpan,draw->msecElapsed,&draw->orient,
+               draw->elem->baseVel,draw->velDirWorld);
+    Vec3Normalize(draw->velDirWorld);
+    pFVar1 = (draw->preVisState).refState;
+    (draw->visState).scale =
+         (*(float *)(&DAT_00caeb50 + (draw->preVisState).randomSeed * 4) * (pFVar1->amplitude).scale
+         + (pFVar1->base).scale) * (draw->preVisState).sampleLerpInv +
+         (*(float *)(&DAT_00caeb50 + (draw->preVisState).randomSeed * 4) * pFVar1[1].amplitude.scale
+         + pFVar1[1].base.scale) * (draw->preVisState).sampleLerp;
+    if (((draw->visState).scale != 0.0) && (bVar2 = FX_CullElementForDraw_Cloud(draw), !bVar2)) {
+      FX_DrawElem_Cloud_Main(draw);
     }
   }
   return;
@@ -1743,12 +1823,12 @@ void __cdecl FX_DrawElem_Cloud(FxDrawState *param_1)
 
 // 005CF940  FX_SetPlacementFromPhysics  (EffectsCore/fx_draw.cpp:1243)
 
-void __cdecl FX_SetPlacementFromPhysics(FxDrawState *param_1,GfxPlacement *param_2)
+void __cdecl FX_SetPlacementFromPhysics(FxDrawState *draw,GfxPlacement *placement)
 
 {
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  Phys_ObjGetInterpolatedState((param_1->elem->field6_0x14).physObjId,param_2->origin,param_2->quat)
-  ;
+  Phys_ObjGetInterpolatedState
+            ((draw->elem->field6_0x14).physObjId,placement->origin,placement->quat);
   Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
   return;
 }
@@ -1756,42 +1836,44 @@ void __cdecl FX_SetPlacementFromPhysics(FxDrawState *param_1,GfxPlacement *param
 
 // 005CF7A0  FX_DrawElem_Model  (EffectsCore/fx_draw.cpp:1250)
 
-void __cdecl FX_DrawElem_Model(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Model(FxDrawState *draw)
 
 {
   FxElemVisStateSample *pFVar1;
   code *pcVar2;
   bool bVar3;
-  FxElemVisuals FVar4;
-  GfxScaledPlacement local_24;
+  FxElemVisuals model;
+  FxElemVisuals visuals;
+  float fxModelLightingToleranceSq;
+  GfxScaledPlacement placement;
   
-  pFVar1 = (param_1->preVisState).refState;
-  (param_1->visState).scale =
-       (*(float *)(&DAT_00caeb50 + (param_1->preVisState).randomSeed * 4) *
-        (pFVar1->amplitude).scale + (pFVar1->base).scale) * (param_1->preVisState).sampleLerpInv +
-       (*(float *)(&DAT_00caeb50 + (param_1->preVisState).randomSeed * 4) *
-        pFVar1[1].amplitude.scale + pFVar1[1].base.scale) * (param_1->preVisState).sampleLerp;
-  if ((param_1->visState).scale != 0.0) {
-    FX_SetPlacement(param_1,&local_24);
-    if ((param_1->elemDef->elemType != '\a') &&
+  pFVar1 = (draw->preVisState).refState;
+  (draw->visState).scale =
+       (*(float *)(&DAT_00caeb50 + (draw->preVisState).randomSeed * 4) * (pFVar1->amplitude).scale +
+       (pFVar1->base).scale) * (draw->preVisState).sampleLerpInv +
+       (*(float *)(&DAT_00caeb50 + (draw->preVisState).randomSeed * 4) * pFVar1[1].amplitude.scale +
+       pFVar1[1].base.scale) * (draw->preVisState).sampleLerp;
+  if ((draw->visState).scale != 0.0) {
+    FX_SetPlacement(draw,&placement);
+    if ((draw->elemDef->elemType != '\a') &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x4ec
                                  ,0,"%s\n\t(draw->elemDef->elemType) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_1->elemDef->flags & 0x8000000U) != 0) {
-      FX_SetPlacementFromPhysics(param_1,&local_24.base);
+    if ((draw->elemDef->flags & 0x8000000U) != 0) {
+      FX_SetPlacementFromPhysics(draw,&placement.base);
     }
-    FVar4 = FX_GetElemVisuals(param_1->elemDef,param_1->randomSeed);
-    if ((FVar4.anonymous == (void *)0x0) &&
+    model = FX_GetElemVisuals(draw->elemDef,draw->randomSeed);
+    if ((model.anonymous == (void *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x4f1
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    R_FilterXModelIntoScene(FVar4.model,&local_24,0,(ushort *)&param_1->elem->u,36.0);
+    R_FilterXModelIntoScene(model.model,&placement,0,(ushort *)&draw->elem->u,36.0);
   }
   return;
 }
@@ -1799,15 +1881,17 @@ void __cdecl FX_DrawElem_Model(FxDrawState *param_1)
 
 // 005CF9B0  FX_CullElementForDraw_Light  (EffectsCore/fx_draw.cpp:1275)
 
-bool __cdecl FX_CullElementForDraw_Light(FxDrawState *param_1)
+bool __cdecl FX_CullElementForDraw_Light(FxDrawState *draw)
 
 {
   bool bVar1;
-  uint uVar2;
+  uint frustumPlaneCount_00;
+  uint frustumPlaneCount;
   
   if ((fx_cull_elem_draw->current).enabled != false) {
-    uVar2 = FX_CullElementForDraw_FrustumPlaneCount(param_1);
-    bVar1 = FX_CullSphere(param_1->camera,uVar2,param_1->posWorld,(param_1->visState).size[0]);
+    frustumPlaneCount_00 = FX_CullElementForDraw_FrustumPlaneCount(draw);
+    bVar1 = FX_CullSphere(draw->camera,frustumPlaneCount_00,draw->posWorld,(draw->visState).size[0])
+    ;
     if (bVar1) {
       return true;
     }
@@ -1818,10 +1902,18 @@ bool __cdecl FX_CullElementForDraw_Light(FxDrawState *param_1)
 
 // 005CFA10  FX_DrawElem_Light_NoCull  (EffectsCore/fx_draw.cpp:1291)
 
-void __cdecl FX_DrawElem_Light_NoCull(FxDrawState *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl FX_DrawElem_Light_NoCull(FxDrawState *draw)
 
 {
-  float local_28;
+  float green;
+  float blue;
+  float red;
+  float dummyAxis;
   float local_24;
   float local_20;
   undefined4 local_1c;
@@ -1831,7 +1923,7 @@ void __cdecl FX_DrawElem_Light_NoCull(FxDrawState *param_1)
   undefined4 local_c;
   undefined4 local_8;
   
-  local_28 = 0.0;
+  dummyAxis = 0.0;
   local_24 = 0.0;
   local_20 = 0.0;
   local_1c = 0;
@@ -1841,27 +1933,27 @@ void __cdecl FX_DrawElem_Light_NoCull(FxDrawState *param_1)
   local_c = 0;
   local_8 = 0;
   FX_EvaluateVisualState
-            ((uint)param_1->system->localClientNum,&param_1->preVisState,param_1->msecLifeSpan,
-             &param_1->visState);
+            ((uint)draw->system->localClientNum,&draw->preVisState,draw->msecLifeSpan,
+             &draw->visState);
   R_AddOmniLightToScene
-            (param_1->posWorld,(float (*) [3])&local_28,(param_1->visState).size[0],
-             (float)(param_1->visState).color[2] * 0.003921569,
-             (float)(param_1->visState).color[1] * 0.003921569,
-             (float)(param_1->visState).color[0] * 0.003921569);
+            (draw->posWorld,(float (*) [3])&dummyAxis,(draw->visState).size[0],
+             (float)(draw->visState).color[2] * 0.003921569,
+             (float)(draw->visState).color[1] * 0.003921569,
+             (float)(draw->visState).color[0] * 0.003921569);
   return;
 }
 
 
 // 005CF980  FX_DrawElem_Light  (EffectsCore/fx_draw.cpp:1312)
 
-void __cdecl FX_DrawElem_Light(FxDrawState *param_1)
+void __cdecl FX_DrawElem_Light(FxDrawState *draw)
 
 {
   bool bVar1;
   
-  bVar1 = FX_CullElementForDraw_Light(param_1);
+  bVar1 = FX_CullElementForDraw_Light(draw);
   if (!bVar1) {
-    FX_DrawElem_Light_NoCull(param_1);
+    FX_DrawElem_Light_NoCull(draw);
   }
   return;
 }
@@ -1869,32 +1961,41 @@ void __cdecl FX_DrawElem_Light(FxDrawState *param_1)
 
 // 005CFB30  FX_DrawElem_SpotLight_NoCull  (EffectsCore/fx_draw.cpp:1321)
 
-void __cdecl FX_DrawElem_SpotLight_NoCull(FxDrawState *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl FX_DrawElem_SpotLight_NoCull(FxDrawState *draw)
 
 {
+  float green;
+  float blue;
+  float red;
+  
   FX_EvaluateVisualState
-            ((uint)param_1->system->localClientNum,&param_1->preVisState,param_1->msecLifeSpan,
-             &param_1->visState);
+            ((uint)draw->system->localClientNum,&draw->preVisState,draw->msecLifeSpan,
+             &draw->visState);
   R_AddSpotLightToScene
-            (param_1->posWorld,(param_1->orient).axis,(param_1->visState).size[0],
-             (float)(param_1->visState).color[2] * 0.003921569,
-             (float)(param_1->visState).color[1] * 0.003921569,
-             (float)(param_1->visState).color[0] * 0.003921569);
+            (draw->posWorld,(draw->orient).axis,(draw->visState).size[0],
+             (float)(draw->visState).color[2] * 0.003921569,
+             (float)(draw->visState).color[1] * 0.003921569,
+             (float)(draw->visState).color[0] * 0.003921569);
   return;
 }
 
 
 // 005CFAF0  FX_DrawElem_SpotLight  (EffectsCore/fx_draw.cpp:1341)
 
-void __cdecl FX_DrawElem_SpotLight(FxDrawState *param_1)
+void __cdecl FX_DrawElem_SpotLight(FxDrawState *draw)
 
 {
   bool bVar1;
   
-  (param_1->visState).size[0] = (float)(r_flashLightRange->current).integer;
-  bVar1 = FX_CullElementForDraw_Light(param_1);
+  (draw->visState).size[0] = (float)(r_flashLightRange->current).integer;
+  bVar1 = FX_CullElementForDraw_Light(draw);
   if (!bVar1) {
-    FX_DrawElem_SpotLight_NoCull(param_1);
+    FX_DrawElem_SpotLight_NoCull(draw);
   }
   return;
 }
@@ -1904,14 +2005,14 @@ void __cdecl FX_DrawElem_SpotLight(FxDrawState *param_1)
 
 void __cdecl
 FX_DrawElement_Setup<1>
-          (FxSystem *param_1,FxDrawState *param_2,int param_3,int param_4,float *param_5,
-          float param_6,float *param_7)
+          (FxSystem *system,FxDrawState *draw,int elemMsecBegin,int elemSequence,float *elemOrigin,
+          float elemWindInterp,float *outRealNormTime)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_38;
+  float axis;
   float local_34;
   float local_30;
   float local_2c;
@@ -1920,22 +2021,23 @@ FX_DrawElement_Setup<1>
   float local_20;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  uint local_8;
+  int msecElapsed;
+  float normTime;
+  float msecElapsedFloat;
+  uint scaledAlpha;
   
-  param_2->randomSeed = (param_4 * 0x128 + (uint)param_2->effect->randomSeed + param_3) % 0x1df;
-  iVar3 = FX_GetElemLifeSpanMsec(param_2->randomSeed,param_6,param_2->elemDef);
-  param_2->msecLifeSpan = (float)iVar3;
-  local_14 = param_2->msecDraw - param_3;
-  local_c = (float)local_14;
-  local_10 = local_c / param_2->msecLifeSpan;
-  if (param_7 != (float *)0x0) {
-    *param_7 = local_10;
+  draw->randomSeed = (elemSequence * 0x128 + (uint)draw->effect->randomSeed + elemMsecBegin) % 0x1df
+  ;
+  iVar3 = FX_GetElemLifeSpanMsec(draw->randomSeed,elemWindInterp,draw->elemDef);
+  draw->msecLifeSpan = (float)iVar3;
+  msecElapsed = draw->msecDraw - elemMsecBegin;
+  msecElapsedFloat = (float)msecElapsed;
+  normTime = msecElapsedFloat / draw->msecLifeSpan;
+  if (outRealNormTime != (float *)0x0) {
+    *outRealNormTime = normTime;
   }
-  if (local_14 < (int)param_2->msecLifeSpan) {
-    if (((int)param_2->msecLifeSpan < local_14) &&
+  if (msecElapsed < (int)draw->msecLifeSpan) {
+    if (((int)draw->msecLifeSpan < msecElapsed) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x59e
                                  ,0,
                                  "msecElapsed <= static_cast< int >( draw->msecLifeSpan )\n\t%i, %i"
@@ -1944,40 +2046,40 @@ FX_DrawElement_Setup<1>
       (*pcVar1)();
       return;
     }
-    param_2->msecElapsed = local_c;
-    param_2->normTimeUpdateEnd = local_10;
+    draw->msecElapsed = msecElapsedFloat;
+    draw->normTimeUpdateEnd = normTime;
   }
   else {
-    param_2->msecElapsed = param_2->msecLifeSpan - 0.01;
-    param_2->normTimeUpdateEnd = 1.0;
+    draw->msecElapsed = draw->msecLifeSpan - 0.01;
+    draw->normTimeUpdateEnd = 1.0;
   }
-  FX_GetOrientation(param_2->elemDef,&param_2->effect->frameAtSpawn,&param_2->effect->frameNow,
-                    param_2->randomSeed,&param_2->orient);
-  FX_OrientationPosToWorldPos(&param_2->orient,param_5,param_2->posWorld);
-  if ((param_2->elemDef->flags & 0x800000U) != 0) {
-    MatrixMultiply(param_2->rotationAxis,(param_2->orient).axis,(float (*) [3])&local_38);
-    (param_2->orient).axis[0][0] = local_38;
-    (param_2->orient).axis[0][1] = local_34;
-    (param_2->orient).axis[0][2] = local_30;
-    (param_2->orient).axis[1][0] = local_2c;
-    (param_2->orient).axis[1][1] = local_28;
-    (param_2->orient).axis[1][2] = local_24;
-    (param_2->orient).axis[2][0] = local_20;
-    (param_2->orient).axis[2][1] = local_1c;
-    (param_2->orient).axis[2][2] = local_18;
+  FX_GetOrientation(draw->elemDef,&draw->effect->frameAtSpawn,&draw->effect->frameNow,
+                    draw->randomSeed,&draw->orient);
+  FX_OrientationPosToWorldPos(&draw->orient,elemOrigin,draw->posWorld);
+  if ((draw->elemDef->flags & 0x800000U) != 0) {
+    MatrixMultiply(draw->rotationAxis,(draw->orient).axis,(float (*) [3])&axis);
+    (draw->orient).axis[0][0] = axis;
+    (draw->orient).axis[0][1] = local_34;
+    (draw->orient).axis[0][2] = local_30;
+    (draw->orient).axis[1][0] = local_2c;
+    (draw->orient).axis[1][1] = local_28;
+    (draw->orient).axis[1][2] = local_24;
+    (draw->orient).axis[2][0] = local_20;
+    (draw->orient).axis[2][1] = local_1c;
+    (draw->orient).axis[2][2] = local_18;
   }
-  FX_SetupVisualState(param_2->elemDef,param_2->effect,param_2->randomSeed,
-                      param_2->normTimeUpdateEnd,&param_2->preVisState);
-  FX_EvaluateSize(&param_2->preVisState,&param_2->visState);
-  if ((param_2->elemDef->flags & 0x1000U) != 0) {
-    FX_EvaluateVisAlpha(&param_2->preVisState,&param_2->visState);
+  FX_SetupVisualState(draw->elemDef,draw->effect,draw->randomSeed,draw->normTimeUpdateEnd,
+                      &draw->preVisState);
+  FX_EvaluateSize(&draw->preVisState,&draw->visState);
+  if ((draw->elemDef->flags & 0x1000U) != 0) {
+    FX_EvaluateVisAlpha(&draw->preVisState,&draw->visState);
   }
-  param_2->camera = &param_2->system->camera;
-  FX_EvaluateDistanceFade(param_2);
-  if ((param_2->elemDef->flags & 0x1000U) != 0) {
-    local_8 = (uint)(param_2->visState).color[3] * (param_2->preVisState).distanceFade >> 8;
-    FX_AddVisBlocker(param_1,param_2->posWorld,(param_2->visState).size[0],
-                     (float)local_8 * 0.003921569);
+  draw->camera = &draw->system->camera;
+  FX_EvaluateDistanceFade(draw);
+  if ((draw->elemDef->flags & 0x1000U) != 0) {
+    scaledAlpha = (uint)(draw->visState).color[3] * (draw->preVisState).distanceFade >> 8;
+    FX_AddVisBlocker(system,draw->posWorld,(draw->visState).size[0],(float)scaledAlpha * 0.003921569
+                    );
   }
   return;
 }
@@ -1987,8 +2089,7 @@ FX_DrawElement_Setup<1>
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-FX_DrawElement(FxSystem *param_1,FxElemDef *param_2,FxElem *param_3,FxDrawState *param_4)
+void __cdecl FX_DrawElement(FxSystem *system,FxElemDef *elemDef,FxElem *elem,FxDrawState *draw)
 
 {
   code *pcVar1;
@@ -1996,19 +2097,20 @@ FX_DrawElement(FxSystem *param_1,FxElemDef *param_2,FxElem *param_3,FxDrawState 
   uint uVar3;
   float local_bc;
   float local_44 [5];
-  float local_30;
+  float fAxis;
   float local_2c;
   float local_28;
   float local_24;
   uint local_20;
-  float local_1c;
+  float qAxis;
   float local_18;
   float local_14;
   float local_10;
-  FxEffect *local_8;
+  I_spuDmaSave save;
+  FxEffect *effect;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((9 < param_2->elemType) &&
+  if ((9 < elemDef->elemType) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x5df,0
                                ,
                                "elemDef->elemType doesn\'t index FX_ELEM_TYPE_LAST_DRAWN + 1\n\t%i not in [0, %i)"
@@ -2017,13 +2119,12 @@ FX_DrawElement(FxSystem *param_1,FxElemDef *param_2,FxElem *param_3,FxDrawState 
     (*pcVar1)();
     return;
   }
-  if (((param_2->visualCount != '\0') && (param_3->msecBegin <= param_4->msecDraw)) &&
-     (((param_4->reflect).enabled == false || ((param_2->flags & 0x40000000U) != 0)))) {
-    local_8 = param_4->effect;
-    param_4->elem = param_3;
-    if (param_2 != param_4->elemDef) {
-      if ((param_2->flags & 0x800000U) != 0) {
-        uVar3 = param_2->rotationAxis;
+  if (((elemDef->visualCount != '\0') && (elem->msecBegin <= draw->msecDraw)) &&
+     (((draw->reflect).enabled == false || ((elemDef->flags & 0x40000000U) != 0)))) {
+    draw->elem = elem;
+    if (elemDef != draw->elemDef) {
+      if ((elemDef->flags & 0x800000U) != 0) {
+        uVar3 = elemDef->rotationAxis;
         local_44[0] = ((float)((uVar3 & 0x1ff) + 0x40400000 + (uVar3 & 0x100) * -2) - 3.0) *
                       16448.252;
         local_44[1] = ((float)((uVar3 >> 9 & 0x3ff) + 0x40400000 + (uVar3 >> 9 & 0x200) * -2) - 3.0)
@@ -2044,30 +2145,30 @@ FX_DrawElement(FxSystem *param_1,FxElemDef *param_2,FxElem *param_3,FxDrawState 
         local_44[2] = local_bc * local_44[2];
         local_44[3] = local_bc * local_44[3];
         uVar3 = uVar3 >> 0x1d & 3;
-        local_1c = local_44[uVar3];
-        local_30 = local_1c;
+        qAxis = local_44[uVar3];
+        fAxis = qAxis;
         local_18 = local_44[uVar3 + 1 & 3];
         local_2c = local_18;
         local_14 = local_44[uVar3 + 2 & 3];
         local_28 = local_14;
         local_24 = local_44[uVar3 + 3 & 3];
         local_10 = local_24;
-        UnitQuatToAxis(&local_1c,param_4->rotationAxis);
+        UnitQuatToAxis(&qAxis,draw->rotationAxis);
       }
-      param_4->elemDef = param_2;
+      draw->elemDef = elemDef;
     }
     FX_DrawElement_Setup<1>
-              (param_1,param_4,param_3->msecBegin,(uint)param_3->sequence,
-               (param_3->field6_0x14).origin,(float)param_3->windInterp / 65535.0,(float *)0x0);
-    if (0.00390625 <= (float)(param_4->preVisState).distanceFade) {
-      if ((s_drawElemHandler[param_2->elemType] == (_func___cdecl_void_FxDrawState_ptr *)0x0) &&
+              (system,draw,elem->msecBegin,(uint)elem->sequence,(elem->field6_0x14).origin,
+               (float)elem->windInterp / 65535.0,(float *)0x0);
+    if (0.00390625 <= (float)(draw->preVisState).distanceFade) {
+      if ((s_drawElemHandler[elemDef->elemType] == (_func___cdecl_void_FxDrawState_ptr *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",
                                    0x60c,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      (*s_drawElemHandler[param_2->elemType])(param_4);
+      (*s_drawElemHandler[elemDef->elemType])(draw);
     }
   }
   return;
@@ -2077,8 +2178,12 @@ FX_DrawElement(FxSystem *param_1,FxElemDef *param_2,FxElem *param_3,FxDrawState 
 // 005D0BD0  FX_DrawTrail  (EffectsCore/fx_draw.cpp:1561)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl FX_DrawTrail(FxSystem *param_1,FxDrawState *param_2,FxTrail *param_3)
+void __cdecl FX_DrawTrail(FxSystem *system,FxDrawState *draw,FxTrail *trail)
 
 {
   code *pcVar1;
@@ -2087,127 +2192,130 @@ void __cdecl FX_DrawTrail(FxSystem *param_1,FxDrawState *param_2,FxTrail *param_
   uchar *puVar4;
   FxTrailSegmentDrawState *pFVar5;
   float10 extraout_ST0;
-  FxTrailSegmentDrawState local_120;
-  float local_e4;
-  r_double_index_t *local_e0;
-  int local_dc;
-  uchar local_d8 [4];
+  FxTrailSegmentDrawState tailSegmentDrawState;
+  float alpha;
+  r_double_index_t *reservedIndices;
+  int trailDefIndCount;
+  uchar lastSegmentDrawState [4];
   float local_d4 [3];
   float local_c8 [3];
   float local_bc [6];
   float local_a4;
-  FxElemVisuals local_9c;
-  short local_98;
-  int local_94;
-  FxTrailDef *local_90;
-  FxTrailSegmentDrawState local_8c;
+  FxElemVisuals visuals;
+  ushort vertsPerSegment;
+  int upperBoundSegmentCount;
+  FxTrailDef *trailDef;
+  FxTrailSegmentDrawState segmentDrawState;
   uint local_50;
-  int local_4c;
-  FxSpriteInfo *local_48;
-  ushort local_44 [2];
-  GfxPackedVertex *local_40;
-  int local_3c;
-  FxTrailElem *local_38;
-  float local_34;
-  float local_30 [6];
-  float local_18;
-  int local_14;
-  int local_10;
-  ushort local_c;
-  float local_8;
+  int exactSegmentCount;
+  FxSpriteInfo *sprite;
+  ushort reservedBaseVertex;
+  GfxPackedVertex *reservedVerts;
+  int indicesToReserve;
+  FxTrailElem *trailElem;
+  float uCoordOffset;
+  float basis [6];
+  float lastSegmentNormTime;
+  int trailDefVertCount;
+  int curSegment;
+  ushort trailElemHandle;
+  float segmentNormTime;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_48 = &param_1->sprite;
-  param_2->elemDef =
-       (((param_2->effect->field0_0x0).def)->field9_0x1c).elemDefsEA + param_3->defIndex;
-  if ((param_2->elemDef->visualCount != '\0') &&
-     (local_c = param_3->firstElemHandle, local_c != 0xffff)) {
-    local_38 = FX_TrailElemFromHandle(param_1,local_c);
-    local_90 = (param_2->elemDef->field34_0x100).localTrailDef;
+  sprite = &system->sprite;
+  draw->elemDef = (((draw->effect->field0_0x0).def)->field9_0x1c).elemDefsEA + trail->defIndex;
+  if ((draw->elemDef->visualCount != '\0') &&
+     (trailElemHandle = trail->firstElemHandle, trailElemHandle != 0xffff)) {
+    trailElem = FX_TrailElemFromHandle(system,trailElemHandle);
+    trailDef = (draw->elemDef->field34_0x100).localTrailDef;
     floor();
-    local_34 = -(float)extraout_ST0;
-    if (local_90->scrollTimeMsec != 0) {
-      if (local_90->scrollTimeMsec < 1) {
-        local_34 = (1.0 - (float)(param_2->msecDraw % local_90->scrollTimeMsec) /
-                          (float)local_90->scrollTimeMsec) + local_34;
+    uCoordOffset = -(float)extraout_ST0;
+    if (trailDef->scrollTimeMsec != 0) {
+      if (trailDef->scrollTimeMsec < 1) {
+        uCoordOffset = (1.0 - (float)(draw->msecDraw % trailDef->scrollTimeMsec) /
+                              (float)trailDef->scrollTimeMsec) + uCoordOffset;
       }
       else {
-        local_34 = (float)(param_2->msecDraw % -local_90->scrollTimeMsec) /
-                   (float)-local_90->scrollTimeMsec + local_34;
+        uCoordOffset = (float)(draw->msecDraw % -trailDef->scrollTimeMsec) /
+                       (float)-trailDef->scrollTimeMsec + uCoordOffset;
       }
     }
-    local_94 = 0;
-    local_c = param_3->firstElemHandle;
-    while (local_c != 0xffff) {
-      local_38 = FX_TrailElemFromHandle(param_1,local_c);
-      if (local_38->msecBegin <= param_2->msecDraw) {
-        local_94 = local_94 + 1;
+    upperBoundSegmentCount = 0;
+    trailElemHandle = trail->firstElemHandle;
+    while (trailElemHandle != 0xffff) {
+      trailElem = FX_TrailElemFromHandle(system,trailElemHandle);
+      if (trailElem->msecBegin <= draw->msecDraw) {
+        upperBoundSegmentCount = upperBoundSegmentCount + 1;
       }
-      local_c = local_38->nextTrailElemHandle;
+      trailElemHandle = trailElem->nextTrailElemHandle;
     }
-    local_14 = local_90->vertCount;
-    local_dc = local_90->indCount;
-    bVar2 = R_ReserveCodeMeshVerts(local_94 * local_14,local_44);
+    trailDefVertCount = trailDef->vertCount;
+    trailDefIndCount = trailDef->indCount;
+    bVar2 = R_ReserveCodeMeshVerts(upperBoundSegmentCount * trailDefVertCount,&reservedBaseVertex);
     if (bVar2) {
-      local_40 = R_GetCodeMeshVerts(local_44[0]);
-      local_4c = 0;
-      local_18 = 1.0;
-      memset(local_d8,'\0',0x3c);
-      local_c = param_3->firstElemHandle;
-      while (local_c != 0xffff) {
-        local_38 = FX_TrailElemFromHandle(param_1,local_c);
-        if (local_38->msecBegin <= param_2->msecDraw) {
+      reservedVerts = R_GetCodeMeshVerts(reservedBaseVertex);
+      exactSegmentCount = 0;
+      lastSegmentNormTime = 1.0;
+      memset(lastSegmentDrawState,'\0',0x3c);
+      trailElemHandle = trail->firstElemHandle;
+      while (trailElemHandle != 0xffff) {
+        trailElem = FX_TrailElemFromHandle(system,trailElemHandle);
+        if (trailElem->msecBegin <= draw->msecDraw) {
           FX_DrawElement_Setup<1>
-                    (param_1,param_2,local_38->msecBegin,(uint)local_38->sequence,local_38->origin,
-                     0.0,&local_8);
-          FX_TrailElem_UncompressBasis(local_38->basis,(float (*) [3])local_30);
+                    (system,draw,trailElem->msecBegin,(uint)trailElem->sequence,trailElem->origin,
+                     0.0,&segmentNormTime);
+          FX_TrailElem_UncompressBasis(trailElem->basis,(float (*) [3])basis);
           FX_EvaluateVisualState
-                    ((uint)param_2->system->localClientNum,&param_2->preVisState,
-                     param_2->msecLifeSpan,&param_2->visState);
+                    ((uint)draw->system->localClientNum,&draw->preVisState,draw->msecLifeSpan,
+                     &draw->visState);
           Fx_GenTrail_PopulateSegmentDrawState
-                    (param_2,local_38->spawnDist,local_34,(float (*) [3])local_30,&local_8c);
-          if (local_8 < 1.0) {
-            if (local_c == param_3->firstElemHandle) {
-              if (local_38->sequence == '\0') {
-                local_8c.color[3] = '\0';
+                    (draw,trailElem->spawnDist,uCoordOffset,(float (*) [3])basis,&segmentDrawState);
+          if (segmentNormTime < 1.0) {
+            if (trailElemHandle == trail->firstElemHandle) {
+              if (trailElem->sequence == '\0') {
+                segmentDrawState.color[3] = '\0';
               }
             }
             else {
-              if (1.0 <= local_18) {
-                puVar4 = local_d8;
-                pFVar5 = &local_120;
+              if (1.0 <= lastSegmentNormTime) {
+                puVar4 = lastSegmentDrawState;
+                pFVar5 = &tailSegmentDrawState;
                 for (iVar3 = 0xf; iVar3 != 0; iVar3 = iVar3 + -1) {
                   pFVar5->trailDef = *(FxTrailDef **)puVar4;
                   puVar4 = puVar4 + 4;
                   pFVar5 = (FxTrailSegmentDrawState *)pFVar5->posWorld;
                 }
-                local_e4 = (1.0 - local_18) / (local_8 - local_18);
-                local_120.uCoord = (local_8c.uCoord - local_a4) * local_e4 + local_a4;
-                Vec3Lerp(local_d4,local_8c.posWorld,local_e4,local_120.posWorld);
-                Vec3Lerp(local_c8,local_8c.basis[0],local_e4,local_120.basis[0]);
-                Vec3Lerp(local_bc,local_8c.basis[1],local_e4,local_120.basis[1]);
-                FX_GenTrail_VertsForSegment(&local_120,local_40 + local_4c * local_14);
-                local_4c = local_4c + 1;
+                alpha = (1.0 - lastSegmentNormTime) / (segmentNormTime - lastSegmentNormTime);
+                tailSegmentDrawState.uCoord =
+                     (segmentDrawState.uCoord - local_a4) * alpha + local_a4;
+                Vec3Lerp(local_d4,segmentDrawState.posWorld,alpha,tailSegmentDrawState.posWorld);
+                Vec3Lerp(local_c8,segmentDrawState.basis[0],alpha,tailSegmentDrawState.basis[0]);
+                Vec3Lerp(local_bc,segmentDrawState.basis[1],alpha,tailSegmentDrawState.basis[1]);
+                FX_GenTrail_VertsForSegment
+                          (&tailSegmentDrawState,
+                           reservedVerts + exactSegmentCount * trailDefVertCount);
+                exactSegmentCount = exactSegmentCount + 1;
               }
-              if (local_c == param_3->lastElemHandle) {
-                local_8c.color[3] = '\0';
+              if (trailElemHandle == trail->lastElemHandle) {
+                segmentDrawState.color[3] = '\0';
               }
             }
-            FX_GenTrail_VertsForSegment(&local_8c,local_40 + local_4c * local_14);
-            local_4c = local_4c + 1;
+            FX_GenTrail_VertsForSegment
+                      (&segmentDrawState,reservedVerts + exactSegmentCount * trailDefVertCount);
+            exactSegmentCount = exactSegmentCount + 1;
           }
-          local_18 = local_8;
-          pFVar5 = &local_8c;
-          puVar4 = local_d8;
+          lastSegmentNormTime = segmentNormTime;
+          pFVar5 = &segmentDrawState;
+          puVar4 = lastSegmentDrawState;
           for (iVar3 = 0xf; iVar3 != 0; iVar3 = iVar3 + -1) {
             *(FxTrailDef **)puVar4 = pFVar5->trailDef;
             pFVar5 = (FxTrailSegmentDrawState *)pFVar5->posWorld;
             puVar4 = puVar4 + 4;
           }
         }
-        local_c = local_38->nextTrailElemHandle;
+        trailElemHandle = trailElem->nextTrailElemHandle;
       }
-      if (local_94 < local_4c) {
+      if (upperBoundSegmentCount < exactSegmentCount) {
         va("Too optimistic: exactSegmentCount = %i, upperBoundSegmentCount = %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x69d
                                  ,0,"%s\n\t%s");
@@ -2217,26 +2325,26 @@ void __cdecl FX_DrawTrail(FxSystem *param_1,FxDrawState *param_2,FxTrail *param_
           return;
         }
       }
-      if (1 < local_4c) {
-        local_3c = local_dc * 3;
-        local_98 = (short)local_90->vertCount;
-        local_9c = FX_GetElemVisuals(param_2->elemDef,param_2->randomSeed);
-        if ((local_48->material != local_9c.anonymous) && (local_48->indexCount != 0)) {
-          if ((local_48->name == (char *)0x0) &&
+      if (1 < exactSegmentCount) {
+        indicesToReserve = trailDefIndCount * 3;
+        vertsPerSegment = (ushort)trailDef->vertCount;
+        visuals = FX_GetElemVisuals(draw->elemDef,draw->randomSeed);
+        if ((sprite->material != visuals.anonymous) && (sprite->indexCount != 0)) {
+          if ((sprite->name == (char *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp"
                                        ,0x6a9,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if ((local_48->material == (Material *)0x0) &&
+          if ((sprite->material == (Material *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp"
                                        ,0x6aa,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if ((local_48->indices == (r_double_index_t *)0x0) &&
+          if ((sprite->indices == (r_double_index_t *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp"
                                        ,0x6ab,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -2244,22 +2352,22 @@ void __cdecl FX_DrawTrail(FxSystem *param_1,FxDrawState *param_2,FxTrail *param_
             return;
           }
           R_AddCodeMeshDrawSurf
-                    (local_48->material,local_48->indices,local_48->indexCount,0,0,local_48->name,
-                     param_2->region);
-          local_48->indexCount = 0;
+                    (sprite->material,sprite->indices,sprite->indexCount,0,0,sprite->name,
+                     draw->region);
+          sprite->indexCount = 0;
         }
-        local_10 = 0;
-        while ((local_10 < local_4c + -1 &&
-               (bVar2 = R_ReserveCodeMeshIndices(local_3c,&local_e0), bVar2))) {
-          if (local_48->material != local_9c.anonymous) {
-            local_48->name = ((param_2->effect->field0_0x0).def)->name;
-            local_48->material = (Material *)local_9c;
-            local_48->indices = local_e0;
+        curSegment = 0;
+        while ((curSegment < exactSegmentCount + -1 &&
+               (bVar2 = R_ReserveCodeMeshIndices(indicesToReserve,&reservedIndices), bVar2))) {
+          if (sprite->material != visuals.anonymous) {
+            sprite->name = ((draw->effect->field0_0x0).def)->name;
+            sprite->material = (Material *)visuals;
+            sprite->indices = reservedIndices;
           }
-          local_48->indexCount = local_48->indexCount + local_3c;
-          FX_GenTrail_IndsForSegment(param_2,local_44[0],local_e0);
-          local_10 = local_10 + 1;
-          local_44[0] = local_44[0] + local_98;
+          sprite->indexCount = sprite->indexCount + indicesToReserve;
+          FX_GenTrail_IndsForSegment(draw,reservedBaseVertex,reservedIndices);
+          curSegment = curSegment + 1;
+          reservedBaseVertex = reservedBaseVertex + vertsPerSegment;
         }
       }
     }
@@ -2273,30 +2381,30 @@ void __cdecl FX_DrawTrail(FxSystem *param_1,FxDrawState *param_2,FxTrail *param_
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-FX_DrawTrailsForEffect(FxSystem *param_1,FxEffect *param_2,int param_3,FxReflectParams *param_4)
+FX_DrawTrailsForEffect(FxSystem *system,FxEffect *effect,int drawTime,FxReflectParams *reflect)
 
 {
-  FxDrawState local_f4;
+  FxDrawState drawState;
   uint local_10;
-  ushort local_c;
-  FxTrail *local_8;
+  ushort trailHandle;
+  FxTrail *trail;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)&local_f4,'\0',0xdc);
-  local_f4.system = param_1;
-  local_f4.effect = param_2;
-  local_f4.msecDraw = param_3;
-  local_f4.region = FX_RegionForReflect(param_4);
-  local_f4.reflect.enabled = param_4->enabled;
-  local_f4.reflect._1_3_ = *(undefined3 *)&param_4->field_0x1;
-  local_f4.reflect.zAdd = param_4->zAdd;
-  local_f4.reflect.zScale = param_4->zScale;
-  local_f4.elem = (FxElem *)0x0;
-  local_c = (local_f4.effect)->firstTrailHandle;
-  while (local_c != 0xffff) {
-    local_8 = FX_TrailFromHandle(param_1,local_c);
-    FX_DrawTrail(param_1,&local_f4,local_8);
-    local_c = local_8->nextTrailHandle;
+  memset((uchar *)&drawState,'\0',0xdc);
+  drawState.system = system;
+  drawState.effect = effect;
+  drawState.msecDraw = drawTime;
+  drawState.region = FX_RegionForReflect(reflect);
+  drawState.reflect.enabled = reflect->enabled;
+  drawState.reflect._1_3_ = *(undefined3 *)&reflect->field_0x1;
+  drawState.reflect.zAdd = reflect->zAdd;
+  drawState.reflect.zScale = reflect->zScale;
+  drawState.elem = (FxElem *)0x0;
+  trailHandle = (drawState.effect)->firstTrailHandle;
+  while (trailHandle != 0xffff) {
+    trail = FX_TrailFromHandle(system,trailHandle);
+    FX_DrawTrail(system,&drawState,trail);
+    trailHandle = trail->nextTrailHandle;
   }
   return;
 }
@@ -2307,38 +2415,39 @@ FX_DrawTrailsForEffect(FxSystem *param_1,FxEffect *param_2,int param_3,FxReflect
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-FX_DrawSpriteEffect(FxSystem *param_1,FxEffect *param_2,int param_3,FxReflectParams *param_4,
-                   uint param_5)
+FX_DrawSpriteEffect(FxSystem *system,FxEffect *effect,int drawTime,FxReflectParams *reflect,
+                   uint cameraType)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  FxElemDef *pFVar4;
-  ushort local_fc;
-  FxDrawState local_f4;
+  FxElemDef *elemDef_00;
+  ushort elemHandle;
+  FxElemDef *elemDef;
+  FxDrawState drawState;
   uint local_14;
-  FxElemDef *local_10;
-  FxElem *local_c;
-  int local_8;
+  FxElemDef *elemDefs;
+  FxElem *elem;
+  int count;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
-  memset((uchar *)&local_f4,'\0',0xdc);
-  local_f4.effect = param_2;
-  local_f4.msecDraw = param_3;
-  local_fc = param_2->firstElemHandle[0];
-  if (local_fc != 0xffff) {
-    local_f4.system = param_1;
-    local_f4.region = FX_RegionForReflect(param_4);
-    local_f4.reflect.enabled = param_4->enabled;
-    local_f4.reflect._1_3_ = *(undefined3 *)&param_4->field_0x1;
-    local_f4.reflect.zAdd = param_4->zAdd;
-    local_f4.reflect.zScale = param_4->zScale;
-    local_10 = ((((local_f4.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
-    while (local_fc != 0xffff) {
-      local_c = FX_ElemFromHandle(param_1,local_fc);
-      if (0x800 < local_8) {
+  count = 0;
+  memset((uchar *)&drawState,'\0',0xdc);
+  drawState.effect = effect;
+  drawState.msecDraw = drawTime;
+  elemHandle = effect->firstElemHandle[0];
+  if (elemHandle != 0xffff) {
+    drawState.system = system;
+    drawState.region = FX_RegionForReflect(reflect);
+    drawState.reflect.enabled = reflect->enabled;
+    drawState.reflect._1_3_ = *(undefined3 *)&reflect->field_0x1;
+    drawState.reflect.zAdd = reflect->zAdd;
+    drawState.reflect.zScale = reflect->zScale;
+    elemDefs = ((((drawState.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
+    while (elemHandle != 0xffff) {
+      elem = FX_ElemFromHandle(system,elemHandle);
+      if (0x800 < count) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x73e
                                  ,0,"Loop in element list");
         if (bVar3) {
@@ -2348,29 +2457,29 @@ FX_DrawSpriteEffect(FxSystem *param_1,FxEffect *param_2,int param_3,FxReflectPar
         (*pcVar2)();
         return;
       }
-      if ((((local_f4.effect)->field0_0x0).def)->elemDefCountEmission +
-          (((local_f4.effect)->field0_0x0).def)->elemDefCountLooping +
-          (((local_f4.effect)->field0_0x0).def)->elemDefCountOneShot <= (int)(uint)local_c->defIndex
-         ) {
+      if ((((drawState.effect)->field0_0x0).def)->elemDefCountEmission +
+          (((drawState.effect)->field0_0x0).def)->elemDefCountLooping +
+          (((drawState.effect)->field0_0x0).def)->elemDefCountOneShot <= (int)(uint)elem->defIndex)
+      {
         return;
       }
-      uVar1._0_1_ = local_c[1].defIndex;
-      uVar1._1_1_ = local_c[1].sequence;
-      if (local_fc == uVar1) {
+      uVar1._0_1_ = elem[1].defIndex;
+      uVar1._1_1_ = elem[1].sequence;
+      if (elemHandle == uVar1) {
         return;
       }
-      pFVar4 = local_10 + local_c->defIndex;
-      if (5 < pFVar4->elemType) {
+      elemDef_00 = elemDefs + elem->defIndex;
+      if (5 < elemDef_00->elemType) {
         return;
       }
-      local_8 = local_8 + 1;
-      if ((pFVar4->visualCount != '\0') &&
-         (((pFVar4->flags & 0x80000000U) == 0 ||
+      count = count + 1;
+      if ((elemDef_00->visualCount != '\0') &&
+         (((elemDef_00->flags & 0x80000000U) == 0 ||
           (((cg_blood->current).enabled != false && (bVar3 = CG_IsMature(), bVar3)))))) {
-        FX_DrawElement(param_1,pFVar4,local_c,&local_f4);
+        FX_DrawElement(system,elemDef_00,elem,&drawState);
       }
-      local_fc._0_1_ = local_c[1].defIndex;
-      local_fc._1_1_ = local_c[1].sequence;
+      elemHandle._0_1_ = elem[1].defIndex;
+      elemHandle._1_1_ = elem[1].sequence;
     }
   }
   return;
@@ -2381,20 +2490,20 @@ FX_DrawSpriteEffect(FxSystem *param_1,FxEffect *param_2,int param_3,FxReflectPar
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl FX_DrawSpotLightEffect(FxSystem *param_1,FxEffect *param_2,int param_3)
+void __cdecl FX_DrawSpotLightEffect(FxSystem *system,FxEffect *effect,int drawTime)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxDrawState local_f4;
+  FxDrawState drawState;
   uint local_14;
-  FxElemDef *local_10;
-  FxElemDef *local_c;
-  FxElem *local_8;
+  FxElemDef *elemDef;
+  FxElemDef *elemDefs;
+  FxElem *elem;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)&local_f4,'\0',0xdc);
-  if (param_1->shared->activeSpotLightEffectCount < 1) {
+  memset((uchar *)&drawState,'\0',0xdc);
+  if (system->shared->activeSpotLightEffectCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x778,0,
                              "%s");
     if (!bVar2) {
@@ -2403,7 +2512,7 @@ void __cdecl FX_DrawSpotLightEffect(FxSystem *param_1,FxEffect *param_2,int para
       return;
     }
   }
-  if (param_1->shared->activeSpotLightElemCount < 1) {
+  if (system->shared->activeSpotLightElemCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x779,0,
                              "%s");
     if (!bVar2) {
@@ -2412,15 +2521,15 @@ void __cdecl FX_DrawSpotLightEffect(FxSystem *param_1,FxEffect *param_2,int para
       return;
     }
   }
-  local_f4.effect = param_2;
-  local_f4.system = param_1;
-  local_f4.msecDraw = param_3;
-  local_f4.region = 0xd;
-  FX_GetNullReflection(&local_f4.reflect);
-  local_c = ((((local_f4.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
-  local_8 = FX_ElemFromHandle(param_1,param_1->shared->activeSpotLightElemHandle);
-  local_10 = local_c + local_8->defIndex;
-  if (local_10->elemType != '\t') {
+  drawState.effect = effect;
+  drawState.system = system;
+  drawState.msecDraw = drawTime;
+  drawState.region = 0xd;
+  FX_GetNullReflection(&drawState.reflect);
+  elemDefs = ((((drawState.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
+  elem = FX_ElemFromHandle(system,system->shared->activeSpotLightElemHandle);
+  elemDef = elemDefs + elem->defIndex;
+  if (elemDef->elemType != '\t') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x783,0,
                              "%s");
     if (!bVar2) {
@@ -2429,17 +2538,17 @@ void __cdecl FX_DrawSpotLightEffect(FxSystem *param_1,FxEffect *param_2,int para
       return;
     }
   }
-  FX_DrawElement(param_1,local_10,local_8,&local_f4);
+  FX_DrawElement(system,elemDef,elem,&drawState);
   return;
 }
 
 
 // 005D0370  FX_ElemSpawnedVisibleToCamera  (EffectsCore/fx_draw.cpp:1929)
 
-bool __cdecl FX_ElemSpawnedVisibleToCamera(uint param_1,uint param_2)
+bool __cdecl FX_ElemSpawnedVisibleToCamera(uint elemSpawnVisBits,uint cameraType)
 
 {
-  return (1 << ((byte)param_2 & 0x1f) & param_1) != 0;
+  return (1 << ((byte)cameraType & 0x1f) & elemSpawnVisBits) != 0;
 }
 
 
@@ -2449,48 +2558,48 @@ bool __cdecl FX_ElemSpawnedVisibleToCamera(uint param_1,uint param_2)
 
 void __cdecl
 FX_DrawNonSpriteEffect
-          (FxSystem *param_1,FxEffect *param_2,uint param_3,int param_4,FxReflectParams *param_5,
-          uint param_6)
+          (FxSystem *system,FxEffect *effect,uint elemClass,int drawTime,FxReflectParams *reflect,
+          uint cameraType)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort local_f8;
-  FxDrawState local_f4;
+  ushort elemHandle;
+  FxDrawState drawState;
   uint local_14;
-  FxElemDef *local_10;
-  FxElemDef *local_c;
-  FxElem *local_8;
+  FxElemDef *elemDef;
+  FxElemDef *elemDefs;
+  FxElem *elem;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)&local_f4,'\0',0xdc);
-  local_f4.effect = param_2;
-  local_f4.msecDraw = param_4;
-  local_f8 = param_2->firstElemHandle[param_3];
-  if (local_f8 != 0xffff) {
-    local_f4.system = param_1;
-    local_f4.region = FX_RegionForReflect(param_5);
-    local_f4.reflect.enabled = param_5->enabled;
-    local_f4.reflect._1_3_ = *(undefined3 *)&param_5->field_0x1;
-    local_f4.reflect.zAdd = param_5->zAdd;
-    local_f4.reflect.zScale = param_5->zScale;
-    local_c = ((((local_f4.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
-    while (local_f8 != 0xffff) {
-      local_8 = FX_ElemFromHandle(param_1,local_f8);
-      local_10 = local_c + local_8->defIndex;
-      if ((local_10->elemType < 6) &&
+  memset((uchar *)&drawState,'\0',0xdc);
+  drawState.effect = effect;
+  drawState.msecDraw = drawTime;
+  elemHandle = effect->firstElemHandle[elemClass];
+  if (elemHandle != 0xffff) {
+    drawState.system = system;
+    drawState.region = FX_RegionForReflect(reflect);
+    drawState.reflect.enabled = reflect->enabled;
+    drawState.reflect._1_3_ = *(undefined3 *)&reflect->field_0x1;
+    drawState.reflect.zAdd = reflect->zAdd;
+    drawState.reflect.zScale = reflect->zScale;
+    elemDefs = ((((drawState.effect)->field0_0x0).def)->field9_0x1c).elemDefsEA;
+    while (elemHandle != 0xffff) {
+      elem = FX_ElemFromHandle(system,elemHandle);
+      elemDef = elemDefs + elem->defIndex;
+      if ((elemDef->elemType < 6) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",
                                    0x7a7,0,"%s\n\t(elemDef->elemType) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_10->elemType != '\a') ||
-         (bVar2 = FX_ElemSpawnedVisibleToCamera((uint)local_8->elemSpawnVisBits,param_6), bVar2)) {
-        FX_DrawElement(param_1,local_10,local_8,&local_f4);
+      if ((elemDef->elemType != '\a') ||
+         (bVar2 = FX_ElemSpawnedVisibleToCamera((uint)elem->elemSpawnVisBits,cameraType), bVar2)) {
+        FX_DrawElement(system,elemDef,elem,&drawState);
       }
-      local_f8._0_1_ = local_8[1].defIndex;
-      local_f8._1_1_ = local_8[1].sequence;
+      elemHandle._0_1_ = elem[1].defIndex;
+      elemHandle._1_1_ = elem[1].sequence;
     }
   }
   return;
@@ -2499,43 +2608,46 @@ FX_DrawNonSpriteEffect
 
 // 005CFBF0  FX_DrawNonSpriteElems  (EffectsCore/fx_draw.cpp:1970)
 
-void __cdecl FX_DrawNonSpriteElems(FxSystem *param_1,FxReflectParams *param_2,uint param_3)
+void __cdecl FX_DrawNonSpriteElems(FxSystem *system,FxReflectParams *reflect,uint cameraType)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  FxEffect *pFVar4;
-  long *plVar5;
-  uint local_8;
+  FxEffect *effect_00;
+  long *plVar4;
+  ushort effectHandle;
+  int firstActiveEffect;
+  FxEffect *effect;
+  int activeIndex;
   
-  if ((param_1 == (FxSystem *)0x0) &&
+  if ((system == (FxSystem *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x7b9,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->camera).isValid == 0) &&
+  if (((system->camera).isValid == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x7ba,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  FX_BeginIteratingOverEffects_Cooperative(param_1);
-  for (local_8 = param_1->shared->firstActiveEffect; local_8 != param_1->shared->firstNewEffect;
-      local_8 = local_8 + 1) {
-    pFVar4 = FX_EffectFromHandle(param_1,param_1->shared->allEffectHandles[local_8 & 0x3ff]);
-    FX_DrawNonSpriteEffect(param_1,pFVar4,1,param_1->msecDraw,param_2,param_3);
+  FX_BeginIteratingOverEffects_Cooperative(system);
+  for (activeIndex = system->shared->firstActiveEffect;
+      activeIndex != system->shared->firstNewEffect; activeIndex = activeIndex + 1) {
+    effect_00 = FX_EffectFromHandle(system,system->shared->allEffectHandles[activeIndex & 0x3ff]);
+    FX_DrawNonSpriteEffect(system,effect_00,1,system->msecDraw,reflect,cameraType);
   }
-  plVar5 = &param_1->shared->iteratorCount;
+  plVar4 = &system->shared->iteratorCount;
   LOCK();
-  iVar1 = *plVar5;
-  *plVar5 = *plVar5 + -1;
+  iVar1 = *plVar4;
+  *plVar4 = *plVar4 + -1;
   UNLOCK();
   if (iVar1 == 1) {
-    FX_RunGarbageCollectionAndPrioritySort(param_1);
+    FX_RunGarbageCollectionAndPrioritySort(system);
   }
   return;
 }
@@ -2543,57 +2655,57 @@ void __cdecl FX_DrawNonSpriteElems(FxSystem *param_1,FxReflectParams *param_2,ui
 
 // 005D0390  FX_DrawSpotLight  (EffectsCore/fx_draw.cpp:1999)
 
-void __cdecl FX_DrawSpotLight(FxSystem *param_1)
+void __cdecl FX_DrawSpotLight(FxSystem *system)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  FxEffect *pFVar4;
-  long *plVar5;
-  long lVar6;
+  FxEffect *effect;
+  long *plVar4;
+  long drawTime;
   
-  if ((param_1 == (FxSystem *)0x0) &&
+  if ((system == (FxSystem *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",2000,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->camera).isValid == 0) &&
+  if (((system->camera).isValid == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x7d1,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  FX_BeginIteratingOverEffects_Cooperative(param_1);
-  if (0 < param_1->shared->activeSpotLightElemCount) {
-    if ((param_1->shared->activeSpotLightEffectCount != 1) &&
+  FX_BeginIteratingOverEffects_Cooperative(system);
+  if (0 < system->shared->activeSpotLightElemCount) {
+    if ((system->shared->activeSpotLightEffectCount != 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x7d6
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_1->shared->activeSpotLightElemCount != 1) &&
+    if ((system->shared->activeSpotLightElemCount != 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x7d7
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    lVar6 = param_1->msecDraw;
-    pFVar4 = FX_EffectFromHandle(param_1,param_1->shared->activeSpotLightEffectHandle);
-    FX_DrawSpotLightEffect(param_1,pFVar4,lVar6);
+    drawTime = system->msecDraw;
+    effect = FX_EffectFromHandle(system,system->shared->activeSpotLightEffectHandle);
+    FX_DrawSpotLightEffect(system,effect,drawTime);
   }
-  plVar5 = &param_1->shared->iteratorCount;
+  plVar4 = &system->shared->iteratorCount;
   LOCK();
-  iVar1 = *plVar5;
-  *plVar5 = *plVar5 + -1;
+  iVar1 = *plVar4;
+  *plVar4 = *plVar4 + -1;
   UNLOCK();
   if (iVar1 == 1) {
-    FX_RunGarbageCollectionAndPrioritySort(param_1);
+    FX_RunGarbageCollectionAndPrioritySort(system);
   }
   return;
 }
@@ -2603,114 +2715,120 @@ void __cdecl FX_DrawSpotLight(FxSystem *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl FX_DrawSpriteElems(FxSystem *param_1,int param_2,FxReflectParams *param_3,uint param_4)
+void __cdecl
+FX_DrawSpriteElems(FxSystem *system,int drawTime,FxReflectParams *reflect,uint cameraType)
 
 {
   int iVar1;
-  ushort uVar2;
-  code *pcVar3;
-  bool bVar4;
-  FxSpriteInfo *pFVar5;
-  FxEffect *pFVar6;
-  DWORD DVar7;
-  uint uVar8;
-  long *plVar9;
-  int local_828;
+  ushort handle;
+  code *pcVar2;
+  bool bVar3;
+  FxSpriteInfo *pFVar4;
+  FxEffect *pFVar5;
+  DWORD DVar6;
+  uint region_00;
+  long *plVar7;
+  uint region;
+  int numTrailEffects;
+  ushort effectHandle;
+  int firstActiveEffect;
+  FxEffect *effect;
+  FxSpriteInfo *sprite;
   ushort auStack_814 [1026];
   uint local_10;
-  int local_c;
-  uint local_8;
+  int i;
+  int activeIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (FxSystem *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x867,0
-                               ,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((system == (FxSystem *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x867,0
+                               ,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if (((param_1->camera).isValid == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x868,0
-                               ,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if (((system->camera).isValid == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x868,0
+                               ,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  param_1->gfxCloudCount = 0;
-  pFVar5 = &param_1->sprite;
-  pFVar5->indices = (r_double_index_t *)0x0;
-  (param_1->sprite).indexCount = 0;
-  (param_1->sprite).name = (char *)0x0;
-  (param_1->sprite).material = (Material *)0x0;
-  local_828 = 0;
-  FX_BeginIteratingOverEffects_Cooperative(param_1);
+  system->gfxCloudCount = 0;
+  pFVar4 = &system->sprite;
+  pFVar4->indices = (r_double_index_t *)0x0;
+  (system->sprite).indexCount = 0;
+  (system->sprite).name = (char *)0x0;
+  (system->sprite).material = (Material *)0x0;
+  numTrailEffects = 0;
+  FX_BeginIteratingOverEffects_Cooperative(system);
   PIXBeginNamedEvent(0xff00ff,"firstActiveEffect");
-  for (local_8 = param_1->shared->firstActiveEffect; local_8 != param_1->shared->firstNewEffect;
-      local_8 = local_8 + 1) {
-    uVar2 = param_1->shared->allEffectHandles[local_8 & 0x3ff];
-    pFVar6 = FX_EffectFromHandle(param_1,uVar2);
-    FX_DrawSpriteEffect(param_1,pFVar6,param_2,param_3,param_4);
-    FX_DrawNonSpriteEffect(param_1,pFVar6,2,param_2,param_3,param_4);
-    if (pFVar6->firstTrailHandle != 0xffff) {
-      auStack_814[local_828] = uVar2;
-      local_828 = local_828 + 1;
+  for (activeIndex = system->shared->firstActiveEffect;
+      activeIndex != system->shared->firstNewEffect; activeIndex = activeIndex + 1) {
+    handle = system->shared->allEffectHandles[activeIndex & 0x3ff];
+    pFVar5 = FX_EffectFromHandle(system,handle);
+    FX_DrawSpriteEffect(system,pFVar5,drawTime,reflect,cameraType);
+    FX_DrawNonSpriteEffect(system,pFVar5,2,drawTime,reflect,cameraType);
+    if (pFVar5->firstTrailHandle != 0xffff) {
+      auStack_814[numTrailEffects] = handle;
+      numTrailEffects = numTrailEffects + 1;
     }
   }
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(0xff00ff,"numTrailEffects");
-  if (0 < local_828) {
-    for (local_c = 0; local_c < local_828; local_c = local_c + 1) {
-      pFVar6 = FX_EffectFromHandle(param_1,auStack_814[local_c]);
-      FX_DrawTrailsForEffect(param_1,pFVar6,param_2,param_3);
+  if (0 < numTrailEffects) {
+    for (i = 0; i < numTrailEffects; i = i + 1) {
+      pFVar5 = FX_EffectFromHandle(system,auStack_814[i]);
+      FX_DrawTrailsForEffect(system,pFVar5,drawTime,reflect);
     }
   }
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  plVar9 = &param_1->shared->iteratorCount;
+  plVar7 = &system->shared->iteratorCount;
   LOCK();
-  iVar1 = *plVar9;
-  *plVar9 = *plVar9 + -1;
+  iVar1 = *plVar7;
+  *plVar7 = *plVar7 + -1;
   UNLOCK();
   if (iVar1 == 1) {
-    FX_RunGarbageCollectionAndPrioritySort(param_1);
+    FX_RunGarbageCollectionAndPrioritySort(system);
   }
   PIXBeginNamedEvent(0xff00ff,"R_AddCodeMeshDrawSurf");
-  if ((param_1->sprite).indexCount != 0) {
-    if (((param_1->sprite).name == (char *)0x0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8a8
-                                 ,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if ((system->sprite).indexCount != 0) {
+    if (((system->sprite).name == (char *)0x0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8a8
+                                 ,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if (((param_1->sprite).material == (Material *)0x0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8a9
-                                 ,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (((system->sprite).material == (Material *)0x0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8a9
+                                 ,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if ((pFVar5->indices == (r_double_index_t *)0x0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8aa
-                                 ,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if ((pFVar4->indices == (r_double_index_t *)0x0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x8aa
+                                 ,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    uVar8 = FX_RegionForReflect(param_3);
+    region_00 = FX_RegionForReflect(reflect);
     R_AddCodeMeshDrawSurf
-              ((param_1->sprite).material,pFVar5->indices,(param_1->sprite).indexCount,0,0,
-               (param_1->sprite).name,uVar8);
-    (param_1->sprite).indexCount = 0;
-    pFVar5->indices = (r_double_index_t *)0x0;
+              ((system->sprite).material,pFVar4->indices,(system->sprite).indexCount,0,0,
+               (system->sprite).name,region_00);
+    (system->sprite).indexCount = 0;
+    pFVar4->indices = (r_double_index_t *)0x0;
   }
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -2719,76 +2837,79 @@ void __cdecl FX_DrawSpriteElems(FxSystem *param_1,int param_2,FxReflectParams *p
 
 // 005D1FA0  FX_GenerateVerts  (EffectsCore/fx_draw.cpp:2231)
 
-void __cdecl FX_GenerateVerts(FxGenerateVertsCmd *param_1)
+void __cdecl FX_GenerateVerts(FxGenerateVertsCmd *cmd)
 
 {
-  int iVar1;
-  char *pcVar2;
-  DWORD DVar3;
-  FxReflectParams local_14;
-  FxSystem *local_8;
+  int drawTime_00;
+  char *Name;
+  DWORD DVar1;
+  I_spuDmaSave save;
+  FxGenerateVertsCmd *localCmd;
+  int drawTime;
+  FxReflectParams reflect;
+  FxSystem *localSystem;
   
-  pcVar2 = va("FX_GenerateVerts(cl=%d)");
-  PIXBeginNamedEvent(-1,pcVar2);
-  local_8 = param_1->system;
+  Name = va("FX_GenerateVerts(cl=%d)");
+  PIXBeginNamedEvent(-1,Name);
+  localSystem = cmd->system;
   R_BeginCodeMeshVerts();
-  iVar1 = local_8->msecDraw;
-  if (iVar1 < 0) {
+  drawTime_00 = localSystem->msecDraw;
+  if (drawTime_00 < 0) {
     R_EndCodeMeshVerts();
   }
   else {
     PIXBeginNamedEvent(0xff00ff,"FX_SpriteGenerateVerts");
-    FX_SpriteGenerateVerts(param_1);
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    FX_SpriteGenerateVerts(cmd);
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(0xff00ff,"FX_Beam_GenerateVerts");
-    FX_Beam_GenerateVerts(param_1);
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    FX_Beam_GenerateVerts(cmd);
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(0xff00ff,"FX_PostLight_GenerateVerts");
-    FX_PostLight_GenerateVerts(param_1->postLightInfo,local_8);
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    FX_PostLight_GenerateVerts(cmd->postLightInfo,localSystem);
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(0xff00ff,"Glass_GenerateVerts");
-    GlassCl_GenerateVerts(param_1->localClientNum,0);
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    GlassCl_GenerateVerts(cmd->localClientNum,0);
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    FX_GetNullReflection(&local_14);
+    FX_GetNullReflection(&reflect);
     PIXBeginNamedEvent(0xff00ff,"FX_DrawSpriteElems");
     if (((fx_enable->current).enabled != false) && ((fx_draw->current).enabled != false)) {
-      FX_DrawSpriteElems(local_8,iVar1,&local_14,(uint)param_1->genVertsCameraType);
+      FX_DrawSpriteElems(localSystem,drawTime_00,&reflect,(uint)cmd->genVertsCameraType);
     }
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(0xff00ff,"FX_GetReflection");
-    FX_GetReflection(param_1->useReflection,param_1->reflectionHeight,&local_14);
-    if (((local_14.enabled != false) && ((fx_enable->current).enabled != false)) &&
+    FX_GetReflection(cmd->useReflection,cmd->reflectionHeight,&reflect);
+    if (((reflect.enabled != false) && ((fx_enable->current).enabled != false)) &&
        ((fx_draw->current).enabled != false)) {
-      FX_DrawSpriteElems(local_8,iVar1,&local_14,(uint)param_1->genVertsCameraType);
+      FX_DrawSpriteElems(localSystem,drawTime_00,&reflect,(uint)cmd->genVertsCameraType);
     }
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     R_EndCodeMeshVerts();
     PIXBeginNamedEvent(0xff00ff,"FX_ToggleVisBlockerFrame");
-    FX_ToggleVisBlockerFrame(local_8,param_1->system);
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    FX_ToggleVisBlockerFrame(localSystem,cmd->system);
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -2803,7 +2924,7 @@ void __cdecl FX_GenerateVerts(FxGenerateVertsCmd *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl FX_FillGenerateVertsCmd(int param_1,FxGenerateVertsCmd *param_2)
+void __cdecl FX_FillGenerateVertsCmd(int localClientNum,FxGenerateVertsCmd *cmd)
 
 {
   code *pcVar1;
@@ -2814,9 +2935,9 @@ void __cdecl FX_FillGenerateVertsCmd(int param_1,FxGenerateVertsCmd *param_2)
   FxSpriteInfo *pFVar6;
   int iVar7;
   cg_s *pcVar8;
-  float (*pafVar9) [3];
+  float (*out) [3];
   
-  if (param_2 == (FxGenerateVertsCmd *)0x0) {
+  if (cmd == (FxGenerateVertsCmd *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_draw.cpp",0x93a,0,
                              "%s");
     if (!bVar2) {
@@ -2825,24 +2946,24 @@ void __cdecl FX_FillGenerateVertsCmd(int param_1,FxGenerateVertsCmd *param_2)
       return;
     }
   }
-  pFVar3 = FX_GetSystem(param_1);
-  param_2->system = pFVar3;
+  pFVar3 = FX_GetSystem(localClientNum);
+  cmd->system = pFVar3;
   pFVar4 = FX_Beam_GetInfo();
-  param_2->beamInfo = pFVar4;
+  cmd->beamInfo = pFVar4;
   pFVar5 = FX_PostLight_GetInfo();
-  param_2->postLightInfo = pFVar5;
+  cmd->postLightInfo = pFVar5;
   pFVar6 = FX_SpriteGetInfo();
-  param_2->spriteInfo = pFVar6;
-  param_2->localClientNum = param_1;
+  cmd->spriteInfo = pFVar6;
+  cmd->localClientNum = localClientNum;
   iVar7 = R_GetLocalClientNum();
   pcVar8 = CG_GetLocalClientGlobals(iVar7);
-  param_2->vieworg[0] = (pcVar8->refdef).vieworg[0];
-  param_2->vieworg[1] = (pcVar8->refdef).vieworg[1];
-  param_2->vieworg[2] = (pcVar8->refdef).vieworg[2];
-  pafVar9 = param_2->viewaxis;
+  cmd->vieworg[0] = (pcVar8->refdef).vieworg[0];
+  cmd->vieworg[1] = (pcVar8->refdef).vieworg[1];
+  cmd->vieworg[2] = (pcVar8->refdef).vieworg[2];
+  out = cmd->viewaxis;
   iVar7 = R_GetLocalClientNum();
   pcVar8 = CG_GetLocalClientGlobals(iVar7);
-  Vec3PackNormAxis((pcVar8->refdef).viewaxis,pafVar9);
+  Vec3PackNormAxis((pcVar8->refdef).viewaxis,out);
   return;
 }
 

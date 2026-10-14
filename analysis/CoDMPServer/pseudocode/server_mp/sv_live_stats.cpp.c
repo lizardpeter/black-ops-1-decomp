@@ -8,31 +8,36 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_GetClientNumForBdOnlineUserID(ulong64 param_1)
+int __cdecl SV_GetClientNumForBdOnlineUserID(ulong64 uid)
 
 {
-  int local_c;
+  int i;
+  int retval;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if ((com_maxclients->current).integer <= local_c) {
+    if ((com_maxclients->current).integer <= i) {
       return -1;
     }
-    if (((1 < *(int *)((int)svs.clients + local_c * 0x84d00)) &&
-        (*(int *)((int)svs.clients + local_c * 0x84d00 + 0x84cf0) == (int)param_1)) &&
-       (*(int *)((int)svs.clients + local_c * 0x84d00 + 0x84cf4) == param_1._4_4_)) break;
-    local_c = local_c + 1;
+    if (((1 < *(int *)((int)svs.clients + i * 0x84d00)) &&
+        (*(int *)((int)svs.clients + i * 0x84d00 + 0x84cf0) == (int)uid)) &&
+       (*(int *)((int)svs.clients + i * 0x84d00 + 0x84cf4) == uid._4_4_)) break;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
 // 007124F0  SV_GetBdUidFromFileInfo  (server_mp/sv_live_stats.cpp:33)
 
-ulong64 __cdecl SV_GetBdUidFromFileInfo(void *param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+ulong64 __cdecl SV_GetBdUidFromFileInfo(void *data)
 
 {
-  return *(ulong64 *)((int)param_1 + 0x110);
+  dwFileOperationInfo *fileInfo;
+  
+  return *(ulong64 *)((int)data + 0x110);
 }
 
 
@@ -43,41 +48,44 @@ ulong64 __cdecl SV_GetBdUidFromFileInfo(void *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-client_t * __cdecl SV_GetClientFromFileInfo(void *param_1)
+client_t * __cdecl SV_GetClientFromFileInfo(void *data)
 
 {
   code *pcVar1;
-  ulong64 uVar2;
-  bool bVar3;
-  uint uVar4;
-  client_t *pcVar5;
-  client_t *local_c;
+  ulong64 uid;
+  bool bVar2;
+  uint uVar3;
+  client_t *pcVar4;
+  int clientNum;
+  client_t *client;
+  dwFileOperationInfo *fileInfo;
   
-  local_c = (client_t *)0x0;
-  if (param_1 != (void *)0x0) {
-    uVar2 = *(ulong64 *)((int)param_1 + 0x110);
+  client = (client_t *)0x0;
+  if (data != (void *)0x0) {
+    uid = *(ulong64 *)((int)data + 0x110);
     Com_DPrintf(0xf,"Read uid %llu, finding client\n");
-    uVar4 = SV_GetClientNumForBdOnlineUserID(uVar2);
-    if ((int)uVar4 < 0) {
+    uVar3 = SV_GetClientNumForBdOnlineUserID(uid);
+    if ((int)uVar3 < 0) {
       Com_DPrintf(0xf,"Warning: Couldn\'t find matching client for bdOnlineUserId %llu\n");
     }
     else {
-      if ((com_maxclients->current).unsignedInt <= uVar4) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_live_stats.cpp",
+      if ((com_maxclients->current).unsignedInt <= uVar3) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_live_stats.cpp",
                                  0x31,0,
                                  "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                                 );
-        if (!bVar3) {
+        if (!bVar2) {
           pcVar1 = (code *)swi(3);
-          pcVar5 = (client_t *)(*pcVar1)();
-          return pcVar5;
+          pcVar4 = (client_t *)(*pcVar1)();
+          return pcVar4;
         }
       }
-      local_c = (client_t *)(uVar4 * 0x84d00 + (int)svs.clients);
+      client = (client_t *)(uVar3 * 0x84d00 + (int)svs.clients);
     }
   }
-  return local_c;
+  return client;
 }
 
 
@@ -89,14 +97,14 @@ client_t * __cdecl SV_GetClientFromFileInfo(void *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ulong64 __cdecl SV_GetPlayerXuid(int param_1)
+ulong64 __cdecl SV_GetPlayerXuid(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   ulong64 uVar3;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_live_stats.cpp",0x40,
                              0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -107,7 +115,7 @@ ulong64 __cdecl SV_GetPlayerXuid(int param_1)
       return uVar3;
     }
   }
-  return CONCAT44(*(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84cf4),
-                  *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84cf0));
+  return CONCAT44(*(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84cf4),
+                  *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84cf0));
 }
 

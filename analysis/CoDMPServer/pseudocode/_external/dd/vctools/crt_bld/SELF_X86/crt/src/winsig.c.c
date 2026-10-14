@@ -2,13 +2,13 @@
 
 // 00C24382  _initp_misc_winsig  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c:57)
 
-void __cdecl _initp_misc_winsig(void *param_1)
+void __cdecl _initp_misc_winsig(void *enull)
 
 {
-  ctrlc_action = param_1;
-  ctrlbreak_action = param_1;
-  abort_action = param_1;
-  term_action = param_1;
+  ctrlc_action = enull;
+  ctrlbreak_action = enull;
+  abort_action = enull;
+  term_action = enull;
   return;
 }
 
@@ -18,7 +18,7 @@ void __cdecl _initp_misc_winsig(void *param_1)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl raise(int param_1)
+int __cdecl raise(int signum)
 
 {
   bool bVar1;
@@ -29,22 +29,24 @@ int __cdecl raise(int param_1)
   _func___cdecl_void_int **pp_Var6;
   _tiddata *p_Var7;
   _XCPT_ACTION *in_stack_ffffffbc;
-  int local_34;
-  void *local_30;
-  int local_28;
+  int oldfpecode;
+  void *oldpxcptinfoptrs;
+  _tiddata *ptd;
+  int indx;
+  int siglock;
   
   p_Var7 = (_tiddata *)0x0;
   bVar1 = false;
-  if (param_1 < 0xc) {
-    if (param_1 != 0xb) {
-      if (param_1 == 2) {
+  if (signum < 0xc) {
+    if (signum != 0xb) {
+      if (signum == 2) {
         pp_Var6 = &ctrlc_action;
         p_Var4 = ctrlc_action;
         goto LAB_00c24499;
       }
-      if (param_1 != 4) {
-        if (param_1 == 6) goto LAB_00c24477;
-        if (param_1 != 8) goto LAB_00c2445b;
+      if (signum != 4) {
+        if (signum == 6) goto LAB_00c24477;
+        if (signum != 8) goto LAB_00c2445b;
       }
     }
     p_Var7 = _getptd_noexit();
@@ -56,16 +58,16 @@ int __cdecl raise(int param_1)
     p_Var4 = *pp_Var6;
   }
   else {
-    if (param_1 == 0xf) {
+    if (signum == 0xf) {
       pp_Var6 = &term_action;
       p_Var4 = term_action;
     }
-    else if (param_1 == 0x15) {
+    else if (signum == 0x15) {
       pp_Var6 = &ctrlbreak_action;
       p_Var4 = ctrlbreak_action;
     }
     else {
-      if (param_1 != 0x16) {
+      if (signum != 0x16) {
 LAB_00c2445b:
         piVar3 = _errno();
         *piVar3 = 0x16;
@@ -90,21 +92,20 @@ LAB_00c24499:
   if (bVar1) {
     _lock(0);
   }
-  if (((param_1 == 8) || (param_1 == 0xb)) || (param_1 == 4)) {
-    local_30 = p_Var7->_tpxcptinfoptrs;
+  if (((signum == 8) || (signum == 0xb)) || (signum == 4)) {
+    oldpxcptinfoptrs = p_Var7->_tpxcptinfoptrs;
     p_Var7->_tpxcptinfoptrs = (void *)0x0;
-    if (param_1 == 8) {
-      local_34 = p_Var7->_tfpecode;
+    if (signum == 8) {
+      oldfpecode = p_Var7->_tfpecode;
       p_Var7->_tfpecode = 0x8c;
       goto LAB_00c244fd;
     }
   }
   else {
 LAB_00c244fd:
-    if (param_1 == 8) {
-      for (local_28 = _First_FPE_Indx; local_28 < _Num_FPE + _First_FPE_Indx;
-          local_28 = local_28 + 1) {
-        *(undefined4 *)(local_28 * 0xc + 8 + (int)p_Var7->_pxcptacttab) = 0;
+    if (signum == 8) {
+      for (indx = _First_FPE_Indx; indx < _Num_FPE + _First_FPE_Indx; indx = indx + 1) {
+        *(undefined4 *)(indx * 0xc + 8 + (int)p_Var7->_pxcptacttab) = 0;
       }
       goto LAB_00c24537;
     }
@@ -113,18 +114,18 @@ LAB_00c244fd:
   *pp_Var6 = p_Var5;
 LAB_00c24537:
   FUN_00c24558();
-  if (param_1 == 8) {
+  if (signum == 8) {
     (*p_Var4)(8);
   }
   else {
-    (*p_Var4)(param_1);
-    if ((param_1 != 0xb) && (param_1 != 4)) {
+    (*p_Var4)(signum);
+    if ((signum != 0xb) && (signum != 4)) {
       return 0;
     }
   }
-  p_Var7->_tpxcptinfoptrs = local_30;
-  if (param_1 == 8) {
-    p_Var7->_tfpecode = local_34;
+  p_Var7->_tpxcptinfoptrs = oldpxcptinfoptrs;
+  if (signum == 8) {
+    p_Var7->_tfpecode = oldfpecode;
   }
   return 0;
 }
@@ -132,19 +133,19 @@ LAB_00c24537:
 
 // 00C243A0  siglookup  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winsig.c:634)
 
-_XCPT_ACTION * __cdecl siglookup(int param_1,_XCPT_ACTION *param_2)
+_XCPT_ACTION * __cdecl siglookup(int pxcptacttab,_XCPT_ACTION *param_2)
 
 {
   _XCPT_ACTION *p_Var1;
   int in_EDX;
   
-  p_Var1 = (_XCPT_ACTION *)param_1;
+  p_Var1 = (_XCPT_ACTION *)pxcptacttab;
   do {
     if (p_Var1->SigNum == in_EDX) break;
     p_Var1 = p_Var1 + 1;
-  } while (p_Var1 < (_XCPT_ACTION *)(_XcptActTabCount * 0xc + param_1));
-  if (((_XCPT_ACTION *)(_XcptActTabCount * 0xc + param_1) <= p_Var1) || (p_Var1->SigNum != in_EDX))
-  {
+  } while (p_Var1 < (_XCPT_ACTION *)(_XcptActTabCount * 0xc + pxcptacttab));
+  if (((_XCPT_ACTION *)(_XcptActTabCount * 0xc + pxcptacttab) <= p_Var1) ||
+     (p_Var1->SigNum != in_EDX)) {
     p_Var1 = (_XCPT_ACTION *)0x0;
   }
   return p_Var1;

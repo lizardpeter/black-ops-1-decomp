@@ -5,25 +5,26 @@
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_PacketAnalyze_SetPacketEntityType(SnapshotInfo_s *param_1,PacketEntityType param_2,bool param_3)
+MSG_PacketAnalyze_SetPacketEntityType
+          (SnapshotInfo_s *snapInfo,PacketEntityType packetEntityType,bool archived)
 
 {
-  param_1->packetEntityType = param_2;
-  param_1->packetEntityTypeArchived = param_3;
+  snapInfo->packetEntityType = packetEntityType;
+  snapInfo->packetEntityTypeArchived = archived;
   return;
 }
 
 
 // 0071EAA0  SV_GetEntityTypeString  (server_mp/sv_snapshot_profile_mp.cpp:652)
 
-char * __cdecl SV_GetEntityTypeString(int param_1)
+char * __cdecl SV_GetEntityTypeString(int packetEntityType)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x1b < (uint)param_1) {
+  if (0x1b < (uint)packetEntityType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_profile_mp.cpp"
                              ,0x28d,0,
                              "packetEntityType doesn\'t index ANALYZE_DATATYPE_ENTITYTYPE_COUNT\n\t%i not in [0, %i)"
@@ -34,41 +35,43 @@ char * __cdecl SV_GetEntityTypeString(int param_1)
       return pcVar3;
     }
   }
-  return s_analyzeEntityTypeNames[param_1];
+  return s_analyzeEntityTypeNames[packetEntityType];
 }
 
 
 // 0071EAE0  SV_PacketAnalyze_TrackSnapshotSize  (server_mp/sv_snapshot_profile_mp.cpp:1415)
 
-void __cdecl SV_PacketAnalyze_TrackSnapshotSize(int param_1)
+void __cdecl SV_PacketAnalyze_TrackSnapshotSize(int size)
 
 {
-  if (s_maxSnapshotSize < param_1) {
-    s_maxSnapshotSize = param_1;
+  if (s_maxSnapshotSize < size) {
+    s_maxSnapshotSize = size;
   }
   s_stdSnapshotDeviation =
-       ((float)s_numSnapshotSamples * s_stdSnapshotDeviation + ((float)param_1 - s_avgSnapshotSize))
-       / (float)(s_numSnapshotSamples + 1);
+       ((float)s_numSnapshotSamples * s_stdSnapshotDeviation + ((float)size - s_avgSnapshotSize)) /
+       (float)(s_numSnapshotSamples + 1);
   s_avgSnapshotSize =
-       ((float)s_numSnapshotSamples * s_avgSnapshotSize + (float)param_1) /
+       ((float)s_numSnapshotSamples * s_avgSnapshotSize + (float)size) /
        (float)(s_numSnapshotSamples + 1);
   s_numSnapshotSamples = s_numSnapshotSamples + 1;
   s_numSnapshotsBuiltSinceLastPoll = s_numSnapshotsBuiltSinceLastPoll + 1;
-  s_uncompressedDataSinceLastPoll = s_uncompressedDataSinceLastPoll + param_1;
+  s_uncompressedDataSinceLastPoll = s_uncompressedDataSinceLastPoll + size;
   return;
 }
 
 
 // 0071EB90  SV_PacketAnalyze_TrackPacketCompression  (server_mp/sv_snapshot_profile_mp.cpp:1429)
 
-void __cdecl SV_PacketAnalyze_TrackPacketCompression(int param_1,int param_2,int param_3)
+void __cdecl
+SV_PacketAnalyze_TrackPacketCompression(int clientNum,int originalSize,int compressedSize)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int slot;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((clientNum < 0) || (0x1f < clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_snapshot_profile_mp.cpp"
                              ,0x598,0,"%s\n\t(clientNum) = %i");
     if (!bVar2) {
@@ -77,12 +80,12 @@ void __cdecl SV_PacketAnalyze_TrackPacketCompression(int param_1,int param_2,int
       return;
     }
   }
-  uVar3 = s_clientSnapshotData[param_1].index & 7;
-  *(int *)(param_1 * 0x44 + 0x98a02d8 + uVar3 * 4) = param_3;
-  s_clientSnapshotData[param_1].snapshotSize[uVar3] = param_2;
-  s_clientSnapshotData[param_1].index = s_clientSnapshotData[param_1].index + 1;
+  uVar3 = s_clientSnapshotData[clientNum].index & 7;
+  *(int *)(clientNum * 0x44 + 0x98a02d8 + uVar3 * 4) = compressedSize;
+  s_clientSnapshotData[clientNum].snapshotSize[uVar3] = originalSize;
+  s_clientSnapshotData[clientNum].index = s_clientSnapshotData[clientNum].index + 1;
   s_numSnapshotsSentSinceLastPoll = s_numSnapshotsSentSinceLastPoll + 1;
-  s_compressedDataSinceLastPoll = s_compressedDataSinceLastPoll + param_3;
+  s_compressedDataSinceLastPoll = s_compressedDataSinceLastPoll + compressedSize;
   return;
 }
 
@@ -91,11 +94,11 @@ void __cdecl SV_PacketAnalyze_TrackPacketCompression(int param_1,int param_2,int
 
 void __cdecl
 SV_PacketAnalyze_TrackETypeBytes
-          (int param_1,int param_2,int param_3,bool param_4,NetFieldList *param_5)
+          (int eType,int number,int bits,bool archived,NetFieldList *fieldList)
 
 {
-  if (((param_3 != 0) && (0 < (sv_debugPacketContentsQuick->current).integer)) && (!param_4)) {
-    BG_GetEntityTypeName(param_1);
+  if (((bits != 0) && (0 < (sv_debugPacketContentsQuick->current).integer)) && (!archived)) {
+    BG_GetEntityTypeName(eType);
     CG_QuickPrint("Entity %d %\'%s\':%d %s\n");
   }
   return;
@@ -104,129 +107,136 @@ SV_PacketAnalyze_TrackETypeBytes
 
 // 0071EC90  SV_PacketAnalyze_TrackPS_ClearBits  (server_mp/sv_snapshot_profile_mp.cpp:1849)
 
-void __cdecl SV_PacketAnalyze_TrackPS_ClearBits(int param_1)
+void __cdecl SV_PacketAnalyze_TrackPS_ClearBits(int bits)
 
 {
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071ECA0  SV_PacketAnalyze_TrackPS_FieldDeltasBits  (server_mp/sv_snapshot_profile_mp.cpp:1864)
 
-void __cdecl SV_PacketAnalyze_TrackPS_FieldDeltasBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_FieldDeltasBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("PlayerState delta fields %i bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071ED00  SV_PacketAnalyze_TrackPS_HudelemBits  (server_mp/sv_snapshot_profile_mp.cpp:1882)
 
-void __cdecl SV_PacketAnalyze_TrackPS_HudelemBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_HudelemBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("Hudelems Total %d bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071ED60  SV_PacketAnalyze_TrackPS_StatsBits  (server_mp/sv_snapshot_profile_mp.cpp:1900)
 
-void __cdecl SV_PacketAnalyze_TrackPS_StatsBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_StatsBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("PlayerState delta stats %i bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071EDC0  SV_PacketAnalyze_TrackPS_WeaponBits  (server_mp/sv_snapshot_profile_mp.cpp:1917)
 
-void __cdecl SV_PacketAnalyze_TrackPS_WeaponBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_WeaponBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("PlayerState delta weapons %i bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071EE20  SV_PacketAnalyze_TrackPS_AmmoPoolBits  (server_mp/sv_snapshot_profile_mp.cpp:1934)
 
-void __cdecl SV_PacketAnalyze_TrackPS_AmmoPoolBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_AmmoPoolBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("PlayerState delta pool ammo %i bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071EE80  SV_PacketAnalyze_TrackPS_AmmoClipBits  (server_mp/sv_snapshot_profile_mp.cpp:1951)
 
-void __cdecl SV_PacketAnalyze_TrackPS_AmmoClipBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_AmmoClipBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("PlayerState delta clip ammo %i bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 
 
 // 0071EEE0  SV_PacketAnalyze_TrackPS_ObjectivesBits  (server_mp/sv_snapshot_profile_mp.cpp:1968)
 
-void __cdecl SV_PacketAnalyze_TrackPS_ObjectivesBits(int param_1,bool param_2)
+void __cdecl SV_PacketAnalyze_TrackPS_ObjectivesBits(int bits,bool isDemoPlayerState)
 
 {
   int iVar1;
+  int currentTotal;
   
-  iVar1 = param_1 - s_lastPSBits;
+  iVar1 = bits - s_lastPSBits;
   if ((!g_archivingSnapshot) && (0 < (sv_debugPacketContentsQuick->current).integer)) {
     CG_QuickPrint("Objectives %d bits\n");
     sv_quickBitsTotal = sv_quickBitsTotal + iVar1;
   }
-  s_lastPSBits = param_1;
+  s_lastPSBits = bits;
   return;
 }
 

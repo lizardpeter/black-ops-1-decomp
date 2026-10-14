@@ -2,14 +2,14 @@
 
 // 004A6830  CG_FleshTypeToName  (cgame/cg_effects_load_obj.cpp:69)
 
-char * __cdecl CG_FleshTypeToName(int param_1)
+char * __cdecl CG_FleshTypeToName(int fleshTypeId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 0) || (3 < (uint)param_1)) {
+  if ((fleshTypeId < 0) || (3 < (uint)fleshTypeId)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_effects_load_obj.cpp",
                              0x46,0,"%s\n\t(fleshTypeId) = %i");
     if (!bVar2) {
@@ -18,7 +18,7 @@ char * __cdecl CG_FleshTypeToName(int param_1)
       return pcVar3;
     }
   }
-  return g_FleshTypeName[param_1];
+  return g_FleshTypeName[fleshTypeId];
 }
 
 
@@ -26,41 +26,41 @@ char * __cdecl CG_FleshTypeToName(int param_1)
 
 int __cdecl
 CG_RegisterImpactEffects_Generic<31,char_const_*___cdecl(int)>
-          (char **param_1,char *param_2,FxEffectDef **param_3,_func___cdecl_char_ptr_int *param_4,
-          char *param_5)
+          (char **szEffectFile,char *pszTypeName,FxEffectDef **fx,
+          _func___cdecl_char_ptr_int *typeToNameFunc,char *defaultEffectName)
 
 {
   FxEffectDef *pFVar1;
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *effectName;
+  int iBadCount;
+  int i;
   
-  local_c = 0;
-  for (local_8 = 0; local_8 < 0x1f; local_8 = local_8 + 1) {
-    local_10 = param_1[local_8];
-    if (local_10 == (char *)0x0) {
-      local_10 = param_5;
+  iBadCount = 0;
+  for (i = 0; i < 0x1f; i = i + 1) {
+    effectName = szEffectFile[i];
+    if (effectName == (char *)0x0) {
+      effectName = defaultEffectName;
     }
-    if (local_10 == (char *)0x0) {
-      (*param_4)(local_8);
+    if (effectName == (char *)0x0) {
+      (*typeToNameFunc)(i);
       Com_Printf(0x15,"no entry for effect type \'%s\' on surface/flesh type \'%s\'\n");
-      local_c = local_c + 1;
-      param_3[local_8] = (FxEffectDef *)0x0;
+      iBadCount = iBadCount + 1;
+      fx[i] = (FxEffectDef *)0x0;
     }
     else {
-      if ((*local_10 == '\0') && (param_5 != (char *)0x0)) {
-        local_10 = param_5;
+      if ((*effectName == '\0') && (defaultEffectName != (char *)0x0)) {
+        effectName = defaultEffectName;
       }
-      if (*local_10 == '\0') {
-        param_3[local_8] = (FxEffectDef *)0x0;
+      if (*effectName == '\0') {
+        fx[i] = (FxEffectDef *)0x0;
       }
       else {
-        pFVar1 = FX_Register(local_10);
-        param_3[local_8] = pFVar1;
+        pFVar1 = FX_Register(effectName);
+        fx[i] = pFVar1;
       }
     }
   }
-  return local_c;
+  return iBadCount;
 }
 
 
@@ -68,53 +68,54 @@ CG_RegisterImpactEffects_Generic<31,char_const_*___cdecl(int)>
 
 int __cdecl
 CG_RegisterImpactEffects_Generic<4,char_const_*___cdecl(int)>
-          (char **param_1,char *param_2,FxEffectDef **param_3,_func___cdecl_char_ptr_int *param_4,
-          char *param_5)
+          (char **szEffectFile,char *pszTypeName,FxEffectDef **fx,
+          _func___cdecl_char_ptr_int *typeToNameFunc,char *defaultEffectName)
 
 {
   FxEffectDef *pFVar1;
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *effectName;
+  int iBadCount;
+  int i;
   
-  local_c = 0;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    local_10 = param_1[local_8];
-    if (local_10 == (char *)0x0) {
-      local_10 = param_5;
+  iBadCount = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    effectName = szEffectFile[i];
+    if (effectName == (char *)0x0) {
+      effectName = defaultEffectName;
     }
-    if (local_10 == (char *)0x0) {
-      (*param_4)(local_8);
+    if (effectName == (char *)0x0) {
+      (*typeToNameFunc)(i);
       Com_Printf(0x15,"no entry for effect type \'%s\' on surface/flesh type \'%s\'\n");
-      local_c = local_c + 1;
-      param_3[local_8] = (FxEffectDef *)0x0;
+      iBadCount = iBadCount + 1;
+      fx[i] = (FxEffectDef *)0x0;
     }
     else {
-      if ((*local_10 == '\0') && (param_5 != (char *)0x0)) {
-        local_10 = param_5;
+      if ((*effectName == '\0') && (defaultEffectName != (char *)0x0)) {
+        effectName = defaultEffectName;
       }
-      if (*local_10 == '\0') {
-        param_3[local_8] = (FxEffectDef *)0x0;
+      if (*effectName == '\0') {
+        fx[i] = (FxEffectDef *)0x0;
       }
       else {
-        pFVar1 = FX_Register(local_10);
-        param_3[local_8] = pFVar1;
+        pFVar1 = FX_Register(effectName);
+        fx[i] = pFVar1;
       }
     }
   }
-  return local_c;
+  return iBadCount;
 }
 
 
 // 004A67D0  CG_RegisterImpactEffects_NonFlesh  (cgame/cg_effects_load_obj.cpp:120)
 
-int __cdecl CG_RegisterImpactEffects_NonFlesh(char **param_1,char *param_2,FxEffectDef **param_3)
+int __cdecl
+CG_RegisterImpactEffects_NonFlesh(char **szEffectFile,char *pszTypeName,FxEffectDef **fx)
 
 {
   int iVar1;
   
   iVar1 = CG_RegisterImpactEffects_Generic<31,char_const_*___cdecl(int)>
-                    (param_1,param_2,param_3,Com_SurfaceTypeToName,(char *)0x0);
+                    (szEffectFile,pszTypeName,fx,Com_SurfaceTypeToName,(char *)0x0);
   return iVar1;
 }
 
@@ -122,13 +123,14 @@ int __cdecl CG_RegisterImpactEffects_NonFlesh(char **param_1,char *param_2,FxEff
 // 004A6800  CG_RegisterImpactEffects_Flesh  (cgame/cg_effects_load_obj.cpp:126)
 
 int __cdecl
-CG_RegisterImpactEffects_Flesh(char **param_1,char *param_2,FxEffectDef **param_3,char *param_4)
+CG_RegisterImpactEffects_Flesh
+          (char **szEffectFile,char *pszTypeName,FxEffectDef **fx,char *defaultEffectName)
 
 {
   int iVar1;
   
   iVar1 = CG_RegisterImpactEffects_Generic<4,char_const_*___cdecl(int)>
-                    (param_1,param_2,param_3,CG_FleshTypeToName,param_4);
+                    (szEffectFile,pszTypeName,fx,CG_FleshTypeToName,defaultEffectName);
   return iVar1;
 }
 
@@ -136,7 +138,8 @@ CG_RegisterImpactEffects_Flesh(char **param_1,char *param_2,FxEffectDef **param_
 // 004A6A70  CG_ParseImpactEffects  (cgame/cg_effects_load_obj.cpp:140)
 
 char * __cdecl
-CG_ParseImpactEffects(char *param_1,char *param_2,int param_3,char **param_4,EffectFile *param_5)
+CG_ParseImpactEffects
+          (char *filename,char *buf,int iTypeCount,char **pszTypeName,EffectFile *effectFile)
 
 {
   char cVar1;
@@ -150,27 +153,32 @@ CG_ParseImpactEffects(char *param_1,char *param_2,int param_3,char **param_4,Eff
   char *local_34;
   char *local_24;
   uint local_20;
-  int local_1c;
-  uint local_10;
+  int iEffectType;
+  int len;
+  char *effectName;
+  int iFleshType;
+  int iSurfaceType;
+  char *token;
   
   do {
     while( true ) {
-      pcVar4 = Com_Parse(&param_2);
-      if (param_2 == (char *)0x0) {
+      pcVar4 = Com_Parse(&buf);
+      if (buf == (char *)0x0) {
         return (char *)0x0;
       }
       if ((*pcVar4 != '\0') && (*pcVar4 != '#')) break;
-      Com_SkipRestOfLine(&param_2);
+      Com_SkipRestOfLine(&buf);
     }
-    local_1c = 0;
-    while ((local_1c < param_3 && (iVar5 = I_stricmp(param_4[local_1c],pcVar4), iVar5 != 0))) {
-      local_1c = local_1c + 1;
+    iEffectType = 0;
+    while ((iEffectType < iTypeCount &&
+           (iVar5 = I_stricmp(pszTypeName[iEffectType],pcVar4), iVar5 != 0))) {
+      iEffectType = iEffectType + 1;
     }
-    if (local_1c == param_3) {
+    if (iEffectType == iTypeCount) {
       pcVar4 = va("unknown effect type \'%s\' in first column of file \'%s\'");
       return pcVar4;
     }
-    pcVar4 = Com_ParseOnLine(&param_2);
+    pcVar4 = Com_ParseOnLine(&buf);
     if (*pcVar4 == '\0') {
       pcVar4 = va("missing surface/flesh type in second column of file \'%s\'");
       return pcVar4;
@@ -179,24 +187,24 @@ CG_ParseImpactEffects(char *param_1,char *param_2,int param_3,char **param_4,Eff
     for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
       iVar6 = I_stricmp(pcVar4,g_FleshTypeName[local_20]);
       if (iVar6 == 0) {
-        local_10 = local_20;
+        iFleshType = local_20;
         goto LAB_004a6b91;
       }
     }
-    local_10 = 0xffffffff;
+    iFleshType = -1;
 LAB_004a6b91:
-    if (((-1 < iVar5) && (-1 < (int)local_10)) &&
+    if (((-1 < iVar5) && (-1 < iFleshType)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_effects_load_obj.cpp"
                                  ,0xb0,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pcVar4 = (char *)(*pcVar2)();
       return pcVar4;
     }
-    if ((iVar5 < 0) && ((int)local_10 < 0)) {
+    if ((iVar5 < 0) && (iFleshType < 0)) {
       pcVar4 = va("unknown surface/flesh type \'%s\' in second column of file \'%s\'");
       return pcVar4;
     }
-    local_34 = Com_ParseOnLine(&param_2);
+    local_34 = Com_ParseOnLine(&buf);
     local_24 = local_34;
     do {
       cVar1 = *local_24;
@@ -217,7 +225,7 @@ LAB_004a6b91:
       local_34 = local_34 + 1;
       local_38 = local_38 + 1;
     } while (cVar1 != '\0');
-    if (((iVar5 < 0) && ((int)local_10 < 0)) &&
+    if (((iVar5 < 0) && (iFleshType < 0)) &&
        (pcVar7 = pcVar4,
        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_effects_load_obj.cpp",
                                 0xbc,0,"%s"), !bVar3)) {
@@ -226,24 +234,26 @@ LAB_004a6b91:
       return pcVar4;
     }
     if (iVar5 < 0) {
-      param_5->flesh[local_1c][local_10] = pcVar4;
+      effectFile->flesh[iEffectType][iFleshType] = pcVar4;
     }
     else {
-      param_5->nonflesh[local_1c][iVar5] = pcVar4;
+      effectFile->nonflesh[iEffectType][iVar5] = pcVar4;
     }
-    Com_SkipRestOfLine(&param_2);
+    Com_SkipRestOfLine(&buf);
   } while( true );
 }
 
 
 // 004A6D20  compare_impact_files  (cgame/cg_effects_load_obj.cpp:206)
 
-int __cdecl compare_impact_files(void *param_1,void *param_2)
+int __cdecl compare_impact_files(void *pe0,void *pe1)
 
 {
   int iVar1;
+  char *psz1;
+  char *psz0;
   
-  iVar1 = I_stricmp(*(char **)param_1,*(char **)param_2);
+  iVar1 = I_stricmp(*(char **)pe0,*(char **)pe1);
   return iVar1;
 }
 
@@ -252,52 +262,52 @@ int __cdecl compare_impact_files(void *param_1,void *param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl CG_RegisterImpactEffectsForDir(char *param_1,EffectFile *param_2,char *param_3)
+void __cdecl CG_RegisterImpactEffectsForDir(char *dir,EffectFile *effectFile,char *listbuf)
 
 {
   char cVar1;
   char *local_4028;
-  int local_4024 [4097];
-  char *local_20;
-  uint local_1c;
-  int local_18;
-  char *local_14;
-  char *local_10;
-  int local_c;
-  uint local_8;
+  undefined4 pszFiles [4097];
+  char *filebuf;
+  uint listCount;
+  int fileSize;
+  char *errorMsg;
+  char *psz;
+  int f;
+  uint i;
   
-  local_8 = 0x4a688d;
-  local_1c = FS_GetFileList(param_1,"csv",FS_LIST_PURE_ONLY,param_3,0x10000);
-  if (local_1c != 0) {
-    if (0x1000 < local_1c) {
-      local_1c = 0x1000;
+  i = 0x4a688d;
+  listCount = FS_GetFileList(dir,"csv",FS_LIST_PURE_ONLY,listbuf,0x10000);
+  if (listCount != 0) {
+    if (0x1000 < listCount) {
+      listCount = 0x1000;
     }
-    local_10 = param_3;
-    for (local_8 = 0; local_8 < local_1c; local_8 = local_8 + 1) {
-      local_4024[local_8] = (int)local_10;
-      local_4028 = local_10;
+    psz = listbuf;
+    for (i = 0; i < listCount; i = i + 1) {
+      pszFiles[i] = psz;
+      local_4028 = psz;
       do {
         cVar1 = *local_4028;
         local_4028 = local_4028 + 1;
       } while (cVar1 != '\0');
-      local_10 = local_4028;
+      psz = local_4028;
     }
-    qsort(local_4024,local_1c,4,compare_impact_files);
-    for (local_8 = 0; local_8 < local_1c; local_8 = local_8 + 1) {
-      local_10 = va("%s/%s");
-      local_18 = FS_FOpenFileByMode(local_10,&local_c,FS_READ);
-      if (-1 < local_18) {
+    qsort(pszFiles,listCount,4,compare_impact_files);
+    for (i = 0; i < listCount; i = i + 1) {
+      psz = va("%s/%s");
+      fileSize = FS_FOpenFileByMode(psz,&f,FS_READ);
+      if (-1 < fileSize) {
         Hunk_CheckTempMemoryHighClear();
-        local_20 = Hunk_AllocateTempMemoryHigh(local_18 + 1,"CG_RegisterImpactEffects");
-        FS_Read(local_20,local_18,local_c);
-        FS_FCloseFile(local_c);
-        local_20[local_18] = '\0';
-        Com_BeginParseSession(local_10);
+        filebuf = Hunk_AllocateTempMemoryHigh(fileSize + 1,"CG_RegisterImpactEffects");
+        FS_Read(filebuf,fileSize,f);
+        FS_FCloseFile(f);
+        filebuf[fileSize] = '\0';
+        Com_BeginParseSession(psz);
         Com_SetCSV(1);
-        local_14 = CG_ParseImpactEffects(local_10,local_20,0x15,g_TypeName,param_2);
+        errorMsg = CG_ParseImpactEffects(psz,filebuf,0x15,g_TypeName,effectFile);
         Com_EndParseSession();
         Hunk_ClearTempMemoryHigh();
-        if (local_14 != (char *)0x0) {
+        if (errorMsg != (char *)0x0) {
           Com_PrintError(0x15,"ERROR: %s");
           return;
         }
@@ -312,52 +322,51 @@ void __cdecl CG_RegisterImpactEffectsForDir(char *param_1,EffectFile *param_2,ch
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-FxImpactTable * __cdecl CG_RegisterImpactEffects_LoadObj(char *param_1)
+FxImpactTable * __cdecl CG_RegisterImpactEffects_LoadObj(char *mapname)
 
 {
   FxImpactEntry *pFVar1;
   int iVar2;
-  EffectFile local_bdc;
-  char *local_5c;
-  int local_58;
-  uint local_54;
-  FxImpactTable *local_50;
-  char local_4c [68];
+  EffectFile effectFile;
+  char *listbuf;
+  int iBadCount;
+  uint i;
+  FxImpactTable *fx;
+  char mapdir [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   Hunk_CheckTempMemoryClear();
-  local_5c = Hunk_AllocateTempMemory(0x10000,"CG_RegisterImpactEffects");
-  memset((uchar *)&local_bdc,'\0',0xb7c);
-  CG_RegisterImpactEffectsForDir("fx",&local_bdc,local_5c);
-  if (param_1 != (char *)0x0) {
-    Com_sprintf(local_4c,0x40,"fx/maps/%s");
-    CG_RegisterImpactEffectsForDir(local_4c,&local_bdc,local_5c);
+  listbuf = Hunk_AllocateTempMemory(0x10000,"CG_RegisterImpactEffects");
+  memset((uchar *)&effectFile,'\0',0xb7c);
+  CG_RegisterImpactEffectsForDir("fx",&effectFile,listbuf);
+  if (mapname != (char *)0x0) {
+    Com_sprintf(mapdir,0x40,"fx/maps/%s");
+    CG_RegisterImpactEffectsForDir(mapdir,&effectFile,listbuf);
   }
-  local_50 = Hunk_AllocAlign(8,4,"CG_RegisterImpactEffects",8);
+  fx = Hunk_AllocAlign(8,4,"CG_RegisterImpactEffects",8);
   pFVar1 = Hunk_AllocAlign(0xb7c,4,"CG_RegisterImpactEffects",8);
-  local_50->table = pFVar1;
-  local_58 = 0;
-  for (local_54 = 0; local_54 < 0x15; local_54 = local_54 + 1) {
+  fx->table = pFVar1;
+  iBadCount = 0;
+  for (i = 0; i < 0x15; i = i + 1) {
     iVar2 = CG_RegisterImpactEffects_NonFlesh
-                      (local_bdc.nonflesh[local_54],g_TypeName[local_54],
-                       local_50->table[local_54].nonflesh);
-    local_58 = iVar2 + local_58;
+                      (effectFile.nonflesh[i],g_TypeName[i],fx->table[i].nonflesh);
+    iBadCount = iVar2 + iBadCount;
     iVar2 = CG_RegisterImpactEffects_Flesh
-                      (local_bdc.flesh[local_54],g_TypeName[local_54],
-                       local_50->table[local_54].flesh,local_bdc.nonflesh[local_54][7]);
-    local_58 = iVar2 + local_58;
+                      (effectFile.flesh[i],g_TypeName[i],fx->table[i].flesh,
+                       effectFile.nonflesh[i][7]);
+    iBadCount = iVar2 + iBadCount;
   }
-  if (local_58 == 0) {
-    local_50->name = "";
+  if (iBadCount == 0) {
+    fx->name = "";
     Hunk_ClearTempMemory();
   }
   else {
     Com_PrintError(0x15,"ERROR: %i missing entries in effect CSV files (see console for details)");
     Hunk_ClearTempMemory();
-    local_50 = (FxImpactTable *)0x0;
+    fx = (FxImpactTable *)0x0;
   }
-  return local_50;
+  return fx;
 }
 
 
@@ -366,7 +375,7 @@ FxImpactTable * __cdecl CG_RegisterImpactEffects_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-FxImpactTable * __cdecl CG_RegisterImpactEffects_FastFile(char *param_1)
+FxImpactTable * __cdecl CG_RegisterImpactEffects_FastFile(char *mapname)
 
 {
   XAssetHeader XVar1;
@@ -378,7 +387,7 @@ FxImpactTable * __cdecl CG_RegisterImpactEffects_FastFile(char *param_1)
 
 // 004A65E0  CG_RegisterImpactEffects  (cgame/cg_effects_load_obj.cpp:342)
 
-FxImpactTable * __cdecl CG_RegisterImpactEffects(char *param_1)
+FxImpactTable * __cdecl CG_RegisterImpactEffects(char *mapname)
 
 {
   FxImpactTable *pFVar1;
@@ -390,7 +399,7 @@ FxImpactTable * __cdecl CG_RegisterImpactEffects(char *param_1)
   else {
     local_c = CG_RegisterImpactEffects_FastFile;
   }
-  pFVar1 = (FxImpactTable *)(*local_c)(param_1);
+  pFVar1 = (FxImpactTable *)(*local_c)(mapname);
   return pFVar1;
 }
 

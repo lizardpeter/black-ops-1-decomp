@@ -2570,60 +2570,60 @@ bool __cdecl G_VehicleUpdateField(char *param_1,char *param_2)
 void __cdecl G_ReloadScrVehicleInfo(void)
 
 {
-  cspField_t *pcVar1;
+  cspField_t *string;
   int extraout_EAX;
   int extraout_EAX_00;
-  int iVar2;
-  vehicle_info_t **ppvVar3;
-  int iVar4;
+  int iVar1;
+  vehicle_info_t **ppvVar2;
+  int iVar3;
   _func_int_uchar_ptr_char_ptr_int_int *unaff_ESI;
-  vehicle_info_t **ppvVar5;
+  vehicle_info_t **ppvVar4;
   int unaff_EDI;
-  double dVar6;
-  _func_void_uchar_ptr_char_ptr *p_Var7;
+  double dVar5;
+  _func_void_uchar_ptr_char_ptr *p_Var6;
   char local_4048 [64];
   undefined1 local_4008 [16380];
   undefined4 uStack_c;
   
-  p_Var7 = (_func_void_uchar_ptr_char_ptr *)&stack0xfffffffc;
+  p_Var6 = (_func_void_uchar_ptr_char_ptr *)&stack0xfffffffc;
   uStack_c = 0x5b2550;
-  iVar4 = 0;
+  iVar3 = 0;
   if (0 < bg_numVehicleInfos) {
-    ppvVar3 = &bg_vehicleInfos;
+    ppvVar2 = &bg_vehicleInfos;
     do {
       sprintf(local_4048,"vehicles/%s");
       if ((useFastFile->current).enabled == false) {
-        pcVar1 = (cspField_t *)FUN_005e8b30(local_4048,"vehicle file","VEHICLEFILE",local_4008);
+        string = (cspField_t *)FUN_005e8b30(local_4048,"vehicle file","VEHICLEFILE",local_4008);
       }
       else {
-        pcVar1 = (cspField_t *)FUN_005e8c30(local_4048,"vehicle file","VEHICLEFILE");
+        string = (cspField_t *)FUN_005e8c30(local_4048,"vehicle file","VEHICLEFILE");
       }
-      strchr((uchar *)pcVar1,'\"');
+      strchr((uchar *)string,'\"');
       if (extraout_EAX == 0) {
-        strchr((uchar *)pcVar1,';');
+        strchr((uchar *)string,';');
         if (extraout_EAX_00 != 0) goto LAB_005b25e4;
       }
       else {
 LAB_005b25e4:
         Com_Error(ERR_DROP,"\x15File [%s] is not a valid %s\n",local_4048,"vehicle file");
       }
-      iVar2 = ParseConfigStringToStruct
-                        ((uchar *)ppvVar3,pcVar1,0x19,(char *)VEH_ParseSpecificField,unaff_EDI,
-                         unaff_ESI,p_Var7);
-      if (iVar2 != 0) {
-        ppvVar5 = ppvVar3 + 0x2b9;
-        iVar2 = 4;
+      iVar1 = ParseConfigStringToStruct
+                        ((uchar *)ppvVar2,string,0x19,(char *)VEH_ParseSpecificField,unaff_EDI,
+                         unaff_ESI,p_Var6);
+      if (iVar1 != 0) {
+        ppvVar4 = ppvVar2 + 0x2b9;
+        iVar1 = 4;
         do {
-          dVar6 = (double)((float)*ppvVar5 * 0.5 * 0.017453292);
+          dVar5 = (double)((float)*ppvVar4 * 0.5 * 0.017453292);
           __libm_sse2_cos((double)CONCAT44(unaff_ESI,unaff_EDI));
-          *ppvVar5 = (vehicle_info_t *)(float)dVar6;
-          ppvVar5 = ppvVar5 + 1;
-          iVar2 = iVar2 + -1;
-        } while (iVar2 != 0);
+          *ppvVar4 = (vehicle_info_t *)(float)dVar5;
+          ppvVar4 = ppvVar4 + 1;
+          iVar1 = iVar1 + -1;
+        } while (iVar1 != 0);
       }
-      iVar4 = iVar4 + 1;
-      ppvVar3 = ppvVar3 + 0x776;
-    } while (iVar4 < bg_numVehicleInfos);
+      iVar3 = iVar3 + 1;
+      ppvVar2 = ppvVar2 + 0x776;
+    } while (iVar3 < bg_numVehicleInfos);
   }
   NitrousVehicle::reinit_parms();
   return;
@@ -2670,25 +2670,25 @@ void __cdecl G_SpawnVehicle(gentity_s *param_1,char *param_2,int param_3)
   int iVar3;
   int iVar4;
   gentity_s *unaff_EDI;
-  gentity_s *pgVar5;
+  gentity_s *dst;
   scr_vehicle_s *local_4;
   
   iVar4 = 0;
   piVar2 = &DAT_049f2120;
   do {
-    pgVar5 = (gentity_s *)(piVar2 + -0x40c);
+    dst = (gentity_s *)(piVar2 + -0x40c);
     if (piVar2[-0x38b] == 0x3ff) break;
-    pgVar5 = (gentity_s *)(piVar2 + -0x81);
+    dst = (gentity_s *)(piVar2 + -0x81);
     if (*piVar2 == 0x3ff) {
       iVar4 = iVar4 + 1;
       break;
     }
-    pgVar5 = (gentity_s *)(piVar2 + 0x30a);
+    dst = (gentity_s *)(piVar2 + 0x30a);
     if (piVar2[0x38b] == 0x3ff) {
       iVar4 = iVar4 + 2;
       break;
     }
-    pgVar5 = (gentity_s *)(piVar2 + 0x695);
+    dst = (gentity_s *)(piVar2 + 0x695);
     if (piVar2[0x716] == 0x3ff) {
       iVar4 = iVar4 + 3;
       break;
@@ -2715,7 +2715,7 @@ void __cdecl G_SpawnVehicle(gentity_s *param_1,char *param_2,int param_3)
       FUN_0072faf0();
     }
   }
-  memset((uchar *)pgVar5,'\0',0xe2c);
+  memset((uchar *)dst,'\0',0xe2c);
   if ((_DAT_04ffe0f8 & 1) == 0) {
     _DAT_04ffe0f8 = _DAT_04ffe0f8 | 1;
     _DAT_04ffda50 = 0;
@@ -2747,30 +2747,30 @@ void __cdecl G_SpawnVehicle(gentity_s *param_1,char *param_2,int param_3)
     _DAT_04ffda5c = 0xfe967699;
     atexit(FUN_0099a4a0);
   }
-  *(undefined ***)(pgVar5 + 0x76c) = DAT_04ffda40;
-  *(undefined4 *)(pgVar5 + 0x7dc) = 0;
-  pgVar5[0x7e0] = (gentity_s)0x0;
-  *(undefined4 *)(pgVar5 + 0x770) = 0x7e967699;
-  *(undefined4 *)(pgVar5 + 0x774) = 0x7e967699;
-  *(undefined4 *)(pgVar5 + 0x778) = 0x7e967699;
-  *(undefined4 *)(pgVar5 + 0x780) = 0xfe967699;
-  *(undefined4 *)(pgVar5 + 0x784) = 0xfe967699;
-  *(undefined4 *)(pgVar5 + 0x788) = 0xfe967699;
-  *(undefined4 *)(pgVar5 + 0x6b8) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6bc) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6c0) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6c4) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6c8) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6cc) = 0xffffffff;
-  *(undefined4 *)(pgVar5 + 0x6a0) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x6a4) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x6a8) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x6ac) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x6b0) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x6b4) = 0x7f7fffff;
-  *(undefined4 *)(pgVar5 + 0x448) = 0x3ff;
-  VEH_InitEntity(pgVar5,psVar1,(int)unaff_EDI);
-  VEH_InitVehicle(param_1,psVar1,(int)pgVar5);
+  *(undefined ***)(dst + 0x76c) = DAT_04ffda40;
+  *(undefined4 *)(dst + 0x7dc) = 0;
+  dst[0x7e0] = (gentity_s)0x0;
+  *(undefined4 *)(dst + 0x770) = 0x7e967699;
+  *(undefined4 *)(dst + 0x774) = 0x7e967699;
+  *(undefined4 *)(dst + 0x778) = 0x7e967699;
+  *(undefined4 *)(dst + 0x780) = 0xfe967699;
+  *(undefined4 *)(dst + 0x784) = 0xfe967699;
+  *(undefined4 *)(dst + 0x788) = 0xfe967699;
+  *(undefined4 *)(dst + 0x6b8) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6bc) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6c0) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6c4) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6c8) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6cc) = 0xffffffff;
+  *(undefined4 *)(dst + 0x6a0) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x6a4) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x6a8) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x6ac) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x6b0) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x6b4) = 0x7f7fffff;
+  *(undefined4 *)(dst + 0x448) = 0x3ff;
+  VEH_InitEntity(dst,psVar1,(int)unaff_EDI);
+  VEH_InitVehicle(param_1,psVar1,(int)dst);
   if (param_3 == 0) {
     FUN_005a6250();
   }

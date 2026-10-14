@@ -3,15 +3,16 @@
 // 007CCA10  Hunk_FirstFitInit  (universal/mem_firstfit.cpp:48)
 
 HunkUser * __cdecl
-Hunk_FirstFitInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong param_4,void *param_5
-                 ,char *param_6,int param_7)
+Hunk_FirstFitInit(void *buffer,int size,HU_ALLOCATION_SCHEME scheme,ulong flags,
+                 void *scheme_specific_data,char *name,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   HunkUser *pHVar3;
+  FIRSTFIT_HUNKUSER *hunk;
   
-  if ((param_4 & 2) == 0) {
+  if ((flags & 2) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_firstfit.cpp",0x31,0
                              ,"%s");
     if (!bVar2) {
@@ -20,7 +21,7 @@ Hunk_FirstFitInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong p
       return pHVar3;
     }
   }
-  if ((uint)param_2 < 0x29) {
+  if ((uint)size < 0x29) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_firstfit.cpp",0x32,0
                              ,"%s");
     if (!bVar2) {
@@ -29,70 +30,79 @@ Hunk_FirstFitInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong p
       return pHVar3;
     }
   }
-  *(char **)((int)param_1 + 8) = param_6;
-  *(HU_ALLOCATION_SCHEME *)param_1 = param_3;
-  *(ulong *)((int)param_1 + 4) = param_4;
-  *(int *)((int)param_1 + 0xc) = param_7;
-  if (*(int *)((int)param_1 + 8) == 0) {
-    *(undefined4 *)((int)param_1 + 0x18) = 0xffffffff;
+  *(char **)((int)buffer + 8) = name;
+  *(HU_ALLOCATION_SCHEME *)buffer = scheme;
+  *(ulong *)((int)buffer + 4) = flags;
+  *(int *)((int)buffer + 0xc) = type;
+  if (*(int *)((int)buffer + 8) == 0) {
+    *(undefined4 *)((int)buffer + 0x18) = 0xffffffff;
   }
   else {
-    *(undefined4 *)((int)param_1 + 0x18) = 0xffffffff;
+    *(undefined4 *)((int)buffer + 0x18) = 0xffffffff;
   }
-  *(int *)((int)param_1 + 0x10) = param_2;
-  *(int *)((int)param_1 + 0x14) = (int)param_1 + 0x20;
-  **(undefined4 **)((int)param_1 + 0x14) = 0;
-  *(int *)(*(int *)((int)param_1 + 0x14) + 4) = *(int *)((int)param_1 + 0x10) + -0x20;
-  *(undefined4 *)((int)param_1 + 0x1c) = 0x20;
-  return param_1;
+  *(int *)((int)buffer + 0x10) = size;
+  *(int *)((int)buffer + 0x14) = (int)buffer + 0x20;
+  **(undefined4 **)((int)buffer + 0x14) = 0;
+  *(int *)(*(int *)((int)buffer + 0x14) + 4) = *(int *)((int)buffer + 0x10) + -0x20;
+  *(undefined4 *)((int)buffer + 0x1c) = 0x20;
+  return buffer;
 }
 
 
 // 007CCB00  Hunk_FirstFitReset  (universal/mem_firstfit.cpp:74)
 
-void __cdecl Hunk_FirstFitReset(HunkUser *param_1)
+void __cdecl Hunk_FirstFitReset(HunkUser *_user)
 
 {
-  param_1[1].flags = (ulong)(param_1 + 2);
-  *(undefined4 *)param_1[1].flags = 0;
-  *(HU_ALLOCATION_SCHEME *)(param_1[1].flags + 4) = param_1[1].scheme - 0x20;
-  param_1[1].type = 0x20;
+  FIRSTFIT_HUNKUSER *hunk;
+  
+  _user[1].flags = (ulong)(_user + 2);
+  *(undefined4 *)_user[1].flags = 0;
+  *(HU_ALLOCATION_SCHEME *)(_user[1].flags + 4) = _user[1].scheme - 0x20;
+  _user[1].type = 0x20;
   return;
 }
 
 
 // 007CCB50  Hunk_FirstFitDestroy  (universal/mem_firstfit.cpp:84)
 
-void __cdecl Hunk_FirstFitDestroy(HunkUser *param_1)
+void __cdecl Hunk_FirstFitDestroy(HunkUser *_user)
 
 {
-  param_1->scheme = HU_SCHEME_DEFAULT;
-  param_1->flags = 0;
-  param_1->name = (char *)0x0;
-  param_1->type = 0;
-  param_1[1].scheme = HU_SCHEME_DEFAULT;
-  param_1[1].flags = 0;
-  param_1[1].name = (char *)0x0;
-  param_1[1].type = 0;
+  _user->scheme = HU_SCHEME_DEFAULT;
+  _user->flags = 0;
+  _user->name = (char *)0x0;
+  _user->type = 0;
+  _user[1].scheme = HU_SCHEME_DEFAULT;
+  _user[1].flags = 0;
+  _user[1].name = (char *)0x0;
+  _user[1].type = 0;
   return;
 }
 
 
 // 007CCB80  Hunk_FirstFitAlloc  (universal/mem_firstfit.cpp:89)
 
-void * __cdecl Hunk_FirstFitAlloc(HunkUser *param_1,int param_2,int param_3,char *param_4)
+void * __cdecl Hunk_FirstFitAlloc(HunkUser *_user,int size,int alignment,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
-  ulong uVar5;
-  ulong *puVar6;
-  ulong *local_24;
-  ulong *local_8;
+  int iVar5;
+  _firstfit_heapnode *p_Var6;
+  _firstfit_heapnode *base_ptr;
+  _firstfit_heapnode *free_link;
+  void *user_ptr;
+  int adj_size;
+  FIRSTFIT_HUNKUSER *hunk;
+  int user_ptr_offset;
+  ScopedCriticalSection csc;
+  _firstfit_heapnode *new_link;
+  _firstfit_heapnode *last;
   
-  if ((param_3 < 1) &&
+  if ((alignment < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_firstfit.cpp",0x5a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -100,92 +110,95 @@ void * __cdecl Hunk_FirstFitAlloc(HunkUser *param_1,int param_2,int param_3,char
     return pvVar3;
   }
   Sys_EnterCriticalSection(CRITSECT_MEMFIRSTFIT);
-  local_24 = (ulong *)param_1[1].flags;
-  local_8 = (ulong *)0x0;
+  free_link = (_firstfit_heapnode *)_user[1].flags;
+  last = (_firstfit_heapnode *)0x0;
   while( true ) {
-    if (local_24 == (ulong *)0x0) {
+    if (free_link == (_firstfit_heapnode *)0x0) {
       Sys_LeaveCriticalSection(CRITSECT_MEMFIRSTFIT);
       return (void *)0x0;
     }
-    iVar4 = ((int)local_24 + param_3 + 0xb & ~(param_3 - 1U)) - (int)(local_24 + 3);
-    uVar5 = param_2 + 0xc + iVar4;
-    if ((int)uVar5 <= (int)local_24[1]) break;
-    local_8 = local_24;
-    local_24 = (ulong *)*local_24;
+    iVar4 = ((int)&free_link[1].next + alignment + 3 & ~(alignment - 1U)) - (int)&free_link[1].size;
+    iVar5 = size + 0xc + iVar4;
+    if (iVar5 <= free_link->size) break;
+    last = free_link;
+    free_link = free_link->next;
   }
-  if ((*local_24 == 0) && ((int)(local_24[1] - uVar5) < 0x401)) {
+  if ((free_link->next == (_firstfit_heapnode *)0x0) && (free_link->size - iVar5 < 0x401)) {
     Sys_LeaveCriticalSection(CRITSECT_MEMFIRSTFIT);
     return (void *)0x0;
   }
-  if (0x400 < (int)(local_24[1] - uVar5)) {
-    puVar6 = (ulong *)((int)local_24 + uVar5);
-    *puVar6 = *local_24;
-    puVar6[1] = local_24[1] - uVar5;
-    *local_24 = (ulong)puVar6;
-    local_24[1] = uVar5;
+  if (0x400 < free_link->size - iVar5) {
+    p_Var6 = (_firstfit_heapnode *)((int)free_link + iVar5);
+    p_Var6->next = free_link->next;
+    p_Var6->size = free_link->size - iVar5;
+    free_link->next = p_Var6;
+    free_link->size = iVar5;
   }
-  if (local_8 == (ulong *)0x0) {
-    param_1[1].flags = *local_24;
+  if (last == (_firstfit_heapnode *)0x0) {
+    _user[1].flags = (ulong)free_link->next;
   }
   else {
-    *local_8 = *local_24;
+    last->next = free_link->next;
   }
-  *local_24 = 0xdeadbeef;
-  *(ulong **)((int)local_24 + iVar4 + 8) = local_24;
-  param_1[1].type = param_1[1].type + local_24[1];
+  free_link->next = (_firstfit_heapnode *)0xdeadbeef;
+  *(_firstfit_heapnode **)((int)free_link + iVar4 + 8) = free_link;
+  _user[1].type = _user[1].type + free_link->size;
   Sys_LeaveCriticalSection(CRITSECT_MEMFIRSTFIT);
-  return (void *)((int)local_24 + iVar4 + 0xc);
+  return (void *)((int)free_link + iVar4 + 0xc);
 }
 
 
 // 007CCD40  Hunk_FirstFitFree  (universal/mem_firstfit.cpp:158)
 
-void __cdecl Hunk_FirstFitFree(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_FirstFitFree(HunkUser *_user,void *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
-  ulong *local_18;
-  ulong *local_10;
-  ulong *local_8;
+  _firstfit_heapnode *free_link;
+  FIRSTFIT_HUNKUSER *hunk;
+  _firstfit_heapnode *scan;
+  ScopedCriticalSection csc;
+  _firstfit_heapnode *last;
   
-  if (param_2 != (void *)0x0) {
+  if (ptr != (void *)0x0) {
     Sys_EnterCriticalSection(CRITSECT_MEMFIRSTFIT);
-    local_8 = (ulong *)0x0;
-    local_10 = (ulong *)param_1[1].flags;
-    local_18 = *(ulong **)((int)param_2 + -4);
-    if (*local_18 == 0xdeadbeef) {
-      param_1[1].type = param_1[1].type - local_18[1];
-      if ((param_1[1].flags == 0) &&
+    last = (_firstfit_heapnode *)0x0;
+    scan = (_firstfit_heapnode *)_user[1].flags;
+    free_link = *(_firstfit_heapnode **)((int)ptr + -4);
+    if (free_link->next == (_firstfit_heapnode *)0xdeadbeef) {
+      _user[1].type = _user[1].type - free_link->size;
+      if ((_user[1].flags == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_firstfit.cpp",
                                    0xb2,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      for (; local_10 != (ulong *)0x0; local_10 = (ulong *)*local_10) {
-        if (local_18 < local_10) {
-          if (local_8 == (ulong *)0x0) {
-            *local_18 = param_1[1].flags;
-            param_1[1].flags = (ulong)local_18;
+      for (; scan != (_firstfit_heapnode *)0x0; scan = scan->next) {
+        if (free_link < scan) {
+          if (last == (_firstfit_heapnode *)0x0) {
+            free_link->next = (_firstfit_heapnode *)_user[1].flags;
+            _user[1].flags = (ulong)free_link;
           }
           else {
-            *local_18 = (ulong)local_10;
-            *local_8 = (ulong)local_18;
-            if ((ulong *)((int)local_8 + local_8[1]) == local_18) {
-              local_8[1] = local_8[1] + local_18[1];
-              *local_8 = *local_18;
-              local_18 = local_8;
+            free_link->next = scan;
+            last->next = free_link;
+            if ((_firstfit_heapnode *)((int)&last->next + last->size) == free_link) {
+              last->size = last->size + free_link->size;
+              last->next = free_link->next;
+              free_link = last;
             }
           }
-          if ((*local_18 != 0) && ((int)local_18 + local_18[1] == *local_18)) {
-            local_18[1] = local_18[1] + *(int *)(*local_18 + 4);
-            *local_18 = *(ulong *)*local_18;
+          if ((free_link->next != (_firstfit_heapnode *)0x0) &&
+             ((_firstfit_heapnode *)((int)&free_link->next + free_link->size) == free_link->next)) {
+            free_link->size = free_link->size + free_link->next->size;
+            free_link->next = free_link->next->next;
           }
           Sys_LeaveCriticalSection(CRITSECT_MEMFIRSTFIT);
           return;
         }
-        local_8 = local_10;
+        last = scan;
       }
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_firstfit.cpp",0xdc
                                ,0,"%s\n\t%s");

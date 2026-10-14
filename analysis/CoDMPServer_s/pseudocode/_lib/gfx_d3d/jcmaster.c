@@ -2,12 +2,15 @@
 
 // 00879740  jinit_c_master_control  (jpeg-6/jcmaster.c:544)
 
+/* WARNING: Variable defined which should be unmapped: transcode_only */
+
 void __cdecl jinit_c_master_control(jpeg_compress_struct *param_1,uchar param_2)
 
 {
   int in_EAX;
   undefined4 *puVar1;
   jpeg_compress_struct *unaff_EDI;
+  uchar transcode_only;
   
   puVar1 = (undefined4 *)(*(code *)**(undefined4 **)(in_EAX + 4))();
   *(undefined4 **)(in_EAX + 0x144) = puVar1;

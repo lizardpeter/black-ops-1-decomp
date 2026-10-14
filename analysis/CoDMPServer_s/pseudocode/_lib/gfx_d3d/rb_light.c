@@ -2,33 +2,37 @@
 
 // 00839F30  SetPixelColorLightGridVec4_PC  (universal/com_color.h:160)
 
-void __cdecl SetPixelColorLightGridVec4_PC(uchar *param_1,float *param_2,float param_3)
+/* WARNING: Variable defined which should be unmapped: rf */
+
+void __cdecl SetPixelColorLightGridVec4_PC(uchar *primaryWeight,float *param_2,float param_3)
 
 {
   float *in_EAX;
   float10 fVar1;
   float10 fVar2;
   float10 fVar3;
-  float local_10;
-  float local_c;
+  uchar *v;
+  float rf;
+  float gf;
+  float bf;
   float local_8;
   
-  local_10 = *in_EAX * 0.03137255;
-  local_c = in_EAX[1] * 0.03137255;
+  gf = *in_EAX * 0.03137255;
+  bf = in_EAX[1] * 0.03137255;
   local_8 = in_EAX[2] * 0.03137255;
-  if (1.0 < local_10) {
-    local_10 = 1.0;
+  if (1.0 < gf) {
+    gf = 1.0;
   }
-  if (1.0 < local_c) {
-    local_c = 1.0;
+  if (1.0 < bf) {
+    bf = 1.0;
   }
   if (1.0 < local_8) {
     local_8 = 1.0;
   }
-  fVar1 = (float10)sqrtf(local_10);
-  fVar2 = (float10)sqrtf(local_c);
+  fVar1 = (float10)sqrtf(gf);
+  fVar2 = (float10)sqrtf(bf);
   fVar3 = (float10)sqrtf(local_8);
-  *(uint *)param_1 =
+  *(uint *)primaryWeight =
        (((int)ROUND(fVar1 * (float10)255.0) & 0xffU | ((int)((float)param_2 * 255.0) & 0xffU) << 8)
         << 8 | (int)ROUND(fVar2 * (float10)255.0) & 0xffU) << 8 |
        (int)ROUND(fVar3 * (float10)255.0) & 0xffU;
@@ -38,7 +42,7 @@ void __cdecl SetPixelColorLightGridVec4_PC(uchar *param_1,float *param_2,float p
 
 // 0083A640  R_ShowLightVisCachePoints  (gfx_d3d/rb_light.cpp:316)
 
-void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int param_3)
+void __cdecl R_ShowLightVisCachePoints(float *clipPlaneCount,DpvsPlane *param_2,int param_3)
 
 {
   uint uVar1;
@@ -46,23 +50,26 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
   int iVar3;
   float fVar4;
   float *in_EAX;
-  int iVar5;
+  uint uVar5;
   htab *phVar6;
-  float **ppfVar7;
-  float *pfVar8;
-  int iVar9;
+  float **scale;
+  float *pfVar7;
+  uint uVar8;
+  uint uVar9;
   int iVar10;
-  int iVar11;
-  uint uVar12;
+  uint uVar11;
   ushort (*unaff_EDI) [3];
+  uint uVar12;
   int iVar13;
-  int iVar14;
+  DpvsPlane *clipPlanes;
+  int dz;
   int local_48;
-  undefined2 local_44;
+  int spread;
+  int dy;
   LONG local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
+  uint z;
+  uint x;
+  uint y;
   int local_24;
   uint local_20;
   undefined8 local_1c;
@@ -71,28 +78,28 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
   float local_8;
   
   if ((lightPointCount != 0) && (iVar3 = (r_vc_showlog->current).integer, 0 < iVar3)) {
-    iVar10 = (int)ROUND((*in_EAX - -131072.0) + 9.313226e-10) >> 5;
-    iVar11 = (int)ROUND((in_EAX[1] - -131072.0) + 9.313226e-10) >> 5;
+    uVar9 = (int)ROUND((*in_EAX - -131072.0) + 9.313226e-10) >> 5;
+    iVar10 = (int)ROUND((in_EAX[1] - -131072.0) + 9.313226e-10) >> 5;
     local_1c = 0x3fdfffffff000000;
-    iVar13 = (int)ROUND((in_EAX[2] - -131072.0) - 0.5) >> 6;
+    uVar12 = (int)ROUND((in_EAX[2] - -131072.0) - 0.5) >> 6;
     local_48 = -1;
-    local_2c = iVar13;
-    local_28 = iVar10;
-    local_24 = iVar11;
+    x = uVar12;
+    y = uVar9;
+    local_24 = iVar10;
     do {
-      uVar1 = iVar13 + local_48;
+      uVar1 = uVar12 + local_48;
       if ((uVar1 < 0x1001) &&
-         (iVar5 = -iVar3, iVar9 = iVar5, local_30 = iVar5,
-         -iVar3 == iVar3 || SBORROW4(iVar5,iVar3) != iVar3 * -2 < 0)) {
+         (uVar5 = -iVar3, uVar8 = uVar5, z = uVar5,
+         -iVar3 == iVar3 || SBORROW4(uVar5,iVar3) != iVar3 * -2 < 0)) {
         do {
-          uVar2 = iVar9 + iVar11;
-          if ((uVar2 < 0x2001) && (iVar5 <= iVar3)) {
-            iVar14 = (iVar3 - iVar5) + 1;
-            uVar12 = iVar5 + iVar10;
+          uVar2 = uVar8 + iVar10;
+          if ((uVar2 < 0x2001) && ((int)uVar5 <= iVar3)) {
+            iVar13 = (iVar3 - uVar5) + 1;
+            uVar11 = uVar5 + uVar9;
             do {
-              if (uVar12 < 0x2001) {
-                fVar4 = (float)(int)uVar12;
-                if ((int)uVar12 < 0) {
+              if (uVar11 < 0x2001) {
+                fVar4 = (float)(int)uVar11;
+                if ((int)uVar11 < 0) {
                   fVar4 = fVar4 + 4.2949673e+09;
                 }
                 local_10 = (float (*) [3])(fVar4 * 32.0 - 131072.0);
@@ -108,17 +115,17 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
                 iVar10 = 0;
                 local_8 = fVar4 * 64.0 - 131072.0;
                 if (0 < (int)param_2) {
-                  pfVar8 = param_1 + 1;
+                  pfVar7 = clipPlaneCount + 1;
                   do {
-                    if (pfVar8[1] * local_8 + pfVar8[-1] * (float)local_10 + *pfVar8 * local_c +
-                        pfVar8[2] < -0.0) goto LAB_0083a934;
+                    if (pfVar7[1] * local_8 + pfVar7[-1] * (float)local_10 + *pfVar7 * local_c +
+                        pfVar7[2] < -0.0) goto LAB_0083a934;
                     iVar10 = iVar10 + 1;
-                    pfVar8 = pfVar8 + 5;
+                    pfVar7 = pfVar7 + 5;
                   } while (iVar10 < (int)param_2);
                 }
-                local_44 = (undefined2)uVar1;
-                local_1c = CONCAT44(CONCAT22(local_1c._6_2_,local_44),
-                                    CONCAT22((short)uVar2,(short)uVar12));
+                spread._0_2_ = (undefined2)uVar1;
+                local_1c = CONCAT44(CONCAT22(local_1c._6_2_,(undefined2)spread),
+                                    CONCAT22((short)uVar2,(short)uVar11));
                 local_20 = uVar2;
                 tlAtomicMutex::Lock(&lightGridMutex);
                 phVar6 = findhash(unaff_EDI);
@@ -130,24 +137,24 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
                   lightGridMutex.ThreadId._4_4_ = 0;
                 }
                 if (phVar6 == (htab *)0x0) {
-                  if ((local_48 == 0) || (ppfVar7 = &colorYellow, local_48 == 1)) {
-                    ppfVar7 = &colorGreen;
+                  if ((local_48 == 0) || (scale = &colorYellow, local_48 == 1)) {
+                    scale = &colorGreen;
                   }
-                  R_AddDebugString((DebugGlobals *)&local_10,(float *)ppfVar7,(float *)&DAT_3f800000
-                                   ,1.4822885e-38,(char *)unaff_EDI);
+                  R_AddDebugString((DebugGlobals *)&local_10,(float *)scale,(float *)&DAT_3f800000,
+                                   1.4822885e-38,(char *)unaff_EDI);
                 }
               }
 LAB_0083a934:
-              uVar12 = uVar12 + 1;
-              iVar14 = iVar14 + -1;
-              iVar5 = local_30;
-              iVar10 = local_28;
-              iVar11 = local_24;
-              iVar13 = local_2c;
-            } while (iVar14 != 0);
+              uVar11 = uVar11 + 1;
+              iVar13 = iVar13 + -1;
+              uVar5 = z;
+              uVar9 = y;
+              iVar10 = local_24;
+              uVar12 = x;
+            } while (iVar13 != 0);
           }
-          iVar9 = iVar9 + 1;
-        } while (iVar9 <= iVar3);
+          uVar8 = uVar8 + 1;
+        } while ((int)uVar8 <= iVar3);
       }
       local_48 = local_48 + 1;
     } while (local_48 < 2);
@@ -170,7 +177,9 @@ void __thiscall tlAtomicMutex::~tlAtomicMutex(tlAtomicMutex *this)
 
 // 0083C020  R_ApplyLightGridColorsPatch  (gfx_d3d/rb_light.cpp:1551)
 
-void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *param_1,uchar *param_2)
+/* WARNING: Variable defined which should be unmapped: heroPos */
+
+void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *pixels,uchar *param_2)
 
 {
   byte bVar1;
@@ -179,26 +188,30 @@ void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *param_1,uchar *p
   GfxDecodedLightGridColors *unaff_ESI;
   float *pfVar4;
   GfxDecodedLightGridColors *unaff_EDI;
+  GfxModelLightingPatch *patch;
+  float *heroPos;
   float *pfStack_70c;
-  GfxDecodedLightGridColors GStack_704;
-  GfxDecodedLightGridColors GStack_384;
+  GfxDecodedLightGridColors accumulatedColors;
+  GfxDecodedLightGridColors decodedColors;
   
-  if (param_1->useHeroLighting == '\0') {
+  if (pixels->useHeroLighting == '\0') {
     pfStack_70c = (float *)0x0;
   }
   else {
-    pfStack_70c = param_1->heroPos;
+    pfStack_70c = pixels->heroPos;
   }
-  bVar1 = param_1->colorsCount;
+  bVar1 = pixels->colorsCount;
   if (bVar1 == 1) {
     R_DecodeLightGridColors((GfxCompressedLightGridColors *)unaff_EDI,unaff_ESI);
-    R_AddHeroOnlyLightsToGridColors(&GStack_384,pfStack_70c);
+    R_AddHeroOnlyLightsToGridColors
+              ((GfxDecodedLightGridColors *)(decodedColors.rgb[0] + 1),pfStack_70c);
   }
   else {
+    accumulatedColors.rgb[0][0] = (float)((rgp.world)->lightGrid).colors;
     R_DecodeLightGridColorsWeighted
-              ((GfxCompressedLightGridColors *)param_1->colorsWeight[0],unaff_EDI,(float)unaff_ESI);
+              ((GfxCompressedLightGridColors *)pixels->colorsWeight[0],unaff_EDI,(float)unaff_ESI);
     if (1 < bVar1) {
-      pfVar4 = param_1->colorsWeight;
+      pfVar4 = pixels->colorsWeight;
       iVar3 = bVar1 - 1;
       do {
         pfVar4 = pfVar4 + 1;
@@ -206,93 +219,96 @@ void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *param_1,uchar *p
                   ((GfxCompressedLightGridColors *)*pfVar4,unaff_EDI,(float)unaff_ESI);
         iVar2 = 0;
         do {
-          *(float *)((int)GStack_704.rgb[0] + iVar2) =
-               *(float *)((int)GStack_384.rgb[0] + iVar2) +
-               *(float *)((int)GStack_704.rgb[0] + iVar2);
-          *(float *)((int)GStack_704.rgb[0] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[0] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[0] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[0] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[0] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[0] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[1] + iVar2) =
-               *(float *)((int)GStack_384.rgb[1] + iVar2) +
-               *(float *)((int)GStack_704.rgb[1] + iVar2);
-          *(float *)((int)GStack_704.rgb[1] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[1] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[1] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[1] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[1] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[1] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[2] + iVar2) =
-               *(float *)((int)GStack_384.rgb[2] + iVar2) +
-               *(float *)((int)GStack_704.rgb[2] + iVar2);
-          *(float *)((int)GStack_704.rgb[2] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[2] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[2] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[2] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[2] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[2] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[3] + iVar2) =
-               *(float *)((int)GStack_384.rgb[3] + iVar2) +
-               *(float *)((int)GStack_704.rgb[3] + iVar2);
-          *(float *)((int)GStack_704.rgb[3] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[3] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[3] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[3] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[3] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[3] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[4] + iVar2) =
-               *(float *)((int)GStack_384.rgb[4] + iVar2) +
-               *(float *)((int)GStack_704.rgb[4] + iVar2);
-          *(float *)((int)GStack_704.rgb[4] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[4] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[4] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[4] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[4] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[4] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[5] + iVar2) =
-               *(float *)((int)GStack_384.rgb[5] + iVar2) +
-               *(float *)((int)GStack_704.rgb[5] + iVar2);
-          *(float *)((int)GStack_704.rgb[5] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[5] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[5] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[5] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[5] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[5] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[6] + iVar2) =
-               *(float *)((int)GStack_384.rgb[6] + iVar2) +
-               *(float *)((int)GStack_704.rgb[6] + iVar2);
-          *(float *)((int)GStack_704.rgb[6] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[6] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[6] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[6] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[6] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[6] + iVar2 + 8);
-          *(float *)((int)GStack_704.rgb[7] + iVar2) =
-               *(float *)((int)GStack_384.rgb[7] + iVar2) +
-               *(float *)((int)GStack_704.rgb[7] + iVar2);
-          *(float *)((int)GStack_704.rgb[7] + iVar2 + 4) =
-               *(float *)((int)GStack_384.rgb[7] + iVar2 + 4) +
-               *(float *)((int)GStack_704.rgb[7] + iVar2 + 4);
-          *(float *)((int)GStack_704.rgb[7] + iVar2 + 8) =
-               *(float *)((int)GStack_384.rgb[7] + iVar2 + 8) +
-               *(float *)((int)GStack_704.rgb[7] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[0] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[0] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[0] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[0] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[1] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[1] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[1] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[1] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[2] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[2] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[2] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[2] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[3] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[3] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[3] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[3] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[4] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[4] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[4] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[4] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[5] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[5] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[5] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[5] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[6] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[6] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[6] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[6] + iVar2 + 0xc);
+          *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 4) =
+               *(float *)((int)decodedColors.rgb[7] + iVar2 + 4) +
+               *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 4);
+          *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 8) =
+               *(float *)((int)decodedColors.rgb[7] + iVar2 + 8) +
+               *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 8);
+          *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 0xc) =
+               *(float *)((int)decodedColors.rgb[7] + iVar2 + 0xc) +
+               *(float *)((int)accumulatedColors.rgb[7] + iVar2 + 0xc);
           iVar2 = iVar2 + 0x80;
         } while (iVar2 < 0x380);
         iVar3 = iVar3 + -1;
       } while (iVar3 != 0);
     }
-    R_AddHeroOnlyLightsToGridColors(&GStack_704,pfStack_70c);
+    R_AddHeroOnlyLightsToGridColors
+              ((GfxDecodedLightGridColors *)(accumulatedColors.rgb[0] + 1),pfStack_70c);
   }
   R_SetLightGridColorsVec4
-            ((GfxDecodedLightGridColors *)param_1->primaryLightWeight,(float)unaff_EDI,
+            ((GfxDecodedLightGridColors *)pixels->primaryLightWeight,(float)unaff_EDI,
              (uchar *)unaff_ESI);
   return;
 }
 
 
 // 0083CC80  R_GetPrimaryLightFromGrid  (gfx_d3d/rb_light.cpp:2030)
+
+/* WARNING: Variable defined which should be unmapped: defaultGridEntry */
 
 uchar __cdecl R_GetPrimaryLightFromGrid(GfxLightGrid *param_1,float *param_2,uchar param_3)
 
@@ -302,8 +318,10 @@ uchar __cdecl R_GetPrimaryLightFromGrid(GfxLightGrid *param_1,float *param_2,uch
   float *in_ECX;
   GfxLightGrid *in_EDX;
   uint uVar3;
+  uint defaultGridEntry;
   GfxLightGridEntry **in_stack_ffffffbc;
   uint *in_stack_ffffffc0;
+  uchar sunPrimaryLightIndex;
   
   uVar2 = R_LightGridLookup(in_EDX,in_ECX,(float *)&stack0xffffffc0,in_stack_ffffffbc,
                             in_stack_ffffffc0);
@@ -331,10 +349,12 @@ uchar __cdecl R_GetPrimaryLightFromGrid(GfxLightGrid *param_1,float *param_2,uch
 
 // 0083CDD0  R_GetLightingAtPoint  (gfx_d3d/rb_light.cpp:2270)
 
+/* WARNING: Variable defined which should be unmapped: primaryLightIndex */
+
 uint __cdecl
 R_GetLightingAtPoint
-          (GfxLightGrid *param_1,float *param_2,uint param_3,ushort param_4,
-          GfxModelLightExtrapolation param_5,bool param_6)
+          (GfxLightGrid *samplePos,float *nonSunPrimaryLightIndex,uint dest,
+          ushort extrapolateBehavior,GfxModelLightExtrapolation useHeroLighting,bool param_6)
 
 {
   float fVar1;
@@ -345,116 +365,122 @@ R_GetLightingAtPoint
   GfxModelLightingPatch *pGVar6;
   short sVar7;
   uint uVar8;
-  float *pfVar9;
+  float *primaryLightWeight;
   uint *unaff_ESI;
-  float *pfVar10;
+  float *heroPos;
   GfxBackEndData *unaff_EDI;
+  float fVar9;
+  float fVar10;
   float fVar11;
-  float *pfVar12;
-  float fVar13;
+  GfxLightGrid *remoteLightGrid;
   undefined2 in_stack_00000012;
-  uint uStack_8c;
-  float *pfStack_88;
-  float fStack_84;
-  byte bStack_7e;
-  float fStack_7c;
+  uint primaryLightIndex;
+  float primaryVisibleWeight;
+  float primaryOccludedWeight;
+  int localEntry;
+  float maxWeight;
+  uint defaultGridEntry;
   ushort uStack_78;
   undefined1 auStack_74 [16];
   float afStack_64 [8];
   float afStack_44 [8];
   float afStack_24 [9];
   
-  bVar3 = R_LightGridLookup(param_1,param_2,afStack_24,(GfxLightGridEntry **)unaff_EDI,unaff_ESI);
-  uStack_8c = (uint)bVar3;
-  if (uStack_8c == 0xff) {
-    uStack_8c = (uint)(byte)param_1->sunPrimaryLightIndex;
+  bVar3 = R_LightGridLookup(samplePos,nonSunPrimaryLightIndex,afStack_24,
+                            (GfxLightGridEntry **)unaff_EDI,unaff_ESI);
+  primaryVisibleWeight = (float)(uint)bVar3;
+  if (primaryVisibleWeight == 3.57331e-43) {
+    primaryVisibleWeight = (float)(uint)(byte)samplePos->sunPrimaryLightIndex;
   }
-  else if ((param_1->hasLightRegions != false) && (uStack_8c != param_1->sunPrimaryLightIndex)) {
-    uStack_8c = param_3;
+  else if ((samplePos->hasLightRegions != false) &&
+          (primaryVisibleWeight != (float)samplePos->sunPrimaryLightIndex)) {
+    primaryVisibleWeight = (float)dest;
   }
-  pfVar9 = (float *)(-(uint)param_6 & (uint)param_2);
-  pfVar10 = (float *)0x0;
-  fVar13 = 0.0;
-  pfVar12 = (float *)0x0;
+  primaryLightWeight = (float *)(-(uint)param_6 & (uint)nonSunPrimaryLightIndex);
+  heroPos = (float *)0x0;
   fVar11 = 0.0;
-  fStack_7c = 0.0;
-  pfStack_88 = (float *)0x0;
-  fStack_84 = 0.0;
+  fVar10 = 0.0;
+  fVar9 = 0.0;
+  defaultGridEntry = 0;
+  primaryOccludedWeight = 0.0;
+  localEntry = 0;
   uVar8 = 0;
   do {
     if ((undefined4 *)afStack_24[uVar8] != (undefined4 *)0x0) {
       uVar2 = *(undefined4 *)afStack_24[uVar8];
-      bStack_7e = (byte)((uint)uVar2 >> 0x10);
-      if (bStack_7e == uStack_8c) {
-        pfStack_88 = (float *)(afStack_64[uVar8] + (float)pfVar12);
-        pfVar12 = pfStack_88;
+      maxWeight._2_1_ = (byte)((uint)uVar2 >> 0x10);
+      if ((float)(uint)maxWeight._2_1_ == primaryVisibleWeight) {
+        primaryOccludedWeight = afStack_64[uVar8] + fVar10;
+        fVar10 = primaryOccludedWeight;
       }
-      else if (((bStack_7e == 0) || ((bStack_7e == 0xff && (uStack_8c != 0)))) &&
+      else if (((maxWeight._2_1_ == 0) ||
+               ((maxWeight._2_1_ == 0xff && (primaryVisibleWeight != 0.0)))) &&
               (bVar4 = R_CanLightInfluenceLightGridCorner
-                                 (param_1,comWorld.primaryLights + uStack_8c,(float *)unaff_EDI,
-                                  (uint)unaff_ESI), fVar11 = fStack_84, pfVar12 = pfStack_88, bVar4)
-              ) {
-        fStack_84 = afStack_64[uVar8] + fStack_84;
-        fVar11 = fStack_84;
+                                 (samplePos,comWorld.primaryLights + (int)primaryVisibleWeight,
+                                  (float *)unaff_EDI,(uint)unaff_ESI), fVar9 = (float)localEntry,
+              fVar10 = primaryOccludedWeight, bVar4)) {
+        localEntry = (int)(afStack_64[uVar8] + (float)localEntry);
+        fVar9 = (float)localEntry;
       }
       fVar1 = afStack_64[uVar8];
-      fVar13 = fVar1 + fStack_7c;
+      fVar11 = fVar1 + (float)defaultGridEntry;
       pfVar5 = (float *)0x0;
       sVar7 = (short)uVar2;
-      fStack_7c = fVar13;
-      if (pfVar10 != (float *)0x0) {
+      defaultGridEntry = (uint)fVar11;
+      if (heroPos != (float *)0x0) {
         do {
           if (*(short *)(auStack_74 + (int)pfVar5 * 2) == sVar7) {
             afStack_44[(int)pfVar5] = fVar1 + afStack_44[(int)pfVar5];
             goto LAB_0083cf28;
           }
           pfVar5 = (float *)((int)pfVar5 + 1);
-        } while (pfVar5 < pfVar10);
+        } while (pfVar5 < heroPos);
       }
-      *(short *)(auStack_74 + (int)pfVar10 * 2) = sVar7;
-      afStack_44[(int)pfVar10] = fVar1;
-      pfVar10 = (float *)((int)pfVar10 + 1);
+      *(short *)(auStack_74 + (int)heroPos * 2) = sVar7;
+      afStack_44[(int)heroPos] = fVar1;
+      heroPos = (float *)((int)heroPos + 1);
     }
 LAB_0083cf28:
     uVar8 = uVar8 + 1;
     if (7 < uVar8) {
-      if (pfVar10 == (float *)0x0) {
+      if (heroPos == (float *)0x0) {
         bVar3 = R_ExtrapolateLightingAtPoint
-                          (param_1,(float *)param_5,uStack_78,(GfxModelLightExtrapolation)unaff_EDI,
-                           (uint)unaff_ESI);
+                          (samplePos,(float *)useHeroLighting,uStack_78,
+                           (GfxModelLightExtrapolation)unaff_EDI,(uint)unaff_ESI);
         return (uint)bVar3;
       }
-      if (uStack_8c == 0) {
-        pfStack_88 = (float *)0x0;
+      if (primaryVisibleWeight == 0.0) {
+        primaryOccludedWeight = 0.0;
       }
-      else if (fVar11 == 0.0) {
-        if ((float)pfVar12 != 0.0) {
-          pfStack_88 = (float *)1.0;
+      else if (fVar9 == 0.0) {
+        if (fVar10 != 0.0) {
+          primaryOccludedWeight = 1.0;
         }
       }
       else {
-        pfStack_88 = (float *)((float)pfVar12 / (fVar11 + (float)pfVar12));
+        primaryOccludedWeight = fVar10 / (fVar9 + fVar10);
       }
-      if (pfVar10 == (float *)&DAT_00000001) {
+      if (heroPos == (float *)&DAT_00000001) {
         pGVar6 = R_BackEndDataAllocAndClearModelLightingPatch(unaff_EDI);
-        pGVar6->modelLightingIndex = param_4;
-        pGVar6->primaryLightWeight = (float)pfStack_88;
+        pGVar6->modelLightingIndex = extrapolateBehavior;
+        pGVar6->primaryLightWeight = primaryOccludedWeight;
         pGVar6->colorsCount = '\x01';
         pGVar6->colorsIndex[0] = auStack_74._0_2_;
-        pGVar6->useHeroLighting = pfVar9 != (float *)0x0;
-        if (pfVar9 != (float *)0x0) {
-          pGVar6->heroPos[0] = *pfVar9;
-          pGVar6->heroPos[1] = pfVar9[1];
-          pGVar6->heroPos[2] = pfVar9[2];
-          return uStack_8c;
+        pGVar6->useHeroLighting = primaryLightWeight != (float *)0x0;
+        if (primaryLightWeight != (float *)0x0) {
+          pGVar6->heroPos[0] = *primaryLightWeight;
+          pGVar6->heroPos[1] = primaryLightWeight[1];
+          pGVar6->heroPos[2] = primaryLightWeight[2];
+          return (uint)primaryVisibleWeight;
         }
       }
       else {
         R_BlendAndSetLightGridColors
-                  ((GfxLightGrid *)auStack_74,(ushort *)afStack_44,pfVar10,(uint)pfVar9,pfStack_88,
-                   1.0 / fVar13,_param_4,(ushort)unaff_EDI);
+                  ((GfxLightGrid *)auStack_74,(ushort *)afStack_44,heroPos,(uint)primaryLightWeight,
+                   (float *)primaryOccludedWeight,1.0 / fVar11,_extrapolateBehavior,
+                   (ushort)unaff_EDI);
       }
-      return uStack_8c;
+      return (uint)primaryVisibleWeight;
     }
   } while( true );
 }
@@ -462,26 +488,26 @@ LAB_0083cf28:
 
 // 0083D050  R_GetAverageLightingAtPoint  (gfx_d3d/rb_light.cpp:2372)
 
-void __cdecl R_GetAverageLightingAtPoint(float *param_1,float *param_2)
+void __cdecl R_GetAverageLightingAtPoint(float *outColor,float *param_2)
 
 {
-  float *pfVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float *pfVar5;
-  float *pfVar6;
-  float *pfVar7;
-  float *pfVar8;
-  float fVar9;
-  float fVar10;
-  float fVar11;
-  char cVar12;
-  short *psVar13;
+  float fVar1;
+  float fVar2;
+  float fVar3;
+  char cVar4;
+  short *psVar5;
+  float (*pafVar6) [4];
+  float (*pafVar7) [4];
+  float (*pafVar8) [4];
+  float (*pafVar9) [4];
+  float (*pafVar10) [4];
+  float (*pafVar11) [4];
+  float (*pafVar12) [4];
+  float (*pafVar13) [4];
   uchar uVar14;
   uint uVar15;
   int iVar16;
-  float *pfVar17;
+  float (*pafVar17) [4];
   float *in_ECX;
   uint uVar18;
   uint *unaff_ESI;
@@ -491,12 +517,15 @@ void __cdecl R_GetAverageLightingAtPoint(float *param_1,float *param_2)
   float fVar21;
   float fVar22;
   float fVar23;
-  short asStack_778 [8];
+  float primaryWeight;
+  float maxWeight;
+  uint defaultGridEntry;
   float afStack_768 [8];
   float afStack_748 [8];
   float afStack_728 [8];
-  float afStack_708 [224];
-  float afStack_388 [225];
+  float fStack_708;
+  GfxDecodedLightGridColors accumulatedColors;
+  GfxDecodedLightGridColors decodedColors;
   
   uVar19 = 0;
   uVar14 = R_LightGridLookup(&(rgp.world)->lightGrid,in_ECX,afStack_728,
@@ -506,11 +535,11 @@ void __cdecl R_GetAverageLightingAtPoint(float *param_1,float *param_2)
     fVar20 = 0.0;
     uVar18 = 0;
     do {
-      psVar13 = *(short **)((int)afStack_728 + uVar18);
-      if (psVar13 != (short *)0x0) {
-        cVar12 = (char)psVar13[1];
-        if ((cVar12 != '\0') && (cVar12 != -1)) {
-          if (cVar12 != '\x01') goto LAB_0083d118;
+      psVar5 = *(short **)((int)afStack_728 + uVar18);
+      if (psVar5 != (short *)0x0) {
+        cVar4 = (char)psVar5[1];
+        if ((cVar4 != '\0') && (cVar4 != -1)) {
+          if (cVar4 != '\x01') goto LAB_0083d118;
           fVar20 = *(float *)((int)afStack_748 + uVar18) + fVar20;
         }
         fVar21 = *(float *)((int)afStack_748 + uVar18);
@@ -518,14 +547,14 @@ void __cdecl R_GetAverageLightingAtPoint(float *param_1,float *param_2)
         fVar22 = fVar21 + fVar22;
         if (uVar19 != 0) {
           do {
-            if (asStack_778[uVar15] == *psVar13) {
+            if (*(short *)((int)&defaultGridEntry + uVar15 * 2) == *psVar5) {
               afStack_768[uVar15] = afStack_768[uVar15] + fVar21;
               goto LAB_0083d118;
             }
             uVar15 = uVar15 + 1;
           } while (uVar15 < uVar19);
         }
-        asStack_778[uVar19] = *psVar13;
+        *(short *)((int)&defaultGridEntry + uVar19 * 2) = *psVar5;
         afStack_768[uVar19] = fVar21;
         uVar19 = uVar19 + 1;
       }
@@ -551,77 +580,78 @@ LAB_0083d118:
                      (float)unaff_ESI);
           iVar16 = 0;
           do {
-            *(float *)((int)afStack_708 + iVar16) =
-                 *(float *)((int)afStack_388 + iVar16) + *(float *)((int)afStack_708 + iVar16);
-            *(float *)((int)afStack_708 + iVar16 + 4) =
-                 *(float *)((int)afStack_388 + iVar16 + 4) +
-                 *(float *)((int)afStack_708 + iVar16 + 4);
-            *(float *)((int)afStack_708 + iVar16 + 8) =
-                 *(float *)((int)afStack_388 + iVar16 + 8) +
-                 *(float *)((int)afStack_708 + iVar16 + 8);
-            *(float *)((int)afStack_708 + iVar16 + 0x10) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x10) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x10);
-            *(float *)((int)afStack_708 + iVar16 + 0x14) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x14) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x14);
-            *(float *)((int)afStack_708 + iVar16 + 0x18) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x18) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x18);
-            *(float *)((int)afStack_708 + iVar16 + 0x20) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x20) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x20);
-            *(float *)((int)afStack_708 + iVar16 + 0x24) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x24) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x24);
-            *(float *)((int)afStack_708 + iVar16 + 0x28) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x28) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x28);
-            *(float *)((int)afStack_708 + iVar16 + 0x30) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x30) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x30);
-            *(float *)((int)afStack_708 + iVar16 + 0x34) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x34) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x34);
-            *(float *)((int)afStack_708 + iVar16 + 0x38) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x38) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x38);
-            *(float *)((int)afStack_708 + iVar16 + 0x40) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x40) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x40);
-            *(float *)((int)afStack_708 + iVar16 + 0x44) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x44) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x44);
-            *(float *)((int)afStack_708 + iVar16 + 0x48) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x48) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x48);
-            *(float *)((int)afStack_708 + iVar16 + 0x50) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x50) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x50);
-            *(float *)((int)afStack_708 + iVar16 + 0x54) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x54) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x54);
-            *(float *)((int)afStack_708 + iVar16 + 0x58) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x58) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x58);
-            *(float *)((int)afStack_708 + iVar16 + 0x60) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x60) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x60);
-            *(float *)((int)afStack_708 + iVar16 + 100) =
-                 *(float *)((int)afStack_388 + iVar16 + 100) +
-                 *(float *)((int)afStack_708 + iVar16 + 100);
-            *(float *)((int)afStack_708 + iVar16 + 0x68) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x68) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x68);
-            *(float *)((int)afStack_708 + iVar16 + 0x70) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x70) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x70);
-            *(float *)((int)afStack_708 + iVar16 + 0x74) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x74) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x74);
-            *(float *)((int)afStack_708 + iVar16 + 0x78) =
-                 *(float *)((int)afStack_388 + iVar16 + 0x78) +
-                 *(float *)((int)afStack_708 + iVar16 + 0x78);
+            *(float *)((int)&fStack_708 + iVar16) =
+                 *(float *)((int)accumulatedColors.rgb[0x37] + iVar16 + 0xc) +
+                 *(float *)((int)&fStack_708 + iVar16);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar16 + 4);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar16 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar16 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar16 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[7] + iVar16) =
+                 *(float *)((int)decodedColors.rgb[7] + iVar16) +
+                 *(float *)((int)accumulatedColors.rgb[7] + iVar16);
+            *(float *)((int)accumulatedColors.rgb[7] + iVar16 + 4) =
+                 *(float *)((int)decodedColors.rgb[7] + iVar16 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[7] + iVar16 + 4);
             iVar16 = iVar16 + 0x80;
           } while (iVar16 < 0x380);
           uVar18 = uVar18 + 1;
@@ -630,29 +660,36 @@ LAB_0083d118:
       fVar21 = 0.0;
       fVar22 = 0.0;
       fVar23 = 0.0;
-      pfVar17 = afStack_708 + 1;
+      pafVar17 = (float (*) [4])&accumulatedColors;
       iVar16 = 7;
       do {
-        pfVar1 = pfVar17 + 1;
-        pfVar2 = pfVar17 + 5;
-        pfVar3 = pfVar17 + 9;
-        pfVar4 = pfVar17 + 0xd;
-        pfVar5 = pfVar17 + 0x11;
-        pfVar6 = pfVar17 + 0x15;
-        pfVar7 = pfVar17 + 0x19;
-        fVar22 = pfVar17[0x1b] +
-                 pfVar17[0x17] +
-                 pfVar17[0x13] +
-                 pfVar17[0xf] + pfVar17[0xb] + pfVar17[7] + pfVar17[3] + pfVar17[-1] + fVar22;
-        fVar21 = pfVar17[0x1c] +
-                 pfVar17[0x18] +
-                 pfVar17[0x14] +
-                 pfVar17[0x10] + pfVar17[0xc] + pfVar17[8] + pfVar17[4] + fVar21 + *pfVar17;
-        pfVar8 = pfVar17 + 0x1d;
-        pfVar17 = pfVar17 + 0x20;
+        pafVar6 = (float (*) [4])*pafVar17;
+        pafVar7 = pafVar17 + 1;
+        pafVar8 = pafVar17 + 2;
+        pafVar9 = pafVar17 + 3;
+        pafVar10 = pafVar17 + 4;
+        pafVar11 = pafVar17 + 5;
+        pafVar12 = pafVar17 + 6;
+        fVar22 = pafVar17[6][3] +
+                 pafVar17[5][3] +
+                 pafVar17[4][3] +
+                 pafVar17[3][3] +
+                 pafVar17[2][3] +
+                 pafVar17[1][3] + (*(float (*) [4])*pafVar17)[3] + pafVar17[-1][3] + fVar22;
+        fVar21 = pafVar17[7][0] +
+                 pafVar17[6][0] +
+                 pafVar17[5][0] +
+                 pafVar17[4][0] +
+                 pafVar17[3][0] +
+                 pafVar17[2][0] + pafVar17[1][0] + fVar21 + (*(float (*) [4])*pafVar17)[0];
+        pafVar13 = pafVar17 + 7;
+        pafVar17 = pafVar17 + 8;
         iVar16 = iVar16 + -1;
-        fVar23 = *pfVar8 + *pfVar7 + *pfVar6 + *pfVar5 + *pfVar4 + *pfVar3 + *pfVar2 + *pfVar1 + 
-                                                  fVar23;
+        fVar23 = (*pafVar13)[1] +
+                 (*pafVar12)[1] +
+                 (*pafVar11)[1] +
+                 (*pafVar10)[1] +
+                 (*pafVar9)[1] + (*pafVar8)[1] + (*pafVar7)[1] + (*pafVar6)[1] + fVar23;
       } while (iVar16 != 0);
       fVar22 = fVar22 * 0.017857144;
       fVar21 = fVar21 * 0.017857144;
@@ -665,17 +702,19 @@ LAB_0083d118:
     fVar22 = 0.0;
     fVar23 = 0.0;
   }
-  fVar9 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3];
-  fVar10 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[1];
-  fVar11 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[2];
-  *param_1 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[0] * fVar9 * fVar20 + fVar22;
-  param_1[1] = fVar10 * fVar9 * fVar20 + fVar21;
-  param_1[2] = fVar11 * fVar9 * fVar20 + fVar23;
+  fVar1 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3];
+  fVar2 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[1];
+  fVar3 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[2];
+  *outColor = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[0] * fVar1 * fVar20 + fVar22;
+  outColor[1] = fVar2 * fVar1 * fVar20 + fVar21;
+  outColor[2] = fVar3 * fVar1 * fVar20 + fVar23;
   return;
 }
 
 
 // 0083D5F0  R_GetAverageSecondaryLightingAtPoint  (gfx_d3d/rb_light.cpp:2483)
+
+/* WARNING: Variable defined which should be unmapped: maxWeight */
 
 void __cdecl R_GetAverageSecondaryLightingAtPoint(float *param_1,float *param_2)
 
@@ -700,12 +739,15 @@ void __cdecl R_GetAverageSecondaryLightingAtPoint(float *param_1,float *param_2)
   float fVar15;
   float fVar16;
   float fVar17;
+  float *outColor;
+  float maxWeight;
+  uint defaultGridEntry;
   short asStack_770 [8];
   float afStack_760 [8];
   float afStack_740 [8];
-  float afStack_720 [8];
-  float afStack_700 [224];
-  float afStack_380 [224];
+  float afStack_720 [7];
+  GfxDecodedLightGridColors accumulatedColors;
+  GfxDecodedLightGridColors decodedColors;
   
   uVar14 = 0;
   R_LightGridLookup(&(rgp.world)->lightGrid,in_ECX,afStack_720,(GfxLightGridEntry **)unaff_EDI,
@@ -734,7 +776,7 @@ void __cdecl R_GetAverageSecondaryLightingAtPoint(float *param_1,float *param_2)
 LAB_0083d670:
     uVar13 = uVar13 + 4;
     if (0x1f < uVar13) {
-      memset((uchar *)afStack_700,'\0',0x380);
+      memset((uchar *)(accumulatedColors.rgb[0] + 1),'\0',0x380);
       fVar17 = 0.0;
       if (fVar15 <= 0.0) {
         fVar15 = 0.0;
@@ -750,77 +792,78 @@ LAB_0083d670:
                      (float)unaff_ESI);
           iVar11 = 0;
           do {
-            *(float *)((int)afStack_700 + iVar11) =
-                 *(float *)((int)afStack_380 + iVar11) + *(float *)((int)afStack_700 + iVar11);
-            *(float *)((int)afStack_700 + iVar11 + 4) =
-                 *(float *)((int)afStack_380 + iVar11 + 4) +
-                 *(float *)((int)afStack_700 + iVar11 + 4);
-            *(float *)((int)afStack_700 + iVar11 + 8) =
-                 *(float *)((int)afStack_380 + iVar11 + 8) +
-                 *(float *)((int)afStack_700 + iVar11 + 8);
-            *(float *)((int)afStack_700 + iVar11 + 0x10) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x10) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x10);
-            *(float *)((int)afStack_700 + iVar11 + 0x14) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x14) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x14);
-            *(float *)((int)afStack_700 + iVar11 + 0x18) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x18) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x18);
-            *(float *)((int)afStack_700 + iVar11 + 0x20) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x20) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x20);
-            *(float *)((int)afStack_700 + iVar11 + 0x24) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x24) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x24);
-            *(float *)((int)afStack_700 + iVar11 + 0x28) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x28) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x28);
-            *(float *)((int)afStack_700 + iVar11 + 0x30) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x30) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x30);
-            *(float *)((int)afStack_700 + iVar11 + 0x34) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x34) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x34);
-            *(float *)((int)afStack_700 + iVar11 + 0x38) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x38) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x38);
-            *(float *)((int)afStack_700 + iVar11 + 0x40) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x40) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x40);
-            *(float *)((int)afStack_700 + iVar11 + 0x44) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x44) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x44);
-            *(float *)((int)afStack_700 + iVar11 + 0x48) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x48) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x48);
-            *(float *)((int)afStack_700 + iVar11 + 0x50) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x50) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x50);
-            *(float *)((int)afStack_700 + iVar11 + 0x54) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x54) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x54);
-            *(float *)((int)afStack_700 + iVar11 + 0x58) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x58) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x58);
-            *(float *)((int)afStack_700 + iVar11 + 0x60) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x60) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x60);
-            *(float *)((int)afStack_700 + iVar11 + 100) =
-                 *(float *)((int)afStack_380 + iVar11 + 100) +
-                 *(float *)((int)afStack_700 + iVar11 + 100);
-            *(float *)((int)afStack_700 + iVar11 + 0x68) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x68) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x68);
-            *(float *)((int)afStack_700 + iVar11 + 0x70) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x70) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x70);
-            *(float *)((int)afStack_700 + iVar11 + 0x74) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x74) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x74);
-            *(float *)((int)afStack_700 + iVar11 + 0x78) =
-                 *(float *)((int)afStack_380 + iVar11 + 0x78) +
-                 *(float *)((int)afStack_700 + iVar11 + 0x78);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[0] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[0] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[1] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[1] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[2] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[2] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[3] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[3] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[4] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[4] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[5] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[5] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[6] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[6] + iVar11 + 0xc);
+            *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 4) =
+                 *(float *)((int)decodedColors.rgb[7] + iVar11 + 4) +
+                 *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 4);
+            *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 8) =
+                 *(float *)((int)decodedColors.rgb[7] + iVar11 + 8) +
+                 *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 8);
+            *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 0xc) =
+                 *(float *)((int)decodedColors.rgb[7] + iVar11 + 0xc) +
+                 *(float *)((int)accumulatedColors.rgb[7] + iVar11 + 0xc);
             iVar11 = iVar11 + 0x80;
           } while (iVar11 < 0x380);
           uVar13 = uVar13 + 1;
@@ -829,7 +872,7 @@ LAB_0083d670:
       *param_1 = fVar17;
       param_1[1] = fVar17;
       param_1[2] = fVar17;
-      pfVar12 = afStack_700 + 2;
+      pfVar12 = accumulatedColors.rgb[0] + 3;
       iVar11 = 7;
       fVar15 = fVar17;
       fVar16 = fVar17;
@@ -869,7 +912,7 @@ LAB_0083d670:
 
 // 0083DB80  R_InitLightVisHistory  (gfx_d3d/rb_light.cpp:2554)
 
-void __cdecl R_InitLightVisHistory(char *param_1)
+void __cdecl R_InitLightVisHistory(char *bspName)
 
 {
   LPVOID lpAddress;

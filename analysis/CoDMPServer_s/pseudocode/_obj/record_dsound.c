@@ -8,18 +8,18 @@
 dsound_sample_t * __cdecl DSOUNDRecord_NewSample(void)
 
 {
-  dsound_sample_t *pdVar1;
+  dsound_sample_t *dst;
   
-  pdVar1 = _DAT_01c7c2e4;
+  dst = _DAT_01c7c2e4;
   _DAT_01c7c2e4 = _DAT_01c7c2e4 + 0x48;
-  memset((uchar *)pdVar1,'\0',0x48);
-  *(int *)(pdVar1 + 0x38) = g_sound_channels;
-  *(undefined4 *)(pdVar1 + 0x2c) = 0x2000;
-  *(undefined4 *)(pdVar1 + 0x30) = 0xff;
-  *(undefined4 *)(pdVar1 + 0x34) = 0x80;
-  *(undefined4 *)(pdVar1 + 0x1c) = 0xffffffff;
-  pdVar1[0x44] = (dsound_sample_t)0x2;
-  return pdVar1;
+  memset((uchar *)dst,'\0',0x48);
+  *(int *)(dst + 0x38) = g_sound_channels;
+  *(undefined4 *)(dst + 0x2c) = 0x2000;
+  *(undefined4 *)(dst + 0x30) = 0xff;
+  *(undefined4 *)(dst + 0x34) = 0x80;
+  *(undefined4 *)(dst + 0x1c) = 0xffffffff;
+  dst[0x44] = (dsound_sample_t)0x2;
+  return dst;
 }
 
 

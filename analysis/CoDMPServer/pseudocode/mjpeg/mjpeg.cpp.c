@@ -5,11 +5,11 @@
 void __cdecl mjpeg_initonce(void)
 
 {
-  ulong local_8;
+  ulong threadId;
   
   mjpeg_hEvent = CreateEventA((LPSECURITY_ATTRIBUTES)0x0,0,0,(LPCSTR)0x0);
-  CreateThread((LPSECURITY_ATTRIBUTES)0x0,0x10000,mjpeg_thread,(LPVOID)0x0,0,&local_8);
-  SetThreadName(local_8,"MJPEG Thread");
+  CreateThread((LPSECURITY_ATTRIBUTES)0x0,0x10000,mjpeg_thread,(LPVOID)0x0,0,&threadId);
+  SetThreadName(threadId,"MJPEG Thread");
   mjpeg_inited = true;
   return;
 }
@@ -17,10 +17,10 @@ void __cdecl mjpeg_initonce(void)
 
 // 009B35C0  mjpeg_set_callback  (mjpeg/mjpeg.cpp:188)
 
-void __cdecl mjpeg_set_callback(_func___cdecl_void_uchar_ptr_uchar_ptr_uchar_ptr *param_1)
+void __cdecl mjpeg_set_callback(_func___cdecl_void_uchar_ptr_uchar_ptr_uchar_ptr *callback)
 
 {
-  mjpeg_current_callback = param_1;
+  mjpeg_current_callback = callback;
   return;
 }
 
@@ -46,49 +46,50 @@ bool __cdecl mjpeg_is_encoding(void)
 
 // 009B3600  mjpeg_thread  (mjpeg/mjpeg.cpp:206)
 
-ulong __cdecl mjpeg_thread(void *param_1)
+ulong __cdecl mjpeg_thread(void *context)
 
 {
   float fVar1;
   uint uVar2;
   ulong64 uVar3;
-  uint local_34;
+  float diff;
+  uint tickNow;
   int local_30;
-  uchar *local_28;
-  uchar *local_24;
-  uchar *local_20;
-  int local_1c;
-  int local_18;
-  undefined8 local_14;
-  float local_8;
+  uchar *u;
+  uchar *y;
+  uchar *v;
+  int frames;
+  int mjpeg_fps;
+  undefined8 tick;
+  float fpsms;
   
   do {
     while (mjpeg_run_encoder == false) {
       WaitForSingleObject(mjpeg_hEvent,0xffffffff);
     }
-    local_14 = tlPcGetTick();
-    local_18 = (r_clipFPS->current).integer;
-    local_8 = 1000.0 / (float)local_18;
-    local_1c = 0;
-    while ((local_1c < 0x2000 && (mjpeg_quit_encoder == false))) {
+    tick = tlPcGetTick();
+    mjpeg_fps = (r_clipFPS->current).integer;
+    fpsms = 1000.0 / (float)mjpeg_fps;
+    frames = 0;
+    while ((frames < 0x2000 && (mjpeg_quit_encoder == false))) {
       uVar3 = tlPcGetTick();
-      local_34 = (uint)uVar3;
+      tickNow = (uint)uVar3;
       local_30 = (int)(uVar3 >> 0x20);
-      uVar2 = (local_30 - local_14._4_4_) - (uint)(local_34 < (uint)local_14);
+      uVar2 = (local_30 - tick._4_4_) - (uint)(tickNow < (uint)tick);
       fVar1 = (float)((-(float10)(longlong)(((ulonglong)uVar2 & 0x80000000) << 0x20) +
-                      (float10)(CONCAT44(uVar2,local_34 - (uint)local_14) & 0x7fffffffffffffff)) /
+                      (float10)(CONCAT44(uVar2,tickNow - (uint)tick) & 0x7fffffffffffffff)) /
                      (float10)tlPcTicksPerMS);
-      if (local_8 <= fVar1) {
+      if (fpsms <= fVar1) {
         Com_PrintWarning(0x10,"WARNING: Movie encoding took to %g ms limit is %g ms\n");
       }
       else {
-        Sleep((DWORD)(longlong)ROUND(local_8 - fVar1));
+        Sleep((DWORD)(longlong)ROUND(fpsms - fVar1));
       }
-      local_14 = tlPcGetTick();
+      tick = tlPcGetTick();
       WaitForSingleObject(mjpeg_hEvent,0xffffffff);
-      yuv_get_buffers(&local_24,&local_28,&local_20);
-      (*mjpeg_current_callback)(local_24,local_28,local_20);
-      local_1c = local_1c + 1;
+      yuv_get_buffers(&y,&u,&v);
+      (*mjpeg_current_callback)(y,u,v);
+      frames = frames + 1;
     }
     mjpeg_run_encoder = false;
     mjpeg_close_int();
@@ -115,7 +116,7 @@ void __cdecl mjpeg_close(void)
 
 // 009B37D0  mjpeg_draw  (mjpeg/mjpeg.cpp:275)
 
-void __cdecl mjpeg_draw(IDirect3DDevice9 *param_1,IDirect3DTexture9 *param_2)
+void __cdecl mjpeg_draw(IDirect3DDevice9 *device,IDirect3DTexture9 *frame)
 
 {
   bool bVar1;

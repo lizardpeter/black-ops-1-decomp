@@ -5,13 +5,13 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-_func___cdecl_int * __cdecl _onexit(_func___cdecl_int *param_1)
+_func___cdecl_int * __cdecl _onexit(_func___cdecl_int *func)
 
 {
   _func___cdecl_int *p_Var1;
   
   _lockexit();
-  p_Var1 = _onexit_nolock(param_1);
+  p_Var1 = _onexit_nolock(func);
   FUN_0095c799();
   return p_Var1;
 }
@@ -19,55 +19,55 @@ _func___cdecl_int * __cdecl _onexit(_func___cdecl_int *param_1)
 
 // 0095C678  _onexit_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c:104)
 
-_func___cdecl_int * __cdecl _onexit_nolock(_func___cdecl_int *param_1)
+_func___cdecl_int * __cdecl _onexit_nolock(_func___cdecl_int *func)
 
 {
+  undefined4 *pblock;
   undefined4 *puVar1;
-  undefined4 *puVar2;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
-  void *pvVar5;
-  int iVar6;
+  void *pvVar4;
+  int iVar5;
   
-  puVar1 = _decode_pointer(__onexitbegin);
-  puVar2 = _decode_pointer(__onexitend);
-  if ((puVar2 < puVar1) || (iVar6 = (int)puVar2 - (int)puVar1, iVar6 + 4U < 4)) {
+  pblock = _decode_pointer(__onexitbegin);
+  puVar1 = _decode_pointer(__onexitend);
+  if ((puVar1 < pblock) || (iVar5 = (int)puVar1 - (int)pblock, iVar5 + 4U < 4)) {
     return (_func___cdecl_int *)0x0;
   }
-  uVar3 = _msize(puVar1);
-  if (uVar3 < iVar6 + 4U) {
-    uVar4 = 0x800;
-    if (uVar3 < 0x800) {
-      uVar4 = uVar3;
+  uVar2 = _msize(pblock);
+  if (uVar2 < iVar5 + 4U) {
+    uVar3 = 0x800;
+    if (uVar2 < 0x800) {
+      uVar3 = uVar2;
     }
-    if ((uVar4 + uVar3 < uVar3) ||
-       (pvVar5 = _realloc_crt(puVar1,uVar4 + uVar3), pvVar5 == (void *)0x0)) {
-      if (uVar3 + 0x10 < uVar3) {
+    if ((uVar3 + uVar2 < uVar2) ||
+       (pvVar4 = _realloc_crt(pblock,uVar3 + uVar2), pvVar4 == (void *)0x0)) {
+      if (uVar2 + 0x10 < uVar2) {
         return (_func___cdecl_int *)0x0;
       }
-      pvVar5 = _realloc_crt(puVar1,uVar3 + 0x10);
-      if (pvVar5 == (void *)0x0) {
+      pvVar4 = _realloc_crt(pblock,uVar2 + 0x10);
+      if (pvVar4 == (void *)0x0) {
         return (_func___cdecl_int *)0x0;
       }
     }
-    puVar2 = (undefined4 *)((int)pvVar5 + (iVar6 >> 2) * 4);
-    __onexitbegin = _encode_pointer(pvVar5);
+    puVar1 = (undefined4 *)((int)pvVar4 + (iVar5 >> 2) * 4);
+    __onexitbegin = _encode_pointer(pvVar4);
   }
-  pvVar5 = _encode_pointer(param_1);
-  *puVar2 = pvVar5;
-  __onexitend = _encode_pointer(puVar2 + 1);
-  return param_1;
+  pvVar4 = _encode_pointer(func);
+  *puVar1 = pvVar4;
+  __onexitend = _encode_pointer(puVar1 + 1);
+  return func;
 }
 
 
 // 0095C79F  atexit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/onexit.c:165)
 
-int __cdecl atexit(_func___cdecl_void *param_1)
+int __cdecl atexit(_func___cdecl_void *func)
 
 {
   _func___cdecl_int *p_Var1;
   
-  p_Var1 = _onexit((_func___cdecl_int *)param_1);
+  p_Var1 = _onexit((_func___cdecl_int *)func);
   return (p_Var1 != (_func___cdecl_int *)0x0) - 1;
 }
 
@@ -77,15 +77,15 @@ int __cdecl atexit(_func___cdecl_void *param_1)
 int __cdecl __onexitinit(void)
 
 {
-  undefined4 *puVar1;
+  undefined4 *ptr;
   
-  puVar1 = _calloc_crt(0x20,4);
-  __onexitend = _encode_pointer(puVar1);
+  ptr = _calloc_crt(0x20,4);
+  __onexitend = _encode_pointer(ptr);
   __onexitbegin = __onexitend;
-  if (puVar1 == (undefined4 *)0x0) {
+  if (ptr == (undefined4 *)0x0) {
     return 0x18;
   }
-  *puVar1 = 0;
+  *ptr = 0;
   return 0;
 }
 

@@ -5,6 +5,9 @@
 void __cdecl _cintrindisp2(void)
 
 {
+  ulong MTSF;
+  ulong DLSF;
+  
   _trandisp2();
   cintrinexit();
   return;
@@ -16,6 +19,9 @@ void __cdecl _cintrindisp2(void)
 void __cdecl _cintrindisp1(void)
 
 {
+  ulong MTSF;
+  ulong DLSF;
+  
   _trandisp1();
   cintrinexit();
   return;
@@ -24,11 +30,14 @@ void __cdecl _cintrindisp1(void)
 
 // 00C1DDDB  _ctrandisp2  (line unknown)
 
-void __cdecl _ctrandisp2(uint64 param_1,uint64 param_2)
+void __cdecl _ctrandisp2(uint64 parm1,uint64 parm2)
 
 {
-  _fload(param_1);
-  _fload(param_2);
+  ulong MTSF;
+  ulong DLSF;
+  
+  _fload(parm1);
+  _fload(parm2);
   _trandisp2();
   ctranexit();
   return;
@@ -37,10 +46,13 @@ void __cdecl _ctrandisp2(uint64 param_1,uint64 param_2)
 
 // 00C1DF71  _ctrandisp1  (line unknown)
 
-void __cdecl _ctrandisp1(uint64 param_1)
+void __cdecl _ctrandisp1(uint64 parm1)
 
 {
-  _fload(param_1);
+  ulong MTSF;
+  ulong DLSF;
+  
+  _fload(parm1);
   _trandisp1();
   ctranexit();
   return;
@@ -49,9 +61,11 @@ void __cdecl _ctrandisp1(uint64 param_1)
 
 // 00C1DFA4  _fload  (line unknown)
 
-void __cdecl _fload(uint64 param_1)
+void __cdecl _fload(uint64 parm)
 
 {
+  longdouble tmp;
+  
   return;
 }
 

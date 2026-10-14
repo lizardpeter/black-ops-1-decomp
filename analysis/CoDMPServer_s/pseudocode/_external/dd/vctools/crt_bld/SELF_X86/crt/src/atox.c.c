@@ -2,36 +2,36 @@
 
 // 0095B756  atol  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c:55)
 
-long __cdecl atol(char *param_1)
+long __cdecl atol(char *nptr)
 
 {
   long lVar1;
   
-  lVar1 = strtol(param_1,(char **)0x0,10);
+  lVar1 = strtol(nptr,(char **)0x0,10);
   return lVar1;
 }
 
 
 // 0095B76C  atoi  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c:99)
 
-int __cdecl atoi(char *param_1)
+int __cdecl atoi(char *nptr)
 
 {
   long lVar1;
   
-  lVar1 = atol(param_1);
+  lVar1 = atol(nptr);
   return lVar1;
 }
 
 
 // 0095B777  _atoi64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atox.c:143)
 
-long64 __cdecl _atoi64(char *param_1)
+long64 __cdecl _atoi64(char *nptr)
 
 {
   long64 lVar1;
   
-  lVar1 = _strtoi64(param_1,(char **)0x0,10);
+  lVar1 = _strtoi64(nptr,(char **)0x0,10);
   return lVar1;
 }
 

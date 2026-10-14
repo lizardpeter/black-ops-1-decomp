@@ -2,54 +2,54 @@
 
 // 00C17A30  strcpy  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strcat.asm:88)
 
-void __cdecl strcpy(uchar *param_1,uchar *param_2)
+void __cdecl strcpy(uchar *dst,uchar *src)
 
 {
   byte bVar1;
   uint uVar2;
   uint uVar3;
   
-  while (((uint)param_2 & 3) != 0) {
-    bVar1 = (byte)*(uint *)param_2;
+  while (((uint)src & 3) != 0) {
+    bVar1 = (byte)*(uint *)src;
     uVar3 = (uint)bVar1;
-    param_2 = (uchar *)((int)param_2 + 1);
+    src = (uchar *)((int)src + 1);
     if (bVar1 == 0) goto LAB_00c17b20;
-    *param_1 = bVar1;
-    param_1 = (uchar *)((int)param_1 + 1);
+    *dst = bVar1;
+    dst = (uchar *)((int)dst + 1);
   }
   do {
-    uVar2 = *(uint *)param_2;
-    uVar3 = *(uint *)param_2;
-    param_2 = (uchar *)((int)param_2 + 4);
+    uVar2 = *(uint *)src;
+    uVar3 = *(uint *)src;
+    src = (uchar *)((int)src + 4);
     if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
       if ((char)uVar3 == '\0') {
 LAB_00c17b20:
-        *param_1 = (byte)uVar3;
+        *dst = (byte)uVar3;
         return;
       }
       if ((char)(uVar3 >> 8) == '\0') {
-        *(short *)param_1 = (short)uVar3;
+        *(short *)dst = (short)uVar3;
         return;
       }
       if ((uVar3 & 0xff0000) == 0) {
-        *(short *)param_1 = (short)uVar3;
-        *(byte *)((int)param_1 + 2) = 0;
+        *(short *)dst = (short)uVar3;
+        *(byte *)((int)dst + 2) = 0;
         return;
       }
       if ((uVar3 & 0xff000000) == 0) {
-        *(uint *)param_1 = uVar3;
+        *(uint *)dst = uVar3;
         return;
       }
     }
-    *(uint *)param_1 = uVar3;
-    param_1 = (uchar *)((int)param_1 + 4);
+    *(uint *)dst = uVar3;
+    dst = (uchar *)((int)dst + 4);
   } while( true );
 }
 
 
 // 00C17A40  strcat  (line unknown)
 
-void __cdecl strcat(uchar *param_1,uchar *param_2)
+void __cdecl strcat(uchar *dst,uchar *src)
 
 {
   byte bVar1;
@@ -58,9 +58,9 @@ void __cdecl strcat(uchar *param_1,uchar *param_2)
   uint *puVar4;
   
   do {
-    if (((uint)param_1 & 3) == 0) goto LAB_00c17a60;
-    uVar3 = *(uint *)param_1;
-    param_1 = (uchar *)((int)param_1 + 1);
+    if (((uint)dst & 3) == 0) goto LAB_00c17a60;
+    uVar3 = *(uint *)dst;
+    dst = (uchar *)((int)dst + 1);
   } while ((byte)uVar3 != 0);
   goto LAB_00c17a93;
   while( true ) {
@@ -71,8 +71,8 @@ void __cdecl strcat(uchar *param_1,uchar *param_2)
     if ((uVar3 & 0xff000000) == 0) break;
 LAB_00c17a60:
     do {
-      puVar4 = (uint *)param_1;
-      param_1 = (uchar *)(puVar4 + 1);
+      puVar4 = (uint *)dst;
+      dst = (uchar *)(puVar4 + 1);
     } while (((*puVar4 ^ 0xffffffff ^ *puVar4 + 0x7efefeff) & 0x81010100) == 0);
     uVar3 = *puVar4;
     if ((char)uVar3 == '\0') goto joined_r0x00c17aaf;
@@ -82,14 +82,14 @@ LAB_00c17a60:
     }
   }
 LAB_00c17a93:
-  puVar4 = (uint *)((int)param_1 + -1);
+  puVar4 = (uint *)((int)dst + -1);
 joined_r0x00c17aaf:
   do {
-    if (((uint)param_2 & 3) == 0) {
+    if (((uint)src & 3) == 0) {
       do {
-        uVar2 = *(uint *)param_2;
-        uVar3 = *(uint *)param_2;
-        param_2 = (uchar *)((int)param_2 + 4);
+        uVar2 = *(uint *)src;
+        uVar3 = *(uint *)src;
+        src = (uchar *)((int)src + 4);
         if (((uVar2 ^ 0xffffffff ^ uVar2 + 0x7efefeff) & 0x81010100) != 0) {
           if ((char)uVar3 == '\0') {
 LAB_00c17b20:
@@ -114,9 +114,9 @@ LAB_00c17b20:
         puVar4 = puVar4 + 1;
       } while( true );
     }
-    bVar1 = (byte)*(uint *)param_2;
+    bVar1 = (byte)*(uint *)src;
     uVar3 = (uint)bVar1;
-    param_2 = (uchar *)((int)param_2 + 1);
+    src = (uchar *)((int)src + 1);
     if (bVar1 == 0) goto LAB_00c17b20;
     *(byte *)puVar4 = bVar1;
     puVar4 = (uint *)((int)puVar4 + 1);

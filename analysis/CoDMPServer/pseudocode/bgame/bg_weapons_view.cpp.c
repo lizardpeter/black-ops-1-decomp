@@ -2,12 +2,12 @@
 
 // 004640C0  BG_GetBobCycle  (bgame/bg_weapons_view.cpp:8)
 
-float __cdecl BG_GetBobCycle(playerState_s *param_1)
+float __cdecl BG_GetBobCycle(playerState_s *ps)
 
 {
   float fVar1;
   
-  fVar1 = ((float)(param_1->bobCycle & 0xff) / 255.0) * 3.1415927;
+  fVar1 = ((float)(ps->bobCycle & 0xff) / 255.0) * 3.1415927;
   return fVar1 + fVar1 + 6.2831855;
 }
 
@@ -15,7 +15,7 @@ float __cdecl BG_GetBobCycle(playerState_s *param_1)
 // 004640F0  BG_CalculateWeaponMovement_VerticalBobFactor  (bgame/bg_weapons_view.cpp:17)
 
 float __cdecl
-BG_CalculateWeaponMovement_VerticalBobFactor(playerState_s *param_1,float param_2,float param_3)
+BG_CalculateWeaponMovement_VerticalBobFactor(playerState_s *ps,float cycle,float speed)
 
 {
   WeaponDef *pWVar1;
@@ -24,208 +24,222 @@ BG_CalculateWeaponMovement_VerticalBobFactor(playerState_s *param_1,float param_
   double dVar3;
   undefined4 in_stack_ffffffec;
   undefined4 in_stack_fffffff0;
-  float local_c;
+  float amplitude;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef((uint)param_1->weapon);
-  if (param_1->waterlevel < 3) {
-    if ((param_1->pm_flags & 0x400000U) == 0) {
-      if (param_1->viewHeightTarget == 0xb) {
-        local_c = param_3 * (bg_weaponBobAmplitudeProne->current).vector[1];
+  pWVar1 = BG_GetWeaponDef((uint)ps->weapon);
+  if (ps->waterlevel < 3) {
+    if ((ps->pm_flags & 0x400000U) == 0) {
+      if (ps->viewHeightTarget == 0xb) {
+        amplitude = speed * (bg_weaponBobAmplitudeProne->current).vector[1];
       }
-      else if (param_1->viewHeightTarget == 0x28) {
-        local_c = (1.0 - param_1->fWeaponPosFrac) * param_3 *
-                  (bg_weaponBobAmplitudeDucked->current).vector[1];
+      else if (ps->viewHeightTarget == 0x28) {
+        amplitude = (1.0 - ps->fWeaponPosFrac) * speed *
+                    (bg_weaponBobAmplitudeDucked->current).vector[1];
       }
-      else if ((param_1->pm_flags & 0x8000U) == 0) {
-        local_c = (1.0 - param_1->fWeaponPosFrac) * param_3 *
-                  (bg_weaponBobAmplitudeStanding->current).vector[1];
+      else if ((ps->pm_flags & 0x8000U) == 0) {
+        amplitude = (1.0 - ps->fWeaponPosFrac) * speed *
+                    (bg_weaponBobAmplitudeStanding->current).vector[1];
       }
       else {
-        local_c = param_3 * (bg_weaponBobAmplitudeSprinting->current).vector[1] *
-                  pWVar1->vSprintBob[1];
+        amplitude = speed * (bg_weaponBobAmplitudeSprinting->current).vector[1] *
+                    pWVar1->vSprintBob[1];
       }
     }
     else {
-      local_c = param_3 * (bg_weaponBobAmplitudeDtp->current).vector[1] * pWVar1->vDtpBob[1];
+      amplitude = speed * (bg_weaponBobAmplitudeDtp->current).vector[1] * pWVar1->vDtpBob[1];
     }
   }
   else {
-    local_c = (bg_weaponBobAmplitudeSwimming->current).vector[1];
+    amplitude = (bg_weaponBobAmplitudeSwimming->current).vector[1];
   }
-  if ((bg_weaponBobMax->current).value <= local_c && local_c != (bg_weaponBobMax->current).value) {
-    local_c = (bg_weaponBobMax->current).value;
+  if ((bg_weaponBobMax->current).value <= amplitude && amplitude != (bg_weaponBobMax->current).value
+     ) {
+    amplitude = (bg_weaponBobMax->current).value;
   }
-  dVar3 = (double)(param_2 * 2.0);
+  dVar3 = (double)(cycle * 2.0);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffff0,in_stack_ffffffec));
   fVar2 = (float)dVar3;
   _CIsin();
-  return ((float)extraout_ST0 * 0.2 + fVar2) * 0.75 * local_c;
+  return ((float)extraout_ST0 * 0.2 + fVar2) * 0.75 * amplitude;
 }
 
 
 // 00464280  BG_CalculateWeaponMovement_HorizontalBobFactor  (bgame/bg_weapons_view.cpp:53)
 
 float __cdecl
-BG_CalculateWeaponMovement_HorizontalBobFactor(playerState_s *param_1,float param_2,float param_3)
+BG_CalculateWeaponMovement_HorizontalBobFactor(playerState_s *ps,float cycle,float speed)
 
 {
   WeaponDef *pWVar1;
   float10 extraout_ST0;
-  float local_c;
+  float amplitude;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef((uint)param_1->weapon);
-  if (param_1->waterlevel < 3) {
-    if ((param_1->pm_flags & 0x400000U) == 0) {
-      if (param_1->viewHeightTarget == 0xb) {
-        local_c = param_3 * (bg_weaponBobAmplitudeProne->current).value;
+  pWVar1 = BG_GetWeaponDef((uint)ps->weapon);
+  if (ps->waterlevel < 3) {
+    if ((ps->pm_flags & 0x400000U) == 0) {
+      if (ps->viewHeightTarget == 0xb) {
+        amplitude = speed * (bg_weaponBobAmplitudeProne->current).value;
       }
-      else if (param_1->viewHeightTarget == 0x28) {
-        local_c = (1.0 - param_1->fWeaponPosFrac) * param_3 *
-                  (bg_weaponBobAmplitudeDucked->current).value;
+      else if (ps->viewHeightTarget == 0x28) {
+        amplitude = (1.0 - ps->fWeaponPosFrac) * speed *
+                    (bg_weaponBobAmplitudeDucked->current).value;
       }
-      else if ((param_1->pm_flags & 0x8000U) == 0) {
-        local_c = (1.0 - param_1->fWeaponPosFrac) * param_3 *
-                  (bg_weaponBobAmplitudeStanding->current).value;
+      else if ((ps->pm_flags & 0x8000U) == 0) {
+        amplitude = (1.0 - ps->fWeaponPosFrac) * speed *
+                    (bg_weaponBobAmplitudeStanding->current).value;
       }
       else {
-        local_c = param_3 * (bg_weaponBobAmplitudeSprinting->current).value * pWVar1->vSprintBob[0];
+        amplitude = speed * (bg_weaponBobAmplitudeSprinting->current).value * pWVar1->vSprintBob[0];
       }
     }
     else {
-      local_c = param_3 * (bg_weaponBobAmplitudeDtp->current).value * pWVar1->vDtpBob[0];
+      amplitude = speed * (bg_weaponBobAmplitudeDtp->current).value * pWVar1->vDtpBob[0];
     }
   }
   else {
-    local_c = (bg_weaponBobAmplitudeSwimming->current).value;
+    amplitude = (bg_weaponBobAmplitudeSwimming->current).value;
   }
-  if ((bg_weaponBobMax->current).value <= local_c && local_c != (bg_weaponBobMax->current).value) {
-    local_c = (bg_weaponBobMax->current).value;
+  if ((bg_weaponBobMax->current).value <= amplitude && amplitude != (bg_weaponBobMax->current).value
+     ) {
+    amplitude = (bg_weaponBobMax->current).value;
   }
   _CIsin();
-  return (float)extraout_ST0 * local_c;
+  return (float)extraout_ST0 * amplitude;
 }
 
 
 // 004664C0  BG_ComputeAndApplyWeaponMovement_IdleAngles  (bgame/bg_weapons_view.cpp:90)
 
-void __cdecl BG_ComputeAndApplyWeaponMovement_IdleAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ComputeAndApplyWeaponMovement_IdleAngles(weaponState_t *ws,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  float fVar4;
-  float fVar5;
-  double dVar6;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float fVar2;
+  float fVar3;
+  double dVar4;
   undefined4 in_stack_ffffffd0;
   undefined4 in_stack_ffffffd4;
-  float local_24;
-  float local_1c;
-  float local_14;
+  float fTargScale;
+  float fracsin;
+  float fTargFactor;
+  float fFactorSpeed;
+  float idleSpeed;
+  int weapIndex;
+  WeaponDef *weapDef;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  if (pWVar3->aimDownSight == false) {
-    local_24 = pWVar3->fHipIdleAmount;
-    local_14 = pWVar3->hipIdleSpeed;
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  if (pWVar1->aimDownSight == false) {
+    fTargScale = pWVar1->fHipIdleAmount;
+    idleSpeed = pWVar1->hipIdleSpeed;
   }
   else {
-    local_24 = (pWVar3->fAdsIdleAmount - pWVar3->fHipIdleAmount) * ppVar1->fWeaponPosFrac +
-               pWVar3->fHipIdleAmount;
-    local_14 = (pWVar3->adsIdleSpeed - pWVar3->hipIdleSpeed) * ppVar1->fWeaponPosFrac +
-               pWVar3->hipIdleSpeed;
+    fTargScale = (pWVar1->fAdsIdleAmount - pWVar1->fHipIdleAmount) * ps_00->fWeaponPosFrac +
+                 pWVar1->fHipIdleAmount;
+    idleSpeed = (pWVar1->adsIdleSpeed - pWVar1->hipIdleSpeed) * ps_00->fWeaponPosFrac +
+                pWVar1->hipIdleSpeed;
     if ((zero_idle_movement->current).enabled != false) {
-      local_24 = 0.0;
-      local_14 = 0.0;
+      fTargScale = 0.0;
+      idleSpeed = 0.0;
     }
   }
-  if ((ppVar1->eFlags & 8U) == 0) {
-    if ((ppVar1->eFlags & 4U) == 0) {
-      local_1c = 1.0;
+  if ((ps_00->eFlags & 8U) == 0) {
+    if ((ps_00->eFlags & 4U) == 0) {
+      fTargFactor = 1.0;
     }
     else {
-      local_1c = pWVar3->fIdleCrouchFactor;
+      fTargFactor = pWVar1->fIdleCrouchFactor;
     }
   }
   else {
-    local_1c = pWVar3->fIdleProneFactor;
+    fTargFactor = pWVar1->fIdleProneFactor;
   }
-  if (local_1c != param_1->fLastIdleFactor) {
-    if (local_1c < param_1->fLastIdleFactor || local_1c == param_1->fLastIdleFactor) {
-      param_1->fLastIdleFactor = param_1->fLastIdleFactor - param_1->frametime * 0.5;
-      if (param_1->fLastIdleFactor <= local_1c && local_1c != param_1->fLastIdleFactor) {
-        param_1->fLastIdleFactor = local_1c;
+  if (fTargFactor != ws->fLastIdleFactor) {
+    if (fTargFactor < ws->fLastIdleFactor || fTargFactor == ws->fLastIdleFactor) {
+      ws->fLastIdleFactor = ws->fLastIdleFactor - ws->frametime * 0.5;
+      if (ws->fLastIdleFactor <= fTargFactor && fTargFactor != ws->fLastIdleFactor) {
+        ws->fLastIdleFactor = fTargFactor;
       }
     }
     else {
-      param_1->fLastIdleFactor = param_1->frametime * 0.5 + param_1->fLastIdleFactor;
-      if (local_1c < param_1->fLastIdleFactor) {
-        param_1->fLastIdleFactor = local_1c;
+      ws->fLastIdleFactor = ws->frametime * 0.5 + ws->fLastIdleFactor;
+      if (fTargFactor < ws->fLastIdleFactor) {
+        ws->fLastIdleFactor = fTargFactor;
       }
     }
   }
-  local_24 = local_24 * param_1->fLastIdleFactor;
-  if (pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE) {
-    local_24 = (1.0 - ppVar1->fWeaponPosFrac) * local_24;
+  fTargScale = fTargScale * ws->fLastIdleFactor;
+  if (pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE) {
+    fTargScale = (1.0 - ps_00->fWeaponPosFrac) * fTargScale;
   }
-  *param_1->weapIdleTime = (int)(param_1->frametime * 1000.0 * local_14) + *param_1->weapIdleTime;
-  dVar6 = (double)((float)*param_1->weapIdleTime * 0.0005);
+  *ws->weapIdleTime = (int)(ws->frametime * 1000.0 * idleSpeed) + *ws->weapIdleTime;
+  dVar4 = (double)((float)*ws->weapIdleTime * 0.0005);
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffffd4,in_stack_ffffffd0));
-  param_2[2] = local_24 * (float)dVar6 * 0.01 + param_2[2];
-  fVar4 = (float)*param_1->weapIdleTime * 0.0007;
-  dVar6 = (double)fVar4;
-  __libm_sse2_sin((double)CONCAT44(fVar4,in_stack_ffffffd0));
-  param_2[1] = local_24 * (float)dVar6 * 0.01 + param_2[1];
-  fVar5 = (float)*param_1->weapIdleTime * 0.001;
-  dVar6 = (double)fVar5;
-  __libm_sse2_sin((double)CONCAT44(fVar4,fVar5));
-  *param_2 = local_24 * (float)dVar6 * 0.01 + *param_2;
+  angles[2] = fTargScale * (float)dVar4 * 0.01 + angles[2];
+  fVar2 = (float)*ws->weapIdleTime * 0.0007;
+  dVar4 = (double)fVar2;
+  __libm_sse2_sin((double)CONCAT44(fVar2,in_stack_ffffffd0));
+  angles[1] = fTargScale * (float)dVar4 * 0.01 + angles[1];
+  fVar3 = (float)*ws->weapIdleTime * 0.001;
+  dVar4 = (double)fVar3;
+  __libm_sse2_sin((double)CONCAT44(fVar2,fVar3));
+  *angles = fTargScale * (float)dVar4 * 0.01 + *angles;
   return;
 }
 
 
 // 004667F0  BG_ComputeAndApplyWeaponMovement_DamageKickAngles  (bgame/bg_weapons_view.cpp:179)
 
-void __cdecl
-BG_ComputeAndApplyWeaponMovement_DamageKickAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ComputeAndApplyWeaponMovement_DamageKickAngles(weaponState_t *ws,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float fVar2;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  float local_10;
+  float fReturnTime;
+  float fDeflectTime;
+  float fRatio;
+  int weapIndex;
+  float fFactor;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  if (param_1->damageTime != 0) {
-    ppVar1 = param_1->ps;
-    uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    local_10 = ppVar1->fWeaponPosFrac * 0.5 + 0.5;
-    fVar4 = local_10 * 100.0;
-    fVar5 = local_10 * 400.0;
-    if ((ppVar1->fWeaponPosFrac != 0.0) && (pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
-      local_10 = (1.0 - ppVar1->fWeaponPosFrac * 0.75) * local_10;
+  if (ws->damageTime != 0) {
+    ps_00 = ws->ps;
+    weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+    pWVar1 = BG_GetWeaponDef(weaponIndex);
+    fFactor = ps_00->fWeaponPosFrac * 0.5 + 0.5;
+    fVar2 = fFactor * 100.0;
+    fVar3 = fFactor * 400.0;
+    if ((ps_00->fWeaponPosFrac != 0.0) && (pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
+      fFactor = (1.0 - ps_00->fWeaponPosFrac * 0.75) * fFactor;
     }
-    fVar6 = (float)(param_1->time - param_1->damageTime);
-    if (fVar4 <= fVar6) {
-      fVar4 = 1.0 - (fVar6 - fVar4) / fVar5;
-      if (0.0 < fVar4) {
-        fVar4 = GetLeanFraction(1.0 - fVar4);
-        local_10 = (1.0 - fVar4) * local_10;
-        *param_2 = local_10 * param_1->v_dmg_pitch * 0.5 + *param_2;
-        param_2[1] = param_2[1] - local_10 * param_1->v_dmg_roll;
-        param_2[2] = local_10 * param_1->v_dmg_roll * 0.5 + param_2[2];
+    fVar4 = (float)(ws->time - ws->damageTime);
+    if (fVar2 <= fVar4) {
+      fVar2 = 1.0 - (fVar4 - fVar2) / fVar3;
+      if (0.0 < fVar2) {
+        fVar2 = GetLeanFraction(1.0 - fVar2);
+        fVar2 = (1.0 - fVar2) * fFactor;
+        *angles = fVar2 * ws->v_dmg_pitch * 0.5 + *angles;
+        angles[1] = angles[1] - fVar2 * ws->v_dmg_roll;
+        angles[2] = fVar2 * ws->v_dmg_roll * 0.5 + angles[2];
       }
     }
     else {
-      fVar4 = GetLeanFraction(fVar6 / fVar4);
-      fVar4 = fVar4 * local_10;
-      *param_2 = fVar4 * param_1->v_dmg_pitch * 0.5 + *param_2;
-      param_2[1] = param_2[1] - fVar4 * param_1->v_dmg_roll;
-      param_2[2] = fVar4 * param_1->v_dmg_roll * 0.5 + param_2[2];
+      fVar2 = GetLeanFraction(fVar4 / fVar2);
+      fVar2 = fVar2 * fFactor;
+      *angles = fVar2 * ws->v_dmg_pitch * 0.5 + *angles;
+      angles[1] = angles[1] - fVar2 * ws->v_dmg_roll;
+      angles[2] = fVar2 * ws->v_dmg_roll * 0.5 + angles[2];
     }
   }
   return;
@@ -234,14 +248,16 @@ BG_ComputeAndApplyWeaponMovement_DamageKickAngles(weaponState_t *param_1,float *
 
 // 00466A50  BG_ApplyWeaponMovement_BaseAngles  (bgame/bg_weapons_view.cpp:229)
 
-void __cdecl BG_ApplyWeaponMovement_BaseAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_BaseAngles(weaponState_t *ws,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  playerState_s *ps;
+  float adsFrac;
   
-  if (param_1 == (weaponState_t *)0x0) {
+  if (ws == (weaponState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0xe9,0,
                              "%s");
     if (!bVar2) {
@@ -250,7 +266,7 @@ void __cdecl BG_ApplyWeaponMovement_BaseAngles(weaponState_t *param_1,float *par
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (angles == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0xea,0,
                              "%s");
     if (!bVar2) {
@@ -259,11 +275,11 @@ void __cdecl BG_ApplyWeaponMovement_BaseAngles(weaponState_t *param_1,float *par
       return;
     }
   }
-  fVar3 = 1.0 - param_1->ps->fWeaponPosFrac * 2.0;
+  fVar3 = 1.0 - ws->ps->fWeaponPosFrac * 2.0;
   if (0.0 < fVar3) {
-    *param_2 = fVar3 * param_1->baseAngles[0] + *param_2;
-    param_2[1] = fVar3 * param_1->baseAngles[1] + param_2[1];
-    param_2[2] = fVar3 * param_1->baseAngles[2] + param_2[2];
+    *angles = fVar3 * ws->baseAngles[0] + *angles;
+    angles[1] = fVar3 * ws->baseAngles[1] + angles[1];
+    angles[2] = fVar3 * ws->baseAngles[2] + angles[2];
   }
   return;
 }
@@ -271,14 +287,16 @@ void __cdecl BG_ApplyWeaponMovement_BaseAngles(weaponState_t *param_1,float *par
 
 // 00466D80  BG_ApplyWeaponMovement_BaseOrigin  (bgame/bg_weapons_view.cpp:246)
 
-void __cdecl BG_ApplyWeaponMovement_BaseOrigin(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_BaseOrigin(weaponState_t *ws,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  playerState_s *ps;
+  float adsFrac;
   
-  if (param_1 == (weaponState_t *)0x0) {
+  if (ws == (weaponState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0xfa,0,
                              "%s");
     if (!bVar2) {
@@ -287,7 +305,7 @@ void __cdecl BG_ApplyWeaponMovement_BaseOrigin(weaponState_t *param_1,float *par
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0xfb,0,
                              "%s");
     if (!bVar2) {
@@ -296,11 +314,11 @@ void __cdecl BG_ApplyWeaponMovement_BaseOrigin(weaponState_t *param_1,float *par
       return;
     }
   }
-  fVar3 = 1.0 - param_1->ps->fWeaponPosFrac * 2.0;
+  fVar3 = 1.0 - ws->ps->fWeaponPosFrac * 2.0;
   if (0.0 < fVar3) {
-    *param_2 = fVar3 * param_1->baseOrigin[0] + *param_2;
-    param_2[1] = fVar3 * param_1->baseOrigin[1] + param_2[1];
-    param_2[2] = fVar3 * param_1->baseOrigin[2] + param_2[2];
+    *origin = fVar3 * ws->baseOrigin[0] + *origin;
+    origin[1] = fVar3 * ws->baseOrigin[1] + origin[1];
+    origin[2] = fVar3 * ws->baseOrigin[2] + origin[2];
   }
   return;
 }
@@ -308,45 +326,45 @@ void __cdecl BG_ApplyWeaponMovement_BaseOrigin(weaponState_t *param_1,float *par
 
 // 00466B50  BG_ApplyWeaponMovement_SwayAngles  (bgame/bg_weapons_view.cpp:263)
 
-void __cdecl BG_ApplyWeaponMovement_SwayAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_SwayAngles(weaponState_t *ws,float *angles)
 
 {
   float fVar1;
   
-  fVar1 = AngleNormalize180(*param_2 - param_1->swayAngles[0]);
-  *param_2 = fVar1;
-  fVar1 = AngleNormalize180(param_2[1] - param_1->swayAngles[1]);
-  param_2[1] = fVar1;
+  fVar1 = AngleNormalize180(*angles - ws->swayAngles[0]);
+  *angles = fVar1;
+  fVar1 = AngleNormalize180(angles[1] - ws->swayAngles[1]);
+  angles[1] = fVar1;
   return;
 }
 
 
 // 00466E80  BG_ApplyWeaponMovement_LeanOrigin  (bgame/bg_weapons_view.cpp:292)
 
-void __cdecl BG_ApplyWeaponMovement_LeanOrigin(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_LeanOrigin(weaponState_t *ws,float *origin)
 
 {
   float fVar1;
-  float local_24;
+  float fLean;
+  float right;
   float local_20;
   float local_1c;
-  float local_18;
-  playerState_s *local_14;
-  float local_10 [3];
+  float fDist;
+  playerState_s *ps;
+  float rollAngles [3];
   
-  local_14 = param_1->ps;
-  if ((local_14->leanf != 0.0) &&
-     (local_14->fWeaponPosFrac <= 1.0 && local_14->fWeaponPosFrac != 1.0)) {
-    local_10[0] = 0.0;
-    local_10[1] = 0.0;
-    local_10[2] = 0.0;
-    fVar1 = GetLeanFraction(local_14->leanf);
-    local_10[2] = local_10[2] - fVar1 * 2.0;
-    local_18 = (1.0 - local_14->fWeaponPosFrac) * fVar1 * 1.6;
-    AngleVectors(local_10,(float *)0x0,&local_24,(float *)0x0);
-    *param_2 = local_18 * local_24 + *param_2;
-    param_2[1] = local_18 * local_20 + param_2[1];
-    param_2[2] = local_18 * local_1c + param_2[2];
+  ps = ws->ps;
+  if ((ps->leanf != 0.0) && (ps->fWeaponPosFrac <= 1.0 && ps->fWeaponPosFrac != 1.0)) {
+    rollAngles[0] = 0.0;
+    rollAngles[1] = 0.0;
+    rollAngles[2] = 0.0;
+    fVar1 = GetLeanFraction(ps->leanf);
+    rollAngles[2] = rollAngles[2] - fVar1 * 2.0;
+    fDist = (1.0 - ps->fWeaponPosFrac) * fVar1 * 1.6;
+    AngleVectors(rollAngles,(float *)0x0,&right,(float *)0x0);
+    *origin = fDist * right + *origin;
+    origin[1] = fDist * local_20 + origin[1];
+    origin[2] = fDist * local_1c + origin[2];
   }
   return;
 }
@@ -354,27 +372,30 @@ void __cdecl BG_ApplyWeaponMovement_LeanOrigin(weaponState_t *param_1,float *par
 
 // 00466BD0  BG_ApplyWeaponMovement_BobAngles  (bgame/bg_weapons_view.cpp:321)
 
-void __cdecl BG_ApplyWeaponMovement_BobAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_BobAngles(weaponState_t *ws,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  float fVar4;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float fVar2;
+  int weapIndex;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  if (pWVar3->overlayReticle == WEAPOVERLAYRETICLE_NONE) {
-    *param_2 = *param_2 + param_1->bobAngles[0];
-    param_2[1] = param_2[1] + param_1->bobAngles[1];
-    param_2[2] = param_2[2] + param_1->bobAngles[2];
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  if (pWVar1->overlayReticle == WEAPOVERLAYRETICLE_NONE) {
+    *angles = *angles + ws->bobAngles[0];
+    angles[1] = angles[1] + ws->bobAngles[1];
+    angles[2] = angles[2] + ws->bobAngles[2];
   }
   else {
-    fVar4 = 1.0 - ppVar1->fWeaponPosFrac;
-    *param_2 = fVar4 * param_1->bobAngles[0] + *param_2;
-    param_2[1] = fVar4 * param_1->bobAngles[1] + param_2[1];
-    param_2[2] = fVar4 * param_1->bobAngles[2] + param_2[2];
+    fVar2 = 1.0 - ps_00->fWeaponPosFrac;
+    *angles = fVar2 * ws->bobAngles[0] + *angles;
+    angles[1] = fVar2 * ws->bobAngles[1] + angles[1];
+    angles[2] = fVar2 * ws->bobAngles[2] + angles[2];
   }
   return;
 }
@@ -382,19 +403,19 @@ void __cdecl BG_ApplyWeaponMovement_BobAngles(weaponState_t *param_1,float *para
 
 // 00466FA0  BG_ApplyWeaponMovement_BobOrigin  (bgame/bg_weapons_view.cpp:338)
 
-void __cdecl BG_ApplyWeaponMovement_BobOrigin(weaponState_t *param_1,float *param_2)
+void __cdecl BG_ApplyWeaponMovement_BobOrigin(weaponState_t *ws,float *origin)
 
 {
-  float local_34;
+  float originCopy;
   float local_30;
   float local_2c;
-  float local_28 [9];
+  float bobAxis [9];
   
-  local_34 = *param_2;
-  local_30 = param_2[1];
-  local_2c = param_2[2];
-  AnglesToAxis(param_1->bobAngles,(float (*) [3])local_28);
-  MatrixTransformVector(&local_34,(float (*) [3])local_28,param_2);
+  originCopy = *origin;
+  local_30 = origin[1];
+  local_2c = origin[2];
+  AnglesToAxis(ws->bobAngles,(float (*) [3])bobAxis);
+  MatrixTransformVector(&originCopy,(float (*) [3])bobAxis,origin);
   return;
 }
 
@@ -404,50 +425,52 @@ void __cdecl BG_ApplyWeaponMovement_BobOrigin(weaponState_t *param_1,float *para
 /* WARNING: Removing unreachable block (ram,0x004649ac) */
 /* WARNING: Removing unreachable block (ram,0x004649d0) */
 
-float __cdecl BG_CalculateWeaponMovement_GetSprintLerp(weaponState_t *param_1,WeaponDef *param_2)
+float __cdecl BG_CalculateWeaponMovement_GetSprintLerp(weaponState_t *ws,WeaponDef *weapDef)
 
 {
   playerState_s *ppVar1;
   uint extraout_EAX;
   uint extraout_EDX;
   float local_14;
-  float local_c;
+  float fFrac;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  if ((ppVar1->weaponstate == 0x1d) && (param_2->sprintOutTime != 0)) {
-    local_14 = (float)ppVar1->weaponTime / (float)param_2->sprintOutTime;
+  ppVar1 = ws->ps;
+  if ((ppVar1->weaponstate == 0x1d) && (weapDef->sprintOutTime != 0)) {
+    local_14 = (float)ppVar1->weaponTime / (float)weapDef->sprintOutTime;
   }
-  else if ((ppVar1->weaponstate == 0x1b) && (param_2->sprintInTime != 0)) {
-    local_14 = 1.0 - (float)ppVar1->weaponTime / (float)param_2->sprintInTime;
+  else if ((ppVar1->weaponstate == 0x1b) && (weapDef->sprintInTime != 0)) {
+    local_14 = 1.0 - (float)ppVar1->weaponTime / (float)weapDef->sprintInTime;
   }
   else {
     local_14 = 1.0;
   }
-  local_c = local_14;
-  ppVar1 = param_1->ps;
+  fFrac = local_14;
+  ppVar1 = ws->ps;
   _allshl();
   if ((((extraout_EAX & ppVar1->perks[0]) != 0 || (extraout_EDX & ppVar1->perks[1]) != 0) &&
       (ppVar1->weaponstate == 0x1d)) && ((perk_sprintRecoveryMultiplier->current).value != 0.0)) {
-    local_c = local_14 * (perk_sprintRecoveryMultiplier->current).value;
+    fFrac = local_14 * (perk_sprintRecoveryMultiplier->current).value;
   }
-  return local_c;
+  return fFrac;
 }
 
 
 // 00464A60  BG_CalculateWeaponMovement_GetLowReadyLerp  (bgame/bg_weapons_view.cpp:384)
 
-float __cdecl BG_CalculateWeaponMovement_GetLowReadyLerp(weaponState_t *param_1,WeaponDef *param_2)
+float __cdecl BG_CalculateWeaponMovement_GetLowReadyLerp(weaponState_t *ws,WeaponDef *weapDef)
 
 {
   playerState_s *ppVar1;
   float local_10;
+  float fFrac;
   
-  ppVar1 = param_1->ps;
-  if ((ppVar1->weaponstate == 0x31) && (param_2->lowReadyOutTime != 0)) {
-    local_10 = (float)ppVar1->weaponTime / (float)param_2->lowReadyOutTime;
+  ppVar1 = ws->ps;
+  if ((ppVar1->weaponstate == 0x31) && (weapDef->lowReadyOutTime != 0)) {
+    local_10 = (float)ppVar1->weaponTime / (float)weapDef->lowReadyOutTime;
   }
-  else if ((ppVar1->weaponstate == 0x2f) && (param_2->lowReadyInTime != 0)) {
-    local_10 = 1.0 - (float)ppVar1->weaponTime / (float)param_2->lowReadyInTime;
+  else if ((ppVar1->weaponstate == 0x2f) && (weapDef->lowReadyInTime != 0)) {
+    local_10 = 1.0 - (float)ppVar1->weaponTime / (float)weapDef->lowReadyInTime;
   }
   else {
     local_10 = 1.0;
@@ -458,18 +481,18 @@ float __cdecl BG_CalculateWeaponMovement_GetLowReadyLerp(weaponState_t *param_1,
 
 // 00464B20  BG_CalculateWeaponMovement_GetDTPLerp  (bgame/bg_weapons_view.cpp:391)
 
-float __cdecl BG_CalculateWeaponMovement_GetDTPLerp(weaponState_t *param_1,WeaponDef *param_2)
+float __cdecl BG_CalculateWeaponMovement_GetDTPLerp(weaponState_t *ws,WeaponDef *weapDef)
 
 {
   playerState_s *ppVar1;
   float local_c;
   
-  ppVar1 = param_1->ps;
-  if ((ppVar1->weaponstate == 0x2a) && (param_2->dtpOutTime != 0)) {
-    local_c = (float)ppVar1->weaponTime / (float)param_2->dtpOutTime;
+  ppVar1 = ws->ps;
+  if ((ppVar1->weaponstate == 0x2a) && (weapDef->dtpOutTime != 0)) {
+    local_c = (float)ppVar1->weaponTime / (float)weapDef->dtpOutTime;
   }
-  else if ((ppVar1->weaponstate == 0x28) && (param_2->dtpInTime != 0)) {
-    local_c = 1.0 - (float)ppVar1->weaponTime / (float)param_2->dtpInTime;
+  else if ((ppVar1->weaponstate == 0x28) && (weapDef->dtpInTime != 0)) {
+    local_c = 1.0 - (float)ppVar1->weaponTime / (float)weapDef->dtpInTime;
   }
   else {
     local_c = 1.0;
@@ -482,13 +505,13 @@ float __cdecl BG_CalculateWeaponMovement_GetDTPLerp(weaponState_t *param_1,Weapo
 
 /* WARNING: Removing unreachable block (ram,0x00464c07) */
 
-float __cdecl BG_CalculateWeaponMovement_GetSlideLerp(weaponState_t *param_1,WeaponDef *param_2)
+float __cdecl BG_CalculateWeaponMovement_GetSlideLerp(weaponState_t *ws,WeaponDef *weapDef)
 
 {
   float local_c;
   
-  if ((param_1->ps->weaponstate == 0x2b) && (param_2->slideInTime != 0)) {
-    local_c = 1.0 - (float)param_1->ps->weaponTime / (float)param_2->slideInTime;
+  if ((ws->ps->weaponstate == 0x2b) && (weapDef->slideInTime != 0)) {
+    local_c = 1.0 - (float)ws->ps->weaponTime / (float)weapDef->slideInTime;
   }
   else {
     local_c = 1.0;
@@ -501,70 +524,73 @@ float __cdecl BG_CalculateWeaponMovement_GetSlideLerp(weaponState_t *param_1,Wea
 
 void __cdecl
 BG_CalculateWeaponMovement_Base_Internal_WeaponState
-          (weaponState_t *param_1,float *param_2,float *param_3)
+          (weaponState_t *ws,float *targetPos,float *targetAngles)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
-  float local_1c;
-  float *local_18;
-  float *local_10;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  uint weaponIndex;
+  WeaponDef *weapDef_00;
+  float lerp;
+  float *weaponStateMaxAngles;
+  int weapIndex;
+  float *weaponStateMaxMovement;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (weaponState_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x199
-                               ,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((ws == (weaponState_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x199
+                               ,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = param_1->ps;
-  uVar4 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if ((ppVar1->weaponstate < 0x1b) || (0x1d < ppVar1->weaponstate)) {
-    if ((ppVar1->weaponstate < 0x2f) || (0x31 < ppVar1->weaponstate)) {
-      if ((ppVar1->weaponstate < 0x28) || (0x2a < ppVar1->weaponstate)) {
-        if (ppVar1->weaponstate == 0x2b) {
-          local_1c = BG_CalculateWeaponMovement_GetSlideLerp(param_1,pWVar5);
-          local_10 = pWVar5->vSlideOfs;
-          local_18 = pWVar5->vSlideRot;
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  weapDef_00 = BG_GetWeaponDef(weaponIndex);
+  if ((ps_00->weaponstate < 0x1b) || (0x1d < ps_00->weaponstate)) {
+    if ((ps_00->weaponstate < 0x2f) || (0x31 < ps_00->weaponstate)) {
+      if ((ps_00->weaponstate < 0x28) || (0x2a < ps_00->weaponstate)) {
+        if (ps_00->weaponstate == 0x2b) {
+          lerp = BG_CalculateWeaponMovement_GetSlideLerp(ws,weapDef_00);
+          weaponStateMaxMovement = weapDef_00->vSlideOfs;
+          weaponStateMaxAngles = weapDef_00->vSlideRot;
         }
         else {
-          bVar3 = Mantle_IsWeaponEquipped(ppVar1);
-          if (!bVar3) {
+          bVar2 = Mantle_IsWeaponEquipped(ps_00);
+          if (!bVar2) {
             return;
           }
-          local_1c = Mantle_GetMantleFrac(ppVar1);
-          local_10 = pWVar5->vMantleOfs;
-          local_18 = pWVar5->vMantleRot;
+          lerp = Mantle_GetMantleFrac(ps_00);
+          weaponStateMaxMovement = weapDef_00->vMantleOfs;
+          weaponStateMaxAngles = weapDef_00->vMantleRot;
         }
       }
       else {
-        local_1c = BG_CalculateWeaponMovement_GetDTPLerp(param_1,pWVar5);
-        local_10 = pWVar5->vDtpOfs;
-        local_18 = pWVar5->vDtpRot;
+        lerp = BG_CalculateWeaponMovement_GetDTPLerp(ws,weapDef_00);
+        weaponStateMaxMovement = weapDef_00->vDtpOfs;
+        weaponStateMaxAngles = weapDef_00->vDtpRot;
       }
     }
     else {
-      local_1c = BG_CalculateWeaponMovement_GetLowReadyLerp(param_1,pWVar5);
-      local_10 = pWVar5->vLowReadyOfs;
-      local_18 = pWVar5->vLowReadyRot;
+      lerp = BG_CalculateWeaponMovement_GetLowReadyLerp(ws,weapDef_00);
+      weaponStateMaxMovement = weapDef_00->vLowReadyOfs;
+      weaponStateMaxAngles = weapDef_00->vLowReadyRot;
     }
   }
   else {
-    local_1c = BG_CalculateWeaponMovement_GetSprintLerp(param_1,pWVar5);
-    local_10 = pWVar5->vSprintOfs;
-    local_18 = pWVar5->vSprintRot;
+    lerp = BG_CalculateWeaponMovement_GetSprintLerp(ws,weapDef_00);
+    weaponStateMaxMovement = weapDef_00->vSprintOfs;
+    weaponStateMaxAngles = weapDef_00->vSprintRot;
   }
-  if (0.0 < local_1c) {
-    *param_2 = local_1c * *local_10 + *param_2;
-    param_2[1] = local_1c * local_10[1] + param_2[1];
-    param_2[2] = local_1c * local_10[2] + param_2[2];
-    *param_3 = local_1c * *local_18 + *param_3;
-    param_3[1] = local_1c * local_18[1] + param_3[1];
-    param_3[2] = local_1c * local_18[2] + param_3[2];
+  if (0.0 < lerp) {
+    *targetPos = lerp * *weaponStateMaxMovement + *targetPos;
+    targetPos[1] = lerp * weaponStateMaxMovement[1] + targetPos[1];
+    targetPos[2] = lerp * weaponStateMaxMovement[2] + targetPos[2];
+    *targetAngles = lerp * *weaponStateMaxAngles + *targetAngles;
+    targetAngles[1] = lerp * weaponStateMaxAngles[1] + targetAngles[1];
+    targetAngles[2] = lerp * weaponStateMaxAngles[2] + targetAngles[2];
   }
   return;
 }
@@ -574,48 +600,55 @@ BG_CalculateWeaponMovement_Base_Internal_WeaponState
 
 void __cdecl
 BG_CalculateWeaponMovement_Base_Internal_Stance
-          (weaponState_t *param_1,float *param_2,float *param_3)
+          (weaponState_t *ws,float *targetPos,float *targetAngles)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  uint weaponIndex;
+  WeaponDef *pWVar3;
+  int isMeleeing;
+  int isCrouched;
+  float lerp;
+  int weapIndex;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int isProne;
   
-  if (param_1 == (weaponState_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x1d4,0
+  if (ws == (weaponState_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x1d4,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  ppVar1 = param_1->ps;
-  uVar4 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if (((ppVar1->weaponstate == 0x11) || (ppVar1->weaponstate == 0x12)) ||
-     (ppVar1->weaponstate == 0x13)) {
-    bVar3 = true;
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar3 = BG_GetWeaponDef(weaponIndex);
+  if (((ps_00->weaponstate == 0x11) || (ps_00->weaponstate == 0x12)) || (ps_00->weaponstate == 0x13)
+     ) {
+    bVar2 = true;
   }
   else {
-    bVar3 = false;
+    bVar2 = false;
   }
-  if (((ppVar1->eFlags & 4U) == 0) || (bVar3)) {
-    if (((ppVar1->eFlags & 8U) != 0) && (!bVar3)) {
-      *param_2 = pWVar5->vProneOfs[0] * 1.0 + *param_2;
-      param_2[1] = pWVar5->vProneOfs[1] * 1.0 + param_2[1];
-      param_2[2] = pWVar5->vProneOfs[2] * 1.0 + param_2[2];
+  if (((ps_00->eFlags & 4U) == 0) || (bVar2)) {
+    if (((ps_00->eFlags & 8U) != 0) && (!bVar2)) {
+      *targetPos = pWVar3->vProneOfs[0] * 1.0 + *targetPos;
+      targetPos[1] = pWVar3->vProneOfs[1] * 1.0 + targetPos[1];
+      targetPos[2] = pWVar3->vProneOfs[2] * 1.0 + targetPos[2];
     }
   }
   else {
-    *param_2 = pWVar5->vDuckedOfs[0] * 1.0 + *param_2;
-    param_2[1] = pWVar5->vDuckedOfs[1] * 1.0 + param_2[1];
-    param_2[2] = pWVar5->vDuckedOfs[2] * 1.0 + param_2[2];
+    *targetPos = pWVar3->vDuckedOfs[0] * 1.0 + *targetPos;
+    targetPos[1] = pWVar3->vDuckedOfs[1] * 1.0 + targetPos[1];
+    targetPos[2] = pWVar3->vDuckedOfs[2] * 1.0 + targetPos[2];
   }
-  if (pWVar5->aimDownSight != false) {
-    *param_3 = ppVar1->fWeaponPosFrac * pWVar5->fAdsAimPitch + *param_3;
+  if (pWVar3->aimDownSight != false) {
+    *targetAngles = ps_00->fWeaponPosFrac * pWVar3->fAdsAimPitch + *targetAngles;
   }
   return;
 }
@@ -625,7 +658,7 @@ BG_CalculateWeaponMovement_Base_Internal_Stance
 
 void __cdecl
 BG_CalculateWeaponMovement_Base_Internal_Movement
-          (weaponState_t *param_1,float param_2,float *param_3,float *param_4)
+          (weaponState_t *ws,float minSpeed,float *targetPos,float *targetAngles)
 
 {
   code *pcVar1;
@@ -633,49 +666,50 @@ BG_CalculateWeaponMovement_Base_Internal_Movement
   float fVar3;
   float fVar4;
   float local_5c;
-  char local_58;
-  float local_34;
+  bool local_58;
+  float angleWeight;
+  float rightViewDir;
   float local_30;
-  undefined1 local_25;
-  float *local_24;
-  float local_20;
-  float local_1c;
-  float *local_18;
-  uint local_14;
-  playerState_s *local_10;
-  WeaponDef *local_c;
-  char local_5;
+  bool isCrouched;
+  float *locomotionMaxAngles;
+  float strafeFrac;
+  float speedFrac;
+  float *locomotionMaxMovement;
+  int weapIndex;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  bool isProne;
   
-  local_10 = param_1->ps;
-  local_14 = BG_GetViewmodelWeaponIndex(local_10);
-  local_c = BG_GetWeaponDef(local_14);
-  if (((local_10->eFlags & 8U) == 0) || ((local_10->pm_flags & 0x400000U) != 0)) {
-    local_58 = '\0';
+  ps = ws->ps;
+  weapIndex = BG_GetViewmodelWeaponIndex(ps);
+  weapDef = BG_GetWeaponDef(weapIndex);
+  if (((ps->eFlags & 8U) == 0) || ((ps->pm_flags & 0x400000U) != 0)) {
+    local_58 = false;
   }
   else {
-    local_58 = '\x01';
+    local_58 = true;
   }
-  local_5 = local_58;
-  local_25 = (local_10->eFlags & 4U) != 0;
-  if (local_58 == '\0') {
-    if ((bool)local_25) {
-      local_18 = local_c->vDuckedMove;
-      local_24 = local_c->vDuckedRot;
+  isProne = local_58;
+  isCrouched = (ps->eFlags & 4U) != 0;
+  if (local_58 == false) {
+    if (isCrouched) {
+      locomotionMaxMovement = weapDef->vDuckedMove;
+      locomotionMaxAngles = weapDef->vDuckedRot;
     }
     else {
-      local_18 = local_c->vStandMove;
-      local_24 = local_c->vStandRot;
+      locomotionMaxMovement = weapDef->vStandMove;
+      locomotionMaxAngles = weapDef->vStandRot;
     }
   }
   else {
-    local_18 = local_c->vProneMove;
-    local_24 = local_c->vProneRot;
+    locomotionMaxMovement = weapDef->vProneMove;
+    locomotionMaxAngles = weapDef->vProneRot;
   }
-  local_5c = (param_1->xyspeed - param_2) / ((float)local_10->speed - param_2);
+  local_5c = (ws->xyspeed - minSpeed) / ((float)ps->speed - minSpeed);
   if (0.0 <= local_5c - 1.0) {
     local_5c = 1.0;
   }
-  local_1c = local_5c;
+  speedFrac = local_5c;
   if (((local_5c < 0.0) || (1.0 < local_5c)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x212
                                ,1,"speedFrac not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2)) {
@@ -683,7 +717,7 @@ BG_CalculateWeaponMovement_Base_Internal_Movement
     (*pcVar1)();
     return;
   }
-  fVar3 = 1.0 - local_10->fWeaponPosFrac;
+  fVar3 = 1.0 - ps->fWeaponPosFrac;
   if (((fVar3 < 0.0) || (1.0 < fVar3)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x216
                                ,1,"angleWeight not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2))
@@ -692,32 +726,32 @@ BG_CalculateWeaponMovement_Base_Internal_Movement
     (*pcVar1)();
     return;
   }
-  *param_3 = local_1c * *local_18 + *param_3;
-  param_3[1] = local_1c * local_18[1] + param_3[1];
-  param_3[2] = local_1c * local_18[2] + param_3[2];
-  fVar4 = local_1c * fVar3;
-  *param_4 = fVar4 * *local_24 + *param_4;
-  param_4[1] = fVar4 * local_24[1] + param_4[1];
-  param_4[2] = fVar4 * local_24[2] + param_4[2];
-  BG_GetPlayerViewDirection(local_10,(float *)0x0,&local_34,(float *)0x0);
-  if ((param_1->xyspeed <= 0.0) &&
+  *targetPos = speedFrac * *locomotionMaxMovement + *targetPos;
+  targetPos[1] = speedFrac * locomotionMaxMovement[1] + targetPos[1];
+  targetPos[2] = speedFrac * locomotionMaxMovement[2] + targetPos[2];
+  fVar4 = speedFrac * fVar3;
+  *targetAngles = fVar4 * *locomotionMaxAngles + *targetAngles;
+  targetAngles[1] = fVar4 * locomotionMaxAngles[1] + targetAngles[1];
+  targetAngles[2] = fVar4 * locomotionMaxAngles[2] + targetAngles[2];
+  BG_GetPlayerViewDirection(ps,(float *)0x0,&rightViewDir,(float *)0x0);
+  if ((ws->xyspeed <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x21e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar4 = Vec2Length(local_10->velocity);
-  if ((0.001 <= ABS(fVar4 - param_1->xyspeed)) &&
+  fVar4 = Vec2Length(ps->velocity);
+  if ((0.001 <= ABS(fVar4 - ws->xyspeed)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x21f
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_20 = ((local_10->velocity[0] * local_34 + local_10->velocity[1] * local_30) * local_1c) /
-             param_1->xyspeed;
-  if (((local_20 < -1.01) || (1.01 < local_20)) &&
+  strafeFrac = ((ps->velocity[0] * rightViewDir + ps->velocity[1] * local_30) * speedFrac) /
+               ws->xyspeed;
+  if (((strafeFrac < -1.01) || (1.01 < strafeFrac)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x221
                                ,1,"strafeFrac not in [-1.01f, 1.01f]\n\t%g not in [%g, %g]"), !bVar2
      )) {
@@ -725,13 +759,13 @@ BG_CalculateWeaponMovement_Base_Internal_Movement
     (*pcVar1)();
     return;
   }
-  *param_3 = local_20 * local_c->vStrafeMove[0] + *param_3;
-  param_3[1] = local_20 * local_c->vStrafeMove[1] + param_3[1];
-  param_3[2] = local_20 * local_c->vStrafeMove[2] + param_3[2];
-  local_20 = local_20 * fVar3;
-  *param_4 = local_20 * local_c->vStrafeRot[0] + *param_4;
-  param_4[1] = local_20 * local_c->vStrafeRot[1] + param_4[1];
-  param_4[2] = local_20 * local_c->vStrafeRot[2] + param_4[2];
+  *targetPos = strafeFrac * weapDef->vStrafeMove[0] + *targetPos;
+  targetPos[1] = strafeFrac * weapDef->vStrafeMove[1] + targetPos[1];
+  targetPos[2] = strafeFrac * weapDef->vStrafeMove[2] + targetPos[2];
+  fVar3 = strafeFrac * fVar3;
+  *targetAngles = fVar3 * weapDef->vStrafeRot[0] + *targetAngles;
+  targetAngles[1] = fVar3 * weapDef->vStrafeRot[1] + targetAngles[1];
+  targetAngles[2] = fVar3 * weapDef->vStrafeRot[2] + targetAngles[2];
   return;
 }
 
@@ -739,7 +773,8 @@ BG_CalculateWeaponMovement_Base_Internal_Movement
 // 00465310  BG_CalculateWeaponMovement_Base_Internal_Save  (bgame/bg_weapons_view.cpp:554)
 
 void __cdecl
-BG_CalculateWeaponMovement_Base_Internal_Save(weaponState_t *param_1,float *param_2,float *param_3)
+BG_CalculateWeaponMovement_Base_Internal_Save
+          (weaponState_t *ws,float *targetPos,float *targetAngles)
 
 {
   float fVar1;
@@ -752,153 +787,160 @@ BG_CalculateWeaponMovement_Base_Internal_Save(weaponState_t *param_1,float *para
   float fVar8;
   float fVar9;
   float fVar10;
-  playerState_s *ppVar11;
-  code *pcVar12;
-  bool bVar13;
-  uint uVar14;
-  WeaponDef *pWVar15;
+  playerState_s *ps_00;
+  code *pcVar11;
+  bool bVar12;
+  uint weaponIndex;
+  WeaponDef *pWVar13;
   float local_54;
   float local_50;
-  float local_28;
-  float local_14;
+  float angleRate;
+  int weapIndex;
+  float originRate;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  bool isProne;
   
-  if (param_1 == (weaponState_t *)0x0) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x234,
+  if (ws == (weaponState_t *)0x0) {
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x234,
                               0,"%s");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x235,
+  if (targetPos == (float *)0x0) {
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x235,
                               0,"%s");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x236,
+  if (targetAngles == (float *)0x0) {
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x236,
                               0,"%s");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
-  ppVar11 = param_1->ps;
-  if (ppVar11 == (playerState_s *)0x0) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x238,
+  ps_00 = ws->ps;
+  if (ps_00 == (playerState_s *)0x0) {
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x238,
                               0,"%s");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
-  uVar14 = BG_GetViewmodelWeaponIndex(ppVar11);
-  pWVar15 = BG_GetWeaponDef(uVar14);
-  if ((ppVar11->eFlags & 8U) == 0) {
-    local_14 = param_1->frametime * pWVar15->fPosMoveRate;
-    local_28 = param_1->frametime * pWVar15->fPosRotRate;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar13 = BG_GetWeaponDef(weaponIndex);
+  if ((ps_00->eFlags & 8U) == 0) {
+    originRate = ws->frametime * pWVar13->fPosMoveRate;
+    angleRate = ws->frametime * pWVar13->fPosRotRate;
   }
   else {
-    local_14 = param_1->frametime * pWVar15->fPosProneMoveRate;
-    local_28 = param_1->frametime * pWVar15->fPosProneRotRate;
+    originRate = ws->frametime * pWVar13->fPosProneMoveRate;
+    angleRate = ws->frametime * pWVar13->fPosProneRotRate;
   }
-  if (1.0 - local_14 < 0.0) {
+  if (1.0 - originRate < 0.0) {
     local_50 = 1.0;
   }
   else {
-    local_50 = local_14;
+    local_50 = originRate;
   }
-  if (1.0 - local_28 < 0.0) {
+  if (1.0 - angleRate < 0.0) {
     local_54 = 1.0;
   }
   else {
-    local_54 = local_28;
+    local_54 = angleRate;
   }
   if ((local_50 < 0.0) || (1.0 < local_50)) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x24c,
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x24c,
                               1,"originRate not in [0.0f, 1.0f]\n\t%g not in [%g, %g]");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
   if ((local_54 < 0.0) || (1.0 < local_54)) {
-    bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x24d,
+    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x24d,
                               1,"angleRate not in [0.0f, 1.0f]\n\t%g not in [%g, %g]");
-    if (!bVar13) {
-      pcVar12 = (code *)swi(3);
-      (*pcVar12)();
+    if (!bVar12) {
+      pcVar11 = (code *)swi(3);
+      (*pcVar11)();
       return;
     }
   }
-  fVar1 = param_2[1];
-  fVar2 = param_1->baseOrigin[1];
-  fVar3 = param_2[2];
-  fVar4 = param_1->baseOrigin[2];
-  fVar5 = *param_3;
-  fVar6 = param_1->baseAngles[0];
-  fVar7 = param_3[1];
-  fVar8 = param_1->baseAngles[1];
-  fVar9 = param_3[2];
-  fVar10 = param_1->baseAngles[2];
-  param_1->baseOrigin[0] = local_50 * (*param_2 - param_1->baseOrigin[0]) + param_1->baseOrigin[0];
-  param_1->baseOrigin[1] = local_50 * (fVar1 - fVar2) + param_1->baseOrigin[1];
-  param_1->baseOrigin[2] = local_50 * (fVar3 - fVar4) + param_1->baseOrigin[2];
-  param_1->baseAngles[0] = local_54 * (fVar5 - fVar6) + param_1->baseAngles[0];
-  param_1->baseAngles[1] = local_54 * (fVar7 - fVar8) + param_1->baseAngles[1];
-  param_1->baseAngles[2] = local_54 * (fVar9 - fVar10) + param_1->baseAngles[2];
+  fVar1 = targetPos[1];
+  fVar2 = ws->baseOrigin[1];
+  fVar3 = targetPos[2];
+  fVar4 = ws->baseOrigin[2];
+  fVar5 = *targetAngles;
+  fVar6 = ws->baseAngles[0];
+  fVar7 = targetAngles[1];
+  fVar8 = ws->baseAngles[1];
+  fVar9 = targetAngles[2];
+  fVar10 = ws->baseAngles[2];
+  ws->baseOrigin[0] = local_50 * (*targetPos - ws->baseOrigin[0]) + ws->baseOrigin[0];
+  ws->baseOrigin[1] = local_50 * (fVar1 - fVar2) + ws->baseOrigin[1];
+  ws->baseOrigin[2] = local_50 * (fVar3 - fVar4) + ws->baseOrigin[2];
+  ws->baseAngles[0] = local_54 * (fVar5 - fVar6) + ws->baseAngles[0];
+  ws->baseAngles[1] = local_54 * (fVar7 - fVar8) + ws->baseAngles[1];
+  ws->baseAngles[2] = local_54 * (fVar9 - fVar10) + ws->baseAngles[2];
   return;
 }
 
 
 // 00464450  BG_CalculateWeaponMovement_Base  (bgame/bg_weapons_view.cpp:601)
 
-void __cdecl BG_CalculateWeaponMovement_Base(weaponState_t *param_1)
+void __cdecl BG_CalculateWeaponMovement_Base(weaponState_t *ws)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   bool bVar4;
-  float local_34 [6];
-  uint local_1c;
-  float local_18;
-  playerState_s *local_14;
-  WeaponDef *local_10;
-  uint local_c;
-  uint local_8;
+  int isCrouched;
+  int isMoving;
+  int isReloading;
+  float targetAngles [6];
+  int weapIndex;
+  float minSpeed;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int isClimbingLadder;
+  int isProne;
   
-  local_14 = param_1->ps;
-  local_1c = BG_GetViewmodelWeaponIndex(local_14);
-  local_10 = BG_GetWeaponDef(local_1c);
-  local_8 = (uint)((local_14->eFlags & 8U) != 0);
-  bVar4 = (local_14->eFlags & 4U) != 0;
-  local_34[3] = 0.0;
-  local_34[4] = 0.0;
-  local_34[5] = 0.0;
-  local_34[0] = 0.0;
-  local_34[1] = 0.0;
-  local_34[2] = 0.0;
-  if (local_8 == 0) {
+  ps = ws->ps;
+  weapIndex = BG_GetViewmodelWeaponIndex(ps);
+  weapDef = BG_GetWeaponDef(weapIndex);
+  isProne = (int)((ps->eFlags & 8U) != 0);
+  bVar4 = (ps->eFlags & 4U) != 0;
+  targetAngles[3] = 0.0;
+  targetAngles[4] = 0.0;
+  targetAngles[5] = 0.0;
+  targetAngles[0] = 0.0;
+  targetAngles[1] = 0.0;
+  targetAngles[2] = 0.0;
+  if (isProne == 0) {
     if (bVar4) {
-      local_18 = local_10->fDuckedMoveMinSpeed;
+      minSpeed = weapDef->fDuckedMoveMinSpeed;
     }
     else {
-      local_18 = local_10->fStandMoveMinSpeed;
+      minSpeed = weapDef->fStandMoveMinSpeed;
     }
   }
   else {
-    local_18 = local_10->fProneMoveMinSpeed;
+    minSpeed = weapDef->fProneMoveMinSpeed;
   }
-  if (local_18 < 0.0) {
+  if (minSpeed < 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_view.cpp",0x277,1
                              ,"%s\n\t(minSpeed) = %g");
     if (!bVar3) {
@@ -907,27 +949,27 @@ void __cdecl BG_CalculateWeaponMovement_Base(weaponState_t *param_1)
       return;
     }
   }
-  if ((param_1->xyspeed <= local_18) || ((float)local_14->speed <= local_18)) {
+  if ((ws->xyspeed <= minSpeed) || ((float)ps->speed <= minSpeed)) {
     bVar3 = false;
   }
   else {
     bVar3 = true;
   }
-  if ((local_14->weaponstate == 10) || (local_14->weaponstateLeft == 10)) {
+  if ((ps->weaponstate == 10) || (ps->weaponstateLeft == 10)) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
-  local_c = (uint)((local_14->pm_flags & 8U) != 0);
-  if ((local_8 != 0) || (bVar4)) {
-    BG_CalculateWeaponMovement_Base_Internal_Stance(param_1,local_34 + 3,local_34);
+  isClimbingLadder = (int)((ps->pm_flags & 8U) != 0);
+  if ((isProne != 0) || (bVar4)) {
+    BG_CalculateWeaponMovement_Base_Internal_Stance(ws,targetAngles + 3,targetAngles);
   }
-  if (((bVar3) && (local_c == 0)) && (!bVar2)) {
-    BG_CalculateWeaponMovement_Base_Internal_Movement(param_1,local_18,local_34 + 3,local_34);
+  if (((bVar3) && (isClimbingLadder == 0)) && (!bVar2)) {
+    BG_CalculateWeaponMovement_Base_Internal_Movement(ws,minSpeed,targetAngles + 3,targetAngles);
   }
-  BG_CalculateWeaponMovement_Base_Internal_WeaponState(param_1,local_34 + 3,local_34);
-  BG_CalculateWeaponMovement_Base_Internal_Save(param_1,local_34 + 3,local_34);
+  BG_CalculateWeaponMovement_Base_Internal_WeaponState(ws,targetAngles + 3,targetAngles);
+  BG_CalculateWeaponMovement_Base_Internal_Save(ws,targetAngles + 3,targetAngles);
   return;
 }
 
@@ -936,117 +978,128 @@ void __cdecl BG_CalculateWeaponMovement_Base(weaponState_t *param_1)
 
 int __cdecl
 BG_CalculateWeaponMovement_GunRecoil_SingleAngle
-          (float *param_1,float *param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8)
+          (float *fOffset,float *speed,float fTimeStep,float fOfsCap,float fGunKickAccel,
+          float fGunKickSpeedMax,float fGunKickSpeedDecay,float fGunKickStaticDecay)
 
 {
-  int local_8;
+  int bCanStop;
   
-  local_8 = 0;
-  if ((0.25 <= ABS(*param_1)) || (1.0 <= ABS(*param_2))) {
-    *param_1 = *param_2 * param_3 + *param_1;
-    if (*param_1 <= param_4) {
-      if ((*param_1 <= -param_4 && -param_4 != *param_1) &&
-         (*param_1 = -param_4, *param_2 <= 0.0 && *param_2 != 0.0)) {
-        *param_2 = 0.0;
+  bCanStop = 0;
+  if ((0.25 <= ABS(*fOffset)) || (1.0 <= ABS(*speed))) {
+    *fOffset = *speed * fTimeStep + *fOffset;
+    if (*fOffset <= fOfsCap) {
+      if ((*fOffset <= -fOfsCap && -fOfsCap != *fOffset) &&
+         (*fOffset = -fOfsCap, *speed <= 0.0 && *speed != 0.0)) {
+        *speed = 0.0;
       }
     }
     else {
-      *param_1 = param_4;
-      if (0.0 < *param_2) {
-        *param_2 = 0.0;
+      *fOffset = fOfsCap;
+      if (0.0 < *speed) {
+        *speed = 0.0;
       }
     }
-    if (*param_1 <= 0.0) {
-      if (*param_1 <= 0.0 && *param_1 != 0.0) {
-        *param_2 = param_5 * param_3 + *param_2;
-      }
-    }
-    else {
-      *param_2 = *param_2 - param_5 * param_3;
-    }
-    *param_2 = *param_2 - *param_2 * param_7 * param_3;
-    if (*param_2 <= 0.0) {
-      *param_2 = param_8 * param_3 + *param_2;
-      if (0.0 < *param_2) {
-        *param_2 = 0.0;
+    if (*fOffset <= 0.0) {
+      if (*fOffset <= 0.0 && *fOffset != 0.0) {
+        *speed = fGunKickAccel * fTimeStep + *speed;
       }
     }
     else {
-      *param_2 = *param_2 - param_8 * param_3;
-      if (*param_2 <= 0.0 && *param_2 != 0.0) {
-        *param_2 = 0.0;
-      }
+      *speed = *speed - fGunKickAccel * fTimeStep;
     }
-    if (*param_2 <= param_6) {
-      if (*param_2 <= -param_6 && -param_6 != *param_2) {
-        *param_2 = -param_6;
+    *speed = *speed - *speed * fGunKickSpeedDecay * fTimeStep;
+    if (*speed <= 0.0) {
+      *speed = fGunKickStaticDecay * fTimeStep + *speed;
+      if (0.0 < *speed) {
+        *speed = 0.0;
       }
     }
     else {
-      *param_2 = param_6;
+      *speed = *speed - fGunKickStaticDecay * fTimeStep;
+      if (*speed <= 0.0 && *speed != 0.0) {
+        *speed = 0.0;
+      }
+    }
+    if (*speed <= fGunKickSpeedMax) {
+      if (*speed <= -fGunKickSpeedMax && -fGunKickSpeedMax != *speed) {
+        *speed = -fGunKickSpeedMax;
+      }
+    }
+    else {
+      *speed = fGunKickSpeedMax;
     }
   }
   else {
-    *param_1 = 0.0;
-    *param_2 = 0.0;
-    local_8 = 1;
+    *fOffset = 0.0;
+    *speed = 0.0;
+    bCanStop = 1;
   }
-  return local_8;
+  return bCanStop;
 }
 
 
 // 004656E0  BG_CalculateWeaponMovement_Recoil  (bgame/bg_weapons_view.cpp:728)
 
-void __cdecl BG_CalculateWeaponMovement_Recoil(weaponState_t *param_1)
+void __cdecl BG_CalculateWeaponMovement_Recoil(weaponState_t *ws)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  int iVar4;
-  int iVar5;
-  float fVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  float local_30;
-  float local_20;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  int iVar2;
+  int iVar3;
+  float fGunKickAccel_00;
+  float fGunKickSpeedMax_00;
+  float fGunKickSpeedDecay_00;
+  float fVar4;
+  float fTimeStep;
+  float fGunKickAccel;
+  float fGunKickSpeedDecay;
+  float fGunKickStaticDecay;
+  float fTotalTime;
+  float fGunKickSpeedMax;
+  int bCanStop;
+  int weapIndex;
+  float fPosLerp;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  iVar4 = BG_IsAimDownSightWeapon(uVar2);
-  if (iVar4 != 0) {
-    fVar9 = ppVar1->fWeaponPosFrac;
-    fVar6 = (pWVar3->fAdsGunKickAccel - pWVar3->fHipGunKickAccel) * fVar9 + pWVar3->fHipGunKickAccel
-    ;
-    fVar7 = (pWVar3->fAdsGunKickSpeedMax - pWVar3->fHipGunKickSpeedMax) * fVar9 +
-            pWVar3->fHipGunKickSpeedMax;
-    fVar8 = (pWVar3->fAdsGunKickSpeedDecay - pWVar3->fHipGunKickSpeedDecay) * fVar9 +
-            pWVar3->fHipGunKickSpeedDecay;
-    fVar9 = (pWVar3->fAdsGunKickStaticDecay - pWVar3->fHipGunKickStaticDecay) * fVar9 +
-            pWVar3->fHipGunKickStaticDecay;
-    local_20 = param_1->frametime;
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  iVar2 = BG_IsAimDownSightWeapon(weaponIndex);
+  if (iVar2 != 0) {
+    fVar4 = ps_00->fWeaponPosFrac;
+    fGunKickAccel_00 =
+         (pWVar1->fAdsGunKickAccel - pWVar1->fHipGunKickAccel) * fVar4 + pWVar1->fHipGunKickAccel;
+    fGunKickSpeedMax_00 =
+         (pWVar1->fAdsGunKickSpeedMax - pWVar1->fHipGunKickSpeedMax) * fVar4 +
+         pWVar1->fHipGunKickSpeedMax;
+    fGunKickSpeedDecay_00 =
+         (pWVar1->fAdsGunKickSpeedDecay - pWVar1->fHipGunKickSpeedDecay) * fVar4 +
+         pWVar1->fHipGunKickSpeedDecay;
+    fVar4 = (pWVar1->fAdsGunKickStaticDecay - pWVar1->fHipGunKickStaticDecay) * fVar4 +
+            pWVar1->fHipGunKickStaticDecay;
+    fTotalTime = ws->frametime;
     do {
-      if (local_20 <= 0.0) {
+      if (fTotalTime <= 0.0) {
         return;
       }
-      if (local_20 <= 0.005) {
-        local_30 = local_20;
-        local_20 = 0.0;
+      if (fTotalTime <= 0.005) {
+        fTimeStep = fTotalTime;
+        fTotalTime = 0.0;
       }
       else {
-        local_30 = 0.005;
-        local_20 = local_20 - 0.005;
+        fTimeStep = 0.005;
+        fTotalTime = fTotalTime - 0.005;
       }
-      iVar4 = BG_CalculateWeaponMovement_GunRecoil_SingleAngle
-                        (param_1->recoilAngles,param_1->recoilSpeed,local_30,pWVar3->fGunMaxPitch,
-                         fVar6,fVar7,fVar8,fVar9);
-      iVar5 = BG_CalculateWeaponMovement_GunRecoil_SingleAngle
-                        (param_1->recoilAngles + 1,param_1->recoilSpeed + 1,local_30,
-                         pWVar3->fGunMaxYaw,fVar6,fVar7,fVar8,fVar9);
-    } while ((iVar5 == 0) || (iVar4 == 0));
+      iVar2 = BG_CalculateWeaponMovement_GunRecoil_SingleAngle
+                        (ws->recoilAngles,ws->recoilSpeed,fTimeStep,pWVar1->fGunMaxPitch,
+                         fGunKickAccel_00,fGunKickSpeedMax_00,fGunKickSpeedDecay_00,fVar4);
+      iVar3 = BG_CalculateWeaponMovement_GunRecoil_SingleAngle
+                        (ws->recoilAngles + 1,ws->recoilSpeed + 1,fTimeStep,pWVar1->fGunMaxYaw,
+                         fGunKickAccel_00,fGunKickSpeedMax_00,fGunKickSpeedDecay_00,fVar4);
+    } while ((iVar3 == 0) || (iVar2 == 0));
   }
   return;
 }
@@ -1054,110 +1107,119 @@ void __cdecl BG_CalculateWeaponMovement_Recoil(weaponState_t *param_1)
 
 // 00465B60  BG_CalculateWeaponMovement_Sway  (bgame/bg_weapons_view.cpp:781)
 
-void __cdecl BG_CalculateWeaponMovement_Sway(weaponState_t *param_1)
+void __cdecl BG_CalculateWeaponMovement_Sway(weaponState_t *ws)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponVariantDef *pWVar3;
-  WeaponDef *pWVar4;
-  int iVar5;
-  float fVar6;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar1;
+  WeaponDef *pWVar2;
+  int iVar3;
+  float fVar4;
   float local_90;
   float local_8c;
   float local_7c;
   float local_74;
-  float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_24;
-  float local_14;
-  float local_10;
+  float swayPitchScale;
+  float swayVertScale;
+  float swayLerpSpeed;
+  float swayHorizScale;
+  float swayYawScale;
+  WeaponVariantDef *weapVariantDef;
+  int weapIndex;
+  float swayMaxAngle;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int ssDeltaTime;
+  float ssSwayScale;
+  float deltaViewAngles;
   float local_c;
   float local_8;
   
-  if (param_1->frametime != 0.0) {
-    ppVar1 = param_1->ps;
-    uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-    pWVar3 = BG_GetWeaponVariantDef(uVar2);
-    pWVar4 = BG_GetWeaponDef(uVar2);
-    if (pWVar4->aimDownSight == false) {
-      local_24 = pWVar4->swayMaxAngle;
-      local_38 = pWVar4->swayLerpSpeed;
-      local_40 = pWVar4->swayPitchScale;
-      local_30 = pWVar4->swayYawScale;
-      local_34 = pWVar4->swayHorizScale;
-      local_3c = pWVar4->swayVertScale;
+  if (ws->frametime != 0.0) {
+    ps_00 = ws->ps;
+    weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+    pWVar1 = BG_GetWeaponVariantDef(weaponIndex);
+    pWVar2 = BG_GetWeaponDef(weaponIndex);
+    if (pWVar2->aimDownSight == false) {
+      swayMaxAngle = pWVar2->swayMaxAngle;
+      swayLerpSpeed = pWVar2->swayLerpSpeed;
+      swayPitchScale = pWVar2->swayPitchScale;
+      swayYawScale = pWVar2->swayYawScale;
+      swayHorizScale = pWVar2->swayHorizScale;
+      swayVertScale = pWVar2->swayVertScale;
     }
     else {
-      if ((0.0 < ppVar1->fWeaponPosFrac) && (pWVar4->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
-        param_1->swayViewAngles[0] = ppVar1->viewangles[0];
-        param_1->swayViewAngles[1] = ppVar1->viewangles[1];
-        param_1->swayViewAngles[2] = ppVar1->viewangles[2];
+      if ((0.0 < ps_00->fWeaponPosFrac) && (pWVar2->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
+        ws->swayViewAngles[0] = ps_00->viewangles[0];
+        ws->swayViewAngles[1] = ps_00->viewangles[1];
+        ws->swayViewAngles[2] = ps_00->viewangles[2];
         return;
       }
-      local_24 = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayMaxAngle +
-                 pWVar4->adsSwayMaxAngle * ppVar1->fWeaponPosFrac;
-      local_38 = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayLerpSpeed +
-                 pWVar4->adsSwayLerpSpeed * ppVar1->fWeaponPosFrac;
-      local_40 = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayPitchScale +
-                 pWVar4->adsSwayPitchScale * ppVar1->fWeaponPosFrac;
-      local_30 = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayYawScale +
-                 pWVar4->adsSwayYawScale * ppVar1->fWeaponPosFrac;
-      local_34 = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayHorizScale +
-                 pWVar3->fAdsSwayHorizScale * ppVar1->fWeaponPosFrac;
-      local_3c = (1.0 - ppVar1->fWeaponPosFrac) * pWVar4->swayVertScale +
-                 pWVar3->fAdsSwayVertScale * ppVar1->fWeaponPosFrac;
+      swayMaxAngle = (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayMaxAngle +
+                     pWVar2->adsSwayMaxAngle * ps_00->fWeaponPosFrac;
+      swayLerpSpeed =
+           (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayLerpSpeed +
+           pWVar2->adsSwayLerpSpeed * ps_00->fWeaponPosFrac;
+      swayPitchScale =
+           (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayPitchScale +
+           pWVar2->adsSwayPitchScale * ps_00->fWeaponPosFrac;
+      swayYawScale = (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayYawScale +
+                     pWVar2->adsSwayYawScale * ps_00->fWeaponPosFrac;
+      swayHorizScale =
+           (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayHorizScale +
+           pWVar1->fAdsSwayHorizScale * ps_00->fWeaponPosFrac;
+      swayVertScale =
+           (1.0 - ps_00->fWeaponPosFrac) * pWVar2->swayVertScale +
+           pWVar1->fAdsSwayVertScale * ps_00->fWeaponPosFrac;
     }
-    iVar5 = (param_1->shellShockStart + param_1->shellShockDuration) - param_1->time;
-    local_14 = 1.0;
-    if (0.0 < (float)iVar5) {
-      if (iVar5 < param_1->shellShockFadeTime) {
-        local_14 = (float)iVar5 / (float)param_1->shellShockFadeTime;
+    iVar3 = (ws->shellShockStart + ws->shellShockDuration) - ws->time;
+    ssSwayScale = 1.0;
+    if (0.0 < (float)iVar3) {
+      if (iVar3 < ws->shellShockFadeTime) {
+        ssSwayScale = (float)iVar3 / (float)ws->shellShockFadeTime;
       }
-      local_14 = (pWVar4->swayShellShockScale - 1.0) * (3.0 - local_14 * 2.0) * local_14 * local_14
-                 + 1.0;
+      ssSwayScale = (pWVar2->swayShellShockScale - 1.0) *
+                    (3.0 - ssSwayScale * 2.0) * ssSwayScale * ssSwayScale + 1.0;
     }
-    AnglesSubtract(ppVar1->viewangles,param_1->swayViewAngles,&local_10);
-    fVar6 = 1.0 / (param_1->frametime * 60.0);
-    local_10 = fVar6 * local_10;
-    local_c = fVar6 * local_c;
-    local_8 = fVar6 * local_8;
-    local_8c = -local_24;
-    local_74 = local_10;
-    if (0.0 <= local_10 - local_24) {
-      local_74 = local_24;
+    AnglesSubtract(ps_00->viewangles,ws->swayViewAngles,&deltaViewAngles);
+    fVar4 = 1.0 / (ws->frametime * 60.0);
+    deltaViewAngles = fVar4 * deltaViewAngles;
+    local_c = fVar4 * local_c;
+    local_8 = fVar4 * local_8;
+    local_8c = -swayMaxAngle;
+    local_74 = deltaViewAngles;
+    if (0.0 <= deltaViewAngles - swayMaxAngle) {
+      local_74 = swayMaxAngle;
     }
-    if (local_8c - local_10 < 0.0) {
+    if (local_8c - deltaViewAngles < 0.0) {
       local_8c = local_74;
     }
-    local_10 = local_8c;
-    local_90 = -local_24;
+    deltaViewAngles = local_8c;
+    local_90 = -swayMaxAngle;
     local_7c = local_c;
-    if (0.0 <= local_c - local_24) {
-      local_7c = local_24;
+    if (0.0 <= local_c - swayMaxAngle) {
+      local_7c = swayMaxAngle;
     }
     if (local_90 - local_c < 0.0) {
       local_90 = local_7c;
     }
     local_c = local_90;
-    fVar6 = DiffTrack(local_90 * local_34 * local_14,param_1->swayOrigin[1],local_38,
-                      param_1->frametime);
-    param_1->swayOrigin[1] = fVar6;
-    fVar6 = DiffTrack(local_8c * local_3c * local_14,param_1->swayOrigin[2],local_38,
-                      param_1->frametime);
-    param_1->swayOrigin[2] = fVar6;
-    local_10 = local_10 * local_40 * local_14;
-    local_c = local_c * local_30 * local_14;
-    fVar6 = DiffTrackAngle(local_10,param_1->swayAngles[0],local_38,param_1->frametime);
-    param_1->swayAngles[0] = fVar6;
-    fVar6 = DiffTrackAngle(local_c,param_1->swayAngles[1],local_38,param_1->frametime);
-    param_1->swayAngles[1] = fVar6;
-    param_1->swayViewAngles[0] = ppVar1->viewangles[0];
-    param_1->swayViewAngles[1] = ppVar1->viewangles[1];
-    param_1->swayViewAngles[2] = ppVar1->viewangles[2];
+    fVar4 = DiffTrack(local_90 * swayHorizScale * ssSwayScale,ws->swayOrigin[1],swayLerpSpeed,
+                      ws->frametime);
+    ws->swayOrigin[1] = fVar4;
+    fVar4 = DiffTrack(local_8c * swayVertScale * ssSwayScale,ws->swayOrigin[2],swayLerpSpeed,
+                      ws->frametime);
+    ws->swayOrigin[2] = fVar4;
+    deltaViewAngles = deltaViewAngles * swayPitchScale * ssSwayScale;
+    local_c = local_c * swayYawScale * ssSwayScale;
+    fVar4 = DiffTrackAngle(deltaViewAngles,ws->swayAngles[0],swayLerpSpeed,ws->frametime);
+    ws->swayAngles[0] = fVar4;
+    fVar4 = DiffTrackAngle(local_c,ws->swayAngles[1],swayLerpSpeed,ws->frametime);
+    ws->swayAngles[1] = fVar4;
+    ws->swayViewAngles[0] = ps_00->viewangles[0];
+    ws->swayViewAngles[1] = ps_00->viewangles[1];
+    ws->swayViewAngles[2] = ps_00->viewangles[2];
   }
   return;
 }
@@ -1165,39 +1227,47 @@ void __cdecl BG_CalculateWeaponMovement_Sway(weaponState_t *param_1)
 
 // 00466190  BG_CalculateWeaponMovement_Bob  (bgame/bg_weapons_view.cpp:946)
 
-void __cdecl BG_CalculateWeaponMovement_Bob(weaponState_t *param_1)
+void __cdecl BG_CalculateWeaponMovement_Bob(weaponState_t *ws)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  float fVar4;
-  float fVar5;
-  float fVar6;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float speed_00;
+  float fVar2;
+  float fVar3;
   float local_3c;
+  float bobCycle;
+  float cycle;
+  int weapIndex;
+  float speed;
+  float scale;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  float adsBobFactor;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  fVar5 = BG_GetBobCycle(ppVar1);
-  fVar5 = (bg_weaponBobLag->current).value * 3.1415927 + fVar5 + 6.2831855;
-  fVar4 = param_1->xyspeed * (bg_weaponBobAmplitudeBase->current).value;
-  fVar6 = BG_CalculateWeaponMovement_VerticalBobFactor(ppVar1,fVar5,fVar4);
-  param_1->bobAngles[0] = fVar6 * -1.0;
-  fVar6 = BG_CalculateWeaponMovement_HorizontalBobFactor(ppVar1,fVar5,fVar4);
-  param_1->bobAngles[1] = fVar6 * -1.0;
+  ps_00 = ws->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  fVar2 = BG_GetBobCycle(ps_00);
+  fVar2 = (bg_weaponBobLag->current).value * 3.1415927 + fVar2 + 6.2831855;
+  speed_00 = ws->xyspeed * (bg_weaponBobAmplitudeBase->current).value;
+  fVar3 = BG_CalculateWeaponMovement_VerticalBobFactor(ps_00,fVar2,speed_00);
+  ws->bobAngles[0] = fVar3 * -1.0;
+  fVar3 = BG_CalculateWeaponMovement_HorizontalBobFactor(ps_00,fVar2,speed_00);
+  ws->bobAngles[1] = fVar3 * -1.0;
   local_3c = BG_CalculateWeaponMovement_HorizontalBobFactor
-                       (ppVar1,fVar5 - 0.47123894,fVar4 * (bg_weaponBobAmplitudeRoll->current).value
-                       );
+                       (ps_00,fVar2 - 0.47123894,
+                        speed_00 * (bg_weaponBobAmplitudeRoll->current).value);
   if (0.0 - local_3c < 0.0) {
     local_3c = 0.0;
   }
-  param_1->bobAngles[2] = local_3c;
-  if (0.0 < ppVar1->fWeaponPosFrac) {
-    fVar5 = 1.0 - (1.0 - pWVar3->fAdsBobFactor) * ppVar1->fWeaponPosFrac;
-    param_1->bobAngles[0] = fVar5 * param_1->bobAngles[0];
-    param_1->bobAngles[1] = fVar5 * param_1->bobAngles[1];
-    param_1->bobAngles[2] = fVar5 * param_1->bobAngles[2];
+  ws->bobAngles[2] = local_3c;
+  if (0.0 < ps_00->fWeaponPosFrac) {
+    fVar2 = 1.0 - (1.0 - pWVar1->fAdsBobFactor) * ps_00->fWeaponPosFrac;
+    ws->bobAngles[0] = fVar2 * ws->bobAngles[0];
+    ws->bobAngles[1] = fVar2 * ws->bobAngles[1];
+    ws->bobAngles[2] = fVar2 * ws->bobAngles[2];
   }
   return;
 }
@@ -1205,61 +1275,61 @@ void __cdecl BG_CalculateWeaponMovement_Bob(weaponState_t *param_1)
 
 // 00466390  BG_SetWeaponMovementAngles  (bgame/bg_weapons_view.cpp:989)
 
-void __cdecl BG_SetWeaponMovementAngles(weaponState_t *param_1,float *param_2)
+void __cdecl BG_SetWeaponMovementAngles(weaponState_t *ws,float *angles)
 
 {
   float fVar1;
   
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  param_2[2] = 0.0;
-  BG_ApplyWeaponMovement_BaseAngles(param_1,param_2);
-  BG_ApplyWeaponMovement_SwayAngles(param_1,param_2);
-  if (param_1->ps->leanf != 0.0) {
-    fVar1 = GetLeanFraction(param_1->ps->leanf);
-    param_2[2] = param_2[2] - fVar1 * 2.0;
+  *angles = 0.0;
+  angles[1] = 0.0;
+  angles[2] = 0.0;
+  BG_ApplyWeaponMovement_BaseAngles(ws,angles);
+  BG_ApplyWeaponMovement_SwayAngles(ws,angles);
+  if (ws->ps->leanf != 0.0) {
+    fVar1 = GetLeanFraction(ws->ps->leanf);
+    angles[2] = angles[2] - fVar1 * 2.0;
   }
-  *param_2 = *param_2 + param_1->recoilAngles[0];
-  param_2[1] = param_2[1] + param_1->recoilAngles[1];
-  param_2[2] = param_2[2] + param_1->recoilAngles[2];
-  BG_ApplyWeaponMovement_BobAngles(param_1,param_2);
-  BG_ComputeAndApplyWeaponMovement_IdleAngles(param_1,param_2);
-  BG_ComputeAndApplyWeaponMovement_DamageKickAngles(param_1,param_2);
+  *angles = *angles + ws->recoilAngles[0];
+  angles[1] = angles[1] + ws->recoilAngles[1];
+  angles[2] = angles[2] + ws->recoilAngles[2];
+  BG_ApplyWeaponMovement_BobAngles(ws,angles);
+  BG_ComputeAndApplyWeaponMovement_IdleAngles(ws,angles);
+  BG_ComputeAndApplyWeaponMovement_DamageKickAngles(ws,angles);
   return;
 }
 
 
 // 00466CE0  BG_SetWeaponMovementOrigin  (bgame/bg_weapons_view.cpp:1004)
 
-void __cdecl BG_SetWeaponMovementOrigin(weaponState_t *param_1,float *param_2)
+void __cdecl BG_SetWeaponMovementOrigin(weaponState_t *ws,float *origin)
 
 {
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  param_2[2] = 0.0;
-  BG_ApplyWeaponMovement_BaseOrigin(param_1,param_2);
-  param_2[1] = param_2[1] - param_1->swayOrigin[1];
-  param_2[2] = param_2[2] + param_1->swayOrigin[2];
-  BG_ApplyWeaponMovement_LeanOrigin(param_1,param_2);
-  BG_ApplyWeaponMovement_BobOrigin(param_1,param_2);
+  *origin = 0.0;
+  origin[1] = 0.0;
+  origin[2] = 0.0;
+  BG_ApplyWeaponMovement_BaseOrigin(ws,origin);
+  origin[1] = origin[1] - ws->swayOrigin[1];
+  origin[2] = origin[2] + ws->swayOrigin[2];
+  BG_ApplyWeaponMovement_LeanOrigin(ws,origin);
+  BG_ApplyWeaponMovement_BobOrigin(ws,origin);
   return;
 }
 
 
 // 004643E0  BG_CalculateWeaponMovement  (bgame/bg_weapons_view.cpp:1015)
 
-void __cdecl BG_CalculateWeaponMovement(weaponState_t *param_1,float *param_2,float *param_3)
+void __cdecl BG_CalculateWeaponMovement(weaponState_t *ws,float *origin,float *angles)
 
 {
-  BG_CalculateWeaponMovement_Base(param_1);
-  BG_CalculateWeaponMovement_Sway(param_1);
-  BG_CalculateWeaponMovement_Recoil(param_1);
-  BG_CalculateWeaponMovement_Bob(param_1);
-  if (param_3 != (float *)0x0) {
-    BG_SetWeaponMovementAngles(param_1,param_3);
+  BG_CalculateWeaponMovement_Base(ws);
+  BG_CalculateWeaponMovement_Sway(ws);
+  BG_CalculateWeaponMovement_Recoil(ws);
+  BG_CalculateWeaponMovement_Bob(ws);
+  if (angles != (float *)0x0) {
+    BG_SetWeaponMovementAngles(ws,angles);
   }
-  if (param_2 != (float *)0x0) {
-    BG_SetWeaponMovementOrigin(param_1,param_2);
+  if (origin != (float *)0x0) {
+    BG_SetWeaponMovementOrigin(ws,origin);
   }
   return;
 }
@@ -1267,8 +1337,7 @@ void __cdecl BG_CalculateWeaponMovement(weaponState_t *param_1,float *param_2,fl
 
 // 004670F0  BG_CalculateViewMovement_VerticalBobFactor  (bgame/bg_weapons_view.cpp:1034)
 
-float __cdecl
-BG_CalculateViewMovement_VerticalBobFactor(playerState_s *param_1,float param_2,float param_3)
+float __cdecl BG_CalculateViewMovement_VerticalBobFactor(playerState_s *ps,float cycle,float speed)
 
 {
   float10 extraout_ST0;
@@ -1276,122 +1345,122 @@ BG_CalculateViewMovement_VerticalBobFactor(playerState_s *param_1,float param_2,
   double dVar2;
   undefined4 in_stack_ffffffe8;
   undefined4 in_stack_ffffffec;
-  float local_8;
+  float amplitude;
   
-  if (param_1->waterlevel < 3) {
-    if ((param_1->pm_flags & 0x400000U) == 0) {
-      if (param_1->viewHeightTarget == 0xb) {
-        local_8 = param_3 * (bg_viewBobAmplitudeProne->current).vector[1];
+  if (ps->waterlevel < 3) {
+    if ((ps->pm_flags & 0x400000U) == 0) {
+      if (ps->viewHeightTarget == 0xb) {
+        amplitude = speed * (bg_viewBobAmplitudeProne->current).vector[1];
       }
-      else if (param_1->viewHeightTarget == 0x28) {
-        local_8 = ((1.0 - param_1->fWeaponPosFrac) * (bg_viewBobAmplitudeDucked->current).vector[1]
-                  + (bg_viewBobAmplitudeDuckedAds->current).vector[1] * param_1->fWeaponPosFrac) *
-                  param_3;
+      else if (ps->viewHeightTarget == 0x28) {
+        amplitude = ((1.0 - ps->fWeaponPosFrac) * (bg_viewBobAmplitudeDucked->current).vector[1] +
+                    (bg_viewBobAmplitudeDuckedAds->current).vector[1] * ps->fWeaponPosFrac) * speed;
       }
-      else if ((param_1->pm_flags & 0x8000U) == 0) {
-        local_8 = ((1.0 - param_1->fWeaponPosFrac) *
-                   (bg_viewBobAmplitudeStanding->current).vector[1] +
-                  (bg_viewBobAmplitudeStandingAds->current).vector[1] * param_1->fWeaponPosFrac) *
-                  param_3;
+      else if ((ps->pm_flags & 0x8000U) == 0) {
+        amplitude = ((1.0 - ps->fWeaponPosFrac) * (bg_viewBobAmplitudeStanding->current).vector[1] +
+                    (bg_viewBobAmplitudeStandingAds->current).vector[1] * ps->fWeaponPosFrac) *
+                    speed;
       }
       else {
-        local_8 = param_3 * (bg_viewBobAmplitudeSprinting->current).vector[1];
+        amplitude = speed * (bg_viewBobAmplitudeSprinting->current).vector[1];
       }
     }
     else {
-      local_8 = param_3 * (bg_viewBobAmplitudeDtp->current).vector[1];
+      amplitude = speed * (bg_viewBobAmplitudeDtp->current).vector[1];
     }
   }
   else {
-    local_8 = (bg_viewBobAmplitudeSwimming->current).vector[1];
+    amplitude = (bg_viewBobAmplitudeSwimming->current).vector[1];
   }
-  if ((bg_viewBobMax->current).value <= local_8 && local_8 != (bg_viewBobMax->current).value) {
-    local_8 = (bg_viewBobMax->current).value;
+  if ((bg_viewBobMax->current).value <= amplitude && amplitude != (bg_viewBobMax->current).value) {
+    amplitude = (bg_viewBobMax->current).value;
   }
-  dVar2 = (double)(param_2 * 2.0);
+  dVar2 = (double)(cycle * 2.0);
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffffec,in_stack_ffffffe8));
   fVar1 = (float)dVar2;
   _CIsin();
-  return ((float)extraout_ST0 * 0.2 + fVar1) * 0.75 * local_8;
+  return ((float)extraout_ST0 * 0.2 + fVar1) * 0.75 * amplitude;
 }
 
 
 // 00467290  BG_CalculateViewMovement_HorizontalBobFactor  (bgame/bg_weapons_view.cpp:1069)
 
 float __cdecl
-BG_CalculateViewMovement_HorizontalBobFactor(playerState_s *param_1,float param_2,float param_3)
+BG_CalculateViewMovement_HorizontalBobFactor(playerState_s *ps,float cycle,float speed)
 
 {
   float10 extraout_ST0;
-  float local_8;
+  float amplitude;
   
-  if (param_1->waterlevel < 3) {
-    if ((param_1->pm_flags & 0x400000U) == 0) {
-      if (param_1->viewHeightTarget == 0xb) {
-        local_8 = param_3 * (bg_viewBobAmplitudeProne->current).value;
+  if (ps->waterlevel < 3) {
+    if ((ps->pm_flags & 0x400000U) == 0) {
+      if (ps->viewHeightTarget == 0xb) {
+        amplitude = speed * (bg_viewBobAmplitudeProne->current).value;
       }
-      else if (param_1->viewHeightTarget == 0x28) {
-        local_8 = ((1.0 - param_1->fWeaponPosFrac) * (bg_viewBobAmplitudeDucked->current).value +
-                  (bg_viewBobAmplitudeDuckedAds->current).value * param_1->fWeaponPosFrac) * param_3
-        ;
+      else if (ps->viewHeightTarget == 0x28) {
+        amplitude = ((1.0 - ps->fWeaponPosFrac) * (bg_viewBobAmplitudeDucked->current).value +
+                    (bg_viewBobAmplitudeDuckedAds->current).value * ps->fWeaponPosFrac) * speed;
       }
-      else if ((param_1->pm_flags & 0x8000U) == 0) {
-        local_8 = ((1.0 - param_1->fWeaponPosFrac) * (bg_viewBobAmplitudeStanding->current).value +
-                  (bg_viewBobAmplitudeStandingAds->current).value * param_1->fWeaponPosFrac) *
-                  param_3;
+      else if ((ps->pm_flags & 0x8000U) == 0) {
+        amplitude = ((1.0 - ps->fWeaponPosFrac) * (bg_viewBobAmplitudeStanding->current).value +
+                    (bg_viewBobAmplitudeStandingAds->current).value * ps->fWeaponPosFrac) * speed;
       }
       else {
-        local_8 = param_3 * (bg_viewBobAmplitudeSprinting->current).value;
+        amplitude = speed * (bg_viewBobAmplitudeSprinting->current).value;
       }
     }
     else {
-      local_8 = param_3 * (bg_viewBobAmplitudeDtp->current).value;
+      amplitude = speed * (bg_viewBobAmplitudeDtp->current).value;
     }
   }
   else {
-    local_8 = (bg_viewBobAmplitudeSwimming->current).value;
+    amplitude = (bg_viewBobAmplitudeSwimming->current).value;
   }
-  if ((bg_viewBobMax->current).value <= local_8 && local_8 != (bg_viewBobMax->current).value) {
-    local_8 = (bg_viewBobMax->current).value;
+  if ((bg_viewBobMax->current).value <= amplitude && amplitude != (bg_viewBobMax->current).value) {
+    amplitude = (bg_viewBobMax->current).value;
   }
   _CIsin();
-  return (float)extraout_ST0 * local_8;
+  return (float)extraout_ST0 * amplitude;
 }
 
 
 // 00467480  BG_CalculateViewMovement_DamageKick  (bgame/bg_weapons_view.cpp:1105)
 
-void __cdecl BG_CalculateViewMovement_DamageKick(viewState_t *param_1,float *param_2)
+void __cdecl BG_CalculateViewMovement_DamageKick(viewState_t *vs,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  float fVar4;
-  float local_10;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float fVar2;
+  float fRatio;
+  int weapIndex;
+  float fFactor;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  if (param_1->damageTime != 0) {
-    ppVar1 = param_1->ps;
-    uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    local_10 = 1.0 - ppVar1->fWeaponPosFrac * 0.5;
-    if ((ppVar1->fWeaponPosFrac != 0.0) && (pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
-      local_10 = (ppVar1->fWeaponPosFrac * 0.5 + 1.0) * local_10;
+  if (vs->damageTime != 0) {
+    ps_00 = vs->ps;
+    weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+    pWVar1 = BG_GetWeaponDef(weaponIndex);
+    fFactor = 1.0 - ps_00->fWeaponPosFrac * 0.5;
+    if ((ps_00->fWeaponPosFrac != 0.0) && (pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE)) {
+      fFactor = (ps_00->fWeaponPosFrac * 0.5 + 1.0) * fFactor;
     }
-    fVar4 = (float)(param_1->time - param_1->damageTime);
-    if (100.0 <= fVar4) {
-      fVar4 = 1.0 - (fVar4 - 100.0) / 400.0;
-      if (0.0 < fVar4) {
-        fVar4 = GetLeanFraction(1.0 - fVar4);
-        local_10 = (1.0 - fVar4) * local_10;
-        *param_2 = local_10 * param_1->v_dmg_pitch + *param_2;
-        param_2[2] = local_10 * param_1->v_dmg_roll + param_2[2];
+    fVar2 = (float)(vs->time - vs->damageTime);
+    if (100.0 <= fVar2) {
+      fVar2 = 1.0 - (fVar2 - 100.0) / 400.0;
+      if (0.0 < fVar2) {
+        fVar2 = GetLeanFraction(1.0 - fVar2);
+        fVar2 = (1.0 - fVar2) * fFactor;
+        *angles = fVar2 * vs->v_dmg_pitch + *angles;
+        angles[2] = fVar2 * vs->v_dmg_roll + angles[2];
       }
     }
     else {
-      fVar4 = GetLeanFraction(fVar4 / 100.0);
-      *param_2 = fVar4 * local_10 * param_1->v_dmg_pitch + *param_2;
-      param_2[2] = fVar4 * local_10 * param_1->v_dmg_roll + param_2[2];
+      fVar2 = GetLeanFraction(fVar2 / 100.0);
+      *angles = fVar2 * fFactor * vs->v_dmg_pitch + *angles;
+      angles[2] = fVar2 * fFactor * vs->v_dmg_roll + angles[2];
     }
   }
   return;
@@ -1400,85 +1469,89 @@ void __cdecl BG_CalculateViewMovement_DamageKick(viewState_t *param_1,float *par
 
 // 00467660  BG_CalculateViewMovement_IdleAngles  (bgame/bg_weapons_view.cpp:1150)
 
-void __cdecl BG_CalculateViewMovement_IdleAngles(viewState_t *param_1,float *param_2)
+void __cdecl BG_CalculateViewMovement_IdleAngles(viewState_t *vs,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  int iVar4;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  int iVar2;
+  float fVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  float fVar7;
-  double dVar8;
+  double dVar6;
   undefined4 in_stack_ffffffd4;
-  float local_24;
-  float local_1c;
-  float local_14;
+  float fTargScale;
+  float fracsin;
+  float fTargFactor;
+  float fFactorSpeed;
+  float idleSpeed;
+  int weapIndex;
+  WeaponDef *weapDef;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  if ((pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE) && (ppVar1->fWeaponPosFrac != 0.0)) {
-    iVar4 = BG_IsAimDownSightWeapon(uVar2);
-    if (iVar4 == 0) {
-      if (pWVar3->fHipIdleAmount == 0.0) {
-        local_24 = 80.0;
-        local_14 = 1.0;
+  ps_00 = vs->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  if ((pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE) && (ps_00->fWeaponPosFrac != 0.0)) {
+    iVar2 = BG_IsAimDownSightWeapon(weaponIndex);
+    if (iVar2 == 0) {
+      if (pWVar1->fHipIdleAmount == 0.0) {
+        fTargScale = 80.0;
+        idleSpeed = 1.0;
       }
       else {
-        local_24 = pWVar3->fHipIdleAmount;
-        local_14 = pWVar3->hipIdleSpeed;
+        fTargScale = pWVar1->fHipIdleAmount;
+        idleSpeed = pWVar1->hipIdleSpeed;
       }
     }
     else {
-      local_24 = (pWVar3->fAdsIdleAmount - pWVar3->fHipIdleAmount) * ppVar1->fWeaponPosFrac +
-                 pWVar3->fHipIdleAmount;
-      local_14 = (pWVar3->adsIdleSpeed - pWVar3->hipIdleSpeed) * ppVar1->fWeaponPosFrac +
-                 pWVar3->hipIdleSpeed;
+      fTargScale = (pWVar1->fAdsIdleAmount - pWVar1->fHipIdleAmount) * ps_00->fWeaponPosFrac +
+                   pWVar1->fHipIdleAmount;
+      idleSpeed = (pWVar1->adsIdleSpeed - pWVar1->hipIdleSpeed) * ps_00->fWeaponPosFrac +
+                  pWVar1->hipIdleSpeed;
       if ((zero_idle_movement->current).enabled != false) {
-        local_24 = 0.0;
-        local_14 = 0.0;
+        fTargScale = 0.0;
+        idleSpeed = 0.0;
       }
     }
-    if (((ppVar1->eFlags & 8U) == 0) || ((ppVar1->pm_flags & 0x400000U) != 0)) {
-      if ((ppVar1->eFlags & 4U) == 0) {
-        local_1c = 1.0;
+    if (((ps_00->eFlags & 8U) == 0) || ((ps_00->pm_flags & 0x400000U) != 0)) {
+      if ((ps_00->eFlags & 4U) == 0) {
+        fTargFactor = 1.0;
       }
       else {
-        local_1c = pWVar3->fIdleCrouchFactor;
+        fTargFactor = pWVar1->fIdleCrouchFactor;
       }
     }
     else {
-      local_1c = pWVar3->fIdleProneFactor;
+      fTargFactor = pWVar1->fIdleProneFactor;
     }
-    if (((pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE) && (ppVar1->fWeaponPosFrac != 0.0)) &&
-       (local_1c != param_1->fLastIdleFactor)) {
-      if (local_1c < param_1->fLastIdleFactor || local_1c == param_1->fLastIdleFactor) {
-        param_1->fLastIdleFactor = param_1->fLastIdleFactor - param_1->frametime * 0.5;
-        if (param_1->fLastIdleFactor <= local_1c && local_1c != param_1->fLastIdleFactor) {
-          param_1->fLastIdleFactor = local_1c;
+    if (((pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE) && (ps_00->fWeaponPosFrac != 0.0)) &&
+       (fTargFactor != vs->fLastIdleFactor)) {
+      if (fTargFactor < vs->fLastIdleFactor || fTargFactor == vs->fLastIdleFactor) {
+        vs->fLastIdleFactor = vs->fLastIdleFactor - vs->frametime * 0.5;
+        if (vs->fLastIdleFactor <= fTargFactor && fTargFactor != vs->fLastIdleFactor) {
+          vs->fLastIdleFactor = fTargFactor;
         }
       }
       else {
-        param_1->fLastIdleFactor = param_1->frametime * 0.5 + param_1->fLastIdleFactor;
-        if (local_1c < param_1->fLastIdleFactor) {
-          param_1->fLastIdleFactor = local_1c;
+        vs->fLastIdleFactor = vs->frametime * 0.5 + vs->fLastIdleFactor;
+        if (fTargFactor < vs->fLastIdleFactor) {
+          vs->fLastIdleFactor = fTargFactor;
         }
       }
     }
-    fVar5 = local_24 * param_1->fLastIdleFactor * ppVar1->fWeaponPosFrac * ppVar1->holdBreathScale;
-    *param_1->weapIdleTime =
-         (int)(ppVar1->holdBreathScale * param_1->frametime * 1000.0 * local_14) +
-         *param_1->weapIdleTime;
-    fVar6 = (float)*param_1->weapIdleTime * 0.0007;
-    dVar8 = (double)fVar6;
-    __libm_sse2_sin((double)CONCAT44(fVar6,in_stack_ffffffd4));
-    param_2[1] = fVar5 * (float)dVar8 * 0.01 + param_2[1];
-    fVar7 = (float)*param_1->weapIdleTime * 0.001;
-    dVar8 = (double)fVar7;
-    __libm_sse2_sin((double)CONCAT44(fVar6,fVar7));
-    *param_2 = fVar5 * (float)dVar8 * 0.01 + *param_2;
+    fVar3 = fTargScale * vs->fLastIdleFactor * ps_00->fWeaponPosFrac * ps_00->holdBreathScale;
+    *vs->weapIdleTime =
+         (int)(ps_00->holdBreathScale * vs->frametime * 1000.0 * idleSpeed) + *vs->weapIdleTime;
+    fVar4 = (float)*vs->weapIdleTime * 0.0007;
+    dVar6 = (double)fVar4;
+    __libm_sse2_sin((double)CONCAT44(fVar4,in_stack_ffffffd4));
+    angles[1] = fVar3 * (float)dVar6 * 0.01 + angles[1];
+    fVar5 = (float)*vs->weapIdleTime * 0.001;
+    dVar6 = (double)fVar5;
+    __libm_sse2_sin((double)CONCAT44(fVar4,fVar5));
+    *angles = fVar3 * (float)dVar6 * 0.01 + *angles;
   }
   return;
 }
@@ -1486,47 +1559,54 @@ void __cdecl BG_CalculateViewMovement_IdleAngles(viewState_t *param_1,float *par
 
 // 004679F0  BG_CalculateViewMovement_BobAngles  (bgame/bg_weapons_view.cpp:1237)
 
-void __cdecl BG_CalculateViewMovement_BobAngles(viewState_t *param_1,float *param_2)
+void __cdecl BG_CalculateViewMovement_BobAngles(viewState_t *vs,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  float fVar4;
-  float fVar5;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float speed_00;
+  float fVar2;
   float local_34;
-  float local_2c;
+  float vAngOfs;
   float local_28;
   float local_24;
+  float fBobCycle;
+  float cycle;
+  float speed;
+  int weapIndex;
+  float fPositionLerp;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  if (pWVar3->overlayReticle != WEAPOVERLAYRETICLE_NONE) {
-    fVar5 = BG_GetBobCycle(ppVar1);
-    fVar5 = (bg_weaponBobLag->current).value * 3.1415927 + fVar5 + 6.2831855;
-    fVar4 = param_1->xyspeed * (bg_weaponBobAmplitudeBase->current).value;
-    local_2c = BG_CalculateWeaponMovement_VerticalBobFactor(ppVar1,fVar5,fVar4);
-    local_2c = local_2c * -1.0;
-    local_28 = BG_CalculateWeaponMovement_HorizontalBobFactor(ppVar1,fVar5,fVar4);
+  ps_00 = vs->ps;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  if (pWVar1->overlayReticle != WEAPOVERLAYRETICLE_NONE) {
+    fVar2 = BG_GetBobCycle(ps_00);
+    fVar2 = (bg_weaponBobLag->current).value * 3.1415927 + fVar2 + 6.2831855;
+    speed_00 = vs->xyspeed * (bg_weaponBobAmplitudeBase->current).value;
+    vAngOfs = BG_CalculateWeaponMovement_VerticalBobFactor(ps_00,fVar2,speed_00);
+    vAngOfs = vAngOfs * -1.0;
+    local_28 = BG_CalculateWeaponMovement_HorizontalBobFactor(ps_00,fVar2,speed_00);
     local_28 = local_28 * -1.0;
     local_34 = BG_CalculateWeaponMovement_HorizontalBobFactor
-                         (ppVar1,fVar5 - 0.47123894,
-                          fVar4 * (bg_weaponBobAmplitudeRoll->current).value);
+                         (ps_00,fVar2 - 0.47123894,
+                          speed_00 * (bg_weaponBobAmplitudeRoll->current).value);
     if (0.0 - local_34 < 0.0) {
       local_34 = 0.0;
     }
     local_24 = local_34;
-    fVar5 = ppVar1->fWeaponPosFrac;
-    if (fVar5 != 0.0) {
-      local_24 = 1.0 - (1.0 - pWVar3->fAdsBobFactor) * fVar5;
-      local_2c = local_2c * local_24;
+    fVar2 = ps_00->fWeaponPosFrac;
+    if (fVar2 != 0.0) {
+      local_24 = 1.0 - (1.0 - pWVar1->fAdsBobFactor) * fVar2;
+      vAngOfs = vAngOfs * local_24;
       local_28 = local_28 * local_24;
       local_24 = local_34 * local_24;
     }
-    *param_2 = *param_2 + fVar5 * local_2c;
-    param_2[1] = param_2[1] + fVar5 * local_28;
-    param_2[2] = param_2[2] + fVar5 * local_24;
+    *angles = *angles + fVar2 * vAngOfs;
+    angles[1] = angles[1] + fVar2 * local_28;
+    angles[2] = angles[2] + fVar2 * local_24;
   }
   return;
 }
@@ -1534,27 +1614,32 @@ void __cdecl BG_CalculateViewMovement_BobAngles(viewState_t *param_1,float *para
 
 // 00467C30  BG_CalculateViewMovement_AdsBob  (bgame/bg_weapons_view.cpp:1284)
 
-void __cdecl BG_CalculateViewMovement_AdsBob(viewState_t *param_1,float *param_2)
+void __cdecl BG_CalculateViewMovement_AdsBob(viewState_t *vs,float *angles)
 
 {
-  playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  playerState_s *ps_00;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  float fVar2;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float fVar6;
+  float bobCycle;
+  int weapIndex;
+  float adsBobFactor;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  ppVar1 = param_1->ps;
-  if ((0.0 < ppVar1->fWeaponPosFrac) && ((ppVar1->eFlags & 0x300U) == 0)) {
-    uVar2 = BG_GetViewmodelWeaponIndex(ppVar1);
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    if (0.0 < pWVar3->fAdsViewBobMult) {
-      fVar4 = ppVar1->fWeaponPosFrac * pWVar3->fAdsViewBobMult;
-      fVar5 = BG_GetBobCycle(ppVar1);
-      fVar6 = BG_CalculateViewMovement_VerticalBobFactor(ppVar1,fVar5,param_1->xyspeed);
-      *param_2 = *param_2 - fVar6 * fVar4;
-      fVar5 = BG_CalculateViewMovement_HorizontalBobFactor(ppVar1,fVar5,param_1->xyspeed);
-      param_2[1] = param_2[1] - fVar5 * fVar4;
+  ps_00 = vs->ps;
+  if ((0.0 < ps_00->fWeaponPosFrac) && ((ps_00->eFlags & 0x300U) == 0)) {
+    weaponIndex = BG_GetViewmodelWeaponIndex(ps_00);
+    pWVar1 = BG_GetWeaponDef(weaponIndex);
+    if (0.0 < pWVar1->fAdsViewBobMult) {
+      fVar2 = ps_00->fWeaponPosFrac * pWVar1->fAdsViewBobMult;
+      fVar3 = BG_GetBobCycle(ps_00);
+      fVar4 = BG_CalculateViewMovement_VerticalBobFactor(ps_00,fVar3,vs->xyspeed);
+      *angles = *angles - fVar4 * fVar2;
+      fVar3 = BG_CalculateViewMovement_HorizontalBobFactor(ps_00,fVar3,vs->xyspeed);
+      angles[1] = angles[1] - fVar3 * fVar2;
     }
   }
   return;
@@ -1563,29 +1648,29 @@ void __cdecl BG_CalculateViewMovement_AdsBob(viewState_t *param_1,float *param_2
 
 // 00467400  BG_CalculateViewMovementAngles  (bgame/bg_weapons_view.cpp:1308)
 
-void __cdecl BG_CalculateViewMovementAngles(viewState_t *param_1,float *param_2)
+void __cdecl BG_CalculateViewMovementAngles(viewState_t *vs,float *angles)
 
 {
-  *param_2 = 0.0;
-  param_2[1] = 0.0;
-  param_2[2] = 0.0;
-  BG_CalculateViewMovement_DamageKick(param_1,param_2);
-  BG_CalculateViewMovement_IdleAngles(param_1,param_2);
-  BG_CalculateViewMovement_BobAngles(param_1,param_2);
-  BG_CalculateViewMovement_AdsBob(param_1,param_2);
+  *angles = 0.0;
+  angles[1] = 0.0;
+  angles[2] = 0.0;
+  BG_CalculateViewMovement_DamageKick(vs,angles);
+  BG_CalculateViewMovement_IdleAngles(vs,angles);
+  BG_CalculateViewMovement_BobAngles(vs,angles);
+  BG_CalculateViewMovement_AdsBob(vs,angles);
   return;
 }
 
 
 // 00467000  MatrixTransformVector  (universal/com_math.h:1398)
 
-void __cdecl MatrixTransformVector(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl MatrixTransformVector(float *in1,float (*in2) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x577,0,"%s"
                             );
     if (!bVar2) {
@@ -1594,9 +1679,9 @@ void __cdecl MatrixTransformVector(float *param_1,float (*param_2) [3],float *pa
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * param_2[1][0] + param_1[2] * param_2[2][0];
-  param_3[1] = *param_1 * (*param_2)[1] + param_1[1] * param_2[1][1] + param_1[2] * param_2[2][1];
-  param_3[2] = *param_1 * (*param_2)[2] + param_1[1] * param_2[1][2] + param_1[2] * param_2[2][2];
+  *out = *in1 * (*in2)[0] + in1[1] * in2[1][0] + in1[2] * in2[2][0];
+  out[1] = *in1 * (*in2)[1] + in1[1] * in2[1][1] + in1[2] * in2[2][1];
+  out[2] = *in1 * (*in2)[2] + in1[1] * in2[1][2] + in1[2] * in2[2][2];
   return;
 }
 

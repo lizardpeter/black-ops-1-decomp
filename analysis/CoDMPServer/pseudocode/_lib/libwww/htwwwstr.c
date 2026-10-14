@@ -672,7 +672,7 @@ undefined4 _HTLocalToWWW(uchar *param_1,uchar *param_2)
 
 {
   int extraout_EAX;
-  uchar *puVar1;
+  uchar *dst;
   int extraout_EAX_00;
   int extraout_EAX_01;
   uchar *local_1c;
@@ -689,20 +689,20 @@ undefined4 _HTLocalToWWW(uchar *param_1,uchar *param_2)
   }
   if ((param_1 != (uchar *)0x0) && (*param_1 != '\0')) {
     strlen(param_1);
-    puVar1 = (uchar *)_HTMemory_malloc(extraout_EAX + 10);
-    if (puVar1 == (uchar *)0x0) {
+    dst = (uchar *)_HTMemory_malloc(extraout_EAX + 10);
+    if (dst == (uchar *)0x0) {
       _HTMemory_outofmem("HTLocalToWWW",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTWWWStr.c",
                          0x33d);
     }
-    strcpy(puVar1,local_1c);
+    strcpy(dst,local_1c);
     strchr(param_1,':');
     if (extraout_EAX_00 != 0) {
-      strcat(puVar1,(uchar *)"/");
+      strcat(dst,(uchar *)"/");
     }
     local_14 = param_1;
-    strlen(puVar1);
-    local_18 = puVar1 + extraout_EAX_01;
+    strlen(dst);
+    local_18 = dst + extraout_EAX_01;
     for (; *local_14 != '\0'; local_14 = local_14 + 1) {
       if (*local_14 == '\\') {
         *local_18 = '/';
@@ -713,8 +713,8 @@ undefined4 _HTLocalToWWW(uchar *param_1,uchar *param_2)
       local_18 = local_18 + 1;
     }
     *local_18 = '\0';
-    local_8 = _HTEscape(puVar1,8);
-    _HTMemory_free(puVar1);
+    local_8 = _HTEscape(dst,8);
+    _HTMemory_free(dst);
   }
   return local_8;
 }

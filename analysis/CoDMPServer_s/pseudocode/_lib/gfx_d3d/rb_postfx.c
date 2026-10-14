@@ -27,10 +27,13 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   float fVar2;
   float fVar3;
   float fVar4;
-  undefined4 local_2c;
-  undefined4 local_28;
-  undefined4 local_24;
-  undefined4 local_20;
+  float breakPointT;
+  float breakPointG;
+  float gammaG;
+  float gammaR;
+  float tintWeightR;
+  float tintWeightB;
+  float desaturationA;
   
   fVar1 = *(float *)(in_ECX + 0x3644) * 4.0;
   fVar2 = *(float *)(in_ECX + 0x3654) * 4.0;
@@ -44,32 +47,32 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
     fVar2 = fVar1 + 3.0517578e-05;
   }
   fVar3 = *(float *)(in_ECX + 0x3658) * 4.0;
-  local_28 = *(float *)(in_ECX + 0x365c) * 4.0;
-  local_24 = *(float *)(in_ECX + 0x3660) * 4.0;
-  local_2c = *(float *)(in_ECX + 0x3664) * 4.0;
+  gammaG = *(float *)(in_ECX + 0x365c) * 4.0;
+  gammaR = *(float *)(in_ECX + 0x3660) * 4.0;
+  breakPointG = *(float *)(in_ECX + 0x3664) * 4.0;
   if (fVar3 < 3.0517578e-05) {
     fVar3 = 3.0517578e-05;
   }
-  if (local_28 < 3.0517578e-05) {
-    local_28 = 3.0517578e-05;
+  if (gammaG < 3.0517578e-05) {
+    gammaG = 3.0517578e-05;
   }
-  if (local_24 < 3.0517578e-05) {
-    local_24 = 3.0517578e-05;
+  if (gammaR < 3.0517578e-05) {
+    gammaR = 3.0517578e-05;
   }
-  if (local_2c < 3.0517578e-05) {
-    local_2c = 3.0517578e-05;
+  if (breakPointG < 3.0517578e-05) {
+    breakPointG = 3.0517578e-05;
   }
   if (32.0 < fVar3) {
     fVar3 = 32.0;
   }
-  if (32.0 < local_28) {
-    local_28 = 32.0;
+  if (32.0 < gammaG) {
+    gammaG = 32.0;
   }
-  if (32.0 < local_24) {
-    local_24 = 32.0;
+  if (32.0 < gammaR) {
+    gammaR = 32.0;
   }
-  if (32.0 < local_2c) {
-    local_2c = 32.0;
+  if (32.0 < breakPointG) {
+    breakPointG = 32.0;
   }
   gfxCmdBufSourceState.input.consts[0x79][0] = *(float *)(in_ECX + 0x3628);
   gfxCmdBufSourceState.input.consts[0x79][1] = *(float *)(in_ECX + 0x362c);
@@ -82,22 +85,22 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x7a][3] = 0.5;
   gfxCmdBufSourceState.input.consts[0x80][0] = fVar3 * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7b][0] = 1.0 / gfxCmdBufSourceState.input.consts[0x80][0];
-  gfxCmdBufSourceState.input.consts[0x80][1] = local_28 * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x80][1] = gammaG * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7b][1] = 1.0 / gfxCmdBufSourceState.input.consts[0x80][1];
-  gfxCmdBufSourceState.input.consts[0x80][2] = local_24 * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x80][2] = gammaR * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7b][2] = 1.0 / gfxCmdBufSourceState.input.consts[0x80][2];
-  gfxCmdBufSourceState.input.consts[0x80][3] = local_2c * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x80][3] = breakPointG * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7b][3] = 1.0 / gfxCmdBufSourceState.input.consts[0x80][3];
   gfxCmdBufSourceState.input.consts[0x81][0] = (32.0 - fVar3) * 0.03125;
-  gfxCmdBufSourceState.input.consts[0x81][1] = (32.0 - local_28) * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x81][1] = (32.0 - gammaG) * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7c][0] = 1.0 / gfxCmdBufSourceState.input.consts[0x81][0];
-  gfxCmdBufSourceState.input.consts[0x81][2] = (32.0 - local_24) * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x81][2] = (32.0 - gammaR) * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7c][1] = 1.0 / gfxCmdBufSourceState.input.consts[0x81][1];
   gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
   gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
   gfxCmdBufSourceState.constVersions[0x7b] = gfxCmdBufSourceState.constVersions[0x7b] + 1;
   gfxCmdBufSourceState.constVersions[0x7c] = gfxCmdBufSourceState.constVersions[0x7c] + 1;
-  gfxCmdBufSourceState.input.consts[0x81][3] = (32.0 - local_2c) * 0.03125;
+  gfxCmdBufSourceState.input.consts[0x81][3] = (32.0 - breakPointG) * 0.03125;
   gfxCmdBufSourceState.input.consts[0x7c][2] = 1.0 / gfxCmdBufSourceState.input.consts[0x81][2];
   gfxCmdBufSourceState.input.consts[0x7c][3] = 1.0 / gfxCmdBufSourceState.input.consts[0x81][3];
   gfxCmdBufSourceState.constVersions[0x7d] = gfxCmdBufSourceState.constVersions[0x7d] + 1;
@@ -109,9 +112,9 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
        -(gfxCmdBufSourceState.input.consts[0x7c][3] * gfxCmdBufSourceState.input.consts[0x80][3]);
   gfxCmdBufSourceState.input.consts[0x7d][1] =
        -(gfxCmdBufSourceState.input.consts[0x7c][1] * gfxCmdBufSourceState.input.consts[0x80][1]);
-  local_20 = *(float *)(in_ECX + 0x3678);
-  if (local_20 == 0.0) {
-    local_20 = 0.1;
+  tintWeightR = *(float *)(in_ECX + 0x3678);
+  if (tintWeightR == 0.0) {
+    tintWeightR = 0.1;
     fVar1 = 0.1;
     fVar2 = 0.1;
     fVar3 = 0.1;
@@ -122,7 +125,7 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
     fVar3 = *(float *)(in_ECX + 0x3684);
   }
   gfxCmdBufSourceState.constVersions[0x7e] = gfxCmdBufSourceState.constVersions[0x7e] + 1;
-  gfxCmdBufSourceState.input.consts[0x7e][0] = 1.0 / local_20;
+  gfxCmdBufSourceState.input.consts[0x7e][0] = 1.0 / tintWeightR;
   gfxCmdBufSourceState.input.consts[0x7e][1] = 1.0 / fVar1;
   gfxCmdBufSourceState.input.consts[0x7e][2] = 1.0 / fVar2;
   gfxCmdBufSourceState.input.consts[0x7e][3] = 1.0 / fVar3;
@@ -183,7 +186,7 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
 
 // 008584B0  RB_BloomStreak  (gfx_d3d/rb_postfx.cpp:360)
 
-void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
+void __cdecl RB_BloomStreak(GfxViewInfo *viewInfo,uchar *srcRt,uchar *dstRt)
 
 {
   float fVar1;
@@ -203,7 +206,13 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
   float fVar12;
   float fVar13;
   uchar uVar14;
-  float local_108 [32];
+  float b;
+  float sampleWeight [10];
+  float local_dc;
+  float local_d8;
+  float local_d4;
+  float local_d0;
+  float local_cc;
   float afStack_88 [11];
   float fStack_5c;
   float fStack_58;
@@ -230,11 +239,11 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
   do {
     _CIpow();
     uVar14 = (uchar)unaff_ESI;
-    local_108[uVar6] = (float)extraout_ST0;
+    (&b)[uVar6] = (float)extraout_ST0;
     uVar6 = uVar6 + 1;
   } while (uVar6 < 0x20);
   iVar5 = 4;
-  pfVar4 = local_108 + 1;
+  pfVar4 = sampleWeight;
   uVar6 = 0;
   do {
     local_10 = *pfVar4;
@@ -243,7 +252,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + -4 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6) = local_24;
+    *(float *)((int)&b + uVar6) = local_24;
     local_1c = pfVar4[2];
     local_14 = pfVar4[1];
     *(float *)((int)afStack_88 + uVar6) = fVar12 + local_10 / local_24;
@@ -252,7 +261,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + -2 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 4) = local_14;
+    *(float *)((int)sampleWeight + uVar6) = local_14;
     local_c = pfVar4[4];
     local_18 = pfVar4[3];
     *(float *)((int)afStack_88 + uVar6 + 4) = fVar12 + local_1c / local_14;
@@ -261,7 +270,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 8) = local_18;
+    *(float *)((int)sampleWeight + uVar6 + 4) = local_18;
     local_38 = pfVar4[6];
     local_20 = pfVar4[5];
     *(float *)((int)afStack_88 + uVar6 + 8) = fVar12 + local_c / local_18;
@@ -270,7 +279,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + 2 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 0xc) = local_20;
+    *(float *)((int)sampleWeight + uVar6 + 8) = local_20;
     local_30 = pfVar4[8];
     fVar8 = pfVar4[7];
     *(float *)((int)afStack_88 + uVar6 + 0xc) = fVar12 + local_38 / local_20;
@@ -279,7 +288,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + 4 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 0x10) = local_44;
+    *(float *)((int)sampleWeight + uVar6 + 0xc) = local_44;
     local_28 = pfVar4[10];
     fVar8 = pfVar4[9];
     *(float *)((int)afStack_88 + uVar6 + 0x10) = fVar12 + local_30 / local_44;
@@ -288,7 +297,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + 6 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 0x14) = local_40;
+    *(float *)((int)sampleWeight + uVar6 + 0x10) = local_40;
     fVar8 = pfVar4[0xc];
     local_34 = pfVar4[0xb];
     *(float *)((int)afStack_88 + uVar6 + 0x14) = fVar12 + local_28 / local_40;
@@ -298,7 +307,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + 8 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 0x18) = local_34;
+    *(float *)((int)sampleWeight + uVar6 + 0x14) = local_34;
     local_2c = pfVar4[0xe];
     fVar1 = pfVar4[0xd];
     *(float *)((int)afStack_88 + uVar6 + 0x18) = fVar12 + fVar8 / local_34;
@@ -306,15 +315,15 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     if (iVar5 + 10 < 0) {
       fVar12 = fVar12 + 4.2949673e+09;
     }
-    *(float *)((int)local_108 + uVar6 + 0x1c) = fVar1 + local_2c;
+    *(float *)((int)sampleWeight + uVar6 + 0x18) = fVar1 + local_2c;
     uVar3 = uVar6 + 0x20;
     iVar5 = iVar5 + 0x10;
     *(float *)((int)afStack_88 + uVar6 + 0x1c) = fVar12 + local_2c / (fVar1 + local_2c);
     pfVar4 = pfVar4 + 0x10;
     uVar6 = uVar3;
   } while (uVar3 < 0x40);
-  if ((param_1->bloom).bloomStreakXTint[2] + (param_1->bloom).bloomStreakXTint[1] +
-      (param_1->bloom).bloomStreakXTint[0] != 0.0) {
+  if ((viewInfo->bloom).bloomStreakXTint[2] + (viewInfo->bloom).bloomStreakXTint[1] +
+      (viewInfo->bloom).bloomStreakXTint[0] != 0.0) {
     g_renderTargetIsOverridden = false;
     gfxCmdBufSourceState.renderTargetWidth = (int)gfxRenderTargets[0x1e].width;
     gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0x1e].height;
@@ -335,27 +344,27 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
                 (gfxCmdBufState.prim.field0_0x0.device,0,0,1,0,0,0);
       gfxRenderTargets[0x1e].cleared = true;
     }
-    fVar12 = (param_1->bloom).bloomStreakXLevels1[0];
-    fVar8 = (param_1->bloom).bloomStreakXLevels1[1];
+    fVar12 = (viewInfo->bloom).bloomStreakXLevels1[0];
+    fVar8 = (viewInfo->bloom).bloomStreakXLevels1[1];
     if (fVar8 <= fVar12) {
       fVar8 = fVar12 + 0.00048828125;
     }
-    gfxCmdBufSourceState.input.consts[0x7a][2] = (param_1->bloom).bloomStreakXLevels1[2];
-    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (param_1->bloom).bloomStreakXLevels0[3];
+    gfxCmdBufSourceState.input.consts[0x7a][2] = (viewInfo->bloom).bloomStreakXLevels1[2];
+    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (viewInfo->bloom).bloomStreakXLevels0[3];
     fVar8 = 1.0 / (fVar8 - fVar12);
     gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
     gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
-    gfxCmdBufSourceState.input.consts[0x79][1] = (param_1->bloom).bloomStreakXLevels0[1] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][2] = (param_1->bloom).bloomStreakXLevels0[2] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][0] = (param_1->bloom).bloomStreakXLevels0[0] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][1] = (viewInfo->bloom).bloomStreakXLevels0[1] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][2] = (viewInfo->bloom).bloomStreakXLevels0[2] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][0] = (viewInfo->bloom).bloomStreakXLevels0[0] * fVar8;
     gfxCmdBufSourceState.input.consts[0x7a][0] = -(fVar8 * fVar12);
     gfxCmdBufSourceState.input.consts[0x7a][1] =
-         (param_1->bloom).bloomStreakXLevels1[3] - gfxCmdBufSourceState.input.consts[0x7a][2];
+         (viewInfo->bloom).bloomStreakXLevels1[3] - gfxCmdBufSourceState.input.consts[0x7a][2];
     gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
     gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1b].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-    if ((((param_1->sceneComposition).renderingMode & 7) == 0) &&
-       (param_1->isRenderingFullScreen == 0)) {
+    if ((((viewInfo->sceneComposition).renderingMode & 7) == 0) &&
+       (viewInfo->isRenderingFullScreen == 0)) {
       RB_SplitScreenFilter(rgp.bloomRemapStreak,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -363,20 +372,20 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     }
     gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1e].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-    fVar12 = (param_1->bloom).bloomStreakXInnerTint[0];
-    fVar8 = (param_1->bloom).bloomStreakXInnerTint[1];
-    fVar1 = (param_1->bloom).bloomStreakXInnerTint[2];
-    fVar7 = ((param_1->bloom).bloomStreakXOuterTint[0] - fVar12) * 0.0625;
-    fVar9 = ((param_1->bloom).bloomStreakXOuterTint[1] - fVar8) * 0.0625;
-    fVar10 = ((param_1->bloom).bloomStreakXOuterTint[2] - fVar1) * 0.0625;
+    fVar12 = (viewInfo->bloom).bloomStreakXInnerTint[0];
+    fVar8 = (viewInfo->bloom).bloomStreakXInnerTint[1];
+    fVar1 = (viewInfo->bloom).bloomStreakXInnerTint[2];
+    fVar7 = ((viewInfo->bloom).bloomStreakXOuterTint[0] - fVar12) * 0.0625;
+    fVar9 = ((viewInfo->bloom).bloomStreakXOuterTint[1] - fVar8) * 0.0625;
+    fVar10 = ((viewInfo->bloom).bloomStreakXOuterTint[2] - fVar1) * 0.0625;
     fVar11 = 1.0 / (float)gfxRenderTargets[0x1e].width;
-    gfxCmdBufSourceState.input.consts[0x79][0] = local_108[0] * fVar12;
-    gfxCmdBufSourceState.input.consts[0x79][1] = local_108[0] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][2] = local_108[0] * fVar1;
+    gfxCmdBufSourceState.input.consts[0x79][0] = b * fVar12;
+    gfxCmdBufSourceState.input.consts[0x79][1] = b * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][2] = b * fVar1;
     gfxCmdBufSourceState.input.consts[0x79][3] = afStack_88[0] * fVar11;
-    gfxCmdBufSourceState.input.consts[0x7a][0] = local_108[1] * (fVar7 + fVar12);
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_108[1] * (fVar9 + fVar8);
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_108[1] * (fVar10 + fVar1);
+    gfxCmdBufSourceState.input.consts[0x7a][0] = sampleWeight[0] * (fVar7 + fVar12);
+    gfxCmdBufSourceState.input.consts[0x7a][1] = sampleWeight[0] * (fVar9 + fVar8);
+    gfxCmdBufSourceState.input.consts[0x7a][2] = sampleWeight[0] * (fVar10 + fVar1);
     gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
     gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
     gfxCmdBufSourceState.constVersions[0x7b] = gfxCmdBufSourceState.constVersions[0x7b] + 1;
@@ -384,30 +393,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar7 + fVar12;
     fVar8 = fVar9 + fVar9 + fVar8;
     fVar12 = fVar10 + fVar10 + fVar1;
-    gfxCmdBufSourceState.input.consts[0x7b][0] = local_108[2] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7b][1] = local_108[2] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7b][2] = local_108[2] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7b][0] = sampleWeight[1] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7b][1] = sampleWeight[1] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7b][2] = sampleWeight[1] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7b][3] = afStack_88[2] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7c][0] = local_108[3] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7c][1] = local_108[3] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7c][2] = local_108[3] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7c][0] = sampleWeight[2] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7c][1] = sampleWeight[2] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7c][2] = sampleWeight[2] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7c][3] = afStack_88[3] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7d][0] = local_108[4] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7d][1] = local_108[4] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7d][2] = local_108[4] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7d][0] = sampleWeight[3] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7d][1] = sampleWeight[3] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7d][2] = sampleWeight[3] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7d][3] = afStack_88[4] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7e][0] = local_108[5] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7e][1] = local_108[5] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7e][2] = local_108[5] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7e][0] = sampleWeight[4] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7e][1] = sampleWeight[4] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7e][2] = sampleWeight[4] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7e][3] = afStack_88[5] * fVar11;
     gfxCmdBufSourceState.constVersions[0x7c] = gfxCmdBufSourceState.constVersions[0x7c] + 1;
     gfxCmdBufSourceState.constVersions[0x7d] = gfxCmdBufSourceState.constVersions[0x7d] + 1;
@@ -416,30 +425,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7f][0] = local_108[6] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7f][1] = local_108[6] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7f][2] = local_108[6] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7f][0] = sampleWeight[5] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7f][1] = sampleWeight[5] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7f][2] = sampleWeight[5] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7f][3] = afStack_88[6] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x80][0] = local_108[7] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x80][1] = local_108[7] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x80][2] = local_108[7] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x80][0] = sampleWeight[6] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x80][1] = sampleWeight[6] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x80][2] = sampleWeight[6] * fVar12;
     gfxCmdBufSourceState.input.consts[0x80][3] = afStack_88[7] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x81][0] = local_108[8] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x81][1] = local_108[8] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x81][2] = local_108[8] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x81][0] = sampleWeight[7] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x81][1] = sampleWeight[7] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x81][2] = sampleWeight[7] * fVar12;
     gfxCmdBufSourceState.input.consts[0x81][3] = afStack_88[8] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x82][0] = local_108[9] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x82][1] = local_108[9] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x82][2] = local_108[9] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x82][0] = sampleWeight[8] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x82][1] = sampleWeight[8] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x82][2] = sampleWeight[8] * fVar12;
     gfxCmdBufSourceState.input.consts[0x82][3] = afStack_88[9] * fVar11;
     fVar13 = fVar7 + fVar13;
     gfxCmdBufSourceState.constVersions[0x80] = gfxCmdBufSourceState.constVersions[0x80] + 1;
@@ -448,30 +457,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar8 = fVar9 + fVar8;
     gfxCmdBufSourceState.constVersions[0x83] = gfxCmdBufSourceState.constVersions[0x83] + 1;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x83][0] = local_108[10] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x83][1] = local_108[10] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x83][2] = local_108[10] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x83][0] = sampleWeight[9] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x83][1] = sampleWeight[9] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x83][2] = sampleWeight[9] * fVar12;
     gfxCmdBufSourceState.input.consts[0x83][3] = afStack_88[10] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x84][0] = local_108[0xb] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x84][1] = local_108[0xb] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x84][2] = local_108[0xb] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x84][0] = local_dc * fVar13;
+    gfxCmdBufSourceState.input.consts[0x84][1] = local_dc * fVar8;
+    gfxCmdBufSourceState.input.consts[0x84][2] = local_dc * fVar12;
     gfxCmdBufSourceState.input.consts[0x84][3] = fStack_5c * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x85][0] = local_108[0xc] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x85][1] = local_108[0xc] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x85][2] = local_108[0xc] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x85][0] = local_d8 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x85][1] = local_d8 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x85][2] = local_d8 * fVar12;
     gfxCmdBufSourceState.input.consts[0x85][3] = fStack_58 * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x86][0] = local_108[0xd] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x86][1] = local_108[0xd] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x86][2] = local_108[0xd] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x86][0] = local_d4 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x86][1] = local_d4 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x86][2] = local_d4 * fVar12;
     gfxCmdBufSourceState.constVersions[0x84] = gfxCmdBufSourceState.constVersions[0x84] + 1;
     gfxCmdBufSourceState.constVersions[0x85] = gfxCmdBufSourceState.constVersions[0x85] + 1;
     gfxCmdBufSourceState.constVersions[0x86] = gfxCmdBufSourceState.constVersions[0x86] + 1;
@@ -481,30 +490,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x87][0] = local_108[0xe] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x87][1] = local_108[0xe] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x87][2] = local_108[0xe] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x87][0] = local_d0 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x87][1] = local_d0 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x87][2] = local_d0 * fVar12;
     gfxCmdBufSourceState.input.consts[0x87][3] = fStack_50 * fVar11;
-    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar7 + fVar13) * local_108[0xf];
+    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar7 + fVar13) * local_cc;
     gfxCmdBufSourceState.input.consts[0x88][3] = fStack_4c * fVar11;
-    gfxCmdBufSourceState.input.consts[0x88][1] = (fVar9 + fVar8) * local_108[0xf];
-    gfxCmdBufSourceState.input.consts[0x88][2] = (fVar10 + fVar12) * local_108[0xf];
-    gfxCmdBufSourceState.input.consts[0x89][1] = (param_1->bloom).bloomStreakXTintControl[1];
-    gfxCmdBufSourceState.input.consts[0x89][2] = (param_1->bloom).bloomStreakXTintControl[2];
-    gfxCmdBufSourceState.input.consts[0x8a][0] = (param_1->bloom).bloomStreakXTint[0] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x8a][1] = (param_1->bloom).bloomStreakXTint[1] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x89][0] = (param_1->bloom).bloomStreakXTintControl[0];
-    gfxCmdBufSourceState.input.consts[0x8a][2] = (param_1->bloom).bloomStreakXTint[2] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x89][3] = (param_1->bloom).bloomStreakXTintControl[3];
+    gfxCmdBufSourceState.input.consts[0x88][1] = (fVar9 + fVar8) * local_cc;
+    gfxCmdBufSourceState.input.consts[0x88][2] = (fVar10 + fVar12) * local_cc;
+    gfxCmdBufSourceState.input.consts[0x89][1] = (viewInfo->bloom).bloomStreakXTintControl[1];
+    gfxCmdBufSourceState.input.consts[0x89][2] = (viewInfo->bloom).bloomStreakXTintControl[2];
+    gfxCmdBufSourceState.input.consts[0x8a][0] = (viewInfo->bloom).bloomStreakXTint[0] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x8a][1] = (viewInfo->bloom).bloomStreakXTint[1] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x89][0] = (viewInfo->bloom).bloomStreakXTintControl[0];
+    gfxCmdBufSourceState.input.consts[0x8a][2] = (viewInfo->bloom).bloomStreakXTint[2] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x89][3] = (viewInfo->bloom).bloomStreakXTintControl[3];
     gfxCmdBufSourceState.constVersions[0x89] = gfxCmdBufSourceState.constVersions[0x89] + 1;
     gfxCmdBufSourceState.constVersions[0x8a] = gfxCmdBufSourceState.constVersions[0x8a] + 1;
     gfxCmdBufSourceState.input.consts[0x8a][3] = 1.0;
     R_SetRenderTargetSize(unaff_EDI,uVar14);
-    R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,*param_3);
-    gfxCmdBufSourceState.input.codeImages[0x23] = gfxRenderTargets[*param_2].image;
+    R_SetRenderTarget();
+    gfxCmdBufSourceState.input.codeImages[0x23] = gfxRenderTargets[*srcRt].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x23].packed = 0;
-    if (((param_1->sceneComposition).renderingMode & 7) == 0) {
-      if (param_1->isRenderingFullScreen == 0) {
+    if (((viewInfo->sceneComposition).renderingMode & 7) == 0) {
+      if (viewInfo->isRenderingFullScreen == 0) {
         RB_SplitScreenFilter(rgp.bloomStreakX,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
       }
       else {
@@ -514,12 +523,12 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     else {
       RB_FullScreenFilter((Material *)unaff_EDI);
     }
-    uVar2 = *param_2;
-    *param_2 = *param_3;
-    *param_3 = uVar2;
+    uVar2 = *srcRt;
+    *srcRt = *dstRt;
+    *dstRt = uVar2;
   }
-  if ((param_1->bloom).bloomStreakYTint[2] + (param_1->bloom).bloomStreakYTint[1] +
-      (param_1->bloom).bloomStreakYTint[0] != 0.0) {
+  if ((viewInfo->bloom).bloomStreakYTint[2] + (viewInfo->bloom).bloomStreakYTint[1] +
+      (viewInfo->bloom).bloomStreakYTint[0] != 0.0) {
     g_renderTargetIsOverridden = false;
     gfxCmdBufSourceState.renderTargetWidth = (int)gfxRenderTargets[0x1e].width;
     gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0x1e].height;
@@ -540,27 +549,27 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
                 (gfxCmdBufState.prim.field0_0x0.device,0,0,1,0,0,0);
       gfxRenderTargets[0x1e].cleared = true;
     }
-    fVar12 = (param_1->bloom).bloomStreakYLevels1[0];
-    fVar8 = (param_1->bloom).bloomStreakYLevels1[1];
+    fVar12 = (viewInfo->bloom).bloomStreakYLevels1[0];
+    fVar8 = (viewInfo->bloom).bloomStreakYLevels1[1];
     if (fVar8 <= fVar12) {
       fVar8 = fVar12 + 0.00048828125;
     }
-    gfxCmdBufSourceState.input.consts[0x7a][2] = (param_1->bloom).bloomStreakYLevels1[2];
-    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (param_1->bloom).bloomStreakYLevels0[3];
+    gfxCmdBufSourceState.input.consts[0x7a][2] = (viewInfo->bloom).bloomStreakYLevels1[2];
+    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (viewInfo->bloom).bloomStreakYLevels0[3];
     fVar8 = 1.0 / (fVar8 - fVar12);
     gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
     gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
-    gfxCmdBufSourceState.input.consts[0x79][1] = (param_1->bloom).bloomStreakYLevels0[1] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][2] = (param_1->bloom).bloomStreakYLevels0[2] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][0] = (param_1->bloom).bloomStreakYLevels0[0] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][1] = (viewInfo->bloom).bloomStreakYLevels0[1] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][2] = (viewInfo->bloom).bloomStreakYLevels0[2] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][0] = (viewInfo->bloom).bloomStreakYLevels0[0] * fVar8;
     gfxCmdBufSourceState.input.consts[0x7a][0] = -(fVar8 * fVar12);
     gfxCmdBufSourceState.input.consts[0x7a][1] =
-         (param_1->bloom).bloomStreakYLevels1[3] - gfxCmdBufSourceState.input.consts[0x7a][2];
+         (viewInfo->bloom).bloomStreakYLevels1[3] - gfxCmdBufSourceState.input.consts[0x7a][2];
     gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
     gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1b].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-    if ((((param_1->sceneComposition).renderingMode & 7) == 0) &&
-       (param_1->isRenderingFullScreen == 0)) {
+    if ((((viewInfo->sceneComposition).renderingMode & 7) == 0) &&
+       (viewInfo->isRenderingFullScreen == 0)) {
       RB_SplitScreenFilter(rgp.bloomRemapStreak,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -568,20 +577,20 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     }
     gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1e].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-    fVar12 = (param_1->bloom).bloomStreakYInnerTint[0];
-    fVar8 = (param_1->bloom).bloomStreakYInnerTint[1];
-    fVar1 = (param_1->bloom).bloomStreakYInnerTint[2];
-    fVar7 = ((param_1->bloom).bloomStreakYOuterTint[0] - fVar12) * 0.0625;
-    fVar9 = ((param_1->bloom).bloomStreakYOuterTint[1] - fVar8) * 0.0625;
-    fVar10 = ((param_1->bloom).bloomStreakYOuterTint[2] - fVar1) * 0.0625;
+    fVar12 = (viewInfo->bloom).bloomStreakYInnerTint[0];
+    fVar8 = (viewInfo->bloom).bloomStreakYInnerTint[1];
+    fVar1 = (viewInfo->bloom).bloomStreakYInnerTint[2];
+    fVar7 = ((viewInfo->bloom).bloomStreakYOuterTint[0] - fVar12) * 0.0625;
+    fVar9 = ((viewInfo->bloom).bloomStreakYOuterTint[1] - fVar8) * 0.0625;
+    fVar10 = ((viewInfo->bloom).bloomStreakYOuterTint[2] - fVar1) * 0.0625;
     fVar11 = 1.0 / (float)gfxRenderTargets[0x1e].height;
-    gfxCmdBufSourceState.input.consts[0x79][0] = local_108[0] * fVar12;
-    gfxCmdBufSourceState.input.consts[0x79][1] = local_108[0] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x79][2] = local_108[0] * fVar1;
+    gfxCmdBufSourceState.input.consts[0x79][0] = b * fVar12;
+    gfxCmdBufSourceState.input.consts[0x79][1] = b * fVar8;
+    gfxCmdBufSourceState.input.consts[0x79][2] = b * fVar1;
     gfxCmdBufSourceState.input.consts[0x79][3] = afStack_88[0] * fVar11;
-    gfxCmdBufSourceState.input.consts[0x7a][0] = local_108[1] * (fVar7 + fVar12);
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_108[1] * (fVar9 + fVar8);
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_108[1] * (fVar10 + fVar1);
+    gfxCmdBufSourceState.input.consts[0x7a][0] = sampleWeight[0] * (fVar7 + fVar12);
+    gfxCmdBufSourceState.input.consts[0x7a][1] = sampleWeight[0] * (fVar9 + fVar8);
+    gfxCmdBufSourceState.input.consts[0x7a][2] = sampleWeight[0] * (fVar10 + fVar1);
     gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
     gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
     gfxCmdBufSourceState.constVersions[0x7b] = gfxCmdBufSourceState.constVersions[0x7b] + 1;
@@ -589,30 +598,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar7 + fVar12;
     fVar8 = fVar9 + fVar9 + fVar8;
     fVar12 = fVar10 + fVar10 + fVar1;
-    gfxCmdBufSourceState.input.consts[0x7b][0] = local_108[2] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7b][1] = local_108[2] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7b][2] = local_108[2] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7b][0] = sampleWeight[1] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7b][1] = sampleWeight[1] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7b][2] = sampleWeight[1] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7b][3] = afStack_88[2] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7c][0] = local_108[3] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7c][1] = local_108[3] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7c][2] = local_108[3] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7c][0] = sampleWeight[2] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7c][1] = sampleWeight[2] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7c][2] = sampleWeight[2] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7c][3] = afStack_88[3] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7d][0] = local_108[4] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7d][1] = local_108[4] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7d][2] = local_108[4] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7d][0] = sampleWeight[3] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7d][1] = sampleWeight[3] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7d][2] = sampleWeight[3] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7d][3] = afStack_88[4] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7e][0] = local_108[5] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7e][1] = local_108[5] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7e][2] = local_108[5] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7e][0] = sampleWeight[4] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7e][1] = sampleWeight[4] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7e][2] = sampleWeight[4] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7e][3] = afStack_88[5] * fVar11;
     gfxCmdBufSourceState.constVersions[0x7c] = gfxCmdBufSourceState.constVersions[0x7c] + 1;
     gfxCmdBufSourceState.constVersions[0x7d] = gfxCmdBufSourceState.constVersions[0x7d] + 1;
@@ -621,30 +630,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x7f][0] = local_108[6] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x7f][1] = local_108[6] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x7f][2] = local_108[6] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x7f][0] = sampleWeight[5] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x7f][1] = sampleWeight[5] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x7f][2] = sampleWeight[5] * fVar12;
     gfxCmdBufSourceState.input.consts[0x7f][3] = afStack_88[6] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x80][0] = local_108[7] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x80][1] = local_108[7] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x80][2] = local_108[7] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x80][0] = sampleWeight[6] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x80][1] = sampleWeight[6] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x80][2] = sampleWeight[6] * fVar12;
     gfxCmdBufSourceState.input.consts[0x80][3] = afStack_88[7] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x81][0] = local_108[8] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x81][1] = local_108[8] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x81][2] = local_108[8] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x81][0] = sampleWeight[7] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x81][1] = sampleWeight[7] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x81][2] = sampleWeight[7] * fVar12;
     gfxCmdBufSourceState.input.consts[0x81][3] = afStack_88[8] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x82][0] = local_108[9] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x82][1] = local_108[9] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x82][2] = local_108[9] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x82][0] = sampleWeight[8] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x82][1] = sampleWeight[8] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x82][2] = sampleWeight[8] * fVar12;
     gfxCmdBufSourceState.input.consts[0x82][3] = afStack_88[9] * fVar11;
     gfxCmdBufSourceState.constVersions[0x80] = gfxCmdBufSourceState.constVersions[0x80] + 1;
     gfxCmdBufSourceState.constVersions[0x81] = gfxCmdBufSourceState.constVersions[0x81] + 1;
@@ -653,30 +662,30 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     gfxCmdBufSourceState.constVersions[0x83] = gfxCmdBufSourceState.constVersions[0x83] + 1;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x83][0] = local_108[10] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x83][1] = local_108[10] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x83][2] = local_108[10] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x83][0] = sampleWeight[9] * fVar13;
+    gfxCmdBufSourceState.input.consts[0x83][1] = sampleWeight[9] * fVar8;
+    gfxCmdBufSourceState.input.consts[0x83][2] = sampleWeight[9] * fVar12;
     gfxCmdBufSourceState.input.consts[0x83][3] = afStack_88[10] * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x84][0] = local_108[0xb] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x84][1] = local_108[0xb] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x84][2] = local_108[0xb] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x84][0] = local_dc * fVar13;
+    gfxCmdBufSourceState.input.consts[0x84][1] = local_dc * fVar8;
+    gfxCmdBufSourceState.input.consts[0x84][2] = local_dc * fVar12;
     gfxCmdBufSourceState.input.consts[0x84][3] = fStack_5c * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x85][0] = local_108[0xc] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x85][1] = local_108[0xc] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x85][2] = local_108[0xc] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x85][0] = local_d8 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x85][1] = local_d8 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x85][2] = local_d8 * fVar12;
     gfxCmdBufSourceState.input.consts[0x85][3] = fStack_58 * fVar11;
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x86][0] = local_108[0xd] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x86][1] = local_108[0xd] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x86][2] = local_108[0xd] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x86][0] = local_d4 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x86][1] = local_d4 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x86][2] = local_d4 * fVar12;
     gfxCmdBufSourceState.constVersions[0x84] = gfxCmdBufSourceState.constVersions[0x84] + 1;
     gfxCmdBufSourceState.constVersions[0x85] = gfxCmdBufSourceState.constVersions[0x85] + 1;
     gfxCmdBufSourceState.constVersions[0x86] = gfxCmdBufSourceState.constVersions[0x86] + 1;
@@ -686,40 +695,40 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
     fVar13 = fVar7 + fVar13;
     fVar8 = fVar9 + fVar8;
     fVar12 = fVar10 + fVar12;
-    gfxCmdBufSourceState.input.consts[0x87][0] = local_108[0xe] * fVar13;
-    gfxCmdBufSourceState.input.consts[0x87][1] = local_108[0xe] * fVar8;
-    gfxCmdBufSourceState.input.consts[0x87][2] = local_108[0xe] * fVar12;
+    gfxCmdBufSourceState.input.consts[0x87][0] = local_d0 * fVar13;
+    gfxCmdBufSourceState.input.consts[0x87][1] = local_d0 * fVar8;
+    gfxCmdBufSourceState.input.consts[0x87][2] = local_d0 * fVar12;
     gfxCmdBufSourceState.input.consts[0x87][3] = fStack_50 * fVar11;
-    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar7 + fVar13) * local_108[0xf];
+    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar7 + fVar13) * local_cc;
     gfxCmdBufSourceState.input.consts[0x88][3] = fStack_4c * fVar11;
-    gfxCmdBufSourceState.input.consts[0x88][1] = (fVar9 + fVar8) * local_108[0xf];
-    gfxCmdBufSourceState.input.consts[0x88][2] = (fVar10 + fVar12) * local_108[0xf];
-    gfxCmdBufSourceState.input.consts[0x89][1] = (param_1->bloom).bloomStreakYTintControl[1];
-    gfxCmdBufSourceState.input.consts[0x89][2] = (param_1->bloom).bloomStreakYTintControl[2];
-    gfxCmdBufSourceState.input.consts[0x8a][0] = (param_1->bloom).bloomStreakYTint[0] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x8a][1] = (param_1->bloom).bloomStreakYTint[1] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x89][0] = (param_1->bloom).bloomStreakYTintControl[0];
-    gfxCmdBufSourceState.input.consts[0x8a][2] = (param_1->bloom).bloomStreakYTint[2] * 0.125;
-    gfxCmdBufSourceState.input.consts[0x89][3] = (param_1->bloom).bloomStreakYTintControl[3];
+    gfxCmdBufSourceState.input.consts[0x88][1] = (fVar9 + fVar8) * local_cc;
+    gfxCmdBufSourceState.input.consts[0x88][2] = (fVar10 + fVar12) * local_cc;
+    gfxCmdBufSourceState.input.consts[0x89][1] = (viewInfo->bloom).bloomStreakYTintControl[1];
+    gfxCmdBufSourceState.input.consts[0x89][2] = (viewInfo->bloom).bloomStreakYTintControl[2];
+    gfxCmdBufSourceState.input.consts[0x8a][0] = (viewInfo->bloom).bloomStreakYTint[0] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x8a][1] = (viewInfo->bloom).bloomStreakYTint[1] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x89][0] = (viewInfo->bloom).bloomStreakYTintControl[0];
+    gfxCmdBufSourceState.input.consts[0x8a][2] = (viewInfo->bloom).bloomStreakYTint[2] * 0.125;
+    gfxCmdBufSourceState.input.consts[0x89][3] = (viewInfo->bloom).bloomStreakYTintControl[3];
     gfxCmdBufSourceState.constVersions[0x89] = gfxCmdBufSourceState.constVersions[0x89] + 1;
     gfxCmdBufSourceState.constVersions[0x8a] = gfxCmdBufSourceState.constVersions[0x8a] + 1;
     gfxCmdBufSourceState.input.consts[0x8a][3] = 1.0;
     R_SetRenderTargetSize(unaff_EDI,uVar14);
-    R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,*param_3);
-    gfxCmdBufSourceState.input.codeImages[0x23] = gfxRenderTargets[*param_2].image;
+    R_SetRenderTarget();
+    gfxCmdBufSourceState.input.codeImages[0x23] = gfxRenderTargets[*srcRt].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x23].packed = 0;
-    if ((((param_1->sceneComposition).renderingMode & 7) != 0) ||
-       (param_1->isRenderingFullScreen != 0)) {
+    if ((((viewInfo->sceneComposition).renderingMode & 7) != 0) ||
+       (viewInfo->isRenderingFullScreen != 0)) {
       RB_FullScreenFilter((Material *)unaff_EDI);
-      uVar14 = *param_2;
-      *param_2 = *param_3;
-      *param_3 = uVar14;
+      uVar14 = *srcRt;
+      *srcRt = *dstRt;
+      *dstRt = uVar14;
       return;
     }
     RB_SplitScreenFilter(rgp.bloomStreakY,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
-    uVar14 = *param_2;
-    *param_2 = *param_3;
-    *param_3 = uVar14;
+    uVar14 = *srcRt;
+    *srcRt = *dstRt;
+    *dstRt = uVar14;
   }
   return;
 }
@@ -727,7 +736,7 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
 
 // 00859BD0  RB_SetBlurConstants  (gfx_d3d/rb_postfx.cpp:942)
 
-void __cdecl RB_SetBlurConstants(float param_1,float param_2)
+void __cdecl RB_SetBlurConstants(float textureScaler,float param_2)
 
 {
   undefined4 unaff_ESI;
@@ -741,7 +750,9 @@ void __cdecl RB_SetBlurConstants(float param_1,float param_2)
   float fVar6;
   float fVar7;
   float local_50;
-  float local_4c;
+  float t;
+  float x;
+  float e;
   float local_38 [13];
   
   fVar7 = in_XMM1_Da;
@@ -753,15 +764,15 @@ void __cdecl RB_SetBlurConstants(float param_1,float param_2)
     fVar6 = fVar7;
   }
   iVar1 = 0;
-  local_4c = 0.5;
+  t = 0.5;
   local_50 = 0.0;
   do {
-    dVar2 = (double)(local_4c * local_4c * (-0.5 / (fVar6 * fVar6)));
+    dVar2 = (double)(t * t * (-0.5 / (fVar6 * fVar6)));
     __libm_sse2_exp((double)CONCAT44(unaff_ESI,unaff_EDI));
     local_38[iVar1] = (float)dVar2;
     iVar1 = iVar1 + 1;
     local_50 = (float)dVar2 * 2.0 + local_50;
-    local_4c = local_4c + 1.0;
+    t = t + 1.0;
   } while (iVar1 < 0xc);
   iVar1 = 0;
   local_50 = 1.0 / local_50;
@@ -820,13 +831,13 @@ void __cdecl RB_SetBlurConstants(float param_1,float param_2)
   gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
   gfxCmdBufSourceState.constVersions[0x7b] = gfxCmdBufSourceState.constVersions[0x7b] + 1;
   gfxCmdBufSourceState.constVersions[0x7c] = gfxCmdBufSourceState.constVersions[0x7c] + 1;
-  gfxCmdBufSourceState.input.consts[0x79][0] = local_38[1] * param_1;
-  gfxCmdBufSourceState.input.consts[0x79][1] = fVar7 * param_1;
-  gfxCmdBufSourceState.input.consts[0x79][2] = fVar6 * param_1;
+  gfxCmdBufSourceState.input.consts[0x79][0] = local_38[1] * textureScaler;
+  gfxCmdBufSourceState.input.consts[0x79][1] = fVar7 * textureScaler;
+  gfxCmdBufSourceState.input.consts[0x79][2] = fVar6 * textureScaler;
   gfxCmdBufSourceState.input.consts[0x79][3] = 0.0;
-  gfxCmdBufSourceState.input.consts[0x7a][0] = fVar5 * param_1;
-  gfxCmdBufSourceState.input.consts[0x7a][1] = fVar4 * param_1;
-  gfxCmdBufSourceState.input.consts[0x7a][2] = fVar3 * param_1;
+  gfxCmdBufSourceState.input.consts[0x7a][0] = fVar5 * textureScaler;
+  gfxCmdBufSourceState.input.consts[0x7a][1] = fVar4 * textureScaler;
+  gfxCmdBufSourceState.input.consts[0x7a][2] = fVar3 * textureScaler;
   gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
   gfxCmdBufSourceState.input.consts[0x7c][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x7c][3] = 0.0;
@@ -1082,14 +1093,16 @@ void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *param_1)
 void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
 
 {
-  GfxViewInfo *pGVar1;
+  GfxViewInfo *viewInfo_00;
   uchar unaff_SI;
   GfxViewInfo *unaff_EDI;
+  float fVar1;
   float fVar2;
-  float fVar3;
+  GfxViewInfo *viewInfo;
+  uchar dstRt;
   uint local_4;
   
-  pGVar1 = param_1;
+  viewInfo_00 = param_1;
   g_renderTargetIsOverridden = false;
   gfxCmdBufSourceState.renderTargetWidth = (int)gfxRenderTargets[0x19].width;
   gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0x19].height;
@@ -1105,7 +1118,7 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
   gfxCmdBufSourceState.input.consts[0x79][0] =
        (1.0 / (float)gfxRenderTargets[6].width) * DAT_00ae6474;
@@ -1115,8 +1128,8 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x79][3] = (1.0 / (float)gfxRenderTargets[6].height) * 2.0;
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomDownsampleLDR,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1141,11 +1154,11 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x19].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.resampleFinal,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1170,7 +1183,7 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
   gfxCmdBufSourceState.input.consts[0x79][0] =
        (1.0 / (float)gfxRenderTargets[0x1a].width) * DAT_00ae6474;
@@ -1180,8 +1193,8 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x79][3] = (1.0 / (float)gfxRenderTargets[0x1a].height) * 2.0;
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1a].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter
                 (rgp.bloomDownsampleConvolution,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
@@ -1207,14 +1220,14 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   RB_SetBloomConstants(unaff_EDI);
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1b].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
   gfxCmdBufSourceState.input.codeImages[0x23] = gfxRenderTargets[0x1b].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x23].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomRemap,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1240,11 +1253,11 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1c].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomBlurX,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1270,11 +1283,11 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     gfxCmdBufSourceState._6709_3_ = 0;
     gfxCmdBufSourceState.viewportIsDirty = true;
   }
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0x1d].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomBlurY,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1286,26 +1299,26 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   }
   param_1 = (GfxViewInfo *)CONCAT31(param_1._1_3_,0x1c);
   local_4 = CONCAT31(local_4._1_3_,0x1d);
-  RB_BloomStreak(pGVar1,(uchar *)&param_1,(uchar *)&local_4);
-  fVar2 = 1.0 / (float)gfxRenderTargets[0x1b].width;
-  gfxCmdBufSourceState.input.consts[0x79][0] = fVar2 * DAT_00af3e58;
-  fVar3 = 1.0 / (float)gfxRenderTargets[0x1b].height;
-  gfxCmdBufSourceState.input.consts[0x79][1] = fVar3 * 0.5;
-  gfxCmdBufSourceState.input.consts[0x79][2] = fVar2 * 0.5;
-  gfxCmdBufSourceState.input.consts[0x79][3] = fVar3 * -1.5;
+  RB_BloomStreak(viewInfo_00,(uchar *)&param_1,(uchar *)&local_4);
+  fVar1 = 1.0 / (float)gfxRenderTargets[0x1b].width;
+  gfxCmdBufSourceState.input.consts[0x79][0] = fVar1 * DAT_00af3e58;
+  fVar2 = 1.0 / (float)gfxRenderTargets[0x1b].height;
+  gfxCmdBufSourceState.input.consts[0x79][1] = fVar2 * 0.5;
+  gfxCmdBufSourceState.input.consts[0x79][2] = fVar1 * 0.5;
+  gfxCmdBufSourceState.input.consts[0x79][3] = fVar2 * -1.5;
   gfxCmdBufSourceState.constVersions[0x79] = gfxCmdBufSourceState.constVersions[0x79] + 1;
   gfxCmdBufSourceState.constVersions[0x7a] = gfxCmdBufSourceState.constVersions[0x7a] + 1;
-  gfxCmdBufSourceState.input.consts[0x7a][0] = fVar2 * -1.5;
-  gfxCmdBufSourceState.input.consts[0x7a][1] = fVar3 * -0.5;
-  gfxCmdBufSourceState.input.consts[0x7a][2] = fVar2 * -0.5;
-  gfxCmdBufSourceState.input.consts[0x7a][3] = fVar3 * DAT_00af3e58;
+  gfxCmdBufSourceState.input.consts[0x7a][0] = fVar1 * -1.5;
+  gfxCmdBufSourceState.input.consts[0x7a][1] = fVar2 * -0.5;
+  gfxCmdBufSourceState.input.consts[0x7a][2] = fVar1 * -0.5;
+  gfxCmdBufSourceState.input.consts[0x7a][3] = fVar2 * DAT_00af3e58;
   R_SetRenderTargetSize((GfxCmdBufSourceState *)unaff_EDI,unaff_SI);
-  R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,(uchar)local_4);
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0x349fc800349e1f0,(uchar)unaff_EDI);
+  R_SetRenderTarget();
+  R_ClearRenderTargetForMultiGpu();
   gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[(uint)param_1 & 0xff].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomSmoothA,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1337,8 +1350,8 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x23].packed = 0;
   gfxCmdBufSourceState.input.codeImages[0x24] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x24].packed = 0;
-  if (((pGVar1->sceneComposition).renderingMode & 7) == 0) {
-    if (pGVar1->isRenderingFullScreen == 0) {
+  if (((viewInfo_00->sceneComposition).renderingMode & 7) == 0) {
+    if (viewInfo_00->isRenderingFullScreen == 0) {
       RB_SplitScreenFilter(rgp.bloomApplyLDR,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     }
     else {
@@ -1349,11 +1362,11 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
     RB_FullScreenFilter((Material *)unaff_EDI);
   }
   RB_SetVisionSetColorCorrection(unaff_EDI);
-  R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_EDI);
+  R_Resolve();
   gfxCmdBufSourceState.input.codeImages[10] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[10].packed = 0;
-  if ((((pGVar1->sceneComposition).renderingMode & 7) == 0) && (pGVar1->isRenderingFullScreen == 0))
-  {
+  if ((((viewInfo_00->sceneComposition).renderingMode & 7) == 0) &&
+     (viewInfo_00->isRenderingFullScreen == 0)) {
     RB_SplitScreenFilter(rgp.postFxColorMaterial,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     return;
   }
@@ -1364,7 +1377,7 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
 
 // 0085B660  RB_PoisonFX  (gfx_d3d/rb_postfx.cpp:2804)
 
-void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
+void __cdecl RB_PoisonFX(GfxViewInfo *viewInfo)
 
 {
   float fVar1;
@@ -1380,8 +1393,12 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
   float fVar9;
   float fVar10;
   float fVar11;
-  float local_20;
-  float local_1c;
+  float blend;
+  float dvision1;
+  float dvision0;
+  float dy;
+  float dx;
+  float x;
   
   g_renderTargetIsOverridden = false;
   gfxCmdBufSourceState.renderTargetWidth = (int)gfxRenderTargets[3].width;
@@ -1403,11 +1420,11 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
     fVar8 = 0.0;
   }
   fVar8 = (fVar8 * DAT_00ae6474 + DAT_00af41d0) * fVar8 * fVar8;
-  fVar5 = (param_1->sceneDef).floatTime;
+  fVar5 = (viewInfo->sceneDef).floatTime;
   fVar11 = (r_poisonFX_warpX->current).value;
   fVar9 = 1.0 - fVar8;
-  fVar1 = (param_1->sceneDef).floatTime;
-  fVar10 = (param_1->poisonFx).curAmount;
+  fVar1 = (viewInfo->sceneDef).floatTime;
+  fVar10 = (viewInfo->poisonFx).curAmount;
   dVar6 = (double)(fVar1 * 0.2 * 6.2831855);
   __libm_sse2_sin((double)CONCAT44(unaff_ESI,unaff_EDI));
   dVar7 = (double)(fVar5 * 0.1 * 6.2831855);
@@ -1436,29 +1453,29 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
   __libm_sse2_cos((double)CONCAT44(unaff_ESI,unaff_EDI));
   fVar5 = (r_poisonFX_dvisionX->current).value;
   fVar3 = (float10)sinf(fVar11);
-  fVar11 = (param_1->sceneDef).floatTime;
+  fVar11 = (viewInfo->sceneDef).floatTime;
   fVar1 = (r_poisonFX_dvisionY->current).value;
   if (((int)(fVar11 * 0.25) & 1U) == 0) {
     dVar7 = (double)(fVar11 * 0.25 * 3.1415927);
     __libm_sse2_sin((double)CONCAT44(unaff_ESI,unaff_EDI));
-    local_1c = (float)dVar7 * 3.25;
+    dvision1 = (float)dVar7 * 3.25;
   }
   else {
-    local_1c = 0.0;
+    dvision1 = 0.0;
   }
   if (((int)(fVar11 * 0.5) & 1U) == 0) {
     dVar7 = (double)(fVar11 * 0.5 * 3.1415927);
     __libm_sse2_sin((double)CONCAT44(unaff_ESI,unaff_EDI));
-    local_20 = (float)dVar7 * 3.75;
+    blend = (float)dVar7 * 3.75;
   }
   else {
-    local_20 = 0.0;
+    blend = 0.0;
   }
-  fVar10 = (param_1->poisonFx).curAmount;
-  pGVar2 = param_1->fullSceneViewMesh;
+  fVar10 = (viewInfo->poisonFx).curAmount;
+  pGVar2 = viewInfo->fullSceneViewMesh;
   dVar7 = (double)(fVar11 * 0.083333336 * 6.2831855);
   __libm_sse2_cos((double)CONCAT44(unaff_ESI,unaff_EDI));
-  fVar8 = (((float)dVar7 * 1.25 + fVar9 * local_1c + local_20 * fVar8 + (float)dVar6 * fVar5) /
+  fVar8 = (((float)dVar7 * 1.25 + fVar9 * dvision1 + blend * fVar8 + (float)dVar6 * fVar5) /
           pGVar2->width) * fVar10;
   fVar10 = ((float)(fVar3 * (float10)fVar1) / pGVar2->height) * fVar10;
   fVar5 = fVar8 + 0.5;
@@ -1475,8 +1492,8 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
     gfxCmdBufSourceState.input.consts[0x7a][2] = fVar8;
     gfxCmdBufSourceState.input.consts[0x7a][3] = fVar10;
   }
-  if ((((param_1->sceneComposition).renderingMode & 7) == 0) &&
-     (param_1->isRenderingFullScreen == 0)) {
+  if ((((viewInfo->sceneComposition).renderingMode & 7) == 0) &&
+     (viewInfo->isRenderingFullScreen == 0)) {
     RB_SplitScreenFilter(rgp.poisonFXMaterial,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
     return;
   }
@@ -1489,7 +1506,7 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
+void __cdecl RB_GenericFilterFX(GfxViewInfo *viewInfo)
 
 {
   int iVar1;
@@ -1535,24 +1552,24 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
   float fStack_28;
   float fStack_24;
   
-  MatrixMultiply44((float *)param_1,(float *)unaff_EDI,(float *)unaff_ESI);
+  MatrixMultiply44((float *)viewInfo,(float *)unaff_EDI,(float *)unaff_ESI);
   iVar11 = 0;
-  paafVar6 = (param_1->genericFilter).passParam;
+  paafVar6 = (viewInfo->genericFilter).passParam;
   do {
     in_stack_ffffff64 = (float)((uint)in_stack_ffffff64 & 0xffffff);
     bVar4 = false;
     local_8c = 0;
     iVar12 = iVar11;
     do {
-      if (((((param_1->genericFilter).passEnabled[0][local_8c + iVar11] != false) &&
+      if (((((viewInfo->genericFilter).passEnabled[0][local_8c + iVar11] != false) &&
            (iVar1 = iVar11 + local_8c,
-           *(int *)((int)(&param_1->doubleVision + 2) + iVar1 * 4 + 0x14) != 0)) &&
-          ((piVar2 = (param_1->genericFilter).passQuads[0] + iVar11 + local_8c,
-           (param_1->genericFilter).passQuads[0][iVar11 + local_8c] < 1 ||
-           (0.0 < (param_1->genericFilter).passFlareOcclusion[0][iVar11 + local_8c] *
-                  (param_1->genericFilter).passParam[0][local_8c + iVar11][4])))) &&
+           *(int *)((int)(&viewInfo->doubleVision + 2) + iVar1 * 4 + 0x14) != 0)) &&
+          ((piVar2 = (viewInfo->genericFilter).passQuads[0] + iVar11 + local_8c,
+           (viewInfo->genericFilter).passQuads[0][iVar11 + local_8c] < 1 ||
+           (0.0 < (viewInfo->genericFilter).passFlareOcclusion[0][iVar11 + local_8c] *
+                  (viewInfo->genericFilter).passParam[0][local_8c + iVar11][4])))) &&
          ((r_superFlare_enable->current).enabled != false)) {
-        switch((param_1->genericFilter).passTarget[0][iVar11 + local_8c]) {
+        switch((viewInfo->genericFilter).passTarget[0][iVar11 + local_8c]) {
         case 1:
           bVar3 = 0xc;
           break;
@@ -1570,7 +1587,7 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         uVar10 = (ushort)(((uint)bVar9 << 0x18) >> 0x10);
         uVar7 = SUB43(in_stack_ffffff60,0);
         in_stack_ffffff60 = fVar8;
-        switch((param_1->genericFilter).passSampler0[0][iVar11 + local_8c]) {
+        switch((viewInfo->genericFilter).passSampler0[0][iVar11 + local_8c]) {
         case 1:
           in_stack_ffffff60 = (float)CONCAT13(0xc,uVar7);
           uVar10 = (ushort)(CONCAT13(bVar9,0xc0000) >> 0x10);
@@ -1587,7 +1604,7 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           uVar10 = (ushort)(CONCAT13(bVar9,0x50000) >> 0x10);
         }
         in_stack_ffffff64 = (float)((uint)uVar10 << 0x10);
-        switch((param_1->genericFilter).passSampler1[0][iVar11 + local_8c]) {
+        switch((viewInfo->genericFilter).passSampler1[0][iVar11 + local_8c]) {
         case 1:
           in_stack_ffffff64 = (float)CONCAT22(uVar10,0xc0c);
           break;
@@ -1607,9 +1624,9 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0xc].height;
           gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FULL;
           UpdateVPosToWorld(unaff_EDI);
-          R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\f');
+          R_SetRenderTarget();
           iVar11 = iVar12;
-          R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_EDI);
+          R_Resolve();
           iVar12 = iVar11;
         }
         if (((char)((uint)in_stack_ffffff60 >> 0x18) == '\r') ||
@@ -1619,9 +1636,9 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0xd].height;
           gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FULL;
           UpdateVPosToWorld(unaff_EDI);
-          R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\r');
+          R_SetRenderTarget();
           iVar11 = iVar12;
-          R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_EDI);
+          R_Resolve();
           iVar12 = iVar11;
         }
         if (((char)((uint)in_stack_ffffff60 >> 0x18) == '\x03') ||
@@ -1631,7 +1648,7 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[3].height;
           gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
           UpdateVPosToWorld(unaff_EDI);
-          R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x03');
+          R_SetRenderTarget();
           (**(code **)((int)*((gfxRenderTargets[6].image)->texture).basemap + 0x48))
                     (((gfxRenderTargets[6].image)->texture).basemap,0,local_78);
           (**(code **)((int)*gfxCmdBufState.prim.field0_0x0.device + 0x88))
@@ -1658,12 +1675,12 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[3].height;
           UpdateVPosToWorld(unaff_EDI);
           iVar11 = iVar12;
-          R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x03');
+          R_SetRenderTarget();
           iVar12 = iVar11;
         }
         else {
           R_SetRenderTargetSize(unaff_EDI,(uchar)unaff_ESI);
-          R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,bVar3);
+          R_SetRenderTarget();
           if (bVar3 == 0) goto switchD_0085bc33_caseD_4;
         }
         gfxCmdBufSourceState.input.consts[0xb7][0] = (*paafVar6)[0][0];
@@ -1673,40 +1690,40 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         if ((((0 < *piVar2) && (gfxCmdBufSourceState.input.consts[0xb7][0] == 0.0)) &&
             (gfxCmdBufSourceState.input.consts[0xb7][1] == 0.0)) &&
            (gfxCmdBufSourceState.input.consts[0xb7][2] == 0.0)) {
-          gfxCmdBufSourceState.input.consts[0xb7][0] = (param_1->genericFilter).sunPosition[0];
-          gfxCmdBufSourceState.input.consts[0xb7][1] = (param_1->genericFilter).sunPosition[1];
-          gfxCmdBufSourceState.input.consts[0xb7][2] = (param_1->genericFilter).sunPosition[2];
+          gfxCmdBufSourceState.input.consts[0xb7][0] = (viewInfo->genericFilter).sunPosition[0];
+          gfxCmdBufSourceState.input.consts[0xb7][1] = (viewInfo->genericFilter).sunPosition[1];
+          gfxCmdBufSourceState.input.consts[0xb7][2] = (viewInfo->genericFilter).sunPosition[2];
         }
         gfxCmdBufSourceState.input.consts[0xb6][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][0];
         gfxCmdBufSourceState.input.consts[0xb6][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][0];
         gfxCmdBufSourceState.input.consts[0xb6][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0];
         gfxCmdBufSourceState.input.consts[0xb6][3] = 0.0;
         gfxCmdBufSourceState.constVersions[0xb6] = gfxCmdBufSourceState.constVersions[0xb6] + 1;
         gfxCmdBufSourceState.input.consts[0xb5][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][1];
         gfxCmdBufSourceState.input.consts[0xb5][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][1];
         gfxCmdBufSourceState.input.consts[0xb5][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][1];
         gfxCmdBufSourceState.constVersions[0xb5] = gfxCmdBufSourceState.constVersions[0xb5] + 1;
         gfxCmdBufSourceState.input.consts[0xb5][3] = 0.0;
         gfxCmdBufSourceState.input.consts[0xb4][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][2];
         gfxCmdBufSourceState.input.consts[0xb4][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][2];
         gfxCmdBufSourceState.input.consts[0xb4][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][2];
         gfxCmdBufSourceState.constVersions[0xb4] = gfxCmdBufSourceState.constVersions[0xb4] + 1;
         gfxCmdBufSourceState.input.consts[0xb4][3] = 0.0;
         gfxCmdBufSourceState.input.consts[0xbf][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.origin[1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
         gfxCmdBufSourceState.input.consts[0xbf][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.origin[2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2];
         gfxCmdBufSourceState.input.consts[0xbf][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.origin[0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[0];
         gfxCmdBufSourceState.input.consts[0xbf][3] = 0.0;
         gfxCmdBufSourceState.input.consts[0x97][0] = local_60;
         gfxCmdBufSourceState.input.consts[0x97][1] = fStack_5c;
@@ -1730,83 +1747,83 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         gfxCmdBufSourceState.input.consts[0x9a][2] = fStack_28;
         gfxCmdBufSourceState.input.consts[0x9a][3] = fStack_24;
         gfxCmdBufSourceState.input.consts[0x9d][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][1];
         gfxCmdBufSourceState.input.consts[0x9d][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][2];
         gfxCmdBufSourceState.input.consts[0x9d][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][3];
         gfxCmdBufSourceState.input.consts[0x9d][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0];
         gfxCmdBufSourceState.constVersions[0x9d] = gfxCmdBufSourceState.constVersions[0x9d] + 1;
         gfxCmdBufSourceState.input.consts[0x9e][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][1];
         gfxCmdBufSourceState.input.consts[0x9e][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][2];
         gfxCmdBufSourceState.input.consts[0x9e][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][3];
         gfxCmdBufSourceState.input.consts[0x9e][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[1][0];
         gfxCmdBufSourceState.constVersions[0x9e] = gfxCmdBufSourceState.constVersions[0x9e] + 1;
         gfxCmdBufSourceState.input.consts[0x9f][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][1];
         gfxCmdBufSourceState.input.consts[0x9f][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][2];
         gfxCmdBufSourceState.input.consts[0x9f][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][3];
         gfxCmdBufSourceState.input.consts[0x9f][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[2][0];
         gfxCmdBufSourceState.constVersions[0x9f] = gfxCmdBufSourceState.constVersions[0x9f] + 1;
         gfxCmdBufSourceState.input.consts[0xa0][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][1];
         gfxCmdBufSourceState.input.consts[0xa0][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][2];
         gfxCmdBufSourceState.input.consts[0xa0][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][3];
         gfxCmdBufSourceState.input.consts[0xa0][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[3][0];
         gfxCmdBufSourceState.constVersions[0xa0] = gfxCmdBufSourceState.constVersions[0xa0] + 1;
         gfxCmdBufSourceState.input.consts[0x92][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][1];
         gfxCmdBufSourceState.input.consts[0x92][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][2];
         gfxCmdBufSourceState.input.consts[0x92][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][3];
         gfxCmdBufSourceState.input.consts[0x92][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[0][0];
         gfxCmdBufSourceState.constVersions[0x92] = gfxCmdBufSourceState.constVersions[0x92] + 1;
         gfxCmdBufSourceState.input.consts[0x93][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][1];
         gfxCmdBufSourceState.input.consts[0x93][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][2];
         gfxCmdBufSourceState.input.consts[0x93][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][3];
         gfxCmdBufSourceState.input.consts[0x93][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[1][0];
         gfxCmdBufSourceState.constVersions[0x93] = gfxCmdBufSourceState.constVersions[0x93] + 1;
         gfxCmdBufSourceState.input.consts[0x94][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][1];
         gfxCmdBufSourceState.input.consts[0x94][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][2];
         gfxCmdBufSourceState.input.consts[0x94][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][3];
         gfxCmdBufSourceState.input.consts[0x94][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[2][0];
         gfxCmdBufSourceState.constVersions[0x94] = gfxCmdBufSourceState.constVersions[0x94] + 1;
         gfxCmdBufSourceState.input.consts[0x95][1] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][1];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][1];
         gfxCmdBufSourceState.input.consts[0x95][2] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][2];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][2];
         gfxCmdBufSourceState.input.consts[0x95][3] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][3];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][3];
         gfxCmdBufSourceState.input.consts[0x95][0] =
-             (param_1->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][0];
+             (viewInfo->field0_0x0).cullViewInfo.viewParms.projectionMatrix.m[3][0];
         gfxCmdBufSourceState.constVersions[0x95] = gfxCmdBufSourceState.constVersions[0x95] + 1;
         gfxCmdBufSourceState.constVersions[0xb7] = gfxCmdBufSourceState.constVersions[0xb7] + 1;
         gfxCmdBufSourceState.input.consts[0xb8][1] = (*paafVar6)[0][5];
         gfxCmdBufSourceState.input.consts[0xb8][2] = (*paafVar6)[0][6];
         gfxCmdBufSourceState.input.consts[0xb8][3] = (*paafVar6)[0][7];
         gfxCmdBufSourceState.input.consts[0xb8][0] =
-             (param_1->genericFilter).passParam[0][local_8c + iVar11][4];
+             (viewInfo->genericFilter).passParam[0][local_8c + iVar11][4];
         gfxCmdBufSourceState.constVersions[0xb8] = gfxCmdBufSourceState.constVersions[0xb8] + 1;
         gfxCmdBufSourceState.input.consts[0xb9][1] = (*paafVar6)[0][9];
         gfxCmdBufSourceState.input.consts[0xb9][2] = (*paafVar6)[0][10];
@@ -1821,11 +1838,11 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         R_Set2D(unaff_EDI);
         GVar5 = gfxCmdBufState.prim.field0_0x0;
         if (*piVar2 < 1) {
-          if (((param_1->sceneComposition).renderingMode & 7) == 0) {
-            if (param_1->isRenderingFullScreen == 0) {
+          if (((viewInfo->sceneComposition).renderingMode & 7) == 0) {
+            if (viewInfo->isRenderingFullScreen == 0) {
               iVar11 = iVar12;
               RB_SplitScreenFilter
-                        (*(Material **)((int)(&param_1->doubleVision + 2) + iVar1 * 4 + 0x14),
+                        (*(Material **)((int)(&viewInfo->doubleVision + 2) + iVar1 * 4 + 0x14),
                          (GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
               iVar12 = iVar11;
             }
@@ -1842,8 +1859,8 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
           }
         }
         else {
-          fStack_74 = (param_1->genericFilter).passFlareOcclusion[0][iVar12 + local_8c] *
-                      (param_1->genericFilter).passParam[0][local_8c + iVar11][4];
+          fStack_74 = (viewInfo->genericFilter).passFlareOcclusion[0][iVar12 + local_8c] *
+                      (viewInfo->genericFilter).passParam[0][local_8c + iVar11][4];
           iVar11 = iVar12;
           if (!bVar4) {
             uStack_70 = 0;
@@ -1874,7 +1891,7 @@ switchD_0085bc33_caseD_4:
     if ((char)((uint)in_stack_ffffff64 >> 0x18) != '\0') {
       RB_SetBlurConstants(1.0 / (float)gfxRenderTargets[0xd].width,(float)unaff_EDI);
       R_SetRenderTargetSize(unaff_EDI,(uchar)unaff_ESI);
-      R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\r');
+      R_SetRenderTarget();
       iVar11 = iVar12;
       if ((1 < dx.gpuCount) && (gfxRenderTargets[0xd].cleared == false)) {
         (**(code **)((int)*gfxCmdBufState.prim.field0_0x0.device + 0xac))
@@ -1884,8 +1901,8 @@ switchD_0085bc33_caseD_4:
       }
       gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0xc].image;
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-      if (((param_1->sceneComposition).renderingMode & 7) == 0) {
-        if (param_1->isRenderingFullScreen == 0) {
+      if (((viewInfo->sceneComposition).renderingMode & 7) == 0) {
+        if (viewInfo->isRenderingFullScreen == 0) {
           RB_SplitScreenFilter(rgp.bloomBlurX,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
         }
         else {
@@ -1897,7 +1914,7 @@ switchD_0085bc33_caseD_4:
       }
       RB_SetBlurConstants(1.0 / (float)gfxRenderTargets[0xc].height,(float)unaff_EDI);
       R_SetRenderTargetSize(unaff_EDI,(uchar)unaff_ESI);
-      R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\f');
+      R_SetRenderTarget();
       if ((1 < dx.gpuCount) && (gfxRenderTargets[0xc].cleared == false)) {
         (**(code **)((int)*gfxCmdBufState.prim.field0_0x0.device + 0xac))
                   (gfxCmdBufState.prim.field0_0x0.device,0,0,1,0,0,0);
@@ -1905,8 +1922,8 @@ switchD_0085bc33_caseD_4:
       }
       gfxCmdBufSourceState.input.codeImages[0x22] = gfxRenderTargets[0xd].image;
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x22].packed = 0;
-      if (((param_1->sceneComposition).renderingMode & 7) == 0) {
-        if (param_1->isRenderingFullScreen == 0) {
+      if (((viewInfo->sceneComposition).renderingMode & 7) == 0) {
+        if (viewInfo->isRenderingFullScreen == 0) {
           RB_SplitScreenFilter(rgp.bloomBlurY,(GfxViewInfo *)0xffffffff,(ulong)unaff_EDI);
         }
         else {
@@ -1918,7 +1935,7 @@ switchD_0085bc33_caseD_4:
       }
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0xd].packed = 0xc800062;
       R_SetRenderTargetSize(unaff_EDI,(uchar)unaff_ESI);
-      R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,(param_1->sceneComposition).mainScene);
+      R_SetRenderTarget();
       if (gfxCmdBufSourceState._6708_4_ != 2) {
         gfxCmdBufSourceState.eyeOffset[0] = 0.0;
         gfxCmdBufSourceState.eyeOffset[1] = 0.0;
@@ -1957,6 +1974,7 @@ void __cdecl RB_FlameFX(GfxViewInfo *param_1)
   float fVar5;
   float fVar6;
   float fVar7;
+  GfxViewInfo *viewInfo;
   
   gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed = 0;
@@ -2068,6 +2086,7 @@ void __cdecl RB_ElectrifiedFX(GfxViewInfo *param_1)
   float fVar5;
   float fVar6;
   float fVar7;
+  GfxViewInfo *viewInfo;
   
   gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed = 0;
@@ -2177,6 +2196,7 @@ void __cdecl RB_TransportedFX(GfxViewInfo *param_1)
   float fVar5;
   float fVar6;
   float fVar7;
+  GfxViewInfo *viewInfo;
   
   gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed = 0;
@@ -2274,6 +2294,8 @@ LAB_0085d255:
 
 // 0085D290  RB_WaterSheetingFX  (gfx_d3d/rb_postfx.cpp:3658)
 
+/* WARNING: Variable defined which should be unmapped: x_speed */
+
 void __cdecl RB_WaterSheetingFX(GfxViewInfo *param_1)
 
 {
@@ -2282,6 +2304,7 @@ void __cdecl RB_WaterSheetingFX(GfxViewInfo *param_1)
   GfxCmdBufSourceState *unaff_EDI;
   float fVar1;
   float fVar2;
+  float x_speed;
   float fStack_14;
   float fStack_10;
   float fStack_8;
@@ -2434,13 +2457,13 @@ void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
   float10 fVar2;
   GfxViewInfo *unaff_retaddr;
   
-  R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_ESI);
+  R_Resolve();
   gfxCmdBufSourceState.input.codeImages[10] = gfxRenderTargets[6].image;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[10].packed = 0;
   RB_BloomLDR(in_EAX);
   bVar1 = RB_UsingPostEffects(unaff_ESI);
   if (bVar1) {
-    R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_ESI);
+    R_Resolve();
     gfxCmdBufSourceState.input.codeImages[10] = gfxRenderTargets[6].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[10].packed = 0;
     if (((r_flame_allowed->current).enabled == false) ||
@@ -2495,7 +2518,7 @@ void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
       RB_SaveScreen_BlendFlashed((GfxBlendSaveScreenFlashedParam *)in_EAX,unaff_ESI);
       RB_SaveScreen((GfxSaveScreenParam *)unaff_ESI,unaff_retaddr);
     }
-    R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_ESI);
+    R_Resolve();
     gfxCmdBufSourceState.input.codeImages[10] = gfxRenderTargets[6].image;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[10].packed = 0;
   }

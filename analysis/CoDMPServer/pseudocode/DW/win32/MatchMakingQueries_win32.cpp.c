@@ -17,16 +17,16 @@ MatchMaking_PC_QUICKMATCH_Query::MatchMaking_PC_QUICKMATCH_Query
 
 void __thiscall
 MatchMaking_PC_QUICKMATCH_Query::serialize
-          (MatchMaking_PC_QUICKMATCH_Query *this,bdByteBuffer *param_1)
+          (MatchMaking_PC_QUICKMATCH_Query *this,bdByteBuffer *buffer)
 
 {
-  bdProfileInfo::serialize((bdProfileInfo *)this,param_1);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_SERVERTYPE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_NETCODE_VERSION);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_MAXPLAYERS);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_PLAYLIST);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_PLAYLIST_VERSION);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_LICENSE);
+  bdProfileInfo::serialize((bdProfileInfo *)this,buffer);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_SERVERTYPE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_NETCODE_VERSION);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_MAXPLAYERS);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_PLAYLIST);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_PLAYLIST_VERSION);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_LICENSE);
   return;
 }
 
@@ -46,16 +46,16 @@ MatchMaking_PC_WAGER_Query::MatchMaking_PC_WAGER_Query(MatchMaking_PC_WAGER_Quer
 // 005AA330  serialize  (DW/win32/MatchMakingQueries_win32.cpp:76)
 
 void __thiscall
-MatchMaking_PC_WAGER_Query::serialize(MatchMaking_PC_WAGER_Query *this,bdByteBuffer *param_1)
+MatchMaking_PC_WAGER_Query::serialize(MatchMaking_PC_WAGER_Query *this,bdByteBuffer *buffer)
 
 {
-  bdProfileInfo::serialize((bdProfileInfo *)this,param_1);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_SERVERTYPE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_LICENSE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_PLAYLIST_MIN);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_PLAYLIST_MAX);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_NETCODE_VERSION);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARAM_PLAYLIST_VERSION);
+  bdProfileInfo::serialize((bdProfileInfo *)this,buffer);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_SERVERTYPE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_LICENSE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_PLAYLIST_MIN);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_PLAYLIST_MAX);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_NETCODE_VERSION);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARAM_PLAYLIST_VERSION);
   return;
 }
 
@@ -75,17 +75,17 @@ MatchMaking_PC_GEO_Query::MatchMaking_PC_GEO_Query(MatchMaking_PC_GEO_Query *thi
 // 005AA3D0  serialize  (DW/win32/MatchMakingQueries_win32.cpp:91)
 
 void __thiscall
-MatchMaking_PC_GEO_Query::serialize(MatchMaking_PC_GEO_Query *this,bdByteBuffer *param_1)
+MatchMaking_PC_GEO_Query::serialize(MatchMaking_PC_GEO_Query *this,bdByteBuffer *buffer)
 
 {
-  bdProfileInfo::serialize((bdProfileInfo *)this,param_1);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_NETCODE_VERSION);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_GAMETYPE);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_SERVERTYPE);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_DDL_VERSION);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_RANKED);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_LICENSE);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberPARAM_GEO);
+  bdProfileInfo::serialize((bdProfileInfo *)this,buffer);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_NETCODE_VERSION);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_GAMETYPE);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_SERVERTYPE);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_DDL_VERSION);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_RANKED);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_LICENSE);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberPARAM_GEO);
   return;
 }
 

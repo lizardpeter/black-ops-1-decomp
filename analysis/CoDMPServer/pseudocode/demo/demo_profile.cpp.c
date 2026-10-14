@@ -2,12 +2,12 @@
 
 // 009C98D0  Demo_GetAnalyzePrintDataType  (demo/demo_profile.cpp:22)
 
-bool __cdecl Demo_GetAnalyzePrintDataType(int param_1)
+bool __cdecl Demo_GetAnalyzePrintDataType(int fieldBit)
 
 {
-  bool local_5;
+  bool result;
   
-  switch(param_1) {
+  switch(fieldBit) {
   case -0x6b:
   case -0x6a:
   case -0x69:
@@ -39,12 +39,12 @@ bool __cdecl Demo_GetAnalyzePrintDataType(int param_1)
   case -0x3e:
   case -0x3d:
   case 0:
-    local_5 = false;
+    result = false;
     break;
   default:
-    local_5 = true;
+    result = true;
   }
-  return local_5;
+  return result;
 }
 
 
@@ -53,11 +53,11 @@ bool __cdecl Demo_GetAnalyzePrintDataType(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_RecordProfileData(int param_1,int param_2)
+void __cdecl Demo_RecordProfileData(int profileDataType,int size)
 
 {
-  demo.profile.memUsed[param_1] = demo.profile.memUsed[param_1] + param_2;
-  demo.profile.count[param_1] = demo.profile.count[param_1] + 1;
+  demo.profile.memUsed[profileDataType] = demo.profile.memUsed[profileDataType] + size;
+  demo.profile.count[profileDataType] = demo.profile.count[profileDataType] + 1;
   return;
 }
 
@@ -71,16 +71,17 @@ void __cdecl Demo_PrintProfileData(void)
 
 {
   char *pcVar1;
-  int local_c;
+  int i;
+  float convertedSize;
   
   pcVar1 = va("Total Demo Filesize: %d bytes\n");
   Demo_Printf(2,pcVar1);
   pcVar1 = va("--------------------Demo Profile--------------------\n");
   Demo_Printf(2,pcVar1);
-  for (local_c = 0; local_c < 8; local_c = local_c + 1) {
+  for (i = 0; i < 8; i = i + 1) {
     pcVar1 = va("%s : Count: %d Size: ");
     Demo_Printf(2,pcVar1);
-    if (demo.profile.memUsed[local_c] < 0x400) {
+    if (demo.profile.memUsed[i] < 0x400) {
       pcVar1 = va("%d Bytes\n");
       Demo_Printf(2,pcVar1);
     }
@@ -103,88 +104,88 @@ void __cdecl Demo_PrintProfileData(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_DrawDebugInformation(int param_1)
+void __cdecl Demo_DrawDebugInformation(int localClientNum)
 
 {
   bool bVar1;
   char *pcVar2;
-  int iVar3;
-  float fVar4;
-  int iVar5;
-  float local_34;
+  int entityIndex_00;
+  float fVar3;
+  int iVar4;
+  float cameraOrigin;
   float local_30;
   float local_2c;
-  int local_28;
-  float local_24;
-  float local_20;
+  int entityIndex;
+  float demoInfoCullDistance;
+  float origin;
   float local_1c;
   float local_18;
-  cg_s *local_14;
-  centity_s *local_10;
-  int local_c;
-  int local_8;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  int debugInfoDrawTime;
+  int entityCount;
   
-  local_24 = 512.0;
-  local_c = 0x32;
-  local_8 = 0;
-  local_28 = -1;
-  bVar1 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  demoInfoCullDistance = 512.0;
+  debugInfoDrawTime = 0x32;
+  entityCount = 0;
+  entityIndex = -1;
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar1) {
-    local_14 = CG_GetLocalClientGlobals(param_1);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
     bVar1 = Demo_IsMovieCamera();
     if (bVar1) {
-      local_34 = local_14->movieCameraOrigin[0];
-      local_30 = local_14->movieCameraOrigin[1];
-      local_2c = local_14->movieCameraOrigin[2];
+      cameraOrigin = cgameGlob->movieCameraOrigin[0];
+      local_30 = cgameGlob->movieCameraOrigin[1];
+      local_2c = cgameGlob->movieCameraOrigin[2];
     }
     else {
-      local_34 = (local_14->refdef).vieworg[0];
-      local_30 = (local_14->refdef).vieworg[1];
-      local_2c = (local_14->refdef).vieworg[2];
+      cameraOrigin = (cgameGlob->refdef).vieworg[0];
+      local_30 = (cgameGlob->refdef).vieworg[1];
+      local_2c = (cgameGlob->refdef).vieworg[2];
     }
     if ((demo_drawdebuginformation->current).integer == 1) {
-      while (local_8 < demo.prevNumEntities) {
-        iVar3 = local_28 + 1;
-        iVar5 = local_28 + 1;
-        local_28 = iVar3;
-        if (-1 < demo.ent[iVar5].eType) {
-          local_10 = CG_GetEntity(param_1,iVar3);
-          local_20 = (local_10->pose).origin[0];
-          local_1c = (local_10->pose).origin[1];
-          local_18 = (local_10->pose).origin[2];
-          fVar4 = Vec3Distance(&local_34,&local_20);
-          if (fVar4 < local_24) {
-            G_DebugStar(&local_20,colorBlue,local_c);
+      while (entityCount < demo.prevNumEntities) {
+        entityIndex_00 = entityIndex + 1;
+        iVar4 = entityIndex + 1;
+        entityIndex = entityIndex_00;
+        if (-1 < demo.ent[iVar4].eType) {
+          cent = CG_GetEntity(localClientNum,entityIndex_00);
+          origin = (cent->pose).origin[0];
+          local_1c = (cent->pose).origin[1];
+          local_18 = (cent->pose).origin[2];
+          fVar3 = Vec3Distance(&cameraOrigin,&origin);
+          if (fVar3 < demoInfoCullDistance) {
+            G_DebugStar(&origin,colorBlue,debugInfoDrawTime);
             local_18 = local_18 + 10.0;
-            iVar5 = local_c;
+            iVar4 = debugInfoDrawTime;
             pcVar2 = va("Ent Mask: %x %x");
-            CL_AddDebugString(&local_20,colorWhite,0.7,pcVar2,iVar5);
+            CL_AddDebugString(&origin,colorWhite,0.7,pcVar2,iVar4);
             local_18 = local_18 + 10.0;
-            iVar5 = local_c;
+            iVar4 = debugInfoDrawTime;
             pcVar2 = va("Ent Type: %d");
-            CL_AddDebugString(&local_20,colorWhite,0.7,pcVar2,iVar5);
+            CL_AddDebugString(&origin,colorWhite,0.7,pcVar2,iVar4);
             local_18 = local_18 + 10.0;
-            iVar5 = local_c;
+            iVar4 = debugInfoDrawTime;
             pcVar2 = va("Ent Num: %d");
-            CL_AddDebugString(&local_20,colorWhite,0.7,pcVar2,iVar5);
+            CL_AddDebugString(&origin,colorWhite,0.7,pcVar2,iVar4);
           }
-          local_8 = local_8 + 1;
+          entityCount = entityCount + 1;
         }
       }
     }
     else if ((demo_drawdebuginformation->current).integer == 2) {
-      for (local_28 = 0x400; local_28 < 0x600; local_28 = local_28 + 1) {
-        local_10 = CG_GetEntity(param_1,local_28);
-        local_20 = (local_10->pose).origin[0];
-        local_1c = (local_10->pose).origin[1];
-        local_18 = (local_10->pose).origin[2];
-        fVar4 = Vec3Distance(&local_34,&local_20);
-        if (fVar4 < local_24) {
-          G_DebugStar(&local_20,colorBlue,local_c);
+      for (entityIndex = 0x400; entityIndex < 0x600; entityIndex = entityIndex + 1) {
+        cent = CG_GetEntity(localClientNum,entityIndex);
+        origin = (cent->pose).origin[0];
+        local_1c = (cent->pose).origin[1];
+        local_18 = (cent->pose).origin[2];
+        fVar3 = Vec3Distance(&cameraOrigin,&origin);
+        if (fVar3 < demoInfoCullDistance) {
+          G_DebugStar(&origin,colorBlue,debugInfoDrawTime);
           local_18 = local_18 + 10.0;
-          iVar5 = local_c;
+          iVar4 = debugInfoDrawTime;
           pcVar2 = va("Ent Num: %d");
-          CL_AddDebugString(&local_20,colorWhite,0.7,pcVar2,iVar5);
+          CL_AddDebugString(&origin,colorWhite,0.7,pcVar2,iVar4);
         }
       }
     }

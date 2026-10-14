@@ -8,40 +8,37 @@
 void __cdecl RB_TouchAllImages(void)
 
 {
-  bool bVar1;
-  code *pcVar2;
+  code *pcVar1;
   GfxImage *unaff_ESI;
-  uint uVar3;
-  uint uStack_4408;
-  int aiStack_4404 [4352];
-  undefined4 uStack_4;
+  GfxImage *pGVar2;
+  bool wasInScene;
+  ImageList imageList;
   
-  bVar1 = dx.inScene;
-  uStack_4 = 0x84bfba;
+  imageList.count._3_1_ = dx.inScene;
   if (!dx.inScene) {
     (**(code **)((int)*dx.device + 0xa4))(dx.device);
   }
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
   }
-  uStack_4408 = 0;
-  pcVar2 = DB_EnumXAssets_FastFile;
+  imageList.image[0] = (GfxImage *)0x0;
+  pcVar1 = DB_EnumXAssets_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar2 = FUN_00699780;
+    pcVar1 = FUN_00699780;
   }
-  (*pcVar2)(8,R_AddImageToList,&uStack_4408,1);
-  qsort(aiStack_4404,uStack_4408,4,RB_CompareTouchImages);
-  uVar3 = 0;
-  if (uStack_4408 != 0) {
+  (*pcVar1)(8,R_AddImageToList,imageList.image,1);
+  qsort(imageList.image + 1,(uint)imageList.image[0],4,RB_CompareTouchImages);
+  pGVar2 = (GfxImage *)0x0;
+  if (imageList.image[0] != (GfxImage *)0x0) {
     do {
-      if (*(char *)(aiStack_4404[uVar3] + 5) == '\0') break;
+      if (imageList.image[(int)&(pGVar2->texture).basemap + 1]->semantic == '\0') break;
       RB_TouchImage(unaff_ESI);
-      uVar3 = uVar3 + 1;
-    } while (uVar3 < uStack_4408);
+      pGVar2 = (GfxImage *)((int)&pGVar2->texture + 1);
+    } while (pGVar2 < imageList.image[0]);
   }
   gfxCmdBufSourceState.input.codeImages[8] = (GfxImage *)0x0;
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed = 0;
-  if (!bVar1) {
+  if (imageList.count._3_1_ == '\0') {
     (**(code **)((int)*dx.device + 0xa8))(dx.device);
   }
   return;

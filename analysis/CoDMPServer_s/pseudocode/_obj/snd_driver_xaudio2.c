@@ -142,26 +142,26 @@ void __cdecl SD_TruncateAudioDeviceNames(Font_s *param_1,float param_2,int param
   char *pcVar2;
   int iVar3;
   int extraout_EAX;
-  char *pcVar4;
-  float fVar5;
+  char *maxChars;
+  float fVar4;
   
-  pcVar4 = &DAT_0350a170;
+  maxChars = &DAT_0350a170;
   do {
-    pcVar2 = pcVar4;
+    pcVar2 = maxChars;
     do {
       cVar1 = *pcVar2;
       pcVar2 = pcVar2 + 1;
     } while (cVar1 != '\0');
-    for (pcVar2 = pcVar2 + (-1 - (int)(pcVar4 + 1)); -1 < (int)pcVar2; pcVar2 = pcVar2 + -1) {
-      fVar5 = 15.12 / (float)param_1->pixelHeight;
-      iVar3 = R_TextWidth(pcVar4,0,param_1);
-      floorf((float)iVar3 * fVar5 + 0.5);
+    for (pcVar2 = pcVar2 + (-1 - (int)(maxChars + 1)); -1 < (int)pcVar2; pcVar2 = pcVar2 + -1) {
+      fVar4 = 15.12 / (float)param_1->pixelHeight;
+      iVar3 = R_TextWidth(maxChars,0,param_1);
+      floorf((float)iVar3 * fVar4 + 0.5);
       _ftol2_sse();
       if (extraout_EAX < 0x119) break;
-      pcVar4[(int)pcVar2] = '\0';
+      maxChars[(int)pcVar2] = '\0';
     }
-    pcVar4 = pcVar4 + 0x100;
-    if (0x350b16f < (int)pcVar4) {
+    maxChars = maxChars + 0x100;
+    if (0x350b16f < (int)maxChars) {
       return;
     }
   } while( true );

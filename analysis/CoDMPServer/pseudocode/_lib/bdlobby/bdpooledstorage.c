@@ -57,8 +57,8 @@ bdPooledStorage::upload
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_0000000a;
   bdFileID *in_stack_0000001c;
   bdRemoteTask *local_6c;
@@ -78,15 +78,15 @@ bdPooledStorage::upload
                      (ushort)param_3,(void *)0x0,0,(uint)param_5,(bdTag *)param_6,in_stack_0000001c,
                      0,false);
   if (bVar1) {
-    bVar2 = _preUpload(this);
+    other_3 = _preUpload(this);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -99,7 +99,7 @@ bdPooledStorage::upload
       InterlockedIncrement((LONG *)((int)*param_1 + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -128,8 +128,8 @@ bdPooledStorage::download
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   uint in_stack_0000001c;
   bdRemoteTask *local_6c;
   bdReference<bdByteBuffer> local_1c;
@@ -149,15 +149,15 @@ bdPooledStorage::download
   if (bVar1) {
     *(undefined4 *)&this->field_0x20 = param_1._4_4_;
     *(bdDownloadInterceptor **)&this->field_0x24 = param_2;
-    bVar2 = _preDownload(this);
+    other_3 = _preDownload(this);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -170,7 +170,7 @@ bdPooledStorage::download
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -200,8 +200,8 @@ bdPooledStorage::uploadSummaryMetaData
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   bdTag *in_stack_00000024;
   bdRemoteTask *local_6c;
   bdReference<bdByteBuffer> local_1c;
@@ -222,15 +222,15 @@ bdPooledStorage::uploadSummaryMetaData
   if (bVar1) {
     *(undefined4 *)&this->field_0x20 = param_1._4_4_;
     *(void **)&this->field_0x24 = param_2;
-    bVar2 = _preUploadSummary(this);
+    other_3 = _preUploadSummary(this);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -243,7 +243,7 @@ bdPooledStorage::uploadSummaryMetaData
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -273,8 +273,8 @@ bdPooledStorage::downloadSummary
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   uint in_stack_0000001c;
   bdRemoteTask *local_6c;
   bdReference<bdByteBuffer> local_1c;
@@ -296,15 +296,15 @@ bdPooledStorage::downloadSummary
   if (bVar1) {
     *(undefined4 *)&this->field_0x20 = param_1._4_4_;
     *(void **)&this->field_0x24 = param_2;
-    bVar2 = _preDownloadSummary(this);
+    other_3 = _preDownloadSummary(this);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -317,7 +317,7 @@ bdPooledStorage::downloadSummary
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }

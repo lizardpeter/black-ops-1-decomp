@@ -4,19 +4,20 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_LoadSun(char *param_1,sunflare_t *param_2)
+void __cdecl R_LoadSun(char *name,sunflare_t *sun)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 *extraout_EAX;
-  char *local_58;
-  uchar local_54 [68];
+  char *nameIter;
+  uchar sunFile [68];
   uint local_10;
-  char *local_c;
+  char *firstCharToCopy;
+  char *firstPeriod;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sky_load_obj.cpp",0x12,0
                              ,"%s");
     if (!bVar2) {
@@ -25,7 +26,7 @@ void __cdecl R_LoadSun(char *param_1,sunflare_t *param_2)
       return;
     }
   }
-  if (param_2 == (sunflare_t *)0x0) {
+  if (sun == (sunflare_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sky_load_obj.cpp",0x13,0
                              ,"%s");
     if (!bVar2) {
@@ -34,20 +35,20 @@ void __cdecl R_LoadSun(char *param_1,sunflare_t *param_2)
       return;
     }
   }
-  Com_Memset(param_2,0,0x60);
-  local_c = param_1;
-  for (local_58 = param_1; *local_58 != '\0'; local_58 = local_58 + 1) {
-    if ((*local_58 == '/') || (*local_58 == '\\')) {
-      local_c = local_58 + 1;
+  Com_Memset(sun,0,0x60);
+  firstCharToCopy = name;
+  for (nameIter = name; *nameIter != '\0'; nameIter = nameIter + 1) {
+    if ((*nameIter == '/') || (*nameIter == '\\')) {
+      firstCharToCopy = nameIter + 1;
     }
   }
-  I_strncpyz((char *)local_54,local_c,0x40);
-  strchr(local_54,'.');
+  I_strncpyz((char *)sunFile,firstCharToCopy,0x40);
+  strchr(sunFile,'.');
   if (extraout_EAX != (undefined1 *)0x0) {
     *extraout_EAX = 0;
   }
-  if (local_54[0] != '\0') {
-    R_LoadSunThroughDvars((char *)local_54,param_2);
+  if (sunFile[0] != '\0') {
+    R_LoadSunThroughDvars((char *)sunFile,sun);
   }
   return;
 }

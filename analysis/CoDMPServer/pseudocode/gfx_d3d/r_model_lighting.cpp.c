@@ -12,14 +12,14 @@ void __cdecl _dynamic_initializer_for__TRACKINST_smodelLightGlob__(void)
 
 // 00AF51B0  R_ModelLightingIndexFromHandle  (gfx_d3d/r_model_lighting.cpp:161)
 
-uint __cdecl R_ModelLightingIndexFromHandle(ushort param_1)
+uint __cdecl R_ModelLightingIndexFromHandle(ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_1 == 0) || (modelLightGlob.totalEntryLimit < param_1)) {
+  if ((handle == 0) || (modelLightGlob.totalEntryLimit < handle)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",0xa4
                              ,0,
                              "handle not in [1, modelLightGlob.totalEntryLimit]\n\t%i not in [%i, %i]"
@@ -30,40 +30,48 @@ uint __cdecl R_ModelLightingIndexFromHandle(ushort param_1)
       return uVar3;
     }
   }
-  return param_1 - 1;
+  return handle - 1;
 }
 
 
 // 00AF50F0  R_SetModelLightingCoords  (gfx_d3d/r_model_lighting.cpp:194)
 
-void __cdecl R_SetModelLightingCoords(ushort param_1,float *param_2)
+void __cdecl R_SetModelLightingCoords(ushort handle,float *out)
 
 {
   float fVar1;
   uint uVar2;
+  uint entryIndex;
+  float yCoord;
+  uint xPixel;
+  float zCoord;
+  uint yPixel;
+  float xCoord;
   
-  uVar2 = R_ModelLightingIndexFromHandle(param_1);
+  uVar2 = R_ModelLightingIndexFromHandle(handle);
   fVar1 = ((float)(uVar2 >> 4 & 0xfffffffc) + 2.0) * modelLightGlob.invImageHeight;
-  *param_2 = ((float)((uVar2 & 0x3f) << 2) + 2.0) * 0.00390625;
-  param_2[1] = fVar1;
-  param_2[2] = 0.5;
-  param_2[3] = 1.0;
+  *out = ((float)((uVar2 & 0x3f) << 2) + 2.0) * 0.00390625;
+  out[1] = fVar1;
+  out[2] = 0.5;
+  out[3] = 1.0;
   return;
 }
 
 
 // 00AF5200  R_AllocStaticModelLighting  (gfx_d3d/r_model_lighting.cpp:222)
 
-bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint param_2)
+bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *smodelDrawInst,uint smodelIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   ushort uVar4;
-  uint uVar5;
-  ushort local_14;
-  uint local_c;
+  uint smodelIndex_00;
+  ushort handle;
+  uint smodelIndexPrev;
+  uint entryIndex;
+  GfxStaticModelDrawInst *smodelDrawInstPrev;
   
   if ((rgp.world == (GfxWorld *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
@@ -72,10 +80,10 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1->lightingHandle == 0) {
+  if (smodelDrawInst->lightingHandle == 0) {
     if (smodelLightGlob.local.assignedCount < smodelLightGlob.local.entryLimit) {
-      local_c = smodelLightGlob.local.assignedCount;
-      local_14 = (short)smodelLightGlob.local.assignedCount + 1;
+      entryIndex = smodelLightGlob.local.assignedCount;
+      handle = (short)smodelLightGlob.local.assignedCount + 1;
       smodelLightGlob.local.assignedCount = smodelLightGlob.local.assignedCount + 1;
     }
     else {
@@ -83,25 +91,26 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
         if (smodelLightGlob.local.freeableCount == 0) {
           return false;
         }
-        local_14 = smodelLightGlob.freeableHandles[smodelLightGlob.local.freeableCount - 1];
+        handle = smodelLightGlob.freeableHandles[smodelLightGlob.local.freeableCount - 1];
         smodelLightGlob.local.freeableCount = smodelLightGlob.local.freeableCount - 1;
-        local_c = R_ModelLightingIndexFromHandle(local_14);
-      } while (smodelLightGlob.local.frameCount == smodelLightGlob.local.usedFrameCount[local_c]);
-      uVar5 = (uint)smodelLightGlob.local.smodelIndex[local_c];
-      ((rgp.world)->dpvs).smodelDrawInsts[uVar5].lightingHandle = 0;
-      R_UncacheStaticModel(uVar5);
+        entryIndex = R_ModelLightingIndexFromHandle(handle);
+      } while (smodelLightGlob.local.frameCount == smodelLightGlob.local.usedFrameCount[entryIndex])
+      ;
+      smodelIndex_00 = (uint)smodelLightGlob.local.smodelIndex[entryIndex];
+      ((rgp.world)->dpvs).smodelDrawInsts[smodelIndex_00].lightingHandle = 0;
+      R_UncacheStaticModel(smodelIndex_00);
     }
-    if ((local_14 == 0) &&
+    if ((handle == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                  0x11f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    param_1->lightingHandle = local_14;
-    uVar4 = truncate_cast<unsigned_short>(param_2);
-    smodelLightGlob.local.smodelIndex[local_c] = uVar4;
-    if ((0x7ff < param_2 >> 5) &&
+    smodelDrawInst->lightingHandle = handle;
+    uVar4 = truncate_cast<unsigned_short>(smodelIndex);
+    smodelLightGlob.local.smodelIndex[entryIndex] = uVar4;
+    if ((0x7ff < smodelIndex >> 5) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                  0x128,0,
                                  "smodelIndex >> 5 doesn\'t index ARRAY_COUNT( smodelLightGlob.lightingBits )\n\t%i not in [0, %i)"
@@ -110,14 +119,14 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    smodelLightGlob.lightingBits[param_2 >> 5] =
-         0x80000000U >> ((byte)param_2 & 0x1f) | smodelLightGlob.lightingBits[param_2 >> 5];
+    smodelLightGlob.lightingBits[smodelIndex >> 5] =
+         0x80000000U >> ((byte)smodelIndex & 0x1f) | smodelLightGlob.lightingBits[smodelIndex >> 5];
     smodelLightGlob.local.anyNewLighting = 1;
   }
   else {
-    local_c = R_ModelLightingIndexFromHandle(param_1->lightingHandle);
+    entryIndex = R_ModelLightingIndexFromHandle(smodelDrawInst->lightingHandle);
     if ((r_cacheSModelLighting->current).enabled == false) {
-      if ((0x7ff < param_2 >> 5) &&
+      if ((0x7ff < smodelIndex >> 5) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp"
                                    ,0xf5,0,
                                    "smodelIndex >> 5 doesn\'t index ARRAY_COUNT( smodelLightGlob.lightingBits )\n\t%i not in [0, %i)"
@@ -126,12 +135,13 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      smodelLightGlob.lightingBits[param_2 >> 5] =
-           0x80000000U >> ((byte)param_2 & 0x1f) | smodelLightGlob.lightingBits[param_2 >> 5];
+      smodelLightGlob.lightingBits[smodelIndex >> 5] =
+           0x80000000U >> ((byte)smodelIndex & 0x1f) |
+           smodelLightGlob.lightingBits[smodelIndex >> 5];
       smodelLightGlob.local.anyNewLighting = 1;
     }
   }
-  smodelLightGlob.local.usedFrameCount[local_c] = smodelLightGlob.local.frameCount;
+  smodelLightGlob.local.usedFrameCount[entryIndex] = smodelLightGlob.local.frameCount;
   return true;
 }
 
@@ -142,8 +152,9 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
 
 uint __cdecl
 R_AllocModelLighting
-          (float *param_1,float param_2,bool param_3,ushort *param_4,
-          _func___cdecl_uint_void_ptr *param_5,void *param_6,GfxLightingInfo *param_7)
+          (float *lightingOrigin,float lightingOriginToleranceSq,bool useHeroLighting,
+          ushort *cachedLightingHandle,_func___cdecl_uint_void_ptr *GetPrimaryLightCallback,
+          void *userData,GfxLightingInfo *lightingInfoOut)
 
 {
   GfxLightingInfo *pGVar1;
@@ -153,20 +164,23 @@ R_AllocModelLighting
   GfxLightingInfo *pGVar5;
   bool bVar6;
   uint uVar7;
-  float (*pafVar8) [3];
-  float fVar9;
-  float local_60;
+  uint uVar8;
+  float (*pafVar9) [3];
+  float fVar10;
+  float distMovedSq;
+  int lightingOriginIsStationary;
+  float boxMaxs;
   float local_5c;
   float local_58;
-  float local_54;
+  float boxMins;
   float local_50;
   float local_4c;
-  uint local_48;
-  uint local_44;
-  uint local_40;
-  uint local_3c;
-  ushort local_38;
-  int local_34;
+  uint pixelFreeRover;
+  uint entryIndex;
+  uint usedCount;
+  uint usedIndex;
+  ushort lightingHandle;
+  uint cmd;
   float local_30;
   float local_2c;
   float local_28;
@@ -176,36 +190,36 @@ R_AllocModelLighting
   GfxLightingInfo *local_18;
   GfxLightingInfo *local_14;
   uchar *local_10;
-  uint local_8;
+  uint nonSunPrimaryLightIndex;
   
   if ((r_showLightingOrigins->current).enabled != false) {
-    local_54 = *param_1 + -1.0;
-    local_50 = param_1[1] + -1.0;
-    local_4c = param_1[2] + -1.0;
-    local_60 = *param_1 + 1.0;
-    local_5c = param_1[1] + 1.0;
-    local_58 = param_1[2] + 1.0;
-    R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_54,&local_60,colorGreen);
+    boxMins = *lightingOrigin + -1.0;
+    local_50 = lightingOrigin[1] + -1.0;
+    local_4c = lightingOrigin[2] + -1.0;
+    boxMaxs = *lightingOrigin + 1.0;
+    local_5c = lightingOrigin[1] + 1.0;
+    local_58 = lightingOrigin[2] + 1.0;
+    R_AddDebugBox(&frontEndDataOut->debugGlobals,&boxMins,&boxMaxs,colorGreen);
   }
-  if ((param_4 == (ushort *)0x0) &&
+  if ((cachedLightingHandle == (ushort *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                0x153,0,"%s"), !bVar6)) {
     pcVar2 = (code *)swi(3);
     uVar7 = (*pcVar2)();
     return uVar7;
   }
-  local_38 = *param_4;
-  if ((local_38 != 0) && ((r_cacheModelLighting->current).enabled != false)) {
-    local_44 = R_ModelLightingIndexFromHandle(local_38);
-    local_3c = local_44 - modelLightGlob.xmodel.baseIndex;
-    if (0.0 < param_2) {
-      fVar9 = Vec3DistanceSq(param_1,modelLightGlob.lightingOrigins[local_3c]);
-      bVar6 = fVar9 < param_2;
+  lightingHandle = *cachedLightingHandle;
+  if ((lightingHandle != 0) && ((r_cacheModelLighting->current).enabled != false)) {
+    entryIndex = R_ModelLightingIndexFromHandle(lightingHandle);
+    usedIndex = entryIndex - modelLightGlob.xmodel.baseIndex;
+    if (0.0 < lightingOriginToleranceSq) {
+      fVar10 = Vec3DistanceSq(lightingOrigin,modelLightGlob.lightingOrigins[usedIndex]);
+      bVar6 = fVar10 < lightingOriginToleranceSq;
     }
     else {
-      pafVar8 = modelLightGlob.lightingOrigins + local_3c;
-      if (((*param_1 == (*pafVar8)[0]) && (param_1[1] == (*pafVar8)[1])) &&
-         (param_1[2] == (*pafVar8)[2])) {
+      pafVar9 = modelLightGlob.lightingOrigins + usedIndex;
+      if (((*lightingOrigin == (*pafVar9)[0]) && (lightingOrigin[1] == (*pafVar9)[1])) &&
+         (lightingOrigin[2] == (*pafVar9)[2])) {
         bVar6 = true;
       }
       else {
@@ -213,14 +227,14 @@ R_AllocModelLighting
       }
     }
     if (bVar6) {
-      modelLightGlob.currPixelFreeBits[local_3c >> 5] =
-           ~(0x80000000U >> ((byte)local_3c & 0x1f)) &
-           modelLightGlob.currPixelFreeBits[local_3c >> 5];
-      if (modelLightGlob.lightingInfo[local_3c].primaryLightIndex == 0xff) {
+      modelLightGlob.currPixelFreeBits[usedIndex >> 5] =
+           ~(0x80000000U >> ((byte)usedIndex & 0x1f)) &
+           modelLightGlob.currPixelFreeBits[usedIndex >> 5];
+      if (modelLightGlob.lightingInfo[usedIndex].primaryLightIndex == 0xff) {
         Sys_WaitWorkerCmdInternal(&r_model_lightingWorkerCmd);
       }
       if (((rgp.world)->primaryLightCount <=
-           (uint)modelLightGlob.lightingInfo[local_3c].primaryLightIndex) &&
+           (uint)modelLightGlob.lightingInfo[usedIndex].primaryLightIndex) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp"
                                    ,0x173,0,
                                    "modelLightGlob.lightingInfo[usedIndex].primaryLightIndex doesn\'t index rgp.world->primaryLightCount\n\t%i not in [0, %i)"
@@ -229,38 +243,39 @@ R_AllocModelLighting
         uVar7 = (*pcVar2)();
         return uVar7;
       }
-      pGVar1 = modelLightGlob.lightingInfo + local_3c;
+      pGVar1 = modelLightGlob.lightingInfo + usedIndex;
       uVar3 = pGVar1->reflectionProbeIndex;
       uVar4 = *(undefined2 *)&pGVar1->field_0x2;
-      uVar7 = modelLightGlob.lightingInfo[local_3c].lightingHandle;
-      param_7->primaryLightIndex = pGVar1->primaryLightIndex;
-      param_7->reflectionProbeIndex = uVar3;
-      *(undefined2 *)&param_7->field_0x2 = uVar4;
-      param_7->lightingHandle = uVar7;
-      return (uint)local_38;
+      uVar7 = modelLightGlob.lightingInfo[usedIndex].lightingHandle;
+      lightingInfoOut->primaryLightIndex = pGVar1->primaryLightIndex;
+      lightingInfoOut->reflectionProbeIndex = uVar3;
+      *(undefined2 *)&lightingInfoOut->field_0x2 = uVar4;
+      lightingInfoOut->lightingHandle = uVar7;
+      return (uint)lightingHandle;
     }
   }
   if (modelLightGlob.allocModelFail == 0) {
-    local_48 = modelLightGlob.pixelFreeRover;
+    pixelFreeRover = modelLightGlob.pixelFreeRover;
     do {
-      uVar7 = modelLightGlob.currPixelFreeBits[local_48] &
-              modelLightGlob.prevPixelFreeBits[local_48] &
-              modelLightGlob.prevPrevPixelFreeBits[local_48];
-      local_40 = 0x1f;
-      if (uVar7 != 0) {
-        for (; uVar7 >> local_40 == 0; local_40 = local_40 - 1) {
+      uVar8 = modelLightGlob.currPixelFreeBits[pixelFreeRover] &
+              modelLightGlob.prevPixelFreeBits[pixelFreeRover] &
+              modelLightGlob.prevPrevPixelFreeBits[pixelFreeRover];
+      uVar7 = 0x1f;
+      if (uVar8 != 0) {
+        for (; uVar8 >> uVar7 == 0; uVar7 = uVar7 - 1) {
         }
       }
-      if (uVar7 == 0) {
-        local_40 = 0x3f;
+      if (uVar8 == 0) {
+        uVar7 = 0x3f;
       }
-      local_40 = local_40 ^ 0x1f;
-      if (local_40 < 0x20) {
-        modelLightGlob.pixelFreeRover = local_48;
-        modelLightGlob.currPixelFreeBits[local_48] =
-             ~(0x80000000U >> ((byte)local_40 & 0x1f)) & modelLightGlob.currPixelFreeBits[local_48];
-        local_3c = local_48 * 0x20 + local_40;
-        if ((modelLightGlob.xmodelEntryLimit <= local_3c) &&
+      usedCount = uVar7 ^ 0x1f;
+      if (usedCount < 0x20) {
+        modelLightGlob.pixelFreeRover = pixelFreeRover;
+        modelLightGlob.currPixelFreeBits[pixelFreeRover] =
+             ~(0x80000000U >> ((byte)usedCount & 0x1f)) &
+             modelLightGlob.currPixelFreeBits[pixelFreeRover];
+        usedIndex = pixelFreeRover * 0x20 + usedCount;
+        if ((modelLightGlob.xmodelEntryLimit <= usedIndex) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp"
                                      ,0x191,0,
                                      "usedIndex doesn\'t index modelLightGlob.xmodelEntryLimit\n\t%i not in [0, %i)"
@@ -269,42 +284,42 @@ R_AllocModelLighting
           uVar7 = (*pcVar2)();
           return uVar7;
         }
-        local_44 = modelLightGlob.xmodel.baseIndex + local_3c;
-        local_38 = (short)local_44 + 1;
-        pafVar8 = modelLightGlob.lightingOrigins + local_3c;
-        (*pafVar8)[0] = *param_1;
-        (*pafVar8)[1] = param_1[1];
-        (*pafVar8)[2] = param_1[2];
-        *param_4 = local_38;
-        uVar7 = R_CalcReflectionProbeIndex(param_1);
-        param_7->reflectionProbeIndex = (uchar)uVar7;
-        local_24 = (*param_5)(param_6);
-        param_7->lightingHandle = (uint)local_38;
+        entryIndex = modelLightGlob.xmodel.baseIndex + usedIndex;
+        lightingHandle = (short)entryIndex + 1;
+        pafVar9 = modelLightGlob.lightingOrigins + usedIndex;
+        (*pafVar9)[0] = *lightingOrigin;
+        (*pafVar9)[1] = lightingOrigin[1];
+        (*pafVar9)[2] = lightingOrigin[2];
+        *cachedLightingHandle = lightingHandle;
+        uVar7 = R_CalcReflectionProbeIndex(lightingOrigin);
+        lightingInfoOut->reflectionProbeIndex = (uchar)uVar7;
+        local_24 = (*GetPrimaryLightCallback)(userData);
+        lightingInfoOut->lightingHandle = (uint)lightingHandle;
         pGVar5 = modelLightGlob.lightingInfo;
-        uVar3 = param_7->reflectionProbeIndex;
-        uVar4 = *(undefined2 *)&param_7->field_0x2;
-        uVar7 = param_7->lightingHandle;
-        pGVar1 = modelLightGlob.lightingInfo + local_3c;
-        pGVar1->primaryLightIndex = param_7->primaryLightIndex;
+        uVar3 = lightingInfoOut->reflectionProbeIndex;
+        uVar4 = *(undefined2 *)&lightingInfoOut->field_0x2;
+        uVar7 = lightingInfoOut->lightingHandle;
+        pGVar1 = modelLightGlob.lightingInfo + usedIndex;
+        pGVar1->primaryLightIndex = lightingInfoOut->primaryLightIndex;
         pGVar1->reflectionProbeIndex = uVar3;
         *(undefined2 *)&pGVar1->field_0x2 = uVar4;
-        pGVar5[local_3c].lightingHandle = uVar7;
-        modelLightGlob.lightingInfo[local_3c].primaryLightIndex = 0xff;
-        local_34 = local_44;
-        local_30 = *param_1;
-        local_2c = param_1[1];
-        local_28 = param_1[2];
+        pGVar5[usedIndex].lightingHandle = uVar7;
+        modelLightGlob.lightingInfo[usedIndex].primaryLightIndex = 0xff;
+        cmd = entryIndex;
+        local_30 = *lightingOrigin;
+        local_2c = lightingOrigin[1];
+        local_28 = lightingOrigin[2];
         local_20 = 1;
-        local_1c = param_3;
-        local_18 = param_7;
-        local_14 = modelLightGlob.lightingInfo + local_3c;
+        local_1c = useHeroLighting;
+        local_18 = lightingInfoOut;
+        local_14 = modelLightGlob.lightingInfo + usedIndex;
         local_10 = (modelLightGlob.image)->pixels;
-        local_8 = local_24;
-        Sys_AddWorkerCmdInternal(&r_model_lightingWorkerCmd,&local_34,(WorkerCmdConditional *)0x0);
-        return (uint)local_38;
+        nonSunPrimaryLightIndex = local_24;
+        Sys_AddWorkerCmdInternal(&r_model_lightingWorkerCmd,&cmd,(WorkerCmdConditional *)0x0);
+        return (uint)lightingHandle;
       }
-      local_48 = (local_48 + 1) % modelLightGlob.pixelFreeBitsWordCount;
-    } while (local_48 != modelLightGlob.pixelFreeRover);
+      pixelFreeRover = (pixelFreeRover + 1) % modelLightGlob.pixelFreeBitsWordCount;
+    } while (pixelFreeRover != modelLightGlob.pixelFreeRover);
     modelLightGlob.allocModelFail = 1;
     R_WarnOncePerFrame(R_WARN_MODEL_LIGHT_CACHE);
   }
@@ -314,47 +329,51 @@ R_AllocModelLighting
 
 // 00AF5970  R_DynEntPrimaryLightCallback  (gfx_d3d/r_model_lighting.cpp:457)
 
-uint __cdecl R_DynEntPrimaryLightCallback(void *param_1)
+uint __cdecl R_DynEntPrimaryLightCallback(void *userData)
 
 {
-  return (uint)(rgp.world)->nonSunPrimaryLightForModelDynEnt[*(int *)param_1];
+  return (uint)(rgp.world)->nonSunPrimaryLightForModelDynEnt[*(int *)userData];
 }
 
 
 // 00AF5AB0  R_GetPrimaryLightForBoxCallback  (gfx_d3d/r_model_lighting.cpp:464)
 
-uint __cdecl R_GetPrimaryLightForBoxCallback(void *param_1)
+uint __cdecl R_GetPrimaryLightForBoxCallback(void *userData)
 
 {
   uint uVar1;
+  GfxFindLightForBox *boxWork;
   
   uVar1 = R_GetNonSunPrimaryLightForBox
-                    (*(GfxViewInfo **)param_1,(float *)((int)param_1 + 4),
-                     (float *)((int)param_1 + 0x10));
+                    (*(GfxViewInfo **)userData,(float *)((int)userData + 4),
+                     (float *)((int)userData + 0x10));
   return uVar1;
 }
 
 
 // 00AF5B50  R_GetPrimaryLightForSphereCallback  (gfx_d3d/r_model_lighting.cpp:472)
 
-uint __cdecl R_GetPrimaryLightForSphereCallback(void *param_1)
+uint __cdecl R_GetPrimaryLightForSphereCallback(void *userData)
 
 {
   uint uVar1;
+  GfxFindLightForSphere *sphereWork;
   
   uVar1 = R_GetNonSunPrimaryLightForSphere
-                    (*(GfxViewInfo **)param_1,(float *)((int)param_1 + 4),
-                     *(float *)((int)param_1 + 0x10));
+                    (*(GfxViewInfo **)userData,(float *)((int)userData + 4),
+                     *(float *)((int)userData + 0x10));
   return uVar1;
 }
 
 
 // 00AF59C0  R_PassbackPrimaryLightCallback  (gfx_d3d/r_model_lighting.cpp:480)
 
-uint __cdecl R_PassbackPrimaryLightCallback(void *param_1)
+uint __cdecl R_PassbackPrimaryLightCallback(void *userData)
 
 {
-  return *(uint *)param_1;
+  uint *res;
+  
+  return *(uint *)userData;
 }
 
 
@@ -362,13 +381,15 @@ uint __cdecl R_PassbackPrimaryLightCallback(void *param_1)
 
 uint __cdecl
 R_AllocModelLighting_DynEnts
-          (float *param_1,uint param_2,bool param_3,ushort *param_4,GfxLightingInfo *param_5)
+          (float *lightingOrigin,uint dynEntId,bool useHeroLighting,ushort *cachedLightingHandle,
+          GfxLightingInfo *lightingInfoOut)
 
 {
   uint uVar1;
   
   uVar1 = R_AllocModelLighting
-                    (param_1,0.0,param_3,param_4,R_DynEntPrimaryLightCallback,&param_2,param_5);
+                    (lightingOrigin,0.0,useHeroLighting,cachedLightingHandle,
+                     R_DynEntPrimaryLightCallback,&dynEntId,lightingInfoOut);
   return uVar1;
 }
 
@@ -377,13 +398,15 @@ R_AllocModelLighting_DynEnts
 
 uint __cdecl
 R_AllocModelLighting_PrimaryLight
-          (float *param_1,uint param_2,bool param_3,ushort *param_4,GfxLightingInfo *param_5)
+          (float *lightingOrigin,uint primaryLightIndex,bool useHeroLighting,
+          ushort *cachedLightingHandle,GfxLightingInfo *lightingInfoOut)
 
 {
   uint uVar1;
   
   uVar1 = R_AllocModelLighting
-                    (param_1,0.0,param_3,param_4,R_PassbackPrimaryLightCallback,&param_2,param_5);
+                    (lightingOrigin,0.0,useHeroLighting,cachedLightingHandle,
+                     R_PassbackPrimaryLightCallback,&primaryLightIndex,lightingInfoOut);
   return uVar1;
 }
 
@@ -392,12 +415,13 @@ R_AllocModelLighting_PrimaryLight
 
 uint __cdecl
 R_AllocModelLighting_Box
-          (GfxViewInfo *param_1,float *param_2,float param_3,float *param_4,float *param_5,
-          bool param_6,ushort *param_7,GfxLightingInfo *param_8)
+          (GfxViewInfo *viewInfo,float *lightingOrigin,float originToleranceSq,float *boxMins,
+          float *boxMaxs,bool useHeroLighting,ushort *cachedLightingHandle,
+          GfxLightingInfo *lightingInfoOut)
 
 {
   uint uVar1;
-  GfxViewInfo *local_20;
+  GfxViewInfo *boxWork;
   float local_1c;
   float local_18;
   float local_14;
@@ -405,16 +429,16 @@ R_AllocModelLighting_Box
   float local_c;
   float local_8;
   
-  local_20 = param_1;
-  local_1c = (*param_4 + *param_5) * 0.5;
-  local_18 = (param_4[1] + param_5[1]) * 0.5;
-  local_14 = (param_4[2] + param_5[2]) * 0.5;
-  local_10 = local_1c - *param_4;
-  local_c = local_18 - param_4[1];
-  local_8 = local_14 - param_4[2];
+  boxWork = viewInfo;
+  local_1c = (*boxMins + *boxMaxs) * 0.5;
+  local_18 = (boxMins[1] + boxMaxs[1]) * 0.5;
+  local_14 = (boxMins[2] + boxMaxs[2]) * 0.5;
+  local_10 = local_1c - *boxMins;
+  local_c = local_18 - boxMins[1];
+  local_8 = local_14 - boxMins[2];
   uVar1 = R_AllocModelLighting
-                    (param_2,param_3,param_6,param_7,R_GetPrimaryLightForBoxCallback,&local_20,
-                     param_8);
+                    (lightingOrigin,originToleranceSq,useHeroLighting,cachedLightingHandle,
+                     R_GetPrimaryLightForBoxCallback,&boxWork,lightingInfoOut);
   return uVar1;
 }
 
@@ -423,25 +447,26 @@ R_AllocModelLighting_Box
 
 uint __cdecl
 R_AllocModelLighting_Sphere
-          (GfxViewInfo *param_1,float *param_2,float param_3,float *param_4,float param_5,
-          bool param_6,ushort *param_7,GfxLightingInfo *param_8)
+          (GfxViewInfo *viewInfo,float *lightingOrigin,float originToleranceSq,float *origin,
+          float radius,bool useHeroLighting,ushort *cachedLightingHandle,
+          GfxLightingInfo *lightingInfoOut)
 
 {
   uint uVar1;
-  GfxViewInfo *local_18;
+  GfxViewInfo *sphereWork;
   float local_14;
   float local_10;
   float local_c;
   float local_8;
   
-  local_18 = param_1;
-  local_14 = *param_4;
-  local_10 = param_4[1];
-  local_c = param_4[2];
-  local_8 = param_5;
+  sphereWork = viewInfo;
+  local_14 = *origin;
+  local_10 = origin[1];
+  local_c = origin[2];
+  local_8 = radius;
   uVar1 = R_AllocModelLighting
-                    (param_2,param_3,param_6,param_7,R_GetPrimaryLightForSphereCallback,&local_18,
-                     param_8);
+                    (lightingOrigin,originToleranceSq,useHeroLighting,cachedLightingHandle,
+                     R_GetPrimaryLightForSphereCallback,&sphereWork,lightingInfoOut);
   return uVar1;
 }
 
@@ -451,7 +476,7 @@ R_AllocModelLighting_Sphere
 void __cdecl R_ToggleModelLightingFrame(void)
 
 {
-  uint local_8;
+  uint entryIndex;
   
   smodelLightGlob.local.frameCount = smodelLightGlob.local.frameCount + 1;
   modelLightGlob.modFrameCount = (modelLightGlob.modFrameCount + 1) % 4;
@@ -463,9 +488,10 @@ void __cdecl R_ToggleModelLightingFrame(void)
   modelLightGlob.currPixelFreeBits = modelLightGlob.pixelFreeBits[modelLightGlob.modFrameCount % 4];
   Com_Memset(modelLightGlob.currPixelFreeBits,0xff,modelLightGlob.pixelFreeBitsSize);
   smodelLightGlob.local.freeableCount = 0;
-  for (local_8 = 0; local_8 < smodelLightGlob.local.assignedCount; local_8 = local_8 + 1) {
-    if (3 < smodelLightGlob.local.frameCount - smodelLightGlob.local.usedFrameCount[local_8]) {
-      smodelLightGlob.freeableHandles[smodelLightGlob.local.freeableCount] = (short)local_8 + 1;
+  for (entryIndex = 0; entryIndex < smodelLightGlob.local.assignedCount; entryIndex = entryIndex + 1
+      ) {
+    if (3 < smodelLightGlob.local.frameCount - smodelLightGlob.local.usedFrameCount[entryIndex]) {
+      smodelLightGlob.freeableHandles[smodelLightGlob.local.freeableCount] = (short)entryIndex + 1;
       smodelLightGlob.local.freeableCount = smodelLightGlob.local.freeableCount + 1;
     }
   }
@@ -475,12 +501,12 @@ void __cdecl R_ToggleModelLightingFrame(void)
 
 // 00AF5C90  R_CalcModelLightingCmd  (gfx_d3d/r_model_lighting.cpp:768)
 
-void __cdecl R_CalcModelLightingCmd(CalcLightingCmd *param_1)
+void __cdecl R_CalcModelLightingCmd(CalcLightingCmd *data)
 
 {
-  R_CalcModelLighting(param_1->entryIndex,param_1->lightingOrigin,param_1->nonSunPrimaryLightIndex,
-                      param_1->extrapolateBehavior,param_1->useHeroLighting,
-                      param_1->primaryLightIndex1,param_1->primaryLightIndex2);
+  R_CalcModelLighting(data->entryIndex,data->lightingOrigin,data->nonSunPrimaryLightIndex,
+                      data->extrapolateBehavior,data->useHeroLighting,data->primaryLightIndex1,
+                      data->primaryLightIndex2);
   return;
 }
 
@@ -488,19 +514,23 @@ void __cdecl R_CalcModelLightingCmd(CalcLightingCmd *param_1)
 // 00AF5CD0  R_CalcModelLighting  (gfx_d3d/r_model_lighting.cpp:780)
 
 void __cdecl
-R_CalcModelLighting(uint param_1,float *param_2,uint param_3,GfxModelLightExtrapolation param_4,
-                   bool param_5,uchar *param_6,uchar *param_7)
+R_CalcModelLighting(uint entryIndex,float *lightingOrigin,uint nonSunPrimaryLightIndex,
+                   GfxModelLightExtrapolation extrapolateBehavior,bool useHeroLighting,
+                   uchar *primaryLightIndex1,uchar *primaryLightIndex2)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  uint uVar4;
-  DWORD DVar5;
+  ushort dest_00;
+  uint uVar3;
+  DWORD DVar4;
+  GfxLightGrid *lightGrid;
+  ushort dest;
+  uchar lightingAtPoint;
   
   PIXBeginNamedEvent(-1,"model lighting");
-  uVar3 = truncate_cast<unsigned_short>(param_1);
-  if (((rgp.world)->primaryLightCount <= param_3) &&
+  dest_00 = truncate_cast<unsigned_short>(entryIndex);
+  if (((rgp.world)->primaryLightCount <= nonSunPrimaryLightIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                0x328,0,
                                "nonSunPrimaryLightIndex doesn\'t index rgp.world->primaryLightCount\n\t%i not in [0, %i)"
@@ -509,13 +539,15 @@ R_CalcModelLighting(uint param_1,float *param_2,uint param_3,GfxModelLightExtrap
     (*pcVar1)();
     return;
   }
-  uVar4 = R_GetLightingAtPoint(&(rgp.world)->lightGrid,param_2,param_3,uVar3,param_4,param_5);
-  *param_6 = (uchar)uVar4;
-  if (param_7 != (uchar *)0x0) {
-    *param_7 = (uchar)uVar4;
+  uVar3 = R_GetLightingAtPoint
+                    (&(rgp.world)->lightGrid,lightingOrigin,nonSunPrimaryLightIndex,dest_00,
+                     extrapolateBehavior,useHeroLighting);
+  *primaryLightIndex1 = (uchar)uVar3;
+  if (primaryLightIndex2 != (uchar *)0x0) {
+    *primaryLightIndex2 = (uchar)uVar3;
   }
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -524,16 +556,17 @@ R_CalcModelLighting(uint param_1,float *param_2,uint param_3,GfxModelLightExtrap
 
 // 00AF60E0  R_SetModelGroundLighting  (gfx_d3d/r_model_lighting.cpp:825)
 
-void __cdecl R_SetModelGroundLighting(uint param_1,uchar *param_2)
+void __cdecl R_SetModelGroundLighting(uint entryIndex,uchar *groundLighting)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   GfxModelLightingPatch *pGVar4;
+  GfxModelLightingPatch *patch;
   
   pGVar4 = R_BackEndDataAllocAndClearModelLightingPatch(frontEndDataOut);
-  uVar3 = truncate_cast<unsigned_short>(param_1);
+  uVar3 = truncate_cast<unsigned_short>(entryIndex);
   pGVar4->modelLightingIndex = uVar3;
   if (pGVar4->colorsCount != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
@@ -544,7 +577,7 @@ void __cdecl R_SetModelGroundLighting(uint param_1,uchar *param_2)
       return;
     }
   }
-  *(undefined4 *)pGVar4->groundLighting = *(undefined4 *)param_2;
+  *(undefined4 *)pGVar4->groundLighting = *(undefined4 *)groundLighting;
   pGVar4->useHeroLighting = '\0';
   return;
 }
@@ -552,7 +585,7 @@ void __cdecl R_SetModelGroundLighting(uint param_1,uchar *param_2)
 
 // 00AF5FF0  R_SetStaticModelLighting  (gfx_d3d/r_model_lighting.cpp:857)
 
-void __cdecl R_SetStaticModelLighting(uint param_1)
+void __cdecl R_SetStaticModelLighting(uint smodelIndex)
 
 {
   uchar uVar1;
@@ -560,9 +593,14 @@ void __cdecl R_SetStaticModelLighting(uint param_1)
   GfxStaticModelDrawInst *pGVar3;
   code *pcVar4;
   bool bVar5;
-  uint uVar6;
+  uint entryIndex_00;
+  uchar primaryLight;
+  bool useHeroLighting;
+  uint entryIndex;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  GfxStaticModelInst *smodelInst;
   
-  if (((rgp.world)->dpvs).smodelCount <= param_1) {
+  if (((rgp.world)->dpvs).smodelCount <= smodelIndex) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                              0x35e,0,
                              "smodelIndex doesn\'t index rgp.world->dpvs.smodelCount\n\t%i not in [0, %i)"
@@ -575,16 +613,16 @@ void __cdecl R_SetStaticModelLighting(uint param_1)
   }
   pGVar2 = ((rgp.world)->dpvs).smodelInsts;
   pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-  uVar6 = R_ModelLightingIndexFromHandle(pGVar3[param_1].lightingHandle);
-  if (pGVar2[param_1].groundLighting.packed == 0) {
-    uVar1 = pGVar3[param_1].primaryLightIndex;
-    R_CalcModelLighting(uVar6,pGVar2[param_1].lightingOrigin,(uint)pGVar3[param_1].primaryLightIndex
-                        ,GFX_MODELLIGHT_EXTRAPOLATE,false,&pGVar3[param_1].primaryLightIndex,
-                        (uchar *)0x0);
-    pGVar3[param_1].primaryLightIndex = uVar1;
+  entryIndex_00 = R_ModelLightingIndexFromHandle(pGVar3[smodelIndex].lightingHandle);
+  if (pGVar2[smodelIndex].groundLighting.packed == 0) {
+    uVar1 = pGVar3[smodelIndex].primaryLightIndex;
+    R_CalcModelLighting(entryIndex_00,pGVar2[smodelIndex].lightingOrigin,
+                        (uint)pGVar3[smodelIndex].primaryLightIndex,GFX_MODELLIGHT_EXTRAPOLATE,false
+                        ,&pGVar3[smodelIndex].primaryLightIndex,(uchar *)0x0);
+    pGVar3[smodelIndex].primaryLightIndex = uVar1;
   }
   else {
-    R_SetModelGroundLighting(uVar6,pGVar2[param_1].groundLighting.array);
+    R_SetModelGroundLighting(entryIndex_00,pGVar2[smodelIndex].groundLighting.array);
   }
   return;
 }
@@ -597,7 +635,8 @@ void __cdecl R_BeginAllStaticModelLighting(void)
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint count;
+  uint size;
   
   if (smodelLightGlob.local.anyNewLighting != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
@@ -608,8 +647,8 @@ void __cdecl R_BeginAllStaticModelLighting(void)
       return;
     }
   }
-  uVar3 = (((rgp.world)->dpvs).smodelCount + 0x1f >> 5) << 2;
-  if (0x1fff < uVar3) {
+  count = (((rgp.world)->dpvs).smodelCount + 0x1f >> 5) << 2;
+  if (0x1fff < count) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                              0x38c,0,"%s");
     if (!bVar2) {
@@ -618,7 +657,7 @@ void __cdecl R_BeginAllStaticModelLighting(void)
       return;
     }
   }
-  Com_Memset(smodelLightGlob.lightingBits,0,uVar3);
+  Com_Memset(smodelLightGlob.lightingBits,0,count);
   return;
 }
 
@@ -634,8 +673,14 @@ void __cdecl R_SetAllStaticModelLighting(void)
   uint uVar4;
   uint uVar5;
   uint uVar6;
-  uint local_1c;
-  uint local_c;
+  uint bit;
+  uint wordCount;
+  uint bits;
+  uint indexHigh;
+  uint indexLow;
+  PIXProfile pp;
+  uint wordIndex;
+  uint smodelIndex;
   
   PIXBeginNamedEvent(-1,"R_SetAllStaticModelLighting");
   if (smodelLightGlob.local.anyNewLighting == 0) {
@@ -654,30 +699,30 @@ void __cdecl R_SetAllStaticModelLighting(void)
       (*pcVar1)();
       return;
     }
-    for (local_c = 0; local_c < uVar5; local_c = local_c + 1) {
-      local_1c = smodelLightGlob.lightingBits[local_c];
-      if (local_1c != 0) {
+    for (wordIndex = 0; wordIndex < uVar5; wordIndex = wordIndex + 1) {
+      bits = smodelLightGlob.lightingBits[wordIndex];
+      if (bits != 0) {
         while( true ) {
           uVar4 = 0x1f;
-          if (local_1c != 0) {
-            for (; local_1c >> uVar4 == 0; uVar4 = uVar4 - 1) {
+          if (bits != 0) {
+            for (; bits >> uVar4 == 0; uVar4 = uVar4 - 1) {
             }
           }
-          if (local_1c == 0) {
+          if (bits == 0) {
             uVar4 = 0x3f;
           }
           uVar4 = uVar4 ^ 0x1f;
           if (0x1f < uVar4) break;
           uVar6 = 0x80000000 >> ((byte)uVar4 & 0x1f);
-          if (((local_1c & uVar6) == 0) &&
+          if (((bits & uVar6) == 0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp"
                                        ,0x3b4,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_1c = ~uVar6 & local_1c;
-          R_SetStaticModelLighting(local_c * 0x20 + uVar4);
+          bits = ~uVar6 & bits;
+          R_SetStaticModelLighting(wordIndex * 0x20 + uVar4);
         }
       }
     }
@@ -692,10 +737,12 @@ void __cdecl R_SetAllStaticModelLighting(void)
 
 // 00AF61D0  R_SetStaticModelLightingCoords  (gfx_d3d/r_model_lighting.cpp:960)
 
-void __cdecl R_SetStaticModelLightingCoords(uint param_1,float *param_2)
+void __cdecl R_SetStaticModelLightingCoords(uint smodelIndex,float *out)
 
 {
-  R_SetModelLightingCoords(((rgp.world)->dpvs).smodelDrawInsts[param_1].lightingHandle,param_2);
+  GfxStaticModelDrawInst *smodelDrawInst;
+  
+  R_SetModelLightingCoords(((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].lightingHandle,out);
   return;
 }
 
@@ -705,27 +752,32 @@ void __cdecl R_SetStaticModelLightingCoords(uint param_1,float *param_2)
 /* WARNING: Removing unreachable block (ram,0x00af6175) */
 /* WARNING: Removing unreachable block (ram,0x00af619c) */
 
-void __cdecl R_SetStaticModelLightingCoordsForSource(uint param_1,GfxCmdBufSourceState *param_2)
+void __cdecl R_SetStaticModelLightingCoordsForSource(uint smodelIndex,GfxCmdBufSourceState *source)
 
 {
-  R_SetStaticModelLightingCoords(param_1,(param_2->input).consts[0x4e]);
-  param_2->constVersions[0x66] = param_2->constVersions[0x66] + 1;
+  R_SetStaticModelLightingCoords(smodelIndex,(source->input).consts[0x4e]);
+  source->constVersions[0x66] = source->constVersions[0x66] + 1;
   return;
 }
 
 
 // 00AF6210  R_GetPackedStaticModelLightingCoords  (gfx_d3d/r_model_lighting.cpp:981)
 
-void __cdecl R_GetPackedStaticModelLightingCoords(uint param_1,PackedLightingCoords *param_2)
+void __cdecl
+R_GetPackedStaticModelLightingCoords(uint smodelIndex,PackedLightingCoords *packedCoords)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   uint uVar4;
+  uint entryIndex;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint xPixel;
+  uint yPixel;
   
   uVar4 = R_ModelLightingIndexFromHandle
-                    (((rgp.world)->dpvs).smodelDrawInsts[param_1].lightingHandle);
+                    (((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].lightingHandle);
   if ((modelLightGlob.imageHeight - 1 & modelLightGlob.imageHeight) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                              0x3e2,0,"%s");
@@ -745,23 +797,25 @@ void __cdecl R_GetPackedStaticModelLightingCoords(uint param_1,PackedLightingCoo
     }
   }
   uVar3 = truncate_cast<unsigned_char>((uVar4 & 0x3f) * 4 + 2);
-  param_2->array[0] = uVar3;
+  packedCoords->array[0] = uVar3;
   uVar3 = truncate_cast<unsigned_char>
                     ((uVar4 >> 4 & 0xfffffffc) +
                      (int)(0x100 / (ulonglong)modelLightGlob.imageHeight) * 2);
-  param_2->array[1] = uVar3;
-  param_2->array[2] = 0x80;
-  param_2->array[3] = '\0';
+  packedCoords->array[1] = uVar3;
+  packedCoords->array[2] = 0x80;
+  packedCoords->array[3] = '\0';
   return;
 }
 
 
 // 00AF6310  R_StaticModelHasLighting  (gfx_d3d/r_model_lighting.cpp:1007)
 
-bool __cdecl R_StaticModelHasLighting(uint param_1)
+bool __cdecl R_StaticModelHasLighting(uint smodelIndex)
 
 {
-  return ((rgp.world)->dpvs).smodelDrawInsts[param_1].lightingHandle != 0;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  
+  return ((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].lightingHandle != 0;
 }
 
 
@@ -770,19 +824,19 @@ bool __cdecl R_StaticModelHasLighting(uint param_1)
 void __cdecl R_SetModelLightingSampleDeltas(void)
 
 {
-  uint local_14;
-  int local_10;
-  uint local_c;
-  uint local_8;
+  uint dx;
+  uint sampleIndex;
+  uint dz;
+  uint dy;
   
-  local_10 = 0;
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-      for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
-        s_modelLightingSampleDelta[local_10] =
-             local_8 * modelLightGlob.lockedBox.RowPitch + local_14 * 4 +
-             local_c * modelLightGlob.lockedBox.SlicePitch;
-        local_10 = local_10 + 1;
+  sampleIndex = 0;
+  for (dz = 0; dz < 4; dz = dz + 1) {
+    for (dy = 0; dy < 4; dy = dy + 1) {
+      for (dx = 0; dx < 4; dx = dx + 1) {
+        s_modelLightingSampleDelta[sampleIndex] =
+             dy * modelLightGlob.lockedBox.RowPitch + dx * 4 +
+             dz * modelLightGlob.lockedBox.SlicePitch;
+        sampleIndex = sampleIndex + 1;
       }
     }
   }
@@ -792,22 +846,26 @@ void __cdecl R_SetModelLightingSampleDeltas(void)
 
 // 00AF6340  RB_PatchModelLighting  (gfx_d3d/r_model_lighting.cpp:1041)
 
-void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *param_1,uint param_2)
+void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *patchList,uint patchCount)
 
 {
-  uchar *puVar1;
-  code *pcVar2;
-  bool bVar3;
-  GfxModelLightingPatch *pGVar4;
-  uint local_14;
-  uint local_10;
+  uchar *pixels_00;
+  code *pcVar1;
+  bool bVar2;
+  GfxModelLightingPatch *patch_00;
+  uint x0;
+  uchar *pixels;
+  uint sampleIndex;
+  uint patchIter;
+  GfxModelLightingPatch *patch;
+  uint y0;
   
-  if (param_2 != 0) {
+  if (patchCount != 0) {
     if ((modelLightGlob.lockedBox.pBits != (void *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
-                                 0x41c,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
+                                 0x41c,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     (**(code **)((int)*((modelLightGlob.image)->texture).basemap + 0x4c))
@@ -815,27 +873,27 @@ void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *param_1,uint param_2)
     R_SetModelLightingSampleDeltas();
     R_SetLightGridSampleDeltas
               (modelLightGlob.lockedBox.RowPitch,modelLightGlob.lockedBox.SlicePitch);
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      pGVar4 = param_1 + local_10;
-      puVar1 = (uchar *)((int)modelLightGlob.lockedBox.pBits +
-                        (pGVar4->modelLightingIndex & 0x3f) * 0x10 +
-                        (pGVar4->modelLightingIndex >> 4 & 0xfffffffc) *
-                        modelLightGlob.lockedBox.RowPitch);
-      if (pGVar4->colorsCount == '\0') {
-        for (local_14 = 0; local_14 < 0x40; local_14 = local_14 + 1) {
-          *(undefined4 *)(puVar1 + s_modelLightingSampleDelta[local_14]) =
-               *(undefined4 *)pGVar4->groundLighting;
+    for (patchIter = 0; patchIter < patchCount; patchIter = patchIter + 1) {
+      patch_00 = patchList + patchIter;
+      pixels_00 = (uchar *)((int)modelLightGlob.lockedBox.pBits +
+                           (patch_00->modelLightingIndex & 0x3f) * 0x10 +
+                           (patch_00->modelLightingIndex >> 4 & 0xfffffffc) *
+                           modelLightGlob.lockedBox.RowPitch);
+      if (patch_00->colorsCount == '\0') {
+        for (sampleIndex = 0; sampleIndex < 0x40; sampleIndex = sampleIndex + 1) {
+          *(undefined4 *)(pixels_00 + s_modelLightingSampleDelta[sampleIndex]) =
+               *(undefined4 *)patch_00->groundLighting;
         }
       }
       else {
-        R_ApplyLightGridColorsPatch(pGVar4,puVar1);
+        R_ApplyLightGridColorsPatch(patch_00,pixels_00);
       }
     }
     if ((modelLightGlob.lockedBox.pBits == (void *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
-                                 0x432,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
+                                 0x432,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     (**(code **)((int)*((modelLightGlob.image)->texture).basemap + 0x50))
@@ -848,19 +906,19 @@ void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *param_1,uint param_2)
 
 // 00AF6560  R_SetModelLightingLookupScale  (gfx_d3d/r_model_lighting.cpp:1082)
 
-void __cdecl R_SetModelLightingLookupScale(GfxCmdBufInput *param_1)
+void __cdecl R_SetModelLightingLookupScale(GfxCmdBufInput *input)
 
 {
-  float local_14;
+  float lookupScale;
   float local_10;
   undefined4 local_c;
   undefined4 local_8;
   
-  local_14 = 0.005859375;
+  lookupScale = 0.005859375;
   local_10 = modelLightGlob.invImageHeight * 1.5;
   local_c = 0x3ec00000;
   local_8 = 0;
-  R_SetInputCodeConstantFromVec4(param_1,0x35,&local_14);
+  R_SetInputCodeConstantFromVec4(input,0x35,&lookupScale);
   return;
 }
 
@@ -870,7 +928,7 @@ void __cdecl R_SetModelLightingLookupScale(GfxCmdBufInput *param_1)
 /* WARNING: Removing unreachable block (ram,0x00af6602) */
 /* WARNING: Removing unreachable block (ram,0x00af6626) */
 
-void __cdecl R_SetupDynamicModelLighting(GfxCmdBufInput *param_1)
+void __cdecl R_SetupDynamicModelLighting(GfxCmdBufInput *input)
 
 {
   code *pcVar1;
@@ -878,15 +936,15 @@ void __cdecl R_SetupDynamicModelLighting(GfxCmdBufInput *param_1)
   bool bVar3;
   
   pGVar2 = modelLightGlob.image;
-  if ((param_1 == (GfxCmdBufInput *)0x0) &&
+  if ((input == (GfxCmdBufInput *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,"%s")
      , !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->codeImages[0xf] = pGVar2;
-  R_SetModelLightingLookupScale(param_1);
+  input->codeImages[0xf] = pGVar2;
+  R_SetModelLightingLookupScale(input);
   return;
 }
 
@@ -896,36 +954,36 @@ void __cdecl R_SetupDynamicModelLighting(GfxCmdBufInput *param_1)
 /* WARNING: Removing unreachable block (ram,0x00af66ab) */
 /* WARNING: Removing unreachable block (ram,0x00af66d2) */
 
-void __cdecl R_SetupCachedStaticModelLighting(GfxCmdBufSourceState *param_1)
+void __cdecl R_SetupCachedStaticModelLighting(GfxCmdBufSourceState *source)
 
 {
-  (param_1->input).consts[0x4e][0] = 0.0;
-  (param_1->input).consts[0x4e][1] = 0.0;
-  (param_1->input).consts[0x4e][2] = 0.5;
-  (param_1->input).consts[0x4e][3] = 1.0;
-  param_1->constVersions[0x66] = param_1->constVersions[0x66] + 1;
+  (source->input).consts[0x4e][0] = 0.0;
+  (source->input).consts[0x4e][1] = 0.0;
+  (source->input).consts[0x4e][2] = 0.5;
+  (source->input).consts[0x4e][3] = 1.0;
+  source->constVersions[0x66] = source->constVersions[0x66] + 1;
   return;
 }
 
 
 // 00AF68C0  R_AllocModelLightingGlobal  (gfx_d3d/r_model_lighting.cpp:1111)
 
-void * __cdecl R_AllocModelLightingGlobal(uint param_1)
+void * __cdecl R_AllocModelLightingGlobal(uint bytes)
 
 {
   void *pvVar1;
   
-  pvVar1 = Z_VirtualAlloc(param_1,"R_AllocModelLightingGlobal",0x13);
+  pvVar1 = Z_VirtualAlloc(bytes,"R_AllocModelLightingGlobal",0x13);
   return pvVar1;
 }
 
 
 // 00A7DE10  R_FreeModelLightingGlobal  (gfx_d3d/r_model_lighting.cpp:1126)
 
-void __cdecl R_FreeModelLightingGlobal(void *param_1)
+void __cdecl R_FreeModelLightingGlobal(void *var_2)
 
 {
-  Z_VirtualFree(param_1,0x13);
+  Z_VirtualFree(var_2,0x13);
   return;
 }
 
@@ -940,8 +998,8 @@ void __cdecl R_InitModelLightingGlobals(void)
   uint uVar3;
   uint *puVar4;
   byte bVar5;
-  int local_c;
-  uint local_8;
+  uint totalBitsNeeded;
+  uint i;
   
   modelLightGlob.xmodelEntryLimit = gfxCfg.maxClientViews * 0x400;
   uVar3 = 0x1f;
@@ -952,12 +1010,12 @@ void __cdecl R_InitModelLightingGlobals(void)
   if (modelLightGlob.xmodelEntryLimit == 0) {
     uVar3 = 0x3f;
   }
-  local_c = 0x20 - (uVar3 ^ 0x1f);
+  totalBitsNeeded = 0x20 - (uVar3 ^ 0x1f);
   for (smodelLightGlob.local.entryLimit =
-            (1 << ((byte)local_c & 0x1f)) + gfxCfg.maxClientViews * -0x400; bVar5 = (byte)local_c,
-      smodelLightGlob.local.entryLimit < 0x800;
+            (1 << ((byte)totalBitsNeeded & 0x1f)) + gfxCfg.maxClientViews * -0x400;
+      bVar5 = (byte)totalBitsNeeded, smodelLightGlob.local.entryLimit < 0x800;
       smodelLightGlob.local.entryLimit = (1 << (bVar5 & 0x1f)) + smodelLightGlob.local.entryLimit) {
-    local_c = local_c + 1;
+    totalBitsNeeded = totalBitsNeeded + 1;
   }
   if (0x1000 < smodelLightGlob.local.entryLimit) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
@@ -969,7 +1027,7 @@ void __cdecl R_InitModelLightingGlobals(void)
     }
   }
   modelLightGlob.totalEntryLimit = 1 << (bVar5 & 0x1f);
-  modelLightGlob.entryBitsY = local_c - 6;
+  modelLightGlob.entryBitsY = totalBitsNeeded - 6;
   modelLightGlob.imageHeight = 1 << ((char)modelLightGlob.entryBitsY + 2U & 0x1f);
   modelLightGlob.invImageHeight = 1.0 / (float)modelLightGlob.imageHeight;
   modelLightGlob.xmodel.baseIndex = smodelLightGlob.local.entryLimit;
@@ -986,9 +1044,9 @@ void __cdecl R_InitModelLightingGlobals(void)
   modelLightGlob.pixelFreeBitsWordCount = modelLightGlob.xmodelEntryLimit >> 5;
   modelLightGlob.lightingOrigins = R_AllocModelLightingGlobal(modelLightGlob.xmodelEntryLimit * 0xc)
   ;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
+  for (i = 0; i < 4; i = i + 1) {
     puVar4 = R_AllocModelLightingGlobal(modelLightGlob.pixelFreeBitsSize);
-    modelLightGlob.pixelFreeBits[local_8] = puVar4;
+    modelLightGlob.pixelFreeBits[i] = puVar4;
   }
   modelLightGlob.lightingInfo = R_AllocModelLightingGlobal(modelLightGlob.xmodelEntryLimit << 3);
   return;
@@ -1000,10 +1058,10 @@ void __cdecl R_InitModelLightingGlobals(void)
 void __cdecl R_ShutdownModelLightingGlobals(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    R_FreeModelLightingGlobal(modelLightGlob.pixelFreeBits[local_8]);
+  for (i = 0; i < 4; i = i + 1) {
+    R_FreeModelLightingGlobal(modelLightGlob.pixelFreeBits[i]);
   }
   R_FreeModelLightingGlobal(modelLightGlob.lightingOrigins);
   R_FreeModelLightingGlobal(modelLightGlob.lightingInfo);
@@ -1021,15 +1079,16 @@ void __cdecl R_ResetModelLighting(void)
   float (*pafVar3) [3];
   uint uVar4;
   uint uVar5;
-  uint local_14;
-  uint local_10;
-  uint local_c;
+  uint entryIndex;
+  uint usedIndex;
+  uint i;
+  uint smodelIndex;
   
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    Com_Memset(modelLightGlob.pixelFreeBits[local_c],0xff,modelLightGlob.pixelFreeBitsSize);
+  for (i = 0; i < 4; i = i + 1) {
+    Com_Memset(modelLightGlob.pixelFreeBits[i],0xff,modelLightGlob.pixelFreeBitsSize);
   }
-  for (local_10 = 0; local_10 < modelLightGlob.xmodelEntryLimit; local_10 = local_10 + 1) {
-    pafVar3 = modelLightGlob.lightingOrigins + local_10;
+  for (usedIndex = 0; usedIndex < modelLightGlob.xmodelEntryLimit; usedIndex = usedIndex + 1) {
+    pafVar3 = modelLightGlob.lightingOrigins + usedIndex;
     (*pafVar3)[0] = 3.4028235e+38;
     (*pafVar3)[1] = 3.4028235e+38;
     (*pafVar3)[2] = 3.4028235e+38;
@@ -1043,13 +1102,13 @@ void __cdecl R_ResetModelLighting(void)
       return;
     }
   }
-  local_14 = 0;
+  entryIndex = 0;
   do {
-    if (smodelLightGlob.local.assignedCount <= local_14) {
+    if (smodelLightGlob.local.assignedCount <= entryIndex) {
       smodelLightGlob.local.assignedCount = 0;
       return;
     }
-    uVar4 = (uint)smodelLightGlob.local.smodelIndex[local_14];
+    uVar4 = (uint)smodelLightGlob.local.smodelIndex[entryIndex];
     if (((rgp.world)->dpvs).smodelCount <= uVar4) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                0x4bb,0,
@@ -1063,7 +1122,7 @@ void __cdecl R_ResetModelLighting(void)
     }
     uVar5 = R_ModelLightingIndexFromHandle
                       (((rgp.world)->dpvs).smodelDrawInsts[uVar4].lightingHandle);
-    if (local_14 != uVar5) {
+    if (entryIndex != uVar5) {
       R_ModelLightingIndexFromHandle(((rgp.world)->dpvs).smodelDrawInsts[uVar4].lightingHandle);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_lighting.cpp",
                                0x4bc,0,
@@ -1076,7 +1135,7 @@ void __cdecl R_ResetModelLighting(void)
       }
     }
     ((rgp.world)->dpvs).smodelDrawInsts[uVar4].lightingHandle = 0;
-    local_14 = local_14 + 1;
+    entryIndex = entryIndex + 1;
   } while( true );
 }
 
@@ -1132,7 +1191,7 @@ void __cdecl R_ShutdownModelLightingImage(void)
 
 // 00AF6BF0  R_InitStaticModelLighting  (gfx_d3d/r_model_lighting.cpp:1268)
 
-void __cdecl R_InitStaticModelLighting(uint param_1)
+void __cdecl R_InitStaticModelLighting(uint smodelCount)
 
 {
   smodelLightGlob.local.assignedCount = 0;
@@ -1146,11 +1205,11 @@ void __cdecl R_InitStaticModelLighting(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x00af6c36) */
 /* WARNING: Removing unreachable block (ram,0x00af6c5d) */
 
-void __cdecl R_SetModelLightingCoordsForSource(ushort param_1,GfxCmdBufSourceState *param_2)
+void __cdecl R_SetModelLightingCoordsForSource(ushort handle,GfxCmdBufSourceState *source)
 
 {
-  R_SetModelLightingCoords(param_1,(param_2->input).consts[0x4e]);
-  param_2->constVersions[0x66] = param_2->constVersions[0x66] + 1;
+  R_SetModelLightingCoords(handle,(source->input).consts[0x4e]);
+  source->constVersions[0x66] = source->constVersions[0x66] + 1;
   return;
 }
 

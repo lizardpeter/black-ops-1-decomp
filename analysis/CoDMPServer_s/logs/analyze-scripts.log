@@ -1,1 +1,6 @@
-2026-10-14 14:48:34 INFO  PrepPdb.java> PDB set: /tmp/in/CoDMPServer_s.pdb  
+2026-10-14 15:22:42 INFO  PrepPdb.java> PDB set: /tmp/in/CoDMPServer_s.pdb  
+2026-10-14 15:26:48 INFO  ApplyPdbNames.java> PDB names: 2271 functions (0 not found), 5226 renamed, 2557 locals created, 900 locals typed, 658 skipped  
+2026-10-14 15:26:53 INFO  ExportAll.java> exported 5000 functions  
+2026-10-14 15:26:58 INFO  ExportAll.java> exported 10000 functions  
+2026-10-14 15:27:03 INFO  ExportAll.java> exported 15000 functions  
+2026-10-14 15:27:05 INFO  ExportAll.java> functions: 18233  

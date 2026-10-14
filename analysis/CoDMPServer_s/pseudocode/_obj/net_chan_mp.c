@@ -480,10 +480,10 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
   uint uVar9;
   int iVar10;
   int iVar11;
-  ulong uVar12;
+  ulong count;
   int unaff_ESI;
   netProfileInfo_t *unaff_EDI;
-  bool bVar13;
+  bool bVar12;
   undefined2 local_858;
   undefined1 local_854;
   uchar local_84c [8];
@@ -496,7 +496,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
   uint local_80c;
   msg_t local_804 [2052];
   
-  bVar13 = false;
+  bVar12 = false;
   bVar4 = false;
   NetProf_PrepProfiling(unaff_EDI);
   *(undefined4 *)param_2 = 0;
@@ -508,7 +508,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
     MSG_ReadShort((msg_t *)unaff_EDI);
   }
   if ((int)uVar5 < 0) {
-    bVar13 = (uVar5 & 0x40000000) != 0;
+    bVar12 = (uVar5 & 0x40000000) != 0;
     if ((uVar5 & 0x20000000) != 0) {
       MSG_ReadByte((msg_t *)unaff_EDI);
       MSG_ReadByte((msg_t *)unaff_EDI);
@@ -542,7 +542,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
   }
   uVar8 = *(uint *)(param_1 + 0xc);
   if ((int)uVar5 <= (int)uVar8) {
-    if ((uVar5 != uVar8) || (!bVar13)) {
+    if ((uVar5 != uVar8) || (!bVar12)) {
       if (((showdrop->current).enabled != false) ||
          (((showpackets->current).integer != 0 &&
           ((1 < (showpackets->current).integer || (*(int *)(param_1 + 0x10) != 2)))))) {
@@ -564,7 +564,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
     iVar10 = MSG_ReadByte((msg_t *)unaff_EDI);
     iVar11 = MSG_ReadShort((msg_t *)unaff_EDI);
     local_818 = iVar11;
-    uVar12 = MSG_ReadShort((msg_t *)unaff_EDI);
+    count = MSG_ReadShort((msg_t *)unaff_EDI);
     if (*(int *)(param_1 + 0x24) < (int)uVar5) {
       *(uint *)(param_1 + 0x24) = uVar5;
       *(undefined4 *)(param_1 + 0x28) = 0;
@@ -580,7 +580,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
     if (!bVar4) {
       *(uint *)pnVar1 = *(uint *)pnVar1 | uVar9;
     }
-    if (bVar13) {
+    if (bVar12) {
       memset(local_84c,'\0',0x30);
       MSG_Init(local_804,(uchar *)0x800,(int)unaff_EDI);
       if (local_83c < local_838 + 4) {
@@ -634,7 +634,7 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
         local_84c[3] = '\0';
       }
       else {
-        local_858 = (undefined2)uVar12;
+        local_858 = (undefined2)count;
         *(undefined2 *)(local_838 + local_844) = local_858;
         local_838 = local_838 + 2;
       }
@@ -671,9 +671,9 @@ int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
                      (int)((ulonglong)*(undefined8 *)(param_1 + 0x18) >> 0x20));
     }
     if ((uVar8 & uVar9) == 0) {
-      *(ulong *)(param_1 + 0x28) = *(int *)(param_1 + 0x28) + uVar12;
+      *(ulong *)(param_1 + 0x28) = *(int *)(param_1 + 0x28) + count;
       memcpy((uchar *)(*(int *)(param_1 + 0x2c) + local_81c),
-             (uchar *)(*(int *)(param_2 + 8) + *(int *)(param_2 + 0x1c)),uVar12);
+             (uchar *)(*(int *)(param_2 + 8) + *(int *)(param_2 + 0x1c)),count);
     }
     iVar6 = 0;
     bVar3 = true;
@@ -796,37 +796,37 @@ int __cdecl NET_GetLoopPacket_Real(netsrc_t param_1,netadr_t *param_2,msg_t *par
 
 {
   uint *puVar1;
-  uchar *puVar2;
-  undefined2 uVar3;
-  uint uVar4;
-  undefined4 uVar5;
-  int iVar6;
+  uchar *src;
+  undefined2 uVar2;
+  uint uVar3;
+  undefined4 uVar4;
+  int iVar5;
   int in_EDX;
-  int iVar7;
+  int iVar6;
   undefined8 *unaff_EDI;
   
-  iVar7 = in_EDX * 0x4f88;
-  puVar1 = (uint *)(&DAT_01d739e0 + iVar7);
-  if (0x10 < (int)(*(int *)(&DAT_01d739e4 + iVar7) - *puVar1)) {
-    *puVar1 = *(int *)(&DAT_01d739e4 + iVar7) - 0x10;
+  iVar6 = in_EDX * 0x4f88;
+  puVar1 = (uint *)(&DAT_01d739e0 + iVar6);
+  if (0x10 < (int)(*(int *)(&DAT_01d739e4 + iVar6) - *puVar1)) {
+    *puVar1 = *(int *)(&DAT_01d739e4 + iVar6) - 0x10;
   }
-  if (*(int *)(&DAT_01d739e4 + iVar7) <= (int)*puVar1) {
+  if (*(int *)(&DAT_01d739e4 + iVar6) <= (int)*puVar1) {
     return 0;
   }
-  uVar4 = *puVar1;
+  uVar3 = *puVar1;
   LOCK();
   *puVar1 = *puVar1 + 1;
   UNLOCK();
-  iVar6 = (uVar4 & 0xf) * 0x4f8;
-  puVar2 = &DAT_01d6ea60 + iVar6 + iVar7;
-  memcpy(*(uchar **)(param_1 + 8),puVar2,*(ulong *)(&DAT_01d6ea60 + iVar6 + 0x4f0 + iVar7));
-  uVar5 = *(undefined4 *)(puVar2 + 0x4f0);
-  uVar3 = *(undefined2 *)(puVar2 + 0x4f4);
+  iVar5 = (uVar3 & 0xf) * 0x4f8;
+  src = &DAT_01d6ea60 + iVar5 + iVar6;
+  memcpy(*(uchar **)(param_1 + 8),src,*(ulong *)(&DAT_01d6ea60 + iVar5 + 0x4f0 + iVar6));
+  uVar4 = *(undefined4 *)(src + 0x4f0);
+  uVar2 = *(undefined2 *)(src + 0x4f4);
   *unaff_EDI = 0;
-  *(undefined4 *)(param_1 + 0x14) = uVar5;
+  *(undefined4 *)(param_1 + 0x14) = uVar4;
   unaff_EDI[1] = 0;
   *(undefined4 *)unaff_EDI = 2;
-  *(undefined2 *)(unaff_EDI + 1) = uVar3;
+  *(undefined2 *)(unaff_EDI + 1) = uVar2;
   return 1;
 }
 
@@ -840,30 +840,30 @@ NET_SendLoopPacket(ulong param_1,uchar *param_2,undefined4 param_3,undefined4 pa
                   )
 
 {
-  uchar *puVar1;
+  uchar *dst;
   uint in_EAX;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint uVar1;
+  int iVar2;
+  uint uVar3;
   
-  uVar4 = 0;
+  uVar3 = 0;
   if ((int)in_EAX < 1) {
-    uVar2 = 1;
-    uVar4 = in_EAX;
+    uVar1 = 1;
+    uVar3 = in_EAX;
   }
   else {
-    uVar2 = in_EAX;
+    uVar1 = in_EAX;
     if (in_EAX == 1) {
-      uVar2 = (uint)param_5;
+      uVar1 = (uint)param_5;
     }
   }
-  iVar3 = uVar2 * 0x4f88;
-  puVar1 = &DAT_01d6ea60 + (*(uint *)(&DAT_01d739e4 + iVar3) & 0xf) * 0x4f8 + iVar3;
-  memcpy(puVar1,param_2,param_1);
-  *(ulong *)(puVar1 + 0x4f0) = param_1;
-  *(uint *)(puVar1 + 0x4f4) = uVar4;
+  iVar2 = uVar1 * 0x4f88;
+  dst = &DAT_01d6ea60 + (*(uint *)(&DAT_01d739e4 + iVar2) & 0xf) * 0x4f8 + iVar2;
+  memcpy(dst,param_2,param_1);
+  *(ulong *)(dst + 0x4f0) = param_1;
+  *(uint *)(dst + 0x4f4) = uVar3;
   LOCK();
-  *(int *)(&DAT_01d739e4 + iVar3) = *(int *)(&DAT_01d739e4 + iVar3) + 1;
+  *(int *)(&DAT_01d739e4 + iVar2) = *(int *)(&DAT_01d739e4 + iVar2) + 1;
   UNLOCK();
   return;
 }
@@ -876,19 +876,19 @@ NET_SendLoopPacket(ulong param_1,uchar *param_2,undefined4 param_3,undefined4 pa
 void __cdecl NET_DeferPacketToClient(netadr_t *param_1,msg_t *param_2)
 
 {
-  ulong uVar1;
-  undefined4 uVar2;
-  int iVar3;
+  ulong count;
+  undefined4 uVar1;
+  int iVar2;
   int unaff_EDI;
   
-  iVar3 = (DAT_01d7d9f4 & 0xf) * 0x508;
-  uVar1 = *(ulong *)(unaff_EDI + 0x14);
-  memcpy((uchar *)(iVar3 + 0x1d78980),*(uchar **)(unaff_EDI + 8),uVar1);
-  uVar2 = *(undefined4 *)(unaff_EDI + 0x2c);
-  *(ulong *)(&DAT_01d78e70 + iVar3) = uVar1;
-  *(undefined4 *)(&DAT_01d78e74 + iVar3) = uVar2;
-  *(undefined8 *)(&DAT_01d78970 + iVar3) = *(undefined8 *)param_1;
-  *(undefined8 *)(&DAT_01d78978 + iVar3) = *(undefined8 *)(param_1 + 8);
+  iVar2 = (DAT_01d7d9f4 & 0xf) * 0x508;
+  count = *(ulong *)(unaff_EDI + 0x14);
+  memcpy((uchar *)(iVar2 + 0x1d78980),*(uchar **)(unaff_EDI + 8),count);
+  uVar1 = *(undefined4 *)(unaff_EDI + 0x2c);
+  *(ulong *)(&DAT_01d78e70 + iVar2) = count;
+  *(undefined4 *)(&DAT_01d78e74 + iVar2) = uVar1;
+  *(undefined8 *)(&DAT_01d78970 + iVar2) = *(undefined8 *)param_1;
+  *(undefined8 *)(&DAT_01d78978 + iVar2) = *(undefined8 *)(param_1 + 8);
   LOCK();
   DAT_01d7d9f4 = DAT_01d7d9f4 + 1;
   UNLOCK();

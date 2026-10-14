@@ -71,36 +71,36 @@ undefined4 _HTProtocol_add(undefined4 param_1,undefined2 param_2,undefined4 para
 undefined4 _HTProtocol_deleteAll(void)
 
 {
+  undefined4 *pBlock;
+  undefined4 *pBlock_00;
   undefined4 *puVar1;
-  undefined4 *puVar2;
-  undefined4 *puVar3;
   
-  puVar2 = _DAT_035477f4;
-  puVar3 = _DAT_035477f4;
+  pBlock_00 = _DAT_035477f4;
+  puVar1 = _DAT_035477f4;
   if (_DAT_035477f4 == (undefined4 *)0x0) {
     return 0;
   }
-  while (((puVar3 != (undefined4 *)0x0 &&
-          (puVar3 = (undefined4 *)puVar3[1], puVar3 != (undefined4 *)0x0)) &&
-         (puVar1 = (undefined4 *)*puVar3, puVar1 != (undefined4 *)0x0))) {
-    if ((void *)*puVar1 != (void *)0x0) {
-      free((void *)*puVar1);
+  while (((puVar1 != (undefined4 *)0x0 &&
+          (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+         (pBlock = (undefined4 *)*puVar1, pBlock != (undefined4 *)0x0))) {
+    if ((void *)*pBlock != (void *)0x0) {
+      free((void *)*pBlock);
     }
-    *puVar1 = 0;
-    if ((void *)puVar1[1] != (void *)0x0) {
-      free((void *)puVar1[1]);
+    *pBlock = 0;
+    if ((void *)pBlock[1] != (void *)0x0) {
+      free((void *)pBlock[1]);
     }
-    puVar1[1] = 0;
-    free(puVar1);
+    pBlock[1] = 0;
+    free(pBlock);
   }
   do {
-    puVar3 = (undefined4 *)puVar2[1];
-    if (puVar2 != (undefined4 *)0x0) {
-      free(puVar2);
+    puVar1 = (undefined4 *)pBlock_00[1];
+    if (pBlock_00 != (undefined4 *)0x0) {
+      free(pBlock_00);
     }
-    puVar2 = puVar3;
-  } while (puVar3 != (undefined4 *)0x0);
-  _DAT_035477f4 = puVar3;
+    pBlock_00 = puVar1;
+  } while (puVar1 != (undefined4 *)0x0);
+  _DAT_035477f4 = puVar1;
   return 1;
 }
 

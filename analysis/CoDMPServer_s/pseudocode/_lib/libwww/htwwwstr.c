@@ -573,53 +573,53 @@ undefined4 _HTMIMEMatch(void)
 
 {
   byte bVar1;
-  byte *pbVar2;
-  uchar *puVar3;
+  byte *string;
+  uchar *string_00;
   int in_EAX;
-  byte *pbVar4;
-  int iVar5;
+  byte *pbVar2;
+  int iVar3;
   int extraout_EAX;
   undefined1 *extraout_EAX_00;
   undefined1 *extraout_EAX_01;
   int in_ECX;
-  char *pcVar6;
-  bool bVar7;
+  char *pcVar4;
+  bool bVar5;
   undefined4 uStack_8;
   
   uStack_8 = 0;
-  if (((in_EAX != 0) && (in_ECX != 0)) && (pbVar2 = *(byte **)(in_EAX + 4), pbVar2 != (byte *)0x0))
+  if (((in_EAX != 0) && (in_ECX != 0)) && (string = *(byte **)(in_EAX + 4), string != (byte *)0x0))
   {
-    pcVar6 = "*";
-    pbVar4 = pbVar2;
+    pcVar4 = "*";
+    pbVar2 = string;
     do {
-      bVar1 = *pbVar4;
-      bVar7 = bVar1 < (byte)*pcVar6;
-      if (bVar1 != *pcVar6) {
+      bVar1 = *pbVar2;
+      bVar5 = bVar1 < (byte)*pcVar4;
+      if (bVar1 != *pcVar4) {
 LAB_0088ddd5:
-        iVar5 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+        iVar3 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
         goto LAB_0088ddda;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar4[1];
-      bVar7 = bVar1 < (byte)pcVar6[1];
-      if (bVar1 != pcVar6[1]) goto LAB_0088ddd5;
-      pbVar4 = pbVar4 + 2;
-      pcVar6 = pcVar6 + 2;
+      bVar1 = pbVar2[1];
+      bVar5 = bVar1 < (byte)pcVar4[1];
+      if (bVar1 != pcVar4[1]) goto LAB_0088ddd5;
+      pbVar2 = pbVar2 + 2;
+      pcVar4 = pcVar4 + 2;
     } while (bVar1 != 0);
-    iVar5 = 0;
+    iVar3 = 0;
 LAB_0088ddda:
-    if (iVar5 == 0) {
+    if (iVar3 == 0) {
       return 1;
     }
-    strchr(pbVar2,'*');
-    if (((extraout_EAX != 0) && (puVar3 = *(uchar **)(in_ECX + 4), puVar3 != (uchar *)0x0)) &&
-       ((strchr(pbVar2,'/'), extraout_EAX_00 != (undefined1 *)0x0 &&
-        (strchr(puVar3,'/'), extraout_EAX_01 != (undefined1 *)0x0)))) {
+    strchr(string,'*');
+    if (((extraout_EAX != 0) && (string_00 = *(uchar **)(in_ECX + 4), string_00 != (uchar *)0x0)) &&
+       ((strchr(string,'/'), extraout_EAX_00 != (undefined1 *)0x0 &&
+        (strchr(string_00,'/'), extraout_EAX_01 != (undefined1 *)0x0)))) {
       *extraout_EAX_01 = 0;
       *extraout_EAX_00 = 0;
       if (((extraout_EAX_00[-1] == '*') &&
-          ((extraout_EAX_00[1] == '*' || (iVar5 = strcasecomp(), iVar5 == 0)))) ||
-         ((extraout_EAX_00[1] == '*' && (iVar5 = strcasecomp(), iVar5 == 0)))) {
+          ((extraout_EAX_00[1] == '*' || (iVar3 = strcasecomp(), iVar3 == 0)))) ||
+         ((extraout_EAX_00[1] == '*' && (iVar3 = strcasecomp(), iVar3 == 0)))) {
         uStack_8 = 1;
       }
       *extraout_EAX_01 = 0x2f;
@@ -636,139 +636,139 @@ byte * _HTWWWToLocal(int param_1)
 
 {
   byte bVar1;
+  byte *pBlock;
+  byte *pBlock_00;
+  byte *string;
   byte *pbVar2;
-  byte *pbVar3;
-  byte *pbVar4;
-  byte *pbVar5;
-  int iVar6;
+  int iVar3;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
-  undefined1 *puVar7;
+  undefined1 *puVar4;
   int in_ECX;
-  char *pcVar8;
-  byte *pbVar9;
-  bool bVar10;
+  char *pcVar5;
+  byte *pbVar6;
+  bool bVar7;
   byte *pbStack_4;
   
   if (in_ECX == 0) {
     return (byte *)0x0;
   }
   pbStack_4 = (byte *)_HTParse();
-  pbVar3 = (byte *)_HTParse();
-  pbVar4 = (byte *)_HTParse();
-  pbVar2 = pbStack_4;
+  pBlock_00 = (byte *)_HTParse();
+  string = (byte *)_HTParse();
+  pBlock = pbStack_4;
   if (param_1 == 0) {
-    pbVar9 = (byte *)0x0;
+    pbVar6 = (byte *)0x0;
   }
   else {
-    pbVar9 = *(byte **)(param_1 + 4);
+    pbVar6 = *(byte **)(param_1 + 4);
   }
   if (*pbStack_4 != 0) {
-    pcVar8 = "file";
-    pbVar5 = pbStack_4;
+    pcVar5 = "file";
+    pbVar2 = pbStack_4;
     do {
-      bVar1 = *pbVar5;
-      bVar10 = bVar1 < (byte)*pcVar8;
-      if (bVar1 != *pcVar8) {
+      bVar1 = *pbVar2;
+      bVar7 = bVar1 < (byte)*pcVar5;
+      if (bVar1 != *pcVar5) {
 LAB_0088df00:
-        iVar6 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+        iVar3 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
         goto LAB_0088df05;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar5[1];
-      bVar10 = bVar1 < (byte)pcVar8[1];
-      if (bVar1 != pcVar8[1]) goto LAB_0088df00;
-      pbVar5 = pbVar5 + 2;
-      pcVar8 = pcVar8 + 2;
+      bVar1 = pbVar2[1];
+      bVar7 = bVar1 < (byte)pcVar5[1];
+      if (bVar1 != pcVar5[1]) goto LAB_0088df00;
+      pbVar2 = pbVar2 + 2;
+      pcVar5 = pcVar5 + 2;
     } while (bVar1 != 0);
-    iVar6 = 0;
+    iVar3 = 0;
 LAB_0088df05:
-    if (iVar6 != 0) {
-      pcVar8 = "cache";
-      pbVar5 = pbStack_4;
+    if (iVar3 != 0) {
+      pcVar5 = "cache";
+      pbVar2 = pbStack_4;
       do {
-        bVar1 = *pbVar5;
-        bVar10 = bVar1 < (byte)*pcVar8;
-        if (bVar1 != *pcVar8) {
+        bVar1 = *pbVar2;
+        bVar7 = bVar1 < (byte)*pcVar5;
+        if (bVar1 != *pcVar5) {
 LAB_0088df30:
-          iVar6 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+          iVar3 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
           goto LAB_0088df35;
         }
         if (bVar1 == 0) break;
-        bVar1 = pbVar5[1];
-        bVar10 = bVar1 < (byte)pcVar8[1];
-        if (bVar1 != pcVar8[1]) goto LAB_0088df30;
-        pbVar5 = pbVar5 + 2;
-        pcVar8 = pcVar8 + 2;
+        bVar1 = pbVar2[1];
+        bVar7 = bVar1 < (byte)pcVar5[1];
+        if (bVar1 != pcVar5[1]) goto LAB_0088df30;
+        pbVar2 = pbVar2 + 2;
+        pcVar5 = pcVar5 + 2;
       } while (bVar1 != 0);
-      iVar6 = 0;
+      iVar3 = 0;
 LAB_0088df35:
-      if (iVar6 != 0) goto LAB_0088df80;
+      if (iVar3 != 0) goto LAB_0088df80;
     }
   }
-  if (((*pbVar3 != 0) && (iVar6 = strcasecomp(), iVar6 != 0)) &&
-     (pbVar5 = pbVar3, pbVar9 != (byte *)0x0)) {
+  if (((*pBlock_00 != 0) && (iVar3 = strcasecomp(), iVar3 != 0)) &&
+     (pbVar2 = pBlock_00, pbVar6 != (byte *)0x0)) {
     do {
-      bVar1 = *pbVar5;
-      bVar10 = bVar1 < *pbVar9;
-      if (bVar1 != *pbVar9) {
+      bVar1 = *pbVar2;
+      bVar7 = bVar1 < *pbVar6;
+      if (bVar1 != *pbVar6) {
 LAB_0088df77:
-        iVar6 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+        iVar3 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
         goto LAB_0088df7c;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar5[1];
-      bVar10 = bVar1 < pbVar9[1];
-      if (bVar1 != pbVar9[1]) goto LAB_0088df77;
-      pbVar9 = pbVar9 + 2;
-      pbVar5 = pbVar5 + 2;
+      bVar1 = pbVar2[1];
+      bVar7 = bVar1 < pbVar6[1];
+      if (bVar1 != pbVar6[1]) goto LAB_0088df77;
+      pbVar6 = pbVar6 + 2;
+      pbVar2 = pbVar2 + 2;
     } while (bVar1 != 0);
-    iVar6 = 0;
+    iVar3 = 0;
 LAB_0088df7c:
-    if (iVar6 != 0) {
+    if (iVar3 != 0) {
 LAB_0088df80:
-      free(pbVar2);
-      if (pbVar3 != (byte *)0x0) {
-        free(pbVar3);
+      free(pBlock);
+      if (pBlock_00 != (byte *)0x0) {
+        free(pBlock_00);
       }
-      if (pbVar4 != (byte *)0x0) {
-        free(pbVar4);
+      if (string != (byte *)0x0) {
+        free(string);
       }
       return (byte *)0x0;
     }
   }
-  strchr(pbVar4,';');
-  puVar7 = extraout_EAX;
+  strchr(string,';');
+  puVar4 = extraout_EAX;
   if ((extraout_EAX != (undefined1 *)0x0) ||
-     (strchr(pbVar4,'?'), puVar7 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
-    *puVar7 = 0;
+     (strchr(string,'?'), puVar4 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
+    *puVar4 = 0;
   }
-  if ((*pbVar4 == 0x2f) && (pbVar9 = pbVar4, pbVar4[2] == 0x3a)) {
+  if ((*string == 0x2f) && (pbVar6 = string, string[2] == 0x3a)) {
     do {
-      pbVar5 = pbVar9 + 1;
-      *pbVar9 = *pbVar5;
-      pbVar9 = pbVar9 + 1;
-    } while (*pbVar5 != 0);
+      pbVar2 = pbVar6 + 1;
+      *pbVar6 = *pbVar2;
+      pbVar6 = pbVar6 + 1;
+    } while (*pbVar2 != 0);
   }
-  else if ((*pbVar3 != 0) && (iVar6 = strcasecomp(), iVar6 != 0)) {
+  else if ((*pBlock_00 != 0) && (iVar3 = strcasecomp(), iVar3 != 0)) {
     pbStack_4 = (byte *)0x0;
-    _StrAllocMCopy(&pbStack_4,"//",pbVar3,pbVar4,0);
-    free(pbVar4);
-    pbVar4 = pbStack_4;
+    _StrAllocMCopy(&pbStack_4,"//",pBlock_00,string,0);
+    free(string);
+    string = pbStack_4;
   }
-  bVar1 = *pbVar4;
-  pbVar9 = pbVar4;
+  bVar1 = *string;
+  pbVar6 = string;
   while (bVar1 != 0) {
-    if (*pbVar9 == 0x2f) {
-      *pbVar9 = 0x5c;
+    if (*pbVar6 == 0x2f) {
+      *pbVar6 = 0x5c;
     }
-    pbVar9 = pbVar9 + 1;
-    bVar1 = *pbVar9;
+    pbVar6 = pbVar6 + 1;
+    bVar1 = *pbVar6;
   }
-  _HTUnEscape(pbVar4);
-  free(pbVar2);
-  free(pbVar3);
-  return pbVar4;
+  _HTUnEscape(string);
+  free(pBlock);
+  free(pBlock_00);
+  return string;
 }
 
 
@@ -781,24 +781,24 @@ undefined4 _HTLocalToWWW(uchar *param_1)
   uchar uVar2;
   char cVar3;
   undefined4 uVar4;
-  char *pcVar5;
+  char *pBlock;
   int extraout_EAX;
-  uchar *puVar6;
+  uchar *puVar5;
   char *in_ECX;
-  int iVar7;
-  char *pcVar8;
+  int iVar6;
+  char *pcVar7;
   
   uVar4 = 0;
   if ((in_ECX == (char *)0x0) || (*in_ECX == '\0')) {
     in_ECX = "file:";
   }
-  if ((param_1 != (uchar *)0x0) && (puVar6 = param_1, *param_1 != '\0')) {
+  if ((param_1 != (uchar *)0x0) && (puVar5 = param_1, *param_1 != '\0')) {
     do {
-      uVar2 = *puVar6;
-      puVar6 = puVar6 + 1;
+      uVar2 = *puVar5;
+      puVar5 = puVar5 + 1;
     } while (uVar2 != '\0');
-    pcVar5 = (char *)_HTMemory_malloc();
-    if (pcVar5 == (char *)0x0) {
+    pBlock = (char *)_HTMemory_malloc();
+    if (pBlock == (char *)0x0) {
       if (DAT_03547718 != (code *)0x0) {
         (*DAT_03547718)("HTLocalToWWW",
                         "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTWWWStr.c",0x33d
@@ -807,44 +807,44 @@ undefined4 _HTLocalToWWW(uchar *param_1)
                     /* WARNING: Subroutine does not return */
       abort();
     }
-    iVar7 = (int)pcVar5 - (int)in_ECX;
+    iVar6 = (int)pBlock - (int)in_ECX;
     do {
       cVar3 = *in_ECX;
-      in_ECX[iVar7] = cVar3;
+      in_ECX[iVar6] = cVar3;
       in_ECX = in_ECX + 1;
     } while (cVar3 != '\0');
     strchr(param_1,':');
     if (extraout_EAX != 0) {
-      pcVar8 = pcVar5 + -1;
+      pcVar7 = pBlock + -1;
       do {
-        pcVar1 = pcVar8 + 1;
-        pcVar8 = pcVar8 + 1;
+        pcVar1 = pcVar7 + 1;
+        pcVar7 = pcVar7 + 1;
       } while (*pcVar1 != '\0');
-      pcVar8[0] = '/';
-      pcVar8[1] = '\0';
+      pcVar7[0] = '/';
+      pcVar7[1] = '\0';
     }
-    pcVar8 = pcVar5;
+    pcVar7 = pBlock;
     do {
-      cVar3 = *pcVar8;
-      pcVar8 = pcVar8 + 1;
+      cVar3 = *pcVar7;
+      pcVar7 = pcVar7 + 1;
     } while (cVar3 != '\0');
-    puVar6 = (uchar *)(pcVar5 + ((int)pcVar8 - (int)(pcVar5 + 1)));
+    puVar5 = (uchar *)(pBlock + ((int)pcVar7 - (int)(pBlock + 1)));
     uVar2 = *param_1;
     while (uVar2 != '\0') {
       if (*param_1 == '\\') {
-        *puVar6 = '/';
+        *puVar5 = '/';
       }
       else {
-        *puVar6 = *param_1;
+        *puVar5 = *param_1;
       }
       param_1 = param_1 + 1;
-      puVar6 = puVar6 + 1;
+      puVar5 = puVar5 + 1;
       uVar2 = *param_1;
     }
-    *puVar6 = '\0';
+    *puVar5 = '\0';
     uVar4 = _HTEscape(8);
-    if (pcVar5 != (char *)0x0) {
-      free(pcVar5);
+    if (pBlock != (char *)0x0) {
+      free(pBlock);
     }
   }
   return uVar4;

@@ -16,7 +16,7 @@ void __cdecl _dynamic_initializer_for__g_lbGlob__(void)
 
 // 009674F0  LB_NeedToReadLeaderBoard  (live/live_leaderboard.cpp:37)
 
-bool __cdecl LB_NeedToReadLeaderBoard(int param_1)
+bool __cdecl LB_NeedToReadLeaderBoard(int controllerIndex)
 
 {
   code *pcVar1;
@@ -54,13 +54,13 @@ void __cdecl LB_ForceRefresh(void)
 
 // 00967570  LB_InitStructure  (live/live_leaderboard.cpp:55)
 
-void __cdecl LB_InitStructure(LbStructure *param_1,int param_2)
+void __cdecl LB_InitStructure(LbStructure *structure,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (LbStructure *)0x0) {
+  if (structure == (LbStructure *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x38,0,
                              "%s");
     if (!bVar2) {
@@ -69,22 +69,23 @@ void __cdecl LB_InitStructure(LbStructure *param_1,int param_2)
       return;
     }
   }
-  param_1->numColums = 0;
-  param_1->type = param_2;
-  memset((uchar *)param_1->columns,'\0',0x44);
+  structure->numColums = 0;
+  structure->type = type;
+  memset((uchar *)structure->columns,'\0',0x44);
   return;
 }
 
 
 // 009675D0  LB_RegisterStat  (live/live_leaderboard.cpp:65)
 
-void __cdecl LB_RegisterStat(LbStructure *param_1,LbStatEnum param_2,bool param_3)
+void __cdecl LB_RegisterStat(LbStructure *structure,LbStatEnum statType,bool isRating)
 
 {
   code *pcVar1;
   bool bVar2;
+  uint numCols;
   
-  if (param_1 == (LbStructure *)0x0) {
+  if (structure == (LbStructure *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x42,0,
                              "%s");
     if (!bVar2) {
@@ -93,7 +94,7 @@ void __cdecl LB_RegisterStat(LbStructure *param_1,LbStatEnum param_2,bool param_
       return;
     }
   }
-  if (0x10 < param_1->numColums) {
+  if (0x10 < structure->numColums) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x45,0,
                              "%s");
     if (!bVar2) {
@@ -102,12 +103,12 @@ void __cdecl LB_RegisterStat(LbStructure *param_1,LbStatEnum param_2,bool param_
       return;
     }
   }
-  if (param_1->numColums < 0x11) {
-    param_1->columns[param_1->numColums] = param_2;
-    if (param_3) {
-      param_1->ratingCol = param_1->numColums;
+  if (structure->numColums < 0x11) {
+    structure->columns[structure->numColums] = statType;
+    if (isRating) {
+      structure->ratingCol = structure->numColums;
     }
-    param_1->numColums = param_1->numColums + 1;
+    structure->numColums = structure->numColums + 1;
   }
   return;
 }
@@ -115,7 +116,7 @@ void __cdecl LB_RegisterStat(LbStructure *param_1,LbStatEnum param_2,bool param_
 
 // 00967670  LB_RegisterStructure  (live/live_leaderboard.cpp:87)
 
-void __cdecl LB_RegisterStructure(LbLookup *param_1,LbStructure param_2,int param_3)
+void __cdecl LB_RegisterStructure(LbLookup *lookup,LbStructure structure,int type)
 
 {
   code *pcVar1;
@@ -123,8 +124,9 @@ void __cdecl LB_RegisterStructure(LbLookup *param_1,LbStructure param_2,int para
   int iVar3;
   LbStructure *pLVar4;
   LbStructure *pLVar5;
+  uint numLbs;
   
-  if (param_1 == (LbLookup *)0x0) {
+  if (lookup == (LbLookup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x58,0,
                              "%s");
     if (!bVar2) {
@@ -133,7 +135,7 @@ void __cdecl LB_RegisterStructure(LbLookup *param_1,LbStructure param_2,int para
       return;
     }
   }
-  if (0xf < param_1->numLbs) {
+  if (0xf < lookup->numLbs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x5a,0,
                              "%s");
     if (!bVar2) {
@@ -142,15 +144,15 @@ void __cdecl LB_RegisterStructure(LbLookup *param_1,LbStructure param_2,int para
       return;
     }
   }
-  if (param_1->numLbs < 0x10) {
-    pLVar4 = &param_2;
-    pLVar5 = param_1->structures + param_3;
+  if (lookup->numLbs < 0x10) {
+    pLVar4 = &structure;
+    pLVar5 = lookup->structures + type;
     for (iVar3 = 0x14; iVar3 != 0; iVar3 = iVar3 + -1) {
       pLVar5->type = pLVar4->type;
       pLVar4 = (LbStructure *)pLVar4->columns;
       pLVar5 = (LbStructure *)pLVar5->columns;
     }
-    param_1->numLbs = param_1->numLbs + 1;
+    lookup->numLbs = lookup->numLbs + 1;
   }
   return;
 }
@@ -158,13 +160,13 @@ void __cdecl LB_RegisterStructure(LbLookup *param_1,LbStructure param_2,int para
 
 // 00967710  LB_InitGlobalStructure  (live/live_leaderboard.cpp:101)
 
-void __cdecl LB_InitGlobalStructure(LbGlobalStructure *param_1,int param_2)
+void __cdecl LB_InitGlobalStructure(LbGlobalStructure *globalStructures,int lbIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (LbGlobalStructure *)0x0) {
+  if (globalStructures == (LbGlobalStructure *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x66,0,
                              "%s");
     if (!bVar2) {
@@ -173,22 +175,25 @@ void __cdecl LB_InitGlobalStructure(LbGlobalStructure *param_1,int param_2)
       return;
     }
   }
-  param_1->numColums = 0;
-  param_1->lbIndex = param_2;
-  memset((uchar *)param_1->columns,'\0',0x4c);
+  globalStructures->numColums = 0;
+  globalStructures->lbIndex = lbIndex;
+  memset((uchar *)globalStructures->columns,'\0',0x4c);
   return;
 }
 
 
 // 00967770  LB_RegisterGlobalStat  (live/live_leaderboard.cpp:111)
 
-void __cdecl LB_RegisterGlobalStat(LbGlobalStructure *param_1,GlobalLbStatEnum param_2,bool param_3)
+void __cdecl
+LB_RegisterGlobalStat
+          (LbGlobalStructure *globalStructures,GlobalLbStatEnum globalStatType,bool isRating)
 
 {
   code *pcVar1;
   bool bVar2;
+  uint numCols;
   
-  if (param_1 == (LbGlobalStructure *)0x0) {
+  if (globalStructures == (LbGlobalStructure *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x70,0,
                              "%s");
     if (!bVar2) {
@@ -197,7 +202,7 @@ void __cdecl LB_RegisterGlobalStat(LbGlobalStructure *param_1,GlobalLbStatEnum p
       return;
     }
   }
-  if (0x12 < param_1->numColums) {
+  if (0x12 < globalStructures->numColums) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x72,0,
                              "%s");
     if (!bVar2) {
@@ -206,12 +211,12 @@ void __cdecl LB_RegisterGlobalStat(LbGlobalStructure *param_1,GlobalLbStatEnum p
       return;
     }
   }
-  if (param_1->numColums < 0x13) {
-    param_1->columns[param_1->numColums] = param_2;
-    if (param_3) {
-      param_1->ratingCol = param_1->numColums;
+  if (globalStructures->numColums < 0x13) {
+    globalStructures->columns[globalStructures->numColums] = globalStatType;
+    if (isRating) {
+      globalStructures->ratingCol = globalStructures->numColums;
     }
-    param_1->numColums = param_1->numColums + 1;
+    globalStructures->numColums = globalStructures->numColums + 1;
   }
   return;
 }
@@ -219,7 +224,8 @@ void __cdecl LB_RegisterGlobalStat(LbGlobalStructure *param_1,GlobalLbStatEnum p
 
 // 00967810  LB_RegisterGlobalStructure  (live/live_leaderboard.cpp:132)
 
-void __cdecl LB_RegisterGlobalStructure(LbLookup *param_1,LbGlobalStructure param_2,int param_3)
+void __cdecl
+LB_RegisterGlobalStructure(LbLookup *lookup,LbGlobalStructure globalStructures,int lbIndex)
 
 {
   code *pcVar1;
@@ -227,8 +233,9 @@ void __cdecl LB_RegisterGlobalStructure(LbLookup *param_1,LbGlobalStructure para
   int iVar3;
   LbGlobalStructure *pLVar4;
   LbGlobalStructure *pLVar5;
+  uint numLbs;
   
-  if (param_1 == (LbLookup *)0x0) {
+  if (lookup == (LbLookup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x85,0,
                              "%s");
     if (!bVar2) {
@@ -237,7 +244,7 @@ void __cdecl LB_RegisterGlobalStructure(LbLookup *param_1,LbGlobalStructure para
       return;
     }
   }
-  if (3 < param_1->numGlobalLbs) {
+  if (3 < lookup->numGlobalLbs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x87,0,
                              "%s");
     if (!bVar2) {
@@ -246,15 +253,15 @@ void __cdecl LB_RegisterGlobalStructure(LbLookup *param_1,LbGlobalStructure para
       return;
     }
   }
-  if (param_1->numGlobalLbs < 4) {
-    pLVar4 = &param_2;
-    pLVar5 = param_1->globalStructures + param_3;
+  if (lookup->numGlobalLbs < 4) {
+    pLVar4 = &globalStructures;
+    pLVar5 = lookup->globalStructures + lbIndex;
     for (iVar3 = 0x16; iVar3 != 0; iVar3 = iVar3 + -1) {
       pLVar5->lbIndex = pLVar4->lbIndex;
       pLVar4 = (LbGlobalStructure *)pLVar4->columns;
       pLVar5 = (LbGlobalStructure *)pLVar5->columns;
     }
-    param_1->numGlobalLbs = param_1->numGlobalLbs + 1;
+    lookup->numGlobalLbs = lookup->numGlobalLbs + 1;
   }
   return;
 }
@@ -264,24 +271,24 @@ void __cdecl LB_RegisterGlobalStructure(LbLookup *param_1,LbGlobalStructure para
 
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-int __cdecl LB_GetLbIndex(LbType param_1,LbResetPeriod param_2,bool param_3,bool param_4)
+int __cdecl LB_GetLbIndex(LbType type,LbResetPeriod resetPeriod,bool isPrestigeLb,bool isHiddenLb)
 
 {
-  undefined4 local_8;
+  int lbIndex;
   
-  if (param_2 == LB_RESETPERIOD_ALL_TIME) {
-    local_8 = param_1;
+  if (resetPeriod == LB_RESETPERIOD_ALL_TIME) {
+    lbIndex = type;
   }
   else {
-    local_8 = param_1 + LB_COUNT + (param_2 - LB_RESETPERIOD_WEEKLY) * 0x20;
-    if (param_4) {
-      local_8 = local_8 + LB_COUNT;
+    lbIndex = type + LB_COUNT + (resetPeriod - LB_RESETPERIOD_WEEKLY) * 0x20;
+    if (isHiddenLb) {
+      lbIndex = lbIndex + 0x10;
     }
   }
-  if (param_3) {
-    local_8 = local_8 + 0x50;
+  if (isPrestigeLb) {
+    lbIndex = lbIndex + 0x50;
   }
-  return local_8;
+  return lbIndex;
 }
 
 
@@ -290,20 +297,22 @@ int __cdecl LB_GetLbIndex(LbType param_1,LbResetPeriod param_2,bool param_3,bool
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int param_2)
+bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *lb,int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  LbResetPeriod LVar4;
-  int iVar5;
-  overlappedTask *poVar6;
-  taskCompleteResults tVar7;
-  undefined4 local_c;
+  LbResetPeriod resetPeriod;
+  int iVar4;
+  overlappedTask *task;
+  taskCompleteResults tVar5;
+  int lbIndex;
+  overlappedTask *ov;
+  undefined4 userID;
   undefined4 local_8;
   
-  if (param_1 == (Leaderboard *)0x0) {
+  if (lb == (Leaderboard *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xba,0,
                              "%s");
     if (!bVar2) {
@@ -312,7 +321,7 @@ bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int para
       return (bool)uVar3;
     }
   }
-  if (param_2 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xbb,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -321,7 +330,7 @@ bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int para
       return (bool)uVar3;
     }
   }
-  if (param_1 == (Leaderboard *)0x0) {
+  if (lb == (Leaderboard *)0x0) {
     bVar2 = false;
   }
   else if ((lb_typeByResetPeriod->current).integer == 0) {
@@ -330,12 +339,12 @@ bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int para
   else {
     uVar3 = 1;
     bVar2 = Dvar_GetBool("lb_prestige");
-    LVar4 = Dvar_GetInt("lb_typeByResetPeriod");
-    iVar5 = LB_GetLbIndex(param_1->type,LVar4,bVar2,(bool)uVar3);
-    bVar2 = dwGetOnlineUserID(param_2,(ulong64 *)&local_c);
+    resetPeriod = Dvar_GetInt("lb_typeByResetPeriod");
+    iVar4 = LB_GetLbIndex(lb->type,resetPeriod,bVar2,(bool)uVar3);
+    bVar2 = dwGetOnlineUserID(controllerIndex,(ulong64 *)&userID);
     if (bVar2) {
-      poVar6 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_2,0x10);
-      if (poVar6 == (overlappedTask *)0x0) {
+      task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,0x10);
+      if (task == (overlappedTask *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0xcf,0,"%s");
         if (!bVar2) {
@@ -344,21 +353,21 @@ bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int para
           return (bool)uVar3;
         }
       }
-      if (poVar6 == (overlappedTask *)0x0) {
+      if (task == (overlappedTask *)0x0) {
         bVar2 = false;
       }
       else {
-        dwReadStatsByUser(poVar6,lbViewIds[iVar5],CONCAT44(local_8,local_c),
-                          (bdStatsInfo *)&param_1->playerLbRow);
-        poVar6->data = param_1;
-        tVar7 = dwGetTaskStatus(poVar6);
-        if (tVar7 == TASK_NOTCOMPLETE) {
-          bdRemoteTask::setTimeout((poVar6->overlappedIO).m_ptr,20.0);
+        dwReadStatsByUser(task,lbViewIds[iVar4],CONCAT44(local_8,userID),
+                          (bdStatsInfo *)&lb->playerLbRow);
+        task->data = lb;
+        tVar5 = dwGetTaskStatus(task);
+        if (tVar5 == TASK_NOTCOMPLETE) {
+          bdRemoteTask::setTimeout((task->overlappedIO).m_ptr,20.0);
           bVar2 = true;
         }
         else {
           Com_PrintError(0x16,"dwReadStatsByUser() failed.\n");
-          TaskManager_ClearTask(poVar6);
+          TaskManager_ClearTask(task);
           bVar2 = false;
         }
       }
@@ -378,17 +387,19 @@ bool __cdecl LB_GetNumMatchesPlayedForPlayerFromLb(Leaderboard *param_1,int para
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
+bool __cdecl LB_GetByRank(Leaderboard *lb,int controllerIndex,uint topRank)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  overlappedTask *poVar4;
-  int iVar5;
-  taskCompleteResults tVar6;
+  overlappedTask *task;
+  int iVar4;
+  taskCompleteResults tVar5;
+  int lbIndex;
+  overlappedTask *ov;
   
-  if (param_1 == (Leaderboard *)0x0) {
+  if (lb == (Leaderboard *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xe5,0,
                              "%s");
     if (!bVar2) {
@@ -397,7 +408,7 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
       return (bool)uVar3;
     }
   }
-  if (param_1->isUpdating != false) {
+  if (lb->isUpdating != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xe6,0,
                              "%s");
     if (!bVar2) {
@@ -406,7 +417,7 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
       return (bool)uVar3;
     }
   }
-  if (param_2 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xe7,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -415,8 +426,8 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
       return (bool)uVar3;
     }
   }
-  poVar4 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_2,0);
-  if (poVar4 == (overlappedTask *)0x0) {
+  task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,0);
+  if (task == (overlappedTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0xea,0,
                              "%s");
     if (!bVar2) {
@@ -425,20 +436,20 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
       return (bool)uVar3;
     }
   }
-  if (poVar4 == (overlappedTask *)0x0) {
+  if (task == (overlappedTask *)0x0) {
     bVar2 = false;
   }
   else {
-    iVar5 = LB_GetLbIndex(param_1->type,(lb_typeByResetPeriod->current).unsignedInt,
+    iVar4 = LB_GetLbIndex(lb->type,(lb_typeByResetPeriod->current).unsignedInt,
                           (lb_prestige->current).enabled,false);
     Com_DPrintf(0x16,"getting starting at rank %i\n");
-    dwReadStatsByRank(poVar4,lbViewIds[iVar5],param_3,(lb_maxrows->current).unsignedInt,
-                      (bdStatsInfo *)(param_1->userStats).m_leaderBoardEntries);
-    poVar4->data = param_1;
-    tVar6 = dwGetTaskStatus(poVar4);
-    if (tVar6 == TASK_NOTCOMPLETE) {
-      bdRemoteTask::setTimeout((poVar4->overlappedIO).m_ptr,20.0);
-      bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(param_1,param_2);
+    dwReadStatsByRank(task,lbViewIds[iVar4],topRank,(lb_maxrows->current).unsignedInt,
+                      (bdStatsInfo *)(lb->userStats).m_leaderBoardEntries);
+    task->data = lb;
+    tVar5 = dwGetTaskStatus(task);
+    if (tVar5 == TASK_NOTCOMPLETE) {
+      bdRemoteTask::setTimeout((task->overlappedIO).m_ptr,20.0);
+      bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(lb,controllerIndex);
       if (!bVar2) {
         Com_PrintError(0x16,"Error Reading number of matches played from leaderboard\n");
       }
@@ -446,7 +457,7 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
     }
     else {
       Com_PrintError(0x16,"dwReadStatsByRank() failed.\n");
-      TaskManager_ClearTask(poVar4);
+      TaskManager_ClearTask(task);
       bVar2 = false;
     }
   }
@@ -456,14 +467,14 @@ bool __cdecl LB_GetByRank(Leaderboard *param_1,int param_2,uint param_3)
 
 // 0096C260  serialize  (DW/leaderboardinfo.h:252)
 
-void __thiscall LeaderBoardRow<10>::serialize(LeaderBoardRow<10> *this,bdByteBuffer *param_1)
+void __thiscall LeaderBoardRow<10>::serialize(LeaderBoardRow<10> *this,bdByteBuffer *buffer)
 
 {
-  uint local_8;
+  uint i;
   
-  bdStatsInfo::serialize((bdStatsInfo *)this,param_1);
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    bdByteBuffer::writeInt32(param_1,this->m_columns[local_8]);
+  bdStatsInfo::serialize((bdStatsInfo *)this,buffer);
+  for (i = 0; i < 10; i = i + 1) {
+    bdByteBuffer::writeInt32(buffer,this->m_columns[i]);
   }
   return;
 }
@@ -474,32 +485,32 @@ void __thiscall LeaderBoardRow<10>::serialize(LeaderBoardRow<10> *this,bdByteBuf
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 bool __thiscall
-LeaderBoardRow<10>::deserialize(LeaderBoardRow<10> *this,bdReference<bdByteBuffer> param_1)
+LeaderBoardRow<10>::deserialize(LeaderBoardRow<10> *this,bdReference<bdByteBuffer> buffer)
 
 {
   bdReference<bdByteBuffer> bVar1;
-  uint local_c;
-  bool local_5;
+  uint i;
+  bool ok;
   
-  bVar1.m_ptr = param_1.m_ptr;
-  if (param_1.m_ptr != (bdByteBuffer *)0x0) {
-    InterlockedIncrement(&(param_1.m_ptr)->_padding_);
+  bVar1.m_ptr = buffer.m_ptr;
+  if (buffer.m_ptr != (bdByteBuffer *)0x0) {
+    InterlockedIncrement(&(buffer.m_ptr)->_padding_);
   }
-  local_5 = bdStatsInfo::deserialize((bdStatsInfo *)this,bVar1);
-  for (local_c = 0; (local_5 != false && (local_c < 10)); local_c = local_c + 1) {
-    local_5 = bdByteBuffer::readInt32(param_1.m_ptr,this->m_columns + local_c);
+  ok = bdStatsInfo::deserialize((bdStatsInfo *)this,bVar1);
+  for (i = 0; (ok != false && (i < 10)); i = i + 1) {
+    ok = bdByteBuffer::readInt32(buffer.m_ptr,this->m_columns + i);
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&param_1);
-  return local_5;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&buffer);
+  return ok;
 }
 
 
 // 00967C90  LB_GetByPlayer  (live/live_leaderboard.cpp:265)
 
-/* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+/* WARNING: Enum "LbType": Some values do not have unique names */
 
-bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
+bool __cdecl LB_GetByPlayer(Leaderboard *lb,int localClientNum)
 
 {
   code *pcVar1;
@@ -507,14 +518,16 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
   undefined1 uVar3;
   int iVar4;
   int iVar5;
-  overlappedTask *poVar6;
-  taskCompleteResults tVar7;
-  ulong64 *puVar8;
-  int iVar9;
-  undefined4 local_c;
+  overlappedTask *task;
+  taskCompleteResults tVar6;
+  ulong64 *userID_00;
+  int type;
+  int lbIndex;
+  overlappedTask *ov;
+  undefined4 userID;
   undefined4 local_8;
   
-  if (param_1 == (Leaderboard *)0x0) {
+  if (lb == (Leaderboard *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x10a,0
                              ,"%s");
     if (!bVar2) {
@@ -523,7 +536,7 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (param_1->isUpdating != false) {
+  if (lb->isUpdating != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x10b,0
                              ,"%s");
     if (!bVar2) {
@@ -532,16 +545,16 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  iVar4 = LB_GetLbIndex(param_1->type,(lb_typeByResetPeriod->current).unsignedInt,
+  iVar4 = LB_GetLbIndex(lb->type,(lb_typeByResetPeriod->current).unsignedInt,
                         (lb_prestige->current).enabled,false);
-  puVar8 = (ulong64 *)&local_c;
-  iVar5 = Com_LocalClient_GetControllerIndex(param_2);
-  bVar2 = dwGetOnlineUserID(iVar5,puVar8);
+  userID_00 = (ulong64 *)&userID;
+  iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar2 = dwGetOnlineUserID(iVar5,userID_00);
   if (bVar2) {
-    iVar9 = 0;
-    iVar5 = Com_LocalClient_GetControllerIndex(param_2);
-    poVar6 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,iVar5,iVar9);
-    if (poVar6 == (overlappedTask *)0x0) {
+    type = 0;
+    iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+    task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,iVar5,type);
+    if (task == (overlappedTask *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x118
                                ,0,"%s");
       if (!bVar2) {
@@ -550,19 +563,19 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
         return (bool)uVar3;
       }
     }
-    if (poVar6 == (overlappedTask *)0x0) {
+    if (task == (overlappedTask *)0x0) {
       bVar2 = false;
     }
     else {
-      dwReadStatsByPivot(poVar6,lbViewIds[iVar4],CONCAT44(local_8,local_c),
+      dwReadStatsByPivot(task,lbViewIds[iVar4],CONCAT44(local_8,userID),
                          (lb_maxrows->current).unsignedInt,
-                         (bdStatsInfo *)(param_1->userStats).m_leaderBoardEntries);
-      poVar6->data = param_1;
-      tVar7 = dwGetTaskStatus(poVar6);
-      if (tVar7 == TASK_NOTCOMPLETE) {
-        bdRemoteTask::setTimeout((poVar6->overlappedIO).m_ptr,20.0);
-        iVar4 = Com_LocalClient_GetControllerIndex(param_2);
-        bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(param_1,iVar4);
+                         (bdStatsInfo *)(lb->userStats).m_leaderBoardEntries);
+      task->data = lb;
+      tVar6 = dwGetTaskStatus(task);
+      if (tVar6 == TASK_NOTCOMPLETE) {
+        bdRemoteTask::setTimeout((task->overlappedIO).m_ptr,20.0);
+        iVar4 = Com_LocalClient_GetControllerIndex(localClientNum);
+        bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(lb,iVar4);
         if (!bVar2) {
           Com_PrintError(0x16,"Error Reading number of matches played from leaderboard\n");
         }
@@ -570,7 +583,7 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
       }
       else {
         Com_PrintError(0x16,"dwReadStatsByUser() failed.\n");
-        TaskManager_ClearTask(poVar6);
+        TaskManager_ClearTask(task);
         bVar2 = false;
       }
     }
@@ -589,15 +602,17 @@ bool __cdecl LB_GetByPlayer(Leaderboard *param_1,int param_2)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_GetStatsByXuids(int param_1,Leaderboard *param_2)
+bool __cdecl LB_GetStatsByXuids(int controllerIndex,Leaderboard *lb)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  overlappedTask *poVar4;
-  int iVar5;
-  taskCompleteResults tVar6;
+  overlappedTask *task;
+  int iVar4;
+  taskCompleteResults tVar5;
+  int lbIndex;
+  overlappedTask *ov;
   
   if (g_lbGlob.numXuids == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x134,0
@@ -615,8 +630,8 @@ bool __cdecl LB_GetStatsByXuids(int param_1,Leaderboard *param_2)
     bVar2 = false;
   }
   else {
-    poVar4 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_1,0);
-    if (poVar4 == (overlappedTask *)0x0) {
+    task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,0);
+    if (task == (overlappedTask *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x13e
                                ,0,"%s");
       if (!bVar2) {
@@ -625,19 +640,19 @@ bool __cdecl LB_GetStatsByXuids(int param_1,Leaderboard *param_2)
         return (bool)uVar3;
       }
     }
-    if (poVar4 == (overlappedTask *)0x0) {
+    if (task == (overlappedTask *)0x0) {
       bVar2 = false;
     }
     else {
-      iVar5 = LB_GetLbIndex(param_2->type,(lb_typeByResetPeriod->current).unsignedInt,
+      iVar4 = LB_GetLbIndex(lb->type,(lb_typeByResetPeriod->current).unsignedInt,
                             (lb_prestige->current).enabled,false);
-      dwReadStatsForUsers(poVar4,lbViewIds[iVar5],g_lbGlob.xuids,g_lbGlob.numXuids,
-                          (bdStatsInfo *)(param_2->userStats).m_leaderBoardEntries);
-      poVar4->data = param_2;
-      tVar6 = dwGetTaskStatus(poVar4);
-      if (tVar6 == TASK_NOTCOMPLETE) {
-        bdRemoteTask::setTimeout((poVar4->overlappedIO).m_ptr,20.0);
-        bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(param_2,param_1);
+      dwReadStatsForUsers(task,lbViewIds[iVar4],g_lbGlob.xuids,g_lbGlob.numXuids,
+                          (bdStatsInfo *)(lb->userStats).m_leaderBoardEntries);
+      task->data = lb;
+      tVar5 = dwGetTaskStatus(task);
+      if (tVar5 == TASK_NOTCOMPLETE) {
+        bdRemoteTask::setTimeout((task->overlappedIO).m_ptr,20.0);
+        bVar2 = LB_GetNumMatchesPlayedForPlayerFromLb(lb,controllerIndex);
         if (!bVar2) {
           Com_PrintError(0x16,"Error Reading number of matches played from leaderboard\n");
         }
@@ -645,7 +660,7 @@ bool __cdecl LB_GetStatsByXuids(int param_1,Leaderboard *param_2)
       }
       else {
         Com_PrintError(0x16,"dwReadStatsForUsers() failed.\n");
-        TaskManager_ClearTask(poVar4);
+        TaskManager_ClearTask(task);
         bVar2 = false;
       }
     }
@@ -670,20 +685,20 @@ CCallback<CSteamAchievements,UserAchievementStored_t,0>::GetCallbackSizeBytes
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_GetPlayerStats(int param_1,Leaderboard *param_2)
+bool __cdecl LB_GetPlayerStats(int controllerIndex,Leaderboard *lb)
 
 {
   bool bVar1;
-  undefined4 local_c;
+  undefined4 userID;
   undefined4 local_8;
   
   g_lbGlob.numXuids = 0;
-  bVar1 = dwGetOnlineUserID(param_1,(ulong64 *)&local_c);
+  bVar1 = dwGetOnlineUserID(controllerIndex,(ulong64 *)&userID);
   if (bVar1) {
     g_lbGlob.numXuids = 1;
     g_lbGlob.xuids[0]._4_4_ = local_8;
-    g_lbGlob.xuids[0]._0_4_ = local_c;
-    bVar1 = LB_GetStatsByXuids(param_1,param_2);
+    g_lbGlob.xuids[0]._0_4_ = userID;
+    bVar1 = LB_GetStatsByXuids(controllerIndex,lb);
   }
   else {
     Com_PrintError(0x16,
@@ -700,23 +715,23 @@ bool __cdecl LB_GetPlayerStats(int param_1,Leaderboard *param_2)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_GetFriends(Leaderboard *param_1,int param_2)
+bool __cdecl LB_GetFriends(Leaderboard *lb,int localClientNum)
 
 {
   code *pcVar1;
   ulong uVar2;
   bool bVar3;
   undefined1 uVar4;
-  int local_d8;
-  FriendInfo local_d4;
+  int i;
+  FriendInfo info;
   uint local_18;
-  int local_14;
-  int local_10;
-  undefined4 local_c;
+  int controllerIndex;
+  int friendCount;
+  undefined4 userID;
   undefined4 local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (Leaderboard *)0x0) {
+  if (lb == (Leaderboard *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x194,0
                              ,"%s");
     if (!bVar3) {
@@ -725,7 +740,7 @@ bool __cdecl LB_GetFriends(Leaderboard *param_1,int param_2)
       return (bool)uVar4;
     }
   }
-  if (param_1->isUpdating != false) {
+  if (lb->isUpdating != false) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x195,0
                              ,"%s");
     if (!bVar3) {
@@ -734,25 +749,25 @@ bool __cdecl LB_GetFriends(Leaderboard *param_1,int param_2)
       return (bool)uVar4;
     }
   }
-  local_14 = Com_LocalClient_GetControllerIndex(param_2);
-  local_10 = Friends_GetCount(local_14,0,0);
-  bVar3 = dwGetOnlineUserID(local_14,(ulong64 *)&local_c);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  friendCount = Friends_GetCount(controllerIndex,0,0);
+  bVar3 = dwGetOnlineUserID(controllerIndex,(ulong64 *)&userID);
   if (bVar3) {
-    g_lbGlob.xuids[0]._0_4_ = local_c;
+    g_lbGlob.xuids[0]._0_4_ = userID;
     g_lbGlob.xuids[0]._4_4_ = local_8;
   }
   g_lbGlob.numXuids = 1;
-  for (local_d8 = 0; local_d8 < local_10; local_d8 = local_d8 + 1) {
-    bVar3 = Friends_GetByIndex(local_14,0,local_d8,&local_d4);
+  for (i = 0; i < friendCount; i = i + 1) {
+    bVar3 = Friends_GetByIndex(controllerIndex,0,i,&info);
     if (bVar3) {
       Com_DPrintf(0x16,"%s\n");
       uVar2 = g_lbGlob.numXuids;
-      *(undefined4 *)(g_lbGlob.xuids + g_lbGlob.numXuids) = (undefined4)local_d4.dwid;
-      *(undefined4 *)((int)g_lbGlob.xuids + uVar2 * 8 + 4) = local_d4.dwid._4_4_;
+      *(undefined4 *)(g_lbGlob.xuids + g_lbGlob.numXuids) = (undefined4)info.dwid;
+      *(undefined4 *)((int)g_lbGlob.xuids + uVar2 * 8 + 4) = info.dwid._4_4_;
       g_lbGlob.numXuids = g_lbGlob.numXuids + 1;
     }
   }
-  bVar3 = LB_GetStatsByXuids(local_14,param_1);
+  bVar3 = LB_GetStatsByXuids(controllerIndex,lb);
   return bVar3;
 }
 
@@ -761,7 +776,7 @@ bool __cdecl LB_GetFriends(Leaderboard *param_1,int param_2)
 
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-bool __cdecl LB_CalcOffset(int param_1,Leaderboard *param_2)
+bool __cdecl LB_CalcOffset(int offset,Leaderboard *lb)
 
 {
   code *pcVar1;
@@ -769,25 +784,26 @@ bool __cdecl LB_CalcOffset(int param_1,Leaderboard *param_2)
   undefined1 uVar3;
   int local_18;
   int local_14;
+  int top;
   
-  if ((param_2 == (Leaderboard *)0x0) &&
+  if ((lb == (Leaderboard *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x1ca
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2->filter == 0) {
-    if (param_2->numResults == 0) {
+  if (lb->filter == 0) {
+    if (lb->numResults == 0) {
       bVar2 = false;
     }
-    else if (param_1 < param_2->offset + param_2->numResults) {
-      if (param_1 < param_2->offset) {
-        local_18 = param_1 - ((lb_maxrows->current).integer / 2 + -1);
+    else if (offset < lb->offset + lb->numResults) {
+      if (offset < lb->offset) {
+        local_18 = offset - ((lb_maxrows->current).integer / 2 + -1);
         if (local_18 < 1) {
           local_18 = 0;
         }
-        param_2->offset = local_18;
+        lb->offset = local_18;
         bVar2 = true;
       }
       else {
@@ -795,16 +811,16 @@ bool __cdecl LB_CalcOffset(int param_1,Leaderboard *param_2)
       }
     }
     else {
-      local_14 = param_1 - ((lb_maxrows->current).integer / 2 + -1);
+      local_14 = offset - ((lb_maxrows->current).integer / 2 + -1);
       if (local_14 < 1) {
         local_14 = 0;
       }
-      param_2->offset = local_14;
+      lb->offset = local_14;
       bVar2 = true;
     }
   }
   else {
-    param_2->offset = 0;
+    lb->offset = 0;
     bVar2 = false;
   }
   return bVar2;
@@ -817,7 +833,7 @@ bool __cdecl LB_CalcOffset(int param_1,Leaderboard *param_2)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 LeaderBoardResult<LeaderBoardRow<10>,100> * __cdecl
-LB_UpdateLeaderboard(int param_1,LbType param_2,int param_3)
+LB_UpdateLeaderboard(int localClientNum,LbType lbType,int index)
 
 {
   int iVar1;
@@ -825,93 +841,102 @@ LB_UpdateLeaderboard(int param_1,LbType param_2,int param_3)
   bool bVar3;
   bool bVar4;
   int iVar5;
-  Leaderboard *pLVar6;
-  int iVar7;
-  int iVar8;
-  char *pcVar9;
-  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar10;
-  bool bVar11;
-  bool bVar12;
-  bool bVar13;
+  Leaderboard *lb_00;
+  int controllerIndex_00;
+  int iVar6;
+  char *fmt;
+  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar7;
+  bool bVar8;
+  bool bVar9;
+  bool bVar10;
+  Leaderboard *lb;
+  bool notSameFilter;
+  bool newOffset;
+  int controllerIndex;
+  bool notSameResetPeriod;
+  int ms;
+  bool outOfDate;
+  bool notSamePrestigeMode;
+  bool needToFetchAgain;
   
-  iVar5 = param_2 * 0x3ca0;
-  pLVar6 = g_lbGlob.leaderboards + param_2;
-  iVar7 = Com_LocalClient_GetControllerIndex(param_1);
-  if (g_lbGlob.leaderboards[param_2].isUpdating == false) {
-    iVar8 = Sys_Milliseconds();
-    bVar11 = g_lbGlob.leaderboards[param_2].lbTypeByResetPeriod !=
-             (lb_typeByResetPeriod->current).integer;
-    bVar12 = g_lbGlob.leaderboards[param_2].filter != (lb_filter->current).integer;
-    bVar13 = g_lbGlob.leaderboards[param_2].prestigeMode != (lb_prestige->current).enabled;
+  iVar5 = lbType * 0x3ca0;
+  lb_00 = g_lbGlob.leaderboards + lbType;
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (g_lbGlob.leaderboards[lbType].isUpdating == false) {
+    iVar6 = Sys_Milliseconds();
+    bVar8 = g_lbGlob.leaderboards[lbType].lbTypeByResetPeriod !=
+            (lb_typeByResetPeriod->current).integer;
+    bVar9 = g_lbGlob.leaderboards[lbType].filter != (lb_filter->current).integer;
+    bVar10 = g_lbGlob.leaderboards[lbType].prestigeMode != (lb_prestige->current).enabled;
     if ((lb_minrefresh->current).integer == 0) {
       bVar4 = false;
     }
     else {
       bVar4 = (lb_minrefresh->current).integer * 1000 <=
-              iVar8 - g_lbGlob.leaderboards[param_2].lastUpdate;
+              iVar6 - g_lbGlob.leaderboards[lbType].lastUpdate;
     }
-    if (((bVar12) || (bVar11)) || (bVar13)) {
+    if (((bVar9) || (bVar8)) || (bVar10)) {
       bVar3 = false;
     }
     else {
-      bVar3 = LB_CalcOffset(param_3,pLVar6);
+      bVar3 = LB_CalcOffset(index,lb_00);
     }
-    if (((bVar12) || (bVar3 != false)) || ((bVar4 || ((bVar11 || (bVar13)))))) {
+    if (((bVar9) || (bVar3 != false)) || ((bVar4 || ((bVar8 || (bVar10)))))) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
-    if ((g_lbGlob.leaderboards[param_2].forceRefresh != false) || (bVar4)) {
-      g_lbGlob.leaderboards[param_2].filter = (lb_filter->current).integer;
-      g_lbGlob.leaderboards[param_2].lbTypeByResetPeriod = (lb_typeByResetPeriod->current).integer;
-      g_lbGlob.leaderboards[param_2].prestigeMode = (lb_prestige->current).enabled;
-      if ((29999 < iVar8 - g_lbGlob.leaderboards[param_2].lastUpdate) || (bVar4)) {
-        iVar1 = g_lbGlob.leaderboards[param_2].filter;
+    if ((g_lbGlob.leaderboards[lbType].forceRefresh != false) || (bVar4)) {
+      g_lbGlob.leaderboards[lbType].filter = (lb_filter->current).integer;
+      g_lbGlob.leaderboards[lbType].lbTypeByResetPeriod = (lb_typeByResetPeriod->current).integer;
+      g_lbGlob.leaderboards[lbType].prestigeMode = (lb_prestige->current).enabled;
+      if ((29999 < iVar6 - g_lbGlob.leaderboards[lbType].lastUpdate) || (bVar4)) {
+        iVar1 = g_lbGlob.leaderboards[lbType].filter;
         if (iVar1 == 0) {
-          if (((bVar12) || (bVar11)) || (bVar13)) {
-            bVar4 = LB_GetByPlayer(pLVar6,param_1);
+          if (((bVar9) || (bVar8)) || (bVar10)) {
+            bVar4 = LB_GetByPlayer(lb_00,localClientNum);
             *(bool *)(iVar5 + 0xa4e8535) = bVar4;
           }
           else {
-            bVar4 = LB_GetByRank(pLVar6,iVar7,g_lbGlob.leaderboards[param_2].offset + 1);
+            bVar4 = LB_GetByRank(lb_00,controllerIndex_00,g_lbGlob.leaderboards[lbType].offset + 1);
             *(bool *)(iVar5 + 0xa4e8535) = bVar4;
           }
         }
         else if (iVar1 == 1) {
-          bVar4 = LB_GetFriends(pLVar6,param_1);
+          bVar4 = LB_GetFriends(lb_00,localClientNum);
           *(bool *)(iVar5 + 0xa4e8535) = bVar4;
         }
         else if (iVar1 == 2) {
-          bVar4 = LB_GetPlayerStats(iVar7,pLVar6);
+          bVar4 = LB_GetPlayerStats(controllerIndex_00,lb_00);
           *(bool *)(iVar5 + 0xa4e8535) = bVar4;
         }
         else {
-          pcVar9 = va("Unknown filter type: %i\n");
+          fmt = va("Unknown filter type: %i\n");
           bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
-                                   0x21d,0,pcVar9);
+                                   0x21d,0,fmt);
           if (!bVar4) {
             pcVar2 = (code *)swi(3);
-            pLVar10 = (LeaderBoardResult<LeaderBoardRow<10>,100> *)(*pcVar2)();
-            return pLVar10;
+            pLVar7 = (LeaderBoardResult<LeaderBoardRow<10>,100> *)(*pcVar2)();
+            return pLVar7;
           }
         }
-        if (g_lbGlob.leaderboards[param_2].isUpdating == false) {
-          UI_CloseMenu(param_1,"popup_gettinglb");
+        if (g_lbGlob.leaderboards[lbType].isUpdating == false) {
+          UI_CloseMenu(localClientNum,"popup_gettinglb");
         }
         else {
-          g_lbGlob.leaderboards[param_2].lastUpdate = iVar8;
-          *(bool *)(iVar5 + 0xa4e8536) = bVar12;
-          *(bool *)(iVar5 + 0xa4e8537) = bVar11;
-          *(bool *)(iVar5 + 0xa4e8538) = bVar13;
+          g_lbGlob.leaderboards[lbType].lastUpdate = iVar6;
+          *(bool *)(iVar5 + 0xa4e8536) = bVar9;
+          *(bool *)(iVar5 + 0xa4e8537) = bVar8;
+          *(bool *)(iVar5 + 0xa4e8538) = bVar10;
         }
       }
       else {
-        UI_CloseMenu(param_1,"popup_gettinglb");
+        UI_CloseMenu(localClientNum,"popup_gettinglb");
       }
     }
   }
-  return &pLVar6->userStats;
+  return &lb_00->userStats;
 }
 
 
@@ -920,35 +945,37 @@ LB_UpdateLeaderboard(int param_1,LbType param_2,int param_3)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-int __cdecl LB_FeederCount(int param_1)
+int __cdecl LB_FeederCount(int localClientNum)
 
 {
-  LbType LVar1;
-  bool bVar2;
-  int iVar3;
+  LbType lbType_00;
+  bool bVar1;
+  int iVar2;
+  Leaderboard *lb;
+  int lbType;
   
-  LVar1 = (lb_type->current).unsignedInt;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = LB_NeedToReadLeaderBoard(iVar3);
-  if (bVar2) {
-    LB_UpdateLeaderboard(param_1,LVar1,g_lbGlob.leaderboards[LVar1].offset);
-    if (g_lbGlob.leaderboards[LVar1].isUpdating == false) {
-      if ((g_lbGlob.leaderboards[LVar1].filter == 1) || (g_lbGlob.leaderboards[LVar1].filter == 2))
-      {
-        iVar3 = g_lbGlob.leaderboards[LVar1].numResults;
+  lbType_00 = (lb_type->current).unsignedInt;
+  iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = LB_NeedToReadLeaderBoard(iVar2);
+  if (bVar1) {
+    LB_UpdateLeaderboard(localClientNum,lbType_00,g_lbGlob.leaderboards[lbType_00].offset);
+    if (g_lbGlob.leaderboards[lbType_00].isUpdating == false) {
+      if ((g_lbGlob.leaderboards[lbType_00].filter == 1) ||
+         (g_lbGlob.leaderboards[lbType_00].filter == 2)) {
+        iVar2 = g_lbGlob.leaderboards[lbType_00].numResults;
       }
       else {
-        iVar3 = g_lbGlob.leaderboards[LVar1].totalResults;
+        iVar2 = g_lbGlob.leaderboards[lbType_00].totalResults;
       }
     }
     else {
-      iVar3 = 0;
+      iVar2 = 0;
     }
   }
   else {
-    iVar3 = 0;
+    iVar2 = 0;
   }
-  return iVar3;
+  return iVar2;
 }
 
 
@@ -957,35 +984,39 @@ int __cdecl LB_FeederCount(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_FeederSelection(int param_1)
+void __cdecl LB_FeederSelection(int index)
 
 {
-  g_lbGlob.leaderboards[(lb_type->current).integer].curIdx = param_1;
+  g_lbGlob.leaderboards[(lb_type->current).integer].curIdx = index;
   return;
 }
 
 
 // 009686F0  LB_OnSelect  (live/live_leaderboard.cpp:593)
 
+/* WARNING: Variable defined which should be unmapped: lb */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LB_OnSelect(int param_1)
+void __cdecl LB_OnSelect(int localClientNum)
 
 {
-  LbType LVar1;
-  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar2;
-  int iVar3;
-  Leaderboard *pLVar4;
+  LbType lbType_00;
+  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar1;
+  int iVar2;
+  Leaderboard *lb;
+  int lbType;
+  LeaderBoardRow<10> *row;
   
-  LVar1 = (lb_type->current).unsignedInt;
-  pLVar4 = g_lbGlob.leaderboards + LVar1;
-  if (g_lbGlob.leaderboards[LVar1].isUpdating == false) {
-    pLVar2 = LB_UpdateLeaderboard(param_1,LVar1,g_lbGlob.leaderboards[LVar1].curIdx);
-    iVar3 = (pLVar4->curIdx - pLVar4->offset) * 0x98;
+  lbType_00 = (lb_type->current).unsignedInt;
+  if (g_lbGlob.leaderboards[lbType_00].isUpdating == false) {
+    pLVar1 = LB_UpdateLeaderboard(localClientNum,lbType_00,g_lbGlob.leaderboards[lbType_00].curIdx);
+    iVar2 = (g_lbGlob.leaderboards[lbType_00].curIdx - g_lbGlob.leaderboards[lbType_00].offset) *
+            0x98;
     Live_ShowPlayerProfile
-              (param_1,CONCAT44((int)pLVar2 + iVar3 + 0x98,
-                                *(undefined4 *)((int)pLVar2 + iVar3 + 0x7c)),(char *)pLVar4);
+              (localClientNum,
+               CONCAT44((int)pLVar1 + iVar2 + 0x98,*(undefined4 *)((int)pLVar1 + iVar2 + 0x7c)),
+               (char *)(g_lbGlob.leaderboards + lbType_00));
   }
   return;
 }
@@ -996,20 +1027,24 @@ void __cdecl LB_OnSelect(int param_1)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LB_GetSelectedPlayerInfo(int param_1,LBSelectedPlayerInfo *param_2)
+void __cdecl LB_GetSelectedPlayerInfo(int localClientNum,LBSelectedPlayerInfo *info)
 
 {
-  LbType LVar1;
-  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar2;
-  int iVar3;
+  LbType lbType_00;
+  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar1;
+  int iVar2;
+  Leaderboard *lb;
+  int lbType;
+  LeaderBoardRow<10> *row;
   
-  LVar1 = (lb_type->current).unsignedInt;
-  if (g_lbGlob.leaderboards[LVar1].isUpdating == false) {
-    pLVar2 = LB_UpdateLeaderboard(param_1,LVar1,g_lbGlob.leaderboards[LVar1].curIdx);
-    iVar3 = (g_lbGlob.leaderboards[LVar1].curIdx - g_lbGlob.leaderboards[LVar1].offset) * 0x98;
-    *(undefined4 *)&param_2->playerXuid = *(undefined4 *)((int)pLVar2 + iVar3 + 0x78);
-    *(undefined4 *)((int)&param_2->playerXuid + 4) = *(undefined4 *)((int)pLVar2 + iVar3 + 0x7c);
-    I_strncpyz(param_2->gamerTag,(char *)((int)pLVar2 + iVar3 + 0x98),0x40);
+  lbType_00 = (lb_type->current).unsignedInt;
+  if (g_lbGlob.leaderboards[lbType_00].isUpdating == false) {
+    pLVar1 = LB_UpdateLeaderboard(localClientNum,lbType_00,g_lbGlob.leaderboards[lbType_00].curIdx);
+    iVar2 = (g_lbGlob.leaderboards[lbType_00].curIdx - g_lbGlob.leaderboards[lbType_00].offset) *
+            0x98;
+    *(undefined4 *)&info->playerXuid = *(undefined4 *)((int)pLVar1 + iVar2 + 0x78);
+    *(undefined4 *)((int)&info->playerXuid + 4) = *(undefined4 *)((int)pLVar1 + iVar2 + 0x7c);
+    I_strncpyz(info->gamerTag,(char *)((int)pLVar1 + iVar2 + 0x98),0x40);
   }
   return;
 }
@@ -1017,39 +1052,40 @@ void __cdecl LB_GetSelectedPlayerInfo(int param_1,LBSelectedPlayerInfo *param_2)
 
 // 00968830  LB_OverrideCursorPos  (live/live_leaderboard.cpp:641)
 
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LB_OverrideCursorPos(int param_1,int *param_2,int *param_3)
+void __cdecl LB_OverrideCursorPos(int viewmax,int *cursorPos,int *startPos)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   int local_10;
+  Leaderboard *lb;
   
-  if ((param_2 == (int *)0x0) &&
+  if ((cursorPos == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x283
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (int *)0x0) &&
+  if ((startPos == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x284
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((*param_2 < 0) &&
+  if ((*cursorPos < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x285
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((*param_3 < 0) &&
+  if ((*startPos < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x286
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1058,42 +1094,42 @@ void __cdecl LB_OverrideCursorPos(int param_1,int *param_2,int *param_3)
   }
   iVar1 = (lb_type->current).integer;
   if (g_lbGlob.leaderboards[iVar1].isUpdating == false) {
-    *param_2 = g_lbGlob.leaderboards[iVar1].curIdx;
+    *cursorPos = g_lbGlob.leaderboards[iVar1].curIdx;
     if (((g_lbGlob.leaderboards[iVar1].notSameFilter == false) &&
         (g_lbGlob.leaderboards[iVar1].notSameResetPeriod == false)) &&
        (g_lbGlob.leaderboards[iVar1].notSamePrestigeMode == false)) {
-      if (*param_2 < *param_3) {
-        *param_3 = *param_2;
+      if (*cursorPos < *startPos) {
+        *startPos = *cursorPos;
       }
-      else if (*param_3 <= *param_2 - param_1) {
-        *param_3 = (*param_2 - param_1) + 1;
+      else if (*startPos <= *cursorPos - viewmax) {
+        *startPos = (*cursorPos - viewmax) + 1;
       }
     }
     else {
-      local_10 = (*param_2 - param_1 / 2) + 1;
+      local_10 = (*cursorPos - viewmax / 2) + 1;
       if (local_10 < 1) {
         local_10 = 0;
       }
-      *param_3 = local_10;
+      *startPos = local_10;
       g_lbGlob.leaderboards[iVar1].notSameFilter = false;
       g_lbGlob.leaderboards[iVar1].notSameResetPeriod = false;
       g_lbGlob.leaderboards[iVar1].notSamePrestigeMode = false;
     }
-    if ((*param_2 < 0) &&
+    if ((*cursorPos < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0x2a1,1,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((*param_3 < 0) &&
+    if ((*startPos < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0x2a2,1,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (((uint)param_1 <= (uint)(*param_2 - *param_3)) &&
+    if (((uint)viewmax <= (uint)(*cursorPos - *startPos)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0x2a3,1,
                                  "(*cursorPos - *startPos) doesn\'t index viewmax\n\t%i not in [0, %i)"
@@ -1109,45 +1145,46 @@ void __cdecl LB_OverrideCursorPos(int param_1,int *param_2,int *param_3)
 
 // 00968A80  LB_GetXUserCol  (live/live_leaderboard.cpp:679)
 
-int __cdecl
-LB_GetXUserCol(LbLookup *param_1,LeaderBoardRow<10> *param_2,int param_3,LbStatEnum param_4)
+int __cdecl LB_GetXUserCol(LbLookup *g_lbLookup,LeaderBoardRow<10> *row,int type,LbStatEnum colId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_1c;
-  uint local_14;
-  LbStructure *local_c;
+  uint i_2;
+  uint numCols;
+  uint i;
+  uint numLbs;
+  LbStructure *structure;
+  int value;
   
-  if ((param_2 == (LeaderBoardRow<10> *)0x0) &&
+  if ((row == (LeaderBoardRow<10> *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x2aa
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (7 < param_3) {
-    param_3 = param_3 + -8;
+  if (7 < type) {
+    type = type + -8;
   }
-  local_c = (LbStructure *)0x0;
-  for (local_14 = 0; (local_c == (LbStructure *)0x0 && (local_14 < param_1->numLbs));
-      local_14 = local_14 + 1) {
-    if (param_1->structures[local_14].type == param_3) {
-      local_c = param_1->structures + local_14;
+  structure = (LbStructure *)0x0;
+  for (i = 0; (structure == (LbStructure *)0x0 && (i < g_lbLookup->numLbs)); i = i + 1) {
+    if (g_lbLookup->structures[i].type == type) {
+      structure = g_lbLookup->structures + i;
     }
   }
-  if ((local_c == (LbStructure *)0x0) &&
+  if ((structure == (LbStructure *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",700,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((local_c != (LbStructure *)0x0) && (param_2 != (LeaderBoardRow<10> *)0x0)) {
-    for (local_1c = 0; local_1c < local_c->numColums; local_1c = local_1c + 1) {
-      if (local_c->columns[local_1c] == param_4) {
-        return param_2->m_columns[local_1c];
+  if ((structure != (LbStructure *)0x0) && (row != (LeaderBoardRow<10> *)0x0)) {
+    for (i_2 = 0; i_2 < structure->numColums; i_2 = i_2 + 1) {
+      if (structure->columns[i_2] == colId) {
+        return row->m_columns[i_2];
       }
     }
   }
@@ -1159,15 +1196,18 @@ LB_GetXUserCol(LbLookup *param_1,LeaderBoardRow<10> *param_2,int param_3,LbStatE
 
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_GetRankIconForXp(LeaderBoardRow<10> *param_1,LbType param_2,Material **param_3)
+void __cdecl LB_GetRankIconForXp(LeaderBoardRow<10> *row,LbType type,Material **handle)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int prestige_00;
+  int prestige;
+  int rank;
+  int xp;
   
-  if (param_1 == (LeaderBoardRow<10> *)0x0) {
+  if (row == (LeaderBoardRow<10> *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x2d7,0
                              ,"%s");
     if (!bVar2) {
@@ -1176,10 +1216,10 @@ void __cdecl LB_GetRankIconForXp(LeaderBoardRow<10> *param_1,LbType param_2,Mate
       return;
     }
   }
-  iVar3 = LB_GetXUserCol(&g_LbLookup,param_1,param_2,LB_STAT_XP);
-  iVar4 = LB_GetXUserCol(&g_LbLookup,param_1,param_2,LB_STAT_PRESTIGE_LEVEL);
+  iVar3 = LB_GetXUserCol(&g_LbLookup,row,type,LB_STAT_XP);
+  prestige_00 = LB_GetXUserCol(&g_LbLookup,row,type,LB_STAT_PRESTIGE_LEVEL);
   iVar3 = CL_GetRankForXp(iVar3);
-  CL_GetRankIcon(iVar3,iVar4,param_3);
+  CL_GetRankIcon(iVar3,prestige_00,handle);
   return;
 }
 
@@ -1188,41 +1228,42 @@ void __cdecl LB_GetRankIconForXp(LeaderBoardRow<10> *param_1,LbType param_2,Mate
 
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-int __cdecl LB_CalcPlayerIndex(int param_1,Leaderboard *param_2)
+int __cdecl LB_CalcPlayerIndex(int localControllerIndex,Leaderboard *lb)
 
 {
   bool bVar1;
-  uint local_10;
-  int local_c;
+  uint numStats;
+  uint i;
+  int userID;
   int local_8;
   
-  local_10 = 0;
-  bVar1 = dwGetOnlineUserID(param_1,(ulong64 *)&local_c);
+  i = 0;
+  bVar1 = dwGetOnlineUserID(localControllerIndex,(ulong64 *)&userID);
   if (bVar1) {
-    for (local_10 = 0;
-        (local_10 < (uint)param_2->numResults &&
-        (((param_2->userStats).m_leaderBoardEntries[local_10]._padding_ != local_c ||
-         ((param_2->userStats).m_leaderBoardEntries[local_10]._padding_ != local_8))));
-        local_10 = local_10 + 1) {
+    for (i = 0; (i < (uint)lb->numResults &&
+                (((lb->userStats).m_leaderBoardEntries[i]._padding_ != userID ||
+                 ((lb->userStats).m_leaderBoardEntries[i]._padding_ != local_8)))); i = i + 1) {
     }
-    if (local_10 == param_2->numResults) {
-      local_10 = 0;
+    if (i == lb->numResults) {
+      i = 0;
     }
   }
-  return local_10;
+  return i;
 }
 
 
 // 00968D70  LB_CompareXUserStatsRowRanks  (live/live_leaderboard.cpp:758)
 
-int __cdecl LB_CompareXUserStatsRowRanks(void *param_1,void *param_2)
+int __cdecl LB_CompareXUserStatsRowRanks(void *r1,void *r2)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  LeaderBoardRow<10> *row1;
+  LeaderBoardRow<10> *row2;
   
-  if (param_1 == (void *)0x0) {
+  if (r1 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x2fa,0
                              ,"%s");
     if (!bVar2) {
@@ -1231,7 +1272,7 @@ int __cdecl LB_CompareXUserStatsRowRanks(void *param_1,void *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (void *)0x0) {
+  if (r2 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x2fb,0
                              ,"%s");
     if (!bVar2) {
@@ -1240,23 +1281,23 @@ int __cdecl LB_CompareXUserStatsRowRanks(void *param_1,void *param_2)
       return iVar3;
     }
   }
-  if (*(int *)((int)param_1 + 0x20) == 0 && *(int *)((int)param_1 + 0x24) == 0) {
-    if (*(int *)((int)param_2 + 0x20) == 0 && *(int *)((int)param_2 + 0x24) == 0) {
+  if (*(int *)((int)r1 + 0x20) == 0 && *(int *)((int)r1 + 0x24) == 0) {
+    if (*(int *)((int)r2 + 0x20) == 0 && *(int *)((int)r2 + 0x24) == 0) {
       iVar3 = 0;
     }
     else {
       iVar3 = 1;
     }
   }
-  else if (*(int *)((int)param_2 + 0x20) == 0 && *(int *)((int)param_2 + 0x24) == 0) {
+  else if (*(int *)((int)r2 + 0x20) == 0 && *(int *)((int)r2 + 0x24) == 0) {
     iVar3 = -1;
   }
-  else if ((*(uint *)((int)param_2 + 0x24) < *(uint *)((int)param_1 + 0x24)) ||
-          ((*(uint *)((int)param_2 + 0x24) <= *(uint *)((int)param_1 + 0x24) &&
-           (*(uint *)((int)param_2 + 0x20) <= *(uint *)((int)param_1 + 0x20))))) {
-    if ((*(uint *)((int)param_1 + 0x24) < *(uint *)((int)param_2 + 0x24)) ||
-       ((*(uint *)((int)param_1 + 0x24) == *(uint *)((int)param_2 + 0x24) &&
-        (*(uint *)((int)param_1 + 0x20) <= *(uint *)((int)param_2 + 0x20))))) {
+  else if ((*(uint *)((int)r2 + 0x24) < *(uint *)((int)r1 + 0x24)) ||
+          ((*(uint *)((int)r2 + 0x24) <= *(uint *)((int)r1 + 0x24) &&
+           (*(uint *)((int)r2 + 0x20) <= *(uint *)((int)r1 + 0x20))))) {
+    if ((*(uint *)((int)r1 + 0x24) < *(uint *)((int)r2 + 0x24)) ||
+       ((*(uint *)((int)r1 + 0x24) == *(uint *)((int)r2 + 0x24) &&
+        (*(uint *)((int)r1 + 0x20) <= *(uint *)((int)r2 + 0x20))))) {
       iVar3 = 0;
     }
     else {
@@ -1274,20 +1315,19 @@ int __cdecl LB_CompareXUserStatsRowRanks(void *param_1,void *param_2)
 
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_SortXUserStatsByRank(Leaderboard *param_1)
+void __cdecl LB_SortXUserStatsByRank(Leaderboard *lb)
 
 {
-  int local_8;
+  int count;
   
-  qsort((param_1->userStats).m_leaderBoardEntries,param_1->numResults,0x98,
-        LB_CompareXUserStatsRowRanks);
-  local_8 = 0;
-  while ((local_8 < param_1->numResults &&
-         ((param_1->userStats).m_leaderBoardEntries[local_8]._padding_ != 0 ||
-          (param_1->userStats).m_leaderBoardEntries[local_8]._padding_ != 0))) {
-    local_8 = local_8 + 1;
+  qsort((lb->userStats).m_leaderBoardEntries,lb->numResults,0x98,LB_CompareXUserStatsRowRanks);
+  count = 0;
+  while ((count < lb->numResults &&
+         ((lb->userStats).m_leaderBoardEntries[count]._padding_ != 0 ||
+          (lb->userStats).m_leaderBoardEntries[count]._padding_ != 0))) {
+    count = count + 1;
   }
-  param_1->numResults = local_8;
+  lb->numResults = count;
   return;
 }
 
@@ -1295,80 +1335,85 @@ void __cdecl LB_SortXUserStatsByRank(Leaderboard *param_1)
 // 00968EA0  LB_MakeRow  (live/live_leaderboard.cpp:816)
 
 bool __cdecl
-LB_MakeRow(int param_1,LbPlayerStat *param_2,int param_3,int param_4,LeaderBoardRow<10> *param_5,
-          bool param_6)
+LB_MakeRow(int controllerIndex,LbPlayerStat *stats,int type,int lbIndex,LeaderBoardRow<10> *row,
+          bool statWriteTypeAdd)
 
 {
   uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
+  LbStatEnum LVar2;
+  int iVar3;
+  code *pcVar4;
+  bool bVar5;
+  undefined1 uVar6;
   bool local_24;
-  uint local_1c;
-  uint local_14;
-  int local_c;
+  LbStatEnum statType;
+  uint i_2;
+  uint numColumsInLb;
+  uint i;
+  uint numLbs;
+  LbStructure *structure;
+  bool ok;
   
-  if (param_5 == (LeaderBoardRow<10> *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x332,0
+  if (row == (LeaderBoardRow<10> *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x332,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return (bool)uVar6;
     }
   }
-  if (param_2 == (LbPlayerStat *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x333,0
+  if (stats == (LbPlayerStat *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x333,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return (bool)uVar6;
     }
   }
   uVar1 = g_LbLookup.numLbs;
-  local_c = 0;
-  if (param_6) {
-    param_5->_padding_ = 1;
+  structure = (LbStructure *)0x0;
+  if (statWriteTypeAdd) {
+    row->_padding_ = 1;
   }
   else {
-    param_5->_padding_ = 0;
+    row->_padding_ = 0;
   }
-  for (local_14 = 0; (local_c == 0 && (local_14 < uVar1)); local_14 = local_14 + 1) {
-    if (g_LbLookup.structures[local_14].type == param_3) {
-      local_c = local_14 * 0x50 + 0xa4e3d6c;
+  for (i = 0; (structure == (LbStructure *)0x0 && (i < uVar1)); i = i + 1) {
+    if (g_LbLookup.structures[i].type == type) {
+      structure = g_LbLookup.structures + i;
     }
   }
-  if ((local_c == 0) || (param_5 == (LeaderBoardRow<10> *)0x0)) {
+  if ((structure == (LbStructure *)0x0) || (row == (LeaderBoardRow<10> *)0x0)) {
     local_24 = false;
   }
   else {
     local_24 = true;
   }
   if (local_24 != false) {
-    uVar1 = *(uint *)(local_c + 0x48);
+    uVar1 = structure->numColums;
     if (10 < uVar1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x34c
+      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x34c
                                ,0,"%s");
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        uVar5 = (*pcVar3)();
-        return (bool)uVar5;
+      if (!bVar5) {
+        pcVar4 = (code *)swi(3);
+        uVar6 = (*pcVar4)();
+        return (bool)uVar6;
       }
     }
-    for (local_1c = 0; local_1c < uVar1; local_1c = local_1c + 1) {
-      iVar2 = *(int *)(local_c + 4 + local_1c * 4);
-      param_5->m_columns[local_1c] = param_2->values[iVar2];
-      if (*(uint *)(local_c + 0x4c) == local_1c) {
-        iVar2 = param_2->values[iVar2];
-        param_5->_padding_ = iVar2;
-        param_5->_padding_ = iVar2 >> 0x1f;
+    for (i_2 = 0; i_2 < uVar1; i_2 = i_2 + 1) {
+      LVar2 = structure->columns[i_2];
+      row->m_columns[i_2] = stats->values[LVar2];
+      if (structure->ratingCol == i_2) {
+        iVar3 = stats->values[LVar2];
+        row->_padding_ = iVar3;
+        row->_padding_ = iVar3 >> 0x1f;
       }
     }
-    dwGetOnlineUserID(param_1,(ulong64 *)&param_5->_padding_);
-    Live_UserGetName(param_1,(char *)&param_5->_padding_,0x41);
-    param_5->_padding_ = lbViewIds[param_4];
+    dwGetOnlineUserID(controllerIndex,(ulong64 *)&row->_padding_);
+    Live_UserGetName(controllerIndex,(char *)&row->_padding_,0x41);
+    row->_padding_ = lbViewIds[lbIndex];
   }
   return local_24;
 }
@@ -1377,74 +1422,79 @@ LB_MakeRow(int param_1,LbPlayerStat *param_2,int param_3,int param_4,LeaderBoard
 // 00969070  LB_MakeGlobalRow  (live/live_leaderboard.cpp:874)
 
 bool __cdecl
-LB_MakeGlobalRow(int param_1,LbPlayerStat *param_2,int param_3,LeaderBoardRow<10> *param_4)
+LB_MakeGlobalRow(int controllerIndex,LbPlayerStat *stats,int lbIndex,LeaderBoardRow<10> *row)
 
 {
   uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
+  GlobalLbStatEnum GVar2;
+  int iVar3;
+  code *pcVar4;
+  bool bVar5;
+  undefined1 uVar6;
   bool local_24;
-  uint local_1c;
-  uint local_14;
-  int local_c;
+  GlobalLbStatEnum statType;
+  uint i_2;
+  uint numColumsInLb;
+  uint i;
+  uint numLbs;
+  LbGlobalStructure *structure;
+  bool ok;
   
-  if (param_4 == (LeaderBoardRow<10> *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x36c,0
+  if (row == (LeaderBoardRow<10> *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x36c,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return (bool)uVar6;
     }
   }
-  if (param_2 == (LbPlayerStat *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x36d,0
+  if (stats == (LbPlayerStat *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x36d,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return (bool)uVar6;
     }
   }
   uVar1 = g_LbLookup.numGlobalLbs;
-  local_c = 0;
-  param_4->_padding_ = 0;
-  for (local_14 = 0; (local_c == 0 && (local_14 < uVar1)); local_14 = local_14 + 1) {
-    if (g_LbLookup.globalStructures[local_14].lbIndex == param_3) {
-      local_c = local_14 * 0x58 + 0xa4e4270;
+  structure = (LbGlobalStructure *)0x0;
+  row->_padding_ = 0;
+  for (i = 0; (structure == (LbGlobalStructure *)0x0 && (i < uVar1)); i = i + 1) {
+    if (g_LbLookup.globalStructures[i].lbIndex == lbIndex) {
+      structure = g_LbLookup.globalStructures + i;
     }
   }
-  if ((local_c == 0) || (param_4 == (LeaderBoardRow<10> *)0x0)) {
+  if ((structure == (LbGlobalStructure *)0x0) || (row == (LeaderBoardRow<10> *)0x0)) {
     local_24 = false;
   }
   else {
     local_24 = true;
   }
   if (local_24 != false) {
-    uVar1 = *(uint *)(local_c + 0x50);
+    uVar1 = structure->numColums;
     if (10 < uVar1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x381
+      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x381
                                ,0,"%s");
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        uVar5 = (*pcVar3)();
-        return (bool)uVar5;
+      if (!bVar5) {
+        pcVar4 = (code *)swi(3);
+        uVar6 = (*pcVar4)();
+        return (bool)uVar6;
       }
     }
-    for (local_1c = 0; local_1c < uVar1; local_1c = local_1c + 1) {
-      iVar2 = *(int *)(local_c + 4 + local_1c * 4);
-      param_4->m_columns[local_1c] = param_2->values[iVar2];
-      if (local_1c == *(uint *)(local_c + 0x54)) {
-        iVar2 = param_2->values[iVar2];
-        param_4->_padding_ = iVar2;
-        param_4->_padding_ = iVar2 >> 0x1f;
+    for (i_2 = 0; i_2 < uVar1; i_2 = i_2 + 1) {
+      GVar2 = structure->columns[i_2];
+      row->m_columns[i_2] = stats->values[GVar2];
+      if (i_2 == structure->ratingCol) {
+        iVar3 = stats->values[GVar2];
+        row->_padding_ = iVar3;
+        row->_padding_ = iVar3 >> 0x1f;
       }
     }
-    dwGetOnlineUserID(param_1,(ulong64 *)&param_4->_padding_);
-    Live_UserGetName(param_1,(char *)&param_4->_padding_,0x41);
-    param_4->_padding_ = GlobalLbViewIds[param_3];
+    dwGetOnlineUserID(controllerIndex,(ulong64 *)&row->_padding_);
+    Live_UserGetName(controllerIndex,(char *)&row->_padding_,0x41);
+    row->_padding_ = GlobalLbViewIds[lbIndex];
   }
   return local_24;
 }
@@ -1465,13 +1515,13 @@ void __cdecl LB_openDownloadingMenuCmd(void)
 void __cdecl LB_ReportUser(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *toastPopupDesc;
+  int toastPopupDuration;
   
   Com_DPrintf(0xe,"Implement me\n");
-  iVar2 = 0xa8c;
-  pcVar1 = UI_SafeTranslateString("MENU_SENT_CAPS");
-  UI_OpenToastPopup(0,"menu_mp_killstreak_select","",pcVar1,iVar2);
+  toastPopupDuration = 0xa8c;
+  toastPopupDesc = UI_SafeTranslateString("MENU_SENT_CAPS");
+  UI_OpenToastPopup(0,"menu_mp_killstreak_select","",toastPopupDesc,toastPopupDuration);
   return;
 }
 
@@ -1479,6 +1529,7 @@ void __cdecl LB_ReportUser(void)
 // 00969290  LB_IncrementEscrow  (live/live_leaderboard.cpp:960)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl LB_IncrementEscrow(void)
 
@@ -1487,10 +1538,10 @@ void __cdecl LB_IncrementEscrow(void)
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  bdStatsInfo **ppbVar5;
-  int iVar6;
-  int iVar7;
-  bdStatsInfo local_14c;
+  bdStatsInfo **statsInfo_00;
+  int numStats;
+  int taskType;
+  bdStatsInfo updateTimeRow;
   int local_dc;
   undefined4 local_d8;
   undefined4 local_d4;
@@ -1501,8 +1552,8 @@ void __cdecl LB_IncrementEscrow(void)
   undefined4 local_c0;
   undefined4 local_bc;
   undefined4 local_b8;
-  undefined8 local_b4;
-  bdStatsInfo local_ac;
+  undefined8 playerXuid;
+  bdStatsInfo balanceRow;
   int local_3c;
   undefined4 local_38;
   undefined4 local_34;
@@ -1514,16 +1565,16 @@ void __cdecl LB_IncrementEscrow(void)
   undefined4 local_1c;
   undefined4 local_18;
   uint local_10;
-  bdStatsInfo *local_c;
+  bdStatsInfo *statsInfo;
   bdStatsInfo *local_8;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar3 = Cmd_Argc();
   if (iVar3 == 3) {
     pcVar4 = Cmd_Argv(1);
-    local_b4 = I_atoi64(pcVar4);
-    bdStatsInfo::bdStatsInfo(&local_ac);
-    local_ac._padding_ = (int)LeaderBoardRow<10>::vftable;
+    playerXuid = I_atoi64(pcVar4);
+    bdStatsInfo::bdStatsInfo(&balanceRow);
+    balanceRow._padding_ = (int)LeaderBoardRow<10>::vftable;
     local_3c = 0;
     local_38 = 0;
     local_34 = 0;
@@ -1534,8 +1585,8 @@ void __cdecl LB_IncrementEscrow(void)
     local_20 = 0;
     local_1c = 0;
     local_18 = 0;
-    bdStatsInfo::bdStatsInfo(&local_14c);
-    local_14c._padding_ = (int)LeaderBoardRow<10>::vftable;
+    bdStatsInfo::bdStatsInfo(&updateTimeRow);
+    updateTimeRow._padding_ = (int)LeaderBoardRow<10>::vftable;
     local_dc = 0;
     local_d8 = 0;
     local_d4 = 0;
@@ -1546,30 +1597,30 @@ void __cdecl LB_IncrementEscrow(void)
     local_c0 = 0;
     local_bc = 0;
     local_b8 = 0;
-    local_ac.m_entityID._0_4_ = (undefined4)local_b4;
-    local_ac.m_entityID._4_4_ = local_b4._4_4_;
-    local_ac.m_leaderboardID = 0x1395;
-    local_ac.m_writeType = STAT_WRITE_ADD;
-    local_ac.m_rating._0_4_ = 0;
-    local_ac.m_rating._4_4_ = 0;
+    balanceRow.m_entityID._0_4_ = (undefined4)playerXuid;
+    balanceRow.m_entityID._4_4_ = playerXuid._4_4_;
+    balanceRow.m_leaderboardID = 0x1395;
+    balanceRow.m_writeType = STAT_WRITE_ADD;
+    balanceRow.m_rating._0_4_ = 0;
+    balanceRow.m_rating._4_4_ = 0;
     pcVar4 = Cmd_Argv(2);
     local_3c = atoi(pcVar4);
-    local_14c.m_entityID._0_4_ = (undefined4)local_b4;
-    local_14c.m_entityID._4_4_ = local_b4._4_4_;
-    local_14c.m_leaderboardID = 0x1396;
-    local_14c.m_writeType = STAT_WRITE_REPLACE;
-    local_14c.m_rating._0_4_ = 0;
-    local_14c.m_rating._4_4_ = 0;
+    updateTimeRow.m_entityID._0_4_ = (undefined4)playerXuid;
+    updateTimeRow.m_entityID._4_4_ = playerXuid._4_4_;
+    updateTimeRow.m_leaderboardID = 0x1396;
+    updateTimeRow.m_writeType = STAT_WRITE_REPLACE;
+    updateTimeRow.m_rating._0_4_ = 0;
+    updateTimeRow.m_rating._4_4_ = 0;
     local_dc = LiveStorage_GetUTC();
-    local_c = &local_ac;
-    local_8 = &local_14c;
-    iVar7 = 0xf;
-    iVar6 = 2;
-    ppbVar5 = &local_c;
+    statsInfo = &balanceRow;
+    local_8 = &updateTimeRow;
+    taskType = 0xf;
+    numStats = 2;
+    statsInfo_00 = &statsInfo;
     iVar3 = Com_ControllerIndexes_GetPrimary();
-    LB_WriteRows(iVar3,ppbVar5,iVar6,iVar7);
-    bdStatsInfo::~bdStatsInfo(&local_14c);
-    bdStatsInfo::~bdStatsInfo(&local_ac);
+    LB_WriteRows(iVar3,statsInfo_00,numStats,taskType);
+    bdStatsInfo::~bdStatsInfo(&updateTimeRow);
+    bdStatsInfo::~bdStatsInfo(&balanceRow);
   }
   else {
     pcVar4 = va("Usage: incrementescrow( <playerXuid>, <amount> )\n");
@@ -1595,83 +1646,89 @@ bool __cdecl LB_SetGametypeDvar(void)
   dvar_s *pdVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
+  dvar_s *gtdvar;
+  int gameMode;
+  bool hardcoreMode;
   
-  local_c = 0;
+  gameMode = 0;
   bVar2 = Dvar_GetBool("scr_hardcore");
   pdVar1 = g_gametype;
   while( true ) {
-    if (lbTypeEnum[local_c] == (char *)0x0) {
+    if (lbTypeEnum[gameMode] == (char *)0x0) {
       Dvar_SetInt(lb_type,0);
       return false;
     }
-    iVar3 = _stricmp(lbTypeEnum[local_c],(pdVar1->current).string);
+    iVar3 = _stricmp(lbTypeEnum[gameMode],(pdVar1->current).string);
     if (iVar3 == 0) break;
-    local_c = local_c + 1;
+    gameMode = gameMode + 1;
   }
-  Dvar_SetInt(lb_type,(-(uint)bVar2 & 8) + local_c);
+  Dvar_SetInt(lb_type,(-(uint)bVar2 & 8) + gameMode);
   return true;
 }
 
 
 // 00969B50  LB_SetStatsForRow  (live/live_leaderboard.cpp:1022)
 
-void __cdecl LB_SetStatsForRow(int param_1,char *param_2,bool param_3)
+void __cdecl LB_SetStatsForRow(int controllerIndex,char *gameModePrefix,bool setMatchDelta)
 
 {
   bool bVar1;
   int local_28;
   int local_24;
-  int local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int timePlayed;
+  int totalScore;
+  int statValue;
+  char *currentStatName;
+  int statId;
   
-  for (local_8 = 0; local_8 < 0x11; local_8 = local_8 + 1) {
-    local_c = *(char **)(&lbStatStrings + local_8 * 4);
-    local_10 = 0;
-    local_14 = 0;
-    local_18 = 0;
-    if (((param_2 == (char *)0x0) || (local_8 == 4)) || (local_8 == 5)) {
-      if ((!param_3) && (bVar1 = LiveStats_GetIntPlayerStat(param_1,&local_10,local_c), !bVar1)) {
+  for (statId = 0; statId < 0x11; statId = statId + 1) {
+    currentStatName = *(char **)(&lbStatStrings + statId * 4);
+    statValue = 0;
+    totalScore = 0;
+    timePlayed = 0;
+    if (((gameModePrefix == (char *)0x0) || (statId == 4)) || (statId == 5)) {
+      if ((!setMatchDelta) &&
+         (bVar1 = LiveStats_GetIntPlayerStat(controllerIndex,&statValue,currentStatName), !bVar1)) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    else if (local_8 == 0) {
-      if (param_3) {
+    else if (statId == 0) {
+      if (setMatchDelta) {
         local_24 = 1;
       }
       else {
-        local_24 = LiveStats_GetTotalMatchesPlayedByGameMode(param_1,param_2);
+        local_24 = LiveStats_GetTotalMatchesPlayedByGameMode(controllerIndex,gameModePrefix);
       }
-      local_10 = local_24;
+      statValue = local_24;
     }
-    else if (local_8 == 3) {
-      if (!param_3) {
-        LiveStats_GetIntPlayerStatByGameMode(param_1,&local_14,param_2,"SCORE");
-        LiveStats_GetIntPlayerStatByGameMode(param_1,&local_18,param_2,"TIME_PLAYED_TOTAL");
-        local_28 = local_18 / 0x3c;
+    else if (statId == 3) {
+      if (!setMatchDelta) {
+        LiveStats_GetIntPlayerStatByGameMode(controllerIndex,&totalScore,gameModePrefix,"SCORE");
+        LiveStats_GetIntPlayerStatByGameMode
+                  (controllerIndex,&timePlayed,gameModePrefix,"TIME_PLAYED_TOTAL");
+        local_28 = timePlayed / 0x3c;
         if (local_28 < 2) {
           local_28 = 1;
         }
-        local_18 = local_28;
-        local_10 = (int)(((float)local_14 * 1000.0) / (float)local_28);
+        timePlayed = local_28;
+        statValue = (int)(((float)totalScore * 1000.0) / (float)local_28);
       }
     }
-    else if (param_3) {
-      bVar1 = LiveStats_GetIntPlayerStatMatchDeltaByGameMode(param_1,&local_10,param_2,local_c);
+    else if (setMatchDelta) {
+      bVar1 = LiveStats_GetIntPlayerStatMatchDeltaByGameMode
+                        (controllerIndex,&statValue,gameModePrefix,currentStatName);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
     else {
-      bVar1 = LiveStats_GetIntPlayerStatByGameMode(param_1,&local_10,param_2,local_c);
+      bVar1 = LiveStats_GetIntPlayerStatByGameMode
+                        (controllerIndex,&statValue,gameModePrefix,currentStatName);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    LB_SetStat(param_1,local_8,local_10);
+    LB_SetStat(controllerIndex,statId,statValue);
   }
   return;
 }
@@ -1683,79 +1740,84 @@ void __cdecl LB_SetStatsForRow(int param_1,char *param_2,bool param_3)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_ReadHiddenLeaderboardComplete(int param_1)
+taskCompleteResults __cdecl LB_ReadHiddenLeaderboardComplete(int slot)
 
 {
   void *pvVar1;
-  char *pcVar2;
-  code *pcVar3;
-  bool bVar4;
-  taskCompleteResults tVar5;
-  LbType LVar6;
-  overlappedTask *poVar7;
+  char *gameModePrefix_00;
+  code *pcVar2;
+  bool bVar3;
+  taskCompleteResults tVar4;
+  LbType type;
+  overlappedTask *task;
   int local_1a4;
-  uint local_194;
-  LbType local_188;
-  int local_178;
-  int local_174;
-  taskCompleteResults local_170;
-  uint local_16c;
-  int local_168;
-  int local_164;
-  bool local_15d;
-  int local_15c;
-  int local_158;
-  LbResetPeriod local_154;
-  int local_150;
-  bdStatsInfo local_14c;
+  uint i;
+  LbType lbType;
+  overlappedTask *uploadStatsToLb;
+  int currentLbType;
+  char *gameModePrefix;
+  LeaderBoardRow<10> *rowReadFromHiddenLb;
+  int timePlayed;
+  int prestige;
+  int totalResults;
+  taskCompleteResults result;
+  int currRow;
+  LbTaskEnum uploadTask;
+  int controllerIndex;
+  bool writeStatsToPrestigeLb;
+  int numResults;
+  int lbIndex;
+  LbResetPeriod resetPeriod;
+  int numMatchesPlayed;
+  bdStatsInfo rowToBeWrittenToLb;
   int local_dc [11];
-  int local_b0;
-  LeaderBoardRow<10> local_ac;
+  int rankXP;
+  LeaderBoardRow<10> rowToBeWrittenToHiddenLb;
   uint local_14;
-  overlappedTask *local_10;
-  bdStatsInfo *local_c [2];
+  overlappedTask *readStatsOverlappedIO;
+  bdStatsInfo *statsInfo [2];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = g_lbGlob.tasks + param_1;
-  if ((0x1f < (uint)param_1) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43d
+  readStatsOverlappedIO = g_lbGlob.tasks + slot;
+  if ((0x1f < (uint)slot) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43d
                                ,0,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)"),
-     !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    tVar5 = (*pcVar3)();
-    return tVar5;
+     !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  if ((g_lbGlob.tasks[param_1].active == false) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43e
-                               ,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    tVar5 = (*pcVar3)();
-    return tVar5;
+  if ((g_lbGlob.tasks[slot].active == false) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43e
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  if ((g_lbGlob.tasks[param_1].data == (void *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43f
-                               ,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    tVar5 = (*pcVar3)();
-    return tVar5;
+  if ((g_lbGlob.tasks[slot].data == (void *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x43f
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  local_168 = 8;
-  local_170 = dwReadStatsComplete(local_10,&local_15c,&local_174);
-  local_164 = local_10->controllerIndex;
-  bdStatsInfo::bdStatsInfo((bdStatsInfo *)&local_ac);
-  local_ac._padding_ = (int)LeaderBoardRow<10>::vftable;
-  local_ac.m_columns[0] = 0;
-  local_ac.m_columns[1] = 0;
-  local_ac.m_columns[2] = 0;
-  local_ac.m_columns[3] = 0;
-  local_ac.m_columns[4] = 0;
-  local_ac.m_columns[5] = 0;
-  local_ac.m_columns[6] = 0;
-  local_ac.m_columns[7] = 0;
-  local_ac.m_columns[8] = 0;
-  local_ac.m_columns[9] = 0;
-  bdStatsInfo::bdStatsInfo(&local_14c);
-  local_14c._padding_ = (int)LeaderBoardRow<10>::vftable;
+  uploadTask = LB_TASK_UPLOADSTATS_WEEKLY_LB;
+  result = dwReadStatsComplete(readStatsOverlappedIO,&numResults,&totalResults);
+  controllerIndex = readStatsOverlappedIO->controllerIndex;
+  bdStatsInfo::bdStatsInfo((bdStatsInfo *)&rowToBeWrittenToHiddenLb);
+  rowToBeWrittenToHiddenLb._padding_ = (int)LeaderBoardRow<10>::vftable;
+  rowToBeWrittenToHiddenLb.m_columns[0] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[1] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[2] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[3] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[4] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[5] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[6] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[7] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[8] = 0;
+  rowToBeWrittenToHiddenLb.m_columns[9] = 0;
+  bdStatsInfo::bdStatsInfo(&rowToBeWrittenToLb);
+  rowToBeWrittenToLb._padding_ = (int)LeaderBoardRow<10>::vftable;
   local_dc[0] = 0;
   local_dc[1] = 0;
   local_dc[2] = 0;
@@ -1766,112 +1828,113 @@ taskCompleteResults __cdecl LB_ReadHiddenLeaderboardComplete(int param_1)
   local_dc[7] = 0;
   local_dc[8] = 0;
   local_dc[9] = 0;
-  local_16c = 0;
-  local_158 = 0;
-  local_b0 = 0;
-  local_178 = 0;
-  local_154 = LB_RESETPERIOD_WEEKLY;
-  local_15d = false;
-  if (local_170 == TASK_COMPLETE) {
-    pvVar1 = g_lbGlob.tasks[param_1].data;
-    LVar6 = Dvar_GetInt("lb_type");
-    pcVar2 = lbTypeEnum[LVar6];
-    local_188 = LVar6;
-    if (7 < (int)LVar6) {
-      local_188 = LVar6 - LB_BASIC_GAMEMODE_COUNT;
+  currRow = 0;
+  lbIndex = 0;
+  rankXP = 0;
+  prestige = 0;
+  resetPeriod = LB_RESETPERIOD_WEEKLY;
+  writeStatsToPrestigeLb = false;
+  if (result == TASK_COMPLETE) {
+    pvVar1 = g_lbGlob.tasks[slot].data;
+    type = Dvar_GetInt("lb_type");
+    gameModePrefix_00 = lbTypeEnum[type];
+    currentLbType = type;
+    if (7 < (int)type) {
+      currentLbType = type - LB_BASIC_GAMEMODE_COUNT;
     }
-    switch(g_lbGlob.tasks[param_1].type) {
+    switch(g_lbGlob.tasks[slot].type) {
     case 1:
-      local_154 = LB_RESETPERIOD_WEEKLY;
-      local_168 = 8;
-      local_158 = LB_GetLbIndex(LVar6,LB_RESETPERIOD_WEEKLY,false,true);
+      resetPeriod = LB_RESETPERIOD_WEEKLY;
+      uploadTask = LB_TASK_UPLOADSTATS_WEEKLY_LB;
+      lbIndex = LB_GetLbIndex(type,LB_RESETPERIOD_WEEKLY,false,true);
       break;
     case 2:
-      local_154 = LB_RESETPERIOD_WEEKLY;
-      local_168 = 9;
-      local_15d = true;
-      local_158 = LB_GetLbIndex(LVar6,LB_RESETPERIOD_WEEKLY,true,true);
+      resetPeriod = LB_RESETPERIOD_WEEKLY;
+      uploadTask = LB_TASK_UPLOADSTATS_PRESTIGE_WEEKLY_LB;
+      writeStatsToPrestigeLb = true;
+      lbIndex = LB_GetLbIndex(type,LB_RESETPERIOD_WEEKLY,true,true);
       break;
     case 3:
-      local_154 = LB_RESETPERIOD_MONTHLY;
-      local_168 = 10;
-      local_158 = LB_GetLbIndex(LVar6,LB_RESETPERIOD_MONTHLY,false,true);
+      resetPeriod = LB_RESETPERIOD_MONTHLY;
+      uploadTask = LB_TASK_UPLOADSTATS_MONTHLY_LB;
+      lbIndex = LB_GetLbIndex(type,LB_RESETPERIOD_MONTHLY,false,true);
       break;
     case 4:
-      local_154 = LB_RESETPERIOD_MONTHLY;
-      local_168 = 0xb;
-      local_15d = true;
-      local_158 = LB_GetLbIndex(LVar6,LB_RESETPERIOD_MONTHLY,true,true);
+      resetPeriod = LB_RESETPERIOD_MONTHLY;
+      uploadTask = LB_TASK_UPLOADSTATS_PRESTIGE_MONTHLY_LB;
+      writeStatsToPrestigeLb = true;
+      lbIndex = LB_GetLbIndex(type,LB_RESETPERIOD_MONTHLY,true,true);
     }
-    LB_SetStatsForRow(local_164,pcVar2,true);
-    LB_MakeRow(local_164,g_lbGlob.playerStats + local_164,local_188,local_158,&local_ac,true);
-    local_c[local_16c] = (bdStatsInfo *)&local_ac;
-    local_16c = local_16c + 1;
-    if ((0 < local_15c) &&
-       (local_150 = *(int *)((int)pvVar1 + 0x70) + 1,
-       lbWriteMinRequirementValues[local_154] <= local_150)) {
-      local_158 = LB_GetLbIndex(LVar6,local_154,local_15d,false);
-      for (local_194 = 0; local_194 < 10; local_194 = local_194 + 1) {
-        local_dc[local_194] =
-             *(int *)((int)pvVar1 + local_194 * 4 + 0x70) + local_ac.m_columns[local_194];
+    LB_SetStatsForRow(controllerIndex,gameModePrefix_00,true);
+    LB_MakeRow(controllerIndex,g_lbGlob.playerStats + controllerIndex,currentLbType,lbIndex,
+               &rowToBeWrittenToHiddenLb,true);
+    statsInfo[currRow] = (bdStatsInfo *)&rowToBeWrittenToHiddenLb;
+    currRow = currRow + 1;
+    if ((0 < numResults) &&
+       (numMatchesPlayed = *(int *)((int)pvVar1 + 0x70) + 1,
+       lbWriteMinRequirementValues[resetPeriod] <= numMatchesPlayed)) {
+      lbIndex = LB_GetLbIndex(type,resetPeriod,writeStatsToPrestigeLb,false);
+      for (i = 0; i < 10; i = i + 1) {
+        local_dc[i] = *(int *)((int)pvVar1 + i * 4 + 0x70) + rowToBeWrittenToHiddenLb.m_columns[i];
       }
       local_1a4 = local_dc[2] / 0x3c;
       if (local_1a4 < 2) {
         local_1a4 = 1;
       }
-      bVar4 = LiveStats_GetIntPlayerStat(local_164,&local_b0,"RANKXP");
-      if (!bVar4) {
+      bVar3 = LiveStats_GetIntPlayerStat(controllerIndex,&rankXP,"RANKXP");
+      if (!bVar3) {
         Com_DPrintf(0x16,"Warning: couldnt read stat RANKXP\n");
       }
-      bVar4 = LiveStats_GetIntPlayerStat(local_164,&local_178,"PLEVEL");
-      if (!bVar4) {
+      bVar3 = LiveStats_GetIntPlayerStat(controllerIndex,&prestige,"PLEVEL");
+      if (!bVar3) {
         Com_DPrintf(0x16,"Warning: couldnt read stat PLEVEL\n");
       }
-      local_dc[4] = local_b0;
-      local_dc[5] = local_178;
-      local_14c.m_rating._0_4_ = (int)(((float)local_dc[1] * 1000.0) / (float)local_1a4);
-      local_14c.m_rating._4_4_ = (int)local_14c.m_rating >> 0x1f;
-      local_14c.m_entityID._0_4_ = local_ac._padding_;
-      local_14c.m_entityID._4_4_ = local_ac._padding_;
-      local_14c.m_leaderboardID = lbViewIds[local_158];
-      local_14c.m_writeType = STAT_WRITE_REPLACE;
-      local_dc[3] = (int)local_14c.m_rating;
-      Live_UserGetName(local_164,local_14c.m_entityName,0x41);
-      local_c[local_16c] = &local_14c;
-      local_16c = local_16c + 1;
+      local_dc[4] = rankXP;
+      local_dc[5] = prestige;
+      rowToBeWrittenToLb.m_rating._0_4_ = (int)(((float)local_dc[1] * 1000.0) / (float)local_1a4);
+      rowToBeWrittenToLb.m_rating._4_4_ = (int)rowToBeWrittenToLb.m_rating >> 0x1f;
+      rowToBeWrittenToLb.m_entityID._0_4_ = rowToBeWrittenToHiddenLb._padding_;
+      rowToBeWrittenToLb.m_entityID._4_4_ = rowToBeWrittenToHiddenLb._padding_;
+      rowToBeWrittenToLb.m_leaderboardID = lbViewIds[lbIndex];
+      rowToBeWrittenToLb.m_writeType = STAT_WRITE_REPLACE;
+      local_dc[3] = (int)rowToBeWrittenToLb.m_rating;
+      Live_UserGetName(controllerIndex,rowToBeWrittenToLb.m_entityName,0x41);
+      statsInfo[currRow] = &rowToBeWrittenToLb;
+      currRow = currRow + 1;
     }
-    poVar7 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,local_164,local_168);
-    dwWriteStats(poVar7,local_c,local_16c);
+    task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,uploadTask);
+    dwWriteStats(task,statsInfo,currRow);
   }
-  if (local_170 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(local_10);
+  if (result != TASK_NOTCOMPLETE) {
+    TaskManager_ClearTask(readStatsOverlappedIO);
   }
-  tVar5 = local_170;
-  bdStatsInfo::~bdStatsInfo(&local_14c);
-  bdStatsInfo::~bdStatsInfo((bdStatsInfo *)&local_ac);
-  return tVar5;
+  tVar4 = result;
+  bdStatsInfo::~bdStatsInfo(&rowToBeWrittenToLb);
+  bdStatsInfo::~bdStatsInfo((bdStatsInfo *)&rowToBeWrittenToHiddenLb);
+  return tVar4;
 }
 
 
 // 00969D50  LB_ReadLeaderboardMatchesCountComplete  (live/live_leaderboard.cpp:1230)
 
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int param_1)
+taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int slot)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
   taskCompleteResults tVar4;
-  int local_14;
-  taskCompleteResults local_10;
-  int local_c;
-  overlappedTask *local_8;
+  Leaderboard *lb;
+  int totalResults;
+  taskCompleteResults result;
+  int numResults;
+  overlappedTask *readStatsOverlappedIO;
   
-  local_8 = g_lbGlob.tasks + param_1;
-  if (0x1f < (uint)param_1) {
+  readStatsOverlappedIO = g_lbGlob.tasks + slot;
+  if (0x1f < (uint)slot) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4d2,0
                              ,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -1880,7 +1943,7 @@ taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int param_1)
       return tVar4;
     }
   }
-  if (g_lbGlob.tasks[param_1].active == false) {
+  if (g_lbGlob.tasks[slot].active == false) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4d3,0
                              ,"%s");
     if (!bVar3) {
@@ -1889,7 +1952,7 @@ taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int param_1)
       return tVar4;
     }
   }
-  if (g_lbGlob.tasks[param_1].type != 0x10) {
+  if (g_lbGlob.tasks[slot].type != 0x10) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4d4,0
                              ,"%s");
     if (!bVar3) {
@@ -1898,7 +1961,7 @@ taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int param_1)
       return tVar4;
     }
   }
-  if (g_lbGlob.tasks[param_1].data == (void *)0x0) {
+  if (g_lbGlob.tasks[slot].data == (void *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4d5,0
                              ,"%s");
     if (!bVar3) {
@@ -1907,124 +1970,127 @@ taskCompleteResults __cdecl LB_ReadLeaderboardMatchesCountComplete(int param_1)
       return tVar4;
     }
   }
-  local_10 = dwReadStatsComplete(local_8,&local_c,&local_14);
-  if (local_10 == TASK_COMPLETE) {
-    pvVar1 = g_lbGlob.tasks[param_1].data;
+  result = dwReadStatsComplete(readStatsOverlappedIO,&numResults,&totalResults);
+  if (result == TASK_COMPLETE) {
+    pvVar1 = g_lbGlob.tasks[slot].data;
     *(undefined4 *)((int)pvVar1 + 0x3c98) = *(undefined4 *)((int)pvVar1 + 0x3c70);
   }
-  if (local_10 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(local_8);
+  if (result != TASK_NOTCOMPLETE) {
+    TaskManager_ClearTask(readStatsOverlappedIO);
   }
-  return local_10;
+  return result;
 }
 
 
 // 00969E90  LB_ReadLeaderboardComplete  (live/live_leaderboard.cpp:1270)
 
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_ReadLeaderboardComplete(int param_1)
+taskCompleteResults __cdecl LB_ReadLeaderboardComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  taskCompleteResults tVar4;
-  int iVar5;
-  char *pcVar6;
-  Leaderboard *local_14;
+  overlappedTask *task;
+  taskCompleteResults tVar3;
+  int iVar4;
+  char *fmt;
+  int controllerIndex;
+  Leaderboard *lb;
+  taskCompleteResults result;
+  bool isUpdatingBackup;
   
-  poVar3 = g_lbGlob.tasks + param_1;
-  if ((0x1f < (uint)param_1) &&
+  task = g_lbGlob.tasks + slot;
+  if ((0x1f < (uint)slot) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4fa
                                ,0,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  if ((g_lbGlob.tasks[param_1].active == false) &&
+  if ((g_lbGlob.tasks[slot].active == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4fb
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  if ((g_lbGlob.tasks[param_1].type != 0) &&
+  if ((g_lbGlob.tasks[slot].type != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4fc
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  if ((g_lbGlob.tasks[param_1].data == (void *)0x0) &&
+  if ((g_lbGlob.tasks[slot].data == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x4fd
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  local_14 = g_lbGlob.tasks[param_1].data;
-  bVar2 = local_14->isUpdating;
-  local_14->isUpdating = false;
-  tVar4 = dwReadStatsComplete(poVar3,&local_14->numResults,&local_14->totalResults);
-  local_14->isUpdating = bVar2;
-  if (tVar4 != TASK_NOTCOMPLETE) {
-    local_14 = g_lbGlob.tasks[param_1].data;
-    local_14->isUpdating = false;
-    local_14->forceRefresh = false;
+  lb = g_lbGlob.tasks[slot].data;
+  bVar2 = lb->isUpdating;
+  lb->isUpdating = false;
+  tVar3 = dwReadStatsComplete(task,&lb->numResults,&lb->totalResults);
+  lb->isUpdating = bVar2;
+  if (tVar3 != TASK_NOTCOMPLETE) {
+    lb = g_lbGlob.tasks[slot].data;
+    lb->isUpdating = false;
+    lb->forceRefresh = false;
   }
-  if (tVar4 == TASK_COMPLETE) {
-    iVar5 = local_14->filter;
-    if (iVar5 == 0) {
-      if (((local_14->notSameFilter != false) || (local_14->notSameResetPeriod != false)) ||
-         (local_14->notSamePrestigeMode != false)) {
-        local_14->offset = (local_14->userStats).m_leaderBoardEntries[0]._padding_ + -1;
-        iVar5 = LB_CalcPlayerIndex(g_lbGlob.tasks[param_1].controllerIndex,local_14);
-        local_14->curIdx = iVar5 + local_14->offset;
+  if (tVar3 == TASK_COMPLETE) {
+    iVar4 = lb->filter;
+    if (iVar4 == 0) {
+      if (((lb->notSameFilter != false) || (lb->notSameResetPeriod != false)) ||
+         (lb->notSamePrestigeMode != false)) {
+        lb->offset = (lb->userStats).m_leaderBoardEntries[0]._padding_ + -1;
+        iVar4 = LB_CalcPlayerIndex(g_lbGlob.tasks[slot].controllerIndex,lb);
+        lb->curIdx = iVar4 + lb->offset;
       }
     }
-    else if ((iVar5 < 1) || (2 < iVar5)) {
-      pcVar6 = va("Unknown filter type: %i\n");
+    else if ((iVar4 < 1) || (2 < iVar4)) {
+      fmt = va("Unknown filter type: %i\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x527
-                               ,0,pcVar6);
+                               ,0,fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        tVar4 = (*pcVar1)();
-        return tVar4;
+        tVar3 = (*pcVar1)();
+        return tVar3;
       }
     }
     else {
-      LB_SortXUserStatsByRank(local_14);
-      if ((local_14->notSameFilter != false) ||
-         ((local_14->notSameResetPeriod != false || (local_14->notSamePrestigeMode != false)))) {
-        iVar5 = LB_CalcPlayerIndex(g_lbGlob.tasks[param_1].controllerIndex,local_14);
-        local_14->curIdx = iVar5;
+      LB_SortXUserStatsByRank(lb);
+      if ((lb->notSameFilter != false) ||
+         ((lb->notSameResetPeriod != false || (lb->notSamePrestigeMode != false)))) {
+        iVar4 = LB_CalcPlayerIndex(g_lbGlob.tasks[slot].controllerIndex,lb);
+        lb->curIdx = iVar4;
       }
     }
   }
-  if (tVar4 == TASK_ERROR) {
-    local_14->numResults = 0;
-    local_14->totalResults = 0;
-    if (g_lbGlob.tasks[param_1].finalStatus == BD_TIMED_OUT) {
-      iVar5 = g_lbGlob.tasks[param_1].controllerIndex;
-      TaskManager_ClearTask(poVar3);
-      Live_DemonwareDisconnectCleanup(iVar5);
+  if (tVar3 == TASK_ERROR) {
+    lb->numResults = 0;
+    lb->totalResults = 0;
+    if (g_lbGlob.tasks[slot].finalStatus == BD_TIMED_OUT) {
+      iVar4 = g_lbGlob.tasks[slot].controllerIndex;
+      TaskManager_ClearTask(task);
+      Live_DemonwareDisconnectCleanup(iVar4);
     }
-    if ((local_14->filter == 0) &&
-       (((local_14->notSameFilter != false || (local_14->notSameResetPeriod != false)) ||
-        (local_14->notSamePrestigeMode != false)))) {
+    if ((lb->filter == 0) &&
+       (((lb->notSameFilter != false || (lb->notSameResetPeriod != false)) ||
+        (lb->notSamePrestigeMode != false)))) {
       Com_DPrintf(0x16,"%s\n");
-      LB_GetByRank(local_14,g_lbGlob.tasks[param_1].controllerIndex,1);
-      local_14->curIdx = 0;
-      local_14->offset = 0;
+      LB_GetByRank(lb,g_lbGlob.tasks[slot].controllerIndex,1);
+      lb->curIdx = 0;
+      lb->offset = 0;
     }
   }
-  if (tVar4 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(poVar3);
+  if (tVar3 != TASK_NOTCOMPLETE) {
+    TaskManager_ClearTask(task);
   }
-  return tVar4;
+  return tVar3;
 }
 
 
@@ -2033,13 +2099,14 @@ taskCompleteResults __cdecl LB_ReadLeaderboardComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_ClearPlayerStats(int param_1)
+void __cdecl LB_ClearPlayerStats(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
+  LbPlayerStat *stat;
   
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x557,0
                              ,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
@@ -2050,8 +2117,8 @@ void __cdecl LB_ClearPlayerStats(int param_1)
       return;
     }
   }
-  *(undefined4 *)&g_lbGlob.playerStats[param_1].userID = 0;
-  *(undefined4 *)((int)&g_lbGlob.playerStats[param_1].userID + 4) = 0;
+  *(undefined4 *)&g_lbGlob.playerStats[localControllerIndex].userID = 0;
+  *(undefined4 *)((int)&g_lbGlob.playerStats[localControllerIndex].userID + 4) = 0;
   return;
 }
 
@@ -2061,13 +2128,14 @@ void __cdecl LB_ClearPlayerStats(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_SetStat(int param_1,int param_2,int param_3)
+void __cdecl LB_SetStat(int localControllerIndex,int statId,int value)
 
 {
   code *pcVar1;
   bool bVar2;
+  LbPlayerStat *stat;
   
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x560,0
                              ,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
@@ -2078,7 +2146,7 @@ void __cdecl LB_SetStat(int param_1,int param_2,int param_3)
       return;
     }
   }
-  *(int *)(param_1 * 0x58 + 0xa4e4860 + param_2 * 4) = param_3;
+  *(int *)(localControllerIndex * 0x58 + 0xa4e4860 + statId * 4) = value;
   Com_DPrintf(0x16,"setting stats (%i) stat %i => %i\n");
   return;
 }
@@ -2089,15 +2157,16 @@ void __cdecl LB_SetStat(int param_1,int param_2,int param_3)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_UpdateNeeded(int param_1)
+void __cdecl LB_UpdateNeeded(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  undefined4 local_c;
+  LbPlayerStat *stat;
+  undefined4 userID;
   undefined4 local_8;
   
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x56c,0
                              ,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
@@ -2108,14 +2177,14 @@ void __cdecl LB_UpdateNeeded(int param_1)
       return;
     }
   }
-  bVar2 = dwGetOnlineUserID(param_1,(ulong64 *)&local_c);
+  bVar2 = dwGetOnlineUserID(localControllerIndex,(ulong64 *)&userID);
   if (bVar2) {
-    *(undefined4 *)&g_lbGlob.playerStats[param_1].userID = local_c;
-    *(undefined4 *)((int)&g_lbGlob.playerStats[param_1].userID + 4) = local_8;
+    *(undefined4 *)&g_lbGlob.playerStats[localControllerIndex].userID = userID;
+    *(undefined4 *)((int)&g_lbGlob.playerStats[localControllerIndex].userID + 4) = local_8;
   }
   else {
-    *(undefined4 *)&g_lbGlob.playerStats[param_1].userID = 0;
-    *(undefined4 *)((int)&g_lbGlob.playerStats[param_1].userID + 4) = 0;
+    *(undefined4 *)&g_lbGlob.playerStats[localControllerIndex].userID = 0;
+    *(undefined4 *)((int)&g_lbGlob.playerStats[localControllerIndex].userID + 4) = 0;
     Com_PrintError(0x16,
                    "dwGetOnlineUserID() failed, probably called before NP logon has completed\n");
   }
@@ -2125,55 +2194,55 @@ void __cdecl LB_UpdateNeeded(int param_1)
 
 // 0096A370  LB_UploadPlayerGlobalStats  (live/live_leaderboard.cpp:1410)
 
-void __cdecl LB_UploadPlayerGlobalStats(int param_1)
+void __cdecl LB_UploadPlayerGlobalStats(int localControllerIndex)
 
 {
   bool bVar1;
-  int local_2c;
-  int local_28;
-  int local_24;
-  char *local_20;
+  int totalCodPointsSpent;
+  int totalCodPoints;
+  int toalCodPointsEarned;
+  char *ops;
   char *local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int timePlayed;
+  int totalScore;
+  int statValue;
+  char *currentStatName;
+  int statId;
   
-  for (local_8 = 0; local_8 < 0x13; local_8 = local_8 + 1) {
-    local_c = *(char **)(&GlobalLbStatStrings + local_8 * 4);
-    local_10 = 0;
-    if (local_8 == 0) {
-      local_14 = 0;
-      local_18 = 0;
-      LiveStats_GetIntPlayerStat(param_1,&local_14,"SCORE");
-      LiveStats_GetIntPlayerStat(param_1,&local_18,"TIME_PLAYED_TOTAL");
-      local_18 = local_18 / 0x3c;
-      if (local_18 == 0) {
-        local_18 = 1;
+  for (statId = 0; statId < 0x13; statId = statId + 1) {
+    currentStatName = *(char **)(&GlobalLbStatStrings + statId * 4);
+    statValue = 0;
+    if (statId == 0) {
+      totalScore = 0;
+      timePlayed = 0;
+      LiveStats_GetIntPlayerStat(localControllerIndex,&totalScore,"SCORE");
+      LiveStats_GetIntPlayerStat(localControllerIndex,&timePlayed,"TIME_PLAYED_TOTAL");
+      timePlayed = timePlayed / 0x3c;
+      if (timePlayed == 0) {
+        timePlayed = 1;
       }
-      local_10 = (int)(((float)local_14 * 1000.0) / (float)local_18);
+      statValue = (int)(((float)totalScore * 1000.0) / (float)timePlayed);
     }
-    else if ((local_8 == 0x11) || (local_8 == 0x12)) {
-      local_20 = "HighestStats";
-      local_1c = local_c;
-      local_10 = LiveStats_GetDDLIntStat(param_1,&local_20,2);
+    else if ((statId == 0x11) || (statId == 0x12)) {
+      ops = "HighestStats";
+      local_1c = currentStatName;
+      statValue = LiveStats_GetDDLIntStat(localControllerIndex,&ops,2);
     }
-    else if (local_8 == 0xe) {
-      local_28 = 0;
-      local_2c = 0;
-      local_24 = 0;
-      LiveStats_GetIntPlayerStat(param_1,&local_28,"CODPOINTS");
-      LiveStats_GetIntPlayerStat(param_1,&local_2c,"CURRENCYSPENT");
-      local_24 = local_28 - local_2c;
+    else if (statId == 0xe) {
+      totalCodPoints = 0;
+      totalCodPointsSpent = 0;
+      toalCodPointsEarned = 0;
+      LiveStats_GetIntPlayerStat(localControllerIndex,&totalCodPoints,"CODPOINTS");
+      LiveStats_GetIntPlayerStat(localControllerIndex,&totalCodPointsSpent,"CURRENCYSPENT");
+      toalCodPointsEarned = totalCodPoints - totalCodPointsSpent;
     }
     else {
-      bVar1 = LiveStats_GetIntPlayerStat(param_1,&local_10,local_c);
+      bVar1 = LiveStats_GetIntPlayerStat(localControllerIndex,&statValue,currentStatName);
       if (!bVar1) {
         Com_DPrintf(0x16,"Warning: unknown mapping %i -> %s, zeroing\n");
       }
     }
-    LB_SetStat(param_1,local_8,local_10);
+    LB_SetStat(localControllerIndex,statId,statValue);
   }
   return;
 }
@@ -2186,20 +2255,21 @@ void __cdecl LB_UploadPlayerGlobalStats(int param_1)
 
 void __cdecl
 Lb_ReadHiddenLeaderboardEntry
-          (int param_1,LeaderBoardRow<10> *param_2,int param_3,LbTaskEnum param_4)
+          (int controllerIndex,LeaderBoardRow<10> *userStats,int lbIndex,LbTaskEnum task)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  taskCompleteResults tVar4;
-  undefined4 local_c;
+  overlappedTask *task_00;
+  taskCompleteResults tVar3;
+  overlappedTask *ov;
+  undefined4 userID;
   undefined4 local_8;
   
-  bVar2 = dwGetOnlineUserID(param_1,(ulong64 *)&local_c);
+  bVar2 = dwGetOnlineUserID(controllerIndex,(ulong64 *)&userID);
   if (bVar2) {
-    poVar3 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_1,param_4);
-    if (poVar3 == (overlappedTask *)0x0) {
+    task_00 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,task);
+    if (task_00 == (overlappedTask *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x5bb
                                ,0,"%s");
       if (!bVar2) {
@@ -2208,12 +2278,12 @@ Lb_ReadHiddenLeaderboardEntry
         return;
       }
     }
-    dwReadStatsByUser(poVar3,lbViewIds[param_3],CONCAT44(local_8,local_c),(bdStatsInfo *)param_2);
-    poVar3->data = param_2;
-    tVar4 = dwGetTaskStatus(poVar3);
-    if (tVar4 != TASK_NOTCOMPLETE) {
+    dwReadStatsByUser(task_00,lbViewIds[lbIndex],CONCAT44(local_8,userID),(bdStatsInfo *)userStats);
+    task_00->data = userStats;
+    tVar3 = dwGetTaskStatus(task_00);
+    if (tVar3 != TASK_NOTCOMPLETE) {
       Com_PrintError(0x16,"dwReadStatsForUsers() failed.\n");
-      TaskManager_ClearTask(poVar3);
+      TaskManager_ClearTask(task_00);
     }
   }
   else {
@@ -2229,27 +2299,30 @@ Lb_ReadHiddenLeaderboardEntry
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Lb_InitiateWeeklyAndMonthlyLbWrite(int param_1,LbType param_2)
+void __cdecl Lb_InitiateWeeklyAndMonthlyLbWrite(int controllerIndex,LbType type)
 
 {
   bool bVar1;
   int iVar2;
+  int lbIndex;
   
-  iVar2 = LB_GetLbIndex(param_2,LB_RESETPERIOD_WEEKLY,false,true);
+  iVar2 = LB_GetLbIndex(type,LB_RESETPERIOD_WEEKLY,false,true);
   Lb_ReadHiddenLeaderboardEntry
-            (param_1,g_lbGlob.weeklyEntry + param_1,iVar2,LB_TASK_READ_WEEKLY_HIDDEN_LB);
-  iVar2 = LB_GetLbIndex(param_2,LB_RESETPERIOD_MONTHLY,false,true);
+            (controllerIndex,g_lbGlob.weeklyEntry + controllerIndex,iVar2,
+             LB_TASK_READ_WEEKLY_HIDDEN_LB);
+  iVar2 = LB_GetLbIndex(type,LB_RESETPERIOD_MONTHLY,false,true);
   Lb_ReadHiddenLeaderboardEntry
-            (param_1,g_lbGlob.monthlyEntry + param_1,iVar2,LB_TASK_READ_MONTHLY_HIDDEN_LB);
-  bVar1 = LiveStats_PrestigeLeaderboardsEnabled(param_1);
+            (controllerIndex,g_lbGlob.monthlyEntry + controllerIndex,iVar2,
+             LB_TASK_READ_MONTHLY_HIDDEN_LB);
+  bVar1 = LiveStats_PrestigeLeaderboardsEnabled(controllerIndex);
   if (bVar1) {
-    iVar2 = LB_GetLbIndex(param_2,LB_RESETPERIOD_WEEKLY,true,true);
+    iVar2 = LB_GetLbIndex(type,LB_RESETPERIOD_WEEKLY,true,true);
     Lb_ReadHiddenLeaderboardEntry
-              (param_1,g_lbGlob.prestigeWeeklyEntry + param_1,iVar2,
+              (controllerIndex,g_lbGlob.prestigeWeeklyEntry + controllerIndex,iVar2,
                LB_TASK_READ_PRESTIGE_WEEKLY_HIDDEN_LB);
-    iVar2 = LB_GetLbIndex(param_2,LB_RESETPERIOD_MONTHLY,true,true);
+    iVar2 = LB_GetLbIndex(type,LB_RESETPERIOD_MONTHLY,true,true);
     Lb_ReadHiddenLeaderboardEntry
-              (param_1,g_lbGlob.prestigeMonthlyEntry + param_1,iVar2,
+              (controllerIndex,g_lbGlob.prestigeMonthlyEntry + controllerIndex,iVar2,
                LB_TASK_READ_PRESTIGE_MONTHLY_HIDDEN_LB);
   }
   return;
@@ -2262,16 +2335,16 @@ void __cdecl Lb_InitiateWeeklyAndMonthlyLbWrite(int param_1,LbType param_2)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LB_UploadPlayerStats(int param_1)
+bool __cdecl LB_UploadPlayerStats(int localControllerIndex)
 
 {
-  char *pcVar1;
-  LbType LVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  int iVar6;
-  taskCompleteResults tVar7;
+  char *gameModePrefix_00;
+  LbType type;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  int iVar4;
+  taskCompleteResults tVar5;
   int local_400;
   bdStatsInfo *local_3fc;
   int local_3f8;
@@ -2283,18 +2356,21 @@ bool __cdecl LB_UploadPlayerStats(int param_1)
   int local_3e0;
   LeaderBoardRow<10> *local_3dc;
   bool local_3d5;
-  int local_3d4;
-  char local_3cd;
-  int local_3c4;
-  LeaderBoardRow<10> local_3bc [6];
+  int index;
+  bool writeStatsToLb;
+  LbType lbType;
+  int lbIndex;
+  int currentLbType;
+  char *gameModePrefix;
+  LeaderBoardRow<10> lbRow [6];
   uint local_28;
-  overlappedTask *local_24;
-  bdStatsInfo *local_20 [6];
-  uint local_8;
+  overlappedTask *ov;
+  bdStatsInfo *statsInfo [6];
+  uint viewIndex;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_3e0 = 6;
-  local_3dc = local_3bc;
+  local_3dc = lbRow;
   while (local_3e0 = local_3e0 + -1, -1 < local_3e0) {
     bdStatsInfo::bdStatsInfo((bdStatsInfo *)local_3dc);
     local_3dc->_padding_ = (int)LeaderBoardRow<10>::vftable;
@@ -2310,60 +2386,61 @@ bool __cdecl LB_UploadPlayerStats(int param_1)
     local_3dc->m_columns[9] = 0;
     local_3dc = local_3dc + 1;
   }
-  bVar4 = Live_IsSignedIn(param_1);
-  if (bVar4) {
-    bVar4 = Live_IsInLiveGame();
-    if (bVar4) {
+  bVar2 = Live_IsSignedIn(localControllerIndex);
+  if (bVar2) {
+    bVar2 = Live_IsInLiveGame();
+    if (bVar2) {
       LB_SetGametypeDvar();
-      pcVar1 = lbTypeEnum[(lb_type->current).integer];
-      if ((pcVar1 == (char *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
-                                   0x5fe,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        uVar5 = (*pcVar3)();
-        return (bool)uVar5;
+      gameModePrefix_00 = lbTypeEnum[(lb_type->current).integer];
+      if ((gameModePrefix_00 == (char *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
+                                   0x5fe,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        uVar3 = (*pcVar1)();
+        return (bool)uVar3;
       }
-      LVar2 = (lb_type->current).unsignedInt;
-      local_3c4 = (lb_type->current).integer;
-      if (7 < local_3c4) {
-        local_3c4 = local_3c4 + -8;
+      type = (lb_type->current).unsignedInt;
+      currentLbType = (lb_type->current).integer;
+      if (7 < currentLbType) {
+        currentLbType = currentLbType + -8;
       }
-      LB_UpdateNeeded(param_1);
-      LB_SetStatsForRow(param_1,pcVar1,false);
-      local_8 = 0;
-      local_3cd = (lb_forceLbWrite->current).enabled;
-      iVar6 = LiveStats_GetTotalMatchesPlayedByGameMode(param_1,pcVar1);
-      if (0x31 < iVar6) {
-        local_3cd = '\x01';
+      LB_UpdateNeeded(localControllerIndex);
+      LB_SetStatsForRow(localControllerIndex,gameModePrefix_00,false);
+      viewIndex = 0;
+      writeStatsToLb = (lb_forceLbWrite->current).enabled;
+      iVar4 = LiveStats_GetTotalMatchesPlayedByGameMode(localControllerIndex,gameModePrefix_00);
+      if (0x31 < iVar4) {
+        writeStatsToLb = true;
       }
-      if (local_3cd != '\0') {
-        iVar6 = LB_GetLbIndex(LVar2,LB_RESETPERIOD_ALL_TIME,false,false);
+      if (writeStatsToLb != false) {
+        iVar4 = LB_GetLbIndex(type,LB_RESETPERIOD_ALL_TIME,false,false);
         Com_DPrintf(0x16,"Writing client_num %i with userID %llx to leaderboard %i\n");
-        LB_MakeRow(param_1,g_lbGlob.playerStats + param_1,local_3c4,iVar6,local_3bc + local_8,false)
-        ;
-        local_20[local_8] = (bdStatsInfo *)(local_3bc + local_8);
-        local_8 = local_8 + 1;
-        bVar4 = LiveStats_PrestigeLeaderboardsEnabled(param_1);
-        if (bVar4) {
-          iVar6 = LB_GetLbIndex(LVar2,LB_RESETPERIOD_ALL_TIME,true,false);
+        LB_MakeRow(localControllerIndex,g_lbGlob.playerStats + localControllerIndex,currentLbType,
+                   iVar4,lbRow + viewIndex,false);
+        statsInfo[viewIndex] = (bdStatsInfo *)(lbRow + viewIndex);
+        viewIndex = viewIndex + 1;
+        bVar2 = LiveStats_PrestigeLeaderboardsEnabled(localControllerIndex);
+        if (bVar2) {
+          iVar4 = LB_GetLbIndex(type,LB_RESETPERIOD_ALL_TIME,true,false);
           Com_DPrintf(0x16,"Writing client_num %i with userID %llx to leaderboard %i\n");
-          LB_MakeRow(param_1,g_lbGlob.playerStats + param_1,local_3c4,iVar6,local_3bc + local_8,
-                     false);
-          local_20[local_8] = (bdStatsInfo *)(local_3bc + local_8);
-          local_8 = local_8 + 1;
+          LB_MakeRow(localControllerIndex,g_lbGlob.playerStats + localControllerIndex,currentLbType,
+                     iVar4,lbRow + viewIndex,false);
+          statsInfo[viewIndex] = (bdStatsInfo *)(lbRow + viewIndex);
+          viewIndex = viewIndex + 1;
         }
       }
-      Lb_InitiateWeeklyAndMonthlyLbWrite(param_1,LVar2);
-      LB_UploadPlayerGlobalStats(param_1);
-      for (local_3d4 = 0; local_3d4 < 4; local_3d4 = local_3d4 + 1) {
-        LB_MakeGlobalRow(param_1,g_lbGlob.playerStats + param_1,local_3d4,local_3bc + local_8);
-        local_20[local_8] = (bdStatsInfo *)(local_3bc + local_8);
-        local_8 = local_8 + 1;
+      Lb_InitiateWeeklyAndMonthlyLbWrite(localControllerIndex,type);
+      LB_UploadPlayerGlobalStats(localControllerIndex);
+      for (index = 0; index < 4; index = index + 1) {
+        LB_MakeGlobalRow(localControllerIndex,g_lbGlob.playerStats + localControllerIndex,index,
+                         lbRow + viewIndex);
+        statsInfo[viewIndex] = (bdStatsInfo *)(lbRow + viewIndex);
+        viewIndex = viewIndex + 1;
       }
-      local_24 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_1,7);
-      dwWriteStats(local_24,local_20,local_8);
-      tVar7 = dwGetTaskStatus(local_24);
-      if (tVar7 == TASK_NOTCOMPLETE) {
+      ov = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,localControllerIndex,7);
+      dwWriteStats(ov,statsInfo,viewIndex);
+      tVar5 = dwGetTaskStatus(ov);
+      if (tVar5 == TASK_NOTCOMPLETE) {
         local_400 = 6;
         local_3fc = (bdStatsInfo *)&stack0xffffffd4;
         while (local_400 = local_400 + -1, -1 < local_400) {
@@ -2374,7 +2451,7 @@ bool __cdecl LB_UploadPlayerStats(int param_1)
       }
       else {
         Com_PrintError(0x16,"dwWriteStats() failed in LB_UploadPlayerStats()\n");
-        TaskManager_ClearTask(local_24);
+        TaskManager_ClearTask(ov);
         local_3f8 = 6;
         local_3f4 = (bdStatsInfo *)&stack0xffffffd4;
         while (local_3f8 = local_3f8 + -1, -1 < local_3f8) {
@@ -2414,14 +2491,15 @@ bool __cdecl LB_UploadPlayerStats(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int param_1)
+taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  taskCompleteResults result;
   
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x67f,0
                              ,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2430,7 +2508,7 @@ taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int param_1)
       return tVar3;
     }
   }
-  if (g_lbGlob.tasks[param_1].active == false) {
+  if (g_lbGlob.tasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x680,0
                              ,"%s");
     if (!bVar2) {
@@ -2439,7 +2517,7 @@ taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int param_1)
       return tVar3;
     }
   }
-  if (g_lbGlob.tasks[param_1].type != 7) {
+  if (g_lbGlob.tasks[slot].type != 7) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x681,0
                              ,"%s");
     if (!bVar2) {
@@ -2448,9 +2526,9 @@ taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int param_1)
       return tVar3;
     }
   }
-  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + param_1);
+  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + slot);
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(g_lbGlob.tasks + param_1);
+    TaskManager_ClearTask(g_lbGlob.tasks + slot);
   }
   return tVar3;
 }
@@ -2461,14 +2539,15 @@ taskCompleteResults __cdecl LB_UploadPlayerStatsComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_WriteStatsToLbComplete(int param_1)
+taskCompleteResults __cdecl LB_WriteStatsToLbComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  taskCompleteResults result;
   
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x691,0
                              ,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2477,7 +2556,7 @@ taskCompleteResults __cdecl LB_WriteStatsToLbComplete(int param_1)
       return tVar3;
     }
   }
-  if (g_lbGlob.tasks[param_1].active == false) {
+  if (g_lbGlob.tasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x692,0
                              ,"%s");
     if (!bVar2) {
@@ -2486,9 +2565,9 @@ taskCompleteResults __cdecl LB_WriteStatsToLbComplete(int param_1)
       return tVar3;
     }
   }
-  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + param_1);
+  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + slot);
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(g_lbGlob.tasks + param_1);
+    TaskManager_ClearTask(g_lbGlob.tasks + slot);
   }
   return tVar3;
 }
@@ -2499,14 +2578,15 @@ taskCompleteResults __cdecl LB_WriteStatsToLbComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_IncrementEscrowComplete(int param_1)
+taskCompleteResults __cdecl LB_IncrementEscrowComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  taskCompleteResults result;
   
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6a2,0
                              ,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2515,7 +2595,7 @@ taskCompleteResults __cdecl LB_IncrementEscrowComplete(int param_1)
       return tVar3;
     }
   }
-  if (g_lbGlob.tasks[param_1].active == false) {
+  if (g_lbGlob.tasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6a3,0
                              ,"%s");
     if (!bVar2) {
@@ -2524,7 +2604,7 @@ taskCompleteResults __cdecl LB_IncrementEscrowComplete(int param_1)
       return tVar3;
     }
   }
-  if (g_lbGlob.tasks[param_1].type != 0xf) {
+  if (g_lbGlob.tasks[slot].type != 0xf) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6a4,0
                              ,"%s");
     if (!bVar2) {
@@ -2533,9 +2613,9 @@ taskCompleteResults __cdecl LB_IncrementEscrowComplete(int param_1)
       return tVar3;
     }
   }
-  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + param_1);
+  tVar3 = dwWriteStatsComplete(g_lbGlob.tasks + slot);
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(g_lbGlob.tasks + param_1);
+    TaskManager_ClearTask(g_lbGlob.tasks + slot);
   }
   return tVar3;
 }
@@ -2546,7 +2626,7 @@ taskCompleteResults __cdecl LB_IncrementEscrowComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_ResolveEscrowComplete(int param_1)
+taskCompleteResults __cdecl LB_ResolveEscrowComplete(int slot)
 
 {
   void *pvVar1;
@@ -2556,14 +2636,16 @@ taskCompleteResults __cdecl LB_ResolveEscrowComplete(int param_1)
   taskCompleteResults tVar5;
   int iVar6;
   LeaderBoardRow<10> *pLVar7;
-  int local_1c;
-  int local_14;
-  taskCompleteResults local_10;
-  int local_c;
-  overlappedTask *local_8;
+  int timeDifference;
+  int lastUpdatedTime;
+  int i;
+  int totalResults;
+  taskCompleteResults result;
+  int numResults;
+  overlappedTask *resolveEscrowOverlappedIO;
   
-  local_8 = g_lbGlob.tasks + param_1;
-  if ((0x1f < (uint)param_1) &&
+  resolveEscrowOverlappedIO = g_lbGlob.tasks + slot;
+  if ((0x1f < (uint)slot) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6b5
                                ,0,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)"),
      !bVar4)) {
@@ -2571,45 +2653,45 @@ taskCompleteResults __cdecl LB_ResolveEscrowComplete(int param_1)
     tVar5 = (*pcVar3)();
     return tVar5;
   }
-  if ((g_lbGlob.tasks[param_1].active == false) &&
+  if ((g_lbGlob.tasks[slot].active == false) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6b6
                                ,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     tVar5 = (*pcVar3)();
     return tVar5;
   }
-  if ((g_lbGlob.tasks[param_1].type != 0xc) &&
+  if ((g_lbGlob.tasks[slot].type != 0xc) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6b7
                                ,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     tVar5 = (*pcVar3)();
     return tVar5;
   }
-  local_10 = dwReadStatsComplete(local_8,&local_c,&local_14);
-  if (local_10 != TASK_NOTCOMPLETE) {
+  result = dwReadStatsComplete(resolveEscrowOverlappedIO,&numResults,&totalResults);
+  if (result != TASK_NOTCOMPLETE) {
     bVar4 = LiveStorage_IsTimeSynced();
     if (bVar4) {
-      pvVar1 = local_8->data;
-      for (local_1c = 0; local_1c < local_c; local_1c = local_1c + 1) {
-        pLVar7 = (LeaderBoardRow<10> *)(local_1c * 0x98);
+      pvVar1 = resolveEscrowOverlappedIO->data;
+      for (i = 0; i < numResults; i = i + 1) {
+        pLVar7 = (LeaderBoardRow<10> *)(i * 0x98);
         if ((*(int *)((int)pvVar1 + 8) == *(int *)((int)pvVar1 + (int)(pLVar7->m_columns + 2))) &&
            (*(int *)((int)pvVar1 + 0xc) == *(int *)((int)pvVar1 + (int)(pLVar7->m_columns + 3)))) {
-          iVar2 = *(int *)((int)pvVar1 + local_1c * 0x98 + 0xe0);
+          iVar2 = *(int *)((int)pvVar1 + i * 0x98 + 0xe0);
           iVar6 = LiveStorage_GetUTC();
           if ((0 < iVar2) && ((lb_escrowTimeout->current).integer < iVar6 - iVar2)) {
-            TaskManager_ClearTask(local_8);
-            LB_ReadRowForUser(local_8->controllerIndex,
+            TaskManager_ClearTask(resolveEscrowOverlappedIO);
+            LB_ReadRowForUser(resolveEscrowOverlappedIO->controllerIndex,
                               CONCAT44(0x1395,*(undefined4 *)((int)pvVar1 + 0xc)),0xd,
-                              local_8->controllerIndex * 0x98 + 0xa4e48b8,pLVar7);
-            return local_10;
+                              resolveEscrowOverlappedIO->controllerIndex * 0x98 + 0xa4e48b8,pLVar7);
+            return result;
           }
           break;
         }
       }
     }
-    TaskManager_ClearTask(local_8);
+    TaskManager_ClearTask(resolveEscrowOverlappedIO);
   }
-  return local_10;
+  return result;
 }
 
 
@@ -2619,13 +2701,13 @@ taskCompleteResults __cdecl LB_ResolveEscrowComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
+taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
-  bdStatsInfo local_15c;
+  bdStatsInfo updateTimeRow;
   int local_ec;
   undefined4 local_e8;
   undefined4 local_e4;
@@ -2636,7 +2718,7 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
   undefined4 local_d0;
   undefined4 local_cc;
   undefined4 local_c8;
-  bdStatsInfo local_c4;
+  bdStatsInfo balanceRow;
   int local_54;
   undefined4 local_50;
   undefined4 local_4c;
@@ -2648,18 +2730,18 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
   undefined4 local_34;
   undefined4 local_30;
   uint local_28;
-  bdStatsInfo *local_24;
+  bdStatsInfo *statsInfo;
   bdStatsInfo *local_20;
-  int local_1c;
-  void *local_18;
-  int local_14;
-  taskCompleteResults local_10;
-  int local_c;
-  overlappedTask *local_8;
+  int i;
+  void *userStats;
+  int totalResults;
+  taskCompleteResults result;
+  int numResults;
+  overlappedTask *retrieveEscrowBalanceOverlappedIO;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = g_lbGlob.tasks + param_1;
-  if ((0x1f < (uint)param_1) &&
+  retrieveEscrowBalanceOverlappedIO = g_lbGlob.tasks + slot;
+  if ((0x1f < (uint)slot) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6dc
                                ,0,"slot doesn\'t index MAX_OVERLAPPED_TASKS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2667,28 +2749,28 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
     tVar3 = (*pcVar1)();
     return tVar3;
   }
-  if ((g_lbGlob.tasks[param_1].active == false) &&
+  if ((g_lbGlob.tasks[slot].active == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6dd
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     tVar3 = (*pcVar1)();
     return tVar3;
   }
-  if ((g_lbGlob.tasks[param_1].type != 0xd) &&
+  if ((g_lbGlob.tasks[slot].type != 0xd) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x6de
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     tVar3 = (*pcVar1)();
     return tVar3;
   }
-  local_10 = dwReadStatsComplete(local_8,&local_c,&local_14);
-  if (local_10 != TASK_NOTCOMPLETE) {
-    local_18 = local_8->data;
-    for (local_1c = 0; local_1c < local_c; local_1c = local_1c + 1) {
-      if ((*(int *)((int)local_18 + 8) == *(int *)((int)local_18 + local_1c * 0x98 + 0x78)) &&
-         (*(int *)((int)local_18 + 0xc) == *(int *)((int)local_18 + local_1c * 0x98 + 0x7c))) {
-        bdStatsInfo::bdStatsInfo(&local_c4);
-        local_c4._padding_ = (int)LeaderBoardRow<10>::vftable;
+  result = dwReadStatsComplete(retrieveEscrowBalanceOverlappedIO,&numResults,&totalResults);
+  if (result != TASK_NOTCOMPLETE) {
+    userStats = retrieveEscrowBalanceOverlappedIO->data;
+    for (i = 0; i < numResults; i = i + 1) {
+      if ((*(int *)((int)userStats + 8) == *(int *)((int)userStats + i * 0x98 + 0x78)) &&
+         (*(int *)((int)userStats + 0xc) == *(int *)((int)userStats + i * 0x98 + 0x7c))) {
+        bdStatsInfo::bdStatsInfo(&balanceRow);
+        balanceRow._padding_ = (int)LeaderBoardRow<10>::vftable;
         local_54 = 0;
         local_50 = 0;
         local_4c = 0;
@@ -2699,8 +2781,8 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
         local_38 = 0;
         local_34 = 0;
         local_30 = 0;
-        bdStatsInfo::bdStatsInfo(&local_15c);
-        local_15c._padding_ = (int)LeaderBoardRow<10>::vftable;
+        bdStatsInfo::bdStatsInfo(&updateTimeRow);
+        updateTimeRow._padding_ = (int)LeaderBoardRow<10>::vftable;
         local_ec = 0;
         local_e8 = 0;
         local_e4 = 0;
@@ -2711,35 +2793,35 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
         local_d0 = 0;
         local_cc = 0;
         local_c8 = 0;
-        g_lbGlob.escrowBalance[local_8->controllerIndex] =
-             *(int *)((int)local_18 + local_1c * 0x98 + 0xe0);
-        local_c4.m_entityID._0_4_ = *(undefined4 *)((int)local_18 + 8);
-        local_c4.m_entityID._4_4_ = *(undefined4 *)((int)local_18 + 0xc);
-        local_c4.m_leaderboardID = 0x1395;
-        local_c4.m_writeType = STAT_WRITE_ADD;
-        local_c4.m_rating._0_4_ = 0;
-        local_c4.m_rating._4_4_ = 0;
-        local_54 = -g_lbGlob.escrowBalance[local_8->controllerIndex];
-        local_15c.m_entityID._0_4_ = *(undefined4 *)((int)local_18 + 8);
-        local_15c.m_entityID._4_4_ = *(undefined4 *)((int)local_18 + 0xc);
-        local_15c.m_leaderboardID = 0x1396;
-        local_15c.m_writeType = STAT_WRITE_REPLACE;
-        local_15c.m_rating._0_4_ = 0;
-        local_15c.m_rating._4_4_ = 0;
+        g_lbGlob.escrowBalance[retrieveEscrowBalanceOverlappedIO->controllerIndex] =
+             *(int *)((int)userStats + i * 0x98 + 0xe0);
+        balanceRow.m_entityID._0_4_ = *(undefined4 *)((int)userStats + 8);
+        balanceRow.m_entityID._4_4_ = *(undefined4 *)((int)userStats + 0xc);
+        balanceRow.m_leaderboardID = 0x1395;
+        balanceRow.m_writeType = STAT_WRITE_ADD;
+        balanceRow.m_rating._0_4_ = 0;
+        balanceRow.m_rating._4_4_ = 0;
+        local_54 = -g_lbGlob.escrowBalance[retrieveEscrowBalanceOverlappedIO->controllerIndex];
+        updateTimeRow.m_entityID._0_4_ = *(undefined4 *)((int)userStats + 8);
+        updateTimeRow.m_entityID._4_4_ = *(undefined4 *)((int)userStats + 0xc);
+        updateTimeRow.m_leaderboardID = 0x1396;
+        updateTimeRow.m_writeType = STAT_WRITE_REPLACE;
+        updateTimeRow.m_rating._0_4_ = 0;
+        updateTimeRow.m_rating._4_4_ = 0;
         local_ec = LiveStorage_GetUTC();
-        local_24 = &local_c4;
-        local_20 = &local_15c;
-        TaskManager_ClearTask(local_8);
-        LB_WriteRows(local_8->controllerIndex,&local_24,2,0xe);
-        tVar3 = local_10;
-        bdStatsInfo::~bdStatsInfo(&local_15c);
-        bdStatsInfo::~bdStatsInfo(&local_c4);
+        statsInfo = &balanceRow;
+        local_20 = &updateTimeRow;
+        TaskManager_ClearTask(retrieveEscrowBalanceOverlappedIO);
+        LB_WriteRows(retrieveEscrowBalanceOverlappedIO->controllerIndex,&statsInfo,2,0xe);
+        tVar3 = result;
+        bdStatsInfo::~bdStatsInfo(&updateTimeRow);
+        bdStatsInfo::~bdStatsInfo(&balanceRow);
         return tVar3;
       }
     }
-    TaskManager_ClearTask(local_8);
+    TaskManager_ClearTask(retrieveEscrowBalanceOverlappedIO);
   }
-  return local_10;
+  return result;
 }
 
 
@@ -2748,26 +2830,28 @@ taskCompleteResults __cdecl LB_RetrieveEscrowBalanceComplete(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-taskCompleteResults __cdecl LB_ClearEscrowComplete(int param_1)
+taskCompleteResults __cdecl LB_ClearEscrowComplete(int slot)
 
 {
   taskCompleteResults tVar1;
   int iVar2;
-  char *pcVar3;
+  char *menuName;
+  int escrowBalance;
+  taskCompleteResults result;
   
-  tVar1 = dwWriteStatsComplete(g_lbGlob.tasks + param_1);
+  tVar1 = dwWriteStatsComplete(g_lbGlob.tasks + slot);
   if (tVar1 != TASK_NOTCOMPLETE) {
-    iVar2 = g_lbGlob.escrowBalance[g_lbGlob.tasks[param_1].controllerIndex];
+    iVar2 = g_lbGlob.escrowBalance[g_lbGlob.tasks[slot].controllerIndex];
     if (0 < iVar2) {
-      LiveStats_SpendCurrency(g_lbGlob.tasks[param_1].controllerIndex,-iVar2,POINTSSPENT_ESCROW,0);
-      LiveStorage_UploadStatsForController(g_lbGlob.tasks[param_1].controllerIndex);
+      LiveStats_SpendCurrency(g_lbGlob.tasks[slot].controllerIndex,-iVar2,POINTSSPENT_ESCROW,0);
+      LiveStorage_UploadStatsForController(g_lbGlob.tasks[slot].controllerIndex);
       Dvar_SetIntByName("ui_escrowReturn",iVar2);
-      pcVar3 = "ui_escrow_popup";
-      iVar2 = Com_ControllerIndex_GetLocalClientNum(g_lbGlob.tasks[param_1].controllerIndex);
-      UI_OpenMenu(iVar2,pcVar3);
+      menuName = "ui_escrow_popup";
+      iVar2 = Com_ControllerIndex_GetLocalClientNum(g_lbGlob.tasks[slot].controllerIndex);
+      UI_OpenMenu(iVar2,menuName);
     }
-    g_lbGlob.escrowBalance[g_lbGlob.tasks[param_1].controllerIndex] = 0;
-    TaskManager_ClearTask(g_lbGlob.tasks + param_1);
+    g_lbGlob.escrowBalance[g_lbGlob.tasks[slot].controllerIndex] = 0;
+    TaskManager_ClearTask(g_lbGlob.tasks + slot);
   }
   return tVar1;
 }
@@ -2780,97 +2864,101 @@ taskCompleteResults __cdecl LB_ClearEscrowComplete(int param_1)
 /* WARNING: Enum "LbType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-char * __cdecl LB_FeederItemText(int param_1,int param_2,int param_3,Material **param_4)
+char * __cdecl LB_FeederItemText(int localClientNum,int index,int column,Material **material)
 
 {
-  LeaderBoardRow<10> *pLVar1;
-  LbType LVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar6;
-  char *pcVar7;
-  LbType LVar8;
+  LeaderBoardRow<10> *row_00;
+  LbType lbType_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  LeaderBoardResult<LeaderBoardRow<10>,100> *pLVar4;
+  char *pcVar5;
+  LbType LVar6;
+  LbType lbType;
+  int rank;
+  LeaderBoardRow<10> *row;
+  int currentLeaderboard;
   
-  LVar2 = (lb_type->current).integer;
-  iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar4 = LB_NeedToReadLeaderBoard(iVar5);
-  if (bVar4) {
-    pLVar6 = LB_UpdateLeaderboard(param_1,LVar2,param_2);
-    if (g_lbGlob.leaderboards[LVar2].isUpdating == false) {
-      if (((uint)g_lbGlob.leaderboards[LVar2].totalResults <= (uint)param_2) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
+  lbType_00 = (lb_type->current).integer;
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar2 = LB_NeedToReadLeaderBoard(iVar3);
+  if (bVar2) {
+    pLVar4 = LB_UpdateLeaderboard(localClientNum,lbType_00,index);
+    if (g_lbGlob.leaderboards[lbType_00].isUpdating == false) {
+      if (((uint)g_lbGlob.leaderboards[lbType_00].totalResults <= (uint)index) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                    0x77b,0,
                                    "index doesn\'t index g_lbGlob.leaderboards[ lbType ].totalResults\n\t%i not in [0, %i)"
-                                  ), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        pcVar7 = (char *)(*pcVar3)();
-        return pcVar7;
+                                  ), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        pcVar5 = (char *)(*pcVar1)();
+        return pcVar5;
       }
       g_lbGlob.feederText[0] = '\0';
-      if ((param_2 - g_lbGlob.leaderboards[LVar2].offset < 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
-                                   0x77f,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        pcVar7 = (char *)(*pcVar3)();
-        return pcVar7;
+      if ((index - g_lbGlob.leaderboards[lbType_00].offset < 0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
+                                   0x77f,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        pcVar5 = (char *)(*pcVar1)();
+        return pcVar5;
       }
-      pLVar1 = (LeaderBoardRow<10> *)
-               ((int)pLVar6 + (param_2 - g_lbGlob.leaderboards[LVar2].offset) * 0x98 + 0x70);
-      switch(param_3) {
+      row_00 = (LeaderBoardRow<10> *)
+               ((int)pLVar4 + (index - g_lbGlob.leaderboards[lbType_00].offset) * 0x98 + 0x70);
+      switch(column) {
       case 0:
         Com_sprintf(g_lbGlob.feederText,0x20,"%lld");
-        pcVar7 = g_lbGlob.feederText;
+        pcVar5 = g_lbGlob.feederText;
         break;
       case 1:
-        LB_GetRankIconForXp(pLVar1,LVar2,param_4);
-        pcVar7 = "";
+        LB_GetRankIconForXp(row_00,lbType_00,material);
+        pcVar5 = "";
         break;
       case 2:
-        iVar5 = LB_GetXUserCol(&g_LbLookup,pLVar1,LVar2,LB_STAT_XP);
-        iVar5 = CL_GetRankForXp(iVar5);
-        CL_GetRankData(iVar5,MP_RANKTABLE_DISPLAYLEVEL);
+        iVar3 = LB_GetXUserCol(&g_LbLookup,row_00,lbType_00,LB_STAT_XP);
+        iVar3 = CL_GetRankForXp(iVar3);
+        CL_GetRankData(iVar3,MP_RANKTABLE_DISPLAYLEVEL);
         Com_sprintf(g_lbGlob.feederText,0x20,"%s");
-        pcVar7 = g_lbGlob.feederText;
+        pcVar5 = g_lbGlob.feederText;
         break;
       case 3:
-        pcVar7 = (char *)&pLVar1->_padding_;
+        pcVar5 = (char *)&row_00->_padding_;
         break;
       case 4:
-        LB_GetXUserCol(&g_LbLookup,pLVar1,LVar2,LB_STAT_SCORE_PER_MINUTE);
+        LB_GetXUserCol(&g_LbLookup,row_00,lbType_00,LB_STAT_SCORE_PER_MINUTE);
         Com_sprintf(g_lbGlob.feederText,0x20,"%.2f");
-        pcVar7 = g_lbGlob.feederText;
+        pcVar5 = g_lbGlob.feederText;
         break;
       default:
-        LVar8 = LVar2 & 0x80000007;
-        if ((int)LVar8 < 0) {
-          LVar8 = (LVar8 - LB_DM | 0xfffffff8) + LB_DM;
+        LVar6 = lbType_00 & 0x80000007;
+        if ((int)LVar6 < 0) {
+          LVar6 = (LVar6 - LB_DM | 0xfffffff8) + LB_DM;
         }
-        if (*(int *)(LVar8 * 0x44 + 0xd4787c + param_3 * 4) == 8) {
-          LB_GetXUserCol(&g_LbLookup,pLVar1,0,LB_STAT_DEATHS);
-          LB_GetXUserCol(&g_LbLookup,pLVar1,0,LB_STAT_KILLS);
+        if (*(int *)(LVar6 * 0x44 + 0xd4787c + column * 4) == 8) {
+          LB_GetXUserCol(&g_LbLookup,row_00,0,LB_STAT_DEATHS);
+          LB_GetXUserCol(&g_LbLookup,row_00,0,LB_STAT_KILLS);
           Com_sprintf(g_lbGlob.feederText,0x20,"%.2f");
         }
         else {
-          LVar8 = LVar2 & 0x80000007;
-          if ((int)LVar8 < 0) {
-            LVar8 = (LVar8 - LB_DM | 0xfffffff8) + LB_DM;
+          LVar6 = lbType_00 & 0x80000007;
+          if ((int)LVar6 < 0) {
+            LVar6 = (LVar6 - LB_DM | 0xfffffff8) + LB_DM;
           }
-          LB_GetXUserCol(&g_LbLookup,pLVar1,LVar2,
-                         *(LbStatEnum *)(LVar8 * 0x44 + 0xd4787c + param_3 * 4));
+          LB_GetXUserCol(&g_LbLookup,row_00,lbType_00,
+                         *(LbStatEnum *)(LVar6 * 0x44 + 0xd4787c + column * 4));
           Com_sprintf(g_lbGlob.feederText,0x20,"%i");
         }
-        pcVar7 = g_lbGlob.feederText;
+        pcVar5 = g_lbGlob.feederText;
       }
     }
     else {
-      pcVar7 = (char *)0x0;
+      pcVar5 = (char *)0x0;
     }
   }
   else {
-    pcVar7 = (char *)0x0;
+    pcVar5 = (char *)0x0;
   }
-  return pcVar7;
+  return pcVar5;
 }
 
 
@@ -2880,17 +2968,20 @@ char * __cdecl LB_FeederItemText(int param_1,int param_2,int param_3,Material **
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
 void __cdecl
-LB_ReadRowForUser(int param_1,ulong64 param_2,uint param_3,int param_4,LeaderBoardRow<10> *param_5)
+LB_ReadRowForUser(int controllerIndex,ulong64 param_2,uint taskType,int userStats,
+                 LeaderBoardRow<10> *param_5)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  taskCompleteResults tVar4;
+  overlappedTask *task;
+  taskCompleteResults tVar3;
   undefined4 in_stack_00000008;
+  bool statsReadStartSuccessful;
+  overlappedTask *ov;
   
   LB_EndOngoingTasks();
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x7f7
                                ,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
@@ -2899,24 +2990,24 @@ LB_ReadRowForUser(int param_1,ulong64 param_2,uint param_3,int param_4,LeaderBoa
     (*pcVar1)();
     return;
   }
-  if ((param_1 < 1) && (bVar2 = Live_IsUserSignedInToLive(param_1), bVar2)) {
-    poVar3 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_1,param_3);
-    if ((poVar3 == (overlappedTask *)0x0) &&
+  if ((controllerIndex < 1) && (bVar2 = Live_IsUserSignedInToLive(controllerIndex), bVar2)) {
+    task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,taskType);
+    if ((task == (overlappedTask *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0x7fe,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *(undefined4 *)(param_4 + 8) = in_stack_00000008;
-    *(undefined4 *)(param_4 + 0xc) = (undefined4)param_2;
-    dwReadStatsByUser(poVar3,param_2._4_4_,CONCAT44((undefined4)param_2,in_stack_00000008),
-                      (bdStatsInfo *)param_4);
-    poVar3->data = (void *)param_4;
-    tVar4 = dwGetTaskStatus(poVar3);
-    if (tVar4 != TASK_NOTCOMPLETE) {
+    *(undefined4 *)(userStats + 8) = in_stack_00000008;
+    *(undefined4 *)(userStats + 0xc) = (undefined4)param_2;
+    dwReadStatsByUser(task,param_2._4_4_,CONCAT44((undefined4)param_2,in_stack_00000008),
+                      (bdStatsInfo *)userStats);
+    task->data = (void *)userStats;
+    tVar3 = dwGetTaskStatus(task);
+    if (tVar3 != TASK_NOTCOMPLETE) {
       Com_PrintError(0x16,"dwReadStatsByUser() failed in LB_ReadRowForUser()\n");
-      TaskManager_ClearTask(poVar3);
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(8);
     }
   }
@@ -2929,16 +3020,18 @@ LB_ReadRowForUser(int param_1,ulong64 param_2,uint param_3,int param_4,LeaderBoa
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl LB_WriteRows(int param_1,bdStatsInfo **param_2,int param_3,int param_4)
+void __cdecl LB_WriteRows(int controllerIndex,bdStatsInfo **statsInfo,int numStats,int taskType)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  taskCompleteResults tVar4;
+  overlappedTask *task;
+  taskCompleteResults tVar3;
+  bool statsWriteStartSuccessful;
+  overlappedTask *ov;
   
   LB_EndOngoingTasks();
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",0x819
                                ,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
@@ -2947,20 +3040,20 @@ void __cdecl LB_WriteRows(int param_1,bdStatsInfo **param_2,int param_3,int para
     (*pcVar1)();
     return;
   }
-  if ((param_1 < 1) && (bVar2 = Live_IsUserSignedInToLive(param_1), bVar2)) {
-    poVar3 = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,param_1,param_4);
-    if ((poVar3 == (overlappedTask *)0x0) &&
+  if ((controllerIndex < 1) && (bVar2 = Live_IsUserSignedInToLive(controllerIndex), bVar2)) {
+    task = TaskManager_GetOpenTaskSlot(g_lbGlob.tasks,controllerIndex,taskType);
+    if ((task == (overlappedTask *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
                                  0x820,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    dwWriteStats(poVar3,param_2,param_3);
-    tVar4 = dwGetTaskStatus(poVar3);
-    if (tVar4 != TASK_NOTCOMPLETE) {
+    dwWriteStats(task,statsInfo,numStats);
+    tVar3 = dwGetTaskStatus(task);
+    if (tVar3 != TASK_NOTCOMPLETE) {
       Com_PrintError(0x16,"dwWriteStats() failed in LB_WriteRows()\n");
-      TaskManager_ClearTask(poVar3);
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(6);
     }
   }
@@ -2970,61 +3063,61 @@ void __cdecl LB_WriteRows(int param_1,bdStatsInfo **param_2,int param_3,int para
 
 // 0096BA60  LB_InitAndRegisterStructure  (live/live_leaderboard.cpp:2098)
 
-void __cdecl LB_InitAndRegisterStructure(LbStructure *param_1,int param_2)
+void __cdecl LB_InitAndRegisterStructure(LbStructure *structure,int type)
 
 {
-  LbStructure LVar1;
-  int iVar2;
-  int *piVar3;
+  LbStructure structure_00;
+  int iVar1;
+  int *piVar2;
   undefined1 in_stack_ffffff9c [68];
-  undefined4 uVar4;
-  LbStructure *pLVar5;
-  LbStatEnum LVar6;
-  int local_8;
+  undefined4 uVar3;
+  LbStructure *pLVar4;
+  LbStatEnum statType;
+  int currStat;
   
-  LB_InitStructure(param_1,param_2);
-  LB_RegisterStat(param_1,LB_STAT_MATCHES_PLAYED,false);
-  LB_RegisterStat(param_1,LB_STAT_SCORE,false);
-  LB_RegisterStat(param_1,LB_STAT_TIME_PLAYED_TOTAL,false);
-  LB_RegisterStat(param_1,LB_STAT_SCORE_PER_MINUTE,true);
-  LB_RegisterStat(param_1,LB_STAT_XP,false);
-  LVar6 = LB_STAT_PRESTIGE_LEVEL;
-  uVar4 = 0x96bad3;
-  pLVar5 = param_1;
-  LB_RegisterStat(param_1,LB_STAT_PRESTIGE_LEVEL,false);
-  for (local_8 = 0; local_8 < lbStatCounts[param_2]; local_8 = local_8 + 1) {
-    LVar6 = LbStatPerLbGameMode[param_2][local_8];
-    uVar4 = 0x96bb13;
-    pLVar5 = param_1;
-    LB_RegisterStat(param_1,LVar6,false);
+  LB_InitStructure(structure,type);
+  LB_RegisterStat(structure,LB_STAT_MATCHES_PLAYED,false);
+  LB_RegisterStat(structure,LB_STAT_SCORE,false);
+  LB_RegisterStat(structure,LB_STAT_TIME_PLAYED_TOTAL,false);
+  LB_RegisterStat(structure,LB_STAT_SCORE_PER_MINUTE,true);
+  LB_RegisterStat(structure,LB_STAT_XP,false);
+  statType = LB_STAT_PRESTIGE_LEVEL;
+  uVar3 = 0x96bad3;
+  pLVar4 = structure;
+  LB_RegisterStat(structure,LB_STAT_PRESTIGE_LEVEL,false);
+  for (currStat = 0; currStat < lbStatCounts[type]; currStat = currStat + 1) {
+    statType = LbStatPerLbGameMode[type][currStat];
+    uVar3 = 0x96bb13;
+    pLVar4 = structure;
+    LB_RegisterStat(structure,statType,false);
   }
-  piVar3 = (int *)&stack0xffffff9c;
-  for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *piVar3 = param_1->type;
-    param_1 = (LbStructure *)param_1->columns;
-    piVar3 = piVar3 + 1;
+  piVar2 = (int *)&stack0xffffff9c;
+  for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *piVar2 = structure->type;
+    structure = (LbStructure *)structure->columns;
+    piVar2 = piVar2 + 1;
   }
-  LVar1.columns[0x10] = uVar4;
-  LVar1.type = in_stack_ffffff9c._0_4_;
-  LVar1.columns[0] = in_stack_ffffff9c._4_4_;
-  LVar1.columns[1] = in_stack_ffffff9c._8_4_;
-  LVar1.columns[2] = in_stack_ffffff9c._12_4_;
-  LVar1.columns[3] = in_stack_ffffff9c._16_4_;
-  LVar1.columns[4] = in_stack_ffffff9c._20_4_;
-  LVar1.columns[5] = in_stack_ffffff9c._24_4_;
-  LVar1.columns[6] = in_stack_ffffff9c._28_4_;
-  LVar1.columns[7] = in_stack_ffffff9c._32_4_;
-  LVar1.columns[8] = in_stack_ffffff9c._36_4_;
-  LVar1.columns[9] = in_stack_ffffff9c._40_4_;
-  LVar1.columns[10] = in_stack_ffffff9c._44_4_;
-  LVar1.columns[0xb] = in_stack_ffffff9c._48_4_;
-  LVar1.columns[0xc] = in_stack_ffffff9c._52_4_;
-  LVar1.columns[0xd] = in_stack_ffffff9c._56_4_;
-  LVar1.columns[0xe] = in_stack_ffffff9c._60_4_;
-  LVar1.columns[0xf] = in_stack_ffffff9c._64_4_;
-  LVar1.numColums = (uint)pLVar5;
-  LVar1.ratingCol = LVar6;
-  LB_RegisterStructure(&g_LbLookup,LVar1,param_2);
+  structure_00.columns[0x10] = uVar3;
+  structure_00.type = in_stack_ffffff9c._0_4_;
+  structure_00.columns[0] = in_stack_ffffff9c._4_4_;
+  structure_00.columns[1] = in_stack_ffffff9c._8_4_;
+  structure_00.columns[2] = in_stack_ffffff9c._12_4_;
+  structure_00.columns[3] = in_stack_ffffff9c._16_4_;
+  structure_00.columns[4] = in_stack_ffffff9c._20_4_;
+  structure_00.columns[5] = in_stack_ffffff9c._24_4_;
+  structure_00.columns[6] = in_stack_ffffff9c._28_4_;
+  structure_00.columns[7] = in_stack_ffffff9c._32_4_;
+  structure_00.columns[8] = in_stack_ffffff9c._36_4_;
+  structure_00.columns[9] = in_stack_ffffff9c._40_4_;
+  structure_00.columns[10] = in_stack_ffffff9c._44_4_;
+  structure_00.columns[0xb] = in_stack_ffffff9c._48_4_;
+  structure_00.columns[0xc] = in_stack_ffffff9c._52_4_;
+  structure_00.columns[0xd] = in_stack_ffffff9c._56_4_;
+  structure_00.columns[0xe] = in_stack_ffffff9c._60_4_;
+  structure_00.columns[0xf] = in_stack_ffffff9c._64_4_;
+  structure_00.numColums = (uint)pLVar4;
+  structure_00.ratingCol = statType;
+  LB_RegisterStructure(&g_LbLookup,structure_00,type);
   return;
 }
 
@@ -3033,58 +3126,58 @@ void __cdecl LB_InitAndRegisterStructure(LbStructure *param_1,int param_2)
 
 void __cdecl
 LB_InitAndRegisterStructureForSpecialLeaderboards
-          (LbGlobalStructure *param_1,int param_2,int param_3)
+          (LbGlobalStructure *globalStructures,int lbIndex,int type)
 
 {
-  LbGlobalStructure LVar1;
-  int iVar2;
-  int *piVar3;
+  LbGlobalStructure globalStructures_00;
+  int iVar1;
+  int *piVar2;
   undefined1 in_stack_ffffff94 [76];
-  undefined4 uVar4;
-  LbGlobalStructure *pLVar5;
-  GlobalLbStatEnum GVar6;
-  int local_8;
+  undefined4 uVar3;
+  LbGlobalStructure *pLVar4;
+  GlobalLbStatEnum globalStatType;
+  int currStat;
   
-  LB_InitGlobalStructure(param_1,param_2);
-  GVar6 = GlobalLbStat[param_3][0];
-  uVar4 = 0x96bb6e;
-  pLVar5 = param_1;
-  LB_RegisterGlobalStat(param_1,GVar6,true);
-  for (local_8 = 1; local_8 < GlobalLbStatCounts[param_3]; local_8 = local_8 + 1) {
-    GVar6 = GlobalLbStat[param_3][local_8];
-    uVar4 = 0x96bbae;
-    pLVar5 = param_1;
-    LB_RegisterGlobalStat(param_1,GVar6,false);
+  LB_InitGlobalStructure(globalStructures,lbIndex);
+  globalStatType = GlobalLbStat[type][0];
+  uVar3 = 0x96bb6e;
+  pLVar4 = globalStructures;
+  LB_RegisterGlobalStat(globalStructures,globalStatType,true);
+  for (currStat = 1; currStat < GlobalLbStatCounts[type]; currStat = currStat + 1) {
+    globalStatType = GlobalLbStat[type][currStat];
+    uVar3 = 0x96bbae;
+    pLVar4 = globalStructures;
+    LB_RegisterGlobalStat(globalStructures,globalStatType,false);
   }
-  piVar3 = (int *)&stack0xffffff94;
-  for (iVar2 = 0x16; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *piVar3 = param_1->lbIndex;
-    param_1 = (LbGlobalStructure *)param_1->columns;
-    piVar3 = piVar3 + 1;
+  piVar2 = (int *)&stack0xffffff94;
+  for (iVar1 = 0x16; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *piVar2 = globalStructures->lbIndex;
+    globalStructures = (LbGlobalStructure *)globalStructures->columns;
+    piVar2 = piVar2 + 1;
   }
-  LVar1.columns[0x12] = uVar4;
-  LVar1.lbIndex = in_stack_ffffff94._0_4_;
-  LVar1.columns[0] = in_stack_ffffff94._4_4_;
-  LVar1.columns[1] = in_stack_ffffff94._8_4_;
-  LVar1.columns[2] = in_stack_ffffff94._12_4_;
-  LVar1.columns[3] = in_stack_ffffff94._16_4_;
-  LVar1.columns[4] = in_stack_ffffff94._20_4_;
-  LVar1.columns[5] = in_stack_ffffff94._24_4_;
-  LVar1.columns[6] = in_stack_ffffff94._28_4_;
-  LVar1.columns[7] = in_stack_ffffff94._32_4_;
-  LVar1.columns[8] = in_stack_ffffff94._36_4_;
-  LVar1.columns[9] = in_stack_ffffff94._40_4_;
-  LVar1.columns[10] = in_stack_ffffff94._44_4_;
-  LVar1.columns[0xb] = in_stack_ffffff94._48_4_;
-  LVar1.columns[0xc] = in_stack_ffffff94._52_4_;
-  LVar1.columns[0xd] = in_stack_ffffff94._56_4_;
-  LVar1.columns[0xe] = in_stack_ffffff94._60_4_;
-  LVar1.columns[0xf] = in_stack_ffffff94._64_4_;
-  LVar1.columns[0x10] = in_stack_ffffff94._68_4_;
-  LVar1.columns[0x11] = in_stack_ffffff94._72_4_;
-  LVar1.numColums = (uint)pLVar5;
-  LVar1.ratingCol = GVar6;
-  LB_RegisterGlobalStructure(&g_LbLookup,LVar1,param_2);
+  globalStructures_00.columns[0x12] = uVar3;
+  globalStructures_00.lbIndex = in_stack_ffffff94._0_4_;
+  globalStructures_00.columns[0] = in_stack_ffffff94._4_4_;
+  globalStructures_00.columns[1] = in_stack_ffffff94._8_4_;
+  globalStructures_00.columns[2] = in_stack_ffffff94._12_4_;
+  globalStructures_00.columns[3] = in_stack_ffffff94._16_4_;
+  globalStructures_00.columns[4] = in_stack_ffffff94._20_4_;
+  globalStructures_00.columns[5] = in_stack_ffffff94._24_4_;
+  globalStructures_00.columns[6] = in_stack_ffffff94._28_4_;
+  globalStructures_00.columns[7] = in_stack_ffffff94._32_4_;
+  globalStructures_00.columns[8] = in_stack_ffffff94._36_4_;
+  globalStructures_00.columns[9] = in_stack_ffffff94._40_4_;
+  globalStructures_00.columns[10] = in_stack_ffffff94._44_4_;
+  globalStructures_00.columns[0xb] = in_stack_ffffff94._48_4_;
+  globalStructures_00.columns[0xc] = in_stack_ffffff94._52_4_;
+  globalStructures_00.columns[0xd] = in_stack_ffffff94._56_4_;
+  globalStructures_00.columns[0xe] = in_stack_ffffff94._60_4_;
+  globalStructures_00.columns[0xf] = in_stack_ffffff94._64_4_;
+  globalStructures_00.columns[0x10] = in_stack_ffffff94._68_4_;
+  globalStructures_00.columns[0x11] = in_stack_ffffff94._72_4_;
+  globalStructures_00.numColums = (uint)pLVar4;
+  globalStructures_00.ratingCol = globalStatType;
+  LB_RegisterGlobalStructure(&g_LbLookup,globalStructures_00,lbIndex);
   return;
 }
 
@@ -3097,22 +3190,22 @@ LB_InitAndRegisterStructureForSpecialLeaderboards
 void __cdecl LB_Init(void)
 
 {
-  int local_c0;
-  LbStructure local_bc;
-  int local_68;
-  LbType local_64;
-  int local_60;
-  LbGlobalStructure local_5c;
+  int gpad;
+  LbStructure structure;
+  int currIndex;
+  int lbIdx;
+  int type;
+  LbGlobalStructure globalStructures;
   
   TaskManager_ClearOverlappedTasks(g_lbGlob.tasks);
   memset((uchar *)&g_LbLookup,'\0',0x668);
-  for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-    LB_InitAndRegisterStructure(&local_bc,local_60);
+  for (type = 0; type < 8; type = type + 1) {
+    LB_InitAndRegisterStructure(&structure,type);
   }
-  local_60 = 0;
-  for (local_68 = 0; local_68 < 4; local_68 = local_68 + 1) {
-    LB_InitAndRegisterStructureForSpecialLeaderboards(&local_5c,local_68,local_60);
-    local_60 = local_60 + 1;
+  type = 0;
+  for (currIndex = 0; currIndex < 4; currIndex = currIndex + 1) {
+    LB_InitAndRegisterStructureForSpecialLeaderboards(&globalStructures,currIndex,type);
+    type = type + 1;
   }
   Cmd_AddCommandInternal
             ("incrementescrow",LB_IncrementEscrow,(cmd_function_s *)&LB_IncrementEscrow_VAR);
@@ -3120,17 +3213,17 @@ void __cdecl LB_Init(void)
             ("downloadingleaderboard",LB_openDownloadingMenuCmd,
              (cmd_function_s *)&LB_openDownloadingMenuCmd_VAR);
   Cmd_AddCommandInternal("reportuser",LB_ReportUser,(cmd_function_s *)&LB_ReportUser_VAR);
-  for (local_c0 = 0; local_c0 < 1; local_c0 = local_c0 + 1) {
-    LB_ClearPlayerStats(local_c0);
+  for (gpad = 0; gpad < 1; gpad = gpad + 1) {
+    LB_ClearPlayerStats(gpad);
   }
-  for (local_64 = LB_GAMEMODE_START; (int)local_64 < 0x10; local_64 = local_64 + LB_DM) {
-    g_lbGlob.leaderboards[local_64].lastUpdate = 0;
-    g_lbGlob.leaderboards[local_64].filter = 3;
-    g_lbGlob.leaderboards[local_64].lbTypeByResetPeriod = 3;
-    g_lbGlob.leaderboards[local_64].type = local_64;
-    g_lbGlob.leaderboards[local_64].offset = 0;
-    g_lbGlob.leaderboards[local_64].curIdx = 0;
-    g_lbGlob.leaderboards[local_64].forceRefresh = true;
+  for (lbIdx = 0; lbIdx < 0x10; lbIdx = lbIdx + 1) {
+    g_lbGlob.leaderboards[lbIdx].lastUpdate = 0;
+    g_lbGlob.leaderboards[lbIdx].filter = 3;
+    g_lbGlob.leaderboards[lbIdx].lbTypeByResetPeriod = 3;
+    g_lbGlob.leaderboards[lbIdx].type = lbIdx;
+    g_lbGlob.leaderboards[lbIdx].offset = 0;
+    g_lbGlob.leaderboards[lbIdx].curIdx = 0;
+    g_lbGlob.leaderboards[lbIdx].forceRefresh = true;
   }
   g_lbGlob.currentLbType = LB_COUNT;
   lb_minrefresh =
@@ -3165,36 +3258,38 @@ void __cdecl LB_Init(void)
 
 // 0096BF00  LB_CheckOngoingTasks  (live/live_leaderboard.cpp:2409)
 
-/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "LbType": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl LB_CheckOngoingTasks(void)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  taskCompleteResults tVar4;
-  char *pcVar5;
-  int local_8;
+  int localClientNum_00;
+  taskCompleteResults tVar3;
+  char *fmt;
+  int localClientNum;
+  int tasknum;
   
-  local_8 = 0;
+  tasknum = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < tasknum) {
       return;
     }
-    if (g_lbGlob.tasks[local_8].active != false) {
-      iVar3 = Com_ControllerIndex_GetLocalClientNum(g_lbGlob.tasks[local_8].controllerIndex);
-      switch(g_lbGlob.tasks[local_8].type) {
+    if (g_lbGlob.tasks[tasknum].active != false) {
+      localClientNum_00 =
+           Com_ControllerIndex_GetLocalClientNum(g_lbGlob.tasks[tasknum].controllerIndex);
+      switch(g_lbGlob.tasks[tasknum].type) {
       case 0:
-        tVar4 = LB_ReadLeaderboardComplete(local_8);
-        if (tVar4 != TASK_NOTCOMPLETE) {
-          if (tVar4 == TASK_COMPLETE) {
-            UI_CloseMenu(iVar3,"popup_gettinglb");
+        tVar3 = LB_ReadLeaderboardComplete(tasknum);
+        if (tVar3 != TASK_NOTCOMPLETE) {
+          if (tVar3 == TASK_COMPLETE) {
+            UI_CloseMenu(localClientNum_00,"popup_gettinglb");
           }
           else {
             Com_Printf(0x10,"Error reading leaderboard stats\n");
-            UI_CloseMenu(iVar3,"popup_gettinglb");
+            UI_CloseMenu(localClientNum_00,"popup_gettinglb");
           }
         }
         break;
@@ -3202,15 +3297,15 @@ void __cdecl LB_CheckOngoingTasks(void)
       case 2:
       case 3:
       case 4:
-        tVar4 = LB_ReadHiddenLeaderboardComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_ReadHiddenLeaderboardComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error reading hidden leaderboard stats\n");
         }
         break;
       default:
-        pcVar5 = va("Unknown live leaderboard task type %i\n");
+        fmt = va("Unknown live leaderboard task type %i\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp",
-                                 0xa26,0,pcVar5);
+                                 0xa26,0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
@@ -3218,8 +3313,8 @@ void __cdecl LB_CheckOngoingTasks(void)
         }
         break;
       case 7:
-        tVar4 = LB_UploadPlayerStatsComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_UploadPlayerStatsComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error uploading leaderboard stats\n");
         }
         break;
@@ -3227,49 +3322,49 @@ void __cdecl LB_CheckOngoingTasks(void)
       case 9:
       case 10:
       case 0xb:
-        tVar4 = LB_WriteStatsToLbComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_WriteStatsToLbComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error uploading leaderboard stats to leaderboards \n");
         }
         break;
       case 0xc:
-        tVar4 = LB_ResolveEscrowComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_ResolveEscrowComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error resolving escrow\n");
         }
         break;
       case 0xd:
-        tVar4 = LB_RetrieveEscrowBalanceComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_RetrieveEscrowBalanceComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error getting escrow balance\n");
         }
         break;
       case 0xe:
-        tVar4 = LB_ClearEscrowComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_ClearEscrowComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error clearing escrow\n");
         }
         break;
       case 0xf:
-        tVar4 = LB_IncrementEscrowComplete(local_8);
-        if ((tVar4 != TASK_NOTCOMPLETE) && (tVar4 != TASK_COMPLETE)) {
+        tVar3 = LB_IncrementEscrowComplete(tasknum);
+        if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_Printf(0x10,"Error incrementing escrow\n");
         }
         break;
       case 0x10:
-        tVar4 = LB_ReadLeaderboardMatchesCountComplete(local_8);
-        if (tVar4 != TASK_NOTCOMPLETE) {
-          if (tVar4 == TASK_COMPLETE) {
-            UI_CloseMenu(iVar3,"popup_gettinglb");
+        tVar3 = LB_ReadLeaderboardMatchesCountComplete(tasknum);
+        if (tVar3 != TASK_NOTCOMPLETE) {
+          if (tVar3 == TASK_COMPLETE) {
+            UI_CloseMenu(localClientNum_00,"popup_gettinglb");
           }
           else {
             Com_Printf(0x10,"Error reading leaderboard stats\n");
-            UI_CloseMenu(iVar3,"popup_gettinglb");
+            UI_CloseMenu(localClientNum_00,"popup_gettinglb");
           }
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   } while( true );
 }
 
@@ -3285,6 +3380,7 @@ void __cdecl LB_EndOngoingTasks(void)
   bool bVar1;
   int iVar2;
   int iVar3;
+  int start;
   
   iVar2 = Sys_Milliseconds();
   do {

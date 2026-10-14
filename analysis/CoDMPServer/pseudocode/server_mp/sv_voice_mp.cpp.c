@@ -17,14 +17,14 @@ bool __cdecl SV_VoiceEnabled(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
+void __cdecl SV_WriteVoiceDataToClient(client_t *client,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int packet;
   
-  if (param_1->voicePacketCount < 1) {
+  if (client->voicePacketCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x1e,0,
                              "%s");
     if (!bVar2) {
@@ -33,7 +33,7 @@ void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
       return;
     }
   }
-  if (0x28 < param_1->voicePacketCount) {
+  if (0x28 < client->voicePacketCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x1f,0,
                              "%s");
     if (!bVar2) {
@@ -42,11 +42,11 @@ void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
       return;
     }
   }
-  MSG_WriteByte(param_2,param_1->voicePacketCount);
-  local_8 = 0;
+  MSG_WriteByte(msg,client->voicePacketCount);
+  packet = 0;
   do {
-    if (param_1->voicePacketCount <= local_8) {
-      if (param_2->overflowed != 0) {
+    if (client->voicePacketCount <= packet) {
+      if (msg->overflowed != 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                  0x32,0,"%s");
         if (!bVar2) {
@@ -57,8 +57,8 @@ void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
       }
       return;
     }
-    MSG_WriteByte(param_2,(uint)param_1->voicePackets[local_8].talker);
-    if (0xffff < param_1->voicePackets[local_8].dataSize) {
+    MSG_WriteByte(msg,(uint)client->voicePackets[packet].talker);
+    if (0xffff < client->voicePackets[packet].dataSize) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x28,
                                0,"%s");
       if (!bVar2) {
@@ -67,10 +67,9 @@ void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
         return;
       }
     }
-    MSG_WriteByte(param_2,param_1->voicePackets[local_8].dataSize);
-    MSG_WriteData(param_2,param_1->voicePackets[local_8].data,
-                  param_1->voicePackets[local_8].dataSize);
-    local_8 = local_8 + 1;
+    MSG_WriteByte(msg,client->voicePackets[packet].dataSize);
+    MSG_WriteData(msg,client->voicePackets[packet].data,client->voicePackets[packet].dataSize);
+    packet = packet + 1;
   } while( true );
 }
 
@@ -83,18 +82,18 @@ void __cdecl SV_WriteVoiceDataToClient(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SendClientVoiceData(client_t *param_1)
+void __cdecl SV_SendClientVoiceData(client_t *client)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar *puVar3;
-  LargeLocal local_3c;
-  msg_t local_34;
+  uchar *data;
+  LargeLocal msg_buf_large_local;
+  msg_t msg;
   
-  LargeLocal::LargeLocal(&local_3c,0x10000);
-  puVar3 = LargeLocal::GetBuf(&local_3c);
-  if (param_1->voicePacketCount < 0) {
+  LargeLocal::LargeLocal(&msg_buf_large_local,0x10000);
+  data = LargeLocal::GetBuf(&msg_buf_large_local);
+  if (client->voicePacketCount < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x42,0,
                              "%s");
     if (!bVar2) {
@@ -103,9 +102,9 @@ void __cdecl SV_SendClientVoiceData(client_t *param_1)
       return;
     }
   }
-  if (((param_1->header).state == 5) && (param_1->voicePacketCount != 0)) {
-    MSG_Init(&local_34,puVar3,0x10000);
-    if (local_34.cursize != 0) {
+  if (((client->header).state == 5) && (client->voicePacketCount != 0)) {
+    MSG_Init(&msg,data,0x10000);
+    if (msg.cursize != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x4b,
                                0,"%s");
       if (!bVar2) {
@@ -114,7 +113,7 @@ void __cdecl SV_SendClientVoiceData(client_t *param_1)
         return;
       }
     }
-    if (local_34.bit != 0) {
+    if (msg.bit != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x4c,
                                0,"%s");
       if (!bVar2) {
@@ -123,22 +122,21 @@ void __cdecl SV_SendClientVoiceData(client_t *param_1)
         return;
       }
     }
-    MSG_WriteString(&local_34,"v");
-    SV_WriteVoiceDataToClient(param_1,&local_34);
-    if (local_34.overflowed == 0) {
+    MSG_WriteString(&msg,"v");
+    SV_WriteVoiceDataToClient(client,&msg);
+    if (msg.overflowed == 0) {
       NET_OutOfBandVoiceData
-                (NS_MAXCLIENTS,(param_1->header).netchan.remoteAddress,local_34.data,
-                 local_34.cursize);
-      param_1->voicePacketCount = 0;
-      LargeLocal::~LargeLocal(&local_3c);
+                (NS_MAXCLIENTS,(client->header).netchan.remoteAddress,msg.data,msg.cursize);
+      client->voicePacketCount = 0;
+      LargeLocal::~LargeLocal(&msg_buf_large_local);
     }
     else {
       Com_PrintWarning(0xf,"WARNING: voice msg overflowed for %s\n");
-      LargeLocal::~LargeLocal(&local_3c);
+      LargeLocal::~LargeLocal(&msg_buf_large_local);
     }
   }
   else {
-    LargeLocal::~LargeLocal(&local_3c);
+    LargeLocal::~LargeLocal(&msg_buf_large_local);
   }
   return;
 }
@@ -152,14 +150,14 @@ void __cdecl SV_SendClientVoiceData(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_ClientWantsVoiceData(int param_1)
+bool __cdecl SV_ClientWantsVoiceData(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x65,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -169,7 +167,7 @@ bool __cdecl SV_ClientWantsVoiceData(int param_1)
       return (bool)uVar3;
     }
   }
-  return (bool)*(undefined1 *)((int)svs.clients + param_1 * 0x84d00 + 0x66208);
+  return (bool)*(undefined1 *)((int)svs.clients + clientNum * 0x84d00 + 0x66208);
 }
 
 
@@ -181,14 +179,14 @@ bool __cdecl SV_ClientWantsVoiceData(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_ClientHasClientMuted(int param_1,int param_2)
+bool __cdecl SV_ClientHasClientMuted(int listener,int talker)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)listener) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x6e,0,
                              "listener doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -198,7 +196,7 @@ bool __cdecl SV_ClientHasClientMuted(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if ((com_maxclients->current).unsignedInt <= (uint)param_2) {
+  if ((com_maxclients->current).unsignedInt <= (uint)talker) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x6f,0,
                              "talker doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -208,27 +206,30 @@ bool __cdecl SV_ClientHasClientMuted(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return (bool)*(undefined1 *)((int)svs.clients + param_2 + param_1 * 0x84d00 + 0x661e8);
+  return (bool)*(undefined1 *)((int)svs.clients + talker + listener * 0x84d00 + 0x661e8);
 }
 
 
 // 0071F340  SV_QueueVoicePacket  (server_mp/sv_voice_mp.cpp:122)
 
+/* WARNING: Variable defined which should be unmapped: talker */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
+void __cdecl SV_QueueVoicePacket(int talkerNum,int clientNum,VoicePacket_t *voicePacket)
 
 {
   code *pcVar1;
   client_t *pcVar2;
   bool bVar3;
   int iVar4;
+  client_t *client;
+  client_t *talker;
   
-  if (param_1 < 0) {
+  if (talkerNum < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x7e,0,
                              "%s");
     if (!bVar3) {
@@ -237,7 +238,7 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
       return;
     }
   }
-  if (param_2 < 0) {
+  if (clientNum < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x7f,0,
                              "%s");
     if (!bVar3) {
@@ -246,7 +247,7 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
       return;
     }
   }
-  if ((com_maxclients->current).integer <= param_1) {
+  if ((com_maxclients->current).integer <= talkerNum) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x80,0,
                              "%s");
     if (!bVar3) {
@@ -255,7 +256,7 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
       return;
     }
   }
-  if ((com_maxclients->current).integer <= param_2) {
+  if ((com_maxclients->current).integer <= clientNum) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x81,0,
                              "%s");
     if (!bVar3) {
@@ -265,15 +266,15 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
     }
   }
   pcVar2 = svs.clients;
-  iVar4 = param_1 * 0x84d00 + (int)svs.clients;
-  if (*(int *)((int)svs.clients + param_2 * 0x84d00 + 0x661e4) < 0x28) {
+  iVar4 = talkerNum * 0x84d00 + (int)svs.clients;
+  if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x661e4) < 0x28) {
     *(int *)((int)svs.clients +
-            *(int *)((int)svs.clients + param_2 * 0x84d00 + 0x661e4) * 0x105 +
-            param_2 * 0x84d00 + 0x63a1d) = param_3->dataSize;
+            *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x661e4) * 0x105 +
+            clientNum * 0x84d00 + 0x63a1d) = voicePacket->dataSize;
     memcpy((uchar *)((int)pcVar2 +
-                    *(int *)((int)pcVar2 + param_2 * 0x84d00 + 0x661e4) * 0x105 +
-                    param_2 * 0x84d00 + 0x6391d),param_3->data,param_3->dataSize);
-    if (param_1 != (param_1 & 0xffU)) {
+                    *(int *)((int)pcVar2 + clientNum * 0x84d00 + 0x661e4) * 0x105 +
+                    clientNum * 0x84d00 + 0x6391d),voicePacket->data,voicePacket->dataSize);
+    if (talkerNum != (talkerNum & 0xffU)) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",0x95,
                                0,"%s");
       if (!bVar3) {
@@ -284,10 +285,10 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
     }
     *(undefined1 *)
      ((int)pcVar2 +
-     *(int *)((int)pcVar2 + param_2 * 0x84d00 + 0x661e4) * 0x105 + param_2 * 0x84d00 + 0x6391c) =
-         (undefined1)param_1;
-    *(int *)((int)pcVar2 + param_2 * 0x84d00 + 0x661e4) =
-         *(int *)((int)pcVar2 + param_2 * 0x84d00 + 0x661e4) + 1;
+     *(int *)((int)pcVar2 + clientNum * 0x84d00 + 0x661e4) * 0x105 + clientNum * 0x84d00 + 0x6391c)
+         = (undefined1)talkerNum;
+    *(int *)((int)pcVar2 + clientNum * 0x84d00 + 0x661e4) =
+         *(int *)((int)pcVar2 + clientNum * 0x84d00 + 0x661e4) + 1;
   }
   return;
 }
@@ -302,43 +303,43 @@ void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UserVoice(client_t *param_1,msg_t *param_2)
+void __cdecl SV_UserVoice(client_t *cl,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_120;
-  VoicePacket_t local_11c;
+  int packet;
+  VoicePacket_t voicePacket;
   uint local_10;
-  int local_c;
-  undefined4 local_8;
+  int packetCount;
+  int totalBytes;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  totalBytes = 0;
   bVar2 = SV_VoiceEnabled();
   if (bVar2) {
-    local_c = MSG_ReadByte(param_2);
-    if ((param_1->gentity == (gentity_s *)0x0) &&
+    packetCount = MSG_ReadByte(msg);
+    if ((cl->gentity == (gentity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                  0xb1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    for (local_120 = 0; local_120 < local_c; local_120 = local_120 + 1) {
-      local_11c.dataSize = MSG_ReadByte(param_2);
-      if ((local_11c.dataSize < 1) || (0x100 < local_11c.dataSize)) {
+    for (packet = 0; packet < packetCount; packet = packet + 1) {
+      voicePacket.dataSize = MSG_ReadByte(msg);
+      if ((voicePacket.dataSize < 1) || (0x100 < voicePacket.dataSize)) {
         Com_Printf(0xf,"Received invalid voice packet of size %i from %s\n");
         return;
       }
-      if ((0x100 < local_11c.dataSize) &&
+      if ((0x100 < voicePacket.dataSize) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                    0xbc,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((param_2->data == (uchar *)0x0) &&
+      if ((msg->data == (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                    0xbd,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -352,8 +353,8 @@ void __cdecl SV_UserVoice(client_t *param_1,msg_t *param_2)
         (*pcVar1)();
         return;
       }
-      MSG_ReadData(param_2,local_11c.data,local_11c.dataSize);
-      G_BroadcastVoice(param_1->gentity,&local_11c);
+      MSG_ReadData(msg,voicePacket.data,voicePacket.dataSize);
+      G_BroadcastVoice(cl->gentity,&voicePacket);
     }
   }
   return;
@@ -369,25 +370,25 @@ void __cdecl SV_UserVoice(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_PreGameUserVoice(client_t *param_1,msg_t *param_2)
+void __cdecl SV_PreGameUserVoice(client_t *cl,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_128;
-  VoicePacket_t local_124;
+  int packet;
+  VoicePacket_t voicePacket;
   uint local_18;
-  uint local_14;
-  uint local_10;
-  int local_c;
-  undefined4 local_8;
+  int otherPlayer;
+  int talker;
+  int packetCount;
+  int totalBytes;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  totalBytes = 0;
   bVar2 = SV_VoiceEnabled();
   if (bVar2) {
-    local_10 = ((int)param_1 - (int)svs.clients) / 0x84d00;
-    if (((com_maxclients->current).unsignedInt <= local_10) &&
+    talker = ((int)cl - (int)svs.clients) / 0x84d00;
+    if (((com_maxclients->current).unsignedInt <= (uint)talker) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                  0xe4,0,
                                  "talker doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -396,21 +397,21 @@ void __cdecl SV_PreGameUserVoice(client_t *param_1,msg_t *param_2)
       (*pcVar1)();
       return;
     }
-    local_c = MSG_ReadByte(param_2);
-    for (local_128 = 0; local_128 < local_c; local_128 = local_128 + 1) {
-      local_124.dataSize = MSG_ReadShort(param_2);
-      if ((local_124.dataSize < 1) || (0x100 < local_124.dataSize)) {
+    packetCount = MSG_ReadByte(msg);
+    for (packet = 0; packet < packetCount; packet = packet + 1) {
+      voicePacket.dataSize = MSG_ReadShort(msg);
+      if ((voicePacket.dataSize < 1) || (0x100 < voicePacket.dataSize)) {
         Com_Printf(0xf,"Received invalid voice packet of size %i from %s\n");
         return;
       }
-      if ((0x100 < local_124.dataSize) &&
+      if ((0x100 < voicePacket.dataSize) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                    0xf0,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((param_2->data == (uchar *)0x0) &&
+      if ((msg->data == (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_voice_mp.cpp",
                                    0xf1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -424,13 +425,13 @@ void __cdecl SV_PreGameUserVoice(client_t *param_1,msg_t *param_2)
         (*pcVar1)();
         return;
       }
-      MSG_ReadData(param_2,local_124.data,local_124.dataSize);
-      for (local_14 = 0; (int)local_14 < (com_maxclients->current).integer; local_14 = local_14 + 1)
-      {
-        if ((((local_14 != local_10) && (2 < *(int *)((int)svs.clients + local_14 * 0x84d00))) &&
-            (bVar2 = SV_ClientHasClientMuted(local_14,local_10), !bVar2)) &&
-           (bVar2 = SV_ClientWantsVoiceData(local_14), bVar2)) {
-          SV_QueueVoicePacket(local_10,local_14,&local_124);
+      MSG_ReadData(msg,voicePacket.data,voicePacket.dataSize);
+      for (otherPlayer = 0; otherPlayer < (com_maxclients->current).integer;
+          otherPlayer = otherPlayer + 1) {
+        if ((((otherPlayer != talker) && (2 < *(int *)((int)svs.clients + otherPlayer * 0x84d00)))
+            && (bVar2 = SV_ClientHasClientMuted(otherPlayer,talker), !bVar2)) &&
+           (bVar2 = SV_ClientWantsVoiceData(otherPlayer), bVar2)) {
+          SV_QueueVoicePacket(talker,otherPlayer,&voicePacket);
         }
       }
     }

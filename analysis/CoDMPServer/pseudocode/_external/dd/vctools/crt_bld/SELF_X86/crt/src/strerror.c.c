@@ -2,33 +2,33 @@
 
 // 00C12011  _get_sys_err_msg  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/syserr.h:44)
 
-char * __cdecl _get_sys_err_msg(int param_1)
+char * __cdecl _get_sys_err_msg(int m)
 
 {
   int *piVar1;
   char **ppcVar2;
   
-  if (-1 < param_1) {
+  if (-1 < m) {
     piVar1 = __sys_nerr();
-    if (param_1 < *piVar1) goto LAB_00c1202e;
+    if (m < *piVar1) goto LAB_00c1202e;
   }
   piVar1 = __sys_nerr();
-  param_1 = *piVar1;
+  m = *piVar1;
 LAB_00c1202e:
   ppcVar2 = __sys_errlist();
-  return ppcVar2[param_1];
+  return ppcVar2[m];
 }
 
 
 // 00C12039  strerror  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strerror.c:67)
 
-char * __cdecl strerror(int param_1)
+char * __cdecl strerror(int errnum)
 
 {
   _tiddata *p_Var1;
   char *pcVar2;
-  char *pcVar3;
-  int iVar4;
+  char *_Src;
+  int iVar3;
   
   p_Var1 = _getptd_noexit();
   if (p_Var1 == (_tiddata *)0x0) {
@@ -43,9 +43,9 @@ char * __cdecl strerror(int param_1)
       }
     }
     pcVar2 = p_Var1->_errmsg;
-    pcVar3 = _get_sys_err_msg(param_1);
-    iVar4 = strcpy_s(pcVar2,0x86,pcVar3);
-    if (iVar4 != 0) {
+    _Src = _get_sys_err_msg(errnum);
+    iVar3 = strcpy_s(pcVar2,0x86,_Src);
+    if (iVar3 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
   }

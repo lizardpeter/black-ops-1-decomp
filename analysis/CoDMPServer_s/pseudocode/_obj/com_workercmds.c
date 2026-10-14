@@ -11,11 +11,11 @@ Sys_AddWorkerCmdInternal(jqWorkerCmd *param_1,void *param_2,WorkerCmdConditional
 
 {
   long *plVar1;
-  uint uVar2;
-  uint *puVar3;
+  uint count;
+  uint *dst;
   jqBatch jStack_7c;
   
-  uVar2 = param_1->dataSize;
+  count = param_1->dataSize;
   jStack_7c.p3x_info = (void *)0x0;
   jStack_7c.Input = (void *)0x0;
   jStack_7c.Output = (void *)0x0;
@@ -23,15 +23,15 @@ Sys_AddWorkerCmdInternal(jqWorkerCmd *param_1,void *param_2,WorkerCmdConditional
   jStack_7c.ConditionalAddress = (void *)0x0;
   jStack_7c.ConditionalValue = 0;
   jStack_7c.GroupID = (jqBatchGroup *)0x0;
-  if (uVar2 != 0) {
-    if (uVar2 < 0x55) {
-      memcpy((uchar *)(jStack_7c.ParamData + 2),param_2,uVar2);
+  if (count != 0) {
+    if (count < 0x55) {
+      memcpy((uchar *)(jStack_7c.ParamData + 2),param_2,count);
       param_2 = jStack_7c.ParamData + 2;
     }
     else {
-      puVar3 = jqAllocBatchData(uVar2);
-      memcpy((uchar *)puVar3,param_2,uVar2);
-      param_2 = puVar3;
+      dst = jqAllocBatchData(count);
+      memcpy((uchar *)dst,param_2,count);
+      param_2 = dst;
     }
   }
   jStack_7c.Module = param_1->module;

@@ -2,13 +2,13 @@
 
 // 00B30E00  RB_VirtualToSceneRadius  (gfx_d3d/rb_imagefilter.cpp:63)
 
-void __cdecl RB_VirtualToSceneRadius(float param_1,float *param_2,float *param_3)
+void __cdecl RB_VirtualToSceneRadius(float radius,float *radiusX,float *radiusY)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (float *)0x0) {
+  if (radiusX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x40,0
                              ,"%s");
     if (!bVar2) {
@@ -17,7 +17,7 @@ void __cdecl RB_VirtualToSceneRadius(float param_1,float *param_2,float *param_3
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (radiusY == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x41,0
                              ,"%s");
     if (!bVar2) {
@@ -26,22 +26,22 @@ void __cdecl RB_VirtualToSceneRadius(float param_1,float *param_2,float *param_3
       return;
     }
   }
-  *param_3 = ((float)vidConfig.sceneHeight * param_1) / 480.0;
-  *param_2 = *param_3 * vidConfig.aspectRatioScenePixel;
+  *radiusY = ((float)vidConfig.sceneHeight * radius) / 480.0;
+  *radiusX = *radiusY * vidConfig.aspectRatioScenePixel;
   return;
 }
 
 
 // 00B31350  RB_PickSymmetricFilterMaterial  (gfx_d3d/rb_imagefilter.cpp:72)
 
-int __cdecl RB_PickSymmetricFilterMaterial(int param_1,Material **param_2)
+int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount,Material **material)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 1) || (8 < param_1)) {
+  if ((halfTapCount < 1) || (8 < halfTapCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x52,0
                              ,"%s\n\t(halfTapCount) = %i");
     if (!bVar2) {
@@ -50,8 +50,8 @@ int __cdecl RB_PickSymmetricFilterMaterial(int param_1,Material **param_2)
       return iVar3;
     }
   }
-  *param_2 = rgp.symmetricFilterMaterial[param_1 + -1];
-  return param_1;
+  *material = rgp.symmetricFilterMaterial[halfTapCount + -1];
+  return halfTapCount;
 }
 
 
@@ -59,7 +59,7 @@ int __cdecl RB_PickSymmetricFilterMaterial(int param_1,Material **param_2)
 
 int __cdecl
 RB_GaussianFilterPoints1D
-          (float param_1,int param_2,int param_3,int param_4,float *param_5,float *param_6)
+          (float pixels,int srcRes,int dstRes,int tapLimit,float *tapOffsets,float *tapWeights)
 
 {
   code *pcVar1;
@@ -72,115 +72,118 @@ RB_GaussianFilterPoints1D
   float fVar8;
   float fVar9;
   float fVar10;
-  int local_30;
-  int local_2c;
-  float local_20;
-  float local_18;
+  int tapHalfCount;
+  int tapIndex;
+  int resolutionRatio;
+  float offset;
+  float totalWeight;
+  float gaussianExponent;
+  float weight;
+  float weightScale;
   
-  if ((param_1 <= 0.0) &&
+  if ((pixels <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",99,0
                                ,"%s\n\t(pixels) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 < 1) &&
+  if ((dstRes < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",100,
                                0,"%s\n\t(dstRes) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 < param_3) &&
+  if ((srcRes < dstRes) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x65
                                ,0,"srcRes >= dstRes\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  fVar7 = (float)param_2 / (float)param_3;
+  fVar7 = (float)srcRes / (float)dstRes;
   if (((int)ROUND(fVar7 + 9.313226e-10) & 1U) == 0) {
     fVar9 = 0.5;
   }
   else {
     fVar9 = 0.0;
   }
-  fVar8 = -0.5 / (param_1 * param_1);
-  local_20 = 0.0;
+  fVar8 = -0.5 / (pixels * pixels);
+  totalWeight = 0.0;
   fVar10 = fVar9;
-  for (local_2c = 0; local_2c < param_4; local_2c = local_2c + 1) {
-    fVar4 = (float)(local_2c << 1) + fVar9;
-    fVar5 = (float)(local_2c * 2 + 1) + fVar9;
+  for (tapIndex = 0; tapIndex < tapLimit; tapIndex = tapIndex + 1) {
+    fVar4 = (float)(tapIndex << 1) + fVar9;
+    fVar5 = (float)(tapIndex * 2 + 1) + fVar9;
     dVar6 = (double)(fVar8 * fVar4 * fVar4);
     __libm_sse2_exp((double)CONCAT44(fVar7,fVar10));
-    local_18 = (float)dVar6;
+    weight = (float)dVar6;
     dVar6 = (double)(fVar8 * fVar5 * fVar5);
     __libm_sse2_exp((double)CONCAT44(fVar7,fVar10));
-    if ((local_2c == 0) && (fVar9 == 0.0)) {
-      local_18 = local_18 * 0.5;
+    if ((tapIndex == 0) && (fVar9 == 0.0)) {
+      weight = weight * 0.5;
     }
-    param_6[local_2c] = local_18 + (float)dVar6;
-    if (param_6[local_2c] == 0.0) {
-      param_5[local_2c] = ((fVar4 + fVar5) * 0.5) / (float)param_2;
+    tapWeights[tapIndex] = weight + (float)dVar6;
+    if (tapWeights[tapIndex] == 0.0) {
+      tapOffsets[tapIndex] = ((fVar4 + fVar5) * 0.5) / (float)srcRes;
     }
     else {
-      param_5[local_2c] =
-           (fVar4 * local_18 + fVar5 * (float)dVar6) / ((float)param_2 * param_6[local_2c]);
+      tapOffsets[tapIndex] =
+           (fVar4 * weight + fVar5 * (float)dVar6) / ((float)srcRes * tapWeights[tapIndex]);
     }
-    local_20 = local_20 + param_6[local_2c];
+    totalWeight = totalWeight + tapWeights[tapIndex];
   }
-  if (0.001 < local_20) {
-    if ((local_20 <= 0.0) &&
+  if (0.001 < totalWeight) {
+    if ((totalWeight <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",
                                  0x88,0,"%s\n\t(totalWeight) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_30 = param_4;
-    while (iVar3 = param_4, local_2c = iVar3 + -1, -1 < local_2c) {
-      param_6[local_2c] = param_6[local_2c] * (0.5 / local_20);
-      param_4 = local_2c;
-      if (param_6[local_2c] <= 0.01 && param_6[local_2c] != 0.01) {
-        local_30 = iVar3;
-        param_4 = local_2c;
+    tapHalfCount = tapLimit;
+    while (iVar3 = tapLimit, tapIndex = iVar3 + -1, -1 < tapIndex) {
+      tapWeights[tapIndex] = tapWeights[tapIndex] * (0.5 / totalWeight);
+      tapLimit = tapIndex;
+      if (tapWeights[tapIndex] <= 0.01 && tapWeights[tapIndex] != 0.01) {
+        tapHalfCount = iVar3;
+        tapLimit = tapIndex;
       }
     }
   }
   else {
-    *param_6 = 0.5;
-    local_30 = 1;
+    *tapWeights = 0.5;
+    tapHalfCount = 1;
   }
-  return local_30;
+  return tapHalfCount;
 }
 
 
 // 00B31240  RB_GenerateGaussianFilter1D  (gfx_d3d/rb_imagefilter.cpp:150)
 
 void __cdecl
-RB_GenerateGaussianFilter1D(float param_1,int *param_2,int param_3,GfxImageFilterPass *param_4)
+RB_GenerateGaussianFilter1D(float radius,int *res,int axis,GfxImageFilterPass *filterPass)
 
 {
   int iVar1;
-  float local_4c [8];
-  int local_2c;
-  int local_28;
-  float local_24 [8];
+  float tapWeights [8];
+  int tapHalfCount;
+  int tapIndex;
+  float tapOffsets [8];
   
-  local_2c = RB_GaussianFilterPoints1D
-                       (param_1,param_2[param_3],param_2[param_3],8,local_24,local_4c);
-  iVar1 = RB_PickSymmetricFilterMaterial(local_2c,&param_4->material);
-  param_4->tapHalfCount = iVar1;
-  for (local_28 = 0; local_28 < 8; local_28 = local_28 + 1) {
-    param_4->tapOffsetsAndWeights[local_28][param_3] = local_24[local_28];
-    *(undefined4 *)((int)param_4 + (1 - param_3) * 4 + local_28 * 0x10 + 0x18) = 0;
-    param_4->tapOffsetsAndWeights[local_28][2] = 0.0;
-    param_4->tapOffsetsAndWeights[local_28][3] = local_4c[local_28];
+  tapHalfCount = RB_GaussianFilterPoints1D(radius,res[axis],res[axis],8,tapOffsets,tapWeights);
+  iVar1 = RB_PickSymmetricFilterMaterial(tapHalfCount,&filterPass->material);
+  filterPass->tapHalfCount = iVar1;
+  for (tapIndex = 0; tapIndex < 8; tapIndex = tapIndex + 1) {
+    filterPass->tapOffsetsAndWeights[tapIndex][axis] = tapOffsets[tapIndex];
+    *(undefined4 *)((int)filterPass + (1 - axis) * 4 + tapIndex * 0x10 + 0x18) = 0;
+    filterPass->tapOffsetsAndWeights[tapIndex][2] = 0.0;
+    filterPass->tapOffsetsAndWeights[tapIndex][3] = tapWeights[tapIndex];
   }
-  param_4->srcWidth = 1.0;
-  param_4->srcHeight = 1.0;
-  param_4->dstWidth = *param_2;
-  param_4->dstHeight = param_2[1];
+  filterPass->srcWidth = 1.0;
+  filterPass->srcHeight = 1.0;
+  filterPass->dstWidth = *res;
+  filterPass->dstHeight = res[1];
   return;
 }
 
@@ -189,38 +192,37 @@ RB_GenerateGaussianFilter1D(float param_1,int *param_2,int param_3,GfxImageFilte
 
 void __cdecl
 RB_GenerateGaussianFilter2D
-          (float param_1,int param_2,int param_3,int param_4,int param_5,GfxImageFilterPass *param_6
-          )
+          (float radius,int srcWidth,int srcHeight,int dstWidth,int dstHeight,
+          GfxImageFilterPass *filterPass)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_30 [4];
-  uint local_20;
-  float local_1c [2];
-  int local_14;
-  int local_10;
-  float local_c [2];
+  float tapOffsetsY [4];
+  int tapIndex;
+  float tapOffsetsX [2];
+  int x;
+  int y;
+  float tapWeightsY [2];
   
-  RB_GaussianFilterPoints1D(param_1,param_2,param_4,2,local_1c,local_30 + 2);
-  RB_GaussianFilterPoints1D(param_1,param_3,param_5,2,local_30,local_c);
-  local_20 = 0;
-  for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-      param_6->tapOffsetsAndWeights[local_20 * 2][0] = -local_1c[local_14];
-      param_6->tapOffsetsAndWeights[local_20 * 2][1] = local_30[local_10];
-      param_6->tapOffsetsAndWeights[local_20 * 2][2] = 0.0;
-      param_6->tapOffsetsAndWeights[local_20 * 2][3] = local_30[local_14 + 2] * local_c[local_10];
-      param_6->tapOffsetsAndWeights[local_20 * 2 + 1][0] = local_1c[local_14];
-      param_6->tapOffsetsAndWeights[local_20 * 2 + 1][1] = local_30[local_10];
-      param_6->tapOffsetsAndWeights[local_20 * 2 + 1][2] = 0.0;
-      param_6->tapOffsetsAndWeights[local_20 * 2 + 1][3] =
-           local_30[local_14 + 2] * local_c[local_10];
-      local_20 = local_20 + 1;
+  RB_GaussianFilterPoints1D(radius,srcWidth,dstWidth,2,tapOffsetsX,tapOffsetsY + 2);
+  RB_GaussianFilterPoints1D(radius,srcHeight,dstHeight,2,tapOffsetsY,tapWeightsY);
+  tapIndex = 0;
+  for (y = 0; y < 2; y = y + 1) {
+    for (x = 0; x < 2; x = x + 1) {
+      filterPass->tapOffsetsAndWeights[tapIndex * 2][0] = -tapOffsetsX[x];
+      filterPass->tapOffsetsAndWeights[tapIndex * 2][1] = tapOffsetsY[y];
+      filterPass->tapOffsetsAndWeights[tapIndex * 2][2] = 0.0;
+      filterPass->tapOffsetsAndWeights[tapIndex * 2][3] = tapOffsetsY[x + 2] * tapWeightsY[y];
+      filterPass->tapOffsetsAndWeights[tapIndex * 2 + 1][0] = tapOffsetsX[x];
+      filterPass->tapOffsetsAndWeights[tapIndex * 2 + 1][1] = tapOffsetsY[y];
+      filterPass->tapOffsetsAndWeights[tapIndex * 2 + 1][2] = 0.0;
+      filterPass->tapOffsetsAndWeights[tapIndex * 2 + 1][3] = tapOffsetsY[x + 2] * tapWeightsY[y];
+      tapIndex = tapIndex + 1;
     }
   }
-  if ((local_20 & 0x7fffffff) != 4) {
+  if ((tapIndex & 0x7fffffffU) != 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0xce,1
                              ,"%s\n\t(tapIndex) = %i");
     if (!bVar2) {
@@ -229,12 +231,12 @@ RB_GenerateGaussianFilter2D
       return;
     }
   }
-  iVar3 = RB_PickSymmetricFilterMaterial(local_20 << 1,&param_6->material);
-  param_6->tapHalfCount = iVar3;
-  param_6->srcWidth = 1.0;
-  param_6->srcHeight = 1.0;
-  param_6->dstWidth = param_4;
-  param_6->dstHeight = param_5;
+  iVar3 = RB_PickSymmetricFilterMaterial(tapIndex << 1,&filterPass->material);
+  filterPass->tapHalfCount = iVar3;
+  filterPass->srcWidth = 1.0;
+  filterPass->srcHeight = 1.0;
+  filterPass->dstWidth = dstWidth;
+  filterPass->dstHeight = dstHeight;
   return;
 }
 
@@ -243,40 +245,40 @@ RB_GenerateGaussianFilter2D
 
 int __cdecl
 RB_GenerateGaussianFilterChain
-          (float param_1,float param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-          GfxImageFilterPass *param_8)
+          (float radiusX,float radiusY,int srcWidth,int srcHeight,int dstWidth,int dstHeight,
+          int passLimit,GfxImageFilterPass *filterPass)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float local_28;
-  int local_1c;
+  int dstRes;
   int local_18;
-  float local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  float passRadius;
+  int passRes;
+  int passAxis;
+  int passCount;
   
-  local_1c = param_5;
-  local_18 = param_6;
-  local_8 = 0;
-  if ((param_3 != param_5) || (param_4 != param_6)) {
-    if (param_2 - param_1 < 0.0) {
-      local_28 = param_2;
+  dstRes = dstWidth;
+  local_18 = dstHeight;
+  passCount = 0;
+  if ((srcWidth != dstWidth) || (srcHeight != dstHeight)) {
+    if (radiusY - radiusX < 0.0) {
+      local_28 = radiusY;
     }
     else {
-      local_28 = param_1;
+      local_28 = radiusX;
     }
-    local_14 = local_28;
+    passRadius = local_28;
     if (1.3895605 < local_28) {
-      local_14 = 1.3895605;
+      passRadius = 1.3895605;
     }
-    param_1 = (SQRT(ABS(param_1 * param_1 - local_14 * local_14)) * (float)param_5) / (float)param_3
-    ;
-    param_2 = (SQRT(ABS(param_2 * param_2 - local_14 * local_14)) * (float)param_6) / (float)param_4
-    ;
-    if (param_7 < 1) {
+    radiusX = (SQRT(ABS(radiusX * radiusX - passRadius * passRadius)) * (float)dstWidth) /
+              (float)srcWidth;
+    radiusY = (SQRT(ABS(radiusY * radiusY - passRadius * passRadius)) * (float)dstHeight) /
+              (float)srcHeight;
+    if (passLimit < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0xf1
                                ,0,"%s");
       if (!bVar2) {
@@ -285,38 +287,39 @@ RB_GenerateGaussianFilterChain
         return iVar3;
       }
     }
-    RB_GenerateGaussianFilter2D(local_14,param_3,param_4,param_5,param_6,param_8 + local_8);
-    local_8 = local_8 + 1;
+    RB_GenerateGaussianFilter2D
+              (passRadius,srcWidth,srcHeight,dstWidth,dstHeight,filterPass + passCount);
+    passCount = passCount + 1;
   }
   while( true ) {
-    if ((0x1f < local_8) || ((param_1 < 0.32950512 && (param_2 < 0.32950512)))) goto LAB_00b311fc;
-    if ((ABS(param_1 - param_2) < 0.32950512) &&
-       (local_14 = (param_1 + param_2) * 0.5, local_14 <= 1.3895605)) break;
-    if (param_1 <= param_2) {
-      if (6.4977503 < param_2) {
-        local_14 = 6.4977503;
-        param_2 = SQRT(param_2 * param_2 - 42.22076);
+    if ((0x1f < passCount) || ((radiusX < 0.32950512 && (radiusY < 0.32950512)))) goto LAB_00b311fc;
+    if ((ABS(radiusX - radiusY) < 0.32950512) &&
+       (passRadius = (radiusX + radiusY) * 0.5, passRadius <= 1.3895605)) break;
+    if (radiusX <= radiusY) {
+      if (6.4977503 < radiusY) {
+        passRadius = 6.4977503;
+        radiusY = SQRT(radiusY * radiusY - 42.22076);
       }
       else {
-        local_14 = param_2;
-        param_2 = 0.0;
+        passRadius = radiusY;
+        radiusY = 0.0;
       }
-      local_c = 1;
-      local_10 = param_6;
+      passAxis = 1;
+      passRes = dstHeight;
     }
     else {
-      if (6.4977503 <= param_1) {
-        local_14 = 6.4977503;
-        param_1 = SQRT(param_1 * param_1 - 42.22076);
+      if (6.4977503 <= radiusX) {
+        passRadius = 6.4977503;
+        radiusX = SQRT(radiusX * radiusX - 42.22076);
       }
       else {
-        local_14 = param_1;
-        param_1 = 0.0;
+        passRadius = radiusX;
+        radiusX = 0.0;
       }
-      local_c = 0;
-      local_10 = param_5;
+      passAxis = 0;
+      passRes = dstWidth;
     }
-    if (param_7 <= local_8) {
+    if (passLimit <= passCount) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",
                                0x123,0,"%s");
       if (!bVar2) {
@@ -325,10 +328,10 @@ RB_GenerateGaussianFilterChain
         return iVar3;
       }
     }
-    RB_GenerateGaussianFilter1D(local_14,&local_1c,local_c,param_8 + local_8);
-    local_8 = local_8 + 1;
+    RB_GenerateGaussianFilter1D(passRadius,&dstRes,passAxis,filterPass + passCount);
+    passCount = passCount + 1;
   }
-  if (param_7 <= local_8) {
+  if (passLimit <= passCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0xfd,0
                              ,"%s");
     if (!bVar2) {
@@ -337,10 +340,11 @@ RB_GenerateGaussianFilterChain
       return iVar3;
     }
   }
-  RB_GenerateGaussianFilter2D(local_14,param_5,param_6,param_5,param_6,param_8 + local_8);
-  local_8 = local_8 + 1;
+  RB_GenerateGaussianFilter2D
+            (passRadius,dstWidth,dstHeight,dstWidth,dstHeight,filterPass + passCount);
+  passCount = passCount + 1;
 LAB_00b311fc:
-  if (param_7 < local_8) {
+  if (passLimit < passCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x128,
                              1,"%s");
     if (!bVar2) {
@@ -349,20 +353,20 @@ LAB_00b311fc:
       return iVar3;
     }
   }
-  return local_8;
+  return passCount;
 }
 
 
 // 00B31AB0  RB_SetupFilterPass  (gfx_d3d/rb_imagefilter.cpp:336)
 
-void __cdecl RB_SetupFilterPass(GfxImageFilterPass *param_1)
+void __cdecl RB_SetupFilterPass(GfxImageFilterPass *filterPass)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int constIndex;
   
-  if (8 < (uint)param_1->tapHalfCount) {
+  if (8 < (uint)filterPass->tapHalfCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x153,
                              0,
                              "filterPass->tapHalfCount doesn\'t index ARRAY_COUNT( filterPass->tapOffsetsAndWeights ) + 1\n\t%i not in [0, %i)"
@@ -373,10 +377,10 @@ void __cdecl RB_SetupFilterPass(GfxImageFilterPass *param_1)
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_1->tapHalfCount; local_8 = local_8 + 1) {
+  for (constIndex = 0; constIndex < filterPass->tapHalfCount; constIndex = constIndex + 1) {
     R_SetCodeConstantFromVec4
-              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,local_8 + 0x24,
-               param_1->tapOffsetsAndWeights[local_8]);
+              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,constIndex + 0x24,
+               filterPass->tapOffsetsAndWeights[constIndex]);
   }
   return;
 }
@@ -384,24 +388,27 @@ void __cdecl RB_SetupFilterPass(GfxImageFilterPass *param_1)
 
 // 00B31B30  RB_FilterPingPong  (gfx_d3d/rb_imagefilter.cpp:345)
 
-void __cdecl RB_FilterPingPong(GfxImageFilter *param_1,int param_2)
+void __cdecl RB_FilterPingPong(GfxImageFilter *filter,int passIndex)
 
 {
   uchar local_15;
   GfxImage *local_14;
+  uint pingpong;
+  uchar renderTargetId;
+  GfxImage *sourceImage;
   
-  if (param_2 == 0) {
-    local_14 = param_1->sourceImage;
+  if (passIndex == 0) {
+    local_14 = filter->sourceImage;
   }
   else {
-    local_14 = gfxRenderTargets[9 - (param_2 & 1U)].image;
+    local_14 = gfxRenderTargets[9 - (passIndex & 1U)].image;
   }
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,local_14);
-  if (param_2 == param_1->passCount + -1) {
-    local_15 = param_1->finalTarget;
+  if (passIndex == filter->passCount + -1) {
+    local_15 = filter->finalTarget;
   }
   else {
-    local_15 = (char)(param_2 & 1U) + '\b';
+    local_15 = (char)(passIndex & 1U) + '\b';
   }
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,local_15);
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,local_15);
@@ -412,56 +419,59 @@ void __cdecl RB_FilterPingPong(GfxImageFilter *param_1,int param_2)
 
 // 00B31900  RB_FilterImage  (gfx_d3d/rb_imagefilter.cpp:388)
 
-void __cdecl RB_FilterImage(GfxImageFilter *param_1)
+void __cdecl RB_FilterImage(GfxImageFilter *filter)
 
 {
-  GfxImageFilterPass *pGVar1;
-  code *pcVar2;
-  bool bVar3;
-  int local_10;
+  GfxImageFilterPass *filterPass_00;
+  code *pcVar1;
+  bool bVar2;
+  GfxImageFilterPass *filterPass;
+  int passIndex;
+  float h;
+  float w;
   
-  if (param_1 == (GfxImageFilter *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18a,
+  if (filter == (GfxImageFilter *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18a,
                              0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->passCount < 1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18b,
+  if (filter->passCount < 1) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18b,
                              0,"%s\n\t(filter->passCount) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->sourceImage == (GfxImage *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18c,
+  if (filter->sourceImage == (GfxImage *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_imagefilter.cpp",0x18c,
                              0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   if (tess.indexCount != 0) {
     RB_EndTessSurface();
   }
-  for (local_10 = 0; local_10 < param_1->passCount; local_10 = local_10 + 1) {
-    pGVar1 = param_1->passes + local_10;
-    RB_FilterPingPong(param_1,local_10);
-    RB_SetupFilterPass(pGVar1);
+  for (passIndex = 0; passIndex < filter->passCount; passIndex = passIndex + 1) {
+    filterPass_00 = filter->passes + passIndex;
+    RB_FilterPingPong(filter,passIndex);
+    RB_SetupFilterPass(filterPass_00);
     R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-    RB_DrawStretchPic(param_1->passes[local_10].material,0.0,0.0,
+    RB_DrawStretchPic(filter->passes[passIndex].material,0.0,0.0,
                       (float)gfxCmdBufSourceState.renderTargetWidth,
-                      (float)gfxCmdBufSourceState.renderTargetHeight,0.0,0.0,pGVar1->srcWidth,
-                      pGVar1->srcHeight,0xffffffff,GFX_PRIM_STATS_CODE);
+                      (float)gfxCmdBufSourceState.renderTargetHeight,0.0,0.0,filterPass_00->srcWidth
+                      ,filterPass_00->srcHeight,0xffffffff,GFX_PRIM_STATS_CODE);
     RB_EndTessSurface();
   }
-  GamerProfile_WriteSettings((int)param_1);
+  GamerProfile_WriteSettings((int)filter);
   return;
 }
 
@@ -470,40 +480,41 @@ void __cdecl RB_FilterImage(GfxImageFilter *param_1)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl RB_GaussianFilterImage(float param_1,uchar param_2,uchar param_3,int param_4)
+void __cdecl
+RB_GaussianFilterImage
+          (float radius,uchar srcRenderTargetId,uchar dstRenderTargetId,int registerCount)
 
 {
   DWORD DVar1;
-  float local_13b0;
-  uint local_13ac;
-  float local_13a8;
-  uint local_13a4;
-  uint local_139c;
-  uint local_1398;
-  GfxImageFilter local_1394;
+  float radiusY;
+  int srcWidth;
+  float radiusX;
+  int dstWidth;
+  PIXProfile pp;
+  int srcHeight;
+  int dstHeight;
+  GfxImageFilter filter;
   undefined4 uStack_8;
   
   uStack_8 = 0xb30c8d;
   PIXBeginNamedEvent(-1,"RB_GaussianFilterImage");
-  RB_VirtualToSceneRadius(param_1,&local_13a8,&local_13b0);
-  local_13ac = (uint)gfxRenderTargets[param_2].width;
-  local_139c = (uint)gfxRenderTargets[param_2].height;
-  local_13a4 = (uint)gfxRenderTargets[param_3].width;
-  local_1398 = (uint)gfxRenderTargets[param_3].height;
-  local_1394.sourceImage = gfxRenderTargets[param_2].image;
-  local_1394.finalTarget = param_3;
-  local_1394.passCount =
+  RB_VirtualToSceneRadius(radius,&radiusX,&radiusY);
+  srcWidth = (int)gfxRenderTargets[srcRenderTargetId].width;
+  dstWidth = (int)gfxRenderTargets[dstRenderTargetId].width;
+  filter.sourceImage = gfxRenderTargets[srcRenderTargetId].image;
+  filter.finalTarget = dstRenderTargetId;
+  filter.passCount =
        RB_GenerateGaussianFilterChain
-                 (local_13a8,local_13b0,local_13ac,local_139c,local_13a4,local_1398,0x20,
-                  local_1394.passes);
-  if (local_1394.passCount == 0) {
+                 (radiusX,radiusY,srcWidth,(uint)gfxRenderTargets[srcRenderTargetId].height,dstWidth
+                  ,(uint)gfxRenderTargets[dstRenderTargetId].height,0x20,filter.passes);
+  if (filter.passCount == 0) {
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    RB_FilterImage(&local_1394);
+    RB_FilterImage(&filter);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();

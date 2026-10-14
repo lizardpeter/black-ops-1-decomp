@@ -6,43 +6,43 @@ void FUN_009e40c0(int param_1,int param_2,int param_3,int param_4,int param_5,ul
 
 {
   ulong in_EAX;
-  uchar *puVar1;
+  uchar *src;
   int unaff_EBX;
-  uchar *puVar2;
-  int iVar3;
-  uchar *puVar4;
+  uchar *puVar1;
+  int iVar2;
+  uchar *puVar3;
   int local_c;
   
-  puVar1 = (uchar *)(param_1 - in_EAX);
+  src = (uchar *)(param_1 - in_EAX);
   local_c = param_2 + 1;
   if (0 < local_c) {
-    puVar4 = puVar1 + in_EAX + param_3 + -1;
-    puVar2 = puVar1;
+    puVar3 = src + in_EAX + param_3 + -1;
+    puVar1 = src;
     do {
-      memset(puVar2,puVar4[1 - param_3],in_EAX);
-      memset(puVar4 + 1,*puVar4,param_6);
-      puVar2 = puVar2 + unaff_EBX;
-      puVar4 = puVar4 + unaff_EBX;
+      memset(puVar1,puVar3[1 - param_3],in_EAX);
+      memset(puVar3 + 1,*puVar3,param_6);
+      puVar1 = puVar1 + unaff_EBX;
+      puVar3 = puVar3 + unaff_EBX;
       local_c = local_c + -1;
     } while (local_c != 0);
   }
-  iVar3 = param_2 + -1;
-  puVar2 = (uchar *)((unaff_EBX * param_2 - in_EAX) + param_1);
-  puVar4 = (uchar *)((param_1 - unaff_EBX * param_4) - in_EAX);
+  iVar2 = param_2 + -1;
+  puVar1 = (uchar *)((unaff_EBX * param_2 - in_EAX) + param_1);
+  puVar3 = (uchar *)((param_1 - unaff_EBX * param_4) - in_EAX);
   param_6 = param_3 + in_EAX + 1 + param_6;
   if (0 < param_4) {
     param_2 = param_4;
     do {
-      memcpy(puVar4,puVar1,param_6);
-      puVar4 = puVar4 + unaff_EBX;
+      memcpy(puVar3,src,param_6);
+      puVar3 = puVar3 + unaff_EBX;
       param_2 = param_2 + -1;
     } while (param_2 != 0);
   }
   if (0 < param_5) {
     param_2 = param_5;
     do {
-      memcpy(puVar2,(uchar *)((iVar3 * unaff_EBX - in_EAX) + param_1),param_6);
-      puVar2 = puVar2 + unaff_EBX;
+      memcpy(puVar1,(uchar *)((iVar2 * unaff_EBX - in_EAX) + param_1),param_6);
+      puVar1 = puVar1 + unaff_EBX;
       param_2 = param_2 + -1;
     } while (param_2 != 0);
   }

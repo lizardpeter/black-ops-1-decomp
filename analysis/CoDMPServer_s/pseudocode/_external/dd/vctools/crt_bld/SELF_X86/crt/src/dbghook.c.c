@@ -2,7 +2,7 @@
 
 // 0096E065  _crt_debugger_hook  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dbghook.c:62)
 
-void __cdecl _crt_debugger_hook(int param_1)
+void __cdecl _crt_debugger_hook(int _Reserved)
 
 {
   _debugger_hook_dummy = 0;

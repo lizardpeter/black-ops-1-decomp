@@ -2,9 +2,11 @@
 
 // 0087CB40  jpeg_make_c_derived_tbl  (jpeg-6/jchuff.c:181)
 
+/* WARNING: Variable defined which should be unmapped: htbl */
+
 void __cdecl
 jpeg_make_c_derived_tbl
-          (jpeg_compress_struct *param_1,uchar param_2,int param_3,c_derived_tbl **param_4)
+          (jpeg_compress_struct *isDC,uchar param_2,int param_3,c_derived_tbl **param_4)
 
 {
   int *piVar1;
@@ -19,38 +21,41 @@ jpeg_make_c_derived_tbl
   uint uVar8;
   int iVar9;
   int iVar10;
-  JHUFF_TBL *pJStack_514;
+  jpeg_compress_struct *cinfo;
+  JHUFF_TBL *htbl;
+  int lastp;
+  c_derived_tbl *dtbl;
   uchar auStack_508 [260];
   int aiStack_404 [257];
   
   if ((in_ECX < 0) || (3 < in_ECX)) {
-    param_1->err->msg_code = 0x32;
-    (param_1->err->msg_parm).i[0] = in_ECX;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    isDC->err->msg_code = 0x32;
+    (isDC->err->msg_parm).i[0] = in_ECX;
+    (*isDC->err->error_exit)((jpeg_common_struct *)isDC);
   }
   if (param_2 == '\0') {
-    pJStack_514 = param_1->ac_huff_tbl_ptrs[in_ECX];
+    lastp = (int)isDC->ac_huff_tbl_ptrs[in_ECX];
   }
   else {
-    pJStack_514 = param_1->dc_huff_tbl_ptrs[in_ECX];
+    lastp = (int)isDC->dc_huff_tbl_ptrs[in_ECX];
   }
-  if (pJStack_514 == (JHUFF_TBL *)0x0) {
-    param_1->err->msg_code = 0x32;
-    (param_1->err->msg_parm).i[0] = in_ECX;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (lastp == 0) {
+    isDC->err->msg_code = 0x32;
+    (isDC->err->msg_parm).i[0] = in_ECX;
+    (*isDC->err->error_exit)((jpeg_common_struct *)isDC);
   }
   if (*in_EAX == 0) {
-    pvVar4 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x500);
+    pvVar4 = (*isDC->mem->alloc_small)((jpeg_common_struct *)isDC,1,0x500);
     *in_EAX = (int)pvVar4;
   }
   iVar3 = *in_EAX;
   iVar10 = 0;
   iVar5 = 1;
   do {
-    uVar8 = (uint)pJStack_514->bits[iVar5];
+    uVar8 = (uint)*(byte *)(iVar5 + lastp);
     if (0x100 < (int)(uVar8 + iVar10)) {
-      param_1->err->msg_code = 8;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      isDC->err->msg_code = 8;
+      (*isDC->err->error_exit)((jpeg_common_struct *)isDC);
     }
     if (uVar8 != 0) {
       memset(auStack_508 + iVar10,(uchar)iVar5,uVar8);
@@ -73,8 +78,8 @@ jpeg_make_c_derived_tbl
         iVar5 = iVar5 + 1;
       }
       if (1 << ((byte)iVar6 & 0x1f) <= iVar5) {
-        param_1->err->msg_code = 8;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        isDC->err->msg_code = 8;
+        (*isDC->err->error_exit)((jpeg_common_struct *)isDC);
       }
       puVar7 = auStack_508 + iVar9;
       iVar5 = iVar5 * 2;
@@ -86,11 +91,11 @@ jpeg_make_c_derived_tbl
   iVar5 = 0;
   if (0 < iVar10) {
     do {
-      uVar8 = (uint)pJStack_514->huffval[iVar5];
+      uVar8 = (uint)*(byte *)(lastp + 0x11 + iVar5);
       if (((int)((-(uint)(param_2 != '\0') & 0xffffff10) + 0xff) < (int)uVar8) ||
          (puVar7[uVar8] != '\0')) {
-        param_1->err->msg_code = 8;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        isDC->err->msg_code = 8;
+        (*isDC->err->error_exit)((jpeg_common_struct *)isDC);
       }
       piVar1 = aiStack_404 + iVar5;
       uVar2 = auStack_508[iVar5];
@@ -105,7 +110,7 @@ jpeg_make_c_derived_tbl
 
 // 0087D400  jpeg_gen_optimal_table  (jpeg-6/jchuff.c:706)
 
-void __cdecl jpeg_gen_optimal_table(jpeg_compress_struct *param_1,JHUFF_TBL *param_2,long *param_3)
+void __cdecl jpeg_gen_optimal_table(jpeg_compress_struct *htbl,JHUFF_TBL *freq,long *param_3)
 
 {
   char *pcVar1;
@@ -118,6 +123,7 @@ void __cdecl jpeg_gen_optimal_table(jpeg_compress_struct *param_1,JHUFF_TBL *par
   int iVar8;
   int iVar9;
   int *piVar10;
+  jpeg_compress_struct *cinfo;
   undefined8 uStack_82c;
   undefined8 uStack_824;
   undefined8 uStack_81c;
@@ -187,8 +193,8 @@ void __cdecl jpeg_gen_optimal_table(jpeg_compress_struct *param_1,JHUFF_TBL *par
     iVar9 = aiStack_808[iVar6];
     if (iVar9 != 0) {
       if (0x20 < iVar9) {
-        param_1->err->msg_code = 0x27;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        htbl->err->msg_code = 0x27;
+        (*htbl->err->error_exit)((jpeg_common_struct *)htbl);
       }
       *(char *)((int)&uStack_82c + iVar9) = *(char *)((int)&uStack_82c + iVar9) + '\x01';
     }
@@ -225,23 +231,23 @@ void __cdecl jpeg_gen_optimal_table(jpeg_compress_struct *param_1,JHUFF_TBL *par
     uVar5 = *puVar2;
   }
   *(char *)((int)&uStack_82c + iVar6) = *(char *)((int)&uStack_82c + iVar6) + -1;
-  *(undefined8 *)param_2->bits = uStack_82c;
-  *(undefined8 *)(param_2->bits + 8) = uStack_824;
-  param_2->bits[0x10] = (uchar)uStack_81c;
+  *(undefined8 *)freq->bits = uStack_82c;
+  *(undefined8 *)(freq->bits + 8) = uStack_824;
+  freq->bits[0x10] = (uchar)uStack_81c;
   iVar6 = 0;
   iVar9 = 1;
   do {
     iVar7 = 0;
     do {
       if (aiStack_808[iVar7] == iVar9) {
-        param_2->huffval[iVar6] = (uchar)iVar7;
+        freq->huffval[iVar6] = (uchar)iVar7;
         iVar6 = iVar6 + 1;
       }
       iVar7 = iVar7 + 1;
     } while (iVar7 < 0x100);
     iVar9 = iVar9 + 1;
   } while (iVar9 < 0x21);
-  param_2->sent_table = '\0';
+  freq->sent_table = '\0';
   return;
 }
 

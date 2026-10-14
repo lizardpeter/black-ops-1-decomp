@@ -175,23 +175,23 @@ void _HTAtom_deleteAll(void)
 
 {
   undefined4 *puVar1;
+  undefined4 *pBlock;
   undefined4 *puVar2;
-  undefined4 *puVar3;
   
-  puVar3 = &DAT_034f8440;
+  puVar2 = &DAT_034f8440;
   do {
-    puVar2 = (undefined4 *)*puVar3;
-    while (puVar2 != (undefined4 *)0x0) {
-      puVar1 = (undefined4 *)*puVar2;
-      if ((void *)puVar2[1] != (void *)0x0) {
-        free((void *)puVar2[1]);
+    pBlock = (undefined4 *)*puVar2;
+    while (pBlock != (undefined4 *)0x0) {
+      puVar1 = (undefined4 *)*pBlock;
+      if ((void *)pBlock[1] != (void *)0x0) {
+        free((void *)pBlock[1]);
       }
-      puVar2[1] = 0;
-      free(puVar2);
-      puVar2 = puVar1;
+      pBlock[1] = 0;
+      free(pBlock);
+      pBlock = puVar1;
     }
-    puVar3 = puVar3 + 1;
-  } while ((int)puVar3 < 0x34f8d9c);
+    puVar2 = puVar2 + 1;
+  } while ((int)puVar2 < 0x34f8d9c);
   DAT_03547784 = 0;
   return;
 }

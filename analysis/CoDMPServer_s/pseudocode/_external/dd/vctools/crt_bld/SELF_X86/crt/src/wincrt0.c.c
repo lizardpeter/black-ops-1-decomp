@@ -24,17 +24,17 @@ int __cdecl __tmainCRTStartup(void)
 {
   int iVar1;
   uchar *puVar2;
-  _STARTUPINFOA local_6c;
-  int local_24;
-  int local_20;
+  _STARTUPINFOA StartupInfo;
+  int mainret;
+  int managedapp;
   undefined4 uStack_c;
   undefined4 local_8;
   
   uStack_c = 0x96097c;
   local_8 = 0;
-  GetStartupInfoA(&local_6c);
+  GetStartupInfoA(&StartupInfo);
   local_8 = 0xfffffffe;
-  local_20 = 0;
+  managedapp = 0;
   iVar1 = _heap_init(1);
   if (iVar1 == 0) {
     fast_error_exit(0x1c);
@@ -64,28 +64,28 @@ int __cdecl __tmainCRTStartup(void)
     _amsg_exit(iVar1);
   }
   puVar2 = _wincmdln();
-  if (((byte)local_6c.dwFlags & 1) == 0) {
-    local_6c.wShowWindow = 10;
+  if (((byte)StartupInfo.dwFlags & 1) == 0) {
+    StartupInfo.wShowWindow = 10;
   }
-  local_24 = _WinMain_16(0x400000,0,puVar2,local_6c.wShowWindow);
-  if (local_20 != 0) {
+  mainret = _WinMain_16(0x400000,0,puVar2,StartupInfo.wShowWindow);
+  if (managedapp != 0) {
     _cexit();
-    return local_24;
+    return mainret;
   }
                     /* WARNING: Subroutine does not return */
-  exit(local_24);
+  exit(mainret);
 }
 
 
 // 00960947  fast_error_exit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0.c:314)
 
-void __cdecl fast_error_exit(int param_1)
+void __cdecl fast_error_exit(int rterrnum)
 
 {
   if (__error_mode == 1) {
     _FF_MSGBANNER();
   }
-  _NMSG_WRITE(param_1);
+  _NMSG_WRITE(rterrnum);
                     /* WARNING: Subroutine does not return */
   __crtExitProcess(0xff);
 }

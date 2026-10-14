@@ -2,7 +2,7 @@
 
 // 0085C610  PhysConstraints_Strcpy  (physics/physconstraints_load_obj.cpp:101)
 
-void __cdecl PhysConstraints_Strcpy(uchar *param_1,char *param_2)
+void __cdecl PhysConstraints_Strcpy(uchar *member,char *keyValue)
 
 {
   char cVar1;
@@ -10,19 +10,21 @@ void __cdecl PhysConstraints_Strcpy(uchar *param_1,char *param_2)
   char *local_24;
   char *local_20;
   char *local_10;
+  char *buf;
+  char **memberString;
   
-  if (*param_2 == '\0') {
-    *(char **)param_1 = "";
+  if (*keyValue == '\0') {
+    *(char **)member = "";
   }
   else {
-    local_10 = param_2;
+    local_10 = keyValue;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    pcVar2 = Hunk_AllocLowAlign((int)(local_10 + (1 - (int)(param_2 + 1))),1,
+    pcVar2 = Hunk_AllocLowAlign((int)(local_10 + (1 - (int)(keyValue + 1))),1,
                                 "SetPhysConstraintsString",0);
-    local_20 = param_2;
+    local_20 = keyValue;
     local_24 = pcVar2;
     do {
       cVar1 = *local_20;
@@ -30,7 +32,7 @@ void __cdecl PhysConstraints_Strcpy(uchar *param_1,char *param_2)
       local_20 = local_20 + 1;
       local_24 = local_24 + 1;
     } while (cVar1 != '\0');
-    *(char **)param_1 = pcVar2;
+    *(char **)member = pcVar2;
   }
   return;
 }
@@ -38,55 +40,56 @@ void __cdecl PhysConstraints_Strcpy(uchar *param_1,char *param_2)
 
 // 0085C6C0  CON_ParseSpecificField  (physics/physconstraints_load_obj.cpp:119)
 
-int __cdecl CON_ParseSpecificField(uchar *param_1,char *param_2,int param_3,int param_4)
+int __cdecl CON_ParseSpecificField(uchar *pStruct,char *pValue,int fieldType,int fieldOffset)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
-  int local_8;
+  char *fmt;
+  int iVar4;
+  PhysConstraints *constraints;
+  int i;
   
-  iVar5 = *(int *)(param_1 + 4);
-  if (param_3 == 0xf) {
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      iVar3 = I_stricmp(param_2,s_constraintTypeNames[local_8]);
+  iVar4 = *(int *)(pStruct + 4);
+  if (fieldType == 0xf) {
+    for (i = 0; i < 10; i = i + 1) {
+      iVar3 = I_stricmp(pValue,s_constraintTypeNames[i]);
       if (iVar3 == 0) {
-        if (local_8 != 0) {
-          *(int *)(param_1 + iVar5 * 0xa8 + 0xc) = local_8;
-          if (0xf < *(uint *)(param_1 + 4)) {
+        if (i != 0) {
+          *(int *)(pStruct + iVar4 * 0xa8 + 0xc) = i;
+          if (0xf < *(uint *)(pStruct + 4)) {
             Com_Error(ERR_DROP,"\x15Cosntraints array overflow\n");
           }
-          *(int *)(param_1 + 4) = *(int *)(param_1 + 4) + 1;
+          *(int *)(pStruct + 4) = *(int *)(pStruct + 4) + 1;
         }
         break;
       }
     }
-    if (local_8 == 10) {
+    if (i == 10) {
       Com_Error(ERR_DROP,"\x15Unknown constraint type [%s]\n");
     }
-    iVar5 = 1;
+    iVar4 = 1;
   }
   else {
-    pcVar4 = va("Bad constraint field type %i\n");
+    fmt = va("Bad constraint field type %i\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physconstraints_load_obj.cpp"
-                             ,0x93,0,pcVar4);
+                             ,0x93,0,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
     Com_Error(ERR_DROP,"\x15Bad constraint field type %i\n");
-    iVar5 = 0;
+    iVar4 = 0;
   }
-  return iVar5;
+  return iVar4;
 }
 
 
 // 0085C7D0  PhysConstraintsPostLoadFixup  (physics/physconstraints_load_obj.cpp:156)
 
-void __cdecl PhysConstraintsPostLoadFixup(PhysConstraints *param_1)
+void __cdecl PhysConstraintsPostLoadFixup(PhysConstraints *physConstraints)
 
 {
   uint uVar1;
@@ -95,18 +98,19 @@ void __cdecl PhysConstraintsPostLoadFixup(PhysConstraints *param_1)
   int iVar4;
   PhysConstraint *pPVar5;
   PhysConstraint *pPVar6;
-  int local_c;
+  int ci;
+  int count;
   
-  uVar1 = param_1->count;
-  for (local_c = 0; local_c < (int)uVar1; local_c = local_c + 1) {
-    pPVar5 = param_1->data + local_c;
+  uVar1 = physConstraints->count;
+  for (ci = 0; ci < (int)uVar1; ci = ci + 1) {
+    pPVar5 = physConstraints->data + ci;
     if (pPVar5->type == CONSTRAINT_ACTUATOR) {
-      if (0xf < param_1->count) {
+      if (0xf < physConstraints->count) {
         Com_Error(ERR_DROP,"\x15Cosntraints array overflow\n");
       }
-      uVar2 = param_1->count;
-      param_1->count = param_1->count + 1;
-      pPVar6 = param_1->data + uVar2;
+      uVar2 = physConstraints->count;
+      physConstraints->count = physConstraints->count + 1;
+      pPVar6 = physConstraints->data + uVar2;
       for (iVar4 = 0x2a; iVar4 != 0; iVar4 = iVar4 + -1) {
         uVar3 = *(undefined2 *)&pPVar5->field_0x2;
         pPVar6->targetname = pPVar5->targetname;
@@ -114,7 +118,7 @@ void __cdecl PhysConstraintsPostLoadFixup(PhysConstraints *param_1)
         pPVar5 = (PhysConstraint *)&pPVar5->type;
         pPVar6 = (PhysConstraint *)&pPVar6->type;
       }
-      param_1->data[uVar2].type = CONSTRAINT_POINT;
+      physConstraints->data[uVar2].type = CONSTRAINT_POINT;
     }
     else if (pPVar5->type == CONSTRAINT_LAUNCH) {
       pPVar5->scale[2] = 0.0;
@@ -129,7 +133,7 @@ void __cdecl PhysConstraintsPostLoadFixup(PhysConstraints *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-PhysConstraints * __cdecl PhysConstraintsLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2)
+PhysConstraints * __cdecl PhysConstraintsLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   char cVar1;
@@ -140,62 +144,62 @@ PhysConstraints * __cdecl PhysConstraintsLoadFile(char *param_1,_func___cdecl_vo
   PhysConstraints *pPVar6;
   char *local_4074;
   char *local_4064;
-  int local_4060;
-  char local_405c [64];
-  char local_401c [16384];
+  int i;
+  char filename [64];
+  char buffer [16384];
   uint local_1c;
-  char *local_18;
-  int local_14;
-  int local_10;
-  PhysConstraints *local_c;
-  char *local_8;
+  char *identifierStr;
+  int fileSize;
+  int fileHandle;
+  PhysConstraints *physConstraints;
+  int identifierStrLength;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = "PHYSCONSTRAINTS";
+  identifierStr = "PHYSCONSTRAINTS";
   local_4064 = "PHYSCONSTRAINTS";
   pcVar3 = local_4064;
   do {
     local_4064 = pcVar3;
     pcVar3 = local_4064 + 1;
   } while (*local_4064 != '\0');
-  local_8 = local_4064 + -0xd1bfa4;
-  local_4074 = param_1;
+  identifierStrLength = (int)(local_4064 + -0xd1bfa4);
+  local_4074 = name;
   do {
     cVar1 = *local_4074;
     local_4074 = local_4074 + 1;
   } while (cVar1 != '\0');
-  if (local_4074 == param_1 + 1) {
-    local_c = (PhysConstraints *)0x0;
+  if (local_4074 == name + 1) {
+    physConstraints = (PhysConstraints *)0x0;
   }
   else {
-    iVar5 = Com_sprintf(local_405c,0x40,"physconstraints/%s");
+    iVar5 = Com_sprintf(filename,0x40,"physconstraints/%s");
     if (iVar5 < 0) {
       Com_PrintError(0x14,"ERROR: filename \'%s\' too long\n");
-      local_c = (PhysConstraints *)0x0;
+      physConstraints = (PhysConstraints *)0x0;
     }
     else {
-      local_14 = FS_FOpenFileByMode(local_405c,&local_10,FS_READ);
-      if (local_14 < 0) {
+      fileSize = FS_FOpenFileByMode(filename,&fileHandle,FS_READ);
+      if (fileSize < 0) {
         Com_PrintError(0x14,"ERROR: physics constraints \'%s\' not found\n");
-        local_c = (PhysConstraints *)0x0;
+        physConstraints = (PhysConstraints *)0x0;
       }
       else {
-        FS_Read(local_401c,(int)local_8,local_10);
-        local_401c[(int)local_8] = '\0';
-        iVar5 = strncmp(local_401c,local_18,(uint)local_8);
+        FS_Read(buffer,identifierStrLength,fileHandle);
+        buffer[identifierStrLength] = '\0';
+        iVar5 = strncmp(buffer,identifierStr,identifierStrLength);
         if (iVar5 == 0) {
-          if (local_14 - (int)local_8 < 0x4000) {
-            FS_Read(local_401c,local_14 - (int)local_8,local_10);
-            local_401c[local_14 - (int)local_8] = '\0';
-            FS_FCloseFile(local_10);
-            iVar5 = Info_Validate(local_401c);
+          if (fileSize - identifierStrLength < 0x4000) {
+            FS_Read(buffer,fileSize - identifierStrLength,fileHandle);
+            buffer[fileSize - identifierStrLength] = '\0';
+            FS_FCloseFile(fileHandle);
+            iVar5 = Info_Validate(buffer);
             if (iVar5 == 0) {
               Com_PrintError(0x14,"ERROR: physics constraints file [%s] is not valid\n");
-              local_c = (PhysConstraints *)0x0;
+              physConstraints = (PhysConstraints *)0x0;
             }
             else {
-              local_c = (*param_2)(0xa88);
-              if (local_c == (PhysConstraints *)0x0) {
+              physConstraints = (*Alloc)(0xa88);
+              if (physConstraints == (PhysConstraints *)0x0) {
                 bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physconstraints_load_obj.cpp"
                                          ,0xea,0,"%s");
                 if (!bVar4) {
@@ -204,79 +208,80 @@ PhysConstraints * __cdecl PhysConstraintsLoadFile(char *param_1,_func___cdecl_vo
                   return pPVar6;
                 }
               }
-              memset((uchar *)local_c,'\0',0xa88);
-              for (local_4060 = 0; local_4060 < 0x10; local_4060 = local_4060 + 1) {
-                local_c->data[local_4060].target_bone1 = "";
-                local_c->data[local_4060].attach_point_type1 = ATTACH_POINT_BONE;
-                local_c->data[local_4060].target_bone2 = "";
-                local_c->data[local_4060].attach_point_type2 = ATTACH_POINT_BONE;
+              memset((uchar *)physConstraints,'\0',0xa88);
+              for (i = 0; i < 0x10; i = i + 1) {
+                physConstraints->data[i].target_bone1 = "";
+                physConstraints->data[i].attach_point_type1 = ATTACH_POINT_BONE;
+                physConstraints->data[i].target_bone2 = "";
+                physConstraints->data[i].attach_point_type2 = ATTACH_POINT_BONE;
               }
               iVar5 = ParseConfigStringToStruct
-                                ((uchar *)local_c,physConstraintsFields,0x3a,local_401c,0x10,
+                                ((uchar *)physConstraints,physConstraintsFields,0x3a,buffer,0x10,
                                  CON_ParseSpecificField,PhysConstraints_Strcpy);
               if (iVar5 == 0) {
-                local_c = (PhysConstraints *)0x0;
+                physConstraints = (PhysConstraints *)0x0;
               }
               else {
-                PhysConstraintsPostLoadFixup(local_c);
+                PhysConstraintsPostLoadFixup(physConstraints);
               }
             }
           }
           else {
             Com_PrintError(0x14,"ERROR: physics constraints file [%s] is to big\n");
-            FS_FCloseFile(local_10);
-            local_c = (PhysConstraints *)0x0;
+            FS_FCloseFile(fileHandle);
+            physConstraints = (PhysConstraints *)0x0;
           }
         }
         else {
           Com_PrintError(0x14,"ERROR: file [%s] is not a physics constraints file\n");
-          FS_FCloseFile(local_10);
-          local_c = (PhysConstraints *)0x0;
+          FS_FCloseFile(fileHandle);
+          physConstraints = (PhysConstraints *)0x0;
         }
       }
     }
   }
-  return local_c;
+  return physConstraints;
 }
 
 
 // 0085C8A0  PhysConstraintsPrecache  (physics/physconstraints_load_obj.cpp:259)
 
-PhysConstraints * __cdecl PhysConstraintsPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2)
+PhysConstraints * __cdecl PhysConstraintsPrecache(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysConstraints *pPVar3;
   char *pcVar4;
+  PhysConstraints *physConstraints;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physconstraints_load_obj.cpp"
                                ,0x106,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysConstraints *)(*pcVar1)();
     return pPVar3;
   }
-  if ((*param_1 == '\0') &&
+  if ((*name == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physconstraints_load_obj.cpp"
                                ,0x107,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysConstraints *)(*pcVar1)();
     return pPVar3;
   }
-  pPVar3 = Hunk_FindDataForFile(8,param_1);
+  pPVar3 = Hunk_FindDataForFile(8,name);
   if (pPVar3 == (PhysConstraints *)0x0) {
-    if (param_2 == (_func___cdecl_void_ptr_int *)0x0) {
+    if (Alloc == (_func___cdecl_void_ptr_int *)0x0) {
       pPVar3 = (PhysConstraints *)0x0;
     }
     else {
-      pPVar3 = PhysConstraintsLoadFile(param_1,param_2);
+      pPVar3 = PhysConstraintsLoadFile(name,Alloc);
       if (pPVar3 == (PhysConstraints *)0x0) {
         Com_PrintError(0x14,"ERROR: Cannot find physics constraints \'%s\'.\n");
         pPVar3 = (PhysConstraints *)0x0;
       }
       else {
-        pcVar4 = Hunk_SetDataForFile(8,param_1,pPVar3,param_2);
+        pcVar4 = Hunk_SetDataForFile(8,name,pPVar3,Alloc);
         pPVar3->name = pcVar4;
       }
     }
@@ -290,31 +295,32 @@ PhysConstraints * __cdecl PhysConstraintsPrecache(char *param_1,_func___cdecl_vo
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-PhysConstraints * __cdecl GetPhysConstraints(char *param_1)
+PhysConstraints * __cdecl GetPhysConstraints(char *name)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_PHYSCONSTRAINTS,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_PHYSCONSTRAINTS,name,true,-1);
   return (PhysConstraints *)XVar1.xmodelPieces;
 }
 
 
 // 0085C980  PhysConstraintsUpdateField  (physics/physconstraints_load_obj.cpp:299)
 
-void __cdecl PhysConstraintsUpdateField(char *param_1,char *param_2)
+void __cdecl PhysConstraintsUpdateField(char *name,char *keyvalue)
 
 {
-  PhysConstraints *pPVar1;
-  int iVar2;
+  PhysConstraints *physConstraints_00;
+  int iVar1;
+  PhysConstraints *physConstraints;
   
-  pPVar1 = GetPhysConstraints(param_1);
-  if (pPVar1 != (PhysConstraints *)0x0) {
-    iVar2 = ParseConfigStringToStruct
-                      ((uchar *)pPVar1,physConstraintsFields,0x3a,param_2,0x10,
+  physConstraints_00 = GetPhysConstraints(name);
+  if (physConstraints_00 != (PhysConstraints *)0x0) {
+    iVar1 = ParseConfigStringToStruct
+                      ((uchar *)physConstraints_00,physConstraintsFields,0x3a,keyvalue,0x10,
                        CON_ParseSpecificField,PhysConstraints_Strcpy);
-    if (iVar2 != 0) {
-      PhysConstraintsPostLoadFixup(pPVar1);
+    if (iVar1 != 0) {
+      PhysConstraintsPostLoadFixup(physConstraints_00);
     }
   }
   return;

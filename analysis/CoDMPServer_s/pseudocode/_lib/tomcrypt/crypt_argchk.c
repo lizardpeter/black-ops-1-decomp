@@ -8,11 +8,11 @@ void __cdecl crypt_argchk(void)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "LTC_ARGCHK \'%s\' failure on line %d of file %s\n";
+  format = "LTC_ARGCHK \'%s\' failure on line %d of file %s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
   return;
 }
 

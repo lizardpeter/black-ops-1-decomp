@@ -2,15 +2,17 @@
 
 // 00B0E1B0  R_HW_SetSamplerTexture  (gfx_d3d/r_setstate_d3d.h:172)
 
-void __cdecl R_HW_SetSamplerTexture(IDirect3DDevice9 *param_1,uint param_2,GfxTexture *param_3)
+void __cdecl R_HW_SetSamplerTexture(IDirect3DDevice9 *device,uint samplerIndex,GfxTexture *texture)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
-  if ((param_3 == (GfxTexture *)0x0) &&
+  if ((texture == (GfxTexture *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",0xad,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -22,13 +24,13 @@ void __cdecl R_HW_SetSamplerTexture(IDirect3DDevice9 *param_1,uint param_2,GfxTe
     RB_LogPrint("device->SetTexture( samplerIndex, texture->basemap )\n");
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*param_1 + 0x104))(param_1,param_2,param_3->basemap);
+  hr_00 = (**(code **)((int)*device + 0x104))(device,samplerIndex,texture->basemap);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar4 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar4);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetTexture( samplerIndex, texture->basemap ) failed: %s\n"
              );
@@ -39,24 +41,26 @@ void __cdecl R_HW_SetSamplerTexture(IDirect3DDevice9 *param_1,uint param_2,GfxTe
 
 // 00B0F2F0  R_HW_DisableSampler  (gfx_d3d/r_setstate_d3d.h:183)
 
-void __cdecl R_HW_DisableSampler(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_DisableSampler(IDirect3DDevice9 *device,uint samplerIndex)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetTexture( samplerIndex, 0 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x104))(param_1,param_2,0);
+  hr_00 = (**(code **)((int)*device + 0x104))(device,samplerIndex,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetTexture( samplerIndex, 0 ) failed: %s\n"
              );
@@ -67,7 +71,9 @@ void __cdecl R_HW_DisableSampler(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0DA60  R_HW_SetSamplerState  (gfx_d3d/r_setstate_d3d.h:188)
 
-uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+uint __cdecl
+R_HW_SetSamplerState
+          (IDirect3DDevice9 *device,uint samplerIndex,uint samplerState,uint oldSamplerState)
 
 {
   code *pcVar1;
@@ -75,10 +81,30 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
   int iVar3;
   int iVar4;
   uint uVar5;
-  uint local_20;
+  int semaphore_7;
+  HRESULT hr_7;
+  int semaphore_6;
+  HRESULT hr_6;
+  int semaphore_5;
+  HRESULT hr_5;
+  int semaphore_4;
+  HRESULT hr_4;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  uint finalSamplerState;
+  _D3DTEXTUREFILTERTYPE minFilter;
+  _D3DTEXTUREFILTERTYPE mipFilter;
+  _D3DTEXTUREADDRESS address;
+  uint diffSamplerState;
+  int anisotropy;
+  _D3DTEXTUREFILTERTYPE magFilter;
   
-  local_20 = param_3;
-  uVar5 = param_3 ^ param_4;
+  finalSamplerState = samplerState;
+  uVar5 = samplerState ^ oldSamplerState;
   if ((uVar5 == 0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",199,0,
                                "%s"), !bVar2)) {
@@ -92,7 +118,7 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
       RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MINFILTER, minFilter )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,6,(param_3 & 0xf00) >> 8);
+    iVar4 = (**(code **)((int)*device + 0x114))(device,samplerIndex,6,(samplerState & 0xf00) >> 8);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -110,7 +136,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
       RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MAGFILTER, magFilter )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,5,(param_3 & 0xf000) >> 0xc);
+    iVar4 = (**(code **)((int)*device + 0x114))
+                      (device,samplerIndex,5,(samplerState & 0xf000) >> 0xc);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -123,8 +150,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
     }
   }
   if ((uVar5 & 0xff) != 0) {
-    if ((param_3 & 0xff) < 2) {
-      local_20 = param_3 & 0xffffff00 | param_4 & 0xff;
+    if ((samplerState & 0xff) < 2) {
+      finalSamplerState = samplerState & 0xffffff00 | oldSamplerState & 0xff;
     }
     else {
       R_AssertDXDeviceOwnership();
@@ -132,7 +159,7 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
         RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MAXANISOTROPY, anisotropy )\n");
       }
       iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,10,param_3 & 0xff);
+      iVar4 = (**(code **)((int)*device + 0x114))(device,samplerIndex,10,samplerState & 0xff);
       if (iVar3 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
@@ -151,7 +178,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
       RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_MIPFILTER, mipFilter )\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,7,(param_3 & 0xf0000) >> 0x10);
+    iVar4 = (**(code **)((int)*device + 0x114))
+                      (device,samplerIndex,7,(samplerState & 0xf0000) >> 0x10);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -170,7 +198,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
         RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSU, address )\n");
       }
       iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,1,(param_3 & 0x300000) >> 0x14);
+      iVar4 = (**(code **)((int)*device + 0x114))
+                        (device,samplerIndex,1,(samplerState & 0x300000) >> 0x14);
       if (iVar3 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
@@ -188,7 +217,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
         RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSV, address )\n");
       }
       iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,2,(param_3 & 0xc00000) >> 0x16);
+      iVar4 = (**(code **)((int)*device + 0x114))
+                        (device,samplerIndex,2,(samplerState & 0xc00000) >> 0x16);
       if (iVar3 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
@@ -206,7 +236,8 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
         RB_LogPrint("device->SetSamplerState( samplerIndex, D3DSAMP_ADDRESSW, address )\n");
       }
       iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar4 = (**(code **)((int)*param_1 + 0x114))(param_1,param_2,3,(param_3 & 0x3000000) >> 0x18);
+      iVar4 = (**(code **)((int)*device + 0x114))
+                        (device,samplerIndex,3,(samplerState & 0x3000000) >> 0x18);
       if (iVar3 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
@@ -219,22 +250,24 @@ uint __cdecl R_HW_SetSamplerState(IDirect3DDevice9 *param_1,uint param_2,uint pa
       }
     }
   }
-  return local_20;
+  return finalSamplerState;
 }
 
 
 // 00B0B340  R_HW_SetViewport  (gfx_d3d/r_setstate_d3d.h:316)
 
 void __cdecl
-R_HW_SetViewport(IDirect3DDevice9 *param_1,GfxViewport *param_2,float param_3,float param_4)
+R_HW_SetViewport(IDirect3DDevice9 *device,GfxViewport *viewport,float nearValue,float farValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
-  if ((param_4 <= param_3) &&
+  if ((farValue <= nearValue) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",0x14e,
                                0,"d3dViewport.MinZ < d3dViewport.MaxZ\n\t%g, %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -246,13 +279,13 @@ R_HW_SetViewport(IDirect3DDevice9 *param_1,GfxViewport *param_2,float param_3,fl
     RB_LogPrint("device->SetViewport( &d3dViewport )\n");
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*param_1 + 0xbc))(param_1);
+  hr_00 = (**(code **)((int)*device + 0xbc))(device);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar4 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar4);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetViewport( &d3dViewport ) failed: %s\n"
              );
@@ -263,11 +296,13 @@ R_HW_SetViewport(IDirect3DDevice9 *param_1,GfxViewport *param_2,float param_3,fl
 
 // 00B0BE90  R_HW_SetAlphaTestEnable  (gfx_d3d/r_setstate_d3d.h:392)
 
-void __cdecl R_HW_SetAlphaTestEnable(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetAlphaTestEnable(IDirect3DDevice9 *device,uint stateBits0)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -276,13 +311,13 @@ void __cdecl R_HW_SetAlphaTestEnable(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xf,(param_2 & 0x800) == 0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0xf,(stateBits0 & 0x800) == 0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_ALPHATESTENABLE, (stateBits0 & GFXS0_ATEST_DISABLE) ? 0 : 1 ) failed: %s\n"
              );
@@ -293,26 +328,30 @@ void __cdecl R_HW_SetAlphaTestEnable(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0BF50  R_HW_SetColorMask  (gfx_d3d/r_setstate_d3d.h:398)
 
-void __cdecl R_HW_SetColorMask(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetColorMask(IDirect3DDevice9 *device,uint stateBits0)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  ulong mask;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_COLORWRITEENABLE, mask )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))
-                    (param_1,0xa8,
-                     -((param_2 & 0x10000000) != 0) & 8U | -((param_2 & 0x8000000) != 0) & 7U);
+  hr_00 = (**(code **)((int)*device + 0xe4))
+                    (device,0xa8,
+                     -((stateBits0 & 0x10000000) != 0) & 8U | -((stateBits0 & 0x8000000) != 0) & 7U)
+  ;
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_COLORWRITEENABLE, mask ) failed: %s\n"
              );
@@ -323,16 +362,18 @@ void __cdecl R_HW_SetColorMask(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0C030  R_HW_SetCullFace  (gfx_d3d/r_setstate_d3d.h:408)
 
-void __cdecl R_HW_SetCullFace(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetCullFace(IDirect3DDevice9 *device,uint stateBits0)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
-  if (((((param_2 & 0xc000) != 0x4000) && ((param_2 & 0xc000) != 0xc000)) &&
-      ((param_2 & 0xc000) != 0x8000)) &&
+  if (((((stateBits0 & 0xc000) != 0x4000) && ((stateBits0 & 0xc000) != 0xc000)) &&
+      ((stateBits0 & 0xc000) != 0x8000)) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",0x199,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -346,13 +387,13 @@ void __cdecl R_HW_SetCullFace(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x16,s_cullTable[(param_2 & 0xc000) >> 0xe]);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0x16,s_cullTable[(stateBits0 & 0xc000) >> 0xe]);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar4 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar4);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_CULLMODE, s_cullTable[(stateBits0 & GFXS0_CULL_MASK) >> GFXS0_CULL_SHIFT] ) failed: %s\n"
              );
@@ -363,11 +404,13 @@ void __cdecl R_HW_SetCullFace(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0C150  R_HW_SetPolygonMode  (gfx_d3d/r_setstate_d3d.h:415)
 
-void __cdecl R_HW_SetPolygonMode(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetPolygonMode(IDirect3DDevice9 *device,uint stateBits0)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -376,13 +419,13 @@ void __cdecl R_HW_SetPolygonMode(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,8,3 - (uint)((param_2 & 0x80000000) != 0));
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,8,3 - (uint)((stateBits0 & 0x80000000) != 0));
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_FILLMODE, (stateBits0 & GFXS0_POLYMODE_LINE) ? D3DFILL_WIREFRAME : D3DFILL_SOLID ) failed: %s\n"
              );
@@ -393,24 +436,26 @@ void __cdecl R_HW_SetPolygonMode(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0C210  R_HW_DisableBlend  (gfx_d3d/r_setstate_d3d.h:422)
 
-void __cdecl R_HW_DisableBlend(IDirect3DDevice9 *param_1)
+void __cdecl R_HW_DisableBlend(IDirect3DDevice9 *device)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_ALPHABLENDENABLE, 0 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x1b,0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0x1b,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_ALPHABLENDENABLE, 0 ) failed: %s\n"
              );
@@ -421,19 +466,34 @@ void __cdecl R_HW_DisableBlend(IDirect3DDevice9 *param_1)
 
 // 00B0C2C0  R_HW_SetBlend  (gfx_d3d/r_setstate_d3d.h:447)
 
-void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,uint param_4)
+void __cdecl
+R_HW_SetBlend(IDirect3DDevice9 *device,bool blendWasEnabled,uint changedBits,uint stateBits0)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_7;
+  HRESULT hr_7;
+  int semaphore_6;
+  HRESULT hr_6;
+  int semaphore_5;
+  HRESULT hr_5;
+  int semaphore_4;
+  HRESULT hr_4;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
-  if (!param_2) {
+  if (!blendWasEnabled) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->SetRenderState( D3DRS_ALPHABLENDENABLE, 1 )\n");
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x1b,1);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0x1b,1);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -445,7 +505,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0x700) != 0) {
+  if ((changedBits & 0x700) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -453,7 +513,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xab,s_blendOpTable[param_4 >> 8 & 7]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0xab,s_blendOpTable[stateBits0 >> 8 & 7]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -465,7 +525,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0xf) != 0) {
+  if ((changedBits & 0xf) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -473,7 +533,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x13,s_blendTable[param_4 & 0xf]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0x13,s_blendTable[stateBits0 & 0xf]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -485,7 +545,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0xf0) != 0) {
+  if ((changedBits & 0xf0) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -493,7 +553,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x14,s_blendTable[param_4 >> 4 & 0xf]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0x14,s_blendTable[stateBits0 >> 4 & 0xf]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -505,7 +565,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0x7000000) != 0) {
+  if ((changedBits & 0x7000000) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -513,7 +573,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xd1,s_blendOpTable[param_4 >> 0x18 & 7]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0xd1,s_blendOpTable[stateBits0 >> 0x18 & 7]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -525,7 +585,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0xf0000) != 0) {
+  if ((changedBits & 0xf0000) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -533,7 +593,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xcf,s_blendTable[param_4 >> 0x10 & 0xf]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0xcf,s_blendTable[stateBits0 >> 0x10 & 0xf]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -545,7 +605,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                );
     }
   }
-  if ((param_3 & 0xf00000) != 0) {
+  if ((changedBits & 0xf00000) != 0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -553,7 +613,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xd0,s_blendTable[param_4 >> 0x14 & 0xf]);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0xd0,s_blendTable[stateBits0 >> 0x14 & 0xf]);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -571,7 +631,7 @@ void __cdecl R_HW_SetBlend(IDirect3DDevice9 *param_1,bool param_2,uint param_3,u
 
 // 00B10100  Byte4PackPixelColor  (universal/com_color.h:546)
 
-void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
+void __cdecl Byte4PackPixelColor(float *from,uchar *to)
 
 {
   uchar local_94;
@@ -583,7 +643,7 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
   int local_3c;
   int local_1c;
   
-  local_1c = (int)ROUND(*param_1 * 255.0 + 9.313226e-10);
+  local_1c = (int)ROUND(*from * 255.0 + 9.313226e-10);
   if (0xfe < local_1c) {
     local_1c = 0xff;
   }
@@ -593,8 +653,8 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
   else {
     local_88 = (uchar)local_1c;
   }
-  param_2[2] = local_88;
-  local_3c = (int)ROUND(param_1[1] * 255.0 + 9.313226e-10);
+  to[2] = local_88;
+  local_3c = (int)ROUND(from[1] * 255.0 + 9.313226e-10);
   if (0xfe < local_3c) {
     local_3c = 0xff;
   }
@@ -604,8 +664,8 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
   else {
     local_8c = (uchar)local_3c;
   }
-  param_2[1] = local_8c;
-  local_5c = (int)ROUND(param_1[2] * 255.0 + 9.313226e-10);
+  to[1] = local_8c;
+  local_5c = (int)ROUND(from[2] * 255.0 + 9.313226e-10);
   if (0xfe < local_5c) {
     local_5c = 0xff;
   }
@@ -615,8 +675,8 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
   else {
     local_90 = (uchar)local_5c;
   }
-  *param_2 = local_90;
-  local_7c = (int)ROUND(param_1[3] * 255.0 + 9.313226e-10);
+  *to = local_90;
+  local_7c = (int)ROUND(from[3] * 255.0 + 9.313226e-10);
   if (0xfe < local_7c) {
     local_7c = 0xff;
   }
@@ -626,18 +686,20 @@ void __cdecl Byte4PackPixelColor(float *param_1,uchar *param_2)
   else {
     local_94 = (uchar)local_7c;
   }
-  param_2[3] = local_94;
+  to[3] = local_94;
   return;
 }
 
 
 // 00B0CDF0  R_HW_SetDepthWriteEnable  (gfx_d3d/r_setstate_d3d.h:598)
 
-void __cdecl R_HW_SetDepthWriteEnable(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetDepthWriteEnable(IDirect3DDevice9 *device,uint stateBits1)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -646,13 +708,13 @@ void __cdecl R_HW_SetDepthWriteEnable(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xe,(param_2 & 1) != 0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0xe,(stateBits1 & 1) != 0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState(D3DRS_ZWRITEENABLE, (stateBits1 & GFXS1_DEPTHWRITE) ? 1 : 0) failed: %s\n"
              );
@@ -663,11 +725,13 @@ void __cdecl R_HW_SetDepthWriteEnable(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0CEB0  R_HW_SetDepthTestEnable  (gfx_d3d/r_setstate_d3d.h:604)
 
-void __cdecl R_HW_SetDepthTestEnable(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetDepthTestEnable(IDirect3DDevice9 *device,uint stateBits1)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -676,13 +740,13 @@ void __cdecl R_HW_SetDepthTestEnable(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,7,(param_2 & 2) == 0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,7,(stateBits1 & 2) == 0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState(D3DRS_ZENABLE, (stateBits1 & GFXS1_DEPTHTEST_DISABLE) ? D3DZB_FALSE : D3DZB_TRUE) failed: %s\n"
              );
@@ -693,11 +757,13 @@ void __cdecl R_HW_SetDepthTestEnable(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0CF70  R_HW_SetDepthTestFunction  (gfx_d3d/r_setstate_d3d.h:610)
 
-void __cdecl R_HW_SetDepthTestFunction(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetDepthTestFunction(IDirect3DDevice9 *device,uint stateBits1)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -706,14 +772,14 @@ void __cdecl R_HW_SetDepthTestFunction(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))
-                    (param_1,0x17,*(undefined4 *)((int)s_depthTestTable + (param_2 & 0xc)));
+  hr_00 = (**(code **)((int)*device + 0xe4))
+                    (device,0x17,*(undefined4 *)((int)s_depthTestTable + (stateBits1 & 0xc)));
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_ZFUNC, s_depthTestTable[(stateBits1 & GFXS1_DEPTHTEST_MASK) >> GFXS1_DEPTHTEST_SHIFT] ) failed: %s\n"
              );
@@ -724,24 +790,26 @@ void __cdecl R_HW_SetDepthTestFunction(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0D030  R_HW_EnableStencil  (gfx_d3d/r_setstate_d3d.h:616)
 
-void __cdecl R_HW_EnableStencil(IDirect3DDevice9 *param_1)
+void __cdecl R_HW_EnableStencil(IDirect3DDevice9 *device)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILENABLE, 1 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x34,1);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0x34,1);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_STENCILENABLE, 1 ) failed: %s\n"
              );
@@ -752,24 +820,26 @@ void __cdecl R_HW_EnableStencil(IDirect3DDevice9 *param_1)
 
 // 00B0D0E0  R_HW_DisableStencil  (gfx_d3d/r_setstate_d3d.h:622)
 
-void __cdecl R_HW_DisableStencil(IDirect3DDevice9 *param_1)
+void __cdecl R_HW_DisableStencil(IDirect3DDevice9 *device)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILENABLE, 0 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x34,0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0x34,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_STENCILENABLE, 0 ) failed: %s\n"
              );
@@ -781,18 +851,25 @@ void __cdecl R_HW_DisableStencil(IDirect3DDevice9 *param_1)
 // 00B0D190  R_HW_SetFrontStencilOp  (gfx_d3d/r_setstate_d3d.h:633)
 
 void __cdecl
-R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+R_HW_SetFrontStencilOp
+          (IDirect3DDevice9 *device,uint stencilOpPass,uint stencilOpFail,uint stencilOpZFail)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILPASS, s_stencilOpTable[stencilOpPass] )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x37,s_stencilOpTable[param_2]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0x37,s_stencilOpTable[stencilOpPass]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -808,7 +885,7 @@ R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint 
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILFAIL, s_stencilOpTable[stencilOpFail] )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x35,s_stencilOpTable[param_3]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0x35,s_stencilOpTable[stencilOpFail]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -824,7 +901,7 @@ R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint 
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILZFAIL, s_stencilOpTable[stencilOpZFail] )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x36,s_stencilOpTable[param_4]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0x36,s_stencilOpTable[stencilOpZFail]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -841,11 +918,19 @@ R_HW_SetFrontStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint 
 
 // 00B0D3B0  R_HW_SetBackStencilOp  (gfx_d3d/r_setstate_d3d.h:641)
 
-void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl
+R_HW_SetBackStencilOp
+          (IDirect3DDevice9 *device,uint stencilOpPass,uint stencilOpFail,uint stencilOpZFail)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -853,7 +938,7 @@ void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint p
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xbc,s_stencilOpTable[param_2]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xbc,s_stencilOpTable[stencilOpPass]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -870,7 +955,7 @@ void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint p
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xba,s_stencilOpTable[param_3]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xba,s_stencilOpTable[stencilOpFail]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -888,7 +973,7 @@ void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint p
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xbb,s_stencilOpTable[param_4]);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xbb,s_stencilOpTable[stencilOpZFail]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -905,24 +990,26 @@ void __cdecl R_HW_SetBackStencilOp(IDirect3DDevice9 *param_1,uint param_2,uint p
 
 // 00B0D5D0  R_HW_SetFrontStencilFunc  (gfx_d3d/r_setstate_d3d.h:649)
 
-void __cdecl R_HW_SetFrontStencilFunc(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetFrontStencilFunc(IDirect3DDevice9 *device,uint stencilFunc)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_STENCILFUNC, s_stencilFuncTable[stencilFunc] )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0x38,s_stencilFuncTable[param_2]);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0x38,s_stencilFuncTable[stencilFunc]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_STENCILFUNC, s_stencilFuncTable[stencilFunc] ) failed: %s\n"
              );
@@ -933,11 +1020,13 @@ void __cdecl R_HW_SetFrontStencilFunc(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0D690  R_HW_SetBackStencilFunc  (gfx_d3d/r_setstate_d3d.h:655)
 
-void __cdecl R_HW_SetBackStencilFunc(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_HW_SetBackStencilFunc(IDirect3DDevice9 *device,uint stencilFunc)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -945,13 +1034,13 @@ void __cdecl R_HW_SetBackStencilFunc(IDirect3DDevice9 *param_1,uint param_2)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xbd,s_stencilFuncTable[param_2]);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0xbd,s_stencilFuncTable[stencilFunc]);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_CCW_STENCILFUNC, s_stencilFuncTable[stencilFunc] ) failed: %s\n"
              );
@@ -962,11 +1051,15 @@ void __cdecl R_HW_SetBackStencilFunc(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B0D840  R_HW_SetPolygonOffset  (gfx_d3d/r_setstate_d3d.h:675)
 
-void __cdecl R_HW_SetPolygonOffset(IDirect3DDevice9 *param_1,float param_2,float param_3)
+void __cdecl R_HW_SetPolygonOffset(IDirect3DDevice9 *device,float scale,float bias)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
   if (gfxMetrics.slopeScaleDepthBias) {
     R_AssertDXDeviceOwnership();
@@ -974,7 +1067,7 @@ void __cdecl R_HW_SetPolygonOffset(IDirect3DDevice9 *param_1,float param_2,float
       RB_LogPrint("device->SetRenderState( D3DRS_SLOPESCALEDEPTHBIAS, FloatAsInt( &scale ) )\n");
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xaf,param_2);
+    iVar2 = (**(code **)((int)*device + 0xe4))(device,0xaf,scale);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -987,14 +1080,14 @@ void __cdecl R_HW_SetPolygonOffset(IDirect3DDevice9 *param_1,float param_2,float
     }
   }
   else {
-    param_3 = param_3 * 2.0;
+    bias = bias * 2.0;
   }
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_DEPTHBIAS, FloatAsInt( &bias ) )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xc3,param_3);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xc3,bias);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -1021,14 +1114,14 @@ void __cdecl R_PixEndNamedRenderTarget(void)
 
 // 00B09690  R_PixStartNamedRenderTarget  (gfx_d3d/r_state.cpp:761)
 
-void __cdecl R_PixStartNamedRenderTarget(uchar param_1)
+void __cdecl R_PixStartNamedRenderTarget(uchar renderTargetId)
 
 {
   char *pcVar1;
   
   R_PixEndNamedRenderTarget();
-  if (gfxRenderTargets[param_1].image == (GfxImage *)0x0) {
-    R_RenderTargetName(param_1);
+  if (gfxRenderTargets[renderTargetId].image == (GfxImage *)0x0) {
+    R_RenderTargetName(renderTargetId);
     pcVar1 = va("Trgt: %s");
     PIXSetMarker(-1,pcVar1);
   }
@@ -1049,57 +1142,62 @@ void __cdecl R_SetTexFilter(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_64;
-  uint local_60;
-  uint local_5c;
-  uint local_58;
-  uint local_54;
-  uint local_50;
-  uint local_4c;
-  uint local_48;
-  uint local_44;
-  uint local_40;
-  uint local_34;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint uVar4;
+  int local_64;
+  int local_60;
+  int local_5c;
+  int local_58;
+  int local_54;
+  int local_50;
+  int local_4c;
+  int local_48;
+  int local_44;
+  int local_40;
+  int mipFilter;
+  int entryIndex;
+  int maxAniso;
+  int mipFilterMode;
+  int linearMippedAnisotropy;
+  int linearNonMippedFilter;
+  int linearMippedFilter;
+  int texFilter;
+  int minAniso;
+  int anisotropicFilter;
+  int anisotropyFor4x;
+  int decoded;
+  int anisotropyFor2x;
   
-  local_30 = (r_texFilterAnisoMax->current).integer;
-  if (gfxMetrics.maxAnisotropy < (int)local_30) {
-    local_30 = gfxMetrics.maxAnisotropy;
+  maxAniso = (r_texFilterAnisoMax->current).integer;
+  if (gfxMetrics.maxAnisotropy < maxAniso) {
+    maxAniso = gfxMetrics.maxAnisotropy;
   }
-  if ((int)local_30 < 2) {
-    local_30 = 1;
-    local_14 = 0x2200;
+  if (maxAniso < 2) {
+    maxAniso = 1;
+    anisotropicFilter = 0x2200;
   }
   else {
-    local_14 = (-(uint)gfxMetrics.hasAnisotropicMagFilter & 0x1000) + 0x2000 |
-               (-(uint)gfxMetrics.hasAnisotropicMinFilter & 0x100) + 0x200;
+    anisotropicFilter =
+         (-(uint)gfxMetrics.hasAnisotropicMagFilter & 0x1000) + 0x2000 |
+         (-(uint)gfxMetrics.hasAnisotropicMinFilter & 0x100) + 0x200;
   }
-  if ((int)local_30 < (r_texFilterAnisoMin->current).integer) {
-    local_40 = local_30;
+  if (maxAniso < (r_texFilterAnisoMin->current).integer) {
+    local_40 = maxAniso;
   }
   else {
     local_40 = (r_texFilterAnisoMin->current).integer;
   }
-  if ((int)local_30 < 1) {
-    local_44 = local_30;
+  if (maxAniso < 1) {
+    local_44 = maxAniso;
   }
   else {
     local_44 = 1;
   }
-  if ((int)local_44 < (int)local_40) {
+  if (local_44 < local_40) {
     local_48 = local_40;
   }
   else {
-    if ((int)local_30 < 1) {
-      local_4c = local_30;
+    if (maxAniso < 1) {
+      local_4c = maxAniso;
     }
     else {
       local_4c = 1;
@@ -1115,12 +1213,12 @@ void __cdecl R_SetTexFilter(void)
       return;
     }
   }
-  local_28 = local_40;
+  linearMippedAnisotropy = local_40;
   if (local_40 == 1) {
-    local_20 = 0x2200;
+    linearMippedFilter = 0x2200;
   }
   else {
-    if ((int)local_40 < 2) {
+    if (local_40 < 2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x333,0,
                                "%s");
       if (!bVar2) {
@@ -1129,50 +1227,50 @@ void __cdecl R_SetTexFilter(void)
         return;
       }
     }
-    local_20 = local_14;
+    linearMippedFilter = anisotropicFilter;
   }
-  if ((int)local_30 < 2) {
-    local_50 = local_30;
+  if (maxAniso < 2) {
+    local_50 = maxAniso;
   }
   else {
     local_50 = 2;
   }
-  if ((int)local_50 < (int)local_40) {
+  if (local_50 < local_40) {
     local_54 = local_40;
   }
   else {
-    if ((int)local_30 < 2) {
-      local_58 = local_30;
+    if (maxAniso < 2) {
+      local_58 = maxAniso;
     }
     else {
       local_58 = 2;
     }
     local_54 = local_58;
   }
-  local_8 = local_54;
-  if ((int)local_30 < 4) {
-    local_5c = local_30;
+  anisotropyFor2x = local_54;
+  if (maxAniso < 4) {
+    local_5c = maxAniso;
   }
   else {
     local_5c = 4;
   }
-  if ((int)local_5c < (int)local_40) {
+  if (local_5c < local_40) {
     local_60 = local_40;
   }
   else {
-    if ((int)local_30 < 4) {
-      local_64 = local_30;
+    if (maxAniso < 4) {
+      local_64 = maxAniso;
     }
     else {
       local_64 = 4;
     }
     local_60 = local_64;
   }
-  local_10 = local_60;
+  anisotropyFor4x = local_60;
   if ((r_texFilterDisable->current).enabled == false) {
-    local_24 = 0x2200;
-    local_2c = (r_texFilterMipMode->current).unsignedInt;
-    if (3 < local_2c) {
+    linearNonMippedFilter = 0x2200;
+    mipFilterMode = (r_texFilterMipMode->current).unsignedInt;
+    if (3 < (uint)mipFilterMode) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x34b,0,
                                "mipFilterMode doesn\'t index R_MIP_FILTER_COUNT\n\t%i not in [0, %i)"
                               );
@@ -1184,36 +1282,36 @@ void __cdecl R_SetTexFilter(void)
     }
   }
   else {
-    local_28 = 1;
-    local_8 = 1;
-    local_10 = 1;
-    local_14 = 0x1100;
-    local_20 = 0x1100;
-    local_24 = 0x1100;
-    local_2c = 3;
+    linearMippedAnisotropy = 1;
+    anisotropyFor2x = 1;
+    anisotropyFor4x = 1;
+    anisotropicFilter = 0x1100;
+    linearMippedFilter = 0x1100;
+    linearNonMippedFilter = 0x1100;
+    mipFilterMode = 3;
   }
-  for (local_34 = 0; local_34 < 0x18; local_34 = local_34 + 1) {
-    uVar3 = local_34 & 7;
-    local_c = s_mipFilterTable[local_2c][(int)(local_34 & 0x18) >> 3] << 0x10;
+  for (entryIndex = 0; (uint)entryIndex < 0x18; entryIndex = entryIndex + 1) {
+    uVar3 = entryIndex & 7;
+    uVar4 = s_mipFilterTable[mipFilterMode][(int)(entryIndex & 0x18U) >> 3] << 0x10;
     if (uVar3 == 2) {
-      if (local_c == 0) {
-        uVar3 = local_24 | 1;
+      if (uVar4 == 0) {
+        uVar3 = linearNonMippedFilter | 1;
       }
       else {
-        uVar3 = local_20 | local_28;
+        uVar3 = linearMippedFilter | linearMippedAnisotropy;
       }
-      local_c = uVar3 | local_c;
+      decoded = uVar3 | uVar4;
     }
     else if (uVar3 == 3) {
-      local_c = local_14 | local_8 | local_c;
+      decoded = anisotropicFilter | anisotropyFor2x | uVar4;
     }
     else if (uVar3 == 4) {
-      local_c = local_14 | local_10 | local_c;
+      decoded = anisotropicFilter | anisotropyFor4x | uVar4;
     }
     else {
-      local_c = local_c | 0x1101;
+      decoded = uVar4 | 0x1101;
     }
-    s_decodeSamplerFilterState[local_34] = local_c;
+    s_decodeSamplerFilterState[entryIndex] = decoded;
   }
   dx.mipBias = (r_texFilterMipBias->current).unsignedInt;
   return;
@@ -1222,18 +1320,24 @@ void __cdecl R_SetTexFilter(void)
 
 // 00B09A70  R_SetInitialContextState  (gfx_d3d/r_state.cpp:884)
 
-void __cdecl R_SetInitialContextState(IDirect3DDevice9 *param_1)
+void __cdecl R_SetInitialContextState(IDirect3DDevice9 *device)
 
 {
   int iVar1;
   int iVar2;
+  int semaphore_3;
+  HRESULT hr_3;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_SEPARATEALPHABLENDENABLE, 1 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xce,1);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xce,1);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -1249,7 +1353,7 @@ void __cdecl R_SetInitialContextState(IDirect3DDevice9 *param_1)
     RB_LogPrint("device->SetRenderState( D3DRS_TWOSIDEDSTENCILMODE, 1 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xb9,1);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xb9,1);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -1265,7 +1369,7 @@ void __cdecl R_SetInitialContextState(IDirect3DDevice9 *param_1)
     RB_LogPrint("device->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,7,0);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,7,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -1285,38 +1389,38 @@ void __cdecl R_SetInitialContextState(IDirect3DDevice9 *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b09d55) */
 /* WARNING: Removing unreachable block (ram,0x00b09d7c) */
 
-void __cdecl R_DepthHackNearClipChanged(GfxCmdBufSourceState *param_1)
+void __cdecl R_DepthHackNearClipChanged(GfxCmdBufSourceState *source)
 
 {
-  *(short *)((int)&param_1->depthHackFlags + 2) = *(short *)((int)&param_1->depthHackFlags + 2) + 1;
-  *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) =
-       *(short *)((int)(param_1->skinnedPlacement).base.quat + 2) + 1;
-  *(short *)((param_1->skinnedPlacement).base.quat + 1) =
-       *(short *)((param_1->skinnedPlacement).base.quat + 1) + 1;
-  (param_1->input).consts[0x4b][3] = -(param_1->input).consts[0x4b][3];
-  param_1->constVersions[99] = param_1->constVersions[99] + 1;
+  *(short *)((int)&source->depthHackFlags + 2) = *(short *)((int)&source->depthHackFlags + 2) + 1;
+  *(short *)((int)(source->skinnedPlacement).base.quat + 2) =
+       *(short *)((int)(source->skinnedPlacement).base.quat + 2) + 1;
+  *(short *)((source->skinnedPlacement).base.quat + 1) =
+       *(short *)((source->skinnedPlacement).base.quat + 1) + 1;
+  (source->input).consts[0x4b][3] = -(source->input).consts[0x4b][3];
+  source->constVersions[99] = source->constVersions[99] + 1;
   return;
 }
 
 
 // 00B09C80  R_ChangeDepthHackNearClip  (gfx_d3d/r_state.cpp:964)
 
-void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *param_1,uint param_2)
+void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source,uint depthHackFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (GfxCmdBufSourceState *)0x0) &&
+  if ((source == (GfxCmdBufSourceState *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x3c5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((float)param_2 != (param_1->sceneDef).floatTime) {
-    R_DepthHackNearClipChanged(param_1);
-    (param_1->sceneDef).floatTime = (float)param_2;
+  if ((float)depthHackFlags != (source->sceneDef).floatTime) {
+    R_DepthHackNearClipChanged(source);
+    (source->sceneDef).floatTime = (float)depthHackFlags;
   }
   return;
 }
@@ -1324,20 +1428,21 @@ void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *param_1,uint param_
 
 // 00B09DD0  R_ChangeObjectPlacement_Core  (gfx_d3d/r_state.cpp:975)
 
-void __cdecl R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *param_1,GfxScaledPlacement *param_2)
+void __cdecl
+R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *source,GfxScaledPlacement *placement)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  GfxMatrix *pGVar4;
-  float local_34;
+  GfxMatrix *out_2;
+  float origin;
   float local_30;
   float local_2c;
-  undefined1 local_28 [24];
+  undefined1 axis [24];
   float local_10 [3];
   
-  if (param_2 == (GfxScaledPlacement *)0x0) {
+  if (placement == (GfxScaledPlacement *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x3d4,0,"%s")
     ;
     if (!bVar2) {
@@ -1346,10 +1451,10 @@ void __cdecl R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *param_1,GfxScale
       return;
     }
   }
-  UnitQuatToAxis((float *)param_2,(float (*) [3])local_28);
-  iVar3 = Vec3IsNormalized((float *)local_28);
+  UnitQuatToAxis((float *)placement,(float (*) [3])axis);
+  iVar3 = Vec3IsNormalized((float *)axis);
   if (iVar3 == 0) {
-    Abs((phys_vec3 *)local_28);
+    Abs((phys_vec3 *)axis);
     va("(%g %g %g) len %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x3d7,0,
                              "%s\n\t%s");
@@ -1359,9 +1464,9 @@ void __cdecl R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *param_1,GfxScale
       return;
     }
   }
-  iVar3 = Vec3IsNormalized((float *)(local_28 + 0xc));
+  iVar3 = Vec3IsNormalized((float *)(axis + 0xc));
   if (iVar3 == 0) {
-    Abs((phys_vec3 *)(local_28 + 0xc));
+    Abs((phys_vec3 *)(axis + 0xc));
     va("(%g %g %g) len %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x3d8,0,
                              "%s\n\t%s");
@@ -1383,21 +1488,21 @@ void __cdecl R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *param_1,GfxScale
       return;
     }
   }
-  pGVar4 = R_GetActiveWorldMatrix(param_1);
-  local_34 = (param_2->base).origin[0] - (param_1->skinnedPlacement).base.origin[0];
-  local_30 = (param_2->base).origin[1] - (param_1->skinnedPlacement).base.origin[1];
-  local_2c = (param_2->base).origin[2] - (param_1->skinnedPlacement).base.origin[2];
-  ikMatrixSet44((float (*) [4])pGVar4,&local_34,(float (*) [3])local_28,param_2->scale);
+  out_2 = R_GetActiveWorldMatrix(source);
+  origin = (placement->base).origin[0] - (source->skinnedPlacement).base.origin[0];
+  local_30 = (placement->base).origin[1] - (source->skinnedPlacement).base.origin[1];
+  local_2c = (placement->base).origin[2] - (source->skinnedPlacement).base.origin[2];
+  ikMatrixSet44((float (*) [4])out_2,&origin,(float (*) [3])axis,placement->scale);
   return;
 }
 
 
 // 00B09DB0  R_ChangeObjectPlacement  (gfx_d3d/r_state.cpp:993)
 
-void __cdecl R_ChangeObjectPlacement(GfxCmdBufSourceState *param_1,GfxScaledPlacement *param_2)
+void __cdecl R_ChangeObjectPlacement(GfxCmdBufSourceState *source,GfxScaledPlacement *placement)
 
 {
-  R_ChangeObjectPlacement_Core(param_1,param_2);
+  R_ChangeObjectPlacement_Core(source,placement);
   return;
 }
 
@@ -1405,43 +1510,46 @@ void __cdecl R_ChangeObjectPlacement(GfxCmdBufSourceState *param_1,GfxScaledPlac
 // 00B0A010  R_ChangeObjectPlacementRemote  (gfx_d3d/r_state.cpp:998)
 
 void __cdecl
-R_ChangeObjectPlacementRemote(GfxCmdBufSourceState *param_1,GfxScaledPlacement *param_2)
+R_ChangeObjectPlacementRemote(GfxCmdBufSourceState *source,GfxScaledPlacement *remotePlacement)
 
 {
-  R_ChangeObjectPlacement(param_1,param_2);
+  R_ChangeObjectPlacement(source,remotePlacement);
   return;
 }
 
 
 // 00B0A460  R_DeriveViewMatrix  (gfx_d3d/r_state.cpp:1021)
 
-void __cdecl R_DeriveViewMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveViewMatrix(GfxCmdBufSourceState *source)
 
 {
   int iVar1;
-  GfxMatrix *pGVar2;
-  float (*pafVar3) [4];
-  GfxMatrix *pGVar4;
+  GfxMatrix *mat;
+  float (*pafVar2) [4];
+  GfxMatrix *pGVar3;
+  GfxMatrix *view;
+  GfxCodeMatrices *activeMatrices;
+  GfxViewParms *viewParms;
   
-  pGVar2 = (param_1->matrices).matrix + 4;
-  pafVar3 = (param_1->viewParms).viewMatrix.m + 3;
-  pGVar4 = pGVar2;
+  mat = (source->matrices).matrix + 4;
+  pafVar2 = (source->viewParms).viewMatrix.m + 3;
+  pGVar3 = mat;
   for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
-    pGVar4->m[0][0] = (*pafVar3)[0];
-    pafVar3 = (float (*) [4])(*pafVar3 + 1);
-    pGVar4 = (GfxMatrix *)(pGVar4->m[0] + 1);
+    pGVar3->m[0][0] = (*pafVar2)[0];
+    pafVar2 = (float (*) [4])(*pafVar2 + 1);
+    pGVar3 = (GfxMatrix *)(pGVar3->m[0] + 1);
   }
   MatrixTransformVector44
-            ((param_1->skinnedPlacement).base.origin,(float (*) [4])pGVar2,
-             (param_1->matrices).matrix[4].m[3]);
-  param_1->constVersions[0xe1] = (ushort)param_1->depthHackFlags;
+            ((source->skinnedPlacement).base.origin,(float (*) [4])mat,
+             (source->matrices).matrix[4].m[3]);
+  source->constVersions[0xe1] = (ushort)source->depthHackFlags;
   return;
 }
 
 
 // 00B0A4E0  R_DeriveWorldViewMatrix  (gfx_d3d/r_state.cpp:1038)
 
-void __cdecl R_DeriveWorldViewMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveWorldViewMatrix(GfxCmdBufSourceState *source)
 
 {
   code *pcVar1;
@@ -1456,9 +1564,9 @@ void __cdecl R_DeriveWorldViewMatrix(GfxCmdBufSourceState *param_1)
   GfxCmdBufSourceState *local_18;
   float (*local_14) [4];
   
-  local_14 = (param_1->viewParms).viewMatrix.m + 3;
-  local_18 = param_1;
-  if (param_1->constVersions[0xdd] != *(ushort *)((int)&param_1->viewParms3D + 2)) {
+  local_14 = (source->viewParms).viewMatrix.m + 3;
+  local_18 = source;
+  if (source->constVersions[0xdd] != *(ushort *)((int)&source->viewParms3D + 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x417,0,"%s")
     ;
     if (!bVar2) {
@@ -1474,19 +1582,19 @@ void __cdecl R_DeriveWorldViewMatrix(GfxCmdBufSourceState *param_1)
     pGVar4 = (GfxCmdBufSourceState *)((pGVar4->matrices).matrix[0].m[0] + 1);
     pfVar5 = pfVar5 + 1;
   }
-  local_30 = local_30 + (param_1->skinnedPlacement).base.origin[0];
-  local_2c = local_2c + (param_1->skinnedPlacement).base.origin[1];
-  local_28 = local_28 + (param_1->skinnedPlacement).base.origin[2];
+  local_30 = local_30 + (source->skinnedPlacement).base.origin[0];
+  local_2c = local_2c + (source->skinnedPlacement).base.origin[1];
+  local_28 = local_28 + (source->skinnedPlacement).base.origin[2];
   MatrixMultiply44((float (*) [4])local_60,local_14,
                    (float (*) [4])((local_18->matrices).matrix + 0xc));
-  param_1->matrixVersions[7] = *(ushort *)(param_1->skinnedPlacement).base.quat;
+  source->matrixVersions[7] = *(ushort *)(source->skinnedPlacement).base.quat;
   return;
 }
 
 
 // 00B0A630  R_DeriveProjectionMatrix  (gfx_d3d/r_state.cpp:1060)
 
-void __cdecl R_DeriveProjectionMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveProjectionMatrix(GfxCmdBufSourceState *source)
 
 {
   float fVar1;
@@ -1494,81 +1602,89 @@ void __cdecl R_DeriveProjectionMatrix(GfxCmdBufSourceState *param_1)
   GfxMatrix *pGVar3;
   float (*pafVar4) [4];
   GfxMatrix *pGVar5;
-  int local_1c;
-  int local_18;
+  int i;
+  int j;
+  float inv;
+  GfxCodeMatrices *activeMatrices;
+  GfxMatrix *proj;
+  GfxViewParms *viewParms;
   
-  pGVar3 = (param_1->matrices).matrix + 8;
-  pafVar4 = (param_1->viewParms).projectionMatrix.m + 3;
+  pGVar3 = (source->matrices).matrix + 8;
+  pafVar4 = (source->viewParms).projectionMatrix.m + 3;
   pGVar5 = pGVar3;
   for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
     pGVar5->m[0][0] = (*pafVar4)[0];
     pafVar4 = (float (*) [4])(*pafVar4 + 1);
     pGVar5 = (GfxMatrix *)(pGVar5->m[0] + 1);
   }
-  if ((param_1->sceneDef).floatTime == 2.8026e-45) {
-    (param_1->matrices).matrix[8].m[3][2] = (param_1->shadowLookupMatrix).m[2][1];
+  if ((source->sceneDef).floatTime == 2.8026e-45) {
+    (source->matrices).matrix[8].m[3][2] = (source->shadowLookupMatrix).m[2][1];
   }
-  if (((param_1->matrices).matrix[8].m[2][3] != 0.0) &&
-     ((param_1->matrices).matrix[8].m[2][3] != 1.0)) {
-    fVar1 = (param_1->matrices).matrix[8].m[2][3];
-    for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-      for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
-        pGVar3->m[local_1c][local_18] = pGVar3->m[local_1c][local_18] * (1.0 / fVar1);
+  if (((source->matrices).matrix[8].m[2][3] != 0.0) && ((source->matrices).matrix[8].m[2][3] != 1.0)
+     ) {
+    fVar1 = (source->matrices).matrix[8].m[2][3];
+    for (j = 0; j < 4; j = j + 1) {
+      for (i = 0; i < 4; i = i + 1) {
+        pGVar3->m[i][j] = pGVar3->m[i][j] * (1.0 / fVar1);
       }
     }
   }
-  param_1->matrixVersions[3] = *(ushort *)((int)&param_1->depthHackFlags + 2);
+  source->matrixVersions[3] = *(ushort *)((int)&source->depthHackFlags + 2);
   return;
 }
 
 
 // 00B0A750  R_DeriveViewProjectionMatrix  (gfx_d3d/r_state.cpp:1089)
 
-void __cdecl R_DeriveViewProjectionMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveViewProjectionMatrix(GfxCmdBufSourceState *source)
 
 {
   int iVar1;
-  GfxMatrix *pGVar2;
-  float (*pafVar3) [4];
-  GfxMatrix *pGVar4;
+  GfxMatrix *out;
+  float (*pafVar2) [4];
+  GfxMatrix *pGVar3;
+  GfxMatrix *viewProj;
+  GfxCodeMatrices *activeMatrices;
+  GfxMatrix *proj;
+  GfxViewParms *viewParms;
   
-  pGVar2 = (param_1->matrices).matrix + 0x10;
-  if ((param_1->sceneDef).floatTime == 2.8026e-45) {
-    if (param_1->matrixVersions[3] != *(ushort *)((int)&param_1->depthHackFlags + 2)) {
-      R_DeriveProjectionMatrix(param_1);
+  out = (source->matrices).matrix + 0x10;
+  if ((source->sceneDef).floatTime == 2.8026e-45) {
+    if (source->matrixVersions[3] != *(ushort *)((int)&source->depthHackFlags + 2)) {
+      R_DeriveProjectionMatrix(source);
     }
-    MatrixMultiply44((param_1->viewParms).viewMatrix.m + 3,
-                     (float (*) [4])((param_1->matrices).matrix + 8),(float (*) [4])pGVar2);
+    MatrixMultiply44((source->viewParms).viewMatrix.m + 3,
+                     (float (*) [4])((source->matrices).matrix + 8),(float (*) [4])out);
   }
   else {
-    pafVar3 = (param_1->viewParms).viewProjectionMatrix.m + 3;
-    pGVar4 = pGVar2;
+    pafVar2 = (source->viewParms).viewProjectionMatrix.m + 3;
+    pGVar3 = out;
     for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pGVar4->m[0][0] = (*pafVar3)[0];
-      pafVar3 = (float (*) [4])(*pafVar3 + 1);
-      pGVar4 = (GfxMatrix *)(pGVar4->m[0] + 1);
+      pGVar3->m[0][0] = (*pafVar2)[0];
+      pafVar2 = (float (*) [4])(*pafVar2 + 1);
+      pGVar3 = (GfxMatrix *)(pGVar3->m[0] + 1);
     }
   }
   MatrixTransformVector44
-            ((param_1->skinnedPlacement).base.origin,(float (*) [4])pGVar2,
-             (param_1->matrices).matrix[0x10].m[3]);
-  *(undefined2 *)((int)&param_1->_padding_ + 2) =
-       *(undefined2 *)((int)(param_1->skinnedPlacement).base.quat + 2);
+            ((source->skinnedPlacement).base.origin,(float (*) [4])out,
+             (source->matrices).matrix[0x10].m[3]);
+  *(undefined2 *)((int)&source->_padding_ + 2) =
+       *(undefined2 *)((int)(source->skinnedPlacement).base.quat + 2);
   return;
 }
 
 
 // 00B0A850  R_DeriveWorldViewProjectionMatrix  (gfx_d3d/r_state.cpp:1118)
 
-void __cdecl R_DeriveWorldViewProjectionMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveWorldViewProjectionMatrix(GfxCmdBufSourceState *source)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  GfxMatrix *pGVar4;
-  GfxCmdBufSourceState *pGVar5;
-  float *pfVar6;
+  GfxMatrix *out;
+  GfxCmdBufSourceState *pGVar4;
+  float *pfVar5;
   float local_60 [12];
   float local_30;
   float local_2c;
@@ -1576,9 +1692,9 @@ void __cdecl R_DeriveWorldViewProjectionMatrix(GfxCmdBufSourceState *param_1)
   GfxCmdBufSourceState *local_18;
   float (*local_14) [4];
   
-  local_14 = (param_1->viewParms).viewMatrix.m + 3;
-  local_18 = param_1;
-  if (param_1->constVersions[0xdd] != *(ushort *)((int)&param_1->viewParms3D + 2)) {
+  local_14 = (source->viewParms).viewMatrix.m + 3;
+  local_18 = source;
+  if (source->constVersions[0xdd] != *(ushort *)((int)&source->viewParms3D + 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x468,0,"%s")
     ;
     if (!bVar2) {
@@ -1587,64 +1703,66 @@ void __cdecl R_DeriveWorldViewProjectionMatrix(GfxCmdBufSourceState *param_1)
       return;
     }
   }
-  pGVar5 = local_18;
-  pfVar6 = local_60;
+  pGVar4 = local_18;
+  pfVar5 = local_60;
   for (iVar3 = 0x10; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pfVar6 = (pGVar5->matrices).matrix[0].m[0][0];
-    pGVar5 = (GfxCmdBufSourceState *)((pGVar5->matrices).matrix[0].m[0] + 1);
-    pfVar6 = pfVar6 + 1;
+    *pfVar5 = (pGVar4->matrices).matrix[0].m[0][0];
+    pGVar4 = (GfxCmdBufSourceState *)((pGVar4->matrices).matrix[0].m[0] + 1);
+    pfVar5 = pfVar5 + 1;
   }
-  pGVar4 = (local_18->matrices).matrix + 0x14;
-  if ((param_1->sceneDef).floatTime == 2.8026e-45) {
-    if (*(short *)((int)&param_1->_padding_ + 2) !=
-        *(short *)((int)(param_1->skinnedPlacement).base.quat + 2)) {
-      R_DeriveViewProjectionMatrix(param_1);
+  out = (local_18->matrices).matrix + 0x14;
+  if ((source->sceneDef).floatTime == 2.8026e-45) {
+    if (*(short *)((int)&source->_padding_ + 2) !=
+        *(short *)((int)(source->skinnedPlacement).base.quat + 2)) {
+      R_DeriveViewProjectionMatrix(source);
     }
     MatrixMultiply44((float (*) [4])local_60,(float (*) [4])((local_18->matrices).matrix + 0x10),
-                     (float (*) [4])pGVar4);
+                     (float (*) [4])out);
   }
   else {
-    local_30 = local_30 + (param_1->skinnedPlacement).base.origin[0];
-    local_2c = local_2c + (param_1->skinnedPlacement).base.origin[1];
-    local_28 = local_28 + (param_1->skinnedPlacement).base.origin[2];
-    MatrixMultiply44((float (*) [4])local_60,local_14 + 8,(float (*) [4])pGVar4);
+    local_30 = local_30 + (source->skinnedPlacement).base.origin[0];
+    local_2c = local_2c + (source->skinnedPlacement).base.origin[1];
+    local_28 = local_28 + (source->skinnedPlacement).base.origin[2];
+    MatrixMultiply44((float (*) [4])local_60,local_14 + 8,(float (*) [4])out);
   }
-  *(undefined2 *)((int)param_1->eyeOffset + 2) =
-       *(undefined2 *)((param_1->skinnedPlacement).base.quat + 1);
+  *(undefined2 *)((int)source->eyeOffset + 2) =
+       *(undefined2 *)((source->skinnedPlacement).base.quat + 1);
   return;
 }
 
 
 // 00B0AA10  R_DeriveShadowLookupMatrix  (gfx_d3d/r_state.cpp:1150)
 
-void __cdecl R_DeriveShadowLookupMatrix(GfxCmdBufSourceState *param_1)
+void __cdecl R_DeriveShadowLookupMatrix(GfxCmdBufSourceState *source)
 
 {
-  GfxMatrix *pGVar1;
-  int iVar2;
-  float (*pafVar3) [4];
-  GfxMatrix *pGVar4;
+  GfxMatrix *mat;
+  int iVar1;
+  float (*pafVar2) [4];
+  GfxMatrix *pGVar3;
+  GfxMatrix *shadowLookup;
+  GfxCodeMatrices *activeMatrices;
   
-  pGVar1 = (param_1->matrices).matrix + 0x18;
-  pafVar3 = (param_1->shadowLookupMatrix).m + 3;
-  pGVar4 = pGVar1;
-  for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
-    pGVar4->m[0][0] = (*pafVar3)[0];
-    pafVar3 = (float (*) [4])(*pafVar3 + 1);
-    pGVar4 = (GfxMatrix *)(pGVar4->m[0] + 1);
+  mat = (source->matrices).matrix + 0x18;
+  pafVar2 = (source->shadowLookupMatrix).m + 3;
+  pGVar3 = mat;
+  for (iVar1 = 0x10; iVar1 != 0; iVar1 = iVar1 + -1) {
+    pGVar3->m[0][0] = (*pafVar2)[0];
+    pafVar2 = (float (*) [4])(*pafVar2 + 1);
+    pGVar3 = (GfxMatrix *)(pGVar3->m[0] + 1);
   }
   MatrixTransformVector44
-            ((param_1->skinnedPlacement).base.origin,(float (*) [4])pGVar1,
-             (param_1->matrices).matrix[0x18].m[3]);
-  *(undefined2 *)((int)param_1->eyeOffset + 10) =
-       *(undefined2 *)((int)(param_1->skinnedPlacement).base.quat + 6);
+            ((source->skinnedPlacement).base.origin,(float (*) [4])mat,
+             (source->matrices).matrix[0x18].m[3]);
+  *(undefined2 *)((int)source->eyeOffset + 10) =
+       *(undefined2 *)((int)(source->skinnedPlacement).base.quat + 6);
   return;
 }
 
 
 // 00B0AA90  R_GenerateWorldOutdoorLookupMatrix  (gfx_d3d/r_state.cpp:1166)
 
-void __cdecl R_GenerateWorldOutdoorLookupMatrix(GfxCmdBufSourceState *param_1,float (*param_2) [4])
+void __cdecl R_GenerateWorldOutdoorLookupMatrix(GfxCmdBufSourceState *source,float (*outMatrix) [4])
 
 {
   code *pcVar1;
@@ -1672,8 +1790,8 @@ void __cdecl R_GenerateWorldOutdoorLookupMatrix(GfxCmdBufSourceState *param_1,fl
   
   local_14 = (r_outdoorAwayBias->current).unsignedInt;
   local_18 = (r_outdoorDownBias->current).value;
-  local_1c = param_1;
-  local_20 = (float (*) [4])R_GetCodeMatrix(param_1,0xca,0);
+  local_1c = source;
+  local_20 = (float (*) [4])R_GetCodeMatrix(source,0xca,0);
   local_30[0] = 0.0;
   local_30[1] = 0.0;
   local_28 = local_14 ^ 0x80000000;
@@ -1681,7 +1799,7 @@ void __cdecl R_GenerateWorldOutdoorLookupMatrix(GfxCmdBufSourceState *param_1,fl
   MatrixTransformVector44(local_30,local_20,local_40);
   local_38 = local_38 + local_18;
   MatrixTransformVector44(local_40,(float (*) [4])&g_drawConsts,&local_50);
-  if (param_1->constVersions[0xdd] != *(ushort *)((int)&param_1->viewParms3D + 2)) {
+  if (source->constVersions[0xdd] != *(ushort *)((int)&source->viewParms3D + 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x4c1,0,"%s")
     ;
     if (!bVar2) {
@@ -1697,37 +1815,37 @@ void __cdecl R_GenerateWorldOutdoorLookupMatrix(GfxCmdBufSourceState *param_1,fl
     pGVar4 = (GfxCmdBufSourceState *)((pGVar4->matrices).matrix[0].m[0] + 1);
     pfVar5 = pfVar5 + 1;
   }
-  local_60 = local_60 + (param_1->skinnedPlacement).base.origin[0];
-  local_5c = local_5c + (param_1->skinnedPlacement).base.origin[1];
-  local_58 = local_58 + (param_1->skinnedPlacement).base.origin[2];
-  MatrixMultiply44((float (*) [4])local_90,(float (*) [4])&g_drawConsts,param_2);
-  param_2[3][0] = param_2[3][0] + local_50;
-  param_2[3][1] = param_2[3][1] + local_4c;
-  param_2[3][2] = param_2[3][2] + local_48;
-  param_2[3][3] = param_2[3][3] + local_44;
-  *(undefined2 *)((int)&param_1->shadowableLightForShadowLookupMatrix + 2) =
-       *(undefined2 *)((param_1->skinnedPlacement).base.quat + 2);
+  local_60 = local_60 + (source->skinnedPlacement).base.origin[0];
+  local_5c = local_5c + (source->skinnedPlacement).base.origin[1];
+  local_58 = local_58 + (source->skinnedPlacement).base.origin[2];
+  MatrixMultiply44((float (*) [4])local_90,(float (*) [4])&g_drawConsts,outMatrix);
+  outMatrix[3][0] = outMatrix[3][0] + local_50;
+  outMatrix[3][1] = outMatrix[3][1] + local_4c;
+  outMatrix[3][2] = outMatrix[3][2] + local_48;
+  outMatrix[3][3] = outMatrix[3][3] + local_44;
+  *(undefined2 *)((int)&source->shadowableLightForShadowLookupMatrix + 2) =
+       *(undefined2 *)((source->skinnedPlacement).base.quat + 2);
   return;
 }
 
 
 // 00B0A340  R_DeriveCodeMatrix  (gfx_d3d/r_state.cpp:1230)
 
-void __cdecl R_DeriveCodeMatrix(GfxCmdBufSourceState *param_1,GfxCodeMatrices *param_2,uint param_3)
+void __cdecl
+R_DeriveCodeMatrix(GfxCmdBufSourceState *source,GfxCodeMatrices *activeMatrices,uint baseIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  switch(param_3) {
+  switch(baseIndex) {
   case 4:
-    R_DeriveViewMatrix(param_1);
+    R_DeriveViewMatrix(source);
     break;
   default:
-    pcVar3 = va("unhandled case %i");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x4ee,1,
-                             pcVar3);
+    fmt = va("unhandled case %i");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x4ee,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -1735,22 +1853,22 @@ void __cdecl R_DeriveCodeMatrix(GfxCmdBufSourceState *param_1,GfxCodeMatrices *p
     }
     break;
   case 8:
-    R_DeriveProjectionMatrix(param_1);
+    R_DeriveProjectionMatrix(source);
     break;
   case 0xc:
-    R_DeriveWorldViewMatrix(param_1);
+    R_DeriveWorldViewMatrix(source);
     break;
   case 0x10:
-    R_DeriveViewProjectionMatrix(param_1);
+    R_DeriveViewProjectionMatrix(source);
     break;
   case 0x14:
-    R_DeriveWorldViewProjectionMatrix(param_1);
+    R_DeriveWorldViewProjectionMatrix(source);
     break;
   case 0x18:
-    R_DeriveShadowLookupMatrix(param_1);
+    R_DeriveShadowLookupMatrix(source);
     break;
   case 0x1c:
-    R_GenerateWorldOutdoorLookupMatrix(param_1,(float (*) [4])(param_2->matrix + param_3));
+    R_GenerateWorldOutdoorLookupMatrix(source,(float (*) [4])(activeMatrices->matrix + baseIndex));
   }
   return;
 }
@@ -1758,45 +1876,52 @@ void __cdecl R_DeriveCodeMatrix(GfxCmdBufSourceState *param_1,GfxCodeMatrices *p
 
 // 00B0A030  R_GetCodeMatrix  (gfx_d3d/r_state.cpp:1269)
 
-float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint param_3)
+float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *source,uint sourceIndex,uint firstRow)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
   float *pfVar4;
+  uint baseIndex_00;
   uint uVar5;
   uint uVar6;
   uint uVar7;
-  uint uVar8;
+  uint baseIndex;
+  uint transposeIndex;
+  GfxCodeMatrices *activeMatrices;
+  uint matrixIndex;
+  uint inverseIndex;
+  uint matrixVersion;
   
-  if ((*(short *)((int)(param_1->skinnedPlacement).base.quat + (param_2 - 0xc5 >> 2) * 2 + -6) == 0)
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x501,0,
-                                  "%s\n\t(sourceIndex) = %i"), !bVar3)) {
+  if ((*(short *)((int)(source->skinnedPlacement).base.quat + (sourceIndex - 0xc5 >> 2) * 2 + -6) ==
+       0) && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",
+                                       0x501,0,"%s\n\t(sourceIndex) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pfVar4 = (float *)(*pcVar2)();
     return pfVar4;
   }
-  if ((3 < param_3) &&
+  if ((3 < firstRow) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x503,0,
                                "firstRow not in [0, 3]\n\t%i not in [%i, %i]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pfVar4 = (float *)(*pcVar2)();
     return pfVar4;
   }
-  uVar1 = *(ushort *)((int)(param_1->skinnedPlacement).base.quat + (param_2 - 0xc5 >> 2) * 2 + -6);
-  uVar7 = param_2 - 0xc5;
-  if (param_1->constVersions[param_2 + 0x18] == uVar1) {
-    pfVar4 = (float *)((int)param_1 + param_3 * 0x10 + uVar7 * 0x40);
+  uVar1 = *(ushort *)
+           ((int)(source->skinnedPlacement).base.quat + (sourceIndex - 0xc5 >> 2) * 2 + -6);
+  uVar6 = sourceIndex - 0xc5;
+  if (source->constVersions[sourceIndex + 0x18] == uVar1) {
+    pfVar4 = (float *)((int)source + firstRow * 0x10 + uVar6 * 0x40);
   }
   else {
-    uVar5 = uVar7 & 0xfffffffc;
-    if (param_1->constVersions[uVar5 + 0xdd] != uVar1) {
-      R_DeriveCodeMatrix(param_1,&param_1->matrices,uVar5);
-      if (uVar7 == uVar5) {
-        return (float *)((int)param_1 + param_3 * 0x10 + uVar7 * 0x40);
+    baseIndex_00 = uVar6 & 0xfffffffc;
+    if (source->constVersions[baseIndex_00 + 0xdd] != uVar1) {
+      R_DeriveCodeMatrix(source,&source->matrices,baseIndex_00);
+      if (uVar6 == baseIndex_00) {
+        return (float *)((int)source + firstRow * 0x10 + uVar6 * 0x40);
       }
-      if ((param_1->constVersions[param_2 + 0x18] == uVar1) &&
+      if ((source->constVersions[sourceIndex + 0x18] == uVar1) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x511,0
                                    ,"%s\n\t(sourceIndex) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -1804,48 +1929,48 @@ float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint 
         return pfVar4;
       }
     }
-    param_1->constVersions[param_2 + 0x18] = uVar1;
-    uVar6 = uVar7 ^ 2;
-    if (param_1->constVersions[uVar6 + 0xdd] == uVar1) {
-      MatrixTranspose44((float *)((param_1->matrices).matrix + uVar6),
-                        (float *)(uVar7 * 0x40 + (int)param_1));
-      pfVar4 = (float *)((int)param_1 + param_3 * 0x10 + uVar7 * 0x40);
+    source->constVersions[sourceIndex + 0x18] = uVar1;
+    uVar5 = uVar6 ^ 2;
+    if (source->constVersions[uVar5 + 0xdd] == uVar1) {
+      MatrixTranspose44((float *)((source->matrices).matrix + uVar5),
+                        (float *)(uVar6 * 0x40 + (int)source));
+      pfVar4 = (float *)((int)source + firstRow * 0x10 + uVar6 * 0x40);
     }
     else {
-      uVar8 = uVar7 ^ 1;
-      if (param_1->constVersions[uVar8 + 0xdd] == uVar1) {
-        MatrixInverse44((float *)((param_1->matrices).matrix + uVar8),
-                        (float *)(uVar7 * 0x40 + (int)param_1));
-        pfVar4 = (float *)((int)param_1 + param_3 * 0x10 + uVar7 * 0x40);
+      uVar7 = uVar6 ^ 1;
+      if (source->constVersions[uVar7 + 0xdd] == uVar1) {
+        MatrixInverse44((float *)((source->matrices).matrix + uVar7),
+                        (float *)(uVar6 * 0x40 + (int)source));
+        pfVar4 = (float *)((int)source + firstRow * 0x10 + uVar6 * 0x40);
       }
       else {
-        if ((uVar7 != (uVar5 | 3)) &&
+        if ((uVar6 != (baseIndex_00 | 3)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x524
                                      ,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pfVar4 = (float *)(*pcVar2)();
           return pfVar4;
         }
-        if ((uVar6 != (uVar5 | 1)) &&
+        if ((uVar5 != (baseIndex_00 | 1)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x525
                                      ,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pfVar4 = (float *)(*pcVar2)();
           return pfVar4;
         }
-        if ((uVar8 != (uVar5 | 2)) &&
+        if ((uVar7 != (baseIndex_00 | 2)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x526
                                      ,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pfVar4 = (float *)(*pcVar2)();
           return pfVar4;
         }
-        MatrixTranspose44((float *)((param_1->matrices).matrix + uVar5),
-                          (float *)((param_1->matrices).matrix + uVar8));
-        param_1->constVersions[uVar8 + 0xdd] = uVar1;
-        MatrixInverse44((float *)((param_1->matrices).matrix + uVar8),
-                        (float *)(uVar7 * 0x40 + (int)param_1));
-        pfVar4 = (float *)((int)param_1 + param_3 * 0x10 + uVar7 * 0x40);
+        MatrixTranspose44((float *)((source->matrices).matrix + baseIndex_00),
+                          (float *)((source->matrices).matrix + uVar7));
+        source->constVersions[uVar7 + 0xdd] = uVar1;
+        MatrixInverse44((float *)((source->matrices).matrix + uVar7),
+                        (float *)(uVar6 * 0x40 + (int)source));
+        pfVar4 = (float *)((int)source + firstRow * 0x10 + uVar6 * 0x40);
       }
     }
   }
@@ -1855,14 +1980,15 @@ float * __cdecl R_GetCodeMatrix(GfxCmdBufSourceState *param_1,uint param_2,uint 
 
 // 00B0AD10  R_GetTextureFromCode  (gfx_d3d/r_state.cpp:1329)
 
-GfxImage * __cdecl R_GetTextureFromCode(GfxCmdBufSourceState *param_1,uint param_2,uchar *param_3)
+GfxImage * __cdecl
+R_GetTextureFromCode(GfxCmdBufSourceState *source,uint codeTexture,uchar *samplerState)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
   
-  if (0x2a < param_2) {
+  if (0x2a < codeTexture) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x532,0,
                              "codeTexture doesn\'t index TEXTURE_SRC_CODE_COUNT\n\t%i not in [0, %i)"
                             );
@@ -1872,7 +1998,7 @@ GfxImage * __cdecl R_GetTextureFromCode(GfxCmdBufSourceState *param_1,uint param
       return pGVar3;
     }
   }
-  if (param_1 == (GfxCmdBufSourceState *)0x0) {
+  if (source == (GfxCmdBufSourceState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x533,0,"%s")
     ;
     if (!bVar2) {
@@ -1881,8 +2007,8 @@ GfxImage * __cdecl R_GetTextureFromCode(GfxCmdBufSourceState *param_1,uint param
       return pGVar3;
     }
   }
-  *param_3 = *(uchar *)((int)(param_1->input).codeImageRenderTargetControl + param_2 + 4);
-  if ((*param_3 & 7) == 0) {
+  *samplerState = *(uchar *)((int)(source->input).codeImageRenderTargetControl + codeTexture + 4);
+  if ((*samplerState & 7) == 0) {
     va("R_GetTextureFromCode %d, %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x536,0,
                              "%s\n\t%s");
@@ -1892,13 +2018,13 @@ GfxImage * __cdecl R_GetTextureFromCode(GfxCmdBufSourceState *param_1,uint param
       return pGVar3;
     }
   }
-  return (param_1->input).codeImages[param_2 + 0xc];
+  return (source->input).codeImages[codeTexture + 0xc];
 }
 
 
 // 00B0ADE0  R_TextureFromCodeError  (gfx_d3d/r_state.cpp:1340)
 
-void __cdecl R_TextureFromCodeError(GfxCmdBufContext *param_1,uint param_2)
+void __cdecl R_TextureFromCodeError(GfxCmdBufContext *context,uint codeTexture)
 
 {
   Com_Error(ERR_DROP,
@@ -1909,7 +2035,7 @@ void __cdecl R_TextureFromCodeError(GfxCmdBufContext *param_1,uint param_2)
 
 // 00B0AE50  R_OverrideGrayscaleImage  (gfx_d3d/r_state.cpp:1352)
 
-GfxImage * __cdecl R_OverrideGrayscaleImage(dvar_s *param_1)
+GfxImage * __cdecl R_OverrideGrayscaleImage(dvar_s *dvar)
 
 {
   code *pcVar1;
@@ -1917,9 +2043,8 @@ GfxImage * __cdecl R_OverrideGrayscaleImage(dvar_s *param_1)
   GfxImage *pGVar3;
   
   pGVar3 = rgp.whiteImage;
-  if ((((param_1->current).integer != 2) &&
-      (pGVar3 = rgp.blackImage, (param_1->current).integer != 0)) &&
-     (pGVar3 = rgp.grayImage, (param_1->current).integer != 3)) {
+  if ((((dvar->current).integer != 2) && (pGVar3 = rgp.blackImage, (dvar->current).integer != 0)) &&
+     (pGVar3 = rgp.grayImage, (dvar->current).integer != 3)) {
     va("%s = %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x54f,0,
                              "%s\n\t%s");
@@ -1936,67 +2061,69 @@ GfxImage * __cdecl R_OverrideGrayscaleImage(dvar_s *param_1)
 
 // 00B0AED0  R_SetLightmap  (gfx_d3d/r_state.cpp:1365)
 
-void __cdecl R_SetLightmap(GfxCmdBufContext param_1,uint param_2)
+void __cdecl R_SetLightmap(GfxCmdBufContext context,uint lmapIndex)
 
 {
   MaterialPass *pMVar1;
   code *pcVar2;
-  GfxImage *pGVar3;
-  bool bVar4;
+  GfxImage *image;
+  bool bVar3;
+  MaterialPass *pass;
+  GfxImage *overrideImage;
   
   if ((g_worldDraw == (GfxWorldDraw *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x55c,0,
-                               "%s"), !bVar4)) {
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x55c,0,
+                               "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
-  if (param_2 == 0x1f) {
+  pMVar1 = (context.field0_0x0._s_0.state)->pass;
+  if (lmapIndex == 0x1f) {
     if (((pMVar1->customSamplerFlags & 6) != 0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x562,0,
-                                 "%s"), !bVar4)) {
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x562,0,
+                                 "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
   else {
-    if (((uint)g_worldDraw->lightmapCount <= param_2) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x566,0,
+    if (((uint)g_worldDraw->lightmapCount <= lmapIndex) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x566,0,
                                  "lmapIndex doesn\'t index g_worldDraw->lightmapCount\n\t%i not in [0, %i)"
-                                ), !bVar4)) {
+                                ), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pGVar3 = rgp.r5g6b5Image;
+    image = rgp.r5g6b5Image;
     if ((r_lightMap->current).integer == 1) {
       if ((pMVar1->customSamplerFlags & 2) != 0) {
-        if (*(int *)((int)((param_1.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+        if (*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                     0x15d77c) == 0) {
-          R_SetSampler(param_1,0xc,'b',g_worldDraw->lightmaps[param_2].primary);
+          R_SetSampler(context,0xc,'b',g_worldDraw->lightmaps[lmapIndex].primary);
         }
         else {
-          R_SetSampler(param_1,0xc,'b',rgp.whiteImage);
+          R_SetSampler(context,0xc,'b',rgp.whiteImage);
         }
       }
       if ((pMVar1->customSamplerFlags & 4) != 0) {
-        R_SetSampler(param_1,0xd,'b',g_worldDraw->lightmaps[param_2].secondary);
+        R_SetSampler(context,0xd,'b',g_worldDraw->lightmaps[lmapIndex].secondary);
       }
       if ((pMVar1->customSamplerFlags & 8) != 0) {
-        R_SetSampler(param_1,0xe,'b',g_worldDraw->lightmaps[param_2].secondaryB);
+        R_SetSampler(context,0xe,'b',g_worldDraw->lightmaps[lmapIndex].secondaryB);
       }
     }
     else {
       if ((pMVar1->customSamplerFlags & 2) != 0) {
-        R_SetSampler(param_1,0xc,'b',rgp.r5g6b5Image);
+        R_SetSampler(context,0xc,'b',rgp.r5g6b5Image);
       }
       if ((pMVar1->customSamplerFlags & 4) != 0) {
-        R_SetSampler(param_1,0xd,'b',pGVar3);
+        R_SetSampler(context,0xd,'b',image);
       }
       if ((pMVar1->customSamplerFlags & 8) != 0) {
-        R_SetSampler(param_1,0xe,'b',rgp.g16r16Image);
+        R_SetSampler(context,0xe,'b',rgp.g16r16Image);
       }
     }
   }
@@ -2006,7 +2133,7 @@ void __cdecl R_SetLightmap(GfxCmdBufContext param_1,uint param_2)
 
 // 00B0B0F0  R_SetReflectionProbe  (gfx_d3d/r_state.cpp:1463)
 
-void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
+void __cdecl R_SetReflectionProbe(GfxCmdBufContext context,uint reflectionProbeIndex)
 
 {
   code *pcVar1;
@@ -2021,7 +2148,7 @@ void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
       return;
     }
   }
-  if (param_2 == 0xff) {
+  if (reflectionProbeIndex == 0xff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5b9,0,"%s")
     ;
     if (!bVar2) {
@@ -2030,7 +2157,7 @@ void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
       return;
     }
   }
-  if (g_worldDraw->reflectionProbeCount <= param_2) {
+  if (g_worldDraw->reflectionProbeCount <= reflectionProbeIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5ba,0,
                              "reflectionProbeIndex doesn\'t index g_worldDraw->reflectionProbeCount\n\t%i not in [0, %i)"
                             );
@@ -2040,7 +2167,7 @@ void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
       return;
     }
   }
-  if (g_worldDraw->reflectionProbes[param_2].reflectionImage == (GfxImage *)0x0) {
+  if (g_worldDraw->reflectionProbes[reflectionProbeIndex].reflectionImage == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5bb,0,"%s")
     ;
     if (!bVar2) {
@@ -2049,8 +2176,9 @@ void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
       return;
     }
   }
-  if (((param_1.field0_0x0._s_0.state)->pass->customSamplerFlags & 1) != 0) {
-    R_SetSampler(param_1,0xf,'r',g_worldDraw->reflectionProbes[param_2].reflectionImage);
+  if (((context.field0_0x0._s_0.state)->pass->customSamplerFlags & 1) != 0) {
+    R_SetSampler(context,0xf,'r',g_worldDraw->reflectionProbes[reflectionProbeIndex].reflectionImage
+                );
   }
   return;
 }
@@ -2058,66 +2186,68 @@ void __cdecl R_SetReflectionProbe(GfxCmdBufContext param_1,uint param_2)
 
 // 00B0B210  R_ChangeDepthRange  (gfx_d3d/r_state.cpp:1504)
 
-void __cdecl R_ChangeDepthRange(GfxCmdBufState *param_1,GfxDepthRangeType param_2)
+void __cdecl R_ChangeDepthRange(GfxCmdBufState *state,GfxDepthRangeType depthRangeType)
 
 {
-  IDirect3DDevice9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
+  IDirect3DDevice9 *device_00;
+  code *pcVar1;
+  bool bVar2;
   float local_10;
   float local_c;
+  IDirect3DDevice9 *device;
   
-  if (param_1->depthRangeType == param_2) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5e3,1,
+  if (state->depthRangeType == depthRangeType) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5e3,1,
                              "state->depthRangeType != depthRangeType\n\t%i, %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  param_1->depthRangeType = param_2;
-  if (param_2 == GFX_DEPTH_RANGE_SCENE) {
+  state->depthRangeType = depthRangeType;
+  if (depthRangeType == GFX_DEPTH_RANGE_SCENE) {
     local_c = 0.015625;
   }
   else {
     local_c = 0.0;
   }
-  param_1->depthRangeNear = local_c;
-  if (param_2 == GFX_DEPTH_RANGE_SCENE) {
+  state->depthRangeNear = local_c;
+  if (depthRangeType == GFX_DEPTH_RANGE_SCENE) {
     local_10 = 1.0;
   }
   else {
     local_10 = 0.015625;
   }
-  param_1->depthRangeFar = local_10;
-  pIVar1 = (param_1->prim).field0_0x0.device;
-  if (pIVar1 == (IDirect3DDevice9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5ec,0,"%s")
+  state->depthRangeFar = local_10;
+  device_00 = (state->prim).field0_0x0.device;
+  if (device_00 == (IDirect3DDevice9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5ec,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  R_HW_SetViewport(pIVar1,&param_1->viewport,param_1->depthRangeNear,param_1->depthRangeFar);
+  R_HW_SetViewport(device_00,&state->viewport,state->depthRangeNear,state->depthRangeFar);
   return;
 }
 
 
 // 00B0B470  R_BeginMaterial  (gfx_d3d/r_state.cpp:1522)
 
-int __cdecl R_BeginMaterial(GfxCmdBufState *param_1,Material *param_2,uchar param_3)
+int __cdecl R_BeginMaterial(GfxCmdBufState *state,Material *material,uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   MaterialTechnique *pMVar4;
-  char *pcVar5;
+  char *text;
+  MaterialTechnique *technique;
   
-  if (param_2 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x5f5,0,"%s")
     ;
     if (!bVar2) {
@@ -2126,19 +2256,19 @@ int __cdecl R_BeginMaterial(GfxCmdBufState *param_1,Material *param_2,uchar para
       return iVar3;
     }
   }
-  pMVar4 = Material_GetTechnique(param_2,param_3);
+  pMVar4 = Material_GetTechnique(material,techType);
   if (pMVar4 == (MaterialTechnique *)0x0) {
     iVar3 = 0;
   }
   else {
     if ((r_logFile->current).integer != 0) {
-      RB_LogTechniqueType(param_3);
-      pcVar5 = va("R_BeginMaterial( %s, %s, %s )\n");
-      RB_LogPrint(pcVar5);
+      RB_LogTechniqueType(techType);
+      text = va("R_BeginMaterial( %s, %s, %s )\n");
+      RB_LogPrint(text);
     }
-    param_1->material = param_2;
-    param_1->techType = param_3;
-    param_1->technique = pMVar4;
+    state->material = material;
+    state->techType = techType;
+    state->technique = pMVar4;
     iVar3 = 1;
   }
   return iVar3;
@@ -2147,24 +2277,27 @@ int __cdecl R_BeginMaterial(GfxCmdBufState *param_1,Material *param_2,uchar para
 
 // 00B0B530  R_ChangeIndices  (gfx_d3d/r_state.cpp:1547)
 
-void __cdecl R_ChangeIndices(GfxCmdBufPrimState *param_1,IDirect3DIndexBuffer9 *param_2)
+void __cdecl R_ChangeIndices(GfxCmdBufPrimState *state,IDirect3DIndexBuffer9 *ib)
 
 {
   IDirect3DDevice9 *pIVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DDevice9 *device;
   
-  if ((param_2 == param_1->indexBuffer) &&
+  if ((ib == state->indexBuffer) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x60e,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_1->indexBuffer = param_2;
-  pIVar1 = (param_1->field0_0x0).device;
+  state->indexBuffer = ib;
+  pIVar1 = (state->field0_0x0).device;
   if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x612,0,
                                "%s"), !bVar3)) {
@@ -2177,13 +2310,13 @@ void __cdecl R_ChangeIndices(GfxCmdBufPrimState *param_1,IDirect3DIndexBuffer9 *
     RB_LogPrint("device->SetIndices( ib )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*pIVar1 + 0x1a0))(pIVar1,param_2);
+  hr_00 = (**(code **)((int)*pIVar1 + 0x1a0))(pIVar1,ib);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp (%i) device->SetIndices( ib ) failed: %s\n"
              );
@@ -2196,17 +2329,20 @@ void __cdecl R_ChangeIndices(GfxCmdBufPrimState *param_1,IDirect3DIndexBuffer9 *
 
 void __cdecl
 R_ChangeStreamSource
-          (GfxCmdBufPrimState *param_1,int param_2,IDirect3DVertexBuffer9 *param_3,uint param_4,
-          uint param_5)
+          (GfxCmdBufPrimState *state,int streamIndex,IDirect3DVertexBuffer9 *vb,uint vertexOffset,
+          uint vertexStride)
 
 {
   IDirect3DDevice9 *pIVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DDevice9 *device;
   
-  pIVar1 = (param_1->field0_0x0).device;
+  pIVar1 = (state->field0_0x0).device;
   if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x619,0,
                                "%s"), !bVar3)) {
@@ -2214,29 +2350,30 @@ R_ChangeStreamSource
     (*pcVar2)();
     return;
   }
-  if ((((param_1->streams[param_2].vb == param_3) && (param_1->streams[param_2].offset == param_4))
-      && (param_1->streams[param_2].stride == param_5)) &&
+  if ((((state->streams[streamIndex].vb == vb) &&
+       (state->streams[streamIndex].offset == vertexOffset)) &&
+      (state->streams[streamIndex].stride == vertexStride)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x61b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_1->streams[param_2].vb = param_3;
-  param_1->streams[param_2].offset = param_4;
-  param_1->streams[param_2].stride = param_5;
+  state->streams[streamIndex].vb = vb;
+  state->streams[streamIndex].offset = vertexOffset;
+  state->streams[streamIndex].stride = vertexStride;
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetStreamSource( streamIndex, vb, vertexOffset, vertexStride )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*pIVar1 + 400))(pIVar1,param_2,param_3,param_4,param_5);
+  hr_00 = (**(code **)((int)*pIVar1 + 400))(pIVar1,streamIndex,vb,vertexOffset,vertexStride);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp (%i) device->SetStreamSource( streamIndex, vb, vertexOffset, vertexStride ) failed: %s\n"
              );
@@ -2247,20 +2384,20 @@ R_ChangeStreamSource
 
 // 00B0B7D0  R_ClearAllStreamSources  (gfx_d3d/r_state.cpp:1579)
 
-void __cdecl R_ClearAllStreamSources(GfxCmdBufPrimState *param_1)
+void __cdecl R_ClearAllStreamSources(GfxCmdBufPrimState *state)
 
 {
-  if (((param_1->streams[0].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[0].offset != 0)) || (param_1->streams[0].stride != 0)) {
-    R_ChangeStreamSource(param_1,0,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((state->streams[0].vb != (IDirect3DVertexBuffer9 *)0x0) || (state->streams[0].offset != 0))
+     || (state->streams[0].stride != 0)) {
+    R_ChangeStreamSource(state,0,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
-  if (((param_1->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[1].offset != 0)) || (param_1->streams[1].stride != 0)) {
-    R_ChangeStreamSource(param_1,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((state->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) || (state->streams[1].offset != 0))
+     || (state->streams[1].stride != 0)) {
+    R_ChangeStreamSource(state,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
-  if (((param_1->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[2].offset != 0)) || (param_1->streams[2].stride != 0)) {
-    R_ChangeStreamSource(param_1,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((state->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) || (state->streams[2].offset != 0))
+     || (state->streams[2].stride != 0)) {
+    R_ChangeStreamSource(state,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
   return;
 }
@@ -2268,23 +2405,26 @@ void __cdecl R_ClearAllStreamSources(GfxCmdBufPrimState *param_1)
 
 // 00B0B870  R_DrawIndexedPrimitive  (gfx_d3d/r_state.cpp:1587)
 
-void __cdecl R_DrawIndexedPrimitive(GfxCmdBufPrimState *param_1,GfxDrawPrimArgs *param_2)
+void __cdecl R_DrawIndexedPrimitive(GfxCmdBufPrimState *state,GfxDrawPrimArgs *args)
 
 {
   IDirect3DDevice9 *pIVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
-  int local_c;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  int triCount;
+  IDirect3DDevice9 *device;
   
-  local_c = param_2->triCount;
-  if (((r_drawPrimFloor->current).integer <= local_c) &&
-     (((r_drawPrimCap->current).integer == 0 || (local_c <= (r_drawPrimCap->current).integer)))) {
+  triCount = args->triCount;
+  if (((r_drawPrimFloor->current).integer <= triCount) &&
+     (((r_drawPrimCap->current).integer == 0 || (triCount <= (r_drawPrimCap->current).integer)))) {
     if ((r_skipDrawTris->current).enabled != false) {
-      local_c = 1;
+      triCount = 1;
     }
-    pIVar1 = (param_1->field0_0x0).device;
+    pIVar1 = (state->field0_0x0).device;
     if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x645,0,
                                  "%s"), !bVar3)) {
@@ -2292,7 +2432,7 @@ void __cdecl R_DrawIndexedPrimitive(GfxCmdBufPrimState *param_1,GfxDrawPrimArgs 
       (*pcVar2)();
       return;
     }
-    RB_TrackDrawPrimCall(param_1,local_c);
+    RB_TrackDrawPrimCall(state,triCount);
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -2300,14 +2440,14 @@ void __cdecl R_DrawIndexedPrimitive(GfxCmdBufPrimState *param_1,GfxDrawPrimArgs 
                  );
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*pIVar1 + 0x148))
-                      (pIVar1,4,0,0,param_2->vertexCount,param_2->baseIndex,local_c);
+    hr_00 = (**(code **)((int)*pIVar1 + 0x148))
+                      (pIVar1,4,0,0,args->vertexCount,args->baseIndex,triCount);
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar5 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar5);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp (%i) device->DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, 0, args->vertexCount, args->baseIndex, triCount ) failed: %s\n"
                );
@@ -2319,36 +2459,39 @@ void __cdecl R_DrawIndexedPrimitive(GfxCmdBufPrimState *param_1,GfxDrawPrimArgs 
 
 // 00B0B9D0  R_SetAlphaAntiAliasingState  (gfx_d3d/r_state.cpp:1933)
 
-void __cdecl R_SetAlphaAntiAliasingState(IDirect3DDevice9 *param_1,int param_2)
+void __cdecl R_SetAlphaAntiAliasingState(IDirect3DDevice9 *device,int stateBits0)
 
 {
   int iVar1;
-  int iVar2;
-  undefined4 local_c;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  _D3DFORMAT aaAlphaFormat;
+  bool usingAlphaTestButNotBlend;
   
-  if ((param_2 & 0xf00U) == 0) {
+  if ((stateBits0 & 0xf00U) == 0) {
     if ((r_aaAlpha->current).integer == 2) {
-      local_c = 0x41415353;
+      aaAlphaFormat = 0x41415353;
     }
     else {
-      local_c = 0x434f5441;
+      aaAlphaFormat = 0x434f5441;
     }
   }
   else {
-    local_c = 0;
+    aaAlphaFormat = D3DFMT_UNKNOWN;
   }
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_ADAPTIVETESS_Y, aaAlphaFormat )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xb5,local_c);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0xb5,aaAlphaFormat);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp (%i) device->SetRenderState( D3DRS_ADAPTIVETESS_Y, aaAlphaFormat ) failed: %s\n"
              );
@@ -2359,42 +2502,44 @@ void __cdecl R_SetAlphaAntiAliasingState(IDirect3DDevice9 *param_1,int param_2)
 
 // 00B0D750  R_ForceSetPolygonOffset  (gfx_d3d/r_state.cpp:1955)
 
-void __cdecl R_ForceSetPolygonOffset(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_ForceSetPolygonOffset(IDirect3DDevice9 *device,uint stateBits1)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  uint uVar3;
-  float local_c;
-  float local_8;
+  float fVar1;
+  code *pcVar2;
+  bool bVar3;
+  uint uVar4;
+  uint offset;
+  float bias;
+  float scale;
   
-  uVar3 = param_2 & 0x30;
-  if (uVar3 == 0x30) {
-    local_c = (sm_polygonOffsetBias->current).value;
-    local_8 = (sm_polygonOffsetScale->current).value;
+  uVar4 = stateBits1 & 0x30;
+  if (uVar4 == 0x30) {
+    fVar1 = (sm_polygonOffsetBias->current).value;
+    scale = (sm_polygonOffsetScale->current).value;
   }
   else {
-    if (uVar3 == 0x30) {
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7ba,0,
+    if (uVar4 == 0x30) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7ba,0,
                                "%s");
-      if (!bVar2) {
-        pcVar1 = (code *)swi(3);
-        (*pcVar1)();
+      if (!bVar3) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
-    local_c = (float)(uVar3 >> 4) * (r_polygonOffsetBias->current).value;
-    local_8 = (float)(uVar3 >> 4) * (r_polygonOffsetScale->current).value;
+    fVar1 = (float)(uVar4 >> 4) * (r_polygonOffsetBias->current).value;
+    scale = (float)(uVar4 >> 4) * (r_polygonOffsetScale->current).value;
   }
-  local_c = local_c * 1.5258789e-05;
-  R_HW_SetPolygonOffset(param_1,local_8,local_c);
+  bias = fVar1 * 1.5258789e-05;
+  R_HW_SetPolygonOffset(device,scale,bias);
   return;
 }
 
 
 // 00B0C820  R_SetAlphaTestFunction  (gfx_d3d/r_state.h:1973)
 
-void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *state,uint stateBits0)
 
 {
   IDirect3DDevice9 *pIVar1;
@@ -2402,29 +2547,34 @@ void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
   bool bVar3;
   int iVar4;
   int iVar5;
-  uchar local_d;
-  undefined4 local_8;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  uchar ref;
+  IDirect3DDevice9 *device;
+  ulong function;
   
-  if ((param_2 & 0x3000) == 0x1000) {
-    local_8 = 5;
-    local_d = '\0';
+  if ((stateBits0 & 0x3000) == 0x1000) {
+    function = 5;
+    ref = '\0';
   }
-  else if ((param_2 & 0x3000) == 0x2000) {
-    local_8 = 7;
-    local_d = 0xff;
+  else if ((stateBits0 & 0x3000) == 0x2000) {
+    function = 7;
+    ref = 0xff;
   }
   else {
-    if (((param_2 & 0x3000) != 0x3000) &&
+    if (((stateBits0 & 0x3000) != 0x3000) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x7c6,1,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = 7;
-    local_d = 0x80;
+    function = 7;
+    ref = 0x80;
   }
-  pIVar1 = (param_1->prim).field0_0x0.device;
+  pIVar1 = (state->prim).field0_0x0.device;
   if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x7cc,0,"%s")
      , !bVar3)) {
@@ -2437,7 +2587,7 @@ void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
     RB_LogPrint("device->SetRenderState( D3DRS_ALPHAFUNC, function )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x19,local_8);
+  iVar5 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x19,function);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -2448,13 +2598,13 @@ void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h (%i) device->SetRenderState( D3DRS_ALPHAFUNC, function ) failed: %s\n"
              );
   }
-  if (param_1->alphaRef != local_d) {
+  if (state->alphaRef != ref) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->SetRenderState( D3DRS_ALPHAREF, ref )\n");
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x18,local_d);
+    iVar5 = (**(code **)((int)*pIVar1 + 0xe4))(pIVar1,0x18,ref);
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -2465,7 +2615,7 @@ void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
                 "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h (%i) device->SetRenderState( D3DRS_ALPHAREF, ref ) failed: %s\n"
                );
     }
-    param_1->alphaRef = local_d;
+    state->alphaRef = ref;
   }
   return;
 }
@@ -2473,111 +2623,116 @@ void __cdecl R_SetAlphaTestFunction(GfxCmdBufState *param_1,uint param_2)
 
 // 00B0BAD0  R_ChangeState_0  (gfx_d3d/r_state.cpp:2007)
 
-void __cdecl R_ChangeState_0(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_ChangeState_0(GfxCmdBufState *state,uint stateBits0)
 
 {
-  IDirect3DDevice9 *pIVar1;
-  code *pcVar2;
+  IDirect3DDevice9 *device_00;
+  code *pcVar1;
+  bool bVar2;
   bool bVar3;
-  bool bVar4;
-  uint local_10;
+  bool enableBlendOpRgb;
+  bool blendOpRgbWasEnabled;
+  uint changedBits;
+  bool enableSeparateAlphaBlend;
+  IDirect3DDevice9 *device;
   
-  local_10 = param_2 ^ param_1->activeStateBits[0];
-  if ((local_10 != 0) || (((param_2 ^ param_1->refStateBits[0]) & 0x7000700) != 0)) {
+  changedBits = stateBits0 ^ state->activeStateBits[0];
+  if ((changedBits != 0) || (((stateBits0 ^ state->refStateBits[0]) & 0x7000700) != 0)) {
     if ((r_logFile->current).integer != 0) {
-      RB_LogPrintState_0(param_2,local_10);
+      RB_LogPrintState_0(stateBits0,changedBits);
     }
     if (((dx.d3d9 == (IDirect3D9 *)0x0) || (dx.device == (IDirect3DDevice9 *)0x0)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7fb,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7fb,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    pIVar1 = (param_1->prim).field0_0x0.device;
-    if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7fe,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    device_00 = (state->prim).field0_0x0.device;
+    if ((device_00 == (IDirect3DDevice9 *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x7fe,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((local_10 & 0x18000000) != 0) {
-      R_HW_SetColorMask(pIVar1,param_2);
+    if ((changedBits & 0x18000000) != 0) {
+      R_HW_SetColorMask(device_00,stateBits0);
     }
-    if ((param_1->stateOverride & 0x40000000U) == 0) {
-      if ((local_10 & 0x800) != 0) {
-        R_HW_SetAlphaTestEnable((param_1->prim).field0_0x0.device,param_2);
+    if ((state->stateOverride & 0x40000000U) == 0) {
+      if ((changedBits & 0x800) != 0) {
+        R_HW_SetAlphaTestEnable((state->prim).field0_0x0.device,stateBits0);
       }
-      if ((param_2 & 0x800) != 0) {
-        if (((param_2 & 0x3000) != 0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x80f
-                                     ,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      if ((stateBits0 & 0x800) != 0) {
+        if (((stateBits0 & 0x3000) != 0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x80f
+                                     ,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        param_2 = param_1->activeStateBits[0] & 0x3000 | param_2;
-        local_10 = local_10 & 0xffffcfff;
-        if (((param_2 ^ param_1->activeStateBits[0]) != local_10) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x812
-                                     ,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        stateBits0 = state->activeStateBits[0] & 0x3000 | stateBits0;
+        changedBits = changedBits & 0xffffcfff;
+        if (((stateBits0 ^ state->activeStateBits[0]) != changedBits) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x812
+                                     ,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      if ((local_10 & 0x3000) != 0) {
-        R_SetAlphaTestFunction(param_1,param_2);
+      if ((changedBits & 0x3000) != 0) {
+        R_SetAlphaTestFunction(state,stateBits0);
       }
     }
-    if ((local_10 & 0xc000) != 0) {
-      R_HW_SetCullFace(pIVar1,param_2);
+    if ((changedBits & 0xc000) != 0) {
+      R_HW_SetCullFace(device_00,stateBits0);
     }
-    if ((local_10 & 0x80000000) != 0) {
-      R_HW_SetPolygonMode(pIVar1,param_2);
+    if ((changedBits & 0x80000000) != 0) {
+      R_HW_SetPolygonMode(device_00,stateBits0);
     }
-    bVar3 = (param_1->refStateBits[0] & 0x700) != 0;
-    if ((param_2 & 0x700) == 0) {
-      if (((param_2 & 0x7000000) != 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x82c,0
-                                   ,"%s"), !bVar4)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    bVar2 = (state->refStateBits[0] & 0x700) != 0;
+    if ((stateBits0 & 0x700) == 0) {
+      if (((stateBits0 & 0x7000000) != 0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x82c,0
+                                   ,"%s"), !bVar3)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      param_2 = param_1->activeStateBits[0] & 0x7ff07ff | param_2 & 0xf800f800;
-      local_10 = local_10 & 0xf800f800;
-      if (((param_2 ^ param_1->activeStateBits[0]) != local_10) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x830,0
-                                   ,"%s"), !bVar4)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      stateBits0 = state->activeStateBits[0] & 0x7ff07ff | stateBits0 & 0xf800f800;
+      changedBits = changedBits & 0xf800f800;
+      if (((stateBits0 ^ state->activeStateBits[0]) != changedBits) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x830,0
+                                   ,"%s"), !bVar3)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      if (bVar3) {
-        R_HW_DisableBlend(pIVar1);
+      if (bVar2) {
+        R_HW_DisableBlend(device_00);
       }
     }
     else {
-      if ((param_2 & 0x7000000) == 0) {
-        param_2 = (param_2 & 0x7ff) << 0x10 | param_2 & 0xf800ffff;
-        local_10 = (param_2 ^ param_1->activeStateBits[0]) & 0x7ff0000 | local_10 & 0xf800ffff;
-        if (((param_2 ^ param_1->activeStateBits[0]) != local_10) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x844
-                                     ,0,"%s"), !bVar4)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      if ((stateBits0 & 0x7000000) == 0) {
+        stateBits0 = (stateBits0 & 0x7ff) << 0x10 | stateBits0 & 0xf800ffff;
+        changedBits = (stateBits0 ^ state->activeStateBits[0]) & 0x7ff0000 |
+                      changedBits & 0xf800ffff;
+        if (((stateBits0 ^ state->activeStateBits[0]) != changedBits) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x844
+                                     ,0,"%s"), !bVar3)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      R_HW_SetBlend(pIVar1,bVar3,local_10,param_2);
+      R_HW_SetBlend(device_00,bVar2,changedBits,stateBits0);
     }
     if (((gfxMetrics.hasTransparencyMsaa != false) && ((r_aaAlpha->current).integer != 0)) &&
-       ((local_10 & 0xf00) != 0)) {
-      R_SetAlphaAntiAliasingState(pIVar1,param_2);
+       ((changedBits & 0xf00) != 0)) {
+      R_SetAlphaAntiAliasingState(device_00,stateBits0);
     }
-    param_1->activeStateBits[0] = param_2;
+    state->activeStateBits[0] = stateBits0;
   }
   return;
 }
@@ -2585,100 +2740,107 @@ void __cdecl R_ChangeState_0(GfxCmdBufState *param_1,uint param_2)
 
 // 00B0CA60  R_ChangeState_1  (gfx_d3d/r_state.cpp:2134)
 
-void __cdecl R_ChangeState_1(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_ChangeState_1(GfxCmdBufState *state,uint stateBits1)
 
 {
-  IDirect3DDevice9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint local_10;
+  IDirect3DDevice9 *device_00;
+  code *pcVar1;
+  bool bVar2;
+  uint stencilOpFail;
+  uint stencilOpPass;
+  uint stencilOpZFail;
+  uint changedBits;
+  uint allTestBits;
+  IDirect3DDevice9 *device;
   
-  local_10 = param_2 ^ param_1->activeStateBits[1];
-  if (local_10 != 0) {
-    if (((param_2 & 0x80) != 0 && (param_2 & 0x40) == 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x862,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  changedBits = stateBits1 ^ state->activeStateBits[1];
+  if (changedBits != 0) {
+    if (((stateBits1 & 0x80) != 0 && (stateBits1 & 0x40) == 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x862,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     if ((r_logFile->current).integer != 0) {
-      RB_LogPrintState_1(param_2,local_10);
+      RB_LogPrintState_1(stateBits1,changedBits);
     }
     if (((dx.d3d9 == (IDirect3D9 *)0x0) || (dx.device == (IDirect3DDevice9 *)0x0)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x869,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x869,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    pIVar1 = (param_1->prim).field0_0x0.device;
-    if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x86c,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    device_00 = (state->prim).field0_0x0.device;
+    if ((device_00 == (IDirect3DDevice9 *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x86c,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((param_1->stateOverride & 0x80000000U) == 0) {
-      if ((local_10 & 1) != 0) {
-        R_HW_SetDepthWriteEnable(pIVar1,param_2);
+    if ((state->stateOverride & 0x80000000U) == 0) {
+      if ((changedBits & 1) != 0) {
+        R_HW_SetDepthWriteEnable(device_00,stateBits1);
       }
-      if ((local_10 & 2) != 0) {
-        R_HW_SetDepthTestEnable(pIVar1,param_2);
+      if ((changedBits & 2) != 0) {
+        R_HW_SetDepthTestEnable(device_00,stateBits1);
       }
-      if ((param_2 & 2) != 0) {
-        if (((param_2 & 0xc) != 0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x877
-                                     ,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      if ((stateBits1 & 2) != 0) {
+        if (((stateBits1 & 0xc) != 0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x877
+                                     ,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        param_2 = param_1->activeStateBits[1] & 0xc | param_2;
-        local_10 = local_10 & 0xfffffff3;
-        if (((param_2 ^ param_1->activeStateBits[1]) != local_10) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x87a
-                                     ,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        stateBits1 = state->activeStateBits[1] & 0xc | stateBits1;
+        changedBits = changedBits & 0xfffffff3;
+        if (((stateBits1 ^ state->activeStateBits[1]) != changedBits) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x87a
+                                     ,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      if ((local_10 & 0xc) != 0) {
-        R_HW_SetDepthTestFunction(pIVar1,param_2);
+      if ((changedBits & 0xc) != 0) {
+        R_HW_SetDepthTestFunction(device_00,stateBits1);
       }
     }
-    if ((local_10 & 0x30) != 0) {
-      R_ForceSetPolygonOffset(pIVar1,param_2);
+    if ((changedBits & 0x30) != 0) {
+      R_ForceSetPolygonOffset(device_00,stateBits1);
     }
-    if ((param_2 & 0x40) == 0) {
-      if ((local_10 & 0x40) != 0) {
-        R_HW_DisableStencil(pIVar1);
+    if ((stateBits1 & 0x40) == 0) {
+      if ((changedBits & 0x40) != 0) {
+        R_HW_DisableStencil(device_00);
       }
-      param_2 = param_1->activeStateBits[1] & 0xffffff80 | param_2 & 0x7f;
-      local_10 = 0;
+      stateBits1 = state->activeStateBits[1] & 0xffffff80 | stateBits1 & 0x7f;
+      changedBits = 0;
     }
-    else if ((local_10 & 0x40) != 0) {
-      R_HW_EnableStencil(pIVar1);
+    else if ((changedBits & 0x40) != 0) {
+      R_HW_EnableStencil(device_00);
     }
-    if ((param_2 & 0x80) == 0) {
-      param_2 = (param_2 & 0xfff00) << 0xc | param_2 & 0xfffff;
-      local_10 = param_2 ^ param_1->activeStateBits[1];
+    if ((stateBits1 & 0x80) == 0) {
+      stateBits1 = (stateBits1 & 0xfff00) << 0xc | stateBits1 & 0xfffff;
+      changedBits = stateBits1 ^ state->activeStateBits[1];
     }
-    if ((local_10 & 0x1ff00) != 0) {
-      R_HW_SetFrontStencilOp(pIVar1,param_2 >> 8 & 7,param_2 >> 0xb & 7,param_2 >> 0xe & 7);
+    if ((changedBits & 0x1ff00) != 0) {
+      R_HW_SetFrontStencilOp
+                (device_00,stateBits1 >> 8 & 7,stateBits1 >> 0xb & 7,stateBits1 >> 0xe & 7);
     }
-    if ((local_10 & 0x1ff00000) != 0) {
-      R_HW_SetBackStencilOp(pIVar1,param_2 >> 0x14 & 7,param_2 >> 0x17 & 7,param_2 >> 0x1a & 7);
+    if ((changedBits & 0x1ff00000) != 0) {
+      R_HW_SetBackStencilOp
+                (device_00,stateBits1 >> 0x14 & 7,stateBits1 >> 0x17 & 7,stateBits1 >> 0x1a & 7);
     }
-    if ((local_10 & 0xe0000) != 0) {
-      R_HW_SetFrontStencilFunc(pIVar1,param_2 >> 0x11 & 7);
+    if ((changedBits & 0xe0000) != 0) {
+      R_HW_SetFrontStencilFunc(device_00,stateBits1 >> 0x11 & 7);
     }
-    if ((local_10 & 0xe0000000) != 0) {
-      R_HW_SetBackStencilFunc(pIVar1,param_2 >> 0x1d);
+    if ((changedBits & 0xe0000000) != 0) {
+      R_HW_SetBackStencilFunc(device_00,stateBits1 >> 0x1d);
     }
-    param_1->activeStateBits[1] = param_2;
+    state->activeStateBits[1] = stateBits1;
   }
   return;
 }
@@ -2688,22 +2850,23 @@ void __cdecl R_ChangeState_1(GfxCmdBufState *param_1,uint param_2)
 
 void __cdecl
 R_SetTextureSamplerCodeImageRenderTarget
-          (GfxCmdBufContext param_1,uint param_2,GfxCodeImageRenderTarget param_3)
+          (GfxCmdBufContext context,uint samplerIndex,GfxCodeImageRenderTarget param_3)
 
 {
-  uchar extraout_AL;
+  uchar samplerState;
   uint uVar1;
-  uchar uVar2;
+  uchar mipLodBias;
+  uint decodedSamplerState;
   
-  (param_1.field0_0x0._s_0.state)->samplerTexture[param_2] = (GfxTexture *)0x0;
-  uVar2 = '\0';
+  (context.field0_0x0._s_0.state)->samplerTexture[samplerIndex] = (GfxTexture *)0x0;
+  mipLodBias = '\0';
   _aullshr();
-  uVar1 = R_DecodeSamplerState(extraout_AL,uVar2);
-  if ((param_1.field0_0x0._s_0.state)->samplerState[param_2] != uVar1) {
+  uVar1 = R_DecodeSamplerState(samplerState,mipLodBias);
+  if ((context.field0_0x0._s_0.state)->samplerState[samplerIndex] != uVar1) {
     uVar1 = R_HW_SetSamplerState
-                      (((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device,param_2,uVar1,
-                       (param_1.field0_0x0._s_0.state)->samplerState[param_2]);
-    (param_1.field0_0x0._s_0.state)->samplerState[param_2] = uVar1;
+                      (((context.field0_0x0._s_0.state)->prim).field0_0x0.device,samplerIndex,uVar1,
+                       (context.field0_0x0._s_0.state)->samplerState[samplerIndex]);
+    (context.field0_0x0._s_0.state)->samplerState[samplerIndex] = uVar1;
   }
   return;
 }
@@ -2711,7 +2874,7 @@ R_SetTextureSamplerCodeImageRenderTarget
 
 // 00B0F970  R_HW_SetRenderTarget  (gfx_d3d/r_state.h:2287)
 
-void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
+void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *state,uchar newTargetId)
 
 {
   IDirect3DDevice9 *pIVar1;
@@ -2719,9 +2882,14 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
   bool bVar3;
   int iVar4;
   int iVar5;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DDevice9 *device;
   
-  R_PixStartNamedRenderTarget(param_2);
-  pIVar1 = (param_1->prim).field0_0x0.device;
+  R_PixStartNamedRenderTarget(newTargetId);
+  pIVar1 = (state->prim).field0_0x0.device;
   if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x8f8,0,"%s")
      , !bVar3)) {
@@ -2729,14 +2897,15 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
     (*pcVar2)();
     return;
   }
-  if (gfxRenderTargets[param_1->renderTargetId].surface.color !=
-      gfxRenderTargets[param_2].surface.color) {
+  if (gfxRenderTargets[state->renderTargetId].surface.color !=
+      gfxRenderTargets[newTargetId].surface.color) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->SetRenderTarget( 0, gfxRenderTargets[newTargetId].surface.color )\n");
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*pIVar1 + 0x94))(pIVar1,0,gfxRenderTargets[param_2].surface.color);
+    iVar5 = (**(code **)((int)*pIVar1 + 0x94))(pIVar1,0,gfxRenderTargets[newTargetId].surface.color)
+    ;
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -2747,16 +2916,16 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
                 "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h (%i) device->SetRenderTarget( 0, gfxRenderTargets[newTargetId].surface.color ) failed: %s\n"
                );
     }
-    (param_1->viewport).x = 0;
-    (param_1->viewport).y = 0;
-    (param_1->viewport).width = (uint)gfxRenderTargets[param_2].width;
-    (param_1->viewport).height = (uint)gfxRenderTargets[param_2].height;
-    param_1->depthRangeType = GFX_DEPTH_RANGE_FULL;
-    param_1->depthRangeNear = 0.0;
-    param_1->depthRangeFar = 1.0;
+    (state->viewport).x = 0;
+    (state->viewport).y = 0;
+    (state->viewport).width = (uint)gfxRenderTargets[newTargetId].width;
+    (state->viewport).height = (uint)gfxRenderTargets[newTargetId].height;
+    state->depthRangeType = GFX_DEPTH_RANGE_FULL;
+    state->depthRangeNear = 0.0;
+    state->depthRangeFar = 1.0;
   }
-  if (gfxRenderTargets[param_1->renderTargetId].surface.depthStencil !=
-      gfxRenderTargets[param_2].surface.depthStencil) {
+  if (gfxRenderTargets[state->renderTargetId].surface.depthStencil !=
+      gfxRenderTargets[newTargetId].surface.depthStencil) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -2765,7 +2934,7 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
     iVar5 = (**(code **)((int)*pIVar1 + 0x9c))
-                      (pIVar1,gfxRenderTargets[param_2].surface.depthStencil);
+                      (pIVar1,gfxRenderTargets[newTargetId].surface.depthStencil);
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -2783,45 +2952,49 @@ void __cdecl R_HW_SetRenderTarget(GfxCmdBufState *param_1,uchar param_2)
 
 // 00B0E060  R_SetSampler  (gfx_d3d/r_state.cpp:2313)
 
-void __cdecl R_SetSampler(GfxCmdBufContext param_1,uint param_2,uchar param_3,GfxImage *param_4)
+void __cdecl
+R_SetSampler(GfxCmdBufContext context,uint samplerIndex,uchar samplerState,GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *text;
+  uint uVar3;
+  uint decodedSamplerState;
+  GfxTexture *texture;
   
-  if ((param_4 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x910,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1.field0_0x0._s_0.state)->samplerTexture[param_2] != &param_4->texture) {
-    (param_1.field0_0x0._s_0.state)->samplerTexture[param_2] = &param_4->texture;
+  if ((context.field0_0x0._s_0.state)->samplerTexture[samplerIndex] != &image->texture) {
+    (context.field0_0x0._s_0.state)->samplerTexture[samplerIndex] = &image->texture;
     if ((r_logFile->current).integer != 0) {
-      pcVar3 = va("---------- texture %i: %s\n");
-      RB_LogPrint(pcVar3);
+      text = va("---------- texture %i: %s\n");
+      RB_LogPrint(text);
     }
     R_HW_SetSamplerTexture
-              (((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device,param_2,&param_4->texture);
+              (((context.field0_0x0._s_0.state)->prim).field0_0x0.device,samplerIndex,
+               &image->texture);
   }
-  if (((param_3 & 0x1f) == 0) &&
+  if (((samplerState & 0x1f) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x926,0,
                                "%s\n\t(samplerState) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1.field0_0x0._s_0.state)->refSamplerState[param_2] != param_3) {
-    (param_1.field0_0x0._s_0.state)->refSamplerState[param_2] = param_3;
-    uVar4 = R_DecodeSamplerState(param_3,'\0');
-    if ((param_1.field0_0x0._s_0.state)->samplerState[param_2] != uVar4) {
-      uVar4 = R_HW_SetSamplerState
-                        (((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device,param_2,uVar4,
-                         (param_1.field0_0x0._s_0.state)->samplerState[param_2]);
-      (param_1.field0_0x0._s_0.state)->samplerState[param_2] = uVar4;
+  if ((context.field0_0x0._s_0.state)->refSamplerState[samplerIndex] != samplerState) {
+    (context.field0_0x0._s_0.state)->refSamplerState[samplerIndex] = samplerState;
+    uVar3 = R_DecodeSamplerState(samplerState,'\0');
+    if ((context.field0_0x0._s_0.state)->samplerState[samplerIndex] != uVar3) {
+      uVar3 = R_HW_SetSamplerState
+                        (((context.field0_0x0._s_0.state)->prim).field0_0x0.device,samplerIndex,
+                         uVar3,(context.field0_0x0._s_0.state)->samplerState[samplerIndex]);
+      (context.field0_0x0._s_0.state)->samplerState[samplerIndex] = uVar3;
     }
   }
   return;
@@ -2830,29 +3003,30 @@ void __cdecl R_SetSampler(GfxCmdBufContext param_1,uint param_2,uchar param_3,Gf
 
 // 00B0E2A0  R_SetSamplerState  (gfx_d3d/r_state.cpp:2396)
 
-void __cdecl R_SetSamplerState(GfxCmdBufState *param_1,uint param_2,uchar param_3)
+void __cdecl R_SetSamplerState(GfxCmdBufState *state,uint samplerIndex,uchar samplerState)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  uint decodedSamplerState;
   
-  param_1->samplerTexture[param_2] = (GfxTexture *)0x0;
-  if (((param_3 & 0x1f) == 0) &&
+  state->samplerTexture[samplerIndex] = (GfxTexture *)0x0;
+  if (((samplerState & 0x1f) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x961,0,
                                "%s\n\t(samplerState) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->refSamplerState[param_2] != param_3) {
-    param_1->refSamplerState[param_2] = param_3;
-    uVar3 = R_DecodeSamplerState(param_3,'\0');
-    if (param_1->samplerState[param_2] != uVar3) {
+  if (state->refSamplerState[samplerIndex] != samplerState) {
+    state->refSamplerState[samplerIndex] = samplerState;
+    uVar3 = R_DecodeSamplerState(samplerState,'\0');
+    if (state->samplerState[samplerIndex] != uVar3) {
       uVar3 = R_HW_SetSamplerState
-                        ((param_1->prim).field0_0x0.device,param_2,uVar3,
-                         param_1->samplerState[param_2]);
-      param_1->samplerState[param_2] = uVar3;
+                        ((state->prim).field0_0x0.device,samplerIndex,uVar3,
+                         state->samplerState[samplerIndex]);
+      state->samplerState[samplerIndex] = uVar3;
     }
   }
   return;
@@ -2861,14 +3035,14 @@ void __cdecl R_SetSamplerState(GfxCmdBufState *param_1,uint param_2,uchar param_
 
 // 00B105A0  R_ForceSetBlendState  (gfx_d3d/r_state.cpp:2422)
 
-void __cdecl R_ForceSetBlendState(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_ForceSetBlendState(IDirect3DDevice9 *device,uint stateBits0)
 
 {
-  if ((param_2 & 0x700) == 0) {
-    R_HW_DisableBlend(param_1);
+  if ((stateBits0 & 0x700) == 0) {
+    R_HW_DisableBlend(device);
   }
   else {
-    R_HW_SetBlend(param_1,false,0xffffffff,param_2);
+    R_HW_SetBlend(device,false,0xffffffff,stateBits0);
   }
   return;
 }
@@ -2876,22 +3050,27 @@ void __cdecl R_ForceSetBlendState(IDirect3DDevice9 *param_1,uint param_2)
 
 // 00B105E0  R_ForceSetStencilState  (gfx_d3d/r_state.cpp:2430)
 
-void __cdecl R_ForceSetStencilState(IDirect3DDevice9 *param_1,uint param_2)
+void __cdecl R_ForceSetStencilState(IDirect3DDevice9 *device,uint stateBits1)
 
 {
-  if ((param_2 & 0x40) == 0) {
-    R_HW_DisableStencil(param_1);
+  uint stencilOpFail;
+  uint stencilOpPass;
+  uint stencilOpZFail;
+  
+  if ((stateBits1 & 0x40) == 0) {
+    R_HW_DisableStencil(device);
   }
   else {
-    R_HW_EnableStencil(param_1);
+    R_HW_EnableStencil(device);
   }
-  if ((param_2 & 0x80) == 0) {
-    param_2 = (param_2 & 0xfff00) << 0xc | param_2 & 0xfffff;
+  if ((stateBits1 & 0x80) == 0) {
+    stateBits1 = (stateBits1 & 0xfff00) << 0xc | stateBits1 & 0xfffff;
   }
-  R_HW_SetFrontStencilOp(param_1,param_2 >> 8 & 7,param_2 >> 0xb & 7,param_2 >> 0xe & 7);
-  R_HW_SetBackStencilOp(param_1,param_2 >> 0x14 & 7,param_2 >> 0x17 & 7,param_2 >> 0x1a & 7);
-  R_HW_SetFrontStencilFunc(param_1,param_2 >> 0x11 & 7);
-  R_HW_SetBackStencilFunc(param_1,param_2 >> 0x1d);
+  R_HW_SetFrontStencilOp(device,stateBits1 >> 8 & 7,stateBits1 >> 0xb & 7,stateBits1 >> 0xe & 7);
+  R_HW_SetBackStencilOp(device,stateBits1 >> 0x14 & 7,stateBits1 >> 0x17 & 7,stateBits1 >> 0x1a & 7)
+  ;
+  R_HW_SetFrontStencilFunc(device,stateBits1 >> 0x11 & 7);
+  R_HW_SetBackStencilFunc(device,stateBits1 >> 0x1d);
   return;
 }
 
@@ -2899,31 +3078,35 @@ void __cdecl R_ForceSetStencilState(IDirect3DDevice9 *param_1,uint param_2)
 // 00B0E360  R_TextureOverride  (gfx_d3d/r_state.cpp:2469)
 
 void __cdecl
-R_TextureOverride(GfxBackEndData *param_1,GfxCmdBufContext param_2,uint param_3,int param_4)
+R_TextureOverride(GfxBackEndData *data,GfxCmdBufContext context,uint modelIndex,int textureOverride)
 
 {
   GfxTextureOverride *pGVar1;
   Material *pMVar2;
-  uint local_1c;
-  int local_10;
+  int i;
+  Material *material;
+  ushort modelMask;
+  int ovr;
+  GfxTextureOverride *override;
+  GfxTexture *texture;
   
-  pMVar2 = (param_2.field0_0x0._s_0.state)->material;
-  local_10 = param_4;
-  while (-1 < local_10) {
-    pGVar1 = param_1->textureOverrides + local_10;
+  pMVar2 = (context.field0_0x0._s_0.state)->material;
+  ovr = textureOverride;
+  while (-1 < ovr) {
+    pGVar1 = data->textureOverrides + ovr;
     if ((((pGVar1->material == (Material *)0x0) || (pGVar1->material == pMVar2)) &&
-        ((pGVar1->dobjModelMask & (ushort)(1 << ((byte)param_3 & 0x1f))) != 0)) &&
+        ((pGVar1->dobjModelMask & (ushort)(1 << ((byte)modelIndex & 0x1f))) != 0)) &&
        (pGVar1->img2 != (GfxImage *)0x0)) {
-      for (local_1c = 0; (int)local_1c < 0x10; local_1c = local_1c + 1) {
-        if ((param_2.field0_0x0._s_0.state)->samplerTexture[local_1c] == &pGVar1->img1->texture) {
-          (param_2.field0_0x0._s_0.state)->samplerTexture[local_1c] = &pGVar1->img2->texture;
+      for (i = 0; i < 0x10; i = i + 1) {
+        if ((context.field0_0x0._s_0.state)->samplerTexture[i] == &pGVar1->img1->texture) {
+          (context.field0_0x0._s_0.state)->samplerTexture[i] = &pGVar1->img2->texture;
           R_HW_SetSamplerTexture
-                    (((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,local_1c,
+                    (((context.field0_0x0._s_0.state)->prim).field0_0x0.device,i,
                      &pGVar1->img2->texture);
         }
       }
     }
-    local_10 = (int)pGVar1->prev;
+    ovr = (int)pGVar1->prev;
   }
   return;
 }
@@ -2931,7 +3114,7 @@ R_TextureOverride(GfxBackEndData *param_1,GfxCmdBufContext param_2,uint param_3,
 
 // 00B0E450  R_GetViewport  (gfx_d3d/r_state.cpp:2502)
 
-void __cdecl R_GetViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+void __cdecl R_GetViewport(GfxCmdBufSourceState *source,GfxViewport *outViewport)
 
 {
   int iVar1;
@@ -2940,44 +3123,44 @@ void __cdecl R_GetViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
   int local_14;
   int local_10;
   
-  if ((param_1 == (GfxCmdBufSourceState *)0x0) &&
+  if ((source == (GfxCmdBufSourceState *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9c7,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1[1].matrices.matrix[0].m[1][3] == 1.4013e-45) {
-    if (((int)param_1[1].matrices.matrix[0].m[2][0] < 1) &&
+  if (source[1].matrices.matrix[0].m[1][3] == 1.4013e-45) {
+    if (((int)source[1].matrices.matrix[0].m[2][0] < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9cb,0,
                                  "%s\n\t(source->renderTargetWidth) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (((int)param_1[1].matrices.matrix[0].m[2][1] < 1) &&
+    if (((int)source[1].matrices.matrix[0].m[2][1] < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9cc,0,
                                  "%s\n\t(source->renderTargetHeight) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_2->x = 0;
-    param_2->y = 0;
-    param_2->width = (int)param_1[1].matrices.matrix[0].m[2][0];
-    param_2->height = (int)param_1[1].matrices.matrix[0].m[2][1];
+    outViewport->x = 0;
+    outViewport->y = 0;
+    outViewport->width = (int)source[1].matrices.matrix[0].m[2][0];
+    outViewport->height = (int)source[1].matrices.matrix[0].m[2][1];
   }
   else {
-    if ((param_1->renderTargetHeight < 1) &&
+    if ((source->renderTargetHeight < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9d5,0,
                                  "%s\n\t(source->sceneViewport.width) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    iVar1._0_1_ = param_1->viewportIsDirty;
-    iVar1._1_1_ = param_1->scissorEnabled;
-    iVar1._2_2_ = *(undefined2 *)&param_1->field_0x1a5a;
+    iVar1._0_1_ = source->viewportIsDirty;
+    iVar1._1_1_ = source->scissorEnabled;
+    iVar1._2_2_ = *(undefined2 *)&source->field_0x1a5a;
     if ((iVar1 < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9d6,0,
                                  "%s\n\t(source->sceneViewport.height) = %i"), !bVar3)) {
@@ -2985,18 +3168,18 @@ void __cdecl R_GetViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
       (*pcVar2)();
       return;
     }
-    param_2->x = param_1->viewportBehavior;
-    param_2->y = param_1->renderTargetWidth;
-    param_2->width = param_1->renderTargetHeight;
-    param_2->height = *(int *)&param_1->viewportIsDirty;
-    if ((param_2->width < 1) &&
+    outViewport->x = source->viewportBehavior;
+    outViewport->y = source->renderTargetWidth;
+    outViewport->width = source->renderTargetHeight;
+    outViewport->height = *(int *)&source->viewportIsDirty;
+    if ((outViewport->width < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9d9,0,
                                  "%s\n\t(outViewport->width) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_2->height < 1) &&
+    if ((outViewport->height < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9da,0,
                                  "%s\n\t(outViewport->height) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -3004,21 +3187,23 @@ void __cdecl R_GetViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
       return;
     }
   }
-  if (((param_1->scissorViewport).width != 2) && ((r_scaleViewport->current).value != 1.0)) {
-    param_2->x = (int)((float)param_2->width * (1.0 - (r_scaleViewport->current).value) * 0.5) +
-                 param_2->x;
-    param_2->y = (int)((float)param_2->height * (1.0 - (r_scaleViewport->current).value) * 0.5) +
-                 param_2->y;
-    local_10 = (int)((float)param_2->width * (r_scaleViewport->current).value);
+  if (((source->scissorViewport).width != 2) && ((r_scaleViewport->current).value != 1.0)) {
+    outViewport->x =
+         (int)((float)outViewport->width * (1.0 - (r_scaleViewport->current).value) * 0.5) +
+         outViewport->x;
+    outViewport->y =
+         (int)((float)outViewport->height * (1.0 - (r_scaleViewport->current).value) * 0.5) +
+         outViewport->y;
+    local_10 = (int)((float)outViewport->width * (r_scaleViewport->current).value);
     if (local_10 < 2) {
       local_10 = 1;
     }
-    param_2->width = local_10;
-    local_14 = (int)((float)param_2->height * (r_scaleViewport->current).value);
+    outViewport->width = local_10;
+    local_14 = (int)((float)outViewport->height * (r_scaleViewport->current).value);
     if (local_14 < 2) {
       local_14 = 1;
     }
-    param_2->height = local_14;
+    outViewport->height = local_14;
   }
   return;
 }
@@ -3026,54 +3211,54 @@ void __cdecl R_GetViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
 
 // 00B0E760  R_SetViewport  (gfx_d3d/r_state.cpp:2539)
 
-void __cdecl R_SetViewport(GfxCmdBufState *param_1,GfxViewport *param_2)
+void __cdecl R_SetViewport(GfxCmdBufState *state,GfxViewport *viewport)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *text;
   
   if ((r_logFile->current).integer != 0) {
-    pcVar3 = va("Viewport at (%i, %i) with size %i x %i\n");
-    RB_LogPrint(pcVar3);
+    text = va("Viewport at (%i, %i) with size %i x %i\n");
+    RB_LogPrint(text);
   }
-  if ((param_2->x < 0) &&
+  if ((viewport->x < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9ee,0,
                                "%s\n\t(viewport->x) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->y < 0) &&
+  if ((viewport->y < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9ef,0,
                                "%s\n\t(viewport->y) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->width < 1) &&
+  if ((viewport->width < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9f0,0,
                                "%s\n\t(viewport->width) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->height < 1) &&
+  if ((viewport->height < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0x9f1,0,
                                "%s\n\t(viewport->height) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_2->x != (param_1->viewport).x) || (param_2->y != (param_1->viewport).y)) ||
-      (param_2->width != (param_1->viewport).width)) ||
-     (param_2->height != (param_1->viewport).height)) {
-    (param_1->viewport).x = param_2->x;
-    (param_1->viewport).y = param_2->y;
-    (param_1->viewport).width = param_2->width;
-    (param_1->viewport).height = param_2->height;
-    R_HW_SetViewport((param_1->prim).field0_0x0.device,param_2,param_1->depthRangeNear,
-                     param_1->depthRangeFar);
+  if ((((viewport->x != (state->viewport).x) || (viewport->y != (state->viewport).y)) ||
+      (viewport->width != (state->viewport).width)) ||
+     (viewport->height != (state->viewport).height)) {
+    (state->viewport).x = viewport->x;
+    (state->viewport).y = viewport->y;
+    (state->viewport).width = viewport->width;
+    (state->viewport).height = viewport->height;
+    R_HW_SetViewport((state->prim).field0_0x0.device,viewport,state->depthRangeNear,
+                     state->depthRangeFar);
   }
   return;
 }
@@ -3081,7 +3266,7 @@ void __cdecl R_SetViewport(GfxCmdBufState *param_1,GfxViewport *param_2)
 
 // 00B0E920  R_SetViewportStruct  (gfx_d3d/r_state.cpp:2572)
 
-void __cdecl R_SetViewportStruct(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+void __cdecl R_SetViewportStruct(GfxCmdBufSourceState *source,GfxViewport *viewport)
 
 {
   int iVar1;
@@ -3090,15 +3275,15 @@ void __cdecl R_SetViewportStruct(GfxCmdBufSourceState *param_1,GfxViewport *para
   undefined2 uVar4;
   bool bVar5;
   
-  param_1->viewportBehavior = param_2->x;
-  param_1->renderTargetWidth = param_2->y;
-  param_1->renderTargetHeight = param_2->width;
-  uVar3 = *(undefined1 *)((int)&param_2->height + 1);
-  uVar4 = *(undefined2 *)((int)&param_2->height + 2);
-  param_1->viewportIsDirty = (bool)*(undefined1 *)&param_2->height;
-  param_1->scissorEnabled = (bool)uVar3;
-  *(undefined2 *)&param_1->field_0x1a5a = uVar4;
-  if (param_1->renderTargetHeight < 1) {
+  source->viewportBehavior = viewport->x;
+  source->renderTargetWidth = viewport->y;
+  source->renderTargetHeight = viewport->width;
+  uVar3 = *(undefined1 *)((int)&viewport->height + 1);
+  uVar4 = *(undefined2 *)((int)&viewport->height + 2);
+  source->viewportIsDirty = (bool)*(undefined1 *)&viewport->height;
+  source->scissorEnabled = (bool)uVar3;
+  *(undefined2 *)&source->field_0x1a5a = uVar4;
+  if (source->renderTargetHeight < 1) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa13,0,"%s")
     ;
     if (!bVar5) {
@@ -3107,9 +3292,9 @@ void __cdecl R_SetViewportStruct(GfxCmdBufSourceState *param_1,GfxViewport *para
       return;
     }
   }
-  iVar1._0_1_ = param_1->viewportIsDirty;
-  iVar1._1_1_ = param_1->scissorEnabled;
-  iVar1._2_2_ = *(undefined2 *)&param_1->field_0x1a5a;
+  iVar1._0_1_ = source->viewportIsDirty;
+  iVar1._1_1_ = source->scissorEnabled;
+  iVar1._2_2_ = *(undefined2 *)&source->field_0x1a5a;
   if (iVar1 < 1) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa14,0,"%s")
     ;
@@ -3119,21 +3304,21 @@ void __cdecl R_SetViewportStruct(GfxCmdBufSourceState *param_1,GfxViewport *para
       return;
     }
   }
-  (param_1->scissorViewport).width = 0;
-  *(undefined1 *)(param_1[1].matrices.matrix[0].m[2] + 2) = 1;
+  (source->scissorViewport).width = 0;
+  *(undefined1 *)(source[1].matrices.matrix[0].m[2] + 2) = 1;
   return;
 }
 
 
 // 00B0E9D0  R_SetScissorStruct  (gfx_d3d/r_state.cpp:2587)
 
-void __cdecl R_SetScissorStruct(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+void __cdecl R_SetScissorStruct(GfxCmdBufSourceState *source,GfxViewport *scissor)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->width < 1) {
+  if (scissor->width < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa1c,0,
                              "%s\n\t(scissor->width) = %i");
     if (!bVar2) {
@@ -3142,7 +3327,7 @@ void __cdecl R_SetScissorStruct(GfxCmdBufSourceState *param_1,GfxViewport *param
       return;
     }
   }
-  if (param_2->height < 1) {
+  if (scissor->height < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa1d,0,
                              "%s\n\t(scissor->height) = %i");
     if (!bVar2) {
@@ -3151,52 +3336,52 @@ void __cdecl R_SetScissorStruct(GfxCmdBufSourceState *param_1,GfxViewport *param
       return;
     }
   }
-  param_1->shadowableLightIndex = param_2->x;
-  param_1[1].matrices.matrix[0].m[0][0] = (float)param_2->y;
-  param_1[1].matrices.matrix[0].m[0][1] = (float)param_2->width;
-  param_1[1].matrices.matrix[0].m[0][2] = (float)param_2->height;
-  param_1->shadowableLightIndex = param_1->shadowableLightIndex + param_1->viewportBehavior;
-  param_1[1].matrices.matrix[0].m[0][0] =
-       (float)((int)param_1[1].matrices.matrix[0].m[0][0] + param_1->renderTargetWidth);
-  *(undefined1 *)((int)param_1[1].matrices.matrix[0].m[2] + 9) = 1;
-  *(undefined1 *)(param_1[1].matrices.matrix[0].m[2] + 2) = 1;
+  source->shadowableLightIndex = scissor->x;
+  source[1].matrices.matrix[0].m[0][0] = (float)scissor->y;
+  source[1].matrices.matrix[0].m[0][1] = (float)scissor->width;
+  source[1].matrices.matrix[0].m[0][2] = (float)scissor->height;
+  source->shadowableLightIndex = source->shadowableLightIndex + source->viewportBehavior;
+  source[1].matrices.matrix[0].m[0][0] =
+       (float)((int)source[1].matrices.matrix[0].m[0][0] + source->renderTargetWidth);
+  *(undefined1 *)((int)source[1].matrices.matrix[0].m[2] + 9) = 1;
+  *(undefined1 *)(source[1].matrices.matrix[0].m[2] + 2) = 1;
   return;
 }
 
 
 // 00B0EAB0  R_ClearScissorStruct  (gfx_d3d/r_state.cpp:2602)
 
-void __cdecl R_ClearScissorStruct(GfxCmdBufSourceState *param_1)
+void __cdecl R_ClearScissorStruct(GfxCmdBufSourceState *source)
 
 {
-  *(undefined1 *)((int)param_1[1].matrices.matrix[0].m[2] + 9) = 0;
-  *(undefined1 *)(param_1[1].matrices.matrix[0].m[2] + 2) = 1;
+  *(undefined1 *)((int)source[1].matrices.matrix[0].m[2] + 9) = 0;
+  *(undefined1 *)(source[1].matrices.matrix[0].m[2] + 2) = 1;
   return;
 }
 
 
 // 00B0EAD0  R_GetScissor  (gfx_d3d/r_state.cpp:2608)
 
-bool __cdecl R_GetScissor(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+bool __cdecl R_GetScissor(GfxCmdBufSourceState *source,GfxViewport *outScissor)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (GfxCmdBufSourceState *)0x0) &&
+  if ((source == (GfxCmdBufSourceState *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa31,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = *(char *)((int)param_1[1].matrices.matrix[0].m[2] + 9) != '\0';
+  bVar2 = *(char *)((int)source[1].matrices.matrix[0].m[2] + 9) != '\0';
   if (bVar2) {
-    param_2->x = param_1->shadowableLightIndex;
-    param_2->y = (int)param_1[1].matrices.matrix[0].m[0][0];
-    param_2->width = (int)param_1[1].matrices.matrix[0].m[0][1];
-    param_2->height = (int)param_1[1].matrices.matrix[0].m[0][2];
+    outScissor->x = source->shadowableLightIndex;
+    outScissor->y = (int)source[1].matrices.matrix[0].m[0][0];
+    outScissor->width = (int)source[1].matrices.matrix[0].m[0][1];
+    outScissor->height = (int)source[1].matrices.matrix[0].m[0][2];
   }
   return bVar2;
 }
@@ -3204,31 +3389,31 @@ bool __cdecl R_GetScissor(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
 
 // 00B0EB40  R_SetScissor  (gfx_d3d/r_state.cpp:2620)
 
-void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
+void __cdecl R_SetScissor(GfxCmdBufState *state,GfxViewport *_scissor)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint local_14;
+  char *text;
+  uint scissor;
   uint local_10;
   uint local_c;
   uint local_8;
   
-  local_14 = param_2->x;
-  local_10 = param_2->y;
-  local_c = param_2->width;
-  local_8 = param_2->height;
+  scissor = _scissor->x;
+  local_10 = _scissor->y;
+  local_c = _scissor->width;
+  local_8 = _scissor->height;
   if ((r_logFile->current).integer != 0) {
-    pcVar3 = va("Scissor at (%i, %i) with size %i x %i\n");
-    RB_LogPrint(pcVar3);
+    text = va("Scissor at (%i, %i) with size %i x %i\n");
+    RB_LogPrint(text);
   }
-  if ((int)local_14 < 0) {
-    local_c = local_c + local_14;
+  if ((int)scissor < 0) {
+    local_c = local_c + scissor;
     if ((int)local_c < 1) {
       local_c = 0;
     }
-    local_14 = 0;
+    scissor = 0;
   }
   if ((int)local_10 < 0) {
     local_8 = local_8 + local_10;
@@ -3237,21 +3422,21 @@ void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
     }
     local_10 = 0;
   }
-  if ((int)(uint)gfxRenderTargets[param_1->renderTargetId].width < (int)local_14) {
-    local_14 = (uint)gfxRenderTargets[param_1->renderTargetId].width;
+  if ((int)(uint)gfxRenderTargets[state->renderTargetId].width < (int)scissor) {
+    scissor = (uint)gfxRenderTargets[state->renderTargetId].width;
     local_c = 0;
   }
-  if ((int)(uint)gfxRenderTargets[param_1->renderTargetId].width < (int)(local_14 + local_c)) {
-    local_c = gfxRenderTargets[param_1->renderTargetId].width - local_14;
+  if ((int)(uint)gfxRenderTargets[state->renderTargetId].width < (int)(scissor + local_c)) {
+    local_c = gfxRenderTargets[state->renderTargetId].width - scissor;
   }
-  if ((int)(uint)gfxRenderTargets[param_1->renderTargetId].height < (int)local_10) {
-    local_10 = (uint)gfxRenderTargets[param_1->renderTargetId].height;
+  if ((int)(uint)gfxRenderTargets[state->renderTargetId].height < (int)local_10) {
+    local_10 = (uint)gfxRenderTargets[state->renderTargetId].height;
     local_8 = 0;
   }
-  if ((int)(uint)gfxRenderTargets[param_1->renderTargetId].height < (int)(local_10 + local_8)) {
-    local_8 = gfxRenderTargets[param_1->renderTargetId].height - local_10;
+  if ((int)(uint)gfxRenderTargets[state->renderTargetId].height < (int)(local_10 + local_8)) {
+    local_8 = gfxRenderTargets[state->renderTargetId].height - local_10;
   }
-  if (((int)local_14 < 0) &&
+  if (((int)scissor < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa63,0,
                                "%s\n\t(scissor.x) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3279,15 +3464,15 @@ void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
     (*pcVar1)();
     return;
   }
-  if ((((param_1->scissorEnabled == 0) || (local_14 != (param_1->scissor).x)) ||
-      (local_10 != (param_1->scissor).y)) ||
-     ((local_c != (param_1->scissor).width || (local_8 != (param_1->scissor).height)))) {
-    (param_1->scissor).x = local_14;
-    (param_1->scissor).y = local_10;
-    (param_1->scissor).width = local_c;
-    (param_1->scissor).height = local_8;
-    param_1->scissorEnabled = 1;
-    R_HW_EnableScissor((param_1->prim).field0_0x0.device,local_14,local_10,local_c,local_8);
+  if ((((state->scissorEnabled == 0) || (scissor != (state->scissor).x)) ||
+      (local_10 != (state->scissor).y)) ||
+     ((local_c != (state->scissor).width || (local_8 != (state->scissor).height)))) {
+    (state->scissor).x = scissor;
+    (state->scissor).y = local_10;
+    (state->scissor).width = local_c;
+    (state->scissor).height = local_8;
+    state->scissorEnabled = 1;
+    R_HW_EnableScissor((state->prim).field0_0x0.device,scissor,local_10,local_c,local_8);
   }
   return;
 }
@@ -3295,18 +3480,18 @@ void __cdecl R_SetScissor(GfxCmdBufState *param_1,GfxViewport *param_2)
 
 // 00B0EE10  R_ClearScissor  (gfx_d3d/r_state.cpp:2674)
 
-void __cdecl R_ClearScissor(GfxCmdBufState *param_1)
+void __cdecl R_ClearScissor(GfxCmdBufState *state)
 
 {
-  char *pcVar1;
+  char *text;
   
   if ((r_logFile->current).integer != 0) {
-    pcVar1 = va("Clear Scissor\n");
-    RB_LogPrint(pcVar1);
+    text = va("Clear Scissor\n");
+    RB_LogPrint(text);
   }
-  if (param_1->scissorEnabled != 0) {
-    param_1->scissorEnabled = 0;
-    R_HW_DisableScissor((param_1->prim).field0_0x0.device);
+  if (state->scissorEnabled != 0) {
+    state->scissorEnabled = 0;
+    R_HW_DisableScissor((state->prim).field0_0x0.device);
   }
   return;
 }
@@ -3314,17 +3499,16 @@ void __cdecl R_ClearScissor(GfxCmdBufState *param_1)
 
 // 00B0EE70  R_SetViewportValues  (gfx_d3d/r_state.cpp:2685)
 
-void __cdecl
-R_SetViewportValues(GfxCmdBufSourceState *param_1,int param_2,int param_3,int param_4,int param_5)
+void __cdecl R_SetViewportValues(GfxCmdBufSourceState *source,int x,int y,int width,int height)
 
 {
-  GfxViewport local_14;
+  GfxViewport viewport;
   
-  local_14.x = param_2;
-  local_14.y = param_3;
-  local_14.width = param_4;
-  local_14.height = param_5;
-  R_SetViewportStruct(param_1,&local_14);
+  viewport.x = x;
+  viewport.y = y;
+  viewport.width = width;
+  viewport.height = height;
+  R_SetViewportStruct(source,&viewport);
   return;
 }
 
@@ -3338,7 +3522,7 @@ R_SetViewportValues(GfxCmdBufSourceState *param_1,int param_2,int param_3,int pa
 /* WARNING: Removing unreachable block (ram,0x00b0f234) */
 /* WARNING: Removing unreachable block (ram,0x00b0f25b) */
 
-void __cdecl R_UpdateViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2)
+void __cdecl R_UpdateViewport(GfxCmdBufSourceState *source,GfxViewport *viewport)
 
 {
   int iVar1;
@@ -3350,69 +3534,71 @@ void __cdecl R_UpdateViewport(GfxCmdBufSourceState *param_1,GfxViewport *param_2
   float fVar7;
   float fVar8;
   float fVar9;
+  float invWidth;
+  float invHeight;
   
-  if ((param_1 == (GfxCmdBufSourceState *)0x0) &&
+  if ((source == (GfxCmdBufSourceState *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa95,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if (((param_1->scissorViewport).width == 0) &&
+  if (((source->scissorViewport).width == 0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa96,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  *(undefined1 *)(param_1[1].matrices.matrix[0].m[2] + 2) = 0;
-  if (((int)param_1[1].matrices.matrix[0].m[2][0] < 1) &&
+  *(undefined1 *)(source[1].matrices.matrix[0].m[2] + 2) = 0;
+  if (((int)source[1].matrices.matrix[0].m[2][0] < 1) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa99,0,
                                "%s\n\t(source->renderTargetWidth) = %i"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if (((int)param_1[1].matrices.matrix[0].m[2][1] < 1) &&
+  if (((int)source[1].matrices.matrix[0].m[2][1] < 1) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xa9a,0,
                                "%s\n\t(source->renderTargetHeight) = %i"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  fVar8 = 1.0 / (float)(int)param_1[1].matrices.matrix[0].m[2][0];
-  fVar9 = 1.0 / (float)(int)param_1[1].matrices.matrix[0].m[2][1];
-  fVar6 = (float)param_2->width * fVar8;
-  fVar7 = (float)param_2->height * fVar9;
-  iVar1 = param_2->x;
-  iVar2 = param_2->y;
-  fVar3 = param_1[1].matrices.matrix[0].m[2][1];
-  (param_1->input).consts[0x15][0] = (float)(int)param_1[1].matrices.matrix[0].m[2][0];
-  (param_1->input).consts[0x15][1] = (float)(int)fVar3;
-  (param_1->input).consts[0x15][2] = fVar8;
-  (param_1->input).consts[0x15][3] = fVar9;
-  R_DirtyCodeConstant(param_1,0x15);
-  (param_1->input).consts[0x48][0] = fVar6 * 0.5;
-  (param_1->input).consts[0x48][1] = -(fVar7 * 0.5);
-  (param_1->input).consts[0x48][2] = 0.0;
-  (param_1->input).consts[0x48][3] = 1.0;
-  R_DirtyCodeConstant(param_1,0x48);
-  (param_1->input).consts[0x49][0] = fVar8 * 0.5 + fVar6 * 0.5 + (float)iVar1 * fVar8;
-  (param_1->input).consts[0x49][1] = fVar9 * 0.5 + fVar7 * 0.5 + (float)iVar2 * fVar9;
-  (param_1->input).consts[0x49][2] = 0.0;
-  (param_1->input).consts[0x49][3] = 0.0;
-  R_DirtyCodeConstant(param_1,0x49);
+  fVar8 = 1.0 / (float)(int)source[1].matrices.matrix[0].m[2][0];
+  fVar9 = 1.0 / (float)(int)source[1].matrices.matrix[0].m[2][1];
+  fVar6 = (float)viewport->width * fVar8;
+  fVar7 = (float)viewport->height * fVar9;
+  iVar1 = viewport->x;
+  iVar2 = viewport->y;
+  fVar3 = source[1].matrices.matrix[0].m[2][1];
+  (source->input).consts[0x15][0] = (float)(int)source[1].matrices.matrix[0].m[2][0];
+  (source->input).consts[0x15][1] = (float)(int)fVar3;
+  (source->input).consts[0x15][2] = fVar8;
+  (source->input).consts[0x15][3] = fVar9;
+  R_DirtyCodeConstant(source,0x15);
+  (source->input).consts[0x48][0] = fVar6 * 0.5;
+  (source->input).consts[0x48][1] = -(fVar7 * 0.5);
+  (source->input).consts[0x48][2] = 0.0;
+  (source->input).consts[0x48][3] = 1.0;
+  R_DirtyCodeConstant(source,0x48);
+  (source->input).consts[0x49][0] = fVar8 * 0.5 + fVar6 * 0.5 + (float)iVar1 * fVar8;
+  (source->input).consts[0x49][1] = fVar9 * 0.5 + fVar7 * 0.5 + (float)iVar2 * fVar9;
+  (source->input).consts[0x49][2] = 0.0;
+  (source->input).consts[0x49][3] = 0.0;
+  R_DirtyCodeConstant(source,0x49);
   return;
 }
 
 
 // 00B0FBF0  R_UpdateStatsTarget  (gfx_d3d/r_state.cpp:2738)
 
-void __cdecl R_UpdateStatsTarget(GfxCmdBufContext param_1,int param_2)
+void __cdecl R_UpdateStatsTarget(GfxCmdBufContext context,int newTargetId)
 
 {
-  ((param_1.field0_0x0._s_0.state)->prim).viewStats =
-       ((param_1.field0_0x0._s_0.state)->prim).frameStats.viewStats;
+  ((context.field0_0x0._s_0.state)->prim).viewStats =
+       ((context.field0_0x0._s_0.state)->prim).frameStats.viewStats;
   return;
 }
 
@@ -3422,47 +3608,48 @@ void __cdecl R_UpdateStatsTarget(GfxCmdBufContext param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x00b0f75c) */
 /* WARNING: Removing unreachable block (ram,0x00b0f781) */
 
-GfxViewportBehavior __cdecl R_ViewportBehaviorForRenderTarget(uchar param_1)
+GfxViewportBehavior __cdecl R_ViewportBehaviorForRenderTarget(uchar renderTargetId)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxViewportBehavior GVar3;
   
-  if ((0x2b < param_1) &&
+  if ((0x2b < renderTargetId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xabf,0,
                                "%s\n\t(renderTargetId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     GVar3 = (*pcVar1)();
     return GVar3;
   }
-  return s_viewportBehaviorForRenderTarget[param_1];
+  return s_viewportBehaviorForRenderTarget[renderTargetId];
 }
 
 
 // 00B0F2C0  R_DisableSampler  (gfx_d3d/r_state.cpp:2761)
 
-void __cdecl R_DisableSampler(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_DisableSampler(GfxCmdBufState *state,uint samplerIndex)
 
 {
-  param_1->samplerTexture[param_2] = (GfxTexture *)0x0;
-  R_HW_DisableSampler((param_1->prim).field0_0x0.device,param_2);
+  state->samplerTexture[samplerIndex] = (GfxTexture *)0x0;
+  R_HW_DisableSampler((state->prim).field0_0x0.device,samplerIndex);
   return;
 }
 
 
 // 00B0FC10  R_UnbindImage  (gfx_d3d/r_state.cpp:2770)
 
-void __cdecl R_UnbindImage(GfxCmdBufState *param_1,GfxImage *param_2)
+void __cdecl R_UnbindImage(GfxCmdBufState *state,GfxImage *image)
 
 {
   uint uVar1;
-  uint local_c;
+  uint samplerIndex;
+  uint maxTextureMaps;
   
   uVar1 = vidConfig.maxTextureMaps;
-  for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
-    if (param_1->samplerTexture[local_c] == &param_2->texture) {
-      R_DisableSampler(param_1,local_c);
+  for (samplerIndex = 0; samplerIndex < uVar1; samplerIndex = samplerIndex + 1) {
+    if (state->samplerTexture[samplerIndex] == &image->texture) {
+      R_DisableSampler(state,samplerIndex);
     }
   }
   return;
@@ -3471,50 +3658,52 @@ void __cdecl R_UnbindImage(GfxCmdBufState *param_1,GfxImage *param_2)
 
 // 00B0F3B0  UpdateVPosToWorld  (gfx_d3d/r_state.cpp:2790)
 
-void __cdecl UpdateVPosToWorld(GfxCmdBufSourceState *param_1)
+void __cdecl UpdateVPosToWorld(GfxCmdBufSourceState *source)
 
 {
   float fVar1;
   float fVar2;
-  float local_4c;
+  float invWidth;
+  float invHeight;
+  float vposx_to_world;
   float local_48;
   float local_44;
   float local_40;
-  float local_3c;
+  float scale1;
   float local_38;
   undefined4 local_34;
   undefined4 local_30;
-  float *local_2c;
-  float local_28 [4];
-  float (*local_18) [4];
-  float local_14;
+  float *projM44;
+  float vpos1_to_world [4];
+  float (*invViewM44) [4];
+  float vposy_to_world;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_1->scissorViewport).width == 1) {
-    fVar1 = param_1[1].matrices.matrix[0].m[2][0];
-    fVar2 = param_1[1].matrices.matrix[0].m[2][1];
-    local_2c = R_GetCodeMatrix(param_1,0xcd,0);
-    local_18 = (float (*) [4])R_GetCodeMatrix(param_1,0xcb,0);
-    local_40 = ((1.0 / (float)(int)fVar1) * -2.0) / *local_2c;
-    local_4c = local_40 * (*local_18)[0];
-    local_48 = local_40 * (*local_18)[1];
-    local_44 = local_40 * (*local_18)[2];
-    local_40 = local_40 * (*local_18)[3];
-    local_8 = ((1.0 / (float)(int)fVar2) * 2.0) / local_2c[5];
-    local_14 = local_8 * local_18[1][0];
-    local_10 = local_8 * local_18[1][1];
-    local_c = local_8 * local_18[1][2];
-    local_8 = local_8 * local_18[1][3];
-    local_3c = 1.0 / *local_2c;
-    local_38 = -1.0 / local_2c[5];
+  if ((source->scissorViewport).width == 1) {
+    fVar1 = source[1].matrices.matrix[0].m[2][0];
+    fVar2 = source[1].matrices.matrix[0].m[2][1];
+    projM44 = R_GetCodeMatrix(source,0xcd,0);
+    invViewM44 = (float (*) [4])R_GetCodeMatrix(source,0xcb,0);
+    local_40 = ((1.0 / (float)(int)fVar1) * -2.0) / *projM44;
+    vposx_to_world = local_40 * (*invViewM44)[0];
+    local_48 = local_40 * (*invViewM44)[1];
+    local_44 = local_40 * (*invViewM44)[2];
+    local_40 = local_40 * (*invViewM44)[3];
+    local_8 = ((1.0 / (float)(int)fVar2) * 2.0) / projM44[5];
+    vposy_to_world = local_8 * invViewM44[1][0];
+    local_10 = local_8 * invViewM44[1][1];
+    local_c = local_8 * invViewM44[1][2];
+    local_8 = local_8 * invViewM44[1][3];
+    scale1 = 1.0 / *projM44;
+    local_38 = -1.0 / projM44[5];
     local_34 = 0xbf800000;
     local_30 = 0;
-    MatrixTransformVector44(&local_3c,local_18,local_28);
-    R_SetCodeConstantFromVec4(param_1,0x16,&local_4c);
-    R_SetCodeConstantFromVec4(param_1,0x17,&local_14);
-    R_SetCodeConstantFromVec4(param_1,0x18,local_28);
+    MatrixTransformVector44(&scale1,invViewM44,vpos1_to_world);
+    R_SetCodeConstantFromVec4(source,0x16,&vposx_to_world);
+    R_SetCodeConstantFromVec4(source,0x17,&vposy_to_world);
+    R_SetCodeConstantFromVec4(source,0x18,vpos1_to_world);
   }
   return;
 }
@@ -3525,15 +3714,16 @@ void __cdecl UpdateVPosToWorld(GfxCmdBufSourceState *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b0f5d9) */
 /* WARNING: Removing unreachable block (ram,0x00b0f5fe) */
 
-void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *param_1,uchar param_2)
+void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *source,uchar newTargetId)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   float fVar4;
+  uchar actualTargetId;
   
-  if ((param_1 == (GfxCmdBufSourceState *)0x0) &&
+  if ((source == (GfxCmdBufSourceState *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb03,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3542,23 +3732,23 @@ void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *param_1,uchar param_2)
   }
   g_renderTargetIsOverridden = false;
   if (2 < (int)pixelCostMode) {
-    uVar3 = RB_PixelCost_OverrideRenderTarget(param_2);
-    g_renderTargetIsOverridden = param_2 != uVar3;
-    param_2 = uVar3;
+    uVar3 = RB_PixelCost_OverrideRenderTarget(newTargetId);
+    g_renderTargetIsOverridden = newTargetId != uVar3;
+    newTargetId = uVar3;
   }
-  if ((0x2b < param_2) &&
+  if ((0x2b < newTargetId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb12,0,
                                "%s\n\t(newTargetId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar4 = (float)R_ViewportBehaviorForRenderTarget(param_2);
-  param_1[1].matrices.matrix[0].m[1][3] = fVar4;
-  param_1[1].matrices.matrix[0].m[2][0] = (float)(uint)gfxRenderTargets[param_2].width;
-  param_1[1].matrices.matrix[0].m[2][1] = (float)(uint)gfxRenderTargets[param_2].height;
-  if ((int)param_1[1].matrices.matrix[0].m[2][0] < 1) {
-    R_RenderTargetName(param_2);
+  fVar4 = (float)R_ViewportBehaviorForRenderTarget(newTargetId);
+  source[1].matrices.matrix[0].m[1][3] = fVar4;
+  source[1].matrices.matrix[0].m[2][0] = (float)(uint)gfxRenderTargets[newTargetId].width;
+  source[1].matrices.matrix[0].m[2][1] = (float)(uint)gfxRenderTargets[newTargetId].height;
+  if ((int)source[1].matrices.matrix[0].m[2][0] < 1) {
+    R_RenderTargetName(newTargetId);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb24,0,
                              "%s\n\t(R_RenderTargetName(newTargetId)) = %s");
     if (!bVar2) {
@@ -3567,8 +3757,8 @@ void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *param_1,uchar param_2)
       return;
     }
   }
-  if ((int)param_1[1].matrices.matrix[0].m[2][1] < 1) {
-    R_RenderTargetName(param_2);
+  if ((int)source[1].matrices.matrix[0].m[2][1] < 1) {
+    R_RenderTargetName(newTargetId);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb25,0,
                              "%s\n\t(R_RenderTargetName(newTargetId)) = %s");
     if (!bVar2) {
@@ -3577,49 +3767,49 @@ void __cdecl R_SetRenderTargetSize(GfxCmdBufSourceState *param_1,uchar param_2)
       return;
     }
   }
-  UpdateVPosToWorld(param_1);
+  UpdateVPosToWorld(source);
   return;
 }
 
 
 // 00B0F7D0  R_SetRenderTarget  (gfx_d3d/r_state.cpp:2859)
 
-void __cdecl R_SetRenderTarget(GfxCmdBufContext param_1,uchar param_2)
+void __cdecl R_SetRenderTarget(GfxCmdBufContext context,uchar newTargetId)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *text;
   
   if (2 < (int)pixelCostMode) {
-    param_2 = RB_PixelCost_OverrideRenderTarget(param_2);
+    newTargetId = RB_PixelCost_OverrideRenderTarget(newTargetId);
   }
-  if (param_2 != (param_1.field0_0x0._s_0.state)->renderTargetId) {
+  if (newTargetId != (context.field0_0x0._s_0.state)->renderTargetId) {
     if ((r_logFile->current).integer != 0) {
-      R_RenderTargetName(param_2);
-      pcVar3 = va("\n========== R_SetRenderTarget( %s ) ==========\n\n");
-      RB_LogPrint(pcVar3);
+      R_RenderTargetName(newTargetId);
+      text = va("\n========== R_SetRenderTarget( %s ) ==========\n\n");
+      RB_LogPrint(text);
     }
-    R_UpdateStatsTarget(param_1,(uint)param_2);
-    if (gfxRenderTargets[param_2].image != (GfxImage *)0x0) {
-      R_UnbindImage(param_1.field0_0x0._s_0.state,gfxRenderTargets[param_2].image);
+    R_UpdateStatsTarget(context,(uint)newTargetId);
+    if (gfxRenderTargets[newTargetId].image != (GfxImage *)0x0) {
+      R_UnbindImage(context.field0_0x0._s_0.state,gfxRenderTargets[newTargetId].image);
     }
-    if ((param_1.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][1] !=
-         (float)(uint)gfxRenderTargets[param_2].height) &&
+    if ((context.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][1] !=
+         (float)(uint)gfxRenderTargets[newTargetId].height) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb45,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((int)param_1.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][0] < 1) &&
+    if (((int)context.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][0] < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb46,0,
                                  "%s\n\t(context.local.source->renderTargetWidth) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((int)param_1.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][1] < 1) &&
+    if (((int)context.field0_0x0._s_0.source[1].matrices.matrix[0].m[2][1] < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xb47,0,
                                  "%s\n\t(context.local.source->renderTargetHeight) = %i"), !bVar2))
     {
@@ -3627,10 +3817,10 @@ void __cdecl R_SetRenderTarget(GfxCmdBufContext param_1,uchar param_2)
       (*pcVar1)();
       return;
     }
-    R_HW_SetRenderTarget(param_1.field0_0x0._s_0.state,param_2);
-    (param_1.field0_0x0._s_0.state)->renderTargetId = param_2;
-    ((param_1.field0_0x0._s_0.source)->scissorViewport).width = 0;
-    *(undefined1 *)(param_1.field0_0x0._s_0.source[1].matrices.matrix[0].m[2] + 2) = 1;
+    R_HW_SetRenderTarget(context.field0_0x0._s_0.state,newTargetId);
+    (context.field0_0x0._s_0.state)->renderTargetId = newTargetId;
+    ((context.field0_0x0._s_0.source)->scissorViewport).width = 0;
+    *(undefined1 *)(context.field0_0x0._s_0.source[1].matrices.matrix[0].m[2] + 2) = 1;
   }
   return;
 }
@@ -3638,31 +3828,33 @@ void __cdecl R_SetRenderTarget(GfxCmdBufContext param_1,uchar param_2)
 
 // 00B0FC60  R_ClearRenderTargetForMultiGpu  (gfx_d3d/r_state.cpp:2929)
 
-void __cdecl R_ClearRenderTargetForMultiGpu(GfxCmdBufContext param_1,uchar param_2)
+void __cdecl R_ClearRenderTargetForMultiGpu(GfxCmdBufContext context,uchar targetId)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
-  if ((1 < dx.gpuCount) && (gfxRenderTargets[param_2].cleared == false)) {
+  if ((1 < dx.gpuCount) && (gfxRenderTargets[targetId].cleared == false)) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("context.state->prim.device->Clear(0, 0, 0x00000001l, 0x00000000, 0, 0)\n");
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device + 0xac))
-                      (((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device,0,0,1,0,0,0);
+    hr_00 = (**(code **)((int)*((context.field0_0x0._s_0.state)->prim).field0_0x0.device + 0xac))
+                      (((context.field0_0x0._s_0.state)->prim).field0_0x0.device,0,0,1,0,0,0);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar2 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar2);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp (%i) context.state->prim.device->Clear(0, 0, 0x00000001l, 0x00000000, 0, 0) failed: %s\n"
                );
     }
-    gfxRenderTargets[param_2].cleared = true;
+    gfxRenderTargets[targetId].cleared = true;
   }
   return;
 }
@@ -3672,8 +3864,8 @@ void __cdecl R_ClearRenderTargetForMultiGpu(GfxCmdBufContext param_1,uchar param
 
 void __cdecl
 R_ClearScreenInternal
-          (IDirect3DDevice9 *param_1,uchar param_2,float *param_3,float param_4,uchar param_5,
-          GfxViewport *param_6)
+          (IDirect3DDevice9 *device,uchar whichToClear,float *color,float depth,uchar stencil,
+          GfxViewport *viewport)
 
 {
   code *pcVar1;
@@ -3681,9 +3873,13 @@ R_ClearScreenInternal
   char *pcVar3;
   int iVar4;
   int iVar5;
-  uchar local_8 [4];
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  GfxColor nativeColor;
   
-  if ((param_1 == (IDirect3DDevice9 *)0x0) &&
+  if ((device == (IDirect3DDevice9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xbd1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3699,35 +3895,35 @@ R_ClearScreenInternal
     pcVar3 = va("---------- (%c) stencil %i\n");
     RB_LogPrint(pcVar3);
   }
-  if ((param_2 == '\0') &&
+  if ((whichToClear == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xbdd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((color == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xbde,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_4 < 0.0) || (1.0 < param_4)) &&
+  if (((depth < 0.0) || (1.0 < depth)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xbdf,0,
                                "depth not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Byte4PackPixelColor(param_3,local_8);
-  if (param_6 == (GfxViewport *)0x0) {
+  Byte4PackPixelColor(color,nativeColor.array);
+  if (viewport == (GfxViewport *)0x0) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->Clear( 0, 0, whichToClear, nativeColor.packed, depth, stencil )\n");
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*param_1 + 0xac))();
+    iVar5 = (**(code **)((int)*device + 0xac))();
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -3745,7 +3941,7 @@ R_ClearScreenInternal
       RB_LogPrint("device->Clear( 1, &rect, whichToClear, nativeColor.packed, depth, stencil )\n");
     }
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*param_1 + 0xac))();
+    iVar5 = (**(code **)((int)*device + 0xac))();
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -3764,43 +3960,43 @@ R_ClearScreenInternal
 // 00B10310  R_ClearScreen  (gfx_d3d/r_state.cpp:3124)
 
 void __cdecl
-R_ClearScreen(IDirect3DDevice9 *param_1,uchar param_2,float *param_3,float param_4,uchar param_5,
-             GfxViewport *param_6)
+R_ClearScreen(IDirect3DDevice9 *device,uchar whichToClear,float *color,float depth,uchar stencil,
+             GfxViewport *viewport)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 == '\0') &&
+  if ((whichToClear == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc35,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2 & 0xf8) != 0) &&
+  if (((whichToClear & 0xf8) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc36,0,
                                "%s\n\t(whichToClear) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((color == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc37,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_4 < 0.0) || (1.0 < param_4)) &&
+  if (((depth < 0.0) || (1.0 < depth)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc38,0,
                                "%s\n\t(depth) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((int)pixelCostMode < 3) || (param_2 = param_2 & 0xfe, param_2 != 0)) {
-    R_ClearScreenInternal(param_1,param_2,param_3,param_4,param_5,param_6);
+  if (((int)pixelCostMode < 3) || (whichToClear = whichToClear & 0xfe, whichToClear != 0)) {
+    R_ClearScreenInternal(device,whichToClear,color,depth,stencil,viewport);
   }
   return;
 }
@@ -3808,23 +4004,23 @@ R_ClearScreen(IDirect3DDevice9 *param_1,uchar param_2,float *param_3,float param
 
 // 00B10440  R_SetMeshStream  (gfx_d3d/r_state.cpp:3142)
 
-void __cdecl R_SetMeshStream(GfxCmdBufState *param_1,GfxMeshData *param_2)
+void __cdecl R_SetMeshStream(GfxCmdBufState *state,GfxMeshData *mesh)
 
 {
-  R_SetStreamSource(&param_1->prim,(param_2->vb).buffer,0,param_2->vertSize);
+  R_SetStreamSource(&state->prim,(mesh->vb).buffer,0,mesh->vertSize);
   return;
 }
 
 
 // 00B10470  R_SetCompleteState  (gfx_d3d/r_state.cpp:3150)
 
-void __cdecl R_SetCompleteState(IDirect3DDevice9 *param_1,uint *param_2)
+void __cdecl R_SetCompleteState(IDirect3DDevice9 *device,uint *stateBits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (IDirect3DDevice9 *)0x0) {
+  if (device == (IDirect3DDevice9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc4f,0,"%s")
     ;
     if (!bVar2) {
@@ -3833,9 +4029,9 @@ void __cdecl R_SetCompleteState(IDirect3DDevice9 *param_1,uint *param_2)
       return;
     }
   }
-  R_HW_SetColorMask(param_1,*param_2);
-  R_HW_SetAlphaTestEnable(param_1,*param_2);
-  if ((*param_2 & 0x800) == 0) {
+  R_HW_SetColorMask(device,*stateBits);
+  R_HW_SetAlphaTestEnable(device,*stateBits);
+  if ((*stateBits & 0x800) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",0xc5a,0,"%s")
     ;
     if (!bVar2) {
@@ -3844,24 +4040,26 @@ void __cdecl R_SetCompleteState(IDirect3DDevice9 *param_1,uint *param_2)
       return;
     }
   }
-  R_HW_SetCullFace(param_1,*param_2);
-  R_HW_SetPolygonMode(param_1,*param_2);
-  R_ForceSetBlendState(param_1,*param_2);
-  R_HW_SetDepthWriteEnable(param_1,param_2[1]);
-  R_HW_SetDepthTestEnable(param_1,param_2[1]);
-  R_HW_SetDepthTestFunction(param_1,param_2[1]);
-  R_ForceSetPolygonOffset(param_1,param_2[1]);
-  R_ForceSetStencilState(param_1,param_2[1]);
+  R_HW_SetCullFace(device,*stateBits);
+  R_HW_SetPolygonMode(device,*stateBits);
+  R_ForceSetBlendState(device,*stateBits);
+  R_HW_SetDepthWriteEnable(device,stateBits[1]);
+  R_HW_SetDepthTestEnable(device,stateBits[1]);
+  R_HW_SetDepthTestFunction(device,stateBits[1]);
+  R_ForceSetPolygonOffset(device,stateBits[1]);
+  R_ForceSetStencilState(device,stateBits[1]);
   return;
 }
 
 
 // 00B106E0  R_Set_Texture_SeeThruDecal  (gfx_d3d/r_state.cpp:3175)
 
-void __cdecl R_Set_Texture_SeeThruDecal(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2)
+void __cdecl R_Set_Texture_SeeThruDecal(GfxCmdBufSourceState *source,GfxViewInfo *viewInfo)
 
 {
-  R_SetCodeImageTexture(param_1,0x26,rgp.r32fWhiteImage);
+  GfxImage *seeThruDecalImage;
+  
+  R_SetCodeImageTexture(source,0x26,rgp.r32fWhiteImage);
   return;
 }
 
@@ -3872,9 +4070,9 @@ void __cdecl R_Set_Texture_SeeThruDecal(GfxCmdBufSourceState *param_1,GfxViewInf
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_1,void *param_2,
-          GfxCmdBufSourceState *param_3,GfxViewInfo *param_4,GfxDrawSurfListInfo *param_5,
-          GfxViewParms *param_6,GfxCmdBuf *param_7,GfxCmdBuf *param_8)
+R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *callback,void *userData,
+          GfxCmdBufSourceState *source,GfxViewInfo *viewInfo,GfxDrawSurfListInfo *info,
+          GfxViewParms *viewParms,GfxCmdBuf *cmdBufEA,GfxCmdBuf *prepassCmdBufEA)
 
 {
   GfxCmdBufContext GVar1;
@@ -3897,45 +4095,45 @@ R_DrawCall(_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_
   local_18 = (GfxCmdBufState *)0x0;
   local_24 = (GfxCmdBufSourceState *)0x0;
   local_20 = (GfxCmdBufState *)0x0;
-  local_28 = (GfxCmdBufPrimState_u_0 *)param_7;
-  local_2c = (GfxCmdBufPrimState_u_0 *)param_8;
-  local_30 = &param_4->input;
-  local_34 = &param_4->sceneDef;
-  if (param_5 != (GfxDrawSurfListInfo *)0x0) {
-    param_5->isMissileCamera = *(bool *)((int)&param_4[1].field0_0x0 + 0x14);
+  local_28 = (GfxCmdBufPrimState_u_0 *)cmdBufEA;
+  local_2c = (GfxCmdBufPrimState_u_0 *)prepassCmdBufEA;
+  local_30 = &viewInfo->input;
+  local_34 = &viewInfo->sceneDef;
+  if (info != (GfxDrawSurfListInfo *)0x0) {
+    info->isMissileCamera = *(bool *)((int)&viewInfo[1].field0_0x0 + 0x14);
   }
-  R_BeginView(param_3,local_34,param_6);
+  R_BeginView(source,local_34,viewParms);
   local_1410.prim.field0_0x0 = *local_28;
   R_InitLocalCmdBufState(&local_1410);
-  R_Set_Texture_SeeThruDecal(param_3,param_4);
-  R_SetCodeImageTexture(param_3,0x27,gfxRenderTargets[0x14].image);
-  if (*(char *)((int)&param_4[1].field0_0x0 + 0x14) == '\0') {
-    R_SetCodeImageTexture(param_3,0x28,gfxRenderTargets[0x16].image);
+  R_Set_Texture_SeeThruDecal(source,viewInfo);
+  R_SetCodeImageTexture(source,0x27,gfxRenderTargets[0x14].image);
+  if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0') {
+    R_SetCodeImageTexture(source,0x28,gfxRenderTargets[0x16].image);
   }
   else {
-    R_SetCodeImageTexture(param_3,0x28,rgp.blackImage);
+    R_SetCodeImageTexture(source,0x28,rgp.blackImage);
   }
   if (local_2c == (GfxCmdBufPrimState_u_0 *)0x0) {
     local_24 = (GfxCmdBufSourceState *)0x0;
     local_20 = (GfxCmdBufState *)0x0;
-    local_1c = param_3;
+    local_1c = source;
     local_18 = &local_1410;
     GVar2.field0_0x0._s_0.state = local_18;
-    GVar2.field0_0x0._s_0.source = param_3;
-    (*param_1)(param_2,GVar2,(GfxCmdBufContext)0x0);
+    GVar2.field0_0x0._s_0.source = source;
+    (*callback)(userData,GVar2,(GfxCmdBufContext)0x0);
   }
   else {
     local_27e0.prim.field0_0x0 = *local_2c;
     R_InitLocalCmdBufState(&local_27e0);
-    local_24 = param_3;
+    local_24 = source;
     local_20 = &local_27e0;
-    local_1c = param_3;
+    local_1c = source;
     local_18 = &local_1410;
     GVar1.field0_0x0._s_0.state = local_18;
-    GVar1.field0_0x0._s_0.source = param_3;
+    GVar1.field0_0x0._s_0.source = source;
     GVar3.field0_0x0._s_0.state = local_20;
-    GVar3.field0_0x0._s_0.source = param_3;
-    (*param_1)(param_2,GVar1,GVar3);
+    GVar3.field0_0x0._s_0.source = source;
+    (*callback)(userData,GVar1,GVar3);
     memcpy(gfxCmdBufState.refSamplerState,local_27e0.refSamplerState,0x13d0);
   }
   memcpy(gfxCmdBufState.refSamplerState,local_1410.refSamplerState,0x13d0);

@@ -2,17 +2,17 @@
 
 // 007C6850  FFT_Init  (universal/fft.cpp:7)
 
-void __cdecl FFT_Init(int *param_1,complex_s *param_2)
+void __cdecl FFT_Init(int *fftBitswap,complex_s *fftTrigTable)
 
 {
   code *pcVar1;
   float10 fVar2;
   bool bVar3;
   float10 fVar4;
-  uint local_c;
-  int local_8;
+  int fftIndex;
+  int logIndex;
   
-  if (param_1 == (int *)0x0) {
+  if (fftBitswap == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\fft.cpp",0xb,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -20,7 +20,7 @@ void __cdecl FFT_Init(int *param_1,complex_s *param_2)
       return;
     }
   }
-  if (param_2 == (complex_s *)0x0) {
+  if (fftTrigTable == (complex_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\fft.cpp",0xc,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -28,17 +28,17 @@ void __cdecl FFT_Init(int *param_1,complex_s *param_2)
       return;
     }
   }
-  for (local_c = 0; (int)local_c < 0x100; local_c = local_c + 1) {
-    param_1[local_c] = 0;
-    for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-      if ((1 << ((byte)local_8 & 0x1f) & local_c) != 0) {
-        param_1[local_c] = 1 << (7 - (byte)local_8 & 0x1f) | param_1[local_c];
+  for (fftIndex = 0; fftIndex < 0x100; fftIndex = fftIndex + 1) {
+    fftBitswap[fftIndex] = 0;
+    for (logIndex = 0; logIndex < 8; logIndex = logIndex + 1) {
+      if ((1 << ((byte)logIndex & 0x1f) & fftIndex) != 0) {
+        fftBitswap[fftIndex] = 1 << (7 - (byte)logIndex & 0x1f) | fftBitswap[fftIndex];
       }
     }
-    fVar2 = (float10)fcos((float10)((float)(int)local_c * 0.024543693));
-    fVar4 = (float10)fsin((float10)((float)(int)local_c * 0.024543693));
-    param_2[local_c].real = (float)fVar2;
-    param_2[local_c].imag = (float)fVar4;
+    fVar2 = (float10)fcos((float10)((float)fftIndex * 0.024543693));
+    fVar4 = (float10)fsin((float10)((float)fftIndex * 0.024543693));
+    fftTrigTable[fftIndex].real = (float)fVar2;
+    fftTrigTable[fftIndex].imag = (float)fVar4;
   }
   return;
 }
@@ -50,7 +50,7 @@ void __cdecl FFT_Init(int *param_1,complex_s *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_4)
+void __cdecl FFT(complex_s *data_inout,ulong log2_count,int *bitSwap,complex_s *trigTable)
 
 {
   float fVar1;
@@ -59,17 +59,18 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
-  int iVar8;
-  byte bVar9;
-  uint uVar10;
-  float *pfVar11;
-  uint local_10c8;
-  float local_10c4 [512];
-  uint local_8c4;
-  uint local_8c0;
+  int iVar7;
+  byte bVar8;
+  uint uVar9;
+  float *pfVar10;
+  uint j;
+  uint m;
+  complex_s data;
+  float local_10bc [510];
+  uint k;
+  uint mmax;
   float afStack_8bc [512];
-  float local_bc;
+  float product;
   float local_b8;
   float local_b4;
   float local_b0;
@@ -77,9 +78,9 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float local_a8;
   float local_a4;
   float local_a0;
-  float *local_9c;
-  uint local_98;
-  float local_94;
+  complex_s *data2;
+  uint step;
+  float temp_weight;
   float local_90;
   float local_8c;
   float local_88;
@@ -87,7 +88,7 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float local_80;
   float local_7c;
   float local_78;
-  float local_74;
+  float temp;
   float local_70;
   float local_6c;
   float local_68;
@@ -95,8 +96,8 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float local_60;
   float local_5c;
   float local_58;
-  int local_54;
-  float local_50;
+  uint bitshave;
+  float weight;
   float local_4c;
   float local_48;
   float local_44;
@@ -104,8 +105,8 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float local_3c;
   float local_38;
   float local_34;
-  uint local_30;
-  float local_2c;
+  uint i;
+  float data_vec;
   float local_28;
   float local_24;
   float local_20;
@@ -114,112 +115,111 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
   float local_14;
   float local_10;
   uint local_c;
-  uint local_8;
+  uint count;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 1 << ((byte)param_2 & 0x1f);
-  local_54 = 8 - param_2;
-  for (local_30 = 0; local_30 < local_8; local_30 = local_30 + 1) {
-    iVar8 = param_3[local_30] >> ((byte)(8 - param_2) & 0x1f);
-    fVar7 = param_1[local_30].imag;
-    local_10c4[iVar8 * 2] = param_1[local_30].real;
-    local_10c4[iVar8 * 2 + 1] = fVar7;
+  count = 1 << ((byte)log2_count & 0x1f);
+  bitshave = 8 - log2_count;
+  for (i = 0; i < count; i = i + 1) {
+    iVar7 = bitSwap[i] >> ((byte)(8 - log2_count) & 0x1f);
+    fVar4 = data_inout[i].imag;
+    (&data)[iVar7].real = data_inout[i].real;
+    local_10bc[iVar7 * 2 + -1] = fVar4;
   }
-  local_9c = local_10c4;
-  uVar10 = local_8 >> 2;
-  pfVar11 = local_10c4 + 2;
+  data2 = &data;
+  uVar9 = count >> 2;
+  pfVar10 = local_10bc;
   do {
-    fVar7 = local_9c[1];
-    fVar1 = local_9c[4];
-    fVar2 = local_9c[5];
-    fVar3 = *local_9c;
-    fVar4 = *local_9c;
-    fVar5 = *pfVar11;
-    fVar6 = pfVar11[4];
-    *local_9c = local_9c[4] + fVar6 + fVar4 + fVar5;
-    local_9c[4] = (fVar4 + fVar5) - (local_9c[4] + fVar6);
-    fVar4 = local_9c[1];
-    fVar5 = pfVar11[1];
-    fVar6 = pfVar11[5];
-    local_9c[1] = local_9c[5] + fVar6 + fVar4 + fVar5;
-    local_9c[5] = (fVar4 + fVar5) - (local_9c[5] + fVar6);
-    fVar4 = *pfVar11;
-    *pfVar11 = (fVar4 - fVar3) - (pfVar11[5] - fVar2);
-    fVar5 = pfVar11[4];
-    pfVar11[4] = (fVar4 - fVar3) + (pfVar11[5] - fVar2);
-    fVar2 = pfVar11[1];
-    pfVar11[1] = (fVar2 - fVar7) + (fVar5 - fVar1);
-    pfVar11[5] = (fVar2 - fVar7) - (fVar5 - fVar1);
-    uVar10 = uVar10 - 1;
-    local_9c = local_9c + 8;
-    pfVar11 = pfVar11 + 8;
-  } while (uVar10 != 0);
-  for (local_30 = 0; local_30 < local_8; local_30 = local_30 + 4) {
-    local_8c4 = local_30 >> 2;
-    afStack_8bc[local_8c4 * 8] = local_10c4[local_30 * 2];
-    afStack_8bc[local_8c4 * 8 + 1] = local_10c4[local_30 * 2 + 2];
-    afStack_8bc[local_8c4 * 8 + 2] = local_10c4[local_30 * 2 + 4];
-    afStack_8bc[local_8c4 * 8 + 3] = local_10c4[local_30 * 2 + 6];
-    afStack_8bc[local_8c4 * 8 + 4] = local_10c4[local_30 * 2 + 1];
-    afStack_8bc[local_8c4 * 8 + 5] = local_10c4[local_30 * 2 + 3];
-    afStack_8bc[local_8c4 * 8 + 6] = local_10c4[local_30 * 2 + 5];
-    afStack_8bc[local_8c4 * 8 + 7] = local_10c4[local_30 * 2 + 7];
+    fVar4 = data2->imag;
+    fVar1 = data2[2].real;
+    fVar2 = data2[2].imag;
+    fVar3 = data2->real;
+    fVar5 = data2->real + *pfVar10;
+    fVar6 = data2[2].real + pfVar10[4];
+    data2->real = fVar6 + fVar5;
+    data2[2].real = fVar5 - fVar6;
+    fVar5 = data2->imag + pfVar10[1];
+    fVar6 = data2[2].imag + pfVar10[5];
+    data2->imag = fVar6 + fVar5;
+    data2[2].imag = fVar5 - fVar6;
+    fVar3 = *pfVar10 - fVar3;
+    fVar2 = pfVar10[5] - fVar2;
+    *pfVar10 = fVar3 - fVar2;
+    fVar1 = pfVar10[4] - fVar1;
+    pfVar10[4] = fVar3 + fVar2;
+    fVar4 = pfVar10[1] - fVar4;
+    pfVar10[1] = fVar4 + fVar1;
+    pfVar10[5] = fVar4 - fVar1;
+    uVar9 = uVar9 - 1;
+    data2 = data2 + 4;
+    pfVar10 = pfVar10 + 8;
+  } while (uVar9 != 0);
+  for (i = 0; i < count; i = i + 4) {
+    k = i >> 2;
+    afStack_8bc[k * 8] = (&data)[i].real;
+    afStack_8bc[k * 8 + 1] = local_10bc[i * 2];
+    afStack_8bc[k * 8 + 2] = local_10bc[i * 2 + 2];
+    afStack_8bc[k * 8 + 3] = local_10bc[i * 2 + 4];
+    afStack_8bc[k * 8 + 4] = local_10bc[i * 2 + -1];
+    afStack_8bc[k * 8 + 5] = local_10bc[i * 2 + 1];
+    afStack_8bc[k * 8 + 6] = local_10bc[i * 2 + 3];
+    afStack_8bc[k * 8 + 7] = local_10bc[i * 2 + 5];
   }
-  local_54 = 5;
-  local_8c0 = 4;
-  while (local_8c0 < local_8) {
-    local_98 = local_8c0 << 1;
-    for (local_10c8 = 0; local_10c8 < local_8c0; local_10c8 = local_10c8 + 4) {
-      bVar9 = (byte)local_54;
-      local_94 = param_4[local_10c8 << (bVar9 & 0x1f)].real;
-      local_90 = param_4[local_10c8 + 1 << (bVar9 & 0x1f)].real;
-      local_8c = param_4[local_10c8 + 2 << (bVar9 & 0x1f)].real;
-      local_88 = param_4[local_10c8 + 3 << (bVar9 & 0x1f)].real;
-      local_84 = param_4[local_10c8 << (bVar9 & 0x1f)].imag;
-      local_80 = param_4[local_10c8 + 1 << (bVar9 & 0x1f)].imag;
-      local_7c = param_4[local_10c8 + 2 << (bVar9 & 0x1f)].imag;
-      local_78 = param_4[local_10c8 + 3 << (bVar9 & 0x1f)].imag;
-      local_50 = param_4[local_10c8 << (bVar9 & 0x1f)].real;
-      local_4c = param_4[local_10c8 + 1 << (bVar9 & 0x1f)].real;
-      local_48 = param_4[local_10c8 + 2 << (bVar9 & 0x1f)].real;
-      local_44 = param_4[local_10c8 + 3 << (bVar9 & 0x1f)].real;
-      local_40 = param_4[local_10c8 << (bVar9 & 0x1f)].imag;
-      local_3c = param_4[local_10c8 + 1 << (bVar9 & 0x1f)].imag;
-      local_38 = param_4[local_10c8 + 2 << (bVar9 & 0x1f)].imag;
-      local_34 = param_4[local_10c8 + 3 << (bVar9 & 0x1f)].imag;
-      for (local_30 = local_10c8; local_30 < local_8; local_30 = local_30 + local_98) {
-        local_8c4 = local_30 >> 2;
-        uVar10 = local_30 + local_8c0 >> 2;
-        local_2c = afStack_8bc[uVar10 * 8];
-        local_28 = afStack_8bc[uVar10 * 8 + 1];
-        local_24 = afStack_8bc[uVar10 * 8 + 2];
-        local_20 = afStack_8bc[uVar10 * 8 + 3];
-        local_1c = afStack_8bc[uVar10 * 8 + 4];
-        local_18 = afStack_8bc[uVar10 * 8 + 5];
-        local_14 = afStack_8bc[uVar10 * 8 + 6];
-        local_10 = afStack_8bc[uVar10 * 8 + 7];
-        local_bc = local_50 * local_2c - local_40 * local_1c;
+  bitshave = 5;
+  mmax = 4;
+  while (mmax < count) {
+    step = mmax << 1;
+    for (m = 0; m < mmax; m = m + 4) {
+      bVar8 = (byte)bitshave;
+      temp_weight = trigTable[m << (bVar8 & 0x1f)].real;
+      local_90 = trigTable[m + 1 << (bVar8 & 0x1f)].real;
+      local_8c = trigTable[m + 2 << (bVar8 & 0x1f)].real;
+      local_88 = trigTable[m + 3 << (bVar8 & 0x1f)].real;
+      local_84 = trigTable[m << (bVar8 & 0x1f)].imag;
+      local_80 = trigTable[m + 1 << (bVar8 & 0x1f)].imag;
+      local_7c = trigTable[m + 2 << (bVar8 & 0x1f)].imag;
+      local_78 = trigTable[m + 3 << (bVar8 & 0x1f)].imag;
+      weight = trigTable[m << (bVar8 & 0x1f)].real;
+      local_4c = trigTable[m + 1 << (bVar8 & 0x1f)].real;
+      local_48 = trigTable[m + 2 << (bVar8 & 0x1f)].real;
+      local_44 = trigTable[m + 3 << (bVar8 & 0x1f)].real;
+      local_40 = trigTable[m << (bVar8 & 0x1f)].imag;
+      local_3c = trigTable[m + 1 << (bVar8 & 0x1f)].imag;
+      local_38 = trigTable[m + 2 << (bVar8 & 0x1f)].imag;
+      local_34 = trigTable[m + 3 << (bVar8 & 0x1f)].imag;
+      for (i = m; i < count; i = i + step) {
+        k = i >> 2;
+        uVar9 = i + mmax >> 2;
+        data_vec = afStack_8bc[uVar9 * 8];
+        local_28 = afStack_8bc[uVar9 * 8 + 1];
+        local_24 = afStack_8bc[uVar9 * 8 + 2];
+        local_20 = afStack_8bc[uVar9 * 8 + 3];
+        local_1c = afStack_8bc[uVar9 * 8 + 4];
+        local_18 = afStack_8bc[uVar9 * 8 + 5];
+        local_14 = afStack_8bc[uVar9 * 8 + 6];
+        local_10 = afStack_8bc[uVar9 * 8 + 7];
+        product = weight * data_vec - local_40 * local_1c;
         local_b8 = local_4c * local_28 - local_3c * local_18;
         local_b4 = local_48 * local_24 - local_38 * local_14;
         local_b0 = local_44 * local_20 - local_34 * local_10;
-        local_74 = local_50 * local_1c;
+        temp = weight * local_1c;
         local_70 = local_4c * local_18;
         local_6c = local_48 * local_14;
         local_68 = local_44 * local_10;
-        local_ac = local_50 * local_1c + local_40 * local_2c;
+        local_ac = weight * local_1c + local_40 * data_vec;
         local_a8 = local_4c * local_18 + local_3c * local_28;
         local_a4 = local_48 * local_14 + local_38 * local_24;
         local_a0 = local_44 * local_10 + local_34 * local_20;
-        fVar7 = afStack_8bc[local_8c4 * 8];
-        local_2c = fVar7;
-        local_28 = afStack_8bc[local_8c4 * 8 + 1];
-        local_24 = afStack_8bc[local_8c4 * 8 + 2];
-        local_20 = afStack_8bc[local_8c4 * 8 + 3];
-        local_1c = afStack_8bc[local_8c4 * 8 + 4];
-        local_18 = afStack_8bc[local_8c4 * 8 + 5];
-        local_14 = afStack_8bc[local_8c4 * 8 + 6];
-        local_10 = afStack_8bc[local_8c4 * 8 + 7];
-        local_74 = fVar7 - local_bc;
+        fVar4 = afStack_8bc[k * 8];
+        data_vec = fVar4;
+        local_28 = afStack_8bc[k * 8 + 1];
+        local_24 = afStack_8bc[k * 8 + 2];
+        local_20 = afStack_8bc[k * 8 + 3];
+        local_1c = afStack_8bc[k * 8 + 4];
+        local_18 = afStack_8bc[k * 8 + 5];
+        local_14 = afStack_8bc[k * 8 + 6];
+        local_10 = afStack_8bc[k * 8 + 7];
+        temp = fVar4 - product;
         local_70 = local_28 - local_b8;
         local_6c = local_24 - local_b4;
         local_68 = local_20 - local_b0;
@@ -227,7 +227,7 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
         local_60 = local_18 - local_a8;
         local_5c = local_14 - local_a4;
         local_58 = local_10 - local_a0;
-        local_2c = fVar7 + local_bc;
+        data_vec = fVar4 + product;
         local_28 = local_28 + local_b8;
         local_24 = local_24 + local_b4;
         local_20 = local_20 + local_b0;
@@ -235,37 +235,37 @@ void __cdecl FFT(complex_s *param_1,ulong param_2,int *param_3,complex_s *param_
         local_18 = local_18 + local_a8;
         local_14 = local_14 + local_a4;
         local_10 = local_10 + local_a0;
-        afStack_8bc[uVar10 * 8] = fVar7 - local_bc;
-        afStack_8bc[uVar10 * 8 + 1] = local_70;
-        afStack_8bc[uVar10 * 8 + 2] = local_6c;
-        afStack_8bc[uVar10 * 8 + 3] = local_68;
-        afStack_8bc[uVar10 * 8 + 4] = local_64;
-        afStack_8bc[uVar10 * 8 + 5] = local_60;
-        afStack_8bc[uVar10 * 8 + 6] = local_5c;
-        afStack_8bc[uVar10 * 8 + 7] = local_58;
-        afStack_8bc[local_8c4 * 8] = local_2c;
-        afStack_8bc[local_8c4 * 8 + 1] = local_28;
-        afStack_8bc[local_8c4 * 8 + 2] = local_24;
-        afStack_8bc[local_8c4 * 8 + 3] = local_20;
-        afStack_8bc[local_8c4 * 8 + 4] = local_1c;
-        afStack_8bc[local_8c4 * 8 + 5] = local_18;
-        afStack_8bc[local_8c4 * 8 + 6] = local_14;
-        afStack_8bc[local_8c4 * 8 + 7] = local_10;
+        afStack_8bc[uVar9 * 8] = fVar4 - product;
+        afStack_8bc[uVar9 * 8 + 1] = local_70;
+        afStack_8bc[uVar9 * 8 + 2] = local_6c;
+        afStack_8bc[uVar9 * 8 + 3] = local_68;
+        afStack_8bc[uVar9 * 8 + 4] = local_64;
+        afStack_8bc[uVar9 * 8 + 5] = local_60;
+        afStack_8bc[uVar9 * 8 + 6] = local_5c;
+        afStack_8bc[uVar9 * 8 + 7] = local_58;
+        afStack_8bc[k * 8] = data_vec;
+        afStack_8bc[k * 8 + 1] = local_28;
+        afStack_8bc[k * 8 + 2] = local_24;
+        afStack_8bc[k * 8 + 3] = local_20;
+        afStack_8bc[k * 8 + 4] = local_1c;
+        afStack_8bc[k * 8 + 5] = local_18;
+        afStack_8bc[k * 8 + 6] = local_14;
+        afStack_8bc[k * 8 + 7] = local_10;
       }
     }
-    local_54 = local_54 + -1;
-    local_8c0 = local_98;
+    bitshave = bitshave - 1;
+    mmax = step;
   }
-  for (local_30 = 0; local_30 < local_8; local_30 = local_30 + 4) {
-    local_8c4 = local_30 >> 2;
-    param_1[local_30].real = afStack_8bc[local_8c4 * 8];
-    param_1[local_30].imag = afStack_8bc[local_8c4 * 8 + 4];
-    param_1[local_30 + 1].real = afStack_8bc[local_8c4 * 8 + 1];
-    param_1[local_30 + 1].imag = afStack_8bc[local_8c4 * 8 + 5];
-    param_1[local_30 + 2].real = afStack_8bc[local_8c4 * 8 + 2];
-    param_1[local_30 + 2].imag = afStack_8bc[local_8c4 * 8 + 6];
-    param_1[local_30 + 3].real = afStack_8bc[local_8c4 * 8 + 3];
-    param_1[local_30 + 3].imag = afStack_8bc[local_8c4 * 8 + 7];
+  for (i = 0; i < count; i = i + 4) {
+    k = i >> 2;
+    data_inout[i].real = afStack_8bc[k * 8];
+    data_inout[i].imag = afStack_8bc[k * 8 + 4];
+    data_inout[i + 1].real = afStack_8bc[k * 8 + 1];
+    data_inout[i + 1].imag = afStack_8bc[k * 8 + 5];
+    data_inout[i + 2].real = afStack_8bc[k * 8 + 2];
+    data_inout[i + 2].imag = afStack_8bc[k * 8 + 6];
+    data_inout[i + 3].real = afStack_8bc[k * 8 + 3];
+    data_inout[i + 3].imag = afStack_8bc[k * 8 + 7];
   }
   return;
 }

@@ -2,26 +2,28 @@
 
 // 00B33090  R_AssignSModelCacheIndex  (gfx_d3d/r_staticmodelcache_load_obj.cpp:39)
 
-uchar __cdecl R_AssignSModelCacheIndex(uint param_1,uint param_2,uint *param_3)
+uchar __cdecl R_AssignSModelCacheIndex(uint smcAllocBits,uint maxEntryCount,uint *smcUseCount)
 
 {
-  uint local_c;
-  uint local_8;
+  uint usedCount;
+  uint leastUsedCache;
+  uint cacheIter;
   
-  local_c = 0;
-  for (local_8 = 1; local_8 < 4; local_8 = local_8 + 1) {
-    if (param_3[local_8] < param_3[local_c]) {
-      local_c = local_8;
+  leastUsedCache = 0;
+  for (cacheIter = 1; cacheIter < 4; cacheIter = cacheIter + 1) {
+    if (smcUseCount[cacheIter] < smcUseCount[leastUsedCache]) {
+      leastUsedCache = cacheIter;
     }
   }
-  param_3[local_c] = param_3[local_c] + (param_2 << ((byte)param_1 & 0x1f));
-  return (uchar)local_c;
+  smcUseCount[leastUsedCache] =
+       smcUseCount[leastUsedCache] + (maxEntryCount << ((byte)smcAllocBits & 0x1f));
+  return (uchar)leastUsedCache;
 }
 
 
 // 00B33490  R_GetSModelCacheAllocBits  (gfx_d3d/r_staticmodelcache_load_obj.cpp:64)
 
-uint __cdecl R_GetSModelCacheAllocBits(XModel *param_1,uint param_2)
+uint __cdecl R_GetSModelCacheAllocBits(XModel *model,uint lod)
 
 {
   uint uVar1;
@@ -29,24 +31,28 @@ uint __cdecl R_GetSModelCacheAllocBits(XModel *param_1,uint param_2)
   uint uVar3;
   uint local_38;
   int local_34;
-  int local_1c;
-  uint local_14;
-  int local_10;
-  XSurface *local_c [2];
+  uint minBitsNeeded;
+  uint surfCount;
+  uint triCount;
+  uint indexCount;
+  uint surfIter;
+  uint vertCount;
+  XSurface *surfs;
+  uint minPoolSize;
   
-  uVar1 = XModelGetSurfCount(param_1,param_2);
-  XModelGetSurfaces(param_1,local_c,param_2);
-  local_1c = 0;
-  local_10 = 0;
-  for (local_14 = 0; local_14 < uVar1; local_14 = local_14 + 1) {
-    iVar2 = XSurfaceGetNumVerts(local_c[0] + local_14);
-    local_10 = iVar2 + local_10;
-    iVar2 = XSurfaceGetNumTris(local_c[0] + local_14);
-    local_1c = iVar2 + local_1c;
+  uVar1 = XModelGetSurfCount(model,lod);
+  XModelGetSurfaces(model,&surfs,lod);
+  triCount = 0;
+  vertCount = 0;
+  for (surfIter = 0; surfIter < uVar1; surfIter = surfIter + 1) {
+    iVar2 = XSurfaceGetNumVerts(surfs + surfIter);
+    vertCount = iVar2 + vertCount;
+    iVar2 = XSurfaceGetNumTris(surfs + surfIter);
+    triCount = iVar2 + triCount;
   }
-  local_34 = local_1c * 3;
-  if (local_34 <= local_10 << 2) {
-    local_34 = local_10 << 2;
+  local_34 = triCount * 3;
+  if (local_34 <= (int)(vertCount << 2)) {
+    local_34 = vertCount << 2;
   }
   uVar3 = ((int)(local_34 + 3 + (local_34 + 3 >> 0x1f & 3U)) >> 2) - 1;
   uVar1 = 0x1f;
@@ -67,24 +73,24 @@ uint __cdecl R_GetSModelCacheAllocBits(XModel *param_1,uint param_2)
 
 // 00B33100  R_CompareSModelStats_Score  (gfx_d3d/r_staticmodelcache_load_obj.cpp:97)
 
-bool __cdecl R_CompareSModelStats_Score(GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2)
+bool __cdecl R_CompareSModelStats_Score(GfxSModelSurfStats *s0,GfxSModelSurfStats *s1)
 
 {
-  return param_2->useCount << ((byte)param_1->smcAllocBits & 0x1f) <
-         param_1->useCount << ((byte)param_2->smcAllocBits & 0x1f);
+  return s1->useCount << ((byte)s0->smcAllocBits & 0x1f) <
+         s0->useCount << ((byte)s1->smcAllocBits & 0x1f);
 }
 
 
 // 00B33130  R_GetEntryCount  (gfx_d3d/r_staticmodelcache_load_obj.cpp:102)
 
-uint __cdecl R_GetEntryCount(GfxSModelSurfStats *param_1)
+uint __cdecl R_GetEntryCount(GfxSModelSurfStats *stats)
 
 {
   uint local_10;
   
-  local_10 = 1 << (0x10U - (char)param_1->smcAllocBits & 0x1f);
-  if ((int)param_1->useCount <= (int)local_10) {
-    local_10 = param_1->useCount;
+  local_10 = 1 << (0x10U - (char)stats->smcAllocBits & 0x1f);
+  if ((int)stats->useCount <= (int)local_10) {
+    local_10 = stats->useCount;
   }
   return local_10;
 }
@@ -94,8 +100,8 @@ uint __cdecl R_GetEntryCount(GfxSModelSurfStats *param_1)
 
 uint __cdecl
 R_MaxModelsInDistRange
-          (GfxStaticModelDrawInst **param_1,uint param_2,float *param_3,float *param_4,float param_5
-          ,float param_6)
+          (GfxStaticModelDrawInst **drawInstArray,uint drawInstCount,float *mins,float *maxs,
+          float distMin,float distMax)
 
 {
   float fVar1;
@@ -104,51 +110,56 @@ R_MaxModelsInDistRange
   float fVar4;
   float fVar5;
   float fVar6;
-  float *pfVar7;
+  float *point;
   uint local_54;
-  uint local_40;
-  uint local_3c;
-  uint local_2c;
-  uint local_28;
-  uint local_20;
-  float local_c;
+  uint maxModelsInRange;
+  uint drawInstCutoff;
+  float distMinSq;
+  uint modelsInRange;
+  uint drawInstIter;
+  uint dartCount;
+  uint dartIndex;
+  float distMaxSq;
+  float distSq;
+  float testPos;
   float local_8;
   
-  fVar3 = (*param_3 + *param_4) * 0.5;
-  fVar4 = (param_3[1] + param_4[1]) * 0.5;
-  fVar1 = *param_3;
-  fVar2 = param_3[1];
-  local_40 = 0;
-  local_54 = param_2 >> 2;
+  fVar3 = (*mins + *maxs) * 0.5;
+  fVar4 = (mins[1] + maxs[1]) * 0.5;
+  fVar1 = *mins;
+  fVar2 = mins[1];
+  maxModelsInRange = 0;
+  local_54 = drawInstCount >> 2;
   if (local_54 < 0x65) {
     local_54 = 100;
   }
-  local_20 = 0;
+  dartIndex = 0;
   while( true ) {
-    if (local_54 <= local_20) {
-      return local_40;
+    if (local_54 <= dartIndex) {
+      return maxModelsInRange;
     }
-    pfVar7 = &local_c;
+    point = &testPos;
     fVar5 = random();
     fVar6 = random();
-    PointInCircleFromUniformDeviates(fVar6,fVar5,pfVar7);
-    local_c = local_c * (fVar3 - fVar1) + fVar3;
+    PointInCircleFromUniformDeviates(fVar6,fVar5,point);
+    testPos = testPos * (fVar3 - fVar1) + fVar3;
     local_8 = local_8 * (fVar4 - fVar2) + fVar4;
-    local_2c = 0;
-    local_3c = param_2 - local_40;
-    for (local_28 = 0; local_28 < local_3c; local_28 = local_28 + 1) {
-      fVar5 = (param_1[local_28]->placement).origin[0] - local_c;
-      fVar6 = (param_1[local_28]->placement).origin[1] - local_8;
+    modelsInRange = 0;
+    drawInstCutoff = drawInstCount - maxModelsInRange;
+    for (drawInstIter = 0; drawInstIter < drawInstCutoff; drawInstIter = drawInstIter + 1) {
+      fVar5 = (drawInstArray[drawInstIter]->placement).origin[0] - testPos;
+      fVar6 = (drawInstArray[drawInstIter]->placement).origin[1] - local_8;
       fVar5 = fVar5 * fVar5 + fVar6 * fVar6;
-      if (((param_5 * param_5 < fVar5) && (fVar5 < param_6 * param_6)) &&
-         (local_2c = local_2c + 1, local_3c < param_2)) {
-        local_3c = local_3c + 1;
+      if (((distMin * distMin < fVar5) && (fVar5 < distMax * distMax)) &&
+         (modelsInRange = modelsInRange + 1, drawInstCutoff < drawInstCount)) {
+        drawInstCutoff = drawInstCutoff + 1;
       }
     }
-    if ((local_40 < local_2c) && (local_40 = local_2c, local_2c == param_2)) break;
-    local_20 = local_20 + 1;
+    if ((maxModelsInRange < modelsInRange) &&
+       (maxModelsInRange = modelsInRange, modelsInRange == drawInstCount)) break;
+    dartIndex = dartIndex + 1;
   }
-  return local_2c;
+  return modelsInRange;
 }
 
 
@@ -156,74 +167,77 @@ R_MaxModelsInDistRange
 
 uint __cdecl
 R_AddSModelListStats
-          (GfxStaticModelDrawInst **param_1,uint param_2,GfxSModelSurfStats *param_3,uint param_4,
-          uint param_5)
+          (GfxStaticModelDrawInst **drawInstArray,uint drawInstCount,GfxSModelSurfStats *stats,
+          uint statsCount,uint statsLimit)
 
 {
-  XModel *pXVar1;
-  uint local_34;
-  float local_2c [2];
-  float local_24;
-  uint local_20;
-  float local_1c [2];
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  float local_8;
+  XModel *model_00;
+  uint lodIter;
+  XModel *model;
+  float mins [2];
+  float prevLodDist;
+  uint lodCount;
+  float maxs [2];
+  uint drawInstIter;
+  uint useCount;
+  uint smcAllocBits;
+  float lodDist;
   
-  if (0xf < param_2) {
-    pXVar1 = (*param_1)->model;
-    local_20 = XModelGetNumLods(pXVar1);
-    if (param_4 + local_20 <= param_5) {
-      ClearBounds2D(local_2c,local_1c);
-      for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-        AddPointToBounds2D((param_1[local_14]->placement).origin,local_2c,local_1c);
+  if (0xf < drawInstCount) {
+    model_00 = (*drawInstArray)->model;
+    lodCount = XModelGetNumLods(model_00);
+    if (statsCount + lodCount <= statsLimit) {
+      ClearBounds2D(mins,maxs);
+      for (drawInstIter = 0; drawInstIter < drawInstCount; drawInstIter = drawInstIter + 1) {
+        AddPointToBounds2D((drawInstArray[drawInstIter]->placement).origin,mins,maxs);
       }
-      local_24 = 0.0;
-      for (local_34 = 0; local_34 < local_20; local_34 = local_34 + 1) {
-        local_8 = XModelGetLodDist(pXVar1,local_34);
-        local_c = R_GetSModelCacheAllocBits(pXVar1,local_34);
-        if ((local_c < 10) &&
-           (local_10 = R_MaxModelsInDistRange(param_1,param_2,local_2c,local_1c,local_24,local_8),
-           0xf < local_10)) {
-          param_3[param_4].model = pXVar1;
-          param_3[param_4].lod = local_34;
-          param_3[param_4].useCount = local_10;
-          param_3[param_4].smcAllocBits = local_c;
-          param_4 = param_4 + 1;
+      prevLodDist = 0.0;
+      for (lodIter = 0; lodIter < lodCount; lodIter = lodIter + 1) {
+        lodDist = XModelGetLodDist(model_00,lodIter);
+        smcAllocBits = R_GetSModelCacheAllocBits(model_00,lodIter);
+        if ((smcAllocBits < 10) &&
+           (useCount = R_MaxModelsInDistRange
+                                 (drawInstArray,drawInstCount,mins,maxs,prevLodDist,lodDist),
+           0xf < useCount)) {
+          stats[statsCount].model = model_00;
+          stats[statsCount].lod = lodIter;
+          stats[statsCount].useCount = useCount;
+          stats[statsCount].smcAllocBits = smcAllocBits;
+          statsCount = statsCount + 1;
         }
-        local_24 = local_8;
+        prevLodDist = lodDist;
       }
     }
   }
-  return param_4;
+  return statsCount;
 }
 
 
 // 00B33790  R_CompareSModels_Model  (gfx_d3d/r_staticmodelcache_load_obj.cpp:251)
 
-bool __cdecl R_CompareSModels_Model(GfxStaticModelDrawInst *param_1,GfxStaticModelDrawInst *param_2)
+bool __cdecl R_CompareSModels_Model(GfxStaticModelDrawInst *s0,GfxStaticModelDrawInst *s1)
 
 {
-  return param_1->model < param_2->model;
+  return s0->model < s1->model;
 }
 
 
 // 00B33180  R_OptimalSModelResourceStats  (gfx_d3d/r_staticmodelcache_load_obj.cpp:261)
 
-uint __cdecl
-R_OptimalSModelResourceStats(GfxWorld *param_1,GfxSModelSurfStats *param_2,uint param_3)
+uint __cdecl R_OptimalSModelResourceStats(GfxWorld *world,GfxSModelSurfStats *stats,uint statLimit)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  dvar_s **ppdVar4;
-  uint local_14;
-  uint local_c;
-  uint local_8;
+  dvar_s **_First_4;
+  GfxStaticModelDrawInst **drawInstArray;
+  uint smodelIter;
+  uint smodelCount;
+  uint smodelIterNext;
+  uint statCount;
   
-  if (param_1 == (GfxWorld *)0x0) {
+  if (world == (GfxWorld *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache_load_obj.cpp"
                              ,0x10c,0,"%s");
     if (!bVar2) {
@@ -232,35 +246,36 @@ R_OptimalSModelResourceStats(GfxWorld *param_1,GfxSModelSurfStats *param_2,uint 
       return uVar3;
     }
   }
-  if ((param_1->dpvs).smodelCount == 0) {
-    local_8 = 0;
+  if ((world->dpvs).smodelCount == 0) {
+    statCount = 0;
   }
   else {
-    ppdVar4 = Hunk_AllocateTempMemory
-                        ((param_1->dpvs).smodelCount << 2,"R_AssignSModelCacheResources");
-    for (local_14 = 0; local_14 != (param_1->dpvs).smodelCount; local_14 = local_14 + 1) {
-      ppdVar4[local_14] = (dvar_s *)((param_1->dpvs).smodelDrawInsts + local_14);
+    _First_4 = Hunk_AllocateTempMemory
+                         ((world->dpvs).smodelCount << 2,"R_AssignSModelCacheResources");
+    for (smodelIter = 0; smodelIter != (world->dpvs).smodelCount; smodelIter = smodelIter + 1) {
+      _First_4[smodelIter] = (dvar_s *)((world->dpvs).smodelDrawInsts + smodelIter);
     }
     std::_Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-              (ppdVar4,ppdVar4 + (param_1->dpvs).smodelCount,
-               (int)(ppdVar4 + (param_1->dpvs).smodelCount) - (int)ppdVar4 >> 2,
+              (_First_4,_First_4 + (world->dpvs).smodelCount,
+               (int)(_First_4 + (world->dpvs).smodelCount) - (int)_First_4 >> 2,
                R_CompareSModels_Model);
-    local_8 = 0;
-    local_14 = 0;
-    while (local_14 != (param_1->dpvs).smodelCount) {
-      local_c = local_14;
-      while ((local_c != (param_1->dpvs).smodelCount &&
-             ((ppdVar4[local_c]->reset).integer == (ppdVar4[local_14]->reset).integer))) {
-        local_c = local_c + 1;
+    statCount = 0;
+    smodelIter = 0;
+    while (smodelIter != (world->dpvs).smodelCount) {
+      smodelIterNext = smodelIter;
+      while ((smodelIterNext != (world->dpvs).smodelCount &&
+             ((_First_4[smodelIterNext]->reset).integer == (_First_4[smodelIter]->reset).integer)))
+      {
+        smodelIterNext = smodelIterNext + 1;
       }
-      local_8 = R_AddSModelListStats
-                          ((GfxStaticModelDrawInst **)(ppdVar4 + local_14),local_c - local_14,
-                           param_2,local_8,param_3);
-      local_14 = local_c;
+      statCount = R_AddSModelListStats
+                            ((GfxStaticModelDrawInst **)(_First_4 + smodelIter),
+                             smodelIterNext - smodelIter,stats,statCount,statLimit);
+      smodelIter = smodelIterNext;
     }
-    Hunk_FreeTempMemory(ppdVar4);
+    Hunk_FreeTempMemory(_First_4);
   }
-  return local_8;
+  return statCount;
 }
 
 
@@ -268,44 +283,47 @@ R_OptimalSModelResourceStats(GfxWorld *param_1,GfxSModelSurfStats *param_2,uint 
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
+void __cdecl R_AssignSModelCacheResources(GfxWorld *world)
 
 {
-  XModel *pXVar1;
-  code *pcVar2;
-  bool bVar3;
-  byte bVar4;
-  uint local_2028 [5];
-  GfxSModelSurfStats local_2014 [512];
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  XModel *model_00;
+  code *pcVar1;
+  bool bVar2;
+  byte bVar3;
+  uchar smcIndex;
+  XModel *model;
+  uint smcUseCount [4];
+  uint lod;
+  GfxSModelSurfStats stats [512];
+  uint entryCount;
+  uint statCount;
+  uint statIter;
   
-  local_8 = 0xb32f1d;
-  if (param_1 == (GfxWorld *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache_load_obj.cpp"
+  statIter = 0xb32f1d;
+  if (world == (GfxWorld *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache_load_obj.cpp"
                              ,0x148,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_2028[0] = 0;
-  local_2028[1] = 0;
-  local_2028[2] = 0;
-  local_2028[3] = 0;
-  local_c = R_OptimalSModelResourceStats(param_1,local_2014,0x200);
+  smcUseCount[0] = 0;
+  smcUseCount[1] = 0;
+  smcUseCount[2] = 0;
+  smcUseCount[3] = 0;
+  statCount = R_OptimalSModelResourceStats(world,stats,0x200);
   std::
   _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-            ((DBReorderAssetEntry *)local_2014,(DBReorderAssetEntry *)(local_2014 + local_c),
-             (int)(local_2014 + local_c) - (int)local_2014 >> 4,R_CompareSModelStats_Score);
-  for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-    pXVar1 = local_2014[local_8].model;
-    local_2028[4] = local_2014[local_8].lod;
-    local_10 = R_GetEntryCount(local_2014 + local_8);
-    bVar4 = R_AssignSModelCacheIndex(local_2014[local_8].smcAllocBits,local_10,local_2028);
-    XModelSetSModelCacheForLod(pXVar1,local_2028[4],(uint)bVar4,local_2014[local_8].smcAllocBits);
+            ((DBReorderAssetEntry *)stats,(DBReorderAssetEntry *)(stats + statCount),
+             (int)(stats + statCount) - (int)stats >> 4,R_CompareSModelStats_Score);
+  for (statIter = 0; statIter < statCount; statIter = statIter + 1) {
+    model_00 = stats[statIter].model;
+    lod = stats[statIter].lod;
+    entryCount = R_GetEntryCount(stats + statIter);
+    bVar3 = R_AssignSModelCacheIndex(stats[statIter].smcAllocBits,entryCount,smcUseCount);
+    XModelSetSModelCacheForLod(model_00,lod,(uint)bVar3,stats[statIter].smcAllocBits);
   }
   return;
 }
@@ -316,8 +334,8 @@ void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
 void __cdecl
 std::
 _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,int param_2,int param_3,DBReorderAssetEntry param_4,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_5)
+          (DBReorderAssetEntry *_First_2,int _Hole_2,int _Bottom_2,DBReorderAssetEntry _Val_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2)
 
 {
   bool bVar1;
@@ -326,49 +344,49 @@ _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReo
   DBReorderAssetEntry local_24;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int _Idx_2;
+  int _Top_2;
   
-  local_8 = param_2;
-  while (local_c = param_2 * 2 + 2, local_c < param_3) {
-    bVar1 = (*param_5)(param_1 + local_c,param_1 + param_2 * 2 + 1);
+  _Top_2 = _Hole_2;
+  while (_Idx_2 = _Hole_2 * 2 + 2, _Idx_2 < _Bottom_2) {
+    bVar1 = (*_Pred_2)(_First_2 + _Idx_2,_First_2 + _Hole_2 * 2 + 1);
     if (bVar1) {
-      local_c = local_c + -1;
+      _Idx_2 = _Idx_2 + -1;
     }
-    pDVar2 = param_1 + local_c;
-    pDVar3 = param_1 + param_2;
+    pDVar2 = _First_2 + _Idx_2;
+    pDVar3 = _First_2 + _Hole_2;
     pDVar3->sequence = pDVar2->sequence;
     pDVar3->type = pDVar2->type;
     pDVar3->typeString = pDVar2->typeString;
     pDVar3->assetName = pDVar2->assetName;
-    param_2 = local_c;
+    _Hole_2 = _Idx_2;
   }
-  if (local_c == param_3) {
-    pDVar2 = param_1 + param_3 + -1;
-    pDVar3 = param_1 + param_2;
+  if (_Idx_2 == _Bottom_2) {
+    pDVar2 = _First_2 + _Bottom_2 + -1;
+    pDVar3 = _First_2 + _Hole_2;
     pDVar3->sequence = pDVar2->sequence;
     pDVar3->type = pDVar2->type;
     pDVar3->typeString = pDVar2->typeString;
     pDVar3->assetName = pDVar2->assetName;
-    param_2 = param_3 + -1;
+    _Hole_2 = _Bottom_2 + -1;
   }
-  local_24.sequence = param_4.sequence;
-  local_24.type = param_4.type;
-  local_24.typeString = param_4.typeString;
-  local_24.assetName = param_4.assetName;
-  local_14 = param_2;
-  while (local_10 = (local_14 + -1) / 2, local_8 < local_14) {
-    bVar1 = (*param_5)(param_1 + local_10,&local_24);
+  local_24.sequence = _Val_2.sequence;
+  local_24.type = _Val_2.type;
+  local_24.typeString = _Val_2.typeString;
+  local_24.assetName = _Val_2.assetName;
+  local_14 = _Hole_2;
+  while (local_10 = (local_14 + -1) / 2, _Top_2 < local_14) {
+    bVar1 = (*_Pred_2)(_First_2 + local_10,&local_24);
     if (!bVar1) break;
-    pDVar2 = param_1 + local_10;
-    pDVar3 = param_1 + local_14;
+    pDVar2 = _First_2 + local_10;
+    pDVar3 = _First_2 + local_14;
     pDVar3->sequence = pDVar2->sequence;
     pDVar3->type = pDVar2->type;
     pDVar3->typeString = pDVar2->typeString;
     pDVar3->assetName = pDVar2->assetName;
     local_14 = local_10;
   }
-  pDVar2 = param_1 + local_14;
+  pDVar2 = _First_2 + local_14;
   pDVar2->sequence = local_24.sequence;
   pDVar2->type = local_24.type;
   pDVar2->typeString = local_24.typeString;
@@ -382,20 +400,20 @@ _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReo
 void __cdecl
 std::
 make_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_3)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Last_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2)
 
 {
-  int iVar1;
+  int _Bottom_2;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 4) {
-    iVar1 = (int)param_2 - (int)param_1 >> 4;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last_2 - (int)_First_2 >> 4) {
+    _Bottom_2 = (int)_Last_2 - (int)_First_2 >> 4;
+    local_18 = _Bottom_2 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First_2,local_18,_Bottom_2,_First_2[local_18],_Pred_2);
     }
   }
   return;
@@ -407,21 +425,21 @@ make_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBRe
 void __cdecl
 std::
 _Sort_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_3)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Last_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2)
 
 {
-  DBReorderAssetEntry DVar1;
+  DBReorderAssetEntry _Val_2;
   
-  for (; 1 < (int)param_2 - (int)param_1 >> 4; param_2 = param_2 + -1) {
-    if (1 < (int)param_2 - (int)param_1 >> 4) {
-      DVar1 = param_2[-1];
-      param_2[-1].sequence = param_1->sequence;
-      param_2[-1].type = param_1->type;
-      param_2[-1].typeString = param_1->typeString;
-      param_2[-1].assetName = param_1->assetName;
+  for (; 1 < (int)_Last_2 - (int)_First_2 >> 4; _Last_2 = _Last_2 + -1) {
+    if (1 < (int)_Last_2 - (int)_First_2 >> 4) {
+      _Val_2 = _Last_2[-1];
+      _Last_2[-1].sequence = _First_2->sequence;
+      _Last_2[-1].type = _First_2->type;
+      _Last_2[-1].typeString = _First_2->typeString;
+      _Last_2[-1].assetName = _First_2->assetName;
       _Adjust_heap<DBReorderAssetEntry_*,int,DBReorderAssetEntry,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-                (param_1,0,(int)param_2 + (-0x10 - (int)param_1) >> 4,DVar1,param_3);
+                (_First_2,0,(int)_Last_2 + (-0x10 - (int)_First_2) >> 4,_Val_2,_Pred_2);
     }
   }
   return;
@@ -433,52 +451,53 @@ _Sort_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBR
 void __cdecl
 std::
 _Insertion_sort1<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&),DBReorderAssetEntry>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_3,
-          DBReorderAssetEntry *param_4)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Last_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2,
+          DBReorderAssetEntry *__formal_2)
 
 {
-  DBReorderAssetEntry *pDVar1;
+  GfxSModelSurfStats *pGVar1;
   bool bVar2;
-  DBReorderAssetEntry *pDVar3;
-  DBReorderAssetEntry local_1c;
-  DBReorderAssetEntry *local_c;
-  DBReorderAssetEntry *local_8;
+  GfxSModelSurfStats *pGVar3;
+  GfxSModelSurfStats *_First1_2;
+  DBReorderAssetEntry _Val_2;
+  GfxSModelSurfStats *_Next1_2;
+  GfxSModelSurfStats *_Next_2;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (local_c = local_8 + 1, local_c != param_2) {
-      local_1c.sequence = local_c->sequence;
-      local_1c.type = local_8[1].type;
-      local_1c.typeString = local_8[1].typeString;
-      local_1c.assetName = local_8[1].assetName;
-      local_8 = local_c;
-      bVar2 = (*param_3)(&local_1c,param_1);
+  if (_First_2 != _Last_2) {
+    _Next_2 = (GfxSModelSurfStats *)_First_2;
+    while (_Next1_2 = _Next_2 + 1, _Next1_2 != (GfxSModelSurfStats *)_Last_2) {
+      _Val_2.sequence = (uint)_Next1_2->model;
+      _Val_2.type = _Next_2[1].lod;
+      _Val_2.typeString = (char *)_Next_2[1].smcAllocBits;
+      _Val_2.assetName = (char *)_Next_2[1].useCount;
+      _Next_2 = _Next1_2;
+      bVar2 = (*_Pred_2)(&_Val_2,_First_2);
       if (bVar2) {
-        local_c = local_c + 1;
+        _Next1_2 = _Next1_2 + 1;
         stdext::unchecked_copy_backward<DBReorderAssetEntry_*,DBReorderAssetEntry_*>
-                  (param_1,local_8,local_c);
-        param_1->sequence = local_1c.sequence;
-        param_1->type = local_1c.type;
-        param_1->typeString = local_1c.typeString;
-        param_1->assetName = local_1c.assetName;
+                  (_First_2,(DBReorderAssetEntry *)_Next_2,(DBReorderAssetEntry *)_Next1_2);
+        _First_2->sequence = _Val_2.sequence;
+        _First_2->type = _Val_2.type;
+        _First_2->typeString = _Val_2.typeString;
+        _First_2->assetName = _Val_2.assetName;
       }
       else {
         while( true ) {
-          pDVar1 = local_c;
-          pDVar3 = local_c + -1;
-          bVar2 = (*param_3)(&local_1c,pDVar3);
+          pGVar1 = _Next1_2;
+          pGVar3 = _Next1_2 + -1;
+          bVar2 = (*_Pred_2)(&_Val_2,(DBReorderAssetEntry *)pGVar3);
           if (!bVar2) break;
-          local_c->sequence = pDVar3->sequence;
-          local_c->type = pDVar1[-1].type;
-          local_c->typeString = pDVar1[-1].typeString;
-          local_c->assetName = pDVar1[-1].assetName;
-          local_c = pDVar3;
+          _Next1_2->model = pGVar3->model;
+          _Next1_2->lod = pGVar1[-1].lod;
+          _Next1_2->smcAllocBits = pGVar1[-1].smcAllocBits;
+          _Next1_2->useCount = pGVar1[-1].useCount;
+          _Next1_2 = pGVar3;
         }
-        local_c->sequence = local_1c.sequence;
-        local_c->type = local_1c.type;
-        local_c->typeString = local_1c.typeString;
-        local_c->assetName = local_1c.assetName;
+        _Next1_2->model = (XModel *)_Val_2.sequence;
+        _Next1_2->lod = _Val_2.type;
+        _Next1_2->smcAllocBits = (uint)_Val_2.typeString;
+        _Next1_2->useCount = (uint)_Val_2.assetName;
       }
     }
   }
@@ -491,8 +510,8 @@ _Insertion_sort1<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const
 void __cdecl
 std::
 _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,DBReorderAssetEntry *param_3,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_4)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Mid_2,DBReorderAssetEntry *_Last_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2)
 
 {
   uint uVar1;
@@ -503,75 +522,76 @@ _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReor
   int iVar6;
   DBReorderAssetEntry *pDVar7;
   DBReorderAssetEntry *pDVar8;
+  uint _Step_2;
   
-  if ((int)param_3 - (int)param_1 >> 4 < 0x29) {
-    bVar5 = (*param_4)(param_2,param_1);
-    if ((bVar5) && (param_2 != param_1)) {
-      uVar1 = param_2->sequence;
-      iVar6 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = param_1->sequence;
-      param_2->type = param_1->type;
-      param_2->typeString = param_1->typeString;
-      param_2->assetName = param_1->assetName;
-      param_1->sequence = uVar1;
-      param_1->type = iVar6;
-      param_1->typeString = pcVar3;
-      param_1->assetName = pcVar4;
+  if ((int)_Last_2 - (int)_First_2 >> 4 < 0x29) {
+    bVar5 = (*_Pred_2)(_Mid_2,_First_2);
+    if ((bVar5) && (_Mid_2 != _First_2)) {
+      uVar1 = _Mid_2->sequence;
+      iVar6 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = _First_2->sequence;
+      _Mid_2->type = _First_2->type;
+      _Mid_2->typeString = _First_2->typeString;
+      _Mid_2->assetName = _First_2->assetName;
+      _First_2->sequence = uVar1;
+      _First_2->type = iVar6;
+      _First_2->typeString = pcVar3;
+      _First_2->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(param_3,param_2);
-    if ((bVar5) && (param_3 != param_2)) {
-      uVar1 = param_3->sequence;
-      iVar6 = param_3->type;
-      pcVar3 = param_3->typeString;
-      pcVar4 = param_3->assetName;
-      param_3->sequence = param_2->sequence;
-      param_3->type = param_2->type;
-      param_3->typeString = param_2->typeString;
-      param_3->assetName = param_2->assetName;
-      param_2->sequence = uVar1;
-      param_2->type = iVar6;
-      param_2->typeString = pcVar3;
-      param_2->assetName = pcVar4;
+    bVar5 = (*_Pred_2)(_Last_2,_Mid_2);
+    if ((bVar5) && (_Last_2 != _Mid_2)) {
+      uVar1 = _Last_2->sequence;
+      iVar6 = _Last_2->type;
+      pcVar3 = _Last_2->typeString;
+      pcVar4 = _Last_2->assetName;
+      _Last_2->sequence = _Mid_2->sequence;
+      _Last_2->type = _Mid_2->type;
+      _Last_2->typeString = _Mid_2->typeString;
+      _Last_2->assetName = _Mid_2->assetName;
+      _Mid_2->sequence = uVar1;
+      _Mid_2->type = iVar6;
+      _Mid_2->typeString = pcVar3;
+      _Mid_2->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(param_2,param_1);
-    if ((bVar5) && (param_2 != param_1)) {
-      uVar1 = param_2->sequence;
-      iVar6 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = param_1->sequence;
-      param_2->type = param_1->type;
-      param_2->typeString = param_1->typeString;
-      param_2->assetName = param_1->assetName;
-      param_1->sequence = uVar1;
-      param_1->type = iVar6;
-      param_1->typeString = pcVar3;
-      param_1->assetName = pcVar4;
+    bVar5 = (*_Pred_2)(_Mid_2,_First_2);
+    if ((bVar5) && (_Mid_2 != _First_2)) {
+      uVar1 = _Mid_2->sequence;
+      iVar6 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = _First_2->sequence;
+      _Mid_2->type = _First_2->type;
+      _Mid_2->typeString = _First_2->typeString;
+      _Mid_2->assetName = _First_2->assetName;
+      _First_2->sequence = uVar1;
+      _First_2->type = iVar6;
+      _First_2->typeString = pcVar3;
+      _First_2->assetName = pcVar4;
     }
   }
   else {
-    iVar6 = ((int)param_3 - (int)param_1 >> 4) + 1;
+    iVar6 = ((int)_Last_2 - (int)_First_2 >> 4) + 1;
     iVar6 = (int)(iVar6 + (iVar6 >> 0x1f & 7U)) >> 3;
-    pDVar7 = param_1 + iVar6 * 2;
-    pDVar8 = param_1 + iVar6;
-    bVar5 = (*param_4)(pDVar8,param_1);
-    if ((bVar5) && (pDVar8 != param_1)) {
+    pDVar7 = _First_2 + iVar6 * 2;
+    pDVar8 = _First_2 + iVar6;
+    bVar5 = (*_Pred_2)(pDVar8,_First_2);
+    if ((bVar5) && (pDVar8 != _First_2)) {
       uVar1 = pDVar8->sequence;
       iVar2 = pDVar8->type;
       pcVar3 = pDVar8->typeString;
       pcVar4 = pDVar8->assetName;
-      pDVar8->sequence = param_1->sequence;
-      pDVar8->type = param_1->type;
-      pDVar8->typeString = param_1->typeString;
-      pDVar8->assetName = param_1->assetName;
-      param_1->sequence = uVar1;
-      param_1->type = iVar2;
-      param_1->typeString = pcVar3;
-      param_1->assetName = pcVar4;
+      pDVar8->sequence = _First_2->sequence;
+      pDVar8->type = _First_2->type;
+      pDVar8->typeString = _First_2->typeString;
+      pDVar8->assetName = _First_2->assetName;
+      _First_2->sequence = uVar1;
+      _First_2->type = iVar2;
+      _First_2->typeString = pcVar3;
+      _First_2->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(pDVar7,pDVar8);
+    bVar5 = (*_Pred_2)(pDVar7,pDVar8);
     if ((bVar5) && (pDVar7 != pDVar8)) {
       uVar1 = pDVar7->sequence;
       iVar2 = pDVar7->type;
@@ -586,71 +606,71 @@ _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReor
       pDVar8->typeString = pcVar3;
       pDVar8->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(pDVar8,param_1);
-    if ((bVar5) && (pDVar8 != param_1)) {
+    bVar5 = (*_Pred_2)(pDVar8,_First_2);
+    if ((bVar5) && (pDVar8 != _First_2)) {
       uVar1 = pDVar8->sequence;
       iVar2 = pDVar8->type;
       pcVar3 = pDVar8->typeString;
       pcVar4 = pDVar8->assetName;
-      pDVar8->sequence = param_1->sequence;
-      pDVar8->type = param_1->type;
-      pDVar8->typeString = param_1->typeString;
-      pDVar8->assetName = param_1->assetName;
-      param_1->sequence = uVar1;
-      param_1->type = iVar2;
-      param_1->typeString = pcVar3;
-      param_1->assetName = pcVar4;
+      pDVar8->sequence = _First_2->sequence;
+      pDVar8->type = _First_2->type;
+      pDVar8->typeString = _First_2->typeString;
+      pDVar8->assetName = _First_2->assetName;
+      _First_2->sequence = uVar1;
+      _First_2->type = iVar2;
+      _First_2->typeString = pcVar3;
+      _First_2->assetName = pcVar4;
     }
-    pDVar7 = param_2 + iVar6;
-    pDVar8 = param_2 + -iVar6;
-    bVar5 = (*param_4)(param_2,pDVar8);
-    if ((bVar5) && (param_2 != pDVar8)) {
-      uVar1 = param_2->sequence;
-      iVar2 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = pDVar8->sequence;
-      param_2->type = pDVar8->type;
-      param_2->typeString = pDVar8->typeString;
-      param_2->assetName = pDVar8->assetName;
+    pDVar7 = _Mid_2 + iVar6;
+    pDVar8 = _Mid_2 + -iVar6;
+    bVar5 = (*_Pred_2)(_Mid_2,pDVar8);
+    if ((bVar5) && (_Mid_2 != pDVar8)) {
+      uVar1 = _Mid_2->sequence;
+      iVar2 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = pDVar8->sequence;
+      _Mid_2->type = pDVar8->type;
+      _Mid_2->typeString = pDVar8->typeString;
+      _Mid_2->assetName = pDVar8->assetName;
       pDVar8->sequence = uVar1;
       pDVar8->type = iVar2;
       pDVar8->typeString = pcVar3;
       pDVar8->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(pDVar7,param_2);
-    if ((bVar5) && (pDVar7 != param_2)) {
+    bVar5 = (*_Pred_2)(pDVar7,_Mid_2);
+    if ((bVar5) && (pDVar7 != _Mid_2)) {
       uVar1 = pDVar7->sequence;
       iVar2 = pDVar7->type;
       pcVar3 = pDVar7->typeString;
       pcVar4 = pDVar7->assetName;
-      pDVar7->sequence = param_2->sequence;
-      pDVar7->type = param_2->type;
-      pDVar7->typeString = param_2->typeString;
-      pDVar7->assetName = param_2->assetName;
-      param_2->sequence = uVar1;
-      param_2->type = iVar2;
-      param_2->typeString = pcVar3;
-      param_2->assetName = pcVar4;
+      pDVar7->sequence = _Mid_2->sequence;
+      pDVar7->type = _Mid_2->type;
+      pDVar7->typeString = _Mid_2->typeString;
+      pDVar7->assetName = _Mid_2->assetName;
+      _Mid_2->sequence = uVar1;
+      _Mid_2->type = iVar2;
+      _Mid_2->typeString = pcVar3;
+      _Mid_2->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(param_2,pDVar8);
-    if ((bVar5) && (param_2 != pDVar8)) {
-      uVar1 = param_2->sequence;
-      iVar2 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = pDVar8->sequence;
-      param_2->type = pDVar8->type;
-      param_2->typeString = pDVar8->typeString;
-      param_2->assetName = pDVar8->assetName;
+    bVar5 = (*_Pred_2)(_Mid_2,pDVar8);
+    if ((bVar5) && (_Mid_2 != pDVar8)) {
+      uVar1 = _Mid_2->sequence;
+      iVar2 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = pDVar8->sequence;
+      _Mid_2->type = pDVar8->type;
+      _Mid_2->typeString = pDVar8->typeString;
+      _Mid_2->assetName = pDVar8->assetName;
       pDVar8->sequence = uVar1;
       pDVar8->type = iVar2;
       pDVar8->typeString = pcVar3;
       pDVar8->assetName = pcVar4;
     }
-    pDVar8 = param_3 + -iVar6;
-    pDVar7 = param_3 + iVar6 * -2;
-    bVar5 = (*param_4)(pDVar8,pDVar7);
+    pDVar8 = _Last_2 + -iVar6;
+    pDVar7 = _Last_2 + iVar6 * -2;
+    bVar5 = (*_Pred_2)(pDVar8,pDVar7);
     if ((bVar5) && (pDVar8 != pDVar7)) {
       uVar1 = pDVar8->sequence;
       iVar2 = pDVar8->type;
@@ -665,22 +685,22 @@ _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReor
       pDVar7->typeString = pcVar3;
       pDVar7->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(param_3,pDVar8);
-    if ((bVar5) && (param_3 != pDVar8)) {
-      uVar1 = param_3->sequence;
-      iVar2 = param_3->type;
-      pcVar3 = param_3->typeString;
-      pcVar4 = param_3->assetName;
-      param_3->sequence = pDVar8->sequence;
-      param_3->type = pDVar8->type;
-      param_3->typeString = pDVar8->typeString;
-      param_3->assetName = pDVar8->assetName;
+    bVar5 = (*_Pred_2)(_Last_2,pDVar8);
+    if ((bVar5) && (_Last_2 != pDVar8)) {
+      uVar1 = _Last_2->sequence;
+      iVar2 = _Last_2->type;
+      pcVar3 = _Last_2->typeString;
+      pcVar4 = _Last_2->assetName;
+      _Last_2->sequence = pDVar8->sequence;
+      _Last_2->type = pDVar8->type;
+      _Last_2->typeString = pDVar8->typeString;
+      _Last_2->assetName = pDVar8->assetName;
       pDVar8->sequence = uVar1;
       pDVar8->type = iVar2;
       pDVar8->typeString = pcVar3;
       pDVar8->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(pDVar8,pDVar7);
+    bVar5 = (*_Pred_2)(pDVar8,pDVar7);
     if ((bVar5) && (pDVar8 != pDVar7)) {
       uVar1 = pDVar8->sequence;
       iVar2 = pDVar8->type;
@@ -695,48 +715,48 @@ _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReor
       pDVar7->typeString = pcVar3;
       pDVar7->assetName = pcVar4;
     }
-    pDVar8 = param_3 + -iVar6;
-    pDVar7 = param_1 + iVar6;
-    bVar5 = (*param_4)(param_2,pDVar7);
-    if ((bVar5) && (param_2 != pDVar7)) {
-      uVar1 = param_2->sequence;
-      iVar6 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = pDVar7->sequence;
-      param_2->type = pDVar7->type;
-      param_2->typeString = pDVar7->typeString;
-      param_2->assetName = pDVar7->assetName;
+    pDVar8 = _Last_2 + -iVar6;
+    pDVar7 = _First_2 + iVar6;
+    bVar5 = (*_Pred_2)(_Mid_2,pDVar7);
+    if ((bVar5) && (_Mid_2 != pDVar7)) {
+      uVar1 = _Mid_2->sequence;
+      iVar6 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = pDVar7->sequence;
+      _Mid_2->type = pDVar7->type;
+      _Mid_2->typeString = pDVar7->typeString;
+      _Mid_2->assetName = pDVar7->assetName;
       pDVar7->sequence = uVar1;
       pDVar7->type = iVar6;
       pDVar7->typeString = pcVar3;
       pDVar7->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(pDVar8,param_2);
-    if ((bVar5) && (pDVar8 != param_2)) {
+    bVar5 = (*_Pred_2)(pDVar8,_Mid_2);
+    if ((bVar5) && (pDVar8 != _Mid_2)) {
       uVar1 = pDVar8->sequence;
       iVar6 = pDVar8->type;
       pcVar3 = pDVar8->typeString;
       pcVar4 = pDVar8->assetName;
-      pDVar8->sequence = param_2->sequence;
-      pDVar8->type = param_2->type;
-      pDVar8->typeString = param_2->typeString;
-      pDVar8->assetName = param_2->assetName;
-      param_2->sequence = uVar1;
-      param_2->type = iVar6;
-      param_2->typeString = pcVar3;
-      param_2->assetName = pcVar4;
+      pDVar8->sequence = _Mid_2->sequence;
+      pDVar8->type = _Mid_2->type;
+      pDVar8->typeString = _Mid_2->typeString;
+      pDVar8->assetName = _Mid_2->assetName;
+      _Mid_2->sequence = uVar1;
+      _Mid_2->type = iVar6;
+      _Mid_2->typeString = pcVar3;
+      _Mid_2->assetName = pcVar4;
     }
-    bVar5 = (*param_4)(param_2,pDVar7);
-    if ((bVar5) && (param_2 != pDVar7)) {
-      uVar1 = param_2->sequence;
-      iVar6 = param_2->type;
-      pcVar3 = param_2->typeString;
-      pcVar4 = param_2->assetName;
-      param_2->sequence = pDVar7->sequence;
-      param_2->type = pDVar7->type;
-      param_2->typeString = pDVar7->typeString;
-      param_2->assetName = pDVar7->assetName;
+    bVar5 = (*_Pred_2)(_Mid_2,pDVar7);
+    if ((bVar5) && (_Mid_2 != pDVar7)) {
+      uVar1 = _Mid_2->sequence;
+      iVar6 = _Mid_2->type;
+      pcVar3 = _Mid_2->typeString;
+      pcVar4 = _Mid_2->assetName;
+      _Mid_2->sequence = pDVar7->sequence;
+      _Mid_2->type = pDVar7->type;
+      _Mid_2->typeString = pDVar7->typeString;
+      _Mid_2->assetName = pDVar7->assetName;
       pDVar7->sequence = uVar1;
       pDVar7->type = iVar6;
       pDVar7->typeString = pcVar3;
@@ -752,194 +772,212 @@ _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReor
 pair<DBReorderAssetEntry_*,DBReorderAssetEntry_*> __cdecl
 std::
 _Unguarded_partition<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_3)
+          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *_First_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Last_2)
 
 {
-  uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  char *pcVar4;
+  XModel *pXVar1;
+  uint uVar2;
+  uint uVar3;
+  uint uVar4;
   bool bVar5;
-  DBReorderAssetEntry *pDVar6;
-  DBReorderAssetEntry *pDVar7;
-  DBReorderAssetEntry *pDVar8;
-  DBReorderAssetEntry *pDVar9;
+  GfxSModelSurfStats *pGVar6;
+  GfxSModelSurfStats *pGVar7;
+  GfxSModelSurfStats *pGVar8;
+  GfxSModelSurfStats *pGVar9;
   pair<DBReorderAssetEntry_*,DBReorderAssetEntry_*> pVar10;
   _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *in_stack_00000010;
-  DBReorderAssetEntry *local_18;
-  DBReorderAssetEntry *local_14;
-  DBReorderAssetEntry *local_10;
-  DBReorderAssetEntry *local_c;
+  GfxSModelSurfStats *_Plast_2;
+  GfxSModelSurfStats *_Glast_2;
+  GfxSModelSurfStats *_Pfirst_2;
+  GfxSModelSurfStats *_Gfirst_2;
+  GfxSModelSurfStats *_Mid_2;
   
-  local_10 = param_2 + (((int)param_3 - (int)param_2 >> 4) - ((int)param_3 - (int)param_2 >> 0x1f)
-                       >> 1);
+  _Pfirst_2 = (GfxSModelSurfStats *)
+              (_First_2 +
+              (((int)_Last_2 - (int)_First_2 >> 4) - ((int)_Last_2 - (int)_First_2 >> 0x1f) >> 1));
   _Median<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-            (param_2,local_10,(DBReorderAssetEntry *)(param_3 + -0x10),in_stack_00000010);
-  local_18 = local_10 + 1;
-  while (((param_2 < local_10 && (bVar5 = (*in_stack_00000010)(local_10 + -1,local_10), !bVar5)) &&
-         (bVar5 = (*in_stack_00000010)(local_10,local_10 + -1), !bVar5))) {
-    local_10 = local_10 + -1;
+            (_First_2,(DBReorderAssetEntry *)_Pfirst_2,(DBReorderAssetEntry *)(_Last_2 + -0x10),
+             in_stack_00000010);
+  _Plast_2 = _Pfirst_2 + 1;
+  while (((_First_2 < _Pfirst_2 &&
+          (bVar5 = (*in_stack_00000010)
+                             ((DBReorderAssetEntry *)(_Pfirst_2 + -1),
+                              (DBReorderAssetEntry *)_Pfirst_2), !bVar5)) &&
+         (bVar5 = (*in_stack_00000010)
+                            ((DBReorderAssetEntry *)_Pfirst_2,
+                             (DBReorderAssetEntry *)(_Pfirst_2 + -1)), !bVar5))) {
+    _Pfirst_2 = _Pfirst_2 + -1;
   }
-  while (((local_18 < param_3 && (bVar5 = (*in_stack_00000010)(local_18,local_10), !bVar5)) &&
-         (bVar5 = (*in_stack_00000010)(local_10,local_18), !bVar5))) {
-    local_18 = local_18 + 1;
+  while (((_Plast_2 < _Last_2 &&
+          (bVar5 = (*in_stack_00000010)
+                             ((DBReorderAssetEntry *)_Plast_2,(DBReorderAssetEntry *)_Pfirst_2),
+          !bVar5)) &&
+         (bVar5 = (*in_stack_00000010)
+                            ((DBReorderAssetEntry *)_Pfirst_2,(DBReorderAssetEntry *)_Plast_2),
+         !bVar5))) {
+    _Plast_2 = _Plast_2 + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pDVar9 = local_18;
-  pDVar6 = local_c;
-  pDVar8 = local_10;
+  _Gfirst_2 = _Plast_2;
+  _Glast_2 = _Pfirst_2;
+  pGVar9 = _Plast_2;
+  pGVar6 = _Gfirst_2;
+  pGVar8 = _Pfirst_2;
   do {
-    while (local_10 = pDVar8, local_c = pDVar6, local_18 = pDVar9, param_3 <= local_c) {
+    while (_Pfirst_2 = pGVar8, _Gfirst_2 = pGVar6, _Plast_2 = pGVar9, _Last_2 <= _Gfirst_2) {
 LAB_00b33947:
-      for (; param_2 < local_14; local_14 = local_14 + -1) {
-        bVar5 = (*in_stack_00000010)(local_14 + -1,local_10);
-        pDVar9 = local_10;
+      for (; _First_2 < _Glast_2; _Glast_2 = _Glast_2 + -1) {
+        bVar5 = (*in_stack_00000010)
+                          ((DBReorderAssetEntry *)(_Glast_2 + -1),(DBReorderAssetEntry *)_Pfirst_2);
+        pGVar9 = _Pfirst_2;
         if (!bVar5) {
-          bVar5 = (*in_stack_00000010)(local_10,local_14 + -1);
+          bVar5 = (*in_stack_00000010)
+                            ((DBReorderAssetEntry *)_Pfirst_2,(DBReorderAssetEntry *)(_Glast_2 + -1)
+                            );
           if (bVar5) break;
-          pDVar9 = local_10 + -1;
-          pDVar6 = local_14 + -1;
-          if (pDVar9 != pDVar6) {
-            uVar1 = pDVar9->sequence;
-            iVar2 = local_10[-1].type;
-            pcVar3 = local_10[-1].typeString;
-            pcVar4 = local_10[-1].assetName;
-            pDVar9->sequence = pDVar6->sequence;
-            local_10[-1].type = local_14[-1].type;
-            local_10[-1].typeString = local_14[-1].typeString;
-            local_10[-1].assetName = local_14[-1].assetName;
-            pDVar6->sequence = uVar1;
-            local_14[-1].type = iVar2;
-            local_14[-1].typeString = pcVar3;
-            local_14[-1].assetName = pcVar4;
+          pGVar9 = _Pfirst_2 + -1;
+          pGVar6 = _Glast_2 + -1;
+          if (pGVar9 != pGVar6) {
+            pXVar1 = pGVar9->model;
+            uVar2 = _Pfirst_2[-1].lod;
+            uVar3 = _Pfirst_2[-1].smcAllocBits;
+            uVar4 = _Pfirst_2[-1].useCount;
+            pGVar9->model = pGVar6->model;
+            _Pfirst_2[-1].lod = _Glast_2[-1].lod;
+            _Pfirst_2[-1].smcAllocBits = _Glast_2[-1].smcAllocBits;
+            _Pfirst_2[-1].useCount = _Glast_2[-1].useCount;
+            pGVar6->model = pXVar1;
+            _Glast_2[-1].lod = uVar2;
+            _Glast_2[-1].smcAllocBits = uVar3;
+            _Glast_2[-1].useCount = uVar4;
           }
         }
-        local_10 = pDVar9;
+        _Pfirst_2 = pGVar9;
       }
-      if ((local_14 == param_2) && (local_c == (DBReorderAssetEntry *)param_3)) {
-        param_1->sequence = (uint)local_10;
-        param_1->type = (int)local_18;
+      if ((_Glast_2 == (GfxSModelSurfStats *)_First_2) &&
+         (_Gfirst_2 == (GfxSModelSurfStats *)_Last_2)) {
+        param_1->sequence = (uint)_Pfirst_2;
+        param_1->type = (int)_Plast_2;
         pVar10.second = param_1;
         pVar10.first = param_1;
         return pVar10;
       }
-      if (local_14 == param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          uVar1 = local_10->sequence;
-          iVar2 = local_10->type;
-          pcVar3 = local_10->typeString;
-          pcVar4 = local_10->assetName;
-          local_10->sequence = local_18->sequence;
-          local_10->type = local_18->type;
-          local_10->typeString = local_18->typeString;
-          local_10->assetName = local_18->assetName;
-          local_18->sequence = uVar1;
-          local_18->type = iVar2;
-          local_18->typeString = pcVar3;
-          local_18->assetName = pcVar4;
+      if (_Glast_2 == (GfxSModelSurfStats *)_First_2) {
+        if ((_Plast_2 != _Gfirst_2) && (_Pfirst_2 != _Plast_2)) {
+          pXVar1 = _Pfirst_2->model;
+          uVar2 = _Pfirst_2->lod;
+          uVar3 = _Pfirst_2->smcAllocBits;
+          uVar4 = _Pfirst_2->useCount;
+          _Pfirst_2->model = _Plast_2->model;
+          _Pfirst_2->lod = _Plast_2->lod;
+          _Pfirst_2->smcAllocBits = _Plast_2->smcAllocBits;
+          _Pfirst_2->useCount = _Plast_2->useCount;
+          _Plast_2->model = pXVar1;
+          _Plast_2->lod = uVar2;
+          _Plast_2->smcAllocBits = uVar3;
+          _Plast_2->useCount = uVar4;
         }
-        pDVar9 = local_18 + 1;
-        pDVar6 = local_c + 1;
-        pDVar8 = local_10 + 1;
-        if (local_10 != local_c) {
-          uVar1 = local_10->sequence;
-          iVar2 = local_10->type;
-          pcVar3 = local_10->typeString;
-          pcVar4 = local_10->assetName;
-          local_10->sequence = local_c->sequence;
-          local_10->type = local_c->type;
-          local_10->typeString = local_c->typeString;
-          local_10->assetName = local_c->assetName;
-          local_c->sequence = uVar1;
-          local_c->type = iVar2;
-          local_c->typeString = pcVar3;
-          local_c->assetName = pcVar4;
+        pGVar9 = _Plast_2 + 1;
+        pGVar6 = _Gfirst_2 + 1;
+        pGVar8 = _Pfirst_2 + 1;
+        if (_Pfirst_2 != _Gfirst_2) {
+          pXVar1 = _Pfirst_2->model;
+          uVar2 = _Pfirst_2->lod;
+          uVar3 = _Pfirst_2->smcAllocBits;
+          uVar4 = _Pfirst_2->useCount;
+          _Pfirst_2->model = _Gfirst_2->model;
+          _Pfirst_2->lod = _Gfirst_2->lod;
+          _Pfirst_2->smcAllocBits = _Gfirst_2->smcAllocBits;
+          _Pfirst_2->useCount = _Gfirst_2->useCount;
+          _Gfirst_2->model = pXVar1;
+          _Gfirst_2->lod = uVar2;
+          _Gfirst_2->smcAllocBits = uVar3;
+          _Gfirst_2->useCount = uVar4;
         }
       }
-      else if (local_c == (DBReorderAssetEntry *)param_3) {
-        pDVar7 = local_14 + -1;
-        pDVar8 = local_10 + -1;
-        if ((pDVar7 != pDVar8) && (pDVar7 != pDVar8)) {
-          uVar1 = pDVar7->sequence;
-          iVar2 = local_14[-1].type;
-          pcVar3 = local_14[-1].typeString;
-          pcVar4 = local_14[-1].assetName;
-          pDVar7->sequence = pDVar8->sequence;
-          local_14[-1].type = local_10[-1].type;
-          local_14[-1].typeString = local_10[-1].typeString;
-          local_14[-1].assetName = local_10[-1].assetName;
-          pDVar8->sequence = uVar1;
-          local_10[-1].type = iVar2;
-          local_10[-1].typeString = pcVar3;
-          local_10[-1].assetName = pcVar4;
+      else if (_Gfirst_2 == (GfxSModelSurfStats *)_Last_2) {
+        pGVar7 = _Glast_2 + -1;
+        pGVar8 = _Pfirst_2 + -1;
+        if ((pGVar7 != pGVar8) && (pGVar7 != pGVar8)) {
+          pXVar1 = pGVar7->model;
+          uVar2 = _Glast_2[-1].lod;
+          uVar3 = _Glast_2[-1].smcAllocBits;
+          uVar4 = _Glast_2[-1].useCount;
+          pGVar7->model = pGVar8->model;
+          _Glast_2[-1].lod = _Pfirst_2[-1].lod;
+          _Glast_2[-1].smcAllocBits = _Pfirst_2[-1].smcAllocBits;
+          _Glast_2[-1].useCount = _Pfirst_2[-1].useCount;
+          pGVar8->model = pXVar1;
+          _Pfirst_2[-1].lod = uVar2;
+          _Pfirst_2[-1].smcAllocBits = uVar3;
+          _Pfirst_2[-1].useCount = uVar4;
         }
-        pDVar9 = local_18 + -1;
-        pDVar6 = local_c;
-        local_14 = pDVar7;
-        if (pDVar8 != pDVar9) {
-          uVar1 = pDVar8->sequence;
-          iVar2 = local_10[-1].type;
-          pcVar3 = local_10[-1].typeString;
-          pcVar4 = local_10[-1].assetName;
-          pDVar8->sequence = pDVar9->sequence;
-          local_10[-1].type = local_18[-1].type;
-          local_10[-1].typeString = local_18[-1].typeString;
-          local_10[-1].assetName = local_18[-1].assetName;
-          pDVar9->sequence = uVar1;
-          local_18[-1].type = iVar2;
-          local_18[-1].typeString = pcVar3;
-          local_18[-1].assetName = pcVar4;
+        pGVar9 = _Plast_2 + -1;
+        pGVar6 = _Gfirst_2;
+        _Glast_2 = pGVar7;
+        if (pGVar8 != pGVar9) {
+          pXVar1 = pGVar8->model;
+          uVar2 = _Pfirst_2[-1].lod;
+          uVar3 = _Pfirst_2[-1].smcAllocBits;
+          uVar4 = _Pfirst_2[-1].useCount;
+          pGVar8->model = pGVar9->model;
+          _Pfirst_2[-1].lod = _Plast_2[-1].lod;
+          _Pfirst_2[-1].smcAllocBits = _Plast_2[-1].smcAllocBits;
+          _Pfirst_2[-1].useCount = _Plast_2[-1].useCount;
+          pGVar9->model = pXVar1;
+          _Plast_2[-1].lod = uVar2;
+          _Plast_2[-1].smcAllocBits = uVar3;
+          _Plast_2[-1].useCount = uVar4;
         }
       }
       else {
-        pDVar7 = local_14 + -1;
-        if (local_c != pDVar7) {
-          uVar1 = local_c->sequence;
-          iVar2 = local_c->type;
-          pcVar3 = local_c->typeString;
-          pcVar4 = local_c->assetName;
-          local_c->sequence = pDVar7->sequence;
-          local_c->type = local_14[-1].type;
-          local_c->typeString = local_14[-1].typeString;
-          local_c->assetName = local_14[-1].assetName;
-          pDVar7->sequence = uVar1;
-          local_14[-1].type = iVar2;
-          local_14[-1].typeString = pcVar3;
-          local_14[-1].assetName = pcVar4;
+        pGVar7 = _Glast_2 + -1;
+        if (_Gfirst_2 != pGVar7) {
+          pXVar1 = _Gfirst_2->model;
+          uVar2 = _Gfirst_2->lod;
+          uVar3 = _Gfirst_2->smcAllocBits;
+          uVar4 = _Gfirst_2->useCount;
+          _Gfirst_2->model = pGVar7->model;
+          _Gfirst_2->lod = _Glast_2[-1].lod;
+          _Gfirst_2->smcAllocBits = _Glast_2[-1].smcAllocBits;
+          _Gfirst_2->useCount = _Glast_2[-1].useCount;
+          pGVar7->model = pXVar1;
+          _Glast_2[-1].lod = uVar2;
+          _Glast_2[-1].smcAllocBits = uVar3;
+          _Glast_2[-1].useCount = uVar4;
         }
-        pDVar9 = local_18;
-        pDVar6 = local_c + 1;
-        pDVar8 = local_10;
-        local_14 = pDVar7;
+        pGVar9 = _Plast_2;
+        pGVar6 = _Gfirst_2 + 1;
+        pGVar8 = _Pfirst_2;
+        _Glast_2 = pGVar7;
       }
     }
-    bVar5 = (*in_stack_00000010)(local_10,local_c);
-    pDVar9 = local_18;
+    bVar5 = (*in_stack_00000010)((DBReorderAssetEntry *)_Pfirst_2,(DBReorderAssetEntry *)_Gfirst_2);
+    pGVar9 = _Plast_2;
     if (!bVar5) {
-      bVar5 = (*in_stack_00000010)(local_c,local_10);
+      bVar5 = (*in_stack_00000010)
+                        ((DBReorderAssetEntry *)_Gfirst_2,(DBReorderAssetEntry *)_Pfirst_2);
       if (bVar5) goto LAB_00b33947;
-      pDVar9 = local_18 + 1;
-      if (local_18 != local_c) {
-        uVar1 = local_18->sequence;
-        iVar2 = local_18->type;
-        pcVar3 = local_18->typeString;
-        pcVar4 = local_18->assetName;
-        local_18->sequence = local_c->sequence;
-        local_18->type = local_c->type;
-        local_18->typeString = local_c->typeString;
-        local_18->assetName = local_c->assetName;
-        local_c->sequence = uVar1;
-        local_c->type = iVar2;
-        local_c->typeString = pcVar3;
-        local_c->assetName = pcVar4;
+      pGVar9 = _Plast_2 + 1;
+      if (_Plast_2 != _Gfirst_2) {
+        pXVar1 = _Plast_2->model;
+        uVar2 = _Plast_2->lod;
+        uVar3 = _Plast_2->smcAllocBits;
+        uVar4 = _Plast_2->useCount;
+        _Plast_2->model = _Gfirst_2->model;
+        _Plast_2->lod = _Gfirst_2->lod;
+        _Plast_2->smcAllocBits = _Gfirst_2->smcAllocBits;
+        _Plast_2->useCount = _Gfirst_2->useCount;
+        _Gfirst_2->model = pXVar1;
+        _Gfirst_2->lod = uVar2;
+        _Gfirst_2->smcAllocBits = uVar3;
+        _Gfirst_2->useCount = uVar4;
       }
     }
-    local_18 = pDVar9;
-    pDVar9 = local_18;
-    pDVar6 = local_c + 1;
-    pDVar8 = local_10;
+    _Plast_2 = pGVar9;
+    pGVar9 = _Plast_2;
+    pGVar6 = _Gfirst_2 + 1;
+    pGVar8 = _Pfirst_2;
   } while( true );
 }
 
@@ -949,42 +987,41 @@ LAB_00b33947:
 void __cdecl
 std::
 _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,int param_3,
-          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *param_4)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Last_2,int _Ideal_2,
+          _func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *_Pred_2)
 
 {
-  DBReorderAssetEntry *local_10;
+  DBReorderAssetEntry *_Mid_2;
   DBReorderAssetEntry *local_c;
-  char *local_8;
+  int _Count_2;
   
-  while ((local_8 = (char *)((int)param_2 - (int)param_1 >> 4), 0x20 < (int)local_8 && (0 < param_3)
-         )) {
+  while ((_Count_2 = (int)_Last_2 - (int)_First_2 >> 4, 0x20 < _Count_2 && (0 < _Ideal_2))) {
     _Unguarded_partition<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-              ((DBReorderAssetEntry *)&local_10,param_1,
-               (_func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 4 < (int)param_2 - (int)local_c >> 4) {
+              ((DBReorderAssetEntry *)&_Mid_2,_First_2,
+               (_func___cdecl_bool_DBReorderAssetEntry_ptr_DBReorderAssetEntry_ptr *)_Last_2);
+    _Ideal_2 = (_Ideal_2 / 2) / 2 + _Ideal_2 / 2;
+    if ((int)_Mid_2 - (int)_First_2 >> 4 < (int)_Last_2 - (int)local_c >> 4) {
       _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First_2,_Mid_2,_Ideal_2,_Pred_2);
+      _First_2 = local_c;
     }
     else {
       _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (local_c,_Last_2,_Ideal_2,_Pred_2);
+      _Last_2 = _Mid_2;
     }
   }
-  if ((int)local_8 < 0x21) {
-    if (1 < (int)local_8) {
+  if (_Count_2 < 0x21) {
+    if (1 < _Count_2) {
       _Insertion_sort1<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&),DBReorderAssetEntry>
-                (param_1,param_2,param_4,(DBReorderAssetEntry *)0x0);
+                (_First_2,_Last_2,_Pred_2,(DBReorderAssetEntry *)0x0);
     }
   }
   else {
     make_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-              (param_1,param_2,param_4);
+              (_First_2,_Last_2,_Pred_2);
     _Sort_heap<DBReorderAssetEntry_*,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
-              (param_1,param_2,param_4);
+              (_First_2,_Last_2,_Pred_2);
   }
   return;
 }
@@ -994,15 +1031,15 @@ _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBRe
 
 DBReorderAssetEntry * __cdecl
 stdext::unchecked_copy_backward<DBReorderAssetEntry_*,DBReorderAssetEntry_*>
-          (DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2,DBReorderAssetEntry *param_3)
+          (DBReorderAssetEntry *_First_2,DBReorderAssetEntry *_Last_2,DBReorderAssetEntry *_Dest_2)
 
 {
   DBReorderAssetEntry *local_28;
   DBReorderAssetEntry *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest_2;
+  local_24 = _Last_2;
+  while (_First_2 != local_24) {
     local_28[-1].sequence = local_24[-1].sequence;
     local_28[-1].type = local_24[-1].type;
     local_28[-1].typeString = local_24[-1].typeString;
@@ -1010,6 +1047,6 @@ stdext::unchecked_copy_backward<DBReorderAssetEntry_*,DBReorderAssetEntry_*>
     local_28 = local_28 + -1;
     local_24 = local_24 + -1;
   }
-  return param_3 + -((int)param_2 - (int)param_1 >> 4);
+  return _Dest_2 + -((int)_Last_2 - (int)_First_2 >> 4);
 }
 

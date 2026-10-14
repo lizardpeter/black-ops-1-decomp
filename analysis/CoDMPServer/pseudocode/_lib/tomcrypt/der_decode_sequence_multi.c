@@ -9,61 +9,61 @@ der_decode_sequence_multi
           (int param_1,undefined4 param_2,int param_3,undefined4 param_4,undefined4 param_5)
 
 {
-  void *pvVar1;
-  undefined4 *puVar2;
-  undefined4 uVar3;
-  undefined4 *puVar4;
-  uint uVar5;
-  int iVar6;
-  bool bVar7;
+  void *ptr;
+  undefined4 *puVar1;
+  undefined4 uVar2;
+  undefined4 *puVar3;
+  uint size;
+  int iVar4;
+  bool bVar5;
   
   if (param_1 == 0) {
     crypt_argchk("in != NULL",
                  "C:\\projects_pc\\cod\\codsrc\\libs\\libtomcrypt-1.17\\src\\pk\\asn1\\der\\sequence\\der_decode_sequence_multi.c"
                  ,0x25);
   }
-  uVar5 = 0;
+  size = 0;
   if (param_3 != 0) {
-    puVar4 = &param_5;
-    bVar7 = param_3 == 0;
-    iVar6 = param_3;
+    puVar3 = &param_5;
+    bVar5 = param_3 == 0;
+    iVar4 = param_3;
     do {
-      if ((bVar7 || iVar6 < 0) || (0xf < iVar6)) {
+      if ((bVar5 || iVar4 < 0) || (0xf < iVar4)) {
         return 0x10;
       }
-      iVar6 = puVar4[1];
-      uVar5 = uVar5 + 1;
-      puVar4 = puVar4 + 3;
-      bVar7 = iVar6 == 0;
-    } while (!bVar7);
-    if (uVar5 != 0) {
-      pvVar1 = tom_game_calloc(0x20,uVar5);
-      if (pvVar1 == (void *)0x0) {
+      iVar4 = puVar3[1];
+      size = size + 1;
+      puVar3 = puVar3 + 3;
+      bVar5 = iVar4 == 0;
+    } while (!bVar5);
+    if (size != 0) {
+      ptr = tom_game_calloc(0x20,size);
+      if (ptr == (void *)0x0) {
         return 0xd;
       }
-      iVar6 = 0;
-      puVar2 = &param_5;
-      puVar4 = (undefined4 *)((int)pvVar1 + 4);
-      bVar7 = param_3 == 0;
-      uVar3 = param_5;
-      while ((!bVar7 && -1 < param_3 && (param_3 < 0x10))) {
-        puVar4[-1] = param_3;
-        param_3 = puVar2[1];
-        puVar4[1] = param_4;
-        param_4 = puVar2[2];
-        *puVar4 = uVar3;
-        uVar3 = puVar2[3];
-        puVar2 = puVar2 + 3;
-        iVar6 = iVar6 + 1;
-        puVar4 = puVar4 + 8;
-        bVar7 = false;
+      iVar4 = 0;
+      puVar1 = &param_5;
+      puVar3 = (undefined4 *)((int)ptr + 4);
+      bVar5 = param_3 == 0;
+      uVar2 = param_5;
+      while ((!bVar5 && -1 < param_3 && (param_3 < 0x10))) {
+        puVar3[-1] = param_3;
+        param_3 = puVar1[1];
+        puVar3[1] = param_4;
+        param_4 = puVar1[2];
+        *puVar3 = uVar2;
+        uVar2 = puVar1[3];
+        puVar1 = puVar1 + 3;
+        iVar4 = iVar4 + 1;
+        puVar3 = puVar3 + 8;
+        bVar5 = false;
         if (param_3 == 0) {
-          uVar3 = der_decode_sequence_ex(param_1,param_2,pvVar1,iVar6,1);
-          tom_game_free(pvVar1);
-          return uVar3;
+          uVar2 = der_decode_sequence_ex(param_1,param_2,ptr,iVar4,1);
+          tom_game_free(ptr);
+          return uVar2;
         }
       }
-      tom_game_free(pvVar1);
+      tom_game_free(ptr);
       return 0x10;
     }
   }

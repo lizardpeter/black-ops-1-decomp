@@ -11,13 +11,13 @@ XAnim_s * __cdecl Dog_GetAnims(void)
 
 // 00414AD0  Dog_DebugPrint  (bgame/bg_dog_animations_mp.cpp:625)
 
-void __cdecl Dog_DebugPrint(char *param_1)
+void __cdecl Dog_DebugPrint(char *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((msg == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog_animations_mp.cpp",
                                0x272,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -34,14 +34,14 @@ void __cdecl Dog_DebugPrint(char *param_1)
 // 00414B30  BG_Dog_CreateAnimChildGroup  (bgame/bg_dog_animations_mp.cpp:636)
 
 void __cdecl
-BG_Dog_CreateAnimChildGroup(int param_1,int param_2,char **param_3,int param_4,int param_5)
+BG_Dog_CreateAnimChildGroup(int index,int childindex,char **animNames,int count,int flags)
 
 {
-  int local_8;
+  int animIndex;
   
-  XAnimBlend(s_dogAnims,param_1,*param_3,param_2,param_4 - 1,param_5);
-  for (local_8 = 1; local_8 < param_4; local_8 = local_8 + 1) {
-    BG_CreateXAnim(s_dogAnims,local_8 + -1 + param_2,param_3[local_8]);
+  XAnimBlend(s_dogAnims,index,*animNames,childindex,count - 1,flags);
+  for (animIndex = 1; animIndex < count; animIndex = animIndex + 1) {
+    BG_CreateXAnim(s_dogAnims,animIndex + -1 + childindex,animNames[animIndex]);
   }
   return;
 }
@@ -49,16 +49,16 @@ BG_Dog_CreateAnimChildGroup(int param_1,int param_2,char **param_3,int param_4,i
 
 // 00414970  Dog_CreateAnims  (bgame/bg_dog_animations_mp.cpp:649)
 
-void __cdecl Dog_CreateAnims(_func___cdecl_void_ptr_int *param_1)
+void __cdecl Dog_CreateAnims(_func___cdecl_void_ptr_int *xanimAlloc)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  int animIndex;
   
   if (s_dogAnims == (XAnim_s *)0x0) {
     Dog_DebugPrint("Dog_CreateAnims");
-    s_dogAnims = XAnimCreateAnims("DOG_ANIMS",0x3c,param_1);
+    s_dogAnims = XAnimCreateAnims("DOG_ANIMS",0x3c,xanimAlloc);
     if ((s_dogAnims == (XAnim_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog_animations_mp.cpp"
                                  ,0x292,0,"%s"), !bVar2)) {
@@ -67,8 +67,8 @@ void __cdecl Dog_CreateAnims(_func___cdecl_void_ptr_int *param_1)
       return;
     }
     XAnimBlend(s_dogAnims,0,s_dogAnimNames[0],1,0x2c,0);
-    for (local_8 = 1; (int)local_8 < 0x26; local_8 = local_8 + 1) {
-      BG_CreateXAnim(s_dogAnims,local_8,s_dogAnimNames[local_8]);
+    for (animIndex = 1; animIndex < 0x26; animIndex = animIndex + 1) {
+      BG_CreateXAnim(s_dogAnims,animIndex,s_dogAnimNames[animIndex]);
     }
     BG_Dog_CreateAnimChildGroup(0x26,0x2d,s_dogAnimNamesRunStartKnob,2,2);
     BG_Dog_CreateAnimChildGroup(0x27,0x2e,s_dogAnimNamesRunKnob,4,1);
@@ -95,19 +95,21 @@ void __cdecl Dog_ShutdownAnims(void)
 
 // 00416F90  BG_Dog_FastForwardAnim  (bgame/bg_dog_animations_mp.cpp:688)
 
-void __cdecl BG_Dog_FastForwardAnim(int param_1,actorInfo_t *param_2)
+void __cdecl BG_Dog_FastForwardAnim(int anim,actorInfo_t *actorInfo)
 
 {
   bool bVar1;
-  XAnim_s *pXVar2;
-  int iVar3;
+  XAnim_s *anims_00;
+  int iVar2;
+  bool setToEnd;
+  XAnim_s *anims;
   
-  pXVar2 = XAnimGetAnims(param_2->pXAnimTree);
-  if (param_1 != 0) {
-    bVar1 = XAnimIsLooped(pXVar2,param_1);
+  anims_00 = XAnimGetAnims(actorInfo->pXAnimTree);
+  if (anim != 0) {
+    bVar1 = XAnimIsLooped(anims_00,anim);
     if (!bVar1) {
-      iVar3 = XAnimGetNumChildren(pXVar2,param_1);
-      if (iVar3 == 0) {
+      iVar2 = XAnimGetNumChildren(anims_00,anim);
+      if (iVar2 == 0) {
         bVar1 = true;
         goto LAB_00416fe9;
       }
@@ -116,7 +118,7 @@ void __cdecl BG_Dog_FastForwardAnim(int param_1,actorInfo_t *param_2)
   bVar1 = false;
 LAB_00416fe9:
   if (bVar1) {
-    XAnimSetTime(param_2->pXAnimTree,param_1,1.0,-1);
+    XAnimSetTime(actorInfo->pXAnimTree,anim,1.0,-1);
   }
   return;
 }
@@ -124,15 +126,17 @@ LAB_00416fe9:
 
 // 00414BB0  BG_Actor_FastForwardAnimState  (bgame/bg_dog_animations_mp.cpp:700)
 
-void __cdecl BG_Actor_FastForwardAnimState(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+void __cdecl
+BG_Actor_FastForwardAnimState(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
   uint uVar1;
+  int animationState;
   
-  uVar1 = (param_2->un2).animState.state & 0xffffffbf;
+  uVar1 = (es->un2).animState.state & 0xffffffbf;
   if (AIAnimationFuncTable[uVar1].pfnSetAtEnd !=
       (_func___cdecl_void_int_entityState_s_ptr_actorInfo_t_ptr *)0x0) {
-    (*AIAnimationFuncTable[uVar1].pfnSetAtEnd)(param_1,param_2,param_3);
+    (*AIAnimationFuncTable[uVar1].pfnSetAtEnd)(localClientNum,es,actorInfo);
   }
   return;
 }
@@ -140,57 +144,57 @@ void __cdecl BG_Actor_FastForwardAnimState(int param_1,entityState_s *param_2,ac
 
 // 004151E0  BG_Dog_GetRunAnimWeights  (bgame/bg_dog_animations_mp.cpp:712)
 
-void __cdecl BG_Dog_GetRunAnimWeights(float param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl BG_Dog_GetRunAnimWeights(float leanAmount,float *center,float *left,float *right)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((uint)param_1 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)leanAmount & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog_animations_mp.cpp",
                                0x2c9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 <= 0.0) {
-    if ((param_1 < 0.0) && (-0.95 < param_1)) {
-      param_1 = -0.95;
+  if (leanAmount <= 0.0) {
+    if ((leanAmount < 0.0) && (-0.95 < leanAmount)) {
+      leanAmount = -0.95;
     }
   }
-  else if (param_1 < 0.95) {
-    param_1 = 0.95;
+  else if (leanAmount < 0.95) {
+    leanAmount = 0.95;
   }
-  if (param_1 <= 0.0) {
-    if (0.0 <= param_1) {
-      *param_3 = 0.0;
-      *param_4 = 0.0;
-      *param_2 = 1.0;
+  if (leanAmount <= 0.0) {
+    if (0.0 <= leanAmount) {
+      *left = 0.0;
+      *right = 0.0;
+      *center = 1.0;
     }
     else {
-      *param_4 = 0.0;
-      *param_3 = (param_1 + 1.0) * 20.0;
-      if (1.0 < *param_3) {
-        *param_3 = 1.0;
+      *right = 0.0;
+      *left = (leanAmount + 1.0) * 20.0;
+      if (1.0 < *left) {
+        *left = 1.0;
       }
-      if (*param_3 <= 0.0 && *param_3 != 0.0) {
-        *param_3 = 0.0;
+      if (*left <= 0.0 && *left != 0.0) {
+        *left = 0.0;
       }
-      *param_2 = 1.0 - *param_3;
+      *center = 1.0 - *left;
     }
   }
   else {
-    *param_3 = 0.0;
-    *param_4 = (1.0 - param_1) * 20.0;
-    if (*param_4 <= 1.0) {
-      if (*param_4 <= 0.0 && *param_4 != 0.0) {
-        *param_4 = 0.0;
+    *left = 0.0;
+    *right = (1.0 - leanAmount) * 20.0;
+    if (*right <= 1.0) {
+      if (*right <= 0.0 && *right != 0.0) {
+        *right = 0.0;
       }
     }
     else {
-      *param_4 = 1.0;
+      *right = 1.0;
     }
-    *param_2 = 1.0 - *param_4;
+    *center = 1.0 - *right;
   }
   return;
 }
@@ -198,38 +202,40 @@ void __cdecl BG_Dog_GetRunAnimWeights(float param_1,float *param_2,float *param_
 
 // 00414C00  BG_Dog_Look_At  (bgame/bg_dog_animations_mp.cpp:760)
 
-void __cdecl BG_Dog_Look_At(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Look_At(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
-  float local_18;
-  float local_10;
-  float local_c;
-  float local_8;
+  DObj *obj_00;
+  float animBlendTime;
+  float rightWeight;
+  DObj *obj;
+  float downWeight;
+  float leftWeight;
+  float upWeight;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    local_8 = 0.0;
-    local_10 = 0.0;
-    local_c = 0.0;
-    local_18 = 0.0;
-    if ((param_2->un2).animState.fAimUpDown <= 0.0) {
-      local_10 = (param_2->un2).animState.fAimUpDown * -1.0;
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    upWeight = 0.0;
+    downWeight = 0.0;
+    leftWeight = 0.0;
+    rightWeight = 0.0;
+    if ((es->un2).animState.fAimUpDown <= 0.0) {
+      downWeight = (es->un2).animState.fAimUpDown * -1.0;
     }
     else {
-      local_8 = (param_2->un2).animState.fAimUpDown;
+      upWeight = (es->un2).animState.fAimUpDown;
     }
-    if ((param_2->un2).animState.fAimLeftRight <= 0.0) {
-      local_18 = (param_2->un2).animState.fAimLeftRight * -1.0;
+    if ((es->un2).animState.fAimLeftRight <= 0.0) {
+      rightWeight = (es->un2).animState.fAimLeftRight * -1.0;
     }
     else {
-      local_c = (param_2->un2).animState.fAimLeftRight;
+      leftWeight = (es->un2).animState.fAimLeftRight;
     }
-    XAnimSetGoalWeight(pDVar1,0x2a,local_8,0.05,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x29,local_10,0.05,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x2c,local_c,0.05,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x2b,local_18,0.05,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x2a,upWeight,0.05,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x29,downWeight,0.05,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x2c,leftWeight,0.05,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x2b,rightWeight,0.05,s_animRate,0,0,0,-1);
   }
   return;
 }
@@ -237,38 +243,39 @@ void __cdecl BG_Dog_Look_At(int param_1,entityState_s *param_2)
 
 // 004154E0  BG_Dog_Clear_Look_At  (bgame/bg_dog_animations_mp.cpp:799)
 
-void __cdecl BG_Dog_Clear_Look_At(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Clear_Look_At(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 0x29;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 0x2a;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 0x2c;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 0x2b;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 0x29;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 0x2a;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 0x2c;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 0x2b;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   }
   return;
 }
@@ -276,19 +283,20 @@ void __cdecl BG_Dog_Clear_Look_At(int param_1,entityState_s *param_2)
 
 // 004153E0  BG_Dog_Init_Normal_Look_At  (bgame/bg_dog_animations_mp.cpp:811)
 
-void __cdecl BG_Dog_Init_Normal_Look_At(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Init_Normal_Look_At(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    BG_Dog_Clear_Look_At(param_1,param_2);
-    XAnimSetGoalWeight(pDVar1,0x36,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x34,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x3a,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x38,1.0,0.0,s_animRate,0,0,0,-1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    BG_Dog_Clear_Look_At(localClientNum,es);
+    XAnimSetGoalWeight(obj_00,0x36,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x34,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x3a,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x38,1.0,0.0,s_animRate,0,0,0,-1);
   }
   return;
 }
@@ -296,19 +304,20 @@ void __cdecl BG_Dog_Init_Normal_Look_At(int param_1,entityState_s *param_2)
 
 // 004162B0  BG_Dog_Init_Attack_Look_At  (bgame/bg_dog_animations_mp.cpp:826)
 
-void __cdecl BG_Dog_Init_Attack_Look_At(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Init_Attack_Look_At(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    BG_Dog_Clear_Look_At(param_1,param_2);
-    XAnimSetGoalWeight(pDVar1,0x37,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x35,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x3b,1.0,0.0,s_animRate,0,0,0,-1);
-    XAnimSetGoalWeight(pDVar1,0x39,1.0,0.0,s_animRate,0,0,0,-1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    BG_Dog_Clear_Look_At(localClientNum,es);
+    XAnimSetGoalWeight(obj_00,0x37,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x35,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x3b,1.0,0.0,s_animRate,0,0,0,-1);
+    XAnimSetGoalWeight(obj_00,0x39,1.0,0.0,s_animRate,0,0,0,-1);
   }
   return;
 }
@@ -316,31 +325,32 @@ void __cdecl BG_Dog_Init_Attack_Look_At(int param_1,entityState_s *param_2)
 
 // 00414DC0  BG_Dog_Move_Start  (bgame/bg_dog_animations_mp.cpp:841)
 
-void __cdecl BG_Dog_Move_Start(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Start(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2d,1.0,0.2,1.0,0,0,1,-1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    XAnimSetCompleteGoalWeight(obj_00,0x2d,1.0,0.2,1.0,0,0,1,-1);
     XAnimSetCompleteGoalWeightKnob
-              (pDVar1,0x26,1.0,0.2,s_animRate,
+              (obj_00,0x26,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -350,30 +360,31 @@ void __cdecl BG_Dog_Move_Start(int param_1,entityState_s *param_2,ActorAnimState
 
 // 00414EC0  BG_Dog_Move_Stop  (bgame/bg_dog_animations_mp.cpp:854)
 
-void __cdecl BG_Dog_Move_Stop(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Stop(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.0;
-    uVar3 = 0x2d;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0x27;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.0;
+    uVar2 = 0x2d;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0x27;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
     XAnimSetCompleteGoalWeight
-              (pDVar1,3,1.0,0.2,s_animRate,
+              (obj_00,3,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -383,62 +394,63 @@ void __cdecl BG_Dog_Move_Stop(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 00414F90  BG_Dog_Move_Run  (bgame/bg_dog_animations_mp.cpp:866)
 
-void __cdecl BG_Dog_Move_Run(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Run(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
-  float local_10;
-  float local_c;
-  float local_8;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
+  float right;
+  float left;
+  float center;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (param_3 != ACTOR_ANIMATION_MOVE_WALK) {
-      iVar5 = -1;
-      fVar4 = 0.0;
-      uVar3 = 0x2d;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.0;
-      uVar3 = 3;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.2;
-      uVar3 = 10;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.2;
-      uVar3 = 0xb;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      BG_Dog_Clear_Traverse_Anims(param_1,param_2,param_3);
-      BG_Dog_Init_Normal_Look_At(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (prevState != ACTOR_ANIMATION_MOVE_WALK) {
+      iVar4 = -1;
+      fVar3 = 0.0;
+      uVar2 = 0x2d;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.0;
+      uVar2 = 3;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.2;
+      uVar2 = 10;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.2;
+      uVar2 = 0xb;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      BG_Dog_Clear_Traverse_Anims(localClientNum,es,prevState);
+      BG_Dog_Init_Normal_Look_At(localClientNum,es);
     }
-    local_8 = 0.0;
-    local_c = 0.0;
-    local_10 = 0.0;
-    BG_Dog_GetRunAnimWeights((param_2->un2).animState.fLeanAmount,&local_8,&local_c,&local_10);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 2;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2e,local_8,0.2,1.0,0,0,0,-1);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2f,local_c,0.2,1.0,0,0,0,-1);
-    XAnimSetCompleteGoalWeight(pDVar1,0x30,local_10,0.2,1.0,0,0,0,-1);
+    center = 0.0;
+    left = 0.0;
+    right = 0.0;
+    BG_Dog_GetRunAnimWeights((es->un2).animState.fLeanAmount,&center,&left,&right);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 2;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    XAnimSetCompleteGoalWeight(obj_00,0x2e,center,0.2,1.0,0,0,0,-1);
+    XAnimSetCompleteGoalWeight(obj_00,0x2f,left,0.2,1.0,0,0,0,-1);
+    XAnimSetCompleteGoalWeight(obj_00,0x30,right,0.2,1.0,0,0,0,-1);
     XAnimSetCompleteGoalWeightKnob
-              (pDVar1,0x27,1.0,0.2,s_animRate,
+              (obj_00,0x27,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,0,-1);
-    BG_Dog_Look_At(param_1,param_2);
+    BG_Dog_Look_At(localClientNum,es);
   }
   return;
 }
@@ -446,38 +458,39 @@ void __cdecl BG_Dog_Move_Run(int param_1,entityState_s *param_2,ActorAnimStates 
 
 // 004155A0  BG_Dog_Move_Run_Think  (bgame/bg_dog_animations_mp.cpp:897)
 
-void __cdecl BG_Dog_Move_Run_Think(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Move_Run_Think(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
-  float local_10;
-  float local_c;
-  float local_8;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
+  float right;
+  float left;
+  float center;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    local_8 = 0.0;
-    local_c = 0.0;
-    local_10 = 0.0;
-    BG_Dog_GetRunAnimWeights((param_2->un2).animState.fLeanAmount,&local_8,&local_c,&local_10);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 2;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2e,local_8,0.2,1.0,0,0,0,-1);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2f,local_c,0.2,1.0,0,0,0,-1);
-    XAnimSetCompleteGoalWeight(pDVar1,0x30,local_10,0.2,1.0,0,0,0,-1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    center = 0.0;
+    left = 0.0;
+    right = 0.0;
+    BG_Dog_GetRunAnimWeights((es->un2).animState.fLeanAmount,&center,&left,&right);
+    cmdIndex = -1;
+    blendTime = 0.3;
+    animIndex = 2;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
+    XAnimSetCompleteGoalWeight(obj_00,0x2e,center,0.2,1.0,0,0,0,-1);
+    XAnimSetCompleteGoalWeight(obj_00,0x2f,left,0.2,1.0,0,0,0,-1);
+    XAnimSetCompleteGoalWeight(obj_00,0x30,right,0.2,1.0,0,0,0,-1);
     XAnimSetCompleteGoalWeightKnob
-              (pDVar1,0x27,1.0,0.2,s_animRate,
+              (obj_00,0x27,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,0,-1);
-    BG_Dog_Look_At(param_1,param_2);
+    BG_Dog_Look_At(localClientNum,es);
   }
   return;
 }
@@ -485,43 +498,44 @@ void __cdecl BG_Dog_Move_Run_Think(int param_1,entityState_s *param_2)
 
 // 00415740  BG_Dog_Move_Walk  (bgame/bg_dog_animations_mp.cpp:917)
 
-void __cdecl BG_Dog_Move_Walk(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Walk(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (param_3 != ACTOR_ANIMATION_MOVE_RUN) {
-      iVar5 = -1;
-      fVar4 = 0.0;
-      uVar3 = 0x2d;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.0;
-      uVar3 = 3;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.2;
-      uVar3 = 10;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      iVar5 = -1;
-      fVar4 = 0.2;
-      uVar3 = 0xb;
-      pXVar2 = DObjGetTree(pDVar1);
-      XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-      BG_Dog_Clear_Traverse_Anims(param_1,param_2,param_3);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (prevState != ACTOR_ANIMATION_MOVE_RUN) {
+      iVar4 = -1;
+      fVar3 = 0.0;
+      uVar2 = 0x2d;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.0;
+      uVar2 = 3;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.2;
+      uVar2 = 10;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      iVar4 = -1;
+      fVar3 = 0.2;
+      uVar2 = 0xb;
+      pXVar1 = DObjGetTree(obj_00);
+      XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+      BG_Dog_Clear_Traverse_Anims(localClientNum,es,prevState);
     }
     XAnimSetCompleteGoalWeight
-              (pDVar1,2,1.0,0.2,s_animRate,
+              (obj_00,2,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -531,25 +545,26 @@ void __cdecl BG_Dog_Move_Walk(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 00415870  BG_Dog_Move_Walk_Think  (bgame/bg_dog_animations_mp.cpp:935)
 
-void __cdecl BG_Dog_Move_Walk_Think(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Move_Walk_Think(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x27;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.3;
+    animIndex = 0x27;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,2,1.0,0.2,s_animRate,
+              (obj_00,2,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -559,7 +574,7 @@ void __cdecl BG_Dog_Move_Walk_Think(int param_1,entityState_s *param_2)
 
 // 00415A00  BG_Dog_Clear_All_Turns  (bgame/bg_dog_animations_mp.cpp:945)
 
-void __cdecl BG_Dog_Clear_All_Turns(DObj *param_1)
+void __cdecl BG_Dog_Clear_All_Turns(DObj *obj)
 
 {
   XAnimTree_s *pXVar1;
@@ -570,42 +585,42 @@ void __cdecl BG_Dog_Clear_All_Turns(DObj *param_1)
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 8;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 9;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 6;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 7;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 0xc;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 0xd;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 10;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   iVar4 = -1;
   fVar3 = 0.0;
   uVar2 = 0xb;
-  pXVar1 = DObjGetTree(param_1);
+  pXVar1 = DObjGetTree(obj);
   XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   return;
 }
@@ -613,31 +628,32 @@ void __cdecl BG_Dog_Clear_All_Turns(DObj *param_1)
 
 // 00415920  BG_Dog_Move_Turn_Left  (bgame/bg_dog_animations_mp.cpp:957)
 
-void __cdecl BG_Dog_Move_Turn_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Turn_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,8,1.0,0.2,s_animRate,
+              (obj_00,8,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -647,31 +663,32 @@ void __cdecl BG_Dog_Move_Turn_Left(int param_1,entityState_s *param_2,ActorAnimS
 
 // 00415B00  BG_Dog_Move_Turn_Right  (bgame/bg_dog_animations_mp.cpp:971)
 
-void __cdecl BG_Dog_Move_Turn_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Move_Turn_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,9,1.0,0.2,s_animRate,
+              (obj_00,9,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -681,31 +698,33 @@ void __cdecl BG_Dog_Move_Turn_Right(int param_1,entityState_s *param_2,ActorAnim
 
 // 00415BE0  BG_Dog_Move_Run_Turn_Left  (bgame/bg_dog_animations_mp.cpp:985)
 
-void __cdecl BG_Dog_Move_Run_Turn_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Move_Run_Turn_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,6,1.0,0.2,s_animRate,
+              (obj_00,6,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -715,31 +734,33 @@ void __cdecl BG_Dog_Move_Run_Turn_Left(int param_1,entityState_s *param_2,ActorA
 
 // 00415CC0  BG_Dog_Move_Run_Turn_Right  (bgame/bg_dog_animations_mp.cpp:999)
 
-void __cdecl BG_Dog_Move_Run_Turn_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Move_Run_Turn_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,7,1.0,0.2,s_animRate,
+              (obj_00,7,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -750,31 +771,32 @@ void __cdecl BG_Dog_Move_Run_Turn_Right(int param_1,entityState_s *param_2,Actor
 // 00415DA0  BG_Dog_Move_Turn_Around_Left  (bgame/bg_dog_animations_mp.cpp:1013)
 
 void __cdecl
-BG_Dog_Move_Turn_Around_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Move_Turn_Around_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0xc,1.0,0.2,s_animRate,
+              (obj_00,0xc,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -785,31 +807,32 @@ BG_Dog_Move_Turn_Around_Left(int param_1,entityState_s *param_2,ActorAnimStates 
 // 00415E80  BG_Dog_Move_Turn_Around_Right  (bgame/bg_dog_animations_mp.cpp:1027)
 
 void __cdecl
-BG_Dog_Move_Turn_Around_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Move_Turn_Around_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0xd,1.0,0.2,s_animRate,
+              (obj_00,0xd,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -820,31 +843,32 @@ BG_Dog_Move_Turn_Around_Right(int param_1,entityState_s *param_2,ActorAnimStates
 // 00415F60  BG_Dog_Move_Run_Turn_Around_Left  (bgame/bg_dog_animations_mp.cpp:1041)
 
 void __cdecl
-BG_Dog_Move_Run_Turn_Around_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Move_Run_Turn_Around_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,10,1.0,0.2,s_animRate,
+              (obj_00,10,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -855,31 +879,32 @@ BG_Dog_Move_Run_Turn_Around_Left(int param_1,entityState_s *param_2,ActorAnimSta
 // 00416040  BG_Dog_Move_Run_Turn_Around_Right  (bgame/bg_dog_animations_mp.cpp:1055)
 
 void __cdecl
-BG_Dog_Move_Run_Turn_Around_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Move_Run_Turn_Around_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 3;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Clear_All_Turns(pDVar1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 3;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Clear_All_Turns(obj_00);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0xb,1.0,0.2,s_animRate,
+              (obj_00,0xb,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -889,34 +914,35 @@ BG_Dog_Move_Run_Turn_Around_Right(int param_1,entityState_s *param_2,ActorAnimSt
 
 // 004161F0  BG_Dog_Stop_Init  (bgame/bg_dog_animations_mp.cpp:1069)
 
-void __cdecl BG_Dog_Stop_Init(int param_1,entityState_s *param_2)
+void __cdecl BG_Dog_Stop_Init(int localClientNum,entityState_s *es)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 1;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0x28;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    BG_Dog_Init_Attack_Look_At(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 1;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 0x28;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    BG_Dog_Init_Attack_Look_At(localClientNum,es);
   }
   return;
 }
@@ -924,28 +950,29 @@ void __cdecl BG_Dog_Stop_Init(int param_1,entityState_s *param_2)
 
 // 00416120  BG_Dog_Stop_Idle  (bgame/bg_dog_animations_mp.cpp:1082)
 
-void __cdecl BG_Dog_Stop_Idle(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Stop_Idle(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (((int)param_3 < 0xe) || (0x11 < (int)param_3)) {
-      BG_Dog_Stop_Init(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (((int)prevState < 0xe) || (0x11 < (int)prevState)) {
+      BG_Dog_Stop_Init(localClientNum,es);
     }
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0x28;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0x28;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,1,1.0,0.2,s_animRate,
+              (obj_00,1,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -955,33 +982,34 @@ void __cdecl BG_Dog_Stop_Idle(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 004163B0  BG_Dog_Stop_AttackIdle  (bgame/bg_dog_animations_mp.cpp:1097)
 
-void __cdecl BG_Dog_Stop_AttackIdle(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Stop_AttackIdle(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (((int)param_3 < 0xe) || (0x11 < (int)param_3)) {
-      BG_Dog_Stop_Init(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (((int)prevState < 0xe) || (0x11 < (int)prevState)) {
+      BG_Dog_Stop_Init(localClientNum,es);
     }
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 1;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0x28;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 1;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.1;
+    uVar2 = 0x28;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x31,1.0,0.2,s_animRate,
+              (obj_00,0x31,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -991,33 +1019,35 @@ void __cdecl BG_Dog_Stop_AttackIdle(int param_1,entityState_s *param_2,ActorAnim
 
 // 004164A0  BG_Dog_Stop_AttackIdle_Bark  (bgame/bg_dog_animations_mp.cpp:1113)
 
-void __cdecl BG_Dog_Stop_AttackIdle_Bark(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Stop_AttackIdle_Bark(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (((int)param_3 < 0xe) || (0x11 < (int)param_3)) {
-      BG_Dog_Stop_Init(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (((int)prevState < 0xe) || (0x11 < (int)prevState)) {
+      BG_Dog_Stop_Init(localClientNum,es);
     }
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 1;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0x28;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 1;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.1;
+    uVar2 = 0x28;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x32,1.0,0.2,s_animRate,
+              (obj_00,0x32,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1028,33 +1058,34 @@ void __cdecl BG_Dog_Stop_AttackIdle_Bark(int param_1,entityState_s *param_2,Acto
 // 00416590  BG_Dog_Stop_AttackIdle_Growl  (bgame/bg_dog_animations_mp.cpp:1129)
 
 void __cdecl
-BG_Dog_Stop_AttackIdle_Growl(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Stop_AttackIdle_Growl(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    if (((int)param_3 < 0xe) || (0x11 < (int)param_3)) {
-      BG_Dog_Stop_Init(param_1,param_2);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    if (((int)prevState < 0xe) || (0x11 < (int)prevState)) {
+      BG_Dog_Stop_Init(localClientNum,es);
     }
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 1;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0x28;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+    iVar4 = -1;
+    fVar3 = 0.2;
+    uVar2 = 1;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.1;
+    uVar2 = 0x28;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x33,1.0,0.2,s_animRate,
+              (obj_00,0x33,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1064,25 +1095,26 @@ BG_Dog_Stop_AttackIdle_Growl(int param_1,entityState_s *param_2,ActorAnimStates 
 
 // 00416680  BG_Dog_Pain_Main  (bgame/bg_dog_animations_mp.cpp:1145)
 
-void __cdecl BG_Dog_Pain_Main(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Pain_Main(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,4,1.0,0.2,s_animRate,
+              (obj_00,4,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1092,25 +1124,26 @@ void __cdecl BG_Dog_Pain_Main(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 00416730  BG_Dog_Pain_Front  (bgame/bg_dog_animations_mp.cpp:1155)
 
-void __cdecl BG_Dog_Pain_Front(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Pain_Front(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x12,1.0,0.2,s_animRate,
+              (obj_00,0x12,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1120,25 +1153,26 @@ void __cdecl BG_Dog_Pain_Front(int param_1,entityState_s *param_2,ActorAnimState
 
 // 004167E0  BG_Dog_Pain_Back  (bgame/bg_dog_animations_mp.cpp:1165)
 
-void __cdecl BG_Dog_Pain_Back(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Pain_Back(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x13,1.0,0.2,s_animRate,
+              (obj_00,0x13,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1148,25 +1182,26 @@ void __cdecl BG_Dog_Pain_Back(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 00416890  BG_Dog_Pain_Left  (bgame/bg_dog_animations_mp.cpp:1175)
 
-void __cdecl BG_Dog_Pain_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Pain_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x14,1.0,0.2,s_animRate,
+              (obj_00,0x14,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1176,25 +1211,26 @@ void __cdecl BG_Dog_Pain_Left(int param_1,entityState_s *param_2,ActorAnimStates
 
 // 00416940  BG_Dog_Pain_Right  (bgame/bg_dog_animations_mp.cpp:1185)
 
-void __cdecl BG_Dog_Pain_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Pain_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x15,1.0,0.2,s_animRate,
+              (obj_00,0x15,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1204,25 +1240,26 @@ void __cdecl BG_Dog_Pain_Right(int param_1,entityState_s *param_2,ActorAnimState
 
 // 004169F0  BG_Dog_Run_Pain_Front  (bgame/bg_dog_animations_mp.cpp:1195)
 
-void __cdecl BG_Dog_Run_Pain_Front(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Run_Pain_Front(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0xe,1.0,0.2,s_animRate,
+              (obj_00,0xe,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1232,25 +1269,26 @@ void __cdecl BG_Dog_Run_Pain_Front(int param_1,entityState_s *param_2,ActorAnimS
 
 // 00416AA0  BG_Dog_Run_Pain_Back  (bgame/bg_dog_animations_mp.cpp:1205)
 
-void __cdecl BG_Dog_Run_Pain_Back(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Run_Pain_Back(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0xf,1.0,0.2,s_animRate,
+              (obj_00,0xf,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1260,25 +1298,26 @@ void __cdecl BG_Dog_Run_Pain_Back(int param_1,entityState_s *param_2,ActorAnimSt
 
 // 00416B50  BG_Dog_Run_Pain_Left  (bgame/bg_dog_animations_mp.cpp:1215)
 
-void __cdecl BG_Dog_Run_Pain_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Run_Pain_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x10,1.0,0.2,s_animRate,
+              (obj_00,0x10,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1288,25 +1327,26 @@ void __cdecl BG_Dog_Run_Pain_Left(int param_1,entityState_s *param_2,ActorAnimSt
 
 // 00416C00  BG_Dog_Run_Pain_Right  (bgame/bg_dog_animations_mp.cpp:1225)
 
-void __cdecl BG_Dog_Run_Pain_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Run_Pain_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x11,1.0,0.2,s_animRate,
+              (obj_00,0x11,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1316,25 +1356,26 @@ void __cdecl BG_Dog_Run_Pain_Right(int param_1,entityState_s *param_2,ActorAnimS
 
 // 00416CB0  BG_Dog_Death_Front  (bgame/bg_dog_animations_mp.cpp:1235)
 
-void __cdecl BG_Dog_Death_Front(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Death_Front(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x16,1.0,0.2,s_animRate,
+              (obj_00,0x16,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1344,25 +1385,26 @@ void __cdecl BG_Dog_Death_Front(int param_1,entityState_s *param_2,ActorAnimStat
 
 // 00416D60  BG_Dog_Death_Back  (bgame/bg_dog_animations_mp.cpp:1245)
 
-void __cdecl BG_Dog_Death_Back(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Death_Back(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x17,1.0,0.2,s_animRate,
+              (obj_00,0x17,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1372,25 +1414,26 @@ void __cdecl BG_Dog_Death_Back(int param_1,entityState_s *param_2,ActorAnimState
 
 // 00416E10  BG_Dog_Death_Left  (bgame/bg_dog_animations_mp.cpp:1255)
 
-void __cdecl BG_Dog_Death_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Death_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x18,1.0,0.2,s_animRate,
+              (obj_00,0x18,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1400,25 +1443,26 @@ void __cdecl BG_Dog_Death_Left(int param_1,entityState_s *param_2,ActorAnimState
 
 // 00416EC0  BG_Dog_Death_Right  (bgame/bg_dog_animations_mp.cpp:1265)
 
-void __cdecl BG_Dog_Death_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Death_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x19,1.0,0.2,s_animRate,
+              (obj_00,0x19,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1429,30 +1473,32 @@ void __cdecl BG_Dog_Death_Right(int param_1,entityState_s *param_2,ActorAnimStat
 // 00416F70  BG_Dog_Death_Fast_Forward_Front  (bgame/bg_dog_animations_mp.cpp:1275)
 
 void __cdecl
-BG_Dog_Death_Fast_Forward_Front(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+BG_Dog_Death_Fast_Forward_Front(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
-  BG_Dog_FastForwardAnim(0x16,param_3);
+  BG_Dog_FastForwardAnim(0x16,actorInfo);
   return;
 }
 
 
 // 00417020  BG_Dog_Death_Fast_Forward_Back  (bgame/bg_dog_animations_mp.cpp:1280)
 
-void __cdecl BG_Dog_Death_Fast_Forward_Back(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+void __cdecl
+BG_Dog_Death_Fast_Forward_Back(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
-  BG_Dog_FastForwardAnim(0x17,param_3);
+  BG_Dog_FastForwardAnim(0x17,actorInfo);
   return;
 }
 
 
 // 00417040  BG_Dog_Death_Fast_Forward_Left  (bgame/bg_dog_animations_mp.cpp:1285)
 
-void __cdecl BG_Dog_Death_Fast_Forward_Left(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+void __cdecl
+BG_Dog_Death_Fast_Forward_Left(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
-  BG_Dog_FastForwardAnim(0x18,param_3);
+  BG_Dog_FastForwardAnim(0x18,actorInfo);
   return;
 }
 
@@ -1460,35 +1506,36 @@ void __cdecl BG_Dog_Death_Fast_Forward_Left(int param_1,entityState_s *param_2,a
 // 00417060  BG_Dog_Death_Fast_Forward_Right  (bgame/bg_dog_animations_mp.cpp:1290)
 
 void __cdecl
-BG_Dog_Death_Fast_Forward_Right(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+BG_Dog_Death_Fast_Forward_Right(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
-  BG_Dog_FastForwardAnim(0x19,param_3);
+  BG_Dog_FastForwardAnim(0x19,actorInfo);
   return;
 }
 
 
 // 00417080  BG_Dog_Flashed  (bgame/bg_dog_animations_mp.cpp:1295)
 
-void __cdecl BG_Dog_Flashed(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Flashed(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1a,1.0,0.2,s_animRate,
+              (obj_00,0x1a,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1498,25 +1545,27 @@ void __cdecl BG_Dog_Flashed(int param_1,entityState_s *param_2,ActorAnimStates p
 
 // 00417130  BG_Dog_Combat_AttackIdle  (bgame/bg_dog_animations_mp.cpp:1305)
 
-void __cdecl BG_Dog_Combat_AttackIdle(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Combat_AttackIdle(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x31,1.0,0.2,s_animRate,
+              (obj_00,0x31,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1527,25 +1576,26 @@ void __cdecl BG_Dog_Combat_AttackIdle(int param_1,entityState_s *param_2,ActorAn
 // 004171E0  BG_Dog_Combat_AttackIdle_Bark  (bgame/bg_dog_animations_mp.cpp:1315)
 
 void __cdecl
-BG_Dog_Combat_AttackIdle_Bark(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Combat_AttackIdle_Bark(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x32,1.0,0.2,s_animRate,
+              (obj_00,0x32,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1556,25 +1606,26 @@ BG_Dog_Combat_AttackIdle_Bark(int param_1,entityState_s *param_2,ActorAnimStates
 // 00417290  BG_Dog_Combat_AttackIdle_Growl  (bgame/bg_dog_animations_mp.cpp:1325)
 
 void __cdecl
-BG_Dog_Combat_AttackIdle_Growl(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Combat_AttackIdle_Growl(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x33,1.0,0.2,s_animRate,
+              (obj_00,0x33,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1584,25 +1635,27 @@ BG_Dog_Combat_AttackIdle_Growl(int param_1,entityState_s *param_2,ActorAnimState
 
 // 00417340  BG_Dog_Combat_Attack_Run  (bgame/bg_dog_animations_mp.cpp:1335)
 
-void __cdecl BG_Dog_Combat_Attack_Run(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Combat_Attack_Run(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,5,1.0,0.2,s_animRate,
+              (obj_00,5,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1613,25 +1666,27 @@ void __cdecl BG_Dog_Combat_Attack_Run(int param_1,entityState_s *param_2,ActorAn
 // 004173F0  BG_Dog_Combat_Attack_Player_Close_Range  (bgame/bg_dog_animations_mp.cpp:1345)
 
 void __cdecl
-BG_Dog_Combat_Attack_Player_Close_Range(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Combat_Attack_Player_Close_Range
+          (int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.1;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1e,1.0,0.2,s_animRate,
+              (obj_00,0x1e,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1641,28 +1696,30 @@ BG_Dog_Combat_Attack_Player_Close_Range(int param_1,entityState_s *param_2,Actor
 
 // 004174A0  BG_Dog_Combat_Attack_Miss  (bgame/bg_dog_animations_mp.cpp:1355)
 
-void __cdecl BG_Dog_Combat_Attack_Miss(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Combat_Attack_Miss(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.1;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1b,1.0,0.2,s_animRate,
+              (obj_00,0x1b,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
-    BG_Dog_Init_Normal_Look_At(param_1,param_2);
+    BG_Dog_Init_Normal_Look_At(localClientNum,es);
   }
   return;
 }
@@ -1671,25 +1728,26 @@ void __cdecl BG_Dog_Combat_Attack_Miss(int param_1,entityState_s *param_2,ActorA
 // 00417560  BG_Dog_Combat_Attack_Miss_Left  (bgame/bg_dog_animations_mp.cpp:1368)
 
 void __cdecl
-BG_Dog_Combat_Attack_Miss_Left(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Combat_Attack_Miss_Left(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.1;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1c,1.0,0.2,s_animRate,
+              (obj_00,0x1c,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1700,25 +1758,26 @@ BG_Dog_Combat_Attack_Miss_Left(int param_1,entityState_s *param_2,ActorAnimState
 // 00417610  BG_Dog_Combat_Attack_Miss_Right  (bgame/bg_dog_animations_mp.cpp:1378)
 
 void __cdecl
-BG_Dog_Combat_Attack_Miss_Right(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Combat_Attack_Miss_Right(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.1;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.1;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1d,1.0,0.2,s_animRate,
+              (obj_00,0x1d,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1728,55 +1787,57 @@ BG_Dog_Combat_Attack_Miss_Right(int param_1,entityState_s *param_2,ActorAnimStat
 
 // 004176C0  BG_Dog_Clear_Traverse_Anims  (bgame/bg_dog_animations_mp.cpp:1388)
 
-void __cdecl BG_Dog_Clear_Traverse_Anims(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Clear_Traverse_Anims(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *pXVar1;
+  uint uVar2;
+  float fVar3;
+  int iVar4;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if ((pDVar1 != (DObj *)0x0) &&
-     ((((param_3 == ACTOR_ANIMATION_TRAVERSE_JUMP_UP_40 ||
-        (param_3 == ACTOR_ANIMATION_TRAVERSE_JUMP_UP_80)) ||
-       (param_3 == ACTOR_ANIMATION_TRAVERSE_JUMP_DOWN_40)) ||
-      (((param_3 == ACTOR_ANIMATION_TRAVERSE_JUMP_DOWN_80 ||
-        (param_3 == ACTOR_ANIMATION_TRAVERSE_WALLHOP)) ||
-       ((param_3 == ACTOR_ANIMATION_TRAVERSE_WINDOW ||
-        (param_3 == ACTOR_ANIMATION_TRAVERSE_THROUGH_HOLE_42)))))))) {
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x1f;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x20;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x21;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x22;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x23;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    iVar5 = -1;
-    fVar4 = 0.3;
-    uVar3 = 0x24;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if ((obj_00 != (DObj *)0x0) &&
+     ((((prevState == ACTOR_ANIMATION_TRAVERSE_JUMP_UP_40 ||
+        (prevState == ACTOR_ANIMATION_TRAVERSE_JUMP_UP_80)) ||
+       (prevState == ACTOR_ANIMATION_TRAVERSE_JUMP_DOWN_40)) ||
+      (((prevState == ACTOR_ANIMATION_TRAVERSE_JUMP_DOWN_80 ||
+        (prevState == ACTOR_ANIMATION_TRAVERSE_WALLHOP)) ||
+       ((prevState == ACTOR_ANIMATION_TRAVERSE_WINDOW ||
+        (prevState == ACTOR_ANIMATION_TRAVERSE_THROUGH_HOLE_42)))))))) {
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x1f;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x20;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x21;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x22;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x23;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
+    iVar4 = -1;
+    fVar3 = 0.3;
+    uVar2 = 0x24;
+    pXVar1 = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(pXVar1,uVar2,fVar3,iVar4);
   }
   return;
 }
@@ -1784,25 +1845,27 @@ void __cdecl BG_Dog_Clear_Traverse_Anims(int param_1,entityState_s *param_2,Acto
 
 // 00417800  BG_Dog_Traverse_Jump_Up_40  (bgame/bg_dog_animations_mp.cpp:1405)
 
-void __cdecl BG_Dog_Traverse_Jump_Up_40(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Traverse_Jump_Up_40(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x1f,1.0,0.2,s_animRate,
+              (obj_00,0x1f,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1812,25 +1875,27 @@ void __cdecl BG_Dog_Traverse_Jump_Up_40(int param_1,entityState_s *param_2,Actor
 
 // 004178B0  BG_Dog_Traverse_Jump_Up_80  (bgame/bg_dog_animations_mp.cpp:1415)
 
-void __cdecl BG_Dog_Traverse_Jump_Up_80(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl
+BG_Dog_Traverse_Jump_Up_80(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x20,1.0,0.2,s_animRate,
+              (obj_00,0x20,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1841,25 +1906,26 @@ void __cdecl BG_Dog_Traverse_Jump_Up_80(int param_1,entityState_s *param_2,Actor
 // 00417960  BG_Dog_Traverse_Jump_Down_40  (bgame/bg_dog_animations_mp.cpp:1425)
 
 void __cdecl
-BG_Dog_Traverse_Jump_Down_40(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Traverse_Jump_Down_40(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x21,1.0,0.2,s_animRate,
+              (obj_00,0x21,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1870,25 +1936,26 @@ BG_Dog_Traverse_Jump_Down_40(int param_1,entityState_s *param_2,ActorAnimStates 
 // 00417A10  BG_Dog_Traverse_Jump_Down_80  (bgame/bg_dog_animations_mp.cpp:1435)
 
 void __cdecl
-BG_Dog_Traverse_Jump_Down_80(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Traverse_Jump_Down_80(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x22,1.0,0.2,s_animRate,
+              (obj_00,0x22,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1898,25 +1965,26 @@ BG_Dog_Traverse_Jump_Down_80(int param_1,entityState_s *param_2,ActorAnimStates 
 
 // 00417AC0  BG_Dog_Traverse_Wallhop  (bgame/bg_dog_animations_mp.cpp:1445)
 
-void __cdecl BG_Dog_Traverse_Wallhop(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Traverse_Wallhop(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x23,1.0,0.2,s_animRate,
+              (obj_00,0x23,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1926,25 +1994,26 @@ void __cdecl BG_Dog_Traverse_Wallhop(int param_1,entityState_s *param_2,ActorAni
 
 // 00417B70  BG_Dog_Traverse_Window  (bgame/bg_dog_animations_mp.cpp:1455)
 
-void __cdecl BG_Dog_Traverse_Window(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+void __cdecl BG_Dog_Traverse_Window(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
     XAnimSetCompleteGoalWeight
-              (pDVar1,0x24,1.0,0.2,s_animRate,
+              (obj_00,0x24,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,1,-1);
   }
@@ -1955,26 +2024,27 @@ void __cdecl BG_Dog_Traverse_Window(int param_1,entityState_s *param_2,ActorAnim
 // 00417C20  BG_Dog_Traverse_Through_Hole_42  (bgame/bg_dog_animations_mp.cpp:1465)
 
 void __cdecl
-BG_Dog_Traverse_Through_Hole_42(int param_1,entityState_s *param_2,ActorAnimStates param_3)
+BG_Dog_Traverse_Through_Hole_42(int localClientNum,entityState_s *es,ActorAnimStates prevState)
 
 {
-  DObj *pDVar1;
-  XAnimTree_s *pXVar2;
-  uint uVar3;
-  float fVar4;
-  int iVar5;
+  DObj *obj_00;
+  XAnimTree_s *tree;
+  uint animIndex;
+  float blendTime;
+  int cmdIndex;
+  DObj *obj;
   
-  pDVar1 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_2->number,param_1);
-  if (pDVar1 != (DObj *)0x0) {
-    iVar5 = -1;
-    fVar4 = 0.2;
-    uVar3 = 0;
-    pXVar2 = DObjGetTree(pDVar1);
-    XAnimClearTreeGoalWeights(pXVar2,uVar3,fVar4,iVar5);
-    XAnimSetCompleteGoalWeight(pDVar1,0x2e,1.0,0.2,1.0,0,0,0,-1);
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    cmdIndex = -1;
+    blendTime = 0.2;
+    animIndex = 0;
+    tree = DObjGetTree(obj_00);
+    XAnimClearTreeGoalWeights(tree,animIndex,blendTime,cmdIndex);
+    XAnimSetCompleteGoalWeight(obj_00,0x2e,1.0,0.2,1.0,0,0,0,-1);
     XAnimSetCompleteGoalWeightKnob
-              (pDVar1,0x27,1.0,0.2,s_animRate,
+              (obj_00,0x27,1.0,0.2,s_animRate,
                *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                         0x8d3a4),2,0,-1);
   }

@@ -6,7 +6,8 @@ float __cdecl R_UpdateFrameRate(void)
 
 {
   int iVar1;
-  undefined4 local_c;
+  int frameTime;
+  int current;
   
   if (frameCount != rg.frontEndFrameCount) {
     if (frameCount == 0) {
@@ -14,16 +15,16 @@ float __cdecl R_UpdateFrameRate(void)
     }
     else if (frameCount + 1 == rg.frontEndFrameCount) {
       iVar1 = Sys_Milliseconds();
-      local_c = iVar1 - previous;
-      if (local_c == 0) {
-        local_c = 1;
+      frameTime = iVar1 - previous;
+      if (frameTime == 0) {
+        frameTime = 1;
       }
       previous = iVar1;
-      if (local_c < 0) {
+      if (frameTime < 0) {
         frameRate = 0.0;
       }
       else {
-        frameRate = 1000.0 / (float)local_c;
+        frameRate = 1000.0 / (float)frameTime;
       }
     }
     else {
@@ -39,15 +40,15 @@ float __cdecl R_UpdateFrameRate(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_WarnOncePerFrame(GfxWarningType param_1)
+void __cdecl R_WarnOncePerFrame(GfxWarningType warnType)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_414 [1028];
+  char message [1028];
   uint local_10;
-  float local_c;
-  char *local_8;
+  float frameRate;
+  char *vargs;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((r_warningRepeatDelay == (dvar_s *)0x0) &&
@@ -57,13 +58,13 @@ void __cdecl R_WarnOncePerFrame(GfxWarningType param_1)
     (*pcVar1)();
     return;
   }
-  local_c = R_UpdateFrameRate();
-  if (s_warnCount[param_1] < rg.frontEndFrameCount) {
-    s_warnCount[param_1] =
-         (int)(local_c * (r_warningRepeatDelay->current).value) + rg.frontEndFrameCount;
-    local_8 = &stack0x00000008;
-    _vsnprintf(local_414,0x400,s_warnFormat[param_1],local_8);
-    local_8 = (char *)0x0;
+  frameRate = R_UpdateFrameRate();
+  if (s_warnCount[warnType] < rg.frontEndFrameCount) {
+    s_warnCount[warnType] =
+         (int)(frameRate * (r_warningRepeatDelay->current).value) + rg.frontEndFrameCount;
+    vargs = &stack0x00000008;
+    _vsnprintf(message,0x400,s_warnFormat[warnType],vargs);
+    vargs = (char *)0x0;
     Com_PrintWarning(8,"%s");
   }
   return;

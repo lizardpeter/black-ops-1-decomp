@@ -108,10 +108,10 @@ void __cdecl CM_LoadMapFromBsp(char *param_1,bool param_2)
   undefined4 uVar2;
   char *in_EAX;
   char *pcVar3;
-  uchar *puVar4;
-  void *pvVar5;
+  uchar *src;
+  void *pvVar4;
   int unaff_EDI;
-  int iVar6;
+  int iVar5;
   ulong local_4;
   
   Com_Memset(&cm,0,0x14c);
@@ -137,16 +137,16 @@ void __cdecl CM_LoadMapFromBsp(char *param_1,bool param_2)
   FUN_005d6ae0();
   FUN_005d6b30();
   FUN_005d6b80();
-  iVar6 = 0x21;
-  puVar4 = Com_GetBspLump(LUMP_COLLISIONEDGEWALKABLE,1,&local_4);
-  cm.triEdgeIsWalkable = Hunk_AllocAlignInternal(local_4,iVar6);
-  memcpy(cm.triEdgeIsWalkable,puVar4,local_4);
+  iVar5 = 0x21;
+  src = Com_GetBspLump(LUMP_COLLISIONEDGEWALKABLE,1,&local_4);
+  cm.triEdgeIsWalkable = Hunk_AllocAlignInternal(local_4,iVar5);
+  memcpy(cm.triEdgeIsWalkable,src,local_4);
   FUN_005d6bd0();
   FUN_005d6c50();
   FUN_005d6f10();
   pcVar3 = cm.name;
-  pvVar5 = Com_GetBspLump(LUMP_ENTITIES,1,&local_4);
-  cm.mapEnts = (MapEnts *)FUN_005d6e00(pcVar3,pvVar5);
+  pvVar4 = Com_GetBspLump(LUMP_ENTITIES,1,&local_4);
+  cm.mapEnts = (MapEnts *)FUN_005d6e00(pcVar3,pvVar4);
   return;
 }
 

@@ -2,20 +2,20 @@
 
 // 00C13994  feof  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/feoferr.c:43)
 
-int __cdecl feof(_iobuf *param_1)
+int __cdecl feof(_iobuf *stream)
 
 {
   int *piVar1;
   uint uVar2;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (stream == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     uVar2 = 0;
   }
   else {
-    uVar2 = param_1->_flag & 0x10;
+    uVar2 = stream->_flag & 0x10;
   }
   return uVar2;
 }
@@ -23,20 +23,20 @@ int __cdecl feof(_iobuf *param_1)
 
 // 00C139C8  ferror  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/feoferr.c:70)
 
-int __cdecl ferror(_iobuf *param_1)
+int __cdecl ferror(_iobuf *stream)
 
 {
   int *piVar1;
   uint uVar2;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (stream == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     uVar2 = 0;
   }
   else {
-    uVar2 = param_1->_flag & 0x20;
+    uVar2 = stream->_flag & 0x20;
   }
   return uVar2;
 }

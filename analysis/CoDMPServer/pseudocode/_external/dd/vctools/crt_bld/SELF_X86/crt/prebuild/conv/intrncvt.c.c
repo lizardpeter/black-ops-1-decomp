@@ -2,7 +2,7 @@
 
 // 00C2BD21  _ld12tod  (line unknown)
 
-INTRNCVT_STATUS __cdecl _ld12tod(_LDBL12 *param_1,_CRT_DOUBLE *param_2)
+INTRNCVT_STATUS __cdecl _ld12tod(_LDBL12 *pld12,_CRT_DOUBLE *d)
 
 {
   undefined4 uVar1;
@@ -25,13 +25,13 @@ INTRNCVT_STATUS __cdecl _ld12tod(_LDBL12 *param_1,_CRT_DOUBLE *param_2)
   int local_c;
   _LDBL12 *local_8;
   
-  local_24[3] = *(ushort *)(param_1->ld12 + 10) & 0x8000;
-  uVar10 = *(uint *)(param_1->ld12 + 6);
+  local_24[3] = *(ushort *)(pld12->ld12 + 10) & 0x8000;
+  uVar10 = *(uint *)(pld12->ld12 + 6);
   local_24[0] = uVar10;
-  uVar1 = *(undefined4 *)(param_1->ld12 + 2);
-  uVar11 = *(ushort *)(param_1->ld12 + 10) & 0x7fff;
+  uVar1 = *(undefined4 *)(pld12->ld12 + 2);
+  uVar11 = *(ushort *)(pld12->ld12 + 10) & 0x7fff;
   iVar12 = uVar11 - 0x3fff;
-  iVar2 = (uint)*(ushort *)param_1->ld12 << 0x10;
+  iVar2 = (uint)*(ushort *)pld12->ld12 << 0x10;
   local_24[1] = uVar1;
   local_24[2] = iVar2;
   if (iVar12 == -0x3fff) {
@@ -49,7 +49,7 @@ INTRNCVT_STATUS __cdecl _ld12tod(_LDBL12 *param_1,_CRT_DOUBLE *param_2)
     IVar3 = INTRNCVT_OK;
   }
   else {
-    param_1 = (_LDBL12 *)0x0;
+    pld12 = (_LDBL12 *)0x0;
     iVar13 = DoubleFormat.precision + -1;
     iVar4 = (int)(DoubleFormat.precision + (DoubleFormat.precision >> 0x1f & 0x1fU)) >> 5;
     uVar8 = DoubleFormat.precision & 0x8000001f;
@@ -69,9 +69,9 @@ INTRNCVT_STATUS __cdecl _ld12tod(_LDBL12 *param_1,_CRT_DOUBLE *param_2)
           local_8 = (_LDBL12 *)0x0;
           p_Var9 = (_LDBL12 *)(1 << (0x1f - ((byte)iVar13 & 0x1f) & 0x1f));
           puVar6 = local_24 + iVar4;
-          param_1 = (_LDBL12 *)(p_Var9->ld12 + *puVar6);
-          if (param_1 < (_LDBL12 *)*puVar6) goto LAB_00c2be56;
-          bVar14 = param_1 < p_Var9;
+          pld12 = (_LDBL12 *)(p_Var9->ld12 + *puVar6);
+          if (pld12 < (_LDBL12 *)*puVar6) goto LAB_00c2be56;
+          bVar14 = pld12 < p_Var9;
           do {
             local_8 = (_LDBL12 *)0x0;
             if (!bVar14) goto LAB_00c2be5d;
@@ -80,16 +80,16 @@ LAB_00c2be56:
               local_8 = (_LDBL12 *)&DAT_00000001;
 LAB_00c2be5d:
               iVar4 = iVar4 + -1;
-              *puVar6 = (uint)param_1;
+              *puVar6 = (uint)pld12;
               if ((iVar4 < 0) || (local_8 == (_LDBL12 *)0x0)) {
-                param_1 = local_8;
+                pld12 = local_8;
                 goto LAB_00c2be6b;
               }
               local_8 = (_LDBL12 *)0x0;
               puVar6 = local_24 + iVar4;
-              param_1 = (_LDBL12 *)(((_LDBL12 *)*puVar6)->ld12 + 1);
-            } while (param_1 < (_LDBL12 *)*puVar6);
-            bVar14 = param_1 == (_LDBL12 *)0x0;
+              pld12 = (_LDBL12 *)(((_LDBL12 *)*puVar6)->ld12 + 1);
+            } while (pld12 < (_LDBL12 *)*puVar6);
+            bVar14 = pld12 == (_LDBL12 *)0x0;
           } while( true );
         }
         iVar4 = iVar4 + 1;
@@ -107,7 +107,7 @@ LAB_00c2be6b:
         puVar7 = puVar7 + 1;
       }
     }
-    if (param_1 != (_LDBL12 *)0x0) {
+    if (pld12 != (_LDBL12 *)0x0) {
       iVar12 = uVar11 - 0x3ffe;
     }
     if (iVar12 < DoubleFormat.min_exp - DoubleFormat.precision) {
@@ -125,14 +125,14 @@ LAB_00c2be6b:
             uVar10 = (uVar10 - 1 | 0xffffffe0) + 1;
           }
           local_10 = 0;
-          param_1 = (_LDBL12 *)0x0;
+          pld12 = (_LDBL12 *)0x0;
           local_8 = (_LDBL12 *)(0x20 - uVar10);
           do {
-            local_14 = local_24[(int)param_1] & ~(-1 << ((byte)uVar10 & 0x1f));
-            local_24[(int)param_1] = local_24[(int)param_1] >> ((byte)uVar10 & 0x1f) | local_10;
-            param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+            local_14 = local_24[(int)pld12] & ~(-1 << ((byte)uVar10 & 0x1f));
+            local_24[(int)pld12] = local_24[(int)pld12] >> ((byte)uVar10 & 0x1f) | local_10;
+            pld12 = (_LDBL12 *)(pld12->ld12 + 1);
             local_10 = local_14 << ((byte)(0x20 - uVar10) & 0x1f);
-          } while ((int)param_1 < 3);
+          } while ((int)pld12 < 3);
           iVar4 = 2;
           puVar7 = local_24 + (2 - iVar2);
           do {
@@ -157,15 +157,15 @@ LAB_00c2be6b:
             uVar10 = (uVar10 - 1 | 0xffffffe0) + 1;
           }
           local_10 = 0;
-          param_1 = (_LDBL12 *)0x0;
+          pld12 = (_LDBL12 *)0x0;
           local_8 = (_LDBL12 *)(0x20 - uVar10);
           do {
-            uVar11 = local_24[(int)param_1];
+            uVar11 = local_24[(int)pld12];
             local_14 = uVar11 & ~(-1 << ((byte)uVar10 & 0x1f));
-            local_24[(int)param_1] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
-            param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+            local_24[(int)pld12] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
+            pld12 = (_LDBL12 *)(pld12->ld12 + 1);
             local_10 = local_14 << ((byte)(0x20 - uVar10) & 0x1f);
-          } while ((int)param_1 < 3);
+          } while ((int)pld12 < 3);
           iVar2 = 2;
           puVar7 = local_24 + (2 - iVar12);
           do {
@@ -192,15 +192,15 @@ LAB_00c2be6b:
         uVar10 = (uVar10 - 1 | 0xffffffe0) + 1;
       }
       local_10 = 0;
-      param_1 = (_LDBL12 *)0x0;
+      pld12 = (_LDBL12 *)0x0;
       local_8 = (_LDBL12 *)(0x20 - uVar10);
       do {
-        uVar11 = local_24[(int)param_1];
+        uVar11 = local_24[(int)pld12];
         local_14 = uVar11 & ~(-1 << ((byte)uVar10 & 0x1f));
-        local_24[(int)param_1] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
-        param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+        local_24[(int)pld12] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
+        pld12 = (_LDBL12 *)(pld12->ld12 + 1);
         local_10 = local_14 << ((byte)(0x20 - uVar10) & 0x1f);
-      } while ((int)param_1 < 3);
+      } while ((int)pld12 < 3);
       iVar2 = 2;
       puVar7 = local_24 + (2 - iVar12);
       do {
@@ -266,15 +266,15 @@ LAB_00c2c00e:
         uVar10 = (uVar10 - 1 | 0xffffffe0) + 1;
       }
       local_10 = 0;
-      param_1 = (_LDBL12 *)0x0;
+      pld12 = (_LDBL12 *)0x0;
       local_8 = (_LDBL12 *)(0x20 - uVar10);
       do {
-        uVar11 = local_24[(int)param_1];
+        uVar11 = local_24[(int)pld12];
         local_14 = uVar11 & ~(-1 << ((byte)uVar10 & 0x1f));
-        local_24[(int)param_1] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
-        param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+        local_24[(int)pld12] = uVar11 >> ((byte)uVar10 & 0x1f) | local_10;
+        pld12 = (_LDBL12 *)(pld12->ld12 + 1);
         local_10 = local_14 << ((byte)(0x20 - uVar10) & 0x1f);
-      } while ((int)param_1 < 3);
+      } while ((int)pld12 < 3);
       iVar2 = 2;
       puVar7 = local_24 + (2 - iVar12);
       do {
@@ -295,11 +295,11 @@ LAB_00c2c222:
   local_24[0] = iVar12 << (0x1fU - (char)DoubleFormat.exp_width & 0x1f) |
                 -(uint)(local_24[3] != 0) & 0x80000000 | local_24[0];
   if (DoubleFormat.format_width == 0x40) {
-    *(uint *)((int)&param_2->x + 4) = local_24[0];
-    *(uint *)&param_2->x = local_24[1];
+    *(uint *)((int)&d->x + 4) = local_24[0];
+    *(uint *)&d->x = local_24[1];
   }
   else if (DoubleFormat.format_width == 0x20) {
-    *(uint *)&param_2->x = local_24[0];
+    *(uint *)&d->x = local_24[0];
   }
   return IVar3;
 }
@@ -307,7 +307,7 @@ LAB_00c2c222:
 
 // 00C2C265  _ld12tof  (line unknown)
 
-INTRNCVT_STATUS __cdecl _ld12tof(_LDBL12 *param_1,_CRT_FLOAT *param_2)
+INTRNCVT_STATUS __cdecl _ld12tof(_LDBL12 *pld12,_CRT_FLOAT *f)
 
 {
   uint uVar1;
@@ -329,13 +329,13 @@ INTRNCVT_STATUS __cdecl _ld12tof(_LDBL12 *param_1,_CRT_FLOAT *param_2)
   uint local_1c [5];
   _LDBL12 *local_8;
   
-  local_1c[1] = *(ushort *)(param_1->ld12 + 10) & 0x8000;
-  uVar9 = *(uint *)(param_1->ld12 + 6);
+  local_1c[1] = *(ushort *)(pld12->ld12 + 10) & 0x8000;
+  uVar9 = *(uint *)(pld12->ld12 + 6);
   local_24 = uVar9;
-  fVar12 = *(float *)(param_1->ld12 + 2);
-  uVar10 = *(ushort *)(param_1->ld12 + 10) & 0x7fff;
+  fVar12 = *(float *)(pld12->ld12 + 2);
+  uVar10 = *(ushort *)(pld12->ld12 + 10) & 0x7fff;
   iVar11 = uVar10 - 0x3fff;
-  uVar1 = (uint)*(ushort *)param_1->ld12 << 0x10;
+  uVar1 = (uint)*(ushort *)pld12->ld12 << 0x10;
   local_20 = fVar12;
   local_1c[0] = uVar1;
   if (iVar11 == -0x3fff) {
@@ -353,7 +353,7 @@ INTRNCVT_STATUS __cdecl _ld12tof(_LDBL12 *param_1,_CRT_FLOAT *param_2)
     IVar3 = INTRNCVT_OK;
   }
   else {
-    param_1 = (_LDBL12 *)0x0;
+    pld12 = (_LDBL12 *)0x0;
     iVar13 = FloatFormat.precision + -1;
     iVar2 = (int)(FloatFormat.precision + (FloatFormat.precision >> 0x1f & 0x1fU)) >> 5;
     uVar7 = FloatFormat.precision & 0x8000001f;
@@ -373,9 +373,9 @@ INTRNCVT_STATUS __cdecl _ld12tof(_LDBL12 *param_1,_CRT_FLOAT *param_2)
           local_8 = (_LDBL12 *)0x0;
           p_Var8 = (_LDBL12 *)(1 << (0x1f - ((byte)iVar13 & 0x1f) & 0x1f));
           puVar5 = &local_24 + iVar2;
-          param_1 = (_LDBL12 *)(p_Var8->ld12 + *puVar5);
-          if (param_1 < (_LDBL12 *)*puVar5) goto LAB_00c2c39a;
-          bVar14 = param_1 < p_Var8;
+          pld12 = (_LDBL12 *)(p_Var8->ld12 + *puVar5);
+          if (pld12 < (_LDBL12 *)*puVar5) goto LAB_00c2c39a;
+          bVar14 = pld12 < p_Var8;
           do {
             local_8 = (_LDBL12 *)0x0;
             if (!bVar14) goto LAB_00c2c3a1;
@@ -384,16 +384,16 @@ LAB_00c2c39a:
               local_8 = (_LDBL12 *)&DAT_00000001;
 LAB_00c2c3a1:
               iVar2 = iVar2 + -1;
-              *puVar5 = (uint)param_1;
+              *puVar5 = (uint)pld12;
               if ((iVar2 < 0) || (local_8 == (_LDBL12 *)0x0)) {
-                param_1 = local_8;
+                pld12 = local_8;
                 goto LAB_00c2c3af;
               }
               local_8 = (_LDBL12 *)0x0;
               puVar5 = &local_24 + iVar2;
-              param_1 = (_LDBL12 *)(((_LDBL12 *)*puVar5)->ld12 + 1);
-            } while (param_1 < (_LDBL12 *)*puVar5);
-            bVar14 = param_1 == (_LDBL12 *)0x0;
+              pld12 = (_LDBL12 *)(((_LDBL12 *)*puVar5)->ld12 + 1);
+            } while (pld12 < (_LDBL12 *)*puVar5);
+            bVar14 = pld12 == (_LDBL12 *)0x0;
           } while( true );
         }
         iVar2 = iVar2 + 1;
@@ -411,7 +411,7 @@ LAB_00c2c3af:
         puVar6 = puVar6 + 1;
       }
     }
-    if (param_1 != (_LDBL12 *)0x0) {
+    if (pld12 != (_LDBL12 *)0x0) {
       iVar11 = uVar10 - 0x3ffe;
     }
     if (iVar11 < FloatFormat.min_exp - FloatFormat.precision) {
@@ -429,15 +429,14 @@ LAB_00c2c3af:
             uVar9 = (uVar9 - 1 | 0xffffffe0) + 1;
           }
           local_1c[3] = 0;
-          param_1 = (_LDBL12 *)0x0;
+          pld12 = (_LDBL12 *)0x0;
           local_8 = (_LDBL12 *)(0x20 - uVar9);
           do {
-            local_1c[2] = (&local_24)[(int)param_1] & ~(-1 << ((byte)uVar9 & 0x1f));
-            (&local_24)[(int)param_1] =
-                 (&local_24)[(int)param_1] >> ((byte)uVar9 & 0x1f) | local_1c[3];
-            param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+            local_1c[2] = (&local_24)[(int)pld12] & ~(-1 << ((byte)uVar9 & 0x1f));
+            (&local_24)[(int)pld12] = (&local_24)[(int)pld12] >> ((byte)uVar9 & 0x1f) | local_1c[3];
+            pld12 = (_LDBL12 *)(pld12->ld12 + 1);
             local_1c[3] = local_1c[2] << ((byte)(0x20 - uVar9) & 0x1f);
-          } while ((int)param_1 < 3);
+          } while ((int)pld12 < 3);
           iVar13 = 2;
           puVar6 = local_1c + -iVar2;
           do {
@@ -462,15 +461,15 @@ LAB_00c2c3af:
             uVar9 = (uVar9 - 1 | 0xffffffe0) + 1;
           }
           local_1c[3] = 0;
-          param_1 = (_LDBL12 *)0x0;
+          pld12 = (_LDBL12 *)0x0;
           local_8 = (_LDBL12 *)(0x20 - uVar9);
           do {
-            uVar1 = (&local_24)[(int)param_1];
+            uVar1 = (&local_24)[(int)pld12];
             local_1c[2] = uVar1 & ~(-1 << ((byte)uVar9 & 0x1f));
-            (&local_24)[(int)param_1] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
-            param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+            (&local_24)[(int)pld12] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
+            pld12 = (_LDBL12 *)(pld12->ld12 + 1);
             local_1c[3] = local_1c[2] << ((byte)(0x20 - uVar9) & 0x1f);
-          } while ((int)param_1 < 3);
+          } while ((int)pld12 < 3);
           iVar2 = 2;
           puVar6 = local_1c + -iVar11;
           do {
@@ -497,15 +496,15 @@ LAB_00c2c3af:
         uVar9 = (uVar9 - 1 | 0xffffffe0) + 1;
       }
       local_1c[3] = 0;
-      param_1 = (_LDBL12 *)0x0;
+      pld12 = (_LDBL12 *)0x0;
       local_8 = (_LDBL12 *)(0x20 - uVar9);
       do {
-        uVar1 = (&local_24)[(int)param_1];
+        uVar1 = (&local_24)[(int)pld12];
         local_1c[2] = uVar1 & ~(-1 << ((byte)uVar9 & 0x1f));
-        (&local_24)[(int)param_1] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
-        param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+        (&local_24)[(int)pld12] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
+        pld12 = (_LDBL12 *)(pld12->ld12 + 1);
         local_1c[3] = local_1c[2] << ((byte)(0x20 - uVar9) & 0x1f);
-      } while ((int)param_1 < 3);
+      } while ((int)pld12 < 3);
       iVar2 = 2;
       puVar6 = local_1c + -iVar11;
       do {
@@ -571,15 +570,15 @@ LAB_00c2c552:
         uVar9 = (uVar9 - 1 | 0xffffffe0) + 1;
       }
       local_1c[3] = 0;
-      param_1 = (_LDBL12 *)0x0;
+      pld12 = (_LDBL12 *)0x0;
       local_8 = (_LDBL12 *)(0x20 - uVar9);
       do {
-        uVar1 = (&local_24)[(int)param_1];
+        uVar1 = (&local_24)[(int)pld12];
         local_1c[2] = uVar1 & ~(-1 << ((byte)uVar9 & 0x1f));
-        (&local_24)[(int)param_1] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
-        param_1 = (_LDBL12 *)(param_1->ld12 + 1);
+        (&local_24)[(int)pld12] = uVar1 >> ((byte)uVar9 & 0x1f) | local_1c[3];
+        pld12 = (_LDBL12 *)(pld12->ld12 + 1);
         local_1c[3] = local_1c[2] << ((byte)(0x20 - uVar9) & 0x1f);
-      } while ((int)param_1 < 3);
+      } while ((int)pld12 < 3);
       iVar2 = 2;
       puVar6 = local_1c + -iVar11;
       do {
@@ -600,11 +599,11 @@ LAB_00c2c766:
   fVar12 = (float)(iVar11 << (0x1fU - (char)FloatFormat.exp_width & 0x1f) |
                    -(uint)(local_1c[1] != 0) & 0x80000000 | local_24);
   if (FloatFormat.format_width == 0x40) {
-    param_2[1].f = fVar12;
-    param_2->f = local_20;
+    f[1].f = fVar12;
+    f->f = local_20;
   }
   else if (FloatFormat.format_width == 0x20) {
-    param_2->f = fVar12;
+    f->f = fVar12;
   }
   return IVar3;
 }

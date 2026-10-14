@@ -158,7 +158,7 @@ void __cdecl CG_Actor(int param_1,centity_s *param_2)
   int iVar5;
   int unaff_EBP;
   ShaderConstantSet *unaff_ESI;
-  uint uVar6;
+  uint lightingOrigin;
   actorInfo_t *unaff_EDI;
   float local_28;
   undefined4 local_24;
@@ -207,13 +207,13 @@ void __cdecl CG_Actor(int param_1,centity_s *param_2)
       iVar5 = R_CullBoxDpvs((float *)unaff_EDI,(DpvsPlane *)unaff_ESI,unaff_EBP);
       if (iVar5 == 0) {
         CG_HighlightPlayer(0,(centity_s *)unaff_EDI,unaff_ESI,SUB41(unaff_EBP,0));
-        uVar6 = 0x400004;
+        lightingOrigin = 0x400004;
         bVar2 = CG_IsInfrared((int)unaff_EDI);
         if (bVar2) {
-          uVar6 = 0x400084;
+          lightingOrigin = 0x400084;
         }
         R_AddDObjToScene((DObj *)(&DAT_01cef1a8 + iVar4),(cpose_t *)param_2,
-                         *(uint *)(param_2 + 0x1e8),uVar6,&local_28,0.0,0.0,0.0,0.0,-1,-1,
+                         *(uint *)(param_2 + 0x1e8),lightingOrigin,&local_28,0.0,0.0,0.0,0.0,-1,-1,
                          (ShaderConstantSet *)(param_2 + 0xfc),(ShaderConstantSet *)0x0,
                          (float)unaff_EDI,(float)unaff_ESI);
       }

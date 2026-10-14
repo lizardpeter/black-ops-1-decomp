@@ -2,7 +2,7 @@
 
 // 00428F80  VEH_ParseSpecificField  (bgame/bg_misctables.cpp:440)
 
-int __cdecl VEH_ParseSpecificField(uchar *param_1,char *param_2,int param_3,int param_4)
+int __cdecl VEH_ParseSpecificField(uchar *pStruct,char *pValue,int fieldType,int fieldOffset)
 
 {
   code *pcVar1;
@@ -12,84 +12,84 @@ int __cdecl VEH_ParseSpecificField(uchar *param_1,char *param_2,int param_3,int 
   char *pcVar5;
   int iVar6;
   double dVar7;
-  int local_8;
+  int i;
   
-  switch(param_3) {
+  switch(fieldType) {
   case 0xf:
-    for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-      iVar6 = I_stricmp(param_2,*(char **)(&s_vehicleClassNames + local_8 * 4));
+    for (i = 0; i < 7; i = i + 1) {
+      iVar6 = I_stricmp(pValue,*(char **)(&s_vehicleClassNames + i * 4));
       if (iVar6 == 0) {
-        *(undefined2 *)(param_1 + 0x40) = (undefined2)local_8;
+        *(undefined2 *)(pStruct + 0x40) = (undefined2)i;
         break;
       }
     }
-    if (local_8 == 7) {
+    if (i == 7) {
       Com_Error(ERR_DROP,"\x15Unknown vehicle type [%s]\n");
     }
     break;
   case 0x10:
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-      iVar6 = I_stricmp(param_2,s_vehicleCameraModes[local_8]);
+    for (i = 0; i < 6; i = i + 1) {
+      iVar6 = I_stricmp(pValue,s_vehicleCameraModes[i]);
       if (iVar6 == 0) {
-        *(undefined2 *)(param_1 + 0x6c) = (undefined2)local_8;
+        *(undefined2 *)(pStruct + 0x6c) = (undefined2)i;
         break;
       }
     }
-    if (local_8 == 6) {
+    if (i == 6) {
       Com_Error(ERR_DROP,"\x15Unknown vehicle camera mode [%s]\n");
     }
     break;
   case 0x11:
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      iVar6 = I_stricmp(param_2,s_vehicleBoostModes[local_8]);
+    for (i = 0; i < 2; i = i + 1) {
+      iVar6 = I_stricmp(pValue,s_vehicleBoostModes[i]);
       if (iVar6 == 0) {
-        *(undefined2 *)(param_1 + 0x160) = (undefined2)local_8;
+        *(undefined2 *)(pStruct + 0x160) = (undefined2)i;
         break;
       }
     }
-    if (local_8 == 2) {
+    if (i == 2) {
       Com_Error(ERR_DROP,"\x15Unknown vehicle boost mode [%s]\n");
     }
     break;
   case 0x12:
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      iVar6 = I_stricmp(param_2,s_tractionTypeNames[local_8]);
+    for (i = 0; i < 3; i = i + 1) {
+      iVar6 = I_stricmp(pValue,s_tractionTypeNames[i]);
       if (iVar6 == 0) {
-        *(int *)(param_1 + 0x1d1c) = local_8;
+        *(int *)(pStruct + 0x1d1c) = i;
         break;
       }
     }
-    if (local_8 == 3) {
+    if (i == 3) {
       Com_Error(ERR_DROP,"\x15Unknown traction type [%s]\n");
     }
     break;
   case 0x13:
-    dVar7 = atof(param_2);
-    *(float *)(param_1 + param_4) = (float)dVar7 * 17.6;
+    dVar7 = atof(pValue);
+    *(float *)(pStruct + fieldOffset) = (float)dVar7 * 17.6;
     break;
   case 0x14:
-    dVar7 = atof(param_2);
-    *(float *)(param_1 + param_4) = (float)dVar7 * 0.001;
+    dVar7 = atof(pValue);
+    *(float *)(pStruct + fieldOffset) = (float)dVar7 * 0.001;
     break;
   case 0x15:
-    uVar3 = SL_FindLowercaseString(param_2,SCRIPTINSTANCE_SERVER);
-    *(uint *)(param_1 + param_4) = uVar3;
+    uVar3 = SL_FindLowercaseString(pValue,SCRIPTINSTANCE_SERVER);
+    *(uint *)(pStruct + fieldOffset) = uVar3;
     break;
   case 0x16:
-    iVar6 = I_stricmp(param_2,"axis");
+    iVar6 = I_stricmp(pValue,"axis");
     if (iVar6 == 0) {
-      param_1[0x1c14] = '\x01';
-      param_1[0x1c15] = '\0';
-      param_1[0x1c16] = '\0';
-      param_1[0x1c17] = '\0';
+      pStruct[0x1c14] = '\x01';
+      pStruct[0x1c15] = '\0';
+      pStruct[0x1c16] = '\0';
+      pStruct[0x1c17] = '\0';
     }
     else {
-      iVar6 = I_stricmp(param_2,"allies");
+      iVar6 = I_stricmp(pValue,"allies");
       if (iVar6 == 0) {
-        param_1[0x1c14] = '\x02';
-        param_1[0x1c15] = '\0';
-        param_1[0x1c16] = '\0';
-        param_1[0x1c17] = '\0';
+        pStruct[0x1c14] = '\x02';
+        pStruct[0x1c15] = '\0';
+        pStruct[0x1c16] = '\0';
+        pStruct[0x1c17] = '\0';
       }
       else {
         bVar2 = false;
@@ -99,12 +99,12 @@ int __cdecl VEH_ParseSpecificField(uchar *param_1,char *param_2,int param_3,int 
     }
     break;
   case 0x17:
-    iVar6 = Key_StringToKeynum(param_2);
-    *(int *)(param_1 + param_4) = iVar6;
+    iVar6 = Key_StringToKeynum(pValue);
+    *(int *)(pStruct + fieldOffset) = iVar6;
     break;
   case 0x18:
-    pGVar4 = GraphFloat_Load(param_2);
-    *(GraphFloat **)(param_1 + param_4) = pGVar4;
+    pGVar4 = GraphFloat_Load(pValue);
+    *(GraphFloat **)(pStruct + fieldOffset) = pGVar4;
     break;
   default:
     pcVar5 = va("Bad vehicle field type %i\n");

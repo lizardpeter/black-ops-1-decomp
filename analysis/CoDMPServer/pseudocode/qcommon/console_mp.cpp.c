@@ -2,7 +2,7 @@
 
 // 006D79A0  Live_GetNecessaryBandwidth  (qcommon/console_mp.cpp:23)
 
-int __cdecl Live_GetNecessaryBandwidth(int param_1)
+int __cdecl Live_GetNecessaryBandwidth(int playerCount)
 
 {
   return (band_dedicated->current).integer;

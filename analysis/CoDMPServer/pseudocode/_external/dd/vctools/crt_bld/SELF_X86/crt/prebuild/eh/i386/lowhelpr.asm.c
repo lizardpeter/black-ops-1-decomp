@@ -2,7 +2,7 @@
 
 // 00C25450  _CallSettingFrame  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/i386/lowhelpr.asm:48)
 
-void __cdecl _CallSettingFrame(ulong param_1,ulong param_2,ulong param_3)
+void __cdecl _CallSettingFrame(ulong funclet,ulong pRN,ulong dwInCode)
 
 {
   code *extraout_EAX;

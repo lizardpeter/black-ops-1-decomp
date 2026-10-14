@@ -2,10 +2,10 @@
 
 // 0059DF80  DevGui_DrawQuad  (devgui/devgui_util.cpp:22)
 
-void __cdecl DevGui_DrawQuad(int (*param_1) [2],float *param_2)
+void __cdecl DevGui_DrawQuad(int (*vtxs) [2],float *color)
 
 {
-  float local_24;
+  float xy;
   float local_20;
   float local_1c;
   float local_18;
@@ -14,15 +14,15 @@ void __cdecl DevGui_DrawQuad(int (*param_1) [2],float *param_2)
   float local_c;
   float local_8;
   
-  local_24 = (float)(*param_1)[0];
-  local_20 = (float)(*param_1)[1];
-  local_1c = (float)param_1[1][0];
-  local_18 = (float)param_1[1][1];
-  local_14 = (float)param_1[2][0];
-  local_10 = (float)param_1[2][1];
-  local_c = (float)param_1[3][0];
-  local_8 = (float)param_1[3][1];
-  R_AddCmdDrawQuadPic((float (*) [2])&local_24,param_2,cls.whiteMaterial);
+  xy = (float)(*vtxs)[0];
+  local_20 = (float)(*vtxs)[1];
+  local_1c = (float)vtxs[1][0];
+  local_18 = (float)vtxs[1][1];
+  local_14 = (float)vtxs[2][0];
+  local_10 = (float)vtxs[2][1];
+  local_c = (float)vtxs[3][0];
+  local_8 = (float)vtxs[3][1];
+  R_AddCmdDrawQuadPic((float (*) [2])&xy,color,cls.whiteMaterial);
   return;
 }
 
@@ -47,14 +47,14 @@ int __cdecl DevGui_GetScreenHeight(void)
 
 // 0059D680  DevGui_DrawBox  (devgui/devgui_util.cpp:112)
 
-void __cdecl DevGui_DrawBox(int param_1,int param_2,int param_3,int param_4,uchar *param_5)
+void __cdecl DevGui_DrawBox(int x,int y,int w,int h,uchar *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_14 [4];
+  float unpackedColor [4];
   
-  if (param_3 == 0) {
+  if (w == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_util.cpp",0x72,0,
                              "%s");
     if (!bVar2) {
@@ -63,7 +63,7 @@ void __cdecl DevGui_DrawBox(int param_1,int param_2,int param_3,int param_4,ucha
       return;
     }
   }
-  if (param_4 == 0) {
+  if (h == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_util.cpp",0x73,0,
                              "%s");
     if (!bVar2) {
@@ -72,28 +72,29 @@ void __cdecl DevGui_DrawBox(int param_1,int param_2,int param_3,int param_4,ucha
       return;
     }
   }
-  Byte4UnpackRgba(param_5,local_14);
+  Byte4UnpackRgba(color,unpackedColor);
   R_AddCmdDrawStretchPic
-            ((float)param_1,(float)param_2,(float)param_3,(float)param_4,0.0,0.0,0.0,0.0,local_14,
-             cls.whiteMaterial);
+            ((float)x,(float)y,(float)w,(float)h,0.0,0.0,0.0,0.0,unpackedColor,cls.whiteMaterial);
   return;
 }
 
 
 // 0059D760  DevGui_DrawBoxCentered  (devgui/devgui_util.cpp:132)
 
-void __cdecl DevGui_DrawBoxCentered(int param_1,int param_2,int param_3,int param_4,uchar *param_5)
+void __cdecl DevGui_DrawBoxCentered(int centerX,int centerY,int w,int h,uchar *color)
 
 {
-  DevGui_DrawBox(param_1 - param_3 / 2,param_2 - param_4 / 2,param_3,param_4,param_5);
+  int x;
+  int y;
+  
+  DevGui_DrawBox(centerX - w / 2,centerY - h / 2,w,h,color);
   return;
 }
 
 
 // 0059D7B0  DevGui_DrawBevelBox  (devgui/devgui_util.cpp:146)
 
-void __cdecl
-DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_5,uchar *param_6)
+void __cdecl DevGui_DrawBevelBox(int x,int y,int w,int h,float shade,uchar *color)
 
 {
   code *pcVar1;
@@ -122,7 +123,7 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
   float local_40;
   float local_3c;
   float local_38;
-  int local_34;
+  int vtxs;
   int local_30;
   int local_2c;
   int local_28;
@@ -130,40 +131,40 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
   int local_20;
   int local_1c;
   int local_18;
-  float local_14;
+  float unpackedColor;
   float local_10;
   float local_c;
   
-  if (((float)param_3 < 8.0) &&
+  if (((float)w < 8.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_util.cpp",0x96,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((float)param_4 < 8.0) &&
+  if (((float)h < 8.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_util.cpp",0x97,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Byte4UnpackRgba(param_6,&local_14);
-  DevGui_DrawBox(param_1,param_2,param_3,param_4,param_6);
-  local_14 = param_5 * local_14;
-  local_10 = param_5 * local_10;
-  local_c = param_5 * local_c;
-  local_38 = local_14;
-  if (0.0 <= local_14 - 1.0) {
+  Byte4UnpackRgba(color,&unpackedColor);
+  DevGui_DrawBox(x,y,w,h,color);
+  unpackedColor = shade * unpackedColor;
+  local_10 = shade * local_10;
+  local_c = shade * local_c;
+  local_38 = unpackedColor;
+  if (0.0 <= unpackedColor - 1.0) {
     local_38 = 1.0;
   }
-  if (0.0 - local_14 < 0.0) {
+  if (0.0 - unpackedColor < 0.0) {
     local_68 = local_38;
   }
   else {
     local_68 = 0.0;
   }
-  local_14 = local_68;
+  unpackedColor = local_68;
   local_3c = local_10;
   if (0.0 <= local_10 - 1.0) {
     local_3c = 1.0;
@@ -186,29 +187,29 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
     local_70 = 0.0;
   }
   local_c = local_70;
-  local_34 = param_1;
-  local_30 = param_2;
-  local_2c = param_1 + 4;
-  local_28 = param_2 + 4;
-  local_24 = param_1 + 4;
-  local_20 = param_2 + -4 + param_4;
-  local_1c = param_1;
-  local_18 = param_2 + param_4;
-  DevGui_DrawQuad((int (*) [2])&local_34,&local_14);
-  local_14 = param_5 * local_14;
-  local_10 = param_5 * local_10;
-  local_c = param_5 * local_c;
-  local_44 = local_14;
-  if (0.0 <= local_14 - 1.0) {
+  vtxs = x;
+  local_30 = y;
+  local_2c = x + 4;
+  local_28 = y + 4;
+  local_24 = x + 4;
+  local_20 = y + -4 + h;
+  local_1c = x;
+  local_18 = y + h;
+  DevGui_DrawQuad((int (*) [2])&vtxs,&unpackedColor);
+  unpackedColor = shade * unpackedColor;
+  local_10 = shade * local_10;
+  local_c = shade * local_c;
+  local_44 = unpackedColor;
+  if (0.0 <= unpackedColor - 1.0) {
     local_44 = 1.0;
   }
-  if (0.0 - local_14 < 0.0) {
+  if (0.0 - unpackedColor < 0.0) {
     local_74 = local_44;
   }
   else {
     local_74 = 0.0;
   }
-  local_14 = local_74;
+  unpackedColor = local_74;
   local_48 = local_10;
   if (0.0 <= local_10 - 1.0) {
     local_48 = 1.0;
@@ -231,29 +232,29 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
     local_7c = 0.0;
   }
   local_c = local_7c;
-  local_34 = param_1;
-  local_30 = param_2;
-  local_2c = param_1 + param_3;
-  local_28 = param_2;
-  local_24 = param_1 + -4 + param_3;
-  local_20 = param_2 + 4;
-  local_1c = param_1 + 4;
-  local_18 = param_2 + 4;
-  DevGui_DrawQuad((int (*) [2])&local_34,&local_14);
-  local_14 = param_5 * local_14;
-  local_10 = param_5 * local_10;
-  local_c = param_5 * local_c;
-  local_50 = local_14;
-  if (0.0 <= local_14 - 1.0) {
+  vtxs = x;
+  local_30 = y;
+  local_2c = x + w;
+  local_28 = y;
+  local_24 = x + -4 + w;
+  local_20 = y + 4;
+  local_1c = x + 4;
+  local_18 = y + 4;
+  DevGui_DrawQuad((int (*) [2])&vtxs,&unpackedColor);
+  unpackedColor = shade * unpackedColor;
+  local_10 = shade * local_10;
+  local_c = shade * local_c;
+  local_50 = unpackedColor;
+  if (0.0 <= unpackedColor - 1.0) {
     local_50 = 1.0;
   }
-  if (0.0 - local_14 < 0.0) {
+  if (0.0 - unpackedColor < 0.0) {
     local_80 = local_50;
   }
   else {
     local_80 = 0.0;
   }
-  local_14 = local_80;
+  unpackedColor = local_80;
   local_54 = local_10;
   if (0.0 <= local_10 - 1.0) {
     local_54 = 1.0;
@@ -276,29 +277,29 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
     local_88 = 0.0;
   }
   local_c = local_88;
-  local_34 = param_1;
-  local_30 = param_2 + param_4;
-  local_2c = param_1 + 4;
-  local_28 = param_2 + -4 + param_4;
-  local_24 = param_1 + -4 + param_3;
-  local_20 = param_2 + -4 + param_4;
-  local_1c = param_1 + param_3;
-  local_18 = param_2 + param_4;
-  DevGui_DrawQuad((int (*) [2])&local_34,&local_14);
-  local_14 = param_5 * local_14;
-  local_10 = param_5 * local_10;
-  local_c = param_5 * local_c;
-  local_5c = local_14;
-  if (0.0 <= local_14 - 1.0) {
+  vtxs = x;
+  local_30 = y + h;
+  local_2c = x + 4;
+  local_28 = y + -4 + h;
+  local_24 = x + -4 + w;
+  local_20 = y + -4 + h;
+  local_1c = x + w;
+  local_18 = y + h;
+  DevGui_DrawQuad((int (*) [2])&vtxs,&unpackedColor);
+  unpackedColor = shade * unpackedColor;
+  local_10 = shade * local_10;
+  local_c = shade * local_c;
+  local_5c = unpackedColor;
+  if (0.0 <= unpackedColor - 1.0) {
     local_5c = 1.0;
   }
-  if (0.0 - local_14 < 0.0) {
+  if (0.0 - unpackedColor < 0.0) {
     local_8c = local_5c;
   }
   else {
     local_8c = 0.0;
   }
-  local_14 = local_8c;
+  unpackedColor = local_8c;
   local_60 = local_10;
   if (0.0 <= local_10 - 1.0) {
     local_60 = 1.0;
@@ -321,28 +322,28 @@ DevGui_DrawBevelBox(int param_1,int param_2,int param_3,int param_4,float param_
     local_94 = 0.0;
   }
   local_c = local_94;
-  local_34 = param_1 + param_3;
-  local_30 = param_2;
-  local_2c = param_1 + param_3;
-  local_28 = param_2 + param_4;
-  local_24 = param_1 + -4 + param_3;
-  local_20 = param_2 + -4 + param_4;
-  local_1c = param_1 + -4 + param_3;
-  local_18 = param_2 + 4;
-  DevGui_DrawQuad((int (*) [2])&local_34,&local_14);
+  vtxs = x + w;
+  local_30 = y;
+  local_2c = x + w;
+  local_28 = y + h;
+  local_24 = x + -4 + w;
+  local_20 = y + -4 + h;
+  local_1c = x + -4 + w;
+  local_18 = y + 4;
+  DevGui_DrawQuad((int (*) [2])&vtxs,&unpackedColor);
   return;
 }
 
 
 // 0059E010  DevGui_DrawLine  (devgui/devgui_util.cpp:241)
 
-void __cdecl DevGui_DrawLine(float *param_1,float *param_2,int param_3,uchar *param_4)
+void __cdecl DevGui_DrawLine(float *start,float *end,int width,uchar *color)
 
 {
   float fVar1;
   float fVar2;
   double dVar3;
-  float fVar4;
+  float w;
   double in_stack_ffffff80;
   float local_70;
   float local_5c;
@@ -365,80 +366,79 @@ void __cdecl DevGui_DrawLine(float *param_1,float *param_2,int param_3,uchar *pa
   float local_18;
   float local_14;
   
-  local_14 = *param_1;
-  local_18 = *param_2;
+  local_14 = *start;
+  local_18 = *end;
   local_1c = local_18;
   if (0.0 <= local_18 - local_14) {
     local_1c = local_14;
   }
   local_24 = local_1c;
-  local_28 = param_1[1];
-  local_2c = param_2[1];
+  local_28 = start[1];
+  local_2c = end[1];
   local_30 = local_2c;
   if (0.0 <= local_2c - local_28) {
     local_30 = local_28;
   }
   local_20 = local_30;
-  local_34 = *param_1;
-  local_38 = *param_2;
+  local_34 = *start;
+  local_38 = *end;
   local_3c = local_38;
   if (0.0 <= local_34 - local_38) {
     local_3c = local_34;
   }
   local_44 = local_3c;
-  local_48 = param_1[1];
-  local_4c = param_2[1];
+  local_48 = start[1];
+  local_4c = end[1];
   local_50 = local_4c;
   if (0.0 <= local_48 - local_4c) {
     local_50 = local_48;
   }
   local_40 = local_50;
-  local_5c = *param_2 - *param_1;
-  local_58 = param_2[1] - param_1[1];
+  local_5c = *end - *start;
+  local_58 = end[1] - start[1];
   local_54 = 0;
   fVar1 = (local_3c - local_1c) / 2.0 + local_1c;
   fVar2 = (local_50 - local_30) / 2.0 + local_30;
-  fVar4 = Vec2Length(&local_5c);
+  w = Vec2Length(&local_5c);
   Vec3Normalize(&local_5c);
   dVar3 = (double)local_5c;
   __libm_sse2_acos(in_stack_ffffff80);
   local_70 = (float)dVar3 * 57.295776;
-  if (param_2[1] <= param_1[1] && param_1[1] != param_2[1]) {
+  if (end[1] <= start[1] && start[1] != end[1]) {
     local_70 = -local_70;
   }
   for (; local_70 < 0.0; local_70 = local_70 + 360.0) {
   }
-  Byte4UnpackRgba(param_4,(float *)&stack0xffffff80);
+  Byte4UnpackRgba(color,(float *)&stack0xffffff80);
   R_AddCmdDrawStretchPicRotateXY
-            (fVar1 - fVar4 / 2.0,fVar2 - (float)(param_3 / 2),fVar4,(float)param_3,0.0,0.0,1.0,1.0,
-             local_70,(float *)&stack0xffffff80,cls.whiteMaterial);
+            (fVar1 - w / 2.0,fVar2 - (float)(width / 2),w,(float)width,0.0,0.0,1.0,1.0,local_70,
+             (float *)&stack0xffffff80,cls.whiteMaterial);
   return;
 }
 
 
 // 0059E2E0  DevGui_DrawFont  (devgui/devgui_util.cpp:284)
 
-void __cdecl
-DevGui_DrawFont(int param_1,int param_2,uchar *param_3,char *param_4,float param_5,float param_6)
+void __cdecl DevGui_DrawFont(int x,int y,uchar *color,char *text,float xScale,float yScale)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_14 [4];
+  float unpackedColor [4];
   
-  if ((param_4 == (char *)0x0) &&
+  if ((text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui_util.cpp",0x120,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (*param_4 != '\0') {
-    Byte4UnpackRgba(param_3,local_14);
+  if (*text != '\0') {
+    Byte4UnpackRgba(color,unpackedColor);
     iVar3 = DevGui_GetFontHeight();
-    R_AddCmdDrawText(param_4,0x7fffffff,cls.consoleFont,(float)param_1,(float)(iVar3 + param_2),
-                     param_5,param_6,0.0,local_14,0);
+    R_AddCmdDrawText(text,0x7fffffff,cls.consoleFont,(float)x,(float)(iVar3 + y),xScale,yScale,0.0,
+                     unpackedColor,0);
   }
   return;
 }
@@ -446,12 +446,12 @@ DevGui_DrawFont(int param_1,int param_2,uchar *param_3,char *param_4,float param
 
 // 0059E390  DevGui_GetFontWidth  (devgui/devgui_util.cpp:318)
 
-int __cdecl DevGui_GetFontWidth(char *param_1)
+int __cdecl DevGui_GetFontWidth(char *text)
 
 {
   int iVar1;
   
-  iVar1 = R_TextWidth(param_1,0,cls.consoleFont);
+  iVar1 = R_TextWidth(text,0,cls.consoleFont);
   return iVar1;
 }
 

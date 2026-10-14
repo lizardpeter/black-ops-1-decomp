@@ -12,7 +12,7 @@ void __cdecl TRACK_statmonitor(void)
 
 // 006ED8C0  StatMon_Warning  (qcommon/statmonitor.cpp:32)
 
-void __cdecl StatMon_Warning(int param_1,int param_2,char *param_3)
+void __cdecl StatMon_Warning(int type,int duration,char *materialName)
 
 {
   code *pcVar1;
@@ -21,7 +21,7 @@ void __cdecl StatMon_Warning(int param_1,int param_2,char *param_3)
   Material *pMVar4;
   
   if (((com_statmon->current).enabled != false) && (bVar2 = G_ExitAfterToolComplete(), !bVar2)) {
-    if ((0xd < (uint)param_1) &&
+    if ((0xd < (uint)type) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\statmonitor.cpp",0x2a,
                                  0,"type doesn\'t index ARRAY_COUNT( stats )\n\t%i not in [0, %i)"),
        !bVar2)) {
@@ -31,13 +31,13 @@ void __cdecl StatMon_Warning(int param_1,int param_2,char *param_3)
     }
     Sys_EnterCriticalSection(CRITSECT_STATMON);
     iVar3 = Sys_Milliseconds();
-    stats[param_1].endtime = iVar3 + param_2;
-    if ((stats[param_1].material == (Material *)0x0) && (cls.rendererStarted != 0)) {
-      pMVar4 = Material_RegisterHandle(param_3,1);
-      stats[param_1].material = pMVar4;
+    stats[type].endtime = iVar3 + duration;
+    if ((stats[type].material == (Material *)0x0) && (cls.rendererStarted != 0)) {
+      pMVar4 = Material_RegisterHandle(materialName,1);
+      stats[type].material = pMVar4;
     }
-    if (statCount <= param_1) {
-      statCount = param_1 + 1;
+    if (statCount <= type) {
+      statCount = type + 1;
     }
     Sys_LeaveCriticalSection(CRITSECT_STATMON);
   }
@@ -47,11 +47,11 @@ void __cdecl StatMon_Warning(int param_1,int param_2,char *param_3)
 
 // 006ED980  StatMon_GetStatsArray  (qcommon/statmonitor.cpp:69)
 
-void __cdecl StatMon_GetStatsArray(statmonitor_s **param_1,int *param_2)
+void __cdecl StatMon_GetStatsArray(statmonitor_s **array,int *count)
 
 {
-  *param_1 = stats;
-  *param_2 = statCount;
+  *array = stats;
+  *count = statCount;
   return;
 }
 

@@ -2,10 +2,11 @@
 
 // 009724C0  Live_SetPlaylistVersion  (live/live_presence_win.cpp:91)
 
-void __cdecl Live_SetPlaylistVersion(int param_1)
+void __cdecl Live_SetPlaylistVersion(int controllerIndex)
 
 {
   int iVar1;
+  int playlistVersion;
   
   if ((dw_loggedin != (dvar_s *)0x0) && ((dw_loggedin->current).enabled != false)) {
     iVar1 = Playlist_GetVersionNumber();
@@ -21,23 +22,23 @@ void __cdecl Live_SetPlaylistVersion(int param_1)
 
 // 00972530  Live_SetPlaylistNum  (live/live_presence_win.cpp:115)
 
-void __cdecl Live_SetPlaylistNum(int param_1,int param_2)
+void __cdecl Live_SetPlaylistNum(int controllerIndex,int playlistNum)
 
 {
   int iVar1;
   
   if ((dw_loggedin != (dvar_s *)0x0) && ((dw_loggedin->current).enabled != false)) {
-    iVar1 = Playlist_GetPlaylistIdForNum(param_1,param_2);
+    iVar1 = Playlist_GetPlaylistIdForNum(controllerIndex,playlistNum);
     if (g_matchmakingInfo->m_memberPLAYLIST != iVar1) {
-      Playlist_GetPlaylistIdForNum(param_1,param_2);
+      Playlist_GetPlaylistIdForNum(controllerIndex,playlistNum);
       Com_Printf(0x10,"Setting playlistId to %i for controller %i\n");
-      iVar1 = Playlist_GetPlaylistIdForNum(param_1,param_2);
+      iVar1 = Playlist_GetPlaylistIdForNum(controllerIndex,playlistNum);
       g_matchmakingInfo->m_memberPLAYLIST = iVar1;
       g_matchmakingInfo->m_dirty = 1;
     }
-    if (g_matchmakingInfo->m_memberGAME_MODE != param_2) {
+    if (g_matchmakingInfo->m_memberGAME_MODE != playlistNum) {
       Com_Printf(0x10,"Setting GAME_MODE to %i for controller %i\n");
-      g_matchmakingInfo->m_memberGAME_MODE = param_2;
+      g_matchmakingInfo->m_memberGAME_MODE = playlistNum;
       g_matchmakingInfo->m_dirty = 1;
     }
   }
@@ -47,12 +48,12 @@ void __cdecl Live_SetPlaylistNum(int param_1,int param_2)
 
 // 00972610  Live_GetMapIndex  (live/live_presence_win.cpp:183)
 
-int __cdecl Live_GetMapIndex(char *param_1)
+int __cdecl Live_GetMapIndex(char *mapname)
 
 {
-  int local_8;
+  int mapIndex;
   
-  for (local_8 = 0; mapRichPresenceInfo[local_8].mapname[0] != '\0'; local_8 = local_8 + 1) {
+  for (mapIndex = 0; mapRichPresenceInfo[mapIndex].mapname[0] != '\0'; mapIndex = mapIndex + 1) {
   }
   return -1;
 }
@@ -60,18 +61,18 @@ int __cdecl Live_GetMapIndex(char *param_1)
 
 // 00972640  Live_GetMapSource  (live/live_presence_win.cpp:204)
 
-int __cdecl Live_GetMapSource(int param_1)
+int __cdecl Live_GetMapSource(int mapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 < 0) {
+  if (mapIndex < 0) {
     iVar3 = 2;
   }
   else {
-    if ((param_1 < 0) || (8 < param_1)) {
+    if ((mapIndex < 0) || (8 < mapIndex)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_presence_win.cpp",0xd2
                                ,0,"%s\n\t(mapIndex) = %i");
       if (!bVar2) {
@@ -80,7 +81,7 @@ int __cdecl Live_GetMapSource(int param_1)
         return iVar3;
       }
     }
-    iVar3 = mapRichPresenceInfo[param_1].mapPack;
+    iVar3 = mapRichPresenceInfo[mapIndex].mapPack;
   }
   return iVar3;
 }

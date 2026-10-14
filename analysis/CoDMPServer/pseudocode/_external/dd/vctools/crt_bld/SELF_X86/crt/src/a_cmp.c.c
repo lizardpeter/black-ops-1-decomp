@@ -2,17 +2,17 @@
 
 // 00C2D635  strncnt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c:50)
 
-int __cdecl strncnt(char *param_1,int param_2)
+int __cdecl strncnt(char *cnt,int param_2)
 
 {
   char *in_EAX;
   char *pcVar1;
   
-  pcVar1 = param_1;
+  pcVar1 = cnt;
   for (; (pcVar1 != (char *)0x0 && (*in_EAX != '\0')); in_EAX = in_EAX + 1) {
     pcVar1 = pcVar1 + -1;
   }
-  return (int)(param_1 + (-1 - (int)(pcVar1 + -1)));
+  return (int)(cnt + (-1 - (int)(pcVar1 + -1)));
 }
 
 
@@ -23,41 +23,42 @@ int __cdecl strncnt(char *param_1,int param_2)
 
 int __cdecl
 __crtCompareStringA_stat
-          (localeinfo_struct *param_1,ulong param_2,ulong param_3,char *param_4,int param_5,
-          char *param_6,int param_7,int param_8)
+          (localeinfo_struct *Locale,ulong dwCmpFlags,ulong cchCount1,char *lpString2,int cchCount2,
+          char *code_page,int param_7,int param_8)
 
 {
-  uint uVar1;
-  char *lpMultiByteStr;
-  int iVar2;
-  DWORD DVar3;
-  BOOL BVar4;
-  BYTE *pBVar5;
+  uint size;
+  char *lpSrcStr;
+  int iVar1;
+  DWORD DVar2;
+  BOOL BVar3;
+  BYTE *pBVar4;
   uint cchWideChar;
-  undefined4 *puVar6;
-  uint uVar7;
+  undefined4 *puVar5;
+  uint uVar6;
   LPWSTR lpWideCharStr;
-  char *pcVar8;
+  char *toCP;
   int *in_ECX;
   byte *in_EDX;
-  byte *pbVar9;
+  byte *pBlock;
   int unaff_EDI;
-  char *pcVar10;
-  int local_2c;
+  char *pBlock_00;
+  int buff_size1;
+  int retcode;
   byte *local_28;
-  PCNZWCH local_24;
+  PCNZWCH wbuffer1;
   char *local_20;
-  _cpinfo local_1c;
+  _cpinfo lpCPInfo;
   uint local_8;
   
-  lpMultiByteStr = param_4;
+  lpSrcStr = lpString2;
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20 = param_4;
+  local_20 = lpString2;
   if (f_use == 0) {
-    iVar2 = CompareStringW(0,0,L"",1,L"",1);
-    if (iVar2 == 0) {
-      DVar3 = GetLastError();
-      if (DVar3 == 0x78) {
+    iVar1 = CompareStringW(0,0,L"",1,L"",1);
+    if (iVar1 == 0) {
+      DVar2 = GetLastError();
+      if (DVar2 == 0x78) {
         f_use = 2;
       }
     }
@@ -65,155 +66,155 @@ __crtCompareStringA_stat
       f_use = 1;
     }
   }
-  if ((int)param_3 < 1) {
-    if ((int)param_3 < -1) {
+  if ((int)cchCount1 < 1) {
+    if ((int)cchCount1 < -1) {
       return 0;
     }
   }
   else {
-    param_3 = strncnt((char *)param_3,unaff_EDI);
+    cchCount1 = strncnt((char *)cchCount1,unaff_EDI);
   }
-  if (param_5 < 1) {
-    if (param_5 < -1) {
+  if (cchCount2 < 1) {
+    if (cchCount2 < -1) {
       return 0;
     }
   }
   else {
-    param_5 = strncnt((char *)param_5,unaff_EDI);
+    cchCount2 = strncnt((char *)cchCount2,unaff_EDI);
   }
   if ((f_use == 2) || (f_use == 0)) {
-    pcVar10 = (char *)0x0;
-    pbVar9 = (byte *)0x0;
-    if (param_1 == (localeinfo_struct *)0x0) {
-      param_1 = *(localeinfo_struct **)(*in_ECX + 0x14);
+    pBlock_00 = (char *)0x0;
+    pBlock = (byte *)0x0;
+    if (Locale == (localeinfo_struct *)0x0) {
+      Locale = *(localeinfo_struct **)(*in_ECX + 0x14);
     }
-    if (param_6 == (char *)0x0) {
-      param_6 = *(char **)(*in_ECX + 4);
+    if (code_page == (char *)0x0) {
+      code_page = *(char **)(*in_ECX + 4);
     }
-    pcVar8 = (char *)__ansicp((int)param_1);
-    if (pcVar8 == (char *)0xffffffff) {
+    toCP = (char *)__ansicp((int)Locale);
+    if (toCP == (char *)0xffffffff) {
       return 0;
     }
     local_28 = in_EDX;
-    if (pcVar8 != param_6) {
-      pbVar9 = (byte *)__convertcp((int)param_6,(int)pcVar8,(char *)in_EDX,(int *)&param_3,
+    if (toCP != code_page) {
+      pBlock = (byte *)__convertcp((int)code_page,(int)toCP,(char *)in_EDX,(int *)&cchCount1,
                                    (char *)0x0,0);
-      if (pbVar9 == (byte *)0x0) {
+      if (pBlock == (byte *)0x0) {
         return 0;
       }
-      pcVar10 = __convertcp((int)param_6,(int)pcVar8,lpMultiByteStr,&param_5,(char *)0x0,0);
-      local_28 = pbVar9;
-      local_20 = pcVar10;
-      if (pcVar10 == (char *)0x0) {
-        free(pbVar9);
+      pBlock_00 = __convertcp((int)code_page,(int)toCP,lpSrcStr,&cchCount2,(char *)0x0,0);
+      local_28 = pBlock;
+      local_20 = pBlock_00;
+      if (pBlock_00 == (char *)0x0) {
+        free(pBlock);
         return 0;
       }
     }
-    iVar2 = CompareStringA((LCID)param_1,param_2,(PCNZCH)local_28,param_3,local_20,param_5);
-    if (pbVar9 != (byte *)0x0) {
-      free(pbVar9);
-      free(pcVar10);
-      return iVar2;
+    iVar1 = CompareStringA((LCID)Locale,dwCmpFlags,(PCNZCH)local_28,cchCount1,local_20,cchCount2);
+    if (pBlock != (byte *)0x0) {
+      free(pBlock);
+      free(pBlock_00);
+      return iVar1;
     }
-    return iVar2;
+    return iVar1;
   }
   if (f_use != 1) {
     return 0;
   }
-  local_2c = 0;
-  if (param_6 == (char *)0x0) {
-    param_6 = *(char **)(*in_ECX + 4);
+  retcode = 0;
+  if (code_page == (char *)0x0) {
+    code_page = *(char **)(*in_ECX + 4);
   }
-  if ((param_3 == 0) || (param_5 == 0)) {
-    if (param_3 == param_5) {
+  if ((cchCount1 == 0) || (cchCount2 == 0)) {
+    if (cchCount1 == cchCount2) {
       return 2;
     }
-    if (1 < param_5) {
+    if (1 < cchCount2) {
       return 1;
     }
-    if (1 < (int)param_3) {
+    if (1 < (int)cchCount1) {
       return 3;
     }
-    BVar4 = GetCPInfo((UINT)param_6,&local_1c);
-    if (BVar4 == 0) {
+    BVar3 = GetCPInfo((UINT)code_page,&lpCPInfo);
+    if (BVar3 == 0) {
       return 0;
     }
-    if (0 < (int)param_3) {
-      if (local_1c.MaxCharSize < 2) {
+    if (0 < (int)cchCount1) {
+      if (lpCPInfo.MaxCharSize < 2) {
         return 3;
       }
-      pBVar5 = local_1c.LeadByte;
+      pBVar4 = lpCPInfo.LeadByte;
       while( true ) {
-        if (local_1c.LeadByte[0] == 0) {
+        if (lpCPInfo.LeadByte[0] == 0) {
           return 3;
         }
-        if (pBVar5[1] == 0) break;
-        if ((*pBVar5 <= *in_EDX) && (*in_EDX <= pBVar5[1])) {
+        if (pBVar4[1] == 0) break;
+        if ((*pBVar4 <= *in_EDX) && (*in_EDX <= pBVar4[1])) {
           return 2;
         }
-        pBVar5 = pBVar5 + 2;
-        local_1c.LeadByte[0] = *pBVar5;
+        pBVar4 = pBVar4 + 2;
+        lpCPInfo.LeadByte[0] = *pBVar4;
       }
       return 3;
     }
-    if (0 < param_5) {
-      if (1 < local_1c.MaxCharSize) {
-        pBVar5 = local_1c.LeadByte;
-        while ((local_1c.LeadByte[0] != 0 && (pBVar5[1] != 0))) {
-          if ((*pBVar5 <= (byte)*lpMultiByteStr) && ((byte)*lpMultiByteStr <= pBVar5[1])) {
+    if (0 < cchCount2) {
+      if (1 < lpCPInfo.MaxCharSize) {
+        pBVar4 = lpCPInfo.LeadByte;
+        while ((lpCPInfo.LeadByte[0] != 0 && (pBVar4[1] != 0))) {
+          if ((*pBVar4 <= (byte)*lpSrcStr) && ((byte)*lpSrcStr <= pBVar4[1])) {
             return 2;
           }
-          pBVar5 = pBVar5 + 2;
-          local_1c.LeadByte[0] = *pBVar5;
+          pBVar4 = pBVar4 + 2;
+          lpCPInfo.LeadByte[0] = *pBVar4;
         }
       }
       return 1;
     }
   }
-  cchWideChar = MultiByteToWideChar((UINT)param_6,9,(LPCSTR)in_EDX,param_3,(LPWSTR)0x0,0);
+  cchWideChar = MultiByteToWideChar((UINT)code_page,9,(LPCSTR)in_EDX,cchCount1,(LPWSTR)0x0,0);
   if (cchWideChar == 0) {
     return 0;
   }
   if (((int)cchWideChar < 1) || (0xffffffe0 / cchWideChar < 2)) {
-    local_24 = (PCNZWCH)0x0;
+    wbuffer1 = (PCNZWCH)0x0;
   }
   else {
-    uVar7 = cchWideChar * 2 + 8;
-    if (uVar7 < 0x401) {
-      puVar6 = (undefined4 *)&stack0xffffffc4;
-      local_24 = (PCNZWCH)&stack0xffffffc4;
+    uVar6 = cchWideChar * 2 + 8;
+    if (uVar6 < 0x401) {
+      puVar5 = (undefined4 *)&stack0xffffffc4;
+      wbuffer1 = (PCNZWCH)&stack0xffffffc4;
       if (&stack0x00000000 != (undefined1 *)0x3c) {
 LAB_00c2d82a:
-        local_24 = (PCNZWCH)(puVar6 + 2);
+        wbuffer1 = (PCNZWCH)(puVar5 + 2);
       }
     }
     else {
-      puVar6 = malloc(uVar7);
-      local_24 = (PCNZWCH)0x0;
-      if (puVar6 != (undefined4 *)0x0) {
-        *puVar6 = 0xdddd;
+      puVar5 = malloc(uVar6);
+      wbuffer1 = (PCNZWCH)0x0;
+      if (puVar5 != (undefined4 *)0x0) {
+        *puVar5 = 0xdddd;
         goto LAB_00c2d82a;
       }
     }
   }
-  if (local_24 == (PCNZWCH)0x0) {
+  if (wbuffer1 == (PCNZWCH)0x0) {
     return 0;
   }
-  iVar2 = MultiByteToWideChar((UINT)param_6,1,(LPCSTR)in_EDX,param_3,local_24,cchWideChar);
-  if ((iVar2 != 0) &&
-     (uVar7 = MultiByteToWideChar((UINT)param_6,9,lpMultiByteStr,param_5,(LPWSTR)0x0,0), uVar7 != 0)
-     ) {
-    if (((int)uVar7 < 1) || (0xffffffe0 / uVar7 < 2)) {
+  iVar1 = MultiByteToWideChar((UINT)code_page,1,(LPCSTR)in_EDX,cchCount1,wbuffer1,cchWideChar);
+  if ((iVar1 != 0) &&
+     (uVar6 = MultiByteToWideChar((UINT)code_page,9,lpSrcStr,cchCount2,(LPWSTR)0x0,0), uVar6 != 0))
+  {
+    if (((int)uVar6 < 1) || (0xffffffe0 / uVar6 < 2)) {
       lpWideCharStr = (LPWSTR)0x0;
     }
     else {
-      uVar1 = uVar7 * 2 + 8;
-      if (uVar1 < 0x401) {
+      size = uVar6 * 2 + 8;
+      if (size < 0x401) {
         if (&stack0x00000000 == (undefined1 *)0x3c) goto LAB_00c2d8eb;
         lpWideCharStr = (LPWSTR)&stack0xffffffcc;
       }
       else {
-        lpWideCharStr = malloc(uVar1);
+        lpWideCharStr = malloc(size);
         if (lpWideCharStr != (LPWSTR)0x0) {
           lpWideCharStr[0] = L'\xdddd';
           lpWideCharStr[1] = L'\0';
@@ -222,24 +223,24 @@ LAB_00c2d82a:
       }
     }
     if (lpWideCharStr != (LPWSTR)0x0) {
-      iVar2 = MultiByteToWideChar((UINT)param_6,1,lpMultiByteStr,param_5,lpWideCharStr,uVar7);
-      if (iVar2 != 0) {
-        local_2c = CompareStringW((LCID)param_1,param_2,local_24,cchWideChar,lpWideCharStr,uVar7);
+      iVar1 = MultiByteToWideChar((UINT)code_page,1,lpSrcStr,cchCount2,lpWideCharStr,uVar6);
+      if (iVar1 != 0) {
+        retcode = CompareStringW((LCID)Locale,dwCmpFlags,wbuffer1,cchWideChar,lpWideCharStr,uVar6);
       }
       _freea(lpWideCharStr);
     }
   }
 LAB_00c2d8eb:
-  _freea(local_24);
-  return local_2c;
+  _freea(wbuffer1);
+  return retcode;
 }
 
 
 // 00C2D9C3  __crtCompareStringA  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_cmp.c:349)
 
 int __cdecl
-__crtCompareStringA(localeinfo_struct *param_1,ulong param_2,ulong param_3,char *param_4,int param_5
-                   ,char *param_6,int param_7,int param_8)
+__crtCompareStringA(localeinfo_struct *plocinfo,ulong Locale,ulong dwCmpFlags,char *lpString1,
+                   int cchCount1,char *lpString2,int cchCount2,int code_page)
 
 {
   int iVar1;
@@ -248,10 +249,10 @@ __crtCompareStringA(localeinfo_struct *param_1,ulong param_2,ulong param_3,char 
   _tiddata *local_c;
   bool local_8;
   
-  _LocaleUpdate::_LocaleUpdate((_LocaleUpdate *)&stack0xffffffec,param_1);
+  _LocaleUpdate::_LocaleUpdate((_LocaleUpdate *)&stack0xffffffec,plocinfo);
   iVar1 = __crtCompareStringA_stat
-                    ((localeinfo_struct *)param_2,param_3,param_5,param_6,param_7,(char *)param_8,
-                     (int)in_stack_ffffffec,(int)in_stack_fffffff0);
+                    ((localeinfo_struct *)Locale,dwCmpFlags,cchCount1,lpString2,cchCount2,
+                     (char *)code_page,(int)in_stack_ffffffec,(int)in_stack_fffffff0);
   if (local_8 != false) {
     local_c->_ownlocale = local_c->_ownlocale & 0xfffffffd;
   }

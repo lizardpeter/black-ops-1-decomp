@@ -2,153 +2,154 @@
 
 // 00B5E890  start_pass_phuff  (jpeg-6/jcphuff.c:107)
 
-void __cdecl start_pass_phuff(jpeg_compress_struct *param_1,uchar param_2)
+void __cdecl start_pass_phuff(jpeg_compress_struct *cinfo,uchar gather_statistics)
 
 {
   jpeg_entropy_encoder *pjVar1;
   jpeg_component_info *pjVar2;
   _func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *p_Var3;
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var4;
-  bool bVar5;
-  int local_18;
-  _func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *local_8;
+  bool isDC;
+  int ci;
+  jpeg_component_info *compptr;
+  phuff_entropy_encoder *entropy;
+  uchar is_DC_band;
+  int tbl;
   
-  pjVar1 = param_1->entropy;
-  pjVar1[2].finish_pass = (_func___cdecl_void_jpeg_compress_struct_ptr *)param_1;
-  *(uchar *)&pjVar1[1].start_pass = param_2;
-  bVar5 = param_1->Ss == 0;
-  if (param_1->Ah == 0) {
-    if (bVar5) {
+  pjVar1 = cinfo->entropy;
+  pjVar1[2].finish_pass = (_func___cdecl_void_jpeg_compress_struct_ptr *)cinfo;
+  *(uchar *)&pjVar1[1].start_pass = gather_statistics;
+  isDC = cinfo->Ss == 0;
+  if (cinfo->Ah == 0) {
+    if (isDC) {
       pjVar1->encode_mcu = encode_mcu_DC_first;
     }
     else {
       pjVar1->encode_mcu = encode_mcu_AC_first;
     }
   }
-  else if (bVar5) {
+  else if (isDC) {
     pjVar1->encode_mcu = encode_mcu_DC_refine;
   }
   else {
     pjVar1->encode_mcu = encode_mcu_AC_refine;
     if (pjVar1[5].encode_mcu ==
         (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)0x0) {
-      p_Var3 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,1000);
+      p_Var3 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,1000);
       pjVar1[5].encode_mcu = p_Var3;
     }
   }
-  if (param_2 == '\0') {
+  if (gather_statistics == '\0') {
     pjVar1->finish_pass = finish_pass_phuff;
   }
   else {
     pjVar1->finish_pass = finish_pass_gather_phuff;
   }
-  local_18 = 0;
+  ci = 0;
   do {
-    if (param_1->comps_in_scan <= local_18) {
+    if (cinfo->comps_in_scan <= ci) {
       pjVar1[4].finish_pass = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
       pjVar1[5].start_pass = (_func___cdecl_void_jpeg_compress_struct_ptr_uchar *)0x0;
       pjVar1[2].start_pass = (_func___cdecl_void_jpeg_compress_struct_ptr_uchar *)0x0;
       pjVar1[2].encode_mcu = (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)0x0;
-      pjVar1[5].finish_pass =
-           (_func___cdecl_void_jpeg_compress_struct_ptr *)param_1->restart_interval;
+      pjVar1[5].finish_pass = (_func___cdecl_void_jpeg_compress_struct_ptr *)cinfo->restart_interval
+      ;
       pjVar1[6].start_pass = (_func___cdecl_void_jpeg_compress_struct_ptr_uchar *)0x0;
       return;
     }
-    pjVar2 = param_1->cur_comp_info[local_18];
-    (&pjVar1[3].start_pass)[local_18] = (_func___cdecl_void_jpeg_compress_struct_ptr_uchar *)0x0;
-    if (bVar5) {
-      if (param_1->Ah == 0) {
-        local_8 = (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)
-                  pjVar2->dc_tbl_no;
+    pjVar2 = cinfo->cur_comp_info[ci];
+    (&pjVar1[3].start_pass)[ci] = (_func___cdecl_void_jpeg_compress_struct_ptr_uchar *)0x0;
+    if (isDC) {
+      if (cinfo->Ah == 0) {
+        tbl = pjVar2->dc_tbl_no;
         goto LAB_00b5e9ca;
       }
     }
     else {
-      local_8 = (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)pjVar2->ac_tbl_no;
-      pjVar1[4].encode_mcu = local_8;
+      tbl = pjVar2->ac_tbl_no;
+      pjVar1[4].encode_mcu = (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)tbl;
 LAB_00b5e9ca:
-      if (param_2 == '\0') {
-        jpeg_make_c_derived_tbl
-                  (param_1,bVar5,(int)local_8,
-                   (c_derived_tbl **)(&pjVar1[6].encode_mcu + (int)local_8));
+      if (gather_statistics == '\0') {
+        jpeg_make_c_derived_tbl(cinfo,isDC,tbl,(c_derived_tbl **)(&pjVar1[6].encode_mcu + tbl));
       }
       else {
-        if (((int)local_8 < 0) || (3 < (int)local_8)) {
-          param_1->err->msg_code = 0x32;
-          (param_1->err->msg_parm).i[0] = (int)local_8;
-          (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        if ((tbl < 0) || (3 < tbl)) {
+          cinfo->err->msg_code = 0x32;
+          (cinfo->err->msg_parm).i[0] = tbl;
+          (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
         }
-        if ((&pjVar1[7].finish_pass)[(int)local_8] ==
-            (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0) {
-          p_Var4 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x404);
-          (&pjVar1[7].finish_pass)[(int)local_8] = p_Var4;
+        if ((&pjVar1[7].finish_pass)[tbl] == (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0) {
+          p_Var4 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x404);
+          (&pjVar1[7].finish_pass)[tbl] = p_Var4;
         }
-        memset((uchar *)(&pjVar1[7].finish_pass)[(int)local_8],'\0',0x404);
+        memset((uchar *)(&pjVar1[7].finish_pass)[tbl],'\0',0x404);
       }
     }
-    local_18 = local_18 + 1;
+    ci = ci + 1;
   } while( true );
 }
 
 
 // 00B5EE10  dump_buffer  (jpeg-6/jcphuff.c:207)
 
-void __cdecl dump_buffer(phuff_entropy_encoder *param_1)
+void __cdecl dump_buffer(phuff_entropy_encoder *entropy)
 
 {
   jpeg_destination_mgr *pjVar1;
   uchar uVar2;
+  jpeg_destination_mgr *dest;
   
-  pjVar1 = param_1->cinfo->dest;
-  uVar2 = (*pjVar1->empty_output_buffer)(param_1->cinfo);
+  pjVar1 = entropy->cinfo->dest;
+  uVar2 = (*pjVar1->empty_output_buffer)(entropy->cinfo);
   if (uVar2 == '\0') {
-    param_1->cinfo->err->msg_code = 0x18;
-    (*param_1->cinfo->err->error_exit)((jpeg_common_struct *)param_1->cinfo);
+    entropy->cinfo->err->msg_code = 0x18;
+    (*entropy->cinfo->err->error_exit)((jpeg_common_struct *)entropy->cinfo);
   }
-  param_1->next_output_byte = pjVar1->next_output_byte;
-  param_1->free_in_buffer = pjVar1->free_in_buffer;
+  entropy->next_output_byte = pjVar1->next_output_byte;
+  entropy->free_in_buffer = pjVar1->free_in_buffer;
   return;
 }
 
 
 // 00B5ECB0  emit_bits  (jpeg-6/jcphuff.c:230)
 
-void __cdecl emit_bits(phuff_entropy_encoder *param_1,uint param_2,int param_3)
+void __cdecl emit_bits(phuff_entropy_encoder *entropy,uint code,int size)
 
 {
-  uchar local_10;
-  int local_c;
-  uint local_8;
+  int iVar1;
+  int c;
+  int put_bits;
+  long put_buffer;
   
-  local_c = param_1->put_bits;
-  if (param_3 == 0) {
-    param_1->cinfo->err->msg_code = 0x28;
-    (*param_1->cinfo->err->error_exit)((jpeg_common_struct *)param_1->cinfo);
+  iVar1 = entropy->put_bits;
+  if (size == 0) {
+    entropy->cinfo->err->msg_code = 0x28;
+    (*entropy->cinfo->err->error_exit)((jpeg_common_struct *)entropy->cinfo);
   }
-  if (param_1->gather_statistics == '\0') {
-    local_c = local_c + param_3;
-    local_8 = ((1 << ((byte)param_3 & 0x1f)) - 1U & param_2) << (0x18U - (char)local_c & 0x1f) |
-              param_1->put_buffer;
-    for (; 7 < local_c; local_c = local_c + -8) {
-      local_10 = (uchar)(local_8 >> 0x10);
-      *param_1->next_output_byte = local_10;
-      param_1->next_output_byte = param_1->next_output_byte + 1;
-      param_1->free_in_buffer = param_1->free_in_buffer - 1;
-      if (param_1->free_in_buffer == 0) {
-        dump_buffer(param_1);
+  if (entropy->gather_statistics == '\0') {
+    put_bits = iVar1 + size;
+    put_buffer = ((1 << ((byte)size & 0x1f)) - 1U & code) << (0x18U - (char)put_bits & 0x1f) |
+                 entropy->put_buffer;
+    for (; 7 < put_bits; put_bits = put_bits + -8) {
+      c._0_1_ = (uchar)((uint)put_buffer >> 0x10);
+      *entropy->next_output_byte = (uchar)c;
+      entropy->next_output_byte = entropy->next_output_byte + 1;
+      entropy->free_in_buffer = entropy->free_in_buffer - 1;
+      if (entropy->free_in_buffer == 0) {
+        dump_buffer(entropy);
       }
-      if (((int)local_8 >> 0x10 & 0xffU) == 0xff) {
-        *param_1->next_output_byte = '\0';
-        param_1->next_output_byte = param_1->next_output_byte + 1;
-        param_1->free_in_buffer = param_1->free_in_buffer - 1;
-        if (param_1->free_in_buffer == 0) {
-          dump_buffer(param_1);
+      if ((put_buffer >> 0x10 & 0xffU) == 0xff) {
+        *entropy->next_output_byte = '\0';
+        entropy->next_output_byte = entropy->next_output_byte + 1;
+        entropy->free_in_buffer = entropy->free_in_buffer - 1;
+        if (entropy->free_in_buffer == 0) {
+          dump_buffer(entropy);
         }
       }
-      local_8 = local_8 << 8;
+      put_buffer = put_buffer << 8;
     }
-    param_1->put_buffer = local_8;
-    param_1->put_bits = local_c;
+    entropy->put_buffer = put_buffer;
+    entropy->put_bits = put_bits;
   }
   return;
 }
@@ -156,27 +157,29 @@ void __cdecl emit_bits(phuff_entropy_encoder *param_1,uint param_2,int param_3)
 
 // 00B5F000  flush_bits  (jpeg-6/jcphuff.c:268)
 
-void __cdecl flush_bits(phuff_entropy_encoder *param_1)
+void __cdecl flush_bits(phuff_entropy_encoder *entropy)
 
 {
-  emit_bits(param_1,0x7f,7);
-  param_1->put_buffer = 0;
-  param_1->put_bits = 0;
+  emit_bits(entropy,0x7f,7);
+  entropy->put_buffer = 0;
+  entropy->put_bits = 0;
   return;
 }
 
 
 // 00B5EE80  emit_symbol  (jpeg-6/jcphuff.c:282)
 
-void __cdecl emit_symbol(phuff_entropy_encoder *param_1,int param_2,int param_3)
+void __cdecl emit_symbol(phuff_entropy_encoder *entropy,int tbl_no,int symbol)
 
 {
-  if (param_1->gather_statistics == '\0') {
-    emit_bits(param_1,param_1->derived_tbls[param_2]->ehufco[param_3],
-              (int)param_1->derived_tbls[param_2]->ehufsi[param_3]);
+  c_derived_tbl *tbl;
+  
+  if (entropy->gather_statistics == '\0') {
+    emit_bits(entropy,entropy->derived_tbls[tbl_no]->ehufco[symbol],
+              (int)entropy->derived_tbls[tbl_no]->ehufsi[symbol]);
   }
   else {
-    param_1->count_ptrs[param_2][param_3] = param_1->count_ptrs[param_2][param_3] + 1;
+    entropy->count_ptrs[tbl_no][symbol] = entropy->count_ptrs[tbl_no][symbol] + 1;
   }
   return;
 }
@@ -184,13 +187,13 @@ void __cdecl emit_symbol(phuff_entropy_encoder *param_1,int param_2,int param_3)
 
 // 00B5F100  emit_buffered_bits  (jpeg-6/jcphuff.c:299)
 
-void __cdecl emit_buffered_bits(phuff_entropy_encoder *param_1,char *param_2,uint param_3)
+void __cdecl emit_buffered_bits(phuff_entropy_encoder *entropy,char *bufstart,uint nbits)
 
 {
-  if (param_1->gather_statistics == '\0') {
-    for (; param_3 != 0; param_3 = param_3 - 1) {
-      emit_bits(param_1,(int)*param_2,1);
-      param_2 = param_2 + 1;
+  if (entropy->gather_statistics == '\0') {
+    for (; nbits != 0; nbits = nbits - 1) {
+      emit_bits(entropy,(int)*bufstart,1);
+      bufstart = bufstart + 1;
     }
   }
   return;
@@ -199,29 +202,29 @@ void __cdecl emit_buffered_bits(phuff_entropy_encoder *param_1,char *param_2,uin
 
 // 00B5F030  emit_eobrun  (jpeg-6/jcphuff.c:317)
 
-void __cdecl emit_eobrun(phuff_entropy_encoder *param_1)
+void __cdecl emit_eobrun(phuff_entropy_encoder *entropy)
 
 {
-  int local_c;
-  uint local_8;
+  int nbits;
+  int temp;
   
-  if (param_1->EOBRUN != 0) {
-    local_8 = param_1->EOBRUN;
-    local_c = 0;
-    while (local_8 = (int)local_8 >> 1, local_8 != 0) {
-      local_c = local_c + 1;
+  if (entropy->EOBRUN != 0) {
+    temp = entropy->EOBRUN;
+    nbits = 0;
+    while (temp = temp >> 1, temp != 0) {
+      nbits = nbits + 1;
     }
-    if (0xe < local_c) {
-      param_1->cinfo->err->msg_code = 0x28;
-      (*param_1->cinfo->err->error_exit)((jpeg_common_struct *)param_1->cinfo);
+    if (0xe < nbits) {
+      entropy->cinfo->err->msg_code = 0x28;
+      (*entropy->cinfo->err->error_exit)((jpeg_common_struct *)entropy->cinfo);
     }
-    emit_symbol(param_1,param_1->ac_tbl_no,local_c << 4);
-    if (local_c != 0) {
-      emit_bits(param_1,param_1->EOBRUN,local_c);
+    emit_symbol(entropy,entropy->ac_tbl_no,nbits << 4);
+    if (nbits != 0) {
+      emit_bits(entropy,entropy->EOBRUN,nbits);
     }
-    param_1->EOBRUN = 0;
-    emit_buffered_bits(param_1,param_1->bit_buffer,param_1->BE);
-    param_1->BE = 0;
+    entropy->EOBRUN = 0;
+    emit_buffered_bits(entropy,entropy->bit_buffer,entropy->BE);
+    entropy->BE = 0;
   }
   return;
 }
@@ -229,35 +232,35 @@ void __cdecl emit_eobrun(phuff_entropy_encoder *param_1)
 
 // 00B5EEF0  emit_restart  (jpeg-6/jcphuff.c:348)
 
-void __cdecl emit_restart(phuff_entropy_encoder *param_1,int param_2)
+void __cdecl emit_restart(phuff_entropy_encoder *entropy,int restart_num)
 
 {
-  int local_8;
+  int ci;
   
-  emit_eobrun(param_1);
-  if (param_1->gather_statistics == '\0') {
-    flush_bits(param_1);
-    *param_1->next_output_byte = 0xff;
-    param_1->next_output_byte = param_1->next_output_byte + 1;
-    param_1->free_in_buffer = param_1->free_in_buffer - 1;
-    if (param_1->free_in_buffer == 0) {
-      dump_buffer(param_1);
+  emit_eobrun(entropy);
+  if (entropy->gather_statistics == '\0') {
+    flush_bits(entropy);
+    *entropy->next_output_byte = 0xff;
+    entropy->next_output_byte = entropy->next_output_byte + 1;
+    entropy->free_in_buffer = entropy->free_in_buffer - 1;
+    if (entropy->free_in_buffer == 0) {
+      dump_buffer(entropy);
     }
-    *param_1->next_output_byte = (char)param_2 + 0xd0;
-    param_1->next_output_byte = param_1->next_output_byte + 1;
-    param_1->free_in_buffer = param_1->free_in_buffer - 1;
-    if (param_1->free_in_buffer == 0) {
-      dump_buffer(param_1);
+    *entropy->next_output_byte = (char)restart_num + 0xd0;
+    entropy->next_output_byte = entropy->next_output_byte + 1;
+    entropy->free_in_buffer = entropy->free_in_buffer - 1;
+    if (entropy->free_in_buffer == 0) {
+      dump_buffer(entropy);
     }
   }
-  if (param_1->cinfo->Ss == 0) {
-    for (local_8 = 0; local_8 < param_1->cinfo->comps_in_scan; local_8 = local_8 + 1) {
-      param_1->last_dc_val[local_8] = 0;
+  if (entropy->cinfo->Ss == 0) {
+    for (ci = 0; ci < entropy->cinfo->comps_in_scan; ci = ci + 1) {
+      entropy->last_dc_val[ci] = 0;
     }
   }
   else {
-    param_1->EOBRUN = 0;
-    param_1->BE = 0;
+    entropy->EOBRUN = 0;
+    entropy->BE = 0;
   }
   return;
 }
@@ -265,59 +268,63 @@ void __cdecl emit_restart(phuff_entropy_encoder *param_1,int param_2)
 
 // 00B5EAC0  encode_mcu_DC_first  (jpeg-6/jcphuff.c:378)
 
-uchar __cdecl encode_mcu_DC_first(jpeg_compress_struct *param_1,short (**param_2) [64])
+uchar __cdecl encode_mcu_DC_first(jpeg_compress_struct *cinfo,short (**MCU_data) [64])
 
 {
-  phuff_entropy_encoder *ppVar1;
+  phuff_entropy_encoder *entropy_00;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  jpeg_component_info *pjVar4;
-  int iVar5;
-  int local_24;
-  uint local_1c;
-  uint local_18;
-  int local_c;
+  jpeg_component_info *pjVar3;
+  int iVar4;
+  int nbits;
+  int Al;
+  int temp2;
+  int temp;
+  int ci;
+  jpeg_component_info *compptr;
+  int blkn;
+  phuff_entropy_encoder *entropy;
   
-  ppVar1 = (phuff_entropy_encoder *)param_1->entropy;
-  iVar2 = param_1->Al;
-  ppVar1->next_output_byte = param_1->dest->next_output_byte;
-  ppVar1->free_in_buffer = param_1->dest->free_in_buffer;
-  if ((param_1->restart_interval != 0) && (ppVar1->restarts_to_go == 0)) {
-    emit_restart(ppVar1,ppVar1->next_restart_num);
+  entropy_00 = (phuff_entropy_encoder *)cinfo->entropy;
+  iVar1 = cinfo->Al;
+  entropy_00->next_output_byte = cinfo->dest->next_output_byte;
+  entropy_00->free_in_buffer = cinfo->dest->free_in_buffer;
+  if ((cinfo->restart_interval != 0) && (entropy_00->restarts_to_go == 0)) {
+    emit_restart(entropy_00,entropy_00->next_restart_num);
   }
-  for (local_c = 0; local_c < param_1->blocks_in_MCU; local_c = local_c + 1) {
-    iVar3 = param_1->MCU_membership[local_c];
-    pjVar4 = param_1->cur_comp_info[iVar3];
-    iVar5 = (int)(*param_2[local_c])[0] >> ((byte)iVar2 & 0x1f);
-    local_1c = iVar5 - ppVar1->last_dc_val[iVar3];
-    ppVar1->last_dc_val[iVar3] = iVar5;
-    local_18 = local_1c;
-    if ((int)local_1c < 0) {
-      local_18 = -local_1c;
-      local_1c = local_1c - 1;
+  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn = blkn + 1) {
+    iVar2 = cinfo->MCU_membership[blkn];
+    pjVar3 = cinfo->cur_comp_info[iVar2];
+    iVar4 = (int)(*MCU_data[blkn])[0] >> ((byte)iVar1 & 0x1f);
+    temp2 = iVar4 - entropy_00->last_dc_val[iVar2];
+    entropy_00->last_dc_val[iVar2] = iVar4;
+    temp = temp2;
+    if (temp2 < 0) {
+      temp = -temp2;
+      temp2 = temp2 + -1;
     }
-    local_24 = 0;
-    for (; local_18 != 0; local_18 = (int)local_18 >> 1) {
-      local_24 = local_24 + 1;
+    nbits = 0;
+    for (; temp != 0; temp = temp >> 1) {
+      nbits = nbits + 1;
     }
-    if (0xb < local_24) {
-      param_1->err->msg_code = 6;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (0xb < nbits) {
+      cinfo->err->msg_code = 6;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    emit_symbol(ppVar1,pjVar4->dc_tbl_no,local_24);
-    if (local_24 != 0) {
-      emit_bits(ppVar1,local_1c,local_24);
+    emit_symbol(entropy_00,pjVar3->dc_tbl_no,nbits);
+    if (nbits != 0) {
+      emit_bits(entropy_00,temp2,nbits);
     }
   }
-  param_1->dest->next_output_byte = ppVar1->next_output_byte;
-  param_1->dest->free_in_buffer = ppVar1->free_in_buffer;
-  if (param_1->restart_interval != 0) {
-    if (ppVar1->restarts_to_go == 0) {
-      ppVar1->restarts_to_go = param_1->restart_interval;
-      ppVar1->next_restart_num = ppVar1->next_restart_num + 1;
-      ppVar1->next_restart_num = ppVar1->next_restart_num & 7;
+  cinfo->dest->next_output_byte = entropy_00->next_output_byte;
+  cinfo->dest->free_in_buffer = entropy_00->free_in_buffer;
+  if (cinfo->restart_interval != 0) {
+    if (entropy_00->restarts_to_go == 0) {
+      entropy_00->restarts_to_go = cinfo->restart_interval;
+      entropy_00->next_restart_num = entropy_00->next_restart_num + 1;
+      entropy_00->next_restart_num = entropy_00->next_restart_num & 7;
     }
-    ppVar1->restarts_to_go = ppVar1->restarts_to_go - 1;
+    entropy_00->restarts_to_go = entropy_00->restarts_to_go - 1;
   }
   return '\x01';
 }
@@ -325,82 +332,85 @@ uchar __cdecl encode_mcu_DC_first(jpeg_compress_struct *param_1,short (**param_2
 
 // 00B5F150  encode_mcu_AC_first  (jpeg-6/jcphuff.c:465)
 
-uchar __cdecl encode_mcu_AC_first(jpeg_compress_struct *param_1,short (**param_2) [64])
+uchar __cdecl encode_mcu_AC_first(jpeg_compress_struct *cinfo,short (**MCU_data) [64])
 
 {
-  phuff_entropy_encoder *ppVar1;
+  phuff_entropy_encoder *entropy_00;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  short (*pasVar4) [64];
-  byte bVar5;
-  int iVar6;
-  int local_24;
-  int local_20;
-  int local_18;
-  uint local_14;
-  uint local_10;
+  short (*pasVar3) [64];
+  byte bVar4;
+  int iVar5;
+  int nbits;
+  int r;
+  int Al;
+  int k;
+  int temp2;
+  int temp;
+  phuff_entropy_encoder *entropy;
+  int Se;
   
-  ppVar1 = (phuff_entropy_encoder *)param_1->entropy;
-  iVar2 = param_1->Se;
-  iVar3 = param_1->Al;
-  ppVar1->next_output_byte = param_1->dest->next_output_byte;
-  ppVar1->free_in_buffer = param_1->dest->free_in_buffer;
-  if ((param_1->restart_interval != 0) && (ppVar1->restarts_to_go == 0)) {
-    emit_restart(ppVar1,ppVar1->next_restart_num);
+  entropy_00 = (phuff_entropy_encoder *)cinfo->entropy;
+  iVar1 = cinfo->Se;
+  iVar2 = cinfo->Al;
+  entropy_00->next_output_byte = cinfo->dest->next_output_byte;
+  entropy_00->free_in_buffer = cinfo->dest->free_in_buffer;
+  if ((cinfo->restart_interval != 0) && (entropy_00->restarts_to_go == 0)) {
+    emit_restart(entropy_00,entropy_00->next_restart_num);
   }
-  pasVar4 = *param_2;
-  local_20 = 0;
-  for (local_18 = param_1->Ss; local_18 <= iVar2; local_18 = local_18 + 1) {
-    iVar6 = (int)(*pasVar4)[*(int *)(&jpeg_natural_order + local_18 * 4)];
-    if (iVar6 == 0) {
-      local_20 = local_20 + 1;
+  pasVar3 = *MCU_data;
+  r = 0;
+  for (k = cinfo->Ss; k <= iVar1; k = k + 1) {
+    iVar5 = (int)(*pasVar3)[*(int *)(&jpeg_natural_order + k * 4)];
+    if (iVar5 == 0) {
+      r = r + 1;
     }
     else {
-      bVar5 = (byte)iVar3;
-      if (iVar6 < 0) {
-        local_10 = -iVar6 >> (bVar5 & 0x1f);
-        local_14 = ~local_10;
+      bVar4 = (byte)iVar2;
+      if (iVar5 < 0) {
+        temp = -iVar5 >> (bVar4 & 0x1f);
+        temp2 = ~temp;
       }
       else {
-        local_14 = iVar6 >> (bVar5 & 0x1f);
-        local_10 = local_14;
+        temp2 = iVar5 >> (bVar4 & 0x1f);
+        temp = temp2;
       }
-      if (local_10 == 0) {
-        local_20 = local_20 + 1;
+      if (temp == 0) {
+        r = r + 1;
       }
       else {
-        if (ppVar1->EOBRUN != 0) {
-          emit_eobrun(ppVar1);
+        if (entropy_00->EOBRUN != 0) {
+          emit_eobrun(entropy_00);
         }
-        for (; 0xf < local_20; local_20 = local_20 + -0x10) {
-          emit_symbol(ppVar1,ppVar1->ac_tbl_no,0xf0);
+        for (; 0xf < r; r = r + -0x10) {
+          emit_symbol(entropy_00,entropy_00->ac_tbl_no,0xf0);
         }
-        local_24 = 1;
-        while (local_10 = (int)local_10 >> 1, local_10 != 0) {
-          local_24 = local_24 + 1;
+        nbits = 1;
+        while (temp = temp >> 1, temp != 0) {
+          nbits = nbits + 1;
         }
-        if (10 < local_24) {
-          param_1->err->msg_code = 6;
-          (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        if (10 < nbits) {
+          cinfo->err->msg_code = 6;
+          (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
         }
-        emit_symbol(ppVar1,ppVar1->ac_tbl_no,local_20 * 0x10 + local_24);
-        emit_bits(ppVar1,local_14,local_24);
-        local_20 = 0;
+        emit_symbol(entropy_00,entropy_00->ac_tbl_no,r * 0x10 + nbits);
+        emit_bits(entropy_00,temp2,nbits);
+        r = 0;
       }
     }
   }
-  if ((0 < local_20) && (ppVar1->EOBRUN = ppVar1->EOBRUN + 1, ppVar1->EOBRUN == 0x7fff)) {
-    emit_eobrun(ppVar1);
+  if ((0 < r) && (entropy_00->EOBRUN = entropy_00->EOBRUN + 1, entropy_00->EOBRUN == 0x7fff)) {
+    emit_eobrun(entropy_00);
   }
-  param_1->dest->next_output_byte = ppVar1->next_output_byte;
-  param_1->dest->free_in_buffer = ppVar1->free_in_buffer;
-  if (param_1->restart_interval != 0) {
-    if (ppVar1->restarts_to_go == 0) {
-      ppVar1->restarts_to_go = param_1->restart_interval;
-      ppVar1->next_restart_num = ppVar1->next_restart_num + 1;
-      ppVar1->next_restart_num = ppVar1->next_restart_num & 7;
+  cinfo->dest->next_output_byte = entropy_00->next_output_byte;
+  cinfo->dest->free_in_buffer = entropy_00->free_in_buffer;
+  if (cinfo->restart_interval != 0) {
+    if (entropy_00->restarts_to_go == 0) {
+      entropy_00->restarts_to_go = cinfo->restart_interval;
+      entropy_00->next_restart_num = entropy_00->next_restart_num + 1;
+      entropy_00->next_restart_num = entropy_00->next_restart_num & 7;
     }
-    ppVar1->restarts_to_go = ppVar1->restarts_to_go - 1;
+    entropy_00->restarts_to_go = entropy_00->restarts_to_go - 1;
   }
   return '\x01';
 }
@@ -408,32 +418,35 @@ uchar __cdecl encode_mcu_AC_first(jpeg_compress_struct *param_1,short (**param_2
 
 // 00B5F3C0  encode_mcu_DC_refine  (jpeg-6/jcphuff.c:572)
 
-uchar __cdecl encode_mcu_DC_refine(jpeg_compress_struct *param_1,short (**param_2) [64])
+uchar __cdecl encode_mcu_DC_refine(jpeg_compress_struct *cinfo,short (**MCU_data) [64])
 
 {
-  phuff_entropy_encoder *ppVar1;
-  int iVar2;
-  int local_c;
+  phuff_entropy_encoder *entropy_00;
+  int iVar1;
+  int Al;
+  int temp;
+  int blkn;
+  phuff_entropy_encoder *entropy;
   
-  ppVar1 = (phuff_entropy_encoder *)param_1->entropy;
-  iVar2 = param_1->Al;
-  ppVar1->next_output_byte = param_1->dest->next_output_byte;
-  ppVar1->free_in_buffer = param_1->dest->free_in_buffer;
-  if ((param_1->restart_interval != 0) && (ppVar1->restarts_to_go == 0)) {
-    emit_restart(ppVar1,ppVar1->next_restart_num);
+  entropy_00 = (phuff_entropy_encoder *)cinfo->entropy;
+  iVar1 = cinfo->Al;
+  entropy_00->next_output_byte = cinfo->dest->next_output_byte;
+  entropy_00->free_in_buffer = cinfo->dest->free_in_buffer;
+  if ((cinfo->restart_interval != 0) && (entropy_00->restarts_to_go == 0)) {
+    emit_restart(entropy_00,entropy_00->next_restart_num);
   }
-  for (local_c = 0; local_c < param_1->blocks_in_MCU; local_c = local_c + 1) {
-    emit_bits(ppVar1,(int)(*param_2[local_c])[0] >> ((byte)iVar2 & 0x1f),1);
+  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn = blkn + 1) {
+    emit_bits(entropy_00,(int)(*MCU_data[blkn])[0] >> ((byte)iVar1 & 0x1f),1);
   }
-  param_1->dest->next_output_byte = ppVar1->next_output_byte;
-  param_1->dest->free_in_buffer = ppVar1->free_in_buffer;
-  if (param_1->restart_interval != 0) {
-    if (ppVar1->restarts_to_go == 0) {
-      ppVar1->restarts_to_go = param_1->restart_interval;
-      ppVar1->next_restart_num = ppVar1->next_restart_num + 1;
-      ppVar1->next_restart_num = ppVar1->next_restart_num & 7;
+  cinfo->dest->next_output_byte = entropy_00->next_output_byte;
+  cinfo->dest->free_in_buffer = entropy_00->free_in_buffer;
+  if (cinfo->restart_interval != 0) {
+    if (entropy_00->restarts_to_go == 0) {
+      entropy_00->restarts_to_go = cinfo->restart_interval;
+      entropy_00->next_restart_num = entropy_00->next_restart_num + 1;
+      entropy_00->next_restart_num = entropy_00->next_restart_num & 7;
     }
-    ppVar1->restarts_to_go = ppVar1->restarts_to_go - 1;
+    entropy_00->restarts_to_go = entropy_00->restarts_to_go - 1;
   }
   return '\x01';
 }
@@ -441,90 +454,94 @@ uchar __cdecl encode_mcu_DC_refine(jpeg_compress_struct *param_1,short (**param_
 
 // 00B5F4F0  encode_mcu_AC_refine  (jpeg-6/jcphuff.c:619)
 
-uchar __cdecl encode_mcu_AC_refine(jpeg_compress_struct *param_1,short (**param_2) [64])
+uchar __cdecl encode_mcu_AC_refine(jpeg_compress_struct *cinfo,short (**MCU_data) [64])
 
 {
-  phuff_entropy_encoder *ppVar1;
+  phuff_entropy_encoder *entropy_00;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  short (*pasVar4) [64];
-  int local_128;
-  char *local_124;
-  int local_11c;
-  uint local_118;
-  int local_114;
-  int local_110;
+  short (*pasVar3) [64];
+  int iVar4;
+  int r;
+  char *BR_buffer;
+  int Al;
+  int k;
+  uint BR;
+  int temp;
+  int EOB;
+  phuff_entropy_encoder *entropy;
+  int Se;
   int aiStack_104 [64];
   
-  ppVar1 = (phuff_entropy_encoder *)param_1->entropy;
-  iVar2 = param_1->Se;
-  iVar3 = param_1->Al;
-  ppVar1->next_output_byte = param_1->dest->next_output_byte;
-  ppVar1->free_in_buffer = param_1->dest->free_in_buffer;
-  if ((param_1->restart_interval != 0) && (ppVar1->restarts_to_go == 0)) {
-    emit_restart(ppVar1,ppVar1->next_restart_num);
+  entropy_00 = (phuff_entropy_encoder *)cinfo->entropy;
+  iVar1 = cinfo->Se;
+  iVar2 = cinfo->Al;
+  entropy_00->next_output_byte = cinfo->dest->next_output_byte;
+  entropy_00->free_in_buffer = cinfo->dest->free_in_buffer;
+  if ((cinfo->restart_interval != 0) && (entropy_00->restarts_to_go == 0)) {
+    emit_restart(entropy_00,entropy_00->next_restart_num);
   }
-  pasVar4 = *param_2;
-  local_110 = 0;
-  for (local_11c = param_1->Ss; local_11c <= iVar2; local_11c = local_11c + 1) {
-    local_114 = (int)(*pasVar4)[*(int *)(&jpeg_natural_order + local_11c * 4)];
-    if (local_114 < 0) {
-      local_114 = -local_114;
+  pasVar3 = *MCU_data;
+  EOB = 0;
+  for (k = cinfo->Ss; k <= iVar1; k = k + 1) {
+    temp = (int)(*pasVar3)[*(int *)(&jpeg_natural_order + k * 4)];
+    if (temp < 0) {
+      temp = -temp;
     }
-    local_114 = local_114 >> ((byte)iVar3 & 0x1f);
-    aiStack_104[local_11c] = local_114;
-    if (local_114 == 1) {
-      local_110 = local_11c;
+    iVar4 = temp >> ((byte)iVar2 & 0x1f);
+    aiStack_104[k] = iVar4;
+    if (iVar4 == 1) {
+      EOB = k;
     }
   }
-  local_128 = 0;
-  local_118 = 0;
-  local_124 = ppVar1->bit_buffer + ppVar1->BE;
-  for (local_11c = param_1->Ss; local_11c <= iVar2; local_11c = local_11c + 1) {
-    iVar3 = aiStack_104[local_11c];
-    if (iVar3 == 0) {
-      local_128 = local_128 + 1;
+  r = 0;
+  BR = 0;
+  BR_buffer = entropy_00->bit_buffer + entropy_00->BE;
+  for (k = cinfo->Ss; k <= iVar1; k = k + 1) {
+    iVar2 = aiStack_104[k];
+    if (iVar2 == 0) {
+      r = r + 1;
     }
     else {
-      while ((0xf < local_128 && (local_11c <= local_110))) {
-        emit_eobrun(ppVar1);
-        emit_symbol(ppVar1,ppVar1->ac_tbl_no,0xf0);
-        local_128 = local_128 + -0x10;
-        emit_buffered_bits(ppVar1,local_124,local_118);
-        local_124 = ppVar1->bit_buffer;
-        local_118 = 0;
+      while ((0xf < r && (k <= EOB))) {
+        emit_eobrun(entropy_00);
+        emit_symbol(entropy_00,entropy_00->ac_tbl_no,0xf0);
+        r = r + -0x10;
+        emit_buffered_bits(entropy_00,BR_buffer,BR);
+        BR_buffer = entropy_00->bit_buffer;
+        BR = 0;
       }
-      if (iVar3 < 2) {
-        emit_eobrun(ppVar1);
-        emit_symbol(ppVar1,ppVar1->ac_tbl_no,local_128 * 0x10 + 1);
-        emit_bits(ppVar1,(uint)(-1 < (*pasVar4)[*(int *)(&jpeg_natural_order + local_11c * 4)]),1);
-        emit_buffered_bits(ppVar1,local_124,local_118);
-        local_124 = ppVar1->bit_buffer;
-        local_118 = 0;
-        local_128 = 0;
+      if (iVar2 < 2) {
+        emit_eobrun(entropy_00);
+        emit_symbol(entropy_00,entropy_00->ac_tbl_no,r * 0x10 + 1);
+        emit_bits(entropy_00,(uint)(-1 < (*pasVar3)[*(int *)(&jpeg_natural_order + k * 4)]),1);
+        emit_buffered_bits(entropy_00,BR_buffer,BR);
+        BR_buffer = entropy_00->bit_buffer;
+        BR = 0;
+        r = 0;
       }
       else {
-        local_124[local_118] = (byte)iVar3 & 1;
-        local_118 = local_118 + 1;
+        BR_buffer[BR] = (byte)iVar2 & 1;
+        BR = BR + 1;
       }
     }
   }
-  if ((0 < local_128) || (local_118 != 0)) {
-    ppVar1->EOBRUN = ppVar1->EOBRUN + 1;
-    ppVar1->BE = ppVar1->BE + local_118;
-    if ((ppVar1->EOBRUN == 0x7fff) || (0x3a9 < ppVar1->BE)) {
-      emit_eobrun(ppVar1);
+  if ((0 < r) || (BR != 0)) {
+    entropy_00->EOBRUN = entropy_00->EOBRUN + 1;
+    entropy_00->BE = entropy_00->BE + BR;
+    if ((entropy_00->EOBRUN == 0x7fff) || (0x3a9 < entropy_00->BE)) {
+      emit_eobrun(entropy_00);
     }
   }
-  param_1->dest->next_output_byte = ppVar1->next_output_byte;
-  param_1->dest->free_in_buffer = ppVar1->free_in_buffer;
-  if (param_1->restart_interval != 0) {
-    if (ppVar1->restarts_to_go == 0) {
-      ppVar1->restarts_to_go = param_1->restart_interval;
-      ppVar1->next_restart_num = ppVar1->next_restart_num + 1;
-      ppVar1->next_restart_num = ppVar1->next_restart_num & 7;
+  cinfo->dest->next_output_byte = entropy_00->next_output_byte;
+  cinfo->dest->free_in_buffer = entropy_00->free_in_buffer;
+  if (cinfo->restart_interval != 0) {
+    if (entropy_00->restarts_to_go == 0) {
+      entropy_00->restarts_to_go = cinfo->restart_interval;
+      entropy_00->next_restart_num = entropy_00->next_restart_num + 1;
+      entropy_00->next_restart_num = entropy_00->next_restart_num & 7;
     }
-    ppVar1->restarts_to_go = ppVar1->restarts_to_go - 1;
+    entropy_00->restarts_to_go = entropy_00->restarts_to_go - 1;
   }
   return '\x01';
 }
@@ -532,92 +549,95 @@ uchar __cdecl encode_mcu_AC_refine(jpeg_compress_struct *param_1,short (**param_
 
 // 00B5F940  finish_pass_phuff  (jpeg-6/jcphuff.c:747)
 
-void __cdecl finish_pass_phuff(jpeg_compress_struct *param_1)
+void __cdecl finish_pass_phuff(jpeg_compress_struct *cinfo)
 
 {
-  phuff_entropy_encoder *ppVar1;
+  phuff_entropy_encoder *entropy_00;
+  phuff_entropy_encoder *entropy;
   
-  ppVar1 = (phuff_entropy_encoder *)param_1->entropy;
-  ppVar1->next_output_byte = param_1->dest->next_output_byte;
-  ppVar1->free_in_buffer = param_1->dest->free_in_buffer;
-  emit_eobrun(ppVar1);
-  flush_bits(ppVar1);
-  param_1->dest->next_output_byte = ppVar1->next_output_byte;
-  param_1->dest->free_in_buffer = ppVar1->free_in_buffer;
+  entropy_00 = (phuff_entropy_encoder *)cinfo->entropy;
+  entropy_00->next_output_byte = cinfo->dest->next_output_byte;
+  entropy_00->free_in_buffer = cinfo->dest->free_in_buffer;
+  emit_eobrun(entropy_00);
+  flush_bits(entropy_00);
+  cinfo->dest->next_output_byte = entropy_00->next_output_byte;
+  cinfo->dest->free_in_buffer = entropy_00->free_in_buffer;
   return;
 }
 
 
 // 00B5F9B0  finish_pass_gather_phuff  (jpeg-6/jcphuff.c:768)
 
-void __cdecl finish_pass_gather_phuff(jpeg_compress_struct *param_1)
+void __cdecl finish_pass_gather_phuff(jpeg_compress_struct *cinfo)
 
 {
-  JHUFF_TBL *pJVar1;
-  char local_20 [4];
-  int local_1c;
-  jpeg_component_info *local_18;
-  JHUFF_TBL **local_14;
-  phuff_entropy_encoder *local_10;
-  bool local_9;
-  int local_8;
+  JHUFF_TBL **ppJVar1;
+  JHUFF_TBL *pJVar2;
+  char did [4];
+  int ci;
+  jpeg_component_info *compptr;
+  JHUFF_TBL **htblptr;
+  phuff_entropy_encoder *entropy;
+  uchar is_DC_band;
+  int tbl;
   
-  local_10 = (phuff_entropy_encoder *)param_1->entropy;
-  emit_eobrun(local_10);
-  local_9 = param_1->Ss == 0;
-  local_20[0] = '\0';
-  local_20[1] = '\0';
-  local_20[2] = '\0';
-  local_20[3] = '\0';
-  local_1c = 0;
+  entropy = (phuff_entropy_encoder *)cinfo->entropy;
+  emit_eobrun(entropy);
+  is_DC_band = cinfo->Ss == 0;
+  did[0] = '\0';
+  did[1] = '\0';
+  did[2] = '\0';
+  did[3] = '\0';
+  ci = 0;
   do {
-    if (param_1->comps_in_scan <= local_1c) {
+    if (cinfo->comps_in_scan <= ci) {
       return;
     }
-    local_18 = param_1->cur_comp_info[local_1c];
-    if (local_9 == false) {
-      local_8 = local_18->ac_tbl_no;
+    compptr = cinfo->cur_comp_info[ci];
+    if (is_DC_band == '\0') {
+      tbl = compptr->ac_tbl_no;
 LAB_00b5fa43:
-      if (local_20[local_8] == '\0') {
-        if (local_9 == false) {
-          local_14 = param_1->ac_huff_tbl_ptrs;
+      if (did[tbl] == '\0') {
+        if (is_DC_band == '\0') {
+          ppJVar1 = cinfo->ac_huff_tbl_ptrs;
         }
         else {
-          local_14 = param_1->dc_huff_tbl_ptrs;
+          ppJVar1 = cinfo->dc_huff_tbl_ptrs;
         }
-        local_14 = local_14 + local_8;
-        if (*local_14 == (JHUFF_TBL *)0x0) {
-          pJVar1 = jpeg_alloc_huff_table((jpeg_common_struct *)param_1);
-          *local_14 = pJVar1;
+        htblptr = ppJVar1 + tbl;
+        if (*htblptr == (JHUFF_TBL *)0x0) {
+          pJVar2 = jpeg_alloc_huff_table((jpeg_common_struct *)cinfo);
+          *htblptr = pJVar2;
         }
-        jpeg_gen_optimal_table(param_1,*local_14,local_10->count_ptrs[local_8]);
-        local_20[local_8] = '\x01';
+        jpeg_gen_optimal_table(cinfo,*htblptr,entropy->count_ptrs[tbl]);
+        did[tbl] = '\x01';
       }
     }
-    else if (param_1->Ah == 0) {
-      local_8 = local_18->dc_tbl_no;
+    else if (cinfo->Ah == 0) {
+      tbl = compptr->dc_tbl_no;
       goto LAB_00b5fa43;
     }
-    local_1c = local_1c + 1;
+    ci = ci + 1;
   } while( true );
 }
 
 
 // 00B5E810  jinit_phuff_encoder  (jpeg-6/jcphuff.c:815)
 
-void __cdecl jinit_phuff_encoder(jpeg_compress_struct *param_1)
+void __cdecl jinit_phuff_encoder(jpeg_compress_struct *cinfo)
 
 {
   jpeg_entropy_encoder *pjVar1;
-  int local_c;
+  int i;
+  phuff_entropy_encoder *entropy;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x6c);
-  param_1->entropy = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x6c);
+  cinfo->entropy = pjVar1;
   pjVar1->start_pass = start_pass_phuff;
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    (&pjVar1[6].encode_mcu)[local_c] =
+  for (i = 0; i < 4; i = i + 1) {
+    (&pjVar1[6].encode_mcu)[i] =
          (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)0x0;
-    (&pjVar1[7].finish_pass)[local_c] = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
+    (&pjVar1[7].finish_pass)[i] = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
   }
   pjVar1[5].encode_mcu = (_func___cdecl_uchar_jpeg_compress_struct_ptr_short_64__ptr_ptr *)0x0;
   return;

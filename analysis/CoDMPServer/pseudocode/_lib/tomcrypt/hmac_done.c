@@ -7,13 +7,13 @@
 int __cdecl hmac_done(int param_1,int param_2,uint *param_3)
 
 {
-  uint uVar1;
-  int iVar2;
-  void *pvVar3;
-  void *pvVar4;
-  uint uVar5;
-  undefined1 *puVar6;
-  int iVar7;
+  uint size;
+  int iVar1;
+  void *ptr;
+  void *ptr_00;
+  uint uVar2;
+  undefined1 *puVar3;
+  int iVar4;
   
   if (param_1 == 0) {
     crypt_argchk("hmac != NULL",
@@ -25,62 +25,62 @@ int __cdecl hmac_done(int param_1,int param_2,uint *param_3)
                  "C:\\projects_pc\\cod\\codsrc\\libs\\libtomcrypt-1.17\\src\\mac\\hmac\\hmac_done.c"
                  ,0x24);
   }
-  iVar7 = *(int *)(param_1 + 0x70);
-  iVar2 = hash_is_valid(iVar7);
-  if (iVar2 == 0) {
-    iVar7 = iVar7 * 0x68;
-    uVar1 = *(uint *)(&DAT_0b548c80 + iVar7);
-    pvVar3 = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar7));
-    pvVar4 = tom_game_malloc(uVar1);
-    if (pvVar3 != (void *)0x0) {
-      if (pvVar4 == (void *)0x0) {
-        tom_game_free(pvVar3);
+  iVar4 = *(int *)(param_1 + 0x70);
+  iVar1 = hash_is_valid(iVar4);
+  if (iVar1 == 0) {
+    iVar4 = iVar4 * 0x68;
+    size = *(uint *)(&DAT_0b548c80 + iVar4);
+    ptr = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar4));
+    ptr_00 = tom_game_malloc(size);
+    if (ptr != (void *)0x0) {
+      if (ptr_00 == (void *)0x0) {
+        tom_game_free(ptr);
         return 0xd;
       }
-      iVar2 = (**(code **)(&DAT_0b548cd4 + iVar7))(param_1,pvVar4);
-      if (iVar2 == 0) {
-        if (*(int *)(&DAT_0b548c84 + iVar7) != 0) {
-          uVar5 = 0;
+      iVar1 = (**(code **)(&DAT_0b548cd4 + iVar4))(param_1,ptr_00);
+      if (iVar1 == 0) {
+        if (*(int *)(&DAT_0b548c84 + iVar4) != 0) {
+          uVar2 = 0;
           do {
-            *(byte *)(uVar5 + (int)pvVar3) = *(byte *)(uVar5 + *(int *)(param_1 + 0xe8)) ^ 0x5c;
-            uVar5 = uVar5 + 1;
-          } while (uVar5 < *(uint *)(&DAT_0b548c84 + iVar7));
+            *(byte *)(uVar2 + (int)ptr) = *(byte *)(uVar2 + *(int *)(param_1 + 0xe8)) ^ 0x5c;
+            uVar2 = uVar2 + 1;
+          } while (uVar2 < *(uint *)(&DAT_0b548c84 + iVar4));
         }
-        iVar2 = (**(code **)(&DAT_0b548ccc + iVar7))(param_1);
-        if (iVar2 == 0) {
-          iVar2 = (**(code **)(&DAT_0b548cd0 + iVar7))
-                            (param_1,pvVar3,*(undefined4 *)(&DAT_0b548c84 + iVar7));
-          if (iVar2 == 0) {
-            iVar2 = (**(code **)(&DAT_0b548cd0 + iVar7))(param_1,pvVar4,uVar1);
-            if (iVar2 == 0) {
-              iVar2 = (**(code **)(&DAT_0b548cd4 + iVar7))(param_1,pvVar3);
-              if (iVar2 == 0) {
-                uVar5 = 0;
-                if (uVar1 != 0) {
+        iVar1 = (**(code **)(&DAT_0b548ccc + iVar4))(param_1);
+        if (iVar1 == 0) {
+          iVar1 = (**(code **)(&DAT_0b548cd0 + iVar4))
+                            (param_1,ptr,*(undefined4 *)(&DAT_0b548c84 + iVar4));
+          if (iVar1 == 0) {
+            iVar1 = (**(code **)(&DAT_0b548cd0 + iVar4))(param_1,ptr_00,size);
+            if (iVar1 == 0) {
+              iVar1 = (**(code **)(&DAT_0b548cd4 + iVar4))(param_1,ptr);
+              if (iVar1 == 0) {
+                uVar2 = 0;
+                if (size != 0) {
                   do {
-                    if (*param_3 <= uVar5) break;
-                    puVar6 = (undefined1 *)(param_2 + uVar5);
-                    uVar5 = uVar5 + 1;
-                    *puVar6 = puVar6[(int)pvVar3 - param_2];
-                  } while (uVar5 < uVar1);
+                    if (*param_3 <= uVar2) break;
+                    puVar3 = (undefined1 *)(param_2 + uVar2);
+                    uVar2 = uVar2 + 1;
+                    *puVar3 = puVar3[(int)ptr - param_2];
+                  } while (uVar2 < size);
                 }
-                *param_3 = uVar5;
-                iVar2 = 0;
+                *param_3 = uVar2;
+                iVar1 = 0;
               }
             }
           }
         }
       }
       tom_game_free(*(void **)(param_1 + 0xe8));
-      tom_game_free(pvVar4);
-      tom_game_free(pvVar3);
-      return iVar2;
+      tom_game_free(ptr_00);
+      tom_game_free(ptr);
+      return iVar1;
     }
-    if (pvVar4 != (void *)0x0) {
-      tom_game_free(pvVar4);
+    if (ptr_00 != (void *)0x0) {
+      tom_game_free(ptr_00);
     }
-    iVar2 = 0xd;
+    iVar1 = 0xd;
   }
-  return iVar2;
+  return iVar1;
 }
 

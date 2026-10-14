@@ -2,7 +2,7 @@
 
 // 00C2C977  __crtMessageBoxA  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtmbox.c:41)
 
-int __cdecl __crtMessageBoxA(char *param_1,char *param_2,uint param_3)
+int __cdecl __crtMessageBoxA(char *lpText,char *lpCaption,uint uType)
 
 {
   _func___cdecl_int_void_ptr_int_void_ptr_ulong_ulong_ptr *p_Var1;
@@ -11,13 +11,13 @@ int __cdecl __crtMessageBoxA(char *param_1,char *param_2,uint param_3)
   code *pcVar3;
   code *pcVar4;
   int iVar5;
-  undefined1 local_18 [8];
+  undefined1 uof [8];
   byte local_10;
-  undefined1 local_c [4];
-  int local_8;
+  undefined1 nDummy [4];
+  HWND__ *hWndParent;
   
   p_Var1 = _encoded_null();
-  local_8 = 0;
+  hWndParent = (HWND__ *)0x0;
   if (pfnMessageBox == (_func___cdecl_int_HWND___ptr_char_ptr_char_ptr_uint *)0x0) {
     hModule = LoadLibraryA("USER32.DLL");
     if (hModule == (HMODULE)0x0) {
@@ -45,26 +45,25 @@ int __cdecl __crtMessageBoxA(char *param_1,char *param_2,uint param_3)
     pcVar3 = _decode_pointer(pfnGetProcessWindowStation);
     pcVar4 = _decode_pointer(pfnGetUserObjectInformation);
     if (((pcVar3 != (code *)0x0) && (pcVar4 != (code *)0x0)) &&
-       (((iVar5 = (*pcVar3)(), iVar5 == 0 ||
-         (iVar5 = (*pcVar4)(iVar5,1,local_18,0xc,local_c), iVar5 == 0)) || ((local_10 & 1) == 0))))
-    {
-      param_3 = param_3 | 0x200000;
+       (((iVar5 = (*pcVar3)(), iVar5 == 0 || (iVar5 = (*pcVar4)(iVar5,1,uof,0xc,nDummy), iVar5 == 0)
+         ) || ((local_10 & 1) == 0)))) {
+      uType = uType | 0x200000;
       goto LAB_00c2cab9;
     }
   }
   if (((((_func___cdecl_int_void_ptr_int_void_ptr_ulong_ulong_ptr *)pfnGetActiveWindow != p_Var1) &&
        (pcVar3 = _decode_pointer(pfnGetActiveWindow), pcVar3 != (code *)0x0)) &&
-      (local_8 = (*pcVar3)(), local_8 != 0)) &&
+      (hWndParent = (HWND__ *)(*pcVar3)(), hWndParent != (HWND__ *)0x0)) &&
      (((_func___cdecl_int_void_ptr_int_void_ptr_ulong_ulong_ptr *)pfnGetLastActivePopup != p_Var1 &&
       (pcVar3 = _decode_pointer(pfnGetLastActivePopup), pcVar3 != (code *)0x0)))) {
-    local_8 = (*pcVar3)(local_8);
+    hWndParent = (HWND__ *)(*pcVar3)(hWndParent);
   }
 LAB_00c2cab9:
   pcVar3 = _decode_pointer(pfnMessageBox);
   if (pcVar3 == (code *)0x0) {
     return 0;
   }
-  iVar5 = (*pcVar3)(local_8,param_1,param_2,param_3);
+  iVar5 = (*pcVar3)(hWndParent,lpText,lpCaption,uType);
   return iVar5;
 }
 

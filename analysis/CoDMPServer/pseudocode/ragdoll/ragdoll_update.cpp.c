@@ -2,15 +2,16 @@
 
 // 00868130  Ragdoll_GetDObjLocalBoneMatrix  (ragdoll/ragdoll_update.cpp:52)
 
-DObjAnimMat * __cdecl Ragdoll_GetDObjLocalBoneMatrix(cpose_t *param_1,DObj *param_2,uchar param_3)
+DObjAnimMat * __cdecl Ragdoll_GetDObjLocalBoneMatrix(cpose_t *pose,DObj *obj,uchar boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
   DObjAnimMat *local_c;
+  DObjAnimMat *mat;
   
-  if (param_2 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x37,0
                              ,"%s");
     if (!bVar2) {
@@ -19,13 +20,13 @@ DObjAnimMat * __cdecl Ragdoll_GetDObjLocalBoneMatrix(cpose_t *param_1,DObj *para
       return pDVar3;
     }
   }
-  CG_DObjCalcBone(param_1,param_2,(uint)param_3);
-  local_c = DObjGetRotTransArray(param_2);
+  CG_DObjCalcBone(pose,obj,(uint)boneIndex);
+  local_c = DObjGetRotTransArray(obj);
   if (local_c == (DObjAnimMat *)0x0) {
     local_c = (DObjAnimMat *)0x0;
   }
   else {
-    local_c = local_c + param_3;
+    local_c = local_c + boneIndex;
   }
   return local_c;
 }
@@ -35,37 +36,38 @@ DObjAnimMat * __cdecl Ragdoll_GetDObjLocalBoneMatrix(cpose_t *param_1,DObj *para
 
 bool __cdecl
 Ragdoll_GetDObjWorldBoneOriginQuat
-          (int param_1,cpose_t *param_2,DObj *param_3,uchar param_4,float *param_5,float *param_6)
+          (int localClientNum,cpose_t *pose,DObj *obj,uchar boneIndex,float *origin,float *quat)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   DObjAnimMat *pDVar4;
+  DObjAnimMat *mat;
   
-  if ((param_3 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x50
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (cpose_t *)0x0) &&
+  if ((pose == (cpose_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x51
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  pDVar4 = Ragdoll_GetDObjLocalBoneMatrix(param_2,param_3,param_4);
+  pDVar4 = Ragdoll_GetDObjLocalBoneMatrix(pose,obj,boneIndex);
   if (pDVar4 != (DObjAnimMat *)0x0) {
-    *param_6 = pDVar4->quat[0];
-    param_6[1] = pDVar4->quat[1];
-    param_6[2] = pDVar4->quat[2];
-    param_6[3] = pDVar4->quat[3];
-    *param_5 = pDVar4->trans[0];
-    param_5[1] = pDVar4->trans[1];
-    param_5[2] = pDVar4->trans[2];
+    *quat = pDVar4->quat[0];
+    quat[1] = pDVar4->quat[1];
+    quat[2] = pDVar4->quat[2];
+    quat[3] = pDVar4->quat[3];
+    *origin = pDVar4->trans[0];
+    origin[1] = pDVar4->trans[1];
+    origin[2] = pDVar4->trans[2];
   }
   return pDVar4 != (DObjAnimMat *)0x0;
 }
@@ -73,13 +75,13 @@ Ragdoll_GetDObjWorldBoneOriginQuat
 
 // 00866C50  Ragdoll_GetDObjBaseBoneMatrix  (ragdoll/ragdoll_update.cpp:95)
 
-void __cdecl Ragdoll_GetDObjBaseBoneMatrix(DObj *param_1,uchar param_2,DObjAnimMat *param_3)
+void __cdecl Ragdoll_GetDObjBaseBoneMatrix(DObj *obj,uchar boneIndex,DObjAnimMat *outMat)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x60,0
                              ,"%s");
     if (!bVar2) {
@@ -88,7 +90,7 @@ void __cdecl Ragdoll_GetDObjBaseBoneMatrix(DObj *param_1,uchar param_2,DObjAnimM
       return;
     }
   }
-  DObjGetBasePoseMatrix(param_1,param_2,param_3);
+  DObjGetBasePoseMatrix(obj,boneIndex,outMat);
   return;
 }
 
@@ -97,15 +99,15 @@ void __cdecl Ragdoll_GetDObjBaseBoneMatrix(DObj *param_1,uchar param_2,DObjAnimM
 
 bool __cdecl
 Ragdoll_GetDObjBaseBoneOrigin
-          (DObj *param_1,float *param_2,float (*param_3) [3],uchar param_4,float *param_5)
+          (DObj *obj,float *offset,float (*axis) [3],uchar boneIndex,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  DObjAnimMat local_24;
+  DObjAnimMat mat;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x6a,0
                              ,"%s");
     if (!bVar2) {
@@ -114,11 +116,11 @@ Ragdoll_GetDObjBaseBoneOrigin
       return (bool)uVar3;
     }
   }
-  Ragdoll_GetDObjBaseBoneMatrix(param_1,param_4,&local_24);
-  Vec3Rotate(local_24.trans,param_3,param_5);
-  *param_5 = *param_2 + *param_5;
-  param_5[1] = param_2[1] + param_5[1];
-  param_5[2] = param_2[2] + param_5[2];
+  Ragdoll_GetDObjBaseBoneMatrix(obj,boneIndex,&mat);
+  Vec3Rotate(mat.trans,axis,origin);
+  *origin = *offset + *origin;
+  origin[1] = offset[1] + origin[1];
+  origin[2] = offset[2] + origin[2];
   return true;
 }
 
@@ -127,17 +129,16 @@ Ragdoll_GetDObjBaseBoneOrigin
 
 bool __cdecl
 Ragdoll_GetDObjBaseBoneOriginQuat
-          (DObj *param_1,float *param_2,float (*param_3) [3],uchar param_4,float *param_5,
-          float *param_6)
+          (DObj *obj,float *offset,float (*axis) [3],uchar boneIndex,float *origin,float *quat)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  DObjAnimMat local_34;
-  float local_14 [4];
+  DObjAnimMat mat;
+  float orientation [4];
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x7a,0
                              ,"%s");
     if (!bVar2) {
@@ -146,27 +147,27 @@ Ragdoll_GetDObjBaseBoneOriginQuat
       return (bool)uVar3;
     }
   }
-  Ragdoll_GetDObjBaseBoneMatrix(param_1,param_4,&local_34);
-  Ragdoll_Mat33ToQuat(param_3,local_14);
-  Ragdoll_QuatMul(local_14,local_34.quat,param_6);
-  Vec3Rotate(local_34.trans,param_3,param_5);
-  *param_5 = *param_2 + *param_5;
-  param_5[1] = param_2[1] + param_5[1];
-  param_5[2] = param_2[2] + param_5[2];
+  Ragdoll_GetDObjBaseBoneMatrix(obj,boneIndex,&mat);
+  Ragdoll_Mat33ToQuat(axis,orientation);
+  Ragdoll_QuatMul(orientation,mat.quat,quat);
+  Vec3Rotate(mat.trans,axis,origin);
+  *origin = *offset + *origin;
+  origin[1] = offset[1] + origin[1];
+  origin[2] = offset[2] + origin[2];
   return true;
 }
 
 
 // 008695A0  Ragdoll_PoseInvAxis  (ragdoll/ragdoll_update.cpp:137)
 
-void __cdecl Ragdoll_PoseInvAxis(cpose_t *param_1,float (*param_2) [3])
+void __cdecl Ragdoll_PoseInvAxis(cpose_t *pose,float (*invAxis) [3])
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_28 [9];
+  float axis [9];
   
-  if (param_1 == (cpose_t *)0x0) {
+  if (pose == (cpose_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x8c,0
                              ,"%s");
     if (!bVar2) {
@@ -175,64 +176,69 @@ void __cdecl Ragdoll_PoseInvAxis(cpose_t *param_1,float (*param_2) [3])
       return;
     }
   }
-  AnglesToAxis(param_1->angles,(float (*) [3])local_28);
-  AxisTranspose((float (*) [3])local_28,param_2);
+  AnglesToAxis(pose->angles,(float (*) [3])axis);
+  AxisTranspose((float (*) [3])axis,invAxis);
   return;
 }
 
 
 // 008665B0  Ragdoll_AnimMatToMat43  (ragdoll/ragdoll_update.cpp:148)
 
-void __cdecl Ragdoll_AnimMatToMat43(DObjAnimMat *param_1,float (*param_2) [3])
+void __cdecl Ragdoll_AnimMatToMat43(DObjAnimMat *mat,float (*out) [3])
 
 {
-  ConvertQuatToMat(param_1,param_2);
-  param_2[3][0] = param_1->trans[0];
-  param_2[3][1] = param_1->trans[1];
-  param_2[3][2] = param_1->trans[2];
+  ConvertQuatToMat(mat,out);
+  out[3][0] = mat->trans[0];
+  out[3][1] = mat->trans[1];
+  out[3][2] = mat->trans[2];
   return;
 }
 
 
 // 00867BF0  Ragdoll_SnapshotBaseLerpBones  (ragdoll/ragdoll_update.cpp:155)
 
-void __cdecl Ragdoll_SnapshotBaseLerpBones(RagdollBody *param_1,BoneOrientation *param_2)
+void __cdecl Ragdoll_SnapshotBaseLerpBones(RagdollBody *body,BoneOrientation *snapshot)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   RagdollDef *pRVar4;
-  DObj *pDVar5;
-  DObjAnimMat *pDVar6;
-  float fVar7;
+  DObj *obj_00;
+  BoneOrientation *pBVar5;
+  DObjAnimMat *mat;
+  float fVar6;
   float local_1a8;
   float local_150;
-  BoneOrientation *local_140;
-  float local_138;
+  RagdollDef *def;
+  int parentBoneNum;
+  DObj *obj;
+  BoneOrientation *baseOffsetOrientation;
+  DObjAnimMat *parentAnimMat;
+  float bodyOffset;
   float local_134;
   float local_130;
-  float local_12c;
-  float local_128 [12];
-  DObjAnimMat *local_f8;
-  BoneOrientation *local_f4;
-  uchar local_ed;
-  int local_ec;
-  float local_e8 [9];
-  cpose_t *local_c4;
-  LerpBone *local_c0;
-  uchar local_b9;
-  int local_b8;
-  phys_vec3 local_b4;
+  float lerp;
+  float boneMat [12];
+  DObjAnimMat *boneAnimMat;
+  BoneOrientation *parentOrientation;
+  uchar parentBoneIdx;
+  int goalMsec;
+  float invAxis [9];
+  cpose_t *pose;
+  LerpBone *lerpBone;
+  uchar boneIdx;
+  int i;
+  phys_vec3 currentOffset;
   float local_a4;
   float local_a0;
   float local_9c;
-  float local_98 [9];
-  float local_74 [4];
-  float local_64 [12];
-  float local_34 [12];
+  float axis [9];
+  float currentLocalRot [4];
+  float invParentMat [12];
+  float relMat [12];
   
-  pRVar4 = Ragdoll_BodyDef(param_1);
+  pRVar4 = Ragdoll_BodyDef(body);
   if ((pRVar4 == (RagdollDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0xb5
                                ,0,"%s"), !bVar3)) {
@@ -240,34 +246,33 @@ void __cdecl Ragdoll_SnapshotBaseLerpBones(RagdollBody *param_1,BoneOrientation 
     (*pcVar2)();
     return;
   }
-  pDVar5 = Ragdoll_BodyDObj(param_1);
-  if ((pDVar5 != (DObj *)0x0) && (local_c4 = Ragdoll_BodyPose(param_1), local_c4 != (cpose_t *)0x0))
-  {
-    local_c0 = param_1->lerpBones;
-    local_140 = param_1->lerpBoneOffsets;
-    param_2 = param_2 + param_1->numBones;
-    for (local_b8 = 0; local_b8 < pRVar4->numBaseLerpBones; local_b8 = local_b8 + 1) {
-      local_ec = pRVar4->baseLerpBoneDefs[local_b8].lerpTime;
-      if (local_ec < 1) {
-        local_12c = 1.0;
+  obj_00 = Ragdoll_BodyDObj(body);
+  if ((obj_00 != (DObj *)0x0) && (pose = Ragdoll_BodyPose(body), pose != (cpose_t *)0x0)) {
+    lerpBone = body->lerpBones;
+    baseOffsetOrientation = body->lerpBoneOffsets;
+    snapshot = snapshot + body->numBones;
+    for (i = 0; i < pRVar4->numBaseLerpBones; i = i + 1) {
+      goalMsec = pRVar4->baseLerpBoneDefs[i].lerpTime;
+      if (goalMsec < 1) {
+        lerp = 1.0;
       }
       else {
-        fVar7 = (float)param_1->stateMsec / (float)local_ec;
-        local_150 = fVar7;
-        if (0.0 <= fVar7 - 1.0) {
+        fVar6 = (float)body->stateMsec / (float)goalMsec;
+        local_150 = fVar6;
+        if (0.0 <= fVar6 - 1.0) {
           local_150 = 1.0;
         }
-        if (0.0 - fVar7 < 0.0) {
+        if (0.0 - fVar6 < 0.0) {
           local_1a8 = local_150;
         }
         else {
           local_1a8 = 0.0;
         }
-        local_12c = local_1a8;
+        lerp = local_1a8;
       }
-      local_b9 = local_c0->animBone;
-      uVar1 = local_c0->parentBone;
-      if (((uint)param_1->numBones <= uVar1) &&
+      boneIdx = lerpBone->animBone;
+      uVar1 = lerpBone->parentBone;
+      if (((uint)body->numBones <= uVar1) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                    0xd4,0,
                                    "parentBoneNum doesn\'t index body->numBones\n\t%i not in [0, %i)"
@@ -276,48 +281,48 @@ void __cdecl Ragdoll_SnapshotBaseLerpBones(RagdollBody *param_1,BoneOrientation 
         (*pcVar2)();
         return;
       }
-      local_f4 = Ragdoll_BodyBoneOrientations(param_1);
-      local_f4 = local_f4 + uVar1;
-      local_ed = param_1->bones[uVar1].animBones[0];
-      local_f8 = Ragdoll_GetDObjLocalBoneMatrix(local_c4,pDVar5,local_b9);
-      pDVar6 = Ragdoll_GetDObjLocalBoneMatrix(local_c4,pDVar5,local_ed);
-      if (local_f8 == (DObjAnimMat *)0x0) {
+      pBVar5 = Ragdoll_BodyBoneOrientations(body);
+      parentOrientation = pBVar5 + uVar1;
+      parentBoneIdx = body->bones[uVar1].animBones[0];
+      boneAnimMat = Ragdoll_GetDObjLocalBoneMatrix(pose,obj_00,boneIdx);
+      mat = Ragdoll_GetDObjLocalBoneMatrix(pose,obj_00,parentBoneIdx);
+      if (boneAnimMat == (DObjAnimMat *)0x0) {
         return;
       }
-      if (pDVar6 == (DObjAnimMat *)0x0) {
+      if (mat == (DObjAnimMat *)0x0) {
         return;
       }
-      if (local_f8 == pDVar6) {
+      if (boneAnimMat == mat) {
         return;
       }
-      ConvertQuatToInverseMat(pDVar6,(float (*) [3])local_64);
-      Ragdoll_AnimMatToMat43(local_f8,(float (*) [3])local_128);
-      MatrixMultiply43((float (*) [3])local_128,(float (*) [3])local_64,(float (*) [3])local_34);
-      AxisToQuat((float (*) [3])local_34,local_74);
-      fVar7 = Abs(&local_b4);
-      if (fVar7 <= 400.0) {
-        Ragdoll_QuatLerp(local_74,local_140->orientation,local_12c,&local_b4.w);
-        Vec3Lerp(&local_b4.x,local_140->origin,local_12c,&local_138);
+      ConvertQuatToInverseMat(mat,(float (*) [3])invParentMat);
+      Ragdoll_AnimMatToMat43(boneAnimMat,(float (*) [3])boneMat);
+      MatrixMultiply43((float (*) [3])boneMat,(float (*) [3])invParentMat,(float (*) [3])relMat);
+      AxisToQuat((float (*) [3])relMat,currentLocalRot);
+      fVar6 = Abs(&currentOffset);
+      if (fVar6 <= 400.0) {
+        Ragdoll_QuatLerp(currentLocalRot,baseOffsetOrientation->orientation,lerp,&currentOffset.w);
+        Vec3Lerp(&currentOffset.x,baseOffsetOrientation->origin,lerp,&bodyOffset);
       }
       else {
-        local_b4.w = local_140->orientation[0];
-        local_a4 = local_140->orientation[1];
-        local_a0 = local_140->orientation[2];
-        local_9c = local_140->orientation[3];
-        local_138 = local_140->origin[0];
-        local_134 = local_140->origin[1];
-        local_130 = local_140->origin[2];
+        currentOffset.w = baseOffsetOrientation->orientation[0];
+        local_a4 = baseOffsetOrientation->orientation[1];
+        local_a0 = baseOffsetOrientation->orientation[2];
+        local_9c = baseOffsetOrientation->orientation[3];
+        bodyOffset = baseOffsetOrientation->origin[0];
+        local_134 = baseOffsetOrientation->origin[1];
+        local_130 = baseOffsetOrientation->origin[2];
       }
-      Ragdoll_QuatMul(local_f4->orientation,&local_b4.w,param_2->orientation);
-      QuatToAxis(local_f4->orientation,(float (*) [3])local_98);
-      AxisTranspose((float (*) [3])local_98,(float (*) [3])local_e8);
-      Vec3Rotate(&local_138,(float (*) [3])local_e8,param_2->origin);
-      param_2->origin[0] = local_f4->origin[0] + param_2->origin[0];
-      param_2->origin[1] = local_f4->origin[1] + param_2->origin[1];
-      param_2->origin[2] = local_f4->origin[2] + param_2->origin[2];
-      local_c0 = local_c0 + 1;
-      local_140 = local_140 + 1;
-      param_2 = param_2 + 1;
+      Ragdoll_QuatMul(parentOrientation->orientation,&currentOffset.w,snapshot->orientation);
+      QuatToAxis(parentOrientation->orientation,(float (*) [3])axis);
+      AxisTranspose((float (*) [3])axis,(float (*) [3])invAxis);
+      Vec3Rotate(&bodyOffset,(float (*) [3])invAxis,snapshot->origin);
+      snapshot->origin[0] = parentOrientation->origin[0] + snapshot->origin[0];
+      snapshot->origin[1] = parentOrientation->origin[1] + snapshot->origin[1];
+      snapshot->origin[2] = parentOrientation->origin[2] + snapshot->origin[2];
+      lerpBone = lerpBone + 1;
+      baseOffsetOrientation = baseOffsetOrientation + 1;
+      snapshot = snapshot + 1;
     }
   }
   return;
@@ -326,31 +331,32 @@ void __cdecl Ragdoll_SnapshotBaseLerpBones(RagdollBody *param_1,BoneOrientation 
 
 // 0086B120  Ragdoll_SnapshotBonePositions  (ragdoll/ragdoll_update.cpp:255)
 
-void __cdecl Ragdoll_SnapshotBonePositions(RagdollBody *param_1,BoneOrientation *param_2)
+void __cdecl Ragdoll_SnapshotBonePositions(RagdollBody *body,BoneOrientation *boneSnapshot)
 
 {
   code *pcVar1;
   bool bVar2;
   RagdollDef *pRVar3;
-  BoneOrientation *local_24;
-  float local_20;
+  RagdollDef *def;
+  BoneOrientation *snapshot;
+  float boneRot;
   float local_1c;
   float local_18;
   float local_14;
-  BoneDef *local_10;
-  int local_c;
-  Bone *local_8;
+  BoneDef *boneDef;
+  int i;
+  Bone *bone;
   
-  if (((param_1 == (RagdollBody *)0x0) || (param_2 == (BoneOrientation *)0x0)) &&
+  if (((body == (RagdollBody *)0x0) || (boneSnapshot == (BoneOrientation *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x107,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Ragdoll_BodyHasPhysics(param_1);
+  bVar2 = Ragdoll_BodyHasPhysics(body);
   if (bVar2) {
-    pRVar3 = Ragdoll_BodyDef(param_1);
+    pRVar3 = Ragdoll_BodyDef(body);
     if ((pRVar3 == (RagdollDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x10d,0,"%s"), !bVar2)) {
@@ -358,27 +364,27 @@ void __cdecl Ragdoll_SnapshotBonePositions(RagdollBody *param_1,BoneOrientation 
       (*pcVar1)();
       return;
     }
-    local_8 = param_1->bones;
-    local_10 = pRVar3->boneDefs;
-    local_24 = param_2;
-    for (local_c = 0; local_c < param_1->numBones; local_c = local_c + 1) {
-      if (local_8->rigidBody != 0) {
-        Phys_ObjGetInterpolatedState(local_8->rigidBody,local_24->origin,&local_20);
-        if (local_10->mirror == false) {
-          local_24->orientation[0] = local_20;
-          local_24->orientation[1] = local_1c;
-          local_24->orientation[2] = local_18;
-          local_24->orientation[3] = local_14;
+    bone = body->bones;
+    boneDef = pRVar3->boneDefs;
+    snapshot = boneSnapshot;
+    for (i = 0; i < body->numBones; i = i + 1) {
+      if (bone->rigidBody != 0) {
+        Phys_ObjGetInterpolatedState(bone->rigidBody,snapshot->origin,&boneRot);
+        if (boneDef->mirror == false) {
+          snapshot->orientation[0] = boneRot;
+          snapshot->orientation[1] = local_1c;
+          snapshot->orientation[2] = local_18;
+          snapshot->orientation[3] = local_14;
         }
         else {
-          Ragdoll_QuatMul(&local_20,quatZRot,local_24->orientation);
+          Ragdoll_QuatMul(&boneRot,quatZRot,snapshot->orientation);
         }
       }
-      local_8 = local_8 + 1;
-      local_24 = local_24 + 1;
-      local_10 = local_10 + 1;
+      bone = bone + 1;
+      snapshot = snapshot + 1;
+      boneDef = boneDef + 1;
     }
-    Ragdoll_SnapshotBaseLerpBones(param_1,param_2);
+    Ragdoll_SnapshotBaseLerpBones(body,boneSnapshot);
   }
   return;
 }
@@ -459,41 +465,45 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 0086AA20  Ragdoll_SnapshotAnimOrientations  (ragdoll/ragdoll_update.cpp:307)
 
-void __cdecl Ragdoll_SnapshotAnimOrientations(RagdollBody *param_1,BoneOrientation *param_2)
+void __cdecl Ragdoll_SnapshotAnimOrientations(RagdollBody *body,BoneOrientation *snapshot)
 
 {
   code *pcVar1;
   bool bVar2;
   RagdollDef *pRVar3;
-  DObj *pDVar4;
-  cpose_t *pcVar5;
-  int local_c;
-  Bone *local_8;
+  DObj *obj_00;
+  cpose_t *pose_00;
+  RagdollDef *def;
+  DObj *obj;
+  BoneDef *boneDef;
+  cpose_t *pose;
+  int i;
+  Bone *bone;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x13b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pRVar3 = Ragdoll_BodyDef(param_1);
-  pDVar4 = Ragdoll_BodyDObj(param_1);
-  if (pDVar4 != (DObj *)0x0) {
-    pcVar5 = Ragdoll_BodyPose(param_1);
-    if (((pRVar3 == (RagdollDef *)0x0) || (pDVar4 == (DObj *)0x0)) || (pcVar5 == (cpose_t *)0x0)) {
-      Ragdoll_BodyNewState(param_1,BS_DEAD);
+  pRVar3 = Ragdoll_BodyDef(body);
+  obj_00 = Ragdoll_BodyDObj(body);
+  if (obj_00 != (DObj *)0x0) {
+    pose_00 = Ragdoll_BodyPose(body);
+    if (((pRVar3 == (RagdollDef *)0x0) || (obj_00 == (DObj *)0x0)) || (pose_00 == (cpose_t *)0x0)) {
+      Ragdoll_BodyNewState(body,BS_DEAD);
     }
     else {
-      local_8 = param_1->bones;
-      for (local_c = 0; local_c < param_1->numBones; local_c = local_c + 1) {
-        if (local_8->animBones[0] != 0xff) {
+      bone = body->bones;
+      for (i = 0; i < body->numBones; i = i + 1) {
+        if (bone->animBones[0] != 0xff) {
           Ragdoll_GetDObjWorldBoneOriginQuat
-                    (param_1->localClientNum,pcVar5,pDVar4,local_8->animBones[0],param_2->origin,
-                     param_2->orientation);
+                    (body->localClientNum,pose_00,obj_00,bone->animBones[0],snapshot->origin,
+                     snapshot->orientation);
         }
-        local_8 = local_8 + 1;
-        param_2 = param_2 + 1;
+        bone = bone + 1;
+        snapshot = snapshot + 1;
       }
     }
   }
@@ -503,14 +513,14 @@ void __cdecl Ragdoll_SnapshotAnimOrientations(RagdollBody *param_1,BoneOrientati
 
 // 00867550  Ragdoll_BodyIdle  (ragdoll/ragdoll.h:326)
 
-bool __cdecl Ragdoll_BodyIdle(RagdollBody *param_1)
+bool __cdecl Ragdoll_BodyIdle(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.h",0x147,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -518,13 +528,18 @@ bool __cdecl Ragdoll_BodyIdle(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  return param_1->state == BS_IDLE;
+  return body->state == BS_IDLE;
 }
 
 
 // 008681B0  Ragdoll_SetCurrentPoseFromSnapshot  (ragdoll/ragdoll_update.cpp:345)
 
-void __cdecl Ragdoll_SetCurrentPoseFromSnapshot(RagdollBody *param_1,BoneOrientation *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Ragdoll_SetCurrentPoseFromSnapshot(RagdollBody *body,BoneOrientation *snapshot)
 
 {
   rigid_body_constraint_ragdoll *this;
@@ -532,25 +547,29 @@ void __cdecl Ragdoll_SetCurrentPoseFromSnapshot(RagdollBody *param_1,BoneOrienta
   bool bVar2;
   RagdollDef *pRVar3;
   float fVar4;
-  int local_30;
-  float local_28;
+  rigid_body_constraint_ragdoll *joint;
+  float error_sq;
+  int id;
+  int i_2;
+  RagdollDef *def;
+  float rotatedOrientation;
   float local_24;
   float local_20;
   float local_1c;
-  BoneDef *local_18;
-  int local_14;
-  int local_10;
-  Bone *local_c;
-  float local_8;
+  BoneDef *boneDef;
+  int iters;
+  int i;
+  Bone *bone;
+  float max_error_sq;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x160,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pRVar3 = Ragdoll_BodyDef(param_1);
+  pRVar3 = Ragdoll_BodyDef(body);
   if ((pRVar3 == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x163,0,"%s"), !bVar2)) {
@@ -558,35 +577,35 @@ void __cdecl Ragdoll_SetCurrentPoseFromSnapshot(RagdollBody *param_1,BoneOrienta
     (*pcVar1)();
     return;
   }
-  local_c = param_1->bones;
-  local_18 = pRVar3->boneDefs;
-  for (local_10 = 0; local_10 < param_1->numBones; local_10 = local_10 + 1) {
-    if (local_18->mirror == false) {
-      local_28 = param_2->orientation[0];
-      local_24 = param_2->orientation[1];
-      local_20 = param_2->orientation[2];
-      local_1c = param_2->orientation[3];
+  bone = body->bones;
+  boneDef = pRVar3->boneDefs;
+  for (i = 0; i < body->numBones; i = i + 1) {
+    if (boneDef->mirror == false) {
+      rotatedOrientation = snapshot->orientation[0];
+      local_24 = snapshot->orientation[1];
+      local_20 = snapshot->orientation[2];
+      local_1c = snapshot->orientation[3];
     }
     else {
-      Ragdoll_QuatMul(param_2->orientation,quatZRot,&local_28);
+      Ragdoll_QuatMul(snapshot->orientation,quatZRot,&rotatedOrientation);
     }
-    if (local_c->rigidBody != 0) {
-      Phys_ObjSetOrientation(local_c->rigidBody,param_2->origin,&local_28);
+    if (bone->rigidBody != 0) {
+      Phys_ObjSetOrientation(bone->rigidBody,snapshot->origin,&rotatedOrientation);
     }
-    local_c = local_c + 1;
-    local_18 = local_18 + 1;
-    param_2 = param_2 + 1;
+    bone = bone + 1;
+    boneDef = boneDef + 1;
+    snapshot = snapshot + 1;
   }
-  local_8 = 100.0;
-  local_14 = 0;
-  while ((1e-05 < local_8 && (local_14 < 100))) {
-    local_14 = local_14 + 1;
-    local_8 = 0.0;
-    for (local_30 = 0; local_30 < param_1->numJoints; local_30 = local_30 + 1) {
-      this = (rigid_body_constraint_ragdoll *)param_1->joints[local_30].joint;
+  max_error_sq = 100.0;
+  iters = 0;
+  while ((1e-05 < max_error_sq && (iters < 100))) {
+    iters = iters + 1;
+    max_error_sq = 0.0;
+    for (i_2 = 0; i_2 < body->numJoints; i_2 = i_2 + 1) {
+      this = (rigid_body_constraint_ragdoll *)body->joints[i_2].joint;
       if ((this != (rigid_body_constraint_ragdoll *)0x0) &&
-         (fVar4 = rigid_body_constraint_ragdoll::pull_together(this), local_8 < fVar4)) {
-        local_8 = fVar4;
+         (fVar4 = rigid_body_constraint_ragdoll::pull_together(this), max_error_sq < fVar4)) {
+        max_error_sq = fVar4;
       }
     }
   }
@@ -596,29 +615,31 @@ void __cdecl Ragdoll_SetCurrentPoseFromSnapshot(RagdollBody *param_1,BoneOrienta
 
 // 00866880  Ragdoll_ValidateBodyObj  (ragdoll/ragdoll_update.cpp:393)
 
-bool __cdecl Ragdoll_ValidateBodyObj(RagdollBody *param_1)
+bool __cdecl Ragdoll_ValidateBodyObj(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   RagdollDef *pRVar4;
-  DObj *pDVar5;
-  int iVar6;
-  BoneDef *local_18;
-  uchar local_11;
-  int local_10;
-  undefined4 local_c;
-  BaseLerpBoneDef *local_8;
+  DObj *obj_00;
+  int iVar5;
+  RagdollDef *def;
+  DObj *obj;
+  BoneDef *boneDef;
+  uchar boneIdx;
+  int i;
+  int minBones;
+  BaseLerpBoneDef *lerpBoneDef;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x191,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  pRVar4 = Ragdoll_BodyDef(param_1);
+  pRVar4 = Ragdoll_BodyDef(body);
   if ((pRVar4 == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x194,0,"%s"), !bVar2)) {
@@ -626,35 +647,35 @@ bool __cdecl Ragdoll_ValidateBodyObj(RagdollBody *param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  pDVar5 = Ragdoll_BodyDObj(param_1);
-  if (pDVar5 == (DObj *)0x0) {
+  obj_00 = Ragdoll_BodyDObj(body);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = false;
   }
   else {
-    local_18 = pRVar4->boneDefs;
-    local_c = 3;
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      local_11 = '\0';
-      iVar6 = DObjGetBoneIndex(pDVar5,local_18->animBoneNames[0],&local_11,-1);
-      if ((iVar6 == 0) || (local_11 == 0xff)) {
+    boneDef = pRVar4->boneDefs;
+    minBones = 3;
+    for (i = 0; i < 3; i = i + 1) {
+      boneIdx = '\0';
+      iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[0],&boneIdx,-1);
+      if ((iVar5 == 0) || (boneIdx == 0xff)) {
         return false;
       }
-      local_11 = '\0';
-      if (((local_18->animBoneNames[1] != 0) &&
-          (iVar6 = DObjGetBoneIndex(pDVar5,local_18->animBoneNames[1],&local_11,-1), iVar6 == 0)) ||
-         (local_11 == 0xff)) {
+      boneIdx = '\0';
+      if (((boneDef->animBoneNames[1] != 0) &&
+          (iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[1],&boneIdx,-1), iVar5 == 0)) ||
+         (boneIdx == 0xff)) {
         return false;
       }
-      local_18 = local_18 + 1;
+      boneDef = boneDef + 1;
     }
-    local_8 = pRVar4->baseLerpBoneDefs;
-    for (local_10 = 0; local_10 < param_1->numLerpBones; local_10 = local_10 + 1) {
-      local_11 = '\0';
-      iVar6 = DObjGetBoneIndex(pDVar5,local_8->animBoneName,&local_11,-1);
-      if ((iVar6 == 0) || (local_11 == 0xff)) {
+    lerpBoneDef = pRVar4->baseLerpBoneDefs;
+    for (i = 0; i < body->numLerpBones; i = i + 1) {
+      boneIdx = '\0';
+      iVar5 = DObjGetBoneIndex(obj_00,lerpBoneDef->animBoneName,&boneIdx,-1);
+      if ((iVar5 == 0) || (boneIdx == 0xff)) {
         return false;
       }
-      local_8 = local_8 + 1;
+      lerpBoneDef = lerpBoneDef + 1;
     }
     bVar2 = true;
   }
@@ -692,7 +713,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Ragdoll_CreatePhysObj(RagdollBody *param_1,BoneDef *param_2,Bone *param_3)
+bool __cdecl Ragdoll_CreatePhysObj(RagdollBody *body,BoneDef *boneDef,Bone *bone)
 
 {
   code *pcVar1;
@@ -700,184 +721,183 @@ bool __cdecl Ragdoll_CreatePhysObj(RagdollBody *param_1,BoneDef *param_2,Bone *p
   undefined1 uVar3;
   int iVar4;
   uint uVar5;
-  gjk_base_t *pgVar6;
-  float fVar7;
-  float local_e8;
+  gjk_base_t *geom;
+  float fVar6;
+  float qRot;
   undefined4 local_e4;
   undefined4 local_e0;
   undefined4 local_dc;
-  RagdollDef *local_d8;
-  float local_d4;
-  DObj *local_d0;
-  float local_cc;
+  RagdollDef *def;
+  float hlength;
+  DObj *obj;
+  float b1Origin;
   undefined4 local_c8;
   undefined4 local_c4;
-  int local_c0;
-  float local_bc;
+  int dir;
+  float b0Origin;
   undefined4 local_b8;
   undefined4 local_b4;
-  centity_s *local_ac;
-  float local_a8;
+  PhysObjUserData *userData;
+  centity_s *cent;
+  float b0Quat;
   undefined4 local_a4;
   undefined4 local_a0;
   undefined4 local_9c;
-  float local_98;
-  float local_94 [9];
-  cpose_t *local_70;
-  gjk_geom_list_t local_6c;
-  PhysPreset local_64;
-  int local_8;
+  float offset;
+  float invPoseAxis [9];
+  cpose_t *pose;
+  gjk_geom_list_t gjk_geom_list;
+  PhysPreset preset;
+  int boneIdx;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x1c0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (BoneDef *)0x0) &&
+  if ((boneDef == (BoneDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x1c1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (Bone *)0x0) &&
+  if ((bone == (Bone *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x1c2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_d8 = Ragdoll_BodyDef(param_1);
-  if ((local_d8 == (RagdollDef *)0x0) &&
+  def = Ragdoll_BodyDef(body);
+  if ((def == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x1c5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_d0 = Ragdoll_BodyDObj(param_1);
-  if (local_d0 == (DObj *)0x0) {
+  obj = Ragdoll_BodyDObj(body);
+  if (obj == (DObj *)0x0) {
     bVar2 = false;
   }
   else {
-    if ((local_d8->bound == false) &&
+    if ((def->bound == false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x1cc,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_2->animBoneNames[0] == 0) &&
+    if ((boneDef->animBoneNames[0] == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x1cd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    param_3->animBones[0] = '\0';
-    param_3->animBones[1] = '\0';
-    iVar4 = DObjGetBoneIndex(local_d0,param_2->animBoneNames[0],param_3->animBones,-1);
-    if ((iVar4 == 0) || (param_3->animBones[0] == 0xff)) {
+    bone->animBones[0] = '\0';
+    bone->animBones[1] = '\0';
+    iVar4 = DObjGetBoneIndex(obj,boneDef->animBoneNames[0],bone->animBones,-1);
+    if ((iVar4 == 0) || (bone->animBones[0] == 0xff)) {
       bVar2 = true;
     }
     else {
-      if (param_2->animBoneNames[1] == 0) {
-        param_3->animBones[1] = '\0';
+      if (boneDef->animBoneNames[1] == 0) {
+        bone->animBones[1] = '\0';
       }
       else {
-        iVar4 = DObjGetBoneIndex(local_d0,param_2->animBoneNames[1],param_3->animBones + 1,-1);
-        if ((iVar4 == 0) || (param_3->animBones[0] == 0xff)) {
-          param_3->animBones[0] = 0xff;
-          param_3->animBones[1] = 0xff;
+        iVar4 = DObjGetBoneIndex(obj,boneDef->animBoneNames[1],bone->animBones + 1,-1);
+        if ((iVar4 == 0) || (bone->animBones[0] == 0xff)) {
+          bone->animBones[0] = 0xff;
+          bone->animBones[1] = 0xff;
           return true;
         }
       }
-      local_70 = Ragdoll_BodyPose(param_1);
-      if ((local_70 == (cpose_t *)0x0) &&
+      pose = Ragdoll_BodyPose(body);
+      if ((pose == (cpose_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                    0x1e4,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      Ragdoll_PoseInvAxis(local_70,(float (*) [3])local_94);
+      Ragdoll_PoseInvAxis(pose,(float (*) [3])invPoseAxis);
       Ragdoll_GetDObjBaseBoneOriginQuat
-                (local_d0,local_70->origin,(float (*) [3])local_94,param_3->animBones[0],&local_bc,
-                 &local_e8);
-      if (param_2->mirror == false) {
-        local_a8 = local_e8;
+                (obj,pose->origin,(float (*) [3])invPoseAxis,bone->animBones[0],&b0Origin,&qRot);
+      if (boneDef->mirror == false) {
+        b0Quat = qRot;
         local_a4 = local_e4;
         local_a0 = local_e0;
         local_9c = local_dc;
       }
       else {
-        Ragdoll_QuatMul(&local_e8,quatZRot,&local_a8);
+        Ragdoll_QuatMul(&qRot,quatZRot,&b0Quat);
       }
-      if (param_3->animBones[1] == '\0') {
-        local_cc = local_bc;
+      if (bone->animBones[1] == '\0') {
+        b1Origin = b0Origin;
         local_c8 = local_b8;
         local_c4 = local_b4;
       }
       else {
         Ragdoll_GetDObjBaseBoneOrigin
-                  (local_d0,local_70->origin,(float (*) [3])local_94,param_3->animBones[1],&local_cc
-                  );
+                  (obj,pose->origin,(float (*) [3])invPoseAxis,bone->animBones[1],&b1Origin);
       }
-      local_8 = ((int)param_3 - (int)param_1->bones) / 0x1c;
-      local_64.bounce = 0.0;
-      local_64.bulletForceScale = 1.0;
-      local_64.explosiveForceScale = 1.0;
-      local_64.friction = param_2->friction;
-      local_64.mass = param_2->mass;
-      local_64.name = "ragdoll_bone";
-      local_64.sndAliasPrefix = (char *)0x0;
-      local_64.canFloat = 1;
-      local_64.centerOfMassOffset[0] = 0.0;
-      local_64.centerOfMassOffset[1] = 0.0;
-      local_64.centerOfMassOffset[2] = 0.0;
-      local_64.buoyancyBoxMin[0] = 0.0;
-      local_64.buoyancyBoxMin[1] = 0.0;
-      local_64.buoyancyBoxMin[2] = 0.0;
-      local_64.buoyancyBoxMax[0] = 0.0;
-      local_64.buoyancyBoxMax[1] = 0.0;
-      local_64.buoyancyBoxMax[2] = 0.0;
-      param_3->parentBone = param_2->parentBone;
-      fVar7 = Vec3Distance(&local_bc,&local_cc);
-      param_3->length = fVar7;
-      param_3->center[0] = 0.0;
-      param_3->center[1] = 0.0;
-      param_3->center[2] = 0.0;
-      fVar7 = param_3->length;
-      uVar5 = -(uint)(local_8 != 0) & 0xfffffffe;
-      local_c0 = uVar5 + 2;
-      param_3->center[uVar5 + 2] = param_3->length * 0.5;
-      local_98 = 0.0;
-      if (local_8 == 3) {
-        local_98 = 2.0;
+      boneIdx = ((int)bone - (int)body->bones) / 0x1c;
+      preset.bounce = 0.0;
+      preset.bulletForceScale = 1.0;
+      preset.explosiveForceScale = 1.0;
+      preset.friction = boneDef->friction;
+      preset.mass = boneDef->mass;
+      preset.name = "ragdoll_bone";
+      preset.sndAliasPrefix = (char *)0x0;
+      preset.canFloat = 1;
+      preset.centerOfMassOffset[0] = 0.0;
+      preset.centerOfMassOffset[1] = 0.0;
+      preset.centerOfMassOffset[2] = 0.0;
+      preset.buoyancyBoxMin[0] = 0.0;
+      preset.buoyancyBoxMin[1] = 0.0;
+      preset.buoyancyBoxMin[2] = 0.0;
+      preset.buoyancyBoxMax[0] = 0.0;
+      preset.buoyancyBoxMax[1] = 0.0;
+      preset.buoyancyBoxMax[2] = 0.0;
+      bone->parentBone = boneDef->parentBone;
+      fVar6 = Vec3Distance(&b0Origin,&b1Origin);
+      bone->length = fVar6;
+      bone->center[0] = 0.0;
+      bone->center[1] = 0.0;
+      bone->center[2] = 0.0;
+      fVar6 = bone->length;
+      uVar5 = -(uint)(boneIdx != 0) & 0xfffffffe;
+      dir = uVar5 + 2;
+      bone->center[uVar5 + 2] = bone->length * 0.5;
+      offset = 0.0;
+      if (boneIdx == 3) {
+        offset = 2.0;
       }
-      param_3->center[uVar5 + 2] = param_3->center[uVar5 + 2] + local_98;
-      local_d4 = fVar7 * 0.5 + local_98;
-      local_6c.m_first_geom = (gjk_base_t *)0x0;
-      local_6c.m_geom_count = 0;
-      pgVar6 = create_capsule_gjk_geom
-                         (param_3->center,param_2->radius,local_d4,0,7,
-                          (gjk_collision_visitor *)&g_empty_collision_visitor);
-      gjk_geom_list_t::add_geom(&local_6c,pgVar6);
-      iVar4 = Phys_ObjCreate(2,&local_bc,&local_a8,vec3_origin,&local_64,&local_6c,false,-1);
-      param_3->rigidBody = iVar4;
-      local_ac = CG_GetEntity(param_1->localClientNum,param_1->dobj);
-      if (param_3->rigidBody == 0) {
+      bone->center[uVar5 + 2] = bone->center[uVar5 + 2] + offset;
+      hlength = fVar6 * 0.5 + offset;
+      gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+      gjk_geom_list.m_geom_count = 0;
+      geom = create_capsule_gjk_geom
+                       (bone->center,boneDef->radius,hlength,0,7,
+                        (gjk_collision_visitor *)&g_empty_collision_visitor);
+      gjk_geom_list_t::add_geom(&gjk_geom_list,geom);
+      iVar4 = Phys_ObjCreate(2,&b0Origin,&b0Quat,vec3_origin,&preset,&gjk_geom_list,false,-1);
+      bone->rigidBody = iVar4;
+      cent = CG_GetEntity(body->localClientNum,body->dobj);
+      if (bone->rigidBody == 0) {
         Com_PrintWarning(0xe,"Ragdoll: Failed to create rigid body\n");
         bVar2 = false;
       }
       else {
-        iVar4 = param_3->rigidBody;
-        if (local_ac->bFloatLonger != 0) {
+        iVar4 = bone->rigidBody;
+        if (cent->bFloatLonger != 0) {
           *(uint *)(iVar4 + 0x100) = *(uint *)(iVar4 + 0x100) | 4;
         }
-        if (local_ac->bForceBuoyancy != 0) {
+        if (cent->bForceBuoyancy != 0) {
           *(uint *)(iVar4 + 0x100) = *(uint *)(iVar4 + 0x100) | 0x10;
         }
         *(uint *)(iVar4 + 0x100) = *(uint *)(iVar4 + 0x100) | 0x20;
@@ -891,46 +911,46 @@ bool __cdecl Ragdoll_CreatePhysObj(RagdollBody *param_1,BoneDef *param_2,Bone *p
 
 // 00868560  Ragdoll_CreatePhysJoint  (ragdoll/ragdoll_update.cpp:551)
 
-bool __cdecl Ragdoll_CreatePhysJoint(RagdollBody *param_1,JointDef *param_2,Joint *param_3)
+bool __cdecl Ragdoll_CreatePhysJoint(RagdollBody *body,JointDef *jointDef,Joint *joint)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  Bone *local_94;
-  float local_90 [9];
-  float local_6c [9];
-  float local_48 [3];
-  float local_3c;
+  Bone *parentBone;
+  float limitAxes [9];
+  float tAxis [9];
+  float anchor [3];
+  float fric;
   float local_38;
   float local_34;
-  int local_30;
-  float local_2c [9];
-  Bone *local_8;
+  int i;
+  float axis [9];
+  Bone *bone;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x231,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (JointDef *)0x0) &&
+  if ((jointDef == (JointDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x232,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (Joint *)0x0) &&
+  if ((joint == (Joint *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x233,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((uint)param_1->numBones <= (uint)param_2->bone) &&
+  if (((uint)body->numBones <= (uint)jointDef->bone) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x234,0,
                                "jointDef->bone doesn\'t index body->numBones\n\t%i not in [0, %i)"),
@@ -939,42 +959,42 @@ bool __cdecl Ragdoll_CreatePhysJoint(RagdollBody *param_1,JointDef *param_2,Join
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = param_1->bones + param_2->bone;
-  if (local_8->parentBone == -1) {
-    local_94 = (Bone *)0x0;
+  bone = body->bones + jointDef->bone;
+  if (bone->parentBone == -1) {
+    parentBone = (Bone *)0x0;
   }
   else {
-    local_94 = param_1->bones + local_8->parentBone;
+    parentBone = body->bones + bone->parentBone;
   }
-  if (local_8->rigidBody != 0) {
-    Phys_ObjGetPosition(local_8->rigidBody,local_48,(float (*) [3])local_6c);
-    AxisTranspose((float (*) [3])local_6c,(float (*) [3])local_2c);
-    if (param_2->numLimitAxes == 0) {
-      param_2->limitAxes[0][0] = 0.0;
-      param_2->limitAxes[0][1] = 0.0;
-      param_2->limitAxes[0][2] = 1.0;
-      param_2->axisFriction[0] = 0.0;
-      param_2->minAngles[0] = -1.5707964;
-      param_2->maxAngles[0] = 1.5707964;
-      param_2->numLimitAxes = param_2->numLimitAxes + 1;
+  if (bone->rigidBody != 0) {
+    Phys_ObjGetPosition(bone->rigidBody,anchor,(float (*) [3])tAxis);
+    AxisTranspose((float (*) [3])tAxis,(float (*) [3])axis);
+    if (jointDef->numLimitAxes == 0) {
+      jointDef->limitAxes[0][0] = 0.0;
+      jointDef->limitAxes[0][1] = 0.0;
+      jointDef->limitAxes[0][2] = 1.0;
+      jointDef->axisFriction[0] = 0.0;
+      jointDef->minAngles[0] = -1.5707964;
+      jointDef->maxAngles[0] = 1.5707964;
+      jointDef->numLimitAxes = jointDef->numLimitAxes + 1;
     }
-    for (local_30 = 0; local_30 < param_2->numLimitAxes; local_30 = local_30 + 1) {
-      Vec3Rotate(param_2->limitAxes[local_30],(float (*) [3])local_2c,local_90 + local_30 * 3);
+    for (i = 0; i < jointDef->numLimitAxes; i = i + 1) {
+      Vec3Rotate(jointDef->limitAxes[i],(float (*) [3])axis,limitAxes + i * 3);
     }
-    local_3c = param_2->axisFriction[0] * 15.0;
-    local_38 = param_2->axisFriction[1] * 15.0;
-    local_34 = param_2->axisFriction[2] * 15.0;
-    if (param_2->type == RAGDOLL_JOINT_HINGE) {
-      iVar4 = Phys_CreateHinge(local_8->rigidBody,local_94->rigidBody,local_48,local_90,0.0,local_3c
-                               ,param_2->minAngles[0],param_2->maxAngles[0]);
-      param_3->joint = iVar4;
-      param_3->joint2 = 0;
+    fric = jointDef->axisFriction[0] * 15.0;
+    local_38 = jointDef->axisFriction[1] * 15.0;
+    local_34 = jointDef->axisFriction[2] * 15.0;
+    if (jointDef->type == RAGDOLL_JOINT_HINGE) {
+      iVar4 = Phys_CreateHinge(bone->rigidBody,parentBone->rigidBody,anchor,limitAxes,0.0,fric,
+                               jointDef->minAngles[0],jointDef->maxAngles[0]);
+      joint->joint = iVar4;
+      joint->joint2 = 0;
     }
-    else if (param_2->type == RAGDOLL_JOINT_SWIVEL) {
-      iVar4 = Phys_CreateSwivel(local_8->rigidBody,local_94->rigidBody,local_48,
-                                param_2->numLimitAxes,(float (*) [3])local_90,vec3_origin,&local_3c,
-                                param_2->minAngles,param_2->maxAngles);
-      param_3->joint = iVar4;
+    else if (jointDef->type == RAGDOLL_JOINT_SWIVEL) {
+      iVar4 = Phys_CreateSwivel(bone->rigidBody,parentBone->rigidBody,anchor,jointDef->numLimitAxes,
+                                (float (*) [3])limitAxes,vec3_origin,&fric,jointDef->minAngles,
+                                jointDef->maxAngles);
+      joint->joint = iVar4;
     }
   }
   return true;
@@ -983,23 +1003,24 @@ bool __cdecl Ragdoll_CreatePhysJoint(RagdollBody *param_1,JointDef *param_2,Join
 
 // 00868490  Ragdoll_CreatePhysJoints  (ragdoll/ragdoll_update.cpp:614)
 
-bool __cdecl Ragdoll_CreatePhysJoints(RagdollBody *param_1)
+bool __cdecl Ragdoll_CreatePhysJoints(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   RagdollDef *pRVar4;
-  int local_8;
+  RagdollDef *def;
+  int i;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x26a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  pRVar4 = Ragdoll_BodyDef(param_1);
+  pRVar4 = Ragdoll_BodyDef(body);
   if ((pRVar4 == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x26d,0,"%s"), !bVar2)) {
@@ -1007,14 +1028,14 @@ bool __cdecl Ragdoll_CreatePhysJoints(RagdollBody *param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->numJoints <= local_8) {
+    if (body->numJoints <= i) {
       return true;
     }
-    bVar2 = Ragdoll_CreatePhysJoint(param_1,pRVar4->jointDefs + local_8,param_1->joints + local_8);
+    bVar2 = Ragdoll_CreatePhysJoint(body,pRVar4->jointDefs + i,body->joints + i);
     if (!bVar2) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return false;
 }
@@ -1027,7 +1048,7 @@ bool __cdecl Ragdoll_CreatePhysJoints(RagdollBody *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
+bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *body)
 
 {
   byte bVar1;
@@ -1042,10 +1063,19 @@ bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
   broad_phase_info *pbVar10;
   broad_phase_info *pbVar11;
   broad_phase_group *pbVar12;
-  int local_14;
-  int local_c;
+  PhysObjUserData *userData;
+  int flags;
+  PhysObjUserData *userData1;
+  broad_phase_collision_pair *bpcp;
+  PhysObjUserData *userData0;
+  int i0;
+  int i1;
+  int i_2;
+  RagdollDef *def;
+  int i;
+  int count;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x27b,0,"%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
@@ -1055,7 +1085,7 @@ bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
   if (4 < physGlob.objects_by_world[0].m_alloc_count / 0xc) {
     cdl_proftimer::start_capture(&proftimer_physics_frame_advance);
   }
-  pRVar8 = Ragdoll_BodyDef(param_1);
+  pRVar8 = Ragdoll_BodyDef(body);
   if ((pRVar8 == (RagdollDef *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x286,0,"%s"), !bVar6)) {
@@ -1064,30 +1094,30 @@ bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
     return (bool)uVar7;
   }
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  for (local_c = 0; local_c < param_1->numBones; local_c = local_c + 1) {
-    bVar6 = Ragdoll_CreatePhysObj(param_1,pRVar8->boneDefs + local_c,param_1->bones + local_c);
+  for (i = 0; i < body->numBones; i = i + 1) {
+    bVar6 = Ragdoll_CreatePhysObj(body,pRVar8->boneDefs + i,body->bones + i);
     if (!bVar6) {
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       return false;
     }
   }
-  param_1->m_list_bpcp = (broad_phase_collision_pair *)0x0;
-  local_14 = 0;
+  body->m_list_bpcp = (broad_phase_collision_pair *)0x0;
+  i_2 = 0;
   do {
-    if (pRVar8->numSelfPairs <= local_14) {
+    if (pRVar8->numSelfPairs <= i_2) {
       pbVar12 = create_broad_phase_group();
-      param_1->m_bpg = pbVar12;
-      broad_phase_group::set(param_1->m_bpg);
-      local_c = 0;
+      body->m_bpg = pbVar12;
+      broad_phase_group::set(body->m_bpg);
+      i = 0;
       do {
-        if (param_1->numBones <= local_c) {
-          environment_collision_list_add((broad_phase_base *)param_1->m_bpg);
-          aasap_list_add((broad_phase_base *)param_1->m_bpg);
+        if (body->numBones <= i) {
+          environment_collision_list_add((broad_phase_base *)body->m_bpg);
+          aasap_list_add((broad_phase_base *)body->m_bpg);
           Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
           return true;
         }
-        if (param_1->bones[local_c].rigidBody != 0) {
-          iVar3 = param_1->bones[local_c].rigidBody;
+        if (body->bones[i].rigidBody != 0) {
+          iVar3 = body->bones[i].rigidBody;
           if (((*(int *)(iVar3 + 0xa0) == 0) ||
               ((*(uint *)(*(int *)(iVar3 + 0xa0) + 0x30) & 1) == 0)) &&
              (bVar6 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
@@ -1103,17 +1133,17 @@ bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
                *(uint *)(*(int *)(iVar3 + 0xa0) + 0x48) | 0x200;
           environment_collision_list_remove(*(broad_phase_base **)(iVar3 + 0xa0));
           pbVar10 = broad_phase_base::get_bpi(*(broad_phase_base **)(iVar3 + 0xa0));
-          broad_phase_group::add_bpi(param_1->m_bpg,pbVar10);
+          broad_phase_group::add_bpi(body->m_bpg,pbVar10);
           *(undefined4 *)(iVar3 + 0xa0) = 0;
         }
-        local_c = local_c + 1;
+        i = i + 1;
       } while( true );
     }
-    bVar1 = pRVar8->selfPairDefs[local_14].bones[0];
-    bVar2 = pRVar8->selfPairDefs[local_14].bones[1];
-    if ((param_1->bones[bVar1].rigidBody != 0) && (param_1->bones[bVar2].rigidBody != 0)) {
-      iVar3 = param_1->bones[bVar1].rigidBody;
-      iVar4 = param_1->bones[bVar2].rigidBody;
+    bVar1 = pRVar8->selfPairDefs[i_2].bones[0];
+    bVar2 = pRVar8->selfPairDefs[i_2].bones[1];
+    if ((body->bones[bVar1].rigidBody != 0) && (body->bones[bVar2].rigidBody != 0)) {
+      iVar3 = body->bones[bVar1].rigidBody;
+      iVar4 = body->bones[bVar2].rigidBody;
       if (((*(int *)(iVar3 + 0xa0) == 0) || ((*(uint *)(*(int *)(iVar3 + 0xa0) + 0x30) & 1) == 0))
          && (bVar6 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x29b,"userData0->m_bpb && userData0->m_bpb->is_bpi()",""), bVar6)) {
@@ -1134,36 +1164,41 @@ bool __cdecl Ragdoll_CreatePhysObjs(RagdollBody *param_1)
         pbVar11 = broad_phase_base::get_bpi(*(broad_phase_base **)(iVar3 + 0xa0));
         pbVar9->m_bpi1 = pbVar11;
         pbVar9->m_bpi2 = pbVar10;
-        pbVar9->m_next_bpcp = param_1->m_list_bpcp;
-        param_1->m_list_bpcp = pbVar9;
+        pbVar9->m_next_bpcp = body->m_list_bpcp;
+        body->m_list_bpcp = pbVar9;
       }
     }
-    local_14 = local_14 + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
 
 // 00869600  Ragdoll_DestroyPhysJoints  (ragdoll/ragdoll_update.cpp:710)
 
-void __cdecl Ragdoll_DestroyPhysJoints(RagdollBody *param_1)
+void __cdecl Ragdoll_DestroyPhysJoints(RagdollBody *body)
 
 {
-  memset((uchar *)param_1->joints,'\0',0xe0);
+  memset((uchar *)body->joints,'\0',0xe0);
   return;
 }
 
 
 // 00869620  Ragdoll_DestroyPhysObjs  (ragdoll/ragdoll_update.cpp:716)
 
-void __cdecl Ragdoll_DestroyPhysObjs(RagdollBody *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Ragdoll_DestroyPhysObjs(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x2d0,
                              0,"%s");
     if (!bVar2) {
@@ -1172,22 +1207,22 @@ void __cdecl Ragdoll_DestroyPhysObjs(RagdollBody *param_1)
       return;
     }
   }
-  if (param_1->m_list_bpcp != (broad_phase_collision_pair *)0x0) {
-    destroy_broad_phase_collision_pair_list(param_1->m_list_bpcp);
-    param_1->m_list_bpcp = (broad_phase_collision_pair *)0x0;
+  if (body->m_list_bpcp != (broad_phase_collision_pair *)0x0) {
+    destroy_broad_phase_collision_pair_list(body->m_list_bpcp);
+    body->m_list_bpcp = (broad_phase_collision_pair *)0x0;
   }
-  if (param_1->m_bpg != (broad_phase_group *)0x0) {
-    destroy_broad_phase_info_list(param_1->m_bpg->m_list_bpi_head);
-    aasap_list_remove((broad_phase_base *)param_1->m_bpg);
-    environment_collision_list_remove((broad_phase_base *)param_1->m_bpg);
-    destroy_broad_phase_group(param_1->m_bpg);
-    param_1->m_bpg = (broad_phase_group *)0x0;
+  if (body->m_bpg != (broad_phase_group *)0x0) {
+    destroy_broad_phase_info_list(body->m_bpg->m_list_bpi_head);
+    aasap_list_remove((broad_phase_base *)body->m_bpg);
+    environment_collision_list_remove((broad_phase_base *)body->m_bpg);
+    destroy_broad_phase_group(body->m_bpg);
+    body->m_bpg = (broad_phase_group *)0x0;
   }
-  for (local_8 = 0; local_8 < param_1->numBones; local_8 = local_8 + 1) {
-    if (param_1->bones[local_8].rigidBody != 0) {
-      Phys_ObjDestroy(2,param_1->bones[local_8].rigidBody);
+  for (i = 0; i < body->numBones; i = i + 1) {
+    if (body->bones[i].rigidBody != 0) {
+      Phys_ObjDestroy(2,body->bones[i].rigidBody);
     }
-    param_1->bones[local_8].rigidBody = 0;
+    body->bones[i].rigidBody = 0;
   }
   Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
   return;
@@ -1196,27 +1231,29 @@ void __cdecl Ragdoll_DestroyPhysObjs(RagdollBody *param_1)
 
 // 00866A20  Ragdoll_SnapshotBaseLerpOffsets  (ragdoll/ragdoll_update.cpp:747)
 
-void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *param_1)
+void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   RagdollDef *pRVar3;
-  DObj *pDVar4;
-  BoneOrientation *local_e8;
-  DObjAnimMat local_e0;
-  DObjAnimMat local_c0;
-  float local_a0 [12];
-  uint local_70;
-  int local_6c;
-  float local_68 [12];
-  LerpBone *local_38;
-  float local_34 [9];
+  DObj *obj_00;
+  RagdollDef *def;
+  BoneOrientation *boneOrientation;
+  DObj *obj;
+  DObjAnimMat parentAnimMat;
+  DObjAnimMat boneAnimMat;
+  float boneMat [12];
+  int parentIndex;
+  int i;
+  float invParentMat [12];
+  LerpBone *bone;
+  float relMat [9];
   float local_10;
   float local_c;
   float local_8;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x2f8,
                              0,"%s");
     if (!bVar2) {
@@ -1225,7 +1262,7 @@ void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *param_1)
       return;
     }
   }
-  pRVar3 = Ragdoll_BodyDef(param_1);
+  pRVar3 = Ragdoll_BodyDef(body);
   if (pRVar3 == (RagdollDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x2fb,
                              0,"%s");
@@ -1235,8 +1272,8 @@ void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *param_1)
       return;
     }
   }
-  pDVar4 = Ragdoll_BodyDObj(param_1);
-  if (pDVar4 == (DObj *)0x0) {
+  obj_00 = Ragdoll_BodyDObj(body);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x2fe,
                              0,"%s");
     if (!bVar2) {
@@ -1245,15 +1282,15 @@ void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *param_1)
       return;
     }
   }
-  local_38 = param_1->lerpBones;
-  local_e8 = param_1->lerpBoneOffsets;
-  local_6c = 0;
+  bone = body->lerpBones;
+  boneOrientation = body->lerpBoneOffsets;
+  i = 0;
   do {
-    if (pRVar3->numBaseLerpBones <= local_6c) {
+    if (pRVar3->numBaseLerpBones <= i) {
       return;
     }
-    local_70 = local_38->parentBone;
-    if ((uint)param_1->numBones <= local_70) {
+    parentIndex = bone->parentBone;
+    if ((uint)body->numBones <= (uint)parentIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x306,0,
                                "parentIndex doesn\'t index body->numBones\n\t%i not in [0, %i)");
@@ -1263,32 +1300,37 @@ void __cdecl Ragdoll_SnapshotBaseLerpOffsets(RagdollBody *param_1)
         return;
       }
     }
-    Ragdoll_GetDObjBaseBoneMatrix(pDVar4,local_38->animBone,&local_c0);
-    Ragdoll_GetDObjBaseBoneMatrix(pDVar4,param_1->bones[local_70].animBones[0],&local_e0);
-    ConvertQuatToInverseMat(&local_e0,(float (*) [3])local_68);
-    Ragdoll_AnimMatToMat43(&local_c0,(float (*) [3])local_a0);
-    MatrixMultiply43((float (*) [3])local_a0,(float (*) [3])local_68,(float (*) [3])local_34);
-    AxisToQuat((float (*) [3])local_34,local_e8->orientation);
-    local_e8->origin[0] = local_10;
-    local_e8->origin[1] = local_c;
-    local_e8->origin[2] = local_8;
-    local_6c = local_6c + 1;
-    local_38 = local_38 + 1;
-    local_e8 = local_e8 + 1;
+    Ragdoll_GetDObjBaseBoneMatrix(obj_00,bone->animBone,&boneAnimMat);
+    Ragdoll_GetDObjBaseBoneMatrix(obj_00,body->bones[parentIndex].animBones[0],&parentAnimMat);
+    ConvertQuatToInverseMat(&parentAnimMat,(float (*) [3])invParentMat);
+    Ragdoll_AnimMatToMat43(&boneAnimMat,(float (*) [3])boneMat);
+    MatrixMultiply43((float (*) [3])boneMat,(float (*) [3])invParentMat,(float (*) [3])relMat);
+    AxisToQuat((float (*) [3])relMat,boneOrientation->orientation);
+    boneOrientation->origin[0] = local_10;
+    boneOrientation->origin[1] = local_c;
+    boneOrientation->origin[2] = local_8;
+    i = i + 1;
+    bone = bone + 1;
+    boneOrientation = boneOrientation + 1;
   } while( true );
 }
 
 
 // 008683A0  Ragdoll_CreateBodyPhysics  (ragdoll/ragdoll_update.cpp:791)
 
-bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x318,
                              0,"%s");
     if (!bVar2) {
@@ -1297,7 +1339,7 @@ bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  if ((int)param_1->state < 3) {
+  if ((int)body->state < 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x319,
                              0,"%s");
     if (!bVar2) {
@@ -1306,7 +1348,7 @@ bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  bVar2 = Ragdoll_BodyInUse(param_1);
+  bVar2 = Ragdoll_BodyInUse(body);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x31a,
                              0,"%s");
@@ -1316,20 +1358,20 @@ bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  bVar2 = Ragdoll_CreatePhysObjs(param_1);
+  bVar2 = Ragdoll_CreatePhysObjs(body);
   if (bVar2) {
-    bVar2 = Ragdoll_CreatePhysJoints(param_1);
+    bVar2 = Ragdoll_CreatePhysJoints(body);
     if (bVar2) {
       bVar2 = true;
     }
     else {
-      Ragdoll_DestroyPhysObjs(param_1);
-      Ragdoll_DestroyPhysJoints(param_1);
+      Ragdoll_DestroyPhysObjs(body);
+      Ragdoll_DestroyPhysJoints(body);
       bVar2 = false;
     }
   }
   else {
-    Ragdoll_DestroyPhysObjs(param_1);
+    Ragdoll_DestroyPhysObjs(body);
     bVar2 = false;
   }
   return bVar2;
@@ -1338,13 +1380,13 @@ bool __cdecl Ragdoll_CreateBodyPhysics(RagdollBody *param_1)
 
 // 0086ACA0  Ragdoll_RemoveBodyPhysics  (ragdoll/ragdoll_update.cpp:813)
 
-void __cdecl Ragdoll_RemoveBodyPhysics(RagdollBody *param_1)
+void __cdecl Ragdoll_RemoveBodyPhysics(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x32e,
                              0,"%s");
     if (!bVar2) {
@@ -1353,95 +1395,98 @@ void __cdecl Ragdoll_RemoveBodyPhysics(RagdollBody *param_1)
       return;
     }
   }
-  Ragdoll_DestroyPhysJoints(param_1);
-  Ragdoll_DestroyPhysObjs(param_1);
-  param_1->debug_hang_point = (rigid_body_constraint_point *)0x0;
-  param_1->hang_point = (rigid_body_constraint_point *)0x0;
+  Ragdoll_DestroyPhysJoints(body);
+  Ragdoll_DestroyPhysObjs(body);
+  body->debug_hang_point = (rigid_body_constraint_point *)0x0;
+  body->hang_point = (rigid_body_constraint_point *)0x0;
   return;
 }
 
 
 // 00866600  Ragdoll_RebindBody  (ragdoll/ragdoll_update.cpp:827)
 
-bool __cdecl Ragdoll_RebindBody(int param_1)
+bool __cdecl Ragdoll_RebindBody(int ragdollHandle)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  RagdollBody *pRVar4;
-  RagdollDef *pRVar5;
-  DObj *pDVar6;
-  int iVar7;
-  BoneDef *local_14;
-  LerpBone *local_10;
-  int local_c;
-  Bone *local_8;
+  RagdollBody *body_00;
+  RagdollDef *pRVar4;
+  DObj *obj_00;
+  int iVar5;
+  RagdollDef *def;
+  DObj *obj;
+  RagdollBody *body;
+  BoneDef *boneDef;
+  LerpBone *lerpBone;
+  int i;
+  Bone *bone;
   
-  pRVar4 = Ragdoll_HandleBody(param_1);
-  if ((pRVar4 == (RagdollBody *)0x0) &&
+  body_00 = Ragdoll_HandleBody(ragdollHandle);
+  if ((body_00 == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x346,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((pRVar4->state == BS_DEAD) || (pRVar4->state == BS_DOBJ_WAIT)) {
+  if ((body_00->state == BS_DEAD) || (body_00->state == BS_DOBJ_WAIT)) {
     bVar2 = false;
   }
   else {
-    bVar2 = Ragdoll_ValidateBodyObj(pRVar4);
+    bVar2 = Ragdoll_ValidateBodyObj(body_00);
     if (bVar2) {
-      pRVar5 = Ragdoll_BodyDef(pRVar4);
-      if ((pRVar5 == (RagdollDef *)0x0) &&
+      pRVar4 = Ragdoll_BodyDef(body_00);
+      if ((pRVar4 == (RagdollDef *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                    0x34f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      pDVar6 = Ragdoll_BodyDObj(pRVar4);
-      if ((pDVar6 == (DObj *)0x0) &&
+      obj_00 = Ragdoll_BodyDObj(body_00);
+      if ((obj_00 == (DObj *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                    0x352,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      local_8 = pRVar4->bones;
-      local_14 = pRVar5->boneDefs;
-      for (local_c = 0; local_c < pRVar4->numBones; local_c = local_c + 1) {
-        local_8->parentBone = local_14->parentBone;
-        local_8->animBones[1] = '\0';
-        local_8->animBones[0] = '\0';
-        iVar7 = DObjGetBoneIndex(pDVar6,local_14->animBoneNames[0],local_8->animBones,-1);
-        if ((iVar7 != 0) && (local_8->animBones[0] != 0xff)) {
-          if (local_14->animBoneNames[1] == 0xffffffff) {
-            local_8->animBones[1] = '\0';
+      bone = body_00->bones;
+      boneDef = pRVar4->boneDefs;
+      for (i = 0; i < body_00->numBones; i = i + 1) {
+        bone->parentBone = boneDef->parentBone;
+        bone->animBones[1] = '\0';
+        bone->animBones[0] = '\0';
+        iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[0],bone->animBones,-1);
+        if ((iVar5 != 0) && (bone->animBones[0] != 0xff)) {
+          if (boneDef->animBoneNames[1] == 0xffffffff) {
+            bone->animBones[1] = '\0';
           }
           else {
-            iVar7 = DObjGetBoneIndex(pDVar6,local_14->animBoneNames[1],local_8->animBones + 1,-1);
-            if ((iVar7 == 0) || (local_8->animBones[1] == 0xff)) {
-              local_8->animBones[1] = 0xff;
-              local_8->animBones[0] = 0xff;
+            iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[1],bone->animBones + 1,-1);
+            if ((iVar5 == 0) || (bone->animBones[1] == 0xff)) {
+              bone->animBones[1] = 0xff;
+              bone->animBones[0] = 0xff;
             }
           }
         }
-        local_8 = local_8 + 1;
-        local_14 = local_14 + 1;
+        bone = bone + 1;
+        boneDef = boneDef + 1;
       }
-      local_10 = pRVar4->lerpBones;
-      for (local_c = 0; local_c < pRVar4->numLerpBones; local_c = local_c + 1) {
-        local_10->animBone = '\0';
-        iVar7 = DObjGetBoneIndex(pDVar6,pRVar5->baseLerpBoneDefs[local_c].animBoneName,
-                                 &local_10->animBone,-1);
-        if ((iVar7 == 0) || (local_10->animBone == 0xff)) {
+      lerpBone = body_00->lerpBones;
+      for (i = 0; i < body_00->numLerpBones; i = i + 1) {
+        lerpBone->animBone = '\0';
+        iVar5 = DObjGetBoneIndex(obj_00,pRVar4->baseLerpBoneDefs[i].animBoneName,&lerpBone->animBone
+                                 ,-1);
+        if ((iVar5 == 0) || (lerpBone->animBone == 0xff)) {
           return false;
         }
-        local_10->parentBone = pRVar5->baseLerpBoneDefs[local_c].parentBoneIndex;
-        local_10 = local_10 + 1;
+        lerpBone->parentBone = pRVar4->baseLerpBoneDefs[i].parentBoneIndex;
+        lerpBone = lerpBone + 1;
       }
-      Ragdoll_SnapshotBaseLerpOffsets(pRVar4);
+      Ragdoll_SnapshotBaseLerpOffsets(body_00);
       bVar2 = true;
     }
     else {
@@ -1454,42 +1499,43 @@ bool __cdecl Ragdoll_RebindBody(int param_1)
 
 // 00866CA0  Ragdoll_ValidatePrecalcBoneDef  (ragdoll/ragdoll_update.cpp:893)
 
-bool __cdecl Ragdoll_ValidatePrecalcBoneDef(RagdollDef *param_1,BoneDef *param_2)
+bool __cdecl Ragdoll_ValidatePrecalcBoneDef(RagdollDef *def,BoneDef *bone)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (RagdollDef *)0x0) &&
+  if ((def == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x37e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (BoneDef *)0x0) &&
+  if ((bone == (BoneDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x37f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return 1e-06 <= ABS(param_2->mass);
+  return 1e-06 <= ABS(bone->mass);
 }
 
 
 // 00867590  Ragdoll_GetTorsoPosition  (ragdoll/ragdoll_update.cpp:913)
 
-void __cdecl Ragdoll_GetTorsoPosition(RagdollBody *param_1,float *param_2)
+void __cdecl Ragdoll_GetTorsoPosition(RagdollBody *body,float *center)
 
 {
   code *pcVar1;
   bool bVar2;
   BoneOrientation *pBVar3;
+  BoneOrientation *boneOrientation;
   
-  if (param_1 != (RagdollBody *)0x0) {
-    bVar2 = Ragdoll_BodyInUse(param_1);
+  if (body != (RagdollBody *)0x0) {
+    bVar2 = Ragdoll_BodyInUse(body);
     if (bVar2) goto LAB_008675d3;
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x394,0,
@@ -1500,10 +1546,10 @@ void __cdecl Ragdoll_GetTorsoPosition(RagdollBody *param_1,float *param_2)
     return;
   }
 LAB_008675d3:
-  pBVar3 = Ragdoll_BodyBoneOrientations(param_1);
-  *param_2 = pBVar3->origin[0];
-  param_2[1] = pBVar3->origin[1];
-  param_2[2] = pBVar3->origin[2];
+  pBVar3 = Ragdoll_BodyBoneOrientations(body);
+  *center = pBVar3->origin[0];
+  center[1] = pBVar3->origin[1];
+  center[2] = pBVar3->origin[2];
   return;
 }
 
@@ -1511,12 +1557,12 @@ LAB_008675d3:
 // 005B54D0  Ragdoll_CompareRagdollsForExplosion  (ragdoll/ragdoll_update.cpp:934)
 
 bool __cdecl
-Ragdoll_CompareRagdollsForExplosion(RagdollSortStruct *param_1,RagdollSortStruct *param_2)
+Ragdoll_CompareRagdollsForExplosion(RagdollSortStruct *ent1_3,RagdollSortStruct *ent2_3)
 
 {
   bool local_8;
   
-  local_8 = param_1->distSq <= param_2->distSq && param_2->distSq != param_1->distSq;
+  local_8 = ent1_3->distSq <= ent2_3->distSq && ent2_3->distSq != ent1_3->distSq;
   return local_8;
 }
 
@@ -1530,183 +1576,188 @@ Ragdoll_CompareRagdollsForExplosion(RagdollSortStruct *param_1,RagdollSortStruct
 
 void __cdecl
 Ragdoll_ExplosionEvent
-          (int param_1,bool param_2,float *param_3,float param_4,float param_5,float *param_6,
-          float param_7)
+          (int localClientNum,bool isCylinder,float *origin,float innerRadius,float outerRadius,
+          float *impulse,float inScale)
 
 {
-  RagdollBody *pRVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  cg_s *pcVar5;
-  int *piVar6;
+  RagdollBody *body_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  cg_s *pcVar4;
+  int *body_01;
+  float fVar5;
+  float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
-  float fVar10;
-  int local_178;
-  phys_free_list<RagdollBody> *local_16c;
-  int local_164;
-  float local_160;
+  cg_s *cgameGlob;
+  RagdollBody *body_2;
+  float dist2;
+  int i;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
+  float distSqr;
+  int hitCount;
+  float delta;
   float local_15c;
   float local_158;
-  float local_154;
+  float torsoPos;
   float local_150;
   float local_14c;
-  float local_148;
-  RagdollSortStruct local_144 [32];
-  float local_40;
+  float boneScale;
+  RagdollSortStruct hitEntsSorter [32];
+  float hitForce;
   float local_3c;
   float local_38;
-  float local_34;
-  float local_30;
+  float invRange;
+  float centerOfMass;
   float local_2c;
   float local_28;
-  float local_24 [3];
-  int local_18;
-  float local_14;
-  float local_10;
-  Bone *local_c;
-  float local_8;
+  float ragdollOrigin [3];
+  int boneIdx;
+  float innerRadiusSqr;
+  float scale;
+  Bone *bone;
+  float outerRadiusSqr;
   
-  if ((param_3 == (float *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
-                               0x3bd,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((origin == (float *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
+                               0x3bd,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((param_4 < 0.0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
-                               0x3be,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((innerRadius < 0.0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
+                               0x3be,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((param_5 < param_4) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
-                               0x3bf,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((outerRadius < innerRadius) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
+                               0x3bf,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  iVar4 = CL_GetFirstActiveLocalClient();
-  if ((param_1 == iVar4) && (param_5 != 0.0)) {
-    local_8 = param_5 * param_5;
-    local_14 = param_4 * param_4;
-    local_34 = 0.0;
-    if (local_14 < local_8) {
-      local_34 = 1.0 / (local_8 - local_14);
+  iVar3 = CL_GetFirstActiveLocalClient();
+  if ((localClientNum == iVar3) && (outerRadius != 0.0)) {
+    outerRadiusSqr = outerRadius * outerRadius;
+    innerRadiusSqr = innerRadius * innerRadius;
+    invRange = 0.0;
+    if (innerRadiusSqr < outerRadiusSqr) {
+      invRange = 1.0 / (outerRadiusSqr - innerRadiusSqr);
     }
-    local_164 = 0;
-    for (local_16c = (phys_free_list<RagdollBody> *)
-                     g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
-        local_16c != &g_ragdoll_body_pool;
-        local_16c = (phys_free_list<RagdollBody> *)(local_16c->m_dummy_head).m_next_T_internal) {
-      piVar6 = &local_16c->m_list_count;
-      bVar3 = Ragdoll_BodyInUse((RagdollBody *)piVar6);
-      if ((!bVar3) &&
-         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x3d2,
-                            "Ragdoll_BodyInUse( body )",""), bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    hitCount = 0;
+    for (body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+        body_i != &g_ragdoll_body_pool;
+        body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal) {
+      body_01 = &body_i->m_list_count;
+      bVar2 = Ragdoll_BodyInUse((RagdollBody *)body_01);
+      if ((!bVar2) &&
+         (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x3d2,
+                            "Ragdoll_BodyInUse( body )",""), bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      Ragdoll_BodyRootOrigin((RagdollBody *)piVar6,local_24);
-      fVar10 = Vec3DistanceSq(param_3,local_24);
-      local_144[local_164].distSq = fVar10;
-      local_144[local_164].body = (RagdollBody *)piVar6;
-      local_164 = local_164 + 1;
+      Ragdoll_BodyRootOrigin((RagdollBody *)body_01,ragdollOrigin);
+      fVar8 = Vec3DistanceSq(origin,ragdollOrigin);
+      hitEntsSorter[hitCount].distSq = fVar8;
+      hitEntsSorter[hitCount].body = (RagdollBody *)body_01;
+      hitCount = hitCount + 1;
     }
     std::
     _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-              (local_144,local_144 + local_164,(int)(local_144 + local_164) - (int)local_144 >> 3,
+              (hitEntsSorter,hitEntsSorter + hitCount,
+               (int)(hitEntsSorter + hitCount) - (int)hitEntsSorter >> 3,
                Ragdoll_CompareRagdollsForExplosion);
-    for (local_178 = 0; (local_178 < 4 && (local_178 < local_164)); local_178 = local_178 + 1) {
-      pRVar1 = local_144[local_178].body;
-      bVar3 = Ragdoll_BodyInUse(pRVar1);
-      if ((!bVar3) &&
-         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x3e2,
-                            "Ragdoll_BodyInUse( body )",""), bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    for (i = 0; (i < 4 && (i < hitCount)); i = i + 1) {
+      body_00 = hitEntsSorter[i].body;
+      bVar2 = Ragdoll_BodyInUse(body_00);
+      if ((!bVar2) &&
+         (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x3e2,
+                            "Ragdoll_BodyInUse( body )",""), bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      if (3 < (int)pRVar1->state) {
-        Ragdoll_GetTorsoPosition(pRVar1,&local_154);
-        pcVar5 = CG_GetLocalClientGlobals(param_1);
-        fVar10 = Vec3DistanceSq((pcVar5->predictedPlayerState).origin,&local_154);
-        if ((fVar10 <= (ragdoll_reactivation_cutoff->current).value *
-                       (ragdoll_reactivation_cutoff->current).value) &&
-           (iVar4 = R_CullPoint(param_1,&local_154,-100.0), iVar4 == 0)) {
-          if (param_2) {
-            local_160 = *param_3 - local_154;
-            local_15c = param_3[1] - local_150;
+      if (3 < (int)body_00->state) {
+        Ragdoll_GetTorsoPosition(body_00,&torsoPos);
+        pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+        fVar8 = Vec3DistanceSq((pcVar4->predictedPlayerState).origin,&torsoPos);
+        if ((fVar8 <= (ragdoll_reactivation_cutoff->current).value *
+                      (ragdoll_reactivation_cutoff->current).value) &&
+           (iVar3 = R_CullPoint(localClientNum,&torsoPos,-100.0), iVar3 == 0)) {
+          if (isCylinder) {
+            delta = *origin - torsoPos;
+            local_15c = origin[1] - local_150;
             local_158 = 0.0;
           }
           else {
-            local_160 = local_154 - *param_3;
-            local_15c = local_150 - param_3[1];
-            local_158 = local_14c - param_3[2];
+            delta = torsoPos - *origin;
+            local_15c = local_150 - origin[1];
+            local_158 = local_14c - origin[2];
           }
-          if ((local_160 * local_160 + local_15c * local_15c + local_158 * local_158 < local_8) &&
-             ((bVar3 = Ragdoll_BodyIdle(pRVar1), !bVar3 ||
-              (bVar3 = Ragdoll_BodyNewState(pRVar1,BS_RUNNING), bVar3)))) {
-            pRVar1->stateMsec = 0;
-            local_148 = 1.0 / (float)pRVar1->numBones;
-            for (local_18 = 0; local_18 < pRVar1->numBones; local_18 = local_18 + 1) {
-              local_10 = param_7;
-              local_c = pRVar1->bones + local_18;
-              if (local_c->rigidBody != 0) {
-                Phys_ObjGetCenterOfMass(local_c->rigidBody,&local_30);
-                fVar10 = flrand(-1.0,1.0);
-                local_30 = fVar10 + local_30;
-                fVar10 = flrand(-1.0,1.0);
-                local_2c = fVar10 + local_2c;
-                fVar10 = flrand(-1.0,1.0);
-                local_28 = fVar10 + local_28;
-                fVar10 = local_30 - *param_3;
-                fVar7 = local_2c - param_3[1];
-                fVar8 = local_28 - param_3[2];
-                fVar9 = fVar10 * fVar10 + fVar7 * fVar7 + fVar8 * fVar8;
-                if (fVar9 < local_8) {
-                  if (local_14 < fVar9) {
-                    if ((local_8 <= local_14) &&
-                       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp"
-                                                 ,0x41a,1,"%s"), !bVar3)) {
-                      pcVar2 = (code *)swi(3);
-                      (*pcVar2)();
+          if ((delta * delta + local_15c * local_15c + local_158 * local_158 < outerRadiusSqr) &&
+             ((bVar2 = Ragdoll_BodyIdle(body_00), !bVar2 ||
+              (bVar2 = Ragdoll_BodyNewState(body_00,BS_RUNNING), bVar2)))) {
+            body_00->stateMsec = 0;
+            boneScale = 1.0 / (float)body_00->numBones;
+            for (boneIdx = 0; boneIdx < body_00->numBones; boneIdx = boneIdx + 1) {
+              scale = inScale;
+              bone = body_00->bones + boneIdx;
+              if (bone->rigidBody != 0) {
+                Phys_ObjGetCenterOfMass(bone->rigidBody,&centerOfMass);
+                fVar8 = flrand(-1.0,1.0);
+                centerOfMass = fVar8 + centerOfMass;
+                fVar8 = flrand(-1.0,1.0);
+                local_2c = fVar8 + local_2c;
+                fVar8 = flrand(-1.0,1.0);
+                local_28 = fVar8 + local_28;
+                fVar8 = centerOfMass - *origin;
+                fVar5 = local_2c - origin[1];
+                fVar6 = local_28 - origin[2];
+                fVar7 = fVar8 * fVar8 + fVar5 * fVar5 + fVar6 * fVar6;
+                if (fVar7 < outerRadiusSqr) {
+                  if (innerRadiusSqr < fVar7) {
+                    if ((outerRadiusSqr <= innerRadiusSqr) &&
+                       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp"
+                                                 ,0x41a,1,"%s"), !bVar2)) {
+                      pcVar1 = (code *)swi(3);
+                      (*pcVar1)();
                       return;
                     }
-                    local_10 = (local_8 - fVar9) * local_34 * local_10;
+                    scale = (outerRadiusSqr - fVar7) * invRange * scale;
                   }
-                  if (((*param_6 == 0.0) && (param_6[1] == 0.0)) && (param_6[2] == 0.0)) {
-                    bVar3 = true;
+                  if (((*impulse == 0.0) && (impulse[1] == 0.0)) && (impulse[2] == 0.0)) {
+                    bVar2 = true;
                   }
                   else {
-                    bVar3 = false;
+                    bVar2 = false;
                   }
-                  if (bVar3) {
-                    local_38 = fVar8;
-                    if (param_2) {
+                  if (bVar2) {
+                    local_38 = fVar6;
+                    if (isCylinder) {
                       local_38 = 0.0;
                     }
-                    local_40 = fVar10;
-                    local_3c = fVar7;
-                    Vec3Normalize(&local_40);
+                    hitForce = fVar8;
+                    local_3c = fVar5;
+                    Vec3Normalize(&hitForce);
                   }
                   else {
-                    local_40 = *param_6;
-                    local_3c = param_6[1];
-                    local_38 = param_6[2];
+                    hitForce = *impulse;
+                    local_3c = impulse[1];
+                    local_38 = impulse[2];
                   }
                   local_38 = local_38 + (ragdoll_explode_upbias->current).value;
-                  Vec3Normalize(&local_40);
-                  fVar10 = local_10 * (ragdoll_explode_force->current).value * local_148;
-                  local_40 = fVar10 * local_40;
-                  local_3c = fVar10 * local_3c;
-                  local_38 = fVar10 * local_38;
-                  Phys_ObjAddForce(local_c->rigidBody,&local_30,&local_40,false);
+                  Vec3Normalize(&hitForce);
+                  fVar8 = scale * (ragdoll_explode_force->current).value * boneScale;
+                  hitForce = fVar8 * hitForce;
+                  local_3c = fVar8 * local_3c;
+                  local_38 = fVar8 * local_38;
+                  Phys_ObjAddForce(bone->rigidBody,&centerOfMass,&hitForce,false);
                 }
               }
             }
@@ -1721,7 +1772,7 @@ Ragdoll_ExplosionEvent
 
 // 00867610  Ragdoll_Launch  (ragdoll/ragdoll_update.cpp:1077)
 
-void __cdecl Ragdoll_Launch(int param_1,int param_2,float *param_3,hitLocation_t param_4)
+void __cdecl Ragdoll_Launch(int localClientNum,int ragdollHandle,float *force,hitLocation_t hitloc)
 
 {
   float (*pafVar1) [3];
@@ -1730,11 +1781,12 @@ void __cdecl Ragdoll_Launch(int param_1,int param_2,float *param_3,hitLocation_t
   int iVar4;
   RagdollBody *pRVar5;
   float fVar6;
-  int local_c;
+  int numBones;
+  RagdollBody *body;
   
   iVar4 = CL_GetFirstActiveLocalClient();
-  if (param_1 == iVar4) {
-    pRVar5 = Ragdoll_HandleBody(param_2);
+  if (localClientNum == iVar4) {
+    pRVar5 = Ragdoll_HandleBody(ragdollHandle);
     if ((pRVar5 == (RagdollBody *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x43b,0,"%s"), !bVar3)) {
@@ -1743,16 +1795,16 @@ void __cdecl Ragdoll_Launch(int param_1,int param_2,float *param_3,hitLocation_t
       return;
     }
     if (pRVar5->storedLaunchCount < 2) {
-      pRVar5->storedLaunchHitLoc[pRVar5->storedLaunchCount] = param_4;
-      local_c = pRVar5->numBones;
-      if (param_4 != HITLOC_NONE) {
-        local_c = 1;
+      pRVar5->storedLaunchHitLoc[pRVar5->storedLaunchCount] = hitloc;
+      numBones = pRVar5->numBones;
+      if (hitloc != HITLOC_NONE) {
+        numBones = 1;
       }
       pafVar1 = pRVar5->storedLaunchForce + pRVar5->storedLaunchCount;
-      fVar6 = (ragdoll_bullet_force->current).value / (float)local_c;
-      (*pafVar1)[0] = fVar6 * *param_3;
-      (*pafVar1)[1] = fVar6 * param_3[1];
-      (*pafVar1)[2] = fVar6 * param_3[2];
+      fVar6 = (ragdoll_bullet_force->current).value / (float)numBones;
+      (*pafVar1)[0] = fVar6 * *force;
+      (*pafVar1)[1] = fVar6 * force[1];
+      (*pafVar1)[2] = fVar6 * force[2];
       pRVar5->storedLaunchCount = pRVar5->storedLaunchCount + 1;
     }
   }
@@ -1762,64 +1814,66 @@ void __cdecl Ragdoll_Launch(int param_1,int param_2,float *param_3,hitLocation_t
 
 // 00867730  Ragdoll_LaunchUpdate  (ragdoll/ragdoll_update.cpp:1099)
 
-void __cdecl Ragdoll_LaunchUpdate(RagdollBody *param_1)
+void __cdecl Ragdoll_LaunchUpdate(RagdollBody *body)
 
 {
   float (*pafVar1) [3];
   bool bVar2;
   float fVar3;
-  int local_38;
-  int local_2c;
-  uint local_28;
-  RagdollDef *local_24;
-  float local_20;
+  Bone *bone_2;
+  int boneIdx;
+  Bone *bone;
+  int bi;
+  uint boneName;
+  RagdollDef *def;
+  float hitForce;
   float local_1c;
   float local_18;
-  float local_14;
+  float centerOfMass;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
-  bVar2 = Ragdoll_BodyIdle(param_1);
-  if ((!bVar2) || (bVar2 = Ragdoll_BodyNewState(param_1,BS_RUNNING), bVar2)) {
-    for (local_8 = 0; local_8 < param_1->storedLaunchCount; local_8 = local_8 + 1) {
-      pafVar1 = param_1->storedLaunchForce + local_8;
-      local_20 = (*pafVar1)[0];
+  bVar2 = Ragdoll_BodyIdle(body);
+  if ((!bVar2) || (bVar2 = Ragdoll_BodyNewState(body,BS_RUNNING), bVar2)) {
+    for (i = 0; i < body->storedLaunchCount; i = i + 1) {
+      pafVar1 = body->storedLaunchForce + i;
+      hitForce = (*pafVar1)[0];
       local_1c = (*pafVar1)[1];
       local_18 = (*pafVar1)[2];
-      if (param_1->storedLaunchHitLoc[local_8] == HITLOC_NONE) {
-        for (local_38 = 0; local_38 < param_1->numBones; local_38 = local_38 + 1) {
-          if (param_1->bones[local_38].rigidBody != 0) {
-            Phys_ObjGetCenterOfMass(param_1->bones[local_38].rigidBody,&local_14);
+      if (body->storedLaunchHitLoc[i] == HITLOC_NONE) {
+        for (boneIdx = 0; boneIdx < body->numBones; boneIdx = boneIdx + 1) {
+          if (body->bones[boneIdx].rigidBody != 0) {
+            Phys_ObjGetCenterOfMass(body->bones[boneIdx].rigidBody,&centerOfMass);
             fVar3 = flrand(-1.0,1.0);
-            local_14 = fVar3 + local_14;
+            centerOfMass = fVar3 + centerOfMass;
             fVar3 = flrand(-1.0,1.0);
             local_10 = fVar3 + local_10;
             fVar3 = flrand(-1.0,1.0);
             local_c = fVar3 + local_c;
-            Phys_ObjAddForce(param_1->bones[local_38].rigidBody,&local_14,&local_20,false);
+            Phys_ObjAddForce(body->bones[boneIdx].rigidBody,&centerOfMass,&hitForce,false);
           }
         }
       }
       else {
-        MapHitLocationToRagdollBoneName(param_1->storedLaunchHitLoc[local_8],&local_28);
-        local_24 = Ragdoll_BodyDef(param_1);
-        for (local_2c = 0; local_2c < local_24->numBones; local_2c = local_2c + 1) {
-          if ((local_24->boneDefs[local_2c].animBoneNames[1] == local_28) &&
-             (param_1->bones[local_2c].rigidBody != 0)) {
-            Phys_ObjGetCenterOfMass(param_1->bones[local_2c].rigidBody,&local_14);
+        MapHitLocationToRagdollBoneName(body->storedLaunchHitLoc[i],&boneName);
+        def = Ragdoll_BodyDef(body);
+        for (bi = 0; bi < def->numBones; bi = bi + 1) {
+          if ((def->boneDefs[bi].animBoneNames[1] == boneName) && (body->bones[bi].rigidBody != 0))
+          {
+            Phys_ObjGetCenterOfMass(body->bones[bi].rigidBody,&centerOfMass);
             fVar3 = flrand(-1.0,1.0);
-            local_14 = fVar3 + local_14;
+            centerOfMass = fVar3 + centerOfMass;
             fVar3 = flrand(-1.0,1.0);
             local_10 = fVar3 + local_10;
             fVar3 = flrand(-1.0,1.0);
             local_c = fVar3 + local_c;
-            Phys_ObjAddForce(param_1->bones[local_2c].rigidBody,&local_14,&local_20,false);
+            Phys_ObjAddForce(body->bones[bi].rigidBody,&centerOfMass,&hitForce,false);
           }
         }
       }
     }
-    param_1->storedLaunchCount = 0;
+    body->storedLaunchCount = 0;
   }
   return;
 }
@@ -1827,101 +1881,103 @@ void __cdecl Ragdoll_LaunchUpdate(RagdollBody *param_1)
 
 // 00869760  Ragdoll_EstimateInitialVelocities  (ragdoll/ragdoll_update.cpp:1162)
 
-void __cdecl Ragdoll_EstimateInitialVelocities(RagdollBody *param_1)
+void __cdecl Ragdoll_EstimateInitialVelocities(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_6c;
+  float len;
+  float len2;
+  float angleOffset;
   float local_68;
   float local_64;
-  float local_60;
+  float posOffset;
   float local_5c;
   float local_58;
-  BoneOrientation *local_54;
-  float local_50;
-  float local_4c;
+  BoneOrientation *prevOrientation;
+  float timeScale;
+  float prevRot;
   float local_48;
   float local_44;
   float local_40;
-  float local_3c;
+  float curRot;
   float local_38;
   float local_34;
   float local_30;
-  BoneOrientation *local_2c;
-  float local_28 [4];
-  int local_18;
-  float local_14;
+  BoneOrientation *curOrientation;
+  float rotOffset [4];
+  int i;
+  float angleOffsetWorld;
   float local_10;
   float local_c;
-  Bone *local_8;
+  Bone *bone;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x497,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->velCaptureMsec != 0) {
-    local_50 = 1000.0 / (float)param_1->velCaptureMsec;
-    local_2c = Ragdoll_BodyBoneOrientations(param_1);
-    local_54 = Ragdoll_BodyPrevBoneOrientations(param_1);
-    local_8 = param_1->bones;
-    for (local_18 = 0; local_18 < param_1->numBones; local_18 = local_18 + 1) {
-      if (local_8->rigidBody != 0) {
-        local_60 = local_2c->origin[0] - local_54->origin[0];
-        local_5c = local_2c->origin[1] - local_54->origin[1];
-        local_58 = local_2c->origin[2] - local_54->origin[2];
-        if (0.0 <= local_2c->orientation[0] * local_54->orientation[0] +
-                   local_2c->orientation[1] * local_54->orientation[1] +
-                   local_2c->orientation[2] * local_54->orientation[2] +
-                   local_2c->orientation[3] * local_54->orientation[3]) {
-          local_4c = local_54->orientation[0];
-          local_48 = local_54->orientation[1];
-          local_44 = local_54->orientation[2];
-          local_40 = local_54->orientation[3];
+  if (body->velCaptureMsec != 0) {
+    timeScale = 1000.0 / (float)body->velCaptureMsec;
+    curOrientation = Ragdoll_BodyBoneOrientations(body);
+    prevOrientation = Ragdoll_BodyPrevBoneOrientations(body);
+    bone = body->bones;
+    for (i = 0; i < body->numBones; i = i + 1) {
+      if (bone->rigidBody != 0) {
+        posOffset = curOrientation->origin[0] - prevOrientation->origin[0];
+        local_5c = curOrientation->origin[1] - prevOrientation->origin[1];
+        local_58 = curOrientation->origin[2] - prevOrientation->origin[2];
+        if (0.0 <= curOrientation->orientation[0] * prevOrientation->orientation[0] +
+                   curOrientation->orientation[1] * prevOrientation->orientation[1] +
+                   curOrientation->orientation[2] * prevOrientation->orientation[2] +
+                   curOrientation->orientation[3] * prevOrientation->orientation[3]) {
+          prevRot = prevOrientation->orientation[0];
+          local_48 = prevOrientation->orientation[1];
+          local_44 = prevOrientation->orientation[2];
+          local_40 = prevOrientation->orientation[3];
         }
         else {
-          local_4c = -local_54->orientation[0];
-          local_48 = -local_54->orientation[1];
-          local_44 = -local_54->orientation[2];
-          local_40 = -local_54->orientation[3];
+          prevRot = -prevOrientation->orientation[0];
+          local_48 = -prevOrientation->orientation[1];
+          local_44 = -prevOrientation->orientation[2];
+          local_40 = -prevOrientation->orientation[3];
         }
-        local_3c = local_2c->orientation[0];
-        local_38 = local_2c->orientation[1];
-        local_34 = local_2c->orientation[2];
-        local_30 = local_2c->orientation[3];
-        Vec4Normalize(&local_3c);
-        Vec4Normalize(&local_4c);
-        Ragdoll_QuatMulInvSecond(&local_3c,&local_4c,local_28);
-        Vec4Normalize(local_28);
-        Ragdoll_QuatToAxisAngle(local_28,&local_6c);
-        Ragdoll_QuatPointRotate(&local_6c,&local_3c,&local_14);
-        local_64 = local_50 * (ragdoll_rotvel_scale->current).value;
-        local_6c = local_64 * local_14;
+        curRot = curOrientation->orientation[0];
+        local_38 = curOrientation->orientation[1];
+        local_34 = curOrientation->orientation[2];
+        local_30 = curOrientation->orientation[3];
+        Vec4Normalize(&curRot);
+        Vec4Normalize(&prevRot);
+        Ragdoll_QuatMulInvSecond(&curRot,&prevRot,rotOffset);
+        Vec4Normalize(rotOffset);
+        Ragdoll_QuatToAxisAngle(rotOffset,&angleOffset);
+        Ragdoll_QuatPointRotate(&angleOffset,&curRot,&angleOffsetWorld);
+        local_64 = timeScale * (ragdoll_rotvel_scale->current).value;
+        angleOffset = local_64 * angleOffsetWorld;
         local_68 = local_64 * local_10;
         local_64 = local_64 * local_c;
-        local_60 = local_50 * local_60;
-        local_5c = local_50 * local_5c;
-        local_58 = local_50 * local_58;
-        Phys_ObjSetAngularVelocityRaw(local_8->rigidBody,&local_6c);
-        fVar3 = local_60 * local_60 + local_5c * local_5c + local_58 * local_58;
+        posOffset = timeScale * posOffset;
+        local_5c = timeScale * local_5c;
+        local_58 = timeScale * local_58;
+        Phys_ObjSetAngularVelocityRaw(bone->rigidBody,&angleOffset);
+        fVar3 = posOffset * posOffset + local_5c * local_5c + local_58 * local_58;
         if (360000.0 < fVar3) {
           fVar3 = 600.0 / SQRT(fVar3);
-          local_60 = fVar3 * local_60;
+          posOffset = fVar3 * posOffset;
           local_5c = fVar3 * local_5c;
           local_58 = fVar3 * local_58;
         }
         if (clamp < local_58) {
           local_58 = clamp;
         }
-        Phys_ObjSetVelocity(local_8->rigidBody,&local_60);
+        Phys_ObjSetVelocity(bone->rigidBody,&posOffset);
       }
-      local_2c = local_2c + 1;
-      local_54 = local_54 + 1;
-      local_8 = local_8 + 1;
+      curOrientation = curOrientation + 1;
+      prevOrientation = prevOrientation + 1;
+      bone = bone + 1;
     }
   }
   return;
@@ -1930,17 +1986,18 @@ void __cdecl Ragdoll_EstimateInitialVelocities(RagdollBody *param_1)
 
 // 008679D0  Ragdoll_Attach  (ragdoll/ragdoll_update.cpp:1252)
 
-void __cdecl Ragdoll_Attach(int param_1,int param_2,int param_3,hitLocation_t param_4)
+void __cdecl Ragdoll_Attach(int localClientNum,int ragdollHandle,int attachEnt,hitLocation_t hitloc)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   RagdollBody *pRVar4;
+  RagdollBody *body;
   
   iVar3 = CL_GetFirstActiveLocalClient();
-  if (param_1 == iVar3) {
-    pRVar4 = Ragdoll_HandleBody(param_2);
+  if (localClientNum == iVar3) {
+    pRVar4 = Ragdoll_HandleBody(ragdollHandle);
     if ((pRVar4 == (RagdollBody *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x4ea,0,"%s"), !bVar2)) {
@@ -1949,8 +2006,8 @@ void __cdecl Ragdoll_Attach(int param_1,int param_2,int param_3,hitLocation_t pa
       return;
     }
     if (pRVar4->hang_point == (rigid_body_constraint_point *)0x0) {
-      pRVar4->storedAttachHitLoc = param_4;
-      pRVar4->storedAttachEnt = param_3;
+      pRVar4->storedAttachHitLoc = hitloc;
+      pRVar4->storedAttachEnt = attachEnt;
       pRVar4->storedPhysObjId = 0;
     }
   }
@@ -1960,14 +2017,14 @@ void __cdecl Ragdoll_Attach(int param_1,int param_2,int param_3,hitLocation_t pa
 
 // 00867A50  Ragdoll_AttachUpdate  (ragdoll/ragdoll_update.cpp:1269)
 
-void __cdecl Ragdoll_AttachUpdate(RagdollBody *param_1)
+void __cdecl Ragdoll_AttachUpdate(RagdollBody *body)
 
 {
   bool bVar1;
   
-  bVar1 = Ragdoll_BodyIdle(param_1);
+  bVar1 = Ragdoll_BodyIdle(body);
   if (bVar1) {
-    Ragdoll_BodyNewState(param_1,BS_RUNNING);
+    Ragdoll_BodyNewState(body,BS_RUNNING);
   }
   return;
 }
@@ -1975,23 +2032,23 @@ void __cdecl Ragdoll_AttachUpdate(RagdollBody *param_1)
 
 // 0086A730  Ragdoll_BoneTrace  (ragdoll/ragdoll_update.cpp:1382)
 
-bool __cdecl Ragdoll_BoneTrace(trace_t *param_1,trace_t *param_2,float *param_3,float *param_4)
+bool __cdecl Ragdoll_BoneTrace(trace_t *trace,trace_t *revTrace,float *start,float *end)
 
 {
-  col_context_t local_2c;
+  col_context_t context;
   
-  col_context_t::col_context_t(&local_2c);
-  CM_BoxTrace(param_1,param_3,param_4,vec3_origin,vec3_origin,0x280ec93,&local_2c);
-  if (param_1->startsolid == false) {
-    if ((param_1->fraction != 1.0) &&
-       (CM_BoxTrace(param_2,param_4,param_3,vec3_origin,vec3_origin,0x280ec93,&local_2c),
-       param_2->fraction != 1.0)) {
+  col_context_t::col_context_t(&context);
+  CM_BoxTrace(trace,start,end,vec3_origin,vec3_origin,0x280ec93,&context);
+  if (trace->startsolid == false) {
+    if ((trace->fraction != 1.0) &&
+       (CM_BoxTrace(revTrace,end,start,vec3_origin,vec3_origin,0x280ec93,&context),
+       revTrace->fraction != 1.0)) {
       return false;
     }
   }
   else {
-    CM_BoxTrace(param_2,param_4,param_3,vec3_origin,vec3_origin,0x280ec93,&local_2c);
-    if (param_2->startsolid != false) {
+    CM_BoxTrace(revTrace,end,start,vec3_origin,vec3_origin,0x280ec93,&context);
+    if (revTrace->startsolid != false) {
       return false;
     }
   }
@@ -2022,7 +2079,7 @@ bool __cdecl Ragdoll_BoneTrace(trace_t *param_1,trace_t *param_2,float *param_3,
 /* WARNING: Removing unreachable block (ram,0x0086a5c8) */
 /* WARNING: Removing unreachable block (ram,0x0086a5e8) */
 
-bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
+bool __cdecl Ragdoll_TunnelTest(RagdollBody *body)
 
 {
   int iVar1;
@@ -2092,14 +2149,14 @@ bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
   local_ac[0].v[1] = 0.0;
   local_ac[0].v[2] = 0.0;
   local_ac[0].v[3] = 0.0;
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x5a7,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     uVar5 = (*pcVar3)();
     return (bool)uVar5;
   }
-  local_b0 = Ragdoll_BodyDef(param_1);
+  local_b0 = Ragdoll_BodyDef(body);
   if ((local_b0 == (RagdollDef *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x5aa,0,"%s"), !bVar4)) {
@@ -2107,14 +2164,14 @@ bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
     uVar5 = (*pcVar3)();
     return (bool)uVar5;
   }
-  local_b4 = param_1->bones;
+  local_b4 = body->bones;
   local_b8 = local_b0->boneDefs;
-  local_c0 = Ragdoll_BodyBoneOrientations(param_1);
+  local_c0 = Ragdoll_BodyBoneOrientations(body);
   local_c4 = 0;
   local_bc = local_c0;
   do {
-    if (param_1->numBones <= local_c4) {
-      local_13c = Ragdoll_BodyPose(param_1);
+    if (body->numBones <= local_c4) {
+      local_13c = Ragdoll_BodyPose(body);
       Phys_Vec3ToNitrousVec(local_13c->origin,&local_150);
       local_160 = 0;
       local_15c = 0;
@@ -2123,8 +2180,8 @@ bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
       local_150.y = local_150.y + 0.0;
       local_150.z = local_150.z + 15.0;
       local_164 = 10.0;
-      local_b4 = param_1->bones;
-      for (local_c4 = 1; local_c4 < param_1->numBones; local_c4 = local_c4 + 1) {
+      local_b4 = body->bones;
+      for (local_c4 = 1; local_c4 < body->numBones; local_c4 = local_c4 + 1) {
         if (local_b4->rigidBody != 0) {
           local_168 = (int *)local_b4->rigidBody;
           iVar1 = *local_168;
@@ -2162,7 +2219,7 @@ bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
         }
         local_b4 = local_b4 + 1;
       }
-      param_1->m_bpg->_padding_ = param_1->m_bpg->_padding_ | 0x200;
+      body->m_bpg->_padding_ = body->m_bpg->_padding_ | 0x200;
       return true;
     }
     if (local_b4->rigidBody != 0) {
@@ -2225,17 +2282,19 @@ bool __cdecl Ragdoll_TunnelTest(RagdollBody *param_1)
 
 // 0086A810  Ragdoll_PrintTunnelFail  (ragdoll/ragdoll_update.cpp:1537)
 
-void __cdecl Ragdoll_PrintTunnelFail(RagdollBody *param_1)
+void __cdecl Ragdoll_PrintTunnelFail(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   cpose_t *pcVar3;
-  DObj *pDVar4;
+  DObj *obj_00;
+  DObj *obj;
+  cpose_t *pose;
   
   if ((ragdoll_dump_anims->current).enabled != false) {
-    pcVar3 = Ragdoll_BodyPose(param_1);
-    pDVar4 = Ragdoll_BodyDObj(param_1);
+    pcVar3 = Ragdoll_BodyPose(body);
+    obj_00 = Ragdoll_BodyDObj(body);
     if ((pcVar3 == (cpose_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x60d,0,"%s"), !bVar2)) {
@@ -2243,7 +2302,7 @@ void __cdecl Ragdoll_PrintTunnelFail(RagdollBody *param_1)
       (*pcVar1)();
       return;
     }
-    if ((pDVar4 == (DObj *)0x0) &&
+    if ((obj_00 == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x60e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2251,7 +2310,7 @@ void __cdecl Ragdoll_PrintTunnelFail(RagdollBody *param_1)
       return;
     }
     Com_Printf(0x14,"Ragdoll initial state in solid, using regular anim. Pos (%0.f %0.f %0.f)\n");
-    DObjDisplayAnim(pDVar4,"Ragdoll anim tree: ");
+    DObjDisplayAnim(obj_00,"Ragdoll anim tree: ");
   }
   return;
 }
@@ -2260,82 +2319,87 @@ void __cdecl Ragdoll_PrintTunnelFail(RagdollBody *param_1)
 // 00867A80  Ragdoll_EnterTunnelTest  (ragdoll/ragdoll_update.cpp:1561)
 
 bool __cdecl
-Ragdoll_EnterTunnelTest(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_EnterTunnelTest(RagdollBody *body,RagdollBodyState prevState,RagdollBodyState curState)
 
 {
   bool bVar1;
-  DObj *pDVar2;
-  DObjAnimMat *pDVar3;
-  BoneOrientation *pBVar4;
-  cpose_t *pcVar5;
+  DObj *obj_00;
+  DObjAnimMat *pDVar2;
+  BoneOrientation *pBVar3;
+  cpose_t *pcVar4;
+  BoneOrientation *boneOrientation;
+  DObj *obj;
+  bool tunnelPassed;
+  cpose_t *pose;
   
-  pDVar2 = Ragdoll_BodyDObj(param_1);
-  if ((pDVar2 != (DObj *)0x0) &&
-     (pDVar3 = DObjGetRotTransArray(pDVar2), pDVar3 != (DObjAnimMat *)0x0)) {
-    bVar1 = Ragdoll_CreateBodyPhysics(param_1);
+  obj_00 = Ragdoll_BodyDObj(body);
+  if ((obj_00 != (DObj *)0x0) &&
+     (pDVar2 = DObjGetRotTransArray(obj_00), pDVar2 != (DObjAnimMat *)0x0)) {
+    bVar1 = Ragdoll_CreateBodyPhysics(body);
     if (!bVar1) {
-      Ragdoll_BodyNewState(param_1,BS_DEAD);
+      Ragdoll_BodyNewState(body,BS_DEAD);
       return false;
     }
-    pBVar4 = Ragdoll_BodyBoneOrientations(param_1);
-    Ragdoll_SetCurrentPoseFromSnapshot(param_1,pBVar4);
-    Ragdoll_EstimateInitialVelocities(param_1);
-    bVar1 = Ragdoll_TunnelTest(param_1);
-    pcVar5 = Ragdoll_BodyPose(param_1);
-    pBVar4 = Ragdoll_BodyBoneOrientations(param_1);
-    param_1->poseOffset[0] = pcVar5->origin[0] - pBVar4->origin[0];
-    param_1->poseOffset[1] = pcVar5->origin[1] - pBVar4->origin[1];
-    param_1->poseOffset[2] = pcVar5->origin[2] - pBVar4->origin[2];
-    pBVar4 = Ragdoll_BodyBoneOrientations(param_1);
-    Ragdoll_SnapshotBaseLerpBones(param_1,pBVar4);
+    pBVar3 = Ragdoll_BodyBoneOrientations(body);
+    Ragdoll_SetCurrentPoseFromSnapshot(body,pBVar3);
+    Ragdoll_EstimateInitialVelocities(body);
+    bVar1 = Ragdoll_TunnelTest(body);
+    pcVar4 = Ragdoll_BodyPose(body);
+    pBVar3 = Ragdoll_BodyBoneOrientations(body);
+    body->poseOffset[0] = pcVar4->origin[0] - pBVar3->origin[0];
+    body->poseOffset[1] = pcVar4->origin[1] - pBVar3->origin[1];
+    body->poseOffset[2] = pcVar4->origin[2] - pBVar3->origin[2];
+    pBVar3 = Ragdoll_BodyBoneOrientations(body);
+    Ragdoll_SnapshotBaseLerpBones(body,pBVar3);
     if (bVar1) {
-      Ragdoll_BodyNewState(param_1,BS_RUNNING);
+      Ragdoll_BodyNewState(body,BS_RUNNING);
     }
     else {
-      Ragdoll_PrintTunnelFail(param_1);
-      Ragdoll_BodyNewState(param_1,BS_DEAD);
+      Ragdoll_PrintTunnelFail(body);
+      Ragdoll_BodyNewState(body,BS_DEAD);
     }
     return true;
   }
-  Ragdoll_BodyNewState(param_1,BS_DEAD);
+  Ragdoll_BodyNewState(body,BS_DEAD);
   return false;
 }
 
 
 // 0086A900  Ragdoll_UpdateVelocityCapture  (ragdoll/ragdoll_update.cpp:1606)
 
-void __cdecl Ragdoll_UpdateVelocityCapture(RagdollBody *param_1,int param_2)
+void __cdecl Ragdoll_UpdateVelocityCapture(RagdollBody *body,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
   BoneOrientation *pBVar3;
+  BoneOrientation *snapshot;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x649,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->stateFrames < 1) {
-    param_1->curOrientationBuffer = param_1->curOrientationBuffer ^ 1;
-    pBVar3 = Ragdoll_BodyBoneOrientations(param_1);
-    Ragdoll_SnapshotAnimOrientations(param_1,pBVar3);
-    if ((param_1->flags & 4U) != 0) {
-      param_1->velCaptureMsec = 1;
-      param_1->curOrientationBuffer = param_1->curOrientationBuffer ^ 1;
-      pBVar3 = Ragdoll_BodyBoneOrientations(param_1);
-      Ragdoll_SnapshotAnimOrientations(param_1,pBVar3);
-      Ragdoll_BodyNewState(param_1,BS_TUNNEL_TEST);
+  if (body->stateFrames < 1) {
+    body->curOrientationBuffer = body->curOrientationBuffer ^ 1;
+    pBVar3 = Ragdoll_BodyBoneOrientations(body);
+    Ragdoll_SnapshotAnimOrientations(body,pBVar3);
+    if ((body->flags & 4U) != 0) {
+      body->velCaptureMsec = 1;
+      body->curOrientationBuffer = body->curOrientationBuffer ^ 1;
+      pBVar3 = Ragdoll_BodyBoneOrientations(body);
+      Ragdoll_SnapshotAnimOrientations(body,pBVar3);
+      Ragdoll_BodyNewState(body,BS_TUNNEL_TEST);
     }
   }
   else {
-    param_1->velCaptureMsec = param_1->stateMsec;
-    param_1->curOrientationBuffer = param_1->curOrientationBuffer ^ 1;
-    pBVar3 = Ragdoll_BodyBoneOrientations(param_1);
-    Ragdoll_SnapshotAnimOrientations(param_1,pBVar3);
-    Ragdoll_BodyNewState(param_1,BS_TUNNEL_TEST);
+    body->velCaptureMsec = body->stateMsec;
+    body->curOrientationBuffer = body->curOrientationBuffer ^ 1;
+    pBVar3 = Ragdoll_BodyBoneOrientations(body);
+    Ragdoll_SnapshotAnimOrientations(body,pBVar3);
+    Ragdoll_BodyNewState(body,BS_TUNNEL_TEST);
   }
   return;
 }
@@ -2343,7 +2407,7 @@ void __cdecl Ragdoll_UpdateVelocityCapture(RagdollBody *param_1,int param_2)
 
 // 0086B400  Ragdoll_UpdateFriction  (ragdoll/ragdoll_update.cpp:1639)
 
-void __cdecl Ragdoll_UpdateFriction(RagdollBody *param_1)
+void __cdecl Ragdoll_UpdateFriction(RagdollBody *body)
 
 {
   code *pcVar1;
@@ -2352,22 +2416,24 @@ void __cdecl Ragdoll_UpdateFriction(RagdollBody *param_1)
   float fVar4;
   float local_38;
   float local_2c;
-  float local_20;
+  float frictionForce;
+  RagdollDef *def;
+  float frictionVec;
   float local_1c;
   float local_18;
-  Joint *local_14;
-  float local_10;
-  int local_c;
-  JointDef *local_8;
+  Joint *joint;
+  float lerpScale;
+  int i;
+  JointDef *jointDef;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x670,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pRVar3 = Ragdoll_BodyDef(param_1);
+  pRVar3 = Ragdoll_BodyDef(body);
   if ((pRVar3 == (RagdollDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x673,0,"%s"), !bVar2)) {
@@ -2375,9 +2441,9 @@ void __cdecl Ragdoll_UpdateFriction(RagdollBody *param_1)
     (*pcVar1)();
     return;
   }
-  local_8 = pRVar3->jointDefs;
-  local_14 = param_1->joints;
-  fVar4 = (float)param_1->stateMsec / (float)(ragdoll_jointlerp_time->current).integer;
+  jointDef = pRVar3->jointDefs;
+  joint = body->joints;
+  fVar4 = (float)body->stateMsec / (float)(ragdoll_jointlerp_time->current).integer;
   local_2c = fVar4;
   if (0.0 <= fVar4 - 1.0) {
     local_2c = 1.0;
@@ -2388,28 +2454,28 @@ void __cdecl Ragdoll_UpdateFriction(RagdollBody *param_1)
   else {
     local_38 = 0.0;
   }
-  local_10 = local_38 + 1.0;
-  if ((param_1->flags & 2U) != 0) {
-    local_10 = waterFrictionScale;
+  lerpScale = local_38 + 1.0;
+  if ((body->flags & 2U) != 0) {
+    lerpScale = waterFrictionScale;
   }
-  for (local_c = 0; local_c < pRVar3->numJoints; local_c = local_c + 1) {
-    if (local_8->type == RAGDOLL_JOINT_HINGE) {
-      if (local_14->joint != 0) {
-        Phys_SetHingeParams(local_14->joint,0.0,local_8->axisFriction[0] * local_10,
-                            local_8->minAngles[0],local_8->maxAngles[0]);
+  for (i = 0; i < pRVar3->numJoints; i = i + 1) {
+    if (jointDef->type == RAGDOLL_JOINT_HINGE) {
+      if (joint->joint != 0) {
+        Phys_SetHingeParams(joint->joint,0.0,jointDef->axisFriction[0] * lerpScale,
+                            jointDef->minAngles[0],jointDef->maxAngles[0]);
       }
     }
-    else if (local_8->type == RAGDOLL_JOINT_SWIVEL) {
-      local_20 = local_10 * local_8->axisFriction[0];
-      local_1c = local_10 * local_8->axisFriction[1];
-      local_18 = local_10 * local_8->axisFriction[2];
-      if (local_14->joint != 0) {
+    else if (jointDef->type == RAGDOLL_JOINT_SWIVEL) {
+      frictionVec = lerpScale * jointDef->axisFriction[0];
+      local_1c = lerpScale * jointDef->axisFriction[1];
+      local_18 = lerpScale * jointDef->axisFriction[2];
+      if (joint->joint != 0) {
         Phys_SetAngularMotorParams
-                  (local_14->joint,vec3_origin,&local_20,local_8->minAngles,local_8->maxAngles);
+                  (joint->joint,vec3_origin,&frictionVec,jointDef->minAngles,jointDef->maxAngles);
       }
     }
-    local_8 = local_8 + 1;
-    local_14 = local_14 + 1;
+    jointDef = jointDef + 1;
+    joint = joint + 1;
   }
   return;
 }
@@ -2422,12 +2488,12 @@ void __cdecl Ragdoll_UpdateFriction(RagdollBody *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Ragdoll_DebugRender(RagdollBody *param_1)
+void __cdecl Ragdoll_DebugRender(RagdollBody *body)
 
 {
-  rigid_body *prVar1;
-  rigid_body_constraint_point *prVar2;
-  int iVar3;
+  rigid_body *b2;
+  rigid_body_constraint_point *prVar1;
+  int no_error;
   phys_vec3 local_70;
   float local_54;
   phys_vec3 local_50;
@@ -2443,44 +2509,44 @@ void __cdecl Ragdoll_DebugRender(RagdollBody *param_1)
   
   if (0 < (ragdoll_debug->current).integer) {
     if ((ragdoll_debug->current).integer == 4) {
-      for (local_14 = 0; local_14 < param_1->numJoints; local_14 = local_14 + 1) {
-        local_1c = param_1->joints[local_14].joint;
-        local_18 = param_1->joints[local_14].joint2;
+      for (local_14 = 0; local_14 < body->numJoints; local_14 = local_14 + 1) {
+        local_1c = body->joints[local_14].joint;
+        local_18 = body->joints[local_14].joint2;
         Phys_JointDebugRender(local_1c);
       }
     }
-    for (local_20 = 0; local_20 < param_1->numBones; local_20 = local_20 + 1) {
+    for (local_20 = 0; local_20 < body->numBones; local_20 = local_20 + 1) {
       if ((1 << ((byte)local_20 & 0x1f) & renderflag) != 0) {
-        local_28 = (PhysObjUserData *)param_1->bones[local_20].rigidBody;
+        local_28 = (PhysObjUserData *)body->bones[local_20].rigidBody;
         local_24 = local_28;
         debug_render(local_28);
       }
     }
   }
-  local_30 = (int *)param_1->bones[hangBone].rigidBody;
+  local_30 = (int *)body->bones[hangBone].rigidBody;
   local_2c = local_30;
   if ((ragdoll_debug->current).integer < 2) {
-    if (param_1->debug_hang_point != (rigid_body_constraint_point *)0x0) {
-      rigid_body::set_flag((rigid_body *)param_1->debug_hang_point->_padding_,0x40,0);
-      phys_sys::destroy(param_1->debug_hang_point);
-      param_1->debug_hang_point = (rigid_body_constraint_point *)0x0;
+    if (body->debug_hang_point != (rigid_body_constraint_point *)0x0) {
+      rigid_body::set_flag((rigid_body *)body->debug_hang_point->_padding_,0x40,0);
+      phys_sys::destroy(body->debug_hang_point);
+      body->debug_hang_point = (rigid_body_constraint_point *)0x0;
     }
   }
-  else if (param_1->debug_hang_point == (rigid_body_constraint_point *)0x0) {
+  else if (body->debug_hang_point == (rigid_body_constraint_point *)0x0) {
     local_34 = (rigid_body *)*local_30;
     local_50.x = (local_34->m_mat).w.x;
     local_50.y = (local_34->m_mat).w.y;
     local_54 = (local_34->m_mat).w.z;
     local_50.w = (local_34->m_mat).w.w;
     local_50.z = local_54 + 60.0;
-    iVar3 = 0;
-    prVar1 = (rigid_body *)phys_sys::get_environment_rigid_body();
-    prVar2 = phys_sys::create_rbc_point(local_34,prVar1,iVar3);
-    param_1->debug_hang_point = prVar2;
+    no_error = 0;
+    b2 = (rigid_body *)phys_sys::get_environment_rigid_body();
+    prVar1 = phys_sys::create_rbc_point(local_34,b2,no_error);
+    body->debug_hang_point = prVar1;
     local_70.x = 0.0;
     local_70.y = 0.0;
     local_70.z = 0.0;
-    rigid_body_constraint_point::set(param_1->debug_hang_point,&local_70,&local_50);
+    rigid_body_constraint_point::set(body->debug_hang_point,&local_70,&local_50);
     rigid_body::set_flag(local_34,0x40,1);
   }
   return;
@@ -2489,51 +2555,52 @@ void __cdecl Ragdoll_DebugRender(RagdollBody *param_1)
 
 // 0086B850  Ragdoll_CheckIdle  (ragdoll/ragdoll_update.cpp:1759)
 
-bool __cdecl Ragdoll_CheckIdle(RagdollBody *param_1,int param_2)
+bool __cdecl Ragdoll_CheckIdle(RagdollBody *body,int msec)
 
 {
   bool bVar1;
-  float local_30 [2];
+  float tvel [2];
   float local_28;
-  float local_24 [3];
-  float local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  float avel [3];
+  float zvel;
+  int i;
+  int stableBoneCount;
+  int totalBoneCount;
+  bool stable;
   
-  if (param_1->debug_hang_point == (rigid_body_constraint_point *)0x0) {
-    if (param_1->hang_point == (rigid_body_constraint_point *)0x0) {
-      if (param_1->rope_id == 0) {
-        local_18 = 0.0;
-        local_c = 0;
-        for (local_14 = 0; local_14 < param_1->numBones; local_14 = local_14 + 1) {
-          if (param_1->bones[local_14].rigidBody != 0) {
-            local_c = local_c + 1;
-            Phys_ObjGetVelocities(param_1->bones[local_14].rigidBody,local_30,local_24);
-            local_18 = local_18 + local_28;
+  if (body->debug_hang_point == (rigid_body_constraint_point *)0x0) {
+    if (body->hang_point == (rigid_body_constraint_point *)0x0) {
+      if (body->rope_id == 0) {
+        zvel = 0.0;
+        totalBoneCount = 0;
+        for (i = 0; i < body->numBones; i = i + 1) {
+          if (body->bones[i].rigidBody != 0) {
+            totalBoneCount = totalBoneCount + 1;
+            Phys_ObjGetVelocities(body->bones[i].rigidBody,tvel,avel);
+            zvel = zvel + local_28;
           }
         }
-        local_18 = local_18 / (float)local_c;
-        if (-2500.0 <= local_18) {
-          param_1->flags = param_1->flags & 0xfffffffd;
-          if ((ragdoll_max_life->current).integer < param_1->stateMsec) {
+        zvel = zvel / (float)totalBoneCount;
+        if (-2500.0 <= zvel) {
+          body->flags = body->flags & 0xfffffffd;
+          if ((ragdoll_max_life->current).integer < body->stateMsec) {
             bVar1 = true;
           }
           else {
-            local_10 = 0;
-            for (local_14 = 0; local_14 < param_1->numBones; local_14 = local_14 + 1) {
-              if ((param_1->bones[local_14].rigidBody != 0) &&
-                 (bVar1 = Phys_ObjIsAsleepSingle(param_1->bones[local_14].rigidBody), bVar1)) {
-                local_10 = local_10 + 1;
+            stableBoneCount = 0;
+            for (i = 0; i < body->numBones; i = i + 1) {
+              if ((body->bones[i].rigidBody != 0) &&
+                 (bVar1 = Phys_ObjIsAsleepSingle(body->bones[i].rigidBody), bVar1)) {
+                stableBoneCount = stableBoneCount + 1;
               }
             }
-            if ((float)local_10 <= (float)local_c * 0.75) {
-              param_1->stableTime = 0;
+            if ((float)stableBoneCount <= (float)totalBoneCount * 0.75) {
+              body->stableTime = 0;
             }
             else {
-              param_1->stableTime = param_1->stableTime + param_2;
+              body->stableTime = body->stableTime + msec;
             }
-            bVar1 = 0xfa < param_1->stableTime;
+            bVar1 = 0xfa < body->stableTime;
           }
         }
         else {
@@ -2558,7 +2625,7 @@ bool __cdecl Ragdoll_CheckIdle(RagdollBody *param_1,int param_2)
 // 0086AC20  Ragdoll_EnterDead  (ragdoll/ragdoll_update.cpp:1861)
 
 bool __cdecl
-Ragdoll_EnterDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_EnterDead(RagdollBody *body,RagdollBodyState prevState,RagdollBodyState curState)
 
 {
   int iVar1;
@@ -2566,8 +2633,10 @@ Ragdoll_EnterDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState
   code *pcVar3;
   bool bVar4;
   undefined1 uVar5;
+  int references;
+  int ragdollDef;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x748,
                              0,"%s");
     if (!bVar4) {
@@ -2576,12 +2645,12 @@ Ragdoll_EnterDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState
       return (bool)uVar5;
     }
   }
-  Ragdoll_RemoveBodyPhysics(param_1);
-  iVar1 = param_1->references;
-  iVar2 = param_1->ragdollDef;
-  memset((uchar *)param_1,'\0',0xa28);
-  param_1->references = iVar1;
-  param_1->ragdollDef = iVar2;
+  Ragdoll_RemoveBodyPhysics(body);
+  iVar1 = body->references;
+  iVar2 = body->ragdollDef;
+  memset((uchar *)body,'\0',0xa28);
+  body->references = iVar1;
+  body->ragdollDef = iVar2;
   return true;
 }
 
@@ -2589,15 +2658,16 @@ Ragdoll_EnterDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState
 // 0086AD10  Ragdoll_ExitDead  (ragdoll/ragdoll_update.cpp:1880)
 
 bool __cdecl
-Ragdoll_ExitDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_ExitDead(RagdollBody *body,RagdollBodyState prevState,RagdollBodyState curState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   RagdollDef *pRVar4;
+  RagdollDef *def;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x75b,
                              0,"%s");
     if (!bVar2) {
@@ -2606,7 +2676,7 @@ Ragdoll_ExitDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState 
       return (bool)uVar3;
     }
   }
-  pRVar4 = Ragdoll_BodyDef(param_1);
+  pRVar4 = Ragdoll_BodyDef(body);
   if (pRVar4 == (RagdollDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x75e,
                              0,"%s");
@@ -2616,9 +2686,9 @@ Ragdoll_ExitDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState 
       return (bool)uVar3;
     }
   }
-  param_1->numBones = pRVar4->numBones;
-  param_1->numLerpBones = 0;
-  param_1->numJoints = pRVar4->numJoints;
+  body->numBones = pRVar4->numBones;
+  body->numLerpBones = 0;
+  body->numJoints = pRVar4->numJoints;
   return true;
 }
 
@@ -2626,29 +2696,31 @@ Ragdoll_ExitDead(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState 
 // 0086ADB0  Ragdoll_ExitDObjWait  (ragdoll/ragdoll_update.cpp:1897)
 
 bool __cdecl
-Ragdoll_ExitDObjWait(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_ExitDObjWait(RagdollBody *body,RagdollBodyState prevState,RagdollBodyState curState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   RagdollDef *pRVar4;
-  DObj *pDVar5;
-  int iVar6;
-  BoneDef *local_14;
-  LerpBone *local_10;
-  int local_c;
-  Bone *local_8;
+  DObj *obj_00;
+  int iVar5;
+  RagdollDef *def;
+  DObj *obj;
+  BoneDef *boneDef;
+  LerpBone *lerpBone;
+  int i;
+  Bone *bone;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x771,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_3 != BS_DEAD) {
-    pRVar4 = Ragdoll_BodyDef(param_1);
+  if (curState != BS_DEAD) {
+    pRVar4 = Ragdoll_BodyDef(body);
     if ((pRVar4 == (RagdollDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x777,0,"%s"), !bVar2)) {
@@ -2656,48 +2728,48 @@ Ragdoll_ExitDObjWait(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodySt
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    pDVar5 = Ragdoll_BodyDObj(param_1);
-    if ((pDVar5 == (DObj *)0x0) &&
+    obj_00 = Ragdoll_BodyDObj(body);
+    if ((obj_00 == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x77a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    local_8 = param_1->bones;
-    local_14 = pRVar4->boneDefs;
-    for (local_c = 0; local_c < param_1->numBones; local_c = local_c + 1) {
-      local_8->parentBone = local_14->parentBone;
-      local_8->animBones[1] = '\0';
-      local_8->animBones[0] = '\0';
-      iVar6 = DObjGetBoneIndex(pDVar5,local_14->animBoneNames[0],local_8->animBones,-1);
-      if ((iVar6 != 0) && (local_8->animBones[0] != 0xff)) {
-        if (local_14->animBoneNames[1] == 0xffffffff) {
-          local_8->animBones[1] = '\0';
+    bone = body->bones;
+    boneDef = pRVar4->boneDefs;
+    for (i = 0; i < body->numBones; i = i + 1) {
+      bone->parentBone = boneDef->parentBone;
+      bone->animBones[1] = '\0';
+      bone->animBones[0] = '\0';
+      iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[0],bone->animBones,-1);
+      if ((iVar5 != 0) && (bone->animBones[0] != 0xff)) {
+        if (boneDef->animBoneNames[1] == 0xffffffff) {
+          bone->animBones[1] = '\0';
         }
         else {
-          iVar6 = DObjGetBoneIndex(pDVar5,local_14->animBoneNames[1],local_8->animBones + 1,-1);
-          if ((iVar6 == 0) || (local_8->animBones[1] == 0xff)) {
-            local_8->animBones[1] = 0xff;
-            local_8->animBones[0] = 0xff;
+          iVar5 = DObjGetBoneIndex(obj_00,boneDef->animBoneNames[1],bone->animBones + 1,-1);
+          if ((iVar5 == 0) || (bone->animBones[1] == 0xff)) {
+            bone->animBones[1] = 0xff;
+            bone->animBones[0] = 0xff;
           }
         }
       }
-      local_8 = local_8 + 1;
-      local_14 = local_14 + 1;
+      bone = bone + 1;
+      boneDef = boneDef + 1;
     }
-    local_10 = param_1->lerpBones;
-    for (local_c = 0; local_c < param_1->numLerpBones; local_c = local_c + 1) {
-      local_10->animBone = '\0';
-      iVar6 = DObjGetBoneIndex(pDVar5,pRVar4->baseLerpBoneDefs[local_c].animBoneName,
-                               &local_10->animBone,-1);
-      if ((iVar6 == 0) || (local_10->animBone == 0xff)) {
+    lerpBone = body->lerpBones;
+    for (i = 0; i < body->numLerpBones; i = i + 1) {
+      lerpBone->animBone = '\0';
+      iVar5 = DObjGetBoneIndex(obj_00,pRVar4->baseLerpBoneDefs[i].animBoneName,&lerpBone->animBone,
+                               -1);
+      if ((iVar5 == 0) || (lerpBone->animBone == 0xff)) {
         return false;
       }
-      local_10->parentBone = pRVar4->baseLerpBoneDefs[local_c].parentBoneIndex;
-      local_10 = local_10 + 1;
+      lerpBone->parentBone = pRVar4->baseLerpBoneDefs[i].parentBoneIndex;
+      lerpBone = lerpBone + 1;
     }
-    Ragdoll_SnapshotBaseLerpOffsets(param_1);
+    Ragdoll_SnapshotBaseLerpOffsets(body);
   }
   return true;
 }
@@ -2705,39 +2777,38 @@ Ragdoll_ExitDObjWait(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodySt
 
 // 0086AFF0  Ragdoll_ExitIdle  (ragdoll/ragdoll_update.cpp:1957)
 
-bool __cdecl
-Ragdoll_ExitIdle(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+bool __cdecl Ragdoll_ExitIdle(RagdollBody *body,RagdollBodyState curState,RagdollBodyState newState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  BoneOrientation *pBVar5;
+  BoneOrientation *snapshot;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x7a6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == BS_DEAD) || (param_3 == BS_DOBJ_WAIT)) {
+  if ((newState == BS_DEAD) || (newState == BS_DOBJ_WAIT)) {
     bVar2 = true;
   }
   else {
-    bVar2 = Ragdoll_ValidateBodyObj(param_1);
-    if ((bVar2) && (bVar2 = Ragdoll_BodyPoseValid(param_1), bVar2)) {
+    bVar2 = Ragdoll_ValidateBodyObj(body);
+    if ((bVar2) && (bVar2 = Ragdoll_BodyPoseValid(body), bVar2)) {
       iVar4 = Ragdoll_CountPhysicsBodies();
       if ((ragdoll_max_simulating->current).integer <= iVar4) {
         return false;
       }
-      bVar2 = Ragdoll_CreateBodyPhysics(param_1);
+      bVar2 = Ragdoll_CreateBodyPhysics(body);
       if (!bVar2) {
         return false;
       }
-      pBVar5 = Ragdoll_BodyBoneOrientations(param_1);
-      Ragdoll_SetCurrentPoseFromSnapshot(param_1,pBVar5);
+      snapshot = Ragdoll_BodyBoneOrientations(body);
+      Ragdoll_SetCurrentPoseFromSnapshot(body,snapshot);
       return true;
     }
     bVar2 = false;
@@ -2749,15 +2820,15 @@ Ragdoll_ExitIdle(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState 
 // 0086B0B0  Ragdoll_EnterIdle  (ragdoll/ragdoll_update.cpp:1979)
 
 bool __cdecl
-Ragdoll_EnterIdle(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_EnterIdle(RagdollBody *body,RagdollBodyState curState,RagdollBodyState newState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  BoneOrientation *pBVar4;
+  BoneOrientation *boneSnapshot;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x7bc,
                              0,"%s");
     if (!bVar2) {
@@ -2766,40 +2837,40 @@ Ragdoll_EnterIdle(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState
       return (bool)uVar3;
     }
   }
-  bVar2 = Ragdoll_BodyHasPhysics(param_1);
+  bVar2 = Ragdoll_BodyHasPhysics(body);
   if (bVar2) {
-    pBVar4 = Ragdoll_BodyBoneOrientations(param_1);
-    Ragdoll_SnapshotBonePositions(param_1,pBVar4);
+    boneSnapshot = Ragdoll_BodyBoneOrientations(body);
+    Ragdoll_SnapshotBonePositions(body,boneSnapshot);
   }
-  Ragdoll_RemoveBodyPhysics(param_1);
+  Ragdoll_RemoveBodyPhysics(body);
   return true;
 }
 
 
 // 0086B2A0  Ragdoll_UpdateDObjWait  (ragdoll/ragdoll_update.cpp:1991)
 
-void __cdecl Ragdoll_UpdateDObjWait(RagdollBody *param_1,int param_2)
+void __cdecl Ragdoll_UpdateDObjWait(RagdollBody *body,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x7c8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->stateFrames < 4) {
-    bVar2 = Ragdoll_ValidateBodyObj(param_1);
+  if (body->stateFrames < 4) {
+    bVar2 = Ragdoll_ValidateBodyObj(body);
     if (bVar2) {
-      Ragdoll_BodyNewState(param_1,BS_VELOCITY_CAPTURE);
+      Ragdoll_BodyNewState(body,BS_VELOCITY_CAPTURE);
     }
   }
   else {
     Com_PrintWarning(0x14,"Ragdoll activation timed out waiting for dobj 0x%x\n");
-    Ragdoll_BodyNewState(param_1,BS_DEAD);
+    Ragdoll_BodyNewState(body,BS_DEAD);
   }
   return;
 }
@@ -2808,36 +2879,36 @@ void __cdecl Ragdoll_UpdateDObjWait(RagdollBody *param_1,int param_2)
 // 0086B340  Ragdoll_EnterDobjWait  (ragdoll/ragdoll_update.cpp:2006)
 
 bool __cdecl
-Ragdoll_EnterDobjWait(RagdollBody *param_1,RagdollBodyState param_2,RagdollBodyState param_3)
+Ragdoll_EnterDobjWait(RagdollBody *body,RagdollBodyState prevState,RagdollBodyState curState)
 
 {
-  Ragdoll_UpdateDObjWait(param_1,0);
+  Ragdoll_UpdateDObjWait(body,0);
   return true;
 }
 
 
 // 0086BA30  Ragdoll_FilterBonePositions  (ragdoll/ragdoll_update.cpp:2015)
 
-void __cdecl Ragdoll_FilterBonePositions(RagdollBody *param_1)
+void __cdecl Ragdoll_FilterBonePositions(RagdollBody *body)
 
 {
-  BoneOrientation *pBVar1;
+  BoneOrientation *boneSnapshot;
   
-  pBVar1 = Ragdoll_BodyBoneOrientations(param_1);
-  Ragdoll_SnapshotBonePositions(param_1,pBVar1);
+  boneSnapshot = Ragdoll_BodyBoneOrientations(body);
+  Ragdoll_SnapshotBonePositions(body,boneSnapshot);
   return;
 }
 
 
 // 0086B360  Ragdoll_UpdateRunning  (ragdoll/ragdoll_update.cpp:2073)
 
-void __cdecl Ragdoll_UpdateRunning(RagdollBody *param_1,int param_2)
+void __cdecl Ragdoll_UpdateRunning(RagdollBody *body,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x81a,
                              0,"%s");
     if (!bVar2) {
@@ -2846,16 +2917,16 @@ void __cdecl Ragdoll_UpdateRunning(RagdollBody *param_1,int param_2)
       return;
     }
   }
-  bVar2 = Ragdoll_CheckIdle(param_1,param_2);
+  bVar2 = Ragdoll_CheckIdle(body,msec);
   if (bVar2) {
-    Ragdoll_BodyNewState(param_1,BS_IDLE);
+    Ragdoll_BodyNewState(body,BS_IDLE);
   }
   else {
-    Ragdoll_FilterBonePositions(param_1);
-    Ragdoll_UpdateFriction(param_1);
-    Ragdoll_LaunchUpdate(param_1);
-    Ragdoll_AttachUpdate(param_1);
-    Ragdoll_DebugRender(param_1);
+    Ragdoll_FilterBonePositions(body);
+    Ragdoll_UpdateFriction(body);
+    Ragdoll_LaunchUpdate(body);
+    Ragdoll_AttachUpdate(body);
+    Ragdoll_DebugRender(body);
   }
   return;
 }
@@ -2863,22 +2934,24 @@ void __cdecl Ragdoll_UpdateRunning(RagdollBody *param_1,int param_2)
 
 // 0086BA50  Ragdoll_BodyNewState  (ragdoll/ragdoll_update.cpp:2128)
 
-bool __cdecl Ragdoll_BodyNewState(RagdollBody *param_1,RagdollBodyState param_2)
+bool __cdecl Ragdoll_BodyNewState(RagdollBody *body,RagdollBodyState state)
 
 {
   RagdollBodyState RVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  StateEnt *entry;
+  RagdollBodyState prevState;
   
-  if ((param_1 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x854,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((BS_IDLE < param_2) &&
+  if ((BS_IDLE < state) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x855,0,
                                "state doesn\'t index RAGDOLL_NUM_STATES\n\t%i not in [0, %i)"),
@@ -2887,7 +2960,7 @@ bool __cdecl Ragdoll_BodyNewState(RagdollBody *param_1,RagdollBodyState param_2)
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  RVar1 = param_1->state;
+  RVar1 = body->state;
   if ((BS_IDLE < RVar1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x858,0,
@@ -2897,24 +2970,24 @@ bool __cdecl Ragdoll_BodyNewState(RagdollBody *param_1,RagdollBodyState param_2)
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (RVar1 != param_2) {
+  if (RVar1 != state) {
     if ((stateEntries[RVar1].exitFunc !=
          (_func___cdecl_bool_RagdollBody_ptr_RagdollBodyState_RagdollBodyState *)0x0) &&
-       (bVar3 = (*stateEntries[RVar1].exitFunc)(param_1,RVar1,param_2), !bVar3)) {
+       (bVar3 = (*stateEntries[RVar1].exitFunc)(body,RVar1,state), !bVar3)) {
       return false;
     }
-    param_1->state = param_2;
-    if ((stateEntries[param_2].enterFunc !=
+    body->state = state;
+    if ((stateEntries[state].enterFunc !=
          (_func___cdecl_bool_RagdollBody_ptr_RagdollBodyState_RagdollBodyState *)0x0) &&
-       (bVar3 = (*stateEntries[param_2].enterFunc)(param_1,RVar1,param_2), !bVar3)) {
-      if (param_1->state == param_2) {
-        param_1->state = RVar1;
+       (bVar3 = (*stateEntries[state].enterFunc)(body,RVar1,state), !bVar3)) {
+      if (body->state == state) {
+        body->state = RVar1;
       }
       return false;
     }
-    param_1->stateFrames = 0;
-    param_1->stateMsec = 0;
-    param_1->stableTime = 0;
+    body->stateFrames = 0;
+    body->stateMsec = 0;
+    body->stableTime = 0;
   }
   return true;
 }
@@ -2922,21 +2995,23 @@ bool __cdecl Ragdoll_BodyNewState(RagdollBody *param_1,RagdollBodyState param_2)
 
 // 0086BBB0  Ragdoll_BodyUpdate  (ragdoll/ragdoll_update.cpp:2173)
 
-void __cdecl Ragdoll_BodyUpdate(int param_1,RagdollBody *param_2)
+void __cdecl Ragdoll_BodyUpdate(int msec,RagdollBody *body)
 
 {
   RagdollBodyState RVar1;
   code *pcVar2;
   bool bVar3;
+  StateEnt *entry;
+  RagdollBodyState prevState;
   
-  if ((param_2 == (RagdollBody *)0x0) &&
+  if ((body == (RagdollBody *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x881,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((BS_IDLE < param_2->state) &&
+  if ((BS_IDLE < body->state) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                0x882,0,
                                "body->state doesn\'t index RAGDOLL_NUM_STATES\n\t%i not in [0, %i)")
@@ -2946,25 +3021,26 @@ void __cdecl Ragdoll_BodyUpdate(int param_1,RagdollBody *param_2)
     return;
   }
   do {
-    RVar1 = param_2->state;
-    if (stateEntries[param_2->state].updateFunc != (_func___cdecl_void_RagdollBody_ptr_int *)0x0) {
-      (*stateEntries[param_2->state].updateFunc)(param_2,param_1);
+    RVar1 = body->state;
+    if (stateEntries[body->state].updateFunc != (_func___cdecl_void_RagdollBody_ptr_int *)0x0) {
+      (*stateEntries[body->state].updateFunc)(body,msec);
     }
-  } while (RVar1 != param_2->state);
-  param_2->stateFrames = param_2->stateFrames + 1;
-  param_2->stateMsec = param_2->stateMsec + param_1;
+  } while (RVar1 != body->state);
+  body->stateFrames = body->stateFrames + 1;
+  body->stateMsec = body->stateMsec + msec;
   return;
 }
 
 
 // 0086BC80  Ragdoll_Update  (ragdoll/ragdoll_update.cpp:2202)
 
-void __cdecl Ragdoll_Update(int param_1)
+void __cdecl Ragdoll_Update(int msec)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_free_list<RagdollBody> *local_8;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -2976,10 +3052,10 @@ void __cdecl Ragdoll_Update(int param_1)
   }
   if ((((ragdollInited != false) && ((ragdoll_enable->current).enabled != false)) &&
       (cg_paused != (dvar_s *)0x0)) && ((cg_paused->current).integer == 0)) {
-    for (local_8 = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal
-        ; local_8 != &g_ragdoll_body_pool;
-        local_8 = (phys_free_list<RagdollBody> *)(local_8->m_dummy_head).m_next_T_internal) {
-      bVar2 = Ragdoll_BodyInUse((RagdollBody *)&local_8->m_list_count);
+    for (body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+        body_i != &g_ragdoll_body_pool;
+        body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal) {
+      bVar2 = Ragdoll_BodyInUse((RagdollBody *)&body_i->m_list_count);
       if ((!bVar2) &&
          (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x8a6,
                             "Ragdoll_BodyInUse( body )",""), bVar2)) {
@@ -2987,7 +3063,7 @@ void __cdecl Ragdoll_Update(int param_1)
         (*pcVar1)();
         return;
       }
-      Ragdoll_BodyUpdate(param_1,(RagdollBody *)&local_8->m_list_count);
+      Ragdoll_BodyUpdate(msec,(RagdollBody *)&body_i->m_list_count);
     }
   }
   return;
@@ -2996,19 +3072,21 @@ void __cdecl Ragdoll_Update(int param_1)
 
 // 0086BD80  Ragdoll_RemoveConstraintsForRope  (ragdoll/ragdoll_update.cpp:2222)
 
-void __cdecl Ragdoll_RemoveConstraintsForRope(int param_1)
+void __cdecl Ragdoll_RemoveConstraintsForRope(int rope_id)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_free_list<RagdollBody> *local_8;
+  rigid_body_constraint_distance *phys_constraint;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
   
-  local_8 = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+  body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
   do {
-    if (local_8 == &g_ragdoll_body_pool) {
+    if (body_i == &g_ragdoll_body_pool) {
       return;
     }
-    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&local_8->m_list_count);
+    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&body_i->m_list_count);
     if (!bVar2) {
       bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x8b2,
                         "Ragdoll_BodyInUse( body )","");
@@ -3018,9 +3096,9 @@ void __cdecl Ragdoll_RemoveConstraintsForRope(int param_1)
         return;
       }
     }
-    if ((undefined1 *)((int)&local_8[2].m_ptr_list[0x7c][-1].rbc_dist + 3) == (undefined1 *)param_1)
+    if ((undefined1 *)((int)&body_i[2].m_ptr_list[0x7c][-1].rbc_dist + 3) == (undefined1 *)rope_id)
     {
-      if (local_8[2].m_ptr_list[0x7d] == (RagdollBody *)0x0) {
+      if (body_i[2].m_ptr_list[0x7d] == (RagdollBody *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",
                                  0x8b5,0,"%s");
         if (!bVar2) {
@@ -3029,50 +3107,52 @@ void __cdecl Ragdoll_RemoveConstraintsForRope(int param_1)
           return;
         }
       }
-      phys_sys::destroy((rigid_body_constraint_distance *)local_8[2].m_ptr_list[0x7d]);
-      local_8[2].m_ptr_list[0x7d] = (RagdollBody *)0x0;
-      local_8[2].m_ptr_list[0x7c] = (RagdollBody *)0x0;
-      local_8->m_ptr_list[8] = (RagdollBody *)0x0;
+      phys_sys::destroy((rigid_body_constraint_distance *)body_i[2].m_ptr_list[0x7d]);
+      body_i[2].m_ptr_list[0x7d] = (RagdollBody *)0x0;
+      body_i[2].m_ptr_list[0x7c] = (RagdollBody *)0x0;
+      body_i->m_ptr_list[8] = (RagdollBody *)0x0;
     }
-    local_8 = (phys_free_list<RagdollBody> *)(local_8->m_dummy_head).m_next_T_internal;
+    body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal;
   } while( true );
 }
 
 
 // 0086BE90  Ragdoll_GetRBForBone  (ragdoll/ragdoll_update.cpp:2240)
 
-int __cdecl Ragdoll_GetRBForBone(int param_1,uint param_2)
+int __cdecl Ragdoll_GetRBForBone(int entnum,uint boneName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   RagdollDef *pRVar4;
-  int local_18;
-  phys_free_list<RagdollBody> *local_8;
+  int bi;
+  RagdollDef *def;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
   
-  local_8 = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+  body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
   while( true ) {
-    if (local_8 == &g_ragdoll_body_pool) {
+    if (body_i == &g_ragdoll_body_pool) {
       return 0;
     }
-    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&local_8->m_list_count);
+    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&body_i->m_list_count);
     if ((!bVar2) &&
        (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_update.cpp",0x8c4,
                           "Ragdoll_BodyInUse( body )",""), bVar2)) break;
-    if ((RagdollBody *)param_1 == local_8->m_ptr_list[0]) {
-      pRVar4 = Ragdoll_BodyDef((RagdollBody *)&local_8->m_list_count);
-      local_18 = 0;
+    if ((RagdollBody *)entnum == body_i->m_ptr_list[0]) {
+      pRVar4 = Ragdoll_BodyDef((RagdollBody *)&body_i->m_list_count);
+      bi = 0;
       while( true ) {
-        if (pRVar4->numBones <= local_18) {
+        if (pRVar4->numBones <= bi) {
           return 0;
         }
-        if (pRVar4->boneDefs[local_18].animBoneNames[1] == param_2) break;
-        local_18 = local_18 + 1;
+        if (pRVar4->boneDefs[bi].animBoneNames[1] == boneName) break;
+        bi = bi + 1;
       }
-      return (int)local_8->m_ptr_list[local_18 * 7 + 0xf];
+      return (int)body_i->m_ptr_list[bi * 7 + 0xf];
     }
-    local_8 = (phys_free_list<RagdollBody> *)(local_8->m_dummy_head).m_next_T_internal;
+    body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal;
   }
   pcVar1 = (code *)swi(3);
   iVar3 = (*pcVar1)();

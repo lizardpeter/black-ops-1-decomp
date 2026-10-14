@@ -2,30 +2,30 @@
 
 // 005F2DA0  G_GoodRandomFloat  (game/bullet.cpp:54)
 
-float __cdecl G_GoodRandomFloat(int *param_1)
+float __cdecl G_GoodRandomFloat(int *idum_2)
 
 {
   float fVar1;
-  int aiStack_104 [64];
+  int aiStack_104 [30];
+  int j_2;
+  long k_2;
+  int iv_2 [32];
   
-  *param_1 = -*param_1;
-  for (aiStack_104[0x1e] = 0x27; -1 < aiStack_104[0x1e]; aiStack_104[0x1e] = aiStack_104[0x1e] + -1)
-  {
-    *param_1 = *param_1 * 0x41a7 + (*param_1 / 0x1f31d) * -0x7fffffff;
-    if (*param_1 < 0) {
-      *param_1 = *param_1 + 0x7fffffff;
+  *idum_2 = -*idum_2;
+  for (j_2 = 0x27; -1 < j_2; j_2 = j_2 + -1) {
+    *idum_2 = *idum_2 * 0x41a7 + (*idum_2 / 0x1f31d) * -0x7fffffff;
+    if (*idum_2 < 0) {
+      *idum_2 = *idum_2 + 0x7fffffff;
     }
-    if (aiStack_104[0x1e] < 0x20) {
-      aiStack_104[aiStack_104[0x1e] + 0x20] = *param_1;
+    if (j_2 < 0x20) {
+      iv_2[j_2] = *idum_2;
     }
   }
-  *param_1 = *param_1 * 0x41a7 + (*param_1 / 0x1f31d) * -0x7fffffff;
-  if (*param_1 < 0) {
-    *param_1 = *param_1 + 0x7fffffff;
+  *idum_2 = *idum_2 * 0x41a7 + (*idum_2 / 0x1f31d) * -0x7fffffff;
+  if (*idum_2 < 0) {
+    *idum_2 = *idum_2 + 0x7fffffff;
   }
-  fVar1 = (float)aiStack_104
-                 [((int)(aiStack_104[0x20] + (aiStack_104[0x20] >> 0x1f & 0x3ffffffU)) >> 0x1a) +
-                  0x20] * 4.656613e-10;
+  fVar1 = (float)iv_2[(int)(iv_2[0] + (iv_2[0] >> 0x1f & 0x3ffffffU)) >> 0x1a] * 4.656613e-10;
   if (0.9999999 - fVar1 < 0.0) {
     fVar1 = 0.9999999;
   }
@@ -35,7 +35,7 @@ float __cdecl G_GoodRandomFloat(int *param_1)
 
 // 005F36A0  Bullet_RandomDir  (game/bullet.cpp:85)
 
-void __cdecl Bullet_RandomDir(int param_1,float *param_2,float *param_3)
+void __cdecl Bullet_RandomDir(int time,float *x,float *y)
 
 {
   code *pcVar1;
@@ -44,8 +44,12 @@ void __cdecl Bullet_RandomDir(int param_1,float *param_2,float *param_3)
   float10 fVar4;
   float fVar5;
   float fVar6;
+  float sinT;
+  float theta;
+  float r;
+  float cosT;
   
-  if (param_2 == (float *)0x0) {
+  if (x == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x58,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -53,7 +57,7 @@ void __cdecl Bullet_RandomDir(int param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (y == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x59,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -61,13 +65,13 @@ void __cdecl Bullet_RandomDir(int param_1,float *param_2,float *param_3)
       return;
     }
   }
-  fVar5 = G_GoodRandomFloat(&param_1);
-  fVar6 = G_GoodRandomFloat(&param_1);
+  fVar5 = G_GoodRandomFloat(&time);
+  fVar6 = G_GoodRandomFloat(&time);
   fVar4 = (float10)(fVar5 * 360.0 * 0.017453292);
   fVar2 = (float10)fcos(fVar4);
   fVar4 = (float10)fsin(fVar4);
-  *param_2 = fVar6 * (float)fVar2;
-  *param_3 = fVar6 * (float)fVar4;
+  *x = fVar6 * (float)fVar2;
+  *y = fVar6 * (float)fVar4;
   return;
 }
 
@@ -75,8 +79,7 @@ void __cdecl Bullet_RandomDir(int param_1,float *param_2,float *param_3)
 // 005F2F30  Bullet_Endpos  (game/bullet.cpp:106)
 
 void __cdecl
-Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParms *param_5,
-             float param_6)
+Bullet_Endpos(int randSeed,float spread,float *end,float *dir,weaponParms *wp,float maxRange)
 
 {
   code *pcVar1;
@@ -84,11 +87,11 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
   double dVar3;
   undefined4 in_stack_ffffff68;
   undefined4 in_stack_ffffff6c;
-  float local_10;
-  float local_c;
-  float local_8;
+  float right;
+  float aimOffset;
+  float up;
   
-  if (((uint)param_2 & 0x7f800000) == 0x7f800000) {
+  if (((uint)spread & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x6f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -96,7 +99,7 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (end == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x71,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -104,7 +107,7 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (param_5 == (weaponParms *)0x0) {
+  if (wp == (weaponParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x72,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -112,10 +115,10 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  dVar3 = (double)(param_2 * 0.017453292);
+  dVar3 = (double)(spread * 0.017453292);
   __libm_sse2_tan((double)CONCAT44(in_stack_ffffff6c,in_stack_ffffff68));
-  local_c = (float)dVar3 * param_6;
-  if (((uint)local_c & 0x7f800000) == 0x7f800000) {
+  aimOffset = (float)dVar3 * maxRange;
+  if (((uint)aimOffset & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x76,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -123,10 +126,10 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  Bullet_RandomDir(param_1,&local_10,&local_8);
-  local_10 = local_10 * local_c;
-  local_8 = local_8 * local_c;
-  if (((uint)local_10 & 0x7f800000) == 0x7f800000) {
+  Bullet_RandomDir(randSeed,&right,&up);
+  right = right * aimOffset;
+  up = up * aimOffset;
+  if (((uint)right & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x7d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -134,7 +137,7 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (((uint)local_8 & 0x7f800000) == 0x7f800000) {
+  if (((uint)up & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x7e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -142,9 +145,9 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (((((uint)param_5->muzzleTrace[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_5->muzzleTrace[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_5->muzzleTrace[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->muzzleTrace[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->muzzleTrace[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->muzzleTrace[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x7f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -152,9 +155,9 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (((((uint)param_5->forward[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_5->forward[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_5->forward[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->forward[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->forward[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->forward[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x80,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -162,9 +165,9 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (((((uint)param_5->right[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_5->right[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_5->right[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->right[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->right[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->right[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x81,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -172,9 +175,9 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (((((uint)param_5->up[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_5->up[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_5->up[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->up[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->up[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->up[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x82,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -182,12 +185,11 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  *param_3 = param_6 * param_5->forward[0] + param_5->muzzleTrace[0];
-  param_3[1] = param_6 * param_5->forward[1] + param_5->muzzleTrace[1];
-  param_3[2] = param_6 * param_5->forward[2] + param_5->muzzleTrace[2];
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  *end = maxRange * wp->forward[0] + wp->muzzleTrace[0];
+  end[1] = maxRange * wp->forward[1] + wp->muzzleTrace[1];
+  end[2] = maxRange * wp->forward[2] + wp->muzzleTrace[2];
+  if (((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)end[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x86,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -195,15 +197,14 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  *param_3 = local_10 * param_5->right[0] + *param_3;
-  param_3[1] = local_10 * param_5->right[1] + param_3[1];
-  param_3[2] = local_10 * param_5->right[2] + param_3[2];
-  *param_3 = local_8 * param_5->up[0] + *param_3;
-  param_3[1] = local_8 * param_5->up[1] + param_3[1];
-  param_3[2] = local_8 * param_5->up[2] + param_3[2];
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  *end = right * wp->right[0] + *end;
+  end[1] = right * wp->right[1] + end[1];
+  end[2] = right * wp->right[2] + end[2];
+  *end = up * wp->up[0] + *end;
+  end[1] = up * wp->up[1] + end[1];
+  end[2] = up * wp->up[2] + end[2];
+  if (((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)end[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x8b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -211,14 +212,13 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
       return;
     }
   }
-  if (param_4 != (float *)0x0) {
-    *param_4 = *param_3 - param_5->muzzleTrace[0];
-    param_4[1] = param_3[1] - param_5->muzzleTrace[1];
-    param_4[2] = param_3[2] - param_5->muzzleTrace[2];
-    Vec3Normalize(param_4);
-    if (((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) {
+  if (dir != (float *)0x0) {
+    *dir = *end - wp->muzzleTrace[0];
+    dir[1] = end[1] - wp->muzzleTrace[1];
+    dir[2] = end[2] - wp->muzzleTrace[2];
+    Vec3Normalize(dir);
+    if (((((uint)*dir & 0x7f800000) == 0x7f800000) || (((uint)dir[1] & 0x7f800000) == 0x7f800000))
+       || (((uint)dir[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x92,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -239,8 +239,7 @@ Bullet_Endpos(int param_1,float param_2,float *param_3,float *param_4,weaponParm
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Bullet_GetDamage(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponDef *param_3,
-                gentity_s *param_4)
+Bullet_GetDamage(BulletFireParams *bp,BulletTraceResults *br,WeaponDef *weapDef,gentity_s *attacker)
 
 {
   int iVar1;
@@ -249,51 +248,56 @@ Bullet_GetDamage(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponDef
   int iVar4;
   float fVar5;
   float fVar6;
-  int local_1c;
+  int damage;
+  float lerpAmount;
+  int baseDamage;
+  float range;
+  float dist;
+  int minDamage;
   
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xa2,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2 == (BulletTraceResults *)0x0) &&
+  if ((br == (BulletTraceResults *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xa3,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if (((param_2->trace).hitType == TRACE_HITTYPE_NONE) &&
+  if (((br->trace).hitType == TRACE_HITTYPE_NONE) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xa4,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_3 == (WeaponDef *)0x0) &&
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xa5,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_4 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xa6,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  iVar4 = param_3->damage;
-  iVar1 = param_3->minDamage;
-  fVar5 = param_3->fMinDamageRange - param_3->fMaxDamageRange;
-  local_1c = iVar4;
+  iVar4 = weapDef->damage;
+  iVar1 = weapDef->minDamage;
+  fVar5 = weapDef->fMinDamageRange - weapDef->fMaxDamageRange;
+  damage = iVar4;
   if ((((iVar4 != iVar1) && (fVar5 != 0.0)) &&
-      (fVar6 = Vec3Distance(param_1->origStart,param_2->hitPos), param_3->fMaxDamageRange <= fVar6))
-     && (local_1c = iVar1, fVar6 < param_3->fMinDamageRange)) {
-    fVar5 = (fVar6 - param_3->fMaxDamageRange) / fVar5;
+      (fVar6 = Vec3Distance(bp->origStart,br->hitPos), weapDef->fMaxDamageRange <= fVar6)) &&
+     (damage = iVar1, fVar6 < weapDef->fMinDamageRange)) {
+    fVar5 = (fVar6 - weapDef->fMaxDamageRange) / fVar5;
     if (((fVar5 < 0.0) || (1.0 < fVar5)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xd5,0,
                                  "%s\n\t(lerpAmount) = %g"), !bVar3)) {
@@ -301,9 +305,9 @@ Bullet_GetDamage(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponDef
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    local_1c = (int)((float)iVar4 * (1.0 - fVar5) + (float)iVar1 * fVar5);
+    damage = (int)((float)iVar4 * (1.0 - fVar5) + (float)iVar1 * fVar5);
   }
-  return (int)((float)local_1c * param_1->damageMultiplier);
+  return (int)((float)damage * bp->damageMultiplier);
 }
 
 
@@ -311,19 +315,19 @@ Bullet_GetDamage(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponDef
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-team_t __cdecl Sentient_EnemyTeam(team_t param_1)
+team_t __cdecl Sentient_EnemyTeam(team_t eTeam)
 
 {
   code *pcVar1;
   bool bVar2;
   team_t tVar3;
-  team_t local_14 [4];
+  team_t EnemyTeam [4];
   
-  local_14[0] = TEAM_BAD;
-  local_14[1] = 2;
-  local_14[2] = 1;
-  local_14[3] = 0;
-  if (((int)param_1 < 0) || (3 < (int)param_1)) {
+  EnemyTeam[0] = TEAM_BAD;
+  EnemyTeam[1] = 2;
+  EnemyTeam[2] = 1;
+  EnemyTeam[3] = 0;
+  if (((int)eTeam < 0) || (3 < (int)eTeam)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game_mp\\../game/sentient.h",0xb8,0
                              ,"%s");
     if (!bVar2) {
@@ -332,7 +336,7 @@ team_t __cdecl Sentient_EnemyTeam(team_t param_1)
       return tVar3;
     }
   }
-  return local_14[param_1];
+  return EnemyTeam[eTeam];
 }
 
 
@@ -344,8 +348,8 @@ team_t __cdecl Sentient_EnemyTeam(team_t param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,float *param_4,
-                  gentity_s *param_5,WeaponVariantDef *param_6)
+Bullet_NofifyActor(BulletFireParams *bp,gentity_s *attacker,float *start,float *end,
+                  gentity_s *hitEnt,WeaponVariantDef *weapVariantDef)
 
 {
   code *pcVar1;
@@ -356,13 +360,14 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
   float *pfVar5;
   float *in_stack_ffffffc0;
   float in_stack_ffffffc4;
-  gentity_s *local_18;
-  float local_14;
+  float BACKWARD_EXTEND_DIST;
+  int teamFlags;
+  float lineStart;
   float local_10;
   float local_c;
-  int local_8;
+  ai_event_t eType;
   
-  if (param_1 == (BulletFireParams *)0x0) {
+  if (bp == (BulletFireParams *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf1,0,"%s");
     if (!bVar2) {
@@ -371,7 +376,7 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
       return;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (attacker == (gentity_s *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf2,0,"%s");
     if (!bVar2) {
@@ -380,7 +385,7 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
       return;
     }
   }
-  if (param_2->sentient == (sentient_s *)0x0) {
+  if (attacker->sentient == (sentient_s *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf3,0,"%s");
     if (!bVar2) {
@@ -389,7 +394,7 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (start == (float *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf4,0,"%s");
     if (!bVar2) {
@@ -398,7 +403,7 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
       return;
     }
   }
-  if (param_4 == (float *)0x0) {
+  if (end == (float *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf5,0,"%s");
     if (!bVar2) {
@@ -407,7 +412,7 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
       return;
     }
   }
-  if (param_6 == (WeaponVariantDef *)0x0) {
+  if (weapVariantDef == (WeaponVariantDef *)0x0) {
     in_stack_ffffffb4 = (gentity_s *)0x0;
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0xf6,0,"%s");
     if (!bVar2) {
@@ -417,36 +422,36 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
     }
   }
   pfVar5 = (float *)0x5f4ba3;
-  tVar3 = Sentient_EnemyTeam(param_2->sentient->eTeam);
+  tVar3 = Sentient_EnemyTeam(attacker->sentient->eTeam);
   bVar4 = (byte)tVar3;
-  if (param_1->damageMultiplier == 1.0) {
-    local_8 = (param_6->bSilenced != false) + 0xb;
+  if (bp->damageMultiplier == 1.0) {
+    eType = (weapVariantDef->bSilenced != false) + AI_EV_GUNSHOT;
     in_stack_ffffffb4 = (gentity_s *)(1 << (bVar4 & 0x1f));
-    pfVar5 = param_3;
+    pfVar5 = start;
     Actor_BroadcastPointEvent
-              (in_stack_ffffffb4,(ai_event_t)param_3,0,in_stack_ffffffc0,in_stack_ffffffc4);
+              (in_stack_ffffffb4,(ai_event_t)start,0,in_stack_ffffffc0,in_stack_ffffffc4);
   }
-  local_14 = *param_3 - *param_4;
-  local_10 = param_3[1] - param_4[1];
-  local_c = param_3[2] - param_4[2];
-  Vec3Normalize(&local_14);
-  local_14 = local_14 * 200.0 + *param_3;
-  local_10 = local_10 * 200.0 + param_3[1];
-  local_c = local_c * 200.0 + param_3[2];
+  lineStart = *start - *end;
+  local_10 = start[1] - end[1];
+  local_c = start[2] - end[2];
+  Vec3Normalize(&lineStart);
+  lineStart = lineStart * 200.0 + *start;
+  local_10 = local_10 * 200.0 + start[1];
+  local_c = local_c * 200.0 + start[2];
   if ((ai_friendlySuppression->current).enabled == false) {
-    if (param_2->client == (gclient_s *)0x0) {
-      local_18 = (gentity_s *)(1 << (bVar4 & 0x1f));
+    if (attacker->client == (gclient_s *)0x0) {
+      teamFlags = 1 << (bVar4 & 0x1f);
     }
     else {
-      local_18 = (gentity_s *)(1 << (bVar4 & 0x1f) | 1 << ((byte)param_2->sentient->eTeam & 0x1f));
+      teamFlags = 1 << (bVar4 & 0x1f) | 1 << ((byte)attacker->sentient->eTeam & 0x1f);
     }
   }
   else {
-    local_18 = (gentity_s *)&DAT_00000006;
+    teamFlags = 6;
   }
   Actor_BroadcastLineEvent
-            ((gentity_s *)&DAT_0000000f,local_18,(ai_event_t)&local_14,(int)param_4,(float *)0x0,
-             (float *)in_stack_ffffffb4,(float)pfVar5);
+            ((gentity_s *)&DAT_0000000f,(gentity_s *)teamFlags,(ai_event_t)&lineStart,(int)end,
+             (float *)0x0,(float *)in_stack_ffffffb4,(float)pfVar5);
   return;
 }
 
@@ -460,8 +465,9 @@ Bullet_NofifyActor(BulletFireParams *param_1,gentity_s *param_2,float *param_3,f
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Bullet_ImpactEffect(BulletFireParams *param_1,BulletTraceResults *param_2,float *param_3,
-                   WeaponVariantDef *param_4,gentity_s *param_5,int param_6,gentity_s **param_7)
+Bullet_ImpactEffect(BulletFireParams *bp,BulletTraceResults *br,float *normal,
+                   WeaponVariantDef *weapVariantDef,gentity_s *attacker,int impactEffectFlags,
+                   gentity_s **outTempEnt)
 
 {
   float *pfVar1;
@@ -469,87 +475,89 @@ Bullet_ImpactEffect(BulletFireParams *param_1,BulletTraceResults *param_2,float 
   bool bVar3;
   byte bVar4;
   <unnamed_type_index> <Var5;
-  uint uVar6;
+  uint src;
   int local_34;
-  gentity_s *local_1c;
+  gentity_s *tempEnt;
+  bool createEffect;
+  float dot;
   
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x119,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (BulletTraceResults *)0x0) &&
+  if ((br == (BulletTraceResults *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x11a,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_2->trace).hitType == TRACE_HITTYPE_NONE) &&
+  if (((br->trace).hitType == TRACE_HITTYPE_NONE) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x11b,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x11c,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_5 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x11d,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_7 == (gentity_s **)0x0) &&
+  if ((outTempEnt == (gentity_s **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x11e,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_2->ignoreHitEnt == false) {
-    if ((((param_2->trace).sflags & 4U) != 0) ||
-       (pfVar1 = &(param_2->trace).fraction, 1.0 < *pfVar1 || *pfVar1 == 1.0)) {
+  if (br->ignoreHitEnt == false) {
+    if ((((br->trace).sflags & 4U) != 0) ||
+       (pfVar1 = &(br->trace).fraction, 1.0 < *pfVar1 || *pfVar1 == 1.0)) {
       bVar3 = false;
     }
     else {
       bVar3 = true;
     }
-    if (param_2->hitEnt != (gentity_s *)0x0) {
-      bVar3 = (bool)(bVar3 & param_2->hitEnt->sentient == (sentient_s *)0x0);
+    if (br->hitEnt != (gentity_s *)0x0) {
+      bVar3 = (bool)(bVar3 & br->hitEnt->sentient == (sentient_s *)0x0);
     }
     if (bVar3) {
       if ((sv_clientSideBullets->current).enabled == false) {
-        local_1c = G_TempEntity(param_2->hitPos,0x33);
-        uVar6 = BG_GetWeaponIndex(param_4);
-        AssignToSmallerType<unsigned_short>(&(local_1c->s).weapon,uVar6);
-        bVar4 = DirToByte(param_3);
-        (local_1c->s).eventParm = (ushort)bVar4;
-        (local_1c->s).un1.scale = (uchar)param_6;
-        (local_1c->s).surfType = (uchar)((int)((param_2->trace).sflags & 0x3f00000U) >> 0x14);
+        tempEnt = G_TempEntity(br->hitPos,0x33);
+        src = BG_GetWeaponIndex(weapVariantDef);
+        AssignToSmallerType<unsigned_short>(&(tempEnt->s).weapon,src);
+        bVar4 = DirToByte(normal);
+        (tempEnt->s).eventParm = (ushort)bVar4;
+        (tempEnt->s).un1.scale = (uchar)impactEffectFlags;
+        (tempEnt->s).surfType = (uchar)((int)((br->trace).sflags & 0x3f00000U) >> 0x14);
         <Var5.brushmodel._1_1_ = 0;
-        <Var5.brushmodel._0_1_ = (byte)(param_2->trace).boneIndex;
-        (local_1c->s).index = <Var5;
-        (local_1c->s).lerp.u.turret.gunAngles[0] = param_1->start[0];
-        (local_1c->s).lerp.u.turret.gunAngles[1] = param_1->start[1];
-        (local_1c->s).lerp.u.turret.gunAngles[2] = param_1->start[2];
-        (local_1c->s).otherEntityNum = (short)param_1->weaponEntIndex;
-        if (param_2->hitEnt == (gentity_s *)0x0) {
+        <Var5.brushmodel._0_1_ = (byte)(br->trace).boneIndex;
+        (tempEnt->s).index = <Var5;
+        (tempEnt->s).lerp.u.turret.gunAngles[0] = bp->start[0];
+        (tempEnt->s).lerp.u.turret.gunAngles[1] = bp->start[1];
+        (tempEnt->s).lerp.u.turret.gunAngles[2] = bp->start[2];
+        (tempEnt->s).otherEntityNum = (short)bp->weaponEntIndex;
+        if (br->hitEnt == (gentity_s *)0x0) {
           local_34 = 0x3ff;
         }
         else {
-          local_34 = (param_2->hitEnt->s).number;
+          local_34 = (br->hitEnt->s).number;
         }
-        AssignToSmallerType<short>(&(local_1c->s).groundEntityNum,local_34);
-        if (((int)(local_1c->s).otherEntityNum != param_1->weaponEntIndex) &&
+        AssignToSmallerType<short>(&(tempEnt->s).groundEntityNum,local_34);
+        if (((int)(tempEnt->s).otherEntityNum != bp->weaponEntIndex) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x16c,0,
                                      "%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -558,16 +566,16 @@ Bullet_ImpactEffect(BulletFireParams *param_1,BulletTraceResults *param_2,float 
         }
       }
       else {
-        local_1c = (gentity_s *)0x0;
+        tempEnt = (gentity_s *)0x0;
       }
-      *param_7 = local_1c;
+      *outTempEnt = tempEnt;
     }
     else {
-      *param_7 = (gentity_s *)0x0;
+      *outTempEnt = (gentity_s *)0x0;
     }
   }
   else {
-    *param_7 = (gentity_s *)0x0;
+    *outTempEnt = (gentity_s *)0x0;
   }
   return;
 }
@@ -580,13 +588,13 @@ Bullet_ImpactEffect(BulletFireParams *param_1,BulletTraceResults *param_2,float 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bullet_ImpactEffect_SetAdditionalFlags(gentity_s *param_1,int param_2)
+void __cdecl Bullet_ImpactEffect_SetAdditionalFlags(gentity_s *tempEnt,int impactEffectFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (tempEnt == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x175,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -594,7 +602,7 @@ void __cdecl Bullet_ImpactEffect_SetAdditionalFlags(gentity_s *param_1,int param
       return;
     }
   }
-  (param_1->s).un1.scale = (param_1->s).un1.scale | (byte)param_2;
+  (tempEnt->s).un1.scale = (tempEnt->s).un1.scale | (byte)impactEffectFlags;
   return;
 }
 
@@ -606,43 +614,42 @@ void __cdecl Bullet_ImpactEffect_SetAdditionalFlags(gentity_s *param_1,int param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl
-Bullet_IgnoreHitEntity(BulletFireParams *param_1,BulletTraceResults *param_2,gentity_s *param_3)
+bool __cdecl Bullet_IgnoreHitEntity(BulletFireParams *bp,BulletTraceResults *br,gentity_s *attacker)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x17e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (BulletTraceResults *)0x0) &&
+  if ((br == (BulletTraceResults *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x17f,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2->hitEnt == (gentity_s *)0x0) &&
+  if ((br->hitEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x180,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x181,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return param_2->hitEnt == param_3;
+  return br->hitEnt == attacker;
 }
 
 
@@ -654,8 +661,8 @@ Bullet_IgnoreHitEntity(BulletFireParams *param_1,BulletTraceResults *param_2,gen
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *param_3,
-            BulletTraceResults *param_4,int param_5)
+Bullet_Trace(BulletFireParams *bp,WeaponVariantDef *weapVariantDef,gentity_s *attacker,
+            BulletTraceResults *br,int lastSurfaceType)
 
 {
   WeaponDef *pWVar1;
@@ -665,8 +672,11 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
   ushort uVar5;
   gentity_s *local_18;
   uchar *local_14;
+  bool hitFlesh;
+  WeaponDef *weapDef;
+  ushort hitEntId;
   
-  if (param_1 == (BulletFireParams *)0x0) {
+  if (bp == (BulletFireParams *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1b1,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -674,7 +684,7 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
       return (bool)uVar4;
     }
   }
-  if (param_2 == (WeaponVariantDef *)0x0) {
+  if (weapVariantDef == (WeaponVariantDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1b2,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -682,7 +692,7 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
       return (bool)uVar4;
     }
   }
-  if (param_3 == (gentity_s *)0x0) {
+  if (attacker == (gentity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1b3,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -690,7 +700,7 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
       return (bool)uVar4;
     }
   }
-  if (param_4 == (BulletTraceResults *)0x0) {
+  if (br == (BulletTraceResults *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1b4,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -698,7 +708,7 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
       return (bool)uVar4;
     }
   }
-  if (0x1e < (uint)param_5) {
+  if (0x1e < (uint)lastSurfaceType) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1b5,0,
                              "lastSurfaceType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -707,56 +717,55 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
       return (bool)uVar4;
     }
   }
-  pWVar1 = param_2->weapDef;
-  Com_Memset(param_4,0,0x50);
+  pWVar1 = weapVariantDef->weapDef;
+  Com_Memset(br,0,0x50);
   if (pWVar1->bRifleBullet == false) {
     local_14 = &bulletPriorityMap;
   }
   else {
     local_14 = riflePriorityMap;
   }
-  G_LocationalTraceAllowChildren
-            (&param_4->trace,param_1->start,param_1->end,param_1->ignoreEntIndex,0x280e833,local_14)
+  G_LocationalTraceAllowChildren(&br->trace,bp->start,bp->end,bp->ignoreEntIndex,0x280e833,local_14)
   ;
-  if (((param_4->trace).hitType == TRACE_HITTYPE_NONE) && (((param_4->trace).sflags & 4U) == 0)) {
+  if (((br->trace).hitType == TRACE_HITTYPE_NONE) && (((br->trace).sflags & 4U) == 0)) {
     bVar3 = false;
   }
   else {
-    uVar5 = Trace_GetEntityHitId(&param_4->trace);
+    uVar5 = Trace_GetEntityHitId(&br->trace);
     if (uVar5 == 0x3fe) {
       local_18 = (gentity_s *)0x0;
     }
     else {
       local_18 = g_entities + uVar5;
     }
-    param_4->hitEnt = local_18;
-    if (((param_4->trace).sflags & 4U) != 0) {
-      param_4->hitEnt = g_entities + uVar5;
+    br->hitEnt = local_18;
+    if (((br->trace).sflags & 4U) != 0) {
+      br->hitEnt = g_entities + uVar5;
     }
-    Vec3Lerp(param_1->start,param_1->end,(param_4->trace).fraction,param_4->hitPos);
-    if (param_4->hitEnt != (gentity_s *)0x0) {
-      if ((((((param_4->hitEnt->s).eType == 1) || ((param_4->hitEnt->s).eType == 2)) ||
-           ((param_4->hitEnt->s).eType == 0x11)) || ((param_4->hitEnt->s).eType == 0x13)) &&
-         ((param_4->trace).sflags == 0)) {
+    Vec3Lerp(bp->start,bp->end,(br->trace).fraction,br->hitPos);
+    if (br->hitEnt != (gentity_s *)0x0) {
+      if ((((((br->hitEnt->s).eType == 1) || ((br->hitEnt->s).eType == 2)) ||
+           ((br->hitEnt->s).eType == 0x11)) || ((br->hitEnt->s).eType == 0x13)) &&
+         ((br->trace).sflags == 0)) {
         bVar3 = true;
       }
       else {
         bVar3 = false;
       }
       if (bVar3) {
-        (param_4->trace).sflags = 0x700000;
+        (br->trace).sflags = 0x700000;
       }
-      bVar3 = Bullet_IgnoreHitEntity(param_1,param_4,param_3);
-      param_4->ignoreHitEnt = bVar3;
+      bVar3 = Bullet_IgnoreHitEntity(bp,br,attacker);
+      br->ignoreHitEnt = bVar3;
     }
-    param_4->depthSurfaceType = (int)((param_4->trace).sflags & 0x3f00000U) >> 0x14;
-    if (((param_4->trace).sflags & 0x100U) == 0) {
-      if ((param_4->depthSurfaceType == 0) && (param_5 != 0)) {
-        param_4->depthSurfaceType = param_5;
+    br->depthSurfaceType = (int)((br->trace).sflags & 0x3f00000U) >> 0x14;
+    if (((br->trace).sflags & 0x100U) == 0) {
+      if ((br->depthSurfaceType == 0) && (lastSurfaceType != 0)) {
+        br->depthSurfaceType = lastSurfaceType;
       }
     }
     else {
-      param_4->depthSurfaceType = 0;
+      br->depthSurfaceType = 0;
     }
     bVar3 = true;
   }
@@ -770,181 +779,179 @@ Bullet_Trace(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *para
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl
-Bullet_Process(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponVariantDef *param_3,
-              gentity_s *param_4,int param_5,int param_6,int *param_7,bool param_8)
+Bullet_Process(BulletFireParams *bp,BulletTraceResults *br,WeaponVariantDef *weapVariantDef,
+              gentity_s *attacker,int dFlags,int gameTime,int *outImpactFlags,bool processFx)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  double dVar7;
-  hitLocation_t hVar8;
+  int timeOffset;
+  uint weapon_00;
+  uint modelIndex;
+  uint partName;
+  double dVar3;
+  hitLocation_t hitLoc_00;
   undefined4 in_stack_ffffff9c;
   undefined4 in_stack_ffffffa0;
-  int local_54 [5];
-  undefined1 local_3e;
-  undefined1 local_3d;
-  gentity_s *local_3c;
-  hitLocation_t local_38;
-  uint local_34;
-  float local_30;
-  int local_2c;
-  gentity_s *local_28;
-  DynEntityDrawType local_24;
-  gentity_s *local_20;
-  WeaponDef *local_1c;
-  float local_18 [4];
-  ushort local_8;
+  int partBits [5];
+  bool targetIsAlive;
+  bool targetWasAlive;
+  gentity_s *useEnt;
+  hitLocation_t hitLoc;
+  int weapon;
+  float coneCos;
+  int damage;
+  gentity_s *inflictorEnt;
+  DynEntityDrawType drawType;
+  gentity_s *bulletEffectTempEnt;
+  WeaponDef *weapDef;
+  float color [4];
+  ushort hitEntId;
   
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1ee,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (BulletTraceResults *)0x0) &&
+  if ((br == (BulletTraceResults *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1ef,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->trace).hitType == TRACE_HITTYPE_NONE) &&
+  if (((br->trace).hitType == TRACE_HITTYPE_NONE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1f0,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1f1,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x1f2,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c = param_3->weapDef;
-  *param_7 = 0;
-  if (param_4->sentient != (sentient_s *)0x0) {
-    Bullet_NofifyActor(param_1,param_4,param_1->start,param_2->hitPos,param_2->hitEnt,param_3);
+  weapDef = weapVariantDef->weapDef;
+  *outImpactFlags = 0;
+  if (attacker->sentient != (sentient_s *)0x0) {
+    Bullet_NofifyActor(bp,attacker,bp->start,br->hitPos,br->hitEnt,weapVariantDef);
   }
-  local_18[0] = 1.0;
-  local_18[1] = 0.0;
-  local_18[2] = 0.0;
-  local_18[3] = 1.0;
+  color[0] = 1.0;
+  color[1] = 0.0;
+  color[2] = 0.0;
+  color[3] = 1.0;
   if ((g_debugBullets->current).integer == 2) {
-    G_DebugLineWithDuration(param_1->start,param_2->hitPos,local_18,1,1000);
+    G_DebugLineWithDuration(bp->start,br->hitPos,color,1,1000);
   }
   else if ((g_debugBullets->current).integer == 1) {
-    G_DebugLineWithDuration(param_1->start,param_2->hitPos,local_18,1,100);
+    G_DebugLineWithDuration(bp->start,br->hitPos,color,1,100);
   }
-  local_2c = Bullet_GetDamage(param_1,param_2,local_1c,param_4);
-  G_CheckHitTriggerDamage(param_4,param_1->start,param_2->hitPos,local_2c,param_1->methodOfDeath);
-  local_20 = (gentity_s *)0x0;
-  if (param_8) {
-    Bullet_ImpactEffect(param_1,param_2,(float *)param_2,param_3,param_4,0,&local_20);
+  damage = Bullet_GetDamage(bp,br,weapDef,attacker);
+  G_CheckHitTriggerDamage(attacker,bp->start,br->hitPos,damage,bp->methodOfDeath);
+  bulletEffectTempEnt = (gentity_s *)0x0;
+  if (processFx) {
+    Bullet_ImpactEffect(bp,br,(float *)br,weapVariantDef,attacker,0,&bulletEffectTempEnt);
   }
-  local_8 = Trace_GetDynEntHitId(&param_2->trace,&local_24);
-  if (local_8 != 0xffff) {
-    DynEntSv_Damage(local_8,local_24,param_2->hitPos,param_1->dir,local_2c,false);
+  hitEntId = Trace_GetDynEntHitId(&br->trace,&drawType);
+  if (hitEntId != 0xffff) {
+    DynEntSv_Damage(hitEntId,drawType,br->hitPos,bp->dir,damage,false);
   }
-  GamerProfile_WriteSettings((int)param_2);
-  if ((local_1c->bBulletImpactExplode != false) && (local_1c->iExplosionInnerDamage != 0)) {
-    dVar7 = (double)(local_1c->damageConeAngle * 0.017453292);
+  GamerProfile_WriteSettings((int)br);
+  if ((weapDef->bBulletImpactExplode != false) && (weapDef->iExplosionInnerDamage != 0)) {
+    dVar3 = (double)(weapDef->damageConeAngle * 0.017453292);
     __libm_sse2_cos((double)CONCAT44(in_stack_ffffffa0,in_stack_ffffff9c));
-    local_30 = (float)dVar7;
-    if (0.0 <= local_1c->damageConeAngle - 180.0) {
-      local_30 = -1.0;
+    coneCos = (float)dVar3;
+    if (0.0 <= weapDef->damageConeAngle - 180.0) {
+      coneCos = -1.0;
     }
-    local_34 = BG_GetWeaponIndex(param_3);
-    local_28 = param_4;
-    if ((param_1->weaponEntIndex != 0x3fe) || (param_1->weaponEntIndex != 0x3ff)) {
-      local_28 = g_entities + param_1->weaponEntIndex;
+    weapon = BG_GetWeaponIndex(weapVariantDef);
+    inflictorEnt = attacker;
+    if ((bp->weaponEntIndex != 0x3fe) || (bp->weaponEntIndex != 0x3ff)) {
+      inflictorEnt = g_entities + bp->weaponEntIndex;
     }
-    G_RadiusDamage(param_2->hitPos,local_28,param_4,(float)local_1c->iExplosionInnerDamage,
-                   (float)local_1c->iExplosionOuterDamage,(float)local_1c->iExplosionRadius,local_30
-                   ,param_1->dir,(gentity_s *)0x0,6,local_34);
+    G_RadiusDamage(br->hitPos,inflictorEnt,attacker,(float)weapDef->iExplosionInnerDamage,
+                   (float)weapDef->iExplosionOuterDamage,(float)weapDef->iExplosionRadius,coneCos,
+                   bp->dir,(gentity_s *)0x0,6,weapon);
   }
-  if (((param_2->hitEnt != (gentity_s *)0x0) && (param_2->hitEnt->takedamage != '\0')) &&
-     (param_2->ignoreHitEnt == false)) {
-    if (local_1c->armorPiercing != false) {
-      param_5 = param_5 | 2;
+  if (((br->hitEnt != (gentity_s *)0x0) && (br->hitEnt->takedamage != '\0')) &&
+     (br->ignoreHitEnt == false)) {
+    if (weapDef->armorPiercing != false) {
+      dFlags = dFlags | 2;
     }
-    if (((param_2->hitEnt->r).inuse == '\0') &&
+    if (((br->hitEnt->r).inuse == '\0') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x22e,0,"%s")
        , !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_3d = 0 < param_2->hitEnt->health;
-    local_38 = (hitLocation_t)(param_2->trace).partGroup;
-    if ((local_38 == HITLOC_HEAD) || (local_38 == HITLOC_HELMET)) {
-      *param_7 = *param_7 | 1;
+    targetWasAlive = 0 < br->hitEnt->health;
+    hitLoc = (hitLocation_t)(br->trace).partGroup;
+    if ((hitLoc == HITLOC_HEAD) || (hitLoc == HITLOC_HELMET)) {
+      *outImpactFlags = *outImpactFlags | 1;
     }
     if (0 < (g_debugLocDamage->current).integer) {
-      CL_AddDebugStar(param_2->hitPos,colorRed,100);
+      CL_AddDebugStar(br->hitPos,colorRed,100);
     }
     if (0 < (g_debugLocHit->current).integer) {
-      local_54[0] = -1;
-      local_54[1] = 0xffffffff;
-      local_54[2] = 0xffffffff;
-      local_54[3] = 0xffffffff;
-      local_54[4] = 0xffffffff;
-      G_DObjCalcPose(param_2->hitEnt,local_54);
-      SV_XModelDebugBoxes(param_2->hitEnt,colorYellow,(int *)0x0,
-                          (g_debugLocHitTime->current).integer);
-      CL_AddDebugLine(param_1->start,param_2->hitPos,colorGreen,0,
-                      (g_debugLocHitTime->current).integer);
-      CL_AddDebugStar(param_2->hitPos,colorRed,(g_debugLocHitTime->current).integer);
+      partBits[0] = -1;
+      partBits[1] = 0xffffffff;
+      partBits[2] = 0xffffffff;
+      partBits[3] = 0xffffffff;
+      partBits[4] = 0xffffffff;
+      G_DObjCalcPose(br->hitEnt,partBits);
+      SV_XModelDebugBoxes(br->hitEnt,colorYellow,(int *)0x0,(g_debugLocHitTime->current).integer);
+      CL_AddDebugLine(bp->start,br->hitPos,colorGreen,0,(g_debugLocHitTime->current).integer);
+      CL_AddDebugStar(br->hitPos,colorRed,(g_debugLocHitTime->current).integer);
     }
-    scr_playerdamage_boneindex = (uchar)(param_2->trace).boneIndex;
-    local_3c = param_4;
-    if (((((param_4->s).lerp.eFlags & 0x4300U) != 0) && (param_4->client != (gclient_s *)0x0)) &&
-       ((param_4->client->ps).viewlocked_entNum != 0x3ff)) {
-      local_3c = g_entities + (param_4->client->ps).viewlocked_entNum;
+    scr_playerdamage_boneindex = (uchar)(br->trace).boneIndex;
+    useEnt = attacker;
+    if (((((attacker->s).lerp.eFlags & 0x4300U) != 0) && (attacker->client != (gclient_s *)0x0)) &&
+       ((attacker->client->ps).viewlocked_entNum != 0x3ff)) {
+      useEnt = g_entities + (attacker->client->ps).viewlocked_entNum;
     }
-    if ((local_3c == (gentity_s *)0x0) &&
+    if ((useEnt == (gentity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x24f,0,"%s")
        , !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar3 = level.time - param_6;
-    uVar6 = (uint)(param_2->trace).partName;
-    uVar5 = (uint)(param_2->trace).modelIndex;
-    hVar8 = local_38;
-    uVar4 = BG_GetWeaponIndex(param_3);
-    G_Damage(param_2->hitEnt,local_3c,param_4,param_1->dir,param_2->hitPos,local_2c,param_5,
-             param_1->methodOfDeath,uVar4,hVar8,uVar5,uVar6,iVar3);
+    timeOffset = level.time - gameTime;
+    partName = (uint)(br->trace).partName;
+    modelIndex = (uint)(br->trace).modelIndex;
+    hitLoc_00 = hitLoc;
+    weapon_00 = BG_GetWeaponIndex(weapVariantDef);
+    G_Damage(br->hitEnt,useEnt,attacker,bp->dir,br->hitPos,damage,dFlags,bp->methodOfDeath,weapon_00
+             ,hitLoc_00,modelIndex,partName,timeOffset);
     scr_playerdamage_boneindex = 0xfe;
-    if (((param_2->hitEnt->r).inuse == '\0') || (param_2->hitEnt->health < 1)) {
-      local_3e = 0;
+    if (((br->hitEnt->r).inuse == '\0') || (br->hitEnt->health < 1)) {
+      targetIsAlive = false;
     }
     else {
-      local_3e = 1;
+      targetIsAlive = true;
     }
   }
-  if ((param_2->trace).hitType == TRACE_HITTYPE_GLASS) {
-    GlassSv_Damage((uint)(param_2->trace).hitId,local_2c,param_1->methodOfDeath,param_2->hitPos,
-                   param_1->dir);
+  if ((br->trace).hitType == TRACE_HITTYPE_GLASS) {
+    GlassSv_Damage((uint)(br->trace).hitId,damage,bp->methodOfDeath,br->hitPos,bp->dir);
   }
-  if (local_20 != (gentity_s *)0x0) {
-    Bullet_ImpactEffect_SetAdditionalFlags(local_20,*param_7);
+  if (bulletEffectTempEnt != (gentity_s *)0x0) {
+    Bullet_ImpactEffect_SetAdditionalFlags(bulletEffectTempEnt,*outImpactFlags);
   }
   return;
 }
@@ -959,57 +966,57 @@ Bullet_Process(BulletFireParams *param_1,BulletTraceResults *param_2,WeaponVaria
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Bullet_FireExtended(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *param_3,
-                   int param_4)
+Bullet_FireExtended(BulletFireParams *bp,WeaponVariantDef *weapVariantDef,gentity_s *attacker,
+                   int gameTime)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_64;
-  int local_60;
-  float4 local_5c;
+  int extIndex;
+  int impactFlags;
+  float4 br;
   uint local_44;
   gentity_s *local_24;
   char local_14;
   uint local_c;
-  WeaponDef *local_8;
+  WeaponDef *weapDef;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5c.v[0] = 0.0;
-  local_5c.v[1] = 0.0;
-  local_5c.v[2] = 0.0;
-  local_5c.v[3] = 0.0;
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  br.v[0] = 0.0;
+  br.v[1] = 0.0;
+  br.v[2] = 0.0;
+  br.v[3] = 0.0;
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x294,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x295,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x296,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_2->weapDef;
-  local_64 = 0;
+  weapDef = weapVariantDef->weapDef;
+  extIndex = 0;
   do {
-    if ((0xb < local_64) ||
-       (bVar2 = Bullet_Trace(param_1,param_2,param_3,(BulletTraceResults *)&local_5c,0), !bVar2)) {
+    if ((0xb < extIndex) ||
+       (bVar2 = Bullet_Trace(bp,weapVariantDef,attacker,(BulletTraceResults *)&br,0), !bVar2)) {
       return;
     }
-    Bullet_Process(param_1,(BulletTraceResults *)&local_5c,param_2,param_3,0,param_4,&local_60,true)
-    ;
+    Bullet_Process(bp,(BulletTraceResults *)&br,weapVariantDef,attacker,0,gameTime,&impactFlags,true
+                  );
     if ((local_44 & 0x10) == 0) {
       if (local_24 == (gentity_s *)0x0) {
         return;
@@ -1018,30 +1025,30 @@ Bullet_FireExtended(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_
         return;
       }
       if (local_14 == '\0') {
-        if (local_8->bRifleBullet == false) {
+        if (weapDef->bRifleBullet == false) {
           return;
         }
         if (local_24->sentient == (sentient_s *)0x0) {
           return;
         }
         iVar3 = Dvar_GetInt("scr_team_fftype");
-        if ((iVar3 == 0) && (iVar3 = OnSameTeam(local_24,param_3), iVar3 != 0)) {
+        if ((iVar3 == 0) && (iVar3 = OnSameTeam(local_24,attacker), iVar3 != 0)) {
           return;
         }
-        param_1->damageMultiplier = param_1->damageMultiplier * 0.5;
-        BG_AdvanceTrace(param_1,(BulletTraceResults *)&local_5c,0.0);
+        bp->damageMultiplier = bp->damageMultiplier * 0.5;
+        BG_AdvanceTrace(bp,(BulletTraceResults *)&br,0.0);
       }
       else {
-        BG_AdvanceTrace(param_1,(BulletTraceResults *)&local_5c,0.0);
+        BG_AdvanceTrace(bp,(BulletTraceResults *)&br,0.0);
       }
     }
     else {
-      bVar2 = BG_AdvanceTrace(param_1,(BulletTraceResults *)&local_5c,0.135);
+      bVar2 = BG_AdvanceTrace(bp,(BulletTraceResults *)&br,0.135);
       if (!bVar2) {
         return;
       }
     }
-    local_64 = local_64 + 1;
+    extIndex = extIndex + 1;
   } while( true );
 }
 
@@ -1060,7 +1067,7 @@ Bullet_FireExtended(BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_
 
 void __cdecl
 Bullet_FirePenetrate
-          (BulletFireParams *param_1,WeaponVariantDef *param_2,gentity_s *param_3,int param_4)
+          (BulletFireParams *bp,WeaponVariantDef *weapVariantDef,gentity_s *attacker,int gameTime)
 
 {
   float fVar1;
@@ -1075,9 +1082,9 @@ Bullet_FirePenetrate
   float local_1b0;
   float local_1ac;
   float local_19c;
-  char local_198;
-  gentity_s *local_128;
-  float4 local_124;
+  bool local_198;
+  gentity_s *bulletEffectTempEnt;
+  float4 revBr;
   uint local_110;
   ushort local_104;
   char local_fa;
@@ -1085,18 +1092,18 @@ Bullet_FirePenetrate
   gentity_s *local_ec;
   float local_e8 [4];
   int local_d8;
-  float local_d0;
+  float lastHitPos;
   float local_cc;
   float local_c8;
-  float local_c4;
-  bool local_bd;
-  int local_bc;
-  char local_b5;
-  int local_b4;
-  uint local_b0;
-  BulletFireParams local_ac;
-  char local_65;
-  float4 local_64;
+  float depth;
+  bool processFx;
+  int penetrateIndex;
+  bool allSolid;
+  int max_penetrations;
+  int impactFlags;
+  BulletFireParams revBp;
+  bool revTraceHit;
+  float4 br;
   uint local_50;
   char local_39;
   float local_28;
@@ -1104,166 +1111,168 @@ Bullet_FirePenetrate
   float local_20;
   int local_18;
   uint local_14;
-  float local_10;
-  char local_9;
-  WeaponDef *local_8;
+  float maxDepth;
+  bool traceHit;
+  WeaponDef *weapDef;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_64.v[0] = 0.0;
-  local_64.v[1] = 0.0;
-  local_64.v[2] = 0.0;
-  local_64.v[3] = 0.0;
-  local_124.v[0] = 0.0;
-  local_124.v[1] = 0.0;
-  local_124.v[2] = 0.0;
-  local_124.v[3] = 0.0;
-  if ((param_1 == (BulletFireParams *)0x0) &&
+  br.v[0] = 0.0;
+  br.v[1] = 0.0;
+  br.v[2] = 0.0;
+  br.v[3] = 0.0;
+  revBr.v[0] = 0.0;
+  revBr.v[1] = 0.0;
+  revBr.v[2] = 0.0;
+  revBr.v[3] = 0.0;
+  if ((bp == (BulletFireParams *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x2df,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_2 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x2e0,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_3 == (gentity_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x2e1,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_8 = param_2->weapDef;
-  if ((local_8->penetrateType == PENETRATE_TYPE_NONE) &&
+  weapDef = weapVariantDef->weapDef;
+  if ((weapDef->penetrateType == PENETRATE_TYPE_NONE) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x2e4,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  bVar4 = Bullet_Trace(param_1,param_2,param_3,(BulletTraceResults *)&local_64,0);
+  bVar4 = Bullet_Trace(bp,weapVariantDef,attacker,(BulletTraceResults *)&br,0);
   if ((bVar4) &&
-     (Bullet_Process(param_1,(BulletTraceResults *)&local_64,param_2,param_3,0,param_4,
-                     (int *)&local_b0,true), local_8->bBulletImpactExplode == false)) {
-    local_b4 = (sv_penetrationCount->current).integer;
-    for (local_bc = 0; local_bc < local_b4; local_bc = local_bc + 1) {
-      local_10 = BG_GetSurfacePenetrationDepth(local_8,local_18);
+     (Bullet_Process(bp,(BulletTraceResults *)&br,weapVariantDef,attacker,0,gameTime,&impactFlags,
+                     true), weapDef->bBulletImpactExplode == false)) {
+    max_penetrations = (sv_penetrationCount->current).integer;
+    for (penetrateIndex = 0; penetrateIndex < max_penetrations; penetrateIndex = penetrateIndex + 1)
+    {
+      maxDepth = BG_GetSurfacePenetrationDepth(weapDef,local_18);
       if ((local_50 & 4) != 0) {
-        local_10 = 100.0;
+        maxDepth = 100.0;
       }
-      if ((param_3->client != (gclient_s *)0x0) &&
-         (pgVar2 = param_3->client, _allshl(),
+      if ((attacker->client != (gclient_s *)0x0) &&
+         (pgVar2 = attacker->client, _allshl(),
          (extraout_EAX & (pgVar2->ps).perks[0]) != 0 || (extraout_EDX & (pgVar2->ps).perks[1]) != 0)
          ) {
-        local_10 = local_10 * (perk_bulletPenetrationMultiplier->current).value;
+        maxDepth = maxDepth * (perk_bulletPenetrationMultiplier->current).value;
       }
-      if (local_10 <= 0.0) {
+      if (maxDepth <= 0.0) {
         return;
       }
-      local_d0 = local_28;
+      lastHitPos = local_28;
       local_cc = local_24;
       local_c8 = local_20;
-      bVar4 = BG_AdvanceTrace(param_1,(BulletTraceResults *)&local_64,0.135);
+      bVar4 = BG_AdvanceTrace(bp,(BulletTraceResults *)&br,0.135);
       if (!bVar4) {
         return;
       }
-      local_9 = Bullet_Trace(param_1,param_2,param_3,(BulletTraceResults *)&local_64,local_18);
-      Com_Memcpy(&local_ac,param_1,0x40);
-      local_ac.dir[0] = -param_1->dir[0];
-      local_ac.dir[1] = -param_1->dir[1];
-      local_ac.dir[2] = -param_1->dir[2];
-      local_ac.start[0] = param_1->end[0];
-      local_ac.start[1] = param_1->end[1];
-      local_ac.start[2] = param_1->end[2];
-      local_ac.end[0] = local_ac.dir[0] * 0.01 + local_d0;
-      local_ac.end[1] = local_ac.dir[1] * 0.01 + local_cc;
-      local_ac.end[2] = local_ac.dir[2] * 0.01 + local_c8;
-      Com_Memcpy(&local_124,&local_64,0x50);
-      local_124.v[0] = -(float)local_124.u[0];
-      local_124.v[1] = -(float)local_124.u[1];
-      local_124.v[2] = -(float)local_124.u[2];
-      if (local_9 != '\0') {
-        BG_AdvanceTrace(&local_ac,(BulletTraceResults *)&local_124,0.01);
+      traceHit = Bullet_Trace(bp,weapVariantDef,attacker,(BulletTraceResults *)&br,local_18);
+      Com_Memcpy(&revBp,bp,0x40);
+      revBp.dir[0] = -bp->dir[0];
+      revBp.dir[1] = -bp->dir[1];
+      revBp.dir[2] = -bp->dir[2];
+      revBp.start[0] = bp->end[0];
+      revBp.start[1] = bp->end[1];
+      revBp.start[2] = bp->end[2];
+      revBp.end[0] = revBp.dir[0] * 0.01 + lastHitPos;
+      revBp.end[1] = revBp.dir[1] * 0.01 + local_cc;
+      revBp.end[2] = revBp.dir[2] * 0.01 + local_c8;
+      Com_Memcpy(&revBr,&br,0x50);
+      revBr.v[0] = -(float)revBr.u[0];
+      revBr.v[1] = -(float)revBr.u[1];
+      revBr.v[2] = -(float)revBr.u[2];
+      if (traceHit != false) {
+        BG_AdvanceTrace(&revBp,(BulletTraceResults *)&revBr,0.01);
       }
-      local_65 = Bullet_Trace(&local_ac,param_2,param_3,(BulletTraceResults *)&local_124,local_d8);
-      if ((((bool)local_65) && (local_fa != '\0')) || ((local_39 != '\0' && (local_f9 != '\0')))) {
-        local_198 = '\x01';
+      revTraceHit = Bullet_Trace(&revBp,weapVariantDef,attacker,(BulletTraceResults *)&revBr,
+                                 local_d8);
+      if (((revTraceHit) && (local_fa != '\0')) || ((local_39 != '\0' && (local_f9 != '\0')))) {
+        local_198 = true;
       }
       else {
-        local_198 = '\0';
+        local_198 = false;
       }
-      local_b5 = local_198;
+      allSolid = local_198;
       if ((local_110 & 4) != 0) {
         local_ec = g_entities + local_104;
       }
-      if (((bool)local_65) || (local_198 != '\0')) {
-        if (local_198 == '\0') {
-          local_19c = Vec3Distance(local_e8,&local_d0);
+      if ((revTraceHit) || (local_198 != false)) {
+        if (local_198 == false) {
+          local_19c = Vec3Distance(local_e8,&lastHitPos);
         }
         else {
-          local_19c = Vec3Distance(local_ac.start,local_ac.end);
+          local_19c = Vec3Distance(revBp.start,revBp.end);
         }
-        local_c4 = local_19c;
+        depth = local_19c;
         if (local_19c < 1.0) {
-          local_c4 = 1.0;
+          depth = 1.0;
         }
-        if (local_65 != '\0') {
-          if ((param_3->client == (gclient_s *)0x0) ||
-             (pgVar2 = param_3->client, _allshl(),
+        if (revTraceHit != false) {
+          if ((attacker->client == (gclient_s *)0x0) ||
+             (pgVar2 = attacker->client, _allshl(),
              (extraout_EAX_00 & (pgVar2->ps).perks[0]) == 0 &&
              (extraout_EDX_00 & (pgVar2->ps).perks[1]) == 0)) {
-            local_1b0 = BG_GetSurfacePenetrationDepth(local_8,local_d8);
-            if (0.0 <= local_1b0 - local_10) {
-              local_1b0 = local_10;
+            local_1b0 = BG_GetSurfacePenetrationDepth(weapDef,local_d8);
+            if (0.0 <= local_1b0 - maxDepth) {
+              local_1b0 = maxDepth;
             }
-            local_10 = local_1b0;
+            maxDepth = local_1b0;
           }
           else {
-            local_1ac = BG_GetSurfacePenetrationDepth(local_8,local_d8);
+            local_1ac = BG_GetSurfacePenetrationDepth(weapDef,local_d8);
             local_1ac = local_1ac * (perk_bulletPenetrationMultiplier->current).value;
-            if (0.0 <= local_1ac - local_10) {
-              local_1ac = local_10;
+            if (0.0 <= local_1ac - maxDepth) {
+              local_1ac = maxDepth;
             }
-            local_10 = local_1ac;
+            maxDepth = local_1ac;
           }
           if ((local_110 & 4) != 0) {
-            local_10 = 100.0;
+            maxDepth = 100.0;
           }
-          if (local_10 <= 0.0) {
+          if (maxDepth <= 0.0) {
             return;
           }
         }
-        param_1->damageMultiplier = param_1->damageMultiplier - local_c4 / local_10;
-        if (param_1->damageMultiplier <= 0.0) {
+        bp->damageMultiplier = bp->damageMultiplier - depth / maxDepth;
+        if (bp->damageMultiplier <= 0.0) {
           return;
         }
-        if (local_b5 == '\0') {
+        if (allSolid == false) {
           fVar1 = (bullet_penetrationMinFxDist->current).value;
           fVar5 = Vec3DistanceSq(&local_28,local_e8);
-          local_bd = fVar1 * fVar1 < fVar5;
-          if ((local_bd) && ((local_9 == '\0' || ((local_50 & 4) == 0)))) {
-            Bullet_ImpactEffect(&local_ac,(BulletTraceResults *)&local_124,param_1->dir,param_2,
-                                param_3,local_b0 | 4,&local_128);
+          processFx = fVar1 * fVar1 < fVar5;
+          if ((processFx) && ((traceHit == false || ((local_50 & 4) == 0)))) {
+            Bullet_ImpactEffect(&revBp,(BulletTraceResults *)&revBr,bp->dir,weapVariantDef,attacker,
+                                impactFlags | 4,&bulletEffectTempEnt);
           }
-          if (local_9 != '\0') {
-            Bullet_Process(param_1,(BulletTraceResults *)&local_64,param_2,param_3,8,param_4,
-                           (int *)&local_b0,local_bd);
+          if (traceHit != false) {
+            Bullet_Process(bp,(BulletTraceResults *)&br,weapVariantDef,attacker,8,gameTime,
+                           &impactFlags,processFx);
           }
         }
       }
-      else if (local_9 != '\0') {
+      else if (traceHit != false) {
         fVar1 = (bullet_penetrationMinFxDist->current).value;
-        fVar5 = Vec3DistanceSq(&local_28,&local_d0);
-        local_bd = fVar1 * fVar1 < fVar5;
-        Bullet_Process(param_1,(BulletTraceResults *)&local_64,param_2,param_3,8,param_4,
-                       (int *)&local_b0,local_bd);
+        fVar5 = Vec3DistanceSq(&local_28,&lastHitPos);
+        processFx = fVar1 * fVar1 < fVar5;
+        Bullet_Process(bp,(BulletTraceResults *)&br,weapVariantDef,attacker,8,gameTime,&impactFlags,
+                       processFx);
       }
-      if (local_9 == '\0') {
+      if (traceHit == false) {
         return;
       }
     }
@@ -1274,14 +1283,14 @@ Bullet_FirePenetrate
 
 // 005F3780  BG_WeaponBulletFire_ExplodeOnImpact  (game/bullet.cpp:869)
 
-bool __cdecl BG_WeaponBulletFire_ExplodeOnImpact(WeaponDef *param_1)
+bool __cdecl BG_WeaponBulletFire_ExplodeOnImpact(WeaponDef *weapDef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x366,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1289,7 +1298,7 @@ bool __cdecl BG_WeaponBulletFire_ExplodeOnImpact(WeaponDef *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->weapType != WEAPTYPE_BULLET) {
+  if (weapDef->weapType != WEAPTYPE_BULLET) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x367,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1297,7 +1306,7 @@ bool __cdecl BG_WeaponBulletFire_ExplodeOnImpact(WeaponDef *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->bBulletImpactExplode == false) &&
+  if ((weapDef->bBulletImpactExplode == false) &&
      ((bg_forceExplosiveBullets->current).enabled == false)) {
     bVar2 = false;
   }
@@ -1310,7 +1319,7 @@ bool __cdecl BG_WeaponBulletFire_ExplodeOnImpact(WeaponDef *param_1)
 
 // 005F3810  BG_WeaponBulletFire_ShouldPenetrate  (game/bullet.cpp:880)
 
-bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *param_1)
+bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *weapDef)
 
 {
   code *pcVar1;
@@ -1318,7 +1327,7 @@ bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *param_1)
   undefined1 uVar3;
   char cVar4;
   
-  if (param_1 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x371,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1326,7 +1335,7 @@ bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->weapType != WEAPTYPE_BULLET) {
+  if (weapDef->weapType != WEAPTYPE_BULLET) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x372,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1334,11 +1343,11 @@ bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->penetrateType == PENETRATE_TYPE_NONE) {
+  if (weapDef->penetrateType == PENETRATE_TYPE_NONE) {
     cVar4 = '\0';
   }
   else {
-    bVar2 = BG_WeaponBulletFire_ExplodeOnImpact(param_1);
+    bVar2 = BG_WeaponBulletFire_ExplodeOnImpact(weapDef);
     cVar4 = '\x01' - bVar2;
   }
   return (bool)cVar4;
@@ -1354,21 +1363,21 @@ bool __cdecl BG_WeaponBulletFire_ShouldPenetrate(WeaponDef *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Bullet_Fire(gentity_s *param_1,float param_2,weaponParms *param_3,gentity_s *param_4,int param_5)
+Bullet_Fire(gentity_s *attacker,float spread,weaponParms *wp,gentity_s *weaponEnt,int gameTime)
 
 {
   code *pcVar1;
   bool bVar2;
   int local_388;
-  int local_37c;
-  float local_378;
-  AntilagClientStore local_374;
+  int shotCount;
+  float range;
+  AntilagClientStore antilagClients;
   uint local_50;
-  BulletFireParams local_4c;
-  int local_8;
+  BulletFireParams bp;
+  int shotIndex;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (gentity_s *)0x0) {
+  if (attacker == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x387,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1376,7 +1385,7 @@ Bullet_Fire(gentity_s *param_1,float param_2,weaponParms *param_3,gentity_s *par
       return;
     }
   }
-  if (param_3 == (weaponParms *)0x0) {
+  if (wp == (weaponParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x388,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1384,7 +1393,7 @@ Bullet_Fire(gentity_s *param_1,float param_2,weaponParms *param_3,gentity_s *par
       return;
     }
   }
-  if (param_3->weapDef == (WeaponDef *)0x0) {
+  if (wp->weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x389,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1392,7 +1401,7 @@ Bullet_Fire(gentity_s *param_1,float param_2,weaponParms *param_3,gentity_s *par
       return;
     }
   }
-  if (param_3->weapDef->weapType != WEAPTYPE_BULLET) {
+  if (wp->weapDef->weapType != WEAPTYPE_BULLET) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\bullet.cpp",0x38a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1400,49 +1409,49 @@ Bullet_Fire(gentity_s *param_1,float param_2,weaponParms *param_3,gentity_s *par
       return;
     }
   }
-  G_AntiLagRewindClientPos(param_5,&local_374);
-  if (param_3->weapDef->weapClass == WEAPCLASS_SPREAD) {
-    local_37c = param_3->weapDef->shotCount;
-    local_378 = param_3->weapDef->fMinDamageRange;
+  G_AntiLagRewindClientPos(gameTime,&antilagClients);
+  if (wp->weapDef->weapClass == WEAPCLASS_SPREAD) {
+    shotCount = wp->weapDef->shotCount;
+    range = wp->weapDef->fMinDamageRange;
   }
   else {
-    local_37c = 1;
-    local_378 = (sv_bullet_range->current).value;
+    shotCount = 1;
+    range = (sv_bullet_range->current).value;
   }
-  for (local_8 = 0; local_8 < local_37c; local_8 = local_8 + 1) {
-    if (param_4 == (gentity_s *)0x0) {
+  for (shotIndex = 0; shotIndex < shotCount; shotIndex = shotIndex + 1) {
+    if (weaponEnt == (gentity_s *)0x0) {
       local_388 = 0x3fe;
     }
     else {
-      local_388 = (param_4->s).number;
+      local_388 = (weaponEnt->s).number;
     }
-    local_4c.weaponEntIndex = local_388;
-    local_4c.ignoreEntIndex = local_388;
-    if ((((vehicle_selfCollision->current).enabled != false) && (param_4 != (gentity_s *)0x0)) &&
-       (param_4->scr_vehicle != (scr_vehicle_s *)0x0)) {
-      local_4c.ignoreEntIndex = 0x3fe;
+    bp.weaponEntIndex = local_388;
+    bp.ignoreEntIndex = local_388;
+    if ((((vehicle_selfCollision->current).enabled != false) && (weaponEnt != (gentity_s *)0x0)) &&
+       (weaponEnt->scr_vehicle != (scr_vehicle_s *)0x0)) {
+      bp.ignoreEntIndex = 0x3fe;
     }
-    local_4c.damageMultiplier = 1.0;
-    local_4c.methodOfDeath = (param_3->weapDef->bRifleBullet != false) + 1;
-    local_4c.origStart[0] = param_3->muzzleTrace[0];
-    local_4c.origStart[1] = param_3->muzzleTrace[1];
-    local_4c.origStart[2] = param_3->muzzleTrace[2];
-    local_4c.start[0] = param_3->muzzleTrace[0];
-    local_4c.start[1] = param_3->muzzleTrace[1];
-    local_4c.start[2] = param_3->muzzleTrace[2];
-    Bullet_Endpos(param_5 + local_8,param_2,local_4c.end,local_4c.dir,param_3,local_378);
+    bp.damageMultiplier = 1.0;
+    bp.methodOfDeath = (wp->weapDef->bRifleBullet != false) + 1;
+    bp.origStart[0] = wp->muzzleTrace[0];
+    bp.origStart[1] = wp->muzzleTrace[1];
+    bp.origStart[2] = wp->muzzleTrace[2];
+    bp.start[0] = wp->muzzleTrace[0];
+    bp.start[1] = wp->muzzleTrace[1];
+    bp.start[2] = wp->muzzleTrace[2];
+    Bullet_Endpos(gameTime + shotIndex,spread,bp.end,bp.dir,wp,range);
     if ((g_debugBullets->current).integer == 1) {
-      G_DebugLineWithDuration(local_4c.start,local_4c.end,colorYellow,1,1000);
+      G_DebugLineWithDuration(bp.start,bp.end,colorYellow,1,1000);
     }
-    bVar2 = BG_WeaponBulletFire_ShouldPenetrate(param_3->weapDef);
+    bVar2 = BG_WeaponBulletFire_ShouldPenetrate(wp->weapDef);
     if (bVar2) {
-      Bullet_FirePenetrate(&local_4c,param_3->weapVariantDef,param_1,param_5);
+      Bullet_FirePenetrate(&bp,wp->weapVariantDef,attacker,gameTime);
     }
     else {
-      Bullet_FireExtended(&local_4c,param_3->weapVariantDef,param_1,param_5);
+      Bullet_FireExtended(&bp,wp->weapVariantDef,attacker,gameTime);
     }
   }
-  G_AntiLag_RestoreClientPos(&local_374);
+  G_AntiLag_RestoreClientPos(&antilagClients);
   return;
 }
 

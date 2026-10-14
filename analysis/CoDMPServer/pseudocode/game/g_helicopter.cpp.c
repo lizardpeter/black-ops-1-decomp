@@ -121,7 +121,7 @@ void __cdecl Helicopter_RegisterDvars(void)
 
 // 0061AB90  HELI_CmdScale  (game/g_helicopter.cpp:105)
 
-void __cdecl HELI_CmdScale(char *param_1,float *param_2)
+void __cdecl HELI_CmdScale(char *move,float *outFracs)
 
 {
   code *pcVar1;
@@ -129,10 +129,12 @@ void __cdecl HELI_CmdScale(char *param_1,float *param_2)
   uint uVar3;
   float fVar4;
   float fVar5;
-  int local_1c;
-  int local_8;
+  int max;
+  float total;
+  float scale;
+  int axis;
   
-  if (param_1 == (char *)0x0) {
+  if (move == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x70,0,"%s"
                             );
     if (!bVar2) {
@@ -141,7 +143,7 @@ void __cdecl HELI_CmdScale(char *param_1,float *param_2)
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (outFracs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x71,0,"%s"
                             );
     if (!bVar2) {
@@ -150,29 +152,28 @@ void __cdecl HELI_CmdScale(char *param_1,float *param_2)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_2[local_8] = (float)(int)param_1[local_8] / 127.0;
+  for (axis = 0; axis < 4; axis = axis + 1) {
+    outFracs[axis] = (float)(int)move[axis] / 127.0;
   }
-  if ((*param_1 != '\0') || (param_1[1] != '\0')) {
-    uVar3 = (int)*param_1 >> 0x1f;
-    local_1c = ((int)*param_1 ^ uVar3) - uVar3;
-    uVar3 = (int)param_1[1] >> 0x1f;
-    if (local_1c < (int)(((int)param_1[1] ^ uVar3) - uVar3)) {
-      uVar3 = (int)param_1[1] >> 0x1f;
-      local_1c = ((int)param_1[1] ^ uVar3) - uVar3;
+  if ((*move != '\0') || (move[1] != '\0')) {
+    uVar3 = (int)*move >> 0x1f;
+    max = ((int)*move ^ uVar3) - uVar3;
+    uVar3 = (int)move[1] >> 0x1f;
+    if (max < (int)(((int)move[1] ^ uVar3) - uVar3)) {
+      uVar3 = (int)move[1] >> 0x1f;
+      max = ((int)move[1] ^ uVar3) - uVar3;
     }
-    if (local_1c != 0) {
-      fVar4 = (float)local_1c /
-              SQRT((float)((int)*param_1 * (int)*param_1 + (int)param_1[1] * (int)param_1[1]));
-      *param_2 = fVar4 * *param_2;
-      param_2[1] = fVar4 * param_2[1];
+    if (max != 0) {
+      fVar4 = (float)max / SQRT((float)((int)*move * (int)*move + (int)move[1] * (int)move[1]));
+      *outFracs = fVar4 * *outFracs;
+      outFracs[1] = fVar4 * outFracs[1];
     }
-    if (ABS(param_2[1]) < (vehHelicopterStrafeDeadzone->current).value) {
-      param_2[1] = 0.0;
+    if (ABS(outFracs[1]) < (vehHelicopterStrafeDeadzone->current).value) {
+      outFracs[1] = 0.0;
     }
     if ((vehHelicopterScaleMovement->current).enabled != false) {
-      fVar4 = ABS(*param_2);
-      fVar5 = ABS(param_2[1]);
+      fVar4 = ABS(*outFracs);
+      fVar5 = ABS(outFracs[1]);
       if (1.0 < fVar4) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x8e,0,
                                  "%s");
@@ -192,19 +193,19 @@ void __cdecl HELI_CmdScale(char *param_1,float *param_2)
         }
       }
       if (fVar4 <= fVar5) {
-        *param_2 = *param_2 * (1.0 - (fVar5 - fVar4));
+        *outFracs = *outFracs * (1.0 - (fVar5 - fVar4));
       }
       else {
-        param_2[1] = param_2[1] * (1.0 - (fVar4 - fVar5));
+        outFracs[1] = outFracs[1] * (1.0 - (fVar4 - fVar5));
       }
     }
   }
-  if (ABS(param_2[2]) < (vehHelicopterRightStickDeadzone->current).value) {
-    param_2[2] = 0.0;
+  if (ABS(outFracs[2]) < (vehHelicopterRightStickDeadzone->current).value) {
+    outFracs[2] = 0.0;
   }
   if ((vehHelicopterAlwaysFaceCamera->current).enabled == false) {
-    if (ABS(param_2[3]) < (vehHelicopterRightStickDeadzone->current).value) {
-      param_2[3] = 0.0;
+    if (ABS(outFracs[3]) < (vehHelicopterRightStickDeadzone->current).value) {
+      outFracs[3] = 0.0;
     }
   }
   return;
@@ -218,33 +219,33 @@ void __cdecl HELI_CmdScale(char *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HELI_UpdateJitter(VehicleJitter *param_1)
+void __cdecl HELI_UpdateJitter(VehicleJitter *jitter)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_14 [3];
-  int local_8;
+  int jitterDelay;
+  float newOffset [3];
+  int i;
   
-  if ((param_1->jitterPeriodMin != 0) || (param_1->jitterPeriodMax != 0)) {
-    if (param_1->jitterEndTime < level.time) {
-      if ((float)param_1->jitterPeriodMin < 0.05) {
-        param_1->jitterPeriodMin = 0x32;
+  if ((jitter->jitterPeriodMin != 0) || (jitter->jitterPeriodMax != 0)) {
+    if (jitter->jitterEndTime < level.time) {
+      if ((float)jitter->jitterPeriodMin < 0.05) {
+        jitter->jitterPeriodMin = 0x32;
       }
-      iVar3 = G_irand(param_1->jitterPeriodMin,param_1->jitterPeriodMax);
-      param_1->jitterEndTime = level.time + iVar3;
-      for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-        if (param_1->jitterOffsetRange[local_8] != 0.0) {
-          fVar4 = G_flrand(-param_1->jitterOffsetRange[local_8],param_1->jitterOffsetRange[local_8])
-          ;
-          local_14[local_8] = fVar4;
+      iVar3 = G_irand(jitter->jitterPeriodMin,jitter->jitterPeriodMax);
+      jitter->jitterEndTime = level.time + iVar3;
+      for (i = 0; i < 3; i = i + 1) {
+        if (jitter->jitterOffsetRange[i] != 0.0) {
+          fVar4 = G_flrand(-jitter->jitterOffsetRange[i],jitter->jitterOffsetRange[i]);
+          newOffset[i] = fVar4;
         }
       }
-      param_1->jitterDeltaAccel[0] = local_14[0] - param_1->jitterAccel[0];
-      param_1->jitterDeltaAccel[1] = local_14[1] - param_1->jitterAccel[1];
-      param_1->jitterDeltaAccel[2] = local_14[2] - param_1->jitterAccel[2];
+      jitter->jitterDeltaAccel[0] = newOffset[0] - jitter->jitterAccel[0];
+      jitter->jitterDeltaAccel[1] = newOffset[1] - jitter->jitterAccel[1];
+      jitter->jitterDeltaAccel[2] = newOffset[2] - jitter->jitterAccel[2];
       if ((iVar3 < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0xbe,
                                    0,"%s"), !bVar2)) {
@@ -253,17 +254,17 @@ void __cdecl HELI_UpdateJitter(VehicleJitter *param_1)
         return;
       }
       fVar4 = 50.000004 / (float)iVar3;
-      param_1->jitterDeltaAccel[0] = fVar4 * param_1->jitterDeltaAccel[0];
-      param_1->jitterDeltaAccel[1] = fVar4 * param_1->jitterDeltaAccel[1];
-      param_1->jitterDeltaAccel[2] = fVar4 * param_1->jitterDeltaAccel[2];
+      jitter->jitterDeltaAccel[0] = fVar4 * jitter->jitterDeltaAccel[0];
+      jitter->jitterDeltaAccel[1] = fVar4 * jitter->jitterDeltaAccel[1];
+      jitter->jitterDeltaAccel[2] = fVar4 * jitter->jitterDeltaAccel[2];
     }
-    param_1->jitterAccel[0] = param_1->jitterAccel[0] + param_1->jitterDeltaAccel[0];
-    param_1->jitterAccel[1] = param_1->jitterAccel[1] + param_1->jitterDeltaAccel[1];
-    param_1->jitterAccel[2] = param_1->jitterAccel[2] + param_1->jitterDeltaAccel[2];
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      fVar4 = DiffTrack(param_1->jitterAccel[local_8],param_1->jitterPos[local_8],
+    jitter->jitterAccel[0] = jitter->jitterAccel[0] + jitter->jitterDeltaAccel[0];
+    jitter->jitterAccel[1] = jitter->jitterAccel[1] + jitter->jitterDeltaAccel[1];
+    jitter->jitterAccel[2] = jitter->jitterAccel[2] + jitter->jitterDeltaAccel[2];
+    for (i = 0; i < 3; i = i + 1) {
+      fVar4 = DiffTrack(jitter->jitterAccel[i],jitter->jitterPos[i],
                         (vehHelicopterJitterJerkyness->current).value,0.05);
-      param_1->jitterPos[local_8] = fVar4;
+      jitter->jitterPos[i] = fVar4;
     }
   }
   return;
@@ -278,7 +279,7 @@ void __cdecl HELI_UpdateJitter(VehicleJitter *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,float *param_5)
+HELI_CalcAccel(gentity_s *ent,char *move,float *bodyAccel,float *rotAccel,float *viewangles)
 
 {
   scr_vehicle_s *psVar1;
@@ -305,157 +306,164 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   float local_198;
   float local_188;
   float local_178;
-  float local_128;
-  float local_110 [4];
+  float frac;
+  float velScale;
+  float yawScale;
+  float speedParallel;
+  vehicle_physic_t *phys;
+  vehicle_info_t *info;
+  float tgtSpeed;
+  float velParallel [4];
   float local_100;
-  scr_vehicle_s *local_fc;
-  float local_f8;
+  scr_vehicle_s *veh;
+  float tgtDir;
   float local_f4;
   float local_f0;
-  float local_ec;
+  float targetTilt;
   float local_e8;
   undefined4 local_e4;
-  float local_e0 [4];
+  float tgtVel [4];
   float local_d0;
   float local_cc;
   float local_c8;
-  float local_c4;
+  float oldTiltVel;
   float local_c0;
-  float local_bc;
-  float local_b8;
+  float speedSq;
+  float tiltAccel;
   float local_b4;
-  float local_b0;
+  float tgtYawVel;
   float afStack_ac [4];
-  float local_9c;
+  float decel;
   int local_98;
-  float local_94 [4];
-  float local_84;
-  float local_80 [3];
+  float maxSpeed [3];
+  float nextState;
+  float currentMaxSpeed;
+  float bodyMat [3];
   float local_74 [3];
   float local_68 [3];
   undefined4 local_5c;
   undefined4 local_58;
   undefined4 local_54;
-  float local_50 [2];
-  int local_48;
-  float local_44;
+  float newAccel [2];
+  int axis;
+  float yawAngles;
   float local_40;
   undefined4 local_3c;
-  float local_38;
-  float local_34 [5];
+  float viewAnglesTargetPitch;
+  float maxAccel [3];
+  float deltaFracToApply;
+  float worldTargetTilt;
   float local_20;
-  float local_18 [5];
+  float velOrthogonal [5];
   
-  psVar1 = param_1->scr_vehicle;
-  local_fc = psVar1;
+  psVar1 = ent->scr_vehicle;
+  veh = psVar1;
   pvVar4 = BG_GetVehicleInfo((int)psVar1->infoIdx);
-  if (local_fc->joltTime <= 0.0) {
-    if (local_fc->maxSpeedOverride <= 0.0) {
-      local_84 = pvVar4->maxSpeed;
+  if (veh->joltTime <= 0.0) {
+    if (veh->maxSpeedOverride <= 0.0) {
+      currentMaxSpeed = pvVar4->maxSpeed;
     }
     else {
-      local_84 = local_fc->maxSpeedOverride;
+      currentMaxSpeed = veh->maxSpeedOverride;
     }
-    local_94[2] = (vehHelicopterMaxSpeedVertical->current).value * 17.6;
-    local_94[0] = local_84;
-    local_94[1] = local_84;
-    local_34[0] = pvVar4->accel;
-    local_34[1] = pvVar4->accel;
-    local_34[2] = (vehHelicopterMaxAccelVertical->current).value * 17.6;
+    maxSpeed[2] = (vehHelicopterMaxSpeedVertical->current).value * 17.6;
+    maxSpeed[0] = currentMaxSpeed;
+    maxSpeed[1] = currentMaxSpeed;
+    maxAccel[0] = pvVar4->accel;
+    maxAccel[1] = pvVar4->accel;
+    maxAccel[2] = (vehHelicopterMaxAccelVertical->current).value * 17.6;
   }
   else {
-    local_94[0] = local_fc->joltSpeed;
-    local_94[1] = local_fc->joltSpeed;
-    local_94[2] = local_fc->joltSpeed;
-    local_34[0] = local_fc->joltDecel;
-    local_34[1] = local_fc->joltDecel;
-    local_34[2] = local_fc->joltDecel;
+    maxSpeed[0] = veh->joltSpeed;
+    maxSpeed[1] = veh->joltSpeed;
+    maxSpeed[2] = veh->joltSpeed;
+    maxAccel[0] = veh->joltDecel;
+    maxAccel[1] = veh->joltDecel;
+    maxAccel[2] = veh->joltDecel;
   }
-  HELI_CmdScale(param_2,local_e0 + 3);
-  for (local_48 = 0; local_48 < 3; local_48 = local_48 + 1) {
-    if (local_94[local_48] == 0.0) {
-      afStack_ac[local_48] = 1.0;
+  HELI_CmdScale(move,tgtVel + 3);
+  for (axis = 0; axis < 3; axis = axis + 1) {
+    if (maxSpeed[axis] == 0.0) {
+      afStack_ac[axis] = 1.0;
     }
     else {
-      afStack_ac[local_48] = local_34[local_48] / local_94[local_48];
+      afStack_ac[axis] = maxAccel[axis] / maxSpeed[axis];
     }
   }
-  local_e0[0] = local_94[0] * local_e0[3];
-  local_e0[1] = local_94[1] * local_d0;
-  local_e0[2] = local_94[2] * local_cc;
-  fVar8 = Vec3NormalizeTo(local_e0,&local_f8);
-  fVar7 = (psVar1->phys).bodyVel[0] * local_f8 + (psVar1->phys).bodyVel[1] * local_f4 +
+  tgtVel[0] = maxSpeed[0] * tgtVel[3];
+  tgtVel[1] = maxSpeed[1] * local_d0;
+  tgtVel[2] = maxSpeed[2] * local_cc;
+  fVar8 = Vec3NormalizeTo(tgtVel,&tgtDir);
+  fVar7 = (psVar1->phys).bodyVel[0] * tgtDir + (psVar1->phys).bodyVel[1] * local_f4 +
           (psVar1->phys).bodyVel[2] * local_f0;
   fVar6 = -fVar7;
-  local_18[0] = fVar6 * local_f8 + (psVar1->phys).bodyVel[0];
-  local_18[1] = fVar6 * local_f4 + (psVar1->phys).bodyVel[1];
-  local_18[2] = fVar6 * local_f0 + (psVar1->phys).bodyVel[2];
-  local_110[0] = fVar7 * local_f8;
-  local_110[1] = fVar7 * local_f4;
-  local_110[2] = fVar7 * local_f0;
-  local_9c = (float)(vehHelicopterDecelerationFwd->current).integer;
+  velOrthogonal[0] = fVar6 * tgtDir + (psVar1->phys).bodyVel[0];
+  velOrthogonal[1] = fVar6 * local_f4 + (psVar1->phys).bodyVel[1];
+  velOrthogonal[2] = fVar6 * local_f0 + (psVar1->phys).bodyVel[2];
+  velParallel[0] = fVar7 * tgtDir;
+  velParallel[1] = fVar7 * local_f4;
+  velParallel[2] = fVar7 * local_f0;
+  decel = (float)(vehHelicopterDecelerationFwd->current).integer;
   local_98 = (vehHelicopterDecelerationSide->current).integer;
-  local_50[0] = 0.0;
-  local_50[1] = 0.0;
-  local_18[3] = 0.0;
-  local_18[4] = 0.0;
-  for (local_48 = 0; local_48 < 2; local_48 = local_48 + 1) {
-    local_94[3] = DiffTrack(0.0,local_18[local_48],(&local_9c)[local_48] * afStack_ac[local_48],0.05
-                           );
-    local_18[local_48 + 3] = (local_94[3] - local_18[local_48]) / 0.05;
+  newAccel[0] = 0.0;
+  newAccel[1] = 0.0;
+  velOrthogonal[3] = 0.0;
+  velOrthogonal[4] = 0.0;
+  for (axis = 0; axis < 2; axis = axis + 1) {
+    nextState = DiffTrack(0.0,velOrthogonal[axis],(&decel)[axis] * afStack_ac[axis],0.05);
+    velOrthogonal[axis + 3] = (nextState - velOrthogonal[axis]) / 0.05;
     if (fVar8 <= fVar7) {
-      local_94[3] = DiffTrack(local_e0[local_48],local_110[local_48],
-                              (&local_9c)[local_48] * afStack_ac[local_48],0.05);
-      local_18[local_48 + 3] = (local_94[3] - local_110[local_48]) / 0.05 + local_18[local_48 + 3];
+      nextState = DiffTrack(tgtVel[axis],velParallel[axis],(&decel)[axis] * afStack_ac[axis],0.05);
+      velOrthogonal[axis + 3] = (nextState - velParallel[axis]) / 0.05 + velOrthogonal[axis + 3];
     }
     else {
-      local_94[3] = DiffTrack(local_e0[local_48],local_110[local_48],afStack_ac[local_48],0.05);
-      local_50[local_48] = (local_94[3] - local_110[local_48]) / 0.05 + local_50[local_48];
+      nextState = DiffTrack(tgtVel[axis],velParallel[axis],afStack_ac[axis],0.05);
+      newAccel[axis] = (nextState - velParallel[axis]) / 0.05 + newAccel[axis];
     }
-    param_3[local_48] = local_18[local_48 + 3] + local_50[local_48];
-    fVar6 = param_3[local_48];
-    local_228 = -local_34[local_48];
+    bodyAccel[axis] = velOrthogonal[axis + 3] + newAccel[axis];
+    fVar6 = bodyAccel[axis];
+    local_228 = -maxAccel[axis];
     local_178 = fVar6;
-    if (0.0 <= fVar6 - local_34[local_48]) {
-      local_178 = local_34[local_48];
+    if (0.0 <= fVar6 - maxAccel[axis]) {
+      local_178 = maxAccel[axis];
     }
     if (local_228 - fVar6 < 0.0) {
       local_228 = local_178;
     }
-    param_3[local_48] = local_228;
-    fVar6 = local_18[local_48 + 3];
-    local_22c = -local_34[local_48];
+    bodyAccel[axis] = local_228;
+    fVar6 = velOrthogonal[axis + 3];
+    local_22c = -maxAccel[axis];
     local_188 = fVar6;
-    if (0.0 <= fVar6 - local_34[local_48]) {
-      local_188 = local_34[local_48];
+    if (0.0 <= fVar6 - maxAccel[axis]) {
+      local_188 = maxAccel[axis];
     }
     if (local_22c - fVar6 < 0.0) {
       local_22c = local_188;
     }
-    local_18[local_48 + 3] = local_22c;
-    fVar6 = local_50[local_48];
-    local_230 = -local_34[local_48];
+    velOrthogonal[axis + 3] = local_22c;
+    fVar6 = newAccel[axis];
+    local_230 = -maxAccel[axis];
     local_198 = fVar6;
-    if (0.0 <= fVar6 - local_34[local_48]) {
-      local_198 = local_34[local_48];
+    if (0.0 <= fVar6 - maxAccel[axis]) {
+      local_198 = maxAccel[axis];
     }
     if (local_230 - fVar6 < 0.0) {
       local_230 = local_198;
     }
-    local_50[local_48] = local_230;
+    newAccel[axis] = local_230;
   }
-  local_94[3] = DiffTrack(local_e0[2],(psVar1->phys).bodyVel[2],afStack_ac[2],0.05);
-  param_3[2] = (local_94[3] - (psVar1->phys).bodyVel[2]) / 0.05;
-  fVar6 = param_3[2];
-  local_234 = -local_34[2];
+  nextState = DiffTrack(tgtVel[2],(psVar1->phys).bodyVel[2],afStack_ac[2],0.05);
+  bodyAccel[2] = (nextState - (psVar1->phys).bodyVel[2]) / 0.05;
+  fVar6 = bodyAccel[2];
+  local_234 = -maxAccel[2];
   local_1a8 = fVar6;
-  if (0.0 <= fVar6 - local_34[2]) {
-    local_1a8 = local_34[2];
+  if (0.0 <= fVar6 - maxAccel[2]) {
+    local_1a8 = maxAccel[2];
   }
   if (local_234 - fVar6 < 0.0) {
     local_234 = local_1a8;
   }
-  param_3[2] = local_234;
+  bodyAccel[2] = local_234;
   if ((pvVar4->rotRate <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x13d,0,
                                "%s"), !bVar3)) {
@@ -465,7 +473,7 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   }
   afStack_ac[3] = pvVar4->rotAccel / pvVar4->rotRate;
   fVar6 = pvVar4->rotRate * local_c8 -
-          local_e0[3] * local_d0 * (vehHelicopterYawOnLeftStick->current).value;
+          tgtVel[3] * local_d0 * (vehHelicopterYawOnLeftStick->current).value;
   local_238 = -pvVar4->rotRate;
   local_1b4 = fVar6;
   if (0.0 <= fVar6 - pvVar4->rotRate) {
@@ -474,10 +482,10 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   if (local_238 - fVar6 < 0.0) {
     local_238 = local_1b4;
   }
-  local_b0 = local_238;
-  local_94[3] = DiffTrack(local_238,(psVar1->phys).rotVel[1],afStack_ac[3],0.05);
-  param_4[1] = (local_94[3] - (psVar1->phys).rotVel[1]) / 0.05;
-  fVar6 = param_4[1];
+  tgtYawVel = local_238;
+  nextState = DiffTrack(local_238,(psVar1->phys).rotVel[1],afStack_ac[3],0.05);
+  rotAccel[1] = (nextState - (psVar1->phys).rotVel[1]) / 0.05;
+  fVar6 = rotAccel[1];
   local_23c = -pvVar4->accel;
   local_1c0 = fVar6;
   if (0.0 <= fVar6 - pvVar4->accel) {
@@ -486,9 +494,9 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   if (local_23c - fVar6 < 0.0) {
     local_23c = local_1c0;
   }
-  param_4[1] = local_23c;
-  for (local_48 = 0; local_48 < 2; local_48 = local_48 + 1) {
-    if (local_94[local_48] <= 0.0) {
+  rotAccel[1] = local_23c;
+  for (axis = 0; axis < 2; axis = axis + 1) {
+    if (maxSpeed[axis] <= 0.0) {
       if ((pvVar4->maxSpeed <= 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x14f
                                    ,0,"%s"), !bVar3)) {
@@ -496,9 +504,9 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
         (*pcVar2)();
         return;
       }
-      local_94[local_48] = pvVar4->maxSpeed;
+      maxSpeed[axis] = pvVar4->maxSpeed;
     }
-    if (local_34[local_48] <= 0.0) {
+    if (maxAccel[axis] <= 0.0) {
       if ((pvVar4->accel <= 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x154
                                    ,0,"%s"), !bVar3)) {
@@ -506,20 +514,20 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
         (*pcVar2)();
         return;
       }
-      local_34[local_48] = pvVar4->accel;
+      maxAccel[axis] = pvVar4->accel;
     }
   }
-  local_44 = 0.0;
+  yawAngles = 0.0;
   local_40 = (psVar1->phys).angles[1];
   local_3c = 0;
-  AngleVectors(&local_44,local_80,local_74,local_68);
+  AngleVectors(&yawAngles,bodyMat,local_74,local_68);
   local_5c = 0;
   local_58 = 0;
   local_54 = 0;
-  fVar6 = (local_18[3] / local_34[0]) * pvVar4->tiltFromDeceleration[0] +
-          (local_50[0] / local_34[0]) * pvVar4->tiltFromAcceleration[0] +
-          (local_e0[0] / local_94[0]) * (vehHelicopterTiltFromControllerAxes->current).value +
-          ((psVar1->phys).bodyVel[0] / local_94[0]) * pvVar4->tiltFromVelocity[0];
+  fVar6 = (velOrthogonal[3] / maxAccel[0]) * pvVar4->tiltFromDeceleration[0] +
+          (newAccel[0] / maxAccel[0]) * pvVar4->tiltFromAcceleration[0] +
+          (tgtVel[0] / maxSpeed[0]) * (vehHelicopterTiltFromControllerAxes->current).value +
+          ((psVar1->phys).bodyVel[0] / maxSpeed[0]) * pvVar4->tiltFromVelocity[0];
   local_1d4 = fVar6;
   if (0.0 <= fVar6 - 1.0) {
     local_1d4 = 1.0;
@@ -530,29 +538,29 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   else {
     local_240 = -1.0;
   }
-  local_ec = local_240;
-  fVar6 = AngleNormalize180(*param_5 - pvVar4->viewPitchOffset);
-  local_38 = (fVar6 * (vehHelicopterTiltFromViewangles->current).value) / 90.0;
-  local_34[3] = 0.65;
+  targetTilt = local_240;
+  fVar6 = AngleNormalize180(*viewangles - pvVar4->viewPitchOffset);
+  viewAnglesTargetPitch = (fVar6 * (vehHelicopterTiltFromViewangles->current).value) / 90.0;
+  deltaFracToApply = 0.65;
   if (0 < (player_topDownCamMode->current).integer) {
-    local_34[3] = 0.3;
+    deltaFracToApply = 0.3;
   }
-  local_ec = (local_38 - local_ec) * local_34[3] + local_ec;
-  local_e8 = (local_18[4] / local_34[1]) * pvVar4->tiltFromDeceleration[1] +
-             (local_50[1] / local_34[1]) * pvVar4->tiltFromAcceleration[1] +
-             (local_e0[1] / local_94[1]) * (vehHelicopterTiltFromControllerAxes->current).value +
-             ((psVar1->phys).bodyVel[1] / local_94[1]) * pvVar4->tiltFromVelocity[1];
+  targetTilt = (viewAnglesTargetPitch - targetTilt) * deltaFracToApply + targetTilt;
+  local_e8 = (velOrthogonal[4] / maxAccel[1]) * pvVar4->tiltFromDeceleration[1] +
+             (newAccel[1] / maxAccel[1]) * pvVar4->tiltFromAcceleration[1] +
+             (tgtVel[1] / maxSpeed[1]) * (vehHelicopterTiltFromControllerAxes->current).value +
+             ((psVar1->phys).bodyVel[1] / maxSpeed[1]) * pvVar4->tiltFromVelocity[1];
   if ((0.0 < (psVar1->phys).bodyVel[0]) && (0.0 < ABS((psVar1->phys).rotVel[1]))) {
-    if ((local_94[0] <= 0.0) &&
+    if ((maxSpeed[0] <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x17b,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_128 = (psVar1->phys).bodyVel[0] / local_94[0];
-    if ((vehHelicopterTiltFromFwdAndYaw_VelAtMaxTilt->current).value <= local_128) {
-      local_128 = 1.0;
+    fVar6 = (psVar1->phys).bodyVel[0] / maxSpeed[0];
+    if ((vehHelicopterTiltFromFwdAndYaw_VelAtMaxTilt->current).value <= fVar6) {
+      velScale = 1.0;
     }
     else {
       if (((vehHelicopterTiltFromFwdAndYaw_VelAtMaxTilt->current).value <= 0.0) &&
@@ -562,7 +570,7 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
         (*pcVar2)();
         return;
       }
-      local_128 = local_128 / (vehHelicopterTiltFromFwdAndYaw_VelAtMaxTilt->current).value;
+      velScale = fVar6 / (vehHelicopterTiltFromFwdAndYaw_VelAtMaxTilt->current).value;
     }
     if ((pvVar4->rotRate <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x185,0
@@ -571,7 +579,7 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
       (*pcVar2)();
       return;
     }
-    local_e8 = (vehHelicopterTiltFromFwdAndYaw->current).value * local_128 *
+    local_e8 = (vehHelicopterTiltFromFwdAndYaw->current).value * velScale *
                (-(psVar1->phys).rotVel[1] / pvVar4->rotRate) + local_e8;
   }
   if (local_e8 - 1.0 < 0.0) {
@@ -588,8 +596,8 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
   }
   local_e8 = local_244;
   local_e4 = 0;
-  MatrixTransformVector(&local_ec,&local_80,local_34 + 4);
-  local_110[3] = local_34[4] - (psVar1->phys).worldTilt[0];
+  MatrixTransformVector(&targetTilt,&bodyMat,&worldTargetTilt);
+  velParallel[3] = worldTargetTilt - (psVar1->phys).worldTilt[0];
   local_100 = local_20 - (psVar1->phys).worldTilt[1];
   if (((vehHelicopterTiltMomentum->current).value == 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x191,0,
@@ -599,26 +607,25 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
     return;
   }
   fVar6 = -1.0 / (vehHelicopterTiltMomentum->current).value;
-  local_b8 = fVar6 * (psVar1->phys).worldTiltVel[0] +
-             (pvVar4->tiltSpeed[0] / (vehHelicopterTiltMomentum->current).value) * local_110[3];
+  tiltAccel = fVar6 * (psVar1->phys).worldTiltVel[0] +
+              (pvVar4->tiltSpeed[0] / (vehHelicopterTiltMomentum->current).value) * velParallel[3];
   local_b4 = fVar6 * (psVar1->phys).worldTiltVel[1] +
              (pvVar4->tiltSpeed[1] / (vehHelicopterTiltMomentum->current).value) * local_100;
   fVar6 = (psVar1->phys).worldTiltVel[0];
   fVar7 = (psVar1->phys).worldTiltVel[1];
-  (psVar1->phys).worldTiltVel[0] = local_b8 * 0.05 + (psVar1->phys).worldTiltVel[0];
+  (psVar1->phys).worldTiltVel[0] = tiltAccel * 0.05 + (psVar1->phys).worldTiltVel[0];
   (psVar1->phys).worldTiltVel[1] = local_b4 * 0.05 + (psVar1->phys).worldTiltVel[1];
-  local_c4 = (fVar6 + (psVar1->phys).worldTiltVel[0]) * 0.5;
+  oldTiltVel = (fVar6 + (psVar1->phys).worldTiltVel[0]) * 0.5;
   local_c0 = (fVar7 + (psVar1->phys).worldTiltVel[1]) * 0.5;
-  (psVar1->phys).worldTilt[0] = local_c4 * 0.05 + (psVar1->phys).worldTilt[0];
+  (psVar1->phys).worldTilt[0] = oldTiltVel * 0.05 + (psVar1->phys).worldTilt[0];
   (psVar1->phys).worldTilt[1] = local_c0 * 0.05 + (psVar1->phys).worldTilt[1];
-  MatrixTransposeTransformVector43((psVar1->phys).worldTilt,&local_80,&local_ec);
-  *param_4 = local_ec * pvVar4->maxBodyPitch;
-  param_4[2] = local_e8 * pvVar4->maxBodyRoll;
+  MatrixTransposeTransformVector43((psVar1->phys).worldTilt,&bodyMat,&targetTilt);
+  *rotAccel = targetTilt * pvVar4->maxBodyPitch;
+  rotAccel[2] = local_e8 * pvVar4->maxBodyRoll;
   pfVar5 = (psVar1->phys).bodyVel;
-  local_bc = *pfVar5 * *pfVar5 + (psVar1->phys).bodyVel[1] * (psVar1->phys).bodyVel[1];
-  if (local_bc <
-      (vehHelicopterHoverSpeedThreshold->current).value *
-      (vehHelicopterHoverSpeedThreshold->current).value) {
+  speedSq = *pfVar5 * *pfVar5 + (psVar1->phys).bodyVel[1] * (psVar1->phys).bodyVel[1];
+  if (speedSq < (vehHelicopterHoverSpeedThreshold->current).value *
+                (vehHelicopterHoverSpeedThreshold->current).value) {
     if (((vehHelicopterHoverSpeedThreshold->current).value <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x1b6,0
                                  ,"%s"), !bVar3)) {
@@ -626,24 +633,24 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
       (*pcVar2)();
       return;
     }
-    fVar6 = ((vehHelicopterHoverSpeedThreshold->current).value - SQRT(local_bc)) /
+    fVar6 = ((vehHelicopterHoverSpeedThreshold->current).value - SQRT(speedSq)) /
             (vehHelicopterHoverSpeedThreshold->current).value;
-    HELI_UpdateJitter(&local_fc->jitter);
-    *param_4 = fVar6 * (local_fc->jitter).jitterPos[0] + *param_4;
-    param_4[2] = fVar6 * (local_fc->jitter).jitterPos[2] + param_4[2];
+    HELI_UpdateJitter(&veh->jitter);
+    *rotAccel = fVar6 * (veh->jitter).jitterPos[0] + *rotAccel;
+    rotAccel[2] = fVar6 * (veh->jitter).jitterPos[2] + rotAccel[2];
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*bodyAccel & 0x7f800000) == 0x7f800000) ||
+       (((uint)bodyAccel[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)bodyAccel[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x1bf,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*rotAccel & 0x7f800000) == 0x7f800000) ||
+       (((uint)rotAccel[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)rotAccel[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x1c0,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -661,7 +668,7 @@ HELI_CalcAccel(gentity_s *param_1,char *param_2,float *param_3,float *param_4,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HELI_CancelAIMove(gentity_s *param_1)
+void __cdecl HELI_CancelAIMove(gentity_s *ent)
 
 {
   scr_vehicle_s *psVar1;
@@ -670,21 +677,25 @@ void __cdecl HELI_CancelAIMove(gentity_s *param_1)
   vehicle_info_t *pvVar4;
   float local_78;
   float local_74;
-  float local_50;
+  float maxPitch;
+  vehicle_physic_t *phys;
+  vehicle_info_t *info;
+  scr_vehicle_s *veh;
+  float tilt;
   float local_4c;
   undefined4 local_48;
-  float local_44;
-  float local_40 [3];
+  float maxRoll;
+  float bodyMat [3];
   float local_34 [3];
   float local_28 [3];
   undefined4 local_1c;
   undefined4 local_18;
   undefined4 local_14;
-  float local_10;
+  float yawAngles;
   float local_c;
   undefined4 local_8;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x1cf,0,
                              "%s");
     if (!bVar3) {
@@ -693,7 +704,7 @@ void __cdecl HELI_CancelAIMove(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
+  if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x1d0,0,
                              "%s");
     if (!bVar3) {
@@ -702,12 +713,12 @@ void __cdecl HELI_CancelAIMove(gentity_s *param_1)
       return;
     }
   }
-  psVar1 = param_1->scr_vehicle;
+  psVar1 = ent->scr_vehicle;
   pvVar4 = BG_GetVehicleInfo((int)psVar1->infoIdx);
-  local_10 = 0.0;
+  yawAngles = 0.0;
   local_c = (psVar1->phys).angles[1];
   local_8 = 0;
-  AngleVectors(&local_10,local_40,local_34,local_28);
+  AngleVectors(&yawAngles,bodyMat,local_34,local_28);
   local_1c = 0;
   local_18 = 0;
   local_14 = 0;
@@ -723,11 +734,11 @@ void __cdecl HELI_CancelAIMove(gentity_s *param_1)
   else {
     local_78 = pvVar4->maxBodyRoll;
   }
-  local_44 = local_78;
-  local_50 = (psVar1->phys).angles[0] / local_74;
+  maxRoll = local_78;
+  tilt = (psVar1->phys).angles[0] / local_74;
   local_4c = (psVar1->phys).angles[2] / local_78;
   local_48 = 0;
-  MatrixTransformVector(&local_50,&local_40,(psVar1->phys).worldTilt);
+  MatrixTransformVector(&tilt,&bodyMat,(psVar1->phys).worldTilt);
   (psVar1->phys).worldTiltVel[0] = 0.0;
   (psVar1->phys).worldTiltVel[1] = 0.0;
   (psVar1->phys).worldTiltVel[2] = 0.0;
@@ -742,7 +753,7 @@ void __cdecl HELI_CancelAIMove(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl VEH_TestSlideMove(gentity_s *param_1,float *param_2)
+int __cdecl VEH_TestSlideMove(gentity_s *ent,float *outPos)
 
 {
   float fVar1;
@@ -754,8 +765,11 @@ int __cdecl VEH_TestSlideMove(gentity_s *param_1,float *param_2)
   scr_vehicle_s *psVar7;
   int iVar8;
   vehicle_physic_t *pvVar9;
+  int clipped;
+  vehicle_physic_t *phys;
+  scr_vehicle_s *veh;
   
-  psVar7 = param_1->scr_vehicle;
+  psVar7 = ent->scr_vehicle;
   pvVar9 = &psVar7->phys;
   fVar1 = pvVar9->origin[0];
   fVar2 = (psVar7->phys).origin[1];
@@ -763,10 +777,10 @@ int __cdecl VEH_TestSlideMove(gentity_s *param_1,float *param_2)
   fVar4 = (psVar7->phys).vel[0];
   fVar5 = (psVar7->phys).vel[1];
   fVar6 = (psVar7->phys).vel[2];
-  iVar8 = VEH_SlideMove(param_1,0);
-  *param_2 = pvVar9->origin[0];
-  param_2[1] = (psVar7->phys).origin[1];
-  param_2[2] = (psVar7->phys).origin[2];
+  iVar8 = VEH_SlideMove(ent,0);
+  *outPos = pvVar9->origin[0];
+  outPos[1] = (psVar7->phys).origin[1];
+  outPos[2] = (psVar7->phys).origin[2];
   pvVar9->origin[0] = fVar1;
   (psVar7->phys).origin[1] = fVar2;
   (psVar7->phys).origin[2] = fVar3;
@@ -784,7 +798,7 @@ int __cdecl VEH_TestSlideMove(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HELI_SoftenCollisions(gentity_s *param_1,float *param_2)
+void __cdecl HELI_SoftenCollisions(gentity_s *ent,float *worldAccel)
 
 {
   float fVar1;
@@ -794,68 +808,73 @@ void __cdecl HELI_SoftenCollisions(gentity_s *param_1,float *param_2)
   int iVar5;
   float fVar6;
   float fVar7;
-  float local_50;
+  int clipped;
+  vehicle_physic_t *phys;
+  float errorAccel;
+  scr_vehicle_s *veh;
+  float clippedPos;
   float local_4c;
   float local_48;
-  float local_38;
+  float error;
   float local_34;
   float local_30;
-  float local_2c;
+  float wishVel;
   float local_28;
   float local_24;
-  float local_20;
+  float targetPos;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
+  float errorMagSqr;
+  float oldVel;
   float local_c;
   float local_8;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x20a,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x20b,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  psVar2 = param_1->scr_vehicle;
+  psVar2 = ent->scr_vehicle;
   if ((((psVar2->phys).vel[0] != 0.0) || ((psVar2->phys).vel[1] != 0.0)) ||
      ((psVar2->phys).vel[2] != 0.0)) {
-    local_10 = (psVar2->phys).vel[0];
+    oldVel = (psVar2->phys).vel[0];
     local_c = (psVar2->phys).vel[1];
     local_8 = (psVar2->phys).vel[2];
     fVar6 = (vehHelicopterLookaheadTime->current).value / 0.05;
     (psVar2->phys).vel[0] = fVar6 * (psVar2->phys).vel[0];
     (psVar2->phys).vel[1] = fVar6 * (psVar2->phys).vel[1];
     (psVar2->phys).vel[2] = fVar6 * (psVar2->phys).vel[2];
-    local_20 = (psVar2->phys).vel[0] * 0.05 + (psVar2->phys).origin[0];
+    targetPos = (psVar2->phys).vel[0] * 0.05 + (psVar2->phys).origin[0];
     local_1c = (psVar2->phys).vel[1] * 0.05 + (psVar2->phys).origin[1];
     local_18 = (psVar2->phys).vel[2] * 0.05 + (psVar2->phys).origin[2];
-    iVar5 = VEH_TestSlideMove(param_1,&local_50);
-    (psVar2->phys).vel[0] = local_10;
+    iVar5 = VEH_TestSlideMove(ent,&clippedPos);
+    (psVar2->phys).vel[0] = oldVel;
     (psVar2->phys).vel[1] = local_c;
     (psVar2->phys).vel[2] = local_8;
     if (iVar5 != 0) {
-      local_38 = local_20 - local_50;
+      error = targetPos - clippedPos;
       local_34 = local_1c - local_4c;
       local_30 = local_18 - local_48;
-      local_14 = local_38 * local_38 + local_34 * local_34 + local_30 * local_30;
-      if (1.0 <= local_14) {
-        fVar6 = (*param_2 * local_38 + param_2[1] * local_34 + param_2[2] * local_30) / local_14;
+      errorMagSqr = error * error + local_34 * local_34 + local_30 * local_30;
+      if (1.0 <= errorMagSqr) {
+        fVar6 = (*worldAccel * error + worldAccel[1] * local_34 + worldAccel[2] * local_30) /
+                errorMagSqr;
         if (0.0 < fVar6) {
           fVar6 = -fVar6;
-          *param_2 = fVar6 * local_38 + *param_2;
-          param_2[1] = fVar6 * local_34 + param_2[1];
-          param_2[2] = fVar6 * local_30 + param_2[2];
+          *worldAccel = fVar6 * error + *worldAccel;
+          worldAccel[1] = fVar6 * local_34 + worldAccel[1];
+          worldAccel[2] = fVar6 * local_30 + worldAccel[2];
         }
-        local_2c = local_50 - (psVar2->phys).origin[0];
+        wishVel = clippedPos - (psVar2->phys).origin[0];
         local_28 = local_4c - (psVar2->phys).origin[1];
         local_24 = local_48 - (psVar2->phys).origin[2];
         if (((vehHelicopterLookaheadTime->current).value <= 0.0) &&
@@ -868,9 +887,9 @@ void __cdecl HELI_SoftenCollisions(gentity_s *param_1,float *param_2)
         fVar7 = 1.0 / (vehHelicopterLookaheadTime->current).value;
         fVar6 = (psVar2->phys).vel[1];
         fVar1 = (psVar2->phys).vel[2];
-        *param_2 = (fVar7 * local_2c - (psVar2->phys).vel[0]) * 20.0 + *param_2;
-        param_2[1] = (fVar7 * local_28 - fVar6) * 20.0 + param_2[1];
-        param_2[2] = (fVar7 * local_24 - fVar1) * 20.0 + param_2[2];
+        *worldAccel = (fVar7 * wishVel - (psVar2->phys).vel[0]) * 20.0 + *worldAccel;
+        worldAccel[1] = (fVar7 * local_28 - fVar6) * 20.0 + worldAccel[1];
+        worldAccel[2] = (fVar7 * local_24 - fVar1) * 20.0 + worldAccel[2];
       }
     }
   }
@@ -886,57 +905,57 @@ void __cdecl HELI_SoftenCollisions(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl VEH_CheckForPredictedCrash(gentity_s *param_1)
+void __cdecl VEH_CheckForPredictedCrash(gentity_s *ent)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  col_context_t local_7c;
-  vehicle_physic_t *local_54;
-  scr_vehicle_s *local_50;
-  float4 local_4c;
+  col_context_t context;
+  vehicle_physic_t *phys;
+  scr_vehicle_s *veh;
+  float4 trace;
   float local_3c;
   uint local_14;
-  float local_10;
+  float targetPos;
   float local_c;
   float local_8;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c.v[0] = 0.0;
-  local_4c.v[1] = 0.0;
-  local_4c.v[2] = 0.0;
-  local_4c.v[3] = 0.0;
-  if ((param_1 == (gentity_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((ent == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x23a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x23b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_50 = param_1->scr_vehicle;
-  local_54 = &local_50->phys;
+  veh = ent->scr_vehicle;
+  phys = &veh->phys;
   if (((vehHelicopterLookaheadTime->current).value != 0.0) &&
-     ((((local_50->phys).vel[0] != 0.0 || ((local_50->phys).vel[1] != 0.0)) ||
-      ((local_50->phys).vel[2] != 0.0)))) {
+     ((((veh->phys).vel[0] != 0.0 || ((veh->phys).vel[1] != 0.0)) || ((veh->phys).vel[2] != 0.0))))
+  {
     fVar1 = (vehHelicopterLookaheadTime->current).value;
-    local_10 = fVar1 * (local_50->phys).vel[0] + local_54->origin[0];
-    local_c = fVar1 * (local_50->phys).vel[1] + (local_50->phys).origin[1];
-    local_8 = fVar1 * (local_50->phys).vel[2] + (local_50->phys).origin[2];
-    col_context_t::col_context_t(&local_7c);
-    G_TraceCapsule((trace_t *)&local_4c,local_54->origin,local_54->mins,local_54->maxs,&local_10,
-                   (param_1->s).number,param_1->clipmask,&local_7c);
+    targetPos = fVar1 * (veh->phys).vel[0] + phys->origin[0];
+    local_c = fVar1 * (veh->phys).vel[1] + (veh->phys).origin[1];
+    local_8 = fVar1 * (veh->phys).vel[2] + (veh->phys).origin[2];
+    col_context_t::col_context_t(&context);
+    G_TraceCapsule((trace_t *)&trace,phys->origin,phys->mins,phys->maxs,&targetPos,(ent->s).number,
+                   ent->clipmask,&context);
     if (local_3c < 1.0) {
-      Scr_AddVector(local_4c.v,SCRIPTINSTANCE_SERVER);
-      Scr_AddVector(local_54->vel,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(param_1,scr_const.veh_predictedcollision,2);
+      Scr_AddVector(trace.v,SCRIPTINSTANCE_SERVER);
+      Scr_AddVector(phys->vel,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(ent,scr_const.veh_predictedcollision,2);
     }
   }
   return;
@@ -951,48 +970,47 @@ void __cdecl VEH_CheckForPredictedCrash(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl VEH_CheckForCrash(gentity_s *param_1,float *param_2)
+void __cdecl VEH_CheckForCrash(gentity_s *ent,float *newPosition)
 
 {
   code *pcVar1;
   bool bVar2;
-  col_context_t local_70;
-  vehicle_physic_t *local_48;
-  scr_vehicle_s *local_44;
-  float4 local_40;
+  col_context_t context;
+  vehicle_physic_t *phys;
+  scr_vehicle_s *veh;
+  float4 trace;
   float local_30;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40.v[0] = 0.0;
-  local_40.v[1] = 0.0;
-  local_40.v[2] = 0.0;
-  local_40.v[3] = 0.0;
-  if ((param_1 == (gentity_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x259,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x25a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_44 = param_1->scr_vehicle;
-  local_48 = &local_44->phys;
-  if ((((local_44->phys).vel[0] != 0.0) || ((local_44->phys).vel[1] != 0.0)) ||
-     ((local_44->phys).vel[2] != 0.0)) {
-    col_context_t::col_context_t(&local_70);
-    G_TraceCapsule((trace_t *)&local_40,local_48->origin,local_48->mins,local_48->maxs,param_2,
-                   (param_1->s).number,param_1->clipmask,&local_70);
+  veh = ent->scr_vehicle;
+  phys = &veh->phys;
+  if ((((veh->phys).vel[0] != 0.0) || ((veh->phys).vel[1] != 0.0)) || ((veh->phys).vel[2] != 0.0)) {
+    col_context_t::col_context_t(&context);
+    G_TraceCapsule((trace_t *)&trace,phys->origin,phys->mins,phys->maxs,newPosition,(ent->s).number,
+                   ent->clipmask,&context);
     if (local_30 < 1.0) {
-      Scr_AddVector(local_40.v,SCRIPTINSTANCE_SERVER);
-      Scr_AddVector(local_48->vel,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(param_1,scr_const.veh_collision,2);
+      Scr_AddVector(trace.v,SCRIPTINSTANCE_SERVER);
+      Scr_AddVector(phys->vel,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(ent,scr_const.veh_collision,2);
     }
   }
   return;
@@ -1006,7 +1024,7 @@ void __cdecl VEH_CheckForCrash(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
+char __cdecl VEH_HandleHeliLockHeight(gentity_s *ent)
 
 {
   float *pfVar1;
@@ -1015,14 +1033,17 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
   bool bVar4;
   char cVar5;
   float fVar6;
-  char local_19;
-  float local_18;
+  vehicle_physic_t *phys;
+  scr_vehicle_s *veh;
+  float deltaHeight;
+  char upmove;
+  float testPoint;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float moveStrength;
+  float absDeltaHeight;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x273,0,
                              "%s");
     if (!bVar4) {
@@ -1031,7 +1052,7 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
       return cVar5;
     }
   }
-  if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
+  if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x274,0,
                              "%s");
     if (!bVar4) {
@@ -1040,7 +1061,7 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
       return cVar5;
     }
   }
-  psVar2 = param_1->scr_vehicle;
+  psVar2 = ent->scr_vehicle;
   if ((psVar2->flags & 0x200U) == 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x279,0,
                              "%s");
@@ -1050,26 +1071,26 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
       return cVar5;
     }
   }
-  local_18 = lookAheadTime * (psVar2->phys).vel[0] + (psVar2->phys).origin[0];
+  testPoint = lookAheadTime * (psVar2->phys).vel[0] + (psVar2->phys).origin[0];
   local_14 = lookAheadTime * (psVar2->phys).vel[1] + (psVar2->phys).origin[1];
   local_10 = (lookAheadTime * (psVar2->phys).vel[2] + (psVar2->phys).origin[2] +
              (psVar2->phys).mins[2]) - psVar2->heliHeightLockOffset;
-  bVar4 = CM_GetHeliHeight(&local_18,200.0,&(psVar2->phys).heliLockHeight);
+  bVar4 = CM_GetHeliHeight(&testPoint,200.0,&(psVar2->phys).heliLockHeight);
   if (!bVar4) {
-    CM_GetHeliHeight(&local_18,3000.0,&(psVar2->phys).heliLockHeight);
+    CM_GetHeliHeight(&testPoint,3000.0,&(psVar2->phys).heliLockHeight);
   }
   fVar6 = local_10 - (psVar2->phys).heliLockHeight;
-  local_c = 1.0;
-  local_8 = ABS(fVar6);
-  if (local_8 < inputFallOffRange) {
-    if (stopInputRange <= local_8) {
-      local_c = local_8 / inputFallOffRange;
+  moveStrength = 1.0;
+  absDeltaHeight = ABS(fVar6);
+  if (absDeltaHeight < inputFallOffRange) {
+    if (stopInputRange <= absDeltaHeight) {
+      moveStrength = absDeltaHeight / inputFallOffRange;
     }
     else {
-      local_c = 0.0;
+      moveStrength = 0.0;
     }
   }
-  if ((local_c < 0.0) || (1.0 < local_c)) {
+  if ((moveStrength < 0.0) || (1.0 < moveStrength)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x294,0,
                              "moveStrength not in [0.0f, 1.0f]\n\t%g not in [%g, %g]");
     if (!bVar4) {
@@ -1080,18 +1101,18 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
   }
   if (0.0 <= fVar6) {
     if (4.0 < (psVar2->phys).vel[2]) {
-      local_c = 1.0;
+      moveStrength = 1.0;
     }
-    local_19 = (char)(int)(local_c * -127.0);
+    upmove = (char)(int)(moveStrength * -127.0);
   }
   else {
     pfVar1 = (psVar2->phys).vel + 2;
     if (*pfVar1 <= -4.0 && *pfVar1 != -4.0) {
-      local_c = 1.0;
+      moveStrength = 1.0;
     }
-    local_19 = (char)(int)(local_c * 127.0);
+    upmove = (char)(int)(moveStrength * 127.0);
   }
-  return local_19;
+  return upmove;
 }
 
 
@@ -1102,7 +1123,7 @@ char __cdecl VEH_HandleHeliLockHeight(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
+void __cdecl VEH_UpdateClientChopper(gentity_s *ent)
 
 {
   gclient_s *pgVar1;
@@ -1122,122 +1143,123 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
   float local_114;
   float local_108;
   float local_fc;
-  float local_e8;
+  float rotDampening;
+  float moveVec;
   float local_e4;
-  float local_e0;
-  float local_dc;
-  float local_d8;
+  float yaw;
+  float len;
+  float temp;
   float local_d4;
-  float local_cc;
-  float local_c8;
-  float local_c4;
-  float local_c0;
-  float local_bc;
-  float local_b8;
-  float local_b4;
-  vehicle_physic_t *local_b0;
-  vehicle_info_t *local_ac;
-  scr_vehicle_s *local_a8;
-  char local_a4;
+  float deltaYaw;
+  float velRatio;
+  float fraction;
+  float controllerMove;
+  float viewDiffMove;
+  float diff;
+  float scale;
+  vehicle_physic_t *phys;
+  vehicle_info_t *info;
+  scr_vehicle_s *veh;
+  char move;
   schar local_a3;
   char local_a2;
-  schar local_a1;
-  undefined1 local_9d;
-  usercmd_s *local_9c;
-  float local_98;
+  char local_a1;
+  bool bumped;
+  usercmd_s *usercmd;
+  float rotAccel;
   float local_94;
   float local_90;
-  float local_8c;
+  float startPos;
   float local_88;
   float local_84;
-  float local_80;
+  float viewangles;
   float local_7c;
   float local_78;
-  float local_74;
+  float collision;
   float local_70;
   float local_6c;
-  float local_68 [3];
-  float local_5c;
+  float bodyAccel [3];
+  float worldAccel;
   float local_58;
   float local_54;
-  float local_50 [3];
+  float axis [3];
   float local_44 [3];
   float local_38 [3];
   undefined4 local_2c;
   undefined4 local_28;
   undefined4 local_24;
-  float local_20;
+  float yawAngles;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float startVel;
   float local_10;
   float local_c;
-  gentity_s *local_8;
+  gentity_s *player;
   
-  local_a4 = '\0';
+  move = '\0';
   local_a3 = '\0';
   local_a2 = '\0';
   local_a1 = '\0';
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x2bd,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x2be,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_80 = 0.0;
+  viewangles = 0.0;
   local_7c = 0.0;
   local_78 = 0.0;
-  local_a8 = param_1->scr_vehicle;
-  local_b0 = &local_a8->phys;
-  local_ac = BG_GetVehicleInfo((int)local_a8->infoIdx);
-  local_8 = VEH_GetSeatOccupantEntity(param_1,0);
-  if (((local_8 != (gentity_s *)0x0) && (local_8->client != (gclient_s *)0x0)) &&
-     ((local_8->client->ps).vehiclePos == 0)) {
-    local_8->client->linkAnglesFrac = 0.0;
-    pgVar1 = local_8->client;
-    local_9c = &(pgVar1->sess).cmd;
-    if (((local_8->client->ps).pm_flags & 0xc00U) == 0) {
-      local_a4 = (pgVar1->sess).cmd.forwardmove;
+  veh = ent->scr_vehicle;
+  phys = &veh->phys;
+  info = BG_GetVehicleInfo((int)veh->infoIdx);
+  player = VEH_GetSeatOccupantEntity(ent,0);
+  if (((player != (gentity_s *)0x0) && (player->client != (gclient_s *)0x0)) &&
+     ((player->client->ps).vehiclePos == 0)) {
+    player->client->linkAnglesFrac = 0.0;
+    pgVar1 = player->client;
+    usercmd = &(pgVar1->sess).cmd;
+    if (((player->client->ps).pm_flags & 0xc00U) == 0) {
+      move = (pgVar1->sess).cmd.forwardmove;
       local_a3 = (pgVar1->sess).cmd.rightmove;
       bVar3 = bitarray<51>::testBit(&(pgVar1->sess).cmd.button_bits,0xb);
       if ((bVar3) && ((vehHelicopterFreeLook->current).enabled != false)) {
-        local_8->client->linkAnglesMinClamp[1] = -(local_ac->turretViewLimits).horizSpanRight;
-        local_8->client->linkAnglesMaxClamp[1] = (local_ac->turretViewLimits).horizSpanLeft;
-        local_8->client->linkAnglesMinClamp[0] = -(local_ac->turretViewLimits).vertSpanUp;
-        local_8->client->linkAnglesMaxClamp[0] = (local_ac->turretViewLimits).vertSpanDown;
+        player->client->linkAnglesMinClamp[1] = -(info->turretViewLimits).horizSpanRight;
+        player->client->linkAnglesMaxClamp[1] = (info->turretViewLimits).horizSpanLeft;
+        player->client->linkAnglesMinClamp[0] = -(info->turretViewLimits).vertSpanUp;
+        player->client->linkAnglesMaxClamp[0] = (info->turretViewLimits).vertSpanDown;
       }
       else {
         iVar4 = (vehHelicopterYawAltitudeControls->current).integer;
         if (iVar4 == 0) {
-          local_a2 = local_9c->pitchmove;
-          local_a1 = local_9c->yawmove;
+          local_a2 = usercmd->pitchmove;
+          local_a1 = usercmd->yawmove;
         }
         else if (iVar4 == 1) {
-          local_a2 = local_9c->pitchmove;
-          bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x24);
+          local_a2 = usercmd->pitchmove;
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x24);
           if (bVar3) {
             local_a1 = '\x7f';
           }
-          bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x25);
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x25);
           if (bVar3) {
             local_a1 = local_a1 + -0x7f;
           }
         }
         else if (iVar4 == 2) {
-          local_a1 = local_9c->yawmove;
-          bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x24);
+          local_a1 = usercmd->yawmove;
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x24);
           if (bVar3) {
             local_a2 = '\x7f';
           }
-          bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x25);
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x25);
           if (bVar3) {
             local_a2 = local_a2 + -0x7f;
           }
@@ -1247,12 +1269,11 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
         }
       }
       if ((vehHelicopterAlwaysFaceCamera->current).enabled != false) {
-        local_b4 = (vehHelicopterAlwaysFaceCameraRate->current).value;
-        local_b8 = AngleNormalize180((local_8->client->ps).viewangles[1] -
-                                     (local_a8->phys).angles[1]);
-        if (local_ac->steerGraph == (GraphFloat *)0x0) {
-          local_c8 = local_b0->rotVel[1] * velInfluence;
-          fVar5 = local_b8 * local_b4 - local_c8;
+        scale = (vehHelicopterAlwaysFaceCameraRate->current).value;
+        diff = AngleNormalize180((player->client->ps).viewangles[1] - (veh->phys).angles[1]);
+        if (info->steerGraph == (GraphFloat *)0x0) {
+          velRatio = phys->rotVel[1] * velInfluence;
+          fVar5 = diff * scale - velRatio;
           local_114 = fVar5;
           if (0.0 <= fVar5 - 180.0) {
             local_114 = 180.0;
@@ -1263,7 +1284,7 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
           else {
             local_188 = -180.0;
           }
-          local_b8 = local_188;
+          diff = local_188;
           if (local_188 - 127.0 < 0.0) {
             local_11c = local_188;
           }
@@ -1276,10 +1297,10 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
           else {
             local_18c = -127.0;
           }
-          local_a1 = (schar)(int)local_18c;
+          local_a1 = (char)(int)local_18c;
         }
         else {
-          fVar5 = (local_b8 / (local_ac->turretViewLimits).horizSpanLeft) * local_b4;
+          fVar5 = (diff / (info->turretViewLimits).horizSpanLeft) * scale;
           local_fc = fVar5;
           if (0.0 <= fVar5 - 1.0) {
             local_fc = 1.0;
@@ -1290,12 +1311,12 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
           else {
             local_180 = -1.0;
           }
-          local_c4 = local_180;
-          local_c4 = GraphFloat_GetValue(local_ac->steerGraph,ABS(local_180));
-          if (local_b8 < 0.0) {
-            local_c4 = local_c4 * -1.0;
+          fraction = local_180;
+          fraction = GraphFloat_GetValue(info->steerGraph,ABS(local_180));
+          if (diff < 0.0) {
+            fraction = fraction * -1.0;
           }
-          fVar5 = local_c4 * 128.0;
+          fVar5 = fraction * 128.0;
           local_184 = -viewDiffInfleunce;
           local_108 = fVar5;
           if (0.0 <= fVar5 - viewDiffInfleunce) {
@@ -1304,37 +1325,37 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
           if (local_184 - fVar5 < 0.0) {
             local_184 = local_108;
           }
-          local_bc = local_184;
-          local_c0 = 0.0;
-          if (((local_8->client->ps).pm_flags & 0xc00U) == 0) {
-            local_c0 = ((float)(int)local_9c->yawmove / 128.0) * controllerInfleunce;
+          viewDiffMove = local_184;
+          controllerMove = 0.0;
+          if (((player->client->ps).pm_flags & 0xc00U) == 0) {
+            controllerMove = ((float)(int)usercmd->yawmove / 128.0) * controllerInfleunce;
           }
-          local_a1 = (schar)(int)(local_184 + local_c0);
+          local_a1 = (char)(int)(local_184 + controllerMove);
         }
-        bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0xb);
+        bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xb);
         if ((bVar3) && ((vehHelicopterFreeLook->current).enabled != false)) {
           local_a1 = '\0';
         }
         else {
-          pgVar1 = local_8->client;
-          local_80 = (pgVar1->ps).viewangles[0];
+          pgVar1 = player->client;
+          viewangles = (pgVar1->ps).viewangles[0];
           local_7c = (pgVar1->ps).viewangles[1];
           local_78 = (pgVar1->ps).viewangles[2];
         }
       }
     }
-    if ((local_a8->flags & 0x200U) != 0) {
-      bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x24);
+    if ((veh->flags & 0x200U) != 0) {
+      bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x24);
       if (bVar3) {
-        local_a8->heliHeightLockOffset = local_a8->heliHeightLockOffset + frame_inc;
+        veh->heliHeightLockOffset = veh->heliHeightLockOffset + frame_inc;
       }
       else {
-        bVar3 = bitarray<51>::testBit(&local_9c->button_bits,0x25);
+        bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0x25);
         if (bVar3) {
-          local_a8->heliHeightLockOffset = local_a8->heliHeightLockOffset - frame_inc;
+          veh->heliHeightLockOffset = veh->heliHeightLockOffset - frame_inc;
         }
       }
-      fVar5 = local_a8->heliHeightLockOffset;
+      fVar5 = veh->heliHeightLockOffset;
       local_124 = fVar5;
       if (0.0 <= fVar5 - max_height_offset) {
         local_124 = max_height_offset;
@@ -1345,13 +1366,13 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
       else {
         local_190 = 0.0;
       }
-      local_a8->heliHeightLockOffset = local_190;
-      local_a2 = VEH_HandleHeliLockHeight(param_1);
+      veh->heliHeightLockOffset = local_190;
+      local_a2 = VEH_HandleHeliLockHeight(ent);
     }
     if (1 < (player_topDownCamMode->current).integer) {
-      local_e8 = (float)(int)local_9c->forwardmove;
-      local_e4 = -(float)(int)local_9c->rightmove;
-      fVar5 = Vec2Normalize(&local_e8);
+      moveVec = (float)(int)usercmd->forwardmove;
+      local_e4 = -(float)(int)usercmd->rightmove;
+      fVar5 = Vec2Normalize(&moveVec);
       local_138 = fVar5;
       if (0.0 <= fVar5 - 127.0) {
         local_138 = 127.0;
@@ -1362,112 +1383,112 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
       else {
         local_194 = -127.0;
       }
-      local_dc = local_194;
-      local_e0 = vectoyaw(&local_e8);
-      local_e0 = local_e0 + (player_topDownCamAngles->current).vector[1];
-      local_cc = AngleDelta(local_e0,local_b0->angles[1]);
-      local_cc = -local_cc;
-      YawVectors(local_cc,&local_d8,(float *)0x0);
-      local_a4 = (char)(int)(local_d8 * local_dc);
-      local_a3 = (schar)(int)(local_d4 * local_dc);
+      len = local_194;
+      fVar5 = vectoyaw(&moveVec);
+      yaw = fVar5 + (player_topDownCamAngles->current).vector[1];
+      fVar5 = AngleDelta(yaw,phys->angles[1]);
+      deltaYaw = -fVar5;
+      YawVectors(deltaYaw,&temp,(float *)0x0);
+      move = (char)(int)(temp * len);
+      local_a3 = (schar)(int)(local_d4 * len);
     }
   }
-  HELI_CalcAccel(param_1,&local_a4,local_68,&local_98,&local_80);
-  local_b0->rotVel[1] = local_94 * 0.05 + local_b0->rotVel[1];
+  HELI_CalcAccel(ent,&move,bodyAccel,&rotAccel,&viewangles);
+  phys->rotVel[1] = local_94 * 0.05 + phys->rotVel[1];
   if ((vehHelicopterAlwaysFaceCamera->current).enabled != false) {
-    local_b0->rotVel[1] =
-         local_b0->rotVel[1] - local_b0->rotVel[1] * 0.05 * (vehHelicopterRotDecel->current).value;
+    phys->rotVel[1] =
+         phys->rotVel[1] - phys->rotVel[1] * 0.05 * (vehHelicopterRotDecel->current).value;
   }
-  fVar5 = AngleNormalize180(local_b0->rotVel[1] * 0.05 + local_b0->prevAngles[1]);
-  local_b0->angles[1] = fVar5;
-  local_b0->angles[0] = local_98;
-  local_b0->angles[2] = local_90;
-  if ((((((uint)local_b0->angles[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)local_b0->angles[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)local_b0->angles[2] & 0x7f800000) == 0x7f800000)) &&
+  fVar5 = AngleNormalize180(phys->rotVel[1] * 0.05 + phys->prevAngles[1]);
+  phys->angles[1] = fVar5;
+  phys->angles[0] = rotAccel;
+  phys->angles[2] = local_90;
+  if ((((((uint)phys->angles[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)phys->angles[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)phys->angles[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x36b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_20 = 0.0;
-  local_1c = local_b0->angles[1];
+  yawAngles = 0.0;
+  local_1c = phys->angles[1];
   local_18 = 0;
-  AngleVectors(&local_20,local_50,local_44,local_38);
+  AngleVectors(&yawAngles,axis,local_44,local_38);
   local_2c = 0;
   local_28 = 0;
   local_24 = 0;
-  MatrixTransformVector(local_68,&local_50,&local_5c);
+  MatrixTransformVector(bodyAccel,&axis,&worldAccel);
   if ((vehHelicopterSoftCollisions->current).enabled != false) {
-    HELI_SoftenCollisions(param_1,&local_5c);
+    HELI_SoftenCollisions(ent,&worldAccel);
   }
-  local_b0->vel[0] = local_5c * 0.05 + local_b0->vel[0];
-  local_b0->vel[1] = local_58 * 0.05 + local_b0->vel[1];
-  local_b0->vel[2] = local_54 * 0.05 + local_b0->vel[2];
-  if (((local_b0->vel[0] == 0.0) && (local_b0->vel[1] == 0.0)) && (local_b0->vel[2] == 0.0)) {
+  phys->vel[0] = worldAccel * 0.05 + phys->vel[0];
+  phys->vel[1] = local_58 * 0.05 + phys->vel[1];
+  phys->vel[2] = local_54 * 0.05 + phys->vel[2];
+  if (((phys->vel[0] == 0.0) && (phys->vel[1] == 0.0)) && (phys->vel[2] == 0.0)) {
     bVar3 = true;
   }
   else {
     bVar3 = false;
   }
   if (!bVar3) {
-    local_14 = local_b0->vel[0];
-    local_10 = local_b0->vel[1];
-    local_c = local_b0->vel[2];
-    local_8c = local_b0->origin[0];
-    local_88 = local_b0->origin[1];
-    local_84 = local_b0->origin[2];
-    VEH_ClearGround(param_1);
-    iVar4 = VEH_SlideMove(param_1,0);
-    local_9d = iVar4 != 0;
-    if ((bool)local_9d) {
-      local_74 = local_b0->origin[0] - (local_14 * 0.05 + local_8c);
-      local_70 = local_b0->origin[1] - (local_10 * 0.05 + local_88);
-      local_6c = local_b0->origin[2] - (local_c * 0.05 + local_84);
-      fVar5 = Vec3Normalize(&local_74);
+    startVel = phys->vel[0];
+    local_10 = phys->vel[1];
+    local_c = phys->vel[2];
+    startPos = phys->origin[0];
+    local_88 = phys->origin[1];
+    local_84 = phys->origin[2];
+    VEH_ClearGround(ent);
+    iVar4 = VEH_SlideMove(ent,0);
+    bumped = iVar4 != 0;
+    if (bumped) {
+      collision = phys->origin[0] - (startVel * 0.05 + startPos);
+      local_70 = phys->origin[1] - (local_10 * 0.05 + local_88);
+      local_6c = phys->origin[2] - (local_c * 0.05 + local_84);
+      fVar5 = Vec3Normalize(&collision);
       if (0.0 < fVar5) {
-        Scr_AddVector(&local_74,SCRIPTINSTANCE_SERVER);
-        Scr_AddVector(&local_14,SCRIPTINSTANCE_SERVER);
-        Scr_Notify(param_1,scr_const.veh_collision,2);
+        Scr_AddVector(&collision,SCRIPTINSTANCE_SERVER);
+        Scr_AddVector(&startVel,SCRIPTINSTANCE_SERVER);
+        Scr_Notify(ent,scr_const.veh_collision,2);
         fVar5 = vel_landing_scale;
         if (0.95 < local_6c) {
-          local_b0->vel[0] = vel_landing_scale * local_b0->vel[0];
-          local_b0->vel[1] = fVar5 * local_b0->vel[1];
-          local_b0->vel[2] = fVar5 * local_b0->vel[2];
+          phys->vel[0] = vel_landing_scale * phys->vel[0];
+          phys->vel[1] = fVar5 * phys->vel[1];
+          phys->vel[2] = fVar5 * phys->vel[2];
         }
       }
     }
   }
-  VEH_CheckForPredictedCrash(param_1);
-  MatrixTransposeTransformVector43(local_b0->vel,&local_50,local_b0->bodyVel);
-  VEH_UpdateVelocityWithRotation(param_1);
-  fVar5 = Abs((phys_vec3 *)local_b0->vel);
-  local_a8->speed = fVar5;
-  if ((local_a8->speed < 0.0) &&
+  VEH_CheckForPredictedCrash(ent);
+  MatrixTransposeTransformVector43(phys->vel,&axis,phys->bodyVel);
+  VEH_UpdateVelocityWithRotation(ent);
+  fVar5 = Abs((phys_vec3 *)phys->vel);
+  veh->speed = fVar5;
+  if ((veh->speed < 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x3a0,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_ac->isDrivable != 0) && ((vehHelicopterboundsOn->current).enabled != false)) {
-    local_b0->origin[2] = (float)(vehHelicopterboundMapHeight->current).integer;
-    if (local_b0->origin[0] <= (vehHelicopterboundMapUpperLeftX->current).value &&
-        (vehHelicopterboundMapUpperLeftX->current).value != local_b0->origin[0]) {
-      local_b0->origin[0] = (float)(vehHelicopterboundMapUpperLeftX->current).integer;
+  if ((info->isDrivable != 0) && ((vehHelicopterboundsOn->current).enabled != false)) {
+    phys->origin[2] = (float)(vehHelicopterboundMapHeight->current).integer;
+    if (phys->origin[0] <= (vehHelicopterboundMapUpperLeftX->current).value &&
+        (vehHelicopterboundMapUpperLeftX->current).value != phys->origin[0]) {
+      phys->origin[0] = (float)(vehHelicopterboundMapUpperLeftX->current).integer;
     }
-    if ((vehHelicopterboundMapLowerRightX->current).value <= local_b0->origin[0] &&
-        local_b0->origin[0] != (vehHelicopterboundMapLowerRightX->current).value) {
-      local_b0->origin[0] = (float)(vehHelicopterboundMapLowerRightX->current).integer;
+    if ((vehHelicopterboundMapLowerRightX->current).value <= phys->origin[0] &&
+        phys->origin[0] != (vehHelicopterboundMapLowerRightX->current).value) {
+      phys->origin[0] = (float)(vehHelicopterboundMapLowerRightX->current).integer;
     }
-    if (local_b0->origin[1] <= (vehHelicopterboundMapUpperLeftY->current).value &&
-        (vehHelicopterboundMapUpperLeftY->current).value != local_b0->origin[1]) {
-      local_b0->origin[1] = (float)(vehHelicopterboundMapUpperLeftY->current).integer;
+    if (phys->origin[1] <= (vehHelicopterboundMapUpperLeftY->current).value &&
+        (vehHelicopterboundMapUpperLeftY->current).value != phys->origin[1]) {
+      phys->origin[1] = (float)(vehHelicopterboundMapUpperLeftY->current).integer;
     }
-    if ((vehHelicopterboundMapLowerRightY->current).value <= local_b0->origin[1] &&
-        local_b0->origin[1] != (vehHelicopterboundMapLowerRightY->current).value) {
-      local_b0->origin[1] = (float)(vehHelicopterboundMapLowerRightY->current).integer;
+    if ((vehHelicopterboundMapLowerRightY->current).value <= phys->origin[1] &&
+        phys->origin[1] != (vehHelicopterboundMapLowerRightY->current).value) {
+      phys->origin[1] = (float)(vehHelicopterboundMapLowerRightY->current).integer;
     }
   }
   return;
@@ -1478,16 +1499,16 @@ void __cdecl VEH_UpdateClientChopper(gentity_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl Vehicle_GetFakeLift(float *param_1,float *param_2,vehicle_info_t *param_3)
+float __cdecl Vehicle_GetFakeLift(float *planeForward,float *planeUp,vehicle_info_t *info)
 
 {
-  float local_8;
+  float dotOffUp;
   
-  local_8 = *param_2 * 0.0 + param_2[1] * 0.0 + param_2[2] * 1.0;
-  if (local_8 < 0.0) {
-    local_8 = 0.0;
+  dotOffUp = *planeUp * 0.0 + planeUp[1] * 0.0 + planeUp[2] * 1.0;
+  if (dotOffUp < 0.0) {
+    dotOffUp = 0.0;
   }
-  return (1.0 - local_8) * -(vehPlaneFakeLiftForce->current).value;
+  return (1.0 - dotOffUp) * -(vehPlaneFakeLiftForce->current).value;
 }
 
 
@@ -1495,7 +1516,7 @@ float __cdecl Vehicle_GetFakeLift(float *param_1,float *param_2,vehicle_info_t *
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-float __cdecl Vehicle_AdjustRollForInputDeadZone(float param_1,vehicle_info_t *param_2)
+float __cdecl Vehicle_AdjustRollForInputDeadZone(float rollPercent,vehicle_info_t *info)
 
 {
   code *pcVar1;
@@ -1514,20 +1535,20 @@ float __cdecl Vehicle_AdjustRollForInputDeadZone(float param_1,vehicle_info_t *p
       return (float)fVar4;
     }
   }
-  if (((vehPlaneRollDeadZone->current).value <= param_1) ||
-     (param_1 <= -(vehPlaneRollDeadZone->current).value)) {
-    if (param_1 < (vehPlaneRollDeadZone->current).value ||
-        param_1 == (vehPlaneRollDeadZone->current).value) {
-      if (-(vehPlaneRollDeadZone->current).value <= param_1) {
+  if (((vehPlaneRollDeadZone->current).value <= rollPercent) ||
+     (rollPercent <= -(vehPlaneRollDeadZone->current).value)) {
+    if (rollPercent < (vehPlaneRollDeadZone->current).value ||
+        rollPercent == (vehPlaneRollDeadZone->current).value) {
+      if (-(vehPlaneRollDeadZone->current).value <= rollPercent) {
         fVar2 = 0.0;
       }
       else {
-        fVar2 = (param_1 + (vehPlaneRollDeadZone->current).value) /
+        fVar2 = (rollPercent + (vehPlaneRollDeadZone->current).value) /
                 (1.0 - (vehPlaneRollDeadZone->current).value);
       }
     }
     else {
-      fVar2 = (param_1 - (vehPlaneRollDeadZone->current).value) /
+      fVar2 = (rollPercent - (vehPlaneRollDeadZone->current).value) /
               (1.0 - (vehPlaneRollDeadZone->current).value);
     }
   }
@@ -1540,7 +1561,7 @@ float __cdecl Vehicle_AdjustRollForInputDeadZone(float param_1,vehicle_info_t *p
 
 // 0061B840  Vehicle_AddRotate  (game/g_helicopter.cpp:1013)
 
-void __cdecl Vehicle_AddRotate(vehicle_physic_t *param_1,float param_2,float param_3,float param_4)
+void __cdecl Vehicle_AddRotate(vehicle_physic_t *phys,float fRoll,float fPitch,float fYaw)
 
 {
   float fVar1;
@@ -1549,87 +1570,78 @@ void __cdecl Vehicle_AddRotate(vehicle_physic_t *param_1,float param_2,float par
   float10 fVar4;
   float fVar5;
   float fVar6;
-  int local_90;
-  int local_8c;
-  int local_88;
-  int local_84;
-  int local_80;
-  float local_7c [6];
+  int i_4;
+  int i_3;
+  int i_2;
+  int j;
+  int i;
+  float axisOut [6];
   float local_64 [3];
-  float local_58;
+  float desiredAngle;
   float local_54;
   float local_50;
-  float local_4c [6];
+  float axisIn [6];
   float local_34 [6];
-  float local_1c;
-  int local_18;
-  float local_8;
+  float fCos;
+  int iAxis;
+  float fSin;
   
-  for (local_80 = 0; local_80 < 3; local_80 = local_80 + 1) {
-    for (local_84 = 0; local_84 < 3; local_84 = local_84 + 1) {
-      local_7c[local_80 * 3 + local_84] = 0.0;
+  for (i = 0; i < 3; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      axisOut[i * 3 + j] = 0.0;
     }
   }
-  AnglesToAxis(param_1->angles,(float (*) [3])local_4c);
-  fVar3 = (float10)fcos((float10)(param_2 * 0.017453292));
-  fVar4 = (float10)fsin((float10)(param_2 * 0.017453292));
-  local_1c = (float)fVar3;
-  local_8 = (float)fVar4;
-  local_18 = 0;
-  for (local_88 = 0; local_88 < 3; local_88 = local_88 + 1) {
-    local_7c[local_18 * 3 + local_88] =
-         local_7c[local_18 * 3 + local_88] + local_4c[local_18 * 3 + local_88];
-    local_7c[((local_18 + 1) % 3) * 3 + local_88] =
-         local_4c[((local_18 + 1) % 3) * 3 + local_88] * local_1c +
-         local_4c[((local_18 + 2) % 3) * 3 + local_88] * local_8 +
-         local_7c[((local_18 + 1) % 3) * 3 + local_88];
-    local_7c[((local_18 + 2) % 3) * 3 + local_88] =
-         (local_4c[((local_18 + 2) % 3) * 3 + local_88] * local_1c -
-         local_4c[((local_18 + 1) % 3) * 3 + local_88] * local_8) +
-         local_7c[((local_18 + 2) % 3) * 3 + local_88];
+  AnglesToAxis(phys->angles,(float (*) [3])axisIn);
+  fVar3 = (float10)fcos((float10)(fRoll * 0.017453292));
+  fVar4 = (float10)fsin((float10)(fRoll * 0.017453292));
+  fCos = (float)fVar3;
+  fSin = (float)fVar4;
+  iAxis = 0;
+  for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+    axisOut[iAxis * 3 + i_2] = axisOut[iAxis * 3 + i_2] + axisIn[iAxis * 3 + i_2];
+    axisOut[((iAxis + 1) % 3) * 3 + i_2] =
+         axisIn[((iAxis + 1) % 3) * 3 + i_2] * fCos + axisIn[((iAxis + 2) % 3) * 3 + i_2] * fSin +
+         axisOut[((iAxis + 1) % 3) * 3 + i_2];
+    axisOut[((iAxis + 2) % 3) * 3 + i_2] =
+         (axisIn[((iAxis + 2) % 3) * 3 + i_2] * fCos - axisIn[((iAxis + 1) % 3) * 3 + i_2] * fSin) +
+         axisOut[((iAxis + 2) % 3) * 3 + i_2];
   }
-  local_18 = 1;
-  fVar3 = (float10)fcos((float10)(param_3 * 0.017453292));
-  fVar4 = (float10)fsin((float10)(param_3 * 0.017453292));
-  local_1c = (float)fVar3;
-  local_8 = (float)fVar4;
-  for (local_8c = 0; local_8c < 3; local_8c = local_8c + 1) {
-    local_7c[local_18 * 3 + local_8c] =
-         local_7c[local_18 * 3 + local_8c] + local_4c[local_18 * 3 + local_8c];
-    local_7c[((local_18 + 1) % 3) * 3 + local_8c] =
-         local_4c[((local_18 + 1) % 3) * 3 + local_8c] * local_1c +
-         local_4c[((local_18 + 2) % 3) * 3 + local_8c] * local_8 +
-         local_7c[((local_18 + 1) % 3) * 3 + local_8c];
-    local_7c[((local_18 + 2) % 3) * 3 + local_8c] =
-         (local_4c[((local_18 + 2) % 3) * 3 + local_8c] * local_1c -
-         local_4c[((local_18 + 1) % 3) * 3 + local_8c] * local_8) +
-         local_7c[((local_18 + 2) % 3) * 3 + local_8c];
+  iAxis = 1;
+  fVar3 = (float10)fcos((float10)(fPitch * 0.017453292));
+  fVar4 = (float10)fsin((float10)(fPitch * 0.017453292));
+  fCos = (float)fVar3;
+  fSin = (float)fVar4;
+  for (i_3 = 0; i_3 < 3; i_3 = i_3 + 1) {
+    axisOut[iAxis * 3 + i_3] = axisOut[iAxis * 3 + i_3] + axisIn[iAxis * 3 + i_3];
+    axisOut[((iAxis + 1) % 3) * 3 + i_3] =
+         axisIn[((iAxis + 1) % 3) * 3 + i_3] * fCos + axisIn[((iAxis + 2) % 3) * 3 + i_3] * fSin +
+         axisOut[((iAxis + 1) % 3) * 3 + i_3];
+    axisOut[((iAxis + 2) % 3) * 3 + i_3] =
+         (axisIn[((iAxis + 2) % 3) * 3 + i_3] * fCos - axisIn[((iAxis + 1) % 3) * 3 + i_3] * fSin) +
+         axisOut[((iAxis + 2) % 3) * 3 + i_3];
   }
-  local_18 = 2;
-  fVar3 = (float10)fcos((float10)(param_4 * 0.017453292));
-  fVar4 = (float10)fsin((float10)(param_4 * 0.017453292));
-  local_1c = (float)fVar3;
-  local_8 = (float)fVar4;
-  for (local_90 = 0; local_90 < 3; local_90 = local_90 + 1) {
-    local_7c[local_18 * 3 + local_90] =
-         local_7c[local_18 * 3 + local_90] + local_4c[local_18 * 3 + local_90];
-    local_7c[((local_18 + 1) % 3) * 3 + local_90] =
-         local_4c[((local_18 + 1) % 3) * 3 + local_90] * local_1c +
-         local_4c[((local_18 + 2) % 3) * 3 + local_90] * local_8 +
-         local_7c[((local_18 + 1) % 3) * 3 + local_90];
-    local_7c[((local_18 + 2) % 3) * 3 + local_90] =
-         (local_4c[((local_18 + 2) % 3) * 3 + local_90] * local_1c -
-         local_4c[((local_18 + 1) % 3) * 3 + local_90] * local_8) +
-         local_7c[((local_18 + 2) % 3) * 3 + local_90];
+  iAxis = 2;
+  fVar3 = (float10)fcos((float10)(fYaw * 0.017453292));
+  fVar4 = (float10)fsin((float10)(fYaw * 0.017453292));
+  fCos = (float)fVar3;
+  fSin = (float)fVar4;
+  for (i_4 = 0; i_4 < 3; i_4 = i_4 + 1) {
+    axisOut[iAxis * 3 + i_4] = axisOut[iAxis * 3 + i_4] + axisIn[iAxis * 3 + i_4];
+    axisOut[((iAxis + 1) % 3) * 3 + i_4] =
+         axisIn[((iAxis + 1) % 3) * 3 + i_4] * fCos + axisIn[((iAxis + 2) % 3) * 3 + i_4] * fSin +
+         axisOut[((iAxis + 1) % 3) * 3 + i_4];
+    axisOut[((iAxis + 2) % 3) * 3 + i_4] =
+         (axisIn[((iAxis + 2) % 3) * 3 + i_4] * fCos - axisIn[((iAxis + 1) % 3) * 3 + i_4] * fSin) +
+         axisOut[((iAxis + 2) % 3) * 3 + i_4];
   }
-  AxisToAngles((float (*) [3])local_7c,&local_58);
-  fVar5 = aircraftRotLag * (local_54 - param_1->angles[1]);
-  fVar6 = aircraftRotLag * (local_50 - param_1->angles[2]);
-  fVar1 = param_1->angles[1];
-  fVar2 = param_1->angles[2];
-  param_1->angles[0] = param_1->angles[0] + aircraftRotLag * (local_58 - param_1->angles[0]);
-  param_1->angles[1] = fVar1 + fVar5;
-  param_1->angles[2] = fVar2 + fVar6;
+  AxisToAngles((float (*) [3])axisOut,&desiredAngle);
+  fVar5 = aircraftRotLag * (local_54 - phys->angles[1]);
+  fVar6 = aircraftRotLag * (local_50 - phys->angles[2]);
+  fVar1 = phys->angles[1];
+  fVar2 = phys->angles[2];
+  phys->angles[0] = phys->angles[0] + aircraftRotLag * (desiredAngle - phys->angles[0]);
+  phys->angles[1] = fVar1 + fVar5;
+  phys->angles[2] = fVar2 + fVar6;
   return;
 }
 
@@ -1643,7 +1655,7 @@ void __cdecl Vehicle_AddRotate(vehicle_physic_t *param_1,float param_2,float par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl VEH_UpdateClientPlane(gentity_s *param_1)
+void __cdecl VEH_UpdateClientPlane(gentity_s *ent)
 
 {
   gclient_s *pgVar1;
@@ -1652,140 +1664,141 @@ void __cdecl VEH_UpdateClientPlane(gentity_s *param_1)
   int iVar4;
   float fVar5;
   float fVar6;
-  float local_114;
+  float actualPitch;
+  float target_axis;
   float local_110;
   float local_10c;
   float local_fc;
   float local_f8;
   float local_f4;
-  float local_f0;
+  float gravityVec;
   float local_ec;
   float local_e8;
-  float local_e4;
+  float end;
   float local_e0;
   float local_dc;
-  float local_d8;
-  float local_d4;
-  undefined4 local_d0;
+  float desiredPitch;
+  float actualYaw;
+  undefined4 zerovec;
   undefined4 local_cc;
   undefined4 local_c8;
-  float local_c4;
-  float local_c0;
-  undefined4 local_bc;
+  float desiredRoll;
+  float desiredYaw;
+  undefined4 up;
   undefined4 local_b8;
   float local_b4;
-  float local_b0;
-  float local_ac;
+  float dotOffUp;
+  float upVec;
   float local_a8;
   float local_a4;
-  float local_a0;
-  float local_9c;
-  float local_98;
-  vehicle_physic_t *local_94;
-  vehicle_info_t *local_90;
-  float local_8c;
-  scr_vehicle_s *local_88;
-  schar local_84;
+  float actualRoll;
+  float desiredDelta;
+  float speedStick;
+  vehicle_physic_t *phys;
+  vehicle_info_t *info;
+  float yawStick;
+  scr_vehicle_s *veh;
+  schar move;
   schar local_83;
   char local_82;
-  schar local_81;
-  usercmd_s *local_80;
-  float local_7c;
-  undefined4 local_78;
+  char local_81;
+  usercmd_s *usercmd;
+  float pitchStick;
+  undefined4 trace;
   undefined4 local_74;
   undefined4 local_70;
   undefined4 local_6c;
   uint local_40;
-  float local_3c [12];
-  gentity_s *local_c;
-  float local_8;
+  float axis [12];
+  gentity_s *player;
+  float rollStick;
   
   local_40 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_84 = '\0';
+  move = '\0';
   local_83 = '\0';
   local_82 = '\0';
   local_81 = '\0';
-  local_78 = 0;
+  trace = 0;
   local_74 = 0;
   local_70 = 0;
   local_6c = 0;
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x439,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x43a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_88 = param_1->scr_vehicle;
-  local_94 = &local_88->phys;
-  local_90 = BG_GetVehicleInfo((int)local_88->infoIdx);
-  local_8 = 0.0;
-  local_7c = 0.0;
-  local_8c = 0.0;
-  local_98 = 0.0;
-  iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  veh = ent->scr_vehicle;
+  phys = &veh->phys;
+  info = BG_GetVehicleInfo((int)veh->infoIdx);
+  rollStick = 0.0;
+  pitchStick = 0.0;
+  yawStick = 0.0;
+  speedStick = 0.0;
+  iVar4 = EntHandle::isDefined(&(ent->r).ownerNum);
   if (iVar4 != 0) {
-    local_c = EntHandle::ent(&(param_1->r).ownerNum);
-    if ((local_c->client == (gclient_s *)0x0) &&
+    player = EntHandle::ent(&(ent->r).ownerNum);
+    if ((player->client == (gclient_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x449,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_c->client->linkAnglesFrac = 0.0;
-    pgVar1 = local_c->client;
-    local_80 = &(pgVar1->sess).cmd;
-    if (((local_c->client->ps).pm_flags & 0xc00U) == 0) {
-      local_84 = (pgVar1->sess).cmd.forwardmove;
+    player->client->linkAnglesFrac = 0.0;
+    pgVar1 = player->client;
+    usercmd = &(pgVar1->sess).cmd;
+    if (((player->client->ps).pm_flags & 0xc00U) == 0) {
+      move = (pgVar1->sess).cmd.forwardmove;
       local_83 = (pgVar1->sess).cmd.rightmove;
       bVar3 = bitarray<51>::testBit(&(pgVar1->sess).cmd.button_bits,0xb);
       if (bVar3) {
-        local_c->client->linkAnglesFrac = 1.0;
-        local_c->client->linkAnglesMinClamp[1] = -(local_90->turretViewLimits).horizSpanRight;
-        local_c->client->linkAnglesMaxClamp[1] = (local_90->turretViewLimits).horizSpanLeft;
-        local_c->client->linkAnglesMinClamp[0] = -(local_90->turretViewLimits).vertSpanUp;
-        local_c->client->linkAnglesMaxClamp[0] = (local_90->turretViewLimits).vertSpanDown;
+        player->client->linkAnglesFrac = 1.0;
+        player->client->linkAnglesMinClamp[1] = -(info->turretViewLimits).horizSpanRight;
+        player->client->linkAnglesMaxClamp[1] = (info->turretViewLimits).horizSpanLeft;
+        player->client->linkAnglesMinClamp[0] = -(info->turretViewLimits).vertSpanUp;
+        player->client->linkAnglesMaxClamp[0] = (info->turretViewLimits).vertSpanDown;
       }
       else {
         iVar4 = (vehHelicopterYawAltitudeControls->current).integer;
         if (iVar4 == 0) {
-          bVar3 = bitarray<51>::testBit(&local_80->button_bits,0xf);
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xf);
           if (bVar3) {
-            local_8 = local_8 - 1.0;
+            rollStick = rollStick - 1.0;
           }
-          bitarray<51>::testBit(&local_80->button_bits,0xe);
-          local_8c = -(float)(int)local_80->rightmove / 128.0;
-          local_7c = (float)(int)local_80->forwardmove / 128.0;
-          local_98 = -(float)(int)local_80->pitchmove / 128.0;
-          local_8 = (float)(int)local_80->rightmove / 128.0;
-          local_8 = Vehicle_AdjustRollForInputDeadZone(local_8,local_90);
+          bitarray<51>::testBit(&usercmd->button_bits,0xe);
+          yawStick = -(float)(int)usercmd->rightmove / 128.0;
+          pitchStick = (float)(int)usercmd->forwardmove / 128.0;
+          speedStick = -(float)(int)usercmd->pitchmove / 128.0;
+          rollStick = (float)(int)usercmd->rightmove / 128.0;
+          rollStick = Vehicle_AdjustRollForInputDeadZone(rollStick,info);
         }
         else if (iVar4 == 1) {
-          local_82 = local_80->pitchmove;
-          bVar3 = bitarray<51>::testBit(&local_80->button_bits,0xf);
+          local_82 = usercmd->pitchmove;
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xf);
           if (bVar3) {
             local_81 = '\x7f';
           }
-          bVar3 = bitarray<51>::testBit(&local_80->button_bits,0xe);
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xe);
           if (bVar3) {
             local_81 = local_81 + -0x7f;
           }
         }
         else if (iVar4 == 2) {
-          local_81 = local_80->yawmove;
-          bVar3 = bitarray<51>::testBit(&local_80->button_bits,0xe);
+          local_81 = usercmd->yawmove;
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xe);
           if (bVar3) {
             local_82 = '\x7f';
           }
-          bVar3 = bitarray<51>::testBit(&local_80->button_bits,0xf);
+          bVar3 = bitarray<51>::testBit(&usercmd->button_bits,0xf);
           if (bVar3) {
             local_82 = local_82 + -0x7f;
           }
@@ -1795,55 +1808,55 @@ void __cdecl VEH_UpdateClientPlane(gentity_s *param_1)
         }
       }
     }
-    AnglesToAxis(local_94->angles,(float (*) [3])&local_114);
-    local_c4 = local_90->maxBodyRoll * 0.05 * local_8;
-    local_d8 = local_90->maxBodyPitch * 0.05 * local_7c;
-    local_c0 = local_90->rotRate * 0.05 * local_8c;
-    local_a0 = DiffTrack(local_c4,local_94->rotVel[2],(vehPlaneRollAccel->current).value,0.05);
-    local_d4 = DiffTrack(local_c0,local_94->rotVel[1],local_90->rotRate,0.05);
-    local_d4 = local_d4 - local_a0 * (vehPlaneYawFromRollScale->current).value;
-    local_bc = 0;
+    AnglesToAxis(phys->angles,(float (*) [3])&target_axis);
+    desiredRoll = info->maxBodyRoll * 0.05 * rollStick;
+    desiredPitch = info->maxBodyPitch * 0.05 * pitchStick;
+    desiredYaw = info->rotRate * 0.05 * yawStick;
+    actualRoll = DiffTrack(desiredRoll,phys->rotVel[2],(vehPlaneRollAccel->current).value,0.05);
+    fVar5 = DiffTrack(desiredYaw,phys->rotVel[1],info->rotRate,0.05);
+    actualYaw = fVar5 - actualRoll * (vehPlaneYawFromRollScale->current).value;
+    up = 0;
     local_b8 = 0;
     local_b4 = 1.0;
-    local_b0 = local_fc * 0.0 + local_f8 * 0.0 + local_f4 * 1.0;
-    if (local_b0 < 0.0) {
-      local_b0 = 0.0;
+    dotOffUp = local_fc * 0.0 + local_f8 * 0.0 + local_f4 * 1.0;
+    if (dotOffUp < 0.0) {
+      dotOffUp = 0.0;
     }
-    fVar5 = DiffTrack(local_d8,local_94->rotVel[0],(vehPlanePitchAccel->current).value,0.05);
-    fVar6 = Vehicle_GetFakeLift(&local_114,&local_fc,local_90);
-    Vehicle_AddRotate(local_94,local_a0,fVar6 + fVar5,local_d4);
-    local_9c = local_98 * 0.05 * local_90->accel;
-    local_94->bodyVel[0] = local_94->bodyVel[0] + local_9c;
-    if (local_94->bodyVel[0] <= (vehPlaneLowSpeed->current).value &&
-        (vehPlaneLowSpeed->current).value != local_94->bodyVel[0]) {
-      local_94->bodyVel[0] = (float)(vehPlaneLowSpeed->current).integer;
+    fVar5 = DiffTrack(desiredPitch,phys->rotVel[0],(vehPlanePitchAccel->current).value,0.05);
+    fVar6 = Vehicle_GetFakeLift(&target_axis,&local_fc,info);
+    Vehicle_AddRotate(phys,actualRoll,fVar6 + fVar5,actualYaw);
+    desiredDelta = speedStick * 0.05 * info->accel;
+    phys->bodyVel[0] = phys->bodyVel[0] + desiredDelta;
+    if (phys->bodyVel[0] <= (vehPlaneLowSpeed->current).value &&
+        (vehPlaneLowSpeed->current).value != phys->bodyVel[0]) {
+      phys->bodyVel[0] = (float)(vehPlaneLowSpeed->current).integer;
     }
-    if (local_90->maxSpeed <= local_94->bodyVel[0] && local_94->bodyVel[0] != local_90->maxSpeed) {
-      local_94->bodyVel[0] = local_90->maxSpeed;
+    if (info->maxSpeed <= phys->bodyVel[0] && phys->bodyVel[0] != info->maxSpeed) {
+      phys->bodyVel[0] = info->maxSpeed;
     }
-    AnglesToAxis(local_94->angles,(float (*) [3])local_3c);
-    local_94->vel[0] = local_114 * local_94->bodyVel[0];
-    local_94->vel[1] = local_110 * local_94->bodyVel[0];
-    local_94->vel[2] = local_10c * local_94->bodyVel[0];
-    local_f0 = (vehPlaneGravityForce->current).value * 0.0;
+    AnglesToAxis(phys->angles,(float (*) [3])axis);
+    phys->vel[0] = target_axis * phys->bodyVel[0];
+    phys->vel[1] = local_110 * phys->bodyVel[0];
+    phys->vel[2] = local_10c * phys->bodyVel[0];
+    gravityVec = (vehPlaneGravityForce->current).value * 0.0;
     local_ec = (vehPlaneGravityForce->current).value * 0.0;
     local_e8 = (vehPlaneGravityForce->current).value * -1.0;
-    local_ac = local_fc * (vehPlaneLiftForce->current).value;
+    upVec = local_fc * (vehPlaneLiftForce->current).value;
     local_a8 = local_f8 * (vehPlaneLiftForce->current).value;
     local_a4 = local_f4 * (vehPlaneLiftForce->current).value;
-    local_e4 = local_ac * 0.05 + local_f0 * 0.05 + local_94->vel[0] * 0.05 + local_94->origin[0];
-    local_e0 = local_a8 * 0.05 + local_ec * 0.05 + local_94->vel[1] * 0.05 + local_94->origin[1];
-    local_dc = local_a4 * 0.05 + local_e8 * 0.05 + local_94->vel[2] * 0.05 + local_94->origin[2];
-    local_d0 = 0;
+    end = upVec * 0.05 + gravityVec * 0.05 + phys->vel[0] * 0.05 + phys->origin[0];
+    local_e0 = local_a8 * 0.05 + local_ec * 0.05 + phys->vel[1] * 0.05 + phys->origin[1];
+    local_dc = local_a4 * 0.05 + local_e8 * 0.05 + phys->vel[2] * 0.05 + phys->origin[2];
+    zerovec = 0;
     local_cc = 0;
     local_c8 = 0;
-    VEH_CheckForCrash(param_1,&local_e4);
-    local_94->origin[0] = local_e4;
-    local_94->origin[1] = local_e0;
-    local_94->origin[2] = local_dc;
-    fVar5 = Abs((phys_vec3 *)local_94->bodyVel);
-    local_88->speed = fVar5;
-    if ((local_88->speed < 0.0) &&
+    VEH_CheckForCrash(ent,&end);
+    phys->origin[0] = end;
+    phys->origin[1] = local_e0;
+    phys->origin[2] = local_dc;
+    fVar5 = Abs((phys_vec3 *)phys->bodyVel);
+    veh->speed = fVar5;
+    if ((veh->speed < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_helicopter.cpp",0x515,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);

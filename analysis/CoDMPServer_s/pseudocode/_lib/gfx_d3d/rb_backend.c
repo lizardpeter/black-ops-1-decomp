@@ -37,6 +37,9 @@ void __cdecl RB_SetIdentity(void)
 
 // 00821660  RB_DrawFullSceneQuad  (gfx_d3d/rb_backend.cpp:543)
 
+/* WARNING: Variable defined which should be unmapped: w */
+/* WARNING: Variable defined which should be unmapped: h */
+
 void __cdecl
 RB_DrawFullSceneQuad
           (Material *param_1,uchar param_2,float param_3,float param_4,float param_5,float param_6,
@@ -49,19 +52,22 @@ RB_DrawFullSceneQuad
   uint in_EAX;
   Material *unaff_ESI;
   float fVar4;
-  Material *in_stack_fffffff4;
+  float w;
+  float h;
+  float s0;
   
   uVar1 = gfxRenderTargets[in_EAX & 0xff].height;
   fVar4 = (float)gfxRenderTargets[in_EAX & 0xff].width;
+  h._0_1_ = SUB41(fVar4,0);
   if ((gfxCmdBufState.origMaterial != unaff_ESI) || (gfxCmdBufState.origTechType != '\x04')) {
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();
     }
-    RB_BeginSurface(in_stack_fffffff4,SUB41(fVar4,0));
+    RB_BeginSurface((Material *)w,h._0_1_);
   }
   if ((0x154a < tess.vertexCount + 4) || (0x100000 < tess.indexCount + 6)) {
     RB_DrawTessSurface();
-    RB_BeginSurface(in_stack_fffffff4,SUB41(fVar4,0));
+    RB_BeginSurface((Material *)w,h._0_1_);
   }
   uVar2 = (ushort)tess.vertexCount;
   tess.indices[tess.indexCount] = uVar2 + 3;
@@ -125,6 +131,7 @@ void __cdecl RB_DrawSW4Quads(Material *param_1,int param_2)
   uchar unaff_SI;
   Material *unaff_EDI;
   float fVar5;
+  int ParticleCount;
   
   if ((gfxCmdBufState.origMaterial != in_EAX) || (gfxCmdBufState.origTechType != '\x04')) {
     if (tess.indexCount != 0) {
@@ -197,10 +204,12 @@ void __cdecl RB_DrawSW4Quads(Material *param_1,int param_2)
 
 // 00821A30  RB_DrawStretchPic  (gfx_d3d/rb_backend.cpp:607)
 
+/* WARNING: Variable defined which should be unmapped: statsTarget */
+/* WARNING: Variable defined which should be unmapped: x */
+
 void __cdecl
-RB_DrawStretchPic(Material *param_1,float param_2,float param_3,float param_4,float param_5,
-                 float param_6,float param_7,float param_8,float param_9,ulong param_10,
-                 GfxPrimStatsTarget param_11)
+RB_DrawStretchPic(Material *y,float w,float h,float s0,float t0,float s1,float t1,float param_8,
+                 float param_9,ulong param_10,GfxPrimStatsTarget param_11)
 
 {
   ushort uVar1;
@@ -210,17 +219,18 @@ RB_DrawStretchPic(Material *param_1,float param_2,float param_3,float param_4,fl
   Material *in_ECX;
   GfxColor unaff_ESI;
   Material *unaff_EDI;
-  uchar unaff_retaddr;
+  float x;
+  GfxPrimStatsTarget statsTarget;
   
   if ((gfxCmdBufState.origMaterial != unaff_EDI) || (gfxCmdBufState.origTechType != '\x04')) {
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();
     }
-    RB_BeginSurface(in_ECX,unaff_retaddr);
+    RB_BeginSurface(in_ECX,x._0_1_);
   }
   if ((0x154a < tess.vertexCount + 4) || (0x100000 < tess.indexCount + 6)) {
     RB_DrawTessSurface();
-    RB_BeginSurface(in_ECX,unaff_retaddr);
+    RB_BeginSurface(in_ECX,x._0_1_);
   }
   uVar1 = (ushort)tess.vertexCount;
   tess.indices[tess.indexCount] = uVar1 + 3;
@@ -231,41 +241,41 @@ RB_DrawStretchPic(Material *param_1,float param_2,float param_3,float param_4,fl
   tess.indices[tess.indexCount + 5] = uVar1 + 1;
   iVar2 = tess.vertexCount;
   pGVar4 = tess.verts + tess.vertexCount;
-  tess.verts[tess.vertexCount].xyzw[1] = param_2;
-  pGVar4->xyzw[0] = (float)param_1;
+  tess.verts[tess.vertexCount].xyzw[1] = w;
+  pGVar4->xyzw[0] = (float)y;
   tess.verts[iVar2].xyzw[2] = 0.0;
   tess.verts[iVar2].xyzw[3] = 1.0;
   tess.verts[iVar2].color = unaff_ESI;
   tess.verts[iVar2].normal.packed = 0x3ffe7f7f;
-  tess.verts[iVar2].texCoord[0] = param_5;
-  tess.verts[iVar2].texCoord[1] = param_6;
+  tess.verts[iVar2].texCoord[0] = t0;
+  tess.verts[iVar2].texCoord[1] = s1;
   iVar3 = tess.vertexCount;
   iVar2 = tess.vertexCount + 1;
-  tess.verts[tess.vertexCount + 1].xyzw[1] = param_2;
+  tess.verts[tess.vertexCount + 1].xyzw[1] = w;
   tess.verts[iVar3 + 1].xyzw[2] = 0.0;
   tess.verts[iVar3 + 1].xyzw[3] = 1.0;
   tess.verts[iVar3 + 1].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar3 + 1].color = unaff_ESI;
-  tess.verts[iVar2].xyzw[0] = (float)param_1 + param_3;
-  tess.verts[iVar3 + 1].texCoord[0] = param_7;
-  tess.verts[iVar3 + 1].texCoord[1] = param_6;
+  tess.verts[iVar2].xyzw[0] = (float)y + h;
+  tess.verts[iVar3 + 1].texCoord[0] = t1;
+  tess.verts[iVar3 + 1].texCoord[1] = s1;
   iVar2 = tess.vertexCount;
-  tess.verts[tess.vertexCount + 2].xyzw[0] = (float)param_1 + param_3;
-  tess.verts[iVar2 + 2].xyzw[1] = param_2 + param_4;
+  tess.verts[tess.vertexCount + 2].xyzw[0] = (float)y + h;
+  tess.verts[iVar2 + 2].xyzw[1] = w + s0;
   tess.verts[iVar2 + 2].xyzw[2] = 0.0;
   tess.verts[iVar2 + 2].xyzw[3] = 1.0;
   tess.verts[iVar2 + 2].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2 + 2].color = unaff_ESI;
-  tess.verts[iVar2 + 2].texCoord[0] = param_7;
+  tess.verts[iVar2 + 2].texCoord[0] = t1;
   tess.verts[iVar2 + 2].texCoord[1] = param_8;
   iVar2 = tess.vertexCount;
-  tess.verts[tess.vertexCount + 3].xyzw[0] = (float)param_1;
-  tess.verts[iVar2 + 3].xyzw[1] = param_2 + param_4;
+  tess.verts[tess.vertexCount + 3].xyzw[0] = (float)y;
+  tess.verts[iVar2 + 3].xyzw[1] = w + s0;
   tess.verts[iVar2 + 3].xyzw[2] = 0.0;
   tess.verts[iVar2 + 3].xyzw[3] = 1.0;
   tess.verts[iVar2 + 3].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2 + 3].color = unaff_ESI;
-  tess.verts[iVar2 + 3].texCoord[0] = param_5;
+  tess.verts[iVar2 + 3].texCoord[0] = t0;
   tess.verts[iVar2 + 3].texCoord[1] = param_8;
   tess.vertexCount = tess.vertexCount + 4;
   tess.indexCount = tess.indexCount + 6;
@@ -275,10 +285,12 @@ RB_DrawStretchPic(Material *param_1,float param_2,float param_3,float param_4,fl
 
 // 00821C10  RB_DrawStretchPicW  (gfx_d3d/rb_backend.cpp:635)
 
+/* WARNING: Variable defined which should be unmapped: statsTarget */
+/* WARNING: Variable defined which should be unmapped: x */
+
 void __cdecl
-RB_DrawStretchPicW(Material *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,float param_7,float param_8,float param_9,float param_10,
-                  ulong param_11,GfxPrimStatsTarget param_12)
+RB_DrawStretchPicW(Material *y,float w0,float w,float h,float s0,float t0,float s1,float t1,
+                  float color,float param_10,ulong param_11,GfxPrimStatsTarget param_12)
 
 {
   ushort uVar1;
@@ -287,17 +299,18 @@ RB_DrawStretchPicW(Material *param_1,float param_2,float param_3,float param_4,f
   GfxVertex *pGVar4;
   Material *unaff_ESI;
   Material *unaff_EDI;
-  uchar unaff_retaddr;
+  float x;
+  GfxPrimStatsTarget statsTarget;
   
   if ((gfxCmdBufState.origMaterial != unaff_EDI) || (gfxCmdBufState.origTechType != '\x04')) {
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();
     }
-    RB_BeginSurface(unaff_ESI,unaff_retaddr);
+    RB_BeginSurface(unaff_ESI,x._0_1_);
   }
   if ((0x154a < tess.vertexCount + 4) || (0x100000 < tess.indexCount + 6)) {
     RB_DrawTessSurface();
-    RB_BeginSurface(unaff_ESI,unaff_retaddr);
+    RB_BeginSurface(unaff_ESI,x._0_1_);
   }
   uVar1 = (ushort)tess.vertexCount;
   tess.indices[tess.indexCount] = uVar1 + 3;
@@ -308,43 +321,43 @@ RB_DrawStretchPicW(Material *param_1,float param_2,float param_3,float param_4,f
   tess.indices[tess.indexCount + 5] = uVar1 + 1;
   iVar2 = tess.vertexCount;
   pGVar4 = tess.verts + tess.vertexCount;
-  tess.verts[tess.vertexCount].xyzw[1] = param_2;
+  tess.verts[tess.vertexCount].xyzw[1] = w0;
   tess.verts[iVar2].color = (GfxColor)param_10;
-  pGVar4->xyzw[0] = (float)param_1;
+  pGVar4->xyzw[0] = (float)y;
   tess.verts[iVar2].xyzw[2] = 0.0;
-  tess.verts[iVar2].xyzw[3] = param_3;
+  tess.verts[iVar2].xyzw[3] = w;
   tess.verts[iVar2].normal.packed = 0x3ffe7f7f;
-  tess.verts[iVar2].texCoord[0] = param_6;
-  tess.verts[iVar2].texCoord[1] = param_7;
+  tess.verts[iVar2].texCoord[0] = t0;
+  tess.verts[iVar2].texCoord[1] = s1;
   iVar3 = tess.vertexCount;
   iVar2 = tess.vertexCount + 1;
-  tess.verts[tess.vertexCount + 1].xyzw[1] = param_2;
+  tess.verts[tess.vertexCount + 1].xyzw[1] = w0;
   tess.verts[iVar3 + 1].color = (GfxColor)param_10;
   tess.verts[iVar3 + 1].xyzw[2] = 0.0;
-  tess.verts[iVar3 + 1].xyzw[3] = param_3;
+  tess.verts[iVar3 + 1].xyzw[3] = w;
   tess.verts[iVar3 + 1].normal.packed = 0x3ffe7f7f;
-  tess.verts[iVar2].xyzw[0] = (float)param_1 + param_4;
-  tess.verts[iVar3 + 1].texCoord[0] = param_8;
-  tess.verts[iVar3 + 1].texCoord[1] = param_7;
+  tess.verts[iVar2].xyzw[0] = (float)y + h;
+  tess.verts[iVar3 + 1].texCoord[0] = t1;
+  tess.verts[iVar3 + 1].texCoord[1] = s1;
   iVar2 = tess.vertexCount;
-  tess.verts[tess.vertexCount + 2].xyzw[0] = (float)param_1 + param_4;
+  tess.verts[tess.vertexCount + 2].xyzw[0] = (float)y + h;
   tess.verts[iVar2 + 2].color = (GfxColor)param_10;
-  tess.verts[iVar2 + 2].xyzw[1] = param_2 + param_5;
+  tess.verts[iVar2 + 2].xyzw[1] = w0 + s0;
   tess.verts[iVar2 + 2].xyzw[2] = 0.0;
-  tess.verts[iVar2 + 2].xyzw[3] = param_3;
+  tess.verts[iVar2 + 2].xyzw[3] = w;
   tess.verts[iVar2 + 2].normal.packed = 0x3ffe7f7f;
-  tess.verts[iVar2 + 2].texCoord[0] = param_8;
-  tess.verts[iVar2 + 2].texCoord[1] = param_9;
+  tess.verts[iVar2 + 2].texCoord[0] = t1;
+  tess.verts[iVar2 + 2].texCoord[1] = color;
   iVar3 = tess.vertexCount;
   iVar2 = tess.vertexCount + 3;
   tess.verts[tess.vertexCount + 3].color = (GfxColor)param_10;
-  tess.verts[iVar2].xyzw[0] = (float)param_1;
-  tess.verts[iVar3 + 3].xyzw[1] = param_2 + param_5;
+  tess.verts[iVar2].xyzw[0] = (float)y;
+  tess.verts[iVar3 + 3].xyzw[1] = w0 + s0;
   tess.verts[iVar3 + 3].xyzw[2] = 0.0;
-  tess.verts[iVar3 + 3].xyzw[3] = param_3;
+  tess.verts[iVar3 + 3].xyzw[3] = w;
   tess.verts[iVar3 + 3].normal.packed = 0x3ffe7f7f;
-  tess.verts[iVar3 + 3].texCoord[0] = param_6;
-  tess.verts[iVar3 + 3].texCoord[1] = param_9;
+  tess.verts[iVar3 + 3].texCoord[0] = t0;
+  tess.verts[iVar3 + 3].texCoord[1] = color;
   tess.vertexCount = tess.vertexCount + 4;
   tess.indexCount = tess.indexCount + 6;
   return;
@@ -353,27 +366,30 @@ RB_DrawStretchPicW(Material *param_1,float param_2,float param_3,float param_4,f
 
 // 00821DF0  RB_DrawStretchPicZ  (gfx_d3d/rb_backend.cpp:663)
 
+/* WARNING: Variable defined which should be unmapped: z */
+
 void __cdecl
-RB_DrawStretchPicZ(Material *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,float param_7,float param_8,float param_9,float param_10,
-                  ulong param_11,GfxPrimStatsTarget param_12)
+RB_DrawStretchPicZ(Material *w,float h,float param_3,float param_4,float param_5,float param_6,
+                  float param_7,float param_8,float param_9,float param_10,ulong param_11,
+                  GfxPrimStatsTarget param_12)
 
 {
   ushort uVar1;
   int iVar2;
   GfxColor unaff_ESI;
   Material *unaff_EDI;
-  Material *unaff_retaddr;
+  float z;
+  float x;
   
   if ((gfxCmdBufState.origMaterial != unaff_EDI) || (gfxCmdBufState.origTechType != '\x04')) {
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();
     }
-    RB_BeginSurface(unaff_retaddr,(uchar)param_1);
+    RB_BeginSurface((Material *)z,(uchar)w);
   }
   if ((0x154a < tess.vertexCount + 4) || (0x100000 < tess.indexCount + 6)) {
     RB_DrawTessSurface();
-    RB_BeginSurface(unaff_retaddr,(uchar)param_1);
+    RB_BeginSurface((Material *)z,(uchar)w);
   }
   uVar1 = (ushort)tess.vertexCount;
   tess.indices[tess.indexCount] = uVar1 + 3;
@@ -385,25 +401,25 @@ RB_DrawStretchPicZ(Material *param_1,float param_2,float param_3,float param_4,f
   iVar2 = tess.vertexCount;
   tess.verts[tess.vertexCount].xyzw[0] = 0.0;
   tess.verts[iVar2].xyzw[1] = 0.0;
-  tess.verts[iVar2].xyzw[2] = (float)param_1;
+  tess.verts[iVar2].xyzw[2] = (float)w;
   tess.verts[iVar2].xyzw[3] = 1.0;
   tess.verts[iVar2].color = unaff_ESI;
   tess.verts[iVar2].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2].texCoord[0] = 0.0;
   tess.verts[iVar2].texCoord[1] = 0.0;
   iVar2 = tess.vertexCount;
-  tess.verts[tess.vertexCount + 1].xyzw[0] = param_2;
+  tess.verts[tess.vertexCount + 1].xyzw[0] = h;
   tess.verts[iVar2 + 1].xyzw[1] = 0.0;
-  tess.verts[iVar2 + 1].xyzw[2] = (float)param_1;
+  tess.verts[iVar2 + 1].xyzw[2] = (float)w;
   tess.verts[iVar2 + 1].xyzw[3] = 1.0;
   tess.verts[iVar2 + 1].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2 + 1].color = unaff_ESI;
   tess.verts[iVar2 + 1].texCoord[0] = 1.0;
   tess.verts[iVar2 + 1].texCoord[1] = 0.0;
   iVar2 = tess.vertexCount;
-  tess.verts[tess.vertexCount + 2].xyzw[0] = param_2;
+  tess.verts[tess.vertexCount + 2].xyzw[0] = h;
   tess.verts[iVar2 + 2].xyzw[1] = param_3;
-  tess.verts[iVar2 + 2].xyzw[2] = (float)param_1;
+  tess.verts[iVar2 + 2].xyzw[2] = (float)w;
   tess.verts[iVar2 + 2].xyzw[3] = 1.0;
   tess.verts[iVar2 + 2].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2 + 2].color = unaff_ESI;
@@ -412,7 +428,7 @@ RB_DrawStretchPicZ(Material *param_1,float param_2,float param_3,float param_4,f
   iVar2 = tess.vertexCount;
   tess.verts[tess.vertexCount + 3].xyzw[0] = 0.0;
   tess.verts[iVar2 + 3].xyzw[1] = param_3;
-  tess.verts[iVar2 + 3].xyzw[2] = (float)param_1;
+  tess.verts[iVar2 + 3].xyzw[2] = (float)w;
   tess.verts[iVar2 + 3].xyzw[3] = 1.0;
   tess.verts[iVar2 + 3].normal.packed = 0x3ffe7f7f;
   tess.verts[iVar2 + 3].color = unaff_ESI;
@@ -426,13 +442,14 @@ RB_DrawStretchPicZ(Material *param_1,float param_2,float param_3,float param_4,f
 
 // 00822410  RB_DrawFullScreenColoredQuad  (gfx_d3d/rb_backend.cpp:792)
 
+/* WARNING: Variable defined which should be unmapped: s0 */
+
 void __cdecl
-RB_DrawFullScreenColoredQuad
-          (Material *param_1,float param_2,float param_3,float param_4,float param_5,ulong param_6)
+RB_DrawFullScreenColoredQuad(Material *t0,float s1,float t1,float color,float param_5,ulong param_6)
 
 {
   GfxCmdBufSourceState *unaff_ESI;
-  GfxPrimStatsTarget unaff_retaddr;
+  float s0;
   ulong extraout_var;
   
   if (tess.indexCount != 0) {
@@ -440,8 +457,8 @@ RB_DrawFullScreenColoredQuad
   }
   R_Set2D(unaff_ESI);
   RB_DrawStretchPic((Material *)0x0,0.0,(float)gfxCmdBufSourceState.renderTargetWidth,
-                    (float)gfxCmdBufSourceState.renderTargetHeight,(float)param_1,param_2,param_3,
-                    param_4,(float)unaff_ESI,extraout_var,unaff_retaddr);
+                    (float)gfxCmdBufSourceState.renderTargetHeight,(float)t0,s1,t1,color,
+                    (float)unaff_ESI,extraout_var,s0._0_1_);
   RB_DrawTessSurface();
   return;
 }
@@ -471,45 +488,51 @@ void __cdecl RB_FullScreenFilter(Material *param_1)
 
 // 00822530  RB_SplitScreenFilter  (gfx_d3d/rb_backend.cpp:879)
 
-void __cdecl RB_SplitScreenFilter(Material *param_1,GfxViewInfo *param_2,ulong param_3)
+/* WARNING: Variable defined which should be unmapped: t1 */
+
+void __cdecl RB_SplitScreenFilter(Material *color,GfxViewInfo *param_2,ulong param_3)
 
 {
   int in_EAX;
   ulong unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
+  float t1_00;
   float fVar1;
+  float t0;
   float fVar2;
+  float s1_00;
   float fVar3;
-  float fVar4;
-  float fVar5;
-  float fVar6;
-  GfxPrimStatsTarget in_stack_ffffffe4;
+  Material *material;
+  float t1;
+  float s1;
+  float h;
+  float w;
   
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
   }
   R_Set2D(unaff_EDI);
-  fVar3 = (float)*(int *)(in_EAX + 0x150) * (1.0 / (float)gfxCmdBufSourceState.renderTargetWidth);
-  fVar1 = (1.0 / (float)gfxCmdBufSourceState.renderTargetWidth) * (float)*(int *)(in_EAX + 0x158) +
-          fVar3;
-  fVar5 = (float)*(int *)(in_EAX + 0x154) * (1.0 / (float)gfxCmdBufSourceState.renderTargetHeight);
-  fVar6 = 1.0 / (fVar1 - fVar3);
-  fVar2 = (1.0 / (float)gfxCmdBufSourceState.renderTargetHeight) * (float)*(int *)(in_EAX + 0x15c) +
-          fVar5;
-  fVar4 = 1.0 / (fVar2 - fVar5);
-  if ((((gfxCmdBufSourceState.input.consts[0x5d][0] != fVar3) ||
-       (gfxCmdBufSourceState.input.consts[0x5d][1] != fVar5)) ||
-      (gfxCmdBufSourceState.input.consts[0x5d][2] != fVar6)) ||
-     (gfxCmdBufSourceState.input.consts[0x5d][3] != fVar4)) {
+  t0 = (float)*(int *)(in_EAX + 0x150) * (1.0 / (float)gfxCmdBufSourceState.renderTargetWidth);
+  t1_00 = (1.0 / (float)gfxCmdBufSourceState.renderTargetWidth) * (float)*(int *)(in_EAX + 0x158) +
+          t0;
+  s1_00 = (float)*(int *)(in_EAX + 0x154) * (1.0 / (float)gfxCmdBufSourceState.renderTargetHeight);
+  fVar3 = 1.0 / (t1_00 - t0);
+  fVar1 = (1.0 / (float)gfxCmdBufSourceState.renderTargetHeight) * (float)*(int *)(in_EAX + 0x15c) +
+          s1_00;
+  fVar2 = 1.0 / (fVar1 - s1_00);
+  if ((((gfxCmdBufSourceState.input.consts[0x5d][0] != t0) ||
+       (gfxCmdBufSourceState.input.consts[0x5d][1] != s1_00)) ||
+      (gfxCmdBufSourceState.input.consts[0x5d][2] != fVar3)) ||
+     (gfxCmdBufSourceState.input.consts[0x5d][3] != fVar2)) {
     gfxCmdBufSourceState.constVersions[0x5d] = gfxCmdBufSourceState.constVersions[0x5d] + 1;
-    gfxCmdBufSourceState.input.consts[0x5d][0] = fVar3;
-    gfxCmdBufSourceState.input.consts[0x5d][1] = fVar5;
-    gfxCmdBufSourceState.input.consts[0x5d][2] = fVar6;
-    gfxCmdBufSourceState.input.consts[0x5d][3] = fVar4;
+    gfxCmdBufSourceState.input.consts[0x5d][0] = t0;
+    gfxCmdBufSourceState.input.consts[0x5d][1] = s1_00;
+    gfxCmdBufSourceState.input.consts[0x5d][2] = fVar3;
+    gfxCmdBufSourceState.input.consts[0x5d][3] = fVar2;
   }
   RB_DrawStretchPic((Material *)0x0,0.0,(float)*(int *)(in_EAX + 0x158),
-                    (float)*(int *)(in_EAX + 0x15c),fVar3,fVar5,fVar1,fVar2,(float)unaff_EDI,
-                    unaff_ESI,in_stack_ffffffe4);
+                    (float)*(int *)(in_EAX + 0x15c),t0,s1_00,t1_00,fVar1,(float)unaff_EDI,unaff_ESI,
+                    t1._0_1_);
   RB_DrawTessSurface();
   return;
 }
@@ -612,7 +635,7 @@ void __cdecl R_ResolveIntZ_PC(void)
 
 // 00822860  R_Resolve  (gfx_d3d/rb_backend.cpp:1262)
 
-void __cdecl R_Resolve(GfxCmdBufContext param_1,GfxImage *param_2)
+void __cdecl R_Resolve(void)
 
 {
   ushort uVar1;
@@ -626,18 +649,24 @@ void __cdecl R_Resolve(GfxCmdBufContext param_1,GfxImage *param_2)
   IDirect3DSurface9 *pIVar8;
   IDirect3DSurface9 IVar9;
   IDirect3DSurface9 *pIVar10;
+  GfxCmdBufContext context;
   IDirect3DSurface9 *pIVar11;
   int *piVar12;
-  IDirect3DSurface9 **ppIVar13;
-  IDirect3DSurface9 **ppIVar14;
+  ushort *puVar13;
+  ushort *puVar14;
   int iVar15;
-  int *piStack_44;
-  undefined1 *puStack_40;
-  IDirect3DSurface9 local_38;
-  undefined1 auStack_34 [4];
-  IDirect3DSurface9 *pIStack_30;
-  IDirect3DSurface9 *pIStack_2c;
-  IDirect3DSurface9 *pIStack_28;
+  int w;
+  int h;
+  IDirect3DSurface9 rr;
+  uint gg;
+  uint bb;
+  ushort a;
+  IDirect3DSurface9 *surfd;
+  IDirect3DSurface9 *surfx;
+  IDirect3DSurface9 *surfxd;
+  IDirect3DSurface9 *imageSurface;
+  _D3DLOCKED_RECT rs;
+  _D3DLOCKED_RECT rd;
   int iStack_4;
   
   (**(code **)(*(int *)*in_EAX + 0x48))((int *)*in_EAX);
@@ -647,30 +676,30 @@ void __cdecl R_Resolve(GfxCmdBufContext param_1,GfxImage *param_2)
      ) {
     (**(code **)(**(int **)(iStack_4 + 0x90) + 0x88))
               (*(int **)(iStack_4 + 0x90),
-               gfxRenderTargets[*(byte *)(iStack_4 + 0x1128)].surface.color,0,piStack_44,0,0);
-    (**(code **)(*piStack_44 + 8))(piStack_44);
+               gfxRenderTargets[*(byte *)(iStack_4 + 0x1128)].surface.color,0,w,0,0);
+    (**(code **)(*(int *)w + 8))(w);
     return;
   }
   uVar4 = (uint)gfxRenderTargets[3].width;
-  pIStack_28 = gfxRenderTargets[0x12].surface.color;
-  pIStack_30 = gfxRenderTargets[0x10].surface.color;
-  pIStack_2c = gfxRenderTargets[0x11].surface.color;
+  surfd = gfxRenderTargets[0x12].surface.color;
+  bb = (uint)gfxRenderTargets[0x10].surface.color;
+  _a = gfxRenderTargets[0x11].surface.color;
   (**(code **)(**(int **)(iStack_4 + 0x90) + 0x80))
             (*(int **)(iStack_4 + 0x90),gfxRenderTargets[2].surface.color,
              gfxRenderTargets[0x10].surface.color);
   Sleep(100);
   iVar15 = 0;
-  ppIVar14 = &pIStack_2c;
-  (**(code **)((int)*pIVar10 + 0x34))(pIVar10,ppIVar14,0,0);
-  IVar9 = local_38;
+  puVar14 = &a;
+  (**(code **)((int)*pIVar10 + 0x34))(pIVar10,puVar14,0,0);
+  IVar9 = rr;
   piVar12 = (int *)0x0;
   pIVar11 = pIVar8;
-  (**(code **)((int)*pIVar8 + 0x34))(pIVar8,auStack_34,0,0);
-  if ((IVar9 != (IDirect3DSurface9)0x0) && (puStack_40 != (undefined1 *)0x0)) {
+  (**(code **)((int)*pIVar8 + 0x34))(pIVar8,&gg,0,0);
+  if ((IVar9 != (IDirect3DSurface9)0x0) && (h != 0)) {
     if (0 < iVar15) {
       do {
-        ppIVar13 = ppIVar14;
-        if (0 < (int)ppIVar14) {
+        puVar13 = puVar14;
+        if (0 < (int)puVar14) {
           do {
             uVar1 = *(ushort *)((int)IVar9 + 6);
             uVar3 = (uint)*(ushort *)((int)IVar9 + 4);
@@ -692,25 +721,24 @@ void __cdecl R_Resolve(GfxCmdBufContext param_1,GfxImage *param_2)
             if (1.0 < fVar6) {
               fVar6 = 1.0;
             }
-            *puStack_40 = (char)(int)(fVar7 * 255.0);
-            puStack_40[1] = (char)(int)(fVar5 * 255.0);
-            puStack_40[2] = (char)(int)(fVar6 * 255.0);
-            puStack_40[3] = (char)uVar1;
-            puStack_40 = puStack_40 + 4;
-            ppIVar13 = (IDirect3DSurface9 **)((int)ppIVar13 + -1);
-          } while (ppIVar13 != (IDirect3DSurface9 **)0x0);
+            *(char *)h = (char)(int)(fVar7 * 255.0);
+            *(char *)(h + 1) = (char)(int)(fVar5 * 255.0);
+            *(char *)(h + 2) = (char)(int)(fVar6 * 255.0);
+            *(char *)(h + 3) = (char)uVar1;
+            h = h + 4;
+            puVar13 = (ushort *)((int)puVar13 + -1);
+          } while (puVar13 != (ushort *)0x0);
           pIVar10 = (IDirect3DSurface9 *)0x0;
-          pIVar8 = &local_38;
+          pIVar8 = &rr;
         }
-        puStack_40 = puStack_40 + (int)(piStack_44 + -(int)ppIVar14);
+        h = h + w + (int)puVar14 * -4;
         iVar15 = iVar15 + -1;
-        IVar9 = (IDirect3DSurface9)((int)IVar9 + (uVar4 / 2 + (int)ppIVar14 * -4) * 2);
+        IVar9 = (IDirect3DSurface9)((int)IVar9 + (uVar4 / 2 + (int)puVar14 * -4) * 2);
       } while (iVar15 != 0);
     }
     (**(code **)((int)*pIVar8 + 0x38))(pIVar8);
     (**(code **)((int)*pIVar10 + 0x38))(pIVar10);
-    (**(code **)(**(int **)((int)local_38 + 0x90) + 0x78))
-              (*(int **)((int)local_38 + 0x90),pIVar8,0,0,0);
+    (**(code **)(**(int **)((int)rr + 0x90) + 0x78))(*(int **)((int)rr + 0x90),pIVar8,0,0,0);
     piVar2 = *(int **)(uVar4 + 0x90);
     (**(code **)(*piVar2 + 0x88))(piVar2,gfxRenderTargets[3].surface.color,0,pIVar11,0,2);
     (**(code **)(*piVar12 + 8))(piVar12);
@@ -760,8 +788,10 @@ void __cdecl RB_SetEyeOffsetConstant(GfxCmdBufSourceState *param_1,float *param_
 
 // 00824470  R_DrawSurfs  (gfx_d3d/rb_backend.cpp:2225)
 
+/* WARNING: Variable defined which should be unmapped: viewport */
+
 void __cdecl
-R_DrawSurfs(GfxCmdBufContext param_1,GfxCmdBufState *param_2,GfxDrawSurfListInfo *param_3)
+R_DrawSurfs(GfxCmdBufContext context,GfxCmdBufState *param_2,GfxDrawSurfListInfo *param_3)
 
 {
   short *psVar1;
@@ -770,66 +800,63 @@ R_DrawSurfs(GfxCmdBufContext param_1,GfxCmdBufState *param_2,GfxDrawSurfListInfo
   float fVar4;
   int iVar5;
   GfxCmdBufContext GVar6;
-  GfxCmdBufContext GVar7;
-  GfxCmdBufContext GVar8;
-  uint uVar9;
+  uint uVar7;
   short extraout_DX;
-  GfxDrawSurfListArgs *pGVar10;
   GfxUI3DBackend *unaff_EBP;
   int unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
+  GfxCmdBufState *prepassState;
+  GfxCmdBufContext prepassContext;
   int iStack_18;
+  GfxViewport viewport;
   
   param_2->origMaterial = (Material *)0x0;
   R_SetDrawSurfsShadowableLight(unaff_EDI,(GfxDrawSurfListInfo *)unaff_EBP);
-  R_Set3D((GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state);
-  pGVar10 = (GfxDrawSurfListArgs *)
-            (-(uint)(param_1.field0_0x0._s_0.source != (GfxCmdBufSourceState *)0x0) &
-            (uint)param_1.field0_0x0._s_0.state);
-  if ((char)param_1.field0_0x0._s_0.state[1].pixelShaderConstState[0xc] != '\0') {
+  R_Set3D((GfxCmdBufSourceState *)context.field0_0x0._s_0.state);
+  if ((char)context.field0_0x0._s_0.state[1].pixelShaderConstState[0xc] != '\0') {
     R_GetViewport(unaff_EDI,unaff_EBP->viewport);
     R_SetViewport((GfxCmdBufState *)unaff_EDI,unaff_EBP->viewport);
-    if (param_1.field0_0x0._s_0.source != (GfxCmdBufSourceState *)0x0) {
+    if (context.field0_0x0._s_0.source != (GfxCmdBufSourceState *)0x0) {
       R_SetViewport((GfxCmdBufState *)unaff_EDI,unaff_EBP->viewport);
     }
     R_UpdateViewport(unaff_EDI,unaff_EBP->viewport);
   }
   iVar5 = *(int *)(unaff_ESI + 4);
   R_SetWaterSimulationConstants((GfxCmdBufSourceState *)0x0,(float)unaff_EDI);
-  *(undefined4 *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 199) = 0;
-  *(undefined4 *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x63c) = 0;
-  *(undefined4 *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 200) = 0;
-  *(undefined4 *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x644) = 0;
-  psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6cc);
+  *(undefined4 *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 199) = 0;
+  *(undefined4 *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x63c) = 0;
+  *(undefined4 *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 200) = 0;
+  *(undefined4 *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x644) = 0;
+  psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6cc);
   *psVar1 = *psVar1 + 1;
-  *(undefined4 *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0xcf) = 0;
-  *(undefined4 *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x67c) = 0;
-  *(undefined4 *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0xd0) = 0;
-  *(undefined4 *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x684) = 0;
-  psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6d4);
+  *(undefined4 *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0xcf) = 0;
+  *(undefined4 *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x67c) = 0;
+  *(undefined4 *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0xd0) = 0;
+  *(undefined4 *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x684) = 0;
+  psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6d4);
   *psVar1 = *psVar1 + 1;
-  *(float *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0xcd) = 1.0;
-  *(float *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x66c) = 1.0;
-  *(float *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0xce) = 1.0;
-  *(float *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x674) = 1.0;
-  psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6d2);
+  *(float *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0xcd) = 1.0;
+  *(float *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x66c) = 1.0;
+  *(float *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0xce) = 1.0;
+  *(float *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x674) = 1.0;
+  psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x6d2);
   *psVar1 = *psVar1 + 1;
-  *(undefined4 *)(param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x21) = 0;
-  *(undefined4 *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x10c) = 0;
-  *(undefined4 *)(param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x22) = 0;
-  *(undefined4 *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x114) = 0;
-  psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x74e);
+  *(undefined4 *)(context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x21) = 0;
+  *(undefined4 *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x10c) = 0;
+  *(undefined4 *)(context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x22) = 0;
+  *(undefined4 *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x114) = 0;
+  psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x74e);
   *psVar1 = *psVar1 + 1;
   R_FoliageSetDefaultShaderConstants(unaff_EDI);
   fVar2 = (r_swrk_override_characterDissolveColor->current).vector[1];
   fVar3 = (r_swrk_override_characterDissolveColor->current).vector[2];
   fVar4 = (r_swrk_override_characterDissolveColor->current).vector[3];
-  *(int *)(param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x21) =
+  *(int *)(context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x21) =
        (r_swrk_override_characterDissolveColor->current).integer;
-  *(float *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x10c) = fVar2;
-  *(float *)(param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x22) = fVar3;
-  *(float *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x114) = fVar4;
-  psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x74e);
+  *(float *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x10c) = fVar2;
+  *(float *)(context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x22) = fVar3;
+  *(float *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x114) = fVar4;
+  psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x74e);
   *psVar1 = *psVar1 + extraout_DX;
   RB_UI3D_SetShaderConstants(unaff_EDI,unaff_EBP);
   RB_SetCustomWindConstants(unaff_EDI,(float *)unaff_EBP);
@@ -837,17 +864,16 @@ R_DrawSurfs(GfxCmdBufContext param_1,GfxCmdBufState *param_2,GfxDrawSurfListInfo
   iStack_18 = 0;
   if (iVar5 != 0) {
     do {
-      GVar8.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
-      GVar8.field0_0x0._s_0.source = param_1.field0_0x0._s_0.source;
-      uVar9 = R_RenderDrawSurfListMaterial(pGVar10,GVar8);
-      iStack_18 = iStack_18 + uVar9;
+      GVar6.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
+      GVar6.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+      uVar7 = R_RenderDrawSurfListMaterial
+                        ((GfxDrawSurfListArgs *)
+                         (-(uint)(context.field0_0x0._s_0.source != (GfxCmdBufSourceState *)0x0) &
+                         (uint)context.field0_0x0._s_0.state),GVar6);
+      iStack_18 = iStack_18 + uVar7;
     } while (iStack_18 != iVar5);
   }
-  GVar6.field0_0x0._s_0.state = param_2;
-  GVar6.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state;
-  GVar7.field0_0x0._s_0.state = (GfxCmdBufState *)param_1.field0_0x0._s_0.source;
-  GVar7.field0_0x0._s_0.source = (GfxCmdBufSourceState *)pGVar10;
-  R_TessEnd(GVar6,GVar7);
+  R_TessEnd();
   param_2->origMaterial = (Material *)0x0;
   return;
 }
@@ -855,37 +881,37 @@ R_DrawSurfs(GfxCmdBufContext param_1,GfxCmdBufState *param_2,GfxDrawSurfListInfo
 
 // 00824750  RB_SetGammaRamp  (gfx_d3d/rb_backend.cpp:2432)
 
+/* WARNING: Variable defined which should be unmapped: d3dGammaRamp */
+
 void __cdecl RB_SetGammaRamp(GfxGammaRamp *param_1)
 
 {
   undefined2 uVar1;
   int iVar2;
-  undefined2 *in_EAX;
   int iVar3;
+  undefined2 *in_EAX;
   int iVar4;
-  undefined2 auStack_604 [256];
-  undefined2 auStack_404 [256];
-  undefined2 auStack_204 [258];
+  _D3DGAMMARAMP d3dGammaRamp;
   
   iVar2 = -(int)in_EAX;
-  iVar3 = (int)auStack_204 - (int)in_EAX;
+  iVar3 = 0x404 - (int)in_EAX;
   iVar4 = 0x100;
   do {
     uVar1 = *in_EAX;
-    *(undefined2 *)((int)auStack_604 + iVar2 + (int)in_EAX) = uVar1;
-    *(undefined2 *)((int)auStack_404 + iVar2 + (int)in_EAX) = uVar1;
-    *(undefined2 *)(iVar3 + (int)in_EAX) = uVar1;
+    *(undefined2 *)((int)&d3dGammaRamp + iVar2 + 4 + (int)in_EAX) = uVar1;
+    *(undefined2 *)((int)&d3dGammaRamp + iVar2 + 0x204 + (int)in_EAX) = uVar1;
+    *(undefined2 *)((int)&d3dGammaRamp + iVar3 + (int)in_EAX) = uVar1;
     in_EAX = in_EAX + 1;
     iVar4 = iVar4 + -1;
   } while (iVar4 != 0);
-  (**(code **)((int)*dx.device + 0x54))(dx.device,dx.targetWindowIndex,0,auStack_604);
+  (**(code **)((int)*dx.device + 0x54))(dx.device,dx.targetWindowIndex,0,d3dGammaRamp.red + 2);
   return;
 }
 
 
 // 00824E00  RB_DrawLines2D  (gfx_d3d/rb_backend.cpp:2705)
 
-void __cdecl RB_DrawLines2D(int param_1,int param_2,GfxPointVertex *param_3)
+void __cdecl RB_DrawLines2D(int verts,int param_2,GfxPointVertex *param_3)
 
 {
   float fVar1;
@@ -900,6 +926,8 @@ void __cdecl RB_DrawLines2D(int param_1,int param_2,GfxPointVertex *param_3)
   float fVar7;
   float fVar8;
   float fVar9;
+  int count;
+  int width;
   
   if ((gfxCmdBufState.origMaterial != rgp.whiteMaterial) || (gfxCmdBufState.origTechType != '\x04'))
   {
@@ -908,7 +936,7 @@ void __cdecl RB_DrawLines2D(int param_1,int param_2,GfxPointVertex *param_3)
     }
     RB_BeginSurface(unaff_ESI,unaff_BL);
   }
-  if (0 < param_1) {
+  if (0 < verts) {
     pfVar5 = (float *)(param_2 + 0x14);
     do {
       fVar8 = pfVar5[-5] - pfVar5[-1];
@@ -981,8 +1009,8 @@ void __cdecl RB_DrawLines2D(int param_1,int param_2,GfxPointVertex *param_3)
       tess.verts[iVar3 + 3].texCoord[1] = 0.0;
       tess.vertexCount = tess.vertexCount + 4;
       pfVar5 = pfVar5 + 8;
-      param_1 = param_1 + -1;
-    } while (param_1 != 0);
+      verts = verts + -1;
+    } while (verts != 0);
   }
   return;
 }
@@ -990,7 +1018,7 @@ void __cdecl RB_DrawLines2D(int param_1,int param_2,GfxPointVertex *param_3)
 
 // 00825100  RB_DrawLines3D  (gfx_d3d/rb_backend.cpp:2748)
 
-void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool param_4)
+void __cdecl RB_DrawLines3D(int width,int verts,GfxPointVertex *depthTest,bool param_4)
 
 {
   float fVar1;
@@ -1022,6 +1050,9 @@ void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool
   float fVar25;
   float fVar26;
   float fVar27;
+  int count;
+  float invWidth;
+  float invHeight;
   
   pMVar9 = rgp.lineMaterial;
   if (!param_4) {
@@ -1038,8 +1069,8 @@ void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool
   fVar20 = (float)gfxCmdBufSourceState.renderTargetWidth;
   fVar16 = (float)gfxCmdBufSourceState.renderTargetHeight;
   pGVar11 = &(gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix;
-  if (0 < param_1) {
-    pfVar12 = param_3[1].xyz + 1;
+  if (0 < width) {
+    pfVar12 = depthTest[1].xyz + 1;
     do {
       fVar19 = pfVar12[-4];
       fVar15 = pfVar12[-5];
@@ -1081,8 +1112,8 @@ void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool
       if ((float10)0 <= -fVar13) {
         fVar19 = 1.0;
       }
-      fVar18 = (1.0 / fVar19) * fVar18 * ((float)param_2 / fVar16);
-      fVar15 = (1.0 / fVar19) * fVar15 * ((float)param_2 / fVar20);
+      fVar18 = (1.0 / fVar19) * fVar18 * ((float)verts / fVar16);
+      fVar15 = (1.0 / fVar19) * fVar15 * ((float)verts / fVar20);
       fVar19 = fVar15 * fVar26;
       fVar23 = fVar18 * fVar26;
       fVar15 = fVar15 * fVar24;
@@ -1138,8 +1169,8 @@ void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool
       tess.verts[iVar6 + 3].texCoord[1] = 0.0;
       tess.vertexCount = tess.vertexCount + 4;
       pfVar12 = pfVar12 + 8;
-      param_1 = param_1 + -1;
-    } while (param_1 != 0);
+      width = width + -1;
+    } while (width != 0);
   }
   RB_DrawTessSurface();
   return;
@@ -1149,7 +1180,7 @@ void __cdecl RB_DrawLines3D(int param_1,int param_2,GfxPointVertex *param_3,bool
 // 008264F0  GetShiftColor  (gfx_d3d/rb_backend.cpp:3696)
 
 void __cdecl
-GetShiftColor(GfxColor param_1,int param_2,int param_3,int param_4,GfxColor param_5,
+GetShiftColor(GfxColor fxBirthTime,int fxDecayDuration,int startColor,int param_4,GfxColor param_5,
              GfxColor *param_6)
 
 {
@@ -1158,22 +1189,25 @@ GetShiftColor(GfxColor param_1,int param_2,int param_3,int param_4,GfxColor para
   int in_EDX;
   uint uVar2;
   float fVar3;
+  GfxColor targetColor;
   
-  iVar1 = gfxCmdBufSourceState.sceneDef.time - param_2;
-  if (in_EDX + param_3 < iVar1) {
-    *in_ECX = param_1;
+  iVar1 = gfxCmdBufSourceState.sceneDef.time - fxDecayDuration;
+  if (in_EDX + startColor < iVar1) {
+    *in_ECX = fxBirthTime;
     return;
   }
   if (in_EDX < iVar1) {
     uVar2 = (uint)param_4 >> 0x10 & 0xff;
-    fVar3 = (float)(iVar1 - in_EDX) / (float)param_3;
+    fVar3 = (float)(iVar1 - in_EDX) / (float)startColor;
     in_ECX->array[2] =
-         (uchar)(int)((float)(int)((param_1.packed >> 0x10 & 0xff) - uVar2) * fVar3 + (float)uVar2);
+         (uchar)(int)((float)(int)((fxBirthTime.packed >> 0x10 & 0xff) - uVar2) * fVar3 +
+                     (float)uVar2);
     uVar2 = (uint)param_4 >> 8 & 0xff;
     in_ECX->array[1] =
-         (uchar)(int)((float)(int)((param_1.packed >> 8 & 0xff) - uVar2) * fVar3 + (float)uVar2);
+         (uchar)(int)((float)(int)((fxBirthTime.packed >> 8 & 0xff) - uVar2) * fVar3 + (float)uVar2)
+    ;
     in_ECX->array[0] =
-         (uchar)(int)((float)(int)((param_1.packed & 0xff) - (param_4 & 0xffU)) * fVar3 +
+         (uchar)(int)((float)(int)((fxBirthTime.packed & 0xff) - (param_4 & 0xffU)) * fVar3 +
                      (float)(param_4 & 0xffU));
     in_ECX->array[3] = (uchar)((uint)param_4 >> 0x18);
     return;
@@ -1186,19 +1220,20 @@ GetShiftColor(GfxColor param_1,int param_2,int param_3,int param_4,GfxColor para
 // 008285A0  RB_DrawTextInSpace  (gfx_d3d/rb_backend.cpp:4590)
 
 void __cdecl
-RB_DrawTextInSpace(char *param_1,Font_s *param_2,float *param_3,float *param_4,float *param_5,
+RB_DrawTextInSpace(char *font,Font_s *xPixelStep,float *yPixelStep,float *color,float *param_5,
                   ulong param_6)
 
 {
   char cVar1;
-  Material *pMVar2;
+  Material *xyz_00;
   float *in_EAX;
-  Glyph *pGVar3;
+  Glyph *pGVar2;
   int *unaff_EBX;
   int *unaff_EBP;
-  char *pcVar4;
+  char *pcVar3;
   uint unaff_ESI;
   Glyph *unaff_EDI;
+  float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
@@ -1206,53 +1241,54 @@ RB_DrawTextInSpace(char *param_1,Font_s *param_2,float *param_3,float *param_4,f
   float fVar9;
   float fVar10;
   float fVar11;
-  float fVar12;
+  char *text;
+  Material *material;
   float local_24;
   float local_20;
-  float local_1c;
+  float dx;
   float local_18;
   float local_14;
-  float local_10;
+  float xyz;
   float local_c;
   float local_8;
   float local_4;
   
-  pMVar2 = param_2->material;
+  xyz_00 = xPixelStep->material;
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
   }
   R_Set3D(&gfxCmdBufSourceState);
-  fVar6 = (*in_EAX - *param_3 * 0.5) - *param_4 * 0.5;
-  fVar7 = (in_EAX[1] - param_3[1] * 0.5) - param_4[1] * 0.5;
-  fVar11 = (in_EAX[2] - param_3[2] * 0.5) - param_4[2] * 0.5;
-  cVar1 = *param_1;
-  pcVar4 = param_1;
+  fVar5 = (*in_EAX - *yPixelStep * 0.5) - *color * 0.5;
+  fVar6 = (in_EAX[1] - yPixelStep[1] * 0.5) - color[1] * 0.5;
+  fVar10 = (in_EAX[2] - yPixelStep[2] * 0.5) - color[2] * 0.5;
+  cVar1 = *font;
+  pcVar3 = font;
   while (cVar1 != '\0') {
-    fVar5 = fVar6;
-    fVar8 = fVar7;
-    fVar12 = fVar11;
+    fVar4 = fVar5;
+    fVar7 = fVar6;
+    fVar11 = fVar10;
     SEH_DecodeLetter((uint)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-    pcVar4 = pcVar4 + (int)param_1;
-    pGVar3 = R_GetCharacterGlyph(param_2,(uint)unaff_EDI);
-    fVar9 = (float)(int)pGVar3->x0;
-    fVar10 = (float)(int)pGVar3->y0;
-    local_c = *param_4 * fVar10 + *param_3 * fVar9 + fVar5;
-    local_8 = param_4[1] * fVar10 + param_3[1] * fVar9 + fVar8;
-    local_4 = param_4[2] * fVar10 + param_3[2] * fVar9 + fVar12;
-    local_10 = (float)pGVar3->pixelWidth;
-    local_18 = *param_3 * local_10;
-    local_1c = (float)pGVar3->pixelHeight;
-    local_14 = param_3[1] * local_10;
-    local_10 = param_3[2] * local_10;
-    local_24 = *param_4 * local_1c;
-    local_20 = param_4[1] * local_1c;
-    local_1c = param_4[2] * local_1c;
-    RB_DrawCharInSpace(pMVar2,&local_c,&local_18,&local_24,unaff_EDI,unaff_ESI);
-    fVar5 = (float)pGVar3->dx;
-    fVar6 = *param_3 * fVar5 + fVar6;
-    fVar7 = param_3[1] * fVar5 + fVar7;
-    fVar11 = param_3[2] * fVar5 + fVar11;
-    cVar1 = *pcVar4;
+    pcVar3 = pcVar3 + (int)font;
+    pGVar2 = R_GetCharacterGlyph(xPixelStep,(uint)unaff_EDI);
+    fVar8 = (float)(int)pGVar2->x0;
+    fVar9 = (float)(int)pGVar2->y0;
+    local_c = *color * fVar9 + *yPixelStep * fVar8 + fVar4;
+    local_8 = color[1] * fVar9 + yPixelStep[1] * fVar8 + fVar7;
+    local_4 = color[2] * fVar9 + yPixelStep[2] * fVar8 + fVar11;
+    xyz = (float)pGVar2->pixelWidth;
+    local_18 = *yPixelStep * xyz;
+    dx = (float)pGVar2->pixelHeight;
+    local_14 = yPixelStep[1] * xyz;
+    xyz = yPixelStep[2] * xyz;
+    local_24 = *color * dx;
+    local_20 = color[1] * dx;
+    dx = color[2] * dx;
+    RB_DrawCharInSpace(xyz_00,&local_c,&local_18,&local_24,unaff_EDI,unaff_ESI);
+    fVar4 = (float)pGVar2->dx;
+    fVar5 = *yPixelStep * fVar4 + fVar5;
+    fVar6 = yPixelStep[1] * fVar4 + fVar6;
+    fVar10 = yPixelStep[2] * fVar4 + fVar10;
+    cVar1 = *pcVar3;
   }
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
@@ -1296,6 +1332,8 @@ void __cdecl RB_BeginFrame(void *param_1)
 
 // 00828F70  RB_ExecuteRenderCommandsLoop  (gfx_d3d/rb_backend.cpp:5989)
 
+/* WARNING: Variable defined which should be unmapped: execState */
+
 void __cdecl RB_ExecuteRenderCommandsLoop(void *param_1,int *param_2)
 
 {
@@ -1303,6 +1341,7 @@ void __cdecl RB_ExecuteRenderCommandsLoop(void *param_1,int *param_2)
   uint *in_EAX;
   ushort *in_ECX;
   uint uVar2;
+  GfxRenderCommandExecState execState;
   GfxRenderCommandExecState local_4;
   
   if (gfxRenderTargets[0x16].image != (GfxImage *)0x0) {
@@ -1422,7 +1461,7 @@ void __cdecl RB_CallExecuteRenderCommands(void)
   gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[2].height;
   gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
   UpdateVPosToWorld(unaff_ESI);
-  R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x02');
+  R_SetRenderTarget();
   pGVar1 = backEndData;
   gfxCmdBufSourceState.constVersions[0xaa] = gfxCmdBufSourceState.constVersions[0xaa] + 1;
   gfxCmdBufSourceState.constVersions[0xab] = gfxCmdBufSourceState.constVersions[0xab] + 1;
@@ -1496,11 +1535,16 @@ RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam *param_1,GfxViewInfo *
   GfxPrimStatsTarget unaff_BL;
   ulong unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
+  float s0_00;
+  float s1_00;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  float local_1c;
-  float local_14;
+  GfxViewInfo *viewInfo;
+  float t1;
+  float s1;
+  float t0;
+  float s0;
+  float scrnH;
+  float scrnW;
   float local_4;
   
   if ((char)in_EAX[6] != '\0') {
@@ -1514,25 +1558,25 @@ RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam *param_1,GfxViewInfo *
       uVar3 = *(uint *)&param_1[0x1ee].enabled & 7;
       if (uVar3 == 0) {
         local_4 = (float)gfxCmdBufSourceState.renderTargetWidth * (float)in_EAX[3];
-        fVar4 = (float)gfxCmdBufSourceState.renderTargetHeight * (float)in_EAX[4];
+        s0_00 = (float)gfxCmdBufSourceState.renderTargetHeight * (float)in_EAX[4];
       }
       else {
         bVar1 = *(byte *)((int)&param_1[0x1ed].s0 + 2);
         local_4 = (float)gfxRenderTargets[bVar1].width;
-        fVar4 = (float)gfxRenderTargets[bVar1].height;
+        s0_00 = (float)gfxRenderTargets[bVar1].height;
       }
       iVar2 = in_EAX[5];
       if (rgp.savedScreenParams[iVar2].isSet == 0) {
-        local_14 = (float)in_EAX[1];
-        local_1c = (float)in_EAX[3] + local_14;
-        fVar5 = (float)in_EAX[2];
-        fVar6 = (float)in_EAX[4];
+        scrnH = (float)in_EAX[1];
+        t0 = (float)in_EAX[3] + scrnH;
+        s1_00 = (float)in_EAX[2];
+        fVar4 = (float)in_EAX[4];
       }
       else {
-        local_14 = rgp.savedScreenParams[iVar2].s0;
-        local_1c = rgp.savedScreenParams[iVar2].ds + local_14;
-        fVar5 = rgp.savedScreenParams[iVar2].t0;
-        fVar6 = rgp.savedScreenParams[iVar2].dt;
+        scrnH = rgp.savedScreenParams[iVar2].s0;
+        t0 = rgp.savedScreenParams[iVar2].ds + scrnH;
+        s1_00 = rgp.savedScreenParams[iVar2].t0;
+        fVar4 = rgp.savedScreenParams[iVar2].dt;
       }
       if (uVar3 == 0) {
         gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[1].image;
@@ -1542,7 +1586,7 @@ RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam *param_1,GfxViewInfo *
         gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed =
              (uint)*(byte *)((int)&param_1[0x1ed].s0 + 3) << 0x18 | 0x800062;
       }
-      RB_DrawStretchPic((Material *)0x0,0.0,local_4,fVar4,local_14,fVar5,local_1c,fVar6 + fVar5,
+      RB_DrawStretchPic((Material *)0x0,0.0,local_4,s0_00,scrnH,s1_00,t0,fVar4 + s1_00,
                         (float)unaff_EDI,unaff_ESI,unaff_BL);
       if (tess.indexCount != 0) {
         RB_DrawTessSurface();
@@ -1567,11 +1611,16 @@ RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam *param_1,GfxViewInfo *
   GfxPrimStatsTarget unaff_BL;
   ulong unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
+  float s0_00;
+  float s1_00;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  float local_20;
-  float local_14;
+  GfxViewInfo *viewInfo;
+  float s1;
+  float t1;
+  float t0;
+  float s0;
+  float screenHeight;
+  float screenWidth;
   float local_4;
   
   if (*(char *)(in_EAX + 0x1c) != '\0') {
@@ -1582,25 +1631,25 @@ RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam *param_1,GfxViewInfo *
     uVar3 = (uint)param_1[0x1b1].intensityWhiteout & 7;
     if (uVar3 == 0) {
       local_4 = (float)gfxCmdBufSourceState.renderTargetWidth * *(float *)(in_EAX + 0x10);
-      fVar4 = (float)gfxCmdBufSourceState.renderTargetHeight * *(float *)(in_EAX + 0x14);
+      s0_00 = (float)gfxCmdBufSourceState.renderTargetHeight * *(float *)(in_EAX + 0x14);
     }
     else {
       bVar1 = *(byte *)((int)&param_1[0x1af].ds + 2);
       local_4 = (float)gfxRenderTargets[bVar1].width;
-      fVar4 = (float)gfxRenderTargets[bVar1].height;
+      s0_00 = (float)gfxRenderTargets[bVar1].height;
     }
     iVar2 = *(int *)(in_EAX + 0x18);
     if (rgp.savedScreenParams[iVar2].isSet == 0) {
-      local_14 = *(float *)(in_EAX + 8);
-      local_20 = *(float *)(in_EAX + 0x10) + local_14;
-      fVar5 = *(float *)(in_EAX + 0xc);
-      fVar6 = *(float *)(in_EAX + 0x14);
+      screenHeight = *(float *)(in_EAX + 8);
+      t1 = *(float *)(in_EAX + 0x10) + screenHeight;
+      s1_00 = *(float *)(in_EAX + 0xc);
+      fVar4 = *(float *)(in_EAX + 0x14);
     }
     else {
-      local_14 = rgp.savedScreenParams[iVar2].s0;
-      local_20 = rgp.savedScreenParams[iVar2].ds + local_14;
-      fVar5 = rgp.savedScreenParams[iVar2].t0;
-      fVar6 = rgp.savedScreenParams[iVar2].dt;
+      screenHeight = rgp.savedScreenParams[iVar2].s0;
+      t1 = rgp.savedScreenParams[iVar2].ds + screenHeight;
+      s1_00 = rgp.savedScreenParams[iVar2].t0;
+      fVar4 = rgp.savedScreenParams[iVar2].dt;
     }
     if (uVar3 == 0) {
       gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[1].image;
@@ -1610,7 +1659,7 @@ RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam *param_1,GfxViewInfo *
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed =
            (uint)*(byte *)((int)&param_1[0x1af].ds + 3) << 0x18 | 0x800062;
     }
-    RB_DrawStretchPic((Material *)0x0,0.0,local_4,fVar4,local_14,fVar5,local_20,fVar6 + fVar5,
+    RB_DrawStretchPic((Material *)0x0,0.0,local_4,s0_00,screenHeight,s1_00,t1,fVar4 + s1_00,
                       (float)unaff_EDI,unaff_ESI,unaff_BL);
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();
@@ -1629,19 +1678,29 @@ void __cdecl RB_SaveScreen(GfxSaveScreenParam *param_1,GfxViewInfo *param_2)
   SavedScreenParams *pSVar1;
   char cVar2;
   float fVar3;
-  float fVar4;
-  float fVar5;
-  float fVar6;
-  Material *pMVar7;
-  int iVar8;
-  int iVar9;
+  float s0_00;
+  float h;
+  float w;
+  Material *y;
+  int iVar4;
+  int iVar5;
   float *in_EAX;
   int in_EDX;
   GfxPrimStatsTarget unaff_BP;
   ulong unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
+  int halfHeight;
+  int halfWidth;
+  int y0;
+  int x0;
+  float t1;
+  float s1;
+  float t0;
+  float s0;
+  int renderTargetWidth;
+  int renderTargetHeight;
   
-  iVar8 = gfxCmdBufSourceState.sceneDef.time;
+  iVar4 = gfxCmdBufSourceState.sceneDef.time;
   cVar2 = *(char *)(in_EAX + 5);
   if (cVar2 != '\0') {
     fVar3 = in_EAX[4];
@@ -1651,12 +1710,12 @@ void __cdecl RB_SaveScreen(GfxSaveScreenParam *param_1,GfxViewInfo *param_2)
       rgp.savedScreenParams[(int)fVar3].t0 = 0.0;
       rgp.savedScreenParams[(int)fVar3].ds = 1.0;
       rgp.savedScreenParams[(int)fVar3].dt = 1.0;
-      rgp.savedScreenTimes[(int)in_EAX[4]] = iVar8;
+      rgp.savedScreenTimes[(int)in_EAX[4]] = iVar4;
       rgp.savedScreenParams[(int)fVar3].isSet = 1;
       return;
     }
     if (cVar2 == '\x01') {
-      R_Resolve((GfxCmdBufContext)0x349fc800349e1f0,(GfxImage *)unaff_EDI);
+      R_Resolve();
       rgp.savedScreenTimes[(int)in_EAX[4]] = gfxCmdBufSourceState.sceneDef.time;
       pSVar1->s0 = 0.0;
       rgp.savedScreenParams[(int)fVar3].t0 = 0.0;
@@ -1668,33 +1727,32 @@ void __cdecl RB_SaveScreen(GfxSaveScreenParam *param_1,GfxViewInfo *param_2)
     if (cVar2 == '\x02') {
       rgp.savedScreenTimes[(int)fVar3] = gfxCmdBufSourceState.sceneDef.time;
       R_SetRenderTargetSize(unaff_EDI,(uchar)unaff_ESI);
-      R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x01');
+      R_SetRenderTarget();
       R_Set2D(unaff_EDI);
-      iVar9 = gfxCmdBufSourceState.renderTargetHeight;
-      iVar8 = gfxCmdBufSourceState.renderTargetWidth;
-      fVar4 = (float)(gfxCmdBufSourceState.renderTargetHeight / 2);
-      fVar5 = (float)(gfxCmdBufSourceState.renderTargetWidth / 2);
-      fVar6 = (float)(((int)in_EAX[4] / 2) * (gfxCmdBufSourceState.renderTargetHeight / 2));
-      pMVar7 = (Material *)
-               (float)(((int)in_EAX[4] % 2) * (gfxCmdBufSourceState.renderTargetWidth / 2));
+      iVar5 = gfxCmdBufSourceState.renderTargetHeight;
+      iVar4 = gfxCmdBufSourceState.renderTargetWidth;
+      s0_00 = (float)(gfxCmdBufSourceState.renderTargetHeight / 2);
+      h = (float)(gfxCmdBufSourceState.renderTargetWidth / 2);
+      w = (float)(((int)in_EAX[4] / 2) * (gfxCmdBufSourceState.renderTargetHeight / 2));
+      y = (Material *)(float)(((int)in_EAX[4] % 2) * (gfxCmdBufSourceState.renderTargetWidth / 2));
       gfxCmdBufSourceState.input.codeImages[8] = gfxRenderTargets[6].image;
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[8].packed = 0;
-      RB_DrawStretchPic(pMVar7,fVar6,fVar5,fVar4,*in_EAX,in_EAX[1],in_EAX[2] + *in_EAX,
-                        in_EAX[3] + in_EAX[1],(float)unaff_EDI,unaff_ESI,unaff_BP);
+      RB_DrawStretchPic(y,w,h,s0_00,*in_EAX,in_EAX[1],in_EAX[2] + *in_EAX,in_EAX[3] + in_EAX[1],
+                        (float)unaff_EDI,unaff_ESI,unaff_BP);
       if (tess.indexCount != 0) {
         RB_DrawTessSurface();
       }
-      pSVar1->s0 = (float)pMVar7 / (float)iVar8;
-      rgp.savedScreenParams[(int)fVar3].t0 = fVar6 / (float)iVar9;
-      rgp.savedScreenParams[(int)fVar3].ds = fVar5 / (float)iVar8;
-      rgp.savedScreenParams[(int)fVar3].dt = fVar4 / (float)iVar9;
+      pSVar1->s0 = (float)y / (float)iVar4;
+      rgp.savedScreenParams[(int)fVar3].t0 = w / (float)iVar5;
+      rgp.savedScreenParams[(int)fVar3].ds = h / (float)iVar4;
+      rgp.savedScreenParams[(int)fVar3].dt = s0_00 / (float)iVar5;
       rgp.savedScreenParams[(int)fVar3].isSet = 1;
       g_renderTargetIsOverridden = false;
       gfxCmdBufSourceState.renderTargetWidth = (int)gfxRenderTargets[3].width;
       gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[3].height;
       gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
       UpdateVPosToWorld(unaff_EDI);
-      R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x03');
+      R_SetRenderTarget();
     }
   }
   return;

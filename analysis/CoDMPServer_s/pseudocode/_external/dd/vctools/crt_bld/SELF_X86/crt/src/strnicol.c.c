@@ -2,37 +2,38 @@
 
 // 00977C78  _strnicoll_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicol.c:55)
 
-int __cdecl _strnicoll_l(char *param_1,char *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _strnicoll_l(char *_string1,char *_string2,uint count,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
   int iVar2;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_4);
-  if (param_3 == 0) {
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (count == 0) {
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0;
   }
-  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {
+  if ((_string1 == (char *)0x0) || (_string2 == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0x7fffffff;
   }
-  if (param_3 < 0x80000000) {
-    if ((local_14.localeinfo.locinfo)->lc_handle[1] == 0) {
-      iVar2 = _strnicmp_l(param_1,param_2,param_3,&local_14.localeinfo);
+  if (count < 0x80000000) {
+    if ((_loc_update.localeinfo.locinfo)->lc_handle[1] == 0) {
+      iVar2 = _strnicmp_l(_string1,_string2,count,&_loc_update.localeinfo);
     }
     else {
-      iVar2 = __crtCompareStringA(&local_14.localeinfo,(local_14.localeinfo.locinfo)->lc_handle[1],
-                                  0x1001,param_1,param_3,param_2,param_3,
-                                  (local_14.localeinfo.locinfo)->lc_collate_cp);
+      iVar2 = __crtCompareStringA(&_loc_update.localeinfo,
+                                  (_loc_update.localeinfo.locinfo)->lc_handle[1],0x1001,_string1,
+                                  count,_string2,count,
+                                  (_loc_update.localeinfo.locinfo)->lc_collate_cp);
       if (iVar2 == 0) {
         piVar1 = _errno();
         *piVar1 = 0x16;
@@ -40,8 +41,8 @@ int __cdecl _strnicoll_l(char *param_1,char *param_2,uint param_3,localeinfo_str
       }
       iVar2 = iVar2 + -2;
     }
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   else {
@@ -49,8 +50,8 @@ int __cdecl _strnicoll_l(char *param_1,char *param_2,uint param_3,localeinfo_str
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
 LAB_00977d4f:
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar2 = 0x7fffffff;
   }

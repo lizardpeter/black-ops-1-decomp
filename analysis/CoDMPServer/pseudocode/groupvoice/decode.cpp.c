@@ -2,32 +2,32 @@
 
 // 006A7490  Decode_Init  (groupvoice/decode.cpp:33)
 
-bool __cdecl Decode_Init(int param_1)
+bool __cdecl Decode_Init(int bandwidthEnum)
 
 {
-  undefined4 local_c;
-  SpeexMode *local_8;
+  int tmp;
+  SpeexMode *mode;
   
-  local_8 = (SpeexMode *)0x0;
-  local_c = 1;
-  if (param_1 == 0) {
-    local_8 = &speex_nb_mode;
+  mode = (SpeexMode *)0x0;
+  tmp = 1;
+  if (bandwidthEnum == 0) {
+    mode = &speex_nb_mode;
   }
-  else if (param_1 == 1) {
-    local_8 = &speex_wb_mode;
+  else if (bandwidthEnum == 1) {
+    mode = &speex_wb_mode;
   }
   else {
-    if (param_1 != 2) {
+    if (bandwidthEnum != 2) {
       Com_Printf(9,"Unknown bandwidth mode %i\n");
       return false;
     }
-    local_8 = &speex_uwb_mode;
+    mode = &speex_uwb_mode;
   }
-  g_decoder = (void *)speex_decoder_init(local_8);
-  speex_decoder_ctl(g_decoder,0,&local_c);
+  g_decoder = (void *)speex_decoder_init(mode);
+  speex_decoder_ctl(g_decoder,0,&tmp);
   Decode_SetOptions(g_encoder_samplerate);
   speex_decoder_ctl(g_decoder,3,&g_decode_frame_size);
-  g_current_decode_bandwidth_setting = param_1;
+  g_current_decode_bandwidth_setting = bandwidthEnum;
   speex_bits_init(&decodeBits);
   return true;
 }
@@ -35,10 +35,10 @@ bool __cdecl Decode_Init(int param_1)
 
 // 006A7560  Decode_SetOptions  (groupvoice/decode.cpp:71)
 
-void __cdecl Decode_SetOptions(int param_1)
+void __cdecl Decode_SetOptions(int frequency)
 
 {
-  speex_decoder_ctl(g_decoder,0x18,&param_1);
+  speex_decoder_ctl(g_decoder,0x18,&frequency);
   return;
 }
 
@@ -61,18 +61,18 @@ void __cdecl Decode_Shutdown(void)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-int __cdecl Decode_Sample(char *param_1,int param_2,short *param_3,int param_4)
+int __cdecl Decode_Sample(char *buffer,int maxLength,short *out,int frame_size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_4010;
-  float local_400c [4097];
-  int local_8;
+  int len;
+  float output [4097];
+  int i;
   
-  local_8 = 0x6a75cd;
-  if (0x1000 < param_2) {
+  i = 0x6a75cd;
+  if (0x1000 < maxLength) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\decode.cpp",100,0,"%s")
     ;
     if (!bVar2) {
@@ -81,7 +81,7 @@ int __cdecl Decode_Sample(char *param_1,int param_2,short *param_3,int param_4)
       return iVar3;
     }
   }
-  if (param_4 < param_2) {
+  if (frame_size < maxLength) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\decode.cpp",0x65,0,"%s"
                             );
     if (!bVar2) {
@@ -90,17 +90,17 @@ int __cdecl Decode_Sample(char *param_1,int param_2,short *param_3,int param_4)
       return iVar3;
     }
   }
-  speex_bits_read_from(&decodeBits,param_1,param_2);
-  iVar3 = speex_decode(g_decoder,&decodeBits,local_400c);
+  speex_bits_read_from(&decodeBits,buffer,maxLength);
+  iVar3 = speex_decode(g_decoder,&decodeBits,output);
   if (iVar3 == 0) {
-    local_4010 = param_4 << 1;
+    len = frame_size << 1;
   }
   else {
-    local_4010 = 0;
+    len = 0;
   }
-  for (local_8 = 0; local_8 < local_4010; local_8 = local_8 + 1) {
-    param_3[local_8] = (short)(int)local_400c[local_8];
+  for (i = 0; i < len; i = i + 1) {
+    out[i] = (short)(int)output[i];
   }
-  return local_4010;
+  return len;
 }
 

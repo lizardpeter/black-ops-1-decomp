@@ -2,16 +2,16 @@
 
 // 00C0FAC6  _time64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time64.c:56)
 
-long64 __cdecl _time64(long64 *param_1)
+long64 __cdecl _time64(long64 *timeptr)
 
 {
   uint extraout_EAX;
   uint uVar1;
   int extraout_EDX;
   int iVar2;
-  _FILETIME local_c;
+  _FILETIME nt_time;
   
-  GetSystemTimeAsFileTime(&local_c);
+  GetSystemTimeAsFileTime(&nt_time);
   _aulldiv();
   uVar1 = extraout_EAX;
   iVar2 = extraout_EDX;
@@ -19,9 +19,9 @@ long64 __cdecl _time64(long64 *param_1)
     uVar1 = 0xffffffff;
     iVar2 = -1;
   }
-  if (param_1 != (long64 *)0x0) {
-    *(uint *)param_1 = uVar1;
-    *(int *)((int)param_1 + 4) = iVar2;
+  if (timeptr != (long64 *)0x0) {
+    *(uint *)timeptr = uVar1;
+    *(int *)((int)timeptr + 4) = iVar2;
   }
   return CONCAT44(iVar2,uVar1);
 }

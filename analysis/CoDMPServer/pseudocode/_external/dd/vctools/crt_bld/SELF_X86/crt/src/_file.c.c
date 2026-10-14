@@ -71,15 +71,15 @@ void __cdecl __endstdio(void)
 
 // 00C12BA2  _lock_file  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c:221)
 
-void __cdecl _lock_file(_iobuf *param_1)
+void __cdecl _lock_file(_iobuf *pf)
 
 {
-  if ((param_1 < _iob) || (_iob + 0x13 < param_1)) {
-    EnterCriticalSection((LPCRITICAL_SECTION)(param_1 + 1));
+  if ((pf < _iob) || (_iob + 0x13 < pf)) {
+    EnterCriticalSection((LPCRITICAL_SECTION)(pf + 1));
   }
   else {
-    _lock(((int)&param_1[-0x70ede]._file >> 5) + 0x10);
-    param_1->_flag = param_1->_flag | 0x8000;
+    _lock(((int)&pf[-0x70ede]._file >> 5) + 0x10);
+    pf->_flag = pf->_flag | 0x8000;
   }
   return;
 }
@@ -87,46 +87,45 @@ void __cdecl _lock_file(_iobuf *param_1)
 
 // 00C12BE3  _lock_file2  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c:264)
 
-void __cdecl _lock_file2(int param_1,void *param_2)
+void __cdecl _lock_file2(int i,void *s)
 
 {
-  if (param_1 < 0x14) {
-    _lock(param_1 + 0x10);
-    *(uint *)((int)param_2 + 0xc) = *(uint *)((int)param_2 + 0xc) | 0x8000;
+  if (i < 0x14) {
+    _lock(i + 0x10);
+    *(uint *)((int)s + 0xc) = *(uint *)((int)s + 0xc) | 0x8000;
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)((int)param_2 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)((int)s + 0x20));
   return;
 }
 
 
 // 00C12C15  _unlock_file  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c:306)
 
-void __cdecl _unlock_file(_iobuf *param_1)
+void __cdecl _unlock_file(_iobuf *pf)
 
 {
-  if (((_iobuf *)((int)&DoserrorNoMem + 3U) < param_1) &&
-     (param_1 < (_iobuf *)((int)&_iob[0x13]._ptr + 1))) {
-    param_1->_flag = param_1->_flag & 0xffff7fff;
-    _unlock(((int)&param_1[-0x70ede]._file >> 5) + 0x10);
+  if (((_iobuf *)((int)&DoserrorNoMem + 3U) < pf) && (pf < (_iobuf *)((int)&_iob[0x13]._ptr + 1))) {
+    pf->_flag = pf->_flag & 0xffff7fff;
+    _unlock(((int)&pf[-0x70ede]._file >> 5) + 0x10);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_1 + 1));
+  LeaveCriticalSection((LPCRITICAL_SECTION)(pf + 1));
   return;
 }
 
 
 // 00C12C51  _unlock_file2  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_file.c:349)
 
-void __cdecl _unlock_file2(int param_1,void *param_2)
+void __cdecl _unlock_file2(int i,void *s)
 
 {
-  if (param_1 < 0x14) {
-    *(uint *)((int)param_2 + 0xc) = *(uint *)((int)param_2 + 0xc) & 0xffff7fff;
-    _unlock(param_1 + 0x10);
+  if (i < 0x14) {
+    *(uint *)((int)s + 0xc) = *(uint *)((int)s + 0xc) & 0xffff7fff;
+    _unlock(i + 0x10);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)((int)param_2 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)((int)s + 0x20));
   return;
 }
 

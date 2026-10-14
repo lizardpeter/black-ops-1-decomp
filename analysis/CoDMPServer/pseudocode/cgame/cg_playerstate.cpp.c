@@ -9,81 +9,80 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DamageFeedback(int param_1,int param_2,int param_3,int param_4)
+void __cdecl CG_DamageFeedback(int localClientNum,int yawByte,int pitchByte,int damage)
 
 {
   cg_s *pcVar1;
   uint extraout_EAX;
   uint extraout_EDX;
   float fVar2;
-  float local_3c;
-  float local_38;
+  float kick;
+  float dir;
   float local_34;
   float local_30;
-  int local_2c;
-  cg_s *local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  int slot;
+  cg_s *cgameGlob;
+  float yaw;
+  float forwardFrac;
+  float sideFrac;
+  float angles;
   float local_14;
   undefined4 local_10;
-  float local_c;
-  int local_8;
+  float pitch;
+  int i;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_3c = (float)param_4 * (bg_viewKickScale->current).value;
-  local_28 = pcVar1;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  kick = (float)damage * (bg_viewKickScale->current).value;
+  cgameGlob = pcVar1;
   _allshl();
   if ((extraout_EAX & (pcVar1->predictedPlayerState).perks[0]) != 0 ||
       (extraout_EDX & (pcVar1->predictedPlayerState).perks[1]) != 0) {
-    local_3c = local_3c * (perk_damageKickReduction->current).value;
+    kick = kick * (perk_damageKickReduction->current).value;
   }
-  if ((bg_viewKickMin->current).value <= local_3c) {
-    if ((bg_viewKickMax->current).value <= local_3c && local_3c != (bg_viewKickMax->current).value)
-    {
-      local_3c = (bg_viewKickMax->current).value;
+  if ((bg_viewKickMin->current).value <= kick) {
+    if ((bg_viewKickMax->current).value <= kick && kick != (bg_viewKickMax->current).value) {
+      kick = (bg_viewKickMax->current).value;
     }
   }
   else {
-    local_3c = (bg_viewKickMin->current).value;
+    kick = (bg_viewKickMin->current).value;
   }
-  if ((param_2 == 0xff) && (param_3 == 0xff)) {
-    local_28->v_dmg_roll = 0.0;
-    local_28->v_dmg_pitch = -local_3c;
+  if ((yawByte == 0xff) && (pitchByte == 0xff)) {
+    cgameGlob->v_dmg_roll = 0.0;
+    cgameGlob->v_dmg_pitch = -kick;
   }
   else {
-    local_18 = ((float)param_3 / 255.0) * 360.0;
-    local_24 = ((float)param_2 / 255.0) * 360.0;
+    angles = ((float)pitchByte / 255.0) * 360.0;
+    yaw = ((float)yawByte / 255.0) * 360.0;
     local_10 = 0;
-    local_14 = local_24;
-    local_c = local_18;
-    AngleVectors(&local_18,&local_38,(float *)0x0,(float *)0x0);
-    local_1c = local_38 * (local_28->refdef).viewaxis[1][0] +
-               local_34 * (local_28->refdef).viewaxis[1][1] +
-               local_30 * (local_28->refdef).viewaxis[1][2];
-    local_20 = local_38 * (local_28->refdef).viewaxis[0][0] +
-               local_34 * (local_28->refdef).viewaxis[0][1] +
-               local_30 * (local_28->refdef).viewaxis[0][2];
-    if ((param_2 != 0) || (param_3 != 0)) {
-      local_28->v_dmg_roll = -local_3c * local_1c;
-      local_28->v_dmg_pitch = local_3c * local_20;
+    local_14 = yaw;
+    pitch = angles;
+    AngleVectors(&angles,&dir,(float *)0x0,(float *)0x0);
+    sideFrac = dir * (cgameGlob->refdef).viewaxis[1][0] +
+               local_34 * (cgameGlob->refdef).viewaxis[1][1] +
+               local_30 * (cgameGlob->refdef).viewaxis[1][2];
+    forwardFrac = dir * (cgameGlob->refdef).viewaxis[0][0] +
+                  local_34 * (cgameGlob->refdef).viewaxis[0][1] +
+                  local_30 * (cgameGlob->refdef).viewaxis[0][2];
+    if ((yawByte != 0) || (pitchByte != 0)) {
+      cgameGlob->v_dmg_roll = -kick * sideFrac;
+      cgameGlob->v_dmg_pitch = kick * forwardFrac;
     }
-    local_2c = 0;
-    for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
-      if (local_28->viewDamage[local_8].time < local_28->viewDamage[local_2c].time) {
-        local_2c = local_8;
+    slot = 0;
+    for (i = 1; i < 8; i = i + 1) {
+      if (cgameGlob->viewDamage[i].time < cgameGlob->viewDamage[slot].time) {
+        slot = i;
       }
     }
-    local_28->viewDamage[local_2c].time = local_28->snap->serverTime;
-    local_28->viewDamage[local_2c].duration = (cg_hudDamageIconTime->current).integer;
+    cgameGlob->viewDamage[slot].time = cgameGlob->snap->serverTime;
+    cgameGlob->viewDamage[slot].duration = (cg_hudDamageIconTime->current).integer;
     fVar2 = random();
-    fVar2 = AngleNormalize360((fVar2 - 0.5) * 20.0 + local_24);
-    local_28->viewDamage[local_2c].yaw = fVar2;
+    fVar2 = AngleNormalize360((fVar2 - 0.5) * 20.0 + yaw);
+    cgameGlob->viewDamage[slot].yaw = fVar2;
   }
-  local_28->v_dmg_time = local_28->time + 500;
-  local_28->damageTime = local_28->snap->serverTime;
-  CG_MenuShowNotify(param_1,0);
+  cgameGlob->v_dmg_time = cgameGlob->time + 500;
+  cgameGlob->damageTime = cgameGlob->snap->serverTime;
+  CG_MenuShowNotify(localClientNum,0);
   return;
 }
 
@@ -95,98 +94,102 @@ void __cdecl CG_DamageFeedback(int param_1,int param_2,int param_3,int param_4)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Respawn(int param_1,int param_2)
+void __cdecl CG_Respawn(int localClientNum,int spectate)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
+  cg_s *cgameGlob_00;
+  bool allowThirdPerson;
+  cg_s *cgameGlob;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if (param_2 == 0) {
-    CG_ClearSavedPlayerState(param_1);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if (spectate == 0) {
+    CG_ClearSavedPlayerState(localClientNum);
   }
   else {
-    CG_SavePlayerState(param_1);
+    CG_SavePlayerState(localClientNum);
   }
-  if ((pcVar3->snap == (snapshot_s *)0x0) &&
+  if ((cgameGlob_00->snap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_playerstate.cpp",0x7f,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  memcpy((uchar *)&pcVar3->predictedPlayerState,(uchar *)&pcVar3->snap->ps,0x26a4);
-  pcVar3->weaponSelectTime = pcVar3->time;
-  pcVar3->equippedOffHand = (pcVar3->predictedPlayerState).offHandIndex;
-  pcVar3->prevViewmodelWeapon = 0;
-  pcVar3->cursorHintIcon = 0;
-  pcVar3->cursorHintTime = 0;
-  pcVar3->proneBlockedEndTime = 0;
-  pcVar3->recoilAngles[0] = 0.0;
-  pcVar3->recoilAngles[1] = 0.0;
-  pcVar3->recoilAngles[2] = 0.0;
-  pcVar3->recoilSpeed[0] = 0.0;
-  pcVar3->recoilSpeed[1] = 0.0;
-  pcVar3->recoilSpeed[2] = 0.0;
-  pcVar3->swayViewAngles[0] = 0.0;
-  pcVar3->swayViewAngles[1] = 0.0;
-  pcVar3->swayViewAngles[2] = 0.0;
-  pcVar3->swayAngles[0] = 0.0;
-  pcVar3->swayAngles[1] = 0.0;
-  pcVar3->swayAngles[2] = 0.0;
-  pcVar3->swayOffset[0] = 0.0;
-  pcVar3->swayOffset[1] = 0.0;
-  pcVar3->swayOffset[2] = 0.0;
-  pcVar3->kickAngles[0] = 0.0;
-  pcVar3->kickAngles[1] = 0.0;
-  pcVar3->kickAngles[2] = 0.0;
-  pcVar3->kickAVel[0] = 0.0;
-  pcVar3->kickAVel[1] = 0.0;
-  pcVar3->kickAVel[2] = 0.0;
-  pcVar3->xyspeed = 0.0;
-  memset((uchar *)&pcVar3->playerEntity,'\0',0x30);
-  pcVar3->damageTime = 0;
-  pcVar3->v_dmg_pitch = 0.0;
-  pcVar3->v_dmg_roll = 0.0;
-  memset((uchar *)pcVar3->viewDamage,'\0',0x60);
-  CG_ClearCameraShakes(param_1);
-  pcVar3->predictedError[0] = 0.0;
-  pcVar3->predictedError[1] = 0.0;
-  pcVar3->predictedError[2] = 0.0;
-  pcVar3->adsViewErrorDone = 0;
-  CL_SetStance(param_1,CL_STANCE_STAND);
-  pcVar3->genericMaterialMap[0xf] = pcVar3->genericMaterialMap[0xe];
-  CL_SetADS(param_1,false);
-  CG_SetEquippedOffHand(param_1,(pcVar3->predictedPlayerState).offHandIndex);
-  (pcVar3->playerEntity).fLastIdleFactor = 0.0;
-  pcVar3->weapIdleTime = 0;
-  pcVar3->heightToCeiling = 3.4028235e+38;
-  CG_HoldBreathInit(pcVar3);
-  CG_ResetFullscreenFX(param_1);
-  if (((pcVar3->snap->ps).otherFlags & 10U) == 0) {
+  memcpy((uchar *)&cgameGlob_00->predictedPlayerState,(uchar *)&cgameGlob_00->snap->ps,0x26a4);
+  cgameGlob_00->weaponSelectTime = cgameGlob_00->time;
+  cgameGlob_00->equippedOffHand = (cgameGlob_00->predictedPlayerState).offHandIndex;
+  cgameGlob_00->prevViewmodelWeapon = 0;
+  cgameGlob_00->cursorHintIcon = 0;
+  cgameGlob_00->cursorHintTime = 0;
+  cgameGlob_00->proneBlockedEndTime = 0;
+  cgameGlob_00->recoilAngles[0] = 0.0;
+  cgameGlob_00->recoilAngles[1] = 0.0;
+  cgameGlob_00->recoilAngles[2] = 0.0;
+  cgameGlob_00->recoilSpeed[0] = 0.0;
+  cgameGlob_00->recoilSpeed[1] = 0.0;
+  cgameGlob_00->recoilSpeed[2] = 0.0;
+  cgameGlob_00->swayViewAngles[0] = 0.0;
+  cgameGlob_00->swayViewAngles[1] = 0.0;
+  cgameGlob_00->swayViewAngles[2] = 0.0;
+  cgameGlob_00->swayAngles[0] = 0.0;
+  cgameGlob_00->swayAngles[1] = 0.0;
+  cgameGlob_00->swayAngles[2] = 0.0;
+  cgameGlob_00->swayOffset[0] = 0.0;
+  cgameGlob_00->swayOffset[1] = 0.0;
+  cgameGlob_00->swayOffset[2] = 0.0;
+  cgameGlob_00->kickAngles[0] = 0.0;
+  cgameGlob_00->kickAngles[1] = 0.0;
+  cgameGlob_00->kickAngles[2] = 0.0;
+  cgameGlob_00->kickAVel[0] = 0.0;
+  cgameGlob_00->kickAVel[1] = 0.0;
+  cgameGlob_00->kickAVel[2] = 0.0;
+  cgameGlob_00->xyspeed = 0.0;
+  memset((uchar *)&cgameGlob_00->playerEntity,'\0',0x30);
+  cgameGlob_00->damageTime = 0;
+  cgameGlob_00->v_dmg_pitch = 0.0;
+  cgameGlob_00->v_dmg_roll = 0.0;
+  memset((uchar *)cgameGlob_00->viewDamage,'\0',0x60);
+  CG_ClearCameraShakes(localClientNum);
+  cgameGlob_00->predictedError[0] = 0.0;
+  cgameGlob_00->predictedError[1] = 0.0;
+  cgameGlob_00->predictedError[2] = 0.0;
+  cgameGlob_00->adsViewErrorDone = 0;
+  CL_SetStance(localClientNum,CL_STANCE_STAND);
+  cgameGlob_00->genericMaterialMap[0xf] = cgameGlob_00->genericMaterialMap[0xe];
+  CL_SetADS(localClientNum,false);
+  CG_SetEquippedOffHand(localClientNum,(cgameGlob_00->predictedPlayerState).offHandIndex);
+  (cgameGlob_00->playerEntity).fLastIdleFactor = 0.0;
+  cgameGlob_00->weapIdleTime = 0;
+  cgameGlob_00->heightToCeiling = 3.4028235e+38;
+  CG_HoldBreathInit(cgameGlob_00);
+  CG_ResetFullscreenFX(localClientNum);
+  if (((cgameGlob_00->snap->ps).otherFlags & 10U) == 0) {
     CG_SetThirdPerson(0);
   }
   else {
     CG_SetThirdPerson((uint)(cg_spectateThirdPerson->current).color[0]);
   }
-  CScr_NotifyNum(param_1,(uint)(pcVar3->predictedPlayerState).clientNum,0,(uint)cscr_const.respawn,0
-                );
+  CScr_NotifyNum(localClientNum,(uint)(cgameGlob_00->predictedPlayerState).clientNum,0,
+                 (uint)cscr_const.respawn,0);
   return;
 }
 
 
 // 004DC580  CG_ResetSpectatorViewAngles  (cgame/cg_playerstate.cpp:213)
 
-void __cdecl CG_ResetSpectatorViewAngles(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_ResetSpectatorViewAngles(int localClientNum)
 
 {
-  float local_10 [3];
+  float angles [3];
   
-  local_10[0] = 0.0;
-  local_10[1] = 0.0;
-  local_10[2] = 0.0;
-  CL_SetViewAngles(param_1,local_10);
+  angles[0] = 0.0;
+  angles[1] = 0.0;
+  angles[2] = 0.0;
+  CL_SetViewAngles(localClientNum,angles);
   Com_Printf(0,"CL_SetViewAngles() - SPECCY - (%3.0f, %3.0f, %3.0f)\n");
   return;
 }
@@ -199,35 +202,38 @@ void __cdecl CG_ResetSpectatorViewAngles(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-CG_CheckPlayerstateEvents(int param_1,playerState_s *param_2,transPlayerState_t *param_3)
+void __cdecl CG_CheckPlayerstateEvents(int localClientNum,playerState_s *ps,transPlayerState_t *ops)
 
 {
   int iVar1;
   bool bVar2;
   cg_s *pcVar3;
-  centity_s *pcVar4;
-  uint uVar5;
+  centity_s *cent_00;
+  uint uVar4;
   short local_26;
-  short local_1c;
-  uint local_c;
+  int eventIndex;
+  short prevEvtSeq;
+  int event;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  int i;
+  int prevUnpredictableEvtSeq;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  pcVar4 = &pcVar3->predictedPlayerEntity;
-  local_1c = param_3->predictableEventSequence;
-  if (param_2->predictableEventSequence + 0x40 < (int)local_1c) {
-    local_1c = local_1c + -0x100;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  cent_00 = &pcVar3->predictedPlayerEntity;
+  prevEvtSeq = ops->predictableEventSequence;
+  if (ps->predictableEventSequence + 0x40 < (int)prevEvtSeq) {
+    prevEvtSeq = prevEvtSeq + -0x100;
   }
-  for (local_c = (int)param_2->predictableEventSequence - 4;
-      (int)local_c < (int)param_2->predictableEventSequence; local_c = local_c + 1) {
-    uVar5 = local_c & 3;
-    if ((int)local_c < (int)local_1c) {
-      if ((local_1c + -4 < (int)local_c) &&
-         (param_2->predictableEvents[uVar5] != param_3->predictableEvents[uVar5])) {
-        iVar1 = param_2->predictableEvents[uVar5];
+  for (i = ps->predictableEventSequence + -4; i < ps->predictableEventSequence; i = i + 1) {
+    uVar4 = i & 3;
+    if (i < prevEvtSeq) {
+      if ((prevEvtSeq + -4 < i) && (ps->predictableEvents[uVar4] != ops->predictableEvents[uVar4]))
+      {
+        iVar1 = ps->predictableEvents[uVar4];
         (pcVar3->predictedPlayerEntity).nextState.eventParm =
-             (ushort)param_2->predictableEventParms[uVar5];
-        CG_EntityEvent(param_1,pcVar4,iVar1);
+             (ushort)ps->predictableEventParms[uVar4];
+        CG_EntityEvent(localClientNum,cent_00,iVar1);
         bVar2 = Dvar_GetBool("showevents");
         if (bVar2) {
           Com_Printf(0x11,
@@ -237,10 +243,10 @@ CG_CheckPlayerstateEvents(int param_1,playerState_s *param_2,transPlayerState_t 
       }
     }
     else {
-      iVar1 = param_2->predictableEvents[uVar5];
-      (pcVar3->predictedPlayerEntity).nextState.eventParm =
-           (ushort)param_2->predictableEventParms[uVar5];
-      CG_EntityEvent(param_1,pcVar4,iVar1);
+      iVar1 = ps->predictableEvents[uVar4];
+      (pcVar3->predictedPlayerEntity).nextState.eventParm = (ushort)ps->predictableEventParms[uVar4]
+      ;
+      CG_EntityEvent(localClientNum,cent_00,iVar1);
       bVar2 = Dvar_GetBool("showevents");
       if (bVar2) {
         Com_Printf(0x11,
@@ -248,16 +254,15 @@ CG_CheckPlayerstateEvents(int param_1,playerState_s *param_2,transPlayerState_t 
       }
     }
   }
-  local_26 = param_3->unpredictableEventSequence;
-  if (param_2->unpredictableEventSequence + 0x40 < (int)local_26) {
+  local_26 = ops->unpredictableEventSequence;
+  if (ps->unpredictableEventSequence + 0x40 < (int)local_26) {
     local_26 = local_26 + -0x100;
   }
-  for (local_c = (uint)local_26; (int)local_c < (int)param_2->unpredictableEventSequence;
-      local_c = local_c + 1) {
-    iVar1 = param_2->unpredictableEvents[local_c & 3];
+  for (i = (int)local_26; i < ps->unpredictableEventSequence; i = i + 1) {
+    iVar1 = ps->unpredictableEvents[i & 3U];
     (pcVar3->predictedPlayerEntity).nextState.eventParm =
-         (ushort)param_2->unpredictableEventParms[local_c & 3];
-    CG_EntityEvent(param_1,pcVar4,iVar1);
+         (ushort)ps->unpredictableEventParms[i & 3U];
+    CG_EntityEvent(localClientNum,cent_00,iVar1);
     bVar2 = Dvar_GetBool("showevents");
     if (bVar2) {
       Com_Printf(0x11,
@@ -270,56 +275,60 @@ CG_CheckPlayerstateEvents(int param_1,playerState_s *param_2,transPlayerState_t 
 
 // 004DC600  CG_TransitionPlayerState  (cgame/cg_playerstate.cpp:286)
 
-void __cdecl
-CG_TransitionPlayerState(int param_1,playerState_s *param_2,transPlayerState_t *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_TransitionPlayerState(int localClientNum,playerState_s *ps,transPlayerState_t *ops)
 
 {
-  if ((param_2->damageEvent != param_3->damageEvent) && (param_2->damageCount != 0)) {
-    CG_DamageFeedback(param_1,param_2->damageYaw,param_2->damagePitch,param_2->damageCount);
+  if ((ps->damageEvent != ops->damageEvent) && (ps->damageCount != 0)) {
+    CG_DamageFeedback(localClientNum,ps->damageYaw,ps->damagePitch,ps->damageCount);
   }
-  CG_CheckPlayerstateEvents(param_1,param_2,param_3);
+  CG_CheckPlayerstateEvents(localClientNum,ps,ops);
   return;
 }
 
 
 // 004DCCB0  CG_ClearTransPlayerState  (cgame/cg_playerstate.cpp:298)
 
-void __cdecl CG_ClearTransPlayerState(transPlayerState_t *param_1)
+void __cdecl CG_ClearTransPlayerState(transPlayerState_t *transPs)
 
 {
-  param_1->otherFlags = 0;
-  param_1->damageEvent = 0;
-  param_1->predictableEventSequence = 0;
-  param_1->predictableEvents[0] = 0;
-  param_1->predictableEvents[1] = 0;
-  param_1->predictableEvents[2] = 0;
-  param_1->predictableEvents[3] = 0;
-  param_1->unpredictableEventSequence = 0;
-  param_1->unpredictableEvents[0] = 0;
-  param_1->unpredictableEvents[1] = 0;
-  param_1->unpredictableEvents[2] = 0;
-  param_1->unpredictableEvents[3] = 0;
+  transPs->otherFlags = 0;
+  transPs->damageEvent = 0;
+  transPs->predictableEventSequence = 0;
+  transPs->predictableEvents[0] = 0;
+  transPs->predictableEvents[1] = 0;
+  transPs->predictableEvents[2] = 0;
+  transPs->predictableEvents[3] = 0;
+  transPs->unpredictableEventSequence = 0;
+  transPs->unpredictableEvents[0] = 0;
+  transPs->unpredictableEvents[1] = 0;
+  transPs->unpredictableEvents[2] = 0;
+  transPs->unpredictableEvents[3] = 0;
   return;
 }
 
 
 // 004DCD00  CG_ExtractTransPlayerState  (cgame/cg_playerstate.cpp:309)
 
-void __cdecl CG_ExtractTransPlayerState(playerState_s *param_1,transPlayerState_t *param_2)
+void __cdecl CG_ExtractTransPlayerState(playerState_s *ps,transPlayerState_t *transPs)
 
 {
-  param_2->otherFlags = param_1->otherFlags;
-  param_2->damageEvent = param_1->damageEvent;
-  param_2->predictableEventSequence = param_1->predictableEventSequence;
-  param_2->predictableEvents[0] = param_1->predictableEvents[0];
-  param_2->predictableEvents[1] = param_1->predictableEvents[1];
-  param_2->predictableEvents[2] = param_1->predictableEvents[2];
-  param_2->predictableEvents[3] = param_1->predictableEvents[3];
-  param_2->unpredictableEventSequence = param_1->unpredictableEventSequence;
-  param_2->unpredictableEvents[0] = param_1->unpredictableEvents[0];
-  param_2->unpredictableEvents[1] = param_1->unpredictableEvents[1];
-  param_2->unpredictableEvents[2] = param_1->unpredictableEvents[2];
-  param_2->unpredictableEvents[3] = param_1->unpredictableEvents[3];
+  transPs->otherFlags = ps->otherFlags;
+  transPs->damageEvent = ps->damageEvent;
+  transPs->predictableEventSequence = ps->predictableEventSequence;
+  transPs->predictableEvents[0] = ps->predictableEvents[0];
+  transPs->predictableEvents[1] = ps->predictableEvents[1];
+  transPs->predictableEvents[2] = ps->predictableEvents[2];
+  transPs->predictableEvents[3] = ps->predictableEvents[3];
+  transPs->unpredictableEventSequence = ps->unpredictableEventSequence;
+  transPs->unpredictableEvents[0] = ps->unpredictableEvents[0];
+  transPs->unpredictableEvents[1] = ps->unpredictableEvents[1];
+  transPs->unpredictableEvents[2] = ps->unpredictableEvents[2];
+  transPs->unpredictableEvents[3] = ps->unpredictableEvents[3];
   return;
 }
 

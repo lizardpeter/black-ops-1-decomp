@@ -29,10 +29,10 @@ int __cdecl UI_FeederCount(int param_1,int param_2,float param_3,listBoxDef_s *p
   int *piVar1;
   int iVar2;
   uiInfo_s *unaff_ESI;
-  DvarSetSource DVar3;
+  DvarSetSource num;
   dvar_s *unaff_EDI;
-  undefined8 *puVar4;
-  DvarSetSource DVar5;
+  undefined8 *base;
+  DvarSetSource DVar3;
   int in_stack_fffffff8;
   
   iVar2 = 0;
@@ -93,12 +93,12 @@ LAB_006270e4:
     iVar2 = Live_GetInvitesCount();
     return iVar2;
   case 0x32:
-    DVar3 = (DvarSetSource)(byte)(&DAT_04efb338)[iVar2 * 0x970];
-    puVar4 = &DAT_04efa9d8 + iVar2 * 0x12e;
-    DVar5 = DVar3;
-    qsort(puVar4,DVar3,0x30,FUN_00788ff0);
-    Dvar_SetBoolFromSource((dvar_s *)0x0,SUB41(puVar4,0),DVar5);
-    return DVar3;
+    num = (DvarSetSource)(byte)(&DAT_04efb338)[iVar2 * 0x970];
+    base = &DAT_04efa9d8 + iVar2 * 0x12e;
+    DVar3 = num;
+    qsort(base,num,0x30,FUN_00788ff0);
+    Dvar_SetBoolFromSource((dvar_s *)0x0,SUB41(base,0),DVar3);
+    return num;
   case 0x36:
     return *(int *)(param_4 + 0x298);
   case 0x4a:

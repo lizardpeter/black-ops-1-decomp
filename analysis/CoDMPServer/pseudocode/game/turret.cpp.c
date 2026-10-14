@@ -31,10 +31,10 @@ void __cdecl Turret_RegisterDvars(void)
 void __cdecl G_InitTurrets(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    turretInfoStore[local_8].inuse = false;
+  for (i = 0; i < 0x20; i = i + 1) {
+    turretInfoStore[i].inuse = false;
   }
   level.turrets = turretInfoStore;
   return;
@@ -48,14 +48,14 @@ void __cdecl G_InitTurrets(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Turret_GetRemainingConvergenceTime(TurretInfo *param_1,int param_2)
+int __cdecl Turret_GetRemainingConvergenceTime(TurretInfo *turretInfo,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_2 != 0) && (param_2 != 1)) {
+  if ((type != 0) && (type != 1)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",100,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -63,7 +63,7 @@ int __cdecl Turret_GetRemainingConvergenceTime(TurretInfo *param_1,int param_2)
       return iVar3;
     }
   }
-  return param_1->convergenceTime[param_2] - (level.time - param_1->targetTime);
+  return turretInfo->convergenceTime[type] - (level.time - turretInfo->targetTime);
 }
 
 
@@ -74,59 +74,59 @@ int __cdecl Turret_GetRemainingConvergenceTime(TurretInfo *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Turret_FillWeaponParms(gentity_s *param_1,gentity_s *param_2,uint param_3,weaponParms *param_4)
+void __cdecl Turret_FillWeaponParms(gentity_s *ent,gentity_s *activator,uint weapon,weaponParms *wp)
 
 {
   int iVar1;
   float fVar2;
-  float local_5c;
+  float diff;
   float local_58;
   float local_54;
-  float local_50;
+  float playerPos;
   float local_4c;
   float local_48;
-  float local_40;
+  float len;
+  float angles;
   float local_3c;
   float local_38;
-  float local_34;
+  float flashTag;
   float local_30;
   float local_2c;
   float local_10;
   float local_c;
   float local_8;
   
-  iVar1 = G_DObjGetWorldTagMatrix(param_1,(uint)scr_const.tag_flash,(float (*) [3])&local_34);
+  iVar1 = G_DObjGetWorldTagMatrix(ent,(uint)scr_const.tag_flash,(float (*) [3])&flashTag);
   if (iVar1 == 0) {
-    SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+    SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
     Com_Error(ERR_DROP,"\x15Couldn\'t find %s on turret (entity %d, classname \'%s\').\n");
   }
-  Weapon_SetWeaponParamsWeapon(param_4,param_3);
-  if ((param_2->client == (gclient_s *)0x0) || ((zombietron->current).enabled != false)) {
-    local_3c = (param_1->r).currentAngles[1] + (param_1->s).lerp.u.turret.gunAngles[1];
-    local_38 = (param_1->r).currentAngles[2];
-    local_40 = (param_1->r).currentAngles[0] + (param_1->s).lerp.u.turret.gunAngles[0];
-    AngleVectors(&local_40,param_4->forward,param_4->right,param_4->up);
-    param_4->gunForward[0] = local_34;
-    param_4->gunForward[1] = local_30;
-    param_4->gunForward[2] = local_2c;
-    param_4->muzzleTrace[0] = local_10;
-    param_4->muzzleTrace[1] = local_c;
-    param_4->muzzleTrace[2] = local_8;
+  Weapon_SetWeaponParamsWeapon(wp,weapon);
+  if ((activator->client == (gclient_s *)0x0) || ((zombietron->current).enabled != false)) {
+    local_3c = (ent->r).currentAngles[1] + (ent->s).lerp.u.turret.gunAngles[1];
+    local_38 = (ent->r).currentAngles[2];
+    angles = (ent->r).currentAngles[0] + (ent->s).lerp.u.turret.gunAngles[0];
+    AngleVectors(&angles,wp->forward,wp->right,wp->up);
+    wp->gunForward[0] = flashTag;
+    wp->gunForward[1] = local_30;
+    wp->gunForward[2] = local_2c;
+    wp->muzzleTrace[0] = local_10;
+    wp->muzzleTrace[1] = local_c;
+    wp->muzzleTrace[2] = local_8;
   }
   else {
-    G_GetPlayerViewOrigin(&param_2->client->ps,&local_50);
-    G_GetPlayerViewDirection(param_2,param_4->forward,param_4->right,param_4->up);
-    param_4->gunForward[0] = param_4->forward[0];
-    param_4->gunForward[1] = param_4->forward[1];
-    param_4->gunForward[2] = param_4->forward[2];
-    local_5c = local_10 - local_50;
+    G_GetPlayerViewOrigin(&activator->client->ps,&playerPos);
+    G_GetPlayerViewDirection(activator,wp->forward,wp->right,wp->up);
+    wp->gunForward[0] = wp->forward[0];
+    wp->gunForward[1] = wp->forward[1];
+    wp->gunForward[2] = wp->forward[2];
+    diff = local_10 - playerPos;
     local_58 = local_c - local_4c;
     local_54 = local_8 - local_48;
-    fVar2 = Vec3Normalize(&local_5c);
-    param_4->muzzleTrace[0] = fVar2 * param_4->forward[0] + local_50;
-    param_4->muzzleTrace[1] = fVar2 * param_4->forward[1] + local_4c;
-    param_4->muzzleTrace[2] = fVar2 * param_4->forward[2] + local_48;
+    fVar2 = Vec3Normalize(&diff);
+    wp->muzzleTrace[0] = fVar2 * wp->forward[0] + playerPos;
+    wp->muzzleTrace[1] = fVar2 * wp->forward[1] + local_4c;
+    wp->muzzleTrace[2] = fVar2 * wp->forward[2] + local_48;
   }
   return;
 }
@@ -139,7 +139,7 @@ Turret_FillWeaponParms(gentity_s *param_1,gentity_s *param_2,uint param_3,weapon
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Fire_Lead(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Fire_Lead(gentity_s *ent,gentity_s *activator,int bUseAccuracy)
 
 {
   TurretInfo *pTVar1;
@@ -150,29 +150,32 @@ void __cdecl Fire_Lead(gentity_s *param_1,gentity_s *param_2,int param_3)
   gentity_s *pgVar6;
   uint uVar7;
   gentity_s *local_7c;
-  int local_74;
-  target_t *local_6c;
-  float local_64;
-  weaponParms local_5c;
-  float local_10;
+  int i;
+  target_t *targets;
+  target_t *targetEnt;
+  gentity_s *attacker;
+  float spread;
+  TurretInfo *turretInfo;
+  weaponParms wp;
+  float targetPos;
   float local_c;
   float local_8;
   
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((activator == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc1,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_2 == g_entities + 0x3ff) {
-    local_7c = param_1;
+  if (activator == g_entities + 0x3ff) {
+    local_7c = ent;
   }
   else {
-    local_7c = param_2;
+    local_7c = activator;
   }
-  Turret_FillWeaponParms(param_1,local_7c,(uint)(param_1->s).weapon,&local_5c);
-  pTVar1 = param_1->pTurretInfo;
+  Turret_FillWeaponParms(ent,local_7c,(uint)(ent->s).weapon,&wp);
+  pTVar1 = ent->pTurretInfo;
   if ((pTVar1 == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",200,0,"%s"),
      !bVar3)) {
@@ -180,53 +183,50 @@ void __cdecl Fire_Lead(gentity_s *param_1,gentity_s *param_2,int param_3)
     (*pcVar2)();
     return;
   }
-  local_10 = pTVar1->targetPos[0];
+  targetPos = pTVar1->targetPos[0];
   local_c = pTVar1->targetPos[1];
   local_8 = pTVar1->targetPos[2];
-  if ((local_5c.weapDef)->weapType == WEAPTYPE_BULLET) {
-    if (param_2->client == (gclient_s *)0x0) {
-      local_64 = pTVar1->aiSpread;
+  if ((wp.weapDef)->weapType == WEAPTYPE_BULLET) {
+    if (activator->client == (gclient_s *)0x0) {
+      spread = pTVar1->aiSpread;
     }
     else {
-      local_64 = pTVar1->playerSpread;
+      spread = pTVar1->playerSpread;
     }
-    Bullet_Fire(local_7c,local_64,&local_5c,param_1,level.time);
+    Bullet_Fire(local_7c,spread,&wp,ent,level.time);
   }
-  else if ((local_5c.weapDef)->weapType == WEAPTYPE_GAS) {
-    Weapon_Flamethrower_Fire(param_1,&local_5c);
+  else if ((wp.weapDef)->weapType == WEAPTYPE_GAS) {
+    Weapon_Flamethrower_Fire(ent,&wp);
   }
   else if (((pTVar1->flags & 0x20000U) == 0) ||
           (iVar4 = EntHandle::isDefined(&pTVar1->target), iVar4 == 0)) {
     Weapon_RocketLauncher_Fire
-              (local_7c,(uint)(param_1->s).weapon,0.0,&local_5c,vec3_origin,(gentity_s *)0x0,
-               (float *)0x0);
+              (local_7c,(uint)(ent->s).weapon,0.0,&wp,vec3_origin,(gentity_s *)0x0,(float *)0x0);
   }
   else {
     ptVar5 = Target_GetTargetArray();
-    local_6c = (target_t *)0x0;
-    for (local_74 = 0; local_74 < 0x20; local_74 = local_74 + 1) {
+    targetEnt = (target_t *)0x0;
+    for (i = 0; i < 0x20; i = i + 1) {
       pgVar6 = EntHandle::ent(&pTVar1->target);
-      if (ptVar5[local_74].ent == pgVar6) {
-        local_6c = ptVar5 + local_74;
+      if (ptVar5[i].ent == pgVar6) {
+        targetEnt = ptVar5 + i;
         break;
       }
     }
-    if (local_6c == (target_t *)0x0) {
+    if (targetEnt == (target_t *)0x0) {
       Weapon_RocketLauncher_Fire
-                (param_1,(uint)(param_1->s).weapon,0.0,&local_5c,vec3_origin,(gentity_s *)0x0,
-                 (float *)0x0);
+                (ent,(uint)(ent->s).weapon,0.0,&wp,vec3_origin,(gentity_s *)0x0,(float *)0x0);
     }
     else {
       Weapon_RocketLauncher_Fire
-                (param_1,(uint)(param_1->s).weapon,0.0,&local_5c,vec3_origin,local_6c->ent,
-                 local_6c->offset);
+                (ent,(uint)(ent->s).weapon,0.0,&wp,vec3_origin,targetEnt->ent,targetEnt->offset);
     }
   }
   if (pTVar1->fireBarrel == 0) {
-    G_AddEvent(param_1,0x2f,(local_7c->s).number);
+    G_AddEvent(ent,0x2f,(local_7c->s).number);
   }
   else {
-    G_AddEvent(param_1,0x30,(local_7c->s).number);
+    G_AddEvent(ent,0x30,(local_7c->s).number);
   }
   if ((pTVar1->flags & 0x8000U) != 0) {
     pTVar1->fireBarrel = pTVar1->fireBarrel + 1;
@@ -248,7 +248,7 @@ void __cdecl Fire_Lead(gentity_s *param_1,gentity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_PlayerTurretPositionAndBlend(gentity_s *param_1,gentity_s *param_2)
+void __cdecl G_PlayerTurretPositionAndBlend(gentity_s *ent,gentity_s *pTurretEnt)
 
 {
   gclient_s *pgVar1;
@@ -256,77 +256,78 @@ void __cdecl G_PlayerTurretPositionAndBlend(gentity_s *param_1,gentity_s *param_
   code *pcVar3;
   bool bVar4;
   float fVar5;
-  uint local_1cc;
-  col_context_t local_1c8;
-  float local_1a0;
-  DObj *local_19c;
-  int local_198;
-  float local_194 [3];
-  float local_188;
-  float local_184;
+  float fHeightRatio;
+  int iPrevBlend;
+  col_context_t context;
+  float fPrevTransZ;
+  DObj *obj;
+  int numVertChildren;
+  float trans2 [3];
+  float yaw;
+  float trans;
   float local_180;
   float local_17c;
-  float local_178;
+  float start;
   float local_174;
   float local_170;
-  float local_16c;
+  float end;
   float local_168;
   float local_164;
-  uint local_160;
-  DObjAnimMat *local_15c;
-  uint local_158;
-  float local_154;
-  float local_150;
-  float local_14c [2];
-  float local_144 [9];
-  float local_120 [9];
+  int iBlend;
+  DObjAnimMat *tagMat;
+  uint heightAnim;
+  float fDelta;
+  float fPrevBlend;
+  float rot [2];
+  float tagAxis [9];
+  float localAxis [9];
   float local_fc;
   float local_f8;
   float local_f4;
-  uint local_f0;
-  float4 local_ec;
+  uint leafAnim1;
+  float4 trace;
   float local_dc;
   char local_c2;
   char local_c1;
   uint local_b4;
-  float local_b0 [2];
+  float endpos [2];
   float local_a8;
-  int local_a4;
-  int *local_a0;
-  float local_9c;
-  int local_98;
-  uint local_94;
-  uint local_90;
-  int *local_8c;
-  WeaponDef *local_88;
-  float local_84;
-  float local_80 [9];
+  int numHorChildren;
+  clientInfo_t *ci;
+  float tagHeight;
+  int i;
+  uint baseAnim;
+  int clientNum;
+  lerpFrame_t *pLerpAnim;
+  WeaponDef *weapDef;
+  float fBlend;
+  float axis [9];
   float local_5c;
   float local_58;
   float local_54;
-  XAnimTree_s *local_50;
-  XAnim_s *local_4c;
-  uint local_48;
-  float local_44;
-  float local_40 [6];
+  XAnimTree_s *pAnimTree;
+  XAnim_s *pXAnims;
+  uint leafAnim2;
+  float localYaw;
+  float turretAxis [6];
   float local_28;
   float local_24;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float vDelta;
   float local_c;
   float local_8;
   
   local_b4 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_ec.v[0] = 0.0;
-  local_ec.v[1] = 0.0;
-  local_ec.v[2] = 0.0;
-  local_ec.v[3] = 0.0;
-  col_context_t::col_context_t(&local_1c8);
-  local_90 = (uint)(param_1->s).clientNum;
-  if ((0x1f < local_90) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  clientNum = (int)(ent->s).clientNum;
+  if ((0x1f < (uint)clientNum) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x16a,0,
                                "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar4)
      ) {
@@ -334,168 +335,168 @@ void __cdecl G_PlayerTurretPositionAndBlend(gentity_s *param_1,gentity_s *param_
     (*pcVar3)();
     return;
   }
-  local_a0 = (int *)(level_bgs.clientinfo + local_90 * 0x5c8);
-  if ((*local_a0 == 0) &&
+  ci = (clientInfo_t *)(level_bgs.clientinfo + clientNum * 0x5c8);
+  if ((ci->infoValid == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x16c,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_8c = local_a0 + 0xf7;
-  if (((local_a0[0xfb] != 0) && (local_a0[0xfc] != 0)) &&
-     ((*(uint *)(local_a0[0xfc] + 0x5c) & 4) != 0)) {
-    local_15c = G_DObjGetLocalTagMatrix(param_2,(uint)scr_const.tag_weapon);
-    if (local_15c == (DObjAnimMat *)0x0) {
+  pLerpAnim = &ci->legs;
+  if ((((ci->legs).animationNumber != 0) && ((ci->legs).animation != (animation_s *)0x0)) &&
+     ((((ci->legs).animation)->flags & 4U) != 0)) {
+    tagMat = G_DObjGetLocalTagMatrix(pTurretEnt,(uint)scr_const.tag_weapon);
+    if (tagMat == (DObjAnimMat *)0x0) {
       Com_PrintWarning(0x11,
                        "WARNING: aborting player positioning on turret since \'tag_weapon\' does not exist\n"
                       );
     }
     else {
-      local_19c = Com_GetServerDObj((param_1->s).number);
-      if (local_19c != (DObj *)0x0) {
-        if (((param_2->s).weapon == 0) &&
+      obj = Com_GetServerDObj((ent->s).number);
+      if (obj != (DObj *)0x0) {
+        if (((pTurretEnt->s).weapon == 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x17e,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        local_88 = BG_GetWeaponDef((uint)(param_2->s).weapon);
-        if ((local_88->weapClass != WEAPCLASS_TURRET) &&
+        weapDef = BG_GetWeaponDef((uint)(pTurretEnt->s).weapon);
+        if ((weapDef->weapClass != WEAPCLASS_TURRET) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x180,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        if ((local_88->fAnimHorRotateInc == 0.0) &&
+        if ((weapDef->fAnimHorRotateInc == 0.0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x181,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        local_50 = (XAnimTree_s *)local_a0[0x14d];
-        local_4c = ((level_bgs.animData)->animScriptData).animTree.anims;
-        local_94 = local_8c[4] & 0xfffffbff;
-        ConvertQuatToMat(local_15c,(float (*) [3])local_144);
-        local_44 = vectosignedyaw(local_144);
-        AnglesToAxis((param_2->r).currentAngles,(float (*) [3])local_40);
-        local_1c = (param_2->r).currentOrigin[0];
-        local_18 = (param_2->r).currentOrigin[1];
-        local_14 = (param_2->r).currentOrigin[2];
-        local_10 = (param_1->r).currentOrigin[0] - local_1c;
-        local_c = (param_1->r).currentOrigin[1] - local_18;
-        local_8 = (param_1->r).currentOrigin[2] - local_14;
-        local_9c = local_10 * local_28 + local_c * local_24 + local_8 * local_20;
-        local_154 = local_9c - local_15c->trans[2];
-        local_198 = XAnimGetNumChildren(local_4c,local_94);
-        local_1a0 = 0.0;
-        local_150 = 0.0;
-        local_1cc = 0;
-        local_48 = 0;
-        if (local_198 == 0) {
-          XAnimGetAnimDebugName(local_4c,local_94);
+        pAnimTree = ci->pXAnimTree;
+        pXAnims = ((level_bgs.animData)->animScriptData).animTree.anims;
+        baseAnim = pLerpAnim->animationNumber & 0xfffffbff;
+        ConvertQuatToMat(tagMat,(float (*) [3])tagAxis);
+        localYaw = vectosignedyaw(tagAxis);
+        AnglesToAxis((pTurretEnt->r).currentAngles,(float (*) [3])turretAxis);
+        local_1c = (pTurretEnt->r).currentOrigin[0];
+        local_18 = (pTurretEnt->r).currentOrigin[1];
+        local_14 = (pTurretEnt->r).currentOrigin[2];
+        vDelta = (ent->r).currentOrigin[0] - local_1c;
+        local_c = (ent->r).currentOrigin[1] - local_18;
+        local_8 = (ent->r).currentOrigin[2] - local_14;
+        tagHeight = vDelta * local_28 + local_c * local_24 + local_8 * local_20;
+        fDelta = tagHeight - tagMat->trans[2];
+        numVertChildren = XAnimGetNumChildren(pXAnims,baseAnim);
+        fPrevTransZ = 0.0;
+        fPrevBlend = 0.0;
+        iPrevBlend = 0;
+        leafAnim2 = 0;
+        if (numVertChildren == 0) {
+          XAnimGetAnimDebugName(pXAnims,baseAnim);
           Com_Error(ERR_DROP,"\x15Player anim \'%s\' has no children");
         }
-        local_98 = 0;
+        i = 0;
         do {
-          local_158 = XAnimGetChildAt(local_4c,local_94,(local_198 + -1) - local_98);
-          local_a4 = XAnimGetNumChildren(local_4c,local_158);
-          if (local_a4 == 0) {
-            XAnimGetAnimDebugName(local_4c,local_158);
+          heightAnim = XAnimGetChildAt(pXAnims,baseAnim,(numVertChildren + -1) - i);
+          numHorChildren = XAnimGetNumChildren(pXAnims,heightAnim);
+          if (numHorChildren == 0) {
+            XAnimGetAnimDebugName(pXAnims,heightAnim);
             Com_Error(ERR_DROP,"\x15Player anim \'%s\' has no children");
           }
-          local_84 = (float)local_a4 * 0.5 + local_44 / local_88->fAnimHorRotateInc;
-          if (0.0 <= local_84) {
-            if ((float)(local_a4 + -1) <= local_84) {
-              local_84 = (float)(local_a4 + -1);
+          fBlend = (float)numHorChildren * 0.5 + localYaw / weapDef->fAnimHorRotateInc;
+          if (0.0 <= fBlend) {
+            if ((float)(numHorChildren + -1) <= fBlend) {
+              fBlend = (float)(numHorChildren + -1);
             }
           }
           else {
-            local_84 = 0.0;
+            fBlend = 0.0;
           }
-          local_160 = (uint)local_84;
-          local_84 = local_84 - (float)(int)local_160;
-          local_f0 = XAnimGetChildAt(local_4c,local_158,local_160);
-          XAnimGetAbsDelta(local_4c,local_f0,local_14c,&local_184,0.0);
-          if (local_84 != 0.0) {
-            local_48 = XAnimGetChildAt(local_4c,local_158,local_160 + 1);
-            XAnimGetAbsDelta(local_4c,local_48,local_14c,local_194,0.0);
-            Vec3Lerp(&local_184,local_194,local_84,&local_184);
+          iBlend = (int)fBlend;
+          fBlend = fBlend - (float)iBlend;
+          leafAnim1 = XAnimGetChildAt(pXAnims,heightAnim,iBlend);
+          XAnimGetAbsDelta(pXAnims,leafAnim1,rot,&trans,0.0);
+          if (fBlend != 0.0) {
+            leafAnim2 = XAnimGetChildAt(pXAnims,heightAnim,iBlend + 1);
+            XAnimGetAbsDelta(pXAnims,leafAnim2,rot,trans2,0.0);
+            Vec3Lerp(&trans,trans2,fBlend,&trans);
           }
-          if (local_154 <= local_17c) break;
-          local_1a0 = local_17c;
-          local_1cc = local_160;
-          local_150 = local_84;
-          local_98 = local_98 + 1;
-        } while (local_98 < local_198);
-        XAnimClearTreeGoalWeightsStrict(local_50,local_94,0.2,-1);
-        XAnimSetGoalWeight(local_19c,local_f0,1.0 - local_84,0.0,1.0,0,0,0,-1);
-        if (local_84 != 0.0) {
-          XAnimSetGoalWeight(local_19c,local_48,local_84,0.0,1.0,0,0,0,-1);
+          if (fDelta <= local_17c) break;
+          fPrevTransZ = local_17c;
+          iPrevBlend = iBlend;
+          fPrevBlend = fBlend;
+          i = i + 1;
+        } while (i < numVertChildren);
+        XAnimClearTreeGoalWeightsStrict(pAnimTree,baseAnim,0.2,-1);
+        XAnimSetGoalWeight(obj,leafAnim1,1.0 - fBlend,0.0,1.0,0,0,0,-1);
+        if (fBlend != 0.0) {
+          XAnimSetGoalWeight(obj,leafAnim2,fBlend,0.0,1.0,0,0,0,-1);
         }
-        if ((local_98 == 0) || (local_98 == local_198)) {
-          XAnimSetGoalWeight(local_19c,local_158,1.0,0.0,1.0,0,0,0,-1);
+        if ((i == 0) || (i == numVertChildren)) {
+          XAnimSetGoalWeight(obj,heightAnim,1.0,0.0,1.0,0,0,0,-1);
         }
         else {
-          if ((local_17c - local_1a0 == 0.0) &&
+          if ((local_17c - fPrevTransZ == 0.0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x1cd,0
                                        ,"%s"), !bVar4)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          fVar5 = (local_154 - local_1a0) / (local_17c - local_1a0);
-          XAnimSetGoalWeight(local_19c,local_158,fVar5,0.0,1.0,0,0,0,-1);
-          local_158 = XAnimGetChildAt(local_4c,local_94,(local_198 + -1) - (local_98 + -1));
-          XAnimSetGoalWeight(local_19c,local_158,1.0 - fVar5,0.0,1.0,0,0,0,-1);
-          local_f0 = XAnimGetChildAt(local_4c,local_158,local_1cc);
-          XAnimSetGoalWeight(local_19c,local_f0,1.0 - local_150,0.0,1.0,0,0,0,-1);
-          if (local_150 != 0.0) {
-            local_48 = XAnimGetChildAt(local_4c,local_158,local_1cc + 1);
-            XAnimSetGoalWeight(local_19c,local_48,local_150,0.0,1.0,0,0,0,-1);
+          fVar5 = (fDelta - fPrevTransZ) / (local_17c - fPrevTransZ);
+          XAnimSetGoalWeight(obj,heightAnim,fVar5,0.0,1.0,0,0,0,-1);
+          heightAnim = XAnimGetChildAt(pXAnims,baseAnim,(numVertChildren + -1) - (i + -1));
+          XAnimSetGoalWeight(obj,heightAnim,1.0 - fVar5,0.0,1.0,0,0,0,-1);
+          leafAnim1 = XAnimGetChildAt(pXAnims,heightAnim,iPrevBlend);
+          XAnimSetGoalWeight(obj,leafAnim1,1.0 - fPrevBlend,0.0,1.0,0,0,0,-1);
+          if (fPrevBlend != 0.0) {
+            leafAnim2 = XAnimGetChildAt(pXAnims,heightAnim,iPrevBlend + 1);
+            XAnimSetGoalWeight(obj,leafAnim2,fPrevBlend,0.0,1.0,0,0,0,-1);
           }
         }
-        XAnimCalcAbsDelta(local_19c,local_94,local_14c,&local_184);
-        VectorAngleMultiply(&local_184,local_44);
-        local_fc = local_184 + local_15c->trans[0];
-        local_f8 = local_180 + local_15c->trans[1];
-        local_f4 = local_9c;
-        local_188 = RotationToYaw(local_14c);
-        local_188 = local_188 + local_44;
-        YawToAxis(local_188,(float (*) [3])local_120);
-        MatrixMultiply43((float (*) [3])local_120,(float (*) [3])local_40,(float (*) [3])local_80);
-        pgVar1 = param_1->client;
+        XAnimCalcAbsDelta(obj,baseAnim,rot,&trans);
+        VectorAngleMultiply(&trans,localYaw);
+        local_fc = trans + tagMat->trans[0];
+        local_f8 = local_180 + tagMat->trans[1];
+        local_f4 = tagHeight;
+        fVar5 = RotationToYaw(rot);
+        yaw = fVar5 + localYaw;
+        YawToAxis(yaw,(float (*) [3])localAxis);
+        MatrixMultiply43((float (*) [3])localAxis,(float (*) [3])turretAxis,(float (*) [3])axis);
+        pgVar1 = ent->client;
         (pgVar1->ps).origin[0] = local_5c;
         (pgVar1->ps).origin[1] = local_58;
         (pgVar1->ps).origin[2] = local_54;
-        pgVar1 = param_1->client;
-        local_178 = (pgVar1->ps).origin[0];
+        pgVar1 = ent->client;
+        start = (pgVar1->ps).origin[0];
         local_174 = (pgVar1->ps).origin[1];
-        pgVar2 = param_1->client;
-        local_16c = (pgVar2->ps).origin[0];
+        pgVar2 = ent->client;
+        end = (pgVar2->ps).origin[0];
         local_168 = (pgVar2->ps).origin[1];
-        local_170 = (pgVar1->ps).origin[2] + (param_1->client->ps).viewHeightCurrent;
+        local_170 = (pgVar1->ps).origin[2] + (ent->client->ps).viewHeightCurrent;
         local_164 = (pgVar2->ps).origin[2] - 100.0;
-        G_TraceCapsule((trace_t *)&local_ec,&local_178,vec3_origin,vec3_origin,&local_16c,
-                       (param_1->s).number,0x2818011,&local_1c8);
+        G_TraceCapsule((trace_t *)&trace,&start,vec3_origin,vec3_origin,&end,(ent->s).number,
+                       0x2818011,&context);
         if (((local_dc < 1.0) && (local_c2 == '\0')) && (local_c1 == '\0')) {
-          Vec3Lerp(&local_178,&local_16c,local_dc,local_b0);
-          (param_1->r).currentOrigin[2] = local_a8;
-          (param_1->client->ps).origin[2] = local_a8;
+          Vec3Lerp(&start,&end,local_dc,endpos);
+          (ent->r).currentOrigin[2] = local_a8;
+          (ent->client->ps).origin[2] = local_a8;
         }
-        BG_PlayerStateToEntityState(&param_1->client->ps,&param_1->s,1,'\x01');
-        pgVar1 = param_1->client;
-        (param_1->r).currentOrigin[0] = (pgVar1->ps).origin[0];
-        (param_1->r).currentOrigin[1] = (pgVar1->ps).origin[1];
-        (param_1->r).currentOrigin[2] = (pgVar1->ps).origin[2];
-        AxisToAngles((float (*) [3])local_80,(param_1->r).currentAngles);
-        (param_1->s).lerp.apos.trBase[0] = (param_1->r).currentAngles[0];
-        (param_1->s).lerp.apos.trBase[1] = (param_1->r).currentAngles[1];
-        (param_1->s).lerp.apos.trBase[2] = (param_1->r).currentAngles[2];
-        SV_LinkEntity(param_1);
+        BG_PlayerStateToEntityState(&ent->client->ps,&ent->s,1,'\x01');
+        pgVar1 = ent->client;
+        (ent->r).currentOrigin[0] = (pgVar1->ps).origin[0];
+        (ent->r).currentOrigin[1] = (pgVar1->ps).origin[1];
+        (ent->r).currentOrigin[2] = (pgVar1->ps).origin[2];
+        AxisToAngles((float (*) [3])axis,(ent->r).currentAngles);
+        (ent->s).lerp.apos.trBase[0] = (ent->r).currentAngles[0];
+        (ent->s).lerp.apos.trBase[1] = (ent->r).currentAngles[1];
+        (ent->s).lerp.apos.trBase[2] = (ent->r).currentAngles[2];
+        SV_LinkEntity(ent);
       }
     }
   }
@@ -510,7 +511,7 @@ void __cdecl G_PlayerTurretPositionAndBlend(gentity_s *param_1,gentity_s *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
+void __cdecl turret_clientaim(gentity_s *self,gentity_s *other)
 
 {
   TurretInfo *pTVar1;
@@ -525,15 +526,18 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
   float local_4c;
   float local_3c;
   float local_20;
+  WeaponDef *weapDef;
+  TurretInfo *pTurretInfo;
+  playerState_s *ps;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x210,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if ((pTVar1 == (TurretInfo *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x213,0,"%s"),
      !bVar4)) {
@@ -541,29 +545,29 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
     (*pcVar3)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((other == (gentity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x215,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_2->client == (gclient_s *)0x0) &&
+  if ((other->client == (gclient_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x216,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pgVar2 = param_2->client;
-  if ((param_1->active == '\0') &&
+  pgVar2 = other->client;
+  if ((self->active == '\0') &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x21a,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  iVar5 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar5 = EntHandle::isDefined(&(self->r).ownerNum);
   if ((iVar5 == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x21b,0,"%s"),
      !bVar4)) {
@@ -571,8 +575,8 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
     (*pcVar3)();
     return;
   }
-  pgVar6 = EntHandle::ent(&(param_1->r).ownerNum);
-  if ((pgVar6 != param_2) &&
+  pgVar6 = EntHandle::ent(&(self->r).ownerNum);
+  if ((pgVar6 != other) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x21c,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -580,7 +584,7 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
     return;
   }
   if ((pgVar2->ps).viewlocked == PLAYERVIEWLOCK_WEAPONJITTER) {
-    pWVar7 = BG_GetWeaponDef((uint)(param_1->s).weapon);
+    pWVar7 = BG_GetWeaponDef((uint)(self->s).weapon);
     if ((pTVar1->fireTime < 1) || (pTVar1->fireTime < pWVar7->iFireTime + -200)) {
       (pgVar2->ps).viewlocked = PLAYERVIEWLOCK_FULL;
     }
@@ -588,10 +592,10 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
   else {
     (pgVar2->ps).viewlocked = PLAYERVIEWLOCK_FULL;
   }
-  AssignToSmallerType<short>(&(pgVar2->ps).viewlocked_entNum,(param_1->s).number);
-  fVar8 = AngleNormalize180((pgVar2->ps).viewangles[0] - (param_1->r).currentAngles[0]);
-  (param_1->s).lerp.u.turret.gunAngles[0] = fVar8;
-  fVar8 = (param_1->s).lerp.u.turret.gunAngles[0];
+  AssignToSmallerType<short>(&(pgVar2->ps).viewlocked_entNum,(self->s).number);
+  fVar8 = AngleNormalize180((pgVar2->ps).viewangles[0] - (self->r).currentAngles[0]);
+  (self->s).lerp.u.turret.gunAngles[0] = fVar8;
+  fVar8 = (self->s).lerp.u.turret.gunAngles[0];
   local_4c = pTVar1->arcmin[0];
   local_20 = fVar8;
   if (0.0 <= fVar8 - pTVar1->arcmax[0]) {
@@ -600,10 +604,10 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
   if (local_4c - fVar8 < 0.0) {
     local_4c = local_20;
   }
-  (param_1->s).lerp.u.turret.gunAngles[0] = local_4c;
-  fVar8 = AngleNormalize180((pgVar2->ps).viewangles[1] - (param_1->r).currentAngles[1]);
-  (param_1->s).lerp.u.turret.gunAngles[1] = fVar8;
-  fVar8 = (param_1->s).lerp.u.turret.gunAngles[1];
+  (self->s).lerp.u.turret.gunAngles[0] = local_4c;
+  fVar8 = AngleNormalize180((pgVar2->ps).viewangles[1] - (self->r).currentAngles[1]);
+  (self->s).lerp.u.turret.gunAngles[1] = fVar8;
+  fVar8 = (self->s).lerp.u.turret.gunAngles[1];
   local_50 = pTVar1->arcmin[1];
   local_3c = fVar8;
   if (0.0 <= fVar8 - pTVar1->arcmax[1]) {
@@ -612,15 +616,15 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
   if (local_50 - fVar8 < 0.0) {
     local_50 = local_3c;
   }
-  (param_1->s).lerp.u.turret.gunAngles[1] = local_50;
-  (param_1->s).lerp.u.turret.gunAngles[2] = 0.0;
-  (param_1->s).lerp.u.turret.heatVal =
+  (self->s).lerp.u.turret.gunAngles[1] = local_50;
+  (self->s).lerp.u.turret.gunAngles[2] = 0.0;
+  (self->s).lerp.u.turret.heatVal =
        (g_entities[(pgVar2->ps).viewlocked_entNum].pTurretInfo)->heatVal / 100.0;
-  *(uint *)((int)&(param_1->s).lerp.u + 0x14) =
+  *(uint *)((int)&(self->s).lerp.u + 0x14) =
        (uint)(g_entities[(pgVar2->ps).viewlocked_entNum].pTurretInfo)->overheating;
   if ((pTVar1->flags & 0x800U) != 0) {
     pTVar1->flags = pTVar1->flags & 0xfffff7ff;
-    (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags ^ 2;
+    (self->s).lerp.eFlags = (self->s).lerp.eFlags ^ 2;
   }
   return;
 }
@@ -633,53 +637,56 @@ void __cdecl turret_clientaim(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_shoot_internal(gentity_s *param_1,gentity_s *param_2)
+void __cdecl turret_shoot_internal(gentity_s *self,gentity_s *other)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   WeaponVariantDef *pWVar4;
-  int iVar5;
+  int amount;
+  int frametime;
+  float overheatRate;
+  WeaponDef *weapDef;
   
-  if ((param_1->pTurretInfo == (TurretInfo *)0x0) &&
+  if ((self->pTurretInfo == (TurretInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x244,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((other == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x245,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->pTurretInfo->flags & 0x4000U) == 0) {
-    pWVar3 = BG_GetWeaponDef((uint)(param_1->s).weapon);
-    param_1->pTurretInfo->fireSndDelay = pWVar3->iFireTime * 3;
-    if (param_2->client == (gclient_s *)0x0) {
-      (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags & 0xffffffdf;
-      Fire_Lead(param_1,param_2,param_1->pTurretInfo->flags & 0x40);
+  if ((self->pTurretInfo->flags & 0x4000U) == 0) {
+    pWVar3 = BG_GetWeaponDef((uint)(self->s).weapon);
+    self->pTurretInfo->fireSndDelay = pWVar3->iFireTime * 3;
+    if (other->client == (gclient_s *)0x0) {
+      (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags & 0xffffffdf;
+      Fire_Lead(self,other,self->pTurretInfo->flags & 0x40);
     }
     else {
-      Fire_Lead(param_1,param_2,0);
-      if ((param_2->client->ps).weaponstate == 0x24) {
-        (param_2->client->ps).viewlocked = PLAYERVIEWLOCK_WEAPONJITTER;
-        iVar5 = -1;
-        pWVar4 = BG_GetWeaponVariantDef((uint)(param_2->client->ps).weapon);
-        BG_AddAmmoToClip(&param_2->client->ps,pWVar4->iClipIndex,iVar5);
+      Fire_Lead(self,other,0);
+      if ((other->client->ps).weaponstate == 0x24) {
+        (other->client->ps).viewlocked = PLAYERVIEWLOCK_WEAPONJITTER;
+        amount = -1;
+        pWVar4 = BG_GetWeaponVariantDef((uint)(other->client->ps).weapon);
+        BG_AddAmmoToClip(&other->client->ps,pWVar4->iClipIndex,amount);
       }
       else {
-        if (((param_2->client->ps).eFlags & 0x300U) != 0) {
-          (param_2->client->ps).viewlocked = PLAYERVIEWLOCK_WEAPONJITTER;
+        if (((other->client->ps).eFlags & 0x300U) != 0) {
+          (other->client->ps).viewlocked = PLAYERVIEWLOCK_WEAPONJITTER;
         }
-        pWVar3 = BG_GetWeaponDef((uint)(param_1->s).weapon);
+        pWVar3 = BG_GetWeaponDef((uint)(self->s).weapon);
         if (pWVar3->overheatWeapon != 0) {
-          param_1->pTurretInfo->heatVal =
+          self->pTurretInfo->heatVal =
                ((float)(level.time - level.previousTime) * pWVar3->overheatRate) / 1000.0 +
-               param_1->pTurretInfo->heatVal;
+               self->pTurretInfo->heatVal;
         }
       }
     }
@@ -695,12 +702,12 @@ void __cdecl turret_shoot_internal(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl turret_is_overheating(gentity_s *param_1)
+bool __cdecl turret_is_overheating(gentity_s *self)
 
 {
   bool bVar1;
   
-  if ((100.0 <= param_1->pTurretInfo->heatVal) || (param_1->pTurretInfo->overheating != false)) {
+  if ((100.0 <= self->pTurretInfo->heatVal) || (self->pTurretInfo->overheating != false)) {
     bVar1 = true;
   }
   else {
@@ -717,7 +724,7 @@ bool __cdecl turret_is_overheating(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_track(gentity_s *param_1,gentity_s *param_2)
+void __cdecl turret_track(gentity_s *self,gentity_s *other)
 
 {
   TurretInfo *pTVar1;
@@ -726,8 +733,10 @@ void __cdecl turret_track(gentity_s *param_1,gentity_s *param_2)
   int iVar4;
   gentity_s *pgVar5;
   WeaponDef *pWVar6;
+  TurretInfo *turretInfo;
+  WeaponDef *weapDef;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if ((pTVar1 == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x27d,0,"%s"),
      !bVar3)) {
@@ -735,46 +744,45 @@ void __cdecl turret_track(gentity_s *param_1,gentity_s *param_2)
     (*pcVar2)();
     return;
   }
-  if ((param_1->active == '\0') &&
+  if ((self->active == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x27f,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
-  if (((iVar4 == 0) || (pgVar5 = EntHandle::ent(&(param_1->r).ownerNum), pgVar5 != param_2)) &&
+  iVar4 = EntHandle::isDefined(&(self->r).ownerNum);
+  if (((iVar4 == 0) || (pgVar5 = EntHandle::ent(&(self->r).ownerNum), pgVar5 != other)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x280,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2->client == (gclient_s *)0x0) &&
+  if ((other->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x281,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  turret_clientaim(param_1,param_2);
-  G_PlayerTurretPositionAndBlend(param_2,param_1);
-  pWVar6 = BG_GetWeaponDef((uint)(param_1->s).weapon);
+  turret_clientaim(self,other);
+  G_PlayerTurretPositionAndBlend(other,self);
+  pWVar6 = BG_GetWeaponDef((uint)(self->s).weapon);
   pTVar1->fireTime = pTVar1->fireTime + -0x32;
   if (pTVar1->fireTime < 1) {
     pTVar1->fireTime = 0;
-    if (((((param_2->client->ps).pm_flags & 0x800U) != 0) ||
-        ((param_2->client->ps).weaponstate == 0x23)) ||
-       ((bVar3 = bitarray<51>::testBit(&param_2->client->button_bits,0), !bVar3 ||
-        (bVar3 = turret_is_overheating(param_1), bVar3)))) {
+    if (((((other->client->ps).pm_flags & 0x800U) != 0) || ((other->client->ps).weaponstate == 0x23)
+        ) || ((bVar3 = bitarray<51>::testBit(&other->client->button_bits,0), !bVar3 ||
+              (bVar3 = turret_is_overheating(self), bVar3)))) {
       pTVar1->triggerDown = 0;
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags & 0xffffffbf;
+      (self->s).lerp.eFlags = (self->s).lerp.eFlags & 0xffffffbf;
     }
     else if ((pWVar6->fireType != WEAPON_FIRETYPE_SINGLESHOT) || (pTVar1->triggerDown == 0)) {
       pTVar1->triggerDown = 1;
       pTVar1->fireTime = pWVar6->iFireTime;
-      turret_shoot_internal(param_1,param_2);
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x40;
+      turret_shoot_internal(self,other);
+      (self->s).lerp.eFlags = (self->s).lerp.eFlags | 0x40;
     }
   }
   return;
@@ -788,7 +796,7 @@ void __cdecl turret_track(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_UpdateSound(gentity_s *param_1)
+void __cdecl turret_UpdateSound(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
@@ -796,8 +804,10 @@ void __cdecl turret_UpdateSound(gentity_s *param_1)
   bool bVar3;
   int iVar4;
   gentity_s *pgVar5;
+  bool isPlayer;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x2b0,0,"%s");
     if (!bVar3) {
@@ -806,9 +816,9 @@ void __cdecl turret_UpdateSound(gentity_s *param_1)
       return;
     }
   }
-  iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar4 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar4 != 0) {
-    pgVar5 = EntHandle::ent(&(param_1->r).ownerNum);
+    pgVar5 = EntHandle::ent(&(self->r).ownerNum);
     if (pgVar5->client != (gclient_s *)0x0) {
       bVar3 = true;
       goto LAB_006a15a7;
@@ -816,23 +826,23 @@ void __cdecl turret_UpdateSound(gentity_s *param_1)
   }
   bVar3 = false;
 LAB_006a15a7:
-  (param_1->s).loopSoundId = 0;
-  (param_1->s).loopSoundFade = 0;
+  (self->s).loopSoundId = 0;
+  (self->s).loopSoundFade = 0;
   if (0 < pTVar1->fireSndDelay) {
     if ((pTVar1->fireSndPlayer == 0) || (!bVar3)) {
-      (param_1->s).loopSoundId = pTVar1->fireSnd;
+      (self->s).loopSoundId = pTVar1->fireSnd;
     }
     else {
-      (param_1->s).loopSoundId = pTVar1->fireSndPlayer;
+      (self->s).loopSoundId = pTVar1->fireSndPlayer;
     }
     pTVar1->fireSndDelay = pTVar1->fireSndDelay + -0x32;
     if ((pTVar1->fireSndDelay < 1) && (pTVar1->stopSnd != 0)) {
-      (param_1->s).loopSoundId = 0;
+      (self->s).loopSoundId = 0;
       if ((pTVar1->stopSndPlayer == 0) || (!bVar3)) {
-        G_PlaySoundAlias(param_1,pTVar1->stopSnd,0,0);
+        G_PlaySoundAlias(self,pTVar1->stopSnd,0,0);
       }
       else {
-        G_PlaySoundAlias(param_1,pTVar1->stopSndPlayer,0,0);
+        G_PlaySoundAlias(self,pTVar1->stopSndPlayer,0,0);
       }
     }
   }
@@ -847,16 +857,18 @@ LAB_006a15a7:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ClientStopUsingTurret(gentity_s *param_1)
+void __cdecl G_ClientStopUsingTurret(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  gentity_s *pgVar5;
+  gentity_s *ent;
+  gentity_s *owner;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x2d7,0,"%s");
     if (!bVar3) {
@@ -865,7 +877,7 @@ void __cdecl G_ClientStopUsingTurret(gentity_s *param_1)
       return;
     }
   }
-  iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar4 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar4 == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x2d9,0,"%s");
     if (!bVar3) {
@@ -874,8 +886,8 @@ void __cdecl G_ClientStopUsingTurret(gentity_s *param_1)
       return;
     }
   }
-  pgVar5 = EntHandle::ent(&(param_1->r).ownerNum);
-  if (pgVar5->client == (gclient_s *)0x0) {
+  ent = EntHandle::ent(&(self->r).ownerNum);
+  if (ent->client == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x2dc,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -884,37 +896,37 @@ void __cdecl G_ClientStopUsingTurret(gentity_s *param_1)
     }
   }
   pTVar1->fireSndDelay = 0;
-  (param_1->s).loopSoundId = 0;
-  (param_1->s).loopSoundFade = 0;
+  (self->s).loopSoundId = 0;
+  (self->s).loopSoundFade = 0;
   if (pTVar1->prevStance != -1) {
     if (pTVar1->prevStance == 2) {
-      G_AddEvent(pgVar5,10,0);
+      G_AddEvent(ent,10,0);
     }
     else if (pTVar1->prevStance == 1) {
-      G_AddEvent(pgVar5,9,0);
+      G_AddEvent(ent,9,0);
     }
     else {
-      G_AddEvent(pgVar5,8,0);
+      G_AddEvent(ent,8,0);
     }
     pTVar1->prevStance = -1;
   }
-  if ((param_1->tagInfo != (tagInfo_s *)0x0) && (param_1->tagInfo->parent != (gentity_s *)0x0)) {
-    iVar4 = G_EntIsLinkedTo(pgVar5,param_1->tagInfo->parent);
+  if ((self->tagInfo != (tagInfo_s *)0x0) && (self->tagInfo->parent != (gentity_s *)0x0)) {
+    iVar4 = G_EntIsLinkedTo(ent,self->tagInfo->parent);
     if (iVar4 != 0) {
-      G_EntUnlink(pgVar5);
+      G_EntUnlink(ent);
     }
   }
-  TeleportPlayer(pgVar5,pTVar1->userOrigin,(pgVar5->r).currentAngles);
-  (pgVar5->client->ps).eFlags = (pgVar5->client->ps).eFlags & 0xfffffcff;
-  (pgVar5->client->ps).viewlocked = PLAYERVIEWLOCK_NONE;
-  (pgVar5->client->ps).viewlocked_entNum = 0x3ff;
-  pgVar5->active = '\0';
-  G_DeactivateTurret(param_1);
-  EntHandle::setEnt(&(param_1->r).ownerNum,(gentity_s *)0x0);
+  TeleportPlayer(ent,pTVar1->userOrigin,(ent->r).currentAngles);
+  (ent->client->ps).eFlags = (ent->client->ps).eFlags & 0xfffffcff;
+  (ent->client->ps).viewlocked = PLAYERVIEWLOCK_NONE;
+  (ent->client->ps).viewlocked_entNum = 0x3ff;
+  ent->active = '\0';
+  G_DeactivateTurret(self);
+  EntHandle::setEnt(&(self->r).ownerNum,(gentity_s *)0x0);
   pTVar1->flags = pTVar1->flags & 0xfffff7ff;
-  Scr_Notify(param_1,scr_const.turretownerchange,0);
-  if (param_1->classname == scr_const.deployed_turret) {
-    G_FreeEntity(param_1);
+  Scr_Notify(self,scr_const.turretownerchange,0);
+  if (self->classname == scr_const.deployed_turret) {
+    G_FreeEntity(self);
   }
   return;
 }
@@ -928,47 +940,52 @@ void __cdecl G_ClientStopUsingTurret(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-turret_CalculateConvergenceAngularVelocity(gentity_s *param_1,float *param_2,float *param_3)
+turret_CalculateConvergenceAngularVelocity
+          (gentity_s *self,float *desiredAngles,float *angularVelocity)
 
 {
-  TurretInfo *pTVar1;
-  code *pcVar2;
-  bool bVar3;
+  TurretInfo *turretInfo_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
+  float fVar6;
   float fVar7;
-  float fVar8;
+  TurretInfo *turretInfo;
+  int remainingYawConvergenceTime;
+  int nextFrameTime;
+  int remainingPitchConvergenceTime;
   
-  pTVar1 = param_1->pTurretInfo;
-  if (pTVar1 == (TurretInfo *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x31a,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  turretInfo_00 = self->pTurretInfo;
+  if (turretInfo_00 == (TurretInfo *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x31a,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x31b,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (angularVelocity == (float *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x31b,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  iVar4 = Turret_GetRemainingConvergenceTime(pTVar1,1);
-  iVar5 = Turret_GetRemainingConvergenceTime(pTVar1,0);
-  iVar6 = param_1->nextthink - level.time;
-  fVar7 = AngleNormalize180((param_1->s).lerp.u.turret.gunAngles[0] - *param_2);
-  fVar8 = AngleNormalize180((param_1->s).lerp.u.turret.gunAngles[1] - param_2[1]);
-  *param_3 = (ABS(fVar7) * 1000.0) / (float)iVar6;
-  param_3[1] = (ABS(fVar8) * 1000.0) / (float)iVar6;
-  if ((0 < iVar4) && (iVar6 < iVar4)) {
-    param_3[1] = ((float)iVar6 / (float)iVar4) * param_3[1];
+  iVar3 = Turret_GetRemainingConvergenceTime(turretInfo_00,1);
+  iVar4 = Turret_GetRemainingConvergenceTime(turretInfo_00,0);
+  iVar5 = self->nextthink - level.time;
+  fVar6 = AngleNormalize180((self->s).lerp.u.turret.gunAngles[0] - *desiredAngles);
+  fVar7 = AngleNormalize180((self->s).lerp.u.turret.gunAngles[1] - desiredAngles[1]);
+  *angularVelocity = (ABS(fVar6) * 1000.0) / (float)iVar5;
+  angularVelocity[1] = (ABS(fVar7) * 1000.0) / (float)iVar5;
+  if ((0 < iVar3) && (iVar5 < iVar3)) {
+    angularVelocity[1] = ((float)iVar5 / (float)iVar3) * angularVelocity[1];
   }
-  if ((0 < iVar5) && (iVar6 < iVar5)) {
-    *param_3 = ((float)iVar6 / (float)iVar5) * *param_3;
+  if ((0 < iVar4) && (iVar5 < iVar4)) {
+    *angularVelocity = ((float)iVar5 / (float)iVar4) * *angularVelocity;
   }
   return;
 }
@@ -981,15 +998,16 @@ turret_CalculateConvergenceAngularVelocity(gentity_s *param_1,float *param_2,flo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_think_client(gentity_s *param_1)
+void __cdecl turret_think_client(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  gentity_s *pgVar4;
+  gentity_s *other;
+  gentity_s *owner;
   
-  iVar3 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar3 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x338,0,"%s");
     if (!bVar2) {
@@ -998,8 +1016,8 @@ void __cdecl turret_think_client(gentity_s *param_1)
       return;
     }
   }
-  pgVar4 = EntHandle::ent(&(param_1->r).ownerNum);
-  if (pgVar4->client == (gclient_s *)0x0) {
+  other = EntHandle::ent(&(self->r).ownerNum);
+  if (other->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x33c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1007,8 +1025,8 @@ void __cdecl turret_think_client(gentity_s *param_1)
       return;
     }
   }
-  if ((pgVar4->active == '\x01') && (0 < pgVar4->health)) {
-    if (param_1->active == '\0') {
+  if ((other->active == '\x01') && (0 < other->health)) {
+    if (self->active == '\0') {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x340,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -1016,15 +1034,15 @@ void __cdecl turret_think_client(gentity_s *param_1)
         return;
       }
     }
-    turret_track(param_1,pgVar4);
-    turret_UpdateSound(param_1);
+    turret_track(self,other);
+    turret_UpdateSound(self);
   }
-  else if (param_1->classname == scr_const.deployed_turret) {
-    (pgVar4->client->ps).weaponstate = 0x24;
-    (pgVar4->client->ps).eFlags = (pgVar4->client->ps).eFlags & 0xfffffcff;
+  else if (self->classname == scr_const.deployed_turret) {
+    (other->client->ps).weaponstate = 0x24;
+    (other->client->ps).eFlags = (other->client->ps).eFlags & 0xfffffcff;
   }
   else {
-    G_ClientStopUsingTurret(param_1);
+    G_ClientStopUsingTurret(self);
   }
   return;
 }
@@ -1037,14 +1055,16 @@ void __cdecl turret_think_client(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_3)
+void __cdecl Turret_ScanStart(gentity_s *self,WeaponDef *weapDef,float deltaYaw)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TurretInfo *turret;
+  float halfArc;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x358,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1052,7 +1072,7 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
       return;
     }
   }
-  if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x359,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1060,7 +1080,7 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
       return;
     }
   }
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if ((pTVar1->flags & 0x40000U) != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x35d,0,"%s");
     if (!bVar3) {
@@ -1069,7 +1089,7 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
       return;
     }
   }
-  if (param_2 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x35f,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1077,7 +1097,7 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
       return;
     }
   }
-  if (param_2->scanSpeed <= 0.0) {
+  if (weapDef->scanSpeed <= 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x360,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1085,7 +1105,7 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
       return;
     }
   }
-  if (param_2->scanAccel <= 0.0) {
+  if (weapDef->scanAccel <= 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x361,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1095,12 +1115,12 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
   }
   pTVar1->flags = pTVar1->flags | 0x40000;
   pTVar1->scanSpeed = 0.0;
-  pTVar1->scanPauseTime = level.time + param_2->scanPauseTime;
-  pTVar1->scanDecelYaw = (param_2->scanSpeed * param_2->scanSpeed) / (param_2->scanAccel * 2.0);
-  if (param_3 * 0.5 < pTVar1->scanDecelYaw) {
-    pTVar1->scanDecelYaw = param_3 * 0.5;
+  pTVar1->scanPauseTime = level.time + weapDef->scanPauseTime;
+  pTVar1->scanDecelYaw = (weapDef->scanSpeed * weapDef->scanSpeed) / (weapDef->scanAccel * 2.0);
+  if (deltaYaw * 0.5 < pTVar1->scanDecelYaw) {
+    pTVar1->scanDecelYaw = deltaYaw * 0.5;
   }
-  Scr_Notify(param_1,scr_const.turret_scan_start,0);
+  Scr_Notify(self,scr_const.turret_scan_start,0);
   return;
 }
 
@@ -1112,14 +1132,15 @@ void __cdecl Turret_ScanStart(gentity_s *param_1,WeaponDef *param_2,float param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_ScanStop(gentity_s *param_1)
+void __cdecl Turret_ScanStop(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TurretInfo *turret;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x37a,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1127,7 +1148,7 @@ void __cdecl Turret_ScanStop(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x37b,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1135,9 +1156,9 @@ void __cdecl Turret_ScanStop(gentity_s *param_1)
       return;
     }
   }
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if ((pTVar1->flags & 0x40000U) != 0) {
-    Scr_Notify(param_1,scr_const.turret_scan_stop,0);
+    Scr_Notify(self,scr_const.turret_scan_stop,0);
   }
   pTVar1->flags = pTVar1->flags & 0xfffbffff;
   pTVar1->flags = pTVar1->flags ^ 0x80000;
@@ -1155,56 +1176,62 @@ void __cdecl Turret_ScanStop(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_ScanForEnemies(gentity_s *param_1)
+void __cdecl Turret_ScanForEnemies(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
-  WeaponDef *pWVar4;
-  LerpEntityStateTypeUnion *pLVar5;
-  float fVar6;
+  WeaponDef *weapDef_00;
+  LerpEntityStateTypeUnion *pLVar4;
+  float fVar5;
   float local_34;
   float local_30;
-  float local_1c;
-  float local_8;
+  TurretInfo *turret;
+  float arcMinYaw;
+  float sign;
+  float *gunAngles;
+  WeaponDef *weapDef;
+  float deltaTime;
+  float arcMaxYaw;
+  float deltaYaw;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x39a,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->pTurretInfo == (TurretInfo *)0x0) &&
+  if ((self->pTurretInfo == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x39b,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pTVar1 = param_1->pTurretInfo;
-  pWVar4 = BG_GetWeaponDef((uint)(param_1->s).weapon);
-  if ((pWVar4->scanSpeed <= 0.0) &&
+  pTVar1 = self->pTurretInfo;
+  weapDef_00 = BG_GetWeaponDef((uint)(self->s).weapon);
+  if ((weapDef_00->scanSpeed <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x3a0,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((pWVar4->scanAccel <= 0.0) &&
+  if ((weapDef_00->scanAccel <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x3a1,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pLVar5 = &(param_1->s).lerp.u;
-  fVar6 = LinearTrackAngle(pTVar1->scanningPitch,(pLVar5->turret).gunAngles[0],pWVar4->scanSpeed,
-                           0.05);
-  (pLVar5->turret).gunAngles[0] = fVar6;
-  if (pTVar1->scanningPitch == (pLVar5->turret).gunAngles[0]) {
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags & 0xffffffdf;
+  pLVar4 = &(self->s).lerp.u;
+  fVar5 = LinearTrackAngle(pTVar1->scanningPitch,(pLVar4->turret).gunAngles[0],weapDef_00->scanSpeed
+                           ,0.05);
+  (pLVar4->turret).gunAngles[0] = fVar5;
+  if (pTVar1->scanningPitch == (pLVar4->turret).gunAngles[0]) {
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags & 0xffffffdf;
     local_30 = pTVar1->arcmin[1] + 4.0;
     if (local_30 - -90.0 < 0.0) {
       local_30 = -90.0;
@@ -1214,33 +1241,33 @@ void __cdecl Turret_ScanForEnemies(gentity_s *param_1)
       local_34 = 90.0;
     }
     if ((pTVar1->flags & 0x80000U) == 0) {
-      local_8 = local_34 - (param_1->s).lerp.u.turret.gunAngles[1];
-      local_1c = 1.0;
+      deltaYaw = local_34 - (self->s).lerp.u.turret.gunAngles[1];
+      sign = 1.0;
     }
     else {
-      local_8 = (param_1->s).lerp.u.turret.gunAngles[1] - local_30;
-      local_1c = -1.0;
+      deltaYaw = (self->s).lerp.u.turret.gunAngles[1] - local_30;
+      sign = -1.0;
     }
     if ((pTVar1->flags & 0x40000U) == 0) {
-      Turret_ScanStart(param_1,pWVar4,local_8);
+      Turret_ScanStart(self,weapDef_00,deltaYaw);
     }
     if (pTVar1->scanPauseTime <= level.time) {
-      if (pTVar1->scanDecelYaw <= local_8) {
-        pTVar1->scanSpeed = pWVar4->scanAccel * 0.05 + pTVar1->scanSpeed;
-        if (pWVar4->scanSpeed <= pTVar1->scanSpeed) {
-          pTVar1->scanSpeed = pWVar4->scanSpeed;
+      if (pTVar1->scanDecelYaw <= deltaYaw) {
+        pTVar1->scanSpeed = weapDef_00->scanAccel * 0.05 + pTVar1->scanSpeed;
+        if (weapDef_00->scanSpeed <= pTVar1->scanSpeed) {
+          pTVar1->scanSpeed = weapDef_00->scanSpeed;
         }
-        (param_1->s).lerp.u.turret.gunAngles[1] =
-             pTVar1->scanSpeed * 0.05 * local_1c + (param_1->s).lerp.u.turret.gunAngles[1];
+        (self->s).lerp.u.turret.gunAngles[1] =
+             pTVar1->scanSpeed * 0.05 * sign + (self->s).lerp.u.turret.gunAngles[1];
       }
       else {
-        pTVar1->scanSpeed = pTVar1->scanSpeed - pWVar4->scanAccel * 0.05;
+        pTVar1->scanSpeed = pTVar1->scanSpeed - weapDef_00->scanAccel * 0.05;
         if (0.0 < pTVar1->scanSpeed) {
-          (param_1->s).lerp.u.turret.gunAngles[1] =
-               pTVar1->scanSpeed * 0.05 * local_1c + (param_1->s).lerp.u.turret.gunAngles[1];
+          (self->s).lerp.u.turret.gunAngles[1] =
+               pTVar1->scanSpeed * 0.05 * sign + (self->s).lerp.u.turret.gunAngles[1];
         }
         else {
-          Turret_ScanStop(param_1);
+          Turret_ScanStop(self);
         }
       }
     }
@@ -1256,7 +1283,7 @@ void __cdecl Turret_ScanForEnemies(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_UpdateTargetAngles(gentity_s *param_1,float *param_2,int param_3)
+int __cdecl turret_UpdateTargetAngles(gentity_s *self,float *desiredAngles,int bManned)
 
 {
   LerpEntityStateTypeUnion *pLVar1;
@@ -1270,12 +1297,15 @@ int __cdecl turret_UpdateTargetAngles(gentity_s *param_1,float *param_2,int para
   float local_4c;
   float local_48;
   float local_44;
-  float local_20;
-  int local_18;
-  float local_10 [2];
-  int local_8;
+  WeaponDef *turretDef;
+  float fDelta;
+  TurretInfo *pTurretInfo;
+  int bComplete;
+  float pitch;
+  float fSpeed [2];
+  int i;
   
-  pTVar3 = param_1->pTurretInfo;
+  pTVar3 = self->pTurretInfo;
   if ((pTVar3 == (TurretInfo *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x3e3,0,"%s"),
      !bVar5)) {
@@ -1283,84 +1313,84 @@ int __cdecl turret_UpdateTargetAngles(gentity_s *param_1,float *param_2,int para
     iVar6 = (*pcVar4)();
     return iVar6;
   }
-  Turret_ScanStop(param_1);
-  local_18 = 1;
-  turret_CalculateConvergenceAngularVelocity(param_1,param_2,local_10);
-  if (param_3 == 0) {
-    local_10[0] = 200.0;
-    local_10[1] = 200.0;
+  Turret_ScanStop(self);
+  bComplete = 1;
+  turret_CalculateConvergenceAngularVelocity(self,desiredAngles,fSpeed);
+  if (bManned == 0) {
+    fSpeed[0] = 200.0;
+    fSpeed[1] = 200.0;
   }
   else {
-    pWVar7 = BG_GetWeaponDef((uint)(param_1->s).weapon);
+    pWVar7 = BG_GetWeaponDef((uint)(self->s).weapon);
     local_44 = pWVar7->maxTurnSpeed[0];
-    if (0.0 <= local_44 - local_10[0]) {
-      local_44 = local_10[0];
+    if (0.0 <= local_44 - fSpeed[0]) {
+      local_44 = fSpeed[0];
     }
     local_48 = pWVar7->minTurnSpeed[0];
     if (0.0 <= local_44 - local_48) {
       local_48 = local_44;
     }
-    local_10[0] = local_48;
+    fSpeed[0] = local_48;
     local_4c = pWVar7->maxTurnSpeed[1];
-    if (0.0 <= local_4c - local_10[1]) {
-      local_4c = local_10[1];
+    if (0.0 <= local_4c - fSpeed[1]) {
+      local_4c = fSpeed[1];
     }
     local_50 = pWVar7->minTurnSpeed[1];
     if (0.0 <= local_4c - local_50) {
       local_50 = local_4c;
     }
-    local_10[1] = local_50;
+    fSpeed[1] = local_50;
   }
   if (((pTVar3->flags & 0x200U) != 0) && ((pTVar3->flags & 0x100U) != 0)) {
-    local_10[0] = 360.0;
+    fSpeed[0] = 360.0;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (1 < local_8) {
+    if (1 < i) {
       if ((pTVar3->flags & 0x200U) != 0) {
         if ((pTVar3->flags & 0x400U) == 0) {
-          fVar2 = (param_1->s).lerp.u.turret.gunAngles[0];
+          fVar2 = (self->s).lerp.u.turret.gunAngles[0];
           if (fVar2 < pTVar3->pitchCap || fVar2 == pTVar3->pitchCap) {
             pTVar3->flags = pTVar3->flags & 0xfffffeff;
           }
           else {
-            (param_1->s).lerp.u.turret.gunAngles[2] =
-                 (param_1->s).lerp.u.turret.gunAngles[0] - pTVar3->pitchCap;
+            (self->s).lerp.u.turret.gunAngles[2] =
+                 (self->s).lerp.u.turret.gunAngles[0] - pTVar3->pitchCap;
           }
         }
         else {
-          pLVar1 = &(param_1->s).lerp.u;
+          pLVar1 = &(self->s).lerp.u;
           if (pTVar3->pitchCap < (pLVar1->turret).gunAngles[0] ||
               pTVar3->pitchCap == (pLVar1->turret).gunAngles[0]) {
             pTVar3->flags = pTVar3->flags & 0xfffffeff;
           }
           else {
-            (param_1->s).lerp.u.turret.gunAngles[2] =
-                 (param_1->s).lerp.u.turret.gunAngles[0] - pTVar3->pitchCap;
+            (self->s).lerp.u.turret.gunAngles[2] =
+                 (self->s).lerp.u.turret.gunAngles[0] - pTVar3->pitchCap;
           }
         }
       }
-      return local_18;
+      return bComplete;
     }
-    local_10[local_8] = local_10[local_8] * 0.05;
-    if ((local_10[local_8] < 0.0) &&
+    fSpeed[i] = fSpeed[i] * 0.05;
+    if ((fSpeed[i] < 0.0) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x408,0,"%s")
        , !bVar5)) break;
-    local_20 = AngleNormalize180(param_2[local_8] -
-                                 *(float *)((int)(&(param_1->s).lerp.apos + 1) + local_8 * 4));
-    if (local_20 < local_10[local_8] || local_20 == local_10[local_8]) {
-      if (local_20 < -local_10[local_8]) {
-        local_18 = 0;
-        local_20 = -local_10[local_8];
+    fDelta = AngleNormalize180(desiredAngles[i] -
+                               *(float *)((int)(&(self->s).lerp.apos + 1) + i * 4));
+    if (fDelta < fSpeed[i] || fDelta == fSpeed[i]) {
+      if (fDelta < -fSpeed[i]) {
+        bComplete = 0;
+        fDelta = -fSpeed[i];
       }
     }
     else {
-      local_18 = 0;
-      local_20 = local_10[local_8];
+      bComplete = 0;
+      fDelta = fSpeed[i];
     }
-    *(float *)((int)(&(param_1->s).lerp.apos + 1) + local_8 * 4) =
-         *(float *)((int)(&(param_1->s).lerp.apos + 1) + local_8 * 4) + local_20;
-    local_8 = local_8 + 1;
+    *(float *)((int)(&(self->s).lerp.apos + 1) + i * 4) =
+         *(float *)((int)(&(self->s).lerp.apos + 1) + i * 4) + fDelta;
+    i = i + 1;
   }
   pcVar4 = (code *)swi(3);
   iVar6 = (*pcVar4)();
@@ -1370,10 +1400,10 @@ int __cdecl turret_UpdateTargetAngles(gentity_s *param_1,float *param_2,int para
 
 // 006A1680  turret_IsFiringInternal  (game/turret.cpp:1070)
 
-int __cdecl turret_IsFiringInternal(int param_1)
+int __cdecl turret_IsFiringInternal(int state)
 
 {
-  return (uint)(param_1 != 0);
+  return (uint)(state != 0);
 }
 
 
@@ -1384,15 +1414,16 @@ int __cdecl turret_IsFiringInternal(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_IsFiring(gentity_s *param_1)
+int __cdecl turret_IsFiring(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x438,0,"%s");
     if (!bVar3) {
@@ -1413,7 +1444,7 @@ int __cdecl turret_IsFiring(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_SetState(gentity_s *param_1,int param_2)
+void __cdecl turret_SetState(gentity_s *self,int state)
 
 {
   TurretInfo *pTVar1;
@@ -1421,8 +1452,9 @@ void __cdecl turret_SetState(gentity_s *param_1,int param_2)
   bool bVar3;
   int iVar4;
   int iVar5;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x443,0,"%s");
     if (!bVar3) {
@@ -1431,18 +1463,18 @@ void __cdecl turret_SetState(gentity_s *param_1,int param_2)
       return;
     }
   }
-  iVar4 = turret_IsFiring(param_1);
-  iVar5 = turret_IsFiringInternal(param_2);
+  iVar4 = turret_IsFiring(self);
+  iVar5 = turret_IsFiringInternal(state);
   if (iVar4 != iVar5) {
-    Scr_Notify(param_1,scr_const.turretstatechange,0);
+    Scr_Notify(self,scr_const.turretstatechange,0);
   }
-  pTVar1->state = param_2;
-  iVar4 = turret_IsFiring(param_1);
+  pTVar1->state = state;
+  iVar4 = turret_IsFiring(self);
   if (iVar4 == 0) {
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags & 0xfffffffb;
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags & 0xfffffffb;
   }
   else {
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags | 4;
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags | 4;
   }
   return;
 }
@@ -1455,14 +1487,15 @@ void __cdecl turret_SetState(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_ClearTargetEnt(gentity_s *param_1)
+void __cdecl turret_ClearTargetEnt(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x456,0,"%s");
     if (!bVar3) {
@@ -1473,7 +1506,7 @@ void __cdecl turret_ClearTargetEnt(gentity_s *param_1)
   }
   EntHandle::setEnt(&pTVar1->target,(gentity_s *)0x0);
   pTVar1->flags = pTVar1->flags & 0xffffffb7;
-  turret_SetState(param_1,0);
+  turret_SetState(self,0);
   return;
 }
 
@@ -1485,18 +1518,18 @@ void __cdecl turret_ClearTargetEnt(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_ReturnToDefaultPos(gentity_s *param_1,int param_2)
+int __cdecl turret_ReturnToDefaultPos(gentity_s *self,int bManned)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float local_14;
-  float local_10 [2];
-  TurretInfo *local_8;
+  float desiredAngles [2];
+  TurretInfo *pTurretInfo;
   
-  local_8 = param_1->pTurretInfo;
-  if (local_8 == (TurretInfo *)0x0) {
+  pTurretInfo = self->pTurretInfo;
+  if (pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x46c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1504,16 +1537,16 @@ int __cdecl turret_ReturnToDefaultPos(gentity_s *param_1,int param_2)
       return iVar3;
     }
   }
-  if (param_2 == 0) {
-    local_14 = local_8->dropPitch;
+  if (bManned == 0) {
+    local_14 = pTurretInfo->dropPitch;
   }
   else {
     local_14 = 0.0;
   }
-  local_10[0] = local_14;
-  local_10[1] = 0.0;
-  turret_SetState(param_1,0);
-  iVar3 = turret_UpdateTargetAngles(param_1,local_10,param_2);
+  desiredAngles[0] = local_14;
+  desiredAngles[1] = 0.0;
+  turret_SetState(self,0);
+  iVar3 = turret_UpdateTargetAngles(self,desiredAngles,bManned);
   return iVar3;
 }
 
@@ -1525,14 +1558,15 @@ int __cdecl turret_ReturnToDefaultPos(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_SetDefaultDropPitch(gentity_s *param_1,float param_2)
+void __cdecl turret_SetDefaultDropPitch(gentity_s *self,float pitch)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x47b,0,"%s");
     if (!bVar3) {
@@ -1541,7 +1575,7 @@ void __cdecl turret_SetDefaultDropPitch(gentity_s *param_1,float param_2)
       return;
     }
   }
-  pTVar1->dropPitch = param_2;
+  pTVar1->dropPitch = pitch;
   return;
 }
 
@@ -1553,14 +1587,15 @@ void __cdecl turret_SetDefaultDropPitch(gentity_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_SetScanningPitch(gentity_s *param_1,float param_2)
+void __cdecl turret_SetScanningPitch(gentity_s *self,float pitch)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x485,0,"%s");
     if (!bVar3) {
@@ -1569,7 +1604,7 @@ void __cdecl turret_SetScanningPitch(gentity_s *param_1,float param_2)
       return;
     }
   }
-  pTVar1->scanningPitch = param_2;
+  pTVar1->scanningPitch = pitch;
   return;
 }
 
@@ -1581,20 +1616,20 @@ void __cdecl turret_SetScanningPitch(gentity_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_shoot(gentity_s *param_1)
+void __cdecl turret_shoot(gentity_s *self)
 
 {
   int iVar1;
   gentity_s *local_8;
   
-  iVar1 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar1 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar1 == 0) {
     local_8 = g_entities + 0x3ff;
   }
   else {
-    local_8 = EntHandle::ent(&(param_1->r).ownerNum);
+    local_8 = EntHandle::ent(&(self->r).ownerNum);
   }
-  turret_shoot_internal(param_1,local_8);
+  turret_shoot_internal(self,local_8);
   return;
 }
 
@@ -1606,53 +1641,51 @@ void __cdecl turret_shoot(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_CanTargetPoint(gentity_s *param_1,float *param_2,float *param_3,float *param_4)
+int __cdecl turret_CanTargetPoint(gentity_s *self,float *vPoint,float *vSource,float *localAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_30 [3];
-  TurretInfo *local_24;
-  float local_20;
+  float angles [3];
+  TurretInfo *pTurretInfo;
+  float tagFlashPos;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int i;
+  float vDelta;
   float local_c;
   float local_8;
   
-  iVar3 = G_DObjGetWorldTagPos(param_1,(uint)scr_const.tag_flash,&local_20);
+  iVar3 = G_DObjGetWorldTagPos(self,(uint)scr_const.tag_flash,&tagFlashPos);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
-    local_24 = param_1->pTurretInfo;
-    if ((local_24 == (TurretInfo *)0x0) &&
+    pTurretInfo = self->pTurretInfo;
+    if ((pTurretInfo == (TurretInfo *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x4a0,0,"%s")
        , !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_10 = *param_2 - local_20;
-    local_c = param_2[1] - local_1c;
-    local_8 = param_2[2] - local_18;
-    vectosignedangles(&local_10,local_30);
-    for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-      fVar4 = AngleNormalize180(local_30[local_14] - (param_1->r).currentAngles[local_14]);
-      param_4[local_14] = fVar4;
-      if ((local_24->arcmax[local_14] <= param_4[local_14] &&
-           param_4[local_14] != local_24->arcmax[local_14]) ||
-         (param_4[local_14] <= local_24->arcmin[local_14] &&
-          local_24->arcmin[local_14] != param_4[local_14])) {
+    vDelta = *vPoint - tagFlashPos;
+    local_c = vPoint[1] - local_1c;
+    local_8 = vPoint[2] - local_18;
+    vectosignedangles(&vDelta,angles);
+    for (i = 0; i < 2; i = i + 1) {
+      fVar4 = AngleNormalize180(angles[i] - (self->r).currentAngles[i]);
+      localAngles[i] = fVar4;
+      if ((pTurretInfo->arcmax[i] <= localAngles[i] && localAngles[i] != pTurretInfo->arcmax[i]) ||
+         (localAngles[i] <= pTurretInfo->arcmin[i] && pTurretInfo->arcmin[i] != localAngles[i])) {
         return 0;
       }
     }
-    *param_3 = local_20;
-    param_3[1] = local_1c;
-    param_3[2] = local_18;
+    *vSource = tagFlashPos;
+    vSource[1] = local_1c;
+    vSource[2] = local_18;
     iVar3 = 1;
   }
   return iVar3;
@@ -1666,18 +1699,18 @@ int __cdecl turret_CanTargetPoint(gentity_s *param_1,float *param_2,float *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_PredictPosition(gentity_s *param_1,playerState_s *param_2,float *param_3)
+void __cdecl Turret_PredictPosition(gentity_s *ent,playerState_s *ps,float *vPos)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
-  trajectory_t local_28;
+  trajectory_t tr;
   
-  G_GetPlayerViewOrigin(param_2,local_28.trBase);
-  if (((((uint)local_28.trBase[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)local_28.trBase[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)local_28.trBase[2] & 0x7f800000) == 0x7f800000)) {
+  G_GetPlayerViewOrigin(ps,tr.trBase);
+  if (((((uint)tr.trBase[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)tr.trBase[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)tr.trBase[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x4b9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1685,16 +1718,16 @@ void __cdecl Turret_PredictPosition(gentity_s *param_1,playerState_s *param_2,fl
       return;
     }
   }
-  pWVar3 = BG_GetWeaponDef((uint)param_2->weapon);
+  pWVar3 = BG_GetWeaponDef((uint)ps->weapon);
   if (pWVar3->offhandSlot == OFFHAND_SLOT_EQUIPMENT) {
-    local_28.trBase[2] = local_28.trBase[2] - 8.0;
+    tr.trBase[2] = tr.trBase[2] - 8.0;
   }
-  local_28.trDelta[0] = param_2->velocity[0];
-  local_28.trDelta[1] = param_2->velocity[1];
-  local_28.trDelta[2] = param_2->velocity[2];
-  if (((((uint)local_28.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)local_28.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)local_28.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+  tr.trDelta[0] = ps->velocity[0];
+  tr.trDelta[1] = ps->velocity[1];
+  tr.trDelta[2] = ps->velocity[2];
+  if (((((uint)tr.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)tr.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)tr.trDelta[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x4bf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1702,10 +1735,9 @@ void __cdecl Turret_PredictPosition(gentity_s *param_1,playerState_s *param_2,fl
       return;
     }
   }
-  local_28.trTime = level.time;
-  local_28.trType = '\x03';
-  BG_EvaluateTrajectory
-            (&local_28,(turret_TargetLeadBias->current).integer * 0x32 + level.time,param_3);
+  tr.trTime = level.time;
+  tr.trType = '\x03';
+  BG_EvaluateTrajectory(&tr,(turret_TargetLeadBias->current).integer * 0x32 + level.time,vPos);
   return;
 }
 
@@ -1719,7 +1751,8 @@ void __cdecl Turret_PredictPosition(gentity_s *param_1,playerState_s *param_2,fl
 
 int __cdecl
 turret_CanTargetSentient
-          (gentity_s *param_1,sentient_s *param_2,float *param_3,float *param_4,float *param_5)
+          (gentity_s *self,sentient_s *sentient,float *targetPosition,float *muzzlePosition,
+          float *localAngles)
 
 {
   gentity_s *pgVar1;
@@ -1729,90 +1762,90 @@ turret_CanTargetSentient
   float fVar5;
   sentient_s *in_stack_ffffff84;
   float *in_stack_ffffff88;
-  float local_30;
+  float angles;
   float local_2c;
-  TurretInfo *local_24;
-  int local_20;
-  float local_1c;
+  TurretInfo *pTurretInfo;
+  int bTooLow;
+  float tagFlashPos;
   float local_18;
   float local_14;
-  float local_10;
+  float vDelta;
   float local_c;
   float local_8;
   
-  if (param_2->ent->client == (gclient_s *)0x0) {
+  if (sentient->ent->client == (gclient_s *)0x0) {
     Sentient_GetEyePosition(in_stack_ffffff84,in_stack_ffffff88);
   }
   else {
-    Turret_PredictPosition(param_2->ent,&param_2->ent->client->ps,param_3);
+    Turret_PredictPosition(sentient->ent,&sentient->ent->client->ps,targetPosition);
   }
-  iVar4 = G_DObjGetWorldTagPos(param_1,(uint)scr_const.tag_flash,&local_1c);
+  iVar4 = G_DObjGetWorldTagPos(self,(uint)scr_const.tag_flash,&tagFlashPos);
   if (iVar4 == 0) {
     iVar4 = 0;
   }
   else {
-    local_24 = param_1->pTurretInfo;
-    if ((local_24 == (TurretInfo *)0x0) &&
+    pTurretInfo = self->pTurretInfo;
+    if ((pTurretInfo == (TurretInfo *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x4dc,0,"%s")
        , !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    local_10 = *param_3 - local_1c;
-    local_c = param_3[1] - local_18;
-    local_8 = param_3[2] - local_14;
-    vectosignedangles(&local_10,&local_30);
-    fVar5 = AngleNormalize180(local_2c - (param_1->r).currentAngles[1]);
-    param_5[1] = fVar5;
-    if ((local_24->arcmax[1] <= param_5[1] && param_5[1] != local_24->arcmax[1]) ||
-       (param_5[1] <= local_24->arcmin[1] && local_24->arcmin[1] != param_5[1])) {
+    vDelta = *targetPosition - tagFlashPos;
+    local_c = targetPosition[1] - local_18;
+    local_8 = targetPosition[2] - local_14;
+    vectosignedangles(&vDelta,&angles);
+    fVar5 = AngleNormalize180(local_2c - (self->r).currentAngles[1]);
+    localAngles[1] = fVar5;
+    if ((pTurretInfo->arcmax[1] <= localAngles[1] && localAngles[1] != pTurretInfo->arcmax[1]) ||
+       (localAngles[1] <= pTurretInfo->arcmin[1] && pTurretInfo->arcmin[1] != localAngles[1])) {
       iVar4 = 0;
     }
     else {
-      *param_4 = local_1c;
-      param_4[1] = local_18;
-      param_4[2] = local_14;
-      if (local_24->state == 1) {
-        fVar5 = AngleNormalize180(local_30 - (param_1->r).currentAngles[0]);
-        *param_5 = fVar5;
-        if (*param_5 < local_24->arcmax[0] || *param_5 == local_24->arcmax[0]) {
-          if (local_24->arcmin[0] < *param_5 || local_24->arcmin[0] == *param_5) {
+      *muzzlePosition = tagFlashPos;
+      muzzlePosition[1] = local_18;
+      muzzlePosition[2] = local_14;
+      if (pTurretInfo->state == 1) {
+        fVar5 = AngleNormalize180(angles - (self->r).currentAngles[0]);
+        *localAngles = fVar5;
+        if (*localAngles < pTurretInfo->arcmax[0] || *localAngles == pTurretInfo->arcmax[0]) {
+          if (pTurretInfo->arcmin[0] < *localAngles || pTurretInfo->arcmin[0] == *localAngles) {
             return 1;
           }
-          local_20 = 0;
+          bTooLow = 0;
         }
         else {
-          local_20 = 1;
+          bTooLow = 1;
         }
-        pgVar1 = param_2->ent;
-        local_10 = (pgVar1->r).currentOrigin[0] - local_1c;
+        pgVar1 = sentient->ent;
+        vDelta = (pgVar1->r).currentOrigin[0] - tagFlashPos;
         local_c = (pgVar1->r).currentOrigin[1] - local_18;
         local_8 = ((pgVar1->r).currentOrigin[2] - local_14) + 2.0;
-        fVar5 = vectosignedpitch(&local_10);
-        fVar5 = AngleNormalize180(fVar5 - (param_1->r).currentAngles[0]);
-        *param_5 = fVar5;
-        if (*param_5 < local_24->arcmax[0] || *param_5 == local_24->arcmax[0]) {
-          if (local_24->arcmin[0] < *param_5 || local_24->arcmin[0] == *param_5) {
-            pgVar1 = param_2->ent;
-            *param_3 = (pgVar1->r).currentOrigin[0];
-            param_3[1] = (pgVar1->r).currentOrigin[1];
-            param_3[2] = (pgVar1->r).currentOrigin[2];
-            param_3[2] = param_3[2] + 2.0;
+        fVar5 = vectosignedpitch(&vDelta);
+        fVar5 = AngleNormalize180(fVar5 - (self->r).currentAngles[0]);
+        *localAngles = fVar5;
+        if (*localAngles < pTurretInfo->arcmax[0] || *localAngles == pTurretInfo->arcmax[0]) {
+          if (pTurretInfo->arcmin[0] < *localAngles || pTurretInfo->arcmin[0] == *localAngles) {
+            pgVar1 = sentient->ent;
+            *targetPosition = (pgVar1->r).currentOrigin[0];
+            targetPosition[1] = (pgVar1->r).currentOrigin[1];
+            targetPosition[2] = (pgVar1->r).currentOrigin[2];
+            targetPosition[2] = targetPosition[2] + 2.0;
             iVar4 = 1;
           }
-          else if (local_20 == 0) {
+          else if (bTooLow == 0) {
             iVar4 = 0;
           }
           else {
-            *param_5 = 0.0;
-            param_3[2] = local_14;
+            *localAngles = 0.0;
+            targetPosition[2] = local_14;
             iVar4 = 1;
           }
         }
-        else if (local_20 == 0) {
-          *param_5 = 0.0;
-          param_3[2] = local_14;
+        else if (bTooLow == 0) {
+          *localAngles = 0.0;
+          targetPosition[2] = local_14;
           iVar4 = 1;
         }
         else {
@@ -1820,45 +1853,45 @@ turret_CanTargetSentient
         }
       }
       else {
-        pgVar1 = param_2->ent;
-        local_10 = (pgVar1->r).currentOrigin[0] - local_1c;
+        pgVar1 = sentient->ent;
+        vDelta = (pgVar1->r).currentOrigin[0] - tagFlashPos;
         local_c = (pgVar1->r).currentOrigin[1] - local_18;
         local_8 = ((pgVar1->r).currentOrigin[2] - local_14) + 2.0;
-        fVar5 = vectosignedpitch(&local_10);
-        fVar5 = AngleNormalize180(fVar5 - (param_1->r).currentAngles[0]);
-        *param_5 = fVar5;
-        if (*param_5 < local_24->arcmax[0] || *param_5 == local_24->arcmax[0]) {
-          if (local_24->arcmin[0] < *param_5 || local_24->arcmin[0] == *param_5) {
-            pgVar1 = param_2->ent;
-            *param_3 = (pgVar1->r).currentOrigin[0];
-            param_3[1] = (pgVar1->r).currentOrigin[1];
-            param_3[2] = (pgVar1->r).currentOrigin[2];
-            param_3[2] = param_3[2] + 2.0;
+        fVar5 = vectosignedpitch(&vDelta);
+        fVar5 = AngleNormalize180(fVar5 - (self->r).currentAngles[0]);
+        *localAngles = fVar5;
+        if (*localAngles < pTurretInfo->arcmax[0] || *localAngles == pTurretInfo->arcmax[0]) {
+          if (pTurretInfo->arcmin[0] < *localAngles || pTurretInfo->arcmin[0] == *localAngles) {
+            pgVar1 = sentient->ent;
+            *targetPosition = (pgVar1->r).currentOrigin[0];
+            targetPosition[1] = (pgVar1->r).currentOrigin[1];
+            targetPosition[2] = (pgVar1->r).currentOrigin[2];
+            targetPosition[2] = targetPosition[2] + 2.0;
             return 1;
           }
-          local_20 = 0;
+          bTooLow = 0;
         }
         else {
-          local_20 = 1;
+          bTooLow = 1;
         }
-        fVar5 = AngleNormalize180(local_30 - (param_1->r).currentAngles[0]);
-        *param_5 = fVar5;
-        if (*param_5 < local_24->arcmax[0] || *param_5 == local_24->arcmax[0]) {
-          if (local_24->arcmin[0] < *param_5 || local_24->arcmin[0] == *param_5) {
+        fVar5 = AngleNormalize180(angles - (self->r).currentAngles[0]);
+        *localAngles = fVar5;
+        if (*localAngles < pTurretInfo->arcmax[0] || *localAngles == pTurretInfo->arcmax[0]) {
+          if (pTurretInfo->arcmin[0] < *localAngles || pTurretInfo->arcmin[0] == *localAngles) {
             iVar4 = 1;
           }
-          else if (local_20 == 0) {
+          else if (bTooLow == 0) {
             iVar4 = 0;
           }
           else {
-            *param_5 = 0.0;
-            param_3[2] = local_14;
+            *localAngles = 0.0;
+            targetPosition[2] = local_14;
             iVar4 = 1;
           }
         }
-        else if (local_20 == 0) {
-          *param_5 = 0.0;
-          param_3[2] = local_14;
+        else if (bTooLow == 0) {
+          *localAngles = 0.0;
+          targetPosition[2] = local_14;
           iVar4 = 1;
         }
         else {
@@ -1879,49 +1912,53 @@ turret_CanTargetSentient
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-turret_aimat_vector_internal(gentity_s *param_1,float *param_2,int param_3,float *param_4)
+turret_aimat_vector_internal(gentity_s *self,float *origin,int bShoot,float *desiredAngles)
 
 {
-  TurretInfo *pTVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  float fVar6;
+  TurretInfo *turretInfo_00;
+  uint uVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  float fVar5;
+  TurretInfo *turretInfo;
+  bool alwaysCheckAngles;
+  int remainingConvergenceTime;
+  WeaponDef *weapDef;
   
-  pTVar1 = param_1->pTurretInfo;
-  if ((pTVar1 == (TurretInfo *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x540,0,"%s"),
-     !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  turretInfo_00 = self->pTurretInfo;
+  if ((turretInfo_00 == (TurretInfo *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x540,0,"%s"),
+     !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  uVar2 = pTVar1->flags;
-  if (param_3 == 0) {
-    turret_SetState(param_1,0);
+  uVar1 = turretInfo_00->flags;
+  if (bShoot == 0) {
+    turret_SetState(self,0);
   }
   else {
-    iVar5 = Turret_GetRemainingConvergenceTime(pTVar1,1);
-    if (pTVar1->state == 0) {
-      if (((level.time < pTVar1->targetTime + 0xfa) || ((uVar2 & 0x20000) != 0)) &&
-         ((fVar6 = AngleNormalize180((param_1->s).lerp.u.turret.gunAngles[0] - *param_4),
-          5.0 <= ABS(fVar6) ||
-          (fVar6 = AngleNormalize180((param_1->s).lerp.u.turret.gunAngles[1] - param_4[1]),
-          5.0 <= ABS(fVar6))))) goto LAB_006a3ecf;
-      turret_SetState(param_1,2);
+    iVar4 = Turret_GetRemainingConvergenceTime(turretInfo_00,1);
+    if (turretInfo_00->state == 0) {
+      if (((level.time < turretInfo_00->targetTime + 0xfa) || ((uVar1 & 0x20000) != 0)) &&
+         ((fVar5 = AngleNormalize180((self->s).lerp.u.turret.gunAngles[0] - *desiredAngles),
+          5.0 <= ABS(fVar5) ||
+          (fVar5 = AngleNormalize180((self->s).lerp.u.turret.gunAngles[1] - desiredAngles[1]),
+          5.0 <= ABS(fVar5))))) goto LAB_006a3ecf;
+      turret_SetState(self,2);
     }
-    else if (pTVar1->state != 2) goto LAB_006a3ecf;
-    BG_GetWeaponDef((uint)(param_1->s).weapon);
-    if (iVar5 < 0) {
-      turret_SetState(param_1,1);
+    else if (turretInfo_00->state != 2) goto LAB_006a3ecf;
+    BG_GetWeaponDef((uint)(self->s).weapon);
+    if (iVar4 < 0) {
+      turret_SetState(self,1);
     }
   }
 LAB_006a3ecf:
-  pTVar1->flags = pTVar1->flags | 0x40;
-  pTVar1->targetPos[0] = *param_2;
-  pTVar1->targetPos[1] = param_2[1];
-  pTVar1->targetPos[2] = param_2[2];
+  turretInfo_00->flags = turretInfo_00->flags | 0x40;
+  turretInfo_00->targetPos[0] = *origin;
+  turretInfo_00->targetPos[1] = origin[1];
+  turretInfo_00->targetPos[2] = origin[2];
   return;
 }
 
@@ -1933,17 +1970,17 @@ LAB_006a3ecf:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_aimat_vector(gentity_s *param_1,float *param_2,int param_3,float *param_4)
+int __cdecl turret_aimat_vector(gentity_s *self,float *origin,int bShoot,float *desiredAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_10 [3];
+  float vSource [3];
   
-  iVar3 = turret_CanTargetPoint(param_1,param_2,local_10,param_4);
+  iVar3 = turret_CanTargetPoint(self,origin,vSource,desiredAngles);
   if (iVar3 == 0) {
-    if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+    if (self->pTurretInfo == (TurretInfo *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x57c,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -1951,11 +1988,11 @@ int __cdecl turret_aimat_vector(gentity_s *param_1,float *param_2,int param_3,fl
         return iVar3;
       }
     }
-    param_1->pTurretInfo->flags = param_1->pTurretInfo->flags & 0xffffffbf;
+    self->pTurretInfo->flags = self->pTurretInfo->flags & 0xffffffbf;
     iVar3 = 0;
   }
   else {
-    turret_aimat_vector_internal(param_1,param_2,param_3,param_4);
+    turret_aimat_vector_internal(self,origin,bShoot,desiredAngles);
     iVar3 = 1;
   }
   return iVar3;
@@ -1969,7 +2006,7 @@ int __cdecl turret_aimat_vector(gentity_s *param_1,float *param_2,int param_3,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_SetTargetEnt(gentity_s *param_1,gentity_s *param_2)
+void __cdecl turret_SetTargetEnt(gentity_s *self,gentity_s *ent)
 
 {
   TurretInfo *pTVar1;
@@ -1977,9 +2014,11 @@ void __cdecl turret_SetTargetEnt(gentity_s *param_1,gentity_s *param_2)
   bool bVar3;
   int iVar4;
   gentity_s *local_10;
+  gentity_s *target;
+  TurretInfo *pTurretInfo;
   
-  pTVar1 = param_1->pTurretInfo;
-  if (param_2 == (gentity_s *)0x0) {
+  pTVar1 = self->pTurretInfo;
+  if (ent == (gentity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x593,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -2002,13 +2041,13 @@ void __cdecl turret_SetTargetEnt(gentity_s *param_1,gentity_s *param_2)
   else {
     local_10 = EntHandle::ent(&pTVar1->target);
   }
-  if (local_10 == param_2) {
+  if (local_10 == ent) {
     if ((int)((turret_KillstreakTargetTime->current).string + pTVar1->targetTime) < level.time) {
       pTVar1->targetTime = level.time;
     }
   }
   else {
-    EntHandle::setEnt(&pTVar1->target,param_2);
+    EntHandle::setEnt(&pTVar1->target,ent);
     pTVar1->targetTime = level.time;
     pTVar1->flags = pTVar1->flags & 0xfffffff7;
   }
@@ -2025,124 +2064,124 @@ void __cdecl turret_SetTargetEnt(gentity_s *param_1,gentity_s *param_2)
 
 int __cdecl
 turret_aimat_Sentient_Internal
-          (gentity_s *param_1,sentient_s *param_2,int param_3,int param_4,float *param_5)
+          (gentity_s *self,sentient_s *enemy,int bShoot,int missTime,float *desiredAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_8c;
-  float local_88;
+  float divergence;
+  float origin;
   float local_84;
   float local_80;
-  float local_7c [3];
-  float local_70;
+  float muzzlePosition [3];
+  float right;
   float local_6c;
-  float local_68;
+  float targetPosition;
   float local_64;
   float local_60;
-  float local_5c;
+  float missOffsetInner;
   float local_58;
   float local_54;
-  float local_50;
+  float tagMat;
   float local_4c;
   float local_2c;
   float local_28;
-  float local_20;
+  float missOffsetOuter;
   float local_1c;
   float local_18;
-  TurretInfo *local_14;
-  float local_10;
+  TurretInfo *pTurretInfo;
+  float missTarget;
   float local_c;
   float local_8;
   
-  if ((param_4 < 0) &&
+  if ((missTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x5ba,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  turret_SetTargetEnt(param_1,param_2->ent);
-  iVar3 = turret_CanTargetSentient(param_1,param_2,&local_68,local_7c,param_5);
+  turret_SetTargetEnt(self,enemy->ent);
+  iVar3 = turret_CanTargetSentient(self,enemy,&targetPosition,muzzlePosition,desiredAngles);
   if (iVar3 == 0) {
     return 0;
   }
-  local_14 = param_1->pTurretInfo;
-  if ((local_14 == (TurretInfo *)0x0) &&
+  pTurretInfo = self->pTurretInfo;
+  if ((pTurretInfo == (TurretInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x5c2,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = Turret_GetRemainingConvergenceTime(local_14,1);
+  iVar3 = Turret_GetRemainingConvergenceTime(pTurretInfo,1);
   if (0 < iVar3) {
-    if ((local_14->flags & 8U) == 0) {
-      local_14->flags = local_14->flags | 8;
-      iVar3 = G_DObjGetWorldTagMatrix(param_1,(uint)scr_const.tag_aim,(float (*) [3])&local_50);
+    if ((pTurretInfo->flags & 8U) == 0) {
+      pTurretInfo->flags = pTurretInfo->flags | 8;
+      iVar3 = G_DObjGetWorldTagMatrix(self,(uint)scr_const.tag_aim,(float (*) [3])&tagMat);
       if (iVar3 == 0) {
         return 0;
       }
-      local_70 = local_64 - local_28;
-      local_6c = local_2c - local_68;
-      Vec2Normalize(&local_70);
-      local_70 = local_70 * 63.0;
+      right = local_64 - local_28;
+      local_6c = local_2c - targetPosition;
+      Vec2Normalize(&right);
+      right = right * 63.0;
       local_6c = local_6c * 63.0;
-      if (local_50 * local_70 + local_4c * local_6c < 0.0) {
-        local_88 = local_68 - local_70;
+      if (tagMat * right + local_4c * local_6c < 0.0) {
+        origin = targetPosition - right;
         local_84 = local_64 - local_6c;
       }
       else {
-        local_88 = local_68 + local_70;
+        origin = targetPosition + right;
         local_84 = local_64 + local_6c;
       }
-      local_80 = (param_2->ent->r).currentOrigin[2];
-      iVar3 = turret_aimat_vector(param_1,&local_88,param_3,param_5);
+      local_80 = (enemy->ent->r).currentOrigin[2];
+      iVar3 = turret_aimat_vector(self,&origin,bShoot,desiredAngles);
       if (iVar3 != 0) {
-        local_14->missOffsetNormalized[0] = local_88 - local_68;
-        local_14->missOffsetNormalized[1] = local_84 - local_64;
-        local_14->missOffsetNormalized[2] = local_80 - local_60;
-        Vec3Normalize(local_14->missOffsetNormalized);
+        pTurretInfo->missOffsetNormalized[0] = origin - targetPosition;
+        pTurretInfo->missOffsetNormalized[1] = local_84 - local_64;
+        pTurretInfo->missOffsetNormalized[2] = local_80 - local_60;
+        Vec3Normalize(pTurretInfo->missOffsetNormalized);
         return 1;
       }
       local_80 = local_60;
-      iVar3 = turret_aimat_vector(param_1,&local_88,param_3,param_5);
+      iVar3 = turret_aimat_vector(self,&origin,bShoot,desiredAngles);
       if (iVar3 != 0) {
-        local_14->missOffsetNormalized[0] = local_88 - local_68;
-        local_14->missOffsetNormalized[1] = local_84 - local_64;
-        local_14->missOffsetNormalized[2] = local_80 - local_60;
-        Vec3Normalize(local_14->missOffsetNormalized);
+        pTurretInfo->missOffsetNormalized[0] = origin - targetPosition;
+        pTurretInfo->missOffsetNormalized[1] = local_84 - local_64;
+        pTurretInfo->missOffsetNormalized[2] = local_80 - local_60;
+        Vec3Normalize(pTurretInfo->missOffsetNormalized);
         return 1;
       }
-      local_14->missOffsetNormalized[0] = 0.0;
-      local_14->missOffsetNormalized[1] = 0.0;
-      local_14->missOffsetNormalized[2] = 0.0;
+      pTurretInfo->missOffsetNormalized[0] = 0.0;
+      pTurretInfo->missOffsetNormalized[1] = 0.0;
+      pTurretInfo->missOffsetNormalized[2] = 0.0;
     }
     else {
-      if (param_4 < 1) {
-        local_8c = 0.0;
+      if (missTime < 1) {
+        divergence = 0.0;
       }
       else {
-        local_8c = (float)((local_14->targetTime + param_4) - level.time) / (float)param_4;
+        divergence = (float)((pTurretInfo->targetTime + missTime) - level.time) / (float)missTime;
       }
-      local_8c = local_8c * 30.0;
-      local_20 = local_8c * local_14->missOffsetNormalized[0];
-      local_1c = local_8c * local_14->missOffsetNormalized[1];
-      local_18 = local_8c * local_14->missOffsetNormalized[2];
-      local_5c = local_14->missOffsetNormalized[0] * 33.0;
-      local_58 = local_14->missOffsetNormalized[1] * 33.0;
-      local_54 = local_14->missOffsetNormalized[2] * 33.0;
-      local_10 = local_68 + local_5c + local_20;
+      local_18 = divergence * 30.0;
+      missOffsetOuter = local_18 * pTurretInfo->missOffsetNormalized[0];
+      local_1c = local_18 * pTurretInfo->missOffsetNormalized[1];
+      local_18 = local_18 * pTurretInfo->missOffsetNormalized[2];
+      missOffsetInner = pTurretInfo->missOffsetNormalized[0] * 33.0;
+      local_58 = pTurretInfo->missOffsetNormalized[1] * 33.0;
+      local_54 = pTurretInfo->missOffsetNormalized[2] * 33.0;
+      missTarget = targetPosition + missOffsetInner + missOffsetOuter;
       local_c = local_64 + local_58 + local_1c;
       local_8 = local_60 + local_54 + local_18;
-      iVar3 = turret_aimat_vector(param_1,&local_10,param_3,param_5);
+      iVar3 = turret_aimat_vector(self,&missTarget,bShoot,desiredAngles);
       if (iVar3 != 0) {
         return 1;
       }
     }
   }
-  turret_aimat_vector_internal(param_1,&local_68,param_3,param_5);
+  turret_aimat_vector_internal(self,&targetPosition,bShoot,desiredAngles);
   return 1;
 }
 
@@ -2154,15 +2193,15 @@ turret_aimat_Sentient_Internal
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl turret_aimat_Sentient(gentity_s *param_1,sentient_s *param_2,int param_3,int param_4)
+int __cdecl turret_aimat_Sentient(gentity_s *self,sentient_s *enemy,int bShoot,int missTime)
 
 {
   int iVar1;
-  float local_c [2];
+  float desiredAngles [2];
   
-  iVar1 = turret_aimat_Sentient_Internal(param_1,param_2,param_3,param_4,local_c);
+  iVar1 = turret_aimat_Sentient_Internal(self,enemy,bShoot,missTime,desiredAngles);
   if (iVar1 != 0) {
-    turret_UpdateTargetAngles(param_1,local_c,1);
+    turret_UpdateTargetAngles(self,desiredAngles,1);
   }
   return (uint)(iVar1 != 0);
 }
@@ -2175,16 +2214,16 @@ int __cdecl turret_aimat_Sentient(gentity_s *param_1,sentient_s *param_2,int par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_aimat_Ent(gentity_s *param_1,gentity_s *param_2,int param_3)
+int __cdecl turret_aimat_Ent(gentity_s *self,gentity_s *ent,int bShoot)
 
 {
   int iVar1;
-  float local_c [2];
+  float desiredAngles [2];
   
-  turret_SetTargetEnt(param_1,param_2);
-  iVar1 = turret_aimat_vector(param_1,(param_2->r).currentOrigin,param_3,local_c);
+  turret_SetTargetEnt(self,ent);
+  iVar1 = turret_aimat_vector(self,(ent->r).currentOrigin,bShoot,desiredAngles);
   if (iVar1 != 0) {
-    turret_UpdateTargetAngles(param_1,local_c,1);
+    turret_UpdateTargetAngles(self,desiredAngles,1);
   }
   return (uint)(iVar1 != 0);
 }
@@ -2197,8 +2236,7 @@ int __cdecl turret_aimat_Ent(gentity_s *param_1,gentity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl
-turret_SightTrace(float *param_1,float *param_2,int param_3,int param_4,gentity_s *param_5)
+int __cdecl turret_SightTrace(float *start,float *end,int passEnt1,int passEnt2,gentity_s *turret)
 
 {
   int iVar1;
@@ -2207,25 +2245,25 @@ turret_SightTrace(float *param_1,float *param_2,int param_3,int param_4,gentity_
   col_context_t local_a8;
   col_context_t local_80;
   col_context_t local_58;
-  col_context_t local_30;
-  int local_8;
+  col_context_t context;
+  int hitNum;
   
-  col_context_t::col_context_t(&local_30);
-  local_8 = 0;
-  if (param_5 == (gentity_s *)0x0) {
+  col_context_t::col_context_t(&context);
+  hitNum = 0;
+  if (turret == (gentity_s *)0x0) {
     col_context_t::col_context_t(&local_a8,0x801803);
     pcVar2 = &local_a8;
-    pcVar3 = &local_30;
+    pcVar3 = &context;
     for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
       pcVar3->mask = pcVar2->mask;
       pcVar2 = (col_context_t *)&pcVar2->prims;
       pcVar3 = (col_context_t *)&pcVar3->prims;
     }
   }
-  else if ((param_5->pTurretInfo->flags & 0x20000U) == 0) {
+  else if ((turret->pTurretInfo->flags & 0x20000U) == 0) {
     col_context_t::col_context_t(&local_80,0x810011);
     pcVar2 = &local_80;
-    pcVar3 = &local_30;
+    pcVar3 = &context;
     for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
       pcVar3->mask = pcVar2->mask;
       pcVar2 = (col_context_t *)&pcVar2->prims;
@@ -2235,18 +2273,18 @@ turret_SightTrace(float *param_1,float *param_2,int param_3,int param_4,gentity_
   else {
     col_context_t::col_context_t(&local_58,0x280e893);
     pcVar2 = &local_58;
-    pcVar3 = &local_30;
+    pcVar3 = &context;
     for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
       pcVar3->mask = pcVar2->mask;
       pcVar2 = (col_context_t *)&pcVar2->prims;
       pcVar3 = (col_context_t *)&pcVar3->prims;
     }
   }
-  local_30.mask = local_30.mask & 0xffffffef;
-  local_30.passEntityNum0 = param_3;
-  local_30.passEntityNum1 = param_4;
-  SV_SightTracePoint(&local_8,param_1,param_2,&local_30);
-  return local_8;
+  context.mask = context.mask & 0xffffffef;
+  context.passEntityNum0 = passEnt1;
+  context.passEntityNum1 = passEnt2;
+  SV_SightTracePoint(&hitNum,start,end,&context);
+  return hitNum;
 }
 
 
@@ -2257,7 +2295,7 @@ turret_SightTrace(float *param_1,float *param_2,int param_3,int param_4,gentity_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_isTargetVisible(gentity_s *param_1,gentity_s *param_2,float *param_3)
+int __cdecl turret_isTargetVisible(gentity_s *self,gentity_s *target,float *distSqr)
 
 {
   TurretInfo *pTVar1;
@@ -2267,27 +2305,30 @@ int __cdecl turret_isTargetVisible(gentity_s *param_1,gentity_s *param_2,float *
   float fVar5;
   sentient_s *in_stack_ffffffbc;
   float *in_stack_ffffffc0;
-  float local_2c [3];
-  float local_20 [4];
-  float local_10;
+  TurretInfo *turretInfo;
+  float distSquared;
+  float flashOrigin [3];
+  float angles [3];
+  int hitNum;
+  float targetOrigin;
   float local_c;
   float local_8;
   
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((target == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x6a9,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x6aa,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if ((pTVar1 == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x6ad,0,"%s"),
      !bVar3)) {
@@ -2295,32 +2336,32 @@ int __cdecl turret_isTargetVisible(gentity_s *param_1,gentity_s *param_2,float *
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2->client != (gclient_s *)0x0) &&
-     (iVar4 = G_IsPlayerDrivingVehicle(param_2), iVar4 != 0)) {
+  if ((target->client != (gclient_s *)0x0) && (iVar4 = G_IsPlayerDrivingVehicle(target), iVar4 != 0)
+     ) {
     return 0;
   }
-  fVar5 = Vec3DistanceSq((param_1->r).currentOrigin,(param_2->r).currentOrigin);
+  fVar5 = Vec3DistanceSq((self->r).currentOrigin,(target->r).currentOrigin);
   if (((pTVar1->flags & 0x20000U) != 0) || (fVar5 < pTVar1->maxRangeSquared)) {
-    if (param_2->sentient == (sentient_s *)0x0) {
-      iVar4 = turret_CanTargetPoint(param_1,(param_2->r).currentOrigin,local_2c,local_20);
+    if (target->sentient == (sentient_s *)0x0) {
+      iVar4 = turret_CanTargetPoint(self,(target->r).currentOrigin,flashOrigin,angles);
       if (iVar4 == 0) {
         return 0;
       }
-      local_10 = (param_2->r).currentOrigin[0];
-      local_c = (param_2->r).currentOrigin[1];
-      local_8 = (param_2->r).currentOrigin[2];
+      targetOrigin = (target->r).currentOrigin[0];
+      local_c = (target->r).currentOrigin[1];
+      local_8 = (target->r).currentOrigin[2];
     }
     else {
-      iVar4 = turret_CanTargetSentient(param_1,param_2->sentient,&local_10,local_2c,local_20);
+      iVar4 = turret_CanTargetSentient(self,target->sentient,&targetOrigin,flashOrigin,angles);
       if (iVar4 == 0) {
         return 0;
       }
       Sentient_GetEyePosition(in_stack_ffffffbc,in_stack_ffffffc0);
     }
-    iVar4 = turret_SightTrace(local_2c,&local_10,(param_1->s).number,(param_2->s).number,param_1);
+    iVar4 = turret_SightTrace(flashOrigin,&targetOrigin,(self->s).number,(target->s).number,self);
     if (iVar4 == 0) {
-      if (param_3 != (float *)0x0) {
-        *param_3 = fVar5;
+      if (distSqr != (float *)0x0) {
+        *distSqr = fVar5;
       }
       iVar4 = 1;
     }
@@ -2342,69 +2383,69 @@ int __cdecl turret_isTargetVisible(gentity_s *param_1,gentity_s *param_2,float *
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl turret_findBestKillstreakTarget(gentity_s *param_1)
+gentity_s * __cdecl turret_findBestKillstreakTarget(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   int iVar4;
-  int local_20;
-  float local_1c;
-  target_t *local_18;
-  TurretInfo *local_14;
-  gentity_s *local_10;
-  gentity_s *local_c;
-  team_t local_8;
+  int i;
+  float distSqr;
+  target_t *targets;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
+  gentity_s *cur;
+  int teamFlags;
   
-  local_14 = param_1->pTurretInfo;
-  if ((local_14 == (TurretInfo *)0x0) &&
+  pTurretInfo = self->pTurretInfo;
+  if ((pTurretInfo == (TurretInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x6f2,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  local_c = (gentity_s *)0x0;
-  if ((((local_14->flags & 0x40U) != 0) &&
-      (iVar4 = EntHandle::isDefined(&local_14->target), iVar4 != 0)) &&
-     (pgVar3 = EntHandle::ent(&local_14->target), pgVar3 != (gentity_s *)0x0)) {
-    pgVar3 = EntHandle::ent(&local_14->target);
+  cur = (gentity_s *)0x0;
+  if ((((pTurretInfo->flags & 0x40U) != 0) &&
+      (iVar4 = EntHandle::isDefined(&pTurretInfo->target), iVar4 != 0)) &&
+     (pgVar3 = EntHandle::ent(&pTurretInfo->target), pgVar3 != (gentity_s *)0x0)) {
+    pgVar3 = EntHandle::ent(&pTurretInfo->target);
     iVar4 = Target_GetTargetIndex(pgVar3);
     if (iVar4 == 0x20) {
-      local_c = (gentity_s *)0x0;
+      cur = (gentity_s *)0x0;
     }
     else {
-      if (level.time <= (int)((turret_KillstreakTargetTime->current).string + local_14->targetTime))
-      {
-        pgVar3 = EntHandle::ent(&local_14->target);
+      if (level.time <=
+          (int)((turret_KillstreakTargetTime->current).string + pTurretInfo->targetTime)) {
+        pgVar3 = EntHandle::ent(&pTurretInfo->target);
         return pgVar3;
       }
-      local_c = EntHandle::ent(&local_14->target);
+      cur = EntHandle::ent(&pTurretInfo->target);
     }
   }
-  local_18 = Target_GetTargetArray();
-  local_20 = 0;
+  targets = Target_GetTargetArray();
+  i = 0;
   do {
-    if (0x1f < local_20) {
-      return local_c;
+    if (0x1f < i) {
+      return cur;
     }
-    if (local_18[local_20].ent != (gentity_s *)0x0) {
-      if ((local_c != (gentity_s *)0x0) &&
-         (iVar4 = turret_isTargetVisible(param_1,local_c,&local_1c), iVar4 == 0)) {
-        local_c = (gentity_s *)0x0;
+    if (targets[i].ent != (gentity_s *)0x0) {
+      if ((cur != (gentity_s *)0x0) &&
+         (iVar4 = turret_isTargetVisible(self,cur,&distSqr), iVar4 == 0)) {
+        cur = (gentity_s *)0x0;
       }
-      local_10 = local_18[local_20].ent;
-      local_8 = (local_10->s).faction.iHeadIconTeam & TEAM_SPECTATOR;
-      if (((local_14->eTeam != local_8) || (local_14->eTeam == TEAM_BAD)) &&
-         (((param_1->s).otherEntityNum != (short)(ushort)(local_10->s).faction.iHeadIconTeam >> 2 &&
-          (((local_18[local_20].flags & 4U) == 0 &&
-           (iVar4 = turret_isTargetVisible(param_1,local_10,&local_1c), iVar4 != 0)))))) {
-        turret_SetTargetEnt(param_1,local_10);
-        return local_10;
+      ent = targets[i].ent;
+      teamFlags = (ent->s).faction.iHeadIconTeam & TEAM_SPECTATOR;
+      if (((pTurretInfo->eTeam != teamFlags) || (pTurretInfo->eTeam == TEAM_BAD)) &&
+         (((self->s).otherEntityNum != (short)(ushort)(ent->s).faction.iHeadIconTeam >> 2 &&
+          (((targets[i].flags & 4U) == 0 &&
+           (iVar4 = turret_isTargetVisible(self,ent,&distSqr), iVar4 != 0)))))) {
+        turret_SetTargetEnt(self,ent);
+        return ent;
       }
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2418,7 +2459,7 @@ gentity_s * __cdecl turret_findBestKillstreakTarget(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-sentient_s * __cdecl turret_findBestTarget(gentity_s *param_1)
+sentient_s * __cdecl turret_findBestTarget(gentity_s *self)
 
 {
   gclient_s *pgVar1;
@@ -2434,83 +2475,82 @@ sentient_s * __cdecl turret_findBestTarget(gentity_s *param_1)
   float fVar9;
   sentient_s *in_stack_ffffffb4;
   int in_stack_ffffffb8;
-  float local_1c [2];
-  TurretInfo *local_14;
-  sentient_s *local_10;
-  sentient_s *local_c;
-  int local_8;
+  float distSqr;
+  float curDistSqr;
+  TurretInfo *pTurretInfo;
+  sentient_s *sent;
+  sentient_s *cur;
+  int teamFlags;
   
-  local_14 = param_1->pTurretInfo;
-  if ((local_14 == (TurretInfo *)0x0) &&
+  pTurretInfo = self->pTurretInfo;
+  if ((pTurretInfo == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x72f,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     psVar4 = (sentient_s *)(*pcVar2)();
     return psVar4;
   }
-  local_c = (sentient_s *)0x0;
-  if ((((local_14->flags & 0x40U) != 0) &&
-      (iVar5 = EntHandle::isDefined(&local_14->target), iVar5 != 0)) &&
-     (pgVar6 = EntHandle::ent(&local_14->target), pgVar6->sentient != (sentient_s *)0x0)) {
-    pgVar6 = EntHandle::ent(&local_14->target);
+  cur = (sentient_s *)0x0;
+  if ((((pTurretInfo->flags & 0x40U) != 0) &&
+      (iVar5 = EntHandle::isDefined(&pTurretInfo->target), iVar5 != 0)) &&
+     (pgVar6 = EntHandle::ent(&pTurretInfo->target), pgVar6->sentient != (sentient_s *)0x0)) {
+    pgVar6 = EntHandle::ent(&pTurretInfo->target);
     if ((pgVar6->client == (gclient_s *)0x0) ||
-       (pgVar6 = EntHandle::ent(&local_14->target), (pgVar6->client->ps).pm_type < 9)) {
-      if (level.time <= (int)((turret_SentryTargetTime->current).string + local_14->targetTime)) {
-        pgVar6 = EntHandle::ent(&local_14->target);
+       (pgVar6 = EntHandle::ent(&pTurretInfo->target), (pgVar6->client->ps).pm_type < 9)) {
+      if (level.time <= (int)((turret_SentryTargetTime->current).string + pTurretInfo->targetTime))
+      {
+        pgVar6 = EntHandle::ent(&pTurretInfo->target);
         return pgVar6->sentient;
       }
-      pgVar6 = EntHandle::ent(&local_14->target);
-      local_c = pgVar6->sentient;
+      pgVar6 = EntHandle::ent(&pTurretInfo->target);
+      cur = pgVar6->sentient;
     }
     else {
-      local_c = (sentient_s *)0x0;
+      cur = (sentient_s *)0x0;
     }
   }
-  if (local_c != (sentient_s *)0x0) {
-    if (local_c->bIgnoreMe == false) {
-      iVar5 = turret_isTargetVisible(param_1,local_c->ent,local_1c);
+  if (cur != (sentient_s *)0x0) {
+    if (cur->bIgnoreMe == false) {
+      iVar5 = turret_isTargetVisible(self,cur->ent,&distSqr);
       if (iVar5 == 0) {
-        local_c = (sentient_s *)0x0;
+        cur = (sentient_s *)0x0;
       }
     }
     else {
-      local_c = (sentient_s *)0x0;
+      cur = (sentient_s *)0x0;
     }
   }
-  tVar7 = Sentient_EnemyTeam(local_14->eTeam);
-  local_8 = 1 << ((byte)tVar7 & 0x1f);
-  if (local_14->prevSentTarget < 0) {
-    local_10 = Sentient_FirstSentient((int)in_stack_ffffffb4);
+  tVar7 = Sentient_EnemyTeam(pTurretInfo->eTeam);
+  teamFlags = 1 << ((byte)tVar7 & 0x1f);
+  if (pTurretInfo->prevSentTarget < 0) {
+    sent = Sentient_FirstSentient((int)in_stack_ffffffb4);
   }
   else {
-    local_10 = Sentient_NextSentient(in_stack_ffffffb4,in_stack_ffffffb8);
+    sent = Sentient_NextSentient(in_stack_ffffffb4,in_stack_ffffffb8);
   }
-  if (local_10 == (sentient_s *)0x0) {
-    local_14->prevSentTarget = -1;
-    psVar4 = local_c;
+  if (sent == (sentient_s *)0x0) {
+    pTurretInfo->prevSentTarget = -1;
+    psVar4 = cur;
   }
   else {
-    local_14->prevSentTarget = ((int)local_10 - (int)level.sentients) / 0x90;
-    psVar4 = local_c;
-    if (((((local_10->bIgnoreMe == false) &&
-          ((local_10->ent->s).number != (int)(param_1->s).otherEntityNum)) &&
-         ((local_10->ent->client == (gclient_s *)0x0 ||
-          (((local_10->ent->client->ps).pm_type != 4 &&
-           ((local_10->ent->client->sess).sessionState != SESS_STATE_SPECTATOR)))))) &&
-        ((local_10->ent->client == (gclient_s *)0x0 || ((local_10->ent->client->ps).pm_type < 9))))
-       && (((((iVar5 = EntHandle::isDefined(&local_10->ent->sentient->scriptOwner), iVar5 == 0 ||
-              (uVar8 = EntHandle::entnum(&local_10->ent->sentient->scriptOwner), psVar4 = local_c,
-              uVar8 != (int)(param_1->s).otherEntityNum)) &&
-             (iVar5 = turret_isTargetVisible(param_1,local_10->ent,local_1c), psVar4 = local_c,
-             iVar5 != 0)) &&
-            ((local_10->ent->client == (gclient_s *)0x0 ||
-             (pgVar1 = local_10->ent->client, _allshl(), psVar4 = local_c,
-             (extraout_EAX & (pgVar1->ps).perks[0]) == 0 &&
-             (extraout_EDX & (pgVar1->ps).perks[1]) == 0)))) &&
-           ((psVar4 = local_10, local_c != (sentient_s *)0x0 &&
-            (fVar9 = Vec3DistanceSq((param_1->r).currentOrigin,(local_c->ent->r).currentOrigin),
-            psVar4 = local_c, local_1c[0] < fVar9)))))) {
-      psVar4 = local_10;
+    pTurretInfo->prevSentTarget = ((int)sent - (int)level.sentients) / 0x90;
+    psVar4 = cur;
+    if (((((sent->bIgnoreMe == false) && ((sent->ent->s).number != (int)(self->s).otherEntityNum))
+         && ((sent->ent->client == (gclient_s *)0x0 ||
+             (((sent->ent->client->ps).pm_type != 4 &&
+              ((sent->ent->client->sess).sessionState != SESS_STATE_SPECTATOR)))))) &&
+        ((sent->ent->client == (gclient_s *)0x0 || ((sent->ent->client->ps).pm_type < 9)))) &&
+       (((((iVar5 = EntHandle::isDefined(&sent->ent->sentient->scriptOwner), iVar5 == 0 ||
+           (uVar8 = EntHandle::entnum(&sent->ent->sentient->scriptOwner), psVar4 = cur,
+           uVar8 != (int)(self->s).otherEntityNum)) &&
+          (iVar5 = turret_isTargetVisible(self,sent->ent,&distSqr), psVar4 = cur, iVar5 != 0)) &&
+         ((sent->ent->client == (gclient_s *)0x0 ||
+          (pgVar1 = sent->ent->client, _allshl(), psVar4 = cur,
+          (extraout_EAX & (pgVar1->ps).perks[0]) == 0 && (extraout_EDX & (pgVar1->ps).perks[1]) == 0
+          )))) && ((psVar4 = sent, cur != (sentient_s *)0x0 &&
+                   (fVar9 = Vec3DistanceSq((self->r).currentOrigin,(cur->ent->r).currentOrigin),
+                   psVar4 = cur, distSqr < fVar9)))))) {
+      psVar4 = sent;
     }
   }
   return psVar4;
@@ -2520,57 +2560,58 @@ sentient_s * __cdecl turret_findBestTarget(gentity_s *param_1)
 // 006A3140  turret_target_sentient  (game/turret.cpp:1919)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl turret_target_sentient(gentity_s *param_1,TurretInfo *param_2)
+void __cdecl turret_target_sentient(gentity_s *self,TurretInfo *turretInfo)
 
 {
-  sentient_s *psVar1;
-  int iVar2;
+  sentient_s *enemy;
+  int iVar1;
   gentity_s *local_10;
-  gentity_s *local_8;
+  sentient_s *target_sent;
+  gentity_s *target_ent;
   
-  psVar1 = turret_findBestTarget(param_1);
-  iVar2 = EntHandle::isDefined(&param_2->manualTarget);
-  if (iVar2 == 0) {
+  enemy = turret_findBestTarget(self);
+  iVar1 = EntHandle::isDefined(&turretInfo->manualTarget);
+  if (iVar1 == 0) {
     local_10 = (gentity_s *)0x0;
   }
   else {
-    local_10 = EntHandle::ent(&param_2->manualTarget);
+    local_10 = EntHandle::ent(&turretInfo->manualTarget);
   }
-  local_8 = local_10;
-  if (psVar1 != (sentient_s *)0x0) {
-    iVar2 = turret_aimat_Sentient(param_1,psVar1,1,param_2->convergenceTime[1]);
-    if (iVar2 != 0) {
+  target_ent = local_10;
+  if (enemy != (sentient_s *)0x0) {
+    iVar1 = turret_aimat_Sentient(self,enemy,1,turretInfo->convergenceTime[1]);
+    if (iVar1 != 0) {
       return;
     }
-    if (local_10 == psVar1->ent) {
-      local_8 = (gentity_s *)0x0;
+    if (local_10 == enemy->ent) {
+      target_ent = (gentity_s *)0x0;
     }
   }
-  if (local_8 != (gentity_s *)0x0) {
-    if (local_8->sentient == (sentient_s *)0x0) {
-      iVar2 = turret_aimat_Ent(param_1,local_8,1);
+  if (target_ent != (gentity_s *)0x0) {
+    if (target_ent->sentient == (sentient_s *)0x0) {
+      iVar1 = turret_aimat_Ent(self,target_ent,1);
     }
     else {
-      iVar2 = turret_isTargetVisible(param_1,local_8,(float *)0x0);
-      if (iVar2 == 0) goto LAB_006a3221;
-      iVar2 = turret_aimat_Sentient(param_1,local_8->sentient,1,param_2->convergenceTime[1]);
+      iVar1 = turret_isTargetVisible(self,target_ent,(float *)0x0);
+      if (iVar1 == 0) goto LAB_006a3221;
+      iVar1 = turret_aimat_Sentient(self,target_ent->sentient,1,turretInfo->convergenceTime[1]);
     }
-    if (iVar2 != 0) {
+    if (iVar1 != 0) {
       return;
     }
   }
 LAB_006a3221:
-  turret_ClearTargetEnt(param_1);
-  if ((((param_2->flags & 0x10000U) == 0) && ((param_2->flags & 0x20000U) == 0)) ||
-     ((param_2->flags & 0x100000U) != 0)) {
-    turret_ReturnToDefaultPos(param_1,1);
+  turret_ClearTargetEnt(self);
+  if ((((turretInfo->flags & 0x10000U) == 0) && ((turretInfo->flags & 0x20000U) == 0)) ||
+     ((turretInfo->flags & 0x100000U) != 0)) {
+    turret_ReturnToDefaultPos(self,1);
   }
   else {
-    Turret_ScanForEnemies(param_1);
+    Turret_ScanForEnemies(self);
   }
   return;
 }
@@ -2583,27 +2624,28 @@ LAB_006a3221:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_target_killstreak(gentity_s *param_1,TurretInfo *param_2)
+void __cdecl turret_target_killstreak(gentity_s *self,TurretInfo *turretInfo)
 
 {
   int iVar1;
   gentity_s *local_c;
+  gentity_s *target_ent;
   
-  local_c = turret_findBestKillstreakTarget(param_1);
-  iVar1 = EntHandle::isDefined(&param_2->manualTarget);
+  local_c = turret_findBestKillstreakTarget(self);
+  iVar1 = EntHandle::isDefined(&turretInfo->manualTarget);
   if (iVar1 != 0) {
-    local_c = EntHandle::ent(&param_2->manualTarget);
+    local_c = EntHandle::ent(&turretInfo->manualTarget);
   }
-  if ((local_c == (gentity_s *)0x0) || (iVar1 = turret_aimat_Ent(param_1,local_c,1), iVar1 == 0)) {
-    turret_ClearTargetEnt(param_1);
-    if ((((param_2->flags & 0x10000U) == 0) && ((param_2->flags & 0x20000U) == 0)) ||
-       ((param_2->flags & 0x100000U) != 0)) {
-      turret_ReturnToDefaultPos(param_1,1);
+  if ((local_c == (gentity_s *)0x0) || (iVar1 = turret_aimat_Ent(self,local_c,1), iVar1 == 0)) {
+    turret_ClearTargetEnt(self);
+    if ((((turretInfo->flags & 0x10000U) == 0) && ((turretInfo->flags & 0x20000U) == 0)) ||
+       ((turretInfo->flags & 0x100000U) != 0)) {
+      turret_ReturnToDefaultPos(self,1);
     }
     else {
-      Turret_ScanForEnemies(param_1);
+      Turret_ScanForEnemies(self);
     }
-    Scr_Notify(param_1,scr_const.turretstatechange,0);
+    Scr_Notify(self,scr_const.turretstatechange,0);
   }
   return;
 }
@@ -2616,35 +2658,36 @@ void __cdecl turret_target_killstreak(gentity_s *param_1,TurretInfo *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_think_auto_nonai(gentity_s *param_1)
+void __cdecl turret_think_auto_nonai(gentity_s *self)
 
 {
-  TurretInfo *pTVar1;
-  code *pcVar2;
-  bool bVar3;
+  TurretInfo *turretInfo_00;
+  code *pcVar1;
+  bool bVar2;
+  TurretInfo *turretInfo;
   
-  if (param_1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x7cd,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (self == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x7cd,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pTVar1 = param_1->pTurretInfo;
-  if (pTVar1 == (TurretInfo *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",2000,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  turretInfo_00 = self->pTurretInfo;
+  if (turretInfo_00 == (TurretInfo *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",2000,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((pTVar1->flags & 0x10000U) != 0) {
-    turret_target_sentient(param_1,pTVar1);
+  if ((turretInfo_00->flags & 0x10000U) != 0) {
+    turret_target_sentient(self,turretInfo_00);
   }
-  if ((pTVar1->flags & 0x20000U) != 0) {
-    turret_target_killstreak(param_1,pTVar1);
+  if ((turretInfo_00->flags & 0x20000U) != 0) {
+    turret_target_killstreak(self,turretInfo_00);
   }
   return;
 }
@@ -2657,13 +2700,13 @@ void __cdecl turret_think_auto_nonai(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_think_init(gentity_s *param_1)
+void __cdecl turret_think_init(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x92d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2671,7 +2714,7 @@ void __cdecl turret_think_init(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->handler != '\x11') {
+  if (self->handler != '\x11') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x92e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2679,13 +2722,13 @@ void __cdecl turret_think_init(gentity_s *param_1)
       return;
     }
   }
-  param_1->handler = '\x12';
-  param_1->nextthink = level.time + 0x32;
-  (param_1->s).lerp.u.turret.gunAngles[2] = 0.0;
-  if (param_1->tagInfo != (tagInfo_s *)0x0) {
-    G_GeneralLink(param_1);
+  self->handler = '\x12';
+  self->nextthink = level.time + 0x32;
+  (self->s).lerp.u.turret.gunAngles[2] = 0.0;
+  if (self->tagInfo != (tagInfo_s *)0x0) {
+    G_GeneralLink(self);
   }
-  if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x937,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2693,8 +2736,8 @@ void __cdecl turret_think_init(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->pTurretInfo->dropPitch == -90.0) {
-    turret_RestoreDefaultDropPitch(param_1);
+  if (self->pTurretInfo->dropPitch == -90.0) {
+    turret_RestoreDefaultDropPitch(self);
   }
   return;
 }
@@ -2708,84 +2751,84 @@ void __cdecl turret_think_init(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_RestoreDefaultDropPitch(gentity_s *param_1)
+void __cdecl turret_RestoreDefaultDropPitch(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar local_e9;
-  DObjAnimMat *local_e8;
-  float local_e4 [9];
-  float local_c0;
+  uchar boneIndex;
+  DObjAnimMat *weaponMtx;
+  float mtx [9];
+  float dir;
   float local_bc;
   float local_b8;
-  DObj *local_b4;
-  float local_b0;
+  DObj *obj;
+  float transDir;
   float local_ac;
   float local_a8;
-  float local_a4 [3];
-  float local_98 [3];
-  TurretInfo *local_8c;
-  DObjAnimMat *local_88;
-  float local_84 [12];
+  float start [3];
+  float end [3];
+  TurretInfo *pTurretInfo;
+  DObjAnimMat *aimMtx;
+  float angles [12];
   float local_54;
   float local_50;
   float local_4c;
-  float4 local_48;
+  float4 trace;
   float local_38;
   uint local_10;
-  int local_c;
-  undefined4 local_8;
+  int i;
+  int numSteps;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0x1e;
-  local_8c = param_1->pTurretInfo;
-  local_48.v[0] = 0.0;
-  local_48.v[1] = 0.0;
-  local_48.v[2] = 0.0;
-  local_48.v[3] = 0.0;
-  if ((local_8c == (TurretInfo *)0x0) &&
+  numSteps = 0x1e;
+  pTurretInfo = self->pTurretInfo;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((pTurretInfo == (TurretInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x947,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_b4 = Com_GetServerDObj((param_1->s).number);
-  local_e9 = 0xfe;
-  iVar3 = DObjGetBoneIndex(local_b4,(uint)scr_const.tag_aim_pitch,&local_e9,-1);
+  obj = Com_GetServerDObj((self->s).number);
+  boneIndex = 0xfe;
+  iVar3 = DObjGetBoneIndex(obj,(uint)scr_const.tag_aim_pitch,&boneIndex,-1);
   if (iVar3 == 0) {
-    local_88 = G_DObjGetLocalTagMatrix(param_1,(uint)scr_const.tag_aim);
+    aimMtx = G_DObjGetLocalTagMatrix(self,(uint)scr_const.tag_aim);
   }
   else {
-    local_88 = G_DObjGetLocalTagMatrix(param_1,(uint)scr_const.tag_aim_pitch);
+    aimMtx = G_DObjGetLocalTagMatrix(self,(uint)scr_const.tag_aim_pitch);
   }
-  if ((local_88 != (DObjAnimMat *)0x0) &&
-     (local_e8 = G_DObjGetLocalTagMatrix(param_1,(uint)scr_const.tag_butt),
-     local_e8 != (DObjAnimMat *)0x0)) {
-    AnglesToAxis((param_1->r).currentAngles,(float (*) [3])(local_84 + 3));
-    local_54 = (param_1->r).currentOrigin[0];
-    local_50 = (param_1->r).currentOrigin[1];
-    local_4c = (param_1->r).currentOrigin[2];
-    local_c0 = local_e8->trans[0] - local_88->trans[0];
-    local_bc = local_e8->trans[1] - local_88->trans[1];
-    local_b8 = local_e8->trans[2] - local_88->trans[2];
-    MatrixTransformVector43(local_88->trans,(float (*) [3])(local_84 + 3),local_a4);
-    for (local_c = 0; local_c < 0x1f; local_c = local_c + 1) {
-      local_84[0] = (float)local_c * -3.0;
-      local_84[1] = 0.0;
-      local_84[2] = 0.0;
-      AnglesToAxis(local_84,(float (*) [3])local_e4);
-      MatrixTransformVector(&local_c0,(float (*) [3])local_e4,&local_b0);
-      local_b0 = local_88->trans[0] + local_b0;
-      local_ac = local_88->trans[1] + local_ac;
-      local_a8 = local_88->trans[2] + local_a8;
-      MatrixTransformVector43(&local_b0,(float (*) [3])(local_84 + 3),local_98);
-      G_LocationalTrace((trace_t *)&local_48,local_a4,local_98,(param_1->s).number,0x800811,
-                        &bulletPriorityMap,(_func___cdecl_int_int_col_context_t_ptr *)0x0);
+  if ((aimMtx != (DObjAnimMat *)0x0) &&
+     (weaponMtx = G_DObjGetLocalTagMatrix(self,(uint)scr_const.tag_butt),
+     weaponMtx != (DObjAnimMat *)0x0)) {
+    AnglesToAxis((self->r).currentAngles,(float (*) [3])(angles + 3));
+    local_54 = (self->r).currentOrigin[0];
+    local_50 = (self->r).currentOrigin[1];
+    local_4c = (self->r).currentOrigin[2];
+    dir = weaponMtx->trans[0] - aimMtx->trans[0];
+    local_bc = weaponMtx->trans[1] - aimMtx->trans[1];
+    local_b8 = weaponMtx->trans[2] - aimMtx->trans[2];
+    MatrixTransformVector43(aimMtx->trans,(float (*) [3])(angles + 3),start);
+    for (i = 0; i < 0x1f; i = i + 1) {
+      angles[0] = (float)i * -3.0;
+      angles[1] = 0.0;
+      angles[2] = 0.0;
+      AnglesToAxis(angles,(float (*) [3])mtx);
+      MatrixTransformVector(&dir,(float (*) [3])mtx,&transDir);
+      transDir = aimMtx->trans[0] + transDir;
+      local_ac = aimMtx->trans[1] + local_ac;
+      local_a8 = aimMtx->trans[2] + local_a8;
+      MatrixTransformVector43(&transDir,(float (*) [3])(angles + 3),end);
+      G_LocationalTrace((trace_t *)&trace,start,end,(self->s).number,0x800811,&bulletPriorityMap,
+                        (_func___cdecl_int_int_col_context_t_ptr *)0x0);
       if (local_38 < 1.0) {
-        local_8c->dropPitch = local_84[0] + (param_1->s).lerp.u.turret.gunAngles[0];
+        pTurretInfo->dropPitch = angles[0] + (self->s).lerp.u.turret.gunAngles[0];
         return;
       }
     }
@@ -2801,7 +2844,7 @@ void __cdecl turret_RestoreDefaultDropPitch(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_think(gentity_s *param_1)
+void __cdecl turret_think(gentity_s *self)
 
 {
   float *pfVar1;
@@ -2813,10 +2856,17 @@ void __cdecl turret_think(gentity_s *param_1)
   WeaponDef *pWVar7;
   DWORD DVar8;
   gentity_s *local_34;
+  int frametime;
+  PIXProfile pixProfile;
+  gentity_s *owner;
+  actor_s *ownerActor;
+  TurretInfo *pTurretInfo;
+  bool overheatFiring;
+  WeaponDef *weapDef;
   
   bVar4 = false;
   PIXBeginNamedEvent(-1,"Turret_think");
-  pTVar2 = param_1->pTurretInfo;
+  pTVar2 = self->pTurretInfo;
   if ((pTVar2 == (TurretInfo *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0x98a,0,"%s"),
      !bVar5)) {
@@ -2824,45 +2874,45 @@ void __cdecl turret_think(gentity_s *param_1)
     (*pcVar3)();
     return;
   }
-  param_1->nextthink = level.time + 0x32;
-  (param_1->s).lerp.u.turret.gunAngles[2] = 0.0;
-  if (param_1->tagInfo != (tagInfo_s *)0x0) {
-    G_GeneralLink(param_1);
+  self->nextthink = level.time + 0x32;
+  (self->s).lerp.u.turret.gunAngles[2] = 0.0;
+  if (self->tagInfo != (tagInfo_s *)0x0) {
+    G_GeneralLink(self);
   }
-  iVar6 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar6 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar6 == 0) {
     local_34 = g_entities + 0x3ff;
   }
   else {
-    local_34 = EntHandle::ent(&(param_1->r).ownerNum);
+    local_34 = EntHandle::ent(&(self->r).ownerNum);
   }
   if (((local_34 != (gentity_s *)0x0) && (local_34->client != (gclient_s *)0x0)) &&
-     (((param_1->s).lerp.eFlags & 0x40U) != 0)) {
+     (((self->s).lerp.eFlags & 0x40U) != 0)) {
     bVar4 = true;
   }
-  pWVar7 = BG_GetWeaponDef((uint)(param_1->s).weapon);
+  pWVar7 = BG_GetWeaponDef((uint)(self->s).weapon);
   if ((pWVar7->overheatWeapon != 0) && ((!bVar4 || (pWVar7->coolWhileFiring != false)))) {
-    param_1->pTurretInfo->heatVal =
-         param_1->pTurretInfo->heatVal -
+    self->pTurretInfo->heatVal =
+         self->pTurretInfo->heatVal -
          ((float)(level.time - level.previousTime) * pWVar7->cooldownRate) / 1000.0;
-    pfVar1 = &param_1->pTurretInfo->heatVal;
+    pfVar1 = &self->pTurretInfo->heatVal;
     if (*pfVar1 <= 0.0 && *pfVar1 != 0.0) {
-      param_1->pTurretInfo->heatVal = 0.0;
+      self->pTurretInfo->heatVal = 0.0;
     }
-    if (param_1->pTurretInfo->heatVal <= pWVar7->overheatEndVal) {
-      param_1->pTurretInfo->overheating = false;
+    if (self->pTurretInfo->heatVal <= pWVar7->overheatEndVal) {
+      self->pTurretInfo->overheating = false;
     }
   }
-  turret_UpdateSound(param_1);
+  turret_UpdateSound(self);
   if (((pTVar2->flags & 2U) == 0) || ((pTVar2->flags & 1U) != 0)) {
-    turret_ReturnToDefaultPos(param_1,0);
+    turret_ReturnToDefaultPos(self,0);
     DVar8 = GetCurrentThreadId();
     if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    turret_think_auto_nonai(param_1);
+    turret_think_auto_nonai(self);
     DVar8 = GetCurrentThreadId();
     if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -2879,19 +2929,19 @@ void __cdecl turret_think(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_controller(gentity_s *param_1,int *param_2)
+void __cdecl turret_controller(gentity_s *self,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
-  byte local_15;
-  DObj *local_14;
-  float local_10;
+  uchar boneIndex;
+  DObj *obj;
+  float angles;
   float local_c;
   undefined4 local_8;
   
-  local_14 = Com_GetServerDObj((param_1->s).number);
-  if (local_14 == (DObj *)0x0) {
+  obj = Com_GetServerDObj((self->s).number);
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xa75,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2901,11 +2951,11 @@ void __cdecl turret_controller(gentity_s *param_1,int *param_2)
   }
   local_c = 0.0;
   local_8 = 0;
-  local_10 = (param_1->s).lerp.u.turret.gunAngles[0] - (param_1->s).lerp.u.turret.gunAngles[2];
-  local_15 = 0xfe;
-  DObjGetBoneIndex(local_14,(uint)scr_const.tag_aim_pitch,&local_15,-1);
-  if (local_15 != 0xff) {
-    if (local_15 == 0xfe) {
+  angles = (self->s).lerp.u.turret.gunAngles[0] - (self->s).lerp.u.turret.gunAngles[2];
+  boneIndex = 0xfe;
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_aim_pitch,&boneIndex,-1);
+  if (boneIndex != 0xff) {
+    if (boneIndex == 0xfe) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xa7d,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -2913,22 +2963,22 @@ void __cdecl turret_controller(gentity_s *param_1,int *param_2)
         return;
       }
     }
-    DObjSetLocalTag(local_14,param_2,(uint)local_15,vec3_origin,&local_10);
-    local_10 = 0.0;
+    DObjSetLocalTag(obj,partBits,(uint)boneIndex,vec3_origin,&angles);
+    angles = 0.0;
   }
-  local_c = (param_1->s).lerp.u.turret.gunAngles[1];
+  local_c = (self->s).lerp.u.turret.gunAngles[1];
   local_8 = 0;
-  local_15 = 0xfe;
-  DObjGetBoneIndex(local_14,(uint)scr_const.tag_aim,&local_15,-1);
-  DObjSetControlTagAngles(local_14,param_2,(uint)local_15,&local_10);
-  local_15 = 0xfe;
-  DObjGetBoneIndex(local_14,(uint)scr_const.tag_aim_animated,&local_15,-1);
-  DObjSetControlTagAngles(local_14,param_2,(uint)local_15,&local_10);
-  local_10 = (param_1->s).lerp.u.turret.gunAngles[2];
+  boneIndex = 0xfe;
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_aim,&boneIndex,-1);
+  DObjSetControlTagAngles(obj,partBits,(uint)boneIndex,&angles);
+  boneIndex = 0xfe;
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_aim_animated,&boneIndex,-1);
+  DObjSetControlTagAngles(obj,partBits,(uint)boneIndex,&angles);
+  angles = (self->s).lerp.u.turret.gunAngles[2];
   local_c = 0.0;
-  local_15 = 0xfe;
-  DObjGetBoneIndex(local_14,(uint)scr_const.tag_flash,&local_15,-1);
-  DObjSetControlTagAngles(local_14,param_2,(uint)local_15,&local_10);
+  boneIndex = 0xfe;
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_flash,&boneIndex,-1);
+  DObjSetControlTagAngles(obj,partBits,(uint)boneIndex,&angles);
   return;
 }
 
@@ -2940,45 +2990,46 @@ void __cdecl turret_controller(gentity_s *param_1,int *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl turret_behind(gentity_s *param_1,gentity_s *param_2)
+int __cdecl turret_behind(gentity_s *self,gentity_s *other)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_34;
+  float dir;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
-  float local_1c;
+  float centerYaw;
+  float minYaw;
+  float angle;
+  float forward;
   float local_18;
   float local_14;
-  TurretInfo *local_10;
-  float local_c;
-  float local_8;
+  TurretInfo *pTurretInfo;
+  float yawSpan;
+  float dot;
   
-  local_10 = param_1->pTurretInfo;
-  if ((param_2->client == (gclient_s *)0x0) &&
+  pTurretInfo = self->pTurretInfo;
+  if ((other->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xabc,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_24 = (param_1->r).currentAngles[1] + local_10->arcmin[1];
-  local_c = (ABS(local_10->arcmax[1]) + ABS(local_10->arcmin[1])) * 0.5;
-  local_28 = AngleNormalize180(local_24 + local_c);
-  YawVectors(local_28,&local_1c,(float *)0x0);
-  Vec3Normalize(&local_1c);
-  local_34 = (param_1->r).currentOrigin[0] - (param_2->r).currentOrigin[0];
-  local_30 = (param_1->r).currentOrigin[1] - (param_2->r).currentOrigin[1];
+  minYaw = (self->r).currentAngles[1] + pTurretInfo->arcmin[1];
+  yawSpan = (ABS(pTurretInfo->arcmax[1]) + ABS(pTurretInfo->arcmin[1])) * 0.5;
+  centerYaw = AngleNormalize180(minYaw + yawSpan);
+  YawVectors(centerYaw,&forward,(float *)0x0);
+  Vec3Normalize(&forward);
+  dir = (self->r).currentOrigin[0] - (other->r).currentOrigin[0];
+  local_30 = (self->r).currentOrigin[1] - (other->r).currentOrigin[1];
   local_2c = 0.0;
-  Vec3Normalize(&local_34);
-  local_8 = local_1c * local_34 + local_18 * local_30 + local_14 * local_2c;
-  fVar4 = Q_acos(local_8);
-  return (uint)(fVar4 * 57.295776 <= local_c);
+  Vec3Normalize(&dir);
+  dot = forward * dir + local_18 * local_30 + local_14 * local_2c;
+  fVar4 = Q_acos(dot);
+  return (uint)(fVar4 * 57.295776 <= yawSpan);
 }
 
 
@@ -2989,7 +3040,7 @@ int __cdecl turret_behind(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_FreeTurret(gentity_s *param_1)
+void __cdecl G_FreeTurret(gentity_s *self)
 
 {
   TurretInfo *pTVar1;
@@ -2997,15 +3048,17 @@ void __cdecl G_FreeTurret(gentity_s *param_1)
   bool bVar3;
   int iVar4;
   gentity_s *local_10;
+  gentity_s *owner;
+  TurretInfo *pTurretInfo;
   
-  iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  iVar4 = EntHandle::isDefined(&(self->r).ownerNum);
   if (iVar4 == 0) {
     local_10 = g_entities + 0x3ff;
   }
   else {
-    local_10 = EntHandle::ent(&(param_1->r).ownerNum);
+    local_10 = EntHandle::ent(&(self->r).ownerNum);
   }
-  pTVar1 = param_1->pTurretInfo;
+  pTVar1 = self->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xad9,0,"%s");
     if (!bVar3) {
@@ -3015,14 +3068,14 @@ void __cdecl G_FreeTurret(gentity_s *param_1)
     }
   }
   if (local_10->client != (gclient_s *)0x0) {
-    G_ClientStopUsingTurret(param_1);
+    G_ClientStopUsingTurret(self);
   }
-  G_DeactivateTurret(param_1);
+  G_DeactivateTurret(self);
   EntHandle::setEnt(&pTVar1->manualTarget,(gentity_s *)0x0);
   EntHandle::setEnt(&pTVar1->target,(gentity_s *)0x0);
   SentientHandle::setSentient(&pTVar1->detachSentient,(sentient_s *)0x0);
   pTVar1->inuse = false;
-  param_1->pTurretInfo = (TurretInfo *)0x0;
+  self->pTurretInfo = (TurretInfo *)0x0;
   return;
 }
 
@@ -3034,24 +3087,25 @@ void __cdecl G_FreeTurret(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_IsTurretUsable(gentity_s *param_1,gentity_s *param_2)
+int __cdecl G_IsTurretUsable(gentity_s *self,gentity_s *owner)
 
 {
   int iVar1;
+  TurretInfo *pTurretInfo;
   
-  if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
     iVar1 = 0;
   }
-  else if ((param_1->pTurretInfo->flags & 0x1000U) == 0) {
+  else if ((self->pTurretInfo->flags & 0x1000U) == 0) {
     iVar1 = 0;
   }
-  else if ((param_1->active == '\0') && (param_1->pTurretInfo != (TurretInfo *)0x0)) {
-    iVar1 = turret_behind(param_1,param_2);
+  else if ((self->active == '\0') && (self->pTurretInfo != (TurretInfo *)0x0)) {
+    iVar1 = turret_behind(self,owner);
     if (iVar1 == 0) {
       iVar1 = 0;
     }
-    else if ((param_2->client->ps).grenadeTimeLeft == 0) {
-      if ((param_2->client->ps).groundEntityNum == 0x3ff) {
+    else if ((owner->client->ps).grenadeTimeLeft == 0) {
+      if ((owner->client->ps).groundEntityNum == 0x3ff) {
         iVar1 = 0;
       }
       else {
@@ -3076,14 +3130,14 @@ int __cdecl G_IsTurretUsable(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_DeactivateTurret(gentity_s *param_1)
+void __cdecl G_DeactivateTurret(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xb09,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3091,13 +3145,13 @@ void __cdecl G_DeactivateTurret(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->active == '\x01') {
+  if (self->active == '\x01') {
     iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
     if (iVar3 != 0) {
-      Scr_Notify(param_1,scr_const.turret_deactivate,0);
+      Scr_Notify(self,scr_const.turret_deactivate,0);
     }
   }
-  param_1->active = '\0';
+  self->active = '\0';
   return;
 }
 
@@ -3110,291 +3164,293 @@ void __cdecl G_DeactivateTurret(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_find_max_angles(gentity_s *param_1,gentity_s *param_2)
+void __cdecl turret_find_max_angles(gentity_s *pOwner,gentity_s *pTurret)
 
 {
   float fVar1;
-  col_context_t local_124;
-  float local_fc;
-  char local_f5;
-  float local_f4;
+  int drawTime;
+  col_context_t context;
+  float maxTurretArc;
+  bool drawLines;
+  float rightPoint;
   float local_f0;
   float local_ec;
-  float local_e8;
-  float local_e4;
+  float minTurretArc;
+  float dropMins;
   float local_e0;
   undefined4 local_dc;
-  float local_d8;
+  float mins;
   float local_d4;
   float local_d0;
-  float local_cc;
+  float start;
   float local_c8;
   float local_c4;
-  float local_c0;
+  float end;
   float local_bc;
   float local_b8;
-  float local_b4;
-  TurretInfo *local_b0;
-  float local_ac;
+  float dropTraceWidth;
+  TurretInfo *pTurretInfo;
+  float leftPoint;
   float local_a8;
   float local_a4;
-  float local_a0;
+  float maxs;
   float local_9c;
   float local_98;
-  float4 local_94;
+  float4 tr;
   float local_84;
   uint local_5c;
-  float local_58;
-  float local_54;
+  float stepIncrement;
+  float up;
   float local_50;
   float local_4c;
-  float local_48;
+  float dropMaxs;
   float local_44;
   float local_40;
-  float local_3c;
-  gclient_s *local_38;
-  float local_34;
+  float heightTestDist;
+  playerState_s *ps;
+  float dropPoint;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
+  float distToTurret;
+  float stepCount;
+  float color;
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float toPlayer;
   float local_c;
   float local_8;
   
   local_5c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_94.v[0] = 0.0;
-  local_94.v[1] = 0.0;
-  local_94.v[2] = 0.0;
-  local_94.v[3] = 0.0;
-  local_24 = 3.0;
-  local_b4 = 0.25;
-  local_3c = 4.0;
-  col_context_t::col_context_t(&local_124);
-  local_f5 = 1 < (cg_debugMounting->current).integer;
-  local_54 = 0.0;
+  tr.v[0] = 0.0;
+  tr.v[1] = 0.0;
+  tr.v[2] = 0.0;
+  tr.v[3] = 0.0;
+  stepCount = 3.0;
+  dropTraceWidth = 0.25;
+  heightTestDist = 4.0;
+  col_context_t::col_context_t(&context);
+  drawLines = 1 < (cg_debugMounting->current).integer;
+  up = 0.0;
   local_50 = 0.0;
   local_4c = 1.0;
-  local_b0 = param_2->pTurretInfo;
-  local_38 = param_1->client;
-  local_e8 = local_b0->arcmin[1];
-  local_fc = local_b0->arcmax[1];
-  local_e4 = -local_b4;
-  local_e0 = -local_b4;
+  pTurretInfo = pTurret->pTurretInfo;
+  ps = &pOwner->client->ps;
+  minTurretArc = pTurretInfo->arcmin[1];
+  maxTurretArc = pTurretInfo->arcmax[1];
+  dropMins = -dropTraceWidth;
+  local_e0 = -dropTraceWidth;
   local_dc = 0;
-  local_48 = local_b4;
-  local_44 = local_b4;
-  local_40 = local_3c * 2.0;
-  local_d0 = (param_1->r).mins[2];
-  local_d8 = (param_1->r).mins[0] - 5.0;
-  local_d4 = (param_1->r).mins[1] - 5.0;
-  local_98 = (param_1->r).maxs[2];
-  local_a0 = (param_1->r).maxs[0] + 5.0;
-  local_9c = (param_1->r).maxs[1] + 5.0;
-  local_10 = (param_1->s).lerp.pos.trBase[0] - (param_2->s).lerp.pos.trBase[0];
-  local_c = (param_1->s).lerp.pos.trBase[1] - (param_2->s).lerp.pos.trBase[1];
+  dropMaxs = dropTraceWidth;
+  local_44 = dropTraceWidth;
+  local_40 = heightTestDist * 2.0;
+  local_d0 = (pOwner->r).mins[2];
+  mins = (pOwner->r).mins[0] - 5.0;
+  local_d4 = (pOwner->r).mins[1] - 5.0;
+  local_98 = (pOwner->r).maxs[2];
+  maxs = (pOwner->r).maxs[0] + 5.0;
+  local_9c = (pOwner->r).maxs[1] + 5.0;
+  toPlayer = (pOwner->s).lerp.pos.trBase[0] - (pTurret->s).lerp.pos.trBase[0];
+  local_c = (pOwner->s).lerp.pos.trBase[1] - (pTurret->s).lerp.pos.trBase[1];
   local_8 = 0.0;
-  local_28 = Vec3Normalize(&local_10);
-  local_28 = local_28 + 24.0;
-  local_10 = local_28 * local_10 + (param_2->s).lerp.pos.trBase[0];
-  local_c = local_28 * local_c + (param_2->s).lerp.pos.trBase[1];
-  local_8 = (param_1->s).lerp.pos.trBase[2] + local_3c;
-  local_ac = 0.0;
+  fVar1 = Vec3Normalize(&toPlayer);
+  distToTurret = fVar1 + 24.0;
+  toPlayer = distToTurret * toPlayer + (pTurret->s).lerp.pos.trBase[0];
+  local_c = distToTurret * local_c + (pTurret->s).lerp.pos.trBase[1];
+  local_8 = (pOwner->s).lerp.pos.trBase[2] + heightTestDist;
+  leftPoint = 0.0;
   local_a8 = 1.0;
   local_a4 = 0.0;
-  YawVectors((param_2->r).currentAngles[1] + 180.0 + local_e8,&local_ac,(float *)0x0);
-  local_ac = local_28 * local_ac + (param_2->s).lerp.pos.trBase[0];
-  local_a8 = local_28 * local_a8 + (param_2->s).lerp.pos.trBase[1];
+  YawVectors((pTurret->r).currentAngles[1] + 180.0 + minTurretArc,&leftPoint,(float *)0x0);
+  leftPoint = distToTurret * leftPoint + (pTurret->s).lerp.pos.trBase[0];
+  local_a8 = distToTurret * local_a8 + (pTurret->s).lerp.pos.trBase[1];
   local_a4 = local_8;
-  local_f4 = 0.0;
+  rightPoint = 0.0;
   local_f0 = 1.0;
   local_ec = 0.0;
-  YawVectors((param_2->r).currentAngles[1] + 180.0 + local_fc,&local_f4,(float *)0x0);
-  local_f4 = local_28 * local_f4 + (param_2->s).lerp.pos.trBase[0];
-  local_f0 = local_28 * local_f0 + (param_2->s).lerp.pos.trBase[1];
+  YawVectors((pTurret->r).currentAngles[1] + 180.0 + maxTurretArc,&rightPoint,(float *)0x0);
+  rightPoint = distToTurret * rightPoint + (pTurret->s).lerp.pos.trBase[0];
+  local_f0 = distToTurret * local_f0 + (pTurret->s).lerp.pos.trBase[1];
   local_ec = local_8;
-  if (local_f5 != '\0') {
-    local_cc = local_ac;
+  if (drawLines != false) {
+    start = leftPoint;
     local_c8 = local_a8;
     local_c4 = local_a4;
-    local_c0 = local_54 * 20.0 + local_ac;
+    end = up * 20.0 + leftPoint;
     local_bc = local_50 * 20.0 + local_a8;
     local_b8 = local_4c * 20.0 + local_a4;
-    local_20 = 0.0;
+    color = 0.0;
     local_1c = 0.0;
     local_18 = 1.0;
     local_14 = 1.0;
-    G_DebugLineWithDuration(&local_cc,&local_c0,&local_20,0,1000);
+    G_DebugLineWithDuration(&start,&end,&color,0,1000);
   }
-  G_TraceCapsule((trace_t *)&local_94,&local_10,&local_d8,&local_a0,&local_ac,(param_1->s).number,
-                 param_1->clipmask & 0xfdff7fff,&local_124);
+  G_TraceCapsule((trace_t *)&tr,&toPlayer,&mins,&maxs,&leftPoint,(pOwner->s).number,
+                 pOwner->clipmask & 0xfdff7fff,&context);
   if (local_84 < 1.0) {
-    local_e8 = local_e8 * local_84;
+    minTurretArc = minTurretArc * local_84;
   }
-  local_58 = (local_e8 / local_24) * -1.0;
+  stepIncrement = (minTurretArc / stepCount) * -1.0;
   do {
-    if (local_e8 == 0.0) goto LAB_006a58f9;
-    local_ac = 0.0;
+    if (minTurretArc == 0.0) goto LAB_006a58f9;
+    leftPoint = 0.0;
     local_a8 = 1.0;
     local_a4 = 0.0;
-    YawVectors((param_2->r).currentAngles[1] + 180.0 + local_e8,&local_ac,(float *)0x0);
-    local_ac = local_28 * local_ac + (param_2->s).lerp.pos.trBase[0];
-    local_a8 = local_28 * local_a8 + (param_2->s).lerp.pos.trBase[1];
+    YawVectors((pTurret->r).currentAngles[1] + 180.0 + minTurretArc,&leftPoint,(float *)0x0);
+    leftPoint = distToTurret * leftPoint + (pTurret->s).lerp.pos.trBase[0];
+    local_a8 = distToTurret * local_a8 + (pTurret->s).lerp.pos.trBase[1];
     local_a4 = local_8;
-    local_2c = local_8 - local_3c * 2.0;
-    local_34 = local_ac;
+    local_2c = local_8 - heightTestDist * 2.0;
+    dropPoint = leftPoint;
     local_30 = local_a8;
-    G_TraceCapsule((trace_t *)&local_94,&local_ac,&local_e4,&local_48,&local_34,(param_1->s).number,
-                   param_1->clipmask & 0xfdff7fff,&local_124);
+    G_TraceCapsule((trace_t *)&tr,&leftPoint,&dropMins,&dropMaxs,&dropPoint,(pOwner->s).number,
+                   pOwner->clipmask & 0xfdff7fff,&context);
     if (local_84 < 1.0) {
-      if (local_f5 != '\0') {
-        local_cc = local_34;
+      if (drawLines != false) {
+        start = dropPoint;
         local_c8 = local_30;
         local_c4 = local_2c;
-        local_c0 = local_54 * 20.0 + local_34;
+        end = up * 20.0 + dropPoint;
         local_bc = local_50 * 20.0 + local_30;
         local_b8 = local_4c * 20.0 + local_2c;
-        local_20 = 0.0;
+        color = 0.0;
         local_1c = 1.0;
         local_18 = 0.0;
         local_14 = 1.0;
-        G_DebugBox(&local_cc,&local_e4,&local_48,0.0,&local_20,0,1000);
+        G_DebugBox(&start,&dropMins,&dropMaxs,0.0,&color,0,1000);
       }
       goto LAB_006a58f9;
     }
-    if (local_f5 != '\0') {
-      local_cc = local_34;
+    if (drawLines != false) {
+      start = dropPoint;
       local_c8 = local_30;
       local_c4 = local_2c;
-      local_c0 = local_54 * 20.0 + local_34;
+      end = up * 20.0 + dropPoint;
       local_bc = local_50 * 20.0 + local_30;
       local_b8 = local_4c * 20.0 + local_2c;
-      local_20 = 1.0;
+      color = 1.0;
       local_1c = 0.0;
       local_18 = 0.0;
       local_14 = 1.0;
-      G_DebugBox(&local_cc,&local_e4,&local_48,0.0,&local_20,0,1000);
+      G_DebugBox(&start,&dropMins,&dropMaxs,0.0,&color,0,1000);
     }
-    local_e8 = local_e8 + local_58;
-  } while (((0.0 <= local_58) || (0.0 <= local_e8)) && ((local_58 <= 0.0 || (local_e8 <= 0.0))));
-  local_e8 = 0.0;
+    minTurretArc = minTurretArc + stepIncrement;
+  } while (((0.0 <= stepIncrement) || (0.0 <= minTurretArc)) &&
+          ((stepIncrement <= 0.0 || (minTurretArc <= 0.0))));
+  minTurretArc = 0.0;
 LAB_006a58f9:
-  if (local_f5 != '\0') {
-    local_cc = local_f4;
+  if (drawLines != false) {
+    start = rightPoint;
     local_c8 = local_f0;
     local_c4 = local_ec;
-    local_c0 = local_54 * 20.0 + local_f4;
+    end = up * 20.0 + rightPoint;
     local_bc = local_50 * 20.0 + local_f0;
     local_b8 = local_4c * 20.0 + local_ec;
-    local_20 = 0.0;
+    color = 0.0;
     local_1c = 0.0;
     local_18 = 1.0;
     local_14 = 1.0;
-    G_DebugLineWithDuration(&local_cc,&local_c0,&local_20,0,1000);
+    G_DebugLineWithDuration(&start,&end,&color,0,1000);
   }
-  G_TraceCapsule((trace_t *)&local_94,&local_10,&local_d8,&local_a0,&local_f4,(param_1->s).number,
-                 param_1->clipmask & 0xfdff7fff,&local_124);
+  G_TraceCapsule((trace_t *)&tr,&toPlayer,&mins,&maxs,&rightPoint,(pOwner->s).number,
+                 pOwner->clipmask & 0xfdff7fff,&context);
   if (local_84 < 1.0) {
-    local_fc = local_fc * local_84;
+    maxTurretArc = maxTurretArc * local_84;
   }
-  local_58 = (local_fc / local_24) * -1.0;
+  stepIncrement = (maxTurretArc / stepCount) * -1.0;
   do {
-    if (local_fc == 0.0) goto LAB_006a5e36;
-    local_f4 = 0.0;
+    if (maxTurretArc == 0.0) goto LAB_006a5e36;
+    rightPoint = 0.0;
     local_f0 = 1.0;
     local_ec = 0.0;
-    YawVectors((param_2->r).currentAngles[1] + 180.0 + local_fc,&local_f4,(float *)0x0);
-    local_f4 = local_28 * local_f4 + (param_2->s).lerp.pos.trBase[0];
-    local_f0 = local_28 * local_f0 + (param_2->s).lerp.pos.trBase[1];
+    YawVectors((pTurret->r).currentAngles[1] + 180.0 + maxTurretArc,&rightPoint,(float *)0x0);
+    rightPoint = distToTurret * rightPoint + (pTurret->s).lerp.pos.trBase[0];
+    local_f0 = distToTurret * local_f0 + (pTurret->s).lerp.pos.trBase[1];
     local_ec = local_8;
-    local_2c = local_8 - local_3c * 2.0;
-    local_34 = local_f4;
+    local_2c = local_8 - heightTestDist * 2.0;
+    dropPoint = rightPoint;
     local_30 = local_f0;
-    G_TraceCapsule((trace_t *)&local_94,&local_f4,&local_e4,&local_48,&local_34,(param_1->s).number,
-                   param_1->clipmask & 0xfdff7fff,&local_124);
+    G_TraceCapsule((trace_t *)&tr,&rightPoint,&dropMins,&dropMaxs,&dropPoint,(pOwner->s).number,
+                   pOwner->clipmask & 0xfdff7fff,&context);
     if (local_84 < 1.0) {
-      if (local_f5 != '\0') {
-        local_cc = local_34;
+      if (drawLines != false) {
+        start = dropPoint;
         local_c8 = local_30;
         local_c4 = local_2c;
-        local_c0 = local_54 * 20.0 + local_34;
+        end = up * 20.0 + dropPoint;
         local_bc = local_50 * 20.0 + local_30;
         local_b8 = local_4c * 20.0 + local_2c;
-        local_20 = 0.0;
+        color = 0.0;
         local_1c = 1.0;
         local_18 = 0.0;
         local_14 = 1.0;
-        G_DebugBox(&local_cc,&local_e4,&local_48,0.0,&local_20,0,1000);
+        G_DebugBox(&start,&dropMins,&dropMaxs,0.0,&color,0,1000);
       }
       goto LAB_006a5e36;
     }
-    if (local_f5 != '\0') {
-      local_cc = local_34;
+    if (drawLines != false) {
+      start = dropPoint;
       local_c8 = local_30;
       local_c4 = local_2c;
-      local_c0 = local_54 * 20.0 + local_34;
+      end = up * 20.0 + dropPoint;
       local_bc = local_50 * 20.0 + local_30;
       local_b8 = local_4c * 20.0 + local_2c;
-      local_20 = 1.0;
+      color = 1.0;
       local_1c = 0.0;
       local_18 = 0.0;
       local_14 = 1.0;
-      G_DebugBox(&local_cc,&local_e4,&local_48,0.0,&local_20,0,1000);
+      G_DebugBox(&start,&dropMins,&dropMaxs,0.0,&color,0,1000);
     }
-    local_fc = local_fc + local_58;
-  } while (((0.0 <= local_58) || (0.0 <= local_fc)) && ((local_58 <= 0.0 || (local_fc <= 0.0))));
-  local_fc = 0.0;
+    maxTurretArc = maxTurretArc + stepIncrement;
+  } while (((0.0 <= stepIncrement) || (0.0 <= maxTurretArc)) &&
+          ((stepIncrement <= 0.0 || (maxTurretArc <= 0.0))));
+  maxTurretArc = 0.0;
 LAB_006a5e36:
-  if ((local_e8 != local_b0->arcmin[1]) || (local_fc != local_b0->arcmax[1])) {
-    fVar1 = AngleNormalize180(local_fc - local_e8);
-    (local_38->ps).viewAngleClampRange[1] = fVar1 * 0.5;
-    (local_38->ps).viewAngleClampBase[1] =
-         (local_fc + local_e8) * 0.5 + (local_38->ps).viewAngleClampBase[1];
+  if ((minTurretArc != pTurretInfo->arcmin[1]) || (maxTurretArc != pTurretInfo->arcmax[1])) {
+    fVar1 = AngleNormalize180(maxTurretArc - minTurretArc);
+    ps->viewAngleClampRange[1] = fVar1 * 0.5;
+    ps->viewAngleClampBase[1] = (maxTurretArc + minTurretArc) * 0.5 + ps->viewAngleClampBase[1];
   }
-  if (local_f5 != '\0') {
-    if (local_e8 != local_b0->arcmin[1]) {
-      local_ac = 0.0;
+  if (drawLines != false) {
+    if (minTurretArc != pTurretInfo->arcmin[1]) {
+      leftPoint = 0.0;
       local_a8 = 1.0;
       local_a4 = 0.0;
-      YawVectors((param_2->r).currentAngles[1] + 180.0 + local_e8,&local_ac,(float *)0x0);
-      local_cc = local_28 * local_ac + (param_2->s).lerp.pos.trBase[0];
-      local_c8 = local_28 * local_a8 + (param_2->s).lerp.pos.trBase[1];
+      YawVectors((pTurret->r).currentAngles[1] + 180.0 + minTurretArc,&leftPoint,(float *)0x0);
+      start = distToTurret * leftPoint + (pTurret->s).lerp.pos.trBase[0];
+      local_c8 = distToTurret * local_a8 + (pTurret->s).lerp.pos.trBase[1];
       local_a4 = local_8;
       local_c4 = local_8;
-      local_c0 = local_54 * 20.0 + local_cc;
+      end = up * 20.0 + start;
       local_bc = local_50 * 20.0 + local_c8;
       local_b8 = local_4c * 20.0 + local_8;
-      local_20 = 1.0;
+      color = 1.0;
       local_1c = 1.0;
       local_18 = 0.0;
       local_14 = 1.0;
-      local_ac = local_cc;
+      leftPoint = start;
       local_a8 = local_c8;
-      G_DebugLineWithDuration(&local_cc,&local_c0,&local_20,0,1000);
+      G_DebugLineWithDuration(&start,&end,&color,0,1000);
     }
-    if (local_fc != local_b0->arcmax[1]) {
-      local_f4 = 0.0;
+    if (maxTurretArc != pTurretInfo->arcmax[1]) {
+      rightPoint = 0.0;
       local_f0 = 1.0;
       local_ec = 0.0;
-      YawVectors((param_2->r).currentAngles[1] + 180.0 + local_fc,&local_f4,(float *)0x0);
-      local_f4 = local_28 * local_f4 + (param_2->s).lerp.pos.trBase[0];
-      local_f0 = local_28 * local_f0 + (param_2->s).lerp.pos.trBase[1];
+      YawVectors((pTurret->r).currentAngles[1] + 180.0 + maxTurretArc,&rightPoint,(float *)0x0);
+      rightPoint = distToTurret * rightPoint + (pTurret->s).lerp.pos.trBase[0];
+      local_f0 = distToTurret * local_f0 + (pTurret->s).lerp.pos.trBase[1];
       local_ec = local_8;
       local_c4 = local_8;
-      local_c0 = local_54 * 20.0 + local_f4;
+      end = up * 20.0 + rightPoint;
       local_bc = local_50 * 20.0 + local_f0;
       local_b8 = local_4c * 20.0 + local_8;
-      local_20 = 1.0;
+      color = 1.0;
       local_1c = 1.0;
       local_18 = 0.0;
       local_14 = 1.0;
-      local_cc = local_f4;
+      start = rightPoint;
       local_c8 = local_f0;
-      G_DebugLineWithDuration(&local_cc,&local_c0,&local_20,0,1000);
+      G_DebugLineWithDuration(&start,&end,&color,0,1000);
     }
   }
   return;
@@ -3408,7 +3464,7 @@ LAB_006a5e36:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl turret_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
+void __cdecl turret_use(gentity_s *self,gentity_s *owner,gentity_s *activator)
 
 {
   float fVar1;
@@ -3419,132 +3475,130 @@ void __cdecl turret_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3
   float local_68;
   float local_58;
   float local_3c;
-  float local_18;
+  float normal;
   float local_14;
   float local_10;
-  TurretInfo *local_c;
-  gclient_s *local_8;
+  TurretInfo *pTurretInfo;
+  playerState_s *ps;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc39,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_c = param_1->pTurretInfo;
-  if ((local_c == (TurretInfo *)0x0) &&
+  pTurretInfo = self->pTurretInfo;
+  if ((pTurretInfo == (TurretInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc3c,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((owner == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc3e,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2->client == (gclient_s *)0x0) &&
+  if ((owner->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc3f,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2->actor != (actor_s *)0x0) &&
+  if ((owner->actor != (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc40,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((level.maxclients <= (param_2->s).number) &&
+  if ((level.maxclients <= (owner->s).number) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xc41,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->active == '\0') {
-    local_8 = param_2->client;
-    param_2->active = '\x01';
-    param_1->active = '\x01';
-    EntHandle::setEnt(&(param_1->r).ownerNum,param_2);
-    (local_8->ps).viewlocked = PLAYERVIEWLOCK_FULL;
-    AssignToSmallerType<short>(&(local_8->ps).viewlocked_entNum,(param_1->s).number);
-    local_c->flags = local_c->flags | 0x800;
-    local_c->arcmin[1] = local_c->initialYawmin;
-    local_c->arcmax[1] = local_c->initialYawmax;
-    AngleVectors((param_2->r).currentAngles,&local_18,(float *)0x0,(float *)0x0);
-    fVar4 = (param_2->r).currentOrigin[1];
-    fVar1 = (param_2->r).currentOrigin[2];
-    local_c->userOrigin[0] = (param_2->r).currentOrigin[0] - local_18;
-    local_c->userOrigin[1] = fVar4 - local_14;
-    local_c->userOrigin[2] = fVar1 - local_10;
-    if (((local_8->ps).pm_flags & 1U) == 0) {
-      if (((local_8->ps).pm_flags & 2U) == 0) {
-        local_c->prevStance = 0;
+  if (self->active == '\0') {
+    ps = &owner->client->ps;
+    owner->active = '\x01';
+    self->active = '\x01';
+    EntHandle::setEnt(&(self->r).ownerNum,owner);
+    ps->viewlocked = PLAYERVIEWLOCK_FULL;
+    AssignToSmallerType<short>(&ps->viewlocked_entNum,(self->s).number);
+    pTurretInfo->flags = pTurretInfo->flags | 0x800;
+    pTurretInfo->arcmin[1] = pTurretInfo->initialYawmin;
+    pTurretInfo->arcmax[1] = pTurretInfo->initialYawmax;
+    AngleVectors((owner->r).currentAngles,&normal,(float *)0x0,(float *)0x0);
+    fVar4 = (owner->r).currentOrigin[1];
+    fVar1 = (owner->r).currentOrigin[2];
+    pTurretInfo->userOrigin[0] = (owner->r).currentOrigin[0] - normal;
+    pTurretInfo->userOrigin[1] = fVar4 - local_14;
+    pTurretInfo->userOrigin[2] = fVar1 - local_10;
+    if ((ps->pm_flags & 1U) == 0) {
+      if ((ps->pm_flags & 2U) == 0) {
+        pTurretInfo->prevStance = 0;
       }
       else {
-        local_c->prevStance = 1;
+        pTurretInfo->prevStance = 1;
       }
     }
     else {
-      local_c->prevStance = 2;
+      pTurretInfo->prevStance = 2;
     }
-    if (local_c->stance == 2) {
-      (local_8->ps).eFlags = (local_8->ps).eFlags | 0x100;
-      (local_8->ps).eFlags = (local_8->ps).eFlags & 0xfffffdff;
+    if (pTurretInfo->stance == 2) {
+      ps->eFlags = ps->eFlags | 0x100;
+      ps->eFlags = ps->eFlags & 0xfffffdff;
     }
-    else if (local_c->stance == 1) {
-      (local_8->ps).eFlags = (local_8->ps).eFlags | 0x200;
-      (local_8->ps).eFlags = (local_8->ps).eFlags & 0xfffffeff;
+    else if (pTurretInfo->stance == 1) {
+      ps->eFlags = ps->eFlags | 0x200;
+      ps->eFlags = ps->eFlags & 0xfffffeff;
     }
     else {
-      (local_8->ps).eFlags = (local_8->ps).eFlags | 0x300;
+      ps->eFlags = ps->eFlags | 0x300;
     }
-    fVar4 = AngleNormalize180((local_8->ps).viewangles[0] - (param_1->r).currentAngles[0]);
-    (param_1->s).lerp.u.turret.gunAngles[0] = fVar4;
-    fVar4 = (param_1->s).lerp.u.turret.gunAngles[0];
-    local_68 = local_c->arcmin[0];
+    fVar4 = AngleNormalize180(ps->viewangles[0] - (self->r).currentAngles[0]);
+    (self->s).lerp.u.turret.gunAngles[0] = fVar4;
+    fVar4 = (self->s).lerp.u.turret.gunAngles[0];
+    local_68 = pTurretInfo->arcmin[0];
     local_3c = fVar4;
-    if (0.0 <= fVar4 - local_c->arcmax[0]) {
-      local_3c = local_c->arcmax[0];
+    if (0.0 <= fVar4 - pTurretInfo->arcmax[0]) {
+      local_3c = pTurretInfo->arcmax[0];
     }
     if (local_68 - fVar4 < 0.0) {
       local_68 = local_3c;
     }
-    (param_1->s).lerp.u.turret.gunAngles[0] = local_68;
-    fVar4 = AngleNormalize180((local_8->ps).viewangles[1] - (param_1->r).currentAngles[1]);
-    (param_1->s).lerp.u.turret.gunAngles[1] = fVar4;
-    fVar4 = (param_1->s).lerp.u.turret.gunAngles[1];
-    local_6c = local_c->arcmin[1];
+    (self->s).lerp.u.turret.gunAngles[0] = local_68;
+    fVar4 = AngleNormalize180(ps->viewangles[1] - (self->r).currentAngles[1]);
+    (self->s).lerp.u.turret.gunAngles[1] = fVar4;
+    fVar4 = (self->s).lerp.u.turret.gunAngles[1];
+    local_6c = pTurretInfo->arcmin[1];
     local_58 = fVar4;
-    if (0.0 <= fVar4 - local_c->arcmax[1]) {
-      local_58 = local_c->arcmax[1];
+    if (0.0 <= fVar4 - pTurretInfo->arcmax[1]) {
+      local_58 = pTurretInfo->arcmax[1];
     }
     if (local_6c - fVar4 < 0.0) {
       local_6c = local_58;
     }
-    (param_1->s).lerp.u.turret.gunAngles[1] = local_6c;
-    (param_1->s).lerp.u.turret.gunAngles[2] = 0.0;
-    (local_8->ps).viewAngleClampRange[0] = (local_c->arcmax[0] - local_c->arcmin[0]) * 0.5;
-    (local_8->ps).viewAngleClampBase[0] = (param_1->r).currentAngles[0] + local_c->arcmax[0];
-    fVar4 = AngleNormalize360((local_8->ps).viewAngleClampBase[0] -
-                              (local_8->ps).viewAngleClampRange[0]);
-    (local_8->ps).viewAngleClampBase[0] = fVar4;
-    (local_8->ps).viewAngleClampRange[1] = (local_c->arcmax[1] - local_c->arcmin[1]) * 0.5;
-    (local_8->ps).viewAngleClampBase[1] = (param_1->r).currentAngles[1] + local_c->arcmax[1];
-    fVar4 = AngleNormalize360((local_8->ps).viewAngleClampBase[1] -
-                              (local_8->ps).viewAngleClampRange[1]);
-    (local_8->ps).viewAngleClampBase[1] = fVar4;
-    if (param_1->classname == scr_const.deployed_turret) {
-      turret_find_max_angles(param_2,param_1);
+    (self->s).lerp.u.turret.gunAngles[1] = local_6c;
+    (self->s).lerp.u.turret.gunAngles[2] = 0.0;
+    ps->viewAngleClampRange[0] = (pTurretInfo->arcmax[0] - pTurretInfo->arcmin[0]) * 0.5;
+    ps->viewAngleClampBase[0] = (self->r).currentAngles[0] + pTurretInfo->arcmax[0];
+    fVar4 = AngleNormalize360(ps->viewAngleClampBase[0] - ps->viewAngleClampRange[0]);
+    ps->viewAngleClampBase[0] = fVar4;
+    ps->viewAngleClampRange[1] = (pTurretInfo->arcmax[1] - pTurretInfo->arcmin[1]) * 0.5;
+    ps->viewAngleClampBase[1] = (self->r).currentAngles[1] + pTurretInfo->arcmax[1];
+    fVar4 = AngleNormalize360(ps->viewAngleClampBase[1] - ps->viewAngleClampRange[1]);
+    ps->viewAngleClampBase[1] = fVar4;
+    if (self->classname == scr_const.deployed_turret) {
+      turret_find_max_angles(owner,self);
     }
-    Scr_Notify(param_1,scr_const.turretownerchange,0);
+    Scr_Notify(self,scr_const.turretownerchange,0);
   }
   return;
 }
@@ -3557,7 +3611,7 @@ void __cdecl turret_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SpawnTurret(gentity_s *param_1,char *param_2,SpawnVar *param_3)
+void __cdecl G_SpawnTurret(gentity_s *self,char *weaponinfoname,SpawnVar *spawnVar)
 
 {
   code *pcVar1;
@@ -3569,102 +3623,100 @@ void __cdecl G_SpawnTurret(gentity_s *param_1,char *param_2,SpawnVar *param_3)
   double dVar7;
   undefined4 in_stack_ffffffbc;
   float local_28;
-  uchar local_21;
-  DObj *local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  TurretInfo *local_10;
-  int local_c;
-  WeaponDef *local_8;
+  uchar boneIndex;
+  DObj *obj;
+  float suppressTime;
+  float maxRange;
+  float convergenceTime;
+  TurretInfo *turretInfo;
+  int i;
+  WeaponDef *weapDef;
   
-  local_10 = (TurretInfo *)0x0;
-  for (local_c = 0;
-      (local_c < 0x20 && (local_10 = turretInfoStore + local_c, local_10->inuse != false));
-      local_c = local_c + 1) {
+  turretInfo = (TurretInfo *)0x0;
+  for (i = 0; (i < 0x20 && (turretInfo = turretInfoStore + i, turretInfo->inuse != false));
+      i = i + 1) {
   }
-  if (local_c == 0x20) {
+  if (i == 0x20) {
     Com_Error(ERR_DROP,"\x15G_SpawnTurret: max number of turrets (%d) exceeded");
   }
-  memset(&local_10->inuse,'\0',0xe0);
-  param_1->pTurretInfo = local_10;
-  local_10->inuse = true;
-  local_10->scanningPitch = 0.0;
-  iVar3 = G_GetWeaponIndexForName(param_2);
-  AssignToSmallerType<unsigned_short>(&(param_1->s).weapon,iVar3);
-  (param_1->s).weaponModel = '\0';
-  if ((param_1->s).weapon == 0) {
-    uVar4 = BG_GetWeaponIndexForName(param_2,G_RegisterWeapon);
-    AssignToSmallerType<unsigned_short>(&(param_1->s).weapon,uVar4);
-    if ((param_1->s).weapon == 0) {
+  memset(&turretInfo->inuse,'\0',0xe0);
+  self->pTurretInfo = turretInfo;
+  turretInfo->inuse = true;
+  turretInfo->scanningPitch = 0.0;
+  iVar3 = G_GetWeaponIndexForName(weaponinfoname);
+  AssignToSmallerType<unsigned_short>(&(self->s).weapon,iVar3);
+  (self->s).weaponModel = '\0';
+  if ((self->s).weapon == 0) {
+    uVar4 = BG_GetWeaponIndexForName(weaponinfoname,G_RegisterWeapon);
+    AssignToSmallerType<unsigned_short>(&(self->s).weapon,uVar4);
+    if ((self->s).weapon == 0) {
       Com_Error(ERR_DROP,"\x15bad weaponinfo \'%s\' specified for turret");
     }
   }
-  local_8 = BG_GetWeaponDef((uint)(param_1->s).weapon);
-  if (local_8->weapClass != WEAPCLASS_TURRET) {
+  weapDef = BG_GetWeaponDef((uint)(self->s).weapon);
+  if (weapDef->weapClass != WEAPCLASS_TURRET) {
     bVar2 = false;
     pcVar5 = va("Could not load turret \'%s\'");
     Scr_Error(pcVar5,bVar2);
   }
-  if ((level.initializing == 0) && (iVar3 = IsItemRegistered((uint)(param_1->s).weapon), iVar3 == 0)
-     ) {
+  if ((level.initializing == 0) && (iVar3 = IsItemRegistered((uint)(self->s).weapon), iVar3 == 0)) {
     bVar2 = false;
     pcVar5 = va("turret \'%s\' not precached");
     Scr_Error(pcVar5,bVar2);
   }
-  local_10->fireTime = 0;
-  local_10->stance = local_8->stance;
-  local_10->prevStance = -1;
-  local_10->fireSndDelay = 0;
-  local_10->heatVal = 0.0;
-  local_10->overheating = false;
-  if (local_8->fireLoopSound == (char *)0x0) {
-    local_10->fireSnd = 0;
+  turretInfo->fireTime = 0;
+  turretInfo->stance = weapDef->stance;
+  turretInfo->prevStance = -1;
+  turretInfo->fireSndDelay = 0;
+  turretInfo->heatVal = 0.0;
+  turretInfo->overheating = false;
+  if (weapDef->fireLoopSound == (char *)0x0) {
+    turretInfo->fireSnd = 0;
   }
   else {
-    uVar4 = SND_FindAliasId(local_8->fireLoopSound);
-    local_10->fireSnd = uVar4;
+    uVar4 = SND_FindAliasId(weapDef->fireLoopSound);
+    turretInfo->fireSnd = uVar4;
   }
-  if (local_8->fireLoopSoundPlayer == (char *)0x0) {
-    local_10->fireSndPlayer = 0;
-  }
-  else {
-    uVar4 = SND_FindAliasId(local_8->fireLoopSoundPlayer);
-    local_10->fireSndPlayer = uVar4;
-  }
-  if (local_8->fireStopSound == (char *)0x0) {
-    local_10->stopSnd = 0;
+  if (weapDef->fireLoopSoundPlayer == (char *)0x0) {
+    turretInfo->fireSndPlayer = 0;
   }
   else {
-    uVar4 = SND_FindAliasId(local_8->fireStopSound);
-    local_10->stopSnd = uVar4;
+    uVar4 = SND_FindAliasId(weapDef->fireLoopSoundPlayer);
+    turretInfo->fireSndPlayer = uVar4;
   }
-  if (local_8->fireStopSoundPlayer == (char *)0x0) {
-    local_10->stopSndPlayer = 0;
+  if (weapDef->fireStopSound == (char *)0x0) {
+    turretInfo->stopSnd = 0;
   }
   else {
-    uVar4 = SND_FindAliasId(local_8->fireStopSoundPlayer);
-    local_10->stopSndPlayer = uVar4;
+    uVar4 = SND_FindAliasId(weapDef->fireStopSound);
+    turretInfo->stopSnd = uVar4;
   }
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"rightarc","",local_10->arcmin + 1), iVar3 == 0)) {
-    local_10->arcmin[1] = local_8->rightArc;
+  if (weapDef->fireStopSoundPlayer == (char *)0x0) {
+    turretInfo->stopSndPlayer = 0;
   }
-  local_10->arcmin[1] = local_10->arcmin[1] * -1.0;
-  if (0.0 < local_10->arcmin[1]) {
-    local_10->arcmin[1] = 0.0;
+  else {
+    uVar4 = SND_FindAliasId(weapDef->fireStopSoundPlayer);
+    turretInfo->stopSndPlayer = uVar4;
   }
-  local_10->initialYawmin = local_10->arcmin[1];
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"leftarc","",local_10->arcmax + 1), iVar3 == 0)) {
-    local_10->arcmax[1] = local_8->leftArc;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"rightarc","",turretInfo->arcmin + 1), iVar3 == 0)) {
+    turretInfo->arcmin[1] = weapDef->rightArc;
   }
-  if (local_10->arcmax[1] <= 0.0 && local_10->arcmax[1] != 0.0) {
-    local_10->arcmax[1] = 0.0;
+  turretInfo->arcmin[1] = turretInfo->arcmin[1] * -1.0;
+  if (0.0 < turretInfo->arcmin[1]) {
+    turretInfo->arcmin[1] = 0.0;
   }
-  local_10->initialYawmax = local_10->arcmax[1];
-  local_10->forwardAngleDot = local_10->initialYawmax - local_10->initialYawmin;
-  fVar6 = local_10->forwardAngleDot;
+  turretInfo->initialYawmin = turretInfo->arcmin[1];
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"leftarc","",turretInfo->arcmax + 1), iVar3 == 0)) {
+    turretInfo->arcmax[1] = weapDef->leftArc;
+  }
+  if (turretInfo->arcmax[1] <= 0.0 && turretInfo->arcmax[1] != 0.0) {
+    turretInfo->arcmax[1] = 0.0;
+  }
+  turretInfo->initialYawmax = turretInfo->arcmax[1];
+  turretInfo->forwardAngleDot = turretInfo->initialYawmax - turretInfo->initialYawmin;
+  fVar6 = turretInfo->forwardAngleDot;
   local_28 = fVar6;
   if (0.0 <= fVar6 - 180.0) {
     local_28 = 180.0;
@@ -3672,125 +3724,125 @@ void __cdecl G_SpawnTurret(gentity_s *param_1,char *param_2,SpawnVar *param_3)
   if (0.0 <= 90.0 - fVar6) {
     local_28 = 90.0;
   }
-  local_10->forwardAngleDot = local_28;
-  dVar7 = (double)(local_10->forwardAngleDot * 0.017453292);
+  turretInfo->forwardAngleDot = local_28;
+  dVar7 = (double)(turretInfo->forwardAngleDot * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(local_28,in_stack_ffffffbc));
-  local_10->forwardAngleDot = (float)dVar7;
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"toparc","",local_10->arcmin), iVar3 == 0)) {
-    local_10->arcmin[0] = local_8->topArc;
+  turretInfo->forwardAngleDot = (float)dVar7;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"toparc","",turretInfo->arcmin), iVar3 == 0)) {
+    turretInfo->arcmin[0] = weapDef->topArc;
   }
-  local_10->arcmin[0] = local_10->arcmin[0] * -1.0;
-  if (0.0 < local_10->arcmin[0]) {
-    local_10->arcmin[0] = 0.0;
+  turretInfo->arcmin[0] = turretInfo->arcmin[0] * -1.0;
+  if (0.0 < turretInfo->arcmin[0]) {
+    turretInfo->arcmin[0] = 0.0;
   }
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"bottomarc","",local_10->arcmax), iVar3 == 0)) {
-    local_10->arcmax[0] = local_8->bottomArc;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"bottomarc","",turretInfo->arcmax), iVar3 == 0)) {
+    turretInfo->arcmax[0] = weapDef->bottomArc;
   }
-  if (local_10->arcmax[0] <= 0.0 && local_10->arcmax[0] != 0.0) {
-    local_10->arcmax[0] = 0.0;
+  if (turretInfo->arcmax[0] <= 0.0 && turretInfo->arcmax[0] != 0.0) {
+    turretInfo->arcmax[0] = 0.0;
   }
-  if (((param_3 == (SpawnVar *)0x0) ||
-      (iVar3 = G_SpawnFloat(param_3,"yawconvergencetime","",&local_14), iVar3 == 0)) &&
-     ((param_3 == (SpawnVar *)0x0 ||
-      (iVar3 = G_SpawnFloat(param_3,"convergencetime","",&local_14), iVar3 == 0)))) {
-    local_14 = local_8->yawConvergenceTime;
+  if (((spawnVar == (SpawnVar *)0x0) ||
+      (iVar3 = G_SpawnFloat(spawnVar,"yawconvergencetime","",&convergenceTime), iVar3 == 0)) &&
+     ((spawnVar == (SpawnVar *)0x0 ||
+      (iVar3 = G_SpawnFloat(spawnVar,"convergencetime","",&convergenceTime), iVar3 == 0)))) {
+    convergenceTime = weapDef->yawConvergenceTime;
   }
-  if (local_14 < 0.0) {
-    local_14 = 0.0;
+  if (convergenceTime < 0.0) {
+    convergenceTime = 0.0;
   }
-  local_10->convergenceTime[1] = (int)(local_14 * 1000.0 + 0.5);
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"pitchconvergencetime","",&local_14), iVar3 == 0)) {
-    local_14 = local_8->pitchConvergenceTime;
+  turretInfo->convergenceTime[1] = (int)(convergenceTime * 1000.0 + 0.5);
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"pitchconvergencetime","",&convergenceTime), iVar3 == 0)) {
+    convergenceTime = weapDef->pitchConvergenceTime;
   }
-  if (local_14 < 0.0) {
-    local_14 = 0.0;
+  if (convergenceTime < 0.0) {
+    convergenceTime = 0.0;
   }
-  local_10->convergenceTime[0] = (int)(local_14 * 1000.0 + 0.5);
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"suppressionTime","",&local_1c), iVar3 == 0)) {
-    local_1c = local_8->suppressTime;
+  turretInfo->convergenceTime[0] = (int)(convergenceTime * 1000.0 + 0.5);
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"suppressionTime","",&suppressTime), iVar3 == 0)) {
+    suppressTime = weapDef->suppressTime;
   }
-  if (local_1c < 0.0) {
-    local_1c = 0.0;
+  if (suppressTime < 0.0) {
+    suppressTime = 0.0;
   }
-  local_10->suppressTime = (int)(local_1c * 1000.0 + 0.5);
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"maxrange","",&local_18), iVar3 == 0)) {
-    local_18 = local_8->maxRange;
+  turretInfo->suppressTime = (int)(suppressTime * 1000.0 + 0.5);
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"maxrange","",&maxRange), iVar3 == 0)) {
+    maxRange = weapDef->maxRange;
   }
-  if (local_18 <= 0.0) {
+  if (maxRange <= 0.0) {
     fVar6 = 3.4028235e+38;
   }
   else {
-    fVar6 = local_18 * local_18;
+    fVar6 = maxRange * maxRange;
   }
-  local_10->maxRangeSquared = fVar6;
-  local_10->dropPitch = -90.0;
-  if (param_1->health == 0) {
-    param_1->health = 100;
+  turretInfo->maxRangeSquared = fVar6;
+  turretInfo->dropPitch = -90.0;
+  if (self->health == 0) {
+    self->health = 100;
   }
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"accuracy","1",&local_10->accuracy), iVar3 == 0)) {
-    local_10->accuracy = local_8->accuracy;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"accuracy","1",&turretInfo->accuracy), iVar3 == 0)) {
+    turretInfo->accuracy = weapDef->accuracy;
   }
-  if (0.0 < local_10->accuracy || local_10->accuracy == 0.0) {
-    if (1.0 < local_10->accuracy) {
-      local_10->accuracy = 1.0;
+  if (0.0 < turretInfo->accuracy || turretInfo->accuracy == 0.0) {
+    if (1.0 < turretInfo->accuracy) {
+      turretInfo->accuracy = 1.0;
     }
   }
   else {
-    local_10->accuracy = 0.0;
+    turretInfo->accuracy = 0.0;
   }
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"aiSpread","1",&local_10->aiSpread), iVar3 == 0)) {
-    local_10->aiSpread = local_8->aiSpread;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"aiSpread","1",&turretInfo->aiSpread), iVar3 == 0)) {
+    turretInfo->aiSpread = weapDef->aiSpread;
   }
-  if (local_10->aiSpread <= 0.0 && local_10->aiSpread != 0.0) {
-    local_10->aiSpread = 0.0;
+  if (turretInfo->aiSpread <= 0.0 && turretInfo->aiSpread != 0.0) {
+    turretInfo->aiSpread = 0.0;
   }
-  if ((param_3 == (SpawnVar *)0x0) ||
-     (iVar3 = G_SpawnFloat(param_3,"playerSpread","1",&local_10->playerSpread), iVar3 == 0)) {
-    local_10->playerSpread = local_8->playerSpread;
+  if ((spawnVar == (SpawnVar *)0x0) ||
+     (iVar3 = G_SpawnFloat(spawnVar,"playerSpread","1",&turretInfo->playerSpread), iVar3 == 0)) {
+    turretInfo->playerSpread = weapDef->playerSpread;
   }
-  if (local_10->playerSpread <= 0.0 && local_10->playerSpread != 0.0) {
-    local_10->playerSpread = 0.0;
+  if (turretInfo->playerSpread <= 0.0 && turretInfo->playerSpread != 0.0) {
+    turretInfo->playerSpread = 0.0;
   }
-  local_10->flags = 0x1003;
-  local_10->state = 0;
-  local_10->prevSentTarget = -1;
-  param_1->clipmask = 1;
-  (param_1->r).contents = 0x200004;
-  (param_1->r).svFlags = '\0';
-  (param_1->s).eType = 0xb;
-  param_1->flags = param_1->flags | 0x1000;
-  G_DObjUpdate(param_1);
-  local_20 = Com_GetServerDObj((param_1->s).number);
-  if (local_20 != (DObj *)0x0) {
-    local_21 = 0xfe;
-    iVar3 = DObjGetBoneIndex(local_20,(uint)scr_const.tag_flash_2,&local_21,-1);
+  turretInfo->flags = 0x1003;
+  turretInfo->state = 0;
+  turretInfo->prevSentTarget = -1;
+  self->clipmask = 1;
+  (self->r).contents = 0x200004;
+  (self->r).svFlags = '\0';
+  (self->s).eType = 0xb;
+  self->flags = self->flags | 0x1000;
+  G_DObjUpdate(self);
+  obj = Com_GetServerDObj((self->s).number);
+  if (obj != (DObj *)0x0) {
+    boneIndex = 0xfe;
+    iVar3 = DObjGetBoneIndex(obj,(uint)scr_const.tag_flash_2,&boneIndex,-1);
     if (iVar3 != 0) {
-      local_10->flags = local_10->flags | 0x8000;
+      turretInfo->flags = turretInfo->flags | 0x8000;
     }
   }
-  (param_1->r).mins[0] = -32.0;
-  (param_1->r).mins[1] = -32.0;
-  (param_1->r).mins[2] = 0.0;
-  (param_1->r).maxs[0] = 32.0;
-  (param_1->r).maxs[1] = 32.0;
-  (param_1->r).maxs[2] = 56.0;
-  G_SetOrigin(param_1,(param_1->r).currentOrigin);
-  G_SetAngle(param_1,(param_1->r).currentAngles);
-  (param_1->s).lerp.u.turret.gunAngles[0] = 0.0;
-  (param_1->s).lerp.u.turret.gunAngles[1] = 0.0;
-  (param_1->s).lerp.u.turret.gunAngles[2] = 0.0;
-  param_1->handler = '\x11';
-  param_1->nextthink = level.time + 0x32;
-  (param_1->s).lerp.apos.trType = '\x04';
-  param_1->takedamage = '\0';
-  iVar3 = EntHandle::isDefined(&(param_1->r).ownerNum);
+  (self->r).mins[0] = -32.0;
+  (self->r).mins[1] = -32.0;
+  (self->r).mins[2] = 0.0;
+  (self->r).maxs[0] = 32.0;
+  (self->r).maxs[1] = 32.0;
+  (self->r).maxs[2] = 56.0;
+  G_SetOrigin(self,(self->r).currentOrigin);
+  G_SetAngle(self,(self->r).currentAngles);
+  (self->s).lerp.u.turret.gunAngles[0] = 0.0;
+  (self->s).lerp.u.turret.gunAngles[1] = 0.0;
+  (self->s).lerp.u.turret.gunAngles[2] = 0.0;
+  self->handler = '\x11';
+  self->nextthink = level.time + 0x32;
+  (self->s).lerp.apos.trType = '\x04';
+  self->takedamage = '\0';
+  iVar3 = EntHandle::isDefined(&(self->r).ownerNum);
   if ((iVar3 != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xd65,0,"%s"),
      !bVar2)) {
@@ -3798,7 +3850,7 @@ void __cdecl G_SpawnTurret(gentity_s *param_1,char *param_2,SpawnVar *param_3)
     (*pcVar1)();
     return;
   }
-  SV_LinkEntity(param_1);
+  SV_LinkEntity(self);
   return;
 }
 
@@ -3810,17 +3862,17 @@ void __cdecl G_SpawnTurret(gentity_s *param_1,char *param_2,SpawnVar *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_turret(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_turret(gentity_s *self,SpawnVar *spawnVar)
 
 {
   int iVar1;
-  char *local_8;
+  char *weaponinfoname;
   
-  iVar1 = G_SpawnString(param_2,"weaponinfo","",&local_8);
+  iVar1 = G_SpawnString(spawnVar,"weaponinfo","",&weaponinfoname);
   if (iVar1 == 0) {
     Com_Error(ERR_DROP,"\x15no weaponinfo specified for turret");
   }
-  G_SpawnTurret(param_1,local_8,param_2);
+  G_SpawnTurret(self,weaponinfoname,spawnVar);
   return;
 }
 
@@ -3832,13 +3884,13 @@ void __cdecl SP_turret(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_SetTurretCarried(gentity_s *param_1,int param_2)
+void __cdecl Turret_SetTurretCarried(gentity_s *self,int carried)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xd77,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3846,7 +3898,7 @@ void __cdecl Turret_SetTurretCarried(gentity_s *param_1,int param_2)
       return;
     }
   }
-  if ((param_1->s).otherEntityNum == 0x3ff) {
+  if ((self->s).otherEntityNum == 0x3ff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xd78,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3854,12 +3906,12 @@ void __cdecl Turret_SetTurretCarried(gentity_s *param_1,int param_2)
       return;
     }
   }
-  if (param_2 == 0) {
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags & 0xfffffff7;
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags | 0x20;
+  if (carried == 0) {
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags & 0xfffffff7;
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags | 0x20;
   }
   else {
-    (param_1->s).lerp.u.turret.flags = (param_1->s).lerp.u.turret.flags | 8;
+    (self->s).lerp.u.turret.flags = (self->s).lerp.u.turret.flags | 8;
   }
   return;
 }
@@ -3872,13 +3924,13 @@ void __cdecl Turret_SetTurretCarried(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Turret_SetTurretOwner(gentity_s *param_1,gentity_s *param_2)
+void __cdecl Turret_SetTurretOwner(gentity_s *self,gentity_s *owner)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xd87,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3886,7 +3938,7 @@ void __cdecl Turret_SetTurretOwner(gentity_s *param_1,gentity_s *param_2)
       return;
     }
   }
-  if (param_1->pTurretInfo == (TurretInfo *)0x0) {
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\turret.cpp",0xd88,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3894,17 +3946,17 @@ void __cdecl Turret_SetTurretOwner(gentity_s *param_1,gentity_s *param_2)
       return;
     }
   }
-  if (((param_2 != (gentity_s *)0x0) && ((param_1->s).otherEntityNum != 0x3ff)) &&
-     ((param_2->s).number != (int)(param_1->s).otherEntityNum)) {
+  if (((owner != (gentity_s *)0x0) && ((self->s).otherEntityNum != 0x3ff)) &&
+     ((owner->s).number != (int)(self->s).otherEntityNum)) {
     Com_PrintWarning(0x11,
                      "WARNING: turret owner ent has been set while there was already another owner ( %i => %i )\n"
                     );
   }
-  if (param_2 == (gentity_s *)0x0) {
-    (param_1->s).otherEntityNum = 0x3ff;
+  if (owner == (gentity_s *)0x0) {
+    (self->s).otherEntityNum = 0x3ff;
   }
   else {
-    (param_1->s).otherEntityNum = (short)(param_2->s).number;
+    (self->s).otherEntityNum = (short)(owner->s).number;
   }
   return;
 }

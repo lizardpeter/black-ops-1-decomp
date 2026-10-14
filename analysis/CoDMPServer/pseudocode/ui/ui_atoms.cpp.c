@@ -3,35 +3,34 @@
 // 0072AFE0  UI_DrawHandlePic  (ui/ui_atoms.cpp:30)
 
 void __cdecl
-UI_DrawHandlePic(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                int param_6,int param_7,float *param_8,Material *param_9)
+UI_DrawHandlePic(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,
+                int vertAlign,float *color,Material *material)
 
 {
-  undefined4 local_14;
-  undefined4 local_10;
-  undefined4 local_c;
-  undefined4 local_8;
+  float t0;
+  float t1;
+  float s1;
+  float s0;
   
-  if (0.0 <= param_4) {
-    local_8 = 0.0;
-    local_c = 1.0;
+  if (0.0 <= w) {
+    s0 = 0.0;
+    s1 = 1.0;
   }
   else {
-    param_4 = -param_4;
-    local_8 = 1.0;
-    local_c = 0.0;
+    w = -w;
+    s0 = 1.0;
+    s1 = 0.0;
   }
-  if (0.0 <= param_5) {
-    local_14 = 0.0;
-    local_10 = 1.0;
+  if (0.0 <= h) {
+    t0 = 0.0;
+    t1 = 1.0;
   }
   else {
-    param_5 = -param_5;
-    local_14 = 1.0;
-    local_10 = 0.0;
+    h = -h;
+    t0 = 1.0;
+    t1 = 0.0;
   }
-  CL_DrawStretchPic(param_1,param_2,param_3,param_4,param_5,param_6,param_7,local_8,local_14,local_c
-                    ,local_10,param_8,param_9);
+  CL_DrawStretchPic(scrPlace,x,y,w,h,horzAlign,vertAlign,s0,t0,s1,t1,color,material);
   return;
 }
 
@@ -40,37 +39,35 @@ UI_DrawHandlePic(ScreenPlacement *param_1,float param_2,float param_3,float para
 
 void __cdecl
 UI_DrawHandlePicRotated
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float *param_8,float param_9,Material *param_10)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float *color,float angle,Material *material)
 
 {
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float t0;
+  float t1;
+  float s1;
+  float s0;
   
-  if (0.0 <= param_4) {
-    local_8 = 0.0;
-    local_c = 1.0;
+  if (0.0 <= w) {
+    s0 = 0.0;
+    s1 = 1.0;
   }
   else {
-    param_4 = -param_4;
-    local_8 = 1.0;
-    local_c = 0.0;
+    w = -w;
+    s0 = 1.0;
+    s1 = 0.0;
   }
-  if (0.0 <= param_5) {
-    local_14 = 0.0;
-    local_10 = 1.0;
+  if (0.0 <= h) {
+    t0 = 0.0;
+    t1 = 1.0;
   }
   else {
-    param_5 = -param_5;
-    local_14 = 1.0;
-    local_10 = 0.0;
+    h = -h;
+    t0 = 1.0;
+    t1 = 0.0;
   }
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  CL_DrawStretchPicPhysicalRotateXY
-            (param_2,param_3,param_4,param_5,local_8,local_14,local_c,local_10,param_9,param_8,
-             param_10);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  CL_DrawStretchPicPhysicalRotateXY(x,y,w,h,s0,t0,s1,t1,angle,color,material);
   return;
 }
 
@@ -79,20 +76,20 @@ UI_DrawHandlePicRotated
 
 void __cdecl
 UI_DrawHandlePicFramed
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float param_8,float param_9,int param_10,float *param_11,
-          Material *param_12)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float frameSize,float frameTexSize,int frameSides,float *color,Material *material)
 
 {
   float fVar1;
   float fVar2;
+  float thicknessW;
+  float thicknessH;
   
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  fVar1 = ScrPlace_ApplyW(param_1,param_8,param_6);
-  fVar2 = ScrPlace_ApplyH(param_1,param_8,param_7);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  fVar1 = ScrPlace_ApplyW(scrPlace,frameSize,horzAlign);
+  fVar2 = ScrPlace_ApplyH(scrPlace,frameSize,vertAlign);
   CL_DrawFramedPicPhysical
-            (param_2,param_3,param_4,param_5,param_8,(fVar2 / fVar1) * param_8,param_9,param_10,
-             param_11,param_12);
+            (x,y,w,h,frameSize,(fVar2 / fVar1) * frameSize,frameTexSize,frameSides,color,material);
   return;
 }
 
@@ -135,12 +132,17 @@ float __cdecl UI_LoadBarProgress_FastFile(void)
 // 0072B2F0  UI_DrawLoadBar  (ui/ui_atoms.cpp:149)
 
 void __cdecl
-UI_DrawLoadBar(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-              int param_6,int param_7,float *param_8,Material *param_9)
+UI_DrawLoadBar(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign
+              ,float *color,Material *material)
 
 {
   float10 fVar1;
   code *local_20;
+  float t0;
+  float percentDone;
+  float t1;
+  float s1;
+  float s0;
   
   if ((useFastFile->current).enabled == false) {
     local_20 = UI_LoadBarProgress_LoadObj;
@@ -149,20 +151,19 @@ UI_DrawLoadBar(ScreenPlacement *param_1,float param_2,float param_3,float param_
     local_20 = UI_LoadBarProgress_FastFile;
   }
   fVar1 = (float10)(*local_20)();
-  CL_DrawStretchPic(param_1,param_2,param_3,param_4 * (float)fVar1,param_5,param_6,param_7,0.0,0.0,
-                    (float)fVar1,1.0,param_8,param_9);
+  CL_DrawStretchPic(scrPlace,x,y,w * (float)fVar1,h,horzAlign,vertAlign,0.0,0.0,(float)fVar1,1.0,
+                    color,material);
   return;
 }
 
 
 // 0072B440  UI_FillRectPhysical  (ui/ui_atoms.cpp:176)
 
-void __cdecl
-UI_FillRectPhysical(float param_1,float param_2,float param_3,float param_4,float *param_5)
+void __cdecl UI_FillRectPhysical(float x,float y,float width,float height,float *color)
 
 {
   if (DAT_098b4b78 != (Material *)0x0) {
-    CL_DrawStretchPicPhysical(param_1,param_2,param_3,param_4,0.0,0.0,0.0,0.0,param_5,DAT_098b4b78);
+    CL_DrawStretchPicPhysical(x,y,width,height,0.0,0.0,0.0,0.0,color,DAT_098b4b78);
   }
   return;
 }
@@ -171,13 +172,13 @@ UI_FillRectPhysical(float param_1,float param_2,float param_3,float param_4,floa
 // 0072B4A0  UI_FillRect  (ui/ui_atoms.cpp:190)
 
 void __cdecl
-UI_FillRect(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-           int param_6,int param_7,float *param_8)
+UI_FillRect(ScreenPlacement *scrPlace,float x,float y,float width,float height,int horzAlign,
+           int vertAlign,float *color)
 
 {
   if (DAT_098b4b78 != (Material *)0x0) {
-    CL_DrawStretchPic(param_1,param_2,param_3,param_4,param_5,param_6,param_7,0.0,0.0,0.0,0.0,
-                      param_8,DAT_098b4b78);
+    CL_DrawStretchPic(scrPlace,x,y,width,height,horzAlign,vertAlign,0.0,0.0,0.0,0.0,color,
+                      DAT_098b4b78);
   }
   return;
 }
@@ -186,11 +187,11 @@ UI_FillRect(ScreenPlacement *param_1,float param_2,float param_3,float param_4,f
 // 0072B500  UI_DrawSpinner  (ui/ui_atoms.cpp:196)
 
 void __cdecl
-UI_DrawSpinner(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-              int param_6,int param_7,float *param_8)
+UI_DrawSpinner(ScreenPlacement *scrPlace,float x,float y,float width,float height,int horzAlign,
+              int vertAlign,float *color)
 
 {
-  CL_DrawSpinner(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+  CL_DrawSpinner(scrPlace,x,y,width,height,horzAlign,vertAlign,color);
   return;
 }
 
@@ -199,12 +200,13 @@ UI_DrawSpinner(ScreenPlacement *param_1,float param_2,float param_3,float param_
 
 void __cdecl
 UI_DrawSpinnerLoadbar
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float *param_8)
+          (ScreenPlacement *scrPlace,float x,float y,float width,float height,int horzAlign,
+          int vertAlign,float *color)
 
 {
   float10 fVar1;
   code *local_10;
+  float percentDone;
   
   if ((useFastFile->current).enabled == false) {
     local_10 = UI_LoadBarProgress_LoadObj;
@@ -213,8 +215,7 @@ UI_DrawSpinnerLoadbar
     local_10 = UI_LoadBarProgress_FastFile;
   }
   fVar1 = (float10)(*local_10)();
-  CL_DrawSpinnerLoadbar
-            (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,(float)fVar1);
+  CL_DrawSpinnerLoadbar(scrPlace,x,y,width,height,horzAlign,vertAlign,color,(float)fVar1);
   return;
 }
 

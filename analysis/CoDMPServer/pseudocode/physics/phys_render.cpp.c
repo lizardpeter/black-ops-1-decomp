@@ -5,9 +5,9 @@
 void __thiscall phys_static_array<float,512>::call_destructors(phys_static_array<float,512> *this)
 
 {
-  int local_8;
+  int i_2;
   
-  for (local_8 = 0; local_8 < this->m_alloc_count; local_8 = local_8 + 1) {
+  for (i_2 = 0; i_2 < this->m_alloc_count; i_2 = i_2 + 1) {
   }
   return;
 }
@@ -17,18 +17,19 @@ void __thiscall phys_static_array<float,512>::call_destructors(phys_static_array
 
 plane_lt * __thiscall
 phys_static_array<plane_lt,512>::add
-          (phys_static_array<plane_lt,512> *this,int param_1,char *param_2)
+          (phys_static_array<plane_lt,512> *this,int no_error,char *error_msg)
 
 {
   plane_lt *ppVar1;
+  plane_lt *rbc;
   
   if (this->m_alloc_count < 0x200) {
     ppVar1 = this->m_slot_array + this->m_alloc_count;
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     ppVar1 = (plane_lt *)0x0;
   }
@@ -40,18 +41,19 @@ phys_static_array<plane_lt,512>::add
 
 phys_vec3 * __thiscall
 phys_static_array<phys_vec3,512>::add
-          (phys_static_array<phys_vec3,512> *this,int param_1,char *param_2)
+          (phys_static_array<phys_vec3,512> *this,int no_error,char *error_msg)
 
 {
   phys_vec3 *ppVar1;
+  phys_vec3 *rbc;
   
   if (this->m_alloc_count < 0x200) {
     ppVar1 = this->m_slot_array + this->m_alloc_count;
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     ppVar1 = (phys_vec3 *)0x0;
   }
@@ -61,14 +63,14 @@ phys_static_array<phys_vec3,512>::add
 
 // 0085B810  operator[]<int>  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:32)
 
-float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int param_1)
+float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   float *pfVar3;
   
-  if ((param_1 < 0) || (2 < param_1)) {
+  if ((i < 0) || (2 < i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20,
                       "i >= 0 && i < 3","");
     if (bVar2) {
@@ -77,7 +79,7 @@ float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int param_1)
       return pfVar3;
     }
   }
-  return &this->x + param_1;
+  return &this->x + i;
 }
 
 
@@ -104,20 +106,21 @@ void __cdecl DebugPatchesAndBrushesEpilog(void)
 // 00856790  find_index_in_brush  (physics/phys_render.cpp:94)
 
 ushort __thiscall
-debug_brush_info_t::find_index_in_brush(debug_brush_info_t *this,cbrush_t *param_1,float *param_2)
+debug_brush_info_t::find_index_in_brush(debug_brush_info_t *this,cbrush_t *brush,float *v)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   float fVar4;
-  uint local_10;
-  uint local_c;
-  float local_8;
+  float d;
+  uint i;
+  uint best_i;
+  float best_d;
   
-  local_8 = Vec3DistanceSq(param_2,*param_1->verts);
-  local_c = 0;
-  if (0xffff < param_1->numverts) {
+  best_d = Vec3DistanceSq(v,*brush->verts);
+  best_i = 0;
+  if (0xffff < brush->numverts) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp",0x62,0,
                              "%s");
     if (!bVar2) {
@@ -126,14 +129,14 @@ debug_brush_info_t::find_index_in_brush(debug_brush_info_t *this,cbrush_t *param
       return uVar3;
     }
   }
-  for (local_10 = 1; local_10 < param_1->numverts; local_10 = local_10 + 1) {
-    fVar4 = Vec3DistanceSq(param_2,param_1->verts[local_10]);
-    if (fVar4 < local_8) {
-      local_c = local_10;
-      local_8 = fVar4;
+  for (i = 1; i < brush->numverts; i = i + 1) {
+    fVar4 = Vec3DistanceSq(v,brush->verts[i]);
+    if (fVar4 < best_d) {
+      best_i = i;
+      best_d = fVar4;
     }
   }
-  return (ushort)local_c;
+  return (ushort)best_i;
 }
 
 
@@ -155,15 +158,15 @@ debug_brush_info_t::find_index_in_brush(debug_brush_info_t *this,cbrush_t *param
 /* WARNING: Removing unreachable block (ram,0x0085629d) */
 
 void __thiscall
-debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *param_1,phys_mat44 *param_2)
+debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *brush,phys_mat44 *mat)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   ushort uVar4;
-  phys_vec3 *ppVar5;
-  float *pfVar6;
+  phys_vec3 *inVector;
+  float *outVector;
   int local_62f0;
   int local_62ec;
   uchar local_62e8;
@@ -249,14 +252,14 @@ debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *param_1,phys_ma
   if (this->num_brushes == 5000) {
     Com_Printf(0,"Debug brush limit exceeded, limit=%d\n");
   }
-  else if (param_2 == (phys_mat44 *)0x0) {
-    Phys_Vec3ToNitrousVec(param_1->mins,&local_30);
-    Phys_Vec3ToNitrousVec(param_1->maxs,&local_40);
-    local_44 = param_1->numsides;
+  else if (mat == (phys_mat44 *)0x0) {
+    Phys_Vec3ToNitrousVec(brush->mins,&local_30);
+    Phys_Vec3ToNitrousVec(brush->maxs,&local_40);
+    local_44 = brush->numsides;
     local_4060.m_slot_array = (plane_lt *)&local_4060;
     local_4060.m_alloc_count = 0;
     for (local_4064 = 0; local_4064 < local_44; local_4064 = local_4064 + 1) {
-      local_4068 = param_1->sides[local_4064].plane;
+      local_4068 = brush->sides[local_4064].plane;
       Phys_Vec3ToNitrousVec(local_4068->normal,&local_4080);
       local_40a0 = local_4068->dist;
       local_40b0.x = local_4080.x;
@@ -354,7 +357,7 @@ debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *param_1,phys_ma
     local_42a0 = (ushort)local_429c;
     local_42a4 = local_18->brushes + local_18->num_brushes;
     local_18->num_brushes = local_18->num_brushes + 1;
-    local_42a4->brush = param_1;
+    local_42a4->brush = brush;
     local_42a4->first_winding_index = local_18->num_windings;
     local_42a4->first_vertex_index = local_18->num_indices;
     local_42a4->num_windings = (ushort)local_429c;
@@ -391,10 +394,10 @@ debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *param_1,phys_ma
           return;
         }
         for (local_62d8 = 0; local_62d8 < (int)(uint)local_62c9; local_62d8 = local_62d8 + 1) {
-          pfVar6 = local_62e4;
-          ppVar5 = phys_static_array<phys_vec3,512>::operator[](&local_62c0,local_62d8);
-          Phys_NitrousVecToVec3(ppVar5,pfVar6);
-          uVar4 = find_index_in_brush(local_18,param_1,local_62e4);
+          outVector = local_62e4;
+          inVector = phys_static_array<phys_vec3,512>::operator[](&local_62c0,local_62d8);
+          Phys_NitrousVecToVec3(inVector,outVector);
+          uVar4 = find_index_in_brush(local_18,brush,local_62e4);
           if ((0xff < uVar4) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp"
                                        ,0xb8,0,"%s"), !bVar3)) {
@@ -431,14 +434,14 @@ debug_brush_info_t::add_brush(debug_brush_info_t *this,cbrush_t *param_1,phys_ma
 // 0085B720  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 phys_vec3 * __thiscall
-phys_static_array<phys_vec3,512>::operator[](phys_static_array<phys_vec3,512> *this,int param_1)
+phys_static_array<phys_vec3,512>::operator[](phys_static_array<phys_vec3,512> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 *ppVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -447,21 +450,21 @@ phys_static_array<phys_vec3,512>::operator[](phys_static_array<phys_vec3,512> *t
       return ppVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
 // 0085B780  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 float * __thiscall
-phys_static_array<float,512>::operator[](phys_static_array<float,512> *this,int param_1)
+phys_static_array<float,512>::operator[](phys_static_array<float,512> *this,int i_2)
 
 {
   code *pcVar1;
   bool bVar2;
   float *pfVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i_2 < 0) || (this->m_alloc_count <= i_2)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -470,21 +473,21 @@ phys_static_array<float,512>::operator[](phys_static_array<float,512> *this,int 
       return pfVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i_2;
 }
 
 
 // 0085B630  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:123)
 
 plane_lt * __thiscall
-phys_static_array<plane_lt,512>::operator[](phys_static_array<plane_lt,512> *this,int param_1)
+phys_static_array<plane_lt,512>::operator[](phys_static_array<plane_lt,512> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   plane_lt *ppVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x7c
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -493,19 +496,19 @@ phys_static_array<plane_lt,512>::operator[](phys_static_array<plane_lt,512> *thi
       return ppVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
 // 008570E0  RB_CheckTessOverflow  (gfx_d3d/rb_backend.h:174)
 
-void __cdecl RB_CheckTessOverflow(int param_1,int param_2)
+void __cdecl RB_CheckTessOverflow(int vertexCount,int indexCount)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x154a < param_1) {
+  if (0x154a < vertexCount) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../gfx_d3d/rb_backend.h",
                              0xaf,0,"%s\n\t(vertexCount) = %i");
     if (!bVar2) {
@@ -514,7 +517,7 @@ void __cdecl RB_CheckTessOverflow(int param_1,int param_2)
       return;
     }
   }
-  if (0x100000 < param_2) {
+  if (0x100000 < indexCount) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../gfx_d3d/rb_backend.h",
                              0xb0,0,"%s\n\t(indexCount) = %i");
     if (!bVar2) {
@@ -523,7 +526,7 @@ void __cdecl RB_CheckTessOverflow(int param_1,int param_2)
       return;
     }
   }
-  if ((0x154a < tess.vertexCount + param_1) || (0x100000 < tess.indexCount + param_2)) {
+  if ((0x154a < tess.vertexCount + vertexCount) || (0x100000 < tess.indexCount + indexCount)) {
     RB_TessOverflow();
   }
   return;
@@ -533,62 +536,62 @@ void __cdecl RB_CheckTessOverflow(int param_1,int param_2)
 // 00856A40  find_index_in_clipmap  (physics/phys_render.cpp:216)
 
 uint __thiscall
-debug_patch_info_t::find_index_in_clipmap
-          (debug_patch_info_t *this,CollisionAabbTree *param_1,float *param_2)
+debug_patch_info_t::find_index_in_clipmap(debug_patch_info_t *this,CollisionAabbTree *tree,float *v)
 
 {
   CollisionPartition *pCVar1;
   float fVar2;
-  int local_18;
-  uint local_14;
-  float local_c;
+  int ti;
+  uint best_i;
+  float d;
+  float best_d;
+  CollisionPartition *partition;
   
-  pCVar1 = cm.partitions + (param_1->u).firstChildIndex;
-  local_c = Vec3DistanceSq(param_2,cm.verts[cm.triIndices[pCVar1->firstTri * 3]]);
-  local_14 = (uint)cm.triIndices[pCVar1->firstTri * 3];
-  for (local_18 = pCVar1->firstTri; local_18 < (int)((uint)pCVar1->triCount + pCVar1->firstTri);
-      local_18 = local_18 + 1) {
-    fVar2 = Vec3DistanceSq(param_2,cm.verts[cm.triIndices[local_18 * 3]]);
-    if (fVar2 < local_c) {
-      local_14 = (uint)cm.triIndices[local_18 * 3];
-      local_c = fVar2;
+  pCVar1 = cm.partitions + (tree->u).firstChildIndex;
+  best_d = Vec3DistanceSq(v,cm.verts[cm.triIndices[pCVar1->firstTri * 3]]);
+  best_i = (uint)cm.triIndices[pCVar1->firstTri * 3];
+  for (ti = pCVar1->firstTri; ti < (int)((uint)pCVar1->triCount + pCVar1->firstTri); ti = ti + 1) {
+    fVar2 = Vec3DistanceSq(v,cm.verts[cm.triIndices[ti * 3]]);
+    if (fVar2 < best_d) {
+      best_i = (uint)cm.triIndices[ti * 3];
+      best_d = fVar2;
     }
-    fVar2 = Vec3DistanceSq(param_2,cm.verts[cm.triIndices[local_18 * 3 + 1]]);
-    if (fVar2 < local_c) {
-      local_14 = (uint)cm.triIndices[local_18 * 3 + 1];
-      local_c = fVar2;
+    fVar2 = Vec3DistanceSq(v,cm.verts[cm.triIndices[ti * 3 + 1]]);
+    if (fVar2 < best_d) {
+      best_i = (uint)cm.triIndices[ti * 3 + 1];
+      best_d = fVar2;
     }
-    fVar2 = Vec3DistanceSq(param_2,cm.verts[cm.triIndices[local_18 * 3 + 2]]);
-    if (fVar2 < local_c) {
-      local_14 = (uint)cm.triIndices[local_18 * 3 + 2];
-      local_c = fVar2;
+    fVar2 = Vec3DistanceSq(v,cm.verts[cm.triIndices[ti * 3 + 2]]);
+    if (fVar2 < best_d) {
+      best_i = (uint)cm.triIndices[ti * 3 + 2];
+      best_d = fVar2;
     }
   }
-  return local_14;
+  return best_i;
 }
 
 
 // 00856880  add_patch  (physics/phys_render.cpp:248)
 
-void __thiscall debug_patch_info_t::add_patch(debug_patch_info_t *this,CollisionAabbTree *param_1)
+void __thiscall debug_patch_info_t::add_patch(debug_patch_info_t *this,CollisionAabbTree *tree)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_24 [3];
-  uint local_18;
-  int local_14;
-  int local_10;
-  debug_patch_t *local_c;
-  chull_t *local_8;
+  float v [3];
+  uint ind;
+  int ind_i;
+  uint ntris;
+  debug_patch_t *debug_patch;
+  chull_t *chull;
   
   if (this->num_patches == 5000) {
     Com_Printf(0,"Debug patches limit exceeded, limit=%d\n");
   }
   else {
-    local_8 = get_partition_chull(param_1);
-    if ((local_8 != (chull_t *)0x0) && (0 < local_8->ninds)) {
-      if (local_8->ninds % 3 != 0) {
+    chull = get_partition_chull(tree);
+    if ((chull != (chull_t *)0x0) && (0 < chull->ninds)) {
+      if (chull->ninds % 3 != 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp",0x102
                                  ,0,"%s");
         if (!bVar2) {
@@ -597,17 +600,17 @@ void __thiscall debug_patch_info_t::add_patch(debug_patch_info_t *this,Collision
           return;
         }
       }
-      local_10 = local_8->ninds / 3;
-      local_c = this->patches + this->num_patches;
+      ntris = chull->ninds / 3;
+      debug_patch = this->patches + this->num_patches;
       this->num_patches = this->num_patches + 1;
-      local_c->tree = param_1;
-      local_c->first_vertex_index = this->num_indices;
-      local_c->num_indices = (short)local_10 * 3;
-      if (local_10 * 3 + this->num_indices < 100000) {
-        for (local_14 = 0; local_14 < local_8->ninds; local_14 = local_14 + 1) {
-          Phys_NitrousVecToVec3(local_8->verts + local_8->inds[local_14],local_24);
-          local_18 = find_index_in_clipmap(this,param_1,local_24);
-          this->indices[this->num_indices] = local_18;
+      debug_patch->tree = tree;
+      debug_patch->first_vertex_index = this->num_indices;
+      debug_patch->num_indices = (short)ntris * 3;
+      if (ntris * 3 + this->num_indices < 100000) {
+        for (ind_i = 0; ind_i < chull->ninds; ind_i = ind_i + 1) {
+          Phys_NitrousVecToVec3(chull->verts + chull->inds[ind_i],v);
+          ind = find_index_in_clipmap(this,tree,v);
+          this->indices[this->num_indices] = ind;
           this->num_indices = this->num_indices + 1;
         }
       }
@@ -729,11 +732,11 @@ void __cdecl clear_debug_brushes_and_patches(void)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl add_debug_brush(cbrush_t *param_1,phys_mat44 *param_2)
+void __cdecl add_debug_brush(cbrush_t *brush,phys_mat44 *mat)
 
 {
   if (debug_brush_info != (debug_brush_info_t *)0x0) {
-    debug_brush_info_t::add_brush(debug_brush_info,param_1,param_2);
+    debug_brush_info_t::add_brush(debug_brush_info,brush,mat);
   }
   return;
 }
@@ -741,11 +744,11 @@ void __cdecl add_debug_brush(cbrush_t *param_1,phys_mat44 *param_2)
 
 // 00856850  add_debug_patch  (physics/phys_render.cpp:324)
 
-void __cdecl add_debug_patch(CollisionAabbTree *param_1)
+void __cdecl add_debug_patch(CollisionAabbTree *tree)
 
 {
   if (debug_patch_info != (debug_patch_info_t *)0x0) {
-    debug_patch_info_t::add_patch(debug_patch_info,param_1);
+    debug_patch_info_t::add_patch(debug_patch_info,tree);
   }
   return;
 }
@@ -760,16 +763,21 @@ void __cdecl render_debug_brushes(void)
   cbrush_t *pcVar2;
   uint uVar3;
   debug_brush_t *pdVar4;
-  uint uVar5;
-  float (*pafVar6) [3];
-  ushort local_ac;
-  uint local_a4;
-  uint local_98;
-  uint local_88;
-  int local_84;
-  float local_80 [4];
-  GfxColor local_70;
-  float local_6c;
+  uint vertexCount;
+  float (*pafVar5) [3];
+  ushort ii_2;
+  int ind;
+  int ii;
+  ushort ibase;
+  int num_indices;
+  int wi;
+  int first_winding_index;
+  cbrush_t *brush;
+  int first_vertex_index;
+  int bi;
+  float lit_color [4];
+  GfxColor gfxColor;
+  float verts;
   float local_68;
   float local_64;
   float local_60;
@@ -778,33 +786,33 @@ void __cdecl render_debug_brushes(void)
   float local_54;
   float local_50;
   float local_4c;
-  materialCommands_t *local_48;
-  float local_44;
+  materialCommands_t *tess;
+  float player_clip_color;
   float local_40;
   float local_3c;
   float local_38;
-  float local_34;
+  float color;
   float local_30;
   float local_2c;
   float local_28;
-  float local_24;
+  float default_color;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14;
+  float mantle_color;
   float local_10;
   float local_c;
   float local_8;
   
-  local_24 = 0.0;
+  default_color = 0.0;
   local_20 = 0.75;
   local_1c = 0.75;
   local_18 = 1.0;
-  local_44 = 0.75;
+  player_clip_color = 0.75;
   local_40 = 0.75;
   local_3c = 0.0;
   local_38 = 1.0;
-  local_14 = 0.5;
+  mantle_color = 0.5;
   local_10 = 0.0;
   local_c = 0.0;
   local_8 = 1.0;
@@ -814,65 +822,62 @@ void __cdecl render_debug_brushes(void)
   }
   else {
     RB_BeginCollisionPolygons(true,false);
-    local_48 = RB_GetCmd();
-    for (local_84 = 0; local_84 < debug_brush_info->num_brushes; local_84 = local_84 + 1) {
-      pdVar4 = debug_brush_info->brushes + local_84;
+    tess = RB_GetCmd();
+    for (bi = 0; bi < debug_brush_info->num_brushes; bi = bi + 1) {
+      pdVar4 = debug_brush_info->brushes + bi;
       pcVar2 = pdVar4->brush;
-      local_88 = pdVar4->first_vertex_index;
+      first_vertex_index = pdVar4->first_vertex_index;
       uVar3 = pdVar4->first_winding_index;
-      for (local_98 = uVar3; (int)local_98 < (int)(pdVar4->num_windings + uVar3);
-          local_98 = local_98 + 1) {
-        uVar5 = (uint)debug_brush_info->windings[local_98];
-        if (2 < uVar5) {
-          RB_CheckTessOverflow(uVar5,(uVar5 - 2) * 3);
-          pafVar6 = pcVar2->verts + debug_brush_info->indices[local_88];
-          local_6c = (*pafVar6)[0];
-          local_68 = (*pafVar6)[1];
-          local_64 = (*pafVar6)[2];
-          pafVar6 = pcVar2->verts + debug_brush_info->indices[local_88 + 1];
-          local_60 = (*pafVar6)[0];
-          local_5c = (*pafVar6)[1];
-          local_58 = (*pafVar6)[2];
-          pafVar6 = pcVar2->verts + debug_brush_info->indices[local_88 + 2];
-          local_54 = (*pafVar6)[0];
-          local_50 = (*pafVar6)[1];
-          local_4c = (*pafVar6)[2];
+      for (wi = uVar3; wi < (int)(pdVar4->num_windings + uVar3); wi = wi + 1) {
+        vertexCount = (uint)debug_brush_info->windings[wi];
+        if (2 < vertexCount) {
+          RB_CheckTessOverflow(vertexCount,(vertexCount - 2) * 3);
+          pafVar5 = pcVar2->verts + debug_brush_info->indices[first_vertex_index];
+          verts = (*pafVar5)[0];
+          local_68 = (*pafVar5)[1];
+          local_64 = (*pafVar5)[2];
+          pafVar5 = pcVar2->verts + debug_brush_info->indices[first_vertex_index + 1];
+          local_60 = (*pafVar5)[0];
+          local_5c = (*pafVar5)[1];
+          local_58 = (*pafVar5)[2];
+          pafVar5 = pcVar2->verts + debug_brush_info->indices[first_vertex_index + 2];
+          local_54 = (*pafVar5)[0];
+          local_50 = (*pafVar5)[1];
+          local_4c = (*pafVar5)[2];
           if ((pcVar2->contents & 0x10000U) == 0) {
             if ((pcVar2->contents & 0x1000000U) == 0) {
-              local_34 = local_24;
+              color = default_color;
               local_30 = local_20;
               local_2c = local_1c;
               local_28 = local_18;
             }
             else {
-              local_34 = local_14;
+              color = mantle_color;
               local_30 = local_10;
               local_2c = local_c;
               local_28 = local_8;
             }
           }
           else {
-            local_34 = local_44;
+            color = player_clip_color;
             local_30 = local_40;
             local_2c = local_3c;
             local_28 = local_38;
           }
-          RB_ApplySunLight((float (*) [3])&local_6c,&local_34,local_80);
-          R_ConvertColorToBytes(local_80,local_70.array);
-          uVar1 = (ushort)local_48->vertexCount;
-          for (local_a4 = local_88; (int)local_a4 < (int)(local_88 + uVar5); local_a4 = local_a4 + 1
-              ) {
-            RB_SetPolyVert(pcVar2->verts[debug_brush_info->indices[local_a4]],local_70,
-                           local_48->vertexCount);
-            local_48->vertexCount = local_48->vertexCount + 1;
+          RB_ApplySunLight((float (*) [3])&verts,&color,lit_color);
+          R_ConvertColorToBytes(lit_color,gfxColor.array);
+          uVar1 = (ushort)tess->vertexCount;
+          for (ii = first_vertex_index; ii < (int)(first_vertex_index + vertexCount); ii = ii + 1) {
+            RB_SetPolyVert(pcVar2->verts[debug_brush_info->indices[ii]],gfxColor,tess->vertexCount);
+            tess->vertexCount = tess->vertexCount + 1;
           }
-          for (local_ac = 1; (int)(uint)local_ac < (int)(uVar5 - 1); local_ac = local_ac + 1) {
-            local_48->indices[local_48->indexCount] = uVar1;
-            local_48->indices[local_48->indexCount + 1] = uVar1 + local_ac;
-            local_48->indices[local_48->indexCount + 2] = uVar1 + 1 + local_ac;
-            local_48->indexCount = local_48->indexCount + 3;
+          for (ii_2 = 1; (int)(uint)ii_2 < (int)(vertexCount - 1); ii_2 = ii_2 + 1) {
+            tess->indices[tess->indexCount] = uVar1;
+            tess->indices[tess->indexCount + 1] = uVar1 + ii_2;
+            tess->indices[tess->indexCount + 2] = uVar1 + 1 + ii_2;
+            tess->indexCount = tess->indexCount + 3;
           }
-          local_88 = local_88 + uVar5;
+          first_vertex_index = first_vertex_index + vertexCount;
         }
       }
     }
@@ -905,7 +910,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0085AC80  make_rotate  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:431)
 
-void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+void __cdecl make_rotate(phys_mat44 *mat,phys_vec3 *v1,phys_vec3 *v2)
 
 {
   float fVar1;
@@ -913,7 +918,7 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,phys_vec3 *param
   float fVar3;
   phys_vec3 local_20;
   
-  phys_cross(&local_20,param_2,param_3);
+  phys_cross(&local_20,v1,v2);
   fVar2 = local_20.x * local_20.x + local_20.y * local_20.y + local_20.z * local_20.z;
   if (1e-05 <= fVar2) {
     fVar2 = SQRT(fVar2);
@@ -921,12 +926,12 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,phys_vec3 *param
     local_20.x = local_20.x * fVar1;
     local_20.y = local_20.y * fVar1;
     local_20.z = local_20.z * fVar1;
-    fVar3 = param_2->x * param_3->x + param_2->y * param_3->y + param_2->z * param_3->z;
+    fVar3 = v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
     fVar1 = SQRT(fVar3 * fVar3 + fVar2 * fVar2);
-    make_rotate(param_1,&local_20,fVar3 / fVar1,fVar2 / fVar1);
+    make_rotate(mat,&local_20,fVar3 / fVar1,fVar2 / fVar1);
   }
   else {
-    phys_mat44::operator=(param_1,&PHYS_IDENTITY_MATRIX);
+    phys_mat44::operator=(mat,&PHYS_IDENTITY_MATRIX);
   }
   return;
 }
@@ -941,15 +946,20 @@ void __cdecl render_debug_patches_full(void)
   debug_patch_t *pdVar2;
   uint uVar3;
   int iVar4;
-  uint local_68;
-  uint local_40;
-  float local_38 [9];
-  float local_14;
+  uint vi;
+  uint seed;
+  uchar seed_g;
+  uchar seed_r;
+  uchar seed_b;
+  uint i;
+  CollisionAabbTree *tree;
+  float polygonVerts [9];
+  float faceColor;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = 0.1;
+  faceColor = 0.1;
   local_10 = 0.85;
   local_c = 0.4;
   local_8 = 1.0;
@@ -959,36 +969,35 @@ void __cdecl render_debug_patches_full(void)
   }
   else {
     RB_BeginCollisionPolygons(true,false);
-    for (local_40 = 0; local_40 < debug_patch_info->num_patches; local_40 = local_40 + 1) {
-      pdVar2 = debug_patch_info->patches + local_40;
+    for (i = 0; i < debug_patch_info->num_patches; i = i + 1) {
+      pdVar2 = debug_patch_info->patches + i;
       uVar3 = (uint)pdVar2->tree >> 4;
-      local_14 = ((float)((uVar3 & 0xf00) >> 4) / 256.0) * 0.5 + 0.5;
+      faceColor = ((float)((uVar3 & 0xf00) >> 4) / 256.0) * 0.5 + 0.5;
       local_10 = ((float)((byte)uVar3 & 0xf0) / 256.0) * 0.5 + 0.5;
       local_c = ((float)((uVar3 & 0xf) << 4) / 256.0) * 0.5 + 0.5;
       if ((pdVar2->tree->u).firstChildIndex == g_debug_partition) {
-        local_14 = 1.0;
+        faceColor = 1.0;
         local_10 = 1.0;
         local_c = 1.0;
         local_8 = 1.0;
       }
-      for (local_68 = pdVar2->first_vertex_index;
-          local_68 < (uint)pdVar2->num_indices + pdVar2->first_vertex_index; local_68 = local_68 + 3
-          ) {
-        pafVar1 = cm.verts + debug_patch_info->indices[local_68];
-        local_38[0] = (*pafVar1)[0];
-        local_38[1] = (*pafVar1)[1];
-        local_38[2] = (*pafVar1)[2];
+      for (vi = pdVar2->first_vertex_index;
+          vi < (uint)pdVar2->num_indices + pdVar2->first_vertex_index; vi = vi + 3) {
+        pafVar1 = cm.verts + debug_patch_info->indices[vi];
+        polygonVerts[0] = (*pafVar1)[0];
+        polygonVerts[1] = (*pafVar1)[1];
+        polygonVerts[2] = (*pafVar1)[2];
         iVar4 = (flip != '\0') + 1;
-        pafVar1 = cm.verts + debug_patch_info->indices[local_68 + 1];
-        local_38[iVar4 * 3] = (*pafVar1)[0];
-        local_38[iVar4 * 3 + 1] = (*pafVar1)[1];
-        local_38[iVar4 * 3 + 2] = (*pafVar1)[2];
+        pafVar1 = cm.verts + debug_patch_info->indices[vi + 1];
+        polygonVerts[iVar4 * 3] = (*pafVar1)[0];
+        polygonVerts[iVar4 * 3 + 1] = (*pafVar1)[1];
+        polygonVerts[iVar4 * 3 + 2] = (*pafVar1)[2];
         iVar4 = 2 - (uint)(flip != '\0');
-        pafVar1 = cm.verts + debug_patch_info->indices[local_68 + 2];
-        local_38[iVar4 * 3] = (*pafVar1)[0];
-        local_38[iVar4 * 3 + 1] = (*pafVar1)[1];
-        local_38[iVar4 * 3 + 2] = (*pafVar1)[2];
-        RB_DrawCollisionPolygon(3,(float (*) [3])local_38,&local_14,true,g_debug_partition);
+        pafVar1 = cm.verts + debug_patch_info->indices[vi + 2];
+        polygonVerts[iVar4 * 3] = (*pafVar1)[0];
+        polygonVerts[iVar4 * 3 + 1] = (*pafVar1)[1];
+        polygonVerts[iVar4 * 3 + 2] = (*pafVar1)[2];
+        RB_DrawCollisionPolygon(3,(float (*) [3])polygonVerts,&faceColor,true,g_debug_partition);
       }
     }
     RB_EndCollisionPolygons();
@@ -1016,15 +1025,15 @@ void __cdecl render_debug_brushes_and_patches(void)
 /* WARNING: Removing unreachable block (ram,0x00857a2d) */
 
 void __cdecl
-render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,float *param_5,
-            bool param_6,bool param_7,float *param_8)
+render_brush(cbrush_t *brush,phys_mat44 *xform,float *color,bool bLinesOnly,float *lightPos,
+            bool persistent,bool ztest,float *edgeColor)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_vec3 *ppVar3;
-  uint uVar4;
-  float *pfVar5;
+  phys_vec3 *inVector;
+  uint uVar3;
+  float *outVector;
   float local_578 [3];
   float local_56c;
   float local_568;
@@ -1070,16 +1079,16 @@ render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,f
   local_1c = 1.0;
   local_18 = 1.0;
   local_14 = 0.25;
-  if (param_3 != (float *)0x0) {
-    local_20 = *param_3;
-    local_1c = param_3[1];
-    local_18 = param_3[2];
-    local_14 = param_3[3];
+  if (color != (float *)0x0) {
+    local_20 = *color;
+    local_1c = color[1];
+    local_18 = color[2];
+    local_14 = color[3];
   }
-  if (param_2 == (phys_mat44 *)0x0) {
-    param_2 = &PHYS_IDENTITY_MATRIX;
+  if (xform == (phys_mat44 *)0x0) {
+    xform = &PHYS_IDENTITY_MATRIX;
   }
-  local_24 = get_brush_chull(param_1);
+  local_24 = get_brush_chull(brush);
   if (local_24 != (chull_t *)0x0) {
     if ((99 < local_24->nverts) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp",0x298
@@ -1089,42 +1098,42 @@ render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,f
       return;
     }
     for (local_28 = 0; local_28 < local_24->nverts; local_28 = local_28 + 1) {
-      pfVar5 = afStack_4d8 + local_28 * 3;
-      ppVar3 = phys_full_multiply(&local_4f0,param_2,local_24->verts + local_28);
-      Phys_NitrousVecToVec3(ppVar3,pfVar5);
+      outVector = afStack_4d8 + local_28 * 3;
+      inVector = phys_full_multiply(&local_4f0,xform,local_24->verts + local_28);
+      Phys_NitrousVecToVec3(inVector,outVector);
     }
     for (local_4f4 = 0; local_4f4 < local_24->ninds; local_4f4 = local_4f4 + 3) {
-      uVar4 = (uint)local_24->inds[local_4f4];
-      local_4f8 = afStack_4d8 + uVar4 * 3;
+      uVar3 = (uint)local_24->inds[local_4f4];
+      local_4f8 = afStack_4d8 + uVar3 * 3;
       local_51c = *local_4f8;
-      local_518 = afStack_4d8[uVar4 * 3 + 1];
-      local_514 = afStack_4d8[uVar4 * 3 + 2];
+      local_518 = afStack_4d8[uVar3 * 3 + 1];
+      local_514 = afStack_4d8[uVar3 * 3 + 2];
       local_520 = &local_510;
-      uVar4 = (uint)local_24->inds[local_4f4 + 1];
-      local_524 = afStack_4d8 + uVar4 * 3;
+      uVar3 = (uint)local_24->inds[local_4f4 + 1];
+      local_524 = afStack_4d8 + uVar3 * 3;
       local_510 = *local_524;
-      local_50c = afStack_4d8[uVar4 * 3 + 1];
-      local_508 = afStack_4d8[uVar4 * 3 + 2];
+      local_50c = afStack_4d8[uVar3 * 3 + 1];
+      local_508 = afStack_4d8[uVar3 * 3 + 2];
       local_528 = &local_504;
-      uVar4 = (uint)local_24->inds[local_4f4 + 2];
-      local_52c = afStack_4d8 + uVar4 * 3;
+      uVar3 = (uint)local_24->inds[local_4f4 + 2];
+      local_52c = afStack_4d8 + uVar3 * 3;
       local_504 = *local_52c;
-      local_500 = afStack_4d8[uVar4 * 3 + 1];
-      local_4fc = afStack_4d8[uVar4 * 3 + 2];
-      if (param_4) {
-        render_line(&local_51c,&local_510,colorLtGreen,0,(uint)param_7);
-        render_line(&local_51c,&local_504,colorLtGreen,0,(uint)param_7);
-        render_line(&local_510,&local_504,colorLtGreen,0,(uint)param_7);
+      local_500 = afStack_4d8[uVar3 * 3 + 1];
+      local_4fc = afStack_4d8[uVar3 * 3 + 2];
+      if (bLinesOnly) {
+        render_line(&local_51c,&local_510,colorLtGreen,0,(uint)ztest);
+        render_line(&local_51c,&local_504,colorLtGreen,0,(uint)ztest);
+        render_line(&local_510,&local_504,colorLtGreen,0,(uint)ztest);
       }
-      else if (param_5 == (float *)0x0) {
-        if (param_6) {
+      else if (lightPos == (float *)0x0) {
+        if (persistent) {
           R_AddPersistentDebugPolygon
                     (&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,&local_20,false,
                      &local_20,false);
         }
         else {
-          R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,param_3,
-                            param_7,param_8,param_7);
+          R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,color,ztest,
+                            edgeColor,ztest);
         }
       }
       else {
@@ -1133,9 +1142,9 @@ render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,f
         local_53c = (local_51c + local_510 + local_504) * 0.33333334;
         local_538 = (local_518 + local_50c + local_500) * 0.33333334;
         local_534 = (local_514 + local_508 + local_4fc) * 0.33333334;
-        local_54c = local_53c - *param_5;
-        local_548 = local_538 - param_5[1];
-        local_544 = local_534 - param_5[2];
+        local_54c = local_53c - *lightPos;
+        local_548 = local_538 - lightPos[1];
+        local_544 = local_534 - lightPos[2];
         Vec3Normalize(&local_54c);
         local_550 = &local_510;
         local_55c = local_510 - local_51c;
@@ -1151,14 +1160,14 @@ render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,f
         local_1c = local_1c * 1.0;
         local_18 = local_18 * 1.0;
         local_14 = 0.25;
-        if (param_6) {
+        if (persistent) {
           R_AddPersistentDebugPolygon
                     (&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,&local_20,false,
                      &local_20,false);
         }
         else {
           R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,&local_20,
-                            param_7,&local_20,param_7);
+                            ztest,&local_20,ztest);
         }
       }
     }
@@ -1169,49 +1178,54 @@ render_brush(cbrush_t *param_1,phys_mat44 *param_2,float *param_3,bool param_4,f
 
 // 00857B60  calc_color  (physics/phys_render.cpp:731)
 
-void __cdecl calc_color(void *param_1,float param_2,float *param_3)
+void __cdecl calc_color(void *id,float alpha,float *color)
 
 {
   uint uVar1;
+  uint seed;
+  uchar seed_g;
+  uchar seed_r;
+  uchar seed_b;
   
-  *param_3 = 0.1;
-  param_3[1] = 0.85;
-  param_3[2] = 0.4;
-  param_3[3] = 1.0;
-  uVar1 = (uint)param_1 >> 4;
-  *param_3 = ((float)((uVar1 & 0xf00) >> 4) / 256.0) * 0.5 + 0.5;
-  param_3[1] = ((float)((byte)uVar1 & 0xf0) / 256.0) * 0.5 + 0.5;
-  param_3[2] = ((float)((uVar1 & 0xf) << 4) / 256.0) * 0.5 + 0.5;
-  param_3[3] = param_2;
+  *color = 0.1;
+  color[1] = 0.85;
+  color[2] = 0.4;
+  color[3] = 1.0;
+  uVar1 = (uint)id >> 4;
+  *color = ((float)((uVar1 & 0xf00) >> 4) / 256.0) * 0.5 + 0.5;
+  color[1] = ((float)((byte)uVar1 & 0xf0) / 256.0) * 0.5 + 0.5;
+  color[2] = ((float)((uVar1 & 0xf) << 4) / 256.0) * 0.5 + 0.5;
+  color[3] = alpha;
   return;
 }
 
 
 // 00857CC0  render_convex_partition  (physics/phys_render.cpp:763)
 
-void __cdecl render_convex_partition(CollisionAabbTree *param_1)
+void __cdecl render_convex_partition(CollisionAabbTree *tree)
 
 {
-  int local_50;
-  float local_4c [4];
-  chull_t *local_3c;
-  float local_38 [3];
+  int ind_i;
+  float edgeColor [4];
+  chull_t *chull;
+  float polygonVerts [3];
   float local_2c [3];
   float local_20 [3];
-  float local_14 [4];
+  float faceColor [4];
   
-  calc_color(param_1,alpha,local_14);
-  local_4c[0] = 0.0;
-  local_4c[1] = 0.0;
-  local_4c[2] = 0.0;
-  local_4c[3] = 1.0;
-  local_3c = get_partition_chull(param_1);
-  if (local_3c != (chull_t *)0x0) {
-    for (local_50 = 0; local_50 < local_3c->ninds; local_50 = local_50 + 3) {
-      Phys_NitrousVecToVec3(local_3c->verts + local_3c->inds[local_50],local_38);
-      Phys_NitrousVecToVec3(local_3c->verts + local_3c->inds[local_50 + 1],local_2c);
-      Phys_NitrousVecToVec3(local_3c->verts + local_3c->inds[local_50 + 2],local_20);
-      R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,&local_38,local_14,true,local_4c,true);
+  calc_color(tree,alpha,faceColor);
+  edgeColor[0] = 0.0;
+  edgeColor[1] = 0.0;
+  edgeColor[2] = 0.0;
+  edgeColor[3] = 1.0;
+  chull = get_partition_chull(tree);
+  if (chull != (chull_t *)0x0) {
+    for (ind_i = 0; ind_i < chull->ninds; ind_i = ind_i + 3) {
+      Phys_NitrousVecToVec3(chull->verts + chull->inds[ind_i],polygonVerts);
+      Phys_NitrousVecToVec3(chull->verts + chull->inds[ind_i + 1],local_2c);
+      Phys_NitrousVecToVec3(chull->verts + chull->inds[ind_i + 2],local_20);
+      R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,&polygonVerts,faceColor,true,edgeColor,true
+                       );
     }
   }
   return;
@@ -1220,14 +1234,14 @@ void __cdecl render_convex_partition(CollisionAabbTree *param_1)
 
 // 00857DF0  render_chull  (physics/phys_render.cpp:789)
 
-void __cdecl render_chull(chull_t *param_1,phys_mat44 *param_2,float *param_3)
+void __cdecl render_chull(chull_t *first,phys_mat44 *xform,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_vec3 *ppVar3;
-  uint uVar4;
-  float *pfVar5;
+  phys_vec3 *inVector;
+  uint uVar3;
+  float *outVector;
   float local_51c;
   float local_518;
   float local_514;
@@ -1247,47 +1261,47 @@ void __cdecl render_chull(chull_t *param_1,phys_mat44 *param_2,float *param_3)
   float local_18;
   float local_14;
   
-  if (param_1 != (chull_t *)0x0) {
+  if (first != (chull_t *)0x0) {
     local_20 = 0.0;
     local_1c = 1.0;
     local_18 = 1.0;
     local_14 = 0.25;
-    if (param_3 != (float *)0x0) {
-      local_20 = *param_3;
-      local_1c = param_3[1];
-      local_18 = param_3[2];
-      local_14 = param_3[3];
+    if (color != (float *)0x0) {
+      local_20 = *color;
+      local_1c = color[1];
+      local_18 = color[2];
+      local_14 = color[3];
     }
-    if (param_2 == (phys_mat44 *)0x0) {
-      param_2 = &PHYS_IDENTITY_MATRIX;
+    if (xform == (phys_mat44 *)0x0) {
+      xform = &PHYS_IDENTITY_MATRIX;
     }
-    for (; param_1 != (chull_t *)0x0; param_1 = param_1->next) {
-      if ((99 < param_1->nverts) &&
+    for (; first != (chull_t *)0x0; first = first->next) {
+      if ((99 < first->nverts) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp",
                                    0x324,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      for (local_24 = 0; local_24 < param_1->nverts; local_24 = local_24 + 1) {
-        pfVar5 = afStack_4d8 + local_24 * 3;
-        ppVar3 = phys_full_multiply(&local_4f0,param_2,param_1->verts + local_24);
-        Phys_NitrousVecToVec3(ppVar3,pfVar5);
+      for (local_24 = 0; local_24 < first->nverts; local_24 = local_24 + 1) {
+        outVector = afStack_4d8 + local_24 * 3;
+        inVector = phys_full_multiply(&local_4f0,xform,first->verts + local_24);
+        Phys_NitrousVecToVec3(inVector,outVector);
       }
-      for (local_4f4 = 0; local_4f4 < param_1->ninds; local_4f4 = local_4f4 + 3) {
-        uVar4 = (uint)param_1->inds[local_4f4];
-        local_4f8 = afStack_4d8 + uVar4 * 3;
+      for (local_4f4 = 0; local_4f4 < first->ninds; local_4f4 = local_4f4 + 3) {
+        uVar3 = (uint)first->inds[local_4f4];
+        local_4f8 = afStack_4d8 + uVar3 * 3;
         local_51c = *local_4f8;
-        local_518 = afStack_4d8[uVar4 * 3 + 1];
-        local_514 = afStack_4d8[uVar4 * 3 + 2];
-        uVar4 = (uint)param_1->inds[local_4f4 + 1];
-        local_510 = afStack_4d8[uVar4 * 3];
-        local_50c = afStack_4d8[uVar4 * 3 + 1];
-        local_508 = afStack_4d8[uVar4 * 3 + 2];
-        uVar4 = (uint)param_1->inds[local_4f4 + 2];
-        local_504 = afStack_4d8[uVar4 * 3];
-        local_500 = afStack_4d8[uVar4 * 3 + 1];
-        local_4fc = afStack_4d8[uVar4 * 3 + 2];
+        local_518 = afStack_4d8[uVar3 * 3 + 1];
+        local_514 = afStack_4d8[uVar3 * 3 + 2];
+        uVar3 = (uint)first->inds[local_4f4 + 1];
+        local_510 = afStack_4d8[uVar3 * 3];
+        local_50c = afStack_4d8[uVar3 * 3 + 1];
+        local_508 = afStack_4d8[uVar3 * 3 + 2];
+        uVar3 = (uint)first->inds[local_4f4 + 2];
+        local_504 = afStack_4d8[uVar3 * 3];
+        local_500 = afStack_4d8[uVar3 * 3 + 1];
+        local_4fc = afStack_4d8[uVar3 * 3 + 2];
         R_AddDebugPolygon(&frontEndDataOut->debugGlobals,3,(float (*) [3])&local_51c,&local_20,true,
                           &local_20,true);
       }
@@ -1299,20 +1313,22 @@ void __cdecl render_chull(chull_t *param_1,phys_mat44 *param_2,float *param_3)
 
 // 008580B0  render_xmodel_chull  (physics/phys_render.cpp:826)
 
-void __cdecl render_xmodel_chull(XModel *param_1,uint param_2,phys_mat44 *param_3,float *param_4)
+void __cdecl render_xmodel_chull(XModel *model,uint key,phys_mat44 *xform,float *color)
 
 {
   int iVar1;
-  PhysGeomList *pPVar2;
-  chull_t *pcVar3;
+  PhysGeomList *geomList_00;
+  chull_t *first;
+  chull_t *chull;
+  PhysGeomList *geomList;
   
-  if (param_1 != (XModel *)0x0) {
-    iVar1 = XModelHasCollmap(param_1);
+  if (model != (XModel *)0x0) {
+    iVar1 = XModelHasCollmap(model);
     if (iVar1 != 0) {
-      pPVar2 = XModelGetCollmap(param_1,0);
-      if (pPVar2 != (PhysGeomList *)0x0) {
-        pcVar3 = get_collmap_chull(pPVar2,param_2);
-        render_chull(pcVar3,param_3,param_4);
+      geomList_00 = XModelGetCollmap(model,0);
+      if (geomList_00 != (PhysGeomList *)0x0) {
+        first = get_collmap_chull(geomList_00,key);
+        render_chull(first,xform,color);
       }
     }
   }
@@ -1322,47 +1338,46 @@ void __cdecl render_xmodel_chull(XModel *param_1,uint param_2,phys_mat44 *param_
 
 // 00858110  render_brushmodel_chull  (physics/phys_render.cpp:839)
 
-void __cdecl render_brushmodel_chull(int param_1,uint param_2,phys_mat44 *param_3,float *param_4)
+void __cdecl render_brushmodel_chull(int brushmodel,uint key,phys_mat44 *xform,float *color)
 
 {
-  chull_t *pcVar1;
+  chull_t *first;
+  chull_t *chull;
   
-  pcVar1 = get_brushmodel_chull(param_1,param_2);
-  render_chull(pcVar1,param_3,param_4);
+  first = get_brushmodel_chull(brushmodel,key);
+  render_chull(first,xform,color);
   return;
 }
 
 
 // 00858140  render_line  (physics/phys_render.cpp:860)
 
-void __cdecl render_line(float *param_1,float *param_2,float *param_3,int param_4,int param_5)
+void __cdecl render_line(float *p0,float *p1,float *color,int duration,int ztest)
 
 {
-  G_DebugLineWithDuration(param_1,param_2,param_3,param_5,param_4);
+  G_DebugLineWithDuration(p0,p1,color,ztest,duration);
   return;
 }
 
 
 // 00858170  render_line  (physics/phys_render.cpp:875)
 
-void __cdecl
-render_line(phys_vec3 *param_1,phys_vec3 *param_2,float *param_3,int param_4,int param_5)
+void __cdecl render_line(phys_vec3 *p0,phys_vec3 *p1,float *color,int duration,int ztest)
 
 {
-  float local_1c [3];
-  float local_10 [3];
+  float _p1 [3];
+  float _p0 [3];
   
-  Phys_NitrousVecToVec3(param_1,local_10);
-  Phys_NitrousVecToVec3(param_2,local_1c);
-  render_line(local_10,local_1c,param_3,param_5,param_4);
+  Phys_NitrousVecToVec3(p0,_p0);
+  Phys_NitrousVecToVec3(p1,_p1);
+  render_line(_p0,_p1,color,ztest,duration);
   return;
 }
 
 
 // 008581C0  render_box  (physics/phys_render.cpp:883)
 
-void __cdecl
-render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *param_4,int param_5)
+void __cdecl render_box(phys_vec3 *mins,phys_vec3 *maxs,phys_mat44 *xform,float *color,int duration)
 
 {
   code *pcVar1;
@@ -1386,7 +1401,7 @@ render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *para
   do {
     if (7 < (int)local_a8) {
       for (local_cc = 0; local_cc < 0xc; local_cc = local_cc + 1) {
-        render_line(local_a0 + edge[local_cc][0],local_a0 + edge[local_cc][1],param_4,param_5,0);
+        render_line(local_a0 + edge[local_cc][0],local_a0 + edge[local_cc][1],color,duration,0);
       }
       return;
     }
@@ -1401,7 +1416,7 @@ render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *para
             return;
           }
         }
-        local_b0 = (&param_1->x)[local_ac];
+        local_b0 = (&mins->x)[local_ac];
       }
       else {
         if ((local_ac < 0) || (2 < local_ac)) {
@@ -1413,7 +1428,7 @@ render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *para
             return;
           }
         }
-        local_b0 = (&param_2->x)[local_ac];
+        local_b0 = (&maxs->x)[local_ac];
       }
       if ((local_ac < 0) || (2 < local_ac)) {
         bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x22
@@ -1426,7 +1441,7 @@ render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *para
       }
       (&local_a0[local_a8].x)[local_ac] = local_b0;
     }
-    ppVar3 = phys_full_multiply(&local_c0,param_3,local_a0 + local_a8);
+    ppVar3 = phys_full_multiply(&local_c0,xform,local_a0 + local_a8);
     local_a0[local_a8].x = ppVar3->x;
     local_a0[local_a8].y = ppVar3->y;
     local_a0[local_a8].z = ppVar3->z;
@@ -1437,32 +1452,32 @@ render_box(phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,float *para
 
 // 00858450  render_box  (physics/phys_render.cpp:905)
 
-void __cdecl render_box(float *param_1,float *param_2,float *param_3,int param_4)
+void __cdecl render_box(float *_mn,float *_mx,float *color,int duration)
 
 {
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  Phys_Vec3ToNitrousVec(param_1,&local_20);
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
-  render_box(&local_20,&local_30,&PHYS_IDENTITY_MATRIX,param_3,param_4);
+  Phys_Vec3ToNitrousVec(_mn,&local_20);
+  Phys_Vec3ToNitrousVec(_mx,&local_30);
+  render_box(&local_20,&local_30,&PHYS_IDENTITY_MATRIX,color,duration);
   return;
 }
 
 
 // 008584B0  render_box  (physics/phys_render.cpp:913)
 
-void __cdecl render_box(phys_vec3 *param_1,phys_vec3 *param_2,float *param_3,int param_4)
+void __cdecl render_box(phys_vec3 *mins,phys_vec3 *maxs,float *color,int duration)
 
 {
-  render_box(param_1,param_2,&PHYS_IDENTITY_MATRIX,param_3,param_4);
+  render_box(mins,maxs,&PHYS_IDENTITY_MATRIX,color,duration);
   return;
 }
 
 
 // 008584E0  render_gjk_geom  (physics/phys_render.cpp:918)
 
-void __cdecl render_gjk_geom(gjk_base_t *param_1,phys_mat44 *param_2)
+void __cdecl render_gjk_geom(gjk_base_t *geom,phys_mat44 *cg2w)
 
 {
   code *pcVar1;
@@ -1486,53 +1501,53 @@ void __cdecl render_gjk_geom(gjk_base_t *param_1,phys_mat44 *param_2)
   float local_34 [8];
   cbrush_t *local_14;
   
-  iVar3 = (**(code **)(*(int *)param_1 + 0x34))();
+  iVar3 = (**(code **)(*(int *)geom + 0x34))();
   if (iVar3 == 0) {
-    local_38 = (**(code **)(*(int *)param_1 + 0x28))();
+    local_38 = (**(code **)(*(int *)geom + 0x28))();
     local_3c = local_38 + -1;
     switch(local_3c) {
     case 0:
     case 3:
     case 4:
-      if (((param_1->m_flags & 2) == 0) &&
+      if (((geom->m_flags & 2) == 0) &&
          (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x53,
                             "get_flag(FLAG_AABB_LOC_VALID)",""), bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_50.x = (param_1->m_aabb_mx_loc).x;
-      local_50.y = (param_1->m_aabb_mx_loc).y;
-      local_50.z = (param_1->m_aabb_mx_loc).z;
-      local_50.w = (param_1->m_aabb_mx_loc).w;
-      if (((param_1->m_flags & 2) == 0) &&
+      local_50.x = (geom->m_aabb_mx_loc).x;
+      local_50.y = (geom->m_aabb_mx_loc).y;
+      local_50.z = (geom->m_aabb_mx_loc).z;
+      local_50.w = (geom->m_aabb_mx_loc).w;
+      if (((geom->m_flags & 2) == 0) &&
          (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x52,
                             "get_flag(FLAG_AABB_LOC_VALID)",""), bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_60.x = (param_1->m_aabb_mn_loc).x;
-      local_60.y = (param_1->m_aabb_mn_loc).y;
-      local_60.z = (param_1->m_aabb_mn_loc).z;
-      local_60.w = (param_1->m_aabb_mn_loc).w;
-      render_box(&local_60,&local_50,param_2,colorMdRed,0);
+      local_60.x = (geom->m_aabb_mn_loc).x;
+      local_60.y = (geom->m_aabb_mn_loc).y;
+      local_60.z = (geom->m_aabb_mn_loc).z;
+      local_60.w = (geom->m_aabb_mn_loc).w;
+      render_box(&local_60,&local_50,cg2w,colorMdRed,0);
       break;
     case 1:
-      local_d4 = (cbrush_t *)(**(code **)(*(int *)param_1 + 0x34))();
+      local_d4 = (cbrush_t *)(**(code **)(*(int *)geom + 0x34))();
       calc_color(local_d4,alpha,local_f4 + 4);
       local_f4[0] = 0.0;
       local_f4[1] = 0.0;
       local_f4[2] = 0.0;
       local_f4[3] = 1.0;
-      render_brush(local_d4,param_2,local_f4 + 4,false,(float *)0x0,false,true,local_f4);
+      render_brush(local_d4,cg2w,local_f4 + 4,false,(float *)0x0,false,true,local_f4);
       break;
     case 2:
-      render_convex_partition((CollisionAabbTree *)param_1[1].m_aabb_mn_loc.x);
+      render_convex_partition((CollisionAabbTree *)geom[1].m_aabb_mn_loc.x);
       break;
     case 5:
-      local_64 = param_1;
-      phys_full_multiply_mat(&local_b0,param_2,(phys_mat44 *)&param_1[1].m_aabb_mn_loc);
+      local_64 = geom;
+      phys_full_multiply_mat(&local_b0,cg2w,(phys_mat44 *)&geom[1].m_aabb_mn_loc);
       local_b4 = local_64 + 1;
       local_d0.x = -*(float *)local_b4;
       local_d0.y = -*(float *)&local_64[1].field_0x4;
@@ -1543,39 +1558,39 @@ void __cdecl render_gjk_geom(gjk_base_t *param_1,phys_mat44 *param_2)
       render_box(&local_d0,(phys_vec3 *)(local_64 + 1),&local_b0,colorMdRed,0);
       break;
     default:
-      if (((param_1->m_flags & 2) == 0) &&
+      if (((geom->m_flags & 2) == 0) &&
          (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x53,
                             "get_flag(FLAG_AABB_LOC_VALID)",""), bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_110.x = (param_1->m_aabb_mx_loc).x;
-      local_110.y = (param_1->m_aabb_mx_loc).y;
-      local_110.z = (param_1->m_aabb_mx_loc).z;
-      local_110.w = (param_1->m_aabb_mx_loc).w;
-      if (((param_1->m_flags & 2) == 0) &&
+      local_110.x = (geom->m_aabb_mx_loc).x;
+      local_110.y = (geom->m_aabb_mx_loc).y;
+      local_110.z = (geom->m_aabb_mx_loc).z;
+      local_110.w = (geom->m_aabb_mx_loc).w;
+      if (((geom->m_flags & 2) == 0) &&
          (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x52,
                             "get_flag(FLAG_AABB_LOC_VALID)",""), bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_120.x = (param_1->m_aabb_mn_loc).x;
-      local_120.y = (param_1->m_aabb_mn_loc).y;
-      local_120.z = (param_1->m_aabb_mn_loc).z;
-      local_120.w = (param_1->m_aabb_mn_loc).w;
-      render_box(&local_120,&local_110,param_2,colorLtOrange,0);
+      local_120.x = (geom->m_aabb_mn_loc).x;
+      local_120.y = (geom->m_aabb_mn_loc).y;
+      local_120.z = (geom->m_aabb_mn_loc).z;
+      local_120.w = (geom->m_aabb_mn_loc).w;
+      render_box(&local_120,&local_110,cg2w,colorLtOrange,0);
     }
   }
   else {
-    local_14 = (cbrush_t *)(**(code **)(*(int *)param_1 + 0x34))();
+    local_14 = (cbrush_t *)(**(code **)(*(int *)geom + 0x34))();
     calc_color(local_14,alpha,local_34 + 4);
     local_34[0] = 0.0;
     local_34[1] = 0.0;
     local_34[2] = 0.0;
     local_34[3] = 1.0;
-    render_brush(local_14,param_2,local_34 + 4,false,(float *)0x0,false,true,local_34);
+    render_brush(local_14,cg2w,local_34 + 4,false,(float *)0x0,false,true,local_34);
   }
   return;
 }
@@ -1588,7 +1603,7 @@ void __cdecl render_gjk_geom(gjk_base_t *param_1,phys_mat44 *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl debug_render(PhysObjUserData *param_1)
+void __cdecl debug_render(PhysObjUserData *userData)
 
 {
   code *pcVar1;
@@ -1599,12 +1614,12 @@ void __cdecl debug_render(PhysObjUserData *param_1)
   phys_mat44 *local_18;
   rigid_body *local_14;
   
-  local_14 = param_1->body;
+  local_14 = userData->body;
   local_18 = &local_14->m_mat;
-  phys_full_multiply_mat(&local_60,local_18,&param_1->cg2rb);
+  phys_full_multiply_mat(&local_60,local_18,&userData->cg2rb);
   Phys_NitrousVecToVec3(&local_18->w,local_6c);
   G_DebugStar(local_6c,colorYellow,0);
-  if ((param_1->m_gjk_geom_list).m_geom_count < 0) {
+  if ((userData->m_gjk_geom_list).m_geom_count < 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x40b,
                       "m_geom_count >= 0","");
     if (bVar2) {
@@ -1613,11 +1628,11 @@ void __cdecl debug_render(PhysObjUserData *param_1)
       return;
     }
   }
-  for (local_74 = (param_1->m_gjk_geom_list).m_first_geom; local_74 != (gjk_base_t *)0x0;
+  for (local_74 = (userData->m_gjk_geom_list).m_first_geom; local_74 != (gjk_base_t *)0x0;
       local_74 = local_74->m_next_geom) {
     render_gjk_geom(local_74,&local_60);
   }
-  GamerProfile_WriteSettings((int)param_1);
+  GamerProfile_WriteSettings((int)userData);
   return;
 }
 
@@ -1627,7 +1642,7 @@ void __cdecl debug_render(PhysObjUserData *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *param_2)
+void __cdecl clip_winding(phys_static_array<phys_vec3,512> *winding,plane_lt *clip)
 
 {
   code *pcVar1;
@@ -1685,12 +1700,12 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
   local_104c[0] = 0;
   local_104c[1] = 0;
   local_104c[2] = 0;
-  local_1060.x = (param_2->n).x;
-  local_1060.y = (param_2->n).y;
-  local_1060.z = (param_2->n).z;
-  local_1060.w = (param_2->n).w;
-  local_1064 = param_2->d;
-  local_1068 = param_1->m_alloc_count;
+  local_1060.x = (clip->n).x;
+  local_1060.y = (clip->n).y;
+  local_1060.z = (clip->n).z;
+  local_1060.w = (clip->n).w;
+  local_1064 = clip->d;
+  local_1068 = winding->m_alloc_count;
   phys_static_array<float,512>::call_destructors(&local_830);
   local_830.m_alloc_count = 0;
   phys_static_array<float,512>::call_destructors(&local_1040);
@@ -1712,7 +1727,7 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
     else {
       tlFatal("phys array add overflow.");
     }
-    local_1080 = phys_static_array<phys_vec3,512>::operator[](param_1,local_106c);
+    local_1080 = phys_static_array<phys_vec3,512>::operator[](winding,local_106c);
     local_1084 = local_1080->x * local_1060.x + local_1080->y * local_1060.y +
                  local_1080->z * local_1060.z;
     local_1088 = local_1084 - local_1064;
@@ -1763,9 +1778,9 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
   pfVar4 = phys_static_array<float,512>::operator[](&local_830,0);
   *(float *)local_109c = *pfVar4;
   if (local_104c[0] == 0) {
-    for (local_10a8 = 0; local_10a8 < param_1->m_alloc_count; local_10a8 = local_10a8 + 1) {
+    for (local_10a8 = 0; local_10a8 < winding->m_alloc_count; local_10a8 = local_10a8 + 1) {
     }
-    param_1->m_alloc_count = 0;
+    winding->m_alloc_count = 0;
     phys_static_array<float,512>::call_destructors(&local_1040);
     phys_static_array<float,512>::call_destructors(&local_830);
   }
@@ -1776,9 +1791,9 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
   else {
     local_30c0.m_slot_array = (phys_vec3 *)&local_30c0;
     local_30c0.m_alloc_count = 0;
-    for (local_30c4 = 0; iVar2 = local_30c0.m_alloc_count, local_30c8 = param_1->m_alloc_count,
+    for (local_30c4 = 0; iVar2 = local_30c0.m_alloc_count, local_30c8 = winding->m_alloc_count,
         local_30c4 < local_30c8; local_30c4 = local_30c4 + 1) {
-      local_30cc = phys_static_array<phys_vec3,512>::operator[](param_1,local_30c4);
+      local_30cc = phys_static_array<phys_vec3,512>::operator[](winding,local_30c4);
       pfVar4 = phys_static_array<float,512>::operator[](&local_1040,local_30c4);
       if (*pfVar4 == 2.8026e-45) {
         local_30d0 = phys_static_array<phys_vec3,512>::add(&local_30c0,0,"phys array add overflow.")
@@ -1802,7 +1817,7 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
           pfVar5 = phys_static_array<float,512>::operator[](&local_1040,local_30c4);
           if (*pfVar4 != *pfVar5) {
             local_30d8 = phys_static_array<phys_vec3,512>::operator[]
-                                   (param_1,(local_30c4 + 1) % local_1068);
+                                   (winding,(local_30c4 + 1) % local_1068);
             pfVar4 = phys_static_array<float,512>::operator[](&local_830,local_30c4);
             pfVar5 = phys_static_array<float,512>::operator[](&local_830,local_30c4);
             pfVar6 = phys_static_array<float,512>::operator[](&local_830,local_30c4 + 1);
@@ -1845,12 +1860,12 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
         }
       }
     }
-    for (local_30fc = 0; local_30fc < param_1->m_alloc_count; local_30fc = local_30fc + 1) {
+    for (local_30fc = 0; local_30fc < winding->m_alloc_count; local_30fc = local_30fc + 1) {
     }
-    param_1->m_alloc_count = 0;
+    winding->m_alloc_count = 0;
     for (local_3104 = 0; local_3104 < iVar2; local_3104 = local_3104 + 1) {
       ppVar8 = phys_static_array<phys_vec3,512>::operator[](&local_30c0,local_3104);
-      ppVar7 = phys_static_array<phys_vec3,512>::add(param_1,0,"phys array add overflow.");
+      ppVar7 = phys_static_array<phys_vec3,512>::add(winding,0,"phys array add overflow.");
       phys_vec3::operator=(ppVar7,ppVar8);
     }
     for (local_3108 = 0; local_3108 < local_30c0.m_alloc_count; local_3108 = local_3108 + 1) {
@@ -1877,7 +1892,7 @@ void __cdecl clip_winding(phys_static_array<phys_vec3,512> *param_1,plane_lt *pa
 /* WARNING: Removing unreachable block (ram,0x008594b1) */
 /* WARNING: Removing unreachable block (ram,0x008594d1) */
 
-void __cdecl init_winding(plane_lt *param_1,phys_static_array<phys_vec3,512> *param_2)
+void __cdecl init_winding(plane_lt *plane,phys_static_array<phys_vec3,512> *winding)
 
 {
   code *pcVar1;
@@ -1936,11 +1951,11 @@ void __cdecl init_winding(plane_lt *param_1,phys_static_array<phys_vec3,512> *pa
   float local_24;
   phys_vec3 local_20;
   
-  local_20.x = (param_1->n).x;
-  local_20.y = (param_1->n).y;
-  local_20.z = (param_1->n).z;
-  local_20.w = (param_1->n).w;
-  local_24 = param_1->d;
+  local_20.x = (plane->n).x;
+  local_20.y = (plane->n).y;
+  local_20.z = (plane->n).z;
+  local_20.w = (plane->n).w;
+  local_24 = plane->d;
   local_28 = local_20.z;
   local_2c = ABS(local_20.z);
   local_30 = local_20.y;
@@ -2020,28 +2035,28 @@ void __cdecl init_winding(plane_lt *param_1,phys_static_array<phys_vec3,512> *pa
   local_fc = local_108;
   local_f8 = local_10c;
   local_f4 = local_110;
-  ppVar3 = phys_static_array<phys_vec3,512>::add(param_2,0,"phys array add overflow.");
+  ppVar3 = phys_static_array<phys_vec3,512>::add(winding,0,"phys array add overflow.");
   phys_vec3::operator=(ppVar3,ppVar4);
   ppVar4 = &local_80;
   ppVar3 = operator+(&local_150,&local_e0,&local_f0);
   ppVar4 = operator+(&local_160,ppVar3,ppVar4);
   phys_vec3::operator=(&local_140,ppVar4);
   ppVar4 = &local_140;
-  ppVar3 = phys_static_array<phys_vec3,512>::add(param_2,0,"phys array add overflow.");
+  ppVar3 = phys_static_array<phys_vec3,512>::add(winding,0,"phys array add overflow.");
   phys_vec3::operator=(ppVar3,ppVar4);
   ppVar4 = &local_80;
   ppVar3 = operator+(&local_170,&local_e0,&local_f0);
   ppVar4 = operator-(&local_180,ppVar3,ppVar4);
   phys_vec3::operator=(&local_140,ppVar4);
   ppVar4 = &local_140;
-  ppVar3 = phys_static_array<phys_vec3,512>::add(param_2,0,"phys array add overflow.");
+  ppVar3 = phys_static_array<phys_vec3,512>::add(winding,0,"phys array add overflow.");
   phys_vec3::operator=(ppVar3,ppVar4);
   ppVar4 = &local_80;
   ppVar3 = operator-(&local_190,&local_e0,&local_f0);
   ppVar4 = operator-(&local_1a0,ppVar3,ppVar4);
   phys_vec3::operator=(&local_140,ppVar4);
   ppVar4 = &local_140;
-  ppVar3 = phys_static_array<phys_vec3,512>::add(param_2,0,"phys array add overflow.");
+  ppVar3 = phys_static_array<phys_vec3,512>::add(winding,0,"phys array add overflow.");
   phys_vec3::operator=(ppVar3,ppVar4);
   return;
 }
@@ -2050,8 +2065,8 @@ void __cdecl init_winding(plane_lt *param_1,phys_static_array<phys_vec3,512> *pa
 // 00859A40  calc_winding  (physics/phys_render.cpp:1140)
 
 void __cdecl
-calc_winding(phys_static_array<plane_lt,512> *param_1,int param_2,
-            phys_static_array<phys_vec3,512> *param_3)
+calc_winding(phys_static_array<plane_lt,512> *planes,int plane_index,
+            phys_static_array<phys_vec3,512> *winding)
 
 {
   plane_lt *ppVar1;
@@ -2064,20 +2079,20 @@ calc_winding(phys_static_array<plane_lt,512> *param_1,int param_2,
   char local_15;
   plane_lt *local_14;
   
-  local_14 = phys_static_array<plane_lt,512>::operator[](param_1,param_2);
-  init_winding(local_14,param_3);
+  local_14 = phys_static_array<plane_lt,512>::operator[](planes,plane_index);
+  init_winding(local_14,winding);
   local_15 = '\0';
-  local_1c = param_1->m_alloc_count;
+  local_1c = planes->m_alloc_count;
   local_20 = 0;
   do {
     if (local_1c <= local_20) {
       return;
     }
-    if (local_20 == param_2) {
+    if (local_20 == plane_index) {
       local_15 = '\x01';
     }
     else {
-      ppVar1 = phys_static_array<plane_lt,512>::operator[](param_1,local_20);
+      ppVar1 = phys_static_array<plane_lt,512>::operator[](planes,local_20);
       ppVar3 = &local_40;
       for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
         (ppVar3->n).x = (ppVar1->n).x;
@@ -2090,15 +2105,15 @@ calc_winding(phys_static_array<plane_lt,512> *param_1,int param_2,
         local_40.n.y = -local_40.n.y;
         local_40.n.z = -local_40.n.z;
         local_40.d = -local_40.d;
-        clip_winding(param_3,&local_40);
-        if (param_3->m_alloc_count < 3) {
+        clip_winding(winding,&local_40);
+        if (winding->m_alloc_count < 3) {
           return;
         }
       }
       else if (local_15 != '\0') {
-        for (local_6c = 0; local_6c < param_3->m_alloc_count; local_6c = local_6c + 1) {
+        for (local_6c = 0; local_6c < winding->m_alloc_count; local_6c = local_6c + 1) {
         }
-        param_3->m_alloc_count = 0;
+        winding->m_alloc_count = 0;
         return;
       }
     }
@@ -2109,80 +2124,80 @@ calc_winding(phys_static_array<plane_lt,512> *param_1,int param_2,
 
 // 00859CE0  Phys_DebugPoint  (physics/phys_render.cpp:1175)
 
-void __cdecl Phys_DebugPoint(phys_vec3 *param_1,float param_2,float *param_3)
+void __cdecl Phys_DebugPoint(phys_vec3 *pos,float radius,float *color)
 
 {
-  float local_10 [3];
+  float point [3];
   
-  Phys_NitrousVecToVec3(param_1,local_10);
-  G_DebugStar(local_10,param_3,0);
+  Phys_NitrousVecToVec3(pos,point);
+  G_DebugStar(point,color,0);
   return;
 }
 
 
 // 00859D10  Phys_DebugBox  (physics/phys_render.cpp:1182)
 
-void __cdecl Phys_DebugBox(phys_mat44 *param_1,float *param_2,float param_3)
+void __cdecl Phys_DebugBox(phys_mat44 *mat,float *color,float scale)
 
 {
-  float local_50 [3];
-  float local_44;
+  float origin [3];
+  float mins;
   float local_40;
   float local_3c;
-  float local_38 [9];
-  undefined4 local_14;
-  float local_10;
+  float rotation [9];
+  float size;
+  float maxs;
   float local_c;
   float local_8;
   
-  local_14 = 0x40e00000;
-  local_44 = param_3 * -7.0;
-  local_40 = param_3 * -3.0;
-  local_3c = param_3 * -3.0;
-  local_10 = param_3 * 7.0;
-  local_c = param_3 * 3.0;
-  local_8 = param_3 * 3.0;
-  Phys_NitrousVecToVec3(&param_1->w,local_50);
-  Phys_NitrousMat44ToVec33(param_1,(float (*) [3])local_38);
-  CG_DebugBoxOriented(local_50,&local_44,&local_10,(float (*) [3])local_38,param_2,0,0);
+  size = 7.0;
+  mins = scale * -7.0;
+  local_40 = scale * -3.0;
+  local_3c = scale * -3.0;
+  maxs = scale * 7.0;
+  local_c = scale * 3.0;
+  local_8 = scale * 3.0;
+  Phys_NitrousVecToVec3(&mat->w,origin);
+  Phys_NitrousMat44ToVec33(mat,(float (*) [3])rotation);
+  CG_DebugBoxOriented(origin,&mins,&maxs,(float (*) [3])rotation,color,0,0);
   return;
 }
 
 
 // 00859E20  Phys_DebugBox  (physics/phys_render.cpp:1202)
 
-void __cdecl Phys_DebugBox(phys_mat44 *param_1,phys_vec3 *param_2,float *param_3)
+void __cdecl Phys_DebugBox(phys_mat44 *mat,phys_vec3 *dims,float *color)
 
 {
-  float local_58 [3];
-  float local_4c;
+  float origin [3];
+  float mins;
   float local_48;
   float local_44;
-  float local_40;
+  float _dims;
   float local_3c;
   float local_38;
-  float local_34 [9];
-  float local_10;
+  float rotation [9];
+  float maxs;
   float local_c;
   float local_8;
   
-  Phys_NitrousVecToVec3(param_2,&local_40);
-  local_10 = local_40;
+  Phys_NitrousVecToVec3(dims,&_dims);
+  maxs = _dims;
   local_c = local_3c;
   local_8 = local_38;
-  local_4c = local_40 * -1.0;
+  mins = _dims * -1.0;
   local_48 = local_3c * -1.0;
   local_44 = local_38 * -1.0;
-  Phys_NitrousVecToVec3(&param_1->w,local_58);
-  Phys_NitrousMat44ToVec33(param_1,(float (*) [3])local_34);
-  CG_DebugBoxOriented(local_58,&local_4c,&local_10,(float (*) [3])local_34,param_3,0,0);
+  Phys_NitrousVecToVec3(&mat->w,origin);
+  Phys_NitrousMat44ToVec33(mat,(float (*) [3])rotation);
+  CG_DebugBoxOriented(origin,&mins,&maxs,(float (*) [3])rotation,color,0,0);
   return;
 }
 
 
 // 00859EF0  Phys_RenderBase  (physics/phys_render.cpp:1222)
 
-void __cdecl Phys_RenderBase(phys_mat44 *param_1,float param_2)
+void __cdecl Phys_RenderBase(phys_mat44 *mat,float scale)
 
 {
   phys_vec3 local_e0;
@@ -2219,13 +2234,13 @@ void __cdecl Phys_RenderBase(phys_mat44 *param_1,float param_2)
   float local_24;
   phys_vec3 local_20;
   
-  local_20.x = (param_1->w).x;
-  local_20.y = (param_1->w).y;
-  local_20.z = (param_1->w).z;
-  local_20.w = (param_1->w).w;
-  local_40 = param_2 * (param_1->x).x;
-  local_3c = param_2 * (param_1->x).y;
-  local_38 = param_2 * (param_1->x).z;
+  local_20.x = (mat->w).x;
+  local_20.y = (mat->w).y;
+  local_20.z = (mat->w).z;
+  local_20.w = (mat->w).w;
+  local_40 = scale * (mat->x).x;
+  local_3c = scale * (mat->x).y;
+  local_38 = scale * (mat->x).z;
   local_60.x = local_20.x + local_40;
   local_60.y = local_20.y + local_3c;
   local_60.z = local_20.z + local_38;
@@ -2236,10 +2251,10 @@ void __cdecl Phys_RenderBase(phys_mat44 *param_1,float param_2)
   local_28 = local_3c;
   local_24 = local_40;
   render_line(&local_20,&local_60,colorMdRed,0,0);
-  local_64 = &param_1->y;
-  local_80 = param_2 * local_64->x;
-  local_7c = param_2 * (param_1->y).y;
-  local_78 = param_2 * (param_1->y).z;
+  local_64 = &mat->y;
+  local_80 = scale * local_64->x;
+  local_7c = scale * (mat->y).y;
+  local_78 = scale * (mat->y).z;
   local_a0.x = local_20.x + local_80;
   local_a0.y = local_20.y + local_7c;
   local_a0.z = local_20.z + local_78;
@@ -2250,10 +2265,10 @@ void __cdecl Phys_RenderBase(phys_mat44 *param_1,float param_2)
   local_6c = local_7c;
   local_68 = local_80;
   render_line(&local_20,&local_a0,colorMdGreen,0,0);
-  local_a4 = &param_1->z;
-  local_c0 = param_2 * local_a4->x;
-  local_bc = param_2 * (param_1->z).y;
-  local_b8 = param_2 * (param_1->z).z;
+  local_a4 = &mat->z;
+  local_c0 = scale * local_a4->x;
+  local_bc = scale * (mat->z).y;
+  local_b8 = scale * (mat->z).z;
   local_e0.x = local_20.x + local_c0;
   local_e0.y = local_20.y + local_bc;
   local_e0.z = local_20.z + local_b8;
@@ -2270,7 +2285,7 @@ void __cdecl Phys_RenderBase(phys_mat44 *param_1,float param_2)
 
 // 0085A1D0  Phys_JointDebugRender  (physics/phys_render.cpp:1263)
 
-void __cdecl Phys_JointDebugRender(int param_1)
+void __cdecl Phys_JointDebugRender(int id)
 
 {
   code *pcVar1;
@@ -2381,7 +2396,7 @@ void __cdecl Phys_JointDebugRender(int param_1)
   float local_14;
   
   local_14 = 15.0;
-  if (param_1 == 0) {
+  if (id == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_render.cpp",0x4f2,0,
                              "%s");
     if (!bVar2) {
@@ -2390,13 +2405,13 @@ void __cdecl Phys_JointDebugRender(int param_1)
       return;
     }
   }
-  local_18 = param_1;
-  local_1c = *(int *)param_1;
-  local_20 = *(int *)(param_1 + 4);
-  if ((*(uint *)(param_1 + 0x30) & 8) == 0) {
-    if ((*(uint *)(param_1 + 0x30) & 4) != 0) {
+  local_18 = id;
+  local_1c = *(int *)id;
+  local_20 = *(int *)(id + 4);
+  if ((*(uint *)(id + 0x30) & 8) == 0) {
+    if ((*(uint *)(id + 0x30) & 4) != 0) {
       if (render_pivots != false) {
-        phys_multiply33(&local_290,(phys_mat44 *)(local_1c + 0x30),(phys_vec3 *)(param_1 + 0x60));
+        phys_multiply33(&local_290,(phys_mat44 *)(local_1c + 0x30),(phys_vec3 *)(id + 0x60));
         phys_multiply33(&local_2a0,(phys_mat44 *)(local_20 + 0x30),(phys_vec3 *)(local_18 + 0x70));
         local_2a4 = (phys_mat44 *)(local_1c + 0x30);
         ppVar4 = (phys_vec3 *)(local_1c + 0x60);
@@ -2440,7 +2455,7 @@ void __cdecl Phys_JointDebugRender(int param_1)
     }
   }
   else {
-    phys_multiply33(&local_30,(phys_mat44 *)(local_1c + 0x30),(phys_vec3 *)(param_1 + 0x60));
+    phys_multiply33(&local_30,(phys_mat44 *)(local_1c + 0x30),(phys_vec3 *)(id + 0x60));
     phys_multiply33(&local_40,(phys_mat44 *)(local_20 + 0x30),(phys_vec3 *)(local_18 + 0x70));
     local_44 = (phys_mat44 *)(local_1c + 0x30);
     ppVar4 = (phys_vec3 *)(local_1c + 0x60);
@@ -2539,14 +2554,14 @@ void __cdecl Phys_JointDebugRender(int param_1)
 
 // 0085ADE0  render_contact  (physics/phys_render.cpp:1354)
 
-void __cdecl render_contact(rigid_body_constraint_contact *param_1)
+void __cdecl render_contact(rigid_body_constraint_contact *rbc)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_vec3 *ppVar3;
-  phys_vec3 *ppVar4;
-  environment_rigid_body *peVar5;
+  phys_vec3 *b;
+  phys_vec3 *a;
+  environment_rigid_body *peVar3;
   phys_vec3 local_130;
   float local_11c;
   float local_118;
@@ -2596,8 +2611,8 @@ void __cdecl render_contact(rigid_body_constraint_contact *param_1)
   contact_point_info *local_18;
   phys_simple_link_list<contact_point_info> *local_14;
   
-  if (param_1 != (rigid_body_constraint_contact *)0x0) {
-    local_14 = &param_1->m_list_contact_point_info_buffer_1;
+  if (rbc != (rigid_body_constraint_contact *)0x0) {
+    local_14 = &rbc->m_list_contact_point_info_buffer_1;
     local_1c = local_14->m_first;
     local_20 = (contact_point_info *)0x0;
     local_18 = local_1c;
@@ -2611,19 +2626,19 @@ void __cdecl render_contact(rigid_body_constraint_contact *param_1)
         return;
       }
       for (local_2c = 0; local_2c < local_28->m_point_pair_count; local_2c = local_2c + 1) {
-        local_30 = param_1->_padding_;
+        local_30 = rbc->_padding_;
         local_34 = local_28->m_list_b2_r_loc + local_2c;
         local_38 = (phys_mat44 *)(local_30 + 0x30);
-        ppVar3 = (phys_vec3 *)(local_30 + 0x60);
-        ppVar4 = phys_multiply33(&local_50,local_38,local_34);
-        operator+(&local_60,ppVar4,ppVar3);
+        b = (phys_vec3 *)(local_30 + 0x60);
+        a = phys_multiply33(&local_50,local_38,local_34);
+        operator+(&local_60,a,b);
         local_70 = (local_28->m_normal).x;
         local_6c = (local_28->m_normal).y;
         local_68 = (local_28->m_normal).z;
         local_64 = (local_28->m_normal).w;
-        local_74 = (environment_rigid_body *)param_1->_padding_;
-        peVar5 = phys_sys::get_environment_rigid_body();
-        if (local_74 == peVar5) {
+        local_74 = (environment_rigid_body *)rbc->_padding_;
+        peVar3 = phys_sys::get_environment_rigid_body();
+        if (local_74 == peVar3) {
           local_90 = -local_70;
           local_8c = -local_6c;
           local_88 = -local_68;
@@ -2678,64 +2693,64 @@ void __cdecl render_contact(rigid_body_constraint_contact *param_1)
 
 // 0085B210  render_collision_tree  (physics/phys_render.cpp:1381)
 
-void __cdecl render_collision_tree(CollisionAabbTree *param_1,float *param_2)
+void __cdecl render_collision_tree(CollisionAabbTree *tree,float *color)
 
 {
   float (*pafVar1) [3];
-  float local_64;
+  float mins;
   float local_60;
   float local_5c;
-  float local_58;
+  float maxs;
   float local_54;
   float local_50;
-  float local_4c [4];
-  int local_3c;
-  float local_38;
+  float color_2 [4];
+  int triIndex;
+  float v0;
   float local_34;
   float local_30;
-  float local_2c;
+  float v2;
   float local_28;
   float local_24;
-  float local_20;
+  float v1;
   float local_1c;
   float local_18;
-  CollisionPartition *local_14;
-  float local_10;
+  CollisionPartition *partition;
+  float center;
   float local_c;
   float local_8;
   
-  local_14 = cm.partitions + (param_1->u).firstChildIndex;
-  for (local_3c = local_14->firstTri;
-      local_3c < (int)((uint)local_14->triCount + local_14->firstTri); local_3c = local_3c + 1) {
-    pafVar1 = cm.verts + cm.triIndices[local_3c * 3];
-    local_38 = (*pafVar1)[0];
+  partition = cm.partitions + (tree->u).firstChildIndex;
+  for (triIndex = partition->firstTri;
+      triIndex < (int)((uint)partition->triCount + partition->firstTri); triIndex = triIndex + 1) {
+    pafVar1 = cm.verts + cm.triIndices[triIndex * 3];
+    v0 = (*pafVar1)[0];
     local_34 = (*pafVar1)[1];
     local_30 = (*pafVar1)[2];
-    pafVar1 = cm.verts + cm.triIndices[local_3c * 3 + 1];
-    local_20 = (*pafVar1)[0];
+    pafVar1 = cm.verts + cm.triIndices[triIndex * 3 + 1];
+    v1 = (*pafVar1)[0];
     local_1c = (*pafVar1)[1];
     local_18 = (*pafVar1)[2];
-    pafVar1 = cm.verts + cm.triIndices[local_3c * 3 + 2];
-    local_2c = (*pafVar1)[0];
+    pafVar1 = cm.verts + cm.triIndices[triIndex * 3 + 2];
+    v2 = (*pafVar1)[0];
     local_28 = (*pafVar1)[1];
     local_24 = (*pafVar1)[2];
-    G_DebugLineWithDuration(&local_38,&local_20,param_2,1,0);
-    G_DebugLineWithDuration(&local_38,&local_2c,param_2,1,0);
-    G_DebugLineWithDuration(&local_20,&local_2c,param_2,1,0);
-    local_10 = (local_38 + local_20 + local_2c) * 0.33333334;
+    G_DebugLineWithDuration(&v0,&v1,color,1,0);
+    G_DebugLineWithDuration(&v0,&v2,color,1,0);
+    G_DebugLineWithDuration(&v1,&v2,color,1,0);
+    center = (v0 + v1 + v2) * 0.33333334;
     local_c = (local_34 + local_1c + local_28) * 0.33333334;
     local_8 = (local_30 + local_18 + local_24) * 0.33333334;
-    local_64 = -rad;
+    mins = -rad;
     local_60 = -rad;
     local_5c = -rad;
-    local_58 = rad;
+    maxs = rad;
     local_54 = rad;
     local_50 = rad;
-    local_4c[0] = 1.0;
-    local_4c[1] = 0.0;
-    local_4c[2] = 0.0;
-    local_4c[3] = 1.0;
-    G_DebugBox(&local_10,&local_64,&local_58,0.0,local_4c,1,0);
+    color_2[0] = 1.0;
+    color_2[1] = 0.0;
+    color_2[2] = 0.0;
+    color_2[3] = 1.0;
+    G_DebugBox(&center,&mins,&maxs,0.0,color_2,1,0);
   }
   return;
 }
@@ -2743,14 +2758,15 @@ void __cdecl render_collision_tree(CollisionAabbTree *param_1,float *param_2)
 
 // 0085B4B0  render_prims  (physics/phys_render.cpp:1404)
 
-void __cdecl render_prims(col_prim_t *param_1,int param_2)
+void __cdecl render_prims(col_prim_t *prims,int nprims)
 
 {
   col_prim_t *pcVar1;
-  int local_8;
+  col_prim_t *prim;
+  int pi;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pcVar1 = param_1 + local_8;
+  for (pi = 0; pi < nprims; pi = pi + 1) {
+    pcVar1 = prims + pi;
     if (pcVar1->type == 0) {
       render_collision_tree((pcVar1->field1_0x4).tree,colorWhite);
     }
@@ -2768,12 +2784,12 @@ void __cdecl render_prims(col_prim_t *param_1,int param_2)
 void __cdecl GjkTraceGeom::Render(void)
 
 {
-  int local_8;
+  int i;
   
   if ((g_debugRenderGjkTraceGeom->current).enabled != false) {
-    for (local_8 = 0; local_8 < nGeoms; local_8 = local_8 + 1) {
-      render_brush(geoms[local_8].brush,&geoms[local_8].mat,(float *)0x0,true,(float *)0x0,false,
-                   false,(float *)0x0);
+    for (i = 0; i < nGeoms; i = i + 1) {
+      render_brush(geoms[i].brush,&geoms[i].mat,(float *)0x0,true,(float *)0x0,false,false,
+                   (float *)0x0);
     }
   }
   nGeoms = 0;

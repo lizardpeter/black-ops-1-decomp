@@ -2,20 +2,20 @@
 
 // 00C20278  _fileno  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fileno.c:40)
 
-int __cdecl _fileno(_iobuf *param_1)
+int __cdecl _fileno(_iobuf *stream)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (stream == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    iVar2 = param_1->_file;
+    iVar2 = stream->_file;
   }
   return iVar2;
 }

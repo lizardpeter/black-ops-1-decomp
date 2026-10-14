@@ -60,11 +60,11 @@ void __cdecl CG_RegisterVehicle(char *param_1,short param_2)
   _func_void_uchar_ptr_char_ptr *unaff_EBX;
   _func_int_uchar_ptr_char_ptr_int_int *unaff_ESI;
   int iVar6;
-  vehicle_info_t **ppvVar7;
+  vehicle_info_t **dst;
   char *unaff_EDI;
-  float *pfVar8;
-  undefined2 *puVar9;
-  double dVar10;
+  float *pfVar7;
+  undefined2 *puVar8;
+  double dVar9;
   char acStack_4048 [64];
   char acStack_4008 [16380];
   undefined4 uStack_c;
@@ -75,37 +75,37 @@ void __cdecl CG_RegisterVehicle(char *param_1,short param_2)
     pcVar2 = (cspField_t *)Com_LoadInfoString(acStack_4048,acStack_4008,unaff_EDI,(char *)unaff_ESI)
     ;
     iVar6 = (int)param_2;
-    ppvVar7 = &bg_vehicleInfos + iVar6 * 0x776;
-    memset((uchar *)ppvVar7,'\0',0x1dd8);
+    dst = &bg_vehicleInfos + iVar6 * 0x776;
+    memset((uchar *)dst,'\0',0x1dd8);
     pcVar3 = param_1;
     do {
       cVar1 = *pcVar3;
-      pcVar3[(int)ppvVar7 - (int)param_1] = cVar1;
+      pcVar3[(int)dst - (int)param_1] = cVar1;
       pcVar3 = pcVar3 + 1;
     } while (cVar1 != '\0');
     iVar4 = ParseConfigStringToStruct
-                      ((uchar *)ppvVar7,pcVar2,0x19,(char *)VEH_ParseSpecificField,(int)unaff_EDI,
+                      ((uchar *)dst,pcVar2,0x19,(char *)VEH_ParseSpecificField,(int)unaff_EDI,
                        unaff_ESI,unaff_EBX);
     if (iVar4 == 0) {
       Com_Error(ERR_DROP,"\x15Cannot parse vehicle on client: %s\n",param_1);
       return;
     }
-    pfVar8 = (float *)(&DAT_049ffed4 + iVar6 * 0x776);
+    pfVar7 = (float *)(&DAT_049ffed4 + iVar6 * 0x776);
     iVar4 = 4;
     do {
-      dVar10 = (double)(*pfVar8 * 0.5 * 0.017453292);
+      dVar9 = (double)(*pfVar7 * 0.5 * 0.017453292);
       __libm_sse2_cos((double)CONCAT44(unaff_ESI,unaff_EDI));
-      *pfVar8 = (float)dVar10;
-      pfVar8 = pfVar8 + 1;
+      *pfVar7 = (float)dVar9;
+      pfVar7 = pfVar7 + 1;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
-    puVar9 = (undefined2 *)(&DAT_049ff7f4 + iVar6 * 0x1dd8);
+    puVar8 = (undefined2 *)(&DAT_049ff7f4 + iVar6 * 0x1dd8);
     pcVar3 = (char *)(iVar6 * 0x1dd8 + 0x49ff6f4);
     iVar6 = 4;
     do {
       uVar5 = BG_GetWeaponIndexForName(pcVar3,(_func_void_uint *)0x0);
-      *puVar9 = (short)uVar5;
-      puVar9 = puVar9 + 1;
+      *puVar8 = (short)uVar5;
+      puVar8 = puVar8 + 1;
       pcVar3 = pcVar3 + 0x40;
       iVar6 = iVar6 + -1;
     } while (iVar6 != 0);

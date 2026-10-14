@@ -2,10 +2,11 @@
 
 // 00469B10  PrintSourceStack  (botlib/l_precomp.cpp:32)
 
-void __cdecl PrintSourceStack(script_s *param_1)
+void __cdecl PrintSourceStack(script_s *scriptstack)
 
 {
-  for (param_1 = param_1->next; param_1 != (script_s *)0x0; param_1 = param_1->next) {
+  for (scriptstack = scriptstack->next; scriptstack != (script_s *)0x0;
+      scriptstack = scriptstack->next) {
     Com_PrintWarning(0x18,"  From file %s, line %d\n");
   }
   return;
@@ -16,16 +17,17 @@ void __cdecl PrintSourceStack(script_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SourceError(source_s *param_1,char *param_2)
+void __cdecl SourceError(source_s *source,char *str)
 
 {
-  char local_40c [1028];
+  char *ap;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_40c,0x400,param_2,&stack0x0000000c);
+  _vsnprintf(text,0x400,str,&stack0x0000000c);
   Com_PrintError(0x18,"Error: file %s, line %d: %s\n");
-  PrintSourceStack(param_1->scriptstack);
+  PrintSourceStack(source->scriptstack);
   return;
 }
 
@@ -34,54 +36,57 @@ void __cdecl SourceError(source_s *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SourceWarning(source_s *param_1,char *param_2)
+void __cdecl SourceWarning(source_s *source,char *str)
 
 {
-  char local_40c [1028];
+  char *ap;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_40c,0x400,param_2,&stack0x0000000c);
+  _vsnprintf(text,0x400,str,&stack0x0000000c);
   Com_PrintWarning(0x18,"Warning: file %s, line %d: %s\n");
-  PrintSourceStack(param_1->scriptstack);
+  PrintSourceStack(source->scriptstack);
   return;
 }
 
 
 // 0046C760  PC_PushIndent  (botlib/l_precomp.cpp:86)
 
-void __cdecl PC_PushIndent(source_s *param_1,int param_2,parseSkip_t param_3)
+void __cdecl PC_PushIndent(source_s *source,int type,parseSkip_t skip)
 
 {
   indent_s *piVar1;
+  indent_s *indent;
   
   piVar1 = GetMemory(0x10);
-  piVar1->type = param_2;
-  piVar1->script = param_1->scriptstack;
-  piVar1->skip = param_3;
-  param_1->skip = (uint)(piVar1->skip != SKIP_NO) + param_1->skip;
-  piVar1->next = param_1->indentstack;
-  param_1->indentstack = piVar1;
+  piVar1->type = type;
+  piVar1->script = source->scriptstack;
+  piVar1->skip = skip;
+  source->skip = (uint)(piVar1->skip != SKIP_NO) + source->skip;
+  piVar1->next = source->indentstack;
+  source->indentstack = piVar1;
   return;
 }
 
 
 // 00469EE0  PC_PopIndent  (botlib/l_precomp.cpp:106)
 
-void __cdecl PC_PopIndent(source_s *param_1,int *param_2,parseSkip_t *param_3)
+void __cdecl PC_PopIndent(source_s *source,int *type,parseSkip_t *skip)
 
 {
-  indent_s *piVar1;
+  indent_s *ptr;
+  indent_s *indent;
   
-  *param_2 = 0;
-  *param_3 = SKIP_NO;
-  piVar1 = param_1->indentstack;
-  if ((piVar1 != (indent_s *)0x0) && (param_1->indentstack->script == param_1->scriptstack)) {
-    *param_2 = piVar1->type;
-    *param_3 = piVar1->skip;
-    param_1->indentstack = param_1->indentstack->next;
-    param_1->skip = param_1->skip - (uint)(piVar1->skip != SKIP_NO);
-    FreeMemory(piVar1);
+  *type = 0;
+  *skip = SKIP_NO;
+  ptr = source->indentstack;
+  if ((ptr != (indent_s *)0x0) && (source->indentstack->script == source->scriptstack)) {
+    *type = ptr->type;
+    *skip = ptr->skip;
+    source->indentstack = source->indentstack->next;
+    source->skip = source->skip - (uint)(ptr->skip != SKIP_NO);
+    FreeMemory(ptr);
   }
   return;
 }
@@ -89,36 +94,37 @@ void __cdecl PC_PopIndent(source_s *param_1,int *param_2,parseSkip_t *param_3)
 
 // 00469C90  PC_PushScript  (botlib/l_precomp.cpp:135)
 
-void __cdecl PC_PushScript(source_s *param_1,script_s *param_2)
+void __cdecl PC_PushScript(source_s *source,script_s *script)
 
 {
   int iVar1;
-  script_s *local_8;
+  script_s *s;
   
-  local_8 = param_1->scriptstack;
+  s = source->scriptstack;
   while( true ) {
-    if (local_8 == (script_s *)0x0) {
-      param_2->next = param_1->scriptstack;
-      param_1->scriptstack = param_2;
+    if (s == (script_s *)0x0) {
+      script->next = source->scriptstack;
+      source->scriptstack = script;
       return;
     }
-    iVar1 = I_stricmp(local_8->filename,param_2->filename);
+    iVar1 = I_stricmp(s->filename,script->filename);
     if (iVar1 == 0) break;
-    local_8 = local_8->next;
+    s = s->next;
   }
-  SourceError(param_1,"%s recursively included");
+  SourceError(source,"%s recursively included");
   return;
 }
 
 
 // 00469D10  PC_CopyToken  (botlib/l_precomp.cpp:159)
 
-token_s * __cdecl PC_CopyToken(token_s *param_1)
+token_s * __cdecl PC_CopyToken(token_s *token)
 
 {
   token_s *ptVar1;
   int iVar2;
   token_s *ptVar3;
+  token_s *t;
   
   ptVar1 = GetMemory(0x430);
   if (ptVar1 == (token_s *)0x0) {
@@ -128,8 +134,8 @@ token_s * __cdecl PC_CopyToken(token_s *param_1)
   else {
     ptVar3 = ptVar1;
     for (iVar2 = 0x10c; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *(undefined4 *)ptVar3->string = *(undefined4 *)param_1->string;
-      param_1 = (token_s *)(param_1->string + 4);
+      *(undefined4 *)ptVar3->string = *(undefined4 *)token->string;
+      token = (token_s *)(token->string + 4);
       ptVar3 = (token_s *)(ptVar3->string + 4);
     }
     ptVar1->next = (token_s *)0x0;
@@ -141,10 +147,10 @@ token_s * __cdecl PC_CopyToken(token_s *param_1)
 
 // 00469D80  PC_FreeToken  (botlib/l_precomp.cpp:182)
 
-void __cdecl PC_FreeToken(token_s *param_1)
+void __cdecl PC_FreeToken(token_s *token)
 
 {
-  FreeMemory(param_1);
+  FreeMemory(token);
   numtokens = numtokens + -1;
   return;
 }
@@ -152,44 +158,46 @@ void __cdecl PC_FreeToken(token_s *param_1)
 
 // 00469DA0  PC_ReadSourceToken  (botlib/l_precomp.cpp:195)
 
-int __cdecl PC_ReadSourceToken(source_s *param_1,token_s *param_2)
+int __cdecl PC_ReadSourceToken(source_s *source,token_s *token)
 
 {
-  script_s *psVar1;
-  int iVar2;
-  token_s *ptVar3;
-  parseSkip_t local_c;
-  int local_8;
+  script_s *script_00;
+  int iVar1;
+  token_s *ptVar2;
+  token_s *t;
+  script_s *script;
+  parseSkip_t skip;
+  int type;
   
   while( true ) {
-    if (param_1->tokens != (token_s *)0x0) {
-      ptVar3 = param_1->tokens;
-      for (iVar2 = 0x10c; iVar2 != 0; iVar2 = iVar2 + -1) {
-        *(undefined4 *)param_2->string = *(undefined4 *)ptVar3->string;
-        ptVar3 = (token_s *)(ptVar3->string + 4);
-        param_2 = (token_s *)(param_2->string + 4);
+    if (source->tokens != (token_s *)0x0) {
+      ptVar2 = source->tokens;
+      for (iVar1 = 0x10c; iVar1 != 0; iVar1 = iVar1 + -1) {
+        *(undefined4 *)token->string = *(undefined4 *)ptVar2->string;
+        ptVar2 = (token_s *)(ptVar2->string + 4);
+        token = (token_s *)(token->string + 4);
       }
-      ptVar3 = param_1->tokens;
-      param_1->tokens = param_1->tokens->next;
-      PC_FreeToken(ptVar3);
+      ptVar2 = source->tokens;
+      source->tokens = source->tokens->next;
+      PC_FreeToken(ptVar2);
       return 1;
     }
-    iVar2 = PS_ReadToken(param_1->scriptstack,param_2);
-    if (iVar2 != 0) break;
-    iVar2 = EndOfScript(param_1->scriptstack);
-    if (iVar2 != 0) {
-      while ((param_1->indentstack != (indent_s *)0x0 &&
-             (param_1->indentstack->script == param_1->scriptstack))) {
-        SourceWarning(param_1,"missing #endif");
-        PC_PopIndent(param_1,&local_8,&local_c);
+    iVar1 = PS_ReadToken(source->scriptstack,token);
+    if (iVar1 != 0) break;
+    iVar1 = EndOfScript(source->scriptstack);
+    if (iVar1 != 0) {
+      while ((source->indentstack != (indent_s *)0x0 &&
+             (source->indentstack->script == source->scriptstack))) {
+        SourceWarning(source,"missing #endif");
+        PC_PopIndent(source,&type,&skip);
       }
     }
-    if (param_1->scriptstack->next == (script_s *)0x0) {
+    if (source->scriptstack->next == (script_s *)0x0) {
       return 0;
     }
-    psVar1 = param_1->scriptstack;
-    param_1->scriptstack = param_1->scriptstack->next;
-    FreeScript(psVar1);
+    script_00 = source->scriptstack;
+    source->scriptstack = source->scriptstack->next;
+    FreeScript(script_00);
   }
   return 1;
 }
@@ -197,14 +205,15 @@ int __cdecl PC_ReadSourceToken(source_s *param_1,token_s *param_2)
 
 // 00469F80  PC_UnreadSourceToken  (botlib/l_precomp.cpp:242)
 
-int __cdecl PC_UnreadSourceToken(source_s *param_1,token_s *param_2)
+int __cdecl PC_UnreadSourceToken(source_s *source,token_s *token)
 
 {
   token_s *ptVar1;
+  token_s *t;
   
-  ptVar1 = PC_CopyToken(param_2);
-  ptVar1->next = param_1->tokens;
-  param_1->tokens = ptVar1;
+  ptVar1 = PC_CopyToken(token);
+  ptVar1->next = source->tokens;
+  source->tokens = ptVar1;
   return 1;
 }
 
@@ -213,7 +222,7 @@ int __cdecl PC_UnreadSourceToken(source_s *param_1,token_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadDefineParms(source_s *param_1,define_s *param_2,token_s **param_3,int param_4)
+int __cdecl PC_ReadDefineParms(source_s *source,define_s *define,token_s **parms,int maxparms)
 
 {
   byte bVar1;
@@ -234,27 +243,30 @@ int __cdecl PC_ReadDefineParms(source_s *param_1,define_s *param_2,token_s **par
   int local_468;
   token_s *local_460;
   byte *local_45c;
-  int local_44c;
-  int local_448;
-  token_s local_444;
+  token_s *t;
+  int done;
+  int lastcomma;
+  int indent;
+  int numparms;
+  token_s token;
   uint local_10;
-  int local_c;
-  token_s *local_8;
+  int i;
+  token_s *last;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = PC_ReadSourceToken(param_1,&local_444);
+  iVar3 = PC_ReadSourceToken(source,&token);
   if (iVar3 == 0) {
-    SourceError(param_1,"define %s missing parms");
+    SourceError(source,"define %s missing parms");
   }
-  else if (param_4 < param_2->numparms) {
-    SourceError(param_1,"define with more than %d parameters");
+  else if (maxparms < define->numparms) {
+    SourceError(source,"define with more than %d parameters");
   }
   else {
-    for (local_c = 0; local_c < param_2->numparms; local_c = local_c + 1) {
-      param_3[local_c] = (token_s *)0x0;
+    for (i = 0; i < define->numparms; i = i + 1) {
+      parms[i] = (token_s *)0x0;
     }
     local_45c = &s__;
-    local_460 = &local_444;
+    local_460 = &token;
     do {
       bVar1 = local_460->string[0];
       bVar5 = bVar1 < *local_45c;
@@ -274,31 +286,31 @@ LAB_0046a0cf:
 LAB_0046a0da:
     if (local_468 == 0) {
       bVar5 = false;
-      local_448 = 0;
-      local_44c = 0;
+      numparms = 0;
+      indent = 0;
 LAB_0046a13e:
       if (bVar5) {
         return 1;
       }
-      if (param_4 <= local_448) {
-        SourceError(param_1,"define %s with too many parms");
+      if (maxparms <= numparms) {
+        SourceError(source,"define %s with too many parms");
         return 0;
       }
-      if (param_2->numparms <= local_448) {
-        SourceWarning(param_1,"define %s has too many parms");
+      if (define->numparms <= numparms) {
+        SourceWarning(source,"define %s has too many parms");
         return 0;
       }
-      param_3[local_448] = (token_s *)0x0;
+      parms[numparms] = (token_s *)0x0;
       bVar2 = true;
-      local_8 = (token_s *)0x0;
+      last = (token_s *)0x0;
 LAB_0046a1c1:
-      iVar3 = PC_ReadSourceToken(param_1,&local_444);
+      iVar3 = PC_ReadSourceToken(source,&token);
       if (iVar3 == 0) {
-        SourceError(param_1,"define %s incomplete");
+        SourceError(source,"define %s incomplete");
         return 0;
       }
       local_470 = &s__;
-      local_474 = &local_444;
+      local_474 = &token;
       do {
         bVar1 = local_474->string[0];
         bVar6 = bVar1 < *local_470;
@@ -316,15 +328,15 @@ LAB_0046a277:
       } while (bVar1 != 0);
       local_47c = 0;
 LAB_0046a282:
-      if ((local_47c == 0) && (local_44c == 0)) {
+      if ((local_47c == 0) && (indent == 0)) {
         if (bVar2) {
-          SourceWarning(param_1,"too many comma\'s");
+          SourceWarning(source,"too many comma\'s");
         }
         goto LAB_0046a4c4;
       }
       bVar2 = false;
       local_484 = &s__;
-      local_488 = &local_444;
+      local_488 = &token;
       do {
         bVar1 = local_488->string[0];
         bVar6 = bVar1 < *local_484;
@@ -343,11 +355,11 @@ LAB_0046a347:
       local_490 = 0;
 LAB_0046a352:
       if (local_490 == 0) {
-        local_44c = local_44c + 1;
+        indent = indent + 1;
       }
       else {
         local_498 = &s__;
-        local_49c = &local_444;
+        local_49c = &token;
         do {
           bVar1 = local_49c->string[0];
           bVar6 = bVar1 < *local_498;
@@ -366,69 +378,69 @@ LAB_0046a3ef:
         local_4a4 = 0;
 LAB_0046a3fa:
         if (local_4a4 == 0) {
-          if (local_44c == 0) goto code_r0x0046a418;
-          local_44c = local_44c + -1;
+          if (indent == 0) goto code_r0x0046a418;
+          indent = indent + -1;
         }
       }
-      if (local_448 < param_2->numparms) {
-        ptVar4 = PC_CopyToken(&local_444);
+      if (numparms < define->numparms) {
+        ptVar4 = PC_CopyToken(&token);
         ptVar4->next = (token_s *)0x0;
-        if (local_8 == (token_s *)0x0) {
-          param_3[local_448] = ptVar4;
-          local_8 = ptVar4;
+        if (last == (token_s *)0x0) {
+          parms[numparms] = ptVar4;
+          last = ptVar4;
         }
         else {
-          local_8->next = ptVar4;
-          local_8 = ptVar4;
+          last->next = ptVar4;
+          last = ptVar4;
         }
       }
       goto LAB_0046a1c1;
     }
-    PC_UnreadSourceToken(param_1,&local_444);
-    SourceError(param_1,"define %s missing parms");
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"define %s missing parms");
   }
   return 0;
 code_r0x0046a418:
-  if (param_3[param_2->numparms + -1] == (token_s *)0x0) {
-    SourceWarning(param_1,"too few define parms to %s");
+  if (parms[define->numparms + -1] == (token_s *)0x0) {
+    SourceWarning(source,"too few define parms to %s");
   }
   bVar5 = true;
 LAB_0046a4c4:
-  local_448 = local_448 + 1;
+  numparms = numparms + 1;
   goto LAB_0046a13e;
 }
 
 
 // 0046A4F0  PC_StringizeTokens  (botlib/l_precomp.cpp:364)
 
-int __cdecl PC_StringizeTokens(token_s *param_1,token_s *param_2)
+int __cdecl PC_StringizeTokens(token_s *tokens,token_s *token)
 
 {
   char *pcVar1;
   token_s *local_24;
   token_s *local_14;
   undefined2 *local_c;
-  token_s *local_8;
+  token_s *t;
   
-  param_2->type = 1;
-  param_2->whitespace_p = (char *)0x0;
-  param_2->endwhitespace_p = (char *)0x0;
-  param_2->string[0] = '\0';
-  local_c = (undefined2 *)&param_2[-1].field_0x42f;
+  token->type = 1;
+  token->whitespace_p = (char *)0x0;
+  token->endwhitespace_p = (char *)0x0;
+  token->string[0] = '\0';
+  local_c = (undefined2 *)&token[-1].field_0x42f;
   do {
     pcVar1 = (char *)((int)local_c + 1);
     local_c = (undefined2 *)((int)local_c + 1);
   } while (*pcVar1 != '\0');
   *local_c = 0x22;
-  for (local_8 = param_1; local_8 != (token_s *)0x0; local_8 = local_8->next) {
-    local_14 = param_2;
+  for (t = tokens; t != (token_s *)0x0; t = t->next) {
+    local_14 = token;
     do {
       pcVar1 = local_14->string;
       local_14 = (token_s *)(local_14->string + 1);
     } while (*pcVar1 != '\0');
     strncat();
   }
-  local_24 = param_2;
+  local_24 = token;
   do {
     pcVar1 = local_24->string;
     local_24 = (token_s *)(local_24->string + 1);
@@ -440,7 +452,7 @@ int __cdecl PC_StringizeTokens(token_s *param_1,token_s *param_2)
 
 // 0046A600  PC_MergeTokens  (botlib/l_precomp.cpp:388)
 
-int __cdecl PC_MergeTokens(token_s *param_1,token_s *param_2)
+int __cdecl PC_MergeTokens(token_s *t1,token_s *t2)
 
 {
   char cVar1;
@@ -455,45 +467,45 @@ int __cdecl PC_MergeTokens(token_s *param_1,token_s *param_2)
   char *local_1c;
   token_s *local_8;
   
-  if ((param_1->type == 4) && ((param_2->type == 4 || (param_2->type == 3)))) {
-    local_8 = param_2;
+  if ((t1->type == 4) && ((t2->type == 4 || (t2->type == 3)))) {
+    local_8 = t2;
     do {
       pcVar3 = local_8->string;
       local_8 = (token_s *)(local_8->string + 1);
     } while (*pcVar3 != '\0');
-    local_1c = &param_1[-1].field_0x42f;
+    local_1c = &t1[-1].field_0x42f;
     do {
       pcVar3 = local_1c + 1;
       local_1c = local_1c + 1;
     } while (*pcVar3 != '\0');
-    ptVar5 = param_2;
-    for (uVar4 = (uint)((int)local_8 - (int)param_2) >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
+    ptVar5 = t2;
+    for (uVar4 = (uint)((int)local_8 - (int)t2) >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
       *(undefined4 *)local_1c = *(undefined4 *)ptVar5->string;
       ptVar5 = (token_s *)(ptVar5->string + 4);
       local_1c = local_1c + 4;
     }
-    for (uVar4 = (int)local_8 - (int)param_2 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
+    for (uVar4 = (int)local_8 - (int)t2 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
       *local_1c = ptVar5->string[0];
       ptVar5 = (token_s *)(ptVar5->string + 1);
       local_1c = local_1c + 1;
     }
     iVar2 = 1;
   }
-  else if ((param_1->type == 1) && (param_2->type == 1)) {
-    local_24 = param_1;
+  else if ((t1->type == 1) && (t2->type == 1)) {
+    local_24 = t1;
     ptVar5 = local_24;
     do {
       local_24 = ptVar5;
       ptVar5 = (token_s *)(local_24->string + 1);
     } while (local_24->string[0] != '\0');
     local_24[-1].field_0x42f = 0;
-    pcVar3 = param_2->string + 1;
+    pcVar3 = t2->string + 1;
     local_34 = pcVar3;
     do {
       cVar1 = *local_34;
       local_34 = local_34 + 1;
     } while (cVar1 != '\0');
-    local_48 = &param_1[-1].field_0x42f;
+    local_48 = &t1[-1].field_0x42f;
     do {
       pcVar6 = local_48 + 1;
       local_48 = local_48 + 1;
@@ -520,37 +532,38 @@ int __cdecl PC_MergeTokens(token_s *param_1,token_s *param_2)
 
 // 0046A760  PC_NameHash  (botlib/l_precomp.cpp:416)
 
-int __cdecl PC_NameHash(char *param_1)
+int __cdecl PC_NameHash(char *name)
 
 {
-  uint local_c;
-  int local_8;
+  int hash;
+  int i;
   
-  local_c = 0;
-  for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-    local_c = (int)param_1[local_8] * (local_8 + 0x77) + local_c;
+  hash = 0;
+  for (i = 0; name[i] != '\0'; i = i + 1) {
+    hash = (int)name[i] * (i + 0x77) + hash;
   }
-  return ((int)local_c >> 10 ^ local_c ^ (int)local_c >> 0x14) & 0x3ff;
+  return (hash >> 10 ^ hash ^ hash >> 0x14) & 0x3ff;
 }
 
 
 // 0046A7D0  PC_AddDefineToHash  (botlib/l_precomp.cpp:438)
 
-void __cdecl PC_AddDefineToHash(define_s *param_1,define_s **param_2)
+void __cdecl PC_AddDefineToHash(define_s *define,define_s **definehash)
 
 {
   int iVar1;
+  int hash;
   
-  iVar1 = PC_NameHash(param_1->name);
-  param_1->hashnext = param_2[iVar1];
-  param_2[iVar1] = param_1;
+  iVar1 = PC_NameHash(define->name);
+  define->hashnext = definehash[iVar1];
+  definehash[iVar1] = define;
   return;
 }
 
 
 // 0046A810  PC_FindHashedDefine  (botlib/l_precomp.cpp:454)
 
-define_s * __cdecl PC_FindHashedDefine(define_s **param_1,char *param_2)
+define_s * __cdecl PC_FindHashedDefine(define_s **definehash,char *name)
 
 {
   byte bVar1;
@@ -559,16 +572,17 @@ define_s * __cdecl PC_FindHashedDefine(define_s **param_1,char *param_2)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  define_s *local_c;
+  define_s *d;
+  int hash;
   
-  iVar2 = PC_NameHash(param_2);
-  local_c = param_1[iVar2];
+  iVar2 = PC_NameHash(name);
+  d = definehash[iVar2];
   do {
-    if (local_c == (define_s *)0x0) {
+    if (d == (define_s *)0x0) {
       return (define_s *)0x0;
     }
-    local_10 = (byte *)param_2;
-    local_14 = (byte *)local_c->name;
+    local_10 = (byte *)name;
+    local_14 = (byte *)d->name;
     do {
       bVar1 = *local_14;
       bVar3 = bVar1 < *local_10;
@@ -587,16 +601,16 @@ LAB_0046a88d:
     local_1c = 0;
 LAB_0046a895:
     if (local_1c == 0) {
-      return local_c;
+      return d;
     }
-    local_c = local_c->hashnext;
+    d = d->hashnext;
   } while( true );
 }
 
 
 // 0046A8B0  PC_FindDefineParm  (botlib/l_precomp.cpp:495)
 
-int __cdecl PC_FindDefineParm(define_s *param_1,char *param_2)
+int __cdecl PC_FindDefineParm(define_s *define,char *name)
 
 {
   byte bVar1;
@@ -604,17 +618,17 @@ int __cdecl PC_FindDefineParm(define_s *param_1,char *param_2)
   int local_1c;
   token_s *local_14;
   byte *local_10;
-  int local_c;
-  token_s *local_8;
+  int i;
+  token_s *p;
   
-  local_c = 0;
-  local_8 = param_1->parms;
+  i = 0;
+  p = define->parms;
   do {
-    if (local_8 == (token_s *)0x0) {
+    if (p == (token_s *)0x0) {
       return -1;
     }
-    local_10 = (byte *)param_2;
-    local_14 = local_8;
+    local_10 = (byte *)name;
+    local_14 = p;
     do {
       bVar1 = local_14->string[0];
       bVar2 = bVar1 < *local_10;
@@ -633,35 +647,36 @@ LAB_0046a923:
     local_1c = 0;
 LAB_0046a92b:
     if (local_1c == 0) {
-      return local_c;
+      return i;
     }
-    local_c = local_c + 1;
-    local_8 = local_8->next;
+    i = i + 1;
+    p = p->next;
   } while( true );
 }
 
 
 // 0046A950  PC_FreeDefine  (botlib/l_precomp.cpp:517)
 
-void __cdecl PC_FreeDefine(define_s *param_1)
+void __cdecl PC_FreeDefine(define_s *define)
 
 {
   token_s *ptVar1;
-  token_s *local_c;
+  token_s *t;
+  token_s *next;
   
-  local_c = param_1->parms;
-  while (local_c != (token_s *)0x0) {
-    ptVar1 = local_c->next;
-    PC_FreeToken(local_c);
-    local_c = ptVar1;
+  t = define->parms;
+  while (t != (token_s *)0x0) {
+    ptVar1 = t->next;
+    PC_FreeToken(t);
+    t = ptVar1;
   }
-  local_c = param_1->tokens;
-  while (local_c != (token_s *)0x0) {
-    ptVar1 = local_c->next;
-    PC_FreeToken(local_c);
-    local_c = ptVar1;
+  t = define->tokens;
+  while (t != (token_s *)0x0) {
+    ptVar1 = t->next;
+    PC_FreeToken(t);
+    t = ptVar1;
   }
-  FreeMemory(param_1);
+  FreeMemory(define);
   return;
 }
 
@@ -670,7 +685,8 @@ void __cdecl PC_FreeDefine(define_s *param_1)
 
 int __cdecl
 PC_ExpandBuiltinDefine
-          (source_s *param_1,token_s *param_2,define_s *param_3,token_s **param_4,token_s **param_5)
+          (source_s *source,token_s *deftoken,define_s *define,token_s **firsttoken,
+          token_s **lasttoken)
 
 {
   char *pcVar1;
@@ -682,90 +698,90 @@ PC_ExpandBuiltinDefine
   token_s *local_2c;
   token_s *local_20;
   script_s *local_1c;
-  long64 local_14;
-  char *local_c;
-  token_s *local_8;
+  long64 t;
+  char *curtime;
+  token_s *token;
   
-  local_8 = PC_CopyToken(param_2);
-  switch(param_3->builtin) {
+  token = PC_CopyToken(deftoken);
+  switch(define->builtin) {
   case 1:
-    sprintf(local_8->string,"%d");
-    local_8->intvalue = param_2->line;
-    local_8->floatvalue = (double)param_2->line;
-    local_8->type = 3;
-    local_8->subtype = 0x1008;
-    *param_4 = local_8;
-    *param_5 = local_8;
+    sprintf(token->string,"%d");
+    token->intvalue = deftoken->line;
+    token->floatvalue = (double)deftoken->line;
+    token->type = 3;
+    token->subtype = 0x1008;
+    *firsttoken = token;
+    *lasttoken = token;
     break;
   case 2:
-    local_1c = param_1->scriptstack;
-    local_20 = local_8;
+    local_1c = source->scriptstack;
+    local_20 = token;
     do {
       cVar2 = local_1c->filename[0];
       local_20->string[0] = cVar2;
       local_1c = (script_s *)(local_1c->filename + 1);
       local_20 = (token_s *)(local_20->string + 1);
     } while (cVar2 != '\0');
-    local_8->type = 4;
-    local_2c = local_8;
+    token->type = 4;
+    local_2c = token;
     do {
       pcVar1 = local_2c->string;
       local_2c = (token_s *)(local_2c->string + 1);
     } while (*pcVar1 != '\0');
-    local_8->subtype = (int)local_2c - (int)(local_8->string + 1);
-    *param_4 = local_8;
-    *param_5 = local_8;
+    token->subtype = (int)local_2c - (int)(token->string + 1);
+    *firsttoken = token;
+    *lasttoken = token;
     break;
   case 3:
-    local_14 = _time64((long64 *)0x0);
-    local_c = _ctime64(&local_14);
-    local_8->string[0] = '\"';
-    local_8->string[1] = '\0';
+    t = _time64((long64 *)0x0);
+    curtime = _ctime64(&t);
+    token->string[0] = '\"';
+    token->string[1] = '\0';
     strncat();
     strncat();
-    local_3c = (undefined2 *)&local_8[-1].field_0x42f;
+    local_3c = (undefined2 *)&token[-1].field_0x42f;
     do {
       pcVar1 = (char *)((int)local_3c + 1);
       local_3c = (undefined2 *)((int)local_3c + 1);
     } while (*pcVar1 != '\0');
     *local_3c = 0x22;
-    free(local_c);
-    local_8->type = 4;
-    local_44 = local_8;
+    free(curtime);
+    token->type = 4;
+    local_44 = token;
     do {
       pcVar1 = local_44->string;
       local_44 = (token_s *)(local_44->string + 1);
     } while (*pcVar1 != '\0');
-    local_8->subtype = (int)local_44 - (int)(local_8->string + 1);
-    *param_4 = local_8;
-    *param_5 = local_8;
+    token->subtype = (int)local_44 - (int)(token->string + 1);
+    *firsttoken = token;
+    *lasttoken = token;
     break;
   case 4:
-    local_14 = _time64((long64 *)0x0);
-    local_c = _ctime64(&local_14);
-    local_8->string[0] = '\"';
-    local_8->string[1] = '\0';
+    t = _time64((long64 *)0x0);
+    curtime = _ctime64(&t);
+    token->string[0] = '\"';
+    token->string[1] = '\0';
     strncat();
-    local_54 = (undefined2 *)&local_8[-1].field_0x42f;
+    local_54 = (undefined2 *)&token[-1].field_0x42f;
     do {
       pcVar1 = (char *)((int)local_54 + 1);
       local_54 = (undefined2 *)((int)local_54 + 1);
     } while (*pcVar1 != '\0');
     *local_54 = 0x22;
-    free(local_c);
-    local_8->type = 4;
-    local_5c = local_8;
+    free(curtime);
+    token->type = 4;
+    local_5c = token;
     do {
       pcVar1 = local_5c->string;
       local_5c = (token_s *)(local_5c->string + 1);
     } while (*pcVar1 != '\0');
-    local_8->subtype = (int)local_5c - (int)(local_8->string + 1);
-    *param_4 = local_8;
-    *param_5 = local_8;
+    token->subtype = (int)local_5c - (int)(token->string + 1);
+    *firsttoken = token;
+    *lasttoken = token;
     break;
   default:
-    *param_4 = (token_s *)0x0;
-    *param_5 = (token_s *)0x0;
+    *firsttoken = (token_s *)0x0;
+    *lasttoken = (token_s *)0x0;
   }
   return 1;
 }
@@ -776,123 +792,124 @@ PC_ExpandBuiltinDefine
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-PC_ExpandDefine(source_s *param_1,token_s *param_2,define_s *param_3,token_s **param_4,
-               token_s **param_5)
+PC_ExpandDefine(source_s *source,token_s *deftoken,define_s *define,token_s **firsttoken,
+               token_s **lasttoken)
 
 {
   int iVar1;
   token_s *ptVar2;
-  int local_660;
-  token_s *local_65c;
-  token_s *local_658;
-  token_s *local_64c [128];
-  token_s *local_44c;
-  token_s *local_448;
-  token_s local_444;
+  int parmnum;
+  token_s *dt;
+  token_s *t;
+  token_s *t1;
+  token_s *nextpt;
+  token_s *parms [128];
+  token_s *t2;
+  token_s *pt;
+  token_s token;
   uint local_14;
-  int local_10;
-  token_s *local_c;
-  token_s *local_8;
+  int i;
+  token_s *last;
+  token_s *first;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_3->builtin == 0) {
-    if ((param_3->numparms == 0) ||
-       (iVar1 = PC_ReadDefineParms(param_1,param_3,local_64c,0x80), iVar1 != 0)) {
-      local_8 = (token_s *)0x0;
-      local_c = (token_s *)0x0;
-      for (local_65c = param_3->tokens; local_65c != (token_s *)0x0; local_65c = local_65c->next) {
-        local_660 = -1;
-        if (local_65c->type == 4) {
-          local_660 = PC_FindDefineParm(param_3,local_65c->string);
+  if (define->builtin == 0) {
+    if ((define->numparms == 0) ||
+       (iVar1 = PC_ReadDefineParms(source,define,parms,0x80), iVar1 != 0)) {
+      first = (token_s *)0x0;
+      last = (token_s *)0x0;
+      for (dt = define->tokens; dt != (token_s *)0x0; dt = dt->next) {
+        parmnum = -1;
+        if (dt->type == 4) {
+          parmnum = PC_FindDefineParm(define,dt->string);
         }
-        if (local_660 < 0) {
-          if ((local_65c->string[0] == '#') && (local_65c->string[1] == '\0')) {
-            if (local_65c->next == (token_s *)0x0) {
-              local_660 = -1;
+        if (parmnum < 0) {
+          if ((dt->string[0] == '#') && (dt->string[1] == '\0')) {
+            if (dt->next == (token_s *)0x0) {
+              parmnum = -1;
             }
             else {
-              local_660 = PC_FindDefineParm(param_3,local_65c->next->string);
+              parmnum = PC_FindDefineParm(define,dt->next->string);
             }
-            if (local_660 < 0) {
-              SourceWarning(param_1,"stringizing operator without define parameter");
+            if (parmnum < 0) {
+              SourceWarning(source,"stringizing operator without define parameter");
               goto LAB_0046ad89;
             }
-            local_65c = local_65c->next;
-            iVar1 = PC_StringizeTokens(local_64c[local_660],&local_444);
+            dt = dt->next;
+            iVar1 = PC_StringizeTokens(parms[parmnum],&token);
             if (iVar1 == 0) {
-              SourceError(param_1,"can\'t stringize tokens");
+              SourceError(source,"can\'t stringize tokens");
               return 0;
             }
-            local_658 = PC_CopyToken(&local_444);
+            t = PC_CopyToken(&token);
           }
           else {
-            local_658 = PC_CopyToken(local_65c);
+            t = PC_CopyToken(dt);
           }
-          local_658->next = (token_s *)0x0;
-          if (local_c == (token_s *)0x0) {
-            local_8 = local_658;
+          t->next = (token_s *)0x0;
+          if (last == (token_s *)0x0) {
+            first = t;
           }
           else {
-            local_c->next = local_658;
+            last->next = t;
           }
-          local_c = local_658;
+          last = t;
         }
         else {
-          for (local_448 = local_64c[local_660]; local_448 != (token_s *)0x0;
-              local_448 = local_448->next) {
-            ptVar2 = PC_CopyToken(local_448);
+          for (pt = parms[parmnum]; pt != (token_s *)0x0; pt = pt->next) {
+            ptVar2 = PC_CopyToken(pt);
             ptVar2->next = (token_s *)0x0;
-            if (local_c == (token_s *)0x0) {
-              local_8 = ptVar2;
+            if (last == (token_s *)0x0) {
+              first = ptVar2;
             }
             else {
-              local_c->next = ptVar2;
+              last->next = ptVar2;
             }
-            local_c = ptVar2;
+            last = ptVar2;
           }
         }
 LAB_0046ad89:
       }
-      local_658 = local_8;
+      t = first;
       do {
         while( true ) {
-          if (local_658 == (token_s *)0x0) {
-            *param_4 = local_8;
-            *param_5 = local_c;
-            for (local_10 = 0; local_10 < param_3->numparms; local_10 = local_10 + 1) {
-              local_448 = local_64c[local_10];
-              while (local_448 != (token_s *)0x0) {
-                ptVar2 = local_448->next;
-                PC_FreeToken(local_448);
-                local_448 = ptVar2;
+          if (t == (token_s *)0x0) {
+            *firsttoken = first;
+            *lasttoken = last;
+            for (i = 0; i < define->numparms; i = i + 1) {
+              pt = parms[i];
+              while (pt != (token_s *)0x0) {
+                ptVar2 = pt->next;
+                PC_FreeToken(pt);
+                pt = ptVar2;
               }
             }
             return 1;
           }
-          if (((local_658->next != (token_s *)0x0) && (local_658->next->string[0] == '#')) &&
-             (local_658->next->string[1] == '#')) break;
+          if (((t->next != (token_s *)0x0) && (t->next->string[0] == '#')) &&
+             (t->next->string[1] == '#')) break;
 LAB_0046b0c0:
-          local_658 = local_658->next;
+          t = t->next;
         }
-        local_44c = local_658->next->next;
-        if (local_44c == (token_s *)0x0) goto LAB_0046b0c0;
-        iVar1 = PC_MergeTokens(local_658,local_44c);
+        t2 = t->next->next;
+        if (t2 == (token_s *)0x0) goto LAB_0046b0c0;
+        iVar1 = PC_MergeTokens(t,t2);
         if (iVar1 == 0) {
-          SourceError(param_1,"can\'t merge %s with %s");
+          SourceError(source,"can\'t merge %s with %s");
           return 0;
         }
-        PC_FreeToken(local_658->next);
-        local_658->next = local_44c->next;
-        if (local_44c == local_c) {
-          local_c = local_658;
+        PC_FreeToken(t->next);
+        t->next = t2->next;
+        if (t2 == last) {
+          last = t;
         }
-        PC_FreeToken(local_44c);
+        PC_FreeToken(t2);
       } while( true );
     }
     iVar1 = 0;
   }
   else {
-    iVar1 = PC_ExpandBuiltinDefine(param_1,param_2,param_3,param_4,param_5);
+    iVar1 = PC_ExpandBuiltinDefine(source,deftoken,define,firsttoken,lasttoken);
   }
   return iVar1;
 }
@@ -900,21 +917,21 @@ LAB_0046b0c0:
 
 // 0046B9A0  PC_ExpandDefineIntoSource  (botlib/l_precomp.cpp:794)
 
-int __cdecl PC_ExpandDefineIntoSource(source_s *param_1,token_s *param_2,define_s *param_3)
+int __cdecl PC_ExpandDefineIntoSource(source_s *source,token_s *deftoken,define_s *define)
 
 {
   int iVar1;
-  token_s *local_c;
-  token_s *local_8;
+  token_s *firsttoken;
+  token_s *lasttoken;
   
-  iVar1 = PC_ExpandDefine(param_1,param_2,param_3,&local_c,&local_8);
+  iVar1 = PC_ExpandDefine(source,deftoken,define,&firsttoken,&lasttoken);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    if ((local_c != (token_s *)0x0) && (local_8 != (token_s *)0x0)) {
-      local_8->next = param_1->tokens;
-      param_1->tokens = local_c;
+    if ((firsttoken != (token_s *)0x0) && (lasttoken != (token_s *)0x0)) {
+      lasttoken->next = source->tokens;
+      source->tokens = firsttoken;
     }
     iVar1 = 1;
   }
@@ -924,20 +941,19 @@ int __cdecl PC_ExpandDefineIntoSource(source_s *param_1,token_s *param_2,define_
 
 // 0046B170  PC_ConvertPath  (botlib/l_precomp.cpp:816)
 
-void __cdecl PC_ConvertPath(char *param_1)
+void __cdecl PC_ConvertPath(char *path)
 
 {
   char cVar1;
   char *local_10;
   char *local_c;
-  char *local_8;
+  char *ptr;
   
-  local_8 = param_1;
-  while (*local_8 != '\0') {
-    if (((*local_8 == '\\') || (*local_8 == '/')) && ((local_8[1] == '\\' || (local_8[1] == '/'))))
-    {
-      local_10 = local_8;
-      local_c = local_8;
+  ptr = path;
+  while (*ptr != '\0') {
+    if (((*ptr == '\\') || (*ptr == '/')) && ((ptr[1] == '\\' || (ptr[1] == '/')))) {
+      local_10 = ptr;
+      local_c = ptr;
       do {
         local_c = local_c + 1;
         cVar1 = *local_c;
@@ -946,12 +962,12 @@ void __cdecl PC_ConvertPath(char *param_1)
       } while (cVar1 != '\0');
     }
     else {
-      local_8 = local_8 + 1;
+      ptr = ptr + 1;
     }
   }
-  for (local_8 = param_1; *local_8 != '\0'; local_8 = local_8 + 1) {
-    if ((*local_8 == '/') || (*local_8 == '\\')) {
-      *local_8 = '\\';
+  for (ptr = path; *ptr != '\0'; ptr = ptr + 1) {
+    if ((*ptr == '/') || (*ptr == '\\')) {
+      *ptr = '\\';
     }
   }
   return;
@@ -962,7 +978,7 @@ void __cdecl PC_ConvertPath(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_include(source_s *param_1)
+int __cdecl PC_Directive_include(source_s *source)
 
 {
   char *pcVar1;
@@ -978,45 +994,45 @@ int __cdecl PC_Directive_include(source_s *param_1)
   token_s *local_498;
   char *local_48c;
   undefined4 local_488;
-  char local_484 [68];
-  script_s *local_440;
-  token_s local_43c;
+  char path [68];
+  script_s *script;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->skip < 1) {
-    iVar3 = PC_ReadSourceToken(param_1,&local_43c);
+  if (source->skip < 1) {
+    iVar3 = PC_ReadSourceToken(source,&token);
     if (iVar3 == 0) {
-      SourceError(param_1,"#include without file name");
+      SourceError(source,"#include without file name");
       iVar3 = 0;
     }
-    else if (local_43c.linescrossed < 1) {
-      if (local_43c.type == 1) {
-        StripDoubleQuotes(local_43c.string);
-        PC_ConvertPath(local_43c.string);
-        local_440 = LoadScriptFile(local_43c.string);
-        if (local_440 == (script_s *)0x0) {
-          local_488 = param_1->includepath;
-          local_48c = local_484;
-          local_440 = (script_s *)0x0;
+    else if (token.linescrossed < 1) {
+      if (token.type == 1) {
+        StripDoubleQuotes(token.string);
+        PC_ConvertPath(token.string);
+        script = LoadScriptFile(token.string);
+        if (script == (script_s *)0x0) {
+          local_488 = source->includepath;
+          local_48c = path;
+          script = (script_s *)0x0;
           do {
             cVar2 = *local_488;
             *local_48c = cVar2;
             local_488 = local_488 + 1;
             local_48c = local_48c + 1;
           } while (cVar2 != '\0');
-          local_498 = &local_43c;
+          local_498 = &token;
           do {
             pcVar1 = local_498->string;
             local_498 = (token_s *)(local_498->string + 1);
           } while (*pcVar1 != '\0');
-          uVar4 = (int)local_498 - (int)&local_43c;
+          uVar4 = (int)local_498 - (int)&token;
           local_4ac = (char *)((int)&local_488 + 3);
           do {
             pcVar1 = local_4ac + 1;
             local_4ac = local_4ac + 1;
           } while (*pcVar1 != '\0');
-          ptVar6 = &local_43c;
+          ptVar6 = &token;
           for (uVar5 = uVar4 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
             *(undefined4 *)local_4ac = *(undefined4 *)ptVar6->string;
             ptVar6 = (token_s *)(ptVar6->string + 4);
@@ -1027,56 +1043,56 @@ int __cdecl PC_Directive_include(source_s *param_1)
             ptVar6 = (token_s *)(ptVar6->string + 1);
             local_4ac = local_4ac + 1;
           }
-          local_440 = LoadScriptFile(local_484);
+          script = LoadScriptFile(path);
         }
       }
       else {
-        if ((local_43c.type != 5) || (local_43c.string[0] != '<')) {
-          SourceError(param_1,"#include without file name");
+        if ((token.type != 5) || (token.string[0] != '<')) {
+          SourceError(source,"#include without file name");
           return 0;
         }
-        local_4b4 = param_1->includepath;
-        local_4b8 = local_484;
+        local_4b4 = source->includepath;
+        local_4b8 = path;
         do {
           cVar2 = *local_4b4;
           *local_4b8 = cVar2;
           local_4b4 = local_4b4 + 1;
           local_4b8 = local_4b8 + 1;
         } while (cVar2 != '\0');
-        while (iVar3 = PC_ReadSourceToken(param_1,&local_43c), iVar3 != 0) {
-          if (0 < local_43c.linescrossed) {
-            PC_UnreadSourceToken(param_1,&local_43c);
+        while (iVar3 = PC_ReadSourceToken(source,&token), iVar3 != 0) {
+          if (0 < token.linescrossed) {
+            PC_UnreadSourceToken(source,&token);
             break;
           }
-          if ((local_43c.type == 5) && (local_43c.string[0] == '>')) break;
+          if ((token.type == 5) && (token.string[0] == '>')) break;
           strncat();
         }
-        if (local_43c.string[0] != '>') {
-          SourceWarning(param_1,"#include missing trailing >");
+        if (token.string[0] != '>') {
+          SourceWarning(source,"#include missing trailing >");
         }
-        local_4c4 = local_484;
+        local_4c4 = path;
         do {
           cVar2 = *local_4c4;
           local_4c4 = local_4c4 + 1;
         } while (cVar2 != '\0');
-        if (local_4c4 == local_484 + 1) {
-          SourceError(param_1,"#include without file name between < >");
+        if (local_4c4 == path + 1) {
+          SourceError(source,"#include without file name between < >");
           return 0;
         }
-        PC_ConvertPath(local_484);
-        local_440 = LoadScriptFile(local_484);
+        PC_ConvertPath(path);
+        script = LoadScriptFile(path);
       }
-      if (local_440 == (script_s *)0x0) {
-        SourceError(param_1,"file %s not found");
+      if (script == (script_s *)0x0) {
+        SourceError(source,"file %s not found");
         iVar3 = 0;
       }
       else {
-        PC_PushScript(param_1,local_440);
+        PC_PushScript(source,script);
         iVar3 = 1;
       }
     }
     else {
-      SourceError(param_1,"#include without file name");
+      SourceError(source,"#include without file name");
       iVar3 = 0;
     }
   }
@@ -1089,50 +1105,51 @@ int __cdecl PC_Directive_include(source_s *param_1)
 
 // 0046B880  PC_ReadLine  (botlib/l_precomp.cpp:929)
 
-int __cdecl PC_ReadLine(source_s *param_1,token_s *param_2,bool param_3)
+int __cdecl PC_ReadLine(source_s *source,token_s *token,bool expandDefines)
 
 {
   byte bVar1;
   int iVar2;
-  define_s *pdVar3;
-  bool bVar4;
+  define_s *define_00;
+  bool bVar3;
   int local_1c;
   token_s *local_14;
   byte *local_10;
-  int local_c;
+  int crossline;
+  define_s *define;
   
-  local_c = 0;
+  crossline = 0;
   do {
     while( true ) {
-      iVar2 = PC_ReadSourceToken(param_1,param_2);
+      iVar2 = PC_ReadSourceToken(source,token);
       if (iVar2 == 0) {
         return 0;
       }
-      if (local_c < param_2->linescrossed) {
-        PC_UnreadSourceToken(param_1,param_2);
+      if (crossline < token->linescrossed) {
+        PC_UnreadSourceToken(source,token);
         return 0;
       }
-      if (((param_2->type != 4) || (!param_3)) ||
-         (pdVar3 = PC_FindHashedDefine(param_1->definehash,param_2->string),
-         pdVar3 == (define_s *)0x0)) break;
-      iVar2 = PC_ExpandDefineIntoSource(param_1,param_2,pdVar3);
+      if (((token->type != 4) || (!expandDefines)) ||
+         (define_00 = PC_FindHashedDefine(source->definehash,token->string),
+         define_00 == (define_s *)0x0)) break;
+      iVar2 = PC_ExpandDefineIntoSource(source,token,define_00);
       if (iVar2 == 0) {
         return 0;
       }
     }
     local_10 = (byte *)0xc76dd4;
-    local_14 = param_2;
+    local_14 = token;
     do {
       bVar1 = local_14->string[0];
-      bVar4 = bVar1 < *local_10;
+      bVar3 = bVar1 < *local_10;
       if (bVar1 != *local_10) {
 LAB_0046b96b:
-        local_1c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
+        local_1c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
         goto LAB_0046b973;
       }
       if (bVar1 == 0) break;
       bVar1 = local_14->string[1];
-      bVar4 = bVar1 < local_10[1];
+      bVar3 = bVar1 < local_10[1];
       if (bVar1 != local_10[1]) goto LAB_0046b96b;
       local_14 = (token_s *)(local_14->string + 2);
       local_10 = local_10 + 2;
@@ -1142,29 +1159,29 @@ LAB_0046b973:
     if (local_1c != 0) {
       return 1;
     }
-    local_c = 1;
+    crossline = 1;
   } while( true );
 }
 
 
 // 0046B610  PC_WhiteSpaceBeforeToken  (botlib/l_precomp.cpp:971)
 
-int __cdecl PC_WhiteSpaceBeforeToken(token_s *param_1)
+int __cdecl PC_WhiteSpaceBeforeToken(token_s *token)
 
 {
-  return (uint)(param_1->endwhitespace_p != param_1->whitespace_p &&
-               -1 < (int)param_1->endwhitespace_p - (int)param_1->whitespace_p);
+  return (uint)(token->endwhitespace_p != token->whitespace_p &&
+               -1 < (int)token->endwhitespace_p - (int)token->whitespace_p);
 }
 
 
 // 0046B630  PC_ClearTokenWhiteSpace  (botlib/l_precomp.cpp:983)
 
-void __cdecl PC_ClearTokenWhiteSpace(token_s *param_1)
+void __cdecl PC_ClearTokenWhiteSpace(token_s *token)
 
 {
-  param_1->whitespace_p = (char *)0x0;
-  param_1->endwhitespace_p = (char *)0x0;
-  param_1->linescrossed = 0;
+  token->whitespace_p = (char *)0x0;
+  token->endwhitespace_p = (char *)0x0;
+  token->linescrossed = 0;
   return;
 }
 
@@ -1173,7 +1190,7 @@ void __cdecl PC_ClearTokenWhiteSpace(token_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_undef(source_s *param_1)
+int __cdecl PC_Directive_undef(source_s *source)
 
 {
   byte bVar1;
@@ -1182,25 +1199,26 @@ int __cdecl PC_Directive_undef(source_s *param_1)
   int local_458;
   byte *local_450;
   token_s *local_44c;
-  define_s *local_448;
-  define_s *local_440;
-  token_s local_43c;
+  define_s *lastdefine;
+  int hash;
+  define_s *define;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->skip < 1) {
-    iVar2 = PC_ReadLine(param_1,&local_43c,false);
+  if (source->skip < 1) {
+    iVar2 = PC_ReadLine(source,&token,false);
     if (iVar2 == 0) {
-      SourceError(param_1,"undef without name");
+      SourceError(source,"undef without name");
       iVar2 = 0;
     }
-    else if (local_43c.type == 4) {
-      iVar2 = PC_NameHash(local_43c.string);
-      local_448 = (define_s *)0x0;
-      for (local_440 = param_1->definehash[iVar2]; local_440 != (define_s *)0x0;
-          local_440 = local_440->hashnext) {
-        local_44c = &local_43c;
-        local_450 = (byte *)local_440->name;
+    else if (token.type == 4) {
+      iVar2 = PC_NameHash(token.string);
+      lastdefine = (define_s *)0x0;
+      for (define = source->definehash[iVar2]; define != (define_s *)0x0; define = define->hashnext)
+      {
+        local_44c = &token;
+        local_450 = (byte *)define->name;
         do {
           bVar1 = *local_450;
           bVar3 = bVar1 < (byte)local_44c->string[0];
@@ -1219,27 +1237,27 @@ LAB_0046b7bf:
         local_458 = 0;
 LAB_0046b7ca:
         if (local_458 == 0) {
-          if ((local_440->flags & 1U) == 0) {
-            if (local_448 == (define_s *)0x0) {
-              param_1->definehash[iVar2] = local_440->hashnext;
+          if ((define->flags & 1U) == 0) {
+            if (lastdefine == (define_s *)0x0) {
+              source->definehash[iVar2] = define->hashnext;
             }
             else {
-              local_448->hashnext = local_440->hashnext;
+              lastdefine->hashnext = define->hashnext;
             }
-            PC_FreeDefine(local_440);
+            PC_FreeDefine(define);
           }
           else {
-            SourceWarning(param_1,"can\'t undef %s");
+            SourceWarning(source,"can\'t undef %s");
           }
           break;
         }
-        local_448 = local_440;
+        lastdefine = define;
       }
       iVar2 = 1;
     }
     else {
-      PC_UnreadSourceToken(param_1,&local_43c);
-      SourceError(param_1,"expected name, found %s");
+      PC_UnreadSourceToken(source,&token);
+      SourceError(source,"expected name, found %s");
       iVar2 = 0;
     }
   }
@@ -1254,7 +1272,7 @@ LAB_0046b7ca:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_define(source_s *param_1)
+int __cdecl PC_Directive_define(source_s *source)
 
 {
   char cVar1;
@@ -1285,44 +1303,46 @@ int __cdecl PC_Directive_define(source_s *param_1)
   char *local_45c;
   token_s *local_458;
   token_s *local_448;
-  token_s local_43c;
+  token_s *t;
+  define_s *define;
+  token_s token;
   uint local_c;
-  token_s *local_8;
+  token_s *last;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (0 < param_1->skip) {
+  if (0 < source->skip) {
     return 1;
   }
-  iVar4 = PC_ReadLine(param_1,&local_43c,false);
+  iVar4 = PC_ReadLine(source,&token,false);
   if (iVar4 == 0) {
-    SourceError(param_1,"#define without name");
+    SourceError(source,"#define without name");
     return 0;
   }
-  if (local_43c.type != 4) {
-    PC_UnreadSourceToken(param_1,&local_43c);
-    SourceError(param_1,"expected name after #define, found %s");
+  if (token.type != 4) {
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"expected name after #define, found %s");
     return 0;
   }
-  pdVar5 = PC_FindHashedDefine(param_1->definehash,local_43c.string);
+  pdVar5 = PC_FindHashedDefine(source->definehash,token.string);
   if (pdVar5 != (define_s *)0x0) {
     if ((pdVar5->flags & 1U) != 0) {
-      SourceError(param_1,"can\'t redefine %s");
+      SourceError(source,"can\'t redefine %s");
       return 0;
     }
-    SourceWarning(param_1,"redefinition of %s");
-    PC_UnreadSourceToken(param_1,&local_43c);
-    iVar4 = PC_Directive_undef(param_1);
+    SourceWarning(source,"redefinition of %s");
+    PC_UnreadSourceToken(source,&token);
+    iVar4 = PC_Directive_undef(source);
     if (iVar4 == 0) {
       return 0;
     }
-    PC_FindHashedDefine(param_1->definehash,local_43c.string);
+    PC_FindHashedDefine(source->definehash,token.string);
   }
-  local_448 = &local_43c;
+  local_448 = &token;
   do {
     pcVar3 = local_448->string;
     local_448 = (token_s *)(local_448->string + 1);
   } while (*pcVar3 != '\0');
-  pdVar5 = GetMemory((ulong)((int)local_448 + (0x21 - (int)(local_43c.string + 1))));
+  pdVar5 = GetMemory((ulong)((int)local_448 + (0x21 - (int)(token.string + 1))));
   pdVar5->name = (char *)0x0;
   pdVar5->flags = 0;
   pdVar5->builtin = 0;
@@ -1332,7 +1352,7 @@ int __cdecl PC_Directive_define(source_s *param_1)
   pdVar5->next = (define_s *)0x0;
   pdVar5->hashnext = (define_s *)0x0;
   pdVar5->name = (char *)(pdVar5 + 1);
-  local_458 = &local_43c;
+  local_458 = &token;
   local_45c = pdVar5->name;
   do {
     cVar1 = local_458->string[0];
@@ -1340,15 +1360,15 @@ int __cdecl PC_Directive_define(source_s *param_1)
     local_458 = (token_s *)(local_458->string + 1);
     local_45c = local_45c + 1;
   } while (cVar1 != '\0');
-  PC_AddDefineToHash(pdVar5,param_1->definehash);
-  iVar4 = PC_ReadLine(param_1,&local_43c,false);
+  PC_AddDefineToHash(pdVar5,source->definehash);
+  iVar4 = PC_ReadLine(source,&token,false);
   if (iVar4 == 0) {
     return 1;
   }
-  iVar4 = PC_WhiteSpaceBeforeToken(&local_43c);
+  iVar4 = PC_WhiteSpaceBeforeToken(&token);
   if (iVar4 == 0) {
     local_468 = &s__;
-    local_46c = &local_43c;
+    local_46c = &token;
     do {
       bVar2 = local_46c->string[0];
       bVar7 = bVar2 < *local_468;
@@ -1367,42 +1387,42 @@ LAB_0046bd0f:
     local_474 = 0;
 LAB_0046bd1a:
     if (local_474 == 0) {
-      local_8 = (token_s *)0x0;
-      iVar4 = PC_CheckTokenString(param_1,")");
+      last = (token_s *)0x0;
+      iVar4 = PC_CheckTokenString(source,")");
       if (iVar4 == 0) {
         do {
-          iVar4 = PC_ReadLine(param_1,&local_43c,false);
+          iVar4 = PC_ReadLine(source,&token,false);
           if (iVar4 == 0) {
-            SourceError(param_1,"expected define parameter");
+            SourceError(source,"expected define parameter");
             return 0;
           }
-          if (local_43c.type != 4) {
-            SourceError(param_1,"invalid define parameter");
+          if (token.type != 4) {
+            SourceError(source,"invalid define parameter");
             return 0;
           }
-          iVar4 = PC_FindDefineParm(pdVar5,local_43c.string);
+          iVar4 = PC_FindDefineParm(pdVar5,token.string);
           if (-1 < iVar4) {
-            SourceError(param_1,"two of the same define parameters");
+            SourceError(source,"two of the same define parameters");
             return 0;
           }
-          ptVar6 = PC_CopyToken(&local_43c);
+          ptVar6 = PC_CopyToken(&token);
           PC_ClearTokenWhiteSpace(ptVar6);
           ptVar6->next = (token_s *)0x0;
-          if (local_8 == (token_s *)0x0) {
+          if (last == (token_s *)0x0) {
             pdVar5->parms = ptVar6;
           }
           else {
-            local_8->next = ptVar6;
+            last->next = ptVar6;
           }
           pdVar5->numparms = pdVar5->numparms + 1;
-          local_8 = ptVar6;
-          iVar4 = PC_ReadLine(param_1,&local_43c,false);
+          last = ptVar6;
+          iVar4 = PC_ReadLine(source,&token,false);
           if (iVar4 == 0) {
-            SourceError(param_1,"define parameters not terminated");
+            SourceError(source,"define parameters not terminated");
             return 0;
           }
           local_47c = &s__;
-          local_480 = &local_43c;
+          local_480 = &token;
           do {
             bVar2 = local_480->string[0];
             bVar7 = bVar2 < *local_47c;
@@ -1422,7 +1442,7 @@ LAB_0046bef1:
 LAB_0046befc:
           if (local_488 == 0) break;
           local_490 = &s__;
-          local_494 = &local_43c;
+          local_494 = &token;
           do {
             bVar2 = local_494->string[0];
             bVar7 = bVar2 < *local_490;
@@ -1441,20 +1461,20 @@ LAB_0046bf8a:
           local_49c = 0;
 LAB_0046bf95:
           if (local_49c != 0) {
-            SourceError(param_1,"define not terminated");
+            SourceError(source,"define not terminated");
             return 0;
           }
         } while( true );
       }
-      iVar4 = PC_ReadLine(param_1,&local_43c,false);
+      iVar4 = PC_ReadLine(source,&token,false);
       if (iVar4 == 0) {
         return 1;
       }
     }
   }
-  local_8 = (token_s *)0x0;
+  last = (token_s *)0x0;
   do {
-    ptVar6 = PC_CopyToken(&local_43c);
+    ptVar6 = PC_CopyToken(&token);
     if (ptVar6->type == 4) {
       local_4a4 = (byte *)pdVar5->name;
       local_4a8 = ptVar6;
@@ -1476,24 +1496,24 @@ LAB_0046c091:
       local_4b0 = 0;
 LAB_0046c09c:
       if (local_4b0 != 0) goto LAB_0046c0c4;
-      SourceError(param_1,"recursive define (removed recursion)");
+      SourceError(source,"recursive define (removed recursion)");
     }
     else {
 LAB_0046c0c4:
       PC_ClearTokenWhiteSpace(ptVar6);
       ptVar6->next = (token_s *)0x0;
-      if (local_8 == (token_s *)0x0) {
+      if (last == (token_s *)0x0) {
         pdVar5->tokens = ptVar6;
-        local_8 = ptVar6;
+        last = ptVar6;
       }
       else {
-        local_8->next = ptVar6;
-        local_8 = ptVar6;
+        last->next = ptVar6;
+        last = ptVar6;
       }
     }
-    iVar4 = PC_ReadLine(param_1,&local_43c,false);
+    iVar4 = PC_ReadLine(source,&token,false);
   } while (iVar4 != 0);
-  if (local_8 == (token_s *)0x0) {
+  if (last == (token_s *)0x0) {
 LAB_0046c27a:
     iVar4 = 1;
   }
@@ -1519,7 +1539,7 @@ LAB_0046c1b0:
 LAB_0046c1bb:
     if (local_4c4 != 0) {
       local_4cc = &s___;
-      local_4d0 = local_8;
+      local_4d0 = last;
       do {
         bVar2 = local_4d0->string[0];
         bVar7 = bVar2 < *local_4cc;
@@ -1539,7 +1559,7 @@ LAB_0046c245:
 LAB_0046c250:
       if (local_4d8 != 0) goto LAB_0046c27a;
     }
-    SourceError(param_1,"define with misplaced ##");
+    SourceError(source,"define with misplaced ##");
     iVar4 = 0;
   }
   return iVar4;
@@ -1550,79 +1570,79 @@ LAB_0046c250:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-define_s * __cdecl PC_DefineFromString(char *param_1)
+define_s * __cdecl PC_DefineFromString(char *string)
 
 {
   char cVar1;
-  token_s *ptVar2;
+  token_s *token;
   char *local_4f0;
-  source_s local_4ec;
+  source_s src;
   uint local_1c;
-  token_s *local_18;
-  define_s *local_14;
-  script_s *local_10;
-  int local_c;
-  int local_8;
+  token_s *t;
+  define_s *def;
+  script_s *script;
+  int i;
+  int res;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4f0 = param_1;
+  local_4f0 = string;
   do {
     cVar1 = *local_4f0;
     local_4f0 = local_4f0 + 1;
   } while (cVar1 != '\0');
-  local_10 = LoadScriptMemory(param_1,(int)local_4f0 - (int)(param_1 + 1),"*extern");
-  memset((uchar *)&local_4ec,'\0',0x4d0);
-  strncpy((uchar *)&local_4ec,(uchar *)"*extern",0x40);
-  local_4ec.scriptstack = local_10;
-  local_4ec.definehash = GetClearedMemory(0x1000);
-  local_8 = PC_Directive_define(&local_4ec);
-  while (ptVar2 = local_4ec.tokens, local_18 = local_4ec.tokens, local_4ec.tokens != (token_s *)0x0)
-  {
-    local_4ec.tokens = (local_4ec.tokens)->next;
-    PC_FreeToken(ptVar2);
+  script = LoadScriptMemory(string,(int)local_4f0 - (int)(string + 1),"*extern");
+  memset((uchar *)&src,'\0',0x4d0);
+  strncpy((uchar *)&src,(uchar *)"*extern",0x40);
+  src.scriptstack = script;
+  src.definehash = GetClearedMemory(0x1000);
+  res = PC_Directive_define(&src);
+  while (token = src.tokens, t = src.tokens, src.tokens != (token_s *)0x0) {
+    src.tokens = (src.tokens)->next;
+    PC_FreeToken(token);
   }
-  local_14 = (define_s *)0x0;
-  local_c = 0;
+  def = (define_s *)0x0;
+  i = 0;
   do {
-    if (0x3ff < local_c) {
+    if (0x3ff < i) {
 LAB_0046c3de:
-      FreeMemory(local_4ec.definehash);
-      FreeScript(local_10);
-      if (local_8 < 1) {
-        if (local_4ec.defines != (define_s *)0x0) {
-          PC_FreeDefine(local_14);
+      FreeMemory(src.definehash);
+      FreeScript(script);
+      if (res < 1) {
+        if (src.defines != (define_s *)0x0) {
+          PC_FreeDefine(def);
         }
-        local_14 = (define_s *)0x0;
+        def = (define_s *)0x0;
       }
-      return local_14;
+      return def;
     }
-    if (local_4ec.definehash[local_c] != (define_s *)0x0) {
-      local_14 = local_4ec.definehash[local_c];
+    if (src.definehash[i] != (define_s *)0x0) {
+      def = src.definehash[i];
       goto LAB_0046c3de;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0046C430  PC_AddDefine  (botlib/l_precomp.cpp:1243)
 
-int __cdecl PC_AddDefine(source_s *param_1,char *param_2)
+int __cdecl PC_AddDefine(source_s *source,char *string)
 
 {
-  define_s *pdVar1;
+  define_s *define_00;
+  define_s *define;
   
-  pdVar1 = PC_DefineFromString(param_2);
-  if (pdVar1 != (define_s *)0x0) {
-    PC_AddDefineToHash(pdVar1,param_1->definehash);
+  define_00 = PC_DefineFromString(string);
+  if (define_00 != (define_s *)0x0) {
+    PC_AddDefineToHash(define_00,source->definehash);
   }
-  return (uint)(pdVar1 != (define_s *)0x0);
+  return (uint)(define_00 != (define_s *)0x0);
 }
 
 
 // 0046C470  PC_CopyDefine  (botlib/l_precomp.cpp:1321)
 
-define_s * __cdecl PC_CopyDefine(source_s *param_1,define_s *param_2)
+define_s * __cdecl PC_CopyDefine(source_s *source,define_s *define)
 
 {
   char cVar1;
@@ -1632,10 +1652,12 @@ define_s * __cdecl PC_CopyDefine(source_s *param_1,define_s *param_2)
   char *local_2c;
   char *local_28;
   char *local_18;
-  token_s *local_c;
-  token_s *local_8;
+  define_s *newdefine;
+  token_s *newtoken;
+  token_s *token;
+  token_s *lasttoken;
   
-  local_18 = param_2->name;
+  local_18 = define->name;
   pcVar4 = local_18 + 1;
   do {
     cVar1 = *local_18;
@@ -1643,7 +1665,7 @@ define_s * __cdecl PC_CopyDefine(source_s *param_1,define_s *param_2)
   } while (cVar1 != '\0');
   pdVar2 = GetMemory((ulong)(local_18 + (0x21 - (int)pcVar4)));
   pdVar2->name = (char *)(pdVar2 + 1);
-  local_28 = param_2->name;
+  local_28 = define->name;
   local_2c = pdVar2->name;
   do {
     cVar1 = *local_28;
@@ -1651,36 +1673,36 @@ define_s * __cdecl PC_CopyDefine(source_s *param_1,define_s *param_2)
     local_28 = local_28 + 1;
     local_2c = local_2c + 1;
   } while (cVar1 != '\0');
-  pdVar2->flags = param_2->flags;
-  pdVar2->builtin = param_2->builtin;
-  pdVar2->numparms = param_2->numparms;
+  pdVar2->flags = define->flags;
+  pdVar2->builtin = define->builtin;
+  pdVar2->numparms = define->numparms;
   pdVar2->next = (define_s *)0x0;
   pdVar2->hashnext = (define_s *)0x0;
   pdVar2->tokens = (token_s *)0x0;
-  local_8 = (token_s *)0x0;
-  for (local_c = param_2->tokens; local_c != (token_s *)0x0; local_c = local_c->next) {
-    ptVar3 = PC_CopyToken(local_c);
+  lasttoken = (token_s *)0x0;
+  for (token = define->tokens; token != (token_s *)0x0; token = token->next) {
+    ptVar3 = PC_CopyToken(token);
     ptVar3->next = (token_s *)0x0;
-    if (local_8 == (token_s *)0x0) {
+    if (lasttoken == (token_s *)0x0) {
       pdVar2->tokens = ptVar3;
     }
     else {
-      local_8->next = ptVar3;
+      lasttoken->next = ptVar3;
     }
-    local_8 = ptVar3;
+    lasttoken = ptVar3;
   }
   pdVar2->parms = (token_s *)0x0;
-  local_8 = (token_s *)0x0;
-  for (local_c = param_2->parms; local_c != (token_s *)0x0; local_c = local_c->next) {
-    ptVar3 = PC_CopyToken(local_c);
+  lasttoken = (token_s *)0x0;
+  for (token = define->parms; token != (token_s *)0x0; token = token->next) {
+    ptVar3 = PC_CopyToken(token);
     ptVar3->next = (token_s *)0x0;
-    if (local_8 == (token_s *)0x0) {
+    if (lasttoken == (token_s *)0x0) {
       pdVar2->parms = ptVar3;
     }
     else {
-      local_8->next = ptVar3;
+      lasttoken->next = ptVar3;
     }
-    local_8 = ptVar3;
+    lasttoken = ptVar3;
   }
   return pdVar2;
 }
@@ -1688,15 +1710,16 @@ define_s * __cdecl PC_CopyDefine(source_s *param_1,define_s *param_2)
 
 // 0046C620  PC_AddGlobalDefinesToSource  (botlib/l_precomp.cpp:1370)
 
-void __cdecl PC_AddGlobalDefinesToSource(source_s *param_1)
+void __cdecl PC_AddGlobalDefinesToSource(source_s *source)
 
 {
-  define_s *pdVar1;
-  define_s *local_8;
+  define_s *define_00;
+  define_s *newdefine;
+  define_s *define;
   
-  for (local_8 = globaldefines; local_8 != (define_s *)0x0; local_8 = local_8->next) {
-    pdVar1 = PC_CopyDefine(param_1,local_8);
-    PC_AddDefineToHash(pdVar1,param_1->definehash);
+  for (define = globaldefines; define != (define_s *)0x0; define = define->next) {
+    define_00 = PC_CopyDefine(source,define);
+    PC_AddDefineToHash(define_00,source->definehash);
   }
   return;
 }
@@ -1706,28 +1729,30 @@ void __cdecl PC_AddGlobalDefinesToSource(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_if_def(source_s *param_1,int param_2)
+int __cdecl PC_Directive_if_def(source_s *source,int type)
 
 {
   int iVar1;
   define_s *pdVar2;
-  token_s local_43c;
+  define_s *d;
+  parseSkip_t skip;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = PC_ReadLine(param_1,&local_43c,false);
+  iVar1 = PC_ReadLine(source,&token,false);
   if (iVar1 == 0) {
-    SourceError(param_1,"#ifdef without name");
+    SourceError(source,"#ifdef without name");
     iVar1 = 0;
   }
-  else if (local_43c.type == 4) {
-    pdVar2 = PC_FindHashedDefine(param_1->definehash,local_43c.string);
-    PC_PushIndent(param_1,param_2,(uint)((param_2 == 8) == (pdVar2 == (define_s *)0x0)));
+  else if (token.type == 4) {
+    pdVar2 = PC_FindHashedDefine(source->definehash,token.string);
+    PC_PushIndent(source,type,(uint)((type == 8) == (pdVar2 == (define_s *)0x0)));
     iVar1 = 1;
   }
   else {
-    PC_UnreadSourceToken(param_1,&local_43c);
-    SourceError(param_1,"expected name after #ifdef, found %s");
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"expected name after #ifdef, found %s");
     iVar1 = 0;
   }
   return iVar1;
@@ -1736,48 +1761,48 @@ int __cdecl PC_Directive_if_def(source_s *param_1,int param_2)
 
 // 0046C7D0  PC_Directive_ifdef  (botlib/l_precomp.cpp:1419)
 
-int __cdecl PC_Directive_ifdef(source_s *param_1)
+int __cdecl PC_Directive_ifdef(source_s *source)
 
 {
   int iVar1;
   
-  iVar1 = PC_Directive_if_def(param_1,8);
+  iVar1 = PC_Directive_if_def(source,8);
   return iVar1;
 }
 
 
 // 0046C7F0  PC_Directive_ifndef  (botlib/l_precomp.cpp:1431)
 
-int __cdecl PC_Directive_ifndef(source_s *param_1)
+int __cdecl PC_Directive_ifndef(source_s *source)
 
 {
   int iVar1;
   
-  iVar1 = PC_Directive_if_def(param_1,0x10);
+  iVar1 = PC_Directive_if_def(source,0x10);
   return iVar1;
 }
 
 
 // 0046C810  PC_Directive_else  (botlib/l_precomp.cpp:1443)
 
-int __cdecl PC_Directive_else(source_s *param_1)
+int __cdecl PC_Directive_else(source_s *source)
 
 {
   int iVar1;
-  parseSkip_t local_c;
-  int local_8;
+  parseSkip_t skip;
+  int type;
   
-  PC_PopIndent(param_1,&local_8,&local_c);
-  if (local_8 == 0) {
-    SourceError(param_1,"misplaced #else");
+  PC_PopIndent(source,&type,&skip);
+  if (type == 0) {
+    SourceError(source,"misplaced #else");
     iVar1 = 0;
   }
-  else if (local_8 == 2) {
-    SourceError(param_1,"#else after #else");
+  else if (type == 2) {
+    SourceError(source,"#else after #else");
     iVar1 = 0;
   }
   else {
-    PC_PushIndent(param_1,2,(uint)(local_c != SKIP_YES));
+    PC_PushIndent(source,2,(uint)(skip != SKIP_YES));
     iVar1 = 1;
   }
   return iVar1;
@@ -1786,28 +1811,28 @@ int __cdecl PC_Directive_else(source_s *param_1)
 
 // 0046C890  PC_Directive_endif  (botlib/l_precomp.cpp:1470)
 
-int __cdecl PC_Directive_endif(source_s *param_1)
+int __cdecl PC_Directive_endif(source_s *source)
 
 {
-  parseSkip_t local_c;
-  int local_8;
+  parseSkip_t skip;
+  int type;
   
-  PC_PopIndent(param_1,&local_8,&local_c);
-  if (local_8 == 0) {
-    SourceError(param_1,"misplaced #endif");
+  PC_PopIndent(source,&type,&skip);
+  if (type == 0) {
+    SourceError(source,"misplaced #endif");
   }
-  return (uint)(local_8 != 0);
+  return (uint)(type != 0);
 }
 
 
 // 0046C8D0  PC_OperatorPriority  (botlib/l_precomp.cpp:1507)
 
-int __cdecl PC_OperatorPriority(int param_1)
+int __cdecl PC_OperatorPriority(int op)
 
 {
   int iVar1;
   
-  switch(param_1) {
+  switch(op) {
   case 5:
     iVar1 = 7;
     break;
@@ -1884,14 +1909,14 @@ int __cdecl PC_OperatorPriority(int param_1)
 // 0046CA30  PC_EvaluateTokens  (botlib/l_precomp.cpp:1587)
 
 int __cdecl
-PC_EvaluateTokens(source_s *param_1,token_s *param_2,long *param_3,double *param_4,int param_5)
+PC_EvaluateTokens(source_s *source,token_s *tokens,long *intvalue,double *floatvalue,int integer)
 
 {
-  uint *puVar1;
+  operator_s *poVar1;
   byte bVar2;
-  uint *puVar3;
+  operator_s *poVar3;
   define_s *pdVar4;
-  uint uVar5;
+  int iVar5;
   int iVar6;
   bool bVar7;
   uint local_ddc;
@@ -1901,9 +1926,9 @@ PC_EvaluateTokens(source_s *param_1,token_s *param_2,long *param_3,double *param
   uint local_dcc;
   uint local_dc8;
   int local_dc4;
-  uint local_dc0;
+  long local_dc0;
   int local_dbc;
-  uint local_db8;
+  long local_db8;
   uint local_db4;
   int local_da4;
   token_s *local_d9c;
@@ -1914,91 +1939,91 @@ PC_EvaluateTokens(source_s *param_1,token_s *param_2,long *param_3,double *param
   int local_d78;
   token_s *local_d70;
   byte *local_d6c;
-  uint *local_d64;
-  token_s *local_d60;
-  double local_d5c;
-  uint *local_d50;
-  uint auStack_d4c [513];
-  uint *local_548;
-  int local_544;
-  uint *local_540;
-  int local_53c;
-  int local_538;
-  uint auStack_534 [321];
-  uint *local_30;
-  uint *local_2c;
-  int local_28;
-  uint local_24;
-  int local_20;
-  uint *local_1c;
-  uint *local_18;
-  uint local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  operator_s *o;
+  token_s *t;
+  double questmarkfloatvalue;
+  operator_s *lastoperator;
+  value_s avStack_d4c [64];
+  operator_s *firstoperator;
+  int lastwasvalue;
+  value_s *v2;
+  int error;
+  int negativevalue;
+  operator_s aoStack_534 [64];
+  value_s *firstvalue;
+  value_s *v1;
+  int numvalues;
+  int parentheses;
+  int numoperators;
+  value_s *v;
+  value_s *lastvalue;
+  int lastoperatortype;
+  int brace;
+  int questmarkintvalue;
+  int gotquestmarkvalue;
   
-  local_10 = 0;
-  local_24 = 0;
-  local_53c = 0;
-  local_544 = 0;
-  local_538 = 0;
-  local_c = 0;
-  local_8 = 0;
-  local_14 = 0;
-  local_20 = 0;
-  local_28 = 0;
-  local_d50 = (uint *)0x0;
-  local_548 = (uint *)0x0;
-  local_18 = (uint *)0x0;
-  local_30 = (uint *)0x0;
-  if (param_3 != (long *)0x0) {
-    *param_3 = 0;
+  brace = 0;
+  parentheses = 0;
+  error = 0;
+  lastwasvalue = 0;
+  negativevalue = 0;
+  questmarkintvalue = 0;
+  gotquestmarkvalue = 0;
+  lastoperatortype = 0;
+  numoperators = 0;
+  numvalues = 0;
+  lastoperator = (operator_s *)0x0;
+  firstoperator = (operator_s *)0x0;
+  lastvalue = (value_s *)0x0;
+  firstvalue = (value_s *)0x0;
+  if (intvalue != (long *)0x0) {
+    *intvalue = 0;
   }
-  if (param_4 != (double *)0x0) {
-    *param_4 = 0.0;
+  if (floatvalue != (double *)0x0) {
+    *floatvalue = 0.0;
   }
-  for (local_d60 = param_2; local_d60 != (token_s *)0x0; local_d60 = local_d60->next) {
-    iVar6 = local_d60->type;
+  for (t = tokens; t != (token_s *)0x0; t = t->next) {
+    iVar6 = t->type;
     if (iVar6 == 3) {
-      if (local_544 == 0) {
-        if (local_28 < 0x40) {
-          local_1c = auStack_d4c + local_28 * 8;
-          local_28 = local_28 + 1;
-          if (local_538 == 0) {
-            *local_1c = local_d60->intvalue;
-            *(double *)(local_1c + 2) = local_d60->floatvalue;
+      if (lastwasvalue == 0) {
+        if (numvalues < 0x40) {
+          v = avStack_d4c + numvalues;
+          numvalues = numvalues + 1;
+          if (negativevalue == 0) {
+            v->intvalue = t->intvalue;
+            v->floatvalue = t->floatvalue;
           }
           else {
-            *local_1c = -local_d60->intvalue;
-            *(double *)(local_1c + 2) = -local_d60->floatvalue;
+            v->intvalue = -t->intvalue;
+            v->floatvalue = -t->floatvalue;
           }
-          local_1c[4] = local_24;
-          local_1c[6] = 0;
-          local_1c[5] = (uint)local_18;
-          if (local_18 == (uint *)0x0) {
-            local_30 = local_1c;
+          v->parentheses = parentheses;
+          v->next = (value_s *)0x0;
+          v->prev = lastvalue;
+          if (lastvalue == (value_s *)0x0) {
+            firstvalue = v;
           }
           else {
-            local_18[6] = (uint)local_1c;
+            lastvalue->next = v;
           }
-          local_18 = local_1c;
-          local_544 = 1;
-          local_538 = 0;
+          lastvalue = v;
+          lastwasvalue = 1;
+          negativevalue = 0;
         }
         else {
-          SourceError(param_1,"out of value space\n");
-          local_53c = 1;
+          SourceError(source,"out of value space\n");
+          error = 1;
         }
       }
       else {
-        SourceError(param_1,"syntax error in #if/#elif");
-        local_53c = 1;
+        SourceError(source,"syntax error in #if/#elif");
+        error = 1;
       }
     }
     else if (iVar6 == 4) {
-      if ((local_544 == 0) && (local_538 == 0)) {
+      if ((lastwasvalue == 0) && (negativevalue == 0)) {
         local_d6c = (byte *)0xc7720c;
-        local_d70 = local_d60;
+        local_d70 = t;
         do {
           bVar2 = local_d70->string[0];
           bVar7 = bVar2 < *local_d6c;
@@ -2017,9 +2042,9 @@ LAB_0046cbe9:
         local_d78 = 0;
 LAB_0046cbf4:
         if (local_d78 == 0) {
-          local_d60 = local_d60->next;
+          t = t->next;
           local_d80 = &s__;
-          local_d84 = local_d60;
+          local_d84 = t;
           do {
             bVar2 = local_d84->string[0];
             bVar7 = bVar2 < *local_d80;
@@ -2038,49 +2063,45 @@ LAB_0046ccb6:
           local_d8c = 0;
 LAB_0046ccc1:
           if (local_d8c == 0) {
-            local_10 = 1;
-            local_d60 = local_d60->next;
+            brace = 1;
+            t = t->next;
           }
-          if ((local_d60 == (token_s *)0x0) || (local_d60->type != 4)) {
-            SourceError(param_1,"defined without name in #if/#elif; got %s");
-            local_53c = 1;
+          if ((t == (token_s *)0x0) || (t->type != 4)) {
+            SourceError(source,"defined without name in #if/#elif; got %s");
+            error = 1;
           }
-          else if (local_28 < 0x40) {
-            local_1c = auStack_d4c + local_28 * 8;
-            local_28 = local_28 + 1;
-            pdVar4 = PC_FindHashedDefine(param_1->definehash,local_d60->string);
+          else if (numvalues < 0x40) {
+            v = avStack_d4c + numvalues;
+            numvalues = numvalues + 1;
+            pdVar4 = PC_FindHashedDefine(source->definehash,t->string);
             if (pdVar4 == (define_s *)0x0) {
-              *local_1c = 0;
-              puVar1 = local_1c;
-              puVar1[2] = 0;
-              puVar1[3] = 0;
+              v->intvalue = 0;
+              v->floatvalue = 0.0;
             }
             else {
-              *local_1c = 1;
-              puVar1 = local_1c;
-              puVar1[2] = 0;
-              puVar1[3] = 0x3ff00000;
+              v->intvalue = 1;
+              v->floatvalue = 1.0;
             }
-            local_1c[4] = local_24;
-            local_1c[6] = 0;
-            local_1c[5] = (uint)local_18;
-            if (local_18 == (uint *)0x0) {
-              local_30 = local_1c;
+            v->parentheses = parentheses;
+            v->next = (value_s *)0x0;
+            v->prev = lastvalue;
+            if (lastvalue == (value_s *)0x0) {
+              firstvalue = v;
             }
             else {
-              local_18[6] = (uint)local_1c;
+              lastvalue->next = v;
             }
-            local_18 = local_1c;
-            if (local_10 == 0) {
+            lastvalue = v;
+            if (brace == 0) {
 LAB_0046cef7:
-              local_10 = 0;
-              local_544 = 1;
+              brace = 0;
+              lastwasvalue = 1;
             }
             else {
-              local_d60 = local_d60->next;
-              if (local_d60 != (token_s *)0x0) {
+              t = t->next;
+              if (t != (token_s *)0x0) {
                 local_d98 = &s__;
-                local_d9c = local_d60;
+                local_d9c = t;
                 do {
                   bVar2 = local_d9c->string[0];
                   bVar7 = bVar2 < *local_d98;
@@ -2100,47 +2121,46 @@ LAB_0046ceb7:
 LAB_0046cec2:
                 if (local_da4 == 0) goto LAB_0046cef7;
               }
-              SourceError(param_1,"defined without ) in #if/#elif");
-              local_53c = 1;
+              SourceError(source,"defined without ) in #if/#elif");
+              error = 1;
             }
           }
           else {
-            SourceError(param_1,"out of value space\n");
-            local_53c = 1;
+            SourceError(source,"out of value space\n");
+            error = 1;
           }
         }
         else {
-          SourceError(param_1,"undefined name %s in #if/#elif");
-          local_53c = 1;
+          SourceError(source,"undefined name %s in #if/#elif");
+          error = 1;
         }
       }
       else {
-        SourceError(param_1,"syntax error in #if/#elif");
-        local_53c = 1;
+        SourceError(source,"syntax error in #if/#elif");
+        error = 1;
       }
     }
     else if (iVar6 == 5) {
-      if (local_538 == 0) {
-        if (local_d60->subtype == 0x2c) {
-          local_24 = local_24 + 1;
+      if (negativevalue == 0) {
+        if (t->subtype == 0x2c) {
+          parentheses = parentheses + 1;
         }
-        else if (local_d60->subtype == 0x2d) {
-          local_24 = local_24 - 1;
-          if ((int)local_24 < 0) {
-            SourceError(param_1,"too many ) in #if/#elsif");
-            local_53c = 1;
+        else if (t->subtype == 0x2d) {
+          parentheses = parentheses + -1;
+          if (parentheses < 0) {
+            SourceError(source,"too many ) in #if/#elsif");
+            error = 1;
           }
         }
-        else if ((param_5 == 0) &&
-                (((((local_d60->subtype == 0x23 || (local_d60->subtype == 0x1c)) ||
-                   (local_d60->subtype == 0x15)) ||
-                  ((local_d60->subtype == 0x16 || (local_d60->subtype == 0x20)))) ||
-                 ((local_d60->subtype == 0x21 || (local_d60->subtype == 0x22)))))) {
-          SourceError(param_1,"illigal operator %s on floating point operands\n");
-          local_53c = 1;
+        else if ((integer == 0) &&
+                (((((t->subtype == 0x23 || (t->subtype == 0x1c)) || (t->subtype == 0x15)) ||
+                  ((t->subtype == 0x16 || (t->subtype == 0x20)))) ||
+                 ((t->subtype == 0x21 || (t->subtype == 0x22)))))) {
+          SourceError(source,"illigal operator %s on floating point operands\n");
+          error = 1;
         }
         else {
-          switch(local_d60->subtype) {
+          switch(t->subtype) {
           case 5:
           case 6:
           case 7:
@@ -2161,297 +2181,295 @@ LAB_0046cec2:
           case 0x2a:
           case 0x2b:
 switchD_0046d17f_caseD_5:
-            if (local_544 == 0) {
-              SourceError(param_1,"operator %s after operator in #if/#elif");
-              local_53c = 1;
+            if (lastwasvalue == 0) {
+              SourceError(source,"operator %s after operator in #if/#elif");
+              error = 1;
             }
             break;
           default:
-            SourceError(param_1,"invalid operator %s in #if/#elif");
-            local_53c = 1;
+            SourceError(source,"invalid operator %s in #if/#elif");
+            error = 1;
             break;
           case 0x10:
           case 0x11:
-            SourceError(param_1,"++ or -- used in #if/#elif");
+            SourceError(source,"++ or -- used in #if/#elif");
             break;
           case 0x1e:
-            if (local_544 != 0) goto switchD_0046d17f_caseD_5;
-            local_538 = 1;
+            if (lastwasvalue != 0) goto switchD_0046d17f_caseD_5;
+            negativevalue = 1;
             break;
           case 0x23:
           case 0x24:
-            if (local_544 != 0) {
-              SourceError(param_1,"! or ~ after value in #if/#elif");
-              local_53c = 1;
+            if (lastwasvalue != 0) {
+              SourceError(source,"! or ~ after value in #if/#elif");
+              error = 1;
             }
           }
-          iVar6 = local_20;
-          if ((local_53c == 0) && (local_538 == 0)) {
-            if (local_20 < 0x40) {
-              puVar1 = auStack_534 + local_20 * 5;
-              local_20 = local_20 + 1;
-              *puVar1 = local_d60->subtype;
-              uVar5 = PC_OperatorPriority(local_d60->subtype);
-              auStack_534[iVar6 * 5 + 1] = uVar5;
-              auStack_534[iVar6 * 5 + 2] = local_24;
-              auStack_534[iVar6 * 5 + 4] = 0;
-              auStack_534[iVar6 * 5 + 3] = (uint)local_d50;
-              puVar3 = puVar1;
-              if (local_d50 != (uint *)0x0) {
-                local_d50[4] = (uint)puVar1;
-                puVar3 = local_548;
+          iVar6 = numoperators;
+          if ((error == 0) && (negativevalue == 0)) {
+            if (numoperators < 0x40) {
+              poVar1 = aoStack_534 + numoperators;
+              numoperators = numoperators + 1;
+              poVar1->op = t->subtype;
+              iVar5 = PC_OperatorPriority(t->subtype);
+              aoStack_534[iVar6].priority = iVar5;
+              aoStack_534[iVar6].parentheses = parentheses;
+              aoStack_534[iVar6].next = (operator_s *)0x0;
+              aoStack_534[iVar6].prev = lastoperator;
+              poVar3 = poVar1;
+              if (lastoperator != (operator_s *)0x0) {
+                lastoperator->next = poVar1;
+                poVar3 = firstoperator;
               }
-              local_548 = puVar3;
-              local_544 = 0;
-              local_d50 = puVar1;
+              firstoperator = poVar3;
+              lastwasvalue = 0;
+              lastoperator = poVar1;
             }
             else {
-              SourceError(param_1,"out of operator space\n");
-              local_53c = 1;
+              SourceError(source,"out of operator space\n");
+              error = 1;
             }
           }
         }
       }
       else {
-        SourceError(param_1,"misplaced minus sign in #if/#elif");
-        local_53c = 1;
+        SourceError(source,"misplaced minus sign in #if/#elif");
+        error = 1;
       }
     }
     else {
-      SourceError(param_1,"unknown %s in #if/#elif");
-      local_53c = 1;
+      SourceError(source,"unknown %s in #if/#elif");
+      error = 1;
     }
-    if (local_53c != 0) break;
+    if (error != 0) break;
   }
-  if (local_53c == 0) {
-    if (local_544 == 0) {
-      SourceError(param_1,"trailing operator in #if/#elif");
-      local_53c = 1;
+  if (error == 0) {
+    if (lastwasvalue == 0) {
+      SourceError(source,"trailing operator in #if/#elif");
+      error = 1;
     }
-    else if (local_24 != 0) {
-      SourceError(param_1,"too many ( in #if/#elif");
-      local_53c = 1;
+    else if (parentheses != 0) {
+      SourceError(source,"too many ( in #if/#elif");
+      error = 1;
     }
   }
-  local_8 = 0;
-  local_c = 0;
-  local_d5c = 0.0;
-  while ((local_53c == 0 && (local_548 != (uint *)0x0))) {
-    local_1c = local_30;
-    local_d64 = local_548;
+  gotquestmarkvalue = 0;
+  questmarkintvalue = 0;
+  questmarkfloatvalue = 0.0;
+  while ((error == 0 && (firstoperator != (operator_s *)0x0))) {
+    v = firstvalue;
+    o = firstoperator;
     while( true ) {
-      if (((local_d64[4] == 0) || (*(int *)(local_d64[4] + 8) < (int)local_d64[2])) ||
-         ((local_d64[2] == *(uint *)(local_d64[4] + 8) &&
-          (*(int *)(local_d64[4] + 4) <= (int)local_d64[1])))) goto LAB_0046d49a;
-      if ((*local_d64 != 0x24) && (*local_d64 != 0x23)) {
-        local_1c = (uint *)local_1c[6];
+      if (((o->next == (operator_s *)0x0) || (o->next->parentheses < o->parentheses)) ||
+         ((o->parentheses == o->next->parentheses && (o->next->priority <= o->priority))))
+      goto LAB_0046d49a;
+      if ((o->op != 0x24) && (o->op != 0x23)) {
+        v = v->next;
       }
-      if (local_1c == (uint *)0x0) break;
-      local_d64 = (uint *)local_d64[4];
+      if (v == (value_s *)0x0) break;
+      o = o->next;
     }
-    SourceError(param_1,"mising values in #if/#elif");
-    local_53c = 1;
+    SourceError(source,"mising values in #if/#elif");
+    error = 1;
 LAB_0046d49a:
-    if (local_53c != 0) break;
-    local_2c = local_1c;
-    local_540 = (uint *)local_1c[6];
-    switch(*local_d64) {
+    if (error != 0) break;
+    v1 = v;
+    v2 = v->next;
+    switch(o->op) {
     case 5:
-      if ((*local_1c == 0) || (*local_540 == 0)) {
+      if ((v->intvalue == 0) || (v2->intvalue == 0)) {
         local_db8 = 0;
       }
       else {
         local_db8 = 1;
       }
-      *local_1c = local_db8;
-      if ((*(double *)(local_2c + 2) == 0.0) || (*(double *)(local_540 + 2) == 0.0)) {
+      v->intvalue = local_db8;
+      if ((v1->floatvalue == 0.0) || (v2->floatvalue == 0.0)) {
         local_dbc = 0;
       }
       else {
         local_dbc = 1;
       }
-      *(double *)(local_2c + 2) = (double)local_dbc;
+      v1->floatvalue = (double)local_dbc;
       break;
     case 6:
-      if ((*local_1c == 0) && (*local_540 == 0)) {
+      if ((v->intvalue == 0) && (v2->intvalue == 0)) {
         local_dc0 = 0;
       }
       else {
         local_dc0 = 1;
       }
-      *local_1c = local_dc0;
-      if ((*(double *)(local_2c + 2) == 0.0) && (*(double *)(local_540 + 2) == 0.0)) {
+      v->intvalue = local_dc0;
+      if ((v1->floatvalue == 0.0) && (v2->floatvalue == 0.0)) {
         local_dc4 = 0;
       }
       else {
         local_dc4 = 1;
       }
-      *(double *)(local_2c + 2) = (double)local_dc4;
+      v1->floatvalue = (double)local_dc4;
       break;
     case 7:
-      *local_1c = (uint)((int)*local_540 <= (int)*local_1c);
-      local_dc8 = (uint)(*(double *)(local_540 + 2) <= *(double *)(local_2c + 2));
-      *(double *)(local_2c + 2) = (double)local_dc8;
+      v->intvalue = (uint)(v2->intvalue <= v->intvalue);
+      local_dc8 = (uint)(v2->floatvalue <= v1->floatvalue);
+      v1->floatvalue = (double)local_dc8;
       break;
     case 8:
-      *local_1c = (uint)((int)*local_1c <= (int)*local_540);
-      local_dcc = (uint)(*(double *)(local_2c + 2) <= *(double *)(local_540 + 2));
-      *(double *)(local_2c + 2) = (double)local_dcc;
+      v->intvalue = (uint)(v->intvalue <= v2->intvalue);
+      local_dcc = (uint)(v1->floatvalue <= v2->floatvalue);
+      v1->floatvalue = (double)local_dcc;
       break;
     case 9:
-      *local_1c = (uint)(*local_1c == *local_540);
-      local_dd0 = (uint)(*(double *)(local_2c + 2) == *(double *)(local_540 + 2));
-      *(double *)(local_2c + 2) = (double)local_dd0;
+      v->intvalue = (uint)(v->intvalue == v2->intvalue);
+      local_dd0 = (uint)(v1->floatvalue == v2->floatvalue);
+      v1->floatvalue = (double)local_dd0;
       break;
     case 10:
-      *local_1c = (uint)(*local_1c != *local_540);
-      local_dd4 = (uint)(*(double *)(local_2c + 2) != *(double *)(local_540 + 2));
-      *(double *)(local_2c + 2) = (double)local_dd4;
+      v->intvalue = (uint)(v->intvalue != v2->intvalue);
+      local_dd4 = (uint)(v1->floatvalue != v2->floatvalue);
+      v1->floatvalue = (double)local_dd4;
       break;
     case 0x15:
-      *local_1c = (int)*local_1c >> ((byte)*local_540 & 0x1f);
+      v->intvalue = v->intvalue >> ((byte)v2->intvalue & 0x1f);
       break;
     case 0x16:
-      *local_1c = *local_1c << ((byte)*local_540 & 0x1f);
+      v->intvalue = v->intvalue << ((byte)v2->intvalue & 0x1f);
       break;
     case 0x1a:
-      *local_1c = *local_1c * *local_540;
-      *(double *)(local_2c + 2) = *(double *)(local_2c + 2) * *(double *)(local_540 + 2);
+      v->intvalue = v->intvalue * v2->intvalue;
+      v1->floatvalue = v1->floatvalue * v2->floatvalue;
       break;
     case 0x1b:
-      if ((*local_540 == 0) || (*(double *)(local_540 + 2) == 0.0)) {
-        SourceError(param_1,"divide by zero in #if/#elif\n");
-        local_53c = 1;
+      if ((v2->intvalue == 0) || (v2->floatvalue == 0.0)) {
+        SourceError(source,"divide by zero in #if/#elif\n");
+        error = 1;
       }
       else {
-        *local_1c = (int)*local_1c / (int)*local_540;
-        *(double *)(local_2c + 2) = *(double *)(local_2c + 2) / *(double *)(local_540 + 2);
+        v->intvalue = v->intvalue / v2->intvalue;
+        v1->floatvalue = v1->floatvalue / v2->floatvalue;
       }
       break;
     case 0x1c:
-      if (*local_540 == 0) {
-        SourceError(param_1,"divide by zero in #if/#elif\n");
-        local_53c = 1;
+      if (v2->intvalue == 0) {
+        SourceError(source,"divide by zero in #if/#elif\n");
+        error = 1;
       }
       else {
-        *local_1c = (int)*local_1c % (int)*local_540;
+        v->intvalue = v->intvalue % v2->intvalue;
       }
       break;
     case 0x1d:
-      *local_1c = *local_1c + *local_540;
-      *(double *)(local_2c + 2) = *(double *)(local_2c + 2) + *(double *)(local_540 + 2);
+      v->intvalue = v->intvalue + v2->intvalue;
+      v1->floatvalue = v1->floatvalue + v2->floatvalue;
       break;
     case 0x1e:
-      *local_1c = *local_1c - *local_540;
-      *(double *)(local_2c + 2) = *(double *)(local_2c + 2) - *(double *)(local_540 + 2);
+      v->intvalue = v->intvalue - v2->intvalue;
+      v1->floatvalue = v1->floatvalue - v2->floatvalue;
       break;
     case 0x20:
-      *local_1c = *local_1c & *local_540;
+      v->intvalue = v->intvalue & v2->intvalue;
       break;
     case 0x21:
-      *local_1c = *local_1c | *local_540;
+      v->intvalue = v->intvalue | v2->intvalue;
       break;
     case 0x22:
-      *local_1c = *local_1c ^ *local_540;
+      v->intvalue = v->intvalue ^ v2->intvalue;
       break;
     case 0x23:
-      *local_1c = ~*local_1c;
+      v->intvalue = ~v->intvalue;
       break;
     case 0x24:
-      *local_1c = (uint)(*local_1c == 0);
-      local_db4 = (uint)(*(double *)(local_2c + 2) == 0.0);
-      *(double *)(local_2c + 2) = (double)local_db4;
+      v->intvalue = (uint)(v->intvalue == 0);
+      local_db4 = (uint)(v1->floatvalue == 0.0);
+      v1->floatvalue = (double)local_db4;
       break;
     case 0x25:
-      *local_1c = (uint)((int)*local_540 < (int)*local_1c);
-      local_dd8 = (uint)(*(double *)(local_540 + 2) <= *(double *)(local_2c + 2) &&
-                        *(double *)(local_2c + 2) != *(double *)(local_540 + 2));
-      *(double *)(local_2c + 2) = (double)local_dd8;
+      v->intvalue = (uint)(v2->intvalue < v->intvalue);
+      local_dd8 = (uint)(v2->floatvalue <= v1->floatvalue && v1->floatvalue != v2->floatvalue);
+      v1->floatvalue = (double)local_dd8;
       break;
     case 0x26:
-      *local_1c = (uint)((int)*local_1c < (int)*local_540);
-      local_ddc = (uint)(*(double *)(local_2c + 2) <= *(double *)(local_540 + 2) &&
-                        *(double *)(local_540 + 2) != *(double *)(local_2c + 2));
-      *(double *)(local_2c + 2) = (double)local_ddc;
+      v->intvalue = (uint)(v->intvalue < v2->intvalue);
+      local_ddc = (uint)(v1->floatvalue <= v2->floatvalue && v2->floatvalue != v1->floatvalue);
+      v1->floatvalue = (double)local_ddc;
       break;
     case 0x2a:
-      if (local_8 == 0) {
-        SourceError(param_1,": without ? in #if/#elif");
-        local_53c = 1;
+      if (gotquestmarkvalue == 0) {
+        SourceError(source,": without ? in #if/#elif");
+        error = 1;
       }
       else {
-        if (param_5 == 0) {
-          if (local_d5c == 0.0) {
-            *(undefined8 *)(local_1c + 2) = *(undefined8 *)(local_540 + 2);
+        if (integer == 0) {
+          if (questmarkfloatvalue == 0.0) {
+            v->floatvalue = v2->floatvalue;
           }
         }
-        else if (local_c == 0) {
-          *local_1c = *local_540;
+        else if (questmarkintvalue == 0) {
+          v->intvalue = v2->intvalue;
         }
-        local_8 = 0;
+        gotquestmarkvalue = 0;
       }
       break;
     case 0x2b:
-      if (local_8 == 0) {
-        local_c = *local_1c;
-        local_d5c = *(double *)(local_1c + 2);
-        local_8 = 1;
+      if (gotquestmarkvalue == 0) {
+        questmarkintvalue = v->intvalue;
+        questmarkfloatvalue = v->floatvalue;
+        gotquestmarkvalue = 1;
       }
       else {
-        SourceError(param_1,"? after ? in #if/#elif");
-        local_53c = 1;
+        SourceError(source,"? after ? in #if/#elif");
+        error = 1;
       }
     }
-    if (local_53c != 0) break;
-    local_14 = *local_d64;
-    if ((*local_d64 != 0x24) && (*local_d64 != 0x23)) {
-      if (*local_d64 != 0x2b) {
-        local_1c = (uint *)local_1c[6];
+    if (error != 0) break;
+    lastoperatortype = o->op;
+    if ((o->op != 0x24) && (o->op != 0x23)) {
+      if (o->op != 0x2b) {
+        v = v->next;
       }
-      if (local_1c[5] == 0) {
-        local_30 = (uint *)local_1c[6];
-      }
-      else {
-        *(uint *)(local_1c[5] + 0x18) = local_1c[6];
-      }
-      if (local_1c[6] == 0) {
-        local_18 = (uint *)local_1c[5];
+      if (v->prev == (value_s *)0x0) {
+        firstvalue = v->next;
       }
       else {
-        *(uint *)(local_1c[6] + 0x14) = local_1c[5];
+        v->prev->next = v->next;
+      }
+      if (v->next == (value_s *)0x0) {
+        lastvalue = v->prev;
+      }
+      else {
+        v->next->prev = v->prev;
       }
     }
-    if (local_d64[3] == 0) {
-      local_548 = (uint *)local_d64[4];
+    if (o->prev == (operator_s *)0x0) {
+      firstoperator = o->next;
     }
     else {
-      *(uint *)(local_d64[3] + 0x10) = local_d64[4];
+      o->prev->next = o->next;
     }
-    if (local_d64[4] != 0) {
-      *(uint *)(local_d64[4] + 0xc) = local_d64[3];
-    }
-  }
-  if (local_30 != (uint *)0x0) {
-    if (param_3 != (long *)0x0) {
-      *param_3 = *local_30;
-    }
-    if (param_4 != (double *)0x0) {
-      *param_4 = *(double *)(local_30 + 2);
+    if (o->next != (operator_s *)0x0) {
+      o->next->prev = o->prev;
     }
   }
-  for (local_d64 = local_548; local_d64 != (uint *)0x0; local_d64 = (uint *)local_d64[4]) {
+  if (firstvalue != (value_s *)0x0) {
+    if (intvalue != (long *)0x0) {
+      *intvalue = firstvalue->intvalue;
+    }
+    if (floatvalue != (double *)0x0) {
+      *floatvalue = firstvalue->floatvalue;
+    }
   }
-  for (local_1c = local_30; local_1c != (uint *)0x0; local_1c = (uint *)local_1c[6]) {
+  for (o = firstoperator; o != (operator_s *)0x0; o = o->next) {
   }
-  if (local_53c == 0) {
+  for (v = firstvalue; v != (value_s *)0x0; v = v->next) {
+  }
+  if (error == 0) {
     iVar6 = 1;
   }
   else {
-    if (param_3 != (long *)0x0) {
-      *param_3 = 0;
+    if (intvalue != (long *)0x0) {
+      *intvalue = 0;
     }
-    if (param_4 != (double *)0x0) {
-      *param_4 = 0.0;
+    if (floatvalue != (double *)0x0) {
+      *floatvalue = 0.0;
     }
     iVar6 = 0;
   }
@@ -2463,7 +2481,7 @@ LAB_0046d49a:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Evaluate(source_s *param_1,long *param_2,double *param_3,int param_4)
+int __cdecl PC_Evaluate(source_s *source,long *intvalue,double *floatvalue,int integer)
 
 {
   byte bVar1;
@@ -2471,59 +2489,62 @@ int __cdecl PC_Evaluate(source_s *param_1,long *param_2,double *param_3,int para
   bool bVar3;
   int iVar4;
   token_s *ptVar5;
-  define_s *pdVar6;
-  bool bVar7;
+  define_s *define_00;
+  bool bVar6;
   int local_464;
   token_s *local_45c;
   byte *local_458;
-  token_s *local_454;
-  token_s local_444;
+  token_s *t;
+  define_s *define;
+  token_s *nexttoken;
+  int defined;
+  token_s token;
   uint local_10;
-  token_s *local_c;
-  token_s *local_8;
+  token_s *firsttoken;
+  token_s *lasttoken;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar3 = false;
-  if (param_2 != (long *)0x0) {
-    *param_2 = 0;
+  if (intvalue != (long *)0x0) {
+    *intvalue = 0;
   }
-  if (param_3 != (double *)0x0) {
-    *param_3 = 0.0;
+  if (floatvalue != (double *)0x0) {
+    *floatvalue = 0.0;
   }
-  iVar4 = PC_ReadLine(param_1,&local_444,true);
+  iVar4 = PC_ReadLine(source,&token,true);
   if (iVar4 == 0) {
-    SourceError(param_1,"no value after #if/#elif");
+    SourceError(source,"no value after #if/#elif");
     iVar4 = 0;
   }
   else {
-    local_c = (token_s *)0x0;
-    local_8 = (token_s *)0x0;
+    firsttoken = (token_s *)0x0;
+    lasttoken = (token_s *)0x0;
     do {
-      if (local_444.type == 4) {
+      if (token.type == 4) {
         if (bVar3) {
           bVar3 = false;
-          ptVar5 = PC_CopyToken(&local_444);
+          ptVar5 = PC_CopyToken(&token);
           ptVar5->next = (token_s *)0x0;
           ptVar2 = ptVar5;
-          if (local_8 != (token_s *)0x0) {
-            local_8->next = ptVar5;
-            ptVar2 = local_c;
+          if (lasttoken != (token_s *)0x0) {
+            lasttoken->next = ptVar5;
+            ptVar2 = firsttoken;
           }
         }
         else {
           local_458 = (byte *)0xc7720c;
-          local_45c = &local_444;
+          local_45c = &token;
           do {
             bVar1 = local_45c->string[0];
-            bVar7 = bVar1 < *local_458;
+            bVar6 = bVar1 < *local_458;
             if (bVar1 != *local_458) {
 LAB_0046e344:
-              local_464 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+              local_464 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
               goto LAB_0046e34f;
             }
             if (bVar1 == 0) break;
             bVar1 = local_45c->string[1];
-            bVar7 = bVar1 < local_458[1];
+            bVar6 = bVar1 < local_458[1];
             if (bVar1 != local_458[1]) goto LAB_0046e344;
             local_45c = (token_s *)(local_45c->string + 2);
             local_458 = local_458 + 2;
@@ -2532,23 +2553,23 @@ LAB_0046e344:
 LAB_0046e34f:
           if (local_464 == 0) {
             bVar3 = true;
-            ptVar5 = PC_CopyToken(&local_444);
+            ptVar5 = PC_CopyToken(&token);
             ptVar5->next = (token_s *)0x0;
             ptVar2 = ptVar5;
-            if (local_8 != (token_s *)0x0) {
-              local_8->next = ptVar5;
-              ptVar2 = local_c;
+            if (lasttoken != (token_s *)0x0) {
+              lasttoken->next = ptVar5;
+              ptVar2 = firsttoken;
             }
           }
           else {
-            pdVar6 = PC_FindHashedDefine(param_1->definehash,local_444.string);
-            if (pdVar6 == (define_s *)0x0) {
-              SourceError(param_1,"can\'t evaluate %s, not defined");
+            define_00 = PC_FindHashedDefine(source->definehash,token.string);
+            if (define_00 == (define_s *)0x0) {
+              SourceError(source,"can\'t evaluate %s, not defined");
               return 0;
             }
-            iVar4 = PC_ExpandDefineIntoSource(param_1,&local_444,pdVar6);
-            ptVar2 = local_c;
-            ptVar5 = local_8;
+            iVar4 = PC_ExpandDefineIntoSource(source,&token,define_00);
+            ptVar2 = firsttoken;
+            ptVar5 = lasttoken;
             if (iVar4 == 0) {
               return 0;
             }
@@ -2556,32 +2577,32 @@ LAB_0046e34f:
         }
       }
       else {
-        if ((local_444.type != 3) && (local_444.type != 5)) {
-          SourceError(param_1,"can\'t evaluate %s");
+        if ((token.type != 3) && (token.type != 5)) {
+          SourceError(source,"can\'t evaluate %s");
           return 0;
         }
-        ptVar5 = PC_CopyToken(&local_444);
+        ptVar5 = PC_CopyToken(&token);
         ptVar5->next = (token_s *)0x0;
         ptVar2 = ptVar5;
-        if (local_8 != (token_s *)0x0) {
-          local_8->next = ptVar5;
-          ptVar2 = local_c;
+        if (lasttoken != (token_s *)0x0) {
+          lasttoken->next = ptVar5;
+          ptVar2 = firsttoken;
         }
       }
-      local_8 = ptVar5;
-      local_c = ptVar2;
-      iVar4 = PC_ReadLine(param_1,&local_444,!bVar3);
+      lasttoken = ptVar5;
+      firsttoken = ptVar2;
+      iVar4 = PC_ReadLine(source,&token,!bVar3);
     } while (iVar4 != 0);
-    iVar4 = PC_EvaluateTokens(param_1,local_c,param_2,param_3,param_4);
+    iVar4 = PC_EvaluateTokens(source,firsttoken,intvalue,floatvalue,integer);
     if (iVar4 == 0) {
       iVar4 = 0;
     }
     else {
-      local_454 = local_c;
-      while (local_454 != (token_s *)0x0) {
-        ptVar2 = local_454->next;
-        PC_FreeToken(local_454);
-        local_454 = ptVar2;
+      t = firsttoken;
+      while (t != (token_s *)0x0) {
+        ptVar2 = t->next;
+        PC_FreeToken(t);
+        t = ptVar2;
       }
       iVar4 = 1;
     }
@@ -2594,7 +2615,7 @@ LAB_0046e34f:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_DollarEvaluate(source_s *param_1,long *param_2,double *param_3,int param_4)
+int __cdecl PC_DollarEvaluate(source_s *source,long *intvalue,double *floatvalue,int integer)
 
 {
   byte bVar1;
@@ -2602,67 +2623,70 @@ int __cdecl PC_DollarEvaluate(source_s *param_1,long *param_2,double *param_3,in
   bool bVar3;
   int iVar4;
   token_s *ptVar5;
-  define_s *pdVar6;
-  bool bVar7;
+  define_s *define_00;
+  bool bVar6;
   int local_468;
   token_s *local_460;
   byte *local_45c;
-  token_s *local_458;
-  int local_448;
-  token_s local_444;
+  token_s *t;
+  define_s *define;
+  int defined;
+  token_s *nexttoken;
+  int indent;
+  token_s token;
   uint local_10;
-  token_s *local_c;
-  token_s *local_8;
+  token_s *firsttoken;
+  token_s *lasttoken;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar3 = false;
-  if (param_2 != (long *)0x0) {
-    *param_2 = 0;
+  if (intvalue != (long *)0x0) {
+    *intvalue = 0;
   }
-  if (param_3 != (double *)0x0) {
-    *param_3 = 0.0;
+  if (floatvalue != (double *)0x0) {
+    *floatvalue = 0.0;
   }
-  iVar4 = PC_ReadSourceToken(param_1,&local_444);
+  iVar4 = PC_ReadSourceToken(source,&token);
   if (iVar4 == 0) {
-    SourceError(param_1,"no leading ( after $evalint/$evalfloat");
+    SourceError(source,"no leading ( after $evalint/$evalfloat");
     iVar4 = 0;
   }
   else {
-    iVar4 = PC_ReadSourceToken(param_1,&local_444);
+    iVar4 = PC_ReadSourceToken(source,&token);
     if (iVar4 == 0) {
-      SourceError(param_1,"nothing to evaluate");
+      SourceError(source,"nothing to evaluate");
       iVar4 = 0;
     }
     else {
-      local_448 = 1;
-      local_c = (token_s *)0x0;
-      local_8 = (token_s *)0x0;
+      indent = 1;
+      firsttoken = (token_s *)0x0;
+      lasttoken = (token_s *)0x0;
       do {
-        if (local_444.type == 4) {
+        if (token.type == 4) {
           if (bVar3) {
             bVar3 = false;
-            ptVar5 = PC_CopyToken(&local_444);
+            ptVar5 = PC_CopyToken(&token);
             ptVar5->next = (token_s *)0x0;
             ptVar2 = ptVar5;
-            if (local_8 != (token_s *)0x0) {
-              local_8->next = ptVar5;
-              ptVar2 = local_c;
+            if (lasttoken != (token_s *)0x0) {
+              lasttoken->next = ptVar5;
+              ptVar2 = firsttoken;
             }
           }
           else {
             local_45c = (byte *)0xc7720c;
-            local_460 = &local_444;
+            local_460 = &token;
             do {
               bVar1 = local_460->string[0];
-              bVar7 = bVar1 < *local_45c;
+              bVar6 = bVar1 < *local_45c;
               if (bVar1 != *local_45c) {
 LAB_0046df0b:
-                local_468 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+                local_468 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
                 goto LAB_0046df16;
               }
               if (bVar1 == 0) break;
               bVar1 = local_460->string[1];
-              bVar7 = bVar1 < local_45c[1];
+              bVar6 = bVar1 < local_45c[1];
               if (bVar1 != local_45c[1]) goto LAB_0046df0b;
               local_460 = (token_s *)(local_460->string + 2);
               local_45c = local_45c + 2;
@@ -2671,23 +2695,23 @@ LAB_0046df0b:
 LAB_0046df16:
             if (local_468 == 0) {
               bVar3 = true;
-              ptVar5 = PC_CopyToken(&local_444);
+              ptVar5 = PC_CopyToken(&token);
               ptVar5->next = (token_s *)0x0;
               ptVar2 = ptVar5;
-              if (local_8 != (token_s *)0x0) {
-                local_8->next = ptVar5;
-                ptVar2 = local_c;
+              if (lasttoken != (token_s *)0x0) {
+                lasttoken->next = ptVar5;
+                ptVar2 = firsttoken;
               }
             }
             else {
-              pdVar6 = PC_FindHashedDefine(param_1->definehash,local_444.string);
-              if (pdVar6 == (define_s *)0x0) {
-                SourceError(param_1,"can\'t evaluate %s, not defined");
+              define_00 = PC_FindHashedDefine(source->definehash,token.string);
+              if (define_00 == (define_s *)0x0) {
+                SourceError(source,"can\'t evaluate %s, not defined");
                 return 0;
               }
-              iVar4 = PC_ExpandDefineIntoSource(param_1,&local_444,pdVar6);
-              ptVar2 = local_c;
-              ptVar5 = local_8;
+              iVar4 = PC_ExpandDefineIntoSource(source,&token,define_00);
+              ptVar2 = firsttoken;
+              ptVar5 = lasttoken;
               if (iVar4 == 0) {
                 return 0;
               }
@@ -2695,39 +2719,39 @@ LAB_0046df16:
           }
         }
         else {
-          if ((local_444.type != 3) && (local_444.type != 5)) {
-            SourceError(param_1,"can\'t evaluate %s");
+          if ((token.type != 3) && (token.type != 5)) {
+            SourceError(source,"can\'t evaluate %s");
             return 0;
           }
-          if (local_444.string[0] == '(') {
-            local_448 = local_448 + 1;
+          if (token.string[0] == '(') {
+            indent = indent + 1;
           }
-          else if (local_444.string[0] == ')') {
-            local_448 = local_448 + -1;
+          else if (token.string[0] == ')') {
+            indent = indent + -1;
           }
-          if (local_448 < 1) break;
-          ptVar5 = PC_CopyToken(&local_444);
+          if (indent < 1) break;
+          ptVar5 = PC_CopyToken(&token);
           ptVar5->next = (token_s *)0x0;
           ptVar2 = ptVar5;
-          if (local_8 != (token_s *)0x0) {
-            local_8->next = ptVar5;
-            ptVar2 = local_c;
+          if (lasttoken != (token_s *)0x0) {
+            lasttoken->next = ptVar5;
+            ptVar2 = firsttoken;
           }
         }
-        local_8 = ptVar5;
-        local_c = ptVar2;
-        iVar4 = PC_ReadSourceToken(param_1,&local_444);
+        lasttoken = ptVar5;
+        firsttoken = ptVar2;
+        iVar4 = PC_ReadSourceToken(source,&token);
       } while (iVar4 != 0);
-      iVar4 = PC_EvaluateTokens(param_1,local_c,param_2,param_3,param_4);
+      iVar4 = PC_EvaluateTokens(source,firsttoken,intvalue,floatvalue,integer);
       if (iVar4 == 0) {
         iVar4 = 0;
       }
       else {
-        local_458 = local_c;
-        while (local_458 != (token_s *)0x0) {
-          ptVar2 = local_458->next;
-          PC_FreeToken(local_458);
-          local_458 = ptVar2;
+        t = firsttoken;
+        while (t != (token_s *)0x0) {
+          ptVar2 = t->next;
+          PC_FreeToken(t);
+          t = ptVar2;
         }
         iVar4 = 1;
       }
@@ -2739,32 +2763,32 @@ LAB_0046df16:
 
 // 0046E150  PC_Directive_elif  (botlib/l_precomp.cpp:2285)
 
-int __cdecl PC_Directive_elif(source_s *param_1)
+int __cdecl PC_Directive_elif(source_s *source)
 
 {
   int iVar1;
-  parseSkip_t local_10;
-  int local_c;
-  int local_8;
+  parseSkip_t skip;
+  int type;
+  long value;
   
-  PC_PopIndent(param_1,&local_c,&local_10);
-  if ((local_c == 0) || (local_c == 2)) {
-    SourceError(param_1,"misplaced #elif");
+  PC_PopIndent(source,&type,&skip);
+  if ((type == 0) || (type == 2)) {
+    SourceError(source,"misplaced #elif");
     iVar1 = 0;
   }
   else {
-    iVar1 = PC_Evaluate(param_1,&local_8,(double *)0x0,1);
+    iVar1 = PC_Evaluate(source,&value,(double *)0x0,1);
     if (iVar1 == 0) {
       iVar1 = 0;
     }
     else {
-      if (local_10 == SKIP_YES) {
-        local_10 = (parseSkip_t)(local_8 == 0);
+      if (skip == SKIP_YES) {
+        skip = (parseSkip_t)(value == 0);
       }
       else {
-        local_10 = SKIP_ALL_ELIFS;
+        skip = SKIP_ALL_ELIFS;
       }
-      PC_PushIndent(param_1,4,local_10);
+      PC_PushIndent(source,4,skip);
       iVar1 = 1;
     }
   }
@@ -2774,15 +2798,16 @@ int __cdecl PC_Directive_elif(source_s *param_1)
 
 // 0046E550  PC_Directive_if  (botlib/l_precomp.cpp:2316)
 
-int __cdecl PC_Directive_if(source_s *param_1)
+int __cdecl PC_Directive_if(source_s *source)
 
 {
   int iVar1;
-  int local_8;
+  parseSkip_t skip;
+  long value;
   
-  iVar1 = PC_Evaluate(param_1,&local_8,(double *)0x0,1);
+  iVar1 = PC_Evaluate(source,&value,(double *)0x0,1);
   if (iVar1 != 0) {
-    PC_PushIndent(param_1,1,(uint)(local_8 == 0));
+    PC_PushIndent(source,1,(uint)(value == 0));
   }
   return (uint)(iVar1 != 0);
 }
@@ -2790,10 +2815,10 @@ int __cdecl PC_Directive_if(source_s *param_1)
 
 // 0046E5A0  PC_Directive_line  (botlib/l_precomp.cpp:2335)
 
-int __cdecl PC_Directive_line(source_s *param_1)
+int __cdecl PC_Directive_line(source_s *source)
 
 {
-  SourceError(param_1,"#line directive not supported");
+  SourceError(source,"#line directive not supported");
   return 0;
 }
 
@@ -2802,19 +2827,19 @@ int __cdecl PC_Directive_line(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_error(source_s *param_1)
+int __cdecl PC_Directive_error(source_s *source)
 
 {
   bool bVar1;
-  token_s local_43c;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_43c.string[0] = '\0';
-  PC_ReadSourceToken(param_1,&local_43c);
-  bVar1 = param_1->skip == 0;
+  token.string[0] = '\0';
+  PC_ReadSourceToken(source,&token);
+  bVar1 = source->skip == 0;
   if (bVar1) {
-    SourceError(param_1,"#error directive: %s");
+    SourceError(source,"#error directive: %s");
   }
   return (uint)!bVar1;
 }
@@ -2824,17 +2849,17 @@ int __cdecl PC_Directive_error(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_pragma(source_s *param_1)
+int __cdecl PC_Directive_pragma(source_s *source)
 
 {
   int iVar1;
-  token_s local_43c;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  SourceWarning(param_1,"#pragma directive not supported");
+  SourceWarning(source,"#pragma directive not supported");
   do {
-    iVar1 = PC_ReadLine(param_1,&local_43c,false);
+    iVar1 = PC_ReadLine(source,&token,false);
   } while (iVar1 != 0);
   return 1;
 }
@@ -2844,22 +2869,22 @@ int __cdecl PC_Directive_pragma(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl UnreadSignToken(source_s *param_1)
+void __cdecl UnreadSignToken(source_s *source)
 
 {
-  token_s local_43c;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_43c.line = param_1->scriptstack->line;
-  local_43c.whitespace_p = param_1->scriptstack->script_p;
-  local_43c.endwhitespace_p = param_1->scriptstack->script_p;
-  local_43c.linescrossed = 0;
-  local_43c.string[0] = '-';
-  local_43c.string[1] = '\0';
-  local_43c.type = 5;
-  local_43c.subtype = 0x1e;
-  PC_UnreadSourceToken(param_1,&local_43c);
+  token.line = source->scriptstack->line;
+  token.whitespace_p = source->scriptstack->script_p;
+  token.endwhitespace_p = source->scriptstack->script_p;
+  token.linescrossed = 0;
+  token.string[0] = '-';
+  token.string[1] = '\0';
+  token.type = 5;
+  token.subtype = 0x1e;
+  PC_UnreadSourceToken(source,&token);
   return;
 }
 
@@ -2868,30 +2893,30 @@ void __cdecl UnreadSignToken(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_eval(source_s *param_1)
+int __cdecl PC_Directive_eval(source_s *source)
 
 {
   int iVar1;
-  token_s local_43c;
+  token_s token;
   uint local_c;
-  int local_8;
+  long value;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = PC_Evaluate(param_1,&local_8,(double *)0x0,1);
+  iVar1 = PC_Evaluate(source,&value,(double *)0x0,1);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    local_43c.line = param_1->scriptstack->line;
-    local_43c.whitespace_p = param_1->scriptstack->script_p;
-    local_43c.endwhitespace_p = param_1->scriptstack->script_p;
-    local_43c.linescrossed = 0;
-    sprintf(local_43c.string,"%d");
-    local_43c.type = 3;
-    local_43c.subtype = 0x3008;
-    PC_UnreadSourceToken(param_1,&local_43c);
-    if (local_8 < 0) {
-      UnreadSignToken(param_1);
+    token.line = source->scriptstack->line;
+    token.whitespace_p = source->scriptstack->script_p;
+    token.endwhitespace_p = source->scriptstack->script_p;
+    token.linescrossed = 0;
+    sprintf(token.string,"%d");
+    token.type = 3;
+    token.subtype = 0x3008;
+    PC_UnreadSourceToken(source,&token);
+    if (value < 0) {
+      UnreadSignToken(source);
     }
     iVar1 = 1;
   }
@@ -2903,30 +2928,30 @@ int __cdecl PC_Directive_eval(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_Directive_evalfloat(source_s *param_1)
+int __cdecl PC_Directive_evalfloat(source_s *source)
 
 {
   int iVar1;
-  token_s local_444;
+  token_s token;
   uint local_10;
-  double local_c;
+  double value;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = PC_Evaluate(param_1,(long *)0x0,&local_c,0);
+  iVar1 = PC_Evaluate(source,(long *)0x0,&value,0);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    local_444.line = param_1->scriptstack->line;
-    local_444.whitespace_p = param_1->scriptstack->script_p;
-    local_444.endwhitespace_p = param_1->scriptstack->script_p;
-    local_444.linescrossed = 0;
-    sprintf(local_444.string,"%1.2f");
-    local_444.type = 3;
-    local_444.subtype = 0x2808;
-    PC_UnreadSourceToken(param_1,&local_444);
-    if (local_c < 0.0) {
-      UnreadSignToken(param_1);
+    token.line = source->scriptstack->line;
+    token.whitespace_p = source->scriptstack->script_p;
+    token.endwhitespace_p = source->scriptstack->script_p;
+    token.linescrossed = 0;
+    sprintf(token.string,"%1.2f");
+    token.type = 3;
+    token.subtype = 0x2808;
+    PC_UnreadSourceToken(source,&token);
+    if (value < 0.0) {
+      UnreadSignToken(source);
     }
     iVar1 = 1;
   }
@@ -2938,7 +2963,7 @@ int __cdecl PC_Directive_evalfloat(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadDirective(source_s *param_1)
+int __cdecl PC_ReadDirective(source_s *source)
 
 {
   byte bVar1;
@@ -2947,20 +2972,20 @@ int __cdecl PC_ReadDirective(source_s *param_1)
   int local_44c;
   byte *local_444;
   token_s *local_440;
-  token_s local_43c;
+  token_s token;
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = PC_ReadSourceToken(param_1,&local_43c);
+  iVar2 = PC_ReadSourceToken(source,&token);
   if (iVar2 == 0) {
-    SourceError(param_1,"found # without name");
+    SourceError(source,"found # without name");
   }
-  else if (local_43c.linescrossed < 1) {
-    if (local_43c.type == 4) {
-      for (local_8 = 0; directives[local_8].name != (char *)0x0; local_8 = local_8 + 1) {
-        local_440 = &local_43c;
-        local_444 = (byte *)directives[local_8].name;
+  else if (token.linescrossed < 1) {
+    if (token.type == 4) {
+      for (i = 0; directives[i].name != (char *)0x0; i = i + 1) {
+        local_440 = &token;
+        local_444 = (byte *)directives[i].name;
         do {
           bVar1 = *local_444;
           bVar3 = bVar1 < (byte)local_440->string[0];
@@ -2979,16 +3004,16 @@ LAB_0046ea0a:
         local_44c = 0;
 LAB_0046ea15:
         if (local_44c == 0) {
-          iVar2 = (*directives[local_8].func)(param_1);
+          iVar2 = (*directives[i].func)(source);
           return iVar2;
         }
       }
     }
-    SourceError(param_1,"unknown precompiler directive %s");
+    SourceError(source,"unknown precompiler directive %s");
   }
   else {
-    PC_UnreadSourceToken(param_1,&local_43c);
-    SourceError(param_1,"found # at end of line");
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"found # at end of line");
   }
   return 0;
 }
@@ -2998,32 +3023,32 @@ LAB_0046ea15:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_DollarDirective_evalint(source_s *param_1)
+int __cdecl PC_DollarDirective_evalint(source_s *source)
 
 {
   int iVar1;
-  token_s local_43c;
+  token_s token;
   uint local_c;
-  ulong local_8;
+  long value;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = PC_DollarEvaluate(param_1,(long *)&local_8,(double *)0x0,1);
+  iVar1 = PC_DollarEvaluate(source,&value,(double *)0x0,1);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    local_43c.line = param_1->scriptstack->line;
-    local_43c.whitespace_p = param_1->scriptstack->script_p;
-    local_43c.endwhitespace_p = param_1->scriptstack->script_p;
-    local_43c.linescrossed = 0;
-    sprintf(local_43c.string,"%d");
-    local_43c.type = 3;
-    local_43c.subtype = 0x3008;
-    local_43c.intvalue = local_8;
-    local_43c.floatvalue = (double)(int)local_8;
-    PC_UnreadSourceToken(param_1,&local_43c);
-    if ((int)local_8 < 0) {
-      UnreadSignToken(param_1);
+    token.line = source->scriptstack->line;
+    token.whitespace_p = source->scriptstack->script_p;
+    token.endwhitespace_p = source->scriptstack->script_p;
+    token.linescrossed = 0;
+    sprintf(token.string,"%d");
+    token.type = 3;
+    token.subtype = 0x3008;
+    token.intvalue = value;
+    token.floatvalue = (double)value;
+    PC_UnreadSourceToken(source,&token);
+    if (value < 0) {
+      UnreadSignToken(source);
     }
     iVar1 = 1;
   }
@@ -3035,34 +3060,34 @@ int __cdecl PC_DollarDirective_evalint(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_DollarDirective_evalfloat(source_s *param_1)
+int __cdecl PC_DollarDirective_evalfloat(source_s *source)
 
 {
   int iVar1;
   ulong local_458;
-  token_s local_444;
+  token_s token;
   uint local_10;
-  double local_c;
+  double value;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = PC_DollarEvaluate(param_1,(long *)0x0,&local_c,0);
+  iVar1 = PC_DollarEvaluate(source,(long *)0x0,&value,0);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    local_444.line = param_1->scriptstack->line;
-    local_444.whitespace_p = param_1->scriptstack->script_p;
-    local_444.endwhitespace_p = param_1->scriptstack->script_p;
-    local_444.linescrossed = 0;
-    sprintf(local_444.string,"%1.2f");
-    local_444.type = 3;
-    local_444.subtype = 0x2808;
-    local_458 = (ulong)(longlong)ROUND(local_c);
-    local_444.intvalue = local_458;
-    local_444.floatvalue = local_c;
-    PC_UnreadSourceToken(param_1,&local_444);
-    if (local_c < 0.0) {
-      UnreadSignToken(param_1);
+    token.line = source->scriptstack->line;
+    token.whitespace_p = source->scriptstack->script_p;
+    token.endwhitespace_p = source->scriptstack->script_p;
+    token.linescrossed = 0;
+    sprintf(token.string,"%1.2f");
+    token.type = 3;
+    token.subtype = 0x2808;
+    local_458 = (ulong)(longlong)ROUND(value);
+    token.intvalue = local_458;
+    token.floatvalue = value;
+    PC_UnreadSourceToken(source,&token);
+    if (value < 0.0) {
+      UnreadSignToken(source);
     }
     iVar1 = 1;
   }
@@ -3074,7 +3099,7 @@ int __cdecl PC_DollarDirective_evalfloat(source_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadDollarDirective(source_s *param_1)
+int __cdecl PC_ReadDollarDirective(source_s *source)
 
 {
   byte bVar1;
@@ -3083,20 +3108,20 @@ int __cdecl PC_ReadDollarDirective(source_s *param_1)
   int local_44c;
   byte *local_444;
   token_s *local_440;
-  token_s local_43c;
+  token_s token;
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = PC_ReadSourceToken(param_1,&local_43c);
+  iVar2 = PC_ReadSourceToken(source,&token);
   if (iVar2 == 0) {
-    SourceError(param_1,"found $ without name");
+    SourceError(source,"found $ without name");
   }
-  else if (local_43c.linescrossed < 1) {
-    if (local_43c.type == 4) {
-      for (local_8 = 0; dollardirectives[local_8].name != (char *)0x0; local_8 = local_8 + 1) {
-        local_440 = &local_43c;
-        local_444 = (byte *)dollardirectives[local_8].name;
+  else if (token.linescrossed < 1) {
+    if (token.type == 4) {
+      for (i = 0; dollardirectives[i].name != (char *)0x0; i = i + 1) {
+        local_440 = &token;
+        local_444 = (byte *)dollardirectives[i].name;
         do {
           bVar1 = *local_444;
           bVar3 = bVar1 < (byte)local_440->string[0];
@@ -3115,17 +3140,17 @@ LAB_0046edaa:
         local_44c = 0;
 LAB_0046edb5:
         if (local_44c == 0) {
-          iVar2 = (*dollardirectives[local_8].func)(param_1);
+          iVar2 = (*dollardirectives[i].func)(source);
           return iVar2;
         }
       }
     }
-    PC_UnreadSourceToken(param_1,&local_43c);
-    SourceError(param_1,"unknown precompiler directive %s");
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"unknown precompiler directive %s");
   }
   else {
-    PC_UnreadSourceToken(param_1,&local_43c);
-    SourceError(param_1,"found $ at end of line");
+    PC_UnreadSourceToken(source,&token);
+    SourceError(source,"found $ at end of line");
   }
   return 0;
 }
@@ -3135,7 +3160,7 @@ LAB_0046edb5:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadToken(source_s *param_1,token_s *param_2)
+int __cdecl PC_ReadToken(source_s *source,token_s *token)
 
 {
   char cVar1;
@@ -3149,66 +3174,65 @@ int __cdecl PC_ReadToken(source_s *param_1,token_s *param_2)
   char *local_460;
   token_s *local_450;
   token_s *local_440;
-  token_s local_43c;
+  token_s newtoken;
   uint local_c;
-  define_s *local_8;
+  define_s *define;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   do {
     do {
       while( true ) {
         while( true ) {
-          iVar3 = PC_ReadSourceToken(param_1,param_2);
+          iVar3 = PC_ReadSourceToken(source,token);
           if (iVar3 == 0) {
             return 0;
           }
-          if (((param_2->type != 5) || (param_2->string[0] != '#')) || (param_2->string[1] != '\0'))
+          if (((token->type != 5) || (token->string[0] != '#')) || (token->string[1] != '\0'))
           break;
-          iVar3 = PC_ReadDirective(param_1);
+          iVar3 = PC_ReadDirective(source);
           if (iVar3 == 0) {
             return 0;
           }
         }
-        if ((param_2->type != 5) || (param_2->string[0] != '$')) break;
-        iVar3 = PC_ReadDollarDirective(param_1);
+        if ((token->type != 5) || (token->string[0] != '$')) break;
+        iVar3 = PC_ReadDollarDirective(source);
         if (iVar3 == 0) {
           return 0;
         }
       }
-    } while (param_1->skip != 0);
-    if ((param_2->type == 1) && (iVar3 = PC_ReadToken(param_1,&local_43c), iVar3 != 0)) {
-      if (local_43c.type == 1) {
-        local_440 = param_2;
+    } while (source->skip != 0);
+    if ((token->type == 1) && (iVar3 = PC_ReadToken(source,&newtoken), iVar3 != 0)) {
+      if (newtoken.type == 1) {
+        local_440 = token;
         ptVar6 = local_440;
         do {
           local_440 = ptVar6;
           ptVar6 = (token_s *)(local_440->string + 1);
         } while (local_440->string[0] != '\0');
         local_440[-1].field_0x42f = 0;
-        local_450 = param_2;
+        local_450 = token;
         do {
           pcVar2 = local_450->string;
           local_450 = (token_s *)(local_450->string + 1);
         } while (*pcVar2 != '\0');
-        local_460 = local_43c.string + 1;
+        local_460 = newtoken.string + 1;
         do {
           cVar1 = *local_460;
           local_460 = local_460 + 1;
         } while (cVar1 != '\0');
         if ((char *)0x3ff <
             local_460 +
-            (int)((int)local_450 + ((1 - (int)(param_2->string + 1)) - (int)(local_43c.string + 2)))
-           ) {
-          SourceError(param_1,"string longer than MAX_TOKEN %d\n");
+            (int)((int)local_450 + ((1 - (int)(token->string + 1)) - (int)(newtoken.string + 2)))) {
+          SourceError(source,"string longer than MAX_TOKEN %d\n");
           return 0;
         }
-        pcVar2 = local_43c.string + 1;
+        pcVar2 = newtoken.string + 1;
         local_470 = pcVar2;
         do {
           cVar1 = *local_470;
           local_470 = local_470 + 1;
         } while (cVar1 != '\0');
-        local_484 = &param_2[-1].field_0x42f;
+        local_484 = &token[-1].field_0x42f;
         do {
           pcVar5 = local_484 + 1;
           local_484 = local_484 + 1;
@@ -3226,21 +3250,21 @@ int __cdecl PC_ReadToken(source_s *param_1,token_s *param_2)
         }
       }
       else {
-        PC_UnreadToken(param_1,&local_43c);
+        PC_UnreadToken(source,&newtoken);
       }
     }
-    if ((param_2->type != 4) ||
-       (local_8 = PC_FindHashedDefine(param_1->definehash,param_2->string),
-       local_8 == (define_s *)0x0)) {
-      ptVar6 = &param_1->token;
+    if ((token->type != 4) ||
+       (define = PC_FindHashedDefine(source->definehash,token->string), define == (define_s *)0x0))
+    {
+      ptVar6 = &source->token;
       for (iVar3 = 0x10c; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *(undefined4 *)ptVar6->string = *(undefined4 *)param_2->string;
-        param_2 = (token_s *)(param_2->string + 4);
+        *(undefined4 *)ptVar6->string = *(undefined4 *)token->string;
+        token = (token_s *)(token->string + 4);
         ptVar6 = (token_s *)(ptVar6->string + 4);
       }
       return 1;
     }
-    iVar3 = PC_ExpandDefineIntoSource(param_1,param_2,local_8);
+    iVar3 = PC_ExpandDefineIntoSource(source,token,define);
     if (iVar3 == 0) {
       return 0;
     }
@@ -3252,7 +3276,7 @@ int __cdecl PC_ReadToken(source_s *param_1,token_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_CheckTokenString(source_s *param_1,char *param_2)
+int __cdecl PC_CheckTokenString(source_s *source,char *string)
 
 {
   byte bVar1;
@@ -3261,17 +3285,17 @@ int __cdecl PC_CheckTokenString(source_s *param_1,char *param_2)
   int local_44c;
   token_s *local_444;
   byte *local_440;
-  token_s local_43c;
+  token_s tok;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = PC_ReadToken(param_1,&local_43c);
+  iVar2 = PC_ReadToken(source,&tok);
   if (iVar2 == 0) {
     iVar2 = 0;
   }
   else {
-    local_440 = (byte *)param_2;
-    local_444 = &local_43c;
+    local_440 = (byte *)string;
+    local_444 = &tok;
     do {
       bVar1 = local_444->string[0];
       bVar3 = bVar1 < *local_440;
@@ -3293,7 +3317,7 @@ LAB_0046f1ff:
       iVar2 = 1;
     }
     else {
-      PC_UnreadSourceToken(param_1,&local_43c);
+      PC_UnreadSourceToken(source,&tok);
       iVar2 = 0;
     }
   }
@@ -3303,145 +3327,152 @@ LAB_0046f1ff:
 
 // 0046F240  PC_UnreadLastToken  (botlib/l_precomp.cpp:2886)
 
-void __cdecl PC_UnreadLastToken(source_s *param_1)
+void __cdecl PC_UnreadLastToken(source_s *source)
 
 {
-  PC_UnreadSourceToken(param_1,&param_1->token);
+  PC_UnreadSourceToken(source,&source->token);
   return;
 }
 
 
 // 0046F260  PC_UnreadToken  (botlib/l_precomp.cpp:2898)
 
-void __cdecl PC_UnreadToken(source_s *param_1,token_s *param_2)
+void __cdecl PC_UnreadToken(source_s *source,token_s *token)
 
 {
-  PC_UnreadSourceToken(param_1,param_2);
+  PC_UnreadSourceToken(source,token);
   return;
 }
 
 
 // 0046F280  LoadSourceFile  (botlib/l_precomp.cpp:2939)
 
-source_s * __cdecl LoadSourceFile(char *param_1)
+source_s * __cdecl LoadSourceFile(char *filename)
 
 {
   script_s *psVar1;
-  source_s *psVar2;
-  define_s **ppdVar3;
+  source_s *source_00;
+  define_s **ppdVar2;
+  source_s *source;
+  script_s *script;
   
-  psVar1 = LoadScriptFile(param_1);
+  psVar1 = LoadScriptFile(filename);
   if (psVar1 == (script_s *)0x0) {
-    psVar2 = (source_s *)0x0;
+    source_00 = (source_s *)0x0;
   }
   else {
     psVar1->next = (script_s *)0x0;
-    psVar2 = GetMemory(0x4d0);
-    memset((uchar *)psVar2,'\0',0x4d0);
-    strncpy((uchar *)psVar2,(uchar *)param_1,0x40);
-    psVar2->scriptstack = psVar1;
-    psVar2->tokens = (token_s *)0x0;
-    psVar2->defines = (define_s *)0x0;
-    psVar2->indentstack = (indent_s *)0x0;
-    psVar2->skip = 0;
-    ppdVar3 = GetClearedMemory(0x1000);
-    psVar2->definehash = ppdVar3;
-    PC_AddGlobalDefinesToSource(psVar2);
+    source_00 = GetMemory(0x4d0);
+    memset((uchar *)source_00,'\0',0x4d0);
+    strncpy((uchar *)source_00,(uchar *)filename,0x40);
+    source_00->scriptstack = psVar1;
+    source_00->tokens = (token_s *)0x0;
+    source_00->defines = (define_s *)0x0;
+    source_00->indentstack = (indent_s *)0x0;
+    source_00->skip = 0;
+    ppdVar2 = GetClearedMemory(0x1000);
+    source_00->definehash = ppdVar2;
+    PC_AddGlobalDefinesToSource(source_00);
   }
-  return psVar2;
+  return source_00;
 }
 
 
 // 0046F350  FreeSource  (botlib/l_precomp.cpp:3002)
 
-void __cdecl FreeSource(source_s *param_1)
+void __cdecl FreeSource(source_s *source)
 
 {
-  script_s *psVar1;
-  token_s *ptVar2;
-  define_s *pdVar3;
-  indent_s *piVar4;
-  int local_8;
+  script_s *script_00;
+  token_s *token_00;
+  define_s *define_00;
+  indent_s *ptr;
+  script_s *script;
+  define_s *define;
+  indent_s *indent;
+  token_s *token;
+  int i;
   
-  while (param_1->scriptstack != (script_s *)0x0) {
-    psVar1 = param_1->scriptstack;
-    param_1->scriptstack = param_1->scriptstack->next;
-    FreeScript(psVar1);
+  while (source->scriptstack != (script_s *)0x0) {
+    script_00 = source->scriptstack;
+    source->scriptstack = source->scriptstack->next;
+    FreeScript(script_00);
   }
-  while (param_1->tokens != (token_s *)0x0) {
-    ptVar2 = param_1->tokens;
-    param_1->tokens = param_1->tokens->next;
-    PC_FreeToken(ptVar2);
+  while (source->tokens != (token_s *)0x0) {
+    token_00 = source->tokens;
+    source->tokens = source->tokens->next;
+    PC_FreeToken(token_00);
   }
-  for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-    while (param_1->definehash[local_8] != (define_s *)0x0) {
-      pdVar3 = param_1->definehash[local_8];
-      param_1->definehash[local_8] = param_1->definehash[local_8]->hashnext;
-      PC_FreeDefine(pdVar3);
+  for (i = 0; i < 0x400; i = i + 1) {
+    while (source->definehash[i] != (define_s *)0x0) {
+      define_00 = source->definehash[i];
+      source->definehash[i] = source->definehash[i]->hashnext;
+      PC_FreeDefine(define_00);
     }
   }
-  while (param_1->indentstack != (indent_s *)0x0) {
-    piVar4 = param_1->indentstack;
-    param_1->indentstack = param_1->indentstack->next;
-    FreeMemory(piVar4);
+  while (source->indentstack != (indent_s *)0x0) {
+    ptr = source->indentstack;
+    source->indentstack = source->indentstack->next;
+    FreeMemory(ptr);
   }
-  if (param_1->definehash != (define_s **)0x0) {
-    FreeMemory(param_1->definehash);
+  if (source->definehash != (define_s **)0x0) {
+    FreeMemory(source->definehash);
   }
-  FreeMemory(param_1);
+  FreeMemory(source);
   return;
 }
 
 
 // 0046F4B0  PC_LoadSourceHandle  (botlib/l_precomp.cpp:3061)
 
-int __cdecl PC_LoadSourceHandle(char *param_1,char **param_2)
+int __cdecl PC_LoadSourceHandle(char *filename,char **builtinDefines)
 
 {
-  source_s *psVar1;
-  int local_c;
-  int local_8;
+  source_s *source_00;
+  source_s *source;
+  int defineIter;
+  int i;
   
-  for (local_8 = 1; (local_8 < 0x40 && (sourceFiles[local_8] != (source_s *)0x0));
-      local_8 = local_8 + 1) {
+  for (i = 1; (i < 0x40 && (sourceFiles[i] != (source_s *)0x0)); i = i + 1) {
   }
-  if (local_8 < 0x40) {
-    psVar1 = LoadSourceFile(param_1);
-    if (psVar1 == (source_s *)0x0) {
-      local_8 = 0;
+  if (i < 0x40) {
+    source_00 = LoadSourceFile(filename);
+    if (source_00 == (source_s *)0x0) {
+      i = 0;
     }
     else {
-      if (param_2 != (char **)0x0) {
-        for (local_c = 0; param_2[local_c] != (char *)0x0; local_c = local_c + 1) {
-          PC_AddDefine(psVar1,param_2[local_c]);
+      if (builtinDefines != (char **)0x0) {
+        for (defineIter = 0; builtinDefines[defineIter] != (char *)0x0; defineIter = defineIter + 1)
+        {
+          PC_AddDefine(source_00,builtinDefines[defineIter]);
         }
       }
-      sourceFiles[local_8] = psVar1;
+      sourceFiles[i] = source_00;
     }
   }
   else {
-    local_8 = 0;
+    i = 0;
   }
-  return local_8;
+  return i;
 }
 
 
 // 0046F560  PC_FreeSourceHandle  (botlib/l_precomp.cpp:3095)
 
-int __cdecl PC_FreeSourceHandle(int param_1)
+int __cdecl PC_FreeSourceHandle(int handle)
 
 {
   int iVar1;
   
-  if ((param_1 < 1) || (0x3f < param_1)) {
+  if ((handle < 1) || (0x3f < handle)) {
     iVar1 = 0;
   }
-  else if (sourceFiles[param_1] == (source_s *)0x0) {
+  else if (sourceFiles[handle] == (source_s *)0x0) {
     iVar1 = 0;
   }
   else {
-    FreeSource(sourceFiles[param_1]);
-    sourceFiles[param_1] = (source_s *)0x0;
+    FreeSource(sourceFiles[handle]);
+    sourceFiles[handle] = (source_s *)0x0;
     iVar1 = 1;
   }
   return iVar1;
@@ -3452,39 +3483,40 @@ int __cdecl PC_FreeSourceHandle(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadTokenHandle(int param_1,pc_token_s *param_2)
+int __cdecl PC_ReadTokenHandle(int handle,pc_token_s *pc_token)
 
 {
   char cVar1;
   int iVar2;
   char *local_448;
   token_s *local_444;
-  token_s local_43c;
+  int ret;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 < 1) || (0x3f < param_1)) {
+  if ((handle < 1) || (0x3f < handle)) {
     iVar2 = 0;
   }
-  else if (sourceFiles[param_1] == (source_s *)0x0) {
+  else if (sourceFiles[handle] == (source_s *)0x0) {
     iVar2 = 0;
   }
   else {
-    iVar2 = PC_ReadToken(sourceFiles[param_1],&local_43c);
-    local_444 = &local_43c;
-    local_448 = param_2->string;
+    iVar2 = PC_ReadToken(sourceFiles[handle],&token);
+    local_444 = &token;
+    local_448 = pc_token->string;
     do {
       cVar1 = local_444->string[0];
       *local_448 = cVar1;
       local_444 = (token_s *)(local_444->string + 1);
       local_448 = local_448 + 1;
     } while (cVar1 != '\0');
-    param_2->type = local_43c.type;
-    param_2->subtype = local_43c.subtype;
-    param_2->intvalue = local_43c.intvalue;
-    param_2->floatvalue = (float)local_43c.floatvalue;
-    if (param_2->type == 1) {
-      StripDoubleQuotes(param_2->string);
+    pc_token->type = token.type;
+    pc_token->subtype = token.subtype;
+    pc_token->intvalue = token.intvalue;
+    pc_token->floatvalue = (float)token.floatvalue;
+    if (pc_token->type == 1) {
+      StripDoubleQuotes(pc_token->string);
     }
   }
   return iVar2;
@@ -3495,39 +3527,40 @@ int __cdecl PC_ReadTokenHandle(int param_1,pc_token_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl PC_ReadLineHandle(int param_1,pc_token_s *param_2)
+int __cdecl PC_ReadLineHandle(int handle,pc_token_s *pc_token)
 
 {
   char cVar1;
   int iVar2;
   char *local_448;
   token_s *local_444;
-  token_s local_43c;
+  int ret;
+  token_s token;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 < 1) || (0x3f < param_1)) {
+  if ((handle < 1) || (0x3f < handle)) {
     iVar2 = 0;
   }
-  else if (sourceFiles[param_1] == (source_s *)0x0) {
+  else if (sourceFiles[handle] == (source_s *)0x0) {
     iVar2 = 0;
   }
   else {
-    iVar2 = PC_ReadLine(sourceFiles[param_1],&local_43c,true);
-    local_444 = &local_43c;
-    local_448 = param_2->string;
+    iVar2 = PC_ReadLine(sourceFiles[handle],&token,true);
+    local_444 = &token;
+    local_448 = pc_token->string;
     do {
       cVar1 = local_444->string[0];
       *local_448 = cVar1;
       local_444 = (token_s *)(local_444->string + 1);
       local_448 = local_448 + 1;
     } while (cVar1 != '\0');
-    param_2->type = local_43c.type;
-    param_2->subtype = local_43c.subtype;
-    param_2->intvalue = local_43c.intvalue;
-    param_2->floatvalue = (float)local_43c.floatvalue;
-    if (param_2->type == 1) {
-      StripDoubleQuotes(param_2->string);
+    pc_token->type = token.type;
+    pc_token->subtype = token.subtype;
+    pc_token->intvalue = token.intvalue;
+    pc_token->floatvalue = (float)token.floatvalue;
+    if (pc_token->type == 1) {
+      StripDoubleQuotes(pc_token->string);
     }
   }
   return iVar2;
@@ -3536,11 +3569,11 @@ int __cdecl PC_ReadLineHandle(int param_1,pc_token_s *param_2)
 
 // 0046F7F0  PC_UnreadLastTokenHandle  (botlib/l_precomp.cpp:3164)
 
-void __cdecl PC_UnreadLastTokenHandle(int param_1)
+void __cdecl PC_UnreadLastTokenHandle(int handle)
 
 {
-  if (((0 < param_1) && (param_1 < 0x40)) && (sourceFiles[param_1] != (source_s *)0x0)) {
-    PC_UnreadLastToken(sourceFiles[param_1]);
+  if (((0 < handle) && (handle < 0x40)) && (sourceFiles[handle] != (source_s *)0x0)) {
+    PC_UnreadLastToken(sourceFiles[handle]);
   }
   return;
 }
@@ -3548,7 +3581,7 @@ void __cdecl PC_UnreadLastTokenHandle(int param_1)
 
 // 0046F830  PC_SourceFileAndLine  (botlib/l_precomp.cpp:3179)
 
-int __cdecl PC_SourceFileAndLine(int param_1,char *param_2,int *param_3)
+int __cdecl PC_SourceFileAndLine(int handle,char *filename,int *line)
 
 {
   char cVar1;
@@ -3558,28 +3591,29 @@ int __cdecl PC_SourceFileAndLine(int param_1,char *param_2,int *param_3)
   source_s *local_1c;
   char *local_10;
   script_s *local_c;
+  script_s *scriptstack;
   
-  if ((param_1 < 1) || (0x3f < param_1)) {
+  if ((handle < 1) || (0x3f < handle)) {
     iVar3 = 0;
   }
-  else if (sourceFiles[param_1] == (source_s *)0x0) {
+  else if (sourceFiles[handle] == (source_s *)0x0) {
     iVar3 = 0;
   }
   else {
-    psVar2 = sourceFiles[param_1]->scriptstack;
+    psVar2 = sourceFiles[handle]->scriptstack;
     if (psVar2 == (script_s *)0x0) {
-      local_1c = sourceFiles[param_1];
-      local_20 = param_2;
+      local_1c = sourceFiles[handle];
+      local_20 = filename;
       do {
         cVar1 = local_1c->filename[0];
         *local_20 = cVar1;
         local_1c = (source_s *)(local_1c->filename + 1);
         local_20 = local_20 + 1;
       } while (cVar1 != '\0');
-      *param_3 = 0;
+      *line = 0;
     }
     else {
-      local_10 = param_2;
+      local_10 = filename;
       local_c = psVar2;
       do {
         cVar1 = local_c->filename[0];
@@ -3587,7 +3621,7 @@ int __cdecl PC_SourceFileAndLine(int param_1,char *param_2,int *param_3)
         local_c = (script_s *)(local_c->filename + 1);
         local_10 = local_10 + 1;
       } while (cVar1 != '\0');
-      *param_3 = psVar2->line;
+      *line = psVar2->line;
     }
     iVar3 = 1;
   }

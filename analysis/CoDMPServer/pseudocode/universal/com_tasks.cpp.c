@@ -70,15 +70,16 @@ void __cdecl _dynamic_initializer_for__g_DeferredTasks__(void)
 
 // 007B7430  ChunkNext  (universal/com_tasks.cpp:52)
 
-int __cdecl ChunkNext(int param_1)
+int __cdecl ChunkNext(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int size;
   
-  iVar3 = (int)s_taskMemoryPool[param_1] + 1;
-  if (0x2000 < param_1 + iVar3) {
+  iVar3 = (int)s_taskMemoryPool[index] + 1;
+  if (0x2000 < index + iVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x37,0,
                              "%s");
     if (!bVar2) {
@@ -87,11 +88,11 @@ int __cdecl ChunkNext(int param_1)
       return iVar3;
     }
   }
-  if (param_1 + iVar3 == 0x2000) {
+  if (index + iVar3 == 0x2000) {
     iVar3 = 0;
   }
   else {
-    iVar3 = param_1 + iVar3;
+    iVar3 = index + iVar3;
   }
   return iVar3;
 }
@@ -99,32 +100,34 @@ int __cdecl ChunkNext(int param_1)
 
 // 007B88F0  ChunkAllocate  (universal/com_tasks.cpp:64)
 
-int __cdecl ChunkAllocate(int param_1,int param_2)
+int __cdecl ChunkAllocate(int index,int blocks)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  int chunkSize;
+  int remainingSize;
   
-  if (((int)s_taskMemoryPool[param_1] < param_2) &&
+  if (((int)s_taskMemoryPool[index] < blocks) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x41,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((*(uint *)((int)s_taskMemoryPool + param_1 * 8 + 4) & 1) != 1) &&
+  if (((*(uint *)((int)s_taskMemoryPool + index * 8 + 4) & 1) != 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x42,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar4 = (int)s_taskMemoryPool[param_1] - param_2;
-  *(int *)(s_taskMemoryPool + param_1) = param_2;
-  *(int *)((int)s_taskMemoryPool + param_1 * 8 + 4) = param_2 >> 0x1f;
-  iVar3 = ChunkNext(param_1);
+  iVar4 = (int)s_taskMemoryPool[index] - blocks;
+  *(int *)(s_taskMemoryPool + index) = blocks;
+  *(int *)((int)s_taskMemoryPool + index * 8 + 4) = blocks >> 0x1f;
+  iVar3 = ChunkNext(index);
   if (0 < iVar4) {
     iVar4 = iVar4 + -1;
     *(int *)(s_taskMemoryPool + iVar3) = iVar4;
@@ -136,78 +139,82 @@ int __cdecl ChunkAllocate(int param_1,int param_2)
 
 // 007B72C0  ChunkFree  (universal/com_tasks.cpp:84)
 
-void __cdecl ChunkFree(int param_1,int param_2)
+void __cdecl ChunkFree(int index,int blocks)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int next;
   
-  if (((int)s_taskMemoryPool[param_1] != param_2) &&
+  if (((int)s_taskMemoryPool[index] != blocks) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x55,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((*(uint *)((int)s_taskMemoryPool + param_1 * 8 + 4) & 1) == 1) &&
+  if (((*(uint *)((int)s_taskMemoryPool + index * 8 + 4) & 1) == 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x56,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = ChunkNext(param_1);
-  if ((param_1 < iVar3) && ((*(uint *)((int)s_taskMemoryPool + iVar3 * 8 + 4) & 1) == 1)) {
-    param_2 = param_2 + 1 + (int)s_taskMemoryPool[iVar3];
+  iVar3 = ChunkNext(index);
+  if ((index < iVar3) && ((*(uint *)((int)s_taskMemoryPool + iVar3 * 8 + 4) & 1) == 1)) {
+    blocks = blocks + 1 + (int)s_taskMemoryPool[iVar3];
     *(undefined4 *)(s_taskMemoryPool + iVar3) = 0xfe66fe77;
     *(undefined4 *)((int)s_taskMemoryPool + iVar3 * 8 + 4) = 0xfe44fe55;
     if (s_taskMemoryPoolIndex == iVar3) {
-      s_taskMemoryPoolIndex = param_1;
+      s_taskMemoryPoolIndex = index;
     }
   }
-  *(int *)(s_taskMemoryPool + param_1) = param_2;
-  *(uint *)((int)s_taskMemoryPool + param_1 * 8 + 4) = param_2 >> 0x1f | 1;
+  *(int *)(s_taskMemoryPool + index) = blocks;
+  *(uint *)((int)s_taskMemoryPool + index * 8 + 4) = blocks >> 0x1f | 1;
   return;
 }
 
 
 // 007B8800  Task_Allocate  (universal/com_tasks.cpp:102)
 
-void * __cdecl Task_Allocate(int param_1)
+void * __cdecl Task_Allocate(int bytes)
 
 {
+  int blocks_00;
   int iVar1;
-  int iVar2;
-  int local_8;
+  int blocks;
+  int index;
   
-  iVar1 = (int)(param_1 + 7 + (param_1 + 7 >> 0x1f & 7U)) >> 3;
-  local_8 = s_taskMemoryPoolIndex;
-  while (((int)s_taskMemoryPool[local_8] < iVar1 ||
-         ((*(uint *)((int)s_taskMemoryPool + local_8 * 8 + 4) & 1) != 1))) {
-    iVar2 = ChunkNext(local_8);
-    if (iVar2 == s_taskMemoryPoolIndex) {
+  blocks_00 = (int)(bytes + 7 + (bytes + 7 >> 0x1f & 7U)) >> 3;
+  index = s_taskMemoryPoolIndex;
+  while (((int)s_taskMemoryPool[index] < blocks_00 ||
+         ((*(uint *)((int)s_taskMemoryPool + index * 8 + 4) & 1) != 1))) {
+    iVar1 = ChunkNext(index);
+    if (iVar1 == s_taskMemoryPoolIndex) {
       Com_Error(ERR_DROP,"Could not allocate %d bytes from task memory pool\n");
       return (void *)0x0;
     }
-    local_8 = ChunkNext(local_8);
+    index = ChunkNext(index);
   }
-  s_taskMemoryPoolIndex = ChunkAllocate(local_8,iVar1);
-  return s_taskMemoryPool + local_8 + 1;
+  s_taskMemoryPoolIndex = ChunkAllocate(index,blocks_00);
+  return s_taskMemoryPool + index + 1;
 }
 
 
 // 007B7250  Task_Deallocate  (universal/com_tasks.cpp:121)
 
-void __cdecl Task_Deallocate(void *param_1,int param_2)
+void __cdecl Task_Deallocate(void *ptr,int bytes)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int index_00;
+  int blocks;
+  int index;
   
-  iVar3 = ((int)param_1 + -0x99dce48 >> 3) + -1;
-  if (iVar3 < 0) {
+  index_00 = ((int)ptr + -0x99dce48 >> 3) + -1;
+  if (index_00 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x7d,0,
                              "%s");
     if (!bVar2) {
@@ -216,7 +223,7 @@ void __cdecl Task_Deallocate(void *param_1,int param_2)
       return;
     }
   }
-  ChunkFree(iVar3,(int)(param_2 + 7 + (param_2 + 7 >> 0x1f & 7U)) >> 3);
+  ChunkFree(index_00,(int)(bytes + 7 + (bytes + 7 >> 0x1f & 7U)) >> 3);
   return;
 }
 
@@ -228,12 +235,12 @@ void __cdecl Task_Deallocate(void *param_1,int param_2)
 void __cdecl TaskManager2_Init(void)
 
 {
-  int local_8;
+  int idx;
   
   s_taskFreeHead.next = s_taskRecords;
   s_taskActiveHead.next = (TaskRecord *)0x0;
-  for (local_8 = 0; local_8 < 0xff; local_8 = local_8 + 1) {
-    s_taskRecords[local_8].next = s_taskRecords + local_8 + 1;
+  for (idx = 0; idx < 0xff; idx = idx + 1) {
+    s_taskRecords[idx].next = s_taskRecords + idx + 1;
   }
   s_taskRecords[0xff].next = (TaskRecord *)0x0;
   memset((uchar *)s_taskMemoryPool,'\0',0x10000);
@@ -252,27 +259,27 @@ void __cdecl TaskManager2_Init(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager2_IsValidServerTask(TaskDefinition *param_1)
+bool __cdecl TaskManager2_IsValidServerTask(TaskDefinition *definition)
 
 {
   int iVar1;
-  uint local_1c;
-  char *local_18 [4];
-  undefined1 local_5;
+  int i;
+  char *validservertasks [4];
+  bool retval;
   
-  local_18[0] = "sendMessage";
-  local_18[1] = "SV_WriteClientLeaderboards";
-  local_18[2] = "SV_WriteClientFile";
-  local_18[3] = "SV_ReadClientFile";
-  local_5 = 0;
-  local_1c = 0;
+  validservertasks[0] = "sendMessage";
+  validservertasks[1] = "SV_WriteClientLeaderboards";
+  validservertasks[2] = "SV_WriteClientFile";
+  validservertasks[3] = "SV_ReadClientFile";
+  retval = false;
+  i = 0;
   while( true ) {
-    if (3 < local_1c) {
-      return (bool)local_5;
+    if (3 < (uint)i) {
+      return retval;
     }
-    iVar1 = I_strcmp(param_1->name,local_18[local_1c]);
+    iVar1 = I_strcmp(definition->name,validservertasks[i]);
     if (iVar1 == 0) break;
-    local_1c = local_1c + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -284,7 +291,7 @@ bool __cdecl TaskManager2_IsValidServerTask(TaskDefinition *param_1)
 
 TaskRecord * __cdecl
 TaskManager2_CreateTaskFromServerThread
-          (TaskDefinition *param_1,int param_2,TaskRecord *param_3,int param_4)
+          (TaskDefinition *definition,int controllerIndex,TaskRecord *nestTask,int timeout)
 
 {
   code *pcVar1;
@@ -296,8 +303,9 @@ TaskManager2_CreateTaskFromServerThread
   void *pvVar7;
   uint uVar8;
   int local_2c;
+  TaskRecord *task;
   
-  if ((param_1 == (TaskDefinition *)0x0) &&
+  if ((definition == (TaskDefinition *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0xb8,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -319,7 +327,7 @@ TaskManager2_CreateTaskFromServerThread
     pTVar4 = (TaskRecord *)(*pcVar1)();
     return pTVar4;
   }
-  bVar3 = TaskManager2_IsValidServerTask(param_1);
+  bVar3 = TaskManager2_IsValidServerTask(definition);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0xbb,0,
                                "%s"), !bVar3)) {
@@ -327,8 +335,8 @@ TaskManager2_CreateTaskFromServerThread
     pTVar4 = (TaskRecord *)(*pcVar1)();
     return pTVar4;
   }
-  if (((param_1->category & 2) != 0) &&
-     (DVar5 = dwGetLogOnStatus(param_2), DVar5 != DW_LIVE_CONNECTED)) {
+  if (((definition->category & 2) != 0) &&
+     (DVar5 = dwGetLogOnStatus(controllerIndex), DVar5 != DW_LIVE_CONNECTED)) {
     Com_PrintWarning(0x20,"Not starting task %s, not connected to DW\n");
     return (TaskRecord *)0x0;
   }
@@ -336,15 +344,15 @@ TaskManager2_CreateTaskFromServerThread
   ppTVar2 = &(s_taskFreeHead.next)->next;
   s_taskFreeHead.next = (s_taskFreeHead.next)->next;
   *ppTVar2 = (TaskRecord *)0x0;
-  pTVar4->definition = param_1;
+  pTVar4->definition = definition;
   iVar6 = Sys_Milliseconds();
   pTVar4->startMS = iVar6;
-  pTVar4->controllerIndex = param_2;
-  if (param_1->payloadSize < 1) {
+  pTVar4->controllerIndex = controllerIndex;
+  if (definition->payloadSize < 1) {
     pTVar4->payload = (void *)0x0;
   }
   else {
-    pvVar7 = Task_Allocate(param_1->payloadSize);
+    pvVar7 = Task_Allocate(definition->payloadSize);
     pTVar4->payload = pvVar7;
   }
   pTVar4->lastPoll = s_taskPollCount;
@@ -354,16 +362,16 @@ TaskManager2_CreateTaskFromServerThread
   pTVar4->isChildTask = false;
   bdReference<bdCommonAddr>::operator=
             ((bdReference<bdCommonAddr> *)&pTVar4->remoteTask,(bdCommonAddr *)0x0);
-  if ((param_1->category & 2) != 0) {
-    if (param_4 == -1) {
+  if ((definition->category & 2) != 0) {
+    if (timeout == -1) {
       pTVar4->timeOut = -1;
     }
     else {
-      if (param_4 == 0) {
+      if (timeout == 0) {
         local_2c = 300000;
       }
       else {
-        local_2c = param_4;
+        local_2c = timeout;
       }
       pTVar4->timeOut = local_2c;
     }
@@ -383,8 +391,9 @@ void __cdecl TaskManager2_CreateDeferredTasks(void)
 {
   code *pcVar1;
   bool bVar2;
-  TaskRecord *pTVar3;
-  int local_8;
+  TaskRecord *task;
+  TaskRecord *newTask;
+  int i;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -397,14 +406,14 @@ void __cdecl TaskManager2_CreateDeferredTasks(void)
   if (g_taskHead != 0) {
     dwEnterDeferredCritsec();
     Com_DPrintf(0x20,"Starting %i deferred tasks\n");
-    for (local_8 = 0; local_8 < g_taskHead; local_8 = local_8 + 1) {
-      pTVar3 = TaskManager2_CreateTaskFromServerThread
-                         (g_DeferredTasks[local_8].definition,0,(TaskRecord *)0x0,0);
+    for (i = 0; i < g_taskHead; i = i + 1) {
+      task = TaskManager2_CreateTaskFromServerThread
+                       (g_DeferredTasks[i].definition,0,(TaskRecord *)0x0,0);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&pTVar3->remoteTask,
-                 (bdReference<bdAddrHandle> *)&g_DeferredTasks[local_8].remoteTask);
-      pTVar3->payload = g_DeferredTasks[local_8].payload;
-      TaskManager2_StartTask(pTVar3);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)&g_DeferredTasks[i].remoteTask);
+      task->payload = g_DeferredTasks[i].payload;
+      TaskManager2_StartTask(task);
     }
     g_taskHead = 0;
     dwLeaveDeferredCritsec();
@@ -418,22 +427,23 @@ void __cdecl TaskManager2_CreateDeferredTasks(void)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-TaskManager2_DeferTaskToMainThread(bdRemoteTask *param_1,TaskDefinition *param_2,void *param_3)
+TaskManager2_DeferTaskToMainThread(bdRemoteTask *dwTask,TaskDefinition *taskDef,void *payload)
 
 {
   int iVar1;
+  TaskRecord *newTask;
   
   dwEnterDeferredCritsec();
   iVar1 = g_taskHead;
   g_taskHead = g_taskHead + 1;
   Com_DPrintf(0x20,"g_taskHead is now %i\n");
-  g_DeferredTasks[iVar1].definition = param_2;
+  g_DeferredTasks[iVar1].definition = taskDef;
   g_DeferredTasks[iVar1].controllerIndex = 0;
   bdReference<bdCommonAddr>::operator=
-            ((bdReference<bdCommonAddr> *)&g_DeferredTasks[iVar1].remoteTask,(bdCommonAddr *)param_1
-            );
+            ((bdReference<bdCommonAddr> *)&g_DeferredTasks[iVar1].remoteTask,(bdCommonAddr *)dwTask)
+  ;
   g_DeferredTasks[iVar1].ownerThread = 1;
-  g_DeferredTasks[iVar1].payload = param_3;
+  g_DeferredTasks[iVar1].payload = payload;
   dwLeaveDeferredCritsec();
   return;
 }
@@ -449,7 +459,7 @@ void __cdecl TaskManager2_PickUpDeferredTasks(void)
   code *pcVar1;
   bool bVar2;
   bdStatus bVar3;
-  int local_8;
+  int i;
   
   bVar2 = Sys_IsServerThread();
   if (!bVar2) {
@@ -462,14 +472,14 @@ void __cdecl TaskManager2_PickUpDeferredTasks(void)
     }
   }
   dwEnterDeferredCritsec();
-  local_8 = 0x3f;
+  i = 0x3f;
   do {
-    if (local_8 <= g_taskEnd) {
+    if (i <= g_taskEnd) {
       g_taskEnd = 0x3f;
       dwLeaveDeferredCritsec();
       return;
     }
-    bVar3 = bdRemoteTask::getStatus(g_DeferredTasks[local_8].remoteTask.m_ptr);
+    bVar3 = bdRemoteTask::getStatus(g_DeferredTasks[i].remoteTask.m_ptr);
     if (bVar3 == BD_PENDING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x11a,0
                                ,"%s");
@@ -479,7 +489,7 @@ void __cdecl TaskManager2_PickUpDeferredTasks(void)
         return;
       }
     }
-    if (g_DeferredTasks[local_8].ownerThread == 0) {
+    if (g_DeferredTasks[i].ownerThread == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x11b,0
                                ,"%s\n\t%s");
       if (!bVar2) {
@@ -488,17 +498,17 @@ void __cdecl TaskManager2_PickUpDeferredTasks(void)
         return;
       }
     }
-    bVar3 = bdRemoteTask::getStatus(g_DeferredTasks[local_8].remoteTask.m_ptr);
+    bVar3 = bdRemoteTask::getStatus(g_DeferredTasks[i].remoteTask.m_ptr);
     if ((bVar3 == BD_DONE) &&
-       ((g_DeferredTasks[local_8].definition)->completed_callback !=
+       ((g_DeferredTasks[i].definition)->completed_callback !=
         (_func___cdecl_void_TaskRecord_ptr *)0x0)) {
-      (*(g_DeferredTasks[local_8].definition)->completed_callback)(g_DeferredTasks + local_8);
+      (*(g_DeferredTasks[i].definition)->completed_callback)(g_DeferredTasks + i);
     }
-    else if ((g_DeferredTasks[local_8].definition)->failure_callback !=
+    else if ((g_DeferredTasks[i].definition)->failure_callback !=
              (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-      (*(g_DeferredTasks[local_8].definition)->failure_callback)(g_DeferredTasks + local_8);
+      (*(g_DeferredTasks[i].definition)->failure_callback)(g_DeferredTasks + i);
     }
-    local_8 = local_8 + -1;
+    i = i + -1;
   } while( true );
 }
 
@@ -507,46 +517,47 @@ void __cdecl TaskManager2_PickUpDeferredTasks(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_FreeAllPendingTasksInternal(int param_1)
+void __cdecl TaskManager2_FreeAllPendingTasksInternal(int localControllerIndex)
 
 {
   TaskRecord *pTVar1;
   code *pcVar2;
   bool bVar3;
   bool bVar4;
-  TaskRecord *local_8;
+  TaskRecord *next;
+  bool freeTask;
+  TaskRecord **current;
   
-  local_8 = &s_taskActiveHead;
+  current = &s_taskActiveHead.next;
   while( true ) {
-    if (local_8->next == (TaskRecord *)0x0) {
+    if (*current == (TaskRecord *)0x0) {
       return;
     }
-    pTVar1 = local_8->next->next;
-    if ((local_8->next->definition == (TaskDefinition *)0x0) &&
+    pTVar1 = (*current)->next;
+    if (((*current)->definition == (TaskDefinition *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x142
                                  ,0,"%s"), !bVar3)) break;
     bVar3 = false;
-    if (param_1 == -1) {
-      bVar4 = TaskManager2_TaskIsPending(local_8->next);
+    if (localControllerIndex == -1) {
+      bVar4 = TaskManager2_TaskIsPending(*current);
       if ((bVar4) &&
-         (((local_8->next->definition->category & 2) != 0 ||
-          ((local_8->next->definition->category & 8) != 0)))) {
+         ((((*current)->definition->category & 2) != 0 ||
+          (((*current)->definition->category & 8) != 0)))) {
         bVar3 = true;
       }
     }
-    else if (((local_8->next->controllerIndex == param_1) &&
-             (bVar4 = TaskManager2_TaskIsPending(local_8->next), bVar4)) &&
-            (((local_8->next->definition->category & 2) != 0 ||
-             ((local_8->next->definition->category & 8) != 0)))) {
+    else if ((((*current)->controllerIndex == localControllerIndex) &&
+             (bVar4 = TaskManager2_TaskIsPending(*current), bVar4)) &&
+            ((((*current)->definition->category & 2) != 0 ||
+             (((*current)->definition->category & 8) != 0)))) {
       bVar3 = true;
     }
     if (bVar3) {
-      if (local_8->next->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*local_8->next->definition->failure_callback)(local_8->next);
+      if ((*current)->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
+        (*(*current)->definition->failure_callback)(*current);
       }
-      if ((local_8->next->definition->payloadSize == 0) || (local_8->next->payload == (void *)0x0))
-      {
-        if ((local_8->next->definition->payloadSize != 0) &&
+      if (((*current)->definition->payloadSize == 0) || ((*current)->payload == (void *)0x0)) {
+        if (((*current)->definition->payloadSize != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                      0x160,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -555,16 +566,16 @@ void __cdecl TaskManager2_FreeAllPendingTasksInternal(int param_1)
         }
       }
       else {
-        Task_Deallocate(local_8->next->payload,local_8->next->definition->payloadSize);
+        Task_Deallocate((*current)->payload,(*current)->definition->payloadSize);
       }
-      local_8->next->payload = (void *)0x0;
-      local_8->next->definition = (TaskDefinition *)0x0;
-      local_8->next->next = s_taskFreeHead.next;
-      s_taskFreeHead.next = local_8->next;
-      local_8->next = pTVar1;
+      (*current)->payload = (void *)0x0;
+      (*current)->definition = (TaskDefinition *)0x0;
+      (*current)->next = s_taskFreeHead.next;
+      s_taskFreeHead.next = *current;
+      *current = pTVar1;
     }
     else {
-      local_8 = local_8->next;
+      current = &(*current)->next;
     }
   }
   pcVar2 = (code *)swi(3);
@@ -575,7 +586,9 @@ void __cdecl TaskManager2_FreeAllPendingTasksInternal(int param_1)
 
 // 007B76F0  TaskManager2_FreeAllPendingTasksForController  (universal/com_tasks.cpp:368)
 
-void __cdecl TaskManager2_FreeAllPendingTasksForController(int param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl TaskManager2_FreeAllPendingTasksForController(int localControllerIndex)
 
 {
   code *pcVar1;
@@ -591,7 +604,7 @@ void __cdecl TaskManager2_FreeAllPendingTasksForController(int param_1)
       return;
     }
   }
-  TaskManager2_FreeAllPendingTasksInternal(param_1);
+  TaskManager2_FreeAllPendingTasksInternal(localControllerIndex);
   return;
 }
 
@@ -600,20 +613,20 @@ void __cdecl TaskManager2_FreeAllPendingTasksForController(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_HandleTimedOutTask(TaskRecord *param_1)
+void __cdecl TaskManager2_HandleTimedOutTask(TaskRecord *TimedOutTask)
 
 {
   code *pcVar1;
   bool bVar2;
-  bdReference<bdByteBuffer> local_8;
+  bdReference<bdRemoteTask> dwtask;
   
   Sys_Milliseconds();
   Com_Printf(0x20,"Task %s timed out after %dms\n");
-  if (param_1->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-    (*param_1->definition->failure_callback)(param_1);
+  if (TimedOutTask->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
+    (*TimedOutTask->definition->failure_callback)(TimedOutTask);
   }
-  if ((param_1->definition->category & 2) != 0) {
-    if ((param_1->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
+  if ((TimedOutTask->definition->category & 2) != 0) {
+    if ((TimedOutTask->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x180,0
                                ,"%s");
       if (!bVar2) {
@@ -622,14 +635,14 @@ void __cdecl TaskManager2_HandleTimedOutTask(TaskRecord *param_1)
         return;
       }
     }
-    local_8.m_ptr = (bdByteBuffer *)(param_1->remoteTask).m_ptr;
-    if ((bdRemoteTask *)local_8.m_ptr != (bdRemoteTask *)0x0) {
-      InterlockedIncrement((LONG *)&((bdRemoteTask *)local_8.m_ptr)->field_0x4);
+    dwtask.m_ptr = (TimedOutTask->remoteTask).m_ptr;
+    if (dwtask.m_ptr != (bdRemoteTask *)0x0) {
+      InterlockedIncrement((LONG *)&(dwtask.m_ptr)->field_0x4);
     }
-    bdRemoteTask::cancelTask((bdRemoteTask *)local_8.m_ptr);
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_8);
+    bdRemoteTask::cancelTask(dwtask.m_ptr);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&dwtask);
   }
-  param_1->state = TASK_STATE_FAILED;
+  TimedOutTask->state = TASK_STATE_FAILED;
   return;
 }
 
@@ -638,7 +651,7 @@ void __cdecl TaskManager2_HandleTimedOutTask(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_FreeDeadTasks(int param_1)
+void __cdecl TaskManager2_FreeDeadTasks(int localControllerIndex)
 
 {
   TaskRecord *pTVar1;
@@ -646,40 +659,41 @@ void __cdecl TaskManager2_FreeDeadTasks(int param_1)
   bool bVar3;
   DWOnlineStatus DVar4;
   int iVar5;
-  TaskRecord *local_8;
+  TaskRecord *next;
+  TaskRecord **current;
   
-  DVar4 = dwGetLogOnStatus(param_1);
+  DVar4 = dwGetLogOnStatus(localControllerIndex);
   if (DVar4 == DW_LIVE_DISCONNECTED) {
-    iVar5 = TaskManager2_CountTasksInProgressForController(param_1);
+    iVar5 = TaskManager2_CountTasksInProgressForController(localControllerIndex);
     if (0 < iVar5) {
-      TaskManager2_CountTasksInProgressForController(param_1);
+      TaskManager2_CountTasksInProgressForController(localControllerIndex);
       Com_Printf(0x20,"TASK: %d total tasks while disconnected from DW for controlleridx %i\n");
     }
-    TaskManager2_FreeAllPendingTasksForController(param_1);
+    TaskManager2_FreeAllPendingTasksForController(localControllerIndex);
   }
-  local_8 = &s_taskActiveHead;
+  current = &s_taskActiveHead.next;
   while( true ) {
-    if (local_8->next == (TaskRecord *)0x0) {
+    if (*current == (TaskRecord *)0x0) {
       return;
     }
-    pTVar1 = local_8->next->next;
-    if ((local_8->next->definition == (TaskDefinition *)0x0) &&
+    pTVar1 = (*current)->next;
+    if (((*current)->definition == (TaskDefinition *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x19c
                                  ,0,"%s"), !bVar3)) break;
-    bVar3 = TaskManager2_TaskIsPending(local_8->next);
-    if ((bVar3) || (local_8->next->controllerIndex != param_1)) {
-      bVar3 = TaskManager2_TaskIsTimedOut(local_8->next);
+    bVar3 = TaskManager2_TaskIsPending(*current);
+    if ((bVar3) || ((*current)->controllerIndex != localControllerIndex)) {
+      bVar3 = TaskManager2_TaskIsTimedOut(*current);
       if (bVar3) {
-        TaskManager2_HandleTimedOutTask(local_8->next);
+        TaskManager2_HandleTimedOutTask(*current);
       }
       else {
-        local_8 = local_8->next;
+        current = &(*current)->next;
       }
     }
     else {
       Com_DPrintf(0x20,"Freeing task %s(%d)\n");
-      if ((local_8->next->payload == (void *)0x0) || (local_8->next->definition->payloadSize < 1)) {
-        if ((local_8->next->definition->payloadSize != 0) &&
+      if (((*current)->payload == (void *)0x0) || ((*current)->definition->payloadSize < 1)) {
+        if (((*current)->definition->payloadSize != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                      0x1a8,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -688,14 +702,14 @@ void __cdecl TaskManager2_FreeDeadTasks(int param_1)
         }
       }
       else {
-        Task_Deallocate(local_8->next->payload,local_8->next->definition->payloadSize);
+        Task_Deallocate((*current)->payload,(*current)->definition->payloadSize);
       }
-      local_8->next->payload = (void *)0x0;
-      local_8->next->definition = (TaskDefinition *)0x0;
-      local_8->next->ownerThread = 0;
-      local_8->next->next = s_taskFreeHead.next;
-      s_taskFreeHead.next = local_8->next;
-      local_8->next = pTVar1;
+      (*current)->payload = (void *)0x0;
+      (*current)->definition = (TaskDefinition *)0x0;
+      (*current)->ownerThread = 0;
+      (*current)->next = s_taskFreeHead.next;
+      s_taskFreeHead.next = *current;
+      *current = pTVar1;
     }
   }
   pcVar2 = (code *)swi(3);
@@ -708,13 +722,14 @@ void __cdecl TaskManager2_FreeDeadTasks(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_ProcessXOverlappedTask(TaskRecord *param_1)
+void __cdecl TaskManager2_ProcessXOverlappedTask(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
+  TaskDefinition *def;
   
-  if (param_1 == (TaskRecord *)0x0) {
+  if (task == (TaskRecord *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",500,0,
                              "%s");
     if (!bVar2) {
@@ -723,7 +738,7 @@ void __cdecl TaskManager2_ProcessXOverlappedTask(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1->definition == (TaskDefinition *)0x0) {
+  if (task->definition == (TaskDefinition *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x1f5,0,
                              "%s");
     if (!bVar2) {
@@ -741,14 +756,16 @@ void __cdecl TaskManager2_ProcessXOverlappedTask(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_CancelEndlessTasks(int param_1)
+void __cdecl TaskManager2_CancelEndlessTasks(int localControllerIndex)
 
 {
   TaskRecord *pTVar1;
   code *pcVar2;
   bool bVar3;
   bool bVar4;
-  TaskRecord *local_8;
+  bool cancelTask;
+  TaskRecord *next;
+  TaskRecord **current;
   
   bVar3 = Sys_IsMainThread();
   if ((!bVar3) &&
@@ -758,38 +775,37 @@ void __cdecl TaskManager2_CancelEndlessTasks(int param_1)
     (*pcVar2)();
     return;
   }
-  local_8 = &s_taskActiveHead;
+  current = &s_taskActiveHead.next;
   while( true ) {
-    if (local_8->next == (TaskRecord *)0x0) {
+    if (*current == (TaskRecord *)0x0) {
       return;
     }
-    pTVar1 = local_8->next->next;
-    if ((local_8->next->definition == (TaskDefinition *)0x0) &&
+    pTVar1 = (*current)->next;
+    if (((*current)->definition == (TaskDefinition *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x20b
                                  ,0,"%s"), !bVar3)) break;
     bVar3 = false;
-    if (param_1 == -1) {
-      bVar4 = TaskManager2_TaskIsPending(local_8->next);
-      if (((bVar4) && ((local_8->next->definition->category & 2) != 0)) &&
-         (local_8->next->timeOut == -1)) {
+    if (localControllerIndex == -1) {
+      bVar4 = TaskManager2_TaskIsPending(*current);
+      if (((bVar4) && (((*current)->definition->category & 2) != 0)) && ((*current)->timeOut == -1))
+      {
         bVar3 = true;
       }
     }
-    else if ((((local_8->next->controllerIndex == param_1) &&
-              (bVar4 = TaskManager2_TaskIsPending(local_8->next), bVar4)) &&
-             ((local_8->next->definition->category & 2) != 0)) && (local_8->next->timeOut == -1)) {
+    else if (((((*current)->controllerIndex == localControllerIndex) &&
+              (bVar4 = TaskManager2_TaskIsPending(*current), bVar4)) &&
+             (((*current)->definition->category & 2) != 0)) && ((*current)->timeOut == -1)) {
       bVar3 = true;
     }
     if (bVar3) {
       Com_DPrintf(0x20,"Cancelling task %s for controlleridx %i\n");
-      bdRemoteTask::cancelTask((local_8->next->remoteTask).m_ptr);
-      local_8->next->state = TASK_STATE_CHILDFAILED;
-      if (local_8->next->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*local_8->next->definition->failure_callback)(local_8->next);
+      bdRemoteTask::cancelTask(((*current)->remoteTask).m_ptr);
+      (*current)->state = TASK_STATE_CHILDFAILED;
+      if ((*current)->definition->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
+        (*(*current)->definition->failure_callback)(*current);
       }
-      if ((local_8->next->definition->payloadSize == 0) || (local_8->next->payload == (void *)0x0))
-      {
-        if ((local_8->next->definition->payloadSize != 0) &&
+      if (((*current)->definition->payloadSize == 0) || ((*current)->payload == (void *)0x0)) {
+        if (((*current)->definition->payloadSize != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                      0x230,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -798,16 +814,16 @@ void __cdecl TaskManager2_CancelEndlessTasks(int param_1)
         }
       }
       else {
-        Task_Deallocate(local_8->next->payload,local_8->next->definition->payloadSize);
+        Task_Deallocate((*current)->payload,(*current)->definition->payloadSize);
       }
-      local_8->next->payload = (void *)0x0;
-      local_8->next->definition = (TaskDefinition *)0x0;
-      local_8->next->next = s_taskFreeHead.next;
-      s_taskFreeHead.next = local_8->next;
-      local_8->next = pTVar1;
+      (*current)->payload = (void *)0x0;
+      (*current)->definition = (TaskDefinition *)0x0;
+      (*current)->next = s_taskFreeHead.next;
+      s_taskFreeHead.next = *current;
+      *current = pTVar1;
     }
     else {
-      local_8 = local_8->next;
+      current = &(*current)->next;
     }
   }
   pcVar2 = (code *)swi(3);
@@ -818,18 +834,20 @@ void __cdecl TaskManager2_CancelEndlessTasks(int param_1)
 
 // 007B74A0  TaskManager2_ComErrorCleanup  (universal/com_tasks.cpp:580)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl TaskManager2_ComErrorCleanup(void)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
   bVar1 = Sys_IsMainThread();
   if (bVar1) {
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      TaskManager2_FreeDeadTasks(local_8);
-      TaskManager2_CancelEndlessTasks(local_8);
-      TaskManager2_ProcessTasks(local_8);
+    for (i = 0; i < 1; i = i + 1) {
+      TaskManager2_FreeDeadTasks(i);
+      TaskManager2_CancelEndlessTasks(i);
+      TaskManager2_ProcessTasks(i);
     }
   }
   else {
@@ -843,117 +861,121 @@ void __cdecl TaskManager2_ComErrorCleanup(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_ProcessDemonwareTask(TaskRecord *param_1)
+void __cdecl TaskManager2_ProcessDemonwareTask(TaskRecord *task)
 
 {
   TaskDefinition *pTVar1;
   code *pcVar2;
   bool bVar3;
-  bdLobbyErrorCode bVar4;
-  bdStatus bVar5;
+  bdLobbyErrorCode code;
+  bdStatus bVar4;
+  char *errorStr;
+  int errorCode;
+  TaskDefinition *def;
+  int ms;
   
-  if ((param_1 == (TaskRecord *)0x0) &&
+  if ((task == (TaskRecord *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",599,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->definition == (TaskDefinition *)0x0) &&
+  if ((task->definition == (TaskDefinition *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",600,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->state == TASK_STATE_INPROGRESS) {
-    if (((param_1->remoteTask).m_ptr == (bdRemoteTask *)0x0) &&
+  if (task->state == TASK_STATE_INPROGRESS) {
+    if (((task->remoteTask).m_ptr == (bdRemoteTask *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x261
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pTVar1 = param_1->definition;
+    pTVar1 = task->definition;
     Sys_Milliseconds();
-    bVar5 = bdRemoteTask::getStatus((param_1->remoteTask).m_ptr);
-    switch(bVar5) {
+    bVar4 = bdRemoteTask::getStatus((task->remoteTask).m_ptr);
+    switch(bVar4) {
     case BD_PENDING:
       break;
     case BD_DONE:
       Com_Printf(0x20,"Demonware task \'%s\'(%d) for controller %d completed in %dms\n");
-      param_1->state = (-(uint)(param_1->isChildTask != false) & 0xfffffffe) + TASK_STATE_COMPLETED;
+      task->state = (-(uint)(task->isChildTask != false) & 0xfffffffe) + TASK_STATE_COMPLETED;
       Com_DPrintf(0x20,"Task %s\'s (startms %d) state set to %s\n");
-      if (param_1->ownerThread == 0) {
+      if (task->ownerThread == 0) {
         if (pTVar1->completed_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-          (*pTVar1->completed_callback)(param_1);
+          (*pTVar1->completed_callback)(task);
         }
       }
       else {
         bdReference<bdAddrHandle>::operator=
                   ((bdReference<bdAddrHandle> *)&g_DeferredTasks[g_taskEnd].remoteTask,
-                   (bdReference<bdAddrHandle> *)&param_1->remoteTask);
-        g_DeferredTasks[g_taskEnd].definition = param_1->definition;
-        g_DeferredTasks[g_taskEnd].payload = param_1->payload;
-        g_DeferredTasks[g_taskEnd].ownerThread = param_1->ownerThread;
+                   (bdReference<bdAddrHandle> *)&task->remoteTask);
+        g_DeferredTasks[g_taskEnd].definition = task->definition;
+        g_DeferredTasks[g_taskEnd].payload = task->payload;
+        g_DeferredTasks[g_taskEnd].ownerThread = task->ownerThread;
         g_taskEnd = g_taskEnd + -1;
         Com_DPrintf(0x20,"g_taskEnd is now %i\n");
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&param_1->remoteTask,(bdCommonAddr *)0x0);
+                  ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)0x0);
       }
       break;
     case BD_FAILED:
-      bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
-      bVar4 = bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
-      dwLobbyErrorCodeToString(bVar4);
+      bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
+      code = bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
+      dwLobbyErrorCodeToString(code);
       Com_PrintError(0x20,
                      "Demonware task \'%s\'(%d) for controller %d failed [%s (%d)] after %dms\n");
-      param_1->state = (-(uint)(param_1->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
+      task->state = (-(uint)(task->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
       Com_DPrintf(0x20,"Task %s(%d) state set to %s\n");
-      if (param_1->ownerThread == 0) {
+      if (task->ownerThread == 0) {
         if (pTVar1->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-          (*pTVar1->failure_callback)(param_1);
+          (*pTVar1->failure_callback)(task);
         }
       }
       else {
         bdReference<bdAddrHandle>::operator=
                   ((bdReference<bdAddrHandle> *)&g_DeferredTasks[g_taskEnd].remoteTask,
-                   (bdReference<bdAddrHandle> *)&param_1->remoteTask);
-        g_DeferredTasks[g_taskEnd].definition = param_1->definition;
-        g_DeferredTasks[g_taskEnd].payload = param_1->payload;
-        g_DeferredTasks[g_taskEnd].ownerThread = param_1->ownerThread;
+                   (bdReference<bdAddrHandle> *)&task->remoteTask);
+        g_DeferredTasks[g_taskEnd].definition = task->definition;
+        g_DeferredTasks[g_taskEnd].payload = task->payload;
+        g_DeferredTasks[g_taskEnd].ownerThread = task->ownerThread;
         g_taskEnd = g_taskEnd + -1;
         Com_DPrintf(0x20,"g_taskEnd is now %i\n");
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&param_1->remoteTask,(bdCommonAddr *)0x0);
+                  ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)0x0);
       }
       break;
     case BD_TIMED_OUT:
       Com_PrintError(0x20,"Demonware task \'%s\' for controller %d timed out after %dms\n");
-      param_1->state = (-(uint)(param_1->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
+      task->state = (-(uint)(task->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
       Com_DPrintf(0x20,"Task %s\'s state set to %s\n");
       if (pTVar1->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*pTVar1->failure_callback)(param_1);
+        (*pTVar1->failure_callback)(task);
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&param_1->remoteTask,(bdCommonAddr *)0x0);
+                  ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)0x0);
       }
       break;
     case BD_CANCELLED:
       Com_Printf(0x20,"Demonware task \'%s\' for controller %d cancelled after %dms\n");
-      param_1->state = (-(uint)(param_1->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
+      task->state = (-(uint)(task->isChildTask != false) & 0xfffffffe) + TASK_STATE_FAILED;
       Com_DPrintf(0x20,"Task %s\'s state set to %s\n");
       if (pTVar1->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*pTVar1->failure_callback)(param_1);
+        (*pTVar1->failure_callback)(task);
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&param_1->remoteTask,(bdCommonAddr *)0x0);
+                  ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)0x0);
       }
       break;
     default:
@@ -966,7 +988,7 @@ void __cdecl TaskManager2_ProcessDemonwareTask(TaskRecord *param_1)
       }
     }
   }
-  else if ((param_1->isChildTask == false) &&
+  else if ((task->isChildTask == false) &&
           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                     0x25c,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -981,38 +1003,40 @@ void __cdecl TaskManager2_ProcessDemonwareTask(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_ProcessNestedTask(TaskRecord *param_1)
+void __cdecl TaskManager2_ProcessNestedTask(TaskRecord *task)
 
 {
   TaskDefinition *pTVar1;
   code *pcVar2;
   bool bVar3;
+  TaskDefinition *def;
+  int ms;
   
-  if ((param_1 == (TaskRecord *)0x0) &&
+  if ((task == (TaskRecord *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x2d2,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->definition == (TaskDefinition *)0x0) &&
+  if ((task->definition == (TaskDefinition *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x2d3,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->state == TASK_STATE_INPROGRESS) {
-    pTVar1 = param_1->definition;
+  if (task->state == TASK_STATE_INPROGRESS) {
+    pTVar1 = task->definition;
     Sys_Milliseconds();
-    if ((param_1->nestedTask == (TaskRecord *)0x0) ||
-       (param_1->nestedTask->state == TASK_STATE_INVALID)) {
-      param_1->state = TASK_STATE_FAILED;
+    if ((task->nestedTask == (TaskRecord *)0x0) || (task->nestedTask->state == TASK_STATE_INVALID))
+    {
+      task->state = TASK_STATE_FAILED;
     }
     else {
-      param_1->state = param_1->nestedTask->state;
+      task->state = task->nestedTask->state;
     }
-    switch(param_1->state) {
+    switch(task->state) {
     case TASK_STATE_INVALID:
       Com_Printf(0x20,"Invalid task made it into process task - %s\n");
       break;
@@ -1023,45 +1047,44 @@ void __cdecl TaskManager2_ProcessNestedTask(TaskRecord *param_1)
     case TASK_STATE_COMPLETED:
       Com_Printf(0x20,"Nested task \'%s\'(startms %d) for controller %d completed in %dms\n");
       if (pTVar1->completed_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*pTVar1->completed_callback)(param_1);
+        (*pTVar1->completed_callback)(task);
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         Com_DPrintf(0x20,"Task %s(%d) is an orphan, setting state to TASK_STATE_COMPLETED\n");
-        param_1->nestedTask->state = TASK_STATE_COMPLETED;
-        param_1->state = TASK_STATE_COMPLETED;
+        task->nestedTask->state = TASK_STATE_COMPLETED;
+        task->state = TASK_STATE_COMPLETED;
       }
       else {
         Com_DPrintf(0x20,"Task %s (%d) has a parent, setting state to TASK_STATE_CHILDCOMPLETE\n");
-        param_1->nestedTask->state = TASK_STATE_COMPLETED;
-        param_1->state = TASK_STATE_CHILDCOMPLETE;
+        task->nestedTask->state = TASK_STATE_COMPLETED;
+        task->state = TASK_STATE_CHILDCOMPLETE;
       }
-      if ((param_1->nestedTask->remoteTask).m_ptr != (bdRemoteTask *)0x0) {
+      if ((task->nestedTask->remoteTask).m_ptr != (bdRemoteTask *)0x0) {
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&param_1->nestedTask->remoteTask,(bdCommonAddr *)0x0
-                  );
+                  ((bdReference<bdCommonAddr> *)&task->nestedTask->remoteTask,(bdCommonAddr *)0x0);
       }
       break;
     case TASK_STATE_CHILDFAILED:
     case TASK_STATE_FAILED:
       Com_Printf(0x20,"Nested task \'%s\'(%d) for controller %d failed in %dms\n");
       if (pTVar1->failure_callback != (_func___cdecl_void_TaskRecord_ptr *)0x0) {
-        (*pTVar1->failure_callback)(param_1);
+        (*pTVar1->failure_callback)(task);
       }
-      if (param_1->isChildTask == false) {
+      if (task->isChildTask == false) {
         Com_DPrintf(0x20,"Task %s(%d) is an orphan, setting state to TASK_STATE_FAILED\n");
-        if ((param_1->nestedTask != (TaskRecord *)0x0) &&
-           (param_1->nestedTask->state != TASK_STATE_INVALID)) {
-          param_1->nestedTask->state = TASK_STATE_FAILED;
+        if ((task->nestedTask != (TaskRecord *)0x0) &&
+           (task->nestedTask->state != TASK_STATE_INVALID)) {
+          task->nestedTask->state = TASK_STATE_FAILED;
         }
-        param_1->state = TASK_STATE_FAILED;
+        task->state = TASK_STATE_FAILED;
       }
       else {
         Com_DPrintf(0x20,"Task %s(%d) has a parent, setting state to TASK_STATE_CHILDFAILED\n");
-        if ((param_1->nestedTask != (TaskRecord *)0x0) &&
-           (param_1->nestedTask->state != TASK_STATE_INVALID)) {
-          param_1->nestedTask->state = TASK_STATE_FAILED;
+        if ((task->nestedTask != (TaskRecord *)0x0) &&
+           (task->nestedTask->state != TASK_STATE_INVALID)) {
+          task->nestedTask->state = TASK_STATE_FAILED;
         }
-        param_1->state = TASK_STATE_CHILDFAILED;
+        task->state = TASK_STATE_CHILDFAILED;
       }
       break;
     default:
@@ -1074,7 +1097,7 @@ void __cdecl TaskManager2_ProcessNestedTask(TaskRecord *param_1)
       }
     }
   }
-  else if ((param_1->isChildTask == false) &&
+  else if ((task->isChildTask == false) &&
           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                     0x2d7,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1089,13 +1112,13 @@ void __cdecl TaskManager2_ProcessNestedTask(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_ProcessTasks(int param_1)
+void __cdecl TaskManager2_ProcessTasks(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  TaskRecord *local_8;
+  TaskRecord *task;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -1105,40 +1128,40 @@ void __cdecl TaskManager2_ProcessTasks(int param_1)
     (*pcVar1)();
     return;
   }
-  if (param_1 != -1) {
+  if (localControllerIndex != -1) {
     TaskManager2_CreateDeferredTasks();
     s_taskPollCount = s_taskPollCount + 1;
-    for (local_8 = s_taskActiveHead.next; local_8 != (TaskRecord *)0x0; local_8 = local_8->next) {
-      if ((local_8->definition == (TaskDefinition *)0x0) &&
+    for (task = s_taskActiveHead.next; task != (TaskRecord *)0x0; task = task->next) {
+      if ((task->definition == (TaskDefinition *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                    0x33d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_8->lastPoll != s_taskPollCount) && (local_8->controllerIndex == param_1)) {
-        if ((((int)local_8->state < 2) || (6 < (int)local_8->state)) &&
+      if ((task->lastPoll != s_taskPollCount) && (task->controllerIndex == localControllerIndex)) {
+        if ((((int)task->state < 2) || (6 < (int)task->state)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",
                                      0x343,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if ((local_8->definition->category & 2) != 0) {
-          TaskManager2_ProcessDemonwareTask(local_8);
+        if ((task->definition->category & 2) != 0) {
+          TaskManager2_ProcessDemonwareTask(task);
         }
-        if ((local_8->definition->category & 4) != 0) {
-          TaskManager2_ProcessXOverlappedTask(local_8);
+        if ((task->definition->category & 4) != 0) {
+          TaskManager2_ProcessXOverlappedTask(task);
         }
-        if ((local_8->definition->category & 8) != 0) {
-          TaskManager2_ProcessNestedTask(local_8);
+        if ((task->definition->category & 8) != 0) {
+          TaskManager2_ProcessNestedTask(task);
         }
-        local_8->lastPoll = s_taskPollCount;
+        task->lastPoll = s_taskPollCount;
         uVar3 = Sys_Milliseconds();
-        local_8->lastPollMS = uVar3;
+        task->lastPollMS = uVar3;
       }
     }
-    TaskManager2_FreeDeadTasks(param_1);
+    TaskManager2_FreeDeadTasks(localControllerIndex);
   }
   return;
 }
@@ -1149,7 +1172,8 @@ void __cdecl TaskManager2_ProcessTasks(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-TaskManager2_CreateTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,int param_4)
+TaskManager2_CreateTask
+          (TaskDefinition *definition,int controllerIndex,TaskRecord *nestTask,int timeout)
 
 {
   code *pcVar1;
@@ -1162,8 +1186,9 @@ TaskManager2_CreateTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,
   uint uVar8;
   int local_38;
   int local_2c;
+  TaskRecord *task;
   
-  if ((param_1 == (TaskDefinition *)0x0) &&
+  if ((definition == (TaskDefinition *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x361,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -1185,21 +1210,21 @@ TaskManager2_CreateTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,
     pTVar4 = (TaskRecord *)(*pcVar1)();
     return pTVar4;
   }
-  if (((param_1->category & 2) == 0) ||
-     (DVar5 = dwGetLogOnStatus(param_2), DVar5 == DW_LIVE_CONNECTED)) {
+  if (((definition->category & 2) == 0) ||
+     (DVar5 = dwGetLogOnStatus(controllerIndex), DVar5 == DW_LIVE_CONNECTED)) {
     pTVar4 = s_taskFreeHead.next;
     ppTVar2 = &(s_taskFreeHead.next)->next;
     s_taskFreeHead.next = (s_taskFreeHead.next)->next;
     *ppTVar2 = (TaskRecord *)0x0;
-    pTVar4->definition = param_1;
+    pTVar4->definition = definition;
     iVar6 = Sys_Milliseconds();
     pTVar4->startMS = iVar6;
-    pTVar4->controllerIndex = param_2;
-    if (param_1->payloadSize < 1) {
+    pTVar4->controllerIndex = controllerIndex;
+    if (definition->payloadSize < 1) {
       pTVar4->payload = (void *)0x0;
     }
     else {
-      pvVar7 = Task_Allocate(param_1->payloadSize);
+      pvVar7 = Task_Allocate(definition->payloadSize);
       pTVar4->payload = pvVar7;
     }
     pTVar4->lastPoll = s_taskPollCount;
@@ -1209,34 +1234,34 @@ TaskManager2_CreateTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,
     pTVar4->isChildTask = false;
     bdReference<bdCommonAddr>::operator=
               ((bdReference<bdCommonAddr> *)&pTVar4->remoteTask,(bdCommonAddr *)0x0);
-    if ((param_1->category & 2) != 0) {
-      if (param_4 == -1) {
+    if ((definition->category & 2) != 0) {
+      if (timeout == -1) {
         pTVar4->timeOut = -1;
       }
       else {
-        if (param_4 == 0) {
+        if (timeout == 0) {
           local_2c = 300000;
         }
         else {
-          local_2c = param_4;
+          local_2c = timeout;
         }
         pTVar4->timeOut = local_2c;
       }
     }
-    if ((param_1->category & 4) != 0) {
-      if (param_4 == 0) {
+    if ((definition->category & 4) != 0) {
+      if (timeout == 0) {
         local_38 = 300000;
       }
       else {
-        local_38 = param_4;
+        local_38 = timeout;
       }
       pTVar4->timeOut = local_38;
     }
-    if ((param_1->category & 8) == 0) {
+    if ((definition->category & 8) == 0) {
       Com_Printf(0x20,"Task \'%s\'(%d) created for local controller %d with timeout of %dms\n");
     }
     else {
-      pTVar4->nestedTask = param_3;
+      pTVar4->nestedTask = nestTask;
       if (pTVar4->nestedTask != (TaskRecord *)0x0) {
         pTVar4->nestedTask->isChildTask = true;
         Com_DPrintf(0x20,"Child task of %s(%d) set to %s(%d)\n");
@@ -1256,13 +1281,13 @@ TaskManager2_CreateTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
+void __cdecl TaskManager2_StartTask(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (TaskRecord *)0x0) {
+  if (task == (TaskRecord *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x3af,0,
                              "%s");
     if (!bVar2) {
@@ -1271,7 +1296,7 @@ void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1->definition == (TaskDefinition *)0x0) {
+  if (task->definition == (TaskDefinition *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x3b0,0,
                              "%s");
     if (!bVar2) {
@@ -1280,7 +1305,7 @@ void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1->next != (TaskRecord *)0x0) {
+  if (task->next != (TaskRecord *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x3b1,0,
                              "%s");
     if (!bVar2) {
@@ -1289,7 +1314,7 @@ void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1->state != TASK_STATE_INIT) {
+  if (task->state != TASK_STATE_INIT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x3b2,0,
                              "%s");
     if (!bVar2) {
@@ -1308,9 +1333,9 @@ void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
       return;
     }
   }
-  param_1->state = TASK_STATE_INPROGRESS;
-  param_1->next = s_taskActiveHead.next;
-  s_taskActiveHead.next = param_1;
+  task->state = TASK_STATE_INPROGRESS;
+  task->next = s_taskActiveHead.next;
+  s_taskActiveHead.next = task;
   TaskManager2_CountTasksInProgress((TaskDefinition *)0x0);
   Com_Printf(0x20,"Task \'%s\' started for local controller %d (%d total tasks)\n");
   return;
@@ -1321,26 +1346,26 @@ void __cdecl TaskManager2_StartTask(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManger2_TaskGetInProgressForControllerByName(char *param_1,int param_2)
+bool __cdecl TaskManger2_TaskGetInProgressForControllerByName(char *taskName,int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  TaskRecord *local_8;
+  TaskRecord *task;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((taskName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x3f3,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    for (local_8 = s_taskActiveHead.next; local_8 != (TaskRecord *)0x0; local_8 = local_8->next) {
-      iVar4 = I_stricmp(local_8->definition->name,param_1);
-      if ((iVar4 == 0) && (local_8->controllerIndex == param_2)) {
+  if ((taskName != (char *)0x0) && (*taskName != '\0')) {
+    for (task = s_taskActiveHead.next; task != (TaskRecord *)0x0; task = task->next) {
+      iVar4 = I_stricmp(task->definition->name,taskName);
+      if ((iVar4 == 0) && (task->controllerIndex == controllerIndex)) {
         return true;
       }
     }
@@ -1354,32 +1379,32 @@ bool __cdecl TaskManger2_TaskGetInProgressForControllerByName(char *param_1,int 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-TaskManager2_TaskGetInProgressForController(TaskDefinition *param_1,int param_2)
+TaskManager2_TaskGetInProgressForController(TaskDefinition *definition,int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  TaskRecord *local_8;
+  TaskRecord *task;
   
-  if ((param_1 == (TaskDefinition *)0x0) &&
+  if ((definition == (TaskDefinition *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x40b,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  local_8 = s_taskActiveHead.next;
+  task = s_taskActiveHead.next;
   while( true ) {
-    if (local_8 == (TaskRecord *)0x0) {
+    if (task == (TaskRecord *)0x0) {
       return (TaskRecord *)0x0;
     }
-    bVar2 = TaskManager2_TaskIsPending(local_8);
-    if (((bVar2) && (local_8->definition == param_1)) && (local_8->controllerIndex == param_2))
+    bVar2 = TaskManager2_TaskIsPending(task);
+    if (((bVar2) && (task->definition == definition)) && (task->controllerIndex == controllerIndex))
     break;
-    local_8 = local_8->next;
+    task = task->next;
   }
-  return local_8;
+  return task;
 }
 
 
@@ -1387,31 +1412,31 @@ TaskManager2_TaskGetInProgressForController(TaskDefinition *param_1,int param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl TaskManager2_TaskGetInProgress(TaskDefinition *param_1)
+TaskRecord * __cdecl TaskManager2_TaskGetInProgress(TaskDefinition *definition)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  TaskRecord *local_8;
+  TaskRecord *task;
   
-  if ((param_1 == (TaskDefinition *)0x0) &&
+  if ((definition == (TaskDefinition *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x41e,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  local_8 = s_taskActiveHead.next;
+  task = s_taskActiveHead.next;
   while( true ) {
-    if (local_8 == (TaskRecord *)0x0) {
+    if (task == (TaskRecord *)0x0) {
       return (TaskRecord *)0x0;
     }
-    bVar2 = TaskManager2_TaskIsPending(local_8);
-    if ((bVar2) && (local_8->definition == param_1)) break;
-    local_8 = local_8->next;
+    bVar2 = TaskManager2_TaskIsPending(task);
+    if ((bVar2) && (task->definition == definition)) break;
+    task = task->next;
   }
-  return local_8;
+  return task;
 }
 
 
@@ -1419,12 +1444,13 @@ TaskRecord * __cdecl TaskManager2_TaskGetInProgress(TaskDefinition *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager2_TaskIsInProgressForController(TaskDefinition *param_1,int param_2)
+bool __cdecl
+TaskManager2_TaskIsInProgressForController(TaskDefinition *definition,int controllerIndex)
 
 {
   TaskRecord *pTVar1;
   
-  pTVar1 = TaskManager2_TaskGetInProgressForController(param_1,param_2);
+  pTVar1 = TaskManager2_TaskGetInProgressForController(definition,controllerIndex);
   return pTVar1 != (TaskRecord *)0x0;
 }
 
@@ -1433,12 +1459,12 @@ bool __cdecl TaskManager2_TaskIsInProgressForController(TaskDefinition *param_1,
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager2_TaskIsInProgress(TaskDefinition *param_1)
+bool __cdecl TaskManager2_TaskIsInProgress(TaskDefinition *definition)
 
 {
   TaskRecord *pTVar1;
   
-  pTVar1 = TaskManager2_TaskGetInProgress(param_1);
+  pTVar1 = TaskManager2_TaskGetInProgress(definition);
   return pTVar1 != (TaskRecord *)0x0;
 }
 
@@ -1447,21 +1473,21 @@ bool __cdecl TaskManager2_TaskIsInProgress(TaskDefinition *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-int __cdecl TaskManager2_CountTasksInProgress(TaskDefinition *param_1)
+int __cdecl TaskManager2_CountTasksInProgress(TaskDefinition *definition)
 
 {
   bool bVar1;
-  TaskRecord *local_c;
-  int local_8;
+  TaskRecord *task;
+  int count;
   
-  local_8 = 0;
-  for (local_c = s_taskActiveHead.next; local_c != (TaskRecord *)0x0; local_c = local_c->next) {
-    bVar1 = TaskManager2_TaskIsPending(local_c);
-    if ((bVar1) && ((local_c->definition == param_1 || (param_1 == (TaskDefinition *)0x0)))) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (task = s_taskActiveHead.next; task != (TaskRecord *)0x0; task = task->next) {
+    bVar1 = TaskManager2_TaskIsPending(task);
+    if ((bVar1) && ((task->definition == definition || (definition == (TaskDefinition *)0x0)))) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -1469,21 +1495,21 @@ int __cdecl TaskManager2_CountTasksInProgress(TaskDefinition *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-int __cdecl TaskManager2_CountTasksInProgressForController(int param_1)
+int __cdecl TaskManager2_CountTasksInProgressForController(int controllerindex)
 
 {
   bool bVar1;
-  TaskRecord *local_c;
-  int local_8;
+  TaskRecord *task;
+  int count;
   
-  local_8 = 0;
-  for (local_c = s_taskActiveHead.next; local_c != (TaskRecord *)0x0; local_c = local_c->next) {
-    bVar1 = TaskManager2_TaskIsPending(local_c);
-    if ((bVar1) && (param_1 == local_c->controllerIndex)) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (task = s_taskActiveHead.next; task != (TaskRecord *)0x0; task = task->next) {
+    bVar1 = TaskManager2_TaskIsPending(task);
+    if ((bVar1) && (controllerindex == task->controllerIndex)) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -1491,13 +1517,13 @@ int __cdecl TaskManager2_CountTasksInProgressForController(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager2_TaskIsPending(TaskRecord *param_1)
+bool __cdecl TaskManager2_TaskIsPending(TaskRecord *task)
 
 {
   bool local_8;
   
-  if (((param_1->state == TASK_STATE_INPROGRESS) || (param_1->state == TASK_STATE_CHILDCOMPLETE)) ||
-     (param_1->state == TASK_STATE_CHILDFAILED)) {
+  if (((task->state == TASK_STATE_INPROGRESS) || (task->state == TASK_STATE_CHILDCOMPLETE)) ||
+     (task->state == TASK_STATE_CHILDFAILED)) {
     local_8 = true;
   }
   else {
@@ -1511,26 +1537,27 @@ bool __cdecl TaskManager2_TaskIsPending(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager2_TaskIsTimedOut(TaskRecord *param_1)
+bool __cdecl TaskManager2_TaskIsTimedOut(TaskRecord *task)
 
 {
   bool bVar1;
   int iVar2;
   bool local_20;
+  bool retval;
   
-  if (((param_1->definition->category & 8) == 0) && (param_1->timeOut != -1)) {
+  if (((task->definition->category & 8) == 0) && (task->timeOut != -1)) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
-  if ((bVar1) && (iVar2 = Sys_Milliseconds(), iVar2 - param_1->lastPollMS < 10000)) {
+  if ((bVar1) && (iVar2 = Sys_Milliseconds(), iVar2 - task->lastPollMS < 10000)) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
-  if ((bVar1) && (iVar2 = Sys_Milliseconds(), param_1->timeOut < iVar2 - param_1->startMS)) {
+  if ((bVar1) && (iVar2 = Sys_Milliseconds(), task->timeOut < iVar2 - task->startMS)) {
     local_20 = true;
   }
   else {
@@ -1542,13 +1569,13 @@ bool __cdecl TaskManager2_TaskIsTimedOut(TaskRecord *param_1)
 
 // 007B92F0  TaskManager2_StateToString  (universal/com_tasks.cpp:1156)
 
-void __cdecl TaskManager2_StateToString(TaskState param_1,char *param_2,int param_3)
+void __cdecl TaskManager2_StateToString(TaskState state,char *string,int stringsize)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_tasks.cpp",0x488,0,
                              "You passed in a null string pointer to TaskManager2_StateToString.\n")
     ;
@@ -1559,31 +1586,31 @@ void __cdecl TaskManager2_StateToString(TaskState param_1,char *param_2,int para
     }
   }
   else {
-    memset((uchar *)param_2,'\0',param_3);
-    switch(param_1) {
+    memset((uchar *)string,'\0',stringsize);
+    switch(state) {
     case TASK_STATE_INVALID:
-      Com_sprintf(param_2,param_3,"TASK_STATE_INVALID");
+      Com_sprintf(string,stringsize,"TASK_STATE_INVALID");
       break;
     case TASK_STATE_INIT:
-      Com_sprintf(param_2,param_3,"TASK_STATE_INIT");
+      Com_sprintf(string,stringsize,"TASK_STATE_INIT");
       break;
     case TASK_STATE_INPROGRESS:
-      Com_sprintf(param_2,param_3,"TASK_STATE_INPROGRESS");
+      Com_sprintf(string,stringsize,"TASK_STATE_INPROGRESS");
       break;
     case TASK_STATE_CHILDCOMPLETE:
-      Com_sprintf(param_2,param_3,"TASK_STATE_CHILDCOMPLETE");
+      Com_sprintf(string,stringsize,"TASK_STATE_CHILDCOMPLETE");
       break;
     case TASK_STATE_CHILDFAILED:
-      Com_sprintf(param_2,param_3,"TASK_STATE_CHILDFAILED");
+      Com_sprintf(string,stringsize,"TASK_STATE_CHILDFAILED");
       break;
     case TASK_STATE_COMPLETED:
-      Com_sprintf(param_2,param_3,"TASK_STATE_COMPLETED");
+      Com_sprintf(string,stringsize,"TASK_STATE_COMPLETED");
       break;
     case TASK_STATE_FAILED:
-      Com_sprintf(param_2,param_3,"TASK_STATE_FAILED");
+      Com_sprintf(string,stringsize,"TASK_STATE_FAILED");
       break;
     default:
-      Com_sprintf(param_2,param_3,"Unknown state!!");
+      Com_sprintf(string,stringsize,"Unknown state!!");
     }
   }
   return;
@@ -1598,20 +1625,20 @@ void __cdecl TaskManager2_StateToString(TaskState param_1,char *param_2,int para
 void __cdecl TaskManager2_DumpTasks(void)
 
 {
-  TaskRecord *local_50;
-  char local_4c;
+  TaskRecord *task;
+  char taskState;
   uchar local_4b [67];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c = '\0';
+  taskState = '\0';
   memset(local_4b,'\0',0x3f);
-  local_50 = s_taskActiveHead.next;
+  task = s_taskActiveHead.next;
   Com_Printf(0x20,"g_TaskEnd: %i\t g_taskHead: %i\n");
   Com_Printf(0x20,"Task name\tState\n");
-  for (; local_50 != (TaskRecord *)0x0; local_50 = local_50->next) {
-    if (local_50->definition != (TaskDefinition *)0x0) {
-      TaskManager2_StateToString(local_50->state,&local_4c,0x40);
+  for (; task != (TaskRecord *)0x0; task = task->next) {
+    if (task->definition != (TaskDefinition *)0x0) {
+      TaskManager2_StateToString(task->state,&taskState,0x40);
       Com_Printf(0x20,"%s(%d)\t%s\n");
     }
   }

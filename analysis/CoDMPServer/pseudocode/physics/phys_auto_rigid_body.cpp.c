@@ -38,7 +38,7 @@ void __cdecl _dynamic_initializer_for__g_auto_rigid_body_map_mutex__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-auto_rigid_body::add(centity_s *param_1,gjk_physics_collision_visitor *param_2,int param_3)
+auto_rigid_body::add(centity_s *cent,gjk_physics_collision_visitor *collision_visitor,int mask)
 
 {
   user_rigid_body *puVar1;
@@ -52,54 +52,53 @@ auto_rigid_body::add(centity_s *param_1,gjk_physics_collision_visitor *param_2,i
   auto_rigid_body *local_64;
   int *local_3c;
   auto_rigid_body *local_38;
-  DObj *local_14;
-  XModel *local_10;
-  uint local_c;
-  auto_rigid_body *local_8;
+  DObj *obj;
+  XModel *model;
+  uint collflag;
+  auto_rigid_body *arb;
   
-  if ((param_1 == (centity_s *)0x0) &&
+  if ((cent == (centity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_auto_rigid_body.cpp"
                                ,0x21,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->currentState).pos.trType == '\n') {
+  if ((cent->currentState).pos.trType == '\n') {
     return;
   }
-  if ((param_1->nextState).lerp.pos.trType != '\n') {
-    bVar4 = CG_IsRagdollTrajectory(&(param_1->currentState).pos);
+  if ((cent->nextState).lerp.pos.trType != '\n') {
+    bVar4 = CG_IsRagdollTrajectory(&(cent->currentState).pos);
     if (bVar4) {
       return;
     }
-    bVar4 = CG_IsRagdollTrajectory(&(param_1->nextState).lerp.pos);
+    bVar4 = CG_IsRagdollTrajectory(&(cent->nextState).lerp.pos);
     if (bVar4) {
       return;
     }
-    if ((((param_1->nextState).solid != 0xffffff) || ((param_1->nextState).eType == 0xe)) ||
-       ((param_1->nextState).eType == 0x10)) {
-      local_14 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum)
-      ;
-      if (local_14 == (DObj *)0x0) {
+    if ((((cent->nextState).solid != 0xffffff) || ((cent->nextState).eType == 0xe)) ||
+       ((cent->nextState).eType == 0x10)) {
+      obj = Com_GetClientDObj((cent->nextState).number,(uint)(cent->pose).localClientNum);
+      if (obj == (DObj *)0x0) {
         return;
       }
-      local_10 = DObjGetModel(local_14,0);
-      iVar5 = XModelHasCollmap(local_10);
-      if ((iVar5 == 0) && ((param_1->nextState).eType != 0x11)) {
+      model = DObjGetModel(obj,0);
+      iVar5 = XModelHasCollmap(model);
+      if ((iVar5 == 0) && ((cent->nextState).eType != 0x11)) {
         return;
       }
     }
     tlAtomicReadWriteMutex::ReadLock(&g_auto_rigid_body_map_mutex);
     local_38 = g_auto_rigid_body_map.m_tree_root;
-    while ((local_38 != (auto_rigid_body *)0x0 && (param_1 != local_38->cent))) {
-      if (param_1 < local_38->cent) {
+    while ((local_38 != (auto_rigid_body *)0x0 && (cent != local_38->cent))) {
+      if (cent < local_38->cent) {
         local_38 = (local_38->m_avl_node_info).m_left;
       }
       else {
         local_38 = (local_38->m_avl_node_info).m_right;
       }
     }
-    local_8 = local_38;
+    arb = local_38;
     local_3c = &(g_auto_rigid_body_map_mutex.ThisPtr)->ReadLockCount;
     LOCK();
     *local_3c = *local_3c + -1;
@@ -107,61 +106,61 @@ auto_rigid_body::add(centity_s *param_1,gjk_physics_collision_visitor *param_2,i
     if (local_38 == (auto_rigid_body *)0x0) {
       tlAtomicReadWriteMutex::WriteLock(&g_auto_rigid_body_map_mutex);
       local_64 = g_auto_rigid_body_map.m_tree_root;
-      while ((local_64 != (auto_rigid_body *)0x0 && (param_1 != local_64->cent))) {
-        if (param_1 < local_64->cent) {
+      while ((local_64 != (auto_rigid_body *)0x0 && (cent != local_64->cent))) {
+        if (cent < local_64->cent) {
           local_64 = (local_64->m_avl_node_info).m_left;
         }
         else {
           local_64 = (local_64->m_avl_node_info).m_right;
         }
       }
-      local_8 = local_64;
+      arb = local_64;
       if (local_64 == (auto_rigid_body *)0x0) {
-        local_8 = phys_simple_allocator<auto_rigid_body>::allocate(&g_auto_rigid_body_allocator);
-        local_8->cent = param_1;
-        local_8->frame_count = 3;
+        arb = phys_simple_allocator<auto_rigid_body>::allocate(&g_auto_rigid_body_allocator);
+        arb->cent = cent;
+        arb->frame_count = 3;
         puVar6 = phys_sys::create_user_rigid_body(0);
-        local_8->rb = puVar6;
-        puVar6 = local_8->rb;
-        pcVar3 = &param_1->pose;
-        AnglesToAxis((param_1->pose).angles,(float (*) [3])local_98);
+        arb->rb = puVar6;
+        puVar6 = arb->rb;
+        pcVar3 = &cent->pose;
+        AnglesToAxis((cent->pose).angles,(float (*) [3])local_98);
         Phys_AxisToNitrousMat((float (*) [3])local_98,&puVar6->m_dictator_mat);
         Phys_Vec3ToNitrousVec(pcVar3->origin,&(puVar6->m_dictator_mat).w);
-        user_rigid_body::set(local_8->rb,&local_8->rb->m_dictator_mat);
-        rigid_body::set_flag((rigid_body *)local_8->rb,0x40,1);
-        local_8->next = g_auto_rigid_body_list;
-        g_auto_rigid_body_list = local_8;
+        user_rigid_body::set(arb->rb,&arb->rb->m_dictator_mat);
+        rigid_body::set_flag((rigid_body *)arb->rb,0x40,1);
+        arb->next = g_auto_rigid_body_list;
+        g_auto_rigid_body_list = arb;
         phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::add
-                  (&g_auto_rigid_body_map,&param_1,local_8);
+                  (&g_auto_rigid_body_map,&cent,arb);
       }
       tlAtomicReadWriteMutex::WriteUnlock(&g_auto_rigid_body_map_mutex);
     }
-    param_2->cent = param_1;
-    param_2->dynEntDef = (DynEntityDef *)0x0;
-    param_2->glass = (Glass *)0x0;
-    local_c = 2;
-    if ((param_1->nextState).eType == 0x11) {
-      local_c = 0x80;
+    collision_visitor->cent = cent;
+    collision_visitor->dynEntDef = (DynEntityDef *)0x0;
+    collision_visitor->glass = (Glass *)0x0;
+    collflag = 2;
+    if ((cent->nextState).eType == 0x11) {
+      collflag = 0x80;
     }
-    if (local_8 == (auto_rigid_body *)0x0) {
+    if (arb == (auto_rigid_body *)0x0) {
       prVar7 = (rigid_body *)phys_sys::get_environment_rigid_body();
-      param_2->rb = prVar7;
-      param_2->rb_to_world_xform = &::PHYS_IDENTITY_MATRIX;
-      param_2->cg_to_world_xform = (phys_mat44 *)0x0;
-      param_2->cg_to_rb_xform = (phys_mat44 *)0x0;
-      param_2->env_collision_flags = local_c;
+      collision_visitor->rb = prVar7;
+      collision_visitor->rb_to_world_xform = &::PHYS_IDENTITY_MATRIX;
+      collision_visitor->cg_to_world_xform = (phys_mat44 *)0x0;
+      collision_visitor->cg_to_rb_xform = (phys_mat44 *)0x0;
+      collision_visitor->env_collision_flags = collflag;
     }
     else {
-      local_8->frame_count = 3;
-      puVar6 = local_8->rb;
-      puVar1 = local_8->rb;
-      param_2->rb = (rigid_body *)local_8->rb;
-      param_2->rb_to_world_xform = (phys_mat44 *)&puVar1->_padding_;
-      param_2->cg_to_world_xform = (phys_mat44 *)&puVar6->_padding_;
-      param_2->cg_to_rb_xform = &::PHYS_IDENTITY_MATRIX;
-      param_2->env_collision_flags = local_c;
+      arb->frame_count = 3;
+      puVar6 = arb->rb;
+      puVar1 = arb->rb;
+      collision_visitor->rb = (rigid_body *)arb->rb;
+      collision_visitor->rb_to_world_xform = (phys_mat44 *)&puVar1->_padding_;
+      collision_visitor->cg_to_world_xform = (phys_mat44 *)&puVar6->_padding_;
+      collision_visitor->cg_to_rb_xform = &::PHYS_IDENTITY_MATRIX;
+      collision_visitor->env_collision_flags = collflag;
     }
-    create_entity_bpi(param_2,param_3);
+    create_entity_bpi(collision_visitor,mask);
     return;
   }
   return;
@@ -178,30 +177,31 @@ auto_rigid_body::add(centity_s *param_1,gjk_physics_collision_visitor *param_2,i
 void __thiscall
 phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::rotate_right
           (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *this,
-          auto_rigid_body **param_1)
+          auto_rigid_body **root_2)
 
 {
   auto_rigid_body *paVar1;
   int *piVar2;
   int local_28;
   int local_20;
+  broad_phase_environment_info *save_left_2;
   
-  paVar1 = ((*param_1)->m_avl_node_info).m_left;
-  ((*param_1)->m_avl_node_info).m_left = (paVar1->m_avl_node_info).m_right;
-  (paVar1->m_avl_node_info).m_right = *param_1;
-  piVar2 = &((*param_1)->m_avl_node_info).m_balance;
+  paVar1 = ((*root_2)->m_avl_node_info).m_left;
+  ((*root_2)->m_avl_node_info).m_left = (paVar1->m_avl_node_info).m_right;
+  (paVar1->m_avl_node_info).m_right = *root_2;
+  piVar2 = &((*root_2)->m_avl_node_info).m_balance;
   local_20 = -(paVar1->m_avl_node_info).m_balance;
   if (local_20 < 1) {
     local_20 = 0;
   }
   *piVar2 = local_20 + 1 + *piVar2;
   piVar2 = &(paVar1->m_avl_node_info).m_balance;
-  local_28 = ((*param_1)->m_avl_node_info).m_balance;
+  local_28 = ((*root_2)->m_avl_node_info).m_balance;
   if (local_28 < 1) {
     local_28 = 0;
   }
   *piVar2 = local_28 + 1 + *piVar2;
-  *param_1 = paVar1;
+  *root_2 = paVar1;
   return;
 }
 
@@ -216,30 +216,31 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::rotate
 void __thiscall
 phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::rotate_left
           (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *this,
-          auto_rigid_body **param_1)
+          auto_rigid_body **root_2)
 
 {
   auto_rigid_body *paVar1;
   int *piVar2;
   int local_28;
   int local_20;
+  broad_phase_environment_info *save_right_2;
   
-  paVar1 = ((*param_1)->m_avl_node_info).m_right;
-  ((*param_1)->m_avl_node_info).m_right = (paVar1->m_avl_node_info).m_left;
-  (paVar1->m_avl_node_info).m_left = *param_1;
-  piVar2 = &((*param_1)->m_avl_node_info).m_balance;
+  paVar1 = ((*root_2)->m_avl_node_info).m_right;
+  ((*root_2)->m_avl_node_info).m_right = (paVar1->m_avl_node_info).m_left;
+  (paVar1->m_avl_node_info).m_left = *root_2;
+  piVar2 = &((*root_2)->m_avl_node_info).m_balance;
   local_20 = (paVar1->m_avl_node_info).m_balance;
   if (local_20 < 1) {
     local_20 = 0;
   }
   *piVar2 = *piVar2 - (local_20 + 1);
   piVar2 = &(paVar1->m_avl_node_info).m_balance;
-  local_28 = -((*param_1)->m_avl_node_info).m_balance;
+  local_28 = -((*root_2)->m_avl_node_info).m_balance;
   if (local_28 < 1) {
     local_28 = 0;
   }
   *piVar2 = *piVar2 - (local_28 + 1);
-  *param_1 = paVar1;
+  *root_2 = paVar1;
   return;
 }
 
@@ -254,111 +255,111 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::rotate
 void __thiscall
 phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::add
           (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *this,
-          centity_s **param_1,auto_rigid_body *param_2)
+          centity_s **key,auto_rigid_body *data)
 
 {
   auto_rigid_body *paVar1;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *ppVar2;
-  code *pcVar3;
-  bool bVar4;
-  int *piVar5;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **pppVar6;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **local_108;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *local_104 [64];
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *root_2;
+  code *pcVar2;
+  bool bVar3;
+  int *piVar4;
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **pppVar5;
+  auto_rigid_body *root;
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **cur_item;
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *the_stack [64];
   
-  local_104[0] = this;
-  local_108 = local_104;
-  while ((*local_108)->m_tree_root != (auto_rigid_body *)0x0) {
-    paVar1 = (*local_108)->m_tree_root;
-    if ((0x1f < (int)local_108 + (8 - (int)local_104) >> 3) &&
-       (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0x67
-                          ,"cur_item + 1 - the_stack < 32",""), bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  the_stack[0] = this;
+  cur_item = the_stack;
+  while ((*cur_item)->m_tree_root != (auto_rigid_body *)0x0) {
+    paVar1 = (*cur_item)->m_tree_root;
+    if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
+       (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0x67
+                          ,"cur_item + 1 - the_stack < 32",""), bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    pppVar6 = local_108 + 2;
-    if (*param_1 < paVar1->cent) {
-      local_108[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
-                     0xffffffff;
-      *pppVar6 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
+    pppVar5 = cur_item + 2;
+    if (*key < paVar1->cent) {
+      cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
+                    0xffffffff;
+      *pppVar5 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
                  &paVar1->m_avl_node_info;
-      local_108 = pppVar6;
+      cur_item = pppVar5;
     }
     else {
-      if ((*param_1 <= paVar1->cent) &&
-         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x70,"key > accessor::get_avl_key(root)",""), bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if ((*key <= paVar1->cent) &&
+         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x70,"key > accessor::get_avl_key(root)",""), bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      local_108[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)0x1
-      ;
-      *pppVar6 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
+      cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)0x1;
+      *pppVar5 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
                  &(paVar1->m_avl_node_info).m_right;
-      local_108 = pppVar6;
+      cur_item = pppVar5;
     }
   }
-  (*local_108)->m_tree_root = param_2;
-  (param_2->m_avl_node_info).m_left = (auto_rigid_body *)0x0;
-  (param_2->m_avl_node_info).m_right = (auto_rigid_body *)0x0;
-  (param_2->m_avl_node_info).m_balance = 0;
+  (*cur_item)->m_tree_root = data;
+  (data->m_avl_node_info).m_left = (auto_rigid_body *)0x0;
+  (data->m_avl_node_info).m_right = (auto_rigid_body *)0x0;
+  (data->m_avl_node_info).m_balance = 0;
   do {
-    if (local_108 <= local_104) {
+    if (cur_item <= the_stack) {
       return;
     }
-    ppVar2 = local_108[-2];
-    piVar5 = &(ppVar2->m_tree_root->m_avl_node_info).m_balance;
-    *piVar5 = (int)&local_108[-1]->m_tree_root + *piVar5;
-    if ((ppVar2->m_tree_root->m_avl_node_info).m_balance == -2) {
-      if ((((((ppVar2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance != -1) &&
-          ((((ppVar2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance != 1)) &&
-         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+    root_2 = cur_item[-2];
+    piVar4 = &(root_2->m_tree_root->m_avl_node_info).m_balance;
+    *piVar4 = (int)&cur_item[-1]->m_tree_root + *piVar4;
+    if ((root_2->m_tree_root->m_avl_node_info).m_balance == -2) {
+      if ((((((root_2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance != -1) &&
+          ((((root_2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance != 1)) &&
+         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0x82,
                             "accessor::get_avl_node(accessor::get_avl_node(root)->m_left)->m_balance == -1 || accessor::get_avl_node(accessor::get_avl_node(root)->m_left)->m_balance == 1"
-                            ,""), bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+                            ,""), bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if ((((ppVar2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance == 1) {
-        rotate_left(this,&(ppVar2->m_tree_root->m_avl_node_info).m_left);
+      if ((((root_2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance == 1) {
+        rotate_left(this,&(root_2->m_tree_root->m_avl_node_info).m_left);
       }
-      rotate_right(this,&ppVar2->m_tree_root);
-      if (((ppVar2->m_tree_root->m_avl_node_info).m_balance != 0) &&
-         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x86,"accessor::get_avl_node(root)->m_balance == 0",""), bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      rotate_right(this,&root_2->m_tree_root);
+      if (((root_2->m_tree_root->m_avl_node_info).m_balance != 0) &&
+         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x86,"accessor::get_avl_node(root)->m_balance == 0",""), bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
-    else if ((ppVar2->m_tree_root->m_avl_node_info).m_balance == 2) {
-      if ((((((ppVar2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance != -1) &&
-          ((((ppVar2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance != 1)) &&
-         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+    else if ((root_2->m_tree_root->m_avl_node_info).m_balance == 2) {
+      if ((((((root_2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance != -1) &&
+          ((((root_2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance != 1)) &&
+         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0x8a,
                             "accessor::get_avl_node(accessor::get_avl_node(root)->m_right)->m_balance == -1 || accessor::get_avl_node(accessor::get_avl_node(root)->m_right)->m_balance == 1"
-                            ,""), bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+                            ,""), bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if ((((ppVar2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance == -1) {
-        rotate_right(this,&(ppVar2->m_tree_root->m_avl_node_info).m_right);
+      if ((((root_2->m_tree_root->m_avl_node_info).m_right)->m_avl_node_info).m_balance == -1) {
+        rotate_right(this,&(root_2->m_tree_root->m_avl_node_info).m_right);
       }
-      rotate_left(this,&ppVar2->m_tree_root);
-      if (((ppVar2->m_tree_root->m_avl_node_info).m_balance != 0) &&
-         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x8e,"accessor::get_avl_node(root)->m_balance == 0",""), bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      rotate_left(this,&root_2->m_tree_root);
+      if (((root_2->m_tree_root->m_avl_node_info).m_balance != 0) &&
+         (bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x8e,"accessor::get_avl_node(root)->m_balance == 0",""), bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
-    local_108 = local_108 + -2;
-    if ((ppVar2->m_tree_root->m_avl_node_info).m_balance == 0) {
+    cur_item = cur_item + -2;
+    if ((root_2->m_tree_root->m_avl_node_info).m_balance == 0) {
       return;
     }
   } while( true );
@@ -367,6 +368,7 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::add
 
 // 00830200  update  (physics/phys_auto_rigid_body.cpp:108)
 
+/* WARNING: Variable defined which should be unmapped: iter_next */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -375,37 +377,38 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::add
 void __cdecl auto_rigid_body::update(void)
 
 {
-  bool bVar1;
-  phys_mat44 local_90;
-  float local_48 [9];
-  float *local_24;
-  float *local_20;
-  auto_rigid_body *local_1c;
+  auto_rigid_body *paVar1;
+  centity_s *pcVar2;
+  bool bVar3;
+  undefined1 local_90 [12];
+  phys_mat44 dictator;
   auto_rigid_body **local_18;
   auto_rigid_body *local_14;
+  auto_rigid_body *iter_next;
+  auto_rigid_body **prev_next;
+  auto_rigid_body *iter;
   
   local_14 = g_auto_rigid_body_list;
   local_18 = &g_auto_rigid_body_list;
   while (local_14 != (auto_rigid_body *)0x0) {
     local_14->frame_count = local_14->frame_count + -1;
     if (((local_14->frame_count < 1) ||
-        (bVar1 = CG_IsRagdollTrajectory(&(local_14->cent->nextState).lerp.pos), bVar1)) ||
+        (bVar3 = CG_IsRagdollTrajectory(&(local_14->cent->nextState).lerp.pos), bVar3)) ||
        ((local_14->cent->nextState).lerp.pos.trType == '\n')) {
-      local_1c = local_14->next;
+      paVar1 = local_14->next;
       phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
                 (&g_auto_rigid_body_map,&local_14->cent);
       phys_sys::destroy(local_14->rb);
       phys_simple_allocator<auto_rigid_body>::free(&g_auto_rigid_body_allocator,local_14);
-      *local_18 = local_1c;
-      local_14 = local_1c;
+      *local_18 = paVar1;
+      local_14 = paVar1;
     }
     else {
-      local_20 = (local_14->cent->pose).origin;
-      local_24 = (local_14->cent->pose).angles;
-      AnglesToAxis(local_24,(float (*) [3])local_48);
-      Phys_AxisToNitrousMat((float (*) [3])local_48,&local_90);
-      Phys_Vec3ToNitrousVec(local_20,&local_90.w);
-      user_rigid_body::setPosition(local_14->rb,&local_90);
+      pcVar2 = local_14->cent;
+      AnglesToAxis((local_14->cent->pose).angles,(float (*) [3])&dictator.w.w);
+      Phys_AxisToNitrousMat((float (*) [3])&dictator.w.w,(phys_mat44 *)local_90);
+      Phys_Vec3ToNitrousVec((pcVar2->pose).origin,(phys_vec3 *)&dictator.z.y);
+      user_rigid_body::setPosition(local_14->rb,(phys_mat44 *)local_90);
       local_18 = &local_14->next;
       local_14 = local_14->next;
     }
@@ -421,19 +424,19 @@ void __cdecl auto_rigid_body::update(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl fixup_wheel_constraints_arb(auto_rigid_body *param_1)
+void __cdecl fixup_wheel_constraints_arb(auto_rigid_body *arb)
 
 {
   phys_free_list<rigid_body_constraint_wheel> *ppVar1;
-  T_internal_base *local_c;
+  rigid_body_constraint_wheel *ci;
+  T_internal_base *wci;
   
   ppVar1 = &g_physics_system->m_list_rbc_wheel;
-  for (local_c = (g_physics_system->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
-      ppVar1 != (phys_free_list<rigid_body_constraint_wheel> *)local_c;
-      local_c = local_c->m_next_T_internal) {
-    if (((rigid_body_constraint_wheel *)(local_c + 2) != (rigid_body_constraint_wheel *)0x0) &&
-       ((user_rigid_body *)local_c[2].m_next_T_internal == param_1->rb)) {
-      rigid_body_constraint_wheel::set_no_collision((rigid_body_constraint_wheel *)(local_c + 2));
+  for (wci = (g_physics_system->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
+      ppVar1 != (phys_free_list<rigid_body_constraint_wheel> *)wci; wci = wci->m_next_T_internal) {
+    if (((rigid_body_constraint_wheel *)(wci + 2) != (rigid_body_constraint_wheel *)0x0) &&
+       ((user_rigid_body *)wci[2].m_next_T_internal == arb->rb)) {
+      rigid_body_constraint_wheel::set_no_collision((rigid_body_constraint_wheel *)(wci + 2));
     }
   }
   return;
@@ -447,17 +450,18 @@ void __cdecl fixup_wheel_constraints_arb(auto_rigid_body *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl auto_rigid_body::remove_ent(centity_s *param_1)
+void __cdecl auto_rigid_body::remove_ent(centity_s *cent)
 
 {
   code *pcVar1;
   bool bVar2;
   auto_rigid_body *local_10;
-  auto_rigid_body **local_c;
+  auto_rigid_body **prev_next;
+  auto_rigid_body *arb;
   
   local_10 = g_auto_rigid_body_map.m_tree_root;
-  while ((local_10 != (auto_rigid_body *)0x0 && (param_1 != local_10->cent))) {
-    if (param_1 < local_10->cent) {
+  while ((local_10 != (auto_rigid_body *)0x0 && (cent != local_10->cent))) {
+    if (cent < local_10->cent) {
       local_10 = (local_10->m_avl_node_info).m_left;
     }
     else {
@@ -465,10 +469,10 @@ void __cdecl auto_rigid_body::remove_ent(centity_s *param_1)
     }
   }
   if (local_10 != (auto_rigid_body *)0x0) {
-    local_c = &g_auto_rigid_body_list;
-    while (*local_c != local_10) {
-      local_c = &(*local_c)->next;
-      if ((*local_c == (auto_rigid_body *)0x0) &&
+    prev_next = &g_auto_rigid_body_list;
+    while (*prev_next != local_10) {
+      prev_next = &(*prev_next)->next;
+      if ((*prev_next == (auto_rigid_body *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_auto_rigid_body.cpp"
                                    ,0x9f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -476,7 +480,7 @@ void __cdecl auto_rigid_body::remove_ent(centity_s *param_1)
         return;
       }
     }
-    *local_c = local_10->next;
+    *prev_next = local_10->next;
     phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
               (&g_auto_rigid_body_map,&local_10->cent);
     fixup_wheel_constraints_arb(local_10);
@@ -497,7 +501,7 @@ void __cdecl auto_rigid_body::remove_ent(centity_s *param_1)
 void __thiscall
 phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
           (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *this,
-          centity_s **param_1)
+          centity_s **key)
 
 {
   auto_rigid_body *paVar1;
@@ -506,13 +510,16 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
   bool bVar4;
   int *piVar5;
   phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **pppVar6;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **local_10c;
-  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *local_104 [64];
+  auto_rigid_body *replace_node;
+  auto_rigid_body *root;
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> **cur_item;
+  auto_rigid_body **node_to_be_removed;
+  phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *the_stack [64];
   
-  local_104[0] = this;
-  local_10c = local_104;
+  the_stack[0] = this;
+  cur_item = the_stack;
   while( true ) {
-    paVar1 = (*local_10c)->m_tree_root;
+    paVar1 = (*cur_item)->m_tree_root;
     if ((paVar1 == (auto_rigid_body *)0x0) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa1
                           ,"root",""), bVar4)) {
@@ -520,53 +527,53 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
       (*pcVar3)();
       return;
     }
-    if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+    if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
        (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xa2
                           ,"cur_item + 1 - the_stack < 32",""), bVar4)) break;
-    pppVar6 = local_10c + 2;
-    if (*param_1 < paVar1->cent) {
-      local_10c[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
-                     0xffffffff;
+    pppVar6 = cur_item + 2;
+    if (*key < paVar1->cent) {
+      cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
+                    0xffffffff;
       *pppVar6 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
                  &paVar1->m_avl_node_info;
-      local_10c = pppVar6;
+      cur_item = pppVar6;
     }
     else {
-      if (*param_1 <= paVar1->cent) {
-        if ((*param_1 != paVar1->cent) &&
+      if (*key <= paVar1->cent) {
+        if ((*key != paVar1->cent) &&
            (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                               0xb0,"key == accessor::get_avl_key(root)",""), bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        ppVar2 = *local_10c;
+        ppVar2 = *cur_item;
         if ((ppVar2->m_tree_root->m_avl_node_info).m_right == (auto_rigid_body *)0x0) {
           ppVar2->m_tree_root = (ppVar2->m_tree_root->m_avl_node_info).m_left;
         }
         else {
-          local_10c[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *
-                         )0x1;
-          pppVar6 = local_10c + 2;
+          cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
+                        0x1;
+          pppVar6 = cur_item + 2;
           *pppVar6 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
                      &(ppVar2->m_tree_root->m_avl_node_info).m_right;
-          local_10c = pppVar6;
-          while (((*local_10c)->m_tree_root->m_avl_node_info).m_left != (auto_rigid_body *)0x0) {
-            if ((0x1f < (int)local_10c + (8 - (int)local_104) >> 3) &&
+          cur_item = pppVar6;
+          while (((*cur_item)->m_tree_root->m_avl_node_info).m_left != (auto_rigid_body *)0x0) {
+            if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
                (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h"
                                   ,0xbf,"cur_item + 1 - the_stack < 32",""), bVar4)) {
               pcVar3 = (code *)swi(3);
               (*pcVar3)();
               return;
             }
-            local_10c[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>
-                            *)0xffffffff;
-            local_10c[2] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>
-                            *)&(*local_10c)->m_tree_root->m_avl_node_info;
-            local_10c = local_10c + 2;
+            cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>
+                           *)0xffffffff;
+            cur_item[2] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>
+                           *)&(*cur_item)->m_tree_root->m_avl_node_info;
+            cur_item = cur_item + 2;
           }
-          paVar1 = (*local_10c)->m_tree_root;
-          (*local_10c)->m_tree_root = (paVar1->m_avl_node_info).m_right;
+          paVar1 = (*cur_item)->m_tree_root;
+          (*cur_item)->m_tree_root = (paVar1->m_avl_node_info).m_right;
           (paVar1->m_avl_node_info).m_left = (ppVar2->m_tree_root->m_avl_node_info).m_left;
           (paVar1->m_avl_node_info).m_right = (ppVar2->m_tree_root->m_avl_node_info).m_right;
           (paVar1->m_avl_node_info).m_balance = (ppVar2->m_tree_root->m_avl_node_info).m_balance;
@@ -575,12 +582,12 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
           ppVar2->m_tree_root = paVar1;
         }
         do {
-          if (local_10c <= local_104) {
+          if (cur_item <= the_stack) {
             return;
           }
-          ppVar2 = local_10c[-2];
+          ppVar2 = cur_item[-2];
           piVar5 = &(ppVar2->m_tree_root->m_avl_node_info).m_balance;
-          *piVar5 = *piVar5 - (int)local_10c[-1];
+          *piVar5 = *piVar5 - (int)cur_item[-1];
           if ((ppVar2->m_tree_root->m_avl_node_info).m_balance == -2) {
             if ((((ppVar2->m_tree_root->m_avl_node_info).m_left)->m_avl_node_info).m_balance == 1) {
               rotate_left(this,&(ppVar2->m_tree_root->m_avl_node_info).m_left);
@@ -614,17 +621,16 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
               return;
             }
           }
-          local_10c = local_10c + -2;
+          cur_item = cur_item + -2;
           if ((ppVar2->m_tree_root->m_avl_node_info).m_balance != 0) {
             return;
           }
         } while( true );
       }
-      local_10c[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)0x1
-      ;
+      cur_item[1] = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)0x1;
       *pppVar6 = (phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body> *)
                  &(paVar1->m_avl_node_info).m_right;
-      local_10c = pppVar6;
+      cur_item = pppVar6;
     }
   }
   pcVar3 = (code *)swi(3);
@@ -640,15 +646,16 @@ phys_inplace_avl_tree<centity_s_const_*,auto_rigid_body,auto_rigid_body>::remove
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-rigid_body * __cdecl auto_rigid_body::ent_has_auto_rigid_body(centity_s *param_1)
+rigid_body * __cdecl auto_rigid_body::ent_has_auto_rigid_body(centity_s *cent)
 
 {
   user_rigid_body *puVar1;
   auto_rigid_body *local_c;
+  auto_rigid_body *arb;
   
   local_c = g_auto_rigid_body_map.m_tree_root;
-  while ((local_c != (auto_rigid_body *)0x0 && (param_1 != local_c->cent))) {
-    if (param_1 < local_c->cent) {
+  while ((local_c != (auto_rigid_body *)0x0 && (cent != local_c->cent))) {
+    if (cent < local_c->cent) {
       local_c = (local_c->m_avl_node_info).m_left;
     }
     else {
@@ -772,6 +779,7 @@ phys_simple_allocator<auto_rigid_body>::allocate(phys_simple_allocator<auto_rigi
 
 {
   auto_rigid_body *paVar1;
+  void *slot;
   
   paVar1 = PMM_ALLOC(0x1c,4);
   if (paVar1 == (auto_rigid_body *)0x0) {
@@ -795,13 +803,13 @@ phys_simple_allocator<auto_rigid_body>::allocate(phys_simple_allocator<auto_rigi
 
 void __thiscall
 phys_simple_allocator<auto_rigid_body>::free
-          (phys_simple_allocator<auto_rigid_body> *this,auto_rigid_body *param_1)
+          (phys_simple_allocator<auto_rigid_body> *this,auto_rigid_body *slot)
 
 {
-  if (param_1 != (auto_rigid_body *)0x0) {
-    PMM_VALIDATE(param_1,0x1c,4);
+  if (slot != (auto_rigid_body *)0x0) {
+    PMM_VALIDATE(slot,0x1c,4);
     this->m_count = this->m_count + -1;
-    PMM_FREE(param_1,0x1c,4);
+    PMM_FREE(slot,0x1c,4);
   }
   return;
 }
@@ -825,25 +833,25 @@ void __thiscall tlAtomicReadWriteMutex::WriteLock(tlAtomicReadWriteMutex *this)
   int *local_1c;
   tlAtomicReadWriteMutex *local_18;
   tlAtomicReadWriteMutex *local_10;
-  DWORD local_c;
+  DWORD CurThread;
   int local_8;
   
-  local_c = GetCurrentThreadId();
+  CurThread = GetCurrentThreadId();
   local_8 = 0;
   local_10 = this->ThisPtr;
   iVar5 = 0;
   LOCK();
   uVar1 = local_10->WriteThreadId;
-  if (local_c == uVar1) {
-    local_10->WriteThreadId = (ulonglong)local_c;
-    DVar4 = local_c;
+  if (CurThread == uVar1) {
+    local_10->WriteThreadId = (ulonglong)CurThread;
+    DVar4 = CurThread;
   }
   else {
     iVar5 = (int)(uVar1 >> 0x20);
     DVar4 = (DWORD)uVar1;
   }
   UNLOCK();
-  if ((DVar4 == local_c) && (iVar5 == 0)) {
+  if ((DVar4 == CurThread) && (iVar5 == 0)) {
     bVar3 = true;
   }
   else {
@@ -863,7 +871,7 @@ void __thiscall tlAtomicReadWriteMutex::WriteLock(tlAtomicReadWriteMutex *this)
     LOCK();
     uVar2 = local_18->WriteThreadId;
     if (uVar2 == 0) {
-      local_18->WriteThreadId = CONCAT44(local_8,local_c);
+      local_18->WriteThreadId = CONCAT44(local_8,CurThread);
     }
     else {
       iVar7 = (int)(uVar2 >> 0x20);
@@ -892,9 +900,9 @@ void __thiscall tlAtomicReadWriteMutex::WriteLock(tlAtomicReadWriteMutex *this)
         local_20 = this->ThisPtr;
         LOCK();
         uVar2 = local_20->WriteThreadId;
-        if (CONCAT44(local_8,local_c) == uVar2) {
+        if (CONCAT44(local_8,CurThread) == uVar2) {
           local_20->WriteThreadId = 0;
-          DVar4 = local_c;
+          DVar4 = CurThread;
           iVar5 = local_8;
         }
         else {
@@ -902,7 +910,7 @@ void __thiscall tlAtomicReadWriteMutex::WriteLock(tlAtomicReadWriteMutex *this)
           iVar5 = (int)(uVar2 >> 0x20);
         }
         UNLOCK();
-        if ((DVar4 == local_c) && (iVar5 == local_8)) {
+        if ((DVar4 == CurThread) && (iVar5 == local_8)) {
           bVar3 = true;
         }
         else {
@@ -932,25 +940,25 @@ void __thiscall tlAtomicReadWriteMutex::ReadLock(tlAtomicReadWriteMutex *this)
   tlAtomicReadWriteMutex *local_18;
   int *local_14;
   tlAtomicReadWriteMutex *local_10;
-  DWORD local_c;
+  DWORD CurThread;
   int local_8;
   
-  local_c = GetCurrentThreadId();
+  CurThread = GetCurrentThreadId();
   local_8 = 0;
   local_10 = this->ThisPtr;
   iVar5 = 0;
   LOCK();
   uVar1 = local_10->WriteThreadId;
-  if (local_c == uVar1) {
-    local_10->WriteThreadId = (ulonglong)local_c;
-    DVar4 = local_c;
+  if (CurThread == uVar1) {
+    local_10->WriteThreadId = (ulonglong)CurThread;
+    DVar4 = CurThread;
   }
   else {
     iVar5 = (int)(uVar1 >> 0x20);
     DVar4 = (DWORD)uVar1;
   }
   UNLOCK();
-  if ((DVar4 == local_c) && (iVar5 == 0)) {
+  if ((DVar4 == CurThread) && (iVar5 == 0)) {
     bVar3 = true;
   }
   else {
@@ -970,7 +978,7 @@ void __thiscall tlAtomicReadWriteMutex::ReadLock(tlAtomicReadWriteMutex *this)
       LOCK();
       uVar2 = local_18->WriteThreadId;
       if (uVar2 == 0) {
-        local_18->WriteThreadId = CONCAT44(local_8,local_c);
+        local_18->WriteThreadId = CONCAT44(local_8,CurThread);
       }
       else {
         iVar6 = (int)(uVar2 >> 0x20);
@@ -988,9 +996,9 @@ void __thiscall tlAtomicReadWriteMutex::ReadLock(tlAtomicReadWriteMutex *this)
       local_20 = this->ThisPtr;
       LOCK();
       uVar2 = local_20->WriteThreadId;
-      if (CONCAT44(local_8,local_c) == uVar2) {
+      if (CONCAT44(local_8,CurThread) == uVar2) {
         local_20->WriteThreadId = 0;
-        DVar4 = local_c;
+        DVar4 = CurThread;
         iVar5 = local_8;
       }
       else {
@@ -998,7 +1006,7 @@ void __thiscall tlAtomicReadWriteMutex::ReadLock(tlAtomicReadWriteMutex *this)
         iVar5 = (int)(uVar2 >> 0x20);
       }
       UNLOCK();
-      if ((DVar4 == local_c) && (iVar5 == local_8)) {
+      if ((DVar4 == CurThread) && (iVar5 == local_8)) {
         bVar3 = true;
       }
       else {
@@ -1023,10 +1031,10 @@ void __thiscall tlAtomicReadWriteMutex::WriteUnlock(tlAtomicReadWriteMutex *this
   int iVar4;
   LONG local_14;
   int *local_10;
-  DWORD local_c;
+  DWORD CurThread;
   int local_8;
   
-  local_c = GetCurrentThreadId();
+  CurThread = GetCurrentThreadId();
   local_8 = 0;
   local_10 = &this->ThisPtr->WriteLockCount;
   LOCK();
@@ -1039,9 +1047,9 @@ void __thiscall tlAtomicReadWriteMutex::WriteUnlock(tlAtomicReadWriteMutex *this
     do {
       LOCK();
       uVar1 = this->ThisPtr->WriteThreadId;
-      if (CONCAT44(local_8,local_c) == uVar1) {
+      if (CONCAT44(local_8,CurThread) == uVar1) {
         this->ThisPtr->WriteThreadId = 0;
-        DVar3 = local_c;
+        DVar3 = CurThread;
         iVar4 = local_8;
       }
       else {
@@ -1049,7 +1057,7 @@ void __thiscall tlAtomicReadWriteMutex::WriteUnlock(tlAtomicReadWriteMutex *this
         iVar4 = (int)(uVar1 >> 0x20);
       }
       UNLOCK();
-      if ((DVar3 == local_c) && (iVar4 == local_8)) {
+      if ((DVar3 == CurThread) && (iVar4 == local_8)) {
         bVar2 = true;
       }
       else {

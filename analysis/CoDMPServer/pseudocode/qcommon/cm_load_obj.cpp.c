@@ -5,21 +5,24 @@
 void __cdecl CMod_LoadMaterials(void)
 
 {
+  void *src;
   void *pvVar1;
-  void *pvVar2;
-  uint local_c;
-  uint local_8;
+  int extra_material_count;
+  uint allocSize;
+  dmaterial_t *in;
+  uint matIndex;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_MATERIALS,0x48,&local_8);
-  if (local_8 == 0) {
+  src = Com_GetBspLump(LUMP_MATERIALS,0x48,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map with no materials");
   }
-  pvVar2 = CM_Hunk_Alloc((local_8 + 1) * 0x48,"CMod_LoadMaterials",0x1a);
-  cm.materials = (dmaterial_t *)((int)pvVar2 + 0x48);
-  cm.numMaterials = local_8;
-  Com_Memcpy(cm.materials,pvVar1,local_8 * 0x48);
-  for (local_c = 0; local_c < cm.numMaterials; local_c = local_c + 1) {
-    cm.materials[local_c].contentFlags = cm.materials[local_c].contentFlags & 0xdffffffb;
+  pvVar1 = CM_Hunk_Alloc((count + 1) * 0x48,"CMod_LoadMaterials",0x1a);
+  cm.materials = (dmaterial_t *)((int)pvVar1 + 0x48);
+  cm.numMaterials = count;
+  Com_Memcpy(cm.materials,src,count * 0x48);
+  for (matIndex = 0; matIndex < cm.numMaterials; matIndex = matIndex + 1) {
+    cm.materials[matIndex].contentFlags = cm.materials[matIndex].contentFlags & 0xdffffffb;
   }
   return;
 }
@@ -31,6 +34,7 @@ cLeafBrushNode_s * __cdecl CMod_AllocLeafBrushNode(void)
 
 {
   cLeafBrushNode_s *pcVar1;
+  cLeafBrushNode_s *leafBrushNode;
   
   pcVar1 = (cLeafBrushNode_s *)TempMalloc(0x14);
   pcVar1->axis = '\0';
@@ -54,49 +58,50 @@ void __cdecl CMod_LoadSubmodels(void)
   cmodel_t *pcVar2;
   float fVar3;
   float local_48;
-  int local_30;
-  void *local_24;
-  float local_20;
-  ushort local_1c;
-  phys_vec3 local_18;
-  uint local_8;
+  int j;
+  cmodel_t *out;
+  uint allocSize;
+  DiskBrushModel *in;
+  uint bmodelIndex;
+  int firstCollAabbIndex;
+  uint count;
+  int collAabbCount;
   
-  local_24 = Com_GetBspLump(LUMP_MODELS,0x2c,(uint *)&local_18.w);
-  if (local_18.w == 0.0) {
+  in = Com_GetBspLump(LUMP_MODELS,0x2c,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map with no brush models (should at least have the world model)");
   }
-  cm.cmodels = CM_Hunk_Alloc((int)local_18.w * 0x48,"CMod_LoadSubmodels",0x1b);
-  cm.numSubModels = (uint)local_18.w;
-  if (0x3fff < (uint)local_18.w) {
+  cm.cmodels = CM_Hunk_Alloc(count * 0x48,"CMod_LoadSubmodels",0x1b);
+  cm.numSubModels = count;
+  if (0x3fff < count) {
     Com_Error(ERR_DROP,"\x15MAX_SUBMODELS exceeded");
   }
-  for (local_20 = 0.0; pcVar2 = cm.cmodels, (uint)local_20 < (uint)local_18.w;
-      local_20 = (float)((int)local_20 + 1)) {
-    for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {
-      pcVar2[(int)local_20].mins[local_30] = *(float *)((int)local_24 + local_30 * 4) - 1.0;
-      pcVar2[(int)local_20].maxs[local_30] = *(float *)((int)local_24 + local_30 * 4 + 0xc) + 1.0;
-      local_48 = ABS(pcVar2[(int)local_20].maxs[local_30]);
-      if (0.0 <= ABS(pcVar2[(int)local_20].mins[local_30]) - local_48) {
-        local_48 = ABS(pcVar2[(int)local_20].mins[local_30]);
+  for (bmodelIndex = 0; pcVar2 = cm.cmodels, bmodelIndex < count; bmodelIndex = bmodelIndex + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      pcVar2[bmodelIndex].mins[j] = in->mins[j] - 1.0;
+      pcVar2[bmodelIndex].maxs[j] = in->maxs[j] + 1.0;
+      local_48 = ABS(pcVar2[bmodelIndex].maxs[j]);
+      if (0.0 <= ABS(pcVar2[bmodelIndex].mins[j]) - local_48) {
+        local_48 = ABS(pcVar2[bmodelIndex].mins[j]);
       }
-      (&local_18.x)[local_30] = local_48;
+      *(float *)(&stack0xffffffe8 + j * 4) = local_48;
     }
-    fVar3 = Abs(&local_18);
-    pcVar2[(int)local_20].radius = fVar3;
-    if (local_20 != 0.0) {
-      local_8 = *(uint *)((int)local_24 + 0x20);
-      pcVar2[(int)local_20].leaf.collAabbCount = (ushort)local_8;
-      if (pcVar2[(int)local_20].leaf.collAabbCount != local_8) {
+    fVar3 = Abs((phys_vec3 *)&stack0xffffffe8);
+    pcVar2[bmodelIndex].radius = fVar3;
+    if (bmodelIndex != 0) {
+      collAabbCount = in->numSurfaces;
+      pcVar2[bmodelIndex].leaf.collAabbCount = (ushort)collAabbCount;
+      if ((uint)pcVar2[bmodelIndex].leaf.collAabbCount != collAabbCount) {
         Com_Error(ERR_DROP,"\x15CMod_LoadSubmodels: collAabbCount exceeded");
       }
-      uVar1 = *(uint *)((int)local_24 + 0x1c);
-      local_1c = (ushort)uVar1;
-      pcVar2[(int)local_20].leaf.firstCollAabbIndex = local_1c;
-      if (pcVar2[(int)local_20].leaf.firstCollAabbIndex != uVar1) {
+      uVar1 = in->firstSurface;
+      firstCollAabbIndex._0_2_ = (ushort)uVar1;
+      pcVar2[bmodelIndex].leaf.firstCollAabbIndex = (ushort)firstCollAabbIndex;
+      if (pcVar2[bmodelIndex].leaf.firstCollAabbIndex != uVar1) {
         Com_Error(ERR_DROP,"\x15CMod_LoadSubmodels: firstCollAabbIndex exceeded");
       }
     }
-    local_24 = (void *)((int)local_24 + 0x2c);
+    in = in + 1;
   }
   return;
 }
@@ -106,7 +111,7 @@ void __cdecl CMod_LoadSubmodels(void)
 
 float __cdecl
 CMod_GetPartitionScore
-          (ushort *param_1,int param_2,int param_3,float *param_4,float *param_5,float *param_6)
+          (ushort *leafBrushes,int numLeafBrushes,int axis,float *mins,float *maxs,float *dist)
 
 {
   ushort uVar1;
@@ -116,60 +121,62 @@ CMod_GetPartitionScore
   float local_38;
   float local_34;
   int local_30;
-  float local_24;
-  int local_20;
-  int local_1c;
-  float local_14;
-  int local_10;
+  float max;
+  int rightBrushCount;
+  int k;
+  cbrush_t *b;
+  float min;
+  int leftBrushCount;
+  int brushnum;
+  int score;
   
-  local_20 = -1;
-  local_10 = -1;
-  local_14 = -3.4028235e+38;
-  local_24 = 3.4028235e+38;
-  for (local_1c = 0; local_1c < param_2; local_1c = local_1c + 1) {
-    uVar1 = param_1[local_1c];
-    if (cm.brushes[uVar1].mins[param_3] < *param_6) {
-      if ((cm.brushes[uVar1].maxs[param_3] <= *param_6) &&
-         (local_10 = local_10 + 1, local_14 < cm.brushes[uVar1].maxs[param_3])) {
-        local_14 = cm.brushes[uVar1].maxs[param_3];
+  rightBrushCount = -1;
+  leftBrushCount = -1;
+  min = -3.4028235e+38;
+  max = 3.4028235e+38;
+  for (k = 0; k < numLeafBrushes; k = k + 1) {
+    uVar1 = leafBrushes[k];
+    if (cm.brushes[uVar1].mins[axis] < *dist) {
+      if ((cm.brushes[uVar1].maxs[axis] <= *dist) &&
+         (leftBrushCount = leftBrushCount + 1, min < cm.brushes[uVar1].maxs[axis])) {
+        min = cm.brushes[uVar1].maxs[axis];
       }
     }
     else {
-      local_20 = local_20 + 1;
-      if (cm.brushes[uVar1].mins[param_3] <= local_24 && local_24 != cm.brushes[uVar1].mins[param_3]
-         ) {
-        local_24 = cm.brushes[uVar1].mins[param_3];
+      rightBrushCount = rightBrushCount + 1;
+      if (cm.brushes[uVar1].mins[axis] <= max && max != cm.brushes[uVar1].mins[axis]) {
+        max = cm.brushes[uVar1].mins[axis];
       }
     }
   }
-  if ((*param_6 < local_14) &&
+  if ((*dist < min) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0xc3,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  if ((local_24 < *param_6) &&
+  if ((max < *dist) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0xc4,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  if (local_20 < local_10) {
-    local_30 = local_20;
+  if (rightBrushCount < leftBrushCount) {
+    local_30 = rightBrushCount;
   }
   else {
-    local_30 = local_10;
+    local_30 = leftBrushCount;
   }
-  *param_6 = (local_14 + local_24) * 0.5;
+  *dist = (min + max) * 0.5;
   if (local_30 < 1) {
     local_38 = 0.0;
   }
   else {
-    local_34 = param_5[param_3] - local_14;
-    if (0.0 <= local_34 - (local_24 - param_4[param_3])) {
-      local_34 = local_24 - param_4[param_3];
+    local_34 = maxs[axis] - min;
+    if (0.0 <= local_34 - (max - mins[axis])) {
+      local_34 = max - mins[axis];
     }
     local_38 = (float)local_30 * local_34;
   }
@@ -180,7 +187,7 @@ CMod_GetPartitionScore
 // 006AAC40  CMod_PartionLeafBrushes_r  (qcommon/cm_load_obj.cpp:212)
 
 cLeafBrushNode_s * __cdecl
-CMod_PartionLeafBrushes_r(ushort *param_1,int param_2,float *param_3,float *param_4)
+CMod_PartionLeafBrushes_r(ushort *leafBrushes,int numLeafBrushes,float *mins,float *maxs)
 
 {
   code *pcVar1;
@@ -189,27 +196,28 @@ CMod_PartionLeafBrushes_r(ushort *param_1,int param_2,float *param_3,float *para
   uint uVar4;
   float local_74;
   float local_70;
-  int local_60;
-  undefined2 local_5c;
-  float local_58;
-  int local_54;
-  byte local_4d;
-  int local_4c;
-  float local_48;
-  float local_44;
-  float local_40 [3];
-  cbrush_t *local_34;
-  float local_30;
-  ulong local_2c;
-  float local_28 [3];
-  cLeafBrushNode_s *local_1c;
-  uchar *local_18;
-  cLeafBrushNode_s *local_14;
-  uint local_10;
-  uint local_c;
-  float local_8;
+  cLeafBrushNode_s *node;
+  int side;
+  int nodeOffset;
+  float testDist;
+  int numLeafBrushesChild;
+  uchar testAxis;
+  int k;
+  float dist;
+  float range;
+  float childMaxs [3];
+  cbrush_t *b;
+  float bestScore;
+  int len;
+  float childMins [3];
+  cLeafBrushNode_s *childNode;
+  ushort *leafBrushesCopy;
+  cLeafBrushNode_s *returnNode;
+  int axis;
+  int brushnum;
+  float score;
   
-  if ((param_2 == 0) &&
+  if ((numLeafBrushes == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0xea,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -217,38 +225,38 @@ CMod_PartionLeafBrushes_r(ushort *param_1,int param_2,float *param_3,float *para
     return pcVar3;
   }
   pcVar3 = CMod_AllocLeafBrushNode();
-  local_30 = 0.0;
-  local_10 = 0xffffffff;
-  local_48 = 0.0;
-  for (local_4d = 0; local_4d < 3; local_4d = local_4d + 1) {
-    for (local_4c = 0; local_4c < param_2; local_4c = local_4c + 1) {
-      local_c = (uint)param_1[local_4c];
-      local_34 = cm.brushes + local_c;
-      local_58 = local_34->mins[local_4d];
-      local_8 = CMod_GetPartitionScore(param_1,param_2,(uint)local_4d,param_3,param_4,&local_58);
-      if (local_30 < local_8) {
-        local_10 = (uint)local_4d;
-        local_48 = local_58;
-        local_30 = local_8;
+  bestScore = 0.0;
+  axis = -1;
+  dist = 0.0;
+  for (testAxis = '\0'; testAxis < 3; testAxis = testAxis + '\x01') {
+    for (k = 0; k < numLeafBrushes; k = k + 1) {
+      brushnum = (int)leafBrushes[k];
+      b = cm.brushes + brushnum;
+      testDist = b->mins[testAxis];
+      score = CMod_GetPartitionScore(leafBrushes,numLeafBrushes,(uint)testAxis,mins,maxs,&testDist);
+      if (bestScore < score) {
+        axis = (int)testAxis;
+        dist = testDist;
+        bestScore = score;
       }
-      local_58 = local_34->maxs[local_4d];
-      local_8 = CMod_GetPartitionScore(param_1,param_2,(uint)local_4d,param_3,param_4,&local_58);
-      if (local_30 < local_8) {
-        local_10 = (uint)local_4d;
-        local_48 = local_58;
-        local_30 = local_8;
+      testDist = b->maxs[testAxis];
+      score = CMod_GetPartitionScore(leafBrushes,numLeafBrushes,(uint)testAxis,mins,maxs,&testDist);
+      if (bestScore < score) {
+        axis = (int)testAxis;
+        dist = testDist;
+        bestScore = score;
       }
     }
   }
-  if ((int)local_10 < 0) {
-    pcVar3->leafBrushCount = (short)param_2;
-    if (pcVar3->leafBrushCount != param_2) {
+  if (axis < 0) {
+    pcVar3->leafBrushCount = (short)numLeafBrushes;
+    if (pcVar3->leafBrushCount != numLeafBrushes) {
       Com_Error(ERR_DROP,"\x15CMod_PartionLeafBrushes_r: leafBrushCount exceeded");
     }
-    for (local_4c = 0; local_4c < param_2; local_4c = local_4c + 1) {
-      local_c = (uint)param_1[local_4c];
-      local_34 = cm.brushes + local_c;
-      pcVar3->contents = pcVar3->contents | local_34->contents;
+    for (k = 0; k < numLeafBrushes; k = k + 1) {
+      brushnum = (int)leafBrushes[k];
+      b = cm.brushes + brushnum;
+      pcVar3->contents = pcVar3->contents | b->contents;
     }
     if ((pcVar3->contents == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x11a
@@ -257,24 +265,24 @@ CMod_PartionLeafBrushes_r(ushort *param_1,int param_2,float *param_3,float *para
       pcVar3 = (cLeafBrushNode_s *)(*pcVar1)();
       return pcVar3;
     }
-    (pcVar3->data).leaf.brushes = param_1;
+    (pcVar3->data).leaf.brushes = leafBrushes;
   }
   else {
-    local_2c = param_2 << 1;
-    local_18 = CM_Hunk_AllocateTempMemoryHigh(local_2c,"CMod_PartionLeafBrushes_r");
-    memcpy(local_18,(uchar *)param_1,local_2c);
-    local_54 = 0;
-    for (local_4c = 0; local_4c < param_2; local_4c = local_4c + 1) {
-      local_c = (uint)*(ushort *)(local_18 + local_4c * 2);
-      local_34 = cm.brushes + local_c;
-      if ((local_34->mins[local_10] < local_48) && (local_48 < local_34->maxs[local_10])) {
-        param_1[local_54] = *(ushort *)(local_18 + local_4c * 2);
-        local_54 = local_54 + 1;
+    len = numLeafBrushes << 1;
+    leafBrushesCopy = CM_Hunk_AllocateTempMemoryHigh(len,"CMod_PartionLeafBrushes_r");
+    memcpy((uchar *)leafBrushesCopy,(uchar *)leafBrushes,len);
+    numLeafBrushesChild = 0;
+    for (k = 0; k < numLeafBrushes; k = k + 1) {
+      brushnum = (int)leafBrushesCopy[k];
+      b = cm.brushes + brushnum;
+      if ((b->mins[axis] < dist) && (dist < b->maxs[axis])) {
+        leafBrushes[numLeafBrushesChild] = leafBrushesCopy[k];
+        numLeafBrushesChild = numLeafBrushesChild + 1;
       }
     }
-    if (local_54 != 0) {
-      local_14 = CMod_PartionLeafBrushes_r(param_1,local_54,param_3,param_4);
-      if ((local_14 != pcVar3 + 1) &&
+    if (numLeafBrushesChild != 0) {
+      returnNode = CMod_PartionLeafBrushes_r(leafBrushes,numLeafBrushesChild,mins,maxs);
+      if ((returnNode != pcVar3 + 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",
                                    0x135,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -282,68 +290,68 @@ CMod_PartionLeafBrushes_r(ushort *param_1,int param_2,float *param_3,float *para
         return pcVar3;
       }
       pcVar3->leafBrushCount = -1;
-      pcVar3->contents = local_14->contents;
-      param_1 = param_1 + local_54;
+      pcVar3->contents = returnNode->contents;
+      leafBrushes = leafBrushes + numLeafBrushesChild;
     }
-    local_44 = 3.4028235e+38;
-    pcVar3->axis = (uchar)local_10;
-    (pcVar3->data).children.dist = local_48;
-    for (local_60 = 0; local_60 < 2; local_60 = local_60 + 1) {
-      local_54 = 0;
-      for (local_4c = 0; local_4c < param_2; local_4c = local_4c + 1) {
-        local_c = (uint)*(ushort *)(local_18 + local_4c * 2);
-        local_34 = cm.brushes + local_c;
-        if (local_60 == 0) {
-          if (local_48 < local_34->mins[local_10] || local_48 == local_34->mins[local_10]) {
-            local_70 = local_34->mins[local_10] - local_48;
-            if (0.0 <= local_70 - local_44) {
-              local_70 = local_44;
+    range = 3.4028235e+38;
+    pcVar3->axis = (uchar)axis;
+    (pcVar3->data).children.dist = dist;
+    for (side = 0; side < 2; side = side + 1) {
+      numLeafBrushesChild = 0;
+      for (k = 0; k < numLeafBrushes; k = k + 1) {
+        brushnum = (int)leafBrushesCopy[k];
+        b = cm.brushes + brushnum;
+        if (side == 0) {
+          if (dist < b->mins[axis] || dist == b->mins[axis]) {
+            local_70 = b->mins[axis] - dist;
+            if (0.0 <= local_70 - range) {
+              local_70 = range;
             }
-            local_44 = local_70;
+            range = local_70;
 LAB_006ab0cf:
-            param_1[local_54] = *(ushort *)(local_18 + local_4c * 2);
-            local_54 = local_54 + 1;
+            leafBrushes[numLeafBrushesChild] = leafBrushesCopy[k];
+            numLeafBrushesChild = numLeafBrushesChild + 1;
           }
         }
-        else if (local_34->maxs[local_10] <= local_48) {
-          local_74 = local_48 - local_34->maxs[local_10];
-          if (0.0 <= local_74 - local_44) {
-            local_74 = local_44;
+        else if (b->maxs[axis] <= dist) {
+          local_74 = dist - b->maxs[axis];
+          if (0.0 <= local_74 - range) {
+            local_74 = range;
           }
-          local_44 = local_74;
+          range = local_74;
           goto LAB_006ab0cf;
         }
       }
-      if ((local_54 == 0) &&
+      if ((numLeafBrushesChild == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",
                                    0x15c,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pcVar3 = (cLeafBrushNode_s *)(*pcVar1)();
         return pcVar3;
       }
-      local_28[0] = *param_3;
-      local_28[1] = param_3[1];
-      local_28[2] = param_3[2];
-      local_40[0] = *param_4;
-      local_40[1] = param_4[1];
-      local_40[2] = param_4[2];
-      if (local_60 == 0) {
-        local_28[local_10] = local_48 + local_44;
+      childMins[0] = *mins;
+      childMins[1] = mins[1];
+      childMins[2] = mins[2];
+      childMaxs[0] = *maxs;
+      childMaxs[1] = maxs[1];
+      childMaxs[2] = maxs[2];
+      if (side == 0) {
+        childMins[axis] = dist + range;
       }
       else {
-        local_40[local_10] = local_48 - local_44;
+        childMaxs[axis] = dist - range;
       }
-      local_1c = CMod_PartionLeafBrushes_r(param_1,local_54,local_28,local_40);
-      uVar4 = ((int)local_1c - (int)pcVar3) / 0x14;
-      local_5c = (undefined2)uVar4;
-      *(undefined2 *)((int)&pcVar3->data + local_60 * 2 + 8) = local_5c;
-      if (*(ushort *)((int)&pcVar3->data + local_60 * 2 + 8) != uVar4) {
+      childNode = CMod_PartionLeafBrushes_r(leafBrushes,numLeafBrushesChild,childMins,childMaxs);
+      uVar4 = ((int)childNode - (int)pcVar3) / 0x14;
+      nodeOffset._0_2_ = (undefined2)uVar4;
+      *(undefined2 *)((int)&pcVar3->data + side * 2 + 8) = (undefined2)nodeOffset;
+      if (*(ushort *)((int)&pcVar3->data + side * 2 + 8) != uVar4) {
         Com_Error(ERR_DROP,"\x15CMod_PartionLeafBrushes_r: child exceeded");
       }
-      pcVar3->contents = pcVar3->contents | local_1c->contents;
-      param_1 = param_1 + local_54;
+      pcVar3->contents = pcVar3->contents | childNode->contents;
+      leafBrushes = leafBrushes + numLeafBrushesChild;
     }
-    (pcVar3->data).children.range = local_44;
+    (pcVar3->data).children.range = range;
   }
   return pcVar3;
 }
@@ -351,21 +359,21 @@ LAB_006ab0cf:
 
 // 006AAA10  CMod_PartionLeafBrushes  (qcommon/cm_load_obj.cpp:381)
 
-void __cdecl CMod_PartionLeafBrushes(ushort *param_1,int param_2,cLeaf_s *param_3)
+void __cdecl CMod_PartionLeafBrushes(ushort *leafBrushes,int numLeafBrushes,cLeaf_s *leaf)
 
 {
   code *pcVar1;
   bool bVar2;
   cLeafBrushNode_s *pcVar3;
-  int local_2c;
-  float local_28 [3];
-  int local_1c;
-  cbrush_t *local_18;
-  float local_14 [3];
-  uint local_8;
+  int j;
+  float mins [3];
+  int k;
+  cbrush_t *b;
+  float maxs [3];
+  int brushnum;
   
-  if (param_2 == 0) {
-    if ((param_3->leafBrushNode != 0) &&
+  if (numLeafBrushes == 0) {
+    if ((leaf->leafBrushNode != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x187
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -374,39 +382,37 @@ void __cdecl CMod_PartionLeafBrushes(ushort *param_1,int param_2,cLeaf_s *param_
     }
   }
   else {
-    local_28[0] = 3.4028235e+38;
-    local_28[1] = 3.4028235e+38;
-    local_28[2] = 3.4028235e+38;
-    local_14[0] = -3.4028235e+38;
-    local_14[1] = -3.4028235e+38;
-    local_14[2] = -3.4028235e+38;
-    for (local_1c = 0; local_1c < param_2; local_1c = local_1c + 1) {
-      local_8 = (uint)param_1[local_1c];
-      local_18 = cm.brushes + local_8;
-      for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-        if (local_18->mins[local_2c] <= local_28[local_2c] &&
-            local_28[local_2c] != local_18->mins[local_2c]) {
-          local_28[local_2c] = local_18->mins[local_2c];
+    mins[0] = 3.4028235e+38;
+    mins[1] = 3.4028235e+38;
+    mins[2] = 3.4028235e+38;
+    maxs[0] = -3.4028235e+38;
+    maxs[1] = -3.4028235e+38;
+    maxs[2] = -3.4028235e+38;
+    for (k = 0; k < numLeafBrushes; k = k + 1) {
+      brushnum = (int)leafBrushes[k];
+      b = cm.brushes + brushnum;
+      for (j = 0; j < 3; j = j + 1) {
+        if (b->mins[j] <= mins[j] && mins[j] != b->mins[j]) {
+          mins[j] = b->mins[j];
         }
-        if (local_14[local_2c] <= local_18->maxs[local_2c] &&
-            local_18->maxs[local_2c] != local_14[local_2c]) {
-          local_14[local_2c] = local_18->maxs[local_2c];
+        if (maxs[j] <= b->maxs[j] && b->maxs[j] != maxs[j]) {
+          maxs[j] = b->maxs[j];
         }
       }
     }
-    param_3->mins[0] = local_28[0];
-    param_3->mins[1] = local_28[1];
-    param_3->mins[2] = local_28[2];
-    param_3->maxs[0] = local_14[0];
-    param_3->maxs[1] = local_14[1];
-    param_3->maxs[2] = local_14[2];
-    for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-      param_3->mins[local_2c] = param_3->mins[local_2c] - 0.125;
-      param_3->maxs[local_2c] = param_3->maxs[local_2c] + 0.125;
+    leaf->mins[0] = mins[0];
+    leaf->mins[1] = mins[1];
+    leaf->mins[2] = mins[2];
+    leaf->maxs[0] = maxs[0];
+    leaf->maxs[1] = maxs[1];
+    leaf->maxs[2] = maxs[2];
+    for (j = 0; j < 3; j = j + 1) {
+      leaf->mins[j] = leaf->mins[j] - 0.125;
+      leaf->maxs[j] = leaf->maxs[j] + 0.125;
     }
     CM_Hunk_CheckTempMemoryHighClear();
-    pcVar3 = CMod_PartionLeafBrushes_r(param_1,param_2,local_28,local_14);
-    param_3->leafBrushNode = ((int)pcVar3 - (int)cm.leafbrushNodes) / 0x14;
+    pcVar3 = CMod_PartionLeafBrushes_r(leafBrushes,numLeafBrushes,mins,maxs);
+    leaf->leafBrushNode = ((int)pcVar3 - (int)cm.leafbrushNodes) / 0x14;
     CM_Hunk_ClearTempMemoryHigh();
   }
   return;
@@ -415,19 +421,19 @@ void __cdecl CMod_PartionLeafBrushes(ushort *param_1,int param_2,cLeaf_s *param_
 
 // 006AB480  CMod_GetLeafTerrainContents  (qcommon/cm_load_obj.cpp:432)
 
-int __cdecl CMod_GetLeafTerrainContents(cLeaf_s *param_1)
+int __cdecl CMod_GetLeafTerrainContents(cLeaf_s *leaf)
 
 {
-  uint local_c;
-  int local_8;
+  int contents;
+  int k;
   
-  local_c = 0;
-  for (local_8 = 0; local_8 < (int)(uint)param_1->collAabbCount; local_8 = local_8 + 1) {
-    local_c = local_c | cm.materials
-                        [cm.aabbTrees[(uint)param_1->firstCollAabbIndex + local_8].materialIndex].
-                        contentFlags;
+  contents = 0;
+  for (k = 0; k < (int)(uint)leaf->collAabbCount; k = k + 1) {
+    contents = contents |
+               cm.materials[cm.aabbTrees[(uint)leaf->firstCollAabbIndex + k].materialIndex].
+               contentFlags;
   }
-  return local_c;
+  return contents;
 }
 
 
@@ -436,48 +442,52 @@ int __cdecl CMod_GetLeafTerrainContents(cLeaf_s *param_1)
 void __cdecl CMod_LoadSubmodelBrushNodes(void)
 
 {
-  int iVar1;
-  code *pcVar2;
-  cmodel_t *pcVar3;
-  bool bVar4;
-  void *pvVar5;
-  ushort *puVar6;
-  int iVar7;
-  uint local_28;
-  int local_1c;
-  void *local_18;
-  uint local_14;
-  uint local_c;
-  uint local_8;
+  int numLeafBrushes_00;
+  code *pcVar1;
+  cmodel_t *pcVar2;
+  bool bVar3;
+  DiskBrushModel *pDVar4;
+  ushort *leafBrushes;
+  int iVar5;
+  int contents;
+  cmodel_t *out;
+  int numLeafBrushes;
+  int leafBrushIndex;
+  DiskBrushModel *in;
+  uint bmodelIndex;
+  ushort *indexes;
+  uint count;
+  int firstBrush;
   
-  pvVar5 = Com_GetBspLump(LUMP_MODELS,0x2c,&local_c);
-  if (local_c != cm.numSubModels) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x1cf,0,
+  pDVar4 = Com_GetBspLump(LUMP_MODELS,0x2c,&count);
+  if (count != cm.numSubModels) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x1cf,0,
                              "count == cm.numSubModels\n\t%i, %i");
-    if (!bVar4) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar3) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  for (local_14 = 1; pcVar3 = cm.cmodels, local_18 = (void *)((int)pvVar5 + 0x2c),
-      local_14 < cm.numSubModels; local_14 = local_14 + 1) {
-    iVar1 = *(int *)((int)pvVar5 + 0x54);
-    puVar6 = CM_Hunk_Alloc(iVar1 << 1,"CMod_LoadSubmodelBrushNodes",0x1b);
-    local_28 = 0;
-    for (local_1c = 0; local_1c < iVar1; local_1c = local_1c + 1) {
-      local_8 = *(int *)((int)pvVar5 + 0x50) + local_1c;
-      puVar6[local_1c] = (ushort)local_8;
-      if (puVar6[local_1c] != local_8) {
+  for (bmodelIndex = 1; pcVar2 = cm.cmodels, in = pDVar4 + 1, bmodelIndex < cm.numSubModels;
+      bmodelIndex = bmodelIndex + 1) {
+    numLeafBrushes_00 = pDVar4[1].numBrushes;
+    leafBrushes = CM_Hunk_Alloc(numLeafBrushes_00 << 1,"CMod_LoadSubmodelBrushNodes",0x1b);
+    contents = 0;
+    for (leafBrushIndex = 0; leafBrushIndex < numLeafBrushes_00; leafBrushIndex = leafBrushIndex + 1
+        ) {
+      firstBrush = pDVar4[1].firstBrush + leafBrushIndex;
+      leafBrushes[leafBrushIndex] = (ushort)firstBrush;
+      if ((uint)leafBrushes[leafBrushIndex] != firstBrush) {
         Com_Error(ERR_DROP,"\x15CMod_LoadSubmodelBrushNodes: leafBrushes exceeded");
       }
-      local_28 = local_28 | cm.brushes[local_8].contents;
+      contents = contents | cm.brushes[firstBrush].contents;
     }
-    pcVar3[local_14].leaf.brushContents = local_28;
-    iVar7 = CMod_GetLeafTerrainContents(&pcVar3[local_14].leaf);
-    pcVar3[local_14].leaf.terrainContents = iVar7;
-    CMod_PartionLeafBrushes(puVar6,iVar1,&pcVar3[local_14].leaf);
-    pvVar5 = local_18;
+    pcVar2[bmodelIndex].leaf.brushContents = contents;
+    iVar5 = CMod_GetLeafTerrainContents(&pcVar2[bmodelIndex].leaf);
+    pcVar2[bmodelIndex].leaf.terrainContents = iVar5;
+    CMod_PartionLeafBrushes(leafBrushes,numLeafBrushes_00,&pcVar2[bmodelIndex].leaf);
+    pDVar4 = in;
   }
   return;
 }
@@ -489,32 +499,33 @@ void __cdecl CMod_LoadNodes(void)
 
 {
   int iVar1;
-  int local_20;
-  cNode_t *local_1c;
-  int *local_14;
-  uint local_10;
-  short local_c;
-  uint local_8;
+  int j;
+  cNode_t *out;
+  uint allocSize;
+  dnode_t *in;
+  uint nodeIter;
+  int child;
+  uint count;
   
-  local_14 = Com_GetBspLump(LUMP_NODES,0x24,&local_8);
-  if (local_8 == 0) {
+  in = Com_GetBspLump(LUMP_NODES,0x24,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map has no nodes");
   }
-  cm.nodes = CM_Hunk_Alloc(local_8 << 3,"CMod_LoadNodes",0x1a);
-  cm.numNodes = local_8;
-  local_1c = cm.nodes;
-  for (local_10 = 0; local_10 < local_8; local_10 = local_10 + 1) {
-    local_1c->plane = cm.planes + *local_14;
-    for (local_20 = 0; local_20 < 2; local_20 = local_20 + 1) {
-      iVar1 = local_14[local_20 + 1];
-      local_c = (short)iVar1;
-      local_1c->children[local_20] = local_c;
-      if (local_1c->children[local_20] != iVar1) {
+  cm.nodes = CM_Hunk_Alloc(count << 3,"CMod_LoadNodes",0x1a);
+  cm.numNodes = count;
+  out = cm.nodes;
+  for (nodeIter = 0; nodeIter < count; nodeIter = nodeIter + 1) {
+    out->plane = cm.planes + in->planeNum;
+    for (j = 0; j < 2; j = j + 1) {
+      iVar1 = in->children[j];
+      child._0_2_ = (short)iVar1;
+      out->children[j] = (short)child;
+      if (out->children[j] != iVar1) {
         Com_Error(ERR_DROP,"\x15CMod_LoadNodes: children exceeded");
       }
     }
-    local_1c = local_1c + 1;
-    local_14 = local_14 + 9;
+    out = out + 1;
+    in = in + 1;
   }
   return;
 }
@@ -528,89 +539,93 @@ void __cdecl CMod_LoadBrushes(void)
 
 {
   byte bVar1;
-  uchar *puVar2;
+  uchar *src;
   cbrushside_t *local_64;
-  cbrushside_t *local_58;
-  uint local_54;
-  cbrush_t *local_50;
-  short *local_4c;
-  float (*local_48) [3];
-  int local_44;
-  uint local_40 [2];
-  float *local_38;
-  uint local_34;
-  int local_30;
-  ulong local_2c;
-  int local_24;
-  uint local_20;
-  int local_1c;
-  byte *local_18;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  int nverts;
+  cbrushside_t *outSides;
+  uint vertsCount;
+  cbrush_t *outBrush;
+  dbrush_t *inBrush;
+  float (*outVerts) [3];
+  uint allocSizeSides;
+  uint brushCount;
+  float sign;
+  dbrushside_t *inSides;
+  uint brushVertsCounts;
+  int countAllocatedBrushes;
+  int allocSizeBrushVerts;
+  uint materialNum;
+  uint allocSizeBrushes;
+  uint axisIter;
+  int index;
+  uchar *inVertsCounts;
+  int num;
+  uint sideIter;
+  uint sidesCount;
+  uint brushIter;
   
-  local_4c = Com_GetBspLump(LUMP_BRUSHES,4,local_40);
-  local_38 = Com_GetBspLump(LUMP_BRUSHSIDES,8,&local_c);
-  puVar2 = Com_GetBspLump(LUMP_BRUSHVERTS,0xc,&local_54);
-  local_18 = Com_GetBspLump(LUMP_BRUSHVERTSCOUNTS,1,&local_34);
-  if (local_34 != local_40[0]) {
+  inBrush = Com_GetBspLump(LUMP_BRUSHES,4,&brushCount);
+  inSides = Com_GetBspLump(LUMP_BRUSHSIDES,8,&sidesCount);
+  src = Com_GetBspLump(LUMP_BRUSHVERTS,0xc,&vertsCount);
+  inVertsCounts = Com_GetBspLump(LUMP_BRUSHVERTSCOUNTS,1,&brushVertsCounts);
+  if (brushVertsCounts != brushCount) {
     Com_Error(ERR_DROP,"\x15CMod_LoadBrushes: bad number of brush verts counts: %i != %i");
   }
-  local_c = local_c + local_40[0] * -6;
-  local_44 = local_c * 0xc;
-  if (local_c == 0) {
+  sidesCount = sidesCount + brushCount * -6;
+  allocSizeSides = sidesCount * 0xc;
+  if (sidesCount == 0) {
     local_64 = (cbrushside_t *)0x0;
   }
   else {
-    local_64 = CM_Hunk_Alloc(local_44,"CMod_LoadBrushSides",0x1b);
+    local_64 = CM_Hunk_Alloc(allocSizeSides,"CMod_LoadBrushSides",0x1b);
   }
   cm.brushsides = local_64;
-  cm.numBrushSides = local_c;
-  local_58 = local_64;
-  local_30 = local_40[0] + 1;
-  local_24 = local_30 * 0x60;
-  cm.brushes = CM_Hunk_Alloc(local_24,"CMod_LoadBrushes",0x1b);
-  cm.numBrushes = (ushort)local_40[0];
-  if ((local_40[0] & 0xffff) != local_40[0]) {
+  cm.numBrushSides = sidesCount;
+  outSides = local_64;
+  countAllocatedBrushes = brushCount + 1;
+  allocSizeBrushes = countAllocatedBrushes * 0x60;
+  cm.brushes = CM_Hunk_Alloc(allocSizeBrushes,"CMod_LoadBrushes",0x1b);
+  cm.numBrushes = (ushort)brushCount;
+  if ((brushCount & 0xffff) != brushCount) {
     Com_Error(ERR_DROP,"\x15CMod_LoadBrushes: cm.numBrushes exceeded");
   }
-  local_2c = local_54 * 0xc;
-  cm.brushVerts = CM_Hunk_Alloc(local_2c,"CMod_LoadBrushes",0x1b);
-  memcpy((uchar *)cm.brushVerts,puVar2,local_2c);
-  cm.numBrushVerts = local_54;
-  local_48 = cm.brushVerts;
-  local_50 = cm.brushes;
-  for (local_8 = 0; local_8 < local_40[0]; local_8 = local_8 + 1) {
-    local_50->numsides = (int)*local_4c - 6;
-    bVar1 = *local_18;
-    local_50->numverts = (uint)bVar1;
-    local_50->verts = local_48;
-    local_48 = local_48 + bVar1;
-    local_50->sides = (cbrushside_t *)(-(uint)(local_50->numsides != 0) & (uint)local_58);
-    for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-      for (local_1c = 0; local_1c < 2; local_1c = local_1c + 1) {
-        if (local_1c == 0) {
-          local_50->mins[local_20] = *local_38;
+  allocSizeBrushVerts = vertsCount * 0xc;
+  cm.brushVerts = CM_Hunk_Alloc(allocSizeBrushVerts,"CMod_LoadBrushes",0x1b);
+  memcpy((uchar *)cm.brushVerts,src,allocSizeBrushVerts);
+  cm.numBrushVerts = vertsCount;
+  outVerts = cm.brushVerts;
+  outBrush = cm.brushes;
+  for (brushIter = 0; brushIter < brushCount; brushIter = brushIter + 1) {
+    outBrush->numsides = (int)inBrush->numSides - 6;
+    bVar1 = *inVertsCounts;
+    outBrush->numverts = (uint)bVar1;
+    outBrush->verts = outVerts;
+    outVerts = outVerts + bVar1;
+    outBrush->sides = (cbrushside_t *)(-(uint)(outBrush->numsides != 0) & (uint)outSides);
+    for (axisIter = 0; axisIter < 3; axisIter = axisIter + 1) {
+      for (index = 0; index < 2; index = index + 1) {
+        if (index == 0) {
+          *(<unnamed_type_u> *)(outBrush->mins + axisIter) = inSides->u;
         }
         else {
-          local_50->maxs[local_20] = *local_38;
+          *(<unnamed_type_u> *)(outBrush->maxs + axisIter) = inSides->u;
         }
-        local_50->axial_cflags[local_1c][local_20] = cm.materials[(int)local_38[1]].contentFlags;
-        local_50->axial_sflags[local_1c][local_20] = cm.materials[(int)local_38[1]].surfaceFlags;
-        local_38 = local_38 + 2;
+        outBrush->axial_cflags[index][axisIter] = cm.materials[inSides->materialNum].contentFlags;
+        outBrush->axial_sflags[index][axisIter] = cm.materials[inSides->materialNum].surfaceFlags;
+        inSides = inSides + 1;
       }
     }
-    for (local_10 = 0; local_10 < local_50->numsides; local_10 = local_10 + 1) {
-      local_58->plane = cm.planes + (int)*local_38;
-      local_58->cflags = cm.materials[(int)local_38[1]].contentFlags;
-      local_58->sflags = cm.materials[(int)local_38[1]].surfaceFlags;
-      local_38 = local_38 + 2;
-      local_58 = local_58 + 1;
+    for (sideIter = 0; sideIter < outBrush->numsides; sideIter = sideIter + 1) {
+      outSides->plane = cm.planes + (inSides->u).planeNum;
+      outSides->cflags = cm.materials[inSides->materialNum].contentFlags;
+      outSides->sflags = cm.materials[inSides->materialNum].surfaceFlags;
+      inSides = inSides + 1;
+      outSides = outSides + 1;
     }
-    local_50->contents = cm.materials[local_4c[1]].contentFlags;
-    local_50 = local_50 + 1;
-    local_4c = local_4c + 2;
-    local_18 = local_18 + 1;
+    outBrush->contents = cm.materials[inBrush->materialNum].contentFlags;
+    outBrush = outBrush + 1;
+    inBrush = inBrush + 1;
+    inVertsCounts = inVertsCounts + 1;
   }
   return;
 }
@@ -618,50 +633,51 @@ void __cdecl CMod_LoadBrushes(void)
 
 // 006AB860  CMod_LoadLeafs  (qcommon/cm_load_obj.cpp:645)
 
-void __cdecl CMod_LoadLeafs(bool param_1)
+void __cdecl CMod_LoadLeafs(bool usePvs)
 
 {
   uint uVar1;
-  cLeaf_s *local_24;
-  int local_20;
-  uint local_1c;
-  int *local_14;
-  ushort local_10;
-  uint local_c;
-  uint local_8;
+  cLeaf_s *out;
+  int cluster;
+  uint leafIter;
+  uint allocSize;
+  DiskLeaf *in;
+  int firstCollAabbIndex;
+  uint count;
+  int collAabbCount;
   
-  local_14 = Com_GetBspLump(LUMP_LEAFS,0x18,&local_c);
-  if (local_c == 0) {
+  in = Com_GetBspLump(LUMP_LEAFS,0x18,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map with no leafs");
   }
-  cm.leafs = CM_Hunk_Alloc(local_c * 0x2c,"CMod_LoadLeafs",0x1a);
-  cm.numLeafs = local_c;
-  local_20 = 0;
-  local_24 = cm.leafs;
-  for (local_1c = 0; local_1c < local_c; local_1c = local_1c + 1) {
-    if (param_1) {
-      local_20 = *local_14;
-      local_24->cluster = (short)local_20;
-      if (local_24->cluster != local_20) {
+  cm.leafs = CM_Hunk_Alloc(count * 0x2c,"CMod_LoadLeafs",0x1a);
+  cm.numLeafs = count;
+  cluster = 0;
+  out = cm.leafs;
+  for (leafIter = 0; leafIter < count; leafIter = leafIter + 1) {
+    if (usePvs) {
+      cluster = in->cluster;
+      out->cluster = (short)cluster;
+      if (out->cluster != cluster) {
         Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: cluster exceeded");
       }
     }
-    uVar1 = local_14[1];
-    local_10 = (ushort)uVar1;
-    local_24->firstCollAabbIndex = local_10;
-    if (local_24->firstCollAabbIndex != uVar1) {
+    uVar1 = in->firstCollAabbIndex;
+    firstCollAabbIndex._0_2_ = (ushort)uVar1;
+    out->firstCollAabbIndex = (ushort)firstCollAabbIndex;
+    if (out->firstCollAabbIndex != uVar1) {
       Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: firstCollAabbIndex exceeded");
     }
-    local_8 = local_14[2];
-    local_24->collAabbCount = (ushort)local_8;
-    if (local_24->collAabbCount != local_8) {
+    collAabbCount = in->collAabbCount;
+    out->collAabbCount = (ushort)collAabbCount;
+    if ((uint)out->collAabbCount != collAabbCount) {
       Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: collAabbCount exceeded");
     }
-    if ((param_1) && (cm.numClusters <= local_20)) {
-      cm.numClusters = local_20 + 1;
+    if ((usePvs) && (cm.numClusters <= cluster)) {
+      cm.numClusters = cluster + 1;
     }
-    local_14 = local_14 + 6;
-    local_24 = local_24 + 1;
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -669,50 +685,51 @@ void __cdecl CMod_LoadLeafs(bool param_1)
 
 // 006AB9B0  CMod_LoadLeafs_Version14  (qcommon/cm_load_obj.cpp:699)
 
-void __cdecl CMod_LoadLeafs_Version14(bool param_1)
+void __cdecl CMod_LoadLeafs_Version14(bool usePvs)
 
 {
   uint uVar1;
-  cLeaf_s *local_24;
-  int local_20;
-  uint local_1c;
-  int *local_14;
-  ushort local_10;
-  uint local_c;
-  uint local_8;
+  cLeaf_s *out;
+  int cluster;
+  uint leafIter;
+  uint allocSize;
+  DiskLeaf_Version14 *in;
+  int firstCollAabbIndex;
+  uint count;
+  int collAabbCount;
   
-  local_14 = Com_GetBspLump(LUMP_LEAFS,0x24,&local_c);
-  if (local_c == 0) {
+  in = Com_GetBspLump(LUMP_LEAFS,0x24,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map with no leafs");
   }
-  cm.leafs = CM_Hunk_Alloc(local_c * 0x2c,"CMod_LoadLeafs",0x1a);
-  cm.numLeafs = local_c;
-  local_20 = 0;
-  local_24 = cm.leafs;
-  for (local_1c = 0; local_1c < local_c; local_1c = local_1c + 1) {
-    if (param_1) {
-      local_20 = *local_14;
-      local_24->cluster = (short)local_20;
-      if (local_24->cluster != local_20) {
+  cm.leafs = CM_Hunk_Alloc(count * 0x2c,"CMod_LoadLeafs",0x1a);
+  cm.numLeafs = count;
+  cluster = 0;
+  out = cm.leafs;
+  for (leafIter = 0; leafIter < count; leafIter = leafIter + 1) {
+    if (usePvs) {
+      cluster = in->cluster;
+      out->cluster = (short)cluster;
+      if (out->cluster != cluster) {
         Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: cluster exceeded");
       }
     }
-    uVar1 = local_14[2];
-    local_10 = (ushort)uVar1;
-    local_24->firstCollAabbIndex = local_10;
-    if (local_24->firstCollAabbIndex != uVar1) {
+    uVar1 = in->firstCollAabbIndex;
+    firstCollAabbIndex._0_2_ = (ushort)uVar1;
+    out->firstCollAabbIndex = (ushort)firstCollAabbIndex;
+    if (out->firstCollAabbIndex != uVar1) {
       Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: firstCollAabbIndex exceeded");
     }
-    local_8 = local_14[3];
-    local_24->collAabbCount = (ushort)local_8;
-    if (local_24->collAabbCount != local_8) {
+    collAabbCount = in->collAabbCount;
+    out->collAabbCount = (ushort)collAabbCount;
+    if ((uint)out->collAabbCount != collAabbCount) {
       Com_Error(ERR_DROP,"\x15CMod_LoadLeafs: collAabbCount exceeded");
     }
-    if ((param_1) && (cm.numClusters <= local_20)) {
-      cm.numClusters = local_20 + 1;
+    if ((usePvs) && (cm.numClusters <= cluster)) {
+      cm.numClusters = cluster + 1;
     }
-    local_14 = local_14 + 9;
-    local_24 = local_24 + 1;
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -723,44 +740,46 @@ void __cdecl CMod_LoadLeafs_Version14(bool param_1)
 void __cdecl CMod_LoadLeafBrushNodes(void)
 
 {
-  uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  uint local_28;
-  cLeaf_s *local_24;
-  uint local_1c;
-  void *local_18;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint numLeafBrushes_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  int contents;
+  cLeaf_s *out;
+  uint numLeafBrushes;
+  uint leafIter;
+  DiskLeaf *in;
+  int indexFirstLeafBrush;
+  uint count;
+  uint brushIter;
+  int brushnum;
   
-  local_18 = Com_GetBspLump(LUMP_LEAFS,0x18,&local_10);
-  if (local_10 != cm.numLeafs) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x2ff,0,
+  in = Com_GetBspLump(LUMP_LEAFS,0x18,&count);
+  if (count != cm.numLeafs) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x2ff,0,
                              "count == cm.numLeafs\n\t%i, %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  local_24 = cm.leafs;
-  for (local_1c = 0; local_1c < cm.numLeafs; local_1c = local_1c + 1) {
-    uVar1 = *(uint *)((int)local_18 + 0x10);
-    iVar2 = *(int *)((int)local_18 + 0xc);
-    local_28 = 0;
-    for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
-      local_8 = (uint)cm.leafbrushes[iVar2 + local_c];
-      local_28 = local_28 | cm.brushes[local_8].contents;
+  out = cm.leafs;
+  for (leafIter = 0; leafIter < cm.numLeafs; leafIter = leafIter + 1) {
+    numLeafBrushes_00 = in->numLeafBrushes;
+    iVar1 = in->firstLeafBrush;
+    contents = 0;
+    for (brushIter = 0; brushIter < numLeafBrushes_00; brushIter = brushIter + 1) {
+      brushnum = (int)cm.leafbrushes[iVar1 + brushIter];
+      contents = contents | cm.brushes[brushnum].contents;
     }
-    local_24->brushContents = local_28;
-    iVar5 = CMod_GetLeafTerrainContents(local_24);
-    local_24->terrainContents = iVar5;
-    CMod_PartionLeafBrushes(cm.leafbrushes + iVar2,uVar1,local_24);
-    local_18 = (void *)((int)local_18 + 0x18);
-    local_24 = local_24 + 1;
+    out->brushContents = contents;
+    iVar4 = CMod_GetLeafTerrainContents(out);
+    out->terrainContents = iVar4;
+    CMod_PartionLeafBrushes(cm.leafbrushes + iVar1,numLeafBrushes_00,out);
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -771,53 +790,55 @@ void __cdecl CMod_LoadLeafBrushNodes(void)
 void __cdecl CMod_LoadLeafBrushNodes_Version14(void)
 
 {
-  uint uVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  uint local_28;
-  cLeaf_s *local_24;
-  uint local_1c;
-  void *local_18;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint numLeafBrushes_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  int contents;
+  cLeaf_s *out;
+  uint numLeafBrushes;
+  uint leafIter;
+  DiskLeaf_Version14 *in;
+  int indexFirstLeafBrush;
+  uint count;
+  uint brushIter;
+  int brushnum;
   
-  local_18 = Com_GetBspLump(LUMP_LEAFS,0x24,&local_10);
-  if (local_10 != cm.numLeafs) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x32a,0,
+  in = Com_GetBspLump(LUMP_LEAFS,0x24,&count);
+  if (count != cm.numLeafs) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x32a,0,
                              "count == cm.numLeafs\n\t%i, %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
   if (cm.numLeafs == 0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x32c,0,
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x32c,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  local_24 = cm.leafs;
-  for (local_1c = 0; local_1c < cm.numLeafs; local_1c = local_1c + 1) {
-    uVar1 = *(uint *)((int)local_18 + 0x14);
-    iVar2 = *(int *)((int)local_18 + 0x10);
-    local_28 = 0;
-    for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
-      local_8 = (uint)cm.leafbrushes[iVar2 + local_c];
-      local_28 = local_28 | cm.brushes[local_8].contents;
+  out = cm.leafs;
+  for (leafIter = 0; leafIter < cm.numLeafs; leafIter = leafIter + 1) {
+    numLeafBrushes_00 = in->numLeafBrushes;
+    iVar1 = in->firstLeafBrush;
+    contents = 0;
+    for (brushIter = 0; brushIter < numLeafBrushes_00; brushIter = brushIter + 1) {
+      brushnum = (int)cm.leafbrushes[iVar1 + brushIter];
+      contents = contents | cm.brushes[brushnum].contents;
     }
-    local_24->brushContents = local_28;
-    iVar5 = CMod_GetLeafTerrainContents(local_24);
-    local_24->terrainContents = iVar5;
-    CMod_PartionLeafBrushes(cm.leafbrushes + iVar2,uVar1,local_24);
-    local_18 = (void *)((int)local_18 + 0x24);
-    local_24 = local_24 + 1;
+    out->brushContents = contents;
+    iVar4 = CMod_GetLeafTerrainContents(out);
+    out->terrainContents = iVar4;
+    CMod_PartionLeafBrushes(cm.leafbrushes + iVar1,numLeafBrushes_00,out);
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -829,48 +850,49 @@ void __cdecl CMod_LoadPlanes(void)
 
 {
   uchar local_24;
-  cplane_s *local_20;
-  uint local_1c;
-  byte local_11;
-  void *local_10;
-  uint local_c;
-  uint local_8;
+  cplane_s *out;
+  uint planeIter;
+  uint allocSize;
+  uchar bits;
+  dplane_t *in;
+  uint axisIter;
+  uint count;
   
-  local_10 = Com_GetBspLump(LUMP_PLANES,0x10,&local_8);
-  if (local_8 == 0) {
+  in = Com_GetBspLump(LUMP_PLANES,0x10,&count);
+  if (count == 0) {
     Com_Error(ERR_DROP,"\x15Map with no planes");
   }
-  if (0x10000 < local_8) {
+  if (0x10000 < count) {
     Com_Error(ERR_DROP,"\x15Number of planes exceeds 65536");
   }
-  cm.planes = CM_Hunk_Alloc(local_8 * 0x14,"CMod_LoadPlanes",0x1a);
-  cm.planeCount = local_8;
-  local_20 = cm.planes;
-  for (local_1c = 0; local_1c < local_8; local_1c = local_1c + 1) {
-    local_11 = 0;
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      local_20->normal[local_c] = *(float *)((int)local_10 + local_c * 4);
-      if (local_20->normal[local_c] <= 0.0 && local_20->normal[local_c] != 0.0) {
-        local_11 = local_11 | (byte)(1 << ((byte)local_c & 0x1f));
+  cm.planes = CM_Hunk_Alloc(count * 0x14,"CMod_LoadPlanes",0x1a);
+  cm.planeCount = count;
+  out = cm.planes;
+  for (planeIter = 0; planeIter < count; planeIter = planeIter + 1) {
+    bits = '\0';
+    for (axisIter = 0; axisIter < 3; axisIter = axisIter + 1) {
+      out->normal[axisIter] = in->normal[axisIter];
+      if (out->normal[axisIter] <= 0.0 && out->normal[axisIter] != 0.0) {
+        bits = bits | (byte)(1 << ((byte)axisIter & 0x1f));
       }
     }
-    local_20->dist = *(float *)((int)local_10 + 0xc);
-    if (local_20->normal[0] == 1.0) {
+    out->dist = in->dist;
+    if (out->normal[0] == 1.0) {
       local_24 = '\0';
     }
-    else if (local_20->normal[1] == 1.0) {
+    else if (out->normal[1] == 1.0) {
       local_24 = '\x01';
     }
-    else if (local_20->normal[2] == 1.0) {
+    else if (out->normal[2] == 1.0) {
       local_24 = '\x02';
     }
     else {
       local_24 = '\x03';
     }
-    local_20->type = local_24;
-    local_20->signbits = local_11;
-    local_10 = (void *)((int)local_10 + 0x10);
-    local_20 = local_20 + 1;
+    out->type = local_24;
+    out->signbits = bits;
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -884,28 +906,29 @@ void __cdecl CMod_LoadLeafBrushes(void)
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  ushort *local_1c;
-  ushort local_18;
-  uint *local_10;
-  uint local_c;
-  uint local_8;
+  ushort *out;
+  uint brushIndex;
+  uint allocSize;
+  uint *in;
+  uint iter;
+  uint count;
   
-  local_10 = Com_GetBspLump(LUMP_LEAFBRUSHES,4,&local_8);
-  cm.leafbrushes = CM_Hunk_Alloc(local_8 * 2 + 2,"CMod_LoadLeafBrushes",0x1b);
-  cm.numLeafBrushes = local_8;
-  local_c = 0;
-  local_1c = cm.leafbrushes;
+  in = Com_GetBspLump(LUMP_LEAFBRUSHES,4,&count);
+  cm.leafbrushes = CM_Hunk_Alloc(count * 2 + 2,"CMod_LoadLeafBrushes",0x1b);
+  cm.numLeafBrushes = count;
+  iter = 0;
+  out = cm.leafbrushes;
   do {
-    if (local_8 <= local_c) {
+    if (count <= iter) {
       return;
     }
-    uVar1 = *local_10;
-    local_18 = (ushort)uVar1;
-    *local_1c = local_18;
-    if (*local_1c != uVar1) {
+    uVar1 = *in;
+    brushIndex._0_2_ = (ushort)uVar1;
+    *out = (ushort)brushIndex;
+    if (*out != uVar1) {
       Com_Error(ERR_DROP,"\x15CMod_LoadLeafBrushes: brushIndex exceeded");
     }
-    if (cm.numBrushes <= *local_1c) {
+    if (cm.numBrushes <= *out) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x394,0
                                ,"%s\n\t(*out) = %i");
       if (!bVar3) {
@@ -914,9 +937,9 @@ void __cdecl CMod_LoadLeafBrushes(void)
         return;
       }
     }
-    local_c = local_c + 1;
-    local_10 = local_10 + 1;
-    local_1c = local_1c + 1;
+    iter = iter + 1;
+    in = in + 1;
+    out = out + 1;
   } while( true );
 }
 
@@ -926,13 +949,16 @@ void __cdecl CMod_LoadLeafBrushes(void)
 void __cdecl CMod_LoadLeafSurfaces(void)
 
 {
-  void *pvVar1;
-  uint local_8;
+  void *src;
+  uint *out;
+  uint allocSize;
+  uint *in;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_LEAFSURFACES,4,&local_8);
-  cm.leafsurfaces = CM_Hunk_Alloc(local_8 << 2,"CMod_LoadLeafSurfaces",0x1d);
-  cm.numLeafSurfaces = local_8;
-  Com_Memcpy(cm.leafsurfaces,pvVar1,local_8 << 2);
+  src = Com_GetBspLump(LUMP_LEAFSURFACES,4,&count);
+  cm.leafsurfaces = CM_Hunk_Alloc(count << 2,"CMod_LoadLeafSurfaces",0x1d);
+  cm.numLeafSurfaces = count;
+  Com_Memcpy(cm.leafsurfaces,src,count << 2);
   return;
 }
 
@@ -942,13 +968,14 @@ void __cdecl CMod_LoadLeafSurfaces(void)
 void __cdecl CMod_LoadCollisionVerts(void)
 
 {
-  void *pvVar1;
-  uint local_8;
+  void *src;
+  uint allocSize;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_COLLISIONVERTS,0xc,&local_8);
-  cm.verts = CM_Hunk_Alloc(local_8 * 0xc,"CMod_LoadCollisionVerts",0x1d);
-  cm.vertCount = local_8;
-  Com_Memcpy(cm.verts,pvVar1,local_8 * 0xc);
+  src = Com_GetBspLump(LUMP_COLLISIONVERTS,0xc,&count);
+  cm.verts = CM_Hunk_Alloc(count * 0xc,"CMod_LoadCollisionVerts",0x1d);
+  cm.vertCount = count;
+  Com_Memcpy(cm.verts,src,count * 0xc);
   return;
 }
 
@@ -958,13 +985,16 @@ void __cdecl CMod_LoadCollisionVerts(void)
 void __cdecl CMod_LoadCollisionTriangles(void)
 
 {
-  void *pvVar1;
-  uint local_8;
+  void *src;
+  ushort *out;
+  uint allocSize;
+  ushort *in;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_COLLISIONTRIS,2,&local_8);
-  cm.triIndices = CM_Hunk_Alloc(local_8 << 1,"CMod_LoadCollisionTriangles",0x1d);
-  cm.triCount = local_8 / 3;
-  Com_Memcpy(cm.triIndices,pvVar1,local_8 << 1);
+  src = Com_GetBspLump(LUMP_COLLISIONTRIS,2,&count);
+  cm.triIndices = CM_Hunk_Alloc(count << 1,"CMod_LoadCollisionTriangles",0x1d);
+  cm.triCount = count / 3;
+  Com_Memcpy(cm.triIndices,src,count << 1);
   return;
 }
 
@@ -974,15 +1004,18 @@ void __cdecl CMod_LoadCollisionTriangles(void)
 void __cdecl CMod_LoadPartitionIndices(void)
 
 {
-  void *pvVar1;
-  int iVar2;
-  uint local_8;
+  void *src;
+  int size_00;
+  ushort *out;
+  uint size;
+  ushort *in;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_UINDS,2,&local_8);
-  iVar2 = local_8 << 1;
-  cm.uinds = CM_Hunk_Alloc(iVar2,"CMod_LoadPartitionIndices",0x1d);
-  cm.nuinds = local_8;
-  Com_Memcpy(cm.uinds,pvVar1,iVar2);
+  src = Com_GetBspLump(LUMP_UINDS,2,&count);
+  size_00 = count << 1;
+  cm.uinds = CM_Hunk_Alloc(size_00,"CMod_LoadPartitionIndices",0x1d);
+  cm.nuinds = count;
+  Com_Memcpy(cm.uinds,src,size_00);
   return;
 }
 
@@ -992,12 +1025,13 @@ void __cdecl CMod_LoadPartitionIndices(void)
 void __cdecl CMod_LoadCollisionEdgeWalkable(void)
 
 {
-  void *pvVar1;
-  uint local_8;
+  void *src;
+  uchar *in;
+  uint count;
   
-  pvVar1 = Com_GetBspLump(LUMP_COLLISIONEDGEWALKABLE,1,&local_8);
-  cm.triEdgeIsWalkable = CM_Hunk_Alloc(local_8,"CMod_LoadCollisionEdgeWalkable",0x1d);
-  Com_Memcpy(cm.triEdgeIsWalkable,pvVar1,local_8);
+  src = Com_GetBspLump(LUMP_COLLISIONEDGEWALKABLE,1,&count);
+  cm.triEdgeIsWalkable = CM_Hunk_Alloc(count,"CMod_LoadCollisionEdgeWalkable",0x1d);
+  Com_Memcpy(cm.triEdgeIsWalkable,src,count);
   return;
 }
 
@@ -1007,25 +1041,26 @@ void __cdecl CMod_LoadCollisionEdgeWalkable(void)
 void __cdecl CMod_LoadCollisionBorders(void)
 
 {
-  CollisionBorder *local_18;
-  float *local_10;
-  uint local_c;
-  uint local_8;
+  CollisionBorder *out;
+  uint allocSize;
+  DiskCollBorder *in;
+  uint index;
+  uint count;
   
-  local_10 = Com_GetBspLump(LUMP_COLLISIONBORDERS,0x1c,&local_8);
-  cm.borders = CM_Hunk_Alloc(local_8 * 0x1c,"CMod_LoadCollisionBorders",0x1d);
-  cm.borderCount = local_8;
-  local_18 = cm.borders;
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    local_18->distEq[0] = *local_10;
-    local_18->distEq[1] = local_10[1];
-    local_18->distEq[2] = local_10[2];
-    local_18->zBase = local_10[3];
-    local_18->zSlope = local_10[4];
-    local_18->start = local_10[5];
-    local_18->length = local_10[6];
-    local_10 = local_10 + 7;
-    local_18 = local_18 + 1;
+  in = Com_GetBspLump(LUMP_COLLISIONBORDERS,0x1c,&count);
+  cm.borders = CM_Hunk_Alloc(count * 0x1c,"CMod_LoadCollisionBorders",0x1d);
+  cm.borderCount = count;
+  out = cm.borders;
+  for (index = 0; index < count; index = index + 1) {
+    out->distEq[0] = in->distEq[0];
+    out->distEq[1] = in->distEq[1];
+    out->distEq[2] = in->distEq[2];
+    out->zBase = in->zBase;
+    out->zSlope = in->zSlope;
+    out->start = in->start;
+    out->length = in->length;
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -1038,27 +1073,28 @@ void __cdecl CMod_LoadCollisionPartitions(void)
 {
   code *pcVar1;
   bool bVar2;
-  CollisionPartition *local_18;
-  void *local_10;
-  uint local_c;
-  uint local_8;
+  CollisionPartition *out;
+  uint allocSize;
+  DiskCollPartition *in;
+  uint index;
+  uint count;
   
-  local_10 = Com_GetBspLump(LUMP_COLLISIONPARTITIONS,0x14,&local_8);
-  cm.partitions = CM_Hunk_Alloc(local_8 * 0x14,"CMod_LoadCollisionPartitions",0x1d);
-  cm.partitionCount = local_8;
-  local_c = 0;
-  local_18 = cm.partitions;
+  in = Com_GetBspLump(LUMP_COLLISIONPARTITIONS,0x14,&count);
+  cm.partitions = CM_Hunk_Alloc(count * 0x14,"CMod_LoadCollisionPartitions",0x1d);
+  cm.partitionCount = count;
+  index = 0;
+  out = cm.partitions;
   do {
-    if (local_8 <= local_c) {
+    if (count <= index) {
       return;
     }
-    local_18->triCount = *(uchar *)((int)local_10 + 2);
-    local_18->borderCount = *(uchar *)((int)local_10 + 3);
-    local_18->firstTri = *(int *)((int)local_10 + 4);
-    local_18->borders = cm.borders + *(int *)((int)local_10 + 8);
-    local_18->nuinds = *(int *)((int)local_10 + 0xc);
-    local_18->fuind = *(int *)((int)local_10 + 0x10);
-    if (cm.triCount < (int)((uint)local_18->triCount + local_18->firstTri)) {
+    out->triCount = in->triCount;
+    out->borderCount = in->borderCount;
+    out->firstTri = in->firstTriIndex;
+    out->borders = cm.borders + in->firstBorderIndex;
+    out->nuinds = in->nuinds;
+    out->fuind = in->fuind;
+    if (cm.triCount < (int)((uint)out->triCount + out->firstTri)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x42d,0
                                ,"%s");
       if (!bVar2) {
@@ -1067,7 +1103,7 @@ void __cdecl CMod_LoadCollisionPartitions(void)
         return;
       }
     }
-    if (local_18->firstTri < 0) {
+    if (out->firstTri < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x42e,0
                                ,"%s");
       if (!bVar2) {
@@ -1076,9 +1112,9 @@ void __cdecl CMod_LoadCollisionPartitions(void)
         return;
       }
     }
-    local_c = local_c + 1;
-    local_10 = (void *)((int)local_10 + 0x14);
-    local_18 = local_18 + 1;
+    index = index + 1;
+    in = in + 1;
+    out = out + 1;
   } while( true );
 }
 
@@ -1088,27 +1124,28 @@ void __cdecl CMod_LoadCollisionPartitions(void)
 void __cdecl CMod_LoadCollisionAabbTrees(void)
 
 {
-  CollisionAabbTree *local_18;
-  float *local_10;
-  uint local_c;
-  uint local_8;
+  CollisionAabbTree *out;
+  uint allocSize;
+  DiskCollAabbTree *in;
+  uint index;
+  uint count;
   
-  local_10 = Com_GetBspLump(LUMP_COLLISIONAABBS,0x20,&local_8);
-  cm.aabbTrees = CM_Hunk_Alloc(local_8 << 5,"CMod_LoadCollisionAabbTrees",0x1d);
-  cm.aabbTreeCount = local_8;
-  local_18 = cm.aabbTrees;
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    local_18->origin[0] = *local_10;
-    local_18->origin[1] = local_10[1];
-    local_18->origin[2] = local_10[2];
-    local_18->halfSize[0] = local_10[3];
-    local_18->halfSize[1] = local_10[4];
-    local_18->halfSize[2] = local_10[5];
-    local_18->materialIndex = *(ushort *)(local_10 + 6);
-    local_18->childCount = *(ushort *)((int)local_10 + 0x1a);
-    local_18->u = *(CollisionAabbTreeIndex *)(local_10 + 7);
-    local_10 = local_10 + 8;
-    local_18 = local_18 + 1;
+  in = Com_GetBspLump(LUMP_COLLISIONAABBS,0x20,&count);
+  cm.aabbTrees = CM_Hunk_Alloc(count << 5,"CMod_LoadCollisionAabbTrees",0x1d);
+  cm.aabbTreeCount = count;
+  out = cm.aabbTrees;
+  for (index = 0; index < count; index = index + 1) {
+    out->origin[0] = in->origin[0];
+    out->origin[1] = in->origin[1];
+    out->origin[2] = in->origin[2];
+    out->halfSize[0] = in->halfSize[0];
+    out->halfSize[1] = in->halfSize[1];
+    out->halfSize[2] = in->halfSize[2];
+    out->materialIndex = in->materialIndex;
+    out->childCount = in->childCount;
+    out->u = *(CollisionAabbTreeIndex *)&in->u;
+    in = in + 1;
+    out = out + 1;
   }
   return;
 }
@@ -1116,12 +1153,12 @@ void __cdecl CMod_LoadCollisionAabbTrees(void)
 
 // 006A9990  MapEnts_VirtualLoad  (qcommon/cm_load_obj.cpp:1131)
 
-MapEnts * __cdecl MapEnts_VirtualLoad(char *param_1)
+MapEnts * __cdecl MapEnts_VirtualLoad(char *name)
 
 {
   MapEnts *pMVar1;
   
-  pMVar1 = MapEnts_RealLoad(param_1);
+  pMVar1 = MapEnts_RealLoad(name);
   return pMVar1;
 }
 
@@ -1139,20 +1176,21 @@ void __cdecl CMod_LoadEntityString(void)
 // 006A99B0  MapEnts_CanPurgeEntity  (qcommon/cm_load_obj.cpp:1149)
 
 bool __cdecl
-MapEnts_CanPurgeEntity(char *param_1,void *param_2,_func___cdecl_bool_void_ptr_char_ptr *param_3)
+MapEnts_CanPurgeEntity
+          (char *classname,void *userData,_func___cdecl_bool_void_ptr_char_ptr *HasKeyCallback)
 
 {
   bool bVar1;
   char cVar2;
   int iVar3;
-  uint local_8;
+  uint classnameIndex;
   
-  local_8 = 0;
+  classnameIndex = 0;
   while( true ) {
-    if (0xb < local_8) {
-      iVar3 = I_stricmp(param_1,"light");
+    if (0xb < classnameIndex) {
+      iVar3 = I_stricmp(classname,"light");
       if (iVar3 == 0) {
-        bVar1 = (*param_3)(param_2,"pl#");
+        bVar1 = (*HasKeyCallback)(userData,"pl#");
         cVar2 = '\x01' - bVar1;
       }
       else {
@@ -1160,9 +1198,9 @@ MapEnts_CanPurgeEntity(char *param_1,void *param_2,_func___cdecl_bool_void_ptr_c
       }
       return (bool)cVar2;
     }
-    iVar3 = I_stricmp(param_1,g_purgeableEnts[local_8]);
+    iVar3 = I_stricmp(classname,g_purgeableEnts[classnameIndex]);
     if (iVar3 == 0) break;
-    local_8 = local_8 + 1;
+    classnameIndex = classnameIndex + 1;
   }
   return true;
 }
@@ -1170,13 +1208,14 @@ MapEnts_CanPurgeEntity(char *param_1,void *param_2,_func___cdecl_bool_void_ptr_c
 
 // 006A9CB0  CMod_HasSpawnString  (qcommon/cm_load_obj.cpp:1166)
 
-bool __cdecl CMod_HasSpawnString(void *param_1,char *param_2)
+bool __cdecl CMod_HasSpawnString(void *userData,char *key)
 
 {
   int iVar1;
-  char *local_8;
+  SpawnVar *spawnVar;
+  char *value;
   
-  iVar1 = G_SpawnString(param_1,param_2,"",&local_8);
+  iVar1 = G_SpawnString(userData,key,"",&value);
   return iVar1 != 0;
 }
 
@@ -1185,7 +1224,7 @@ bool __cdecl CMod_HasSpawnString(void *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MapEnts * __cdecl MapEnts_GetFromString(char *param_1,char *param_2,int param_3)
+MapEnts * __cdecl MapEnts_GetFromString(char *name,char *entityString,int numEntityChars)
 
 {
   char cVar1;
@@ -1196,36 +1235,37 @@ MapEnts * __cdecl MapEnts_GetFromString(char *param_1,char *param_2,int param_3)
   char *pcVar6;
   int iVar7;
   char *local_a34;
-  SpawnVar local_a2c;
+  MapEnts *mapEnts;
+  SpawnVar spawnVar;
   uint local_1c;
-  char *local_18;
-  ulong local_14;
-  int local_10;
-  char *local_c;
-  uchar *local_8;
+  char *end;
+  int size;
+  int nameLen;
+  char *classname;
+  char *begin;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   pMVar4 = CM_Hunk_Alloc(0xc,"CMod_LoadEntityString",0x1f);
-  local_a34 = param_1;
+  local_a34 = name;
   do {
     cVar1 = *local_a34;
     local_a34 = local_a34 + 1;
   } while (cVar1 != '\0');
-  local_10 = (int)local_a34 - (int)(param_1 + 1);
-  pcVar5 = CM_Hunk_Alloc(local_10 + 1,"CMod_LoadEntityString",0x1f);
+  nameLen = (int)local_a34 - (int)(name + 1);
+  pcVar5 = CM_Hunk_Alloc(nameLen + 1,"CMod_LoadEntityString",0x1f);
   pMVar4->name = pcVar5;
-  memcpy((uchar *)pMVar4->name,(uchar *)param_1,local_10 + 1);
-  pcVar5 = Com_EntityString(&param_3);
-  pcVar6 = CM_Hunk_Alloc(param_3,"CMod_LoadEntityString",0x1f);
+  memcpy((uchar *)pMVar4->name,(uchar *)name,nameLen + 1);
+  pcVar5 = Com_EntityString(&numEntityChars);
+  pcVar6 = CM_Hunk_Alloc(numEntityChars,"CMod_LoadEntityString",0x1f);
   pMVar4->entityString = pcVar6;
   pMVar4->numEntityChars = 0;
   G_SetEntityParsePoint(pcVar5);
   while( true ) {
     do {
-      local_8 = (uchar *)G_GetEntityParsePoint();
-      iVar7 = G_ParseSpawnVars(&local_a2c);
+      begin = G_GetEntityParsePoint();
+      iVar7 = G_ParseSpawnVars(&spawnVar);
       if (iVar7 == 0) {
-        if ((param_3 <= pMVar4->numEntityChars) &&
+        if ((numEntityChars <= pMVar4->numEntityChars) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",
                                      0x4c1,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1236,16 +1276,16 @@ MapEnts * __cdecl MapEnts_GetFromString(char *param_1,char *param_2,int param_3)
         pMVar4->numEntityChars = pMVar4->numEntityChars + 1;
         return pMVar4;
       }
-      G_SpawnString(&local_a2c,"classname","",&local_c);
-      bVar3 = MapEnts_CanPurgeEntity(local_c,&local_a2c,CMod_HasSpawnString);
+      G_SpawnString(&spawnVar,"classname","",&classname);
+      bVar3 = MapEnts_CanPurgeEntity(classname,&spawnVar,CMod_HasSpawnString);
     } while (bVar3);
-    local_18 = G_GetEntityParsePoint();
-    local_14 = (int)local_18 - (int)local_8;
-    if ((param_3 < (int)(pMVar4->numEntityChars + local_14)) &&
+    end = G_GetEntityParsePoint();
+    size = (int)end - (int)begin;
+    if ((numEntityChars < pMVar4->numEntityChars + size) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x4bc
                                  ,0,"%s"), !bVar3)) break;
-    memcpy((uchar *)(pMVar4->entityString + pMVar4->numEntityChars),local_8,local_14);
-    pMVar4->numEntityChars = pMVar4->numEntityChars + local_14;
+    memcpy((uchar *)(pMVar4->entityString + pMVar4->numEntityChars),(uchar *)begin,size);
+    pMVar4->numEntityChars = pMVar4->numEntityChars + size;
   }
   pcVar2 = (code *)swi(3);
   pMVar4 = (MapEnts *)(*pcVar2)();
@@ -1255,15 +1295,15 @@ MapEnts * __cdecl MapEnts_GetFromString(char *param_1,char *param_2,int param_3)
 
 // 006A9A30  MapEnts_RealLoad  (qcommon/cm_load_obj.cpp:1226)
 
-MapEnts * __cdecl MapEnts_RealLoad(char *param_1)
+MapEnts * __cdecl MapEnts_RealLoad(char *name)
 
 {
   MapEnts *pMVar1;
-  int local_c;
-  char *local_8;
+  int numEntityChars;
+  char *entityString;
   
-  local_8 = Com_EntityString(&local_c);
-  pMVar1 = MapEnts_GetFromString(param_1,local_8,local_c);
+  entityString = Com_EntityString(&numEntityChars);
+  pMVar1 = MapEnts_GetFromString(name,entityString,numEntityChars);
   return pMVar1;
 }
 
@@ -1276,10 +1316,11 @@ void __cdecl CMod_LoadVisibility(void)
   code *pcVar1;
   bool bVar2;
   int *piVar3;
-  uint local_8;
+  uchar *buf;
+  uint len;
   
-  piVar3 = Com_GetBspLump(LUMP_VISIBILITY,1,&local_8);
-  if (local_8 == 0) {
+  piVar3 = Com_GetBspLump(LUMP_VISIBILITY,1,&len);
+  if (len == 0) {
     cm.clusterBytes = (int)(cm.numClusters + 0x3fU & 0xffffffc0) >> 3;
     cm.numClusters = 1;
     cm.visibility = CM_Hunk_Alloc(cm.clusterBytes,"CMod_LoadVisibility",10);
@@ -1289,7 +1330,7 @@ void __cdecl CMod_LoadVisibility(void)
     cm.vised = 1;
     cm.numClusters = *piVar3;
     cm.clusterBytes = piVar3[1];
-    if (local_8 != cm.numClusters * cm.clusterBytes + 8U) {
+    if (len != cm.numClusters * cm.clusterBytes + 8U) {
       va("%i != %i == %i * %i + %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load_obj.cpp",0x4ec,0
                                ,"%s\n\t%s");
@@ -1299,8 +1340,8 @@ void __cdecl CMod_LoadVisibility(void)
         return;
       }
     }
-    cm.visibility = CM_Hunk_Alloc(local_8 - 8,"CMod_LoadVisibility",10);
-    Com_Memcpy(cm.visibility,piVar3 + 2,local_8 - 8);
+    cm.visibility = CM_Hunk_Alloc(len - 8,"CMod_LoadVisibility",10);
+    Com_Memcpy(cm.visibility,piVar3 + 2,len - 8);
   }
   return;
 }
@@ -1308,29 +1349,33 @@ void __cdecl CMod_LoadVisibility(void)
 
 // 006AA570  CMod_LoadBrushRelated  (qcommon/cm_load_obj.cpp:1276)
 
-void __cdecl CMod_LoadBrushRelated(uint param_1,bool param_2)
+void __cdecl CMod_LoadBrushRelated(uint version,bool usePvs)
 
 {
-  HunkUser *pHVar1;
-  char *pcVar2;
-  int iVar3;
-  cLeafBrushNode_s *pcVar4;
+  HunkUser *user_00;
+  char *pcVar1;
+  int iVar2;
+  cLeafBrushNode_s *pcVar3;
+  int leafbrushNodesCount;
+  int size;
+  HunkUser *user;
+  cLeafBrushNode_s *leafbrushNodes;
   
   CMod_LoadBrushes();
   CMod_LoadLeafBrushes();
   CMod_LoadCollisionAabbTrees();
-  if (param_1 < 0xf) {
-    CMod_LoadLeafs_Version14(param_2);
+  if (version < 0xf) {
+    CMod_LoadLeafs_Version14(usePvs);
   }
   else {
-    CMod_LoadLeafs(param_2);
+    CMod_LoadLeafs(usePvs);
   }
   CMod_LoadSubmodels();
-  pHVar1 = Hunk_UserCreate(0x400000,HU_SCHEME_DEFAULT,4,(void *)0x0,"CMod_LoadBrushRelated",0x1b);
-  TempMemoryReset(pHVar1);
-  pcVar2 = TempMalloc(0);
-  cm.leafbrushNodes = (cLeafBrushNode_s *)(pcVar2 + -0x14);
-  if (param_1 < 0xf) {
+  user_00 = Hunk_UserCreate(0x400000,HU_SCHEME_DEFAULT,4,(void *)0x0,"CMod_LoadBrushRelated",0x1b);
+  TempMemoryReset(user_00);
+  pcVar1 = TempMalloc(0);
+  cm.leafbrushNodes = (cLeafBrushNode_s *)(pcVar1 + -0x14);
+  if (version < 0xf) {
     CMod_LoadLeafBrushNodes_Version14();
   }
   else {
@@ -1339,37 +1384,38 @@ void __cdecl CMod_LoadBrushRelated(uint param_1,bool param_2)
   CMod_LoadSubmodelBrushNodes();
   CM_InitBoxHull();
   cm.leafbrushNodes = cm.leafbrushNodes + 1;
-  pcVar2 = TempMalloc(0);
-  iVar3 = ((int)pcVar2 - (int)cm.leafbrushNodes) / 0x14;
-  cm.leafbrushNodesCount = iVar3 + 1;
-  pcVar4 = CM_Hunk_Alloc(cm.leafbrushNodesCount * 0x14,"CMod_LoadBrushRelated",0x1b);
-  memcpy(&pcVar4[1].axis,&(cm.leafbrushNodes)->axis,iVar3 * 0x14);
-  cm.leafbrushNodes = pcVar4;
-  Hunk_UserDestroy(pHVar1);
+  pcVar1 = TempMalloc(0);
+  iVar2 = ((int)pcVar1 - (int)cm.leafbrushNodes) / 0x14;
+  cm.leafbrushNodesCount = iVar2 + 1;
+  pcVar3 = CM_Hunk_Alloc(cm.leafbrushNodesCount * 0x14,"CMod_LoadBrushRelated",0x1b);
+  memcpy(&pcVar3[1].axis,&(cm.leafbrushNodes)->axis,iVar2 * 0x14);
+  cm.leafbrushNodes = pcVar3;
+  Hunk_UserDestroy(user_00);
   return;
 }
 
 
 // 006A9CE0  CM_LoadMapFromBsp  (qcommon/cm_load_obj.cpp:1321)
 
-void __cdecl CM_LoadMapFromBsp(char *param_1,bool param_2)
+void __cdecl CM_LoadMapFromBsp(char *name,bool usePvs)
 
 {
   char cVar1;
   bool bVar2;
-  uint uVar3;
+  uint version_00;
   char *local_20;
   char *local_1c;
   char *local_c;
+  uint version;
   
   Com_Memset(&cm,0,0x14c);
-  local_c = param_1;
+  local_c = name;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  cm.name = CM_Hunk_Alloc((int)(local_c + (1 - (int)(param_1 + 1))),"CM_LoadMapFromBsp",0x1a);
-  local_1c = param_1;
+  cm.name = CM_Hunk_Alloc((int)(local_c + (1 - (int)(name + 1))),"CM_LoadMapFromBsp",0x1a);
+  local_1c = name;
   local_20 = cm.name;
   do {
     cVar1 = *local_1c;
@@ -1377,10 +1423,10 @@ void __cdecl CM_LoadMapFromBsp(char *param_1,bool param_2)
     local_1c = local_1c + 1;
     local_20 = local_20 + 1;
   } while (cVar1 != '\0');
-  uVar3 = Com_GetBspVersion();
+  version_00 = Com_GetBspVersion();
   CMod_LoadMaterials();
   CMod_LoadPlanes();
-  CMod_LoadBrushRelated(uVar3,param_2);
+  CMod_LoadBrushRelated(version_00,usePvs);
   CMod_LoadNodes();
   CMod_LoadLeafSurfaces();
   CMod_LoadCollisionVerts();
@@ -1389,7 +1435,7 @@ void __cdecl CM_LoadMapFromBsp(char *param_1,bool param_2)
   CMod_LoadCollisionEdgeWalkable();
   CMod_LoadCollisionBorders();
   CMod_LoadCollisionPartitions();
-  if (param_2) {
+  if (usePvs) {
     CMod_LoadVisibility();
   }
   else {
@@ -1411,6 +1457,7 @@ void __cdecl CM_InitBoxHull(void)
 
 {
   cLeafBrushNode_s *pcVar1;
+  cLeafBrushNode_s *leafBrushNode;
   
   cm.box_brush = cm.brushes + cm.numBrushes;
   (cm.box_brush)->numsides = 0;

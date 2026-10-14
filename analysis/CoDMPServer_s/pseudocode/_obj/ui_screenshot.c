@@ -109,76 +109,76 @@ void __cdecl UI_ScreenshotDownload(int param_1,int param_2,__uint64 param_3,uint
 void __cdecl UI_ScreenshotDraw(int param_1,int param_2,rectDef_s *param_3,float *param_4)
 
 {
-  float fVar1;
-  float fVar2;
+  float w;
+  float h;
   int in_EAX;
-  int *piVar3;
-  int iVar4;
+  int *piVar1;
+  int iVar2;
   int in_EDX;
   int unaff_EBX;
   GfxImage *unaff_ESI;
   float *unaff_EDI;
-  float10 fVar5;
+  float10 fVar3;
+  float fVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
+  float s0;
   
-  iVar4 = 0;
-  piVar3 = &DAT_01cac1e8;
+  iVar2 = 0;
+  piVar1 = &DAT_01cac1e8;
   do {
-    if (*piVar3 == in_EDX) {
-      iVar4 = (&DAT_01cac1ec)[iVar4 * 5];
+    if (*piVar1 == in_EDX) {
+      iVar2 = (&DAT_01cac1ec)[iVar2 * 5];
       goto LAB_0064ebf9;
     }
-    piVar3 = piVar3 + 5;
-    iVar4 = iVar4 + 1;
-  } while ((int)piVar3 < 0x1cac1fc);
-  iVar4 = -1;
+    piVar1 = piVar1 + 5;
+    iVar2 = iVar2 + 1;
+  } while ((int)piVar1 < 0x1cac1fc);
+  iVar2 = -1;
 LAB_0064ebf9:
-  iVar4 = iVar4 * 0x7c;
-  fVar6 = *(float *)(&DAT_020c6ec4 + iVar4);
-  if (*(float *)(&DAT_020c6ec4 + iVar4) < 0.05) {
-    fVar6 = DAT_03507bc8;
+  iVar2 = iVar2 * 0x7c;
+  fVar4 = *(float *)(&DAT_020c6ec4 + iVar2);
+  if (*(float *)(&DAT_020c6ec4 + iVar2) < 0.05) {
+    fVar4 = DAT_03507bc8;
   }
-  fVar8 = *(float *)(&DAT_020c6ed0 + iVar4);
-  fVar7 = 0.5 / (fVar6 + 1.0);
-  fVar6 = *(float *)(&DAT_020c6ed4 + iVar4);
-  fVar5 = (float10)fabsf(fVar8);
-  iVar4 = DAT_01eb5024;
-  if ((float10)0.1 < fVar5) {
-    DAT_01f2c3ac = (float)DAT_01eb5024 * 0.001 * fVar8 + DAT_01f2c3ac;
+  fVar6 = *(float *)(&DAT_020c6ed0 + iVar2);
+  fVar5 = 0.5 / (fVar4 + 1.0);
+  fVar4 = *(float *)(&DAT_020c6ed4 + iVar2);
+  fVar3 = (float10)fabsf(fVar6);
+  iVar2 = DAT_01eb5024;
+  if ((float10)0.1 < fVar3) {
+    DAT_01f2c3ac = (float)DAT_01eb5024 * 0.001 * fVar6 + DAT_01f2c3ac;
   }
-  fVar5 = (float10)fabsf(fVar6);
-  if ((float10)0.1 < fVar5) {
-    DAT_01f2be74 = DAT_01f2be74 - (float)iVar4 * 0.001 * fVar6;
+  fVar3 = (float10)fabsf(fVar4);
+  if ((float10)0.1 < fVar3) {
+    DAT_01f2be74 = DAT_01f2be74 - (float)iVar2 * 0.001 * fVar4;
   }
-  fVar6 = 1.0 - fVar7;
-  fVar8 = DAT_01f2c3ac;
-  if (0.0 <= DAT_01f2c3ac - fVar6) {
-    fVar8 = fVar6;
+  fVar4 = 1.0 - fVar5;
+  fVar6 = DAT_01f2c3ac;
+  if (0.0 <= DAT_01f2c3ac - fVar4) {
+    fVar6 = fVar4;
   }
-  if (0.0 <= fVar7 - DAT_01f2c3ac) {
-    fVar8 = fVar7;
+  if (0.0 <= fVar5 - DAT_01f2c3ac) {
+    fVar6 = fVar5;
   }
-  if (DAT_01f2be74 - fVar6 < 0.0) {
-    fVar6 = DAT_01f2be74;
+  if (DAT_01f2be74 - fVar4 < 0.0) {
+    fVar4 = DAT_01f2be74;
   }
-  if (0.0 <= fVar7 - DAT_01f2be74) {
-    fVar6 = fVar7;
+  if (0.0 <= fVar5 - DAT_01f2be74) {
+    fVar4 = fVar5;
   }
-  DAT_01f2be74 = fVar6;
-  DAT_01f2c3ac = fVar8;
+  DAT_01f2be74 = fVar4;
+  DAT_01f2c3ac = fVar6;
   if (DAT_03507bc4 == 3) {
-    fVar1 = *(float *)(in_EAX + 4);
-    fVar2 = *(float *)(in_EAX + 8);
-    fVar9 = *(float *)(in_EAX + 0xc);
+    w = *(float *)(in_EAX + 4);
+    h = *(float *)(in_EAX + 8);
+    s0 = *(float *)(in_EAX + 0xc);
     ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x1e),
                        *(float **)(in_EAX + 0x10),*(float **)(in_EAX + 0x14),unaff_EDI,
-                       (float *)unaff_ESI,unaff_EBX,(int)fVar9);
+                       (float *)unaff_ESI,unaff_EBX,(int)s0);
     R_AddCmdDrawStretchComposite
-              (fVar1,fVar2,fVar9,fVar8 - fVar7,fVar6 - fVar7,fVar8 + fVar7,fVar6 + fVar7,
-               DAT_03507bb8,unaff_EDI,unaff_ESI);
+              (w,h,s0,fVar6 - fVar5,fVar4 - fVar5,fVar6 + fVar5,fVar4 + fVar5,DAT_03507bb8,unaff_EDI
+               ,unaff_ESI);
   }
   return;
 }

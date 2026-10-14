@@ -312,13 +312,13 @@ void __cdecl CL_ParseGamestate(int param_1,msg_t *param_2)
   char *pcVar11;
   int iVar12;
   uchar *puVar13;
+  uchar *src;
   uchar *puVar14;
-  uchar *puVar15;
-  void *pvVar16;
+  void *pvVar15;
   GlassesClient *this;
-  int iVar17;
+  int iVar16;
   int unaff_EBP;
-  int iVar18;
+  int iVar17;
   uint unaff_ESI;
   msg_t *unaff_EDI;
   char acStack_124 [32];
@@ -424,36 +424,36 @@ void __cdecl CL_ParseGamestate(int param_1,msg_t *param_2)
     if (uVar9 == 2) {
       iVar8 = -1;
       iVar10 = MSG_ReadShort(unaff_EDI);
-      iVar18 = 0;
+      iVar17 = 0;
       if (DAT_01f3b124 != 0) {
         if (((*(int *)(DAT_01f3b124 + 4) < 1) || (*(int *)(DAT_01f3b124 + 8) < 1)) ||
            (pcVar11 = (char *)**(int **)(DAT_01f3b124 + 0xc), pcVar11 == (char *)0x0)) {
           pcVar11 = "";
         }
-        iVar17 = atoi(pcVar11);
+        iVar16 = atoi(pcVar11);
         iVar12 = DAT_01f3b124;
         goto joined_r0x004fd1f6;
       }
-      iVar17 = 0;
+      iVar16 = 0;
       iVar12 = DAT_01f3b124;
       do {
         while( true ) {
-          if (0xcbb < iVar18) goto joined_r0x004fd253;
-          iVar18 = iVar18 + 1;
+          if (0xcbb < iVar17) goto joined_r0x004fd253;
+          iVar17 = iVar17 + 1;
           if (iVar12 != 0) break;
-          iVar17 = 0;
+          iVar16 = 0;
         }
-        if (((*(int *)(iVar12 + 4) < 1) || (*(int *)(iVar12 + 8) <= iVar18)) ||
-           ((iVar18 < 0 ||
-            (pcVar11 = *(char **)(*(int *)(iVar12 + 0xc) + *(int *)(iVar12 + 4) * iVar18 * 8),
+        if (((*(int *)(iVar12 + 4) < 1) || (*(int *)(iVar12 + 8) <= iVar17)) ||
+           ((iVar17 < 0 ||
+            (pcVar11 = *(char **)(*(int *)(iVar12 + 0xc) + *(int *)(iVar12 + 4) * iVar17 * 8),
             pcVar11 == (char *)0x0)))) {
           pcVar11 = "";
         }
-        iVar17 = atoi(pcVar11);
+        iVar16 = atoi(pcVar11);
         iVar12 = DAT_01f3b124;
 joined_r0x004fd1f6:
         DAT_01f3b124 = iVar12;
-      } while (iVar17 == 0);
+      } while (iVar16 == 0);
 joined_r0x004fd253:
       for (; iVar10 != 0; iVar10 = iVar10 + -1) {
         iVar12 = MSG_ReadBit(unaff_EDI);
@@ -463,27 +463,27 @@ joined_r0x004fd253:
         else {
           iVar8 = iVar8 + 1;
         }
-        iVar12 = iVar18;
+        iVar12 = iVar17;
         if ((iVar8 < 0) || (iVar4 = DAT_01f3b124, 0xcbb < iVar8)) {
           Com_Error(ERR_DROP,"\x15configstring > MAX_CONFIGSTRINGS");
           iVar4 = DAT_01f3b124;
         }
-        while (iVar18 = iVar12, DAT_01f3b124 = iVar4, iVar17 != 0) {
-          if (iVar8 <= iVar17) {
-            if ((iVar17 != 0) && (iVar17 == iVar8)) {
-              iVar18 = iVar12 + 1;
+        while (iVar17 = iVar12, DAT_01f3b124 = iVar4, iVar16 != 0) {
+          if (iVar8 <= iVar16) {
+            if ((iVar16 != 0) && (iVar16 == iVar8)) {
+              iVar17 = iVar12 + 1;
               if (iVar4 == 0) {
 LAB_004fd378:
-                iVar17 = 0;
-                iVar18 = iVar12 + 1;
+                iVar16 = 0;
+                iVar17 = iVar12 + 1;
               }
               else {
-                if ((((*(int *)(iVar4 + 4) < 1) || (*(int *)(iVar4 + 8) <= iVar18)) || (iVar18 < 0))
-                   || (pcVar11 = *(char **)(*(int *)(iVar4 + 0xc) + *(int *)(iVar4 + 4) * iVar18 * 8
+                if ((((*(int *)(iVar4 + 4) < 1) || (*(int *)(iVar4 + 8) <= iVar17)) || (iVar17 < 0))
+                   || (pcVar11 = *(char **)(*(int *)(iVar4 + 0xc) + *(int *)(iVar4 + 4) * iVar17 * 8
                                            ), pcVar11 == (char *)0x0)) {
                   pcVar11 = "";
                 }
-                iVar17 = atoi(pcVar11);
+                iVar16 = atoi(pcVar11);
               }
             }
             break;
@@ -503,44 +503,44 @@ LAB_004fd378:
             uVar3 = *puVar13;
             puVar13 = puVar13 + 1;
           } while (uVar3 != '\0');
-          (&DAT_047ab254)[iVar17] = DAT_047be544;
+          (&DAT_047ab254)[iVar16] = DAT_047be544;
           memcpy(&DAT_047ae544 + (int)DAT_047be544,(uchar *)pcVar11,
                  (ulong)(puVar13 + (1 - (int)(pcVar11 + 1))));
           DAT_047be544 = puVar13 + (int)(DAT_047be544 + (1 - (int)(pcVar11 + 1)));
-          iVar18 = iVar12 + 1;
+          iVar17 = iVar12 + 1;
           if (iVar4 == 0) goto LAB_004fd378;
-          if (((*(int *)(iVar4 + 4) < 1) || (*(int *)(iVar4 + 8) <= iVar18)) ||
-             ((iVar18 < 0 ||
-              (pcVar11 = *(char **)(*(int *)(iVar4 + 0xc) + *(int *)(iVar4 + 4) * iVar18 * 8),
+          if (((*(int *)(iVar4 + 4) < 1) || (*(int *)(iVar4 + 8) <= iVar17)) ||
+             ((iVar17 < 0 ||
+              (pcVar11 = *(char **)(*(int *)(iVar4 + 0xc) + *(int *)(iVar4 + 4) * iVar17 * 8),
               pcVar11 == (char *)0x0)))) {
             pcVar11 = "";
           }
-          iVar17 = atoi(pcVar11);
-          iVar12 = iVar18;
+          iVar16 = atoi(pcVar11);
+          iVar12 = iVar17;
           iVar4 = DAT_01f3b124;
         }
-        puVar14 = (uchar *)MSG_ReadBigString(unaff_EDI);
-        puVar13 = puVar14 + 1;
-        puVar15 = puVar14;
+        src = (uchar *)MSG_ReadBigString(unaff_EDI);
+        puVar13 = src + 1;
+        puVar14 = src;
         do {
-          uVar3 = *puVar15;
-          puVar15 = puVar15 + 1;
+          uVar3 = *puVar14;
+          puVar14 = puVar14 + 1;
         } while (uVar3 != '\0');
-        if (0x10000 < (int)(puVar15 + (int)(DAT_047be544 + (1 - (int)puVar13)))) {
+        if (0x10000 < (int)(puVar14 + (int)(DAT_047be544 + (1 - (int)puVar13)))) {
           Com_Error(ERR_DROP,"\x15MAX_GAMESTATE_CHARS exceeded");
         }
         (&DAT_047ab254)[iVar8] = DAT_047be544;
-        memcpy(&DAT_047ae544 + (int)DAT_047be544,puVar14,(ulong)(puVar15 + (1 - (int)puVar13)));
-        DAT_047be544 = puVar15 + (int)(DAT_047be544 + (1 - (int)puVar13));
+        memcpy(&DAT_047ae544 + (int)DAT_047be544,src,(ulong)(puVar14 + (1 - (int)puVar13)));
+        DAT_047be544 = puVar14 + (int)(DAT_047be544 + (1 - (int)puVar13));
         iVar12 = DAT_01f3b124;
       }
-      while (iVar17 != 0) {
+      while (iVar16 != 0) {
         if (iVar12 == 0) {
           pcVar11 = "";
         }
-        else if ((((*(int *)(iVar12 + 4) < 2) || (*(int *)(iVar12 + 8) <= iVar18)) || (iVar18 < 0))
+        else if ((((*(int *)(iVar12 + 4) < 2) || (*(int *)(iVar12 + 8) <= iVar17)) || (iVar17 < 0))
                 || (pcVar11 = *(char **)(*(int *)(iVar12 + 0xc) + 8 +
-                                        *(int *)(iVar12 + 4) * iVar18 * 8),
+                                        *(int *)(iVar12 + 4) * iVar17 * 8),
                    (uchar *)pcVar11 == (uchar *)0x0)) {
           pcVar11 = "";
         }
@@ -549,30 +549,30 @@ LAB_004fd378:
           uVar3 = *puVar13;
           puVar13 = puVar13 + 1;
         } while (uVar3 != '\0');
-        (&DAT_047ab254)[iVar17] = DAT_047be544;
+        (&DAT_047ab254)[iVar16] = DAT_047be544;
         memcpy(&DAT_047ae544 + (int)DAT_047be544,(uchar *)pcVar11,
                (ulong)(puVar13 + (1 - (int)(pcVar11 + 1))));
         DAT_047be544 = puVar13 + (int)(DAT_047be544 + (1 - (int)(pcVar11 + 1)));
-        iVar18 = iVar18 + 1;
+        iVar17 = iVar17 + 1;
         if (iVar12 == 0) break;
-        if (((*(int *)(iVar12 + 4) < 1) || (*(int *)(iVar12 + 8) <= iVar18)) ||
-           ((iVar18 < 0 ||
-            (pcVar11 = *(char **)(*(int *)(iVar12 + 0xc) + *(int *)(iVar12 + 4) * iVar18 * 8),
+        if (((*(int *)(iVar12 + 4) < 1) || (*(int *)(iVar12 + 8) <= iVar17)) ||
+           ((iVar17 < 0 ||
+            (pcVar11 = *(char **)(*(int *)(iVar12 + 0xc) + *(int *)(iVar12 + 4) * iVar17 * 8),
             pcVar11 == (char *)0x0)))) {
           pcVar11 = "";
         }
-        iVar17 = atoi(pcVar11);
+        iVar16 = atoi(pcVar11);
         iVar12 = DAT_01f3b124;
       }
       sscanf(&DAT_047ae544 + DAT_047ab288,"%f %f %f");
     }
     else if (uVar9 == 4) {
-      pvVar16 = (void *)MSG_ReadEntityIndex(unaff_EDI,unaff_ESI);
-      if (((int)pvVar16 < 0) || (0x3ff < (int)pvVar16)) {
-        Com_Error(ERR_DROP,"\x15Baseline number out of range: %i",pvVar16);
+      pvVar15 = (void *)MSG_ReadEntityIndex(unaff_EDI,unaff_ESI);
+      if (((int)pvVar15 < 0) || (0x3ff < (int)pvVar15)) {
+        Com_Error(ERR_DROP,"\x15Baseline number out of range: %i",pvVar15);
       }
       memset(auStack_e4,'\0',0xe0);
-      MSG_ReadDeltaEntityStruct(param_2,0,auStack_e4,pvVar16,(uint)unaff_EDI,unaff_ESI,unaff_EBP);
+      MSG_ReadDeltaEntityStruct(param_2,0,auStack_e4,pvVar15,(uint)unaff_EDI,unaff_ESI,unaff_EBP);
     }
     else {
       if (uVar9 != 3) goto LAB_004fd5b9;

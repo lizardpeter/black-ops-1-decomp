@@ -12,7 +12,7 @@ void __cdecl R_StartADSZScaleFrame(void)
 
 // 00AB8CC0  R_SetADSZScale  (gfx_d3d/r_adszscale.cpp:28)
 
-void __cdecl R_SetADSZScale(uint param_1,float param_2)
+void __cdecl R_SetADSZScale(uint viewport,float pos)
 
 {
   uint uVar1;
@@ -21,7 +21,7 @@ void __cdecl R_SetADSZScale(uint param_1,float param_2)
   if ((int)uVar1 < 0) {
     uVar1 = (uVar1 - 1 | 0xfffffffe) + 1;
   }
-  adsZScale[param_1 + uVar1][0] = param_2;
+  adsZScale[viewport + uVar1][0] = pos;
   return;
 }
 
@@ -31,7 +31,7 @@ void __cdecl R_SetADSZScale(uint param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x00ab8d2a) */
 /* WARNING: Removing unreachable block (ram,0x00ab8d54) */
 
-void __cdecl R_SetADSZScaleConstants(uint param_1,GfxCmdBufSourceState *param_2)
+void __cdecl R_SetADSZScaleConstants(uint viewport,GfxCmdBufSourceState *source)
 
 {
   uint uVar1;
@@ -40,11 +40,11 @@ void __cdecl R_SetADSZScaleConstants(uint param_1,GfxCmdBufSourceState *param_2)
   if ((int)uVar1 < 0) {
     uVar1 = (uVar1 - 1 | 0xfffffffe) + 1;
   }
-  (param_2->input).consts[0xac][0] = adsZScale[param_1 + uVar1][0];
-  (param_2->input).consts[0xac][1] = 0.0;
-  (param_2->input).consts[0xac][2] = 0.0;
-  (param_2->input).consts[0xac][3] = 0.0;
-  R_DirtyCodeConstant(param_2,0xac);
+  (source->input).consts[0xac][0] = adsZScale[viewport + uVar1][0];
+  (source->input).consts[0xac][1] = 0.0;
+  (source->input).consts[0xac][2] = 0.0;
+  (source->input).consts[0xac][3] = 0.0;
+  R_DirtyCodeConstant(source,0xac);
   return;
 }
 

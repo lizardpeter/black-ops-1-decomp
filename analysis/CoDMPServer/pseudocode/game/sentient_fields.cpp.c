@@ -7,14 +7,14 @@
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl SentientScr_ReadOnly(sentient_s *param_1,sentient_fields_s *param_2)
+void __cdecl SentientScr_ReadOnly(sentient_s *pSelf,sentient_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *error;
   
-  if (param_1 == (sentient_s *)0x0) {
+  if (pSelf == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x43,0,
                              "%s");
     if (!bVar2) {
@@ -24,30 +24,32 @@ void __cdecl SentientScr_ReadOnly(sentient_s *param_1,sentient_fields_s *param_2
     }
   }
   bVar2 = false;
-  pcVar3 = va("sentient property \'%s\' is read-only");
-  Scr_Error(pcVar3,bVar2);
+  error = va("sentient property \'%s\' is read-only");
+  Scr_Error(error,bVar2);
   return;
 }
 
 
 // 00930C90  SentientScr_SetTeam  (game/sentient_fields.cpp:78)
 
+/* WARNING: Variable defined which should be unmapped: pszTeam */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl SentientScr_SetTeam(sentient_s *param_1,sentient_fields_s *param_2)
+void __cdecl SentientScr_SetTeam(sentient_s *pSelf,sentient_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  sentient_s *psVar3;
-  int iVar4;
-  char *pcVar5;
+  sentient_s *s0;
+  int iVar3;
+  char *error;
   team_t unaff_EBP;
+  char *pszTeam;
   
-  if (param_1 == (sentient_s *)0x0) {
+  if (pSelf == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x4f,0,
                              "%s");
     if (!bVar2) {
@@ -56,30 +58,30 @@ void __cdecl SentientScr_SetTeam(sentient_s *param_1,sentient_fields_s *param_2)
       return;
     }
   }
-  psVar3 = (sentient_s *)Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = I_stricmp((char *)psVar3,"axis");
-  if (iVar4 == 0) {
-    Sentient_SetTeam(psVar3,unaff_EBP);
+  s0 = (sentient_s *)Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar3 = I_stricmp((char *)s0,"axis");
+  if (iVar3 == 0) {
+    Sentient_SetTeam(s0,unaff_EBP);
   }
   else {
-    iVar4 = I_stricmp((char *)psVar3,"allies");
-    if (iVar4 == 0) {
-      Sentient_SetTeam(psVar3,unaff_EBP);
+    iVar3 = I_stricmp((char *)s0,"allies");
+    if (iVar3 == 0) {
+      Sentient_SetTeam(s0,unaff_EBP);
     }
     else {
-      iVar4 = I_stricmp((char *)psVar3,"spectator");
-      if (iVar4 == 0) {
-        Sentient_SetTeam(psVar3,unaff_EBP);
+      iVar3 = I_stricmp((char *)s0,"spectator");
+      if (iVar3 == 0) {
+        Sentient_SetTeam(s0,unaff_EBP);
       }
       else {
-        iVar4 = I_stricmp((char *)psVar3,"free");
-        if (iVar4 == 0) {
-          Sentient_SetTeam(psVar3,unaff_EBP);
+        iVar3 = I_stricmp((char *)s0,"free");
+        if (iVar3 == 0) {
+          Sentient_SetTeam(s0,unaff_EBP);
         }
         else {
           bVar2 = false;
-          pcVar5 = va("unknown team \'%s\', should be axis, allies, or neutral\n");
-          Scr_Error(pcVar5,bVar2);
+          error = va("unknown team \'%s\', should be axis, allies, or neutral\n");
+          Scr_Error(error,bVar2);
         }
       }
     }
@@ -95,27 +97,27 @@ void __cdecl SentientScr_SetTeam(sentient_s *param_1,sentient_fields_s *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl SentientScr_GetTeam(sentient_s *param_1,sentient_fields_s *param_2)
+void __cdecl SentientScr_GetTeam(sentient_s *pSelf,sentient_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (sentient_s *)0x0) &&
+  if ((pSelf == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x6c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((int)param_1->eTeam < 0) || (3 < (int)param_1->eTeam)) &&
+  if ((((int)pSelf->eTeam < 0) || (3 < (int)pSelf->eTeam)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x6e,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_1->eTeam) {
+  switch(pSelf->eTeam) {
   case TEAM_BAD:
     Scr_AddString("free",SCRIPTINSTANCE_SERVER);
     break;
@@ -153,14 +155,14 @@ void __cdecl GScr_AddFieldsForSentient(void)
 {
   code *pcVar1;
   bool bVar2;
-  sentient_fields_s *local_8;
+  sentient_fields_s *f;
   
-  local_8 = fields;
+  f = fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if (((int)&local_8[-0x8d158].setter / 0x18 & 0xc000U) != 0) {
+    if (((int)&f[-0x8d158].setter / 0x18 & 0xc000U) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x9e,0
                                ,"%s");
       if (!bVar2) {
@@ -169,8 +171,7 @@ void __cdecl GScr_AddFieldsForSentient(void)
         return;
       }
     }
-    if ((int)&local_8[-0x8d158].setter / 0x18 != ((int)&local_8[-0x8d158].setter / 0x18 & 0xffffU))
-    {
+    if ((int)&f[-0x8d158].setter / 0x18 != ((int)&f[-0x8d158].setter / 0x18 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0x9f,0
                                ,"%s");
       if (!bVar2) {
@@ -179,9 +180,9 @@ void __cdecl GScr_AddFieldsForSentient(void)
         return;
       }
     }
-    Scr_AddClassField(0,local_8->name,(int)&local_8[-0x8d158].setter / 0x18 & 0xffffU | 0x4000,
+    Scr_AddClassField(0,f->name,(int)&f[-0x8d158].setter / 0x18 & 0xffffU | 0x4000,
                       SCRIPTINSTANCE_SERVER);
-    local_8 = local_8 + 1;
+    f = f + 1;
   } while( true );
 }
 
@@ -193,13 +194,14 @@ void __cdecl GScr_AddFieldsForSentient(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_SetSentientField(sentient_s *param_1,int param_2)
+void __cdecl Scr_SetSentientField(sentient_s *sentient,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  sentient_fields_s *f;
   
-  if (param_1 == (sentient_s *)0x0) {
+  if (sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0xaf,0,
                              "%s");
     if (!bVar2) {
@@ -208,7 +210,7 @@ void __cdecl Scr_SetSentientField(sentient_s *param_1,int param_2)
       return;
     }
   }
-  if (0x12 < (uint)param_2) {
+  if (0x12 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",0xb0,0,
                              "%s");
     if (!bVar2) {
@@ -217,11 +219,11 @@ void __cdecl Scr_SetSentientField(sentient_s *param_1,int param_2)
       return;
     }
   }
-  if (fields[param_2].setter == (_func___cdecl_void_sentient_s_ptr_sentient_fields_s_ptr *)0x0) {
-    GScr_SetGenericField((uchar *)param_1,fields[param_2].type,fields[param_2].ofs,0);
+  if (fields[offset].setter == (_func___cdecl_void_sentient_s_ptr_sentient_fields_s_ptr *)0x0) {
+    GScr_SetGenericField((uchar *)sentient,fields[offset].type,fields[offset].ofs,0);
   }
   else {
-    (*fields[param_2].setter)(param_1,fields + param_2);
+    (*fields[offset].setter)(sentient,fields + offset);
   }
   return;
 }
@@ -234,13 +236,14 @@ void __cdecl Scr_SetSentientField(sentient_s *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_GetSentientField(sentient_s *param_1,int param_2)
+void __cdecl Scr_GetSentientField(sentient_s *sentient,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  sentient_fields_s *f;
   
-  if (param_1 == (sentient_s *)0x0) {
+  if (sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",199,0,
                              "%s");
     if (!bVar2) {
@@ -249,7 +252,7 @@ void __cdecl Scr_GetSentientField(sentient_s *param_1,int param_2)
       return;
     }
   }
-  if (0x12 < (uint)param_2) {
+  if (0x12 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp",200,0,
                              "%s");
     if (!bVar2) {
@@ -258,11 +261,11 @@ void __cdecl Scr_GetSentientField(sentient_s *param_1,int param_2)
       return;
     }
   }
-  if (fields[param_2].getter == (_func___cdecl_void_sentient_s_ptr_sentient_fields_s_ptr *)0x0) {
-    GScr_GetGenericField((uchar *)param_1,fields[param_2].type,fields[param_2].ofs,0);
+  if (fields[offset].getter == (_func___cdecl_void_sentient_s_ptr_sentient_fields_s_ptr *)0x0) {
+    GScr_GetGenericField((uchar *)sentient,fields[offset].type,fields[offset].ofs,0);
   }
   else {
-    (*fields[param_2].getter)(param_1,fields + param_2);
+    (*fields[offset].getter)(sentient,fields + offset);
   }
   return;
 }

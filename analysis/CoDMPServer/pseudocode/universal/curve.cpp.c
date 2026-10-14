@@ -13,15 +13,15 @@ cCurve * __thiscall cCurve::cCurve(cCurve *this)
 // 007B9AD0  GetPositionOnCubic  (universal/curve.cpp:49)
 
 void __cdecl
-GetPositionOnCubic(float *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-                  float *param_6)
+GetPositionOnCubic(float *startPos,float *startVel,float *endPos,float *endVel,float time,
+                  float *output)
 
 {
-  float local_a4;
+  float resVec;
   float local_a0;
   float local_9c;
-  float local_94 [16];
-  float local_54;
+  float result [16];
+  float mat;
   float local_50;
   float local_4c;
   float local_48;
@@ -37,59 +37,61 @@ GetPositionOnCubic(float *param_1,float *param_2,float *param_3,float *param_4,f
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float timeVector;
   float local_10;
   float local_c;
   float local_8;
   
-  local_54 = *param_1;
-  local_50 = param_1[1];
-  local_4c = param_1[2];
+  mat = *startPos;
+  local_50 = startPos[1];
+  local_4c = startPos[2];
   local_48 = 0.0;
-  local_44 = *param_3;
-  local_40 = param_3[1];
-  local_3c = param_3[2];
+  local_44 = *endPos;
+  local_40 = endPos[1];
+  local_3c = endPos[2];
   local_38 = 0;
-  local_34 = *param_2;
-  local_30 = param_2[1];
-  local_2c = param_2[2];
+  local_34 = *startVel;
+  local_30 = startVel[1];
+  local_2c = startVel[2];
   local_28 = 0;
-  local_24 = *param_4;
-  local_20 = param_4[1];
-  local_1c = param_4[2];
+  local_24 = *endVel;
+  local_20 = endVel[1];
+  local_1c = endVel[2];
   local_18 = 0;
-  MatrixMultiply44(gHermiteMatrix,(float (*) [4])&local_54,(float (*) [4])local_94);
-  local_14 = param_5 * param_5 * param_5;
-  local_10 = param_5 * param_5;
-  local_c = param_5;
+  MatrixMultiply44(gHermiteMatrix,(float (*) [4])&mat,(float (*) [4])result);
+  timeVector = time * time * time;
+  local_10 = time * time;
+  local_c = time;
   local_8 = 1.0;
-  MatrixTransformVector44(&local_14,(float (*) [4])local_94,&local_a4);
-  *param_6 = local_a4;
-  param_6[1] = local_a0;
-  param_6[2] = local_9c;
+  MatrixTransformVector44(&timeVector,(float (*) [4])result,&resVec);
+  *output = resVec;
+  output[1] = local_a0;
+  output[2] = local_9c;
   return;
 }
 
 
 // 007B9C50  GetPositionOnSpine  (universal/curve.cpp:69)
 
-void __cdecl
-GetPositionOnSpine(float *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-                  float *param_6)
+void __cdecl GetPositionOnSpine(float *p1,float *p2,float *p3,float *p4,float time,float *output)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
+  float u_3;
+  float u;
+  float u_2;
+  float u_4;
   
-  fVar1 = (1.0 - param_5) * (1.0 - param_5) * (1.0 - param_5);
-  fVar2 = param_5 * 3.0 * (1.0 - param_5) * (1.0 - param_5);
-  fVar3 = param_5 * 3.0 * param_5 * (1.0 - param_5);
-  fVar4 = param_5 * param_5 * param_5;
-  *param_6 = *param_1 * fVar1 + *param_2 * fVar2 + *param_3 * fVar3 + *param_4 * fVar4;
-  param_6[1] = param_1[1] * fVar1 + param_2[1] * fVar2 + param_3[1] * fVar3 + param_4[1] * fVar4;
-  param_6[2] = param_1[2] * fVar1 + param_2[2] * fVar2 + param_3[2] * fVar3 + param_4[2] * fVar4;
+  fVar1 = (1.0 - time) * (1.0 - time) * (1.0 - time);
+  fVar2 = time * 3.0 * (1.0 - time) * (1.0 - time);
+  fVar3 = time * 3.0 * time * (1.0 - time);
+  fVar4 = time * time * time;
+  *output = *p1 * fVar1 + *p2 * fVar2 + *p3 * fVar3 + *p4 * fVar4;
+  output[1] = p1[1] * fVar1 + p2[1] * fVar2 + p3[1] * fVar3 + p4[1] * fVar4;
+  output[2] = p1[2] * fVar1 + p2[2] * fVar2 + p3[2] * fVar3 + p4[2] * fVar4;
   return;
 }
 
@@ -99,7 +101,7 @@ GetPositionOnSpine(float *param_1,float *param_2,float *param_3,float *param_4,f
 void __thiscall cCurve::Reset(cCurve *this)
 
 {
-  int local_8;
+  int i;
   
   this->mActive = false;
   this->mDraw = false;
@@ -115,16 +117,16 @@ void __thiscall cCurve::Reset(cCurve *this)
   this->mCurPos = 0.0;
   this->mCurServerPos = 0.0;
   this->mSpeed = 12.0;
-  for (local_8 = 0; local_8 < 100; local_8 = local_8 + 1) {
-    this->mNodes[local_8].pos[2] = 0.0;
-    this->mNodes[local_8].pos[1] = 0.0;
-    this->mNodes[local_8].pos[0] = 0.0;
-    this->mNodes[local_8].vel[2] = 0.0;
-    this->mNodes[local_8].vel[1] = 0.0;
-    this->mNodes[local_8].vel[0] = 0.0;
-    this->mNodes[local_8].dist = 0.0;
-    this->mNodes[local_8].totalDist = 0.0;
-    this->mNodes[local_8].bReached = false;
+  for (i = 0; i < 100; i = i + 1) {
+    this->mNodes[i].pos[2] = 0.0;
+    this->mNodes[i].pos[1] = 0.0;
+    this->mNodes[i].pos[0] = 0.0;
+    this->mNodes[i].vel[2] = 0.0;
+    this->mNodes[i].vel[1] = 0.0;
+    this->mNodes[i].vel[0] = 0.0;
+    this->mNodes[i].dist = 0.0;
+    this->mNodes[i].totalDist = 0.0;
+    this->mNodes[i].bReached = false;
   }
   return;
 }
@@ -154,14 +156,14 @@ void __thiscall cCurve::Reinit(cCurve *this)
 
 // 007BA060  AddNode  (universal/curve.cpp:147)
 
-void __thiscall cCurve::AddNode(cCurve *this,float *param_1)
+void __thiscall cCurve::AddNode(cCurve *this,float *p)
 
 {
   code *pcVar1;
   bool bVar2;
   nodeData *pnVar3;
   float fVar4;
-  float local_10;
+  float diff;
   float local_c;
   float local_8;
   
@@ -181,18 +183,18 @@ void __thiscall cCurve::AddNode(cCurve *this,float *param_1)
       return;
     }
   }
-  this->mNodes[this->mNumNodes].pos[0] = *param_1;
-  this->mNodes[this->mNumNodes].pos[1] = param_1[1];
-  this->mNodes[this->mNumNodes].pos[2] = param_1[2];
+  this->mNodes[this->mNumNodes].pos[0] = *p;
+  this->mNodes[this->mNumNodes].pos[1] = p[1];
+  this->mNodes[this->mNumNodes].pos[2] = p[2];
   if (this->mNumNodes == 0) {
     this->mDistance = 0.0;
   }
   else {
     pnVar3 = this->mNodes + this->mNumNodes + -1;
-    local_10 = pnVar3->pos[0] - *param_1;
-    local_c = pnVar3->pos[1] - param_1[1];
-    local_8 = pnVar3->pos[2] - param_1[2];
-    fVar4 = Abs((phys_vec3 *)&local_10);
+    diff = pnVar3->pos[0] - *p;
+    local_c = pnVar3->pos[1] - p[1];
+    local_8 = pnVar3->pos[2] - p[2];
+    fVar4 = Abs((phys_vec3 *)&diff);
     this->mNodes[this->mNumNodes + -1].dist = fVar4;
     this->mDistance = this->mDistance + this->mNodes[this->mNumNodes + -1].dist;
     this->mNodes[this->mNumNodes].totalDist = this->mDistance;
@@ -204,7 +206,7 @@ void __thiscall cCurve::AddNode(cCurve *this,float *param_1)
 
 // 007BA220  AddNode  (universal/curve.cpp:176)
 
-void __thiscall cCurve::AddNode(cCurve *this,float *param_1,float param_2)
+void __thiscall cCurve::AddNode(cCurve *this,float *p,float timePeriod)
 
 {
   code *pcVar1;
@@ -226,14 +228,14 @@ void __thiscall cCurve::AddNode(cCurve *this,float *param_1,float param_2)
       return;
     }
   }
-  this->mNodes[this->mNumNodes].pos[0] = *param_1;
-  this->mNodes[this->mNumNodes].pos[1] = param_1[1];
-  this->mNodes[this->mNumNodes].pos[2] = param_1[2];
+  this->mNodes[this->mNumNodes].pos[0] = *p;
+  this->mNodes[this->mNumNodes].pos[1] = p[1];
+  this->mNodes[this->mNumNodes].pos[2] = p[2];
   if (this->mNumNodes == 0) {
     this->mDistance = 0.0;
   }
   else {
-    this->mNodes[this->mNumNodes + -1].dist = param_2;
+    this->mNodes[this->mNumNodes + -1].dist = timePeriod;
     this->mDistance = this->mDistance + this->mNodes[this->mNumNodes + -1].dist;
     this->mNodes[this->mNumNodes].totalDist = this->mDistance;
   }
@@ -245,95 +247,92 @@ void __thiscall cCurve::AddNode(cCurve *this,float *param_1,float param_2)
 
 // 007BA390  GetPosition  (universal/curve.cpp:206)
 
-void __thiscall cCurve::GetPosition(cCurve *this,float param_1,float *param_2)
+void __thiscall cCurve::GetPosition(cCurve *this,float time,float *pos)
 
 {
   float *pfVar1;
   nodeData *pnVar2;
-  float local_34;
-  float local_30;
+  float t;
+  float endVel;
   float local_2c;
   float local_28;
-  float local_24;
+  float startVel;
   float local_20;
   float local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  int local_8;
+  int cNum;
+  float curveTime;
+  float currentDistance;
+  float distance;
+  int i;
   
-  if (0.0 <= param_1) {
-    if (1.0 < param_1) {
-      param_1 = 1.0;
+  if (0.0 <= time) {
+    if (1.0 < time) {
+      time = 1.0;
     }
   }
   else {
-    param_1 = 0.0;
+    time = 0.0;
   }
-  local_c = param_1 * this->mDistance;
-  local_10 = 0.0;
-  local_8 = 0;
+  distance = time * this->mDistance;
+  currentDistance = 0.0;
+  i = 0;
   if (this->mCurveType == CURVE_BSPLINE) {
-    for (; ((pfVar1 = &this->mNodes[local_8].totalDist, *pfVar1 <= local_c && local_c != *pfVar1 &&
-            (local_8 < this->mNumNodes)) && (local_8 < 100)); local_8 = local_8 + 1) {
+    for (; ((pfVar1 = &this->mNodes[i].totalDist, *pfVar1 <= distance && distance != *pfVar1 &&
+            (i < this->mNumNodes)) && (i < 100)); i = i + 1) {
     }
   }
   else {
-    for (; (local_10 + this->mNodes[local_8].dist < local_c && (local_8 < 100));
-        local_8 = local_8 + 1) {
-      local_10 = local_10 + this->mNodes[local_8].dist;
+    for (; (currentDistance + this->mNodes[i].dist < distance && (i < 100)); i = i + 1) {
+      currentDistance = currentDistance + this->mNodes[i].dist;
     }
   }
   if (this->mCurveType == CURVE_BSPLINE) {
-    if (local_8 < 4) {
-      local_8 = 0;
+    if (i < 4) {
+      i = 0;
     }
     else {
-      local_18 = (int)ROUND((float)(local_8 + -4) / 3.0 - 0.5);
-      local_8 = local_18 * 3 + 3;
+      cNum = (int)ROUND((float)(i + -4) / 3.0 - 0.5);
+      i = cNum * 3 + 3;
     }
-    if (local_8 < 1) {
-      if (this->mNodes[local_8 + 3].totalDist <= 1e-06) {
-        local_14 = 1.0;
+    if (i < 1) {
+      if (this->mNodes[i + 3].totalDist <= 1e-06) {
+        curveTime = 1.0;
       }
       else {
-        local_14 = local_c / this->mNodes[local_8 + 3].totalDist;
+        curveTime = distance / this->mNodes[i + 3].totalDist;
       }
     }
     else {
-      local_14 = (local_c - this->mNodes[local_8].totalDist) /
-                 (this->mNodes[local_8 + 3].totalDist - this->mNodes[local_8].totalDist);
+      curveTime = (distance - this->mNodes[i].totalDist) /
+                  (this->mNodes[i + 3].totalDist - this->mNodes[i].totalDist);
     }
-    if (this->mNodes[local_8 + 3].totalDist <= 1e-06) {
-      pnVar2 = this->mNodes + local_8;
-      *param_2 = pnVar2->pos[0];
-      param_2[1] = pnVar2->pos[1];
-      param_2[2] = pnVar2->pos[2];
+    if (this->mNodes[i + 3].totalDist <= 1e-06) {
+      pnVar2 = this->mNodes + i;
+      *pos = pnVar2->pos[0];
+      pos[1] = pnVar2->pos[1];
+      pos[2] = pnVar2->pos[2];
     }
     else {
-      GetPositionOnSpine(this->mNodes[local_8].pos,this->mNodes[local_8 + 1].pos,
-                         this->mNodes[local_8 + 2].pos,this->mNodes[local_8 + 3].pos,local_14,
-                         param_2);
+      GetPositionOnSpine(this->mNodes[i].pos,this->mNodes[i + 1].pos,this->mNodes[i + 2].pos,
+                         this->mNodes[i + 3].pos,curveTime,pos);
     }
   }
   else {
-    local_34 = local_c - local_10;
-    if (this->mNodes[local_8].dist != 0.0) {
-      local_34 = local_34 / this->mNodes[local_8].dist;
+    t = distance - currentDistance;
+    if (this->mNodes[i].dist != 0.0) {
+      t = t / this->mNodes[i].dist;
     }
-    local_1c = this->mNodes[local_8].dist;
-    pfVar1 = this->mNodes[local_8].vel;
-    local_24 = local_1c * *pfVar1;
+    local_1c = this->mNodes[i].dist;
+    pfVar1 = this->mNodes[i].vel;
+    startVel = local_1c * *pfVar1;
     local_20 = local_1c * pfVar1[1];
     local_1c = local_1c * pfVar1[2];
-    local_28 = this->mNodes[local_8].dist;
-    pfVar1 = this->mNodes[local_8 + 1].vel;
-    local_30 = local_28 * *pfVar1;
+    local_28 = this->mNodes[i].dist;
+    pfVar1 = this->mNodes[i + 1].vel;
+    endVel = local_28 * *pfVar1;
     local_2c = local_28 * pfVar1[1];
     local_28 = local_28 * pfVar1[2];
-    GetPositionOnCubic(this->mNodes[local_8].pos,&local_24,this->mNodes[local_8 + 1].pos,&local_30,
-                       local_34,param_2);
+    GetPositionOnCubic(this->mNodes[i].pos,&startVel,this->mNodes[i + 1].pos,&endVel,t,pos);
   }
   return;
 }
@@ -341,7 +340,7 @@ void __thiscall cCurve::GetPosition(cCurve *this,float param_1,float *param_2)
 
 // 007BA740  GetStartVelocity  (universal/curve.cpp:294)
 
-void __thiscall cCurve::GetStartVelocity(cCurve *this,int param_1,float *param_2)
+void __thiscall cCurve::GetStartVelocity(cCurve *this,int index,float *vel)
 
 {
   float *pfVar1;
@@ -355,26 +354,26 @@ void __thiscall cCurve::GetStartVelocity(cCurve *this,int param_1,float *param_2
   nodeData *pnVar9;
   float fVar10;
   
-  pnVar8 = this->mNodes + param_1;
-  pnVar9 = this->mNodes + param_1 + 1;
+  pnVar8 = this->mNodes + index;
+  pnVar9 = this->mNodes + index + 1;
   fVar2 = pnVar9->pos[1];
   fVar3 = pnVar8->pos[1];
   fVar4 = pnVar9->pos[2];
   fVar5 = pnVar8->pos[2];
-  fVar10 = 1.0 / this->mNodes[param_1].dist;
-  pfVar1 = this->mNodes[param_1 + 1].vel;
+  fVar10 = 1.0 / this->mNodes[index].dist;
+  pfVar1 = this->mNodes[index + 1].vel;
   fVar6 = pfVar1[1];
   fVar7 = pfVar1[2];
-  *param_2 = (fVar10 * (pnVar9->pos[0] - pnVar8->pos[0]) * 3.0 - *pfVar1) * 0.5;
-  param_2[1] = (fVar10 * (fVar2 - fVar3) * 3.0 - fVar6) * 0.5;
-  param_2[2] = (fVar10 * (fVar4 - fVar5) * 3.0 - fVar7) * 0.5;
+  *vel = (fVar10 * (pnVar9->pos[0] - pnVar8->pos[0]) * 3.0 - *pfVar1) * 0.5;
+  vel[1] = (fVar10 * (fVar2 - fVar3) * 3.0 - fVar6) * 0.5;
+  vel[2] = (fVar10 * (fVar4 - fVar5) * 3.0 - fVar7) * 0.5;
   return;
 }
 
 
 // 007BA8B0  GetEndVelocity  (universal/curve.cpp:306)
 
-void __thiscall cCurve::GetEndVelocity(cCurve *this,int param_1,float *param_2)
+void __thiscall cCurve::GetEndVelocity(cCurve *this,int index,float *vel)
 
 {
   float *pfVar1;
@@ -388,33 +387,35 @@ void __thiscall cCurve::GetEndVelocity(cCurve *this,int param_1,float *param_2)
   nodeData *pnVar9;
   float fVar10;
   
-  pnVar8 = this->mNodes + param_1 + -1;
-  pnVar9 = this->mNodes + param_1;
+  pnVar8 = this->mNodes + index + -1;
+  pnVar9 = this->mNodes + index;
   fVar2 = pnVar9->pos[1];
   fVar3 = pnVar8->pos[1];
   fVar4 = pnVar9->pos[2];
   fVar5 = pnVar8->pos[2];
-  fVar10 = 1.0 / this->mNodes[param_1 + -1].dist;
-  pfVar1 = this->mNodes[param_1 + -1].vel;
+  fVar10 = 1.0 / this->mNodes[index + -1].dist;
+  pfVar1 = this->mNodes[index + -1].vel;
   fVar6 = pfVar1[1];
   fVar7 = pfVar1[2];
-  *param_2 = (fVar10 * (pnVar9->pos[0] - pnVar8->pos[0]) * 3.0 - *pfVar1) * 0.5;
-  param_2[1] = (fVar10 * (fVar2 - fVar3) * 3.0 - fVar6) * 0.5;
-  param_2[2] = (fVar10 * (fVar4 - fVar5) * 3.0 - fVar7) * 0.5;
+  *vel = (fVar10 * (pnVar9->pos[0] - pnVar8->pos[0]) * 3.0 - *pfVar1) * 0.5;
+  vel[1] = (fVar10 * (fVar2 - fVar3) * 3.0 - fVar6) * 0.5;
+  vel[2] = (fVar10 * (fVar4 - fVar5) * 3.0 - fVar7) * 0.5;
   return;
 }
 
 
 // 007BAA20  CurveSortCompare  (universal/curve.cpp:318)
 
-int __cdecl cCurve::CurveSortCompare(void *param_1,void *param_2)
+int __cdecl cCurve::CurveSortCompare(void *e1,void *e2)
 
 {
   float fVar1;
   float fVar2;
+  float d1;
+  float d2;
   
-  fVar1 = Vec3DistanceSq(gCurveSortArgs.p,param_1);
-  fVar2 = Vec3DistanceSq(gCurveSortArgs.p,param_2);
+  fVar1 = Vec3DistanceSq(gCurveSortArgs.p,e1);
+  fVar2 = Vec3DistanceSq(gCurveSortArgs.p,e2);
   if (gCurveSortArgs.increasing_sort_order == false) {
     fVar2 = fVar2 - fVar1;
   }
@@ -427,35 +428,37 @@ int __cdecl cCurve::CurveSortCompare(void *param_1,void *param_2)
 
 // 007BAA90  Sort  (universal/curve.cpp:333)
 
-void __thiscall cCurve::Sort(cCurve *this,float *param_1,bool param_2)
+void __thiscall cCurve::Sort(cCurve *this,float *p,bool is_increasing_sort_order)
 
 {
   nodeData *pnVar1;
   nodeData *pnVar2;
   float fVar3;
-  phys_vec3 local_14;
+  float diff;
+  float local_10;
+  float local_c;
+  int i;
   
-  gCurveSortArgs.increasing_sort_order = param_2;
-  gCurveSortArgs.p[0] = *param_1;
-  gCurveSortArgs.p[1] = param_1[1];
-  gCurveSortArgs.p[2] = param_1[2];
+  gCurveSortArgs.increasing_sort_order = is_increasing_sort_order;
+  gCurveSortArgs.p[0] = *p;
+  gCurveSortArgs.p[1] = p[1];
+  gCurveSortArgs.p[2] = p[2];
   qsort(this,this->mNumNodes,0x24,CurveSortCompare);
-  for (local_14.w = 0.0; (int)local_14.w < this->mNumNodes;
-      local_14.w = (float)((int)local_14.w + 1)) {
-    if (local_14.w == 0.0) {
+  for (i = 0; i < this->mNumNodes; i = i + 1) {
+    if (i == 0) {
       this->mDistance = 0.0;
       this->mNodes[0].totalDist = 0.0;
     }
     else {
-      pnVar1 = this->mNodes + (int)local_14.w;
-      pnVar2 = this->mNodes + (int)local_14.w + -1;
-      local_14.x = pnVar2->pos[0] - pnVar1->pos[0];
-      local_14.y = pnVar2->pos[1] - pnVar1->pos[1];
-      local_14.z = pnVar2->pos[2] - pnVar1->pos[2];
-      fVar3 = Abs(&local_14);
-      this->mNodes[(int)local_14.w + -1].dist = fVar3;
-      this->mDistance = this->mDistance + this->mNodes[(int)local_14.w + -1].dist;
-      this->mNodes[(int)local_14.w].totalDist = this->mDistance;
+      pnVar1 = this->mNodes + i;
+      pnVar2 = this->mNodes + i + -1;
+      diff = pnVar2->pos[0] - pnVar1->pos[0];
+      local_10 = pnVar2->pos[1] - pnVar1->pos[1];
+      local_c = pnVar2->pos[2] - pnVar1->pos[2];
+      fVar3 = Abs((phys_vec3 *)&stack0xffffffec);
+      this->mNodes[i + -1].dist = fVar3;
+      this->mDistance = this->mDistance + this->mNodes[i + -1].dist;
+      this->mNodes[i].totalDist = this->mDistance;
     }
   }
   return;
@@ -470,45 +473,45 @@ void __thiscall cCurve::BuildNonUniform(cCurve *this)
   float *pfVar1;
   nodeData *pnVar2;
   nodeData *pnVar3;
-  int local_24;
-  float local_20;
+  int i_2;
+  float diff2;
   float local_1c;
   float local_18;
-  float local_14;
+  float diff1;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
-  for (local_8 = 1; local_8 < this->mNumNodes + -1; local_8 = local_8 + 1) {
-    pnVar2 = this->mNodes + local_8;
-    pnVar3 = this->mNodes + local_8 + 1;
-    local_14 = pnVar3->pos[0] - pnVar2->pos[0];
+  for (i = 1; i < this->mNumNodes + -1; i = i + 1) {
+    pnVar2 = this->mNodes + i;
+    pnVar3 = this->mNodes + i + 1;
+    diff1 = pnVar3->pos[0] - pnVar2->pos[0];
     local_10 = pnVar3->pos[1] - pnVar2->pos[1];
     local_c = pnVar3->pos[2] - pnVar2->pos[2];
-    if (((local_14 != 0.0) && (local_10 != 0.0)) && (local_c != 0.0)) {
-      Vec3NormalizeFast(&local_14);
+    if (((diff1 != 0.0) && (local_10 != 0.0)) && (local_c != 0.0)) {
+      Vec3NormalizeFast(&diff1);
     }
-    pnVar2 = this->mNodes + local_8;
-    pnVar3 = this->mNodes + local_8 + -1;
-    local_20 = pnVar3->pos[0] - pnVar2->pos[0];
+    pnVar2 = this->mNodes + i;
+    pnVar3 = this->mNodes + i + -1;
+    diff2 = pnVar3->pos[0] - pnVar2->pos[0];
     local_1c = pnVar3->pos[1] - pnVar2->pos[1];
     local_18 = pnVar3->pos[2] - pnVar2->pos[2];
-    if (((local_20 != 0.0) && (local_1c != 0.0)) && (local_18 != 0.0)) {
-      Vec3NormalizeFast(&local_20);
+    if (((diff2 != 0.0) && (local_1c != 0.0)) && (local_18 != 0.0)) {
+      Vec3NormalizeFast(&diff2);
     }
-    pfVar1 = this->mNodes[local_8].vel;
-    *pfVar1 = local_14 - local_20;
+    pfVar1 = this->mNodes[i].vel;
+    *pfVar1 = diff1 - diff2;
     pfVar1[1] = local_10 - local_1c;
     pfVar1[2] = local_c - local_18;
-    if (((this->mNodes[local_8].vel[0] != 0.0) && (this->mNodes[local_8].vel[1] != 0.0)) &&
-       (this->mNodes[local_8].vel[2] != 0.0)) {
-      Vec3NormalizeFast(this->mNodes[local_8].vel);
+    if (((this->mNodes[i].vel[0] != 0.0) && (this->mNodes[i].vel[1] != 0.0)) &&
+       (this->mNodes[i].vel[2] != 0.0)) {
+      Vec3NormalizeFast(this->mNodes[i].vel);
     }
   }
   GetStartVelocity(this,0,this->mNodes[0].vel);
   GetEndVelocity(this,this->mNumNodes + -1,this->mNodes[this->mNumNodes + -1].vel);
   if (this->mCurveType != CURVE_RNS) {
-    for (local_24 = 0; local_24 < 3; local_24 = local_24 + 1) {
+    for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
       Smooth(this);
       if (this->mCurveType == CURVE_TNS) {
         Constrain(this);
@@ -524,26 +527,26 @@ void __thiscall cCurve::BuildNonUniform(cCurve *this)
 void __thiscall cCurve::BuildBSpline(cCurve *this)
 
 {
-  int local_18;
-  float local_14;
+  int i;
+  float lastNode;
   float local_10;
   float local_c;
-  int local_8;
+  int nNeeded;
   
-  local_8 = 0;
+  nNeeded = 0;
   if (this->mNumNodes < 4) {
-    local_8 = 4 - this->mNumNodes;
+    nNeeded = 4 - this->mNumNodes;
   }
   else if ((this->mNumNodes + -1) % 3 != 0) {
-    local_8 = 3 - (this->mNumNodes + -1) % 3;
+    nNeeded = 3 - (this->mNumNodes + -1) % 3;
   }
-  if (local_8 != 0) {
-    local_14 = this->mNodes[this->mNumNodes + -1].pos[0];
+  if (nNeeded != 0) {
+    lastNode = this->mNodes[this->mNumNodes + -1].pos[0];
     local_10 = this->mNodes[this->mNumNodes + -1].pos[1];
     local_c = this->mNodes[this->mNumNodes + -1].pos[2];
-    for (local_18 = 0; local_18 < local_8; local_18 = local_18 + 1) {
+    for (i = 0; i < nNeeded; i = i + 1) {
       if (this->mNumNodes < 100) {
-        AddNode(this,&local_14);
+        AddNode(this,&lastNode);
       }
     }
   }
@@ -573,47 +576,47 @@ void __thiscall cCurve::Smooth(cCurve *this)
 {
   float *pfVar1;
   float fVar2;
-  float local_38;
+  float endVel;
   float local_34;
   float local_30;
-  float local_2c;
+  float startVel;
   float local_28;
   float local_24;
-  int local_20;
-  float local_1c;
+  int i;
+  float newVel;
   float local_18;
   float local_14;
-  float local_10;
+  float oldVel;
   float local_c;
   float local_8;
   
-  GetStartVelocity(this,0,&local_10);
-  for (local_20 = 1; local_20 < this->mNumNodes + -1; local_20 = local_20 + 1) {
-    GetEndVelocity(this,local_20,&local_38);
-    fVar2 = this->mNodes[local_20].dist;
-    local_38 = fVar2 * local_38;
+  GetStartVelocity(this,0,&oldVel);
+  for (i = 1; i < this->mNumNodes + -1; i = i + 1) {
+    GetEndVelocity(this,i,&endVel);
+    fVar2 = this->mNodes[i].dist;
+    endVel = fVar2 * endVel;
     local_34 = fVar2 * local_34;
     local_30 = fVar2 * local_30;
-    GetStartVelocity(this,local_20,&local_2c);
-    fVar2 = this->mNodes[local_20 + -1].dist;
-    local_2c = fVar2 * local_2c;
+    GetStartVelocity(this,i,&startVel);
+    fVar2 = this->mNodes[i + -1].dist;
+    startVel = fVar2 * startVel;
     local_28 = fVar2 * local_28;
     local_24 = fVar2 * local_24;
-    local_14 = 1.0 / (this->mNodes[local_20 + -1].dist + this->mNodes[local_20].dist);
-    local_1c = local_14 * (local_2c + local_38);
+    local_14 = 1.0 / (this->mNodes[i + -1].dist + this->mNodes[i].dist);
+    newVel = local_14 * (startVel + endVel);
     local_18 = local_14 * (local_28 + local_34);
     local_14 = local_14 * (local_24 + local_30);
-    pfVar1 = this->mNodes[local_20 + -1].vel;
-    *pfVar1 = local_10;
+    pfVar1 = this->mNodes[i + -1].vel;
+    *pfVar1 = oldVel;
     pfVar1[1] = local_c;
     pfVar1[2] = local_8;
-    local_10 = local_1c;
+    oldVel = newVel;
     local_c = local_18;
     local_8 = local_14;
   }
   GetEndVelocity(this,this->mNumNodes + -1,this->mNodes[this->mNumNodes + -1].vel);
   pfVar1 = this->mNodes[this->mNumNodes + -2].vel;
-  *pfVar1 = local_10;
+  *pfVar1 = oldVel;
   pfVar1[1] = local_c;
   pfVar1[2] = local_8;
   return;
@@ -630,28 +633,31 @@ void __thiscall cCurve::Constrain(cCurve *this)
   nodeData *pnVar3;
   nodeData *pnVar4;
   float fVar5;
-  phys_vec3 local_1c;
-  float local_c;
-  int local_8;
+  float delta;
+  float local_18;
+  float local_14;
+  float r0;
+  float r1;
+  int i;
   
-  for (local_8 = 1; local_8 < this->mNumNodes + -1; local_8 = local_8 + 1) {
-    pnVar3 = this->mNodes + local_8 + -1;
-    pnVar4 = this->mNodes + local_8;
-    local_1c.x = pnVar4->pos[0] - pnVar3->pos[0];
-    local_1c.y = pnVar4->pos[1] - pnVar3->pos[1];
-    local_1c.z = pnVar4->pos[2] - pnVar3->pos[2];
-    local_1c.w = Abs(&local_1c);
-    local_1c.w = local_1c.w / this->mNodes[local_8 + -1].dist;
-    pnVar4 = this->mNodes + local_8;
-    pnVar3 = this->mNodes + local_8 + 1;
-    local_1c.x = pnVar3->pos[0] - pnVar4->pos[0];
-    local_1c.y = pnVar3->pos[1] - pnVar4->pos[1];
-    local_1c.z = pnVar3->pos[2] - pnVar4->pos[2];
-    local_c = Abs(&local_1c);
-    local_c = local_c / this->mNodes[local_8].dist;
-    pfVar1 = this->mNodes[local_8].vel;
-    fVar5 = (local_1c.w * 4.0 * local_c) / ((local_1c.w + local_c) * (local_1c.w + local_c));
-    pfVar2 = this->mNodes[local_8].vel;
+  for (i = 1; i < this->mNumNodes + -1; i = i + 1) {
+    pnVar3 = this->mNodes + i + -1;
+    pnVar4 = this->mNodes + i;
+    delta = pnVar4->pos[0] - pnVar3->pos[0];
+    local_18 = pnVar4->pos[1] - pnVar3->pos[1];
+    local_14 = pnVar4->pos[2] - pnVar3->pos[2];
+    fVar5 = Abs((phys_vec3 *)&stack0xffffffe4);
+    r0 = fVar5 / this->mNodes[i + -1].dist;
+    pnVar4 = this->mNodes + i;
+    pnVar3 = this->mNodes + i + 1;
+    delta = pnVar3->pos[0] - pnVar4->pos[0];
+    local_18 = pnVar3->pos[1] - pnVar4->pos[1];
+    local_14 = pnVar3->pos[2] - pnVar4->pos[2];
+    fVar5 = Abs((phys_vec3 *)&stack0xffffffe4);
+    r1 = fVar5 / this->mNodes[i].dist;
+    pfVar1 = this->mNodes[i].vel;
+    fVar5 = (r0 * 4.0 * r1) / ((r0 + r1) * (r0 + r1));
+    pfVar2 = this->mNodes[i].vel;
     *pfVar1 = fVar5 * *pfVar2;
     pfVar1[1] = fVar5 * pfVar2[1];
     pfVar1[2] = fVar5 * pfVar2[2];
@@ -662,13 +668,13 @@ void __thiscall cCurve::Constrain(cCurve *this)
 
 // 007BB410  GetPos  (universal/curve.cpp:632)
 
-void __thiscall cCurve::GetPos(cCurve *this,float param_1,float *param_2)
+void __thiscall cCurve::GetPos(cCurve *this,float t,float *p)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0.0) || (1.0 < param_1)) {
+  if ((t < 0.0) || (1.0 < t)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\curve.cpp",0x279,0,"%s")
     ;
     if (!bVar2) {
@@ -677,7 +683,7 @@ void __thiscall cCurve::GetPos(cCurve *this,float param_1,float *param_2)
       return;
     }
   }
-  GetPosition(this,param_1,param_2);
+  GetPosition(this,t,p);
   return;
 }
 
@@ -691,18 +697,21 @@ float __thiscall cCurve::GetLength(cCurve *this)
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  phys_vec3 local_48;
-  float local_38;
-  float local_34;
-  float local_30;
-  int local_2c;
-  float local_28;
-  undefined4 local_24;
-  float local_20;
+  float diff;
+  float local_44;
+  float local_40;
+  int j;
+  float pos;
+  float end;
+  float step;
+  int i;
+  float curveLength;
+  int kNumSteps;
+  float endPos;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
+  float start;
+  float startPos;
   float local_c;
   float local_8;
   
@@ -714,51 +723,51 @@ float __thiscall cCurve::GetLength(cCurve *this)
     return (float)fVar3;
   }
   if (this->mCurveType == CURVE_TNS) {
-    local_28 = 0.0;
-    local_14 = 0.0;
-    local_24 = 0x20;
-    for (local_2c = 0; local_2c < this->mNumNodes; local_2c = local_2c + 1) {
-      local_34 = local_14 + this->mNodes[local_2c].dist;
-      local_30 = (local_34 - local_14) / 32.0;
-      local_38 = local_14;
-      fVar4 = local_14 / this->mDistance;
-      local_14 = local_14 + this->mNodes[local_2c].dist;
-      GetPosition(this,fVar4,&local_10);
-      for (local_48.w = 0.0; (int)local_48.w < 0x20; local_48.w = (float)((int)local_48.w + 1)) {
-        local_38 = local_38 + local_30;
-        GetPosition(this,local_38 / this->mDistance,&local_20);
-        local_48.x = local_20 - local_10;
-        local_48.y = local_1c - local_c;
-        local_48.z = local_18 - local_8;
-        fVar4 = Abs(&local_48);
-        local_28 = fVar4 + local_28;
-        local_10 = local_20;
+    curveLength = 0.0;
+    start = 0.0;
+    kNumSteps = 0x20;
+    for (i = 0; i < this->mNumNodes; i = i + 1) {
+      end = start + this->mNodes[i].dist;
+      step = (end - start) / 32.0;
+      pos = start;
+      fVar4 = start / this->mDistance;
+      start = start + this->mNodes[i].dist;
+      GetPosition(this,fVar4,&startPos);
+      for (j = 0; j < 0x20; j = j + 1) {
+        pos = pos + step;
+        GetPosition(this,pos / this->mDistance,&endPos);
+        diff = endPos - startPos;
+        local_44 = local_1c - local_c;
+        local_40 = local_18 - local_8;
+        fVar4 = Abs((phys_vec3 *)&stack0xffffffb8);
+        curveLength = fVar4 + curveLength;
+        startPos = endPos;
         local_c = local_1c;
         local_8 = local_18;
       }
     }
   }
   else {
-    local_28 = this->mDistance;
+    curveLength = this->mDistance;
   }
-  return local_28;
+  return curveLength;
 }
 
 
 // 007BB650  SetDraw  (universal/curve.cpp:679)
 
-void __thiscall cCurve::SetDraw(cCurve *this,float *param_1)
+void __thiscall cCurve::SetDraw(cCurve *this,float *userColor)
 
 {
   this->mDraw = true;
-  if (param_1 == (float *)0x0) {
+  if (userColor == (float *)0x0) {
     this->mUseColor = false;
   }
   else {
-    this->mDrawColor[0] = *param_1;
-    this->mDrawColor[1] = param_1[1];
-    this->mDrawColor[2] = param_1[2];
-    this->mDrawColor[3] = param_1[3];
+    this->mDrawColor[0] = *userColor;
+    this->mDrawColor[1] = userColor[1];
+    this->mDrawColor[2] = userColor[2];
+    this->mDrawColor[3] = userColor[3];
     this->mUseColor = true;
   }
   return;

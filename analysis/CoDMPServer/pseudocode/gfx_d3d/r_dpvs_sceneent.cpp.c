@@ -4,21 +4,21 @@
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_AddCellSceneEntSurfacesInFrustumCmd(void *param_1)
+void __cdecl R_AddCellSceneEntSurfacesInFrustumCmd(void *data)
 
 {
   uint *puVar1;
-  GfxBrushModel *pGVar2;
-  code *pcVar3;
-  DpvsPlane *pDVar4;
-  bool bVar5;
-  DpvsPlane *pDVar6;
+  GfxBrushModel *minmax;
+  code *pcVar2;
+  DpvsPlane *pDVar3;
+  bool bVar4;
+  DpvsPlane *planes;
+  int iVar5;
+  uint uVar6;
+  int planeCount;
   int iVar7;
-  uint uVar8;
-  int iVar9;
-  int iVar10;
-  int iVar11;
-  float fVar12;
+  int iVar8;
+  float fVar9;
   DpvsPlane *local_bc;
   int local_b8;
   DpvsPlane *local_a4;
@@ -44,18 +44,18 @@ void __cdecl R_AddCellSceneEntSurfacesInFrustumCmd(void *param_1)
   int local_18;
   undefined4 *local_14;
   
-  local_14 = param_1;
+  local_14 = data;
   local_18 = 0xaa1c094;
   local_1c = scene.dpvs.localClientNum;
   local_20 = &(rgp.world)->dpvsPlanes;
   local_24 = gfxCfg.entCount >> 5;
   if ((gfxCfg.maxClientViews <= (uint)scene.dpvs.localClientNum) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
                                0xd5,0,
                                "localClientNum doesn\'t index gfxCfg.maxClientViews\n\t%i not in [0, %i)"
-                              ), !bVar5)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+                              ), !bVar4)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
   local_28 = scene.dpvs.entInfo[local_1c];
@@ -67,145 +67,145 @@ void __cdecl R_AddCellSceneEntSurfacesInFrustumCmd(void *param_1)
   local_40 = (uint)*(byte *)((int)local_14 + 10);
   local_44 = (uint)*(byte *)((int)local_14 + 0xb);
   if (((uint)local_20->cellCount <= local_38) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
                                0xe1,0,
                                "cellIndex doesn\'t index worldDpvsPlanes->cellCount\n\t%i not in [0, %i)"
-                              ), !bVar5)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+                              ), !bVar4)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
   local_54 = *(int *)(local_18 + 4 + local_34 * 4);
   local_5c = local_3c;
   local_58 = (undefined2)local_40;
   local_56 = (undefined2)local_38;
-  uVar8 = local_1c * local_24;
-  if ((0xff < uVar8) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
+  uVar6 = local_1c * local_24;
+  if ((0xff < uVar6) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
                                0xea,0,
                                "offset doesn\'t index MAX_TOTAL_ENT_COUNT >> 5\n\t%i not in [0, %i)"
-                              ), !bVar5)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+                              ), !bVar4)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  pDVar4 = local_3c;
-  iVar11 = local_38 * 0x100 + uVar8;
+  pDVar3 = local_3c;
+  iVar8 = local_38 * 0x100 + uVar6;
   puVar1 = local_20->sceneEntCellBits;
   if (((int)local_40 < (int)local_44) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
-                               0x105,0,"%s"), !bVar5)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp",
+                               0x105,0,"%s"), !bVar4)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  pDVar6 = pDVar4 + local_44;
-  iVar9 = local_40 - local_44;
+  planes = pDVar3 + local_44;
+  planeCount = local_40 - local_44;
   local_7c = 0;
   do {
     if (local_24 <= local_7c) {
       puVar1 = local_20->sceneEntCellBits;
-      iVar10 = local_20->cellCount;
+      iVar7 = local_20->cellCount;
       local_7c = 0;
       do {
         if (local_24 <= local_7c) {
           return;
         }
-        local_80 = puVar1[iVar11 + iVar10 * 0x100 + local_7c];
+        local_80 = puVar1[iVar8 + iVar7 * 0x100 + local_7c];
         while( true ) {
-          uVar8 = 0x1f;
+          uVar6 = 0x1f;
           if (local_80 != 0) {
-            for (; local_80 >> uVar8 == 0; uVar8 = uVar8 - 1) {
+            for (; local_80 >> uVar6 == 0; uVar6 = uVar6 - 1) {
             }
           }
           if (local_80 == 0) {
-            uVar8 = 0x3f;
+            uVar6 = 0x3f;
           }
-          uVar8 = uVar8 ^ 0x1f;
-          if (0x1f < uVar8) break;
-          iVar7 = local_7c * 0x20 + uVar8;
-          uVar8 = 0x80000000 >> ((byte)uVar8 & 0x1f);
-          if (((local_80 & uVar8) == 0) &&
-             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp"
-                                       ,0x17e,0,"%s"), !bVar5)) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
+          uVar6 = uVar6 ^ 0x1f;
+          if (0x1f < uVar6) break;
+          iVar5 = local_7c * 0x20 + uVar6;
+          uVar6 = 0x80000000 >> ((byte)uVar6 & 0x1f);
+          if (((local_80 & uVar6) == 0) &&
+             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp"
+                                       ,0x17e,0,"%s"), !bVar4)) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
-          local_80 = ~uVar8 & local_80;
-          if (*(char *)(local_54 + iVar7) == '\0') {
-            pGVar2 = local_28[iVar7].bmodel;
-            local_bc = pDVar6;
-            for (local_b8 = 0; local_b8 < iVar9; local_b8 = local_b8 + 1) {
-              fVar12 = R_DpvsPlaneMaxSignedDistToBox(local_bc,(float *)pGVar2);
-              if (fVar12 <= 0.0) {
-                bVar5 = true;
+          local_80 = ~uVar6 & local_80;
+          if (*(char *)(local_54 + iVar5) == '\0') {
+            minmax = local_28[iVar5].bmodel;
+            local_bc = planes;
+            for (local_b8 = 0; local_b8 < planeCount; local_b8 = local_b8 + 1) {
+              fVar9 = R_DpvsPlaneMaxSignedDistToBox(local_bc,(float *)minmax);
+              if (fVar9 <= 0.0) {
+                bVar4 = true;
                 goto LAB_00b5318b;
               }
               local_bc = local_bc + 1;
             }
-            bVar5 = false;
+            bVar4 = false;
 LAB_00b5318b:
-            if (!bVar5) {
-              *(undefined1 *)(local_54 + iVar7) = 1;
+            if (!bVar4) {
+              *(undefined1 *)(local_54 + iVar5) = 1;
             }
           }
         }
         local_7c = local_7c + 1;
       } while( true );
     }
-    local_80 = puVar1[iVar11 + local_7c];
+    local_80 = puVar1[iVar8 + local_7c];
 LAB_00b52db4:
-    uVar8 = 0x1f;
+    uVar6 = 0x1f;
     if (local_80 != 0) {
-      for (; local_80 >> uVar8 == 0; uVar8 = uVar8 - 1) {
+      for (; local_80 >> uVar6 == 0; uVar6 = uVar6 - 1) {
       }
     }
     if (local_80 == 0) {
-      uVar8 = 0x3f;
+      uVar6 = 0x3f;
     }
-    uVar8 = uVar8 ^ 0x1f;
-    if (uVar8 < 0x20) {
-      iVar10 = local_7c * 0x20 + uVar8;
-      uVar8 = 0x80000000 >> ((byte)uVar8 & 0x1f);
-      if (((local_80 & uVar8) == 0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp"
-                                   ,0x116,0,"%s"), !bVar5)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+    uVar6 = uVar6 ^ 0x1f;
+    if (uVar6 < 0x20) {
+      iVar7 = local_7c * 0x20 + uVar6;
+      uVar6 = 0x80000000 >> ((byte)uVar6 & 0x1f);
+      if (((local_80 & uVar6) == 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_sceneent.cpp"
+                                   ,0x116,0,"%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      local_80 = ~uVar8 & local_80;
-      if (*(char *)(local_54 + iVar10) == '\0') {
-        uVar8 = (uint)local_30[iVar10];
-        if (uVar8 == 0xffff) {
-          if ((local_2c[iVar10] != 0xffff) &&
-             (iVar7 = R_CullSphereDpvs(scene.sceneModel[local_2c[iVar10]].placement.base.origin,
-                                       local_28[iVar10].radius,pDVar6,iVar9), iVar7 == 0)) {
-            *(undefined1 *)(local_54 + iVar10) = 1;
+      local_80 = ~uVar6 & local_80;
+      if (*(char *)(local_54 + iVar7) == '\0') {
+        uVar6 = (uint)local_30[iVar7];
+        if (uVar6 == 0xffff) {
+          if ((local_2c[iVar7] != 0xffff) &&
+             (iVar5 = R_CullSphereDpvs(scene.sceneModel[local_2c[iVar7]].placement.base.origin,
+                                       local_28[iVar7].radius,planes,planeCount), iVar5 == 0)) {
+            *(undefined1 *)(local_54 + iVar7) = 1;
           }
         }
         else {
-          iVar7 = uVar8 * 0x84 + 0xa9ce830;
-          iVar10 = R_CullSphereDpvs(scene.sceneDObj[uVar8].placement.base.origin,
-                                    local_28[iVar10].radius,pDVar6,iVar9);
-          if (iVar10 == 0) {
-            if (1 < scene.sceneDObj[uVar8].cull.state) {
-              local_a4 = pDVar4;
+          iVar5 = uVar6 * 0x84 + 0xa9ce830;
+          iVar7 = R_CullSphereDpvs(scene.sceneDObj[uVar6].placement.base.origin,
+                                   local_28[iVar7].radius,planes,planeCount);
+          if (iVar7 == 0) {
+            if (1 < scene.sceneDObj[uVar6].cull.state) {
+              local_a4 = pDVar3;
               for (local_a0 = 0; local_a0 < (int)local_40; local_a0 = local_a0 + 1) {
-                fVar12 = R_DpvsPlaneMaxSignedDistToBox(local_a4,scene.sceneDObj[uVar8].cull.mins);
-                if (fVar12 <= 0.0) {
-                  bVar5 = true;
+                fVar9 = R_DpvsPlaneMaxSignedDistToBox(local_a4,scene.sceneDObj[uVar6].cull.mins);
+                if (fVar9 <= 0.0) {
+                  bVar4 = true;
                   goto LAB_00b52fb7;
                 }
                 local_a4 = local_a4 + 1;
               }
-              bVar5 = false;
+              bVar4 = false;
 LAB_00b52fb7:
-              if (bVar5) goto LAB_00b52db4;
+              if (bVar4) goto LAB_00b52db4;
             }
-            local_60 = iVar7;
-            if (scene.sceneDObj[uVar8].cull.state < 2) {
+            local_60 = iVar5;
+            if (scene.sceneDObj[uVar6].cull.state < 2) {
               Sys_AddWorkerCmdInternal
                         (&r_dpvs_entityWorkerCmd,&local_60,(WorkerCmdConditional *)0x0);
             }

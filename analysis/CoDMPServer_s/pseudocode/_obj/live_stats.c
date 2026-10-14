@@ -918,20 +918,20 @@ LiveStats_GetMilestoneRowNum(StringTable **param_1,int param_2,char *param_3,cha
 void __cdecl LiveStats_CheckCurrentValue(StringTable *param_1,int param_2,int param_3,int *param_4)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   int in_ECX;
   int in_EDX;
   int *unaff_ESI;
   
   if ((((*(int *)(in_ECX + 4) < 3) || (*(int *)(in_ECX + 8) <= in_EDX)) || (in_EDX < 0)) ||
-     (pcVar1 = *(char **)(*(int *)(in_ECX + 0xc) + 0x10 + *(int *)(in_ECX + 4) * in_EDX * 8),
-     pcVar1 == (char *)0x0)) {
-    pcVar1 = "";
+     (nptr = *(char **)(*(int *)(in_ECX + 0xc) + 0x10 + *(int *)(in_ECX + 4) * in_EDX * 8),
+     nptr == (char *)0x0)) {
+    nptr = "";
   }
-  iVar2 = atoi(pcVar1);
-  if (iVar2 <= *unaff_ESI) {
-    *unaff_ESI = iVar2;
+  iVar1 = atoi(nptr);
+  if (iVar1 <= *unaff_ESI) {
+    *unaff_ESI = iVar1;
   }
   return;
 }
@@ -2002,8 +2002,8 @@ void __cdecl LiveStats_BuildGlobalChallengesListCmd(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   int in_ECX;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
@@ -2013,9 +2013,9 @@ void __cdecl LiveStats_BuildGlobalChallengesListCmd(void)
                   );
     return;
   }
-  pcVar2 = Cmd_Argv(in_ECX);
-  iVar3 = atoi(pcVar2);
-  Cmd_Argv(iVar3);
+  nptr = Cmd_Argv(in_ECX);
+  iVar2 = atoi(nptr);
+  Cmd_Argv(iVar2);
   FUN_0078fba0();
   return;
 }
@@ -2089,8 +2089,8 @@ void __cdecl LiveStats_BuildAttachmentsListCmd(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   int in_ECX;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
@@ -2098,9 +2098,9 @@ void __cdecl LiveStats_BuildAttachmentsListCmd(void)
     Com_PrintError(0xf,"BuildAttachmentsList usage: BuildAttachmentsList <sortOrder> \n");
     return;
   }
-  pcVar2 = Cmd_Argv(in_ECX);
-  iVar3 = atoi(pcVar2);
-  FUN_0078fec0(0,iVar3);
+  nptr = Cmd_Argv(in_ECX);
+  iVar2 = atoi(nptr);
+  FUN_0078fec0(0,iVar2);
   return;
 }
 

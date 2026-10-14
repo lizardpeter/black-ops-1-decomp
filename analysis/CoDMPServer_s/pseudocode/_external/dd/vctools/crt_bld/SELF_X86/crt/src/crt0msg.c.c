@@ -25,41 +25,41 @@ void __cdecl _FF_MSGBANNER(void)
 
 // 009687CF  _NMSG_WRITE  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0msg.c:174)
 
-void __cdecl _NMSG_WRITE(int param_1)
+void __cdecl _NMSG_WRITE(int rterrnum)
 
 {
-  uint uVar1;
+  int iVar1;
   int iVar2;
   DWORD DVar3;
   int extraout_EAX;
   int extraout_EAX_00;
-  char *pcVar4;
+  char *_Dst;
   HANDLE hFile;
   DWORD nNumberOfBytesToWrite;
   DWORD *lpNumberOfBytesWritten;
   LPOVERLAPPED lpOverlapped;
-  DWORD local_c;
-  uint local_8;
+  DWORD bytes_written;
+  int tblindx;
   
-  local_8 = 0;
+  tblindx = 0;
   do {
-    if (param_1 == rterrs[local_8].rterrno) break;
-    local_8 = local_8 + 1;
-  } while (local_8 < 0x17);
-  uVar1 = local_8;
-  if (local_8 < 0x17) {
-    iVar2 = _set_error_mode(3);
-    if ((iVar2 == 1) || ((iVar2 = _set_error_mode(3), iVar2 == 0 && (__app_type == 1)))) {
+    if (rterrnum == rterrs[tblindx].rterrno) break;
+    tblindx = tblindx + 1;
+  } while ((uint)tblindx < 0x17);
+  iVar2 = tblindx;
+  if ((uint)tblindx < 0x17) {
+    iVar1 = _set_error_mode(3);
+    if ((iVar1 == 1) || ((iVar1 = _set_error_mode(3), iVar1 == 0 && (__app_type == 1)))) {
       hFile = GetStdHandle(0xfffffff4);
       if ((hFile != (HANDLE)0x0) && (hFile != (HANDLE)0xffffffff)) {
         lpOverlapped = (LPOVERLAPPED)0x0;
-        lpNumberOfBytesWritten = &local_c;
-        strlen((uchar *)rterrs[uVar1].rterrtxt);
-        WriteFile(hFile,rterrs[uVar1].rterrtxt,nNumberOfBytesToWrite,lpNumberOfBytesWritten,
+        lpNumberOfBytesWritten = &bytes_written;
+        strlen((uchar *)rterrs[iVar2].rterrtxt);
+        WriteFile(hFile,rterrs[iVar2].rterrtxt,nNumberOfBytesToWrite,lpNumberOfBytesWritten,
                   lpOverlapped);
       }
     }
-    else if (param_1 != 0xfc) {
+    else if (rterrnum != 0xfc) {
       iVar2 = strcpy_s(outmsg,0x314,"Runtime Error!\n\nProgram: ");
       if (iVar2 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
@@ -73,8 +73,8 @@ void __cdecl _NMSG_WRITE(int param_1)
       strlen((uchar *)(outmsg + 0x19));
       if (0x3c < extraout_EAX + 1U) {
         strlen((uchar *)(outmsg + 0x19));
-        pcVar4 = (char *)((int)__lc_handle + extraout_EAX_00 + 0x12);
-        iVar2 = strncpy_s(pcVar4,(int)&DAT_00b00294 - (int)pcVar4,"...",3);
+        _Dst = (char *)((int)__lc_handle + extraout_EAX_00 + 0x12);
+        iVar2 = strncpy_s(_Dst,(int)&DAT_00b00294 - (int)_Dst,"...",3);
         if (iVar2 != 0) {
           _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
         }
@@ -83,7 +83,7 @@ void __cdecl _NMSG_WRITE(int param_1)
       if (iVar2 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      iVar2 = strcat_s(outmsg,0x314,rterrs[local_8].rterrtxt);
+      iVar2 = strcat_s(outmsg,0x314,rterrs[tblindx].rterrtxt);
       if (iVar2 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }

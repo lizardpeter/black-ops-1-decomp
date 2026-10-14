@@ -2,16 +2,17 @@
 
 // 00509C20  CG_SpawnFloat  (cgame/cg_spawn.cpp:33)
 
-int __cdecl CG_SpawnFloat(char *param_1,char *param_2,float *param_3)
+int __cdecl CG_SpawnFloat(char *key,char *defaultString,float *out)
 
 {
   int iVar1;
   double dVar2;
-  char *local_8;
+  int present;
+  char *s;
   
-  iVar1 = G_SpawnString(&cg_level.spawnVar,param_1,param_2,&local_8);
-  dVar2 = atof(local_8);
-  *param_3 = (float)dVar2;
+  iVar1 = G_SpawnString(&cg_level.spawnVar,key,defaultString,&s);
+  dVar2 = atof(s);
+  *out = (float)dVar2;
   return iVar1;
 }
 
@@ -23,19 +24,19 @@ int __cdecl CG_SpawnFloat(char *param_1,char *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl CG_GetEntityTypeName(centity_s *param_1)
+char * __cdecl CG_GetEntityTypeName(centity_s *cent)
 
 {
   char *pcVar1;
   
-  switch((param_1->nextState).eType) {
+  switch((cent->nextState).eType) {
   case 6:
     pcVar1 = "SCRIPTMOVER";
     break;
   default:
-    if ((param_1->nextState).loopSoundId == 0) {
-      if (param_1->destructible == (Destructible *)0x0) {
-        if (param_1->bIsTrigger == 0) {
+    if ((cent->nextState).loopSoundId == 0) {
+      if (cent->destructible == (Destructible *)0x0) {
+        if (cent->bIsTrigger == 0) {
           pcVar1 = "MISC";
         }
         else {
@@ -68,16 +69,20 @@ char * __cdecl CG_GetEntityTypeName(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PrintEntities(int param_1)
+void __cdecl CG_PrintEntities(int localClientNum)
 
 {
   code *pcVar1;
   fake_centity_s *pfVar2;
   bool bVar3;
   int iVar4;
-  uint local_8;
+  DestructibleDef *ddef;
+  XModel *model;
+  cgs_t *cgs;
+  fake_centity_s *cent;
+  uint i;
   
-  if (((param_1 < 0) || (1 < param_1)) &&
+  if (((localClientNum < 0) || (1 < localClientNum)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",99,0,
                                "localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]")
      , !bVar3)) {
@@ -85,12 +90,12 @@ void __cdecl CG_PrintEntities(int param_1)
     (*pcVar1)();
     return;
   }
-  for (local_8 = 0; pfVar2 = cg_fakeEntitiesArray, local_8 < 0x200; local_8 = local_8 + 1) {
-    iVar4 = param_1 * 0x200 + local_8;
+  for (i = 0; pfVar2 = cg_fakeEntitiesArray, i < 0x200; i = i + 1) {
+    iVar4 = localClientNum * 0x200 + i;
     if (cg_fakeEntitiesInuseArray
         [((int)cg_fakeEntitiesArray +
-         (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + param_1 * 0x200))) / 0x32c + param_1 * 0x200]
-        == false) {
+         (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + localClientNum * 0x200))) / 0x32c +
+         localClientNum * 0x200] == false) {
       Com_Printf(0xe,"%4i: Unused.\n");
     }
     else {
@@ -102,9 +107,9 @@ void __cdecl CG_PrintEntities(int param_1)
             Com_Printf(0xe,"\tSolid BModel");
           }
           else {
-            CG_GetLocalClientStaticGlobals(param_1);
+            CG_GetLocalClientStaticGlobals(localClientNum);
             if (pfVar2[iVar4].cent.destructible != (Destructible *)0x0) {
-              Destructible_GetDDef(&pfVar2[iVar4].cent,param_1);
+              Destructible_GetDDef(&pfVar2[iVar4].cent,localClientNum);
             }
             Com_Printf(0xe,"\t%s");
           }
@@ -127,16 +132,17 @@ void __cdecl CG_PrintEntities(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-centity_s * __cdecl CG_Spawn(int param_1)
+centity_s * __cdecl CG_Spawn(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
-  fake_centity_s *pfVar4;
-  uint local_8;
+  fake_centity_s *ent;
+  fake_centity_s *cent;
+  uint i;
   
-  if (((param_1 < 0) || (1 < param_1)) &&
+  if (((localClientNum < 0) || (1 < localClientNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x9a,0,
                                "localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]")
      , !bVar2)) {
@@ -144,10 +150,10 @@ centity_s * __cdecl CG_Spawn(int param_1)
     pcVar3 = (centity_s *)(*pcVar1)();
     return pcVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x1ff < local_8) {
-      CG_PrintEntities(param_1);
+    if (0x1ff < i) {
+      CG_PrintEntities(localClientNum);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0xb4,0,
                                "Ran out of fake local centities");
       if (bVar2) {
@@ -157,22 +163,22 @@ centity_s * __cdecl CG_Spawn(int param_1)
       pcVar3 = (centity_s *)(*pcVar1)();
       return pcVar3;
     }
-    pfVar4 = cg_fakeEntitiesArray + param_1 * 0x200 + local_8;
-    (pfVar4->cent).pose.physObjId = 0;
+    ent = cg_fakeEntitiesArray + localClientNum * 0x200 + i;
+    (ent->cent).pose.physObjId = 0;
     if (cg_fakeEntitiesInuseArray
-        [((int)pfVar4 - (int)(cg_fakeEntitiesArray + param_1 * 0x200)) / 0x32c + param_1 * 0x200] ==
-        false) break;
-    local_8 = local_8 + 1;
+        [((int)ent - (int)(cg_fakeEntitiesArray + localClientNum * 0x200)) / 0x32c +
+         localClientNum * 0x200] == false) break;
+    i = i + 1;
   }
-  CG_SetFakeEntInUse(param_1,pfVar4);
-  (pfVar4->cent).nextValid = 1;
-  (pfVar4->cent).nextState.lerp.useCount = 1;
-  (pfVar4->cent).nextState.number = local_8 + 0x400;
-  AssignToSmallerType<unsigned_char>(&(pfVar4->cent).nextState.clientNum,param_1);
-  AssignToSmallerType<unsigned_char>(&(pfVar4->cent).pose.localClientNum,param_1);
-  CG_UpdatePoseUnion(param_1,&pfVar4->cent);
-  R_InitShaderConstantSet(&(pfVar4->cent).pose.constantSet);
-  return &pfVar4->cent;
+  CG_SetFakeEntInUse(localClientNum,ent);
+  (ent->cent).nextValid = 1;
+  (ent->cent).nextState.lerp.useCount = 1;
+  (ent->cent).nextState.number = i + 0x400;
+  AssignToSmallerType<unsigned_char>(&(ent->cent).nextState.clientNum,localClientNum);
+  AssignToSmallerType<unsigned_char>(&(ent->cent).pose.localClientNum,localClientNum);
+  CG_UpdatePoseUnion(localClientNum,&ent->cent);
+  R_InitShaderConstantSet(&(ent->cent).pose.constantSet);
+  return &ent->cent;
 }
 
 
@@ -183,44 +189,46 @@ centity_s * __cdecl CG_Spawn(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Free(int param_1,int param_2)
+void __cdecl CG_Free(int localClientNum,int entNum)
 
 {
   short sVar1;
   code *pcVar2;
   bool bVar3;
-  centity_s *pcVar4;
-  fake_centity_s *pfVar5;
+  centity_s *cent_00;
+  fake_centity_s *ent;
+  centity_s *cent;
+  fake_centity_s *fcent;
   
-  pcVar4 = CG_GetEntity(param_1,param_2);
-  sVar1 = (pcVar4->nextState).eType;
+  cent_00 = CG_GetEntity(localClientNum,entNum);
+  sVar1 = (cent_00->nextState).eType;
   if ((7 < sVar1) && (sVar1 < 10)) {
-    FX_ThroughWithEffect(param_1,(pcVar4->pose).field19_0x6c.fx.effect,true);
-    (pcVar4->pose).field19_0x6c.fx.effect = 0;
+    FX_ThroughWithEffect(localClientNum,(cent_00->pose).field19_0x6c.fx.effect,true);
+    (cent_00->pose).field19_0x6c.fx.effect = 0;
   }
-  (pcVar4->currentState).useCount = (pcVar4->currentState).useCount + 1;
-  CG_ShutdownEntity(param_1,pcVar4,true);
-  CG_SafeDObjFree(param_1,param_2);
-  pfVar5 = cg_fakeEntitiesArray + param_1 * 0x200 + -0x400 + param_2;
+  (cent_00->currentState).useCount = (cent_00->currentState).useCount + 1;
+  CG_ShutdownEntity(localClientNum,cent_00,true);
+  CG_SafeDObjFree(localClientNum,entNum);
+  ent = cg_fakeEntitiesArray + localClientNum * 0x200 + -0x400 + entNum;
   if ((cg_fakeEntitiesInuseArray
-       [((int)pfVar5 - (int)(cg_fakeEntitiesArray + param_1 * 0x200)) / 0x32c + param_1 * 0x200] ==
-       false) &&
+       [((int)ent - (int)(cg_fakeEntitiesArray + localClientNum * 0x200)) / 0x32c +
+        localClientNum * 0x200] == false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0xce,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((&pfVar5->cent != pcVar4) &&
+  if ((&ent->cent != cent_00) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0xcf,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pfVar5->flags = 0;
-  CG_ClearFakeEntInUse(param_1,pfVar5);
-  memset((uchar *)&pfVar5->cent,'\0',0x328);
+  ent->flags = 0;
+  CG_ClearFakeEntInUse(localClientNum,ent);
+  memset((uchar *)&ent->cent,'\0',0x328);
   return;
 }
 
@@ -232,30 +240,31 @@ void __cdecl CG_Free(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ShutdownFakeEntities(int param_1)
+void __cdecl CG_ShutdownFakeEntities(int localClientNum)
 
 {
   code *pcVar1;
   fake_centity_s *pfVar2;
   bool bVar3;
   int iVar4;
-  int local_8;
+  fake_centity_s *cent;
+  int num;
   
-  local_8 = 0;
+  num = 0;
   do {
     pfVar2 = cg_fakeEntitiesArray;
-    if (0x1ff < local_8) {
-      memset(cg_fakeEntitiesInuseArray + param_1 * 0x200,'\0',0x200);
-      cg_fakeEntitiesInuseCount[param_1] = 0;
+    if (0x1ff < num) {
+      memset(cg_fakeEntitiesInuseArray + localClientNum * 0x200,'\0',0x200);
+      cg_fakeEntitiesInuseCount[localClientNum] = 0;
       cg_fakeEntitiesInuseCountFromMap = 0;
       cg_fakeEntitiesInuseCountFromLoadScript = 0;
       return;
     }
-    iVar4 = param_1 * 0x200 + local_8;
+    iVar4 = localClientNum * 0x200 + num;
     if (cg_fakeEntitiesInuseArray
         [((int)cg_fakeEntitiesArray +
-         (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + param_1 * 0x200))) / 0x32c + param_1 * 0x200]
-        == false) {
+         (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + localClientNum * 0x200))) / 0x32c +
+         localClientNum * 0x200] == false) {
       bVar3 = true;
     }
     else {
@@ -271,24 +280,29 @@ void __cdecl CG_ShutdownFakeEntities(int param_1)
       }
     }
     if (cg_fakeEntitiesInuseArray
-        [((int)pfVar2 + (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + param_1 * 0x200))) / 0x32c +
-         param_1 * 0x200] != false) {
-      CG_Free(param_1,pfVar2[iVar4].cent.nextState.number);
+        [((int)pfVar2 + (iVar4 * 0x32c - (int)(cg_fakeEntitiesArray + localClientNum * 0x200))) /
+         0x32c + localClientNum * 0x200] != false) {
+      CG_Free(localClientNum,pfVar2[iVar4].cent.nextState.number);
     }
-    local_8 = local_8 + 1;
+    num = num + 1;
   } while( true );
 }
 
 
 // 0050A420  CG_InitFakeEntities  (cgame/cg_spawn.cpp:237)
 
-void __cdecl CG_InitFakeEntities(int param_1,bool param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_InitFakeEntities(int localClientNum,bool spawnEntsFromMap)
 
 {
-  CG_ShutdownFakeEntities(param_1);
-  if (param_2) {
-    CG_SpawnEntitiesFromString(param_1);
-    cg_fakeEntitiesInuseCountFromMap = cg_fakeEntitiesInuseCount[param_1];
+  CG_ShutdownFakeEntities(localClientNum);
+  if (spawnEntsFromMap) {
+    CG_SpawnEntitiesFromString(localClientNum);
+    cg_fakeEntitiesInuseCountFromMap = cg_fakeEntitiesInuseCount[localClientNum];
   }
   return;
 }
@@ -298,37 +312,38 @@ void __cdecl CG_InitFakeEntities(int param_1,bool param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetModelIndex(char *param_1,int param_2)
+int __cdecl CG_GetModelIndex(char *name,int localClientNum)
 
 {
   cgs_t *pcVar1;
   int iVar2;
-  int local_c;
+  int i;
+  cgs_t *cgs;
   
-  pcVar1 = CG_GetLocalClientStaticGlobals(param_2);
-  local_c = 0;
+  pcVar1 = CG_GetLocalClientStaticGlobals(localClientNum);
+  i = 0;
   while( true ) {
-    if (0x1ff < local_c) {
+    if (0x1ff < i) {
       return -1;
     }
-    if ((pcVar1->gameModels[local_c] != (XModel *)0x0) &&
-       (iVar2 = _stricmp(param_1,pcVar1->gameModels[local_c]->name), iVar2 == 0)) break;
-    local_c = local_c + 1;
+    if ((pcVar1->gameModels[i] != (XModel *)0x0) &&
+       (iVar2 = _stricmp(name,pcVar1->gameModels[i]->name), iVar2 == 0)) break;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
 // 0050A4D0  CScr_FreeFields  (cgame/cg_spawn.cpp:351)
 
-void __cdecl CScr_FreeFields(cent_field_t *param_1,uchar *param_2)
+void __cdecl CScr_FreeFields(cent_field_t *fields,uchar *base)
 
 {
-  cent_field_t *local_8;
+  cent_field_t *field;
   
-  for (local_8 = param_1; local_8->name != (char *)0x0; local_8 = local_8 + 1) {
-    if (local_8->type == F_STRING) {
-      Scr_SetString((ushort *)(param_2 + local_8->ofs),0,SCRIPTINSTANCE_CLIENT);
+  for (field = fields; field->name != (char *)0x0; field = field + 1) {
+    if (field->type == F_STRING) {
+      Scr_SetString((ushort *)(base + field->ofs),0,SCRIPTINSTANCE_CLIENT);
     }
   }
   return;
@@ -342,11 +357,11 @@ void __cdecl CScr_FreeFields(cent_field_t *param_1,uchar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_FreeEntityFields(centity_s *param_1)
+void __cdecl CScr_FreeEntityFields(centity_s *cent)
 
 {
-  if (0x3ff < (param_1->nextState).number) {
-    CScr_FreeFields(client_spawn_fields,(uchar *)param_1);
+  if (0x3ff < (cent->nextState).number) {
+    CScr_FreeFields(client_spawn_fields,(uchar *)cent);
   }
   return;
 }
@@ -359,10 +374,10 @@ void __cdecl CScr_FreeEntityFields(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetDynamicEntityField(int param_1,centity_s *param_2,uint param_3)
+void __cdecl CScr_SetDynamicEntityField(int clientNum,centity_s *ent,uint index)
 
 {
-  Scr_SetDynamicEntityField((param_2->nextState).number,0,param_3,SCRIPTINSTANCE_CLIENT,param_1);
+  Scr_SetDynamicEntityField((ent->nextState).number,0,index,SCRIPTINSTANCE_CLIENT,clientNum);
   return;
 }
 
@@ -374,14 +389,15 @@ void __cdecl CScr_SetDynamicEntityField(int param_1,centity_s *param_2,uint para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetEntityScriptVariable(int param_1,char *param_2,char *param_3,centity_s *param_4)
+void __cdecl CG_SetEntityScriptVariable(int clientNum,char *key,char *value,centity_s *ent)
 
 {
-  uint uVar1;
+  uint index_00;
+  uint index;
   
-  uVar1 = CG_SetEntityScriptVariableInternal(param_2,param_3);
-  if (uVar1 != 0) {
-    CScr_SetDynamicEntityField(param_1,param_4,uVar1);
+  index_00 = CG_SetEntityScriptVariableInternal(key,value);
+  if (index_00 != 0) {
+    CScr_SetDynamicEntityField(clientNum,ent,index_00);
   }
   return;
 }
@@ -395,7 +411,7 @@ void __cdecl CG_SetEntityScriptVariable(int param_1,char *param_2,char *param_3,
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,int param_5)
+CG_ParseEntityField(int localClientNum,char *key,char *value,centity_s *ent,int ignoreModel)
 
 {
   code *pcVar1;
@@ -403,51 +419,51 @@ CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,i
   int iVar3;
   uint uVar4;
   double dVar5;
-  short local_1c;
-  cent_field_t *local_14;
+  int modelIndex;
+  uchar *b;
+  cent_field_t *f;
   
-  local_14 = client_spawn_fields;
+  f = client_spawn_fields;
   while( true ) {
-    if (local_14->name == (char *)0x0) {
-      CG_SetEntityScriptVariable(param_1,param_2,param_3,param_4);
+    if (f->name == (char *)0x0) {
+      CG_SetEntityScriptVariable(localClientNum,key,value,ent);
       return;
     }
-    iVar3 = I_stricmp(local_14->name,param_2);
+    iVar3 = I_stricmp(f->name,key);
     if (iVar3 == 0) break;
-    local_14 = local_14 + 1;
+    f = f + 1;
   }
-  switch(local_14->type) {
+  switch(f->type) {
   case F_INT:
-    iVar3 = atoi(param_3);
-    *(int *)((int)(param_4->pose).origin + local_14->ofs + -0x30) = iVar3;
+    iVar3 = atoi(value);
+    *(int *)((int)(ent->pose).origin + f->ofs + -0x30) = iVar3;
     break;
   case F_SHORT:
-    iVar3 = atoi(param_3);
-    *(short *)((int)(param_4->pose).origin + local_14->ofs + -0x30) = (short)iVar3;
+    iVar3 = atoi(value);
+    *(short *)((int)(ent->pose).origin + f->ofs + -0x30) = (short)iVar3;
     break;
   case F_BYTE:
-    iVar3 = atoi(param_3);
-    *(char *)((int)(param_4->pose).origin + local_14->ofs + -0x30) = (char)iVar3;
+    iVar3 = atoi(value);
+    *(char *)((int)(ent->pose).origin + f->ofs + -0x30) = (char)iVar3;
     break;
   case F_FLOAT:
-    dVar5 = atof(param_3);
-    *(float *)((int)(param_4->pose).origin + local_14->ofs + -0x30) = (float)dVar5;
+    dVar5 = atof(value);
+    *(float *)((int)(ent->pose).origin + f->ofs + -0x30) = (float)dVar5;
     break;
   case F_STRING:
     Scr_SetStringLiveUpdateSafe
-              ((ushort *)((int)(param_4->pose).origin + local_14->ofs + -0x30),param_3,
-               SCRIPTINSTANCE_CLIENT);
+              ((ushort *)((int)(ent->pose).origin + f->ofs + -0x30),value,SCRIPTINSTANCE_CLIENT);
     break;
   case F_VECTOR:
-    sscanf(param_3,"%f %f %f");
-    *(undefined4 *)((int)(param_4->pose).origin + local_14->ofs + -0x30) = 0;
-    *(undefined4 *)((int)(param_4->pose).origin + local_14->ofs + -0x2c) = 0;
-    *(undefined4 *)((int)(param_4->pose).origin + local_14->ofs + -0x28) = 0;
+    sscanf(value,"%f %f %f");
+    *(undefined4 *)((int)(ent->pose).origin + f->ofs + -0x30) = 0;
+    *(undefined4 *)((int)(ent->pose).origin + f->ofs + -0x2c) = 0;
+    *(undefined4 *)((int)(ent->pose).origin + f->ofs + -0x28) = 0;
     break;
   case F_MODEL:
-    if (param_5 == 0) {
-      if (*param_3 == '*') {
-        uVar4 = atoi(param_3 + 1);
+    if (ignoreModel == 0) {
+      if (*value == '*') {
+        uVar4 = atoi(value + 1);
         if ((uVar4 != (uVar4 & 0xffff)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x1c4,
                                      0,"%s"), !bVar2)) {
@@ -455,11 +471,11 @@ CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,i
           (*pcVar1)();
           return;
         }
-        local_1c = (short)uVar4;
-        (param_4->nextState).index.brushmodel = local_1c;
+        modelIndex._0_2_ = (short)uVar4;
+        (ent->nextState).index.brushmodel = (short)modelIndex;
       }
       else {
-        uVar4 = CG_GetModelIndex(param_3,param_1);
+        uVar4 = CG_GetModelIndex(value,localClientNum);
         if (((int)uVar4 < 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x1cb,
                                      0,"%s"), !bVar2)) {
@@ -467,7 +483,7 @@ CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,i
           (*pcVar1)();
           return;
         }
-        local_1c = (short)uVar4;
+        modelIndex._0_2_ = (short)uVar4;
         if ((uVar4 != (uVar4 & 0xffff)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x1cc,
                                      0,"%s"), !bVar2)) {
@@ -475,8 +491,8 @@ CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,i
           (*pcVar1)();
           return;
         }
-        (param_4->nextState).index.brushmodel = local_1c;
-        param_4->nextValid = 1;
+        (ent->nextState).index.brushmodel = (short)modelIndex;
+        ent->nextValid = 1;
       }
     }
   }
@@ -491,17 +507,17 @@ CG_ParseEntityField(int param_1,char *param_2,char *param_3,centity_s *param_4,i
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ClearFakeEntInUse(int param_1,fake_centity_s *param_2)
+void __cdecl CG_ClearFakeEntInUse(int localClientNum,fake_centity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   
   if ((cg_fakeEntitiesInuseArray
-       [((int)param_2 - (int)(cg_fakeEntitiesArray + param_1 * 0x200)) / 0x32c + param_1 * 0x200] !=
-       false) &&
-     (cg_fakeEntitiesInuseCount[param_1] = cg_fakeEntitiesInuseCount[param_1] + -1,
-     cg_fakeEntitiesInuseCount[param_1] < 0)) {
+       [((int)ent - (int)(cg_fakeEntitiesArray + localClientNum * 0x200)) / 0x32c +
+        localClientNum * 0x200] != false) &&
+     (cg_fakeEntitiesInuseCount[localClientNum] = cg_fakeEntitiesInuseCount[localClientNum] + -1,
+     cg_fakeEntitiesInuseCount[localClientNum] < 0)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame_mp/cg_local_mp.h",
                              0x1a1,0,"%s");
     if (!bVar2) {
@@ -511,8 +527,8 @@ void __cdecl CG_ClearFakeEntInUse(int param_1,fake_centity_s *param_2)
     }
   }
   cg_fakeEntitiesInuseArray
-  [((int)param_2 - (int)(cg_fakeEntitiesArray + param_1 * 0x200)) / 0x32c + param_1 * 0x200] = false
-  ;
+  [((int)ent - (int)(cg_fakeEntitiesArray + localClientNum * 0x200)) / 0x32c +
+   localClientNum * 0x200] = false;
   return;
 }
 
@@ -524,14 +540,15 @@ void __cdecl CG_ClearFakeEntInUse(int param_1,fake_centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ParseEntityFields(int param_1,centity_s *param_2,SpawnVar *param_3,int param_4)
+void __cdecl
+CG_ParseEntityFields(int localClientNum,centity_s *ent,SpawnVar *spawnVar,int ignoreModel)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_3->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x1e2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -539,9 +556,9 @@ void __cdecl CG_ParseEntityFields(int param_1,centity_s *param_2,SpawnVar *param
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_3->numSpawnVars; local_8 = local_8 + 1) {
-    CG_ParseEntityField(param_1,param_3->spawnVars[local_8][0],param_3->spawnVars[local_8][1],
-                        param_2,param_4);
+  for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+    CG_ParseEntityField(localClientNum,spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1],ent,
+                        ignoreModel);
   }
   return;
 }
@@ -554,33 +571,33 @@ void __cdecl CG_ParseEntityFields(int param_1,centity_s *param_2,SpawnVar *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InitScriptMover(centity_s *param_1)
+void __cdecl CG_InitScriptMover(centity_s *cent)
 
 {
-  (param_1->nextState).lerp.eFlags = (param_1->nextState).lerp.eFlags | 0x10;
-  (param_1->nextState).eType = 6;
-  (param_1->pose).eType = '\x06';
-  (param_1->nextState).lerp.pos.trBase[0] = (param_1->pose).origin[0];
-  (param_1->nextState).lerp.pos.trBase[1] = (param_1->pose).origin[1];
-  (param_1->nextState).lerp.pos.trBase[2] = (param_1->pose).origin[2];
-  (param_1->currentState).pos.trBase[0] = (param_1->pose).origin[0];
-  (param_1->currentState).pos.trBase[1] = (param_1->pose).origin[1];
-  (param_1->currentState).pos.trBase[2] = (param_1->pose).origin[2];
-  (param_1->nextState).lerp.pos.trType = '\0';
-  (param_1->nextState).lerp.apos.trBase[0] = (param_1->pose).angles[0];
-  (param_1->nextState).lerp.apos.trBase[1] = (param_1->pose).angles[1];
-  (param_1->nextState).lerp.apos.trBase[2] = (param_1->pose).angles[2];
-  (param_1->currentState).apos.trBase[0] = (param_1->pose).angles[0];
-  (param_1->currentState).apos.trBase[1] = (param_1->pose).angles[1];
-  (param_1->currentState).apos.trBase[2] = (param_1->pose).angles[2];
-  (param_1->nextState).lerp.apos.trType = '\0';
-  (param_1->nextState).lerp.u.turret.gunAngles[0] = 0.0;
-  (param_1->nextState).lerp.u.turret.gunAngles[1] = 0.0;
-  (param_1->nextState).lerp.u.turret.gunAngles[2] = 0.0;
-  (param_1->nextState).lerp.u.turret.ownerNum = 0;
-  (param_1->nextState).lerp.u.turret.heatVal = 0.0;
-  (param_1->nextState).lerp.u.turret.overheating = 0;
-  (param_1->nextState).lerp.u.player.meleeWeapon = 0x3ff;
+  (cent->nextState).lerp.eFlags = (cent->nextState).lerp.eFlags | 0x10;
+  (cent->nextState).eType = 6;
+  (cent->pose).eType = '\x06';
+  (cent->nextState).lerp.pos.trBase[0] = (cent->pose).origin[0];
+  (cent->nextState).lerp.pos.trBase[1] = (cent->pose).origin[1];
+  (cent->nextState).lerp.pos.trBase[2] = (cent->pose).origin[2];
+  (cent->currentState).pos.trBase[0] = (cent->pose).origin[0];
+  (cent->currentState).pos.trBase[1] = (cent->pose).origin[1];
+  (cent->currentState).pos.trBase[2] = (cent->pose).origin[2];
+  (cent->nextState).lerp.pos.trType = '\0';
+  (cent->nextState).lerp.apos.trBase[0] = (cent->pose).angles[0];
+  (cent->nextState).lerp.apos.trBase[1] = (cent->pose).angles[1];
+  (cent->nextState).lerp.apos.trBase[2] = (cent->pose).angles[2];
+  (cent->currentState).apos.trBase[0] = (cent->pose).angles[0];
+  (cent->currentState).apos.trBase[1] = (cent->pose).angles[1];
+  (cent->currentState).apos.trBase[2] = (cent->pose).angles[2];
+  (cent->nextState).lerp.apos.trType = '\0';
+  (cent->nextState).lerp.u.turret.gunAngles[0] = 0.0;
+  (cent->nextState).lerp.u.turret.gunAngles[1] = 0.0;
+  (cent->nextState).lerp.u.turret.gunAngles[2] = 0.0;
+  (cent->nextState).lerp.u.turret.ownerNum = 0;
+  (cent->nextState).lerp.u.turret.heatVal = 0.0;
+  (cent->nextState).lerp.u.turret.overheating = 0;
+  (cent->nextState).lerp.u.player.meleeWeapon = 0x3ff;
   return;
 }
 
@@ -592,39 +609,39 @@ void __cdecl CG_InitScriptMover(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_SetTriggerBrushModel(int param_1,centity_s *param_2)
+bool __cdecl CG_SetTriggerBrushModel(int localClientNum,centity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  float local_1c;
+  float mins;
   float local_18;
   int local_14;
-  float local_10;
+  float maxs;
   int local_c;
   int local_8;
   
-  if ((param_2->nextValid == 0) &&
+  if ((ent->nextValid == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x208,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = CM_ClipHandleIsValid((int)(param_2->nextState).index.brushmodel);
+  bVar2 = CM_ClipHandleIsValid((int)(ent->nextState).index.brushmodel);
   if (bVar2) {
-    CM_ModelBounds((int)(param_2->nextState).index.brushmodel,&local_1c,&local_10);
-    (param_2->pose).field19_0x6c.turret.barrelPitch = local_1c;
-    (param_2->pose).field19_0x6c.player.waterHeight = local_18;
-    (param_2->pose).field19_0x6c.player.nextWaterHeightCheck = local_14;
-    (param_2->pose).field19_0x6c.player.nextRippleTime = (int)local_10;
-    (param_2->pose).field19_0x6c.actor.nextWaterHeightCheck = local_c;
-    (param_2->pose).field19_0x6c.actor.nextRippleTime = local_8;
-    iVar4 = CM_ContentsOfModel((int)(param_2->nextState).index.brushmodel);
-    (param_2->pose).field19_0x6c.fx.triggerTime = iVar4;
-    (param_2->nextState).solid = 0xffffff;
+    CM_ModelBounds((int)(ent->nextState).index.brushmodel,&mins,&maxs);
+    (ent->pose).field19_0x6c.turret.barrelPitch = mins;
+    (ent->pose).field19_0x6c.player.waterHeight = local_18;
+    (ent->pose).field19_0x6c.player.nextWaterHeightCheck = local_14;
+    (ent->pose).field19_0x6c.player.nextRippleTime = (int)maxs;
+    (ent->pose).field19_0x6c.actor.nextWaterHeightCheck = local_c;
+    (ent->pose).field19_0x6c.actor.nextRippleTime = local_8;
+    iVar4 = CM_ContentsOfModel((int)(ent->nextState).index.brushmodel);
+    (ent->pose).field19_0x6c.fx.triggerTime = iVar4;
+    (ent->nextState).solid = 0xffffff;
   }
   return bVar2;
 }
@@ -637,22 +654,22 @@ bool __cdecl CG_SetTriggerBrushModel(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_InitTrigger(int param_1,centity_s *param_2)
+bool __cdecl CG_InitTrigger(int localClientNum,centity_s *self)
 
 {
   bool bVar1;
   
-  bVar1 = CG_SetTriggerBrushModel(param_1,param_2);
+  bVar1 = CG_SetTriggerBrushModel(localClientNum,self);
   if (bVar1) {
-    (param_2->pose).field19_0x6c.player.control = (clientControllers_t *)0x405c0008;
-    (param_2->nextState).lerp.eFlags = (param_2->nextState).lerp.eFlags | 1;
-    (param_2->currentState).eFlags = (param_2->currentState).eFlags | 1;
-    (param_2->currentState).eFlags = (param_2->currentState).eFlags | 0x20;
-    (param_2->nextState).lerp.eFlags = (param_2->nextState).lerp.eFlags | 0x20;
+    (self->pose).field19_0x6c.player.control = (clientControllers_t *)0x405c0008;
+    (self->nextState).lerp.eFlags = (self->nextState).lerp.eFlags | 1;
+    (self->currentState).eFlags = (self->currentState).eFlags | 1;
+    (self->currentState).eFlags = (self->currentState).eFlags | 0x20;
+    (self->nextState).lerp.eFlags = (self->nextState).lerp.eFlags | 0x20;
   }
   else {
     Com_PrintError(1,"Killing trigger at (%f %f %f) because the brush model is invalid.\n");
-    CG_Free(param_1,(param_2->nextState).number);
+    CG_Free(localClientNum,(self->nextState).number);
   }
   return bVar1;
 }
@@ -665,19 +682,19 @@ bool __cdecl CG_InitTrigger(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InitTriggerWait(int param_1,centity_s *param_2,int *param_3,int param_4)
+void __cdecl CG_InitTriggerWait(int localClientNum,centity_s *ent,int *spawnflags,int waitSpawnFlag)
 
 {
   int iVar1;
-  float local_8;
+  float wait;
   
-  if (((cg_level.spawnVar.spawnVarsValid) && (iVar1 = CG_SpawnFloat("wait","",&local_8), iVar1 != 0)
-      ) && (local_8 <= 0.0)) {
-    if ((param_4 & 0x40U) == 0) {
-      *param_3 = *param_3 | param_4;
+  if (((cg_level.spawnVar.spawnVarsValid) && (iVar1 = CG_SpawnFloat("wait","",&wait), iVar1 != 0))
+     && (wait <= 0.0)) {
+    if ((waitSpawnFlag & 0x40U) == 0) {
+      *spawnflags = *spawnflags | waitSpawnFlag;
     }
     else {
-      param_2->bIsOneShot = 1;
+      ent->bIsOneShot = 1;
     }
   }
   return;
@@ -691,13 +708,13 @@ void __cdecl CG_InitTriggerWait(int param_1,centity_s *param_2,int *param_3,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InitSentientTrigger(centity_s *param_1,int param_2)
+void __cdecl CG_InitSentientTrigger(centity_s *self,int spawnflags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (self == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x244,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -705,28 +722,25 @@ void __cdecl CG_InitSentientTrigger(centity_s *param_1,int param_2)
       return;
     }
   }
-  (param_1->pose).field19_0x6c.player.control = (clientControllers_t *)0x0;
-  if ((param_2 & 8U) == 0) {
-    (param_1->pose).field19_0x6c.fx.triggerTime =
-         (param_1->pose).field19_0x6c.fx.triggerTime | 0x40000000;
+  (self->pose).field19_0x6c.player.control = (clientControllers_t *)0x0;
+  if ((spawnflags & 8U) == 0) {
+    (self->pose).field19_0x6c.fx.triggerTime = (self->pose).field19_0x6c.fx.triggerTime | 0x40000000
+    ;
   }
-  if ((param_2 & 1U) != 0) {
-    (param_1->pose).field19_0x6c.fx.triggerTime =
-         (param_1->pose).field19_0x6c.fx.triggerTime | 0x40000;
+  if ((spawnflags & 1U) != 0) {
+    (self->pose).field19_0x6c.fx.triggerTime = (self->pose).field19_0x6c.fx.triggerTime | 0x40000;
   }
-  if ((param_2 & 2U) != 0) {
-    (param_1->pose).field19_0x6c.fx.triggerTime =
-         (param_1->pose).field19_0x6c.fx.triggerTime | 0x80000;
+  if ((spawnflags & 2U) != 0) {
+    (self->pose).field19_0x6c.fx.triggerTime = (self->pose).field19_0x6c.fx.triggerTime | 0x80000;
   }
-  if ((param_2 & 4U) != 0) {
-    (param_1->pose).field19_0x6c.fx.triggerTime =
-         (param_1->pose).field19_0x6c.fx.triggerTime | 0x100000;
+  if ((spawnflags & 4U) != 0) {
+    (self->pose).field19_0x6c.fx.triggerTime = (self->pose).field19_0x6c.fx.triggerTime | 0x100000;
   }
-  if ((param_2 & 0x10U) != 0) {
-    (param_1->pose).field19_0x6c.fx.triggerTime = (param_1->pose).field19_0x6c.fx.triggerTime | 8;
+  if ((spawnflags & 0x10U) != 0) {
+    (self->pose).field19_0x6c.fx.triggerTime = (self->pose).field19_0x6c.fx.triggerTime | 8;
   }
-  if ((param_2 & 0x40U) != 0) {
-    param_1->bIsOneShot = 1;
+  if ((spawnflags & 0x40U) != 0) {
+    self->bIsOneShot = 1;
   }
   return;
 }
@@ -739,15 +753,15 @@ void __cdecl CG_InitSentientTrigger(centity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SP_trigger_multiple(int param_1,centity_s *param_2,int param_3)
+void __cdecl CG_SP_trigger_multiple(int localClientNum,centity_s *ent,int spawnFlags)
 
 {
   bool bVar1;
   
-  CG_InitTriggerWait(param_1,param_2,&param_3,0x40);
-  bVar1 = CG_InitTrigger(param_1,param_2);
+  CG_InitTriggerWait(localClientNum,ent,&spawnFlags,0x40);
+  bVar1 = CG_InitTrigger(localClientNum,ent);
   if (bVar1) {
-    CG_InitSentientTrigger(param_2,param_3);
+    CG_InitSentientTrigger(ent,spawnFlags);
   }
   return;
 }
@@ -760,14 +774,14 @@ void __cdecl CG_SP_trigger_multiple(int param_1,centity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SP_trigger_once(int param_1,centity_s *param_2,int param_3)
+void __cdecl CG_SP_trigger_once(int localClientNum,centity_s *ent,int spawnFlags)
 
 {
   bool bVar1;
   
-  bVar1 = CG_InitTrigger(param_1,param_2);
+  bVar1 = CG_InitTrigger(localClientNum,ent);
   if (bVar1) {
-    CG_InitSentientTrigger(param_2,param_3 | 0x40);
+    CG_InitSentientTrigger(ent,spawnFlags | 0x40);
   }
   return;
 }
@@ -780,35 +794,35 @@ void __cdecl CG_SP_trigger_once(int param_1,centity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SP_trigger_radius(int param_1,centity_s *param_2,int param_3)
+void __cdecl CG_SP_trigger_radius(int localClientNum,centity_s *ent,int spawnFlags)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  float local_c;
-  float local_8;
+  float height;
+  float radius;
   
-  iVar2 = CG_SpawnFloat("radius","",&local_8);
+  iVar2 = CG_SpawnFloat("radius","",&radius);
   if (iVar2 == 0) {
     pcVar3 = va("radius not specified for trigger_radius at (%g %g %g)");
     Com_Error(ERR_DROP,pcVar3);
   }
-  iVar2 = CG_SpawnFloat("height","",&local_c);
+  iVar2 = CG_SpawnFloat("height","",&height);
   if (iVar2 == 0) {
     pcVar3 = va("height not specified for trigger_radius at (%g %g %g)");
     Com_Error(ERR_DROP,pcVar3);
   }
-  bVar1 = CG_InitTrigger(param_1,param_2);
+  bVar1 = CG_InitTrigger(localClientNum,ent);
   if (bVar1) {
-    (param_2->pose).field19_0x6c.turret.barrelPitch = -local_8;
-    (param_2->pose).field19_0x6c.player.waterHeight = -local_8;
-    (param_2->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
-    (param_2->pose).field19_0x6c.player.nextRippleTime = (int)local_8;
-    (param_2->pose).field19_0x6c.actor.nextWaterHeightCheck = (int)local_8;
-    (param_2->pose).field19_0x6c.actor.nextRippleTime = (int)local_c;
-    CG_InitTriggerWait(param_1,param_2,&param_3,0x40);
-    CG_InitSentientTrigger(param_2,param_3);
+    (ent->pose).field19_0x6c.turret.barrelPitch = -radius;
+    (ent->pose).field19_0x6c.player.waterHeight = -radius;
+    (ent->pose).field19_0x6c.player.nextWaterHeightCheck = 0;
+    (ent->pose).field19_0x6c.turret.firingOffset = radius;
+    (ent->pose).field19_0x6c.general.maxs[1] = radius;
+    (ent->pose).field19_0x6c.general.maxs[2] = height;
+    CG_InitTriggerWait(localClientNum,ent,&spawnFlags,0x40);
+    CG_InitSentientTrigger(ent,spawnFlags);
   }
   return;
 }
@@ -821,7 +835,7 @@ void __cdecl CG_SP_trigger_radius(int param_1,centity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CallSpawn(int param_1,SpawnVar *param_2)
+void __cdecl CG_CallSpawn(int localClientNum,SpawnVar *spawnVar)
 
 {
   byte bVar1;
@@ -858,53 +872,56 @@ void __cdecl CG_CallSpawn(int param_1,SpawnVar *param_2)
   int local_b0;
   byte *local_a8;
   byte *local_a4;
-  char *local_88;
-  uint local_84;
-  float local_80;
+  char *originString_2;
+  int brushmodel_2;
+  float origin_2;
   float local_7c;
   float local_78;
-  phys_vec3 local_74;
-  char *local_64;
-  char *local_60;
-  uint local_5c;
-  char *local_58;
-  uint local_54;
-  float local_50;
+  float force;
+  float local_70;
+  float local_6c;
+  float fmag;
+  char *modelString_2;
+  char *forceString;
+  int modelIndex_2;
+  char *originString;
+  int brushmodel;
+  float origin;
   float local_4c;
   float local_48;
-  float local_44;
+  float mins;
   float local_40;
   float local_3c;
-  float local_38;
+  float maxs;
   float local_34;
   float local_30;
-  char *local_2c;
-  uint local_28;
-  char *local_24;
-  char *local_20;
-  char local_19;
-  byte *local_18;
-  DestructibleDef *local_14;
-  centity_s *local_10;
-  uint local_c;
-  char *local_8;
+  char *modelString;
+  int modelIndex;
+  char *clientSide;
+  char *destructibledefname;
+  bool bClientSide;
+  char *classname;
+  DestructibleDef *ddef;
+  centity_s *ent;
+  uint flags;
+  char *spawnFlags;
   
-  if (((param_2 == (SpawnVar *)0x0) || (param_2->spawnVarsValid == false)) &&
+  if (((spawnVar == (SpawnVar *)0x0) || (spawnVar->spawnVarsValid == false)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x295,1,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  G_SpawnString(param_2,"classname","",(char **)&local_18);
-  if (local_18 == (byte *)0x0) {
+  G_SpawnString(spawnVar,"classname","",&classname);
+  if (classname == (char *)0x0) {
     Com_Printf(0xf,"CG_CallSpawn: NULL classname\n");
     return;
   }
-  G_SpawnString(param_2,"spawnflags","",&local_8);
-  local_c = atoi(local_8);
-  local_19 = (local_c & 2) != 0;
-  local_a4 = local_18;
+  G_SpawnString(spawnVar,"spawnflags","",&spawnFlags);
+  flags = atoi(spawnFlags);
+  bClientSide = (flags & 2) != 0;
+  local_a4 = (byte *)classname;
   local_a8 = (byte *)0xc8c20c;
   do {
     bVar1 = *local_a8;
@@ -924,7 +941,7 @@ LAB_0050ad4d:
   local_b0 = 0;
 LAB_0050ad58:
   if (local_b0 != 0) {
-    local_b8 = local_18;
+    local_b8 = (byte *)classname;
     local_bc = (byte *)0xc8c1fc;
     do {
       bVar1 = *local_bc;
@@ -945,28 +962,28 @@ LAB_0050ade2:
 LAB_0050aded:
     if (local_c4 != 0) goto LAB_0050aef2;
   }
-  G_SpawnString(param_2,"destructibledef",(char *)0x0,&local_20);
-  if (local_20 == (char *)0x0) {
-    G_SpawnString(param_2,"clientside",(char *)0x0,&local_24);
-    if ((local_19 != '\0') || ((local_24 != (char *)0x0 && (dVar7 = atof(local_24), dVar7 == 1.0))))
-    {
-      local_10 = CG_Spawn(param_1);
-      CG_ParseEntityFields(param_1,local_10,param_2,0);
-      CG_InitScriptMover(local_10);
+  G_SpawnString(spawnVar,"destructibledef",(char *)0x0,&destructibledefname);
+  if (destructibledefname == (char *)0x0) {
+    G_SpawnString(spawnVar,"clientside",(char *)0x0,&clientSide);
+    if ((bClientSide != false) ||
+       ((clientSide != (char *)0x0 && (dVar7 = atof(clientSide), dVar7 == 1.0)))) {
+      ent = CG_Spawn(localClientNum);
+      CG_ParseEntityFields(localClientNum,ent,spawnVar,0);
+      CG_InitScriptMover(ent);
       return;
     }
   }
   else {
-    local_14 = DestructibleDefPrecache(local_20);
-    if ((local_14 != (DestructibleDef *)0x0) && (local_14->clientOnly != 0)) {
-      local_10 = CG_Spawn(param_1);
-      CG_ParseEntityFields(param_1,local_10,param_2,1);
-      CG_DestructibleClientOnlyCreate(local_10,local_14);
+    ddef = DestructibleDefPrecache(destructibledefname);
+    if ((ddef != (DestructibleDef *)0x0) && (ddef->clientOnly != 0)) {
+      ent = CG_Spawn(localClientNum);
+      CG_ParseEntityFields(localClientNum,ent,spawnVar,1);
+      CG_DestructibleClientOnlyCreate(ent,ddef);
       return;
     }
   }
 LAB_0050aef2:
-  local_cc = local_18;
+  local_cc = (byte *)classname;
   local_d0 = (byte *)0xc8aff4;
   do {
     bVar1 = *local_d0;
@@ -988,9 +1005,9 @@ LAB_0050af6e:
   if (local_d8 == 0) {
     return;
   }
-  bVar4 = CL_LocalClient_IsFirstActive(param_1);
-  if ((bVar4) && (local_19 = '\0', (local_c & 0x80) != 0)) {
-    local_e0 = local_18;
+  bVar4 = CL_LocalClient_IsFirstActive(localClientNum);
+  if ((bVar4) && (bClientSide = false, (flags & 0x80) != 0)) {
+    local_e0 = (byte *)classname;
     local_e4 = (byte *)0xc90ad8;
     do {
       bVar1 = *local_e4;
@@ -1010,13 +1027,13 @@ LAB_0050b023:
     local_ec = 0;
 LAB_0050b02e:
     if (local_ec == 0) {
-      local_10 = CG_Spawn(param_1);
-      CG_ParseEntityFields(param_1,local_10,param_2,0);
-      CG_SP_trigger_multiple(param_1,local_10,local_c);
-      local_10->bIsTrigger = 1;
+      ent = CG_Spawn(localClientNum);
+      CG_ParseEntityFields(localClientNum,ent,spawnVar,0);
+      CG_SP_trigger_multiple(localClientNum,ent,flags);
+      ent->bIsTrigger = 1;
       return;
     }
-    local_f4 = local_18;
+    local_f4 = (byte *)classname;
     local_f8 = (byte *)0xc90ac8;
     do {
       bVar1 = *local_f8;
@@ -1036,14 +1053,14 @@ LAB_0050b10f:
     local_100 = 0;
 LAB_0050b11a:
     if (local_100 == 0) {
-      local_10 = CG_Spawn(param_1);
-      CG_ParseEntityFields(param_1,local_10,param_2,0);
-      CG_SP_trigger_radius(param_1,local_10,local_c);
-      local_10->bIsTrigger = 1;
-      local_10->bIsTriggerRadius = 1;
+      ent = CG_Spawn(localClientNum);
+      CG_ParseEntityFields(localClientNum,ent,spawnVar,0);
+      CG_SP_trigger_radius(localClientNum,ent,flags);
+      ent->bIsTrigger = 1;
+      ent->bIsTriggerRadius = 1;
       return;
     }
-    local_108 = local_18;
+    local_108 = (byte *)classname;
     local_10c = (byte *)0xc90ab8;
     do {
       bVar1 = *local_10c;
@@ -1063,14 +1080,14 @@ LAB_0050b213:
     local_114 = 0;
 LAB_0050b21e:
     if (local_114 == 0) {
-      local_10 = CG_Spawn(param_1);
-      CG_ParseEntityFields(param_1,local_10,param_2,0);
-      CG_SP_trigger_once(param_1,local_10,local_c);
-      local_10->bIsTrigger = 1;
+      ent = CG_Spawn(localClientNum);
+      CG_ParseEntityFields(localClientNum,ent,spawnVar,0);
+      CG_SP_trigger_once(localClientNum,ent,flags);
+      ent->bIsTrigger = 1;
       return;
     }
   }
-  local_11c = local_18;
+  local_11c = (byte *)classname;
   local_120 = (byte *)0xc90aa4;
   do {
     bVar1 = *local_120;
@@ -1090,11 +1107,11 @@ LAB_0050b2f9:
   local_128 = 0;
 LAB_0050b304:
   if (local_128 == 0) {
-    G_SpawnHeliHeightLock(param_2);
+    G_SpawnHeliHeightLock(spawnVar);
   }
   else {
     if (num_occlusion_overrides < 0x20) {
-      local_130 = local_18;
+      local_130 = (byte *)classname;
       local_134 = (byte *)0xc90a90;
       do {
         bVar1 = *local_134;
@@ -1114,41 +1131,41 @@ LAB_0050b3a8:
       local_13c = 0;
 LAB_0050b3b3:
       if (local_13c == 0) {
-        G_SpawnString(param_2,"origin",(char *)0x0,&local_58);
-        G_SpawnString(param_2,"model",(char *)0x0,&local_2c);
-        if ((*local_2c != '*') &&
+        G_SpawnString(spawnVar,"origin",(char *)0x0,&originString);
+        G_SpawnString(spawnVar,"model",(char *)0x0,&modelString);
+        if ((*modelString != '*') &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x30a,
                                      0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_28 = atoi(local_2c + 1);
-        if ((local_28 != (local_28 & 0xffff)) &&
+        modelIndex = atoi(modelString + 1);
+        if ((modelIndex != (modelIndex & 0xffffU)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x30c,
                                      0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_54 = local_28 & 0xffff;
-        local_50 = 0.0;
+        brushmodel = modelIndex & 0xffff;
+        origin = 0.0;
         local_4c = 0.0;
         local_48 = 0.0;
-        sscanf(local_58,"%f %f %f");
-        CM_ModelBounds(local_54,&local_44,&local_38);
+        sscanf(originString,"%f %f %f");
+        CM_ModelBounds(brushmodel,&mins,&maxs);
         iVar3 = num_occlusion_overrides;
-        occlusion_overrides[num_occlusion_overrides][0][0] = local_50 + local_44;
+        occlusion_overrides[num_occlusion_overrides][0][0] = origin + mins;
         occlusion_overrides[iVar3][0][1] = local_4c + local_40;
         occlusion_overrides[iVar3][0][2] = local_48 + local_3c;
         iVar3 = num_occlusion_overrides;
-        occlusion_overrides[num_occlusion_overrides][1][0] = local_50 + local_38;
+        occlusion_overrides[num_occlusion_overrides][1][0] = origin + maxs;
         occlusion_overrides[iVar3][1][1] = local_4c + local_34;
         occlusion_overrides[iVar3][1][2] = local_48 + local_30;
         num_occlusion_overrides = num_occlusion_overrides + 1;
       }
     }
-    local_144 = local_18;
+    local_144 = (byte *)classname;
     local_148 = (byte *)0xc90a68;
     do {
       bVar1 = *local_148;
@@ -1176,46 +1193,46 @@ LAB_0050b5fa:
         return;
       }
       if (num_undertow_volumes < 0x20) {
-        G_SpawnString(param_2,"origin",(char *)0x0,&local_88);
-        G_SpawnString(param_2,"model",(char *)0x0,&local_64);
-        G_SpawnString(param_2,"force",(char *)0x0,&local_60);
-        if ((*local_64 != '*') &&
+        G_SpawnString(spawnVar,"origin",(char *)0x0,&originString_2);
+        G_SpawnString(spawnVar,"model",(char *)0x0,&modelString_2);
+        G_SpawnString(spawnVar,"force",(char *)0x0,&forceString);
+        if ((*modelString_2 != '*') &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x326,
                                      0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_5c = atoi(local_64 + 1);
-        if ((local_5c != (local_5c & 0xffff)) &&
+        modelIndex_2 = atoi(modelString_2 + 1);
+        if ((modelIndex_2 != (modelIndex_2 & 0xffffU)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_spawn.cpp",0x328,
                                      0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_84 = local_5c & 0xffff;
-        undertow_volumes[num_undertow_volumes] = local_84;
-        local_80 = 0.0;
+        brushmodel_2 = modelIndex_2 & 0xffff;
+        undertow_volumes[num_undertow_volumes] = brushmodel_2;
+        origin_2 = 0.0;
         local_7c = 0.0;
         local_78 = 0.0;
-        sscanf(local_88,"%f %f %f");
+        sscanf(originString_2,"%f %f %f");
         iVar3 = num_undertow_volumes;
-        undertow_origins[num_undertow_volumes][0] = local_80;
+        undertow_origins[num_undertow_volumes][0] = origin_2;
         undertow_origins[iVar3][1] = local_7c;
         undertow_origins[iVar3][2] = local_78;
-        local_74.x = 0.0;
-        local_74.y = 0.0;
-        local_74.z = -200.0;
-        if ((local_60 != (char *)0x0) && (*local_60 != '\0')) {
-          sscanf(local_60,"%f %f %f");
+        force = 0.0;
+        local_70 = 0.0;
+        local_6c = -200.0;
+        if ((forceString != (char *)0x0) && (*forceString != '\0')) {
+          sscanf(forceString,"%f %f %f");
         }
-        fVar6 = Abs(&local_74);
+        fVar6 = Abs((phys_vec3 *)&stack0xffffff8c);
         iVar3 = num_undertow_volumes;
         fVar5 = 1.0 / fVar6;
-        undertow_forces[num_undertow_volumes][0] = fVar5 * local_74.x;
-        undertow_forces[iVar3][1] = fVar5 * local_74.y;
-        undertow_forces[iVar3][2] = fVar5 * local_74.z;
+        undertow_forces[num_undertow_volumes][0] = fVar5 * force;
+        undertow_forces[iVar3][1] = fVar5 * local_70;
+        undertow_forces[iVar3][2] = fVar5 * local_6c;
         undertow_forces[num_undertow_volumes][3] = fVar6;
         num_undertow_volumes = num_undertow_volumes + 1;
       }
@@ -1227,7 +1244,12 @@ LAB_0050b5fa:
 
 // 0050BC60  CG_SpawnEntitiesFromString  (cgame/cg_spawn.cpp:834)
 
-void __cdecl CG_SpawnEntitiesFromString(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_SpawnEntitiesFromString(int localClientNum)
 
 {
   int iVar1;
@@ -1238,7 +1260,7 @@ void __cdecl CG_SpawnEntitiesFromString(int param_1)
   iVar1 = G_ParseSpawnVars(&cg_level.spawnVar);
   if (iVar1 != 0) {
     while (iVar1 = G_ParseSpawnVars(&cg_level.spawnVar), iVar1 != 0) {
-      CG_CallSpawn(param_1,&cg_level.spawnVar);
+      CG_CallSpawn(localClientNum,&cg_level.spawnVar);
     }
     G_ResetEntityParsePoint();
   }

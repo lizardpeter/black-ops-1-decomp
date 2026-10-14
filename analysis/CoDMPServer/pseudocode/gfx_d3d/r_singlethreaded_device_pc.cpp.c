@@ -2,7 +2,7 @@
 
 // 00A3DA50  R_AcquireDXDeviceOwnership  (gfx_d3d/r_singlethreaded_device_pc.cpp:18)
 
-int __cdecl R_AcquireDXDeviceOwnership(_func___cdecl_void *param_1)
+int __cdecl R_AcquireDXDeviceOwnership(_func___cdecl_void *pumpfunc)
 
 {
   bool bVar1;
@@ -17,8 +17,8 @@ int __cdecl R_AcquireDXDeviceOwnership(_func___cdecl_void *param_1)
     bVar1 = Sys_IsMainThread();
     if (bVar1) {
       while (bVar1 = Sys_TryEnterCriticalSection(CRITSECT_DXDEVICE), !bVar1) {
-        if (param_1 != (_func___cdecl_void *)0x0) {
-          (*param_1)();
+        if (pumpfunc != (_func___cdecl_void *)0x0) {
+          (*pumpfunc)();
         }
         NET_Sleep(1);
       }

@@ -353,45 +353,45 @@ void __cdecl auto_rigid_body::update(void)
 {
   int iVar1;
   auto_rigid_body *paVar2;
-  auto_rigid_body *paVar3;
+  auto_rigid_body *size;
   phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body> *in_ECX;
   phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body> *extraout_ECX;
   phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body> *extraout_ECX_00;
-  auto_rigid_body **ppaVar4;
+  auto_rigid_body **ppaVar3;
   float *unaff_ESI;
   centity_s **unaff_EDI;
   phys_mat44 local_50;
   
-  ppaVar4 = &g_auto_rigid_body_list;
-  paVar3 = g_auto_rigid_body_list;
-  while (paVar3 != (auto_rigid_body *)0x0) {
-    *(int *)(paVar3 + 8) = *(int *)(paVar3 + 8) + -1;
-    if (((*(int *)(paVar3 + 8) < 1) ||
+  ppaVar3 = &g_auto_rigid_body_list;
+  size = g_auto_rigid_body_list;
+  while (size != (auto_rigid_body *)0x0) {
+    *(int *)(size + 8) = *(int *)(size + 8) + -1;
+    if (((*(int *)(size + 8) < 1) ||
         (((in_ECX = *(phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body> **)
-                     (paVar3 + 4), (ragdoll_enable->current).enabled != false &&
+                     (size + 4), (ragdoll_enable->current).enabled != false &&
           (0xb < (byte)in_ECX[500])) && ((byte)in_ECX[500] < 0xf)))) ||
        (in_ECX[500] == (phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body>)0xa)
        ) {
-      paVar2 = *(auto_rigid_body **)(paVar3 + 0xc);
+      paVar2 = *(auto_rigid_body **)(size + 0xc);
       phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body>::remove
                 (in_ECX,unaff_EDI);
-      phys_sys::destroy(*(user_rigid_body **)paVar3);
+      phys_sys::destroy(*(user_rigid_body **)size);
       _g_auto_rigid_body_allocator = _g_auto_rigid_body_allocator + -1;
-      PMM_FREE(paVar3,0x1c,4);
-      *ppaVar4 = paVar2;
+      PMM_FREE(size,0x1c,4);
+      *ppaVar3 = paVar2;
       in_ECX = extraout_ECX_00;
-      paVar3 = paVar2;
+      size = paVar2;
     }
     else {
-      iVar1 = *(int *)(paVar3 + 4);
+      iVar1 = *(int *)(size + 4);
       AnglesToAxis((float *)unaff_EDI,unaff_ESI);
       local_50.w.x = *(float *)(iVar1 + 0x30);
       local_50.w.y = *(float *)(iVar1 + 0x34);
       local_50.w.z = *(float *)(iVar1 + 0x38);
-      user_rigid_body::setPosition(*(user_rigid_body **)paVar3,&local_50);
-      ppaVar4 = (auto_rigid_body **)(paVar3 + 0xc);
+      user_rigid_body::setPosition(*(user_rigid_body **)size,&local_50);
+      ppaVar3 = (auto_rigid_body **)(size + 0xc);
       in_ECX = extraout_ECX;
-      paVar3 = *ppaVar4;
+      size = *ppaVar3;
     }
   }
   return;
@@ -434,37 +434,37 @@ void __cdecl auto_rigid_body::remove_ent(centity_s *param_1)
   auto_rigid_body **ppaVar2;
   uint in_ECX;
   centity_s **unaff_ESI;
-  auto_rigid_body *paVar3;
+  auto_rigid_body *size;
   
-  paVar3 = _g_auto_rigid_body_map;
+  size = _g_auto_rigid_body_map;
   if (_g_auto_rigid_body_map != (auto_rigid_body *)0x0) {
-    while (in_ECX != *(uint *)(paVar3 + 4)) {
-      if (in_ECX < *(uint *)(paVar3 + 4)) {
-        paVar3 = *(auto_rigid_body **)(paVar3 + 0x10);
+    while (in_ECX != *(uint *)(size + 4)) {
+      if (in_ECX < *(uint *)(size + 4)) {
+        size = *(auto_rigid_body **)(size + 0x10);
       }
       else {
-        paVar3 = *(auto_rigid_body **)(paVar3 + 0x14);
+        size = *(auto_rigid_body **)(size + 0x14);
       }
-      if (paVar3 == (auto_rigid_body *)0x0) {
+      if (size == (auto_rigid_body *)0x0) {
         return;
       }
     }
-    if (paVar3 != (auto_rigid_body *)0x0) {
+    if (size != (auto_rigid_body *)0x0) {
       ppaVar2 = &g_auto_rigid_body_list;
       paVar1 = g_auto_rigid_body_list;
-      while (paVar1 != paVar3) {
+      while (paVar1 != size) {
         ppaVar2 = (auto_rigid_body **)(*ppaVar2 + 0xc);
         paVar1 = *ppaVar2;
       }
       this = *(phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body> **)
-              (paVar3 + 0xc);
+              (size + 0xc);
       *ppaVar2 = (auto_rigid_body *)this;
       phys_inplace_avl_tree<centity_s_const*,auto_rigid_body,auto_rigid_body>::remove
                 (this,unaff_ESI);
-      fixup_wheel_constraints_arb(paVar3);
-      phys_sys::destroy(*(user_rigid_body **)paVar3);
+      fixup_wheel_constraints_arb(size);
+      phys_sys::destroy(*(user_rigid_body **)size);
       _g_auto_rigid_body_allocator = _g_auto_rigid_body_allocator + -1;
-      PMM_FREE(paVar3,0x1c,4);
+      PMM_FREE(size,0x1c,4);
     }
   }
   return;

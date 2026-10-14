@@ -9,20 +9,20 @@ uchar * __cdecl unzReOpen(char *param_1,uchar *param_2)
 {
   int *piVar1;
   _iobuf *p_Var2;
-  uchar *puVar3;
+  uchar *dst;
   
   piVar1 = _errno();
   *piVar1 = 0;
   p_Var2 = fopen(param_1,"rb");
   if ((p_Var2 != (_iobuf *)0xffffffff) && (p_Var2 != (_iobuf *)0x0)) {
-    puVar3 = malloc(0x80);
-    memcpy(puVar3,param_2,0x80);
-    *(_iobuf **)puVar3 = p_Var2;
-    puVar3[0x7c] = '\0';
-    puVar3[0x7d] = '\0';
-    puVar3[0x7e] = '\0';
-    puVar3[0x7f] = '\0';
-    return puVar3;
+    dst = malloc(0x80);
+    memcpy(dst,param_2,0x80);
+    *(_iobuf **)dst = p_Var2;
+    dst[0x7c] = '\0';
+    dst[0x7d] = '\0';
+    dst[0x7e] = '\0';
+    dst[0x7f] = '\0';
+    return dst;
   }
   return (uchar *)0x0;
 }
@@ -37,12 +37,12 @@ undefined4 * __cdecl unzOpen(char *param_1)
 {
   int iVar1;
   int *piVar2;
-  _iobuf *p_Var3;
-  uint uVar4;
-  int iVar5;
+  _iobuf *stream;
+  uint offset;
+  int iVar3;
+  undefined4 *puVar4;
+  _iobuf **pp_Var5;
   undefined4 *puVar6;
-  _iobuf **pp_Var7;
-  undefined4 *puVar8;
   int local_90;
   short local_8c [2];
   int local_88;
@@ -59,51 +59,51 @@ undefined4 * __cdecl unzOpen(char *param_1)
   local_88 = 0;
   piVar2 = _errno();
   *piVar2 = 0;
-  p_Var3 = fopen(param_1,"rb");
-  if ((p_Var3 != (_iobuf *)0xffffffff) && (p_Var3 != (_iobuf *)0x0)) {
-    uVar4 = FUN_006cfc80(p_Var3);
-    if (uVar4 == 0) {
+  stream = fopen(param_1,"rb");
+  if ((stream != (_iobuf *)0xffffffff) && (stream != (_iobuf *)0x0)) {
+    offset = FUN_006cfc80(stream);
+    if (offset == 0) {
       local_88 = -1;
     }
-    iVar5 = fseek(p_Var3,uVar4,0);
-    if (iVar5 != 0) {
+    iVar3 = fseek(stream,offset,0);
+    if (iVar3 != 0) {
       local_88 = -1;
     }
-    fread(&local_90,1,4,p_Var3);
-    fread(&local_90,1,2,p_Var3);
-    fread(local_84,1,2,p_Var3);
-    fread(local_8c,1,2,p_Var3);
-    iVar5 = (int)local_8c[0];
-    local_7c = iVar5;
-    fread(local_8c,1,2,p_Var3);
-    if (((local_8c[0] != iVar5) || (local_84[0] != 0)) || ((short)local_90 != 0)) {
+    fread(&local_90,1,4,stream);
+    fread(&local_90,1,2,stream);
+    fread(local_84,1,2,stream);
+    fread(local_8c,1,2,stream);
+    iVar3 = (int)local_8c[0];
+    local_7c = iVar3;
+    fread(local_8c,1,2,stream);
+    if (((local_8c[0] != iVar3) || (local_84[0] != 0)) || ((short)local_90 != 0)) {
       local_88 = -0x67;
     }
-    fread(&local_90,1,4,p_Var3);
-    iVar5 = local_90;
+    fread(&local_90,1,4,stream);
+    iVar3 = local_90;
     local_60 = local_90;
-    fread(&local_90,1,4,p_Var3);
+    fread(&local_90,1,4,stream);
     iVar1 = local_90;
     local_5c = local_90;
-    fread(&local_90,1,2,p_Var3);
+    fread(&local_90,1,2,stream);
     local_78 = (int)(short)local_90;
-    if (((uint)(iVar5 + iVar1) <= uVar4) && (local_88 == 0)) {
-      local_74 = (uVar4 - iVar1) - iVar5;
+    if (((uint)(iVar3 + iVar1) <= offset) && (local_88 == 0)) {
+      local_74 = (offset - iVar1) - iVar3;
       local_4 = 0;
-      local_80 = p_Var3;
-      local_64 = uVar4;
-      puVar6 = malloc(0x80);
-      pp_Var7 = &local_80;
-      puVar8 = puVar6;
-      for (iVar5 = 0x20; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *puVar8 = *pp_Var7;
-        pp_Var7 = pp_Var7 + 1;
-        puVar8 = puVar8 + 1;
+      local_80 = stream;
+      local_64 = offset;
+      puVar4 = malloc(0x80);
+      pp_Var5 = &local_80;
+      puVar6 = puVar4;
+      for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
+        *puVar6 = *pp_Var5;
+        pp_Var5 = pp_Var5 + 1;
+        puVar6 = puVar6 + 1;
       }
       unzGoToFirstFile();
-      return puVar6;
+      return puVar4;
     }
-    fclose(p_Var3);
+    fclose(stream);
   }
   return (undefined4 *)0x0;
 }
@@ -187,8 +187,8 @@ undefined4 __cdecl unzOpenCurrentFile(undefined4 *param_1)
 {
   undefined4 *puVar1;
   int iVar2;
-  undefined4 *puVar3;
-  void *pvVar4;
+  undefined4 *pBlock;
+  void *pvVar3;
   undefined4 local_8;
   int local_4;
   
@@ -203,38 +203,38 @@ undefined4 __cdecl unzOpenCurrentFile(undefined4 *param_1)
   if (iVar2 != 0) {
     return 0xffffff99;
   }
-  puVar3 = malloc(0x60);
-  if (puVar3 != (undefined4 *)0x0) {
-    pvVar4 = malloc(0x4000);
-    *puVar3 = pvVar4;
-    puVar3[0x10] = param_1;
-    puVar3[0x11] = local_8;
-    puVar3[0x12] = 0;
-    if (pvVar4 != (void *)0x0) {
-      puVar3[0xf] = 0;
+  pBlock = malloc(0x60);
+  if (pBlock != (undefined4 *)0x0) {
+    pvVar3 = malloc(0x4000);
+    *pBlock = pvVar3;
+    pBlock[0x10] = param_1;
+    pBlock[0x11] = local_8;
+    pBlock[0x12] = 0;
+    if (pvVar3 != (void *)0x0) {
+      pBlock[0xf] = 0;
       iVar2 = puVar1[0xd];
-      puVar3[0x16] = iVar2;
-      puVar3[0x15] = *puVar1;
-      puVar3[0x17] = puVar1[3];
-      puVar3[6] = 0;
+      pBlock[0x16] = iVar2;
+      pBlock[0x15] = *puVar1;
+      pBlock[0x17] = puVar1[3];
+      pBlock[6] = 0;
       if (iVar2 != 0) {
-        puVar3[9] = 0;
-        puVar3[10] = 0;
-        puVar3[0xb] = 0;
+        pBlock[9] = 0;
+        pBlock[10] = 0;
+        pBlock[0xb] = 0;
         iVar2 = inflateInit2_();
         if (iVar2 == 0) {
-          puVar3[0xf] = 1;
+          pBlock[0xf] = 1;
         }
       }
-      puVar3[0x13] = puVar1[0x10];
-      puVar3[0x14] = puVar1[0x11];
+      pBlock[0x13] = puVar1[0x10];
+      pBlock[0x14] = puVar1[0x11];
       iVar2 = puVar1[0x1e];
-      puVar3[2] = 0;
-      puVar3[0xe] = iVar2 + 0x1e + local_4;
-      puVar1[0x1f] = puVar3;
+      pBlock[2] = 0;
+      pBlock[0xe] = iVar2 + 0x1e + local_4;
+      puVar1[0x1f] = pBlock;
       return 0;
     }
-    free(puVar3);
+    free(pBlock);
   }
   return 0xffffff98;
 }
@@ -342,22 +342,22 @@ int __cdecl unzReadCurrentFile(int param_1)
 undefined4 __cdecl unzCloseCurrentFile(int param_1)
 
 {
-  undefined4 *puVar1;
+  undefined4 *pBlock;
   
   if (param_1 == 0) {
     return 0xffffff9a;
   }
-  puVar1 = *(undefined4 **)(param_1 + 0x7c);
-  if (puVar1 == (undefined4 *)0x0) {
+  pBlock = *(undefined4 **)(param_1 + 0x7c);
+  if (pBlock == (undefined4 *)0x0) {
     return 0xffffff9a;
   }
-  free((void *)*puVar1);
-  *puVar1 = 0;
-  if (puVar1[0xf] != 0) {
+  free((void *)*pBlock);
+  *pBlock = 0;
+  if (pBlock[0xf] != 0) {
     inflateEnd();
   }
-  puVar1[0xf] = 0;
-  free(puVar1);
+  pBlock[0xf] = 0;
+  free(pBlock);
   *(undefined4 *)(param_1 + 0x7c) = 0;
   return 0;
 }

@@ -5,6 +5,8 @@
 void __cdecl Jump_RegisterDvars(void)
 
 {
+  ushort flags;
+  
   jump_height = _Dvar_RegisterFloat("jump_height",39.0,0.0,1000.0,0x180,
                                     "The maximum height of a player\'s jump");
   jump_stepSize =
@@ -24,18 +26,18 @@ void __cdecl Jump_RegisterDvars(void)
 
 // 0041D200  Jump_ClearState  (bgame/bg_jump.cpp:65)
 
-void __cdecl Jump_ClearState(playerState_s *param_1)
+void __cdecl Jump_ClearState(playerState_s *ps)
 
 {
-  param_1->pm_flags = param_1->pm_flags & 0xffffbfff;
-  param_1->jumpOriginZ = 0.0;
+  ps->pm_flags = ps->pm_flags & 0xffffbfff;
+  ps->jumpOriginZ = 0.0;
   return;
 }
 
 
 // 0041D230  Jump_GetStepHeight  (bgame/bg_jump.cpp:71)
 
-bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *param_3)
+bool __cdecl Jump_GetStepHeight(playerState_s *ps,float *origin,float *stepSize)
 
 {
   code *pcVar1;
@@ -43,7 +45,7 @@ bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *par
   undefined1 uVar3;
   float fVar4;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x48,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -51,7 +53,7 @@ bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *par
       return (bool)uVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x49,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -59,7 +61,7 @@ bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *par
       return (bool)uVar3;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (stepSize == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x4a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -67,14 +69,14 @@ bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *par
       return (bool)uVar3;
     }
   }
-  fVar4 = param_1->jumpOriginZ + (jump_height->current).value;
-  if (fVar4 < param_2[2] || fVar4 == param_2[2]) {
+  fVar4 = ps->jumpOriginZ + (jump_height->current).value;
+  if (fVar4 < origin[2] || fVar4 == origin[2]) {
     bVar2 = false;
   }
   else {
-    *param_3 = (float)(jump_stepSize->current).integer;
-    if (param_1->jumpOriginZ + (jump_height->current).value < param_2[2] + *param_3) {
-      *param_3 = (param_1->jumpOriginZ + (jump_height->current).value) - param_2[2];
+    *stepSize = (float)(jump_stepSize->current).integer;
+    if (ps->jumpOriginZ + (jump_height->current).value < origin[2] + *stepSize) {
+      *stepSize = (ps->jumpOriginZ + (jump_height->current).value) - origin[2];
     }
     bVar2 = true;
   }
@@ -84,32 +86,32 @@ bool __cdecl Jump_GetStepHeight(playerState_s *param_1,float *param_2,float *par
 
 // 0041D340  Jump_IsPlayerAboveMax  (bgame/bg_jump.cpp:91)
 
-bool __cdecl Jump_IsPlayerAboveMax(playerState_s *param_1)
+bool __cdecl Jump_IsPlayerAboveMax(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (((param_1->pm_flags & 0x4000U) == 0) &&
+  if (((ps->pm_flags & 0x4000U) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x5c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return param_1->jumpOriginZ + (jump_height->current).value <= param_1->origin[2];
+  return ps->jumpOriginZ + (jump_height->current).value <= ps->origin[2];
 }
 
 
 // 0041D3B0  Jump_ActivateSlowdown  (bgame/bg_jump.cpp:98)
 
-void __cdecl Jump_ActivateSlowdown(playerState_s *param_1)
+void __cdecl Jump_ActivateSlowdown(playerState_s *ps)
 
 {
-  if (param_1->pm_time == 0) {
-    param_1->pm_flags = param_1->pm_flags | 0x4000;
-    param_1->pm_time = 0x708;
+  if (ps->pm_time == 0) {
+    ps->pm_flags = ps->pm_flags | 0x4000;
+    ps->pm_time = 0x708;
   }
   return;
 }
@@ -117,15 +119,15 @@ void __cdecl Jump_ActivateSlowdown(playerState_s *param_1)
 
 // 0041D3E0  Jump_ApplySlowdown  (bgame/bg_jump.cpp:107)
 
-void __cdecl Jump_ApplySlowdown(playerState_s *param_1)
+void __cdecl Jump_ApplySlowdown(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_8;
+  float scale;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x6e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -133,28 +135,28 @@ void __cdecl Jump_ApplySlowdown(playerState_s *param_1)
       return;
     }
   }
-  local_8 = 1.0;
-  if (param_1->pm_time < 0x709) {
-    if (param_1->pm_time == 0) {
-      fVar3 = param_1->jumpOriginZ + 18.0;
-      if (fVar3 < param_1->origin[2] || fVar3 == param_1->origin[2]) {
-        param_1->pm_time = 0x4b0;
-        local_8 = 0.5;
+  scale = 1.0;
+  if (ps->pm_time < 0x709) {
+    if (ps->pm_time == 0) {
+      fVar3 = ps->jumpOriginZ + 18.0;
+      if (fVar3 < ps->origin[2] || fVar3 == ps->origin[2]) {
+        ps->pm_time = 0x4b0;
+        scale = 0.5;
       }
       else {
-        param_1->pm_time = 0x708;
-        local_8 = 0.65;
+        ps->pm_time = 0x708;
+        scale = 0.65;
       }
     }
   }
   else {
-    Jump_ClearState(param_1);
-    local_8 = 0.65;
+    Jump_ClearState(ps);
+    scale = 0.65;
   }
   if ((jump_slowdownEnable->current).enabled != false) {
-    param_1->velocity[0] = local_8 * param_1->velocity[0];
-    param_1->velocity[1] = local_8 * param_1->velocity[1];
-    param_1->velocity[2] = local_8 * param_1->velocity[2];
+    ps->velocity[0] = scale * ps->velocity[0];
+    ps->velocity[1] = scale * ps->velocity[1];
+    ps->velocity[2] = scale * ps->velocity[2];
   }
   return;
 }
@@ -162,13 +164,13 @@ void __cdecl Jump_ApplySlowdown(playerState_s *param_1)
 
 // 0041DDD0  resetBit  (qcommon/bitarray.h:126)
 
-void __thiscall bitarray<51>::resetBit(bitarray<51> *this,uint param_1)
+void __thiscall bitarray<51>::resetBit(bitarray<51> *this,uint pos)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x32 < param_1) {
+  if (0x32 < pos) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/bitarray.h",
                              0x7f,0,"%s");
     if (!bVar2) {
@@ -177,14 +179,14 @@ void __thiscall bitarray<51>::resetBit(bitarray<51> *this,uint param_1)
       return;
     }
   }
-  this->array[param_1 >> 5] = ~(0x80000000U >> ((byte)param_1 & 0x1f)) & this->array[param_1 >> 5];
+  this->array[pos >> 5] = ~(0x80000000U >> ((byte)pos & 0x1f)) & this->array[pos >> 5];
   return;
 }
 
 
 // 0041D590  Jump_GetSlowdownFriction  (bgame/bg_jump.cpp:138)
 
-float __cdecl Jump_GetSlowdownFriction(playerState_s *param_1)
+float __cdecl Jump_GetSlowdownFriction(playerState_s *ps)
 
 {
   code *pcVar1;
@@ -192,7 +194,7 @@ float __cdecl Jump_GetSlowdownFriction(playerState_s *param_1)
   bool bVar3;
   float10 fVar4;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x8b,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -200,7 +202,7 @@ float __cdecl Jump_GetSlowdownFriction(playerState_s *param_1)
       return (float)fVar4;
     }
   }
-  if (0x708 < param_1->pm_time) {
+  if (0x708 < ps->pm_time) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x8c,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -211,8 +213,8 @@ float __cdecl Jump_GetSlowdownFriction(playerState_s *param_1)
   if ((jump_slowdownEnable->current).enabled == false) {
     fVar2 = 1.0;
   }
-  else if (param_1->pm_time < 0x6a4) {
-    fVar2 = (float)param_1->pm_time * 1.5 * 0.00058823527 + 1.0;
+  else if (ps->pm_time < 0x6a4) {
+    fVar2 = (float)ps->pm_time * 1.5 * 0.00058823527 + 1.0;
   }
   else {
     fVar2 = 2.5;
@@ -223,15 +225,15 @@ float __cdecl Jump_GetSlowdownFriction(playerState_s *param_1)
 
 // 0041D510  Jump_ReduceFriction  (bgame/bg_jump.cpp:152)
 
-float __cdecl Jump_ReduceFriction(playerState_s *param_1)
+float __cdecl Jump_ReduceFriction(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_8;
+  float control;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x9b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -239,27 +241,29 @@ float __cdecl Jump_ReduceFriction(playerState_s *param_1)
       return (float)fVar3;
     }
   }
-  if (param_1->pm_time < 0x709) {
-    local_8 = Jump_GetSlowdownFriction(param_1);
+  if (ps->pm_time < 0x709) {
+    control = Jump_GetSlowdownFriction(ps);
   }
   else {
-    Jump_ClearState(param_1);
-    local_8 = 1.0;
+    Jump_ClearState(ps);
+    control = 1.0;
   }
-  return local_8;
+  return control;
 }
 
 
 // 0041D640  Jump_ClampVelocity  (bgame/bg_jump.cpp:171)
 
-void __cdecl Jump_ClampVelocity(playerState_s *param_1,float *param_2)
+void __cdecl Jump_ClampVelocity(playerState_s *ps,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float maxJumpVel;
+  float heightDiff;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xaf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -267,7 +271,7 @@ void __cdecl Jump_ClampVelocity(playerState_s *param_1,float *param_2)
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xb0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -275,16 +279,16 @@ void __cdecl Jump_ClampVelocity(playerState_s *param_1,float *param_2)
       return;
     }
   }
-  if (0.0 < param_1->origin[2] - param_2[2]) {
-    fVar3 = (param_1->jumpOriginZ + (jump_height->current).value) - param_1->origin[2];
+  if (0.0 < ps->origin[2] - origin[2]) {
+    fVar3 = (ps->jumpOriginZ + (jump_height->current).value) - ps->origin[2];
     if (0.1 <= fVar3) {
-      fVar3 = SQRT(fVar3 * 2.0 * (float)param_1->gravity);
-      if (fVar3 < param_1->velocity[2]) {
-        param_1->velocity[2] = fVar3;
+      fVar3 = SQRT(fVar3 * 2.0 * (float)ps->gravity);
+      if (fVar3 < ps->velocity[2]) {
+        ps->velocity[2] = fVar3;
       }
     }
     else {
-      param_1->velocity[2] = 0.0;
+      ps->velocity[2] = 0.0;
     }
   }
   return;
@@ -293,7 +297,7 @@ void __cdecl Jump_ClampVelocity(playerState_s *param_1,float *param_2)
 
 // 0041DAB0  Jump_GetLandFactor  (bgame/bg_jump.cpp:197)
 
-float __cdecl Jump_GetLandFactor(playerState_s *param_1)
+float __cdecl Jump_GetLandFactor(playerState_s *ps)
 
 {
   code *pcVar1;
@@ -301,7 +305,7 @@ float __cdecl Jump_GetLandFactor(playerState_s *param_1)
   bool bVar3;
   float10 fVar4;
   
-  if ((param_1->pm_flags & 0x4000U) == 0) {
+  if ((ps->pm_flags & 0x4000U) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xc6,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -309,7 +313,7 @@ float __cdecl Jump_GetLandFactor(playerState_s *param_1)
       return (float)fVar4;
     }
   }
-  if (0x708 < param_1->pm_time) {
+  if (0x708 < ps->pm_time) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",199,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -320,8 +324,8 @@ float __cdecl Jump_GetLandFactor(playerState_s *param_1)
   if ((jump_slowdownEnable->current).enabled == false) {
     fVar2 = 1.0;
   }
-  else if (param_1->pm_time < 0x6a4) {
-    fVar2 = (float)param_1->pm_time * 1.5 * 0.00058823527 + 1.0;
+  else if (ps->pm_time < 0x6a4) {
+    fVar2 = (float)ps->pm_time * 1.5 * 0.00058823527 + 1.0;
   }
   else {
     fVar2 = 2.5;
@@ -332,51 +336,53 @@ float __cdecl Jump_GetLandFactor(playerState_s *param_1)
 
 // 0041D900  Jump_Start  (bgame/bg_jump.cpp:211)
 
-void __cdecl Jump_Start(pmove_t *param_1,pml_t *param_2,float param_3)
+void __cdecl Jump_Start(pmove_t *pm,pml_t *pml,float height)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  float fVar4;
-  float local_c;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  float fVar3;
+  float factor;
+  float velocitySqrd;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  if (ppVar1 == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xd9,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  ps_00 = pm->ps;
+  if (ps_00 == (playerState_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xd9,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_c = param_3 * 2.0 * (float)ppVar1->gravity;
-  if (((ppVar1->pm_flags & 0x4000U) != 0) && (ppVar1->pm_time < 0x709)) {
-    fVar4 = Jump_GetLandFactor(ppVar1);
-    if (fVar4 == 0.0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xe2,0,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+  velocitySqrd = height * 2.0 * (float)ps_00->gravity;
+  if (((ps_00->pm_flags & 0x4000U) != 0) && (ps_00->pm_time < 0x709)) {
+    fVar3 = Jump_GetLandFactor(ps_00);
+    if (fVar3 == 0.0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0xe2,0,"%s");
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    local_c = local_c / fVar4;
+    velocitySqrd = velocitySqrd / fVar3;
   }
-  param_2->groundPlane = 0;
-  param_2->almostGroundPlane = 0;
-  param_2->walking = 0;
-  ppVar1->groundEntityNum = 0x3ff;
-  ppVar1->jumpTime = (param_1->cmd).serverTime;
-  ppVar1->jumpOriginZ = ppVar1->origin[2];
-  ppVar1->velocity[2] = SQRT(local_c);
-  ppVar1->pm_flags = ppVar1->pm_flags & 0xfffffe7f;
-  ppVar1->pm_flags = ppVar1->pm_flags | 0x4000;
-  ppVar1->pm_time = 0;
-  (ppVar1->sprintState).sprintButtonUpRequired = 0;
-  ppVar1->aimSpreadScale = ppVar1->aimSpreadScale + (jump_spreadAdd->current).value;
-  if (255.0 < ppVar1->aimSpreadScale) {
-    ppVar1->aimSpreadScale = 255.0;
+  pml->groundPlane = 0;
+  pml->almostGroundPlane = 0;
+  pml->walking = 0;
+  ps_00->groundEntityNum = 0x3ff;
+  ps_00->jumpTime = (pm->cmd).serverTime;
+  ps_00->jumpOriginZ = ps_00->origin[2];
+  ps_00->velocity[2] = SQRT(velocitySqrd);
+  ps_00->pm_flags = ps_00->pm_flags & 0xfffffe7f;
+  ps_00->pm_flags = ps_00->pm_flags | 0x4000;
+  ps_00->pm_time = 0;
+  (ps_00->sprintState).sprintButtonUpRequired = 0;
+  ps_00->aimSpreadScale = ps_00->aimSpreadScale + (jump_spreadAdd->current).value;
+  if (255.0 < ps_00->aimSpreadScale) {
+    ps_00->aimSpreadScale = 255.0;
   }
   return;
 }
@@ -384,21 +390,21 @@ void __cdecl Jump_Start(pmove_t *param_1,pml_t *param_2,float param_3)
 
 // 0041DB60  Jump_PushOffLadder  (bgame/bg_jump.cpp:256)
 
-void __cdecl Jump_PushOffLadder(playerState_s *param_1,pml_t *param_2,pmove_t *param_3)
+void __cdecl Jump_PushOffLadder(playerState_s *ps,pml_t *pml,pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_20;
+  float flatForward;
   float local_1c;
   float local_18;
-  float local_14;
+  float pushOffDir;
   float local_10;
   float local_c;
-  float local_8;
+  float dot;
   
-  if ((param_1->pm_flags & 8U) == 0) {
+  if ((ps->pm_flags & 8U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x105,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -406,49 +412,49 @@ void __cdecl Jump_PushOffLadder(playerState_s *param_1,pml_t *param_2,pmove_t *p
       return;
     }
   }
-  param_1->velocity[2] = param_1->velocity[2] * 0.75;
-  local_20 = param_2->forward[0];
-  local_1c = param_2->forward[1];
+  ps->velocity[2] = ps->velocity[2] * 0.75;
+  flatForward = pml->forward[0];
+  local_1c = pml->forward[1];
   local_18 = 0.0;
-  Vec3Normalize(&local_20);
-  if (0.0 <= param_1->vLadderVec[0] * param_2->forward[0] +
-             param_1->vLadderVec[1] * param_2->forward[1] +
-             param_1->vLadderVec[2] * param_2->forward[2]) {
-    local_14 = local_20;
+  Vec3Normalize(&flatForward);
+  if (0.0 <= ps->vLadderVec[0] * pml->forward[0] + ps->vLadderVec[1] * pml->forward[1] +
+             ps->vLadderVec[2] * pml->forward[2]) {
+    pushOffDir = flatForward;
     local_10 = local_1c;
   }
   else {
-    local_8 = local_20 * param_1->vLadderVec[0] + local_1c * param_1->vLadderVec[1] +
-              local_18 * param_1->vLadderVec[2];
-    fVar3 = local_8 * -2.0;
-    local_14 = fVar3 * param_1->vLadderVec[0] + local_20;
-    local_10 = fVar3 * param_1->vLadderVec[1] + local_1c;
-    local_c = fVar3 * param_1->vLadderVec[2] + local_18;
-    Vec3Normalize(&local_14);
+    dot = flatForward * ps->vLadderVec[0] + local_1c * ps->vLadderVec[1] +
+          local_18 * ps->vLadderVec[2];
+    fVar3 = dot * -2.0;
+    pushOffDir = fVar3 * ps->vLadderVec[0] + flatForward;
+    local_10 = fVar3 * ps->vLadderVec[1] + local_1c;
+    local_c = fVar3 * ps->vLadderVec[2] + local_18;
+    Vec3Normalize(&pushOffDir);
   }
   fVar3 = (jump_ladderPushVel->current).value;
-  param_1->velocity[0] = fVar3 * local_14;
-  param_1->velocity[1] = fVar3 * local_10;
-  param_1->pm_flags = param_1->pm_flags & 0xfffffff7;
+  ps->velocity[0] = fVar3 * pushOffDir;
+  ps->velocity[1] = fVar3 * local_10;
+  ps->pm_flags = ps->pm_flags & 0xfffffff7;
   return;
 }
 
 
 // 0041DD70  Jump_AddSurfaceEvent  (bgame/bg_jump.cpp:290)
 
-void __cdecl Jump_AddSurfaceEvent(playerState_s *param_1,pml_t *param_2)
+void __cdecl Jump_AddSurfaceEvent(playerState_s *ps,pml_t *pml)
 
 {
-  uint uVar1;
+  uint eventParm;
+  int surfType;
   
-  if ((param_1->pm_flags & 8U) == 0) {
-    uVar1 = PM_GroundSurfaceType(param_1,param_2);
-    if (uVar1 != 0) {
-      BG_AddPredictableEventToPlayerstate(0x6e,uVar1,param_1);
+  if ((ps->pm_flags & 8U) == 0) {
+    eventParm = PM_GroundSurfaceType(ps,pml);
+    if (eventParm != 0) {
+      BG_AddPredictableEventToPlayerstate(0x6e,eventParm,ps);
     }
   }
   else {
-    BG_AddPredictableEventToPlayerstate(0x6e,0x15,param_1);
+    BG_AddPredictableEventToPlayerstate(0x6e,0x15,ps);
   }
   return;
 }
@@ -456,84 +462,85 @@ void __cdecl Jump_AddSurfaceEvent(playerState_s *param_1,pml_t *param_2)
 
 // 0041D750  Jump_Check  (bgame/bg_jump.cpp:309)
 
-bool __cdecl Jump_Check(pmove_t *param_1,pml_t *param_2)
+bool __cdecl Jump_Check(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  int iVar5;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  int iVar4;
+  playerState_s *ps;
   
-  if (param_1 == (pmove_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x138,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      uVar4 = (*pcVar2)();
-      return (bool)uVar4;
+  if (pm == (pmove_t *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x138,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  ppVar1 = param_1->ps;
-  if (ppVar1 == (playerState_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x13b,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      uVar4 = (*pcVar2)();
-      return (bool)uVar4;
+  ps_00 = pm->ps;
+  if (ps_00 == (playerState_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_jump.cpp",0x13b,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  if ((ppVar1->pm_flags & 0x80000U) == 0) {
-    if ((param_1->cmd).serverTime - ppVar1->jumpTime < 500) {
-      bVar3 = false;
+  if ((ps_00->pm_flags & 0x80000U) == 0) {
+    if ((pm->cmd).serverTime - ps_00->jumpTime < 500) {
+      bVar2 = false;
     }
-    else if ((ppVar1->pm_flags & 0x400U) == 0) {
-      if ((ppVar1->pm_flags & 4U) == 0) {
-        if (ppVar1->pm_type < 9) {
-          iVar5 = PM_GetEffectiveStance(ppVar1);
-          if ((iVar5 == 0) || (ppVar1->groundEntityNum == 0x3ff)) {
-            bVar3 = bitarray<51>::testBit(&(param_1->cmd).button_bits,10);
-            if (bVar3) {
-              bVar3 = bitarray<51>::testBit(&(param_1->oldcmd).button_bits,10);
-              if (bVar3) {
-                bitarray<51>::resetBit(&(param_1->cmd).button_bits,10);
-                bVar3 = false;
+    else if ((ps_00->pm_flags & 0x400U) == 0) {
+      if ((ps_00->pm_flags & 4U) == 0) {
+        if (ps_00->pm_type < 9) {
+          iVar4 = PM_GetEffectiveStance(ps_00);
+          if ((iVar4 == 0) || (ps_00->groundEntityNum == 0x3ff)) {
+            bVar2 = bitarray<51>::testBit(&(pm->cmd).button_bits,10);
+            if (bVar2) {
+              bVar2 = bitarray<51>::testBit(&(pm->oldcmd).button_bits,10);
+              if (bVar2) {
+                bitarray<51>::resetBit(&(pm->cmd).button_bits,10);
+                bVar2 = false;
               }
-              else if (((param_2->groundTrace).sflags & 2U) == 0) {
-                Jump_Start(param_1,param_2,(jump_height->current).value);
-                Jump_AddSurfaceEvent(ppVar1,param_2);
-                if ((ppVar1->pm_flags & 8U) != 0) {
-                  Jump_PushOffLadder(ppVar1,param_2,param_1);
+              else if (((pml->groundTrace).sflags & 2U) == 0) {
+                Jump_Start(pm,pml,(jump_height->current).value);
+                Jump_AddSurfaceEvent(ps_00,pml);
+                if ((ps_00->pm_flags & 8U) != 0) {
+                  Jump_PushOffLadder(ps_00,pml,pm);
                 }
-                BG_AnimScriptEvent(param_1,ANIM_ET_JUMP,0,1);
-                bVar3 = true;
+                BG_AnimScriptEvent(pm,ANIM_ET_JUMP,0,1);
+                bVar2 = true;
               }
               else {
-                bVar3 = false;
+                bVar2 = false;
               }
             }
             else {
-              bVar3 = false;
+              bVar2 = false;
             }
           }
           else {
-            bVar3 = false;
+            bVar2 = false;
           }
         }
         else {
-          bVar3 = false;
+          bVar2 = false;
         }
       }
       else {
-        bVar3 = false;
+        bVar2 = false;
       }
     }
     else {
-      bVar3 = false;
+      bVar2 = false;
     }
   }
   else {
-    bVar3 = false;
+    bVar2 = false;
   }
-  return bVar3;
+  return bVar2;
 }
 

@@ -2,27 +2,28 @@
 
 // 00577700  Con_OpenChannel  (client/con_channels.cpp:88)
 
-bool __cdecl Con_OpenChannel(char *param_1,bool param_2)
+bool __cdecl Con_OpenChannel(char *name,bool allowScript)
 
 {
   bool bVar1;
   int iVar2;
-  int local_c;
+  int index;
+  bool alreadyExists;
   
   bVar1 = false;
-  local_c = 0;
+  index = 0;
   while( true ) {
-    if ((0xff < local_c) || (pcGlob.openChannels[local_c].name[0] == '\0')) goto LAB_0057775f;
-    iVar2 = I_strnicmp(pcGlob.openChannels[local_c].name,param_1,0x20);
+    if ((0xff < index) || (pcGlob.openChannels[index].name[0] == '\0')) goto LAB_0057775f;
+    iVar2 = I_strnicmp(pcGlob.openChannels[index].name,name,0x20);
     if (iVar2 == 0) break;
-    local_c = local_c + 1;
+    index = index + 1;
   }
   bVar1 = true;
 LAB_0057775f:
-  if (local_c < 0x100) {
+  if (index < 0x100) {
     if (!bVar1) {
-      I_strncpyz(pcGlob.openChannels[local_c].name,param_1,0x20);
-      *(bool *)(local_c * 0x21 + 0x2d9c308) = param_2;
+      I_strncpyz(pcGlob.openChannels[index].name,name,0x20);
+      *(bool *)(index * 0x21 + 0x2d9c308) = allowScript;
     }
     bVar1 = true;
   }
@@ -35,14 +36,14 @@ LAB_0057775f:
 
 // 00578220  Con_CloseChannelInternal  (client/con_channels.cpp:119)
 
-void __cdecl Con_CloseChannelInternal(int param_1)
+void __cdecl Con_CloseChannelInternal(int channel)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint filter;
   
-  if (0xff < (uint)param_1) {
+  if (0xff < (uint)channel) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\con_channels.cpp",0x7a,0,
                              "channel doesn\'t index CON_MAX_CHANNELS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -51,10 +52,10 @@ void __cdecl Con_CloseChannelInternal(int param_1)
       return;
     }
   }
-  if (pcGlob.openChannels[param_1].name[0] != '\0') {
-    pcGlob.openChannels[param_1].name[0] = '\0';
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-      Com_BitClearAssert(pcGlob.filters[local_8],param_1,0x20);
+  if (pcGlob.openChannels[channel].name[0] != '\0') {
+    pcGlob.openChannels[channel].name[0] = '\0';
+    for (filter = 0; filter < 6; filter = filter + 1) {
+      Com_BitClearAssert(pcGlob.filters[filter],channel,0x20);
     }
   }
   return;
@@ -63,19 +64,19 @@ void __cdecl Con_CloseChannelInternal(int param_1)
 
 // 005777B0  Con_ScriptHasPermission  (client/con_channels.cpp:136)
 
-bool __cdecl Con_ScriptHasPermission(int param_1)
+bool __cdecl Con_ScriptHasPermission(int channel)
 
 {
   undefined1 uVar1;
   
-  if ((param_1 < 0) || (0xff < param_1)) {
+  if ((channel < 0) || (0xff < channel)) {
     uVar1 = 0;
   }
-  else if (pcGlob.openChannels[param_1].name[0] == '\0') {
+  else if (pcGlob.openChannels[channel].name[0] == '\0') {
     uVar1 = 0;
   }
   else {
-    uVar1 = pcGlob.openChannels[param_1].allowScript;
+    uVar1 = pcGlob.openChannels[channel].allowScript;
   }
   return (bool)uVar1;
 }
@@ -83,42 +84,42 @@ bool __cdecl Con_ScriptHasPermission(int param_1)
 
 // 005777F0  Con_GetChannel  (client/con_channels.cpp:148)
 
-bool __cdecl Con_GetChannel(char *param_1,int *param_2)
+bool __cdecl Con_GetChannel(char *name,int *channel_result)
 
 {
   int iVar1;
-  int local_8;
+  int channel;
   
-  local_8 = 0;
+  channel = 0;
   do {
-    if (0xff < local_8) {
+    if (0xff < channel) {
 LAB_00577848:
-      return local_8 < 0x100;
+      return channel < 0x100;
     }
-    if (pcGlob.openChannels[local_8].name[0] != '\0') {
-      iVar1 = I_stricmp(param_1,pcGlob.openChannels[local_8].name);
+    if (pcGlob.openChannels[channel].name[0] != '\0') {
+      iVar1 = I_stricmp(name,pcGlob.openChannels[channel].name);
       if (iVar1 == 0) {
-        *param_2 = local_8;
+        *channel_result = channel;
         goto LAB_00577848;
       }
     }
-    local_8 = local_8 + 1;
+    channel = channel + 1;
   } while( true );
 }
 
 
 // 00577860  Con_IsChannelOpen  (client/con_channels.cpp:165)
 
-bool __cdecl Con_IsChannelOpen(int param_1)
+bool __cdecl Con_IsChannelOpen(int channel)
 
 {
   bool bVar1;
   
-  if ((param_1 < 0) || (0xff < param_1)) {
+  if ((channel < 0) || (0xff < channel)) {
     bVar1 = false;
   }
   else {
-    bVar1 = pcGlob.openChannels[param_1].name[0] != '\0';
+    bVar1 = pcGlob.openChannels[channel].name[0] != '\0';
   }
   return bVar1;
 }
@@ -128,36 +129,36 @@ bool __cdecl Con_IsChannelOpen(int param_1)
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_FilterShowChannel(print_msg_dest_t param_1,char *param_2,bool param_3)
+void __cdecl Con_FilterShowChannel(print_msg_dest_t dest,char *channelName,bool show)
 
 {
   int iVar1;
-  int local_c;
-  int local_8;
+  int channel;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 1; local_c < 0x100; local_c = local_c + 1) {
-    if ((pcGlob.openChannels[local_c].name[0] != '\0') &&
-       (iVar1 = I_stricmpwild(param_2,pcGlob.openChannels[local_c].name), iVar1 == 0)) {
-      if (param_3) {
-        iVar1 = Com_BitCheckAssert(pcGlob.filters[param_1],local_c,0x20);
+  count = 0;
+  for (channel = 1; channel < 0x100; channel = channel + 1) {
+    if ((pcGlob.openChannels[channel].name[0] != '\0') &&
+       (iVar1 = I_stricmpwild(channelName,pcGlob.openChannels[channel].name), iVar1 == 0)) {
+      if (show) {
+        iVar1 = Com_BitCheckAssert(pcGlob.filters[dest],channel,0x20);
         if (iVar1 == 0) {
-          Com_BitSetAssert(pcGlob.filters[param_1],local_c,0x20);
+          Com_BitSetAssert(pcGlob.filters[dest],channel,0x20);
           Com_Printf(0,"Adding channel: %s\n");
-          local_8 = local_8 + 1;
+          count = count + 1;
         }
       }
       else {
-        iVar1 = Com_BitCheckAssert(pcGlob.filters[param_1],local_c,0x20);
+        iVar1 = Com_BitCheckAssert(pcGlob.filters[dest],channel,0x20);
         if (iVar1 != 0) {
-          Com_BitClearAssert(pcGlob.filters[param_1],local_c,0x20);
+          Com_BitClearAssert(pcGlob.filters[dest],channel,0x20);
           Com_Printf(0,"Hiding channel: %s\n");
-          local_8 = local_8 + 1;
+          count = count + 1;
         }
       }
     }
   }
-  if (local_8 == 0) {
+  if (count == 0) {
     Com_Printf(0,"No channels added or hidden\n");
   }
   return;
@@ -168,7 +169,7 @@ void __cdecl Con_FilterShowChannel(print_msg_dest_t param_1,char *param_2,bool p
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-bool __cdecl Con_IsChannelVisible(print_msg_dest_t param_1,int param_2,int param_3)
+bool __cdecl Con_IsChannelVisible(print_msg_dest_t dest,int channel,int errorflags)
 
 {
   code *pcVar1;
@@ -176,20 +177,21 @@ bool __cdecl Con_IsChannelVisible(print_msg_dest_t param_1,int param_2,int param
   undefined1 uVar3;
   int iVar4;
   uint uVar5;
+  int error;
   
-  if (((param_2 < 0) || (0xff < param_2)) &&
+  if (((channel < 0) || (0xff < channel)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\con_channels.cpp",0xd5,0,
                                "%s\n\t(channel) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (pcGlob.openChannels[param_2].name[0] == '\0') {
+  if (pcGlob.openChannels[channel].name[0] == '\0') {
     bVar2 = false;
   }
   else {
-    if (param_1 == CON_DEST_MINICON) {
-      if (((param_2 == 2) || (param_2 == 3)) || (param_2 == 4)) {
+    if (dest == CON_DEST_MINICON) {
+      if (((channel == 2) || (channel == 3)) || (channel == 4)) {
         bVar2 = true;
       }
       else {
@@ -198,17 +200,17 @@ bool __cdecl Con_IsChannelVisible(print_msg_dest_t param_1,int param_2,int param
       if (bVar2) {
         return false;
       }
-      param_1 = CON_DEST_CONSOLE;
+      dest = CON_DEST_CONSOLE;
     }
-    if ((param_1 == CON_DEST_CONSOLE) && (param_2 == 0)) {
+    if ((dest == CON_DEST_CONSOLE) && (channel == 0)) {
       bVar2 = true;
     }
     else {
-      iVar4 = Com_BitCheckAssert(pcGlob.filters[param_1],param_2,0x20);
+      iVar4 = Com_BitCheckAssert(pcGlob.filters[dest],channel,0x20);
       if (iVar4 == 0) {
-        uVar5 = param_3 >> 5 & 0x1f;
+        uVar5 = errorflags >> 5 & 0x1f;
         if (((uVar5 == 3) || (uVar5 == 2)) &&
-           (iVar4 = Com_BitCheckAssert(pcGlob.filters[param_1],1,0x20), iVar4 != 0)) {
+           (iVar4 = Com_BitCheckAssert(pcGlob.filters[dest],1,0x20), iVar4 != 0)) {
           return true;
         }
         bVar2 = false;
@@ -227,10 +229,10 @@ bool __cdecl Con_IsChannelVisible(print_msg_dest_t param_1,int param_2,int param
 void __cdecl Con_ChannelList_f(void)
 
 {
-  int local_8;
+  int channel;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if ((local_8 != 0) && (pcGlob.openChannels[local_8].name[0] != '\0')) {
+  for (channel = 0; channel < 0x100; channel = channel + 1) {
+    if ((channel != 0) && (pcGlob.openChannels[channel].name[0] != '\0')) {
       Com_Printf(0,"%s\n");
     }
   }
@@ -242,13 +244,14 @@ void __cdecl Con_ChannelList_f(void)
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_FilterAdd(bool param_1)
+void __cdecl Con_FilterAdd(bool show)
 
 {
   int iVar1;
-  char *pcVar2;
-  bool bVar3;
-  int local_c;
+  char *channelName;
+  bool show_00;
+  int arg;
+  int argc;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -256,10 +259,10 @@ void __cdecl Con_FilterAdd(bool param_1)
     Com_Printf(0,"USAGE: %s <channel>\n<channel> may include wildcards */?\n");
   }
   else {
-    for (local_c = 1; local_c < iVar1; local_c = local_c + 1) {
-      bVar3 = param_1;
-      pcVar2 = Cmd_Argv(local_c);
-      Con_FilterShowChannel(CON_DEST_CONSOLE,pcVar2,bVar3);
+    for (arg = 1; arg < iVar1; arg = arg + 1) {
+      show_00 = show;
+      channelName = Cmd_Argv(arg);
+      Con_FilterShowChannel(CON_DEST_CONSOLE,channelName,show_00);
     }
     dvar_modifiedFlags = dvar_modifiedFlags | 1;
   }
@@ -295,11 +298,11 @@ void __cdecl Con_FilterList_f(void)
 
 {
   bool bVar1;
-  int local_8;
+  int channel;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if (local_8 != 0) {
-      bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,local_8,0);
+  for (channel = 0; channel < 0x100; channel = channel + 1) {
+    if (channel != 0) {
+      bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,0);
       if (bVar1) {
         Com_Printf(0,"%s\n");
       }
@@ -313,20 +316,20 @@ void __cdecl Con_FilterList_f(void)
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_WriteFilterConfigString(int param_1)
+void __cdecl Con_WriteFilterConfigString(int f)
 
 {
   bool bVar1;
-  int local_8;
+  int channel;
   
-  FS_Printf(param_1,"con_hidechannel *; con_showchannel");
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,local_8,0);
+  FS_Printf(f,"con_hidechannel *; con_showchannel");
+  for (channel = 0; channel < 0x100; channel = channel + 1) {
+    bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,0);
     if (bVar1) {
-      FS_Printf(param_1," %s");
+      FS_Printf(f," %s");
     }
   }
-  FS_Printf(param_1,"\n");
+  FS_Printf(f,"\n");
   return;
 }
 
@@ -336,54 +339,55 @@ void __cdecl Con_WriteFilterConfigString(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_InitChannelsForDestFromList(print_msg_dest_t param_1,char *param_2)
+void __cdecl Con_InitChannelsForDestFromList(print_msg_dest_t dest,char *channelNames)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *local_120;
-  uchar local_11c [256];
+  uchar channelName [256];
   uint local_1c;
-  uint local_18;
-  uint local_14;
-  ulong local_10;
-  char local_9;
-  uint local_8;
+  uint channelNamesLen;
+  uint charIndex;
+  uint channelNameLength;
+  bool foundChannelName;
+  uint channelNameStart;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (char *)0x0) &&
+  if ((channelNames == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\con_channels.cpp",0x146,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_120 = param_2;
+  local_120 = channelNames;
   do {
     cVar1 = *local_120;
     local_120 = local_120 + 1;
   } while (cVar1 != '\0');
-  local_18 = (int)local_120 - (int)(param_2 + 1);
-  local_9 = '\0';
-  local_8 = 0;
-  Con_FilterShowChannel(param_1,"*",false);
-  for (local_14 = 0; local_14 <= local_18; local_14 = local_14 + 1) {
-    if (((param_2[local_14] == ' ') || (param_2[local_14] == ',')) || (param_2[local_14] == '\0')) {
-      if (local_9 != '\0') {
-        local_10 = local_14 - local_8;
-        if (0x100 < local_10 + 1) {
+  channelNamesLen = (int)local_120 - (int)(channelNames + 1);
+  foundChannelName = false;
+  channelNameStart = 0;
+  Con_FilterShowChannel(dest,"*",false);
+  for (charIndex = 0; charIndex <= channelNamesLen; charIndex = charIndex + 1) {
+    if (((channelNames[charIndex] == ' ') || (channelNames[charIndex] == ',')) ||
+       (channelNames[charIndex] == '\0')) {
+      if (foundChannelName != false) {
+        channelNameLength = charIndex - channelNameStart;
+        if (0x100 < channelNameLength + 1) {
           Com_Error(ERR_DROP,"Channel name too long in specified list: \"%s\"\n");
         }
-        memcpy(local_11c,(uchar *)(param_2 + local_8),local_10);
-        local_11c[local_10] = '\0';
-        Con_FilterShowChannel(param_1,(char *)local_11c,true);
-        local_9 = '\0';
+        memcpy(channelName,(uchar *)(channelNames + channelNameStart),channelNameLength);
+        channelName[channelNameLength] = '\0';
+        Con_FilterShowChannel(dest,(char *)channelName,true);
+        foundChannelName = false;
       }
     }
-    else if (local_9 == '\0') {
-      local_8 = local_14;
-      local_9 = '\x01';
+    else if (foundChannelName == false) {
+      channelNameStart = charIndex;
+      foundChannelName = true;
     }
   }
   return;
@@ -400,52 +404,56 @@ void __cdecl Con_InitGameMsgChannels(void)
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  dvar_s *pdVar5;
-  char *pcVar6;
+  char *string;
+  dvar_s *pdVar4;
+  char *string_00;
   char *local_24;
   char *local_14;
-  uint local_c;
+  char *dvarName;
+  uint gameWindowIndex;
+  char *dvarDesc;
   
   if (!inited) {
     inited = true;
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      pcVar6 = con_gameMsgWindowNFilter_Names[local_c];
-      pcVar4 = con_gameMsgWindowNFilter_Descs[local_c];
-      sprintf(pcVar6,"con_gameMsgWindow%dFilter");
-      local_14 = pcVar6;
+    for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
+      string_00 = con_gameMsgWindowNFilter_Names[gameWindowIndex];
+      string = con_gameMsgWindowNFilter_Descs[gameWindowIndex];
+      sprintf(string_00,"con_gameMsgWindow%dFilter");
+      local_14 = string_00;
       do {
         cVar1 = *local_14;
         local_14 = local_14 + 1;
       } while (cVar1 != '\0');
-      if (((int)local_14 - (local_c * 0x19 + 0x2d9e4a9) != 0x18) &&
+      if (((int)local_14 - (gameWindowIndex * 0x19 + 0x2d9e4a9) != 0x18) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\con_channels.cpp",
                                    0x180,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      sprintf(pcVar4,
+      sprintf(string,
               "Space-separated list of console channels that should be displayed in game message window %d"
              );
-      local_24 = pcVar4;
+      local_24 = string;
       do {
         cVar1 = *local_24;
         local_24 = local_24 + 1;
       } while (cVar1 != '\0');
-      if (((int)local_24 - (local_c * 0x5b + 0x2d9e501) != 0x5a) &&
+      if (((int)local_24 - (gameWindowIndex * 0x5b + 0x2d9e501) != 0x5a) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\con_channels.cpp",
                                    0x183,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      pdVar5 = _Dvar_RegisterString(pcVar6,defaultGameWindowFilters[local_c],0x21,pcVar4);
-      con_gameMsgWindowNFilter[local_c] = pdVar5;
+      pdVar4 = _Dvar_RegisterString(string_00,defaultGameWindowFilters[gameWindowIndex],0x21,string)
+      ;
+      con_gameMsgWindowNFilter[gameWindowIndex] = pdVar4;
     }
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
+    for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
       Con_InitChannelsForDestFromList
-                (local_c + CON_DEST_GAME1,(con_gameMsgWindowNFilter[local_c]->current).string);
+                (gameWindowIndex + CON_DEST_GAME1,
+                 (con_gameMsgWindowNFilter[gameWindowIndex]->current).string);
     }
   }
   return;
@@ -459,12 +467,12 @@ void __cdecl Con_InitGameMsgChannels(void)
 void __cdecl Con_InitChannels(void)
 
 {
-  int local_c;
-  uint local_8;
+  int i;
+  uint channel;
   
   memset((uchar *)&pcGlob,'\0',0x2100);
-  for (local_8 = 0; local_8 < 0x22; local_8 = local_8 + 1) {
-    Con_OpenChannel(builtinChannels[local_8],false);
+  for (channel = 0; channel < 0x22; channel = channel + 1) {
+    Con_OpenChannel(builtinChannels[channel],false);
   }
   pcGlob.openChannels[0x19].allowScript = true;
   con_default_console_filter =
@@ -475,8 +483,8 @@ void __cdecl Con_InitChannels(void)
   Con_FilterShowChannel(CON_DEST_MINICON,"std",true);
   Con_FilterShowChannel(CON_DEST_MINICON,"error",true);
   Con_FilterShowChannel(CON_DEST_ERROR,"error",true);
-  for (local_c = 0x1f; local_c < 0x22; local_c = local_c + 1) {
-    Con_FilterShowChannel(CON_DEST_CONSOLE,builtinChannels[local_c],false);
+  for (i = 0x1f; i < 0x22; i = i + 1) {
+    Con_FilterShowChannel(CON_DEST_CONSOLE,builtinChannels[i],false);
   }
   Con_InitGameMsgChannels();
   Cmd_AddCommandInternal
@@ -495,10 +503,10 @@ void __cdecl Con_InitChannels(void)
 void __cdecl Con_ShutdownChannels(void)
 
 {
-  undefined4 local_8;
+  int channel;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    Con_CloseChannelInternal(local_8);
+  for (channel = 0; channel < 0x100; channel = channel + 1) {
+    Con_CloseChannelInternal(channel);
   }
   return;
 }
@@ -506,13 +514,13 @@ void __cdecl Con_ShutdownChannels(void)
 
 // 00577EA0  Com_BitClearAssert  (universal/q_shared.h:883)
 
-void __cdecl Com_BitClearAssert(uint *param_1,int param_2,int param_3)
+void __cdecl Com_BitClearAssert(uint *array,int bitNum,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (uint *)0x0) {
+  if (array == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\client_mp\\../universal/q_shared.h"
                              ,0x374,0,"%s");
     if (!bVar2) {
@@ -521,7 +529,7 @@ void __cdecl Com_BitClearAssert(uint *param_1,int param_2,int param_3)
       return;
     }
   }
-  if ((uint)(param_3 << 3) <= (uint)param_2) {
+  if ((uint)(size << 3) <= (uint)bitNum) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\client_mp\\../universal/q_shared.h"
                              ,0x375,0,"bitNum doesn\'t index size * 8\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -530,7 +538,7 @@ void __cdecl Com_BitClearAssert(uint *param_1,int param_2,int param_3)
       return;
     }
   }
-  param_1[param_2 >> 5] = ~(1 << ((byte)param_2 & 0x1f)) & param_1[param_2 >> 5];
+  array[bitNum >> 5] = ~(1 << ((byte)bitNum & 0x1f)) & array[bitNum >> 5];
   return;
 }
 

@@ -10,6 +10,8 @@ void __cdecl R_CalcGameTimeVec(float param_1,float *param_2)
   float10 fVar2;
   float fVar3;
   float in_XMM3_Da;
+  float sinOfFracPartOfGameTime;
+  float cosOfFracPartOfGameTime;
   
   fVar3 = (float)((uint)in_XMM3_Da & 0x80000000 | 0x4b000000);
   fVar3 = (in_XMM3_Da + fVar3) - fVar3;
@@ -30,10 +32,11 @@ void __cdecl R_CalcGameTimeVec(float param_1,float *param_2)
 // 007FFC80  R_HW_EnableScissor  (gfx_d3d/r_setstate_d3d.h:686)
 
 void __cdecl
-R_HW_EnableScissor(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4,uint param_5)
+R_HW_EnableScissor(IDirect3DDevice9 *h,uint param_2,uint param_3,uint param_4,uint param_5)
 
 {
   int *unaff_ESI;
+  uint w;
   
   (**(code **)(*unaff_ESI + 0xe4))();
   (**(code **)(*unaff_ESI + 300))();
@@ -58,6 +61,7 @@ void __cdecl R_InitLocalCmdBufState(GfxCmdBufState *param_1)
 // 00801C20  R_DrawEmissive  (gfx_d3d/rb_draw3d.cpp:5649)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
 void __cdecl R_DrawEmissive(GfxViewInfo *param_1,GfxCmdBuf *param_2)
 
@@ -68,6 +72,7 @@ void __cdecl R_DrawEmissive(GfxViewInfo *param_1,GfxCmdBuf *param_2)
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&stack0xffffe560,(GfxCmdBufInput *)((int)in_ECX + 0x2690),1);
@@ -81,6 +86,7 @@ void __cdecl R_DrawEmissive(GfxViewInfo *param_1,GfxCmdBuf *param_2)
 // 00801E00  R_DrawReflected  (gfx_d3d/rb_draw3d.cpp:5733)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
 void __cdecl R_DrawReflected(GfxViewInfo *param_1,GfxCmdBuf *param_2)
 
@@ -91,6 +97,7 @@ void __cdecl R_DrawReflected(GfxViewInfo *param_1,GfxCmdBuf *param_2)
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&stack0xffffe560,(GfxCmdBufInput *)((int)in_ECX + 0x2690),1);
@@ -116,7 +123,7 @@ void __cdecl RB_Draw3DInternal(GfxViewInfo *param_1)
     gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[2].height;
     gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
     UpdateVPosToWorld(unaff_ESI);
-    R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x02');
+    R_SetRenderTarget();
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x1140);
     return;
   }

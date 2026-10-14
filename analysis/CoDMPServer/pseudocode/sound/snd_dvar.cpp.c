@@ -9,7 +9,7 @@ void __cdecl SND_InitDvar(void)
   bool bVar2;
   uint uVar3;
   snd_speaker_config *psVar4;
-  uint local_8;
+  uint i;
   
   snd_draw3D = _Dvar_RegisterEnum("snd_draw3D",snd_draw3DNames,0,0x80,
                                   "Draw the position and info of world sounds");
@@ -311,13 +311,13 @@ void __cdecl SND_InitDvar(void)
       return;
     }
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
     uVar3 = SND_GetSpeakerConfigCount();
-    if (uVar3 <= local_8) break;
-    psVar4 = Snd_GetSpeakerConfig(local_8);
-    snd_speakerConfigurationStrings[local_8] = psVar4->name;
-    local_8 = local_8 + 1;
+    if (uVar3 <= i) break;
+    psVar4 = Snd_GetSpeakerConfig(i);
+    snd_speakerConfigurationStrings[i] = psVar4->name;
+    i = i + 1;
   }
   uVar3 = SND_GetSpeakerConfigCount();
   snd_speakerConfigurationStrings[uVar3] = (char *)0x0;
@@ -330,15 +330,15 @@ void __cdecl SND_InitDvar(void)
 
 // 00946970  Snd_SetConfigStringsBySpeakerCount  (sound/snd_dvar.cpp:366)
 
-void __cdecl Snd_SetConfigStringsBySpeakerCount(uint param_1)
+void __cdecl Snd_SetConfigStringsBySpeakerCount(uint speakerCount)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   snd_speaker_config *psVar4;
-  uint local_c;
-  int local_8;
+  uint i;
+  int index;
   
   if (snd_speakerConfiguration == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dvar.cpp",0x16f,0,"%s");
@@ -357,23 +357,23 @@ void __cdecl Snd_SetConfigStringsBySpeakerCount(uint param_1)
       return;
     }
   }
-  local_8 = 0;
-  local_c = 0;
+  index = 0;
+  i = 0;
   while( true ) {
     uVar3 = SND_GetSpeakerConfigCount();
-    if (uVar3 <= local_c) break;
-    psVar4 = Snd_GetSpeakerConfig(local_c);
-    if (psVar4->speakerCount <= param_1) {
-      psVar4 = Snd_GetSpeakerConfig(local_c);
-      snd_speakerConfigurationStrings[local_8] = psVar4->name;
-      local_8 = local_8 + 1;
+    if (uVar3 <= i) break;
+    psVar4 = Snd_GetSpeakerConfig(i);
+    if (psVar4->speakerCount <= speakerCount) {
+      psVar4 = Snd_GetSpeakerConfig(i);
+      snd_speakerConfigurationStrings[index] = psVar4->name;
+      index = index + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  snd_speakerConfigurationStrings[local_8] = (char *)0x0;
+  snd_speakerConfigurationStrings[index] = (char *)0x0;
   if ((snd_speakerConfiguration != (dvar_s *)0x0) &&
-     (local_8 <= (snd_speakerConfiguration->current).integer)) {
-    Dvar_SetInt(snd_speakerConfiguration,local_8 + -1);
+     (index <= (snd_speakerConfiguration->current).integer)) {
+    Dvar_SetInt(snd_speakerConfiguration,index + -1);
   }
   Dvar_UpdateEnumDomain(snd_speakerConfiguration,snd_speakerConfigurationStrings);
   return;

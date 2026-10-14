@@ -2,88 +2,88 @@
 
 // 00984044  DXGetErrorDescriptionA  (<external>/temp/193462/obj.x86fre/misc/dxerr/objfre/i386/dxerra.cpp:4069)
 
-char * __cdecl DXGetErrorDescriptionA(int param_1)
+char * __cdecl DXGetErrorDescriptionA(int hr)
 
 {
-  if (param_1 < -0x7789fdb4) {
-    if (param_1 == -0x7789fdb5) {
+  if (hr < -0x7789fdb4) {
+    if (hr == -0x7789fdb5) {
       return "This surface can not be restored because it was created in a different mode.";
     }
-    if (param_1 < -0x7ffbfc0d) {
-      if (param_1 == -0x7ffbfc0e) {
+    if (hr < -0x7ffbfc0d) {
+      if (hr == -0x7ffbfc0e) {
         return "A registry entry is corrupt.";
       }
-      if (param_1 < -0x7ffbfdc6) {
-        if (param_1 == -0x7ffbfdc7) {
+      if (hr < -0x7ffbfdc6) {
+        if (hr == -0x7ffbfdc7) {
           return "This Advise cannot be canceled because it was not successfully set.";
         }
-        if (param_1 < -0x7ffbfde9) {
-          if (param_1 == -0x7ffbfdea) {
+        if (hr < -0x7ffbfde9) {
+          if (hr == -0x7ffbfdea) {
             return "An object or name was not found.";
           }
-          if (param_1 < -0x7ffbfdfa) {
-            if (param_1 == -0x7ffbfdfb) {
+          if (hr < -0x7ffbfdfa) {
+            if (hr == -0x7ffbfdfb) {
               return 
               "The operation cannot be performed unless the device is acquired in DISCL_EXCLUSIVE mode. & This operation cannot be performed because the filter is active."
               ;
             }
-            if (param_1 < -0x7ffbfeab) {
-              if (param_1 == -0x7ffbfeac) {
+            if (hr < -0x7ffbfeab) {
+              if (hr == -0x7ffbfeac) {
                 return "Class not registered";
               }
-              if (param_1 < -0x7fffbffb) {
-                if (param_1 == -0x7fffbffc) {
+              if (hr < -0x7fffbffb) {
+                if (hr == -0x7fffbffc) {
                   return "Operation aborted";
                 }
-                if (param_1 == -0x7ffffff6) {
+                if (hr == -0x7ffffff6) {
                   return "The data necessary to complete this operation is not yet available.";
                 }
-                if (param_1 == -0x7fffbfff) {
+                if (hr == -0x7fffbfff) {
                   return "The function called is not supported at this time";
                 }
-                if (param_1 == -0x7fffbffe) {
+                if (hr == -0x7fffbffe) {
                   return "The requested COM interface is not available";
                 }
-                if (param_1 == -0x7fffbffd) {
+                if (hr == -0x7fffbffd) {
                   return "Invalid pointer";
                 }
               }
               else {
-                if (param_1 == -0x7fffbffb) {
+                if (hr == -0x7fffbffb) {
                   return "An undetermined error occurred";
                 }
-                if (param_1 == -0x7fff0001) {
+                if (hr == -0x7fff0001) {
                   return "Catastrophic failure";
                 }
-                if (param_1 == -0x7ffbfef0) {
+                if (hr == -0x7ffbfef0) {
                   return "This object does not support aggregation";
                 }
               }
             }
             else {
-              if (param_1 == -0x7ffbfe10) {
+              if (hr == -0x7ffbfe10) {
                 return "CoInitialize has not been called.";
               }
-              if (param_1 == -0x7ffbfe0f) {
+              if (hr == -0x7ffbfe0f) {
                 return "CoInitialize has already been called.";
               }
-              if (param_1 == -0x7ffbfe00) {
+              if (hr == -0x7ffbfe00) {
                 return 
                 "Unable to IDirectInputJoyConfig_Acquire because the user does not have sufficient privileges to change the joystick configuration. & An invalid media type was specified"
                 ;
               }
-              if (param_1 == -0x7ffbfdff) {
+              if (hr == -0x7ffbfdff) {
                 return "The device is full. & An invalid media subtype was specified.";
               }
-              if (param_1 == -0x7ffbfdfe) {
+              if (hr == -0x7ffbfdfe) {
                 return 
                 "Not all the requested information fit into the buffer. & This object can only be created as an aggregated object."
                 ;
               }
-              if (param_1 == -0x7ffbfdfd) {
+              if (hr == -0x7ffbfdfd) {
                 return "The effect is not downloaded. & The enumerator has become invalid.";
               }
-              if (param_1 == -0x7ffbfdfc) {
+              if (hr == -0x7ffbfdfc) {
                 return 
                 "The device cannot be reinitialized because there are still effects attached to it. & At least one of the pins involved in the operation is already connected."
                 ;
@@ -91,7 +91,7 @@ char * __cdecl DXGetErrorDescriptionA(int param_1)
             }
           }
           else {
-            switch(param_1) {
+            switch(hr) {
             case -0x7ffbfdfa:
               return 
               "The effect could not be downloaded because essential information is missing.  For example, no axes have been associated with the effect, or no type-specific information has been created. & One of the specified pins supports no media types."
@@ -140,7 +140,7 @@ char * __cdecl DXGetErrorDescriptionA(int param_1)
           }
         }
         else {
-          switch(param_1) {
+          switch(hr) {
           case -0x7ffbfde9:
             return "No combination of intermediate filters could be found to make the connection.";
           case -0x7ffbfde8:
@@ -211,7 +211,7 @@ char * __cdecl DXGetErrorDescriptionA(int param_1)
         }
       }
       else {
-        switch(param_1) {
+        switch(hr) {
         case -0x7ffbfdc6:
           return "A full-screen mode is not available.";
         case -0x7ffbfdc5:
@@ -375,11 +375,11 @@ switchD_0098441e_caseD_80040259:
         }
       }
     }
-    else if (param_1 < -0x7ffbf6fe) {
-      if (param_1 == -0x7ffbf6ff) {
+    else if (hr < -0x7ffbf6fe) {
+      if (hr == -0x7ffbf6ff) {
         return "Could not initialize Direct3D.";
       }
-      switch(param_1) {
+      switch(hr) {
       case -0x7ffbfc01:
         return "Device installer errors.";
       case -0x7ffbfc00:
@@ -412,12 +412,12 @@ switchD_0098441e_caseD_80040259:
         return "The object is not in running state.";
       }
     }
-    else if (param_1 < -0x7ff8fffd) {
-      if (param_1 == -0x7ff8fffe) {
+    else if (hr < -0x7ff8fffd) {
+      if (hr == -0x7ff8fffe) {
 LAB_00985c89:
         return "The system cannot find the file specified.";
       }
-      switch(param_1) {
+      switch(hr) {
       case -0x7ffbf6fe:
         return "No device could be found with the specified device settings.";
       case -0x7ffbf6fd:
@@ -440,12 +440,12 @@ LAB_00985c89:
         return "The device was removed.";
       }
     }
-    else if (param_1 < -0x7ff8ffea) {
-      if (param_1 == -0x7ff8ffeb) {
+    else if (hr < -0x7ff8ffea) {
+      if (hr == -0x7ff8ffeb) {
 LAB_00984829:
         return "This object has not been initialized";
       }
-      switch(param_1) {
+      switch(hr) {
       case -0x7ff8fffd:
 switchD_009847fa_caseD_80070003:
         return "The system cannot find the path specified.";
@@ -474,320 +474,320 @@ switchD_009847fa_caseD_8007000b:
         return "Ran out of memory";
       }
     }
-    else if (param_1 < -0x7789fea1) {
-      if (param_1 == -0x7789fea2) {
+    else if (hr < -0x7789fea1) {
+      if (hr == -0x7789fea2) {
         return 
         "Overlay surfaces could not be z layered based on their BltOrder because the hardware does not support z layering of overlays."
         ;
       }
-      if (param_1 < -0x7789ff4b) {
-        if (param_1 == -0x7789ff4c) {
+      if (hr < -0x7789ff4b) {
+        if (hr == -0x7789ff4c) {
           return 
           "Operation could not be carried out because there is no alpha accleration hardware present or available."
           ;
         }
-        if (param_1 < -0x7789ffeb) {
-          if (param_1 == -0x7789ffec) {
+        if (hr < -0x7789ffeb) {
+          if (hr == -0x7789ffec) {
             return "This surface can not be detached from the requested surface.";
           }
-          if (param_1 < -0x7ff8fb7e) {
-            if (param_1 == -0x7ff8fb7f) {
+          if (hr < -0x7ff8fb7e) {
+            if (hr == -0x7ff8fb7f) {
               return 
               "The application was written for an unsupported prerelease version of DirectInput.";
             }
-            if (param_1 == -0x7ff8ffe2) {
+            if (hr == -0x7ff8ffe2) {
               return "Access to the device has been lost.  It must be re-acquired.";
             }
-            if (param_1 == -0x7ff8ffa9) {
+            if (hr == -0x7ff8ffa9) {
               return "An invalid parameter was passed to the returning function";
             }
-            if (param_1 == -0x7ff8ff89) {
+            if (hr == -0x7ff8ff89) {
               return 
               "The object could not be created due to an incompatible driver version or mismatched or incomplete driver components."
               ;
             }
-            if (param_1 == -0x7ff8ff56) {
+            if (hr == -0x7ff8ff56) {
               return "The operation cannot be performed while the device is acquired.";
             }
-            if (param_1 == -0x7ff8fefd) {
+            if (hr == -0x7ff8fefd) {
               return "No more items.";
             }
-            if (param_1 == -0x7ff8fb82) {
+            if (hr == -0x7ff8fb82) {
               return "The application requires a newer version of DirectInput.";
             }
           }
           else {
-            if (param_1 == -0x7ff8fb70) {
+            if (hr == -0x7ff8fb70) {
               return "The specified property ID is not supported for the specified property set.";
             }
-            if (param_1 == -0x7ff8fb6e) {
+            if (hr == -0x7ff8fb6e) {
               return "The specified property set is not supported.";
             }
-            if ((param_1 == -0x7ff8fb21) || (param_1 == -0x7789fffb)) goto LAB_0098491c;
-            if (param_1 == -0x7789fff6) {
+            if ((hr == -0x7ff8fb21) || (hr == -0x7789fffb)) goto LAB_0098491c;
+            if (hr == -0x7789fff6) {
               return "This surface can not be attached to the requested surface.";
             }
           }
         }
-        else if (param_1 < -0x7789ff87) {
-          if (param_1 == -0x7789ff88) {
+        else if (hr < -0x7789ff87) {
+          if (hr == -0x7789ff88) {
             return "DirectDraw does not support the requested mode";
           }
-          if (param_1 == -0x7789ffd8) {
+          if (hr == -0x7789ffd8) {
             return "Support is currently not available.";
           }
-          if (param_1 == -0x7789ffc9) {
+          if (hr == -0x7789ffc9) {
             return "An exception was encountered while performing the requested operation";
           }
-          if (param_1 == -0x7789ffa6) {
+          if (hr == -0x7789ffa6) {
             return "Height of rectangle provided is not a multiple of reqd alignment";
           }
-          if (param_1 == -0x7789ffa1) {
+          if (hr == -0x7789ffa1) {
             return "Unable to match primary surface creation request with existing primary surface."
             ;
           }
-          if (param_1 == -0x7789ff9c) {
+          if (hr == -0x7789ff9c) {
             return "One or more of the caps bits passed to the callback are incorrect.";
           }
-          if (param_1 == -0x7789ff92) {
+          if (hr == -0x7789ff92) {
             return "DirectDraw does not support provided Cliplist.";
           }
         }
         else {
-          if (param_1 == -0x7789ff7e) {
+          if (hr == -0x7789ff7e) {
             return "DirectDraw received a pointer that was an invalid DIRECTDRAW object.";
           }
-          if (param_1 == -0x7789ff6f) {
+          if (hr == -0x7789ff6f) {
             return "pixel format was invalid as specified";
           }
-          if (param_1 == -0x7789ff6a) {
+          if (hr == -0x7789ff6a) {
             return "Rectangle provided was invalid.";
           }
-          if (param_1 == -0x7789ff60) {
+          if (hr == -0x7789ff60) {
             return "Operation could not be carried out because one or more surfaces are locked";
           }
-          if (param_1 == -0x7789ff56) {
+          if (hr == -0x7789ff56) {
             return "There is no 3D present.";
           }
         }
       }
-      else if (param_1 < -0x7789ff00) {
-        if (param_1 == -0x7789ff01) {
+      else if (hr < -0x7789ff00) {
+        if (hr == -0x7789ff01) {
           return "Requested item was not found";
         }
-        if (param_1 < -0x7789ff23) {
-          if (param_1 == -0x7789ff24) {
+        if (hr < -0x7789ff23) {
+          if (hr == -0x7789ff24) {
             return 
             "Operation could not be carried out because there is no hardware support of the dest color key."
             ;
           }
-          if (param_1 == -0x7789ff4b) {
+          if (hr == -0x7789ff4b) {
             return 
             "Operation could not be carried out because there is no stereo hardware present or available."
             ;
           }
-          if (param_1 == -0x7789ff4a) {
+          if (hr == -0x7789ff4a) {
             return 
             "Operation could not be carried out because there is no hardware present which supports stereo surfaces"
             ;
           }
-          if (param_1 == -0x7789ff33) {
+          if (hr == -0x7789ff33) {
             return "no clip list available";
           }
-          if (param_1 == -0x7789ff2e) {
+          if (hr == -0x7789ff2e) {
             return 
             "Operation could not be carried out because there is no color conversion hardware present or available."
             ;
           }
-          if (param_1 == -0x7789ff2c) {
+          if (hr == -0x7789ff2c) {
             return 
             "Create function called without DirectDraw object method SetCooperativeLevel being called."
             ;
           }
-          if (param_1 == -0x7789ff29) {
+          if (hr == -0x7789ff29) {
             return "Surface doesn\'t currently have a color key";
           }
         }
         else {
-          if (param_1 == -0x7789ff22) {
+          if (hr == -0x7789ff22) {
             return "No DirectDraw support possible with current display driver";
           }
-          if (param_1 == -0x7789ff1f) {
+          if (hr == -0x7789ff1f) {
             return 
             "Operation requires the application to have exclusive mode but the application does not have exclusive mode."
             ;
           }
-          if (param_1 == -0x7789ff1a) {
+          if (hr == -0x7789ff1a) {
             return "Flipping visible surfaces is not supported.";
           }
-          if (param_1 == -0x7789ff10) {
+          if (hr == -0x7789ff10) {
             return "There is no GDI present.";
           }
-          if (param_1 == -0x7789ff06) {
+          if (hr == -0x7789ff06) {
             return 
             "Operation could not be carried out because there is no hardware present or available.";
           }
         }
       }
-      else if (param_1 < -0x7789fec3) {
-        if (param_1 == -0x7789fec4) {
+      else if (hr < -0x7789fec3) {
+        if (hr == -0x7789fec4) {
           return 
           "DirectDrawSurface is not in 4 bit color palette and the requested operation requires 4 bit color palette."
           ;
         }
-        if (param_1 == -0x7789fefc) {
+        if (hr == -0x7789fefc) {
           return 
           "Operation could not be carried out because there is no overlay hardware present or available."
           ;
         }
-        if (param_1 == -0x7789fef2) {
+        if (hr == -0x7789fef2) {
           return 
           "Operation could not be carried out because the source and destination rectangles are on the same surface and overlap each other."
           ;
         }
-        if (param_1 == -0x7789fee8) {
+        if (hr == -0x7789fee8) {
           return 
           "Operation could not be carried out because there is no appropriate raster op hardware present or available."
           ;
         }
-        if (param_1 == -0x7789fede) {
+        if (hr == -0x7789fede) {
           return 
           "Operation could not be carried out because there is no rotation hardware present or available."
           ;
         }
-        if (param_1 == -0x7789feca) {
+        if (hr == -0x7789feca) {
           return 
           "Operation could not be carried out because there is no hardware support for stretching";
         }
       }
       else {
-        if (param_1 == -0x7789fec3) {
+        if (hr == -0x7789fec3) {
           return 
           "DirectDrawSurface is not in 4 bit color index palette and the requested operation requires 4 bit color index palette."
           ;
         }
-        if (param_1 == -0x7789fec0) {
+        if (hr == -0x7789fec0) {
           return 
           "DirectDraw Surface is not in 8 bit color mode and the requested operation requires 8 bit color."
           ;
         }
-        if (param_1 == -0x7789feb6) {
+        if (hr == -0x7789feb6) {
           return 
           "Operation could not be carried out because there is no texture mapping hardware present or available."
           ;
         }
-        if (param_1 == -0x7789feb1) {
+        if (hr == -0x7789feb1) {
           return 
           "Operation could not be carried out because there is no hardware support for vertical blank synchronized operations."
           ;
         }
-        if (param_1 == -0x7789feac) {
+        if (hr == -0x7789feac) {
           return 
           "Operation could not be carried out because there is no hardware support for zbuffer blting."
           ;
         }
       }
     }
-    else if (param_1 < -0x7789fdcd) {
-      if (param_1 == -0x7789fdce) {
+    else if (hr < -0x7789fdcd) {
+      if (hr == -0x7789fdce) {
         return 
         "A DirectDraw object representing this driver has already been created for this process.";
       }
-      if (param_1 < -0x7789fe33) {
-        if (param_1 == -0x7789fe34) {
+      if (hr < -0x7789fe33) {
+        if (hr == -0x7789fe34) {
           return "The requested surface is not attached.";
         }
-        if (param_1 < -0x7789fe65) {
-          if (param_1 == -0x7789fe66) {
+        if (hr < -0x7789fe65) {
+          if (hr == -0x7789fe66) {
             return "This surface is already attached to the surface it is being attached to.";
           }
-          if (param_1 == -0x7789fe98) {
+          if (hr == -0x7789fe98) {
             return "The hardware needed for the requested operation has already been allocated.";
           }
-          if (param_1 == -0x7789fe84) {
+          if (hr == -0x7789fe84) {
             return "Out of video memory";
           }
-          if (param_1 == -0x7789fe82) {
+          if (hr == -0x7789fe82) {
             return "hardware does not support clipped overlays";
           }
-          if (param_1 == -0x7789fe80) {
+          if (hr == -0x7789fe80) {
             return "Can only have ony color key active at one time for overlays";
           }
-          if (param_1 == -0x7789fe7d) {
+          if (hr == -0x7789fe7d) {
             return 
             "Access to this palette is being refused because the palette is already locked by another thread."
             ;
           }
-          if (param_1 == -0x7789fe70) {
+          if (hr == -0x7789fe70) {
             return "No src color key specified for this operation.";
           }
         }
         else {
-          if (param_1 == -0x7789fe5c) {
+          if (hr == -0x7789fe5c) {
             return 
             "This surface is already a dependency of the surface it is being made a dependency of.";
           }
-          if (param_1 == -0x7789fe52) {
+          if (hr == -0x7789fe52) {
             return 
             "Access to this surface is being refused because the surface is already locked by another thread."
             ;
           }
-          if (param_1 == -0x7789fe4d) {
+          if (hr == -0x7789fe4d) {
             return 
             "Access to this surface is being refused because no driver exists which can supply a pointer to the surface. This is most likely to happen when attempting to lock the primary surface when no DCI provider is present. Will also happen on attempts to lock an optimized surface."
             ;
           }
-          if (param_1 == -0x7789fe48) {
+          if (hr == -0x7789fe48) {
             return "Access to Surface refused because Surface is obscured.";
           }
-          if (param_1 == -0x7789fe3e) {
+          if (hr == -0x7789fe3e) {
             return 
             "Access to this surface is being refused because the surface is gone. The DIRECTDRAWSURFACE object representing this surface should have Restore called on it."
             ;
           }
         }
       }
-      else if (param_1 < -0x7789fdf6) {
-        if (param_1 == -0x7789fdf7) {
+      else if (hr < -0x7789fdf6) {
+        if (hr == -0x7789fdf7) {
           return "The specified stream contains invalid data";
         }
-        if (param_1 == -0x7789fe2a) {
+        if (hr == -0x7789fe2a) {
           return "Height requested by DirectDraw is too large.";
         }
-        if (param_1 == -0x7789fe20) {
+        if (hr == -0x7789fe20) {
           return 
           "Size requested by DirectDraw is too large --  The individual height and width are OK.";
         }
-        if (param_1 == -0x7789fe16) {
+        if (hr == -0x7789fe16) {
           return "Width requested by DirectDraw is too large.";
         }
-        if (param_1 == -0x7789fe02) {
+        if (hr == -0x7789fe02) {
           return "Pixel format requested is unsupported by DirectDraw";
         }
-        if (param_1 == -0x7789fdf8) {
+        if (hr == -0x7789fdf8) {
           return "Bitmask in the pixel format requested is unsupported by DirectDraw";
         }
       }
       else {
-        if (param_1 == -0x7789fde7) {
+        if (hr == -0x7789fde7) {
           return "vertical blank is in progress";
         }
-        if (param_1 == -0x7789fde4) {
+        if (hr == -0x7789fde4) {
           return "Was still drawing";
         }
-        if (param_1 == -0x7789fde2) {
+        if (hr == -0x7789fde2) {
           return "The specified surface type requires specification of the COMPLEX flag";
         }
-        if (param_1 == -0x7789fdd0) {
+        if (hr == -0x7789fdd0) {
           return "Rectangle provided was not horizontally aligned on reqd. boundary";
         }
-        if (param_1 == -0x7789fdcf) {
+        if (hr == -0x7789fdcf) {
           return "The GUID passed to DirectDrawCreate is not a valid DirectDraw driver identifier.";
         }
       }
     }
     else {
-      switch(param_1) {
+      switch(hr) {
       case -0x7789fdcd:
         return 
         "A hardware only DirectDraw object creation was attempted but the driver did not support any hardware."
@@ -858,12 +858,12 @@ switchD_009847fa_caseD_8007000b:
       }
     }
   }
-  else if (param_1 < -0x7789fd93) {
-    if (param_1 == -0x7789fd94) {
+  else if (hr < -0x7789fd93) {
+    if (hr == -0x7789fd94) {
       return 
       "A DC has already been returned for this surface. Only one DC can be retrieved per surface.";
     }
-    switch(param_1) {
+    switch(hr) {
     case -0x7789fdb4:
       return "This surface can not be restored because it is an implicitly created surface.";
     case -0x7789fdb3:
@@ -889,83 +889,83 @@ switchD_009847fa_caseD_8007000b:
       return "Attempt was made to set a palette on a mipmap sublevel";
     }
   }
-  else if (param_1 < -0x7766fffb) {
-    if (param_1 == -0x7766fffc) {
+  else if (hr < -0x7766fffb) {
+    if (hr == -0x7766fffc) {
       return "The geomery scanner failed to process the data.";
     }
-    if (param_1 < -0x7789f782) {
-      if (param_1 == -0x7789f783) {
+    if (hr < -0x7789f782) {
+      if (hr == -0x7789f783) {
         return "Contect protection not available";
       }
-      if (param_1 < -0x7789fc71) {
-        if (param_1 == -0x7789fc72) {
+      if (hr < -0x7789fc71) {
+        if (hr == -0x7789fc72) {
           return "Bad file float size";
         }
-        if (param_1 < -0x7789fc98) {
-          if (param_1 == -0x7789fc99) {
+        if (hr < -0x7789fc98) {
+          if (hr == -0x7789fc99) {
 LAB_009850d3:
             return "No more objects";
           }
-          if (param_1 < -0x7789fd49) {
-            if (param_1 == -0x7789fd4a) {
+          if (hr < -0x7789fd49) {
+            if (hr == -0x7789fd4a) {
               return "D3D has not yet been initialized.";
             }
-            if (param_1 < -0x7789fd4d) {
-              if (param_1 == -0x7789fd4e) {
+            if (hr < -0x7789fd4d) {
+              if (hr == -0x7789fd4e) {
                 return "There is more data available than the specified buffer size could hold";
               }
-              if (param_1 == -0x7789fd8a) {
+              if (hr == -0x7789fd8a) {
                 return 
                 "An attempt was made to allocate non-local video memory from a device that does not support non-local video memory."
                 ;
               }
-              if (param_1 == -0x7789fd80) {
+              if (hr == -0x7789fd80) {
                 return "The attempt to page lock a surface failed.";
               }
-              if (param_1 == -0x7789fd6c) {
+              if (hr == -0x7789fd6c) {
                 return "The attempt to page unlock a surface failed.";
               }
-              if (param_1 == -0x7789fd58) {
+              if (hr == -0x7789fd58) {
                 return 
                 "An attempt was made to page unlock a surface with no outstanding page locks.";
               }
             }
             else {
-              if (param_1 == -0x7789fd4d) {
+              if (hr == -0x7789fd4d) {
                 return "The data has expired and is therefore no longer valid.";
               }
-              if (param_1 == -0x7789fd4c) {
+              if (hr == -0x7789fd4c) {
                 return "The mode test has finished executing.";
               }
-              if (param_1 == -0x7789fd4b) {
+              if (hr == -0x7789fd4b) {
                 return "The mode test has switched to a new mode.";
               }
             }
           }
           else {
-            if (param_1 == -0x7789fd49) {
+            if (hr == -0x7789fd49) {
               return "The video port is not active";
             }
-            if (param_1 == -0x7789fd48) {
+            if (hr == -0x7789fd48) {
               return "The monitor does not have EDID data.";
             }
-            if (param_1 == -0x7789fd47) {
+            if (hr == -0x7789fd47) {
               return "The driver does not enumerate display mode refresh rates.";
             }
-            if (param_1 == -0x7789fd45) {
+            if (hr == -0x7789fd45) {
               return 
               "Surfaces created by one direct draw device cannot be used directly by another direct draw device."
               ;
             }
-            if (param_1 == -0x7789fc9c) goto LAB_009850a1;
-            if (param_1 == -0x7789fc9b) goto LAB_00985097;
-            if (param_1 == -0x7789fc9a) {
+            if (hr == -0x7789fc9c) goto LAB_009850a1;
+            if (hr == -0x7789fc9b) goto LAB_00985097;
+            if (hr == -0x7789fc9a) {
               return "Internal error";
             }
           }
         }
         else {
-          switch(param_1) {
+          switch(hr) {
           case -0x7789fc98:
             return "Bad intrinsics";
           case -0x7789fc97:
@@ -1003,334 +1003,334 @@ switchD_009850f2_caseD_88760389:
           }
         }
       }
-      else if (param_1 < -0x7789f7de) {
-        if (param_1 == -0x7789f7df) {
+      else if (hr < -0x7789f7de) {
+        if (hr == -0x7789f7df) {
           return "Conflicting render state";
         }
-        if (param_1 < -0x7789f7e7) {
-          if (param_1 == -0x7789f7e8) {
+        if (hr < -0x7789f7e7) {
+          if (hr == -0x7789f7e8) {
             return "Wrong texture format";
           }
-          if (param_1 == -0x7789fc71) {
+          if (hr == -0x7789fc71) {
             return "Bad file";
           }
-          if (param_1 == -0x7789fc70) {
+          if (hr == -0x7789fc70) {
             return "Parse error";
           }
-          if (param_1 == -0x7789fc6f) {
+          if (hr == -0x7789fc6f) {
 LAB_009850a1:
             return "Bad array size";
           }
-          if (param_1 == -0x7789fc6e) {
+          if (hr == -0x7789fc6e) {
 LAB_00985097:
             return "Bad data reference";
           }
-          if (param_1 == -0x7789fc6d) goto LAB_009850d3;
-          if (param_1 == -0x7789fc6c) goto switchD_009850f2_caseD_8876036a;
-          if (param_1 == -0x7789fc6b) goto switchD_009850f2_caseD_8876036b;
+          if (hr == -0x7789fc6d) goto LAB_009850d3;
+          if (hr == -0x7789fc6c) goto switchD_009850f2_caseD_8876036a;
+          if (hr == -0x7789fc6b) goto switchD_009850f2_caseD_8876036b;
         }
         else {
-          if (param_1 == -0x7789f7e7) {
+          if (hr == -0x7789f7e7) {
             return "Unsupported color operation";
           }
-          if (param_1 == -0x7789f7e6) {
+          if (hr == -0x7789f7e6) {
             return "Unsupported color arg";
           }
-          if (param_1 == -0x7789f7e5) {
+          if (hr == -0x7789f7e5) {
             return "Unsupported alpha operation";
           }
-          if (param_1 == -0x7789f7e4) {
+          if (hr == -0x7789f7e4) {
             return "Unsupported alpha arg";
           }
-          if (param_1 == -0x7789f7e3) {
+          if (hr == -0x7789f7e3) {
             return "Too many operations";
           }
-          if (param_1 == -0x7789f7e2) {
+          if (hr == -0x7789f7e2) {
             return "Conflicting texture filter";
           }
-          if (param_1 == -0x7789f7e1) {
+          if (hr == -0x7789f7e1) {
             return "Unsupported factor value";
           }
         }
       }
-      else if (param_1 < -0x7789f795) {
-        if (param_1 == -0x7789f796) {
+      else if (hr < -0x7789f795) {
+        if (hr == -0x7789f796) {
           return "Not available";
         }
-        if (param_1 == -0x7789f7de) {
+        if (hr == -0x7789f7de) {
           return "Unsupported texture filter";
         }
-        if (param_1 == -0x7789f7da) {
+        if (hr == -0x7789f7da) {
           return "Conflicting texture palette";
         }
-        if (param_1 == -0x7789f7d9) {
+        if (hr == -0x7789f7d9) {
           return "Driver internal error";
         }
-        if (param_1 == -0x7789f79a) goto switchD_009850f2_caseD_88760387;
-        if (param_1 == -0x7789f799) {
+        if (hr == -0x7789f79a) goto switchD_009850f2_caseD_88760387;
+        if (hr == -0x7789f799) {
           return "More data";
         }
-        if (param_1 == -0x7789f798) {
+        if (hr == -0x7789f798) {
           return "Device lost";
         }
-        if (param_1 == -0x7789f797) {
+        if (hr == -0x7789f797) {
           return "Device not reset";
         }
       }
       else {
-        if (param_1 == -0x7789f795) {
+        if (hr == -0x7789f795) {
           return "Invalid device";
         }
-        if (param_1 == -0x7789f794) {
+        if (hr == -0x7789f794) {
           return "Invalid call";
         }
-        if (param_1 == -0x7789f793) {
+        if (hr == -0x7789f793) {
           return "Driver invalid call";
         }
-        if (param_1 == -0x7789f790) {
+        if (hr == -0x7789f790) {
           return "Hardware device was removed";
         }
-        if (param_1 == -0x7789f78c) {
+        if (hr == -0x7789f78c) {
           return "Hardware adapter reset by OS";
         }
-        if (param_1 == -0x7789f785) {
+        if (hr == -0x7789f785) {
           return "Overlay is not supported";
         }
-        if (param_1 == -0x7789f784) {
+        if (hr == -0x7789f784) {
           return "Overlay format is not supported";
         }
       }
     }
-    else if (param_1 < -0x7785fffb) {
-      if (param_1 == -0x7785fffc) {
+    else if (hr < -0x7785fffb) {
+      if (hr == -0x7785fffc) {
         return "Unsupported.";
       }
-      if (param_1 < -0x7787ff87) {
-        if (param_1 == -0x7787ff88) {
+      if (hr < -0x7787ff87) {
+        if (hr == -0x7787ff88) {
           return "No sound driver is available for use";
         }
-        if (param_1 < -0x7789f4a5) {
-          if (param_1 == -0x7789f4a6) {
+        if (hr < -0x7789f4a5) {
+          if (hr == -0x7789f4a6) {
             return "Loaded mesh has no data";
           }
-          if (param_1 < -0x7789f4a9) {
-            if (param_1 == -0x7789f4aa) {
+          if (hr < -0x7789f4a9) {
+            if (hr == -0x7789f4aa) {
               return "Cannot attr sort";
             }
-            if (param_1 == -0x7789f782) {
+            if (hr == -0x7789f782) {
               return "Unsupported cryptographic system";
             }
-            if (param_1 == -0x7789f77c) {
+            if (hr == -0x7789f77c) {
               return "Presentation statistics are disjoint";
             }
-            if (param_1 == -0x7789f4ac) {
+            if (hr == -0x7789f4ac) {
               return "Can not modify index buffer";
             }
-            if (param_1 == -0x7789f4ab) {
+            if (hr == -0x7789f4ab) {
               return "Invalid mesh";
             }
           }
           else {
-            if (param_1 == -0x7789f4a9) {
+            if (hr == -0x7789f4a9) {
               return "Skinning not supported";
             }
-            if (param_1 == -0x7789f4a8) {
+            if (hr == -0x7789f4a8) {
               return "Too many influences";
             }
-            if (param_1 == -0x7789f4a7) {
+            if (hr == -0x7789f4a7) {
               return "Invalid data";
             }
           }
         }
         else {
-          if (param_1 == -0x7789f4a5) {
+          if (hr == -0x7789f4a5) {
             return "Duplicate named fragment";
           }
-          if (param_1 == -0x7789f4a4) {
+          if (hr == -0x7789f4a4) {
             return "Can Not remove last item";
           }
-          if (param_1 == -0x7787fff6) {
+          if (hr == -0x7787fff6) {
             return 
             "The call failed because resources (such as a priority level) were already being used by another caller"
             ;
           }
-          if (param_1 == -0x7787ffe2) {
+          if (hr == -0x7787ffe2) {
             return "The control (vol, pan, etc.) requested by the caller is not available";
           }
-          if (param_1 == -0x7787ffce) {
+          if (hr == -0x7787ffce) {
             return "This call is not valid for the current state of this object";
           }
-          if (param_1 == -0x7787ffba) {
+          if (hr == -0x7787ffba) {
             return 
             "The caller does not have the priority level required for the function to succeed";
           }
-          if (param_1 == -0x7787ff9c) {
+          if (hr == -0x7787ff9c) {
             return "The specified WAVE format is not supported";
           }
         }
       }
-      else if (param_1 < -0x7787ff2d) {
-        if (param_1 == -0x7787ff2e) {
+      else if (hr < -0x7787ff2d) {
+        if (hr == -0x7787ff2e) {
           return "The GUID specified in an audiopath file does not match a valid MIXIN buffer";
         }
-        if (param_1 == -0x7787ff7e) {
+        if (hr == -0x7787ff7e) {
 LAB_0098491c:
           return "This object is already initialized";
         }
-        if (param_1 == -0x7787ff6a) {
+        if (hr == -0x7787ff6a) {
           return "The buffer memory has been lost, and must be restored";
         }
-        if (param_1 == -0x7787ff60) {
+        if (hr == -0x7787ff60) {
           return "Another app has a higher priority level, preventing this call from succeeding";
         }
-        if (param_1 == -0x7787ff56) goto LAB_00984829;
-        if (param_1 == -0x7787ff4c) {
+        if (hr == -0x7787ff56) goto LAB_00984829;
+        if (hr == -0x7787ff4c) {
           return "Tried to create a DSBCAPS_CTRLFX buffer shorter than DSBSIZE_FX_MIN milliseconds";
         }
-        if (param_1 == -0x7787ff42) {
+        if (hr == -0x7787ff42) {
           return "Attempt to use DirectSound 8 functionality on an older DirectSound object";
         }
-        if (param_1 == -0x7787ff38) {
+        if (hr == -0x7787ff38) {
           return "A circular loop of send effects was detected";
         }
       }
       else {
-        if (param_1 == -0x7787ff24) {
+        if (hr == -0x7787ff24) {
           return "Requested effects are not available";
         }
-        if (param_1 == -0x7787ee9f) {
+        if (hr == -0x7787ee9f) {
           return "The object requested was not found (numerically equal to DMUS_E_NOT_FOUND)";
         }
-        if (param_1 == -0x7786ffff) {
+        if (hr == -0x7786ffff) {
 LAB_009855e1:
           return "There are too many unique state objects.";
         }
-        if (param_1 == -0x7786fffe) goto switchD_009850f2_caseD_88760389;
-        if (param_1 == -0x7785ffff) {
+        if (hr == -0x7786fffe) goto switchD_009850f2_caseD_88760389;
+        if (hr == -0x7785ffff) {
           return 
           "The application has made an erroneous API call that it had enough information to avoid. This error is intended to denote that the application should be altered to avoid the error. Use of the debug version of the DXGI.DLL will provide run-time debug output with further information."
           ;
         }
-        if (param_1 == -0x7785fffe) {
+        if (hr == -0x7785fffe) {
           return 
           "The item requested was not found. For GetPrivateData calls, this means that the specified GUID had not been previously associated with the object."
           ;
         }
-        if (param_1 == -0x7785fffd) {
+        if (hr == -0x7785fffd) {
           return 
           "The specified size of the destination buffer is too small to hold the requested data.";
         }
       }
     }
-    else if (param_1 < -0x7769fffe) {
-      if (param_1 == -0x7769ffff) {
+    else if (hr < -0x7769fffe) {
+      if (hr == -0x7769ffff) {
         return "Invalid XAudio2 API call or arguments";
       }
-      if (param_1 < -0x7785ffde) {
-        if (param_1 == -0x7785ffdf) {
+      if (hr < -0x7785ffde) {
+        if (hr == -0x7785ffdf) {
           return 
           "The application attempted to perform an operation on an DXGI output that is only legal after the output has been claimed for exclusive owenership."
           ;
         }
-        if (param_1 == -0x7785fffb) {
+        if (hr == -0x7785fffb) {
           return "Hardware device removed.";
         }
-        if (param_1 == -0x7785fffa) {
+        if (hr == -0x7785fffa) {
           return "Device hung due to badly formed commands.";
         }
-        if (param_1 == -0x7785fff9) {
+        if (hr == -0x7785fff9) {
           return "Device reset due to a badly formed commant.";
         }
-        if (param_1 == -0x7785fff6) {
+        if (hr == -0x7785fff6) {
           return "Was still drawing.";
         }
-        if ((param_1 == -0x7785fff5) || (param_1 == -0x7785fff4)) {
+        if ((hr == -0x7785fff5) || (hr == -0x7785fff4)) {
 LAB_00985666:
           return "The requested functionality is not supported by the device or the driver.";
         }
-        if (param_1 == -0x7785ffe0) {
+        if (hr == -0x7785ffe0) {
           return "An internal driver error occurred.";
         }
       }
       else {
-        if (param_1 == -0x7785ffde) goto LAB_00985666;
-        if (param_1 == -0x7785ffdd) {
+        if (hr == -0x7785ffde) goto LAB_00985666;
+        if (hr == -0x7785ffdd) {
           return "Remote desktop client disconnected.";
         }
-        if (param_1 == -0x7785ffdc) {
+        if (hr == -0x7785ffdc) {
           return "Remote desktop client is out of memory.";
         }
-        if (param_1 == -0x7783ffff) goto LAB_009855e1;
-        if (param_1 == -0x7783fffe) goto switchD_009850f2_caseD_88760389;
-        if (param_1 == -0x7783fffd) {
+        if (hr == -0x7783ffff) goto LAB_009855e1;
+        if (hr == -0x7783fffe) goto switchD_009850f2_caseD_88760389;
+        if (hr == -0x7783fffd) {
           return "Therea are too many unique view objects.";
         }
-        if (param_1 == -0x7783fffc) {
+        if (hr == -0x7783fffc) {
           return "Deferred context requires Map-Discard usage pattern";
         }
       }
     }
-    else if (param_1 < -0x7767affd) {
-      if (param_1 == -0x7767affe) {
+    else if (hr < -0x7767affd) {
+      if (hr == -0x7767affe) {
         return "Indicates the specified font does not exist.";
       }
-      if (param_1 == -0x7769fffe) {
+      if (hr == -0x7769fffe) {
         return "Hardware XMA decoder error";
       }
-      if (param_1 == -0x7769fffd) {
+      if (hr == -0x7769fffd) {
         return "Failed to create an audio effect";
       }
-      if (param_1 == -0x7769fffc) {
+      if (hr == -0x7769fffc) {
         return "Device invalidated (unplugged, disabled, etc)";
       }
-      if (param_1 == -0x7768ffff) {
+      if (hr == -0x7768ffff) {
         return "Requested audio format unsupported.";
       }
-      if (param_1 == -0x7767d080) {
+      if (hr == -0x7767d080) {
         return "The pixel format is not supported.";
       }
-      if (param_1 == -0x7767b000) {
+      if (hr == -0x7767b000) {
         return "Indicates an error in an input file such as a font file.";
       }
-      if (param_1 == -0x7767afff) {
+      if (hr == -0x7767afff) {
         return 
         "Indicates an error originating in DirectWrite code, which is not expected to occur but is safe to recover from."
         ;
       }
     }
     else {
-      if (param_1 == -0x7767affd) {
+      if (hr == -0x7767affd) {
         return 
         "A font file could not be opened because the file, directory, network location, drive, or other storage location does not exist or is unavailable."
         ;
       }
-      if (param_1 == -0x7767affc) {
+      if (hr == -0x7767affc) {
         return 
         "A font file exists but could not be opened due to access denied, sharing violation, or similar error."
         ;
       }
-      if (param_1 == -0x7767affb) {
+      if (hr == -0x7767affb) {
         return "A font collection is obsolete due to changes in the system.";
       }
-      if (param_1 == -0x7767affa) {
+      if (hr == -0x7767affa) {
         return "The given interface is already registered.";
       }
-      if (param_1 == -0x7766ffff) {
+      if (hr == -0x7766ffff) {
         return "The object was not in the correct state to process the method.";
       }
-      if (param_1 == -0x7766fffe) {
+      if (hr == -0x7766fffe) {
         return "The object has not yet been initialized.";
       }
-      if (param_1 == -0x7766fffd) {
+      if (hr == -0x7766fffd) {
         return "The requested opertion is not supported.";
       }
     }
   }
-  else if (param_1 < -0x7538fffe) {
-    if (param_1 == -0x7538ffff) {
+  else if (hr < -0x7538fffe) {
+    if (hr == -0x7538ffff) {
       return "The engine is already initialized.";
     }
-    switch(param_1) {
+    switch(hr) {
     case -0x7766fffb:
       return "D2D could not access the screen.";
     case -0x7766fffa:
@@ -1383,11 +1383,11 @@ LAB_00985666:
       ;
     }
   }
-  else if (param_1 < -0x7538fefe) {
-    if (param_1 == -0x7538feff) {
+  else if (hr < -0x7538fefe) {
+    if (hr == -0x7538feff) {
       return "Error writing a file during auditioning.";
     }
-    switch(param_1) {
+    switch(hr) {
     case -0x7538fffe:
       return "The engine has not been initialized.";
     case -0x7538fffd:
@@ -1442,50 +1442,50 @@ LAB_00985666:
       return "Friendly names are not included in the bank.";
     }
   }
-  else if (param_1 < 9) {
-    if (param_1 == 8) goto switchD_009847fa_caseD_80070008;
-    if (param_1 < -0x3ff31feb) {
-      if (param_1 == -0x3ff31fec) {
+  else if (hr < 9) {
+    if (hr == 8) goto switchD_009847fa_caseD_80070008;
+    if (hr < -0x3ff31feb) {
+      if (hr == -0x3ff31fec) {
         return "Element content is invalid according to the DTD or schema.";
       }
-      if (param_1 < -0x3ff31ffc) {
-        if (param_1 == -0x3ff31ffd) {
+      if (hr < -0x3ff31ffc) {
+        if (hr == -0x3ff31ffd) {
           return "Entity \'%1\' contains an infinite entity reference loop.";
         }
-        if (param_1 < -0x7538fef9) {
-          if (param_1 == -0x7538fefa) {
+        if (hr < -0x7538fef9) {
+          if (hr == -0x7538fefa) {
             return "Missing a DSP parameter.";
           }
-          if (param_1 == -0x7538fefe) {
+          if (hr == -0x7538fefe) {
             return "Missing a soundbank.";
           }
-          if (param_1 == -0x7538fefd) {
+          if (hr == -0x7538fefd) {
             return "Missing an RPC curve.";
           }
-          if (param_1 == -0x7538fefc) {
+          if (hr == -0x7538fefc) {
             return "Missing data for an audition command.";
           }
-          if (param_1 == -0x7538fefb) {
+          if (hr == -0x7538fefb) {
             return "Unknown command.";
           }
         }
         else {
-          if (param_1 == -0x7538fef9) {
+          if (hr == -0x7538fef9) {
             return "Wave does not exist in auditioned wavebank.";
           }
-          if (param_1 == -0x7538fef8) {
+          if (hr == -0x7538fef8) {
             return "Failed to create a directory for streaming wavebank data.";
           }
-          if (param_1 == -0x7538fef7) {
+          if (hr == -0x7538fef7) {
             return "Invalid audition session.";
           }
-          if (param_1 == -0x3ff31ffe) {
+          if (hr == -0x3ff31ffe) {
             return "Reference to undefined entity \'%1\'.";
           }
         }
       }
       else {
-        switch(param_1) {
+        switch(hr) {
         case -0x3ff31ffc:
           return "Cannot use the NDATA keyword in a parameter entity declaration.";
         case -0x3ff31ffb:
@@ -1508,12 +1508,12 @@ LAB_00985666:
         }
       }
     }
-    else if (param_1 < -0x3ff31ddc) {
-      if (param_1 == -0x3ff31ddd) {
+    else if (hr < -0x3ff31ddc) {
+      if (hr == -0x3ff31ddd) {
         return 
         "The validate method failed because the document does not contain exactly one root node.";
       }
-      switch(param_1) {
+      switch(hr) {
       case -0x3ff31feb:
         return "The attribute \'%1\' on this element is not defined in the DTD or schema.";
       case -0x3ff31fea:
@@ -1536,162 +1536,162 @@ LAB_00985666:
         return "Expecting: %1.";
       }
     }
-    else if (param_1 < 4) {
-      if (param_1 == 3) goto switchD_009847fa_caseD_80070003;
-      if (param_1 == -0x3ff31ddc) {
+    else if (hr < 4) {
+      if (hr == 3) goto switchD_009847fa_caseD_80070003;
+      if (hr == -0x3ff31ddc) {
         return 
         "The validate method failed because a DTD or schema was not specified in the document.";
       }
-      if (param_1 == 0) {
+      if (hr == 0) {
         return "The function completed successfully";
       }
-      if (param_1 == 1) {
+      if (hr == 1) {
         return "Call successful, but returned FALSE";
       }
-      if (param_1 == 2) goto LAB_00985c89;
+      if (hr == 2) goto LAB_00985c89;
     }
     else {
-      if (param_1 == 4) goto switchD_009847fa_caseD_80070004;
-      if (param_1 == 5) {
+      if (hr == 4) goto switchD_009847fa_caseD_80070004;
+      if (hr == 5) {
         return "Access is denied.";
       }
-      if (param_1 == 6) {
+      if (hr == 6) {
         return "The handle is invalid.";
       }
     }
   }
-  else if (param_1 < 0x40269) {
-    if (param_1 == 0x40268) {
+  else if (hr < 0x40269) {
+    if (hr == 0x40268) {
       return "The graph can\'t be cued because of lack of or corrupt data.";
     }
-    if (param_1 < 0x40246) {
-      if (param_1 == 0x40245) {
+    if (hr < 0x40246) {
+      if (hr == 0x40245) {
         return "The file contained some property settings that were not used.";
       }
-      if (param_1 < 0x40004) {
-        if (param_1 == 0x40003) {
+      if (hr < 0x40004) {
+        if (hr == 0x40003) {
           return "End of stream. Sample not updated.";
         }
-        if (param_1 == 9) goto switchD_009847fa_caseD_80070009;
-        if (param_1 == 10) goto switchD_009847fa_caseD_8007000a;
-        if (param_1 == 0xb) goto switchD_009847fa_caseD_8007000b;
-        if (param_1 == 0xe) {
+        if (hr == 9) goto switchD_009847fa_caseD_80070009;
+        if (hr == 10) goto switchD_009847fa_caseD_8007000a;
+        if (hr == 0xb) goto switchD_009847fa_caseD_8007000b;
+        if (hr == 0xe) {
           return "The system cannot find the drive specified.";
         }
       }
       else {
-        if (param_1 == 0x40103) {
+        if (hr == 0x40103) {
           return "The end of the list has been reached.";
         }
-        if (param_1 == 0x4022d) {
+        if (hr == 0x4022d) {
           return "An attempt to add a filter with a duplicate name succeeded with a modified name.";
         }
-        if (param_1 == 0x40237) {
+        if (hr == 0x40237) {
           return "The state transition has not completed.";
         }
-        if (param_1 == 0x40242) {
+        if (hr == 0x40242) {
           return "Some of the streams in this movie are in an unsupported format.";
         }
       }
     }
-    else if (param_1 < 0x40259) {
-      if (param_1 == 0x40258) {
+    else if (hr < 0x40259) {
+      if (hr == 0x40258) {
         return "Cannot play back the audio stream: no audio hardware is available.";
       }
-      if (param_1 == 0x40246) {
+      if (hr == 0x40246) {
         return "Some connections have failed and have been deferred.";
       }
-      if (param_1 == 0x40250) {
+      if (hr == 0x40250) {
         return "The resource specified is no longer needed.";
       }
-      if (param_1 == 0x40254) {
+      if (hr == 0x40254) {
         return 
         "A connection could not be made with the media type in the persistent graph, but has been made with a negotiated media type."
         ;
       }
-      if (param_1 == 0x40257) goto switchD_0098441e_caseD_80040255;
+      if (hr == 0x40257) goto switchD_0098441e_caseD_80040255;
     }
     else {
-      if (param_1 == 0x4025a) goto switchD_0098441e_caseD_80040259;
-      if (param_1 == 0x40260) {
+      if (hr == 0x4025a) goto switchD_0098441e_caseD_80040259;
+      if (hr == 0x40260) {
         return "The value returned had to be estimated.  It\'s accuracy can not be guaranteed.";
       }
-      if (param_1 == 0x40263) {
+      if (hr == 0x40263) {
         return "This success code is reserved for internal purposes within ActiveMovie.";
       }
-      if (param_1 == 0x40267) {
+      if (hr == 0x40267) {
         return "The stream has been turned off.";
       }
     }
   }
-  else if (param_1 < 0x8760879) {
-    if (param_1 == 0x8760878) {
+  else if (hr < 0x8760879) {
+    if (hr == 0x8760878) {
       return "Client window is occluded (minimized or other fullscreen)";
     }
-    if (param_1 < 0x4028e) {
-      if (param_1 == 0x4028d) {
+    if (hr < 0x4028e) {
+      if (hr == 0x4028d) {
         return "The seek into the movie was not frame accurate.";
       }
-      if (param_1 == 0x40270) {
+      if (hr == 0x40270) {
         return "The stop time for the sample was not set.";
       }
-      if (param_1 == 0x4027e) {
+      if (hr == 0x4027e) {
         return 
         "There was no preview pin available, so the capture pin output is being split to provide both capture and preview."
         ;
       }
-      if (param_1 == 0x40280) {
+      if (hr == 0x40280) {
         return 
         "The current title was not a sequential set of chapters (PGC), and the returned timing information might not be continuous."
         ;
       }
-      if (param_1 == 0x4028c) {
+      if (hr == 0x4028c) {
         return 
         "The audio stream did not contain sufficient information to determine the contents of each channel."
         ;
       }
     }
     else {
-      if (param_1 == 0x876086f) {
+      if (hr == 0x876086f) {
         return "The call succeeded but there won\'t be any mipmaps generated";
       }
-      if (param_1 == 0x8760875) {
+      if (hr == 0x8760875) {
         return "Resource not resident in memory";
       }
-      if (param_1 == 0x8760876) {
+      if (hr == 0x8760876) {
         return "Resource resident in shared memory";
       }
-      if (param_1 == 0x8760877) {
+      if (hr == 0x8760877) {
         return "Desktop display mode has changed";
       }
     }
   }
-  else if (param_1 < 0x87a0006) {
-    if (param_1 == 0x87a0005) {
+  else if (hr < 0x87a0006) {
+    if (hr == 0x87a0005) {
       return "No access to desktop.";
     }
-    if (param_1 == 0x878000a) {
+    if (hr == 0x878000a) {
       return "The call succeeded, but we had to substitute the 3D algorithm";
     }
-    if (param_1 == 0x87a0001) {
+    if (hr == 0x87a0001) {
       return 
       "The target window or output has been occluded. The application should suspend rendering operations if possible."
       ;
     }
-    if (param_1 == 0x87a0002) {
+    if (hr == 0x87a0002) {
       return "Target window is clipped.";
     }
-    if (param_1 == 0x87a0004) {
+    if (hr == 0x87a0004) {
 LAB_00985ef9:
       return "";
     }
   }
   else {
-    if (param_1 == 0x87a0006) goto LAB_00985ef9;
-    if (param_1 == 0x87a0007) {
+    if (hr == 0x87a0006) goto LAB_00985ef9;
+    if (hr == 0x87a0007) {
       return "Display mode has changed";
     }
-    if (param_1 == 0x87a0008) {
+    if (hr == 0x87a0008) {
       return "Display mode is changing";
     }
   }

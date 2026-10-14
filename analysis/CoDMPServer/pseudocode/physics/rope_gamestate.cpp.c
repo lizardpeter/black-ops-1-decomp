@@ -7,20 +7,20 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetEntityIndex(ushort *param_1)
+int __cdecl GetEntityIndex(ushort *targetname)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (level.num_entities <= local_8) {
+    if (level.num_entities <= i) {
       return -1;
     }
-    if (g_entities[local_8].targetname == *param_1) break;
-    local_8 = local_8 + 1;
+    if (g_entities[i].targetname == *targetname) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -28,22 +28,24 @@ int __cdecl GetEntityIndex(ushort *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Rope_WriteGameState(msg_t *param_1)
+void __cdecl Rope_WriteGameState(msg_t *msg)
 
 {
   PhysConstraint *pPVar1;
   int iVar2;
-  int local_8;
+  int entnum_2;
+  int entnum;
+  int i;
   
-  for (local_8 = 0; pPVar1 = cm.constraints, local_8 < cm.num_constraints; local_8 = local_8 + 1) {
-    if (cm.constraints[local_8].type == CONSTRAINT_ROPE) {
-      if (cm.constraints[local_8].attach_point_type1 == ATTACH_POINT_ENT) {
-        iVar2 = GetEntityIndex(&cm.constraints[local_8].target_ent1);
-        MSG_WriteLong(param_1,iVar2);
+  for (i = 0; pPVar1 = cm.constraints, i < cm.num_constraints; i = i + 1) {
+    if (cm.constraints[i].type == CONSTRAINT_ROPE) {
+      if (cm.constraints[i].attach_point_type1 == ATTACH_POINT_ENT) {
+        iVar2 = GetEntityIndex(&cm.constraints[i].target_ent1);
+        MSG_WriteLong(msg,iVar2);
       }
-      if (pPVar1[local_8].attach_point_type2 == ATTACH_POINT_ENT) {
-        iVar2 = GetEntityIndex(&pPVar1[local_8].target_ent2);
-        MSG_WriteLong(param_1,iVar2);
+      if (pPVar1[i].attach_point_type2 == ATTACH_POINT_ENT) {
+        iVar2 = GetEntityIndex(&pPVar1[i].target_ent2);
+        MSG_WriteLong(msg,iVar2);
       }
     }
   }
@@ -55,28 +57,28 @@ void __cdecl Rope_WriteGameState(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Rope_ReadGameState(msg_t *param_1,int param_2)
+void __cdecl Rope_ReadGameState(msg_t *msg,int localClientNum)
 
 {
   PhysConstraint *pPVar1;
   int iVar2;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; pPVar1 = cm.constraints, local_8 < cm.num_constraints; local_8 = local_8 + 1) {
-    if ((cm.constraints[local_8].type == CONSTRAINT_ROPE) &&
-       ((cm.constraints[local_8].attach_point_type1 == ATTACH_POINT_ENT ||
-        (cm.constraints[local_8].attach_point_type2 == ATTACH_POINT_ENT)))) {
-      if (cm.constraints[local_8].attach_point_type1 == ATTACH_POINT_ENT) {
-        iVar2 = MSG_ReadLong(param_1);
-        pPVar1[local_8].target_index1 = iVar2;
+  for (i = 0; pPVar1 = cm.constraints, i < cm.num_constraints; i = i + 1) {
+    if ((cm.constraints[i].type == CONSTRAINT_ROPE) &&
+       ((cm.constraints[i].attach_point_type1 == ATTACH_POINT_ENT ||
+        (cm.constraints[i].attach_point_type2 == ATTACH_POINT_ENT)))) {
+      if (cm.constraints[i].attach_point_type1 == ATTACH_POINT_ENT) {
+        iVar2 = MSG_ReadLong(msg);
+        pPVar1[i].target_index1 = iVar2;
       }
-      if (pPVar1[local_8].attach_point_type2 == ATTACH_POINT_ENT) {
-        iVar2 = MSG_ReadLong(param_1);
-        pPVar1[local_8].target_index2 = iVar2;
+      if (pPVar1[i].attach_point_type2 == ATTACH_POINT_ENT) {
+        iVar2 = MSG_ReadLong(msg);
+        pPVar1[i].target_index2 = iVar2;
       }
     }
   }
-  CreateRopes(param_2);
+  CreateRopes(localClientNum);
   return;
 }
 

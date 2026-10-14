@@ -1476,7 +1476,7 @@ void __cdecl CG_RegisterSounds(void)
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
+  char *string;
   char local_84 [132];
   
   FUN_004816e0("wpn_grenade_explode",&DAT_00c1c604);
@@ -1506,7 +1506,7 @@ void __cdecl CG_RegisterSounds(void)
   _DAT_00c1cfc0 = SND_HashName("fly_dtp_launch_npc");
   _DAT_00c1d4dc = SND_HashName("fly_dtp_collide_plr");
   _DAT_00c1d4d8 = SND_HashName("fly_dtp_collide_npc");
-  pcVar3 = &DAT_00c1d010;
+  string = &DAT_00c1d010;
   iVar2 = 0;
   do {
     sprintf(local_84,"fly_dtp_land_plr_%s");
@@ -1515,8 +1515,8 @@ void __cdecl CG_RegisterSounds(void)
     sprintf(local_84,"fly_dtp_land_npc_%s");
     uVar1 = SND_HashName(local_84);
     *(uint *)((int)&DAT_00c1cfc8 + iVar2) = uVar1;
-    sprintf(pcVar3 + 0x240,"fly_dtp_slide_loop_plr_%s");
-    sprintf(pcVar3,"fly_dtp_slide_loop_npc_%s");
+    sprintf(string + 0x240,"fly_dtp_slide_loop_plr_%s");
+    sprintf(string,"fly_dtp_slide_loop_npc_%s");
     sprintf(local_84,"fly_dtp_slide_stop_plr_%s");
     uVar1 = SND_HashName(local_84);
     *(uint *)((int)&DAT_00c1d4b4 + iVar2) = uVar1;
@@ -1535,9 +1535,9 @@ void __cdecl CG_RegisterSounds(void)
     sprintf(local_84,"fly_pslide_stop_npc_%s");
     uVar1 = SND_HashName(local_84);
     *(uint *)((int)&DAT_00c1d54c + iVar2) = uVar1;
-    pcVar3 = pcVar3 + 0x40;
+    string = string + 0x40;
     iVar2 = iVar2 + 4;
-  } while ((int)pcVar3 < 0xc1d250);
+  } while ((int)string < 0xc1d250);
   _DAT_00c1d5a0 = SND_HashName("fly_sprint_gasp");
   DAT_00c1d578 = SND_HashName("prj_whizbyuw");
   DAT_00c1d570 = SND_HashName("prj_whizby");
@@ -2200,43 +2200,43 @@ void __cdecl CG_Init(int param_1,int param_2,int param_3,int param_4)
 {
   byte bVar1;
   undefined4 uVar2;
-  cgs_t *pcVar3;
-  cg_s *pcVar4;
-  dvar_s *pdVar5;
-  clientActive_t *pcVar6;
-  clientConnection_t *pcVar7;
-  ushort uVar8;
-  RagdollDef **ppRVar9;
-  snd_command *psVar10;
-  int iVar11;
-  int *piVar12;
-  code *pcVar13;
-  byte *pbVar14;
-  cgs_t *pcVar15;
+  cgs_t *dst;
+  cg_s *dst_00;
+  dvar_s *pdVar3;
+  clientActive_t *pcVar4;
+  clientConnection_t *pcVar5;
+  ushort uVar6;
+  RagdollDef **ppRVar7;
+  snd_command *psVar8;
+  int iVar9;
+  int *piVar10;
+  code *pcVar11;
+  byte *pbVar12;
+  cgs_t *pcVar13;
   WeaponOptions *this;
   char *unaff_ESI;
-  int iVar16;
-  char *pcVar17;
-  cgs_t *pcVar18;
+  int iVar14;
+  char *pcVar15;
+  cgs_t *pcVar16;
   snd_command *unaff_EDI;
-  cgs_t *pcVar19;
-  bool bVar20;
+  cgs_t *pcVar17;
+  bool bVar18;
   int iStack_64;
   char *pcStack_58;
   undefined4 uStack_54;
   undefined8 uStack_50;
   cgs_t acStack_48 [68];
   
-  pcVar7 = clientConnections;
-  pcVar4 = cgArray;
-  pcVar3 = cgsArray;
+  pcVar5 = clientConnections;
+  dst_00 = cgArray;
+  dst = cgsArray;
   iStack_64 = 1;
   gjkcc_info_database_t::gjkcc_info_destroy
             ((gjkcc_info_database_t *)(&cg_pmove + param_1 * 0x244),
              (uint)(&cg_pmove + param_1 * 0x244),SUB41(unaff_EDI,0));
-  memset((uchar *)pcVar3,'\0',0x31c8);
-  memset((uchar *)pcVar4,'\0',0x71980);
-  iVar16 = param_1 * 0x21b4;
+  memset((uchar *)dst,'\0',0x31c8);
+  memset((uchar *)dst_00,'\0',0x71980);
+  iVar14 = param_1 * 0x21b4;
   memset((uchar *)(&cgDC + param_1 * 0x86d),'\0',0x21b4);
   memset((uchar *)(&cg_entitiesArray)[param_1],'\0',0xca000);
   memset((uchar *)(&cg_weaponsArray)[param_1],'\0',0x12000);
@@ -2248,12 +2248,12 @@ void __cdecl CG_Init(int param_1,int param_2,int param_3,int param_4)
   memset(&DAT_00b855e8,'\0',0x200);
   memset((uchar *)&playerDetails,'\0',0xd00);
   uVar2 = DAT_00af40f4;
-  *(undefined4 *)(pcVar4 + 0x433f8) = 0;
-  *(undefined4 *)(pcVar4 + 0x433fc) = 0;
-  *(undefined4 *)(pcVar4 + 0x43400) = uVar2;
-  *(undefined4 *)(pcVar4 + 0x43404) = uVar2;
-  *(undefined4 *)(pcVar4 + 0x43408) = 0x40c00000;
-  *(undefined4 *)(pcVar4 + 0x4340c) = 0;
+  *(undefined4 *)(dst_00 + 0x433f8) = 0;
+  *(undefined4 *)(dst_00 + 0x433fc) = 0;
+  *(undefined4 *)(dst_00 + 0x43400) = uVar2;
+  *(undefined4 *)(dst_00 + 0x43404) = uVar2;
+  *(undefined4 *)(dst_00 + 0x43408) = 0x40c00000;
+  *(undefined4 *)(dst_00 + 0x4340c) = 0;
   CG_SetupSplitscreenDvars(SUB41(unaff_EDI,0));
   flame_freeze_id = 0;
   flame_spawn_id = 0;
@@ -2264,21 +2264,21 @@ void __cdecl CG_Init(int param_1,int param_2,int param_3,int param_4)
   Flame_Class_Drips_Init();
   Flame_Init_Sources();
   if (ragdollInited == false) {
-    ppRVar9 = &ragdollDefs;
+    ppRVar7 = &ragdollDefs;
     do {
-      *(undefined1 *)((int)ppRVar9 + 1) = 0;
-      *(undefined1 *)ppRVar9 = 0;
-      ppRVar9 = ppRVar9 + 0x3c2;
-    } while ((int)ppRVar9 < 0x216b608);
+      *(undefined1 *)((int)ppRVar7 + 1) = 0;
+      *(undefined1 *)ppRVar7 = 0;
+      ppRVar7 = ppRVar7 + 0x3c2;
+    } while ((int)ppRVar7 < 0x216b608);
     ragdollInited = true;
   }
   Phys_Init();
   IK_InitSystem();
   if (DAT_034f8f6b == '\0') {
     if (_g_snd != 0) {
-      psVar10 = SND_GetNewCommand();
-      if (psVar10 != (snd_command *)0x0) {
-        *(undefined4 *)psVar10 = 0x1a;
+      psVar8 = SND_GetNewCommand();
+      if (psVar8 != (snd_command *)0x0) {
+        *(undefined4 *)psVar8 = 0x1a;
         SND_CommandPush(unaff_EDI);
       }
       SND_UpdateWait();
@@ -2286,216 +2286,216 @@ void __cdecl CG_Init(int param_1,int param_2,int param_3,int param_4)
     CG_SndAutoSimReset();
     CG_SndFireReset();
   }
-  pcVar6 = clients;
-  *(int *)(pcVar4 + 4) = param_1;
-  pcVar4[0x6b17c] = SUB41(param_1,0);
-  pcVar4[0x6b17a] = (cg_s)0x15;
+  pcVar4 = clients;
+  *(int *)(dst_00 + 4) = param_1;
+  dst_00[0x6b17c] = SUB41(param_1,0);
+  dst_00[0x6b17a] = (cg_s)0x15;
   if (((&DAT_00c6f748)[param_1 * 0x468] == '\0') && ((&DAT_00c6f5c8)[param_1 * 0x468] == '\0')) {
-    *(undefined4 *)(pcVar6 + 0x27b0) = 0;
+    *(undefined4 *)(pcVar4 + 0x27b0) = 0;
   }
-  *pcVar6 = (clientActive_t)0x0;
-  *(bgsAnim_s **)(pcVar4 + 0x5f178) = &cg_bgsAnim;
-  pcVar4[0x5e771] = (cg_s)0x0;
+  *pcVar4 = (clientActive_t)0x0;
+  *(bgsAnim_s **)(dst_00 + 0x5f178) = &cg_bgsAnim;
+  dst_00[0x5e771] = (cg_s)0x0;
   _DAT_00c1a4d4 = SND_FindAlias;
-  *(code **)(*(int *)(pcVar4 + 0x5f178) + 0x8d380) = CG_PlayAnimScriptSoundAlias;
-  *(undefined1 **)(pcVar4 + 0x5f20c) = &LAB_00483880;
-  *(code **)(pcVar4 + 0x5f210) = FUN_00483b00;
-  *(code **)(pcVar4 + 0x5f214) = FUN_00483930;
-  *(undefined1 **)(pcVar4 + 0x5f218) = &LAB_00483bb0;
-  *(code **)(pcVar4 + 0x5f21c) = Com_SafeClientDObjFree;
-  *(code **)(pcVar4 + 0x5f220) = CM_Hunk_AllocXModel;
-  *(undefined4 *)(pcVar4 + 0x5f188) = 0;
-  *(code **)(pcVar4 + 0x5f224) = CG_rand;
-  *(code **)(pcVar4 + 0x5f228) = CG_random;
-  *(int *)pcVar4 = param_4;
-  *(undefined4 *)(pcVar4 + 0x5edb0) = 1;
-  iVar11 = Com_HashString("r_grassEnable",0);
-  piVar12 = (int *)FUN_0069fda0(iVar11);
-  if (piVar12 == (int *)0x0) {
+  *(code **)(*(int *)(dst_00 + 0x5f178) + 0x8d380) = CG_PlayAnimScriptSoundAlias;
+  *(undefined1 **)(dst_00 + 0x5f20c) = &LAB_00483880;
+  *(code **)(dst_00 + 0x5f210) = FUN_00483b00;
+  *(code **)(dst_00 + 0x5f214) = FUN_00483930;
+  *(undefined1 **)(dst_00 + 0x5f218) = &LAB_00483bb0;
+  *(code **)(dst_00 + 0x5f21c) = Com_SafeClientDObjFree;
+  *(code **)(dst_00 + 0x5f220) = CM_Hunk_AllocXModel;
+  *(undefined4 *)(dst_00 + 0x5f188) = 0;
+  *(code **)(dst_00 + 0x5f224) = CG_rand;
+  *(code **)(dst_00 + 0x5f228) = CG_random;
+  *(int *)dst_00 = param_4;
+  *(undefined4 *)(dst_00 + 0x5edb0) = 1;
+  iVar9 = Com_HashString("r_grassEnable",0);
+  piVar10 = (int *)FUN_0069fda0(iVar9);
+  if (piVar10 == (int *)0x0) {
     _Dvar_RegisterString("r_grassEnable",(char *)0x4000,(ushort)unaff_EDI,unaff_ESI);
   }
-  else if (*piVar12 != 0) {
-    if (piVar12[4] == 0) {
+  else if (*piVar10 != 0) {
+    if (piVar10[4] == 0) {
       pcStack_58 = (char *)((uint)pcStack_58 & 0xffffff00);
     }
     else {
       pcStack_58 = "0";
     }
-    FUN_0069f980(piVar12,CONCAT44(uStack_54,pcStack_58),uStack_50,0);
+    FUN_0069f980(piVar10,CONCAT44(uStack_54,pcStack_58),uStack_50,0);
   }
-  pdVar5 = com_sv_running;
-  *(undefined4 *)(pcVar4 + 0x700a8) = 0xffffffff;
-  *(undefined4 *)(pcVar4 + 0x42d84) = 0xffffffff;
-  *(undefined4 *)(pcVar4 + 0x70084) = 0;
-  *(undefined4 *)(pcVar4 + 0x71790) = 0x3ff;
-  *(undefined4 *)(pcVar4 + 0x5ee0c) = 1;
-  *(int *)(pcVar3 + 0x18) = param_2;
-  *(int *)(pcVar3 + 0x14) = param_3;
-  *(uint *)(pcVar3 + 0x1c) = (uint)(pdVar5->current).color[0];
+  pdVar3 = com_sv_running;
+  *(undefined4 *)(dst_00 + 0x700a8) = 0xffffffff;
+  *(undefined4 *)(dst_00 + 0x42d84) = 0xffffffff;
+  *(undefined4 *)(dst_00 + 0x70084) = 0;
+  *(undefined4 *)(dst_00 + 0x71790) = 0x3ff;
+  *(undefined4 *)(dst_00 + 0x5ee0c) = 1;
+  *(int *)(dst + 0x18) = param_2;
+  *(int *)(dst + 0x14) = param_3;
+  *(uint *)(dst + 0x1c) = (uint)(pdVar3->current).color[0];
   CG_ParseServerInfo((int)unaff_EDI);
   CG_ParseCodInfo((int)unaff_EDI);
   R_BeginRemoteScreenUpdate();
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     UI_LoadIngameMenus((int)unaff_EDI);
   }
-  pdVar5 = useFastFile;
+  pdVar3 = useFastFile;
   *(undefined4 *)(&DAT_01edf000 + param_1 * 8) = 0;
   *(undefined4 *)(&DAT_01edf004 + param_1 * 8) = 0;
-  if ((pdVar5->current).enabled == false) {
+  if ((pdVar3->current).enabled == false) {
     SCR_UpdateScreen();
   }
-  pcVar13 = Material_Register_FastFile;
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  _cgMedia = (*pcVar13)();
-  pcVar13 = R_RegisterFont_FastFile;
+  _cgMedia = (*pcVar11)();
+  pcVar11 = R_RegisterFont_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = R_RegisterFont_LoadObj;
+    pcVar11 = R_RegisterFont_LoadObj;
   }
-  DAT_00c1c5fc = (*pcVar13)();
-  pcVar13 = R_RegisterFont_FastFile;
+  DAT_00c1c5fc = (*pcVar11)();
+  pcVar11 = R_RegisterFont_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = R_RegisterFont_LoadObj;
+    pcVar11 = R_RegisterFont_LoadObj;
   }
-  DAT_00c1c600 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1c600 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d6f8 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d6f8 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  _DAT_00c1d6fc = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  _DAT_00c1d6fc = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  _DAT_00c1d700 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  _DAT_00c1d700 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d704 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d704 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d708 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d708 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d70c = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d70c = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d710 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d710 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d714 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d714 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d718 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d718 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d71c = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d71c = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d720 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d720 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  _DAT_00c1d724 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  _DAT_00c1d724 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  _DAT_00c1d728 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  _DAT_00c1d728 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d72c = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d72c = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  DAT_00c1d730 = (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  DAT_00c1d730 = (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
-  pcVar13 = Material_Register_FastFile;
+  (*pcVar11)();
+  pcVar11 = Material_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = Material_Register_LoadObj;
+    pcVar11 = Material_Register_LoadObj;
   }
-  (*pcVar13)();
+  (*pcVar11)();
   CG_AntiBurnInHUD_RegisterDvars();
   CG_InitConsoleCommands();
-  pcVar19 = cgsArray;
+  pcVar17 = cgsArray;
   *(undefined4 *)cgsArray = 0;
-  *(undefined4 *)(pcVar19 + 8) = DAT_047aaae4;
-  *(undefined4 *)(pcVar19 + 0xc) = DAT_047aaae8;
-  *(undefined4 *)(pcVar19 + 0x10) = DAT_047aaafc;
-  pbVar14 = &DAT_047ae544 + _DAT_047ab25c;
-  pcVar17 = "cod";
+  *(undefined4 *)(pcVar17 + 8) = DAT_047aaae4;
+  *(undefined4 *)(pcVar17 + 0xc) = DAT_047aaae8;
+  *(undefined4 *)(pcVar17 + 0x10) = DAT_047aaafc;
+  pbVar12 = &DAT_047ae544 + _DAT_047ab25c;
+  pcVar15 = "cod";
   do {
-    bVar1 = *pbVar14;
-    bVar20 = bVar1 < (byte)*pcVar17;
-    if (bVar1 != *pcVar17) {
+    bVar1 = *pbVar12;
+    bVar18 = bVar1 < (byte)*pcVar15;
+    if (bVar1 != *pcVar15) {
 LAB_00485320:
-      iVar11 = (1 - (uint)bVar20) - (uint)(bVar20 != 0);
+      iVar9 = (1 - (uint)bVar18) - (uint)(bVar18 != 0);
       goto LAB_00485325;
     }
     if (bVar1 == 0) break;
-    bVar1 = pbVar14[1];
-    bVar20 = bVar1 < (byte)pcVar17[1];
-    if (bVar1 != pcVar17[1]) goto LAB_00485320;
-    pbVar14 = pbVar14 + 2;
-    pcVar17 = pcVar17 + 2;
+    bVar1 = pbVar12[1];
+    bVar18 = bVar1 < (byte)pcVar15[1];
+    if (bVar1 != pcVar15[1]) goto LAB_00485320;
+    pbVar12 = pbVar12 + 2;
+    pcVar15 = pcVar15 + 2;
   } while (bVar1 != 0);
-  iVar11 = 0;
+  iVar9 = 0;
 LAB_00485325:
-  if (iVar11 != 0) {
+  if (iVar9 != 0) {
     Com_Error(ERR_DROP,"\x15Client/Server game mismatch: %s/%s");
   }
   if ((useFastFile->current).enabled == false) {
@@ -2512,17 +2512,17 @@ LAB_00485325:
   _DAT_00b43cac = 0;
   _DAT_00b43cb4 = 0;
   memset(&DAT_00b43cb8,'\0',0x380);
-  bVar20 = bg_lastParsedWeaponIndex == 0;
-  *(cg_s **)(*(int *)ThreadLocalStoragePointer + 0x48) = pcVar4 + 0x5f178;
-  if (bVar20) {
+  bVar18 = bg_lastParsedWeaponIndex == 0;
+  *(cg_s **)(*(int *)ThreadLocalStoragePointer + 0x48) = dst_00 + 0x5f178;
+  if (bVar18) {
     DAT_03501074 = 2;
     BG_ClearWeaponDef();
   }
-  bVar20 = false;
+  bVar18 = false;
   if (DAT_02462690 == 0) {
     memset((uchar *)&cg_bgsAnim,'\0',0x8d3a8);
-    bVar20 = (com_sv_running->current).enabled == false;
-    if (bVar20) {
+    bVar18 = (com_sv_running->current).enabled == false;
+    if (bVar18) {
       FUN_004849a0(&pcStack_58);
       iStack_64 = FUN_00484ae0();
     }
@@ -2544,38 +2544,38 @@ LAB_00485325:
     CG_Veh_Init((int)unaff_EDI);
   }
   CG_Veh_RegisterMaterials((int)unaff_EDI);
-  pcVar18 = pcVar3 + 0x149;
-  pcVar19 = acStack_48;
-  pcVar15 = (cgs_t *)Com_GetExtensionSubString((char *)unaff_EDI);
-  for (; pcVar18 != pcVar15; pcVar18 = pcVar18 + 1) {
-    *pcVar19 = *pcVar18;
-    pcVar19 = pcVar19 + 1;
+  pcVar16 = dst + 0x149;
+  pcVar17 = acStack_48;
+  pcVar13 = (cgs_t *)Com_GetExtensionSubString((char *)unaff_EDI);
+  for (; pcVar16 != pcVar13; pcVar16 = pcVar16 + 1) {
+    *pcVar17 = *pcVar16;
+    pcVar17 = pcVar17 + 1;
   }
-  *pcVar19 = (cgs_t)0x0;
+  *pcVar17 = (cgs_t)0x0;
   FUN_00484a80();
-  if (bVar20) {
+  if (bVar18) {
     Scr_FreeScripts((scriptInstance_t)unaff_EDI,(uchar)unaff_ESI);
   }
-  if (*(int *)(pcVar3 + 0x1c) == 0) {
+  if (*(int *)(dst + 0x1c) == 0) {
     GScr_LoadConsts();
     BG_LoadPenetrationDepthTable();
   }
   CG_LoadingString((int)unaff_EDI,unaff_ESI);
   CL_CM_LoadMap((char *)unaff_EDI);
-  *(undefined4 *)(iVar16 + 0xb8c10c) = 0;
-  *(undefined4 *)(iVar16 + 0xb8c190) = 0;
-  *(undefined4 *)(iVar16 + 0xb8ae48) = 0xffffffff;
-  *(undefined4 *)(iVar16 + 0xb8cd98) = 0;
-  *(undefined4 *)(iVar16 + 0xb8cd9c) = 0;
-  *(undefined1 *)(iVar16 + 0xb8cdc0) = 0;
-  *(undefined1 *)(iVar16 + 0xb8cdc1) = 0;
+  *(undefined4 *)(iVar14 + 0xb8c10c) = 0;
+  *(undefined4 *)(iVar14 + 0xb8c190) = 0;
+  *(undefined4 *)(iVar14 + 0xb8ae48) = 0xffffffff;
+  *(undefined4 *)(iVar14 + 0xb8cd98) = 0;
+  *(undefined4 *)(iVar14 + 0xb8cd9c) = 0;
+  *(undefined1 *)(iVar14 + 0xb8cdc0) = 0;
+  *(undefined1 *)(iVar14 + 0xb8cdc1) = 0;
   Item_SetupKeywordHash();
   Menu_SetupKeywordHash();
   CG_LoadingString((int)unaff_EDI,unaff_ESI);
   CG_ParsePlayerInfos((int)unaff_EDI);
   if (DAT_034f9009 == '\0') {
     CG_LoadingString((int)unaff_EDI,unaff_ESI);
-    LoadWorld((char *)(pcVar3 + 0x144));
+    LoadWorld((char *)(dst + 0x144));
     DAT_034f9009 = '\x01';
   }
   CG_LoadingString((int)unaff_EDI,unaff_ESI);
@@ -2587,11 +2587,11 @@ LAB_00485325:
     memset((uchar *)s_streamHints,'\0',0x80);
   }
   FX_InitSystem(param_1);
-  pcVar13 = FUN_0053de80;
+  pcVar11 = FUN_0053de80;
   if ((useFastFile->current).enabled == false) {
-    pcVar13 = FUN_0053dea0;
+    pcVar11 = FUN_0053dea0;
   }
-  DAT_01aae564 = (*pcVar13)("misc/missing_fx");
+  DAT_01aae564 = (*pcVar11)("misc/missing_fx");
   if ((useFastFile->current).enabled == false) {
     SCR_UpdateScreen();
   }
@@ -2611,38 +2611,38 @@ LAB_00485325:
   CG_InitVisionSets((int)unaff_EDI);
   CG_InitExposure((int)unaff_EDI,unaff_ESI);
   CG_InitBolt(param_1);
-  pcVar6 = clients;
+  pcVar4 = clients;
   if (iStack_64 == 2) {
     DAT_047ab230 = atoi(&DAT_047ae544 + DAT_047ab260);
-    *(int *)(pcVar6 + 0x2748) = DAT_047ab230;
+    *(int *)(pcVar4 + 0x2748) = DAT_047ab230;
   }
-  pcVar4[0x5e770] = (cg_s)0x0;
+  dst_00[0x5e770] = (cg_s)0x0;
   CG_SetConfigValues(param_1);
   CG_LoadingString((int)unaff_EDI,unaff_ESI);
   CG_NorthDirectionChanged((int)unaff_EDI);
   if ((r_loadForRenderer->current).enabled != false) {
-    pcVar13 = DB_EnumXAssets_FastFile;
+    pcVar11 = DB_EnumXAssets_FastFile;
     if ((useFastFile->current).enabled == false) {
-      pcVar13 = FUN_00699780;
+      pcVar11 = FUN_00699780;
     }
-    (*pcVar13)();
+    (*pcVar11)();
   }
   if ((DAT_034f9009 == '\0') && (_g_snd != 0)) {
-    psVar10 = SND_GetNewCommand();
-    if (psVar10 != (snd_command *)0x0) {
-      *(undefined4 *)psVar10 = 9;
-      *(undefined4 *)(psVar10 + 4) = 0;
+    psVar8 = SND_GetNewCommand();
+    if (psVar8 != (snd_command *)0x0) {
+      *(undefined4 *)psVar8 = 9;
+      *(undefined4 *)(psVar8 + 4) = 0;
       SND_CommandPush(unaff_EDI);
     }
     SND_UpdateWait();
   }
   CG_ParseFog(param_1);
   R_WaterSimulationRestart();
-  R_InitPrimaryLights((GfxLight *)(pcVar4 + 0x44600));
-  pcVar6 = clients;
+  R_InitPrimaryLights((GfxLight *)(dst_00 + 0x44600));
+  pcVar4 = clients;
   s_shadowHistory[param_1].entryCount = 0;
   s_shadowHistory[param_1].lastUpdateTime = 0;
-  *pcVar6 = (clientActive_t)0x0;
+  *pcVar4 = (clientActive_t)0x0;
   memset(&DAT_00b01008 + param_1 * 0xc04,'\0',0xc04);
   FUN_004040e0();
   AimAssist_Init((int)unaff_EDI);
@@ -2652,8 +2652,8 @@ LAB_00485325:
   if ((cg_loadScripts != (dvar_s *)0x0) && ((cg_loadScripts->current).enabled != false)) {
     CScr_LoadStructs();
     if (DAT_00c1f840 != SCRIPTINSTANCE_SERVER) {
-      uVar8 = Scr_ExecThread(DAT_00c1f840,0,(uint)unaff_EDI);
-      RemoveRefToObject(SCRIPTINSTANCE_CLIENT,(uint)uVar8);
+      uVar6 = Scr_ExecThread(DAT_00c1f840,0,(uint)unaff_EDI);
+      RemoveRefToObject(SCRIPTINSTANCE_CLIENT,(uint)uVar6);
     }
     cg_fakeEntitiesInuseCountFromLoadScript =
          (int)(&cg_fakeEntitiesInuseCount)[param_1] - cg_fakeEntitiesInuseCountFromMap;
@@ -2663,11 +2663,11 @@ LAB_00485325:
                 ,0x19c,cg_fakeEntitiesInuseCountFromMap,cg_fakeEntitiesInuseCountFromLoadScript);
     }
     Scr_AddInt(param_1,(scriptInstance_t)unaff_EDI);
-    uVar8 = Scr_ExecThread(DAT_00c1f84c,1,(uint)unaff_EDI);
-    RemoveRefToObject(SCRIPTINSTANCE_CLIENT,(uint)uVar8);
+    uVar6 = Scr_ExecThread(DAT_00c1f84c,1,(uint)unaff_EDI);
+    RemoveRefToObject(SCRIPTINSTANCE_CLIENT,(uint)uVar6);
   }
   if (iStack_64 == 2) {
-    pcVar7[0x9ea04] = (clientConnection_t)0x1;
+    pcVar5[0x9ea04] = (clientConnection_t)0x1;
   }
   BG_InitFire();
   *(undefined4 *)(*(int *)ThreadLocalStoragePointer + 0x48) = 0;
@@ -2688,21 +2688,21 @@ void __cdecl CG_Shutdown(int param_1)
   int *piVar1;
   int *piVar2;
   uchar *puVar3;
-  cg_s *pcVar4;
-  uchar *puVar5;
-  int iVar6;
-  void *pvVar7;
-  snd_command *psVar8;
+  cg_s *dst;
+  uchar *dst_00;
+  int iVar4;
+  void *pvVar5;
+  snd_command *psVar6;
   GlassesClient *this;
   GlassRenderer *this_00;
-  fake_centity_s *pfVar9;
-  int iVar10;
+  fake_centity_s *pfVar7;
+  int iVar8;
   RagdollBodyState unaff_ESI;
   snd_command *unaff_EDI;
   int iStack_8;
   
-  iVar6 = param_1;
-  pcVar4 = cgArray;
+  iVar4 = param_1;
+  dst = cgArray;
   _DAT_0354a0ac = 0x7e967699;
   _DAT_0354a0b0 = 0x7e967699;
   _DAT_0354a0b4 = 0x7e967699;
@@ -2718,11 +2718,11 @@ void __cdecl CG_Shutdown(int param_1)
     _DAT_03549b94 = 1;
   }
   UNLOCK();
-  pvVar7 = generic_avl_map_destroy
+  pvVar5 = generic_avl_map_destroy
                      ((phys_inplace_avl_tree<unsigned_int,generic_avl_map_node_t,generic_avl_map_node_t>
                        *)(&cg_pmove + param_1 * 0x244),(uint)unaff_EDI);
-  if (pvVar7 != (void *)0x0) {
-    destroy_gjkcc_info(pvVar7);
+  if (pvVar5 != (void *)0x0) {
+    destroy_gjkcc_info(pvVar5);
     _DAT_03549b98 = _DAT_03549b98 + -1;
   }
   LOCK();
@@ -2731,20 +2731,20 @@ void __cdecl CG_Shutdown(int param_1)
   }
   UNLOCK();
   rg.globalstats = (trStatistics_t *)0x0;
-  if ((_g_snd != 0) && (psVar8 = SND_GetNewCommand(), psVar8 != (snd_command *)0x0)) {
-    *(undefined4 *)psVar8 = 10;
+  if ((_g_snd != 0) && (psVar6 = SND_GetNewCommand(), psVar6 != (snd_command *)0x0)) {
+    *(undefined4 *)psVar6 = 10;
     SND_CommandPush(unaff_EDI);
   }
   param_1 = 0;
   iStack_8 = 0;
   do {
     if (param_1 < 0x400) {
-      pfVar9 = (fake_centity_s *)((int)(&cg_entitiesArray)[iVar6] + iStack_8);
+      pfVar7 = (fake_centity_s *)((int)(&cg_entitiesArray)[iVar4] + iStack_8);
     }
     else {
-      pfVar9 = cg_fakeEntitiesArray + (iVar6 * 0x200 + param_1) * 0x32c + -0xcaffc;
+      pfVar7 = cg_fakeEntitiesArray + (iVar4 * 0x200 + param_1) * 0x32c + -0xcaffc;
     }
-    piVar1 = *(int **)(pfVar9 + 0x10);
+    piVar1 = *(int **)(pfVar7 + 0x10);
     if (0 < (int)piVar1) {
       if (*piVar1 == 1) {
         Ragdoll_BodyNewState((RagdollBody *)unaff_EDI,unaff_ESI);
@@ -2752,55 +2752,55 @@ void __cdecl CG_Shutdown(int param_1)
         *piVar1 = 0;
         DAT_00aeeb40 = DAT_00aeeb40 + -1;
         piVar2 = (int *)piVar1[-1];
-        iVar10 = piVar1[-2];
-        *(int **)(iVar10 + 4) = piVar2;
-        *piVar2 = iVar10;
+        iVar8 = piVar1[-2];
+        *(int **)(iVar8 + 4) = piVar2;
+        *piVar2 = iVar8;
         PMM_FREE(piVar1 + -2,0xa2c,4);
       }
       else {
         *piVar1 = *piVar1 + -1;
       }
-      *(undefined4 *)(pfVar9 + 0x10) = 0;
+      *(undefined4 *)(pfVar7 + 0x10) = 0;
     }
-    if ((*(int *)(pfVar9 + 0x18) != 0) && (*(int *)(pfVar9 + 0x18) != -1)) {
+    if ((*(int *)(pfVar7 + 0x18) != 0) && (*(int *)(pfVar7 + 0x18) != -1)) {
       Phys_ObjDestroy(0,(int)unaff_EDI);
-      *(undefined4 *)(pfVar9 + 0x18) = 0;
+      *(undefined4 *)(pfVar7 + 0x18) = 0;
     }
     iStack_8 = iStack_8 + 0x328;
     param_1 = param_1 + 1;
   } while (iStack_8 < 0xca000);
-  iVar10 = 0;
+  iVar8 = 0;
   DAT_034f9008 = 0;
   DAT_034f9009 = 0;
   DAT_00b2b908 = 0;
   s_dogAnims = (XAnim_s *)0x0;
-  if (((useFastFile->current).enabled == false) && (0 < *(int *)(iVar6 * 0x21b4 + 0xb8c10c))) {
+  if (((useFastFile->current).enabled == false) && (0 < *(int *)(iVar4 * 0x21b4 + 0xb8c10c))) {
     do {
       FUN_00664bb0();
-      iVar10 = iVar10 + 1;
-    } while (iVar10 < *(int *)(iVar6 * 0x21b4 + 0xb8c10c));
+      iVar8 = iVar8 + 1;
+    } while (iVar8 < *(int *)(iVar4 * 0x21b4 + 0xb8c10c));
   }
   CG_FreeWeapons((int)unaff_EDI);
-  CG_FreeClientEntityCaches(iVar6);
-  iVar10 = 0;
+  CG_FreeClientEntityCaches(iVar4);
+  iVar8 = 0;
   if (0 < (com_maxclients->current).integer) {
     do {
       CG_SafeDObjFree((int)unaff_EDI,unaff_ESI);
-      iVar10 = iVar10 + 1;
-    } while (iVar10 < (com_maxclients->current).integer);
+      iVar8 = iVar8 + 1;
+    } while (iVar8 < (com_maxclients->current).integer);
   }
-  iVar10 = 0x20;
+  iVar8 = 0x20;
   do {
     CG_SafeDObjFree((int)unaff_EDI,unaff_ESI);
-    iVar10 = iVar10 + 1;
-  } while (iVar10 < 0x400);
-  CG_ShutdownEntities(iVar6);
-  CG_ShutdownEntity(iVar6,(centity_s *)(pcVar4 + 0x42d88),true);
+    iVar8 = iVar8 + 1;
+  } while (iVar8 < 0x400);
+  CG_ShutdownEntities(iVar4);
+  CG_ShutdownEntity(iVar4,(centity_s *)(dst + 0x42d88),true);
   FX_KillAllEffects((int)unaff_EDI);
-  puVar5 = DAT_01aae570;
+  dst_00 = DAT_01aae570;
   puVar3 = DAT_01aae568;
   memset(DAT_01aae568,'\0',0x360);
-  memset(puVar5,'\0',0x62480);
+  memset(dst_00,'\0',0x62480);
   puVar3[0x344] = 0xff;
   puVar3[0x345] = 0xff;
   puVar3[0x346] = 0xff;
@@ -2814,8 +2814,8 @@ void __cdecl CG_Shutdown(int param_1)
   puVar3[0x34e] = '\0';
   puVar3[0x34f] = '\0';
   memset(&DAT_01aadb60,'\0',0xa08);
-  DynEntCl_Shutdown(iVar6);
-  CG_ShutdownFakeEntities(iVar6);
+  DynEntCl_Shutdown(iVar4);
+  CG_ShutdownFakeEntities(iVar4);
   if (clGlasses != (GlassesClient *)0x0) {
     GlassesClient::Reset(this);
     GlassRenderer::Reset(this_00);
@@ -2824,8 +2824,8 @@ void __cdecl CG_Shutdown(int param_1)
     num_heli_height_lock_patches = 0;
   }
   FUN_00483d00();
-  *(undefined4 *)(pcVar4 + 0x2c) = 0;
-  memset((uchar *)pcVar4,'\0',0x71980);
+  *(undefined4 *)(dst + 0x2c) = 0;
+  memset((uchar *)dst,'\0',0x71980);
   return;
 }
 

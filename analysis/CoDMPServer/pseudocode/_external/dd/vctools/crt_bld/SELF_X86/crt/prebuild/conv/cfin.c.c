@@ -5,40 +5,41 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 _flt * __cdecl
-_fltin2(_flt *param_1,char *param_2,int param_3,int param_4,int param_5,localeinfo_struct *param_6)
+_fltin2(_flt *flt,char *str,int len_ignore,int scale_ignore,int radix_ignore,
+       localeinfo_struct *_Locale)
 
 {
   INTRNCVT_STATUS IVar1;
   uint uVar2;
-  char *local_28;
+  char *EndPtr;
   char *local_24;
-  _CRT_DOUBLE local_20;
-  uint local_18;
-  _LDBL12 local_14;
+  _CRT_DOUBLE x;
+  uint flags;
+  _LDBL12 ld12;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_24 = param_2;
+  local_24 = str;
   uVar2 = 0;
-  local_18 = __strgtold12_l(&local_14,&local_28,param_2,0,0,0,0,param_6);
-  if ((local_18 & 4) == 0) {
-    IVar1 = _ld12tod(&local_14,&local_20);
-    if (((local_18 & 2) != 0) || (IVar1 == INTRNCVT_OVERFLOW)) {
+  flags = __strgtold12_l(&ld12,&EndPtr,str,0,0,0,0,_Locale);
+  if ((flags & 4) == 0) {
+    IVar1 = _ld12tod(&ld12,&x);
+    if (((flags & 2) != 0) || (IVar1 == INTRNCVT_OVERFLOW)) {
       uVar2 = 0x80;
     }
-    if (((local_18 & 1) != 0) || (IVar1 == INTRNCVT_UNDERFLOW)) {
+    if (((flags & 1) != 0) || (IVar1 == INTRNCVT_UNDERFLOW)) {
       uVar2 = uVar2 | 0x100;
     }
   }
   else {
     uVar2 = 0x200;
-    local_20.x._0_4_ = 0;
-    local_20.x._4_4_ = 0;
+    x.x._0_4_ = 0;
+    x.x._4_4_ = 0;
   }
-  param_1->nbytes = (int)local_28 - (int)local_24;
-  *(undefined4 *)&param_1->dval = local_20.x._0_4_;
-  *(undefined4 *)((int)&param_1->dval + 4) = local_20.x._4_4_;
-  param_1->flags = uVar2;
-  return param_1;
+  flt->nbytes = (int)EndPtr - (int)local_24;
+  *(undefined4 *)&flt->dval = x.x._0_4_;
+  *(undefined4 *)((int)&flt->dval + 4) = x.x._4_4_;
+  flt->flags = uVar2;
+  return flt;
 }
 

@@ -2,10 +2,10 @@
 
 // 009689B3  _initp_misc_purevirt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/inithelp.c:166)
 
-void __cdecl _initp_misc_purevirt(void *param_1)
+void __cdecl _initp_misc_purevirt(void *enull)
 
 {
-  __pPurecall = param_1;
+  __pPurecall = enull;
   return;
 }
 

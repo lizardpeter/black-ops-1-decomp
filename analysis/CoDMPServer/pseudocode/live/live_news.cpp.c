@@ -42,7 +42,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_countersNewsState__(void)
 
 // 0096D440  LiveNews_NeedToGetFriendNews  (live/live_news.cpp:118)
 
-bool __cdecl LiveNews_NeedToGetFriendNews(int param_1)
+bool __cdecl LiveNews_NeedToGetFriendNews(int controllerIndex)
 
 {
   int iVar1;
@@ -67,9 +67,9 @@ void __cdecl LiveNews_PopulateTickerQueueMessages(void)
 
 {
   int local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
     if (s_tickerMessageQueue.newsItemCount < 0xb) {
       local_c = s_tickerMessageQueue.newsItemCount;
@@ -77,10 +77,10 @@ void __cdecl LiveNews_PopulateTickerQueueMessages(void)
     else {
       local_c = 10;
     }
-    if (local_c <= local_8) break;
+    if (local_c <= i) break;
     LiveTicker_AddMessages
-              (s_tickerMessageQueue.messageToBeAddedToTicker[local_8],TICKER_STREAM_FRIENDS,false);
-    local_8 = local_8 + 1;
+              (s_tickerMessageQueue.messageToBeAddedToTicker[i],TICKER_STREAM_FRIENDS,false);
+    i = i + 1;
   }
   return;
 }
@@ -88,14 +88,14 @@ void __cdecl LiveNews_PopulateTickerQueueMessages(void)
 
 // 0096D500  LiveNews_FindDuplicateNewsItemIndex  (live/live_news.cpp:145)
 
-int __cdecl LiveNews_FindDuplicateNewsItemIndex(char *param_1)
+int __cdecl LiveNews_FindDuplicateNewsItemIndex(char *outputString)
 
 {
   int iVar1;
   int local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
     if (s_tickerMessageQueue.newsItemCount < 0xb) {
       local_c = s_tickerMessageQueue.newsItemCount;
@@ -103,12 +103,12 @@ int __cdecl LiveNews_FindDuplicateNewsItemIndex(char *param_1)
     else {
       local_c = 10;
     }
-    if (local_c <= local_8) break;
-    iVar1 = I_strcmp(s_tickerMessageQueue.messageToBeAddedToTicker[local_8],param_1);
+    if (local_c <= i) break;
+    iVar1 = I_strcmp(s_tickerMessageQueue.messageToBeAddedToTicker[i],outputString);
     if (iVar1 == 0) {
-      return local_8;
+      return i;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return -1;
 }
@@ -118,148 +118,150 @@ int __cdecl LiveNews_FindDuplicateNewsItemIndex(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl LiveNews_PopulateFriendNews(int param_1,ulong64 param_2,char *param_3)
+void __cdecl LiveNews_PopulateFriendNews(int controllerIndex,ulong64 param_2,char *param_3)
 
 {
-  char *pcVar1;
-  ConversionArguments *pCVar2;
+  PCacheComponent *pPVar1;
+  int iVar2;
   char *pcVar3;
-  int iVar4;
+  ConversionArguments *arguments;
+  char *outputString;
   int in_stack_fffffe2c;
   ddlState_t local_1c4;
   ddlState_t local_1b4;
   ddlState_t local_1a4;
-  int local_194;
-  uint local_190;
-  char local_189;
-  uint local_188;
-  char *local_184;
-  uint local_180;
-  int local_17c;
-  ddlState_t local_178;
-  int local_164;
-  char local_15d;
-  PCacheComponent *local_15c;
-  int local_158;
-  char local_154 [64];
-  char local_114 [32];
-  ddlState_t local_f4;
-  char local_e4 [68];
-  ddlDef_t *local_a0;
-  char *local_9c;
-  int local_98;
-  ddlState_t local_94;
-  ConversionArguments local_84;
-  char local_5c [64];
+  int newsItemQueuePosition;
+  int newsTypeHash;
+  bool isValidToken;
+  int timestamp;
+  char *newsType;
+  int tokenType;
+  int randomlyPickedNewsItemIndex;
+  ddlState_t g_tickerMessage;
+  PCache_ScopedLock __pcache_lock;
+  int totalNumNewsItem;
+  bool isEmptyToken;
+  PCachePublicProfile *profile;
+  int tickerMessageIndex;
+  char localized_string_newstype [64];
+  char gamerTag [32];
+  ddlState_t tickerMessageNumber;
+  char localized_string [68];
+  ddlDef_t *playerDDL;
+  char *token;
+  int tokenIndex;
+  ddlState_t tickerMessageToken;
+  ConversionArguments convArgs;
+  char tempValueString [64];
   uint local_1c;
-  uint local_18;
-  ddlState_t local_14;
+  int value;
+  ddlState_t tickerMessageTokenNumber;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_184 = (char *)0x0;
-  local_9c = (char *)0x0;
-  local_98 = 0;
-  local_158 = 0;
-  local_164 = 0;
-  local_84.args[0] = (char *)0x0;
-  local_84.args[1] = (char *)0x0;
-  local_84.args[2] = (char *)0x0;
-  local_84.args[3] = (char *)0x0;
-  local_84.args[4] = (char *)0x0;
-  local_84.args[5] = (char *)0x0;
-  local_84.args[6] = (char *)0x0;
-  local_84.args[7] = (char *)0x0;
-  local_84.args[8] = (char *)0x0;
-  local_84.argCount = 0;
+  newsType = (char *)0x0;
+  token = (char *)0x0;
+  tokenIndex = 0;
+  totalNumNewsItem = 0;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
   PCache_Lock();
-  local_15c = PCache_GetComponent(param_1,param_2 & 0xffffffff,in_stack_fffffe2c);
-  local_a0 = PCache_GetPublicProfileDDL();
-  DDL_Reset(&local_178,local_a0);
-  DDL_MoveToName(&local_178,&local_178,"tickerMessage");
-  DDL_MoveToIndex(&local_178,&local_f4,local_158,1);
-  I_strncpyz(local_114,param_2._4_4_,0x20);
-  local_84.args[local_84.argCount] = local_114;
-  local_84.argCount = local_84.argCount + 1;
+  pPVar1 = PCache_GetComponent(controllerIndex,param_2 & 0xffffffff,in_stack_fffffe2c);
+  playerDDL = PCache_GetPublicProfileDDL();
+  DDL_Reset(&g_tickerMessage,playerDDL);
+  DDL_MoveToName(&g_tickerMessage,&g_tickerMessage,"tickerMessage");
+  DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,0,1);
+  I_strncpyz(gamerTag,param_2._4_4_,0x20);
+  convArgs.args[convArgs.argCount] = gamerTag;
+  convArgs.argCount = convArgs.argCount + 1;
   do {
-    DDL_MoveToName(&local_f4,&local_1a4,"timestamp");
-    local_188 = DDL_GetInt(&local_1a4,(char *)(local_15c + 1));
-    if (local_188 == 0) break;
-    local_164 = local_164 + 1;
-    iVar4 = DDL_IterateNext(&local_f4,&local_f4);
-  } while (iVar4 != 0);
-  if (0 < local_164) {
-    local_17c = CG_rand();
-    local_17c = local_17c % local_164;
-    DDL_MoveToIndex(&local_178,&local_f4,local_17c,1);
-    DDL_MoveToName(&local_f4,&local_94,"token");
-    DDL_MoveToName(&local_f4,&local_1b4,"messageType");
-    local_190 = DDL_GetInt(&local_1b4,(char *)(local_15c + 1));
-    local_184 = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_190);
-    if (local_184 == (char *)0x0) {
+    DDL_MoveToName(&tickerMessageNumber,&local_1a4,"timestamp");
+    timestamp = DDL_GetInt(&local_1a4,(char *)(pPVar1 + 1));
+    if (timestamp == 0) break;
+    totalNumNewsItem = totalNumNewsItem + 1;
+    iVar2 = DDL_IterateNext(&tickerMessageNumber,&tickerMessageNumber);
+  } while (iVar2 != 0);
+  if (0 < totalNumNewsItem) {
+    iVar2 = CG_rand();
+    randomlyPickedNewsItemIndex = iVar2 % totalNumNewsItem;
+    DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,randomlyPickedNewsItemIndex,1);
+    DDL_MoveToName(&tickerMessageNumber,&tickerMessageToken,"token");
+    DDL_MoveToName(&tickerMessageNumber,&local_1b4,"messageType");
+    newsTypeHash = DDL_GetInt(&local_1b4,(char *)(pPVar1 + 1));
+    newsType = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,newsTypeHash);
+    if (newsType == (char *)0x0) {
       Com_Printf(0x10,"%s\'s one of the ticker news is corrupted \n");
       PCache_Unlock();
       return;
     }
-    I_strncpyz(local_154,local_184,0x40);
+    I_strncpyz(localized_string_newstype,newsType,0x40);
     while( true ) {
-      DDL_MoveToIndex(&local_94,&local_14,local_98,1);
-      DDL_MoveToName(&local_14,&local_1c4,"tokenType");
-      local_180 = DDL_GetInt(&local_1c4,(char *)(local_15c + 1));
-      DDL_MoveToName(&local_14,(ddlState_t *)&stack0xfffffe2c,"value");
-      local_18 = DDL_GetInt((ddlState_t *)&stack0xfffffe2c,(char *)(local_15c + 1));
-      if ((local_180 == 0) && (local_18 == 0)) break;
-      if (local_180 == 1) {
-        sprintf(local_5c,"%d");
-        local_84.args[local_84.argCount] = local_5c;
-        local_84.argCount = local_84.argCount + 1;
-        local_189 = '\x01';
-        local_15d = '\0';
+      DDL_MoveToIndex(&tickerMessageToken,&tickerMessageTokenNumber,tokenIndex,1);
+      DDL_MoveToName(&tickerMessageTokenNumber,&local_1c4,"tokenType");
+      tokenType = DDL_GetInt(&local_1c4,(char *)(pPVar1 + 1));
+      DDL_MoveToName(&tickerMessageTokenNumber,(ddlState_t *)&stack0xfffffe2c,"value");
+      value = DDL_GetInt((ddlState_t *)&stack0xfffffe2c,(char *)(pPVar1 + 1));
+      if ((tokenType == 0) && (value == 0)) break;
+      if (tokenType == 1) {
+        sprintf(tempValueString,"%d");
+        convArgs.args[convArgs.argCount] = tempValueString;
+        convArgs.argCount = convArgs.argCount + 1;
+        isValidToken = true;
+        isEmptyToken = false;
       }
-      else if (local_180 == 0) {
-        local_9c = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_18);
-        if (local_9c == (char *)0x0) {
-          local_189 = '\0';
+      else if (tokenType == 0) {
+        token = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,value);
+        if (token == (char *)0x0) {
+          isValidToken = false;
           Com_Printf(0x10,"%s has corrupted token in one of the messages. \n");
           goto LAB_0096da13;
         }
-        I_strncpyz(local_e4,local_9c,0x40);
-        pcVar1 = UI_SafeTranslateString(local_e4);
-        local_84.args[local_84.argCount] = pcVar1;
-        local_84.argCount = local_84.argCount + 1;
-        local_189 = '\x01';
-        local_15d = '\0';
+        I_strncpyz(localized_string,token,0x40);
+        pcVar3 = UI_SafeTranslateString(localized_string);
+        convArgs.args[convArgs.argCount] = pcVar3;
+        convArgs.argCount = convArgs.argCount + 1;
+        isValidToken = true;
+        isEmptyToken = false;
       }
-      else if (local_180 == 2) {
-        local_9c = LiveContracts_GetContractName(local_18);
-        iVar4 = I_strcmp(local_9c,"");
-        if (iVar4 == 0) {
-          local_189 = '\0';
+      else if (tokenType == 2) {
+        token = LiveContracts_GetContractName(value);
+        iVar2 = I_strcmp(token,"");
+        if (iVar2 == 0) {
+          isValidToken = false;
           Com_Printf(0x10,"%s has corrupted contract token in one of the messages. \n");
           goto LAB_0096da13;
         }
-        local_84.args[local_84.argCount] = local_9c;
-        local_84.argCount = local_84.argCount + 1;
-        local_189 = '\x01';
-        local_15d = '\0';
+        convArgs.args[convArgs.argCount] = token;
+        convArgs.argCount = convArgs.argCount + 1;
+        isValidToken = true;
+        isEmptyToken = false;
       }
-      local_98 = local_98 + 1;
-      if ((local_189 == '\0') || (local_15d != '\0')) goto LAB_0096da13;
+      tokenIndex = tokenIndex + 1;
+      if ((isValidToken == false) || (isEmptyToken != false)) goto LAB_0096da13;
     }
-    local_189 = '\x01';
-    local_15d = '\x01';
+    isValidToken = true;
 LAB_0096da13:
-    if (local_189 == '\x01') {
-      iVar4 = 0x80;
-      pcVar3 = outputString;
-      pCVar2 = &local_84;
-      pcVar1 = UI_SafeTranslateString(local_154);
-      UI_ReplaceConversions(pcVar1,pCVar2,pcVar3,iVar4);
-      iVar4 = LiveNews_FindDuplicateNewsItemIndex(outputString);
-      if (iVar4 == -1) {
-        local_194 = s_tickerMessageQueue.newsItemCount % 10;
+    if (isValidToken == true) {
+      iVar2 = 0x80;
+      outputString = ::outputString;
+      arguments = &convArgs;
+      pcVar3 = UI_SafeTranslateString(localized_string_newstype);
+      UI_ReplaceConversions(pcVar3,arguments,outputString,iVar2);
+      iVar2 = LiveNews_FindDuplicateNewsItemIndex(::outputString);
+      if (iVar2 == -1) {
+        newsItemQueuePosition = s_tickerMessageQueue.newsItemCount % 10;
         s_tickerMessageQueue.newsItemCount = s_tickerMessageQueue.newsItemCount + 1;
-        I_strncpyz(s_tickerMessageQueue.messageToBeAddedToTicker[local_194],outputString,0x80);
+        I_strncpyz(s_tickerMessageQueue.messageToBeAddedToTicker[newsItemQueuePosition],
+                   ::outputString,0x80);
       }
     }
   }
@@ -273,56 +275,57 @@ LAB_0096da13:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveNews_GetFriendsXuids(int param_1)
+void __cdecl LiveNews_GetFriendsXuids(int controllerIndex)
 
 {
   undefined4 uVar1;
   undefined4 uVar2;
   int iVar3;
   int local_a50;
-  int local_a4c;
-  int local_a38;
-  int local_a34;
-  int local_a30;
-  FriendInfo local_a2c;
+  int i_4;
+  int r;
+  int i_3;
+  int i_2;
+  int i;
+  FriendInfo friendInfo;
   uint local_974;
-  int local_970;
+  int minCount;
   undefined4 auStack_96c [601];
-  int local_8;
+  int friendCount;
   
   local_974 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Friends_GetCount(param_1,0,0);
-  local_a50 = local_8;
-  if (5 < local_8) {
+  friendCount = Friends_GetCount(controllerIndex,0,0);
+  local_a50 = friendCount;
+  if (5 < friendCount) {
     local_a50 = 5;
   }
-  local_970 = local_a50;
-  if (local_a50 == local_8) {
-    for (local_a30 = 0; local_a30 < local_8; local_a30 = local_a30 + 1) {
-      Friends_GetByIndex(param_1,0,local_a30,&local_a2c);
-      *(undefined4 *)(friendXuid + local_a30) = (undefined4)local_a2c.dwid;
-      *(undefined4 *)((int)friendXuid + local_a30 * 8 + 4) = local_a2c.dwid._4_4_;
+  minCount = local_a50;
+  if (local_a50 == friendCount) {
+    for (i = 0; i < friendCount; i = i + 1) {
+      Friends_GetByIndex(controllerIndex,0,i,&friendInfo);
+      *(undefined4 *)(friendXuid + i) = (undefined4)friendInfo.dwid;
+      *(undefined4 *)((int)friendXuid + i * 8 + 4) = friendInfo.dwid._4_4_;
     }
   }
   else {
-    for (local_a34 = 0; local_a34 < local_8; local_a34 = local_a34 + 1) {
-      Friends_GetByIndex(param_1,0,local_a34,&local_a2c);
-      auStack_96c[local_a34 * 2] = (undefined4)local_a2c.dwid;
-      auStack_96c[local_a34 * 2 + 1] = local_a2c.dwid._4_4_;
+    for (i_2 = 0; i_2 < friendCount; i_2 = i_2 + 1) {
+      Friends_GetByIndex(controllerIndex,0,i_2,&friendInfo);
+      auStack_96c[i_2 * 2] = (undefined4)friendInfo.dwid;
+      auStack_96c[i_2 * 2 + 1] = friendInfo.dwid._4_4_;
     }
-    for (local_a38 = 0; local_a38 < local_8; local_a38 = local_a38 + 1) {
+    for (i_3 = 0; i_3 < friendCount; i_3 = i_3 + 1) {
       iVar3 = CG_rand();
-      iVar3 = iVar3 % (local_8 - local_a38) + local_a38;
-      uVar1 = auStack_96c[local_a38 * 2];
-      uVar2 = auStack_96c[local_a38 * 2 + 1];
-      auStack_96c[local_a38 * 2] = auStack_96c[iVar3 * 2];
-      auStack_96c[local_a38 * 2 + 1] = auStack_96c[iVar3 * 2 + 1];
+      iVar3 = iVar3 % (friendCount - i_3) + i_3;
+      uVar1 = auStack_96c[i_3 * 2];
+      uVar2 = auStack_96c[i_3 * 2 + 1];
+      auStack_96c[i_3 * 2] = auStack_96c[iVar3 * 2];
+      auStack_96c[i_3 * 2 + 1] = auStack_96c[iVar3 * 2 + 1];
       auStack_96c[iVar3 * 2] = uVar1;
       auStack_96c[iVar3 * 2 + 1] = uVar2;
     }
-    for (local_a4c = 0; local_a4c < 5; local_a4c = local_a4c + 1) {
-      *(undefined4 *)(friendXuid + local_a4c) = auStack_96c[local_a4c * 2];
-      *(undefined4 *)((int)friendXuid + local_a4c * 8 + 4) = auStack_96c[local_a4c * 2 + 1];
+    for (i_4 = 0; i_4 < 5; i_4 = i_4 + 1) {
+      *(undefined4 *)(friendXuid + i_4) = auStack_96c[i_4 * 2];
+      *(undefined4 *)((int)friendXuid + i_4 * 8 + 4) = auStack_96c[i_4 * 2 + 1];
     }
   }
   LiveTicker_ReplaceMessages("",TICKER_STREAM_FRIENDS,false);
@@ -332,18 +335,22 @@ void __cdecl LiveNews_GetFriendsXuids(int param_1)
 
 // 0096DD00  LiveNews_GetFriendsPublicProfile  (live/live_news.cpp:360)
 
-bool __cdecl LiveNews_GetFriendsPublicProfile(int param_1,ulong64 param_2)
+/* WARNING: Variable defined which should be unmapped: __pcache_lock */
+
+bool __cdecl LiveNews_GetFriendsPublicProfile(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  PCacheComponent *pPVar4;
-  int in_stack_fffffff4;
+  PCacheComponent *component;
+  int iStack_c;
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *friendPublicProfile;
   
   PCache_Lock();
-  pPVar4 = PCache_GetComponent(param_1,param_2 & 0xffffffff,in_stack_fffffff4);
-  if (pPVar4 == (PCacheComponent *)0x0) {
+  component = PCache_GetComponent(controllerIndex,param_2 & 0xffffffff,iStack_c);
+  if (component == (PCacheComponent *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x16e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -351,16 +358,14 @@ bool __cdecl LiveNews_GetFriendsPublicProfile(int param_1,ulong64 param_2)
       return (bool)uVar3;
     }
   }
-  bVar2 = PCache_TouchComponent(pPVar4);
+  bVar2 = PCache_TouchComponent(component);
   if (bVar2) {
-    uVar3 = 1;
     PCache_Unlock();
   }
   else {
-    uVar3 = 0;
     PCache_Unlock();
   }
-  return (bool)uVar3;
+  return bVar2;
 }
 
 
@@ -368,51 +373,49 @@ bool __cdecl LiveNews_GetFriendsPublicProfile(int param_1,ulong64 param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LiveNews_UpdateFriendsNewsTicker(int param_1)
+void __cdecl LiveNews_UpdateFriendsNewsTicker(int localControllerIndex)
 
 {
   bool bVar1;
   FriendInfo *pFVar2;
-  FriendInfo *local_cc;
-  int local_c8;
-  undefined1 local_c4 [24];
+  int i_2;
+  int i;
+  undefined1 friendInfo [24];
   undefined1 local_ac [164];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = LiveNews_NeedToGetFriendNews(param_1);
+  bVar1 = LiveNews_NeedToGetFriendNews(localControllerIndex);
   if (bVar1) {
-    for (local_c8 = 0; local_c8 < 5; local_c8 = local_c8 + 1) {
-      indexOfXuidAddedToTicker[local_c8] = false;
-      *(undefined4 *)(friendXuid + local_c8) = 0;
-      *(undefined4 *)((int)friendXuid + local_c8 * 8 + 4) = 0;
+    for (i = 0; i < 5; i = i + 1) {
+      indexOfXuidAddedToTicker[i] = false;
+      *(undefined4 *)(friendXuid + i) = 0;
+      *(undefined4 *)((int)friendXuid + i * 8 + 4) = 0;
     }
-    LiveNews_GetFriendsXuids(param_1);
+    LiveNews_GetFriendsXuids(localControllerIndex);
     LiveNews_PopulateTickerQueueMessages();
   }
-  local_cc = (FriendInfo *)0x0;
-  while (((int)local_cc < 5 &&
-         ((int)friendXuid[(int)local_cc] != 0 ||
-          *(int *)((int)friendXuid + (int)local_cc * 8 + 4) != 0))) {
-    if (local_cc[0xe5c0d].presence[0x14] == '\0') {
-      pFVar2 = local_cc;
+  i_2 = 0;
+  while ((i_2 < 5 && ((int)friendXuid[i_2] != 0 || *(int *)((int)friendXuid + i_2 * 8 + 4) != 0))) {
+    if (indexOfXuidAddedToTicker[i_2] == false) {
+      pFVar2 = (FriendInfo *)i_2;
       bVar1 = LiveNews_GetFriendsPublicProfile
-                        (param_1,CONCAT44(local_cc,*(undefined4 *)
-                                                    ((int)friendXuid + (int)local_cc * 8 + 4)));
+                        (localControllerIndex,
+                         CONCAT44(i_2,*(undefined4 *)((int)friendXuid + i_2 * 8 + 4)));
       if (bVar1) {
-        bVar1 = Friends_GetByID(param_1,CONCAT44(local_c4,*(undefined4 *)
-                                                           ((int)friendXuid + (int)local_cc * 8 + 4)
-                                                ),pFVar2);
+        bVar1 = Friends_GetByID(localControllerIndex,
+                                CONCAT44(friendInfo,*(undefined4 *)((int)friendXuid + i_2 * 8 + 4)),
+                                pFVar2);
         if (bVar1) {
           LiveNews_PopulateFriendNews
-                    (param_1,CONCAT44(local_ac,*(undefined4 *)
-                                                ((int)friendXuid + (int)local_cc * 8 + 4)),
+                    (localControllerIndex,
+                     CONCAT44(local_ac,*(undefined4 *)((int)friendXuid + i_2 * 8 + 4)),
                      (char *)pFVar2);
         }
-        local_cc[0xe5c0d].presence[0x14] = '\x01';
+        indexOfXuidAddedToTicker[i_2] = true;
       }
     }
-    local_cc = (FriendInfo *)((int)&local_cc->status + 1);
+    i_2 = i_2 + 1;
   }
   return;
 }
@@ -422,142 +425,145 @@ void __cdecl LiveNews_UpdateFriendsNewsTicker(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl LiveNews_GetOwnNews(int param_1)
+void __cdecl LiveNews_GetOwnNews(int controllerIndex)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  bool bVar3;
-  ulong64 uVar4;
-  ConversionArguments *pCVar5;
-  int iVar6;
-  undefined4 uVar7;
+  char *sourceString;
+  bool bVar2;
+  ulong64 uVar3;
+  ConversionArguments *arguments;
+  int iVar4;
+  undefined4 uVar5;
   int in_stack_fffffdb4;
   ddlState_t local_23c;
   ddlState_t local_22c;
   ddlState_t local_21c;
-  char *local_20c;
-  char local_205;
-  uint local_204;
-  uint local_200;
-  char *local_1fc;
-  ddlState_t local_1f8;
-  char local_1e4 [135];
-  char local_15d;
-  PCacheComponent *local_15c;
-  int local_158;
-  char local_154 [64];
-  char local_114 [32];
-  ddlState_t local_f4;
-  char local_e4 [64];
-  ddlDef_t *local_a4;
-  int local_a0;
-  ddlState_t local_9c;
-  ConversionArguments local_8c;
-  char local_64 [68];
+  char *contractName;
+  bool isValidToken;
+  int timestamp;
+  int tokenType;
+  char *newsType;
+  ddlState_t g_tickerMessage;
+  PCache_ScopedLock __pcache_lock;
+  char outputString [135];
+  bool isEmptyToken;
+  PCachePublicProfile *profile;
+  int tickerMessageIndex;
+  char localized_string_newstype [64];
+  char gamerTag [32];
+  ddlState_t tickerMessageNumber;
+  char localized_string [64];
+  ddlDef_t *playerDDL;
+  int tokenIndex;
+  ddlState_t tickerMessageToken;
+  ConversionArguments convArgs;
+  char tempValueString [68];
   uint local_20;
-  uint local_1c;
-  ddlState_t local_18;
-  uint local_8;
+  int value;
+  ddlState_t tickerMessageTokenNumber;
+  int newsTypeHash;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_a0 = 0;
-  local_158 = 0;
-  local_1fc = (char *)0x0;
-  local_8c.args[0] = (char *)0x0;
-  local_8c.args[1] = (char *)0x0;
-  local_8c.args[2] = (char *)0x0;
-  local_8c.args[3] = (char *)0x0;
-  local_8c.args[4] = (char *)0x0;
-  local_8c.args[5] = (char *)0x0;
-  local_8c.args[6] = (char *)0x0;
-  local_8c.args[7] = (char *)0x0;
-  local_8c.args[8] = (char *)0x0;
-  local_8c.argCount = 0;
-  iVar6 = 0x20;
-  pcVar1 = Live_ControllerIndex_GetClientName(param_1);
-  I_strncpyz(local_114,pcVar1,iVar6);
-  local_8c.args[local_8c.argCount] = local_114;
-  local_8c.argCount = local_8c.argCount + 1;
+  tokenIndex = 0;
+  tickerMessageIndex = 0;
+  newsType = (char *)0x0;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  iVar4 = 0x20;
+  pcVar1 = Live_ControllerIndex_GetClientName(controllerIndex);
+  I_strncpyz(gamerTag,pcVar1,iVar4);
+  convArgs.args[convArgs.argCount] = gamerTag;
+  convArgs.argCount = convArgs.argCount + 1;
   PCache_Lock();
-  uVar7 = 0;
-  uVar4 = Live_GetXuid(0);
-  local_15c = PCache_GetComponent(0,CONCAT44(uVar7,(int)(uVar4 >> 0x20)),in_stack_fffffdb4);
-  local_a4 = PCache_GetPublicProfileDDL();
-  DDL_Reset(&local_1f8,local_a4);
-  DDL_MoveToName(&local_1f8,&local_1f8,"tickerMessage");
-  DDL_MoveToIndex(&local_1f8,&local_f4,local_158,1);
+  uVar5 = 0;
+  uVar3 = Live_GetXuid(0);
+  profile = (PCachePublicProfile *)
+            PCache_GetComponent(0,CONCAT44(uVar5,(int)(uVar3 >> 0x20)),in_stack_fffffdb4);
+  playerDDL = PCache_GetPublicProfileDDL();
+  DDL_Reset(&g_tickerMessage,playerDDL);
+  DDL_MoveToName(&g_tickerMessage,&g_tickerMessage,"tickerMessage");
+  DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,tickerMessageIndex,1);
   do {
     while( true ) {
-      DDL_MoveToName(&local_f4,&local_21c,"timestamp");
-      local_204 = DDL_GetInt(&local_21c,(char *)(local_15c + 1));
-      if (local_204 == 0) goto LAB_0096e3f4;
-      DDL_MoveToName(&local_f4,&local_9c,"token");
-      DDL_MoveToName(&local_f4,&local_22c,"messageType");
-      local_8 = DDL_GetInt(&local_22c,(char *)(local_15c + 1));
-      local_1fc = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_8);
-      if (local_1fc == (char *)0x0) break;
-      I_strncpyz(local_154,local_1fc,0x40);
+      DDL_MoveToName(&tickerMessageNumber,&local_21c,"timestamp");
+      timestamp = DDL_GetInt(&local_21c,profile->ddl);
+      if (timestamp == 0) goto LAB_0096e3f4;
+      DDL_MoveToName(&tickerMessageNumber,&tickerMessageToken,"token");
+      DDL_MoveToName(&tickerMessageNumber,&local_22c,"messageType");
+      newsTypeHash = DDL_GetInt(&local_22c,profile->ddl);
+      newsType = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,newsTypeHash);
+      if (newsType == (char *)0x0) break;
+      I_strncpyz(localized_string_newstype,newsType,0x40);
       while( true ) {
-        DDL_MoveToIndex(&local_9c,&local_18,local_a0,1);
-        DDL_MoveToName(&local_18,&local_23c,"tokenType");
-        local_200 = DDL_GetInt(&local_23c,(char *)(local_15c + 1));
-        DDL_MoveToName(&local_18,(ddlState_t *)&stack0xfffffdb4,"value");
-        local_1c = DDL_GetInt((ddlState_t *)&stack0xfffffdb4,(char *)(local_15c + 1));
-        if ((local_200 == 0) && (local_1c == 0)) break;
-        if (local_200 == 1) {
-          sprintf(local_64,"%d");
-          local_8c.args[local_8c.argCount] = local_64;
-          local_8c.argCount = local_8c.argCount + 1;
-          local_205 = '\x01';
-          local_15d = '\0';
+        DDL_MoveToIndex(&tickerMessageToken,&tickerMessageTokenNumber,tokenIndex,1);
+        DDL_MoveToName(&tickerMessageTokenNumber,&local_23c,"tokenType");
+        tokenType = DDL_GetInt(&local_23c,profile->ddl);
+        DDL_MoveToName(&tickerMessageTokenNumber,(ddlState_t *)&stack0xfffffdb4,"value");
+        value = DDL_GetInt((ddlState_t *)&stack0xfffffdb4,profile->ddl);
+        if ((tokenType == 0) && (value == 0)) break;
+        if (tokenType == 1) {
+          sprintf(tempValueString,"%d");
+          convArgs.args[convArgs.argCount] = tempValueString;
+          convArgs.argCount = convArgs.argCount + 1;
+          isValidToken = true;
+          isEmptyToken = false;
         }
-        else if (local_200 == 0) {
-          local_1fc = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_8);
-          bVar3 = local_1fc != (char *)0x0;
-          if (bVar3) {
-            iVar6 = 0x40;
-            pcVar1 = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_1c);
-            I_strncpyz(local_e4,pcVar1,iVar6);
-            pcVar1 = UI_SafeTranslateString(local_e4);
-            local_8c.args[local_8c.argCount] = pcVar1;
-            local_8c.argCount = local_8c.argCount + 1;
+        else if (tokenType == 0) {
+          newsType = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,newsTypeHash);
+          bVar2 = newsType != (char *)0x0;
+          if (bVar2) {
+            iVar4 = 0x40;
+            pcVar1 = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,value);
+            I_strncpyz(localized_string,pcVar1,iVar4);
+            pcVar1 = UI_SafeTranslateString(localized_string);
+            convArgs.args[convArgs.argCount] = pcVar1;
+            convArgs.argCount = convArgs.argCount + 1;
           }
-          local_15d = '\0';
-          local_205 = bVar3;
+          isEmptyToken = false;
+          isValidToken = bVar2;
         }
-        else if (local_200 == 2) {
-          local_20c = LiveContracts_GetContractName(local_1c);
-          iVar6 = I_strcmp(local_20c,"");
-          local_205 = iVar6 != 0;
-          if ((bool)local_205) {
-            local_8c.args[local_8c.argCount] = local_20c;
-            local_8c.argCount = local_8c.argCount + 1;
+        else if (tokenType == 2) {
+          contractName = LiveContracts_GetContractName(value);
+          iVar4 = I_strcmp(contractName,"");
+          isValidToken = iVar4 != 0;
+          if (isValidToken) {
+            convArgs.args[convArgs.argCount] = contractName;
+            convArgs.argCount = convArgs.argCount + 1;
           }
-          local_15d = '\0';
+          isEmptyToken = false;
         }
-        local_a0 = local_a0 + 1;
-        if ((local_205 == '\0') || (local_15d != '\0')) goto LAB_0096e388;
+        tokenIndex = tokenIndex + 1;
+        if ((isValidToken == false) || (isEmptyToken != false)) goto LAB_0096e388;
       }
-      local_205 = '\x01';
-      local_15d = '\x01';
+      isValidToken = true;
+      isEmptyToken = true;
 LAB_0096e388:
-      if (local_205 == '\x01') {
-        iVar6 = 0x80;
-        pcVar1 = local_1e4;
-        pCVar5 = &local_8c;
-        pcVar2 = UI_SafeTranslateString(local_154);
-        UI_ReplaceConversions(pcVar2,pCVar5,pcVar1,iVar6);
+      if (isValidToken == true) {
+        iVar4 = 0x80;
+        pcVar1 = outputString;
+        arguments = &convArgs;
+        sourceString = UI_SafeTranslateString(localized_string_newstype);
+        UI_ReplaceConversions(sourceString,arguments,pcVar1,iVar4);
       }
-      local_8c.argCount = 1;
-      local_a0 = 0;
-      iVar6 = DDL_IterateNext(&local_f4,&local_f4);
-      if (iVar6 == 0) goto LAB_0096e3f4;
+      convArgs.argCount = 1;
+      tokenIndex = 0;
+      iVar4 = DDL_IterateNext(&tickerMessageNumber,&tickerMessageNumber);
+      if (iVar4 == 0) goto LAB_0096e3f4;
     }
     Com_Printf(0x10,"%s\'s one of the ticker news is corrupted \n");
-    iVar6 = DDL_IterateNext(&local_f4,&local_f4);
-  } while (iVar6 != 0);
+    iVar4 = DDL_IterateNext(&tickerMessageNumber,&tickerMessageNumber);
+  } while (iVar4 != 0);
 LAB_0096e3f4:
   PCache_Unlock();
   return;
@@ -568,98 +574,99 @@ LAB_0096e3f4:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl LiveNews_GetNextIndexForPublishingNews(PCachePublicProfile *param_1,CmdArgs *param_2)
+int __cdecl LiveNews_GetNextIndexForPublishingNews(PCachePublicProfile *profile,CmdArgs *cmd_args)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   ddlState_t local_128;
   ddlState_t local_118;
   ddlState_t local_108;
   ddlState_t local_f8;
-  int local_e8;
-  int local_e4;
-  uint local_e0;
-  ddlState_t local_dc;
-  char local_cc [68];
-  int local_88;
-  StringTable *local_84;
-  char *local_80;
-  int local_7c;
-  int local_78;
-  char local_74 [68];
+  int i_2;
+  int i;
+  int timestamp;
+  ddlState_t g_tickerMessage;
+  char newsType [68];
+  int firstTickerMessageIndex;
+  StringTable *table;
+  char *name;
+  int priority;
+  int timeSinceNewsPublished;
+  char localized_string_newstype [68];
   uint local_30;
-  ddlState_t local_2c;
-  ddlDef_t *local_1c;
-  int local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  ddlState_t tickerMessageNumber;
+  ddlDef_t *playerDDL;
+  int lowestPriority;
+  char *weight;
+  int lowestPriorityIndex;
+  int maximumNumMessagesAllowed;
+  int newsTypeHash;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_88 = 0;
-  local_18 = 0;
-  local_10 = 0;
-  local_80 = (char *)0x0;
-  local_14 = (char *)0x0;
-  StringTable_GetAsset("mp/tickerWeights.csv",&local_84);
-  I_strncpyz(local_cc,param_2->argv[param_2->nesting][1],0x40);
-  pcVar1 = StringTable_Lookup(local_84,0,local_cc,2);
-  local_c = atoi(pcVar1);
-  local_1c = PCache_GetPublicProfileDDL();
-  DDL_Reset(&local_dc,local_1c);
-  DDL_MoveToName(&local_dc,&local_dc,"tickerMessage");
-  DDL_MoveToIndex(&local_dc,&local_2c,local_88,1);
-  for (local_e4 = 0; local_e4 < 3; local_e4 = local_e4 + 1) {
-    DDL_MoveToName(&local_2c,&local_f8,"timestamp");
-    local_e0 = DDL_GetInt(&local_f8,param_1->ddl);
-    if ((int)local_e0 < 1) {
-      return local_e4;
+  firstTickerMessageIndex = 0;
+  lowestPriority = 0;
+  lowestPriorityIndex = 0;
+  name = (char *)0x0;
+  weight = (char *)0x0;
+  StringTable_GetAsset("mp/tickerWeights.csv",&table);
+  I_strncpyz(newsType,cmd_args->argv[cmd_args->nesting][1],0x40);
+  nptr = StringTable_Lookup(table,0,newsType,2);
+  maximumNumMessagesAllowed = atoi(nptr);
+  playerDDL = PCache_GetPublicProfileDDL();
+  DDL_Reset(&g_tickerMessage,playerDDL);
+  DDL_MoveToName(&g_tickerMessage,&g_tickerMessage,"tickerMessage");
+  DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,firstTickerMessageIndex,1);
+  for (i = 0; i < 3; i = i + 1) {
+    DDL_MoveToName(&tickerMessageNumber,&local_f8,"timestamp");
+    timestamp = DDL_GetInt(&local_f8,profile->ddl);
+    if (timestamp < 1) {
+      return i;
     }
-    DDL_MoveToName(&local_2c,&local_108,"messageType");
-    local_8 = DDL_GetInt(&local_108,param_1->ddl);
-    local_80 = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_8);
-    if (local_80 == (char *)0x0) {
-      return local_e4;
+    DDL_MoveToName(&tickerMessageNumber,&local_108,"messageType");
+    newsTypeHash = DDL_GetInt(&local_108,profile->ddl);
+    name = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,newsTypeHash);
+    if (name == (char *)0x0) {
+      return i;
     }
-    I_strncpyz(local_74,local_80,0x40);
-    iVar2 = I_stricmp(local_cc,local_74);
-    if ((iVar2 == 0) && (local_c == 1)) {
-      return local_e4;
+    I_strncpyz(localized_string_newstype,name,0x40);
+    iVar1 = I_stricmp(newsType,localized_string_newstype);
+    if ((iVar1 == 0) && (maximumNumMessagesAllowed == 1)) {
+      return i;
     }
-    iVar2 = DDL_IterateNext(&local_2c,&local_2c);
-    if (iVar2 == 0) break;
+    iVar1 = DDL_IterateNext(&tickerMessageNumber,&tickerMessageNumber);
+    if (iVar1 == 0) break;
   }
-  DDL_MoveToIndex(&local_dc,&local_2c,local_88,1);
-  local_e8 = 0;
+  DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,firstTickerMessageIndex,1);
+  i_2 = 0;
   while( true ) {
-    if (2 < local_e8) {
-      return local_10;
+    if (2 < i_2) {
+      return lowestPriorityIndex;
     }
-    DDL_MoveToName(&local_2c,&local_118,"messageType");
-    local_8 = DDL_GetInt(&local_118,param_1->ddl);
-    local_80 = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,local_8);
-    if (local_80 != (char *)0x0) {
-      I_strncpyz(local_74,local_80,0x40);
-      local_14 = StringTable_Lookup(local_84,0,local_74,1);
-      DDL_MoveToName(&local_2c,&local_128,"timestamp");
-      local_e0 = DDL_GetInt(&local_128,param_1->ddl);
-      local_78 = LiveStorage_GetUTC();
-      local_78 = local_78 - local_e0;
-      local_7c = atoi(local_14);
-      local_7c = local_7c * local_78;
-      if (local_18 < local_7c) {
-        local_10 = local_e8;
-        local_18 = local_7c;
+    DDL_MoveToName(&tickerMessageNumber,&local_118,"messageType");
+    newsTypeHash = DDL_GetInt(&local_118,profile->ddl);
+    name = DB_FindXAssetNameFromHash(ASSET_TYPE_LOCALIZE_ENTRY,newsTypeHash);
+    if (name != (char *)0x0) {
+      I_strncpyz(localized_string_newstype,name,0x40);
+      weight = StringTable_Lookup(table,0,localized_string_newstype,1);
+      DDL_MoveToName(&tickerMessageNumber,&local_128,"timestamp");
+      timestamp = DDL_GetInt(&local_128,profile->ddl);
+      iVar1 = LiveStorage_GetUTC();
+      timeSinceNewsPublished = iVar1 - timestamp;
+      iVar1 = atoi(weight);
+      priority = iVar1 * timeSinceNewsPublished;
+      if (lowestPriority < priority) {
+        lowestPriorityIndex = i_2;
+        lowestPriority = priority;
       }
     }
-    iVar2 = DDL_IterateNext(&local_2c,&local_2c);
-    if (iVar2 == 0) break;
-    local_e8 = local_e8 + 1;
+    iVar1 = DDL_IterateNext(&tickerMessageNumber,&tickerMessageNumber);
+    if (iVar1 == 0) break;
+    i_2 = i_2 + 1;
   }
-  return local_10;
+  return lowestPriorityIndex;
 }
 
 
@@ -668,10 +675,12 @@ int __cdecl LiveNews_GetNextIndexForPublishingNews(PCachePublicProfile *param_1,
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl LiveNews_PublishNews(int param_1,CmdArgs *param_2)
+void __cdecl LiveNews_PublishNews(int controllerIndex,CmdArgs *cmd_args)
 
 {
+  PCachePublicProfile *profile_00;
   int iVar1;
+  uint value;
   int in_stack_fffffe6c;
   ddlState_t local_184;
   ddlState_t local_174;
@@ -681,90 +690,91 @@ void __cdecl LiveNews_PublishNews(int param_1,CmdArgs *param_2)
   ddlState_t local_140;
   ddlState_t local_130;
   ddlState_t local_120;
-  uint local_110;
-  char local_109;
-  uint local_108;
-  char local_104 [68];
-  ddlState_t local_c0;
-  uint local_b0;
-  int local_a8;
-  int local_a4;
-  PCachePublicProfile *local_a0;
-  uint local_9c;
-  ddlState_t local_98;
-  ddlDef_t *local_88;
-  char local_84 [68];
+  uint hash;
+  bool isNumber;
+  int number;
+  char newsType [68];
+  ddlState_t g_tickerMessage;
+  int tokenType;
+  PCache_ScopedLock __pcache_lock;
+  int argIndex;
+  int messageNumber;
+  PCachePublicProfile *profile;
+  int time;
+  ddlState_t tickerMessageNumber;
+  ddlDef_t *playerDDL;
+  char token [68];
   uint local_40;
-  int local_3c;
-  ddlState_t local_38;
-  ddlState_t local_28;
-  int local_18;
-  ulong64 local_14;
-  uint local_8;
+  int tokenIndex;
+  ddlState_t tickerMessageToken;
+  ddlState_t tickerMessageTokenNumber;
+  int argc;
+  ulong64 xuid;
+  uint newsTypeHash;
   
   local_40 = __security_cookie ^ (uint)&stack0xfffffffc;
   PCache_Lock();
-  local_14 = Live_GetXuid(param_1);
-  local_a0 = (PCachePublicProfile *)PCache_GetComponent(param_1,local_14 >> 0x20,in_stack_fffffe6c);
-  if (((local_a0->c).state & 2) == 0) {
+  xuid = Live_GetXuid(controllerIndex);
+  profile_00 = (PCachePublicProfile *)
+               PCache_GetComponent(controllerIndex,xuid >> 0x20,in_stack_fffffe6c);
+  if (((profile_00->c).state & 2) == 0) {
     PCache_Unlock();
   }
   else {
-    local_88 = PCache_GetPublicProfileDDL();
-    DDL_Reset(&local_c0,local_88);
-    DDL_MoveToName(&local_c0,&local_c0,"tickerMessage");
-    local_a4 = LiveNews_GetNextIndexForPublishingNews(local_a0,param_2);
-    DDL_MoveToIndex(&local_c0,&local_98,local_a4,1);
-    DDL_MoveToName(&local_98,&local_38,"token");
-    I_strncpyz(local_104,param_2->argv[param_2->nesting][1],0x40);
-    local_8 = DB_HashForName(local_104,ASSET_TYPE_LOCALIZE_ENTRY);
-    DDL_MoveToName(&local_98,&local_120,"messageType");
-    DDL_SetInt(&local_120,local_8,local_a0->ddl);
-    local_9c = LiveStorage_GetUTC();
-    DDL_MoveToName(&local_98,&local_130,"timestamp");
-    DDL_SetInt(&local_130,local_9c,local_a0->ddl);
-    local_18 = param_2->argc[param_2->nesting];
-    local_3c = 0;
-    for (local_a8 = 2; local_a8 < local_18; local_a8 = local_a8 + 1) {
-      I_strncpyz(local_84,param_2->argv[param_2->nesting][local_a8],0x40);
-      iVar1 = sscanf(local_84,"%d");
-      local_109 = iVar1 != 0;
-      if (((bool)local_109) && (iVar1 = I_stricmp("TICKER_CONTRACTCOMPLETED",local_104), iVar1 == 0)
-         ) {
-        local_b0 = 2;
+    playerDDL = PCache_GetPublicProfileDDL();
+    DDL_Reset(&g_tickerMessage,playerDDL);
+    DDL_MoveToName(&g_tickerMessage,&g_tickerMessage,"tickerMessage");
+    iVar1 = LiveNews_GetNextIndexForPublishingNews(profile_00,cmd_args);
+    DDL_MoveToIndex(&g_tickerMessage,&tickerMessageNumber,iVar1,1);
+    DDL_MoveToName(&tickerMessageNumber,&tickerMessageToken,"token");
+    I_strncpyz(newsType,cmd_args->argv[cmd_args->nesting][1],0x40);
+    newsTypeHash = DB_HashForName(newsType,ASSET_TYPE_LOCALIZE_ENTRY);
+    DDL_MoveToName(&tickerMessageNumber,&local_120,"messageType");
+    DDL_SetInt(&local_120,newsTypeHash,profile_00->ddl);
+    value = LiveStorage_GetUTC();
+    DDL_MoveToName(&tickerMessageNumber,&local_130,"timestamp");
+    DDL_SetInt(&local_130,value,profile_00->ddl);
+    argc = cmd_args->argc[cmd_args->nesting];
+    tokenIndex = 0;
+    for (argIndex = 2; argIndex < argc; argIndex = argIndex + 1) {
+      I_strncpyz(token,cmd_args->argv[cmd_args->nesting][argIndex],0x40);
+      iVar1 = sscanf(token,"%d");
+      isNumber = iVar1 != 0;
+      if ((isNumber) && (iVar1 = I_stricmp("TICKER_CONTRACTCOMPLETED",newsType), iVar1 == 0)) {
+        tokenType = 2;
       }
-      else if (local_109 == '\0') {
-        local_b0 = 0;
-      }
-      else {
-        local_b0 = 1;
-      }
-      if ((local_b0 == 1) || (local_b0 == 2)) {
-        DDL_MoveToIndex(&local_38,&local_28,local_3c,1);
-        DDL_MoveToName(&local_28,&local_140,"tokenType");
-        DDL_SetInt(&local_140,local_b0,local_a0->ddl);
-        local_154 = local_108;
-        DDL_MoveToName(&local_28,&local_150,"value");
-        DDL_SetInt(&local_150,local_154,local_a0->ddl);
+      else if (isNumber == false) {
+        tokenType = 0;
       }
       else {
-        DDL_MoveToIndex(&local_38,&local_28,local_3c,1);
-        DDL_MoveToName(&local_28,&local_164,"tokenType");
-        DDL_SetInt(&local_164,local_b0,local_a0->ddl);
-        local_110 = DB_HashForName(local_84,ASSET_TYPE_LOCALIZE_ENTRY);
-        DDL_MoveToName(&local_28,&local_174,"value");
-        DDL_SetInt(&local_174,local_110,local_a0->ddl);
+        tokenType = 1;
       }
-      iVar1 = DDL_IterateNext(&local_28,&local_28);
+      if ((tokenType == 1) || (tokenType == 2)) {
+        DDL_MoveToIndex(&tickerMessageToken,&tickerMessageTokenNumber,tokenIndex,1);
+        DDL_MoveToName(&tickerMessageTokenNumber,&local_140,"tokenType");
+        DDL_SetInt(&local_140,tokenType,profile_00->ddl);
+        local_154 = number;
+        DDL_MoveToName(&tickerMessageTokenNumber,&local_150,"value");
+        DDL_SetInt(&local_150,local_154,profile_00->ddl);
+      }
+      else {
+        DDL_MoveToIndex(&tickerMessageToken,&tickerMessageTokenNumber,tokenIndex,1);
+        DDL_MoveToName(&tickerMessageTokenNumber,&local_164,"tokenType");
+        DDL_SetInt(&local_164,tokenType,profile_00->ddl);
+        hash = DB_HashForName(token,ASSET_TYPE_LOCALIZE_ENTRY);
+        DDL_MoveToName(&tickerMessageTokenNumber,&local_174,"value");
+        DDL_SetInt(&local_174,hash,profile_00->ddl);
+      }
+      iVar1 = DDL_IterateNext(&tickerMessageTokenNumber,&tickerMessageTokenNumber);
       if (iVar1 == 0) break;
-      local_3c = local_3c + 1;
+      tokenIndex = tokenIndex + 1;
     }
-    DDL_MoveToIndex(&local_38,&local_28,local_3c,1);
-    DDL_MoveToName(&local_28,&local_184,"tokenType");
-    DDL_SetInt(&local_184,0,local_a0->ddl);
-    DDL_MoveToName(&local_28,(ddlState_t *)&stack0xfffffe6c,"value");
-    DDL_SetInt((ddlState_t *)&stack0xfffffe6c,0,local_a0->ddl);
-    (local_a0->c).state = (local_a0->c).state | 1;
+    DDL_MoveToIndex(&tickerMessageToken,&tickerMessageTokenNumber,tokenIndex,1);
+    DDL_MoveToName(&tickerMessageTokenNumber,&local_184,"tokenType");
+    DDL_SetInt(&local_184,0,profile_00->ddl);
+    DDL_MoveToName(&tickerMessageTokenNumber,(ddlState_t *)&stack0xfffffe6c,"value");
+    DDL_SetInt((ddlState_t *)&stack0xfffffe6c,0,profile_00->ddl);
+    (profile_00->c).state = (profile_00->c).state | 1;
     PCache_Unlock();
   }
   return;
@@ -777,14 +787,14 @@ void __cdecl LiveNews_PublishNews_f(void)
 
 {
   int iVar1;
-  CmdArgs *pCVar2;
+  CmdArgs *cmd_args;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_Printf(0,"USAGE: userPublishNews <newstype> <tokens(0..5)> \n");
   }
-  pCVar2 = Cmd_Args();
-  LiveNews_PublishNews(0,pCVar2);
+  cmd_args = Cmd_Args();
+  LiveNews_PublishNews(0,cmd_args);
   return;
 }
 
@@ -821,7 +831,7 @@ void __cdecl LiveNews_Init(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl formatStringWithCommas(char *param_1,int param_2,ulong64 param_3)
+void __cdecl formatStringWithCommas(char *outputString,int stringLength,ulong64 value)
 
 {
   char cVar1;
@@ -829,49 +839,50 @@ void __cdecl formatStringWithCommas(char *param_1,int param_2,ulong64 param_3)
   bool bVar3;
   int iVar4;
   char *local_418;
-  int local_414;
-  char local_40c;
+  int i;
+  int intermediateStringLength;
+  char intermediateString;
   undefined1 auStack_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x2f2,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    if ((param_2 == 0) &&
+  if (outputString != (char *)0x0) {
+    if ((stringLength == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x2f6,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (param_2 != 0) {
-      memset((uchar *)param_1,'\0',param_2);
-      Com_sprintf(&local_40c,0x400,"%llu");
-      local_418 = &local_40c;
+    if (stringLength != 0) {
+      memset((uchar *)outputString,'\0',stringLength);
+      Com_sprintf(&intermediateString,0x400,"%llu");
+      local_418 = &intermediateString;
       do {
         cVar1 = *local_418;
         local_418 = local_418 + 1;
       } while (cVar1 != '\0');
       iVar4 = (int)local_418 - (int)auStack_40b;
-      if ((param_2 < iVar4) &&
+      if ((stringLength < iVar4) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x300,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (iVar4 <= param_2) {
-        for (local_414 = 0; local_414 < iVar4; local_414 = local_414 + 1) {
-          if (((iVar4 - local_414) % 3 == 0) && (local_414 != 0)) {
-            Com_sprintf(param_1,0x400,"%s%c");
+      if (iVar4 <= stringLength) {
+        for (i = 0; i < iVar4; i = i + 1) {
+          if (((iVar4 - i) % 3 == 0) && (i != 0)) {
+            Com_sprintf(outputString,0x400,"%s%c");
           }
-          Com_sprintf(param_1,0x400,"%s%c");
+          Com_sprintf(outputString,0x400,"%s%c");
         }
       }
     }
@@ -884,87 +895,87 @@ void __cdecl formatStringWithCommas(char *param_1,int param_2,ulong64 param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl LiveNews_EvaluateExpression(char *param_1,char *param_2,int param_3)
+bool __cdecl LiveNews_EvaluateExpression(char *expr,char *outputString,int stringLength)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float10 extraout_ST0;
-  ulong64 uVar4;
-  double dVar5;
-  undefined1 local_42c [1024];
+  ulong64 value_00;
+  double dVar4;
+  undefined1 compileBuffer [1024];
   uint local_2c;
-  ExpressionStatement local_28;
-  float local_18;
-  undefined1 local_11;
-  char *local_10;
-  undefined8 local_c;
+  ExpressionStatement statement;
+  float floatValue;
+  bool validNumber;
+  char *expressionResult;
+  undefined8 value;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((expr == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x310,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 == (char *)0x0) {
-    local_11 = 0;
+  if (expr == (char *)0x0) {
+    validNumber = false;
   }
   else {
-    if ((param_2 == (char *)0x0) &&
+    if ((outputString == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x314,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_2 == (char *)0x0) {
-      local_11 = 0;
+    if (outputString == (char *)0x0) {
+      validNumber = false;
     }
     else {
-      if ((param_3 == 0) &&
+      if ((stringLength == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_news.cpp",0x318,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (param_3 == 0) {
-        local_11 = 0;
+      if (stringLength == 0) {
+        validNumber = false;
       }
       else {
-        local_11 = 0;
-        local_18 = 0.0;
-        Expression_Parse(&param_1,&local_28,local_42c,0x400);
-        local_10 = GetExpressionResultString(0,(itemDef_s *)0x0,&local_28);
-        uVar4 = I_atoi64(local_10);
-        local_c._4_4_ = (int)(uVar4 >> 0x20);
-        local_c._0_4_ = (uint)uVar4;
-        local_c = uVar4;
-        if ((local_c._4_4_ == 0) && ((uint)local_c < 10)) {
-          dVar5 = atof(local_10);
-          local_18 = (float)dVar5;
-          if ((0.01 < local_18) && (local_18 < 10.0)) {
+        validNumber = false;
+        floatValue = 0.0;
+        Expression_Parse(&expr,&statement,compileBuffer,0x400);
+        expressionResult = GetExpressionResultString(0,(itemDef_s *)0x0,&statement);
+        value_00 = I_atoi64(expressionResult);
+        value._4_4_ = (int)(value_00 >> 0x20);
+        value._0_4_ = (uint)value_00;
+        value = value_00;
+        if ((value._4_4_ == 0) && ((uint)value < 10)) {
+          dVar4 = atof(expressionResult);
+          floatValue = (float)dVar4;
+          if ((0.01 < floatValue) && (floatValue < 10.0)) {
             floor();
-            if (local_18 == (float)extraout_ST0) {
-              Com_sprintf(param_2,param_3,"%llu");
+            if (floatValue == (float)extraout_ST0) {
+              Com_sprintf(outputString,stringLength,"%llu");
             }
             else {
-              Com_sprintf(param_2,param_3,"%.2f");
+              Com_sprintf(outputString,stringLength,"%.2f");
             }
-            local_11 = 1;
+            validNumber = true;
           }
         }
         else {
-          formatStringWithCommas(param_2,param_3,uVar4);
-          local_11 = 1;
+          formatStringWithCommas(outputString,stringLength,value_00);
+          validNumber = true;
         }
       }
     }
   }
-  return (bool)local_11;
+  return validNumber;
 }
 
 
@@ -972,44 +983,44 @@ bool __cdecl LiveNews_EvaluateExpression(char *param_1,char *param_2,int param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl LiveNews_EvaluateCounter(int param_1,char *param_2,int param_3)
+bool __cdecl LiveNews_EvaluateCounter(int row,char *outputString,int stringLength)
 
 {
   bool bVar1;
   char *pcVar2;
-  ConversionArguments *pCVar3;
-  int iVar4;
-  char local_444 [1028];
+  ConversionArguments *arguments;
+  int iVar3;
+  char expressionString [1028];
   uint local_40;
-  char *local_3c;
-  StringTable *local_38;
-  char *local_34;
-  int local_30;
-  ConversionArguments local_2c;
+  char *expression;
+  StringTable *countersTable;
+  char *stringRef;
+  int weight;
+  ConversionArguments convArgs;
   
   local_40 = __security_cookie ^ (uint)&stack0xfffffffc;
-  StringTable_GetAsset("mp/globalCounterRefs.csv",&local_38);
-  iVar4 = 1;
+  StringTable_GetAsset("mp/globalCounterRefs.csv",&countersTable);
+  iVar3 = 1;
   pcVar2 = va("%d");
-  pcVar2 = StringTable_Lookup(local_38,0,pcVar2,iVar4);
-  local_30 = atoi(pcVar2);
-  iVar4 = G_rand();
-  if (iVar4 % 100 + 1 <= local_30) {
-    iVar4 = 3;
+  pcVar2 = StringTable_Lookup(countersTable,0,pcVar2,iVar3);
+  weight = atoi(pcVar2);
+  iVar3 = G_rand();
+  if (iVar3 % 100 + 1 <= weight) {
+    iVar3 = 3;
     pcVar2 = va("%d");
-    local_3c = StringTable_Lookup(local_38,0,pcVar2,iVar4);
-    if (((local_3c != (char *)0x0) && (*local_3c != '\0')) &&
-       (bVar1 = LiveNews_EvaluateExpression(local_3c,local_444,0x400), bVar1)) {
-      iVar4 = 2;
+    expression = StringTable_Lookup(countersTable,0,pcVar2,iVar3);
+    if (((expression != (char *)0x0) && (*expression != '\0')) &&
+       (bVar1 = LiveNews_EvaluateExpression(expression,expressionString,0x400), bVar1)) {
+      iVar3 = 2;
       pcVar2 = va("%d");
-      local_34 = StringTable_Lookup(local_38,0,pcVar2,iVar4);
-      if ((local_34 != (char *)0x0) && (*local_34 != '\0')) {
+      stringRef = StringTable_Lookup(countersTable,0,pcVar2,iVar3);
+      if ((stringRef != (char *)0x0) && (*stringRef != '\0')) {
         if (&stack0x00000000 != (undefined1 *)0x444) {
-          local_2c.args[0] = local_444;
-          local_2c.argCount = 1;
-          pCVar3 = &local_2c;
-          pcVar2 = UI_SafeTranslateString(local_34);
-          UI_ReplaceConversions(pcVar2,pCVar3,param_2,param_3);
+          convArgs.args[0] = expressionString;
+          convArgs.argCount = 1;
+          arguments = &convArgs;
+          pcVar2 = UI_SafeTranslateString(stringRef);
+          UI_ReplaceConversions(pcVar2,arguments,outputString,stringLength);
           return true;
         }
         return false;
@@ -1026,30 +1037,31 @@ bool __cdecl LiveNews_EvaluateCounter(int param_1,char *param_2,int param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-bool __cdecl LiveNews_ProcessCounter(int param_1)
+bool __cdecl LiveNews_ProcessCounter(int counterID)
 
 {
   bool bVar1;
   int iVar2;
-  int local_114;
-  char local_10c [260];
+  int i;
+  int row;
+  char stringRef [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = G_rand();
   iVar2 = iVar2 % s_countersNewsState.total + 1;
-  local_114 = 0;
+  i = 0;
   while( true ) {
-    if (s_countersNewsState.numProcessed <= local_114) {
-      bVar1 = LiveNews_EvaluateCounter(iVar2,local_10c,0x100);
+    if (s_countersNewsState.numProcessed <= i) {
+      bVar1 = LiveNews_EvaluateCounter(iVar2,stringRef,0x100);
       if (bVar1) {
         s_countersNewsState.counters[s_countersNewsState.numProcessed] = iVar2;
-        LiveTicker_AddMessages(local_10c,TICKER_STREAM_EVENTS,false);
+        LiveTicker_AddMessages(stringRef,TICKER_STREAM_EVENTS,false);
       }
       return bVar1;
     }
-    if (iVar2 == s_countersNewsState.counters[local_114]) break;
-    local_114 = local_114 + 1;
+    if (iVar2 == s_countersNewsState.counters[i]) break;
+    i = i + 1;
   }
   return false;
 }
@@ -1059,7 +1071,7 @@ bool __cdecl LiveNews_ProcessCounter(int param_1)
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveNews_UpdateCountersTicker(int param_1)
+void __cdecl LiveNews_UpdateCountersTicker(int localControllerIndex)
 
 {
   bool bVar1;
@@ -1086,12 +1098,12 @@ void __cdecl LiveNews_InitCountersTicker(void)
 
 {
   int local_10;
-  StringTable *local_8;
+  StringTable *countersTable;
   
   s_countersNewsState.numProcessed = 0;
   s_countersNewsState.lastFlushTime = Sys_Milliseconds();
-  StringTable_GetAsset("mp/globalCounterRefs.csv",&local_8);
-  s_countersNewsState.total = StringTable_RowCount(local_8);
+  StringTable_GetAsset("mp/globalCounterRefs.csv",&countersTable);
+  s_countersNewsState.total = StringTable_RowCount(countersTable);
   local_10 = s_countersNewsState.total;
   if (9 < s_countersNewsState.total) {
     local_10 = 10;

@@ -28,67 +28,78 @@ void __cdecl IN_GamepadsMove(void)
 
 {
   bool bVar1;
-  uint uVar2;
-  int extraout_EAX;
-  int extraout_EAX_00;
-  int extraout_EAX_01;
-  int extraout_EAX_02;
-  int extraout_EAX_03;
-  int extraout_EAX_04;
-  uint local_2c;
-  int local_28;
-  bool local_15;
+  uint time_00;
+  int value;
+  int value_00;
+  int value_01;
+  int value_02;
+  int value_03;
+  int value_04;
+  int ry;
+  uint butIndex;
+  int controllerIndex;
+  int rightTrig;
+  uint countButtons;
+  int lx;
+  bool gpadPresent;
+  int time;
+  int rx;
+  int leftTrig;
+  int ly;
   
-  local_15 = false;
+  gpadPresent = false;
   GPad_UpdateAll();
-  uVar2 = Sys_Milliseconds();
-  for (local_28 = 0; local_28 < 1; local_28 = local_28 + 1) {
-    bVar1 = GPad_IsActive(local_28);
+  time_00 = Sys_Milliseconds();
+  for (controllerIndex = 0; controllerIndex < 1; controllerIndex = controllerIndex + 1) {
+    bVar1 = GPad_IsActive(controllerIndex);
     if (bVar1) {
-      local_15 = true;
-      GPad_GetStick(local_28,GPAD_INVALID);
+      gpadPresent = true;
+      GPad_GetStick(controllerIndex,GPAD_INVALID);
       _ftol2_sse();
-      GPad_GetStick(local_28,GPAD_LY);
+      GPad_GetStick(controllerIndex,GPAD_LY);
       _ftol2_sse();
-      GPad_GetStick(local_28,GPAD_RX);
+      GPad_GetStick(controllerIndex,GPAD_RX);
       _ftol2_sse();
-      GPad_GetStick(local_28,GPAD_RY);
+      GPad_GetStick(controllerIndex,GPAD_RY);
       _ftol2_sse();
-      GPad_GetButton(local_28,GPAD_L_TRIG);
+      GPad_GetButton(controllerIndex,GPAD_L_TRIG);
       _ftol2_sse();
-      GPad_GetButton(local_28,GPAD_R_TRIG);
+      GPad_GetButton(controllerIndex,GPAD_R_TRIG);
       _ftol2_sse();
-      CL_GamepadEvent(local_28,0,extraout_EAX_01,uVar2);
-      CL_GamepadEvent(local_28,1,extraout_EAX_02,uVar2);
-      CL_GamepadEvent(local_28,2,extraout_EAX,uVar2);
-      CL_GamepadEvent(local_28,3,extraout_EAX_00,uVar2);
-      CL_GamepadEvent(local_28,5,extraout_EAX_03,uVar2);
-      CL_GamepadEvent(local_28,4,extraout_EAX_04,uVar2);
-      for (local_2c = 0; local_2c < 0x10; local_2c = local_2c + 1) {
-        bVar1 = GPad_IsButtonPressed(local_28,buttonList[local_2c].padButton);
+      CL_GamepadEvent(controllerIndex,0,value_01,time_00);
+      CL_GamepadEvent(controllerIndex,1,value_02,time_00);
+      CL_GamepadEvent(controllerIndex,2,value,time_00);
+      CL_GamepadEvent(controllerIndex,3,value_00,time_00);
+      CL_GamepadEvent(controllerIndex,5,value_03,time_00);
+      CL_GamepadEvent(controllerIndex,4,value_04,time_00);
+      for (butIndex = 0; butIndex < 0x10; butIndex = butIndex + 1) {
+        bVar1 = GPad_IsButtonPressed(controllerIndex,buttonList[butIndex].padButton);
         if (bVar1) {
           CL_GamepadButtonEventForPort
-                    (local_28,buttonList[local_2c].code,1,uVar2,buttonList[local_2c].padButton);
+                    (controllerIndex,buttonList[butIndex].code,1,time_00,
+                     buttonList[butIndex].padButton);
         }
         else {
-          bVar1 = GPad_ButtonRequiresUpdates(local_28,buttonList[local_2c].padButton);
+          bVar1 = GPad_ButtonRequiresUpdates(controllerIndex,buttonList[butIndex].padButton);
           if (bVar1) {
             CL_GamepadButtonEventForPort
-                      (local_28,buttonList[local_2c].code,2,uVar2,buttonList[local_2c].padButton);
+                      (controllerIndex,buttonList[butIndex].code,2,time_00,
+                       buttonList[butIndex].padButton);
           }
           else {
-            bVar1 = GPad_IsButtonReleased(local_28,buttonList[local_2c].padButton);
+            bVar1 = GPad_IsButtonReleased(controllerIndex,buttonList[butIndex].padButton);
             if (bVar1) {
               CL_GamepadButtonEventForPort
-                        (local_28,buttonList[local_2c].code,0,uVar2,buttonList[local_2c].padButton);
+                        (controllerIndex,buttonList[butIndex].code,0,time_00,
+                         buttonList[butIndex].padButton);
             }
           }
         }
       }
     }
   }
-  if ((gpad_present != (dvar_s *)0x0) && ((gpad_present->current).enabled != local_15)) {
-    Dvar_SetBool(gpad_present,local_15);
+  if ((gpad_present != (dvar_s *)0x0) && ((gpad_present->current).enabled != gpadPresent)) {
+    Dvar_SetBool(gpad_present,gpadPresent);
   }
   return;
 }
@@ -99,11 +110,11 @@ void __cdecl IN_GamepadsMove(void)
 void __cdecl IN_RecenterMouse(void)
 
 {
-  tagRECT local_14;
+  tagRECT window_rect;
   
-  GetWindowRect((HWND)g_wv.hWnd,&local_14);
-  window_center_x = (local_14.right + local_14.left) / 2;
-  window_center_y = (local_14.top + local_14.bottom) / 2;
+  GetWindowRect((HWND)g_wv.hWnd,&window_rect);
+  window_center_x = (window_rect.right + window_rect.left) / 2;
+  window_center_y = (window_rect.top + window_rect.bottom) / 2;
   SetCursorPos(window_center_x,window_center_y);
   return;
 }
@@ -133,7 +144,7 @@ int __cdecl IN_IsForegroundWindow(void)
 
 // 007D8800  IN_ActivateMouse  (win32/win_input.cpp:329)
 
-void __cdecl IN_ActivateMouse(int param_1)
+void __cdecl IN_ActivateMouse(int force)
 
 {
   code *pcVar1;
@@ -151,7 +162,7 @@ void __cdecl IN_ActivateMouse(int param_1)
     if ((in_mouse->current).enabled == false) {
       s_wmv.mouseActive = false;
     }
-    else if ((param_1 != 0) || (s_wmv.mouseActive == false)) {
+    else if ((force != 0) || (s_wmv.mouseActive == false)) {
       iVar3 = IN_IsForegroundWindow();
       if (iVar3 == 0) {
         s_wmv.mouseActive = false;
@@ -199,21 +210,22 @@ void __cdecl IN_StartupMouse(void)
 
 // 007D8910  IN_MouseEvent  (win32/win_input.cpp:405)
 
-void __cdecl IN_MouseEvent(int param_1)
+void __cdecl IN_MouseEvent(int mstate)
 
 {
   uint uVar1;
-  int local_8;
+  int diff;
+  int button;
   
-  if ((s_wmv.mouseInitialized) && (uVar1 = param_1 ^ s_wmv.oldButtonState, uVar1 != 0)) {
+  if ((s_wmv.mouseInitialized) && (uVar1 = mstate ^ s_wmv.oldButtonState, uVar1 != 0)) {
     GamerProfile_WriteSettings(0);
-    for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if ((1 << ((byte)local_8 & 0x1f) & uVar1) != 0) {
-        Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,local_8 + 200,
-                     (uint)((1 << ((byte)local_8 & 0x1f) & param_1) != 0),0,(void *)0x0);
+    for (button = 0; button < 5; button = button + 1) {
+      if ((1 << ((byte)button & 0x1f) & uVar1) != 0) {
+        Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,button + 200,
+                     (uint)((1 << ((byte)button & 0x1f) & mstate) != 0),0,(void *)0x0);
       }
     }
-    s_wmv.oldButtonState = param_1;
+    s_wmv.oldButtonState = mstate;
   }
   return;
 }
@@ -221,32 +233,33 @@ void __cdecl IN_MouseEvent(int param_1)
 
 // 007D8F60  IN_ClampMouseMove  (win32/win_input.cpp:430)
 
-void __cdecl IN_ClampMouseMove(tagPOINT *param_1)
+void __cdecl IN_ClampMouseMove(tagPOINT *curPos)
 
 {
   bool bVar1;
-  tagRECT local_14;
+  bool isClamped;
+  tagRECT rc;
   
-  GetWindowRect((HWND)g_wv.hWnd,&local_14);
+  GetWindowRect((HWND)g_wv.hWnd,&rc);
   bVar1 = false;
-  if (param_1->x < local_14.left) {
-    param_1->x = local_14.left;
+  if (curPos->x < rc.left) {
+    curPos->x = rc.left;
     bVar1 = true;
   }
-  else if (local_14.right <= param_1->x) {
-    param_1->x = local_14.right + -1;
+  else if (rc.right <= curPos->x) {
+    curPos->x = rc.right + -1;
     bVar1 = true;
   }
-  if (param_1->y < local_14.top) {
-    param_1->y = local_14.top;
+  if (curPos->y < rc.top) {
+    curPos->y = rc.top;
     bVar1 = true;
   }
-  else if (local_14.bottom <= param_1->y) {
-    param_1->y = local_14.bottom + -1;
+  else if (rc.bottom <= curPos->y) {
+    curPos->y = rc.bottom + -1;
     bVar1 = true;
   }
   if (bVar1) {
-    SetCursorPos(param_1->x,param_1->y);
+    SetCursorPos(curPos->x,curPos->y);
   }
   return;
 }
@@ -254,14 +267,17 @@ void __cdecl IN_ClampMouseMove(tagPOINT *param_1)
 
 // 007D8E20  IN_MouseMove  (win32/win_input.cpp:470)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl IN_MouseMove(void)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  tagPOINT local_10;
-  int local_8;
+  int dx;
+  tagPOINT curPos;
+  int dy;
   
   if ((!s_wmv.mouseInitialized) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_input.cpp",0x1db,0,
@@ -279,20 +295,20 @@ void __cdecl IN_MouseMove(void)
   }
   iVar3 = IN_IsForegroundWindow();
   if (iVar3 != 0) {
-    GetCursorPos(&local_10);
+    GetCursorPos(&curPos);
     if ((r_fullscreen->current).enabled != false) {
-      IN_ClampMouseMove((tagPOINT *)&local_10);
+      IN_ClampMouseMove((tagPOINT *)&curPos);
     }
-    iVar3 = local_10.x - s_wmv.oldPos.x;
-    local_8 = local_10.y - s_wmv.oldPos.y;
-    if ((iVar3 != 0) || (local_8 != 0)) {
+    iVar3 = curPos.x - s_wmv.oldPos.x;
+    dy = curPos.y - s_wmv.oldPos.y;
+    if ((iVar3 != 0) || (dy != 0)) {
       GamerProfile_WriteSettings(0);
     }
-    s_wmv.oldPos.x = local_10.x;
-    s_wmv.oldPos.y = local_10.y;
-    ScreenToClient((HWND)g_wv.hWnd,&local_10);
-    g_wv.recenterMouse = CL_MouseEvent(local_10.x,local_10.y,iVar3,local_8);
-    if ((g_wv.recenterMouse != 0) && ((iVar3 != 0 || (local_8 != 0)))) {
+    s_wmv.oldPos.x = curPos.x;
+    s_wmv.oldPos.y = curPos.y;
+    ScreenToClient((HWND)g_wv.hWnd,&curPos);
+    g_wv.recenterMouse = CL_MouseEvent(curPos.x,curPos.y,iVar3,dy);
+    if ((g_wv.recenterMouse != 0) && ((iVar3 != 0 || (dy != 0)))) {
       IN_RecenterMouse();
       s_wmv.oldPos.x = window_center_x;
       s_wmv.oldPos.y = window_center_y;
@@ -304,33 +320,34 @@ void __cdecl IN_MouseMove(void)
 
 // 007D89B0  IN_SetCursorPos  (win32/win_input.cpp:506)
 
-void __cdecl IN_SetCursorPos(int param_1,int param_2)
+void __cdecl IN_SetCursorPos(int x,int y)
 
 {
-  tagPOINT local_c;
+  tagPOINT curPos;
   
-  local_c.x = param_1;
-  local_c.y = param_2;
-  ClientToScreen((HWND)g_wv.hWnd,&local_c);
-  SetCursorPos(local_c.x,local_c.y);
-  s_wmv.oldPos.x = local_c.x;
-  s_wmv.oldPos.y = local_c.y;
+  curPos.x = x;
+  curPos.y = y;
+  ClientToScreen((HWND)g_wv.hWnd,&curPos);
+  SetCursorPos(curPos.x,curPos.y);
+  s_wmv.oldPos.x = curPos.x;
+  s_wmv.oldPos.y = curPos.y;
   return;
 }
 
 
 // 007D8A00  IN_ShowSystemCursor  (win32/win_input.cpp:522)
 
-void __cdecl IN_ShowSystemCursor(int param_1)
+void __cdecl IN_ShowSystemCursor(int show)
 
 {
   int iVar1;
-  undefined4 local_c;
+  int actualShow;
+  int desiredShow;
   
-  g_showCursor = param_1;
-  iVar1 = (param_1 != 0) - 1;
-  for (local_c = ShowCursor(param_1); local_c != iVar1;
-      local_c = ShowCursor((uint)(local_c < iVar1))) {
+  g_showCursor = show;
+  iVar1 = (show != 0) - 1;
+  for (actualShow = ShowCursor(show); actualShow != iVar1;
+      actualShow = ShowCursor((uint)(actualShow < iVar1))) {
   }
   return;
 }
@@ -371,11 +388,11 @@ void __cdecl IN_Init(void)
 
 // 007D8AB0  IN_Activate  (win32/win_input.cpp:597)
 
-void __cdecl IN_Activate(int param_1)
+void __cdecl IN_Activate(int active)
 
 {
-  in_appactive = param_1;
-  if (param_1 == 0) {
+  in_appactive = active;
+  if (active == 0) {
     IN_DeactivateMouse();
   }
   else {

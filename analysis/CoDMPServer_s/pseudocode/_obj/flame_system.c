@@ -331,10 +331,10 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
 {
   flameGeneric_s *pfVar1;
   renderQuad_t *prVar2;
-  int iVar3;
+  int numQuads;
+  float *pfVar3;
   float *pfVar4;
-  float *pfVar5;
-  flameGeneric_s **ppfVar6;
+  flameGeneric_s **ppfVar5;
   flameGeneric_s **local_4044;
   int local_4040;
   int local_403c;
@@ -361,66 +361,66 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
   local_401c = *(undefined4 *)(param_1 + 0x4314c);
   local_4018 = *(undefined4 *)(param_1 + 0x43150);
   local_4014 = *(undefined4 *)(param_1 + 0x43154);
-  ppfVar6 = param_3 + param_4 + -1;
+  ppfVar5 = param_3 + param_4 + -1;
   local_4040 = 0;
-  local_4044 = ppfVar6;
+  local_4044 = ppfVar5;
   do {
-    iVar3 = 0;
+    numQuads = 0;
     local_403c = 0;
     if (local_4040 < param_4) {
       if (3 < param_4 - local_4040) {
         prVar2 = local_4010;
-        pfVar4 = &local_4010[0].rotation;
-        pfVar5 = &local_4010[0].radius;
+        pfVar3 = &local_4010[0].rotation;
+        pfVar4 = &local_4010[0].radius;
         local_4038 = &local_4010[0].lifeFrac;
         do {
-          iVar3 = local_403c;
+          numQuads = local_403c;
           if (0x1ff < local_403c) goto LAB_00713e0c;
-          pfVar1 = *ppfVar6;
+          pfVar1 = *ppfVar5;
           prVar2->pos[0] = *(float *)pfVar1;
           prVar2->pos[1] = *(float *)(pfVar1 + 4);
           prVar2->pos[2] = *(float *)(pfVar1 + 8);
-          *pfVar4 = *(float *)(pfVar1 + 0x2c);
-          *pfVar5 = *(float *)(pfVar1 + 0x34);
-          iVar3 = local_403c + 1;
+          *pfVar3 = *(float *)(pfVar1 + 0x2c);
+          *pfVar4 = *(float *)(pfVar1 + 0x34);
+          numQuads = local_403c + 1;
           *local_4038 = (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
                         (float)((int)*(float *)(pfVar1 + 0x44) - (int)*(float *)(pfVar1 + 0x40));
-          if (0x1ff < iVar3) {
+          if (0x1ff < numQuads) {
             local_4040 = local_4040 + 1;
-            ppfVar6 = local_4044 + -1;
-            local_4044 = ppfVar6;
+            ppfVar5 = local_4044 + -1;
+            local_4044 = ppfVar5;
             goto LAB_00713e0c;
           }
           pfVar1 = local_4044[-1];
           prVar2[1].pos[0] = *(float *)pfVar1;
           prVar2[1].pos[1] = *(float *)(pfVar1 + 4);
           prVar2[1].pos[2] = *(float *)(pfVar1 + 8);
-          pfVar4[8] = *(float *)(pfVar1 + 0x2c);
-          pfVar5[8] = *(float *)(pfVar1 + 0x34);
-          iVar3 = local_403c + 2;
+          pfVar3[8] = *(float *)(pfVar1 + 0x2c);
+          pfVar4[8] = *(float *)(pfVar1 + 0x34);
+          numQuads = local_403c + 2;
           local_4038[8] =
                (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
                (float)((int)*(float *)(pfVar1 + 0x44) - (int)*(float *)(pfVar1 + 0x40));
-          if (0x1ff < iVar3) {
+          if (0x1ff < numQuads) {
             local_4040 = local_4040 + 2;
-            ppfVar6 = local_4044 + -2;
-            local_4044 = ppfVar6;
+            ppfVar5 = local_4044 + -2;
+            local_4044 = ppfVar5;
             goto LAB_00713e0c;
           }
           pfVar1 = local_4044[-2];
           prVar2[2].pos[0] = *(float *)pfVar1;
           prVar2[2].pos[1] = *(float *)(pfVar1 + 4);
           prVar2[2].pos[2] = *(float *)(pfVar1 + 8);
-          pfVar4[0x10] = *(float *)(pfVar1 + 0x2c);
-          pfVar5[0x10] = *(float *)(pfVar1 + 0x34);
-          iVar3 = local_403c + 3;
+          pfVar3[0x10] = *(float *)(pfVar1 + 0x2c);
+          pfVar4[0x10] = *(float *)(pfVar1 + 0x34);
+          numQuads = local_403c + 3;
           local_4038[0x10] =
                (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
                (float)((int)*(float *)(pfVar1 + 0x44) - (int)*(float *)(pfVar1 + 0x40));
-          if (0x1ff < iVar3) {
+          if (0x1ff < numQuads) {
             local_4040 = local_4040 + 3;
-            ppfVar6 = local_4044 + -3;
-            local_4044 = ppfVar6;
+            ppfVar5 = local_4044 + -3;
+            local_4044 = ppfVar5;
             goto LAB_00713e0c;
           }
           pfVar1 = local_4044[-3];
@@ -428,44 +428,44 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
           prVar2[3].pos[0] = *(float *)pfVar1;
           prVar2[3].pos[1] = *(float *)(pfVar1 + 4);
           prVar2[3].pos[2] = *(float *)(pfVar1 + 8);
-          pfVar4[0x18] = *(float *)(pfVar1 + 0x2c);
-          pfVar5[0x18] = *(float *)(pfVar1 + 0x34);
+          pfVar3[0x18] = *(float *)(pfVar1 + 0x2c);
+          pfVar4[0x18] = *(float *)(pfVar1 + 0x34);
           local_4038[0x18] =
                (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
                (float)((int)*(float *)(pfVar1 + 0x44) - (int)*(float *)(pfVar1 + 0x40));
-          iVar3 = local_403c + 4;
-          ppfVar6 = local_4044 + -4;
+          numQuads = local_403c + 4;
+          ppfVar5 = local_4044 + -4;
           prVar2 = prVar2 + 4;
+          pfVar3 = pfVar3 + 0x20;
           pfVar4 = pfVar4 + 0x20;
-          pfVar5 = pfVar5 + 0x20;
-          local_4044 = ppfVar6;
-          local_403c = iVar3;
+          local_4044 = ppfVar5;
+          local_403c = numQuads;
           local_4038 = local_4038 + 0x20;
         } while (local_4040 < param_4 + -3);
       }
       if (local_4040 < param_4) {
-        pfVar4 = local_4010[iVar3].pos + 2;
+        pfVar3 = local_4010[numQuads].pos + 2;
         do {
-          local_4044 = ppfVar6;
-          if (0x1ff < iVar3) break;
-          pfVar1 = *ppfVar6;
-          iVar3 = iVar3 + 1;
-          ((renderQuad_t *)(pfVar4 + -2))->pos[0] = *(float *)pfVar1;
-          ppfVar6 = ppfVar6 + -1;
-          pfVar4[-1] = *(float *)(pfVar1 + 4);
-          *pfVar4 = *(float *)(pfVar1 + 8);
-          pfVar4[2] = *(float *)(pfVar1 + 0x2c);
-          pfVar4[3] = *(float *)(pfVar1 + 0x34);
+          local_4044 = ppfVar5;
+          if (0x1ff < numQuads) break;
+          pfVar1 = *ppfVar5;
+          numQuads = numQuads + 1;
+          ((renderQuad_t *)(pfVar3 + -2))->pos[0] = *(float *)pfVar1;
+          ppfVar5 = ppfVar5 + -1;
+          pfVar3[-1] = *(float *)(pfVar1 + 4);
+          *pfVar3 = *(float *)(pfVar1 + 8);
+          pfVar3[2] = *(float *)(pfVar1 + 0x2c);
+          pfVar3[3] = *(float *)(pfVar1 + 0x34);
           local_4040 = local_4040 + 1;
-          pfVar4[4] = (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
+          pfVar3[4] = (float)((int)*(float *)(pfVar1 + 0x3c) - (int)*(float *)(pfVar1 + 0x40)) /
                       (float)((int)*(float *)(pfVar1 + 0x44) - (int)*(float *)(pfVar1 + 0x40));
-          pfVar4 = pfVar4 + 8;
-          local_4044 = ppfVar6;
+          pfVar3 = pfVar3 + 8;
+          local_4044 = ppfVar5;
         } while (local_4040 < param_4);
       }
     }
 LAB_00713e0c:
-    R_GenerateQuadStampCodeMeshVertsArray(param_2,local_4010,iVar3,(float (*) [3])&local_4034);
+    R_GenerateQuadStampCodeMeshVertsArray(param_2,local_4010,numQuads,(float (*) [3])&local_4034);
     if (param_4 <= local_4040) {
       return;
     }

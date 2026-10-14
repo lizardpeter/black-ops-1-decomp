@@ -161,33 +161,33 @@ int __cdecl Sys_DirectoryHasContents(char *param_1)
 
 {
   int in_EAX;
+  int hFile;
   int iVar1;
-  int iVar2;
   int unaff_ESI;
   char *unaff_EDI;
   _finddata64i32_t _Stack_22c;
   char acStack_104 [260];
   
   Com_sprintf("%s\\*",in_EAX,unaff_EDI);
-  iVar1 = _findfirst64i32(acStack_104,&_Stack_22c);
-  if (iVar1 != -1) {
+  hFile = _findfirst64i32(acStack_104,&_Stack_22c);
+  if (hFile != -1) {
     do {
       if (((byte)_Stack_22c.attrib & 0x10) == 0) {
 LAB_006ad5d5:
-        _findclose(iVar1);
+        _findclose(hFile);
         return 1;
       }
-      iVar2 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
-      if (iVar2 != 0) {
-        iVar2 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
-        if (iVar2 != 0) {
-          iVar2 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
-          if (iVar2 != 0) goto LAB_006ad5d5;
+      iVar1 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
+      if (iVar1 != 0) {
+        iVar1 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
+        if (iVar1 != 0) {
+          iVar1 = I_strnicmp(_Stack_22c.name,unaff_EDI,unaff_ESI);
+          if (iVar1 != 0) goto LAB_006ad5d5;
         }
       }
-      iVar2 = _findnext64i32(iVar1,&_Stack_22c);
-    } while (iVar2 != -1);
-    _findclose(iVar1);
+      iVar1 = _findnext64i32(hFile,&_Stack_22c);
+    } while (iVar1 != -1);
+    _findclose(hFile);
   }
   return 0;
 }

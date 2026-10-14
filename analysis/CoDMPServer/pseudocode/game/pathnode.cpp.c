@@ -119,6 +119,7 @@ phys_simple_allocator<pathnode_parent_t>::allocate(phys_simple_allocator<pathnod
 
 {
   pathnode_parent_t *ppVar1;
+  void *slot;
   
   ppVar1 = PMM_ALLOC(0x18,4);
   if (ppVar1 == (pathnode_parent_t *)0x0) {
@@ -133,15 +134,15 @@ phys_simple_allocator<pathnode_parent_t>::allocate(phys_simple_allocator<pathnod
 
 // 00921EF0  Path_ReadOnly  (game/pathnode.cpp:686)
 
-void __cdecl Path_ReadOnly(int param_1)
+void __cdecl Path_ReadOnly(int offset)
 
 {
-  char *pcVar1;
-  bool bVar2;
+  char *error;
+  bool force_terminal;
   
-  bVar2 = false;
-  pcVar1 = va("pathnode property \'%s\' is read-only");
-  Scr_Error(pcVar1,bVar2);
+  force_terminal = false;
+  error = va("pathnode property \'%s\' is read-only");
+  Scr_Error(error,force_terminal);
   return;
 }
 
@@ -150,13 +151,13 @@ void __cdecl Path_ReadOnly(int param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_GetType(pathnode_t *param_1,int param_2)
+void __cdecl Path_GetType(pathnode_t *node,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (((int)(param_1->constant).type < 0) || (0x14 < (int)(param_1->constant).type)) {
+  if (((int)(node->constant).type < 0) || (0x14 < (int)(node->constant).type)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2c7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -164,20 +165,20 @@ void __cdecl Path_GetType(pathnode_t *param_1,int param_2)
       return;
     }
   }
-  Scr_AddString(*(char **)(&nodeStringTable + (param_1->constant).type * 4),SCRIPTINSTANCE_SERVER);
+  Scr_AddString(*(char **)(&nodeStringTable + (node->constant).type * 4),SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00921E80  Scr_SetPathnodeField  (game/pathnode.cpp:717)
 
-void __cdecl Scr_SetPathnodeField(int param_1,int param_2)
+void __cdecl Scr_SetPathnodeField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (10 < (uint)param_2) {
+  if (10 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2ce,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -185,7 +186,7 @@ void __cdecl Scr_SetPathnodeField(int param_1,int param_2)
       return;
     }
   }
-  if (0x1fff < (uint)param_1) {
+  if (0x1fff < (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2cf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -193,7 +194,7 @@ void __cdecl Scr_SetPathnodeField(int param_1,int param_2)
       return;
     }
   }
-  Path_ReadOnly(param_2);
+  Path_ReadOnly(offset);
   return;
 }
 
@@ -202,15 +203,17 @@ void __cdecl Scr_SetPathnodeField(int param_1,int param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_GetPathnodeField(int param_1,int param_2)
+void __cdecl Scr_GetPathnodeField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  pathnode_t *ppVar3;
-  int iVar4;
+  pathnode_t *b;
+  int iVar3;
+  pathnode_t *node;
+  node_field_t *f;
   
-  if (10 < (uint)param_2) {
+  if (10 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2da,0,
                              "offset doesn\'t index ARRAY_COUNT( fields ) - 1\n\t%i not in [0, %i)")
     ;
@@ -220,7 +223,7 @@ void __cdecl Scr_GetPathnodeField(int param_1,int param_2)
       return;
     }
   }
-  if (g_path.actualNodeCount <= (uint)param_1) {
+  if (g_path.actualNodeCount <= (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2db,0,
                              "entnum doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -229,15 +232,15 @@ void __cdecl Scr_GetPathnodeField(int param_1,int param_2)
       return;
     }
   }
-  iVar4 = param_2 * 0x14;
-  ppVar3 = (gameWorldCurrent->path).nodes + param_1;
-  if (*(int *)((int)fields + iVar4 + 0x10) == 0) {
+  iVar3 = offset * 0x14;
+  b = (gameWorldCurrent->path).nodes + entnum;
+  if (*(int *)((int)fields + iVar3 + 0x10) == 0) {
     GScr_GetGenericField
-              ((uchar *)ppVar3,*(fieldtype_t *)((int)fields + iVar4 + 0xc),
-               *(int *)((int)fields + iVar4 + 4),0);
+              ((uchar *)b,*(fieldtype_t *)((int)fields + iVar3 + 0xc),
+               *(int *)((int)fields + iVar3 + 4),0);
   }
   else {
-    (**(code **)((int)fields + iVar4 + 0x10))(ppVar3,param_2);
+    (**(code **)((int)fields + iVar3 + 0x10))(b,offset);
   }
   return;
 }
@@ -249,15 +252,16 @@ void __cdecl Scr_GetPathnodeField(int param_1,int param_2)
 
 void __cdecl
 Path_CallFunctionForNodes
-          (scriptInstance_t param_1,_func___cdecl_void_scriptInstance_t_pathnode_t_ptr *param_2)
+          (scriptInstance_t inst,_func___cdecl_void_scriptInstance_t_pathnode_t_ptr *function)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_c;
+  uint nodeIndex;
+  uint nodeCount;
   
-  if (param_2 == (_func___cdecl_void_scriptInstance_t_pathnode_t_ptr *)0x0) {
+  if (function == (_func___cdecl_void_scriptInstance_t_pathnode_t_ptr *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x2fc,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -266,8 +270,8 @@ Path_CallFunctionForNodes
     }
   }
   uVar1 = (gameWorldCurrent->path).nodeCount;
-  for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
-    (*param_2)(param_1,(gameWorldCurrent->path).nodes + local_c);
+  for (nodeIndex = 0; nodeIndex < uVar1; nodeIndex = nodeIndex + 1) {
+    (*function)(inst,(gameWorldCurrent->path).nodes + nodeIndex);
   }
   return;
 }
@@ -277,28 +281,28 @@ Path_CallFunctionForNodes
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_SetPathnodeScriptVariable(char *param_1,char *param_2,pathnode_t *param_3)
+void __cdecl G_SetPathnodeScriptVariable(char *key,char *value,pathnode_t *ent)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  int iVar4;
-  char *pcVar5;
-  double dVar6;
-  scriptInstance_t sVar7;
-  int local_8;
+  uint index_00;
+  int value_00;
+  char *fmt;
+  double dVar3;
+  scriptInstance_t sVar4;
+  uint index;
+  int type;
   
-  uVar3 = Scr_FindField(param_1,&local_8,SCRIPTINSTANCE_SERVER);
-  if (uVar3 != 0) {
-    switch(local_8) {
+  index_00 = Scr_FindField(key,&type,SCRIPTINSTANCE_SERVER);
+  if (index_00 != 0) {
+    switch(type) {
     case 2:
-      Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
+      Scr_AddString(value,SCRIPTINSTANCE_SERVER);
       break;
     default:
-      pcVar5 = va("G_SetPathnodeScriptVariable: bad case %d");
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x321,0,
-                               pcVar5);
+      fmt = va("G_SetPathnodeScriptVariable: bad case %d");
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x321,0,fmt);
       if (bVar2) {
         return;
       }
@@ -310,16 +314,16 @@ void __cdecl G_SetPathnodeScriptVariable(char *param_1,char *param_2,pathnode_t 
                 ,false);
       break;
     case 5:
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      dVar6 = atof(param_2);
-      Scr_AddFloat((float)dVar6,sVar7);
+      sVar4 = SCRIPTINSTANCE_SERVER;
+      dVar3 = atof(value);
+      Scr_AddFloat((float)dVar3,sVar4);
       break;
     case 6:
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      iVar4 = atoi(param_2);
-      Scr_AddInt(iVar4,sVar7);
+      sVar4 = SCRIPTINSTANCE_SERVER;
+      value_00 = atoi(value);
+      Scr_AddInt(value_00,sVar4);
     }
-    GScr_SetDynamicPathnodeField(param_3,uVar3);
+    GScr_SetDynamicPathnodeField(ent,index_00);
   }
   return;
 }
@@ -329,33 +333,34 @@ void __cdecl G_SetPathnodeScriptVariable(char *param_1,char *param_2,pathnode_t 
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl GScr_SetDynamicPathnodeField(pathnode_t *param_1,uint param_2)
+void __cdecl GScr_SetDynamicPathnodeField(pathnode_t *node,uint index)
 
 {
-  int iVar1;
-  uint uVar2;
-  scriptInstance_t sVar3;
-  int iVar4;
+  int entnum;
+  uint classnum;
+  scriptInstance_t inst;
+  int localClientNum;
   
-  iVar4 = 0;
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar2 = 2;
-  iVar1 = Path_ConvertNodeToIndex(param_1);
-  Scr_SetDynamicEntityField(iVar1,uVar2,param_2,sVar3,iVar4);
+  localClientNum = 0;
+  inst = SCRIPTINSTANCE_SERVER;
+  classnum = 2;
+  entnum = Path_ConvertNodeToIndex(node);
+  Scr_SetDynamicEntityField(entnum,classnum,index,inst,localClientNum);
   return;
 }
 
 
 // 00923C40  PathNode_ClearStringField  (game/pathnode.cpp:817)
 
-void __cdecl PathNode_ClearStringField(ushort *param_1)
+void __cdecl PathNode_ClearStringField(ushort *destScrString)
 
 {
   uint uVar1;
+  uint user;
   
-  if ((*param_1 != 0) &&
-     (uVar1 = SL_GetUser((uint)*param_1,SCRIPTINSTANCE_SERVER), (uVar1 & 1) != 0)) {
-    *param_1 = 0;
+  if ((*destScrString != 0) &&
+     (uVar1 = SL_GetUser((uint)*destScrString,SCRIPTINSTANCE_SERVER), (uVar1 & 1) != 0)) {
+    *destScrString = 0;
   }
   return;
 }
@@ -363,35 +368,36 @@ void __cdecl PathNode_ClearStringField(ushort *param_1)
 
 // 00923280  PathNode_UpdateStringField  (game/pathnode.cpp:830)
 
-void __cdecl PathNode_UpdateStringField(char *param_1,ushort *param_2,char *param_3,char *param_4)
+void __cdecl PathNode_UpdateStringField(char *destKey,ushort *destScrString,char *key,char *value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  uint uVar5;
+  char *s0;
+  uint uVar4;
+  char *destString;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((key == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x341,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((destKey == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x342,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = I_stricmp(param_3,param_1);
+  iVar3 = I_stricmp(key,destKey);
   if ((iVar3 == 0) &&
-     ((pcVar4 = SL_ConvertToString((uint)*param_2,SCRIPTINSTANCE_SERVER), pcVar4 == (char *)0x0 ||
-      (iVar3 = I_stricmp(pcVar4,param_4), iVar3 != 0)))) {
-    uVar5 = SL_GetString(param_4,1,SCRIPTINSTANCE_SERVER);
-    *param_2 = (ushort)uVar5;
+     ((s0 = SL_ConvertToString((uint)*destScrString,SCRIPTINSTANCE_SERVER), s0 == (char *)0x0 ||
+      (iVar3 = I_stricmp(s0,value), iVar3 != 0)))) {
+    uVar4 = SL_GetString(value,1,SCRIPTINSTANCE_SERVER);
+    *destScrString = (ushort)uVar4;
   }
   return;
 }
@@ -399,35 +405,36 @@ void __cdecl PathNode_UpdateStringField(char *param_1,ushort *param_2,char *para
 
 // 00923340  PathNode_UpdateFloatField  (game/pathnode.cpp:849)
 
-void __cdecl PathNode_UpdateFloatField(char *param_1,float *param_2,char *param_3,char *param_4)
+void __cdecl PathNode_UpdateFloatField(char *destKey,float *destFloat,char *key,char *value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float in_ECX;
+  float floatValue;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((key == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x354,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((destKey == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x355,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = I_stricmp(param_3,param_1);
+  iVar3 = I_stricmp(key,destKey);
   if (iVar3 == 0) {
-    iVar3 = sscanf(param_4,"%f");
+    iVar3 = sscanf(value,"%f");
     if (iVar3 != 1) {
       Com_Error(ERR_DROP,"Malformed \'%s\' float field for node \'%s\'\n");
     }
-    *param_2 = in_ECX;
+    *destFloat = in_ECX;
   }
   return;
 }
@@ -437,18 +444,18 @@ void __cdecl PathNode_UpdateFloatField(char *param_1,float *param_2,char *param_
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl PathNode_OriginMatches(char *param_1,float *param_2)
+void __cdecl PathNode_OriginMatches(char *value,float *nodeOrigin)
 
 {
   int iVar1;
-  float local_10;
+  float origin;
   float local_c;
   
-  iVar1 = sscanf(param_1,"%f %f %f");
+  iVar1 = sscanf(value,"%f %f %f");
   if (iVar1 != 3) {
     Com_Error(ERR_DROP,"Malformed origin for path node \'%s\'\n");
   }
-  if ((local_10 != *param_2) || (local_c != param_2[1])) {
+  if ((origin != *nodeOrigin) || (local_c != nodeOrigin[1])) {
     g_path.originErrors = g_path.originErrors + 1;
   }
   return;
@@ -459,34 +466,32 @@ void __cdecl PathNode_OriginMatches(char *param_1,float *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_ParsePathnodeScriptField(char *param_1,char *param_2,pathnode_t *param_3)
+void __cdecl G_ParsePathnodeScriptField(char *key,char *value,pathnode_t *node)
 
 {
   int iVar1;
-  node_field_t *local_8;
+  node_field_t *f;
   
   if ((useFastFile->current).enabled != false) {
-    PathNode_UpdateStringField("target",&(param_3->constant).target,param_1,param_2);
-    PathNode_UpdateStringField("targetname",&(param_3->constant).targetname,param_1,param_2);
-    PathNode_UpdateStringField
-              ("script_linkname",&(param_3->constant).script_linkName,param_1,param_2);
-    PathNode_UpdateStringField
-              ("script_noteworthy",&(param_3->constant).script_noteworthy,param_1,param_2);
-    PathNode_UpdateFloatField("radius",&(param_3->constant).fRadius,param_1,param_2);
-    iVar1 = I_stricmp(param_1,"origin");
+    PathNode_UpdateStringField("target",&(node->constant).target,key,value);
+    PathNode_UpdateStringField("targetname",&(node->constant).targetname,key,value);
+    PathNode_UpdateStringField("script_linkname",&(node->constant).script_linkName,key,value);
+    PathNode_UpdateStringField("script_noteworthy",&(node->constant).script_noteworthy,key,value);
+    PathNode_UpdateFloatField("radius",&(node->constant).fRadius,key,value);
+    iVar1 = I_stricmp(key,"origin");
     if (iVar1 == 0) {
-      PathNode_OriginMatches(param_2,(param_3->constant).vOrigin);
+      PathNode_OriginMatches(value,(node->constant).vOrigin);
     }
   }
-  local_8 = fields;
+  f = fields;
   while( true ) {
-    if (local_8->name == (char *)0x0) {
-      G_SetPathnodeScriptVariable(param_1,param_2,param_3);
+    if (f->name == (char *)0x0) {
+      G_SetPathnodeScriptVariable(key,value,node);
       return;
     }
-    iVar1 = I_stricmp(local_8->name,param_1);
+    iVar1 = I_stricmp(f->name,key);
     if (iVar1 == 0) break;
-    local_8 = (node_field_t *)&local_8[1].type;
+    f = (node_field_t *)&f[1].type;
   }
   return;
 }
@@ -496,14 +501,14 @@ void __cdecl G_ParsePathnodeScriptField(char *param_1,char *param_2,pathnode_t *
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_ParsePathnodeScriptFields(pathnode_t *param_1,SpawnVar *param_2)
+void __cdecl G_ParsePathnodeScriptFields(pathnode_t *node,SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if ((param_2 == (SpawnVar *)0x0) || (param_2->spawnVarsValid == false)) {
+  if ((spawnVar == (SpawnVar *)0x0) || (spawnVar->spawnVarsValid == false)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x393,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -511,9 +516,8 @@ void __cdecl G_ParsePathnodeScriptFields(pathnode_t *param_1,SpawnVar *param_2)
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_2->numSpawnVars; local_8 = local_8 + 1) {
-    G_ParsePathnodeScriptField
-              (param_2->spawnVars[local_8][0],param_2->spawnVars[local_8][1],param_1);
+  for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+    G_ParsePathnodeScriptField(spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1],node);
   }
   return;
 }
@@ -536,7 +540,7 @@ void __cdecl _dynamic_initializer_for__g_parented_pathnode_list_map__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl parented_pathnode_list_update(gentity_s *param_1,phys_mat44 *param_2,float *param_3)
+void __cdecl parented_pathnode_list_update(gentity_s *gent,phys_mat44 *mat,float *__formal)
 
 {
   phys_vec3 *ppVar1;
@@ -548,7 +552,7 @@ void __cdecl parented_pathnode_list_update(gentity_s *param_1,phys_mat44 *param_
   uint local_14;
   
   if ((enable_moving_paths->current).integer == 1) {
-    local_14 = (param_1->s).number;
+    local_14 = (gent->s).number;
     local_18 = g_parented_pathnode_list_map.m_tree_root;
     while ((local_18 != (generic_avl_map_node_t *)0x0 && (local_14 != local_18->m_avl_key))) {
       if (local_14 < local_18->m_avl_key) {
@@ -562,7 +566,7 @@ void __cdecl parented_pathnode_list_update(gentity_s *param_1,phys_mat44 *param_
     if (local_18 != (generic_avl_map_node_t *)0x0) {
       for (local_20 = local_18->m_data; local_20 != (float *)0x0; local_20 = (float *)local_20[5]) {
         Phys_Vec3ToNitrousVec(local_20,&local_30);
-        ppVar1 = phys_full_multiply(&local_40,param_2,&local_30);
+        ppVar1 = phys_full_multiply(&local_40,mat,&local_30);
         local_30.x = ppVar1->x;
         local_30.y = ppVar1->y;
         local_30.z = ppVar1->z;
@@ -618,14 +622,16 @@ void __cdecl _dynamic_initializer_for__g_pathnode_parent_allocator__(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl setup_pathnode_parent(pathnode_t *param_1,int param_2,float *param_3)
+void __cdecl setup_pathnode_parent(pathnode_t *node,int entnum,float *origin_loc)
 
 {
   code *pcVar1;
   bool bVar2;
-  pathnode_parent_t *ppVar3;
+  pathnode_parent_t *data;
+  uint avl_key;
+  pathnode_parent_t *node_parent;
   
-  if (((param_1->constant).spawnflags & 0x100) == 0) {
+  if (((node->constant).spawnflags & 0x100) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x4c1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -633,8 +639,8 @@ void __cdecl setup_pathnode_parent(pathnode_t *param_1,int param_2,float *param_
       return;
     }
   }
-  ppVar3 = phys_simple_allocator<pathnode_parent_t>::allocate(&g_pathnode_parent_allocator);
-  if (ppVar3 == (pathnode_parent_t *)0x0) {
+  data = phys_simple_allocator<pathnode_parent_t>::allocate(&g_pathnode_parent_allocator);
+  if (data == (pathnode_parent_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x4c3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -642,13 +648,13 @@ void __cdecl setup_pathnode_parent(pathnode_t *param_1,int param_2,float *param_
       return;
     }
   }
-  ppVar3->origin_loc[0] = *param_3;
-  ppVar3->origin_loc[1] = param_3[1];
-  ppVar3->origin_loc[2] = param_3[2];
-  ppVar3->entnum = param_2;
-  ppVar3->m_node = param_1;
-  ppVar3->m_next = (pathnode_parent_t *)0x0;
-  generic_avl_map_add(&g_pathnode_parent_map,ppVar3,(uint)param_1);
+  data->origin_loc[0] = *origin_loc;
+  data->origin_loc[1] = origin_loc[1];
+  data->origin_loc[2] = origin_loc[2];
+  data->entnum = entnum;
+  data->m_node = node;
+  data->m_next = (pathnode_parent_t *)0x0;
+  generic_avl_map_add(&g_pathnode_parent_map,data,(uint)node);
   return;
 }
 
@@ -657,11 +663,13 @@ void __cdecl setup_pathnode_parent(pathnode_t *param_1,int param_2,float *param_
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-pathnode_parent_t * __cdecl get_pathnode_parent(pathnode_t *param_1)
+pathnode_parent_t * __cdecl get_pathnode_parent(pathnode_t *node)
 
 {
   pathnode_parent_t *ppVar1;
   generic_avl_map_node_t *local_10;
+  generic_avl_map_node_t *gamn;
+  uint avl_key;
   
   if (first_time_called != 0) {
     node_parent_world.origin_loc[0] = 0.0;
@@ -672,14 +680,14 @@ pathnode_parent_t * __cdecl get_pathnode_parent(pathnode_t *param_1)
     node_parent_world.m_next = (pathnode_parent_t *)0x0;
     first_time_called = 0;
   }
-  if (((param_1->constant).spawnflags & 0x100) == 0) {
+  if (((node->constant).spawnflags & 0x100) == 0) {
     ppVar1 = &node_parent_world;
   }
   else {
     local_10 = g_pathnode_parent_map.m_tree_root;
-    while ((local_10 != (generic_avl_map_node_t *)0x0 &&
-           (param_1 != (pathnode_t *)local_10->m_avl_key))) {
-      if (param_1 < (pathnode_t *)local_10->m_avl_key) {
+    while ((local_10 != (generic_avl_map_node_t *)0x0 && (node != (pathnode_t *)local_10->m_avl_key)
+           )) {
+      if (node < (pathnode_t *)local_10->m_avl_key) {
         local_10 = (local_10->m_avl_node_info).m_left;
       }
       else {
@@ -704,12 +712,12 @@ pathnode_parent_t * __cdecl get_pathnode_parent(pathnode_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl is_moving_entity(gentity_s *param_1)
+bool __cdecl is_moving_entity(gentity_s *gent)
 
 {
   bool bVar1;
   
-  if (((param_1->s).eType == 6) || ((param_1->s).eType == 0xe)) {
+  if (((gent->s).eType == 6) || ((gent->s).eType == 0xe)) {
     bVar1 = true;
   }
   else {
@@ -727,7 +735,7 @@ bool __cdecl is_moving_entity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl node_droptofloor(pathnode_t *param_1)
+void __cdecl node_droptofloor(pathnode_t *node)
 
 {
   bool bVar1;
@@ -768,10 +776,10 @@ void __cdecl node_droptofloor(pathnode_t *param_1)
   local_4c.v[2] = 0.0;
   local_4c.v[3] = 0.0;
   col_context_t::col_context_t(&local_74);
-  local_78 = (param_1->constant).vOrigin;
+  local_78 = (node->constant).vOrigin;
   local_a8[3] = *local_78;
-  local_98 = (param_1->constant).vOrigin[1];
-  local_7c = (param_1->constant).vOrigin[2];
+  local_98 = (node->constant).vOrigin[1];
+  local_7c = (node->constant).vOrigin[2];
   local_88 = local_7c - 256.0;
   local_94 = local_7c + 1.0;
   local_a8[0] = -15.0;
@@ -790,7 +798,7 @@ void __cdecl node_droptofloor(pathnode_t *param_1)
     if (local_3c == 1.0) {
       printf("ERROR: Pathnode (%s) at (%g %g %g) is floating\n");
       Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) is floating\n");
-      (param_1->constant).type = NODE_BADNODE;
+      (node->constant).type = NODE_BADNODE;
     }
     else {
       Vec3Lerp(local_a8 + 3,&local_90,local_3c,local_a8 + 3);
@@ -799,11 +807,11 @@ void __cdecl node_droptofloor(pathnode_t *param_1)
       G_TraceCapsule((trace_t *)&local_4c,local_a8 + 3,actorMins,actorMaxs,local_a8 + 3,0x3ff,
                      0x820011,&local_74);
       if ((local_21 == '\0') && (local_22 == '\0')) {
-        local_c0 = (param_1->constant).vOrigin;
+        local_c0 = (node->constant).vOrigin;
         *local_c0 = local_a8[3];
-        (param_1->constant).vOrigin[1] = local_98;
-        (param_1->constant).vOrigin[2] = local_94;
-        if ((((param_1->constant).spawnflags & 0x100) != 0) &&
+        (node->constant).vOrigin[1] = local_98;
+        (node->constant).vOrigin[2] = local_94;
+        if ((((node->constant).spawnflags & 0x100) != 0) &&
            (((local_b8 == 1 && (local_bc < 0x3fe)) && ((enable_moving_paths->current).integer == 1))
            )) {
           local_c4 = (uint)local_bc;
@@ -813,27 +821,27 @@ void __cdecl node_droptofloor(pathnode_t *param_1)
             AnglesToAxis((local_c8->r).currentAngles,(float (*) [3])local_ec);
             Phys_AxisToNitrousMat((float (*) [3])local_ec,&local_130);
             Phys_Vec3ToNitrousVec((local_c8->r).currentOrigin,&local_130.w);
-            Phys_Vec3ToNitrousVec((param_1->constant).vOrigin,&local_140);
+            Phys_Vec3ToNitrousVec((node->constant).vOrigin,&local_140);
             local_154 = phys_full_inv_multiply(&local_150,&local_130,&local_140);
             local_140.x = local_154->x;
             local_140.y = local_154->y;
             local_140.z = local_154->z;
             Phys_NitrousVecToVec3(&local_140,local_160);
-            setup_pathnode_parent(param_1,local_c4,local_160);
+            setup_pathnode_parent(node,local_c4,local_160);
           }
         }
       }
       else {
         printf("ERROR: Pathnode (%s) at (%g %g %g) is in solid\n");
         Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) is in solid\n");
-        (param_1->constant).type = NODE_BADNODE;
+        (node->constant).type = NODE_BADNODE;
       }
     }
   }
   else {
     printf("ERROR: Pathnode (%s) at (%g %g %g) is in solid\n");
     Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) is in solid\n");
-    (param_1->constant).type = NODE_BADNODE;
+    (node->constant).type = NODE_BADNODE;
   }
   return;
 }
@@ -870,15 +878,15 @@ void __cdecl G_UpdateTrackExtraNodes(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_InitPathBaseNode(pathbasenode_t *param_1,pathnode_t *param_2)
+void __cdecl G_InitPathBaseNode(pathbasenode_t *pbnode,pathnode_t *pnode)
 
 {
-  param_1->vOrigin[0] = (param_2->constant).vOrigin[0];
-  param_1->vOrigin[1] = (param_2->constant).vOrigin[1];
-  param_1->vOrigin[2] = (param_2->constant).vOrigin[2];
-  param_1->type = 1 << ((byte)(param_2->constant).type & 0x1f);
-  if (((param_2->constant).spawnflags & 1) != 0) {
-    param_1->type = param_1->type | 0x200000;
+  pbnode->vOrigin[0] = (pnode->constant).vOrigin[0];
+  pbnode->vOrigin[1] = (pnode->constant).vOrigin[1];
+  pbnode->vOrigin[2] = (pnode->constant).vOrigin[2];
+  pbnode->type = 1 << ((byte)(pnode->constant).type & 0x1f);
+  if (((pnode->constant).spawnflags & 1) != 0) {
+    pbnode->type = pbnode->type | 0x200000;
   }
   return;
 }
@@ -888,12 +896,12 @@ void __cdecl G_InitPathBaseNode(pathbasenode_t *param_1,pathnode_t *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_DropPathNodeToFloor(uint param_1)
+void __cdecl G_DropPathNodeToFloor(uint nodeIndex)
 
 {
-  node_droptofloor((gameWorldCurrent->path).nodes + param_1);
-  G_InitPathBaseNode((gameWorldCurrent->path).basenodes + param_1,
-                     (gameWorldCurrent->path).nodes + param_1);
+  node_droptofloor((gameWorldCurrent->path).nodes + nodeIndex);
+  G_InitPathBaseNode((gameWorldCurrent->path).basenodes + nodeIndex,
+                     (gameWorldCurrent->path).nodes + nodeIndex);
   return;
 }
 
@@ -901,8 +909,8 @@ void __cdecl G_DropPathNodeToFloor(uint param_1)
 // 00922AB0  G_DropPathnodesToFloor  (game/pathnode.cpp:1461)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -912,12 +920,14 @@ void __cdecl G_DropPathnodesToFloor(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_1010;
+  pathnode_t *node_2;
+  pathnode_t *node;
+  uint nodeIndex;
   int aiStack_100c [1024];
-  int local_c;
-  gentity_s *local_8;
+  int entIndex;
+  gentity_s *ent;
   
-  local_8 = (gentity_s *)0x922abd;
+  ent = (gentity_s *)0x922abd;
   if (((gameWorldCurrent->path).nodeCount < g_path.actualNodeCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x5bb,0,"%s")
      , !bVar2)) {
@@ -925,32 +935,30 @@ void __cdecl G_DropPathnodesToFloor(void)
     (*pcVar1)();
     return;
   }
-  for (local_c = 0; local_c < level.num_entities; local_c = local_c + 1) {
-    local_8 = level.gentities + local_c;
-    if ((local_8->r).inuse != '\0') {
-      aiStack_100c[local_c] = (local_8->r).contents;
-      iVar3 = Path_IsDynamicBlockingEntity(local_8);
+  for (entIndex = 0; entIndex < level.num_entities; entIndex = entIndex + 1) {
+    ent = level.gentities + entIndex;
+    if ((ent->r).inuse != '\0') {
+      aiStack_100c[entIndex] = (ent->r).contents;
+      iVar3 = Path_IsDynamicBlockingEntity(ent);
       if (iVar3 != 0) {
-        (local_8->r).contents = 0;
+        (ent->r).contents = 0;
       }
     }
   }
-  for (local_1010 = 0; local_1010 < (gameWorldCurrent->path).nodeCount; local_1010 = local_1010 + 1)
-  {
-    if (((gameWorldCurrent->path).nodes[local_1010].constant.spawnflags & 0x100) == 0) {
-      G_DropPathNodeToFloor(local_1010);
+  for (nodeIndex = 0; nodeIndex < (gameWorldCurrent->path).nodeCount; nodeIndex = nodeIndex + 1) {
+    if (((gameWorldCurrent->path).nodes[nodeIndex].constant.spawnflags & 0x100) == 0) {
+      G_DropPathNodeToFloor(nodeIndex);
     }
   }
-  for (local_c = 0; local_c < level.num_entities; local_c = local_c + 1) {
-    local_8 = level.gentities + local_c;
-    if ((local_8->r).inuse != '\0') {
-      (local_8->r).contents = aiStack_100c[local_c];
+  for (entIndex = 0; entIndex < level.num_entities; entIndex = entIndex + 1) {
+    ent = level.gentities + entIndex;
+    if ((ent->r).inuse != '\0') {
+      (ent->r).contents = aiStack_100c[entIndex];
     }
   }
-  for (local_1010 = 0; local_1010 < (gameWorldCurrent->path).nodeCount; local_1010 = local_1010 + 1)
-  {
-    if (((gameWorldCurrent->path).nodes[local_1010].constant.spawnflags & 0x100) != 0) {
-      G_DropPathNodeToFloor(local_1010);
+  for (nodeIndex = 0; nodeIndex < (gameWorldCurrent->path).nodeCount; nodeIndex = nodeIndex + 1) {
+    if (((gameWorldCurrent->path).nodes[nodeIndex].constant.spawnflags & 0x100) != 0) {
+      G_DropPathNodeToFloor(nodeIndex);
     }
   }
   return;
@@ -961,77 +969,78 @@ void __cdecl G_DropPathnodesToFloor(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_SpawnPathnodeDynamic(SpawnVar *param_1)
+void __cdecl G_SpawnPathnodeDynamic(SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  void *pvVar4;
-  float local_18;
+  char *name;
+  void *pvVar3;
+  char *animscript;
+  float forward;
   float local_14;
-  nodeType local_c;
-  pathnode_t *local_8;
+  nodeType type;
+  pathnode_t *loadNode;
   
   if ((g_spawnai->current).enabled != false) {
     if (g_path.actualNodeCount < 0x2000) {
       if (((useFastFile->current).enabled == false) ||
          (g_path.actualNodeCount != (gameWorldCurrent->path).nodeCount)) {
-        local_8 = (gameWorldCurrent->path).nodes + g_path.actualNodeCount;
+        loadNode = (gameWorldCurrent->path).nodes + g_path.actualNodeCount;
         g_path.actualNodeCount = g_path.actualNodeCount + 1;
         if ((gameWorldCurrent->path).nodeCount < g_path.actualNodeCount) {
-          (local_8->dynamic).pOwner.number = 0;
-          (local_8->dynamic).pOwner.infoIndex = 0;
-          (local_8->dynamic).iFreeTime = 0;
-          (local_8->dynamic).iValidTime[0] = 0;
-          (local_8->dynamic).iValidTime[1] = 0;
-          (local_8->dynamic).iValidTime[2] = 0;
-          (local_8->dynamic).inPlayerLOSTime = 0;
-          (local_8->dynamic).wLinkCount = 0;
-          (local_8->dynamic).wOverlapCount = 0;
-          (local_8->dynamic).turretEntNumber = 0;
-          (local_8->dynamic).userCount = 0;
-          (local_8->transient).iSearchFrame = 0;
-          (local_8->transient).pNextOpen = (pathnode_t *)0x0;
-          (local_8->transient).pPrevOpen = (pathnode_t *)0x0;
-          (local_8->transient).pParent = (pathnode_t *)0x0;
-          (local_8->transient).fCost = 0.0;
-          (local_8->transient).fHeuristic = 0.0;
-          (local_8->transient).costFactor = 0.0;
+          (loadNode->dynamic).pOwner.number = 0;
+          (loadNode->dynamic).pOwner.infoIndex = 0;
+          (loadNode->dynamic).iFreeTime = 0;
+          (loadNode->dynamic).iValidTime[0] = 0;
+          (loadNode->dynamic).iValidTime[1] = 0;
+          (loadNode->dynamic).iValidTime[2] = 0;
+          (loadNode->dynamic).inPlayerLOSTime = 0;
+          (loadNode->dynamic).wLinkCount = 0;
+          (loadNode->dynamic).wOverlapCount = 0;
+          (loadNode->dynamic).turretEntNumber = 0;
+          (loadNode->dynamic).userCount = 0;
+          (loadNode->transient).iSearchFrame = 0;
+          (loadNode->transient).pNextOpen = (pathnode_t *)0x0;
+          (loadNode->transient).pPrevOpen = (pathnode_t *)0x0;
+          (loadNode->transient).pParent = (pathnode_t *)0x0;
+          (loadNode->transient).fCost = 0.0;
+          (loadNode->transient).fHeuristic = 0.0;
+          (loadNode->transient).costFactor = 0.0;
         }
-        G_ParsePathnodeScriptFields(local_8,param_1);
-        YawVectors((local_8->constant).fAngle,&local_18,(float *)0x0);
-        (local_8->constant).forward[0] = local_18;
-        (local_8->constant).forward[1] = local_14;
-        local_c = (local_8->constant).type;
-        if ((0x14 < (int)local_c) &&
+        G_ParsePathnodeScriptFields(loadNode,spawnVar);
+        YawVectors((loadNode->constant).fAngle,&forward,(float *)0x0);
+        (loadNode->constant).forward[0] = forward;
+        (loadNode->constant).forward[1] = local_14;
+        type = (loadNode->constant).type;
+        if ((0x14 < (int)type) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x60b,0
                                      ,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_c == NODE_NEGOTIATION_BEGIN) {
-          if ((local_8->constant).animscript == 0) {
+        if (type == NODE_NEGOTIATION_BEGIN) {
+          if ((loadNode->constant).animscript == 0) {
             printf("ERROR: Pathnode (%s) at (%g %g %g) has no animscript specified\n");
             Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) has no animscript specified\n");
-            (local_8->constant).type = NODE_BADNODE;
+            (loadNode->constant).type = NODE_BADNODE;
           }
           else if (((g_connectpaths->current).integer < 2) &&
                   ((r_reflectionProbeGenerate->current).enabled == false)) {
-            pcVar3 = SL_ConvertToString((uint)(local_8->constant).animscript,SCRIPTINSTANCE_SERVER);
-            pvVar4 = Hunk_FindDataForFile(1,pcVar3);
-            (local_8->constant).animscriptfunc = (int)pvVar4;
-            if ((local_8->constant).animscriptfunc == 0) {
+            name = SL_ConvertToString((uint)(loadNode->constant).animscript,SCRIPTINSTANCE_SERVER);
+            pvVar3 = Hunk_FindDataForFile(1,name);
+            (loadNode->constant).animscriptfunc = (int)pvVar3;
+            if ((loadNode->constant).animscriptfunc == 0) {
               printf("ERROR: Pathnode (%s) at (%g %g %g) cannot find animscript \'%s\'\n");
               Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) cannot find animscript \'%s\'\n")
               ;
-              (local_8->constant).type = NODE_BADNODE;
+              (loadNode->constant).type = NODE_BADNODE;
             }
           }
         }
-        else if (local_c == NODE_TURRET) {
-          (local_8->dynamic).turretEntNumber = -1;
+        else if (type == NODE_TURRET) {
+          (loadNode->dynamic).turretEntNumber = -1;
         }
       }
       else {
@@ -1054,14 +1063,14 @@ void __cdecl GScr_AddFieldsForPathnode(void)
 {
   code *pcVar1;
   bool bVar2;
-  node_field_t *local_8;
+  node_field_t *f;
   
-  local_8 = fields;
+  f = fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if ((int)&local_8[-0x12c5b4].type / 0x14 != ((int)&local_8[-0x12c5b4].type / 0x14 & 0xffffU)) {
+    if ((int)&f[-0x12c5b4].type / 0x14 != ((int)&f[-0x12c5b4].type / 0x14 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x644,0,"%s")
       ;
       if (!bVar2) {
@@ -1070,9 +1079,8 @@ void __cdecl GScr_AddFieldsForPathnode(void)
         return;
       }
     }
-    Scr_AddClassField(2,local_8->name,(int)&local_8[-0x12c5b4].type / 0x14 & 0xffff,
-                      SCRIPTINSTANCE_SERVER);
-    local_8 = (node_field_t *)&local_8[1].type;
+    Scr_AddClassField(2,f->name,(int)&f[-0x12c5b4].type / 0x14 & 0xffff,SCRIPTINSTANCE_SERVER);
+    f = (node_field_t *)&f[1].type;
   } while( true );
 }
 
@@ -1081,19 +1089,19 @@ void __cdecl GScr_AddFieldsForPathnode(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_FreePathnode(pathnode_t *param_1)
+void __cdecl Scr_FreePathnode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
+  uint classnum;
+  scriptInstance_t inst;
   
   if ((useFastFile->current).enabled == false) {
-    Scr_FreePathnodeFields(param_1);
+    Scr_FreePathnodeFields(node);
   }
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x650,0,"%s");
     if (!bVar2) {
@@ -1102,10 +1110,10 @@ void __cdecl Scr_FreePathnode(pathnode_t *param_1)
       return;
     }
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  uVar4 = 2;
-  iVar3 = Path_ConvertNodeToIndex(param_1);
-  Scr_FreeEntityNum(iVar3,uVar4,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  classnum = 2;
+  iVar3 = Path_ConvertNodeToIndex(node);
+  Scr_FreeEntityNum(iVar3,classnum,inst);
   return;
 }
 
@@ -1114,19 +1122,19 @@ void __cdecl Scr_FreePathnode(pathnode_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_AddPathnode(pathnode_t *param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddPathnode(pathnode_t *node,scriptInstance_t inst)
 
 {
-  int iVar1;
-  uint uVar2;
-  scriptInstance_t sVar3;
-  int iVar4;
+  int entnum;
+  uint classnum;
+  scriptInstance_t inst_00;
+  int clientNum;
   
-  iVar4 = 0;
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar2 = 2;
-  iVar1 = Path_ConvertNodeToIndex(param_1);
-  Scr_AddEntityNum(iVar1,uVar2,sVar3,iVar4);
+  clientNum = 0;
+  inst_00 = SCRIPTINSTANCE_SERVER;
+  classnum = 2;
+  entnum = Path_ConvertNodeToIndex(node);
+  Scr_AddEntityNum(entnum,classnum,inst_00,clientNum);
   return;
 }
 
@@ -1141,17 +1149,23 @@ void __cdecl Scr_GetNode(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
+  char *name_00;
+  uint uVar4;
   uint uVar5;
-  uint uVar6;
-  pathnode_t *local_24;
-  pathnode_t *local_20;
+  pathnode_t *node;
+  pathnode_t *result;
+  uchar *b;
+  uint name;
+  int offset;
+  char *key;
+  node_field_t *f;
+  uint value;
   
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  pcVar4 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  uVar5 = Scr_GetOffset(2,pcVar4,SCRIPTINSTANCE_SERVER);
-  if (-1 < (int)uVar5) {
-    if ((10 < uVar5) &&
+  name_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  uVar4 = Scr_GetOffset(2,name_00,SCRIPTINSTANCE_SERVER);
+  if (-1 < (int)uVar4) {
+    if ((10 < uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x678,0,
                                  "offset doesn\'t index ARRAY_COUNT( fields ) - 1\n\t%i not in [0, %i)"
                                 ), !bVar2)) {
@@ -1159,25 +1173,24 @@ void __cdecl Scr_GetNode(void)
       (*pcVar1)();
       return;
     }
-    if (*(int *)((int)fields + uVar5 * 0x14 + 0xc) != 5) {
+    if (*(int *)((int)fields + uVar4 * 0x14 + 0xc) != 5) {
       Scr_ParamError(1,"key is not internally a string",SCRIPTINSTANCE_SERVER);
     }
-    local_20 = (pathnode_t *)0x0;
-    for (local_24 = (gameWorldCurrent->path).nodes;
-        local_24 != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; local_24 = local_24 + 1
-        ) {
-      uVar6 = (uint)*(ushort *)
-                     ((int)(local_24->constant).vOrigin +
-                     *(int *)((int)fields + uVar5 * 0x14 + 4) + -0x14);
-      if ((uVar6 != 0) && (uVar6 == uVar3)) {
-        if (local_20 != (pathnode_t *)0x0) {
+    result = (pathnode_t *)0x0;
+    for (node = (gameWorldCurrent->path).nodes;
+        node != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; node = node + 1) {
+      uVar5 = (uint)*(ushort *)
+                     ((int)(node->constant).vOrigin +
+                     *(int *)((int)fields + uVar4 * 0x14 + 4) + -0x14);
+      if ((uVar5 != 0) && (uVar5 == uVar3)) {
+        if (result != (pathnode_t *)0x0) {
           Scr_Error("getnode used with more than one node",false);
         }
-        local_20 = local_24;
+        result = node;
       }
     }
-    if (local_20 != (pathnode_t *)0x0) {
-      Scr_AddPathnode(local_20,SCRIPTINSTANCE_SERVER);
+    if (result != (pathnode_t *)0x0) {
+      Scr_AddPathnode(result,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -1197,16 +1210,22 @@ void __cdecl Scr_GetNodeArray(void)
   char *pcVar4;
   uint uVar5;
   uint uVar6;
-  scriptInstance_t sVar7;
-  pathnode_t *local_20;
+  scriptInstance_t inst;
+  pathnode_t *node;
+  uchar *b;
+  uint name;
+  int offset;
+  char *key;
+  node_field_t *f;
+  uint value;
   
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   pcVar4 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   uVar5 = Scr_GetOffset(2,pcVar4,SCRIPTINSTANCE_SERVER);
   if ((int)uVar5 < 0) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar4 = va("key \'%s\' does not internally belong to nodes");
-    Scr_ParamError(1,pcVar4,sVar7);
+    Scr_ParamError(1,pcVar4,inst);
   }
   if ((10 < uVar5) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x6ad,0,
@@ -1220,14 +1239,13 @@ void __cdecl Scr_GetNodeArray(void)
     Scr_ParamError(1,"key is not internally a string",SCRIPTINSTANCE_SERVER);
   }
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_20 = (gameWorldCurrent->path).nodes;
-      local_20 != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; local_20 = local_20 + 1)
-  {
+  for (node = (gameWorldCurrent->path).nodes;
+      node != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; node = node + 1) {
     uVar6 = (uint)*(ushort *)
-                   ((int)(local_20->constant).vOrigin +
-                   *(int *)((int)fields + uVar5 * 0x14 + 4) + -0x14);
+                   ((int)(node->constant).vOrigin + *(int *)((int)fields + uVar5 * 0x14 + 4) + -0x14
+                   );
     if ((uVar6 != 0) && (uVar6 == uVar3)) {
-      Scr_AddPathnode(local_20,SCRIPTINSTANCE_SERVER);
+      Scr_AddPathnode(node,SCRIPTINSTANCE_SERVER);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -1242,11 +1260,11 @@ void __cdecl Scr_GetNodeArray(void)
 void __cdecl Scr_GetAllNodes(void)
 
 {
-  uint local_8;
+  uint i;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < g_path.actualNodeCount; local_8 = local_8 + 1) {
-    Scr_AddPathnode((gameWorldCurrent->path).nodes + local_8,SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+    Scr_AddPathnode((gameWorldCurrent->path).nodes + i,SCRIPTINSTANCE_SERVER);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -1257,7 +1275,7 @@ void __cdecl Scr_GetAllNodes(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-pathnode_t * __cdecl Scr_GetPathnode(uint param_1,scriptInstance_t param_2)
+pathnode_t * __cdecl Scr_GetPathnode(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -1267,16 +1285,16 @@ pathnode_t * __cdecl Scr_GetPathnode(uint param_1,scriptInstance_t param_2)
   undefined1 local_1c [10];
   uint local_12;
   undefined2 local_e;
-  undefined4 local_c;
+  undefined4 entref;
   undefined2 local_8;
   
-  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)param_1);
+  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)index);
   local_12 = *sVar4._0_4_;
   local_e = (undefined2)sVar4._0_4_[1];
-  local_c._2_2_ = (short)(local_12 >> 0x10);
-  local_c = local_12;
+  entref._2_2_ = (short)(local_12 >> 0x10);
+  entref = local_12;
   local_8 = local_e;
-  if (local_c._2_2_ == 2) {
+  if (entref._2_2_ == 2) {
     if (g_path.actualNodeCount <= (local_12 & 0xffff)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x774,0,
                                "entref.entnum doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
@@ -1287,10 +1305,10 @@ pathnode_t * __cdecl Scr_GetPathnode(uint param_1,scriptInstance_t param_2)
         return ppVar3;
       }
     }
-    ppVar3 = (gameWorldCurrent->path).nodes + (local_c & 0xffff);
+    ppVar3 = (gameWorldCurrent->path).nodes + (entref & 0xffff);
   }
   else {
-    Scr_ParamError(param_1,"not a pathnode",param_2);
+    Scr_ParamError(index,"not a pathnode",inst);
     ppVar3 = (pathnode_t *)0x0;
   }
   return ppVar3;
@@ -1301,20 +1319,20 @@ pathnode_t * __cdecl Scr_GetPathnode(uint param_1,scriptInstance_t param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Path_CompareNodesIncreasing(pathsort_t *param_1,pathsort_t *param_2)
+bool __cdecl Path_CompareNodesIncreasing(pathsort_t *ps1,pathsort_t *ps2)
 
 {
   bool local_8;
   
-  if ((param_1->node->dynamic).wLinkCount == 0) {
-    if ((param_2->node->dynamic).wLinkCount != 0) {
+  if ((ps1->node->dynamic).wLinkCount == 0) {
+    if ((ps2->node->dynamic).wLinkCount != 0) {
       return false;
     }
   }
-  else if ((param_2->node->dynamic).wLinkCount == 0) {
+  else if ((ps2->node->dynamic).wLinkCount == 0) {
     return true;
   }
-  local_8 = param_1->metric <= param_2->metric && param_2->metric != param_1->metric;
+  local_8 = ps1->metric <= ps2->metric && ps2->metric != ps1->metric;
   return local_8;
 }
 
@@ -1323,15 +1341,16 @@ bool __cdecl Path_CompareNodesIncreasing(pathsort_t *param_1,pathsort_t *param_2
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_ConvertNodeToIndex(pathnode_t *param_1)
+int __cdecl Path_ConvertNodeToIndex(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  uint nodeIndex;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x79f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1339,7 +1358,7 @@ int __cdecl Path_ConvertNodeToIndex(pathnode_t *param_1)
       return iVar3;
     }
   }
-  uVar4 = (int)param_1 - (int)(gameWorldCurrent->path).nodes >> 7;
+  uVar4 = (int)node - (int)(gameWorldCurrent->path).nodes >> 7;
   if (g_path.actualNodeCount <= uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x7a2,0,
                              "nodeIndex doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)")
@@ -1358,14 +1377,14 @@ int __cdecl Path_ConvertNodeToIndex(pathnode_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-pathnode_t * __cdecl Path_ConvertIndexToNode(int param_1)
+pathnode_t * __cdecl Path_ConvertIndexToNode(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   pathnode_t *ppVar3;
   
-  if (g_path.actualNodeCount <= (uint)param_1) {
+  if (g_path.actualNodeCount <= (uint)index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x7a9,0,
                              "index doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1374,7 +1393,7 @@ pathnode_t * __cdecl Path_ConvertIndexToNode(int param_1)
       return ppVar3;
     }
   }
-  return (gameWorldCurrent->path).nodes + param_1;
+  return (gameWorldCurrent->path).nodes + index;
 }
 
 
@@ -1383,7 +1402,7 @@ pathnode_t * __cdecl Path_ConvertIndexToNode(int param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_Init(int param_1)
+void __cdecl Path_Init(int restart)
 
 {
   code *pcVar1;
@@ -1394,8 +1413,8 @@ void __cdecl Path_Init(int param_1)
     pcVar3 = Dvar_GetString("mapname");
     pcVar3 = Com_GetHunkStringCopy(pcVar3);
     gameWorldCurrent->name = pcVar3;
-    Path_InitStatic(param_1);
-    if (param_1 == 0) {
+    Path_InitStatic(restart);
+    if (restart == 0) {
       Path_CreateNodes();
     }
   }
@@ -1422,23 +1441,23 @@ void __cdecl Path_Init(int param_1)
 void __cdecl Path_Shutdown(void)
 
 {
-  pathnode_t *local_8;
+  pathnode_t *node;
   
   Path_ShutdownBadPlaces();
   if ((useFastFile->current).enabled != false) {
-    for (local_8 = (gameWorldCurrent->path).nodes;
-        local_8 != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; local_8 = local_8 + 1) {
-      PathNode_ClearStringField(&(local_8->constant).target);
-      PathNode_ClearStringField(&(local_8->constant).targetname);
-      PathNode_ClearStringField(&(local_8->constant).script_linkName);
-      PathNode_ClearStringField(&(local_8->constant).script_noteworthy);
+    for (node = (gameWorldCurrent->path).nodes;
+        node != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; node = node + 1) {
+      PathNode_ClearStringField(&(node->constant).target);
+      PathNode_ClearStringField(&(node->constant).targetname);
+      PathNode_ClearStringField(&(node->constant).script_linkName);
+      PathNode_ClearStringField(&(node->constant).script_noteworthy);
     }
     g_path.extraNodes = 0;
     g_path.originErrors = 0;
   }
-  for (local_8 = (gameWorldCurrent->path).nodes;
-      local_8 != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; local_8 = local_8 + 1) {
-    Scr_FreePathnode(local_8);
+  for (node = (gameWorldCurrent->path).nodes;
+      node != (gameWorldCurrent->path).nodes + g_path.actualNodeCount; node = node + 1) {
+    Scr_FreePathnode(node);
   }
   g_path.actualNodeCount = 0;
   debugPath = (path_t *)0x0;
@@ -1453,14 +1472,14 @@ void __cdecl Path_Shutdown(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl NodeVisCacheEntry(int param_1,int param_2)
+int __cdecl NodeVisCacheEntry(int i,int j)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 <= param_1) {
+  if (j <= i) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x7f1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1468,7 +1487,7 @@ int __cdecl NodeVisCacheEntry(int param_1,int param_2)
       return iVar3;
     }
   }
-  return param_1 * g_path.actualNodeCount + param_2;
+  return i * g_path.actualNodeCount + j;
 }
 
 
@@ -1476,14 +1495,14 @@ int __cdecl NodeVisCacheEntry(int param_1,int param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl ExpandedNodeVisCacheEntry(int param_1,int param_2)
+int __cdecl ExpandedNodeVisCacheEntry(int i,int j)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 <= param_2) {
+  if (i <= j) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x7f8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1491,7 +1510,7 @@ int __cdecl ExpandedNodeVisCacheEntry(int param_1,int param_2)
       return iVar3;
     }
   }
-  return (param_1 + -1) * g_path.actualNodeCount + param_2;
+  return (i + -1) * g_path.actualNodeCount + j;
 }
 
 
@@ -1499,21 +1518,22 @@ int __cdecl ExpandedNodeVisCacheEntry(int param_1,int param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_NodesInCylinder_process(pathnode_t *param_1)
+void __cdecl Path_NodesInCylinder_process(pathnode_t *pnode)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float fVar4;
+  float distSq;
   
-  fVar3 = (param_1->constant).vOrigin[0] - g_path.circle.origin[0];
-  fVar4 = (param_1->constant).vOrigin[1] - g_path.circle.origin[1];
+  fVar3 = (pnode->constant).vOrigin[0] - g_path.circle.origin[0];
+  fVar4 = (pnode->constant).vOrigin[1] - g_path.circle.origin[1];
   fVar3 = fVar3 * fVar3 + fVar4 * fVar4;
   if ((((fVar3 <= g_path.circle.maxDistSq) &&
-       ((1 << ((byte)(param_1->constant).type & 0x1f) & g_path.circle.typeFlags) != 0)) &&
-      ((((param_1->constant).spawnflags & 1) == 0 || ((g_path.circle.typeFlags & 1U) != 0)))) &&
-     (fVar4 = (param_1->constant).vOrigin[2] - g_path.circle.origin[2],
+       ((1 << ((byte)(pnode->constant).type & 0x1f) & g_path.circle.typeFlags) != 0)) &&
+      ((((pnode->constant).spawnflags & 1) == 0 || ((g_path.circle.typeFlags & 1U) != 0)))) &&
+     (fVar4 = (pnode->constant).vOrigin[2] - g_path.circle.origin[2],
      fVar4 * fVar4 <= g_path.circle.maxHeightSq)) {
     if ((g_path.circle.maxNodes <= g_path.circle.nodeCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x847,0,
@@ -1522,7 +1542,7 @@ void __cdecl Path_NodesInCylinder_process(pathnode_t *param_1)
       (*pcVar1)();
       return;
     }
-    g_path.circle.nodes[g_path.circle.nodeCount].node = param_1;
+    g_path.circle.nodes[g_path.circle.nodeCount].node = pnode;
     g_path.circle.nodes[g_path.circle.nodeCount].metric = fVar3;
     g_path.circle.nodeCount = g_path.circle.nodeCount + 1;
   }
@@ -1534,40 +1554,42 @@ void __cdecl Path_NodesInCylinder_process(pathnode_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_NodesInCylinder_r(pathnode_tree_t *param_1)
+void __cdecl Path_NodesInCylinder_r(pathnode_tree_t *tree)
 
 {
   ushort *puVar1;
-  pathnode_t *ppVar2;
-  pathnode_parent_t *ppVar3;
-  float fVar4;
-  int local_10;
+  pathnode_t *node;
+  pathnode_parent_t *ppVar2;
+  float fVar3;
+  pathnode_t *pnode;
+  int i;
+  ushort *leafNodes;
+  float dist;
   
 LAB_00924316:
   do {
-    if (param_1->axis < 0) {
-      puVar1 = (param_1->u).s.nodes;
-      local_10 = 0;
-      while ((local_10 < (param_1->u).s.nodeCount &&
-             (g_path.circle.nodeCount < g_path.circle.maxNodes))) {
-        ppVar2 = (gameWorldCurrent->path).nodes + puVar1[local_10];
-        ppVar3 = get_pathnode_parent(ppVar2);
-        if (ppVar3->entnum == 0x3fe) {
-          Path_NodesInCylinder_process(ppVar2);
+    if (tree->axis < 0) {
+      puVar1 = (tree->u).s.nodes;
+      i = 0;
+      while ((i < (tree->u).s.nodeCount && (g_path.circle.nodeCount < g_path.circle.maxNodes))) {
+        node = (gameWorldCurrent->path).nodes + puVar1[i];
+        ppVar2 = get_pathnode_parent(node);
+        if (ppVar2->entnum == 0x3fe) {
+          Path_NodesInCylinder_process(node);
         }
-        local_10 = local_10 + 1;
+        i = i + 1;
       }
       return;
     }
-    fVar4 = g_path.circle.origin[param_1->axis] - param_1->dist;
-    if (fVar4 <= g_path.circle.maxDist) {
-      if (fVar4 < -g_path.circle.maxDist) {
-        param_1 = (param_1->u).child[0];
+    fVar3 = g_path.circle.origin[tree->axis] - tree->dist;
+    if (fVar3 <= g_path.circle.maxDist) {
+      if (fVar3 < -g_path.circle.maxDist) {
+        tree = (tree->u).child[0];
         goto LAB_00924316;
       }
-      Path_NodesInCylinder_r((param_1->u).child[0]);
+      Path_NodesInCylinder_r((tree->u).child[0]);
     }
-    param_1 = (param_1->u).child[1];
+    tree = (tree->u).child[1];
   } while( true );
 }
 
@@ -1581,15 +1603,17 @@ void __cdecl Path_MovingNodesInCylinder(void)
 
 {
   generic_avl_map_node_t *local_1070;
-  void *local_1058;
-  int local_104c;
-  uint local_1024 [1024];
-  undefined4 local_24;
-  float local_20;
+  pathnode_parent_t *node_parent;
+  generic_avl_map_node_t *gamn;
+  uint avl_key;
+  int i;
+  uint touch [1024];
+  int query_contents;
+  float query_maxs;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int num;
+  float query_mins;
   float local_c;
   float local_8;
   
@@ -1603,19 +1627,18 @@ void __cdecl Path_MovingNodesInCylinder(void)
       adjust_maxs[1] = 17.0;
       adjust_maxs[2] = 32.0;
     }
-    local_10 = -g_path.circle.maxDist + g_path.circle.origin[0] + adjust_mins[0];
+    query_mins = -g_path.circle.maxDist + g_path.circle.origin[0] + adjust_mins[0];
     local_c = -g_path.circle.maxDist + g_path.circle.origin[1] + adjust_mins[1];
     local_8 = g_path.circle.origin[2] + 0.0 + adjust_mins[2];
-    local_20 = g_path.circle.maxDist + g_path.circle.origin[0] + adjust_maxs[0];
+    query_maxs = g_path.circle.maxDist + g_path.circle.origin[0] + adjust_maxs[0];
     local_1c = g_path.circle.maxDist + g_path.circle.origin[1] + adjust_maxs[1];
     local_18 = g_path.circle.maxHeight + g_path.circle.origin[2] + adjust_maxs[2];
-    local_24 = 0x820011;
-    local_14 = CM_AreaEntities(&local_10,&local_20,(int *)local_1024,0x400,0x820011);
-    for (local_104c = 0; local_104c < local_14; local_104c = local_104c + 1) {
+    query_contents = 0x820011;
+    num = CM_AreaEntities(&query_mins,&query_maxs,(int *)touch,0x400,0x820011);
+    for (i = 0; i < num; i = i + 1) {
       local_1070 = g_parented_pathnode_list_map.m_tree_root;
-      while ((local_1070 != (generic_avl_map_node_t *)0x0 &&
-             (local_1024[local_104c] != local_1070->m_avl_key))) {
-        if (local_1024[local_104c] < local_1070->m_avl_key) {
+      while ((local_1070 != (generic_avl_map_node_t *)0x0 && (touch[i] != local_1070->m_avl_key))) {
+        if (touch[i] < local_1070->m_avl_key) {
           local_1070 = (local_1070->m_avl_node_info).m_left;
         }
         else {
@@ -1623,9 +1646,9 @@ void __cdecl Path_MovingNodesInCylinder(void)
         }
       }
       if (local_1070 != (generic_avl_map_node_t *)0x0) {
-        for (local_1058 = local_1070->m_data; local_1058 != (void *)0x0;
-            local_1058 = *(void **)((int)local_1058 + 0x14)) {
-          Path_NodesInCylinder_process(*(pathnode_t **)((int)local_1058 + 0x10));
+        for (node_parent = local_1070->m_data; node_parent != (pathnode_parent_t *)0x0;
+            node_parent = node_parent->m_next) {
+          Path_NodesInCylinder_process(node_parent->m_node);
         }
       }
     }
@@ -1640,7 +1663,7 @@ void __cdecl Path_MovingNodesInCylinder(void)
 
 int __cdecl
 Path_NodesInCylinder
-          (float *param_1,float param_2,float param_3,pathsort_t *param_4,int param_5,int param_6)
+          (float *origin,float maxDist,float maxHeight,pathsort_t *nodes,int maxNodes,int typeFlags)
 
 {
   int iVar1;
@@ -1649,16 +1672,16 @@ Path_NodesInCylinder
     iVar1 = 0;
   }
   else {
-    g_path.circle.origin[0] = *param_1;
-    g_path.circle.origin[1] = param_1[1];
-    g_path.circle.origin[2] = param_1[2];
-    g_path.circle.maxDist = param_2;
-    g_path.circle.maxDistSq = param_2 * param_2;
-    g_path.circle.maxHeight = param_3;
-    g_path.circle.maxHeightSq = param_3 * param_3;
-    g_path.circle.typeFlags = param_6;
-    g_path.circle.nodes = param_4;
-    g_path.circle.maxNodes = param_5;
+    g_path.circle.origin[0] = *origin;
+    g_path.circle.origin[1] = origin[1];
+    g_path.circle.origin[2] = origin[2];
+    g_path.circle.maxDist = maxDist;
+    g_path.circle.maxDistSq = maxDist * maxDist;
+    g_path.circle.maxHeight = maxHeight;
+    g_path.circle.maxHeightSq = maxHeight * maxHeight;
+    g_path.circle.typeFlags = typeFlags;
+    g_path.circle.nodes = nodes;
+    g_path.circle.maxNodes = maxNodes;
     g_path.circle.nodeCount = 0;
     Path_NodesInCylinder_r((gameWorldCurrent->path).nodeTree);
     Path_MovingNodesInCylinder();
@@ -1673,12 +1696,12 @@ Path_NodesInCylinder
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
-Path_NodesInRadius(float *param_1,float param_2,pathsort_t *param_3,int param_4,int param_5)
+Path_NodesInRadius(float *origin,float maxDist,pathsort_t *nodes,int maxNodes,int typeFlags)
 
 {
   int iVar1;
   
-  iVar1 = Path_NodesInCylinder(param_1,param_2,1e+09,param_3,param_4,param_5);
+  iVar1 = Path_NodesInCylinder(origin,maxDist,1e+09,nodes,maxNodes,typeFlags);
   return iVar1;
 }
 
@@ -1690,10 +1713,10 @@ Path_NodesInRadius(float *param_1,float param_2,pathsort_t *param_3,int param_4,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Path_IsDynamicBlockingEntity(gentity_s *param_1)
+int __cdecl Path_IsDynamicBlockingEntity(gentity_s *ent)
 
 {
-  return param_1->flags & 0x800;
+  return ent->flags & 0x800;
 }
 
 
@@ -1702,17 +1725,18 @@ int __cdecl Path_IsDynamicBlockingEntity(gentity_s *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
+int __cdecl Path_IsBadPlaceLink(int nodeNumFrom,int nodeNumTo,team_t eTeam)
 
 {
   pathnode_t *ppVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
-  uint local_8;
+  char *fmt;
+  pathnode_t *from;
+  uint i;
   
-  if ((g_path.actualNodeCount <= (uint)param_1) &&
+  if ((g_path.actualNodeCount <= (uint)nodeNumFrom) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x8e0,0,
                                "nodeNumFrom doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -1720,7 +1744,7 @@ int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((g_path.actualNodeCount <= (uint)param_2) &&
+  if ((g_path.actualNodeCount <= (uint)nodeNumTo) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x8e1,0,
                                "nodeNumTo doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -1728,7 +1752,7 @@ int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((TEAM_SPECTATOR < param_3) &&
+  if ((TEAM_SPECTATOR < eTeam) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x8e2,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -1737,12 +1761,11 @@ int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
     return iVar4;
   }
   ppVar1 = (gameWorldCurrent->path).nodes;
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (ppVar1[param_1].constant.totalLinkCount <= local_8) {
-      pcVar5 = va("Path_IsBadPlaceLink called from %i to %i, but there is no such link");
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x8eb,0,
-                               pcVar5);
+    if (ppVar1[nodeNumFrom].constant.totalLinkCount <= i) {
+      fmt = va("Path_IsBadPlaceLink called from %i to %i, but there is no such link");
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x8eb,0,fmt);
       if (bVar3) {
         return 0;
       }
@@ -1750,10 +1773,10 @@ int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    if ((uint)ppVar1[param_1].constant.Links[local_8].nodeNum == param_2) break;
-    local_8 = local_8 + 1;
+    if ((uint)ppVar1[nodeNumFrom].constant.Links[i].nodeNum == nodeNumTo) break;
+    i = i + 1;
   }
-  return (uint)(ppVar1[param_1].constant.Links[local_8].ubBadPlaceCount[param_3] != '\0');
+  return (uint)(ppVar1[nodeNumFrom].constant.Links[i].ubBadPlaceCount[eTeam] != '\0');
 }
 
 
@@ -1764,18 +1787,17 @@ int __cdecl Path_IsBadPlaceLink(int param_1,int param_2,team_t param_3)
 void __cdecl Path_InitLinkCounts(void)
 
 {
-  uint local_14;
-  uint local_10;
-  uint local_8;
+  uint j;
+  uint k;
+  bool foundlink;
+  uint i;
   
-  for (local_8 = 0; local_8 < (gameWorldCurrent->path).nodeCount; local_8 = local_8 + 1) {
-    (gameWorldCurrent->path).nodes[local_8].dynamic.wLinkCount =
-         (gameWorldCurrent->path).nodes[local_8].constant.totalLinkCount;
-    for (local_14 = 0; local_14 < (gameWorldCurrent->path).nodes[local_8].constant.totalLinkCount;
-        local_14 = local_14 + 1) {
-      for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-        (gameWorldCurrent->path).nodes[local_8].constant.Links[local_14].ubBadPlaceCount[local_10] =
-             '\0';
+  for (i = 0; i < (gameWorldCurrent->path).nodeCount; i = i + 1) {
+    (gameWorldCurrent->path).nodes[i].dynamic.wLinkCount =
+         (gameWorldCurrent->path).nodes[i].constant.totalLinkCount;
+    for (j = 0; j < (gameWorldCurrent->path).nodes[i].constant.totalLinkCount; j = j + 1) {
+      for (k = 0; k < 4; k = k + 1) {
+        (gameWorldCurrent->path).nodes[i].constant.Links[j].ubBadPlaceCount[k] = '\0';
       }
     }
   }
@@ -1792,24 +1814,24 @@ void __cdecl Path_InitLinkInfoArray(void)
 {
   ushort local_10;
   ushort local_c;
-  int local_8;
+  int i;
   
   g_path.pathLinkInfoArrayInited = 1;
-  for (local_8 = 0; local_8 < 0x800; local_8 = local_8 + 1) {
-    if (local_8 == 0) {
+  for (i = 0; i < 0x800; i = i + 1) {
+    if (i == 0) {
       local_c = 0x7ff;
     }
     else {
-      local_c = (short)local_8 - 1;
+      local_c = (short)i - 1;
     }
-    g_path.pathLinkInfoArray[local_8].prev = local_c;
-    if (local_8 == 0x7ff) {
+    g_path.pathLinkInfoArray[i].prev = local_c;
+    if (i == 0x7ff) {
       local_10 = 0;
     }
     else {
-      local_10 = (short)local_8 + 1;
+      local_10 = (short)i + 1;
     }
-    g_path.pathLinkInfoArray[local_8].next = local_10;
+    g_path.pathLinkInfoArray[i].next = local_10;
   }
   return;
 }
@@ -1826,15 +1848,16 @@ void __cdecl Path_AutoDisconnectPaths(void)
 
 {
   int iVar1;
-  gentity_s *pgVar2;
-  int local_8;
+  gentity_s *ent_00;
+  gentity_s *ent;
+  int i;
   
   Path_ValidateAllNodes();
-  for (local_8 = 0; local_8 < level.num_entities; local_8 = local_8 + 1) {
-    pgVar2 = level.gentities + local_8;
-    if ((((pgVar2->r).inuse != '\0') && (iVar1 = Path_IsDynamicBlockingEntity(pgVar2), iVar1 != 0))
-       && ((pgVar2->flags & 0x40000000U) != 0)) {
-      Path_DisconnectPathsForEntity(pgVar2);
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    ent_00 = level.gentities + i;
+    if ((((ent_00->r).inuse != '\0') && (iVar1 = Path_IsDynamicBlockingEntity(ent_00), iVar1 != 0))
+       && ((ent_00->flags & 0x40000000U) != 0)) {
+      Path_DisconnectPathsForEntity(ent_00);
     }
   }
   return;
@@ -1845,34 +1868,34 @@ void __cdecl Path_AutoDisconnectPaths(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_InitNodeDynamic(pathnode_t *param_1)
+void __cdecl Path_InitNodeDynamic(pathnode_t *loadNode)
 
 {
-  float local_10;
+  float forward;
   float local_c;
   
-  (param_1->dynamic).pOwner.number = 0;
-  (param_1->dynamic).pOwner.infoIndex = 0;
-  (param_1->dynamic).iFreeTime = 0;
-  (param_1->dynamic).iValidTime[0] = 0;
-  (param_1->dynamic).iValidTime[1] = 0;
-  (param_1->dynamic).iValidTime[2] = 0;
-  (param_1->dynamic).inPlayerLOSTime = 0;
-  (param_1->dynamic).wLinkCount = 0;
-  (param_1->dynamic).wOverlapCount = 0;
-  (param_1->dynamic).turretEntNumber = 0;
-  (param_1->dynamic).userCount = 0;
-  (param_1->transient).iSearchFrame = 0;
-  (param_1->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_1->transient).pPrevOpen = (pathnode_t *)0x0;
-  (param_1->transient).pParent = (pathnode_t *)0x0;
-  (param_1->transient).fCost = 0.0;
-  (param_1->transient).fHeuristic = 0.0;
-  (param_1->transient).costFactor = 0.0;
-  YawVectors((param_1->constant).fAngle,&local_10,(float *)0x0);
-  (param_1->constant).forward[0] = local_10;
-  (param_1->constant).forward[1] = local_c;
-  (param_1->dynamic).turretEntNumber = -1;
+  (loadNode->dynamic).pOwner.number = 0;
+  (loadNode->dynamic).pOwner.infoIndex = 0;
+  (loadNode->dynamic).iFreeTime = 0;
+  (loadNode->dynamic).iValidTime[0] = 0;
+  (loadNode->dynamic).iValidTime[1] = 0;
+  (loadNode->dynamic).iValidTime[2] = 0;
+  (loadNode->dynamic).inPlayerLOSTime = 0;
+  (loadNode->dynamic).wLinkCount = 0;
+  (loadNode->dynamic).wOverlapCount = 0;
+  (loadNode->dynamic).turretEntNumber = 0;
+  (loadNode->dynamic).userCount = 0;
+  (loadNode->transient).iSearchFrame = 0;
+  (loadNode->transient).pNextOpen = (pathnode_t *)0x0;
+  (loadNode->transient).pPrevOpen = (pathnode_t *)0x0;
+  (loadNode->transient).pParent = (pathnode_t *)0x0;
+  (loadNode->transient).fCost = 0.0;
+  (loadNode->transient).fHeuristic = 0.0;
+  (loadNode->transient).costFactor = 0.0;
+  YawVectors((loadNode->constant).fAngle,&forward,(float *)0x0);
+  (loadNode->constant).forward[0] = forward;
+  (loadNode->constant).forward[1] = local_c;
+  (loadNode->dynamic).turretEntNumber = -1;
   return;
 }
 
@@ -1884,10 +1907,10 @@ void __cdecl Path_InitNodeDynamic(pathnode_t *param_1)
 void __cdecl Path_InitNodesDynamic(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < (gameWorldCurrent->path).nodeCount; local_8 = local_8 + 1) {
-    Path_InitNodeDynamic((gameWorldCurrent->path).nodes + local_8);
+  for (i = 0; i < (gameWorldCurrent->path).nodeCount; i = i + 1) {
+    Path_InitNodeDynamic((gameWorldCurrent->path).nodes + i);
   }
   return;
 }
@@ -1905,6 +1928,11 @@ void __cdecl Path_PreSpawnInitPaths(void)
 
 
 // 00924810  Path_InitPaths  (game/pathnode.cpp:2387)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Path_InitPaths(void)
 
@@ -1949,60 +1977,65 @@ void __cdecl Path_InitPaths(void)
 
 // 00924990  Path_CheckSpawnExitNodesConnectivity  (game/pathnode.cpp:2471)
 
+/* WARNING: Variable defined which should be unmapped: exitCounter */
+/* WARNING: Variable defined which should be unmapped: spawnCounter */
+/* WARNING: Variable defined which should be unmapped: nodeCount */
+/* WARNING: Variable defined which should be unmapped: exitCount */
+/* WARNING: Variable defined which should be unmapped: spawnCount */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Path_CheckSpawnExitNodesConnectivity(void)
 
 {
+  path_t *pNodeFrom;
   code *pcVar1;
   bool bVar2;
-  path_t *in_stack_fffff8d8;
-  undefined1 *puVar3;
-  path_t *ppVar4;
-  int iVar5;
-  uint uVar6;
-  int iVar7;
-  int iVar8;
+  int exitCounter;
+  int spawnCounter;
+  uint nodeCount;
+  int exitCount;
+  int spawnCount;
   int aiStack_32c [100];
-  int local_19c;
-  undefined4 local_198;
+  int connectionFlag;
+  undefined4 eTeam;
   int aiStack_194 [100];
   
-  local_198 = 2;
-  local_19c = 0;
-  Path_Begin(in_stack_fffff8d8);
-  iVar8 = 0;
-  iVar7 = 0;
-  uVar6 = 0;
+  eTeam = 2;
+  connectionFlag = 0;
+  Path_Begin((path_t *)exitCounter);
+  spawnCount = 0;
+  exitCount = 0;
+  nodeCount = 0;
   do {
-    if (g_path.actualNodeCount <= uVar6) {
-      if (iVar8 == 0) {
+    if (g_path.actualNodeCount <= nodeCount) {
+      if (spawnCount == 0) {
         Com_PrintWarning(0x12,"WARNING: %s \n");
       }
-      if (iVar7 == 0) {
+      if (exitCount == 0) {
         Com_PrintWarning(0x12,"WARNING: %s \n");
       }
-      for (iVar5 = 0; iVar5 < iVar8; iVar5 = iVar5 + 1) {
-        puVar3 = (undefined1 *)0x0;
-        while ((int)puVar3 < iVar7) {
-          ppVar4 = (path_t *)aiStack_32c[iVar5];
-          local_19c = Path_FindPathFromTo(ppVar4,aiStack_32c[iVar5] + 0x14,
-                                          (pathnode_t *)aiStack_194[(int)puVar3],
-                                          (float *)(aiStack_194[(int)puVar3] + 0x14),
-                                          (pathnode_t *)&DAT_00000001,(float *)0x0,(int)ppVar4,iVar5
-                                         );
-          if (local_19c == 0) {
+      for (spawnCounter = 0; spawnCounter < spawnCount; spawnCounter = spawnCounter + 1) {
+        exitCounter = 0;
+        while (exitCounter < exitCount) {
+          pNodeFrom = (path_t *)aiStack_32c[spawnCounter];
+          connectionFlag =
+               Path_FindPathFromTo(pNodeFrom,aiStack_32c[spawnCounter] + 0x14,
+                                   (pathnode_t *)aiStack_194[exitCounter],
+                                   (float *)(aiStack_194[exitCounter] + 0x14),
+                                   (pathnode_t *)&DAT_00000001,(float *)0x0,(int)pNodeFrom,
+                                   spawnCounter);
+          if (connectionFlag == 0) {
             Com_PrintError(1,
                            "ERROR: Dog at SpawnNode (%g %g %g) is not connected to ExitNode (%g %g %g)\n"
                           );
           }
-          puVar3 = (undefined1 *)((int)ppVar4->pts[0].vOrigPoint + 1);
+          exitCounter = (int)pNodeFrom->pts[0].vOrigPoint + 1;
         }
       }
       return;
     }
-    if (99 < iVar8) {
+    if (99 < spawnCount) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x9b7,0,"%s")
       ;
       if (!bVar2) {
@@ -2011,7 +2044,7 @@ void __cdecl Path_CheckSpawnExitNodesConnectivity(void)
         return;
       }
     }
-    if (99 < iVar7) {
+    if (99 < exitCount) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x9b8,0,"%s")
       ;
       if (!bVar2) {
@@ -2020,15 +2053,15 @@ void __cdecl Path_CheckSpawnExitNodesConnectivity(void)
         return;
       }
     }
-    if (scr_const.spawn == (gameWorldCurrent->path).nodes[uVar6].constant.script_noteworthy) {
-      aiStack_32c[iVar8] = (int)((gameWorldCurrent->path).nodes + uVar6);
-      iVar8 = iVar8 + 1;
+    if (scr_const.spawn == (gameWorldCurrent->path).nodes[nodeCount].constant.script_noteworthy) {
+      aiStack_32c[spawnCount] = (int)((gameWorldCurrent->path).nodes + nodeCount);
+      spawnCount = spawnCount + 1;
     }
-    if (scr_const.exit == (gameWorldCurrent->path).nodes[uVar6].constant.script_noteworthy) {
-      aiStack_194[iVar7] = (int)((gameWorldCurrent->path).nodes + uVar6);
-      iVar7 = iVar7 + 1;
+    if (scr_const.exit == (gameWorldCurrent->path).nodes[nodeCount].constant.script_noteworthy) {
+      aiStack_194[exitCount] = (int)((gameWorldCurrent->path).nodes + nodeCount);
+      exitCount = exitCount + 1;
     }
-    uVar6 = uVar6 + 1;
+    nodeCount = nodeCount + 1;
   } while( true );
 }
 
@@ -2037,36 +2070,36 @@ void __cdecl Path_CheckSpawnExitNodesConnectivity(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugNoLinks(pathnode_t *param_1,float (*param_2) [4],int param_3)
+void __cdecl Path_DrawDebugNoLinks(pathnode_t *node,float (*color) [4],int duration)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
-  float local_1c;
+  float vEnd;
   float local_18;
   float local_14;
-  float local_10;
+  float vStart;
   float local_c;
   float local_8;
   
-  fVar1 = (param_1->constant).vOrigin[0];
-  fVar2 = (param_1->constant).vOrigin[1];
-  fVar3 = (param_1->constant).vOrigin[2] + 1.0;
-  local_10 = fVar1 + 6.928203;
+  fVar1 = (node->constant).vOrigin[0];
+  fVar2 = (node->constant).vOrigin[1];
+  fVar3 = (node->constant).vOrigin[2] + 1.0;
+  vStart = fVar1 + 6.928203;
   local_c = fVar2 + 4.0;
   local_8 = fVar3 + 0.0;
-  local_1c = fVar1 + -6.928203;
+  vEnd = fVar1 + -6.928203;
   local_18 = fVar2 + -4.0;
   local_14 = fVar3 + -0.0;
-  G_DebugLineWithDuration(&local_10,&local_1c,*param_2,0,param_3);
-  local_10 = fVar1 + -4.0;
+  G_DebugLineWithDuration(&vStart,&vEnd,*color,0,duration);
+  vStart = fVar1 + -4.0;
   local_c = fVar2 + 6.928203;
   local_8 = fVar3 + 0.0;
-  local_1c = fVar1 + 4.0;
+  vEnd = fVar1 + 4.0;
   local_18 = fVar2 + -6.928203;
   local_14 = fVar3 + -0.0;
-  G_DebugLineWithDuration(&local_10,&local_1c,*param_2,0,param_3);
+  G_DebugLineWithDuration(&vStart,&vEnd,*color,0,duration);
   return;
 }
 
@@ -2075,117 +2108,114 @@ void __cdecl Path_DrawDebugNoLinks(pathnode_t *param_1,float (*param_2) [4],int 
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugLink(pathnode_t *param_1,int param_2,bool param_3)
+void __cdecl Path_DrawDebugLink(pathnode_t *node,int i,bool bShowAll)
 
 {
   float *local_94;
   float *local_90;
   float *local_8c;
   uint local_88;
-  uint local_64;
-  int local_60;
-  float local_5c;
+  int iBadDirs;
+  int j;
+  float vDir;
   float local_58;
   float local_54;
-  int local_50;
-  float local_4c;
+  int k;
+  float vMid;
   float local_48;
   float local_44;
-  float local_40;
+  float vSelfOrg;
   float local_3c;
   float local_38;
-  uint local_34;
-  float local_30;
+  int linkCount;
+  float vTop;
   float local_2c;
   float local_28;
-  float local_24;
+  float vOtherOrg;
   float local_20;
   float local_1c;
-  float local_18;
+  float vBot;
   float local_14;
   float local_10;
-  pathnode_t *local_c;
-  float local_8;
+  pathnode_t *otherNode;
+  float fArrowSize;
   
-  local_8 = 8.0;
-  local_c = (gameWorldCurrent->path).nodes + (param_1->constant).Links[param_2].nodeNum;
-  if (((param_1->constant).type == NODE_NEGOTIATION_BEGIN) &&
-     ((local_c->constant).type == NODE_NEGOTIATION_END)) {
-    if ((param_1->dynamic).wOverlapCount != 0) {
+  fArrowSize = 8.0;
+  otherNode = (gameWorldCurrent->path).nodes + (node->constant).Links[i].nodeNum;
+  if (((node->constant).type == NODE_NEGOTIATION_BEGIN) &&
+     ((otherNode->constant).type == NODE_NEGOTIATION_END)) {
+    if ((node->dynamic).wOverlapCount != 0) {
       return;
     }
-    if ((local_c->dynamic).wOverlapCount != 0) {
+    if ((otherNode->dynamic).wOverlapCount != 0) {
       return;
     }
   }
-  local_40 = (param_1->constant).vOrigin[0];
-  local_3c = (param_1->constant).vOrigin[1];
-  local_24 = (local_c->constant).vOrigin[0];
-  local_20 = (local_c->constant).vOrigin[1];
-  local_38 = (param_1->constant).vOrigin[2] + 16.0;
-  local_1c = (local_c->constant).vOrigin[2] + 16.0;
-  if (param_3) {
-    local_88 = (uint)(local_c->constant).totalLinkCount;
+  vSelfOrg = (node->constant).vOrigin[0];
+  local_3c = (node->constant).vOrigin[1];
+  vOtherOrg = (otherNode->constant).vOrigin[0];
+  local_20 = (otherNode->constant).vOrigin[1];
+  local_38 = (node->constant).vOrigin[2] + 16.0;
+  local_1c = (otherNode->constant).vOrigin[2] + 16.0;
+  if (bShowAll) {
+    local_88 = (uint)(otherNode->constant).totalLinkCount;
   }
   else {
-    local_88 = (uint)(local_c->dynamic).wLinkCount;
+    local_88 = (uint)(otherNode->dynamic).wLinkCount;
   }
-  local_34 = local_88;
-  local_60 = 0;
+  linkCount = local_88;
+  j = 0;
   while( true ) {
-    if ((int)local_88 <= local_60) {
-      for (local_50 = 3;
-          (-1 < local_50 && ((param_1->constant).Links[param_2].ubBadPlaceCount[local_50] == '\0'));
-          local_50 = local_50 + -1) {
+    if ((int)local_88 <= j) {
+      for (k = 3; (-1 < k && ((node->constant).Links[i].ubBadPlaceCount[k] == '\0')); k = k + -1) {
       }
-      if (local_50 < 0) {
+      if (k < 0) {
         local_94 = colorRed;
       }
       else {
         local_94 = colorMagenta;
       }
-      G_DebugLine(&local_40,&local_24,local_94,1);
-      local_4c = (local_40 + local_24) * 0.5;
+      G_DebugLine(&vSelfOrg,&vOtherOrg,local_94,1);
+      vMid = (vSelfOrg + vOtherOrg) * 0.5;
       local_48 = (local_3c + local_20) * 0.5;
       local_44 = (local_38 + local_1c) * 0.5;
-      local_5c = local_40 - local_24;
+      vDir = vSelfOrg - vOtherOrg;
       local_58 = local_3c - local_20;
       local_54 = local_38 - local_1c;
-      Vec3Normalize(&local_5c);
-      local_30 = local_8 * local_5c + local_4c;
-      local_2c = local_8 * local_58 + local_48;
-      local_10 = local_8 * local_54 + local_44;
-      local_28 = local_10 + local_8;
-      local_10 = local_10 - local_8;
-      local_18 = local_30;
+      Vec3Normalize(&vDir);
+      vTop = fArrowSize * vDir + vMid;
+      local_2c = fArrowSize * local_58 + local_48;
+      local_10 = fArrowSize * local_54 + local_44;
+      local_28 = local_10 + fArrowSize;
+      local_10 = local_10 - fArrowSize;
+      vBot = vTop;
       local_14 = local_2c;
-      G_DebugLine(&local_30,&local_4c,colorRed,0);
-      G_DebugLine(&local_18,&local_4c,colorRed,0);
+      G_DebugLine(&vTop,&vMid,colorRed,0);
+      G_DebugLine(&vBot,&vMid,colorRed,0);
       return;
     }
-    if (param_1 == (gameWorldCurrent->path).nodes + (local_c->constant).Links[local_60].nodeNum)
-    break;
-    local_60 = local_60 + 1;
+    if (node == (gameWorldCurrent->path).nodes + (otherNode->constant).Links[j].nodeNum) break;
+    j = j + 1;
   }
-  if (param_1 <= local_c) {
+  if (node <= otherNode) {
     return;
   }
-  local_64 = 0;
-  for (local_50 = 3; -1 < local_50; local_50 = local_50 + -1) {
-    if ((param_1->constant).Links[param_2].ubBadPlaceCount[local_50] != '\0') {
-      local_64 = 1;
+  iBadDirs = 0;
+  for (k = 3; -1 < k; k = k + -1) {
+    if ((node->constant).Links[i].ubBadPlaceCount[k] != '\0') {
+      iBadDirs = 1;
       break;
     }
   }
-  local_50 = 3;
+  k = 3;
   do {
-    if (local_50 < 0) {
+    if (k < 0) {
 LAB_009263a5:
-      if (local_64 == 0) {
+      if (iBadDirs == 0) {
         local_8c = colorCyan;
       }
       else {
-        if (local_64 == 3) {
+        if (iBadDirs == 3) {
           local_90 = colorYellow;
         }
         else {
@@ -2193,37 +2223,37 @@ LAB_009263a5:
         }
         local_8c = local_90;
       }
-      G_DebugLine(&local_40,&local_24,local_8c,1);
-      if ((local_64 == 1) || (local_64 == 2)) {
-        local_4c = (local_40 + local_24) * 0.5;
+      G_DebugLine(&vSelfOrg,&vOtherOrg,local_8c,1);
+      if ((iBadDirs == 1) || (iBadDirs == 2)) {
+        vMid = (vSelfOrg + vOtherOrg) * 0.5;
         local_48 = (local_3c + local_20) * 0.5;
         local_44 = (local_38 + local_1c) * 0.5;
-        local_5c = local_40 - local_24;
+        vDir = vSelfOrg - vOtherOrg;
         local_58 = local_3c - local_20;
         local_54 = local_38 - local_1c;
-        Vec3Normalize(&local_5c);
-        if (local_64 == 1) {
-          local_5c = -local_5c;
+        Vec3Normalize(&vDir);
+        if (iBadDirs == 1) {
+          vDir = -vDir;
           local_58 = -local_58;
           local_54 = -local_54;
         }
-        local_30 = local_8 * local_5c + local_4c;
-        local_2c = local_8 * local_58 + local_48;
-        local_10 = local_8 * local_54 + local_44;
-        local_28 = local_10 + local_8;
-        local_10 = local_10 - local_8;
-        local_18 = local_30;
+        vTop = fArrowSize * vDir + vMid;
+        local_2c = fArrowSize * local_58 + local_48;
+        local_10 = fArrowSize * local_54 + local_44;
+        local_28 = local_10 + fArrowSize;
+        local_10 = local_10 - fArrowSize;
+        vBot = vTop;
         local_14 = local_2c;
-        G_DebugLine(&local_30,&local_4c,colorBlue,1);
-        G_DebugLine(&local_18,&local_4c,colorBlue,1);
+        G_DebugLine(&vTop,&vMid,colorBlue,1);
+        G_DebugLine(&vBot,&vMid,colorBlue,1);
       }
       return;
     }
-    if ((local_c->constant).Links[local_60].ubBadPlaceCount[local_50] != '\0') {
-      local_64 = local_64 | 2;
+    if ((otherNode->constant).Links[j].ubBadPlaceCount[k] != '\0') {
+      iBadDirs = iBadDirs | 2;
       goto LAB_009263a5;
     }
-    local_50 = local_50 + -1;
+    k = k + -1;
   } while( true );
 }
 
@@ -2235,7 +2265,7 @@ LAB_009263a5:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl Path_GetDebugStringScale(float *param_1,float *param_2)
+float __cdecl Path_GetDebugStringScale(float *cameraPos,float *origin)
 
 {
   code *pcVar1;
@@ -2243,10 +2273,13 @@ float __cdecl Path_GetDebugStringScale(float *param_1,float *param_2)
   float10 fVar3;
   float fVar4;
   float local_20;
-  phys_vec3 local_18;
-  gentity_s *local_8;
+  float delta;
+  float local_14;
+  float local_10;
+  float scale;
+  gentity_s *player;
   
-  if (param_1 == (float *)0x0) {
+  if (cameraPos == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xa63,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2254,7 +2287,7 @@ float __cdecl Path_GetDebugStringScale(float *param_1,float *param_2)
       return (float)fVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xa64,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2262,20 +2295,20 @@ float __cdecl Path_GetDebugStringScale(float *param_1,float *param_2)
       return (float)fVar3;
     }
   }
-  local_18.w = 1.0;
-  local_8 = G_Find((gentity_s *)0x0,0x164,scr_const.player);
-  if (local_8 != (gentity_s *)0x0) {
-    local_18.x = *param_1 - *param_2;
-    local_18.y = param_1[1] - param_2[1];
-    local_18.z = (param_1[2] - param_2[2]) + (local_8->client->ps).viewHeightCurrent;
-    fVar4 = Abs(&local_18);
-    local_18.w = (fVar4 / 3600.0) * local_18.w;
+  scale = 1.0;
+  player = G_Find((gentity_s *)0x0,0x164,scr_const.player);
+  if (player != (gentity_s *)0x0) {
+    delta = *cameraPos - *origin;
+    local_14 = cameraPos[1] - origin[1];
+    local_10 = (cameraPos[2] - origin[2]) + (player->client->ps).viewHeightCurrent;
+    fVar4 = Abs((phys_vec3 *)&stack0xffffffe8);
+    scale = (fVar4 / 3600.0) * scale;
   }
-  if (local_18.w - 0.5 < 0.0) {
+  if (scale - 0.5 < 0.0) {
     local_20 = 0.5;
   }
   else {
-    local_20 = local_18.w;
+    local_20 = scale;
   }
   return local_20;
 }
@@ -2285,7 +2318,7 @@ float __cdecl Path_GetDebugStringScale(float *param_1,float *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1,float param_2,float *param_3)
+void __cdecl Path_DrawDebugNodeBox(pathnode_t *node,float size,float *color_)
 
 {
   code *pcVar1;
@@ -2295,52 +2328,54 @@ void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1,float param_2,float *para
   int iVar5;
   float10 fVar6;
   float local_7c;
-  float local_58;
+  float start;
   float local_54;
   float local_50;
-  float local_4c;
+  float end;
   float local_48;
   float local_44;
-  float local_40;
+  float maxs;
   float local_3c;
   float local_38;
-  float local_2c;
+  float fCos;
+  float fSin;
+  float boxsizeMax;
   float local_28;
   float local_24;
-  float local_20;
+  float boxsizeMin;
   float local_1c;
   float local_18;
-  float local_14;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  ppVar4 = get_pathnode_parent(param_1);
+  ppVar4 = get_pathnode_parent(node);
   if (ppVar4->entnum == 0x3fe) {
-    local_14 = *param_3;
-    local_10 = param_3[1];
-    local_c = param_3[2];
-    local_8 = param_3[3];
+    color = *color_;
+    local_10 = color_[1];
+    local_c = color_[2];
+    local_8 = color_[3];
   }
   else {
-    local_14 = 0.0;
+    color = 0.0;
     local_10 = 1.0;
     local_c = 0.0;
     local_8 = 1.0;
   }
-  if (0.0 < param_2) {
-    local_7c = param_2;
+  if (0.0 < size) {
+    local_7c = size;
   }
   else {
     local_7c = 16.0;
   }
-  local_20 = -local_7c;
+  boxsizeMin = -local_7c;
   local_1c = -local_7c;
   local_18 = 0.0;
-  local_2c = local_7c;
+  boxsizeMax = local_7c;
   local_28 = local_7c;
   local_24 = local_7c;
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xa84,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -2348,23 +2383,22 @@ void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1,float param_2,float *para
       return;
     }
   }
-  G_DebugBox((param_1->constant).vOrigin,&local_20,&local_2c,(param_1->constant).fAngle,&local_14,1,
-             0);
-  iVar5 = Path_IsValidClaimNode(param_1);
+  G_DebugBox((node->constant).vOrigin,&boxsizeMin,&boxsizeMax,(node->constant).fAngle,&color,1,0);
+  iVar5 = Path_IsValidClaimNode(node);
   if (iVar5 != 0) {
-    local_40 = (param_1->constant).vOrigin[0] + local_2c;
-    local_3c = (param_1->constant).vOrigin[1] + local_28;
-    local_38 = (param_1->constant).vOrigin[2] + local_24;
-    local_58 = ((param_1->constant).vOrigin[0] + local_20 + local_40) * 0.5;
-    local_54 = ((param_1->constant).vOrigin[1] + local_1c + local_3c) * 0.5;
-    local_50 = ((param_1->constant).vOrigin[2] + local_18 + local_38) * 0.5;
-    fVar6 = (float10)((param_1->constant).fAngle * 0.017453292);
+    maxs = (node->constant).vOrigin[0] + boxsizeMax;
+    local_3c = (node->constant).vOrigin[1] + local_28;
+    local_38 = (node->constant).vOrigin[2] + local_24;
+    start = ((node->constant).vOrigin[0] + boxsizeMin + maxs) * 0.5;
+    local_54 = ((node->constant).vOrigin[1] + local_1c + local_3c) * 0.5;
+    local_50 = ((node->constant).vOrigin[2] + local_18 + local_38) * 0.5;
+    fVar6 = (float10)((node->constant).fAngle * 0.017453292);
     fVar2 = (float10)fcos(fVar6);
     fVar6 = (float10)fsin(fVar6);
-    local_4c = local_2c * (float)fVar2 + local_58;
-    local_48 = local_2c * (float)fVar6 + local_54;
+    end = boxsizeMax * (float)fVar2 + start;
+    local_48 = boxsizeMax * (float)fVar6 + local_54;
     local_44 = local_50;
-    G_DebugLine(&local_58,&local_4c,&local_14,1);
+    G_DebugLine(&start,&end,&color,1);
   }
   return;
 }
@@ -2374,10 +2408,10 @@ void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1,float param_2,float *para
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1)
+void __cdecl Path_DrawDebugNodeBox(pathnode_t *node)
 
 {
-  Path_DrawDebugNodeBox(param_1,-1.0,nodeColorTable[(param_1->constant).type]);
+  Path_DrawDebugNodeBox(node,-1.0,nodeColorTable[(node->constant).type]);
   return;
 }
 
@@ -2386,8 +2420,11 @@ void __cdecl Path_DrawDebugNodeBox(pathnode_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
+void __cdecl Path_DrawDebugNode(float *cameraPos,pathnode_t *node)
 
 {
   char *pcVar1;
@@ -2405,17 +2442,17 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
   char *local_144;
   undefined4 *local_13c;
   undefined1 local_120 [4];
-  char local_11c [4];
+  char temp [4];
   undefined1 local_118 [256];
   uint local_18;
-  float local_14;
+  float org;
   float local_10;
   float local_c;
-  float local_8;
+  float scale;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_120 = (undefined1  [4])0x0;
-  if (param_1 == (float *)0x0) {
+  if (cameraPos == (float *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xab0,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -2423,7 +2460,7 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
       return;
     }
   }
-  if (param_2 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xab1,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -2431,13 +2468,13 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
       return;
     }
   }
-  Path_DrawDebugNodeBox(param_2);
-  local_14 = (param_2->constant).vOrigin[0];
-  local_10 = (param_2->constant).vOrigin[1];
-  local_c = (16.0 - (float)local_120) * 0.5 + (param_2->constant).vOrigin[2];
-  local_8 = Path_GetDebugStringScale(param_1,&local_14);
-  sprintf(local_11c,"%s");
-  iVar5 = IsNodeEnabled(param_2);
+  Path_DrawDebugNodeBox(node);
+  org = (node->constant).vOrigin[0];
+  local_10 = (node->constant).vOrigin[1];
+  local_c = (16.0 - (float)local_120) * 0.5 + (node->constant).vOrigin[2];
+  scale = Path_GetDebugStringScale(cameraPos,&org);
+  sprintf(temp,"%s");
+  iVar5 = IsNodeEnabled(node);
   if (iVar5 == 0) {
     puVar3 = (undefined4 *)(local_120 + 3);
     do {
@@ -2447,7 +2484,7 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
     *(undefined4 *)((int)local_13c + 1) = 0x4c44203a;
     *(undefined1 *)((int)local_13c + 5) = 0;
   }
-  if (((param_2->constant).spawnflags & 4) != 0) {
+  if (((node->constant).spawnflags & 4) != 0) {
     local_144 = local_120 + 3;
     do {
       pcVar1 = local_144 + 1;
@@ -2455,7 +2492,7 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
     } while (*pcVar1 != '\0');
     *(char (*) [4])local_144 = (char  [4])0x53443a;
   }
-  if (((param_2->constant).spawnflags & 8) != 0) {
+  if (((node->constant).spawnflags & 8) != 0) {
     local_14c = local_120 + 3;
     do {
       pcVar1 = local_14c + 1;
@@ -2463,7 +2500,7 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
     } while (*pcVar1 != '\0');
     *(char (*) [4])local_14c = (char  [4])0x43443a;
   }
-  if (((param_2->constant).spawnflags & 0x10) != 0) {
+  if (((node->constant).spawnflags & 0x10) != 0) {
     local_154 = local_120 + 3;
     do {
       pcVar1 = local_154 + 1;
@@ -2471,8 +2508,8 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
     } while (*pcVar1 != '\0');
     *(char (*) [4])local_154 = (char  [4])0x50443a;
   }
-  if (((param_2->constant).spawnflags & 0x800) != 0) {
-    if ((param_2->constant).type == NODE_COVER_PILLAR) {
+  if (((node->constant).spawnflags & 0x800) != 0) {
+    if ((node->constant).type == NODE_COVER_PILLAR) {
       local_15c = local_120 + 3;
       do {
         pcVar1 = local_15c + 1;
@@ -2480,8 +2517,8 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
       } while (*pcVar1 != '\0');
       *(char (*) [4])local_15c = (char  [4])0x52443a;
     }
-    else if (((param_2->constant).type == NODE_NEGOTIATION_BEGIN) ||
-            ((param_2->constant).type == NODE_NEGOTIATION_END)) {
+    else if (((node->constant).type == NODE_NEGOTIATION_BEGIN) ||
+            ((node->constant).type == NODE_NEGOTIATION_END)) {
       pcVar1 = local_120 + 3;
       do {
         local_164 = pcVar1;
@@ -2499,8 +2536,8 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
       *(undefined2 *)((int)local_16c + 5) = 0x52;
     }
   }
-  if (((param_2->constant).spawnflags & 0x400) != 0) {
-    if ((param_2->constant).type == NODE_COVER_PILLAR) {
+  if (((node->constant).spawnflags & 0x400) != 0) {
+    if ((node->constant).type == NODE_COVER_PILLAR) {
       local_174 = local_120 + 3;
       do {
         pcVar1 = local_174 + 1;
@@ -2517,7 +2554,7 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
       *(char (*) [4])local_17c = (char  [4])0x59423a;
     }
   }
-  G_AddDebugString(&local_14,colorYellow,local_8,local_11c,0);
+  G_AddDebugString(&org,colorYellow,scale,temp,0);
   return;
 }
 
@@ -2526,28 +2563,28 @@ void __cdecl Path_DrawDebugNode(float *param_1,pathnode_t *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugNearestNode(float *param_1,int param_2)
+void __cdecl Path_DrawDebugNearestNode(float *vOrigin,int numNodes)
 
 {
-  pathnode_t *ppVar1;
-  int local_c14;
-  pathsort_t local_c0c [256];
-  int local_8;
+  pathnode_t *node_00;
+  int i;
+  pathnode_t *node;
+  pathsort_t nodes [256];
+  int nodeCount;
   
-  ppVar1 = Path_NearestNode(param_1,local_c0c,-1,(ai_showNodesDist->current).value,&local_8,0x100,
-                            NEAREST_NODE_DONT_DO_HEIGHT_CHECK);
+  node_00 = Path_NearestNode(vOrigin,nodes,-1,(ai_showNodesDist->current).value,&nodeCount,0x100,
+                             NEAREST_NODE_DONT_DO_HEIGHT_CHECK);
   if ((ai_showNearestNode->current).integer < 2) {
-    if (ppVar1 == (pathnode_t *)0x0) {
-      G_DebugCircle(param_1,192.0,colorRed,1,1,0);
+    if (node_00 == (pathnode_t *)0x0) {
+      G_DebugCircle(vOrigin,192.0,colorRed,1,1,0);
     }
     else {
-      Path_DrawDebugNode(param_1,ppVar1);
+      Path_DrawDebugNode(vOrigin,node_00);
     }
   }
   else {
-    for (local_c14 = 0; (local_c14 < local_8 && (local_c14 < (ai_showNearestNode->current).integer))
-        ; local_c14 = local_c14 + 1) {
-      Path_DrawDebugNode(param_1,local_c0c[local_c14].node);
+    for (i = 0; (i < nodeCount && (i < (ai_showNearestNode->current).integer)); i = i + 1) {
+      Path_DrawDebugNode(vOrigin,nodes[i].node);
     }
   }
   return;
@@ -2561,79 +2598,83 @@ void __cdecl Path_DrawDebugNearestNode(float *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugClaimedNodes(float *param_1,int param_2)
+void __cdecl Path_DrawDebugClaimedNodes(float *origin,int numNodes)
 
 {
-  pathnode_t *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  sentient_s *psVar5;
-  char *pcVar6;
-  float local_c24;
+  pathnode_t *node_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  sentient_s *psVar4;
+  char *pcVar5;
+  float fVar6;
+  pathnode_t *node;
+  float pos;
   float local_c20;
   float local_c1c;
-  int local_c18;
-  pathsort_t local_c14 [256];
-  float local_10;
-  int local_c;
-  float local_8;
+  int nodeIndex;
+  pathsort_t nodes [256];
+  float time;
+  int nodeCount;
+  float scale;
   
-  if (param_1 == (float *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xd02,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (origin == (float *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xd02,0,"%s");
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  Path_NearestNode(param_1,local_c14,-1,(ai_showNodesDist->current).value,&local_c,0x100,
+  Path_NearestNode(origin,nodes,-1,(ai_showNodesDist->current).value,&nodeCount,0x100,
                    NEAREST_NODE_DONT_DO_HEIGHT_CHECK);
-  for (local_c18 = 0; (local_c18 < local_c && (local_c18 < param_2)); local_c18 = local_c18 + 1) {
-    ppVar1 = local_c14[local_c18].node;
-    Path_DrawDebugNodeBox(ppVar1);
-    local_8 = Path_GetDebugStringScale(param_1,(ppVar1->constant).vOrigin);
-    local_8 = local_8 * 0.5;
-    local_c24 = (ppVar1->constant).vOrigin[0];
-    local_c20 = (ppVar1->constant).vOrigin[1];
-    local_c1c = (ppVar1->constant).vOrigin[2];
-    iVar4 = SentientHandle::isDefined(&(ppVar1->dynamic).pOwner);
-    if (iVar4 == 0) {
-      G_AddDebugString(&local_c24,colorWhite,local_8,"Owner: None",0);
+  for (nodeIndex = 0; (nodeIndex < nodeCount && (nodeIndex < numNodes)); nodeIndex = nodeIndex + 1)
+  {
+    node_00 = nodes[nodeIndex].node;
+    Path_DrawDebugNodeBox(node_00);
+    fVar6 = Path_GetDebugStringScale(origin,(node_00->constant).vOrigin);
+    scale = fVar6 * 0.5;
+    pos = (node_00->constant).vOrigin[0];
+    local_c20 = (node_00->constant).vOrigin[1];
+    local_c1c = (node_00->constant).vOrigin[2];
+    iVar3 = SentientHandle::isDefined(&(node_00->dynamic).pOwner);
+    if (iVar3 == 0) {
+      G_AddDebugString(&pos,colorWhite,scale,"Owner: None",0);
     }
     else {
-      psVar5 = SentientHandle::sentient(&(ppVar1->dynamic).pOwner);
-      if (psVar5->ent == (gentity_s *)0x0) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xd13,0,
+      psVar4 = SentientHandle::sentient(&(node_00->dynamic).pOwner);
+      if (psVar4->ent == (gentity_s *)0x0) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xd13,0,
                                  "%s");
-        if (!bVar3) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      SentientHandle::sentient(&(ppVar1->dynamic).pOwner);
-      pcVar6 = va("Owner: %d");
-      G_AddDebugString(&local_c24,colorGreen,local_8,pcVar6,0);
+      SentientHandle::sentient(&(node_00->dynamic).pOwner);
+      pcVar5 = va("Owner: %d");
+      G_AddDebugString(&pos,colorGreen,scale,pcVar5,0);
     }
-    local_c1c = local_8 * 12.0 + local_c1c;
-    if (level.time < (ppVar1->dynamic).iValidTime[1]) {
-      local_10 = (float)((ppVar1->dynamic).iValidTime[1] - level.time) * 0.001;
-      pcVar6 = va("Invalid Ally: %2.1f");
-      G_AddDebugString(&local_c24,colorYellow,local_8,pcVar6,0);
-      local_c1c = local_8 * 12.0 + local_c1c;
+    local_c1c = scale * 12.0 + local_c1c;
+    if (level.time < (node_00->dynamic).iValidTime[1]) {
+      time = (float)((node_00->dynamic).iValidTime[1] - level.time) * 0.001;
+      pcVar5 = va("Invalid Ally: %2.1f");
+      G_AddDebugString(&pos,colorYellow,scale,pcVar5,0);
+      local_c1c = scale * 12.0 + local_c1c;
     }
-    if (level.time <= (ppVar1->dynamic).iValidTime[0]) {
-      local_10 = (float)((ppVar1->dynamic).iValidTime[0] - level.time) * 0.001;
-      pcVar6 = va("Invalid Axis: %2.1f");
-      G_AddDebugString(&local_c24,colorYellow,local_8,pcVar6,0);
-      local_c1c = local_8 * 12.0 + local_c1c;
+    if (level.time <= (node_00->dynamic).iValidTime[0]) {
+      time = (float)((node_00->dynamic).iValidTime[0] - level.time) * 0.001;
+      pcVar5 = va("Invalid Axis: %2.1f");
+      G_AddDebugString(&pos,colorYellow,scale,pcVar5,0);
+      local_c1c = scale * 12.0 + local_c1c;
     }
-    if (((ppVar1->dynamic).iFreeTime != 0x7fffffff) && (level.time < (ppVar1->dynamic).iFreeTime)) {
-      local_10 = (float)((ppVar1->dynamic).iFreeTime - level.time) * 0.001;
-      pcVar6 = va("Delay: %2.1f");
-      G_AddDebugString(&local_c24,colorYellow,local_8,pcVar6,0);
-      local_c1c = local_8 * 12.0 + local_c1c;
+    if (((node_00->dynamic).iFreeTime != 0x7fffffff) && (level.time < (node_00->dynamic).iFreeTime))
+    {
+      time = (float)((node_00->dynamic).iFreeTime - level.time) * 0.001;
+      pcVar5 = va("Delay: %2.1f");
+      G_AddDebugString(&pos,colorYellow,scale,pcVar5,0);
+      local_c1c = scale * 12.0 + local_c1c;
     }
   }
   return;
@@ -2642,36 +2683,37 @@ void __cdecl Path_DrawDebugClaimedNodes(float *param_1,int param_2)
 
 // 00925830  Path_DrawDebugFindPath  (game/pathnode.cpp:3382)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DrawDebugFindPath(float *param_1)
+void __cdecl Path_DrawDebugFindPath(float *vOrigin)
 
 {
   pathnode_t *ppVar1;
   uint uVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
-  int iVar6;
+  char *pszText;
+  int iVar5;
   float *in_stack_ffffffa8;
   float *in_stack_ffffffac;
-  float *pfVar7;
+  float *pfVar6;
   int in_stack_ffffffb8;
-  float local_34;
+  pathnode_t *node;
+  float delta;
   float local_30;
-  float local_2c;
+  float p1;
   float local_28;
   float local_24;
-  float local_20;
+  float startPos;
   float local_1c;
   float local_18;
-  float local_14;
+  float p2;
   float local_10;
   float local_c;
-  uint local_8;
+  uint i;
   
   if ((ai_debugFindPath->current).integer == 0) {
     iValidBits = 0;
@@ -2679,15 +2721,15 @@ void __cdecl Path_DrawDebugFindPath(float *param_1)
   else {
     if ((((ai_debugFindPath->current).integer == 1) || ((ai_debugFindPath->current).integer == 4))
        || ((ai_debugFindPath->current).integer == 5)) {
-      vStartPos[0] = *param_1;
-      vStartPos[1] = param_1[1];
-      vStartPos[2] = param_1[2];
+      vStartPos[0] = *vOrigin;
+      vStartPos[1] = vOrigin[1];
+      vStartPos[2] = vOrigin[2];
       iValidBits = iValidBits | 1;
     }
     else if ((ai_debugFindPath->current).integer == 2) {
-      vGoalPos[0] = *param_1;
-      vGoalPos[1] = param_1[1];
-      vGoalPos[2] = param_1[2];
+      vGoalPos[0] = *vOrigin;
+      vGoalPos[1] = vOrigin[1];
+      vGoalPos[2] = vOrigin[2];
       iValidBits = iValidBits | 2;
     }
     else if ((ai_debugFindPath->current).integer != 3) {
@@ -2701,18 +2743,18 @@ void __cdecl Path_DrawDebugFindPath(float *param_1)
     if (iValidBits == 3) {
       if (((vStartPos[0] == vGoalPos[0]) && (vStartPos[1] == vGoalPos[1])) &&
          (vStartPos[2] == vGoalPos[2])) {
-        pfVar7 = (float *)&DAT_00000001;
+        pfVar6 = (float *)&DAT_00000001;
       }
       else {
-        pfVar7 = (float *)0x0;
+        pfVar6 = (float *)0x0;
       }
-      if (pfVar7 == (float *)0x0) {
+      if (pfVar6 == (float *)0x0) {
         if (debugPath == (path_t *)0x0) {
           debugPath = &debugPathBuf;
           Path_Begin((path_t *)0x0);
           in_stack_ffffffac = vGoalPos;
           in_stack_ffffffa8 = vStartPos;
-          Path_FindPath((path_t *)vStartPos,0xa07a060,(float *)&DAT_00000001,pfVar7,
+          Path_FindPath((path_t *)vStartPos,0xa07a060,(float *)&DAT_00000001,pfVar6,
                         in_stack_ffffffb8);
         }
         if ((ai_debugFindPath->current).integer != 4) {
@@ -2727,60 +2769,59 @@ void __cdecl Path_DrawDebugFindPath(float *param_1)
               else {
                 width = 5000.0;
               }
-              local_34 = vStartPos[0] - vGoalPos[0];
+              delta = vStartPos[0] - vGoalPos[0];
               local_30 = vStartPos[1] - vGoalPos[1];
-              Vec2Normalize(&local_34);
+              Vec2Normalize(&delta);
               perp[0] = -local_30;
-              perp[1] = local_34;
+              perp[1] = delta;
             }
             local_18 = vGoalPos[2];
-            local_20 = vStartPos[0];
+            startPos = vStartPos[0];
             local_1c = vStartPos[1];
-            G_DebugLine(&local_20,vGoalPos,colorCyan,0);
-            local_2c = (local_20 - perp[1] * 5000.0) + perp[0] * width;
+            G_DebugLine(&startPos,vGoalPos,colorCyan,0);
+            p1 = (startPos - perp[1] * 5000.0) + perp[0] * width;
             local_28 = perp[0] * 5000.0 + local_1c + perp[1] * width;
             local_24 = local_18;
-            local_14 = perp[1] * 5000.0 + local_20 + perp[0] * width;
+            p2 = perp[1] * 5000.0 + startPos + perp[0] * width;
             local_10 = (local_1c - perp[0] * 5000.0) + perp[1] * width;
             local_c = local_18;
-            G_DebugLine(&local_2c,&local_14,colorCyan,0);
-            pfVar7 = vStartPos;
+            G_DebugLine(&p1,&p2,colorCyan,0);
+            pfVar6 = vStartPos;
             iVar4 = Path_FindPathWithWidth
                               ((path_t *)vStartPos,0xa07a060,(float *)&DAT_00000001,(float *)width,
                                0xa07a054,(float)in_stack_ffffffa8,in_stack_ffffffac);
             if (iVar4 == 0) {
               return;
             }
-            bVar3 = Path_Exists((path_t *)pfVar7);
+            bVar3 = Path_Exists((path_t *)pfVar6);
           }
           else {
-            pfVar7 = vStartPos;
+            pfVar6 = vStartPos;
             iVar4 = Path_FindPath((path_t *)vStartPos,0xa07a060,(float *)&DAT_00000001,
                                   in_stack_ffffffa8,(int)in_stack_ffffffac);
             if (iVar4 == 0) {
               return;
             }
-            bVar3 = Path_Exists((path_t *)pfVar7);
+            bVar3 = Path_Exists((path_t *)pfVar6);
           }
           if (!bVar3) {
             return;
           }
-          for (local_8 = 0; uVar2 = local_8, local_8 < g_path.actualNodeCount; local_8 = local_8 + 1
-              ) {
+          for (i = 0; uVar2 = i, i < g_path.actualNodeCount; i = i + 1) {
             ppVar1 = (gameWorldCurrent->path).nodes;
-            if (ppVar1[local_8].transient.iSearchFrame == level.iSearchFrame) {
-              pcVar5 = va("%i");
-              G_AddDebugString(ppVar1[uVar2].constant.vOrigin,colorWhite,1.0,pcVar5,0);
+            if (ppVar1[i].transient.iSearchFrame == level.iSearchFrame) {
+              pszText = va("%i");
+              G_AddDebugString(ppVar1[uVar2].constant.vOrigin,colorWhite,1.0,pszText,0);
             }
           }
         }
         if (((ai_debugFindPath->current).integer == 4) || ((ai_debugFindPath->current).integer == 5)
            ) {
-          iVar6 = 0;
+          iVar5 = 0;
           iVar4 = 0;
           Path_UpdateLookahead
                     ((path_t *)0x0,(float *)0x0,1,1,(int)in_stack_ffffffa8,(int)in_stack_ffffffac);
-          Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,iVar4,iVar6);
+          Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,iVar4,iVar5);
         }
         else {
           Path_DebugDraw((path_t *)0x0,(float *)0xffffffff,(int)in_stack_ffffffa8,
@@ -2808,48 +2849,47 @@ void __cdecl Path_DrawVisData(void)
   sentient_s *in_stack_ffffffc8;
   float local_28;
   float local_24;
-  pathnode_t *local_20;
-  float local_1c [3];
-  pathnode_t *local_10;
-  uint local_c;
-  gentity_s *local_8;
+  pathnode_t *node;
+  float viewPos [3];
+  pathnode_t *pSourceNode;
+  uint i;
+  gentity_s *player;
   
-  local_20 = (pathnode_t *)0x0;
-  local_10 = (pathnode_t *)0x0;
-  CL_GetDebugViewPos(local_1c);
-  local_8 = G_Find((gentity_s *)0x0,0x164,scr_const.player);
-  if (((local_8 != (gentity_s *)0x0) &&
-      (local_10 = Sentient_NearestNode(in_stack_ffffffc8), local_10 != (pathnode_t *)0x0)) &&
-     (Path_DrawDebugNode(local_1c,local_10), local_10 != (pathnode_t *)0x0)) {
-    for (local_c = 0; local_c < g_path.actualNodeCount; local_c = local_c + 1) {
-      local_20 = (gameWorldCurrent->path).nodes + local_c;
-      if ((local_20 != local_10) &&
-         (((ai_showVisData->current).integer != 2 ||
-          (iVar1 = Path_IsCoverNode(local_20), iVar1 != 0)))) {
-        local_28 = (local_20->constant).vOrigin[0] - (local_10->constant).vOrigin[0];
-        local_24 = (local_20->constant).vOrigin[1] - (local_10->constant).vOrigin[1];
+  node = (pathnode_t *)0x0;
+  pSourceNode = (pathnode_t *)0x0;
+  CL_GetDebugViewPos(viewPos);
+  player = G_Find((gentity_s *)0x0,0x164,scr_const.player);
+  if (((player != (gentity_s *)0x0) &&
+      (pSourceNode = Sentient_NearestNode(in_stack_ffffffc8), pSourceNode != (pathnode_t *)0x0)) &&
+     (Path_DrawDebugNode(viewPos,pSourceNode), pSourceNode != (pathnode_t *)0x0)) {
+    for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+      node = (gameWorldCurrent->path).nodes + i;
+      if ((node != pSourceNode) &&
+         (((ai_showVisData->current).integer != 2 || (iVar1 = Path_IsCoverNode(node), iVar1 != 0))))
+      {
+        local_28 = (node->constant).vOrigin[0] - (pSourceNode->constant).vOrigin[0];
+        local_24 = (node->constant).vOrigin[1] - (pSourceNode->constant).vOrigin[1];
         fVar2 = Vec2Length(&local_28);
         if (fVar2 < (ai_showVisDataDist->current).value ||
             fVar2 == (ai_showVisDataDist->current).value) {
-          iVar1 = Path_ExpandedNodeVisible(local_10,local_20);
-          if ((iVar1 == 0) || (iVar1 = Path_NodesVisible(local_10,local_20), iVar1 == 0)) {
-            iVar1 = Path_ExpandedNodeVisible(local_10,local_20);
+          iVar1 = Path_ExpandedNodeVisible(pSourceNode,node);
+          if ((iVar1 == 0) || (iVar1 = Path_NodesVisible(pSourceNode,node), iVar1 == 0)) {
+            iVar1 = Path_ExpandedNodeVisible(pSourceNode,node);
             if (iVar1 == 0) {
-              iVar1 = Path_NodesVisible(local_10,local_20);
+              iVar1 = Path_NodesVisible(pSourceNode,node);
               if (iVar1 != 0) {
-                Path_DrawDebugNode(local_1c,local_20);
-                G_DebugLine((local_10->constant).vOrigin,(local_20->constant).vOrigin,colorYellow,0)
-                ;
+                Path_DrawDebugNode(viewPos,node);
+                G_DebugLine((pSourceNode->constant).vOrigin,(node->constant).vOrigin,colorYellow,0);
               }
             }
             else {
-              Path_DrawDebugNode(local_1c,local_20);
-              G_DebugLine((local_10->constant).vOrigin,(local_20->constant).vOrigin,colorRed,0);
+              Path_DrawDebugNode(viewPos,node);
+              G_DebugLine((pSourceNode->constant).vOrigin,(node->constant).vOrigin,colorRed,0);
             }
           }
           else {
-            Path_DrawDebugNode(local_1c,local_20);
-            G_DebugLine((local_10->constant).vOrigin,(local_20->constant).vOrigin,colorGreen,0);
+            Path_DrawDebugNode(viewPos,node);
+            G_DebugLine((pSourceNode->constant).vOrigin,(node->constant).vOrigin,colorGreen,0);
           }
         }
       }
@@ -2860,6 +2900,11 @@ void __cdecl Path_DrawVisData(void)
 
 
 // 00925F40  Path_Update  (game/pathnode.cpp:3619)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Path_Update(void)
 
@@ -2872,64 +2917,66 @@ void __cdecl Path_Update(void)
 
 // 00925F50  Path_DrawDebug  (game/pathnode.cpp:3628)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Path_DrawDebug(void)
 
 {
-  bool bVar1;
-  char *pcVar2;
-  pathnode_t *ppVar3;
+  bool bShowAll_00;
+  char *pszText;
+  pathnode_t *node_00;
   uint local_3c;
-  uint local_30;
-  float local_24;
+  uint j;
+  pathnode_t *node;
+  bool bShowAll;
+  float viewPos;
   float local_20;
   float local_1c;
-  uint local_18;
-  uint local_14;
-  float local_10;
+  uint linkCount;
+  uint i;
+  float vDelta;
   float local_c;
   float local_8;
   
   if ((level.gentities)->client != (gclient_s *)0x0) {
-    CL_GetDebugViewPos(&local_24);
+    CL_GetDebugViewPos(&viewPos);
     if (g_radiant_selected_pathnode != (pathnode_t *)0x0) {
-      Path_DrawDebugNode(&local_24,g_radiant_selected_pathnode);
+      Path_DrawDebugNode(&viewPos,g_radiant_selected_pathnode);
     }
     if ((ai_showNodes->current).integer != 0) {
-      for (local_14 = 0; local_14 < g_path.actualNodeCount; local_14 = local_14 + 1) {
-        ppVar3 = (gameWorldCurrent->path).nodes + local_14;
+      for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+        node_00 = (gameWorldCurrent->path).nodes + i;
         if ((ai_showNodesDist->current).value == 0.0) {
 LAB_00926060:
           if (((ai_showNodes->current).integer == 2) || ((ai_showNodes->current).integer == 4)) {
-            pcVar2 = va("%i");
-            G_AddDebugString((ppVar3->constant).vOrigin,colorWhite,1.0,pcVar2,0);
+            pszText = va("%i");
+            G_AddDebugString((node_00->constant).vOrigin,colorWhite,1.0,pszText,0);
           }
-          bVar1 = 2 < (ai_showNodes->current).integer;
-          if (bVar1) {
-            local_3c = (uint)(ppVar3->constant).totalLinkCount;
+          bShowAll_00 = 2 < (ai_showNodes->current).integer;
+          if (bShowAll_00) {
+            local_3c = (uint)(node_00->constant).totalLinkCount;
           }
           else {
-            local_3c = (uint)(ppVar3->dynamic).wLinkCount;
+            local_3c = (uint)(node_00->dynamic).wLinkCount;
           }
-          local_18 = local_3c;
+          linkCount = local_3c;
           if (local_3c == 0) {
-            Path_DrawDebugNoLinks(ppVar3,&colorRed,0);
+            Path_DrawDebugNoLinks(node_00,&colorRed,0);
           }
           else {
-            for (local_30 = 0; local_30 < local_18; local_30 = local_30 + 1) {
-              Path_DrawDebugLink(ppVar3,local_30,bVar1);
+            for (j = 0; j < linkCount; j = j + 1) {
+              Path_DrawDebugLink(node_00,j,bShowAll_00);
             }
           }
         }
         else {
-          local_10 = (ppVar3->constant).vOrigin[0] - local_24;
-          local_c = (ppVar3->constant).vOrigin[1] - local_20;
-          local_8 = (ppVar3->constant).vOrigin[2] - local_1c;
-          if (local_10 * local_10 + local_c * local_c <=
+          vDelta = (node_00->constant).vOrigin[0] - viewPos;
+          local_c = (node_00->constant).vOrigin[1] - local_20;
+          local_8 = (node_00->constant).vOrigin[2] - local_1c;
+          if (vDelta * vDelta + local_c * local_c <=
               (ai_showNodesDist->current).value * (ai_showNodesDist->current).value)
           goto LAB_00926060;
         }
@@ -2940,7 +2987,7 @@ LAB_00926060:
       ;
     }
     if ((ai_debugClaimedNodes->current).integer != 0) {
-      Path_DrawDebugClaimedNodes(&local_24,(ai_debugClaimedNodes->current).integer);
+      Path_DrawDebugClaimedNodes(&viewPos,(ai_debugClaimedNodes->current).integer);
     }
     if ((ai_debugFindPath->current).integer != 0) {
       Path_DrawDebugFindPath(((level.gentities)->client->ps).origin);
@@ -2960,34 +3007,36 @@ LAB_00926060:
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_NodesVisible(pathnode_t *param_1,pathnode_t *param_2)
+int __cdecl Path_NodesVisible(pathnode_t *node0,pathnode_t *node1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  uint uVar5;
+  uint j;
+  uint i;
   int local_14;
-  int local_10;
+  int entry;
+  uint nodeIndex0;
+  uint nodeIndex1;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node0 == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xea8,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (pathnode_t *)0x0) &&
+  if ((node1 == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xea9,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  uVar4 = Path_ConvertNodeToIndex(param_1);
-  uVar5 = Path_ConvertNodeToIndex(param_2);
-  if ((g_path.actualNodeCount <= uVar4) &&
+  j = Path_ConvertNodeToIndex(node0);
+  i = Path_ConvertNodeToIndex(node1);
+  if ((g_path.actualNodeCount <= j) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xeae,0,
                                "nodeIndex0 doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -2995,7 +3044,7 @@ int __cdecl Path_NodesVisible(pathnode_t *param_1,pathnode_t *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((g_path.actualNodeCount <= uVar5) &&
+  if ((g_path.actualNodeCount <= i) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xeaf,0,
                                "nodeIndex1 doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -3003,17 +3052,17 @@ int __cdecl Path_NodesVisible(pathnode_t *param_1,pathnode_t *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (uVar4 < uVar5) {
-    local_10 = NodeVisCacheEntry(uVar4,uVar5);
+  if (j < i) {
+    entry = NodeVisCacheEntry(j,i);
   }
   else {
-    if (uVar4 <= uVar5) {
+    if (j <= i) {
       return 1;
     }
-    local_10 = NodeVisCacheEntry(uVar5,uVar4);
+    entry = NodeVisCacheEntry(i,j);
   }
   if (((gameWorldCurrent->path).pathVis == (uchar *)0x0) ||
-     (((uint)(gameWorldCurrent->path).pathVis[local_10 >> 3] & 1 << ((byte)local_10 & 7)) == 0)) {
+     (((uint)(gameWorldCurrent->path).pathVis[entry >> 3] & 1 << ((byte)entry & 7)) == 0)) {
     local_14 = 0;
   }
   else {
@@ -3027,34 +3076,36 @@ int __cdecl Path_NodesVisible(pathnode_t *param_1,pathnode_t *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_ExpandedNodeVisible(pathnode_t *param_1,pathnode_t *param_2)
+int __cdecl Path_ExpandedNodeVisible(pathnode_t *node0,pathnode_t *node1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  uint uVar5;
+  uint j;
+  uint i;
   int local_14;
-  int local_10;
+  int entry;
+  uint nodeIndex0;
+  uint nodeIndex1;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node0 == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xec4,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (pathnode_t *)0x0) &&
+  if ((node1 == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xec5,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  uVar4 = Path_ConvertNodeToIndex(param_1);
-  uVar5 = Path_ConvertNodeToIndex(param_2);
-  if ((g_path.actualNodeCount <= uVar4) &&
+  j = Path_ConvertNodeToIndex(node0);
+  i = Path_ConvertNodeToIndex(node1);
+  if ((g_path.actualNodeCount <= j) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xeca,0,
                                "nodeIndex0 doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -3062,7 +3113,7 @@ int __cdecl Path_ExpandedNodeVisible(pathnode_t *param_1,pathnode_t *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((g_path.actualNodeCount <= uVar5) &&
+  if ((g_path.actualNodeCount <= i) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0xecb,0,
                                "nodeIndex1 doesn\'t index g_path.actualNodeCount\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -3070,17 +3121,17 @@ int __cdecl Path_ExpandedNodeVisible(pathnode_t *param_1,pathnode_t *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (uVar5 < uVar4) {
-    local_10 = ExpandedNodeVisCacheEntry(uVar4,uVar5);
+  if (i < j) {
+    entry = ExpandedNodeVisCacheEntry(j,i);
   }
   else {
-    if (uVar5 <= uVar4) {
+    if (i <= j) {
       return 1;
     }
-    local_10 = ExpandedNodeVisCacheEntry(uVar5,uVar4);
+    entry = ExpandedNodeVisCacheEntry(i,j);
   }
   if (((gameWorldCurrent->path).pathVis == (uchar *)0x0) ||
-     (((uint)(gameWorldCurrent->path).pathVis[local_10 >> 3] & 1 << ((byte)local_10 & 7)) == 0)) {
+     (((uint)(gameWorldCurrent->path).pathVis[entry >> 3] & 1 << ((byte)entry & 7)) == 0)) {
     local_14 = 0;
   }
   else {
@@ -3095,15 +3146,15 @@ int __cdecl Path_ExpandedNodeVisible(pathnode_t *param_1,pathnode_t *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 pathnode_t * __cdecl
-Path_NearestNode(float *param_1,pathsort_t *param_2,int param_3,float param_4,int *param_5,
-                int param_6,nearestNodeHeightCheck param_7)
+Path_NearestNode(float *vOrigin,pathsort_t *nodes,int typeFlags,float fMaxDist,int *returnCount,
+                int maxNodes,nearestNodeHeightCheck heightCheck)
 
 {
   pathnode_t *ppVar1;
   
   ppVar1 = Path_NearestNodeNotCrossPlanes
-                     (param_1,param_2,param_3,param_4,(float (*) [2])0x0,(float *)0x0,0,param_5,
-                      param_6,param_7);
+                     (vOrigin,nodes,typeFlags,fMaxDist,(float (*) [2])0x0,(float *)0x0,0,returnCount
+                      ,maxNodes,heightCheck);
   return ppVar1;
 }
 
@@ -3114,116 +3165,115 @@ Path_NearestNode(float *param_1,pathsort_t *param_2,int param_3,float param_4,in
 
 pathnode_t * __cdecl
 Path_NearestNodeNotCrossPlanes
-          (float *param_1,pathsort_t *param_2,int param_3,float param_4,float (*param_5) [2],
-          float *param_6,int param_7,int *param_8,int param_9,nearestNodeHeightCheck param_10)
+          (float *vOrigin,pathsort_t *nodes,int typeFlags,float fMaxDist,float (*vNormal) [2],
+          float *fDist,int iPlaneCount,int *returnCount,int maxNodes,
+          nearestNodeHeightCheck heightCheck)
 
 {
   float fVar1;
-  pathnode_t *local_474;
-  float local_46c;
+  float closestDistSq;
+  pathnode_t *closestNode;
+  float distSq;
+  float adjustedOrigin;
   float local_468;
   float local_464;
-  int local_460;
-  pathnode_t *local_45c;
-  col_context_t local_458;
-  int local_430;
-  float local_42c;
+  int j;
+  pathnode_t *node;
+  col_context_t context;
+  int iNodeCount;
+  float mins;
   float local_428;
   undefined4 local_424;
-  float local_420;
+  float maxs;
   float local_41c;
   float local_418;
   int aiStack_414 [257];
-  int local_10;
-  int local_c;
-  int local_8;
+  int i;
+  int hitNum;
+  int iFailedNodeCount;
   
-  col_context_t::col_context_t(&local_458,0x820011);
-  if (param_10 == NEAREST_NODE_DO_HEIGHT_CHECK) {
-    local_46c = *param_1;
-    local_468 = param_1[1];
-    local_464 = param_1[2] - 120.0;
-    local_430 = Path_NodesInCylinder(&local_46c,param_4,184.0,param_2,param_9,param_3);
+  col_context_t::col_context_t(&context,0x820011);
+  if (heightCheck == NEAREST_NODE_DO_HEIGHT_CHECK) {
+    adjustedOrigin = *vOrigin;
+    local_468 = vOrigin[1];
+    local_464 = vOrigin[2] - 120.0;
+    iNodeCount = Path_NodesInCylinder(&adjustedOrigin,fMaxDist,184.0,nodes,maxNodes,typeFlags);
   }
   else {
-    local_430 = Path_NodesInRadius(param_1,param_4,param_2,param_9,param_3);
+    iNodeCount = Path_NodesInRadius(vOrigin,fMaxDist,nodes,maxNodes,typeFlags);
   }
   std::_Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
-            (param_2,param_2 + local_430,((int)(param_2 + local_430) - (int)param_2) / 0xc,
+            (nodes,nodes + iNodeCount,((int)(nodes + iNodeCount) - (int)nodes) / 0xc,
              Path_CompareNodesIncreasing);
   local_418 = 48.0;
   local_424 = 0x41880000;
-  local_42c = fudge;
+  mins = fudge;
   if ((zombiemode->current).enabled != false) {
-    local_42c = zombie_fudge;
+    mins = zombie_fudge;
   }
-  local_41c = 15.0 - local_42c;
-  local_420 = 15.0 - local_42c;
-  local_428 = local_42c + -15.0;
-  local_42c = local_42c + -15.0;
-  local_8 = 0;
-  *param_8 = local_430;
-  local_10 = 0;
+  local_41c = 15.0 - mins;
+  maxs = 15.0 - mins;
+  local_428 = mins + -15.0;
+  mins = mins + -15.0;
+  iFailedNodeCount = 0;
+  *returnCount = iNodeCount;
+  i = 0;
   do {
-    if (local_430 <= local_10) {
-      local_10 = 0;
+    if (iNodeCount <= i) {
+      i = 0;
       while( true ) {
-        if (local_8 <= local_10) {
+        if (iFailedNodeCount <= i) {
           if ((zombiemode->current).enabled == false) {
-            local_474 = (pathnode_t *)0x0;
+            closestNode = (pathnode_t *)0x0;
           }
           else {
-            local_474 = (pathnode_t *)0x0;
-            for (local_10 = 0; local_10 < local_430; local_10 = local_10 + 1) {
-              local_45c = param_2[local_10].node;
-              fVar1 = Vec3DistanceSq((local_45c->constant).vOrigin,param_1);
+            closestNode = (pathnode_t *)0x0;
+            for (i = 0; i < iNodeCount; i = i + 1) {
+              node = nodes[i].node;
+              fVar1 = Vec3DistanceSq((node->constant).vOrigin,vOrigin);
               if (fVar1 < 3.4028235e+38) {
-                local_474 = local_45c;
+                closestNode = node;
               }
             }
           }
-          return local_474;
+          return closestNode;
         }
-        local_c = 0;
-        SV_SightTraceCapsule
-                  (&local_c,param_1,&local_42c,&local_420,(float *)(aiStack_414[local_10] + 0x14),
-                   &local_458);
-        if (local_c == 0) break;
-        local_10 = local_10 + 1;
+        hitNum = 0;
+        SV_SightTraceCapsule(&hitNum,vOrigin,&mins,&maxs,(float *)(aiStack_414[i] + 0x14),&context);
+        if (hitNum == 0) break;
+        i = i + 1;
       }
-      return (pathnode_t *)aiStack_414[local_10];
+      return (pathnode_t *)aiStack_414[i];
     }
-    local_45c = param_2[local_10].node;
-    if ((local_45c->dynamic).wLinkCount == 0) {
+    node = nodes[i].node;
+    if ((node->dynamic).wLinkCount == 0) {
 LAB_00927376:
-      aiStack_414[local_8] = (int)local_45c;
-      local_8 = local_8 + 1;
+      aiStack_414[iFailedNodeCount] = (int)node;
+      iFailedNodeCount = iFailedNodeCount + 1;
     }
     else {
-      if ((((((local_45c->constant).vOrigin[0] + -15.0) - 1.0 < *param_1) &&
-           (fVar1 = (local_45c->constant).vOrigin[0] + 15.0 + 1.0,
-           *param_1 <= fVar1 && fVar1 != *param_1)) &&
-          (((local_45c->constant).vOrigin[1] + -15.0) - 1.0 < param_1[1])) &&
-         (((fVar1 = (local_45c->constant).vOrigin[1] + 15.0 + 1.0,
-           param_1[1] <= fVar1 && fVar1 != param_1[1] &&
-           (((local_45c->constant).vOrigin[2] + 0.0) - 1.0 < param_1[2])) &&
-          (fVar1 = (local_45c->constant).vOrigin[2] + 48.0 + 1.0,
-          param_1[2] <= fVar1 && fVar1 != param_1[2])))) {
-        return local_45c;
+      if ((((((node->constant).vOrigin[0] + -15.0) - 1.0 < *vOrigin) &&
+           (fVar1 = (node->constant).vOrigin[0] + 15.0 + 1.0, *vOrigin <= fVar1 && fVar1 != *vOrigin
+           )) && (((node->constant).vOrigin[1] + -15.0) - 1.0 < vOrigin[1])) &&
+         (((fVar1 = (node->constant).vOrigin[1] + 15.0 + 1.0,
+           vOrigin[1] <= fVar1 && fVar1 != vOrigin[1] &&
+           (((node->constant).vOrigin[2] + 0.0) - 1.0 < vOrigin[2])) &&
+          (fVar1 = (node->constant).vOrigin[2] + 48.0 + 1.0,
+          vOrigin[2] <= fVar1 && fVar1 != vOrigin[2])))) {
+        return node;
       }
-      for (local_460 = 0; local_460 < param_7; local_460 = local_460 + 1) {
-        fVar1 = (local_45c->constant).vOrigin[0] * param_5[local_460][0] +
-                (local_45c->constant).vOrigin[1] * param_5[local_460][1];
-        if (param_6[local_460] <= fVar1 && fVar1 != param_6[local_460]) goto LAB_00927376;
+      for (j = 0; j < iPlaneCount; j = j + 1) {
+        fVar1 = (node->constant).vOrigin[0] * vNormal[j][0] +
+                (node->constant).vOrigin[1] * vNormal[j][1];
+        if (fDist[j] <= fVar1 && fVar1 != fDist[j]) goto LAB_00927376;
       }
-      local_c = 0;
-      SV_SightTraceCapsule
-                (&local_c,param_1,&local_42c,&local_420,(local_45c->constant).vOrigin,&local_458);
-      if (local_c == 0) {
-        return local_45c;
+      hitNum = 0;
+      SV_SightTraceCapsule(&hitNum,vOrigin,&mins,&maxs,(node->constant).vOrigin,&context);
+      if (hitNum == 0) {
+        return node;
       }
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -3235,7 +3285,7 @@ LAB_00927376:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-sentient_s * __cdecl Path_GetNodeOwner(pathnode_t *param_1)
+sentient_s * __cdecl Path_GetNodeOwner(pathnode_t *node)
 
 {
   short sVar1;
@@ -3244,26 +3294,27 @@ sentient_s * __cdecl Path_GetNodeOwner(pathnode_t *param_1)
   bool bVar4;
   sentient_s *psVar5;
   int iVar6;
+  pathnode_t *overlappedNode;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x118d,0,"%s"
                               ), !bVar4)) {
     pcVar3 = (code *)swi(3);
     psVar5 = (sentient_s *)(*pcVar3)();
     return psVar5;
   }
-  iVar6 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar6 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (iVar6 == 0) {
-    if (-1 < (param_1->constant).wOverlapNode[0]) {
-      sVar1 = (param_1->constant).wOverlapNode[0];
+    if (-1 < (node->constant).wOverlapNode[0]) {
+      sVar1 = (node->constant).wOverlapNode[0];
       ppVar2 = (gameWorldCurrent->path).nodes;
       iVar6 = SentientHandle::isDefined(&ppVar2[sVar1].dynamic.pOwner);
       if (iVar6 != 0) {
         psVar5 = SentientHandle::sentient(&ppVar2[sVar1].dynamic.pOwner);
         return psVar5;
       }
-      if (-1 < (param_1->constant).wOverlapNode[1]) {
-        sVar1 = (param_1->constant).wOverlapNode[1];
+      if (-1 < (node->constant).wOverlapNode[1]) {
+        sVar1 = (node->constant).wOverlapNode[1];
         ppVar2 = (gameWorldCurrent->path).nodes;
         iVar6 = SentientHandle::isDefined(&ppVar2[sVar1].dynamic.pOwner);
         if (iVar6 != 0) {
@@ -3275,7 +3326,7 @@ sentient_s * __cdecl Path_GetNodeOwner(pathnode_t *param_1)
     psVar5 = (sentient_s *)0x0;
   }
   else {
-    psVar5 = SentientHandle::sentient(&(param_1->dynamic).pOwner);
+    psVar5 = SentientHandle::sentient(&(node->dynamic).pOwner);
   }
   return psVar5;
 }
@@ -3288,7 +3339,7 @@ sentient_s * __cdecl Path_GetNodeOwner(pathnode_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
+int __cdecl Path_CanStealPriorityNode(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
@@ -3299,8 +3350,11 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
   float fVar6;
   float fVar7;
   actor_s *in_stack_ffffffd0;
+  float ownerToNodeDistSq;
+  sentient_s *owner;
+  float claimerToNodeDistSq;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11ac,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3308,7 +3362,7 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
       return iVar3;
     }
   }
-  if (((param_1->constant).spawnflags & 0x40) == 0) {
+  if (((node->constant).spawnflags & 0x40) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11ad,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3316,7 +3370,7 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (sentient_s *)0x0) {
+  if (claimer == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11ae,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3324,29 +3378,29 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
       return iVar3;
     }
   }
-  psVar4 = Path_GetNodeOwner(param_1);
+  psVar4 = Path_GetNodeOwner(node);
   if (psVar4 == (sentient_s *)0x0) {
     iVar3 = 1;
   }
-  else if ((param_1->dynamic).wOverlapCount < 2) {
+  else if ((node->dynamic).wOverlapCount < 2) {
     if (psVar4->ent->actor == (actor_s *)0x0) {
       iVar3 = 0;
     }
-    else if (psVar4 == param_2) {
+    else if (psVar4 == claimer) {
       iVar3 = 1;
     }
-    else if (psVar4->eTeam == param_2->eTeam) {
+    else if (psVar4->eTeam == claimer->eTeam) {
       bVar2 = Actor_IsDying(in_stack_ffffffd0);
       if (bVar2) {
         iVar3 = 1;
       }
       else {
-        fVar5 = (param_1->constant).vOrigin[0] - (psVar4->ent->r).currentOrigin[0];
-        fVar6 = (param_1->constant).vOrigin[1] - (psVar4->ent->r).currentOrigin[1];
+        fVar5 = (node->constant).vOrigin[0] - (psVar4->ent->r).currentOrigin[0];
+        fVar6 = (node->constant).vOrigin[1] - (psVar4->ent->r).currentOrigin[1];
         fVar5 = fVar5 * fVar5 + fVar6 * fVar6;
         if (225.0 <= fVar5) {
-          fVar6 = (param_1->constant).vOrigin[0] - (param_2->ent->r).currentOrigin[0];
-          fVar7 = (param_1->constant).vOrigin[1] - (param_2->ent->r).currentOrigin[1];
+          fVar6 = (node->constant).vOrigin[0] - (claimer->ent->r).currentOrigin[0];
+          fVar7 = (node->constant).vOrigin[1] - (claimer->ent->r).currentOrigin[1];
           if (fVar5 <= fVar6 * fVar6 + fVar7 * fVar7 + 225.0) {
             iVar3 = 0;
           }
@@ -3364,7 +3418,7 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
     }
   }
   else {
-    iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+    iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11c0,0,"%s"
                               );
@@ -3382,12 +3436,13 @@ int __cdecl Path_CanStealPriorityNode(pathnode_t *param_1,sentient_s *param_2)
 
 // 00927930  Path_CanStealNode  (game/pathnode.cpp:4598)
 
+/* WARNING: Variable defined which should be unmapped: owner */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Path_CanStealNode(pathnode_t *param_1,sentient_s *param_2)
+bool __cdecl Path_CanStealNode(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
@@ -3396,36 +3451,37 @@ bool __cdecl Path_CanStealNode(pathnode_t *param_1,sentient_s *param_2)
   actor_s *paVar4;
   int iVar5;
   pathnode_t *unaff_EBP;
+  sentient_s *owner;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11f9,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (sentient_s *)0x0) &&
+  if ((claimer == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x11fa,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  paVar4 = (actor_s *)Path_GetNodeOwner(param_1);
+  paVar4 = (actor_s *)Path_GetNodeOwner(node);
   if (paVar4 == (actor_s *)0x0) {
     bVar2 = true;
   }
-  else if ((param_1->dynamic).wOverlapCount < 2) {
+  else if ((node->dynamic).wOverlapCount < 2) {
     if (paVar4->ent->actor == (actor_s *)0x0) {
       bVar2 = false;
     }
-    else if (paVar4 == (actor_s *)param_2) {
+    else if (paVar4 == (actor_s *)claimer) {
       bVar2 = true;
     }
-    else if (param_2->ent->actor == (actor_s *)0x0) {
+    else if (claimer->ent->actor == (actor_s *)0x0) {
       bVar2 = false;
     }
-    else if (param_2->pClaimedNode == (pathnode_t *)0x0) {
+    else if (claimer->pClaimedNode == (pathnode_t *)0x0) {
       bVar2 = Actor_IsMoving(paVar4);
       if (bVar2) {
         bVar2 = false;
@@ -3443,7 +3499,7 @@ bool __cdecl Path_CanStealNode(pathnode_t *param_1,sentient_s *param_2)
     }
   }
   else {
-    iVar5 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+    iVar5 = SentientHandle::isDefined(&(node->dynamic).pOwner);
     if ((iVar5 != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x120b,0,
                                  "%s"), !bVar2)) {
@@ -3464,7 +3520,7 @@ bool __cdecl Path_CanStealNode(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Path_CanClaimNode(pathnode_t *param_1,sentient_s *param_2)
+int __cdecl Path_CanClaimNode(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
@@ -3472,45 +3528,45 @@ int __cdecl Path_CanClaimNode(pathnode_t *param_1,sentient_s *param_2)
   int iVar3;
   sentient_s *psVar4;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x123d,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (sentient_s *)0x0) &&
+  if ((claimer == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x123e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_2->eTeam != TEAM_AXIS) && (param_2->eTeam != TEAM_ALLIES)) &&
+  if (((claimer->eTeam != TEAM_AXIS) && (claimer->eTeam != TEAM_ALLIES)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x123f,0,
                                "%s\n\t(claimer->eTeam) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if ((iVar3 != 0) &&
-     (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar4 == param_2)) {
+     (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4 == claimer)) {
     return 1;
   }
-  if ((param_1->dynamic).iValidTime[param_2->eTeam - TEAM_AXIS] < level.time) {
-    if ((param_1->dynamic).iFreeTime < level.time) {
+  if ((node->dynamic).iValidTime[claimer->eTeam - TEAM_AXIS] < level.time) {
+    if ((node->dynamic).iFreeTime < level.time) {
       iVar3 = 1;
     }
     else {
-      if (((param_1->dynamic).iFreeTime == 0x7fffffff) &&
-         (bVar2 = Path_CanStealNode(param_1,param_2), bVar2)) {
-        psVar4 = Path_GetNodeOwner(param_1);
+      if (((node->dynamic).iFreeTime == 0x7fffffff) &&
+         (bVar2 = Path_CanStealNode(node,claimer), bVar2)) {
+        psVar4 = Path_GetNodeOwner(node);
         Path_RelinquishNodeNow(psVar4);
         return 1;
       }
-      if ((((param_1->constant).spawnflags & 0x40) != 0) &&
-         (iVar3 = Path_CanStealPriorityNode(param_1,param_2), iVar3 != 0)) {
+      if ((((node->constant).spawnflags & 0x40) != 0) &&
+         (iVar3 = Path_CanStealPriorityNode(node,claimer), iVar3 != 0)) {
         return 1;
       }
       iVar3 = 0;
@@ -3530,14 +3586,14 @@ int __cdecl Path_CanClaimNode(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_ClaimNodeInternal(pathnode_t *param_1,sentient_s *param_2)
+void __cdecl Path_ClaimNodeInternal(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *unaff_EBP;
   
-  if (param_2->ent->actor != (actor_s *)0x0) {
+  if (claimer->ent->actor != (actor_s *)0x0) {
     bVar2 = Actor_KeepClaimedNode(unaff_EBP);
     if (bVar2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1275,0,"%s"
@@ -3549,8 +3605,8 @@ void __cdecl Path_ClaimNodeInternal(pathnode_t *param_1,sentient_s *param_2)
       }
     }
   }
-  param_2->pClaimedNode = param_1;
-  param_2->banNodeTime = 0;
+  claimer->pClaimedNode = node;
+  claimer->banNodeTime = 0;
   Sentient_BanNearNodes((sentient_s *)unaff_EBP);
   return;
 }
@@ -3563,13 +3619,13 @@ void __cdecl Path_ClaimNodeInternal(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_MarkNodeOverlap(pathnode_t *param_1)
+void __cdecl Path_MarkNodeOverlap(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x127e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3577,87 +3633,88 @@ void __cdecl Path_MarkNodeOverlap(pathnode_t *param_1)
       return;
     }
   }
-  SentientHandle::setSentient(&(param_1->dynamic).pOwner,(sentient_s *)0x0);
-  (param_1->dynamic).iFreeTime = 0x7fffffff;
-  (param_1->dynamic).wOverlapCount = (param_1->dynamic).wOverlapCount + 1;
+  SentientHandle::setSentient(&(node->dynamic).pOwner,(sentient_s *)0x0);
+  (node->dynamic).iFreeTime = 0x7fffffff;
+  (node->dynamic).wOverlapCount = (node->dynamic).wOverlapCount + 1;
   return;
 }
 
 
 // 00927A90  Path_ClaimNode  (game/pathnode.cpp:4742)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_ClaimNode(pathnode_t *param_1,sentient_s *param_2)
+void __cdecl Path_ClaimNode(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   sentient_s *psVar4;
-  pathnode_t *ppVar5;
-  int local_8;
+  pathnode_t *node_00;
+  pathnode_t *otherNode;
+  int i;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x128f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (sentient_s *)0x0) &&
+  if ((claimer == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1290,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->eTeam != TEAM_AXIS) && (param_2->eTeam != TEAM_ALLIES)) &&
+  if (((claimer->eTeam != TEAM_AXIS) && (claimer->eTeam != TEAM_ALLIES)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1291,0,
                                "%s\n\t(claimer->eTeam) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (((iVar3 == 0) ||
-      (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar4 != param_2)) &&
-     ((level.time <= (param_1->dynamic).iFreeTime &&
+      (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4 != claimer)) &&
+     ((level.time <= (node->dynamic).iFreeTime &&
       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1292,0,
                                 "%s\n\t(node->dynamic.iFreeTime) = %i"), !bVar2)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (((iVar3 != 0) &&
-      (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar4 != param_2)) &&
-     ((level.time <= (param_1->dynamic).iValidTime[param_2->eTeam - TEAM_AXIS] &&
+      (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4 != claimer)) &&
+     ((level.time <= (node->dynamic).iValidTime[claimer->eTeam - TEAM_AXIS] &&
       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1293,0,
                                 "%s"), !bVar2)))) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  SentientHandle::setSentient(&(param_1->dynamic).pOwner,param_2);
-  (param_1->dynamic).iFreeTime = 0x7fffffff;
-  local_8 = 0;
+  SentientHandle::setSentient(&(node->dynamic).pOwner,claimer);
+  (node->dynamic).iFreeTime = 0x7fffffff;
+  i = 0;
   while( true ) {
-    if ((1 < local_8) || ((param_1->constant).wOverlapNode[local_8] < 0)) {
-      Path_ClaimNodeInternal(param_1,param_2);
+    if ((1 < i) || ((node->constant).wOverlapNode[i] < 0)) {
+      Path_ClaimNodeInternal(node,claimer);
       return;
     }
-    ppVar5 = (gameWorldCurrent->path).nodes + (param_1->constant).wOverlapNode[local_8];
-    iVar3 = SentientHandle::isDefined(&(ppVar5->dynamic).pOwner);
+    node_00 = (gameWorldCurrent->path).nodes + (node->constant).wOverlapNode[i];
+    iVar3 = SentientHandle::isDefined(&(node_00->dynamic).pOwner);
     if ((((iVar3 == 0) ||
-         (psVar4 = SentientHandle::sentient(&(ppVar5->dynamic).pOwner), psVar4 != param_2)) &&
-        ((ppVar5->dynamic).iFreeTime == 0x7fffffff)) && ((ppVar5->dynamic).wOverlapCount == 0)) {
-      iVar3 = SentientHandle::isDefined(&(ppVar5->dynamic).pOwner);
+         (psVar4 = SentientHandle::sentient(&(node_00->dynamic).pOwner), psVar4 != claimer)) &&
+        ((node_00->dynamic).iFreeTime == 0x7fffffff)) && ((node_00->dynamic).wOverlapCount == 0)) {
+      iVar3 = SentientHandle::isDefined(&(node_00->dynamic).pOwner);
       if (iVar3 != 0) {
-        SentientHandle::sentient(&(ppVar5->dynamic).pOwner);
+        SentientHandle::sentient(&(node_00->dynamic).pOwner);
       }
       va("node = %i, owner = %i, free time = %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12a0,0,
@@ -3668,8 +3725,8 @@ void __cdecl Path_ClaimNode(pathnode_t *param_1,sentient_s *param_2)
         return;
       }
     }
-    Path_MarkNodeOverlap(ppVar5);
-    if ((2 < (ushort)(ppVar5->dynamic).wOverlapCount) &&
+    Path_MarkNodeOverlap(node_00);
+    if ((2 < (ushort)(node_00->dynamic).wOverlapCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12a4,0,
                                  "otherNode->dynamic.wOverlapCount doesn\'t index ARRAY_COUNT( otherNode->constant.wOverlapNode ) + 1\n\t%i not in [0, %i)"
                                 ), !bVar2)) {
@@ -3677,10 +3734,10 @@ void __cdecl Path_ClaimNode(pathnode_t *param_1,sentient_s *param_2)
       (*pcVar1)();
       return;
     }
-    if (((ppVar5->constant).wOverlapNode[(ppVar5->dynamic).wOverlapCount + -1] < 0) &&
+    if (((node_00->constant).wOverlapNode[(node_00->dynamic).wOverlapCount + -1] < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12a5,0,
                                  "%s"), !bVar2)) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -3695,7 +3752,7 @@ void __cdecl Path_ClaimNode(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_RevokeClaim(pathnode_t *param_1,sentient_s *param_2)
+void __cdecl Path_RevokeClaim(pathnode_t *node,sentient_s *pNewClaimer)
 
 {
   code *pcVar1;
@@ -3705,18 +3762,17 @@ void __cdecl Path_RevokeClaim(pathnode_t *param_1,sentient_s *param_2)
   sentient_s *unaff_EBP;
   pathnode_t *unaff_retaddr;
   
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (((((iVar3 == 0) ||
-        (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner),
-        psVar4->ent == (gentity_s *)0x0)) ||
-       (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner),
-       psVar4->ent->actor != (actor_s *)0x0)) &&
-      ((iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner), iVar3 != 0 &&
-       (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar4 != param_2)))) &&
-     ((param_1->dynamic).iFreeTime == 0x7fffffff)) {
-    SentientHandle::sentient(&(param_1->dynamic).pOwner);
+        (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4->ent == (gentity_s *)0x0
+        )) || (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner),
+              psVar4->ent->actor != (actor_s *)0x0)) &&
+      ((iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner), iVar3 != 0 &&
+       (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4 != pNewClaimer)))) &&
+     ((node->dynamic).iFreeTime == 0x7fffffff)) {
+    SentientHandle::sentient(&(node->dynamic).pOwner);
     Sentient_NodeClaimRevoked(unaff_EBP,unaff_retaddr);
-    if (((param_1->dynamic).iFreeTime == 0x7fffffff) &&
+    if (((node->dynamic).iFreeTime == 0x7fffffff) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12b8,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -3735,7 +3791,7 @@ void __cdecl Path_RevokeClaim(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_ForceClaimNode(pathnode_t *param_1,sentient_s *param_2)
+void __cdecl Path_ForceClaimNode(pathnode_t *node,sentient_s *claimer)
 
 {
   code *pcVar1;
@@ -3743,53 +3799,52 @@ void __cdecl Path_ForceClaimNode(pathnode_t *param_1,sentient_s *param_2)
   int iVar3;
   sentient_s *psVar4;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12c6,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (sentient_s *)0x0) &&
+  if ((claimer == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12c7,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->eTeam != TEAM_AXIS) && (param_2->eTeam != TEAM_ALLIES)) &&
+  if (((claimer->eTeam != TEAM_AXIS) && (claimer->eTeam != TEAM_ALLIES)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x12c8,0,
                                "%s\n\t(claimer->eTeam) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->pClaimedNode != (pathnode_t *)0x0) && (param_2->pClaimedNode != param_1)) {
-    Path_RelinquishNodeSoon(param_2);
+  if ((claimer->pClaimedNode != (pathnode_t *)0x0) && (claimer->pClaimedNode != node)) {
+    Path_RelinquishNodeSoon(claimer);
   }
-  iVar3 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar3 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if ((iVar3 == 0) ||
-     (psVar4 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar4 != param_2)) {
-    Path_RevokeClaim(param_1,param_2);
-    if ((-1 < (param_1->constant).wOverlapNode[0]) &&
-       (Path_RevokeClaim((gameWorldCurrent->path).nodes + (param_1->constant).wOverlapNode[0],
-                         param_2), -1 < (param_1->constant).wOverlapNode[1])) {
-      Path_RevokeClaim((gameWorldCurrent->path).nodes + (param_1->constant).wOverlapNode[1],param_2)
-      ;
+     (psVar4 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar4 != claimer)) {
+    Path_RevokeClaim(node,claimer);
+    if ((-1 < (node->constant).wOverlapNode[0]) &&
+       (Path_RevokeClaim((gameWorldCurrent->path).nodes + (node->constant).wOverlapNode[0],claimer),
+       -1 < (node->constant).wOverlapNode[1])) {
+      Path_RevokeClaim((gameWorldCurrent->path).nodes + (node->constant).wOverlapNode[1],claimer);
     }
-    if ((param_1->dynamic).iFreeTime != 0x7fffffff) {
-      SentientHandle::setSentient(&(param_1->dynamic).pOwner,param_2);
-      (param_1->dynamic).iFreeTime = 0x7fffffff;
-      if ((-1 < (param_1->constant).wOverlapNode[0]) &&
-         (Path_MarkNodeOverlap((gameWorldCurrent->path).nodes + (param_1->constant).wOverlapNode[0])
-         , -1 < (param_1->constant).wOverlapNode[1])) {
-        Path_MarkNodeOverlap((gameWorldCurrent->path).nodes + (param_1->constant).wOverlapNode[1]);
+    if ((node->dynamic).iFreeTime != 0x7fffffff) {
+      SentientHandle::setSentient(&(node->dynamic).pOwner,claimer);
+      (node->dynamic).iFreeTime = 0x7fffffff;
+      if ((-1 < (node->constant).wOverlapNode[0]) &&
+         (Path_MarkNodeOverlap((gameWorldCurrent->path).nodes + (node->constant).wOverlapNode[0]),
+         -1 < (node->constant).wOverlapNode[1])) {
+        Path_MarkNodeOverlap((gameWorldCurrent->path).nodes + (node->constant).wOverlapNode[1]);
       }
-      Path_ClaimNodeInternal(param_1,param_2);
+      Path_ClaimNodeInternal(node,claimer);
     }
   }
-  else if (param_2->pClaimedNode != param_1) {
-    Path_ClaimNode(param_1,param_2);
+  else if (claimer->pClaimedNode != node) {
+    Path_ClaimNode(node,claimer);
   }
   return;
 }
@@ -3802,10 +3857,10 @@ void __cdecl Path_ForceClaimNode(pathnode_t *param_1,sentient_s *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_RelinquishNodeNow(sentient_s *param_1)
+void __cdecl Path_RelinquishNodeNow(sentient_s *claimer)
 
 {
-  Path_RelinquishNode(param_1,0);
+  Path_RelinquishNode(claimer,0);
   return;
 }
 
@@ -3817,22 +3872,22 @@ void __cdecl Path_RelinquishNodeNow(sentient_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_RelinquishNodeSoon(sentient_s *param_1)
+void __cdecl Path_RelinquishNodeSoon(sentient_s *claimer)
 
 {
-  Path_RelinquishNode(param_1,5000);
+  Path_RelinquishNode(claimer,5000);
   return;
 }
 
 
 // 00928150  Path_RelinquishNode  (game/pathnode.cpp:4881)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_RelinquishNode(sentient_s *param_1,int param_2)
+void __cdecl Path_RelinquishNode(sentient_s *claimer,int timeUntilRelinquished)
 
 {
   short sVar1;
@@ -3843,11 +3898,14 @@ void __cdecl Path_RelinquishNode(sentient_s *param_1,int param_2)
   bool bVar6;
   int iVar7;
   sentient_s *psVar8;
-  int local_18;
-  sentient_s *local_c;
-  int local_8;
+  pathnode_t *otherNode;
+  int i;
+  pathnode_t *node;
+  actor_s *claimActor;
+  sentient_s *newOwner;
+  int newFreeTime;
   
-  ppVar2 = param_1->pClaimedNode;
+  ppVar2 = claimer->pClaimedNode;
   if ((ppVar2 == (pathnode_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1320,0,"%s"
                               ), !bVar6)) {
@@ -3864,50 +3922,50 @@ void __cdecl Path_RelinquishNode(sentient_s *param_1,int param_2)
     return;
   }
   psVar8 = SentientHandle::sentient(&(ppVar2->dynamic).pOwner);
-  if ((psVar8 != param_1) &&
+  if ((psVar8 != claimer) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1322,0,"%s"
                               ), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((param_1 == (sentient_s *)0x0) &&
+  if ((claimer == (sentient_s *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1323,0,"%s"
                               ), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if (((param_1->eTeam != TEAM_AXIS) && (param_1->eTeam != TEAM_ALLIES)) &&
+  if (((claimer->eTeam != TEAM_AXIS) && (claimer->eTeam != TEAM_ALLIES)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1324,0,
                                "%s\n\t(claimer->eTeam) = %i"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  param_1->pClaimedNode = (pathnode_t *)0x0;
-  Scr_Notify(param_1->ent,scr_const.node_relinquished,0);
-  param_1->bNearestNodeValid = '\0';
-  paVar3 = param_1->ent->actor;
+  claimer->pClaimedNode = (pathnode_t *)0x0;
+  Scr_Notify(claimer->ent,scr_const.node_relinquished,0);
+  claimer->bNearestNodeValid = '\0';
+  paVar3 = claimer->ent->actor;
   if (paVar3 != (actor_s *)0x0) {
     (paVar3->arrivalInfo).animscriptOverrideRunTo = 0;
   }
-  if (param_2 < 1) {
-    local_8 = 0;
-    local_c = (sentient_s *)0x0;
+  if (timeUntilRelinquished < 1) {
+    newFreeTime = 0;
+    newOwner = (sentient_s *)0x0;
   }
   else {
-    local_8 = level.time + param_2;
-    local_c = param_1;
+    newFreeTime = level.time + timeUntilRelinquished;
+    newOwner = claimer;
   }
-  (ppVar2->dynamic).iFreeTime = local_8;
-  SentientHandle::setSentient(&(ppVar2->dynamic).pOwner,local_c);
-  local_18 = 0;
+  (ppVar2->dynamic).iFreeTime = newFreeTime;
+  SentientHandle::setSentient(&(ppVar2->dynamic).pOwner,newOwner);
+  i = 0;
   while( true ) {
-    if ((1 < local_18) || ((ppVar2->constant).wOverlapNode[local_18] < 0)) {
+    if ((1 < i) || ((ppVar2->constant).wOverlapNode[i] < 0)) {
       return;
     }
-    sVar1 = (ppVar2->constant).wOverlapNode[local_18];
+    sVar1 = (ppVar2->constant).wOverlapNode[i];
     ppVar4 = (gameWorldCurrent->path).nodes;
     iVar7 = SentientHandle::isDefined(&ppVar4[sVar1].dynamic.pOwner);
     if ((iVar7 != 0) &&
@@ -3915,10 +3973,10 @@ void __cdecl Path_RelinquishNode(sentient_s *param_1,int param_2)
                                  "%s"), !bVar6)) break;
     ppVar4[sVar1].dynamic.wOverlapCount = ppVar4[sVar1].dynamic.wOverlapCount + -1;
     if (ppVar4[sVar1].dynamic.wOverlapCount == 0) {
-      SentientHandle::setSentient(&ppVar4[sVar1].dynamic.pOwner,local_c);
-      ppVar4[sVar1].dynamic.iFreeTime = local_8;
+      SentientHandle::setSentient(&ppVar4[sVar1].dynamic.pOwner,newOwner);
+      ppVar4[sVar1].dynamic.iFreeTime = newFreeTime;
     }
-    local_18 = local_18 + 1;
+    i = i + 1;
   }
   pcVar5 = (code *)swi(3);
   (*pcVar5)();
@@ -3933,7 +3991,7 @@ void __cdecl Path_RelinquishNode(sentient_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_MarkNodeInvalid(pathnode_t *param_1,team_t param_2)
+void __cdecl Path_MarkNodeInvalid(pathnode_t *node,team_t eTeam)
 
 {
   short sVar1;
@@ -3942,54 +4000,54 @@ void __cdecl Path_MarkNodeInvalid(pathnode_t *param_1,team_t param_2)
   bool bVar4;
   int iVar5;
   sentient_s *psVar6;
-  int local_8;
+  pathnode_t *otherNode;
+  int i;
   
-  if ((param_1 == (pathnode_t *)0x0) &&
+  if ((node == (pathnode_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1359,0,"%s"
                               ), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if (((param_2 != TEAM_AXIS) && (param_2 != TEAM_ALLIES)) &&
+  if (((eTeam != TEAM_AXIS) && (eTeam != TEAM_ALLIES)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x135a,0,
                                "%s\n\t(eTeam) = %i"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  iVar5 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar5 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if ((iVar5 != 0) &&
-     (psVar6 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar6->eTeam == param_2)) {
-    psVar6 = SentientHandle::sentient(&(param_1->dynamic).pOwner);
+     (psVar6 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar6->eTeam == eTeam)) {
+    psVar6 = SentientHandle::sentient(&(node->dynamic).pOwner);
     if (psVar6->pClaimedNode != (pathnode_t *)0x0) {
-      psVar6 = SentientHandle::sentient(&(param_1->dynamic).pOwner);
+      psVar6 = SentientHandle::sentient(&(node->dynamic).pOwner);
       Path_RelinquishNodeSoon(psVar6);
     }
-    SentientHandle::setSentient(&(param_1->dynamic).pOwner,(sentient_s *)0x0);
+    SentientHandle::setSentient(&(node->dynamic).pOwner,(sentient_s *)0x0);
   }
-  (param_1->dynamic).iValidTime[param_2 - TEAM_AXIS] = level.time + 5000;
-  if ((param_1->dynamic).wOverlapCount == 0) {
-    (param_1->dynamic).iFreeTime = 0;
-    for (local_8 = 0; (local_8 < 2 && (-1 < (param_1->constant).wOverlapNode[local_8]));
-        local_8 = local_8 + 1) {
-      sVar1 = (param_1->constant).wOverlapNode[local_8];
+  (node->dynamic).iValidTime[eTeam - TEAM_AXIS] = level.time + 5000;
+  if ((node->dynamic).wOverlapCount == 0) {
+    (node->dynamic).iFreeTime = 0;
+    for (i = 0; (i < 2 && (-1 < (node->constant).wOverlapNode[i])); i = i + 1) {
+      sVar1 = (node->constant).wOverlapNode[i];
       ppVar2 = (gameWorldCurrent->path).nodes;
       if ((ppVar2[sVar1].dynamic.wOverlapCount == 0) &&
          (ppVar2[sVar1].dynamic.iFreeTime < 0x7fffffff)) {
         iVar5 = SentientHandle::isDefined(&ppVar2[sVar1].dynamic.pOwner);
         if ((iVar5 != 0) &&
-           (psVar6 = SentientHandle::sentient(&ppVar2[sVar1].dynamic.pOwner),
-           psVar6->eTeam == param_2)) {
+           (psVar6 = SentientHandle::sentient(&ppVar2[sVar1].dynamic.pOwner), psVar6->eTeam == eTeam
+           )) {
           SentientHandle::setSentient(&ppVar2[sVar1].dynamic.pOwner,(sentient_s *)0x0);
         }
         ppVar2[sVar1].dynamic.iFreeTime = 0;
       }
     }
   }
-  iVar5 = SentientHandle::isDefined(&(param_1->dynamic).pOwner);
+  iVar5 = SentientHandle::isDefined(&(node->dynamic).pOwner);
   if (((iVar5 != 0) &&
-      (psVar6 = SentientHandle::sentient(&(param_1->dynamic).pOwner), psVar6->eTeam == param_2)) &&
+      (psVar6 = SentientHandle::sentient(&(node->dynamic).pOwner), psVar6->eTeam == eTeam)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1378,0,"%s"
                               ), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -4004,15 +4062,15 @@ void __cdecl Path_MarkNodeInvalid(pathnode_t *param_1,team_t param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-ai_stance_e __cdecl Path_AllowedStancesForNode(pathnode_t *param_1)
+ai_stance_e __cdecl Path_AllowedStancesForNode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   ai_stance_e aVar3;
-  ai_stance_e local_8;
+  ai_stance_e eAllowedStances;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1380,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -4020,17 +4078,17 @@ ai_stance_e __cdecl Path_AllowedStancesForNode(pathnode_t *param_1)
       return aVar3;
     }
   }
-  local_8 = STANCE_ANY;
-  if (((param_1->constant).spawnflags & 4) != 0) {
-    local_8 = STANCE_PRONE|STANCE_CROUCH;
+  eAllowedStances = STANCE_ANY;
+  if (((node->constant).spawnflags & 4) != 0) {
+    eAllowedStances = STANCE_PRONE|STANCE_CROUCH;
   }
-  if (((param_1->constant).spawnflags & 8) != 0) {
-    local_8 = local_8 & ~STANCE_CROUCH;
+  if (((node->constant).spawnflags & 8) != 0) {
+    eAllowedStances = eAllowedStances & ~STANCE_CROUCH;
   }
-  if (((param_1->constant).spawnflags & 0x10) != 0) {
-    local_8 = local_8 & ~STANCE_PRONE;
+  if (((node->constant).spawnflags & 0x10) != 0) {
+    eAllowedStances = eAllowedStances & ~STANCE_PRONE;
   }
-  if (local_8 == STANCE_BAD) {
+  if (eAllowedStances == STANCE_BAD) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x138b,0,
                              "%s\n\t(node->constant.spawnflags) = %i");
     if (!bVar2) {
@@ -4039,7 +4097,7 @@ ai_stance_e __cdecl Path_AllowedStancesForNode(pathnode_t *param_1)
       return aVar3;
     }
   }
-  return local_8;
+  return eAllowedStances;
 }
 
 
@@ -4047,16 +4105,17 @@ ai_stance_e __cdecl Path_AllowedStancesForNode(pathnode_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_ValidateNode(pathnode_t *param_1)
+void __cdecl Path_ValidateNode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_c;
+  int j;
+  pathlink_s *link;
   
-  local_c = (uint)(param_1->constant).totalLinkCount;
-  while (local_c = local_c - 1, (int)(param_1->dynamic).wLinkCount <= (int)local_c) {
-    if ((param_1->constant).Links[local_c].disconnectCount == '\0') {
+  j = (int)(node->constant).totalLinkCount;
+  while (j = j - 1, (node->dynamic).wLinkCount <= j) {
+    if ((node->constant).Links[j].disconnectCount == '\0') {
       va("%d, %d, %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13b1,0,
                                "%s\n\t%s");
@@ -4067,7 +4126,7 @@ void __cdecl Path_ValidateNode(pathnode_t *param_1)
       }
     }
   }
-  if ((local_c != (int)(param_1->dynamic).wLinkCount - 1U) &&
+  if ((j != (node->dynamic).wLinkCount + -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13b4,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -4075,10 +4134,10 @@ void __cdecl Path_ValidateNode(pathnode_t *param_1)
     return;
   }
   do {
-    if ((int)local_c < 0) {
+    if (j < 0) {
       return;
     }
-    if ((param_1->constant).Links[local_c].disconnectCount != '\0') {
+    if ((node->constant).Links[j].disconnectCount != '\0') {
       va("%d, %d, %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13b8,0,
                                "%s\n\t%s");
@@ -4088,7 +4147,7 @@ void __cdecl Path_ValidateNode(pathnode_t *param_1)
         return;
       }
     }
-    local_c = local_c - 1;
+    j = j + -1;
   } while( true );
 }
 
@@ -4100,10 +4159,10 @@ void __cdecl Path_ValidateNode(pathnode_t *param_1)
 void __cdecl Path_ValidateAllNodes(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < g_path.actualNodeCount; local_8 = local_8 + 1) {
-    Path_ValidateNode((gameWorldCurrent->path).nodes + local_8);
+  for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+    Path_ValidateNode((gameWorldCurrent->path).nodes + i);
   }
   return;
 }
@@ -4119,30 +4178,30 @@ void __cdecl Path_CheckLinkLeaks(void)
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_c;
-  int local_8;
+  uint infoIndex;
+  int count;
   
   if (g_path.pathLinkInfoArrayInited != 0) {
-    local_8 = 0;
+    count = 0;
     uVar1 = g_path.pathLinkInfoArray[0].next;
-    while (local_c = (uint)uVar1, local_c != 0) {
-      local_8 = local_8 + 1;
-      uVar1 = g_path.pathLinkInfoArray[local_c].next;
+    while (infoIndex = (uint)uVar1, infoIndex != 0) {
+      count = count + 1;
+      uVar1 = g_path.pathLinkInfoArray[infoIndex].next;
     }
-    if ((local_8 != 0x7ff) &&
+    if ((count != 0x7ff) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13d1,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = 0;
+    count = 0;
     uVar1 = g_path.pathLinkInfoArray[0].prev;
-    while (local_c = (uint)uVar1, local_c != 0) {
-      local_8 = local_8 + 1;
-      uVar1 = g_path.pathLinkInfoArray[local_c].prev;
+    while (infoIndex = (uint)uVar1, infoIndex != 0) {
+      count = count + 1;
+      uVar1 = g_path.pathLinkInfoArray[infoIndex].prev;
     }
-    if ((local_8 != 0x7ff) &&
+    if ((count != 0x7ff) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13d6,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -4161,12 +4220,12 @@ void __cdecl Path_CheckLinkLeaks(void)
 void __cdecl Path_CheckUserCountLeaks(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < g_path.actualNodeCount; local_8 = local_8 + 1) {
-    if ((gameWorldCurrent->path).nodes[local_8].dynamic.userCount != 0) {
+  for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+    if ((gameWorldCurrent->path).nodes[i].dynamic.userCount != 0) {
       Com_Printf(0xf,"WARNING: Path node %d has a userCount of %d\n");
-      (gameWorldCurrent->path).nodes[local_8].dynamic.userCount = 0;
+      (gameWorldCurrent->path).nodes[i].dynamic.userCount = 0;
     }
   }
   return;
@@ -4178,7 +4237,7 @@ void __cdecl Path_CheckUserCountLeaks(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
+void __cdecl Path_DisconnectPath(pathnode_t *node,pathlink_s *link)
 
 {
   float fVar1;
@@ -4192,12 +4251,12 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
   bool bVar9;
   pathlink_s *ppVar10;
   
-  Path_ValidateNode(param_1);
-  param_2->disconnectCount = param_2->disconnectCount + '\x01';
-  if (param_2->disconnectCount == '\0') {
+  Path_ValidateNode(node);
+  link->disconnectCount = link->disconnectCount + '\x01';
+  if (link->disconnectCount == '\0') {
     Scr_Error("too many disconnects on a single path link (overflow on disconnect count)",false);
   }
-  if (param_2->disconnectCount == '\0') {
+  if (link->disconnectCount == '\0') {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13fa,0,"%s");
     if (!bVar9) {
       pcVar3 = (code *)swi(3);
@@ -4205,9 +4264,9 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
       return;
     }
   }
-  if (param_2->disconnectCount < 2) {
-    (param_1->dynamic).wLinkCount = (param_1->dynamic).wLinkCount + -1;
-    if ((param_1->dynamic).wLinkCount < 0) {
+  if (link->disconnectCount < 2) {
+    (node->dynamic).wLinkCount = (node->dynamic).wLinkCount + -1;
+    if ((node->dynamic).wLinkCount < 0) {
       va("node: %d, %d");
       bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1405,0,
                                "%s\n\t%s");
@@ -4217,7 +4276,7 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
         return;
       }
     }
-    if ((param_1->constant).Links + (param_1->dynamic).wLinkCount < param_2) {
+    if ((node->constant).Links + (node->dynamic).wLinkCount < link) {
       va("node: %d, %d (%d) %d (%d)");
       bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1406,0,
                                "%s\n\t%s");
@@ -4227,29 +4286,29 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
         return;
       }
     }
-    fVar1 = param_2->fDist;
-    uVar6 = param_2->nodeNum;
-    uVar7 = param_2->disconnectCount;
-    uVar8 = param_2->negotiationLink;
-    uVar2 = *(undefined4 *)param_2->ubBadPlaceCount;
-    ppVar10 = (param_1->constant).Links + (param_1->dynamic).wLinkCount;
-    param_2->fDist = ppVar10->fDist;
+    fVar1 = link->fDist;
+    uVar6 = link->nodeNum;
+    uVar7 = link->disconnectCount;
+    uVar8 = link->negotiationLink;
+    uVar2 = *(undefined4 *)link->ubBadPlaceCount;
+    ppVar10 = (node->constant).Links + (node->dynamic).wLinkCount;
+    link->fDist = ppVar10->fDist;
     uVar4 = ppVar10->disconnectCount;
     uVar5 = ppVar10->negotiationLink;
-    param_2->nodeNum = ppVar10->nodeNum;
-    param_2->disconnectCount = uVar4;
-    param_2->negotiationLink = uVar5;
-    *(undefined4 *)param_2->ubBadPlaceCount = *(undefined4 *)ppVar10->ubBadPlaceCount;
-    ppVar10 = (param_1->constant).Links + (param_1->dynamic).wLinkCount;
+    link->nodeNum = ppVar10->nodeNum;
+    link->disconnectCount = uVar4;
+    link->negotiationLink = uVar5;
+    *(undefined4 *)link->ubBadPlaceCount = *(undefined4 *)ppVar10->ubBadPlaceCount;
+    ppVar10 = (node->constant).Links + (node->dynamic).wLinkCount;
     ppVar10->fDist = fVar1;
     ppVar10->nodeNum = uVar6;
     ppVar10->disconnectCount = uVar7;
     ppVar10->negotiationLink = uVar8;
     *(undefined4 *)ppVar10->ubBadPlaceCount = uVar2;
-    Path_ValidateNode(param_1);
+    Path_ValidateNode(node);
   }
   else {
-    if (param_2 < (param_1->constant).Links + (param_1->dynamic).wLinkCount) {
+    if (link < (node->constant).Links + (node->dynamic).wLinkCount) {
       va("node: %d, %d (%d) %d (%d)");
       bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x13fe,0,
                                "%s\n\t%s");
@@ -4259,7 +4318,7 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
         return;
       }
     }
-    Path_ValidateNode(param_1);
+    Path_ValidateNode(node);
   }
   return;
 }
@@ -4270,7 +4329,7 @@ void __cdecl Path_DisconnectPath(pathnode_t *param_1,pathlink_s *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_ConnectPath(pathnode_t *param_1,pathlink_s *param_2)
+void __cdecl Path_ConnectPath(pathnode_t *node,pathlink_s *link)
 
 {
   float fVar1;
@@ -4284,7 +4343,7 @@ void __cdecl Path_ConnectPath(pathnode_t *param_1,pathlink_s *param_2)
   bool bVar9;
   pathlink_s *ppVar10;
   
-  if (param_2->disconnectCount == '\0') {
+  if (link->disconnectCount == '\0') {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1414,0,"%s");
     if (!bVar9) {
       pcVar3 = (code *)swi(3);
@@ -4292,7 +4351,7 @@ void __cdecl Path_ConnectPath(pathnode_t *param_1,pathlink_s *param_2)
       return;
     }
   }
-  if (param_2 < (param_1->constant).Links + (param_1->dynamic).wLinkCount) {
+  if (link < (node->constant).Links + (node->dynamic).wLinkCount) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1415,0,"%s");
     if (!bVar9) {
       pcVar3 = (code *)swi(3);
@@ -4300,33 +4359,33 @@ void __cdecl Path_ConnectPath(pathnode_t *param_1,pathlink_s *param_2)
       return;
     }
   }
-  Path_ValidateNode(param_1);
-  param_2->disconnectCount = param_2->disconnectCount + 0xff;
-  if (param_2->disconnectCount == '\0') {
-    fVar1 = param_2->fDist;
-    uVar6 = param_2->nodeNum;
-    uVar7 = param_2->disconnectCount;
-    uVar8 = param_2->negotiationLink;
-    uVar2 = *(undefined4 *)param_2->ubBadPlaceCount;
-    ppVar10 = (param_1->constant).Links + (param_1->dynamic).wLinkCount;
-    param_2->fDist = ppVar10->fDist;
+  Path_ValidateNode(node);
+  link->disconnectCount = link->disconnectCount + 0xff;
+  if (link->disconnectCount == '\0') {
+    fVar1 = link->fDist;
+    uVar6 = link->nodeNum;
+    uVar7 = link->disconnectCount;
+    uVar8 = link->negotiationLink;
+    uVar2 = *(undefined4 *)link->ubBadPlaceCount;
+    ppVar10 = (node->constant).Links + (node->dynamic).wLinkCount;
+    link->fDist = ppVar10->fDist;
     uVar4 = ppVar10->disconnectCount;
     uVar5 = ppVar10->negotiationLink;
-    param_2->nodeNum = ppVar10->nodeNum;
-    param_2->disconnectCount = uVar4;
-    param_2->negotiationLink = uVar5;
-    *(undefined4 *)param_2->ubBadPlaceCount = *(undefined4 *)ppVar10->ubBadPlaceCount;
-    ppVar10 = (param_1->constant).Links + (param_1->dynamic).wLinkCount;
+    link->nodeNum = ppVar10->nodeNum;
+    link->disconnectCount = uVar4;
+    link->negotiationLink = uVar5;
+    *(undefined4 *)link->ubBadPlaceCount = *(undefined4 *)ppVar10->ubBadPlaceCount;
+    ppVar10 = (node->constant).Links + (node->dynamic).wLinkCount;
     ppVar10->fDist = fVar1;
     ppVar10->nodeNum = uVar6;
     ppVar10->disconnectCount = uVar7;
     ppVar10->negotiationLink = uVar8;
     *(undefined4 *)ppVar10->ubBadPlaceCount = uVar2;
-    (param_1->dynamic).wLinkCount = (param_1->dynamic).wLinkCount + 1;
-    Path_ValidateNode(param_1);
+    (node->dynamic).wLinkCount = (node->dynamic).wLinkCount + 1;
+    Path_ValidateNode(node);
   }
   else {
-    Path_ValidateNode(param_1);
+    Path_ValidateNode(node);
   }
   return;
 }
@@ -4336,20 +4395,21 @@ void __cdecl Path_ConnectPath(pathnode_t *param_1,pathlink_s *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_ConnectPath(pathnode_t *param_1,int param_2)
+void __cdecl Path_ConnectPath(pathnode_t *node,int toNodeNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  pathlink_s *ppVar3;
-  int local_c;
+  pathlink_s *link_00;
+  int j;
+  pathlink_s *link;
   
-  if (((param_1->constant).spawnflags & 0x4000) == 0) {
-    for (local_c = (int)(param_1->dynamic).wLinkCount;
-        local_c < (int)(uint)(param_1->constant).totalLinkCount; local_c = local_c + 1) {
-      ppVar3 = (param_1->constant).Links + local_c;
-      if ((uint)ppVar3->nodeNum == param_2) {
-        Path_ConnectPath(param_1,ppVar3);
+  if (((node->constant).spawnflags & 0x4000) == 0) {
+    for (j = (int)(node->dynamic).wLinkCount; j < (int)(uint)(node->constant).totalLinkCount;
+        j = j + 1) {
+      link_00 = (node->constant).Links + j;
+      if ((uint)link_00->nodeNum == toNodeNum) {
+        Path_ConnectPath(node,link_00);
         return;
       }
     }
@@ -4372,11 +4432,13 @@ void __cdecl Path_ConnectPath(pathnode_t *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DisconnectPath(gentity_s *param_1,pathnode_t *param_2,pathlink_s *param_3)
+void __cdecl Path_DisconnectPath(gentity_s *ent,pathnode_t *node,pathlink_s *link)
 
 {
   ushort uVar1;
   uint uVar2;
+  PathLinkInfo *newInfo;
+  ushort newInfoIndex;
   
   uVar1 = g_path.pathLinkInfoArray[0].next;
   if (g_path.pathLinkInfoArray[0].next == 0) {
@@ -4386,21 +4448,20 @@ void __cdecl Path_DisconnectPath(gentity_s *param_1,pathnode_t *param_2,pathlink
   g_path.pathLinkInfoArray[0].next = g_path.pathLinkInfoArray[uVar2].next;
   g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[uVar2].next].prev = 0;
   g_path.pathLinkInfoArray[uVar2].from =
-       (ushort)((int)param_2 - (int)(gameWorldCurrent->path).nodes >> 7);
-  g_path.pathLinkInfoArray[uVar2].to = param_3->nodeNum;
-  if (param_1->disconnectedLinks == 0) {
-    param_1->disconnectedLinks = uVar1;
+       (ushort)((int)node - (int)(gameWorldCurrent->path).nodes >> 7);
+  g_path.pathLinkInfoArray[uVar2].to = link->nodeNum;
+  if (ent->disconnectedLinks == 0) {
+    ent->disconnectedLinks = uVar1;
     g_path.pathLinkInfoArray[uVar2].next = uVar1;
     g_path.pathLinkInfoArray[uVar2].prev = uVar1;
   }
   else {
-    g_path.pathLinkInfoArray[uVar2].prev = param_1->disconnectedLinks;
-    g_path.pathLinkInfoArray[uVar2].next = g_path.pathLinkInfoArray[param_1->disconnectedLinks].next
-    ;
+    g_path.pathLinkInfoArray[uVar2].prev = ent->disconnectedLinks;
+    g_path.pathLinkInfoArray[uVar2].next = g_path.pathLinkInfoArray[ent->disconnectedLinks].next;
     g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[uVar2].next].prev = uVar1;
     g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[uVar2].prev].next = uVar1;
   }
-  Path_DisconnectPath(param_2,param_3);
+  Path_DisconnectPath(node,link);
   return;
 }
 
@@ -4412,16 +4473,17 @@ void __cdecl Path_DisconnectPath(gentity_s *param_1,pathnode_t *param_2,pathlink
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_ConnectPathsForEntity(gentity_s *param_1)
+void __cdecl Path_ConnectPathsForEntity(gentity_s *ent)
 
 {
   code *pcVar1;
   ushort uVar2;
   bool bVar3;
   int iVar4;
-  ushort local_8;
+  ushort prev;
+  ushort oldInfoIndex;
   
-  iVar4 = Path_IsDynamicBlockingEntity(param_1);
+  iVar4 = Path_IsDynamicBlockingEntity(ent);
   if ((iVar4 == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x146c,0,"%s"
                               ), !bVar3)) {
@@ -4429,18 +4491,18 @@ void __cdecl Path_ConnectPathsForEntity(gentity_s *param_1)
     (*pcVar1)();
     return;
   }
-  param_1->flags = param_1->flags | 0x4000000;
-  local_8 = param_1->disconnectedLinks;
-  if (local_8 != 0) {
-    param_1->disconnectedLinks = 0;
-    g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[local_8].prev].next = 0;
-    g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[0].prev].next = local_8;
-    uVar2 = g_path.pathLinkInfoArray[local_8].prev;
-    g_path.pathLinkInfoArray[local_8].prev = g_path.pathLinkInfoArray[0].prev;
+  ent->flags = ent->flags | 0x4000000;
+  oldInfoIndex = ent->disconnectedLinks;
+  if (oldInfoIndex != 0) {
+    ent->disconnectedLinks = 0;
+    g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[oldInfoIndex].prev].next = 0;
+    g_path.pathLinkInfoArray[g_path.pathLinkInfoArray[0].prev].next = oldInfoIndex;
+    uVar2 = g_path.pathLinkInfoArray[oldInfoIndex].prev;
+    g_path.pathLinkInfoArray[oldInfoIndex].prev = g_path.pathLinkInfoArray[0].prev;
     g_path.pathLinkInfoArray[0].prev = uVar2;
-    for (; local_8 != 0; local_8 = g_path.pathLinkInfoArray[local_8].next) {
-      Path_ConnectPath((gameWorldCurrent->path).nodes + g_path.pathLinkInfoArray[local_8].from,
-                       (uint)g_path.pathLinkInfoArray[local_8].to);
+    for (; oldInfoIndex != 0; oldInfoIndex = g_path.pathLinkInfoArray[oldInfoIndex].next) {
+      Path_ConnectPath((gameWorldCurrent->path).nodes + g_path.pathLinkInfoArray[oldInfoIndex].from,
+                       (uint)g_path.pathLinkInfoArray[oldInfoIndex].to);
     }
   }
   return;
@@ -4454,7 +4516,7 @@ void __cdecl Path_ConnectPathsForEntity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_DisconnectPathsForEntity(gentity_s *param_1)
+void __cdecl Path_DisconnectPathsForEntity(gentity_s *ent)
 
 {
   ushort uVar1;
@@ -4462,26 +4524,28 @@ void __cdecl Path_DisconnectPathsForEntity(gentity_s *param_1)
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  pathnode_t *ppVar6;
-  uint local_98;
-  sightclip_t local_8c;
-  int local_40;
-  float local_3c;
+  pathnode_t *node_00;
+  uint j;
+  pathnode_t *node;
+  pathnode_t *nodeTo;
+  sightclip_t clip;
+  int entityNum;
+  float rdir;
   float local_38;
   float local_34;
-  pathlink_s *local_30;
-  float local_2c;
+  pathlink_s *link;
+  float start;
   float local_28;
   float local_24;
-  float local_20;
+  float mx;
   float local_1c;
   float local_18;
-  uint local_14;
-  float local_10;
+  uint i;
+  float mn;
   float local_c;
   float local_8;
   
-  iVar5 = Path_IsDynamicBlockingEntity(param_1);
+  iVar5 = Path_IsDynamicBlockingEntity(ent);
   if ((iVar5 == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x148d,0,"%s"
                               ), !bVar4)) {
@@ -4489,53 +4553,52 @@ void __cdecl Path_DisconnectPathsForEntity(gentity_s *param_1)
     (*pcVar3)();
     return;
   }
-  Path_ConnectPathsForEntity(param_1);
-  param_1->flags = param_1->flags & 0xfbffffff;
-  param_1->iDisconnectTime = level.time;
-  local_40 = (param_1->s).number;
-  local_3c = 266.0;
+  Path_ConnectPathsForEntity(ent);
+  ent->flags = ent->flags & 0xfbffffff;
+  ent->iDisconnectTime = level.time;
+  entityNum = (ent->s).number;
+  rdir = 266.0;
   local_38 = 266.0;
   local_34 = 266.0;
-  local_10 = (param_1->r).absmin[0] - 266.0;
-  local_c = (param_1->r).absmin[1] - 266.0;
-  local_8 = (param_1->r).absmin[2] - 266.0;
-  local_20 = (param_1->r).absmax[0] + 266.0;
-  local_1c = (param_1->r).absmax[1] + 266.0;
-  local_18 = (param_1->r).absmax[2] + 266.0;
-  local_8c.mins[0] = -15.0;
-  local_8c.mins[1] = -15.0;
-  local_8c.mins[2] = 18.0;
-  local_8c.maxs[0] = 15.0;
-  local_8c.maxs[1] = 15.0;
-  local_8c.maxs[2] = 48.0;
-  local_8c.contentmask = 0x2820011;
-  local_8c.passEntityNum[1] = 0x3ff;
-  local_8c.passEntityNum[0] = 0x3ff;
-  for (local_14 = 0; local_14 < g_path.actualNodeCount; local_14 = local_14 + 1) {
-    ppVar6 = (gameWorldCurrent->path).nodes + local_14;
-    local_8c.start[0] = (ppVar6->constant).vOrigin[0];
-    local_8c.start[1] = (ppVar6->constant).vOrigin[1];
-    local_8c.start[2] = (ppVar6->constant).vOrigin[2];
-    if ((((ppVar6->constant).type == NODE_NEGOTIATION_BEGIN) ||
-        ((ppVar6->constant).type == NODE_NEGOTIATION_END)) ||
-       (((local_8c.start[0] <= local_20 &&
-         (((local_8c.start[1] <= local_1c && (local_8c.start[2] <= local_18)) &&
-          (local_10 <= local_8c.start[0])))) &&
-        ((local_c <= local_8c.start[1] && (local_8 <= local_8c.start[2])))))) {
-      local_98 = (uint)(ppVar6->constant).totalLinkCount;
-      local_2c = local_8c.start[0];
-      local_28 = local_8c.start[1];
-      local_24 = local_8c.start[2];
-      while (local_98 = local_98 - 1, local_98 != 0xffffffff) {
-        local_30 = (ppVar6->constant).Links + local_98;
-        uVar1 = local_30->nodeNum;
+  mn = (ent->r).absmin[0] - 266.0;
+  local_c = (ent->r).absmin[1] - 266.0;
+  local_8 = (ent->r).absmin[2] - 266.0;
+  mx = (ent->r).absmax[0] + 266.0;
+  local_1c = (ent->r).absmax[1] + 266.0;
+  local_18 = (ent->r).absmax[2] + 266.0;
+  clip.mins[0] = -15.0;
+  clip.mins[1] = -15.0;
+  clip.mins[2] = 18.0;
+  clip.maxs[0] = 15.0;
+  clip.maxs[1] = 15.0;
+  clip.maxs[2] = 48.0;
+  clip.contentmask = 0x2820011;
+  clip.passEntityNum[1] = 0x3ff;
+  clip.passEntityNum[0] = 0x3ff;
+  for (i = 0; i < g_path.actualNodeCount; i = i + 1) {
+    node_00 = (gameWorldCurrent->path).nodes + i;
+    clip.start[0] = (node_00->constant).vOrigin[0];
+    clip.start[1] = (node_00->constant).vOrigin[1];
+    clip.start[2] = (node_00->constant).vOrigin[2];
+    if ((((node_00->constant).type == NODE_NEGOTIATION_BEGIN) ||
+        ((node_00->constant).type == NODE_NEGOTIATION_END)) ||
+       (((clip.start[0] <= mx &&
+         (((clip.start[1] <= local_1c && (clip.start[2] <= local_18)) && (mn <= clip.start[0])))) &&
+        ((local_c <= clip.start[1] && (local_8 <= clip.start[2])))))) {
+      j = (uint)(node_00->constant).totalLinkCount;
+      start = clip.start[0];
+      local_28 = clip.start[1];
+      local_24 = clip.start[2];
+      while (j = j - 1, j != 0xffffffff) {
+        link = (node_00->constant).Links + j;
+        uVar1 = link->nodeNum;
         ppVar2 = (gameWorldCurrent->path).nodes;
-        local_8c.end[0] = ppVar2[uVar1].constant.vOrigin[0];
-        local_8c.end[1] = ppVar2[uVar1].constant.vOrigin[1];
-        local_8c.end[2] = ppVar2[uVar1].constant.vOrigin[2];
-        iVar5 = SV_SightTraceCapsuleToEntity(&local_8c,local_40);
+        clip.end[0] = ppVar2[uVar1].constant.vOrigin[0];
+        clip.end[1] = ppVar2[uVar1].constant.vOrigin[1];
+        clip.end[2] = ppVar2[uVar1].constant.vOrigin[2];
+        iVar5 = SV_SightTraceCapsuleToEntity(&clip,entityNum);
         if (iVar5 != 0) {
-          Path_DisconnectPath(param_1,ppVar6,local_30);
+          Path_DisconnectPath(ent,node_00,link);
         }
       }
     }
@@ -4546,22 +4609,23 @@ void __cdecl Path_DisconnectPathsForEntity(gentity_s *param_1)
 
 // 00929CD0  Path_UpdateBadPlaceCountForLink  (game/pathnode.cpp:5310)
 
-void __cdecl Path_UpdateBadPlaceCountForLink(pathlink_s *param_1,int param_2,int param_3)
+void __cdecl Path_UpdateBadPlaceCountForLink(pathlink_s *link,int teamflags,int delta)
 
 {
-  char *pcVar1;
-  bool bVar2;
+  char *error;
+  bool force_terminal;
   uchar local_14;
   int local_10;
-  uint local_8;
+  int iNewCount;
+  uint i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if ((1 << ((byte)local_8 & 0x1f) & param_2) != 0) {
-      local_10 = (uint)param_1->ubBadPlaceCount[local_8] + param_3;
+  for (i = 0; i < 4; i = i + 1) {
+    if ((1 << ((byte)i & 0x1f) & teamflags) != 0) {
+      local_10 = (uint)link->ubBadPlaceCount[i] + delta;
       if (local_10 < 0) {
-        bVar2 = false;
-        pcVar1 = va("Bad place underflow -- negative count in slot (%i) val (%i)");
-        Scr_Error(pcVar1,bVar2);
+        force_terminal = false;
+        error = va("Bad place underflow -- negative count in slot (%i) val (%i)");
+        Scr_Error(error,force_terminal);
       }
       else if (0xff < local_10) {
         Scr_Error("Bad place overflow -- count exceeds 255",false);
@@ -4575,7 +4639,7 @@ void __cdecl Path_UpdateBadPlaceCountForLink(pathlink_s *param_1,int param_2,int
       else {
         local_14 = (uchar)local_10;
       }
-      param_1->ubBadPlaceCount[local_8] = local_14;
+      link->ubBadPlaceCount[i] = local_14;
     }
   }
   return;
@@ -4586,7 +4650,7 @@ void __cdecl Path_UpdateBadPlaceCountForLink(pathlink_s *param_1,int param_2,int
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_UpdateArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int param_3)
+void __cdecl Path_UpdateArcBadPlaceCount(badplace_arc_t *arc,int teamflags,int delta)
 
 {
   float fVar1;
@@ -4595,7 +4659,8 @@ void __cdecl Path_UpdateArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int
   ushort uVar4;
   pathnode_t *ppVar5;
   pathnode_t *ppVar6;
-  pathlink_s *ppVar7;
+  pathlink_s *link;
+  float fVar7;
   float fVar8;
   float fVar9;
   float fVar10;
@@ -4610,9 +4675,8 @@ void __cdecl Path_UpdateArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int
   float fVar19;
   float fVar20;
   float fVar21;
-  float fVar22;
-  double dVar23;
-  float fVar24;
+  double dVar22;
+  float fVar23;
   double in_stack_fffffee0;
   uint local_98;
   uint local_68;
@@ -4628,72 +4692,71 @@ void __cdecl Path_UpdateArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int
   float local_18;
   float local_14;
   
-  YawVectors(param_1->angle0,(float *)0x0,&local_1c);
-  YawVectors(param_1->angle1,(float *)0x0,&local_28);
+  YawVectors(arc->angle0,(float *)0x0,&local_1c);
+  YawVectors(arc->angle1,(float *)0x0,&local_28);
   local_1c = -local_1c;
   local_18 = -local_18;
-  local_14 = local_1c * param_1->origin[0] + local_18 * param_1->origin[1];
-  local_20 = local_28 * param_1->origin[0] + local_24 * param_1->origin[1];
-  local_2c = param_1->angle1 - param_1->angle0;
+  local_14 = local_1c * arc->origin[0] + local_18 * arc->origin[1];
+  local_20 = local_28 * arc->origin[0] + local_24 * arc->origin[1];
+  local_2c = arc->angle1 - arc->angle0;
   if (local_2c < 0.0) {
     local_2c = local_2c + 360.0;
   }
   local_30 = (uint)(local_2c < 180.0);
   local_34 = local_30;
-  YawVectors(local_2c * 0.5 + param_1->angle0,&local_40,(float *)0x0);
-  dVar23 = (double)(local_2c * 0.008726646);
+  YawVectors(local_2c * 0.5 + arc->angle0,&local_40,(float *)0x0);
+  dVar22 = (double)(local_2c * 0.008726646);
   __libm_sse2_sin(in_stack_fffffee0);
-  fVar8 = ((float)dVar23 / local_2c) * 76.39437 * param_1->radius;
-  fVar9 = fVar8 * local_40 + param_1->origin[0];
-  fVar10 = fVar8 * local_3c + param_1->origin[1];
-  fVar11 = param_1->radius * param_1->radius;
-  fVar12 = param_1->halfheight * param_1->halfheight;
-  fVar8 = param_1->radius;
-  fVar1 = param_1->radius;
-  fVar2 = param_1->halfheight;
-  fVar3 = param_1->halfheight;
+  fVar7 = ((float)dVar22 / local_2c) * 76.39437 * arc->radius;
+  fVar8 = fVar7 * local_40 + arc->origin[0];
+  fVar9 = fVar7 * local_3c + arc->origin[1];
+  fVar10 = arc->radius * arc->radius;
+  fVar11 = arc->halfheight * arc->halfheight;
+  fVar7 = arc->radius;
+  fVar1 = arc->radius;
+  fVar2 = arc->halfheight;
+  fVar3 = arc->halfheight;
   local_68 = 0;
   do {
     if (g_path.actualNodeCount <= local_68) {
       return;
     }
     ppVar5 = (gameWorldCurrent->path).nodes;
-    fVar13 = ppVar5[local_68].constant.vOrigin[0] - param_1->origin[0];
-    fVar14 = ppVar5[local_68].constant.vOrigin[1] - param_1->origin[1];
-    fVar15 = ppVar5[local_68].constant.vOrigin[2] - param_1->origin[2];
-    fVar24 = fVar13 * fVar13 + fVar14 * fVar14;
-    if ((fVar24 < (fVar8 + 256.0) * (fVar1 + 256.0)) &&
-       (fVar15 * fVar15 < (fVar2 + 128.0) * (fVar3 + 128.0))) {
-      fVar16 = fVar9 - ppVar5[local_68].constant.vOrigin[0];
-      fVar17 = fVar10 - ppVar5[local_68].constant.vOrigin[1];
+    fVar12 = ppVar5[local_68].constant.vOrigin[0] - arc->origin[0];
+    fVar13 = ppVar5[local_68].constant.vOrigin[1] - arc->origin[1];
+    fVar14 = ppVar5[local_68].constant.vOrigin[2] - arc->origin[2];
+    fVar23 = fVar12 * fVar12 + fVar13 * fVar13;
+    if ((fVar23 < (fVar7 + 256.0) * (fVar1 + 256.0)) &&
+       (fVar14 * fVar14 < (fVar2 + 128.0) * (fVar3 + 128.0))) {
+      fVar15 = fVar8 - ppVar5[local_68].constant.vOrigin[0];
+      fVar16 = fVar9 - ppVar5[local_68].constant.vOrigin[1];
       for (local_98 = 0; local_98 < ppVar5[local_68].constant.totalLinkCount;
           local_98 = local_98 + 1) {
-        ppVar7 = ppVar5[local_68].constant.Links + local_98;
-        uVar4 = ppVar7->nodeNum;
+        link = ppVar5[local_68].constant.Links + local_98;
+        uVar4 = link->nodeNum;
         ppVar6 = (gameWorldCurrent->path).nodes;
-        fVar18 = ppVar6[uVar4].constant.vOrigin[0] - param_1->origin[0];
-        fVar19 = ppVar6[uVar4].constant.vOrigin[1] - param_1->origin[1];
-        fVar20 = ppVar6[uVar4].constant.vOrigin[2] - param_1->origin[2];
-        fVar21 = fVar9 - ppVar6[uVar4].constant.vOrigin[0];
-        fVar22 = fVar10 - ppVar6[uVar4].constant.vOrigin[1];
-        if (fVar21 * fVar21 + fVar22 * fVar22 <= fVar16 * fVar16 + fVar17 * fVar17) {
-          if (fVar15 < param_1->halfheight) {
-            if ((-param_1->halfheight < fVar15) || (-param_1->halfheight < fVar20))
-            goto LAB_00929885;
+        fVar17 = ppVar6[uVar4].constant.vOrigin[0] - arc->origin[0];
+        fVar18 = ppVar6[uVar4].constant.vOrigin[1] - arc->origin[1];
+        fVar19 = ppVar6[uVar4].constant.vOrigin[2] - arc->origin[2];
+        fVar20 = fVar8 - ppVar6[uVar4].constant.vOrigin[0];
+        fVar21 = fVar9 - ppVar6[uVar4].constant.vOrigin[1];
+        if (fVar20 * fVar20 + fVar21 * fVar21 <= fVar15 * fVar15 + fVar16 * fVar16) {
+          if (fVar14 < arc->halfheight) {
+            if ((-arc->halfheight < fVar14) || (-arc->halfheight < fVar19)) goto LAB_00929885;
           }
-          else if (fVar20 < param_1->halfheight) {
+          else if (fVar19 < arc->halfheight) {
 LAB_00929885:
-            if ((fVar24 <= fVar11) || (fVar18 * fVar18 + fVar19 * fVar19 <= fVar11)) {
+            if ((fVar23 <= fVar10) || (fVar17 * fVar17 + fVar18 * fVar18 <= fVar10)) {
 LAB_00929ae0:
-              if ((param_1->angle0 != 0.0) || (param_1->angle1 != 360.0)) {
-                fVar18 = (ppVar5[local_68].constant.vOrigin[0] * local_1c +
+              if ((arc->angle0 != 0.0) || (arc->angle1 != 360.0)) {
+                fVar17 = (ppVar5[local_68].constant.vOrigin[0] * local_1c +
                          ppVar5[local_68].constant.vOrigin[1] * local_18) - local_14;
-                fVar19 = (ppVar6[uVar4].constant.vOrigin[0] * local_1c +
+                fVar18 = (ppVar6[uVar4].constant.vOrigin[0] * local_1c +
                          ppVar6[uVar4].constant.vOrigin[1] * local_18) - local_14;
                 if (local_34 == 0) {
-                  if ((0.0 <= fVar18) || (0.0 <= fVar19)) goto LAB_00929ca3;
+                  if ((0.0 <= fVar17) || (0.0 <= fVar18)) goto LAB_00929ca3;
                 }
-                else if ((fVar18 < 0.0) && (fVar19 < 0.0)) goto LAB_009296e0;
+                else if ((fVar17 < 0.0) && (fVar18 < 0.0)) goto LAB_009296e0;
                 if (((ppVar5[local_68].constant.vOrigin[0] * local_28 +
                      ppVar5[local_68].constant.vOrigin[1] * local_24) - local_20 < 0.0) &&
                    ((ppVar6[uVar4].constant.vOrigin[0] * local_28 +
@@ -4701,24 +4764,24 @@ LAB_00929ae0:
                 goto LAB_009296e0;
               }
 LAB_00929ca3:
-              Path_UpdateBadPlaceCountForLink(ppVar7,param_2,param_3);
+              Path_UpdateBadPlaceCountForLink(link,teamflags,delta);
             }
             else {
-              fVar18 = ppVar6[uVar4].constant.vOrigin[0] - ppVar5[local_68].constant.vOrigin[0];
-              fVar19 = ppVar6[uVar4].constant.vOrigin[1] - ppVar5[local_68].constant.vOrigin[1];
-              fVar20 = ppVar6[uVar4].constant.vOrigin[2] - ppVar5[local_68].constant.vOrigin[2];
-              fVar21 = -(fVar18 * fVar13 + fVar19 * fVar14);
-              if (0.0 < fVar21) {
-                fVar19 = fVar18 * fVar18 + fVar19 * fVar19;
-                fVar18 = fVar21 * fVar21 - fVar19 * (fVar24 - fVar11);
-                if (0.0 < fVar18) {
-                  fVar18 = SQRT(fVar18);
-                  fVar22 = (fVar21 - fVar18) / fVar19;
-                  if ((fVar22 < 1.0) &&
-                     ((fVar22 = fVar20 * fVar22 + fVar15, fVar22 * fVar22 <= fVar12 ||
-                      ((fVar19 = (fVar21 + fVar18) / fVar19, fVar19 < 1.0 &&
-                       ((fVar18 = fVar20 * fVar19 + fVar15, fVar18 * fVar18 <= fVar12 ||
-                        (fVar22 * fVar18 < 0.0)))))))) goto LAB_00929ae0;
+              fVar17 = ppVar6[uVar4].constant.vOrigin[0] - ppVar5[local_68].constant.vOrigin[0];
+              fVar18 = ppVar6[uVar4].constant.vOrigin[1] - ppVar5[local_68].constant.vOrigin[1];
+              fVar19 = ppVar6[uVar4].constant.vOrigin[2] - ppVar5[local_68].constant.vOrigin[2];
+              fVar20 = -(fVar17 * fVar12 + fVar18 * fVar13);
+              if (0.0 < fVar20) {
+                fVar18 = fVar17 * fVar17 + fVar18 * fVar18;
+                fVar17 = fVar20 * fVar20 - fVar18 * (fVar23 - fVar10);
+                if (0.0 < fVar17) {
+                  fVar17 = SQRT(fVar17);
+                  fVar21 = (fVar20 - fVar17) / fVar18;
+                  if ((fVar21 < 1.0) &&
+                     ((fVar21 = fVar19 * fVar21 + fVar14, fVar21 * fVar21 <= fVar11 ||
+                      ((fVar18 = (fVar20 + fVar17) / fVar18, fVar18 < 1.0 &&
+                       ((fVar17 = fVar19 * fVar18 + fVar14, fVar17 * fVar17 <= fVar11 ||
+                        (fVar21 * fVar17 < 0.0)))))))) goto LAB_00929ae0;
                 }
               }
             }
@@ -4741,14 +4804,15 @@ LAB_009296e0:
 
 void __cdecl
 Path_CheckForInwardLinks
-          (pathnode_t *param_1,int param_2,int param_3,float param_4,float param_5,float param_6,
-          float param_7,float *param_8,badplace_arc_t *param_9,float *param_10,float *param_11,
-          int param_12,int param_13)
+          (pathnode_t *node,int currDepth,int maxDepth,float fRadiusSqrd,float fHeightSqrd,
+          float fMaxRadiusSqrd,float fMaxHeightSqrd,float *centroid,badplace_arc_t *arc,float *side0
+          ,float *side1,int teamflags,int delta)
 
 {
   ushort uVar1;
-  pathlink_s *ppVar2;
-  pathnode_t *ppVar3;
+  pathlink_s *link_00;
+  pathnode_t *ppVar2;
+  bool bVar3;
   float fVar4;
   float fVar5;
   float fVar6;
@@ -4760,105 +4824,125 @@ Path_CheckForInwardLinks
   float fVar12;
   float fVar13;
   float fVar14;
-  int local_90;
-  int local_58;
-  pathnode_t *local_54;
-  float local_38;
-  pathnode_t *local_20;
-  bool local_5;
+  int j;
+  float fDistNode1;
+  float fDistNode0;
+  float fDistOther0;
+  float fDistOther1;
+  float fHeight1;
+  float t1;
+  float t0;
+  float fDiscriminant;
+  float fSqrtDisc;
+  float fC;
+  float fB;
+  float fA;
+  float fHeight0;
+  int i;
+  pathnode_t *finalNode;
+  float fPosHeightSqrd;
+  pathlink_s *link;
+  bool bArcLessThan180;
+  float angle;
+  float fCentroidDeltaSqrd;
+  float fOtherDeltaSqrd;
+  pathnode_t *currNode;
+  pathnode_t *otherNode;
+  float fPosDeltaSqrd;
+  bool allNodesDone;
   
-  local_20 = param_1;
-  local_54 = param_1;
-  local_38 = param_9->angle1 - param_9->angle0;
-  if (local_38 < 0.0) {
-    local_38 = local_38 + 360.0;
+  currNode = node;
+  finalNode = node;
+  angle = arc->angle1 - arc->angle0;
+  if (angle < 0.0) {
+    angle = angle + 360.0;
   }
   do {
-    if (local_20 == (pathnode_t *)0x0) {
-      for (local_5 = false; !local_5; local_5 = param_1 == (pathnode_t *)0x0 || local_5) {
-        local_5 = param_1 == local_54;
-        for (local_90 = 0; local_90 < (int)(uint)(param_1->constant).totalLinkCount;
-            local_90 = local_90 + 1) {
-          ppVar3 = (gameWorldCurrent->path).nodes + (param_1->constant).Links[local_90].nodeNum;
-          if ((param_2 != param_3) && ((ppVar3->transient).iSearchFrame <= level.iSearchFrame)) {
-            (ppVar3->transient).pNextOpen = (local_54->transient).pNextOpen;
-            (ppVar3->transient).pPrevOpen = local_54;
-            (local_54->transient).pNextOpen = ppVar3;
-            (ppVar3->transient).iSearchFrame = level.iSearchFrame + 1;
+    if (currNode == (pathnode_t *)0x0) {
+      allNodesDone = false;
+      while (!allNodesDone) {
+        bVar3 = node == finalNode;
+        for (j = 0; j < (int)(uint)(node->constant).totalLinkCount; j = j + 1) {
+          ppVar2 = (gameWorldCurrent->path).nodes + (node->constant).Links[j].nodeNum;
+          if ((currDepth != maxDepth) && ((ppVar2->transient).iSearchFrame <= level.iSearchFrame)) {
+            (ppVar2->transient).pNextOpen = (finalNode->transient).pNextOpen;
+            (ppVar2->transient).pPrevOpen = finalNode;
+            (finalNode->transient).pNextOpen = ppVar2;
+            (ppVar2->transient).iSearchFrame = level.iSearchFrame + 1;
           }
         }
-        param_1 = (param_1->transient).pNextOpen;
+        node = (node->transient).pNextOpen;
+        allNodesDone = node == (pathnode_t *)0x0 || bVar3;
       }
-      if ((local_54->transient).pNextOpen != (pathnode_t *)0x0) {
+      if ((finalNode->transient).pNextOpen != (pathnode_t *)0x0) {
         Path_CheckForInwardLinks
-                  ((local_54->transient).pNextOpen,param_2 + 1,param_3,param_4,param_5,param_6,
-                   param_7,param_8,param_9,param_10,param_11,param_12,param_13);
+                  ((finalNode->transient).pNextOpen,currDepth + 1,maxDepth,fRadiusSqrd,fHeightSqrd,
+                   fMaxRadiusSqrd,fMaxHeightSqrd,centroid,arc,side0,side1,teamflags,delta);
       }
       return;
     }
-    fVar4 = (local_20->constant).vOrigin[0] - param_9->origin[0];
-    fVar5 = (local_20->constant).vOrigin[1] - param_9->origin[1];
-    fVar6 = (local_20->constant).vOrigin[2] - param_9->origin[2];
+    fVar4 = (currNode->constant).vOrigin[0] - arc->origin[0];
+    fVar5 = (currNode->constant).vOrigin[1] - arc->origin[1];
+    fVar6 = (currNode->constant).vOrigin[2] - arc->origin[2];
     fVar14 = fVar4 * fVar4 + fVar5 * fVar5;
-    if (param_6 <= fVar14) {
+    if (fMaxRadiusSqrd <= fVar14) {
       return;
     }
-    if (param_7 <= fVar6 * fVar6) {
+    if (fMaxHeightSqrd <= fVar6 * fVar6) {
       return;
     }
-    fVar7 = *param_8 - (local_20->constant).vOrigin[0];
-    fVar8 = param_8[1] - (local_20->constant).vOrigin[1];
-    for (local_58 = 0; local_58 < (int)(uint)(local_20->constant).totalLinkCount;
-        local_58 = local_58 + 1) {
-      ppVar2 = (local_20->constant).Links + local_58;
-      uVar1 = ppVar2->nodeNum;
-      ppVar3 = (gameWorldCurrent->path).nodes;
-      fVar9 = ppVar3[uVar1].constant.vOrigin[0] - param_9->origin[0];
-      fVar10 = ppVar3[uVar1].constant.vOrigin[1] - param_9->origin[1];
-      fVar11 = ppVar3[uVar1].constant.vOrigin[2] - param_9->origin[2];
-      fVar12 = *param_8 - ppVar3[uVar1].constant.vOrigin[0];
-      fVar13 = param_8[1] - ppVar3[uVar1].constant.vOrigin[1];
+    fVar7 = *centroid - (currNode->constant).vOrigin[0];
+    fVar8 = centroid[1] - (currNode->constant).vOrigin[1];
+    for (i = 0; i < (int)(uint)(currNode->constant).totalLinkCount; i = i + 1) {
+      link_00 = (currNode->constant).Links + i;
+      uVar1 = link_00->nodeNum;
+      ppVar2 = (gameWorldCurrent->path).nodes;
+      fVar9 = ppVar2[uVar1].constant.vOrigin[0] - arc->origin[0];
+      fVar10 = ppVar2[uVar1].constant.vOrigin[1] - arc->origin[1];
+      fVar11 = ppVar2[uVar1].constant.vOrigin[2] - arc->origin[2];
+      fVar12 = *centroid - ppVar2[uVar1].constant.vOrigin[0];
+      fVar13 = centroid[1] - ppVar2[uVar1].constant.vOrigin[1];
       if (fVar12 * fVar12 + fVar13 * fVar13 <= fVar7 * fVar7 + fVar8 * fVar8) {
-        if (fVar6 < param_9->halfheight) {
-          if ((-param_9->halfheight < fVar6) || (-param_9->halfheight < fVar11)) goto LAB_0092a0a5;
+        if (fVar6 < arc->halfheight) {
+          if ((-arc->halfheight < fVar6) || (-arc->halfheight < fVar11)) goto LAB_0092a0a5;
         }
-        else if (fVar11 < param_9->halfheight) {
+        else if (fVar11 < arc->halfheight) {
 LAB_0092a0a5:
-          if ((fVar14 <= param_4) || (fVar9 * fVar9 + fVar10 * fVar10 <= param_4)) {
+          if ((fVar14 <= fRadiusSqrd) || (fVar9 * fVar9 + fVar10 * fVar10 <= fRadiusSqrd)) {
 LAB_0092a275:
-            if ((param_9->angle0 != 0.0) || (param_9->angle1 != 360.0)) {
-              fVar9 = ((local_20->constant).vOrigin[0] * *param_10 +
-                      (local_20->constant).vOrigin[1] * param_10[1]) - param_10[2];
-              fVar10 = (ppVar3[uVar1].constant.vOrigin[0] * *param_10 +
-                       ppVar3[uVar1].constant.vOrigin[1] * param_10[1]) - param_10[2];
-              if (180.0 <= local_38) {
+            if ((arc->angle0 != 0.0) || (arc->angle1 != 360.0)) {
+              fVar9 = ((currNode->constant).vOrigin[0] * *side0 +
+                      (currNode->constant).vOrigin[1] * side0[1]) - side0[2];
+              fVar10 = (ppVar2[uVar1].constant.vOrigin[0] * *side0 +
+                       ppVar2[uVar1].constant.vOrigin[1] * side0[1]) - side0[2];
+              if (180.0 <= angle) {
                 if ((0.0 <= fVar9) || (0.0 <= fVar10)) goto LAB_0092a442;
               }
               else if ((fVar9 < 0.0) && (fVar10 < 0.0)) goto LAB_00929f38;
-              if ((((local_20->constant).vOrigin[0] * *param_11 +
-                   (local_20->constant).vOrigin[1] * param_11[1]) - param_11[2] < 0.0) &&
-                 ((ppVar3[uVar1].constant.vOrigin[0] * *param_11 +
-                  ppVar3[uVar1].constant.vOrigin[1] * param_11[1]) - param_11[2] < 0.0))
+              if ((((currNode->constant).vOrigin[0] * *side1 +
+                   (currNode->constant).vOrigin[1] * side1[1]) - side1[2] < 0.0) &&
+                 ((ppVar2[uVar1].constant.vOrigin[0] * *side1 +
+                  ppVar2[uVar1].constant.vOrigin[1] * side1[1]) - side1[2] < 0.0))
               goto LAB_00929f38;
             }
 LAB_0092a442:
-            Path_UpdateBadPlaceCountForLink(ppVar2,param_12,param_13);
+            Path_UpdateBadPlaceCountForLink(link_00,teamflags,delta);
           }
           else {
-            fVar9 = ppVar3[uVar1].constant.vOrigin[0] - (param_1->constant).vOrigin[0];
-            fVar10 = ppVar3[uVar1].constant.vOrigin[1] - (param_1->constant).vOrigin[1];
-            fVar11 = ppVar3[uVar1].constant.vOrigin[2] - (param_1->constant).vOrigin[2];
+            fVar9 = ppVar2[uVar1].constant.vOrigin[0] - (node->constant).vOrigin[0];
+            fVar10 = ppVar2[uVar1].constant.vOrigin[1] - (node->constant).vOrigin[1];
+            fVar11 = ppVar2[uVar1].constant.vOrigin[2] - (node->constant).vOrigin[2];
             fVar12 = -(fVar9 * fVar4 + fVar10 * fVar5);
             if (0.0 < fVar12) {
               fVar10 = fVar9 * fVar9 + fVar10 * fVar10;
-              fVar9 = fVar12 * fVar12 - fVar10 * (fVar14 - param_4);
+              fVar9 = fVar12 * fVar12 - fVar10 * (fVar14 - fRadiusSqrd);
               if (0.0 < fVar9) {
                 fVar9 = SQRT(fVar9);
                 fVar13 = (fVar12 - fVar9) / fVar10;
                 if ((fVar13 < 1.0) &&
-                   ((fVar13 = fVar11 * fVar13 + fVar6, fVar13 * fVar13 <= param_5 ||
+                   ((fVar13 = fVar11 * fVar13 + fVar6, fVar13 * fVar13 <= fHeightSqrd ||
                     ((fVar10 = (fVar12 + fVar9) / fVar10, fVar10 < 1.0 &&
-                     ((fVar9 = fVar11 * fVar10 + fVar6, fVar9 * fVar9 <= param_5 ||
+                     ((fVar9 = fVar11 * fVar10 + fVar6, fVar9 * fVar9 <= fHeightSqrd ||
                       (fVar13 * fVar9 < 0.0)))))))) goto LAB_0092a275;
               }
             }
@@ -4867,10 +4951,10 @@ LAB_0092a442:
       }
 LAB_00929f38:
     }
-    if ((local_20->transient).pNextOpen == (pathnode_t *)0x0) {
-      local_54 = local_20;
+    if ((currNode->transient).pNextOpen == (pathnode_t *)0x0) {
+      finalNode = currNode;
     }
-    local_20 = (local_20->transient).pNextOpen;
+    currNode = (currNode->transient).pNextOpen;
   } while( true );
 }
 
@@ -4884,7 +4968,7 @@ LAB_00929f38:
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Path_UpdateLimitedDepthArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int param_3,int param_4)
+Path_UpdateLimitedDepthArcBadPlaceCount(badplace_arc_t *arc,int teamflags,int delta,int depth)
 
 {
   double dVar1;
@@ -4919,31 +5003,31 @@ Path_UpdateLimitedDepthArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int 
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_18 = param_1->angle1 - param_1->angle0;
+  local_18 = arc->angle1 - arc->angle0;
   AngleNormalize360(local_18);
-  YawVectors(param_1->angle0,(float *)0x0,&local_24);
-  YawVectors(param_1->angle1,(float *)0x0,&local_30);
+  YawVectors(arc->angle0,(float *)0x0,&local_24);
+  YawVectors(arc->angle1,(float *)0x0,&local_30);
   local_24 = -local_24;
   local_20 = -local_20;
-  local_1c = local_24 * param_1->origin[0] + local_20 * param_1->origin[1];
-  local_28 = local_30 * param_1->origin[0] + local_2c * param_1->origin[1];
-  YawVectors(local_18 * 0.5 + param_1->angle0,&local_3c,(float *)0x0);
+  local_1c = local_24 * arc->origin[0] + local_20 * arc->origin[1];
+  local_28 = local_30 * arc->origin[0] + local_2c * arc->origin[1];
+  YawVectors(local_18 * 0.5 + arc->angle0,&local_3c,(float *)0x0);
   dVar1 = (double)(local_18 * 0.008726646);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffc04,in_stack_fffffc00));
   local_40 = (float)dVar1;
-  local_44 = (local_40 / local_18) * 76.39437 * param_1->radius;
-  local_50 = local_44 * local_3c + param_1->origin[0];
-  local_4c = local_44 * local_38 + param_1->origin[1];
-  local_48 = local_44 * local_34 + param_1->origin[2];
-  local_54 = param_1->radius * param_1->radius;
-  local_58 = param_1->halfheight * param_1->halfheight;
-  local_5c = (param_1->radius + 256.0) * (param_1->radius + 256.0);
-  local_60 = (param_1->halfheight + 128.0) * (param_1->halfheight + 128.0);
+  local_44 = (local_40 / local_18) * 76.39437 * arc->radius;
+  local_50 = local_44 * local_3c + arc->origin[0];
+  local_4c = local_44 * local_38 + arc->origin[1];
+  local_48 = local_44 * local_34 + arc->origin[2];
+  local_54 = arc->radius * arc->radius;
+  local_58 = arc->halfheight * arc->halfheight;
+  local_5c = (arc->radius + 256.0) * (arc->radius + 256.0);
+  local_60 = (arc->halfheight + 128.0) * (arc->halfheight + 128.0);
   memset((uchar *)local_360,'\0',0x300);
-  local_368 = Path_NearestNode(param_1->origin,local_360,-2,param_1->radius,&local_364,0x40,
+  local_368 = Path_NearestNode(arc->origin,local_360,-2,arc->radius,&local_364,0x40,
                                NEAREST_NODE_DONT_DO_HEIGHT_CHECK);
   if ((local_368 == (pathnode_t *)0x0) && (local_364 < 1)) {
-    local_368 = Path_NearestNode(&local_50,local_360,-2,param_1->radius * 0.5,&local_364,0x40,
+    local_368 = Path_NearestNode(&local_50,local_360,-2,arc->radius * 0.5,&local_364,0x40,
                                  NEAREST_NODE_DONT_DO_HEIGHT_CHECK);
     if ((local_368 == (pathnode_t *)0x0) && (local_364 < 1)) {
       return;
@@ -4960,16 +5044,16 @@ Path_UpdateLimitedDepthArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int 
   (local_368->transient).iSearchFrame = level.iSearchFrame + 1;
   local_3e8.transient.pNextOpen = local_368;
   Path_CheckForInwardLinks
-            (local_368,0,param_4,local_54,local_58,local_5c,local_60,&local_50,param_1,&local_24,
-             &local_30,param_2,param_3);
+            (local_368,0,depth,local_54,local_58,local_5c,local_60,&local_50,arc,&local_24,&local_30
+             ,teamflags,delta);
   for (; local_368 != (pathnode_t *)0x0; local_368 = (local_368->transient).pNextOpen) {
     (local_368->transient).iSearchFrame = level.iSearchFrame;
   }
-  local_3f4 = param_1->origin[0] + local_24;
-  local_3f0 = param_1->origin[1] + local_20;
-  local_3ec = param_1->origin[2];
-  G_DebugLine(param_1->origin,(float *)&stack0xfffffc00,colorOrange,0);
-  G_DebugLine(param_1->origin,&local_3f4,colorOrange,0);
+  local_3f4 = arc->origin[0] + local_24;
+  local_3f0 = arc->origin[1] + local_20;
+  local_3ec = arc->origin[2];
+  G_DebugLine(arc->origin,(float *)&stack0xfffffc00,colorOrange,0);
+  G_DebugLine(arc->origin,&local_3f4,colorOrange,0);
   return;
 }
 
@@ -4983,7 +5067,7 @@ Path_UpdateLimitedDepthArcBadPlaceCount(badplace_arc_t *param_1,int param_2,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_UpdateBrushBadPlaceCount(gentity_s *param_1,int param_2,int param_3)
+void __cdecl Path_UpdateBrushBadPlaceCount(gentity_s *brushEnt,int teamflags,int delta)
 
 {
   pathnode_t *ppVar1;
@@ -4991,73 +5075,73 @@ void __cdecl Path_UpdateBrushBadPlaceCount(gentity_s *param_1,int param_2,int pa
   uint uVar3;
   bool bVar4;
   int iVar5;
-  pathlink_s *ppVar6;
-  uint local_3824;
-  pathsort_t local_381c [512];
-  float local_201c;
-  float local_2018;
-  uint local_2014;
-  uint local_2010;
-  uchar local_200c [8196];
+  pathlink_s *link_00;
+  pathlink_s *link;
+  pathnode_t *node;
+  uint j;
+  int MAX_NODES_IN_BRUSH;
+  pathsort_t nodes [512];
+  float height;
+  float radius;
+  uint nodeCount;
+  uint i;
+  uchar inVolume [8196];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((brushEnt == (gentity_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1683,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((param_1->r).currentAngles[0] != 0.0) || ((param_1->r).currentAngles[2] != 0.0)) &&
+  if ((((brushEnt->r).currentAngles[0] != 0.0) || ((brushEnt->r).currentAngles[2] != 0.0)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x1684,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  memset(local_200c,'\0',0x2000);
-  local_2018 = RadiusFromBounds2D((param_1->r).mins,(param_1->r).maxs);
-  local_201c = (param_1->r).maxs[2] - (param_1->r).mins[2];
-  if ((local_2018 <= 0.0) &&
+  memset(inVolume,'\0',0x2000);
+  radius = RadiusFromBounds2D((brushEnt->r).mins,(brushEnt->r).maxs);
+  height = (brushEnt->r).maxs[2] - (brushEnt->r).mins[2];
+  if ((radius <= 0.0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x168b,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_201c <= 0.0) &&
+  if ((height <= 0.0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x168c,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_2014 = Path_NodesInCylinder
-                         ((param_1->r).currentOrigin,local_2018,local_201c,local_381c,0x200,-2);
-  if ((0x1ff < local_2014) &&
+  nodeCount = Path_NodesInCylinder((brushEnt->r).currentOrigin,radius,height,nodes,0x200,-2);
+  if ((0x1ff < nodeCount) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.cpp",0x168f,0,"%s"
                               ), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  for (local_2010 = 0; local_2010 < local_2014; local_2010 = local_2010 + 1) {
-    ppVar1 = local_381c[local_2010].node;
-    iVar5 = SV_EntityContact((ppVar1->constant).vOrigin,(ppVar1->constant).vOrigin,param_1);
+  for (i = 0; i < nodeCount; i = i + 1) {
+    ppVar1 = nodes[i].node;
+    iVar5 = SV_EntityContact((ppVar1->constant).vOrigin,(ppVar1->constant).vOrigin,brushEnt);
     if (iVar5 != 0) {
-      local_200c[(int)ppVar1 - (int)(gameWorldCurrent->path).nodes >> 7] = '\x01';
+      inVolume[(int)ppVar1 - (int)(gameWorldCurrent->path).nodes >> 7] = '\x01';
     }
   }
-  for (local_2010 = 0; uVar3 = local_2010, local_2010 < g_path.actualNodeCount;
-      local_2010 = local_2010 + 1) {
+  for (i = 0; uVar3 = i, i < g_path.actualNodeCount; i = i + 1) {
     ppVar1 = (gameWorldCurrent->path).nodes;
-    if (local_200c[local_2010] == '\0') {
-      for (local_3824 = 0; local_3824 < ppVar1[uVar3].constant.totalLinkCount;
-          local_3824 = local_3824 + 1) {
-        ppVar6 = ppVar1[uVar3].constant.Links + local_3824;
-        if (local_200c[ppVar6->nodeNum] != '\0') {
-          Path_UpdateBadPlaceCountForLink(ppVar6,param_2,param_3);
+    if (inVolume[i] == '\0') {
+      for (j = 0; j < ppVar1[uVar3].constant.totalLinkCount; j = j + 1) {
+        link_00 = ppVar1[uVar3].constant.Links + j;
+        if (inVolume[link_00->nodeNum] != '\0') {
+          Path_UpdateBadPlaceCountForLink(link_00,teamflags,delta);
         }
       }
     }
@@ -5071,13 +5155,13 @@ void __cdecl Path_UpdateBrushBadPlaceCount(gentity_s *param_1,int param_2,int pa
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
-Path_IsNodeInArc(pathnode_t *param_1,float *param_2,float param_3,float param_4,float param_5,
-                float param_6)
+Path_IsNodeInArc(pathnode_t *pNode,float *origin,float radius,float angle0,float angle1,
+                float halfHeight)
 
 {
   int iVar1;
   
-  iVar1 = IsPosInsideArc((param_1->constant).vOrigin,15.0,param_2,param_3,param_4,param_5,param_6);
+  iVar1 = IsPosInsideArc((pNode->constant).vOrigin,15.0,origin,radius,angle0,angle1,halfHeight);
   return iVar1;
 }
 
@@ -5086,12 +5170,12 @@ Path_IsNodeInArc(pathnode_t *param_1,float *param_2,float param_3,float param_4,
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl IsNodeEnabled(pathnode_t *param_1)
+int __cdecl IsNodeEnabled(pathnode_t *pNode)
 
 {
   int iVar1;
   
-  if ((param_1 == (pathnode_t *)0x0) || (((param_1->constant).spawnflags & 0x200) != 0)) {
+  if ((pNode == (pathnode_t *)0x0) || (((pNode->constant).spawnflags & 0x200) != 0)) {
     iVar1 = 0;
   }
   else {
@@ -5106,55 +5190,57 @@ int __cdecl IsNodeEnabled(pathnode_t *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-pathnode_t * __cdecl G_FindPathNode(SpawnVar *param_1,nodeType param_2,int param_3)
+pathnode_t * __cdecl G_FindPathNode(SpawnVar *spawnVar,nodeType type,int gameId)
 
 {
   pathnode_t *ppVar1;
   float fVar2;
   float fVar3;
-  uint local_98;
-  uint local_94;
-  uint local_90;
-  pathnode_t local_8c;
+  pathnode_t *node;
+  float dist2;
+  int score;
+  uint i;
+  int best_score;
+  pathnode_t compare_node;
   uint local_c;
-  pathnode_t *local_8;
+  pathnode_t *best_node;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)&local_8c,'\0',0x80);
-  G_ParsePathnodeFields(param_1,&local_8c,param_2);
-  local_90 = 1;
-  local_8 = (pathnode_t *)0x0;
-  for (local_94 = 0; local_94 < (gameWorldCurrent->path).nodeCount; local_94 = local_94 + 1) {
-    local_98 = 0;
-    ppVar1 = (gameWorldCurrent->path).nodes + local_94;
-    fVar2 = local_8c.constant.vOrigin[0] - (ppVar1->constant).vOrigin[0];
-    fVar3 = local_8c.constant.vOrigin[1] - (ppVar1->constant).vOrigin[1];
+  memset((uchar *)&compare_node,'\0',0x80);
+  G_ParsePathnodeFields(spawnVar,&compare_node,type);
+  best_score = 1;
+  best_node = (pathnode_t *)0x0;
+  for (i = 0; i < (gameWorldCurrent->path).nodeCount; i = i + 1) {
+    score = 0;
+    ppVar1 = (gameWorldCurrent->path).nodes + i;
+    fVar2 = compare_node.constant.vOrigin[0] - (ppVar1->constant).vOrigin[0];
+    fVar3 = compare_node.constant.vOrigin[1] - (ppVar1->constant).vOrigin[1];
     fVar2 = fVar2 * fVar2 + fVar3 * fVar3;
-    if ((fVar2 < 100.0) && (local_98 = 1, fVar2 < 0.5)) {
-      local_98 = 2;
+    if ((fVar2 < 100.0) && (score = 1, fVar2 < 0.5)) {
+      score = 2;
     }
-    if (((ppVar1->constant).target != 0) && ((ppVar1->constant).target == local_8c.constant.target))
-    {
-      local_98 = local_98 + 1;
+    if (((ppVar1->constant).target != 0) &&
+       ((ppVar1->constant).target == compare_node.constant.target)) {
+      score = score + 1;
     }
     if (((ppVar1->constant).targetname != 0) &&
-       ((ppVar1->constant).targetname == local_8c.constant.targetname)) {
-      local_98 = local_98 + 1;
+       ((ppVar1->constant).targetname == compare_node.constant.targetname)) {
+      score = score + 1;
     }
     if (((ppVar1->constant).script_noteworthy != 0) &&
-       ((ppVar1->constant).script_noteworthy == local_8c.constant.script_noteworthy)) {
-      local_98 = local_98 + 1;
+       ((ppVar1->constant).script_noteworthy == compare_node.constant.script_noteworthy)) {
+      score = score + 1;
     }
-    if (local_90 < local_98) {
-      local_90 = local_98;
-      local_8 = ppVar1;
+    if ((uint)best_score < (uint)score) {
+      best_score = score;
+      best_node = ppVar1;
     }
   }
-  if (((0 < param_3) && (param_3 < (int)(gameWorldCurrent->path).nodeCount)) &&
-     (local_8 == (pathnode_t *)0x0)) {
-    local_8 = (gameWorldCurrent->path).nodes + param_3;
+  if (((0 < gameId) && (gameId < (int)(gameWorldCurrent->path).nodeCount)) &&
+     (best_node == (pathnode_t *)0x0)) {
+    best_node = (gameWorldCurrent->path).nodes + gameId;
   }
-  return local_8;
+  return best_node;
 }
 
 
@@ -5162,7 +5248,7 @@ pathnode_t * __cdecl G_FindPathNode(SpawnVar *param_1,nodeType param_2,int param
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl G_ProcessPathnodeCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessPathnodeCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   ushort uVar1;
@@ -5170,53 +5256,61 @@ void __cdecl G_ProcessPathnodeCommand(RadiantCommand *param_1,SpawnVar *param_2)
   pathnode_t *ppVar3;
   uchar uVar4;
   uchar uVar5;
-  char *pcVar6;
-  nodeType nVar7;
-  int iVar8;
-  uint uVar9;
-  pathlink_s *ppVar10;
-  pathlink_s *ppVar11;
-  uint local_2c;
-  uint local_24;
-  pathnode_t *local_18;
+  char *classname_00;
+  nodeType type;
+  int gameId_00;
+  uint uVar6;
+  pathlink_s *ppVar7;
+  pathlink_s *ppVar8;
+  int nodeIndex_2;
+  uint tempLinks;
+  uint ilink;
+  pathnode_t *othernode;
+  uint j;
+  int nodeindex;
+  int nodeIndex;
+  pathnode_t *node;
+  RadiantCommandType commandType;
+  char *classname;
+  nodeType nodetype;
+  int gameId;
   
-  local_18 = (pathnode_t *)0x0;
-  pcVar6 = GetPairValue(param_2,"classname");
-  nVar7 = G_GetNodeTypeFromClassname(pcVar6);
-  RVar2 = param_1->type;
-  iVar8 = G_GetGameIdMapping(param_1->liveUpdateId);
+  node = (pathnode_t *)0x0;
+  classname_00 = GetPairValue(spawnVar,"classname");
+  type = G_GetNodeTypeFromClassname(classname_00);
+  RVar2 = command->type;
+  gameId_00 = G_GetGameIdMapping(command->liveUpdateId);
   if (RVar2 == RADIANT_COMMAND_CREATE) {
-    G_SpawnPathnodeStatic(param_2,pcVar6);
-    G_SpawnPathnodeDynamic(param_2);
+    G_SpawnPathnodeStatic(spawnVar,classname_00);
+    G_SpawnPathnodeDynamic(spawnVar);
     g_radiant_selected_pathnode =
          (gameWorldCurrent->path).nodes + ((gameWorldCurrent->path).nodeCount - 1);
-    uVar9 = Path_ConvertNodeToIndex(g_radiant_selected_pathnode);
-    G_DropPathNodeToFloor(uVar9);
+    uVar6 = Path_ConvertNodeToIndex(g_radiant_selected_pathnode);
+    G_DropPathNodeToFloor(uVar6);
     Path_ConnectPathsForSingleNode(g_radiant_selected_pathnode);
     GamerProfile_WriteSettings((int)g_radiant_selected_pathnode);
     Com_Printf(5,"Radiant Live Update: Created new path node\n");
-    G_AssignGameIdMapping(param_1->liveUpdateId,uVar9);
+    G_AssignGameIdMapping(command->liveUpdateId,uVar6);
   }
   else if (RVar2 == RADIANT_COMMAND_DELETE) {
-    g_radiant_selected_pathnode = G_FindPathNode(param_2,nVar7,iVar8);
+    g_radiant_selected_pathnode = G_FindPathNode(spawnVar,type,gameId_00);
     if (g_radiant_selected_pathnode != (pathnode_t *)0x0) {
-      uVar9 = Path_ConvertNodeToIndex(g_radiant_selected_pathnode);
-      for (local_24 = 0; local_24 < (gameWorldCurrent->path).nodeCount; local_24 = local_24 + 1) {
+      uVar6 = Path_ConvertNodeToIndex(g_radiant_selected_pathnode);
+      for (j = 0; j < (gameWorldCurrent->path).nodeCount; j = j + 1) {
         ppVar3 = (gameWorldCurrent->path).nodes;
-        for (local_2c = 0; local_2c < ppVar3[local_24].constant.totalLinkCount;
-            local_2c = local_2c + 1) {
-          if (ppVar3[local_24].constant.Links[local_2c].nodeNum == uVar9) {
-            ppVar3[local_24].constant.totalLinkCount = ppVar3[local_24].constant.totalLinkCount - 1;
-            ppVar11 = ppVar3[local_24].constant.Links + ppVar3[local_24].constant.totalLinkCount;
-            ppVar10 = ppVar3[local_24].constant.Links + local_2c;
-            ppVar10->fDist = ppVar11->fDist;
-            uVar4 = ppVar11->disconnectCount;
-            uVar5 = ppVar11->negotiationLink;
-            ppVar10->nodeNum = ppVar11->nodeNum;
-            ppVar10->disconnectCount = uVar4;
-            ppVar10->negotiationLink = uVar5;
-            *(undefined4 *)ppVar10->ubBadPlaceCount = *(undefined4 *)ppVar11->ubBadPlaceCount;
-            ppVar3[local_24].dynamic.wLinkCount = ppVar3[local_24].constant.totalLinkCount;
+        for (ilink = 0; ilink < ppVar3[j].constant.totalLinkCount; ilink = ilink + 1) {
+          if (ppVar3[j].constant.Links[ilink].nodeNum == uVar6) {
+            ppVar3[j].constant.totalLinkCount = ppVar3[j].constant.totalLinkCount - 1;
+            ppVar8 = ppVar3[j].constant.Links + ppVar3[j].constant.totalLinkCount;
+            ppVar7 = ppVar3[j].constant.Links + ilink;
+            ppVar7->fDist = ppVar8->fDist;
+            uVar4 = ppVar8->disconnectCount;
+            uVar5 = ppVar8->negotiationLink;
+            ppVar7->nodeNum = ppVar8->nodeNum;
+            ppVar7->disconnectCount = uVar4;
+            ppVar7->negotiationLink = uVar5;
+            *(undefined4 *)ppVar7->ubBadPlaceCount = *(undefined4 *)ppVar8->ubBadPlaceCount;
+            ppVar3[j].dynamic.wLinkCount = ppVar3[j].constant.totalLinkCount;
           }
         }
       }
@@ -5229,31 +5323,31 @@ void __cdecl G_ProcessPathnodeCommand(RadiantCommand *param_1,SpawnVar *param_2)
   }
   else {
     if (RVar2 == RADIANT_COMMAND_SELECT) {
-      local_18 = G_FindPathNode(param_2,nVar7,iVar8);
-      g_radiant_selected_pathnode = local_18;
-      GamerProfile_WriteSettings((int)local_18);
-      if (local_18 == (pathnode_t *)0x0) {
+      node = G_FindPathNode(spawnVar,type,gameId_00);
+      g_radiant_selected_pathnode = node;
+      GamerProfile_WriteSettings((int)node);
+      if (node == (pathnode_t *)0x0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find pathnode.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
     }
     else if (RVar2 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_18 = g_radiant_selected_pathnode;
+      node = g_radiant_selected_pathnode;
     }
     else if (RVar2 == RADIANT_COMMAND_UPDATE) {
-      local_18 = G_FindPathNode(param_2,nVar7,iVar8);
+      node = G_FindPathNode(spawnVar,type,gameId_00);
     }
-    if (local_18 != (pathnode_t *)0x0) {
-      uVar1 = (local_18->constant).spawnflags;
-      G_ParsePathnodeFields(param_2,local_18,nVar7);
+    if (node != (pathnode_t *)0x0) {
+      uVar1 = (node->constant).spawnflags;
+      G_ParsePathnodeFields(spawnVar,node,type);
       if ((uVar1 & 0x4000) != 0) {
-        (local_18->constant).spawnflags = (local_18->constant).spawnflags | 0x4000;
+        (node->constant).spawnflags = (node->constant).spawnflags | 0x4000;
       }
-      uVar9 = Path_ConvertNodeToIndex(local_18);
-      G_DropPathNodeToFloor(uVar9);
-      Path_ConnectPathsForSingleNode(local_18);
-      G_AssignGameIdMapping(param_1->liveUpdateId,uVar9);
+      uVar6 = Path_ConvertNodeToIndex(node);
+      G_DropPathNodeToFloor(uVar6);
+      Path_ConnectPathsForSingleNode(node);
+      G_AssignGameIdMapping(command->liveUpdateId,uVar6);
     }
   }
   return;

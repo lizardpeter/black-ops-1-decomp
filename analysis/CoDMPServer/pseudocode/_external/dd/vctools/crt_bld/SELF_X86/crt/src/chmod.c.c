@@ -2,7 +2,7 @@
 
 // 00C150DE  _chmod  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/chmod.c:43)
 
-int __cdecl _chmod(char *param_1,int param_2)
+int __cdecl _chmod(char *path,int mode)
 
 {
   ulong *puVar1;
@@ -10,7 +10,7 @@ int __cdecl _chmod(char *param_1,int param_2)
   DWORD DVar3;
   BOOL BVar4;
   
-  if (param_1 == (char *)0x0) {
+  if (path == (char *)0x0) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
@@ -18,15 +18,15 @@ int __cdecl _chmod(char *param_1,int param_2)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
-    DVar3 = GetFileAttributesA(param_1);
+    DVar3 = GetFileAttributesA(path);
     if (DVar3 != 0xffffffff) {
-      if ((param_2 & 0x80U) == 0) {
+      if ((mode & 0x80U) == 0) {
         DVar3 = DVar3 | 1;
       }
       else {
         DVar3 = DVar3 & 0xfffffffe;
       }
-      BVar4 = SetFileAttributesA(param_1,DVar3);
+      BVar4 = SetFileAttributesA(path,DVar3);
       if (BVar4 != 0) {
         return 0;
       }

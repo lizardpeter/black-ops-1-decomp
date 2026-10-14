@@ -5,41 +5,44 @@
 /* WARNING: Removing unreachable block (ram,0x00b2d01a) */
 /* WARNING: Removing unreachable block (ram,0x00b2d041) */
 
-void __cdecl R_DepthPrepassCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+void __cdecl
+R_DepthPrepassCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
   int iVar4;
-  undefined4 *puVar5;
+  GfxDrawSurfListInfo *pGVar5;
   GfxDrawSurfListInfo *pGVar6;
   int local_68;
   jqBatchGroup *local_64;
-  GfxDrawSurfListInfo local_5c;
-  uchar local_9;
-  void *local_8;
+  uchar depthPrepassRT;
+  GfxDrawSurfListInfo info;
+  uchar baseTechType;
+  GfxViewInfo *viewInfo;
   
   local_68 = 3;
-  local_64 = local_5c.group;
+  local_64 = info.group;
   while (local_68 = local_68 + -1, -1 < local_68) {
     (local_64->field0_0x0)._s_0.QueuedBatchCount = 0;
     (local_64->field0_0x0)._s_0.ExecutingBatchCount = 0;
     local_64 = local_64 + 1;
   }
-  local_8 = param_1;
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                       *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                       *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
+  viewInfo = userData;
+  if ((*(uint *)((int)userData + 0x3620) & 7) == 0) {
+    R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                       *(uint *)((int)userData + 0x160),*(uint *)((int)userData + 0x164),
+                       *(uint *)((int)userData + 0x168),*(uint *)((int)userData + 0x16c));
   }
-  if (*(char *)((int)local_8 + 0x195) == '\0') {
-    R_SetRenderTarget(param_2,(dx.supportsSceneNullRenderTarget != false) + '\x03');
-    local_9 = '\0';
+  if (viewInfo->renderingFloatZ == false) {
+    R_SetRenderTarget(context,(dx.supportsSceneNullRenderTarget != false) + '\x03');
+    baseTechType = '\0';
   }
   else {
-    if (*(char *)((int)local_8 + 0x38c4) == '\0') {
-      if ((gfxRenderTargets[(-(uint)(*(char *)((int)local_8 + 0x38c4) != '\0') & 0x10) + 7].surface.
+    if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0') {
+      if ((gfxRenderTargets
+           [(-(uint)(*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0') & 0x10) + 7].surface.
            color == (IDirect3DSurface9 *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_depthprepass.cpp"
                                    ,0xd5,0,"%s"), !bVar2)) {
@@ -47,51 +50,50 @@ void __cdecl R_DepthPrepassCallback(void *param_1,GfxCmdBufContext param_2,GfxCm
         (*pcVar1)();
         return;
       }
-      R_SetRenderTarget(param_2,'\a');
+      R_SetRenderTarget(context,'\a');
     }
     else {
-      R_SetRenderTarget(param_2,'\x17');
+      R_SetRenderTarget(context,'\x17');
     }
-    local_9 = '\x01';
-    R_DrawQuadMesh(param_2,rgp.shadowClearMaterial,
-                   (GfxMeshData *)(*(int *)((int)local_8 + 0x2228) + 0x10));
-    ((param_2.field0_0x0._s_0.source)->input).consts[0x4b][0] = 0.0;
-    ((param_2.field0_0x0._s_0.source)->input).consts[0x4b][1] = 0.0;
-    ((param_2.field0_0x0._s_0.source)->input).consts[0x4b][2] = 0.0;
-    ((param_2.field0_0x0._s_0.source)->input).consts[0x4b][3] = 1.0;
-    R_DirtyCodeConstant(param_2.field0_0x0._s_0.source,0x4b);
+    baseTechType = '\x01';
+    R_DrawQuadMesh(context,rgp.shadowClearMaterial,&viewInfo->fullSceneViewMesh->meshData);
+    ((context.field0_0x0._s_0.source)->input).consts[0x4b][0] = 0.0;
+    ((context.field0_0x0._s_0.source)->input).consts[0x4b][1] = 0.0;
+    ((context.field0_0x0._s_0.source)->input).consts[0x4b][2] = 0.0;
+    ((context.field0_0x0._s_0.source)->input).consts[0x4b][3] = 1.0;
+    R_DirtyCodeConstant(context.field0_0x0._s_0.source,0x4b);
   }
-  R_SetWindShaderConstants(param_2.field0_0x0._s_0.source);
-  puVar5 = (undefined4 *)((int)local_8 + 0x2320);
-  pGVar6 = &local_5c;
+  R_SetWindShaderConstants(context.field0_0x0._s_0.source);
+  pGVar5 = viewInfo->drawList + 3;
+  pGVar6 = &info;
   for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pGVar6->drawSurfs = (GfxDrawSurf *)*puVar5;
-    puVar5 = puVar5 + 1;
+    pGVar6->drawSurfs = pGVar5->drawSurfs;
+    pGVar5 = (GfxDrawSurfListInfo *)&pGVar5->drawSurfCount;
     pGVar6 = (GfxDrawSurfListInfo *)&pGVar6->drawSurfCount;
   }
-  local_5c.baseTechType = local_9;
+  info.baseTechType = baseTechType;
   PIXBeginNamedEvent(-1,"zprepass decalInfo");
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,&local_5c);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,&info);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  puVar5 = (undefined4 *)((int)local_8 + 0x2230);
-  pGVar6 = &local_5c;
+  pGVar5 = viewInfo->drawList;
+  pGVar6 = &info;
   for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pGVar6->drawSurfs = (GfxDrawSurf *)*puVar5;
-    puVar5 = puVar5 + 1;
+    pGVar6->drawSurfs = pGVar5->drawSurfs;
+    pGVar5 = (GfxDrawSurfListInfo *)&pGVar5->drawSurfCount;
     pGVar6 = (GfxDrawSurfListInfo *)&pGVar6->drawSurfCount;
   }
-  local_5c.baseTechType = local_9;
+  info.baseTechType = baseTechType;
   PIXBeginNamedEvent(-1,"zprepass litInfo");
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,&local_5c);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,&info);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if ((*(uint *)((int)local_8 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  if (((uint)(viewInfo->bloom).bloomTintScale[2] & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   return;
 }
@@ -102,7 +104,7 @@ void __cdecl R_DepthPrepassCallback(void *param_1,GfxCmdBufContext param_2,GfxCm
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_DepthPrepass(uchar param_1,GfxViewInfo *param_2,GfxCmdBuf *param_3)
+void __cdecl R_DepthPrepass(uchar renderTargetId,GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   GfxCmdBufSourceState local_1ab0;
@@ -110,12 +112,12 @@ void __cdecl R_DepthPrepass(uchar param_1,GfxViewInfo *param_2,GfxCmdBuf *param_
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   if ((r_reflectionProbeGenerate->current).enabled == false) {
-    R_InitCmdBufSourceState(&local_1ab0,&param_2->input,1);
-    R_SetRenderTargetSize(&local_1ab0,param_1);
-    R_SetViewportStruct(&local_1ab0,&(param_2->field0_0x0).cullViewInfo.sceneViewport);
-    R_SetADSZScaleConstants(param_2->localClientNum,&local_1ab0);
-    R_DrawCall(R_DepthPrepassCallback,param_2,&local_1ab0,param_2,(GfxDrawSurfListInfo *)0x0,
-               (GfxViewParms *)param_2,param_3,(GfxCmdBuf *)0x0);
+    R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,1);
+    R_SetRenderTargetSize(&local_1ab0,renderTargetId);
+    R_SetViewportStruct(&local_1ab0,&(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+    R_SetADSZScaleConstants(viewInfo->localClientNum,&local_1ab0);
+    R_DrawCall(R_DepthPrepassCallback,viewInfo,&local_1ab0,viewInfo,(GfxDrawSurfListInfo *)0x0,
+               (GfxViewParms *)viewInfo,cmdBuf,(GfxCmdBuf *)0x0);
   }
   return;
 }

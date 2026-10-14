@@ -47,28 +47,28 @@ void _HTPresentation_add(undefined4 param_1,undefined4 param_2,undefined8 param_
 void _HTPresentation_deleteAll(void)
 
 {
-  void *pvVar1;
+  void *pBlock;
   undefined4 *in_EAX;
-  undefined4 *puVar2;
+  undefined4 *puVar1;
   
-  puVar2 = in_EAX;
+  puVar1 = in_EAX;
   if (in_EAX != (undefined4 *)0x0) {
-    while (((puVar2 != (undefined4 *)0x0 &&
-            (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-           (pvVar1 = (void *)*puVar2, pvVar1 != (void *)0x0))) {
-      if (*(void **)((int)pvVar1 + 0xc) != (void *)0x0) {
-        free(*(void **)((int)pvVar1 + 0xc));
+    while (((puVar1 != (undefined4 *)0x0 &&
+            (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+           (pBlock = (void *)*puVar1, pBlock != (void *)0x0))) {
+      if (*(void **)((int)pBlock + 0xc) != (void *)0x0) {
+        free(*(void **)((int)pBlock + 0xc));
       }
-      *(undefined4 *)((int)pvVar1 + 0xc) = 0;
-      free(pvVar1);
+      *(undefined4 *)((int)pBlock + 0xc) = 0;
+      free(pBlock);
     }
     do {
-      puVar2 = (undefined4 *)in_EAX[1];
+      puVar1 = (undefined4 *)in_EAX[1];
       if (in_EAX != (undefined4 *)0x0) {
         free(in_EAX);
       }
-      in_EAX = puVar2;
-    } while (puVar2 != (undefined4 *)0x0);
+      in_EAX = puVar1;
+    } while (puVar1 != (undefined4 *)0x0);
   }
   return;
 }
@@ -172,24 +172,24 @@ void _HTCoding_deleteAll(void)
 void _HTLanguage_deleteAll(void)
 
 {
+  undefined4 *pBlock;
   undefined4 *puVar1;
-  undefined4 *puVar2;
   
+  pBlock = DAT_03547774;
   puVar1 = DAT_03547774;
-  puVar2 = DAT_03547774;
   if (DAT_03547774 != (undefined4 *)0x0) {
-    while (((puVar2 != (undefined4 *)0x0 &&
-            (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-           ((void *)*puVar2 != (void *)0x0))) {
-      free((void *)*puVar2);
+    while (((puVar1 != (undefined4 *)0x0 &&
+            (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+           ((void *)*puVar1 != (void *)0x0))) {
+      free((void *)*puVar1);
     }
     do {
-      puVar2 = (undefined4 *)puVar1[1];
-      if (puVar1 != (undefined4 *)0x0) {
-        free(puVar1);
+      puVar1 = (undefined4 *)pBlock[1];
+      if (pBlock != (undefined4 *)0x0) {
+        free(pBlock);
       }
-      puVar1 = puVar2;
-    } while (puVar2 != (undefined4 *)0x0);
+      pBlock = puVar1;
+    } while (puVar1 != (undefined4 *)0x0);
   }
   return;
 }
@@ -200,24 +200,24 @@ void _HTLanguage_deleteAll(void)
 void _HTCharset_deleteAll(void)
 
 {
+  undefined4 *pBlock;
   undefined4 *puVar1;
-  undefined4 *puVar2;
   
+  pBlock = DAT_03547770;
   puVar1 = DAT_03547770;
-  puVar2 = DAT_03547770;
   if (DAT_03547770 != (undefined4 *)0x0) {
-    while (((puVar2 != (undefined4 *)0x0 &&
-            (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-           ((void *)*puVar2 != (void *)0x0))) {
-      free((void *)*puVar2);
+    while (((puVar1 != (undefined4 *)0x0 &&
+            (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+           ((void *)*puVar1 != (void *)0x0))) {
+      free((void *)*puVar1);
     }
     do {
-      puVar2 = (undefined4 *)puVar1[1];
-      if (puVar1 != (undefined4 *)0x0) {
-        free(puVar1);
+      puVar1 = (undefined4 *)pBlock[1];
+      if (pBlock != (undefined4 *)0x0) {
+        free(pBlock);
       }
-      puVar1 = puVar2;
-    } while (puVar2 != (undefined4 *)0x0);
+      pBlock = puVar1;
+    } while (puVar1 != (undefined4 *)0x0);
   }
   return;
 }

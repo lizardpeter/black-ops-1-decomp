@@ -11,46 +11,46 @@ void __cdecl jpeg_screenshot_tile(uchar *param_1,uchar *param_2,uchar *param_3)
   int in_EAX;
   int iVar1;
   int iVar2;
+  uchar *src;
   uchar *puVar3;
-  uchar *puVar4;
-  ulong uVar5;
-  uchar *puVar6;
+  ulong uVar4;
+  uchar *dst;
   int iStack_c;
   uchar *puStack_8;
   
-  puVar4 = param_1;
+  puVar3 = param_1;
   RB_Resource_Callback(yuv_encode_frame);
   RB_Resource_Flush();
-  uVar5 = _DAT_0268dcb0;
+  uVar4 = _DAT_0268dcb0;
   puStack_8 = _DAT_0268dcf8;
   iVar1 = _DAT_0268dcc4 * _DAT_0268dcbc * _DAT_0268dcb4;
   param_1 = _DAT_0268dcfc;
   iVar2 = iVar1 * _DAT_0268dcb0;
-  puVar6 = (uchar *)(in_EAX + (iVar1 + _DAT_0268dcb8) * _DAT_0268dcb0);
+  dst = (uchar *)(in_EAX + (iVar1 + _DAT_0268dcb8) * _DAT_0268dcb0);
   iVar1 = (int)(_DAT_0268dcb8 * _DAT_0268dcb0) / 2 + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2);
   param_2 = param_2 + iVar1;
-  puVar4 = puVar4 + iVar1;
+  puVar3 = puVar3 + iVar1;
   if (0 < _DAT_0268dcb4) {
     iVar1 = _DAT_0268dcc4 * _DAT_0268dcb0;
     iStack_c = _DAT_0268dcb4;
-    puVar3 = _DAT_0268dcf4;
+    src = _DAT_0268dcf4;
     do {
-      memcpy(puVar6,puVar3,uVar5);
-      puVar6 = puVar6 + iVar1;
-      puVar3 = puVar3 + uVar5;
+      memcpy(dst,src,uVar4);
+      dst = dst + iVar1;
+      src = src + uVar4;
       iStack_c = iStack_c + -1;
     } while (iStack_c != 0);
   }
   iStack_c = _DAT_0268dcb4 / 2;
   if (0 < iStack_c) {
-    iVar1 = (int)(_DAT_0268dcc4 * uVar5) / 2;
-    uVar5 = (int)uVar5 / 2;
+    iVar1 = (int)(_DAT_0268dcc4 * uVar4) / 2;
+    uVar4 = (int)uVar4 / 2;
     do {
-      memcpy(puVar4,puStack_8,uVar5);
-      puStack_8 = puStack_8 + uVar5;
-      puVar4 = puVar4 + iVar1;
-      memcpy(param_2,param_1,uVar5);
-      param_1 = param_1 + uVar5;
+      memcpy(puVar3,puStack_8,uVar4);
+      puStack_8 = puStack_8 + uVar4;
+      puVar3 = puVar3 + iVar1;
+      memcpy(param_2,param_1,uVar4);
+      param_1 = param_1 + uVar4;
       param_2 = param_2 + iVar1;
       iStack_c = iStack_c + -1;
     } while (iStack_c != 0);

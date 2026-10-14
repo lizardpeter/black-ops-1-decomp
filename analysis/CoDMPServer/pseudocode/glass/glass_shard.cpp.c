@@ -4,8 +4,8 @@
 
 void __thiscall
 GlassPhysics::CreateAxis
-          (GlassPhysics *this,float *param_1,float (*param_2) [3],float *param_3,float *param_4,
-          float param_5,float *param_6,float *param_7)
+          (GlassPhysics *this,float *position,float (*axis) [3],float *tVel,float *aVel,float mass,
+          float *localBBoxMin,float *localBBoxMax)
 
 {
   phys_vec3 local_2c0;
@@ -74,8 +74,8 @@ GlassPhysics::CreateAxis
   GlassPhysics *local_14;
   
   local_14 = this;
-  Phys_Vec3ToNitrousVec(param_6,&local_30);
-  Phys_Vec3ToNitrousVec(param_7,&local_40);
+  Phys_Vec3ToNitrousVec(localBBoxMin,&local_30);
+  Phys_Vec3ToNitrousVec(localBBoxMax,&local_40);
   local_60.x = local_40.x - local_30.x;
   local_60.y = local_40.y - local_30.y;
   local_60.z = local_40.z - local_30.z;
@@ -83,34 +83,34 @@ GlassPhysics::CreateAxis
   local_48 = local_60.y;
   local_44 = local_60.x;
   nuge::calc_box_inertia(&local_60,&local_80,&local_64);
-  local_84 = param_5 / local_64;
+  local_84 = mass / local_64;
   local_80.x = local_80.x * local_84;
   local_80.y = local_80.y * local_84;
   local_80.z = local_80.z * local_84;
-  local_a0.x = (*param_2)[0];
-  local_a0.y = (*param_2)[1];
-  local_a0.z = (*param_2)[2];
+  local_a0.x = (*axis)[0];
+  local_a0.y = (*axis)[1];
+  local_a0.z = (*axis)[2];
   local_90 = local_a0.z;
   local_8c = local_a0.y;
   local_88 = local_a0.x;
   phys_vec3::operator=(&local_e0.x,&local_a0);
-  local_100.x = param_2[1][0];
-  local_100.y = param_2[1][1];
-  local_100.z = param_2[1][2];
+  local_100.x = axis[1][0];
+  local_100.y = axis[1][1];
+  local_100.z = axis[1][2];
   local_ec = local_100.z;
   local_e8 = local_100.y;
   local_e4 = local_100.x;
   phys_vec3::operator=(&local_e0.y,&local_100);
-  local_120.x = param_2[2][0];
-  local_120.y = param_2[2][1];
-  local_120.z = param_2[2][2];
+  local_120.x = axis[2][0];
+  local_120.y = axis[2][1];
+  local_120.z = axis[2][2];
   local_10c = local_120.z;
   local_108 = local_120.y;
   local_104 = local_120.x;
   phys_vec3::operator=(&local_e0.z,&local_120);
-  local_140.x = *param_1;
-  local_140.y = param_1[1];
-  local_140.z = param_1[2];
+  local_140.x = *position;
+  local_140.y = position[1];
+  local_140.z = position[2];
   local_12c = local_140.z;
   local_128 = local_140.y;
   local_124 = local_140.x;
@@ -137,7 +137,7 @@ GlassPhysics::CreateAxis
   phys_vec3::operator=(&local_180.w,&local_1e0);
   phys_full_inverse(&local_220,&local_180);
   phys_full_multiply_mat(&local_260,&local_e0,&local_220);
-  local_14->m_inv_mass = 1.0 / param_5;
+  local_14->m_inv_mass = 1.0 / mass;
   local_280 = 1.0 / local_80.x;
   local_27c = 1.0 / local_80.y;
   local_278 = 1.0 / local_80.z;
@@ -149,16 +149,16 @@ GlassPhysics::CreateAxis
   local_268 = local_27c;
   local_264 = local_280;
   phys_mat44::operator=(&local_14->m_mat,&local_260);
-  local_2a0 = *param_3;
-  local_29c = param_3[1];
-  local_298 = param_3[2];
+  local_2a0 = *tVel;
+  local_29c = tVel[1];
+  local_298 = tVel[2];
   local_2a4 = &local_14->m_t_vel;
   local_2a4->x = local_2a0;
   (local_14->m_t_vel).y = local_29c;
   (local_14->m_t_vel).z = local_298;
-  local_2c0.x = *param_4;
-  local_2c0.y = param_4[1];
-  local_2c0.z = param_4[2];
+  local_2c0.x = *aVel;
+  local_2c0.y = aVel[1];
+  local_2c0.z = aVel[2];
   local_2b0 = local_2c0.z;
   local_2ac = local_2c0.y;
   local_2a8 = local_2c0.x;
@@ -174,19 +174,19 @@ GlassPhysics::CreateAxis
 
 // 009A3BE0  operator+=  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:46)
 
-phys_vec3 * __thiscall phys_vec3::operator+=(phys_vec3 *this,phys_vec3 *param_1)
+phys_vec3 * __thiscall phys_vec3::operator+=(phys_vec3 *this,phys_vec3 *v)
 
 {
-  this->x = this->x + param_1->x;
-  this->y = this->y + param_1->y;
-  this->z = this->z + param_1->z;
+  this->x = this->x + v->x;
+  this->y = this->y + v->y;
+  this->z = this->z + v->z;
   return this;
 }
 
 
 // 009A23B0  AddForce  (glass/glass_shard.cpp:96)
 
-void __thiscall GlassPhysics::AddForce(GlassPhysics *this,float *param_1,float *param_2)
+void __thiscall GlassPhysics::AddForce(GlassPhysics *this,float *worldPos,float *impulse)
 
 {
   code *pcVar1;
@@ -212,12 +212,12 @@ void __thiscall GlassPhysics::AddForce(GlassPhysics *this,float *param_1,float *
   float local_18;
   GlassPhysics *local_14;
   
-  local_18 = *param_2;
-  local_1c = param_2[1];
-  local_20 = param_2[2];
-  local_50 = *param_1;
-  local_4c = param_1[1];
-  local_48 = param_1[2];
+  local_18 = *impulse;
+  local_1c = impulse[1];
+  local_20 = impulse[2];
+  local_50 = *worldPos;
+  local_4c = worldPos[1];
+  local_48 = worldPos[2];
   local_30.x = local_18 * 0.001;
   local_30.y = local_1c * 0.001;
   local_30.z = local_20 * 0.001;
@@ -263,22 +263,22 @@ void __thiscall GlassPhysics::AddForce(GlassPhysics *this,float *param_1,float *
 
 // 009A47D0  operator=  (glass/glass_shard.h:105)
 
-void __thiscall GlassShard::Outline::Vertex::operator=(Vertex *this,Vertex *param_1)
+void __thiscall GlassShard::Outline::Vertex::operator=(Vertex *this,Vertex *other)
 
 {
-  (this->edge).origin[0] = (param_1->edge).origin[0];
-  (this->edge).origin[1] = (param_1->edge).origin[1];
-  (this->edge).dir[0] = (param_1->edge).dir[0];
-  (this->edge).dir[1] = (param_1->edge).dir[1];
-  (this->edge).len = (param_1->edge).len;
-  this->isOriginalEdge = param_1->isOriginalEdge;
+  (this->edge).origin[0] = (other->edge).origin[0];
+  (this->edge).origin[1] = (other->edge).origin[1];
+  (this->edge).dir[0] = (other->edge).dir[0];
+  (this->edge).dir[1] = (other->edge).dir[1];
+  (this->edge).len = (other->edge).len;
+  this->isOriginalEdge = other->isOriginalEdge;
   return;
 }
 
 
 // 009A26E0  SetVelocity  (glass/glass_shard.cpp:115)
 
-void __thiscall GlassPhysics::SetVelocity(GlassPhysics *this,float *param_1)
+void __thiscall GlassPhysics::SetVelocity(GlassPhysics *this,float *t_vel)
 
 {
   float fVar1;
@@ -286,9 +286,9 @@ void __thiscall GlassPhysics::SetVelocity(GlassPhysics *this,float *param_1)
   code *pcVar3;
   bool bVar4;
   
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  (this->m_t_vel).x = *param_1;
+  fVar1 = t_vel[1];
+  fVar2 = t_vel[2];
+  (this->m_t_vel).x = *t_vel;
   (this->m_t_vel).y = fVar1;
   (this->m_t_vel).z = fVar2;
   if ((((this->m_t_vel).x == (this->m_t_vel).x) && ((this->m_t_vel).y == (this->m_t_vel).y)) &&
@@ -309,15 +309,15 @@ void __thiscall GlassPhysics::SetVelocity(GlassPhysics *this,float *param_1)
 
 // 009A2820  SetAngularVelocity  (glass/glass_shard.cpp:121)
 
-void __thiscall GlassPhysics::SetAngularVelocity(GlassPhysics *this,float *param_1)
+void __thiscall GlassPhysics::SetAngularVelocity(GlassPhysics *this,float *a_vel)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  (this->m_a_vel).x = *param_1;
+  fVar1 = a_vel[1];
+  fVar2 = a_vel[2];
+  (this->m_a_vel).x = *a_vel;
   (this->m_a_vel).y = fVar1;
   (this->m_a_vel).z = fVar2;
   return;
@@ -326,11 +326,11 @@ void __thiscall GlassPhysics::SetAngularVelocity(GlassPhysics *this,float *param
 
 // 009A28C0  Step  (glass/glass_shard.cpp:126)
 
-void __thiscall GlassPhysics::Step(GlassPhysics *this,float param_1)
+void __thiscall GlassPhysics::Step(GlassPhysics *this,float deltaTime)
 
 {
-  IntegrateVelocity(this,param_1);
-  IntegratePos(this,param_1);
+  IntegrateVelocity(this,deltaTime);
+  IntegratePos(this,deltaTime);
   (this->m_force_sum).x = ::PHYS_ZERO_VEC.x;
   (this->m_force_sum).y = ::PHYS_ZERO_VEC.y;
   (this->m_force_sum).z = ::PHYS_ZERO_VEC.z;
@@ -343,12 +343,12 @@ void __thiscall GlassPhysics::Step(GlassPhysics *this,float param_1)
 
 // 009A7010  MarkAllEdge  (glass/glass_shard.h:128)
 
-void __thiscall GlassShard::Outline::MarkAllEdge(Outline *this,bool param_1)
+void __thiscall GlassShard::Outline::MarkAllEdge(Outline *this,bool e)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
   if (this->isClosed == false) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.h",0x80,0,"%s");
@@ -358,8 +358,8 @@ void __thiscall GlassShard::Outline::MarkAllEdge(Outline *this,bool param_1)
       return;
     }
   }
-  for (local_8 = 0; local_8 < this->numVerts; local_8 = local_8 + 1) {
-    this->verts[local_8].isOriginalEdge = param_1;
+  for (i = 0; i < this->numVerts; i = i + 1) {
+    this->verts[i].isOriginalEdge = e;
   }
   return;
 }
@@ -369,7 +369,7 @@ void __thiscall GlassShard::Outline::MarkAllEdge(Outline *this,bool param_1)
 
 void __thiscall
 GlassPhysics::tensor_transform_principle
-          (GlassPhysics *this,phys_vec3 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+          (GlassPhysics *this,phys_vec3 *diag,phys_mat44 *mat,phys_mat44 *tensor)
 
 {
   float fVar1;
@@ -446,29 +446,29 @@ GlassPhysics::tensor_transform_principle
   float local_18;
   GlassPhysics *local_14;
   
-  local_18 = param_1->x;
-  local_40 = local_18 * (param_2->x).x;
-  local_3c = local_18 * (param_2->x).y;
-  local_38 = local_18 * (param_2->x).z;
-  local_44 = param_1->y;
-  local_48 = &param_2->y;
+  local_18 = diag->x;
+  local_40 = local_18 * (mat->x).x;
+  local_3c = local_18 * (mat->x).y;
+  local_38 = local_18 * (mat->x).z;
+  local_44 = diag->y;
+  local_48 = &mat->y;
   local_70 = local_44 * local_48->x;
-  local_6c = local_44 * (param_2->y).y;
-  local_68 = local_44 * (param_2->y).z;
-  local_74 = param_1->z;
-  local_78 = &param_2->z;
+  local_6c = local_44 * (mat->y).y;
+  local_68 = local_44 * (mat->y).z;
+  local_74 = diag->z;
+  local_78 = &mat->z;
   local_a0 = local_74 * local_78->x;
-  local_9c = local_74 * (param_2->z).y;
-  local_98 = local_74 * (param_2->z).z;
-  local_a4 = (param_2->z).x;
+  local_9c = local_74 * (mat->z).y;
+  local_98 = local_74 * (mat->z).z;
+  local_a4 = (mat->z).x;
   local_c0 = local_a4 * local_a0;
   local_bc = local_a4 * local_9c;
   local_b8 = local_a4 * local_98;
-  local_c4 = (param_2->y).x;
+  local_c4 = (mat->y).x;
   local_e0 = local_c4 * local_70;
   local_dc = local_c4 * local_6c;
   local_d8 = local_c4 * local_68;
-  local_e4 = (param_2->x).x;
+  local_e4 = (mat->x).x;
   local_100 = local_e4 * local_40;
   local_fc = local_e4 * local_3c;
   local_f8 = local_e4 * local_38;
@@ -478,27 +478,27 @@ GlassPhysics::tensor_transform_principle
   local_140.x = local_120 + local_c0;
   local_140.y = local_11c + local_bc;
   local_140.z = local_118 + local_b8;
-  fVar3 = (param_2->z).y;
+  fVar3 = (mat->z).y;
   fVar1 = fVar3 * local_a0;
   fVar2 = fVar3 * local_9c;
   fVar3 = fVar3 * local_98;
-  fVar6 = (param_2->y).y;
+  fVar6 = (mat->y).y;
   fVar4 = fVar6 * local_70;
   fVar5 = fVar6 * local_6c;
   fVar6 = fVar6 * local_68;
-  fVar9 = (param_2->x).y;
+  fVar9 = (mat->x).y;
   fVar7 = fVar9 * local_40;
   fVar8 = fVar9 * local_3c;
   fVar9 = fVar9 * local_38;
-  fVar12 = (param_2->z).z;
+  fVar12 = (mat->z).z;
   fVar10 = fVar12 * local_a0;
   fVar11 = fVar12 * local_9c;
   fVar12 = fVar12 * local_98;
-  fVar15 = (param_2->y).z;
+  fVar15 = (mat->y).z;
   fVar13 = fVar15 * local_70;
   fVar14 = fVar15 * local_6c;
   fVar15 = fVar15 * local_68;
-  fVar18 = (param_2->x).z;
+  fVar18 = (mat->x).z;
   fVar16 = fVar18 * local_40;
   fVar17 = fVar18 * local_3c;
   fVar18 = fVar18 * local_38;
@@ -527,13 +527,13 @@ GlassPhysics::tensor_transform_principle
   local_20 = local_3c;
   local_1c = local_40;
   local_14 = this;
-  phys_vec3::operator=(&param_3->x,&local_140);
-  (param_3->y).x = fVar7 + fVar4 + fVar1;
-  (param_3->y).y = fVar8 + fVar5 + fVar2;
-  (param_3->y).z = fVar9 + fVar6 + fVar3;
-  (param_3->z).x = fVar16 + fVar13 + fVar10;
-  (param_3->z).y = fVar17 + fVar14 + fVar11;
-  (param_3->z).z = fVar18 + fVar15 + fVar12;
+  phys_vec3::operator=(&tensor->x,&local_140);
+  (tensor->y).x = fVar7 + fVar4 + fVar1;
+  (tensor->y).y = fVar8 + fVar5 + fVar2;
+  (tensor->y).z = fVar9 + fVar6 + fVar3;
+  (tensor->z).x = fVar16 + fVar13 + fVar10;
+  (tensor->z).y = fVar17 + fVar14 + fVar11;
+  (tensor->z).z = fVar18 + fVar15 + fVar12;
   return;
 }
 
@@ -561,13 +561,13 @@ float __thiscall GlassShard::Outline::Length(Outline *this)
 
 // 009A32C0  IntegrateVelocity  (glass/glass_shard.cpp:158)
 
-void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1)
+void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float deltaTime)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_vec3 *ppVar3;
-  float fVar4;
+  phys_vec3 *v;
+  float fVar3;
   float local_23c;
   float local_22c;
   phys_vec3 local_210;
@@ -639,12 +639,12 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
   GlassPhysics *local_14;
   
   local_18 = &this->m_force_sum;
-  local_1c = 1.0 / param_1;
+  local_1c = 1.0 / deltaTime;
   local_18->x = local_18->x * local_1c;
   (this->m_force_sum).y = (this->m_force_sum).y * local_1c;
   (this->m_force_sum).z = (this->m_force_sum).z * local_1c;
   local_20 = &this->m_torque_sum;
-  local_24 = 1.0 / param_1;
+  local_24 = 1.0 / deltaTime;
   local_20->x = local_20->x * local_24;
   (this->m_torque_sum).y = (this->m_torque_sum).y * local_24;
   (this->m_torque_sum).z = (this->m_torque_sum).z * local_24;
@@ -663,9 +663,9 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
   local_100 = local_e0 + local_b0;
   local_fc = local_dc + local_ac;
   local_f8 = local_d8 + local_a8;
-  local_120 = param_1 * local_100;
-  local_11c = param_1 * local_fc;
-  local_118 = param_1 * local_f8;
+  local_120 = deltaTime * local_100;
+  local_11c = deltaTime * local_fc;
+  local_118 = deltaTime * local_f8;
   local_124 = &local_14->m_t_vel;
   local_124->x = local_124->x + local_120;
   (local_14->m_t_vel).y = (local_14->m_t_vel).y + local_11c;
@@ -686,9 +686,9 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
   local_8c = local_ac;
   local_88 = local_b0;
   local_144 = phys_multiply33(&local_140,&local_70,&local_14->m_torque_sum);
-  local_160 = param_1 * local_144->x;
-  local_15c = param_1 * local_144->y;
-  local_158 = param_1 * local_144->z;
+  local_160 = deltaTime * local_144->x;
+  local_15c = deltaTime * local_144->y;
+  local_158 = deltaTime * local_144->z;
   local_164 = &local_14->m_a_vel;
   local_164->x = local_164->x + local_160;
   (local_14->m_a_vel).y = (local_14->m_a_vel).y + local_15c;
@@ -709,32 +709,32 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
   local_1e0 = local_1b8->x * local_1b4->x;
   local_1dc = (local_14->m_inv_inertia).y * local_1b4->y;
   local_1d8 = (local_14->m_inv_inertia).z * local_1b4->z;
-  local_200.x = param_1 * local_1e0;
-  local_200.y = param_1 * local_1dc;
-  local_200.z = param_1 * local_1d8;
+  local_200.x = deltaTime * local_1e0;
+  local_200.y = deltaTime * local_1dc;
+  local_200.z = deltaTime * local_1d8;
   local_1ec = local_200.z;
   local_1e8 = local_200.y;
   local_1e4 = local_200.x;
   local_1c4 = local_1d8;
   local_1c0 = local_1dc;
   local_1bc = local_1e0;
-  ppVar3 = phys_multiply33(&local_210,&local_14->m_mat,&local_200);
-  phys_vec3::operator+=(&local_14->m_a_vel,ppVar3);
-  fVar4 = AbsSquared(&local_14->m_a_vel);
-  if (256.0 < fVar4) {
-    if ((fVar4 <= 9.9999994e-11) &&
+  v = phys_multiply33(&local_210,&local_14->m_mat,&local_200);
+  phys_vec3::operator+=(&local_14->m_a_vel,v);
+  fVar3 = AbsSquared(&local_14->m_a_vel);
+  if (256.0 < fVar3) {
+    if ((fVar3 <= 9.9999994e-11) &&
        (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0xb7,
                           "navel_sq > phys_sqr(0.00001f)",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    fVar4 = 16.0 / SQRT(fVar4);
-    (local_14->m_a_vel).x = (local_14->m_a_vel).x * fVar4;
-    (local_14->m_a_vel).y = (local_14->m_a_vel).y * fVar4;
-    (local_14->m_a_vel).z = (local_14->m_a_vel).z * fVar4;
+    fVar3 = 16.0 / SQRT(fVar3);
+    (local_14->m_a_vel).x = (local_14->m_a_vel).x * fVar3;
+    (local_14->m_a_vel).y = (local_14->m_a_vel).y * fVar3;
+    (local_14->m_a_vel).z = (local_14->m_a_vel).z * fVar3;
   }
-  local_22c = param_1 * (phys_dragLinear->current).value;
+  local_22c = deltaTime * (phys_dragLinear->current).value;
   if (0.9 <= local_22c) {
     local_22c = 0.9;
   }
@@ -742,7 +742,7 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
   (local_14->m_t_vel).x = (local_14->m_t_vel).x * local_22c;
   (local_14->m_t_vel).y = (local_14->m_t_vel).y * local_22c;
   (local_14->m_t_vel).z = (local_14->m_t_vel).z * local_22c;
-  local_23c = param_1 * (phys_dragAngular->current).value;
+  local_23c = deltaTime * (phys_dragAngular->current).value;
   if (0.9 <= local_23c) {
     local_23c = 0.9;
   }
@@ -757,7 +757,7 @@ void __thiscall GlassPhysics::IntegrateVelocity(GlassPhysics *this,float param_1
 // 009A3C40  phys_multiply33  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:176)
 
 phys_vec3 * __cdecl
-phys_multiply33(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 *param_2)
+phys_multiply33(phys_vec3 *__return_storage_ptr__,phys_mat44 *mat_2,phys_vec3 *v_2)
 
 {
   float fVar1;
@@ -770,17 +770,16 @@ phys_multiply33(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 
   float fVar8;
   float fVar9;
   
-  fVar1 = param_2->z;
-  fVar2 = (param_1->z).y;
-  fVar3 = (param_1->z).z;
-  fVar4 = param_2->y;
-  fVar5 = (param_1->y).y;
-  fVar6 = (param_1->y).z;
-  fVar7 = param_2->x;
-  fVar8 = (param_1->x).y;
-  fVar9 = (param_1->x).z;
-  __return_storage_ptr__->x =
-       fVar7 * (param_1->x).x + fVar4 * (param_1->y).x + fVar1 * (param_1->z).x;
+  fVar1 = v_2->z;
+  fVar2 = (mat_2->z).y;
+  fVar3 = (mat_2->z).z;
+  fVar4 = v_2->y;
+  fVar5 = (mat_2->y).y;
+  fVar6 = (mat_2->y).z;
+  fVar7 = v_2->x;
+  fVar8 = (mat_2->x).y;
+  fVar9 = (mat_2->x).z;
+  __return_storage_ptr__->x = fVar7 * (mat_2->x).x + fVar4 * (mat_2->y).x + fVar1 * (mat_2->z).x;
   __return_storage_ptr__->y = fVar7 * fVar8 + fVar4 * fVar5 + fVar1 * fVar2;
   __return_storage_ptr__->z = fVar7 * fVar9 + fVar4 * fVar6 + fVar1 * fVar3;
   return __return_storage_ptr__;
@@ -789,7 +788,7 @@ phys_multiply33(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 
 
 // 009A3E70  IntegratePos  (glass/glass_shard.cpp:206)
 
-void __thiscall GlassPhysics::IntegratePos(GlassPhysics *this,float param_1)
+void __thiscall GlassPhysics::IntegratePos(GlassPhysics *this,float deltaTime)
 
 {
   phys_mat44 local_90;
@@ -804,9 +803,9 @@ void __thiscall GlassPhysics::IntegratePos(GlassPhysics *this,float param_1)
   GlassPhysics *local_14;
   
   local_18 = &this->m_t_vel;
-  local_40 = param_1 * local_18->x;
-  local_3c = param_1 * (this->m_t_vel).y;
-  local_38 = param_1 * (this->m_t_vel).z;
+  local_40 = deltaTime * local_18->x;
+  local_3c = deltaTime * (this->m_t_vel).y;
+  local_38 = deltaTime * (this->m_t_vel).z;
   local_44 = &(this->m_mat).w;
   local_44->x = local_44->x + local_40;
   (this->m_mat).w.y = (this->m_mat).w.y + local_3c;
@@ -815,7 +814,7 @@ void __thiscall GlassPhysics::IntegratePos(GlassPhysics *this,float param_1)
   local_20 = local_3c;
   local_1c = local_40;
   local_14 = this;
-  make_rotate(&local_90,&this->m_a_vel,param_1,1000.0);
+  make_rotate(&local_90,&this->m_a_vel,deltaTime,1000.0);
   phys_multiply_mat(&local_14->m_mat,&local_90,&local_14->m_mat);
   return;
 }
@@ -823,11 +822,11 @@ void __thiscall GlassPhysics::IntegratePos(GlassPhysics *this,float param_1)
 
 // 009A3F80  GetPosition  (glass/glass_shard.cpp:215)
 
-void __thiscall GlassPhysics::GetPosition(GlassPhysics *this,float *param_1,float (*param_2) [3])
+void __thiscall GlassPhysics::GetPosition(GlassPhysics *this,float *position,float (*axis) [3])
 
 {
-  Phys_NitrousVecToVec3(&(this->m_mat).w,param_1);
-  Phys_NitrousMat44ToVec33(&this->m_mat,param_2);
+  Phys_NitrousVecToVec3(&(this->m_mat).w,position);
+  Phys_NitrousMat44ToVec33(&this->m_mat,axis);
   return;
 }
 
@@ -907,44 +906,42 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 009A9750  Vec3Avg  (universal/com_vector.h:293)
 
-void __cdecl Vec3Avg(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Avg(float *a,float *b,float *sum)
 
 {
-  *param_3 = (*param_1 + *param_2) * 0.5;
-  param_3[1] = (param_1[1] + param_2[1]) * 0.5;
-  param_3[2] = (param_1[2] + param_2[2]) * 0.5;
+  *sum = (*a + *b) * 0.5;
+  sum[1] = (a[1] + b[1]) * 0.5;
+  sum[2] = (a[2] + b[2]) * 0.5;
   return;
 }
 
 
 // 009A97C0  Vec3Mul  (universal/com_vector.h:314)
 
-void __cdecl Vec3Mul(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Mul(float *a,float *b,float *product)
 
 {
-  *param_3 = *param_1 * *param_2;
-  param_3[1] = param_1[1] * param_2[1];
-  param_3[2] = param_1[2] * param_2[2];
+  *product = *a * *b;
+  product[1] = a[1] * b[1];
+  product[2] = a[2] * b[2];
   return;
 }
 
 
 // 009A5170  Vec2IntesectLines  (glass/glass_shard.cpp:331)
 
-bool __cdecl
-Vec2IntesectLines(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+bool __cdecl Vec2IntesectLines(float *a1,float *a2,float *b1,float *b2,float *ret)
 
 {
   float fVar1;
+  float det;
   
-  fVar1 = (*param_1 - *param_2) * (param_3[1] - param_4[1]) -
-          (param_1[1] - param_2[1]) * (*param_3 - *param_4);
+  fVar1 = (*a1 - *a2) * (b1[1] - b2[1]) - (a1[1] - a2[1]) * (*b1 - *b2);
   if (1e-05 < ABS(fVar1)) {
-    *param_5 = ((*param_3 - *param_4) * (*param_1 * param_2[1] - param_1[1] * *param_2) -
-               (*param_1 - *param_2) * (*param_3 * param_4[1] - param_3[1] * *param_4)) / fVar1;
-    param_5[1] = ((param_3[1] - param_4[1]) * (*param_1 * param_2[1] - param_1[1] * *param_2) -
-                 (param_1[1] - param_2[1]) * (*param_3 * param_4[1] - param_3[1] * *param_4)) /
-                 fVar1;
+    *ret = ((*b1 - *b2) * (*a1 * a2[1] - a1[1] * *a2) - (*a1 - *a2) * (*b1 * b2[1] - b1[1] * *b2)) /
+           fVar1;
+    ret[1] = ((b1[1] - b2[1]) * (*a1 * a2[1] - a1[1] * *a2) -
+             (a1[1] - a2[1]) * (*b1 * b2[1] - b1[1] * *b2)) / fVar1;
   }
   return 1e-05 < ABS(fVar1);
 }
@@ -972,16 +969,17 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 009A5030  GetSegmentParam  (glass/glass_shard.cpp:408)
 
-float __cdecl GetSegmentParam(float *param_1,float *param_2,float *param_3)
+float __cdecl GetSegmentParam(float *a1,float *a2,float *p)
 
 {
   float local_10;
+  float dx;
   
-  if (ABS(*param_2 - *param_1) - 1e-05 < 0.0) {
-    local_10 = (param_3[1] - param_1[1]) / (param_2[1] - param_1[1]);
+  if (ABS(*a2 - *a1) - 1e-05 < 0.0) {
+    local_10 = (p[1] - a1[1]) / (a2[1] - a1[1]);
   }
   else {
-    local_10 = (*param_3 - *param_1) / (*param_2 - *param_1);
+    local_10 = (*p - *a1) / (*a2 - *a1);
   }
   return local_10;
 }
@@ -989,17 +987,17 @@ float __cdecl GetSegmentParam(float *param_1,float *param_2,float *param_3)
 
 // 009A50C0  Vec2IntersectSegments  (glass/glass_shard.cpp:425)
 
-bool __cdecl
-Vec2IntersectSegments(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+bool __cdecl Vec2IntersectSegments(float *a1,float *a2,float *b1,float *b2,float *ret)
 
 {
   bool bVar1;
   float fVar2;
+  float t2;
+  float t1;
   
-  bVar1 = Vec2IntesectLines(param_1,param_2,param_3,param_4,param_5);
-  if ((((bVar1) && (fVar2 = GetSegmentParam(param_1,param_2,param_5), 1e-05 < fVar2)) &&
-      (fVar2 < 0.99999)) &&
-     ((fVar2 = GetSegmentParam(param_3,param_4,param_5), 1e-05 < fVar2 && (fVar2 < 0.99999)))) {
+  bVar1 = Vec2IntesectLines(a1,a2,b1,b2,ret);
+  if ((((bVar1) && (fVar2 = GetSegmentParam(a1,a2,ret), 1e-05 < fVar2)) && (fVar2 < 0.99999)) &&
+     ((fVar2 = GetSegmentParam(b1,b2,ret), 1e-05 < fVar2 && (fVar2 < 0.99999)))) {
     return true;
   }
   return false;
@@ -1008,11 +1006,11 @@ Vec2IntersectSegments(float *param_1,float *param_2,float *param_3,float *param_
 
 // 009A3FC0  Init  (glass/glass_shard.cpp:445)
 
-uint __thiscall GlassShard::Outline::Init(Outline *this,void *param_1,uchar param_2)
+uint __thiscall GlassShard::Outline::Init(Outline *this,void *ptr,uchar num)
 
 {
-  this->verts = param_1;
-  this->maxVerts = param_2;
+  this->verts = ptr;
+  this->maxVerts = num;
   this->numVerts = '\0';
   return (uint)this->maxVerts * 0x18;
 }
@@ -1020,17 +1018,17 @@ uint __thiscall GlassShard::Outline::Init(Outline *this,void *param_1,uchar para
 
 // 009A3FF0  SetPointers  (glass/glass_shard.cpp:454)
 
-uint __thiscall GlassShard::Outline::SetPointers(Outline *this,uchar *param_1)
+uint __thiscall GlassShard::Outline::SetPointers(Outline *this,uchar *ptr)
 
 {
-  this->verts = (Vertex *)param_1;
+  this->verts = (Vertex *)ptr;
   return (uint)this->numVerts * 0x18;
 }
 
 
 // 009A4010  operator=  (glass/glass_shard.cpp:461)
 
-Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *param_1)
+Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *o)
 
 {
   code *pcVar1;
@@ -1047,7 +1045,7 @@ Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *param
       return pOVar3;
     }
   }
-  if (param_1->verts == (Vertex *)0x0) {
+  if (o->verts == (Vertex *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x1cf,0,
                              "%s");
     if (!bVar2) {
@@ -1056,7 +1054,7 @@ Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *param
       return pOVar3;
     }
   }
-  if (this->maxVerts < param_1->numVerts) {
+  if (this->maxVerts < o->numVerts) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x1d0,0,
                              "%s");
     if (!bVar2) {
@@ -1065,12 +1063,12 @@ Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *param
       return pOVar3;
     }
   }
-  this->isClosed = param_1->isClosed;
-  this->numVerts = param_1->numVerts;
-  memcpy((uchar *)this->verts,(uchar *)param_1->verts,(uint)this->numVerts * 0x18);
-  fVar4 = Length(param_1);
+  this->isClosed = o->isClosed;
+  this->numVerts = o->numVerts;
+  memcpy((uchar *)this->verts,(uchar *)o->verts,(uint)this->numVerts * 0x18);
+  fVar4 = Length(o);
   this->length = fVar4;
-  fVar4 = Area(param_1);
+  fVar4 = Area(o);
   this->area = fVar4;
   Verify(this);
   return this;
@@ -1079,7 +1077,7 @@ Outline * __thiscall GlassShard::Outline::operator=(Outline *this,Outline *param
 
 // 009A4160  Add  (glass/glass_shard.cpp:480)
 
-Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *param_1)
+Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *pos)
 
 {
   float *pfVar1;
@@ -1092,15 +1090,15 @@ Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *param_1)
       pfVar1 = this->verts[this->numVerts - 1].edge.dir;
       bVar2 = this->numVerts;
       pVVar3 = this->verts;
-      *pfVar1 = *param_1 - pVVar3[bVar2 - 1].edge.origin[0];
-      pfVar1[1] = param_1[1] - pVVar3[bVar2 - 1].edge.origin[1];
+      *pfVar1 = *pos - pVVar3[bVar2 - 1].edge.origin[0];
+      pfVar1[1] = pos[1] - pVVar3[bVar2 - 1].edge.origin[1];
       fVar4 = Vec2Normalize(pfVar1);
       this->verts[this->numVerts - 1].edge.len = fVar4;
     }
     bVar2 = this->numVerts;
     pVVar3 = this->verts;
-    pVVar3[bVar2].edge.origin[0] = *param_1;
-    pVVar3[bVar2].edge.origin[1] = param_1[1];
+    pVVar3[bVar2].edge.origin[0] = *pos;
+    pVVar3[bVar2].edge.origin[1] = pos[1];
     pfVar1 = this->verts[this->numVerts].edge.dir;
     *pfVar1 = 0.0;
     pfVar1[1] = 0.0;
@@ -1114,7 +1112,7 @@ Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *param_1)
 
 // 009A42D0  Add  (glass/glass_shard.cpp:502)
 
-Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *param_1,float param_2)
+Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *dir,float len)
 
 {
   float *pfVar1;
@@ -1136,9 +1134,9 @@ Vertex * __thiscall GlassShard::Outline::Add(Outline *this,float *param_1,float 
   }
   if (this->numVerts < this->maxVerts) {
     pfVar1 = this->verts[this->numVerts - 1].edge.dir;
-    *pfVar1 = *param_1;
-    pfVar1[1] = param_1[1];
-    this->verts[this->numVerts - 1].edge.len = param_2;
+    *pfVar1 = *dir;
+    pfVar1[1] = dir[1];
+    this->verts[this->numVerts - 1].edge.len = len;
     bVar3 = this->numVerts;
     pVVar6 = this->verts;
     pVVar7 = this->verts + (this->numVerts - 1);
@@ -1171,9 +1169,10 @@ bool __thiscall GlassShard::Outline::CloseOutline(Outline *this)
   uint uVar8;
   uint uVar9;
   float fVar10;
-  uint local_c;
-  byte local_6;
-  byte local_5;
+  int v2_2;
+  uint v1_2;
+  uchar v2;
+  uchar v1;
   
   if ((this->numVerts < 3) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x20d,0,
@@ -1190,49 +1189,48 @@ bool __thiscall GlassShard::Outline::CloseOutline(Outline *this)
   pfVar1[1] = (pVVar4->edge).origin[1] - pVVar3[bVar2 - 1].edge.origin[1];
   fVar10 = Vec2Normalize(pfVar1);
   this->verts[this->numVerts - 1].edge.len = fVar10;
-  local_5 = 0;
+  v1 = '\0';
   while( true ) {
     while( true ) {
-      if (this->numVerts <= local_5) {
+      if (this->numVerts <= v1) {
         this->length = 0.0;
         this->area = 0.0;
-        for (local_c = 0; local_c < this->numVerts; local_c = local_c + 1) {
-          uVar8 = local_c - (this->numVerts - 1);
+        for (v1_2 = 0; v1_2 < this->numVerts; v1_2 = v1_2 + 1) {
+          uVar8 = v1_2 - (this->numVerts - 1);
           uVar9 = (int)uVar8 >> 0x1f;
-          this->length = this->length + this->verts[local_c].edge.len;
-          this->area = (this->verts[local_c].edge.origin[0] *
-                        this->verts[local_c + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.
-                        origin[1] -
-                       this->verts[local_c].edge.origin[1] *
-                       this->verts[local_c + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.
-                       origin[0]) * 0.5 + this->area;
+          this->length = this->length + this->verts[v1_2].edge.len;
+          this->area = (this->verts[v1_2].edge.origin[0] *
+                        this->verts[v1_2 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.origin
+                        [1] - this->verts[v1_2].edge.origin[1] *
+                              this->verts[v1_2 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.
+                              origin[0]) * 0.5 + this->area;
         }
         this->area = ABS(this->area);
         this->isClosed = true;
         Verify(this);
         return true;
       }
-      pfVar1 = &this->verts[local_5].edge.len;
+      pfVar1 = &this->verts[v1].edge.len;
       if (*pfVar1 <= 0.01 && *pfVar1 != 0.01) break;
-      local_5 = local_5 + 1;
+      v1 = v1 + '\x01';
     }
     if (this->numVerts == '\x03') break;
-    for (local_6 = local_5; (int)(uint)local_6 < (int)(this->numVerts - 1); local_6 = local_6 + 1) {
-      Vertex::operator=(this->verts + local_6,this->verts + local_6 + 1);
+    for (v2 = v1; (int)(uint)v2 < (int)(this->numVerts - 1); v2 = v2 + '\x01') {
+      Vertex::operator=(this->verts + v2,this->verts + v2 + 1);
     }
     this->numVerts = this->numVerts + 0xff;
-    uVar8 = (uint)local_5 - (this->numVerts - 1);
+    uVar8 = (uint)v1 - (this->numVerts - 1);
     uVar9 = (int)uVar8 >> 0x1f;
-    pfVar1 = this->verts[local_5].edge.dir;
+    pfVar1 = this->verts[v1].edge.dir;
     pVVar3 = this->verts;
     pVVar4 = this->verts;
-    *pfVar1 = pVVar4[local_5 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.origin[0] -
-              pVVar3[local_5].edge.origin[0];
-    pfVar1[1] = pVVar4[local_5 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.origin[1] -
-                pVVar3[local_5].edge.origin[1];
+    *pfVar1 = pVVar4[v1 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.origin[0] -
+              pVVar3[v1].edge.origin[0];
+    pfVar1[1] = pVVar4[v1 + 1 & (int)-((uVar8 ^ uVar9) - uVar9) >> 0x1f].edge.origin[1] -
+                pVVar3[v1].edge.origin[1];
     fVar10 = Vec2Normalize(pfVar1);
-    this->verts[local_5].edge.len = fVar10;
-    local_5 = 0;
+    this->verts[v1].edge.len = fVar10;
+    v1 = '\0';
   }
   return false;
 }
@@ -1240,7 +1238,7 @@ bool __thiscall GlassShard::Outline::CloseOutline(Outline *this)
 
 // 009A4840  GetBBox  (glass/glass_shard.cpp:571)
 
-void __thiscall GlassShard::Outline::GetBBox(Outline *this,float *param_1,float *param_2)
+void __thiscall GlassShard::Outline::GetBBox(Outline *this,float *mn,float *mx)
 
 {
   float *pfVar1;
@@ -1250,48 +1248,48 @@ void __thiscall GlassShard::Outline::GetBBox(Outline *this,float *param_1,float 
   float local_28;
   float local_24;
   float local_20;
-  uint local_8;
+  uint i;
   
   pVVar3 = this->verts;
-  *param_1 = (pVVar3->edge).origin[0];
-  param_1[1] = (pVVar3->edge).origin[1];
+  *mn = (pVVar3->edge).origin[0];
+  mn[1] = (pVVar3->edge).origin[1];
   pVVar3 = this->verts;
-  *param_2 = (pVVar3->edge).origin[0];
-  param_2[1] = (pVVar3->edge).origin[1];
-  for (local_8 = 1; local_8 < this->numVerts; local_8 = local_8 + 1) {
-    pVVar3 = this->verts + local_8;
-    if (*param_1 < (pVVar3->edge).origin[0] || *param_1 == (pVVar3->edge).origin[0]) {
-      local_20 = *param_1;
+  *mx = (pVVar3->edge).origin[0];
+  mx[1] = (pVVar3->edge).origin[1];
+  for (i = 1; i < this->numVerts; i = i + 1) {
+    pVVar3 = this->verts + i;
+    if (*mn < (pVVar3->edge).origin[0] || *mn == (pVVar3->edge).origin[0]) {
+      local_20 = *mn;
     }
     else {
       local_20 = (pVVar3->edge).origin[0];
     }
-    *param_1 = local_20;
+    *mn = local_20;
     pfVar1 = (pVVar3->edge).origin + 1;
-    if (param_1[1] < *pfVar1 || param_1[1] == *pfVar1) {
-      local_24 = param_1[1];
+    if (mn[1] < *pfVar1 || mn[1] == *pfVar1) {
+      local_24 = mn[1];
     }
     else {
       local_24 = (pVVar3->edge).origin[1];
     }
-    param_1[1] = local_24;
-    pVVar3 = this->verts + local_8;
+    mn[1] = local_24;
+    pVVar3 = this->verts + i;
     fVar2 = (pVVar3->edge).origin[0];
-    if (fVar2 < *param_2 || fVar2 == *param_2) {
-      local_28 = *param_2;
+    if (fVar2 < *mx || fVar2 == *mx) {
+      local_28 = *mx;
     }
     else {
       local_28 = (pVVar3->edge).origin[0];
     }
-    *param_2 = local_28;
+    *mx = local_28;
     fVar2 = (pVVar3->edge).origin[1];
-    if (fVar2 < param_2[1] || fVar2 == param_2[1]) {
-      local_2c = param_2[1];
+    if (fVar2 < mx[1] || fVar2 == mx[1]) {
+      local_2c = mx[1];
     }
     else {
       local_2c = (pVVar3->edge).origin[1];
     }
-    param_2[1] = local_2c;
+    mx[1] = local_2c;
   }
   return;
 }
@@ -1305,13 +1303,13 @@ float __thiscall GlassShard::Outline::Extent(Outline *this)
   float fVar1;
   float local_1c;
   float local_18;
-  float local_14;
+  float mx;
   float local_10;
-  float local_c;
+  float mn;
   float local_8;
   
-  GetBBox(this,&local_c,&local_14);
-  local_1c = local_14 - local_c;
+  GetBBox(this,&mn,&mx);
+  local_1c = mx - mn;
   local_18 = local_10 - local_8;
   fVar1 = Vec2Length(&local_1c);
   return fVar1;
@@ -1320,28 +1318,28 @@ float __thiscall GlassShard::Outline::Extent(Outline *this)
 
 // 009A4A10  Recenter  (glass/glass_shard.cpp:590)
 
-void __thiscall GlassShard::Outline::Recenter(Outline *this,bool param_1,float *param_2)
+void __thiscall GlassShard::Outline::Recenter(Outline *this,bool flip,float *offset)
 
 {
   Vertex *pVVar1;
   Vertex *pVVar2;
-  uint local_18;
-  float local_14;
+  uint i;
+  float mx;
   float local_10;
-  float local_c;
+  float mn;
   float local_8;
   
-  if (param_1) {
+  if (flip) {
     Reverse(this);
   }
-  GetBBox(this,&local_c,&local_14);
-  *param_2 = (local_c + local_14) * 0.5;
-  param_2[1] = (local_8 + local_10) * 0.5;
-  for (local_18 = 0; local_18 < this->numVerts; local_18 = local_18 + 1) {
+  GetBBox(this,&mn,&mx);
+  *offset = (mn + mx) * 0.5;
+  offset[1] = (local_8 + local_10) * 0.5;
+  for (i = 0; i < this->numVerts; i = i + 1) {
     pVVar1 = this->verts;
     pVVar2 = this->verts;
-    pVVar1[local_18].edge.origin[0] = pVVar2[local_18].edge.origin[0] - *param_2;
-    pVVar1[local_18].edge.origin[1] = pVVar2[local_18].edge.origin[1] - param_2[1];
+    pVVar1[i].edge.origin[0] = pVVar2[i].edge.origin[0] - *offset;
+    pVVar1[i].edge.origin[1] = pVVar2[i].edge.origin[1] - offset[1];
   }
   return;
 }
@@ -1355,20 +1353,20 @@ bool __thiscall GlassShard::Outline::HasNarrowAngle(Outline *this)
   float *pfVar1;
   float *pfVar2;
   float local_24;
-  uint local_c;
-  float local_8;
+  uint i;
+  float val;
   
-  local_8 = 1.0;
-  for (local_c = 0; local_c < this->numVerts; local_c = local_c + 1) {
-    pfVar1 = this->verts[(local_c + 1) % (uint)this->numVerts].edge.dir;
-    pfVar2 = this->verts[local_c].edge.dir;
+  val = 1.0;
+  for (i = 0; i < this->numVerts; i = i + 1) {
+    pfVar1 = this->verts[(i + 1) % (uint)this->numVerts].edge.dir;
+    pfVar2 = this->verts[i].edge.dir;
     local_24 = *pfVar2 * *pfVar1 + pfVar2[1] * pfVar1[1];
-    if (0.0 <= local_24 - local_8) {
-      local_24 = local_8;
+    if (0.0 <= local_24 - val) {
+      local_24 = val;
     }
-    local_8 = local_24;
+    val = local_24;
   }
-  return local_8 < -0.9;
+  return val < -0.9;
 }
 
 
@@ -1383,27 +1381,29 @@ bool __thiscall GlassShard::Outline::IsNarrow(Outline *this)
   float fVar4;
   float local_38;
   float local_34;
-  float local_1c;
+  float bboxRatio;
+  float area2bboxRatio;
+  float mx;
   float local_18;
-  float local_14;
+  float mn;
   float local_10;
-  float local_c;
+  float extent;
   float local_8;
   
-  GetBBox(this,&local_14,&local_1c);
-  local_c = local_1c - local_14;
+  GetBBox(this,&mn,&mx);
+  extent = mx - mn;
   local_8 = local_18 - local_10;
   local_34 = local_8;
-  if (0.0 <= local_c - local_8) {
-    local_34 = local_c;
+  if (0.0 <= extent - local_8) {
+    local_34 = extent;
   }
   local_38 = local_8;
-  if (0.0 <= local_8 - local_c) {
-    local_38 = local_c;
+  if (0.0 <= local_8 - extent) {
+    local_38 = extent;
   }
   pDVar1 = &clGlasses->renderer->narrowShardRatio->current;
   if (local_34 / local_38 < pDVar1->value || local_34 / local_38 == pDVar1->value) {
-    fVar2 = local_c * local_8;
+    fVar2 = extent * local_8;
     fVar4 = Area(this);
     fVar2 = fVar2 / fVar4;
     pDVar1 = &clGlasses->renderer->narrowShardRatio->current;
@@ -1438,8 +1438,10 @@ void __thiscall GlassShard::Outline::Reverse(Outline *this)
   uint uVar8;
   uint uVar9;
   int local_634;
-  uint local_608;
-  float local_604 [5];
+  int j1;
+  int j2;
+  uint i;
+  float tmpVerts [5];
   undefined1 auStack_5f0 [1516];
   
   if ((this->isClosed == false) &&
@@ -1449,8 +1451,8 @@ void __thiscall GlassShard::Outline::Reverse(Outline *this)
     (*pcVar6)();
     return;
   }
-  for (local_608 = 0; local_608 < this->numVerts; local_608 = local_608 + 1) {
-    uVar9 = (this->numVerts - 1) - local_608;
+  for (i = 0; i < this->numVerts; i = i + 1) {
+    uVar9 = (this->numVerts - 1) - i;
     uVar8 = uVar9;
     if ((int)uVar9 < 1) {
       uVar8 = (uint)this->numVerts;
@@ -1461,14 +1463,14 @@ void __thiscall GlassShard::Outline::Reverse(Outline *this)
     fVar3 = pfVar1[1];
     fVar4 = this->verts[local_634].edge.len;
     pVVar5 = this->verts;
-    local_604[local_608 * 6] = pVVar5[uVar9].edge.origin[0];
-    local_604[local_608 * 6 + 1] = pVVar5[uVar9].edge.origin[1];
-    local_604[local_608 * 6 + 2] = -fVar2;
-    local_604[local_608 * 6 + 3] = -fVar3;
-    local_604[local_608 * 6 + 4] = fVar4;
-    auStack_5f0[local_608 * 0x18] = this->verts[local_634].isOriginalEdge;
+    tmpVerts[i * 6] = pVVar5[uVar9].edge.origin[0];
+    tmpVerts[i * 6 + 1] = pVVar5[uVar9].edge.origin[1];
+    tmpVerts[i * 6 + 2] = -fVar2;
+    tmpVerts[i * 6 + 3] = -fVar3;
+    tmpVerts[i * 6 + 4] = fVar4;
+    auStack_5f0[i * 0x18] = this->verts[local_634].isOriginalEdge;
   }
-  memcpy((uchar *)this->verts,(uchar *)local_604,(uint)this->numVerts * 0x18);
+  memcpy((uchar *)this->verts,(uchar *)tmpVerts,(uint)this->numVerts * 0x18);
   Verify(this);
   return;
 }
@@ -1478,86 +1480,85 @@ void __thiscall GlassShard::Outline::Reverse(Outline *this)
 
 int __thiscall
 GlassShard::Outline::GetNumIntersections
-          (Outline *this,float *param_1,float *param_2,float *param_3,int *param_4)
+          (Outline *this,float *start,float *dir,float *nearestDist,int *nearestedge)
 
 {
   bool bVar1;
   float fVar2;
-  float local_20 [2];
-  uint local_18;
-  float local_14;
-  float local_10;
+  float dist;
+  float p [2];
+  uint i;
+  float TEST_LENGTH;
+  float end;
   float local_c;
-  int local_8;
+  int n;
   
-  local_14 = 1000.0;
-  local_8 = 0;
-  local_10 = *param_2 * 1000.0 + *param_1;
-  local_c = param_2[1] * 1000.0 + param_1[1];
-  *param_3 = 1000.0;
-  for (local_18 = 0; local_18 < this->numVerts; local_18 = local_18 + 1) {
+  TEST_LENGTH = 1000.0;
+  n = 0;
+  end = *dir * 1000.0 + *start;
+  local_c = dir[1] * 1000.0 + start[1];
+  *nearestDist = 1000.0;
+  for (i = 0; i < this->numVerts; i = i + 1) {
     bVar1 = Vec2IntersectSegments
-                      ((float *)(this->verts + local_18),
-                       (float *)(this->verts + (local_18 + 1) % (uint)this->numVerts),param_1,
-                       &local_10,local_20);
+                      ((float *)(this->verts + i),
+                       (float *)(this->verts + (i + 1) % (uint)this->numVerts),start,&end,p);
     if (bVar1) {
-      fVar2 = GetSegmentParam(param_1,&local_10,local_20);
-      if (fVar2 * local_14 < *param_3) {
-        *param_3 = fVar2 * local_14;
-        *param_4 = local_18;
+      fVar2 = GetSegmentParam(start,&end,p);
+      if (fVar2 * TEST_LENGTH < *nearestDist) {
+        *nearestDist = fVar2 * TEST_LENGTH;
+        *nearestedge = i;
       }
-      local_8 = local_8 + 1;
+      n = n + 1;
     }
   }
-  return local_8;
+  return n;
 }
 
 
 // 009A5300  DoesIntersect  (glass/glass_shard.cpp:685)
 
 bool __thiscall
-GlassShard::Outline::DoesIntersect
-          (Outline *this,float *param_1,float *param_2,float param_3,float param_4)
+GlassShard::Outline::DoesIntersect(Outline *this,float *start,float *dir,float len,float padding)
 
 {
   float *pfVar1;
   bool bVar2;
   float fVar3;
   uint local_80;
-  float local_2c;
+  float p1;
   float local_28;
-  float local_24;
+  float p2;
   float local_20;
-  float local_1c [2];
-  uint local_14;
-  float local_10;
+  float p [2];
+  uint i;
+  float end;
   float local_c;
-  uint local_8;
+  uint num;
   
-  local_10 = param_3 * *param_2 + *param_1;
-  local_c = param_3 * param_2[1] + param_1[1];
+  end = len * *dir + *start;
+  local_c = len * dir[1] + start[1];
   if (this->isClosed == false) {
     local_80 = this->numVerts - 1;
   }
   else {
     local_80 = (uint)this->numVerts;
   }
-  local_8 = local_80;
-  local_14 = 0;
+  num = local_80;
+  i = 0;
   while( true ) {
-    if (local_8 <= local_14) {
+    if (num <= i) {
       return false;
     }
-    pfVar1 = this->verts[local_14].edge.dir;
-    local_2c = -param_4 * *pfVar1 + this->verts[local_14].edge.origin[0];
-    local_28 = -param_4 * pfVar1[1] + this->verts[local_14].edge.origin[1];
-    pfVar1 = this->verts[local_14].edge.dir;
-    fVar3 = this->verts[local_14].edge.len + param_4;
-    local_24 = fVar3 * *pfVar1 + this->verts[local_14].edge.origin[0];
-    local_20 = fVar3 * pfVar1[1] + this->verts[local_14].edge.origin[1];
-    bVar2 = Vec2IntersectSegments(&local_2c,&local_24,param_1,&local_10,local_1c);
+    pfVar1 = this->verts[i].edge.dir;
+    p1 = -padding * *pfVar1 + this->verts[i].edge.origin[0];
+    local_28 = -padding * pfVar1[1] + this->verts[i].edge.origin[1];
+    pfVar1 = this->verts[i].edge.dir;
+    fVar3 = this->verts[i].edge.len + padding;
+    p2 = fVar3 * *pfVar1 + this->verts[i].edge.origin[0];
+    local_20 = fVar3 * pfVar1[1] + this->verts[i].edge.origin[1];
+    bVar2 = Vec2IntersectSegments(&p1,&p2,start,&end,p);
     if (bVar2) break;
-    local_14 = local_14 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -1566,8 +1567,7 @@ GlassShard::Outline::DoesIntersect
 // 009A54A0  GetNearestDistances  (glass/glass_shard.cpp:710)
 
 void __thiscall
-GlassShard::Outline::GetNearestDistances
-          (Outline *this,float *param_1,EdgeDistance *param_2,int param_3)
+GlassShard::Outline::GetNearestDistances(Outline *this,float *p,EdgeDistance *dists,int nDists)
 
 {
   float *pfVar1;
@@ -1580,42 +1580,43 @@ GlassShard::Outline::GetNearestDistances
   float fVar8;
   float fVar9;
   float fVar10;
-  uint local_80;
+  int local_80;
   float local_7c;
   float local_50;
-  int local_38;
-  int local_34;
-  int local_30;
-  uint local_c;
-  int local_8;
+  int i_3;
+  int k;
+  int j;
+  float t;
+  float d2;
+  int i_2;
+  int i;
   
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    param_2[local_8].edgeIndex = 0xffffffff;
+  for (i = 0; i < nDists; i = i + 1) {
+    dists[i].edgeIndex = 0xffffffff;
   }
-  local_c = 0;
+  i_2 = 0;
   do {
-    if ((int)(uint)this->numVerts <= (int)local_c) {
-      local_38 = 0;
+    if ((int)(uint)this->numVerts <= i_2) {
+      i_3 = 0;
       while( true ) {
-        if (param_3 <= local_38) {
+        if (nDists <= i_3) {
           return;
         }
-        if ((param_2[local_38].edgeIndex == 0xffffffff) &&
+        if ((dists[i_3].edgeIndex == 0xffffffff) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",
                                      0x2f8,0,"%s"), !bVar4)) break;
-        param_2[local_38].dist = SQRT(param_2[local_38].dist);
-        local_38 = local_38 + 1;
+        dists[i_3].dist = SQRT(dists[i_3].dist);
+        i_3 = i_3 + 1;
       }
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    fVar10 = this->verts[local_c].edge.len;
-    pfVar1 = this->verts[local_c].edge.dir;
-    fVar7 = this->verts[local_c].edge.len;
-    fVar10 = (fVar10 * *pfVar1 * (*param_1 - this->verts[local_c].edge.origin[0]) +
-             fVar10 * pfVar1[1] * (param_1[1] - this->verts[local_c].edge.origin[1])) /
-             (fVar7 * fVar7);
+    fVar10 = this->verts[i_2].edge.len;
+    pfVar1 = this->verts[i_2].edge.dir;
+    fVar7 = this->verts[i_2].edge.len;
+    fVar10 = (fVar10 * *pfVar1 * (*p - this->verts[i_2].edge.origin[0]) +
+             fVar10 * pfVar1[1] * (p[1] - this->verts[i_2].edge.origin[1])) / (fVar7 * fVar7);
     local_50 = fVar10;
     if (0.0 <= fVar10 - 1.0) {
       local_50 = 1.0;
@@ -1626,45 +1627,45 @@ GlassShard::Outline::GetNearestDistances
     else {
       local_7c = 0.0;
     }
-    pfVar1 = this->verts[local_c].edge.dir;
-    fVar10 = local_7c * this->verts[local_c].edge.len;
-    fVar7 = fVar10 * *pfVar1 + this->verts[local_c].edge.origin[0];
-    fVar10 = fVar10 * pfVar1[1] + this->verts[local_c].edge.origin[1];
-    fVar8 = *param_1 - fVar7;
-    fVar9 = param_1[1] - fVar10;
+    pfVar1 = this->verts[i_2].edge.dir;
+    fVar10 = local_7c * this->verts[i_2].edge.len;
+    fVar7 = fVar10 * *pfVar1 + this->verts[i_2].edge.origin[0];
+    fVar10 = fVar10 * pfVar1[1] + this->verts[i_2].edge.origin[1];
+    fVar8 = *p - fVar7;
+    fVar9 = p[1] - fVar10;
     fVar8 = fVar8 * fVar8 + fVar9 * fVar9;
-    local_30 = 0;
+    j = 0;
     while( true ) {
-      if (param_3 < (int)local_c) {
-        local_80 = param_3;
+      if (nDists < i_2) {
+        local_80 = nDists;
       }
       else {
-        local_80 = local_c;
+        local_80 = i_2;
       }
-      if ((int)local_80 <= local_30) goto LAB_009a577d;
-      iVar3 = param_3;
-      if (fVar8 < param_2[local_30].dist) break;
-      local_30 = local_30 + 1;
+      if (local_80 <= j) goto LAB_009a577d;
+      iVar3 = nDists;
+      if (fVar8 < dists[j].dist) break;
+      j = j + 1;
     }
-    while (local_34 = iVar3 + -1, local_30 < local_34) {
-      pEVar6 = param_2 + iVar3 + -2;
-      pEVar5 = param_2 + local_34;
+    while (k = iVar3 + -1, j < k) {
+      pEVar6 = dists + iVar3 + -2;
+      pEVar5 = dists + k;
       pEVar5->edgeIndex = pEVar6->edgeIndex;
       pEVar5->edgeParam = pEVar6->edgeParam;
       pEVar5->dist = pEVar6->dist;
       pEVar5->closestPoint[0] = pEVar6->closestPoint[0];
       pEVar5->closestPoint[1] = pEVar6->closestPoint[1];
-      iVar3 = local_34;
+      iVar3 = k;
     }
 LAB_009a577d:
-    if (local_30 < param_3) {
-      param_2[local_30].edgeIndex = local_c;
-      param_2[local_30].edgeParam = local_7c;
-      param_2[local_30].dist = fVar8;
-      param_2[local_30].closestPoint[0] = fVar7;
-      param_2[local_30].closestPoint[1] = fVar10;
+    if (j < nDists) {
+      dists[j].edgeIndex = i_2;
+      dists[j].edgeParam = local_7c;
+      dists[j].dist = fVar8;
+      dists[j].closestPoint[0] = fVar7;
+      dists[j].closestPoint[1] = fVar10;
     }
-    local_c = local_c + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
@@ -1708,23 +1709,24 @@ void __thiscall GlassShard::Mesh::Clear(Mesh *this)
 
 // 009A58D0  SetTriangles  (glass/glass_shard.cpp:809)
 
-void __thiscall GlassShard::Mesh::SetTriangles(Mesh *this,void *param_1,uchar *param_2,uint param_3)
+void __thiscall
+GlassShard::Mesh::SetTriangles(Mesh *this,void *ptr,uchar *triangles,uint numTriIdxs)
 
 {
   Clear(this);
-  this->indices = param_1;
-  memcpy(this->indices,param_2,param_3);
+  this->indices = ptr;
+  memcpy(this->indices,triangles,numTriIdxs);
   return;
 }
 
 
 // 009A5910  SetPointers  (glass/glass_shard.cpp:818)
 
-uint __thiscall GlassShard::Mesh::SetPointers(Mesh *this,uchar *param_1)
+uint __thiscall GlassShard::Mesh::SetPointers(Mesh *this,uchar *ptr)
 
 {
-  this->normArray = (PackedUnitVec *)param_1;
-  this->indices = param_1 + (uint)this->numNorm * 4;
+  this->normArray = (PackedUnitVec *)ptr;
+  this->indices = ptr + (uint)this->numNorm * 4;
   return (uint)this->numIndices + (uint)this->numNorm * 4;
 }
 
@@ -1733,7 +1735,7 @@ uint __thiscall GlassShard::Mesh::SetPointers(Mesh *this,uchar *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2,float *param_3)
+void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *outline,float thickness,float *tangt)
 
 {
   uchar *puVar1;
@@ -1741,95 +1743,95 @@ void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2
   code *pcVar3;
   bool bVar4;
   PackedUnitVec local_20c;
-  float local_178;
+  float d1;
   float local_174;
   undefined4 local_170;
-  float local_16c;
+  float normal;
   float local_168;
   float local_164;
-  float local_160;
+  float p1;
   float local_15c;
   undefined4 local_158;
-  float local_154;
+  float p3;
   float local_150;
   float local_14c;
-  float local_148;
+  float d2;
   float local_144;
   float local_140;
-  int local_13c;
-  float local_138;
+  int v2;
+  float p2;
   float local_134;
   undefined4 local_130;
-  int local_12c;
-  int local_128;
-  int local_124;
-  ulong local_120;
-  uchar local_11c [260];
+  int v1;
+  int i_2;
+  int i;
+  int numTriVerts;
+  uchar triangles [260];
   uint local_18;
-  uchar *local_14;
-  undefined4 local_10;
+  uchar *ptr;
+  undefined4 vec;
   undefined4 local_c;
   undefined4 local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (this->normArray == (PackedUnitVec *)0x0) {
-    local_120 = (param_1->numVerts - 2) * 3;
-    memcpy(local_11c,this->indices,local_120);
+    numTriVerts = (outline->numVerts - 2) * 3;
+    memcpy(triangles,this->indices,numTriVerts);
     this->normArray = (PackedUnitVec *)this->indices;
-    puVar1 = ((PackedUnitVec *)this->indices)->array + (uint)param_1->numVerts * 4 + 8;
+    puVar1 = ((PackedUnitVec *)this->indices)->array + (uint)outline->numVerts * 4 + 8;
     this->indices = puVar1;
-    local_14 = puVar1 + (param_1->numVerts - 1) * 0xc;
+    ptr = puVar1 + (outline->numVerts - 1) * 0xc;
     this->numNorm = '\0';
     bVar2 = this->numNorm;
     this->numNorm = this->numNorm + '\x01';
     this->normArray[bVar2].packed = 0x3ffe7f7f;
-    local_10 = 0;
+    vec = 0;
     local_c = 0;
     local_8 = 0xbf800000;
     bVar2 = this->numNorm;
     this->numNorm = this->numNorm + '\x01';
     this->normArray[bVar2].packed = 0x3f007f7f;
     this->numIndices = '\0';
-    for (local_124 = 0; local_124 < (int)local_120; local_124 = local_124 + 3) {
-      this->indices[this->numIndices] = local_11c[local_124] << 1;
+    for (i = 0; i < numTriVerts; i = i + 3) {
+      this->indices[this->numIndices] = triangles[i] << 1;
       this->numIndices = this->numIndices + '\x01';
-      this->indices[this->numIndices] = local_11c[local_124 + 1] << 1;
+      this->indices[this->numIndices] = triangles[i + 1] << 1;
       this->numIndices = this->numIndices + '\x01';
-      this->indices[this->numIndices] = local_11c[local_124 + 2] << 1;
+      this->indices[this->numIndices] = triangles[i + 2] << 1;
       this->numIndices = this->numIndices + '\x01';
     }
-    for (local_128 = 0; local_128 < (int)local_120; local_128 = local_128 + 3) {
-      this->indices[this->numIndices] = local_11c[local_128] * '\x02' + '\x01';
+    for (i_2 = 0; i_2 < numTriVerts; i_2 = i_2 + 3) {
+      this->indices[this->numIndices] = triangles[i_2] * '\x02' + '\x01';
       this->numIndices = this->numIndices + '\x01';
-      this->indices[this->numIndices] = local_11c[local_128 + 2] * '\x02' + '\x01';
+      this->indices[this->numIndices] = triangles[i_2 + 2] * '\x02' + '\x01';
       this->numIndices = this->numIndices + '\x01';
-      this->indices[this->numIndices] = local_11c[local_128 + 1] * '\x02' + '\x01';
+      this->indices[this->numIndices] = triangles[i_2 + 1] * '\x02' + '\x01';
       this->numIndices = this->numIndices + '\x01';
     }
     this->numIndicesLow = this->numIndices;
-    this->numVerts = param_1->numVerts << 1;
+    this->numVerts = outline->numVerts << 1;
     this->numVertsLow = this->numVerts;
-    for (local_12c = 0; local_12c < (int)(uint)param_1->numVerts; local_12c = local_12c + 1) {
-      local_13c = (local_12c + 1) % (int)(uint)param_1->numVerts;
-      local_160 = param_1->verts[local_12c].edge.origin[0];
-      local_15c = param_1->verts[local_12c].edge.origin[1];
+    for (v1 = 0; v1 < (int)(uint)outline->numVerts; v1 = v1 + 1) {
+      v2 = (v1 + 1) % (int)(uint)outline->numVerts;
+      p1 = outline->verts[v1].edge.origin[0];
+      local_15c = outline->verts[v1].edge.origin[1];
       local_158 = 0;
-      local_138 = param_1->verts[local_13c].edge.origin[0];
-      local_134 = param_1->verts[local_13c].edge.origin[1];
+      p2 = outline->verts[v2].edge.origin[0];
+      local_134 = outline->verts[v2].edge.origin[1];
       local_130 = 0;
-      local_154 = param_1->verts[local_12c].edge.origin[0];
-      local_150 = param_1->verts[local_12c].edge.origin[1];
-      local_14c = param_2;
-      local_178 = local_160 - local_138;
+      p3 = outline->verts[v1].edge.origin[0];
+      local_150 = outline->verts[v1].edge.origin[1];
+      local_14c = thickness;
+      d1 = p1 - p2;
       local_174 = local_15c - local_134;
       local_170 = 0;
-      local_148 = local_160 - local_154;
+      d2 = p1 - p3;
       local_144 = local_15c - local_150;
-      local_140 = 0.0 - param_2;
-      Vec3Cross(&local_148,&local_178,&local_16c);
-      Vec3Normalize(&local_16c);
+      local_140 = 0.0 - thickness;
+      Vec3Cross(&d2,&d1,&normal);
+      Vec3Normalize(&normal);
       local_20c.array[1] = (char)(int)(local_168 * 127.0 + 127.5);
-      local_20c.array[0] = (char)(int)(local_16c * 127.0 + 127.5);
+      local_20c.array[0] = (char)(int)(normal * 127.0 + 127.5);
       local_20c.array[2] = (char)(int)(local_164 * 127.0 + 127.5);
       local_20c.array[3] = 0x3f;
       this->normArray[this->numNorm] = local_20c;
@@ -1848,21 +1850,21 @@ void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2
       this->numNorm = this->numNorm + '\x01';
       this->numVerts = this->numVerts + '\x04';
     }
-    if (((uint)this->numNorm != param_1->numVerts + 2) &&
+    if (((uint)this->numNorm != outline->numVerts + 2) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x390,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (((uint)this->numVerts != (uint)param_1->numVerts * 6) &&
+    if (((uint)this->numVerts != (uint)outline->numVerts * 6) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x391,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (((uint)this->numIndices != (param_1->numVerts - 1) * 0xc) &&
+    if (((uint)this->numIndices != (outline->numVerts - 1) * 0xc) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x392,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -1876,34 +1878,38 @@ void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2
 
 // 009A6450  InitVertexList  (glass/glass_shard.cpp:918)
 
-void __cdecl GlassShard::Mesh::InitVertexList(uchar param_1,GlassShardMeshVertex *param_2)
+void __cdecl GlassShard::Mesh::InitVertexList(uchar numOutlineVerts,GlassShardMeshVertex *verts)
 
 {
-  byte bVar1;
-  char cVar2;
-  undefined4 local_8;
+  uchar uVar1;
+  byte bVar2;
+  char cVar3;
+  uchar v2;
+  uchar v1;
+  uchar i;
+  uchar numVerts;
   
-  local_8 = 0;
-  while (local_8._2_1_ < param_1) {
-    param_2[local_8._3_1_].pos = local_8._3_1_;
-    param_2[local_8._3_1_].norm = '\0';
-    bVar1 = local_8._3_1_ + 1;
-    param_2[bVar1].pos = bVar1;
-    param_2[bVar1].norm = '\x01';
-    local_8 = (uint)CONCAT11(local_8._3_1_ + 2,local_8._2_1_ + 1) << 0x10;
+  _v2 = 0;
+  while (i < numOutlineVerts) {
+    verts[numVerts].pos = numVerts;
+    verts[numVerts].norm = '\0';
+    bVar2 = numVerts + 1;
+    verts[bVar2].pos = bVar2;
+    verts[bVar2].norm = '\x01';
+    _v2 = (uint)CONCAT11(numVerts + '\x02',i + '\x01') << 0x10;
   }
-  while (bVar1 = local_8._1_1_, local_8._1_1_ < param_1) {
-    cVar2 = (char)((ulonglong)(local_8._1_1_ + 1) % (ulonglong)(longlong)(int)(uint)param_1);
-    param_2[local_8._3_1_].pos = local_8._1_1_ << 1;
-    param_2[local_8._3_1_].norm = local_8._1_1_ + 2;
-    param_2[local_8._3_1_ + 1].pos = local_8._1_1_ * '\x02' + '\x01';
-    param_2[local_8._3_1_ + 1].norm = local_8._1_1_ + 2;
-    param_2[local_8._3_1_ + 2].pos = cVar2 << 1;
-    param_2[local_8._3_1_ + 2].norm = local_8._1_1_ + 2;
-    param_2[local_8._3_1_ + 3].pos = cVar2 * '\x02' + '\x01';
-    param_2[local_8._3_1_ + 3].norm = local_8._1_1_ + 2;
-    local_8 = (uint)(byte)(local_8._3_1_ + 4) << 0x18;
-    local_8 = (uint)CONCAT21(local_8._2_2_,bVar1 + 1) << 8;
+  while (uVar1 = v1, v1 < numOutlineVerts) {
+    cVar3 = (char)((ulonglong)(v1 + 1) % (ulonglong)(longlong)(int)(uint)numOutlineVerts);
+    verts[numVerts].pos = v1 << 1;
+    verts[numVerts].norm = v1 + '\x02';
+    verts[numVerts + 1].pos = v1 * '\x02' + '\x01';
+    verts[numVerts + 1].norm = v1 + '\x02';
+    verts[numVerts + 2].pos = cVar3 << 1;
+    verts[numVerts + 2].norm = v1 + '\x02';
+    verts[numVerts + 3].pos = cVar3 * '\x02' + '\x01';
+    verts[numVerts + 3].norm = v1 + '\x02';
+    _v2 = (uint)(byte)(numVerts + 4) << 0x18;
+    _v2 = (uint)CONCAT21(_i,uVar1 + '\x01') << 8;
   }
   return;
 }
@@ -1911,19 +1917,19 @@ void __cdecl GlassShard::Mesh::InitVertexList(uchar param_1,GlassShardMeshVertex
 
 // 009A6590  GetMemorySize  (glass/glass_shard.cpp:954)
 
-uint __cdecl GlassShard::Mesh::GetMemorySize(uint param_1)
+uint __cdecl GlassShard::Mesh::GetMemorySize(uint numOutineVerts)
 
 {
-  return param_1 * 0x10 - 4;
+  return numOutineVerts * 0x10 - 4;
 }
 
 
 // 009A65B0  Triangles  (glass/glass_shard.cpp:963)
 
-Triangles * __thiscall GlassShard::Triangles::Triangles(Triangles *this,Outline *param_1)
+Triangles * __thiscall GlassShard::Triangles::Triangles(Triangles *this,Outline *ol)
 
 {
-  this->outline = param_1;
+  this->outline = ol;
   this->nIndices = 0;
   return this;
 }
@@ -1931,8 +1937,7 @@ Triangles * __thiscall GlassShard::Triangles::Triangles(Triangles *this,Outline 
 
 // 009A65E0  CalcCross  (glass/glass_shard.cpp:967)
 
-float __thiscall
-GlassShard::Triangles::CalcCross(Triangles *this,int param_1,int param_2,int param_3)
+float __thiscall GlassShard::Triangles::CalcCross(Triangles *this,int idx1,int idx2,int idx3)
 
 {
   Vertex *pVVar1;
@@ -1940,10 +1945,10 @@ GlassShard::Triangles::CalcCross(Triangles *this,int param_1,int param_2,int par
   Vertex *pVVar3;
   Vertex *pVVar4;
   
-  pVVar3 = this->outline->verts + param_1;
-  pVVar1 = this->outline->verts + param_2;
-  pVVar4 = this->outline->verts + param_2;
-  pVVar2 = this->outline->verts + param_3;
+  pVVar3 = this->outline->verts + idx1;
+  pVVar1 = this->outline->verts + idx2;
+  pVVar4 = this->outline->verts + idx2;
+  pVVar2 = this->outline->verts + idx3;
   return ((pVVar1->edge).origin[0] - (pVVar3->edge).origin[0]) *
          ((pVVar2->edge).origin[1] - (pVVar4->edge).origin[1]) -
          ((pVVar1->edge).origin[1] - (pVVar3->edge).origin[1]) *
@@ -1953,18 +1958,18 @@ GlassShard::Triangles::CalcCross(Triangles *this,int param_1,int param_2,int par
 
 // 009A66B0  AddTri  (glass/glass_shard.cpp:975)
 
-bool __thiscall GlassShard::Triangles::AddTri(Triangles *this,int param_1,int param_2,int param_3)
+bool __thiscall GlassShard::Triangles::AddTri(Triangles *this,int v1,int v2,int v3)
 
 {
   bool bVar1;
   
   bVar1 = this->nIndices + 3 < 0x100;
   if (bVar1) {
-    this->triangleIndices[this->nIndices] = (uchar)param_1;
+    this->triangleIndices[this->nIndices] = (uchar)v1;
     this->nIndices = this->nIndices + 1;
-    this->triangleIndices[this->nIndices] = (uchar)param_2;
+    this->triangleIndices[this->nIndices] = (uchar)v2;
     this->nIndices = this->nIndices + 1;
-    this->triangleIndices[this->nIndices] = (uchar)param_3;
+    this->triangleIndices[this->nIndices] = (uchar)v3;
     this->nIndices = this->nIndices + 1;
   }
   return bVar1;
@@ -1973,20 +1978,17 @@ bool __thiscall GlassShard::Triangles::AddTri(Triangles *this,int param_1,int pa
 
 // 009A6C90  IsInside  (glass/glass_shard.cpp:987)
 
-bool __cdecl IsInside(float *param_1,float *param_2,float *param_3,float *param_4)
+bool __cdecl IsInside(float *v1,float *v2,float *v3,float *p)
 
 {
   bool bVar1;
   
-  if ((0.0 < (*param_2 - *param_1) * (param_4[1] - param_1[1]) -
-             (param_2[1] - param_1[1]) * (*param_4 - *param_1)) ||
-     (0.0 < (*param_3 - *param_2) * (param_4[1] - param_2[1]) -
-            (param_3[1] - param_2[1]) * (*param_4 - *param_2))) {
+  if ((0.0 < (*v2 - *v1) * (p[1] - v1[1]) - (v2[1] - v1[1]) * (*p - *v1)) ||
+     (0.0 < (*v3 - *v2) * (p[1] - v2[1]) - (v3[1] - v2[1]) * (*p - *v2))) {
     bVar1 = false;
   }
   else {
-    bVar1 = (*param_1 - *param_3) * (param_4[1] - param_3[1]) -
-            (param_1[1] - param_3[1]) * (*param_4 - *param_3) <= 0.0;
+    bVar1 = (*v1 - *v3) * (p[1] - v3[1]) - (v1[1] - v3[1]) * (*p - *v3) <= 0.0;
   }
   return bVar1;
 }
@@ -1998,17 +2000,17 @@ bool __thiscall GlassShard::Triangles::Triangulate(Triangles *this)
 
 {
   GlassRenderer *pGVar1;
+  int idx1_00;
+  int idx2_00;
+  int idx3_00;
   int iVar2;
-  int iVar3;
-  int iVar4;
-  code *pcVar5;
-  uint uVar6;
-  bool bVar7;
-  bool bVar8;
-  undefined1 uVar9;
-  ulong64 *puVar10;
-  ulong64 uVar11;
-  float fVar12;
+  code *pcVar3;
+  bool bVar4;
+  bool bVar5;
+  undefined1 uVar6;
+  ulong64 *puVar7;
+  ulong64 uVar8;
+  float fVar9;
   uint local_1bc;
   int local_1b8;
   uint local_1b4;
@@ -2017,122 +2019,126 @@ bool __thiscall GlassShard::Triangles::Triangulate(Triangles *this)
   int local_1a8;
   uint local_1a4;
   int local_1a0;
-  int local_140;
-  int local_13c;
-  int local_128;
-  int local_120;
-  uint local_11c;
+  int j_2;
+  int j;
+  bool foundInside;
+  int idx1;
+  int idx2;
+  int idx3;
+  int i_2;
+  int numBefore;
+  int i;
+  uint timer;
   int local_118;
-  uint local_108;
-  int local_104 [64];
+  int num;
+  int hullVtxIndex [64];
   
   pGVar1 = clGlasses->renderer;
-  puVar10 = &pGVar1->triangulateTimer;
-  uVar11 = tlPcGetTick();
-  local_108 = (uint)this->outline->numVerts;
-  for (local_120 = 0; local_120 < (int)local_108; local_120 = local_120 + 1) {
-    local_104[local_120] = local_120;
+  puVar7 = &pGVar1->triangulateTimer;
+  uVar8 = tlPcGetTick();
+  num = (int)this->outline->numVerts;
+  for (i = 0; i < num; i = i + 1) {
+    hullVtxIndex[i] = i;
   }
   do {
-    uVar6 = local_108;
-    local_11c = (uint)uVar11;
-    local_118 = (int)(uVar11 >> 0x20);
-    if ((int)local_108 < 4) {
-      if ((local_108 != 3) &&
-         (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x44e
-                                   ,0,"%s"), !bVar8)) {
-        pcVar5 = (code *)swi(3);
-        uVar9 = (*pcVar5)();
-        return (bool)uVar9;
+    iVar2 = num;
+    timer = (uint)uVar8;
+    local_118 = (int)(uVar8 >> 0x20);
+    if (num < 4) {
+      if ((num != 3) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x44e
+                                   ,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar6 = (*pcVar3)();
+        return (bool)uVar6;
       }
-      bVar8 = AddTri(this,local_104[0],local_104[1],local_104[2]);
-      if (bVar8) {
-        uVar11 = tlPcGetTick();
-        local_1bc = (uint)uVar11;
-        local_1b8 = (int)(uVar11 >> 0x20);
-        uVar11 = *puVar10;
+      bVar5 = AddTri(this,hullVtxIndex[0],hullVtxIndex[1],hullVtxIndex[2]);
+      if (bVar5) {
+        uVar8 = tlPcGetTick();
+        local_1bc = (uint)uVar8;
+        local_1b8 = (int)(uVar8 >> 0x20);
+        uVar8 = *puVar7;
         iVar2 = *(int *)((int)&pGVar1->triangulateTimer + 4);
-        *(uint *)puVar10 = (local_1bc - local_11c) + (int)*puVar10;
+        *(uint *)puVar7 = (local_1bc - timer) + (int)*puVar7;
         *(uint *)((int)&pGVar1->triangulateTimer + 4) =
-             iVar2 + ((local_1b8 - local_118) - (uint)(local_1bc < local_11c)) +
-             (uint)CARRY4(local_1bc - local_11c,(uint)uVar11);
+             iVar2 + ((local_1b8 - local_118) - (uint)(local_1bc < timer)) +
+             (uint)CARRY4(local_1bc - timer,(uint)uVar8);
       }
       else {
-        uVar11 = tlPcGetTick();
-        local_1b4 = (uint)uVar11;
-        local_1b0 = (int)(uVar11 >> 0x20);
-        uVar11 = *puVar10;
+        uVar8 = tlPcGetTick();
+        local_1b4 = (uint)uVar8;
+        local_1b0 = (int)(uVar8 >> 0x20);
+        uVar8 = *puVar7;
         iVar2 = *(int *)((int)&pGVar1->triangulateTimer + 4);
-        *(uint *)puVar10 = (local_1b4 - local_11c) + (int)*puVar10;
+        *(uint *)puVar7 = (local_1b4 - timer) + (int)*puVar7;
         *(uint *)((int)&pGVar1->triangulateTimer + 4) =
-             iVar2 + ((local_1b0 - local_118) - (uint)(local_1b4 < local_11c)) +
-             (uint)CARRY4(local_1b4 - local_11c,(uint)uVar11);
+             iVar2 + ((local_1b0 - local_118) - (uint)(local_1b4 < timer)) +
+             (uint)CARRY4(local_1b4 - timer,(uint)uVar8);
       }
-      return bVar8;
+      return bVar5;
     }
-    local_128 = 0;
+    i_2 = 0;
 LAB_009a681d:
-    if ((int)local_108 <= local_128) goto LAB_009a6af1;
-    iVar2 = local_104[(int)(local_128 + -1 + local_108) % (int)local_108];
-    iVar3 = local_104[local_128];
-    iVar4 = local_104[(local_128 + 1) % (int)local_108];
-    fVar12 = CalcCross(this,iVar2,iVar3,iVar4);
-    if (0.0 <= fVar12) {
+    if (num <= i_2) goto LAB_009a6af1;
+    idx1_00 = hullVtxIndex[(i_2 + -1 + num) % num];
+    idx2_00 = hullVtxIndex[i_2];
+    idx3_00 = hullVtxIndex[(i_2 + 1) % num];
+    fVar9 = CalcCross(this,idx1_00,idx2_00,idx3_00);
+    if (0.0 <= fVar9) {
 LAB_009a680e:
-      local_128 = local_128 + 1;
+      i_2 = i_2 + 1;
       goto LAB_009a681d;
     }
-    bVar8 = false;
-    local_13c = 0;
-    while ((local_13c < (int)(local_108 - 3) && (!bVar8))) {
-      bVar7 = IsInside((float *)(this->outline->verts + iVar2),
-                       (float *)(this->outline->verts + iVar3),
-                       (float *)(this->outline->verts + iVar4),
-                       (float *)(this->outline->verts +
-                                local_104[(local_128 + 2 + local_13c) % (int)local_108]));
-      if (bVar7) {
-        bVar8 = true;
+    bVar5 = false;
+    j = 0;
+    while ((j < num + -3 && (!bVar5))) {
+      bVar4 = IsInside((float *)(this->outline->verts + idx1_00),
+                       (float *)(this->outline->verts + idx2_00),
+                       (float *)(this->outline->verts + idx3_00),
+                       (float *)(this->outline->verts + hullVtxIndex[(i_2 + 2 + j) % num]));
+      if (bVar4) {
+        bVar5 = true;
       }
-      local_13c = local_13c + 1;
+      j = j + 1;
     }
-    if (bVar8) goto LAB_009a680e;
-    bVar8 = AddTri(this,local_104[(int)(local_128 + -1 + local_108) % (int)local_108],
-                   local_104[local_128],local_104[(local_128 + 1) % (int)local_108]);
-    if (!bVar8) {
-      uVar11 = tlPcGetTick();
-      local_1a4 = (uint)uVar11;
-      local_1a0 = (int)(uVar11 >> 0x20);
-      uVar11 = *puVar10;
+    if (bVar5) goto LAB_009a680e;
+    bVar5 = AddTri(this,hullVtxIndex[(i_2 + -1 + num) % num],hullVtxIndex[i_2],
+                   hullVtxIndex[(i_2 + 1) % num]);
+    if (!bVar5) {
+      uVar8 = tlPcGetTick();
+      local_1a4 = (uint)uVar8;
+      local_1a0 = (int)(uVar8 >> 0x20);
+      uVar8 = *puVar7;
       iVar2 = *(int *)((int)&pGVar1->triangulateTimer + 4);
-      *(uint *)puVar10 = (local_1a4 - local_11c) + (int)*puVar10;
+      *(uint *)puVar7 = (local_1a4 - timer) + (int)*puVar7;
       *(uint *)((int)&pGVar1->triangulateTimer + 4) =
-           iVar2 + ((local_1a0 - local_118) - (uint)(local_1a4 < local_11c)) +
-           (uint)CARRY4(local_1a4 - local_11c,(uint)uVar11);
+           iVar2 + ((local_1a0 - local_118) - (uint)(local_1a4 < timer)) +
+           (uint)CARRY4(local_1a4 - timer,(uint)uVar8);
       return false;
     }
-    for (local_140 = local_128; local_140 < (int)(local_108 - 1); local_140 = local_140 + 1) {
-      local_104[local_140] = local_104[local_140 + 1];
+    for (j_2 = i_2; j_2 < num + -1; j_2 = j_2 + 1) {
+      hullVtxIndex[j_2] = hullVtxIndex[j_2 + 1];
     }
-    local_108 = local_108 - 1;
+    num = num + -1;
 LAB_009a6af1:
-    if (uVar6 == local_108) {
-      uVar11 = tlPcGetTick();
-      local_1ac = (uint)uVar11;
-      local_1a8 = (int)(uVar11 >> 0x20);
-      uVar11 = *puVar10;
+    if (iVar2 == num) {
+      uVar8 = tlPcGetTick();
+      local_1ac = (uint)uVar8;
+      local_1a8 = (int)(uVar8 >> 0x20);
+      uVar8 = *puVar7;
       iVar2 = *(int *)((int)&pGVar1->triangulateTimer + 4);
-      *(uint *)puVar10 = (local_1ac - local_11c) + (int)*puVar10;
+      *(uint *)puVar7 = (local_1ac - timer) + (int)*puVar7;
       *(uint *)((int)&pGVar1->triangulateTimer + 4) =
-           iVar2 + ((local_1a8 - local_118) - (uint)(local_1ac < local_11c)) +
-           (uint)CARRY4(local_1ac - local_11c,(uint)uVar11);
+           iVar2 + ((local_1a8 - local_118) - (uint)(local_1ac < timer)) +
+           (uint)CARRY4(local_1ac - timer,(uint)uVar8);
       return false;
     }
-    if ((uVar6 == local_108) &&
-       (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",1099,0,
-                                 "%s"), !bVar8)) {
-      pcVar5 = (code *)swi(3);
-      uVar9 = (*pcVar5)();
-      return (bool)uVar9;
+    if ((iVar2 == num) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",1099,0,
+                                 "%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar6 = (*pcVar3)();
+      return (bool)uVar6;
     }
   } while( true );
 }
@@ -2140,16 +2146,18 @@ LAB_009a6af1:
 
 // 009A7A20  compareShards  (glass/glass_shard.cpp:1115)
 
-int __cdecl compareShards(void *param_1,void *param_2)
+int __cdecl compareShards(void *s1,void *s2)
 
 {
   int iVar1;
   float fVar2;
   float fVar3;
   undefined4 local_18;
+  GlassShard *shard1;
+  GlassShard *shard2;
   
-  iVar1 = *(int *)param_2;
-  fVar2 = GlassShard::Outline::Area((Outline *)(*(int *)param_1 + 0xc));
+  iVar1 = *(int *)s2;
+  fVar2 = GlassShard::Outline::Area((Outline *)(*(int *)s1 + 0xc));
   fVar3 = GlassShard::Outline::Area((Outline *)(iVar1 + 0xc));
   if (fVar2 - fVar3 < 0.0) {
     local_18 = 1.0;
@@ -2202,21 +2210,21 @@ float __thiscall GlassShard::EdgeRatio(GlassShard *this)
 {
   float fVar1;
   float local_18;
-  uint local_c;
-  float local_8;
+  uint i;
+  float originalEdgeRatio;
   
-  local_8 = 0.0;
-  for (local_c = 0; local_c < (this->outline).numVerts; local_c = local_c + 1) {
-    if ((this->outline).verts[local_c].isOriginalEdge == false) {
+  originalEdgeRatio = 0.0;
+  for (i = 0; i < (this->outline).numVerts; i = i + 1) {
+    if ((this->outline).verts[i].isOriginalEdge == false) {
       local_18 = 0.0;
     }
     else {
-      local_18 = (this->outline).verts[local_c].edge.len;
+      local_18 = (this->outline).verts[i].edge.len;
     }
-    local_8 = local_8 + local_18;
+    originalEdgeRatio = originalEdgeRatio + local_18;
   }
   fVar1 = Outline::Length(&this->outline);
-  return local_8 / fVar1;
+  return originalEdgeRatio / fVar1;
 }
 
 
@@ -2237,62 +2245,60 @@ void __thiscall GlassShard::UnEdge(GlassShard *this)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __thiscall GlassShard::Create(GlassShard *this,Glass *param_1)
+bool __thiscall GlassShard::Create(GlassShard *this,Glass *glass)
 
 {
   bool bVar1;
-  int local_728;
-  Triangles local_724;
+  int i;
+  Triangles triangles;
   uint local_61c;
-  ShardGroup *local_618;
-  Outline local_614;
+  ShardGroup *grp;
+  Outline newOutline;
   Vertex local_604 [64];
   
   local_61c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->numOutlineVerts < 3) {
+  if (glass->numOutlineVerts < 3) {
     bVar1 = false;
   }
   else {
-    local_614.verts = local_604;
-    local_614.numVerts = 0;
-    local_614.maxVerts = '@';
-    local_614.isClosed = false;
-    for (local_728 = 0; local_728 < (int)(uint)param_1->numOutlineVerts; local_728 = local_728 + 1)
-    {
-      Outline::Add(&local_614,param_1->outline[local_728]);
+    newOutline.verts = local_604;
+    newOutline.numVerts = 0;
+    newOutline.maxVerts = '@';
+    newOutline.isClosed = false;
+    for (i = 0; i < (int)(uint)glass->numOutlineVerts; i = i + 1) {
+      Outline::Add(&newOutline,glass->outline[i]);
     }
-    Outline::CloseOutline(&local_614);
-    Outline::MarkAllEdge(&local_614,param_1->isPlanar);
-    Triangles::Triangles(&local_724,&local_614);
-    bVar1 = Triangles::Triangulate(&local_724);
+    Outline::CloseOutline(&newOutline);
+    Outline::MarkAllEdge(&newOutline,glass->isPlanar);
+    Triangles::Triangles(&triangles,&newOutline);
+    bVar1 = Triangles::Triangulate(&triangles);
     if (bVar1) {
-      bVar1 = AllocateMemory(this,(uint)local_614.numVerts,&local_724);
+      bVar1 = AllocateMemory(this,(uint)newOutline.numVerts,&triangles);
       if (bVar1) {
-        Outline::operator=(&this->outline,&local_614);
-        this->thickness = param_1->thickness;
-        this->uvScale = param_1->uvScale;
-        this->glassIndex = (ushort)param_1->index;
-        this->axis[0][0] = param_1->outlineAxis[0][0];
-        this->axis[0][1] = param_1->outlineAxis[0][1];
-        this->axis[0][2] = param_1->outlineAxis[0][2];
-        this->axis[1][0] = param_1->outlineAxis[1][0];
-        this->axis[1][1] = param_1->outlineAxis[1][1];
-        this->axis[1][2] = param_1->outlineAxis[1][2];
-        this->axis[2][0] = param_1->outlineAxis[2][0];
-        this->axis[2][1] = param_1->outlineAxis[2][1];
-        this->axis[2][2] = param_1->outlineAxis[2][2];
-        this->origin[0] = param_1->outlineOrigin[0];
-        this->origin[1] = param_1->outlineOrigin[1];
-        this->origin[2] = param_1->outlineOrigin[2];
-        this->isOriginalEdge = param_1->isPlanar;
-        local_618 = GlassRenderer::GetShardGroup(clGlasses->renderer,this->origin,param_1->glassDef)
-        ;
-        if (local_618 == (ShardGroup *)0x0) {
+        Outline::operator=(&this->outline,&newOutline);
+        this->thickness = glass->thickness;
+        this->uvScale = glass->uvScale;
+        this->glassIndex = (ushort)glass->index;
+        this->axis[0][0] = glass->outlineAxis[0][0];
+        this->axis[0][1] = glass->outlineAxis[0][1];
+        this->axis[0][2] = glass->outlineAxis[0][2];
+        this->axis[1][0] = glass->outlineAxis[1][0];
+        this->axis[1][1] = glass->outlineAxis[1][1];
+        this->axis[1][2] = glass->outlineAxis[1][2];
+        this->axis[2][0] = glass->outlineAxis[2][0];
+        this->axis[2][1] = glass->outlineAxis[2][1];
+        this->axis[2][2] = glass->outlineAxis[2][2];
+        this->origin[0] = glass->outlineOrigin[0];
+        this->origin[1] = glass->outlineOrigin[1];
+        this->origin[2] = glass->outlineOrigin[2];
+        this->isOriginalEdge = glass->isPlanar;
+        grp = GlassRenderer::GetShardGroup(clGlasses->renderer,this->origin,glass->glassDef);
+        if (grp == (ShardGroup *)0x0) {
           bVar1 = false;
         }
         else {
           UpdateBBox(this);
-          ShardGroup::Add(local_618,this);
+          ShardGroup::Add(grp,this);
           bVar1 = true;
         }
       }
@@ -2310,15 +2316,16 @@ bool __thiscall GlassShard::Create(GlassShard *this,Glass *param_1)
 
 // 009A73B0  CanSplit  (glass/glass_shard.cpp:1242)
 
-bool __thiscall GlassShard::CanSplit(GlassShard *this,float param_1,float param_2)
+bool __thiscall GlassShard::CanSplit(GlassShard *this,float maxShardSize,float minShardSize)
 
 {
   float fVar1;
   float local_14;
+  float minSplitArea;
   
-  local_14 = param_2 * 2.5;
-  if (0.0 <= local_14 - param_1) {
-    local_14 = param_1;
+  local_14 = minShardSize * 2.5;
+  if (0.0 <= local_14 - maxShardSize) {
+    local_14 = maxShardSize;
   }
   fVar1 = Outline::Area(&this->outline);
   return local_14 < fVar1;
@@ -2327,13 +2334,15 @@ bool __thiscall GlassShard::CanSplit(GlassShard *this,float param_1,float param_
 
 // 009A7430  CanSplit  (glass/glass_shard.cpp:1251)
 
-bool __thiscall GlassShard::CanSplit(GlassShard *this,bool param_1)
+bool __thiscall GlassShard::CanSplit(GlassShard *this,bool shatter)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float local_18;
+  float maxShardSize;
+  float minShardSize;
   
   if (this->group == (ShardGroup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x4e4,0,
@@ -2344,7 +2353,7 @@ bool __thiscall GlassShard::CanSplit(GlassShard *this,bool param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1) {
+  if (shatter) {
     local_18 = 1.0;
   }
   else {
@@ -2358,7 +2367,7 @@ bool __thiscall GlassShard::CanSplit(GlassShard *this,bool param_1)
 
 // 009A74F0  Shatter  (glass/glass_shard.cpp:1259)
 
-int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int param_2)
+int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **newShards,int maxNewShards)
 
 {
   float fVar1;
@@ -2377,14 +2386,20 @@ int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int par
   float local_9c;
   uint local_88;
   int local_84;
-  int local_44;
-  int local_3c;
-  int local_38;
-  int local_2c;
-  uint local_24;
-  uint local_1c;
+  int i_2;
+  int numNewVerts;
+  int i;
+  int ns;
+  float glassSize;
+  int numTries;
+  int maxSplits;
+  float maxShardSize;
+  int numNewShards;
+  float minShardSize;
+  uint timer;
   int local_18;
-  int local_8;
+  PIXProfile pp;
+  int maxSplitTries;
   
   PIXBeginNamedEvent(-1,"GlassShard.Shatter");
   pGVar2 = clGlasses->renderer;
@@ -2410,17 +2425,17 @@ int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int par
   if (0.0 <= local_a0 - fVar1) {
     local_a0 = fVar1;
   }
-  *param_1 = this;
-  local_24 = 1;
-  local_2c = (clGlasses->renderer->maxShardSplit->current).integer;
+  *newShards = this;
+  numNewShards = 1;
+  maxSplits = (clGlasses->renderer->maxShardSplit->current).integer;
   if (0 < this->group->glassDef->maxShards) {
-    local_2c = this->group->glassDef->maxShards;
+    maxSplits = this->group->glassDef->maxShards;
   }
-  local_a4 = param_2 + -1;
-  if (local_2c <= local_a4) {
-    local_a4 = local_2c;
+  local_a4 = maxNewShards + -1;
+  if (maxSplits <= local_a4) {
+    local_a4 = maxSplits;
   }
-  local_8 = local_a4 * 3;
+  maxSplitTries = local_a4 * 3;
   splitFailCount[0] = 0;
   splitFailCount[1] = 0;
   splitFailCount[2] = 0;
@@ -2432,20 +2447,20 @@ int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int par
   PIXBeginNamedEvent(0,"Split");
   do {
     do {
-      if (((local_a4 <= (int)local_24) || (bVar4 = CanSplit(*param_1,local_9c,local_a0), !bVar4)) ||
-         (local_8 < 1)) goto LAB_009a7854;
-      local_38 = 0;
-      local_3c = 0;
-      while (((local_3c < (int)local_24 && (local_38 == 0)) &&
-             (bVar4 = CanSplit(param_1[local_3c],local_9c,local_a0), bVar4))) {
-        local_38 = Split(param_1[local_3c],param_1 + local_24,local_a0,0,-1.0);
-        local_3c = local_3c + 1;
-        local_8 = local_8 + -1;
+      if (((local_a4 <= numNewShards) || (bVar4 = CanSplit(*newShards,local_9c,local_a0), !bVar4))
+         || (maxSplitTries < 1)) goto LAB_009a7854;
+      ns = 0;
+      i = 0;
+      while (((i < numNewShards && (ns == 0)) &&
+             (bVar4 = CanSplit(newShards[i],local_9c,local_a0), bVar4))) {
+        ns = Split(newShards[i],newShards + numNewShards,local_a0,0,-1.0);
+        i = i + 1;
+        maxSplitTries = maxSplitTries + -1;
       }
-    } while (local_38 == 0);
-    local_24 = local_24 + local_38;
-    qsort(param_1,local_24,4,compareShards);
-    fVar11 = Outline::Area(&(*param_1)->outline);
+    } while (ns == 0);
+    numNewShards = numNewShards + ns;
+    qsort(newShards,numNewShards,4,compareShards);
+    fVar11 = Outline::Area(&(*newShards)->outline);
   } while (local_9c <= fVar11);
 LAB_009a7854:
   DVar6 = GetCurrentThreadId();
@@ -2453,10 +2468,10 @@ LAB_009a7854:
     _D3DPERF_EndEvent_0();
   }
   if ((clGlasses->renderer->debugSplit->current).enabled != false) {
-    for (local_44 = 0; local_44 < (int)local_24; local_44 = local_44 + 1) {
+    for (i_2 = 0; i_2 < numNewShards; i_2 = i_2 + 1) {
     }
-    Outline::Area(&param_1[local_24 - 1]->outline);
-    Outline::Area(&(*param_1)->outline);
+    Outline::Area(&newShards[numNewShards + -1]->outline);
+    Outline::Area(&(*newShards)->outline);
     Com_Printf(0,
                "Shatter: original size=%.1f num tries=%d new shards=%d largest=%.1f smallest=%.1f numVerts=%d(%.1f)\n"
               );
@@ -2466,20 +2481,20 @@ LAB_009a7854:
   }
   uVar10 = tlPcGetTick();
   local_88 = (uint)uVar10;
-  local_1c = (uint)uVar9;
+  timer = (uint)uVar9;
   local_84 = (int)(uVar10 >> 0x20);
   local_18 = (int)(uVar9 >> 0x20);
   uVar9 = *puVar7;
   iVar5 = *(int *)((int)&pGVar2->shatterTimer + 4);
-  *(uint *)puVar7 = (local_88 - local_1c) + (int)*puVar7;
+  *(uint *)puVar7 = (local_88 - timer) + (int)*puVar7;
   *(uint *)((int)&pGVar2->shatterTimer + 4) =
-       iVar5 + ((local_84 - local_18) - (uint)(local_88 < local_1c)) +
-       (uint)CARRY4(local_88 - local_1c,(uint)uVar9);
+       iVar5 + ((local_84 - local_18) - (uint)(local_88 < timer)) +
+       (uint)CARRY4(local_88 - timer,(uint)uVar9);
   DVar6 = GetCurrentThreadId();
   if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return local_24;
+  return numNewShards;
 }
 
 
@@ -2487,8 +2502,8 @@ LAB_009a7854:
 
 void __thiscall
 GlassShard::InitPhysics
-          (GlassShard *this,GlassShard **param_1,int param_2,float param_3,float *param_4,
-          float *param_5)
+          (GlassShard *this,GlassShard **newShards,int numNewShards,float glassExtent,float *pos,
+          float *dir)
 
 {
   float fVar1;
@@ -2497,16 +2512,18 @@ GlassShard::InitPhysics
   uint uVar4;
   DWORD DVar5;
   float local_34;
-  int local_14;
-  int local_10;
+  int i_2;
+  int i;
+  bool autoShatter;
+  int numKeepShards;
   
   if (this->group == (ShardGroup *)0x0) {
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      Remove(param_1[local_10],REMOVE_DONT_TRACK,false);
+    for (i = 0; i < numNewShards; i = i + 1) {
+      Remove(newShards[i],REMOVE_DONT_TRACK,false);
     }
   }
   else {
-    if (*param_5 * *param_5 + param_5[1] * param_5[1] + param_5[2] * param_5[2] == 0.0) {
+    if (*dir * *dir + dir[1] * dir[1] + dir[2] * dir[2] == 0.0) {
       local_34 = 0.5;
     }
     else {
@@ -2514,28 +2531,27 @@ GlassShard::InitPhysics
     }
     fVar1 = this->group->glassDef->shardLifeProbablility;
     PIXBeginNamedEvent(0,"InitPhysics");
-    for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-      InitMesh(param_1[local_14]);
+    for (i_2 = 0; i_2 < numNewShards; i_2 = i_2 + 1) {
+      InitMesh(newShards[i_2]);
       if ((clGlasses->renderer->freezeShards->current).enabled == false) {
-        bVar3 = InitPhysics(param_1[local_14],
-                            local_14 < (int)((float)param_2 * fVar1 * local_34 + 0.5),param_4,
-                            param_5,param_3,1.0);
+        bVar3 = InitPhysics(newShards[i_2],i_2 < (int)((float)numNewShards * fVar1 * local_34 + 0.5)
+                            ,pos,dir,glassExtent,1.0);
         if (bVar3) goto LAB_009a7c20;
       }
       else {
-        UpdateBBox(param_1[local_14]);
+        UpdateBBox(newShards[i_2]);
 LAB_009a7c20:
-        if (param_1[local_14]->group == (ShardGroup *)0x0) {
+        if (newShards[i_2]->group == (ShardGroup *)0x0) {
           if (this->group == (ShardGroup *)0x0) {
-            Remove(param_1[local_14],REMOVE_DONT_TRACK,false);
+            Remove(newShards[i_2],REMOVE_DONT_TRACK,false);
             goto LAB_009a7b98;
           }
-          ShardGroup::Add(this->group,param_1[local_14]);
+          ShardGroup::Add(this->group,newShards[i_2]);
         }
-        pSVar2 = param_1[local_14]->group;
-        uVar4 = GlassRenderer::CalcPackedPos(clGlasses->renderer,param_1[local_14]->origin);
+        pSVar2 = newShards[i_2]->group;
+        uVar4 = GlassRenderer::CalcPackedPos(clGlasses->renderer,newShards[i_2]->origin);
         if (pSVar2->packedPos != uVar4) {
-          GlassRenderer::AddGroupChange(clGlasses->renderer,param_1[local_14]);
+          GlassRenderer::AddGroupChange(clGlasses->renderer,newShards[i_2]);
         }
       }
 LAB_009a7b98:
@@ -2562,7 +2578,7 @@ void __thiscall GlassShard::InitMesh(GlassShard *this)
 
 // 009A7D40  AllocateMemory  (glass/glass_shard.cpp:1649)
 
-bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangles *param_2)
+bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint nHull,Triangles *triangles)
 
 {
   code *pcVar1;
@@ -2571,26 +2587,26 @@ bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangl
   uint uVar4;
   uchar *puVar5;
   short local_14;
-  uchar *local_8;
+  uchar *ptr;
   
   FreeMemory(this);
-  if (param_2 == (Triangles *)0x0) {
+  if (triangles == (Triangles *)0x0) {
     local_14 = 0;
   }
   else {
-    uVar4 = Mesh::GetMemorySize(param_1);
+    uVar4 = Mesh::GetMemorySize(nHull);
     local_14 = (short)uVar4;
   }
-  this->memorySize = (short)param_1 * 0x18 + local_14;
+  this->memorySize = (short)nHull * 0x18 + local_14;
   puVar5 = GlassRenderer::AllocateShardMemory(clGlasses->renderer,(uint)this->memorySize,this);
   this->memoryPtr = puVar5;
   if (this->memoryPtr == (uchar *)0x0) {
     bVar2 = false;
   }
   else {
-    local_8 = this->memoryPtr;
-    if (param_1 != 0) {
-      if (0xff < param_1) {
+    ptr = this->memoryPtr;
+    if (nHull != 0) {
+      if (0xff < nHull) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x683,0
                                  ,"%s");
         if (!bVar2) {
@@ -2599,11 +2615,11 @@ bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangl
           return (bool)uVar3;
         }
       }
-      uVar4 = Outline::Init(&this->outline,local_8,(uchar)param_1);
-      local_8 = local_8 + uVar4;
+      uVar4 = Outline::Init(&this->outline,ptr,(uchar)nHull);
+      ptr = ptr + uVar4;
     }
-    if (param_2 != (Triangles *)0x0) {
-      if (param_2->nIndices != (param_1 - 2) * 3) {
+    if (triangles != (Triangles *)0x0) {
+      if (triangles->nIndices != (nHull - 2) * 3) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x688,0
                                  ,"%s");
         if (!bVar2) {
@@ -2612,7 +2628,7 @@ bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangl
           return (bool)uVar3;
         }
       }
-      Mesh::SetTriangles(&this->mesh,local_8,param_2->triangleIndices,param_2->nIndices);
+      Mesh::SetTriangles(&this->mesh,ptr,triangles->triangleIndices,triangles->nIndices);
     }
     bVar2 = true;
   }
@@ -2652,9 +2668,9 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
   bool bVar4;
   uint uVar5;
   uchar *puVar6;
-  uchar local_40c [1024];
+  uchar backupBuffer [1024];
   uint local_c;
-  uchar *local_8;
+  uchar *ptr;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((0x3ff < this->memorySize) &&
@@ -2678,7 +2694,7 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
     (*pcVar3)();
     return;
   }
-  memcpy(local_40c,this->memoryPtr,(uint)this->memorySize);
+  memcpy(backupBuffer,this->memoryPtr,(uint)this->memorySize);
   GlassRenderer::FreeShardMemory(clGlasses->renderer,this->memoryPtr);
   bVar1 = (this->outline).numVerts;
   uVar2 = this->memorySize;
@@ -2703,13 +2719,13 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
     GlassRenderer::FreeShard(clGlasses->renderer,this);
   }
   else {
-    memcpy(this->memoryPtr,local_40c,(uint)this->memorySize);
-    local_8 = this->memoryPtr;
-    uVar5 = Outline::SetPointers(&this->outline,local_8);
-    local_8 = local_8 + uVar5;
-    uVar5 = Mesh::SetPointers(&this->mesh,local_8);
-    local_8 = local_8 + uVar5;
-    if (((int)local_8 - (int)this->memoryPtr != (uint)this->memorySize) &&
+    memcpy(this->memoryPtr,backupBuffer,(uint)this->memorySize);
+    ptr = this->memoryPtr;
+    uVar5 = Outline::SetPointers(&this->outline,ptr);
+    ptr = ptr + uVar5;
+    uVar5 = Mesh::SetPointers(&this->mesh,ptr);
+    ptr = ptr + uVar5;
+    if (((int)ptr - (int)this->memoryPtr != (uint)this->memorySize) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x6be,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -2723,24 +2739,24 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
 
 // 009A81C0  ToWorldPos  (glass/glass_shard.cpp:1730)
 
-void __thiscall GlassShard::ToWorldPos(GlassShard *this,float *param_1,float *param_2,bool param_3)
+void __thiscall GlassShard::ToWorldPos(GlassShard *this,float *pLocal,float *pWorld,bool is3D)
 
 {
   float fVar1;
   
-  fVar1 = *param_1;
-  *param_2 = fVar1 * this->axis[0][0] + this->origin[0];
-  param_2[1] = fVar1 * this->axis[0][1] + this->origin[1];
-  param_2[2] = fVar1 * this->axis[0][2] + this->origin[2];
-  fVar1 = param_1[1];
-  *param_2 = fVar1 * this->axis[1][0] + *param_2;
-  param_2[1] = fVar1 * this->axis[1][1] + param_2[1];
-  param_2[2] = fVar1 * this->axis[1][2] + param_2[2];
-  if (param_3) {
-    fVar1 = param_1[2];
-    *param_2 = fVar1 * this->axis[2][0] + *param_2;
-    param_2[1] = fVar1 * this->axis[2][1] + param_2[1];
-    param_2[2] = fVar1 * this->axis[2][2] + param_2[2];
+  fVar1 = *pLocal;
+  *pWorld = fVar1 * this->axis[0][0] + this->origin[0];
+  pWorld[1] = fVar1 * this->axis[0][1] + this->origin[1];
+  pWorld[2] = fVar1 * this->axis[0][2] + this->origin[2];
+  fVar1 = pLocal[1];
+  *pWorld = fVar1 * this->axis[1][0] + *pWorld;
+  pWorld[1] = fVar1 * this->axis[1][1] + pWorld[1];
+  pWorld[2] = fVar1 * this->axis[1][2] + pWorld[2];
+  if (is3D) {
+    fVar1 = pLocal[2];
+    *pWorld = fVar1 * this->axis[2][0] + *pWorld;
+    pWorld[1] = fVar1 * this->axis[2][1] + pWorld[1];
+    pWorld[2] = fVar1 * this->axis[2][2] + pWorld[2];
   }
   return;
 }
@@ -2748,24 +2764,24 @@ void __thiscall GlassShard::ToWorldPos(GlassShard *this,float *param_1,float *pa
 
 // 009A8320  ToWorldDir  (glass/glass_shard.cpp:1738)
 
-void __thiscall GlassShard::ToWorldDir(GlassShard *this,float *param_1,float *param_2,bool param_3)
+void __thiscall GlassShard::ToWorldDir(GlassShard *this,float *dLocal,float *dWorld,bool is3D)
 
 {
   float fVar1;
   
-  fVar1 = *param_1;
-  *param_2 = fVar1 * this->axis[0][0] + 0.0;
-  param_2[1] = fVar1 * this->axis[0][1] + 0.0;
-  param_2[2] = fVar1 * this->axis[0][2] + 0.0;
-  fVar1 = param_1[1];
-  *param_2 = fVar1 * this->axis[1][0] + *param_2;
-  param_2[1] = fVar1 * this->axis[1][1] + param_2[1];
-  param_2[2] = fVar1 * this->axis[1][2] + param_2[2];
-  if (param_3) {
-    fVar1 = param_1[2];
-    *param_2 = fVar1 * this->axis[2][0] + *param_2;
-    param_2[1] = fVar1 * this->axis[2][1] + param_2[1];
-    param_2[2] = fVar1 * this->axis[2][2] + param_2[2];
+  fVar1 = *dLocal;
+  *dWorld = fVar1 * this->axis[0][0] + 0.0;
+  dWorld[1] = fVar1 * this->axis[0][1] + 0.0;
+  dWorld[2] = fVar1 * this->axis[0][2] + 0.0;
+  fVar1 = dLocal[1];
+  *dWorld = fVar1 * this->axis[1][0] + *dWorld;
+  dWorld[1] = fVar1 * this->axis[1][1] + dWorld[1];
+  dWorld[2] = fVar1 * this->axis[1][2] + dWorld[2];
+  if (is3D) {
+    fVar1 = dLocal[2];
+    *dWorld = fVar1 * this->axis[2][0] + *dWorld;
+    dWorld[1] = fVar1 * this->axis[2][1] + dWorld[1];
+    dWorld[2] = fVar1 * this->axis[2][2] + dWorld[2];
   }
   return;
 }
@@ -2774,11 +2790,11 @@ void __thiscall GlassShard::ToWorldDir(GlassShard *this,float *param_1,float *pa
 // 009A8480  ToLocal  (glass/glass_shard.cpp:1746)
 
 void __thiscall
-GlassShard::ToLocal(GlassShard *this,float *param_1,float *param_2,float *param_3,float *param_4)
+GlassShard::ToLocal(GlassShard *this,float *pos,float *dir,float *localPos,float *localDir)
 
 {
   float fVar1;
-  float local_34;
+  float invXform;
   float local_30;
   float local_2c;
   float local_28;
@@ -2791,34 +2807,34 @@ GlassShard::ToLocal(GlassShard *this,float *param_1,float *param_2,float *param_
   float local_c;
   float local_8;
   
-  MatrixInverseOrthogonal43(this->axis,(float (*) [3])&local_34);
-  if (param_4 != (float *)0x0) {
-    fVar1 = *param_2;
-    *param_4 = fVar1 * local_34 + 0.0;
-    param_4[1] = fVar1 * local_30 + 0.0;
-    param_4[2] = fVar1 * local_2c + 0.0;
-    fVar1 = param_2[1];
-    *param_4 = fVar1 * local_28 + *param_4;
-    param_4[1] = fVar1 * local_24 + param_4[1];
-    param_4[2] = fVar1 * local_20 + param_4[2];
-    fVar1 = param_2[2];
-    *param_4 = fVar1 * local_1c + *param_4;
-    param_4[1] = fVar1 * local_18 + param_4[1];
-    param_4[2] = fVar1 * local_14 + param_4[2];
+  MatrixInverseOrthogonal43(this->axis,(float (*) [3])&invXform);
+  if (localDir != (float *)0x0) {
+    fVar1 = *dir;
+    *localDir = fVar1 * invXform + 0.0;
+    localDir[1] = fVar1 * local_30 + 0.0;
+    localDir[2] = fVar1 * local_2c + 0.0;
+    fVar1 = dir[1];
+    *localDir = fVar1 * local_28 + *localDir;
+    localDir[1] = fVar1 * local_24 + localDir[1];
+    localDir[2] = fVar1 * local_20 + localDir[2];
+    fVar1 = dir[2];
+    *localDir = fVar1 * local_1c + *localDir;
+    localDir[1] = fVar1 * local_18 + localDir[1];
+    localDir[2] = fVar1 * local_14 + localDir[2];
   }
-  if (param_3 != (float *)0x0) {
-    fVar1 = *param_1;
-    *param_3 = fVar1 * local_34 + local_10;
-    param_3[1] = fVar1 * local_30 + local_c;
-    param_3[2] = fVar1 * local_2c + local_8;
-    fVar1 = param_1[1];
-    *param_3 = fVar1 * local_28 + *param_3;
-    param_3[1] = fVar1 * local_24 + param_3[1];
-    param_3[2] = fVar1 * local_20 + param_3[2];
-    fVar1 = param_1[2];
-    *param_3 = fVar1 * local_1c + *param_3;
-    param_3[1] = fVar1 * local_18 + param_3[1];
-    param_3[2] = fVar1 * local_14 + param_3[2];
+  if (localPos != (float *)0x0) {
+    fVar1 = *pos;
+    *localPos = fVar1 * invXform + local_10;
+    localPos[1] = fVar1 * local_30 + local_c;
+    localPos[2] = fVar1 * local_2c + local_8;
+    fVar1 = pos[1];
+    *localPos = fVar1 * local_28 + *localPos;
+    localPos[1] = fVar1 * local_24 + localPos[1];
+    localPos[2] = fVar1 * local_20 + localPos[2];
+    fVar1 = pos[2];
+    *localPos = fVar1 * local_1c + *localPos;
+    localPos[1] = fVar1 * local_18 + localPos[1];
+    localPos[2] = fVar1 * local_14 + localPos[2];
   }
   return;
 }
@@ -2826,37 +2842,38 @@ GlassShard::ToLocal(GlassShard *this,float *param_1,float *param_2,float *param_
 
 // 009A8710  Intersect  (glass/glass_shard.cpp:1771)
 
-bool __thiscall GlassShard::Intersect(GlassShard *this,float *param_1,float *param_2,float *param_3)
+bool __thiscall GlassShard::Intersect(GlassShard *this,float *pos,float *dir,float *hitPoint)
 
 {
   char cVar1;
   uint uVar2;
-  float local_40 [3];
-  int local_34 [2];
-  float local_2c;
+  float testDir [3];
+  int edge;
+  int ret;
+  float localHit;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float t;
+  float localPos;
   float local_18;
   float local_14;
-  float local_10;
+  float localDir;
   float local_c;
   float local_8;
   
-  ToLocal(this,param_1,param_2,&local_1c,&local_10);
-  if ((ABS(local_8) <= 1e-05) || (local_20 = -local_14 / local_8, local_20 < 0.0)) {
+  ToLocal(this,pos,dir,&localPos,&localDir);
+  if ((ABS(local_8) <= 1e-05) || (t = -local_14 / local_8, t < 0.0)) {
     cVar1 = '\0';
   }
   else {
-    local_2c = local_20 * local_10 + local_1c;
-    local_28 = local_20 * local_c + local_18;
-    local_24 = local_20 * local_8 + local_14;
-    *param_3 = local_2c;
-    param_3[1] = local_28;
-    local_40[0] = 1.0;
-    local_40[1] = 0.0;
-    uVar2 = Outline::GetNumIntersections(&this->outline,param_3,local_40,local_40 + 2,local_34);
+    localHit = t * localDir + localPos;
+    local_28 = t * local_c + local_18;
+    local_24 = t * local_8 + local_14;
+    *hitPoint = localHit;
+    hitPoint[1] = local_28;
+    testDir[0] = 1.0;
+    testDir[1] = 0.0;
+    uVar2 = Outline::GetNumIntersections(&this->outline,hitPoint,testDir,testDir + 2,&edge);
     uVar2 = uVar2 & 0x80000001;
     if ((int)uVar2 < 0) {
       uVar2 = (uVar2 - 1 | 0xfffffffe) + 1;
@@ -2871,35 +2888,37 @@ bool __thiscall GlassShard::Intersect(GlassShard *this,float *param_1,float *par
 
 void __thiscall
 GlassShard::ExplosionEvent
-          (GlassShard *this,float *param_1,float param_2,float param_3,float param_4,int param_5)
+          (GlassShard *this,float *expOrigin,float damageInner,float damageOuter,float radius,
+          int mod)
 
 {
   bool bVar1;
-  float local_28;
+  float DAMAGE_SCALE;
+  float force;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  float damage;
+  float dir;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float dist;
+  float distSq;
   
-  local_8 = Vec3DistanceSq(param_1,this->origin);
-  if (local_8 < param_4 * param_4) {
-    local_c = SQRT(local_8);
-    local_1c = (param_2 - param_3) * (1.0 - local_c / param_4) + param_3;
-    local_18 = this->origin[0] - *param_1;
-    local_14 = this->origin[1] - param_1[1];
-    local_10 = this->origin[2] - param_1[2];
-    Vec3Normalize(&local_18);
+  distSq = Vec3DistanceSq(expOrigin,this->origin);
+  if (distSq < radius * radius) {
+    dist = SQRT(distSq);
+    damage = (damageInner - damageOuter) * (1.0 - dist / radius) + damageOuter;
+    dir = this->origin[0] - *expOrigin;
+    local_14 = this->origin[1] - expOrigin[1];
+    local_10 = this->origin[2] - expOrigin[2];
+    Vec3Normalize(&dir);
     bVar1 = InitPhysicsObj(this,true);
     if (bVar1) {
-      local_20 = local_1c * 0.01 * (clGlasses->renderer->forceMultiplier->current).value;
-      local_28 = local_20 * local_18;
+      local_20 = damage * 0.01 * (clGlasses->renderer->forceMultiplier->current).value;
+      force = local_20 * dir;
       local_24 = local_20 * local_14;
       local_20 = local_20 * local_10;
-      AddForce(this,this->origin,&local_28);
+      AddForce(this,this->origin,&force);
     }
     if (this->isOriginalEdge != false) {
       UnEdge(this);
@@ -2915,21 +2934,20 @@ GlassShard::ExplosionEvent
 
 bool __thiscall
 GlassShard::TracePoint
-          (GlassShard *this,float *param_1,float *param_2,float *param_3,float param_4,
-          float *param_5,float *param_6)
+          (GlassShard *this,float *p0,float *p1,float *dir,float length,float *mins,float *maxs)
 
 {
   ShardGroup *pSVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  float *pfVar5;
-  int iVar6;
-  DWORD DVar7;
-  uint uVar8;
-  float *pfVar9;
-  float fVar10;
-  float fVar11;
+  float *a;
+  int iVar5;
+  DWORD DVar6;
+  uint uVar7;
+  float *b;
+  float fVar8;
+  float fVar9;
   float local_19c;
   undefined4 local_198;
   float local_194;
@@ -2973,36 +2991,39 @@ GlassShard::TracePoint
   float local_bc;
   float *local_b8;
   float *local_b4;
-  int local_b0;
-  float local_ac [3];
-  int local_a0;
-  int local_9c;
-  int local_98;
-  float local_94;
-  GlassShard *local_90;
-  int local_88;
-  int local_84;
-  int local_80;
-  undefined4 local_7c;
-  int local_74;
-  EdgeDistance local_6c;
-  float local_58;
-  uint local_54;
-  GlassShard *local_50 [10];
-  float local_28;
-  float local_24;
-  float local_20 [3];
-  float local_14;
-  float local_10;
-  float local_c;
+  int i_4;
+  float pos2d [3];
+  int i_3;
+  int ns_2;
+  int maxSplits;
+  float SHARD_CHIP_RATIO;
+  GlassShard *fixedShard;
+  PIXProfile pp_3;
+  int maxSplitTries;
+  int i_2;
+  int i;
+  int NUM_TRIES;
+  PIXProfile pp_2;
+  int ns;
+  PIXProfile pp;
+  EdgeDistance dists;
+  float maxShardSize;
+  int numNewShards;
+  GlassShard *newShards [10];
+  float minShardSize;
+  float EDGE_DIST_RATIO;
+  float hitPoint3d [3];
+  float glassExtent;
+  float STICKINESS;
+  float hitPoint2d;
   float local_8;
   
   local_b8 = this->worldBBoxMax;
   local_b4 = this->worldBBoxMin;
-  if (((((*local_b8 < *param_5) || (this->worldBBoxMax[1] < param_5[1])) ||
-       (this->worldBBoxMax[2] < param_5[2])) ||
-      ((*param_6 < *local_b4 || (param_6[1] < this->worldBBoxMin[1])))) ||
-     (param_6[2] < this->worldBBoxMin[2])) {
+  if (((((*local_b8 < *mins) || (this->worldBBoxMax[1] < mins[1])) ||
+       (this->worldBBoxMax[2] < mins[2])) ||
+      ((*maxs < *local_b4 || (maxs[1] < this->worldBBoxMin[1])))) ||
+     (maxs[2] < this->worldBBoxMin[2])) {
     bVar3 = false;
   }
   else {
@@ -3011,25 +3032,25 @@ GlassShard::TracePoint
   if (!bVar3) {
     return false;
   }
-  pfVar5 = this->worldBBoxMax;
-  pfVar9 = this->worldBBoxMin;
-  Vec3Min(param_1,param_2,&local_c4);
-  Vec3Max(param_1,param_2,&local_d0);
-  if (((*pfVar5 < local_c4) || (this->worldBBoxMax[1] < local_c0)) ||
+  a = this->worldBBoxMax;
+  b = this->worldBBoxMin;
+  Vec3Min(p0,p1,&local_c4);
+  Vec3Max(p0,p1,&local_d0);
+  if (((*a < local_c4) || (this->worldBBoxMax[1] < local_c0)) ||
      ((this->worldBBoxMax[2] < local_bc ||
-      (((local_d0 < *pfVar9 || (local_cc < this->worldBBoxMin[1])) ||
-       (local_c8 < this->worldBBoxMin[2])))))) {
+      (((local_d0 < *b || (local_cc < this->worldBBoxMin[1])) || (local_c8 < this->worldBBoxMin[2]))
+      )))) {
     bVar3 = false;
   }
   else {
     bVar3 = true;
   }
   if (bVar3) {
-    Vec3Sub(param_2,param_1,&local_100);
-    Vec3Avg(pfVar5,pfVar9,local_f4);
-    Vec3Sub(pfVar5,pfVar9,&local_10c);
+    Vec3Sub(p1,p0,&local_100);
+    Vec3Avg(a,b,local_f4);
+    Vec3Sub(a,b,&local_10c);
     Vec3Scale(&local_10c,0.5,&local_10c);
-    Vec3Sub(param_1,local_f4,&local_dc);
+    Vec3Sub(p0,local_f4,&local_dc);
     Vec3Abs(&local_100,&local_118);
     local_184 = local_114;
     local_180 = local_110;
@@ -3058,24 +3079,24 @@ GlassShard::TracePoint
   }
   bVar3 = false;
 LAB_009a8de3:
-  if ((!bVar3) || (bVar3 = Intersect(this,param_1,param_3,&local_c), !bVar3)) {
+  if ((!bVar3) || (bVar3 = Intersect(this,p0,dir,&hitPoint2d), !bVar3)) {
     return false;
   }
-  ToWorldPos(this,&local_c,local_20,false);
-  local_14 = Outline::Extent(&this->outline);
-  local_50[1] = (GlassShard *)0x0;
-  local_50[2] = (GlassShard *)0x0;
-  local_50[3] = (GlassShard *)0x0;
-  local_50[4] = (GlassShard *)0x0;
-  local_50[5] = (GlassShard *)0x0;
-  local_50[6] = (GlassShard *)0x0;
-  local_50[7] = (GlassShard *)0x0;
-  local_50[8] = (GlassShard *)0x0;
-  local_50[9] = (GlassShard *)0x0;
-  local_54 = 1;
-  local_28 = this->group->glassDef->minShardSize *
-             (clGlasses->renderer->shardShatterSizeLimitScale->current).value;
-  local_58 = this->group->glassDef->maxShardSize;
+  ToWorldPos(this,&hitPoint2d,hitPoint3d,false);
+  glassExtent = Outline::Extent(&this->outline);
+  newShards[1] = (GlassShard *)0x0;
+  newShards[2] = (GlassShard *)0x0;
+  newShards[3] = (GlassShard *)0x0;
+  newShards[4] = (GlassShard *)0x0;
+  newShards[5] = (GlassShard *)0x0;
+  newShards[6] = (GlassShard *)0x0;
+  newShards[7] = (GlassShard *)0x0;
+  newShards[8] = (GlassShard *)0x0;
+  newShards[9] = (GlassShard *)0x0;
+  numNewShards = 1;
+  minShardSize = this->group->glassDef->minShardSize *
+                 (clGlasses->renderer->shardShatterSizeLimitScale->current).value;
+  maxShardSize = this->group->glassDef->maxShardSize;
   splitFailCount[0] = 0;
   splitFailCount[1] = 0;
   splitFailCount[2] = 0;
@@ -3084,218 +3105,219 @@ LAB_009a8de3:
   splitFailCount[5] = 0;
   splitFailCount[6] = 0;
   splitFailCount[7] = 0;
-  local_50[0] = this;
-  Outline::GetNearestDistances(&this->outline,&local_c,&local_6c,1);
-  local_24 = 0.02;
-  fVar10 = Outline::Length(&this->outline);
-  if (local_6c.dist <= fVar10 * local_24) {
+  newShards[0] = this;
+  Outline::GetNearestDistances(&this->outline,&hitPoint2d,&dists,1);
+  EDGE_DIST_RATIO = 0.02;
+  fVar8 = Outline::Length(&this->outline);
+  if (dists.dist <= fVar8 * EDGE_DIST_RATIO) {
     PIXBeginNamedEvent(-1,"Split 1");
-    local_c = local_6c.closestPoint[0];
-    local_8 = local_6c.closestPoint[1];
-    ToWorldPos(this,&local_c,local_20,false);
-    local_7c = 5;
-    local_74 = 0;
-    local_80 = 0;
-    while (((local_80 < 5 && (local_74 == 0)) &&
-           (bVar3 = CanSplit(local_50[0],local_58,local_28), bVar3))) {
-      local_74 = Split(local_50[0],local_50 + local_54,local_28,local_6c.edgeIndex,
-                       local_6c.edgeParam);
-      local_80 = local_80 + 1;
+    hitPoint2d = dists.closestPoint[0];
+    local_8 = dists.closestPoint[1];
+    ToWorldPos(this,&hitPoint2d,hitPoint3d,false);
+    ns = 0;
+    i = 0;
+    while (((i < 5 && (ns == 0)) &&
+           (bVar3 = CanSplit(newShards[0],maxShardSize,minShardSize), bVar3))) {
+      ns = Split(newShards[0],newShards + numNewShards,minShardSize,dists.edgeIndex,dists.edgeParam)
+      ;
+      i = i + 1;
     }
-    local_54 = local_54 + local_74;
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    numNewShards = numNewShards + ns;
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
     PIXBeginNamedEvent(-1,"Chip");
-    iVar6 = Chip(this,&local_6c,&local_c,local_50 + local_54,local_28);
-    if (iVar6 != 0) {
-      local_54 = local_54 + 1;
+    iVar5 = Chip(this,&dists,&hitPoint2d,newShards + numNewShards,minShardSize);
+    if (iVar5 != 0) {
+      numNewShards = numNewShards + 1;
     }
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  for (local_84 = 0; local_84 < (int)local_54; local_84 = local_84 + 1) {
-    fVar10 = EdgeRatio(local_50[local_84]);
-    if (fVar10 < 0.15) {
-      UnEdge(local_50[local_84]);
+  for (i_2 = 0; i_2 < numNewShards; i_2 = i_2 + 1) {
+    fVar8 = EdgeRatio(newShards[i_2]);
+    if (fVar8 < 0.15) {
+      UnEdge(newShards[i_2]);
     }
   }
-  local_10 = 1.0;
-  if (local_54 == 1) {
-    if ((local_50[0]->isOriginalEdge != false) && (bVar3 = LeaveOnEdge(local_50[0],1.0), !bVar3)) {
-      UnEdge(local_50[0]);
+  STICKINESS = 1.0;
+  if (numNewShards == 1) {
+    if ((newShards[0]->isOriginalEdge != false) && (bVar3 = LeaveOnEdge(newShards[0],1.0), !bVar3))
+    {
+      UnEdge(newShards[0]);
     }
   }
   else {
-    if ((local_54 != 2) &&
+    if ((numNewShards != 2) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x778,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_90 = (GlassShard *)0x0;
-    if ((local_50[0]->isOriginalEdge == false) || (local_50[1]->isOriginalEdge == false)) {
-      if (local_50[0]->isOriginalEdge == false) {
-        if (local_50[1]->isOriginalEdge != false) {
-          bVar3 = LeaveOnEdge(local_50[1],local_10);
+    fixedShard = (GlassShard *)0x0;
+    if ((newShards[0]->isOriginalEdge == false) || (newShards[1]->isOriginalEdge == false)) {
+      if (newShards[0]->isOriginalEdge == false) {
+        if (newShards[1]->isOriginalEdge != false) {
+          bVar3 = LeaveOnEdge(newShards[1],STICKINESS);
           if (bVar3) {
-            local_90 = local_50[1];
+            fixedShard = newShards[1];
           }
           else {
-            UnEdge(local_50[1]);
+            UnEdge(newShards[1]);
           }
         }
       }
       else {
-        bVar3 = LeaveOnEdge(local_50[0],local_10);
+        bVar3 = LeaveOnEdge(newShards[0],STICKINESS);
         if (bVar3) {
-          local_90 = local_50[0];
+          fixedShard = newShards[0];
         }
         else {
-          UnEdge(local_50[0]);
+          UnEdge(newShards[0]);
         }
       }
     }
     else {
-      fVar10 = Outline::Area(&local_50[0]->outline);
-      fVar11 = Outline::Area(&local_50[1]->outline);
-      if (fVar11 <= fVar10) {
-        UnEdge(local_50[1]);
-        local_90 = local_50[0];
+      fVar8 = Outline::Area(&newShards[0]->outline);
+      fVar9 = Outline::Area(&newShards[1]->outline);
+      if (fVar9 <= fVar8) {
+        UnEdge(newShards[1]);
+        fixedShard = newShards[0];
       }
       else {
-        UnEdge(local_50[0]);
-        local_90 = local_50[1];
+        UnEdge(newShards[0]);
+        fixedShard = newShards[1];
       }
     }
-    local_94 = 3.0;
-    fVar10 = Outline::Area(&local_50[0]->outline);
-    fVar10 = fVar10 * local_94;
-    fVar11 = Outline::Area(&local_50[1]->outline);
-    if (fVar11 <= fVar10) {
-      fVar10 = Outline::Area(&local_50[1]->outline);
-      fVar10 = fVar10 * local_94;
-      fVar11 = Outline::Area(&local_50[0]->outline);
-      if (fVar10 < fVar11) {
-        local_90 = local_50[0];
+    SHARD_CHIP_RATIO = 3.0;
+    fVar8 = Outline::Area(&newShards[0]->outline);
+    fVar8 = fVar8 * SHARD_CHIP_RATIO;
+    fVar9 = Outline::Area(&newShards[1]->outline);
+    if (fVar9 <= fVar8) {
+      fVar8 = Outline::Area(&newShards[1]->outline);
+      fVar8 = fVar8 * SHARD_CHIP_RATIO;
+      fVar9 = Outline::Area(&newShards[0]->outline);
+      if (fVar8 < fVar9) {
+        fixedShard = newShards[0];
       }
     }
     else {
-      local_90 = local_50[1];
+      fixedShard = newShards[1];
     }
     PIXBeginNamedEvent(-1,"Split 2");
-    local_98 = 10;
-    local_88 = 0x1e;
-    while ((((int)local_54 < local_98 && (bVar3 = CanSplit(local_50[0],local_58,local_28), bVar3))
-           && (0 < local_88))) {
-      local_9c = 0;
-      local_a0 = 0;
-      while (((local_a0 < (int)local_54 && (local_9c == 0)) &&
-             (bVar3 = CanSplit(local_50[local_a0],local_58,local_28), bVar3))) {
-        if (local_50[local_a0] != local_90) {
-          ToLocal(local_50[local_a0],local_20,(float *)0x0,local_ac,(float *)0x0);
-          Outline::GetNearestDistances(&local_50[local_a0]->outline,local_ac,&local_6c,1);
-          local_9c = Split(local_50[local_a0],local_50 + local_54,local_28,local_6c.edgeIndex,
-                           local_6c.edgeParam);
+    maxSplits = 10;
+    maxSplitTries = 0x1e;
+    while (((numNewShards < maxSplits &&
+            (bVar3 = CanSplit(newShards[0],maxShardSize,minShardSize), bVar3)) &&
+           (0 < maxSplitTries))) {
+      ns_2 = 0;
+      i_3 = 0;
+      while (((i_3 < numNewShards && (ns_2 == 0)) &&
+             (bVar3 = CanSplit(newShards[i_3],maxShardSize,minShardSize), bVar3))) {
+        if (newShards[i_3] != fixedShard) {
+          ToLocal(newShards[i_3],hitPoint3d,(float *)0x0,pos2d,(float *)0x0);
+          Outline::GetNearestDistances(&newShards[i_3]->outline,pos2d,&dists,1);
+          ns_2 = Split(newShards[i_3],newShards + numNewShards,minShardSize,dists.edgeIndex,
+                       dists.edgeParam);
         }
-        local_a0 = local_a0 + 1;
-        local_88 = local_88 + -1;
+        i_3 = i_3 + 1;
+        maxSplitTries = maxSplitTries + -1;
       }
-      if (local_9c != 0) {
-        local_54 = local_54 + local_9c;
-        qsort(local_50,local_54,4,compareShards);
+      if (ns_2 != 0) {
+        numNewShards = numNewShards + ns_2;
+        qsort(newShards,numNewShards,4,compareShards);
       }
     }
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   if ((clGlasses->renderer->debugSplit->current).enabled != false) {
-    Outline::Area((Outline *)((&local_54)[local_54] + 0xc));
-    Outline::Area(&local_50[0]->outline);
+    Outline::Area((Outline *)((&numNewShards)[numNewShards] + 0xc));
+    Outline::Area(&newShards[0]->outline);
     Com_Printf(0,"TracePoint: new shards=%d largest=%.1f smallest=%.1f\n");
     Com_Printf(0,
                "         fail: sPos=%d sDir=%d init=%d verts=%d area=%d angle=%d narrow=%d mem=%d\n"
               );
   }
   PIXBeginNamedEvent(0,"InitPhysics");
-  local_b0 = 0;
+  i_4 = 0;
   do {
-    if ((int)local_54 <= local_b0) {
-      DVar7 = GetCurrentThreadId();
-      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (numNewShards <= i_4) {
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return true;
     }
-    InitMesh(local_50[local_b0]);
-    if (local_50[local_b0]->isOriginalEdge == false) {
+    InitMesh(newShards[i_4]);
+    if (newShards[i_4]->isOriginalEdge == false) {
       if ((clGlasses->renderer->freezeShards->current).enabled != false) {
-        UpdateBBox(local_50[local_b0]);
+        UpdateBBox(newShards[i_4]);
         goto LAB_009a966f;
       }
-      bVar3 = InitPhysics(local_50[local_b0],true,local_20,param_3,local_14,1.0);
+      bVar3 = InitPhysics(newShards[i_4],true,hitPoint3d,dir,glassExtent,1.0);
       if (bVar3) goto LAB_009a966f;
     }
     else {
-      UpdateBBox(local_50[local_b0]);
+      UpdateBBox(newShards[i_4]);
 LAB_009a966f:
-      if (local_50[local_b0]->group == (ShardGroup *)0x0) {
-        ShardGroup::Add(this->group,local_50[local_b0]);
+      if (newShards[i_4]->group == (ShardGroup *)0x0) {
+        ShardGroup::Add(this->group,newShards[i_4]);
       }
-      pSVar1 = local_50[local_b0]->group;
-      uVar8 = GlassRenderer::CalcPackedPos(clGlasses->renderer,local_50[local_b0]->origin);
-      if (pSVar1->packedPos != uVar8) {
-        GlassRenderer::AddGroupChange(clGlasses->renderer,local_50[local_b0]);
+      pSVar1 = newShards[i_4]->group;
+      uVar7 = GlassRenderer::CalcPackedPos(clGlasses->renderer,newShards[i_4]->origin);
+      if (pSVar1->packedPos != uVar7) {
+        GlassRenderer::AddGroupChange(clGlasses->renderer,newShards[i_4]);
       }
     }
-    local_b0 = local_b0 + 1;
+    i_4 = i_4 + 1;
   } while( true );
 }
 
 
 // 009A9810  GetLocalBBox  (glass/glass_shard.cpp:2144)
 
-void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *param_2)
+void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *mins,float *maxs)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  float local_14;
+  float pos;
   float local_10;
   undefined4 local_c;
-  uint local_8;
+  uint i;
   
   fVar1 = (((this->outline).verts)->edge).origin[1];
-  *param_1 = (((this->outline).verts)->edge).origin[0];
-  param_1[1] = fVar1;
-  param_1[2] = 0.0;
+  *mins = (((this->outline).verts)->edge).origin[0];
+  mins[1] = fVar1;
+  mins[2] = 0.0;
   fVar1 = (((this->outline).verts)->edge).origin[1];
-  *param_2 = (((this->outline).verts)->edge).origin[0];
-  param_2[1] = fVar1;
-  param_2[2] = 0.0;
-  for (local_8 = 1; local_8 < (this->outline).numVerts; local_8 = local_8 + 1) {
-    local_14 = (this->outline).verts[local_8].edge.origin[0];
-    local_10 = (this->outline).verts[local_8].edge.origin[1];
+  *maxs = (((this->outline).verts)->edge).origin[0];
+  maxs[1] = fVar1;
+  maxs[2] = 0.0;
+  for (i = 1; i < (this->outline).numVerts; i = i + 1) {
+    pos = (this->outline).verts[i].edge.origin[0];
+    local_10 = (this->outline).verts[i].edge.origin[1];
     local_c = 0;
-    Vec3Min(&local_14,param_1,param_1);
-    Vec3Max(&local_14,param_2,param_2);
+    Vec3Min(&pos,mins,mins);
+    Vec3Max(&pos,maxs,maxs);
   }
   if (this->thickness <= 0.0) {
-    param_1[2] = this->thickness;
+    mins[2] = this->thickness;
   }
   else {
-    param_2[2] = this->thickness;
+    maxs[2] = this->thickness;
   }
-  if (param_1 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3304,7 +3326,7 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3313,7 +3335,7 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (*param_2 < *param_1) {
+  if (*maxs < *mins) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3322,7 +3344,7 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (param_2[1] < param_1[1]) {
+  if (maxs[1] < mins[1]) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3331,7 +3353,7 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (param_2[2] < param_1[2]) {
+  if (maxs[2] < mins[2]) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3340,9 +3362,8 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*mins & 0x7f800000) == 0x7f800000) || (((uint)mins[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)mins[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3351,9 +3372,8 @@ void __thiscall GlassShard::GetLocalBBox(GlassShard *this,float *param_1,float *
       return;
     }
   }
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*maxs & 0x7f800000) == 0x7f800000) || (((uint)maxs[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)maxs[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x86f,0,
                              "%s");
     if (!bVar3) {
@@ -3374,11 +3394,11 @@ void __thiscall GlassShard::UpdateBBox(GlassShard *this)
   float fVar1;
   float fVar2;
   Vertex *pVVar3;
-  float local_20;
+  float temp;
   float local_1c;
   float local_18;
-  uint local_14;
-  float local_10;
+  uint i;
+  float offset;
   float local_c;
   float local_8;
   
@@ -3389,23 +3409,23 @@ void __thiscall GlassShard::UpdateBBox(GlassShard *this)
   this->worldBBoxMax[1] = -3.4028235e+38;
   this->worldBBoxMax[2] = -3.4028235e+38;
   local_8 = this->thickness;
-  local_10 = local_8 * this->axis[2][0];
+  offset = local_8 * this->axis[2][0];
   local_c = local_8 * this->axis[2][1];
   local_8 = local_8 * this->axis[2][2];
-  for (local_14 = 0; local_14 < (this->outline).numVerts; local_14 = local_14 + 1) {
-    pVVar3 = (this->outline).verts + local_14;
+  for (i = 0; i < (this->outline).numVerts; i = i + 1) {
+    pVVar3 = (this->outline).verts + i;
     fVar1 = (pVVar3->edge).origin[0];
     fVar2 = (pVVar3->edge).origin[1];
-    local_20 = fVar2 * this->axis[1][0] + fVar1 * this->axis[0][0] + this->origin[0];
+    temp = fVar2 * this->axis[1][0] + fVar1 * this->axis[0][0] + this->origin[0];
     local_1c = fVar2 * this->axis[1][1] + fVar1 * this->axis[0][1] + this->origin[1];
     local_18 = fVar2 * this->axis[1][2] + fVar1 * this->axis[0][2] + this->origin[2];
-    Vec3Min(&local_20,this->worldBBoxMin,this->worldBBoxMin);
-    Vec3Max(&local_20,this->worldBBoxMax,this->worldBBoxMax);
-    local_20 = local_20 + local_10;
+    Vec3Min(&temp,this->worldBBoxMin,this->worldBBoxMin);
+    Vec3Max(&temp,this->worldBBoxMax,this->worldBBoxMax);
+    temp = temp + offset;
     local_1c = local_1c + local_c;
     local_18 = local_18 + local_8;
-    Vec3Min(&local_20,this->worldBBoxMin,this->worldBBoxMin);
-    Vec3Max(&local_20,this->worldBBoxMax,this->worldBBoxMax);
+    Vec3Min(&temp,this->worldBBoxMin,this->worldBBoxMin);
+    Vec3Max(&temp,this->worldBBoxMax,this->worldBBoxMax);
   }
   return;
 }
@@ -3413,7 +3433,7 @@ void __thiscall GlassShard::UpdateBBox(GlassShard *this)
 
 // 009A9E30  Update  (glass/glass_shard.cpp:2190)
 
-void __thiscall GlassShard::Update(GlassShard *this,float param_1)
+void __thiscall GlassShard::Update(GlassShard *this,float deltaTime)
 
 {
   ShardGroup *pSVar1;
@@ -3421,6 +3441,8 @@ void __thiscall GlassShard::Update(GlassShard *this,float param_1)
   bool bVar3;
   uint uVar4;
   bool bVar5;
+  bool isStable;
+  bool hitBottom;
   
   if (((this->physObjId == 0) && (this->glassPhysics == (GlassPhysics *)0x0)) &&
      (this->delayedDrop == false)) {
@@ -3448,10 +3470,10 @@ void __thiscall GlassShard::Update(GlassShard *this,float param_1)
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
     }
     else {
-      if (0.0 < param_1) {
-        GlassPhysics::Step(this->glassPhysics,param_1);
+      if (0.0 < deltaTime) {
+        GlassPhysics::Step(this->glassPhysics,deltaTime);
         GlassPhysics::GetPosition(this->glassPhysics,this->origin,this->axis);
-        this->timeUntilAction = this->timeUntilAction - param_1;
+        this->timeUntilAction = this->timeUntilAction - deltaTime;
         bVar3 = this->timeUntilAction <= 0.0 && this->timeUntilAction != 0.0;
       }
       bVar5 = false;
@@ -3476,7 +3498,7 @@ void __thiscall GlassShard::Update(GlassShard *this,float param_1)
     }
   }
   else {
-    this->timeUntilAction = this->timeUntilAction - param_1;
+    this->timeUntilAction = this->timeUntilAction - deltaTime;
     if (this->timeUntilAction <= 0.0 && this->timeUntilAction != 0.0) {
       InitPhysics(this,true,vec3_origin,vec3_origin,0.0,0.0);
     }
@@ -3490,24 +3512,27 @@ void __thiscall GlassShard::Update(GlassShard *this,float param_1)
 void __thiscall GlassShard::ChangeGroup(GlassShard *this)
 
 {
-  GlassDef *pGVar1;
-  bool bVar2;
+  GlassDef *glassDef_00;
+  bool bVar1;
   ShardGroup *this_00;
+  ShardGroup *grp;
+  GlassDef *glassDef;
+  bool freeShard;
   
-  bVar2 = true;
+  bVar1 = true;
   if (this->group != (ShardGroup *)0x0) {
-    pGVar1 = this->group->glassDef;
+    glassDef_00 = this->group->glassDef;
     ShardGroup::Remove(this->group,this);
     if (this->remove == false) {
-      this_00 = GlassRenderer::GetShardGroup(clGlasses->renderer,this->origin,pGVar1);
+      this_00 = GlassRenderer::GetShardGroup(clGlasses->renderer,this->origin,glassDef_00);
       if (this_00 != (ShardGroup *)0x0) {
         ShardGroup::Add(this_00,this);
-        bVar2 = false;
+        bVar1 = false;
       }
     }
   }
   this->inGroupChange = false;
-  if (bVar2) {
+  if (bVar1) {
     GlassRenderer::FreeShard(clGlasses->renderer,this);
   }
   return;
@@ -3516,7 +3541,7 @@ void __thiscall GlassShard::ChangeGroup(GlassShard *this)
 
 // 009AA140  Remove  (glass/glass_shard.cpp:2284)
 
-void __thiscall GlassShard::Remove(GlassShard *this,RemoveReason_conflict param_1,bool param_2)
+void __thiscall GlassShard::Remove(GlassShard *this,RemoveReason_conflict reason,bool delay)
 
 {
   code *pcVar1;
@@ -3531,15 +3556,15 @@ void __thiscall GlassShard::Remove(GlassShard *this,RemoveReason_conflict param_
     (*pcVar1)();
     return;
   }
-  if (param_2) {
+  if (delay) {
     if (this->remove == false) {
       this->remove = true;
       GlassRenderer::AddGroupChange(clGlasses->renderer,this);
-      removeReasonsCount[param_1] = removeReasonsCount[param_1] + 1;
+      removeReasonsCount[reason] = removeReasonsCount[reason] + 1;
     }
   }
   else {
-    removeReasonsCount[param_1] = removeReasonsCount[param_1] + 1;
+    removeReasonsCount[reason] = removeReasonsCount[reason] + 1;
     if (this->group != (ShardGroup *)0x0) {
       ShardGroup::Remove(this->group,this);
     }
@@ -3556,7 +3581,8 @@ void __thiscall GlassShard::Remove(GlassShard *this,RemoveReason_conflict param_
 
 void __thiscall
 GlassShard::GenerateVerts
-          (GlassShard *this,bool param_1,GfxPackedVertex *param_2,ushort param_3,ushort *param_4)
+          (GlassShard *this,bool highLod,GfxPackedVertex *baseVerts,ushort vertsBaseIndex,
+          ushort *idxOut)
 
 {
   code *pcVar1;
@@ -3596,67 +3622,67 @@ GlassShard::GenerateVerts
   float local_1474;
   float (*local_1470) [3];
   uint local_146c;
-  uint local_1468;
-  uint local_1464;
-  float local_1460;
+  uint i_4;
+  uint i_3;
+  float temp;
   float local_145c;
   float local_1458;
-  PackedUnitVec local_1454;
+  PackedUnitVec n;
   PackedUnitVec local_1450;
   PackedUnitVec local_144c;
-  uint local_1448;
-  Vertex *local_1444;
-  uint local_1440;
-  float local_143c [769];
-  PackedTexCoords *local_838;
-  PackedTexCoords local_834 [256];
-  byte *local_434;
-  PackedUnitVec local_430;
-  float local_428;
+  uint i_2;
+  Vertex *lPos;
+  uint i;
+  float pos [769];
+  PackedTexCoords *tc;
+  PackedTexCoords texCoords [256];
+  uchar *idxIn;
+  PackedUnitVec tangent;
+  uint nIdxs;
+  float offset;
   float local_424;
   float local_420;
   PackedUnitVec aPStack_41c [257];
   uint local_18;
-  GlassShardMeshVertex *local_14;
-  uint local_10;
-  uint local_c;
-  float *local_8;
+  GlassShardMeshVertex *verts;
+  uint nVerts;
+  uint numNorm;
+  float *p;
   
-  local_8 = (float *)0x9aa24d;
+  p = (float *)0x9aa24d;
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (GfxPackedVertex *)0x0) &&
+  if ((baseVerts == (GfxPackedVertex *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0x907,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = local_143c;
-  local_838 = local_834;
+  p = pos;
+  tc = texCoords;
   local_1474 = this->thickness;
   local_1470 = this->axis + 2;
-  local_428 = local_1474 * (*local_1470)[0];
+  offset = local_1474 * (*local_1470)[0];
   local_424 = local_1474 * this->axis[2][1];
   local_420 = local_1474 * this->axis[2][2];
-  for (local_1440 = 0; local_1475 = (this->outline).numVerts, local_1440 < local_1475;
-      local_1440 = local_1440 + 1) {
-    local_1444 = (this->outline).verts + local_1440;
+  for (i = 0; local_1475 = (this->outline).numVerts, i < local_1475; i = i + 1) {
+    lPos = (this->outline).verts + i;
     local_1484 = this->axis;
-    local_1480 = (local_1444->edge).origin[0];
+    local_1480 = (lPos->edge).origin[0];
     local_147c = this->origin;
-    *local_8 = local_1480 * (*local_1484)[0] + *local_147c;
-    local_8[1] = local_1480 * this->axis[0][1] + this->origin[1];
-    local_8[2] = local_1480 * this->axis[0][2] + this->origin[2];
+    *p = local_1480 * (*local_1484)[0] + *local_147c;
+    p[1] = local_1480 * this->axis[0][1] + this->origin[1];
+    p[2] = local_1480 * this->axis[0][2] + this->origin[2];
     local_148c = this->axis + 1;
-    local_1488 = (local_1444->edge).origin[1];
-    *local_8 = local_1488 * (*local_148c)[0] + *local_8;
-    local_8[1] = local_1488 * this->axis[1][1] + local_8[1];
-    local_8[2] = local_1488 * this->axis[1][2] + local_8[2];
-    local_1490 = local_8 + 3;
-    *local_1490 = *local_8 + local_428;
-    local_8[4] = local_8[1] + local_424;
-    local_8[5] = local_8[2] + local_420;
-    local_14b0 = (local_1444->edge).origin[0] * this->uvScale;
+    local_1488 = (lPos->edge).origin[1];
+    *p = local_1488 * (*local_148c)[0] + *p;
+    p[1] = local_1488 * this->axis[1][1] + p[1];
+    p[2] = local_1488 * this->axis[1][2] + p[2];
+    local_1490 = p + 3;
+    *local_1490 = *p + offset;
+    p[4] = p[1] + local_424;
+    p[5] = p[2] + local_420;
+    local_14b0 = (lPos->edge).origin[0] * this->uvScale;
     local_14a8 = (int)local_14b0 >> 0x10 & 0xc000;
     local_14ac = (int)((int)local_14b0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_14ac) {
@@ -3670,7 +3696,7 @@ GlassShard::GenerateVerts
     }
     local_14a4 = local_1544 & 0x3fff;
     local_149c = local_14a8 | local_14a4;
-    local_14c4 = (local_1444->edge).origin[1] * this->uvScale;
+    local_14c4 = (lPos->edge).origin[1] * this->uvScale;
     local_14bc = (int)local_14c4 >> 0x10 & 0xc000;
     local_14c0 = (int)((int)local_14c4 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_14c0) {
@@ -3685,79 +3711,79 @@ GlassShard::GenerateVerts
     local_14b8 = local_1548 & 0x3fff;
     local_1498 = local_14bc | local_14b8;
     local_1494 = local_149c * 0x10000 + local_1498;
-    local_838[1].packed = local_1494;
-    *local_838 = local_838[1];
-    local_8 = local_8 + 6;
-    local_838 = local_838 + 2;
+    tc[1].packed = local_1494;
+    *tc = tc[1];
+    p = p + 6;
+    tc = tc + 2;
     local_14b4 = local_14c4;
     local_14a0 = local_14b0;
     local_146c = local_1494;
   }
-  if (param_1) {
+  if (highLod) {
     local_154c = (uint)(this->mesh).numNorm;
   }
   else {
     local_154c = 2;
   }
-  local_c = local_154c;
-  for (local_1448 = 0; local_1448 < local_c; local_1448 = local_1448 + 1) {
+  numNorm = local_154c;
+  for (i_2 = 0; i_2 < numNorm; i_2 = i_2 + 1) {
                     /* WARNING: Load size is inaccurate */
-    local_14d8 = *(PackedUnitVec *)(this->mesh).normArray[local_1448].array;
+    local_14d8 = *(PackedUnitVec *)(this->mesh).normArray[i_2].array;
     local_14d4 = local_14d8;
     local_14d0 = local_14d8;
     local_14cc = local_14d8;
     Vec3UnpackUnitVec(local_14d8,(float *)&local_14d8);
-    local_1454 = local_14d8;
+    n = local_14d8;
     local_1450 = local_14d4;
     local_144c = local_14d0;
-    local_1460 = (float)local_14d0 * this->axis[2][0] +
-                 (float)local_14d4 * this->axis[1][0] + (float)local_14d8 * this->axis[0][0];
+    temp = (float)local_14d0 * this->axis[2][0] +
+           (float)local_14d4 * this->axis[1][0] + (float)local_14d8 * this->axis[0][0];
     local_145c = (float)local_14d0 * this->axis[2][1] +
                  (float)local_14d4 * this->axis[1][1] + (float)local_14d8 * this->axis[0][1];
     local_1458 = (float)local_14d0 * this->axis[2][2] +
                  (float)local_14d4 * this->axis[1][2] + (float)local_14d8 * this->axis[0][2];
     local_1510.array[1] = (char)(int)(local_145c * 127.0 + 127.5);
-    local_1510.array[0] = (char)(int)(local_1460 * 127.0 + 127.5);
+    local_1510.array[0] = (char)(int)(temp * 127.0 + 127.5);
     local_1510.array[2] = (char)(int)(local_1458 * 127.0 + 127.5);
     local_1510.array[3] = 0x3f;
-    aPStack_41c[local_1448] = local_1510;
+    aPStack_41c[i_2] = local_1510;
   }
   local_152c.array[1] = (char)(int)(this->axis[0][1] * 127.0 + 127.5);
   local_152c.array[0] = (char)(int)(this->axis[0][0] * 127.0 + 127.5);
   local_152c.array[2] = (char)(int)(this->axis[0][2] * 127.0 + 127.5);
   local_152c.array[3] = 0x3f;
-  local_430 = local_152c;
-  local_14 = clGlasses->renderer->vertexList[(this->outline).numVerts - 1];
-  if (param_1) {
+  tangent = local_152c;
+  verts = clGlasses->renderer->vertexList[(this->outline).numVerts - 1];
+  if (highLod) {
     local_154d = (this->mesh).numVerts;
   }
   else {
     local_154d = (this->mesh).numVertsLow;
   }
-  local_10 = (uint)local_154d;
-  for (local_1464 = 0; local_1464 < local_154d; local_1464 = local_1464 + 1) {
-    uVar3 = (uint)local_14[local_1464].pos;
-    param_2->xyz[0] = local_143c[uVar3 * 3];
-    param_2->xyz[1] = local_143c[uVar3 * 3 + 1];
-    param_2->xyz[2] = local_143c[uVar3 * 3 + 2];
-    param_2->normal = aPStack_41c[local_14[local_1464].norm];
-    param_2->tangent = local_152c;
-    (param_2->color).packed = 0xffffffff;
-    param_2->binormalSign = 1.0;
-    param_2->texCoord = local_834[local_14[local_1464].pos];
-    param_2 = param_2 + 1;
+  nVerts = (uint)local_154d;
+  for (i_3 = 0; i_3 < local_154d; i_3 = i_3 + 1) {
+    uVar3 = (uint)verts[i_3].pos;
+    baseVerts->xyz[0] = pos[uVar3 * 3];
+    baseVerts->xyz[1] = pos[uVar3 * 3 + 1];
+    baseVerts->xyz[2] = pos[uVar3 * 3 + 2];
+    baseVerts->normal = aPStack_41c[verts[i_3].norm];
+    baseVerts->tangent = local_152c;
+    (baseVerts->color).packed = 0xffffffff;
+    baseVerts->binormalSign = 1.0;
+    baseVerts->texCoord = texCoords[verts[i_3].pos];
+    baseVerts = baseVerts + 1;
   }
-  local_434 = (this->mesh).indices;
-  if (param_1) {
+  idxIn = (this->mesh).indices;
+  if (highLod) {
     local_154e = (this->mesh).numIndices;
   }
   else {
     local_154e = (this->mesh).numIndicesLow;
   }
-  for (local_1468 = 0; local_1468 < local_154e; local_1468 = local_1468 + 1) {
-    *param_4 = *local_434 + param_3;
-    param_4 = param_4 + 1;
-    local_434 = local_434 + 1;
+  for (i_4 = 0; i_4 < local_154e; i_4 = i_4 + 1) {
+    *idxOut = *idxIn + vertsBaseIndex;
+    idxOut = idxOut + 1;
+    idxIn = idxIn + 1;
   }
   return;
 }
@@ -3768,7 +3794,8 @@ GlassShard::GenerateVerts
 /* WARNING: Type propagation algorithm not settling */
 
 int __thiscall
-GlassShard::Split(GlassShard *this,GlassShard **param_1,float param_2,uint param_3,float param_4)
+GlassShard::Split(GlassShard *this,GlassShard **newShards,float minShardSize,uint startEdge,
+                 float startEdgeParam)
 
 {
   float *pfVar1;
@@ -3794,94 +3821,93 @@ GlassShard::Split(GlassShard *this,GlassShard **param_1,float param_2,uint param
   uint local_d14;
   int local_d10;
   float local_cd8;
-  float local_cac;
+  float d;
   float local_ca8;
-  float local_ca4;
-  int local_ca0;
-  undefined4 local_c9c;
-  char local_c95;
-  uint local_c94;
-  uint local_c90;
-  float local_c8c;
-  float local_c88;
-  int local_c84;
-  float local_c80;
+  float newAngle;
+  int i_2;
+  int NUM_TRIES_2;
+  bool found;
+  uint nextEdgeIndex;
+  uint edgeIndex;
+  float len_2;
+  float firstAngle_2;
+  int j_2;
+  float pos_2;
   float local_c7c;
-  float local_c78;
-  uint local_c74;
-  float local_c70;
+  float len;
+  uint i;
+  float pos;
   float local_c6c;
-  float local_c68;
-  float local_c64;
-  int local_c60;
-  float local_c5c;
-  float local_c58;
-  char local_c51;
-  float local_c50;
+  float startParam;
+  float firstAngle;
+  int j;
+  float minEdgeLength;
+  float maxEdgeLength;
+  bool dirSign;
+  float newDir;
   float local_c4c;
-  undefined4 local_c48;
-  Outline local_c44;
+  int NUM_TRIES;
+  Outline otherOutline;
   Vertex local_c34 [64];
-  float local_630;
-  undefined8 local_62c;
+  float newEdgeDist;
+  undefined8 timer;
   ulong64 *local_624;
-  uint local_618;
-  Outline local_614;
+  int newEdgeIdx;
+  Outline newOutline;
   Vertex local_604 [64];
   
   local_624 = &clGlasses->renderer->splitTimer;
-  local_62c = tlPcGetTick();
+  timer = tlPcGetTick();
   puVar8 = &clGlasses->renderer->numSplits;
   *puVar8 = *puVar8 + 1;
   pGVar2 = clGlasses->renderer;
-  local_c5c = Outline::Length(&this->outline);
-  local_c5c = local_c5c * (pGVar2->shardEdgeSize->current).value;
+  fVar11 = Outline::Length(&this->outline);
+  minEdgeLength = fVar11 * (pGVar2->shardEdgeSize->current).value;
   pGVar2 = clGlasses->renderer;
-  local_c58 = Outline::Length(&this->outline);
-  local_c58 = local_c58 * (pGVar2->shardEdgeSize->current).vector[1];
-  local_c51 = '\0';
-  local_630 = -1.0;
-  local_618 = 0xffffffff;
-  local_c48 = 10;
-  if (0.0 <= param_4) {
-    pfVar1 = (this->outline).verts[param_3].edge.dir;
-    fVar11 = (this->outline).verts[param_3].edge.len * param_4;
-    pVVar7 = (this->outline).verts + param_3;
-    local_c80 = fVar11 * *pfVar1 + (pVVar7->edge).origin[0];
+  fVar11 = Outline::Length(&this->outline);
+  maxEdgeLength = fVar11 * (pGVar2->shardEdgeSize->current).vector[1];
+  dirSign = false;
+  newEdgeDist = -1.0;
+  newEdgeIdx = -1;
+  NUM_TRIES = 10;
+  if (0.0 <= startEdgeParam) {
+    pfVar1 = (this->outline).verts[startEdge].edge.dir;
+    fVar11 = (this->outline).verts[startEdge].edge.len * startEdgeParam;
+    pVVar7 = (this->outline).verts + startEdge;
+    pos_2 = fVar11 * *pfVar1 + (pVVar7->edge).origin[0];
     local_c7c = fVar11 * pfVar1[1] + (pVVar7->edge).origin[1];
-    for (local_c84 = 0; local_618 = 0xffffffff, local_c84 < 10; local_c84 = local_c84 + 1) {
+    for (j_2 = 0; newEdgeIdx = -1, j_2 < 10; j_2 = j_2 + 1) {
       iVar4 = irand(0,2);
-      local_c51 = iVar4 != 0;
-      uVar5 = (uint)(byte)local_c51;
-      local_c88 = flrand(30.0,150.0);
-      local_c88 = local_c88 * (float)(int)((-uVar5 & 2) - 1);
-      pfVar1 = (this->outline).verts[param_3].edge.dir;
-      local_c50 = *pfVar1;
+      dirSign = iVar4 != 0;
+      uVar5 = (uint)dirSign;
+      fVar11 = flrand(30.0,150.0);
+      firstAngle_2 = fVar11 * (float)(int)((-uVar5 & 2) - 1);
+      pfVar1 = (this->outline).verts[startEdge].edge.dir;
+      newDir = *pfVar1;
       local_c4c = pfVar1[1];
-      VectorAngleMultiply(&local_c50,-local_c88);
-      uVar5 = Outline::GetNumIntersections
-                        (&this->outline,&local_c80,&local_c50,&local_630,(int *)&local_618);
+      VectorAngleMultiply(&newDir,-firstAngle_2);
+      uVar5 = Outline::GetNumIntersections(&this->outline,&pos_2,&newDir,&newEdgeDist,&newEdgeIdx);
       uVar5 = uVar5 & 0x80000001;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
       }
-      if ((uVar5 == 1) && (local_c5c < local_630)) break;
+      if ((uVar5 == 1) && (minEdgeLength < newEdgeDist)) break;
     }
   }
   else {
-    param_3 = 0x40;
-    param_4 = 0.0;
-    local_c60 = 0;
-    while ((local_c60 < 10 && (0x3f < param_3))) {
+    startEdge = 0x40;
+    startEdgeParam = 0.0;
+    j = 0;
+    while ((j < 10 && (0x3f < startEdge))) {
       fVar11 = Outline::Length(&this->outline);
-      local_c68 = flrand(0.0,fVar11);
-      for (local_c74 = 0; local_c74 < (this->outline).numVerts; local_c74 = local_c74 + 1) {
-        local_c78 = (this->outline).verts[local_c74].edge.len;
-        if (local_c68 <= local_c78) {
+      startParam = flrand(0.0,fVar11);
+      for (i = 0; i < (this->outline).numVerts; i = i + 1) {
+        len = (this->outline).verts[i].edge.len;
+        if (startParam <= len) {
           fVar11 = Outline::Length(&this->outline);
-          if (0.025 < local_c78 / fVar11) {
-            param_3 = local_c74;
-            fVar11 = local_c68 / local_c78;
+          if (0.025 < len / fVar11) {
+            startEdge = i;
+            fVar11 = startParam / len;
             local_cd8 = fVar11;
             if (0.0 <= fVar11 - 0.75) {
               local_cd8 = 0.75;
@@ -3892,175 +3918,177 @@ GlassShard::Split(GlassShard *this,GlassShard **param_1,float param_2,uint param
             else {
               local_da4 = 0.25;
             }
-            param_4 = local_da4;
+            startEdgeParam = local_da4;
           }
           break;
         }
-        local_c68 = local_c68 - local_c78;
+        startParam = startParam - len;
       }
-      if (param_3 < 0x40) {
+      if (startEdge < 0x40) {
         iVar4 = irand(0,2);
-        local_c51 = iVar4 != 0;
-        uVar5 = (uint)(byte)local_c51;
+        dirSign = iVar4 != 0;
+        uVar5 = (uint)dirSign;
         fVar11 = flrand((clGlasses->renderer->shardSplitDir->current).value,
                         (clGlasses->renderer->shardSplitDir->current).vector[1]);
-        local_c64 = fVar11 * (float)(int)((-uVar5 & 2) - 1) + 90.0;
-        pfVar1 = (this->outline).verts[param_3].edge.dir;
-        local_c50 = *pfVar1;
+        firstAngle = fVar11 * (float)(int)((-uVar5 & 2) - 1) + 90.0;
+        pfVar1 = (this->outline).verts[startEdge].edge.dir;
+        newDir = *pfVar1;
         local_c4c = pfVar1[1];
-        VectorAngleMultiply(&local_c50,-local_c64);
-        pfVar1 = (this->outline).verts[param_3].edge.dir;
-        fVar11 = (this->outline).verts[param_3].edge.len * param_4;
-        pVVar7 = (this->outline).verts + param_3;
-        local_c70 = fVar11 * *pfVar1 + (pVVar7->edge).origin[0];
+        VectorAngleMultiply(&newDir,-firstAngle);
+        pfVar1 = (this->outline).verts[startEdge].edge.dir;
+        fVar11 = (this->outline).verts[startEdge].edge.len * startEdgeParam;
+        pVVar7 = (this->outline).verts + startEdge;
+        pos = fVar11 * *pfVar1 + (pVVar7->edge).origin[0];
         local_c6c = fVar11 * pfVar1[1] + (pVVar7->edge).origin[1];
-        uVar5 = Outline::GetNumIntersections
-                          (&this->outline,&local_c70,&local_c50,&local_630,(int *)&local_618);
+        uVar5 = Outline::GetNumIntersections(&this->outline,&pos,&newDir,&newEdgeDist,&newEdgeIdx);
         uVar5 = uVar5 & 0x80000001;
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
         }
-        if ((uVar5 == 1) && (local_c5c < local_630)) break;
-        local_618 = 0xffffffff;
+        if ((uVar5 == 1) && (minEdgeLength < newEdgeDist)) break;
+        newEdgeIdx = -1;
       }
-      local_c60 = local_c60 + 1;
+      j = j + 1;
     }
   }
-  if ((int)local_618 < 0) {
+  if (newEdgeIdx < 0) {
     splitFailCount[0] = splitFailCount[0] + 1;
     uVar10 = tlPcGetTick();
     local_d14 = (uint)uVar10;
     local_d10 = (int)(uVar10 >> 0x20);
     uVar10 = *local_624;
-    *(uint *)local_624 = (local_d14 - (uint)local_62c) + (uint)*local_624;
+    *(uint *)local_624 = (local_d14 - (uint)timer) + (uint)*local_624;
     *(uint *)((int)local_624 + 4) =
          *(uint *)((int)local_624 + 4) +
-         ((local_d10 - local_62c._4_4_) - (uint)(local_d14 < (uint)local_62c)) +
-         (uint)CARRY4(local_d14 - (uint)local_62c,(uint)uVar10);
+         ((local_d10 - timer._4_4_) - (uint)(local_d14 < (uint)timer)) +
+         (uint)CARRY4(local_d14 - (uint)timer,(uint)uVar10);
   }
   else {
-    local_614.verts = local_604;
-    local_614.numVerts = 0;
-    local_614.maxVerts = '@';
-    local_614.isClosed = false;
-    local_c44.verts = local_c34;
-    local_c44.numVerts = '\0';
-    local_c44.maxVerts = '@';
-    local_c44.isClosed = false;
+    newOutline.verts = local_604;
+    newOutline.numVerts = 0;
+    newOutline.maxVerts = '@';
+    newOutline.isClosed = false;
+    otherOutline.verts = local_c34;
+    otherOutline.numVerts = '\0';
+    otherOutline.maxVerts = '@';
+    otherOutline.isClosed = false;
     pVVar7 = (this->outline).verts;
-    pVVar6 = Outline::Add(&local_614,(float *)((this->outline).verts + param_3));
-    pVVar6->isOriginalEdge = pVVar7[param_3].isOriginalEdge;
-    pVVar7 = Outline::Add(&local_614,(this->outline).verts[param_3].edge.dir,
-                          (this->outline).verts[param_3].edge.len * param_4);
+    pVVar6 = Outline::Add(&newOutline,(float *)((this->outline).verts + startEdge));
+    pVVar6->isOriginalEdge = pVVar7[startEdge].isOriginalEdge;
+    pVVar7 = Outline::Add(&newOutline,(this->outline).verts[startEdge].edge.dir,
+                          (this->outline).verts[startEdge].edge.len * startEdgeParam);
     pVVar7->isOriginalEdge = false;
-    Outline::Add(&local_c44,(float *)(local_614.verts + 1));
+    Outline::Add(&otherOutline,(float *)(newOutline.verts + 1));
     do {
-      local_c8c = flrand(local_c5c,local_c58);
-      if (local_630 - local_c8c < local_c5c * 0.5) {
-        bVar3 = (this->outline).verts[local_618].isOriginalEdge;
-        pVVar7 = Outline::Add(&local_614,&local_c50,local_630);
+      len_2 = flrand(minEdgeLength,maxEdgeLength);
+      if (newEdgeDist - len_2 < minEdgeLength * 0.5) {
+        bVar3 = (this->outline).verts[newEdgeIdx].isOriginalEdge;
+        pVVar7 = Outline::Add(&newOutline,&newDir,newEdgeDist);
         pVVar7->isOriginalEdge = bVar3;
-        bVar3 = (this->outline).verts[local_618].isOriginalEdge;
-        pVVar7 = Outline::Add(&local_c44,(float *)(local_614.verts + (local_614.numVerts - 1)));
+        bVar3 = (this->outline).verts[newEdgeIdx].isOriginalEdge;
+        pVVar7 = Outline::Add(&otherOutline,(float *)(newOutline.verts + (newOutline.numVerts - 1)))
+        ;
         pVVar7->isOriginalEdge = bVar3;
-        uVar5 = local_618 - ((this->outline).numVerts - 1);
+        uVar5 = newEdgeIdx - ((this->outline).numVerts - 1);
         uVar9 = (int)uVar5 >> 0x1f;
-        for (local_c90 = local_618 + 1 & (int)-((uVar5 ^ uVar9) - uVar9) >> 0x1f;
-            local_c90 != param_3;
-            local_c90 = local_c90 + 1 & (int)-((uVar5 ^ uVar9) - uVar9) >> 0x1f) {
-          bVar3 = (this->outline).verts[local_c90].isOriginalEdge;
-          pVVar7 = Outline::Add(&local_614,(float *)((this->outline).verts + local_c90));
+        for (edgeIndex = newEdgeIdx + 1U & (int)-((uVar5 ^ uVar9) - uVar9) >> 0x1f;
+            edgeIndex != startEdge;
+            edgeIndex = edgeIndex + 1 & (int)-((uVar5 ^ uVar9) - uVar9) >> 0x1f) {
+          bVar3 = (this->outline).verts[edgeIndex].isOriginalEdge;
+          pVVar7 = Outline::Add(&newOutline,(float *)((this->outline).verts + edgeIndex));
           pVVar7->isOriginalEdge = bVar3;
-          uVar5 = local_c90 - ((this->outline).numVerts - 1);
+          uVar5 = edgeIndex - ((this->outline).numVerts - 1);
           uVar9 = (int)uVar5 >> 0x1f;
         }
-        bVar3 = Outline::CloseOutline(&local_614);
+        bVar3 = Outline::CloseOutline(&newOutline);
         if (!bVar3) {
           uVar10 = tlPcGetTick();
           local_d50 = (uint)uVar10;
           local_d4c = (int)(uVar10 >> 0x20);
           uVar10 = *local_624;
-          *(uint *)local_624 = (local_d50 - (uint)local_62c) + (uint)*local_624;
+          *(uint *)local_624 = (local_d50 - (uint)timer) + (uint)*local_624;
           *(uint *)((int)local_624 + 4) =
                *(uint *)((int)local_624 + 4) +
-               ((local_d4c - local_62c._4_4_) - (uint)(local_d50 < (uint)local_62c)) +
-               (uint)CARRY4(local_d50 - (uint)local_62c,(uint)uVar10);
+               ((local_d4c - timer._4_4_) - (uint)(local_d50 < (uint)timer)) +
+               (uint)CARRY4(local_d50 - (uint)timer,(uint)uVar10);
           return 0;
         }
-        local_c90 = local_618;
-        while (local_c90 != param_3) {
+        edgeIndex = newEdgeIdx;
+        while (edgeIndex != startEdge) {
           iVar4 = (this->outline).numVerts - 1;
-          local_c94 = ((local_c90 - 1) - iVar4 &
-                      (int)-((local_c90 ^ (int)local_c90 >> 0x1f) - ((int)local_c90 >> 0x1f)) >>
-                      0x1f) + iVar4;
-          bVar3 = (this->outline).verts[local_c94].isOriginalEdge;
-          pVVar7 = Outline::Add(&local_c44,(float *)((this->outline).verts + local_c90));
+          nextEdgeIndex =
+               ((edgeIndex - 1) - iVar4 &
+               (int)-((edgeIndex ^ (int)edgeIndex >> 0x1f) - ((int)edgeIndex >> 0x1f)) >> 0x1f) +
+               iVar4;
+          bVar3 = (this->outline).verts[nextEdgeIndex].isOriginalEdge;
+          pVVar7 = Outline::Add(&otherOutline,(float *)((this->outline).verts + edgeIndex));
           pVVar7->isOriginalEdge = bVar3;
-          local_c90 = local_c94;
+          edgeIndex = nextEdgeIndex;
         }
-        bVar3 = Outline::CloseOutline(&local_c44);
+        bVar3 = Outline::CloseOutline(&otherOutline);
         if (!bVar3) {
           uVar10 = tlPcGetTick();
           local_d68 = (uint)uVar10;
           local_d64 = (int)(uVar10 >> 0x20);
           uVar10 = *local_624;
-          *(uint *)local_624 = (local_d68 - (uint)local_62c) + (uint)*local_624;
+          *(uint *)local_624 = (local_d68 - (uint)timer) + (uint)*local_624;
           *(uint *)((int)local_624 + 4) =
                *(uint *)((int)local_624 + 4) +
-               ((local_d64 - local_62c._4_4_) - (uint)(local_d68 < (uint)local_62c)) +
-               (uint)CARRY4(local_d68 - (uint)local_62c,(uint)uVar10);
+               ((local_d64 - timer._4_4_) - (uint)(local_d68 < (uint)timer)) +
+               (uint)CARRY4(local_d68 - (uint)timer,(uint)uVar10);
           return 0;
         }
-        iVar4 = InitSplitShards(this,&local_614,&local_c44,param_1,param_2);
+        iVar4 = InitSplitShards(this,&newOutline,&otherOutline,newShards,minShardSize);
         uVar10 = tlPcGetTick();
         local_d98 = (uint)uVar10;
         local_d94 = (int)(uVar10 >> 0x20);
         uVar10 = *local_624;
-        *(uint *)local_624 = (local_d98 - (uint)local_62c) + (uint)*local_624;
+        *(uint *)local_624 = (local_d98 - (uint)timer) + (uint)*local_624;
         *(uint *)((int)local_624 + 4) =
              *(uint *)((int)local_624 + 4) +
-             ((local_d94 - local_62c._4_4_) - (uint)(local_d98 < (uint)local_62c)) +
-             (uint)CARRY4(local_d98 - (uint)local_62c,(uint)uVar10);
+             ((local_d94 - timer._4_4_) - (uint)(local_d98 < (uint)timer)) +
+             (uint)CARRY4(local_d98 - (uint)timer,(uint)uVar10);
         return iVar4;
       }
-      pVVar7 = Outline::Add(&local_614,&local_c50,local_c8c);
+      pVVar7 = Outline::Add(&newOutline,&newDir,len_2);
       pVVar7->isOriginalEdge = false;
-      pVVar7 = Outline::Add(&local_c44,(float *)(local_614.verts + (local_614.numVerts - 1)));
+      pVVar7 = Outline::Add(&otherOutline,(float *)(newOutline.verts + (newOutline.numVerts - 1)));
       pVVar7->isOriginalEdge = false;
-      local_c9c = 5;
-      local_c95 = '\0';
-      for (local_ca0 = 0; local_ca0 < 5; local_ca0 = local_ca0 + 1) {
-        local_ca4 = flrand((clGlasses->renderer->shardSplitDir2->current).value,
-                           (clGlasses->renderer->shardSplitDir2->current).vector[1]);
-        local_ca4 = (float)(int)((-(uint)(local_c51 != '\0') & 0xfffffffe) + 1) * local_ca4;
-        local_cac = local_c50;
+      NUM_TRIES_2 = 5;
+      found = false;
+      for (i_2 = 0; i_2 < 5; i_2 = i_2 + 1) {
+        fVar11 = flrand((clGlasses->renderer->shardSplitDir2->current).value,
+                        (clGlasses->renderer->shardSplitDir2->current).vector[1]);
+        newAngle = (float)(int)((-(uint)(dirSign != false) & 0xfffffffe) + 1) * fVar11;
+        d = newDir;
         local_ca8 = local_c4c;
-        VectorAngleMultiply(&local_cac,local_ca4);
+        VectorAngleMultiply(&d,newAngle);
         bVar3 = Outline::DoesIntersect
-                          (&local_614,(float *)(local_614.verts + (local_614.numVerts - 1)),
-                           &local_cac,10000.0,local_c5c);
+                          (&newOutline,(float *)(newOutline.verts + (newOutline.numVerts - 1)),&d,
+                           10000.0,minEdgeLength);
         if ((!bVar3) &&
            (iVar4 = Outline::GetNumIntersections
-                              (&this->outline,(float *)(local_614.verts + (local_614.numVerts - 1)),
-                               &local_cac,&local_630,(int *)&local_618), iVar4 != 0)) {
-          local_c50 = local_cac;
+                              (&this->outline,
+                               (float *)(newOutline.verts + (newOutline.numVerts - 1)),&d,
+                               &newEdgeDist,&newEdgeIdx), iVar4 != 0)) {
+          newDir = d;
           local_c4c = local_ca8;
-          local_c95 = '\x01';
+          found = true;
           break;
         }
       }
-      local_c51 = '\x01' - (local_c51 != '\0');
-    } while (local_c95 != '\0');
+      dirSign = (bool)('\x01' - (dirSign != false));
+    } while (found != false);
     splitFailCount[1] = splitFailCount[1] + 1;
     uVar10 = tlPcGetTick();
     local_d90 = (uint)uVar10;
     local_d8c = (int)(uVar10 >> 0x20);
     uVar10 = *local_624;
-    *(uint *)local_624 = (local_d90 - (uint)local_62c) + (uint)*local_624;
+    *(uint *)local_624 = (local_d90 - (uint)timer) + (uint)*local_624;
     *(uint *)((int)local_624 + 4) =
          *(uint *)((int)local_624 + 4) +
-         ((local_d8c - local_62c._4_4_) - (uint)(local_d90 < (uint)local_62c)) +
-         (uint)CARRY4(local_d90 - (uint)local_62c,(uint)uVar10);
+         ((local_d8c - timer._4_4_) - (uint)(local_d90 < (uint)timer)) +
+         (uint)CARRY4(local_d90 - (uint)timer,(uint)uVar10);
   }
   return 0;
 }
@@ -4069,8 +4097,8 @@ GlassShard::Split(GlassShard *this,GlassShard **param_1,float param_2,uint param
 // 009ABC40  Chip  (glass/glass_shard.cpp:2688)
 
 int __thiscall
-GlassShard::Chip(GlassShard *this,EdgeDistance *param_1,float *param_2,GlassShard **param_3,
-                float param_4)
+GlassShard::Chip(GlassShard *this,EdgeDistance *dist,float *hitPoint,GlassShard **newShards,
+                float minShardSize)
 
 {
   bool bVar1;
@@ -4078,113 +4106,114 @@ GlassShard::Chip(GlassShard *this,EdgeDistance *param_1,float *param_2,GlassShar
   int iVar3;
   uint *puVar4;
   ulong64 uVar5;
+  float fVar6;
   uint local_ca0;
   uint local_c8c;
   int local_c88;
   uint local_c74;
   int local_c70;
-  Outline local_c4c;
+  uint nextEdgeIndex;
+  Outline outline1;
   Vertex local_c3c [64];
-  float local_63c;
+  float newDir;
   float local_638;
-  uint local_634;
-  float local_630;
-  undefined8 local_62c;
+  uint edgeIndex;
+  float newEdgeDist;
+  undefined8 timer;
   ulong64 *local_624;
-  float local_61c;
-  uint local_618;
-  Outline local_614;
+  float firstAngle;
+  int newEdgeIdx;
+  Outline outline2;
   Vertex local_604 [64];
   
   local_624 = &clGlasses->renderer->splitTimer;
-  local_62c = tlPcGetTick();
+  timer = tlPcGetTick();
   puVar4 = &clGlasses->renderer->numSplits;
   *puVar4 = *puVar4 + 1;
-  local_c4c.verts = local_c3c;
-  local_c4c.numVerts = '\0';
-  local_c4c.maxVerts = '@';
-  local_c4c.isClosed = false;
-  local_614.verts = local_604;
-  local_614.numVerts = '\0';
-  local_614.maxVerts = '@';
-  local_614.isClosed = false;
-  bVar1 = (this->outline).verts[param_1->edgeIndex].isOriginalEdge;
-  pVVar2 = Outline::Add(&local_c4c,(float *)((this->outline).verts + param_1->edgeIndex));
+  outline1.verts = local_c3c;
+  outline1.numVerts = '\0';
+  outline1.maxVerts = '@';
+  outline1.isClosed = false;
+  outline2.verts = local_604;
+  outline2.numVerts = '\0';
+  outline2.maxVerts = '@';
+  outline2.isClosed = false;
+  bVar1 = (this->outline).verts[dist->edgeIndex].isOriginalEdge;
+  pVVar2 = Outline::Add(&outline1,(float *)((this->outline).verts + dist->edgeIndex));
   pVVar2->isOriginalEdge = bVar1;
-  pVVar2 = Outline::Add(&local_c4c,param_1->closestPoint);
+  pVVar2 = Outline::Add(&outline1,dist->closestPoint);
   pVVar2->isOriginalEdge = false;
-  pVVar2 = Outline::Add(&local_614,param_1->closestPoint);
+  pVVar2 = Outline::Add(&outline2,dist->closestPoint);
   pVVar2->isOriginalEdge = false;
-  pVVar2 = Outline::Add(&local_c4c,param_2);
+  pVVar2 = Outline::Add(&outline1,hitPoint);
   pVVar2->isOriginalEdge = false;
-  pVVar2 = Outline::Add(&local_614,param_2);
+  pVVar2 = Outline::Add(&outline2,hitPoint);
   pVVar2->isOriginalEdge = false;
   iVar3 = irand(0,2);
-  local_61c = flrand(30.0,60.0);
-  local_61c = local_61c * (float)(int)((-(uint)(iVar3 != 0) & 2) - 1);
-  local_63c = local_c4c.verts[1].edge.dir[0];
-  local_638 = local_c4c.verts[1].edge.dir[1];
-  VectorAngleMultiply(&local_63c,local_61c);
-  local_630 = -1.0;
-  local_618 = 0xffffffff;
-  iVar3 = Outline::GetNumIntersections
-                    (&this->outline,param_2,&local_63c,&local_630,(int *)&local_618);
+  fVar6 = flrand(30.0,60.0);
+  firstAngle = fVar6 * (float)(int)((-(uint)(iVar3 != 0) & 2) - 1);
+  newDir = outline1.verts[1].edge.dir[0];
+  local_638 = outline1.verts[1].edge.dir[1];
+  VectorAngleMultiply(&newDir,firstAngle);
+  newEdgeDist = -1.0;
+  newEdgeIdx = -1;
+  iVar3 = Outline::GetNumIntersections(&this->outline,hitPoint,&newDir,&newEdgeDist,&newEdgeIdx);
   if (iVar3 < 1) {
     uVar5 = tlPcGetTick();
     local_c74 = (uint)uVar5;
     local_c70 = (int)(uVar5 >> 0x20);
     uVar5 = *local_624;
-    *(uint *)local_624 = (local_c74 - (uint)local_62c) + (uint)*local_624;
+    *(uint *)local_624 = (local_c74 - (uint)timer) + (uint)*local_624;
     *(uint *)((int)local_624 + 4) =
          *(uint *)((int)local_624 + 4) +
-         ((local_c70 - local_62c._4_4_) - (uint)(local_c74 < (uint)local_62c)) +
-         (uint)CARRY4(local_c74 - (uint)local_62c,(uint)uVar5);
+         ((local_c70 - timer._4_4_) - (uint)(local_c74 < (uint)timer)) +
+         (uint)CARRY4(local_c74 - (uint)timer,(uint)uVar5);
     iVar3 = 0;
   }
   else {
-    bVar1 = (this->outline).verts[local_618].isOriginalEdge;
-    pVVar2 = Outline::Add(&local_c4c,&local_63c,local_630);
+    bVar1 = (this->outline).verts[newEdgeIdx].isOriginalEdge;
+    pVVar2 = Outline::Add(&outline1,&newDir,newEdgeDist);
     pVVar2->isOriginalEdge = bVar1;
-    bVar1 = (this->outline).verts[local_618].isOriginalEdge;
-    pVVar2 = Outline::Add(&local_614,&local_63c,local_630);
+    bVar1 = (this->outline).verts[newEdgeIdx].isOriginalEdge;
+    pVVar2 = Outline::Add(&outline2,&newDir,newEdgeDist);
     pVVar2->isOriginalEdge = bVar1;
-    local_634 = local_618 + 1;
-    if ((this->outline).numVerts <= local_634) {
-      local_634 = 0;
+    edgeIndex = newEdgeIdx + 1;
+    if ((this->outline).numVerts <= edgeIndex) {
+      edgeIndex = 0;
     }
-    while (local_634 != param_1->edgeIndex) {
-      bVar1 = (this->outline).verts[local_634].isOriginalEdge;
-      pVVar2 = Outline::Add(&local_c4c,(float *)((this->outline).verts + local_634));
+    while (edgeIndex != dist->edgeIndex) {
+      bVar1 = (this->outline).verts[edgeIndex].isOriginalEdge;
+      pVVar2 = Outline::Add(&outline1,(float *)((this->outline).verts + edgeIndex));
       pVVar2->isOriginalEdge = bVar1;
-      local_634 = local_634 + 1;
-      if ((this->outline).numVerts <= local_634) {
-        local_634 = 0;
+      edgeIndex = edgeIndex + 1;
+      if ((this->outline).numVerts <= edgeIndex) {
+        edgeIndex = 0;
       }
     }
-    Outline::CloseOutline(&local_c4c);
-    local_634 = local_618;
-    while (local_634 != param_1->edgeIndex) {
-      local_ca0 = local_634;
-      if (local_634 == 0) {
+    Outline::CloseOutline(&outline1);
+    edgeIndex = newEdgeIdx;
+    while (edgeIndex != dist->edgeIndex) {
+      local_ca0 = edgeIndex;
+      if (edgeIndex == 0) {
         local_ca0 = (uint)(this->outline).numVerts;
       }
       local_ca0 = local_ca0 - 1;
       bVar1 = (this->outline).verts[local_ca0].isOriginalEdge;
-      pVVar2 = Outline::Add(&local_614,(float *)((this->outline).verts + local_634));
+      pVVar2 = Outline::Add(&outline2,(float *)((this->outline).verts + edgeIndex));
       pVVar2->isOriginalEdge = bVar1;
-      local_634 = local_ca0;
+      edgeIndex = local_ca0;
     }
-    Outline::CloseOutline(&local_614);
-    iVar3 = InitSplitShards(this,&local_c4c,&local_614,param_3,param_4);
+    Outline::CloseOutline(&outline2);
+    iVar3 = InitSplitShards(this,&outline1,&outline2,newShards,minShardSize);
     uVar5 = tlPcGetTick();
     local_c8c = (uint)uVar5;
     local_c88 = (int)(uVar5 >> 0x20);
     uVar5 = *local_624;
-    *(uint *)local_624 = (local_c8c - (uint)local_62c) + (uint)*local_624;
+    *(uint *)local_624 = (local_c8c - (uint)timer) + (uint)*local_624;
     *(uint *)((int)local_624 + 4) =
          *(uint *)((int)local_624 + 4) +
-         ((local_c88 - local_62c._4_4_) - (uint)(local_c8c < (uint)local_62c)) +
-         (uint)CARRY4(local_c8c - (uint)local_62c,(uint)uVar5);
+         ((local_c88 - timer._4_4_) - (uint)(local_c8c < (uint)timer)) +
+         (uint)CARRY4(local_c8c - (uint)timer,(uint)uVar5);
   }
   return iVar3;
 }
@@ -4194,7 +4223,8 @@ GlassShard::Chip(GlassShard *this,EdgeDistance *param_1,float *param_2,GlassShar
 
 int __thiscall
 GlassShard::InitSplitShards
-          (GlassShard *this,Outline *param_1,Outline *param_2,GlassShard **param_3,float param_4)
+          (GlassShard *this,Outline *outline1,Outline *outline2,GlassShard **newShards,
+          float minShardSize)
 
 {
   code *pcVar1;
@@ -4202,47 +4232,47 @@ GlassShard::InitSplitShards
   GlassShard *pGVar3;
   int iVar4;
   float fVar5;
-  float local_14 [4];
+  float otherOffset [4];
   
-  if ((((param_1->numVerts < 3) || (param_2->numVerts < 3)) || (0x16 < param_1->numVerts)) ||
-     (0x16 < param_2->numVerts)) {
+  if ((((outline1->numVerts < 3) || (outline2->numVerts < 3)) || (0x16 < outline1->numVerts)) ||
+     (0x16 < outline2->numVerts)) {
     splitFailCount[3] = splitFailCount[3] + 1;
   }
   else {
-    fVar5 = Outline::Area(param_1);
-    if (param_4 <= fVar5) {
-      fVar5 = Outline::Area(param_2);
-      if (param_4 <= fVar5) {
-        bVar2 = Outline::HasNarrowAngle(param_1);
-        if ((bVar2) || (bVar2 = Outline::HasNarrowAngle(param_2), bVar2)) {
+    fVar5 = Outline::Area(outline1);
+    if (minShardSize <= fVar5) {
+      fVar5 = Outline::Area(outline2);
+      if (minShardSize <= fVar5) {
+        bVar2 = Outline::HasNarrowAngle(outline1);
+        if ((bVar2) || (bVar2 = Outline::HasNarrowAngle(outline2), bVar2)) {
           splitFailCount[6] = splitFailCount[6] + 1;
         }
         else {
-          bVar2 = Outline::IsNarrow(param_1);
-          if ((!bVar2) && (bVar2 = Outline::IsNarrow(param_2), !bVar2)) {
+          bVar2 = Outline::IsNarrow(outline1);
+          if ((!bVar2) && (bVar2 = Outline::IsNarrow(outline2), !bVar2)) {
             pGVar3 = GlassRenderer::AllocShard(clGlasses->renderer);
-            *param_3 = pGVar3;
-            if (*param_3 == (GlassShard *)0x0) {
+            *newShards = pGVar3;
+            if (*newShards == (GlassShard *)0x0) {
               splitFailCount[5] = splitFailCount[5] + 1;
               return 0;
             }
-            local_14[0] = 0.0;
-            local_14[1] = 0.0;
-            Outline::Reverse(param_2);
-            bVar2 = Init(*param_3,this,param_2,local_14);
+            otherOffset[0] = 0.0;
+            otherOffset[1] = 0.0;
+            Outline::Reverse(outline2);
+            bVar2 = Init(*newShards,this,outline2,otherOffset);
             if (!bVar2) {
               splitFailCount[2] = splitFailCount[2] + 1;
-              GlassRenderer::FreeShard(clGlasses->renderer,*param_3);
+              GlassRenderer::FreeShard(clGlasses->renderer,*newShards);
               return 0;
             }
-            local_14[2] = 0.0;
-            local_14[3] = 0.0;
-            bVar2 = Init(this,this,param_1,local_14 + 2);
+            otherOffset[2] = 0.0;
+            otherOffset[3] = 0.0;
+            bVar2 = Init(this,this,outline1,otherOffset + 2);
             if (bVar2) {
               return 1;
             }
-            GlassRenderer::FreeShard(clGlasses->renderer,*param_3);
-            bVar2 = Init(this,this,param_2,local_14);
+            GlassRenderer::FreeShard(clGlasses->renderer,*newShards);
+            bVar2 = Init(this,this,outline2,otherOffset);
             if (!bVar2) {
               bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",
                                        0xb23,0,"Out of shard memory");
@@ -4276,52 +4306,52 @@ GlassShard::InitSplitShards
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __thiscall
-GlassShard::Init(GlassShard *this,GlassShard *param_1,Outline *param_2,float *param_3)
+GlassShard::Init(GlassShard *this,GlassShard *other,Outline *newOutline,float *offset)
 
 {
   float fVar1;
   bool bVar2;
-  uint local_118;
-  Triangles local_114;
+  uint i;
+  Triangles triangles;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Outline::Verify(param_2);
+  Outline::Verify(newOutline);
   FreeMemory(this);
-  Triangles::Triangles(&local_114,param_2);
-  bVar2 = Triangles::Triangulate(&local_114);
+  Triangles::Triangles(&triangles,newOutline);
+  bVar2 = Triangles::Triangulate(&triangles);
   if (bVar2) {
-    bVar2 = AllocateMemory(this,(uint)param_2->numVerts,&local_114);
+    bVar2 = AllocateMemory(this,(uint)newOutline->numVerts,&triangles);
     if (bVar2) {
-      Outline::operator=(&this->outline,param_2);
-      this->thickness = param_1->thickness;
-      this->uvScale = param_1->uvScale;
-      this->glassIndex = param_1->glassIndex;
-      this->axis[0][0] = param_1->axis[0][0];
-      this->axis[0][1] = param_1->axis[0][1];
-      this->axis[0][2] = param_1->axis[0][2];
-      this->axis[1][0] = param_1->axis[1][0];
-      this->axis[1][1] = param_1->axis[1][1];
-      this->axis[1][2] = param_1->axis[1][2];
-      this->axis[2][0] = param_1->axis[2][0];
-      this->axis[2][1] = param_1->axis[2][1];
-      this->axis[2][2] = param_1->axis[2][2];
-      this->origin[0] = param_1->origin[0];
-      this->origin[1] = param_1->origin[1];
-      this->origin[2] = param_1->origin[2];
-      fVar1 = *param_3;
+      Outline::operator=(&this->outline,newOutline);
+      this->thickness = other->thickness;
+      this->uvScale = other->uvScale;
+      this->glassIndex = other->glassIndex;
+      this->axis[0][0] = other->axis[0][0];
+      this->axis[0][1] = other->axis[0][1];
+      this->axis[0][2] = other->axis[0][2];
+      this->axis[1][0] = other->axis[1][0];
+      this->axis[1][1] = other->axis[1][1];
+      this->axis[1][2] = other->axis[1][2];
+      this->axis[2][0] = other->axis[2][0];
+      this->axis[2][1] = other->axis[2][1];
+      this->axis[2][2] = other->axis[2][2];
+      this->origin[0] = other->origin[0];
+      this->origin[1] = other->origin[1];
+      this->origin[2] = other->origin[2];
+      fVar1 = *offset;
       this->origin[0] = fVar1 * this->axis[0][0] + this->origin[0];
       this->origin[1] = fVar1 * this->axis[0][1] + this->origin[1];
       this->origin[2] = fVar1 * this->axis[0][2] + this->origin[2];
-      fVar1 = param_3[1];
+      fVar1 = offset[1];
       this->origin[0] = fVar1 * this->axis[1][0] + this->origin[0];
       this->origin[1] = fVar1 * this->axis[1][1] + this->origin[1];
       this->origin[2] = fVar1 * this->axis[1][2] + this->origin[2];
       this->isOriginalEdge = false;
-      local_118 = 0;
-      while ((local_118 < (this->outline).numVerts && (this->isOriginalEdge == false))) {
-        this->isOriginalEdge = (this->outline).verts[local_118].isOriginalEdge;
-        local_118 = local_118 + 1;
+      i = 0;
+      while ((i < (this->outline).numVerts && (this->isOriginalEdge == false))) {
+        this->isOriginalEdge = (this->outline).verts[i].isOriginalEdge;
+        i = i + 1;
       }
       bVar2 = true;
     }
@@ -4343,6 +4373,11 @@ float __thiscall GlassShard::GetMass(GlassShard *this)
 {
   float fVar1;
   float fVar2;
+  float GLASS_MIN_MASS;
+  float volume;
+  float GLASS_MAX_VOLUME;
+  float GLASS_MIN_VOLUME;
+  float GLASS_MAX_MASS;
   
   fVar1 = this->thickness;
   fVar2 = Outline::Area(&this->outline);
@@ -4364,23 +4399,24 @@ float __thiscall GlassShard::GetMass(GlassShard *this)
 
 // 009AC8B0  InitPhysicsObj  (glass/glass_shard.cpp:2922)
 
-bool __thiscall GlassShard::InitPhysicsObj(GlassShard *this,bool param_1)
+bool __thiscall GlassShard::InitPhysicsObj(GlassShard *this,bool enableCollisions)
 
 {
   bool bVar1;
   GlassShard *this_00;
   GlassPhysics *pGVar2;
-  gjk_base_t *pgVar3;
-  int iVar4;
-  float fVar5;
-  float *pfVar6;
-  float *pfVar7;
-  PhysPreset local_94;
-  float local_38 [3];
-  float local_2c [4];
-  broad_phase_base *local_1c;
-  float local_18 [3];
-  gjk_geom_list_t local_c;
+  gjk_base_t *geom;
+  int iVar3;
+  float mass;
+  float *localBBoxMin_00;
+  float *localBBoxMax_00;
+  GlassShard *other;
+  PhysPreset physPreset;
+  float localBBoxMin [3];
+  float quat [4];
+  broad_phase_base *bpb;
+  float localBBoxMax [3];
+  gjk_geom_list_t gjk_geom_list;
   
   this->timeUntilAction = (float)(clGlasses->renderer->maxShardLife->current).integer;
   if ((this->physObjId == 0) && (this->glassPhysics == (GlassPhysics *)0x0)) {
@@ -4393,51 +4429,52 @@ bool __thiscall GlassShard::InitPhysicsObj(GlassShard *this,bool param_1)
     bVar1 = true;
   }
   else {
-    if (param_1) {
+    if (enableCollisions) {
       bVar1 = GlassRenderer::AddColidingShard(clGlasses->renderer,this);
       if (bVar1) {
         this_00 = GlassRenderer::GetSmallestColidingShard(clGlasses->renderer);
         if (this_00 == this) {
           GlassRenderer::RemoveColidingShard(clGlasses->renderer,this);
-          param_1 = false;
+          enableCollisions = false;
         }
         else {
           DisableCollisions(this_00);
         }
       }
     }
-    GetLocalBBox(this,local_38,local_18);
-    if (param_1 == false) {
+    GetLocalBBox(this,localBBoxMin,localBBoxMax);
+    if (enableCollisions == false) {
       pGVar2 = GlassRenderer::AllocPhysics(clGlasses->renderer);
       this->glassPhysics = pGVar2;
       if (this->glassPhysics != (GlassPhysics *)0x0) {
-        pfVar7 = local_18;
-        pfVar6 = local_38;
-        fVar5 = GetMass(this);
+        localBBoxMax_00 = localBBoxMax;
+        localBBoxMin_00 = localBBoxMin;
+        mass = GetMass(this);
         GlassPhysics::CreateAxis
-                  (this->glassPhysics,this->origin,this->axis,vec3_origin,vec3_origin,fVar5,pfVar6,
-                   pfVar7);
+                  (this->glassPhysics,this->origin,this->axis,vec3_origin,vec3_origin,mass,
+                   localBBoxMin_00,localBBoxMax_00);
       }
       bVar1 = this->glassPhysics != (GlassPhysics *)0x0;
     }
     else {
-      Com_Memset(&local_94,0,0x54);
-      local_94.mass = GetMass(this);
-      local_94.friction = 0.5;
-      AxisToQuat(this->axis,local_2c);
+      Com_Memset(&physPreset,0,0x54);
+      physPreset.mass = GetMass(this);
+      physPreset.friction = 0.5;
+      AxisToQuat(this->axis,quat);
       Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
       Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-      local_c.m_first_geom = (gjk_base_t *)0x0;
-      local_c.m_geom_count = 0;
-      pgVar3 = create_aabb_gjk_geom
-                         (local_38,local_18,9,(gjk_collision_visitor *)&g_empty_collision_visitor);
-      gjk_geom_list_t::add_geom(&local_c,pgVar3);
-      iVar4 = Phys_ObjCreate(1,this->origin,local_2c,vec3_origin,&local_94,&local_c,true,-1);
-      this->physObjId = iVar4;
-      local_1c = *(broad_phase_base **)(this->physObjId + 0xa0);
-      aasap_list_remove(local_1c);
-      local_1c->m_env_collision_flags = local_1c->m_env_collision_flags & 0xffffffbf;
-      local_1c->m_my_collision_type_flags = local_1c->m_my_collision_type_flags | 0x100;
+      gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+      gjk_geom_list.m_geom_count = 0;
+      geom = create_aabb_gjk_geom
+                       (localBBoxMin,localBBoxMax,9,
+                        (gjk_collision_visitor *)&g_empty_collision_visitor);
+      gjk_geom_list_t::add_geom(&gjk_geom_list,geom);
+      iVar3 = Phys_ObjCreate(1,this->origin,quat,vec3_origin,&physPreset,&gjk_geom_list,true,-1);
+      this->physObjId = iVar3;
+      bpb = *(broad_phase_base **)(this->physObjId + 0xa0);
+      aasap_list_remove(bpb);
+      bpb->m_env_collision_flags = bpb->m_env_collision_flags & 0xffffffbf;
+      bpb->m_my_collision_type_flags = bpb->m_my_collision_type_flags | 0x100;
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
       bVar1 = true;
@@ -4448,6 +4485,11 @@ bool __thiscall GlassShard::InitPhysicsObj(GlassShard *this,bool param_1)
 
 
 // 009ACB90  DestroyPhysicsObj  (glass/glass_shard.cpp:2988)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall GlassShard::DestroyPhysicsObj(GlassShard *this)
 
@@ -4471,19 +4513,24 @@ void __thiscall GlassShard::DestroyPhysicsObj(GlassShard *this)
 
 // 009ACC30  DisableCollisions  (glass/glass_shard.cpp:3008)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __thiscall GlassShard::DisableCollisions(GlassShard *this)
 
 {
   code *pcVar1;
   bool bVar2;
   GlassPhysics *pGVar3;
-  float fVar4;
-  float *pfVar5;
-  float *pfVar6;
-  float local_34 [3];
-  float local_28 [3];
-  float local_1c [3];
-  float local_10 [3];
+  float mass;
+  float *localBBoxMin_00;
+  float *localBBoxMax_00;
+  float localBBoxMin [3];
+  float localBBoxMax [3];
+  float aVel [3];
+  float tVel [3];
   
   if (this->physObjId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0xbc1,0,
@@ -4512,15 +4559,16 @@ void __thiscall GlassShard::DisableCollisions(GlassShard *this)
   else {
     Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    Phys_ObjGetVelocities(this->physObjId,local_10,local_1c);
+    Phys_ObjGetVelocities(this->physObjId,tVel,aVel);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
-    GetLocalBBox(this,local_34,local_28);
-    pfVar6 = local_28;
-    pfVar5 = local_34;
-    fVar4 = GetMass(this);
+    GetLocalBBox(this,localBBoxMin,localBBoxMax);
+    localBBoxMax_00 = localBBoxMax;
+    localBBoxMin_00 = localBBoxMin;
+    mass = GetMass(this);
     GlassPhysics::CreateAxis
-              (this->glassPhysics,this->origin,this->axis,local_10,local_1c,fVar4,pfVar5,pfVar6);
+              (this->glassPhysics,this->origin,this->axis,tVel,aVel,mass,localBBoxMin_00,
+               localBBoxMax_00);
   }
   Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
@@ -4534,24 +4582,24 @@ void __thiscall GlassShard::DisableCollisions(GlassShard *this)
 
 // 009ACDB0  AddForce  (glass/glass_shard.cpp:3042)
 
-void __thiscall GlassShard::AddForce(GlassShard *this,float *param_1,float *param_2)
+void __thiscall GlassShard::AddForce(GlassShard *this,float *pos,float *forceIn)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_24;
-  float local_14;
+  float force;
   float local_10;
   float local_c;
-  float local_8;
+  float size;
   
-  local_8 = Vec3NormalizeTo(param_2,&local_14);
-  if (0.0 < local_8) {
-    local_24 = local_8;
-    if (500000.0 - local_8 < 0.0) {
+  size = Vec3NormalizeTo(forceIn,&force);
+  if (0.0 < size) {
+    local_24 = size;
+    if (500000.0 - size < 0.0) {
       local_24 = 500000.0;
     }
-    local_14 = local_24 * local_14;
+    force = local_24 * force;
     local_10 = local_24 * local_10;
     local_c = local_24 * local_c;
     if (this->physObjId == 0) {
@@ -4562,12 +4610,12 @@ void __thiscall GlassShard::AddForce(GlassShard *this,float *param_1,float *para
         (*pcVar1)();
         return;
       }
-      GlassPhysics::AddForce(this->glassPhysics,param_1,&local_14);
+      GlassPhysics::AddForce(this->glassPhysics,pos,&force);
     }
     else {
       Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
       Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-      Phys_ObjAddForce(this->physObjId,param_1,&local_14,false);
+      Phys_ObjAddForce(this->physObjId,pos,&force,false);
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
     }
@@ -4578,7 +4626,7 @@ void __thiscall GlassShard::AddForce(GlassShard *this,float *param_1,float *para
 
 // 009ACED0  SetVelocity  (glass/glass_shard.cpp:3066)
 
-void __thiscall GlassShard::SetVelocity(GlassShard *this,float *param_1,float *param_2)
+void __thiscall GlassShard::SetVelocity(GlassShard *this,float *t_vel,float *a_vel)
 
 {
   code *pcVar1;
@@ -4594,14 +4642,14 @@ void __thiscall GlassShard::SetVelocity(GlassShard *this,float *param_1,float *p
         return;
       }
     }
-    GlassPhysics::SetVelocity(this->glassPhysics,param_1);
-    GlassPhysics::SetAngularVelocity(this->glassPhysics,param_2);
+    GlassPhysics::SetVelocity(this->glassPhysics,t_vel);
+    GlassPhysics::SetAngularVelocity(this->glassPhysics,a_vel);
   }
   else {
     Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    Phys_ObjSetVelocity(this->physObjId,param_1);
-    Phys_ObjSetAngularVelocity(this->physObjId,param_2);
+    Phys_ObjSetVelocity(this->physObjId,t_vel);
+    Phys_ObjSetAngularVelocity(this->physObjId,a_vel);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
   }
@@ -4611,7 +4659,7 @@ void __thiscall GlassShard::SetVelocity(GlassShard *this,float *param_1,float *p
 
 // 009ACF90  LeaveOnEdge  (glass/glass_shard.cpp:3085)
 
-bool __thiscall GlassShard::LeaveOnEdge(GlassShard *this,float param_1)
+bool __thiscall GlassShard::LeaveOnEdge(GlassShard *this,float stickiness)
 
 {
   code *pcVar1;
@@ -4620,6 +4668,8 @@ bool __thiscall GlassShard::LeaveOnEdge(GlassShard *this,float param_1)
   float fVar4;
   float fVar5;
   bool local_14;
+  float prob;
+  bool ret;
   
   if ((this->isOriginalEdge == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0xc0e,0,
@@ -4628,9 +4678,9 @@ bool __thiscall GlassShard::LeaveOnEdge(GlassShard *this,float param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (0.0 < param_1) {
+  if (0.0 < stickiness) {
     fVar4 = EdgeRatio(this);
-    fVar4 = ((fVar4 - 0.15) * param_1) / 0.19999999;
+    fVar4 = ((fVar4 - 0.15) * stickiness) / 0.19999999;
     if ((fVar4 <= 0.0) || (fVar5 = random(), fVar4 <= fVar5)) {
       local_14 = false;
     }
@@ -4655,17 +4705,17 @@ bool __thiscall GlassShard::IsOnBottomEdge(GlassShard *this)
   uint uVar5;
   float local_5c;
   float local_58;
-  float local_38 [2];
+  float wPos [2];
   float local_30;
-  uint local_2c;
-  float local_28;
-  float local_24;
-  uint local_20;
-  float local_1c [2];
+  uint i_2;
+  float minOthers;
+  float minEdge;
+  uint edgeIdx2;
+  float wDir [2];
   float local_14;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  uint i;
+  uint edgeIdx;
+  int numEdges;
   
   if ((this->isOriginalEdge == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",0xc1c,0,
@@ -4675,48 +4725,48 @@ bool __thiscall GlassShard::IsOnBottomEdge(GlassShard *this)
     return (bool)uVar3;
   }
   if (ABS(this->axis[2][2]) < 0.01) {
-    local_8 = 0;
-    local_c = 0xffffffff;
-    for (local_10 = 0; local_10 < (this->outline).numVerts; local_10 = local_10 + 1) {
-      if ((this->outline).verts[local_10].isOriginalEdge != false) {
-        local_8 = local_8 + 1;
-        if (local_8 == 2) {
+    numEdges = 0;
+    edgeIdx = 0xffffffff;
+    for (i = 0; i < (this->outline).numVerts; i = i + 1) {
+      if ((this->outline).verts[i].isOriginalEdge != false) {
+        numEdges = numEdges + 1;
+        if (numEdges == 2) {
           return false;
         }
-        ToWorldDir(this,(this->outline).verts[local_10].edge.dir,local_1c,false);
+        ToWorldDir(this,(this->outline).verts[i].edge.dir,wDir,false);
         if (ABS(local_14) < 0.01) {
-          local_c = local_10;
+          edgeIdx = i;
         }
       }
     }
-    if (local_c != 0xffffffff) {
-      uVar4 = local_c - ((this->outline).numVerts - 1);
+    if (edgeIdx != 0xffffffff) {
+      uVar4 = edgeIdx - ((this->outline).numVerts - 1);
       uVar5 = (int)uVar4 >> 0x1f;
-      local_20 = local_c + 1 & (int)-((uVar4 ^ uVar5) - uVar5) >> 0x1f;
-      local_24 = 3.4028235e+38;
-      local_28 = 3.4028235e+38;
-      for (local_2c = 0; local_2c < (this->outline).numVerts; local_2c = local_2c + 1) {
-        ToWorldPos(this,(float *)((this->outline).verts + local_2c),local_38,false);
-        if ((local_2c == local_c) || (local_2c == local_20)) {
-          if (local_30 - local_24 < 0.0) {
+      edgeIdx2 = edgeIdx + 1 & (int)-((uVar4 ^ uVar5) - uVar5) >> 0x1f;
+      minEdge = 3.4028235e+38;
+      minOthers = 3.4028235e+38;
+      for (i_2 = 0; i_2 < (this->outline).numVerts; i_2 = i_2 + 1) {
+        ToWorldPos(this,(float *)((this->outline).verts + i_2),wPos,false);
+        if ((i_2 == edgeIdx) || (i_2 == edgeIdx2)) {
+          if (local_30 - minEdge < 0.0) {
             local_58 = local_30;
           }
           else {
-            local_58 = local_24;
+            local_58 = minEdge;
           }
-          local_24 = local_58;
+          minEdge = local_58;
         }
         else {
-          if (local_30 - local_28 < 0.0) {
+          if (local_30 - minOthers < 0.0) {
             local_5c = local_30;
           }
           else {
-            local_5c = local_28;
+            local_5c = minOthers;
           }
-          local_28 = local_5c;
+          minOthers = local_5c;
         }
       }
-      if (local_24 < local_28) {
+      if (minEdge < minOthers) {
         return true;
       }
     }
@@ -4730,13 +4780,13 @@ bool __thiscall GlassShard::IsOnBottomEdge(GlassShard *this)
 void __thiscall GlassShard::Recenter(GlassShard *this)
 
 {
-  float local_c;
+  float offset;
   float local_8;
   
-  Outline::Recenter(&this->outline,false,&local_c);
-  this->origin[0] = local_c * this->axis[0][0] + this->origin[0];
-  this->origin[1] = local_c * this->axis[0][1] + this->origin[1];
-  this->origin[2] = local_c * this->axis[0][2] + this->origin[2];
+  Outline::Recenter(&this->outline,false,&offset);
+  this->origin[0] = offset * this->axis[0][0] + this->origin[0];
+  this->origin[1] = offset * this->axis[0][1] + this->origin[1];
+  this->origin[2] = offset * this->axis[0][2] + this->origin[2];
   this->origin[0] = local_8 * this->axis[1][0] + this->origin[0];
   this->origin[1] = local_8 * this->axis[1][1] + this->origin[1];
   this->origin[2] = local_8 * this->axis[1][2] + this->origin[2];
@@ -4748,7 +4798,8 @@ void __thiscall GlassShard::Recenter(GlassShard *this)
 
 bool __thiscall
 GlassShard::InitPhysics
-          (GlassShard *this,bool param_1,float *param_2,float *param_3,float param_4,float param_5)
+          (GlassShard *this,bool enableCollisions,float *hitPos,float *hitDir,float glassSize,
+          float stickiness)
 
 {
   code *pcVar1;
@@ -4760,24 +4811,24 @@ GlassShard::InitPhysics
   float local_90;
   float local_74;
   float local_6c;
-  float local_4c;
+  float dir_2;
   float local_48;
   float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
+  float dist;
+  float distAtten;
+  float dir;
   float local_34;
   float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
+  float strength;
+  float EXTRA_VEL;
+  float velocity;
   float local_20;
   float local_1c;
-  float local_18;
-  float local_14;
+  float EXTRA_ANG_VEL;
+  float angVelocity;
   float local_10;
   float local_c;
-  float local_8;
+  float dirLengthSq;
   
   if ((this->outline).verts == (Vertex *)0x0) {
     Remove(this,REMOVE_OUT_OF_SHARD_MEMORY,true);
@@ -4785,33 +4836,33 @@ GlassShard::InitPhysics
   }
   else {
     this->delayedDrop = false;
-    if (((this->isOriginalEdge == false) || (param_5 <= 0.0)) ||
+    if (((this->isOriginalEdge == false) || (stickiness <= 0.0)) ||
        (bVar2 = IsOnBottomEdge(this), bVar2)) {
-      bVar2 = InitPhysicsObj(this,param_1);
+      bVar2 = InitPhysicsObj(this,enableCollisions);
       if (bVar2) {
-        local_8 = *param_3 * *param_3 + param_3[1] * param_3[1] + param_3[2] * param_3[2];
-        if (local_8 == 0.0) {
-          local_28 = (clGlasses->renderer->extraVelocity->current).value;
-          fVar4 = flrand(-local_28,local_28);
-          fVar5 = flrand(-local_28,local_28);
-          local_1c = flrand(-local_28,local_28);
-          local_24 = fVar4;
+        dirLengthSq = *hitDir * *hitDir + hitDir[1] * hitDir[1] + hitDir[2] * hitDir[2];
+        if (dirLengthSq == 0.0) {
+          EXTRA_VEL = (clGlasses->renderer->extraVelocity->current).value;
+          fVar4 = flrand(-EXTRA_VEL,EXTRA_VEL);
+          fVar5 = flrand(-EXTRA_VEL,EXTRA_VEL);
+          local_1c = flrand(-EXTRA_VEL,EXTRA_VEL);
+          velocity = fVar4;
           local_20 = fVar5;
         }
-        else if (local_8 <= 1.01) {
-          if ((param_4 <= 0.0) &&
+        else if (dirLengthSq <= 1.01) {
+          if ((glassSize <= 0.0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_shard.cpp",
                                        0xc9b,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             uVar3 = (*pcVar1)();
             return (bool)uVar3;
           }
-          local_4c = this->origin[0] - *param_2;
-          local_48 = this->origin[1] - param_2[1];
-          local_44 = this->origin[2] - param_2[2];
-          local_40 = Vec3Normalize(&local_4c);
+          dir_2 = this->origin[0] - *hitPos;
+          local_48 = this->origin[1] - hitPos[1];
+          local_44 = this->origin[2] - hitPos[2];
+          dist = Vec3Normalize(&dir_2);
           fVar4 = (clGlasses->renderer->forceOriginMult->current).value;
-          fVar5 = ((clGlasses->renderer->forceAttenuation->current).value * local_40) / param_4;
+          fVar5 = ((clGlasses->renderer->forceAttenuation->current).value * dist) / glassSize;
           local_90 = fVar5;
           if (0.0 <= fVar5 - 1.0) {
             local_90 = 1.0;
@@ -4822,22 +4873,22 @@ GlassShard::InitPhysics
           else {
             local_b4 = 0.25;
           }
-          local_3c = 1.0 - local_b4;
-          local_4c = local_3c * (fVar4 * local_4c + *param_3);
-          local_48 = local_3c * (fVar4 * local_48 + param_3[1]);
-          local_44 = local_3c * (fVar4 * local_44 + param_3[2]);
+          distAtten = 1.0 - local_b4;
+          dir_2 = distAtten * (fVar4 * dir_2 + *hitDir);
+          local_48 = distAtten * (fVar4 * local_48 + hitDir[1]);
+          local_44 = distAtten * (fVar4 * local_44 + hitDir[2]);
           local_1c = (clGlasses->renderer->forceMultiplier->current).value;
-          local_24 = local_1c * local_4c;
+          velocity = local_1c * dir_2;
           local_20 = local_1c * local_48;
           local_1c = local_1c * local_44;
         }
         else {
-          local_38 = this->origin[0] - *param_2;
-          local_34 = this->origin[1] - param_2[1];
-          local_30 = this->origin[2] - param_2[2];
-          Vec3Normalize(&local_38);
-          local_2c = SQRT(local_8) - 1.0;
-          fVar4 = local_2c * 2.0;
+          dir = this->origin[0] - *hitPos;
+          local_34 = this->origin[1] - hitPos[1];
+          local_30 = this->origin[2] - hitPos[2];
+          Vec3Normalize(&dir);
+          strength = SQRT(dirLengthSq) - 1.0;
+          fVar4 = strength * 2.0;
           local_6c = fVar4;
           if (0.0 <= fVar4 - 1.0) {
             local_6c = 1.0;
@@ -4848,21 +4899,21 @@ GlassShard::InitPhysics
           else {
             local_74 = 0.2;
           }
-          local_38 = local_74 * local_38;
+          dir = local_74 * dir;
           local_34 = local_74 * local_34;
           local_30 = local_74 * local_30;
           local_1c = (clGlasses->renderer->forceMultiplier->current).value;
-          local_24 = local_1c * local_38;
+          velocity = local_1c * dir;
           local_20 = local_1c * local_34;
           local_1c = local_1c * local_30;
         }
-        local_18 = (clGlasses->renderer->extraVelocity->current).value;
-        fVar4 = flrand(-local_18,local_18);
-        fVar5 = flrand(-local_18,local_18);
-        local_c = flrand(-local_18,local_18);
-        local_14 = fVar4;
+        EXTRA_ANG_VEL = (clGlasses->renderer->extraVelocity->current).value;
+        fVar4 = flrand(-EXTRA_ANG_VEL,EXTRA_ANG_VEL);
+        fVar5 = flrand(-EXTRA_ANG_VEL,EXTRA_ANG_VEL);
+        local_c = flrand(-EXTRA_ANG_VEL,EXTRA_ANG_VEL);
+        angVelocity = fVar4;
         local_10 = fVar5;
-        SetVelocity(this,&local_24,&local_14);
+        SetVelocity(this,&velocity,&angVelocity);
         UnEdge(this);
         bVar2 = true;
       }
@@ -4873,7 +4924,7 @@ GlassShard::InitPhysics
     }
     else {
       UpdateBBox(this);
-      bVar2 = LeaveOnEdge(this,param_5);
+      bVar2 = LeaveOnEdge(this,stickiness);
       if (!bVar2) {
         this->delayedDrop = true;
         fVar4 = flrand((clGlasses->renderer->timeUntilDropRange->current).value,
@@ -4895,52 +4946,54 @@ void __thiscall GlassShard::DrawOutline(GlassShard *this)
   char *pcVar1;
   int iVar2;
   float *local_3a8;
-  float local_348;
+  float bboxRatio;
+  float area2bboxRatio;
+  float val;
+  float localBBoxMin;
   float local_344;
   float local_340;
-  float local_33c;
+  float bboxExtent;
   float local_338;
   float local_334;
-  float local_330;
+  float localBBoxMax;
   float local_32c;
   float local_328;
-  uint local_324;
-  float local_320;
+  uint i_2;
+  float pos;
   float local_31c;
   undefined4 local_318;
-  float local_314;
+  float temp;
   float local_310;
   float local_30c;
-  uint local_308;
+  uint i;
   float afStack_304 [192];
   
-  for (local_308 = 0; local_308 < (this->outline).numVerts; local_308 = local_308 + 1) {
-    local_320 = (this->outline).verts[local_308].edge.origin[0];
-    local_31c = (this->outline).verts[local_308].edge.origin[1];
+  for (i = 0; i < (this->outline).numVerts; i = i + 1) {
+    pos = (this->outline).verts[i].edge.origin[0];
+    local_31c = (this->outline).verts[i].edge.origin[1];
     local_318 = 0;
-    local_314 = local_31c * this->axis[1][0] + local_320 * this->axis[0][0] + this->origin[0];
-    local_310 = local_31c * this->axis[1][1] + local_320 * this->axis[0][1] + this->origin[1];
-    local_30c = local_31c * this->axis[1][2] + local_320 * this->axis[0][2] + this->origin[2];
-    afStack_304[local_308 * 3] = this->axis[2][0] * 0.0 + local_314;
-    afStack_304[local_308 * 3 + 1] = this->axis[2][1] * 0.0 + local_310;
-    afStack_304[local_308 * 3 + 2] = this->axis[2][2] * 0.0 + local_30c;
+    temp = local_31c * this->axis[1][0] + pos * this->axis[0][0] + this->origin[0];
+    local_310 = local_31c * this->axis[1][1] + pos * this->axis[0][1] + this->origin[1];
+    local_30c = local_31c * this->axis[1][2] + pos * this->axis[0][2] + this->origin[2];
+    afStack_304[i * 3] = this->axis[2][0] * 0.0 + temp;
+    afStack_304[i * 3 + 1] = this->axis[2][1] * 0.0 + local_310;
+    afStack_304[i * 3 + 2] = this->axis[2][2] * 0.0 + local_30c;
   }
-  for (local_324 = 0; local_324 < (this->outline).numVerts; local_324 = local_324 + 1) {
-    if ((this->outline).verts[local_324].isOriginalEdge == false) {
+  for (i_2 = 0; i_2 < (this->outline).numVerts; i_2 = i_2 + 1) {
+    if ((this->outline).verts[i_2].isOriginalEdge == false) {
       local_3a8 = colorYellow;
     }
     else {
       local_3a8 = colorBlue;
     }
-    CL_AddDebugLine(afStack_304 + local_324 * 3,
-                    afStack_304 + ((local_324 + 1) % (uint)(this->outline).numVerts) * 3,local_3a8,1
-                    ,0);
+    CL_AddDebugLine(afStack_304 + i_2 * 3,
+                    afStack_304 + ((i_2 + 1) % (uint)(this->outline).numVerts) * 3,local_3a8,1,0);
   }
   if ((clGlasses->renderer->drawShardOutline->current).integer < 1) {
     if ((clGlasses->renderer->pickShards->current).enabled != false) {
       EdgeRatio(this);
-      GetLocalBBox(this,&local_348,&local_330);
-      local_33c = local_330 - local_348;
+      GetLocalBBox(this,&localBBoxMin,&localBBoxMax);
+      bboxExtent = localBBoxMax - localBBoxMin;
       local_338 = local_32c - local_344;
       local_334 = local_328 - local_340;
       Outline::Area(&this->outline);
@@ -4949,7 +5002,7 @@ void __thiscall GlassShard::DrawOutline(GlassShard *this)
       Outline::IsNarrow(&this->outline);
       pcVar1 = va("%d %.1f %.2f (%.2f %.2f) %d");
       CL_AddDebugString(this->origin,colorWhite,0.25,pcVar1,iVar2);
-      CL_AddDebugBox(this->axis,this->origin,&local_348,&local_330,colorBlue,1,0);
+      CL_AddDebugBox(this->axis,this->origin,&localBBoxMin,&localBBoxMax,colorBlue,1,0);
     }
   }
   else if (1 < (clGlasses->renderer->drawShardOutline->current).integer) {

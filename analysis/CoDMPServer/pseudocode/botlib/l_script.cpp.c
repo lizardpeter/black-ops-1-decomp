@@ -2,7 +2,7 @@
 
 // 0046F910  PS_CreatePunctuationTable  (botlib/l_script.cpp:94)
 
-void __cdecl PS_CreatePunctuationTable(script_s *param_1,punctuation_s *param_2)
+void __cdecl PS_CreatePunctuationTable(script_s *script,punctuation_s *punctuations)
 
 {
   char cVar1;
@@ -12,25 +12,25 @@ void __cdecl PS_CreatePunctuationTable(script_s *param_1,punctuation_s *param_2)
   punctuation_s *ppVar5;
   char *local_28;
   char *local_18;
-  punctuation_s *local_14;
-  int local_10;
-  punctuation_s *local_8;
+  punctuation_s *lastp;
+  int i;
+  punctuation_s *newp;
+  punctuation_s *p;
   
-  if (param_1->punctuationtable == (punctuation_s **)0x0) {
+  if (script->punctuationtable == (punctuation_s **)0x0) {
     pppVar2 = GetMemory(0x400);
-    param_1->punctuationtable = pppVar2;
+    script->punctuationtable = pppVar2;
   }
-  memset((uchar *)param_1->punctuationtable,'\0',0x400);
-  local_10 = 0;
+  memset((uchar *)script->punctuationtable,'\0',0x400);
+  i = 0;
   do {
-    if (param_2[local_10].p == (char *)0x0) {
+    if (punctuations[i].p == (char *)0x0) {
       return;
     }
-    ppVar5 = param_2 + local_10;
-    local_14 = (punctuation_s *)0x0;
-    for (local_8 = param_1->punctuationtable[*ppVar5->p]; local_8 != (punctuation_s *)0x0;
-        local_8 = local_8->next) {
-      local_18 = local_8->p;
+    ppVar5 = punctuations + i;
+    lastp = (punctuation_s *)0x0;
+    for (p = script->punctuationtable[*ppVar5->p]; p != (punctuation_s *)0x0; p = p->next) {
+      local_18 = p->p;
       pcVar3 = local_18 + 1;
       do {
         cVar1 = *local_18;
@@ -43,27 +43,27 @@ void __cdecl PS_CreatePunctuationTable(script_s *param_1,punctuation_s *param_2)
         local_28 = local_28 + 1;
       } while (cVar1 != '\0');
       if ((uint)((int)local_18 - (int)pcVar3) < (uint)((int)local_28 - (int)pcVar4)) {
-        ppVar5->next = local_8;
-        if (local_14 == (punctuation_s *)0x0) {
-          param_1->punctuationtable[*ppVar5->p] = ppVar5;
+        ppVar5->next = p;
+        if (lastp == (punctuation_s *)0x0) {
+          script->punctuationtable[*ppVar5->p] = ppVar5;
         }
         else {
-          local_14->next = ppVar5;
+          lastp->next = ppVar5;
         }
         break;
       }
-      local_14 = local_8;
+      lastp = p;
     }
-    if (local_8 == (punctuation_s *)0x0) {
+    if (p == (punctuation_s *)0x0) {
       ppVar5->next = (punctuation_s *)0x0;
-      if (local_14 == (punctuation_s *)0x0) {
-        param_1->punctuationtable[*ppVar5->p] = ppVar5;
+      if (lastp == (punctuation_s *)0x0) {
+        script->punctuationtable[*ppVar5->p] = ppVar5;
       }
       else {
-        local_14->next = ppVar5;
+        lastp->next = ppVar5;
       }
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -72,15 +72,16 @@ void __cdecl PS_CreatePunctuationTable(script_s *param_1,punctuation_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl ScriptError(script_s *param_1,char *param_2)
+void __cdecl ScriptError(script_s *script,char *str)
 
 {
-  char local_40c [1028];
+  char *ap;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1->flags & 1U) == 0) {
-    _vsnprintf(local_40c,0x400,param_2,&stack0x0000000c);
+  if ((script->flags & 1U) == 0) {
+    _vsnprintf(text,0x400,str,&stack0x0000000c);
     Com_PrintError(0x18,"Error: file %s, line %d: %s\n");
   }
   return;
@@ -91,15 +92,16 @@ void __cdecl ScriptError(script_s *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl ScriptWarning(script_s *param_1,char *param_2)
+void __cdecl ScriptWarning(script_s *script,char *str)
 
 {
-  char local_40c [1028];
+  char *ap;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1->flags & 2U) == 0) {
-    _vsnprintf(local_40c,0x400,param_2,&stack0x0000000c);
+  if ((script->flags & 2U) == 0) {
+    _vsnprintf(text,0x400,str,&stack0x0000000c);
     Com_PrintWarning(0x18,"Warning: file %s, line %d: %s\n");
   }
   return;
@@ -108,358 +110,362 @@ void __cdecl ScriptWarning(script_s *param_1,char *param_2)
 
 // 00471210  SetScriptPunctuations  (botlib/l_script.cpp:185)
 
-void __cdecl SetScriptPunctuations(script_s *param_1)
+void __cdecl SetScriptPunctuations(script_s *script)
 
 {
-  PS_CreatePunctuationTable(param_1,default_punctuations);
-  param_1->punctuations = default_punctuations;
+  PS_CreatePunctuationTable(script,default_punctuations);
+  script->punctuations = default_punctuations;
   return;
 }
 
 
 // 0046FBB0  PS_ReadWhiteSpace  (botlib/l_script.cpp:200)
 
-int __cdecl PS_ReadWhiteSpace(script_s *param_1)
+int __cdecl PS_ReadWhiteSpace(script_s *script)
 
 {
   do {
     while( true ) {
-      while (*param_1->script_p < '!') {
-        if (*param_1->script_p == '\0') {
+      while (*script->script_p < '!') {
+        if (*script->script_p == '\0') {
           return 0;
         }
-        if (*param_1->script_p == '\n') {
-          param_1->line = param_1->line + 1;
+        if (*script->script_p == '\n') {
+          script->line = script->line + 1;
         }
-        param_1->script_p = param_1->script_p + 1;
+        script->script_p = script->script_p + 1;
       }
-      if (*param_1->script_p != '/') {
+      if (*script->script_p != '/') {
         return 1;
       }
-      if (param_1->script_p[1] == '/') break;
-      if (param_1->script_p[1] != '*') {
+      if (script->script_p[1] == '/') break;
+      if (script->script_p[1] != '*') {
         return 1;
       }
-      param_1->script_p = param_1->script_p + 1;
+      script->script_p = script->script_p + 1;
       do {
-        param_1->script_p = param_1->script_p + 1;
-        if (*param_1->script_p == '\0') {
+        script->script_p = script->script_p + 1;
+        if (*script->script_p == '\0') {
           return 0;
         }
-        if (*param_1->script_p == '\n') {
-          param_1->line = param_1->line + 1;
+        if (*script->script_p == '\n') {
+          script->line = script->line + 1;
         }
-      } while ((*param_1->script_p != '*') || (param_1->script_p[1] != '/'));
-      param_1->script_p = param_1->script_p + 1;
-      if (*param_1->script_p == '\0') {
+      } while ((*script->script_p != '*') || (script->script_p[1] != '/'));
+      script->script_p = script->script_p + 1;
+      if (*script->script_p == '\0') {
         return 0;
       }
-      param_1->script_p = param_1->script_p + 1;
-      if (*param_1->script_p == '\0') {
+      script->script_p = script->script_p + 1;
+      if (*script->script_p == '\0') {
         return 0;
       }
     }
-    param_1->script_p = param_1->script_p + 1;
+    script->script_p = script->script_p + 1;
     do {
-      param_1->script_p = param_1->script_p + 1;
-      if (*param_1->script_p == '\0') {
+      script->script_p = script->script_p + 1;
+      if (*script->script_p == '\0') {
         return 0;
       }
-    } while (*param_1->script_p != '\n');
-    param_1->line = param_1->line + 1;
-    param_1->script_p = param_1->script_p + 1;
-  } while (*param_1->script_p != '\0');
+    } while (*script->script_p != '\n');
+    script->line = script->line + 1;
+    script->script_p = script->script_p + 1;
+  } while (*script->script_p != '\0');
   return 0;
 }
 
 
 // 0046FD80  PS_ReadEscapeCharacter  (botlib/l_script.cpp:269)
 
-int __cdecl PS_ReadEscapeCharacter(script_s *param_1,char *param_2)
+int __cdecl PS_ReadEscapeCharacter(script_s *script,char *ch)
 
 {
   int iVar1;
-  int local_10;
-  int local_c;
+  int c;
+  int val;
+  int i;
   
-  param_1->script_p = param_1->script_p + 1;
-  switch(*param_1->script_p) {
+  script->script_p = script->script_p + 1;
+  switch(*script->script_p) {
   case '\"':
-    local_10._0_1_ = '\"';
+    c._0_1_ = '\"';
     break;
   default:
-    if ((*param_1->script_p < '0') || ('9' < *param_1->script_p)) {
-      ScriptError(param_1,"unknown escape char");
+    if ((*script->script_p < '0') || ('9' < *script->script_p)) {
+      ScriptError(script,"unknown escape char");
     }
-    local_c = 0;
-    while ((iVar1 = (int)*param_1->script_p, 0x2f < iVar1 && (iVar1 < 0x3a))) {
-      local_c = local_c * 10 + iVar1 + -0x30;
-      param_1->script_p = param_1->script_p + 1;
+    val = 0;
+    while ((iVar1 = (int)*script->script_p, 0x2f < iVar1 && (iVar1 < 0x3a))) {
+      val = val * 10 + iVar1 + -0x30;
+      script->script_p = script->script_p + 1;
     }
-    param_1->script_p = param_1->script_p + -1;
-    if (0xff < local_c) {
-      ScriptWarning(param_1,"too large value in escape character");
-      local_c = 0xff;
+    script->script_p = script->script_p + -1;
+    if (0xff < val) {
+      ScriptWarning(script,"too large value in escape character");
+      val = 0xff;
     }
-    local_10._0_1_ = (char)local_c;
+    c._0_1_ = (char)val;
     break;
   case '\'':
-    local_10._0_1_ = '\'';
+    c._0_1_ = '\'';
     break;
   case '?':
-    local_10._0_1_ = '?';
+    c._0_1_ = '?';
     break;
   case '\\':
-    local_10._0_1_ = '\\';
+    c._0_1_ = '\\';
     break;
   case 'a':
-    local_10._0_1_ = '\a';
+    c._0_1_ = '\a';
     break;
   case 'b':
-    local_10._0_1_ = '\b';
+    c._0_1_ = '\b';
     break;
   case 'f':
-    local_10._0_1_ = '\f';
+    c._0_1_ = '\f';
     break;
   case 'n':
-    local_10._0_1_ = '\n';
+    c._0_1_ = '\n';
     break;
   case 'r':
-    local_10._0_1_ = '\r';
+    c._0_1_ = '\r';
     break;
   case 't':
-    local_10._0_1_ = '\t';
+    c._0_1_ = '\t';
     break;
   case 'v':
-    local_10._0_1_ = '\v';
+    c._0_1_ = '\v';
     break;
   case 'x':
-    param_1->script_p = param_1->script_p + 1;
-    local_c = 0;
+    script->script_p = script->script_p + 1;
+    val = 0;
     do {
-      local_10 = (int)*param_1->script_p;
-      if ((local_10 < 0x30) || (0x39 < local_10)) {
-        if ((local_10 < 0x41) || (0x5a < local_10)) {
-          if ((local_10 < 0x61) || (0x7a < local_10)) goto LAB_0046fee1;
-          local_10 = local_10 + -0x57;
+      iVar1 = (int)*script->script_p;
+      if ((iVar1 < 0x30) || (0x39 < iVar1)) {
+        if ((iVar1 < 0x41) || (0x5a < iVar1)) {
+          if ((iVar1 < 0x61) || (0x7a < iVar1)) goto LAB_0046fee1;
+          c = iVar1 + -0x57;
         }
         else {
-          local_10 = local_10 + -0x37;
+          c = iVar1 + -0x37;
         }
       }
       else {
-        local_10 = local_10 + -0x30;
+        c = iVar1 + -0x30;
       }
-      local_c = local_c * 0x10 + local_10;
-      param_1->script_p = param_1->script_p + 1;
+      val = val * 0x10 + c;
+      script->script_p = script->script_p + 1;
     } while( true );
   }
 LAB_0046ffda:
-  param_1->script_p = param_1->script_p + 1;
-  *param_2 = (char)local_10;
+  script->script_p = script->script_p + 1;
+  *ch = (char)c;
   return 1;
 LAB_0046fee1:
-  param_1->script_p = param_1->script_p + -1;
-  if (0xff < local_c) {
-    ScriptWarning(param_1,"too large value in escape character");
-    local_c = 0xff;
+  script->script_p = script->script_p + -1;
+  if (0xff < val) {
+    ScriptWarning(script,"too large value in escape character");
+    val = 0xff;
   }
-  local_10._0_1_ = (char)local_c;
+  c._0_1_ = (char)val;
   goto LAB_0046ffda;
 }
 
 
 // 00470090  PS_ReadString  (botlib/l_script.cpp:378)
 
-int __cdecl PS_ReadString(script_s *param_1,token_s *param_2,int param_3)
+int __cdecl PS_ReadString(script_s *script,token_s *token,int quote)
 
 {
   char *pcVar1;
   int iVar2;
   int iVar3;
-  int local_c;
+  int tmpline;
+  int len;
+  char *tmpscript_p;
   
-  if (param_3 == 0x22) {
-    param_2->type = 1;
+  if (quote == 0x22) {
+    token->type = 1;
   }
-  else if (param_3 == 0x27) {
-    param_2->type = 2;
+  else if (quote == 0x27) {
+    token->type = 2;
   }
-  else if (param_3 == 0x23) {
-    param_2->type = 6;
-    param_1->script_p = param_1->script_p + 1;
-    param_3 = 0x22;
+  else if (quote == 0x23) {
+    token->type = 6;
+    script->script_p = script->script_p + 1;
+    quote = 0x22;
   }
-  if (param_2->type == 6) {
-    param_2->string[0] = -1;
-    local_c = 1;
-    param_1->script_p = param_1->script_p + 1;
+  if (token->type == 6) {
+    token->string[0] = -1;
+    len = 1;
+    script->script_p = script->script_p + 1;
   }
   else {
-    param_2->string[0] = *param_1->script_p;
-    local_c = 1;
-    param_1->script_p = param_1->script_p + 1;
+    token->string[0] = *script->script_p;
+    len = 1;
+    script->script_p = script->script_p + 1;
   }
   while( true ) {
     while( true ) {
       while( true ) {
-        if (0x3fd < local_c) {
-          ScriptError(param_1,"string longer than MAX_TOKEN = %d");
+        if (0x3fd < len) {
+          ScriptError(script,"string longer than MAX_TOKEN = %d");
           return 0;
         }
-        if ((*param_1->script_p != '\\') || ((param_1->flags & 8U) != 0)) break;
-        iVar2 = PS_ReadEscapeCharacter(param_1,param_2->string + local_c);
+        if ((*script->script_p != '\\') || ((script->flags & 8U) != 0)) break;
+        iVar2 = PS_ReadEscapeCharacter(script,token->string + len);
         if (iVar2 == 0) {
-          param_2->string[local_c] = '\0';
+          token->string[len] = '\0';
           return 0;
         }
-        local_c = local_c + 1;
+        len = len + 1;
       }
-      if (*param_1->script_p == param_3) break;
-      if (*param_1->script_p == '\0') {
-        param_2->string[local_c] = '\0';
-        ScriptError(param_1,"missing trailing quote");
+      if (*script->script_p == quote) break;
+      if (*script->script_p == '\0') {
+        token->string[len] = '\0';
+        ScriptError(script,"missing trailing quote");
         return 0;
       }
-      if (*param_1->script_p == '\n') {
-        param_2->string[local_c] = '\0';
-        ScriptError(param_1,"newline inside string %s");
+      if (*script->script_p == '\n') {
+        token->string[len] = '\0';
+        ScriptError(script,"newline inside string %s");
         return 0;
       }
-      param_2->string[local_c] = *param_1->script_p;
-      local_c = local_c + 1;
-      param_1->script_p = param_1->script_p + 1;
+      token->string[len] = *script->script_p;
+      len = len + 1;
+      script->script_p = script->script_p + 1;
     }
-    param_1->script_p = param_1->script_p + 1;
-    if ((param_1->flags & 4U) != 0) break;
-    pcVar1 = param_1->script_p;
-    iVar2 = param_1->line;
-    iVar3 = PS_ReadWhiteSpace(param_1);
+    script->script_p = script->script_p + 1;
+    if ((script->flags & 4U) != 0) break;
+    pcVar1 = script->script_p;
+    iVar2 = script->line;
+    iVar3 = PS_ReadWhiteSpace(script);
     if (iVar3 == 0) {
-      param_1->script_p = pcVar1;
-      param_1->line = iVar2;
+      script->script_p = pcVar1;
+      script->line = iVar2;
       break;
     }
-    if (*param_1->script_p != param_3) {
-      param_1->script_p = pcVar1;
-      param_1->line = iVar2;
+    if (*script->script_p != quote) {
+      script->script_p = pcVar1;
+      script->line = iVar2;
       break;
     }
-    param_1->script_p = param_1->script_p + 1;
+    script->script_p = script->script_p + 1;
   }
-  if (param_2->type == 6) {
-    param_2->string[local_c] = -1;
+  if (token->type == 6) {
+    token->string[len] = -1;
   }
   else {
-    param_2->string[local_c] = (char)param_3;
+    token->string[len] = (char)quote;
   }
-  local_c = local_c + 1;
-  param_2->string[local_c] = '\0';
-  param_2->subtype = local_c;
+  len = len + 1;
+  token->string[len] = '\0';
+  token->subtype = len;
   return 1;
 }
 
 
 // 00470340  PS_ReadName  (botlib/l_script.cpp:494)
 
-int __cdecl PS_ReadName(script_s *param_1,token_s *param_2)
+int __cdecl PS_ReadName(script_s *script,token_s *token)
 
 {
   char cVar1;
-  int local_8;
+  char c;
+  int len;
   
-  local_8 = 0;
-  param_2->type = 4;
+  len = 0;
+  token->type = 4;
   do {
-    param_2->string[local_8] = *param_1->script_p;
-    local_8 = local_8 + 1;
-    param_1->script_p = param_1->script_p + 1;
-    if (0x3ff < local_8) {
-      ScriptError(param_1,"name longer than MAX_TOKEN = %d");
+    token->string[len] = *script->script_p;
+    len = len + 1;
+    script->script_p = script->script_p + 1;
+    if (0x3ff < len) {
+      ScriptError(script,"name longer than MAX_TOKEN = %d");
       return 0;
     }
-    cVar1 = *param_1->script_p;
+    cVar1 = *script->script_p;
   } while (((('`' < cVar1) && (cVar1 < '{')) || (('@' < cVar1 && (cVar1 < '[')))) ||
           ((('/' < cVar1 && (cVar1 < ':')) || (cVar1 == '_'))));
-  param_2->string[local_8] = '\0';
-  param_2->subtype = local_8;
+  token->string[len] = '\0';
+  token->subtype = len;
   return 1;
 }
 
 
 // 00470420  NumberValue  (botlib/l_script.cpp:523)
 
-void __cdecl NumberValue(char *param_1,int param_2,ulong *param_3,double *param_4)
+void __cdecl NumberValue(char *string,int subtype,ulong *intvalue,double *floatvalue)
 
 {
   ulong local_24;
-  uint local_8;
+  ulong dotfound;
   
-  local_8 = 0;
-  *param_3 = 0;
-  *param_4 = 0.0;
-  if ((param_2 & 0x800U) == 0) {
-    if ((param_2 & 8U) == 0) {
-      if ((param_2 & 0x100U) == 0) {
-        if ((param_2 & 0x200U) == 0) {
-          if ((param_2 & 0x400U) != 0) {
-            for (param_1 = param_1 + 2; *param_1 != '\0'; param_1 = param_1 + 1) {
-              *param_3 = *param_1 + -0x30 + *param_3 * 2;
+  dotfound = 0;
+  *intvalue = 0;
+  *floatvalue = 0.0;
+  if ((subtype & 0x800U) == 0) {
+    if ((subtype & 8U) == 0) {
+      if ((subtype & 0x100U) == 0) {
+        if ((subtype & 0x200U) == 0) {
+          if ((subtype & 0x400U) != 0) {
+            for (string = string + 2; *string != '\0'; string = string + 1) {
+              *intvalue = *string + -0x30 + *intvalue * 2;
             }
-            *param_4 = (double)*param_3;
+            *floatvalue = (double)*intvalue;
           }
         }
         else {
-          while (param_1 = param_1 + 1, *param_1 != '\0') {
-            *param_3 = *param_1 + -0x30 + *param_3 * 8;
+          while (string = string + 1, *string != '\0') {
+            *intvalue = *string + -0x30 + *intvalue * 8;
           }
-          *param_4 = (double)*param_3;
+          *floatvalue = (double)*intvalue;
         }
       }
       else {
-        for (param_1 = param_1 + 2; *param_1 != '\0'; param_1 = param_1 + 1) {
-          *param_3 = *param_3 << 4;
-          if ((*param_1 < 'a') || ('f' < *param_1)) {
-            if ((*param_1 < 'A') || ('F' < *param_1)) {
-              *param_3 = *param_1 + -0x30 + *param_3;
+        for (string = string + 2; *string != '\0'; string = string + 1) {
+          *intvalue = *intvalue << 4;
+          if ((*string < 'a') || ('f' < *string)) {
+            if ((*string < 'A') || ('F' < *string)) {
+              *intvalue = *string + -0x30 + *intvalue;
             }
             else {
-              *param_3 = *param_1 + -0x37 + *param_3;
+              *intvalue = *string + -0x37 + *intvalue;
             }
           }
           else {
-            *param_3 = *param_1 + -0x57 + *param_3;
+            *intvalue = *string + -0x57 + *intvalue;
           }
         }
-        *param_4 = (double)*param_3;
+        *floatvalue = (double)*intvalue;
       }
     }
     else {
-      for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-        *param_3 = *param_3 * 10 + -0x30 + (int)*param_1;
+      for (; *string != '\0'; string = string + 1) {
+        *intvalue = *intvalue * 10 + -0x30 + (int)*string;
       }
-      *param_4 = (double)*param_3;
+      *floatvalue = (double)*intvalue;
     }
   }
   else {
-    for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-      if (*param_1 == '.') {
-        if (local_8 != 0) {
+    for (; *string != '\0'; string = string + 1) {
+      if (*string == '.') {
+        if (dotfound != 0) {
           return;
         }
-        local_8 = 10;
-        param_1 = param_1 + 1;
+        dotfound = 10;
+        string = string + 1;
       }
-      if (local_8 == 0) {
-        *param_4 = *param_4 * 10.0 + (double)(*param_1 + -0x30);
+      if (dotfound == 0) {
+        *floatvalue = *floatvalue * 10.0 + (double)(*string + -0x30);
       }
       else {
-        *param_4 = (double)(*param_1 + -0x30) / (double)local_8 + *param_4;
-        local_8 = local_8 * 10;
+        *floatvalue = (double)(*string + -0x30) / (double)dotfound + *floatvalue;
+        dotfound = dotfound * 10;
       }
     }
-    local_24 = (ulong)(longlong)ROUND(*param_4);
-    *param_3 = local_24;
+    local_24 = (ulong)(longlong)ROUND(*floatvalue);
+    *intvalue = local_24;
   }
   return;
 }
@@ -467,86 +473,87 @@ void __cdecl NumberValue(char *param_1,int param_2,ulong *param_3,double *param_
 
 // 004706F0  PS_ReadNumber  (botlib/l_script.cpp:602)
 
-int __cdecl PS_ReadNumber(script_s *param_1,token_s *param_2)
+int __cdecl PS_ReadNumber(script_s *script,token_s *token)
 
 {
   char cVar1;
   bool bVar2;
   bool bVar3;
-  char local_11;
-  int local_10;
-  int local_c;
+  int octal;
+  char c;
+  int len;
+  int i;
+  int dot;
   
-  local_10 = 0;
-  param_2->type = 3;
-  if ((*param_1->script_p == '0') &&
-     ((param_1->script_p[1] == 'x' || (param_1->script_p[1] == 'X')))) {
-    param_2->string[0] = *param_1->script_p;
-    param_1->script_p = param_1->script_p + 1;
-    param_2->string[1] = *param_1->script_p;
-    local_10 = 2;
-    param_1->script_p = param_1->script_p + 1;
-    local_11 = *param_1->script_p;
+  len = 0;
+  token->type = 3;
+  if ((*script->script_p == '0') && ((script->script_p[1] == 'x' || (script->script_p[1] == 'X'))))
+  {
+    token->string[0] = *script->script_p;
+    script->script_p = script->script_p + 1;
+    token->string[1] = *script->script_p;
+    len = 2;
+    script->script_p = script->script_p + 1;
+    c = *script->script_p;
     while( true ) {
-      if ((((local_11 < '0') || ('9' < local_11)) && ((local_11 < 'a' || ('f' < local_11)))) &&
-         ((local_11 < 'A' || ('A' < local_11)))) {
-        param_2->subtype = param_2->subtype | 0x100;
+      if ((((c < '0') || ('9' < c)) && ((c < 'a' || ('f' < c)))) && ((c < 'A' || ('A' < c)))) {
+        token->subtype = token->subtype | 0x100;
         goto LAB_00470a76;
       }
-      param_2->string[local_10] = *param_1->script_p;
-      local_10 = local_10 + 1;
-      param_1->script_p = param_1->script_p + 1;
-      if (0x3ff < local_10) break;
-      local_11 = *param_1->script_p;
+      token->string[len] = *script->script_p;
+      len = len + 1;
+      script->script_p = script->script_p + 1;
+      if (0x3ff < len) break;
+      c = *script->script_p;
     }
-    ScriptError(param_1,"hexadecimal number longer than MAX_TOKEN = %d");
+    ScriptError(script,"hexadecimal number longer than MAX_TOKEN = %d");
   }
   else {
-    if ((*param_1->script_p == '0') &&
-       ((param_1->script_p[1] == 'b' || (param_1->script_p[1] == 'B')))) {
-      param_2->string[0] = *param_1->script_p;
-      param_1->script_p = param_1->script_p + 1;
-      param_2->string[1] = *param_1->script_p;
-      local_10 = 2;
-      param_1->script_p = param_1->script_p + 1;
-      local_11 = *param_1->script_p;
-      while ((local_11 == '0' || (local_11 == '1'))) {
-        param_2->string[local_10] = *param_1->script_p;
-        local_10 = local_10 + 1;
-        param_1->script_p = param_1->script_p + 1;
-        if (0x3ff < local_10) {
-          ScriptError(param_1,"binary number longer than MAX_TOKEN = %d");
+    if ((*script->script_p == '0') && ((script->script_p[1] == 'b' || (script->script_p[1] == 'B')))
+       ) {
+      token->string[0] = *script->script_p;
+      script->script_p = script->script_p + 1;
+      token->string[1] = *script->script_p;
+      len = 2;
+      script->script_p = script->script_p + 1;
+      c = *script->script_p;
+      while ((c == '0' || (c == '1'))) {
+        token->string[len] = *script->script_p;
+        len = len + 1;
+        script->script_p = script->script_p + 1;
+        if (0x3ff < len) {
+          ScriptError(script,"binary number longer than MAX_TOKEN = %d");
           return 0;
         }
-        local_11 = *param_1->script_p;
+        c = *script->script_p;
       }
-      param_2->subtype = param_2->subtype | 0x400;
+      token->subtype = token->subtype | 0x400;
 LAB_00470a76:
-      for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-        cVar1 = *param_1->script_p;
-        if (((cVar1 == 'l') || (cVar1 == 'L')) && ((param_2->subtype & 0x2000U) == 0)) {
-          param_1->script_p = param_1->script_p + 1;
-          param_2->subtype = param_2->subtype | 0x2000;
+      for (i = 0; i < 2; i = i + 1) {
+        cVar1 = *script->script_p;
+        if (((cVar1 == 'l') || (cVar1 == 'L')) && ((token->subtype & 0x2000U) == 0)) {
+          script->script_p = script->script_p + 1;
+          token->subtype = token->subtype | 0x2000;
         }
-        else if (((cVar1 == 'u') || (cVar1 == 'U')) && ((param_2->subtype & 0x4800U) == 0)) {
-          param_1->script_p = param_1->script_p + 1;
-          param_2->subtype = param_2->subtype | 0x4000;
+        else if (((cVar1 == 'u') || (cVar1 == 'U')) && ((token->subtype & 0x4800U) == 0)) {
+          script->script_p = script->script_p + 1;
+          token->subtype = token->subtype | 0x4000;
         }
       }
-      param_2->string[local_10] = '\0';
-      NumberValue(param_2->string,param_2->subtype,&param_2->intvalue,&param_2->floatvalue);
-      if ((param_2->subtype & 0x800U) == 0) {
-        param_2->subtype = param_2->subtype | 0x1000;
+      token->string[len] = '\0';
+      NumberValue(token->string,token->subtype,&token->intvalue,&token->floatvalue);
+      if ((token->subtype & 0x800U) == 0) {
+        token->subtype = token->subtype | 0x1000;
       }
       return 1;
     }
     bVar2 = false;
     bVar3 = false;
-    if (*param_1->script_p == '0') {
+    if (*script->script_p == '0') {
       bVar2 = true;
     }
     do {
-      cVar1 = *param_1->script_p;
+      cVar1 = *script->script_p;
       if (cVar1 == '.') {
         bVar3 = true;
       }
@@ -555,21 +562,21 @@ LAB_00470a76:
       }
       else if ((cVar1 < '0') || ('9' < cVar1)) {
         if (bVar2) {
-          param_2->subtype = param_2->subtype | 0x200;
+          token->subtype = token->subtype | 0x200;
         }
         else {
-          param_2->subtype = param_2->subtype | 8;
+          token->subtype = token->subtype | 8;
         }
         if (bVar3) {
-          param_2->subtype = param_2->subtype | 0x800;
+          token->subtype = token->subtype | 0x800;
         }
         goto LAB_00470a76;
       }
-      param_2->string[local_10] = *param_1->script_p;
-      local_10 = local_10 + 1;
-      param_1->script_p = param_1->script_p + 1;
-    } while (local_10 < 0x3ff);
-    ScriptError(param_1,"number longer than MAX_TOKEN = %d");
+      token->string[len] = *script->script_p;
+      len = len + 1;
+      script->script_p = script->script_p + 1;
+    } while (len < 0x3ff);
+    ScriptError(script,"number longer than MAX_TOKEN = %d");
   }
   return 0;
 }
@@ -577,64 +584,66 @@ LAB_00470a76:
 
 // 00470BA0  PS_ReadPunctuation  (botlib/l_script.cpp:758)
 
-int __cdecl PS_ReadPunctuation(script_s *param_1,token_s *param_2)
+int __cdecl PS_ReadPunctuation(script_s *script,token_s *token)
 
 {
   uchar uVar1;
-  uchar *puVar2;
-  int iVar3;
-  uint uVar4;
+  uchar *source;
+  int iVar2;
+  uint count;
   uchar *local_14;
-  punctuation_s *local_10;
+  punctuation_s *punc;
+  int len;
+  char *p;
   
-  local_10 = param_1->punctuationtable[*param_1->script_p];
+  punc = script->punctuationtable[*script->script_p];
   while( true ) {
-    if (local_10 == (punctuation_s *)0x0) {
+    if (punc == (punctuation_s *)0x0) {
       return 0;
     }
-    puVar2 = (uchar *)local_10->p;
-    local_14 = puVar2;
+    source = (uchar *)punc->p;
+    local_14 = source;
     do {
       uVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (uVar1 != '\0');
-    uVar4 = (int)local_14 - (int)(puVar2 + 1);
-    if ((param_1->script_p + uVar4 <= param_1->end_p) &&
-       (iVar3 = strncmp(param_1->script_p,(char *)puVar2,uVar4), iVar3 == 0)) break;
-    local_10 = local_10->next;
+    count = (int)local_14 - (int)(source + 1);
+    if ((script->script_p + count <= script->end_p) &&
+       (iVar2 = strncmp(script->script_p,(char *)source,count), iVar2 == 0)) break;
+    punc = punc->next;
   }
-  strncpy((uchar *)param_2,puVar2,0x400);
-  param_1->script_p = param_1->script_p + uVar4;
-  param_2->type = 5;
-  param_2->subtype = local_10->n;
+  strncpy((uchar *)token,source,0x400);
+  script->script_p = script->script_p + count;
+  token->type = 5;
+  token->subtype = punc->n;
   return 1;
 }
 
 
 // 00470C90  PS_ReadPrimitive  (botlib/l_script.cpp:793)
 
-int __cdecl PS_ReadPrimitive(script_s *param_1,token_s *param_2)
+int __cdecl PS_ReadPrimitive(script_s *script,token_s *token)
 
 {
   int iVar1;
   token_s *ptVar2;
-  int local_8;
+  int len;
   
-  local_8 = 0;
-  while ((' ' < *param_1->script_p && (*param_1->script_p != ';'))) {
-    if (0x3ff < local_8) {
-      ScriptError(param_1,"primitive token longer than MAX_TOKEN = %d");
+  len = 0;
+  while ((' ' < *script->script_p && (*script->script_p != ';'))) {
+    if (0x3ff < len) {
+      ScriptError(script,"primitive token longer than MAX_TOKEN = %d");
       return 0;
     }
-    param_2->string[local_8] = *param_1->script_p;
-    local_8 = local_8 + 1;
-    param_1->script_p = param_1->script_p + 1;
+    token->string[len] = *script->script_p;
+    len = len + 1;
+    script->script_p = script->script_p + 1;
   }
-  param_2->string[local_8] = '\0';
-  ptVar2 = &param_1->token;
+  token->string[len] = '\0';
+  ptVar2 = &script->token;
   for (iVar1 = 0x10c; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *(undefined4 *)ptVar2->string = *(undefined4 *)param_2->string;
-    param_2 = (token_s *)(param_2->string + 4);
+    *(undefined4 *)ptVar2->string = *(undefined4 *)token->string;
+    token = (token_s *)(token->string + 4);
     ptVar2 = (token_s *)(ptVar2->string + 4);
   }
   return 1;
@@ -643,90 +652,90 @@ int __cdecl PS_ReadPrimitive(script_s *param_1,token_s *param_2)
 
 // 00470D30  PS_ReadToken  (botlib/l_script.cpp:821)
 
-int __cdecl PS_ReadToken(script_s *param_1,token_s *param_2)
+int __cdecl PS_ReadToken(script_s *script,token_s *token)
 
 {
   int iVar1;
   token_s *ptVar2;
   
-  if (param_1->tokenavailable == 0) {
-    param_1->lastscript_p = param_1->script_p;
-    param_1->lastline = param_1->line;
-    memset((uchar *)param_2,'\0',0x430);
-    param_1->whitespace_p = param_1->script_p;
-    param_2->whitespace_p = param_1->script_p;
-    iVar1 = PS_ReadWhiteSpace(param_1);
+  if (script->tokenavailable == 0) {
+    script->lastscript_p = script->script_p;
+    script->lastline = script->line;
+    memset((uchar *)token,'\0',0x430);
+    script->whitespace_p = script->script_p;
+    token->whitespace_p = script->script_p;
+    iVar1 = PS_ReadWhiteSpace(script);
     if (iVar1 == 0) {
       iVar1 = 0;
     }
     else {
-      param_1->endwhitespace_p = param_1->script_p;
-      param_2->endwhitespace_p = param_1->script_p;
-      param_2->line = param_1->line;
-      param_2->linescrossed = param_1->line - param_1->lastline;
-      if (*param_1->script_p == '\"') {
-        iVar1 = PS_ReadString(param_1,param_2,0x22);
+      script->endwhitespace_p = script->script_p;
+      token->endwhitespace_p = script->script_p;
+      token->line = script->line;
+      token->linescrossed = script->line - script->lastline;
+      if (*script->script_p == '\"') {
+        iVar1 = PS_ReadString(script,token,0x22);
         if (iVar1 == 0) {
           return 0;
         }
       }
-      else if ((*param_1->script_p == '#') && (param_1->script_p[1] == '\"')) {
-        iVar1 = PS_ReadString(param_1,param_2,0x23);
+      else if ((*script->script_p == '#') && (script->script_p[1] == '\"')) {
+        iVar1 = PS_ReadString(script,token,0x23);
         if (iVar1 == 0) {
           return 0;
         }
       }
-      else if (*param_1->script_p == '\'') {
-        iVar1 = PS_ReadString(param_1,param_2,0x27);
+      else if (*script->script_p == '\'') {
+        iVar1 = PS_ReadString(script,token,0x27);
         if (iVar1 == 0) {
           return 0;
         }
       }
-      else if (((*param_1->script_p < '0') || ('9' < *param_1->script_p)) &&
-              ((*param_1->script_p != '.' ||
-               ((param_1->script_p[1] < '0' || ('9' < param_1->script_p[1])))))) {
-        if ((param_1->flags & 0x10U) != 0) {
-          iVar1 = PS_ReadPrimitive(param_1,param_2);
+      else if (((*script->script_p < '0') || ('9' < *script->script_p)) &&
+              ((*script->script_p != '.' ||
+               ((script->script_p[1] < '0' || ('9' < script->script_p[1])))))) {
+        if ((script->flags & 0x10U) != 0) {
+          iVar1 = PS_ReadPrimitive(script,token);
           return iVar1;
         }
-        if (((*param_1->script_p < 'a') || ('z' < *param_1->script_p)) &&
-           (((*param_1->script_p < 'A' || ('Z' < *param_1->script_p)) && (*param_1->script_p != '_')
-            ))) {
-          iVar1 = PS_ReadPunctuation(param_1,param_2);
+        if (((*script->script_p < 'a') || ('z' < *script->script_p)) &&
+           (((*script->script_p < 'A' || ('Z' < *script->script_p)) && (*script->script_p != '_'))))
+        {
+          iVar1 = PS_ReadPunctuation(script,token);
           if (iVar1 == 0) {
-            ScriptError(param_1,"can\'t read token");
+            ScriptError(script,"can\'t read token");
             return 0;
           }
         }
         else {
-          iVar1 = PS_ReadName(param_1,param_2);
+          iVar1 = PS_ReadName(script,token);
           if (iVar1 == 0) {
             return 0;
           }
         }
       }
       else {
-        iVar1 = PS_ReadNumber(param_1,param_2);
+        iVar1 = PS_ReadNumber(script,token);
         if (iVar1 == 0) {
           return 0;
         }
       }
-      ptVar2 = &param_1->token;
+      ptVar2 = &script->token;
       for (iVar1 = 0x10c; iVar1 != 0; iVar1 = iVar1 + -1) {
-        *(undefined4 *)ptVar2->string = *(undefined4 *)param_2->string;
-        param_2 = (token_s *)(param_2->string + 4);
+        *(undefined4 *)ptVar2->string = *(undefined4 *)token->string;
+        token = (token_s *)(token->string + 4);
         ptVar2 = (token_s *)(ptVar2->string + 4);
       }
       iVar1 = 1;
     }
   }
   else {
-    param_1->tokenavailable = 0;
-    ptVar2 = &param_1->token;
+    script->tokenavailable = 0;
+    ptVar2 = &script->token;
     for (iVar1 = 0x10c; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)param_2->string = *(undefined4 *)ptVar2->string;
+      *(undefined4 *)token->string = *(undefined4 *)ptVar2->string;
       ptVar2 = (token_s *)(ptVar2->string + 4);
-      param_2 = (token_s *)(param_2->string + 4);
+      token = (token_s *)(token->string + 4);
     }
     iVar1 = 1;
   }
@@ -736,7 +745,7 @@ int __cdecl PS_ReadToken(script_s *param_1,token_s *param_2)
 
 // 00470FD0  StripDoubleQuotes  (botlib/l_script.cpp:1132)
 
-void __cdecl StripDoubleQuotes(char *param_1)
+void __cdecl StripDoubleQuotes(char *string)
 
 {
   char cVar1;
@@ -746,9 +755,9 @@ void __cdecl StripDoubleQuotes(char *param_1)
   char *local_c;
   char *local_8;
   
-  if (*param_1 == '\"') {
-    local_c = param_1;
-    local_8 = param_1;
+  if (*string == '\"') {
+    local_c = string;
+    local_8 = string;
     do {
       local_8 = local_8 + 1;
       cVar1 = *local_8;
@@ -756,14 +765,14 @@ void __cdecl StripDoubleQuotes(char *param_1)
       local_c = local_c + 1;
     } while (cVar1 != '\0');
   }
-  local_18 = param_1;
+  local_18 = string;
   pcVar2 = local_18;
   do {
     local_18 = pcVar2;
     pcVar2 = local_18 + 1;
   } while (*local_18 != '\0');
   if (local_18[-1] == '\"') {
-    local_28 = param_1;
+    local_28 = string;
     pcVar2 = local_28;
     do {
       local_28 = pcVar2;
@@ -777,10 +786,10 @@ void __cdecl StripDoubleQuotes(char *param_1)
 
 // 00471090  EndOfScript  (botlib/l_script.cpp:1271)
 
-int __cdecl EndOfScript(script_s *param_1)
+int __cdecl EndOfScript(script_s *script)
 
 {
-  return (uint)(param_1->end_p <= param_1->script_p);
+  return (uint)(script->end_p <= script->script_p);
 }
 
 
@@ -788,97 +797,101 @@ int __cdecl EndOfScript(script_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-script_s * __cdecl LoadScriptFile(char *param_1)
+script_s * __cdecl LoadScriptFile(char *filename)
 
 {
   char cVar1;
-  script_s *psVar2;
-  int iVar3;
+  script_s *script_00;
+  int iVar2;
   script_s *local_60;
   char *local_5c;
-  int local_50;
-  char local_4c [64];
+  void *buffer;
+  script_s *script;
+  int fp;
+  char pathname [64];
   uint local_c;
-  int local_8;
+  int length;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,"%s");
-  local_8 = FS_FOpenFileRead(local_4c,&local_50);
-  if (local_50 == 0) {
-    psVar2 = (script_s *)0x0;
+  Com_sprintf(pathname,0x40,"%s");
+  length = FS_FOpenFileRead(pathname,&fp);
+  if (fp == 0) {
+    script_00 = (script_s *)0x0;
   }
   else {
-    psVar2 = GetClearedMemory(local_8 + 0x4b1);
-    local_5c = param_1;
-    local_60 = psVar2;
+    script_00 = GetClearedMemory(length + 0x4b1);
+    local_5c = filename;
+    local_60 = script_00;
     do {
       cVar1 = *local_5c;
       local_60->filename[0] = cVar1;
       local_5c = local_5c + 1;
       local_60 = (script_s *)(local_60->filename + 1);
     } while (cVar1 != '\0');
-    psVar2->buffer = psVar2[1].filename;
-    psVar2->buffer[local_8] = '\0';
-    psVar2->length = local_8;
-    psVar2->script_p = psVar2->buffer;
-    psVar2->lastscript_p = psVar2->buffer;
-    psVar2->end_p = psVar2->buffer + local_8;
-    psVar2->tokenavailable = 0;
-    psVar2->line = 1;
-    psVar2->lastline = 1;
-    SetScriptPunctuations(psVar2);
-    FS_Read(psVar2->buffer,local_8,local_50);
-    FS_FCloseFile(local_50);
-    iVar3 = Com_Compress(psVar2->buffer);
-    psVar2->length = iVar3;
+    script_00->buffer = script_00[1].filename;
+    script_00->buffer[length] = '\0';
+    script_00->length = length;
+    script_00->script_p = script_00->buffer;
+    script_00->lastscript_p = script_00->buffer;
+    script_00->end_p = script_00->buffer + length;
+    script_00->tokenavailable = 0;
+    script_00->line = 1;
+    script_00->lastline = 1;
+    SetScriptPunctuations(script_00);
+    FS_Read(script_00->buffer,length,fp);
+    FS_FCloseFile(fp);
+    iVar2 = Com_Compress(script_00->buffer);
+    script_00->length = iVar2;
   }
-  return psVar2;
+  return script_00;
 }
 
 
 // 00471230  LoadScriptMemory  (botlib/l_script.cpp:1373)
 
-script_s * __cdecl LoadScriptMemory(char *param_1,int param_2,char *param_3)
+script_s * __cdecl LoadScriptMemory(char *ptr,int length,char *name)
 
 {
   char cVar1;
-  script_s *psVar2;
+  script_s *script_00;
   script_s *local_14;
   char *local_10;
+  void *buffer;
+  script_s *script;
   
-  psVar2 = GetClearedMemory(param_2 + 0x4b1);
-  local_10 = param_3;
-  local_14 = psVar2;
+  script_00 = GetClearedMemory(length + 0x4b1);
+  local_10 = name;
+  local_14 = script_00;
   do {
     cVar1 = *local_10;
     local_14->filename[0] = cVar1;
     local_10 = local_10 + 1;
     local_14 = (script_s *)(local_14->filename + 1);
   } while (cVar1 != '\0');
-  psVar2->buffer = psVar2[1].filename;
-  psVar2->buffer[param_2] = '\0';
-  psVar2->length = param_2;
-  psVar2->script_p = psVar2->buffer;
-  psVar2->lastscript_p = psVar2->buffer;
-  psVar2->end_p = psVar2->buffer + param_2;
-  psVar2->tokenavailable = 0;
-  psVar2->line = 1;
-  psVar2->lastline = 1;
-  SetScriptPunctuations(psVar2);
-  memcpy((uchar *)psVar2->buffer,(uchar *)param_1,param_2);
-  return psVar2;
+  script_00->buffer = script_00[1].filename;
+  script_00->buffer[length] = '\0';
+  script_00->length = length;
+  script_00->script_p = script_00->buffer;
+  script_00->lastscript_p = script_00->buffer;
+  script_00->end_p = script_00->buffer + length;
+  script_00->tokenavailable = 0;
+  script_00->line = 1;
+  script_00->lastline = 1;
+  SetScriptPunctuations(script_00);
+  memcpy((uchar *)script_00->buffer,(uchar *)ptr,length);
+  return script_00;
 }
 
 
 // 00471320  FreeScript  (botlib/l_script.cpp:1410)
 
-void __cdecl FreeScript(script_s *param_1)
+void __cdecl FreeScript(script_s *script)
 
 {
-  if (param_1->punctuationtable != (punctuation_s **)0x0) {
-    FreeMemory(param_1->punctuationtable);
+  if (script->punctuationtable != (punctuation_s **)0x0) {
+    FreeMemory(script->punctuationtable);
   }
-  FreeMemory(param_1);
+  FreeMemory(script);
   return;
 }
 

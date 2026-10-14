@@ -3,81 +3,84 @@
 // 005DEA00  FX_GetProfileEntry  (EffectsCore/fx_profile.cpp:69)
 
 FxProfileEntry * __cdecl
-FX_GetProfileEntry(FxEffectDef *param_1,FxProfileEntry *param_2,int *param_3)
+FX_GetProfileEntry(FxEffectDef *effectDef,FxProfileEntry *entryPool,int *entryCount)
 
 {
   code *pcVar1;
   bool bVar2;
   FxProfileEntry *pFVar3;
-  int local_8;
+  int entryIndex;
   
-  for (local_8 = 0; local_8 < *param_3; local_8 = local_8 + 1) {
-    if (param_2[local_8].effectDef == param_1) goto LAB_005deafe;
+  for (entryIndex = 0; entryIndex < *entryCount; entryIndex = entryIndex + 1) {
+    if (entryPool[entryIndex].effectDef == effectDef) goto LAB_005deafe;
   }
-  if ((local_8 != *param_3) &&
+  if ((entryIndex != *entryCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",0x4e
                                ,0,"entryIndex == *entryCount\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pFVar3 = (FxProfileEntry *)(*pcVar1)();
     return pFVar3;
   }
-  *param_3 = *param_3 + 1;
-  param_2[local_8].effectDef = param_1;
-  param_2[local_8].effectCount = 0;
-  param_2[local_8].activeElemCount = 0;
-  param_2[local_8].pendingElemCount = 0;
-  param_2[local_8].trailCount = 0;
-  param_2[local_8].activeTrailElemCount = 0;
-  param_2[local_8].pendingTrailElemCount = 0;
+  *entryCount = *entryCount + 1;
+  entryPool[entryIndex].effectDef = effectDef;
+  entryPool[entryIndex].effectCount = 0;
+  entryPool[entryIndex].activeElemCount = 0;
+  entryPool[entryIndex].pendingElemCount = 0;
+  entryPool[entryIndex].trailCount = 0;
+  entryPool[entryIndex].activeTrailElemCount = 0;
+  entryPool[entryIndex].pendingTrailElemCount = 0;
 LAB_005deafe:
-  return param_2 + local_8;
+  return entryPool + entryIndex;
 }
 
 
 // 005DEB10  FX_ProfileSingleEffect  (EffectsCore/fx_profile.cpp:93)
 
-void __cdecl FX_ProfileSingleEffect(FxSystem *param_1,FxEffect *param_2,FxProfileEntry *param_3)
+void __cdecl FX_ProfileSingleEffect(FxSystem *system,FxEffect *effect,FxProfileEntry *entry)
 
 {
   FxElem *pFVar1;
   FxTrail *pFVar2;
   FxTrailElem *pFVar3;
-  ushort local_20;
-  ushort local_1c;
-  uint local_c;
-  ushort local_8;
+  ushort elemHandle;
+  ushort trailHandle;
+  FxTrail *trail;
+  FxTrailElem *trailElem;
+  FxElem *elem;
+  uint elemClass;
+  ushort trailElemHandle;
   
-  param_3->effectCount = param_3->effectCount + 1;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    local_20 = param_2->firstElemHandle[local_c];
-    while (local_20 != 0xffff) {
-      pFVar1 = FX_ElemFromHandle(param_1,local_20);
-      if (param_1->msecNow < pFVar1->msecBegin) {
-        param_3->pendingElemCount = param_3->pendingElemCount + 1;
+  entry->effectCount = entry->effectCount + 1;
+  for (elemClass = 0; elemClass < 3; elemClass = elemClass + 1) {
+    elemHandle = effect->firstElemHandle[elemClass];
+    while (elemHandle != 0xffff) {
+      pFVar1 = FX_ElemFromHandle(system,elemHandle);
+      if (system->msecNow < pFVar1->msecBegin) {
+        entry->pendingElemCount = entry->pendingElemCount + 1;
       }
       else {
-        param_3->activeElemCount = param_3->activeElemCount + 1;
+        entry->activeElemCount = entry->activeElemCount + 1;
       }
-      local_20._0_1_ = pFVar1[1].defIndex;
-      local_20._1_1_ = pFVar1[1].sequence;
+      elemHandle._0_1_ = pFVar1[1].defIndex;
+      elemHandle._1_1_ = pFVar1[1].sequence;
     }
   }
-  local_1c = param_2->firstTrailHandle;
-  while (local_1c != 0xffff) {
-    pFVar2 = FX_TrailFromHandle(param_1,local_1c);
-    param_3->trailCount = param_3->trailCount + 1;
-    local_8 = pFVar2->firstElemHandle;
-    while (local_8 != 0xffff) {
-      pFVar3 = FX_TrailElemFromHandle(param_1,local_8);
-      if (param_1->msecNow < pFVar3->msecBegin) {
-        param_3->pendingTrailElemCount = param_3->pendingTrailElemCount + 1;
+  trailHandle = effect->firstTrailHandle;
+  while (trailHandle != 0xffff) {
+    pFVar2 = FX_TrailFromHandle(system,trailHandle);
+    entry->trailCount = entry->trailCount + 1;
+    trailElemHandle = pFVar2->firstElemHandle;
+    while (trailElemHandle != 0xffff) {
+      pFVar3 = FX_TrailElemFromHandle(system,trailElemHandle);
+      if (system->msecNow < pFVar3->msecBegin) {
+        entry->pendingTrailElemCount = entry->pendingTrailElemCount + 1;
       }
       else {
-        param_3->activeTrailElemCount = param_3->activeTrailElemCount + 1;
+        entry->activeTrailElemCount = entry->activeTrailElemCount + 1;
       }
-      local_8 = pFVar3->nextTrailElemHandle;
+      trailElemHandle = pFVar3->nextTrailElemHandle;
     }
-    local_1c = pFVar2->nextTrailHandle;
+    trailHandle = pFVar2->nextTrailHandle;
   }
   return;
 }
@@ -85,14 +88,16 @@ void __cdecl FX_ProfileSingleEffect(FxSystem *param_1,FxEffect *param_2,FxProfil
 
 // 005DECE0  FX_GetProfileEntryCost  (EffectsCore/fx_profile.cpp:133)
 
-float __cdecl FX_GetProfileEntryCost(FxProfileEntry *param_1)
+float __cdecl FX_GetProfileEntryCost(FxProfileEntry *entry)
 
 {
   float fVar1;
   float local_10;
+  float costEffect;
+  float costElem;
   
-  fVar1 = (float)param_1->effectCount * 0.0009765625;
-  local_10 = (float)(param_1->activeElemCount + param_1->pendingElemCount) * 0.00048828125;
+  fVar1 = (float)entry->effectCount * 0.0009765625;
+  local_10 = (float)(entry->activeElemCount + entry->pendingElemCount) * 0.00048828125;
   if (0.0 <= fVar1 - local_10) {
     local_10 = fVar1;
   }
@@ -102,15 +107,15 @@ float __cdecl FX_GetProfileEntryCost(FxProfileEntry *param_1)
 
 // 005DEC80  FX_CompareProfileEntries  (EffectsCore/fx_profile.cpp:144)
 
-int __cdecl FX_CompareProfileEntries(void *param_1,void *param_2)
+int __cdecl FX_CompareProfileEntries(void *e0,void *e1)
 
 {
   int iVar1;
   float fVar2;
   float fVar3;
   
-  fVar2 = FX_GetProfileEntryCost(param_1);
-  fVar3 = FX_GetProfileEntryCost(param_2);
+  fVar2 = FX_GetProfileEntryCost(e0);
+  fVar3 = FX_GetProfileEntryCost(e1);
   if (fVar3 <= fVar2) {
     if (fVar2 <= fVar3) {
       iVar1 = 0;
@@ -131,72 +136,73 @@ int __cdecl FX_CompareProfileEntries(void *param_1,void *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 void __cdecl
-FX_DrawProfile(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,float *param_3)
+FX_DrawProfile(int clientIndex,_func___cdecl_void_char_ptr_float_ptr *drawFunc,float *profilePos)
 
 {
   int iVar1;
-  FxEffect *pFVar2;
-  char *pcVar3;
-  long *plVar4;
-  float *pfVar5;
-  int local_701c;
-  uint local_7014;
-  FxSystem *local_7010;
-  FxProfileEntry local_700c [1024];
-  FxProfileEntry *local_c;
-  uint local_8;
+  FxEffect *effect_00;
+  char *pcVar2;
+  long *plVar3;
+  float *pfVar4;
+  int activeCount;
+  int entryIndex;
+  FxEffect *effect;
+  int entryCount;
+  FxSystem *system;
+  FxProfileEntry entryPool [1024];
+  FxProfileEntry *curEntry;
+  int activeIndex;
   
-  local_8 = 0x5de4fd;
-  local_7010 = FX_GetSystem(param_1);
-  if (local_7010 != (FxSystem *)0x0) {
-    FX_BeginIteratingOverEffects_Cooperative(local_7010);
-    local_7014 = 0;
-    for (local_8 = local_7010->shared->firstActiveEffect;
-        local_8 != local_7010->shared->firstNewEffect; local_8 = local_8 + 1) {
-      pFVar2 = FX_EffectFromHandle(local_7010,local_7010->shared->allEffectHandles[local_8 & 0x3ff])
-      ;
-      local_c = FX_GetProfileEntry((pFVar2->field0_0x0).def,local_700c,(int *)&local_7014);
-      FX_ProfileSingleEffect(local_7010,pFVar2,local_c);
+  activeIndex = 0x5de4fd;
+  system = FX_GetSystem(clientIndex);
+  if (system != (FxSystem *)0x0) {
+    FX_BeginIteratingOverEffects_Cooperative(system);
+    entryCount = 0;
+    for (activeIndex = system->shared->firstActiveEffect;
+        activeIndex != system->shared->firstNewEffect; activeIndex = activeIndex + 1) {
+      effect_00 = FX_EffectFromHandle(system,system->shared->allEffectHandles[activeIndex & 0x3ff]);
+      curEntry = FX_GetProfileEntry((effect_00->field0_0x0).def,entryPool,&entryCount);
+      FX_ProfileSingleEffect(system,effect_00,curEntry);
     }
-    plVar4 = &local_7010->shared->iteratorCount;
+    plVar3 = &system->shared->iteratorCount;
     LOCK();
-    iVar1 = *plVar4;
-    *plVar4 = *plVar4 + -1;
+    iVar1 = *plVar3;
+    *plVar3 = *plVar3 + -1;
     UNLOCK();
     if (iVar1 == 1) {
-      FX_RunGarbageCollectionAndPrioritySort(local_7010);
+      FX_RunGarbageCollectionAndPrioritySort(system);
     }
-    qsort(local_700c,local_7014,0x1c,FX_CompareProfileEntries);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i effect objects in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i trails in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i spot lights in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i effect elements in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i trail elements in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    pfVar5 = param_3;
-    pcVar3 = va("%4i of %4i cloud elements in use (%.0f%%; %i free)");
-    (*param_2)(pcVar3,pfVar5);
-    (*param_2)("",param_3);
-    (*param_2)("Effects are sorted by percent of available resources used",param_3);
-    pfVar5 = param_3;
-    pcVar3 = va("%4s  %4s (%4s/%4s)  %4s  %4s (%4s/%4s)  %s");
-    (*param_2)(pcVar3,pfVar5);
-    (*param_2)("-------------------------------------------------------------------",param_3);
-    for (local_701c = 0; (local_701c < 0x1e && (local_701c < (int)local_7014));
-        local_701c = local_701c + 1) {
-      local_c = local_700c + local_701c;
-      pfVar5 = param_3;
-      pcVar3 = va("%4i  %4i (%4i/%4i)  %4i  %4i (%4i/%4i)  %s");
-      (*param_2)(pcVar3,pfVar5);
+    qsort(entryPool,entryCount,0x1c,FX_CompareProfileEntries);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i effect objects in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i trails in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i spot lights in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i effect elements in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i trail elements in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4i of %4i cloud elements in use (%.0f%%; %i free)");
+    (*drawFunc)(pcVar2,pfVar4);
+    (*drawFunc)("",profilePos);
+    (*drawFunc)("Effects are sorted by percent of available resources used",profilePos);
+    pfVar4 = profilePos;
+    pcVar2 = va("%4s  %4s (%4s/%4s)  %4s  %4s (%4s/%4s)  %s");
+    (*drawFunc)(pcVar2,pfVar4);
+    (*drawFunc)("-------------------------------------------------------------------",profilePos);
+    for (entryIndex = 0; (entryIndex < 0x1e && (entryIndex < entryCount));
+        entryIndex = entryIndex + 1) {
+      curEntry = entryPool + entryIndex;
+      pfVar4 = profilePos;
+      pcVar2 = va("%4i  %4i (%4i/%4i)  %4i  %4i (%4i/%4i)  %s");
+      (*drawFunc)(pcVar2,pfVar4);
     }
   }
   return;
@@ -205,21 +211,27 @@ FX_DrawProfile(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,float 
 
 // 005DF1B0  FX_ComparePriorityDebugEntries  (EffectsCore/fx_profile.cpp:223)
 
-int __cdecl FX_ComparePriorityDebugEntries(void *param_1,void *param_2)
+int __cdecl FX_ComparePriorityDebugEntries(void *e0,void *e1)
 
 {
   int iVar1;
+  int ap;
+  int ac;
+  PriorityDebugEntry *b;
+  int bp;
+  PriorityDebugEntry *a;
+  int bc;
   
-  if (*(byte *)(*(int *)param_2 + 5) < *(byte *)(*(int *)param_1 + 5)) {
+  if (*(byte *)(*(int *)e1 + 5) < *(byte *)(*(int *)e0 + 5)) {
     iVar1 = -1;
   }
-  else if (*(byte *)(*(int *)param_1 + 5) < *(byte *)(*(int *)param_2 + 5)) {
+  else if (*(byte *)(*(int *)e0 + 5) < *(byte *)(*(int *)e1 + 5)) {
     iVar1 = 1;
   }
-  else if (*(int *)((int)param_2 + 4) < *(int *)((int)param_1 + 4)) {
+  else if (*(int *)((int)e1 + 4) < *(int *)((int)e0 + 4)) {
     iVar1 = -1;
   }
-  else if (*(int *)((int)param_1 + 4) < *(int *)((int)param_2 + 4)) {
+  else if (*(int *)((int)e0 + 4) < *(int *)((int)e1 + 4)) {
     iVar1 = 1;
   }
   else {
@@ -234,115 +246,121 @@ int __cdecl FX_ComparePriorityDebugEntries(void *param_1,void *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 void __cdecl
-FX_DrawPriorityDebug(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,float *param_3)
+FX_DrawPriorityDebug
+          (int clientIndex,_func___cdecl_void_char_ptr_float_ptr *drawFunc,float *profilePos)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  FxSystem *pFVar4;
-  FxEffect *pFVar5;
-  char *pcVar6;
-  long *plVar7;
-  float *pfVar8;
-  uint local_2050;
-  int local_202c;
-  int local_2028;
-  FxEffect_u_0 *local_2024;
-  uint local_2020;
-  uint local_2010;
-  FxEffect_u_0 local_200c [2049];
-  int local_8;
+  FxSystem *system_00;
+  FxEffect *pFVar4;
+  char *pcVar5;
+  long *plVar6;
+  float *pfVar7;
+  int local_2050;
+  PriorityDebugEntry *entry_2;
+  int i;
+  int entryIndex;
+  PriorityDebugEntry *entry;
+  int activeIndex;
+  int activeCount;
+  FxEffect *effect;
+  FxSystem *system;
+  int entryCount;
+  FxEffect_u_0 sortBuffer [2049];
+  int warningPriority;
   
-  local_8 = 0x5ded5d;
-  pFVar4 = FX_GetSystem(param_1);
-  if ((pFVar4 == (FxSystem *)0x0) &&
+  warningPriority = 0x5ded5d;
+  system_00 = FX_GetSystem(clientIndex);
+  if ((system_00 == (FxSystem *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",
                                0x101,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  FX_BeginIteratingOverEffects_Cooperative(pFVar4);
-  local_2010 = 0;
-  local_2020 = pFVar4->shared->firstActiveEffect;
+  FX_BeginIteratingOverEffects_Cooperative(system_00);
+  entryCount = 0;
+  activeIndex = system_00->shared->firstActiveEffect;
   do {
-    if (local_2020 == pFVar4->shared->firstNewEffect) {
-      plVar7 = &pFVar4->shared->iteratorCount;
+    if (activeIndex == system_00->shared->firstNewEffect) {
+      plVar6 = &system_00->shared->iteratorCount;
       LOCK();
-      iVar1 = *plVar7;
-      *plVar7 = *plVar7 + -1;
+      iVar1 = *plVar6;
+      *plVar6 = *plVar6 + -1;
       UNLOCK();
       if (iVar1 == 1) {
-        FX_RunGarbageCollectionAndPrioritySort(pFVar4);
+        FX_RunGarbageCollectionAndPrioritySort(system_00);
       }
-      qsort(local_200c,local_2010,8,FX_ComparePriorityDebugEntries);
-      local_8 = (pFVar4->priorityInfo).warningHigh[(pFVar4->priorityInfo).readIndex];
-      pfVar8 = param_3;
-      pcVar6 = va("%4i of %4i effect objects in use (%.0f%%; %i free)");
-      (*param_2)(pcVar6,pfVar8);
-      pfVar8 = param_3;
-      pcVar6 = va("%4i of %4i effect elements in use (%.0f%%; %i free)");
-      (*param_2)(pcVar6,pfVar8);
-      pfVar8 = param_3;
-      pcVar6 = va("priority warning high %d. Client %d, handles %d");
-      (*param_2)(pcVar6,pfVar8);
-      (*param_2)("",param_3);
-      pfVar8 = param_3;
-      pcVar6 = va("%4s   %4s   %s");
-      (*param_2)(pcVar6,pfVar8);
-      (*param_2)("-------------------------------------------------------------------",param_3);
-      if ((int)local_2010 < 0x29) {
-        local_2050 = local_2010;
+      qsort(sortBuffer,entryCount,8,FX_ComparePriorityDebugEntries);
+      warningPriority = (system_00->priorityInfo).warningHigh[(system_00->priorityInfo).readIndex];
+      pfVar7 = profilePos;
+      pcVar5 = va("%4i of %4i effect objects in use (%.0f%%; %i free)");
+      (*drawFunc)(pcVar5,pfVar7);
+      pfVar7 = profilePos;
+      pcVar5 = va("%4i of %4i effect elements in use (%.0f%%; %i free)");
+      (*drawFunc)(pcVar5,pfVar7);
+      pfVar7 = profilePos;
+      pcVar5 = va("priority warning high %d. Client %d, handles %d");
+      (*drawFunc)(pcVar5,pfVar7);
+      (*drawFunc)("",profilePos);
+      pfVar7 = profilePos;
+      pcVar5 = va("%4s   %4s   %s");
+      (*drawFunc)(pcVar5,pfVar7);
+      (*drawFunc)("-------------------------------------------------------------------",profilePos);
+      if (entryCount < 0x29) {
+        local_2050 = entryCount;
       }
       else {
         local_2050 = 0x28;
       }
-      for (local_202c = 0; local_202c < (int)local_2050; local_202c = local_202c + 1) {
-        pfVar8 = param_3;
-        pcVar6 = va("%4i   %4i   %s");
-        (*param_2)(pcVar6,pfVar8);
+      for (i = 0; i < local_2050; i = i + 1) {
+        pfVar7 = profilePos;
+        pcVar5 = va("%4i   %4i   %s");
+        (*drawFunc)(pcVar5,pfVar7);
       }
       return;
     }
-    pFVar5 = FX_EffectFromHandle(pFVar4,pFVar4->shared->allEffectHandles[local_2020 & 0x3ff]);
-    local_2024 = (FxEffect_u_0 *)0x0;
-    for (local_2028 = 0; local_2028 < (int)local_2010; local_2028 = local_2028 + 1) {
-      if (local_200c[local_2028 * 2].def == (pFVar5->field0_0x0).def) {
-        local_2024 = local_200c + local_2028 * 2;
+    pFVar4 = FX_EffectFromHandle(system_00,system_00->shared->allEffectHandles[activeIndex & 0x3ff])
+    ;
+    entry = (PriorityDebugEntry *)0x0;
+    for (entryIndex = 0; entryIndex < entryCount; entryIndex = entryIndex + 1) {
+      if (sortBuffer[entryIndex * 2].def == (pFVar4->field0_0x0).def) {
+        entry = (PriorityDebugEntry *)(sortBuffer + entryIndex * 2);
         break;
       }
     }
-    if (local_2024 == (FxEffect_u_0 *)0x0) {
-      if ((0x3ff < (int)local_2010) &&
+    if (entry == (PriorityDebugEntry *)0x0) {
+      if ((0x3ff < entryCount) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",
                                    0x118,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_200c[local_2010 * 2] = pFVar5->field0_0x0;
-      local_200c[local_2010 * 2 + 1] = (FxEffect_u_0)0x1;
-      local_2010 = local_2010 + 1;
+      sortBuffer[entryCount * 2] = pFVar4->field0_0x0;
+      sortBuffer[entryCount * 2 + 1] = (FxEffect_u_0)0x1;
+      entryCount = entryCount + 1;
     }
     else {
-      local_2024[1].def = (FxEffectDef *)((int)&(local_2024[1].def)->name + 1);
+      entry->count = entry->count + 1;
     }
-    local_2020 = local_2020 + 1;
+    activeIndex = activeIndex + 1;
   } while( true );
 }
 
 
 // 005DF8C0  typeAsString  (EffectsCore/fx_profile.cpp:316)
 
-char * __cdecl typeAsString(uchar param_1)
+char * __cdecl typeAsString(uchar type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  switch(param_1) {
+  switch(type) {
   case '\0':
     pcVar3 = "wbrush";
     break;
@@ -371,10 +389,15 @@ char * __cdecl typeAsString(uchar param_1)
 
 // 005DF720  FX_DrawMarkProfile_MarkPrint  (EffectsCore/fx_profile.cpp:373)
 
+/* WARNING: Variable defined which should be unmapped: mark */
+/* WARNING: Variable defined which should be unmapped: markCount */
+/* WARNING: Variable defined which should be unmapped: triCount */
+/* WARNING: Variable defined which should be unmapped: pointCount */
+
 void __cdecl
 FX_DrawMarkProfile_MarkPrint
-          (FxMarksSystem *param_1,ushort param_2,char *param_3,int param_4,
-          _func___cdecl_void_char_ptr_float_ptr *param_5,float *param_6)
+          (FxMarksSystem *marksSystem,ushort head,char *name,int index,
+          _func___cdecl_void_char_ptr_float_ptr *drawFunc,float *profilePos)
 
 {
   code *pcVar1;
@@ -382,29 +405,31 @@ FX_DrawMarkProfile_MarkPrint
   byte bVar3;
   FxMark *pFVar4;
   char *pcVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  byte local_d;
-  ushort local_c;
-  ushort local_8;
+  uchar thisMarkType;
+  FxMark *mark;
+  int markCount;
+  int triCount;
+  int pointCount;
+  uchar type;
+  ushort lastMarkHandle;
+  ushort markHandle;
   
-  iVar6 = 0;
-  iVar7 = 0;
-  iVar8 = 0;
-  local_d = 0;
-  local_8 = param_2;
-  local_c = 0xffff;
+  markCount = 0;
+  triCount = 0;
+  pointCount = 0;
+  type = '\0';
+  markHandle = head;
+  lastMarkHandle = 0xffff;
   do {
-    if (local_8 == 0xffff) {
-      if (iVar6 != 0) {
-        typeAsString(local_d);
+    if (markHandle == 0xffff) {
+      if (markCount != 0) {
+        typeAsString(type);
         pcVar5 = va("%s%5i %s %i (%i pts, %i tris)");
-        (*param_5)(pcVar5,param_6);
+        (*drawFunc)(pcVar5,profilePos);
       }
       return;
     }
-    pFVar4 = FX_MarkFromHandle(param_1,local_8);
+    pFVar4 = FX_MarkFromHandle(marksSystem,markHandle);
     if (pFVar4->frameCountDrawn == -1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",
                                0x18a,0,"%s");
@@ -414,7 +439,7 @@ FX_DrawMarkProfile_MarkPrint
         return;
       }
     }
-    if (pFVar4->prevMark != local_c) {
+    if (pFVar4->prevMark != lastMarkHandle) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",
                                0x18b,0,"%s");
       if (!bVar2) {
@@ -423,25 +448,25 @@ FX_DrawMarkProfile_MarkPrint
         return;
       }
     }
-    iVar7 = (uint)pFVar4->triCount + iVar7;
-    iVar8 = (uint)pFVar4->pointCount + iVar8;
+    triCount = (uint)pFVar4->triCount + triCount;
+    pointCount = (uint)pFVar4->pointCount + pointCount;
     bVar3 = (pFVar4->context).modelTypeAndSurf & 0xc0;
-    if (iVar6 == 0) {
-      local_d = bVar3;
+    if (markCount == 0) {
+      type = bVar3;
     }
-    if (local_d != bVar3) {
+    if (type != bVar3) {
       va("%i %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",
                                0x191,0,"%s\n\t%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        (*pcVar1)(pFVar4,iVar6,iVar7,iVar8);
+        (*pcVar1)(pFVar4,markCount,triCount,pointCount);
         return;
       }
     }
-    iVar6 = iVar6 + 1;
-    local_c = local_8;
-    local_8 = pFVar4->nextMark;
+    markCount = markCount + 1;
+    lastMarkHandle = markHandle;
+    markHandle = pFVar4->nextMark;
   } while( true );
 }
 
@@ -452,47 +477,61 @@ FX_DrawMarkProfile_MarkPrint
 /* WARNING: Removing unreachable block (ram,0x005df383) */
 
 void __cdecl
-FX_DrawMarkProfile(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,float *param_3)
+FX_DrawMarkProfile(int clientIndex,_func___cdecl_void_char_ptr_float_ptr *drawFunc,float *profilePos
+                  )
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  FxMarksSystem *pFVar4;
-  FxMark *pFVar5;
-  char *pcVar6;
-  uint uVar7;
-  _func___cdecl_void_char_ptr_float_ptr *p_Var8;
-  float *pfVar9;
-  int local_3c;
-  int local_38;
-  FxTriGroupPool *local_30;
-  FxPointGroupPool *local_2c;
-  int local_24;
-  ushort local_10;
-  FxMark *local_8;
+  ushort head;
+  FxMarksSystem *marksSystem_00;
+  FxMark *pFVar3;
+  char *pcVar4;
+  uint index;
+  _func___cdecl_void_char_ptr_float_ptr *drawFunc_00;
+  float *pfVar5;
+  uchar type;
+  FxMarksSystem *marksSystem;
+  int worldBrushMarks;
+  int entModelMarks2;
+  int entBrushMarks2;
+  int freeMarks2;
+  int entityIndex;
+  int wastedPointGroups;
+  FxTriGroupPool *triGroup;
+  FxPointGroupPool *pointGroup;
+  int entBrushMarks;
+  int freeMarks;
+  int wastedTriGroups;
+  int freePointGroups;
+  int entModelMarks;
+  int worldModelMarks;
+  ushort markHandle;
+  int freeTriGroups;
+  FxMark *markIter;
   
-  pFVar4 = FX_GetMarksSystem(param_1);
-  local_10 = pFVar4->firstFreeMarkHandle;
-  local_24 = 0;
-  while (local_10 != 0xffff) {
-    local_24 = local_24 + 1;
-    pFVar5 = FX_MarkFromHandle(pFVar4,local_10);
-    local_10 = pFVar5->nextMark;
+  marksSystem_00 = FX_GetMarksSystem(clientIndex);
+  markHandle = marksSystem_00->firstFreeMarkHandle;
+  freeMarks = 0;
+  while (markHandle != 0xffff) {
+    freeMarks = freeMarks + 1;
+    pFVar3 = FX_MarkFromHandle(marksSystem_00,markHandle);
+    markHandle = pFVar3->nextMark;
   }
-  for (local_30 = pFVar4->firstFreeTriGroup; local_30 != (FxTriGroupPool *)0x0;
-      local_30 = local_30->nextFreeTriGroup) {
+  for (triGroup = marksSystem_00->firstFreeTriGroup; triGroup != (FxTriGroupPool *)0x0;
+      triGroup = triGroup->nextFreeTriGroup) {
   }
-  for (local_2c = pFVar4->firstFreePointGroup; local_2c != (FxPointGroupPool *)0x0;
-      local_2c = local_2c->nextFreePointGroup) {
+  for (pointGroup = marksSystem_00->firstFreePointGroup; pointGroup != (FxPointGroupPool *)0x0;
+      pointGroup = pointGroup->nextFreePointGroup) {
   }
-  local_3c = 0;
-  for (local_8 = pFVar4->marks; local_8 != (FxMark *)pFVar4->triGroups; local_8 = local_8 + 1) {
-    if (local_8->frameCountDrawn == -1) {
-      local_3c = local_3c + 1;
+  freeMarks2 = 0;
+  for (markIter = marksSystem_00->marks; markIter != (FxMark *)marksSystem_00->triGroups;
+      markIter = markIter + 1) {
+    if (markIter->frameCountDrawn == -1) {
+      freeMarks2 = freeMarks2 + 1;
     }
     else {
-      switch((local_8->context).modelTypeAndSurf & 0xc0) {
+      switch((markIter->context).modelTypeAndSurf & 0xc0) {
       case 0:
         break;
       case 0x40:
@@ -503,7 +542,7 @@ FX_DrawMarkProfile(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,fl
       }
     }
   }
-  if (local_24 != local_3c) {
+  if (freeMarks != freeMarks2) {
     va("%i %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_profile.cpp",0x1ed,
                              0,"%s\n\t%s");
@@ -513,42 +552,46 @@ FX_DrawMarkProfile(int param_1,_func___cdecl_void_char_ptr_float_ptr *param_2,fl
       return;
     }
   }
-  pfVar9 = param_3;
-  pcVar6 = va("%4i of %4i marks in use (%i alloced, %i freed)");
-  (*param_2)(pcVar6,pfVar9);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i of %4i triGroups in use (%4i wasted)");
-  (*param_2)(pcVar6,pfVar9);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i of %4i pointGroups in use (%4i wasted)");
-  (*param_2)(pcVar6,pfVar9);
-  (*param_2)(" ",param_3);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i World Brush Marks");
-  (*param_2)(pcVar6,pfVar9);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i World Model Marks");
-  (*param_2)(pcVar6,pfVar9);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i Ent Brush Marks");
-  (*param_2)(pcVar6,pfVar9);
-  pfVar9 = param_3;
-  pcVar6 = va("%4i Ent Model");
-  (*param_2)(pcVar6,pfVar9);
-  FX_DrawMarkProfile_MarkPrint(pFVar4,pFVar4->firstActiveWorldMarkHandle,"world",0,param_2,param_3);
-  for (local_38 = 0; local_38 != 0x600; local_38 = local_38 + 1) {
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i of %4i marks in use (%i alloced, %i freed)");
+  (*drawFunc)(pcVar4,pfVar5);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i of %4i triGroups in use (%4i wasted)");
+  (*drawFunc)(pcVar4,pfVar5);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i of %4i pointGroups in use (%4i wasted)");
+  (*drawFunc)(pcVar4,pfVar5);
+  (*drawFunc)(" ",profilePos);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i World Brush Marks");
+  (*drawFunc)(pcVar4,pfVar5);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i World Model Marks");
+  (*drawFunc)(pcVar4,pfVar5);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i Ent Brush Marks");
+  (*drawFunc)(pcVar4,pfVar5);
+  pfVar5 = profilePos;
+  pcVar4 = va("%4i Ent Model");
+  (*drawFunc)(pcVar4,pfVar5);
+  FX_DrawMarkProfile_MarkPrint
+            (marksSystem_00,marksSystem_00->firstActiveWorldMarkHandle,"world",0,drawFunc,profilePos
+            );
+  for (entityIndex = 0; entityIndex != 0x600; entityIndex = entityIndex + 1) {
     FX_DrawMarkProfile_MarkPrint
-              (pFVar4,pFVar4->entFirstMarkHandles[local_38],"ent",local_38,param_2,param_3);
+              (marksSystem_00,marksSystem_00->entFirstMarkHandles[entityIndex],"ent",entityIndex,
+               drawFunc,profilePos);
   }
-  for (local_8 = pFVar4->marks; local_8 != (FxMark *)pFVar4->triGroups; local_8 = local_8 + 1) {
-    if (((local_8->frameCountDrawn != -1) && (local_8->prevMark == 0xffff)) &&
-       (((local_8->context).modelTypeAndSurf & 0xc0) == 0x40)) {
-      uVar7 = (uint)(local_8->context).modelIndex;
-      pcVar6 = "sm";
-      p_Var8 = param_2;
-      pfVar9 = param_3;
-      uVar3 = FX_MarkToHandle(pFVar4,local_8);
-      FX_DrawMarkProfile_MarkPrint(pFVar4,uVar3,pcVar6,uVar7,p_Var8,pfVar9);
+  for (markIter = marksSystem_00->marks; markIter != (FxMark *)marksSystem_00->triGroups;
+      markIter = markIter + 1) {
+    if (((markIter->frameCountDrawn != -1) && (markIter->prevMark == 0xffff)) &&
+       (((markIter->context).modelTypeAndSurf & 0xc0) == 0x40)) {
+      index = (uint)(markIter->context).modelIndex;
+      pcVar4 = "sm";
+      drawFunc_00 = drawFunc;
+      pfVar5 = profilePos;
+      head = FX_MarkToHandle(marksSystem_00,markIter);
+      FX_DrawMarkProfile_MarkPrint(marksSystem_00,head,pcVar4,index,drawFunc_00,pfVar5);
     }
   }
   return;

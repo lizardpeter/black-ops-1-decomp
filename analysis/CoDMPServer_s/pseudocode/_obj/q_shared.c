@@ -727,16 +727,16 @@ int __cdecl Com_sprintfPos(char *param_1,int param_2,int *param_3,char *param_4,
   int in_EAX;
   uint uVar2;
   int in_ECX;
-  uint uVar3;
+  uint count;
   
   iVar1 = *(int *)param_1;
   if (in_EAX + -1 <= iVar1) {
     return -1;
   }
-  uVar3 = in_EAX - iVar1;
-  uVar2 = _vsnprintf((char *)(iVar1 + in_ECX),uVar3,(char *)param_2,(char *)&param_3);
-  ((char *)(iVar1 + in_ECX))[uVar3 - 1] = '\0';
-  if ((uVar2 != uVar3) && (uVar2 != 0xffffffff)) {
+  count = in_EAX - iVar1;
+  uVar2 = _vsnprintf((char *)(iVar1 + in_ECX),count,(char *)param_2,(char *)&param_3);
+  ((char *)(iVar1 + in_ECX))[count - 1] = '\0';
+  if ((uVar2 != count) && (uVar2 != 0xffffffff)) {
     *(uint *)param_1 = *(int *)param_1 + uVar2;
     return uVar2;
   }
@@ -752,24 +752,24 @@ int __cdecl Com_sprintfPos(char *param_1,int param_2,int *param_3,char *param_4,
 char * __cdecl va(char *param_1,...)
 
 {
-  char *pcVar1;
-  int iVar2;
-  uint uVar3;
+  char *string;
+  int iVar1;
+  uint uVar2;
   
-  iVar2 = *(int *)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 4);
-  uVar3 = *(int *)(iVar2 + 0x1000) + 1U & 0x80000003;
-  if ((int)uVar3 < 0) {
-    uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
+  iVar1 = *(int *)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 4);
+  uVar2 = *(int *)(iVar1 + 0x1000) + 1U & 0x80000003;
+  if ((int)uVar2 < 0) {
+    uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
   }
-  pcVar1 = (char *)(*(int *)(iVar2 + 0x1000) * 0x400 + iVar2);
-  *(uint *)(iVar2 + 0x1000) = uVar3;
-  iVar2 = _vsnprintf(pcVar1,0x400,param_1,&stack0x00000008);
-  pcVar1[0x3ff] = '\0';
-  if ((iVar2 < 0) || (0x3ff < iVar2)) {
-    pcVar1[0x3ff] = '\0';
-    Com_Error(ERR_DROP,"\x15Attempted to overrun string in call to va(): \'%s\'",pcVar1);
+  string = (char *)(*(int *)(iVar1 + 0x1000) * 0x400 + iVar1);
+  *(uint *)(iVar1 + 0x1000) = uVar2;
+  iVar1 = _vsnprintf(string,0x400,param_1,&stack0x00000008);
+  string[0x3ff] = '\0';
+  if ((iVar1 < 0) || (0x3ff < iVar1)) {
+    string[0x3ff] = '\0';
+    Com_Error(ERR_DROP,"\x15Attempted to overrun string in call to va(): \'%s\'",string);
   }
-  return pcVar1;
+  return string;
 }
 
 

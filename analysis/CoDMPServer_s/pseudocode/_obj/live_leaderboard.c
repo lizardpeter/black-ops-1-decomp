@@ -919,77 +919,77 @@ LB_MakeRow(int param_1,LbPlayerStat *param_2,int param_3,int param_4,LeaderBoard
           bool param_6)
 
 {
-  uchar *puVar1;
-  char cVar2;
-  uint uVar3;
-  undefined4 uVar4;
+  uchar *dst;
+  char cVar1;
+  uint uVar2;
+  undefined4 uVar3;
   int in_EAX;
-  int *piVar5;
-  char *pcVar6;
-  uint uVar7;
-  int iVar8;
-  undefined4 *puVar9;
-  int *piVar10;
-  int iVar11;
+  int *piVar4;
+  char *pcVar5;
+  uint uVar6;
+  int iVar7;
+  undefined4 *puVar8;
+  int *piVar9;
+  int iVar10;
   
-  uVar3 = _g_LbLookup;
-  piVar10 = (int *)0x0;
-  uVar7 = 0;
+  uVar2 = _g_LbLookup;
+  piVar9 = (int *)0x0;
+  uVar6 = 0;
   *(uint *)(param_3 + 0x10) = (uint)((char)param_4 != '\0');
-  piVar5 = &DAT_0253385c;
+  piVar4 = &DAT_0253385c;
   do {
-    if (uVar3 <= uVar7) {
-      if (piVar10 == (int *)0x0) {
+    if (uVar2 <= uVar6) {
+      if (piVar9 == (int *)0x0) {
         return false;
       }
       break;
     }
-    if (*piVar5 == in_EAX) {
-      piVar10 = piVar5;
+    if (*piVar4 == in_EAX) {
+      piVar9 = piVar4;
     }
-    uVar7 = uVar7 + 1;
-    piVar5 = piVar5 + 0x14;
-  } while (piVar10 == (int *)0x0);
-  uVar3 = piVar10[0x12];
-  if (uVar3 != 0) {
-    puVar9 = (undefined4 *)(param_3 + 0x70);
-    uVar7 = 0;
-    piVar5 = piVar10;
+    uVar6 = uVar6 + 1;
+    piVar4 = piVar4 + 0x14;
+  } while (piVar9 == (int *)0x0);
+  uVar2 = piVar9[0x12];
+  if (uVar2 != 0) {
+    puVar8 = (undefined4 *)(param_3 + 0x70);
+    uVar6 = 0;
+    piVar4 = piVar9;
     do {
-      piVar5 = piVar5 + 1;
-      iVar8 = *piVar5;
-      *puVar9 = *(undefined4 *)(param_1 + iVar8 * 4);
-      if (piVar10[0x13] == uVar7) {
-        iVar8 = *(int *)(param_1 + iVar8 * 4);
-        *(int *)(param_3 + 0x1c) = iVar8 >> 0x1f;
-        *(int *)(param_3 + 0x18) = iVar8;
+      piVar4 = piVar4 + 1;
+      iVar7 = *piVar4;
+      *puVar8 = *(undefined4 *)(param_1 + iVar7 * 4);
+      if (piVar9[0x13] == uVar6) {
+        iVar7 = *(int *)(param_1 + iVar7 * 4);
+        *(int *)(param_3 + 0x1c) = iVar7 >> 0x1f;
+        *(int *)(param_3 + 0x18) = iVar7;
       }
-      uVar7 = uVar7 + 1;
-      puVar9 = puVar9 + 1;
-    } while (uVar7 < uVar3);
+      uVar6 = uVar6 + 1;
+      puVar8 = puVar8 + 1;
+    } while (uVar6 < uVar2);
   }
-  uVar4 = g_bdUserID._4_4_;
-  puVar1 = (uchar *)(param_3 + 0x28);
+  uVar3 = g_bdUserID._4_4_;
+  dst = (uchar *)(param_3 + 0x28);
   *(undefined4 *)(param_3 + 8) = (undefined4)g_bdUserID;
-  *(undefined4 *)(param_3 + 0xc) = uVar4;
-  memset(puVar1,'\0',0x41);
-  pcVar6 = LiveSteam_GetClientPersonaName(true);
-  if (puVar1 != (uchar *)0x0) {
-    if (pcVar6 == (char *)0x0) {
-      *puVar1 = '\0';
+  *(undefined4 *)(param_3 + 0xc) = uVar3;
+  memset(dst,'\0',0x41);
+  pcVar5 = LiveSteam_GetClientPersonaName(true);
+  if (dst != (uchar *)0x0) {
+    if (pcVar5 == (char *)0x0) {
+      *dst = '\0';
       *(undefined4 *)(param_3 + 4) = *(undefined4 *)(&DAT_009ec738 + (int)param_2 * 4);
       return true;
     }
-    pcVar6 = pcVar6 + -1;
-    iVar11 = 0x41;
-    iVar8 = (param_3 + 0x27) - (int)pcVar6;
+    pcVar5 = pcVar5 + -1;
+    iVar10 = 0x41;
+    iVar7 = (param_3 + 0x27) - (int)pcVar5;
     do {
-      cVar2 = pcVar6[1];
-      pcVar6 = pcVar6 + 1;
-      pcVar6[iVar8] = cVar2;
-      if (cVar2 == '\0') break;
-      iVar11 = iVar11 + -1;
-    } while (iVar11 != 0);
+      cVar1 = pcVar5[1];
+      pcVar5 = pcVar5 + 1;
+      pcVar5[iVar7] = cVar1;
+      if (cVar1 == '\0') break;
+      iVar10 = iVar10 + -1;
+    } while (iVar10 != 0);
     *(undefined1 *)(param_3 + 0x68) = 0;
   }
   *(undefined4 *)(param_3 + 4) = *(undefined4 *)(&DAT_009ec738 + (int)param_2 * 4);
@@ -1006,76 +1006,76 @@ bool __cdecl
 LB_MakeGlobalRow(int param_1,LbPlayerStat *param_2,int param_3,LeaderBoardRow<10> *param_4)
 
 {
-  uchar *puVar1;
-  char cVar2;
-  uint uVar3;
-  undefined4 uVar4;
-  int *piVar5;
-  char *pcVar6;
-  uint uVar7;
-  int iVar8;
-  undefined4 *puVar9;
-  int *piVar10;
-  int iVar11;
+  uchar *dst;
+  char cVar1;
+  uint uVar2;
+  undefined4 uVar3;
+  int *piVar4;
+  char *pcVar5;
+  uint uVar6;
+  int iVar7;
+  undefined4 *puVar8;
+  int *piVar9;
+  int iVar10;
   
-  uVar3 = DAT_02533d5c;
-  piVar10 = (int *)0x0;
+  uVar2 = DAT_02533d5c;
+  piVar9 = (int *)0x0;
   *(undefined4 *)(param_3 + 0x10) = 0;
-  uVar7 = 0;
-  piVar5 = &DAT_02533d60;
+  uVar6 = 0;
+  piVar4 = &DAT_02533d60;
   do {
-    if (uVar3 <= uVar7) {
-      if (piVar10 == (int *)0x0) {
+    if (uVar2 <= uVar6) {
+      if (piVar9 == (int *)0x0) {
         return false;
       }
       break;
     }
-    if ((LbPlayerStat *)*piVar5 == param_2) {
-      piVar10 = piVar5;
+    if ((LbPlayerStat *)*piVar4 == param_2) {
+      piVar9 = piVar4;
     }
-    uVar7 = uVar7 + 1;
-    piVar5 = piVar5 + 0x16;
-  } while (piVar10 == (int *)0x0);
-  uVar3 = piVar10[0x14];
-  if (uVar3 != 0) {
-    puVar9 = (undefined4 *)(param_3 + 0x70);
-    uVar7 = 0;
-    piVar5 = piVar10;
+    uVar6 = uVar6 + 1;
+    piVar4 = piVar4 + 0x16;
+  } while (piVar9 == (int *)0x0);
+  uVar2 = piVar9[0x14];
+  if (uVar2 != 0) {
+    puVar8 = (undefined4 *)(param_3 + 0x70);
+    uVar6 = 0;
+    piVar4 = piVar9;
     do {
-      piVar5 = piVar5 + 1;
-      iVar8 = *piVar5;
-      *puVar9 = *(undefined4 *)(param_1 + iVar8 * 4);
-      if (uVar7 == piVar10[0x15]) {
-        iVar8 = *(int *)(param_1 + iVar8 * 4);
-        *(int *)(param_3 + 0x1c) = iVar8 >> 0x1f;
-        *(int *)(param_3 + 0x18) = iVar8;
+      piVar4 = piVar4 + 1;
+      iVar7 = *piVar4;
+      *puVar8 = *(undefined4 *)(param_1 + iVar7 * 4);
+      if (uVar6 == piVar9[0x15]) {
+        iVar7 = *(int *)(param_1 + iVar7 * 4);
+        *(int *)(param_3 + 0x1c) = iVar7 >> 0x1f;
+        *(int *)(param_3 + 0x18) = iVar7;
       }
-      uVar7 = uVar7 + 1;
-      puVar9 = puVar9 + 1;
-    } while (uVar7 < uVar3);
+      uVar6 = uVar6 + 1;
+      puVar8 = puVar8 + 1;
+    } while (uVar6 < uVar2);
   }
-  uVar4 = g_bdUserID._4_4_;
-  puVar1 = (uchar *)(param_3 + 0x28);
+  uVar3 = g_bdUserID._4_4_;
+  dst = (uchar *)(param_3 + 0x28);
   *(undefined4 *)(param_3 + 8) = (undefined4)g_bdUserID;
-  *(undefined4 *)(param_3 + 0xc) = uVar4;
-  memset(puVar1,'\0',0x41);
-  pcVar6 = LiveSteam_GetClientPersonaName(true);
-  if (puVar1 != (uchar *)0x0) {
-    if (pcVar6 == (char *)0x0) {
-      *puVar1 = '\0';
+  *(undefined4 *)(param_3 + 0xc) = uVar3;
+  memset(dst,'\0',0x41);
+  pcVar5 = LiveSteam_GetClientPersonaName(true);
+  if (dst != (uchar *)0x0) {
+    if (pcVar5 == (char *)0x0) {
+      *dst = '\0';
       *(undefined4 *)(param_3 + 4) = *(undefined4 *)(&DAT_009ec728 + (int)param_2 * 4);
       return true;
     }
-    pcVar6 = pcVar6 + -1;
-    iVar11 = 0x41;
-    iVar8 = (param_3 + 0x27) - (int)pcVar6;
+    pcVar5 = pcVar5 + -1;
+    iVar10 = 0x41;
+    iVar7 = (param_3 + 0x27) - (int)pcVar5;
     do {
-      cVar2 = pcVar6[1];
-      pcVar6 = pcVar6 + 1;
-      pcVar6[iVar8] = cVar2;
-      if (cVar2 == '\0') break;
-      iVar11 = iVar11 + -1;
-    } while (iVar11 != 0);
+      cVar1 = pcVar5[1];
+      pcVar5 = pcVar5 + 1;
+      pcVar5[iVar7] = cVar1;
+      if (cVar1 == '\0') break;
+      iVar10 = iVar10 + -1;
+    } while (iVar10 != 0);
     *(undefined1 *)(param_3 + 0x68) = 0;
   }
   *(undefined4 *)(param_3 + 4) = *(undefined4 *)(&DAT_009ec728 + (int)param_2 * 4);

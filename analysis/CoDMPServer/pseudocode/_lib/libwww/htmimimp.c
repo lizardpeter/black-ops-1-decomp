@@ -143,13 +143,13 @@ undefined4 _HTMIME_contentEncoding(undefined4 param_1,undefined4 param_2)
 undefined4 _HTMIME_contentLength(undefined4 param_1,undefined4 param_2)
 
 {
-  char *pcVar1;
-  long lVar2;
+  char *nptr;
+  long lVar1;
   
-  pcVar1 = (char *)_HTNextField(&stack0x00000010);
-  if (pcVar1 != (char *)0x0) {
-    lVar2 = atol(pcVar1);
-    _HTResponse_setLength(param_2,lVar2);
+  nptr = (char *)_HTNextField(&stack0x00000010);
+  if (nptr != (char *)0x0) {
+    lVar1 = atol(nptr);
+    _HTResponse_setLength(param_2,lVar1);
   }
   return 0;
 }
@@ -251,24 +251,24 @@ undefined4 _HTMIME_keepAlive(undefined4 param_1)
 {
   undefined4 uVar1;
   undefined4 uVar2;
-  char *pcVar3;
-  int iVar4;
+  char *nptr;
+  int iVar3;
   int local_8;
   
   uVar1 = _HTAnchor_document(param_1);
   uVar1 = _HTLink_method(uVar1);
   while (local_8 = _HTNextPair(&stack0x00000010), local_8 != 0) {
     uVar2 = _HTNextField(&local_8);
-    pcVar3 = (char *)_HTNextField(&local_8);
-    iVar4 = strcasecomp(uVar2,"max");
-    if ((iVar4 == 0) && (pcVar3 != (char *)0x0)) {
-      iVar4 = atoi(pcVar3);
-      _HTRequest_setPreemptive(uVar1,iVar4);
+    nptr = (char *)_HTNextField(&local_8);
+    iVar3 = strcasecomp(uVar2,"max");
+    if ((iVar3 == 0) && (nptr != (char *)0x0)) {
+      iVar3 = atoi(nptr);
+      _HTRequest_setPreemptive(uVar1,iVar3);
     }
     else {
-      iVar4 = strcasecomp(uVar2,"timeout");
-      if ((iVar4 == 0) && (pcVar3 != (char *)0x0)) {
-        atoi(pcVar3);
+      iVar3 = strcasecomp(uVar2,"timeout");
+      if ((iVar3 == 0) && (nptr != (char *)0x0)) {
+        atoi(nptr);
       }
     }
   }
@@ -590,38 +590,38 @@ undefined4 _HTMIME_warning(undefined4 param_1)
 
 {
   char *pcVar1;
-  uchar *puVar2;
-  int iVar3;
+  uchar *string;
+  int iVar2;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
   undefined4 extraout_EAX_01;
   undefined4 local_18;
   
   pcVar1 = (char *)_HTNextField(&stack0x00000010);
-  puVar2 = (uchar *)_HTNextField(&stack0x00000010);
-  if ((pcVar1 != (char *)0x0) && (puVar2 != (uchar *)0x0)) {
-    iVar3 = atoi(pcVar1);
-    if (iVar3 == 10) {
+  string = (uchar *)_HTNextField(&stack0x00000010);
+  if ((pcVar1 != (char *)0x0) && (string != (uchar *)0x0)) {
+    iVar2 = atoi(pcVar1);
+    if (iVar2 == 10) {
       local_18 = 0x2d;
     }
-    else if (iVar3 == 0xb) {
+    else if (iVar2 == 0xb) {
       local_18 = 0x2e;
     }
-    else if (iVar3 == 0xc) {
+    else if (iVar2 == 0xc) {
       local_18 = 0x2f;
     }
-    else if (iVar3 == 0xd) {
+    else if (iVar2 == 0xd) {
       local_18 = 0x30;
     }
-    else if (iVar3 == 0xe) {
+    else if (iVar2 == 0xe) {
       local_18 = 0x31;
     }
     else {
       local_18 = 0x32;
     }
-    strchr(puVar2,'\r');
+    strchr(string,'\r');
     if (extraout_EAX == (undefined1 *)0x0) {
-      strchr(puVar2,'\n');
+      strchr(string,'\n');
       if (extraout_EAX_00 != (undefined1 *)0x0) {
         *extraout_EAX_00 = 0;
       }
@@ -630,8 +630,8 @@ undefined4 _HTMIME_warning(undefined4 param_1)
       *extraout_EAX = 0;
     }
     pcVar1 = "HTMIME_warning";
-    strlen(puVar2);
-    _HTRequest_addError(param_1,4,0,local_18,puVar2,extraout_EAX_01,pcVar1);
+    strlen(string);
+    _HTRequest_addError(param_1,4,0,local_18,string,extraout_EAX_01,pcVar1);
   }
   return 0;
 }

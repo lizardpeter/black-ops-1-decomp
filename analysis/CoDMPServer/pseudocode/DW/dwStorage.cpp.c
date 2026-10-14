@@ -5,22 +5,23 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwReadFileFailure(TaskRecord *param_1)
+void __cdecl dwReadFileFailure(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
-  bdLobbyErrorCode bVar4;
+  bdLobbyErrorCode code;
   undefined3 extraout_var;
-  char *pcVar5;
-  char local_4c [64];
+  char *errorMessage;
+  dwFileTask *fileTask;
+  char errorStr [64];
   uint local_c;
-  undefined4 local_8;
+  bdLobbyErrorCode errorCode;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) ||
-     ((param_1->remoteTask).m_ptr == (bdRemoteTask *)0x0)) {
+  if (((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) ||
+     ((task->remoteTask).m_ptr == (bdRemoteTask *)0x0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x14,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -28,19 +29,19 @@ void __cdecl dwReadFileFailure(TaskRecord *param_1)
       return;
     }
   }
-  if (((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) &&
-     ((param_1->remoteTask).m_ptr != (bdRemoteTask *)0x0)) {
-    pvVar1 = param_1->payload;
-    bVar4 = bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
-    local_8 = CONCAT31(extraout_var,bVar4);
-    *(undefined4 *)((int)pvVar1 + 0x10) = local_8;
-    dwLobbyErrorCodeToString(bVar4,local_4c,0x40);
+  if (((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) &&
+     ((task->remoteTask).m_ptr != (bdRemoteTask *)0x0)) {
+    pvVar1 = task->payload;
+    code = bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
+    _errorCode = CONCAT31(extraout_var,code);
+    *(undefined4 *)((int)pvVar1 + 0x10) = _errorCode;
+    dwLobbyErrorCodeToString(code,errorStr,0x40);
     Sys_Milliseconds();
     Com_Printf(0x10,"Failed to fetch DW file \'%s\': err %i \'%s\'. (%dms)\n");
     if (*(char *)((int)pvVar1 + 0xdc) == '\0') {
       Sys_Milliseconds();
-      pcVar5 = va("DEBUG POPUP: Failed to fetch DW file \'%s\': err %i \'%s\'. (%dms)\n");
-      Com_SetErrorMessage(pcVar5);
+      errorMessage = va("DEBUG POPUP: Failed to fetch DW file \'%s\': err %i \'%s\'. (%dms)\n");
+      Com_SetErrorMessage(errorMessage);
       UI_OpenMenu(0,"error_dw_fetch_file");
     }
   }
@@ -52,29 +53,31 @@ void __cdecl dwReadFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwReadFileSuccess(TaskRecord *param_1)
+void __cdecl dwReadFileSuccess(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
   bool bVar4;
+  dwFileTask *fileTask;
+  bool foundFile;
   
   bVar4 = false;
-  if (((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) &&
+  if (((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x2d,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    pvVar1 = param_1->payload;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
     bVar4 = *(int *)((int)pvVar1 + 0xc) != 0;
     *(undefined4 *)((int)pvVar1 + 0x20) = *(undefined4 *)((int)pvVar1 + 0xc);
   }
   if (!bVar4) {
-    dwReadFileFailure(param_1);
+    dwReadFileFailure(task);
   }
   return;
 }
@@ -84,7 +87,8 @@ void __cdecl dwReadFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwReadFileInternal(int param_1,dwFileTask *param_2,ulong64 param_3)
+TaskRecord * __cdecl
+dwReadFileInternal(int localControllerIndex,dwFileTask *fileTask,ulong64 ownerUID)
 
 {
   code *pcVar1;
@@ -93,12 +97,12 @@ TaskRecord * __cdecl dwReadFileInternal(int param_1,dwFileTask *param_2,ulong64 
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  bdStorage *local_c;
-  TaskRecord *local_8;
+  bdRemoteTask *remoteTask;
+  bdStorage *storage;
+  TaskRecord *task;
   
-  local_c = dwGetStorage(param_1);
-  if (param_2->m_buffer == (void *)0x0) {
+  storage = dwGetStorage(localControllerIndex);
+  if (fileTask->m_buffer == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x43,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -106,7 +110,7 @@ TaskRecord * __cdecl dwReadFileInternal(int param_1,dwFileTask *param_2,ulong64 
       return pTVar3;
     }
   }
-  if (param_2->m_bufferSize == 0) {
+  if (fileTask->m_bufferSize == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x44,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -114,36 +118,36 @@ TaskRecord * __cdecl dwReadFileInternal(int param_1,dwFileTask *param_2,ulong64 
       return pTVar3;
     }
   }
-  local_8 = (TaskRecord *)0x0;
-  if ((((local_c != (bdStorage *)0x0) && (param_2 != (dwFileTask *)0x0)) &&
-      (param_2->m_buffer != (void *)0x0)) && (param_2->m_bufferSize != 0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    (param_2->m_fileData).m_fileData = param_2->m_buffer;
-    (param_2->m_fileData).m_fileSize = param_2->m_bufferSize;
-    if (param_3 == 0) {
+  task = (TaskRecord *)0x0;
+  if ((((storage != (bdStorage *)0x0) && (fileTask != (dwFileTask *)0x0)) &&
+      (fileTask->m_buffer != (void *)0x0)) && (fileTask->m_bufferSize != 0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    (fileTask->m_fileData).m_fileData = fileTask->m_buffer;
+    (fileTask->m_fileData).m_fileSize = fileTask->m_bufferSize;
+    if (ownerUID == 0) {
       bVar4 = bdStorage::getPublisherFile
-                        (local_c,(char *)&local_18,(bdFileData *)param_2->m_filename);
-      local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                        (storage,(char *)&local_18,(bdFileData *)fileTask->m_filename);
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
     else {
-      bVar4 = bdStorage::getFile(local_c,(char *)&local_14,(bdFileData *)param_2->m_filename,
-                                 CONCAT44((undefined4)param_3,&param_2->m_fileData));
-      local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+      bVar4 = bdStorage::getFile(storage,(char *)&local_14,(bdFileData *)fileTask->m_filename,
+                                 CONCAT44((undefined4)ownerUID,&fileTask->m_fileData));
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    if (local_10 == (bdCommonAddr *)0x0) {
+    if (remoteTask == (bdRemoteTask *)0x0) {
       dwConnectionErrorHandler(0xf);
     }
     else {
-      local_8 = TaskManager2_CreateTask(task_ReadFileByID,param_1,(TaskRecord *)0x0,0);
+      task = TaskManager2_CreateTask(task_ReadFileByID,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_8->remoteTask,local_10);
-      TaskManager2_StartTask(local_8);
-      local_8->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fileTask;
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -151,16 +155,16 @@ TaskRecord * __cdecl dwReadFileInternal(int param_1,dwFileTask *param_2,ulong64 
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwReadFile(int param_1,dwFileTask *param_2)
+TaskRecord * __cdecl dwReadFile(int localControllerIndex,dwFileTask *fileTask)
 
 {
-  undefined4 local_8;
+  TaskRecord *retval;
   
-  local_8 = (TaskRecord *)0x0;
-  if (param_2 != (dwFileTask *)0x0) {
-    local_8 = dwReadFileInternal(param_1,param_2,0);
+  retval = (TaskRecord *)0x0;
+  if (fileTask != (dwFileTask *)0x0) {
+    retval = dwReadFileInternal(localControllerIndex,fileTask,0);
   }
-  return local_8;
+  return retval;
 }
 
 
@@ -168,22 +172,22 @@ TaskRecord * __cdecl dwReadFile(int param_1,dwFileTask *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwReadUserFile(int param_1,dwFileTask *param_2)
+TaskRecord * __cdecl dwReadUserFile(int localControllerIndex,dwFileTask *fileTask)
 
 {
   bool bVar1;
-  undefined4 local_14;
+  undefined4 userID;
   undefined4 local_10;
-  TaskRecord *local_8;
+  TaskRecord *retval;
   
-  local_8 = (TaskRecord *)0x0;
-  if (param_2 != (dwFileTask *)0x0) {
-    bVar1 = dwGetOnlineUserID(param_1,(ulong64 *)&local_14);
+  retval = (TaskRecord *)0x0;
+  if (fileTask != (dwFileTask *)0x0) {
+    bVar1 = dwGetOnlineUserID(localControllerIndex,(ulong64 *)&userID);
     if (bVar1) {
-      local_8 = dwReadFileInternal(param_1,param_2,CONCAT44(local_10,local_14));
+      retval = dwReadFileInternal(localControllerIndex,fileTask,CONCAT44(local_10,userID));
     }
   }
-  return local_8;
+  return retval;
 }
 
 
@@ -191,16 +195,17 @@ TaskRecord * __cdecl dwReadUserFile(int param_1,dwFileTask *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwReadUserFileByUserID(int param_1,dwFileTask *param_2,ulong64 param_3)
+TaskRecord * __cdecl
+dwReadUserFileByUserID(int localControllerIndex,dwFileTask *fileTask,ulong64 xuid)
 
 {
-  undefined4 local_8;
+  TaskRecord *retval;
   
-  local_8 = (TaskRecord *)0x0;
-  if (param_2 != (dwFileTask *)0x0) {
-    local_8 = dwReadFileInternal(param_1,param_2,param_3);
+  retval = (TaskRecord *)0x0;
+  if (fileTask != (dwFileTask *)0x0) {
+    retval = dwReadFileInternal(localControllerIndex,fileTask,xuid);
   }
-  return local_8;
+  return retval;
 }
 
 
@@ -209,23 +214,23 @@ TaskRecord * __cdecl dwReadUserFileByUserID(int param_1,dwFileTask *param_2,ulon
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwDeleteFileFailure(TaskRecord *param_1)
+void __cdecl dwDeleteFileFailure(TaskRecord *task)
 
 {
-  bdLobbyErrorCode bVar1;
+  bdLobbyErrorCode code;
   undefined3 extraout_var;
-  char local_4c [64];
+  char errorStr [64];
   uint local_c;
-  undefined4 local_8;
+  bdLobbyErrorCode errorCode;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
+  if ((task->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
     Com_PrintWarning(0x20,"failure with no remote task\n");
   }
   else {
-    bVar1 = bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
-    local_8 = CONCAT31(extraout_var,bVar1);
-    dwLobbyErrorCodeToString(bVar1,local_4c,0x40);
+    code = bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
+    _errorCode = CONCAT31(extraout_var,code);
+    dwLobbyErrorCodeToString(code,errorStr,0x40);
     Com_PrintError(0x17,"DW delete file error %i - \'%s\'\n");
   }
   return;
@@ -236,18 +241,18 @@ void __cdecl dwDeleteFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwDeleteFile(int param_1,char *param_2)
+TaskRecord * __cdecl dwDeleteFile(int localControllerIndex,char *filename)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  bdReference<bdRemoteTask> bVar4;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  bdStorage *local_c;
-  TaskRecord *local_8;
+  bdStorage *storage;
+  TaskRecord *task;
   
-  if (param_2 == (char *)0x0) {
+  if (filename == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0xaa,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -255,19 +260,19 @@ TaskRecord * __cdecl dwDeleteFile(int param_1,char *param_2)
       return pTVar3;
     }
   }
-  local_c = dwGetStorage(param_1);
-  local_8 = (TaskRecord *)0x0;
-  if (local_c != (bdStorage *)0x0) {
+  storage = dwGetStorage(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if (storage != (bdStorage *)0x0) {
     Com_Printf(0x10,"Starting deleting file: %s.\n");
-    local_8 = TaskManager2_CreateTask(task_DeleteFile,param_1,(TaskRecord *)0x0,0);
-    bVar4 = bdStorage::removeFile(local_c,(char *)&local_10,0);
+    task = TaskManager2_CreateTask(task_DeleteFile,localControllerIndex,(TaskRecord *)0x0,0);
+    other_3 = bdStorage::removeFile(storage,(char *)&local_10,0);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_8->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar4.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    TaskManager2_StartTask(local_8);
+    TaskManager2_StartTask(task);
   }
-  return local_8;
+  return task;
 }
 
 
@@ -276,23 +281,23 @@ TaskRecord * __cdecl dwDeleteFile(int param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwWriteFileFailure(TaskRecord *param_1)
+void __cdecl dwWriteFileFailure(TaskRecord *task)
 
 {
-  bdLobbyErrorCode bVar1;
+  bdLobbyErrorCode code;
   undefined3 extraout_var;
-  char local_4c [64];
+  char errorStr [64];
   uint local_c;
-  undefined4 local_8;
+  bdLobbyErrorCode errorCode;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
+  if ((task->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
     Com_PrintWarning(0x20,"failure with no remote task\n");
   }
   else {
-    bVar1 = bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
-    local_8 = CONCAT31(extraout_var,bVar1);
-    dwLobbyErrorCodeToString(bVar1,local_4c,0x40);
+    code = bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
+    _errorCode = CONCAT31(extraout_var,code);
+    dwLobbyErrorCodeToString(code,errorStr,0x40);
     Com_PrintError(0x17,"DW upload file error %i - \'%s\'\n");
   }
   return;
@@ -304,20 +309,20 @@ void __cdecl dwWriteFileFailure(TaskRecord *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-dwWriteFile(int param_1,char *param_2,void *param_3,uint param_4,bdFileInfo *param_5,ulong64 param_6
-           )
+dwWriteFile(int localControllerIndex,char *filename,void *data,uint dataSize,bdFileInfo *fileInfo,
+           ulong64 param_6)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  bdReference<bdRemoteTask> bVar4;
+  bdReference<bdRemoteTask> other_3;
   uint in_stack_00000018;
   bdReference<bdByteBuffer> local_10;
-  bdStorage *local_c;
-  TaskRecord *local_8;
+  bdStorage *storage;
+  TaskRecord *task;
   
-  if (param_5 == (bdFileInfo *)0x0) {
+  if (fileInfo == (bdFileInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0xd5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -325,21 +330,21 @@ dwWriteFile(int param_1,char *param_2,void *param_3,uint param_4,bdFileInfo *par
       return pTVar3;
     }
   }
-  local_c = dwGetStorage(param_1);
-  local_8 = (TaskRecord *)0x0;
-  if ((local_c != (bdStorage *)0x0) && (param_5 != (bdFileInfo *)0x0)) {
+  storage = dwGetStorage(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((storage != (bdStorage *)0x0) && (fileInfo != (bdFileInfo *)0x0)) {
     Com_Printf(0x10,"Starting upload of file: %s.\n");
-    local_8 = TaskManager2_CreateTask(task_UploadFile,param_1,(TaskRecord *)0x0,0);
-    bVar4 = bdStorage::uploadFile
-                      (local_c,(char *)&local_10,param_2,(uint)param_3,param_4,
-                       (ulonglong)in_stack_00000018 << 0x20,(bdFileInfo *)param_6);
+    task = TaskManager2_CreateTask(task_UploadFile,localControllerIndex,(TaskRecord *)0x0,0);
+    other_3 = bdStorage::uploadFile
+                        (storage,(char *)&local_10,filename,(uint)data,dataSize,
+                         (ulonglong)in_stack_00000018 << 0x20,(bdFileInfo *)param_6);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_8->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar4.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    TaskManager2_StartTask(local_8);
+    TaskManager2_StartTask(task);
   }
-  return local_8;
+  return task;
 }
 
 
@@ -347,7 +352,7 @@ dwWriteFile(int param_1,char *param_2,void *param_3,uint param_4,bdFileInfo *par
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareGetListing(int param_1,dwFileShareListTask *param_2)
+TaskRecord * __cdecl dwFileShareGetListing(int localControllerIndex,dwFileShareListTask *fsTask)
 
 {
   code *pcVar1;
@@ -355,11 +360,11 @@ TaskRecord * __cdecl dwFileShareGetListing(int param_1,dwFileShareListTask *para
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  if (param_2 == (dwFileShareListTask *)0x0) {
+  if (fsTask == (dwFileShareListTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0xfc,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -367,26 +372,26 @@ TaskRecord * __cdecl dwFileShareGetListing(int param_1,dwFileShareListTask *para
       return pTVar3;
     }
   }
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdContentStreaming *)0x0) && (param_2 != (dwFileShareListTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
+  contentStreaming = dwGetContentStreaming(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((contentStreaming != (bdContentStreaming *)0x0) && (fsTask != (dwFileShareListTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
     bVar4 = bdContentStreaming::listFilesByOwner
-                      (local_8,CONCAT44((int)param_2->ownerID,&local_14),
-                       *(uint *)((int)&param_2->ownerID + 4),(ushort)param_2->startDate,
-                       (bdFileMetaData *)(uint)param_2->category,(ushort)param_2->descriptors,
-                       param_2->maxNumResults,(char *)(uint)param_2->offset);
-    local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                      (contentStreaming,CONCAT44((int)fsTask->ownerID,&local_14),
+                       *(uint *)((int)&fsTask->ownerID + 4),(ushort)fsTask->startDate,
+                       (bdFileMetaData *)(uint)fsTask->category,(ushort)fsTask->descriptors,
+                       fsTask->maxNumResults,(char *)(uint)fsTask->offset);
+    remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_ReadFileShare,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_ReadFileShare,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -394,7 +399,7 @@ TaskRecord * __cdecl dwFileShareGetListing(int param_1,dwFileShareListTask *para
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareGetRating(int param_1,dwFileShareGetRatingTask *param_2)
+TaskRecord * __cdecl dwFileShareGetRating(int localControllerIndex,dwFileShareGetRatingTask *fsTask)
 
 {
   code *pcVar1;
@@ -402,12 +407,12 @@ TaskRecord * __cdecl dwFileShareGetRating(int param_1,dwFileShareGetRatingTask *
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_18;
-  bdCommonAddr *local_14;
-  TaskRecord *local_10;
-  int *local_c;
-  bdStats *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  int leaderboardID;
+  bdStats *stats;
   
-  if (param_2 == (dwFileShareGetRatingTask *)0x0) {
+  if (fsTask == (dwFileShareGetRatingTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x114,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -415,25 +420,25 @@ TaskRecord * __cdecl dwFileShareGetRating(int param_1,dwFileShareGetRatingTask *
       return pTVar3;
     }
   }
-  local_8 = dwGetStats(param_1);
-  local_10 = (TaskRecord *)0x0;
-  if ((local_8 != (bdStats *)0x0) && (param_2 != (dwFileShareGetRatingTask *)0x0)) {
-    local_14 = (bdCommonAddr *)0x0;
-    local_c = &param_2->outStatsInfo[-0x168115]._padding_;
+  stats = dwGetStats(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((stats != (bdStats *)0x0) && (fsTask != (dwFileShareGetRatingTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    leaderboardID = (int)&fsTask->outStatsInfo[-0x168115]._padding_;
     bVar4 = bdStats::readStatsByEntityID
-                      (local_8,(uint)&local_18,(__uint64 *)local_c,param_2->maxFilesToFetch,
-                       (bdStatsInfo *)param_2->leaderboardID);
-    local_14 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                      (stats,(uint)&local_18,(__uint64 *)leaderboardID,fsTask->maxFilesToFetch,
+                       (bdStatsInfo *)fsTask->leaderboardID);
+    remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
-    if (local_14 != (bdCommonAddr *)0x0) {
-      local_10 = TaskManager2_CreateTask(task_GetFileRating,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_GetFileRating,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_10->remoteTask,local_14);
-      TaskManager2_StartTask(local_10);
-      local_10->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_10;
+  return task;
 }
 
 
@@ -441,7 +446,8 @@ TaskRecord * __cdecl dwFileShareGetRating(int param_1,dwFileShareGetRatingTask *
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareGetTopRated(int param_1,dwFileShareGetTopRatedTask *param_2)
+TaskRecord * __cdecl
+dwFileShareGetTopRated(int localControllerIndex,dwFileShareGetTopRatedTask *fsTask)
 
 {
   uint uVar1;
@@ -450,11 +456,11 @@ TaskRecord * __cdecl dwFileShareGetTopRated(int param_1,dwFileShareGetTopRatedTa
   TaskRecord *pTVar4;
   bdReference<bdRemoteTask> bVar5;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdStats *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdStats *stats;
   
-  if (param_2 == (dwFileShareGetTopRatedTask *)0x0) {
+  if (fsTask == (dwFileShareGetTopRatedTask *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x12e,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -462,45 +468,44 @@ TaskRecord * __cdecl dwFileShareGetTopRated(int param_1,dwFileShareGetTopRatedTa
       return pTVar4;
     }
   }
-  local_8 = dwGetStats(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdStats *)0x0) && (param_2 != (dwFileShareGetTopRatedTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    uVar1 = (uint)param_2->startRank;
+  stats = dwGetStats(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((stats != (bdStats *)0x0) && (fsTask != (dwFileShareGetTopRatedTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    uVar1 = (uint)fsTask->startRank;
     bVar5 = bdStats::readStatsByRank
-                      (local_8,(uint)&local_14,
-                       CONCAT44(*(int *)((int)&param_2->startRank + 4) + (uint)(0xfffffffe < uVar1),
-                                uVar1 + 1),(bdStatsInfo *)param_2->statsInfo,param_2->leaderboardID)
-    ;
-    local_10 = (bdCommonAddr *)(bVar5.m_ptr)->_padding_;
+                      (stats,(uint)&local_14,
+                       CONCAT44(*(int *)((int)&fsTask->startRank + 4) + (uint)(0xfffffffe < uVar1),
+                                uVar1 + 1),(bdStatsInfo *)fsTask->statsInfo,fsTask->leaderboardID);
+    remoteTask = (bdRemoteTask *)(bVar5.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_GetTopRated,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_GetTopRated,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
 // 005A7390  dwFileShareLocationToCollectionID  (DW/dwStorage.cpp:325)
 
-bool __cdecl dwFileShareLocationToCollectionID(fileShareLocation param_1,uint *param_2)
+bool __cdecl dwFileShareLocationToCollectionID(fileShareLocation location,uint *collectionID)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == FILESHARE_LOCATION_USERSTORAGE) {
-    *param_2 = 1;
+  if (location == FILESHARE_LOCATION_USERSTORAGE) {
+    *collectionID = 1;
     bVar2 = true;
   }
-  else if (param_1 == FILESHARE_LOCATION_POOLEDSTORAGE) {
-    *param_2 = 2;
+  else if (location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    *collectionID = 2;
     bVar2 = true;
   }
   else {
@@ -521,7 +526,7 @@ bool __cdecl dwFileShareLocationToCollectionID(fileShareLocation param_1,uint *p
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareSearch(int param_1,dwFileShareSearchTask *param_2)
+TaskRecord * __cdecl dwFileShareSearch(int localControllerIndex,dwFileShareSearchTask *fsTask)
 
 {
   code *pcVar1;
@@ -529,12 +534,12 @@ TaskRecord * __cdecl dwFileShareSearch(int param_1,dwFileShareSearchTask *param_
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_18;
-  bdCommonAddr *local_14;
-  uint local_10;
-  TaskRecord *local_c;
-  bdTags *local_8;
+  bdRemoteTask *remoteTask;
+  uint collectionID;
+  TaskRecord *task;
+  bdTags *tagService;
   
-  if (param_2 == (dwFileShareSearchTask *)0x0) {
+  if (fsTask == (dwFileShareSearchTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x165,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -542,28 +547,29 @@ TaskRecord * __cdecl dwFileShareSearch(int param_1,dwFileShareSearchTask *param_
       return pTVar3;
     }
   }
-  local_8 = dwGetTagService(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdTags *)0x0) && (param_2 != (dwFileShareSearchTask *)0x0)) {
-    local_14 = (bdCommonAddr *)0x0;
-    bVar2 = dwFileShareLocationToCollectionID(param_2->location,&local_10);
+  tagService = dwGetTagService(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((tagService != (bdTags *)0x0) && (fsTask != (dwFileShareSearchTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    bVar2 = dwFileShareLocationToCollectionID(fsTask->location,&collectionID);
     if (bVar2) {
       bVar4 = bdTags::searchByTags
-                        (local_8,(uint)&local_18,local_10,param_2->startIndex,
-                         SUB41(param_2->maxNumResults,0),(uint)param_2->orderNewestFirst,
-                         (bdTag *)param_2->numTags,(bdFileID *)param_2->tags);
-      local_14 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                        (tagService,(uint)&local_18,collectionID,fsTask->startIndex,
+                         SUB41(fsTask->maxNumResults,0),(uint)fsTask->orderNewestFirst,
+                         (bdTag *)fsTask->numTags,(bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
-    if (local_14 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_SearchFileShareByTag,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_SearchFileShareByTag,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_14);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -572,7 +578,8 @@ TaskRecord * __cdecl dwFileShareSearch(int param_1,dwFileShareSearchTask *param_
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-dwFileShareGetDescriptorsFromPooledStorage(int param_1,dwFileShareDescriptorsTask *param_2)
+dwFileShareGetDescriptorsFromPooledStorage
+          (int localControllerIndex,dwFileShareDescriptorsTask *fsTask)
 
 {
   bdFileID *pbVar1;
@@ -581,13 +588,13 @@ dwFileShareGetDescriptorsFromPooledStorage(int param_1,dwFileShareDescriptorsTas
   TaskRecord *pTVar4;
   bdReference<bdRemoteTask> bVar5;
   bdReference<bdByteBuffer> local_bc;
-  uint local_b8;
-  bdCommonAddr *local_b4;
-  TaskRecord *local_b0;
-  undefined4 local_ac [41];
-  bdPooledStorage *local_8;
+  uint i;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  undefined4 fileIDs [41];
+  bdPooledStorage *pooledStorage;
   
-  if (param_2 == (dwFileShareDescriptorsTask *)0x0) {
+  if (fsTask == (dwFileShareDescriptorsTask *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x185,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -595,29 +602,30 @@ dwFileShareGetDescriptorsFromPooledStorage(int param_1,dwFileShareDescriptorsTas
       return pTVar4;
     }
   }
-  local_8 = dwGetPooledStorage(param_1);
-  local_b0 = (TaskRecord *)0x0;
-  if ((local_8 != (bdPooledStorage *)0x0) && (param_2 != (dwFileShareDescriptorsTask *)0x0)) {
-    local_b4 = (bdCommonAddr *)0x0;
-    for (local_b8 = 0; local_b8 < param_2->numFiles; local_b8 = local_b8 + 1) {
-      pbVar1 = param_2->fileIDs;
-      local_ac[local_b8 * 2] = (int)pbVar1[local_b8].m_fileID;
-      local_ac[local_b8 * 2 + 1] = *(undefined4 *)((int)&pbVar1[local_b8].m_fileID + 4);
+  pooledStorage = dwGetPooledStorage(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((pooledStorage != (bdPooledStorage *)0x0) && (fsTask != (dwFileShareDescriptorsTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    for (i = 0; i < fsTask->numFiles; i = i + 1) {
+      pbVar1 = fsTask->fileIDs;
+      fileIDs[i * 2] = (int)pbVar1[i].m_fileID;
+      fileIDs[i * 2 + 1] = *(undefined4 *)((int)&pbVar1[i].m_fileID + 4);
     }
     bVar5 = bdPooledStorage::getPooledMetaDataByID
-                      (local_8,(uint)&local_bc,(__uint64 *)param_2->numFiles,
-                       (bdFileMetaData *)local_ac);
-    local_b4 = (bdCommonAddr *)(bVar5.m_ptr)->_padding_;
+                      (pooledStorage,(uint)&local_bc,(__uint64 *)fsTask->numFiles,
+                       (bdFileMetaData *)fileIDs);
+    remoteTask = (bdRemoteTask *)(bVar5.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_bc);
-    if (local_b4 != (bdCommonAddr *)0x0) {
-      local_b0 = TaskManager2_CreateTask(task_SearchFileShareByFileID,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_SearchFileShareByFileID,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_b0->remoteTask,local_b4);
-      TaskManager2_StartTask(local_b0);
-      local_b0->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_b0;
+  return task;
 }
 
 
@@ -626,7 +634,8 @@ dwFileShareGetDescriptorsFromPooledStorage(int param_1,dwFileShareDescriptorsTas
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-dwFileShareGetDescriptorsFromUserStorage(int param_1,dwFileShareDescriptorsTask *param_2)
+dwFileShareGetDescriptorsFromUserStorage
+          (int localControllerIndex,dwFileShareDescriptorsTask *fsTask)
 
 {
   bdFileID *pbVar1;
@@ -635,13 +644,13 @@ dwFileShareGetDescriptorsFromUserStorage(int param_1,dwFileShareDescriptorsTask 
   TaskRecord *pTVar4;
   bdReference<bdRemoteTask> bVar5;
   bdReference<bdByteBuffer> local_bc;
-  uint local_b8;
-  bdCommonAddr *local_b4;
-  TaskRecord *local_b0;
-  undefined4 local_ac [41];
-  bdContentStreaming *local_8;
+  uint i;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  undefined4 fileIDs [41];
+  bdContentStreaming *contentStreaming;
   
-  if (param_2 == (dwFileShareDescriptorsTask *)0x0) {
+  if (fsTask == (dwFileShareDescriptorsTask *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x1a4,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -649,29 +658,31 @@ dwFileShareGetDescriptorsFromUserStorage(int param_1,dwFileShareDescriptorsTask 
       return pTVar4;
     }
   }
-  local_8 = dwGetContentStreaming(param_1);
-  local_b0 = (TaskRecord *)0x0;
-  if ((local_8 != (bdContentStreaming *)0x0) && (param_2 != (dwFileShareDescriptorsTask *)0x0)) {
-    local_b4 = (bdCommonAddr *)0x0;
-    for (local_b8 = 0; local_b8 < param_2->numFiles; local_b8 = local_b8 + 1) {
-      pbVar1 = param_2->fileIDs;
-      local_ac[local_b8 * 2] = (int)pbVar1[local_b8].m_fileID;
-      local_ac[local_b8 * 2 + 1] = *(undefined4 *)((int)&pbVar1[local_b8].m_fileID + 4);
+  contentStreaming = dwGetContentStreaming(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((contentStreaming != (bdContentStreaming *)0x0) &&
+     (fsTask != (dwFileShareDescriptorsTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    for (i = 0; i < fsTask->numFiles; i = i + 1) {
+      pbVar1 = fsTask->fileIDs;
+      fileIDs[i * 2] = (int)pbVar1[i].m_fileID;
+      fileIDs[i * 2 + 1] = *(undefined4 *)((int)&pbVar1[i].m_fileID + 4);
     }
     bVar5 = bdContentStreaming::getFileMetaDataByID
-                      (local_8,(uint)&local_bc,(__uint64 *)param_2->numFiles,
-                       (bdFileMetaData *)local_ac);
-    local_b4 = (bdCommonAddr *)(bVar5.m_ptr)->_padding_;
+                      (contentStreaming,(uint)&local_bc,(__uint64 *)fsTask->numFiles,
+                       (bdFileMetaData *)fileIDs);
+    remoteTask = (bdRemoteTask *)(bVar5.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_bc);
-    if (local_b4 != (bdCommonAddr *)0x0) {
-      local_b0 = TaskManager2_CreateTask(task_SearchFileShareByFileID,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_SearchFileShareByFileID,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_b0->remoteTask,local_b4);
-      TaskManager2_StartTask(local_b0);
-      local_b0->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_b0;
+  return task;
 }
 
 
@@ -679,27 +690,28 @@ dwFileShareGetDescriptorsFromUserStorage(int param_1,dwFileShareDescriptorsTask 
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareGetDescriptors(int param_1,dwFileShareDescriptorsTask *param_2)
+TaskRecord * __cdecl
+dwFileShareGetDescriptors(int localControllerIndex,dwFileShareDescriptorsTask *fsTask)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
   
-  if ((param_2 == (dwFileShareDescriptorsTask *)0x0) &&
+  if ((fsTask == (dwFileShareDescriptorsTask *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x1c1,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if (param_2 != (dwFileShareDescriptorsTask *)0x0) {
-    if (param_2->location == FILESHARE_LOCATION_USERSTORAGE) {
-      pTVar3 = dwFileShareGetDescriptorsFromUserStorage(param_1,param_2);
+  if (fsTask != (dwFileShareDescriptorsTask *)0x0) {
+    if (fsTask->location == FILESHARE_LOCATION_USERSTORAGE) {
+      pTVar3 = dwFileShareGetDescriptorsFromUserStorage(localControllerIndex,fsTask);
       return pTVar3;
     }
-    if (param_2->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
-      pTVar3 = dwFileShareGetDescriptorsFromPooledStorage(param_1,param_2);
+    if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+      pTVar3 = dwFileShareGetDescriptorsFromPooledStorage(localControllerIndex,fsTask);
       return pTVar3;
     }
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x1ce,0,
@@ -718,36 +730,38 @@ TaskRecord * __cdecl dwFileShareGetDescriptors(int param_1,dwFileShareDescriptor
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareReadPooledStorageFile(int param_1,dwFileShareReadFileTask *param_2)
+TaskRecord * __cdecl
+dwFileShareReadPooledStorageFile(int controllerIndex,dwFileShareReadFileTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdPooledStorage *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdPooledStorage *pooledStorage;
   
-  local_8 = dwGetPooledStorage(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdPooledStorage *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
-    if (param_2->downloadHandler != (bdDownloadInterceptor *)0x0) {
+  pooledStorage = dwGetPooledStorage(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (pooledStorage != (bdPooledStorage *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
+    if (fsTask->downloadHandler != (bdDownloadInterceptor *)0x0) {
       bVar1 = bdPooledStorage::download
-                        (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                         *(bdDownloadInterceptor **)((int)&param_2->fileID + 4),
-                         (bdFileMetaData *)param_2->downloadHandler,(uint)&param_2->descriptor,0);
-      local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                        (pooledStorage,CONCAT44((int)fsTask->fileID,&local_14),
+                         *(bdDownloadInterceptor **)((int)&fsTask->fileID + 4),
+                         (bdFileMetaData *)fsTask->downloadHandler,(uint)&fsTask->descriptor,0);
+      remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_ReadContentServerFile,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_ReadContentServerFile,controllerIndex,(TaskRecord *)0x0,0)
+      ;
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -755,45 +769,47 @@ TaskRecord * __cdecl dwFileShareReadPooledStorageFile(int param_1,dwFileShareRea
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareReadUserStorageFile(int param_1,dwFileShareReadFileTask *param_2)
+TaskRecord * __cdecl
+dwFileShareReadUserStorageFile(int controllerIndex,dwFileShareReadFileTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdContentStreaming *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
-    if (param_2->downloadHandler == (bdDownloadInterceptor *)0x0) {
+  contentStreaming = dwGetContentStreaming(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (contentStreaming != (bdContentStreaming *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
+    if (fsTask->downloadHandler == (bdDownloadInterceptor *)0x0) {
       bVar1 = bdContentStreaming::download
-                        (local_8,CONCAT44((int)param_2->fileID,&local_18),
-                         *(void **)((int)&param_2->fileID + 4),(uint)param_2->buffer,
-                         (bdFileMetaData *)param_2->bufferSize,(uint)&param_2->descriptor,0);
-      local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                        (contentStreaming,CONCAT44((int)fsTask->fileID,&local_18),
+                         *(void **)((int)&fsTask->fileID + 4),(uint)fsTask->buffer,
+                         (bdFileMetaData *)fsTask->bufferSize,(uint)&fsTask->descriptor,0);
+      remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
     else {
       bVar1 = bdContentStreaming::download
-                        (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                         *(bdDownloadInterceptor **)((int)&param_2->fileID + 4),
-                         (bdFileMetaData *)param_2->downloadHandler,(uint)&param_2->descriptor,0);
-      local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                        (contentStreaming,CONCAT44((int)fsTask->fileID,&local_14),
+                         *(bdDownloadInterceptor **)((int)&fsTask->fileID + 4),
+                         (bdFileMetaData *)fsTask->downloadHandler,(uint)&fsTask->descriptor,0);
+      remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_ReadContentServerFile,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_ReadContentServerFile,controllerIndex,(TaskRecord *)0x0,0)
+      ;
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -801,27 +817,27 @@ TaskRecord * __cdecl dwFileShareReadUserStorageFile(int param_1,dwFileShareReadF
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareReadFile(int param_1,dwFileShareReadFileTask *param_2)
+TaskRecord * __cdecl dwFileShareReadFile(int controllerIndex,dwFileShareReadFileTask *fsTask)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
   
-  if ((param_2 == (dwFileShareReadFileTask *)0x0) &&
+  if ((fsTask == (dwFileShareReadFileTask *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x20f,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if (param_2 != (dwFileShareReadFileTask *)0x0) {
-    if (param_2->location == FILESHARE_LOCATION_USERSTORAGE) {
-      pTVar3 = dwFileShareReadUserStorageFile(param_1,param_2);
+  if (fsTask != (dwFileShareReadFileTask *)0x0) {
+    if (fsTask->location == FILESHARE_LOCATION_USERSTORAGE) {
+      pTVar3 = dwFileShareReadUserStorageFile(controllerIndex,fsTask);
       return pTVar3;
     }
-    if (param_2->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
-      pTVar3 = dwFileShareReadPooledStorageFile(param_1,param_2);
+    if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+      pTVar3 = dwFileShareReadPooledStorageFile(controllerIndex,fsTask);
       return pTVar3;
     }
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x21c,0,
@@ -840,7 +856,7 @@ TaskRecord * __cdecl dwFileShareReadFile(int param_1,dwFileShareReadFileTask *pa
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareRemoveFile(int param_1,dwFileShareRemoveTask *param_2)
+TaskRecord * __cdecl dwFileShareRemoveFile(int controllerIndex,dwFileShareRemoveTask *fsTask)
 
 {
   code *pcVar1;
@@ -848,11 +864,11 @@ TaskRecord * __cdecl dwFileShareRemoveFile(int param_1,dwFileShareRemoveTask *pa
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  if (param_2 == (dwFileShareRemoveTask *)0x0) {
+  if (fsTask == (dwFileShareRemoveTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x225,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -860,22 +876,22 @@ TaskRecord * __cdecl dwFileShareRemoveFile(int param_1,dwFileShareRemoveTask *pa
       return pTVar3;
     }
   }
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdContentStreaming *)0x0) && (param_2 != (dwFileShareRemoveTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    bVar4 = bdContentStreaming::removeFile(local_8,(ushort)&local_14);
-    local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+  contentStreaming = dwGetContentStreaming(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((contentStreaming != (bdContentStreaming *)0x0) && (fsTask != (dwFileShareRemoveTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    bVar4 = bdContentStreaming::removeFile(contentStreaming,(ushort)&local_14);
+    remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_FileShareRemove,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_FileShareRemove,controllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -883,49 +899,50 @@ TaskRecord * __cdecl dwFileShareRemoveFile(int param_1,dwFileShareRemoveTask *pa
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareTransferFile(int param_1,dwFileShareTransferTask *param_2)
+TaskRecord * __cdecl dwFileShareTransferFile(int controllerIndex,dwFileShareTransferTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdContentStreaming *)0x0) && (param_2 != (dwFileShareTransferTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    if (param_2->location == FILESHARE_LOCATION_USERSTORAGE) {
+  contentStreaming = dwGetContentStreaming(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((contentStreaming != (bdContentStreaming *)0x0) && (fsTask != (dwFileShareTransferTask *)0x0))
+  {
+    remoteTask = (bdRemoteTask *)0x0;
+    if (fsTask->location == FILESHARE_LOCATION_USERSTORAGE) {
       bVar1 = bdContentStreaming::copyFromUserStorage
-                        (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                         (ushort)*(undefined4 *)((int)&param_2->fileID + 4),
-                         (char *)(uint)param_2->fileSlot,(ushort)param_2->fileName,
-                         (void *)(uint)param_2->category,(uint)param_2->metaData,
-                         param_2->metaDataSize,(bdTag *)param_2->numTags,(bdFileID *)param_2->tags);
-      local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                        (contentStreaming,CONCAT44((int)fsTask->fileID,&local_14),
+                         (ushort)*(undefined4 *)((int)&fsTask->fileID + 4),
+                         (char *)(uint)fsTask->fileSlot,(ushort)fsTask->fileName,
+                         (void *)(uint)fsTask->category,(uint)fsTask->metaData,fsTask->metaDataSize,
+                         (bdTag *)fsTask->numTags,(bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    else if (param_2->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    else if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
       bVar1 = bdContentStreaming::copyFromPooledStorage
-                        (local_8,CONCAT44((int)param_2->fileID,&local_18),
-                         (ushort)*(undefined4 *)((int)&param_2->fileID + 4),
-                         (char *)(uint)param_2->fileSlot,(ushort)param_2->fileName,
-                         (void *)(uint)param_2->category,(uint)param_2->metaData,
-                         param_2->metaDataSize,(bdTag *)param_2->numTags,(bdFileID *)param_2->tags);
-      local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                        (contentStreaming,CONCAT44((int)fsTask->fileID,&local_18),
+                         (ushort)*(undefined4 *)((int)&fsTask->fileID + 4),
+                         (char *)(uint)fsTask->fileSlot,(ushort)fsTask->fileName,
+                         (void *)(uint)fsTask->category,(uint)fsTask->metaData,fsTask->metaDataSize,
+                         (bdTag *)fsTask->numTags,(bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_FileShareTransfer,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_FileShareTransfer,controllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -933,34 +950,34 @@ TaskRecord * __cdecl dwFileShareTransferFile(int param_1,dwFileShareTransferTask
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareGetSummary(int param_1,dwFileShareSummaryTask *param_2)
+TaskRecord * __cdecl dwFileShareGetSummary(int controllerIndex,dwFileShareSummaryTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdPooledStorage *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdPooledStorage *pooledStorage;
   
-  local_8 = dwGetPooledStorage(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdPooledStorage *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
+  pooledStorage = dwGetPooledStorage(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (pooledStorage != (bdPooledStorage *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
     bVar1 = bdPooledStorage::downloadSummary
-                      (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                       *(void **)((int)&param_2->fileID + 4),(uint)param_2->summaryData,
-                       param_2->summaryDataSize,0);
-    local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                      (pooledStorage,CONCAT44((int)fsTask->fileID,&local_14),
+                       *(void **)((int)&fsTask->fileID + 4),(uint)fsTask->summaryData,
+                       fsTask->summaryDataSize,0);
+    remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_FileShareGetSummary,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_FileShareGetSummary,controllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -968,35 +985,35 @@ TaskRecord * __cdecl dwFileShareGetSummary(int param_1,dwFileShareSummaryTask *p
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareSetPooledSummary(int param_1,dwFileShareSummaryTask *param_2)
+TaskRecord * __cdecl dwFileShareSetPooledSummary(int controllerIndex,dwFileShareSummaryTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdPooledStorage *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdPooledStorage *pooledStorage;
   
-  local_8 = dwGetPooledStorage(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdPooledStorage *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
+  pooledStorage = dwGetPooledStorage(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (pooledStorage != (bdPooledStorage *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
     bVar1 = bdPooledStorage::uploadSummaryMetaData
-                      (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                       *(void **)((int)&param_2->fileID + 4),(uint)param_2->summaryData,
-                       (void *)param_2->summaryDataSize,(uint)param_2->metaData,
-                       param_2->metaDataSize,(bdTag *)param_2->numTags);
-    local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                      (pooledStorage,CONCAT44((int)fsTask->fileID,&local_14),
+                       *(void **)((int)&fsTask->fileID + 4),(uint)fsTask->summaryData,
+                       (void *)fsTask->summaryDataSize,(uint)fsTask->metaData,fsTask->metaDataSize,
+                       (bdTag *)fsTask->numTags);
+    remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_FileShareSetSummary,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_FileShareSetSummary,controllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -1004,35 +1021,35 @@ TaskRecord * __cdecl dwFileShareSetPooledSummary(int param_1,dwFileShareSummaryT
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareSetUserSummary(int param_1,dwFileShareSummaryTask *param_2)
+TaskRecord * __cdecl dwFileShareSetUserSummary(int controllerIndex,dwFileShareSummaryTask *fsTask)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdContentStreaming *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
+  contentStreaming = dwGetContentStreaming(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (contentStreaming != (bdContentStreaming *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
     bVar1 = bdContentStreaming::uploadUserSummaryMetaData
-                      (local_8,CONCAT44((int)param_2->fileID,&local_14),
-                       *(void **)((int)&param_2->fileID + 4),(uint)param_2->summaryData,
-                       (void *)param_2->summaryDataSize,(uint)param_2->metaData,
-                       param_2->metaDataSize,(bdTag *)param_2->numTags);
-    local_10 = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                      (contentStreaming,CONCAT44((int)fsTask->fileID,&local_14),
+                       *(void **)((int)&fsTask->fileID + 4),(uint)fsTask->summaryData,
+                       (void *)fsTask->summaryDataSize,(uint)fsTask->metaData,fsTask->metaDataSize,
+                       (bdTag *)fsTask->numTags);
+    remoteTask = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_FileShareSetSummary,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask(task_FileShareSetSummary,controllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -1040,16 +1057,16 @@ TaskRecord * __cdecl dwFileShareSetUserSummary(int param_1,dwFileShareSummaryTas
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareSetSummary(int param_1,dwFileShareSummaryTask *param_2)
+TaskRecord * __cdecl dwFileShareSetSummary(int controllerIndex,dwFileShareSummaryTask *fsTask)
 
 {
   TaskRecord *pTVar1;
   
-  if (param_2->location == FILESHARE_LOCATION_USERSTORAGE) {
-    pTVar1 = dwFileShareSetUserSummary(param_1,param_2);
+  if (fsTask->location == FILESHARE_LOCATION_USERSTORAGE) {
+    pTVar1 = dwFileShareSetUserSummary(controllerIndex,fsTask);
   }
-  else if (param_2->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
-    pTVar1 = dwFileShareSetPooledSummary(param_1,param_2);
+  else if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    pTVar1 = dwFileShareSetPooledSummary(controllerIndex,fsTask);
   }
   else {
     pTVar1 = (TaskRecord *)0x0;
@@ -1063,7 +1080,7 @@ TaskRecord * __cdecl dwFileShareSetSummary(int param_1,dwFileShareSummaryTask *p
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-dwFileShareWritePooledStorageFile(int param_1,dwFileShareWriteFileTask *param_2)
+dwFileShareWritePooledStorageFile(int controllerIndex,dwFileShareWriteFileTask *fsTask)
 
 {
   code *pcVar1;
@@ -1071,15 +1088,15 @@ dwFileShareWritePooledStorageFile(int param_1,dwFileShareWriteFileTask *param_2)
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdPooledStorage *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdPooledStorage *pooledStorage;
   
-  local_8 = dwGetPooledStorage(param_1);
-  local_c = (TaskRecord *)0x0;
-  if (local_8 != (bdPooledStorage *)0x0) {
-    local_10 = (bdCommonAddr *)0x0;
-    if (param_2->uploadHandler == (bdUploadInterceptor *)0x0) {
+  pooledStorage = dwGetPooledStorage(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if (pooledStorage != (bdPooledStorage *)0x0) {
+    remoteTask = (bdRemoteTask *)0x0;
+    if (fsTask->uploadHandler == (bdUploadInterceptor *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x2b6,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -1087,23 +1104,24 @@ dwFileShareWritePooledStorageFile(int param_1,dwFileShareWriteFileTask *param_2)
         return pTVar3;
       }
     }
-    if (param_2->uploadHandler != (bdUploadInterceptor *)0x0) {
+    if (fsTask->uploadHandler != (bdUploadInterceptor *)0x0) {
       bVar4 = bdPooledStorage::upload
-                        (local_8,(bdUploadInterceptor *)&local_14,(ushort)param_2->uploadHandler,
-                         (char *)(uint)param_2->category,(uint)param_2->fileName,
-                         (bdTag *)param_2->numTags,(bdFileID *)param_2->tags);
-      local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                        (pooledStorage,(bdUploadInterceptor *)&local_14,
+                         (ushort)fsTask->uploadHandler,(char *)(uint)fsTask->category,
+                         (uint)fsTask->fileName,(bdTag *)fsTask->numTags,(bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_WriteContentServerFile,param_1,(TaskRecord *)0x0,-1);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_WriteContentServerFile,controllerIndex,(TaskRecord *)0x0,-1);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -1111,7 +1129,8 @@ dwFileShareWritePooledStorageFile(int param_1,dwFileShareWriteFileTask *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareWriteUserStorageFile(int param_1,dwFileShareWriteFileTask *param_2)
+TaskRecord * __cdecl
+dwFileShareWriteUserStorageFile(int controllerIndex,dwFileShareWriteFileTask *fsTask)
 
 {
   code *pcVar1;
@@ -1120,11 +1139,11 @@ TaskRecord * __cdecl dwFileShareWriteUserStorageFile(int param_1,dwFileShareWrit
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  TaskRecord *local_c;
-  bdContentStreaming *local_8;
+  bdRemoteTask *remoteTask;
+  TaskRecord *task;
+  bdContentStreaming *contentStreaming;
   
-  if (param_2 == (dwFileShareWriteFileTask *)0x0) {
+  if (fsTask == (dwFileShareWriteFileTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x2cb,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1132,39 +1151,40 @@ TaskRecord * __cdecl dwFileShareWriteUserStorageFile(int param_1,dwFileShareWrit
       return pTVar3;
     }
   }
-  local_8 = dwGetContentStreaming(param_1);
-  local_c = (TaskRecord *)0x0;
-  if ((local_8 != (bdContentStreaming *)0x0) && (param_2 != (dwFileShareWriteFileTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    if (param_2->uploadHandler == (bdUploadInterceptor *)0x0) {
+  contentStreaming = dwGetContentStreaming(controllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((contentStreaming != (bdContentStreaming *)0x0) && (fsTask != (dwFileShareWriteFileTask *)0x0)
+     ) {
+    remoteTask = (bdRemoteTask *)0x0;
+    if (fsTask->uploadHandler == (bdUploadInterceptor *)0x0) {
       bVar4 = bdContentStreaming::upload
-                        (local_8,(ushort)&local_18,(void *)(uint)param_2->fileSlot,
-                         (uint)param_2->fileData,(char *)param_2->fileSize,(ushort)param_2->fileName
-                         ,(void *)(uint)param_2->category,(uint)param_2->thumbData,
-                         param_2->thumbDataSize,(bdTag *)param_2->numTags,(bdFileID *)param_2->tags)
-      ;
-      local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                        (contentStreaming,(ushort)&local_18,(void *)(uint)fsTask->fileSlot,
+                         (uint)fsTask->fileData,(char *)fsTask->fileSize,(ushort)fsTask->fileName,
+                         (void *)(uint)fsTask->category,(uint)fsTask->thumbData,
+                         fsTask->thumbDataSize,(bdTag *)fsTask->numTags,(bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
     }
     else {
       bVar4 = bdContentStreaming::upload
-                        (local_8,(ushort)&local_14,(bdUploadInterceptor *)(uint)param_2->fileSlot,
-                         (uint)param_2->uploadHandler,(char *)0x0,(ushort)param_2->fileName,
-                         (void *)(uint)param_2->category,(uint)param_2->thumbData,
-                         param_2->thumbDataSize,(bdTag *)param_2->numTags,(bdFileID *)param_2->tags)
-      ;
-      local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+                        (contentStreaming,(ushort)&local_14,
+                         (bdUploadInterceptor *)(uint)fsTask->fileSlot,(uint)fsTask->uploadHandler,
+                         (char *)0x0,(ushort)fsTask->fileName,(void *)(uint)fsTask->category,
+                         (uint)fsTask->thumbData,fsTask->thumbDataSize,(bdTag *)fsTask->numTags,
+                         (bdFileID *)fsTask->tags);
+      remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
     }
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_c = TaskManager2_CreateTask(task_WriteContentServerFile,param_1,(TaskRecord *)0x0,-1);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_WriteContentServerFile,controllerIndex,(TaskRecord *)0x0,-1);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_c->remoteTask,local_10);
-      TaskManager2_StartTask(local_c);
-      local_c->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -1172,27 +1192,27 @@ TaskRecord * __cdecl dwFileShareWriteUserStorageFile(int param_1,dwFileShareWrit
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareWriteFile(int param_1,dwFileShareWriteFileTask *param_2)
+TaskRecord * __cdecl dwFileShareWriteFile(int controllerIndex,dwFileShareWriteFileTask *fsTask)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
   
-  if ((param_2 == (dwFileShareWriteFileTask *)0x0) &&
+  if ((fsTask == (dwFileShareWriteFileTask *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x2ef,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if (param_2 != (dwFileShareWriteFileTask *)0x0) {
-    if (param_2->location == FILESHARE_LOCATION_USERSTORAGE) {
-      pTVar3 = dwFileShareWriteUserStorageFile(param_1,param_2);
+  if (fsTask != (dwFileShareWriteFileTask *)0x0) {
+    if (fsTask->location == FILESHARE_LOCATION_USERSTORAGE) {
+      pTVar3 = dwFileShareWriteUserStorageFile(controllerIndex,fsTask);
       return pTVar3;
     }
-    if (param_2->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
-      pTVar3 = dwFileShareWritePooledStorageFile(param_1,param_2);
+    if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+      pTVar3 = dwFileShareWritePooledStorageFile(controllerIndex,fsTask);
       return pTVar3;
     }
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x2fc,0,
@@ -1211,19 +1231,19 @@ TaskRecord * __cdecl dwFileShareWriteFile(int param_1,dwFileShareWriteFileTask *
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFileShareGetProgressPooled(int param_1,uint *param_2,float *param_3)
+void __cdecl dwFileShareGetProgressPooled(int localControllerIndex,uint *bytes,float *dataRate)
 
 {
   bdContentStreamingBase *this;
   
-  this = (bdContentStreamingBase *)dwGetPooledStorage(param_1);
+  this = (bdContentStreamingBase *)dwGetPooledStorage(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error getting HTTP operation progress. No handle to pooled storage.\n");
-    *param_2 = 0;
-    *param_3 = 0.0;
+    *bytes = 0;
+    *dataRate = 0.0;
   }
   else {
-    bdContentStreamingBase::checkProgress(this,param_2,param_3);
+    bdContentStreamingBase::checkProgress(this,bytes,dataRate);
   }
   return;
 }
@@ -1233,19 +1253,19 @@ void __cdecl dwFileShareGetProgressPooled(int param_1,uint *param_2,float *param
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFileShareGetProgressUser(int param_1,uint *param_2,float *param_3)
+void __cdecl dwFileShareGetProgressUser(int localControllerIndex,uint *bytes,float *dataRate)
 
 {
   bdContentStreamingBase *this;
   
-  this = (bdContentStreamingBase *)dwGetContentStreaming(param_1);
+  this = (bdContentStreamingBase *)dwGetContentStreaming(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error getting HTTP operation progress. No handle to content streaming.\n");
-    *param_2 = 0;
-    *param_3 = 0.0;
+    *bytes = 0;
+    *dataRate = 0.0;
   }
   else {
-    bdContentStreamingBase::checkProgress(this,param_2,param_3);
+    bdContentStreamingBase::checkProgress(this,bytes,dataRate);
   }
   return;
 }
@@ -1254,13 +1274,14 @@ void __cdecl dwFileShareGetProgressUser(int param_1,uint *param_2,float *param_3
 // 005A8330  dwFileShareGetProgress  (DW/dwStorage.cpp:804)
 
 void __cdecl
-dwFileShareGetProgress(int param_1,uint *param_2,float *param_3,fileShareLocation param_4)
+dwFileShareGetProgress
+          (int localControllerIndex,uint *bytes,float *dataRate,fileShareLocation location)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (uint *)0x0) {
+  if (bytes == (uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x325,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1268,7 +1289,7 @@ dwFileShareGetProgress(int param_1,uint *param_2,float *param_3,fileShareLocatio
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (dataRate == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x326,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1276,12 +1297,12 @@ dwFileShareGetProgress(int param_1,uint *param_2,float *param_3,fileShareLocatio
       return;
     }
   }
-  if ((param_2 != (uint *)0x0) && (param_3 != (float *)0x0)) {
-    if (param_4 == FILESHARE_LOCATION_USERSTORAGE) {
-      dwFileShareGetProgressUser(param_1,param_2,param_3);
+  if ((bytes != (uint *)0x0) && (dataRate != (float *)0x0)) {
+    if (location == FILESHARE_LOCATION_USERSTORAGE) {
+      dwFileShareGetProgressUser(localControllerIndex,bytes,dataRate);
     }
-    else if (param_4 == FILESHARE_LOCATION_POOLEDSTORAGE) {
-      dwFileShareGetProgressPooled(param_1,param_2,param_3);
+    else if (location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+      dwFileShareGetProgressPooled(localControllerIndex,bytes,dataRate);
     }
     else {
       Com_PrintWarning(0x10,"Invalid fileshare location\n");
@@ -1295,12 +1316,12 @@ dwFileShareGetProgress(int param_1,uint *param_2,float *param_3,fileShareLocatio
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFileShareAbortOperationPooled(int param_1)
+void __cdecl dwFileShareAbortOperationPooled(int localControllerIndex)
 
 {
   bdContentStreamingBase *this;
   
-  this = (bdContentStreamingBase *)dwGetPooledStorage(param_1);
+  this = (bdContentStreamingBase *)dwGetPooledStorage(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error aborting HTTP operation. No handle to pooled storage.\n");
   }
@@ -1315,12 +1336,12 @@ void __cdecl dwFileShareAbortOperationPooled(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFileShareAbortOperationUser(int param_1)
+void __cdecl dwFileShareAbortOperationUser(int localControllerIndex)
 
 {
   bdContentStreamingBase *this;
   
-  this = (bdContentStreamingBase *)dwGetContentStreaming(param_1);
+  this = (bdContentStreamingBase *)dwGetContentStreaming(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error aborting HTTP operation. No handle to content streaming.\n");
   }
@@ -1333,17 +1354,17 @@ void __cdecl dwFileShareAbortOperationUser(int param_1)
 
 // 005A84B0  dwFileShareAbortOperation  (DW/dwStorage.cpp:853)
 
-void __cdecl dwFileShareAbortOperation(int param_1,fileShareLocation param_2)
+void __cdecl dwFileShareAbortOperation(int localControllerIndex,fileShareLocation location)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == FILESHARE_LOCATION_USERSTORAGE) {
-    dwFileShareAbortOperationUser(param_1);
+  if (location == FILESHARE_LOCATION_USERSTORAGE) {
+    dwFileShareAbortOperationUser(localControllerIndex);
   }
-  else if (param_2 == FILESHARE_LOCATION_POOLEDSTORAGE) {
-    dwFileShareAbortOperationPooled(param_1);
+  else if (location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    dwFileShareAbortOperationPooled(localControllerIndex);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x35f,0,
@@ -1362,13 +1383,13 @@ void __cdecl dwFileShareAbortOperation(int param_1,fileShareLocation param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-int __cdecl dwFileShareGetLastHTTPErrorPooled(int param_1)
+int __cdecl dwFileShareGetLastHTTPErrorPooled(int localControllerIndex)
 
 {
   bdContentStreamingBase *this;
   int iVar1;
   
-  this = (bdContentStreamingBase *)dwGetPooledStorage(param_1);
+  this = (bdContentStreamingBase *)dwGetPooledStorage(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error aborting HTTP operation. No handle to pooled storage.\n");
     iVar1 = 0;
@@ -1384,13 +1405,13 @@ int __cdecl dwFileShareGetLastHTTPErrorPooled(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-int __cdecl dwFileShareGetLastHTTPErrorUser(int param_1)
+int __cdecl dwFileShareGetLastHTTPErrorUser(int localControllerIndex)
 
 {
   bdContentStreamingBase *this;
   int iVar1;
   
-  this = (bdContentStreamingBase *)dwGetContentStreaming(param_1);
+  this = (bdContentStreamingBase *)dwGetContentStreaming(localControllerIndex);
   if (this == (bdContentStreamingBase *)0x0) {
     Com_PrintError(0x10,"Error aborting HTTP operation. No handle to content streaming.\n");
     iVar1 = 0;
@@ -1404,18 +1425,18 @@ int __cdecl dwFileShareGetLastHTTPErrorUser(int param_1)
 
 // 005A8590  dwFileShareGetLastHTTPError  (DW/dwStorage.cpp:898)
 
-int __cdecl dwFileShareGetLastHTTPError(int param_1,fileShareLocation param_2)
+int __cdecl dwFileShareGetLastHTTPError(int localControllerIndex,fileShareLocation location)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 == FILESHARE_LOCATION_USERSTORAGE) {
-    iVar3 = dwFileShareGetLastHTTPErrorUser(param_1);
+  if (location == FILESHARE_LOCATION_USERSTORAGE) {
+    iVar3 = dwFileShareGetLastHTTPErrorUser(localControllerIndex);
   }
-  else if (param_2 == FILESHARE_LOCATION_POOLEDSTORAGE) {
-    iVar3 = dwFileShareGetLastHTTPErrorPooled(param_1);
+  else if (location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    iVar3 = dwFileShareGetLastHTTPErrorPooled(localControllerIndex);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x38c,0,
@@ -1435,7 +1456,8 @@ int __cdecl dwFileShareGetLastHTTPError(int param_1,fileShareLocation param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFileShareSubmitRating(int param_1,dwFileShareSubmitRatingTask *param_2)
+TaskRecord * __cdecl
+dwFileShareSubmitRating(int localControllerIndex,dwFileShareSubmitRatingTask *fsTask)
 
 {
   code *pcVar1;
@@ -1443,11 +1465,11 @@ TaskRecord * __cdecl dwFileShareSubmitRating(int param_1,dwFileShareSubmitRating
   TaskRecord *pTVar3;
   bdReference<bdRemoteTask> bVar4;
   bdReference<bdByteBuffer> local_14;
-  bdCommonAddr *local_10;
-  bdVoteRank *local_c;
-  TaskRecord *local_8;
+  bdRemoteTask *remoteTask;
+  bdVoteRank *voteRankService;
+  TaskRecord *task;
   
-  if (param_2 == (dwFileShareSubmitRatingTask *)0x0) {
+  if (fsTask == (dwFileShareSubmitRatingTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStorage.cpp",0x3af,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1455,21 +1477,22 @@ TaskRecord * __cdecl dwFileShareSubmitRating(int param_1,dwFileShareSubmitRating
       return pTVar3;
     }
   }
-  local_c = dwGetVoteRankService(param_1);
-  local_8 = (TaskRecord *)0x0;
-  if ((local_c != (bdVoteRank *)0x0) && (param_2 != (dwFileShareSubmitRatingTask *)0x0)) {
-    local_10 = (bdCommonAddr *)0x0;
-    bVar4 = bdVoteRank::submitRating(local_c,(bdRatingInfo *)&local_14,(uint)param_2);
-    local_10 = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
+  voteRankService = dwGetVoteRankService(localControllerIndex);
+  task = (TaskRecord *)0x0;
+  if ((voteRankService != (bdVoteRank *)0x0) && (fsTask != (dwFileShareSubmitRatingTask *)0x0)) {
+    remoteTask = (bdRemoteTask *)0x0;
+    bVar4 = bdVoteRank::submitRating(voteRankService,(bdRatingInfo *)&local_14,(uint)fsTask);
+    remoteTask = (bdRemoteTask *)(bVar4.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    if (local_10 != (bdCommonAddr *)0x0) {
-      local_8 = TaskManager2_CreateTask(task_FileShareSubmitRating,param_1,(TaskRecord *)0x0,0);
+    if (remoteTask != (bdRemoteTask *)0x0) {
+      task = TaskManager2_CreateTask
+                       (task_FileShareSubmitRating,localControllerIndex,(TaskRecord *)0x0,0);
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)&local_8->remoteTask,local_10);
-      TaskManager2_StartTask(local_8);
-      local_8->payload = param_2;
+                ((bdReference<bdCommonAddr> *)&task->remoteTask,(bdCommonAddr *)remoteTask);
+      TaskManager2_StartTask(task);
+      task->payload = fsTask;
     }
   }
-  return local_8;
+  return task;
 }
 

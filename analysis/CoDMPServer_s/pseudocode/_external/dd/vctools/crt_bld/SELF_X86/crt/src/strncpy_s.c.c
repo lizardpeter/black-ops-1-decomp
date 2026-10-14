@@ -2,7 +2,7 @@
 
 // 009757C8  strncpy_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tcsncpy_s.inl:13)
 
-int __cdecl strncpy_s(char *param_1,uint param_2,char *param_3,uint param_4)
+int __cdecl strncpy_s(char *_Dst,uint _SizeInBytes,char *_Src,uint _Count)
 
 {
   char cVar1;
@@ -11,63 +11,63 @@ int __cdecl strncpy_s(char *param_1,uint param_2,char *param_3,uint param_4)
   uint uVar4;
   int iVar5;
   
-  if (param_4 == 0) {
-    if (param_1 == (char *)0x0) {
-      if (param_2 == 0) {
+  if (_Count == 0) {
+    if (_Dst == (char *)0x0) {
+      if (_SizeInBytes == 0) {
         return 0;
       }
     }
     else {
 LAB_009757ee:
-      if (param_2 != 0) {
-        if (param_4 == 0) {
-          *param_1 = '\0';
+      if (_SizeInBytes != 0) {
+        if (_Count == 0) {
+          *_Dst = '\0';
           return 0;
         }
-        if (param_3 != (char *)0x0) {
-          pcVar3 = param_1;
-          uVar4 = param_2;
-          if (param_4 == 0xffffffff) {
+        if (_Src != (char *)0x0) {
+          pcVar3 = _Dst;
+          uVar4 = _SizeInBytes;
+          if (_Count == 0xffffffff) {
             do {
-              cVar1 = *param_3;
+              cVar1 = *_Src;
               *pcVar3 = cVar1;
               pcVar3 = pcVar3 + 1;
-              param_3 = param_3 + 1;
+              _Src = _Src + 1;
               if (cVar1 == '\0') break;
               uVar4 = uVar4 - 1;
             } while (uVar4 != 0);
           }
           else {
             do {
-              cVar1 = *param_3;
+              cVar1 = *_Src;
               *pcVar3 = cVar1;
               pcVar3 = pcVar3 + 1;
-              param_3 = param_3 + 1;
+              _Src = _Src + 1;
               if ((cVar1 == '\0') || (uVar4 = uVar4 - 1, uVar4 == 0)) break;
-              param_4 = param_4 - 1;
-            } while (param_4 != 0);
-            if (param_4 == 0) {
+              _Count = _Count - 1;
+            } while (_Count != 0);
+            if (_Count == 0) {
               *pcVar3 = '\0';
             }
           }
           if (uVar4 != 0) {
             return 0;
           }
-          if (param_4 == 0xffffffff) {
-            param_1[param_2 - 1] = '\0';
+          if (_Count == 0xffffffff) {
+            _Dst[_SizeInBytes - 1] = '\0';
             return 0x50;
           }
-          *param_1 = '\0';
+          *_Dst = '\0';
           piVar2 = _errno();
           iVar5 = 0x22;
           *piVar2 = 0x22;
           goto LAB_009757ff;
         }
-        *param_1 = '\0';
+        *_Dst = '\0';
       }
     }
   }
-  else if (param_1 != (char *)0x0) goto LAB_009757ee;
+  else if (_Dst != (char *)0x0) goto LAB_009757ee;
   piVar2 = _errno();
   iVar5 = 0x16;
   *piVar2 = 0x16;

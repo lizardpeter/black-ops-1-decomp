@@ -500,60 +500,60 @@ switchD_004d92e7_caseD_78:
 void __cdecl CL_SetExpectedHunkUsage(char *param_1)
 
 {
-  uint uVar1;
-  int iVar2;
-  uchar *puVar3;
-  char *pcVar4;
+  uint size;
+  int iVar1;
+  uchar *dst;
+  char *pcVar2;
   int unaff_ESI;
   char *unaff_EDI;
   uchar *local_4;
   
-  iVar2 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_4);
+  iVar1 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_4);
   if (local_4 != (uchar *)0x0) {
-    *(int *)(&DAT_01f41584 + (int)local_4 * 0x11c) = iVar2;
+    *(int *)(&DAT_01f41584 + (int)local_4 * 0x11c) = iVar1;
     *(undefined4 *)(&DAT_01f41590 + (int)local_4 * 0x11c) = 0;
   }
   *(undefined4 *)(&DAT_01f41580 + (int)local_4 * 0x11c) = 0;
-  if (-1 < iVar2) {
-    uVar1 = iVar2 + 1;
-    puVar3 = malloc(uVar1);
-    if (puVar3 == (uchar *)0x0) {
+  if (-1 < iVar1) {
+    size = iVar1 + 1;
+    dst = malloc(size);
+    if (dst == (uchar *)0x0) {
                     /* WARNING: Subroutine does not return */
       FUN_00699280();
     }
-    Com_Memset(puVar3,0,uVar1);
-    memset(puVar3,'\0',uVar1);
-    FS_Read(puVar3,iVar2,(int)local_4);
+    Com_Memset(dst,0,size);
+    memset(dst,'\0',size);
+    FS_Read(dst,iVar1,(int)local_4);
     FS_FCloseFile((int)unaff_EDI);
-    local_4 = puVar3;
+    local_4 = dst;
     while( true ) {
-      iVar2 = FUN_006a9e90();
-      iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
-      if (*(char *)(iVar2 + 0x408) != '\0') {
-        local_4 = *(uchar **)(iVar2 + 0x420);
-        *(undefined1 *)(iVar2 + 0x408) = 0;
-        *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
+      iVar1 = FUN_006a9e90();
+      iVar1 = *(int *)(iVar1 + 0x4280) * 0x428 + iVar1;
+      if (*(char *)(iVar1 + 0x408) != '\0') {
+        local_4 = *(uchar **)(iVar1 + 0x420);
+        *(undefined1 *)(iVar1 + 0x408) = 0;
+        *(undefined4 *)(iVar1 + 0x404) = *(undefined4 *)(iVar1 + 0x41c);
       }
-      pcVar4 = (char *)FUN_006aa5f0(&local_4,1);
-      if (*pcVar4 == '\0') break;
-      iVar2 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
-      if (iVar2 == 0) {
-        iVar2 = FUN_006a9e90();
-        iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
-        if (*(char *)(iVar2 + 0x408) != '\0') {
-          local_4 = *(uchar **)(iVar2 + 0x420);
-          *(undefined1 *)(iVar2 + 0x408) = 0;
-          *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
+      pcVar2 = (char *)FUN_006aa5f0(&local_4,1);
+      if (*pcVar2 == '\0') break;
+      iVar1 = I_strnicmp(pcVar2,unaff_EDI,unaff_ESI);
+      if (iVar1 == 0) {
+        iVar1 = FUN_006a9e90();
+        iVar1 = *(int *)(iVar1 + 0x4280) * 0x428 + iVar1;
+        if (*(char *)(iVar1 + 0x408) != '\0') {
+          local_4 = *(uchar **)(iVar1 + 0x420);
+          *(undefined1 *)(iVar1 + 0x408) = 0;
+          *(undefined4 *)(iVar1 + 0x404) = *(undefined4 *)(iVar1 + 0x41c);
         }
-        pcVar4 = (char *)FUN_006aa5f0(&local_4,1);
-        if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-          com_expectedHunkUsage = atoi(pcVar4);
-          free(puVar3);
+        pcVar2 = (char *)FUN_006aa5f0(&local_4,1);
+        if ((pcVar2 != (char *)0x0) && (*pcVar2 != '\0')) {
+          com_expectedHunkUsage = atoi(pcVar2);
+          free(dst);
           return;
         }
       }
     }
-    free(puVar3);
+    free(dst);
   }
   com_expectedHunkUsage = 0;
   return;
@@ -854,12 +854,12 @@ CL_DrawStretchPicRotatedXY
   float fVar1;
   Material *in_ECX;
   float in_EDX;
-  float fVar2;
+  float w0;
   
   if ((in_EDX == 0.0) || (*(float *)((int)in_EDX + 0xc) != 0.0)) {
     param_3 = (float)(in_ECX->info).name * param_3;
     fVar1 = (float)(in_ECX->info).gameFlags;
-    fVar2 = fVar1 * param_2 + *(float *)(in_ECX->stateBitsEntry + 0x3c);
+    w0 = fVar1 * param_2 + *(float *)(in_ECX->stateBitsEntry + 0x3c);
     param_4 = fVar1 * param_4;
     if (rg.renderHiResShot != 0) {
       in_ECX = (Material *)(float)rg.hiResShotTiles;
@@ -869,10 +869,10 @@ CL_DrawStretchPicRotatedXY
       if (DAT_047aaae8 < 0) {
         fVar1 = fVar1 + 4.2949673e+09;
       }
-      fVar2 = (float)in_ECX * fVar2 - fVar1 * rg.hiResShotCol;
+      w0 = (float)in_ECX * w0 - fVar1 * rg.hiResShotCol;
     }
     R_AddCmdDrawStretchPicRotateXYW
-              (fVar2,1.0,param_3,param_4,0.0,0.0,1.0,1.0,param_5,in_EDX,(float *)param_6,in_ECX);
+              (w0,1.0,param_3,param_4,0.0,0.0,1.0,1.0,param_5,in_EDX,(float *)param_6,in_ECX);
   }
   return;
 }
@@ -963,14 +963,14 @@ LAB_004d9f77:
 void __cdecl CL_UpdateLevelHunkUsage(void)
 
 {
-  uint uVar1;
-  uchar uVar2;
-  char cVar3;
-  int iVar4;
-  uchar *puVar5;
-  char *pcVar6;
+  uint size;
+  uchar uVar1;
+  char cVar2;
+  int iVar3;
+  uchar *puVar4;
+  char *pcVar5;
+  uchar *puVar6;
   uchar *puVar7;
-  uchar *puVar8;
   int unaff_ESI;
   char *unaff_EDI;
   uchar *local_114;
@@ -981,96 +981,96 @@ void __cdecl CL_UpdateLevelHunkUsage(void)
   
   local_10c = (char *)(DAT_01f4632c + DAT_01f46334);
   local_108 = clients;
-  iVar4 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_114);
+  iVar3 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_114);
   if (local_114 != (uchar *)0x0) {
-    *(int *)(&DAT_01f41584 + (int)local_114 * 0x11c) = iVar4;
+    *(int *)(&DAT_01f41584 + (int)local_114 * 0x11c) = iVar3;
     *(undefined4 *)(&DAT_01f41590 + (int)local_114 * 0x11c) = 0;
   }
   *(undefined4 *)(&DAT_01f41580 + (int)local_114 * 0x11c) = 0;
-  if (-1 < iVar4) {
-    uVar1 = iVar4 + 1;
-    puVar5 = malloc(uVar1);
-    local_110 = puVar5;
-    if (puVar5 != (uchar *)0x0) {
-      Com_Memset(puVar5,0,uVar1);
-      memset(puVar5,'\0',uVar1);
-      puVar5 = malloc(uVar1);
-      if (puVar5 != (uchar *)0x0) {
-        Com_Memset(puVar5,0,uVar1);
-        memset(puVar5,'\0',uVar1);
-        puVar7 = local_110;
-        FS_Read(local_110,iVar4,(int)local_114);
+  if (-1 < iVar3) {
+    size = iVar3 + 1;
+    puVar4 = malloc(size);
+    local_110 = puVar4;
+    if (puVar4 != (uchar *)0x0) {
+      Com_Memset(puVar4,0,size);
+      memset(puVar4,'\0',size);
+      puVar4 = malloc(size);
+      if (puVar4 != (uchar *)0x0) {
+        Com_Memset(puVar4,0,size);
+        memset(puVar4,'\0',size);
+        puVar6 = local_110;
+        FS_Read(local_110,iVar3,(int)local_114);
         FS_FCloseFile((int)unaff_EDI);
-        local_114 = puVar7;
-        *puVar5 = '\0';
+        local_114 = puVar6;
+        *puVar4 = '\0';
         while( true ) {
-          iVar4 = FUN_006a9e90();
-          iVar4 = *(int *)(iVar4 + 0x4280) * 0x428 + iVar4;
-          if (*(char *)(iVar4 + 0x408) != '\0') {
-            local_114 = *(uchar **)(iVar4 + 0x420);
-            *(undefined1 *)(iVar4 + 0x408) = 0;
-            *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
+          iVar3 = FUN_006a9e90();
+          iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
+          if (*(char *)(iVar3 + 0x408) != '\0') {
+            local_114 = *(uchar **)(iVar3 + 0x420);
+            *(undefined1 *)(iVar3 + 0x408) = 0;
+            *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
           }
-          pcVar6 = (char *)FUN_006aa5f0(&local_114,1);
-          if ((pcVar6 == (char *)0x0) || (*pcVar6 == '\0')) break;
-          iVar4 = I_strnicmp(pcVar6,unaff_EDI,unaff_ESI);
-          if (iVar4 == 0) {
-            iVar4 = FUN_006a9e90();
-            iVar4 = *(int *)(iVar4 + 0x4280) * 0x428 + iVar4;
-            if (*(char *)(iVar4 + 0x408) != '\0') {
-              local_114 = *(uchar **)(iVar4 + 0x420);
-              *(undefined1 *)(iVar4 + 0x408) = 0;
-              *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
+          pcVar5 = (char *)FUN_006aa5f0(&local_114,1);
+          if ((pcVar5 == (char *)0x0) || (*pcVar5 == '\0')) break;
+          iVar3 = I_strnicmp(pcVar5,unaff_EDI,unaff_ESI);
+          if (iVar3 == 0) {
+            iVar3 = FUN_006a9e90();
+            iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
+            if (*(char *)(iVar3 + 0x408) != '\0') {
+              local_114 = *(uchar **)(iVar3 + 0x420);
+              *(undefined1 *)(iVar3 + 0x408) = 0;
+              *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
             }
-            pcVar6 = (char *)FUN_006aa5f0(&local_114,1);
-            if ((pcVar6 != (char *)0x0) && (*pcVar6 != '\0')) {
-              pcVar6 = (char *)atoi(pcVar6);
-              if (pcVar6 == local_10c) {
+            pcVar5 = (char *)FUN_006aa5f0(&local_114,1);
+            if ((pcVar5 != (char *)0x0) && (*pcVar5 != '\0')) {
+              pcVar5 = (char *)atoi(pcVar5);
+              if (pcVar5 == local_10c) {
                 free(local_110);
-                free(puVar5);
+                free(puVar4);
                 return;
               }
             }
           }
           else {
-            puVar7 = puVar5;
-            I_strncat((char *)puVar5,(int)pcVar6,unaff_EDI);
-            I_strncat((char *)puVar5,0x9d3680,(char *)puVar7);
-            iVar4 = FUN_006a9e90();
-            iVar4 = *(int *)(iVar4 + 0x4280) * 0x428 + iVar4;
-            if (*(char *)(iVar4 + 0x408) != '\0') {
-              local_114 = *(uchar **)(iVar4 + 0x420);
-              *(undefined1 *)(iVar4 + 0x408) = 0;
-              *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
+            puVar6 = puVar4;
+            I_strncat((char *)puVar4,(int)pcVar5,unaff_EDI);
+            I_strncat((char *)puVar4,0x9d3680,(char *)puVar6);
+            iVar3 = FUN_006a9e90();
+            iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
+            if (*(char *)(iVar3 + 0x408) != '\0') {
+              local_114 = *(uchar **)(iVar3 + 0x420);
+              *(undefined1 *)(iVar3 + 0x408) = 0;
+              *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
             }
-            pcVar6 = (char *)FUN_006aa5f0(&local_114,1);
-            if ((pcVar6 == (char *)0x0) || (*pcVar6 == '\0')) {
+            pcVar5 = (char *)FUN_006aa5f0(&local_114,1);
+            if ((pcVar5 == (char *)0x0) || (*pcVar5 == '\0')) {
               Com_Error(ERR_DROP,"EXE_ERR_HUNGUSAGE_CORRUPT");
             }
             else {
-              puVar7 = puVar5;
-              I_strncat((char *)puVar5,(int)pcVar6,unaff_EDI);
-              I_strncat((char *)puVar5,0xa0f0a0,(char *)puVar7);
+              puVar6 = puVar4;
+              I_strncat((char *)puVar4,(int)pcVar5,unaff_EDI);
+              I_strncat((char *)puVar4,0xa0f0a0,(char *)puVar6);
             }
           }
         }
-        iVar4 = FUN_0068eba0(0);
-        if (iVar4 == 0) {
-          pcVar6 = va("EXE_ERR_CANT_CREATE\x15%s","hunkusage.dat");
-          Com_Error(ERR_DROP,pcVar6);
+        iVar3 = FUN_0068eba0(0);
+        if (iVar3 == 0) {
+          pcVar5 = va("EXE_ERR_CANT_CREATE\x15%s","hunkusage.dat");
+          Com_Error(ERR_DROP,pcVar5);
         }
-        puVar7 = puVar5;
+        puVar6 = puVar4;
         do {
-          uVar2 = *puVar7;
-          puVar7 = puVar7 + 1;
-        } while (uVar2 != '\0');
-        puVar8 = (uchar *)FS_Write(puVar7 + -(int)(puVar5 + 1),iVar4,(int)unaff_EDI);
-        if (puVar8 != puVar7 + -(int)(puVar5 + 1)) {
+          uVar1 = *puVar6;
+          puVar6 = puVar6 + 1;
+        } while (uVar1 != '\0');
+        puVar7 = (uchar *)FS_Write(puVar6 + -(int)(puVar4 + 1),iVar3,(int)unaff_EDI);
+        if (puVar7 != puVar6 + -(int)(puVar4 + 1)) {
           Com_Error(ERR_DROP,"EXE_ERR_CANT_WRITE\x15%s","hunkusage.dat");
         }
         FS_FCloseFile((int)unaff_EDI);
         free(local_110);
-        free(puVar5);
+        free(puVar4);
         goto LAB_004da2e5;
       }
     }
@@ -1078,32 +1078,32 @@ void __cdecl CL_UpdateLevelHunkUsage(void)
     FUN_00699280();
   }
 LAB_004da2e5:
-  puVar5 = (uchar *)FS_FOpenFileAppend("hunkusage.dat");
-  if (puVar5 != (uchar *)0x0) {
-    *(undefined4 *)(&DAT_01f41584 + (int)puVar5 * 0x11c) = 0;
-    *(undefined4 *)(&DAT_01f41590 + (int)puVar5 * 0x11c) = 0;
+  puVar4 = (uchar *)FS_FOpenFileAppend("hunkusage.dat");
+  if (puVar4 != (uchar *)0x0) {
+    *(undefined4 *)(&DAT_01f41584 + (int)puVar4 * 0x11c) = 0;
+    *(undefined4 *)(&DAT_01f41590 + (int)puVar4 * 0x11c) = 0;
   }
-  *(undefined4 *)(&DAT_01f41580 + (int)puVar5 * 0x11c) = 0;
-  local_114 = puVar5;
-  if (puVar5 == (uchar *)0x0) {
+  *(undefined4 *)(&DAT_01f41580 + (int)puVar4 * 0x11c) = 0;
+  local_114 = puVar4;
+  if (puVar4 == (uchar *)0x0) {
     Com_Error(ERR_DROP,"EXE_ERR_HUNKUSAGE_CANT_WRITE");
   }
-  pcVar6 = local_104;
+  pcVar5 = local_104;
   Com_sprintf("%s %i\n",(int)(local_108 + 0x274c),local_10c);
   do {
-    cVar3 = *pcVar6;
-    pcVar6 = pcVar6 + 1;
-  } while (cVar3 != '\0');
-  pcVar6 = pcVar6 + -(int)(local_104 + 1);
-  FS_Write(pcVar6,(int)puVar5,(int)unaff_EDI);
-  FS_FCloseFile((int)pcVar6);
-  iVar4 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_114);
+    cVar2 = *pcVar5;
+    pcVar5 = pcVar5 + 1;
+  } while (cVar2 != '\0');
+  pcVar5 = pcVar5 + -(int)(local_104 + 1);
+  FS_Write(pcVar5,(int)puVar4,(int)unaff_EDI);
+  FS_FCloseFile((int)pcVar5);
+  iVar3 = FS_FOpenFileRead("hunkusage.dat",(int *)&local_114);
   if (local_114 != (uchar *)0x0) {
-    *(int *)(&DAT_01f41584 + (int)local_114 * 0x11c) = iVar4;
+    *(int *)(&DAT_01f41584 + (int)local_114 * 0x11c) = iVar3;
     *(undefined4 *)(&DAT_01f41590 + (int)local_114 * 0x11c) = 0;
   }
   *(undefined4 *)(&DAT_01f41580 + (int)local_114 * 0x11c) = 0;
-  if (-1 < iVar4) {
+  if (-1 < iVar3) {
     FS_FCloseFile((int)unaff_EDI);
   }
   return;

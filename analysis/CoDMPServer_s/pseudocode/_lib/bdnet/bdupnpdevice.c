@@ -865,29 +865,29 @@ bdUPnPDevice::extractTag
           (bdUPnPDevice *this,char *param_1,char *param_2,char **param_3,uint *param_4)
 
 {
-  uchar *extraout_EAX;
+  uchar *str1;
+  int extraout_EAX;
   int extraout_EAX_00;
-  int extraout_EAX_01;
-  uchar *puVar1;
+  uchar *str1_00;
   bool bStack_d;
   
   bStack_d = false;
   *param_3 = (char *)0x0;
   *param_4 = 0;
   strstr((uchar *)param_2,(uchar *)param_1);
-  if ((extraout_EAX != (uchar *)0x0) && (strstr(extraout_EAX,(uchar *)">"), extraout_EAX_00 != 0)) {
-    puVar1 = (uchar *)(extraout_EAX_00 + 1);
-    strstr(puVar1,"</");
-    if (extraout_EAX_01 == 0) {
+  if ((str1 != (uchar *)0x0) && (strstr(str1,(uchar *)">"), extraout_EAX != 0)) {
+    str1_00 = (uchar *)(extraout_EAX + 1);
+    strstr(str1_00,"</");
+    if (extraout_EAX_00 == 0) {
       bdLogMessage(1,"warn/","bdnet/upnpdevice",
                    "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdNet\\bdUPnP\\bdUPnPDevice.cpp",
                    "bdUPnPDevice::extractTag",0x2dd,"Tag %s is improperly formatted",param_1,this);
     }
     else {
-      bStack_d = extraout_EAX_01 - (int)puVar1 != 0;
+      bStack_d = extraout_EAX_00 - (int)str1_00 != 0;
       if (bStack_d) {
-        *param_3 = (char *)puVar1;
-        *param_4 = extraout_EAX_01 - (int)puVar1;
+        *param_3 = (char *)str1_00;
+        *param_4 = extraout_EAX_00 - (int)str1_00;
       }
     }
   }

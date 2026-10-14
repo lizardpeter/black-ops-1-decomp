@@ -2,14 +2,18 @@
 
 // 00848A30  R_AddDebugLine  (gfx_d3d/r_debug.cpp:143)
 
+/* WARNING: Variable defined which should be unmapped: doDepthTest */
+
 void __cdecl
-R_AddDebugLine(DebugGlobals *param_1,float *param_2,float *param_3,float *param_4,int param_5)
+R_AddDebugLine(DebugGlobals *end,float *param_2,float *param_3,float *param_4,int param_5)
 
 {
   int iVar1;
   int iVar2;
   int unaff_ESI;
   undefined4 *unaff_EDI;
+  float *start;
+  int doDepthTest;
   
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6920);
   if (*(int *)(unaff_ESI + 0x38) < *(int *)(unaff_ESI + 0x34) + 1) {
@@ -29,9 +33,9 @@ R_AddDebugLine(DebugGlobals *param_1,float *param_2,float *param_3,float *param_
     if (iVar1 == 0) goto LAB_00848af4;
   }
   iVar2 = *(int *)(unaff_ESI + 0x34) * 0x2c;
-  *(float (**) [3])(iVar2 + iVar1) = (param_1->polySet).verts;
-  *(int *)(iVar2 + 4 + iVar1) = (param_1->polySet).vertCount;
-  *(int *)(iVar2 + 8 + iVar1) = (param_1->polySet).vertLimit;
+  *(float (**) [3])(iVar2 + iVar1) = (end->polySet).verts;
+  *(int *)(iVar2 + 4 + iVar1) = (end->polySet).vertCount;
+  *(int *)(iVar2 + 8 + iVar1) = (end->polySet).vertLimit;
   *(float *)(iVar2 + 0xc + iVar1) = *param_2;
   iVar2 = iVar2 + iVar1;
   *(float *)(iVar2 + 0x10) = param_2[1];
@@ -50,7 +54,7 @@ LAB_00848af4:
 
 // 00848B10  R_AddDebugBox  (gfx_d3d/r_debug.cpp:186)
 
-void __cdecl R_AddDebugBox(DebugGlobals *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl R_AddDebugBox(DebugGlobals *mins,float *param_2,float *param_3,float *param_4)
 
 {
   float *pfVar1;
@@ -60,6 +64,7 @@ void __cdecl R_AddDebugBox(DebugGlobals *param_1,float *param_2,float *param_3,f
   float *unaff_ESI;
   float *unaff_EDI;
   float fVar3;
+  DebugGlobals *debugGlobalsEntry;
   float local_60 [24];
   
   uVar2 = 0;
@@ -103,12 +108,13 @@ void __cdecl R_AddDebugBox(DebugGlobals *param_1,float *param_2,float *param_3,f
 // 00848BB0  R_AddDebugString  (gfx_d3d/r_debug.cpp:221)
 
 void __cdecl
-R_AddDebugString(DebugGlobals *param_1,float *param_2,float *param_3,float param_4,char *param_5)
+R_AddDebugString(DebugGlobals *color,float *scale,float *string,float param_4,char *param_5)
 
 {
   int iVar1;
   int iVar2;
   int unaff_EDI;
+  float *origin;
   
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6920);
   if (*(int *)(unaff_EDI + 0x20) < *(int *)(unaff_EDI + 0x1c) + 1) {
@@ -127,15 +133,15 @@ LAB_00848bd0:
     if (iVar1 == 0) goto LAB_00848bd0;
   }
   iVar2 = *(int *)(unaff_EDI + 0x1c) * 0x80;
-  *(float (**) [3])(iVar2 + iVar1) = (param_1->polySet).verts;
+  *(float (**) [3])(iVar2 + iVar1) = (color->polySet).verts;
   iVar2 = iVar2 + iVar1;
-  *(int *)(iVar2 + 4) = (param_1->polySet).vertCount;
-  *(int *)(iVar2 + 8) = (param_1->polySet).vertLimit;
-  *(float *)(iVar2 + 0xc) = *param_2;
-  *(float *)(iVar2 + 0x10) = param_2[1];
-  *(float *)(iVar2 + 0x14) = param_2[2];
-  *(float *)(iVar2 + 0x18) = param_2[3];
-  *(float **)(iVar2 + 0x1c) = param_3;
+  *(int *)(iVar2 + 4) = (color->polySet).vertCount;
+  *(int *)(iVar2 + 8) = (color->polySet).vertLimit;
+  *(float *)(iVar2 + 0xc) = *scale;
+  *(float *)(iVar2 + 0x10) = scale[1];
+  *(float *)(iVar2 + 0x14) = scale[2];
+  *(float *)(iVar2 + 0x18) = scale[3];
+  *(float **)(iVar2 + 0x1c) = string;
   strncpy((uchar *)(iVar2 + 0x20),(uchar *)param_4,0x5f);
   *(undefined1 *)(iVar2 + 0x7f) = 0;
   *(int *)(unaff_EDI + 0x1c) = *(int *)(unaff_EDI + 0x1c) + 1;
@@ -151,56 +157,57 @@ void __cdecl R_TransferDebugGlobals(DebugGlobals *param_1)
 {
   undefined8 *puVar1;
   GfxDebugPlume *pGVar2;
-  GfxDebugPlume *pGVar3;
+  GfxDebugPlume *dst;
+  int iVar3;
   int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
+  DebugGlobals *debugGlobalsEntry;
   
-  iVar6 = 0;
-  iVar4 = debugGlobals.plumeCount;
+  iVar5 = 0;
+  iVar3 = debugGlobals.plumeCount;
   pGVar2 = debugGlobals.plumes;
   if (0 < debugGlobals.plumeCount) {
-    iVar7 = 0;
+    iVar6 = 0;
     do {
-      iVar5 = scene.def.time - *(int *)((int)pGVar2->color + iVar7 + 0x14);
-      puVar1 = (undefined8 *)((int)pGVar2->origin + iVar7);
-      if ((iVar5 < 0) || (*(int *)((int)puVar1 + 0x24) < iVar5)) {
-        iVar4 = iVar4 + -1;
-        debugGlobals.plumeCount = iVar4;
-        *puVar1 = *(undefined8 *)pGVar2[iVar4].origin;
-        puVar1[1] = *(undefined8 *)(pGVar2[iVar4].origin + 2);
-        puVar1[2] = *(undefined8 *)(pGVar2[iVar4].color + 1);
-        puVar1[3] = *(undefined8 *)(pGVar2[iVar4].color + 3);
-        puVar1[4] = *(undefined8 *)&pGVar2[iVar4].startTime;
-        iVar4 = debugGlobals.plumeCount;
+      iVar4 = scene.def.time - *(int *)((int)pGVar2->color + iVar6 + 0x14);
+      puVar1 = (undefined8 *)((int)pGVar2->origin + iVar6);
+      if ((iVar4 < 0) || (*(int *)((int)puVar1 + 0x24) < iVar4)) {
+        iVar3 = iVar3 + -1;
+        debugGlobals.plumeCount = iVar3;
+        *puVar1 = *(undefined8 *)pGVar2[iVar3].origin;
+        puVar1[1] = *(undefined8 *)(pGVar2[iVar3].origin + 2);
+        puVar1[2] = *(undefined8 *)(pGVar2[iVar3].color + 1);
+        puVar1[3] = *(undefined8 *)(pGVar2[iVar3].color + 3);
+        puVar1[4] = *(undefined8 *)&pGVar2[iVar3].startTime;
+        iVar3 = debugGlobals.plumeCount;
         pGVar2 = debugGlobals.plumes;
       }
       else {
-        iVar6 = iVar6 + 1;
-        iVar7 = iVar7 + 0x28;
+        iVar5 = iVar5 + 1;
+        iVar6 = iVar6 + 0x28;
       }
-    } while (iVar6 < iVar4);
+    } while (iVar5 < iVar3);
   }
   if (pGVar2 != (GfxDebugPlume *)0x0) {
-    pGVar3 = param_1->plumes;
-    if (pGVar3 == (GfxDebugPlume *)0x0) {
+    dst = param_1->plumes;
+    if (dst == (GfxDebugPlume *)0x0) {
       pGVar2 = (GfxDebugPlume *)_Z_TryVirtualAllocInternal(debugGlobals.plumeLimit * 0x28);
       param_1->plumes = pGVar2;
       if (pGVar2 == (GfxDebugPlume *)0x0) {
         R_WarnOncePerFrame(R_WARN_DEBUG_ALLOC);
       }
-      pGVar3 = param_1->plumes;
-      iVar4 = debugGlobals.plumeCount;
+      dst = param_1->plumes;
+      iVar3 = debugGlobals.plumeCount;
       pGVar2 = debugGlobals.plumes;
-      if (pGVar3 == (GfxDebugPlume *)0x0) {
+      if (dst == (GfxDebugPlume *)0x0) {
         return;
       }
     }
-    memcpy((uchar *)pGVar3,(uchar *)pGVar2,iVar4 * 0x28);
-    iVar4 = debugGlobals.plumeCount;
+    memcpy((uchar *)dst,(uchar *)pGVar2,iVar3 * 0x28);
+    iVar3 = debugGlobals.plumeCount;
   }
-  param_1->plumeCount = iVar4;
+  param_1->plumeCount = iVar3;
   if (persistentPolySet.polys == (GfxDebugPoly *)0x0) {
     return;
   }

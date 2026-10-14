@@ -102,26 +102,27 @@ bool __cdecl CreateDebugStringsIfNeeded(void)
 
 void __cdecl
 AddDebugStringInternal
-          (float *param_1,float *param_2,float param_3,char *param_4,int param_5,
-          clientDebugStringInfo_t *param_6)
+          (float *xyz,float *color,float scale,char *text,int duration,clientDebugStringInfo_t *info
+          )
 
 {
   trDebugString_t *ptVar1;
+  trDebugString_t *string;
   
-  if (param_6->num + 1 <= param_6->max) {
-    ptVar1 = param_6->strings + param_6->num;
-    ptVar1->xyz[0] = *param_1;
-    ptVar1->xyz[1] = param_1[1];
-    ptVar1->xyz[2] = param_1[2];
-    ptVar1->color[0] = *param_2;
-    ptVar1->color[1] = param_2[1];
-    ptVar1->color[2] = param_2[2];
-    ptVar1->color[3] = param_2[3];
-    ptVar1->scale = param_3;
-    strncpy((uchar *)ptVar1->text,(uchar *)param_4,0x5f);
+  if (info->num + 1 <= info->max) {
+    ptVar1 = info->strings + info->num;
+    ptVar1->xyz[0] = *xyz;
+    ptVar1->xyz[1] = xyz[1];
+    ptVar1->xyz[2] = xyz[2];
+    ptVar1->color[0] = *color;
+    ptVar1->color[1] = color[1];
+    ptVar1->color[2] = color[2];
+    ptVar1->color[3] = color[3];
+    ptVar1->scale = scale;
+    strncpy((uchar *)ptVar1->text,(uchar *)text,0x5f);
     ptVar1->text[0x5f] = '\0';
-    param_6->durations[param_6->num] = param_5;
-    param_6->num = param_6->num + 1;
+    info->durations[info->num] = duration;
+    info->num = info->num + 1;
   }
   return;
 }
@@ -129,23 +130,23 @@ AddDebugStringInternal
 
 // 0054DE40  CL_AddDebugString  (client/cl_debugdata.cpp:87)
 
-void __cdecl
-CL_AddDebugString(float *param_1,float *param_2,float param_3,char *param_4,int param_5)
+void __cdecl CL_AddDebugString(float *xyz,float *color,float scale,char *text,int duration)
 
 {
   int iVar1;
   bool bVar2;
-  clientDebugStringInfo_t *local_c;
+  clientDebugStringInfo_t *info;
+  int fromServer;
   
   if ((cls.rendererStarted != 0) && (bVar2 = CreateDebugStringsIfNeeded(), bVar2)) {
     iVar1 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0xc);
     if (iVar1 == 0) {
-      local_c = &cls.debug.clStrings;
+      info = &cls.debug.clStrings;
     }
     else {
-      local_c = &cls.debug.svStrings;
+      info = &cls.debug.svStrings;
     }
-    AddDebugStringInternal(param_1,param_2,param_3,param_4,param_5,local_c);
+    AddDebugStringInternal(xyz,color,scale,text,duration,info);
     if (iVar1 != 0) {
       cls.debug.fromServer = 1;
     }
@@ -221,26 +222,27 @@ bool __cdecl CreateDebugSpheresIfNeeded(void)
 
 void __cdecl
 AddDebugSphereInternal
-          (float *param_1,float param_2,float *param_3,int param_4,int param_5,int param_6,
-          clientDebugSphereInfo_t *param_7)
+          (float *center,float radius,float *color,int sideCount,int depthTest,int duration,
+          clientDebugSphereInfo_t *info)
 
 {
   trDebugSphere_t *ptVar1;
+  trDebugSphere_t *sphere;
   
-  if (param_7->num + 1 <= param_7->max) {
-    ptVar1 = param_7->spheres + param_7->num;
-    ptVar1->center[0] = *param_1;
-    ptVar1->center[1] = param_1[1];
-    ptVar1->center[2] = param_1[2];
-    ptVar1->radius = param_2;
-    ptVar1->color[0] = *param_3;
-    ptVar1->color[1] = param_3[1];
-    ptVar1->color[2] = param_3[2];
-    ptVar1->color[3] = param_3[3];
-    ptVar1->depthTest = param_5;
-    ptVar1->sideCount = param_4;
-    param_7->durations[param_7->num] = param_6;
-    param_7->num = param_7->num + 1;
+  if (info->num + 1 <= info->max) {
+    ptVar1 = info->spheres + info->num;
+    ptVar1->center[0] = *center;
+    ptVar1->center[1] = center[1];
+    ptVar1->center[2] = center[2];
+    ptVar1->radius = radius;
+    ptVar1->color[0] = *color;
+    ptVar1->color[1] = color[1];
+    ptVar1->color[2] = color[2];
+    ptVar1->color[3] = color[3];
+    ptVar1->depthTest = depthTest;
+    ptVar1->sideCount = sideCount;
+    info->durations[info->num] = duration;
+    info->num = info->num + 1;
   }
   return;
 }
@@ -249,22 +251,23 @@ AddDebugSphereInternal
 // 0054E190  CL_AddDebugSphere  (client/cl_debugdata.cpp:155)
 
 void __cdecl
-CL_AddDebugSphere(float *param_1,float param_2,float *param_3,int param_4,int param_5,int param_6)
+CL_AddDebugSphere(float *center,float radius,float *color,int sideCount,int depthTest,int duration)
 
 {
   int iVar1;
   bool bVar2;
-  clientDebugSphereInfo_t *local_c;
+  clientDebugSphereInfo_t *info;
+  int fromServer;
   
   if ((cls.rendererStarted != 0) && (bVar2 = CreateDebugSpheresIfNeeded(), bVar2)) {
     iVar1 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0xc);
     if (iVar1 == 0) {
-      local_c = &cls.debug.clSpheres;
+      info = &cls.debug.clSpheres;
     }
     else {
-      local_c = &cls.debug.svSpheres;
+      info = &cls.debug.svSpheres;
     }
-    AddDebugSphereInternal(param_1,param_2,param_3,param_4,param_5,param_6,local_c);
+    AddDebugSphereInternal(center,radius,color,sideCount,depthTest,duration,info);
     if (iVar1 != 0) {
       cls.debug.fromServer = 1;
     }
@@ -340,27 +343,28 @@ bool __cdecl CreateDebugLinesIfNeeded(void)
 
 void __cdecl
 AddDebugLineInternal
-          (float *param_1,float *param_2,float *param_3,int param_4,int param_5,
-          clientDebugLineInfo_t *param_6)
+          (float *start,float *end,float *color,int depthTest,int duration,
+          clientDebugLineInfo_t *info)
 
 {
   trDebugLine_t *ptVar1;
+  trDebugLine_t *line;
   
-  if (param_6->num + 1 <= param_6->max) {
-    ptVar1 = param_6->lines + param_6->num;
-    ptVar1->start[0] = *param_1;
-    ptVar1->start[1] = param_1[1];
-    ptVar1->start[2] = param_1[2];
-    ptVar1->end[0] = *param_2;
-    ptVar1->end[1] = param_2[1];
-    ptVar1->end[2] = param_2[2];
-    ptVar1->color[0] = *param_3;
-    ptVar1->color[1] = param_3[1];
-    ptVar1->color[2] = param_3[2];
-    ptVar1->color[3] = param_3[3];
-    ptVar1->depthTest = param_4;
-    param_6->durations[param_6->num] = param_5;
-    param_6->num = param_6->num + 1;
+  if (info->num + 1 <= info->max) {
+    ptVar1 = info->lines + info->num;
+    ptVar1->start[0] = *start;
+    ptVar1->start[1] = start[1];
+    ptVar1->start[2] = start[2];
+    ptVar1->end[0] = *end;
+    ptVar1->end[1] = end[1];
+    ptVar1->end[2] = end[2];
+    ptVar1->color[0] = *color;
+    ptVar1->color[1] = color[1];
+    ptVar1->color[2] = color[2];
+    ptVar1->color[3] = color[3];
+    ptVar1->depthTest = depthTest;
+    info->durations[info->num] = duration;
+    info->num = info->num + 1;
   }
   return;
 }
@@ -368,22 +372,23 @@ AddDebugLineInternal
 
 // 0054E490  CL_AddDebugLine  (client/cl_debugdata.cpp:223)
 
-void __cdecl CL_AddDebugLine(float *param_1,float *param_2,float *param_3,int param_4,int param_5)
+void __cdecl CL_AddDebugLine(float *start,float *end,float *color,int depthTest,int duration)
 
 {
   int iVar1;
   bool bVar2;
-  clientDebugLineInfo_t *local_c;
+  clientDebugLineInfo_t *info;
+  int fromServer;
   
   if ((cls.rendererStarted != 0) && (bVar2 = CreateDebugLinesIfNeeded(), bVar2)) {
     iVar1 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0xc);
     if (iVar1 == 0) {
-      local_c = &cls.debug.clLines;
+      info = &cls.debug.clLines;
     }
     else {
-      local_c = &cls.debug.svLines;
+      info = &cls.debug.svLines;
     }
-    AddDebugLineInternal(param_1,param_2,param_3,param_4,param_5,local_c);
+    AddDebugLineInternal(start,end,color,depthTest,duration,info);
     if (iVar1 != 0) {
       cls.debug.fromServer = 1;
     }
@@ -395,43 +400,43 @@ void __cdecl CL_AddDebugLine(float *param_1,float *param_2,float *param_3,int pa
 // 0054E7A0  CL_AddDebugAxis  (client/cl_debugdata.cpp:247)
 
 void __cdecl
-CL_AddDebugAxis(float *param_1,float (*param_2) [3],float param_3,int param_4,int param_5)
+CL_AddDebugAxis(float *origin,float (*axis) [3],float length,int doDepthTest,int duration)
 
 {
   bool bVar1;
-  clientDebugLineInfo_t *local_30;
-  float local_2c;
+  clientDebugLineInfo_t *info;
+  float z;
   float local_28;
   float local_24;
-  float local_20;
+  float x;
   float local_1c;
   float local_18;
-  float local_14;
+  float y;
   float local_10;
   float local_c;
-  int local_8;
+  int fromServer;
   
   if ((cls.rendererStarted != 0) && (bVar1 = CreateDebugLinesIfNeeded(), bVar1)) {
-    local_8 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0xc);
-    if (local_8 == 0) {
-      local_30 = &cls.debug.clLines;
+    fromServer = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0xc);
+    if (fromServer == 0) {
+      info = &cls.debug.clLines;
     }
     else {
-      local_30 = &cls.debug.svLines;
+      info = &cls.debug.svLines;
     }
-    local_20 = param_3 * (*param_2)[0] + *param_1;
-    local_1c = param_3 * (*param_2)[1] + param_1[1];
-    local_18 = param_3 * (*param_2)[2] + param_1[2];
-    local_14 = param_3 * param_2[1][0] + *param_1;
-    local_10 = param_3 * param_2[1][1] + param_1[1];
-    local_c = param_3 * param_2[1][2] + param_1[2];
-    local_2c = param_3 * param_2[2][0] + *param_1;
-    local_28 = param_3 * param_2[2][1] + param_1[1];
-    local_24 = param_3 * param_2[2][2] + param_1[2];
-    AddDebugLineInternal(param_1,&local_20,colorRed,param_4,param_5,local_30);
-    AddDebugLineInternal(param_1,&local_14,colorGreen,param_4,param_5,local_30);
-    AddDebugLineInternal(param_1,&local_2c,colorBlue,param_4,param_5,local_30);
-    if (local_8 != 0) {
+    x = length * (*axis)[0] + *origin;
+    local_1c = length * (*axis)[1] + origin[1];
+    local_18 = length * (*axis)[2] + origin[2];
+    y = length * axis[1][0] + *origin;
+    local_10 = length * axis[1][1] + origin[1];
+    local_c = length * axis[1][2] + origin[2];
+    z = length * axis[2][0] + *origin;
+    local_28 = length * axis[2][1] + origin[1];
+    local_24 = length * axis[2][2] + origin[2];
+    AddDebugLineInternal(origin,&x,colorRed,doDepthTest,duration,info);
+    AddDebugLineInternal(origin,&y,colorGreen,doDepthTest,duration,info);
+    AddDebugLineInternal(origin,&z,colorBlue,doDepthTest,duration,info);
+    if (fromServer != 0) {
       cls.debug.fromServer = 1;
     }
   }
@@ -443,37 +448,37 @@ CL_AddDebugAxis(float *param_1,float (*param_2) [3],float param_3,int param_4,in
 
 void __cdecl
 CL_AddDebugStarWithText
-          (float *param_1,float *param_2,float *param_3,char *param_4,float param_5,int param_6)
+          (float *point,float *starColor,float *textColor,char *string,float fontsize,int duration)
 
 {
-  float local_20;
+  float lineEnd;
   float local_1c;
   float local_18;
-  float local_14;
+  float lineStart;
   float local_10;
   float local_c;
-  float local_8;
+  float starsize;
   
-  local_8 = param_5 * 5.0;
-  local_10 = param_1[1];
-  local_c = param_1[2];
-  local_1c = param_1[1];
-  local_18 = param_1[2];
-  local_14 = *param_1 + local_8;
-  local_20 = *param_1 - local_8;
-  CL_AddDebugLine(&local_14,&local_20,param_2,0,param_6);
-  local_14 = local_14 - local_8;
-  local_20 = local_20 + local_8;
-  local_10 = local_10 + local_8;
-  local_1c = local_1c - local_8;
-  CL_AddDebugLine(&local_14,&local_20,param_2,0,param_6);
-  local_10 = local_10 - local_8;
-  local_1c = local_1c + local_8;
-  local_c = local_c + local_8;
-  local_18 = local_18 - local_8;
-  CL_AddDebugLine(&local_14,&local_20,param_2,0,param_6);
-  if ((param_4 != (char *)0x0) && (*param_4 != '\0')) {
-    CL_AddDebugString(param_1,param_3,param_5,param_4,param_6);
+  starsize = fontsize * 5.0;
+  local_10 = point[1];
+  local_c = point[2];
+  local_1c = point[1];
+  local_18 = point[2];
+  lineStart = *point + starsize;
+  lineEnd = *point - starsize;
+  CL_AddDebugLine(&lineStart,&lineEnd,starColor,0,duration);
+  lineStart = lineStart - starsize;
+  lineEnd = lineEnd + starsize;
+  local_10 = local_10 + starsize;
+  local_1c = local_1c - starsize;
+  CL_AddDebugLine(&lineStart,&lineEnd,starColor,0,duration);
+  local_10 = local_10 - starsize;
+  local_1c = local_1c + starsize;
+  local_c = local_c + starsize;
+  local_18 = local_18 - starsize;
+  CL_AddDebugLine(&lineStart,&lineEnd,starColor,0,duration);
+  if ((string != (char *)0x0) && (*string != '\0')) {
+    CL_AddDebugString(point,textColor,fontsize,string,duration);
   }
   return;
 }
@@ -481,10 +486,10 @@ CL_AddDebugStarWithText
 
 // 0054EAF0  CL_AddDebugStar  (client/cl_debugdata.cpp:313)
 
-void __cdecl CL_AddDebugStar(float *param_1,float *param_2,int param_3)
+void __cdecl CL_AddDebugStar(float *point,float *color,int duration)
 
 {
-  CL_AddDebugStarWithText(param_1,param_2,MYNULLTEXTCOLOR,(char *)0x0,1.0,param_3);
+  CL_AddDebugStarWithText(point,color,MYNULLTEXTCOLOR,(char *)0x0,1.0,duration);
   return;
 }
 
@@ -492,8 +497,8 @@ void __cdecl CL_AddDebugStar(float *param_1,float *param_2,int param_3)
 // 0054EB20  CL_AddDebugBox  (client/cl_debugdata.cpp:319)
 
 void __cdecl
-CL_AddDebugBox(float *param_1,float *param_2,float *param_3,float param_4,float *param_5,int param_6
-              ,int param_7)
+CL_AddDebugBox(float *origin,float *mins,float *maxs,float yaw,float *color,int depthTest,
+              int duration)
 
 {
   float fVar1;
@@ -501,34 +506,35 @@ CL_AddDebugBox(float *param_1,float *param_2,float *param_3,float param_4,float 
   float10 fVar3;
   float10 fVar4;
   float local_a0;
-  uint local_84;
-  uint local_74;
-  float afStack_6c [26];
+  uint j;
+  uint i;
+  float fCos;
+  float afStack_6c [25];
+  float fSin;
   
-  fVar3 = (float10)fcos((float10)(param_4 * 0.017453292));
-  fVar4 = (float10)fsin((float10)(param_4 * 0.017453292));
-  for (local_74 = 0; local_74 < 8; local_74 = local_74 + 1) {
-    for (local_84 = 0; local_84 < 3; local_84 = local_84 + 1) {
-      if ((1 << ((byte)local_84 & 0x1f) & local_74) == 0) {
-        local_a0 = param_2[local_84];
+  fVar3 = (float10)fcos((float10)(yaw * 0.017453292));
+  fVar4 = (float10)fsin((float10)(yaw * 0.017453292));
+  for (i = 0; i < 8; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      if ((1 << ((byte)j & 0x1f) & i) == 0) {
+        local_a0 = mins[j];
       }
       else {
-        local_a0 = param_3[local_84];
+        local_a0 = maxs[j];
       }
-      afStack_6c[local_74 * 3 + local_84] = local_a0;
+      afStack_6c[i * 3 + j] = local_a0;
     }
-    fVar1 = afStack_6c[local_74 * 3];
-    fVar2 = afStack_6c[local_74 * 3 + 1];
-    afStack_6c[local_74 * 3] =
-         afStack_6c[local_74 * 3] * (float)fVar3 - afStack_6c[local_74 * 3 + 1] * (float)fVar4;
-    afStack_6c[local_74 * 3 + 1] = fVar1 * (float)fVar4 + fVar2 * (float)fVar3;
-    afStack_6c[local_74 * 3] = afStack_6c[local_74 * 3] + *param_1;
-    afStack_6c[local_74 * 3 + 1] = afStack_6c[local_74 * 3 + 1] + param_1[1];
-    afStack_6c[local_74 * 3 + 2] = afStack_6c[local_74 * 3 + 2] + param_1[2];
+    fVar1 = afStack_6c[i * 3];
+    fVar2 = afStack_6c[i * 3 + 1];
+    afStack_6c[i * 3] = afStack_6c[i * 3] * (float)fVar3 - afStack_6c[i * 3 + 1] * (float)fVar4;
+    afStack_6c[i * 3 + 1] = fVar1 * (float)fVar4 + fVar2 * (float)fVar3;
+    afStack_6c[i * 3] = afStack_6c[i * 3] + *origin;
+    afStack_6c[i * 3 + 1] = afStack_6c[i * 3 + 1] + origin[1];
+    afStack_6c[i * 3 + 2] = afStack_6c[i * 3 + 2] + origin[2];
   }
-  for (local_74 = 0; local_74 < 0xc; local_74 = local_74 + 1) {
-    CL_AddDebugLine(afStack_6c + edge[local_74][0] * 3,afStack_6c + edge[local_74][1] * 3,param_5,
-                    param_6,param_7);
+  for (i = 0; i < 0xc; i = i + 1) {
+    CL_AddDebugLine(afStack_6c + edge[i][0] * 3,afStack_6c + edge[i][1] * 3,color,depthTest,duration
+                   );
   }
   return;
 }
@@ -537,8 +543,8 @@ CL_AddDebugBox(float *param_1,float *param_2,float *param_3,float param_4,float 
 // 0054ED50  CL_AddDebugBox  (client/cl_debugdata.cpp:364)
 
 void __cdecl
-CL_AddDebugBox(float (*param_1) [3],float *param_2,float *param_3,float *param_4,float *param_5,
-              int param_6,int param_7)
+CL_AddDebugBox(float (*axis) [3],float *origin,float *mins,float *maxs,float *color,int depthTest,
+              int duration)
 
 {
   float fVar1;
@@ -553,39 +559,38 @@ CL_AddDebugBox(float (*param_1) [3],float *param_2,float *param_3,float *param_4
   float fVar10;
   float fVar11;
   float local_94;
-  uint local_78;
-  uint local_68;
+  uint j;
+  uint i;
   float afStack_64 [24];
   
-  for (local_68 = 0; local_68 < 8; local_68 = local_68 + 1) {
-    for (local_78 = 0; local_78 < 3; local_78 = local_78 + 1) {
-      if ((1 << ((byte)local_78 & 0x1f) & local_68) == 0) {
-        local_94 = param_3[local_78];
+  for (i = 0; i < 8; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      if ((1 << ((byte)j & 0x1f) & i) == 0) {
+        local_94 = mins[j];
       }
       else {
-        local_94 = param_4[local_78];
+        local_94 = maxs[j];
       }
-      afStack_64[local_68 * 3 + local_78] = local_94;
+      afStack_64[i * 3 + j] = local_94;
     }
-    fVar1 = afStack_64[local_68 * 3];
-    fVar2 = (*param_1)[1];
-    fVar3 = param_2[1];
-    fVar4 = (*param_1)[2];
-    fVar5 = param_2[2];
-    fVar6 = afStack_64[local_68 * 3 + 1];
-    fVar7 = param_1[1][1];
-    fVar8 = param_1[1][2];
-    fVar9 = afStack_64[local_68 * 3 + 2];
-    fVar10 = param_1[2][1];
-    fVar11 = param_1[2][2];
-    afStack_64[local_68 * 3] =
-         fVar9 * param_1[2][0] + fVar6 * param_1[1][0] + fVar1 * (*param_1)[0] + *param_2;
-    afStack_64[local_68 * 3 + 1] = fVar9 * fVar10 + fVar6 * fVar7 + fVar1 * fVar2 + fVar3;
-    afStack_64[local_68 * 3 + 2] = fVar9 * fVar11 + fVar6 * fVar8 + fVar1 * fVar4 + fVar5;
+    fVar1 = afStack_64[i * 3];
+    fVar2 = (*axis)[1];
+    fVar3 = origin[1];
+    fVar4 = (*axis)[2];
+    fVar5 = origin[2];
+    fVar6 = afStack_64[i * 3 + 1];
+    fVar7 = axis[1][1];
+    fVar8 = axis[1][2];
+    fVar9 = afStack_64[i * 3 + 2];
+    fVar10 = axis[2][1];
+    fVar11 = axis[2][2];
+    afStack_64[i * 3] = fVar9 * axis[2][0] + fVar6 * axis[1][0] + fVar1 * (*axis)[0] + *origin;
+    afStack_64[i * 3 + 1] = fVar9 * fVar10 + fVar6 * fVar7 + fVar1 * fVar2 + fVar3;
+    afStack_64[i * 3 + 2] = fVar9 * fVar11 + fVar6 * fVar8 + fVar1 * fVar4 + fVar5;
   }
-  for (local_68 = 0; local_68 < 0xc; local_68 = local_68 + 1) {
-    CL_AddDebugLine(afStack_64 + edge[local_68][0] * 3,afStack_64 + edge[local_68][1] * 3,param_5,
-                    param_6,param_7);
+  for (i = 0; i < 0xc; i = i + 1) {
+    CL_AddDebugLine(afStack_64 + edge[i][0] * 3,afStack_64 + edge[i][1] * 3,color,depthTest,duration
+                   );
   }
   return;
 }
@@ -593,23 +598,23 @@ CL_AddDebugBox(float (*param_1) [3],float *param_2,float *param_3,float *param_4
 
 // 0054EFF0  FlushDebugStrings  (client/cl_debugdata.cpp:412)
 
-void __cdecl FlushDebugStrings(clientDebugStringInfo_t *param_1,int param_2)
+void __cdecl FlushDebugStrings(clientDebugStringInfo_t *info,int fromServer)
 
 {
   int iVar1;
   trDebugString_t *ptVar2;
   trDebugString_t *ptVar3;
-  int local_8;
+  int idx;
   
-  if (param_1->strings != (trDebugString_t *)0x0) {
-    local_8 = 0;
-    while (local_8 < param_1->num) {
-      param_1->durations[local_8] = param_1->durations[local_8] + -1;
-      if (param_1->durations[local_8] < 1) {
-        param_1->num = param_1->num + -1;
-        param_1->durations[local_8] = param_1->durations[param_1->num];
-        ptVar2 = param_1->strings + param_1->num;
-        ptVar3 = param_1->strings + local_8;
+  if (info->strings != (trDebugString_t *)0x0) {
+    idx = 0;
+    while (idx < info->num) {
+      info->durations[idx] = info->durations[idx] + -1;
+      if (info->durations[idx] < 1) {
+        info->num = info->num + -1;
+        info->durations[idx] = info->durations[info->num];
+        ptVar2 = info->strings + info->num;
+        ptVar3 = info->strings + idx;
         for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
           ptVar3->xyz[0] = ptVar2->xyz[0];
           ptVar2 = (trDebugString_t *)(ptVar2->xyz + 1);
@@ -617,10 +622,10 @@ void __cdecl FlushDebugStrings(clientDebugStringInfo_t *param_1,int param_2)
         }
       }
       else {
-        if (param_2 != 0) {
+        if (fromServer != 0) {
           cls.debug.fromServer = 1;
         }
-        local_8 = local_8 + 1;
+        idx = idx + 1;
       }
     }
   }
@@ -630,23 +635,23 @@ void __cdecl FlushDebugStrings(clientDebugStringInfo_t *param_1,int param_2)
 
 // 0054F0C0  FlushDebugLines  (client/cl_debugdata.cpp:440)
 
-void __cdecl FlushDebugLines(clientDebugLineInfo_t *param_1,int param_2)
+void __cdecl FlushDebugLines(clientDebugLineInfo_t *info,int fromServer)
 
 {
   int iVar1;
   trDebugLine_t *ptVar2;
   trDebugLine_t *ptVar3;
-  int local_8;
+  int idx;
   
-  if (param_1->lines != (trDebugLine_t *)0x0) {
-    local_8 = 0;
-    while (local_8 < param_1->num) {
-      param_1->durations[local_8] = param_1->durations[local_8] + -1;
-      if (param_1->durations[local_8] < 1) {
-        param_1->num = param_1->num + -1;
-        param_1->durations[local_8] = param_1->durations[param_1->num];
-        ptVar2 = param_1->lines + param_1->num;
-        ptVar3 = param_1->lines + local_8;
+  if (info->lines != (trDebugLine_t *)0x0) {
+    idx = 0;
+    while (idx < info->num) {
+      info->durations[idx] = info->durations[idx] + -1;
+      if (info->durations[idx] < 1) {
+        info->num = info->num + -1;
+        info->durations[idx] = info->durations[info->num];
+        ptVar2 = info->lines + info->num;
+        ptVar3 = info->lines + idx;
         for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
           ptVar3->start[0] = ptVar2->start[0];
           ptVar2 = (trDebugLine_t *)(ptVar2->start + 1);
@@ -654,10 +659,10 @@ void __cdecl FlushDebugLines(clientDebugLineInfo_t *param_1,int param_2)
         }
       }
       else {
-        if (param_2 != 0) {
+        if (fromServer != 0) {
           cls.debug.fromServer = 1;
         }
-        local_8 = local_8 + 1;
+        idx = idx + 1;
       }
     }
   }
@@ -667,23 +672,23 @@ void __cdecl FlushDebugLines(clientDebugLineInfo_t *param_1,int param_2)
 
 // 0054F190  FlushDebugSpheres  (client/cl_debugdata.cpp:468)
 
-void __cdecl FlushDebugSpheres(clientDebugSphereInfo_t *param_1,int param_2)
+void __cdecl FlushDebugSpheres(clientDebugSphereInfo_t *info,int fromServer)
 
 {
   int iVar1;
   trDebugSphere_t *ptVar2;
   trDebugSphere_t *ptVar3;
-  int local_8;
+  int idx;
   
-  if (param_1->spheres != (trDebugSphere_t *)0x0) {
-    local_8 = 0;
-    while (local_8 < param_1->num) {
-      param_1->durations[local_8] = param_1->durations[local_8] + -1;
-      if (param_1->durations[local_8] < 1) {
-        param_1->num = param_1->num + -1;
-        param_1->durations[local_8] = param_1->durations[param_1->num];
-        ptVar2 = param_1->spheres + param_1->num;
-        ptVar3 = param_1->spheres + local_8;
+  if (info->spheres != (trDebugSphere_t *)0x0) {
+    idx = 0;
+    while (idx < info->num) {
+      info->durations[idx] = info->durations[idx] + -1;
+      if (info->durations[idx] < 1) {
+        info->num = info->num + -1;
+        info->durations[idx] = info->durations[info->num];
+        ptVar2 = info->spheres + info->num;
+        ptVar3 = info->spheres + idx;
         for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
           ptVar3->center[0] = ptVar2->center[0];
           ptVar2 = (trDebugSphere_t *)(ptVar2->center + 1);
@@ -691,10 +696,10 @@ void __cdecl FlushDebugSpheres(clientDebugSphereInfo_t *param_1,int param_2)
         }
       }
       else {
-        if (param_2 != 0) {
+        if (fromServer != 0) {
           cls.debug.fromServer = 1;
         }
-        local_8 = local_8 + 1;
+        idx = idx + 1;
       }
     }
   }
@@ -755,6 +760,8 @@ void __cdecl CL_FlushDebugServerData(void)
 void __cdecl CL_UpdateDebugServerData(void)
 
 {
+  uint copySize;
+  
   if (cls.rendererStarted != 0) {
     cls.debug.svStringsBuffer.num = cls.debug.svStrings.num;
     memcpy((uchar *)cls.debug.svStringsBuffer.strings,(uchar *)cls.debug.svStrings.strings,

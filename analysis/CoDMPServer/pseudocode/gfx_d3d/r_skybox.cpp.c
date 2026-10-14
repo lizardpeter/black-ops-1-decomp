@@ -2,10 +2,10 @@
 
 // 00ADE9B0  R_RegisterSkyboxModel  (gfx_d3d/r_skybox.cpp:22)
 
-void __cdecl R_RegisterSkyboxModel(char *param_1)
+void __cdecl R_RegisterSkyboxModel(char *xmodelName)
 
 {
-  g_skyboxModel = R_RegisterModel(param_1);
+  g_skyboxModel = R_RegisterModel(xmodelName);
   return;
 }
 
@@ -22,21 +22,21 @@ void __cdecl R_ClearSkyboxModel(void)
 
 // 00ADE9E0  R_AddSkyboxModel  (gfx_d3d/r_skybox.cpp:38)
 
-void __cdecl R_AddSkyboxModel(float *param_1)
+void __cdecl R_AddSkyboxModel(float *eyePos)
 
 {
-  GfxScaledPlacement local_24;
+  GfxScaledPlacement placement;
   
   if (g_skyboxModel != (XModel *)0x0) {
-    local_24.scale = 1.0;
-    local_24.base.origin[0] = *param_1;
-    local_24.base.origin[1] = param_1[1];
-    local_24.base.origin[2] = param_1[2];
-    local_24.base.quat[0] = 0.0;
-    local_24.base.quat[1] = 0.0;
-    local_24.base.quat[2] = 0.0;
-    local_24.base.quat[3] = 1.0;
-    R_FilterXModelIntoScene(g_skyboxModel,&local_24,0,&myhandle,0.0);
+    placement.scale = 1.0;
+    placement.base.origin[0] = *eyePos;
+    placement.base.origin[1] = eyePos[1];
+    placement.base.origin[2] = eyePos[2];
+    placement.base.quat[0] = 0.0;
+    placement.base.quat[1] = 0.0;
+    placement.base.quat[2] = 0.0;
+    placement.base.quat[3] = 1.0;
+    R_FilterXModelIntoScene(g_skyboxModel,&placement,0,&myhandle,0.0);
   }
   return;
 }

@@ -7,6 +7,9 @@
 __m128 * __cdecl _mm_cvtpu16_ps(__m128 *__return_storage_ptr__,__m64 param_1)
 
 {
+  __m128 tmp;
+  __m64 ext_val;
+  
   return (__m128 *)(__security_cookie ^ (uint)&stack0xfffffff0);
 }
 
@@ -37,8 +40,8 @@ __m128 * __cdecl _mm_cvtpu8_ps(__m128 *__return_storage_ptr__,__m64 param_1)
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,int *param_6)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -106,7 +109,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
   undefined6 uVar41;
   undefined6 uVar42;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x335,0
                               ,"%s");
     if (!bVar28) {
@@ -115,7 +118,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x336,0
                               ,"%s");
     if (!bVar28) {
@@ -124,7 +127,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (((uint)param_5 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x337,0
                               ,"%s");
     if (!bVar28) {
@@ -133,7 +136,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x338,0
                               ,"%s");
     if (!bVar28) {
@@ -142,10 +145,10 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
       return;
     }
   }
-  local_18 = *param_6;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar29 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar29 = srcVerts + local_18;
     fVar31 = pGVar29->xyz[0];
     fVar32 = pGVar29->xyz[1];
     GVar26 = pGVar29->color;
@@ -156,7 +159,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
     auVar25._12_4_ = (uint)pGVar29->binormalSign & 0x80000000;
     local_c0 = SUB164(auVar25 | (undefined1  [16])_one,0);
     fStack_b4 = SUB164(auVar25 | (undefined1  [16])_one,0xc);
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar35 = *pfVar30;
     fVar36 = pfVar30[1];
     fVar14 = pfVar30[2];
@@ -271,7 +274,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
     sVar3 = (short)((uint6)uVar42 >> 0x20);
     sVar4 = (short)(CONCAT17((0 < sVar5) * (sVar5 < 0x100) * (char)((uint)fVar36 >> 0x10) -
                              (0xff < sVar5),CONCAT16(cVar13,uVar42)) >> 0x30);
-    in_stack_fffff86c = param_5 + local_18;
+    in_stack_fffff86c = dstVerts + local_18;
     in_stack_fffff86c->xyz[0] = fVar43;
     in_stack_fffff86c->xyz[1] = fVar45;
     in_stack_fffff86c->xyz[2] = fVar46;
@@ -289,7 +292,7 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
     local_1c = local_1c + 1;
     local_18 = local_18 + 1;
   }
-  *param_6 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -300,8 +303,8 @@ R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,int *param_6)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -372,7 +375,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
   undefined6 uVar40;
   undefined6 uVar41;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x335,0
                               ,"%s");
     if (!bVar25) {
@@ -381,7 +384,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x336,0
                               ,"%s");
     if (!bVar25) {
@@ -390,7 +393,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (((uint)param_5 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x337,0
                               ,"%s");
     if (!bVar25) {
@@ -399,7 +402,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x338,0
                               ,"%s");
     if (!bVar25) {
@@ -408,10 +411,10 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
       return;
     }
   }
-  local_18 = *param_6;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar26 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar26 = srcVerts + local_18;
     fVar2 = pGVar26->xyz[0];
     fVar3 = pGVar26->xyz[1];
     GVar23 = pGVar26->color;
@@ -422,7 +425,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
     auVar22._12_4_ = (uint)pGVar26->binormalSign & 0x80000000;
     local_c0 = SUB164(auVar22 | (undefined1  [16])_one,0);
     fStack_b4 = SUB164(auVar22 | (undefined1  [16])_one,0xc);
-    pfVar27 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar27 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar30 = *pfVar27;
     fVar31 = pfVar27[1];
     fVar35 = pfVar27[2];
@@ -537,7 +540,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
     sVar5 = (short)((uint6)uVar41 >> 0x20);
     sVar6 = (short)(CONCAT17((0 < sVar7) * (sVar7 < 0x100) * (char)((uint)fVar35 >> 0x10) -
                              (0xff < sVar7),CONCAT16(cVar15,uVar41)) >> 0x30);
-    pfVar27 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar27 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar44 = *pfVar27 * fVar2 + pfVar27[4] * fVar3 + pfVar27[8] * local_c0 + pfVar27[0xc];
     fVar47 = pfVar27[1] * fVar2 + pfVar27[5] * fVar3 + pfVar27[9] * local_c0 + pfVar27[0xd];
     fVar50 = pfVar27[2] * fVar2 + pfVar27[6] * fVar3 + pfVar27[10] * local_c0 + pfVar27[0xe];
@@ -551,7 +554,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
     fVar2 = sse_weightScale.m128_f32[1];
     fVar3 = sse_weightScale.m128_f32[2];
     fVar30 = sse_weightScale.m128_f32[3];
-    in_stack_fffff64c = param_5 + local_18;
+    in_stack_fffff64c = dstVerts + local_18;
     in_stack_fffff64c->xyz[0] = fVar43 + fVar31 * sse_weightScale.m128_f32[0] * (fVar44 - fVar43);
     in_stack_fffff64c->xyz[1] = fVar46 + fVar35 * fVar2 * (fVar47 - fVar46);
     in_stack_fffff64c->xyz[2] = fVar48 + fVar34 * fVar3 * (fVar50 - fVar48);
@@ -569,7 +572,7 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
     local_1c = local_1c + 3;
     local_18 = local_18 + 1;
   }
-  *param_6 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -580,8 +583,8 @@ R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,int *param_6)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -653,7 +656,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
   undefined6 uVar37;
   undefined6 uVar38;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x335,0
                               ,"%s");
     if (!bVar22) {
@@ -662,7 +665,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x336,0
                               ,"%s");
     if (!bVar22) {
@@ -671,7 +674,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (((uint)param_5 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x337,0
                               ,"%s");
     if (!bVar22) {
@@ -680,7 +683,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x338,0
                               ,"%s");
     if (!bVar22) {
@@ -689,10 +692,10 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
       return;
     }
   }
-  local_18 = *param_6;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar23 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar23 = srcVerts + local_18;
     fVar42 = pGVar23->xyz[0];
     fVar45 = pGVar23->xyz[1];
     GVar20 = pGVar23->color;
@@ -703,7 +706,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
     auVar19._12_4_ = (uint)pGVar23->binormalSign & 0x80000000;
     local_c0 = SUB164(auVar19 | (undefined1  [16])_one,0);
     fStack_b4 = SUB164(auVar19 | (undefined1  [16])_one,0xc);
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar27 = *pfVar24;
     fVar28 = pfVar24[1];
     fVar32 = pfVar24[2];
@@ -818,7 +821,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
     sVar3 = (short)((uint6)uVar38 >> 0x20);
     sVar4 = (short)(CONCAT17((0 < sVar5) * (sVar5 < 0x100) * (char)((uint)fVar32 >> 0x10) -
                              (0xff < sVar5),CONCAT16(cVar13,uVar38)) >> 0x30);
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar40 = *pfVar24 * fVar42 + pfVar24[4] * fVar45 + pfVar24[8] * local_c0 + pfVar24[0xc];
     fVar26 = pfVar24[1] * fVar42 + pfVar24[5] * fVar45 + pfVar24[9] * local_c0 + pfVar24[0xd];
     fVar30 = pfVar24[2] * fVar42 + pfVar24[6] * fVar45 + pfVar24[10] * local_c0 + pfVar24[0xe];
@@ -837,7 +840,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
     fVar28 = sse_one.m128_f32[3];
     fVar41 = sse_one.m128_f32[0];
     fVar47 = sse_one.m128_f32[2];
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar25 = *pfVar24 * fVar42 + pfVar24[4] * fVar45 + pfVar24[8] * local_c0 + pfVar24[0xc];
     fVar29 = pfVar24[1] * fVar42 + pfVar24[5] * fVar45 + pfVar24[9] * local_c0 + pfVar24[0xd];
     fVar50 = pfVar24[2] * fVar42 + pfVar24[6] * fVar45 + pfVar24[10] * local_c0 + pfVar24[0xe];
@@ -852,7 +855,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
     fVar45 = fVar45 * sse_weightScale.m128_f32[1];
     fVar49 = fVar49 * sse_weightScale.m128_f32[2];
     fVar52 = fVar52 * sse_weightScale.m128_f32[3];
-    in_stack_fffff43c = param_5 + local_18;
+    in_stack_fffff43c = dstVerts + local_18;
     in_stack_fffff43c->xyz[0] =
          fVar32 * fVar40 + fVar42 * fVar25 + ((fVar41 - fVar32) - fVar42) * fVar39;
     in_stack_fffff43c->xyz[1] =
@@ -874,7 +877,7 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
     local_1c = local_1c + 5;
     local_18 = local_18 + 1;
   }
-  *param_6 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -885,8 +888,8 @@ R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,int *param_6)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -966,7 +969,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
   undefined6 uVar38;
   undefined6 uVar39;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar23 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x335,0
                               ,"%s");
     if (!bVar23) {
@@ -975,7 +978,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar23 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x336,0
                               ,"%s");
     if (!bVar23) {
@@ -984,7 +987,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (((uint)param_5 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar23 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x337,0
                               ,"%s");
     if (!bVar23) {
@@ -993,7 +996,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar23 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x338,0
                               ,"%s");
     if (!bVar23) {
@@ -1002,10 +1005,10 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
       return;
     }
   }
-  local_18 = *param_6;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar24 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar24 = srcVerts + local_18;
     fVar41 = pGVar24->xyz[0];
     fVar49 = pGVar24->xyz[1];
     GVar21 = pGVar24->color;
@@ -1016,7 +1019,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     auVar20._12_4_ = (uint)pGVar24->binormalSign & 0x80000000;
     local_c0 = SUB164(auVar20 | (undefined1  [16])_one,0);
     fStack_b4 = SUB164(auVar20 | (undefined1  [16])_one,0xc);
-    pfVar25 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar25 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar28 = *pfVar25;
     fVar29 = pfVar25[1];
     fVar33 = pfVar25[2];
@@ -1131,7 +1134,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     sVar3 = (short)((uint6)uVar39 >> 0x20);
     sVar4 = (short)(CONCAT17((0 < sVar5) * (sVar5 < 0x100) * (char)((uint)fVar33 >> 0x10) -
                              (0xff < sVar5),CONCAT16(cVar13,uVar39)) >> 0x30);
-    pfVar25 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar25 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar30 = *pfVar25 * fVar41 + pfVar25[4] * fVar49 + pfVar25[8] * local_c0 + pfVar25[0xc];
     fVar44 = pfVar25[1] * fVar41 + pfVar25[5] * fVar49 + pfVar25[9] * local_c0 + pfVar25[0xd];
     fVar52 = pfVar25[2] * fVar41 + pfVar25[6] * fVar49 + pfVar25[10] * local_c0 + pfVar25[0xe];
@@ -1150,7 +1153,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     fVar29 = sse_one.m128_f32[3];
     fVar31 = sse_one.m128_f32[0];
     fVar54 = sse_one.m128_f32[2];
-    pfVar25 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar25 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar51 = *pfVar25 * fVar41 + pfVar25[4] * fVar49 + pfVar25[8] * local_c0 + pfVar25[0xc];
     fVar46 = pfVar25[1] * fVar41 + pfVar25[5] * fVar49 + pfVar25[9] * local_c0 + pfVar25[0xd];
     fVar55 = pfVar25[2] * fVar41 + pfVar25[6] * fVar49 + pfVar25[10] * local_c0 + pfVar25[0xe];
@@ -1165,7 +1168,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     fVar47 = fVar47 * sse_weightScale.m128_f32[1];
     fVar56 = fVar56 * sse_weightScale.m128_f32[2];
     fVar26 = fVar26 * sse_weightScale.m128_f32[3];
-    pfVar25 = (float *)((int)param_4->axis[0] + (uint)local_1c[5]);
+    pfVar25 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[5]);
     fVar59 = *pfVar25 * fVar41 + pfVar25[4] * fVar49 + pfVar25[8] * local_c0 + pfVar25[0xc];
     fVar48 = pfVar25[1] * fVar41 + pfVar25[5] * fVar49 + pfVar25[9] * local_c0 + pfVar25[0xd];
     fVar57 = pfVar25[2] * fVar41 + pfVar25[6] * fVar49 + pfVar25[10] * local_c0 + pfVar25[0xe];
@@ -1180,7 +1183,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     fVar49 = fVar49 * sse_weightScale.m128_f32[1];
     fVar58 = fVar58 * sse_weightScale.m128_f32[2];
     fVar27 = fVar27 * sse_weightScale.m128_f32[3];
-    in_stack_fffff23c = param_5 + local_18;
+    in_stack_fffff23c = dstVerts + local_18;
     in_stack_fffff23c->xyz[0] =
          fVar33 * fVar30 + fVar32 * fVar51 + fVar41 * fVar59 +
          (((fVar31 - fVar33) - fVar32) - fVar41) * fVar40;
@@ -1206,7 +1209,7 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
     local_1c = local_1c + 7;
     local_18 = local_18 + 1;
   }
-  *param_6 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -1217,8 +1220,8 @@ R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6,int *param_7)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *dstVertNormals,GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -1290,7 +1293,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
   undefined6 uVar43;
   undefined6 uVar44;
   
-  if (param_6 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x37f,0
                               ,"%s");
     if (!bVar28) {
@@ -1299,7 +1302,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x380,0
                               ,"%s");
     if (!bVar28) {
@@ -1308,7 +1311,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x381,0
                               ,"%s");
     if (!bVar28) {
@@ -1317,7 +1320,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (((uint)param_6 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x382,0
                               ,"%s");
     if (!bVar28) {
@@ -1326,7 +1329,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",899,0,
                               "%s");
     if (!bVar28) {
@@ -1335,7 +1338,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",900,0,
                               "%s");
     if (!bVar28) {
@@ -1344,17 +1347,17 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
       return;
     }
   }
-  local_18 = *param_7;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar29 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar29 = srcVerts + local_18;
     fVar31 = pGVar29->xyz[0];
     fVar32 = pGVar29->xyz[1];
     fVar33 = pGVar29->xyz[2];
     fVar13 = pGVar29->binormalSign;
     GVar26 = pGVar29->color;
     PVar27 = pGVar29->texCoord;
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar35 = *pfVar30;
     fVar14 = pfVar30[1];
     fVar15 = pfVar30[2];
@@ -1475,7 +1478,7 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
     sVar2 = (short)(CONCAT17((0 < sVar4) * (sVar4 < 0x100) * (char)((uint)fVar35 >> 0x10) -
                              (0xff < sVar4),CONCAT16(cVar12,uVar44)) >> 0x30);
     GVar45.tangent.array[3] = (0 < sVar2) * (sVar2 < 0x100) * cVar12 - (0xff < sVar2);
-    in_stack_fffff8dc = param_6 + local_18;
+    in_stack_fffff8dc = dstVerts + local_18;
     in_stack_fffff8dc->xyz[0] = fVar49;
     in_stack_fffff8dc->xyz[1] = fVar51;
     in_stack_fffff8dc->xyz[2] = fVar52;
@@ -1484,11 +1487,11 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
     in_stack_fffff8dc->texCoord = PVar27;
     in_stack_fffff8dc->normal = (PackedUnitVec)GVar45.normal;
     in_stack_fffff8dc->tangent = GVar45.tangent;
-    param_5[local_18] = GVar45;
+    dstVertNormals[local_18] = GVar45;
     local_1c = local_1c + 1;
     local_18 = local_18 + 1;
   }
-  *param_7 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -1499,8 +1502,8 @@ R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6,int *param_7)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *dstVertNormals,GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -1576,7 +1579,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
   undefined6 uVar44;
   undefined6 uVar45;
   
-  if (param_6 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x37f,0
                               ,"%s");
     if (!bVar26) {
@@ -1585,7 +1588,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x380,0
                               ,"%s");
     if (!bVar26) {
@@ -1594,7 +1597,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x381,0
                               ,"%s");
     if (!bVar26) {
@@ -1603,7 +1606,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (((uint)param_6 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x382,0
                               ,"%s");
     if (!bVar26) {
@@ -1612,7 +1615,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",899,0,
                               "%s");
     if (!bVar26) {
@@ -1621,7 +1624,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar26 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",900,0,
                               "%s");
     if (!bVar26) {
@@ -1630,17 +1633,17 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
       return;
     }
   }
-  local_18 = *param_7;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar27 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar27 = srcVerts + local_18;
     fVar2 = pGVar27->xyz[0];
     fVar3 = pGVar27->xyz[1];
     fVar4 = pGVar27->xyz[2];
     fVar16 = pGVar27->binormalSign;
     GVar24 = pGVar27->color;
     PVar25 = pGVar27->texCoord;
-    pfVar28 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar28 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar31 = *pfVar28;
     fVar32 = pfVar28[1];
     fVar36 = pfVar28[2];
@@ -1761,7 +1764,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
     sVar5 = (short)(CONCAT17((0 < sVar7) * (sVar7 < 0x100) * (char)((uint)fVar36 >> 0x10) -
                              (0xff < sVar7),CONCAT16(cVar15,uVar45)) >> 0x30);
     GVar46.tangent.array[3] = (0 < sVar5) * (sVar5 < 0x100) * cVar15 - (0xff < sVar5);
-    pfVar28 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar28 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar51 = *pfVar28 * fVar2 + pfVar28[4] * fVar3 + pfVar28[8] * fVar4 + pfVar28[0xc];
     fVar54 = pfVar28[1] * fVar2 + pfVar28[5] * fVar3 + pfVar28[9] * fVar4 + pfVar28[0xd];
     fVar57 = pfVar28[2] * fVar2 + pfVar28[6] * fVar3 + pfVar28[10] * fVar4 + pfVar28[0xe];
@@ -1775,7 +1778,7 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
     fVar2 = sse_weightScale.m128_f32[1];
     fVar3 = sse_weightScale.m128_f32[2];
     fVar4 = sse_weightScale.m128_f32[3];
-    in_stack_fffff6bc = param_6 + local_18;
+    in_stack_fffff6bc = dstVerts + local_18;
     in_stack_fffff6bc->xyz[0] = fVar50 + fVar31 * sse_weightScale.m128_f32[0] * (fVar51 - fVar50);
     in_stack_fffff6bc->xyz[1] = fVar53 + fVar32 * fVar2 * (fVar54 - fVar53);
     in_stack_fffff6bc->xyz[2] = fVar55 + fVar36 * fVar3 * (fVar57 - fVar55);
@@ -1784,11 +1787,11 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
     in_stack_fffff6bc->texCoord = PVar25;
     in_stack_fffff6bc->normal = (PackedUnitVec)GVar46.normal;
     in_stack_fffff6bc->tangent = GVar46.tangent;
-    param_5[local_18] = GVar46;
+    dstVertNormals[local_18] = GVar46;
     local_1c = local_1c + 3;
     local_18 = local_18 + 1;
   }
-  *param_7 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -1799,8 +1802,8 @@ R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6,int *param_7)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *dstVertNormals,GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -1877,7 +1880,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
   undefined6 uVar39;
   undefined6 uVar40;
   
-  if (param_6 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x37f,0
                               ,"%s");
     if (!bVar21) {
@@ -1886,7 +1889,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x380,0
                               ,"%s");
     if (!bVar21) {
@@ -1895,7 +1898,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x381,0
                               ,"%s");
     if (!bVar21) {
@@ -1904,7 +1907,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (((uint)param_6 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x382,0
                               ,"%s");
     if (!bVar21) {
@@ -1913,7 +1916,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",899,0,
                               "%s");
     if (!bVar21) {
@@ -1922,7 +1925,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar21 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",900,0,
                               "%s");
     if (!bVar21) {
@@ -1931,17 +1934,17 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
       return;
     }
   }
-  local_18 = *param_7;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar22 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar22 = srcVerts + local_18;
     fVar49 = pGVar22->xyz[0];
     fVar52 = pGVar22->xyz[1];
     fVar56 = pGVar22->xyz[2];
     fVar13 = pGVar22->binormalSign;
     GVar19 = pGVar22->color;
     PVar20 = pGVar22->texCoord;
-    pfVar23 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar23 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar26 = *pfVar23;
     fVar27 = pfVar23[1];
     fVar31 = pfVar23[2];
@@ -2062,7 +2065,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
     sVar2 = (short)(CONCAT17((0 < sVar4) * (sVar4 < 0x100) * (char)((uint)fVar31 >> 0x10) -
                              (0xff < sVar4),CONCAT16(cVar12,uVar40)) >> 0x30);
     GVar41.tangent.array[3] = (0 < sVar2) * (sVar2 < 0x100) * cVar12 - (0xff < sVar2);
-    pfVar23 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar23 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar46 = *pfVar23 * fVar49 + pfVar23[4] * fVar52 + pfVar23[8] * fVar56 + pfVar23[0xc];
     fVar24 = pfVar23[1] * fVar49 + pfVar23[5] * fVar52 + pfVar23[9] * fVar56 + pfVar23[0xd];
     fVar28 = pfVar23[2] * fVar49 + pfVar23[6] * fVar52 + pfVar23[10] * fVar56 + pfVar23[0xe];
@@ -2081,7 +2084,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
     fVar27 = sse_one.m128_f32[3];
     fVar47 = sse_one.m128_f32[0];
     fVar29 = sse_one.m128_f32[2];
-    pfVar23 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar23 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar48 = *pfVar23 * fVar49 + pfVar23[4] * fVar52 + pfVar23[8] * fVar56 + pfVar23[0xc];
     fVar25 = pfVar23[1] * fVar49 + pfVar23[5] * fVar52 + pfVar23[9] * fVar56 + pfVar23[0xd];
     fVar54 = pfVar23[2] * fVar49 + pfVar23[6] * fVar52 + pfVar23[10] * fVar56 + pfVar23[0xe];
@@ -2096,7 +2099,7 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
     fVar52 = fVar52 * sse_weightScale.m128_f32[1];
     fVar56 = fVar56 * sse_weightScale.m128_f32[2];
     fVar59 = fVar59 * sse_weightScale.m128_f32[3];
-    in_stack_fffff4ac = param_6 + local_18;
+    in_stack_fffff4ac = dstVerts + local_18;
     in_stack_fffff4ac->xyz[0] =
          fVar31 * fVar46 + fVar49 * fVar48 + ((fVar47 - fVar31) - fVar49) * fVar45;
     in_stack_fffff4ac->xyz[1] =
@@ -2109,11 +2112,11 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
     in_stack_fffff4ac->texCoord = PVar20;
     in_stack_fffff4ac->normal = (PackedUnitVec)GVar41.normal;
     in_stack_fffff4ac->tangent = GVar41.tangent;
-    param_5[local_18] = GVar41;
+    dstVertNormals[local_18] = GVar41;
     local_1c = local_1c + 5;
     local_18 = local_18 + 1;
   }
-  *param_7 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -2124,8 +2127,8 @@ R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6,int *param_7)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *dstVertNormals,GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   code *pcVar1;
@@ -2209,7 +2212,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
   undefined6 uVar40;
   undefined6 uVar41;
   
-  if (param_6 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x37f,0
                               ,"%s");
     if (!bVar22) {
@@ -2218,7 +2221,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x380,0
                               ,"%s");
     if (!bVar22) {
@@ -2227,7 +2230,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x381,0
                               ,"%s");
     if (!bVar22) {
@@ -2236,7 +2239,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (((uint)param_6 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x382,0
                               ,"%s");
     if (!bVar22) {
@@ -2245,7 +2248,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",899,0,
                               "%s");
     if (!bVar22) {
@@ -2254,7 +2257,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",900,0,
                               "%s");
     if (!bVar22) {
@@ -2263,17 +2266,17 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
       return;
     }
   }
-  local_18 = *param_7;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar23 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar23 = srcVerts + local_18;
     fVar47 = pGVar23->xyz[0];
     fVar54 = pGVar23->xyz[1];
     fVar63 = pGVar23->xyz[2];
     fVar13 = pGVar23->binormalSign;
     GVar20 = pGVar23->color;
     PVar21 = pGVar23->texCoord;
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar27 = *pfVar24;
     fVar28 = pfVar24[1];
     fVar32 = pfVar24[2];
@@ -2394,7 +2397,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
     sVar2 = (short)(CONCAT17((0 < sVar4) * (sVar4 < 0x100) * (char)((uint)fVar32 >> 0x10) -
                              (0xff < sVar4),CONCAT16(cVar12,uVar41)) >> 0x30);
     GVar42.tangent.array[3] = (0 < sVar2) * (sVar2 < 0x100) * cVar12 - (0xff < sVar2);
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar26 = *pfVar24 * fVar47 + pfVar24[4] * fVar54 + pfVar24[8] * fVar63 + pfVar24[0xc];
     fVar64 = pfVar24[1] * fVar47 + pfVar24[5] * fVar54 + pfVar24[9] * fVar63 + pfVar24[0xd];
     fVar57 = pfVar24[2] * fVar47 + pfVar24[6] * fVar54 + pfVar24[10] * fVar63 + pfVar24[0xe];
@@ -2413,7 +2416,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
     fVar28 = sse_one.m128_f32[3];
     fVar29 = sse_one.m128_f32[0];
     fVar59 = sse_one.m128_f32[2];
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar30 = *pfVar24 * fVar47 + pfVar24[4] * fVar54 + pfVar24[8] * fVar63 + pfVar24[0xc];
     fVar51 = pfVar24[1] * fVar47 + pfVar24[5] * fVar54 + pfVar24[9] * fVar63 + pfVar24[0xd];
     fVar60 = pfVar24[2] * fVar47 + pfVar24[6] * fVar54 + pfVar24[10] * fVar63 + pfVar24[0xe];
@@ -2428,7 +2431,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
     fVar52 = fVar52 * sse_weightScale.m128_f32[1];
     fVar61 = fVar61 * sse_weightScale.m128_f32[2];
     fVar65 = fVar65 * sse_weightScale.m128_f32[3];
-    pfVar24 = (float *)((int)param_4->axis[0] + (uint)local_1c[5]);
+    pfVar24 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[5]);
     fVar56 = *pfVar24 * fVar47 + pfVar24[4] * fVar54 + pfVar24[8] * fVar63 + pfVar24[0xc];
     fVar53 = pfVar24[1] * fVar47 + pfVar24[5] * fVar54 + pfVar24[9] * fVar63 + pfVar24[0xd];
     fVar62 = pfVar24[2] * fVar47 + pfVar24[6] * fVar54 + pfVar24[10] * fVar63 + pfVar24[0xe];
@@ -2443,7 +2446,7 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
     fVar54 = fVar54 * sse_weightScale.m128_f32[1];
     fVar63 = fVar63 * sse_weightScale.m128_f32[2];
     fVar66 = fVar66 * sse_weightScale.m128_f32[3];
-    in_stack_fffff2ac = param_6 + local_18;
+    in_stack_fffff2ac = dstVerts + local_18;
     in_stack_fffff2ac->xyz[0] =
          fVar31 * fVar26 + fVar32 * fVar30 + fVar47 * fVar56 +
          (((fVar29 - fVar31) - fVar32) - fVar47) * fVar46;
@@ -2460,11 +2463,11 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
     in_stack_fffff2ac->texCoord = PVar21;
     in_stack_fffff2ac->normal = (PackedUnitVec)GVar42.normal;
     in_stack_fffff2ac->tangent = GVar42.tangent;
-    param_5[local_18] = GVar42;
+    dstVertNormals[local_18] = GVar42;
     local_1c = local_1c + 7;
     local_18 = local_18 + 1;
   }
-  *param_7 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -2475,9 +2478,9 @@ R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertexNormal *param_6,GfxPackedVertex *param_7,
-          int *param_8)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *srcVertNormals,GfxPackedVertexNormal *dstVertNormals,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   GfxPackedVertexNormal GVar1;
@@ -2503,7 +2506,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
   ushort *local_1c;
   int local_18;
   
-  if (param_7 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c3,0
                               ,"%s");
     if (!bVar17) {
@@ -2512,7 +2515,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (param_6 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c4,0
                               ,"%s");
     if (!bVar17) {
@@ -2521,7 +2524,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c5,0
                               ,"%s");
     if (!bVar17) {
@@ -2530,7 +2533,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (srcVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c6,0
                               ,"%s");
     if (!bVar17) {
@@ -2539,7 +2542,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (((uint)param_7 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c7,0
                               ,"%s");
     if (!bVar17) {
@@ -2548,7 +2551,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (((uint)param_6 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c8,0
                               ,"%s");
     if (!bVar17) {
@@ -2557,7 +2560,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c9,0
                               ,"%s");
     if (!bVar17) {
@@ -2566,7 +2569,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)srcVertNormals & 7) != 0) {
     bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3ca,0
                               ,"%s");
     if (!bVar17) {
@@ -2575,18 +2578,18 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
       return;
     }
   }
-  local_18 = *param_8;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar18 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar18 = srcVerts + local_18;
     fVar3 = pGVar18->xyz[0];
     fVar4 = pGVar18->xyz[1];
     fVar5 = pGVar18->xyz[2];
     fVar6 = pGVar18->binormalSign;
     GVar15 = pGVar18->color;
     PVar16 = pGVar18->texCoord;
-    GVar1 = param_5[local_18];
-    pfVar19 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    GVar1 = srcVertNormals[local_18];
+    pfVar19 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar7 = pfVar19[1];
     fVar8 = pfVar19[2];
     fVar9 = pfVar19[5];
@@ -2595,7 +2598,7 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
     fVar12 = pfVar19[10];
     fVar13 = pfVar19[0xd];
     fVar14 = pfVar19[0xe];
-    pGVar18 = param_7 + local_18;
+    pGVar18 = dstVerts + local_18;
     pGVar18->xyz[0] = *pfVar19 * fVar3 + pfVar19[4] * fVar4 + pfVar19[8] * fVar5 + pfVar19[0xc];
     pGVar18->xyz[1] = fVar7 * fVar3 + fVar9 * fVar4 + fVar11 * fVar5 + fVar13;
     pGVar18->xyz[2] = fVar8 * fVar3 + fVar10 * fVar4 + fVar12 * fVar5 + fVar14;
@@ -2604,11 +2607,11 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
     pGVar18->texCoord = PVar16;
     pGVar18->normal = GVar1.normal;
     pGVar18->tangent = GVar1.tangent;
-    param_6[local_18] = GVar1;
+    dstVertNormals[local_18] = GVar1;
     local_1c = local_1c + 1;
     local_18 = local_18 + 1;
   }
-  *param_8 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -2619,9 +2622,9 @@ R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertexNormal *param_6,GfxPackedVertex *param_7,
-          int *param_8)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *srcVertNormals,GfxPackedVertexNormal *dstVertNormals,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   GfxPackedVertexNormal GVar1;
@@ -2653,7 +2656,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
   ushort *local_1c;
   int local_18;
   
-  if (param_7 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c3,0
                               ,"%s");
     if (!bVar10) {
@@ -2662,7 +2665,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (param_6 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c4,0
                               ,"%s");
     if (!bVar10) {
@@ -2671,7 +2674,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c5,0
                               ,"%s");
     if (!bVar10) {
@@ -2680,7 +2683,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (srcVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c6,0
                               ,"%s");
     if (!bVar10) {
@@ -2689,7 +2692,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (((uint)param_7 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c7,0
                               ,"%s");
     if (!bVar10) {
@@ -2698,7 +2701,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (((uint)param_6 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c8,0
                               ,"%s");
     if (!bVar10) {
@@ -2707,7 +2710,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c9,0
                               ,"%s");
     if (!bVar10) {
@@ -2716,7 +2719,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)srcVertNormals & 7) != 0) {
     bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3ca,0
                               ,"%s");
     if (!bVar10) {
@@ -2725,22 +2728,22 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
       return;
     }
   }
-  local_18 = *param_8;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar11 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar11 = srcVerts + local_18;
     fVar3 = pGVar11->xyz[0];
     fVar4 = pGVar11->xyz[1];
     fVar5 = pGVar11->xyz[2];
     fVar6 = pGVar11->binormalSign;
     GVar8 = pGVar11->color;
     PVar9 = pGVar11->texCoord;
-    GVar1 = param_5[local_18];
-    pfVar12 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    GVar1 = srcVertNormals[local_18];
+    pfVar12 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar17 = *pfVar12 * fVar3 + pfVar12[4] * fVar4 + pfVar12[8] * fVar5 + pfVar12[0xc];
     fVar19 = pfVar12[1] * fVar3 + pfVar12[5] * fVar4 + pfVar12[9] * fVar5 + pfVar12[0xd];
     fVar21 = pfVar12[2] * fVar3 + pfVar12[6] * fVar4 + pfVar12[10] * fVar5 + pfVar12[0xe];
-    pfVar12 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar12 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar18 = *pfVar12 * fVar3 + pfVar12[4] * fVar4 + pfVar12[8] * fVar5 + pfVar12[0xc];
     fVar20 = pfVar12[1] * fVar3 + pfVar12[5] * fVar4 + pfVar12[9] * fVar5 + pfVar12[0xd];
     fVar22 = pfVar12[2] * fVar3 + pfVar12[6] * fVar4 + pfVar12[10] * fVar5 + pfVar12[0xe];
@@ -2754,7 +2757,7 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
     fVar3 = sse_weightScale.m128_f32[1];
     fVar4 = sse_weightScale.m128_f32[2];
     fVar5 = sse_weightScale.m128_f32[3];
-    in_stack_fffffbbc = param_7 + local_18;
+    in_stack_fffffbbc = dstVerts + local_18;
     in_stack_fffffbbc->xyz[0] = fVar17 + fVar13 * sse_weightScale.m128_f32[0] * (fVar18 - fVar17);
     in_stack_fffffbbc->xyz[1] = fVar19 + fVar14 * fVar3 * (fVar20 - fVar19);
     in_stack_fffffbbc->xyz[2] = fVar21 + fVar15 * fVar4 * (fVar22 - fVar21);
@@ -2763,11 +2766,11 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
     in_stack_fffffbbc->texCoord = PVar9;
     in_stack_fffffbbc->normal = GVar1.normal;
     in_stack_fffffbbc->tangent = GVar1.tangent;
-    param_6[local_18] = GVar1;
+    dstVertNormals[local_18] = GVar1;
     local_1c = local_1c + 3;
     local_18 = local_18 + 1;
   }
-  *param_8 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -2778,9 +2781,9 @@ R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertexNormal *param_6,GfxPackedVertex *param_7,
-          int *param_8)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *srcVertNormals,GfxPackedVertexNormal *dstVertNormals,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   GfxPackedVertexNormal GVar1;
@@ -2833,7 +2836,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
   ushort *local_1c;
   int local_18;
   
-  if (param_7 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c3,0
                               ,"%s");
     if (!bVar27) {
@@ -2842,7 +2845,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (param_6 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c4,0
                               ,"%s");
     if (!bVar27) {
@@ -2851,7 +2854,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c5,0
                               ,"%s");
     if (!bVar27) {
@@ -2860,7 +2863,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (srcVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c6,0
                               ,"%s");
     if (!bVar27) {
@@ -2869,7 +2872,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (((uint)param_7 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c7,0
                               ,"%s");
     if (!bVar27) {
@@ -2878,7 +2881,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (((uint)param_6 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c8,0
                               ,"%s");
     if (!bVar27) {
@@ -2887,7 +2890,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c9,0
                               ,"%s");
     if (!bVar27) {
@@ -2896,7 +2899,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)srcVertNormals & 7) != 0) {
     bVar27 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3ca,0
                               ,"%s");
     if (!bVar27) {
@@ -2905,18 +2908,18 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
       return;
     }
   }
-  local_18 = *param_8;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar28 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar28 = srcVerts + local_18;
     fVar7 = pGVar28->xyz[0];
     fVar8 = pGVar28->xyz[1];
     fVar9 = pGVar28->xyz[2];
     fVar10 = pGVar28->binormalSign;
     GVar25 = pGVar28->color;
     PVar26 = pGVar28->texCoord;
-    GVar1 = param_5[local_18];
-    pfVar29 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    GVar1 = srcVertNormals[local_18];
+    pfVar29 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar11 = *pfVar29;
     fVar12 = pfVar29[1];
     fVar13 = pfVar29[2];
@@ -2929,7 +2932,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
     fVar20 = pfVar29[0xc];
     fVar21 = pfVar29[0xd];
     fVar22 = pfVar29[0xe];
-    pfVar29 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar29 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar30 = *pfVar29 * fVar7 + pfVar29[4] * fVar8 + pfVar29[8] * fVar9 + pfVar29[0xc];
     fVar34 = pfVar29[1] * fVar7 + pfVar29[5] * fVar8 + pfVar29[9] * fVar9 + pfVar29[0xd];
     fVar38 = pfVar29[2] * fVar7 + pfVar29[6] * fVar8 + pfVar29[10] * fVar9 + pfVar29[0xe];
@@ -2948,7 +2951,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
     fVar4 = sse_one.m128_f32[1];
     fVar5 = sse_one.m128_f32[2];
     fVar6 = sse_one.m128_f32[3];
-    pfVar29 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar29 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar32 = *pfVar29 * fVar7 + pfVar29[4] * fVar8 + pfVar29[8] * fVar9 + pfVar29[0xc];
     fVar36 = pfVar29[1] * fVar7 + pfVar29[5] * fVar8 + pfVar29[9] * fVar9 + pfVar29[0xd];
     fVar40 = pfVar29[2] * fVar7 + pfVar29[6] * fVar8 + pfVar29[10] * fVar9 + pfVar29[0xe];
@@ -2963,7 +2966,7 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
     fVar37 = fVar37 * sse_weightScale.m128_f32[1];
     fVar41 = fVar41 * sse_weightScale.m128_f32[2];
     fVar43 = fVar43 * sse_weightScale.m128_f32[3];
-    in_stack_fffff98c = param_7 + local_18;
+    in_stack_fffff98c = dstVerts + local_18;
     in_stack_fffff98c->xyz[0] =
          fVar31 * fVar30 + fVar33 * fVar32 +
          ((fVar3 - fVar31) - fVar33) * (fVar11 * fVar7 + fVar14 * fVar8 + fVar17 * fVar9 + fVar20);
@@ -2979,11 +2982,11 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
     in_stack_fffff98c->texCoord = PVar26;
     in_stack_fffff98c->normal = GVar1.normal;
     in_stack_fffff98c->tangent = GVar1.tangent;
-    param_6[local_18] = GVar1;
+    dstVertNormals[local_18] = GVar1;
     local_1c = local_1c + 5;
     local_18 = local_18 + 1;
   }
-  *param_8 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -2994,9 +2997,9 @@ R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
 
 void __cdecl
 R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertexNormal *param_6,GfxPackedVertex *param_7,
-          int *param_8)
+          (GfxPackedVertex *srcVerts,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *srcVertNormals,GfxPackedVertexNormal *dstVertNormals,
+          GfxPackedVertex *dstVerts,int *pVertexIndex)
 
 {
   GfxPackedVertexNormal GVar1;
@@ -3057,7 +3060,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
   ushort *local_1c;
   int local_18;
   
-  if (param_7 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c3,0
                               ,"%s");
     if (!bVar28) {
@@ -3066,7 +3069,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (param_6 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c4,0
                               ,"%s");
     if (!bVar28) {
@@ -3075,7 +3078,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (param_1 == (GfxPackedVertex *)0x0) {
+  if (srcVerts == (GfxPackedVertex *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c5,0
                               ,"%s");
     if (!bVar28) {
@@ -3084,7 +3087,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (srcVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c6,0
                               ,"%s");
     if (!bVar28) {
@@ -3093,7 +3096,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (((uint)param_7 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c7,0
                               ,"%s");
     if (!bVar28) {
@@ -3102,7 +3105,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (((uint)param_6 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c8,0
                               ,"%s");
     if (!bVar28) {
@@ -3111,7 +3114,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)srcVerts & 0xf) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3c9,0
                               ,"%s");
     if (!bVar28) {
@@ -3120,7 +3123,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)srcVertNormals & 7) != 0) {
     bVar28 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x3ca,0
                               ,"%s");
     if (!bVar28) {
@@ -3129,18 +3132,18 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
       return;
     }
   }
-  local_18 = *param_8;
-  local_1c = param_2;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    pGVar29 = param_1 + local_18;
+  local_18 = *pVertexIndex;
+  local_1c = vertexBlend;
+  for (local_20 = 0; local_20 < vertCount; local_20 = local_20 + 1) {
+    pGVar29 = srcVerts + local_18;
     fVar7 = pGVar29->xyz[0];
     fVar8 = pGVar29->xyz[1];
     fVar9 = pGVar29->xyz[2];
     fVar10 = pGVar29->binormalSign;
     GVar26 = pGVar29->color;
     PVar27 = pGVar29->texCoord;
-    GVar1 = param_5[local_18];
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)*local_1c);
+    GVar1 = srcVertNormals[local_18];
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)*local_1c);
     fVar11 = *pfVar30;
     fVar12 = pfVar30[1];
     fVar13 = pfVar30[2];
@@ -3153,7 +3156,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
     fVar20 = pfVar30[0xc];
     fVar21 = pfVar30[0xd];
     fVar22 = pfVar30[0xe];
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)local_1c[1]);
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[1]);
     fVar31 = *pfVar30 * fVar7 + pfVar30[4] * fVar8 + pfVar30[8] * fVar9 + pfVar30[0xc];
     fVar37 = pfVar30[1] * fVar7 + pfVar30[5] * fVar8 + pfVar30[9] * fVar9 + pfVar30[0xd];
     fVar43 = pfVar30[2] * fVar7 + pfVar30[6] * fVar8 + pfVar30[10] * fVar9 + pfVar30[0xe];
@@ -3172,7 +3175,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
     fVar4 = sse_one.m128_f32[1];
     fVar5 = sse_one.m128_f32[2];
     fVar6 = sse_one.m128_f32[3];
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)local_1c[3]);
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[3]);
     fVar33 = *pfVar30 * fVar7 + pfVar30[4] * fVar8 + pfVar30[8] * fVar9 + pfVar30[0xc];
     fVar39 = pfVar30[1] * fVar7 + pfVar30[5] * fVar8 + pfVar30[9] * fVar9 + pfVar30[0xd];
     fVar45 = pfVar30[2] * fVar7 + pfVar30[6] * fVar8 + pfVar30[10] * fVar9 + pfVar30[0xe];
@@ -3187,7 +3190,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
     fVar40 = fVar40 * sse_weightScale.m128_f32[1];
     fVar46 = fVar46 * sse_weightScale.m128_f32[2];
     fVar50 = fVar50 * sse_weightScale.m128_f32[3];
-    pfVar30 = (float *)((int)param_4->axis[0] + (uint)local_1c[5]);
+    pfVar30 = (float *)((int)boneMatrix->axis[0] + (uint)local_1c[5]);
     fVar35 = *pfVar30 * fVar7 + pfVar30[4] * fVar8 + pfVar30[8] * fVar9 + pfVar30[0xc];
     fVar41 = pfVar30[1] * fVar7 + pfVar30[5] * fVar8 + pfVar30[9] * fVar9 + pfVar30[0xd];
     fVar47 = pfVar30[2] * fVar7 + pfVar30[6] * fVar8 + pfVar30[10] * fVar9 + pfVar30[0xe];
@@ -3202,7 +3205,7 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
     fVar42 = fVar42 * sse_weightScale.m128_f32[1];
     fVar48 = fVar48 * sse_weightScale.m128_f32[2];
     fVar51 = fVar51 * sse_weightScale.m128_f32[3];
-    in_stack_fffff78c = param_7 + local_18;
+    in_stack_fffff78c = dstVerts + local_18;
     in_stack_fffff78c->xyz[0] =
          fVar32 * fVar31 + fVar34 * fVar33 + fVar36 * fVar35 +
          (((fVar3 - fVar32) - fVar34) - fVar36) *
@@ -3222,11 +3225,11 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
     in_stack_fffff78c->texCoord = PVar27;
     in_stack_fffff78c->normal = GVar1.normal;
     in_stack_fffff78c->tangent = GVar1.tangent;
-    param_6[local_18] = GVar1;
+    dstVertNormals[local_18] = GVar1;
     local_1c = local_1c + 7;
     local_18 = local_18 + 1;
   }
-  *param_8 = local_18;
+  *pVertexIndex = local_18;
   return;
 }
 
@@ -3237,8 +3240,8 @@ R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
 
 void __cdecl
 MatrixTransformVertexAndBasis
-          (float *param_1,float param_2,PackedUnitVec param_3,PackedUnitVec param_4,
-          DObjSkelMat *param_5,GfxPackedVertex *param_6)
+          (float *offset,float binormalSign,PackedUnitVec normal,PackedUnitVec tangent,
+          DObjSkelMat *mat,GfxPackedVertex *vert)
 
 {
   PackedUnitVec local_7c;
@@ -3257,65 +3260,62 @@ MatrixTransformVertexAndBasis
   PackedUnitVec local_28;
   PackedUnitVec local_24;
   uint local_20;
-  float local_1c;
+  float rotated;
   float local_18;
   float local_14;
-  PackedUnitVec local_10;
+  PackedUnitVec unpacked;
   PackedUnitVec local_c;
   PackedUnitVec local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  param_6->xyz[0] =
-       *param_1 * param_5->axis[0][0] + param_1[1] * param_5->axis[1][0] +
-       param_1[2] * param_5->axis[2][0] + param_5->origin[0];
-  param_6->xyz[1] =
-       *param_1 * param_5->axis[0][1] + param_1[1] * param_5->axis[1][1] +
-       param_1[2] * param_5->axis[2][1] + param_5->origin[1];
-  param_6->xyz[2] =
-       *param_1 * param_5->axis[0][2] + param_1[1] * param_5->axis[1][2] +
-       param_1[2] * param_5->axis[2][2] + param_5->origin[2];
-  param_6->binormalSign = param_2;
-  local_30 = param_3;
-  local_2c = param_3;
-  local_28 = param_3;
-  local_24 = param_3;
-  Vec3UnpackUnitVec(param_3,(float *)&local_30);
+  vert->xyz[0] = *offset * mat->axis[0][0] + offset[1] * mat->axis[1][0] +
+                 offset[2] * mat->axis[2][0] + mat->origin[0];
+  vert->xyz[1] = *offset * mat->axis[0][1] + offset[1] * mat->axis[1][1] +
+                 offset[2] * mat->axis[2][1] + mat->origin[1];
+  vert->xyz[2] = *offset * mat->axis[0][2] + offset[1] * mat->axis[1][2] +
+                 offset[2] * mat->axis[2][2] + mat->origin[2];
+  vert->binormalSign = binormalSign;
+  local_30 = normal;
+  local_2c = normal;
+  local_28 = normal;
+  local_24 = normal;
+  Vec3UnpackUnitVec(normal,(float *)&local_30);
   local_24 = (PackedUnitVec)0x0;
-  local_10 = local_30;
+  unpacked = local_30;
   local_c = local_2c;
   local_8 = local_28;
-  local_1c = (float)local_30 * param_5->axis[0][0] + (float)local_2c * param_5->axis[1][0] +
-             (float)local_28 * param_5->axis[2][0];
-  local_40 = (float)local_30 * param_5->axis[0][1] + (float)local_2c * param_5->axis[1][1] +
-             (float)local_28 * param_5->axis[2][1];
-  local_3c = (float)local_30 * param_5->axis[0][2] + (float)local_2c * param_5->axis[1][2] +
-             (float)local_28 * param_5->axis[2][2];
+  rotated = (float)local_30 * mat->axis[0][0] + (float)local_2c * mat->axis[1][0] +
+            (float)local_28 * mat->axis[2][0];
+  local_40 = (float)local_30 * mat->axis[0][1] + (float)local_2c * mat->axis[1][1] +
+             (float)local_28 * mat->axis[2][1];
+  local_3c = (float)local_30 * mat->axis[0][2] + (float)local_2c * mat->axis[1][2] +
+             (float)local_28 * mat->axis[2][2];
   local_38 = 0;
   local_4c.array[1] = (char)(int)(local_40 * 127.0 + 127.5);
-  local_4c.array[0] = (char)(int)(local_1c * 127.0 + 127.5);
+  local_4c.array[0] = (char)(int)(rotated * 127.0 + 127.5);
   local_4c.array[2] = (char)(int)(local_3c * 127.0 + 127.5);
   local_4c.array[3] = 0x3f;
   local_48 = local_4c;
   local_44 = local_4c;
-  param_6->normal = local_4c;
-  local_60 = param_4;
-  local_5c = param_4;
-  local_58 = param_4;
-  local_54 = param_4;
+  vert->normal = local_4c;
+  local_60 = tangent;
+  local_5c = tangent;
+  local_58 = tangent;
+  local_54 = tangent;
   local_18 = local_40;
   local_14 = local_3c;
-  Vec3UnpackUnitVec(param_4,(float *)&local_60);
+  Vec3UnpackUnitVec(tangent,(float *)&local_60);
   local_7c.array[1] =
-       (char)(int)(((float)local_60 * param_5->axis[0][1] + (float)local_5c * param_5->axis[1][1] +
-                   (float)local_58 * param_5->axis[2][1]) * 127.0 + 127.5);
+       (char)(int)(((float)local_60 * mat->axis[0][1] + (float)local_5c * mat->axis[1][1] +
+                   (float)local_58 * mat->axis[2][1]) * 127.0 + 127.5);
   local_7c.array[0] =
-       (char)(int)(((float)local_60 * param_5->axis[0][0] + (float)local_5c * param_5->axis[1][0] +
-                   (float)local_58 * param_5->axis[2][0]) * 127.0 + 127.5);
+       (char)(int)(((float)local_60 * mat->axis[0][0] + (float)local_5c * mat->axis[1][0] +
+                   (float)local_58 * mat->axis[2][0]) * 127.0 + 127.5);
   local_7c.array[2] =
-       (char)(int)(((float)local_60 * param_5->axis[0][2] + (float)local_5c * param_5->axis[1][2] +
-                   (float)local_58 * param_5->axis[2][2]) * 127.0 + 127.5);
+       (char)(int)(((float)local_60 * mat->axis[0][2] + (float)local_5c * mat->axis[1][2] +
+                   (float)local_58 * mat->axis[2][2]) * 127.0 + 127.5);
   local_7c.array[3] = 0x3f;
-  param_6->tangent = local_7c;
+  vert->tangent = local_7c;
   return;
 }
 
@@ -3324,16 +3324,17 @@ MatrixTransformVertexAndBasis
 
 void __cdecl
 R_SkinXSurfaceWeight0
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,float *param_6)
+          (GfxPackedVertex *vertsIn,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *vertsOut,float *tension)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort *local_c;
-  int local_8;
+  DObjSkelMat *matrix;
+  ushort *blend;
+  int vertIndex;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (vertsOut == (GfxPackedVertex *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x42b,0,
                              "%s");
     if (!bVar2) {
@@ -3342,16 +3343,16 @@ R_SkinXSurfaceWeight0
       return;
     }
   }
-  local_c = param_2;
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
+  blend = vertexBlend;
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
     MatrixTransformVertexAndBasis
-              (param_1->xyz,param_1->binormalSign,param_1->normal,param_1->tangent,
-               (DObjSkelMat *)((int)param_4->axis[0] + (uint)*local_c),param_5);
-    param_5->color = param_1->color;
-    param_5->texCoord = param_1->texCoord;
-    param_1 = param_1 + 1;
-    local_c = local_c + 1;
-    param_5 = param_5 + 1;
+              (vertsIn->xyz,vertsIn->binormalSign,vertsIn->normal,vertsIn->tangent,
+               (DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)*blend),vertsOut);
+    vertsOut->color = vertsIn->color;
+    vertsOut->texCoord = vertsIn->texCoord;
+    vertsIn = vertsIn + 1;
+    blend = blend + 1;
+    vertsOut = vertsOut + 1;
   }
   return;
 }
@@ -3361,20 +3362,21 @@ R_SkinXSurfaceWeight0
 
 void __cdecl
 R_SkinXSurfaceWeight1
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,float *param_6)
+          (GfxPackedVertex *vertsIn,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *vertsOut,float *tension)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort *local_1c;
-  float local_18;
+  DObjSkelMat *matrix;
+  ushort *blend;
+  float offset;
   float local_14;
   float local_10;
-  float local_c;
-  int local_8;
+  float boneWeight;
+  int vertIndex;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (vertsOut == (GfxPackedVertex *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x44c,0,
                              "%s");
     if (!bVar2) {
@@ -3383,26 +3385,26 @@ R_SkinXSurfaceWeight1
       return;
     }
   }
-  local_1c = param_2;
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
+  blend = vertexBlend;
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
     MatrixTransformVertexAndBasis
-              (param_1->xyz,param_1->binormalSign,param_1->normal,param_1->tangent,
-               (DObjSkelMat *)((int)param_4->axis[0] + (uint)*local_1c),param_5);
-    local_c = (float)local_1c[2] * 1.5258789e-05;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_1c[1]),
-                       &local_18);
-    local_18 = local_c * local_18;
-    local_14 = local_c * local_14;
-    local_10 = local_c * local_10;
-    local_c = 1.0 - local_c;
-    param_5->xyz[0] = local_c * param_5->xyz[0] + local_18;
-    param_5->xyz[1] = local_c * param_5->xyz[1] + local_14;
-    param_5->xyz[2] = local_c * param_5->xyz[2] + local_10;
-    param_5->color = param_1->color;
-    param_5->texCoord = param_1->texCoord;
-    param_1 = param_1 + 1;
-    local_1c = local_1c + 3;
-    param_5 = param_5 + 1;
+              (vertsIn->xyz,vertsIn->binormalSign,vertsIn->normal,vertsIn->tangent,
+               (DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)*blend),vertsOut);
+    boneWeight = (float)blend[2] * 1.5258789e-05;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[1]),
+                       &offset);
+    offset = boneWeight * offset;
+    local_14 = boneWeight * local_14;
+    local_10 = boneWeight * local_10;
+    boneWeight = 1.0 - boneWeight;
+    vertsOut->xyz[0] = boneWeight * vertsOut->xyz[0] + offset;
+    vertsOut->xyz[1] = boneWeight * vertsOut->xyz[1] + local_14;
+    vertsOut->xyz[2] = boneWeight * vertsOut->xyz[2] + local_10;
+    vertsOut->color = vertsIn->color;
+    vertsOut->texCoord = vertsIn->texCoord;
+    vertsIn = vertsIn + 1;
+    blend = blend + 3;
+    vertsOut = vertsOut + 1;
   }
   return;
 }
@@ -3412,24 +3414,25 @@ R_SkinXSurfaceWeight1
 
 void __cdecl
 R_SkinXSurfaceWeight2
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,float *param_6)
+          (GfxPackedVertex *vertsIn,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *vertsOut,float *tension)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort *local_2c;
-  float local_28;
+  DObjSkelMat *matrix;
+  ushort *blend;
+  float offset;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  float boneWeight;
+  float totalOffset;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int vertIndex;
+  float totalBoneWeight;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (vertsOut == (GfxPackedVertex *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x480,0,
                              "%s");
     if (!bVar2) {
@@ -3438,33 +3441,33 @@ R_SkinXSurfaceWeight2
       return;
     }
   }
-  local_2c = param_2;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
+  blend = vertexBlend;
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
     MatrixTransformVertexAndBasis
-              (param_1->xyz,param_1->binormalSign,param_1->normal,param_1->tangent,
-               (DObjSkelMat *)((int)param_4->axis[0] + (uint)*local_2c),param_5);
-    local_8 = (float)local_2c[2] * 1.5258789e-05;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_2c[1]),
-                       &local_18);
-    local_18 = local_8 * local_18;
-    local_14 = local_8 * local_14;
-    local_10 = local_8 * local_10;
-    local_1c = (float)local_2c[4] * 1.5258789e-05;
-    local_8 = local_8 + local_1c;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_2c[3]),
-                       &local_28);
-    local_18 = local_1c * local_28 + local_18;
-    local_14 = local_1c * local_24 + local_14;
-    local_10 = local_1c * local_20 + local_10;
-    local_1c = 1.0 - local_8;
-    param_5->xyz[0] = local_1c * param_5->xyz[0] + local_18;
-    param_5->xyz[1] = local_1c * param_5->xyz[1] + local_14;
-    param_5->xyz[2] = local_1c * param_5->xyz[2] + local_10;
-    param_5->color = param_1->color;
-    param_5->texCoord = param_1->texCoord;
-    param_1 = param_1 + 1;
-    local_2c = local_2c + 5;
-    param_5 = param_5 + 1;
+              (vertsIn->xyz,vertsIn->binormalSign,vertsIn->normal,vertsIn->tangent,
+               (DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)*blend),vertsOut);
+    totalBoneWeight = (float)blend[2] * 1.5258789e-05;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[1]),
+                       &totalOffset);
+    totalOffset = totalBoneWeight * totalOffset;
+    local_14 = totalBoneWeight * local_14;
+    local_10 = totalBoneWeight * local_10;
+    boneWeight = (float)blend[4] * 1.5258789e-05;
+    totalBoneWeight = totalBoneWeight + boneWeight;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[3]),
+                       &offset);
+    totalOffset = boneWeight * offset + totalOffset;
+    local_14 = boneWeight * local_24 + local_14;
+    local_10 = boneWeight * local_20 + local_10;
+    boneWeight = 1.0 - totalBoneWeight;
+    vertsOut->xyz[0] = boneWeight * vertsOut->xyz[0] + totalOffset;
+    vertsOut->xyz[1] = boneWeight * vertsOut->xyz[1] + local_14;
+    vertsOut->xyz[2] = boneWeight * vertsOut->xyz[2] + local_10;
+    vertsOut->color = vertsIn->color;
+    vertsOut->texCoord = vertsIn->texCoord;
+    vertsIn = vertsIn + 1;
+    blend = blend + 5;
+    vertsOut = vertsOut + 1;
   }
   return;
 }
@@ -3474,24 +3477,25 @@ R_SkinXSurfaceWeight2
 
 void __cdecl
 R_SkinXSurfaceWeight3
-          (GfxPackedVertex *param_1,ushort *param_2,int param_3,DObjSkelMat *param_4,
-          GfxPackedVertex *param_5,float *param_6)
+          (GfxPackedVertex *vertsIn,ushort *vertexBlend,int vertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *vertsOut,float *tension)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort *local_2c;
-  float local_28;
+  DObjSkelMat *matrix;
+  ushort *blend;
+  float offset;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  float boneWeight;
+  float totalOffset;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int vertIndex;
+  float totalBoneWeight;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (vertsOut == (GfxPackedVertex *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x4c4,0,
                              "%s");
     if (!bVar2) {
@@ -3500,40 +3504,40 @@ R_SkinXSurfaceWeight3
       return;
     }
   }
-  local_2c = param_2;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
+  blend = vertexBlend;
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
     MatrixTransformVertexAndBasis
-              (param_1->xyz,param_1->binormalSign,param_1->normal,param_1->tangent,
-               (DObjSkelMat *)((int)param_4->axis[0] + (uint)*local_2c),param_5);
-    local_8 = (float)local_2c[2] * 1.5258789e-05;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_2c[1]),
-                       &local_18);
-    local_18 = local_8 * local_18;
-    local_14 = local_8 * local_14;
-    local_10 = local_8 * local_10;
-    local_1c = (float)local_2c[4] * 1.5258789e-05;
-    local_8 = local_8 + local_1c;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_2c[3]),
-                       &local_28);
-    local_18 = local_1c * local_28 + local_18;
-    local_14 = local_1c * local_24 + local_14;
-    local_10 = local_1c * local_20 + local_10;
-    local_1c = (float)local_2c[6] * 1.5258789e-05;
-    local_8 = local_8 + local_1c;
-    R_TransformSkelMat(param_1->xyz,(DObjSkelMat *)((int)param_4->axis[0] + (uint)local_2c[5]),
-                       &local_28);
-    local_18 = local_1c * local_28 + local_18;
-    local_14 = local_1c * local_24 + local_14;
-    local_10 = local_1c * local_20 + local_10;
-    local_1c = 1.0 - local_8;
-    param_5->xyz[0] = local_1c * param_5->xyz[0] + local_18;
-    param_5->xyz[1] = local_1c * param_5->xyz[1] + local_14;
-    param_5->xyz[2] = local_1c * param_5->xyz[2] + local_10;
-    param_5->color = param_1->color;
-    param_5->texCoord = param_1->texCoord;
-    param_1 = param_1 + 1;
-    local_2c = local_2c + 7;
-    param_5 = param_5 + 1;
+              (vertsIn->xyz,vertsIn->binormalSign,vertsIn->normal,vertsIn->tangent,
+               (DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)*blend),vertsOut);
+    totalBoneWeight = (float)blend[2] * 1.5258789e-05;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[1]),
+                       &totalOffset);
+    totalOffset = totalBoneWeight * totalOffset;
+    local_14 = totalBoneWeight * local_14;
+    local_10 = totalBoneWeight * local_10;
+    boneWeight = (float)blend[4] * 1.5258789e-05;
+    totalBoneWeight = totalBoneWeight + boneWeight;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[3]),
+                       &offset);
+    totalOffset = boneWeight * offset + totalOffset;
+    local_14 = boneWeight * local_24 + local_14;
+    local_10 = boneWeight * local_20 + local_10;
+    boneWeight = (float)blend[6] * 1.5258789e-05;
+    totalBoneWeight = totalBoneWeight + boneWeight;
+    R_TransformSkelMat(vertsIn->xyz,(DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)blend[5]),
+                       &offset);
+    totalOffset = boneWeight * offset + totalOffset;
+    local_14 = boneWeight * local_24 + local_14;
+    local_10 = boneWeight * local_20 + local_10;
+    boneWeight = 1.0 - totalBoneWeight;
+    vertsOut->xyz[0] = boneWeight * vertsOut->xyz[0] + totalOffset;
+    vertsOut->xyz[1] = boneWeight * vertsOut->xyz[1] + local_14;
+    vertsOut->xyz[2] = boneWeight * vertsOut->xyz[2] + local_10;
+    vertsOut->color = vertsIn->color;
+    vertsOut->texCoord = vertsIn->texCoord;
+    vertsIn = vertsIn + 1;
+    blend = blend + 7;
+    vertsOut = vertsOut + 1;
   }
   return;
 }
@@ -3554,96 +3558,100 @@ void __cdecl _dynamic_initializer_for__g_shortBoneWeightPerm__(void)
 
 // 00B451D0  R_SkinXSurfaceWeight  (gfx_d3d/r_model_skin.cpp:3560)
 
-/* WARNING: Type propagation algorithm not settling */
-
 void __cdecl
 R_SkinXSurfaceWeight
-          (XSurface *param_1,GfxPackedVertex *param_2,XSurfaceVertexInfo *param_3,
-          DObjSkelMat *param_4,GfxPackedVertex *param_5)
+          (XSurface *xsurf,GfxPackedVertex *inVerts,XSurfaceVertexInfo *vertexInfo,
+          DObjSkelMat *boneMatrix,GfxPackedVertex *outVerts)
 
 {
   uint uVar1;
   float local_2c;
-  int local_28;
-  int local_20;
-  uint local_1c;
-  ushort *local_14;
-  GfxPackedVertex *local_10;
-  int local_c;
-  float *local_8;
+  int i;
+  uint numVerts;
+  int tensionBufferStage;
+  uint iVert;
+  int stride;
+  ushort *vertsBlend;
+  GfxPackedVertex *pverts;
+  int vertIndex;
+  float *vertsTension;
   
-  local_c = 0;
-  local_14 = param_3->vertsBlend;
-  uVar1 = (int)param_3->vertCount[0] + (int)param_3->vertCount[1] + (int)param_3->vertCount[2] +
-          (int)param_3->vertCount[3];
-  local_20 = -1;
-  local_8 = (float *)0x0;
-  if (((uVar1 < 0x3e9) && (param_3->tensionData != (float *)0x0)) &&
+  vertIndex = 0;
+  vertsBlend = vertexInfo->vertsBlend;
+  uVar1 = (int)vertexInfo->vertCount[0] + (int)vertexInfo->vertCount[1] +
+          (int)vertexInfo->vertCount[2] + (int)vertexInfo->vertCount[3];
+  tensionBufferStage = -1;
+  vertsTension = (float *)0x0;
+  if (((uVar1 < 0x3e9) && (vertexInfo->tensionData != (float *)0x0)) &&
      ((r_tension_enable->current).enabled != false)) {
     Sys_EnterCriticalSection(CRITSECT_TENSION);
-    for (local_28 = 0; local_28 < 4; local_28 = local_28 + 1) {
-      if (TensionUsage[local_28] == false) {
-        TensionUsage[local_28] = true;
-        local_20 = local_28;
-        local_8 = TensionBuffer[local_28];
+    for (i = 0; i < 4; i = i + 1) {
+      if (TensionUsage[i] == false) {
+        TensionUsage[i] = true;
+        tensionBufferStage = i;
+        vertsTension = TensionBuffer[i];
         break;
       }
     }
     Sys_LeaveCriticalSection(CRITSECT_TENSION);
   }
-  local_10 = param_2;
+  pverts = inVerts;
   if (uVar1 != 0) {
-    if (param_3->vertCount[0] != 0) {
-      R_SkinXSurfaceWeight0(param_2,local_14,(int)param_3->vertCount[0],param_4,param_5,local_8);
-      local_10 = param_2 + param_3->vertCount[0];
-      local_c = (int)param_3->vertCount[0];
-      local_14 = local_14 + param_3->vertCount[0];
-      if (local_8 != (float *)0x0) {
-        local_8 = local_8 + (int)param_3->vertCount[0] * 4;
+    if (vertexInfo->vertCount[0] != 0) {
+      R_SkinXSurfaceWeight0
+                (inVerts,vertsBlend,(int)vertexInfo->vertCount[0],boneMatrix,outVerts,vertsTension);
+      pverts = inVerts + vertexInfo->vertCount[0];
+      vertIndex = (int)vertexInfo->vertCount[0];
+      vertsBlend = vertsBlend + vertexInfo->vertCount[0];
+      if (vertsTension != (float *)0x0) {
+        vertsTension = vertsTension + vertexInfo->vertCount[0] * 4;
       }
     }
-    if (param_3->vertCount[1] != 0) {
+    if (vertexInfo->vertCount[1] != 0) {
       R_SkinXSurfaceWeight1
-                (local_10,local_14,(int)param_3->vertCount[1],param_4,param_5 + local_c,local_8);
-      local_10 = local_10 + param_3->vertCount[1];
-      local_c = param_3->vertCount[1] + local_c;
-      local_14 = local_14 + param_3->vertCount[1] * 3;
-      if (local_8 != (float *)0x0) {
-        local_8 = local_8 + (int)param_3->vertCount[1] * 4;
+                (pverts,vertsBlend,(int)vertexInfo->vertCount[1],boneMatrix,outVerts + vertIndex,
+                 vertsTension);
+      pverts = pverts + vertexInfo->vertCount[1];
+      vertIndex = vertexInfo->vertCount[1] + vertIndex;
+      vertsBlend = vertsBlend + vertexInfo->vertCount[1] * 3;
+      if (vertsTension != (float *)0x0) {
+        vertsTension = vertsTension + vertexInfo->vertCount[1] * 4;
       }
     }
-    if (param_3->vertCount[2] != 0) {
+    if (vertexInfo->vertCount[2] != 0) {
       R_SkinXSurfaceWeight2
-                (local_10,local_14,(int)param_3->vertCount[2],param_4,param_5 + local_c,local_8);
-      local_10 = local_10 + param_3->vertCount[2];
-      local_c = param_3->vertCount[2] + local_c;
-      local_14 = local_14 + param_3->vertCount[2] * 5;
-      if (local_8 != (float *)0x0) {
-        local_8 = local_8 + (int)param_3->vertCount[2] * 4;
+                (pverts,vertsBlend,(int)vertexInfo->vertCount[2],boneMatrix,outVerts + vertIndex,
+                 vertsTension);
+      pverts = pverts + vertexInfo->vertCount[2];
+      vertIndex = vertexInfo->vertCount[2] + vertIndex;
+      vertsBlend = vertsBlend + vertexInfo->vertCount[2] * 5;
+      if (vertsTension != (float *)0x0) {
+        vertsTension = vertsTension + vertexInfo->vertCount[2] * 4;
       }
     }
-    if ((param_3->vertCount[3] != 0) &&
+    if ((vertexInfo->vertCount[3] != 0) &&
        (R_SkinXSurfaceWeight3
-                  (local_10,local_14,(int)param_3->vertCount[3],param_4,param_5 + local_c,local_8),
-       local_8 != (float *)0x0)) {
-      local_8 = local_8 + (int)param_3->vertCount[3] * 4;
+                  (pverts,vertsBlend,(int)vertexInfo->vertCount[3],boneMatrix,outVerts + vertIndex,
+                   vertsTension), vertsTension != (float *)0x0)) {
+      vertsTension = vertsTension + vertexInfo->vertCount[3] * 4;
     }
-    if (((uVar1 < 0x3e9) && (param_3->tensionData != (float *)0x0)) && (local_8 == (float *)0x0)) {
-      for (local_1c = 0; local_1c < uVar1; local_1c = local_1c + 1) {
-        if (0.0 < param_5->binormalSign || param_5->binormalSign == 0.0) {
+    if (((uVar1 < 0x3e9) && (vertexInfo->tensionData != (float *)0x0)) &&
+       (vertsTension == (float *)0x0)) {
+      for (iVert = 0; iVert < uVar1; iVert = iVert + 1) {
+        if (0.0 < outVerts->binormalSign || outVerts->binormalSign == 0.0) {
           local_2c = 1.0;
         }
         else {
           local_2c = -1.0;
         }
-        param_5->binormalSign = local_2c;
-        param_5 = param_5 + 1;
+        outVerts->binormalSign = local_2c;
+        outVerts = outVerts + 1;
       }
     }
-    else if (local_20 != -1) {
-      GamerProfile_WriteSettings((int)param_3->tensionData);
+    else if (tensionBufferStage != -1) {
+      GamerProfile_WriteSettings((int)vertexInfo->tensionData);
       Sys_EnterCriticalSection(CRITSECT_TENSION);
-      TensionUsage[local_20] = false;
+      TensionUsage[tensionBufferStage] = false;
       Sys_LeaveCriticalSection(CRITSECT_TENSION);
     }
   }
@@ -3655,33 +3663,33 @@ R_SkinXSurfaceWeight
 
 void __cdecl
 R_SkinXSurfaceWeightSse
-          (GfxPackedVertex *param_1,XSurfaceVertexInfo *param_2,DObjSkelMat *param_3,
-          GfxPackedVertex *param_4)
+          (GfxPackedVertex *inVerts,XSurfaceVertexInfo *vertexInfo,DObjSkelMat *boneMatrix,
+          GfxPackedVertex *outVerts)
 
 {
-  ushort *local_c;
-  int local_8;
+  ushort *vertsBlend;
+  int vertIndex;
   
-  local_8 = 0;
-  local_c = param_2->vertsBlend;
-  if (param_2->vertCount[0] != 0) {
+  vertIndex = 0;
+  vertsBlend = vertexInfo->vertsBlend;
+  if (vertexInfo->vertCount[0] != 0) {
     R_SkinXSurfaceWeightSseBlock<1,Sse_SkinVertex_0>
-              (param_1,local_c,(int)param_2->vertCount[0],param_3,param_4,&local_8);
-    local_c = local_c + param_2->vertCount[0];
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[0],boneMatrix,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[0];
   }
-  if (param_2->vertCount[1] != 0) {
+  if (vertexInfo->vertCount[1] != 0) {
     R_SkinXSurfaceWeightSseBlock<3,Sse_SkinVertex_1>
-              (param_1,local_c,(int)param_2->vertCount[1],param_3,param_4,&local_8);
-    local_c = local_c + param_2->vertCount[1] * 3;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[1],boneMatrix,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[1] * 3;
   }
-  if (param_2->vertCount[2] != 0) {
+  if (vertexInfo->vertCount[2] != 0) {
     R_SkinXSurfaceWeightSseBlock<5,Sse_SkinVertex_2>
-              (param_1,local_c,(int)param_2->vertCount[2],param_3,param_4,&local_8);
-    local_c = local_c + param_2->vertCount[2] * 5;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[2],boneMatrix,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[2] * 5;
   }
-  if (param_2->vertCount[3] != 0) {
+  if (vertexInfo->vertCount[3] != 0) {
     R_SkinXSurfaceWeightSseBlock<7,Sse_SkinVertex_3>
-              (param_1,local_c,(int)param_2->vertCount[3],param_3,param_4,&local_8);
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[3],boneMatrix,outVerts,&vertIndex);
   }
   return;
 }
@@ -3691,33 +3699,37 @@ R_SkinXSurfaceWeightSse
 
 void __cdecl
 R_SkinXSurfaceWeightSseOut
-          (GfxPackedVertex *param_1,XSurfaceVertexInfo *param_2,DObjSkelMat *param_3,
-          GfxPackedVertexNormal *param_4,GfxPackedVertex *param_5)
+          (GfxPackedVertex *inVerts,XSurfaceVertexInfo *vertexInfo,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *outVertNormals,GfxPackedVertex *outVerts)
 
 {
-  ushort *local_c;
-  int local_8;
+  ushort *vertsBlend;
+  int vertIndex;
   
-  local_8 = 0;
-  local_c = param_2->vertsBlend;
-  if (param_2->vertCount[0] != 0) {
+  vertIndex = 0;
+  vertsBlend = vertexInfo->vertsBlend;
+  if (vertexInfo->vertCount[0] != 0) {
     R_SkinXSurfaceWeightSseBlockOut<1,Sse_SkinVertex_0>
-              (param_1,local_c,(int)param_2->vertCount[0],param_3,param_4,param_5,&local_8);
-    local_c = local_c + param_2->vertCount[0];
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[0],boneMatrix,outVertNormals,outVerts,
+               &vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[0];
   }
-  if (param_2->vertCount[1] != 0) {
+  if (vertexInfo->vertCount[1] != 0) {
     R_SkinXSurfaceWeightSseBlockOut<3,Sse_SkinVertex_1>
-              (param_1,local_c,(int)param_2->vertCount[1],param_3,param_4,param_5,&local_8);
-    local_c = local_c + param_2->vertCount[1] * 3;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[1],boneMatrix,outVertNormals,outVerts,
+               &vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[1] * 3;
   }
-  if (param_2->vertCount[2] != 0) {
+  if (vertexInfo->vertCount[2] != 0) {
     R_SkinXSurfaceWeightSseBlockOut<5,Sse_SkinVertex_2>
-              (param_1,local_c,(int)param_2->vertCount[2],param_3,param_4,param_5,&local_8);
-    local_c = local_c + param_2->vertCount[2] * 5;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[2],boneMatrix,outVertNormals,outVerts,
+               &vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[2] * 5;
   }
-  if (param_2->vertCount[3] != 0) {
+  if (vertexInfo->vertCount[3] != 0) {
     R_SkinXSurfaceWeightSseBlockOut<7,Sse_SkinVertex_3>
-              (param_1,local_c,(int)param_2->vertCount[3],param_3,param_4,param_5,&local_8);
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[3],boneMatrix,outVertNormals,outVerts,
+               &vertIndex);
   }
   return;
 }
@@ -3727,33 +3739,38 @@ R_SkinXSurfaceWeightSseOut
 
 void __cdecl
 R_SkinXSurfaceWeightSseInOut
-          (GfxPackedVertex *param_1,XSurfaceVertexInfo *param_2,DObjSkelMat *param_3,
-          GfxPackedVertexNormal *param_4,GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6)
+          (GfxPackedVertex *inVerts,XSurfaceVertexInfo *vertexInfo,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *inVertNormals,GfxPackedVertexNormal *outVertNormals,
+          GfxPackedVertex *outVerts)
 
 {
-  ushort *local_c;
-  int local_8;
+  ushort *vertsBlend;
+  int vertIndex;
   
-  local_8 = 0;
-  local_c = param_2->vertsBlend;
-  if (param_2->vertCount[0] != 0) {
+  vertIndex = 0;
+  vertsBlend = vertexInfo->vertsBlend;
+  if (vertexInfo->vertCount[0] != 0) {
     R_SkinXSurfaceWeightSseBlockInOut<1,Sse_SkinVertexSimple_0>
-              (param_1,local_c,(int)param_2->vertCount[0],param_3,param_4,param_5,param_6,&local_8);
-    local_c = local_c + param_2->vertCount[0];
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[0],boneMatrix,inVertNormals,
+               outVertNormals,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[0];
   }
-  if (param_2->vertCount[1] != 0) {
+  if (vertexInfo->vertCount[1] != 0) {
     R_SkinXSurfaceWeightSseBlockInOut<3,Sse_SkinVertexSimple_1>
-              (param_1,local_c,(int)param_2->vertCount[1],param_3,param_4,param_5,param_6,&local_8);
-    local_c = local_c + param_2->vertCount[1] * 3;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[1],boneMatrix,inVertNormals,
+               outVertNormals,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[1] * 3;
   }
-  if (param_2->vertCount[2] != 0) {
+  if (vertexInfo->vertCount[2] != 0) {
     R_SkinXSurfaceWeightSseBlockInOut<5,Sse_SkinVertexSimple_2>
-              (param_1,local_c,(int)param_2->vertCount[2],param_3,param_4,param_5,param_6,&local_8);
-    local_c = local_c + param_2->vertCount[2] * 5;
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[2],boneMatrix,inVertNormals,
+               outVertNormals,outVerts,&vertIndex);
+    vertsBlend = vertsBlend + vertexInfo->vertCount[2] * 5;
   }
-  if (param_2->vertCount[3] != 0) {
+  if (vertexInfo->vertCount[3] != 0) {
     R_SkinXSurfaceWeightSseBlockInOut<7,Sse_SkinVertexSimple_3>
-              (param_1,local_c,(int)param_2->vertCount[3],param_3,param_4,param_5,param_6,&local_8);
+              (inVerts,vertsBlend,(int)vertexInfo->vertCount[3],boneMatrix,inVertNormals,
+               outVertNormals,outVerts,&vertIndex);
   }
   return;
 }
@@ -3762,19 +3779,23 @@ R_SkinXSurfaceWeightSseInOut
 // 00B460D0  R_SkinXSurfaceRigid  (gfx_d3d/r_model_skin.cpp:3897)
 
 void __cdecl
-R_SkinXSurfaceRigid(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPackedVertex *param_4)
+R_SkinXSurfaceRigid(XSurface *surf,int totalVertCount,DObjSkelMat *boneMatrix,
+                   GfxPackedVertex *vertices)
 
 {
   ushort uVar1;
   ushort uVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_20;
-  int local_18;
-  GfxPackedVertex *local_14;
-  GfxPackedVertex *local_c;
+  uint i;
+  int vertCount;
+  int vertIndex;
+  GfxPackedVertex *vertex;
+  XRigidVertList *vertList;
+  GfxPackedVertex *v;
+  DObjSkelMat *bone;
   
-  if (param_4 == (GfxPackedVertex *)0x0) {
+  if (vertices == (GfxPackedVertex *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf42,0,
                              "%s");
     if (!bVar4) {
@@ -3783,7 +3804,7 @@ R_SkinXSurfaceRigid(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPacked
       return;
     }
   }
-  if (((uint)param_4 & 0xf) != 0) {
+  if (((uint)vertices & 0xf) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf43,0,
                              "%s");
     if (!bVar4) {
@@ -3792,7 +3813,7 @@ R_SkinXSurfaceRigid(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPacked
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)boneMatrix & 0xf) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf44,0,
                              "%s");
     if (!bVar4) {
@@ -3801,22 +3822,22 @@ R_SkinXSurfaceRigid(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPacked
       return;
     }
   }
-  local_c = param_1->verts0;
-  local_14 = param_4;
-  for (local_20 = 0; local_20 < param_1->vertListCount; local_20 = local_20 + 1) {
-    uVar1 = param_1->vertList[local_20].vertCount;
-    uVar2 = param_1->vertList[local_20].boneOffset;
-    for (local_18 = 0; local_18 < (int)(uint)uVar1; local_18 = local_18 + 1) {
+  v = surf->verts0;
+  vertex = vertices;
+  for (i = 0; i < surf->vertListCount; i = i + 1) {
+    uVar1 = surf->vertList[i].vertCount;
+    uVar2 = surf->vertList[i].boneOffset;
+    for (vertIndex = 0; vertIndex < (int)(uint)uVar1; vertIndex = vertIndex + 1) {
       MatrixTransformVertexAndBasis
-                (local_c->xyz,local_c->binormalSign,local_c->normal,local_c->tangent,
-                 (DObjSkelMat *)((int)param_3->axis[0] + (uint)uVar2),local_14);
-      local_14->color = local_c->color;
-      local_14->texCoord = local_c->texCoord;
-      local_c = local_c + 1;
-      local_14 = local_14 + 1;
+                (v->xyz,v->binormalSign,v->normal,v->tangent,
+                 (DObjSkelMat *)((int)boneMatrix->axis[0] + (uint)uVar2),vertex);
+      vertex->color = v->color;
+      vertex->texCoord = v->texCoord;
+      v = v + 1;
+      vertex = vertex + 1;
     }
   }
-  if ((int)local_14 - (int)param_4 >> 5 != param_2) {
+  if ((int)vertex - (int)vertices >> 5 != totalVertCount) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf61,0,
                              "%s");
     if (!bVar4) {
@@ -3834,7 +3855,8 @@ R_SkinXSurfaceRigid(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPacked
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPackedVertex *param_4)
+R_SkinXSurfaceRigidSse
+          (XSurface *surf,int totalVertCount,DObjSkelMat *boneMatrix,GfxPackedVertex *dstVerts)
 
 {
   ushort uVar1;
@@ -3901,7 +3923,7 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
   undefined6 uVar41;
   undefined6 uVar42;
   
-  if (param_4 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf84,0
                               ,"%s");
     if (!bVar31) {
@@ -3910,7 +3932,7 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
       return;
     }
   }
-  if (((uint)param_4 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf85,0
                               ,"%s");
     if (!bVar31) {
@@ -3919,7 +3941,7 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)boneMatrix & 0xf) != 0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xf86,0
                               ,"%s");
     if (!bVar31) {
@@ -3928,11 +3950,11 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
       return;
     }
   }
-  local_18 = param_1->verts0;
-  local_1c = param_4;
-  for (local_20 = 0; local_20 < param_1->vertListCount; local_20 = local_20 + 1) {
-    uVar1 = param_1->vertList[local_20].vertCount;
-    pfVar32 = (float *)((int)param_3->axis[0] + (uint)param_1->vertList[local_20].boneOffset);
+  local_18 = surf->verts0;
+  local_1c = dstVerts;
+  for (local_20 = 0; local_20 < surf->vertListCount; local_20 = local_20 + 1) {
+    uVar1 = surf->vertList[local_20].vertCount;
+    pfVar32 = (float *)((int)boneMatrix->axis[0] + (uint)surf->vertList[local_20].boneOffset);
     fVar14 = *pfVar32;
     fVar15 = pfVar32[1];
     fVar16 = pfVar32[2];
@@ -4069,7 +4091,7 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
       in_stack_fffff8e8 = in_stack_fffff8e0;
     }
   }
-  if ((int)local_1c - (int)param_4 >> 5 != param_2) {
+  if ((int)local_1c - (int)dstVerts >> 5 != totalVertCount) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfab,0
                               ,"%s");
     if (!bVar31) {
@@ -4088,8 +4110,8 @@ R_SkinXSurfaceRigidSse(XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPac
 
 void __cdecl
 R_SkinXSurfaceRigidSseOut
-          (XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPackedVertexNormal *param_4,
-          GfxPackedVertex *param_5)
+          (XSurface *surf,int totalVertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *dstVertNormals,GfxPackedVertex *dstVerts)
 
 {
   ushort uVar1;
@@ -4157,7 +4179,7 @@ R_SkinXSurfaceRigidSseOut
   undefined6 uVar41;
   undefined6 uVar42;
   
-  if (param_5 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfcc,0
                               ,"%s");
     if (!bVar31) {
@@ -4166,7 +4188,7 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  if (param_4 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfcd,0
                               ,"%s");
     if (!bVar31) {
@@ -4175,7 +4197,7 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  if (((uint)param_5 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfce,0
                               ,"%s");
     if (!bVar31) {
@@ -4184,7 +4206,7 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  if (((uint)param_4 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfcf,0
                               ,"%s");
     if (!bVar31) {
@@ -4193,7 +4215,7 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)boneMatrix & 0xf) != 0) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xfd0,0
                               ,"%s");
     if (!bVar31) {
@@ -4202,12 +4224,12 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  local_18 = param_1->verts0;
-  local_1c = param_5;
-  local_20 = (__m64 *)param_4;
-  for (local_24 = 0; local_24 < param_1->vertListCount; local_24 = local_24 + 1) {
-    uVar1 = param_1->vertList[local_24].vertCount;
-    pfVar32 = (float *)((int)param_3->axis[0] + (uint)param_1->vertList[local_24].boneOffset);
+  local_18 = surf->verts0;
+  local_1c = dstVerts;
+  local_20 = (__m64 *)dstVertNormals;
+  for (local_24 = 0; local_24 < surf->vertListCount; local_24 = local_24 + 1) {
+    uVar1 = surf->vertList[local_24].vertCount;
+    pfVar32 = (float *)((int)boneMatrix->axis[0] + (uint)surf->vertList[local_24].boneOffset);
     fVar14 = *pfVar32;
     fVar15 = pfVar32[1];
     fVar16 = pfVar32[2];
@@ -4346,7 +4368,7 @@ R_SkinXSurfaceRigidSseOut
       in_stack_fffff8e8 = in_stack_fffff8e0;
     }
   }
-  if ((int)local_1c - (int)param_5 >> 5 != param_2) {
+  if ((int)local_1c - (int)dstVerts >> 5 != totalVertCount) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xff6,0
                               ,"%s");
     if (!bVar31) {
@@ -4355,7 +4377,7 @@ R_SkinXSurfaceRigidSseOut
       return;
     }
   }
-  if ((int)local_20 - (int)param_4 >> 3 != param_2) {
+  if ((int)local_20 - (int)dstVertNormals >> 3 != totalVertCount) {
     bVar31 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0xff7,0
                               ,"%s");
     if (!bVar31) {
@@ -4374,8 +4396,9 @@ R_SkinXSurfaceRigidSseOut
 
 void __cdecl
 R_SkinXSurfaceRigidSseInOut
-          (XSurface *param_1,int param_2,DObjSkelMat *param_3,GfxPackedVertexNormal *param_4,
-          GfxPackedVertexNormal *param_5,GfxPackedVertex *param_6)
+          (XSurface *surf,int totalVertCount,DObjSkelMat *boneMatrix,
+          GfxPackedVertexNormal *srcVertNormals,GfxPackedVertexNormal *dstVertNormals,
+          GfxPackedVertex *dstVerts)
 
 {
   GfxPackedVertexNormal GVar1;
@@ -4408,7 +4431,7 @@ R_SkinXSurfaceRigidSseInOut
   GfxPackedVertexNormal *local_1c;
   GfxPackedVertex *local_18;
   
-  if (param_6 == (GfxPackedVertex *)0x0) {
+  if (dstVerts == (GfxPackedVertex *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x1019,
                               0,"%s");
     if (!bVar22) {
@@ -4417,7 +4440,7 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  if (param_5 == (GfxPackedVertexNormal *)0x0) {
+  if (dstVertNormals == (GfxPackedVertexNormal *)0x0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x101a,
                               0,"%s");
     if (!bVar22) {
@@ -4426,7 +4449,7 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  if (((uint)param_6 & 0xf) != 0) {
+  if (((uint)dstVerts & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x101b,
                               0,"%s");
     if (!bVar22) {
@@ -4435,7 +4458,7 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  if (((uint)param_5 & 7) != 0) {
+  if (((uint)dstVertNormals & 7) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x101c,
                               0,"%s");
     if (!bVar22) {
@@ -4444,7 +4467,7 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)boneMatrix & 0xf) != 0) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x101d,
                               0,"%s");
     if (!bVar22) {
@@ -4453,13 +4476,13 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  local_18 = param_1->verts0;
-  local_1c = param_4;
-  local_20 = param_6;
-  local_24 = param_5;
-  for (local_28 = 0; local_28 < param_1->vertListCount; local_28 = local_28 + 1) {
-    uVar2 = param_1->vertList[local_28].vertCount;
-    pfVar23 = (float *)((int)param_3->axis[0] + (uint)param_1->vertList[local_28].boneOffset);
+  local_18 = surf->verts0;
+  local_1c = srcVertNormals;
+  local_20 = dstVerts;
+  local_24 = dstVertNormals;
+  for (local_28 = 0; local_28 < surf->vertListCount; local_28 = local_28 + 1) {
+    uVar2 = surf->vertList[local_28].vertCount;
+    pfVar23 = (float *)((int)boneMatrix->axis[0] + (uint)surf->vertList[local_28].boneOffset);
     fVar4 = *pfVar23;
     fVar5 = pfVar23[1];
     fVar6 = pfVar23[2];
@@ -4495,7 +4518,7 @@ R_SkinXSurfaceRigidSseInOut
       local_24 = local_24 + 1;
     }
   }
-  if ((int)local_20 - (int)param_6 >> 5 != param_2) {
+  if ((int)local_20 - (int)dstVerts >> 5 != totalVertCount) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x1045,
                               0,"%s");
     if (!bVar22) {
@@ -4504,7 +4527,7 @@ R_SkinXSurfaceRigidSseInOut
       return;
     }
   }
-  if ((int)local_24 - (int)param_5 >> 3 != param_2) {
+  if ((int)local_24 - (int)dstVertNormals >> 3 != totalVertCount) {
     bVar22 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",0x1046,
                               0,"%s");
     if (!bVar22) {
@@ -4519,14 +4542,14 @@ R_SkinXSurfaceRigidSseInOut
 
 // 00B45170  R_SkinXSurfaceSkinned  (gfx_d3d/r_model_skin.cpp:4177)
 
-void __cdecl R_SkinXSurfaceSkinned(XSurface *param_1,DObjSkelMat *param_2,void *param_3)
+void __cdecl R_SkinXSurfaceSkinned(XSurface *xsurf,DObjSkelMat *boneMatrix,void *skinVerticesOut)
 
 {
-  if ((param_1->flags & 0x80) == 0) {
-    R_SkinXSurfaceRigid(param_1,(uint)param_1->vertCount,param_2,param_3);
+  if ((xsurf->flags & 0x80) == 0) {
+    R_SkinXSurfaceRigid(xsurf,(uint)xsurf->vertCount,boneMatrix,skinVerticesOut);
   }
   else {
-    R_SkinXSurfaceWeight(param_1,param_1->verts0,&param_1->vertInfo,param_2,param_3);
+    R_SkinXSurfaceWeight(xsurf,xsurf->verts0,&xsurf->vertInfo,boneMatrix,skinVerticesOut);
   }
   return;
 }
@@ -4536,42 +4559,47 @@ void __cdecl R_SkinXSurfaceSkinned(XSurface *param_1,DObjSkelMat *param_2,void *
 
 void __cdecl
 R_SkinXSurfaceSkinnedSse
-          (XSurface *param_1,DObjSkelMat *param_2,GfxPackedVertexNormal *param_3,
-          GfxPackedVertexNormal *param_4,void *param_5)
+          (XSurface *xsurf,DObjSkelMat *boneMatrix,GfxPackedVertexNormal *skinVertNormalIn,
+          GfxPackedVertexNormal *skinVertNormalOut,void *skinVerticesOut)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_4 == (GfxPackedVertexNormal *)0x0) {
-    if ((param_3 != (GfxPackedVertexNormal *)0x0) &&
+  if (skinVertNormalOut == (GfxPackedVertexNormal *)0x0) {
+    if ((skinVertNormalIn != (GfxPackedVertexNormal *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
                                  0x1078,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->flags & 0x80) == 0) {
-      R_SkinXSurfaceRigidSse(param_1,(uint)param_1->vertCount,param_2,param_5);
+    if ((xsurf->flags & 0x80) == 0) {
+      R_SkinXSurfaceRigidSse(xsurf,(uint)xsurf->vertCount,boneMatrix,skinVerticesOut);
     }
     else {
-      R_SkinXSurfaceWeightSse(param_1->verts0,&param_1->vertInfo,param_2,param_5);
+      R_SkinXSurfaceWeightSse(xsurf->verts0,&xsurf->vertInfo,boneMatrix,skinVerticesOut);
     }
   }
-  else if (param_3 == (GfxPackedVertexNormal *)0x0) {
-    if ((param_1->flags & 0x80) == 0) {
-      R_SkinXSurfaceRigidSseOut(param_1,(uint)param_1->vertCount,param_2,param_4,param_5);
+  else if (skinVertNormalIn == (GfxPackedVertexNormal *)0x0) {
+    if ((xsurf->flags & 0x80) == 0) {
+      R_SkinXSurfaceRigidSseOut
+                (xsurf,(uint)xsurf->vertCount,boneMatrix,skinVertNormalOut,skinVerticesOut);
     }
     else {
-      R_SkinXSurfaceWeightSseOut(param_1->verts0,&param_1->vertInfo,param_2,param_4,param_5);
+      R_SkinXSurfaceWeightSseOut
+                (xsurf->verts0,&xsurf->vertInfo,boneMatrix,skinVertNormalOut,skinVerticesOut);
     }
   }
-  else if ((param_1->flags & 0x80) == 0) {
-    R_SkinXSurfaceRigidSseInOut(param_1,(uint)param_1->vertCount,param_2,param_3,param_4,param_5);
+  else if ((xsurf->flags & 0x80) == 0) {
+    R_SkinXSurfaceRigidSseInOut
+              (xsurf,(uint)xsurf->vertCount,boneMatrix,skinVertNormalIn,skinVertNormalOut,
+               skinVerticesOut);
   }
   else {
-    R_SkinXSurfaceWeightSseInOut(param_1->verts0,&param_1->vertInfo,param_2,param_3,param_4,param_5)
-    ;
+    R_SkinXSurfaceWeightSseInOut
+              (xsurf->verts0,&xsurf->vertInfo,boneMatrix,skinVertNormalIn,skinVertNormalOut,
+               skinVerticesOut);
   }
   return;
 }
@@ -4579,45 +4607,45 @@ R_SkinXSurfaceSkinnedSse
 
 // 00B487E0  R_MultiplySkelMat  (gfx_d3d/r_model_skin.cpp:4262)
 
-void __cdecl R_MultiplySkelMat(DObjSkelMat *param_1,DObjSkelMat *param_2,DObjSkelMat *param_3)
+void __cdecl R_MultiplySkelMat(DObjSkelMat *mat0,DObjSkelMat *mat1,DObjSkelMat *out)
 
 {
-  param_3->axis[0][0] =
-       param_1->axis[0][0] * param_2->axis[0][0] + param_1->axis[0][1] * param_2->axis[1][0] +
-       param_1->axis[0][2] * param_2->axis[2][0];
-  param_3->axis[0][1] =
-       param_1->axis[0][0] * param_2->axis[0][1] + param_1->axis[0][1] * param_2->axis[1][1] +
-       param_1->axis[0][2] * param_2->axis[2][1];
-  param_3->axis[0][2] =
-       param_1->axis[0][0] * param_2->axis[0][2] + param_1->axis[0][1] * param_2->axis[1][2] +
-       param_1->axis[0][2] * param_2->axis[2][2];
-  param_3->axis[1][0] =
-       param_1->axis[1][0] * param_2->axis[0][0] + param_1->axis[1][1] * param_2->axis[1][0] +
-       param_1->axis[1][2] * param_2->axis[2][0];
-  param_3->axis[1][1] =
-       param_1->axis[1][0] * param_2->axis[0][1] + param_1->axis[1][1] * param_2->axis[1][1] +
-       param_1->axis[1][2] * param_2->axis[2][1];
-  param_3->axis[1][2] =
-       param_1->axis[1][0] * param_2->axis[0][2] + param_1->axis[1][1] * param_2->axis[1][2] +
-       param_1->axis[1][2] * param_2->axis[2][2];
-  param_3->axis[2][0] =
-       param_1->axis[2][0] * param_2->axis[0][0] + param_1->axis[2][1] * param_2->axis[1][0] +
-       param_1->axis[2][2] * param_2->axis[2][0];
-  param_3->axis[2][1] =
-       param_1->axis[2][0] * param_2->axis[0][1] + param_1->axis[2][1] * param_2->axis[1][1] +
-       param_1->axis[2][2] * param_2->axis[2][1];
-  param_3->axis[2][2] =
-       param_1->axis[2][0] * param_2->axis[0][2] + param_1->axis[2][1] * param_2->axis[1][2] +
-       param_1->axis[2][2] * param_2->axis[2][2];
-  param_3->origin[0] =
-       param_1->origin[0] * param_2->axis[0][0] + param_1->origin[1] * param_2->axis[1][0] +
-       param_1->origin[2] * param_2->axis[2][0] + param_2->origin[0];
-  param_3->origin[1] =
-       param_1->origin[0] * param_2->axis[0][1] + param_1->origin[1] * param_2->axis[1][1] +
-       param_1->origin[2] * param_2->axis[2][1] + param_2->origin[1];
-  param_3->origin[2] =
-       param_1->origin[0] * param_2->axis[0][2] + param_1->origin[1] * param_2->axis[1][2] +
-       param_1->origin[2] * param_2->axis[2][2] + param_2->origin[2];
+  out->axis[0][0] =
+       mat0->axis[0][0] * mat1->axis[0][0] + mat0->axis[0][1] * mat1->axis[1][0] +
+       mat0->axis[0][2] * mat1->axis[2][0];
+  out->axis[0][1] =
+       mat0->axis[0][0] * mat1->axis[0][1] + mat0->axis[0][1] * mat1->axis[1][1] +
+       mat0->axis[0][2] * mat1->axis[2][1];
+  out->axis[0][2] =
+       mat0->axis[0][0] * mat1->axis[0][2] + mat0->axis[0][1] * mat1->axis[1][2] +
+       mat0->axis[0][2] * mat1->axis[2][2];
+  out->axis[1][0] =
+       mat0->axis[1][0] * mat1->axis[0][0] + mat0->axis[1][1] * mat1->axis[1][0] +
+       mat0->axis[1][2] * mat1->axis[2][0];
+  out->axis[1][1] =
+       mat0->axis[1][0] * mat1->axis[0][1] + mat0->axis[1][1] * mat1->axis[1][1] +
+       mat0->axis[1][2] * mat1->axis[2][1];
+  out->axis[1][2] =
+       mat0->axis[1][0] * mat1->axis[0][2] + mat0->axis[1][1] * mat1->axis[1][2] +
+       mat0->axis[1][2] * mat1->axis[2][2];
+  out->axis[2][0] =
+       mat0->axis[2][0] * mat1->axis[0][0] + mat0->axis[2][1] * mat1->axis[1][0] +
+       mat0->axis[2][2] * mat1->axis[2][0];
+  out->axis[2][1] =
+       mat0->axis[2][0] * mat1->axis[0][1] + mat0->axis[2][1] * mat1->axis[1][1] +
+       mat0->axis[2][2] * mat1->axis[2][1];
+  out->axis[2][2] =
+       mat0->axis[2][0] * mat1->axis[0][2] + mat0->axis[2][1] * mat1->axis[1][2] +
+       mat0->axis[2][2] * mat1->axis[2][2];
+  out->origin[0] =
+       mat0->origin[0] * mat1->axis[0][0] + mat0->origin[1] * mat1->axis[1][0] +
+       mat0->origin[2] * mat1->axis[2][0] + mat1->origin[0];
+  out->origin[1] =
+       mat0->origin[0] * mat1->axis[0][1] + mat0->origin[1] * mat1->axis[1][1] +
+       mat0->origin[2] * mat1->axis[2][1] + mat1->origin[1];
+  out->origin[2] =
+       mat0->origin[0] * mat1->axis[0][2] + mat0->origin[1] * mat1->axis[1][2] +
+       mat0->origin[2] * mat1->axis[2][2] + mat1->origin[2];
   return;
 }
 
@@ -4626,14 +4654,14 @@ void __cdecl R_MultiplySkelMat(DObjSkelMat *param_1,DObjSkelMat *param_2,DObjSke
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_SkinXModelCmd(void *param_1)
+void __cdecl R_SkinXModelCmd(void *data)
 
 {
-  XSurface *pXVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  DWORD DVar5;
+  XSurface *xsurf;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  DWORD DVar4;
   GfxPackedVertexNormal *local_28e0;
   GfxPackedVertexNormal *local_28dc;
   uchar *local_28d8;
@@ -4657,8 +4685,8 @@ void __cdecl R_SkinXModelCmd(void *param_1)
   undefined4 local_14;
   
   local_14 = 0xb482a0;
-  iVar4 = Sys_QueryD3DDeviceOKEvent();
-  if (iVar4 != 0) {
+  iVar3 = Sys_QueryD3DDeviceOKEvent();
+  if (iVar3 != 0) {
     PIXBeginNamedEvent(-1,"R_SkinXModelCmd");
     if (((sys_SSE->current).enabled == false) || ((r_sse_skinning->current).enabled == false)) {
       local_14 = 0;
@@ -4669,21 +4697,21 @@ void __cdecl R_SkinXModelCmd(void *param_1)
     local_15 = (char)local_14;
     local_16 = '\0';
     local_17 = gfxBuf.fastSkin;
-    local_1c = param_1;
-    local_20 = *(uint **)param_1;
-    local_24 = *(int *)((int)param_1 + 4);
-    if ((param_1 == (void *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
-                                 0x114f,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    local_1c = data;
+    local_20 = *(uint **)data;
+    local_24 = *(int *)((int)data + 4);
+    if ((data == (void *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
+                                 0x114f,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     if ((*(short *)((int)local_1c + 0x28) == 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
-                                 0x1150,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
+                                 0x1150,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     local_28 = local_20;
@@ -4725,54 +4753,54 @@ void __cdecl R_SkinXModelCmd(void *param_1)
         else {
           local_28 = local_34 + 6;
           if ((local_34[1] == 0) &&
-             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
-                                       ,0x11b2,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+             (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
+                                       ,0x11b2,0,"%s"), !bVar2)) {
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          pXVar1 = (XSurface *)local_34[1];
+          xsurf = (XSurface *)local_34[1];
           if ((int)*local_34 < 0) {
             if (((local_34[5] & 0xf) != 0) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
+               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
                                          ,0x11cc,0,
                                          "%s\n\t(reinterpret_cast< uint >( skinnedSurf->skinnedVert )) = %i"
-                                        ), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+                                        ), !bVar2)) {
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
             local_28d8 = (uchar *)local_34[5];
           }
           else {
             if ((gfxBuf.skinnedCacheLockAddr == (uchar *)0x0) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
-                                         ,0x11c3,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
+                                         ,0x11c3,0,"%s"), !bVar2)) {
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
             if ((((uint)gfxBuf.skinnedCacheLockAddr & 0xf) != 0) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
+               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
                                          ,0x11c4,0,
                                          "%s\n\t(reinterpret_cast< uint >( gfxBuf.skinnedCacheLockAddr )) = %i"
-                                        ), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+                                        ), !bVar2)) {
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
             if (((*local_34 & 0xf) != 0) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
+               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp"
                                          ,0x11c5,0,"%s\n\t(skinnedSurf->skinnedCachedOffset) = %i"),
-               !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+               !bVar2)) {
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
             local_28d8 = gfxBuf.skinnedCacheLockAddr + *local_34;
           }
           if (local_15 == '\0') {
-            R_SkinXSurfaceSkinned(pXVar1,aDStack_28d0 + local_2c,local_28d8);
+            R_SkinXSurfaceSkinned(xsurf,aDStack_28d0 + local_2c,local_28d8);
           }
           else {
             if (local_16 == '\0') {
@@ -4788,14 +4816,14 @@ void __cdecl R_SkinXModelCmd(void *param_1)
                 local_28dc = gfxBuf.oldSkinnedCacheNormalsAddr + ((int)local_34[5] >> 5);
               }
             }
-            R_SkinXSurfaceSkinnedSse
-                      (pXVar1,aDStack_28d0 + local_2c,local_28dc,local_28e0,local_28d8);
+            R_SkinXSurfaceSkinnedSse(xsurf,aDStack_28d0 + local_2c,local_28dc,local_28e0,local_28d8)
+            ;
           }
         }
       }
     }
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }

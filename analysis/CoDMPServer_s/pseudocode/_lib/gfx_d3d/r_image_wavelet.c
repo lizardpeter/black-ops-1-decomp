@@ -2,7 +2,7 @@
 
 // 0086E110  Wavelet_DecompressLevel  (gfx_d3d/r_image_wavelet.cpp:87)
 
-void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode *param_3)
+void __cdecl Wavelet_DecompressLevel(uchar *dst,uchar *param_2,WaveletDecode *param_3)
 
 {
   uchar uVar1;
@@ -30,8 +30,11 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
   int iVar20;
   int iVar21;
   uint uVar22;
-  byte bStack_64;
-  int iStack_4c;
+  uchar *src;
+  int evenOddParity;
+  int stride;
+  int w;
+  int size;
   int iStack_48;
   uint auStack_44 [8];
   int iStack_24;
@@ -91,7 +94,7 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
     Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
     if ((uVar15 & 1) != 0) {
       Wavelet_AddDeltaToMipmap
-                (param_1,(int)(iStack_48 * iVar5 + (iStack_48 * iVar5 >> 0x1f & 3U)) >> 2,unaff_ESI,
+                (dst,(int)(iStack_48 * iVar5 + (iStack_48 * iVar5 >> 0x1f & 3U)) >> 2,unaff_ESI,
                  (int *)(auStack_44 + 1));
     }
     iVar9 = iVar5 * iVar3;
@@ -99,10 +102,10 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
       iVar16 = (iStack_48 - 1U >> 1) + 1;
       do {
         if (0 < iVar5) {
-          iStack_4c = (iVar5 - 1U >> 1) + 1;
+          size = (iVar5 - 1U >> 1) + 1;
           do {
             if (unaff_ESI->channels != 1) {
-              bStack_64 = (byte)unaff_ESI->value & 1;
+              stride._0_1_ = (byte)unaff_ESI->value & 1;
               uVar18 = (ushort)((*(uint *)unaff_ESI->data >> ((byte)unaff_ESI->bit & 0x1f)) << 0xf)
                        | unaff_ESI->value >> 1;
               uVar15 = unaff_ESI->bit + 1;
@@ -151,8 +154,8 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
                 Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
               }
               puVar8 = param_2 + auStack_44[1];
-              iVar21 = (uint)param_1[auStack_44[1]] * 2;
-              *puVar8 = (char)(iVar11 + iVar17 + iVar20 + iVar21 >> 1) + bStack_64;
+              iVar21 = (uint)dst[auStack_44[1]] * 2;
+              *puVar8 = (char)(iVar11 + iVar17 + iVar20 + iVar21 >> 1) + (byte)stride;
               auStack_44[0] = iVar21 - iVar11;
               puVar8[iVar3] = (uchar)((int)((auStack_44[0] - iVar17) + iVar20) >> 1);
               puVar8[iVar9] = (uchar)((int)((auStack_44[0] - iVar20) + iVar17) >> 1);
@@ -160,7 +163,7 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
               iVar14 = unaff_ESI->channels;
               puVar8[iVar13] = (uchar)(((iVar11 - iVar17) - iVar20) + iVar21 >> 1);
               if (2 < iVar14) {
-                bStack_64 = (byte)unaff_ESI->value & 1;
+                stride._0_1_ = (byte)unaff_ESI->value & 1;
                 Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
                 uVar15 = unaff_ESI->value;
                 Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
@@ -187,11 +190,11 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
                 }
                 iVar21 = iVar21 + iVar11;
                 puVar8 = param_2 + auStack_44[2];
-                iVar4 = (uint)param_1[auStack_44[2]] * 2;
-                *puVar8 = (char)(iVar21 + iVar14 + iStack_24 + iVar4 >> 1) + bStack_64;
+                iVar4 = (uint)dst[auStack_44[2]] * 2;
+                *puVar8 = (char)(iVar21 + iVar14 + iStack_24 + iVar4 >> 1) + (byte)stride;
                 puVar8[iVar3] = (uchar)(((iStack_24 - iVar21) - iVar14) + iVar4 >> 1);
                 puVar8[iVar9] = (uchar)(((iVar14 - iVar21) - iStack_24) + iVar4 >> 1);
-                bStack_64 = (byte)unaff_ESI->value & 1;
+                stride._0_1_ = (byte)unaff_ESI->value & 1;
                 puVar8[iVar13] = (uchar)(((iVar21 - iVar14) - iStack_24) + iVar4 >> 1);
                 Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
                 uVar15 = unaff_ESI->value;
@@ -219,8 +222,8 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
                 }
                 iVar17 = iVar17 + iVar11;
                 puVar8 = param_2 + auStack_44[3];
-                iVar11 = (uint)param_1[auStack_44[3]] * 2;
-                *puVar8 = (char)(iVar17 + iVar20 + iStack_18 + iVar11 >> 1) + bStack_64;
+                iVar11 = (uint)dst[auStack_44[3]] * 2;
+                *puVar8 = (char)(iVar17 + iVar20 + iStack_18 + iVar11 >> 1) + (byte)stride;
                 puVar8[iVar3] = (uchar)(((iStack_18 - iVar17) - iVar20) + iVar11 >> 1);
                 puVar8[iVar9] = (uchar)(((iVar20 - iVar17) - iStack_18) + iVar11 >> 1);
                 puVar8[iVar13] = (uchar)(((iVar17 - iVar20) - iStack_18) + iVar11 >> 1);
@@ -236,7 +239,7 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
               }
             }
             else {
-              bStack_64 = (byte)unaff_ESI->value & 1;
+              stride._0_1_ = (byte)unaff_ESI->value & 1;
               uVar15 = (ushort)((*(uint *)unaff_ESI->data >> ((byte)unaff_ESI->bit & 0x1f)) << 0xf)
                        | unaff_ESI->value >> 1;
               uVar10 = unaff_ESI->bit + 1;
@@ -288,16 +291,16 @@ void __cdecl Wavelet_DecompressLevel(uchar *param_1,uchar *param_2,WaveletDecode
                 Wavelet_ConsumeBits((ushort)unaff_EDI,unaff_EBP);
               }
               puVar8 = param_2 + auStack_44[unaff_ESI->channels];
-              iVar14 = (uint)param_1[auStack_44[unaff_ESI->channels]] * 2;
-              *puVar8 = (char)(iVar11 + iVar17 + iVar20 + iVar14 >> 1) + bStack_64;
+              iVar14 = (uint)dst[auStack_44[unaff_ESI->channels]] * 2;
+              *puVar8 = (char)(iVar11 + iVar17 + iVar20 + iVar14 >> 1) + (byte)stride;
               puVar8[iVar3] = (uchar)(((iVar20 - iVar11) - iVar17) + iVar14 >> 1);
               puVar8[iVar9] = (uchar)(((iVar17 - iVar11) - iVar20) + iVar14 >> 1);
               puVar8[iVar3 + iVar9] = (uchar)(((iVar11 - iVar17) - iVar20) + iVar14 >> 1);
             }
-            param_1 = param_1 + iVar3;
+            dst = dst + iVar3;
             param_2 = param_2 + iVar3 * 2;
-            iStack_4c = iStack_4c + -1;
-          } while (iStack_4c != 0);
+            size = size + -1;
+          } while (size != 0);
         }
         param_2 = param_2 + iVar9;
         iVar16 = iVar16 + -1;

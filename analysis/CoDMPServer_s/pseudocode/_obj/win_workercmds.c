@@ -79,7 +79,7 @@ void __cdecl R_InitWorkerCmds(void)
 {
   jqQueue *pjVar1;
   uint uVar2;
-  jqBatch *pjVar3;
+  jqBatch *Queue;
   jqBatch local_80;
   
   jqInit();
@@ -108,9 +108,9 @@ void __cdecl R_InitWorkerCmds(void)
   }
   local_80.ParamData[0] = 1;
   pjVar1 = jqGetWorkerQueue(8);
-  pjVar3 = &local_80;
-  jqAddBatch(pjVar3,pjVar1);
-  jqFlush((jqBatchGroup *)0x0,ZEXT48(pjVar3) << 0x20);
+  Queue = &local_80;
+  jqAddBatch(Queue,pjVar1);
+  jqFlush((jqBatchGroup *)0x0,ZEXT48(Queue) << 0x20);
   _DAT_01da49ac = jqWorkers[1]._padding_;
   _DAT_01da49b0 = jqWorkers[2]._padding_;
   g_WorkerCmdInit = true;

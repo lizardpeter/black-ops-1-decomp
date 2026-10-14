@@ -7,9 +7,9 @@ int __cdecl getSystemCP(int param_1)
 {
   UINT UVar1;
   int unaff_ESI;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,(localeinfo_struct *)0x0);
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,(localeinfo_struct *)0x0);
   fSystemSet = 0;
   if (unaff_ESI == -2) {
     fSystemSet = 1;
@@ -21,18 +21,18 @@ int __cdecl getSystemCP(int param_1)
   }
   else {
     if (unaff_ESI != -4) {
-      if (local_14.updated == false) {
+      if (_loc_update.updated == false) {
         fSystemSet = 0;
         return unaff_ESI;
       }
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       return unaff_ESI;
     }
-    UVar1 = (local_14.localeinfo.locinfo)->lc_codepage;
+    UVar1 = (_loc_update.localeinfo.locinfo)->lc_codepage;
     fSystemSet = 1;
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return UVar1;
 }
@@ -109,15 +109,15 @@ void __cdecl setSBUpLow(threadmbcinfostruct *param_1)
   char cVar5;
   BYTE *pBVar6;
   int unaff_ESI;
-  _cpinfo local_51c;
-  ushort local_508 [256];
-  char local_308 [256];
-  char local_208 [256];
-  uchar local_108 [256];
+  _cpinfo cpinfo;
+  ushort wVector [256];
+  char upVector [256];
+  char lowVector [256];
+  uchar sbVector [256];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  BVar3 = GetCPInfo(*(UINT *)(unaff_ESI + 4),&local_51c);
+  BVar3 = GetCPInfo(*(UINT *)(unaff_ESI + 4),&cpinfo);
   if (BVar3 == 0) {
     uVar4 = 0;
     do {
@@ -144,34 +144,34 @@ LAB_00c1ae88:
   else {
     uVar4 = 0;
     do {
-      local_108[uVar4] = (uchar)uVar4;
+      sbVector[uVar4] = (uchar)uVar4;
       uVar4 = uVar4 + 1;
     } while (uVar4 < 0x100);
-    local_108[0] = ' ';
-    if (local_51c.LeadByte[0] != 0) {
-      pBVar6 = local_51c.LeadByte + 1;
+    sbVector[0] = ' ';
+    if (cpinfo.LeadByte[0] != 0) {
+      pBVar6 = cpinfo.LeadByte + 1;
       do {
-        uVar4 = (uint)local_51c.LeadByte[0];
+        uVar4 = (uint)cpinfo.LeadByte[0];
         if (uVar4 <= *pBVar6) {
-          memset(local_108 + uVar4,' ',(*pBVar6 - uVar4) + 1);
+          memset(sbVector + uVar4,' ',(*pBVar6 - uVar4) + 1);
         }
-        local_51c.LeadByte[0] = pBVar6[1];
+        cpinfo.LeadByte[0] = pBVar6[1];
         pBVar6 = pBVar6 + 2;
-      } while (local_51c.LeadByte[0] != 0);
+      } while (cpinfo.LeadByte[0] != 0);
     }
-    __crtGetStringTypeA((localeinfo_struct *)0x0,1,(char *)local_108,0x100,local_508,
+    __crtGetStringTypeA((localeinfo_struct *)0x0,1,(char *)sbVector,0x100,wVector,
                         *(int *)(unaff_ESI + 4),*(int *)(unaff_ESI + 0xc),0);
-    __crtLCMapStringA((localeinfo_struct *)0x0,*(ulong *)(unaff_ESI + 0xc),0x100,(char *)local_108,
-                      0x100,local_208,0x100,*(int *)(unaff_ESI + 4),0);
-    __crtLCMapStringA((localeinfo_struct *)0x0,*(ulong *)(unaff_ESI + 0xc),0x200,(char *)local_108,
-                      0x100,local_308,0x100,*(int *)(unaff_ESI + 4),0);
+    __crtLCMapStringA((localeinfo_struct *)0x0,*(ulong *)(unaff_ESI + 0xc),0x100,(char *)sbVector,
+                      0x100,lowVector,0x100,*(int *)(unaff_ESI + 4),0);
+    __crtLCMapStringA((localeinfo_struct *)0x0,*(ulong *)(unaff_ESI + 0xc),0x200,(char *)sbVector,
+                      0x100,upVector,0x100,*(int *)(unaff_ESI + 4),0);
     uVar4 = 0;
     do {
-      if ((local_508[uVar4] & 1) == 0) {
-        if ((local_508[uVar4] & 2) != 0) {
+      if ((wVector[uVar4] & 1) == 0) {
+        if ((wVector[uVar4] & 2) != 0) {
           pbVar1 = (byte *)(unaff_ESI + 0x1d + uVar4);
           *pbVar1 = *pbVar1 | 0x20;
-          cVar5 = local_308[uVar4];
+          cVar5 = upVector[uVar4];
           goto LAB_00c1ae26;
         }
         *(undefined1 *)(unaff_ESI + 0x11d + uVar4) = 0;
@@ -179,7 +179,7 @@ LAB_00c1ae88:
       else {
         pbVar1 = (byte *)(unaff_ESI + 0x1d + uVar4);
         *pbVar1 = *pbVar1 | 0x10;
-        cVar5 = local_208[uVar4];
+        cVar5 = lowVector[uVar4];
 LAB_00c1ae26:
         *(char *)(unaff_ESI + 0x11d + uVar4) = cVar5;
       }
@@ -201,6 +201,7 @@ threadmbcinfostruct * __cdecl __updatetmbcinfo(void)
   _tiddata *p_Var1;
   LONG LVar2;
   threadmbcinfostruct *lpAddend;
+  threadmbcinfostruct *ptmbci;
   
   p_Var1 = _getptd();
   if (((p_Var1->_ownlocale & __globallocalestatus) == 0) ||
@@ -235,7 +236,7 @@ threadmbcinfostruct * __cdecl __updatetmbcinfo(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _setmbcp(int param_1)
+int __cdecl _setmbcp(int codepage)
 
 {
   _tiddata *p_Var1;
@@ -247,15 +248,17 @@ int __cdecl _setmbcp(int param_1)
   threadmbcinfostruct *ptVar7;
   threadmbcinfostruct *ptVar8;
   int in_stack_ffffffc8;
-  int local_24;
+  _tiddata *ptd;
+  int retcode;
+  int i;
   
-  local_24 = -1;
+  retcode = -1;
   p_Var1 = _getptd();
   __updatetmbcinfo();
   ptVar3 = p_Var1->ptmbcinfo;
   iVar2 = getSystemCP(in_stack_ffffffc8);
   if (iVar2 == ptVar3->mbcodepage) {
-    local_24 = 0;
+    retcode = 0;
   }
   else {
     ptVar3 = _malloc_crt(0x220);
@@ -268,8 +271,8 @@ int __cdecl _setmbcp(int param_1)
         ptVar8 = (threadmbcinfostruct *)&ptVar8->mbcodepage;
       }
       ptVar3->refcount = 0;
-      local_24 = _setmbcp_nolock(iVar2,ptVar3);
-      if (local_24 == 0) {
+      retcode = _setmbcp_nolock(iVar2,ptVar3);
+      if (retcode == 0) {
         LVar4 = InterlockedDecrement(&p_Var1->ptmbcinfo->refcount);
         if ((LVar4 == 0) && (p_Var1->ptmbcinfo != &__initialmbcinfo)) {
           free(p_Var1->ptmbcinfo);
@@ -299,7 +302,7 @@ int __cdecl _setmbcp(int param_1)
           FUN_00c1b308();
         }
       }
-      else if (local_24 == -1) {
+      else if (retcode == -1) {
         if (ptVar3 != &__initialmbcinfo) {
           free(ptVar3);
         }
@@ -308,7 +311,7 @@ int __cdecl _setmbcp(int param_1)
       }
     }
   }
-  return local_24;
+  return retcode;
 }
 
 
@@ -316,7 +319,7 @@ int __cdecl _setmbcp(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _setmbcp_nolock(int param_1,threadmbcinfostruct *param_2)
+int __cdecl _setmbcp_nolock(int codepage,threadmbcinfostruct *ptmbci)
 
 {
   BYTE *pBVar1;
@@ -333,39 +336,39 @@ int __cdecl _setmbcp_nolock(int param_1,threadmbcinfostruct *param_2)
   BYTE *pBVar10;
   uchar (*pauVar11) [8];
   threadmbcinfostruct *unaff_EDI;
-  uint local_24;
-  uchar (*local_20) [8];
-  _cpinfo local_1c;
+  uint irg;
+  uint icp;
+  _cpinfo cpinfo;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar3 = getSystemCP((int)unaff_EDI);
   if (uVar3 != 0) {
-    local_20 = (uchar (*) [8])0x0;
+    icp = 0;
     uVar4 = 0;
     do {
       if (*(uint *)((int)__rgcode_page_info[0].mbulinfo + (uVar4 - 4)) == uVar3) {
-        memset(param_2->mbctype,'\0',0x101);
-        local_24 = 0;
-        pauVar11 = __rgcode_page_info[(int)local_20].rgrange;
-        local_20 = pauVar11;
+        memset(ptmbci->mbctype,'\0',0x101);
+        irg = 0;
+        pauVar11 = __rgcode_page_info[icp].rgrange;
+        icp = (uint)pauVar11;
         do {
           for (; ((*pauVar11)[0] != '\0' && (bVar2 = (*pauVar11)[1], bVar2 != 0));
               pauVar11 = (uchar (*) [8])(*pauVar11 + 2)) {
             for (uVar4 = (uint)(*pauVar11)[0]; uVar4 <= bVar2; uVar4 = uVar4 + 1) {
-              param_2->mbctype[uVar4 + 1] = param_2->mbctype[uVar4 + 1] | __rgctypeflag[local_24];
+              ptmbci->mbctype[uVar4 + 1] = ptmbci->mbctype[uVar4 + 1] | __rgctypeflag[irg];
               bVar2 = (*pauVar11)[1];
             }
           }
-          local_24 = local_24 + 1;
-          pauVar11 = local_20 + 1;
-          local_20 = pauVar11;
-        } while (local_24 < 4);
-        param_2->mbcodepage = uVar3;
-        param_2->ismbcodepage = 1;
+          irg = irg + 1;
+          pauVar11 = (uchar (*) [8])(icp + 8);
+          icp = (uint)pauVar11;
+        } while (irg < 4);
+        ptmbci->mbcodepage = uVar3;
+        ptmbci->ismbcodepage = 1;
         iVar9 = CPtoLCID((int)unaff_EDI);
-        param_2->mblcid = iVar9;
-        puVar6 = param_2->mbulinfo;
+        ptmbci->mblcid = iVar9;
+        puVar6 = ptmbci->mbulinfo;
         puVar8 = (ushort *)((int)__rgcode_page_info[0].mbulinfo + extraout_ECX);
         iVar9 = 6;
         do {
@@ -376,35 +379,35 @@ int __cdecl _setmbcp_nolock(int param_1,threadmbcinfostruct *param_2)
         } while (iVar9 != 0);
         goto LAB_00c1b131;
       }
-      local_20 = (uchar (*) [8])((int)local_20 + 1);
+      icp = icp + 1;
       uVar4 = uVar4 + 0x30;
     } while (uVar4 < 0xf0);
     if (((uVar3 == 65000) || (uVar3 == 0xfde9)) ||
        (BVar5 = IsValidCodePage(uVar3 & 0xffff), BVar5 == 0)) {
       return -1;
     }
-    BVar5 = GetCPInfo(uVar3,&local_1c);
+    BVar5 = GetCPInfo(uVar3,&cpinfo);
     if (BVar5 != 0) {
-      memset(param_2->mbctype,'\0',0x101);
-      param_2->mbcodepage = uVar3;
-      param_2->mblcid = 0;
-      if (local_1c.MaxCharSize < 2) {
-        param_2->ismbcodepage = 0;
+      memset(ptmbci->mbctype,'\0',0x101);
+      ptmbci->mbcodepage = uVar3;
+      ptmbci->mblcid = 0;
+      if (cpinfo.MaxCharSize < 2) {
+        ptmbci->ismbcodepage = 0;
       }
       else {
-        if (local_1c.LeadByte[0] != '\0') {
-          pBVar10 = local_1c.LeadByte + 1;
+        if (cpinfo.LeadByte[0] != '\0') {
+          pBVar10 = cpinfo.LeadByte + 1;
           do {
             bVar2 = *pBVar10;
             if (bVar2 == 0) break;
             for (uVar3 = (uint)pBVar10[-1]; uVar3 <= bVar2; uVar3 = uVar3 + 1) {
-              param_2->mbctype[uVar3 + 1] = param_2->mbctype[uVar3 + 1] | 4;
+              ptmbci->mbctype[uVar3 + 1] = ptmbci->mbctype[uVar3 + 1] | 4;
             }
             pBVar1 = pBVar10 + 1;
             pBVar10 = pBVar10 + 2;
           } while (*pBVar1 != 0);
         }
-        puVar7 = param_2->mbctype + 2;
+        puVar7 = ptmbci->mbctype + 2;
         iVar9 = 0xfe;
         do {
           *puVar7 = *puVar7 | 8;
@@ -412,15 +415,15 @@ int __cdecl _setmbcp_nolock(int param_1,threadmbcinfostruct *param_2)
           iVar9 = iVar9 + -1;
         } while (iVar9 != 0);
         iVar9 = CPtoLCID((int)unaff_EDI);
-        param_2->mblcid = iVar9;
-        param_2->ismbcodepage = extraout_EDX;
+        ptmbci->mblcid = iVar9;
+        ptmbci->ismbcodepage = extraout_EDX;
       }
-      param_2->mbulinfo[0] = 0;
-      param_2->mbulinfo[1] = 0;
-      param_2->mbulinfo[2] = 0;
-      param_2->mbulinfo[3] = 0;
-      param_2->mbulinfo[4] = 0;
-      param_2->mbulinfo[5] = 0;
+      ptmbci->mbulinfo[0] = 0;
+      ptmbci->mbulinfo[1] = 0;
+      ptmbci->mbulinfo[2] = 0;
+      ptmbci->mbulinfo[3] = 0;
+      ptmbci->mbulinfo[4] = 0;
+      ptmbci->mbulinfo[5] = 0;
 LAB_00c1b131:
       setSBUpLow(unaff_EDI);
       return 0;

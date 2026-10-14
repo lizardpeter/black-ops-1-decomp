@@ -2,22 +2,22 @@
 
 // 00B642A0  start_iMCU_row  (jpeg-6/jdcoefct.c:81)
 
-void __cdecl start_iMCU_row(jpeg_decompress_struct *param_1)
+void __cdecl start_iMCU_row(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_coef_controller *pjVar1;
+  my_coef_controller *coef;
   
-  pjVar1 = param_1->coef;
-  if (param_1->comps_in_scan < 2) {
-    if (param_1->input_iMCU_row < param_1->total_iMCU_rows - 1) {
+  pjVar1 = cinfo->coef;
+  if (cinfo->comps_in_scan < 2) {
+    if (cinfo->input_iMCU_row < cinfo->total_iMCU_rows - 1) {
       pjVar1[1].start_output_pass =
-           (_func___cdecl_void_jpeg_decompress_struct_ptr *)param_1->cur_comp_info[0]->v_samp_factor
-      ;
+           (_func___cdecl_void_jpeg_decompress_struct_ptr *)cinfo->cur_comp_info[0]->v_samp_factor;
     }
     else {
       pjVar1[1].start_output_pass =
-           (_func___cdecl_void_jpeg_decompress_struct_ptr *)
-           param_1->cur_comp_info[0]->last_row_height;
+           (_func___cdecl_void_jpeg_decompress_struct_ptr *)cinfo->cur_comp_info[0]->last_row_height
+      ;
     }
   }
   else {
@@ -31,27 +31,28 @@ void __cdecl start_iMCU_row(jpeg_decompress_struct *param_1)
 
 // 00B64280  start_input_pass  (jpeg-6/jdcoefct.c:108)
 
-void __cdecl start_input_pass(jpeg_decompress_struct *param_1)
+void __cdecl start_input_pass(jpeg_decompress_struct *cinfo)
 
 {
-  param_1->input_iMCU_row = 0;
-  start_iMCU_row(param_1);
+  cinfo->input_iMCU_row = 0;
+  start_iMCU_row(cinfo);
   return;
 }
 
 
 // 00B64320  start_output_pass  (jpeg-6/jdcoefct.c:120)
 
-void __cdecl start_output_pass(jpeg_decompress_struct *param_1)
+void __cdecl start_output_pass(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_coef_controller *pjVar1;
   uchar uVar2;
+  my_coef_controller *coef;
   
-  pjVar1 = param_1->coef;
+  pjVar1 = cinfo->coef;
   if (pjVar1->coef_arrays != (jvirt_barray_control **)0x0) {
-    if (param_1->do_block_smoothing != '\0') {
-      uVar2 = smoothing_ok(param_1);
+    if (cinfo->do_block_smoothing != '\0') {
+      uVar2 = smoothing_ok(cinfo);
       if (uVar2 != '\0') {
         pjVar1->decompress_data = decompress_smooth_data;
         goto LAB_00b6436d;
@@ -60,14 +61,14 @@ void __cdecl start_output_pass(jpeg_decompress_struct *param_1)
     pjVar1->decompress_data = decompress_data;
   }
 LAB_00b6436d:
-  param_1->output_iMCU_row = 0;
+  cinfo->output_iMCU_row = 0;
   return;
 }
 
 
 // 00B64380  decompress_onepass  (jpeg-6/jdcoefct.c:148)
 
-int __cdecl decompress_onepass(jpeg_decompress_struct *param_1,uchar ***param_2)
+int __cdecl decompress_onepass(jpeg_decompress_struct *cinfo,uchar ***output_buf)
 
 {
   jpeg_d_coef_controller *pjVar1;
@@ -76,162 +77,165 @@ int __cdecl decompress_onepass(jpeg_decompress_struct *param_1,uchar ***param_2)
   _func___cdecl_void_jpeg_decompress_struct_ptr_jpeg_component_info_ptr_short_ptr_uchar_ptr_ptr_uint
   *p_Var4;
   uchar uVar5;
-  _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var6;
+  uint uVar6;
   int iVar7;
   int local_44;
-  uchar **local_40;
-  _func___cdecl_void_jpeg_decompress_struct_ptr *local_3c;
-  int local_38;
-  _func___cdecl_int_jpeg_decompress_struct_ptr *local_2c;
-  int local_24;
-  int local_18;
-  int local_14;
-  uint local_c;
+  uchar **output_ptr;
+  uint MCU_col_num;
+  int xindex;
+  my_coef_controller *coef;
+  uint last_MCU_col;
+  int yoffset;
+  int ci;
+  uint start_col;
+  jpeg_component_info *compptr;
+  int yindex;
+  int blkn;
+  int useful_width;
+  uint output_col;
+  uint last_iMCU_row;
   
-  pjVar1 = param_1->coef;
-  p_Var6 = (_func___cdecl_void_jpeg_decompress_struct_ptr *)(param_1->MCUs_per_row - 1);
-  uVar2 = param_1->total_iMCU_rows;
-  local_2c = pjVar1[1].consume_data;
+  pjVar1 = cinfo->coef;
+  uVar6 = cinfo->MCUs_per_row - 1;
+  uVar2 = cinfo->total_iMCU_rows;
+  yoffset = (int)pjVar1[1].consume_data;
   do {
-    if ((int)pjVar1[1].start_output_pass <= (int)local_2c) {
-      param_1->output_iMCU_row = param_1->output_iMCU_row + 1;
-      param_1->input_iMCU_row = param_1->input_iMCU_row + 1;
-      if (param_1->input_iMCU_row < param_1->total_iMCU_rows) {
-        start_iMCU_row(param_1);
+    if ((int)pjVar1[1].start_output_pass <= yoffset) {
+      cinfo->output_iMCU_row = cinfo->output_iMCU_row + 1;
+      cinfo->input_iMCU_row = cinfo->input_iMCU_row + 1;
+      if (cinfo->input_iMCU_row < cinfo->total_iMCU_rows) {
+        start_iMCU_row(cinfo);
         iVar7 = 3;
       }
       else {
-        (*param_1->inputctl->finish_input_pass)(param_1);
+        (*cinfo->inputctl->finish_input_pass)(cinfo);
         iVar7 = 4;
       }
       return iVar7;
     }
-    for (local_3c = pjVar1[1].start_input_pass; local_3c <= p_Var6; local_3c = local_3c + 1) {
-      R_SetBlackProbe((uchar *)pjVar1[1].decompress_data,param_1->blocks_in_MCU << 7);
-      uVar5 = (*param_1->entropy->decode_mcu)(param_1,(short (**) [64])&pjVar1[1].decompress_data);
+    for (MCU_col_num = (uint)pjVar1[1].start_input_pass; MCU_col_num <= uVar6;
+        MCU_col_num = MCU_col_num + 1) {
+      R_SetBlackProbe((uchar *)pjVar1[1].decompress_data,cinfo->blocks_in_MCU << 7);
+      uVar5 = (*cinfo->entropy->decode_mcu)(cinfo,(short (**) [64])&pjVar1[1].decompress_data);
       if (uVar5 == '\0') {
-        pjVar1[1].consume_data = local_2c;
-        pjVar1[1].start_input_pass = local_3c;
+        pjVar1[1].consume_data = (_func___cdecl_int_jpeg_decompress_struct_ptr *)yoffset;
+        pjVar1[1].start_input_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)MCU_col_num;
         return 0;
       }
-      local_14 = 0;
-      for (local_24 = 0; local_24 < param_1->comps_in_scan; local_24 = local_24 + 1) {
-        pjVar3 = param_1->cur_comp_info[local_24];
+      blkn = 0;
+      for (ci = 0; ci < cinfo->comps_in_scan; ci = ci + 1) {
+        pjVar3 = cinfo->cur_comp_info[ci];
         if (pjVar3->component_needed == '\0') {
-          local_14 = local_14 + pjVar3->MCU_blocks;
+          blkn = blkn + pjVar3->MCU_blocks;
         }
         else {
-          p_Var4 = param_1->idct->inverse_DCT[pjVar3->component_index];
-          if (local_3c < p_Var6) {
+          p_Var4 = cinfo->idct->inverse_DCT[pjVar3->component_index];
+          if (MCU_col_num < uVar6) {
             local_44 = pjVar3->MCU_width;
           }
           else {
             local_44 = pjVar3->last_col_width;
           }
-          local_40 = param_2[pjVar3->component_index] + (int)local_2c * pjVar3->DCT_scaled_size;
+          output_ptr = output_buf[pjVar3->component_index] + yoffset * pjVar3->DCT_scaled_size;
           iVar7 = pjVar3->MCU_sample_width;
-          for (local_18 = 0; local_18 < pjVar3->MCU_height; local_18 = local_18 + 1) {
-            if ((param_1->input_iMCU_row < uVar2 - 1) ||
-               ((int)(local_2c + local_18) < pjVar3->last_row_height)) {
-              local_c = (int)local_3c * iVar7;
-              for (local_38 = 0; local_38 < local_44; local_38 = local_38 + 1) {
-                (*p_Var4)(param_1,pjVar3,(short *)(&pjVar1[1].decompress_data)[local_14 + local_38],
-                          local_40,local_c);
-                local_c = local_c + pjVar3->DCT_scaled_size;
+          for (yindex = 0; yindex < pjVar3->MCU_height; yindex = yindex + 1) {
+            if ((cinfo->input_iMCU_row < uVar2 - 1) || (yoffset + yindex < pjVar3->last_row_height))
+            {
+              output_col = MCU_col_num * iVar7;
+              for (xindex = 0; xindex < local_44; xindex = xindex + 1) {
+                (*p_Var4)(cinfo,pjVar3,(short *)(&pjVar1[1].decompress_data)[blkn + xindex],
+                          output_ptr,output_col);
+                output_col = output_col + pjVar3->DCT_scaled_size;
               }
             }
-            local_14 = local_14 + pjVar3->MCU_width;
-            local_40 = local_40 + pjVar3->DCT_scaled_size;
+            blkn = blkn + pjVar3->MCU_width;
+            output_ptr = output_ptr + pjVar3->DCT_scaled_size;
           }
         }
       }
     }
     pjVar1[1].start_input_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0;
-    local_2c = local_2c + 1;
+    yoffset = yoffset + 1;
   } while( true );
 }
 
 
 // 00B64640  consume_data  (jpeg-6/jdcoefct.c:245)
 
-int __cdecl consume_data(jpeg_decompress_struct *param_1)
+int __cdecl consume_data(jpeg_decompress_struct *cinfo)
 
 {
   uchar uVar1;
   short (**ppasVar2) [64];
   int iVar3;
-  _func___cdecl_void_jpeg_decompress_struct_ptr *local_3c;
+  uint MCU_col_num;
   int aiStack_38 [4];
-  int local_28;
-  jpeg_d_coef_controller *local_24;
-  _func___cdecl_int_jpeg_decompress_struct_ptr *local_20;
-  int local_1c;
-  int local_18;
-  jpeg_component_info *local_14;
-  int local_10;
-  int local_c;
-  _func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *local_8;
+  int xindex;
+  my_coef_controller *coef;
+  int yoffset;
+  int ci;
+  uint start_col;
+  jpeg_component_info *compptr;
+  int yindex;
+  int blkn;
+  short (*buffer_ptr) [64];
   
-  local_24 = param_1->coef;
-  for (local_1c = 0; local_1c < param_1->comps_in_scan; local_1c = local_1c + 1) {
-    local_14 = param_1->cur_comp_info[local_1c];
-    ppasVar2 = (*param_1->mem->access_virt_barray)
-                         ((jpeg_common_struct *)param_1,
-                          (jvirt_barray_control *)
-                          (&local_24[3].decompress_data)[local_14->component_index],
-                          param_1->input_iMCU_row * local_14->v_samp_factor,local_14->v_samp_factor,
+  coef = (my_coef_controller *)cinfo->coef;
+  for (ci = 0; ci < cinfo->comps_in_scan; ci = ci + 1) {
+    compptr = cinfo->cur_comp_info[ci];
+    ppasVar2 = (*cinfo->mem->access_virt_barray)
+                         ((jpeg_common_struct *)cinfo,
+                          coef->whole_image[compptr->component_index + 2],
+                          cinfo->input_iMCU_row * compptr->v_samp_factor,compptr->v_samp_factor,
                           '\x01');
-    aiStack_38[local_1c] = (int)ppasVar2;
+    aiStack_38[ci] = (int)ppasVar2;
   }
-  local_20 = local_24[1].consume_data;
+  yoffset = (int)coef->MCU_buffer[0];
   do {
-    if ((int)local_24[1].start_output_pass <= (int)local_20) {
-      param_1->input_iMCU_row = param_1->input_iMCU_row + 1;
-      if (param_1->input_iMCU_row < param_1->total_iMCU_rows) {
-        start_iMCU_row(param_1);
+    if ((int)coef->MCU_buffer[1] <= yoffset) {
+      cinfo->input_iMCU_row = cinfo->input_iMCU_row + 1;
+      if (cinfo->input_iMCU_row < cinfo->total_iMCU_rows) {
+        start_iMCU_row(cinfo);
         iVar3 = 3;
       }
       else {
-        (*param_1->inputctl->finish_input_pass)(param_1);
+        (*cinfo->inputctl->finish_input_pass)(cinfo);
         iVar3 = 4;
       }
       return iVar3;
     }
-    for (local_3c = local_24[1].start_input_pass;
-        local_3c < (_func___cdecl_void_jpeg_decompress_struct_ptr *)param_1->MCUs_per_row;
-        local_3c = local_3c + 1) {
-      local_c = 0;
-      for (local_1c = 0; local_1c < param_1->comps_in_scan; local_1c = local_1c + 1) {
-        local_14 = param_1->cur_comp_info[local_1c];
-        local_18 = (int)local_3c * local_14->MCU_width;
-        for (local_10 = 0; local_10 < local_14->MCU_height; local_10 = local_10 + 1) {
-          local_8 = (_func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *)
-                    (local_18 * 0x80 +
-                    *(int *)(aiStack_38[local_1c] + (int)(local_20 + local_10) * 4));
-          for (local_28 = 0; local_28 < local_14->MCU_width; local_28 = local_28 + 1) {
-            (&local_24[1].decompress_data)[local_c] = local_8;
-            local_c = local_c + 1;
-            local_8 = local_8 + 0x80;
+    for (MCU_col_num = coef->MCU_rows_per_iMCU_row; MCU_col_num < cinfo->MCUs_per_row;
+        MCU_col_num = MCU_col_num + 1) {
+      blkn = 0;
+      for (ci = 0; ci < cinfo->comps_in_scan; ci = ci + 1) {
+        compptr = cinfo->cur_comp_info[ci];
+        start_col = MCU_col_num * compptr->MCU_width;
+        for (yindex = 0; yindex < compptr->MCU_height; yindex = yindex + 1) {
+          buffer_ptr = (short (*) [64])
+                       (start_col * 0x80 + *(int *)(aiStack_38[ci] + (yindex + yoffset) * 4));
+          for (xindex = 0; xindex < compptr->MCU_width; xindex = xindex + 1) {
+            coef->MCU_buffer[blkn + 2] = buffer_ptr;
+            blkn = blkn + 1;
+            buffer_ptr = buffer_ptr + 1;
           }
         }
       }
-      uVar1 = (*param_1->entropy->decode_mcu)(param_1,(short (**) [64])&local_24[1].decompress_data)
-      ;
+      uVar1 = (*cinfo->entropy->decode_mcu)(cinfo,coef->MCU_buffer + 2);
       if (uVar1 == '\0') {
-        local_24[1].consume_data = local_20;
-        local_24[1].start_input_pass = local_3c;
+        coef->MCU_buffer[0] = (short (*) [64])yoffset;
+        coef->MCU_rows_per_iMCU_row = MCU_col_num;
         return 0;
       }
     }
-    local_24[1].start_input_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0;
-    local_20 = local_20 + 1;
+    coef->MCU_rows_per_iMCU_row = 0;
+    yoffset = yoffset + 1;
   } while( true );
 }
 
 
 // 00B64880  decompress_data  (jpeg-6/jdcoefct.c:316)
 
-int __cdecl decompress_data(jpeg_decompress_struct *param_1,uchar ***param_2)
+int __cdecl decompress_data(jpeg_decompress_struct *cinfo,uchar ***output_buf)
 
 {
   jpeg_d_coef_controller *pjVar1;
@@ -240,60 +244,62 @@ int __cdecl decompress_data(jpeg_decompress_struct *param_1,uchar ***param_2)
   *p_Var3;
   int iVar4;
   short (**ppasVar5) [64];
-  uint local_34;
-  uchar **local_30;
-  uint local_24;
-  int local_20;
-  int local_18;
-  jpeg_component_info *local_14;
-  short (*local_10) [64];
-  uint local_c;
+  uint block_num;
+  uchar **output_ptr;
+  my_coef_controller *coef;
+  int block_rows;
+  int block_row;
+  int ci;
+  jpeg_component_info *compptr;
+  short (*buffer_ptr) [64];
+  uint output_col;
+  uint last_iMCU_row;
   
-  pjVar1 = param_1->coef;
-  uVar2 = param_1->total_iMCU_rows;
-  while ((param_1->input_scan_number < param_1->output_scan_number ||
-         ((param_1->input_scan_number == param_1->output_scan_number &&
-          (param_1->input_iMCU_row <= param_1->output_iMCU_row))))) {
-    iVar4 = (*param_1->inputctl->consume_input)(param_1);
+  pjVar1 = cinfo->coef;
+  uVar2 = cinfo->total_iMCU_rows;
+  while ((cinfo->input_scan_number < cinfo->output_scan_number ||
+         ((cinfo->input_scan_number == cinfo->output_scan_number &&
+          (cinfo->input_iMCU_row <= cinfo->output_iMCU_row))))) {
+    iVar4 = (*cinfo->inputctl->consume_input)(cinfo);
     if (iVar4 == 0) {
       return 0;
     }
   }
-  local_18 = 0;
-  local_14 = param_1->comp_info;
-  for (; local_18 < param_1->num_components; local_18 = local_18 + 1) {
-    if (local_14->component_needed != '\0') {
-      ppasVar5 = (*param_1->mem->access_virt_barray)
-                           ((jpeg_common_struct *)param_1,
-                            (jvirt_barray_control *)(&pjVar1[3].decompress_data)[local_18],
-                            param_1->output_iMCU_row * local_14->v_samp_factor,
-                            local_14->v_samp_factor,'\0');
-      if (param_1->output_iMCU_row < uVar2 - 1) {
-        local_24 = local_14->v_samp_factor;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    if (compptr->component_needed != '\0') {
+      ppasVar5 = (*cinfo->mem->access_virt_barray)
+                           ((jpeg_common_struct *)cinfo,
+                            (jvirt_barray_control *)(&pjVar1[3].decompress_data)[ci],
+                            cinfo->output_iMCU_row * compptr->v_samp_factor,compptr->v_samp_factor,
+                            '\0');
+      if (cinfo->output_iMCU_row < uVar2 - 1) {
+        block_rows = compptr->v_samp_factor;
       }
       else {
-        local_24 = local_14->height_in_blocks % (uint)local_14->v_samp_factor;
-        if (local_24 == 0) {
-          local_24 = local_14->v_samp_factor;
+        block_rows = compptr->height_in_blocks % (uint)compptr->v_samp_factor;
+        if (block_rows == 0) {
+          block_rows = compptr->v_samp_factor;
         }
       }
-      p_Var3 = param_1->idct->inverse_DCT[local_18];
-      local_30 = param_2[local_18];
-      for (local_20 = 0; local_20 < (int)local_24; local_20 = local_20 + 1) {
-        local_10 = ppasVar5[local_20];
-        local_c = 0;
-        for (local_34 = 0; local_34 < local_14->width_in_blocks; local_34 = local_34 + 1) {
-          (*p_Var3)(param_1,local_14,*local_10,local_30,local_c);
-          local_10 = local_10 + 1;
-          local_c = local_c + local_14->DCT_scaled_size;
+      p_Var3 = cinfo->idct->inverse_DCT[ci];
+      output_ptr = output_buf[ci];
+      for (block_row = 0; block_row < block_rows; block_row = block_row + 1) {
+        buffer_ptr = ppasVar5[block_row];
+        output_col = 0;
+        for (block_num = 0; block_num < compptr->width_in_blocks; block_num = block_num + 1) {
+          (*p_Var3)(cinfo,compptr,*buffer_ptr,output_ptr,output_col);
+          buffer_ptr = buffer_ptr + 1;
+          output_col = output_col + compptr->DCT_scaled_size;
         }
-        local_30 = local_30 + local_14->DCT_scaled_size;
+        output_ptr = output_ptr + compptr->DCT_scaled_size;
       }
     }
-    local_14 = local_14 + 1;
+    compptr = compptr + 1;
   }
-  param_1->output_iMCU_row = param_1->output_iMCU_row + 1;
-  if (param_1->output_iMCU_row < param_1->total_iMCU_rows) {
+  cinfo->output_iMCU_row = cinfo->output_iMCU_row + 1;
+  if (cinfo->output_iMCU_row < cinfo->total_iMCU_rows) {
     return 3;
   }
   return 4;
@@ -302,36 +308,39 @@ int __cdecl decompress_data(jpeg_decompress_struct *param_1,uchar ***param_2)
 
 // 00B64AB0  smoothing_ok  (jpeg-6/jdcoefct.c:406)
 
-uchar __cdecl smoothing_ok(jpeg_decompress_struct *param_1)
+uchar __cdecl smoothing_ok(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_coef_controller *pjVar1;
   JQUANT_TBL *pJVar2;
   _func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *p_Var3;
   int (*paiVar4) [64];
-  uchar local_21;
-  int local_14;
-  jpeg_component_info *local_10;
-  int local_c;
-  _func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *local_8;
+  uchar smoothing_useful;
+  my_coef_controller *coef;
+  JQUANT_TBL *qtable;
+  int *coef_bits;
+  int ci;
+  jpeg_component_info *compptr;
+  int coefi;
+  int *coef_bits_latch;
   
-  pjVar1 = param_1->coef;
-  local_21 = '\0';
-  if ((param_1->progressive_mode == '\0') || (param_1->coef_bits == (int (*) [64])0x0)) {
-    local_21 = '\0';
+  pjVar1 = cinfo->coef;
+  smoothing_useful = '\0';
+  if ((cinfo->progressive_mode == '\0') || (cinfo->coef_bits == (int (*) [64])0x0)) {
+    smoothing_useful = '\0';
   }
   else {
     if (pjVar1[5].decompress_data ==
         (_func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *)0x0) {
-      p_Var3 = (*param_1->mem->alloc_small)
-                         ((jpeg_common_struct *)param_1,1,param_1->num_components * 0x18);
+      p_Var3 = (*cinfo->mem->alloc_small)
+                         ((jpeg_common_struct *)cinfo,1,cinfo->num_components * 0x18);
       pjVar1[5].decompress_data = p_Var3;
     }
-    local_8 = pjVar1[5].decompress_data;
-    local_14 = 0;
-    local_10 = param_1->comp_info;
-    for (; local_14 < param_1->num_components; local_14 = local_14 + 1) {
-      pJVar2 = local_10->quant_table;
+    coef_bits_latch = (int *)pjVar1[5].decompress_data;
+    ci = 0;
+    compptr = cinfo->comp_info;
+    for (; ci < cinfo->num_components; ci = ci + 1) {
+      pJVar2 = compptr->quant_table;
       if (pJVar2 == (JQUANT_TBL *)0x0) {
         return '\0';
       }
@@ -340,21 +349,21 @@ uchar __cdecl smoothing_ok(jpeg_decompress_struct *param_1)
              (pJVar2->quantval[2] == 0)))) {
         return '\0';
       }
-      paiVar4 = param_1->coef_bits + local_14;
+      paiVar4 = cinfo->coef_bits + ci;
       if ((*paiVar4)[0] < 0) {
         return '\0';
       }
-      for (local_c = 1; local_c < 6; local_c = local_c + 1) {
-        *(int *)(local_8 + local_c * 4) = (*paiVar4)[local_c];
-        if ((*paiVar4)[local_c] != 0) {
-          local_21 = '\x01';
+      for (coefi = 1; coefi < 6; coefi = coefi + 1) {
+        coef_bits_latch[coefi] = (*paiVar4)[coefi];
+        if ((*paiVar4)[coefi] != 0) {
+          smoothing_useful = '\x01';
         }
       }
-      local_8 = local_8 + 0x18;
-      local_10 = local_10 + 1;
+      coef_bits_latch = coef_bits_latch + 6;
+      compptr = compptr + 1;
     }
   }
-  return local_21;
+  return smoothing_useful;
 }
 
 
@@ -362,7 +371,7 @@ uchar __cdecl smoothing_ok(jpeg_decompress_struct *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl decompress_smooth_data(jpeg_decompress_struct *param_1,uchar ***param_2)
+int __cdecl decompress_smooth_data(jpeg_decompress_struct *cinfo,uchar ***output_buf)
 
 {
   jpeg_d_coef_controller *pjVar1;
@@ -385,223 +394,241 @@ int __cdecl decompress_smooth_data(jpeg_decompress_struct *param_1,uchar ***para
   uint uVar17;
   uint uVar18;
   bool bVar19;
-  uint local_124;
-  uchar **local_120;
-  short (**local_118) [64];
-  int local_108;
-  int local_f4;
-  uint local_f0;
-  uint local_e4;
-  int local_e0;
-  int local_dc;
-  int local_d8;
-  short (*local_d4) [64];
-  int local_cc;
-  int local_c4;
-  jpeg_component_info *local_c0;
-  short (*local_ac) [64];
-  short (*local_a8) [64];
-  uint local_a4;
-  int local_98;
-  short local_94;
+  uint delta;
+  uint block_num;
+  uchar **output_ptr;
+  int DC2;
+  short (**buffer) [64];
+  long Q01;
+  long Q11;
+  int DC5;
+  int DC7;
+  uchar first_row;
+  long Q20;
+  my_coef_controller *coef;
+  int Al;
+  int pred;
+  int block_rows;
+  JQUANT_TBL *quanttbl;
+  uint last_block_column;
+  int access_rows;
+  int DC4;
+  int DC6;
+  int block_row;
+  short (*prev_block_row) [64];
+  int DC1;
+  int *coef_bits;
+  int ci;
+  jpeg_component_info *compptr;
+  long Q10;
+  uchar last_row;
+  long num;
+  int DC8;
+  short (*next_block_row) [64];
+  short (*buffer_ptr) [64];
+  uint output_col;
+  long Q00;
+  uint last_iMCU_row;
+  int DC3;
+  short workspace;
   short local_92;
   short local_90;
   short local_84;
   short local_82;
   short local_74;
   uint local_10;
-  uint local_c;
-  int local_8;
+  long Q02;
+  int DC9;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pjVar1 = param_1->coef;
-  uVar2 = param_1->total_iMCU_rows;
-  while (((param_1->input_scan_number <= param_1->output_scan_number &&
-          (param_1->inputctl->eoi_reached == '\0')) &&
-         ((param_1->input_scan_number != param_1->output_scan_number ||
-          (param_1->input_iMCU_row <= param_1->output_iMCU_row + (uint)(param_1->Ss == 0)))))) {
-    iVar10 = (*param_1->inputctl->consume_input)(param_1);
+  pjVar1 = cinfo->coef;
+  uVar2 = cinfo->total_iMCU_rows;
+  while (((cinfo->input_scan_number <= cinfo->output_scan_number &&
+          (cinfo->inputctl->eoi_reached == '\0')) &&
+         ((cinfo->input_scan_number != cinfo->output_scan_number ||
+          (cinfo->input_iMCU_row <= cinfo->output_iMCU_row + (uint)(cinfo->Ss == 0)))))) {
+    iVar10 = (*cinfo->inputctl->consume_input)(cinfo);
     if (iVar10 == 0) {
       return 0;
     }
   }
-  local_c4 = 0;
-  local_c0 = param_1->comp_info;
-  for (; local_c4 < param_1->num_components; local_c4 = local_c4 + 1) {
-    if (local_c0->component_needed != '\0') {
-      if (param_1->output_iMCU_row < uVar2 - 1) {
-        local_f0 = local_c0->v_samp_factor;
-        local_e4 = local_f0 << 1;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    if (compptr->component_needed != '\0') {
+      if (cinfo->output_iMCU_row < uVar2 - 1) {
+        block_rows = compptr->v_samp_factor;
+        access_rows = block_rows << 1;
         bVar7 = false;
       }
       else {
-        local_f0 = local_c0->height_in_blocks % (uint)local_c0->v_samp_factor;
-        if (local_f0 == 0) {
-          local_f0 = local_c0->v_samp_factor;
+        block_rows = compptr->height_in_blocks % (uint)compptr->v_samp_factor;
+        if (block_rows == 0) {
+          block_rows = compptr->v_samp_factor;
         }
-        local_e4 = local_f0;
+        access_rows = block_rows;
         bVar7 = true;
       }
-      bVar19 = param_1->output_iMCU_row == 0;
+      bVar19 = cinfo->output_iMCU_row == 0;
       if (bVar19) {
-        local_118 = (*param_1->mem->access_virt_barray)
-                              ((jpeg_common_struct *)param_1,
-                               (jvirt_barray_control *)(&pjVar1[3].decompress_data)[local_c4],0,
-                               local_e4,'\0');
+        buffer = (*cinfo->mem->access_virt_barray)
+                           ((jpeg_common_struct *)cinfo,
+                            (jvirt_barray_control *)(&pjVar1[3].decompress_data)[ci],0,access_rows,
+                            '\0');
       }
       else {
-        local_118 = (*param_1->mem->access_virt_barray)
-                              ((jpeg_common_struct *)param_1,
-                               (jvirt_barray_control *)(&pjVar1[3].decompress_data)[local_c4],
-                               (param_1->output_iMCU_row - 1) * local_c0->v_samp_factor,
-                               local_e4 + local_c0->v_samp_factor,'\0');
-        local_118 = local_118 + local_c0->v_samp_factor;
+        buffer = (*cinfo->mem->access_virt_barray)
+                           ((jpeg_common_struct *)cinfo,
+                            (jvirt_barray_control *)(&pjVar1[3].decompress_data)[ci],
+                            (cinfo->output_iMCU_row - 1) * compptr->v_samp_factor,
+                            access_rows + compptr->v_samp_factor,'\0');
+        buffer = buffer + compptr->v_samp_factor;
       }
       p_Var3 = pjVar1[5].decompress_data;
-      pJVar4 = local_c0->quant_table;
+      pJVar4 = compptr->quant_table;
       uVar17 = (uint)pJVar4->quantval[0];
       uVar13 = (uint)pJVar4->quantval[1];
       uVar11 = (uint)pJVar4->quantval[8];
       uVar18 = (uint)pJVar4->quantval[0x10];
       uVar14 = (uint)pJVar4->quantval[9];
-      local_c = (uint)pJVar4->quantval[2];
-      p_Var5 = param_1->idct->inverse_DCT[local_c4];
-      local_120 = param_2[local_c4];
-      for (local_d8 = 0; local_d8 < (int)local_f0; local_d8 = local_d8 + 1) {
-        local_a8 = local_118[local_d8];
-        if ((!bVar19) || (local_d4 = local_a8, local_d8 != 0)) {
-          local_d4 = local_118[local_d8 + -1];
+      Q02 = (long)pJVar4->quantval[2];
+      p_Var5 = cinfo->idct->inverse_DCT[ci];
+      output_ptr = output_buf[ci];
+      for (block_row = 0; block_row < block_rows; block_row = block_row + 1) {
+        buffer_ptr = buffer[block_row];
+        if ((!bVar19) || (prev_block_row = buffer_ptr, block_row != 0)) {
+          prev_block_row = buffer[block_row + -1];
         }
-        if ((!bVar7) || (local_ac = local_a8, local_d8 != local_f0 - 1)) {
-          local_ac = local_118[local_d8 + 1];
+        if ((!bVar7) || (next_block_row = buffer_ptr, block_row != block_rows + -1)) {
+          next_block_row = buffer[block_row + 1];
         }
-        local_cc = (int)(*local_d4)[0];
-        local_e0 = (int)(*local_a8)[0];
-        local_108 = (int)(*local_ac)[0];
-        local_a4 = 0;
-        uVar15 = local_c0->width_in_blocks - 1;
-        local_dc = local_e0;
-        local_98 = local_cc;
-        local_8 = local_108;
-        for (local_124 = 0; iVar9 = local_8, iVar8 = local_98, iVar10 = local_dc,
-            local_124 <= uVar15; local_124 = local_124 + 1) {
-          jcopy_block_row(local_a8,(short (*) [64])&local_94,1);
-          if (local_124 < uVar15) {
-            local_98 = (int)local_d4[1][0];
-            local_dc = (int)local_a8[1][0];
-            local_8 = (int)local_ac[1][0];
+        DC1 = (int)(*prev_block_row)[0];
+        DC4 = (int)(*buffer_ptr)[0];
+        DC7 = (int)(*next_block_row)[0];
+        output_col = 0;
+        uVar15 = compptr->width_in_blocks - 1;
+        DC6 = DC4;
+        DC3 = DC1;
+        DC9 = DC7;
+        for (block_num = 0; iVar9 = DC9, iVar8 = DC3, iVar10 = DC6, block_num <= uVar15;
+            block_num = block_num + 1) {
+          jcopy_block_row(buffer_ptr,(short (*) [64])&workspace,1);
+          if (block_num < uVar15) {
+            DC3 = (int)prev_block_row[1][0];
+            DC6 = (int)buffer_ptr[1][0];
+            DC9 = (int)next_block_row[1][0];
           }
-          iVar6 = *(int *)(p_Var3 + local_c4 * 0x18 + 4);
+          iVar6 = *(int *)(p_Var3 + ci * 0x18 + 4);
           if ((iVar6 != 0) && (local_92 == 0)) {
-            iVar16 = uVar17 * 0x24 * (local_e0 - local_dc);
+            iVar16 = uVar17 * 0x24 * (DC4 - DC6);
             bVar12 = (byte)iVar6;
             if (iVar16 < 0) {
-              local_f4 = (int)(uVar13 * 0x80 - iVar16) / (int)(uVar13 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar13 * 0x80 - iVar16) / (int)(uVar13 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
-              local_f4._0_2_ = -(short)local_f4;
+              pred._0_2_ = -(short)pred;
             }
             else {
-              local_f4 = (int)(uVar13 * 0x80 + iVar16) / (int)(uVar13 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar13 * 0x80 + iVar16) / (int)(uVar13 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
             }
-            local_92 = (short)local_f4;
+            local_92 = (short)pred;
           }
-          iVar6 = *(int *)(p_Var3 + local_c4 * 0x18 + 8);
+          iVar6 = *(int *)(p_Var3 + ci * 0x18 + 8);
           if ((iVar6 != 0) && (local_84 == 0)) {
             iVar16 = uVar17 * 0x24 * (iVar8 - iVar9);
             bVar12 = (byte)iVar6;
             if (iVar16 < 0) {
-              local_f4 = (int)(uVar11 * 0x80 - iVar16) / (int)(uVar11 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar11 * 0x80 - iVar16) / (int)(uVar11 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
-              local_f4._0_2_ = -(short)local_f4;
+              pred._0_2_ = -(short)pred;
             }
             else {
-              local_f4 = (int)(uVar11 * 0x80 + iVar16) / (int)(uVar11 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar11 * 0x80 + iVar16) / (int)(uVar11 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
             }
-            local_84 = (short)local_f4;
+            local_84 = (short)pred;
           }
-          iVar6 = *(int *)(p_Var3 + local_c4 * 0x18 + 0xc);
+          iVar6 = *(int *)(p_Var3 + ci * 0x18 + 0xc);
           if ((iVar6 != 0) && (local_74 == 0)) {
             iVar16 = uVar17 * 9 * (iVar8 + iVar9 + iVar10 * -2);
             bVar12 = (byte)iVar6;
             if (iVar16 < 0) {
-              local_f4 = (int)(uVar18 * 0x80 - iVar16) / (int)(uVar18 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar18 * 0x80 - iVar16) / (int)(uVar18 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
-              local_f4._0_2_ = -(short)local_f4;
+              pred._0_2_ = -(short)pred;
             }
             else {
-              local_f4 = (int)(uVar18 * 0x80 + iVar16) / (int)(uVar18 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar18 * 0x80 + iVar16) / (int)(uVar18 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
             }
-            local_74 = (short)local_f4;
+            local_74 = (short)pred;
           }
-          iVar6 = *(int *)(p_Var3 + local_c4 * 0x18 + 0x10);
+          iVar6 = *(int *)(p_Var3 + ci * 0x18 + 0x10);
           if ((iVar6 != 0) && (local_82 == 0)) {
-            iVar16 = uVar17 * 5 * (((local_cc - local_98) - local_108) + local_8);
+            iVar16 = uVar17 * 5 * (((DC1 - DC3) - DC7) + DC9);
             bVar12 = (byte)iVar6;
             if (iVar16 < 0) {
-              local_f4 = (int)(uVar14 * 0x80 - iVar16) / (int)(uVar14 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar14 * 0x80 - iVar16) / (int)(uVar14 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
-              local_f4._0_2_ = -(short)local_f4;
+              pred._0_2_ = -(short)pred;
             }
             else {
-              local_f4 = (int)(uVar14 * 0x80 + iVar16) / (int)(uVar14 << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (int)(uVar14 * 0x80 + iVar16) / (int)(uVar14 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
             }
-            local_82 = (short)local_f4;
+            local_82 = (short)pred;
           }
-          iVar6 = *(int *)(p_Var3 + local_c4 * 0x18 + 0x14);
+          iVar6 = *(int *)(p_Var3 + ci * 0x18 + 0x14);
           if ((iVar6 != 0) && (local_90 == 0)) {
-            iVar16 = uVar17 * 9 * (local_e0 + local_dc + iVar10 * -2);
+            iVar16 = uVar17 * 9 * (DC4 + DC6 + iVar10 * -2);
             bVar12 = (byte)iVar6;
             if (iVar16 < 0) {
-              local_f4 = (int)(local_c * 0x80 - iVar16) / (int)(local_c << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (Q02 * 0x80 - iVar16) / (Q02 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
-              local_f4._0_2_ = -(short)local_f4;
+              pred._0_2_ = -(short)pred;
             }
             else {
-              local_f4 = (int)(local_c * 0x80 + iVar16) / (int)(local_c << 8);
-              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= local_f4)) {
-                local_f4 = (1 << (bVar12 & 0x1f)) + -1;
+              pred = (Q02 * 0x80 + iVar16) / (Q02 << 8);
+              if ((0 < iVar6) && (1 << (bVar12 & 0x1f) <= pred)) {
+                pred = (1 << (bVar12 & 0x1f)) + -1;
               }
             }
-            local_90 = (short)local_f4;
+            local_90 = (short)pred;
           }
-          (*p_Var5)(param_1,local_c0,&local_94,local_120,local_a4);
-          local_cc = iVar8;
-          local_e0 = iVar10;
-          local_108 = iVar9;
-          local_a8 = local_a8 + 1;
-          local_d4 = local_d4 + 1;
-          local_ac = local_ac + 1;
-          local_a4 = local_a4 + local_c0->DCT_scaled_size;
+          (*p_Var5)(cinfo,compptr,&workspace,output_ptr,output_col);
+          DC1 = iVar8;
+          DC4 = iVar10;
+          DC7 = iVar9;
+          buffer_ptr = buffer_ptr + 1;
+          prev_block_row = prev_block_row + 1;
+          next_block_row = next_block_row + 1;
+          output_col = output_col + compptr->DCT_scaled_size;
         }
-        local_120 = local_120 + local_c0->DCT_scaled_size;
+        output_ptr = output_ptr + compptr->DCT_scaled_size;
       }
     }
-    local_c0 = local_c0 + 1;
+    compptr = compptr + 1;
   }
-  param_1->output_iMCU_row = param_1->output_iMCU_row + 1;
-  if (param_1->output_iMCU_row < param_1->total_iMCU_rows) {
+  cinfo->output_iMCU_row = cinfo->output_iMCU_row + 1;
+  if (cinfo->output_iMCU_row < cinfo->total_iMCU_rows) {
     return 3;
   }
   return 4;
@@ -610,7 +637,7 @@ int __cdecl decompress_smooth_data(jpeg_decompress_struct *param_1,uchar ***para
 
 // 00B640F0  jinit_d_coef_controller  (jpeg-6/jdcoefct.c:677)
 
-void __cdecl jinit_d_coef_controller(jpeg_decompress_struct *param_1,uchar param_2)
+void __cdecl jinit_d_coef_controller(jpeg_decompress_struct *cinfo,uchar need_full_buffer)
 
 {
   jpeg_d_coef_controller *pjVar1;
@@ -618,42 +645,43 @@ void __cdecl jinit_d_coef_controller(jpeg_decompress_struct *param_1,uchar param
   uint uVar3;
   jvirt_barray_control *pjVar4;
   void *pvVar5;
-  int local_18;
-  uint local_14;
-  int local_10;
-  jpeg_component_info *local_c;
+  int i;
+  int access_rows;
+  int ci;
+  jpeg_component_info *compptr;
+  my_coef_controller *coef;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x74);
-  param_1->coef = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x74);
+  cinfo->coef = pjVar1;
   pjVar1->start_input_pass = start_input_pass;
   pjVar1->start_output_pass = start_output_pass;
   pjVar1[5].decompress_data = (_func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *)0x0;
-  if (param_2 == '\0') {
-    pvVar5 = (*param_1->mem->alloc_large)((jpeg_common_struct *)param_1,1,0x500);
-    for (local_18 = 0; local_18 < 10; local_18 = local_18 + 1) {
-      (&pjVar1[1].decompress_data)[local_18] =
+  if (need_full_buffer == '\0') {
+    pvVar5 = (*cinfo->mem->alloc_large)((jpeg_common_struct *)cinfo,1,0x500);
+    for (i = 0; i < 10; i = i + 1) {
+      (&pjVar1[1].decompress_data)[i] =
            (_func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *)
-           (local_18 * 0x80 + (int)pvVar5);
+           (i * 0x80 + (int)pvVar5);
     }
     pjVar1->consume_data = CL_GetFirstActiveLocalClient;
     pjVar1->decompress_data = decompress_onepass;
     pjVar1->coef_arrays = (jvirt_barray_control **)0x0;
   }
   else {
-    local_10 = 0;
-    local_c = param_1->comp_info;
-    for (; local_10 < param_1->num_components; local_10 = local_10 + 1) {
-      local_14 = local_c->v_samp_factor;
-      if (param_1->progressive_mode != '\0') {
-        local_14 = local_14 * 3;
+    ci = 0;
+    compptr = cinfo->comp_info;
+    for (; ci < cinfo->num_components; ci = ci + 1) {
+      access_rows = compptr->v_samp_factor;
+      if (cinfo->progressive_mode != '\0') {
+        access_rows = access_rows * 3;
       }
-      uVar2 = jround_up(local_c->height_in_blocks,local_c->v_samp_factor);
-      uVar3 = jround_up(local_c->width_in_blocks,local_c->h_samp_factor);
-      pjVar4 = (*param_1->mem->request_virt_barray)
-                         ((jpeg_common_struct *)param_1,1,'\x01',uVar3,uVar2,local_14);
-      (&pjVar1[3].decompress_data)[local_10] =
+      uVar2 = jround_up(compptr->height_in_blocks,compptr->v_samp_factor);
+      uVar3 = jround_up(compptr->width_in_blocks,compptr->h_samp_factor);
+      pjVar4 = (*cinfo->mem->request_virt_barray)
+                         ((jpeg_common_struct *)cinfo,1,'\x01',uVar3,uVar2,access_rows);
+      (&pjVar1[3].decompress_data)[ci] =
            (_func___cdecl_int_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr *)pjVar4;
-      local_c = local_c + 1;
+      compptr = compptr + 1;
     }
     pjVar1->consume_data = consume_data;
     pjVar1->decompress_data = decompress_data;

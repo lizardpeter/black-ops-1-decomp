@@ -2,14 +2,14 @@
 
 // 005750C0  Window_GetDynamicFlags  (ui/ui_utils.h:35)
 
-int __cdecl Window_GetDynamicFlags(int param_1,windowDef_t *param_2)
+int __cdecl Window_GetDynamicFlags(int contextIndex,windowDef_t *w)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x24,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -19,20 +19,22 @@ int __cdecl Window_GetDynamicFlags(int param_1,windowDef_t *param_2)
       return iVar3;
     }
   }
-  return param_2->dynamicFlags[param_1];
+  return w->dynamicFlags[contextIndex];
 }
 
 
 // 005736E0  SCR_DrawSmallStringExt  (client_mp/cl_scrn_mp.cpp:121)
 
-void __cdecl SCR_DrawSmallStringExt(int param_1,int param_2,char *param_3,float *param_4)
+void __cdecl SCR_DrawSmallStringExt(int x,int y,char *string,float *setColor)
 
 {
   int iVar1;
+  float yAdj;
+  float xAdj;
   
   iVar1 = R_TextHeight(cls.consoleFont);
-  R_AddCmdDrawText(param_3,0x7fffffff,cls.consoleFont,(float)param_1,(float)param_2 + (float)iVar1,
-                   1.0,1.0,0.0,param_4,0);
+  R_AddCmdDrawText(string,0x7fffffff,cls.consoleFont,(float)x,(float)y + (float)iVar1,1.0,1.0,0.0,
+                   setColor,0);
   return;
 }
 
@@ -55,28 +57,28 @@ void __cdecl SCR_Init(void)
 void __cdecl SCR_DrawDemoRecording(void)
 
 {
-  float local_430;
-  char local_42c [1028];
+  int pos;
+  float xScale;
+  char string [1028];
   uint local_28;
-  clientConnection_t *local_24;
-  float local_20 [4];
-  float local_10;
-  float local_c;
-  float local_8;
+  clientConnection_t *clc;
+  float color [4];
+  float x;
+  float y;
+  float yScale;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_24 = CL_GetLocalClientConnection(0);
-  if (local_24->demorecording != 0) {
-    FS_FTell(local_24->demofile);
-    sprintf(local_42c,"RECORDING %s: %ik");
-    CL_LookupColor('7',local_20);
-    local_10 = 5.0;
-    local_c = 5.0;
-    local_430 = R_NormalizedTextScale(cls.consoleFont,0.33333334);
-    local_8 = local_430;
-    ScrPlace_ApplyRect((ScreenPlacement *)&scrPlaceView,&local_10,&local_c,&local_430,&local_8,1,1);
-    R_AddCmdDrawText(local_42c,0x7fffffff,cls.consoleFont,local_10,local_c,local_430,local_8,0.0,
-                     local_20,0);
+  clc = CL_GetLocalClientConnection(0);
+  if (clc->demorecording != 0) {
+    FS_FTell(clc->demofile);
+    sprintf(string,"RECORDING %s: %ik");
+    CL_LookupColor('7',color);
+    x = 5.0;
+    y = 5.0;
+    xScale = R_NormalizedTextScale(cls.consoleFont,0.33333334);
+    yScale = xScale;
+    ScrPlace_ApplyRect((ScreenPlacement *)&scrPlaceView,&x,&y,&xScale,&yScale,1,1);
+    R_AddCmdDrawText(string,0x7fffffff,cls.consoleFont,x,y,xScale,yScale,0.0,color,0);
   }
   return;
 }
@@ -92,6 +94,7 @@ DemoType __cdecl CL_GetDemoType(void)
   bool bVar1;
   clientConnection_t *pcVar2;
   DemoType DVar3;
+  clientConnection_t *clc;
   
   pcVar2 = CL_GetLocalClientConnection(0);
   if (pcVar2->demoplaying == 0) {
@@ -116,113 +119,124 @@ DemoType __cdecl CL_GetDemoType(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl CL_CGameRendering(int param_1,uint param_2)
+int __cdecl CL_CGameRendering(int localClientNum,uint eyeToRender)
 
 {
   bool bVar1;
   cg_s *pcVar2;
   connstate_t cVar3;
-  char *pcVar4;
-  clientActive_t *pcVar5;
-  int iVar6;
-  DemoType DVar7;
-  DWORD DVar8;
-  clientUIActive_t *pcVar9;
-  uiInfo_s *puVar10;
-  menuDef_t *pmVar11;
-  uint uVar12;
-  int iVar13;
-  CubemapShot CVar14;
+  char *Name;
+  clientActive_t *pcVar4;
+  int iVar5;
+  DemoType DVar6;
+  DWORD DVar7;
+  clientUIActive_t *pcVar8;
+  uiInfo_s *dc;
+  menuDef_t *menu;
+  uint uVar9;
+  int iVar10;
+  CubemapShot CVar11;
   int in_stack_ffffff98;
   int local_64;
   int local_30;
+  int hiRes;
+  menuDef_t *toastPopupMenu;
+  uiInfo_s *uiInfo;
+  int contextIndex;
+  clientActive_t *cl;
+  clientUIActive_t *clientUIActive;
+  PIXProfile pixProfile;
+  cg_s *cgameGlob;
+  connstate_t clcState;
+  int extraCamActive;
   
-  bVar1 = CG_ExtraCamIsActive(param_1);
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  cVar3 = CL_GetLocalClientConnectionState(param_1);
+  bVar1 = CG_ExtraCamIsActive(localClientNum);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  cVar3 = CL_GetLocalClientConnectionState(localClientNum);
   if (cVar3 == CA_ACTIVE) {
-    pcVar4 = va("CL_CGameRendering(cl=%d)");
-    PIXBeginNamedEvent(-1,pcVar4);
+    Name = va("CL_CGameRendering(cl=%d)");
+    PIXBeginNamedEvent(-1,Name);
     R_UI3D_PerframeInit();
     R_BeginClientCmdList2D();
     if (bVar1) {
-      CG_ExtraCam_GetViewOrigin(param_1,(pcVar2->refdef).extraCamPos);
+      CG_ExtraCam_GetViewOrigin(localClientNum,(pcVar2->refdef).extraCamPos);
       (pcVar2->refdef).extraCamPosValid = true;
     }
     else {
       (pcVar2->refdef).extraCamPosValid = false;
     }
-    pcVar5 = CL_GetLocalClientGlobals(param_1);
-    iVar6 = UI_IsFullscreen(param_1);
-    uVar12 = (uint)(iVar6 == 0);
-    iVar6 = 0;
-    CVar14 = CUBEMAPSHOT_NONE;
-    DVar7 = CL_GetDemoType();
-    iVar6 = CG_DrawActiveFrame(param_1,pcVar5->serverTime,DVar7,CVar14,iVar6,uVar12);
-    if (iVar6 == 0) {
-      CL_SendCmd(param_1);
+    pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+    iVar5 = UI_IsFullscreen(localClientNum);
+    uVar9 = (uint)(iVar5 == 0);
+    iVar5 = 0;
+    CVar11 = CUBEMAPSHOT_NONE;
+    DVar6 = CL_GetDemoType();
+    iVar5 = CG_DrawActiveFrame(localClientNum,pcVar4->serverTime,DVar6,CVar11,iVar5,uVar9);
+    if (iVar5 == 0) {
+      CL_SendCmd(localClientNum);
       local_30 = 0;
-      DVar8 = GetCurrentThreadId();
-      if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar7 = GetCurrentThreadId();
+      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
       GamerProfile_WriteSettings(in_stack_ffffff98);
-      pcVar9 = CL_GetLocalClientUIGlobals(param_1);
-      if ((pcVar9->keyCatchers & 0x10U) == 0) {
-        puVar10 = UI_GetInfo(param_1);
-        iVar6 = (puVar10->uiDC).contextIndex;
-        if (puVar10->toastPopupOpened != false) {
-          pmVar11 = Menus_FindByName(&puVar10->uiDC,"menu_toast_popup");
-          iVar13 = Sys_Milliseconds();
-          if (iVar13 - puVar10->toastPopupTimeCounter < puVar10->toastPopupDuration) {
-            Window_AddDynamicFlags(iVar6,&pmVar11->window,4);
-            Menu_Paint(param_1,&puVar10->uiDC,(ScreenPlacementStack *)0x0,pmVar11,-1);
+      pcVar8 = CL_GetLocalClientUIGlobals(localClientNum);
+      if ((pcVar8->keyCatchers & 0x10U) == 0) {
+        dc = UI_GetInfo(localClientNum);
+        iVar5 = (dc->uiDC).contextIndex;
+        if (dc->toastPopupOpened != false) {
+          menu = Menus_FindByName(&dc->uiDC,"menu_toast_popup");
+          iVar10 = Sys_Milliseconds();
+          if (iVar10 - dc->toastPopupTimeCounter < dc->toastPopupDuration) {
+            Window_AddDynamicFlags(iVar5,&menu->window,4);
+            Menu_Paint(localClientNum,&dc->uiDC,(ScreenPlacementStack *)0x0,menu,-1);
           }
           else {
-            uVar12 = Window_GetDynamicFlags(iVar6,&pmVar11->window);
-            if ((uVar12 & 0x42000) == 0) {
-              Menu_Paint(param_1,&puVar10->uiDC,(ScreenPlacementStack *)0x0,pmVar11,-1);
-              if (((pmVar11->closeSlideSpeed < 1) || (pmVar11->closeSlideDirection < 0)) ||
-                 (3 < pmVar11->closeSlideDirection)) {
-                if (0 < pmVar11->closeFadingTime) {
-                  Window_AddDynamicFlags(iVar6,&pmVar11->window,0x2000);
-                  iVar6 = Sys_Milliseconds();
-                  pmVar11->fadeTimeCounter = iVar6;
+            uVar9 = Window_GetDynamicFlags(iVar5,&menu->window);
+            if ((uVar9 & 0x42000) == 0) {
+              Menu_Paint(localClientNum,&dc->uiDC,(ScreenPlacementStack *)0x0,menu,-1);
+              if (((menu->closeSlideSpeed < 1) || (menu->closeSlideDirection < 0)) ||
+                 (3 < menu->closeSlideDirection)) {
+                if (0 < menu->closeFadingTime) {
+                  Window_AddDynamicFlags(iVar5,&menu->window,0x2000);
+                  iVar5 = Sys_Milliseconds();
+                  menu->fadeTimeCounter = iVar5;
                 }
               }
               else {
-                Window_AddDynamicFlags(iVar6,&pmVar11->window,0x40000);
-                iVar13 = Sys_Milliseconds();
-                pmVar11->slideTimeCounter = iVar13;
-                if (0 < pmVar11->closeFadingTime) {
-                  Window_AddDynamicFlags(iVar6,&pmVar11->window,0x2000);
-                  local_64 = pmVar11->closeFadingTime;
-                  if (local_64 <= pmVar11->closeSlideSpeed) {
-                    local_64 = pmVar11->closeSlideSpeed;
+                Window_AddDynamicFlags(iVar5,&menu->window,0x40000);
+                iVar10 = Sys_Milliseconds();
+                menu->slideTimeCounter = iVar10;
+                if (0 < menu->closeFadingTime) {
+                  Window_AddDynamicFlags(iVar5,&menu->window,0x2000);
+                  local_64 = menu->closeFadingTime;
+                  if (local_64 <= menu->closeSlideSpeed) {
+                    local_64 = menu->closeSlideSpeed;
                   }
-                  pmVar11->closeSlideSpeed = local_64;
-                  iVar6 = pmVar11->closeFadingTime;
-                  if (iVar6 <= pmVar11->closeSlideSpeed) {
-                    iVar6 = pmVar11->closeSlideSpeed;
+                  menu->closeSlideSpeed = local_64;
+                  iVar5 = menu->closeFadingTime;
+                  if (iVar5 <= menu->closeSlideSpeed) {
+                    iVar5 = menu->closeSlideSpeed;
                   }
-                  pmVar11->closeFadingTime = iVar6;
-                  iVar6 = Sys_Milliseconds();
-                  pmVar11->fadeTimeCounter = iVar6;
+                  menu->closeFadingTime = iVar5;
+                  iVar5 = Sys_Milliseconds();
+                  menu->fadeTimeCounter = iVar5;
                 }
               }
             }
             else {
-              uVar12 = Window_GetDynamicFlags(iVar6,&pmVar11->window);
-              if ((uVar12 & 0x42000) != 0) {
-                Menu_Paint(param_1,&puVar10->uiDC,(ScreenPlacementStack *)0x0,pmVar11,-1);
-                uVar12 = Window_GetDynamicFlags(iVar6,&pmVar11->window);
-                if ((uVar12 & 0x42000) == 0) {
-                  Window_RemoveDynamicFlags(iVar6,&pmVar11->window,4);
-                  puVar10->toastPopupTimeCounter = -1;
-                  puVar10->toastPopupOpened = false;
+              uVar9 = Window_GetDynamicFlags(iVar5,&menu->window);
+              if ((uVar9 & 0x42000) != 0) {
+                Menu_Paint(localClientNum,&dc->uiDC,(ScreenPlacementStack *)0x0,menu,-1);
+                uVar9 = Window_GetDynamicFlags(iVar5,&menu->window);
+                if ((uVar9 & 0x42000) == 0) {
+                  Window_RemoveDynamicFlags(iVar5,&menu->window,4);
+                  dc->toastPopupTimeCounter = -1;
+                  dc->toastPopupOpened = false;
                 }
               }
             }
@@ -230,32 +244,32 @@ int __cdecl CL_CGameRendering(int param_1,uint param_2)
         }
       }
       else {
-        UI_UpdateTime(param_1,cls.realtime);
-        UI_Refresh(param_1);
+        UI_UpdateTime(localClientNum,cls.realtime);
+        UI_Refresh(localClientNum);
       }
       R_UI3D_SetupBackendData
                 ((GfxUI3DBackend *)
                  ((int)frontEndDataOut->viewInfo + frontEndDataOut->viewInfoIndex * 0x38e0 + 0x37e4)
                 );
-      iVar6 = rg.renderHiResShot;
+      iVar5 = rg.renderHiResShot;
       if (bVar1) {
         rg.renderHiResShot = 0;
-        iVar13 = UI_IsFullscreen(param_1);
-        uVar12 = (uint)(iVar13 == 0);
-        iVar13 = 0;
-        CVar14 = CUBEMAPSHOT_NONE;
-        DVar7 = CL_GetDemoType();
-        CG_DrawExtraCamFrame(param_1,pcVar5->serverTime,DVar7,CVar14,iVar13,uVar12);
+        iVar10 = UI_IsFullscreen(localClientNum);
+        uVar9 = (uint)(iVar10 == 0);
+        iVar10 = 0;
+        CVar11 = CUBEMAPSHOT_NONE;
+        DVar6 = CL_GetDemoType();
+        CG_DrawExtraCamFrame(localClientNum,pcVar4->serverTime,DVar6,CVar11,iVar10,uVar9);
       }
-      rg.renderHiResShot = iVar6;
+      rg.renderHiResShot = iVar5;
       PIXBeginNamedEvent(-1,"wait Draw2D");
-      DVar8 = GetCurrentThreadId();
-      if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar7 = GetCurrentThreadId();
+      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       R_AddCmdEndOfList();
-      DVar8 = GetCurrentThreadId();
-      if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar7 = GetCurrentThreadId();
+      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       local_30 = 1;
@@ -270,11 +284,12 @@ int __cdecl CL_CGameRendering(int param_1,uint param_2)
 
 // 00573770  CL_DrawScreen  (client_mp/cl_scrn_mp.cpp:401)
 
-void __cdecl CL_DrawScreen(int param_1)
+void __cdecl CL_DrawScreen(int localClientNum)
 
 {
   DWORD DVar1;
   connstate_t cVar2;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"CL_DrawScreen");
   if (cls.rendererStarted == 0) {
@@ -284,20 +299,20 @@ void __cdecl CL_DrawScreen(int param_1)
     }
   }
   else {
-    cVar2 = CL_GetLocalClientConnectionState(param_1);
+    cVar2 = CL_GetLocalClientConnectionState(localClientNum);
     if (cVar2 == CA_ACTIVE) {
-      CG_DrawFullScreenDebugOverlays(param_1);
-      CG_DrawUpperRightDebugInfo(param_1);
+      CG_DrawFullScreenDebugOverlays(localClientNum);
+      CG_DrawUpperRightDebugInfo(localClientNum);
     }
     else {
-      GamerProfile_WriteSettings(param_1);
+      GamerProfile_WriteSettings(localClientNum);
     }
     if ((((cg_draw2D != (dvar_s *)0x0) && (cg_drawVersion != (dvar_s *)0x0)) &&
         ((cg_draw2D->current).enabled != false)) && ((cg_drawVersion->current).enabled != false)) {
       CG_DrawVersion();
     }
-    Con_DrawConsole(param_1);
-    DevGui_Draw(param_1);
+    Con_DrawConsole(localClientNum);
+    DevGui_Draw(localClientNum);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -329,13 +344,17 @@ void __cdecl SCR_DrawLoadingAndLogo(void)
 
 // 00575140  SCR_DrawScreenField  (client_mp/cl_scrn_mp.cpp:634)
 
-void __cdecl SCR_DrawScreenField(int param_1,int param_2)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl SCR_DrawScreenField(int localClientNum,int refreshedUI)
 
 {
   code *pcVar1;
   bool bVar2;
   connstate_t cVar3;
   int iVar4;
+  connstate_t clcState;
   
   R_BeginSharedCmdList();
   R_AddCmdProjectionSet2D();
@@ -346,9 +365,9 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
       SCR_DrawLoadingAndLogo();
     }
     else {
-      UI_UpdateTime(param_1,cls.realtime);
-      cVar3 = CL_GetLocalClientConnectionState(param_1);
-      iVar4 = UI_IsFullscreen(param_1);
+      UI_UpdateTime(localClientNum,cls.realtime);
+      cVar3 = CL_GetLocalClientConnectionState(localClientNum);
+      iVar4 = UI_IsFullscreen(localClientNum);
       if (iVar4 == 0) {
         switch(cVar3) {
         case CA_DISCONNECTED:
@@ -366,8 +385,8 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
               return;
             }
             if (cls.wwwDlInProgress != 0) {
-              UI_Refresh(param_1);
-              UI_DrawConnectScreen(param_1);
+              UI_Refresh(localClientNum);
+              UI_DrawConnectScreen(localClientNum);
             }
           }
           else {
@@ -384,11 +403,11 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
         case CA_CINEMATIC:
         case CA_UICINEMATIC:
           SCR_ClearScreen();
-          SCR_DrawCinematic(param_1);
+          SCR_DrawCinematic(localClientNum);
           break;
         case CA_LOGO:
           SCR_ClearScreen();
-          CL_DrawLogo(param_1);
+          CL_DrawLogo(localClientNum);
           break;
         case CA_CONNECTING:
         case CA_CHALLENGING:
@@ -397,9 +416,9 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
         case CA_LOADING:
         case CA_PRIMED:
           SCR_ClearScreen();
-          UI_Refresh(param_1);
-          UI_DrawConnectScreen(param_1);
-          param_2 = 1;
+          UI_Refresh(localClientNum);
+          UI_DrawConnectScreen(localClientNum);
+          refreshedUI = 1;
           break;
         case CA_ACTIVE:
           SCR_DrawDemoRecording();
@@ -423,7 +442,7 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
           break;
         case CA_UICINEMATIC:
           SCR_ClearScreen();
-          SCR_DrawCinematic(param_1);
+          SCR_DrawCinematic(localClientNum);
           break;
         case CA_ACTIVE:
           break;
@@ -431,11 +450,11 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
           Com_Error(ERR_FATAL,"\x15SCR_DrawScreenField: bad clcState");
         }
       }
-      if ((param_2 == 0) && (bVar2 = Key_IsCatcherActive(param_1,0x10), bVar2)) {
-        UI_Refresh(param_1);
+      if ((refreshedUI == 0) && (bVar2 = Key_IsCatcherActive(localClientNum,0x10), bVar2)) {
+        UI_Refresh(localClientNum);
       }
       if ((net_showprofile->current).integer != 0) {
-        Net_DisplayProfile(param_1);
+        Net_DisplayProfile(localClientNum);
       }
       R_UI3D_SetupBackendData(&frontEndDataOut->rbUI3D);
     }
@@ -446,15 +465,15 @@ void __cdecl SCR_DrawScreenField(int param_1,int param_2)
 
 // 00573870  CL_GetMenuBlurRadius  (client_mp/cl_scrn_mp.cpp:811)
 
-float __cdecl CL_GetMenuBlurRadius(int param_1)
+float __cdecl CL_GetMenuBlurRadius(int localClientNum)
 
 {
   bool bVar1;
   float fVar2;
   
-  bVar1 = Key_IsCatcherActive(param_1,0x10);
+  bVar1 = Key_IsCatcherActive(localClientNum,0x10);
   if ((bVar1) && (cls.uiStarted != 0)) {
-    fVar2 = UI_GetBlurRadius(param_1);
+    fVar2 = UI_GetBlurRadius(localClientNum);
   }
   else {
     fVar2 = 0.0;
@@ -470,7 +489,7 @@ float __cdecl CL_GetMenuBlurRadius(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CL_UpdateUIVisibilityBits(int param_1)
+void __cdecl CL_UpdateUIVisibilityBits(int localClientNum)
 
 {
   uint uVar1;
@@ -585,13 +604,30 @@ void __cdecl CL_UpdateUIVisibilityBits(int param_1)
   uint extraout_EDX_45;
   bool bVar17;
   bool bVar18;
-  char *pcVar19;
-  uint local_c;
+  char *menuName;
+  bool showEnemies;
+  bool axisHaveRadar;
+  bool hardcore;
+  bool isScoreboardOpen;
+  bool demoModeThirdPerson;
+  bool clientHasRadar;
+  bool alliesHaveRadar;
+  bool demoModeAllGameHudHidden;
+  bool demoModeMovieCam;
+  bool isSpectating;
+  bool inKillCam;
+  int mtlIndex;
+  cg_s *cgameGlob;
+  bool uiActive;
+  bool spectatingClient;
+  PIXProfile pp;
+  uint weaponIndex;
+  playerState_s *ps;
   
   PIXBeginNamedEvent(-1,"CL_UpdateUIVisibilityBits");
-  *(undefined4 *)(&DAT_098dada8 + param_1 * 8) = 0;
-  *(undefined4 *)(&DAT_098dadac + param_1 * 8) = 0;
-  bVar8 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  *(undefined4 *)(&DAT_098dada8 + localClientNum * 8) = 0;
+  *(undefined4 *)(&DAT_098dadac + localClientNum * 8) = 0;
+  bVar8 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar8) {
     if ((ui_hud_visible == (dvar_s *)0x0) || ((ui_hud_visible->current).enabled != false)) {
       bVar8 = true;
@@ -600,364 +636,368 @@ void __cdecl CL_UpdateUIVisibilityBits(int param_1)
       bVar8 = false;
     }
     if (bVar8) {
-      pcVar11 = CG_GetLocalClientGlobals(param_1);
-      pcVar12 = CG_GetLocalClientGlobals(param_1);
+      pcVar11 = CG_GetLocalClientGlobals(localClientNum);
+      pcVar12 = CG_GetLocalClientGlobals(localClientNum);
       if (pcVar12->nextSnap != (snapshot_s *)0x0) {
         uVar13 = pcVar11->matchUIVisibilityFlags << 4;
-        *(uint *)(&DAT_098dada8 + param_1 * 8) = *(uint *)(&DAT_098dada8 + param_1 * 8) | uVar13;
-        *(uint *)(&DAT_098dadac + param_1 * 8) =
-             *(uint *)(&DAT_098dadac + param_1 * 8) | (int)uVar13 >> 0x1f;
+        *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+             *(uint *)(&DAT_098dada8 + localClientNum * 8) | uVar13;
+        *(uint *)(&DAT_098dadac + localClientNum * 8) =
+             *(uint *)(&DAT_098dadac + localClientNum * 8) | (int)uVar13 >> 0x1f;
         uVar13 = *(uint *)((int)(pcVar11->bgs).clientinfo + pcVar11->clientNum * 0x5c8 + 0x5bc);
-        *(uint *)(&DAT_098dada8 + param_1 * 8) = *(uint *)(&DAT_098dada8 + param_1 * 8) | uVar13;
-        *(uint *)(&DAT_098dadac + param_1 * 8) =
-             *(uint *)(&DAT_098dadac + param_1 * 8) | (int)uVar13 >> 0x1f;
-        *(uint *)(&DAT_098dada8 + param_1 * 8) =
-             *(uint *)(&DAT_098dada8 + param_1 * 8) | *(uint *)(&DAT_098dadb0 + param_1 * 8);
-        *(uint *)(&DAT_098dadac + param_1 * 8) =
-             *(uint *)(&DAT_098dadac + param_1 * 8) | *(uint *)(&DAT_098dadb4 + param_1 * 8);
+        *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+             *(uint *)(&DAT_098dada8 + localClientNum * 8) | uVar13;
+        *(uint *)(&DAT_098dadac + localClientNum * 8) =
+             *(uint *)(&DAT_098dadac + localClientNum * 8) | (int)uVar13 >> 0x1f;
+        *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+             *(uint *)(&DAT_098dada8 + localClientNum * 8) |
+             *(uint *)(&DAT_098dadb0 + localClientNum * 8);
+        *(uint *)(&DAT_098dadac + localClientNum * 8) =
+             *(uint *)(&DAT_098dadac + localClientNum * 8) |
+             *(uint *)(&DAT_098dadb4 + localClientNum * 8);
         iVar14 = CG_IsInGuidedMissile(&pcVar11->predictedPlayerState);
         if (iVar14 != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         iVar14 = CG_IsInGuidedMissileStatic(&pcVar11->predictedPlayerState);
         if (iVar14 != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_00 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_00 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_00 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_00 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar8 = pcVar11->inKillCam != 0;
         if (bVar8) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_01 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_01 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_01 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_01 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar9 = CG_IsSelectingLocation(param_1);
+        bVar9 = CG_IsSelectingLocation(localClientNum);
         if (bVar9) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_02 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_02 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_02 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_02 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar9 = CG_Flashbanged(param_1);
-        if ((bVar9) || (bVar9 = CG_Flared(param_1), bVar9)) {
+        bVar9 = CG_Flashbanged(localClientNum);
+        if ((bVar9) || (bVar9 = CG_Flared(localClientNum), bVar9)) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_03 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_03 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_03 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_03 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar9 = CL_IsUIActive(param_1);
+        bVar9 = CL_IsUIActive(localClientNum);
         if (bVar9) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_04 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_04 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_04 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_04 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar17 = ((pcVar11->predictedPlayerState).otherFlags & 0x1aU) != 0;
         if (bVar17) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_05 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_05 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_05 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_05 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar18 = ((pcVar11->predictedPlayerState).otherFlags & 0x18U) != 0;
         if (bVar18) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_06 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_06 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_06 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_06 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if (((pcVar11->predictedPlayerState).otherFlags & 0x10U) != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_07 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_07 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_07 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_07 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if (((pcVar11->predictedPlayerState).otherFlags & 2U) != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_08 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_08 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_08 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_08 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar10 = CG_ScopeIsOverlayed(param_1);
+        bVar10 = CG_ScopeIsOverlayed(localClientNum);
         if ((bVar10) &&
            (pWVar15 = BG_GetWeaponDef((uint)(pcVar11->predictedPlayerState).weapon),
            pWVar15->guidedMissileType != MISSILE_GUIDANCE_TVGUIDED)) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_09 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_09 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_09 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_09 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if (((pcVar11->predictedPlayerState).eFlags & 0x4000U) != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_10 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_10 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_10 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_10 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         uVar13 = BG_GetNumWeapons();
         if ((pcVar11->weaponSelect < uVar13) &&
            (iVar14 = BG_PlayerHasWeapon(&pcVar11->predictedPlayerState,pcVar11->weaponSelect),
            iVar14 != 0)) {
-          local_c = pcVar11->weaponSelect;
+          weaponIndex = pcVar11->weaponSelect;
         }
         else {
-          local_c = (uint)(pcVar11->predictedPlayerState).weapon;
+          weaponIndex = (uint)(pcVar11->predictedPlayerState).weapon;
         }
-        pWVar15 = BG_GetWeaponDef(local_c);
+        pWVar15 = BG_GetWeaponDef(weaponIndex);
         if (pWVar15->fuelTankWeapon != false) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_11 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_11 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_11 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_11 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if ((((pcVar11->predictedPlayerState).locationSelectionInfo & 0xfU) < 0xf) &&
            ((pcVar11->predictedPlayerState).locationSelectionInfo != 0)) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_12 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_12 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_12 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_12 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar10 = CG_JavelinADS(param_1);
+        bVar10 = CG_JavelinADS(localClientNum);
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_13 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_13 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_13 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_13 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar10 = CG_ExtraCamIsActive(param_1);
+        bVar10 = CG_ExtraCamIsActive(localClientNum);
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_14 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_14 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_14 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_14 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if ((pcVar11->compassScrambler[0xb].handle != 0) ||
            ((pcVar11->compassScrambler[0xb].startTime != 0 &&
             (((pcVar11->predictedPlayerState).weapFlags & 0x200000U) == 0)))) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_15 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_15 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_15 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_15 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        bVar10 = CG_ExtraCamIsActive(param_1);
+        bVar10 = CG_ExtraCamIsActive(localClientNum);
         if ((((bVar10) || (pcVar11->compassScrambler[0xb].handle != 0)) ||
             ((pcVar11->compassScrambler[0xb].startTime != 0 &&
              (((pcVar11->predictedPlayerState).weapFlags & 0x200000U) == 0)))) &&
            (((pcVar11->predictedPlayerState).eFlags & 0x4000U) == 0)) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_16 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_16 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_16 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_16 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = CL_IsRenderingSplitScreen();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_17 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_17 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_17 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_17 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         if (*(int *)((int)(pcVar11->bgs).clientinfo + pcVar11->clientNum * 0x5c8) == 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_22 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_22 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_22 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_22 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         else {
           switch(*(undefined4 *)((int)(pcVar11->bgs).clientinfo + pcVar11->clientNum * 0x5c8 + 0x2c)
                 ) {
           case 0:
             _allshl();
-            *(uint *)(&DAT_098dada8 + param_1 * 8) =
-                 extraout_EAX_18 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-            *(uint *)(&DAT_098dadac + param_1 * 8) =
-                 extraout_EDX_18 | *(uint *)(&DAT_098dadac + param_1 * 8);
+            *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+                 extraout_EAX_18 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+            *(uint *)(&DAT_098dadac + localClientNum * 8) =
+                 extraout_EDX_18 | *(uint *)(&DAT_098dadac + localClientNum * 8);
             break;
           case 1:
             _allshl();
-            *(uint *)(&DAT_098dada8 + param_1 * 8) =
-                 extraout_EAX_19 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-            *(uint *)(&DAT_098dadac + param_1 * 8) =
-                 extraout_EDX_19 | *(uint *)(&DAT_098dadac + param_1 * 8);
+            *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+                 extraout_EAX_19 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+            *(uint *)(&DAT_098dadac + localClientNum * 8) =
+                 extraout_EDX_19 | *(uint *)(&DAT_098dadac + localClientNum * 8);
             break;
           case 2:
             _allshl();
-            *(uint *)(&DAT_098dada8 + param_1 * 8) =
-                 extraout_EAX_20 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-            *(uint *)(&DAT_098dadac + param_1 * 8) =
-                 extraout_EDX_20 | *(uint *)(&DAT_098dadac + param_1 * 8);
+            *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+                 extraout_EAX_20 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+            *(uint *)(&DAT_098dadac + localClientNum * 8) =
+                 extraout_EDX_20 | *(uint *)(&DAT_098dadac + localClientNum * 8);
             break;
           case 3:
             _allshl();
-            *(uint *)(&DAT_098dada8 + param_1 * 8) =
-                 extraout_EAX_21 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-            *(uint *)(&DAT_098dadac + param_1 * 8) =
-                 extraout_EDX_21 | *(uint *)(&DAT_098dadac + param_1 * 8);
+            *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+                 extraout_EAX_21 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+            *(uint *)(&DAT_098dadac + localClientNum * 8) =
+                 extraout_EDX_21 | *(uint *)(&DAT_098dadac + localClientNum * 8);
           }
         }
         _allshl();
-        if (((extraout_EAX_23 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-             (extraout_EDX_23 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0) ||
+        if (((extraout_EAX_23 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+             (extraout_EDX_23 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0) ||
            (_allshl(),
-           (extraout_EAX_24 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-           (extraout_EDX_24 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0)) {
+           (extraout_EAX_24 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+           (extraout_EDX_24 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0)) {
           bVar10 = false;
         }
         else {
           bVar10 = true;
         }
         _allshl();
-        if (((extraout_EAX_25 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-             (extraout_EDX_25 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0) ||
+        if (((extraout_EAX_25 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+             (extraout_EDX_25 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0) ||
            (_allshl(),
-           (extraout_EAX_26 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-           (extraout_EDX_26 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0)) {
+           (extraout_EAX_26 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+           (extraout_EDX_26 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0)) {
           bVar6 = false;
         }
         else {
           bVar6 = true;
         }
         _allshl();
-        if (((extraout_EAX_27 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-             (extraout_EDX_27 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0) ||
+        if (((extraout_EAX_27 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+             (extraout_EDX_27 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0) ||
            (_allshl(),
-           (extraout_EAX_28 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-           (extraout_EDX_28 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0)) {
+           (extraout_EAX_28 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+           (extraout_EDX_28 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0)) {
           bVar7 = false;
         }
         else {
           bVar7 = true;
         }
         _allshl();
-        uVar13 = *(uint *)(&DAT_098dada8 + param_1 * 8);
-        uVar1 = *(uint *)(&DAT_098dadac + param_1 * 8);
+        uVar13 = *(uint *)(&DAT_098dada8 + localClientNum * 8);
+        uVar1 = *(uint *)(&DAT_098dadac + localClientNum * 8);
         _allshl();
-        uVar2 = *(uint *)(&DAT_098dada8 + param_1 * 8);
-        uVar3 = *(uint *)(&DAT_098dadac + param_1 * 8);
+        uVar2 = *(uint *)(&DAT_098dada8 + localClientNum * 8);
+        uVar3 = *(uint *)(&DAT_098dadac + localClientNum * 8);
         _allshl();
         if ((((((extraout_EAX_29 & uVar13) == 0 && (extraout_EDX_29 & uVar1) == 0) || (bVar10)) ||
              (bVar6)) ||
             ((bVar7 || ((extraout_EAX_30 & uVar2) != 0 || (extraout_EDX_30 & uVar3) != 0)))) &&
-           (((extraout_EAX_31 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-             (extraout_EDX_31 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0 ||
+           (((extraout_EAX_31 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+             (extraout_EDX_31 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0 ||
             ((cg_thirdPerson->current).integer == 0)))) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_32 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_32 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_32 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_32 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         iVar14 = Dvar_GetInt("ui_hud_showobjicons");
         if (iVar14 != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_33 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_33 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_33 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_33 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         iVar14 = Dvar_GetInt("ui_hud_obituaries");
         if (iVar14 != 0) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_34 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_34 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_34 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_34 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        pcVar19 = "scoreboard";
-        iVar14 = Com_LocalClient_GetUIContextIndex(param_1);
-        bVar10 = Menu_IsMenuOpenAndVisible(iVar14,pcVar19);
+        menuName = "scoreboard";
+        iVar14 = Com_LocalClient_GetUIContextIndex(localClientNum);
+        bVar10 = Menu_IsMenuOpenAndVisible(iVar14,menuName);
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_35 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_35 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_35 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_35 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = Live_IsWagerMatch();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_36 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_36 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_36 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_36 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = Demo_IsPlaying();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_37 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_37 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_37 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_37 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = Demo_IsRenderingMovie();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_38 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_38 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_38 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_38 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = Demo_IsGameHudHidden();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_39 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_39 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_39 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_39 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
         bVar10 = Demo_IsDemoHudHidden();
         if (bVar10) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_40 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_40 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_40 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_40 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
-        Demo_UpdateVisibilityBitsForCameraMode(param_1,-1);
+        Demo_UpdateVisibilityBitsForCameraMode(localClientNum,-1);
         _allshl();
-        uVar13 = *(uint *)(&DAT_098dada8 + param_1 * 8);
-        uVar1 = *(uint *)(&DAT_098dadac + param_1 * 8);
+        uVar13 = *(uint *)(&DAT_098dada8 + localClientNum * 8);
+        uVar1 = *(uint *)(&DAT_098dadac + localClientNum * 8);
         _allshl();
-        uVar2 = *(uint *)(&DAT_098dada8 + param_1 * 8);
-        uVar3 = *(uint *)(&DAT_098dadac + param_1 * 8);
+        uVar2 = *(uint *)(&DAT_098dada8 + localClientNum * 8);
+        uVar3 = *(uint *)(&DAT_098dadac + localClientNum * 8);
         _allshl();
-        uVar4 = *(uint *)(&DAT_098dada8 + param_1 * 8);
-        uVar5 = *(uint *)(&DAT_098dadac + param_1 * 8);
+        uVar4 = *(uint *)(&DAT_098dada8 + localClientNum * 8);
+        uVar5 = *(uint *)(&DAT_098dadac + localClientNum * 8);
         _allshl();
         if (((!bVar18 && !bVar17) || (bVar8)) &&
            (((extraout_EAX_41 & uVar13) == 0 && (extraout_EDX_41 & uVar1) == 0 &&
             ((((!bVar9 && ((extraout_EAX_42 & uVar2) == 0 && (extraout_EDX_42 & uVar3) == 0)) &&
               ((extraout_EAX_43 & uVar4) == 0 && (extraout_EDX_43 & uVar5) == 0)) &&
-             ((extraout_EAX_44 & *(uint *)(&DAT_098dada8 + param_1 * 8)) == 0 &&
-              (extraout_EDX_44 & *(uint *)(&DAT_098dadac + param_1 * 8)) == 0)))))) {
+             ((extraout_EAX_44 & *(uint *)(&DAT_098dada8 + localClientNum * 8)) == 0 &&
+              (extraout_EDX_44 & *(uint *)(&DAT_098dadac + localClientNum * 8)) == 0)))))) {
           _allshl();
-          *(uint *)(&DAT_098dada8 + param_1 * 8) =
-               extraout_EAX_45 | *(uint *)(&DAT_098dada8 + param_1 * 8);
-          *(uint *)(&DAT_098dadac + param_1 * 8) =
-               extraout_EDX_45 | *(uint *)(&DAT_098dadac + param_1 * 8);
+          *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+               extraout_EAX_45 | *(uint *)(&DAT_098dada8 + localClientNum * 8);
+          *(uint *)(&DAT_098dadac + localClientNum * 8) =
+               extraout_EDX_45 | *(uint *)(&DAT_098dadac + localClientNum * 8);
         }
       }
     }
@@ -984,12 +1024,20 @@ void __cdecl SCR_UpdateFrame(void)
   uint uVar2;
   bool bVar3;
   cg_s *pcVar4;
-  int iVar5;
-  clientActive_t *pcVar6;
-  float fVar7;
+  int refreshedUI_00;
+  clientActive_t *pcVar5;
+  float timescale;
   uint local_30;
   uint local_2c;
   bool local_28;
+  int beginFrameCalled;
+  bool isPaused;
+  int localClientNum;
+  uint eyeToRender;
+  int refreshedUI;
+  int updateSound;
+  uint streamingFrame;
+  int eyeDrawType;
   
   uVar2 = streamFrontendGlob.frame;
   bVar3 = Sys_IsMainThread();
@@ -1037,13 +1085,13 @@ LAB_00574aa1:
   else {
     local_30 = 0;
   }
-  fVar7 = Com_GetTimescaleForSnd();
+  timescale = Com_GetTimescaleForSnd();
   bVar3 = CG_IsMature();
-  SND_BeginFrame(bVar3,local_28,fVar7,local_30,local_2c);
+  SND_BeginFrame(bVar3,local_28,timescale,local_30,local_2c);
   CG_SndUpdate();
   CL_CompositeRender();
   GlassCl_BeginUpdate();
-  iVar5 = CL_CGameRendering(0,0);
+  refreshedUI_00 = CL_CGameRendering(0,0);
   bVar3 = CL_AllLocalClientsDisconnected();
   if (bVar3) {
     bVar3 = Sys_IsMainThread();
@@ -1052,7 +1100,7 @@ LAB_00574aa1:
     }
   }
   CL_UpdateUIVisibilityBits(0);
-  SCR_DrawScreenField(0,iVar5);
+  SCR_DrawScreenField(0,refreshedUI_00);
   CL_DrawScreen(0);
   if (uVar2 == streamFrontendGlob.frame) {
     R_StreamUpdate_Idle();
@@ -1063,9 +1111,9 @@ LAB_00574aa1:
   SND_EndFrame();
   R_EndFrame();
   R_IssueRenderCommands(3);
-  if (((r_reflectionProbeGenerate->current).enabled != false) && (iVar5 != 0)) {
-    pcVar6 = CL_GetLocalClientGlobals(0);
-    if (1000 < pcVar6->serverTime) {
+  if (((r_reflectionProbeGenerate->current).enabled != false) && (refreshedUI_00 != 0)) {
+    pcVar5 = CL_GetLocalClientGlobals(0);
+    if (1000 < pcVar5->serverTime) {
       R_BspGenerateReflections();
     }
   }
@@ -1081,6 +1129,9 @@ bool __cdecl SCR_ShouldSkipUpdateScreen(void)
   bool bVar1;
   connstate_t cVar2;
   int iVar3;
+  int clcState;
+  int timeNow;
+  int msecLimit;
   
   cVar2 = CL_GetLocalClientConnectionState(0);
   if ((int)cVar2 < 10) {
@@ -1109,7 +1160,9 @@ void __cdecl SCR_UpdateScreen(void)
   int iVar2;
   int iVar3;
   connstate_t cVar4;
-  int local_c;
+  int semaphore;
+  int shouldSkipRender;
+  connstate_t cstate;
   
   if ((!updateScreenCalled) && (bVar1 = SCR_ShouldSkipUpdateScreen(), !bVar1)) {
     iVar2 = R_AcquireDXDeviceOwnership(r_PumpDemonware);
@@ -1127,11 +1180,11 @@ void __cdecl SCR_UpdateScreen(void)
       if (cVar4 == CA_LOADING) {
         Sys_LoadingKeepAlive();
       }
-      local_c = com_errorEntered;
+      shouldSkipRender = com_errorEntered;
       if ((com_errorEntered != 0) && ((long_blocking_call->current).enabled != false)) {
-        local_c = 0;
+        shouldSkipRender = 0;
       }
-      if ((scr_initialized != 0) && (local_c == 0)) {
+      if ((scr_initialized != 0) && (shouldSkipRender == 0)) {
         updateScreenCalled = true;
         SND_Update();
         SCR_UpdateFrame();
@@ -1187,6 +1240,10 @@ void __cdecl CL_CubemapShotUsage(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CL_CubemapShot_f(void)
 
@@ -1195,28 +1252,29 @@ void __cdecl CL_CubemapShot_f(void)
   bool bVar2;
   int iVar3;
   clientActive_t *pcVar4;
-  DemoType DVar5;
-  char *pcVar6;
-  double dVar7;
-  CubemapShot CVar8;
-  uint uVar9;
-  float fVar10;
-  char *pcVar11;
-  float fVar12;
+  DemoType demoType;
+  char *pcVar5;
+  double dVar6;
+  CubemapShot CVar7;
+  float n0_00;
+  char *pcVar8;
+  int renderScreen;
+  float n1_00;
   char *local_b0;
   char *local_ac;
   char *local_9c;
-  float local_6c;
+  clientActive_t *cl;
+  float rgb;
   float local_68;
   float local_64;
-  CubemapShot local_60;
-  int local_5c;
-  uint local_58;
-  char local_54 [64];
+  int shot;
+  int localClientNum;
+  int size;
+  char szBaseName [64];
   uint local_14;
-  float local_10;
-  char local_9;
-  float local_8;
+  float n0;
+  bool isLightingShot;
+  float n1;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = CL_LocalClient_IsCUIFlagSet(0,0x20);
@@ -1227,69 +1285,69 @@ void __cdecl CL_CubemapShot_f(void)
   iVar3 = Cmd_Argc();
   if (2 < iVar3) {
     local_9c = Cmd_Argv(2);
-    pcVar6 = local_9c + 1;
+    pcVar5 = local_9c + 1;
     do {
       cVar1 = *local_9c;
       local_9c = local_9c + 1;
     } while (cVar1 != '\0');
-    if ((uint)((int)local_9c - (int)pcVar6) < 0x29) {
+    if ((uint)((int)local_9c - (int)pcVar5) < 0x29) {
       local_ac = Cmd_Argv(2);
-      local_b0 = local_54;
+      local_b0 = szBaseName;
       do {
         cVar1 = *local_ac;
         *local_b0 = cVar1;
         local_ac = local_ac + 1;
         local_b0 = local_b0 + 1;
       } while (cVar1 != '\0');
-      pcVar6 = Cmd_Argv(1);
-      local_58 = atoi(pcVar6);
-      if ((((int)local_58 < 4) || (0x400 < (int)local_58)) || ((local_58 - 1 & local_58) != 0)) {
+      pcVar5 = Cmd_Argv(1);
+      size = atoi(pcVar5);
+      if (((size < 4) || (0x400 < size)) || ((size - 1U & size) != 0)) {
         CL_CubemapShotUsage();
         return;
       }
-      local_6c = 0.0;
+      rgb = 0.0;
       local_68 = 0.0;
       local_64 = 0.0;
-      local_9 = '\0';
-      local_10 = 1.0;
-      local_8 = 1.333;
+      isLightingShot = false;
+      n0 = 1.0;
+      n1 = 1.333;
       iVar3 = Cmd_Argc();
       if (iVar3 == 7) {
-        pcVar11 = "lighting";
-        pcVar6 = Cmd_Argv(3);
-        iVar3 = I_stricmp(pcVar6,pcVar11);
+        pcVar8 = "lighting";
+        pcVar5 = Cmd_Argv(3);
+        iVar3 = I_stricmp(pcVar5,pcVar8);
         if (iVar3 != 0) {
           CL_CubemapShotUsage();
           return;
         }
-        pcVar6 = Cmd_Argv(4);
-        dVar7 = atof(pcVar6);
-        local_6c = (float)dVar7;
-        pcVar6 = Cmd_Argv(5);
-        dVar7 = atof(pcVar6);
-        local_68 = (float)dVar7;
-        pcVar6 = Cmd_Argv(6);
-        dVar7 = atof(pcVar6);
-        local_64 = (float)dVar7;
-        local_9 = '\x01';
+        pcVar5 = Cmd_Argv(4);
+        dVar6 = atof(pcVar5);
+        rgb = (float)dVar6;
+        pcVar5 = Cmd_Argv(5);
+        dVar6 = atof(pcVar5);
+        local_68 = (float)dVar6;
+        pcVar5 = Cmd_Argv(6);
+        dVar6 = atof(pcVar5);
+        local_64 = (float)dVar6;
+        isLightingShot = true;
       }
       else {
         iVar3 = Cmd_Argc();
         if (iVar3 == 6) {
-          pcVar11 = "fresnel";
-          pcVar6 = Cmd_Argv(3);
-          iVar3 = I_stricmp(pcVar6,pcVar11);
+          pcVar8 = "fresnel";
+          pcVar5 = Cmd_Argv(3);
+          iVar3 = I_stricmp(pcVar5,pcVar8);
           if (iVar3 != 0) {
             CL_CubemapShotUsage();
             return;
           }
-          pcVar6 = Cmd_Argv(4);
-          dVar7 = atof(pcVar6);
-          local_10 = (float)dVar7;
-          pcVar6 = Cmd_Argv(5);
-          dVar7 = atof(pcVar6);
-          local_8 = (float)dVar7;
-          if ((local_10 < 1.0) || (local_8 < 1.0)) {
+          pcVar5 = Cmd_Argv(4);
+          dVar6 = atof(pcVar5);
+          n0 = (float)dVar6;
+          pcVar5 = Cmd_Argv(5);
+          dVar6 = atof(pcVar5);
+          n1 = (float)dVar6;
+          if ((n0 < 1.0) || (n1 < 1.0)) {
             CL_CubemapShotUsage();
             return;
           }
@@ -1303,33 +1361,31 @@ void __cdecl CL_CubemapShot_f(void)
         }
       }
       R_SyncRenderThread();
-      local_5c = 0;
+      localClientNum = 0;
       pcVar4 = CL_GetLocalClientGlobals(0);
-      for (local_60 = CUBEMAPSHOT_RIGHT; (int)local_60 < 7; local_60 = local_60 + CUBEMAPSHOT_RIGHT)
-      {
-        R_BeginCubemapShot(local_58,1);
+      for (shot = 1; shot < 7; shot = shot + 1) {
+        R_BeginCubemapShot(size,1);
         R_BeginFrame();
         R_BeginSharedCmdList();
         R_ClearClientCmdList2D();
-        iVar3 = 1;
-        CVar8 = local_60;
-        uVar9 = local_58;
-        DVar5 = CL_GetDemoType();
-        CG_DrawActiveFrame(local_5c,pcVar4->serverTime,DVar5,CVar8,uVar9,iVar3);
+        renderScreen = 1;
+        CVar7 = shot;
+        iVar3 = size;
+        demoType = CL_GetDemoType();
+        CG_DrawActiveFrame(localClientNum,pcVar4->serverTime,demoType,CVar7,iVar3,renderScreen);
         R_EndFrame();
         R_IssueRenderCommands(3);
-        R_EndCubemapShot(local_60);
+        R_EndCubemapShot(shot);
       }
-      if (local_9 != '\0') {
-        R_LightingFromCubemapShots(&local_6c);
+      if (isLightingShot != false) {
+        R_LightingFromCubemapShots(&rgb);
       }
-      for (local_60 = CUBEMAPSHOT_RIGHT; (int)local_60 < 7; local_60 = local_60 + CUBEMAPSHOT_RIGHT)
-      {
-        CVar8 = local_60;
-        fVar10 = local_10;
-        fVar12 = local_8;
-        pcVar6 = va("env/%s%s.tga");
-        R_SaveCubemapShot(pcVar6,CVar8,fVar10,fVar12);
+      for (shot = 1; shot < 7; shot = shot + 1) {
+        CVar7 = shot;
+        n0_00 = n0;
+        n1_00 = n1;
+        pcVar5 = va("env/%s%s.tga");
+        R_SaveCubemapShot(pcVar5,CVar7,n0_00,n1_00);
       }
       return;
     }
@@ -1348,94 +1404,105 @@ void __cdecl CL_CubemapShot_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HiResScreenshot(int param_1)
+void __cdecl HiResScreenshot(int tiles)
 
 {
-  int iVar1;
-  code *pcVar2;
-  uint uVar3;
-  uint uVar4;
-  bool bVar5;
-  bool bVar6;
-  cg_s *pcVar7;
-  int local_8228;
-  int local_8220;
-  int local_821c;
-  jpeg_exif local_81f4;
-  int local_81e4;
-  int local_81e0;
-  uchar local_81dc [32768];
-  jpeg_encode local_1dc;
+  int value;
+  code *pcVar1;
+  uint width_00;
+  uint height_00;
+  bool bVar2;
+  bool bVar3;
+  cg_s *pcVar4;
+  int row;
+  float column;
+  int y;
+  int i;
+  clientActive_t *cl;
+  bool streamFreezeState;
+  uchar *out;
+  int curlod;
+  float yAspect;
+  cg_s *cgameGlob;
+  int width;
+  int height;
+  int localClientNum;
+  jpeg_exif exif;
+  int total;
+  int now;
+  uchar output [32768];
+  jpeg_encode encode;
   uint local_c;
-  undefined4 uStack_8;
+  undefined3 uStack_8;
+  bool bloomTweaks;
   
-  uStack_8 = 0x575a9d;
+  _uStack_8 = 0x575a9d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar7 = CG_GetLocalClientGlobals(0);
+  pcVar4 = CG_GetLocalClientGlobals(0);
   CL_GetLocalClientGlobals(0);
-  if ((param_1 == 0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",0x6e9,
-                               0,"%s"), !bVar5)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((tiles == 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",0x6e9,
+                               0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if (param_1 != 0) {
-    iVar1 = (r_forceLod->current).integer;
+  if (tiles != 0) {
+    value = (r_forceLod->current).integer;
     Dvar_SetInt(r_forceLod,4);
-    bVar5 = (r_streamFreezeState->current).enabled;
+    bVar2 = (r_streamFreezeState->current).enabled;
     Dvar_SetBool(r_streamFreezeState,true);
-    uStack_8 = CONCAT13((r_bloomTweaks->current).enabled,(undefined3)uStack_8);
+    _uStack_8 = CONCAT13((r_bloomTweaks->current).enabled,uStack_8);
     Dvar_SetBool(r_bloomTweaks,true);
-    pcVar7->hiResShotMode = 1;
-    uVar4 = cls.vidConfig.displayHeight;
-    uVar3 = cls.vidConfig.displayWidth;
+    pcVar4->hiResShotMode = 1;
+    height_00 = cls.vidConfig.displayHeight;
+    width_00 = cls.vidConfig.displayWidth;
     if (((cls.vidConfig.displayHeight == 0) || (cls.vidConfig.displayWidth == 0)) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",
-                                 0x6fa,0,"%s"), !bVar6)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",
+                                 0x6fa,0,"%s"), !bVar3)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((uVar4 != 0) && (uVar3 != 0)) {
-      if ((0xffff < (int)(uVar3 * param_1)) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",
-                                   0x708,0,"%s"), !bVar6)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if ((height_00 != 0) && (width_00 != 0)) {
+      if ((0xffff < (int)(width_00 * tiles)) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_scrn_mp.cpp",
+                                   0x708,0,"%s"), !bVar3)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
       NET_Sleep(200);
-      for (local_821c = 0; local_821c < 10; local_821c = local_821c + 1) {
+      for (i = 0; i < 10; i = i + 1) {
         SCR_UpdateScreen();
       }
       NET_Sleep(200);
-      R_BeginHiResShot(param_1);
-      local_81f4.gpsLat = 34.02154;
-      local_81f4.gpsLon = -118.44875;
-      local_81f4.gpsOffsetLon = (pcVar7->refdef).vieworg[0] * 0.0254;
-      local_81f4.gpsOffsetLat = (pcVar7->refdef).vieworg[1] * 0.0254;
-      jpeg_encode::begin(&local_1dc,local_81dc,(int)((float)(int)(uVar3 * param_1) * 1.0),
-                         uVar4 * param_1,0x100,true,&local_81f4);
-      local_81e4 = ((int)(uVar4 + ((int)uVar4 >> 0x1f & 0xfU)) >> 4) * param_1 * param_1;
-      local_81e0 = 0;
-      for (local_8220 = 0; local_8220 < (int)(uVar4 * param_1); local_8220 = local_8220 + 0x10) {
-        for (local_8228 = 0; local_8228 < param_1; local_8228 = local_8228 + 1) {
+      R_BeginHiResShot(tiles);
+      exif.gpsLat = 34.02154;
+      exif.gpsLon = -118.44875;
+      exif.gpsOffsetLon = (pcVar4->refdef).vieworg[0] * 0.0254;
+      exif.gpsOffsetLat = (pcVar4->refdef).vieworg[1] * 0.0254;
+      jpeg_encode::begin(&encode,output,(int)((float)(int)(width_00 * tiles) * 1.0),
+                         height_00 * tiles,0x100,true,&exif);
+      total = ((int)(height_00 + ((int)height_00 >> 0x1f & 0xfU)) >> 4) * tiles * tiles;
+      now = 0;
+      for (y = 0; y < (int)(height_00 * tiles); y = y + 0x10) {
+        for (row = 0; row < tiles; row = row + 1) {
           jpeg_screenshot_set_frame_info
-                    (uVar3,uVar4,0,0,param_1,(float)local_8228,(float)local_8220 / (float)(int)uVar4
-                     ,0,1.0,(float)local_81e0 / (float)local_81e4);
-          local_81e0 = local_81e0 + 1;
-          R_UpdateHiResShot((float)local_8228,(float)local_8220 / (float)(int)uVar4);
+                    (width_00,height_00,0,0,tiles,(float)row,(float)y / (float)(int)height_00,0,1.0,
+                     (float)now / (float)total);
+          now = now + 1;
+          R_UpdateHiResShot((float)row,(float)y / (float)(int)height_00);
           SCR_UpdateScreen();
-          jpeg_screenshot_chunk(local_81dc,&local_1dc);
+          jpeg_screenshot_chunk(output,&encode);
         }
       }
-      jpeg_encode::end(&local_1dc,local_81dc);
+      jpeg_encode::end(&encode,output);
       R_EndHiResShot();
-      pcVar7->hiResShotMode = 0;
-      Dvar_SetInt(r_forceLod,iVar1);
-      Dvar_SetBool(r_streamFreezeState,bVar5);
-      Dvar_SetBool(r_bloomTweaks,uStack_8._3_1_);
+      pcVar4->hiResShotMode = 0;
+      Dvar_SetInt(r_forceLod,value);
+      Dvar_SetBool(r_streamFreezeState,bVar2);
+      Dvar_SetBool(r_bloomTweaks,bloomTweaks);
     }
   }
   return;
@@ -1444,25 +1511,35 @@ void __cdecl HiResScreenshot(int param_1)
 
 // 00575A50  CL_TakeHiResShot  (client_mp/cl_scrn_mp.cpp:1906)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CL_TakeHiResShot(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined4 local_8;
+  char *nptr;
+  int tiles;
   
-  local_8 = 1;
+  tiles = 1;
   iVar1 = Cmd_Argc();
   if (1 < iVar1) {
-    pcVar2 = Cmd_Argv(1);
-    local_8 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    tiles = atoi(nptr);
   }
-  HiResScreenshot(local_8);
+  HiResScreenshot(tiles);
   return;
 }
 
 
 // 00575F10  CL_TakeHiResShot2  (client_mp/cl_scrn_mp.cpp:1915)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CL_TakeHiResShot2(void)
 
@@ -1474,6 +1551,11 @@ void __cdecl CL_TakeHiResShot2(void)
 
 // 00575F20  CL_TakeHiResShot3  (client_mp/cl_scrn_mp.cpp:1920)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CL_TakeHiResShot3(void)
 
 {
@@ -1484,6 +1566,11 @@ void __cdecl CL_TakeHiResShot3(void)
 
 // 00575F30  CL_TakeHiResShot4  (client_mp/cl_scrn_mp.cpp:1925)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CL_TakeHiResShot4(void)
 
 {
@@ -1493,6 +1580,11 @@ void __cdecl CL_TakeHiResShot4(void)
 
 
 // 00575F40  CL_TakeHiResShot8  (client_mp/cl_scrn_mp.cpp:1930)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CL_TakeHiResShot8(void)
 

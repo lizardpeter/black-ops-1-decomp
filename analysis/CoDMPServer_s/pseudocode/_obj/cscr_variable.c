@@ -10,7 +10,7 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t param_1)
   char *pcVar1;
   char cVar2;
   undefined *puVar3;
-  void *lpAddress;
+  void *base;
   int iVar4;
   scrVarGlob_t *psVar5;
   int iVar6;
@@ -44,14 +44,14 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t param_1)
     iVar9 = iVar9 + -1;
   } while (iVar9 != 0);
   if (iVar6 != 0) {
-    lpAddress = (void *)_Z_TryVirtualAllocInternal(iVar6 * 0x8c);
-    if (lpAddress == (void *)0x0) {
+    base = (void *)_Z_TryVirtualAllocInternal(iVar6 * 0x8c);
+    if (base == (void *)0x0) {
       pcVar16 = "Cannot dump script threads: out of memory\n";
     }
     else {
       local_9c = 0;
       local_a4 = 1.285736e-39;
-      pvVar7 = lpAddress;
+      pvVar7 = base;
       do {
         psVar5 = (&gScrVarGlob)[param_1 * 0x20];
         uVar10 = *(uint *)(psVar5 + (int)local_a4 + 0x10);
@@ -95,7 +95,7 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t param_1)
         local_a4 = (float)((int)local_a4 + 0x1c);
         pvVar7 = pvVar8;
       } while ((uint)local_a4 < 0x7dffc8);
-      qsort(lpAddress,local_9c,0x8c,FUN_00729ff0);
+      qsort(base,local_9c,0x8c,FUN_00729ff0);
       Com_Printf(0x18,"********************************\n");
       iVar6 = 0;
       local_a4 = 0.0;
@@ -103,7 +103,7 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t param_1)
       if (0 < (int)local_9c) {
         do {
           fVar15 = 0.0;
-          pvVar7 = (void *)(iVar6 * 0x8c + (int)lpAddress);
+          pvVar7 = (void *)(iVar6 * 0x8c + (int)base);
           iVar9 = 0;
           fVar14 = 0.0;
           pfVar12 = (float *)((int)pvVar7 + 0x88);
@@ -132,7 +132,7 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t param_1)
           }
         } while (iVar6 < (int)local_9c);
       }
-      VirtualFree(lpAddress,0,0x8000);
+      VirtualFree(base,0,0x8000);
       Com_Printf(0x18,"********************************\n");
       Com_Printf(0x18,"var usage: %d, endon usage: %d\n",(int)local_a4,(int)local_a0);
       Com_Printf(0x18,"\n");

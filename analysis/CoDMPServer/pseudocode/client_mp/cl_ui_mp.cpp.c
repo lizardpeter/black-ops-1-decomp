@@ -2,22 +2,24 @@
 
 // 00575F50  CL_GetClientState  (client_mp/cl_ui_mp.cpp:32)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_GetClientState(int param_1,uiClientState_s *param_2)
+void __cdecl CL_GetClientState(int localClientNum,uiClientState_s *state)
 
 {
   clientConnection_t *pcVar1;
   connstate_t cVar2;
+  clientActive_t *cl;
+  clientConnection_t *clc;
   
-  CL_GetLocalClientGlobals(param_1);
-  pcVar1 = CL_GetLocalClientConnection(param_1);
-  param_2->connectPacketCount = pcVar1->connectPacketCount;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
-  param_2->connState = cVar2;
-  I_strncpyz(param_2->servername,cls.servername,0x400);
-  I_strncpyz(param_2->messageString,pcVar1->serverMessage,0x400);
+  CL_GetLocalClientGlobals(localClientNum);
+  pcVar1 = CL_GetLocalClientConnection(localClientNum);
+  state->connectPacketCount = pcVar1->connectPacketCount;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
+  state->connState = cVar2;
+  I_strncpyz(state->servername,cls.servername,0x400);
+  I_strncpyz(state->messageString,pcVar1->serverMessage,0x400);
   return;
 }
 
@@ -26,15 +28,17 @@ void __cdecl CL_GetClientState(int param_1,uiClientState_s *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl CL_AllowPopup(int param_1)
+bool __cdecl CL_AllowPopup(int localClientNum)
 
 {
   bool bVar1;
   connstate_t cVar2;
   clientConnection_t *pcVar3;
+  connstate_t connstate;
+  clientConnection_t *clc;
   
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
-  pcVar3 = CL_GetLocalClientConnection(param_1);
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
+  pcVar3 = CL_GetLocalClientConnection(localClientNum);
   if (pcVar3->demoplaying == 0) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
@@ -53,13 +57,13 @@ bool __cdecl CL_AllowPopup(int param_1)
 
 // 00576030  Key_KeynumToStringBuf  (client_mp/cl_ui_mp.cpp:650)
 
-void __cdecl Key_KeynumToStringBuf(int param_1,char *param_2,int param_3)
+void __cdecl Key_KeynumToStringBuf(int keynum,char *buf,int buflen)
 
 {
-  char *pcVar1;
+  char *src;
   
-  pcVar1 = Key_KeynumToString(param_1,1);
-  I_strncpyz(param_2,pcVar1,param_3);
+  src = Key_KeynumToString(keynum,1);
+  I_strncpyz(buf,src,buflen);
   return;
 }
 
@@ -68,24 +72,24 @@ void __cdecl Key_KeynumToStringBuf(int param_1,char *param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_GetClientName(int param_1,int param_2,char *param_3,int param_4,bool param_5)
+int __cdecl CL_GetClientName(int localClientNum,int index,char *buf,int size,bool addClanName)
 
 {
   clientActive_t *pcVar1;
-  char *pcVar2;
-  int local_8;
+  char *src;
+  clientActive_t *cl;
+  clientState_s *pState;
+  int i;
   
-  *param_3 = '\0';
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  *buf = '\0';
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   if ((pcVar1->snap).valid != 0) {
-    for (local_8 = 0; local_8 < (pcVar1->snap).numClients; local_8 = local_8 + 1) {
-      if (pcVar1->parseClients[(pcVar1->snap).parseClientsNum + local_8 & 0x7ff].clientIndex ==
-          param_2) {
-        pcVar2 = CS_DisplayName(pcVar1->parseClients +
-                                ((pcVar1->snap).parseClientsNum + local_8 & 0x7ff),
-                                -(uint)param_5 & 2 | 1);
-        I_strncpyz(param_3,pcVar2,param_4);
-        I_CleanStr(param_3);
+    for (i = 0; i < (pcVar1->snap).numClients; i = i + 1) {
+      if (pcVar1->parseClients[(pcVar1->snap).parseClientsNum + i & 0x7ff].clientIndex == index) {
+        src = CS_DisplayName(pcVar1->parseClients + ((pcVar1->snap).parseClientsNum + i & 0x7ff),
+                             -(uint)addClanName & 2 | 1);
+        I_strncpyz(buf,src,size);
+        I_CleanStr(buf);
         return 1;
       }
     }
@@ -98,23 +102,23 @@ int __cdecl CL_GetClientName(int param_1,int param_2,char *param_3,int param_4,b
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_GetClientClanName(int param_1,int param_2,char *param_3,int param_4)
+int __cdecl CL_GetClientClanName(int localClientNum,int index,char *buf,int size)
 
 {
   clientActive_t *pcVar1;
-  char *pcVar2;
-  int local_8;
+  char *src;
+  clientActive_t *cl;
+  clientState_s *pState;
+  int i;
   
-  *param_3 = '\0';
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  *buf = '\0';
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   if ((pcVar1->snap).valid != 0) {
-    for (local_8 = 0; local_8 < (pcVar1->snap).numClients; local_8 = local_8 + 1) {
-      if (pcVar1->parseClients[(pcVar1->snap).parseClientsNum + local_8 & 0x7ff].clientIndex ==
-          param_2) {
-        pcVar2 = CS_DisplayName(pcVar1->parseClients +
-                                ((pcVar1->snap).parseClientsNum + local_8 & 0x7ff),2);
-        I_strncpyz(param_3,pcVar2,param_4);
-        I_CleanStr(param_3);
+    for (i = 0; i < (pcVar1->snap).numClients; i = i + 1) {
+      if (pcVar1->parseClients[(pcVar1->snap).parseClientsNum + i & 0x7ff].clientIndex == index) {
+        src = CS_DisplayName(pcVar1->parseClients + ((pcVar1->snap).parseClientsNum + i & 0x7ff),2);
+        I_strncpyz(buf,src,size);
+        I_CleanStr(buf);
         return 1;
       }
     }
@@ -125,12 +129,12 @@ int __cdecl CL_GetClientClanName(int param_1,int param_2,char *param_3,int param
 
 // 005761F0  CL_LocalClientIsInGame  (client_mp/cl_ui_mp.cpp:815)
 
-int __cdecl CL_LocalClientIsInGame(int param_1)
+int __cdecl CL_LocalClientIsInGame(int localClientNum_2)
 
 {
   connstate_t cVar1;
   
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum_2);
   return (uint)(cVar1 == CA_ACTIVE);
 }
 
@@ -141,15 +145,15 @@ int __cdecl CL_ShutdownUI(void)
 
 {
   int iVar1;
-  undefined4 local_8;
+  int localClientNum;
   
   if (cls.uiStarted == 0) {
     iVar1 = 0;
   }
   else {
     Key_RemoveCatcher(0,-0x11);
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      UI_Shutdown(local_8);
+    for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+      UI_Shutdown(localClientNum);
     }
     cls.uiStarted = 0;
     iVar1 = 1;
@@ -163,16 +167,17 @@ int __cdecl CL_ShutdownUI(void)
 void __cdecl CL_InitUI(void)
 
 {
-  int iVar1;
-  undefined4 local_c;
+  int remoteScreenUpdateNesting_00;
+  int localClientNum;
+  int remoteScreenUpdateNesting;
   
   UI_InitOnceForAllClients();
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    UI_Init(local_c);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    UI_Init(localClientNum);
   }
   cls.uiStarted = 1;
-  iVar1 = R_PopRemoteScreenUpdate();
-  R_PushRemoteScreenUpdate(iVar1);
+  remoteScreenUpdateNesting_00 = R_PopRemoteScreenUpdate();
+  R_PushRemoteScreenUpdate(remoteScreenUpdateNesting_00);
   return;
 }
 

@@ -224,45 +224,45 @@ _HTChunkedDecoder(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 undefined4 FUN_00bd7610(int param_1,undefined4 param_2,int param_3)
 
 {
-  uchar *puVar1;
-  undefined4 uVar2;
+  uchar *buf;
+  undefined4 uVar1;
   undefined4 extraout_EAX;
   
-  puVar1 = (uchar *)_HTChunk_data(*(undefined4 *)(param_1 + 0x28));
+  buf = (uchar *)_HTChunk_data(*(undefined4 *)(param_1 + 0x28));
   if (*(int *)(param_1 + 0x1c) == 0) {
     if (*(int *)(param_1 + 0x10) == 0) {
       if (*(int *)(param_1 + 0x18) == 0) {
-        sprintf((char *)puVar1,"%x%c%c");
+        sprintf((char *)buf,"%x%c%c");
       }
       else {
-        sprintf((char *)puVar1,"%c%c%x%c%c");
+        sprintf((char *)buf,"%c%c%x%c%c");
       }
     }
     else if (*(int *)(param_1 + 0x18) == 0) {
-      sprintf((char *)puVar1,"%x %s %c%c");
+      sprintf((char *)buf,"%x %s %c%c");
     }
     else {
-      sprintf((char *)puVar1,"%c%c%x %s %c%c");
+      sprintf((char *)buf,"%c%c%x %s %c%c");
     }
     *(int *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + param_3;
-    strlen(puVar1);
-    (**(code **)(**(int **)(param_1 + 8) + 0x18))(*(undefined4 *)(param_1 + 8),puVar1,extraout_EAX);
+    strlen(buf);
+    (**(code **)(**(int **)(param_1 + 8) + 0x18))(*(undefined4 *)(param_1 + 8),buf,extraout_EAX);
     if (param_3 < 1) {
       (**(code **)(**(int **)(param_1 + 8) + 0x10))(*(undefined4 *)(param_1 + 8),0xd);
       (**(code **)(**(int **)(param_1 + 8) + 0x10))(*(undefined4 *)(param_1 + 8),10);
       *(undefined4 *)(param_1 + 0x1c) = 1;
       (**(code **)(**(int **)(param_1 + 8) + 4))(*(undefined4 *)(param_1 + 8));
-      uVar2 = 200;
+      uVar1 = 200;
     }
     else {
-      uVar2 = (**(code **)(**(int **)(param_1 + 8) + 0x18))
+      uVar1 = (**(code **)(**(int **)(param_1 + 8) + 0x18))
                         (*(undefined4 *)(param_1 + 8),param_2,param_3);
     }
   }
   else {
-    uVar2 = 200;
+    uVar1 = 200;
   }
-  return uVar2;
+  return uVar1;
 }
 
 

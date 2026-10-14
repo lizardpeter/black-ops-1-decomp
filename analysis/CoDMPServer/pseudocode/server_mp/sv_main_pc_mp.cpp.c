@@ -44,20 +44,20 @@ int __cdecl SV_GetRegion(void)
 
 // 00715F90  SV_SetRegion  (server_mp/sv_main_pc_mp.cpp:185)
 
-void __cdecl SV_SetRegion(int param_1)
+void __cdecl SV_SetRegion(int region)
 
 {
-  s_region = param_1;
+  s_region = region;
   return;
 }
 
 
 // 00715FA0  SV_SetTime  (server_mp/sv_main_pc_mp.cpp:192)
 
-void __cdecl SV_SetTime(int param_1)
+void __cdecl SV_SetTime(int time)
 
 {
-  s_LSGTime = param_1;
+  s_LSGTime = time;
   return;
 }
 
@@ -92,26 +92,25 @@ int __cdecl SV_GetTime(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DWUserDisconnected(ulong64 param_1)
+void __cdecl SV_DWUserDisconnected(ulong64 userID)
 
 {
-  int local_8;
+  int i;
   
   if (svs.clients == (client_t *)0x0) {
     Com_DPrintf(0xf,"Got user disconnected notification, but svs.clients is NULL.\n");
   }
   else {
-    for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-      if ((((2 < *(int *)((int)svs.clients + local_8 * 0x84d00)) &&
-           (*(int *)((int)svs.clients + local_8 * 0x84d00 + 0x63910) == 0)) &&
-          (*(int *)((int)svs.clients + local_8 * 0x84d00 + 0x63914) == 0)) &&
-         ((*(int *)((int)svs.clients + local_8 * 0x84d00 + 0x84cf0) == (int)param_1 &&
-          (*(int *)((int)svs.clients + local_8 * 0x84d00 + 0x84cf4) == param_1._4_4_)))) {
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if ((((2 < *(int *)((int)svs.clients + i * 0x84d00)) &&
+           (*(int *)((int)svs.clients + i * 0x84d00 + 0x63910) == 0)) &&
+          (*(int *)((int)svs.clients + i * 0x84d00 + 0x63914) == 0)) &&
+         ((*(int *)((int)svs.clients + i * 0x84d00 + 0x84cf0) == (int)userID &&
+          (*(int *)((int)svs.clients + i * 0x84d00 + 0x84cf4) == userID._4_4_)))) {
         Com_Printf(0,
                    "Treason uncloaked! User %s is still connected, but the LSG says they\'re gone!\n"
                   );
-        SV_DropClient((client_t *)(local_8 * 0x84d00 + (int)svs.clients),"EXE_DISCONNECTED",true,
-                      true);
+        SV_DropClient((client_t *)(i * 0x84d00 + (int)svs.clients),"EXE_DISCONNECTED",true,true);
         return;
       }
     }
@@ -128,46 +127,47 @@ void __cdecl SV_DWUserDisconnected(ulong64 param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_GetSlotForPasswordIfFree(char *param_1)
+int __cdecl SV_GetSlotForPasswordIfFree(char *password)
 
 {
   int iVar1;
-  char *pcVar2;
-  reservedslot_t *prVar3;
-  int local_c;
+  char *s0;
+  reservedslot_t *s1;
+  int i;
+  int slot;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (s_numslotpasses <= local_c) {
+    if (s_numslotpasses <= i) {
       return -1;
     }
-    iVar1 = I_strcmp(param_1,s_reservedSlots[local_c].pass);
+    iVar1 = I_strcmp(password,s_reservedSlots[i].pass);
     if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  if (s_reservedSlots[local_c].inUse != false) {
-    prVar3 = s_reservedSlots + local_c;
-    pcVar2 = Info_ValueForKey((char *)((int)svs.clients + local_c * 0x84d00 + 0x718),"password");
-    iVar1 = I_strcmp(pcVar2,prVar3->pass);
+  if (s_reservedSlots[i].inUse != false) {
+    s1 = s_reservedSlots + i;
+    s0 = Info_ValueForKey((char *)((int)svs.clients + i * 0x84d00 + 0x718),"password");
+    iVar1 = I_strcmp(s0,s1->pass);
     if (iVar1 == 0) {
       Com_Printf(0xf,"Reserved slot %d in use by %s.\n");
       return -1;
     }
   }
-  s_reservedSlots[local_c].inUse = true;
-  return local_c;
+  s_reservedSlots[i].inUse = true;
+  return i;
 }
 
 
 // 00716200  SV_FreeReservedSlot  (server_mp/sv_main_pc_mp.cpp:283)
 
-void __cdecl SV_FreeReservedSlot(int param_1)
+void __cdecl SV_FreeReservedSlot(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (s_numslotpasses < param_1)) {
+  if ((slot < 0) || (s_numslotpasses < slot)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_pc_mp.cpp",0x11c
                              ,0,"%s");
     if (!bVar2) {
@@ -176,7 +176,7 @@ void __cdecl SV_FreeReservedSlot(int param_1)
       return;
     }
   }
-  if (s_reservedSlots[param_1].inUse == false) {
+  if (s_reservedSlots[slot].inUse == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_pc_mp.cpp",0x11d
                              ,0,"%s");
     if (!bVar2) {
@@ -185,8 +185,8 @@ void __cdecl SV_FreeReservedSlot(int param_1)
       return;
     }
   }
-  if ((-1 < param_1) && (param_1 <= s_numslotpasses)) {
-    s_reservedSlots[param_1].inUse = false;
+  if ((-1 < slot) && (slot <= s_numslotpasses)) {
+    s_reservedSlots[slot].inUse = false;
   }
   return;
 }
@@ -200,15 +200,16 @@ void __cdecl SV_FreeReservedSlot(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DropClientForReservedSlot(char *param_1)
+int __cdecl SV_DropClientForReservedSlot(char *password)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
+  int slot;
   
-  uVar3 = SV_GetSlotForPasswordIfFree(param_1);
+  uVar3 = SV_GetSlotForPasswordIfFree(password);
   bVar2 = Demo_IsEnabled();
   if ((bVar2) && (uVar3 == 0)) {
     Com_DPrintf(0xf,"Reserved slot 0 can not be used when film recording is enabled.\n");
@@ -235,26 +236,28 @@ int __cdecl SV_DropClientForReservedSlot(char *param_1)
 void __cdecl SV_ReadWhiteListfile(void)
 
 {
-  _iobuf *p_Var1;
-  int iVar2;
+  _iobuf *stream;
+  int iVar1;
   undefined1 *extraout_EAX;
-  int local_8;
+  char *p;
+  _iobuf *fp;
+  int i;
   
-  local_8 = 0;
-  p_Var1 = fopen("reservedslots.txt","r");
-  if (p_Var1 != (_iobuf *)0x0) {
+  i = 0;
+  stream = fopen("reservedslots.txt","r");
+  if (stream != (_iobuf *)0x0) {
     while( true ) {
-      iVar2 = feof(p_Var1);
-      if (((iVar2 != 0) || ((sv_numreservedslots->current).integer <= local_8)) ||
-         ((com_maxclients->current).integer <= local_8)) break;
-      fgets(s_reservedSlots[local_8].pass,0x18,p_Var1);
-      strchr((uchar *)(s_reservedSlots + local_8),'\n');
+      iVar1 = feof(stream);
+      if (((iVar1 != 0) || ((sv_numreservedslots->current).integer <= i)) ||
+         ((com_maxclients->current).integer <= i)) break;
+      fgets(s_reservedSlots[i].pass,0x18,stream);
+      strchr((uchar *)(s_reservedSlots + i),'\n');
       if (extraout_EAX != (undefined1 *)0x0) {
         *extraout_EAX = 0;
       }
-      local_8 = local_8 + 1;
+      i = i + 1;
     }
-    s_numslotpasses = local_8;
+    s_numslotpasses = i;
   }
   Com_DPrintf(0xf,"Parsed %i reserved slot passwords\n");
   return;
@@ -263,14 +266,14 @@ void __cdecl SV_ReadWhiteListfile(void)
 
 // 00716350  SV_SetLicenseType  (server_mp/sv_main_pc_mp.cpp:345)
 
-void __cdecl SV_SetLicenseType(int param_1)
+void __cdecl SV_SetLicenseType(int licensetype)
 
 {
-  if (param_1 == 5) {
+  if (licensetype == 5) {
     Com_Error(ERR_FATAL,"Incorrect licensetype for server!\n");
   }
   else {
-    s_licensetype = param_1;
+    s_licensetype = licensetype;
   }
   return;
 }
@@ -340,23 +343,23 @@ uint __cdecl SV_GetClientCount(void)
 
 {
   pregameStateEnum pVar1;
-  int local_c;
-  uint local_8;
+  int i;
+  uint clientCount;
   
-  local_8 = 0;
+  clientCount = 0;
   if ((com_sv_running != (dvar_s *)0x0) && ((com_sv_running->current).enabled != false)) {
     if ((xblive_wagermatch != (dvar_s *)0x0) &&
        (((xblive_wagermatch->current).enabled != false &&
         (pVar1 = Pregame_GetState(), pVar1 == PREGAME_GAMESTARTED)))) {
-      return (sv_maxclients->current).integer;
+      return (sv_maxclients->current).unsignedInt;
     }
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if (2 < *(int *)((int)svs.clients + local_c * 0x84d00)) {
-        local_8 = local_8 + 1;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (2 < *(int *)((int)svs.clients + i * 0x84d00)) {
+        clientCount = clientCount + 1;
       }
     }
   }
-  return local_8;
+  return clientCount;
 }
 
 
@@ -372,7 +375,7 @@ bool __cdecl SV_HasInfoChanged(void)
   int iVar2;
   int iVar3;
   uint uVar4;
-  bool local_5;
+  bool retval;
   
   iVar2 = I_strcmp(g_matchmakingInfo->m_membermapname,(sv_mapname->current).string);
   if (iVar2 != 0) {
@@ -382,16 +385,16 @@ bool __cdecl SV_HasInfoChanged(void)
   if (iVar3 != 0) {
     I_strncpyz(g_matchmakingInfo->m_memberservername,(sv_hostname->current).string,0x40);
   }
-  local_5 = iVar3 != 0 || iVar2 != 0;
+  retval = iVar3 != 0 || iVar2 != 0;
   if ((sv_maxclients->current).integer != g_matchmakingInfo->_padding_) {
     g_matchmakingInfo->_padding_ = (sv_maxclients->current).integer;
-    local_5 = true;
+    retval = true;
   }
   uVar4 = Com_GametypeToInt((g_gametype->current).string);
   if (uVar4 != g_matchmakingInfo->m_memberGAME_TYPE) {
     uVar4 = Com_GametypeToInt((g_gametype->current).string);
     g_matchmakingInfo->m_memberGAME_TYPE = uVar4;
-    local_5 = true;
+    retval = true;
   }
   bVar1 = LiveStorage_DoWeHavePlaylists();
   if (bVar1) {
@@ -399,12 +402,12 @@ bool __cdecl SV_HasInfoChanged(void)
     if (g_matchmakingInfo->m_memberPLAYLIST_VERSION != iVar2) {
       iVar2 = Playlist_GetVersionNumber();
       g_matchmakingInfo->m_memberPLAYLIST_VERSION = iVar2;
-      local_5 = true;
+      retval = true;
     }
     if ((playlist != (dvar_s *)0x0) &&
        (g_matchmakingInfo->m_memberPLAYLIST != (playlist->current).integer)) {
       g_matchmakingInfo->m_memberPLAYLIST = (playlist->current).integer;
-      local_5 = true;
+      retval = true;
     }
   }
   switch(g_matchmakingInfo->m_memberserverType) {
@@ -413,7 +416,7 @@ bool __cdecl SV_HasInfoChanged(void)
     bVar1 = SV_IsWagerServer();
     if (bVar1) {
       g_matchmakingInfo->m_memberserverType = 2;
-      local_5 = true;
+      retval = true;
     }
     break;
   case 2:
@@ -422,7 +425,7 @@ bool __cdecl SV_HasInfoChanged(void)
       iVar2 = SV_GetLicenseType();
       bVar1 = SV_IsServerRanked(iVar2);
       g_matchmakingInfo->m_memberserverType = (uint)bVar1;
-      local_5 = true;
+      retval = true;
     }
     break;
   default:
@@ -437,15 +440,15 @@ bool __cdecl SV_HasInfoChanged(void)
       bVar1 = SV_IsServerRanked(iVar2);
       g_matchmakingInfo->m_memberserverType = (uint)bVar1;
     }
-    local_5 = true;
+    retval = true;
   }
-  return local_5;
+  return retval;
 }
 
 
 // 007167B0  SV_IsServerRanked  (server_mp/sv_main_pc_mp.cpp:528)
 
-bool __cdecl SV_IsServerRanked(int param_1)
+bool __cdecl SV_IsServerRanked(int licensetype)
 
 {
   bool bVar1;
@@ -454,7 +457,7 @@ bool __cdecl SV_IsServerRanked(int param_1)
   if (bVar1) {
     bVar1 = false;
   }
-  else if ((param_1 == 4) || (param_1 == 2)) {
+  else if ((licensetype == 4) || (licensetype == 2)) {
     bVar1 = true;
   }
   else {
@@ -493,54 +496,55 @@ void __cdecl SV_QuitIfNeeded(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_MasterHeartbeat(int param_1,char *param_2)
+void __cdecl SV_MasterHeartbeat(int controllerIndex,char *hbname)
 
 {
-  netadr_t nVar1;
-  bool bVar2;
-  int iVar3;
-  uint uVar4;
-  ddlDef_t *pdVar5;
+  netadr_t adr;
+  bool bVar1;
+  int iVar2;
+  uint uVar3;
+  ddlDef_t *pdVar4;
   bdTrulyRandomImpl *this;
-  bdSecurityID *pbVar6;
-  bdStatus bVar7;
-  taskCompleteResults tVar8;
-  int iVar9;
-  bdSessionID *pbVar10;
-  bdReference<bdRemoteTask> bVar11;
+  bdSecurityID *pbVar5;
+  bdStatus bVar6;
+  taskCompleteResults tVar7;
+  int iVar8;
+  bdSessionID *pbVar9;
+  bdReference<bdRemoteTask> bVar10;
+  undefined1 uVar11;
   undefined1 uVar12;
-  undefined1 uVar13;
-  undefined2 uVar14;
+  undefined2 uVar13;
   undefined1 local_19c [4];
-  undefined1 local_198 [8];
-  int local_190;
-  bdMatchMaking *local_18c;
-  bdMatchMaking *local_188;
-  int local_184;
-  uint local_180;
-  undefined4 local_17c [64];
-  char local_7c;
+  undefined1 local_198 [4];
+  client_t *cl;
+  int i_2;
+  bdMatchMaking *matchmaking_2;
+  bdMatchMaking *matchmaking;
+  int i;
+  uint notifyCount;
+  undefined4 toNotify [64];
+  char tmp;
   uchar local_7b [67];
-  bdQoSProbe *local_38;
-  bdSecurityKey local_34;
-  taskCompleteResults local_24;
-  bdSecurityKey local_20;
+  bdQoSProbe *qosProbe;
+  bdSecurityKey seckey;
+  taskCompleteResults result;
+  bdSecurityKey secKey;
   uint local_10;
-  bdQoSProbe *local_c;
-  char local_5;
+  bdQoSProbe *qosprobe;
+  bool forceSessionUpdate;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = G_ExitAfterToolComplete();
-  if (bVar2) {
+  bVar1 = G_ExitAfterToolComplete();
+  if (bVar1) {
     return;
   }
-  local_5 = '\0';
+  forceSessionUpdate = false;
   if (sv_authenticating == (dvar_s *)0x0) {
     sv_authenticating = _Dvar_RegisterBool("sv_authenticating",false,0x40,"");
   }
   if (sessionCreateFinished != false) {
-    local_c = dwGetQoSProbe();
-    bdQoSProbe::pump(local_c);
+    qosprobe = dwGetQoSProbe();
+    bdQoSProbe::pump(qosprobe);
   }
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;
@@ -548,48 +552,48 @@ void __cdecl SV_MasterHeartbeat(int param_1,char *param_2)
   }
   if (g_svdedicatedauthstate != SV_DWAUTHORIZED) goto LAB_00716e61;
   LiveStorage_CheckOngoingSessionTasks();
-  if ((sessionCreated == false) && (iVar3 = Sys_Milliseconds(), s_dwBackOff < iVar3 - lastdwattempt)
+  if ((sessionCreated == false) && (iVar2 = Sys_Milliseconds(), s_dwBackOff < iVar2 - lastdwattempt)
      ) {
     lastdwattempt = Sys_Milliseconds();
     createSessionTask = TaskManager_GetOpenTaskSlot(overlappedTasks,0,2);
     g_matchmakingInfo->m_memberNETCODE_VERSION = 0x414;
-    bVar2 = SV_IsWagerServer();
-    if (bVar2) {
+    bVar1 = SV_IsWagerServer();
+    if (bVar1) {
       g_matchmakingInfo->m_memberserverType = 2;
     }
     else {
-      iVar3 = SV_GetLicenseType();
-      bVar2 = SV_IsServerRanked(iVar3);
-      g_matchmakingInfo->m_memberserverType = (uint)bVar2;
+      iVar2 = SV_GetLicenseType();
+      bVar1 = SV_IsServerRanked(iVar2);
+      g_matchmakingInfo->m_memberserverType = (uint)bVar1;
     }
     I_strncpyz(g_matchmakingInfo->m_membermapname,(sv_mapname->current).string,0x20);
     I_strncpyz(g_matchmakingInfo->m_memberservername,(sv_hostname->current).string,0x40);
-    uVar4 = Com_GametypeToInt((g_gametype->current).string);
-    g_matchmakingInfo->m_memberGAME_TYPE = uVar4;
+    uVar3 = Com_GametypeToInt((g_gametype->current).string);
+    g_matchmakingInfo->m_memberGAME_TYPE = uVar3;
     g_matchmakingInfo->_padding_ = (sv_maxclients->current).integer;
-    uVar4 = SV_GetLicenseType();
-    g_matchmakingInfo->m_memberLICENSE = uVar4;
-    bVar2 = Dvar_GetBool("sv_nocacvalidate");
-    if (bVar2) {
-      pdVar5 = LiveStats_GetStatsDDL();
-      g_matchmakingInfo->m_memberDDL_VERSION = pdVar5->version + 100;
+    uVar3 = SV_GetLicenseType();
+    g_matchmakingInfo->m_memberLICENSE = uVar3;
+    bVar1 = Dvar_GetBool("sv_nocacvalidate");
+    if (bVar1) {
+      pdVar4 = LiveStats_GetStatsDDL();
+      g_matchmakingInfo->m_memberDDL_VERSION = pdVar4->version + 100;
     }
     else {
-      pdVar5 = LiveStats_GetStatsDDL();
-      g_matchmakingInfo->m_memberDDL_VERSION = pdVar5->version;
+      pdVar4 = LiveStats_GetStatsDDL();
+      g_matchmakingInfo->m_memberDDL_VERSION = pdVar4->version;
     }
-    bdSecurityKey::bdSecurityKey(&local_20);
-    uVar4 = 0x10;
-    uVar12 = SUB41(&local_20,0);
-    uVar13 = (undefined1)((uint)&local_20 >> 8);
-    uVar14 = (undefined2)((uint)&local_20 >> 0x10);
+    bdSecurityKey::bdSecurityKey(&secKey);
+    uVar3 = 0x10;
+    uVar11 = SUB41(&secKey,0);
+    uVar12 = (undefined1)((uint)&secKey >> 8);
+    uVar13 = (undefined2)((uint)&secKey >> 0x10);
     this = bdSingleton<bdTrulyRandomImpl>::getInstance();
-    bdTrulyRandomImpl::getRandomUByte8(this,(uchar *)CONCAT22(uVar14,CONCAT11(uVar13,uVar12)),uVar4)
+    bdTrulyRandomImpl::getRandomUByte8(this,(uchar *)CONCAT22(uVar13,CONCAT11(uVar12,uVar11)),uVar3)
     ;
-    MatchMakingInfo::setSessionKey(g_matchmakingInfo,&local_20);
+    MatchMakingInfo::setSessionKey(g_matchmakingInfo,&secKey);
     dwGetOnlineUserID(0,&g_matchmakingInfo->m_memberdemonwareID);
-    iVar3 = SV_GetRegion();
-    g_matchmakingInfo->m_memberGEOGRAPHICAL_LOCATION = iVar3;
+    iVar2 = SV_GetRegion();
+    g_matchmakingInfo->m_memberGEOGRAPHICAL_LOCATION = iVar2;
     dwCreateSession(createSessionTask,g_matchmakingInfo);
     sessionCreated = true;
     sessionCreateFinished = false;
@@ -597,47 +601,47 @@ void __cdecl SV_MasterHeartbeat(int param_1,char *param_2)
     SV_ReadWhiteListfile();
   }
   else if (sessionCreateFinished == false) {
-    local_24 = dwCreateSessionComplete(createSessionTask);
-    if (local_24 == TASK_COMPLETE) {
+    result = dwCreateSessionComplete(createSessionTask);
+    if (result == TASK_COMPLETE) {
       Com_Printf(0,"Session creation complete!\n");
       sessionCreateFinished = true;
       Dvar_SetBool(sv_dwlsgerror,false);
       lastdwattempt = 0;
       s_dwBackOff = 2000;
-      local_38 = dwGetQoSProbe();
-      local_7c = '\0';
+      qosProbe = dwGetQoSProbe();
+      tmp = '\0';
       memset(local_7b,'\0',0x3f);
-      bdSecurityKey::bdSecurityKey(&local_34);
-      uVar4 = 0x24;
-      uVar12 = SUB41(&local_7c,0);
-      uVar13 = (undefined1)((uint)&local_7c >> 8);
-      uVar14 = (undefined2)((uint)&local_7c >> 0x10);
-      pbVar6 = dwGetSessionSecID();
-      bdSecurityInfo::toString(pbVar6,(char *)CONCAT22(uVar14,CONCAT11(uVar13,uVar12)),uVar4);
+      bdSecurityKey::bdSecurityKey(&seckey);
+      uVar3 = 0x24;
+      uVar11 = SUB41(&tmp,0);
+      uVar12 = (undefined1)((uint)&tmp >> 8);
+      uVar13 = (undefined2)((uint)&tmp >> 0x10);
+      pbVar5 = dwGetSessionSecID();
+      bdSecurityInfo::toString(pbVar5,(char *)CONCAT22(uVar13,CONCAT11(uVar12,uVar11)),uVar3);
       Com_Printf(0,"listening for secid %s\n");
-      MatchMakingInfo::getSessionKey(g_matchmakingInfo,&local_34);
-      bdSecurityInfo::toString(&local_34,&local_7c,0x24);
+      MatchMakingInfo::getSessionKey(g_matchmakingInfo,&seckey);
+      bdSecurityInfo::toString(&seckey,&tmp,0x24);
       Com_Printf(0,"listening for seckey %s\n");
-      if (local_38 == (bdQoSProbe *)0x0) {
+      if (qosProbe == (bdQoSProbe *)0x0) {
 LAB_00716b81:
         SV_QuitIfNeeded();
       }
       else {
-        uVar4 = 0;
+        uVar3 = 0;
+        uVar11 = 0;
         uVar12 = 0;
         uVar13 = 0;
-        uVar14 = 0;
-        pbVar6 = dwGetSessionSecID();
-        bVar2 = bdQoSProbe::listen(local_38,pbVar6,(uchar *)CONCAT22(uVar14,CONCAT11(uVar13,uVar12))
-                                   ,uVar4);
-        if (!bVar2) goto LAB_00716b81;
+        pbVar5 = dwGetSessionSecID();
+        bVar1 = bdQoSProbe::listen(qosProbe,pbVar5,(uchar *)CONCAT22(uVar13,CONCAT11(uVar12,uVar11))
+                                   ,uVar3);
+        if (!bVar1) goto LAB_00716b81;
         Com_Printf(0,"Qos listener started\n");
       }
       LiveCounter_Init();
       LiveCounter_SetupCounters();
       s_lastDwGoodUpdate = Sys_Milliseconds();
     }
-    else if (local_24 == TASK_ERROR) {
+    else if (result == TASK_ERROR) {
       SV_QuitIfNeeded();
       sessionCreated = false;
       sessionCreateFinished = true;
@@ -645,24 +649,24 @@ LAB_00716b81:
     }
   }
   if ((outstandingnotifyjoin != false) &&
-     (bVar7 = bdRemoteTask::getStatus(notifyJoinTask), bVar7 != BD_PENDING)) {
+     (bVar6 = bdRemoteTask::getStatus(notifyJoinTask), bVar6 != BD_PENDING)) {
     Com_Printf(0,"SERVER: notifyjoin complete!\n");
     outstandingnotifyjoin = false;
   }
   if ((outstandingnotifyleave != false) &&
-     (bVar7 = bdRemoteTask::getStatus(notifyLeaveTask), bVar7 != BD_PENDING)) {
+     (bVar6 = bdRemoteTask::getStatus(notifyLeaveTask), bVar6 != BD_PENDING)) {
     Com_Printf(0,"SERVER: notifyleave complete!\n");
     outstandingnotifyleave = false;
   }
   if (sessionCreateFinished != false) {
-    local_5 = SV_HasInfoChanged();
+    forceSessionUpdate = SV_HasInfoChanged();
   }
   if ((updateSessionTask == (overlappedTask *)0x0) &&
      ((180000 < svs.time - sessionupdatetimer ||
-      ((local_5 != '\0' && (sessionCreateFinished != false)))))) {
+      ((forceSessionUpdate != false && (sessionCreateFinished != false)))))) {
     updateSessionTask = TaskManager_GetOpenTaskSlot(overlappedTasks,0,4);
     dwUpdateSession(updateSessionTask,g_matchmakingInfo);
-    if (local_5 == '\0') {
+    if (forceSessionUpdate == false) {
       Com_Printf(0,"Server: Updating session (%ims)\n");
     }
     else {
@@ -670,16 +674,16 @@ LAB_00716b81:
     }
     sessionupdatetimer = svs.time;
     sessionupdatehangtimer = svs.time;
-    local_5 = '\0';
+    forceSessionUpdate = false;
     lastdwattempt = Sys_Milliseconds();
   }
   if (updateSessionTask != (overlappedTask *)0x0) {
     Com_Printf(0,".");
     if (svs.time - sessionupdatehangtimer < 0x2711) {
-      tVar8 = dwUpdateSessionComplete(updateSessionTask);
-      if (tVar8 != TASK_NOTCOMPLETE) {
-        tVar8 = dwUpdateSessionComplete(updateSessionTask);
-        if (tVar8 == TASK_COMPLETE) {
+      tVar7 = dwUpdateSessionComplete(updateSessionTask);
+      if (tVar7 != TASK_NOTCOMPLETE) {
+        tVar7 = dwUpdateSessionComplete(updateSessionTask);
+        if (tVar7 == TASK_COMPLETE) {
           Com_Printf(0,"Server: Session updated - %ims\n");
           Dvar_SetBool(sv_dwlsgerror,false);
           s_lastDwGoodUpdate = Sys_Milliseconds();
@@ -707,7 +711,7 @@ LAB_00716b81:
 LAB_00716e61:
   if ((((sv_dwlsgerror->current).enabled != false) &&
       ((sv_authenticating->current).enabled == false)) &&
-     (iVar3 = Sys_Milliseconds(), 1200000 < iVar3 - s_lastConnectAttempt)) {
+     (iVar2 = Sys_Milliseconds(), 1200000 < iVar2 - s_lastConnectAttempt)) {
     Com_Printf(0,
                "\n************************\n************************\nRECREATING SESSION\n************************\n"
               );
@@ -722,7 +726,7 @@ LAB_00716e61:
   }
   if ((sv_authenticating->current).enabled != false) {
     if (g_svdedicatedauthstate == SV_DWAUTHORIZING) {
-      DW_DedicatedLogonComplete(param_1,svs.time);
+      DW_DedicatedLogonComplete(controllerIndex,svs.time);
     }
     if (g_svdedicatedauthstate == SV_DWAUTHORIZED) {
       Dvar_SetBool(sv_authenticating,false);
@@ -738,17 +742,17 @@ LAB_00716e61:
       }
       else {
         Dvar_SetBool(sv_authenticating,false);
-        iVar3 = Sys_Milliseconds();
-        s_lastConnectAttempt = iVar3 + 1200000;
+        iVar2 = Sys_Milliseconds();
+        s_lastConnectAttempt = iVar2 + 1200000;
       }
     }
   }
   if (((playlist_enabled != (dvar_s *)0x0) && ((playlist_enabled->current).enabled != false)) &&
-     ((bVar2 = LiveStorage_DoWeHavePlaylists(), bVar2 && (sv_playlistFetchInterval != (dvar_s *)0x0)
+     ((bVar1 = LiveStorage_DoWeHavePlaylists(), bVar1 && (sv_playlistFetchInterval != (dvar_s *)0x0)
       ))) {
-    iVar3 = Sys_Milliseconds();
-    iVar9 = SV_GetPlaylistFetchedTime();
-    if ((sv_playlistFetchInterval->current).integer * 1000 < iVar3 - iVar9) {
+    iVar2 = Sys_Milliseconds();
+    iVar8 = SV_GetPlaylistFetchedTime();
+    if ((sv_playlistFetchInterval->current).integer * 1000 < iVar2 - iVar8) {
       Sys_Milliseconds();
       SV_GetPlaylistFetchedTime();
       Com_Printf(0xf,"It\'s been %i seconds, fetching playlists\n");
@@ -759,50 +763,49 @@ LAB_00716e61:
   }
   if (svs.nextHeartbeatTime <= svs.time) {
     svs.nextHeartbeatTime = svs.time + 10000;
-    local_180 = 0;
-    for (local_184 = 0; local_184 < (com_maxclients->current).integer; local_184 = local_184 + 1) {
-      if (((2 < *(int *)((int)svs.clients + local_184 * 0x84d00)) &&
-          (*(int *)((int)svs.clients + local_184 * 0x84d00 + 0x63910) == 0)) &&
-         ((*(int *)((int)svs.clients + local_184 * 0x84d00 + 0x63914) == 0 &&
-          (*(int *)((int)svs.clients + local_184 * 0x84d00 + 0x84cf8) != 0)))) {
-        local_17c[local_180 * 2] = *(undefined4 *)((int)svs.clients + local_184 * 0x84d00 + 0x84cf0)
-        ;
-        local_17c[local_180 * 2 + 1] =
-             *(undefined4 *)((int)svs.clients + local_184 * 0x84d00 + 0x84cf4);
-        local_180 = local_180 + 1;
-        *(undefined4 *)((int)svs.clients + local_184 * 0x84d00 + 0x84cf8) = 0;
+    notifyCount = 0;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (((2 < *(int *)((int)svs.clients + i * 0x84d00)) &&
+          (*(int *)((int)svs.clients + i * 0x84d00 + 0x63910) == 0)) &&
+         ((*(int *)((int)svs.clients + i * 0x84d00 + 0x63914) == 0 &&
+          (*(int *)((int)svs.clients + i * 0x84d00 + 0x84cf8) != 0)))) {
+        toNotify[notifyCount * 2] = *(undefined4 *)((int)svs.clients + i * 0x84d00 + 0x84cf0);
+        toNotify[notifyCount * 2 + 1] = *(undefined4 *)((int)svs.clients + i * 0x84d00 + 0x84cf4);
+        notifyCount = notifyCount + 1;
+        *(undefined4 *)((int)svs.clients + i * 0x84d00 + 0x84cf8) = 0;
       }
     }
-    if ((local_180 != 0) && (local_188 = dwGetMatchmaking(0), local_188 != (bdMatchMaking *)0x0)) {
+    if ((notifyCount != 0) &&
+       (matchmaking = dwGetMatchmaking(0), matchmaking != (bdMatchMaking *)0x0)) {
       Com_Printf(0,"Server: Starting notifyjoin for %u clients\n");
-      uVar12 = SUB41(local_17c,0);
-      uVar13 = (undefined1)((uint)local_17c >> 8);
-      uVar14 = (undefined2)((uint)local_17c >> 0x10);
-      pbVar10 = dwGetSessionID();
-      bVar11 = bdMatchMaking::notifyJoin
-                         (local_188,(bdSessionID *)local_198,(__uint64 *)pbVar10,
-                          CONCAT22(uVar14,CONCAT11(uVar13,uVar12)));
-      notifyJoinTask = (bdRemoteTask *)(bVar11.m_ptr)->_padding_;
+      uVar11 = SUB41(toNotify,0);
+      uVar12 = (undefined1)((uint)toNotify >> 8);
+      uVar13 = (undefined2)((uint)toNotify >> 0x10);
+      pbVar9 = dwGetSessionID();
+      bVar10 = bdMatchMaking::notifyJoin
+                         (matchmaking,(bdSessionID *)local_198,(__uint64 *)pbVar9,
+                          CONCAT22(uVar13,CONCAT11(uVar12,uVar11)));
+      notifyJoinTask = (bdRemoteTask *)(bVar10.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_198);
       outstandingnotifyjoin = true;
     }
     if ((int)g_notifyLeave[0] != 0 || g_notifyLeave[0]._4_4_ != 0) {
-      local_180 = 0;
-      while ((local_180 < 0x20 &&
-             ((int)g_notifyLeave[local_180] != 0 ||
-              *(int *)((int)g_notifyLeave + local_180 * 8 + 4) != 0))) {
-        local_180 = local_180 + 1;
+      notifyCount = 0;
+      while ((notifyCount < 0x20 &&
+             ((int)g_notifyLeave[notifyCount] != 0 ||
+              *(int *)((int)g_notifyLeave + notifyCount * 8 + 4) != 0))) {
+        notifyCount = notifyCount + 1;
       }
-      local_18c = dwGetMatchmaking(0);
-      if (local_18c != (bdMatchMaking *)0x0) {
-        uVar12 = 0xd8;
-        uVar13 = 0xfb;
-        uVar14 = 0x987;
-        pbVar10 = dwGetSessionID();
-        bVar11 = bdMatchMaking::notifyLeave
-                           (local_18c,(bdSessionID *)local_19c,(__uint64 *)pbVar10,
-                            CONCAT22(uVar14,CONCAT11(uVar13,uVar12)));
-        notifyLeaveTask = (bdRemoteTask *)(bVar11.m_ptr)->_padding_;
+      matchmaking_2 = dwGetMatchmaking(0);
+      if (matchmaking_2 != (bdMatchMaking *)0x0) {
+        uVar11 = 0xd8;
+        uVar12 = 0xfb;
+        uVar13 = 0x987;
+        pbVar9 = dwGetSessionID();
+        bVar10 = bdMatchMaking::notifyLeave
+                           (matchmaking_2,(bdSessionID *)local_19c,(__uint64 *)pbVar9,
+                            CONCAT22(uVar13,CONCAT11(uVar12,uVar11)));
+        notifyLeaveTask = (bdRemoteTask *)(bVar10.m_ptr)->_padding_;
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
                   ((bdReference<bdByteBuffer> *)local_19c);
         outstandingnotifyleave = true;
@@ -810,27 +813,24 @@ LAB_00716e61:
       }
     }
     if ((live_service != (dvar_s *)0x0) && ((live_service->current).enabled != false)) {
-      for (local_190 = 0; local_190 < (com_maxclients->current).integer; local_190 = local_190 + 1)
-      {
-        local_198._4_4_ = local_190 * 0x84d00 + (int)svs.clients;
-        if ((((((client_t *)local_198._4_4_)->lastConnectTime != 0) &&
-             (*(int *)(((client_t *)(local_198._4_4_ + 0x84210))->userinfo + 0x3d4) != 0)) &&
-            ((((client_t *)local_198._4_4_)->header).sendAsActive != 0)) &&
+      for (i_2 = 0; i_2 < (com_maxclients->current).integer; i_2 = i_2 + 1) {
+        cl = (client_t *)(i_2 * 0x84d00 + (int)svs.clients);
+        if ((((cl->lastConnectTime != 0) && (*(int *)(cl[1].userinfo + 0x3d4) != 0)) &&
+            ((cl->header).sendAsActive != 0)) &&
            (Com_DPrintf(0xf,"Still waiting for challengeresponse from client %s\n"),
-           60000 < svs.time - *(int *)(local_198._4_4_ + 0x5764))) {
+           60000 < svs.time - cl->lastConnectTime)) {
           Com_DPrintf(0xf,
                       "DWCHALLENGERESPONSE: Dropping client %s because it\'s been %i msec and we\'ve had no challengeresponse\n"
                      );
-          if (((clientHeader_t *)local_198._4_4_)->state == 5) {
-            SV_DropClient((client_t *)local_198._4_4_,"EXE_BAD_CHALLENGE",true,true);
+          if ((cl->header).state == 5) {
+            SV_DropClient(cl,"EXE_BAD_CHALLENGE",true,true);
           }
           else {
-            iVar3 = (((clientHeader_t *)local_198._4_4_)->netchan).remoteAddress.addrHandleIndex;
-            nVar1.addrHandleIndex._1_1_ = (char)((uint)iVar3 >> 8);
-            nVar1._0_13_ = *(undefined1 (*) [13])
-                            &(((clientHeader_t *)local_198._4_4_)->netchan).remoteAddress;
-            nVar1.addrHandleIndex._2_2_ = (short)((uint)iVar3 >> 0x10);
-            NET_OutOfBandPrint(NS_MAXCLIENTS,nVar1,"error\nEXE_BAD_CHALLENGE");
+            iVar2 = (cl->header).netchan.remoteAddress.addrHandleIndex;
+            adr.addrHandleIndex._1_1_ = (char)((uint)iVar2 >> 8);
+            adr._0_13_ = *(undefined1 (*) [13])&(cl->header).netchan.remoteAddress;
+            adr.addrHandleIndex._2_2_ = (short)((uint)iVar2 >> 0x10);
+            NET_OutOfBandPrint(NS_MAXCLIENTS,adr,"error\nEXE_BAD_CHALLENGE");
           }
         }
       }
@@ -849,36 +849,38 @@ LAB_00716e61:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_FlushRedirect(char *param_1)
+void __cdecl SV_FlushRedirect(char *outputbuf)
 
 {
   char cVar1;
   char *local_4a8;
-  undefined1 local_49c;
+  char c;
+  int RedirectFragmentSize;
+  undefined1 buf;
   char local_49b [1167];
   uint local_c;
-  int local_8;
+  int len;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4a8 = param_1;
+  local_4a8 = outputbuf;
   do {
     cVar1 = *local_4a8;
     local_4a8 = local_4a8 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_4a8 - (int)(param_1 + 1);
-  while (0x484 < local_8) {
-    cVar1 = param_1[0x484];
-    param_1[0x484] = '\0';
-    local_49c = 1;
+  len = (int)local_4a8 - (int)(outputbuf + 1);
+  while (0x484 < len) {
+    cVar1 = outputbuf[0x484];
+    outputbuf[0x484] = '\0';
+    buf = 1;
     Com_sprintf(local_49b,0x48b,"print\n%s");
-    dwRawSendTo(&svs.redirectAddress,&local_49c,0x48c);
-    local_8 = local_8 + -0x484;
-    param_1 = param_1 + 0x484;
-    *param_1 = cVar1;
+    dwRawSendTo(&svs.redirectAddress,&buf,0x48c);
+    len = len + -0x484;
+    outputbuf = outputbuf + 0x484;
+    *outputbuf = cVar1;
   }
-  local_49c = 1;
+  buf = 1;
   Com_sprintf(local_49b,0x48b,"print\n%s");
-  dwRawSendTo(&svs.redirectAddress,&local_49c,0x48c);
+  dwRawSendTo(&svs.redirectAddress,&buf,0x48c);
   return;
 }
 
@@ -892,50 +894,50 @@ void __cdecl SV_FlushRedirect(char *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SVC_RemoteCommand(netadr_t param_1,msg_t *param_2)
+void __cdecl SVC_RemoteCommand(netadr_t from,msg_t *msg)
 
 {
   byte bVar1;
   int iVar2;
-  char *pcVar3;
-  bool bVar4;
-  char *pcVar5;
-  int iVar6;
-  int iVar7;
+  char *add;
+  bool bVar3;
+  char *msg_00;
+  int maxlen_00;
+  int mayAddQuotes;
   int local_c20;
   byte *local_c18;
   byte *local_c14;
-  int local_c10;
-  char local_c0c [1024];
-  char local_80c [2032];
-  int local_1c;
-  int local_18;
-  byte *local_14;
-  int local_10;
-  int local_c;
+  int maxlen;
+  char remaining [1024];
+  char sv_outputbuf [2032];
+  int valid;
+  int len;
+  char *password;
+  int time;
+  int i;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = Sys_Milliseconds();
-  if ((lasttime != 0) && (local_10 - lasttime < 500)) {
+  time = Sys_Milliseconds();
+  if ((lasttime != 0) && (time - lasttime < 500)) {
     return;
   }
-  lasttime = local_10;
-  local_14 = (byte *)SV_Cmd_Argv(1);
+  lasttime = time;
+  password = SV_Cmd_Argv(1);
   if (*(rcon_password->current).string != '\0') {
     local_c14 = (byte *)(rcon_password->current).string;
-    local_c18 = local_14;
+    local_c18 = (byte *)password;
     do {
       bVar1 = *local_c18;
-      bVar4 = bVar1 < *local_c14;
+      bVar3 = bVar1 < *local_c14;
       if (bVar1 != *local_c14) {
 LAB_00717799:
-        local_c20 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
+        local_c20 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
         goto LAB_007177a4;
       }
       if (bVar1 == 0) break;
       bVar1 = local_c18[1];
-      bVar4 = bVar1 < local_c14[1];
+      bVar3 = bVar1 < local_c14[1];
       if (bVar1 != local_c14[1]) goto LAB_00717799;
       local_c18 = local_c18 + 2;
       local_c14 = local_c14 + 2;
@@ -943,32 +945,32 @@ LAB_00717799:
     local_c20 = 0;
 LAB_007177a4:
     if (local_c20 == 0) {
-      local_1c = 1;
+      valid = 1;
       SV_Cmd_Argv(2);
-      NET_AdrToStringDW(param_1);
+      NET_AdrToStringDW(from);
       Com_Printf(0xf,"Rcon from %s:\n%s\n");
       goto LAB_00717847;
     }
   }
-  local_1c = 0;
+  valid = 0;
   SV_Cmd_Argv(2);
-  NET_AdrToStringDW(param_1);
+  NET_AdrToStringDW(from);
   Com_Printf(0xf,"Bad rcon from %s:\n%s\n");
 LAB_00717847:
-  svs.redirectAddress.type = param_1.type;
-  svs.redirectAddress.ip[0] = param_1.ip[0];
-  svs.redirectAddress.ip[1] = param_1.ip[1];
-  svs.redirectAddress.ip[2] = param_1.ip[2];
-  svs.redirectAddress.ip[3] = param_1.ip[3];
-  svs.redirectAddress.port = param_1.port;
-  svs.redirectAddress._10_2_ = param_1._10_2_;
-  svs.redirectAddress.addrHandleIndex = param_1.addrHandleIndex;
-  Com_BeginRedirect(local_80c,0x7f0,SV_FlushRedirect);
+  svs.redirectAddress.type = from.type;
+  svs.redirectAddress.ip[0] = from.ip[0];
+  svs.redirectAddress.ip[1] = from.ip[1];
+  svs.redirectAddress.ip[2] = from.ip[2];
+  svs.redirectAddress.ip[3] = from.ip[3];
+  svs.redirectAddress.port = from.port;
+  svs.redirectAddress._10_2_ = from._10_2_;
+  svs.redirectAddress.addrHandleIndex = from.addrHandleIndex;
+  Com_BeginRedirect(sv_outputbuf,0x7f0,SV_FlushRedirect);
   if (*(rcon_password->current).string == '\0') {
     Com_Printf(0xf,"The server must set \'rcon_password\' for clients to use \'rcon\'.\n");
   }
-  else if (local_1c == 0) {
-    if (*local_14 == 0) {
+  else if (valid == 0) {
+    if (*password == '\0') {
       Com_Printf(0xf,"You must log in with \'rcon login <password>\' before using \'rcon\'.\n");
     }
     else {
@@ -976,22 +978,22 @@ LAB_00717847:
     }
   }
   else {
-    local_18 = 0;
-    local_c10 = 0x400;
-    local_c = 2;
-    while (iVar2 = SV_Cmd_Argc(), local_c < iVar2) {
-      iVar7 = 1;
-      pcVar5 = local_c0c;
-      iVar2 = local_18;
-      iVar6 = local_c10;
-      pcVar3 = SV_Cmd_Argv(local_c);
-      local_18 = Com_AddToString(pcVar3,pcVar5,iVar2,iVar6,iVar7);
-      local_18 = Com_AddToString(" ",local_c0c,local_18,0x400,0);
-      local_c = local_c + 1;
+    len = 0;
+    maxlen = 0x400;
+    i = 2;
+    while (iVar2 = SV_Cmd_Argc(), i < iVar2) {
+      mayAddQuotes = 1;
+      msg_00 = remaining;
+      iVar2 = len;
+      maxlen_00 = maxlen;
+      add = SV_Cmd_Argv(i);
+      len = Com_AddToString(add,msg_00,iVar2,maxlen_00,mayAddQuotes);
+      len = Com_AddToString(" ",remaining,len,0x400,0);
+      i = i + 1;
     }
-    if (local_18 < 0x400) {
-      local_c0c[local_18] = '\0';
-      Con_Restricted_ExecuteBuf(0,0,local_c0c);
+    if (len < 0x400) {
+      remaining[len] = '\0';
+      Con_Restricted_ExecuteBuf(0,0,remaining);
     }
   }
   Com_EndRedirect();
@@ -1000,6 +1002,8 @@ LAB_00717847:
 
 
 // 007179A0  SV_MatchEnd  (server_mp/sv_main_pc_mp.cpp:1095)
+
+/* WARNING: Enum "LbType": Some values do not have unique names */
 
 void __cdecl SV_MatchEnd(void)
 
@@ -1016,14 +1020,14 @@ void __cdecl SV_MatchEnd(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SV_SysLog_LogMessage(int param_1,char *param_2)
+void __cdecl SV_SysLog_LogMessage(int severity,char *msg)
 
 {
   char cVar1;
   int iVar2;
   char *local_428;
-  netadr_t local_424;
-  char local_414;
+  netadr_t to;
+  char syslogMsg;
   uchar local_413 [1035];
   uint local_8;
   
@@ -1031,21 +1035,21 @@ void __cdecl SV_SysLog_LogMessage(int param_1,char *param_2)
   iVar2 = Sys_Milliseconds();
   if (999 < iVar2 - lastCall) {
     lastCall = Sys_Milliseconds();
-    local_414 = '\0';
+    syslogMsg = '\0';
     memset(local_413,'\0',0x400);
-    local_424.type = NA_IP;
-    local_424.port = 0x202;
-    local_424.ip[0] = 0xd0;
-    local_424.ip[1] = 0xa7;
-    local_424.ip[2] = 0xf9;
-    local_424.ip[3] = 0xa1;
-    Com_sprintf(&local_414,0x400,"<%u>BLACKOPS: %s: %s");
-    local_428 = &local_414;
+    to.type = NA_IP;
+    to.port = 0x202;
+    to.ip[0] = 0xd0;
+    to.ip[1] = 0xa7;
+    to.ip[2] = 0xf9;
+    to.ip[3] = 0xa1;
+    Com_sprintf(&syslogMsg,0x400,"<%u>BLACKOPS: %s: %s");
+    local_428 = &syslogMsg;
     do {
       cVar1 = *local_428;
       local_428 = local_428 + 1;
     } while (cVar1 != '\0');
-    dwSendSysLogPacket(&local_424,&local_414,(int)local_428 - (int)local_413);
+    dwSendSysLogPacket(&to,&syslogMsg,(int)local_428 - (int)local_413);
   }
   return;
 }
@@ -1057,15 +1061,17 @@ void __cdecl SV_SysLog_LogMessage_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
+  char *msg;
+  char *nptr;
+  char *message;
+  int severity;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    pcVar2 = Cmd_Argv(2);
-    pcVar3 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar3);
-    SV_SysLog_LogMessage(iVar1,pcVar2);
+    msg = Cmd_Argv(2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    SV_SysLog_LogMessage(iVar1,msg);
   }
   else {
     Com_Printf(0,"Usage: logmessage severity message\n");
@@ -1079,15 +1085,15 @@ void __cdecl SV_SysLog_LogMessage_f(void)
 ulong64 __cdecl SV_GetOwnerID(void)
 
 {
-  undefined4 local_c;
+  undefined4 retval;
   undefined4 local_8;
   
-  local_c = 0;
+  retval = 0;
   local_8 = 0;
   if ((sv_ownerid != (dvar_s *)0x0) && (*(sv_ownerid->current).string != '\0')) {
-    StringToXUID((sv_ownerid->current).string,(ulong64 *)&local_c);
+    StringToXUID((sv_ownerid->current).string,(ulong64 *)&retval);
   }
-  return CONCAT44(local_8,local_c);
+  return CONCAT44(local_8,retval);
 }
 
 
@@ -1097,11 +1103,12 @@ bool __cdecl SV_CanLoadCustomGameType(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   bool local_10;
+  bool retval;
   
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   if ((bVar1) || ((playlist_enabled->current).enabled != false)) {
     local_10 = false;
   }
@@ -1121,52 +1128,52 @@ void __cdecl SV_RegisterRconKey_f(void)
 {
   char cVar1;
   int iVar2;
-  uchar *puVar3;
-  char *pcVar4;
+  uchar *src;
+  char *pcVar3;
   ulong local_60;
   char *local_54;
   ulong local_44;
-  bdSecurityID local_24;
-  ulong local_1c;
-  bdSecurityKey local_18;
+  bdSecurityID rconkeyID;
+  int size;
+  bdSecurityKey rconkey;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    bdSecurityKey::bdSecurityKey(&local_18);
-    bdSecurityID::bdSecurityID(&local_24);
-    local_18.ab[0] = '\0';
-    local_18.ab[1] = '\0';
-    local_18.ab[2] = '\0';
-    local_18.ab[3] = '\0';
-    local_18.ab[4] = '\0';
-    local_18.ab[5] = '\0';
-    local_18.ab[6] = '\0';
-    local_18.ab[7] = '\0';
-    local_18.ab[8] = '\0';
-    local_18.ab[9] = '\0';
-    local_18.ab[10] = '\0';
-    local_18.ab[0xb] = '\0';
-    local_18.ab[0xc] = '\0';
-    local_18.ab[0xd] = '\0';
-    local_18.ab[0xe] = '\0';
-    local_18.ab[0xf] = '\0';
-    local_24.ab[0] = '\0';
-    local_24.ab[1] = '\0';
-    local_24.ab[2] = '\0';
-    local_24.ab[3] = '\0';
-    local_24.ab[4] = '\0';
-    local_24.ab[5] = '\0';
-    local_24.ab[6] = '\0';
-    local_24.ab[7] = '\0';
+    bdSecurityKey::bdSecurityKey(&rconkey);
+    bdSecurityID::bdSecurityID(&rconkeyID);
+    rconkey.ab[0] = '\0';
+    rconkey.ab[1] = '\0';
+    rconkey.ab[2] = '\0';
+    rconkey.ab[3] = '\0';
+    rconkey.ab[4] = '\0';
+    rconkey.ab[5] = '\0';
+    rconkey.ab[6] = '\0';
+    rconkey.ab[7] = '\0';
+    rconkey.ab[8] = '\0';
+    rconkey.ab[9] = '\0';
+    rconkey.ab[10] = '\0';
+    rconkey.ab[0xb] = '\0';
+    rconkey.ab[0xc] = '\0';
+    rconkey.ab[0xd] = '\0';
+    rconkey.ab[0xe] = '\0';
+    rconkey.ab[0xf] = '\0';
+    rconkeyID.ab[0] = '\0';
+    rconkeyID.ab[1] = '\0';
+    rconkeyID.ab[2] = '\0';
+    rconkeyID.ab[3] = '\0';
+    rconkeyID.ab[4] = '\0';
+    rconkeyID.ab[5] = '\0';
+    rconkeyID.ab[6] = '\0';
+    rconkeyID.ab[7] = '\0';
     local_54 = Cmd_Argv(1);
-    pcVar4 = local_54 + 1;
+    pcVar3 = local_54 + 1;
     do {
       cVar1 = *local_54;
       local_54 = local_54 + 1;
     } while (cVar1 != '\0');
-    local_44 = (int)local_54 - (int)pcVar4;
+    local_44 = (int)local_54 - (int)pcVar3;
     if (0xf < (int)local_44) {
       local_44 = 0x10;
     }
@@ -1176,11 +1183,11 @@ void __cdecl SV_RegisterRconKey_f(void)
     else {
       local_60 = local_44;
     }
-    local_1c = local_60;
-    puVar3 = (uchar *)Cmd_Argv(1);
-    memcpy(local_18.ab,puVar3,local_60);
-    builtin_memcpy(local_24.ab,"rconkey1",8);
-    dwRegisterSecIDAndKey(&local_24,&local_18);
+    size = local_60;
+    src = (uchar *)Cmd_Argv(1);
+    memcpy(rconkey.ab,src,local_60);
+    builtin_memcpy(rconkeyID.ab,"rconkey1",8);
+    dwRegisterSecIDAndKey(&rconkeyID,&rconkey);
   }
   else {
     Com_Printf(0xf,"usage: setrconkey key\n");

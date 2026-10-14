@@ -242,12 +242,12 @@ void __cdecl FX_ShutdownSystem(int param_1)
 
 {
   uchar *puVar1;
-  uchar *puVar2;
+  uchar *dst;
   
-  puVar2 = DAT_01aae570;
+  dst = DAT_01aae570;
   puVar1 = DAT_01aae568;
   memset(DAT_01aae568,'\0',0x360);
-  memset(puVar2,'\0',0x62480);
+  memset(dst,'\0',0x62480);
   puVar1[0x344] = 0xff;
   puVar1[0x345] = 0xff;
   puVar1[0x346] = 0xff;
@@ -1857,74 +1857,74 @@ void __cdecl
 FX_FreeElem(FxSystem *param_1,ushort param_2,FxEffect *param_3,FxEffect *param_4,uint param_5)
 
 {
-  byte *pbVar1;
+  byte *dst;
+  ushort uVar1;
   ushort uVar2;
-  ushort uVar3;
-  FxEffectDef *pFVar4;
-  FxEffect *pFVar5;
-  FxEffectDef *pFVar6;
-  FxElemDef *pFVar7;
-  long *plVar8;
+  FxEffectDef *pFVar3;
+  FxEffect *pFVar4;
+  FxEffectDef *pFVar5;
+  FxElemDef *pFVar6;
+  long *plVar7;
   uint unaff_EDI;
   
-  pbVar1 = (byte *)((int)&param_1->elems->field0_0x0 + (uint)param_2 * 4);
-  pFVar5 = UniqueHandleToEffect
+  dst = (byte *)((int)&param_1->elems->field0_0x0 + (uint)param_2 * 4);
+  pFVar4 = UniqueHandleToEffect
                      (*(FxSystem **)((int)&param_1->elems->field0_0x0 + (uint)param_2 * 4 + 0x24),
                       unaff_EDI);
-  if (pFVar5 != (FxEffect *)0x0) {
-    pFVar5 = pFVar5 + 1;
+  if (pFVar4 != (FxEffect *)0x0) {
+    pFVar4 = pFVar4 + 1;
     do {
-      pFVar4 = (pFVar5->field0_0x0).def;
+      pFVar3 = (pFVar4->field0_0x0).def;
       LOCK();
-      pFVar6 = (pFVar5->field0_0x0).def;
-      if (pFVar4 == pFVar6) {
-        (pFVar5->field0_0x0).def = (FxEffectDef *)((uint)pFVar4 | 0x4000);
-        pFVar6 = pFVar4;
+      pFVar5 = (pFVar4->field0_0x0).def;
+      if (pFVar3 == pFVar5) {
+        (pFVar4->field0_0x0).def = (FxEffectDef *)((uint)pFVar3 | 0x4000);
+        pFVar5 = pFVar3;
       }
       UNLOCK();
-    } while (pFVar6 != pFVar4);
+    } while (pFVar5 != pFVar3);
     param_1->hasStaleAttachedFx = true;
   }
-  uVar2 = *(ushort *)(pbVar1 + 0x2e);
-  uVar3 = *(ushort *)(pbVar1 + 0x2c);
-  pbVar1[0x24] = 0;
-  pbVar1[0x25] = 0;
-  pbVar1[0x26] = 0;
-  pbVar1[0x27] = 0;
+  uVar1 = *(ushort *)(dst + 0x2e);
+  uVar2 = *(ushort *)(dst + 0x2c);
+  dst[0x24] = 0;
+  dst[0x25] = 0;
+  dst[0x26] = 0;
+  dst[0x27] = 0;
   if ((param_5 == 0) && (param_3->firstSortedElemHandle == param_2)) {
-    param_3->firstSortedElemHandle = uVar3;
+    param_3->firstSortedElemHandle = uVar2;
   }
-  if (uVar3 != 0xffff) {
-    *(ushort *)((int)&param_1->elems->field0_0x0 + (uint)uVar3 * 4 + 0x2e) = uVar2;
+  if (uVar2 != 0xffff) {
+    *(ushort *)((int)&param_1->elems->field0_0x0 + (uint)uVar2 * 4 + 0x2e) = uVar1;
   }
-  if (uVar2 == 0xffff) {
-    param_3->firstElemHandle[param_5] = uVar3;
+  if (uVar1 == 0xffff) {
+    param_3->firstElemHandle[param_5] = uVar2;
   }
   else {
-    *(ushort *)((int)&param_1->elems->field0_0x0 + (uint)uVar2 * 4 + 0x2c) = uVar3;
+    *(ushort *)((int)&param_1->elems->field0_0x0 + (uint)uVar1 * 4 + 0x2c) = uVar2;
   }
-  pFVar7 = (((param_3->field0_0x0).def)->field9_0x1c).elemDefsEA + *pbVar1;
-  if (((pFVar7->elemType == '\a') && ((pFVar7->flags & 0x8000000U) != 0)) &&
-     (*(int *)(pbVar1 + 0x14) != 0)) {
+  pFVar6 = (((param_3->field0_0x0).def)->field9_0x1c).elemDefsEA + *dst;
+  if (((pFVar6->elemType == '\a') && ((pFVar6->flags & 0x8000000U) != 0)) &&
+     (*(int *)(dst + 0x14) != 0)) {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6b18);
     Phys_ObjDestroy(1,unaff_EDI);
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_020c6b18);
   }
-  memset(pbVar1,'\0',0x2c);
-  FUN_00547a70(pbVar1,param_1->elems);
-  pFVar5 = param_4 + 1;
+  memset(dst,'\0',0x2c);
+  FUN_00547a70(dst,param_1->elems);
+  pFVar4 = param_4 + 1;
   if (((uint)param_4[1].field0_0x0.def & 0x3fff) == 1) {
     FX_EffectNoLongerReferenced(param_1,param_4,0);
   }
-  if (((uint)(pFVar5->field0_0x0).def & 0x3fff) != 0) {
+  if (((uint)(pFVar4->field0_0x0).def & 0x3fff) != 0) {
     LOCK();
-    (pFVar5->field0_0x0).def =
-         (FxEffectDef *)((int)(pFVar5->field0_0x0).def[-1].boundingSphere + 0xf);
+    (pFVar4->field0_0x0).def =
+         (FxEffectDef *)((int)(pFVar4->field0_0x0).def[-1].boundingSphere + 0xf);
     UNLOCK();
   }
-  plVar8 = &param_1->shared->activeElemCount;
+  plVar7 = &param_1->shared->activeElemCount;
   LOCK();
-  *plVar8 = *plVar8 + -1;
+  *plVar7 = *plVar7 + -1;
   UNLOCK();
   return;
 }

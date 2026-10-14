@@ -68,12 +68,13 @@ channel_t<GfxColor> * __thiscall channel_t<GfxColor>::channel_t<GfxColor>(channe
 
 // 00A8A210  Alloc  (gfx_d3d/r_water_sim.cpp:178)
 
-void __thiscall channel_t<float4>::Alloc(channel_t<float4> *this,int param_1)
+void __thiscall channel_t<float4>::Alloc(channel_t<float4> *this,int location)
 
 {
   code *pcVar1;
   bool bVar2;
   float4 *pfVar3;
+  uint extra;
   
   if (this->v != (float4 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xb3,0,
@@ -85,7 +86,7 @@ void __thiscall channel_t<float4>::Alloc(channel_t<float4> *this,int param_1)
     }
   }
   this->bufferSize = 0x100080;
-  pfVar3 = _PMem_Alloc(this->bufferSize,0x10,4,param_1,TRACK_WATERSIM,
+  pfVar3 = _PMem_Alloc(this->bufferSize,0x10,4,location,TRACK_WATERSIM,
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xbd);
   this->v = pfVar3;
   return;
@@ -94,12 +95,13 @@ void __thiscall channel_t<float4>::Alloc(channel_t<float4> *this,int param_1)
 
 // 00A8A4F0  Alloc  (gfx_d3d/r_water_sim.cpp:178)
 
-void __thiscall channel_t<short>::Alloc(channel_t<short> *this,int param_1)
+void __thiscall channel_t<short>::Alloc(channel_t<short> *this,int location)
 
 {
   code *pcVar1;
   bool bVar2;
   short *psVar3;
+  uint extra;
   
   if (this->v != (short *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xb3,0,
@@ -111,7 +113,7 @@ void __thiscall channel_t<short>::Alloc(channel_t<short> *this,int param_1)
     }
   }
   this->bufferSize = 0x20080;
-  psVar3 = _PMem_Alloc(this->bufferSize,0x10,4,param_1,TRACK_WATERSIM,
+  psVar3 = _PMem_Alloc(this->bufferSize,0x10,4,location,TRACK_WATERSIM,
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xbd);
   this->v = psVar3;
   return;
@@ -120,12 +122,13 @@ void __thiscall channel_t<short>::Alloc(channel_t<short> *this,int param_1)
 
 // 00A8A740  Alloc  (gfx_d3d/r_water_sim.cpp:178)
 
-void __thiscall channel_t<char>::Alloc(channel_t<char> *this,int param_1)
+void __thiscall channel_t<char>::Alloc(channel_t<char> *this,int location)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  uint extra;
   
   if (this->v != (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xb3,0,
@@ -137,7 +140,7 @@ void __thiscall channel_t<char>::Alloc(channel_t<char> *this,int param_1)
     }
   }
   this->bufferSize = 0x10080;
-  pcVar3 = _PMem_Alloc(this->bufferSize,0x10,4,param_1,TRACK_WATERSIM,
+  pcVar3 = _PMem_Alloc(this->bufferSize,0x10,4,location,TRACK_WATERSIM,
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xbd);
   this->v = pcVar3;
   return;
@@ -146,12 +149,13 @@ void __thiscall channel_t<char>::Alloc(channel_t<char> *this,int param_1)
 
 // 00A8A990  Alloc  (gfx_d3d/r_water_sim.cpp:178)
 
-void __thiscall channel_t<GfxColor>::Alloc(channel_t<GfxColor> *this,int param_1)
+void __thiscall channel_t<GfxColor>::Alloc(channel_t<GfxColor> *this,int location)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxColor *pGVar3;
+  uint extra;
   
   if (this->v != (GfxColor *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xb3,0,
@@ -163,7 +167,7 @@ void __thiscall channel_t<GfxColor>::Alloc(channel_t<GfxColor> *this,int param_1
     }
   }
   this->bufferSize = 0x40080;
-  pGVar3 = _PMem_Alloc(this->bufferSize,0x10,4,param_1,TRACK_WATERSIM,
+  pGVar3 = _PMem_Alloc(this->bufferSize,0x10,4,location,TRACK_WATERSIM,
                        "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xbd);
   this->v = pGVar3;
   return;
@@ -194,28 +198,28 @@ void __thiscall channel_t<float4>::Free(channel_t<float4> *this)
 
 // 00A8A2E0  Cache  (gfx_d3d/r_water_sim.cpp:215)
 
-float4 * __thiscall
-channel_t<float4>::Cache(channel_t<float4> *this,int param_1,bool param_2,bool param_3)
+float4 * __thiscall channel_t<float4>::Cache(channel_t<float4> *this,int y,bool modify,bool flush)
 
 {
   cache_t *pcVar1;
   code *pcVar2;
   bool bVar3;
   float4 *pfVar4;
-  uint local_10;
+  uint i;
+  float4 *unboundedData;
   
-  if (((param_1 < 0) || (0x100 < param_1)) &&
+  if (((y < 0) || (0x100 < y)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xd8,0,
                                "y not in [0, GRIDSIZE]\n\t%i not in [%i, %i]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pfVar4 = (float4 *)(*pcVar2)();
     return pfVar4;
   }
-  if (!param_3) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      if (this->cache[local_10].y == param_1) {
-        this->cache[local_10].modified = (bool)(this->cache[local_10].modified | param_2);
-        return this->cache[local_10].data;
+  if (!flush) {
+    for (i = 0; i < 4; i = i + 1) {
+      if (this->cache[i].y == y) {
+        this->cache[i].modified = (bool)(this->cache[i].modified | modify);
+        return this->cache[i].data;
       }
     }
   }
@@ -226,13 +230,13 @@ channel_t<float4>::Cache(channel_t<float4> *this,int param_1,bool param_2,bool p
     memcpy((uchar *)this->v[pcVar1->y * 0x100].u,(uchar *)pcVar1->data[0].u,0x1000);
     pcVar1->modified = false;
   }
-  if (param_3) {
+  if (flush) {
     pcVar1->y = -1;
     pfVar4 = (float4 *)0x0;
   }
   else {
-    pcVar1->modified = param_2;
-    pcVar1->y = param_1;
+    pcVar1->modified = modify;
+    pcVar1->y = y;
     memcpy((uchar *)pcVar1->data[0].u,(uchar *)this->v[pcVar1->y * 0x100].u,0x1000);
     (pcVar1->pad0).v[0] = pcVar1->data[0xff].v[0];
     (pcVar1->pad0).v[1] = *(float *)((int)pcVar1->data + 0xff4);
@@ -250,8 +254,7 @@ channel_t<float4>::Cache(channel_t<float4> *this,int param_1,bool param_2,bool p
 
 // 00A8A570  Cache  (gfx_d3d/r_water_sim.cpp:215)
 
-short * __thiscall
-channel_t<short>::Cache(channel_t<short> *this,int param_1,bool param_2,bool param_3)
+short * __thiscall channel_t<short>::Cache(channel_t<short> *this,int y,bool modify,bool flush)
 
 {
   int iVar1;
@@ -260,20 +263,21 @@ channel_t<short>::Cache(channel_t<short> *this,int param_1,bool param_2,bool par
   short *psVar4;
   int iVar5;
   short *psVar6;
-  uint local_10;
+  uint i;
+  short *unboundedData;
   
-  if (((param_1 < 0) || (0x100 < param_1)) &&
+  if (((y < 0) || (0x100 < y)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xd8,0,
                                "y not in [0, GRIDSIZE]\n\t%i not in [%i, %i]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     psVar4 = (short *)(*pcVar2)();
     return psVar4;
   }
-  if (!param_3) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      if (this->cache[local_10].y == param_1) {
-        this->cache[local_10].modified = (bool)(this->cache[local_10].modified | param_2);
-        return this->cache[local_10].data;
+  if (!flush) {
+    for (i = 0; i < 4; i = i + 1) {
+      if (this->cache[i].y == y) {
+        this->cache[i].modified = (bool)(this->cache[i].modified | modify);
+        return this->cache[i].data;
       }
     }
   }
@@ -290,13 +294,13 @@ channel_t<short>::Cache(channel_t<short> *this,int param_1,bool param_2,bool par
     }
     this->cache[iVar1].modified = false;
   }
-  if (param_3) {
+  if (flush) {
     this->cache[iVar1].y = -1;
     psVar4 = (short *)0x0;
   }
   else {
-    this->cache[iVar1].modified = param_2;
-    this->cache[iVar1].y = param_1;
+    this->cache[iVar1].modified = modify;
+    this->cache[iVar1].y = y;
     psVar4 = this->v + this->cache[iVar1].y * 0x100;
     psVar6 = this->cache[iVar1].data;
     for (iVar5 = 0x80; iVar5 != 0; iVar5 = iVar5 + -1) {
@@ -314,8 +318,7 @@ channel_t<short>::Cache(channel_t<short> *this,int param_1,bool param_2,bool par
 
 // 00A8A7C0  Cache  (gfx_d3d/r_water_sim.cpp:215)
 
-char * __thiscall
-channel_t<char>::Cache(channel_t<char> *this,int param_1,bool param_2,bool param_3)
+char * __thiscall channel_t<char>::Cache(channel_t<char> *this,int y,bool modify,bool flush)
 
 {
   int iVar1;
@@ -324,20 +327,21 @@ channel_t<char>::Cache(channel_t<char> *this,int param_1,bool param_2,bool param
   char *pcVar4;
   int iVar5;
   char *pcVar6;
-  uint local_10;
+  uint i;
+  char *unboundedData;
   
-  if (((param_1 < 0) || (0x100 < param_1)) &&
+  if (((y < 0) || (0x100 < y)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xd8,0,
                                "y not in [0, GRIDSIZE]\n\t%i not in [%i, %i]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  if (!param_3) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      if (this->cache[local_10].y == param_1) {
-        this->cache[local_10].modified = (bool)(this->cache[local_10].modified | param_2);
-        return this->cache[local_10].data;
+  if (!flush) {
+    for (i = 0; i < 4; i = i + 1) {
+      if (this->cache[i].y == y) {
+        this->cache[i].modified = (bool)(this->cache[i].modified | modify);
+        return this->cache[i].data;
       }
     }
   }
@@ -354,13 +358,13 @@ channel_t<char>::Cache(channel_t<char> *this,int param_1,bool param_2,bool param
     }
     this->cache[iVar1].modified = false;
   }
-  if (param_3) {
+  if (flush) {
     this->cache[iVar1].y = -1;
     pcVar4 = (char *)0x0;
   }
   else {
-    this->cache[iVar1].modified = param_2;
-    this->cache[iVar1].y = param_1;
+    this->cache[iVar1].modified = modify;
+    this->cache[iVar1].y = y;
     pcVar4 = this->v + this->cache[iVar1].y * 0x100;
     pcVar6 = this->cache[iVar1].data;
     for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
@@ -379,7 +383,7 @@ channel_t<char>::Cache(channel_t<char> *this,int param_1,bool param_2,bool param
 // 00A8AB10  Cache  (gfx_d3d/r_water_sim.cpp:215)
 
 GfxColor * __thiscall
-channel_t<GfxColor>::Cache(channel_t<GfxColor> *this,int param_1,bool param_2,bool param_3)
+channel_t<GfxColor>::Cache(channel_t<GfxColor> *this,int y,bool modify,bool flush)
 
 {
   int iVar1;
@@ -388,20 +392,21 @@ channel_t<GfxColor>::Cache(channel_t<GfxColor> *this,int param_1,bool param_2,bo
   GfxColor *pGVar4;
   int iVar5;
   GfxColor *pGVar6;
-  uint local_10;
+  uint i;
+  GfxColor *unboundedData;
   
-  if (((param_1 < 0) || (0x100 < param_1)) &&
+  if (((y < 0) || (0x100 < y)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0xd8,0,
                                "y not in [0, GRIDSIZE]\n\t%i not in [%i, %i]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pGVar4 = (GfxColor *)(*pcVar2)();
     return pGVar4;
   }
-  if (!param_3) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      if (this->cache[local_10].y == param_1) {
-        this->cache[local_10].modified = (bool)(this->cache[local_10].modified | param_2);
-        return this->cache[local_10].data;
+  if (!flush) {
+    for (i = 0; i < 4; i = i + 1) {
+      if (this->cache[i].y == y) {
+        this->cache[i].modified = (bool)(this->cache[i].modified | modify);
+        return this->cache[i].data;
       }
     }
   }
@@ -418,13 +423,13 @@ channel_t<GfxColor>::Cache(channel_t<GfxColor> *this,int param_1,bool param_2,bo
     }
     this->cache[iVar1].modified = false;
   }
-  if (param_3) {
+  if (flush) {
     this->cache[iVar1].y = -1;
     pGVar4 = (GfxColor *)0x0;
   }
   else {
-    this->cache[iVar1].modified = param_2;
-    this->cache[iVar1].y = param_1;
+    this->cache[iVar1].modified = modify;
+    this->cache[iVar1].y = y;
     pGVar4 = this->v + this->cache[iVar1].y * 0x100;
     pGVar6 = this->cache[iVar1].data;
     for (iVar5 = 0x100; iVar5 != 0; iVar5 = iVar5 + -1) {
@@ -453,15 +458,15 @@ cache_t * __thiscall channel_t<float4>::cache_t::cache_t(cache_t *this)
 
 // 00A8AA10  add  (gfx_d3d/r_water_sim.cpp:311)
 
-void __thiscall fifo_t<debugpoint_t,16>::add(fifo_t<debugpoint_t,16> *this,debugpoint_t *param_1)
+void __thiscall fifo_t<debugpoint_t,16>::add(fifo_t<debugpoint_t,16> *this,debugpoint_t *t)
 
 {
   debugpoint_t *pdVar1;
   
   pdVar1 = this->data + this->tail;
-  pdVar1->pos[0] = param_1->pos[0];
-  pdVar1->pos[1] = param_1->pos[1];
-  pdVar1->pos[2] = param_1->pos[2];
+  pdVar1->pos[0] = t->pos[0];
+  pdVar1->pos[1] = t->pos[1];
+  pdVar1->pos[2] = t->pos[2];
   this->tail = this->tail + 1;
   this->tail = this->tail & 0xf;
   if (this->head == this->tail) {
@@ -474,16 +479,15 @@ void __thiscall fifo_t<debugpoint_t,16>::add(fifo_t<debugpoint_t,16> *this,debug
 
 // 00A8AA90  add  (gfx_d3d/r_water_sim.cpp:311)
 
-void __thiscall
-fifo_t<meshExpire_t,1024>::add(fifo_t<meshExpire_t,1024> *this,meshExpire_t *param_1)
+void __thiscall fifo_t<meshExpire_t,1024>::add(fifo_t<meshExpire_t,1024> *this,meshExpire_t *t)
 
 {
   uint uVar1;
   uint uVar2;
   
-  uVar1 = param_1->baseVertex;
+  uVar1 = t->baseVertex;
   uVar2 = this->tail;
-  this->data[uVar2].framesLeft = param_1->framesLeft;
+  this->data[uVar2].framesLeft = t->framesLeft;
   this->data[uVar2].baseVertex = uVar1;
   this->tail = this->tail + 1;
   this->tail = this->tail & 0x3ff;
@@ -589,24 +593,26 @@ void __cdecl FlushBuffers(void)
 
 // 00A86A20  GetBuffersForPoint  (gfx_d3d/r_water_sim.cpp:471)
 
-void __cdecl GetBuffersForPoint(int param_1,int param_2,int *param_3,float *param_4)
+void __cdecl GetBuffersForPoint(int u,int v,int *bufId,float *interpolate)
 
 {
   int iVar1;
+  int diff;
+  int lastUpdateV;
   
   iVar1 = (data.frame & 0xf) * 0x10;
-  *param_3 = (uint)((data.frame & 0x10) == 0);
-  if (iVar1 < param_2) {
-    *param_3 = *param_3 ^ 1;
+  *bufId = (uint)((data.frame & 0x10) == 0);
+  if (iVar1 < v) {
+    *bufId = *bufId ^ 1;
   }
-  *param_4 = (float)(iVar1 - param_2 & 0xff) * 0.00390625;
+  *interpolate = (float)(iVar1 - v & 0xff) * 0.00390625;
   return;
 }
 
 
 // 00A83150  R_WaterFindCells  (gfx_d3d/r_water_sim.cpp:486)
 
-bool __cdecl R_WaterFindCells(int param_1,int param_2,ComWaterCell **param_3)
+bool __cdecl R_WaterFindCells(int gridX,int gridY,ComWaterCell **cells)
 
 {
   bool bVar1;
@@ -617,6 +623,10 @@ bool __cdecl R_WaterFindCells(int param_1,int param_2,ComWaterCell **param_3)
   ComWaterCell *local_20;
   ComWaterCell *local_1c;
   ComWaterCell *local_18;
+  int cellY;
+  int cellX;
+  int h;
+  int w;
   
   if (comWorld.numWaterCells == 0) {
     bVar1 = false;
@@ -624,34 +634,34 @@ bool __cdecl R_WaterFindCells(int param_1,int param_2,ComWaterCell **param_3)
   else {
     iVar3 = comWorld.waterHeader.maxx - comWorld.waterHeader.minx;
     iVar5 = comWorld.waterHeader.maxy - comWorld.waterHeader.miny;
-    iVar2 = param_1 + comWorld.waterHeader.minx * -0x10 >> 4;
-    iVar4 = param_2 + comWorld.waterHeader.miny * -0x10 >> 4;
+    iVar2 = gridX + comWorld.waterHeader.minx * -0x10 >> 4;
+    iVar4 = gridY + comWorld.waterHeader.miny * -0x10 >> 4;
     if ((((iVar2 < 0) || (iVar4 < 0)) || (iVar3 <= iVar2)) || (iVar5 <= iVar4)) {
       bVar1 = false;
     }
     else {
-      *param_3 = comWorld.waterCells + iVar4 * iVar3 + iVar2;
+      *cells = comWorld.waterCells + iVar4 * iVar3 + iVar2;
       if (iVar2 < iVar3 + -1) {
         local_18 = comWorld.waterCells + iVar4 * iVar3 + 1 + iVar2;
       }
       else {
-        local_18 = *param_3;
+        local_18 = *cells;
       }
-      param_3[1] = local_18;
+      cells[1] = local_18;
       if (iVar4 < iVar5 + -1) {
         local_1c = comWorld.waterCells + (iVar4 + 1) * iVar3 + iVar2;
       }
       else {
-        local_1c = *param_3;
+        local_1c = *cells;
       }
-      param_3[2] = local_1c;
+      cells[2] = local_1c;
       if ((iVar2 < iVar3 + -1) && (iVar4 < iVar5 + -1)) {
         local_20 = comWorld.waterCells + (iVar4 + 1) * iVar3 + 1 + iVar2;
       }
       else {
-        local_20 = *param_3;
+        local_20 = *cells;
       }
-      param_3[3] = local_20;
+      cells[3] = local_20;
       bVar1 = true;
     }
   }
@@ -663,7 +673,7 @@ bool __cdecl R_WaterFindCells(int param_1,int param_2,ComWaterCell **param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl R_WaterSimulationFillTile(tile_t *param_1)
+bool __cdecl R_WaterSimulationFillTile(tile_t *tile)
 
 {
   char cVar1;
@@ -691,50 +701,51 @@ bool __cdecl R_WaterSimulationFillTile(tile_t *param_1)
   float local_a0;
   float local_94;
   float local_8c;
-  int local_84;
+  int c;
+  float f;
   uchar local_78 [4];
-  float local_74;
-  float local_70;
-  float local_6c;
-  float local_68;
-  float local_64;
-  float local_60;
-  float local_5c;
-  float local_58;
-  int local_54;
-  char *local_50;
-  short *local_4c;
-  float4 *local_48;
-  GfxColor *local_44;
-  char *local_40;
-  float4 *local_3c;
-  int local_38;
-  ComWaterCell *local_34;
+  float w2;
+  float f0_x;
+  float w0;
+  float f1_y;
+  float w1;
+  float f1_x;
+  float f0_y;
+  float w3;
+  int tx;
+  char *p_shoredist;
+  short *p_waterheight;
+  float4 *p_buf1;
+  GfxColor *p_colors;
+  char *p_flooroffset;
+  float4 *p_buf0;
+  int ty;
+  ComWaterCell *cells;
   ComWaterCell *local_30;
   ComWaterCell *local_2c;
   ComWaterCell *local_28;
-  float local_24;
+  float zero;
   float local_20;
   float local_1c;
   float local_18;
-  ComWaterCell local_14;
+  ComWaterCell dummy;
   uint local_c;
-  bool local_5;
+  bool valid;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = R_WaterFindCells(param_1->worldX,param_1->worldY,&local_34);
-  if (!local_5) {
-    local_28 = &local_14;
-    local_2c = &local_14;
-    local_30 = &local_14;
-    local_34 = &local_14;
-    local_14.color[0] = 0xff;
-    local_14.color[1] = 0xff;
-    local_14.color[2] = 0xff;
-    local_14.color[3] = 0xff;
-    local_14.shoredist = '\0';
-    local_14.waterheight = -0x8000;
-    local_14.flooroffset = '\0';
+  valid = R_WaterFindCells(tile->worldX,tile->worldY,&cells);
+  if (!valid) {
+    local_28 = &dummy;
+    local_2c = &dummy;
+    local_30 = &dummy;
+    cells = &dummy;
+    dummy.color[0] = 0xff;
+    dummy.color[1] = 0xff;
+    dummy.color[2] = 0xff;
+    dummy.color[3] = 0xff;
+    dummy.shoredist = '\0';
+    dummy.waterheight = -0x8000;
+    dummy.flooroffset = '\0';
   }
   if ((config.gridScale != 25.0) &&
      (bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0x215,
@@ -743,64 +754,62 @@ bool __cdecl R_WaterSimulationFillTile(tile_t *param_1)
     uVar15 = (*pcVar13)();
     return (bool)uVar15;
   }
-  local_24 = 0.0;
+  zero = 0.0;
   local_20 = 0.0;
   local_1c = 0.0;
   local_18 = 0.0;
-  for (local_38 = 0; local_38 < 0x10; local_38 = local_38 + 1) {
-    local_4c = data.waterheight.v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    local_40 = data.flooroffset.v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    local_50 = data.shoredist.v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    local_44 = data.colors.v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    local_3c = data.buffer[0].v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    local_48 = data.buffer[1].v + (param_1->srcV + local_38) * 0x100 + param_1->srcU;
-    for (local_54 = 0; local_54 < 0x10; local_54 = local_54 + 1) {
-      local_70 = (float)local_54 / 16.0;
-      local_5c = (float)local_38 / 16.0;
-      local_60 = 1.0 - local_70;
-      local_68 = 1.0 - local_5c;
-      fVar16 = local_60 * local_68;
-      local_6c = fVar16;
-      fVar17 = local_70 * local_68;
-      local_64 = fVar17;
-      fVar18 = local_60 * local_5c;
-      local_74 = fVar18;
-      fVar19 = local_70 * local_5c;
-      local_58 = fVar19;
-      sVar9 = local_34->waterheight;
+  for (ty = 0; ty < 0x10; ty = ty + 1) {
+    p_waterheight = data.waterheight.v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    p_flooroffset = data.flooroffset.v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    p_shoredist = data.shoredist.v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    p_colors = data.colors.v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    p_buf0 = data.buffer[0].v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    p_buf1 = data.buffer[1].v + (tile->srcV + ty) * 0x100 + tile->srcU;
+    for (tx = 0; tx < 0x10; tx = tx + 1) {
+      f0_x = (float)tx / 16.0;
+      f0_y = (float)ty / 16.0;
+      f1_x = 1.0 - f0_x;
+      f1_y = 1.0 - f0_y;
+      fVar16 = f1_x * f1_y;
+      w0 = fVar16;
+      fVar17 = f0_x * f1_y;
+      w1 = fVar17;
+      fVar18 = f1_x * f0_y;
+      w2 = fVar18;
+      fVar19 = f0_x * f0_y;
+      w3 = fVar19;
+      sVar9 = cells->waterheight;
       sVar10 = local_30->waterheight;
       sVar11 = local_2c->waterheight;
       sVar12 = local_28->waterheight;
-      cVar1 = local_34->flooroffset;
+      cVar1 = cells->flooroffset;
       cVar2 = local_30->flooroffset;
       cVar3 = local_2c->flooroffset;
       cVar4 = local_28->flooroffset;
-      bVar5 = local_34->shoredist;
+      bVar5 = cells->shoredist;
       bVar6 = local_30->shoredist;
       bVar7 = local_2c->shoredist;
       bVar8 = local_28->shoredist;
-      local_78[0] = (uchar)(int)((float)local_34->color[0] * fVar16 +
+      local_78[0] = (uchar)(int)((float)cells->color[0] * fVar16 +
                                  (float)local_30->color[0] * fVar17 +
                                  (float)local_2c->color[0] * fVar18 +
                                 (float)local_28->color[0] * fVar19);
-      local_78[1] = (char)(int)((float)local_34->color[1] * fVar16 +
-                                (float)local_30->color[1] * fVar17 +
-                                (float)local_2c->color[1] * fVar18 +
+      local_78[1] = (char)(int)((float)cells->color[1] * fVar16 + (float)local_30->color[1] * fVar17
+                                + (float)local_2c->color[1] * fVar18 +
                                (float)local_28->color[1] * fVar19);
-      local_78[2] = (char)(int)((float)local_34->color[2] * fVar16 +
-                                (float)local_30->color[2] * fVar17 +
-                                (float)local_2c->color[2] * fVar18 +
+      local_78[2] = (char)(int)((float)cells->color[2] * fVar16 + (float)local_30->color[2] * fVar17
+                                + (float)local_2c->color[2] * fVar18 +
                                (float)local_28->color[2] * fVar19);
-      local_78[3] = (char)(int)((float)local_34->color[3] * fVar16 +
-                                (float)local_30->color[3] * fVar17 +
-                                (float)local_2c->color[3] * fVar18 +
+      local_78[3] = (char)(int)((float)cells->color[3] * fVar16 + (float)local_30->color[3] * fVar17
+                                + (float)local_2c->color[3] * fVar18 +
                                (float)local_28->color[3] * fVar19);
-      if ((local_54 == 0) && (local_38 == 0)) {
+      if ((tx == 0) && (ty == 0)) {
         floor();
-        param_1->worldZ = (int)(short)(int)extraout_ST0;
+        tile->worldZ = (int)(short)(int)extraout_ST0;
       }
-      *local_4c = (short)(int)((float)(int)sVar9 * fVar16 + (float)(int)sVar10 * fVar17 +
-                               (float)(int)sVar11 * fVar18 + (float)(int)sVar12 * fVar19);
+      *p_waterheight =
+           (short)(int)((float)(int)sVar9 * fVar16 + (float)(int)sVar10 * fVar17 +
+                        (float)(int)sVar11 * fVar18 + (float)(int)sVar12 * fVar19);
       fVar20 = (float)(int)(char)(int)((float)(int)cVar1 * fVar16 + (float)(int)cVar2 * fVar17 +
                                        (float)(int)cVar3 * fVar18 + (float)(int)cVar4 * fVar19) /
                config.gridScale;
@@ -814,7 +823,7 @@ bool __cdecl R_WaterSimulationFillTile(tile_t *param_1)
       else {
         local_a0 = 0.0;
       }
-      *local_40 = (char)(int)local_a0;
+      *p_flooroffset = (char)(int)local_a0;
       fVar16 = (float)(((int)((float)bVar5 * fVar16 + (float)bVar6 * fVar17 + (float)bVar7 * fVar18
                              + (float)bVar8 * fVar19) & 0xffU) << 4) * config.gridScale;
       local_94 = fVar16;
@@ -827,49 +836,49 @@ bool __cdecl R_WaterSimulationFillTile(tile_t *param_1)
       else {
         local_a4 = 0.0;
       }
-      *local_50 = (char)(int)local_a4;
-      if ((local_3c->v[1] <= (float)(int)*local_40 && (float)(int)*local_40 != local_3c->v[1]) ||
-         (local_48->v[1] <= (float)(int)*local_40 && (float)(int)*local_40 != local_48->v[1])) {
-        local_3c->v[0] = local_24;
-        local_3c->v[1] = local_20;
-        local_3c->v[2] = local_1c;
-        local_3c->v[3] = local_18;
-        local_48->v[0] = local_24;
-        local_48->v[1] = local_20;
-        local_48->v[2] = local_1c;
-        local_48->v[3] = local_18;
+      *p_shoredist = (char)(int)local_a4;
+      if ((p_buf0->v[1] <= (float)(int)*p_flooroffset && (float)(int)*p_flooroffset != p_buf0->v[1])
+         || (p_buf1->v[1] <= (float)(int)*p_flooroffset &&
+             (float)(int)*p_flooroffset != p_buf1->v[1])) {
+        p_buf0->v[0] = zero;
+        p_buf0->v[1] = local_20;
+        p_buf0->v[2] = local_1c;
+        p_buf0->v[3] = local_18;
+        p_buf1->v[0] = zero;
+        p_buf1->v[1] = local_20;
+        p_buf1->v[2] = local_1c;
+        p_buf1->v[3] = local_18;
       }
-      for (local_84 = 0; local_84 < 4; local_84 = local_84 + 1) {
-        local_44->array[local_84] = local_78[local_84];
+      for (c = 0; c < 4; c = c + 1) {
+        p_colors->array[c] = local_78[c];
       }
-      local_44 = local_44 + 1;
-      local_3c = local_3c + 1;
-      local_48 = local_48 + 1;
-      local_4c = local_4c + 1;
-      local_40 = local_40 + 1;
-      local_50 = local_50 + 1;
+      p_colors = p_colors + 1;
+      p_buf0 = p_buf0 + 1;
+      p_buf1 = p_buf1 + 1;
+      p_waterheight = p_waterheight + 1;
+      p_flooroffset = p_flooroffset + 1;
+      p_shoredist = p_shoredist + 1;
     }
   }
-  param_1->minMax[0][0] = (float)(param_1->worldX + -8) * config.gridScale;
-  param_1->minMax[0][1] = (float)(param_1->worldY + -8) * config.gridScale;
-  param_1->minMax[0][2] = (float)(param_1->worldZ + -8) * config.gridScale;
-  param_1->minMax[1][0] = (float)(param_1->worldX + 0x18) * config.gridScale;
-  param_1->minMax[1][1] = (float)(param_1->worldY + 0x18) * config.gridScale;
-  param_1->minMax[1][2] = (float)(param_1->worldZ + 0x18) * config.gridScale;
-  return local_5;
+  tile->minMax[0][0] = (float)(tile->worldX + -8) * config.gridScale;
+  tile->minMax[0][1] = (float)(tile->worldY + -8) * config.gridScale;
+  tile->minMax[0][2] = (float)(tile->worldZ + -8) * config.gridScale;
+  tile->minMax[1][0] = (float)(tile->worldX + 0x18) * config.gridScale;
+  tile->minMax[1][1] = (float)(tile->worldY + 0x18) * config.gridScale;
+  tile->minMax[1][2] = (float)(tile->worldZ + 0x18) * config.gridScale;
+  return valid;
 }
 
 
 // 00A86350  Float4LoadFloats  (gfx_d3d/r_water_sim.cpp:611)
 
-void __cdecl
-Float4LoadFloats(float param_1,float param_2,float param_3,float param_4,float4 *param_5)
+void __cdecl Float4LoadFloats(float x,float y,float z,float w,float4 *result)
 
 {
-  param_5->v[0] = param_1;
-  param_5->v[1] = param_2;
-  param_5->v[2] = param_3;
-  param_5->v[3] = param_4;
+  result->v[0] = x;
+  result->v[1] = y;
+  result->v[2] = z;
+  result->v[3] = w;
   return;
 }
 
@@ -898,7 +907,7 @@ void __cdecl UnlockUpdateMutex(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_WaterSimulationUpdateFrame(WaterSimulationCmd *param_1)
+void __cdecl R_WaterSimulationUpdateFrame(WaterSimulationCmd *cmd)
 
 {
   code *pcVar1;
@@ -1203,8 +1212,8 @@ void __cdecl R_WaterSimulationUpdateFrame(WaterSimulationCmd *param_1)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_18 = data.buffer + (param_1->update).destBuf;
-  local_1c = data.buffer + (param_1->update).srcBuf;
+  local_18 = data.buffer + (cmd->update).destBuf;
+  local_1c = data.buffer + (cmd->update).srcBuf;
   local_2c = config.windDir[0];
   local_24 = config.windDir[2];
   local_28 = -0.1;
@@ -1309,8 +1318,8 @@ void __cdecl R_WaterSimulationUpdateFrame(WaterSimulationCmd *param_1)
   local_1ac = config.windAmount;
   local_1a8 = config.windAmount;
   local_1a4 = config.windAmount;
-  local_1bc = (param_1->update).startTile;
-  local_1b8 = (param_1->update).startTile + 0x10;
+  local_1bc = (cmd->update).startTile;
+  local_1b8 = (cmd->update).startTile + 0x10;
   local_1b4 = local_1bc;
   local_2c = local_19c;
   local_28 = local_198;
@@ -1792,15 +1801,15 @@ void __cdecl R_WaterSimulationUpdateFrame(WaterSimulationCmd *param_1)
 
 // 00A81A30  ExpireMesh  (gfx_d3d/r_water_sim.cpp:948)
 
-void __cdecl ExpireMesh(tile_t *param_1)
+void __cdecl ExpireMesh(tile_t *tile)
 
 {
   code *pcVar1;
   bool bVar2;
-  meshExpire_t local_10;
-  tilemesh_t *local_8;
+  meshExpire_t expire;
+  tilemesh_t *mesh;
   
-  local_8 = (param_1->meshes).data + (param_1->meshes).head;
+  mesh = (tile->meshes).data + (tile->meshes).head;
   if ((expiredMeshes.tail - expiredMeshes.head & 0x3ff) == 0x3ff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0x3b7,0,
                              "%s");
@@ -1810,22 +1819,22 @@ void __cdecl ExpireMesh(tile_t *param_1)
       return;
     }
   }
-  local_10.framesLeft = 3;
-  local_10.baseVertex = local_8->baseVertex;
-  fifo_t<meshExpire_t,1024>::add(&expiredMeshes,&local_10);
-  (param_1->meshes).head = (param_1->meshes).head + 1;
-  (param_1->meshes).head = (param_1->meshes).head & 3;
+  expire.framesLeft = 3;
+  expire.baseVertex = mesh->baseVertex;
+  fifo_t<meshExpire_t,1024>::add(&expiredMeshes,&expire);
+  (tile->meshes).head = (tile->meshes).head + 1;
+  (tile->meshes).head = (tile->meshes).head & 3;
   return;
 }
 
 
 // 00A81A00  ExpireAllMeshes  (gfx_d3d/r_water_sim.cpp:964)
 
-void __cdecl ExpireAllMeshes(tile_t *param_1)
+void __cdecl ExpireAllMeshes(tile_t *tile)
 
 {
-  while (((param_1->meshes).tail - (param_1->meshes).head & 3) != 0) {
-    ExpireMesh(param_1);
+  while (((tile->meshes).tail - (tile->meshes).head & 3) != 0) {
+    ExpireMesh(tile);
   }
   return;
 }
@@ -1833,27 +1842,28 @@ void __cdecl ExpireAllMeshes(tile_t *param_1)
 
 // 00A81AD0  R_WaterSimulationTeleport  (gfx_d3d/r_water_sim.cpp:971)
 
-void __cdecl R_WaterSimulationTeleport(int param_1,int param_2)
+void __cdecl R_WaterSimulationTeleport(int posX,int posY)
 
 {
   uint uVar1;
-  uint local_c;
-  uint local_8;
+  uint n;
+  uint x;
+  uint y;
   
-  data.gridX = param_1;
-  data.gridY = param_2;
+  data.gridX = posX;
+  data.gridY = posY;
   data.centerU = 0x80;
   data.centerV = 0x80;
   data.frame = 0xf;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      uVar1 = local_8 * 0x10 + local_c;
+  for (y = 0; y < 0x10; y = y + 1) {
+    for (x = 0; x < 0x10; x = x + 1) {
+      uVar1 = y * 0x10 + x;
       data.tiles[uVar1].occupied = false;
       data.tiles[uVar1].lastUpdateTime = uVar1 >> 4;
-      data.tiles[uVar1].srcU = local_c << 4;
-      data.tiles[uVar1].srcV = local_8 << 4;
-      data.tiles[uVar1].worldX = local_c * 0x10 + -0x80 + data.gridX;
-      data.tiles[uVar1].worldY = local_8 * 0x10 + -0x80 + data.gridY;
+      data.tiles[uVar1].srcU = x << 4;
+      data.tiles[uVar1].srcV = y << 4;
+      data.tiles[uVar1].worldX = x * 0x10 + -0x80 + data.gridX;
+      data.tiles[uVar1].worldY = y * 0x10 + -0x80 + data.gridY;
       data.tiles[uVar1].worldZ = 0;
       ExpireAllMeshes(data.tiles + uVar1);
     }
@@ -1864,7 +1874,7 @@ void __cdecl R_WaterSimulationTeleport(int param_1,int param_2)
 
 // 00A82570  R_WaterSimulationTrackView  (gfx_d3d/r_water_sim.cpp:998)
 
-void __cdecl R_WaterSimulationTrackView(float *param_1)
+void __cdecl R_WaterSimulationTrackView(float *eyePos)
 
 {
   bool bVar1;
@@ -1877,23 +1887,30 @@ void __cdecl R_WaterSimulationTrackView(float *param_1)
   float fVar8;
   float fVar9;
   float fVar10;
-  int local_34;
-  int local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
+  int newY;
+  uint n_2;
+  int newX;
+  uint x;
+  uint y;
+  uint n;
+  int dx;
+  float d;
+  int newTileY;
+  int newTileX;
+  int dy;
+  float speedScale;
   
-  iVar5 = (int)(*param_1 / (config.gridScale * 16.0));
-  iVar2 = (int)(param_1[1] / (config.gridScale * 16.0));
+  iVar5 = (int)(*eyePos / (config.gridScale * 16.0));
+  iVar2 = (int)(eyePos[1] / (config.gridScale * 16.0));
   uVar3 = ((int)(data.gridX + (data.gridX >> 0x1f & 0xfU)) >> 4) - iVar5;
   uVar4 = ((int)(data.gridY + (data.gridY >> 0x1f & 0xfU)) >> 4) - iVar2;
   if (((int)((uVar3 ^ (int)uVar3 >> 0x1f) - ((int)uVar3 >> 0x1f)) < 0x10) &&
      ((int)((uVar4 ^ (int)uVar4 >> 0x1f) - ((int)uVar4 >> 0x1f)) < 0x10)) {
     fVar10 = (data.localEyeHeight * 7.0) / 8.0;
-    fVar7 = R_WaterSimulationGetBaseHeight(param_1);
+    fVar7 = R_WaterSimulationGetBaseHeight(eyePos);
     data.localEyeHeight = (fVar7 * 1.0) / 8.0 + fVar10;
-    data.localSurfaceDistance = data.localEyeHeight - param_1[2];
-    fVar8 = Vec3Distance(param_1,data.oldEyePos);
+    data.localSurfaceDistance = data.localEyeHeight - eyePos[2];
+    fVar8 = Vec3Distance(eyePos,data.oldEyePos);
     fVar8 = fVar8 / ((config.gridScale * 16.0) / 16.0);
     fVar7 = fVar8;
     if (0.0 <= fVar8 - 1.0) {
@@ -1906,34 +1923,34 @@ void __cdecl R_WaterSimulationTrackView(float *param_1)
     dVar6 = (double)(1.0 - fVar9);
     __libm_sse2_pow((double)CONCAT44(fVar10,fVar9),(double)CONCAT44(fVar7,fVar8));
     data.speedScale = ((float)dVar6 * 1.0) / 32.0 + (data.speedScale * 31.0) / 32.0;
-    data.oldEyePos[0] = *param_1;
-    data.oldEyePos[1] = param_1[1];
-    data.oldEyePos[2] = param_1[2];
+    data.oldEyePos[0] = *eyePos;
+    data.oldEyePos[1] = eyePos[1];
+    data.oldEyePos[2] = eyePos[2];
     if ((uVar3 != 0) || (uVar4 != 0)) {
       data.gridX = data.gridX + uVar3 * -0x10;
       data.gridY = data.gridY + uVar4 * -0x10;
       data.centerU = data.centerU + uVar3 * -0x10 & 0xff;
       data.centerV = data.centerV + uVar4 * -0x10 & 0xff;
-      for (local_24 = 0; local_24 < 0x10; local_24 = local_24 + 1) {
-        for (local_28 = 0; local_28 < 0x10; local_28 = local_28 + 1) {
-          iVar2 = local_24 * 0x10 + local_28;
-          local_2c = data.tiles[iVar2].worldX;
-          local_34 = data.tiles[iVar2].worldY;
+      for (y = 0; y < 0x10; y = y + 1) {
+        for (x = 0; x < 0x10; x = x + 1) {
+          iVar2 = y * 0x10 + x;
+          newX = data.tiles[iVar2].worldX;
+          newY = data.tiles[iVar2].worldY;
           if (data.tiles[iVar2].worldX < data.gridX + -0x80) {
-            local_2c = data.tiles[iVar2].worldX + 0x100;
+            newX = data.tiles[iVar2].worldX + 0x100;
           }
           if (data.tiles[iVar2].worldY < data.gridY + -0x80) {
-            local_34 = data.tiles[iVar2].worldY + 0x100;
+            newY = data.tiles[iVar2].worldY + 0x100;
           }
           if (data.gridX + 0x80 <= data.tiles[iVar2].worldX) {
-            local_2c = data.tiles[iVar2].worldX + -0x100;
+            newX = data.tiles[iVar2].worldX + -0x100;
           }
           if (data.gridY + 0x80 <= data.tiles[iVar2].worldY) {
-            local_34 = data.tiles[iVar2].worldY + -0x100;
+            newY = data.tiles[iVar2].worldY + -0x100;
           }
-          if ((local_2c != data.tiles[iVar2].worldX) || (local_34 != data.tiles[iVar2].worldY)) {
-            data.tiles[iVar2].worldX = local_2c;
-            data.tiles[iVar2].worldY = local_34;
+          if ((newX != data.tiles[iVar2].worldX) || (newY != data.tiles[iVar2].worldY)) {
+            data.tiles[iVar2].worldX = newX;
+            data.tiles[iVar2].worldY = newY;
             ExpireAllMeshes(data.tiles + iVar2);
             bVar1 = R_WaterSimulationFillTile(data.tiles + iVar2);
             *(bool *)(iVar2 * 0xbc + 0xad71a34) = bVar1;
@@ -1944,9 +1961,9 @@ void __cdecl R_WaterSimulationTrackView(float *param_1)
   }
   else {
     R_WaterSimulationTeleport(iVar5 << 4,iVar2 << 4);
-    for (local_20 = 0; local_20 < 0x100; local_20 = local_20 + 1) {
-      bVar1 = R_WaterSimulationFillTile(data.tiles + local_20);
-      *(bool *)(local_20 * 0xbc + 0xad71a34) = bVar1;
+    for (n = 0; n < 0x100; n = n + 1) {
+      bVar1 = R_WaterSimulationFillTile(data.tiles + n);
+      *(bool *)(n * 0xbc + 0xad71a34) = bVar1;
     }
   }
   return;
@@ -1961,7 +1978,8 @@ void __cdecl R_WaterSimulationTrackView(float *param_1)
 void __cdecl R_InitWaterSimulation(void)
 
 {
-  uint local_c;
+  uint n;
+  ushort flags;
   
   if (waterSimInitialized) {
     R_WaterSimulationRestart();
@@ -2025,8 +2043,8 @@ void __cdecl R_InitWaterSimulation(void)
     expiredMeshes.tail = 0;
     expiredMeshes.head = 0;
     numFreeVertBlocks = 0;
-    for (local_c = 0; local_c < 800; local_c = local_c + 1) {
-      freeVertBlocks[numFreeVertBlocks] = local_c * 0x121;
+    for (n = 0; n < 800; n = n + 1) {
+      freeVertBlocks[numFreeVertBlocks] = n * 0x121;
       numFreeVertBlocks = numFreeVertBlocks + 1;
     }
     waterUpdateMutex = CreateMutexA((LPSECURITY_ATTRIBUTES)0x0,0,(LPCSTR)0x0);
@@ -2042,8 +2060,8 @@ void __cdecl R_InitWaterSimulation(void)
 void __cdecl R_WaterSimulationRestart(void)
 
 {
-  int local_c;
-  uint local_8;
+  int n_2;
+  uint n;
   
   data.waveTimeleft = 0.0;
   data.timeDelta = 0;
@@ -2054,18 +2072,17 @@ void __cdecl R_WaterSimulationRestart(void)
   data.oldEyePos[0] = 0.0;
   data.oldEyePos[1] = 0.0;
   data.oldEyePos[2] = 0.0;
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    ExpireAllMeshes(data.tiles + local_8);
+  for (n = 0; n < 0x100; n = n + 1) {
+    ExpireAllMeshes(data.tiles + n);
   }
   memset((uchar *)&prevCmd,'\0',0x54);
   R_WaterSimulationTeleport(-0x21524111,-0x21524111);
   if (rgp.world != (GfxWorld *)0x0) {
     Dvar_SetFloat(r_watersim_windDir,(rgp.world)->waterDirection);
-    for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      if ((rgp.world)->waterBuffers[local_c].bufferSize != 0) {
-        memcpy((uchar *)(data.buffer[local_c].v)->u,
-               (uchar *)(rgp.world)->waterBuffers[local_c].buffer,
-               (rgp.world)->waterBuffers[local_c].bufferSize);
+    for (n_2 = 0; n_2 < 2; n_2 = n_2 + 1) {
+      if ((rgp.world)->waterBuffers[n_2].bufferSize != 0) {
+        memcpy((uchar *)(data.buffer[n_2].v)->u,(uchar *)(rgp.world)->waterBuffers[n_2].buffer,
+               (rgp.world)->waterBuffers[n_2].bufferSize);
       }
     }
   }
@@ -2081,6 +2098,7 @@ uint __cdecl AllocMeshVerts(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  uint block;
   
   if (numFreeVertBlocks == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",0x49b,0,
@@ -2111,7 +2129,7 @@ uint __cdecl NumMeshVertsFree(void)
 
 // 00A83320  FreeMeshVerts  (gfx_d3d/r_water_sim.cpp:1189)
 
-void __cdecl FreeMeshVerts(uint param_1)
+void __cdecl FreeMeshVerts(uint baseVertex)
 
 {
   code *pcVar1;
@@ -2126,7 +2144,7 @@ void __cdecl FreeMeshVerts(uint param_1)
       return;
     }
   }
-  freeVertBlocks[numFreeVertBlocks] = param_1;
+  freeVertBlocks[numFreeVertBlocks] = baseVertex;
   numFreeVertBlocks = numFreeVertBlocks + 1;
   return;
 }
@@ -2134,31 +2152,32 @@ void __cdecl FreeMeshVerts(uint param_1)
 
 // 00A81BE0  R_InitWaterSimulationBuffers  (gfx_d3d/r_water_sim.cpp:1196)
 
-void __cdecl R_InitWaterSimulationBuffers(int param_1)
+void __cdecl R_InitWaterSimulationBuffers(int location)
 
 {
   int iVar1;
+  int semaphore;
   
   if (comWorld.numWaterCells == 0) {
     R_WaterSimulationSwitchOff();
   }
   else if (!buffersAllocated) {
-    PMem_BeginAlloc("water buffers",param_1,TRACK_WATERSIM);
-    channel_t<float4>::Alloc(data.buffer,param_1);
-    channel_t<float4>::Alloc(data.buffer + 1,param_1);
-    channel_t<short>::Alloc(&data.waterheight,param_1);
-    channel_t<char>::Alloc(&data.flooroffset,param_1);
-    channel_t<char>::Alloc(&data.shoredist,param_1);
-    channel_t<GfxColor>::Alloc(&data.colors,param_1);
+    PMem_BeginAlloc("water buffers",location,TRACK_WATERSIM);
+    channel_t<float4>::Alloc(data.buffer,location);
+    channel_t<float4>::Alloc(data.buffer + 1,location);
+    channel_t<short>::Alloc(&data.waterheight,location);
+    channel_t<char>::Alloc(&data.flooroffset,location);
+    channel_t<char>::Alloc(&data.shoredist,location);
+    channel_t<GfxColor>::Alloc(&data.colors,location);
     memset((uchar *)(data.buffer[0].v)->u,'\0',data.buffer[0].bufferSize);
     memset((uchar *)(data.buffer[1].v)->u,'\0',data.buffer[1].bufferSize);
     memset((uchar *)data.waterheight.v,'\0',data.waterheight.bufferSize);
     memset((uchar *)data.flooroffset.v,'\0',data.flooroffset.bufferSize);
     memset((uchar *)data.shoredist.v,'\0',data.shoredist.bufferSize);
     memset((data.colors.v)->array,'\0',data.colors.bufferSize);
-    PMem_EndAlloc("water buffers",param_1);
+    PMem_EndAlloc("water buffers",location);
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    R_InitWaterSimulationVertexBuffers(param_1);
+    R_InitWaterSimulationVertexBuffers(location);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -2226,19 +2245,20 @@ void __cdecl R_WaterSimulationUpdateConfig(void)
 
 // 00A838C0  R_SurfaceAlloc  (gfx_d3d/r_water_sim.cpp:1302)
 
-void * __cdecl R_SurfaceAlloc(uint param_1)
+void * __cdecl R_SurfaceAlloc(uint size)
 
 {
   int iVar1;
   long *plVar2;
   uchar *puVar3;
+  uint startSurfPos;
   
   plVar2 = &frontEndDataOut->surfPos;
   LOCK();
   iVar1 = *plVar2;
-  *plVar2 = *plVar2 + param_1;
+  *plVar2 = *plVar2 + size;
   UNLOCK();
-  if (iVar1 + param_1 < 0x40001) {
+  if (iVar1 + size < 0x40001) {
     puVar3 = frontEndDataOut->surfsBuffer + iVar1;
   }
   else {
@@ -2251,7 +2271,7 @@ void * __cdecl R_SurfaceAlloc(uint param_1)
 
 // 00A834F0  R_RenderWaterModel  (gfx_d3d/r_water_sim.cpp:1318)
 
-void __cdecl R_RenderWaterModel(uint param_1)
+void __cdecl R_RenderWaterModel(uint viewIndex)
 
 {
   uint uVar1;
@@ -2268,21 +2288,29 @@ void __cdecl R_RenderWaterModel(uint param_1)
   float fVar10;
   float fVar11;
   uint local_70;
-  uint local_18;
-  float local_10;
+  uint surfId;
+  tilemesh_t *mesh1;
+  tilemesh_t *mesh0;
+  float dist;
+  float interpolate;
+  int lod;
+  int region;
+  uint n;
+  GfxLodParms *lodParms;
+  float lodOrigin;
   float local_c;
   float local_8;
   
   if (s_world.waterMaterial != (Material *)0x0) {
-    local_8 = rg.correctedLodParms[param_1].origin[2];
-    local_10 = rg.correctedLodParms[param_1].origin[0] - (config.gridScale * 16.0) / 2.0;
-    local_c = rg.correctedLodParms[param_1].origin[1] - (config.gridScale * 16.0) / 2.0;
-    for (local_18 = 0; local_18 < 0x100; local_18 = local_18 + 1) {
-      if (((data.tiles[local_18].occupied != false) &&
-          (1 < (data.tiles[local_18].meshes.tail - data.tiles[local_18].meshes.head & 3))) &&
-         (iVar7 = R_CullBoxCurDpvs(data.tiles[local_18].minMax[0],param_1), iVar7 == 0)) {
-        uVar9 = data.tiles[local_18].meshes.head;
-        iVar7 = local_18 * 0xbc + 0xad71a5c + (data.tiles[local_18].meshes.head + 1 & 3) * 0x20;
+    local_8 = rg.correctedLodParms[viewIndex].origin[2];
+    lodOrigin = rg.correctedLodParms[viewIndex].origin[0] - (config.gridScale * 16.0) / 2.0;
+    local_c = rg.correctedLodParms[viewIndex].origin[1] - (config.gridScale * 16.0) / 2.0;
+    for (n = 0; n < 0x100; n = n + 1) {
+      if (((data.tiles[n].occupied != false) &&
+          (1 < (data.tiles[n].meshes.tail - data.tiles[n].meshes.head & 3))) &&
+         (iVar7 = R_CullBoxCurDpvs(data.tiles[n].minMax[0],viewIndex), iVar7 == 0)) {
+        uVar9 = data.tiles[n].meshes.head;
+        iVar7 = n * 0xbc + 0xad71a5c + (data.tiles[n].meshes.head + 1 & 3) * 0x20;
         puVar8 = R_SurfaceAlloc(0x2c);
         if (puVar8 == (undefined4 *)0x0) {
           return;
@@ -2290,14 +2318,14 @@ void __cdecl R_RenderWaterModel(uint param_1)
         puVar8[5] = (float)(data.frame - *(int *)(iVar7 + 0x14)) / 16.0;
         puVar8[1] = data.vertexBuffer;
         puVar8[2] = data.vertexBuffer;
-        puVar8[3] = data.tiles[local_18].meshes.data[uVar9].baseVertex;
+        puVar8[3] = data.tiles[n].meshes.data[uVar9].baseVertex;
         puVar8[4] = *(undefined4 *)(iVar7 + 0x18);
-        fVar10 = (float)data.tiles[local_18].worldY * config.gridScale;
-        fVar11 = (float)data.tiles[local_18].worldZ * config.gridScale;
-        puVar8[8] = (float)data.tiles[local_18].worldX * config.gridScale;
+        fVar10 = (float)data.tiles[n].worldY * config.gridScale;
+        fVar11 = (float)data.tiles[n].worldZ * config.gridScale;
+        puVar8[8] = (float)data.tiles[n].worldX * config.gridScale;
         puVar8[9] = fVar10;
         puVar8[10] = fVar11;
-        fVar10 = Vec3DistanceSq((float *)(puVar8 + 8),&local_10);
+        fVar10 = Vec3DistanceSq((float *)(puVar8 + 8),&lodOrigin);
         local_70 = (uint)(2.25e+06 <= fVar10);
         *puVar8 = data.indexBuffer[local_70];
         puVar8[6] = 0x121;
@@ -2330,21 +2358,22 @@ void __cdecl R_RenderWaterModel(uint param_1)
 
 // 00A81DC0  R_SetWaterSimulationConstants  (gfx_d3d/r_water_sim.cpp:1405)
 
-void __cdecl R_SetWaterSimulationConstants(GfxCmdBufSourceState *param_1,float param_2)
+void __cdecl R_SetWaterSimulationConstants(GfxCmdBufSourceState *state,float interp)
 
 {
   float local_1c;
+  bool isFullScreen;
   
-  if ((*(int *)(*(int *)((int)(param_1->viewParms).viewMatrix.m[2][0] + 0x16cc40) + 0x18c) == 0) ||
+  if ((*(int *)(*(int *)((int)(state->viewParms).viewMatrix.m[2][0] + 0x16cc40) + 0x18c) == 0) ||
      (!data.enabled)) {
     local_1c = 100000.0;
   }
   else {
     local_1c = 1.0 / ((data.speedScale * 222.72 * config.gridScale) / 2.0);
   }
-  R_UpdateCodeConstant(param_1,0x50,0.0,param_2,data.localSurfaceDistance,local_1c);
+  R_UpdateCodeConstant(state,0x50,0.0,interp,data.localSurfaceDistance,local_1c);
   R_UpdateCodeConstant
-            (param_1,0x74,(r_watersim_scroll->current).value,(r_watersim_scroll->current).vector[1],
+            (state,0x74,(r_watersim_scroll->current).value,(r_watersim_scroll->current).vector[1],
              0.0,0.0);
   return;
 }
@@ -2354,7 +2383,7 @@ void __cdecl R_SetWaterSimulationConstants(GfxCmdBufSourceState *param_1,float p
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
+void __cdecl R_WaterSimulationRender(float *eyePos,int time,uint viewIndex)
 
 {
   uint uVar1;
@@ -2412,14 +2441,14 @@ void __cdecl R_WaterSimulationRender(float *param_1,int param_2,uint param_3)
         expiredMeshes.head = expiredMeshes.head + 1 & 0x3ff) {
     }
     R_WaterSimulationUpdateConfig();
-    R_WaterSimulationTrackView(param_1);
-    R_RenderWaterModel(param_3);
+    R_WaterSimulationTrackView(eyePos);
+    R_RenderWaterModel(viewIndex);
     data.enabled = true;
-    if (param_2 < 0) {
+    if (time < 0) {
       local_1c = 0;
     }
     else {
-      local_1c = param_2;
+      local_1c = time;
     }
     data.timeDelta = data.timeDelta + local_1c;
     local_20 = 0x12;
@@ -2529,43 +2558,43 @@ void __cdecl R_WaterSimulationSwitchOff(void)
 
 // 00A86740  FillIndexBuffer  (gfx_d3d/r_water_sim.cpp:1696)
 
-int __cdecl FillIndexBuffer(ushort *param_1,uint param_2,ushort *param_3)
+int __cdecl FillIndexBuffer(ushort *lockedindex,uint lodMask,ushort *verts)
 
 {
-  int local_c;
-  ushort *local_8;
+  uint count;
+  ushort *p;
   
-  local_8 = tessTable[param_2];
-  local_c = 0;
-  for (; *local_8 != 0xffff; local_8 = local_8 + 1) {
-    *param_1 = param_3[*local_8];
-    param_1 = param_1 + 1;
-    local_c = local_c + 1;
+  p = tessTable[lodMask];
+  count = 0;
+  for (; *p != 0xffff; p = p + 1) {
+    *lockedindex = verts[*p];
+    lockedindex = lockedindex + 1;
+    count = count + 1;
   }
-  return local_c;
+  return count;
 }
 
 
 // 00A863A0  Water_AllocVertexBuffer  (gfx_d3d/r_water_sim.cpp:1711)
 
-void * __cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **param_1,uint param_2,uint param_3)
+void * __cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **vb,uint buffersize,uint location)
 
 {
   void *pvVar1;
   
-  pvVar1 = R_AllocDynamicVertexBuffer(param_1,param_2,true,param_3,"water vtx buffers");
+  pvVar1 = R_AllocDynamicVertexBuffer(vb,buffersize,true,location,"water vtx buffers");
   return pvVar1;
 }
 
 
 // 00A863C0  Water_AllocIndexBuffer  (gfx_d3d/r_water_sim.cpp:1724)
 
-void * __cdecl Water_AllocIndexBuffer(IDirect3DIndexBuffer9 **param_1,uint param_2,uint param_3)
+void * __cdecl Water_AllocIndexBuffer(IDirect3DIndexBuffer9 **ib,uint buffersize,uint location)
 
 {
   void *pvVar1;
   
-  pvVar1 = R_AllocStaticIndexBuffer(param_1,param_2,param_3,"water vtx buffers");
+  pvVar1 = R_AllocStaticIndexBuffer(ib,buffersize,location,"water vtx buffers");
   return pvVar1;
 }
 
@@ -2574,14 +2603,15 @@ void * __cdecl Water_AllocIndexBuffer(IDirect3DIndexBuffer9 **param_1,uint param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
+void __cdecl R_InitWaterSimulationVertexBuffers(uint location)
 
 {
   code *pcVar1;
   short sVar2;
   short sVar3;
   bool bVar4;
-  ushort local_48;
+  uint lodMask;
+  ushort verts;
   short local_46;
   short local_44;
   short local_42;
@@ -2591,61 +2621,61 @@ void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
   short local_3a;
   short local_38;
   uint local_34;
-  ushort local_30;
-  int local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  undefined4 local_18;
-  uint local_14;
-  short local_10;
-  int local_c;
-  ushort *local_8;
+  ushort base;
+  int count;
+  uint x_2;
+  uint y_2;
+  uint x;
+  uint y;
+  uint buffersize;
+  int indexbuffersize;
+  ushort vstride;
+  int numTris;
+  ushort *lockedindex;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (!vertexBuffersAllocated) {
-    local_18 = 0x387200;
-    data.lockedData = Water_AllocVertexBuffer(&data.vertexBuffer,0x387200,param_1);
-    local_c = 0x200;
+    buffersize = 0x387200;
+    data.lockedData = Water_AllocVertexBuffer(&data.vertexBuffer,0x387200,location);
+    numTris = 0x200;
     data.tileTriCount[0] = 0x200;
-    local_14 = 0xc00;
-    local_10 = 0x11;
-    local_8 = Water_AllocIndexBuffer(data.indexBuffer,0xc00,param_1);
-    for (local_1c = 0; local_1c < 0x10; local_1c = local_1c + 1) {
-      for (local_20 = 0; local_20 < 0x10; local_20 = local_20 + 1) {
-        sVar3 = (short)local_1c;
-        sVar2 = (short)local_20;
-        *local_8 = local_10 * sVar3 + sVar2;
-        local_8[1] = (sVar3 + 1) * local_10 + sVar2;
-        local_8[2] = local_10 * sVar3 + 1 + sVar2;
-        local_8[3] = local_10 * sVar3 + 1 + sVar2;
-        local_8[4] = (sVar3 + 1) * local_10 + sVar2;
-        local_8[5] = (sVar3 + 1) * local_10 + 1 + sVar2;
-        local_8 = local_8 + 6;
+    indexbuffersize = 0xc00;
+    vstride = 0x11;
+    lockedindex = Water_AllocIndexBuffer(data.indexBuffer,0xc00,location);
+    for (y = 0; y < 0x10; y = y + 1) {
+      for (x = 0; x < 0x10; x = x + 1) {
+        sVar3 = (short)y;
+        sVar2 = (short)x;
+        *lockedindex = vstride * sVar3 + sVar2;
+        lockedindex[1] = (sVar3 + 1) * vstride + sVar2;
+        lockedindex[2] = vstride * sVar3 + 1 + sVar2;
+        lockedindex[3] = vstride * sVar3 + 1 + sVar2;
+        lockedindex[4] = (sVar3 + 1) * vstride + sVar2;
+        lockedindex[5] = (sVar3 + 1) * vstride + 1 + sVar2;
+        lockedindex = lockedindex + 6;
       }
     }
     R_FinishStaticIndexBuffer(data.indexBuffer[0]);
-    local_8 = Water_AllocIndexBuffer(data.indexBuffer + 1,local_14,param_1);
-    local_c = 0;
-    for (local_24 = 0; local_24 < 0x10; local_24 = local_24 + 2) {
-      for (local_28 = 0; local_28 < 0x10; local_28 = local_28 + 2) {
-        local_48 = local_10 * (short)local_24 + (short)local_28;
-        local_46 = local_48 + 1;
-        local_44 = local_48 + 2;
-        local_42 = local_48 + local_10;
-        local_40 = local_48 + 1 + local_10;
-        local_3e = local_48 + 2 + local_10;
-        local_3c = local_48 + local_10 * 2;
-        local_3a = local_48 + 1 + local_10 * 2;
-        local_38 = local_48 + 2 + local_10 * 2;
-        local_30 = local_48;
-        local_2c = FillIndexBuffer(local_8,-(uint)(local_28 != 0) & 8 | -(uint)(local_28 != 0xe) & 4
-                                           | -(uint)(local_24 != 0) & 2 | (uint)(local_24 != 0xe),
-                                   &local_48);
-        local_8 = local_8 + local_2c;
-        local_c = local_2c / 3 + local_c;
-        if (((local_2c / 3) * 3 - local_2c != 0) &&
+    lockedindex = Water_AllocIndexBuffer(data.indexBuffer + 1,indexbuffersize,location);
+    numTris = 0;
+    for (y_2 = 0; y_2 < 0x10; y_2 = y_2 + 2) {
+      for (x_2 = 0; x_2 < 0x10; x_2 = x_2 + 2) {
+        verts = vstride * (short)y_2 + (short)x_2;
+        local_46 = verts + 1;
+        local_44 = verts + 2;
+        local_42 = verts + vstride;
+        local_40 = verts + 1 + vstride;
+        local_3e = verts + 2 + vstride;
+        local_3c = verts + vstride * 2;
+        local_3a = verts + 1 + vstride * 2;
+        local_38 = verts + 2 + vstride * 2;
+        base = verts;
+        count = FillIndexBuffer(lockedindex,
+                                -(uint)(x_2 != 0) & 8 | -(uint)(x_2 != 0xe) & 4 |
+                                -(uint)(y_2 != 0) & 2 | (uint)(y_2 != 0xe),&verts);
+        lockedindex = lockedindex + count;
+        numTris = count / 3 + numTris;
+        if (((count / 3) * 3 - count != 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_water_sim.cpp",
                                      0x709,0,"%s"), !bVar4)) {
           pcVar1 = (code *)swi(3);
@@ -2654,7 +2684,7 @@ void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
         }
       }
     }
-    data.tileTriCount[1] = local_c;
+    data.tileTriCount[1] = numTris;
     R_FinishStaticIndexBuffer(data.indexBuffer[1]);
     vertexBuffersAllocated = true;
   }
@@ -2667,18 +2697,18 @@ void __cdecl R_InitWaterSimulationVertexBuffers(uint param_1)
 void __cdecl R_FreeWaterSimulationVertexBuffers(void)
 
 {
-  int local_8;
+  int n;
   
   if (vertexBuffersAllocated) {
     if (data.vertexBuffer != (IDirect3DVertexBuffer9 *)0x0) {
       R_FreeStaticVertexBuffer(data.vertexBuffer);
       data.vertexBuffer = (IDirect3DVertexBuffer9 *)0x0;
     }
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      if (data.indexBuffer[local_8] != (IDirect3DIndexBuffer9 *)0x0) {
-        R_FreeStaticIndexBuffer(data.indexBuffer[local_8]);
+    for (n = 0; n < 2; n = n + 1) {
+      if (data.indexBuffer[n] != (IDirect3DIndexBuffer9 *)0x0) {
+        R_FreeStaticIndexBuffer(data.indexBuffer[n]);
       }
-      data.indexBuffer[local_8] = (IDirect3DIndexBuffer9 *)0x0;
+      data.indexBuffer[n] = (IDirect3DIndexBuffer9 *)0x0;
     }
     vertexBuffersAllocated = false;
   }
@@ -2688,16 +2718,16 @@ void __cdecl R_FreeWaterSimulationVertexBuffers(void)
 
 // 00A86830  R_WaterSimulationNotifyBullet  (gfx_d3d/r_water_sim.cpp:1949)
 
-void __cdecl R_WaterSimulationNotifyBullet(float *param_1)
+void __cdecl R_WaterSimulationNotifyBullet(float *hitpos)
 
 {
-  debugpoint_t local_10;
+  debugpoint_t p;
   
   if ((r_watersim_debug->current).enabled != false) {
-    local_10.pos[0] = *param_1;
-    local_10.pos[1] = param_1[1];
-    local_10.pos[2] = param_1[2];
-    fifo_t<debugpoint_t,16>::add(&debugPoints,&local_10);
+    p.pos[0] = *hitpos;
+    p.pos[1] = hitpos[1];
+    p.pos[2] = hitpos[2];
+    fifo_t<debugpoint_t,16>::add(&debugPoints,&p);
   }
   return;
 }
@@ -2705,19 +2735,19 @@ void __cdecl R_WaterSimulationNotifyBullet(float *param_1)
 
 // 00A86A90  ConvertWorldToGrid  (gfx_d3d/r_water_sim.cpp:2003)
 
-bool __cdecl ConvertWorldToGrid(float *param_1,int *param_2,int *param_3)
+bool __cdecl ConvertWorldToGrid(float *worldPos,int *u,int *v)
 
 {
   bool bVar1;
   uint uVar2;
   
-  *param_2 = (int)(*param_1 / config.gridScale) - data.gridX;
-  *param_3 = (int)(param_1[1] / config.gridScale) - data.gridY;
-  uVar2 = *param_2 >> 0x1f;
-  if (((int)((*param_2 ^ uVar2) - uVar2) < 0x80) &&
-     (uVar2 = *param_3 >> 0x1f, (int)((*param_3 ^ uVar2) - uVar2) < 0x80)) {
-    *param_2 = *param_2 + data.centerU & 0xff;
-    *param_3 = *param_3 + data.centerV & 0xff;
+  *u = (int)(*worldPos / config.gridScale) - data.gridX;
+  *v = (int)(worldPos[1] / config.gridScale) - data.gridY;
+  uVar2 = *u >> 0x1f;
+  if (((int)((*u ^ uVar2) - uVar2) < 0x80) &&
+     (uVar2 = *v >> 0x1f, (int)((*v ^ uVar2) - uVar2) < 0x80)) {
+    *u = *u + data.centerU & 0xff;
+    *v = *v + data.centerV & 0xff;
     bVar1 = true;
   }
   else {
@@ -2729,39 +2759,42 @@ bool __cdecl ConvertWorldToGrid(float *param_1,int *param_2,int *param_3)
 
 // 00A86880  R_WaterSimulationSetHeight  (gfx_d3d/r_water_sim.cpp:2027)
 
-void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param_3,float param_4)
+void __cdecl
+R_WaterSimulationSetHeight(float *center,float radius,float targetHeight,float lerpRate)
 
 {
   float4 *pfVar1;
   bool bVar2;
-  float local_2c;
-  short local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int iVar3;
+  float *value;
+  float interpolate;
+  short waterheight;
+  int bufId;
+  int x;
+  int y;
+  int u;
+  int v;
+  int size;
+  int sx;
+  int sy;
   
   if (data.enabled) {
-    local_10 = (int)(param_2 / config.gridScale);
-    bVar2 = ConvertWorldToGrid(param_1,&local_c,&local_8);
+    size = (int)(radius / config.gridScale);
+    bVar2 = ConvertWorldToGrid(center,&sx,&sy);
     if (bVar2) {
-      for (local_14 = 0; local_14 < local_10; local_14 = local_14 + 1) {
-        for (local_18 = 0; local_18 < local_10; local_18 = local_18 + 1) {
-          local_20 = (local_c + local_18) - local_10 / 2;
-          local_1c = (local_8 + local_14) - local_10 / 2;
-          if ((((0 < local_20) && (0 < local_1c)) && (local_20 < 0xff)) && (local_1c < 0xff)) {
-            GetBuffersForPoint(local_20,local_1c,&local_24,&local_2c);
-            local_28 = data.waterheight.v[local_1c * 0x100 + local_20];
-            if ((param_1[2] - 10.0 < (float)(int)local_28) &&
-               ((float)(int)local_28 < param_1[2] + 200.0)) {
-              local_20 = local_1c * 0x100 + local_20;
-              pfVar1 = data.buffer[local_24].v;
-              pfVar1->v[local_20 * 4 + 1] =
-                   (param_3 - pfVar1->v[local_20 * 4 + 1]) * param_4 + pfVar1->v[local_20 * 4 + 1];
+      for (v = 0; v < size; v = v + 1) {
+        for (u = 0; u < size; u = u + 1) {
+          x = (sx + u) - size / 2;
+          y = (sy + v) - size / 2;
+          if ((((0 < x) && (0 < y)) && (x < 0xff)) && (y < 0xff)) {
+            GetBuffersForPoint(x,y,&bufId,&interpolate);
+            waterheight = data.waterheight.v[y * 0x100 + x];
+            if ((center[2] - 10.0 < (float)(int)waterheight) &&
+               ((float)(int)waterheight < center[2] + 200.0)) {
+              iVar3 = y * 0x100 + x;
+              pfVar1 = data.buffer[bufId].v;
+              pfVar1->v[iVar3 * 4 + 1] =
+                   (targetHeight - pfVar1->v[iVar3 * 4 + 1]) * lerpRate + pfVar1->v[iVar3 * 4 + 1];
             }
           }
         }
@@ -2774,7 +2807,7 @@ void __cdecl R_WaterSimulationSetHeight(float *param_1,float param_2,float param
 
 // 00A86B30  R_WaterSimulationSimpleDisplace  (gfx_d3d/r_water_sim.cpp:2105)
 
-void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float param_3)
+void __cdecl R_WaterSimulationSimpleDisplace(float *hitpos,float radius,float height)
 
 {
   bool bVar1;
@@ -2782,61 +2815,61 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
   float local_4c;
   float local_44;
   float local_40;
-  float local_38;
-  int local_34;
-  float4 *local_30;
-  float local_2c;
-  float local_28;
-  int local_24;
-  int local_20;
-  float local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  float interpolate;
+  int bufId;
+  float *value;
+  float dx;
+  float scale;
+  int x;
+  int y;
+  float dy;
+  int u;
+  int v;
+  int size;
+  int sx;
+  int sy;
   
   if (data.enabled) {
-    if (param_2 - max_plop_size < 0.0) {
-      local_40 = param_2;
+    if (radius - max_plop_size < 0.0) {
+      local_40 = radius;
     }
     else {
       local_40 = max_plop_size;
     }
-    if (0.0 - param_2 < 0.0) {
+    if (0.0 - radius < 0.0) {
       local_4c = local_40;
     }
     else {
       local_4c = 0.0;
     }
     local_50 = -max_plop_height;
-    if (param_3 - max_plop_height < 0.0) {
-      local_44 = param_3;
+    if (height - max_plop_height < 0.0) {
+      local_44 = height;
     }
     else {
       local_44 = max_plop_height;
     }
-    if (local_50 - param_3 < 0.0) {
+    if (local_50 - height < 0.0) {
       local_50 = local_44;
     }
-    local_10 = (int)(local_4c / config.gridScale);
+    size = (int)(local_4c / config.gridScale);
     local_50 = local_50 / config.gridScale;
-    bVar1 = ConvertWorldToGrid(param_1,&local_c,&local_8);
+    bVar1 = ConvertWorldToGrid(hitpos,&sx,&sy);
     if (bVar1) {
-      for (local_14 = 0; local_14 < local_10; local_14 = local_14 + 1) {
-        for (local_18 = 0; local_18 < local_10; local_18 = local_18 + 1) {
-          local_2c = (float)local_18 - (float)local_10 / 2.0;
-          local_1c = (float)local_14 - (float)local_10 / 2.0;
-          local_28 = 1.0 - SQRT(local_2c * local_2c + local_1c * local_1c) / (float)local_10;
-          if (local_28 < 0.0) {
-            local_28 = 0.0;
+      for (v = 0; v < size; v = v + 1) {
+        for (u = 0; u < size; u = u + 1) {
+          dx = (float)u - (float)size / 2.0;
+          dy = (float)v - (float)size / 2.0;
+          scale = 1.0 - SQRT(dx * dx + dy * dy) / (float)size;
+          if (scale < 0.0) {
+            scale = 0.0;
           }
-          local_24 = (local_c + local_18) - local_10 / 2;
-          local_20 = (local_8 + local_14) - local_10 / 2;
-          if ((((0 < local_24) && (0 < local_20)) && (local_24 < 0xff)) && (local_20 < 0xff)) {
-            GetBuffersForPoint(local_24,local_20,&local_34,&local_38);
-            local_30 = data.buffer[local_34].v + local_20 * 0x100 + local_24;
-            local_30->v[1] = local_50 * local_28 * local_28 + local_30->v[1];
+          x = (sx + u) - size / 2;
+          y = (sy + v) - size / 2;
+          if ((((0 < x) && (0 < y)) && (x < 0xff)) && (y < 0xff)) {
+            GetBuffersForPoint(x,y,&bufId,&interpolate);
+            value = (float *)(data.buffer[bufId].v + y * 0x100 + x);
+            value[1] = local_50 * scale * scale + value[1];
           }
         }
       }
@@ -2848,22 +2881,21 @@ void __cdecl R_WaterSimulationSimpleDisplace(float *param_1,float param_2,float 
 
 // 00A86DE0  R_WaterSimulationNotifyExplosionEx  (gfx_d3d/r_water_sim.cpp:2170)
 
-void __cdecl R_WaterSimulationNotifyExplosionEx(float *param_1,int param_2,float param_3)
+void __cdecl R_WaterSimulationNotifyExplosionEx(float *hitpos,int size,float height)
 
 {
-  R_WaterSimulationSimpleDisplace
-            (param_1,(float)param_2 * config.gridScale,param_3 * config.gridScale);
+  R_WaterSimulationSimpleDisplace(hitpos,(float)size * config.gridScale,height * config.gridScale);
   return;
 }
 
 
 // 00A86E20  R_WaterSimulationNotifyExplosion  (gfx_d3d/r_water_sim.cpp:2175)
 
-void __cdecl R_WaterSimulationNotifyExplosion(float *param_1)
+void __cdecl R_WaterSimulationNotifyExplosion(float *hitpos)
 
 {
   R_WaterSimulationSimpleDisplace
-            (param_1,(float)explodesize * config.gridScale,explodeheight * config.gridScale);
+            (hitpos,(float)explodesize * config.gridScale,explodeheight * config.gridScale);
   return;
 }
 
@@ -2872,7 +2904,7 @@ void __cdecl R_WaterSimulationNotifyExplosion(float *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int param_1,int param_2,uint param_3)
+float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int u,int v,uint bufnum)
 
 {
   float local_64;
@@ -2892,29 +2924,29 @@ float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int param_1,int param_
   float local_28;
   float local_24;
   float local_20;
-  float4 *local_1c;
-  undefined4 local_18;
+  float4 *vp;
+  undefined4 value;
   undefined4 local_14;
   undefined4 local_10;
   undefined4 local_c;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1c = data.buffer[param_2 >> 8 & 1U ^ param_3].v;
-  local_1c = local_1c + (param_2 & 0xffU) * 0x100 + (param_1 & 0xffU);
-  local_18 = local_1c->v[0];
-  local_14 = local_1c->v[1];
-  local_10 = local_1c->v[2];
-  local_c = local_1c->v[3];
+  vp = data.buffer[v >> 8 & 1U ^ bufnum].v;
+  vp = vp + (v & 0xffU) * 0x100 + (u & 0xffU);
+  value = vp->v[0];
+  local_14 = vp->v[1];
+  local_10 = vp->v[2];
+  local_c = vp->v[3];
   local_2c = g_swizzleXZYW.v[0];
   local_28 = g_swizzleXZYW.v[1];
   local_24 = g_swizzleXZYW.v[2];
   local_20 = g_swizzleXZYW.v[3];
-  local_64 = local_18;
+  local_64 = value;
   local_60 = local_14;
   local_5c = local_10;
   local_58 = local_c;
-  local_54 = local_18;
+  local_54 = value;
   local_50 = local_14;
   local_4c = local_10;
   local_48 = local_c;
@@ -2922,15 +2954,15 @@ float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int param_1,int param_
   local_40 = g_swizzleXZYW.v[1];
   local_3c = g_swizzleXZYW.v[2];
   local_38 = g_swizzleXZYW.v[3];
-  local_30 = &local_18;
+  local_30 = &value;
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_18._0_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 0x18));
+  value._0_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 0x18));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_18._1_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 0x10 & 0xff));
+  value._1_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 0x10 & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_18._2_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 8 & 0xff));
+  value._2_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] >> 8 & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
-  local_18._3_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] & 0xff));
+  value._3_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[0] & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
   local_14._0_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[1] >> 0x18));
                     /* WARNING: Ignoring partial resolution of indirect */
@@ -2955,7 +2987,7 @@ float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int param_1,int param_
   local_c._2_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[3] >> 8 & 0xff));
                     /* WARNING: Ignoring partial resolution of indirect */
   local_c._3_1_ = *(undefined1 *)((int)&local_64 + (g_swizzleXZYW.u[3] & 0xff));
-  __return_storage_ptr__->v[0] = local_18;
+  __return_storage_ptr__->v[0] = value;
   __return_storage_ptr__->v[1] = local_14;
   __return_storage_ptr__->v[2] = local_10;
   __return_storage_ptr__->v[3] = local_c;
@@ -2967,7 +2999,7 @@ float4 * __cdecl ReadValue(float4 *__return_storage_ptr__,int param_1,int param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_WaterSimulationSkinMesh(WaterSimulationCmd *param_1)
+void __cdecl R_WaterSimulationSkinMesh(WaterSimulationCmd *cmd)
 
 {
   int iVar1;
@@ -3324,13 +3356,13 @@ void __cdecl R_WaterSimulationSkinMesh(WaterSimulationCmd *param_1)
   local_e4 = 128.0;
   local_e0 = 128.0;
   local_dc = 128.0;
-  local_ec = (param_1->skin).srcBuf;
+  local_ec = (cmd->skin).srcBuf;
   local_f0 = 0;
   do {
     if (0xf < local_f0) {
       return;
     }
-    local_f4 = *(int **)((int)&(param_1->skin).field2_0x8 + local_f0 * 4);
+    local_f4 = *(int **)((int)&(cmd->skin).field2_0x8 + local_f0 * 4);
     if (local_f4 != (int *)0x0) {
       iVar1 = Sys_QueryD3DDeviceOKEvent();
       if (iVar1 == 0) {
@@ -3827,15 +3859,17 @@ void __cdecl R_WaterSimulationApplyWaveSeed(void)
   uint uVar1;
   int iVar2;
   int iVar3;
-  int local_18;
-  float local_10;
+  int du;
+  uint attempts;
+  int dv;
+  float v;
   float local_c;
   undefined4 local_8;
   
   data.waveTimeleft = data.waveTimeleft - 16.666666;
   if (data.waveTimeleft < 0.0) {
     data.waveTimeleft = data.waveTimeleft + config.waveSeedDelay;
-    local_18 = 100;
+    attempts = 100;
     do {
       uVar1 = water_rand();
       uVar1 = uVar1 & 0x800000ff;
@@ -3849,11 +3883,11 @@ void __cdecl R_WaterSimulationApplyWaveSeed(void)
         uVar1 = (uVar1 - 1 | 0xffffff00) + 1;
       }
       iVar3 = uVar1 - 0x80;
-    } while ((local_18 != 0) && (local_18 = local_18 + -1, iVar2 * iVar2 + iVar3 * iVar3 < 0x4000));
-    local_10 = (float)(iVar2 + data.gridX) * config.gridScale;
+    } while ((attempts != 0) && (attempts = attempts - 1, iVar2 * iVar2 + iVar3 * iVar3 < 0x4000));
+    v = (float)(iVar2 + data.gridX) * config.gridScale;
     local_c = (float)(iVar3 + data.gridY) * config.gridScale;
     local_8 = 0;
-    R_WaterSimulationSimpleDisplace(&local_10,config.waveSeedRadius,-config.waveSeedHeight);
+    R_WaterSimulationSimpleDisplace(&v,config.waveSeedRadius,-config.waveSeedHeight);
   }
   return;
 }
@@ -3861,105 +3895,110 @@ void __cdecl R_WaterSimulationApplyWaveSeed(void)
 
 // 00A86FB0  R_WaterSimulationCmd  (gfx_d3d/r_water_sim.cpp:2531)
 
-void __cdecl R_WaterSimulationCmd(void *param_1)
+void __cdecl R_WaterSimulationCmd(void *rawdata)
 
 {
+  WaterSimulationCmd *cmd;
+  
   water_rand_seed = data.frame;
   LockUpdateMutex();
-  R_WaterSimulationUpdateFrame(param_1);
+  R_WaterSimulationUpdateFrame(rawdata);
   FlushBuffers();
   R_WaterSimulationApplyWaveSeed();
   FlushBuffers();
   UnlockUpdateMutex();
-  R_WaterSimulationSkinMesh(param_1);
+  R_WaterSimulationSkinMesh(rawdata);
   return;
 }
 
 
 // 00A89A80  R_WaterSimulationGetGridPosition  (gfx_d3d/r_water_sim.cpp:2593)
 
-void __cdecl R_WaterSimulationGetGridPosition(int param_1,int param_2,int param_3,float *param_4)
+void __cdecl R_WaterSimulationGetGridPosition(int sx,int sy,int timeOffset,float *v)
 
 {
   float fVar1;
-  uint uVar2;
-  uint uVar3;
-  float4 *pfVar4;
-  float local_34;
-  channel_t<float4> *local_30;
-  float local_2c;
+  uint u;
+  uint v_00;
+  float4 *pfVar2;
+  float t;
+  channel_t<float4> *old_pos;
+  float oldposvalue;
   float local_28;
   float local_24;
   float local_20;
-  float local_18;
+  float temp;
+  float posvalue;
   float local_14;
   float local_10;
   float local_c;
-  uint local_8;
+  int bufId;
   
-  uVar2 = param_1 & 0xff;
-  uVar3 = param_2 & 0xff;
-  GetBuffersForPoint(uVar2,uVar3,(int *)&local_8,&local_34);
-  local_30 = data.buffer + (local_8 ^ 1);
-  pfVar4 = data.buffer[local_8].v + uVar3 * 0x100 + uVar2;
-  local_18 = pfVar4->v[0];
-  local_14 = pfVar4->v[1];
-  local_10 = pfVar4->v[2];
-  local_c = pfVar4->v[3];
-  local_34 = (float)param_3 * 0.0625 + local_34;
-  pfVar4 = local_30->v + uVar3 * 0x100 + uVar2;
-  local_2c = pfVar4->v[0];
-  local_28 = pfVar4->v[1];
-  local_24 = pfVar4->v[2];
-  local_20 = pfVar4->v[3];
-  Vec3Lerp(&local_2c,&local_18,local_34,param_4);
-  fVar1 = param_4[1];
-  param_4[1] = param_4[2];
-  param_4[2] = fVar1;
+  u = sx & 0xff;
+  v_00 = sy & 0xff;
+  GetBuffersForPoint(u,v_00,&bufId,&t);
+  old_pos = data.buffer + (bufId ^ 1);
+  pfVar2 = data.buffer[bufId].v + v_00 * 0x100 + u;
+  posvalue = pfVar2->v[0];
+  local_14 = pfVar2->v[1];
+  local_10 = pfVar2->v[2];
+  local_c = pfVar2->v[3];
+  t = (float)timeOffset * 0.0625 + t;
+  pfVar2 = old_pos->v + v_00 * 0x100 + u;
+  oldposvalue = pfVar2->v[0];
+  local_28 = pfVar2->v[1];
+  local_24 = pfVar2->v[2];
+  local_20 = pfVar2->v[3];
+  Vec3Lerp(&oldposvalue,&posvalue,t,v);
+  fVar1 = v[1];
+  v[1] = v[2];
+  v[2] = fVar1;
   return;
 }
 
 
 // 00A89960  R_WaterSimulationGetBaseHeight  (gfx_d3d/r_water_sim.cpp:2628)
 
-float __cdecl R_WaterSimulationGetBaseHeight(float *param_1)
+float __cdecl R_WaterSimulationGetBaseHeight(float *queryPos)
 
 {
   bool bVar1;
   float fVar2;
-  int local_c;
-  int local_8;
+  short waterheight;
+  int sx;
+  int sy;
   
-  if ((data.enabled) && (bVar1 = ConvertWorldToGrid(param_1,&local_c,&local_8), bVar1)) {
-    return (float)(int)data.waterheight.v[local_8 * 0x100 + local_c];
+  if ((data.enabled) && (bVar1 = ConvertWorldToGrid(queryPos,&sx,&sy), bVar1)) {
+    return (float)(int)data.waterheight.v[sy * 0x100 + sx];
   }
-  fVar2 = R_WaterSimulationGetHeightGlobal(param_1);
+  fVar2 = R_WaterSimulationGetHeightGlobal(queryPos);
   return fVar2;
 }
 
 
 // 00A899C0  R_WaterSimulationGetHeight  (gfx_d3d/r_water_sim.cpp:2639)
 
-float __cdecl R_WaterSimulationGetHeight(float *param_1)
+float __cdecl R_WaterSimulationGetHeight(float *queryPos)
 
 {
   bool bVar1;
   float fVar2;
-  float local_20 [2];
+  float posc [2];
   float local_18;
-  int local_10 [2];
-  int local_8;
+  short waterheight;
+  int sx;
+  float value;
+  int sy;
   
   if ((r_watersim_enabled == (dvar_s *)0x0) || ((r_watersim_enabled->current).enabled == false)) {
-    fVar2 = R_WaterSimulationGetHeightGlobal(param_1);
+    fVar2 = R_WaterSimulationGetHeightGlobal(queryPos);
   }
   else {
-    if ((data.enabled) && (bVar1 = ConvertWorldToGrid(param_1,local_10,&local_8), bVar1)) {
-      R_WaterSimulationGetGridPosition(local_10[0],local_8,0,local_20);
-      return local_18 * config.gridScale +
-             (float)(int)data.waterheight.v[local_8 * 0x100 + local_10[0]];
+    if ((data.enabled) && (bVar1 = ConvertWorldToGrid(queryPos,&sx,&sy), bVar1)) {
+      R_WaterSimulationGetGridPosition(sx,sy,0,posc);
+      return local_18 * config.gridScale + (float)(int)data.waterheight.v[sy * 0x100 + sx];
     }
-    fVar2 = R_WaterSimulationGetHeightGlobal(param_1);
+    fVar2 = R_WaterSimulationGetHeightGlobal(queryPos);
   }
   return fVar2;
 }
@@ -3967,127 +4006,128 @@ float __cdecl R_WaterSimulationGetHeight(float *param_1)
 
 // 00A89BE0  R_WaterSimulationGetInfo  (gfx_d3d/r_water_sim.cpp:2706)
 
-void __cdecl R_WaterSimulationGetInfo(float *param_1,WaterSimInfo *param_2)
+void __cdecl R_WaterSimulationGetInfo(float *queryPos,WaterSimInfo *info)
 
 {
   bool bVar1;
   float fVar2;
-  float local_7c [2];
+  float oldposc [2];
   float local_74;
-  float local_70 [2];
+  float posc [2];
   float local_68;
-  float local_64;
+  float pos3;
   float local_60;
   float local_5c;
-  float local_58;
+  float normal;
   float local_54;
   float local_50;
-  float local_4c;
+  float tangent;
   float local_48;
   float local_44;
-  float local_40;
+  float pos0;
   float local_3c;
   float local_38;
-  float local_34;
+  float binormal;
   float local_30;
   float local_2c;
-  short local_28;
-  float local_24;
+  short waterheight;
+  float pos1;
   float local_20;
   float local_1c;
-  int local_18;
-  int local_14;
-  float local_10;
+  int sx;
+  int sy;
+  float pos2;
   float local_c;
   float local_8;
   
-  if ((data.enabled) && (bVar1 = ConvertWorldToGrid(param_1,&local_18,&local_14), bVar1)) {
-    param_2->pos[0] = *param_1;
-    param_2->pos[1] = param_1[1];
-    param_2->pos[2] = param_1[2];
-    param_2->pos[2] = -3.4028235e+38;
-    param_2->normal[0] = 0.0;
-    param_2->normal[1] = 0.0;
-    param_2->normal[2] = 1.0;
-    param_2->waveVelocity[0] = 0.0;
-    param_2->waveVelocity[1] = 0.0;
-    param_2->waveVelocity[2] = 0.0;
-    local_28 = data.waterheight.v[local_14 * 0x100 + local_18];
-    R_WaterSimulationGetGridPosition(local_18,local_14,0,local_70);
-    R_WaterSimulationGetGridPosition(local_18,local_14,-1,local_7c);
-    R_WaterSimulationGetGridPosition(local_18 + -1,local_14,0,&local_40);
-    R_WaterSimulationGetGridPosition(local_18 + 1,local_14,0,&local_24);
-    R_WaterSimulationGetGridPosition(local_18,local_14 + -1,0,&local_10);
-    R_WaterSimulationGetGridPosition(local_18,local_14 + 1,0,&local_64);
-    local_40 = local_40 - 1.0;
-    local_24 = local_24 + 1.0;
+  if ((data.enabled) && (bVar1 = ConvertWorldToGrid(queryPos,&sx,&sy), bVar1)) {
+    info->pos[0] = *queryPos;
+    info->pos[1] = queryPos[1];
+    info->pos[2] = queryPos[2];
+    info->pos[2] = -3.4028235e+38;
+    info->normal[0] = 0.0;
+    info->normal[1] = 0.0;
+    info->normal[2] = 1.0;
+    info->waveVelocity[0] = 0.0;
+    info->waveVelocity[1] = 0.0;
+    info->waveVelocity[2] = 0.0;
+    waterheight = data.waterheight.v[sy * 0x100 + sx];
+    R_WaterSimulationGetGridPosition(sx,sy,0,posc);
+    R_WaterSimulationGetGridPosition(sx,sy,-1,oldposc);
+    R_WaterSimulationGetGridPosition(sx + -1,sy,0,&pos0);
+    R_WaterSimulationGetGridPosition(sx + 1,sy,0,&pos1);
+    R_WaterSimulationGetGridPosition(sx,sy + -1,0,&pos2);
+    R_WaterSimulationGetGridPosition(sx,sy + 1,0,&pos3);
+    pos0 = pos0 - 1.0;
+    pos1 = pos1 + 1.0;
     local_c = local_c - 1.0;
     local_60 = local_60 + 1.0;
-    local_4c = local_24 - local_40;
+    tangent = pos1 - pos0;
     local_48 = local_20 - local_3c;
     local_44 = local_1c - local_38;
-    local_34 = local_64 - local_10;
+    binormal = pos3 - pos2;
     local_30 = local_60 - local_c;
     local_2c = local_5c - local_8;
-    Vec3Cross(&local_4c,&local_34,&local_58);
-    Vec3Normalize(&local_4c);
-    Vec3Normalize(&local_34);
-    Vec3Normalize(&local_58);
-    param_2->waveVelocity[0] =
-         config.gridScale * 16.0 * (local_38 - local_1c) * (local_68 - local_74);
-    param_2->waveVelocity[1] =
-         config.gridScale * 16.0 * (local_8 - local_5c) * (local_68 - local_74);
-    param_2->pos[2] = local_68 * config.gridScale + (float)(int)local_28;
-    param_2->tangent[0] = local_4c;
-    param_2->tangent[1] = local_48;
-    param_2->tangent[2] = local_44;
-    param_2->binormal[0] = local_34;
-    param_2->binormal[1] = local_30;
-    param_2->binormal[2] = local_2c;
-    param_2->normal[0] = local_58;
-    param_2->normal[1] = local_54;
-    param_2->normal[2] = local_50;
+    Vec3Cross(&tangent,&binormal,&normal);
+    Vec3Normalize(&tangent);
+    Vec3Normalize(&binormal);
+    Vec3Normalize(&normal);
+    info->waveVelocity[0] = config.gridScale * 16.0 * (local_38 - local_1c) * (local_68 - local_74);
+    info->waveVelocity[1] = config.gridScale * 16.0 * (local_8 - local_5c) * (local_68 - local_74);
+    info->pos[2] = local_68 * config.gridScale + (float)(int)waterheight;
+    info->tangent[0] = tangent;
+    info->tangent[1] = local_48;
+    info->tangent[2] = local_44;
+    info->binormal[0] = binormal;
+    info->binormal[1] = local_30;
+    info->binormal[2] = local_2c;
+    info->normal[0] = normal;
+    info->normal[1] = local_54;
+    info->normal[2] = local_50;
     return;
   }
-  param_2->pos[0] = *param_1;
-  param_2->pos[1] = param_1[1];
-  param_2->pos[2] = param_1[2];
-  fVar2 = R_WaterSimulationGetHeightGlobal(param_1);
-  param_2->pos[2] = fVar2;
-  param_2->tangent[0] = 1.0;
-  param_2->tangent[1] = 0.0;
-  param_2->tangent[2] = 0.0;
-  param_2->binormal[0] = 0.0;
-  param_2->binormal[1] = 1.0;
-  param_2->binormal[2] = 0.0;
-  param_2->normal[0] = 0.0;
-  param_2->normal[1] = 0.0;
-  param_2->normal[2] = 1.0;
-  param_2->waveVelocity[0] = 0.0;
-  param_2->waveVelocity[1] = 0.0;
-  param_2->waveVelocity[2] = 0.0;
+  info->pos[0] = *queryPos;
+  info->pos[1] = queryPos[1];
+  info->pos[2] = queryPos[2];
+  fVar2 = R_WaterSimulationGetHeightGlobal(queryPos);
+  info->pos[2] = fVar2;
+  info->tangent[0] = 1.0;
+  info->tangent[1] = 0.0;
+  info->tangent[2] = 0.0;
+  info->binormal[0] = 0.0;
+  info->binormal[1] = 1.0;
+  info->binormal[2] = 0.0;
+  info->normal[0] = 0.0;
+  info->normal[1] = 0.0;
+  info->normal[2] = 1.0;
+  info->waveVelocity[0] = 0.0;
+  info->waveVelocity[1] = 0.0;
+  info->waveVelocity[2] = 0.0;
   return;
 }
 
 
 // 00A8A0D0  R_WaterSimulationGetHeightGlobal  (gfx_d3d/r_water_sim.cpp:2762)
 
-float __cdecl R_WaterSimulationGetHeightGlobal(float *param_1)
+float __cdecl R_WaterSimulationGetHeightGlobal(float *queryPos)
 
 {
   float fVar1;
   bool bVar2;
-  int extraout_EAX;
-  int extraout_EAX_00;
-  ComWaterCell *local_1c [6];
+  int gridX_00;
+  int gridY_00;
+  int gridX;
+  ComWaterCell *cells [4];
+  int gridY;
+  bool valid;
   
   floor();
   _ftol2_sse();
   floor();
   _ftol2_sse();
-  bVar2 = R_WaterFindCells(extraout_EAX,extraout_EAX_00,local_1c);
+  bVar2 = R_WaterFindCells(gridX_00,gridY_00,cells);
   if (bVar2) {
-    fVar1 = (float)(int)local_1c[0]->waterheight;
+    fVar1 = (float)(int)cells[0]->waterheight;
   }
   else {
     fVar1 = -131072.0;
@@ -4098,20 +4138,21 @@ float __cdecl R_WaterSimulationGetHeightGlobal(float *param_1)
 
 // 00A8A190  R_WaterSimulationGetAverageHeight  (gfx_d3d/r_water_sim.cpp:2778)
 
-bool __cdecl R_WaterSimulationGetAverageHeight(float *param_1)
+bool __cdecl R_WaterSimulationGetAverageHeight(float *pHeight)
 
 {
   bool bVar1;
-  uint local_8;
+  short h;
+  uint n;
   
   if (comWorld.numWaterCells == 0) {
     bVar1 = false;
   }
   else {
-    *param_1 = (float)(int)(comWorld.waterCells)->waterheight;
-    for (local_8 = 0; local_8 < comWorld.numWaterCells; local_8 = local_8 + 100) {
-      if (-0x8000 < comWorld.waterCells[local_8].waterheight) {
-        *param_1 = (float)(int)comWorld.waterCells[local_8].waterheight;
+    *pHeight = (float)(int)(comWorld.waterCells)->waterheight;
+    for (n = 0; n < comWorld.numWaterCells; n = n + 100) {
+      if (-0x8000 < comWorld.waterCells[n].waterheight) {
+        *pHeight = (float)(int)comWorld.waterCells[n].waterheight;
         break;
       }
     }

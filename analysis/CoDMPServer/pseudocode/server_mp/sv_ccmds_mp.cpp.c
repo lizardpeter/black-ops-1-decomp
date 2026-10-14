@@ -4,27 +4,27 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl SV_CheckMapExists(char *param_1)
+bool __cdecl SV_CheckMapExists(char *map)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  char local_4c [68];
+  char *fmt;
+  char expanded [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_GetBspFilename(local_4c,0x40,param_1);
-  iVar4 = FS_ReadFile(local_4c,(void **)0x0);
+  Com_GetBspFilename(expanded,0x40,map);
+  iVar4 = FS_ReadFile(expanded,(void **)0x0);
   if (iVar4 == -1) {
     Com_PrintError(1,"Can\'t find map %s\n");
     bVar2 = Monkey_IsRunning();
     if (bVar2) {
-      pcVar5 = va("Can\'t find map %s\n");
+      fmt = va("Can\'t find map %s\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_ccmds_mp.cpp",0x51,
-                               0,pcVar5);
+                               0,fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
@@ -53,10 +53,11 @@ client_t * __cdecl SV_GetPlayerByName(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  client_t *local_58;
-  int local_50;
-  char local_4c [68];
+  char *s1;
+  client_t *cl;
+  char *s;
+  int i;
+  char cleanName [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -66,22 +67,22 @@ client_t * __cdecl SV_GetPlayerByName(void)
       Com_Printf(0,"No player specified.\n");
     }
     else {
-      pcVar2 = SV_Cmd_Argv(1);
-      local_58 = svs.clients;
-      for (local_50 = 0; local_50 < (com_maxclients->current).integer; local_50 = local_50 + 1) {
-        if ((local_58->header).state != 0) {
-          iVar1 = I_stricmp(local_58->name,pcVar2);
+      s1 = SV_Cmd_Argv(1);
+      cl = svs.clients;
+      for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+        if ((cl->header).state != 0) {
+          iVar1 = I_stricmp(cl->name,s1);
           if (iVar1 == 0) {
-            return local_58;
+            return cl;
           }
-          I_strncpyz(local_4c,local_58->name,0x40);
-          I_CleanStr(local_4c);
-          iVar1 = I_stricmp(local_4c,pcVar2);
+          I_strncpyz(cleanName,cl->name,0x40);
+          I_CleanStr(cleanName);
+          iVar1 = I_stricmp(cleanName,s1);
           if (iVar1 == 0) {
-            return local_58;
+            return cl;
           }
         }
-        local_58 = (client_t *)(local_58[1].userinfo + 0x3d8);
+        cl = (client_t *)(cl[1].userinfo + 0x3d8);
       }
       Com_Printf(0,"Player %s is not on the server\n");
     }
@@ -103,8 +104,11 @@ client_t * __cdecl SV_GetPlayerByNum(void)
 {
   client_t *pcVar1;
   int iVar2;
-  char *pcVar3;
-  int local_8;
+  char *nptr;
+  client_t *cl;
+  int idnum;
+  char *s;
+  int i;
   
   if ((com_sv_running->current).enabled == false) {
     pcVar1 = (client_t *)0x0;
@@ -116,14 +120,14 @@ client_t * __cdecl SV_GetPlayerByNum(void)
       pcVar1 = (client_t *)0x0;
     }
     else {
-      pcVar3 = SV_Cmd_Argv(1);
-      for (local_8 = 0; pcVar3[local_8] != '\0'; local_8 = local_8 + 1) {
-        if ((pcVar3[local_8] < '0') || ('9' < pcVar3[local_8])) {
+      nptr = SV_Cmd_Argv(1);
+      for (i = 0; nptr[i] != '\0'; i = i + 1) {
+        if ((nptr[i] < '0') || ('9' < nptr[i])) {
           Com_Printf(0,"Bad slot number: %s\n");
           return (client_t *)0x0;
         }
       }
-      iVar2 = atoi(pcVar3);
+      iVar2 = atoi(nptr);
       if ((iVar2 < 0) || ((com_maxclients->current).integer <= iVar2)) {
         Com_Printf(0,"Bad client slot: %i\n");
         pcVar1 = (client_t *)0x0;
@@ -143,12 +147,12 @@ client_t * __cdecl SV_GetPlayerByNum(void)
 
 // 00703280  SV_GetMapBaseName  (server_mp/sv_ccmds_mp.cpp:202)
 
-char * __cdecl SV_GetMapBaseName(char *param_1)
+char * __cdecl SV_GetMapBaseName(char *mapname)
 
 {
   char *pcVar1;
   
-  pcVar1 = FS_GetMapBaseName(param_1);
+  pcVar1 = FS_GetMapBaseName(mapname);
   return pcVar1;
 }
 
@@ -160,7 +164,7 @@ char * __cdecl SV_GetMapBaseName(char *param_1)
 /* WARNING: Removing unreachable block (ram,0x00703fc2) */
 /* WARNING: Removing unreachable block (ram,0x00703fd2) */
 
-void __cdecl ShowLoadErrorsSummary(char *param_1,uint param_2)
+void __cdecl ShowLoadErrorsSummary(char *mapName,uint count)
 
 {
   bool bVar1;
@@ -168,7 +172,7 @@ void __cdecl ShowLoadErrorsSummary(char *param_1,uint param_2)
   
   bVar1 = Monkey_IsRunning();
   if ((!bVar1) && (com_errorPrintsCount != 0)) {
-    if (param_2 == 1) {
+    if (count == 1) {
       local_8 = 
       "\x15\"%s\"\n-\nThere was %u error when loading this map.\nSee the console log for details.\n"
       ;
@@ -188,66 +192,74 @@ void __cdecl ShowLoadErrorsSummary(char *param_1,uint param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x00703ce5) */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_Map_f(void)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  char *pcVar5;
-  dvar_s *pdVar6;
-  int iVar7;
+  char *mapname_00;
+  int iVar3;
+  char *pcVar4;
+  dvar_s *pdVar5;
+  int iVar6;
   bool local_64;
-  char local_54 [64];
+  bool isDevmap;
+  char *map;
+  dvar_s *cow;
+  char mapname [64];
   uint local_14;
-  bool local_e;
-  bool local_d;
-  char *local_c;
-  char *local_8;
+  bool mapIsPreloaded;
+  bool cheat;
+  char *basename;
+  char *cmd;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar3 = SV_Cmd_Argv(1);
-  if ((pcVar3 == (char *)0x0) &&
+  mapname_00 = SV_Cmd_Argv(1);
+  if ((mapname_00 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_ccmds_mp.cpp",0x100
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (*pcVar3 != '\0') {
-    iVar4 = SV_Cmd_Argc();
-    if (iVar4 < 3) {
-      local_e = false;
+  if (*mapname_00 != '\0') {
+    iVar3 = SV_Cmd_Argc();
+    if (iVar3 < 3) {
+      mapIsPreloaded = false;
     }
     else {
-      pcVar5 = SV_Cmd_Argv(2);
-      iVar4 = atoi(pcVar5);
-      local_e = iVar4 != 0;
+      pcVar4 = SV_Cmd_Argv(2);
+      iVar3 = atoi(pcVar4);
+      mapIsPreloaded = iVar3 != 0;
     }
-    iVar4 = SV_Cmd_Argc();
-    if (iVar4 < 4) {
+    iVar3 = SV_Cmd_Argc();
+    if (iVar3 < 4) {
       sv_migrate = 0;
     }
     else {
-      pcVar5 = SV_Cmd_Argv(3);
-      sv_migrate = atoi(pcVar5);
+      pcVar4 = SV_Cmd_Argv(3);
+      sv_migrate = atoi(pcVar4);
     }
     com_errorPrintsCount = 0;
-    local_c = SV_GetMapBaseName(pcVar3);
-    I_strncpyz(local_54,local_c,0x40);
-    I_strlwr(local_54);
+    basename = SV_GetMapBaseName(mapname_00);
+    I_strncpyz(mapname,basename,0x40);
+    I_strlwr(mapname);
     if ((useFastFile->current).enabled == false) {
-      bVar2 = SV_CheckMapExists(local_54);
+      bVar2 = SV_CheckMapExists(mapname);
       if (!bVar2) {
         Com_PrintError(1,"Can\'t find map \"%s\".\n");
         return;
       }
     }
     else {
-      bVar2 = DB_FileExists(local_54,FFD_DEFAULT);
-      if ((!bVar2) && (bVar2 = DB_FileExists(local_54,FFD_USER_MAP), !bVar2)) {
+      bVar2 = DB_FileExists(mapname,FFD_DEFAULT);
+      if ((!bVar2) && (bVar2 = DB_FileExists(mapname,FFD_USER_MAP), !bVar2)) {
         Com_PrintError(1,"Can\'t find map \"%s\" in usermaps\\%s folder.\n");
         return;
       }
@@ -256,25 +268,25 @@ void __cdecl SV_Map_f(void)
     if (bVar2) {
       Demo_End(false);
     }
-    local_8 = SV_Cmd_Argv(0);
-    iVar4 = I_stricmp(local_8,"devmap");
-    local_d = (com_developer->current).integer == 2;
-    pdVar6 = Dvar_FindVar("thereisacow");
-    if ((pdVar6 == (dvar_s *)0x0) || (iVar7 = atoi((pdVar6->current).string), iVar7 != 0x7a8)) {
-      local_d = false;
+    cmd = SV_Cmd_Argv(0);
+    iVar3 = I_stricmp(cmd,"devmap");
+    cheat = (com_developer->current).integer == 2;
+    pdVar5 = Dvar_FindVar("thereisacow");
+    if ((pdVar5 == (dvar_s *)0x0) || (iVar6 = atoi((pdVar5->current).string), iVar6 != 0x7a8)) {
+      cheat = false;
     }
-    if ((iVar4 == 0) || (local_d != false)) {
+    if ((iVar3 == 0) || (cheat != false)) {
       local_64 = true;
     }
     else {
       local_64 = false;
     }
-    local_d = local_64;
+    cheat = local_64;
     Dvar_SetBool(sv_cheats,local_64);
-    FS_ConvertPath(local_54);
-    SV_SpawnServer(0,local_54,(uint)local_e,sv_migrate);
+    FS_ConvertPath(mapname);
+    SV_SpawnServer(0,mapname,(uint)mapIsPreloaded,sv_migrate);
     Monkey_Event("loaded");
-    ShowLoadErrorsSummary(pcVar3,com_errorPrintsCount);
+    ShowLoadErrorsSummary(mapname_00,com_errorPrintsCount);
   }
   return;
 }
@@ -288,26 +300,28 @@ void __cdecl SV_Map_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ReconnectClients(int param_1)
+void __cdecl SV_ReconnectClients(int savepersist)
 
 {
-  client_t *pcVar1;
-  char *pcVar2;
-  int local_8;
+  client_t *client_00;
+  char *pcVar1;
+  client_t *client;
+  char *denied;
+  int i;
   
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    pcVar1 = (client_t *)(local_8 * 0x84d00 + (int)svs.clients);
-    if (2 < (pcVar1->header).state) {
-      pcVar2 = va("%c");
-      SV_AddServerCommand(pcVar1,SV_CMD_RELIABLE,pcVar2);
-      pcVar2 = ClientConnect(local_8,pcVar1->scriptId);
-      if (pcVar2 == (char *)0x0) {
-        if ((pcVar1->header).state == 5) {
-          SV_ClientEnterWorld(pcVar1,&pcVar1->lastUsercmd);
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    client_00 = (client_t *)(i * 0x84d00 + (int)svs.clients);
+    if (2 < (client_00->header).state) {
+      pcVar1 = va("%c");
+      SV_AddServerCommand(client_00,SV_CMD_RELIABLE,pcVar1);
+      pcVar1 = ClientConnect(i,client_00->scriptId);
+      if (pcVar1 == (char *)0x0) {
+        if ((client_00->header).state == 5) {
+          SV_ClientEnterWorld(client_00,&client_00->lastUsercmd);
         }
       }
       else {
-        SV_DropClient(pcVar1,pcVar2,true,true);
+        SV_DropClient(client_00,pcVar1,true,true);
         Com_Printf(0,"SV_MapRestart_f: dropped client %i - denied!\n");
       }
     }
@@ -319,23 +333,26 @@ void __cdecl SV_ReconnectClients(int param_1)
 // 00703390  SV_MapRestart  (server_mp/sv_ccmds_mp.cpp:468)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_MapRestart(int param_1)
+void __cdecl SV_MapRestart(int fast_restart)
 
 {
   bool bVar1;
   DWORD DVar2;
   int iVar3;
   int iVar4;
-  char *pcVar5;
-  client_t *pcVar6;
-  int local_58;
-  char local_4c [68];
+  char *src;
+  client_t *drop;
+  client_t *client;
+  int i;
+  int savepersist;
+  PIXProfile pp;
+  char mapname [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -350,7 +367,7 @@ void __cdecl SV_MapRestart(int param_1)
     }
   }
   else {
-    if ((param_1 == 0) && (bVar1 = Demo_IsRecording(), bVar1)) {
+    if ((fast_restart == 0) && (bVar1 = Demo_IsRecording(), bVar1)) {
       Demo_End(false);
     }
     SV_SetGametype();
@@ -358,7 +375,7 @@ void __cdecl SV_MapRestart(int param_1)
     iVar3 = G_GetSavePersist();
     if (((com_maxclients->modified == false) &&
         (iVar4 = I_stricmp(sv.gametype,(sv_gametype->current).string), iVar4 == 0)) &&
-       (param_1 != 0)) {
+       (fast_restart != 0)) {
       if (com_frameTime == sv.start_frameTime) {
         DVar2 = GetCurrentThreadId();
         if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -366,15 +383,14 @@ void __cdecl SV_MapRestart(int param_1)
         }
       }
       else {
-        for (local_58 = 0; local_58 < (com_maxclients->current).integer; local_58 = local_58 + 1) {
-          pcVar6 = (client_t *)(local_58 * 0x84d00 + (int)svs.clients);
-          if (2 < (pcVar6->header).state) {
-            if ((iVar3 == 0) && (pcVar6->bIsTestClient != 0)) {
-              SV_DropClient(pcVar6,"EXE_PLAYERKICKED",true,true);
+        for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+          drop = (client_t *)(i * 0x84d00 + (int)svs.clients);
+          if (2 < (drop->header).state) {
+            if ((iVar3 == 0) && (drop->bIsTestClient != 0)) {
+              SV_DropClient(drop,"EXE_PLAYERKICKED",true,true);
             }
             else {
-              NET_OutOfBandPrint(NS_MAXCLIENTS,(pcVar6->header).netchan.remoteAddress,"fastrestart")
-              ;
+              NET_OutOfBandPrint(NS_MAXCLIENTS,(drop->header).netchan.remoteAddress,"fastrestart");
             }
           }
         }
@@ -397,10 +413,10 @@ void __cdecl SV_MapRestart(int param_1)
     else {
       G_SetSavePersist(0);
       iVar3 = 0x40;
-      pcVar5 = Dvar_GetString("mapname");
-      I_strncpyz(local_4c,pcVar5,iVar3);
-      FS_ConvertPath(local_4c);
-      SV_SpawnServer(0,local_4c,0,0);
+      src = Dvar_GetString("mapname");
+      I_strncpyz(mapname,src,iVar3);
+      FS_ConvertPath(mapname);
+      SV_SpawnServer(0,mapname,0,0);
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -413,6 +429,12 @@ void __cdecl SV_MapRestart(int param_1)
 
 // 00704010  SV_MapRestart_f  (server_mp/sv_ccmds_mp.cpp:573)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl SV_MapRestart_f(void)
 
 {
@@ -422,6 +444,12 @@ void __cdecl SV_MapRestart_f(void)
 
 
 // 00704020  SV_FastRestart_f  (server_mp/sv_ccmds_mp.cpp:585)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_FastRestart_f(void)
 
@@ -439,7 +467,7 @@ void __cdecl SV_MapRotate_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char *local_8;
+  char *token;
   
   Com_Printf(0,"\n\nmap_rotate...\n\n");
   iVar2 = SV_GetLicenseType();
@@ -475,13 +503,13 @@ void __cdecl SV_MapRotate_f(void)
       Dvar_SetString(sv_mapRotationCurrent,(sv_mapRotation->current).string);
     }
     Com_Printf(0,"\"sv_mapRotationCurrent\" is:\"%s\"\n\n");
-    local_8 = UI_GetMapRotationToken();
-    if (local_8 == (char *)0x0) {
+    token = UI_GetMapRotationToken();
+    if (token == (char *)0x0) {
       Dvar_SetString(sv_mapRotationCurrent,(sv_mapRotation->current).string);
-      local_8 = UI_GetMapRotationToken();
+      token = UI_GetMapRotationToken();
     }
-    while (local_8 != (char *)0x0) {
-      iVar2 = I_stricmp(local_8,"gametype");
+    while (token != (char *)0x0) {
+      iVar2 = I_stricmp(token,"gametype");
       if (iVar2 == 0) {
         pcVar3 = UI_GetMapRotationToken();
         if (pcVar3 == (char *)0x0) {
@@ -499,7 +527,7 @@ void __cdecl SV_MapRotate_f(void)
         Dvar_SetString(sv_gametype,pcVar3);
       }
       else {
-        iVar2 = I_stricmp(local_8,"map");
+        iVar2 = I_stricmp(token,"map");
         if (iVar2 == 0) {
           pcVar3 = UI_GetMapRotationToken();
           if (pcVar3 == (char *)0x0) {
@@ -514,7 +542,7 @@ void __cdecl SV_MapRotate_f(void)
           Cmd_ExecuteSingleCommand(0,0,pcVar3);
           return;
         }
-        iVar2 = I_stricmp(local_8,"arena");
+        iVar2 = I_stricmp(token,"arena");
         if (iVar2 == 0) {
           pcVar3 = UI_GetMapRotationToken();
           if (pcVar3 == (char *)0x0) {
@@ -529,7 +557,7 @@ void __cdecl SV_MapRotate_f(void)
           Cmd_ExecuteSingleCommand(0,0,pcVar3);
         }
         else {
-          iVar2 = I_stricmp(local_8,"nextarena");
+          iVar2 = I_stricmp(token,"nextarena");
           if (iVar2 == 0) {
             Com_Printf(0,"nextarena executing arena: %s.\n");
             Dvar_GetString("nextarena");
@@ -543,7 +571,7 @@ void __cdecl SV_MapRotate_f(void)
           }
         }
       }
-      local_8 = UI_GetMapRotationToken();
+      token = UI_GetMapRotationToken();
     }
     Com_Printf(0,"No map specified in sv_mapRotation - forcing map_restart.\n");
     SV_FastRestart_f();
@@ -560,14 +588,15 @@ void __cdecl SV_MapRotate_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_KickClient(client_t *param_1,char *param_2,int param_3,char *param_4)
+int __cdecl SV_KickClient(client_t *cl,char *playerName,int maxPlayerNameLen,char *reason)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int guid;
   
-  if (param_1 == (client_t *)0x0) {
+  if (cl == (client_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_ccmds_mp.cpp",0x2f6,0
                              ,"%s");
     if (!bVar2) {
@@ -576,18 +605,18 @@ int __cdecl SV_KickClient(client_t *param_1,char *param_2,int param_3,char *para
       return iVar3;
     }
   }
-  if ((param_1->header).netchan.remoteAddress.type == NA_LOOPBACK) {
+  if ((cl->header).netchan.remoteAddress.type == NA_LOOPBACK) {
     SV_SendServerCommand((client_t *)0x0,SV_CMD_CAN_IGNORE,"%c \"EXE_CANNOTKICKHOSTPLAYER\"");
     iVar3 = 0;
   }
   else {
-    if (param_2 != (char *)0x0) {
-      I_strncpyz(param_2,param_1->name,param_3);
-      I_CleanStr(param_2);
+    if (playerName != (char *)0x0) {
+      I_strncpyz(playerName,cl->name,maxPlayerNameLen);
+      I_CleanStr(playerName);
     }
-    iVar3 = param_1->guid;
-    SV_DropClient(param_1,param_4,true,true);
-    param_1->lastPacketTime = svs.time;
+    iVar3 = cl->guid;
+    SV_DropClient(cl,reason,true,true);
+    cl->lastPacketTime = svs.time;
   }
   return iVar3;
 }
@@ -601,16 +630,18 @@ int __cdecl SV_KickClient(client_t *param_1,char *param_2,int param_3,char *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_KickUser_f(char *param_1,int param_2)
+int __cdecl SV_KickUser_f(char *playerName,int maxPlayerNameLen)
 
 {
   int iVar1;
-  client_t *pcVar2;
-  char *pcVar3;
-  char *pcVar4;
-  client_t *local_18;
-  char *local_14;
-  int local_10;
+  client_t *cl_00;
+  char *s0;
+  char *s1;
+  client_t *cl;
+  char *reason;
+  int clientNum;
+  char *cmdName;
+  int argc;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -625,30 +656,30 @@ int __cdecl SV_KickUser_f(char *param_1,int param_2)
     }
     else {
       if (iVar1 == 3) {
-        local_14 = SV_Cmd_Argv(2);
+        reason = SV_Cmd_Argv(2);
       }
       else {
-        local_14 = "EXE_PLAYERKICKED";
+        reason = "EXE_PLAYERKICKED";
       }
-      pcVar2 = SV_GetPlayerByName();
-      if (pcVar2 == (client_t *)0x0) {
-        pcVar4 = "all";
-        pcVar3 = SV_Cmd_Argv(1);
-        iVar1 = I_stricmp(pcVar3,pcVar4);
+      cl_00 = SV_GetPlayerByName();
+      if (cl_00 == (client_t *)0x0) {
+        s1 = "all";
+        s0 = SV_Cmd_Argv(1);
+        iVar1 = I_stricmp(s0,s1);
         if (iVar1 == 0) {
-          local_18 = svs.clients;
-          for (local_10 = 0; local_10 < (com_maxclients->current).integer; local_10 = local_10 + 1)
-          {
-            if (((local_18->header).state != 0) && (local_18->bIsDemoClient == 0)) {
-              SV_KickClient(local_18,(char *)0x0,0,local_14);
+          cl = svs.clients;
+          for (clientNum = 0; clientNum < (com_maxclients->current).integer;
+              clientNum = clientNum + 1) {
+            if (((cl->header).state != 0) && (cl->bIsDemoClient == 0)) {
+              SV_KickClient(cl,(char *)0x0,0,reason);
             }
-            local_18 = (client_t *)(local_18[1].userinfo + 0x3d8);
+            cl = (client_t *)(cl[1].userinfo + 0x3d8);
           }
         }
         iVar1 = 0;
       }
       else {
-        iVar1 = SV_KickClient(pcVar2,param_1,param_2,local_14);
+        iVar1 = SV_KickClient(cl_00,playerName,maxPlayerNameLen,reason);
       }
     }
   }
@@ -664,12 +695,14 @@ int __cdecl SV_KickUser_f(char *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_KickClient_f(char *param_1,int param_2)
+int __cdecl SV_KickClient_f(char *playerName,int maxPlayerNameLen)
 
 {
   int iVar1;
-  client_t *pcVar2;
-  char *local_c;
+  client_t *cl_00;
+  client_t *cl;
+  char *reason;
+  int argc;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -684,17 +717,17 @@ int __cdecl SV_KickClient_f(char *param_1,int param_2)
     }
     else {
       if (iVar1 == 3) {
-        local_c = SV_Cmd_Argv(2);
+        reason = SV_Cmd_Argv(2);
       }
       else {
-        local_c = "EXE_PLAYERKICKED";
+        reason = "EXE_PLAYERKICKED";
       }
-      pcVar2 = SV_GetPlayerByNum();
-      if (pcVar2 == (client_t *)0x0) {
+      cl_00 = SV_GetPlayerByNum();
+      if (cl_00 == (client_t *)0x0) {
         iVar1 = 0;
       }
       else {
-        iVar1 = SV_KickClient(pcVar2,param_1,param_2,local_c);
+        iVar1 = SV_KickClient(cl_00,playerName,maxPlayerNameLen,reason);
       }
     }
   }
@@ -705,19 +738,24 @@ int __cdecl SV_KickClient_f(char *param_1,int param_2)
 // 00704470  SV_TempBan_f  (server_mp/sv_ccmds_mp.cpp:898)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_TempBan_f(void)
 
 {
-  char local_4c [64];
+  char playerName [64];
   uint local_c;
-  int local_8;
+  int guid;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = SV_KickUser_f(local_4c,0x40);
-  if (local_8 != 0) {
+  guid = SV_KickUser_f(playerName,0x40);
+  if (guid != 0) {
     Com_Printf(0,"%s (guid %i) was kicked.\n");
-    SV_BanGuidBriefly(local_8);
+    SV_BanGuidBriefly(guid);
   }
   return;
 }
@@ -735,7 +773,8 @@ void __cdecl SV_Ban_f(void)
 
 {
   int iVar1;
-  client_t *pcVar2;
+  client_t *cl_00;
+  client_t *cl;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -743,9 +782,9 @@ void __cdecl SV_Ban_f(void)
   else {
     iVar1 = SV_Cmd_Argc();
     if (iVar1 == 2) {
-      pcVar2 = SV_GetPlayerByName();
-      if (pcVar2 != (client_t *)0x0) {
-        SV_BanClient(pcVar2);
+      cl_00 = SV_GetPlayerByName();
+      if (cl_00 != (client_t *)0x0) {
+        SV_BanClient(cl_00);
       }
     }
     else {
@@ -764,12 +803,12 @@ void __cdecl SV_Ban_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_RankUpClient(client_t *param_1)
+void __cdecl SV_RankUpClient(client_t *client)
 
 {
-  SV_CACValidate_SetIntStat(param_1->globalStats + 0x380,"RANKXP",0x1343a4);
-  SV_CACValidate_SetIntStat(param_1->globalStats + 0x380,"CODPOINTS",100000);
-  SV_CACValidate_SetIntStat(param_1->globalStats + 0x380,"PLEVEL",0xf);
+  SV_CACValidate_SetIntStat(client->globalStats + 0x380,"RANKXP",0x1343a4);
+  SV_CACValidate_SetIntStat(client->globalStats + 0x380,"CODPOINTS",100000);
+  SV_CACValidate_SetIntStat(client->globalStats + 0x380,"PLEVEL",0xf);
   return;
 }
 
@@ -781,12 +820,14 @@ void __cdecl SV_RankUpClient(client_t *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl SV_RankUp_f(void)
 
 {
   int iVar1;
-  client_t *pcVar2;
+  client_t *client;
+  client_t *cl;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -794,14 +835,14 @@ void __cdecl SV_RankUp_f(void)
   else {
     iVar1 = SV_Cmd_Argc();
     if (iVar1 == 2) {
-      pcVar2 = SV_GetPlayerByName();
-      if (pcVar2 == (client_t *)0x0) {
+      client = SV_GetPlayerByName();
+      if (client == (client_t *)0x0) {
         SV_Cmd_Argv(1);
         Com_Printf(0,"Couldn\'t find user %s\n");
       }
       else {
-        SV_RankUpClient(pcVar2);
-        SV_DWWriteClientStats(pcVar2);
+        SV_RankUpClient(client);
+        SV_DWWriteClientStats(client);
       }
     }
     else {
@@ -824,7 +865,8 @@ void __cdecl SV_BanNum_f(void)
 
 {
   int iVar1;
-  client_t *pcVar2;
+  client_t *cl_00;
+  client_t *cl;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -832,9 +874,9 @@ void __cdecl SV_BanNum_f(void)
   else {
     iVar1 = SV_Cmd_Argc();
     if (iVar1 == 2) {
-      pcVar2 = SV_GetPlayerByNum();
-      if (pcVar2 != (client_t *)0x0) {
-        SV_BanClient(pcVar2);
+      cl_00 = SV_GetPlayerByNum();
+      if (cl_00 != (client_t *)0x0) {
+        SV_BanClient(cl_00);
       }
     }
     else {
@@ -851,12 +893,12 @@ void __cdecl SV_Unban_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *name;
   
   iVar1 = SV_Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = SV_Cmd_Argv(1);
-    SV_UnbanClient(pcVar2);
+    name = SV_Cmd_Argv(1);
+    SV_UnbanClient(name);
   }
   else {
     Com_Printf(0,"Usage: unban <client name>\n");
@@ -867,6 +909,12 @@ void __cdecl SV_Unban_f(void)
 
 // 00704A80  SV_Drop_f  (server_mp/sv_ccmds_mp.cpp:1032)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl SV_Drop_f(void)
 
 {
@@ -876,6 +924,12 @@ void __cdecl SV_Drop_f(void)
 
 
 // 00704AA0  SV_DropNum_f  (server_mp/sv_ccmds_mp.cpp:1038)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_DropNum_f(void)
 
@@ -888,19 +942,24 @@ void __cdecl SV_DropNum_f(void)
 // 00704B60  SV_TempBanNum_f  (server_mp/sv_ccmds_mp.cpp:1051)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_TempBanNum_f(void)
 
 {
-  char local_4c [64];
+  char playerName [64];
   uint local_c;
-  int local_8;
+  int guid;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = SV_KickClient_f(local_4c,0x40);
-  if (local_8 != 0) {
+  guid = SV_KickClient_f(playerName,0x40);
+  if (guid != 0) {
     Com_Printf(0,"%s (guid %i) was kicked by the server\n");
-    SV_BanGuidBriefly(local_8);
+    SV_BanGuidBriefly(guid);
   }
   return;
 }
@@ -921,9 +980,13 @@ void __cdecl SV_Status_f(void)
   int iVar2;
   char *pcVar3;
   char *local_28;
-  int local_20;
-  client_t *local_1c;
-  int local_c;
+  int j;
+  client_t *cl;
+  int l;
+  int ping;
+  char *s;
+  int i;
+  playerState_s *ps;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -935,17 +998,17 @@ void __cdecl SV_Status_f(void)
     Com_Printf(0,
                "--- ----- ---- ---------- --------------- ------- --------------------- ------ -----\n"
               );
-    local_1c = svs.clients;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if ((local_1c->header).state != 0) {
+    cl = svs.clients;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if ((cl->header).state != 0) {
         Com_Printf(0,"%3i ");
-        SV_GameClientNum(local_c);
-        G_GetClientScore(((int)local_1c - (int)svs.clients) / 0x84d00);
+        SV_GameClientNum(i);
+        G_GetClientScore(((int)cl - (int)svs.clients) / 0x84d00);
         Com_Printf(0,"%5i ");
-        if ((local_1c->header).state == 3) {
+        if ((cl->header).state == 3) {
           Com_Printf(0,"CNCT ");
         }
-        else if ((local_1c->header).state == 1) {
+        else if ((cl->header).state == 1) {
           Com_Printf(0,"ZMBI ");
         }
         else {
@@ -953,27 +1016,26 @@ void __cdecl SV_Status_f(void)
         }
         Com_Printf(0,"%6i ");
         Com_Printf(0,"%s^7");
-        iVar2 = I_DrawStrlen(local_1c->name);
-        for (local_20 = 0; local_20 < 0x10 - iVar2; local_20 = local_20 + 1) {
+        iVar2 = I_DrawStrlen(cl->name);
+        for (j = 0; j < 0x10 - iVar2; j = j + 1) {
           Com_Printf(0," ");
         }
         Com_Printf(0,"%7i ");
-        local_28 = NET_AdrToString((local_1c->header).netchan.remoteAddress);
+        local_28 = NET_AdrToString((cl->header).netchan.remoteAddress);
         Com_Printf(0,"%s");
         pcVar3 = local_28 + 1;
         do {
           cVar1 = *local_28;
           local_28 = local_28 + 1;
         } while (cVar1 != '\0');
-        for (local_20 = 0; local_20 < 0x16 - ((int)local_28 - (int)pcVar3); local_20 = local_20 + 1)
-        {
+        for (j = 0; j < 0x16 - ((int)local_28 - (int)pcVar3); j = j + 1) {
           Com_Printf(0," ");
         }
         Com_Printf(0,"%6i");
         Com_Printf(0," %5i");
         Com_Printf(0,"\n");
       }
-      local_1c = (client_t *)(local_1c[1].userinfo + 0x3d8);
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
     Com_Printf(0,"\n");
   }
@@ -983,23 +1045,23 @@ void __cdecl SV_Status_f(void)
 
 // 00705500  SV_AssembleConSayMessage  (server_mp/sv_ccmds_mp.cpp:1136)
 
-void __cdecl SV_AssembleConSayMessage(int param_1,char *param_2,int param_3)
+void __cdecl SV_AssembleConSayMessage(int firstArg,char *text,int sizeofText)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *local_c;
-  int local_8;
+  uint textLen;
   
-  builtin_strncpy(param_2,"console: ",10);
-  local_8 = 9;
-  local_c = param_2;
+  builtin_strncpy(text,"console: ",10);
+  textLen = 9;
+  local_c = text;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  if ((int)local_c - (int)(param_2 + 1) != 9) {
+  if ((int)local_c - (int)(text + 1) != 9) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_ccmds_mp.cpp",0x475,1
                              ,"%s");
     if (!bVar3) {
@@ -1008,12 +1070,12 @@ void __cdecl SV_AssembleConSayMessage(int param_1,char *param_2,int param_3)
       return;
     }
   }
-  Cmd_ArgsBuffer(param_1,param_2 + 9,param_3 + -9);
-  if (param_2[9] == '\"') {
-    for (; param_2[local_8 + 1] != '\0'; local_8 = local_8 + 1) {
-      param_2[local_8 + -1] = param_2[local_8];
+  Cmd_ArgsBuffer(firstArg,text + 9,sizeofText + -9);
+  if (text[9] == '\"') {
+    for (; text[textLen + 1] != '\0'; textLen = textLen + 1) {
+      text[textLen - 1] = text[textLen];
     }
-    param_2[local_8] = '\0';
+    text[textLen] = '\0';
   }
   return;
 }
@@ -1032,7 +1094,7 @@ void __cdecl SV_ConSay_f(void)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1042,7 +1104,7 @@ void __cdecl SV_ConSay_f(void)
   else {
     iVar1 = SV_Cmd_Argc();
     if (1 < iVar1) {
-      SV_AssembleConSayMessage(1,local_40c,0x400);
+      SV_AssembleConSayMessage(1,text,0x400);
       SV_SendServerCommand((client_t *)0x0,SV_CMD_CAN_IGNORE,"%c \"\x15%s\"");
     }
   }
@@ -1065,9 +1127,13 @@ void __cdecl SV_TeamStatus_f(void)
   int iVar2;
   char *pcVar3;
   char *local_28;
-  int local_20;
-  client_t *local_1c;
-  int local_c;
+  int j;
+  client_t *cl;
+  int l;
+  int ping;
+  char *s;
+  int i;
+  playerState_s *ps;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -1080,17 +1146,17 @@ void __cdecl SV_TeamStatus_f(void)
     Com_Printf(0,
                "--- ----- ---- ---------- --------------- ---- ------- --------------------- ------ -----\n"
               );
-    local_1c = svs.clients;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if ((local_1c->header).state != 0) {
+    cl = svs.clients;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if ((cl->header).state != 0) {
         Com_Printf(0,"%3i ");
-        SV_GameClientNum(local_c);
-        G_GetClientScore(((int)local_1c - (int)svs.clients) / 0x84d00);
+        SV_GameClientNum(i);
+        G_GetClientScore(((int)cl - (int)svs.clients) / 0x84d00);
         Com_Printf(0,"%5i ");
-        if ((local_1c->header).state == 3) {
+        if ((cl->header).state == 3) {
           Com_Printf(0,"CNCT ");
         }
-        else if ((local_1c->header).state == 1) {
+        else if ((cl->header).state == 1) {
           Com_Printf(0,"ZMBI ");
         }
         else {
@@ -1098,29 +1164,28 @@ void __cdecl SV_TeamStatus_f(void)
         }
         Com_Printf(0,"%6i ");
         Com_Printf(0,"%s^7");
-        iVar2 = I_DrawStrlen(local_1c->name);
-        for (local_20 = 0; local_20 < 0x10 - iVar2; local_20 = local_20 + 1) {
+        iVar2 = I_DrawStrlen(cl->name);
+        for (j = 0; j < 0x10 - iVar2; j = j + 1) {
           Com_Printf(0," ");
         }
-        G_GetClientTeam(((int)local_1c - (int)svs.clients) / 0x84d00);
+        G_GetClientTeam(((int)cl - (int)svs.clients) / 0x84d00);
         Com_Printf(0,"%4i ");
         Com_Printf(0,"%7i ");
-        local_28 = NET_AdrToString((local_1c->header).netchan.remoteAddress);
+        local_28 = NET_AdrToString((cl->header).netchan.remoteAddress);
         Com_Printf(0,"%s");
         pcVar3 = local_28 + 1;
         do {
           cVar1 = *local_28;
           local_28 = local_28 + 1;
         } while (cVar1 != '\0');
-        for (local_20 = 0; local_20 < 0x16 - ((int)local_28 - (int)pcVar3); local_20 = local_20 + 1)
-        {
+        for (j = 0; j < 0x16 - ((int)local_28 - (int)pcVar3); j = j + 1) {
           Com_Printf(0," ");
         }
         Com_Printf(0,"%6i");
         Com_Printf(0," %5i");
         Com_Printf(0,"\n");
       }
-      local_1c = (client_t *)(local_1c[1].userinfo + 0x3d8);
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
     Com_Printf(0,"\n");
   }
@@ -1141,9 +1206,11 @@ void __cdecl SV_ConTell_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  client_t *pcVar3;
-  char local_40c [1028];
+  char *nptr;
+  client_t *cl_00;
+  client_t *cl;
+  int clientNum;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1153,12 +1220,12 @@ void __cdecl SV_ConTell_f(void)
   else {
     iVar1 = SV_Cmd_Argc();
     if (2 < iVar1) {
-      pcVar2 = SV_Cmd_Argv(1);
-      iVar1 = atoi(pcVar2);
+      nptr = SV_Cmd_Argv(1);
+      iVar1 = atoi(nptr);
       if (((-1 < iVar1) && (iVar1 < (com_maxclients->current).integer)) &&
-         (pcVar3 = (client_t *)(iVar1 * 0x84d00 + (int)svs.clients), (pcVar3->header).state == 5)) {
-        SV_AssembleConSayMessage(2,local_40c,0x400);
-        SV_SendServerCommand(pcVar3,SV_CMD_CAN_IGNORE,"%c \"\x15%s\"");
+         (cl_00 = (client_t *)(iVar1 * 0x84d00 + (int)svs.clients), (cl_00->header).state == 5)) {
+        SV_AssembleConSayMessage(2,text,0x400);
+        SV_SendServerCommand(cl_00,SV_CMD_CAN_IGNORE,"%c \"\x15%s\"");
       }
     }
   }
@@ -1184,28 +1251,32 @@ void __cdecl SV_Heartbeat_f(void)
 
 // 007051C0  SV_Serverinfo_f  (server_mp/sv_ccmds_mp.cpp:1306)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 void __cdecl SV_Serverinfo_f(void)
 
 {
-  char *pcVar1;
+  char *s;
   
   Com_Printf(0,"Server info settings:\n");
-  pcVar1 = Dvar_InfoString(0,4);
-  Info_Print(pcVar1);
+  s = Dvar_InfoString(0,4);
+  Info_Print(s);
   return;
 }
 
 
 // 007051F0  SV_Systeminfo_f  (server_mp/sv_ccmds_mp.cpp:1320)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 void __cdecl SV_Systeminfo_f(void)
 
 {
-  char *pcVar1;
+  char *s;
   
   Com_Printf(0,"System info settings:\n");
-  pcVar1 = Dvar_InfoString(0,8);
-  Info_Print(pcVar1);
+  s = Dvar_InfoString(0,8);
+  Info_Print(s);
   return;
 }
 
@@ -1223,6 +1294,7 @@ void __cdecl SV_DumpUser_f(void)
 {
   int iVar1;
   client_t *pcVar2;
+  client_t *cl;
   
   if ((com_sv_running->current).enabled == false) {
     Com_Printf(0,"Server is not running.\n");
@@ -1289,28 +1361,31 @@ void __cdecl SV_SetPerk_f(void)
   code *pcVar1;
   bool bVar2;
   client_t *pcVar3;
-  char *pcVar4;
-  uint uVar5;
-  playerState_s *ppVar6;
-  clientState_s *pcVar7;
-  uint local_10;
-  client_t *local_8;
+  char *perkName_00;
+  uint perkIndex_00;
+  playerState_s *ppVar4;
+  clientState_s *pcVar5;
+  client_t *cl;
+  char *perkName;
+  int perkIndex;
+  int i;
+  playerState_s *ps;
+  client_t *clIdx;
   
   pcVar3 = SV_GetPlayerByName();
   if (pcVar3 != (client_t *)0x0) {
-    pcVar4 = SV_Cmd_Argv(2);
-    uVar5 = BG_GetPerkIndexForName(pcVar4);
-    if (((int)uVar5 < 0) || (0x33 < (int)uVar5)) {
+    perkName_00 = SV_Cmd_Argv(2);
+    perkIndex_00 = BG_GetPerkIndexForName(perkName_00);
+    if (((int)perkIndex_00 < 0) || (0x33 < (int)perkIndex_00)) {
       Com_DPrintf(0,"Unknown perk: %s\n");
     }
     else {
-      local_10 = 0;
-      for (local_8 = svs.clients;
-          ((int)local_10 < (com_maxclients->current).integer && (local_8 != pcVar3));
-          local_8 = (client_t *)(local_8[1].userinfo + 0x3d8)) {
-        local_10 = local_10 + 1;
+      i = 0;
+      for (clIdx = svs.clients; (i < (com_maxclients->current).integer && (clIdx != pcVar3));
+          clIdx = (client_t *)(clIdx[1].userinfo + 0x3d8)) {
+        i = i + 1;
       }
-      if (((com_maxclients->current).unsignedInt <= local_10) &&
+      if (((com_maxclients->current).unsignedInt <= (uint)i) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_ccmds_mp.cpp",
                                    0x65b,0,
                                    "i doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -1319,10 +1394,10 @@ void __cdecl SV_SetPerk_f(void)
         (*pcVar1)();
         return;
       }
-      ppVar6 = SV_GameClientNum(local_10);
-      BG_SetPerk(ppVar6->perks,uVar5);
-      pcVar7 = G_GetClientState(local_10);
-      BG_SetPerk(pcVar7->perks,uVar5);
+      ppVar4 = SV_GameClientNum(i);
+      BG_SetPerk(ppVar4->perks,perkIndex_00);
+      pcVar5 = G_GetClientState(i);
+      BG_SetPerk(pcVar5->perks,perkIndex_00);
     }
   }
   return;
@@ -1330,6 +1405,12 @@ void __cdecl SV_SetPerk_f(void)
 
 
 // 007036E0  SV_AddOperatorCommands  (server_mp/sv_ccmds_mp.cpp:1678)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_AddOperatorCommands(void)
 
@@ -1433,6 +1514,12 @@ void __cdecl SV_AddOperatorCommands(void)
 
 
 // 00705410  SV_AddDedicatedCommands  (server_mp/sv_ccmds_mp.cpp:1786)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SV_AddDedicatedCommands(void)
 

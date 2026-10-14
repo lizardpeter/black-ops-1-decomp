@@ -2,13 +2,14 @@
 
 // 004DCD90  BG_Player_DoControllers  (cgame_mp/cg_pose_mp.cpp:25)
 
-void __cdecl BG_Player_DoControllers(CEntPlayerInfo *param_1,DObj *param_2,int *param_3)
+void __cdecl BG_Player_DoControllers(CEntPlayerInfo *player,DObj *obj,int *partBits)
 
 {
   clientControllers_t *pcVar1;
   bool bVar2;
+  clientControllers_t *control;
   
-  pcVar1 = param_1->control;
+  pcVar1 = player->control;
   if (((pcVar1->tag_origin_angles[0] == 0.0) && (pcVar1->tag_origin_angles[1] == 0.0)) &&
      (pcVar1->tag_origin_angles[2] == 0.0)) {
     bVar2 = true;
@@ -28,7 +29,7 @@ void __cdecl BG_Player_DoControllers(CEntPlayerInfo *param_1,DObj *param_2,int *
       return;
     }
   }
-  DObjSetLocalTag(param_2,param_3,0,pcVar1->tag_origin_offset,pcVar1->tag_origin_angles);
+  DObjSetLocalTag(obj,partBits,0,pcVar1->tag_origin_offset,pcVar1->tag_origin_angles);
   return;
 }
 
@@ -40,17 +41,19 @@ void __cdecl BG_Player_DoControllers(CEntPlayerInfo *param_1,DObj *param_2,int *
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Player_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_Player_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
-  cg_s *pcVar1;
-  centity_s *pcVar2;
+  cg_s *cgameGlob_00;
+  centity_s *cent;
+  cg_s *cgameGlob;
+  centity_s *ent;
   
-  if ((param_1->field19_0x6c).player.control != (clientControllers_t *)0x0) {
-    pcVar1 = CG_GetLocalClientGlobals((uint)param_1->localClientNum);
-    pcVar2 = CG_GetEntity((uint)param_1->localClientNum,param_2->entnum - 1);
-    CG_UpdateMinigunTags(pcVar1,pcVar2,param_2,param_3);
-    BG_Player_DoControllers(&(param_1->field19_0x6c).player,param_2,param_3);
+  if ((pose->field19_0x6c).player.control != (clientControllers_t *)0x0) {
+    cgameGlob_00 = CG_GetLocalClientGlobals((uint)pose->localClientNum);
+    cent = CG_GetEntity((uint)pose->localClientNum,obj->entnum - 1);
+    CG_UpdateMinigunTags(cgameGlob_00,cent,obj,partBits);
+    BG_Player_DoControllers(&(pose->field19_0x6c).player,obj,partBits);
   }
   return;
 }
@@ -64,7 +67,7 @@ void __cdecl CG_Player_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_Vehicle_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   code *pcVar1;
@@ -196,7 +199,7 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if ((param_2 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_pose_mp.cpp",0x59,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -213,12 +216,12 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
   local_50[5] = 0.0;
   local_50[1] = 0.0;
   local_50[2] = 0.0;
-  local_50[6] = (float)(int)(param_1->field19_0x6c).vehicle.pitch * 0.005493164;
-  local_30 = (float)(int)(param_1->field19_0x6c).vehicle.roll * 0.005493164;
-  local_2c[0] = (float)(int)(param_1->field19_0x6c).vehicle.barrelPitch * 0.005493164;
-  local_2c[4] = (float)(int)(param_1->field19_0x6c).vehicle.yaw * 0.005493164;
-  local_54 = (float)(int)(param_1->field19_0x6c).vehicle.steerYaw * 0.005493164;
-  local_50[0] = (float)(int)(param_1->field19_0x6c).vehicle.steerPitch * 0.005493164;
+  local_50[6] = (float)(int)(pose->field19_0x6c).vehicle.pitch * 0.005493164;
+  local_30 = (float)(int)(pose->field19_0x6c).vehicle.roll * 0.005493164;
+  local_2c[0] = (float)(int)(pose->field19_0x6c).vehicle.barrelPitch * 0.005493164;
+  local_2c[4] = (float)(int)(pose->field19_0x6c).vehicle.yaw * 0.005493164;
+  local_54 = (float)(int)(pose->field19_0x6c).vehicle.steerYaw * 0.005493164;
+  local_50[0] = (float)(int)(pose->field19_0x6c).vehicle.steerPitch * 0.005493164;
   for (local_58 = 0; iVar4 = local_58, local_58 < 4; local_58 = local_58 + 1) {
     local_8c = afStack_88 + local_58 * 3;
     *local_8c = 0.0;
@@ -230,46 +233,45 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
     afStack_bc[iVar4 * 3 + 1] = 0.0;
     afStack_bc[iVar4 * 3 + 2] = 0.0;
     afStack_88[local_58 * 3] =
-         (float)(int)*(short *)((int)param_1->absmax + local_58 * 2 + 0x26) * 0.005493164;
+         (float)(int)*(short *)((int)pose->absmax + local_58 * 2 + 0x26) * 0.005493164;
     afStack_bc[local_58 * 3 + 1] =
-         (float)(int)*(short *)((int)param_1->absmax + local_58 * 2 + 0x2e) * 0.005493164;
+         (float)(int)*(short *)((int)pose->absmax + local_58 * 2 + 0x2e) * 0.005493164;
   }
-  DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).vehicle.tag_body,vec3_origin,
-                  local_50 + 6);
-  DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).vehicle.tag_turret,vec3_origin,
+  DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).vehicle.tag_body,vec3_origin,local_50 + 6)
+  ;
+  DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).vehicle.tag_turret,vec3_origin,
                   local_2c + 3);
-  DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).vehicle.tag_barrel,vec3_origin,
-                  local_2c);
-  if (0.0 < (param_1->field19_0x6c).vehicle.barrelRecoil) {
-    local_c4 = (param_1->field19_0x6c).vehicle.barrelRecoil;
+  DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).vehicle.tag_barrel,vec3_origin,local_2c);
+  if (0.0 < (pose->field19_0x6c).vehicle.barrelRecoil) {
+    local_c4 = (pose->field19_0x6c).vehicle.barrelRecoil;
     local_d0 = local_c4 * recoilVec[0];
     local_cc = local_c4 * recoilVec[1];
     local_c8 = local_c4 * recoilVec[2];
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).vehicle.tag_barrel_recoil,
-                    &local_d0,vec3_origin);
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).vehicle.tag_barrel_recoil,&local_d0,
+                    vec3_origin);
   }
   for (local_58 = 0; local_58 < 4; local_58 = local_58 + 1) {
-    DObjSetLocalTag(param_2,param_3,
-                    (uint)*(byte *)((int)((param_1->constantSet).value + -2) + 8 + local_58),
+    DObjSetLocalTag(obj,partBits,
+                    (uint)*(byte *)((int)((pose->constantSet).value + -2) + 8 + local_58),
                     vec3_origin,afStack_bc + local_58 * 3);
-    DObjSetLocalTag(param_2,param_3,
-                    (uint)*(byte *)((int)((param_1->constantSet).value + -2) + 0xc + local_58),
+    DObjSetLocalTag(obj,partBits,
+                    (uint)*(byte *)((int)((pose->constantSet).value + -2) + 0xc + local_58),
                     vec3_origin,afStack_88 + local_58 * 3);
   }
-  if ((param_1->field19_0x6c).vehicle.tag_minigun_spin != 0xfe) {
+  if ((pose->field19_0x6c).vehicle.tag_minigun_spin != 0xfe) {
     local_dc[0] = 0.0;
     local_dc[1] = 0.0;
-    local_dc[2] = (float)(int)(param_1->field19_0x6c).vehicle.minigun_rotation * 0.005493164;
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).vehicle.tag_minigun_spin,
-                    vec3_origin,local_dc);
+    local_dc[2] = (float)(int)(pose->field19_0x6c).vehicle.minigun_rotation * 0.005493164;
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).vehicle.tag_minigun_spin,vec3_origin,
+                    local_dc);
   }
-  local_e0 = (param_1->field19_0x6c).vehicle.time;
-  AnglesToAxis(param_1->angles,(float (*) [3])&local_110);
+  local_e0 = (pose->field19_0x6c).vehicle.time;
+  AnglesToAxis(pose->angles,(float (*) [3])&local_110);
   local_114 = local_ec;
-  local_118 = param_1->origin;
+  local_118 = pose->origin;
   local_188 = *local_118;
-  local_184 = param_1->origin[1];
-  local_180 = param_1->origin[2];
+  local_184 = pose->origin[1];
+  local_180 = pose->origin[2];
   local_11c = &local_110;
   local_1c8 = local_110;
   local_1b8 = local_10c;
@@ -307,17 +309,17 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
   local_12c = local_184;
   local_128 = local_180;
   local_ec[0] = local_188;
-  local_1cc = DObjGetModel(param_2,0);
+  local_1cc = DObjGetModel(obj,0);
   local_1d0 = XModelNumBones(local_1cc);
   local_1d8 = XModelGetBasePose(local_1cc);
   local_1d4 = local_1d8;
-  uVar3 = DObjGetEntNum(param_2);
-  local_1dc = CG_GetEntity((uint)param_1->localClientNum,uVar3 - 1);
+  uVar3 = DObjGetEntNum(obj);
+  local_1dc = CG_GetEntity((uint)pose->localClientNum,uVar3 - 1);
   if (local_1dc->nitrousVeh == (NitrousVehicle *)0x0) {
     for (local_58 = 0; local_58 < 6; local_58 = local_58 + 1) {
-      local_1e0 = (uint)*(byte *)((int)param_1->absmax + local_58 + 0x3c);
+      local_1e0 = (uint)*(byte *)((int)pose->absmax + local_58 + 0x3c);
       if (local_1e0 < 0xfe) {
-        iVar4 = DObjSetRotTransIndex(param_2,param_3,local_1e0);
+        iVar4 = DObjSetRotTransIndex(obj,partBits,local_1e0);
         if (iVar4 != 0) {
           local_1e4 = local_1d8 + local_1e0;
           local_1e8 = local_1e4->trans;
@@ -333,7 +335,7 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
                       local_128;
           local_20c = local_1f8 * local_154 + local_1f4 * local_144 + local_1f0 * local_134 +
                       local_124;
-          local_21c = (local_e0 + 40.0) * param_1->absmax[local_58 + 0x1d];
+          local_21c = (local_e0 + 40.0) * pose->absmax[local_58 + 0x1d];
           local_220 = 40.0 - local_e0;
           local_224 = local_220;
           if (0.0 <= local_21c - local_220) {
@@ -362,13 +364,13 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
           local_204 = local_24c;
           local_200 = local_248;
           local_1fc = local_244;
-          DObjSetLocalTagInternal(param_2,&local_250,local_50 + 3,local_1e0);
+          DObjSetLocalTagInternal(obj,&local_250,local_50 + 3,local_1e0);
           if (local_50[0] != 0.0) {
-            local_258 = DObjGetChildBones(param_2,(uchar)local_1e0,local_254,4);
+            local_258 = DObjGetChildBones(obj,(uchar)local_1e0,local_254,4);
             for (local_25c = 0; local_25c < local_258; local_25c = local_25c + 1) {
-              iVar4 = DObjSetRotTransIndex(param_2,param_3,(uint)local_254[local_25c]);
+              iVar4 = DObjSetRotTransIndex(obj,partBits,(uint)local_254[local_25c]);
               if (iVar4 != 0) {
-                DObjSetLocalTagInternal(param_2,vec3_origin,local_50,(uint)local_254[local_25c]);
+                DObjSetLocalTagInternal(obj,vec3_origin,local_50,(uint)local_254[local_25c]);
               }
             }
           }
@@ -382,41 +384,41 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
         return;
       }
     }
-    local_50[0] = local_50[0] * (param_1->field19_0x6c).vehicle.extra_wheel_rot_scale;
+    local_50[0] = local_50[0] * (pose->field19_0x6c).vehicle.extra_wheel_rot_scale;
     for (local_260 = 0; local_260 < 4; local_260 = local_260 + 1) {
-      local_1e0 = (uint)*(byte *)((int)((param_1->constantSet).value + -1) + local_260);
-      if ((local_1e0 < 0xfe) &&
-         (iVar4 = DObjSetRotTransIndex(param_2,param_3,local_1e0), iVar4 != 0)) {
-        DObjSetLocalTagInternal(param_2,vec3_origin,local_50,local_1e0);
+      local_1e0 = (uint)*(byte *)((int)((pose->constantSet).value + -1) + local_260);
+      if ((local_1e0 < 0xfe) && (iVar4 = DObjSetRotTransIndex(obj,partBits,local_1e0), iVar4 != 0))
+      {
+        DObjSetLocalTagInternal(obj,vec3_origin,local_50,local_1e0);
       }
     }
   }
   else {
-    local_264 = DObjGetRotTransArray(param_2);
+    local_264 = DObjGetRotTransArray(obj);
     if (local_264 != (DObjAnimMat *)0x0) {
       for (local_268 = 0; local_268 < 6; local_268 = local_268 + 1) {
-        local_1e0 = (uint)*(byte *)((int)param_1->absmax + local_268 + 0x3c);
+        local_1e0 = (uint)*(byte *)((int)pose->absmax + local_268 + 0x3c);
         if (local_1e0 < 0xfe) {
-          iVar4 = DObjSetRotTransIndex(param_2,param_3,local_1e0);
+          iVar4 = DObjSetRotTransIndex(obj,partBits,local_1e0);
           if (iVar4 != 0) {
-            local_278[2] = param_1->absmax[local_268 + 0x1d];
+            local_278[2] = pose->absmax[local_268 + 0x1d];
             local_278[0] = 0.0;
             local_278[1] = 0.0;
-            local_284 = param_1->absmax[local_268 + 0x17];
+            local_284 = pose->absmax[local_268 + 0x17];
             local_288 = 0.0;
             local_280 = 0;
             local_27c = local_284;
             local_26c = local_278[2];
-            DObjSetLocalTagInternal(param_2,local_278,&local_288,local_1e0);
-            local_28c = param_1->absmax[local_268 + 0x11];
+            DObjSetLocalTagInternal(obj,local_278,&local_288,local_1e0);
+            local_28c = pose->absmax[local_268 + 0x11];
             local_284 = 0.0;
             local_280 = 0;
             local_288 = local_28c;
-            local_294 = DObjGetChildBones(param_2,(uchar)local_1e0,local_290,4);
+            local_294 = DObjGetChildBones(obj,(uchar)local_1e0,local_290,4);
             for (local_298 = 0; local_298 < local_294; local_298 = local_298 + 1) {
-              iVar4 = DObjSetRotTransIndex(param_2,param_3,(uint)local_290[local_298]);
+              iVar4 = DObjSetRotTransIndex(obj,partBits,(uint)local_290[local_298]);
               if (iVar4 != 0) {
-                DObjSetLocalTagInternal(param_2,vec3_origin,&local_288,(uint)local_290[local_298]);
+                DObjSetLocalTagInternal(obj,vec3_origin,&local_288,(uint)local_290[local_298]);
               }
             }
           }
@@ -430,16 +432,16 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
         }
       }
       for (local_29c = 0; local_29c < 4; local_29c = local_29c + 1) {
-        local_1e0 = (uint)*(byte *)((int)((param_1->constantSet).value + -1) + local_29c);
+        local_1e0 = (uint)*(byte *)((int)((pose->constantSet).value + -1) + local_29c);
         if (local_1e0 < 0xfe) {
-          local_2ac[0] = param_1->absmax[local_29c + 0x11] *
-                         (param_1->field19_0x6c).vehicle.extra_wheel_rot_scale;
+          local_2ac[0] = pose->absmax[local_29c + 0x11] *
+                         (pose->field19_0x6c).vehicle.extra_wheel_rot_scale;
           local_2ac[1] = 0.0;
           local_2ac[2] = 0.0;
           local_2ac[3] = local_2ac[0];
-          iVar4 = DObjSetRotTransIndex(param_2,param_3,local_1e0);
+          iVar4 = DObjSetRotTransIndex(obj,partBits,local_1e0);
           if (iVar4 != 0) {
-            DObjSetLocalTagInternal(param_2,vec3_origin,local_2ac,local_1e0);
+            DObjSetLocalTagInternal(obj,vec3_origin,local_2ac,local_1e0);
           }
         }
       }
@@ -451,35 +453,33 @@ void __cdecl CG_Vehicle_DoControllers(cpose_t *param_1,DObj *param_2,int *param_
 
 // 004DCE80  CG_Destructible_DoControllers  (cgame_mp/cg_pose_mp.cpp:291)
 
-void __cdecl CG_Destructible_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_Destructible_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   int iVar1;
-  float local_2c;
+  float controlAngles;
   float local_28;
   float local_24;
-  byte local_1d;
-  Destructible_BonePose *local_1c;
-  int local_18;
-  DestructiblePose *local_14;
-  float local_10 [3];
+  uchar boneIndex;
+  Destructible_BonePose *bonepose;
+  int i;
+  DestructiblePose *dpose;
+  float noTrans [3];
   
-  local_10[0] = 0.0;
-  local_10[1] = 0.0;
-  local_10[2] = 0.0;
-  if (param_1->destructiblePose != '\0') {
-    local_14 = CG_GetDestructiblePose((ushort)param_1->destructiblePose);
-    for (local_18 = 0;
-        (local_18 < 0x20 && (local_1c = local_14->bones + local_18, local_1c->boneid != 0));
-        local_18 = local_18 + 1) {
-      local_1d = 0;
-      iVar1 = DObjGetBoneIndex(param_2,local_1c->boneid,&local_1d,-1);
-      if ((iVar1 != 0) && (iVar1 = DObjSetRotTransIndex(param_2,param_3,(uint)local_1d), iVar1 != 0)
-         ) {
-        local_2c = local_1c->angles_offset[0] + local_1c->angles_original[0];
-        local_28 = local_1c->angles_offset[1] + local_1c->angles_original[1];
-        local_24 = local_1c->angles_offset[2] + local_1c->angles_original[2];
-        DObjSetLocalTagInternal(param_2,local_10,&local_2c,(uint)local_1d);
+  noTrans[0] = 0.0;
+  noTrans[1] = 0.0;
+  noTrans[2] = 0.0;
+  if (pose->destructiblePose != '\0') {
+    dpose = CG_GetDestructiblePose((ushort)pose->destructiblePose);
+    for (i = 0; (i < 0x20 && (bonepose = dpose->bones + i, bonepose->boneid != 0)); i = i + 1) {
+      boneIndex = '\0';
+      iVar1 = DObjGetBoneIndex(obj,bonepose->boneid,&boneIndex,-1);
+      if ((iVar1 != 0) && (iVar1 = DObjSetRotTransIndex(obj,partBits,(uint)boneIndex), iVar1 != 0))
+      {
+        controlAngles = bonepose->angles_offset[0] + bonepose->angles_original[0];
+        local_28 = bonepose->angles_offset[1] + bonepose->angles_original[1];
+        local_24 = bonepose->angles_offset[2] + bonepose->angles_original[2];
+        DObjSetLocalTagInternal(obj,noTrans,&controlAngles,(uint)boneIndex);
       }
     }
   }
@@ -489,185 +489,189 @@ void __cdecl CG_Destructible_DoControllers(cpose_t *param_1,DObj *param_2,int *p
 
 // 004DE6D0  CG_mg42_DoControllers  (cgame_mp/cg_pose_mp.cpp:327)
 
-void __cdecl CG_mg42_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_mg42_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   float fVar1;
   float10 fVar2;
   float10 fVar3;
   float10 fVar4;
-  float local_78;
+  float ofsVec;
   float local_74;
   float local_70;
-  float local_6c;
+  float axis;
   float local_68;
   float local_64;
-  float local_48;
+  float ofs;
   float local_44;
   undefined4 local_40;
-  float local_3c;
-  float local_30;
-  float local_2c;
+  float ofsDist;
+  float ys;
+  float yc;
+  float turretYaw;
+  float totOfs;
   float local_28;
   float local_24;
-  float local_20;
+  float angles;
   float local_1c;
   undefined4 local_18;
-  float local_10;
-  clientControllers_t *local_c;
+  float pc;
+  float turretPitch;
+  float *viewAngles;
+  float ps;
   
-  local_20 = 0.0;
+  angles = 0.0;
   local_1c = 0.0;
   local_18 = 0;
-  if ((param_1->field19_0x6c).turret.playerUsing == false) {
-    local_10 = *(float *)&param_1->field19_0x6c;
-    local_30 = (param_1->field19_0x6c).actor.pitch;
+  if ((pose->field19_0x6c).turret.playerUsing == false) {
+    turretPitch = (float)(pose->field19_0x6c).player.control;
+    turretYaw = (pose->field19_0x6c).actor.pitch;
   }
   else {
-    local_c = (param_1->field19_0x6c).player.control;
-    local_10 = AngleNormalize180(local_c->angles[0][0] - param_1->angles[0]);
-    local_30 = AngleNormalize180(local_c->angles[0][1] - param_1->angles[1]);
+    viewAngles = (float *)(pose->field19_0x6c).player.control;
+    turretPitch = AngleNormalize180(((clientControllers_t *)viewAngles)->angles[0][0] -
+                                    pose->angles[0]);
+    turretYaw = AngleNormalize180(viewAngles[1] - pose->angles[1]);
   }
   local_18 = 0;
-  local_3c = (param_1->field19_0x6c).player.waterHeight;
-  local_2c = 0.0;
+  ofsDist = (pose->field19_0x6c).player.waterHeight;
+  totOfs = 0.0;
   local_28 = 0.0;
   local_24 = 0.0;
-  if ((param_1->field19_0x6c).turret.tag_aim_pivot == 0xff) {
-    local_1c = local_30;
-    local_20 = local_10;
-    fVar2 = (float10)fcos((float10)(local_10 * 0.017453292));
-    fVar3 = (float10)fsin((float10)(local_10 * 0.017453292));
+  if ((pose->field19_0x6c).turret.tag_aim_pivot == 0xff) {
+    local_1c = turretYaw;
+    angles = turretPitch;
+    fVar2 = (float10)fcos((float10)(turretPitch * 0.017453292));
+    fVar3 = (float10)fsin((float10)(turretPitch * 0.017453292));
     fVar1 = (float)fVar2;
-    fVar2 = (float10)fcos((float10)(local_30 * 0.017453292));
-    fVar4 = (float10)fsin((float10)(local_30 * 0.017453292));
-    local_48 = ((float)fVar2 - 1.0) * local_3c * ycFwdScale +
-               (1.0 - fVar1) * local_3c * pcFwdScale * ((float)fVar2 - 1.0);
-    local_44 = (float)fVar4 * local_3c * ysScale + (fVar1 - 1.0) * local_3c * pcScale * (float)fVar4
-    ;
+    fVar2 = (float10)fcos((float10)(turretYaw * 0.017453292));
+    fVar4 = (float10)fsin((float10)(turretYaw * 0.017453292));
+    ofs = ((float)fVar2 - 1.0) * ofsDist * ycFwdScale +
+          (1.0 - fVar1) * ofsDist * pcFwdScale * ((float)fVar2 - 1.0);
+    local_44 = (float)fVar4 * ofsDist * ysScale + (fVar1 - 1.0) * ofsDist * pcScale * (float)fVar4;
     local_40 = 0;
-    local_2c = fVar1 * local_3c + 0.0 + local_48;
+    totOfs = fVar1 * ofsDist + 0.0 + ofs;
     local_28 = local_44 + 0.0;
-    local_24 = -(float)fVar3 * local_3c + 0.0 + 0.0;
-    if ((param_1->field19_0x6c).turret.firingOffset != 0.0) {
-      AnglesToAxis(&local_20,(float (*) [3])&local_6c);
-      fVar1 = (param_1->field19_0x6c).turret.firingOffset;
-      local_2c = local_2c + fVar1 * local_6c;
+    local_24 = -(float)fVar3 * ofsDist + 0.0 + 0.0;
+    if ((pose->field19_0x6c).turret.firingOffset != 0.0) {
+      AnglesToAxis(&angles,(float (*) [3])&axis);
+      fVar1 = (pose->field19_0x6c).turret.firingOffset;
+      totOfs = totOfs + fVar1 * axis;
       local_28 = local_28 + fVar1 * local_68;
       local_24 = local_24 + fVar1 * local_64;
-      local_78 = -(fVar1 * local_6c);
+      ofsVec = -(fVar1 * axis);
       local_74 = -(fVar1 * local_68);
       local_70 = -(fVar1 * local_64);
-      DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_weapon,&local_78,
-                      vec3_origin);
+      DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_weapon,&ofsVec,vec3_origin)
+      ;
     }
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_aim,&local_2c,&local_20
-                   );
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_aim_animated,&local_2c,
-                    &local_20);
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_aim,&totOfs,&angles);
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_aim_animated,&totOfs,&angles)
+    ;
   }
   else {
-    local_20 = local_10;
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_aim_pivot,vec3_origin,
-                    &local_20);
-    local_20 = 0.0;
-    local_1c = local_30;
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_aim,&local_2c,&local_20
+    angles = turretPitch;
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_aim_pivot,vec3_origin,&angles
                    );
-    DObjSetLocalTag(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_aim_animated,&local_2c,
-                    &local_20);
+    angles = 0.0;
+    local_1c = turretYaw;
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_aim,&totOfs,&angles);
+    DObjSetLocalTag(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_aim_animated,&totOfs,&angles)
+    ;
   }
-  local_20 = (param_1->field19_0x6c).turret.barrelPitch;
+  angles = (pose->field19_0x6c).turret.barrelPitch;
   local_1c = 0.0;
-  DObjSetControlTagAngles(param_2,param_3,(uint)(param_1->field19_0x6c).turret.tag_flash,&local_20);
+  DObjSetControlTagAngles(obj,partBits,(uint)(pose->field19_0x6c).turret.tag_flash,&angles);
   return;
 }
 
 
 // 004DEC10  CG_DoBaseOriginController  (cgame_mp/cg_pose_mp.cpp:433)
 
-void __cdecl CG_DoBaseOriginController(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_DoBaseOriginController(cpose_t *pose,DObj *obj,int *setPartBits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_78;
+  uint rootBoneMask;
+  float baseQuat;
   float local_74;
   float local_70;
   float local_6c;
-  float local_68;
+  float origin;
   float local_64;
   float local_60;
-  int local_5c;
-  DObjAnimMat local_58;
-  uint local_38;
-  uint local_34;
-  DObjAnimMat *local_30;
-  uint local_2c;
-  int local_28 [9];
+  int partIndex;
+  DObjAnimMat animMat;
+  int rootBoneCount;
+  uint maxHighIndex;
+  DObjAnimMat *mat;
+  uint highIndex;
+  int partBits [9];
   
-  local_38 = DObjGetRootBoneCount(param_2);
-  if ((local_38 == 0) &&
+  rootBoneCount = DObjGetRootBoneCount(obj);
+  if ((rootBoneCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_pose_mp.cpp",0x1c0,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_38 = local_38 - 1;
-  local_34 = (int)local_38 >> 5;
-  for (local_2c = 0; local_2c < local_34; local_2c = local_2c + 1) {
-    if (param_3[local_2c] != -1) goto LAB_004decb9;
+  rootBoneCount = rootBoneCount + -1;
+  maxHighIndex = rootBoneCount >> 5;
+  for (highIndex = 0; highIndex < maxHighIndex; highIndex = highIndex + 1) {
+    if (setPartBits[highIndex] != -1) goto LAB_004decb9;
   }
-  if ((param_3[local_34] | 0xffffffffU >> (((byte)local_38 & 0x1f) + 1 & 0x1f)) != 0xffffffff) {
+  if ((setPartBits[maxHighIndex] | 0xffffffffU >> (((byte)rootBoneCount & 0x1f) + 1 & 0x1f)) !=
+      0xffffffff) {
 LAB_004decb9:
-    local_30 = DObjGetRotTransArray(param_2);
-    if (local_30 != (DObjAnimMat *)0x0) {
-      AnglesToQuat(param_1->angles,&local_78);
-      local_28[0] = 0;
-      local_28[1] = 0;
-      local_28[2] = 0;
-      local_28[3] = 0;
-      local_28[5] = 0;
-      local_28[6] = 0;
-      local_28[7] = 0;
-      local_28[8] = 0;
-      local_28[4] = 0x80000000;
-      for (local_5c = 0; local_5c <= (int)local_38; local_5c = local_5c + 1) {
-        local_2c = local_5c >> 5;
-        if ((local_28[4] & param_3[local_2c]) == 0) {
-          iVar3 = DObjSetRotTransIndex(param_2,local_28 + (4 - local_2c),local_5c);
+    mat = DObjGetRotTransArray(obj);
+    if (mat != (DObjAnimMat *)0x0) {
+      AnglesToQuat(pose->angles,&baseQuat);
+      partBits[0] = 0;
+      partBits[1] = 0;
+      partBits[2] = 0;
+      partBits[3] = 0;
+      partBits[5] = 0;
+      partBits[6] = 0;
+      partBits[7] = 0;
+      partBits[8] = 0;
+      partBits[4] = 0x80000000;
+      for (partIndex = 0; partIndex <= rootBoneCount; partIndex = partIndex + 1) {
+        highIndex = partIndex >> 5;
+        if ((partBits[4] & setPartBits[highIndex]) == 0) {
+          iVar3 = DObjSetRotTransIndex(obj,partBits + (4 - highIndex),partIndex);
           if (iVar3 == 0) {
-            local_58.quat[0] = local_78;
-            local_58.quat[1] = local_74;
-            local_58.quat[2] = local_70;
-            local_58.quat[3] = local_6c;
-            DObjSetTrans(&local_58,param_1->origin);
-            local_58.transWeight = Vec4LengthSq(local_58.quat);
-            if (local_58.transWeight == 0.0) {
-              local_58.quat[3] = 1.0;
-              local_58.transWeight = 2.0;
+            animMat.quat[0] = baseQuat;
+            animMat.quat[1] = local_74;
+            animMat.quat[2] = local_70;
+            animMat.quat[3] = local_6c;
+            DObjSetTrans(&animMat,pose->origin);
+            animMat.transWeight = Vec4LengthSq(animMat.quat);
+            if (animMat.transWeight == 0.0) {
+              animMat.quat[3] = 1.0;
+              animMat.transWeight = 2.0;
             }
             else {
-              local_58.transWeight = 2.0 / local_58.transWeight;
+              animMat.transWeight = 2.0 / animMat.transWeight;
             }
-            QuatMultiplyEquals(&local_78,local_30->quat);
-            MatrixTransformVectorQuatTrans(local_30->trans,&local_58,&local_68);
+            QuatMultiplyEquals(&baseQuat,mat->quat);
+            MatrixTransformVectorQuatTrans(mat->trans,&animMat,&origin);
           }
           else {
-            local_30->quat[0] = local_78;
-            local_30->quat[1] = local_74;
-            local_30->quat[2] = local_70;
-            local_30->quat[3] = local_6c;
-            local_68 = param_1->origin[0];
-            local_64 = param_1->origin[1];
-            local_60 = param_1->origin[2];
+            mat->quat[0] = baseQuat;
+            mat->quat[1] = local_74;
+            mat->quat[2] = local_70;
+            mat->quat[3] = local_6c;
+            origin = pose->origin[0];
+            local_64 = pose->origin[1];
+            local_60 = pose->origin[2];
           }
-          DObjSetTrans(local_30,&local_68);
+          DObjSetTrans(mat,&origin);
         }
-        local_28[4] = (uint)local_28[4] >> 1 | local_28[4] << 0x1f;
-        local_30 = local_30 + 1;
+        partBits[4] = (uint)partBits[4] >> 1 | partBits[4] << 0x1f;
+        mat = mat + 1;
       }
     }
   }
@@ -677,7 +681,7 @@ LAB_004decb9:
 
 // 004DCFC0  CG_Actor_DoControllers  (cgame_mp/cg_pose_mp.cpp:516)
 
-void __cdecl CG_Actor_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_Actor_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   float fVar1;
@@ -686,32 +690,31 @@ void __cdecl CG_Actor_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
   bool bVar4;
   int iVar5;
   float10 fVar6;
-  float local_14 [2];
+  float offset [2];
   int local_c;
-  DObjAnimMat *local_8;
+  DObjAnimMat *mat;
   
-  if ((param_2 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_pose_mp.cpp",0x208,0
                                ,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8 = DObjGetRotTransArray(param_2);
-  if ((local_8 != (DObjAnimMat *)0x0) &&
-     (iVar5 = DObjSetRotTransIndex(param_2,param_3,0), iVar5 != 0)) {
-    fVar1 = (param_1->field19_0x6c).actor.pitch;
-    local_8->quat[0] = 0.0;
-    local_8->quat[2] = 0.0;
+  mat = DObjGetRotTransArray(obj);
+  if ((mat != (DObjAnimMat *)0x0) && (iVar5 = DObjSetRotTransIndex(obj,partBits,0), iVar5 != 0)) {
+    fVar1 = (pose->field19_0x6c).actor.pitch;
+    mat->quat[0] = 0.0;
+    mat->quat[2] = 0.0;
     fVar6 = (float10)(fVar1 * 0.008726646);
     fVar3 = (float10)fcos(fVar6);
     fVar6 = (float10)fsin(fVar6);
-    local_8->quat[3] = (float)fVar3;
-    local_8->quat[1] = (float)fVar6;
-    local_c = (param_1->field19_0x6c).player.nextWaterHeightCheck;
-    local_14[0] = 0.0;
-    local_14[1] = 0.0;
-    DObjSetTrans(local_8,local_14);
+    mat->quat[3] = (float)fVar3;
+    mat->quat[1] = (float)fVar6;
+    local_c = (pose->field19_0x6c).player.nextWaterHeightCheck;
+    offset[0] = 0.0;
+    offset[1] = 0.0;
+    DObjSetTrans(mat,offset);
   }
   return;
 }
@@ -724,45 +727,49 @@ void __cdecl CG_Actor_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl CG_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   bool bVar1;
   ushort uVar2;
   centity_s *pcVar3;
   int iVar4;
-  int iVar5;
+  int xdoll_handle_00;
   Destructible *local_3c;
-  int local_28;
-  int local_18 [5];
+  int xdoll_handle;
+  int pi;
+  int count;
+  centity_s *cent;
+  Destructible *des;
+  int setPartBits [5];
   
-  DObjGetSetBones(param_2,local_18);
-  switch(param_1->eType) {
+  DObjGetSetBones(obj,setPartBits);
+  switch(pose->eType) {
   case '\x01':
-    CG_Player_DoControllers(param_1,param_2,param_3);
+    CG_Player_DoControllers(pose,obj,partBits);
     break;
   case '\f':
   case '\x0e':
   case '\x10':
-    CG_Vehicle_DoControllers(param_1,param_2,param_3);
+    CG_Vehicle_DoControllers(pose,obj,partBits);
     break;
   case '\x11':
   case '\x13':
-    CG_Actor_DoControllers(param_1,param_2,param_3);
+    CG_Actor_DoControllers(pose,obj,partBits);
   case '\v':
-    CG_mg42_DoControllers(param_1,param_2,param_3);
+    CG_mg42_DoControllers(pose,obj,partBits);
   }
-  if (param_1->destructiblePose != '\0') {
-    CG_Destructible_DoControllers(param_1,param_2,param_3);
+  if (pose->destructiblePose != '\0') {
+    CG_Destructible_DoControllers(pose,obj,partBits);
   }
-  CG_DoBaseOriginController(param_1,param_2,local_18);
-  if ((param_1->isRagdoll != '\0') &&
-     ((0 < param_1->ragdollHandle || (0 < param_1->killcamRagdollHandle)))) {
-    Ragdoll_DoControllers(param_1,param_2,param_3);
+  CG_DoBaseOriginController(pose,obj,setPartBits);
+  if ((pose->isRagdoll != '\0') && ((0 < pose->ragdollHandle || (0 < pose->killcamRagdollHandle))))
+  {
+    Ragdoll_DoControllers(pose,obj,partBits);
   }
-  if (param_1->eType != '\x15') {
-    uVar2 = DObjGetEntNum(param_2);
-    pcVar3 = CG_GetEntity((uint)param_1->localClientNum,uVar2 - 1);
+  if (pose->eType != '\x15') {
+    uVar2 = DObjGetEntNum(obj);
+    pcVar3 = CG_GetEntity((uint)pose->localClientNum,uVar2 - 1);
     if (pcVar3 == (centity_s *)0x0) {
       local_3c = (Destructible *)0x0;
     }
@@ -771,10 +778,10 @@ void __cdecl CG_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
     }
     if ((local_3c != (Destructible *)0x0) && (bVar1 = Destructible_XDollActive(local_3c), bVar1)) {
       iVar4 = Destructible_GetPieceCount(local_3c);
-      for (local_28 = 0; local_28 < iVar4; local_28 = local_28 + 1) {
-        iVar5 = Destructible_GetXDollHandle(local_3c,local_28);
-        if (iVar5 != 0) {
-          XDoll_DoControllers(iVar5,param_3,(uint)param_1->localClientNum);
+      for (pi = 0; pi < iVar4; pi = pi + 1) {
+        xdoll_handle_00 = Destructible_GetXDollHandle(local_3c,pi);
+        if (xdoll_handle_00 != 0) {
+          XDoll_DoControllers(xdoll_handle_00,partBits,(uint)pose->localClientNum);
         }
       }
     }
@@ -785,17 +792,22 @@ void __cdecl CG_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
 
 // 004DF150  CG_DObjCalcPose  (cgame_mp/cg_pose_mp.cpp:635)
 
-DObjAnimMat * __cdecl CG_DObjCalcPose(cpose_t *param_1,DObj *param_2,int *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+DObjAnimMat * __cdecl CG_DObjCalcPose(cpose_t *remote_pose,DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
   int iVar4;
-  DObjAnimMat *local_c;
-  cpose_t *local_8;
+  DObjAnimMat *boneMatrix;
+  cpose_t *pose;
   
-  if (param_2 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_pose_mp.cpp",0x281,0,
                              "%s");
     if (!bVar2) {
@@ -804,7 +816,7 @@ DObjAnimMat * __cdecl CG_DObjCalcPose(cpose_t *param_1,DObj *param_2,int *param_
       return pDVar3;
     }
   }
-  if (param_1 == (cpose_t *)0x0) {
+  if (remote_pose == (cpose_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_pose_mp.cpp",0x282,0,
                              "%s");
     if (!bVar2) {
@@ -813,38 +825,37 @@ DObjAnimMat * __cdecl CG_DObjCalcPose(cpose_t *param_1,DObj *param_2,int *param_
       return pDVar3;
     }
   }
-  DObjLock(param_2);
-  iVar4 = CL_DObjCreateSkelForBones(param_2,param_3,&local_c);
+  DObjLock(obj);
+  iVar4 = CL_DObjCreateSkelForBones(obj,partBits,&boneMatrix);
   if (iVar4 == 0) {
-    local_8 = param_1;
-    DObjCompleteHierarchyBits(param_2,param_3);
-    CG_DoControllers(local_8,param_2,param_3);
-    DObjCalcSkel(param_2,param_3);
-    DObjUnlock(param_2);
+    pose = remote_pose;
+    DObjCompleteHierarchyBits(obj,partBits);
+    CG_DoControllers(pose,obj,partBits);
+    DObjCalcSkel(obj,partBits);
+    DObjUnlock(obj);
   }
   else {
-    DObjUnlock(param_2);
+    DObjUnlock(obj);
   }
-  return local_c;
+  return boneMatrix;
 }
 
 
 // 004DEEB0  Vec4LengthSq  (universal/com_vector.h:688)
 
-float __cdecl Vec4LengthSq(float *param_1)
+float __cdecl Vec4LengthSq(float *v)
 
 {
-  return param_1[3] * param_1[3] +
-         param_1[2] * param_1[2] + param_1[1] * param_1[1] + *param_1 * *param_1;
+  return v[3] * v[3] + v[2] * v[2] + v[1] * v[1] + *v * *v;
 }
 
 
 // 004DEEF0  MatrixTransformVectorQuatTrans  (universal/com_math.h:1583)
 
-void __cdecl MatrixTransformVectorQuatTrans(float *param_1,DObjAnimMat *param_2,float *param_3)
+void __cdecl MatrixTransformVectorQuatTrans(float *in,DObjAnimMat *mat,float *out)
 
 {
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -854,20 +865,17 @@ void __cdecl MatrixTransformVectorQuatTrans(float *param_1,DObjAnimMat *param_2,
   float local_c;
   float local_8;
   
-  ConvertQuatToMat(param_2,(float (*) [3])&local_28);
-  *param_3 = *param_1 * local_28 + param_1[1] * local_1c + param_1[2] * local_10 + param_2->trans[0]
-  ;
-  param_3[1] = *param_1 * local_24 + param_1[1] * local_18 + param_1[2] * local_c +
-               param_2->trans[1];
-  param_3[2] = *param_1 * local_20 + param_1[1] * local_14 + param_1[2] * local_8 +
-               param_2->trans[2];
+  ConvertQuatToMat(mat,(float (*) [3])&axis);
+  *out = *in * axis + in[1] * local_1c + in[2] * local_10 + mat->trans[0];
+  out[1] = *in * local_24 + in[1] * local_18 + in[2] * local_c + mat->trans[1];
+  out[2] = *in * local_20 + in[1] * local_14 + in[2] * local_8 + mat->trans[2];
   return;
 }
 
 
 // 004DEFD0  QuatMultiplyEquals  (universal/com_math.h:1695)
 
-void __cdecl QuatMultiplyEquals(float *param_1,float *param_2)
+void __cdecl QuatMultiplyEquals(float *in,float *inout)
 
 {
   float fVar1;
@@ -889,29 +897,28 @@ void __cdecl QuatMultiplyEquals(float *param_1,float *param_2)
   float fVar17;
   float fVar18;
   
-  fVar1 = param_1[3];
-  fVar2 = *param_1;
-  fVar3 = param_1[1];
-  fVar4 = *param_2;
-  fVar5 = param_1[2];
-  fVar6 = param_1[3];
-  fVar7 = param_2[1];
-  fVar8 = *param_1;
-  fVar9 = *param_2;
-  fVar10 = param_1[1];
-  fVar11 = param_1[2];
-  fVar12 = param_1[3];
-  fVar13 = *param_2;
-  fVar14 = *param_1;
-  fVar15 = param_2[1];
-  fVar16 = param_1[1];
-  fVar17 = param_2[2];
-  fVar18 = param_1[2];
-  *param_2 = (*param_2 * param_1[3] + param_2[3] * *param_1 + param_2[2] * param_1[1]) -
-             param_2[1] * param_1[2];
-  param_2[1] = (param_2[1] * fVar1 - param_2[2] * fVar2) + param_2[3] * fVar3 + fVar4 * fVar5;
-  param_2[2] = ((param_2[2] * fVar6 + fVar7 * fVar8) - fVar9 * fVar10) + param_2[3] * fVar11;
-  param_2[3] = ((param_2[3] * fVar12 - fVar13 * fVar14) - fVar15 * fVar16) - fVar17 * fVar18;
+  fVar1 = in[3];
+  fVar2 = *in;
+  fVar3 = in[1];
+  fVar4 = *inout;
+  fVar5 = in[2];
+  fVar6 = in[3];
+  fVar7 = inout[1];
+  fVar8 = *in;
+  fVar9 = *inout;
+  fVar10 = in[1];
+  fVar11 = in[2];
+  fVar12 = in[3];
+  fVar13 = *inout;
+  fVar14 = *in;
+  fVar15 = inout[1];
+  fVar16 = in[1];
+  fVar17 = inout[2];
+  fVar18 = in[2];
+  *inout = (*inout * in[3] + inout[3] * *in + inout[2] * in[1]) - inout[1] * in[2];
+  inout[1] = (inout[1] * fVar1 - inout[2] * fVar2) + inout[3] * fVar3 + fVar4 * fVar5;
+  inout[2] = ((inout[2] * fVar6 + fVar7 * fVar8) - fVar9 * fVar10) + inout[3] * fVar11;
+  inout[3] = ((inout[3] * fVar12 - fVar13 * fVar14) - fVar15 * fVar16) - fVar17 * fVar18;
   return;
 }
 

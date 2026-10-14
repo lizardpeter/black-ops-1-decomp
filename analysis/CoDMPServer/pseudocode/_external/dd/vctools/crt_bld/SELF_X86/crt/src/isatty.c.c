@@ -2,26 +2,25 @@
 
 // 00C2BB34  _isatty  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/isatty.c:37)
 
-int __cdecl _isatty(int param_1)
+int __cdecl _isatty(int fh)
 
 {
   int *piVar1;
   uint uVar2;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     piVar1 = _errno();
     *piVar1 = 9;
     return 0;
   }
-  if ((param_1 < 0) || ((uint)_nhandle <= (uint)param_1)) {
+  if ((fh < 0) || ((uint)_nhandle <= (uint)fh)) {
     piVar1 = _errno();
     *piVar1 = 9;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     uVar2 = 0;
   }
   else {
-    uVar2 = (int)*(char *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + (param_1 & 0x1fU) * 0x40)
-            & 0x40;
+    uVar2 = (int)*(char *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + (fh & 0x1fU) * 0x40) & 0x40;
   }
   return uVar2;
 }

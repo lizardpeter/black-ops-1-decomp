@@ -12,7 +12,7 @@ void __cdecl _dynamic_initializer_for__SQRT2__(void)
 
 // 0048A310  BG_HasPerk  (bgame/bg_perks.h:135)
 
-bool __cdecl BG_HasPerk(uint *param_1,uint param_2)
+bool __cdecl BG_HasPerk(uint *perks,uint perkIndex)
 
 {
   code *pcVar1;
@@ -22,7 +22,7 @@ bool __cdecl BG_HasPerk(uint *param_1,uint param_2)
   uint extraout_EDX;
   bool local_14;
   
-  if ((0x33 < param_2) &&
+  if ((0x33 < perkIndex) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0x88,
                                0,"perkIndex doesn\'t index PERK_COUNT\n\t%i not in [0, %i)"), !bVar2
      )) {
@@ -31,7 +31,7 @@ bool __cdecl BG_HasPerk(uint *param_1,uint param_2)
     return (bool)uVar3;
   }
   _allshl();
-  local_14 = (extraout_EAX & *param_1) != 0 || (extraout_EDX & param_1[1]) != 0;
+  local_14 = (extraout_EAX & *perks) != 0 || (extraout_EDX & perks[1]) != 0;
   return local_14;
 }
 
@@ -80,7 +80,7 @@ void __cdecl CG_ClearCompassPingData(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl GetRadarLineMargin(cg_s *param_1)
+float __cdecl GetRadarLineMargin(cg_s *cgameGlob)
 
 {
   code *pcVar1;
@@ -88,15 +88,18 @@ float __cdecl GetRadarLineMargin(cg_s *param_1)
   float10 fVar3;
   float fVar4;
   float local_14;
+  float marginForRadar;
+  float marginForMap;
+  float margin;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xcb,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_1->compassMapWorldSize[0] == 0.0) &&
+  if ((cgameGlob->compassMapWorldSize[0] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xcc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -105,7 +108,7 @@ float __cdecl GetRadarLineMargin(cg_s *param_1)
   }
   fVar4 = (compassMaxRange->current).value * SQRT2 +
           (compassRadarLineThickness->current).value * (compassMaxRange->current).value;
-  local_14 = (cg_hudMapRadarLineThickness->current).value * param_1->compassMapWorldSize[0];
+  local_14 = (cg_hudMapRadarLineThickness->current).value * cgameGlob->compassMapWorldSize[0];
   if (local_14 < fVar4) {
     local_14 = fVar4;
   }
@@ -120,14 +123,15 @@ float __cdecl GetRadarLineMargin(cg_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetRadarLine(cg_s *param_1,float param_2,float *param_3)
+void __cdecl GetRadarLine(cg_s *cgameGlob,float radarProgress,float *line)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float margin;
   
-  if (param_1 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0xe9,0,"%s");
     if (!bVar2) {
@@ -136,22 +140,21 @@ void __cdecl GetRadarLine(cg_s *param_1,float param_2,float *param_3)
       return;
     }
   }
-  fVar3 = GetRadarLineMargin(param_1);
-  *param_3 = param_1->compassNorth[1];
-  param_3[1] = -param_1->compassNorth[0];
-  param_3[2] = (param_1->compassMapUpperLeft[0] * *param_3 +
-                param_1->compassMapUpperLeft[1] * param_3[1] +
-               (fVar3 * 2.0 + param_1->compassMapWorldSize[0]) * param_2) - fVar3;
+  fVar3 = GetRadarLineMargin(cgameGlob);
+  *line = cgameGlob->compassNorth[1];
+  line[1] = -cgameGlob->compassNorth[0];
+  line[2] = (cgameGlob->compassMapUpperLeft[0] * *line + cgameGlob->compassMapUpperLeft[1] * line[1]
+            + (fVar3 * 2.0 + cgameGlob->compassMapWorldSize[0]) * radarProgress) - fVar3;
   return;
 }
 
 
 // 0048B640  GetLocalRadarRadius  (cgame_mp/cg_compassfriendlies_mp.cpp:247)
 
-float __cdecl GetLocalRadarRadius(float param_1)
+float __cdecl GetLocalRadarRadius(float radarProgress)
 
 {
-  return (compassLocalRadarRadius->current).value * param_1;
+  return (compassLocalRadarRadius->current).value * radarProgress;
 }
 
 
@@ -162,41 +165,47 @@ float __cdecl GetLocalRadarRadius(float param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl DoesMovementCrossRadar(cg_s *param_1,float param_2,float *param_3,float *param_4)
+bool __cdecl DoesMovementCrossRadar(cg_s *cgameGlob,float radarProgress,float *p1,float *p2)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  float local_18;
+  float radarLine;
   float local_14;
   float local_10;
+  float v2;
+  float v1;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x101,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  GetRadarLine(param_1,param_2,&local_18);
-  return (local_18 * *param_3 + local_14 * param_3[1]) - local_10 < 0.0 !=
-         (local_18 * *param_4 + local_14 * param_4[1]) - local_10 < 0.0;
+  GetRadarLine(cgameGlob,radarProgress,&radarLine);
+  return (radarLine * *p1 + local_14 * p1[1]) - local_10 < 0.0 !=
+         (radarLine * *p2 + local_14 * p2[1]) - local_10 < 0.0;
 }
 
 
 // 0048B540  DoesMovementCrossLocalRadar  (cgame_mp/cg_compassfriendlies_mp.cpp:267)
 
-bool __cdecl DoesMovementCrossLocalRadar(float *param_1,float param_2,float *param_3,float *param_4)
+bool __cdecl
+DoesMovementCrossLocalRadar(float *radarPos,float localRadarProgress,float *p1,float *p2)
 
 {
   float fVar1;
+  float distanceSq1;
+  float distanceSq2;
+  float radius;
   
-  fVar1 = GetLocalRadarRadius(param_2);
-  return (*param_3 - *param_1) * (*param_3 - *param_1) +
-         (param_3[1] - param_1[1]) * (param_3[1] - param_1[1]) < fVar1 * fVar1 !=
-         (*param_4 - *param_1) * (*param_4 - *param_1) +
-         (param_4[1] - param_1[1]) * (param_4[1] - param_1[1]) < fVar1 * fVar1;
+  fVar1 = GetLocalRadarRadius(localRadarProgress);
+  return (*p1 - *radarPos) * (*p1 - *radarPos) + (p1[1] - radarPos[1]) * (p1[1] - radarPos[1]) <
+         fVar1 * fVar1 !=
+         (*p2 - *radarPos) * (*p2 - *radarPos) + (p2[1] - radarPos[1]) * (p2[1] - radarPos[1]) <
+         fVar1 * fVar1;
 }
 
 
@@ -207,36 +216,38 @@ bool __cdecl DoesMovementCrossLocalRadar(float *param_1,float param_2,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl DoLinesSurroundPoint(cg_s *param_1,float *param_2,float *param_3,float *param_4)
+bool __cdecl DoLinesSurroundPoint(cg_s *cgameGlob,float *radarLine1,float *radarLine2,float *pos)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  float v2;
+  float v1;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x119,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return (*param_2 * *param_4 + param_2[1] * param_4[1]) - param_2[2] < 0.0 !=
-         (*param_3 * *param_4 + param_3[1] * param_4[1]) - param_3[2] < 0.0;
+  return (*radarLine1 * *pos + radarLine1[1] * pos[1]) - radarLine1[2] < 0.0 !=
+         (*radarLine2 * *pos + radarLine2[1] * pos[1]) - radarLine2[2] < 0.0;
 }
 
 
 // 0048C160  DoRadiiSurroundPoint  (cgame_mp/cg_compassfriendlies_mp.cpp:290)
 
-bool __cdecl DoRadiiSurroundPoint(float *param_1,float param_2,float param_3,float *param_4)
+bool __cdecl DoRadiiSurroundPoint(float *radarPos,float radius1,float radius2,float *pos)
 
 {
   float fVar1;
   bool local_14;
+  float distanceSq;
   
-  fVar1 = (*param_4 - *param_1) * (*param_4 - *param_1) +
-          (param_4[1] - param_1[1]) * (param_4[1] - param_1[1]);
-  if ((fVar1 <= param_2 * param_2) || (param_3 * param_3 <= fVar1)) {
+  fVar1 = (*pos - *radarPos) * (*pos - *radarPos) + (pos[1] - radarPos[1]) * (pos[1] - radarPos[1]);
+  if ((fVar1 <= radius1 * radius1) || (radius2 * radius2 <= fVar1)) {
     local_14 = false;
   }
   else {
@@ -248,27 +259,27 @@ bool __cdecl DoRadiiSurroundPoint(float *param_1,float param_2,float param_3,flo
 
 // 0048A260  RadarPingEnemyPlayer  (cgame_mp/cg_compassfriendlies_mp.cpp:298)
 
-void __cdecl RadarPingEnemyPlayer(CompassActor *param_1,int param_2,int param_3)
+void __cdecl RadarPingEnemyPlayer(CompassActor *actor,int time,int PerkToIgnore)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (CompassActor *)0x0) &&
+  if ((actor == (CompassActor *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,299,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 < param_1->lastUpdate) {
-    param_1->lastUpdate = 0;
+  if (time < actor->lastUpdate) {
+    actor->lastUpdate = 0;
   }
-  if ((param_2 + -0x5dc <= param_1->lastUpdate) &&
-     ((param_3 == 0x34 || (bVar2 = BG_HasPerk(param_1->perks,param_3), !bVar2)))) {
-    param_1->lastEnemyPos[0] = param_1->lastPos[0];
-    param_1->lastEnemyPos[1] = param_1->lastPos[1];
-    param_1->beginRadarFadeTime = param_2;
+  if ((time + -0x5dc <= actor->lastUpdate) &&
+     ((PerkToIgnore == 0x34 || (bVar2 = BG_HasPerk(actor->perks,PerkToIgnore), !bVar2)))) {
+    actor->lastEnemyPos[0] = actor->lastPos[0];
+    actor->lastEnemyPos[1] = actor->lastPos[1];
+    actor->beginRadarFadeTime = time;
   }
   return;
 }
@@ -278,24 +289,24 @@ void __cdecl RadarPingEnemyPlayer(CompassActor *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl RadarPingEnemyTurrets(CompassTurrets *param_1,int param_2)
+void __cdecl RadarPingEnemyTurrets(CompassTurrets *turret,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (CompassTurrets *)0x0) &&
+  if ((turret == (CompassTurrets *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x13b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 < param_1->lastUpdate) {
-    param_1->lastUpdate = 0;
+  if (time < turret->lastUpdate) {
+    turret->lastUpdate = 0;
   }
-  if (param_2 + -0x5dc <= param_1->lastUpdate) {
-    param_1->beginFadeTime = param_2;
+  if (time + -0x5dc <= turret->lastUpdate) {
+    turret->beginFadeTime = time;
   }
   return;
 }
@@ -303,32 +314,32 @@ void __cdecl RadarPingEnemyTurrets(CompassTurrets *param_1,int param_2)
 
 // 0048A400  SatellitePingEnemyPlayer  (cgame_mp/cg_compassfriendlies_mp.cpp:328)
 
-void __cdecl SatellitePingEnemyPlayer(CompassActor *param_1,int param_2,int param_3,bool param_4)
+void __cdecl
+SatellitePingEnemyPlayer(CompassActor *actor,int time,int PerkToIgnore,bool fasterUpdate)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (CompassActor *)0x0) &&
+  if ((actor == (CompassActor *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x149,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 < param_1->lastUpdate) {
-    param_1->lastUpdate = 0;
+  if (time < actor->lastUpdate) {
+    actor->lastUpdate = 0;
   }
-  if ((param_2 + -0x5dc <= param_1->lastUpdate) &&
-     ((param_3 == 0x34 || (bVar2 = BG_HasPerk(param_1->perks,param_3), !bVar2)))) {
-    param_1->lastEnemyPos[0] = param_1->lastPos[0];
-    param_1->lastEnemyPos[1] = param_1->lastPos[1];
-    if ((compassStaticImageUpdateTime->current).integer <
-        param_2 - param_1->beginStaticImageFadeTime) {
-      param_1->beginStaticImageFadeTime = param_2;
-      param_1->satelliteEnemyPos[0] = param_1->lastPos[0];
-      param_1->satelliteEnemyPos[1] = param_1->lastPos[1];
-      param_1->beginSatelliteFadeTime = param_2;
+  if ((time + -0x5dc <= actor->lastUpdate) &&
+     ((PerkToIgnore == 0x34 || (bVar2 = BG_HasPerk(actor->perks,PerkToIgnore), !bVar2)))) {
+    actor->lastEnemyPos[0] = actor->lastPos[0];
+    actor->lastEnemyPos[1] = actor->lastPos[1];
+    if ((compassStaticImageUpdateTime->current).integer < time - actor->beginStaticImageFadeTime) {
+      actor->beginStaticImageFadeTime = time;
+      actor->satelliteEnemyPos[0] = actor->lastPos[0];
+      actor->satelliteEnemyPos[1] = actor->lastPos[1];
+      actor->beginSatelliteFadeTime = time;
     }
   }
   return;
@@ -344,7 +355,8 @@ void __cdecl SatellitePingEnemyPlayer(CompassActor *param_1,int param_2,int para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CanLocalPlayerHearActorFootsteps(int param_1,float *param_2,int param_3)
+bool __cdecl
+CanLocalPlayerHearActorFootsteps(int localClientNum,float *actorPos,int actorClientIndex)
 
 {
   uint *puVar1;
@@ -357,40 +369,45 @@ bool __cdecl CanLocalPlayerHearActorFootsteps(int param_1,float *param_2,int par
   uint extraout_EDX;
   float fVar7;
   float fVar8;
-  float local_28;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  snapshot_s *nextSnap;
+  snapshot_s *snap;
+  float currentPos;
   float local_24;
-  playerState_s *local_1c;
-  float local_18;
+  playerState_s *ps;
+  float nextPos;
   float local_14;
-  float local_c;
+  float deltaTime;
+  float xyspeedSq;
   
   if ((compassEnemyFootstepEnabled->current).enabled == false) {
     bVar4 = false;
   }
   else {
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
-    local_1c = &pcVar5->predictedPlayerState;
+    pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+    ps = &pcVar5->predictedPlayerState;
     if ((pcVar5->predictedPlayerState).pm_type == 0) {
-      puVar1 = (uint *)((int)(pcVar5->bgs).clientinfo + param_3 * 0x5c8 + 0x44);
+      puVar1 = (uint *)((int)(pcVar5->bgs).clientinfo + actorClientIndex * 0x5c8 + 0x44);
       _allshl();
       if ((extraout_EAX & *puVar1) == 0 && (extraout_EDX & puVar1[1]) == 0) {
-        fVar7 = *param_2 - local_1c->origin[0];
-        fVar8 = param_2[1] - local_1c->origin[1];
+        fVar7 = *actorPos - ps->origin[0];
+        fVar8 = actorPos[1] - ps->origin[1];
         if (fVar7 * fVar7 + fVar8 * fVar8 <=
             (compassEnemyFootstepMaxRange->current).value *
             (compassEnemyFootstepMaxRange->current).value) {
-          fVar7 = ABS(param_2[2] - local_1c->origin[2]);
+          fVar7 = ABS(actorPos[2] - ps->origin[2]);
           if (fVar7 < (compassEnemyFootstepMaxZ->current).value ||
               fVar7 == (compassEnemyFootstepMaxZ->current).value) {
             psVar2 = pcVar5->snap;
             psVar3 = pcVar5->nextSnap;
-            local_c = (float)(psVar3->serverTime - psVar2->serverTime) * 0.001;
-            if (0.0 < local_c) {
-              pcVar6 = CG_GetEntity(param_1,param_3);
-              BG_EvaluateTrajectory(&(pcVar6->currentState).pos,psVar2->serverTime,&local_28);
-              BG_EvaluateTrajectory(&(pcVar6->nextState).lerp.pos,psVar3->serverTime,&local_18);
-              fVar7 = (1.0 / local_c) * (local_18 - local_28);
-              fVar8 = (1.0 / local_c) * (local_14 - local_24);
+            deltaTime = (float)(psVar3->serverTime - psVar2->serverTime) * 0.001;
+            if (0.0 < deltaTime) {
+              pcVar6 = CG_GetEntity(localClientNum,actorClientIndex);
+              BG_EvaluateTrajectory(&(pcVar6->currentState).pos,psVar2->serverTime,&currentPos);
+              BG_EvaluateTrajectory(&(pcVar6->nextState).lerp.pos,psVar3->serverTime,&nextPos);
+              fVar7 = (1.0 / deltaTime) * (nextPos - currentPos);
+              fVar8 = (1.0 / deltaTime) * (local_14 - local_24);
               bVar4 = (compassEnemyFootstepMinSpeed->current).value *
                       (compassEnemyFootstepMinSpeed->current).value <= fVar7 * fVar7 + fVar8 * fVar8
               ;
@@ -426,55 +443,60 @@ bool __cdecl CanLocalPlayerHearActorFootsteps(int param_1,float *param_2,int par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorUpdatePos(int param_1,CompassActor *param_2,float *param_3,int param_4)
+void __cdecl
+ActorUpdatePos(int localClientNum,CompassActor *actor,float *newPos,int actorClientIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
+  cg_s *cgameGlob_00;
+  int perkToIgnore;
+  bool fasterUpdate;
+  cg_s *cgameGlob;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 == (CompassActor *)0x0) &&
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if ((actor == (CompassActor *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x196,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < param_4) &&
+  if ((0x1f < actorClientIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x197,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->enemy != false) && (pcVar3->inKillCam == 0)) {
-    if (((pcVar3->predictedPlayerState).spyplaneTypeEnabled != 0) &&
-       ((pcVar3->time + -0x5dc < param_2->lastUpdate &&
-        (bVar2 = DoesMovementCrossRadar(pcVar3,pcVar3->radarProgress,param_2->lastPos,param_3),
-        bVar2)))) {
-      RadarPingEnemyPlayer(param_2,pcVar3->time,0x19);
+  if ((actor->enemy != false) && (cgameGlob_00->inKillCam == 0)) {
+    if (((cgameGlob_00->predictedPlayerState).spyplaneTypeEnabled != 0) &&
+       ((cgameGlob_00->time + -0x5dc < actor->lastUpdate &&
+        (bVar2 = DoesMovementCrossRadar
+                           (cgameGlob_00,cgameGlob_00->radarProgress,actor->lastPos,newPos), bVar2))
+       )) {
+      RadarPingEnemyPlayer(actor,cgameGlob_00->time,0x19);
     }
-    if (((pcVar3->predictedPlayerState).satelliteTypeEnabled != 0) &&
-       (pcVar3->time + -0x5dc < param_2->lastUpdate)) {
+    if (((cgameGlob_00->predictedPlayerState).satelliteTypeEnabled != 0) &&
+       (cgameGlob_00->time + -0x5dc < actor->lastUpdate)) {
       SatellitePingEnemyPlayer
-                (param_2,pcVar3->time,
+                (actor,cgameGlob_00->time,
                  (-(uint)((perk_blackbirdShowsGpsJammer->current).enabled != false) & 0x1b) + 0x19,
-                 (pcVar3->predictedPlayerState).satelliteTypeEnabled == 2);
+                 (cgameGlob_00->predictedPlayerState).satelliteTypeEnabled == 2);
     }
-    bVar2 = CanLocalPlayerHearActorFootsteps(param_1,param_3,param_4);
+    bVar2 = CanLocalPlayerHearActorFootsteps(localClientNum,newPos,actorClientIndex);
     if (bVar2) {
-      RadarPingEnemyPlayer(param_2,pcVar3->time,0x26);
+      RadarPingEnemyPlayer(actor,cgameGlob_00->time,0x26);
     }
     bVar2 = DoesMovementCrossLocalRadar
-                      ((float *)&pcVar3->compassScrambler[0xd].handle,
-                       pcVar3->compassScrambler[0xe].pos[1],param_2->lastPos,param_3);
+                      ((float *)&cgameGlob_00->compassScrambler[0xd].handle,
+                       cgameGlob_00->compassScrambler[0xe].pos[1],actor->lastPos,newPos);
     if (bVar2) {
-      RadarPingEnemyPlayer(param_2,pcVar3->time,0x21);
+      RadarPingEnemyPlayer(actor,cgameGlob_00->time,0x21);
     }
   }
-  param_2->lastPos[0] = *param_3;
-  param_2->lastPos[1] = param_3[1];
+  actor->lastPos[0] = *newPos;
+  actor->lastPos[1] = newPos[1];
   return;
 }
 
@@ -483,31 +505,30 @@ void __cdecl ActorUpdatePos(int param_1,CompassActor *param_2,float *param_3,int
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-CompassVehicle * __cdecl GetVehicle(int param_1,int param_2)
+CompassVehicle * __cdecl GetVehicle(int localClientNum,int entityNum)
 
 {
   CompassVehicle *pCVar1;
-  int local_c;
-  int local_8;
+  int veh;
+  int oldest;
   
-  local_c = 0;
+  veh = 0;
   while( true ) {
-    if (0xf < local_c) {
-      for (local_c = 0;
-          (local_c < 0x10 && (*(int *)(param_1 * 0x1c0 + 0xe96a74 + local_c * 0x1c) != 0));
-          local_c = local_c + 1) {
+    if (0xf < veh) {
+      for (veh = 0; (veh < 0x10 && (*(int *)(localClientNum * 0x1c0 + 0xe96a74 + veh * 0x1c) != 0));
+          veh = veh + 1) {
       }
-      if (0xf < local_c) {
-        local_8 = 0;
-        for (local_c = 1; local_c < 0x10; local_c = local_c + 1) {
-          if (*(int *)(param_1 * 0x1c0 + 0xe96a74 + local_c * 0x1c) <
-              *(int *)(param_1 * 0x1c0 + 0xe96a74 + local_8 * 0x1c)) {
-            local_8 = local_c;
+      if (0xf < veh) {
+        oldest = 0;
+        for (veh = 1; veh < 0x10; veh = veh + 1) {
+          if (*(int *)(localClientNum * 0x1c0 + 0xe96a74 + veh * 0x1c) <
+              *(int *)(localClientNum * 0x1c0 + 0xe96a74 + oldest * 0x1c)) {
+            oldest = veh;
           }
         }
-        local_c = local_8;
+        veh = oldest;
       }
-      pCVar1 = s_compassVehicles[param_1] + local_c;
+      pCVar1 = s_compassVehicles[localClientNum] + veh;
       pCVar1->entityNum = 0;
       pCVar1->lastUpdate = 0;
       pCVar1->lastPos[0] = 0.0;
@@ -515,13 +536,13 @@ CompassVehicle * __cdecl GetVehicle(int param_1,int param_2)
       pCVar1->lastYaw = 0.0;
       pCVar1->team = TEAM_BAD;
       pCVar1->ownerIndex = 0;
-      s_compassVehicles[param_1][local_c].entityNum = param_2;
-      return s_compassVehicles[param_1] + local_c;
+      s_compassVehicles[localClientNum][veh].entityNum = entityNum;
+      return s_compassVehicles[localClientNum] + veh;
     }
-    if (s_compassVehicles[param_1][local_c].entityNum == param_2) break;
-    local_c = local_c + 1;
+    if (s_compassVehicles[localClientNum][veh].entityNum == entityNum) break;
+    veh = veh + 1;
   }
-  return s_compassVehicles[param_1] + local_c;
+  return s_compassVehicles[localClientNum] + veh;
 }
 
 
@@ -529,30 +550,31 @@ CompassVehicle * __cdecl GetVehicle(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-CompassHelicopter * __cdecl GetHelicopter(int param_1,int param_2)
+CompassHelicopter * __cdecl GetHelicopter(int localClientNum,int entityNum)
 
 {
   CompassHelicopter *pCVar1;
-  int local_c;
-  int local_8;
+  int copter;
+  int oldest;
   
-  local_c = 0;
+  copter = 0;
   while( true ) {
-    if (7 < local_c) {
-      for (local_c = 0; (local_c < 8 && (*(int *)(param_1 * 0xe0 + 0xe976b4 + local_c * 0x1c) != 0))
-          ; local_c = local_c + 1) {
+    if (7 < copter) {
+      for (copter = 0;
+          (copter < 8 && (*(int *)(localClientNum * 0xe0 + 0xe976b4 + copter * 0x1c) != 0));
+          copter = copter + 1) {
       }
-      if (7 < local_c) {
-        local_8 = 0;
-        for (local_c = 1; local_c < 8; local_c = local_c + 1) {
-          if (*(int *)(param_1 * 0xe0 + 0xe976b4 + local_c * 0x1c) <
-              *(int *)(param_1 * 0xe0 + 0xe976b4 + local_8 * 0x1c)) {
-            local_8 = local_c;
+      if (7 < copter) {
+        oldest = 0;
+        for (copter = 1; copter < 8; copter = copter + 1) {
+          if (*(int *)(localClientNum * 0xe0 + 0xe976b4 + copter * 0x1c) <
+              *(int *)(localClientNum * 0xe0 + 0xe976b4 + oldest * 0x1c)) {
+            oldest = copter;
           }
         }
-        local_c = local_8;
+        copter = oldest;
       }
-      pCVar1 = s_compassHelicopter[param_1] + local_c;
+      pCVar1 = s_compassHelicopter[localClientNum] + copter;
       pCVar1->entityNum = 0;
       pCVar1->lastUpdate = 0;
       pCVar1->lastPos[0] = 0.0;
@@ -560,13 +582,13 @@ CompassHelicopter * __cdecl GetHelicopter(int param_1,int param_2)
       pCVar1->lastYaw = 0.0;
       pCVar1->team = TEAM_BAD;
       pCVar1->ownerIndex = 0;
-      s_compassHelicopter[param_1][local_c].entityNum = param_2;
-      return s_compassHelicopter[param_1] + local_c;
+      s_compassHelicopter[localClientNum][copter].entityNum = entityNum;
+      return s_compassHelicopter[localClientNum] + copter;
     }
-    if (s_compassHelicopter[param_1][local_c].entityNum == param_2) break;
-    local_c = local_c + 1;
+    if (s_compassHelicopter[localClientNum][copter].entityNum == entityNum) break;
+    copter = copter + 1;
   }
-  return s_compassHelicopter[param_1] + local_c;
+  return s_compassHelicopter[localClientNum] + copter;
 }
 
 
@@ -574,31 +596,31 @@ CompassHelicopter * __cdecl GetHelicopter(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-CompassGuidedMissile * __cdecl GetGuidedMissile(int param_1,int param_2)
+CompassGuidedMissile * __cdecl GetGuidedMissile(int localClientNum,int entityNum)
 
 {
   CompassGuidedMissile *pCVar1;
-  int local_c;
-  int local_8;
+  int missile;
+  int oldest;
   
-  local_c = 0;
+  missile = 0;
   while( true ) {
-    if (0x1f < local_c) {
-      for (local_c = 0;
-          (local_c < 0x20 && (*(int *)(param_1 * 0x380 + 0xe98f94 + local_c * 0x1c) != 0));
-          local_c = local_c + 1) {
+    if (0x1f < missile) {
+      for (missile = 0;
+          (missile < 0x20 && (*(int *)(localClientNum * 0x380 + 0xe98f94 + missile * 0x1c) != 0));
+          missile = missile + 1) {
       }
-      if (0x1f < local_c) {
-        local_8 = 0;
-        for (local_c = 1; local_c < 0x20; local_c = local_c + 1) {
-          if (*(int *)(param_1 * 0x380 + 0xe98f94 + local_c * 0x1c) <
-              *(int *)(param_1 * 0x380 + 0xe98f94 + local_8 * 0x1c)) {
-            local_8 = local_c;
+      if (0x1f < missile) {
+        oldest = 0;
+        for (missile = 1; missile < 0x20; missile = missile + 1) {
+          if (*(int *)(localClientNum * 0x380 + 0xe98f94 + missile * 0x1c) <
+              *(int *)(localClientNum * 0x380 + 0xe98f94 + oldest * 0x1c)) {
+            oldest = missile;
           }
         }
-        local_c = local_8;
+        missile = oldest;
       }
-      pCVar1 = s_compassGuidedMissiles[param_1] + local_c;
+      pCVar1 = s_compassGuidedMissiles[localClientNum] + missile;
       pCVar1->entityNum = 0;
       pCVar1->lastUpdate = 0;
       pCVar1->lastPos[0] = 0.0;
@@ -606,13 +628,13 @@ CompassGuidedMissile * __cdecl GetGuidedMissile(int param_1,int param_2)
       pCVar1->lastYaw = 0.0;
       pCVar1->team = TEAM_BAD;
       pCVar1->ownerIndex = 0;
-      s_compassGuidedMissiles[param_1][local_c].entityNum = param_2;
-      return s_compassGuidedMissiles[param_1] + local_c;
+      s_compassGuidedMissiles[localClientNum][missile].entityNum = entityNum;
+      return s_compassGuidedMissiles[localClientNum] + missile;
     }
-    if (s_compassGuidedMissiles[param_1][local_c].entityNum == param_2) break;
-    local_c = local_c + 1;
+    if (s_compassGuidedMissiles[localClientNum][missile].entityNum == entityNum) break;
+    missile = missile + 1;
   }
-  return s_compassGuidedMissiles[param_1] + local_c;
+  return s_compassGuidedMissiles[localClientNum] + missile;
 }
 
 
@@ -620,35 +642,34 @@ CompassGuidedMissile * __cdecl GetGuidedMissile(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-CompassDogs * __cdecl GetDogs(int param_1,int param_2,int param_3)
+CompassDogs * __cdecl GetDogs(int localClientNum,int entityNum,int time)
 
 {
   CompassDogs *pCVar1;
-  int local_c;
-  int local_8;
+  int dog;
+  int oldest;
   
-  if (1000 < param_3 - lastUpdateTime) {
+  if (1000 < time - lastUpdateTime) {
     memset((uchar *)s_compassDogs,'\0',0x100);
   }
-  lastUpdateTime = param_3;
-  local_c = 0;
+  lastUpdateTime = time;
+  dog = 0;
   while( true ) {
-    if (7 < local_c) {
-      for (local_c = 0;
-          (local_c < 8 && (*(int *)(param_1 * 0x100 + 0xe96c34 + local_c * 0x20) != 0));
-          local_c = local_c + 1) {
+    if (7 < dog) {
+      for (dog = 0; (dog < 8 && (*(int *)(localClientNum * 0x100 + 0xe96c34 + dog * 0x20) != 0));
+          dog = dog + 1) {
       }
-      if (7 < local_c) {
-        local_8 = 0;
-        for (local_c = 1; local_c < 8; local_c = local_c + 1) {
-          if (*(int *)(param_1 * 0x100 + 0xe96c34 + local_c * 0x20) <
-              *(int *)(param_1 * 0x100 + 0xe96c34 + local_8 * 0x20)) {
-            local_8 = local_c;
+      if (7 < dog) {
+        oldest = 0;
+        for (dog = 1; dog < 8; dog = dog + 1) {
+          if (*(int *)(localClientNum * 0x100 + 0xe96c34 + dog * 0x20) <
+              *(int *)(localClientNum * 0x100 + 0xe96c34 + oldest * 0x20)) {
+            oldest = dog;
           }
         }
-        local_c = local_8;
+        dog = oldest;
       }
-      pCVar1 = s_compassDogs[param_1] + local_c;
+      pCVar1 = s_compassDogs[localClientNum] + dog;
       pCVar1->entityNum = 0;
       pCVar1->lastUpdate = 0;
       pCVar1->lastPos[0] = 0.0;
@@ -657,13 +678,13 @@ CompassDogs * __cdecl GetDogs(int param_1,int param_2,int param_3)
       pCVar1->team = TEAM_BAD;
       pCVar1->ownerIndex = 0;
       *(undefined4 *)&pCVar1->enemy = 0;
-      s_compassDogs[param_1][local_c].entityNum = param_2;
-      return s_compassDogs[param_1] + local_c;
+      s_compassDogs[localClientNum][dog].entityNum = entityNum;
+      return s_compassDogs[localClientNum] + dog;
     }
-    if (s_compassDogs[param_1][local_c].entityNum == param_2) break;
-    local_c = local_c + 1;
+    if (s_compassDogs[localClientNum][dog].entityNum == entityNum) break;
+    dog = dog + 1;
   }
-  return s_compassDogs[param_1] + local_c;
+  return s_compassDogs[localClientNum] + dog;
 }
 
 
@@ -671,35 +692,35 @@ CompassDogs * __cdecl GetDogs(int param_1,int param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-CompassTurrets * __cdecl GetCompassTurrets(int param_1,int param_2,int param_3)
+CompassTurrets * __cdecl GetCompassTurrets(int localClientNum,int entityNum,int time)
 
 {
   CompassTurrets *pCVar1;
-  int local_c;
-  int local_8;
+  int turret;
+  int oldest;
   
-  if (1000 < param_3 - lastUpdateTime) {
+  if (1000 < time - lastUpdateTime) {
     memset((uchar *)s_compassDogs,'\0',0x100);
   }
-  lastUpdateTime = param_3;
-  local_c = 0;
+  lastUpdateTime = time;
+  turret = 0;
   while( true ) {
-    if (0x1f < local_c) {
-      for (local_c = 0;
-          (local_c < 0x20 && (*(int *)(param_1 * 0x480 + 0xe965f4 + local_c * 0x24) != 0));
-          local_c = local_c + 1) {
+    if (0x1f < turret) {
+      for (turret = 0;
+          (turret < 0x20 && (*(int *)(localClientNum * 0x480 + 0xe965f4 + turret * 0x24) != 0));
+          turret = turret + 1) {
       }
-      if (0x1f < local_c) {
-        local_8 = 0;
-        for (local_c = 1; local_c < 0x20; local_c = local_c + 1) {
-          if (*(int *)(param_1 * 0x480 + 0xe965f4 + local_c * 0x24) <
-              *(int *)(param_1 * 0x480 + 0xe965f4 + local_8 * 0x24)) {
-            local_8 = local_c;
+      if (0x1f < turret) {
+        oldest = 0;
+        for (turret = 1; turret < 0x20; turret = turret + 1) {
+          if (*(int *)(localClientNum * 0x480 + 0xe965f4 + turret * 0x24) <
+              *(int *)(localClientNum * 0x480 + 0xe965f4 + oldest * 0x24)) {
+            oldest = turret;
           }
         }
-        local_c = local_8;
+        turret = oldest;
       }
-      pCVar1 = s_compassTurrets[param_1] + local_c;
+      pCVar1 = s_compassTurrets[localClientNum] + turret;
       pCVar1->entityNum = 0;
       pCVar1->lastUpdate = 0;
       pCVar1->beginFadeTime = 0;
@@ -711,13 +732,13 @@ CompassTurrets * __cdecl GetCompassTurrets(int param_1,int param_2,int param_3)
       pCVar1->enemy = false;
       pCVar1->firing = false;
       *(undefined2 *)&pCVar1->field_0x22 = 0;
-      s_compassTurrets[param_1][local_c].entityNum = param_2;
-      return s_compassTurrets[param_1] + local_c;
+      s_compassTurrets[localClientNum][turret].entityNum = entityNum;
+      return s_compassTurrets[localClientNum] + turret;
     }
-    if (s_compassTurrets[param_1][local_c].entityNum == param_2) break;
-    local_c = local_c + 1;
+    if (s_compassTurrets[localClientNum][turret].entityNum == entityNum) break;
+    turret = turret + 1;
   }
-  return s_compassTurrets[param_1] + local_c;
+  return s_compassTurrets[localClientNum] + turret;
 }
 
 
@@ -728,7 +749,7 @@ CompassTurrets * __cdecl GetCompassTurrets(int param_1,int param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateVehicleInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateVehicleInfo(int localClientNum,int entityIndex)
 
 {
   int *piVar1;
@@ -739,8 +760,13 @@ void __cdecl CG_CompassUpdateVehicleInfo(int param_1,int param_2)
   vehicle_info_t *pvVar6;
   CompassVehicle *pCVar7;
   team_t tVar8;
+  vehicle_info_t *info;
+  clientInfo_t *localClientInfo;
+  CompassVehicle *veh;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar4->nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x284,0,"%s"), !bVar3)) {
@@ -748,7 +774,7 @@ void __cdecl CG_CompassUpdateVehicleInfo(int param_1,int param_2)
     (*pcVar2)();
     return;
   }
-  pcVar5 = CG_GetEntity(param_1,param_2);
+  pcVar5 = CG_GetEntity(localClientNum,entityIndex);
   if (((((pcVar5->nextState).eType != 0xe) && ((pcVar5->nextState).eType != 0xd)) &&
       (((pcVar5->nextState).eType != 6 || (pcVar5->bIsPlaneOnRadar == 0)))) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
@@ -766,7 +792,7 @@ void __cdecl CG_CompassUpdateVehicleInfo(int param_1,int param_2)
        ((pvVar6->addToCompass != 0 ||
         (((((pcVar4->nextSnap->ps).eFlags & 0x4000U) != 0 && (*piVar1 != 0)) &&
          (piVar1[0x157] == (pcVar5->nextState).number)))))) {
-      pCVar7 = GetVehicle(param_1,param_2);
+      pCVar7 = GetVehicle(localClientNum,entityIndex);
       pCVar7->lastUpdate = pcVar4->time;
       pCVar7->lastPos[0] = (pcVar5->pose).origin[0];
       pCVar7->lastPos[1] = (pcVar5->pose).origin[1];
@@ -786,7 +812,7 @@ void __cdecl CG_CompassUpdateVehicleInfo(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateHelicopterInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateHelicopterInfo(int localClientNum,int entityIndex)
 
 {
   code *pcVar1;
@@ -794,8 +820,11 @@ void __cdecl CG_CompassUpdateHelicopterInfo(int param_1,int param_2)
   cg_s *pcVar3;
   centity_s *pcVar4;
   CompassHelicopter *pCVar5;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  CompassHelicopter *copter;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->nextSnap == (snapshot_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x2a6,0,"%s");
@@ -805,7 +834,7 @@ void __cdecl CG_CompassUpdateHelicopterInfo(int param_1,int param_2)
       return;
     }
   }
-  pcVar4 = CG_GetEntity(param_1,param_2);
+  pcVar4 = CG_GetEntity(localClientNum,entityIndex);
   if ((pcVar4->nextState).eType != 0xc) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x2a8,0,"%s");
@@ -815,7 +844,7 @@ void __cdecl CG_CompassUpdateHelicopterInfo(int param_1,int param_2)
       return;
     }
   }
-  pCVar5 = GetHelicopter(param_1,param_2);
+  pCVar5 = GetHelicopter(localClientNum,entityIndex);
   pCVar5->lastUpdate = pcVar3->time;
   pCVar5->lastPos[0] = (pcVar4->pose).origin[0];
   pCVar5->lastPos[1] = (pcVar4->pose).origin[1];
@@ -833,7 +862,7 @@ void __cdecl CG_CompassUpdateHelicopterInfo(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateGuidedMissileInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateGuidedMissileInfo(int localClientNum,int entityIndex)
 
 {
   code *pcVar1;
@@ -841,8 +870,11 @@ void __cdecl CG_CompassUpdateGuidedMissileInfo(int param_1,int param_2)
   cg_s *pcVar3;
   centity_s *pcVar4;
   CompassGuidedMissile *pCVar5;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  CompassGuidedMissile *missile;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->nextSnap == (snapshot_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x2ca,0,"%s");
@@ -852,7 +884,7 @@ void __cdecl CG_CompassUpdateGuidedMissileInfo(int param_1,int param_2)
       return;
     }
   }
-  pcVar4 = CG_GetEntity(param_1,param_2);
+  pcVar4 = CG_GetEntity(localClientNum,entityIndex);
   if ((pcVar4->nextState).eType != 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x2cc,0,"%s");
@@ -862,7 +894,7 @@ void __cdecl CG_CompassUpdateGuidedMissileInfo(int param_1,int param_2)
       return;
     }
   }
-  pCVar5 = GetGuidedMissile(param_1,param_2);
+  pCVar5 = GetGuidedMissile(localClientNum,entityIndex);
   pCVar5->lastUpdate = pcVar3->time;
   pCVar5->lastPos[0] = (pcVar4->pose).origin[0];
   pCVar5->lastPos[1] = (pcVar4->pose).origin[1];
@@ -880,100 +912,110 @@ void __cdecl CG_CompassUpdateGuidedMissileInfo(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateVehicleOccupantInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateVehicleOccupantInfo(int localClientNum,int entityIndex)
 
 {
   int *piVar1;
-  CompassActor *pCVar2;
-  int iVar3;
-  code *pcVar4;
-  bool bVar5;
-  cg_s *pcVar6;
-  centity_s *pcVar7;
-  vehicle_info_t *pvVar8;
-  int iVar9;
+  CompassActor *actor_00;
+  int iVar2;
+  code *pcVar3;
+  bool bVar4;
+  cg_s *pcVar5;
+  centity_s *pcVar6;
+  vehicle_info_t *pvVar7;
+  int iVar8;
   bool local_44;
-  uint local_c;
-  uint local_8;
+  clientInfo_t *ci;
+  int playerIndex;
+  clientInfo_t *localClientInfo;
+  vehicle_info_t *info;
+  cg_s *cgameGlob;
+  int playerTeam;
+  centity_s *cent;
+  clientInfo_t *clientInfo;
+  CompassActor *actor;
+  int i;
+  int clientNum;
   
-  pcVar6 = CG_GetLocalClientGlobals(param_1);
-  if ((pcVar6->nextSnap == (snapshot_s *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x2e3,0,"%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  if ((pcVar5->nextSnap == (snapshot_s *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x2e3,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  pcVar7 = CG_GetEntity(param_1,param_2);
-  if (((((pcVar7->nextState).eType != 0xe) && ((pcVar7->nextState).eType != 0xc)) &&
-      ((pcVar7->nextState).eType != 0xd)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x2e5,0,"%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  pcVar6 = CG_GetEntity(localClientNum,entityIndex);
+  if (((((pcVar6->nextState).eType != 0xe) && ((pcVar6->nextState).eType != 0xc)) &&
+      ((pcVar6->nextState).eType != 0xd)) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x2e5,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pcVar7 == (centity_s *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x2e7,0,"%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((pcVar6 == (centity_s *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x2e7,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if (((pcVar7->nextState).eType != 0x10) && ((pcVar7->nextState).eType != 0xc)) {
-    if (((pcVar7->nextState).eType != 0xe) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                 ,0x2ea,0,"%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+  if (((pcVar6->nextState).eType != 0x10) && ((pcVar6->nextState).eType != 0xc)) {
+    if (((pcVar6->nextState).eType != 0xe) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                 ,0x2ea,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    pvVar8 = CG_GetVehicleInfo((uint)(pcVar7->nextState).un2.vehicleState.vehicleInfoIndex);
-    if ((pvVar8 == (vehicle_info_t *)0x0) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                 ,0x2ed,0,"%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    pvVar7 = CG_GetVehicleInfo((uint)(pcVar6->nextState).un2.vehicleState.vehicleInfoIndex);
+    if ((pvVar7 == (vehicle_info_t *)0x0) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                 ,0x2ed,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    if (pvVar8->remoteControl == 0) {
-      local_8 = 0xffffffff;
-      for (local_c = 0; (int)local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-        piVar1 = (int *)((int)(pcVar6->bgs).clientinfo + local_c * 0x5c8);
-        if (((*piVar1 != 0) && (piVar1[0x157] == (pcVar7->nextState).number)) &&
+    if (pvVar7->remoteControl == 0) {
+      clientNum = -1;
+      for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+        piVar1 = (int *)((int)(pcVar5->bgs).clientinfo + i * 0x5c8);
+        if (((*piVar1 != 0) && (piVar1[0x157] == (pcVar6->nextState).number)) &&
            (piVar1[0x158] == 0)) {
-          local_8 = local_c;
+          clientNum = i;
           break;
         }
       }
-      if ((local_8 != 0xffffffff) && ((int)local_c < (com_maxclients->current).integer)) {
-        iVar9 = (uint)(pcVar6->nextSnap->ps).clientNum * 0x5c8;
-        if (((pcVar6->nextSnap->ps).clientNum != local_8) &&
-           (iVar3 = *(int *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x2c), iVar3 != 3)) {
-          if ((((iVar3 != 2) && (iVar3 != 1)) && (iVar3 != 0)) &&
-             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                       ,0x30d,0,"%s"), !bVar5)) {
-            pcVar4 = (code *)swi(3);
-            (*pcVar4)();
+      if ((clientNum != -1) && (i < (com_maxclients->current).integer)) {
+        iVar8 = (uint)(pcVar5->nextSnap->ps).clientNum * 0x5c8;
+        if (((uint)(pcVar5->nextSnap->ps).clientNum != clientNum) &&
+           (iVar2 = *(int *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x2c), iVar2 != 3))
+        {
+          if ((((iVar2 != 2) && (iVar2 != 1)) && (iVar2 != 0)) &&
+             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                       ,0x30d,0,"%s"), !bVar4)) {
+            pcVar3 = (code *)swi(3);
+            (*pcVar3)();
             return;
           }
-          pCVar2 = s_compassActors[param_1] + local_8;
-          pCVar2->lastUpdate = pcVar6->time;
-          if ((*(int *)((int)(pcVar6->bgs).clientinfo + iVar9 + 0x2c) == 0) ||
-             (iVar3 != *(int *)((int)(pcVar6->bgs).clientinfo + iVar9 + 0x2c))) {
+          actor_00 = s_compassActors[localClientNum] + clientNum;
+          actor_00->lastUpdate = pcVar5->time;
+          if ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar8 + 0x2c) == 0) ||
+             (iVar2 != *(int *)((int)(pcVar5->bgs).clientinfo + iVar8 + 0x2c))) {
             local_44 = true;
           }
           else {
             local_44 = false;
           }
-          pCVar2->enemy = local_44;
-          pCVar2->perks[0] = *(uint *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x44);
-          pCVar2->perks[1] = *(uint *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x48);
-          pCVar2->inVehicle = true;
-          if (pCVar2->enemy != false) {
-            ActorUpdatePos(param_1,pCVar2,(pcVar7->pose).origin,local_8);
-            pCVar2->lastEnemyPos[0] = (pcVar7->pose).origin[0];
-            pCVar2->lastEnemyPos[1] = (pcVar7->pose).origin[1];
+          actor_00->enemy = local_44;
+          actor_00->perks[0] = *(uint *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x44);
+          actor_00->perks[1] = *(uint *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x48);
+          actor_00->inVehicle = true;
+          if (actor_00->enemy != false) {
+            ActorUpdatePos(localClientNum,actor_00,(pcVar6->pose).origin,clientNum);
+            actor_00->lastEnemyPos[0] = (pcVar6->pose).origin[0];
+            actor_00->lastEnemyPos[1] = (pcVar6->pose).origin[1];
           }
         }
       }
@@ -990,7 +1032,7 @@ void __cdecl CG_CompassUpdateVehicleOccupantInfo(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateDogInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateDogInfo(int localClientNum,int entityIndex)
 
 {
   code *pcVar1;
@@ -998,8 +1040,11 @@ void __cdecl CG_CompassUpdateDogInfo(int param_1,int param_2)
   cg_s *pcVar3;
   centity_s *pcVar4;
   CompassDogs *pCVar5;
+  CompassDogs *dog;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->nextSnap == (snapshot_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x324,0,"%s");
@@ -1009,7 +1054,7 @@ void __cdecl CG_CompassUpdateDogInfo(int param_1,int param_2)
       return;
     }
   }
-  pcVar4 = CG_GetEntity(param_1,param_2);
+  pcVar4 = CG_GetEntity(localClientNum,entityIndex);
   if (((pcVar4->nextState).eType != 0x11) && ((pcVar4->nextState).eType != 0x13)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x326,0,"%s");
@@ -1019,7 +1064,7 @@ void __cdecl CG_CompassUpdateDogInfo(int param_1,int param_2)
       return;
     }
   }
-  pCVar5 = GetDogs(param_1,param_2,pcVar3->time);
+  pCVar5 = GetDogs(localClientNum,entityIndex,pcVar3->time);
   pCVar5->lastUpdate = pcVar3->time;
   pCVar5->lastPos[0] = (pcVar4->pose).origin[0];
   pCVar5->lastPos[1] = (pcVar4->pose).origin[1];
@@ -1037,7 +1082,7 @@ void __cdecl CG_CompassUpdateDogInfo(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateTurretInfo(int param_1,int param_2)
+void __cdecl CG_CompassUpdateTurretInfo(int localClientNum,int entityIndex)
 
 {
   code *pcVar1;
@@ -1046,8 +1091,11 @@ void __cdecl CG_CompassUpdateTurretInfo(int param_1,int param_2)
   centity_s *pcVar4;
   CompassTurrets *pCVar5;
   float fVar6;
+  CompassTurrets *turret;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->nextSnap == (snapshot_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x337,0,"%s");
@@ -1057,7 +1105,7 @@ void __cdecl CG_CompassUpdateTurretInfo(int param_1,int param_2)
       return;
     }
   }
-  pcVar4 = CG_GetEntity(param_1,param_2);
+  pcVar4 = CG_GetEntity(localClientNum,entityIndex);
   if ((pcVar4->nextState).eType != 0xb) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x33a,0,"%s");
@@ -1067,7 +1115,7 @@ void __cdecl CG_CompassUpdateTurretInfo(int param_1,int param_2)
       return;
     }
   }
-  pCVar5 = GetCompassTurrets(param_1,param_2,pcVar3->time);
+  pCVar5 = GetCompassTurrets(localClientNum,entityIndex,pcVar3->time);
   pCVar5->lastUpdate = pcVar3->time;
   pCVar5->lastPos[0] = (pcVar4->pose).origin[0];
   pCVar5->lastPos[1] = (pcVar4->pose).origin[1];
@@ -1094,24 +1142,31 @@ void __cdecl CG_CompassUpdateTurretInfo(int param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_CompassRadarPingEnemyTurrets(int param_1,float param_2,float param_3,float param_4,float param_5)
+CG_CompassRadarPingEnemyTurrets
+          (int localClientNum,float oldRadarProgress,float newRadarProgress,
+          float oldLocalRadarProgress,float newLocalRadarProgress)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  cg_s *pcVar4;
-  float fVar5;
-  float fVar6;
+  cg_s *cgameGlob_00;
+  float radius1;
+  float radius2;
   bool local_44;
-  CompassTurrets *local_34;
-  int local_20;
-  float local_1c [3];
-  float local_10 [3];
+  centity_s *cent;
+  CompassTurrets *turret;
+  clientInfo_t *localClientInfo;
+  float localRadarRadius2;
+  cg_s *cgameGlob;
+  float localRadarRadius1;
+  int turretIndex;
+  float radarLine1 [3];
+  float radarLine2 [3];
   
-  if (param_2 <= param_3) {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    if ((0x1f < (pcVar4->nextSnap->ps).clientNum) &&
+  if (oldRadarProgress <= newRadarProgress) {
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    if ((0x1f < (cgameGlob_00->nextSnap->ps).clientNum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x35b,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1120,31 +1175,31 @@ CG_CompassRadarPingEnemyTurrets(int param_1,float param_2,float param_3,float pa
       (*pcVar2)();
       return;
     }
-    bVar1 = (pcVar4->nextSnap->ps).clientNum;
-    GetRadarLine(pcVar4,param_2,local_1c);
-    GetRadarLine(pcVar4,param_3,local_10);
-    fVar5 = GetLocalRadarRadius(param_4);
-    fVar6 = GetLocalRadarRadius(param_5);
-    local_34 = s_compassTurrets[param_1];
-    for (local_20 = 0; local_20 < 0x20; local_20 = local_20 + 1) {
-      CG_GetEntity(param_1,local_20);
-      if ((local_34->team == TEAM_BAD) ||
-         (local_34->team != *(team_t *)((int)(pcVar4->bgs).clientinfo + (uint)bVar1 * 0x5c8 + 0x2c))
-         ) {
+    bVar1 = (cgameGlob_00->nextSnap->ps).clientNum;
+    GetRadarLine(cgameGlob_00,oldRadarProgress,radarLine1);
+    GetRadarLine(cgameGlob_00,newRadarProgress,radarLine2);
+    radius1 = GetLocalRadarRadius(oldLocalRadarProgress);
+    radius2 = GetLocalRadarRadius(newLocalRadarProgress);
+    turret = s_compassTurrets[localClientNum];
+    for (turretIndex = 0; turretIndex < 0x20; turretIndex = turretIndex + 1) {
+      CG_GetEntity(localClientNum,turretIndex);
+      if ((turret->team == TEAM_BAD) ||
+         (turret->team !=
+          *(team_t *)((int)(cgameGlob_00->bgs).clientinfo + (uint)bVar1 * 0x5c8 + 0x2c))) {
         local_44 = true;
       }
       else {
         local_44 = false;
       }
-      local_34->enemy = local_44;
-      if ((local_34->enemy != false) &&
-         ((bVar3 = DoLinesSurroundPoint(pcVar4,local_1c,local_10,local_34->lastPos), bVar3 ||
-          (bVar3 = DoRadiiSurroundPoint
-                             ((float *)&pcVar4->compassScrambler[0xd].handle,fVar5,fVar6,
-                              local_34->lastPos), bVar3)))) {
-        RadarPingEnemyTurrets(local_34,pcVar4->time);
+      turret->enemy = local_44;
+      if ((turret->enemy != false) &&
+         ((bVar3 = DoLinesSurroundPoint(cgameGlob_00,radarLine1,radarLine2,turret->lastPos), bVar3
+          || (bVar3 = DoRadiiSurroundPoint
+                                ((float *)&cgameGlob_00->compassScrambler[0xd].handle,radius1,
+                                 radius2,turret->lastPos), bVar3)))) {
+        RadarPingEnemyTurrets(turret,cgameGlob_00->time);
       }
-      local_34 = local_34 + 1;
+      turret = turret + 1;
     }
   }
   return;
@@ -1160,25 +1215,32 @@ CG_CompassRadarPingEnemyTurrets(int param_1,float param_2,float param_3,float pa
 
 void __cdecl
 CG_CompassRadarPingEnemyPlayers
-          (int param_1,float param_2,float param_3,float param_4,float param_5,int param_6)
+          (int localClientNum,float oldRadarProgress,float newRadarProgress,
+          float oldLocalRadarProgress,float newLocalRadarProgress,int ignorePerk)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  centity_s *pcVar4;
-  int iVar5;
-  float fVar6;
-  float fVar7;
+  cg_s *cgameGlob_00;
+  centity_s *pcVar3;
+  int iVar4;
+  float radius1;
+  float radius2;
   bool local_48;
-  uint local_28;
-  float local_20 [3];
-  CompassActor *local_14;
-  float local_10 [3];
+  centity_s *cent;
+  clientInfo_t *localClientInfo;
+  float localRadarRadius2;
+  cg_s *cgameGlob;
+  int playerTeam;
+  int actorIndex;
+  float localRadarRadius1;
+  float radarLine1 [3];
+  CompassActor *actor;
+  float radarLine2 [3];
   
-  if (param_2 <= param_3) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    if ((0x1f < (pcVar3->nextSnap->ps).clientNum) &&
+  if (oldRadarProgress <= newRadarProgress) {
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    if ((0x1f < (cgameGlob_00->nextSnap->ps).clientNum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x387,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1187,12 +1249,12 @@ CG_CompassRadarPingEnemyPlayers
       (*pcVar1)();
       return;
     }
-    iVar5 = (uint)(pcVar3->nextSnap->ps).clientNum * 0x5c8;
-    GetRadarLine(pcVar3,param_2,local_20);
-    GetRadarLine(pcVar3,param_3,local_10);
-    fVar6 = GetLocalRadarRadius(param_4);
-    fVar7 = GetLocalRadarRadius(param_5);
-    if ((param_1 != 0) &&
+    iVar4 = (uint)(cgameGlob_00->nextSnap->ps).clientNum * 0x5c8;
+    GetRadarLine(cgameGlob_00,oldRadarProgress,radarLine1);
+    GetRadarLine(cgameGlob_00,newRadarProgress,radarLine2);
+    radius1 = GetLocalRadarRadius(oldLocalRadarProgress);
+    radius2 = GetLocalRadarRadius(newLocalRadarProgress);
+    if ((localClientNum != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x392,0,
                                  "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -1201,11 +1263,11 @@ CG_CompassRadarPingEnemyPlayers
       (*pcVar1)();
       return;
     }
-    local_14 = s_compassActors[param_1];
-    for (local_28 = 0; (int)local_28 < 0x20; local_28 = local_28 + 1) {
-      if (((int)local_28 < (com_maxclients->current).integer) &&
-         (local_28 != (pcVar3->nextSnap->ps).clientNum)) {
-        if ((0x1f < local_28) &&
+    actor = s_compassActors[localClientNum];
+    for (actorIndex = 0; actorIndex < 0x20; actorIndex = actorIndex + 1) {
+      if ((actorIndex < (com_maxclients->current).integer) &&
+         (actorIndex != (uint)(cgameGlob_00->nextSnap->ps).clientNum)) {
+        if ((0x1f < (uint)actorIndex) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                      ,0x39d,0,
                                      "actorIndex doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
@@ -1214,8 +1276,8 @@ CG_CompassRadarPingEnemyPlayers
           (*pcVar1)();
           return;
         }
-        if (*(int *)((int)(pcVar3->bgs).clientinfo + local_28 * 0x5c8) != 0) {
-          if ((0x1f < local_28) &&
+        if (*(int *)((int)(cgameGlob_00->bgs).clientinfo + actorIndex * 0x5c8) != 0) {
+          if ((0x1f < (uint)actorIndex) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                        ,0x3a1,0,
                                        "actorIndex doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)")
@@ -1224,35 +1286,37 @@ CG_CompassRadarPingEnemyPlayers
             (*pcVar1)();
             return;
           }
-          if ((*(int *)((int)(pcVar3->bgs).clientinfo + iVar5 + 0x2c) == 0) ||
-             (*(int *)((int)(pcVar3->bgs).clientinfo + local_28 * 0x5c8 + 0x2c) !=
-              *(int *)((int)(pcVar3->bgs).clientinfo + iVar5 + 0x2c))) {
+          if ((*(int *)((int)(cgameGlob_00->bgs).clientinfo + iVar4 + 0x2c) == 0) ||
+             (*(int *)((int)(cgameGlob_00->bgs).clientinfo + actorIndex * 0x5c8 + 0x2c) !=
+              *(int *)((int)(cgameGlob_00->bgs).clientinfo + iVar4 + 0x2c))) {
             local_48 = true;
           }
           else {
             local_48 = false;
           }
-          local_14->enemy = local_48;
-          local_14->perks[0] = *(uint *)((int)(pcVar3->bgs).clientinfo + local_28 * 0x5c8 + 0x44);
-          local_14->perks[1] = *(uint *)((int)(pcVar3->bgs).clientinfo + local_28 * 0x5c8 + 0x48);
-          if ((local_14->enemy != false) &&
-             ((pcVar4 = CG_GetEntity(param_1,local_28), pcVar4->nextValid == 0 ||
-              (((pcVar4->nextState).eType == 1 &&
-               (((pcVar4->nextState).lerp.eFlags & 0x40000U) == 0)))))) {
-            bVar2 = DoLinesSurroundPoint(pcVar3,local_20,local_10,local_14->lastPos);
+          actor->enemy = local_48;
+          actor->perks[0] =
+               *(uint *)((int)(cgameGlob_00->bgs).clientinfo + actorIndex * 0x5c8 + 0x44);
+          actor->perks[1] =
+               *(uint *)((int)(cgameGlob_00->bgs).clientinfo + actorIndex * 0x5c8 + 0x48);
+          if ((actor->enemy != false) &&
+             ((pcVar3 = CG_GetEntity(localClientNum,actorIndex), pcVar3->nextValid == 0 ||
+              (((pcVar3->nextState).eType == 1 &&
+               (((pcVar3->nextState).lerp.eFlags & 0x40000U) == 0)))))) {
+            bVar2 = DoLinesSurroundPoint(cgameGlob_00,radarLine1,radarLine2,actor->lastPos);
             if (bVar2) {
-              RadarPingEnemyPlayer(local_14,pcVar3->time,0x19);
+              RadarPingEnemyPlayer(actor,cgameGlob_00->time,0x19);
             }
             bVar2 = DoRadiiSurroundPoint
-                              ((float *)&pcVar3->compassScrambler[0xd].handle,fVar6,fVar7,
-                               local_14->lastPos);
+                              ((float *)&cgameGlob_00->compassScrambler[0xd].handle,radius1,radius2,
+                               actor->lastPos);
             if (bVar2) {
-              RadarPingEnemyPlayer(local_14,pcVar3->time,0x21);
+              RadarPingEnemyPlayer(actor,cgameGlob_00->time,0x21);
             }
           }
         }
       }
-      local_14 = local_14 + 1;
+      actor = actor + 1;
     }
   }
   return;
@@ -1266,7 +1330,7 @@ CG_CompassRadarPingEnemyPlayers
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassIncreaseRadarTime(int param_1)
+void __cdecl CG_CompassIncreaseRadarTime(int localClientNum)
 
 {
   code *pcVar1;
@@ -1274,12 +1338,13 @@ void __cdecl CG_CompassIncreaseRadarTime(int param_1)
   cg_s *pcVar3;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float local_10;
-  float local_8;
+  float oldRadarProgress;
+  cg_s *cgameGlob;
+  float oldLocalRadarProgress;
   
-  local_10 = 0.0;
-  local_8 = 0.0;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  oldRadarProgress = 0.0;
+  oldLocalRadarProgress = 0.0;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3 == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x3c7,0,"%s");
@@ -1294,7 +1359,7 @@ void __cdecl CG_CompassIncreaseRadarTime(int param_1)
     pcVar3->radarProgress = 0.0;
   }
   else {
-    local_10 = pcVar3->radarProgress;
+    oldRadarProgress = pcVar3->radarProgress;
     if ((pcVar3->predictedPlayerState).satelliteTypeEnabled == 0) {
       pcVar3->radarType = (pcVar3->predictedPlayerState).spyplaneTypeEnabled;
     }
@@ -1318,7 +1383,7 @@ void __cdecl CG_CompassIncreaseRadarTime(int param_1)
     pcVar3->compassScrambler[0xe].pos[1] = 0.0;
   }
   else {
-    local_8 = pcVar3->compassScrambler[0xe].pos[1];
+    oldLocalRadarProgress = pcVar3->compassScrambler[0xe].pos[1];
     pcVar3->compassScrambler[0xe].pos[1] =
          (float)pcVar3->frametime / ((compassLocalRadarUpdateTime->current).value * 1000.0) +
          pcVar3->compassScrambler[0xe].pos[1];
@@ -1326,22 +1391,24 @@ void __cdecl CG_CompassIncreaseRadarTime(int param_1)
     pcVar3->compassScrambler[0xe].pos[1] =
          pcVar3->compassScrambler[0xe].pos[1] - (float)extraout_ST0_00;
     CG_CompassRadarPingEnemyPlayers
-              (param_1,local_10,pcVar3->radarProgress,local_8,pcVar3->compassScrambler[0xe].pos[1],
-               0x26);
+              (localClientNum,oldRadarProgress,pcVar3->radarProgress,oldLocalRadarProgress,
+               pcVar3->compassScrambler[0xe].pos[1],0x26);
   }
   if ((pcVar3->predictedPlayerState).spyplaneTypeEnabled != 0) {
     CG_CompassRadarPingEnemyPlayers
-              (param_1,local_10,pcVar3->radarProgress,local_8,pcVar3->compassScrambler[0xe].pos[1],
-               0x19);
+              (localClientNum,oldRadarProgress,pcVar3->radarProgress,oldLocalRadarProgress,
+               pcVar3->compassScrambler[0xe].pos[1],0x19);
     CG_CompassRadarPingEnemyTurrets
-              (param_1,local_10,pcVar3->radarProgress,local_8,pcVar3->compassScrambler[0xe].pos[1]);
+              (localClientNum,oldRadarProgress,pcVar3->radarProgress,oldLocalRadarProgress,
+               pcVar3->compassScrambler[0xe].pos[1]);
   }
   if (pcVar3->compassScrambler[0xd].startTime != 0) {
     CG_CompassRadarPingEnemyPlayers
-              (param_1,local_10,pcVar3->radarProgress,local_8,pcVar3->compassScrambler[0xe].pos[1],
-               0x26);
+              (localClientNum,oldRadarProgress,pcVar3->radarProgress,oldLocalRadarProgress,
+               pcVar3->compassScrambler[0xe].pos[1],0x26);
     CG_CompassRadarPingEnemyTurrets
-              (param_1,local_10,pcVar3->radarProgress,local_8,pcVar3->compassScrambler[0xe].pos[1]);
+              (localClientNum,oldRadarProgress,pcVar3->radarProgress,oldLocalRadarProgress,
+               pcVar3->compassScrambler[0xe].pos[1]);
   }
   return;
 }
@@ -1354,7 +1421,7 @@ void __cdecl CG_CompassIncreaseRadarTime(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddTurretWeaponPingInfo(int param_1,centity_s *param_2,float *param_3,int param_4)
+void __cdecl CG_AddTurretWeaponPingInfo(int localClientNum,centity_s *cent,float *origin,int msec)
 
 {
   int iVar1;
@@ -1363,16 +1430,19 @@ void __cdecl CG_AddTurretWeaponPingInfo(int param_1,centity_s *param_2,float *pa
   cg_s *pcVar4;
   CompassTurrets *pCVar5;
   bool local_14;
+  CompassTurrets *turret;
+  clientInfo_t *localClientInfo;
+  cg_s *cgameGlob;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 == (centity_s *)0x0) &&
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  if ((cent == (centity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x3f9,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_2->nextState).eType != 0xb) &&
+  if (((cent->nextState).eType != 0xb) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x3fa,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1380,7 +1450,7 @@ void __cdecl CG_AddTurretWeaponPingInfo(int param_1,centity_s *param_2,float *pa
     return;
   }
   iVar1 = pcVar4->clientNum;
-  pCVar5 = GetCompassTurrets(param_1,(param_2->nextState).number,pcVar4->time);
+  pCVar5 = GetCompassTurrets(localClientNum,(cent->nextState).number,pcVar4->time);
   if ((pCVar5->team == TEAM_BAD) ||
      (pCVar5->team != *(team_t *)((int)(pcVar4->bgs).clientinfo + iVar1 * 0x5c8 + 0x2c))) {
     local_14 = true;
@@ -1389,10 +1459,10 @@ void __cdecl CG_AddTurretWeaponPingInfo(int param_1,centity_s *param_2,float *pa
     local_14 = false;
   }
   pCVar5->enemy = local_14;
-  if ((((pCVar5->enemy == false) || (bVar3 = IsHardcoreMode(param_1), !bVar3)) ||
+  if ((((pCVar5->enemy == false) || (bVar3 = IsHardcoreMode(localClientNum), !bVar3)) ||
       ((pcVar4->predictedPlayerState).satelliteTypeEnabled != 0)) ||
      ((pcVar4->predictedPlayerState).spyplaneTypeEnabled != 0)) {
-    pCVar5->beginFadeTime = pcVar4->time + param_4;
+    pCVar5->beginFadeTime = pcVar4->time + msec;
   }
   return;
 }
@@ -1405,92 +1475,99 @@ void __cdecl CG_AddTurretWeaponPingInfo(int param_1,centity_s *param_2,float *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassAddWeaponPingInfo(int param_1,centity_s *param_2,float *param_3,int param_4)
+void __cdecl CG_CompassAddWeaponPingInfo(int localClientNum,centity_s *cent,float *origin,int msec)
 
 {
-  CompassActor *pCVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  cg_s *pcVar5;
+  CompassActor *actor_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  cg_s *pcVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
   bool local_2c;
+  int playerIndex;
+  clientInfo_t *localClientInfo;
+  cg_s *cgameGlob;
+  int playerTeam;
+  bool enemy;
+  clientInfo_t *clientInfo;
+  CompassActor *actor;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 == (centity_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x413,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  if ((cent == (centity_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x413,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if ((param_2->nextState).eType != 2) {
-    if (((param_2->nextState).eType != 1) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                 ,0x416,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if ((cent->nextState).eType != 2) {
+    if (((cent->nextState).eType != 1) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                 ,0x416,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if ((0x1f < (uint)(param_2->nextState).number) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+    if ((0x1f < (uint)(cent->nextState).number) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x417,0,
                                  "cent->nextState.number doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                ), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+                                ), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if ((0x1f < (pcVar5->nextSnap->ps).clientNum) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+    if ((0x1f < (pcVar4->nextSnap->ps).clientNum) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x418,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                ), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+                                ), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    iVar6 = (uint)(pcVar5->nextSnap->ps).clientNum * 0x5c8;
-    if ((pcVar5->nextSnap->ps).clientNum != (param_2->nextState).clientNum) {
-      iVar7 = (param_2->nextState).number;
-      iVar2 = *(int *)((int)(pcVar5->bgs).clientinfo +
-                      (uint)(param_2->nextState).clientNum * 0x5c8 + 0x2c);
-      if (iVar2 != 3) {
-        if ((((iVar2 != 2) && (iVar2 != 1)) && (iVar2 != 0)) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                     ,0x424,0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+    iVar5 = (uint)(pcVar4->nextSnap->ps).clientNum * 0x5c8;
+    if ((pcVar4->nextSnap->ps).clientNum != (cent->nextState).clientNum) {
+      iVar6 = (cent->nextState).number;
+      iVar1 = *(int *)((int)(pcVar4->bgs).clientinfo +
+                      (uint)(cent->nextState).clientNum * 0x5c8 + 0x2c);
+      if (iVar1 != 3) {
+        if ((((iVar1 != 2) && (iVar1 != 1)) && (iVar1 != 0)) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                     ,0x424,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        if ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) == 0) ||
-           (iVar2 != *(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c))) {
-          bVar4 = true;
+        if ((*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == 0) ||
+           (iVar1 != *(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c))) {
+          bVar3 = true;
         }
         else {
-          bVar4 = false;
+          bVar3 = false;
         }
-        if (((!bVar4) || (bVar4 = IsHardcoreMode(param_1), !bVar4)) ||
-           (((pcVar5->predictedPlayerState).satelliteTypeEnabled != 0 ||
-            ((pcVar5->predictedPlayerState).spyplaneTypeEnabled != 0)))) {
-          pCVar1 = s_compassActors[param_1] + iVar7;
-          pCVar1->beginFadeTime = pcVar5->time + param_4;
-          if ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) == 0) ||
-             (iVar2 != *(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c))) {
+        if (((!bVar3) || (bVar3 = IsHardcoreMode(localClientNum), !bVar3)) ||
+           (((pcVar4->predictedPlayerState).satelliteTypeEnabled != 0 ||
+            ((pcVar4->predictedPlayerState).spyplaneTypeEnabled != 0)))) {
+          actor_00 = s_compassActors[localClientNum] + iVar6;
+          actor_00->beginFadeTime = pcVar4->time + msec;
+          if ((*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == 0) ||
+             (iVar1 != *(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c))) {
             local_2c = true;
           }
           else {
             local_2c = false;
           }
-          pCVar1->enemy = local_2c;
-          iVar7 = iVar7 * 0x5c8;
-          pCVar1->perks[0] = *(uint *)((int)(pcVar5->bgs).clientinfo + iVar7 + 0x44);
-          pCVar1->perks[1] = *(uint *)((int)(pcVar5->bgs).clientinfo + iVar7 + 0x48);
-          if (pCVar1->enemy != false) {
-            ActorUpdatePos(param_1,pCVar1,param_3,(uint)(param_2->nextState).clientNum);
-            pCVar1->lastEnemyPos[0] = *param_3;
-            pCVar1->lastEnemyPos[1] = param_3[1];
+          actor_00->enemy = local_2c;
+          iVar6 = iVar6 * 0x5c8;
+          actor_00->perks[0] = *(uint *)((int)(pcVar4->bgs).clientinfo + iVar6 + 0x44);
+          actor_00->perks[1] = *(uint *)((int)(pcVar4->bgs).clientinfo + iVar6 + 0x48);
+          if (actor_00->enemy != false) {
+            ActorUpdatePos(localClientNum,actor_00,origin,(uint)(cent->nextState).clientNum);
+            actor_00->lastEnemyPos[0] = *origin;
+            actor_00->lastEnemyPos[1] = origin[1];
           }
         }
       }
@@ -1508,82 +1585,89 @@ void __cdecl CG_CompassAddWeaponPingInfo(int param_1,centity_s *param_2,float *p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_CompassAddVehicleWeaponPingInfo(int param_1,centity_s *param_2,float *param_3,int param_4)
+CG_CompassAddVehicleWeaponPingInfo(int localClientNum,centity_s *cent,float *origin,int msec)
 
 {
   int *piVar1;
-  CompassActor *pCVar2;
-  int iVar3;
-  code *pcVar4;
-  bool bVar5;
-  cg_s *pcVar6;
-  int iVar7;
+  CompassActor *actor_00;
+  int iVar2;
+  code *pcVar3;
+  bool bVar4;
+  cg_s *pcVar5;
+  int iVar6;
   bool local_38;
-  uint local_c;
-  uint local_8;
+  clientInfo_t *ci;
+  int playerIndex;
+  clientInfo_t *localClientInfo;
+  cg_s *cgameGlob;
+  int playerTeam;
+  bool enemy;
+  clientInfo_t *clientInfo;
+  CompassActor *actor;
+  int i;
+  int clientNum;
   
-  pcVar6 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 == (centity_s *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x444,0,"%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  if ((cent == (centity_s *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x444,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((param_2->nextState).eType != 0x10) {
-    if ((((param_2->nextState).eType != 0xe) && ((param_2->nextState).eType != 0xc)) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                 ,0x447,0,"%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+  if ((cent->nextState).eType != 0x10) {
+    if ((((cent->nextState).eType != 0xe) && ((cent->nextState).eType != 0xc)) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                 ,0x447,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    local_8 = 0xffffffff;
-    for (local_c = 0; (int)local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      piVar1 = (int *)((int)(pcVar6->bgs).clientinfo + local_c * 0x5c8);
-      if (((*piVar1 != 0) && (piVar1[0x157] == (param_2->nextState).number)) && (piVar1[0x158] == 0)
-         ) {
-        local_8 = local_c;
+    clientNum = -1;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      piVar1 = (int *)((int)(pcVar5->bgs).clientinfo + i * 0x5c8);
+      if (((*piVar1 != 0) && (piVar1[0x157] == (cent->nextState).number)) && (piVar1[0x158] == 0)) {
+        clientNum = i;
         break;
       }
     }
-    if (((int)local_c < (com_maxclients->current).integer) && (local_8 != 0xffffffff)) {
-      iVar7 = (uint)(pcVar6->nextSnap->ps).clientNum * 0x5c8;
-      if (((pcVar6->nextSnap->ps).clientNum != local_8) &&
-         (iVar3 = *(int *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x2c), iVar3 != 3)) {
-        if ((((iVar3 != 2) && (iVar3 != 1)) && (iVar3 != 0)) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                                     ,0x464,0,"%s"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+    if ((i < (com_maxclients->current).integer) && (clientNum != -1)) {
+      iVar6 = (uint)(pcVar5->nextSnap->ps).clientNum * 0x5c8;
+      if (((uint)(pcVar5->nextSnap->ps).clientNum != clientNum) &&
+         (iVar2 = *(int *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x2c), iVar2 != 3)) {
+        if ((((iVar2 != 2) && (iVar2 != 1)) && (iVar2 != 0)) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                                     ,0x464,0,"%s"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        if ((*(int *)((int)(pcVar6->bgs).clientinfo + iVar7 + 0x2c) == 0) ||
-           (iVar3 != *(int *)((int)(pcVar6->bgs).clientinfo + iVar7 + 0x2c))) {
-          bVar5 = true;
+        if ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) == 0) ||
+           (iVar2 != *(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c))) {
+          bVar4 = true;
         }
         else {
-          bVar5 = false;
+          bVar4 = false;
         }
-        if (((!bVar5) || (bVar5 = IsHardcoreMode(param_1), !bVar5)) ||
-           (((pcVar6->predictedPlayerState).spyplaneTypeEnabled != 0 ||
-            ((pcVar6->predictedPlayerState).satelliteTypeEnabled != 0)))) {
-          pCVar2 = s_compassActors[param_1] + local_8;
-          pCVar2->beginFadeTime = pcVar6->time + param_4;
-          if ((*(int *)((int)(pcVar6->bgs).clientinfo + iVar7 + 0x2c) == 0) ||
-             (iVar3 != *(int *)((int)(pcVar6->bgs).clientinfo + iVar7 + 0x2c))) {
+        if (((!bVar4) || (bVar4 = IsHardcoreMode(localClientNum), !bVar4)) ||
+           (((pcVar5->predictedPlayerState).spyplaneTypeEnabled != 0 ||
+            ((pcVar5->predictedPlayerState).satelliteTypeEnabled != 0)))) {
+          actor_00 = s_compassActors[localClientNum] + clientNum;
+          actor_00->beginFadeTime = pcVar5->time + msec;
+          if ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) == 0) ||
+             (iVar2 != *(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c))) {
             local_38 = true;
           }
           else {
             local_38 = false;
           }
-          pCVar2->enemy = local_38;
-          pCVar2->perks[0] = *(uint *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x44);
-          pCVar2->perks[1] = *(uint *)((int)(pcVar6->bgs).clientinfo + local_8 * 0x5c8 + 0x48);
-          if (pCVar2->enemy != false) {
-            ActorUpdatePos(param_1,pCVar2,param_3,local_8);
-            pCVar2->lastEnemyPos[0] = *param_3;
-            pCVar2->lastEnemyPos[1] = param_3[1];
+          actor_00->enemy = local_38;
+          actor_00->perks[0] = *(uint *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x44);
+          actor_00->perks[1] = *(uint *)((int)(pcVar5->bgs).clientinfo + clientNum * 0x5c8 + 0x48);
+          if (actor_00->enemy != false) {
+            ActorUpdatePos(localClientNum,actor_00,origin,clientNum);
+            actor_00->lastEnemyPos[0] = *origin;
+            actor_00->lastEnemyPos[1] = origin[1];
           }
         }
       }
@@ -1595,31 +1679,31 @@ CG_CompassAddVehicleWeaponPingInfo(int param_1,centity_s *param_2,float *param_3
 
 // 0048D1B0  CG_FindFakeFireActor  (cgame_mp/cg_compassfriendlies_mp.cpp:1144)
 
-CompassFakeFire * __cdecl CG_FindFakeFireActor(int param_1,int param_2,int param_3)
+CompassFakeFire * __cdecl CG_FindFakeFireActor(int localClientNum,int playerIndex,int entNum)
 
 {
-  int local_14;
-  CompassFakeFire *local_10;
-  int local_c;
-  int local_8;
+  int index;
+  CompassFakeFire *fakeFire;
+  int oldestIndex;
+  int oldestTime;
   
-  local_c = 0;
-  local_8 = 0x7fffffff;
-  local_10 = s_compassFakeFire[param_1][param_2];
-  local_14 = 0;
+  oldestIndex = 0;
+  oldestTime = 0x7fffffff;
+  fakeFire = s_compassFakeFire[localClientNum][playerIndex];
+  index = 0;
   while( true ) {
-    if (7 < local_14) {
-      return s_compassFakeFire[param_1][param_2] + local_c;
+    if (7 < index) {
+      return s_compassFakeFire[localClientNum][playerIndex] + oldestIndex;
     }
-    if (local_10->entityNum == param_3) break;
-    if (local_10->beginFadeTime < local_8) {
-      local_c = local_14;
-      local_8 = local_10->beginFadeTime;
+    if (fakeFire->entityNum == entNum) break;
+    if (fakeFire->beginFadeTime < oldestTime) {
+      oldestIndex = index;
+      oldestTime = fakeFire->beginFadeTime;
     }
-    local_14 = local_14 + 1;
-    local_10 = local_10 + 1;
+    index = index + 1;
+    fakeFire = fakeFire + 1;
   }
-  return local_10;
+  return fakeFire;
 }
 
 
@@ -1632,7 +1716,7 @@ CompassFakeFire * __cdecl CG_FindFakeFireActor(int param_1,int param_2,int param
 
 void __cdecl
 CG_CompassAddFakeFirePingInfo
-          (int param_1,int param_2,int param_3,float *param_4,float *param_5,int param_6)
+          (int localClientNum,int ownerNum,int entNum,float *origin,float *dir,int msec)
 
 {
   int iVar1;
@@ -1641,12 +1725,18 @@ CG_CompassAddFakeFirePingInfo
   cg_s *pcVar4;
   int iVar5;
   bool local_30;
-  float local_14;
+  int playerIndex;
+  clientInfo_t *localClientInfo;
+  cg_s *cgameGlob;
+  int playerTeam;
+  bool enemy;
+  clientInfo_t *clientInfo;
+  float angles;
   float local_10;
-  CompassFakeFire *local_8;
+  CompassFakeFire *actor;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  if ((0x1f < (uint)param_2) &&
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  if ((0x1f < (uint)ownerNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x49b,0,"ownerNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
      !bVar3)) {
@@ -1664,7 +1754,7 @@ CG_CompassAddFakeFirePingInfo
     return;
   }
   iVar5 = (uint)(pcVar4->nextSnap->ps).clientNum * 0x5c8;
-  iVar1 = *(int *)((int)(pcVar4->bgs).clientinfo + param_2 * 0x5c8 + 0x2c);
+  iVar1 = *(int *)((int)(pcVar4->bgs).clientinfo + ownerNum * 0x5c8 + 0x2c);
   if (iVar1 != 3) {
     if ((((iVar1 != 2) && (iVar1 != 1)) && (iVar1 != 0)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
@@ -1675,24 +1765,24 @@ CG_CompassAddFakeFirePingInfo
     }
     if ((iVar1 == *(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c)) &&
        ((*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) != 0 ||
-        (param_2 == (uint)(pcVar4->nextSnap->ps).clientNum)))) {
+        (ownerNum == (uint)(pcVar4->nextSnap->ps).clientNum)))) {
       local_30 = false;
     }
     else {
       local_30 = true;
     }
-    if (((local_30 == false) || (bVar3 = IsHardcoreMode(param_1), !bVar3)) ||
+    if (((local_30 == false) || (bVar3 = IsHardcoreMode(localClientNum), !bVar3)) ||
        (((pcVar4->predictedPlayerState).spyplaneTypeEnabled != 0 ||
         ((pcVar4->predictedPlayerState).satelliteTypeEnabled != 0)))) {
-      local_8 = CG_FindFakeFireActor(param_1,param_2,param_3);
-      local_8->entityNum = param_3;
-      local_8->beginFadeTime = pcVar4->time + param_6;
-      local_8->enemy = local_30;
-      local_8->pos[0] = *param_4;
-      local_8->pos[1] = param_4[1];
-      vectoangles(param_5,&local_14);
-      local_8->yaw = local_10;
-      local_8->satellite = (pcVar4->predictedPlayerState).satelliteTypeEnabled != 0;
+      actor = CG_FindFakeFireActor(localClientNum,ownerNum,entNum);
+      actor->entityNum = entNum;
+      actor->beginFadeTime = pcVar4->time + msec;
+      actor->enemy = local_30;
+      actor->pos[0] = *origin;
+      actor->pos[1] = origin[1];
+      vectoangles(dir,&angles);
+      actor->yaw = local_10;
+      actor->satellite = (pcVar4->predictedPlayerState).satelliteTypeEnabled != 0;
     }
   }
   return;
@@ -1706,13 +1796,14 @@ CG_CompassAddFakeFirePingInfo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddEnemyScrambler(int param_1,centity_s *param_2)
+void __cdecl CG_AddEnemyScrambler(int localClientNum,centity_s *scramblerEnt)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  pcVar1[1].activeSnapshots[0].physicsTime = (int)param_2;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar1[1].activeSnapshots[0].physicsTime = (int)scramblerEnt;
   return;
 }
 
@@ -1724,12 +1815,13 @@ void __cdecl CG_AddEnemyScrambler(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ClearNearestEnemyScrambler(int param_1)
+void __cdecl CG_ClearNearestEnemyScrambler(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   pcVar1[1].activeSnapshots[0].physicsTime = 0;
   return;
 }
@@ -1737,45 +1829,46 @@ void __cdecl CG_ClearNearestEnemyScrambler(int param_1)
 
 // 0048D2C0  CG_AddFriendlyScrambler  (cgame_mp/cg_compassfriendlies_mp.cpp:1231)
 
+/* WARNING: Variable defined which should be unmapped: oldest_scrambler_time */
+/* WARNING: Variable defined which should be unmapped: i */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddFriendlyScrambler(int param_1,float param_2,float param_3,int param_4)
+void __cdecl CG_AddFriendlyScrambler(int localClientNum,float x,float y,int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  int iVar4;
-  undefined4 uVar5;
-  int iVar6;
-  int local_8;
+  cg_s *cgameGlob;
+  int oldest_scrambler_time;
+  int i;
+  int oldest_scrambler;
   
-  uVar5 = 0;
-  local_8 = 0;
-  iVar4 = 0x7fffffff;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  oldest_scrambler = 0;
+  oldest_scrambler_time = 0x7fffffff;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->nextSnap == (snapshot_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x4d5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      (*pcVar1)(iVar4,uVar5);
+      (*pcVar1)(0x7fffffff,0);
       return;
     }
   }
-  for (iVar6 = 0; iVar6 < 0x10; iVar6 = iVar6 + 1) {
-    if (pcVar3->compassScrambler[iVar6 + 0x10].startTime < iVar4) {
-      iVar4 = pcVar3->compassScrambler[iVar6 + 0x10].startTime;
-      local_8 = iVar6;
+  for (i = 0; i < 0x10; i = i + 1) {
+    if (pcVar3->compassScrambler[i + 0x10].startTime < oldest_scrambler_time) {
+      oldest_scrambler_time = pcVar3->compassScrambler[i + 0x10].startTime;
+      oldest_scrambler = i;
     }
   }
-  pcVar3->compassScrambler[local_8 + 0x10].startTime = pcVar3->time;
-  pcVar3->compassScrambler[local_8 + 0x10].handle = param_4;
-  pcVar3->compassScrambler[local_8 + 0x10].pos[0] = param_2;
-  pcVar3->compassScrambler[local_8 + 0x10].pos[1] = param_3;
+  pcVar3->compassScrambler[oldest_scrambler + 0x10].startTime = pcVar3->time;
+  pcVar3->compassScrambler[oldest_scrambler + 0x10].handle = handle;
+  pcVar3->compassScrambler[oldest_scrambler + 0x10].pos[0] = x;
+  pcVar3->compassScrambler[oldest_scrambler + 0x10].pos[1] = y;
   return;
 }
 
@@ -1787,16 +1880,17 @@ void __cdecl CG_AddFriendlyScrambler(int param_1,float param_2,float param_3,int
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_RemoveFriendlyScrambler(int param_1,int param_2)
+void __cdecl CG_RemoveFriendlyScrambler(int localClientNum,int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  int local_8;
+  cg_s *cgameGlob;
+  int scamblerIndex;
   
-  local_8 = 0;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  scamblerIndex = 0;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar3->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x4ec,0,"%s"), !bVar2)) {
@@ -1805,14 +1899,14 @@ void __cdecl CG_RemoveFriendlyScrambler(int param_1,int param_2)
     return;
   }
   while( true ) {
-    if (0xf < local_8) {
+    if (0xf < scamblerIndex) {
       return;
     }
-    if (param_2 == pcVar3->compassScrambler[local_8 + 0x10].handle) break;
-    local_8 = local_8 + 1;
+    if (handle == pcVar3->compassScrambler[scamblerIndex + 0x10].handle) break;
+    scamblerIndex = scamblerIndex + 1;
   }
-  pcVar3->compassScrambler[local_8 + 0x10].startTime = 0;
-  pcVar3->compassScrambler[local_8 + 0x10].handle = 0;
+  pcVar3->compassScrambler[scamblerIndex + 0x10].startTime = 0;
+  pcVar3->compassScrambler[scamblerIndex + 0x10].handle = 0;
   return;
 }
 
@@ -1824,17 +1918,18 @@ void __cdecl CG_RemoveFriendlyScrambler(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_RemoveAllFriendlyScramblers(int param_1)
+void __cdecl CG_RemoveAllFriendlyScramblers(int localClientNum)
 
 {
   cg_s *pcVar1;
-  int local_8;
+  cg_s *cgameGlob;
+  int scamblerIndex;
   
-  local_8 = 0;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  for (; local_8 < 0x10; local_8 = local_8 + 1) {
-    pcVar1->compassScrambler[local_8 + 0x10].startTime = 0;
-    pcVar1->compassScrambler[local_8 + 0x10].handle = 0;
+  scamblerIndex = 0;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  for (; scamblerIndex < 0x10; scamblerIndex = scamblerIndex + 1) {
+    pcVar1->compassScrambler[scamblerIndex + 0x10].startTime = 0;
+    pcVar1->compassScrambler[scamblerIndex + 0x10].handle = 0;
   }
   return;
 }
@@ -1847,7 +1942,7 @@ void __cdecl CG_RemoveAllFriendlyScramblers(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpdateActors(int param_1)
+void __cdecl CG_CompassUpdateActors(int localClientNum)
 
 {
   code *pcVar1;
@@ -1857,31 +1952,32 @@ void __cdecl CG_CompassUpdateActors(int param_1)
   bool local_5c;
   bool local_58;
   bool local_54;
-  float local_40;
+  clientInfo_t *localClientInfo;
+  float newPos;
   float local_3c;
-  float local_38;
+  float clientPos;
   float local_34;
   float local_30;
-  int local_2c;
-  cg_s *local_28;
-  centity_s *local_24;
-  int local_20;
-  float local_1c;
+  int team;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  int playerTeam;
+  float posDelta;
   float local_18;
-  uint local_14;
-  int local_10;
-  CompassActor *local_c;
-  int local_8;
+  int index;
+  int clientIndex;
+  CompassActor *actor;
+  int num;
   
-  local_28 = CG_GetLocalClientGlobals(param_1);
-  if ((local_28->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x52d,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (local_28->nextSnap->ps).clientNum) &&
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x52f,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1890,9 +1986,9 @@ void __cdecl CG_CompassUpdateActors(int param_1)
     (*pcVar1)();
     return;
   }
-  pcVar2 = local_28;
-  iVar4 = (uint)(local_28->nextSnap->ps).clientNum * 0x5c8;
-  if ((0x1f < (local_28->nextSnap->ps).clientNum) &&
+  pcVar2 = cgameGlob;
+  iVar4 = (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8;
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x532,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1901,9 +1997,9 @@ void __cdecl CG_CompassUpdateActors(int param_1)
     (*pcVar1)();
     return;
   }
-  if (*(int *)((int)(local_28->bgs).clientinfo + (uint)(local_28->nextSnap->ps).clientNum * 0x5c8)
+  if (*(int *)((int)(cgameGlob->bgs).clientinfo + (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8)
       != 0) {
-    if ((0x1f < (local_28->nextSnap->ps).clientNum) &&
+    if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x535,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1912,21 +2008,21 @@ void __cdecl CG_CompassUpdateActors(int param_1)
       (*pcVar1)();
       return;
     }
-    local_2c = *(int *)((int)(local_28->bgs).clientinfo +
-                       (uint)(local_28->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-    if (local_2c != 3) {
-      local_10 = param_1;
-      for (local_8 = 0; local_8 < local_28->nextSnap->numEntities; local_8 = local_8 + 1) {
-        local_14 = local_28->nextSnap->entities[local_8].number;
-        if (((int)local_14 < 0) &&
+    team = *(int *)((int)(cgameGlob->bgs).clientinfo +
+                   (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+    if (team != 3) {
+      clientIndex = localClientNum;
+      for (num = 0; num < cgameGlob->nextSnap->numEntities; num = num + 1) {
+        index = cgameGlob->nextSnap->entities[num].number;
+        if ((index < 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                      ,0x542,0,"%s\n\t(index) = %i"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if ((int)local_14 < (com_maxclients->current).integer) {
-          if ((0x1f < local_14) &&
+        if (index < (com_maxclients->current).integer) {
+          if ((0x1f < (uint)index) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                        ,0x547,0,
                                        "index doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
@@ -1935,8 +2031,8 @@ void __cdecl CG_CompassUpdateActors(int param_1)
             (*pcVar1)();
             return;
           }
-          if (*(int *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8) != 0) {
-            if ((0x1f < local_14) &&
+          if (*(int *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8) != 0) {
+            if ((0x1f < (uint)index) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                          ,0x54b,0,
                                          "index doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
@@ -1945,8 +2041,8 @@ void __cdecl CG_CompassUpdateActors(int param_1)
               (*pcVar1)();
               return;
             }
-            local_20 = *(int *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x2c);
-            if ((local_10 != 0) &&
+            playerTeam = *(int *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x2c);
+            if ((clientIndex != 0) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                          ,0x54e,0,
                                          "clientIndex doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -1955,7 +2051,7 @@ void __cdecl CG_CompassUpdateActors(int param_1)
               (*pcVar1)();
               return;
             }
-            if ((0x1f < local_14) &&
+            if ((0x1f < (uint)index) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                          ,0x54f,0,
                                          "index doesn\'t index MAX_COMPASS_ACTORS\n\t%i not in [0, %i)"
@@ -1964,59 +2060,56 @@ void __cdecl CG_CompassUpdateActors(int param_1)
               (*pcVar1)();
               return;
             }
-            local_c = s_compassActors[local_10] + local_14;
+            actor = s_compassActors[clientIndex] + index;
             if ((*(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c) == 0) ||
-               (local_20 != *(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c))) {
+               (playerTeam != *(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c))) {
               local_54 = true;
             }
             else {
               local_54 = false;
             }
-            local_c->enemy = local_54;
-            local_c->perks[0] = *(uint *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x44)
-            ;
-            local_c->perks[1] = *(uint *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x48)
-            ;
-            local_c->needsRevive =
-                 *(int *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x40);
-            local_24 = CG_GetEntity(param_1,local_14);
-            if (((local_24->nextState).eType == 1) &&
-               (((local_24->nextState).lerp.eFlags & 0x40000U) == 0)) {
-              if (((local_24->nextState).clientNum != local_14) &&
+            actor->enemy = local_54;
+            actor->perks[0] = *(uint *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x44);
+            actor->perks[1] = *(uint *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x48);
+            actor->needsRevive = *(int *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x40);
+            cent = CG_GetEntity(localClientNum,index);
+            if (((cent->nextState).eType == 1) && (((cent->nextState).lerp.eFlags & 0x40000U) == 0))
+            {
+              if (((uint)(cent->nextState).clientNum != index) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                            ,0x55b,0,"%s"), !bVar3)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              local_c = s_compassActors[local_10] + local_14;
-              ActorUpdatePos(param_1,local_c,(local_24->pose).origin,local_14);
-              local_c->lastUpdate = local_28->time;
-              local_c->lastYaw = (local_24->pose).angles[1];
-              if ((((local_24->nextState).lerp.eFlags & 0x4000U) == 0) ||
-                 (((local_24->nextState).lerp.eFlags2 & 0x10000000U) != 0)) {
+              actor = s_compassActors[clientIndex] + index;
+              ActorUpdatePos(localClientNum,actor,(cent->pose).origin,index);
+              actor->lastUpdate = cgameGlob->time;
+              actor->lastYaw = (cent->pose).angles[1];
+              if ((((cent->nextState).lerp.eFlags & 0x4000U) == 0) ||
+                 (((cent->nextState).lerp.eFlags2 & 0x10000000U) != 0)) {
                 local_58 = false;
               }
               else {
                 local_58 = true;
               }
-              local_c->inVehicle = local_58;
-              bVar3 = CL_IsPlayerTalking(param_1,local_14);
+              actor->inVehicle = local_58;
+              bVar3 = CL_IsPlayerTalking(localClientNum,index);
               if (bVar3) {
-                local_c->beginVoiceFadeTime = local_28->time + 0x32;
+                actor->beginVoiceFadeTime = cgameGlob->time + 0x32;
               }
-              if ((((local_24->nextState).lerp.eFlags & 0x400000U) != 0) &&
-                 (local_c->pingTime <= local_28->time)) {
-                local_c->pingTime = local_28->time + 3000;
+              if ((((cent->nextState).lerp.eFlags & 0x400000U) != 0) &&
+                 (actor->pingTime <= cgameGlob->time)) {
+                actor->pingTime = cgameGlob->time + 3000;
               }
             }
           }
         }
       }
-      if ((local_28->nextSnap->ps).iCompassPlayerInfo != 0) {
-        local_14 = (local_28->nextSnap->ps).iCompassPlayerInfo & 0x3f;
-        local_c = s_compassActors[local_10] + local_14;
-        if ((0x1f < local_14) &&
+      if ((cgameGlob->nextSnap->ps).iCompassPlayerInfo != 0) {
+        index = (cgameGlob->nextSnap->ps).iCompassPlayerInfo & 0x3f;
+        actor = s_compassActors[clientIndex] + index;
+        if ((0x1f < (uint)index) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                      ,0x57c,0,
                                      "index doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
@@ -2025,34 +2118,34 @@ void __cdecl CG_CompassUpdateActors(int param_1)
           (*pcVar1)();
           return;
         }
-        local_20 = *(int *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x2c);
-        local_c = s_compassActors[local_10] + local_14;
+        playerTeam = *(int *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x2c);
+        actor = s_compassActors[clientIndex] + index;
         if ((*(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c) == 0) ||
-           (local_20 != *(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c))) {
+           (playerTeam != *(int *)((int)(pcVar2->bgs).clientinfo + iVar4 + 0x2c))) {
           local_5c = true;
         }
         else {
           local_5c = false;
         }
-        local_c->enemy = local_5c;
-        local_c->perks[0] = *(uint *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x44);
-        local_c->perks[1] = *(uint *)((int)(local_28->bgs).clientinfo + local_14 * 0x5c8 + 0x48);
-        local_1c = (float)(((int)((local_28->nextSnap->ps).iCompassPlayerInfo & 0x7fc0U) >> 6) * 4 +
-                          -0x3fc);
-        local_18 = (float)(((int)((local_28->nextSnap->ps).iCompassPlayerInfo & 0xff8000U) >> 0xf) *
-                           4 + -0x3fc);
-        local_38 = (local_28->refdef).vieworg[0];
-        local_34 = (local_28->refdef).vieworg[1];
-        local_30 = (local_28->refdef).vieworg[2];
-        local_40 = local_1c + local_38;
+        actor->enemy = local_5c;
+        actor->perks[0] = *(uint *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x44);
+        actor->perks[1] = *(uint *)((int)(cgameGlob->bgs).clientinfo + index * 0x5c8 + 0x48);
+        posDelta = (float)(((int)((cgameGlob->nextSnap->ps).iCompassPlayerInfo & 0x7fc0U) >> 6) * 4
+                          + -0x3fc);
+        local_18 = (float)(((int)((cgameGlob->nextSnap->ps).iCompassPlayerInfo & 0xff8000U) >> 0xf)
+                           * 4 + -0x3fc);
+        clientPos = (cgameGlob->refdef).vieworg[0];
+        local_34 = (cgameGlob->refdef).vieworg[1];
+        local_30 = (cgameGlob->refdef).vieworg[2];
+        newPos = posDelta + clientPos;
         local_3c = local_18 + local_34;
-        ActorUpdatePos(param_1,local_c,&local_40,local_14);
-        local_c->lastYaw = (float)((local_28->nextSnap->ps).iCompassPlayerInfo >> 0x18) * 1.40625;
-        local_c->lastUpdate = local_28->time;
-        local_c->inVehicle = false;
-        if ((((local_28->nextSnap->ps).eFlags & 0x800000U) != 0) &&
-           (local_c->pingTime <= local_28->time)) {
-          local_c->pingTime = local_28->time + 3000;
+        ActorUpdatePos(localClientNum,actor,&newPos,index);
+        actor->lastYaw = (float)((cgameGlob->nextSnap->ps).iCompassPlayerInfo >> 0x18) * 1.40625;
+        actor->lastUpdate = cgameGlob->time;
+        actor->inVehicle = false;
+        if ((((cgameGlob->nextSnap->ps).eFlags & 0x800000U) != 0) &&
+           (actor->pingTime <= cgameGlob->time)) {
+          actor->pingTime = cgameGlob->time + 3000;
         }
       }
     }
@@ -2070,7 +2163,8 @@ void __cdecl CG_CompassUpdateActors(int param_1)
 
 void __cdecl
 CG_CompassDrawFriendlies
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   code *pcVar1;
@@ -2079,51 +2173,51 @@ CG_CompassDrawFriendlies
   float local_c8;
   float local_c4;
   float local_c0;
-  uint local_a8;
-  float local_a4 [2];
-  undefined1 local_99;
-  int local_98;
-  float local_94;
+  int icon;
+  float yawVector [2];
+  bool clipped;
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_90;
-  float local_8c;
+  float baseColorModdedByComapassFadeOut;
   float local_88;
   float local_84;
   float local_80;
-  int local_7c;
-  int local_78;
-  ScreenPlacement *local_74;
-  cg_s *local_70;
-  float local_6c;
-  float local_68;
-  float local_64;
-  float local_60;
+  int team;
+  int timeDiff;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float dist;
+  float compassFadeOutAlpha;
+  float yawTo;
+  float posDelta;
   float local_5c;
-  Material *local_58;
-  float local_54;
-  Material *local_50;
-  float local_4c;
-  int local_48;
-  CompassActor *local_44;
-  uint local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  Material *firingMaterial;
+  float voiceFade;
+  Material *voiceMaterial;
+  float centerY;
+  int clientIndex;
+  CompassActor *actor;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float firingFade;
+  float w;
   
-  local_70 = CG_GetLocalClientGlobals(param_1);
-  if ((local_70->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x5b5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (local_70->nextSnap->ps).clientNum) &&
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x5b7,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -2132,13 +2226,15 @@ CG_CompassDrawFriendlies
     (*pcVar1)();
     return;
   }
-  local_98 = (int)(local_70->bgs).clientinfo + (uint)(local_70->nextSnap->ps).clientNum * 0x5c8;
-  CG_CompassUpYawVector(local_70,local_a4);
-  local_68 = CG_FadeCompass(param_1,local_70->compassFadeTime,param_2);
-  fVar3 = CG_FadeCompassIcons(param_1,false);
-  local_68 = fVar3 * local_68;
-  if (local_68 != 0.0) {
-    if ((0x1f < (local_70->nextSnap->ps).clientNum) &&
+  localClientInfo =
+       (clientInfo_t *)
+       ((int)(cgameGlob->bgs).clientinfo + (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8);
+  CG_CompassUpYawVector(cgameGlob,yawVector);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar3 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar3 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
+    if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x5c1,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -2147,9 +2243,9 @@ CG_CompassDrawFriendlies
       (*pcVar1)();
       return;
     }
-    if (*(int *)((int)(local_70->bgs).clientinfo + (uint)(local_70->nextSnap->ps).clientNum * 0x5c8)
-        != 0) {
-      if ((0x1f < (local_70->nextSnap->ps).clientNum) &&
+    if (*(int *)((int)(cgameGlob->bgs).clientinfo +
+                (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8) != 0) {
+      if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                    ,0x5c4,0,
                                    "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -2158,41 +2254,41 @@ CG_CompassDrawFriendlies
         (*pcVar1)();
         return;
       }
-      local_7c = *(int *)((int)(local_70->bgs).clientinfo +
-                         (uint)(local_70->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-      if ((local_7c != 3) && (local_7c != 0)) {
+      team = *(int *)((int)(cgameGlob->bgs).clientinfo +
+                     (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+      if ((team != 3) && (team != 0)) {
         CG_CompassCalcDimensions
-                  (param_2,local_70,param_3,param_4,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h)
-        ;
-        local_24 = local_3c.w * 0.5 + local_3c.x;
-        local_4c = local_3c.h * 0.5 + local_3c.y;
-        local_1c = *param_5;
-        local_18 = param_5[1];
-        local_14 = param_5[2];
-        local_10 = param_5[3];
-        local_74 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-        local_48 = param_1;
-        if (local_68 < param_5[3]) {
-          param_5[3] = local_68;
+                  (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                   &scaledRect.h);
+        centerX = scaledRect.w * 0.5 + scaledRect.x;
+        centerY = scaledRect.h * 0.5 + scaledRect.y;
+        fadedColor = *color;
+        local_18 = color[1];
+        local_14 = color[2];
+        local_10 = color[3];
+        scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+        clientIndex = localClientNum;
+        if (compassFadeOutAlpha < color[3]) {
+          color[3] = compassFadeOutAlpha;
         }
-        if (local_68 < local_10) {
-          local_10 = local_68;
+        if (compassFadeOutAlpha < local_10) {
+          local_10 = compassFadeOutAlpha;
         }
-        local_44 = s_compassActors[param_1];
-        for (local_40 = 0; (int)local_40 < 0x20; local_40 = local_40 + 1) {
-          if (local_70->time < local_44->lastUpdate) {
-            local_44->lastUpdate = 0;
+        actor = s_compassActors[localClientNum];
+        for (num = 0; num < 0x20; num = num + 1) {
+          if (cgameGlob->time < actor->lastUpdate) {
+            actor->lastUpdate = 0;
           }
-          if ((((local_70->time + -0x5dc <= local_44->lastUpdate) && (local_44->enemy == false)) &&
-              ((local_70->nextSnap->ps).clientNum != local_40)) && (local_44->inVehicle == false)) {
-            if ((1.0 < ABS(local_44->lastPos[0])) || (1.0 < ABS(local_44->lastPos[1]))) {
-              local_60 = local_44->lastPos[0] - (local_70->refdef).vieworg[0];
-              local_5c = local_44->lastPos[1] - (local_70->refdef).vieworg[1];
-              local_6c = Vec2Length(&local_60);
-              if (local_6c < (compassObjectiveMaxRange->current).value ||
-                  local_6c == (compassObjectiveMaxRange->current).value) {
-                local_10 = local_6c;
-                if (local_6c < (compassMaxRange->current).value) {
+          if ((((cgameGlob->time + -0x5dc <= actor->lastUpdate) && (actor->enemy == false)) &&
+              ((uint)(cgameGlob->nextSnap->ps).clientNum != num)) && (actor->inVehicle == false)) {
+            if ((1.0 < ABS(actor->lastPos[0])) || (1.0 < ABS(actor->lastPos[1]))) {
+              posDelta = actor->lastPos[0] - (cgameGlob->refdef).vieworg[0];
+              local_5c = actor->lastPos[1] - (cgameGlob->refdef).vieworg[1];
+              dist = Vec2Length(&posDelta);
+              if (dist < (compassObjectiveMaxRange->current).value ||
+                  dist == (compassObjectiveMaxRange->current).value) {
+                local_10 = dist;
+                if (dist < (compassMaxRange->current).value) {
                   local_10 = (compassMaxRange->current).value;
                 }
               }
@@ -2208,110 +2304,110 @@ CG_CompassDrawFriendlies
               local_10 = (1.0 - (compassObjectiveMinAlpha->current).value) * 0.5 +
                          (compassObjectiveMinAlpha->current).value;
             }
-            local_99 = CG_WorldPosToCompass
-                                 (param_2,local_70,&local_3c,local_a4,(local_70->refdef).vieworg,
-                                  local_44->lastPos,(float *)0x0,&local_94);
-            if ((!(bool)local_99) || ((compassClampIcons->current).enabled != false)) {
-              CalcCompassFriendlySize(param_2,&local_8,&local_20);
-              local_94 = (local_24 - local_8 * 0.5) + local_94;
-              local_90 = (local_4c - local_20 * 0.5) + local_90;
-              if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)
-                 ) {
-                local_64 = AngleNormalize360(local_70->refdefViewAngles[1] - local_44->lastYaw);
+            clipped = CG_WorldPosToCompass
+                                (compassType,cgameGlob,&scaledRect,yawVector,
+                                 (cgameGlob->refdef).vieworg,actor->lastPos,(float *)0x0,&xy);
+            if ((!clipped) || ((compassClampIcons->current).enabled != false)) {
+              CalcCompassFriendlySize(compassType,&w,&h);
+              xy = (centerX - w * 0.5) + xy;
+              local_90 = (centerY - h * 0.5) + local_90;
+              if ((compassType == COMPASS_TYPE_PARTIAL) &&
+                 ((compassRotation->current).enabled != false)) {
+                yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - actor->lastYaw);
               }
               else {
-                local_64 = AngleNormalize360(local_70->compassNorthYaw - local_44->lastYaw);
+                yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - actor->lastYaw);
               }
-              local_a8 = 0;
-              if (local_70->time < local_44->pingTime) {
-                local_78 = (local_44->pingTime - local_70->time) % 500;
-                local_a8 = (uint)(0xf9 < local_78);
+              icon = 0;
+              if (cgameGlob->time < actor->pingTime) {
+                timeDiff = (actor->pingTime - cgameGlob->time) % 500;
+                icon = (int)(0xf9 < timeDiff);
               }
-              local_58 = (Material *)0x0;
-              local_c = 0.0;
-              if ((local_44->beginFadeTime != 0) &&
-                 ((float)local_70->time <=
-                  (float)local_44->beginFadeTime +
-                  (compassSoundPingFadeTime->current).value * 1000.0)) {
-                if (local_44->beginFadeTime < local_70->time) {
-                  local_c = 1.0 - (float)(local_70->time - local_44->beginFadeTime) /
-                                  ((compassSoundPingFadeTime->current).value * 1000.0);
+              firingMaterial = (Material *)0x0;
+              firingFade = 0.0;
+              if ((actor->beginFadeTime != 0) &&
+                 ((float)cgameGlob->time <=
+                  (float)actor->beginFadeTime + (compassSoundPingFadeTime->current).value * 1000.0))
+              {
+                if (actor->beginFadeTime < cgameGlob->time) {
+                  firingFade = 1.0 - (float)(cgameGlob->time - actor->beginFadeTime) /
+                                     ((compassSoundPingFadeTime->current).value * 1000.0);
                 }
                 else {
-                  local_c = 1.0;
+                  firingFade = 1.0;
                 }
-                local_58 = cgMedia.compassping_friendlyfiring;
+                firingMaterial = cgMedia.compassping_friendlyfiring;
               }
-              local_50 = (Material *)0x0;
-              local_54 = 0.0;
-              if ((local_44->beginVoiceFadeTime != 0) &&
-                 ((float)local_70->time <=
-                  (float)local_44->beginVoiceFadeTime +
+              voiceMaterial = (Material *)0x0;
+              voiceFade = 0.0;
+              if ((actor->beginVoiceFadeTime != 0) &&
+                 ((float)cgameGlob->time <=
+                  (float)actor->beginVoiceFadeTime +
                   (compassSoundPingFadeTime->current).value * 1000.0)) {
-                if (local_44->beginVoiceFadeTime < local_70->time) {
-                  local_54 = 1.0 - (float)(local_70->time - local_44->beginVoiceFadeTime) /
-                                   ((compassSoundPingFadeTime->current).value * 1000.0);
+                if (actor->beginVoiceFadeTime < cgameGlob->time) {
+                  voiceFade = 1.0 - (float)(cgameGlob->time - actor->beginVoiceFadeTime) /
+                                    ((compassSoundPingFadeTime->current).value * 1000.0);
                 }
                 else {
-                  local_54 = 1.0;
+                  voiceFade = 1.0;
                 }
-                local_50 = cgMedia.compassping_friendlyyelling;
+                voiceMaterial = cgMedia.compassping_friendlyyelling;
               }
-              local_8c = *param_5;
-              local_88 = param_5[1];
-              local_84 = param_5[2];
-              local_c0 = param_5[3];
-              if (local_68 - local_c0 < 0.0) {
-                local_c0 = local_68;
+              baseColorModdedByComapassFadeOut = *color;
+              local_88 = color[1];
+              local_84 = color[2];
+              local_c0 = color[3];
+              if (compassFadeOutAlpha - local_c0 < 0.0) {
+                local_c0 = compassFadeOutAlpha;
               }
               local_80 = local_c0;
-              if (local_68 - local_c < 0.0) {
-                local_c4 = local_68;
+              if (compassFadeOutAlpha - firingFade < 0.0) {
+                local_c4 = compassFadeOutAlpha;
               }
               else {
-                local_c4 = local_c;
+                local_c4 = firingFade;
               }
-              local_c = local_c4;
-              if (local_68 - local_54 < 0.0) {
-                local_c8 = local_68;
+              firingFade = local_c4;
+              if (compassFadeOutAlpha - voiceFade < 0.0) {
+                local_c8 = compassFadeOutAlpha;
               }
               else {
-                local_c8 = local_54;
+                local_c8 = voiceFade;
               }
-              local_54 = local_c8;
-              if (local_44->needsRevive != 0) {
-                local_a8 = 2;
+              voiceFade = local_c8;
+              if (actor->needsRevive != 0) {
+                icon = 2;
               }
-              if (local_a8 == 1) {
-                UI_DrawHandlePic(local_74,local_94,local_90,local_8,local_20,param_4->horzAlign,
-                                 param_4->vertAlign,&local_1c,cgMedia.friendMaterials[1]);
+              if (icon == 1) {
+                UI_DrawHandlePic(scrPlace,xy,local_90,w,h,rect->horzAlign,rect->vertAlign,
+                                 &fadedColor,cgMedia.friendMaterials[1]);
               }
-              else if (local_a8 == 2) {
-                CG_DrawRotatedPic(local_74,local_94,local_90,local_8,local_20,param_4->horzAlign,
-                                  param_4->vertAlign,local_70->compassNorthYaw,&local_8c,
+              else if (icon == 2) {
+                CG_DrawRotatedPic(scrPlace,xy,local_90,w,h,rect->horzAlign,rect->vertAlign,
+                                  cgameGlob->compassNorthYaw,&baseColorModdedByComapassFadeOut,
                                   cgMedia.friendMaterials[2]);
               }
               else {
-                if (((local_58 == (Material *)0x0) || (local_c4 != 1.0)) &&
-                   ((local_50 == (Material *)0x0 || (local_c8 != 1.0)))) {
-                  CG_DrawRotatedPic(local_74,local_94,local_90,local_8,local_20,param_4->horzAlign,
-                                    param_4->vertAlign,local_64,&local_8c,
-                                    cgMedia.friendMaterials[local_a8]);
+                if (((firingMaterial == (Material *)0x0) || (local_c4 != 1.0)) &&
+                   ((voiceMaterial == (Material *)0x0 || (local_c8 != 1.0)))) {
+                  CG_DrawRotatedPic(scrPlace,xy,local_90,w,h,rect->horzAlign,rect->vertAlign,yawTo,
+                                    &baseColorModdedByComapassFadeOut,cgMedia.friendMaterials[icon])
+                  ;
                 }
-                if (local_50 != (Material *)0x0) {
-                  local_10 = local_54;
-                  CG_DrawRotatedPic(local_74,local_94,local_90,local_8,local_20,param_4->horzAlign,
-                                    param_4->vertAlign,local_64,&local_1c,local_50);
+                if (voiceMaterial != (Material *)0x0) {
+                  local_10 = voiceFade;
+                  CG_DrawRotatedPic(scrPlace,xy,local_90,w,h,rect->horzAlign,rect->vertAlign,yawTo,
+                                    &fadedColor,voiceMaterial);
                 }
-                if (local_58 != (Material *)0x0) {
-                  local_10 = local_c;
-                  CG_DrawRotatedPic(local_74,local_94,local_90,local_8,local_20,param_4->horzAlign,
-                                    param_4->vertAlign,local_64,&local_1c,local_58);
+                if (firingMaterial != (Material *)0x0) {
+                  local_10 = firingFade;
+                  CG_DrawRotatedPic(scrPlace,xy,local_90,w,h,rect->horzAlign,rect->vertAlign,yawTo,
+                                    &fadedColor,firingMaterial);
                 }
               }
             }
           }
-          local_44 = local_44 + 1;
+          actor = actor + 1;
         }
       }
     }
@@ -2329,36 +2425,36 @@ CG_CompassDrawFriendlies
 
 void __cdecl
 CG_CompassDrawIconAtLocation
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5,
-          float *param_6,Material *param_7)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color,float *vPos,Material *material)
 
 {
-  float local_44 [2];
-  float local_3c;
+  float yawVector [2];
+  float xy;
   float local_38;
-  ScreenPlacement *local_34;
-  cg_s *local_30;
-  float local_2c;
-  rectDef_s local_28;
-  float local_10;
-  float local_c;
-  float local_8;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float centerY;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float w;
   
-  local_30 = CG_GetLocalClientGlobals(param_1);
-  CG_CompassUpYawVector(local_30,local_44);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  CG_CompassUpYawVector(cgameGlob,yawVector);
   CG_CompassCalcDimensions
-            (param_2,local_30,param_3,param_4,&local_28.x,&local_28.y,&local_28.w,&local_28.h);
-  local_10 = local_28.w * 0.5 + local_28.x;
-  local_2c = local_28.h * 0.5 + local_28.y;
-  local_34 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
+            (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+             &scaledRect.h);
+  centerX = scaledRect.w * 0.5 + scaledRect.x;
+  centerY = scaledRect.h * 0.5 + scaledRect.y;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
   CG_WorldPosToCompass
-            (param_2,local_30,&local_28,local_44,(local_30->refdef).vieworg,param_6,(float *)0x0,
-             &local_3c);
-  CalcCompassFriendlySize(param_2,&local_8,&local_c);
-  local_3c = (local_10 - local_8 * 0.5) + local_3c;
-  local_38 = (local_2c - local_c * 0.5) + local_38;
-  CG_DrawRotatedPic(local_34,local_3c,local_38,local_8,local_c,param_4->horzAlign,param_4->vertAlign
-                    ,0.0,param_5,param_7);
+            (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,vPos,
+             (float *)0x0,&xy);
+  CalcCompassFriendlySize(compassType,&w,&h);
+  xy = (centerX - w * 0.5) + xy;
+  local_38 = (centerY - h * 0.5) + local_38;
+  CG_DrawRotatedPic(scrPlace,xy,local_38,w,h,rect->horzAlign,rect->vertAlign,0.0,color,material);
   return;
 }
 
@@ -2371,21 +2467,24 @@ CG_CompassDrawIconAtLocation
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-GetPositionFromPackedBits(int param_1,int param_2,int param_3,int param_4,float *param_5)
+GetPositionFromPackedBits(int localClientNum,int bitsPerAxis,int bitMask,int bits,float *vPos)
 
 {
   cg_s *pcVar1;
   float fVar2;
   float fVar3;
+  float xpos;
+  float ypos;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = ((float)(param_4 & param_3) / (float)param_3) * pcVar1->compassMapWorldSize[0];
-  fVar3 = ((float)(param_4 >> ((byte)param_2 & 0x1f) & param_3) / (float)param_3) *
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  fVar2 = ((float)(bits & bitMask) / (float)bitMask) * pcVar1->compassMapWorldSize[0];
+  fVar3 = ((float)(bits >> ((byte)bitsPerAxis & 0x1f) & bitMask) / (float)bitMask) *
           pcVar1->compassMapWorldSize[1];
-  *param_5 = (fVar2 * pcVar1->compassNorth[1] + pcVar1->compassMapUpperLeft[0]) -
-             fVar3 * pcVar1->compassNorth[0];
-  param_5[1] = (pcVar1->compassMapUpperLeft[1] - fVar2 * pcVar1->compassNorth[0]) -
-               fVar3 * pcVar1->compassNorth[1];
+  *vPos = (fVar2 * pcVar1->compassNorth[1] + pcVar1->compassMapUpperLeft[0]) -
+          fVar3 * pcVar1->compassNorth[0];
+  vPos[1] = (pcVar1->compassMapUpperLeft[1] - fVar2 * pcVar1->compassNorth[0]) -
+            fVar3 * pcVar1->compassNorth[1];
   return;
 }
 
@@ -2397,7 +2496,7 @@ GetPositionFromPackedBits(int param_1,int param_2,int param_3,int param_4,float 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddArtilleryPing(int param_1,float *param_2)
+void __cdecl CG_AddArtilleryPing(int localClientNum,float *position)
 
 {
   float *pfVar1;
@@ -2405,13 +2504,14 @@ void __cdecl CG_AddArtilleryPing(int param_1,float *param_2)
   bool bVar3;
   cg_s *pcVar4;
   int iVar5;
-  int local_10;
-  int local_c;
-  int local_8;
+  cg_s *cgameGlob;
+  int oldest_shell_time;
+  int oldest_shell;
+  int i;
   
-  local_c = 0;
-  local_10 = 0x7fffffff;
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  oldest_shell = 0;
+  oldest_shell_time = 0x7fffffff;
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar4->nextSnap == (snapshot_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                              ,0x698,0,"%s");
@@ -2421,33 +2521,33 @@ void __cdecl CG_AddArtilleryPing(int param_1,float *param_2)
       return;
     }
   }
-  local_8 = 0;
+  i = 0;
   do {
-    if (5 < local_8) {
+    if (5 < i) {
 LAB_0048e735:
-      *(int *)(param_1 * 0x78 + 0xe96588 + local_c * 0x14) = pcVar4->time;
-      s_compassArtillery[param_1][local_c].pos[0] = *param_2;
-      s_compassArtillery[param_1][local_c].pos[1] = param_2[1];
-      pfVar1 = (float *)(param_1 * 0x78 + 0xe96580 + local_c * 0x14);
-      *pfVar1 = *param_2;
-      pfVar1[1] = param_2[1];
+      *(int *)(localClientNum * 0x78 + 0xe96588 + oldest_shell * 0x14) = pcVar4->time;
+      s_compassArtillery[localClientNum][oldest_shell].pos[0] = *position;
+      s_compassArtillery[localClientNum][oldest_shell].pos[1] = position[1];
+      pfVar1 = (float *)(localClientNum * 0x78 + 0xe96580 + oldest_shell * 0x14);
+      *pfVar1 = *position;
+      pfVar1[1] = position[1];
       iVar5 = irand(-compass_jitter,compass_jitter);
-      s_compassArtillery[param_1][local_c].pos[0] =
-           (float)iVar5 + s_compassArtillery[param_1][local_c].pos[0];
+      s_compassArtillery[localClientNum][oldest_shell].pos[0] =
+           (float)iVar5 + s_compassArtillery[localClientNum][oldest_shell].pos[0];
       iVar5 = irand(-compass_jitter,compass_jitter);
-      *(float *)(param_1 * 0x78 + 0xe9657c + local_c * 0x14) =
-           (float)iVar5 + *(float *)(param_1 * 0x78 + 0xe9657c + local_c * 0x14);
+      *(float *)(localClientNum * 0x78 + 0xe9657c + oldest_shell * 0x14) =
+           (float)iVar5 + *(float *)(localClientNum * 0x78 + 0xe9657c + oldest_shell * 0x14);
       return;
     }
-    if (5000 < pcVar4->time - *(int *)(param_1 * 0x78 + 0xe96588 + local_8 * 0x14)) {
-      local_c = local_8;
+    if (5000 < pcVar4->time - *(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14)) {
+      oldest_shell = i;
       goto LAB_0048e735;
     }
-    if (*(int *)(param_1 * 0x78 + 0xe96588 + local_8 * 0x14) < local_10) {
-      local_10 = *(int *)(param_1 * 0x78 + 0xe96588 + local_8 * 0x14);
-      local_c = local_8;
+    if (*(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14) < oldest_shell_time) {
+      oldest_shell_time = *(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14);
+      oldest_shell = i;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2461,39 +2561,40 @@ LAB_0048e735:
 
 void __cdecl
 CG_CompassDrawArtilleryIcon
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
   float fVar4;
-  Material *local_40;
-  float local_3c;
+  Material *icon;
+  float icon_color;
   float local_38;
   float local_34;
   float local_30;
-  uint local_2c;
-  cg_s *local_28;
-  float local_24;
-  int local_20;
-  float local_1c;
+  int isMortar;
+  cg_s *cgameGlob;
+  float max_alpha;
+  int i;
+  float position;
   float local_18;
-  playerState_s *local_10;
-  float local_c;
-  int local_8;
+  playerState_s *ps;
+  float alpha;
+  int pingTime;
   
-  local_28 = CG_GetLocalClientGlobals(param_1);
-  if ((local_28->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x6bb,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_20 = 0;
-  local_10 = &local_28->predictedPlayerState;
-  if ((0x1f < (local_28->nextSnap->ps).clientNum) &&
+  i = 0;
+  ps = &cgameGlob->predictedPlayerState;
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x6c0,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -2502,51 +2603,52 @@ CG_CompassDrawArtilleryIcon
     (*pcVar2)();
     return;
   }
-  if ((local_10->artilleryInboundIconLocation & 0x30000U) != 0) {
-    local_2c = local_10->artilleryInboundIconLocation & 0x40000;
-    if (local_2c == 0) {
-      local_40 = cgMedia.compass_artillery_enemy;
-      local_8 = 5000;
+  if ((ps->artilleryInboundIconLocation & 0x30000U) != 0) {
+    isMortar = ps->artilleryInboundIconLocation & 0x40000;
+    if (isMortar == 0) {
+      icon = cgMedia.compass_artillery_enemy;
+      pingTime = 5000;
     }
     else {
-      local_40 = cgMedia.compass_mortar_enemy;
-      local_8 = 0xdac;
+      icon = cgMedia.compass_mortar_enemy;
+      pingTime = 0xdac;
     }
-    if ((local_10->artilleryInboundIconLocation & 0x10000U) != 0) {
-      if (local_2c == 0) {
-        local_40 = cgMedia.compass_artillery_friendly;
+    if ((ps->artilleryInboundIconLocation & 0x10000U) != 0) {
+      if (isMortar == 0) {
+        icon = cgMedia.compass_artillery_friendly;
       }
       else {
-        local_40 = cgMedia.compass_mortar_friendly;
+        icon = cgMedia.compass_mortar_friendly;
       }
     }
-    local_3c = *param_5;
-    local_38 = param_5[1];
-    local_34 = param_5[2];
-    local_30 = param_5[3];
-    local_24 = param_5[3];
-    for (local_20 = 0; local_20 < 6; local_20 = local_20 + 1) {
-      if ((*(int *)(param_1 * 0x78 + 0xe96588 + local_20 * 0x14) != 0) &&
-         (local_28->time - *(int *)(param_1 * 0x78 + 0xe96588 + local_20 * 0x14) <= local_8)) {
-        local_c = (1.0 - (float)(local_28->time -
-                                *(int *)(param_1 * 0x78 + 0xe96588 + local_20 * 0x14)) /
-                         (float)local_8) * local_24;
-        fVar4 = CG_GetScramblerEnemyAlpha(param_1);
-        local_c = (1.0 - fVar4) * local_c;
-        if (local_28->compassScrambler[0xe].startTime != 0) {
-          local_c = 0.0;
+    icon_color = *color;
+    local_38 = color[1];
+    local_34 = color[2];
+    local_30 = color[3];
+    max_alpha = color[3];
+    for (i = 0; i < 6; i = i + 1) {
+      if ((*(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14) != 0) &&
+         (cgameGlob->time - *(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14) <= pingTime)) {
+        alpha = (1.0 - (float)(cgameGlob->time -
+                              *(int *)(localClientNum * 0x78 + 0xe96588 + i * 0x14)) /
+                       (float)pingTime) * max_alpha;
+        fVar4 = CG_GetScramblerEnemyAlpha(localClientNum);
+        alpha = (1.0 - fVar4) * alpha;
+        if (cgameGlob->compassScrambler[0xe].startTime != 0) {
+          alpha = 0.0;
         }
-        local_30 = local_c;
-        if (local_2c == 0) {
-          local_1c = s_compassArtillery[param_1][local_20].pos[0];
-          local_18 = s_compassArtillery[param_1][local_20].pos[1];
+        local_30 = alpha;
+        if (isMortar == 0) {
+          position = s_compassArtillery[localClientNum][i].pos[0];
+          local_18 = s_compassArtillery[localClientNum][i].pos[1];
         }
         else {
-          pfVar1 = (float *)(param_1 * 0x78 + 0xe96580 + local_20 * 0x14);
-          local_1c = *pfVar1;
+          pfVar1 = (float *)(localClientNum * 0x78 + 0xe96580 + i * 0x14);
+          position = *pfVar1;
           local_18 = pfVar1[1];
         }
-        CG_CompassDrawIconAtLocation(param_1,param_2,param_3,param_4,&local_3c,&local_1c,local_40);
+        CG_CompassDrawIconAtLocation
+                  (localClientNum,compassType,parentRect,rect,&icon_color,&position,icon);
       }
     }
   }
@@ -2565,68 +2667,72 @@ CG_CompassDrawArtilleryIcon
 
 void __cdecl
 CG_CompassDrawIncomingArtilleryIcon
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   code *pcVar1;
   playerState_s *ppVar2;
-  Material *pMVar3;
-  cg_s *pcVar4;
-  bool bVar5;
+  Material *material;
+  cg_s *pcVar3;
+  bool bVar4;
   uint extraout_EAX;
   uint extraout_EDX;
-  float local_44 [2];
-  Material *local_3c;
-  undefined1 local_35;
-  float local_34 [2];
-  cg_s *local_2c;
-  float local_28 [2];
-  rectDef_s local_20;
-  playerState_s *local_8;
+  float yawVector [2];
+  Material *icon;
+  bool clipped;
+  float xy [2];
+  cg_s *cgameGlob;
+  float artilleryPos [2];
+  rectDef_s scaledRect;
+  playerState_s *ps;
   
-  local_2c = CG_GetLocalClientGlobals(param_1);
-  if ((local_2c->nextSnap == (snapshot_s *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x701,0,"%s"), !bVar5)) {
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x701,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar4 = local_2c;
-  ppVar2 = &local_2c->predictedPlayerState;
+  pcVar3 = cgameGlob;
+  ppVar2 = &cgameGlob->predictedPlayerState;
   _allshl();
   if ((extraout_EAX & ppVar2->perks[0]) != 0 ||
-      (extraout_EDX & (pcVar4->predictedPlayerState).perks[1]) != 0) {
-    local_8 = &local_2c->predictedPlayerState;
-    if ((0x1f < (local_2c->nextSnap->ps).clientNum) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+      (extraout_EDX & (pcVar3->predictedPlayerState).perks[1]) != 0) {
+    ps = &cgameGlob->predictedPlayerState;
+    if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x708,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                ), !bVar5)) {
+                                ), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_8->artilleryInboundIconLocation & 0x70000U) != 0) {
-      GetPositionFromPackedBits(param_1,8,0xff,local_8->artilleryInboundIconLocation,local_28);
-      CG_CompassUpYawVector(local_2c,local_44);
+    if ((ps->artilleryInboundIconLocation & 0x70000U) != 0) {
+      GetPositionFromPackedBits(localClientNum,8,0xff,ps->artilleryInboundIconLocation,artilleryPos)
+      ;
+      CG_CompassUpYawVector(cgameGlob,yawVector);
       CG_CompassCalcDimensions
-                (param_2,local_2c,param_3,param_4,&local_20.x,&local_20.y,&local_20.w,&local_20.h);
-      local_35 = CG_WorldPosToCompass
-                           (param_2,local_2c,&local_20,local_44,(local_2c->refdef).vieworg,local_28,
-                            (float *)0x0,local_34);
-      pMVar3 = cgMedia.compass_incoming_artillery;
-      local_3c = cgMedia.compass_incoming_artillery;
-      if ((local_8->artilleryInboundIconLocation & 0x10000U) == 0) {
-        param_5[1] = 0.0;
-        param_5[2] = 0.0;
+                (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                 &scaledRect.h);
+      clipped = CG_WorldPosToCompass
+                          (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                           artilleryPos,(float *)0x0,xy);
+      material = cgMedia.compass_incoming_artillery;
+      icon = cgMedia.compass_incoming_artillery;
+      if ((ps->artilleryInboundIconLocation & 0x10000U) == 0) {
+        color[1] = 0.0;
+        color[2] = 0.0;
       }
       else {
-        *param_5 = 0.0;
-        param_5[2] = 0.0;
+        *color = 0.0;
+        color[2] = 0.0;
       }
-      if (!(bool)local_35) {
-        CG_CompassDrawIconAtLocation(param_1,param_2,param_3,param_4,param_5,local_28,pMVar3);
+      if (!clipped) {
+        CG_CompassDrawIconAtLocation
+                  (localClientNum,compassType,parentRect,rect,color,artilleryPos,material);
       }
     }
   }
@@ -2637,17 +2743,20 @@ CG_CompassDrawIncomingArtilleryIcon
 // 0048FC70  GetCompassPingMaterialForClient  (cgame_mp/cg_compassfriendlies_mp.cpp:1834)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-Material * __cdecl GetCompassPingMaterialForClient(int param_1,clientInfo_t *param_2)
+Material * __cdecl GetCompassPingMaterialForClient(int localClientNum,clientInfo_t *clientInfo)
 
 {
   int iVar1;
   Material *pMVar2;
   
   pMVar2 = cgMedia.compassping_enemy;
-  if (((((xblive_wagermatch->current).enabled != false) && (param_2 != (clientInfo_t *)0x0)) &&
-      (0 < (param_2->score).score)) &&
-     (iVar1 = CG_GetPlaceWithTiesForScore(param_1,(param_2->score).score),
+  if (((((xblive_wagermatch->current).enabled != false) && (clientInfo != (clientInfo_t *)0x0)) &&
+      (0 < (clientInfo->score).score)) &&
+     (iVar1 = CG_GetPlaceWithTiesForScore(localClientNum,(clientInfo->score).score),
      pMVar2 = cgMedia.compassping_enemy, iVar1 == 1)) {
     pMVar2 = cgMedia.compassping_firstplace;
   }
@@ -2658,17 +2767,20 @@ Material * __cdecl GetCompassPingMaterialForClient(int param_1,clientInfo_t *par
 // 0048FCC0  GetCompassFiringMaterialForClient  (cgame_mp/cg_compassfriendlies_mp.cpp:1842)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-Material * __cdecl GetCompassFiringMaterialForClient(int param_1,clientInfo_t *param_2)
+Material * __cdecl GetCompassFiringMaterialForClient(int localClientNum,clientInfo_t *clientInfo)
 
 {
   int iVar1;
   Material *pMVar2;
   
   pMVar2 = cgMedia.compassping_enemyfiring;
-  if (((((xblive_wagermatch->current).enabled != false) && (param_2 != (clientInfo_t *)0x0)) &&
-      (0 < (param_2->score).score)) &&
-     (iVar1 = CG_GetPlaceWithTiesForScore(param_1,(param_2->score).score),
+  if (((((xblive_wagermatch->current).enabled != false) && (clientInfo != (clientInfo_t *)0x0)) &&
+      (0 < (clientInfo->score).score)) &&
+     (iVar1 = CG_GetPlaceWithTiesForScore(localClientNum,(clientInfo->score).score),
      pMVar2 = cgMedia.compassping_enemyfiring, iVar1 == 1)) {
     pMVar2 = cgMedia.compassping_firstplace;
   }
@@ -2687,281 +2799,296 @@ Material * __cdecl GetCompassFiringMaterialForClient(int param_1,clientInfo_t *p
 
 void __cdecl
 CG_CompassDrawEnemies
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
-  clientInfo_t *pcVar1;
-  code *pcVar2;
+  clientInfo_t *clientInfo;
+  code *pcVar1;
+  bool bVar2;
   bool bVar3;
   bool bVar4;
   bool bVar5;
   bool bVar6;
-  bool bVar7;
-  centity_s *pcVar8;
+  centity_s *pcVar7;
   uint extraout_EAX;
-  Material *pMVar9;
+  Material *pMVar8;
   uint extraout_EDX;
-  float fVar10;
-  float local_a0;
-  float local_94;
-  float local_88;
-  float local_80;
-  float local_7c;
-  float local_74 [2];
-  bool local_69;
-  int local_68;
-  float local_64;
+  float fVar9;
+  Material *compassFiringMaterial;
+  float yawTo;
+  Material *compassPingMaterial;
+  bool withinRadarPingTime;
+  bool withinFadeTime;
+  float fadeTimeAmount;
+  bool withinStaticImagePingTime;
+  bool hasShowRadarPerk;
+  bool withinSatellitePingTime;
+  centity_s *cent;
+  float StaticImageTimeAmount;
+  float radarTimeAmount;
+  float satelliteTimeAmount;
+  bool satelliteStaticImageClipped;
+  float yawVector [2];
+  bool clipped;
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_60;
-  int local_5c;
-  ScreenPlacement *local_58;
-  cg_s *local_54;
-  float local_50;
-  float local_4c;
-  int local_48;
-  CompassActor *local_44;
-  int local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  int team;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float compassFadeOutAlpha;
+  float centerY;
+  int clientIndex;
+  CompassActor *actor;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  bool local_9;
-  float local_8;
+  bool alwaysShowEnemies;
+  float w;
   
-  local_54 = CG_GetLocalClientGlobals(param_1);
-  if ((local_54->nextSnap == (snapshot_s *)0x0) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0x750,0,"%s"), !bVar7)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0x750,0,"%s"), !bVar6)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((0x1f < (local_54->nextSnap->ps).clientNum) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x752,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                              ), !bVar7)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+                              ), !bVar6)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_68 = (int)(local_54->bgs).clientinfo + (uint)(local_54->nextSnap->ps).clientNum * 0x5c8;
-  CG_CompassUpYawVector(local_54,local_74);
-  local_50 = CG_FadeCompass(param_1,local_54->compassFadeTime,param_2);
-  fVar10 = CG_FadeCompassIcons(param_1,false);
-  local_50 = fVar10 * local_50;
-  if (local_50 != 0.0) {
-    if ((0x1f < (local_54->nextSnap->ps).clientNum) &&
-       (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+  localClientInfo =
+       (clientInfo_t *)
+       ((int)(cgameGlob->bgs).clientinfo + (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8);
+  CG_CompassUpYawVector(cgameGlob,yawVector);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar9 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar9 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
+    if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x75d,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                ), !bVar7)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+                                ), !bVar6)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (*(int *)((int)(local_54->bgs).clientinfo + (uint)(local_54->nextSnap->ps).clientNum * 0x5c8)
-        != 0) {
-      if ((0x1f < (local_54->nextSnap->ps).clientNum) &&
-         (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+    if (*(int *)((int)(cgameGlob->bgs).clientinfo +
+                (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8) != 0) {
+      if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
+         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                    ,0x760,0,
                                    "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                  ), !bVar7)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+                                  ), !bVar6)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      local_5c = *(int *)((int)(local_54->bgs).clientinfo +
-                         (uint)(local_54->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-      if (local_5c != 3) {
+      team = *(int *)((int)(cgameGlob->bgs).clientinfo +
+                     (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+      if (team != 3) {
         CG_CompassCalcDimensions
-                  (param_2,local_54,param_3,param_4,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h)
-        ;
-        local_24 = local_3c.w * 0.5 + local_3c.x;
-        local_4c = local_3c.h * 0.5 + local_3c.y;
-        local_1c = *param_5;
-        local_18 = param_5[1];
-        local_14 = param_5[2];
-        local_10 = param_5[3];
-        local_58 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-        local_48 = param_1;
-        local_9 = Dvar_GetBool("g_compassShowEnemies");
-        if ((((local_54->predictedPlayerState).otherFlags & 2U) != 0) &&
+                  (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                   &scaledRect.h);
+        centerX = scaledRect.w * 0.5 + scaledRect.x;
+        centerY = scaledRect.h * 0.5 + scaledRect.y;
+        fadedColor = *color;
+        local_18 = color[1];
+        local_14 = color[2];
+        local_10 = color[3];
+        scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+        clientIndex = localClientNum;
+        alwaysShowEnemies = Dvar_GetBool("g_compassShowEnemies");
+        if ((((cgameGlob->predictedPlayerState).otherFlags & 2U) != 0) &&
            ((compassSpectatorsSeeEnemies->current).enabled != false)) {
-          local_9 = true;
+          alwaysShowEnemies = true;
         }
-        local_44 = s_compassActors[local_48];
-        for (local_40 = 0; local_40 < 0x20; local_40 = local_40 + 1) {
-          local_94 = 0.0;
-          local_80 = 0.0;
-          local_7c = 0.0;
-          local_88 = 0.0;
-          if (((local_44->enemy != false) &&
-              (pcVar1 = (clientInfo_t *)((int)(local_54->bgs).clientinfo + local_40 * 0x5c8),
-              pcVar1->infoValid != 0)) &&
-             ((pcVar8 = CG_GetEntity(param_1,local_40),
-              (pcVar8->pose).field19_0x6c.player.waterHeight <= (pcVar8->pose).origin[2] + 60.0 ||
-              (pcVar1->attachedVehEntNum != 0x3ff)))) {
+        actor = s_compassActors[clientIndex];
+        for (num = 0; num < 0x20; num = num + 1) {
+          fadeTimeAmount = 0.0;
+          radarTimeAmount = 0.0;
+          satelliteTimeAmount = 0.0;
+          StaticImageTimeAmount = 0.0;
+          if (((actor->enemy != false) &&
+              (clientInfo = (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + num * 0x5c8),
+              clientInfo->infoValid != 0)) &&
+             ((pcVar7 = CG_GetEntity(localClientNum,num),
+              (pcVar7->pose).field19_0x6c.player.waterHeight <= (pcVar7->pose).origin[2] + 60.0 ||
+              (clientInfo->attachedVehEntNum != 0x3ff)))) {
             _allshl();
-            bVar7 = (extraout_EAX & pcVar1->perks[0]) != 0 || (extraout_EDX & pcVar1->perks[1]) != 0
-            ;
-            if ((local_9 != false) || (bVar7)) {
-              if (local_54->time < ((CompassActor *)&local_44->lastUpdate)->lastUpdate) {
-                ((CompassActor *)&local_44->lastUpdate)->lastUpdate = 0;
+            bVar6 = (extraout_EAX & clientInfo->perks[0]) != 0 ||
+                    (extraout_EDX & clientInfo->perks[1]) != 0;
+            if ((alwaysShowEnemies != false) || (bVar6)) {
+              if (cgameGlob->time < actor->lastUpdate) {
+                actor->lastUpdate = 0;
               }
-              if (((CompassActor *)&local_44->lastUpdate)->lastUpdate < local_54->time + -0x5dc)
-              goto LAB_0048f281;
+              if (actor->lastUpdate < cgameGlob->time + -0x5dc) goto LAB_0048f281;
             }
-            if (((float)local_44->beginFadeTime + (compassSoundPingFadeTime->current).value * 1000.0
-                 <= (float)local_54->time) || (local_44->beginFadeTime == 0)) {
-              bVar4 = false;
-            }
-            else {
-              bVar4 = true;
-            }
-            if ((local_9 != false) || (bVar7)) {
-              bVar3 = true;
-            }
-            else if (((float)local_44->beginRadarFadeTime +
-                      (compassRadarPingFadeTime->current).value * 1000.0 <= (float)local_54->time)
-                    || (local_44->beginRadarFadeTime == 0)) {
+            if (((float)actor->beginFadeTime + (compassSoundPingFadeTime->current).value * 1000.0 <=
+                 (float)cgameGlob->time) || (actor->beginFadeTime == 0)) {
               bVar3 = false;
             }
             else {
               bVar3 = true;
             }
-            if (((float)local_44->beginSatelliteFadeTime +
-                 (compassSatellitePingFadeTime->current).value * 1000.0 <= (float)local_54->time) ||
-               (local_44->beginSatelliteFadeTime == 0)) {
+            if ((alwaysShowEnemies != false) || (bVar6)) {
+              bVar2 = true;
+            }
+            else if (((float)actor->beginRadarFadeTime +
+                      (compassRadarPingFadeTime->current).value * 1000.0 <= (float)cgameGlob->time)
+                    || (actor->beginRadarFadeTime == 0)) {
+              bVar2 = false;
+            }
+            else {
+              bVar2 = true;
+            }
+            if (((float)actor->beginSatelliteFadeTime +
+                 (compassSatellitePingFadeTime->current).value * 1000.0 <= (float)cgameGlob->time)
+               || (actor->beginSatelliteFadeTime == 0)) {
+              bVar4 = false;
+            }
+            else {
+              bVar4 = true;
+            }
+            if (((float)actor->beginStaticImageFadeTime +
+                 (compassSatelliteStaticImageFadeTime->current).value * 1000.0 <=
+                 (float)cgameGlob->time) || (actor->beginStaticImageFadeTime == 0)) {
               bVar5 = false;
             }
             else {
               bVar5 = true;
             }
-            if (((float)local_44->beginStaticImageFadeTime +
-                 (compassSatelliteStaticImageFadeTime->current).value * 1000.0 <=
-                 (float)local_54->time) || (local_44->beginStaticImageFadeTime == 0)) {
-              bVar6 = false;
-            }
-            else {
-              bVar6 = true;
-            }
-            if ((((bVar4) || (bVar3)) || (bVar5)) || (bVar6)) {
-              if ((local_9 != false) || (bVar7)) {
-                local_69 = CG_WorldPosToCompass
-                                     (param_2,local_54,&local_3c,local_74,(local_54->refdef).vieworg
-                                      ,local_44->lastPos,(float *)0x0,&local_64);
+            if ((((bVar3) || (bVar2)) || (bVar4)) || (bVar5)) {
+              if ((alwaysShowEnemies != false) || (bVar6)) {
+                clipped = CG_WorldPosToCompass
+                                    (compassType,cgameGlob,&scaledRect,yawVector,
+                                     (cgameGlob->refdef).vieworg,actor->lastPos,(float *)0x0,&xy);
               }
               else {
-                local_69 = CG_WorldPosToCompass
-                                     (param_2,local_54,&local_3c,local_74,(local_54->refdef).vieworg
-                                      ,local_44->lastEnemyPos,(float *)0x0,&local_64);
+                clipped = CG_WorldPosToCompass
+                                    (compassType,cgameGlob,&scaledRect,yawVector,
+                                     (cgameGlob->refdef).vieworg,actor->lastEnemyPos,(float *)0x0,
+                                     &xy);
               }
-              if ((local_69 == false) || ((compassClampIcons->current).enabled != false)) {
-                CalcCompassFriendlySize(param_2,&local_8,&local_20);
-                local_64 = (local_24 - local_8 * 0.5) + local_64;
-                local_60 = (local_4c - local_20 * 0.5) + local_60;
-                if ((local_54->time <= local_44->beginRadarFadeTime) ||
-                   ((local_9 != false || (bVar7)))) {
-                  local_80 = 1.0;
+              if ((clipped == false) || ((compassClampIcons->current).enabled != false)) {
+                CalcCompassFriendlySize(compassType,&w,&h);
+                xy = (centerX - w * 0.5) + xy;
+                local_60 = (centerY - h * 0.5) + local_60;
+                if ((cgameGlob->time <= actor->beginRadarFadeTime) ||
+                   ((alwaysShowEnemies != false || (bVar6)))) {
+                  radarTimeAmount = 1.0;
                 }
-                else if (local_44->beginRadarFadeTime != 0) {
-                  local_80 = 1.0 - (float)(local_54->time - local_44->beginRadarFadeTime) /
-                                   ((compassRadarPingFadeTime->current).value * 1000.0);
+                else if (actor->beginRadarFadeTime != 0) {
+                  radarTimeAmount =
+                       1.0 - (float)(cgameGlob->time - actor->beginRadarFadeTime) /
+                             ((compassRadarPingFadeTime->current).value * 1000.0);
                 }
-                if (local_44->beginSatelliteFadeTime < local_54->time) {
-                  if (local_44->beginSatelliteFadeTime != 0) {
-                    local_7c = 1.0 - (float)(local_54->time - local_44->beginSatelliteFadeTime) /
-                                     ((compassSatellitePingFadeTime->current).value * 1000.0);
+                if (actor->beginSatelliteFadeTime < cgameGlob->time) {
+                  if (actor->beginSatelliteFadeTime != 0) {
+                    satelliteTimeAmount =
+                         1.0 - (float)(cgameGlob->time - actor->beginSatelliteFadeTime) /
+                               ((compassSatellitePingFadeTime->current).value * 1000.0);
                   }
                 }
                 else {
-                  local_7c = 1.0;
+                  satelliteTimeAmount = 1.0;
                 }
-                if (local_44->beginStaticImageFadeTime < local_54->time) {
-                  if (local_44->beginStaticImageFadeTime != 0) {
-                    local_88 = 1.0 - (float)(local_54->time - local_44->beginStaticImageFadeTime) /
-                                     ((compassSatelliteStaticImageFadeTime->current).value * 1000.0)
-                    ;
+                if (actor->beginStaticImageFadeTime < cgameGlob->time) {
+                  if (actor->beginStaticImageFadeTime != 0) {
+                    StaticImageTimeAmount =
+                         1.0 - (float)(cgameGlob->time - actor->beginStaticImageFadeTime) /
+                               ((compassSatelliteStaticImageFadeTime->current).value * 1000.0);
                   }
                 }
                 else {
-                  local_88 = 1.0;
+                  StaticImageTimeAmount = 1.0;
                 }
-                if (local_44->beginFadeTime < local_54->time) {
-                  if (local_44->beginFadeTime != 0) {
-                    local_94 = 1.0 - (float)(local_54->time - local_44->beginFadeTime) /
-                                     ((compassSoundPingFadeTime->current).value * 1000.0);
+                if (actor->beginFadeTime < cgameGlob->time) {
+                  if (actor->beginFadeTime != 0) {
+                    fadeTimeAmount =
+                         1.0 - (float)(cgameGlob->time - actor->beginFadeTime) /
+                               ((compassSoundPingFadeTime->current).value * 1000.0);
                   }
                 }
                 else {
-                  local_94 = 1.0;
+                  fadeTimeAmount = 1.0;
                 }
-                local_44->currentFadeTimeAmount = 0.0;
-                if ((0.0 <= local_80) &&
-                   ((local_44->currentFadeTimeAmount = local_44->currentFadeTimeAmount + local_80,
-                    pcVar1->attachedVehEntNum == 0x3ff ||
-                    (((pcVar8->nextState).lerp.eFlags2 & 0x10000000U) != 0)))) {
-                  local_10 = local_80 * local_50;
-                  pMVar9 = GetCompassPingMaterialForClient(param_1,pcVar1);
-                  UI_DrawHandlePic(local_58,local_64,local_60,local_8,local_20,param_4->horzAlign,
-                                   param_4->vertAlign,&local_1c,pMVar9);
+                actor->currentFadeTimeAmount = 0.0;
+                if ((0.0 <= radarTimeAmount) &&
+                   ((actor->currentFadeTimeAmount = actor->currentFadeTimeAmount + radarTimeAmount,
+                    clientInfo->attachedVehEntNum == 0x3ff ||
+                    (((pcVar7->nextState).lerp.eFlags2 & 0x10000000U) != 0)))) {
+                  local_10 = radarTimeAmount * compassFadeOutAlpha;
+                  pMVar8 = GetCompassPingMaterialForClient(localClientNum,clientInfo);
+                  UI_DrawHandlePic(scrPlace,xy,local_60,w,h,rect->horzAlign,rect->vertAlign,
+                                   &fadedColor,pMVar8);
                 }
-                if ((0.0 <= local_7c) &&
-                   ((local_44->currentFadeTimeAmount = local_44->currentFadeTimeAmount + local_7c,
-                    pcVar1->attachedVehEntNum == 0x3ff ||
-                    (((pcVar8->nextState).lerp.eFlags2 & 0x10000000U) != 0)))) {
-                  local_10 = local_7c * local_50;
-                  if ((param_2 == COMPASS_TYPE_PARTIAL) &&
+                if ((0.0 <= satelliteTimeAmount) &&
+                   ((actor->currentFadeTimeAmount =
+                          actor->currentFadeTimeAmount + satelliteTimeAmount,
+                    clientInfo->attachedVehEntNum == 0x3ff ||
+                    (((pcVar7->nextState).lerp.eFlags2 & 0x10000000U) != 0)))) {
+                  local_10 = satelliteTimeAmount * compassFadeOutAlpha;
+                  if ((compassType == COMPASS_TYPE_PARTIAL) &&
                      ((compassRotation->current).enabled != false)) {
-                    local_a0 = AngleNormalize360(local_54->refdefViewAngles[1] - local_44->lastYaw);
+                    yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - actor->lastYaw);
                   }
                   else {
-                    local_a0 = AngleNormalize360(local_54->compassNorthYaw - local_44->lastYaw);
+                    yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - actor->lastYaw);
                   }
-                  CG_DrawRotatedPic(local_58,local_64,local_60,local_8,local_20,param_4->horzAlign,
-                                    param_4->vertAlign,local_a0,&local_1c,
-                                    cgMedia.compassping_enemydirectional);
+                  CG_DrawRotatedPic(scrPlace,xy,local_60,w,h,rect->horzAlign,rect->vertAlign,yawTo,
+                                    &fadedColor,cgMedia.compassping_enemydirectional);
                 }
-                if ((0.0 <= local_94) &&
-                   (local_44->currentFadeTimeAmount = local_44->currentFadeTimeAmount + local_94,
-                   pcVar1->attachedVehEntNum == 0x3ff)) {
-                  local_10 = local_94 * local_50;
-                  pMVar9 = GetCompassFiringMaterialForClient(param_1,pcVar1);
-                  UI_DrawHandlePic(local_58,local_64,local_60,local_8,local_20,param_4->horzAlign,
-                                   param_4->vertAlign,&local_1c,pMVar9);
+                if ((0.0 <= fadeTimeAmount) &&
+                   (actor->currentFadeTimeAmount = actor->currentFadeTimeAmount + fadeTimeAmount,
+                   clientInfo->attachedVehEntNum == 0x3ff)) {
+                  local_10 = fadeTimeAmount * compassFadeOutAlpha;
+                  pMVar8 = GetCompassFiringMaterialForClient(localClientNum,clientInfo);
+                  UI_DrawHandlePic(scrPlace,xy,local_60,w,h,rect->horzAlign,rect->vertAlign,
+                                   &fadedColor,pMVar8);
                 }
               }
               CG_WorldPosToCompass
-                        (param_2,local_54,&local_3c,local_74,(local_54->refdef).vieworg,
-                         local_44->satelliteEnemyPos,(float *)0x0,&local_64);
-              if ((local_69 == false) &&
-                 (0.0 < (compassSatelliteStaticImageFadeTime->current).value)) {
-                CalcCompassFriendlySize(param_2,&local_8,&local_20);
-                local_64 = (local_24 - local_8 * 0.5) + local_64;
-                local_60 = (local_4c - local_20 * 0.5) + local_60;
-                if (local_44->beginStaticImageFadeTime < local_54->time) {
-                  if (local_44->beginStaticImageFadeTime != 0) {
-                    local_88 = 1.0 - (float)(local_54->time - local_44->beginStaticImageFadeTime) /
-                                     ((compassSatelliteStaticImageFadeTime->current).value * 1000.0)
-                    ;
+                        (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                         actor->satelliteEnemyPos,(float *)0x0,&xy);
+              if ((clipped == false) && (0.0 < (compassSatelliteStaticImageFadeTime->current).value)
+                 ) {
+                CalcCompassFriendlySize(compassType,&w,&h);
+                xy = (centerX - w * 0.5) + xy;
+                local_60 = (centerY - h * 0.5) + local_60;
+                if (actor->beginStaticImageFadeTime < cgameGlob->time) {
+                  if (actor->beginStaticImageFadeTime != 0) {
+                    StaticImageTimeAmount =
+                         1.0 - (float)(cgameGlob->time - actor->beginStaticImageFadeTime) /
+                               ((compassSatelliteStaticImageFadeTime->current).value * 1000.0);
                   }
                 }
                 else {
-                  local_88 = 1.0;
+                  StaticImageTimeAmount = 1.0;
                 }
-                if ((0.0 <= local_88) && (pcVar1->attachedVehEntNum == 0x3ff)) {
-                  local_10 = local_88;
-                  UI_DrawHandlePic(local_58,local_64,local_60,local_8,local_20,param_4->horzAlign,
-                                   param_4->vertAlign,&local_1c,cgMedia.compassping_enemysatellite);
+                if ((0.0 <= StaticImageTimeAmount) && (clientInfo->attachedVehEntNum == 0x3ff)) {
+                  local_10 = StaticImageTimeAmount;
+                  UI_DrawHandlePic(scrPlace,xy,local_60,w,h,rect->horzAlign,rect->vertAlign,
+                                   &fadedColor,cgMedia.compassping_enemysatellite);
                 }
               }
             }
           }
 LAB_0048f281:
-          local_44 = local_44 + 1;
+          actor = actor + 1;
         }
       }
     }
@@ -2979,48 +3106,51 @@ LAB_0048f281:
 
 void __cdecl
 CG_CompassDrawFakeFire
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   Material *local_8c;
-  float local_84;
-  float local_7c;
-  float local_78 [2];
-  undefined1 local_6d;
-  int local_6c;
-  float local_68;
+  float yawTo;
+  bool withinRadarPingTime;
+  bool withinFadeTime;
+  float fadeTimeAmount;
+  float yawVector [2];
+  bool clipped;
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_64;
-  int local_60;
-  ScreenPlacement *local_5c;
-  cg_s *local_58;
-  float local_54;
-  float local_50;
-  int local_4c;
-  CompassFakeFire *local_48;
-  int local_44;
-  rectDef_s local_40;
-  float local_28;
-  float local_24;
-  float local_20;
+  int team;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float compassFadeOutAlpha;
+  float centerY;
+  int clientIndex;
+  CompassFakeFire *actor;
+  int entNum;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_1c;
   float local_18;
   float local_14;
-  undefined1 local_d;
-  int local_c;
-  float local_8;
+  bool alwaysShowEnemies;
+  int actorNum;
+  float w;
   
-  local_58 = CG_GetLocalClientGlobals(param_1);
-  if ((local_58->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x828,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (local_58->nextSnap->ps).clientNum) &&
+  if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x82a,0,
                                "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -3029,13 +3159,15 @@ CG_CompassDrawFakeFire
     (*pcVar1)();
     return;
   }
-  local_6c = (int)(local_58->bgs).clientinfo + (uint)(local_58->nextSnap->ps).clientNum * 0x5c8;
-  CG_CompassUpYawVector(local_58,local_78);
-  local_54 = CG_FadeCompass(param_1,local_58->compassFadeTime,param_2);
-  fVar3 = CG_FadeCompassIcons(param_1,false);
-  local_54 = fVar3 * local_54;
-  if (local_54 != 0.0) {
-    if ((0x1f < (local_58->nextSnap->ps).clientNum) &&
+  localClientInfo =
+       (clientInfo_t *)
+       ((int)(cgameGlob->bgs).clientinfo + (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8);
+  CG_CompassUpYawVector(cgameGlob,yawVector);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar3 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar3 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
+    if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                  ,0x835,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -3044,9 +3176,9 @@ CG_CompassDrawFakeFire
       (*pcVar1)();
       return;
     }
-    if (*(int *)((int)(local_58->bgs).clientinfo + (uint)(local_58->nextSnap->ps).clientNum * 0x5c8)
-        != 0) {
-      if ((0x1f < (local_58->nextSnap->ps).clientNum) &&
+    if (*(int *)((int)(cgameGlob->bgs).clientinfo +
+                (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8) != 0) {
+      if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                    ,0x838,0,
                                    "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -3055,77 +3187,76 @@ CG_CompassDrawFakeFire
         (*pcVar1)();
         return;
       }
-      local_60 = *(int *)((int)(local_58->bgs).clientinfo +
-                         (uint)(local_58->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-      if (local_60 != 3) {
+      team = *(int *)((int)(cgameGlob->bgs).clientinfo +
+                     (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+      if (team != 3) {
         CG_CompassCalcDimensions
-                  (param_2,local_58,param_3,param_4,&local_40.x,&local_40.y,&local_40.w,&local_40.h)
-        ;
-        local_28 = local_40.w * 0.5 + local_40.x;
-        local_50 = local_40.h * 0.5 + local_40.y;
-        local_20 = *param_5;
-        local_1c = param_5[1];
-        local_18 = param_5[2];
-        local_14 = param_5[3];
-        local_5c = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-        local_4c = param_1;
-        local_d = Dvar_GetBool("g_compassShowEnemies");
-        for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-          local_48 = s_compassFakeFire[local_4c][local_c];
-          for (local_44 = 0; local_44 < 8; local_44 = local_44 + 1) {
-            local_7c = 0.0;
-            if (((float)local_48->beginFadeTime + (compassSoundPingFadeTime->current).value * 1000.0
-                 <= (float)local_58->time) || (local_48->beginFadeTime == 0)) {
+                  (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                   &scaledRect.h);
+        centerX = scaledRect.w * 0.5 + scaledRect.x;
+        centerY = scaledRect.h * 0.5 + scaledRect.y;
+        fadedColor = *color;
+        local_1c = color[1];
+        local_18 = color[2];
+        local_14 = color[3];
+        scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+        clientIndex = localClientNum;
+        alwaysShowEnemies = Dvar_GetBool("g_compassShowEnemies");
+        for (actorNum = 0; actorNum < 0x20; actorNum = actorNum + 1) {
+          actor = s_compassFakeFire[clientIndex][actorNum];
+          for (entNum = 0; entNum < 8; entNum = entNum + 1) {
+            fadeTimeAmount = 0.0;
+            if (((float)actor->beginFadeTime + (compassSoundPingFadeTime->current).value * 1000.0 <=
+                 (float)cgameGlob->time) || (actor->beginFadeTime == 0)) {
               bVar2 = false;
             }
             else {
               bVar2 = true;
             }
             if ((bVar2) &&
-               ((local_6d = CG_WorldPosToCompass
-                                      (param_2,local_58,&local_40,local_78,
-                                       (local_58->refdef).vieworg,local_48->pos,(float *)0x0,
-                                       &local_68), !(bool)local_6d ||
-                ((compassClampIcons->current).enabled != false)))) {
-              CalcCompassFriendlySize(param_2,&local_8,&local_24);
-              local_68 = (local_28 - local_8 * 0.5) + local_68;
-              local_64 = (local_50 - local_24 * 0.5) + local_64;
-              if (local_48->beginFadeTime < local_58->time) {
-                if (local_48->beginFadeTime != 0) {
-                  local_7c = 1.0 - (float)(local_58->time - local_48->beginFadeTime) /
-                                   ((compassSoundPingFadeTime->current).value * 1000.0);
+               ((clipped = CG_WorldPosToCompass
+                                     (compassType,cgameGlob,&scaledRect,yawVector,
+                                      (cgameGlob->refdef).vieworg,actor->pos,(float *)0x0,&xy),
+                !clipped || ((compassClampIcons->current).enabled != false)))) {
+              CalcCompassFriendlySize(compassType,&w,&h);
+              xy = (centerX - w * 0.5) + xy;
+              local_64 = (centerY - h * 0.5) + local_64;
+              if (actor->beginFadeTime < cgameGlob->time) {
+                if (actor->beginFadeTime != 0) {
+                  fadeTimeAmount =
+                       1.0 - (float)(cgameGlob->time - actor->beginFadeTime) /
+                             ((compassSoundPingFadeTime->current).value * 1000.0);
                 }
               }
               else {
-                local_7c = 1.0;
+                fadeTimeAmount = 1.0;
               }
-              if (0.0 <= local_7c) {
-                local_14 = local_7c * local_54;
-                if ((local_48->enemy == false) || (local_48->satellite == false)) {
-                  if (local_48->enemy == false) {
+              if (0.0 <= fadeTimeAmount) {
+                local_14 = fadeTimeAmount * compassFadeOutAlpha;
+                if ((actor->enemy == false) || (actor->satellite == false)) {
+                  if (actor->enemy == false) {
                     local_8c = cgMedia.compassping_friendlyfakefire;
                   }
                   else {
                     local_8c = cgMedia.compassping_enemyfiring;
                   }
-                  UI_DrawHandlePic(local_5c,local_68,local_64,local_8,local_24,param_4->horzAlign,
-                                   param_4->vertAlign,&local_20,local_8c);
+                  UI_DrawHandlePic(scrPlace,xy,local_64,w,h,rect->horzAlign,rect->vertAlign,
+                                   &fadedColor,local_8c);
                 }
                 else {
-                  if ((param_2 == COMPASS_TYPE_PARTIAL) &&
+                  if ((compassType == COMPASS_TYPE_PARTIAL) &&
                      ((compassRotation->current).enabled != false)) {
-                    local_84 = AngleNormalize360(local_58->refdefViewAngles[1] - local_48->yaw);
+                    yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - actor->yaw);
                   }
                   else {
-                    local_84 = AngleNormalize360(local_58->compassNorthYaw - local_48->yaw);
+                    yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - actor->yaw);
                   }
-                  CG_DrawRotatedPic(local_5c,local_68,local_64,local_8,local_24,param_4->horzAlign,
-                                    param_4->vertAlign,local_84,&local_20,
-                                    cgMedia.compassping_enemydirectional);
+                  CG_DrawRotatedPic(scrPlace,xy,local_64,w,h,rect->horzAlign,rect->vertAlign,yawTo,
+                                    &fadedColor,cgMedia.compassping_enemydirectional);
                 }
               }
             }
-            local_48 = local_48 + 1;
+            actor = actor + 1;
           }
         }
       }
@@ -3144,180 +3275,183 @@ CG_CompassDrawFakeFire
 
 void __cdecl
 CG_CompassDrawRadarEffects
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_b0 [2];
-  float local_a8;
-  float local_a4;
+  float fVar4;
+  float yawVector [2];
+  float radiusPixels;
+  float xy_2;
   float local_a0;
-  float local_9c;
+  float scissorRect;
   float local_98;
   float local_94;
   float local_90;
   int local_8c;
   int local_88;
-  float local_84;
-  rectDef_s local_80;
-  float local_68;
-  float local_64;
+  float radius;
+  rectDef_s compassRect;
+  float pixPerInch;
+  float fadedColor;
   float local_60;
   float local_5c;
   float local_58;
-  float local_54;
+  float center;
   float local_50;
-  float local_4c;
-  float local_48;
-  float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
+  float texBottom;
+  float texTop;
+  float texRight;
+  float radarXAmount;
+  float texLeft;
+  float xy;
   float local_34;
-  float local_30;
+  float radarLine;
   float local_2c;
   float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  ScreenPlacement *local_18;
-  cg_s *local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float rotation;
+  float radarTextureCenterX;
+  float playerPosRelativeToRadarLine;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float radarLineThickness;
+  float h;
+  float w;
   
-  if ((param_4 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x883,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (rectDef_s *)0x0) &&
+  if ((parentRect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x884,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = CG_GetLocalClientGlobals(param_1);
-  if ((local_14 == (cg_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x887,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar3 = CG_FadeCompassIcons(param_1,false);
-  param_5[3] = fVar3 * param_5[3];
-  if (param_5[3] != 0.0) {
-    if ((local_14->predictedPlayerState).spyplaneTypeEnabled != 0) {
-      local_18 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-      CG_CompassCalcDimensions
-                (param_2,local_14,param_3,param_4,&local_38,&local_34,&local_8,&local_c);
-      if ((local_8 <= 0.0) &&
+  fVar3 = CG_FadeCompassIcons(localClientNum,false);
+  color[3] = fVar3 * color[3];
+  if (color[3] != 0.0) {
+    if ((cgameGlob->predictedPlayerState).spyplaneTypeEnabled != 0) {
+      scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+      CG_CompassCalcDimensions(compassType,cgameGlob,parentRect,rect,&xy,&local_34,&w,&h);
+      if ((w <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                    ,0x899,1,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_c <= 0.0) &&
+      if ((h <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                    ,0x89a,1,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_2 == COMPASS_TYPE_PARTIAL) {
-        GetRadarLine(local_14,local_14->radarProgress,&local_30);
-        local_10 = (compassRadarLineThickness->current).value;
-        local_1c = ((local_30 * (local_14->refdef).vieworg[0] +
-                    local_2c * (local_14->refdef).vieworg[1]) - local_28) /
-                   (compassMaxRange->current).value;
-        local_20 = local_1c / local_10 + 0.5;
+      if (compassType == COMPASS_TYPE_PARTIAL) {
+        GetRadarLine(cgameGlob,cgameGlob->radarProgress,&radarLine);
+        radarLineThickness = (compassRadarLineThickness->current).value;
+        playerPosRelativeToRadarLine =
+             ((radarLine * (cgameGlob->refdef).vieworg[0] +
+              local_2c * (cgameGlob->refdef).vieworg[1]) - local_28) /
+             (compassMaxRange->current).value;
+        radarTextureCenterX = playerPosRelativeToRadarLine / radarLineThickness + 0.5;
         if ((compassRotation->current).enabled == false) {
-          local_24 = 0.0;
+          rotation = 0.0;
         }
         else {
-          local_24 = local_14->compassNorthYaw - local_14->refdefViewAngles[1];
+          rotation = cgameGlob->compassNorthYaw - cgameGlob->refdefViewAngles[1];
         }
         CL_DrawStretchPicRotatedST
-                  (local_18,local_38,local_34,local_8,local_c,param_4->horzAlign,param_4->vertAlign,
-                   local_20,0.0,0.5 / local_10,1.0,1.0,local_24,param_5,cgMedia.compass_radarline);
+                  (scrPlace,xy,local_34,w,h,rect->horzAlign,rect->vertAlign,radarTextureCenterX,0.0,
+                   0.5 / radarLineThickness,1.0,1.0,rotation,color,cgMedia.compass_radarline);
       }
       else {
-        if ((param_2 != COMPASS_TYPE_FULL) &&
+        if ((compassType != COMPASS_TYPE_FULL) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                      ,0x8b5,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        fVar3 = local_14->radarProgress;
-        local_40 = GetRadarLineMargin(local_14);
-        local_40 = local_40 / local_14->compassMapWorldSize[0];
-        local_40 = (local_40 * 2.0 + 1.0) * fVar3 - local_40;
-        local_10 = (cg_hudMapRadarLineThickness->current).value;
-        if (local_10 <= 0.0) {
+        fVar3 = cgameGlob->radarProgress;
+        fVar4 = GetRadarLineMargin(cgameGlob);
+        fVar4 = fVar4 / cgameGlob->compassMapWorldSize[0];
+        radarXAmount = (fVar4 * 2.0 + 1.0) * fVar3 - fVar4;
+        radarLineThickness = (cg_hudMapRadarLineThickness->current).value;
+        if (radarLineThickness <= 0.0) {
           return;
         }
-        local_3c = -local_40 / local_10 + 0.5;
-        local_44 = (1.0 - local_40) / local_10 + 0.5;
-        local_4c = 0.0;
-        if ((local_c == 0.0) &&
+        texLeft = -radarXAmount / radarLineThickness + 0.5;
+        texRight = (1.0 - radarXAmount) / radarLineThickness + 0.5;
+        texBottom = 0.0;
+        if ((h == 0.0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                      ,0x8c0,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_48 = 1.0 / ((local_10 * local_8) / local_c);
-        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_38,local_34,
-                          local_8,local_c,param_4->horzAlign,param_4->vertAlign,local_3c,local_4c,
-                          local_44,local_48,param_5,cgMedia.compass_radarline);
+        texTop = 1.0 / ((radarLineThickness * w) / h);
+        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,local_34,w,h
+                          ,rect->horzAlign,rect->vertAlign,texLeft,texBottom,texRight,texTop,color,
+                          cgMedia.compass_radarline);
       }
     }
-    if (local_14->compassScrambler[0xd].startTime != 0) {
-      local_18 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
+    if (cgameGlob->compassScrambler[0xd].startTime != 0) {
+      scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
       CG_CompassCalcDimensions
-                (param_2,local_14,param_3,param_4,&local_80.x,&local_80.y,&local_80.w,&local_80.h);
-      local_54 = local_80.w * 0.5 + local_80.x;
-      local_50 = local_80.h * 0.5 + local_80.y;
-      CG_CompassUpYawVector(local_14,local_b0);
+                (compassType,cgameGlob,parentRect,rect,&compassRect.x,&compassRect.y,&compassRect.w,
+                 &compassRect.h);
+      center = compassRect.w * 0.5 + compassRect.x;
+      local_50 = compassRect.h * 0.5 + compassRect.y;
+      CG_CompassUpYawVector(cgameGlob,yawVector);
       CG_WorldPosToCompass
-                (param_2,local_14,&local_80,local_b0,(local_14->refdef).vieworg,
-                 (float *)&local_14->compassScrambler[0xd].handle,&local_a4,(float *)0x0);
-      local_84 = GetLocalRadarRadius(local_14->compassScrambler[0xe].pos[1]);
-      if (param_2 == COMPASS_TYPE_PARTIAL) {
-        local_68 = (compassMaxRange->current).value;
+                (compassType,cgameGlob,&compassRect,yawVector,(cgameGlob->refdef).vieworg,
+                 (float *)&cgameGlob->compassScrambler[0xd].handle,&xy_2,(float *)0x0);
+      radius = GetLocalRadarRadius(cgameGlob->compassScrambler[0xe].pos[1]);
+      if (compassType == COMPASS_TYPE_PARTIAL) {
+        fVar3 = (compassMaxRange->current).value;
       }
       else {
-        local_68 = local_14->compassMapWorldSize[1];
+        fVar3 = cgameGlob->compassMapWorldSize[1];
       }
-      local_68 = local_80.h / local_68;
-      local_a8 = local_84 * local_68;
-      local_9c = local_80.x;
-      local_98 = local_80.y;
-      local_94 = local_80.w;
-      local_90 = local_80.h;
-      local_8c = local_80.horzAlign;
-      local_88 = local_80.vertAlign;
-      ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_9c,&local_98,
-                         &local_94,&local_90,param_4->horzAlign,param_4->vertAlign);
-      R_AddCmdSetScissorValues(true,(int)local_9c,(int)local_98,(int)local_94,(int)local_90);
-      local_64 = *param_5;
-      local_60 = param_5[1];
-      local_5c = param_5[2];
-      local_58 = 1.0 - (local_14->compassScrambler[0xe].pos[1] - 0.5) * 2.0;
+      pixPerInch = compassRect.h / fVar3;
+      radiusPixels = radius * pixPerInch;
+      scissorRect = compassRect.x;
+      local_98 = compassRect.y;
+      local_94 = compassRect.w;
+      local_90 = compassRect.h;
+      local_8c = compassRect.horzAlign;
+      local_88 = compassRect.vertAlign;
+      ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&scissorRect,
+                         &local_98,&local_94,&local_90,rect->horzAlign,rect->vertAlign);
+      R_AddCmdSetScissorValues(true,(int)scissorRect,(int)local_98,(int)local_94,(int)local_90);
+      fadedColor = *color;
+      local_60 = color[1];
+      local_5c = color[2];
+      local_58 = 1.0 - (cgameGlob->compassScrambler[0xe].pos[1] - 0.5) * 2.0;
       if (local_58 < 0.0) {
         local_58 = 0.0;
       }
-      CL_DrawStretchPic(local_18,(local_a4 + local_54) - local_a8,(local_a0 + local_50) - local_a8,
-                        local_a8 * 2.0,local_a8 * 2.0,param_4->horzAlign,param_4->vertAlign,0.0,0.0,
-                        1.0,1.0,&local_64,cgMedia.compass_acoustic_ping);
+      CL_DrawStretchPic(scrPlace,(xy_2 + center) - radiusPixels,(local_a0 + local_50) - radiusPixels
+                        ,radiusPixels * 2.0,radiusPixels * 2.0,rect->horzAlign,rect->vertAlign,0.0,
+                        0.0,1.0,1.0,&fadedColor,cgMedia.compass_acoustic_ping);
       R_AddCmdSetScissorValues(false,0,0,0,0);
     }
   }
@@ -3334,34 +3468,33 @@ CG_CompassDrawRadarEffects
 
 void __cdecl
 CG_CompassDrawFlicker
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5,
-          Material *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color,Material *material)
 
 {
   ushort uVar1;
-  float *pfVar2;
-  float local_2c [4];
-  cg_s *local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float *vec;
+  float c0 [4];
+  cg_s *cgameGlob;
+  float scrambleAmount;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  local_1c = CG_GetLocalClientGlobals(param_1);
-  CG_CompassCalcDimensions(param_2,local_1c,param_3,param_4,&local_14,&local_10,&local_8,&local_c);
-  local_2c[0] = CG_GetScramblerEnemyAlpha(param_1);
-  if (0.0 < local_2c[0]) {
-    local_2c[1] = 0.0;
-    local_2c[2] = 0.0;
-    local_2c[3] = 0.0;
-    pfVar2 = local_2c;
-    local_18 = local_2c[0];
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  CG_CompassCalcDimensions(compassType,cgameGlob,parentRect,rect,&x,&y,&w,&h);
+  c0[0] = CG_GetScramblerEnemyAlpha(localClientNum);
+  if (0.0 < c0[0]) {
+    c0[1] = 0.0;
+    c0[2] = 0.0;
+    c0[3] = 0.0;
+    vec = c0;
+    scrambleAmount = c0[0];
     uVar1 = GetCodeConst_GenericParam0();
-    CL_SetCustomConstant((uint)uVar1,pfVar2);
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_14,local_10,local_8,
-                      local_c,param_4->horzAlign,param_4->vertAlign,0.0,0.0,1.0,1.0,param_5,param_6)
-    ;
+    CL_SetCustomConstant((uint)uVar1,vec);
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                      rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,color,material);
   }
   return;
 }
@@ -3378,8 +3511,8 @@ CG_CompassDrawFlicker
 
 void __cdecl
 CG_CompassDrawVehicles
-          (int param_1,CompassType param_2,int param_3,rectDef_s *param_4,rectDef_s *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,int eType,rectDef_s *parentRect,
+          rectDef_s *rect,float *color)
 
 {
   int *piVar1;
@@ -3391,47 +3524,49 @@ CG_CompassDrawVehicles
   uint extraout_EAX;
   uint extraout_EDX;
   float fVar7;
-  ushort local_98;
-  float local_94 [2];
-  char local_89;
-  int local_88;
-  vehicle_info_t *local_84;
-  float local_80;
+  CompassActor *actor_2;
+  CompassActor *actor;
+  ushort i;
+  float yawVector [2];
+  bool clipped;
+  clientInfo_t *localClientInfo;
+  vehicle_info_t *info;
+  float xy;
   float local_7c;
-  CompassVehicle *local_78;
-  cg_s *local_74;
-  team_t local_70;
-  Material *local_6c;
-  centity_s *local_68;
-  float local_64;
-  char local_5e;
-  char local_5d;
-  float local_5c;
-  float local_58;
-  float local_54;
+  CompassVehicle *veh;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  Material *material;
+  centity_s *cent;
+  float compassFadeOutAlpha;
+  bool enemy;
+  bool compassForcePlayerIcon;
+  float yawTo;
+  float centerY;
+  float altColor;
   float local_50;
   float local_4c;
-  char local_41;
-  int local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  bool friendly;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  char local_9;
-  float local_8;
+  bool isSelf;
+  float w;
   
-  local_74 = CG_GetLocalClientGlobals(param_1);
-  if ((local_74->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x920,0,"%s"), !bVar5)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((0x1f < (uint)local_74->clientNum) &&
+  if ((0x1f < (uint)cgameGlob->clientNum) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x922,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -3440,216 +3575,214 @@ CG_CompassDrawVehicles
     (*pcVar2)();
     return;
   }
-  local_88 = (int)(local_74->bgs).clientinfo + local_74->clientNum * 0x5c8;
-  local_64 = CG_FadeCompass(param_1,local_74->compassFadeTime,param_2);
-  fVar7 = CG_FadeCompassIcons(param_1,false);
-  local_64 = fVar7 * local_64;
-  if (local_64 != 0.0) {
+  localClientInfo =
+       (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar7 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar7 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_74,param_4,param_5,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h);
-    local_24 = local_3c.w * 0.5 + local_3c.x;
-    local_58 = local_3c.h * 0.5 + local_3c.y;
-    local_1c = *param_6;
-    local_18 = param_6[1];
-    local_14 = param_6[2];
-    local_10 = param_6[3];
-    CG_CompassUpYawVector(local_74,local_94);
-    local_5d = Dvar_GetBool("compassForcePlayerIcon");
-    local_78 = s_compassVehicles[param_1];
-    for (local_40 = 0; local_40 < 0x10; local_40 = local_40 + 1) {
-      local_1c = *param_6;
-      local_18 = param_6[1];
-      local_14 = param_6[2];
-      local_10 = param_6[3];
-      local_68 = CG_GetEntity(param_1,local_78->entityNum);
-      if ((((local_68->nextState).eType == param_3) || (local_68->bIsPlaneOnRadar != 0)) &&
-         ((param_3 == 0xd ||
-          ((local_68->bIsPlaneOnRadar != 0 ||
-           (fVar7 = CG_VehGetHealthPercentageEntity(local_68), fVar7 != 0.0)))))) {
-        if (local_74->time < local_78->lastUpdate) {
-          local_78->lastUpdate = 0;
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_18 = color[1];
+    local_14 = color[2];
+    local_10 = color[3];
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    compassForcePlayerIcon = Dvar_GetBool("compassForcePlayerIcon");
+    veh = s_compassVehicles[localClientNum];
+    for (num = 0; num < 0x10; num = num + 1) {
+      fadedColor = *color;
+      local_18 = color[1];
+      local_14 = color[2];
+      local_10 = color[3];
+      cent = CG_GetEntity(localClientNum,veh->entityNum);
+      if ((((cent->nextState).eType == eType) || (cent->bIsPlaneOnRadar != 0)) &&
+         ((eType == 0xd ||
+          ((cent->bIsPlaneOnRadar != 0 ||
+           (fVar7 = CG_VehGetHealthPercentageEntity(cent), fVar7 != 0.0)))))) {
+        if (cgameGlob->time < veh->lastUpdate) {
+          veh->lastUpdate = 0;
         }
-        if (local_74->time + -0x5dc <= local_78->lastUpdate) {
-          local_89 = CG_WorldPosToCompass
-                               (param_2,local_74,&local_3c,local_94,(local_74->refdef).vieworg,
-                                local_78->lastPos,(float *)0x0,&local_80);
-          if (((param_3 == 0xd) || (local_68->bIsPlaneOnRadar != 0)) ||
+        if (cgameGlob->time + -0x5dc <= veh->lastUpdate) {
+          clipped = CG_WorldPosToCompass
+                              (compassType,cgameGlob,&scaledRect,yawVector,
+                               (cgameGlob->refdef).vieworg,veh->lastPos,(float *)0x0,&xy);
+          if (((eType == 0xd) || (cent->bIsPlaneOnRadar != 0)) ||
              (bVar5 = CG_IsVehicleMayhemGameType(), bVar5)) {
-            local_89 = '\0';
+            clipped = false;
           }
-          if (param_3 == 0xc) {
+          if (eType == 0xc) {
             iVar6 = CL_LocalClient_GetActiveCount();
-            local_8 = (float)(byte)(((iVar6 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value
-            ;
+            w = (float)(byte)(((iVar6 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
             iVar6 = CL_LocalClient_GetActiveCount();
-            local_20 = (float)(byte)(((iVar6 < 2) - 1U & 0x28) + 0x28) *
-                       (compassSize->current).value;
+            h = (float)(byte)(((iVar6 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
           }
           else {
             iVar6 = CL_LocalClient_GetActiveCount();
-            local_8 = (float)(byte)(((iVar6 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value
-            ;
+            w = (float)(byte)(((iVar6 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
             iVar6 = CL_LocalClient_GetActiveCount();
-            local_20 = (float)(byte)(((iVar6 < 2) - 1U & 0x14) + 0x14) *
-                       (compassSize->current).value;
+            h = (float)(byte)(((iVar6 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
           }
-          local_80 = (local_24 - local_8 * 0.5) + local_80;
-          local_7c = (local_58 - local_20 * 0.5) + local_7c;
-          if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-            local_5c = AngleNormalize360(local_74->refdefViewAngles[1] - local_78->lastYaw);
+          xy = (centerX - w * 0.5) + xy;
+          local_7c = (centerY - h * 0.5) + local_7c;
+          if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)
+             ) {
+            yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - veh->lastYaw);
           }
           else {
-            local_5c = AngleNormalize360(local_74->compassNorthYaw - local_78->lastYaw);
+            yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - veh->lastYaw);
           }
-          if (local_64 < local_10) {
-            local_10 = local_64;
+          if (compassFadeOutAlpha < local_10) {
+            local_10 = compassFadeOutAlpha;
           }
-          local_70 = *(team_t *)(local_88 + 0x2c);
-          local_41 = '\0';
-          local_5e = '\0';
-          local_9 = '\0';
-          if ((param_3 == 0xd) || (local_68->bIsPlaneOnRadar != 0)) {
-            if (local_68->compassMaterial == (Material *)0x0) {
+          myTeam = localClientInfo->team;
+          friendly = false;
+          enemy = false;
+          isSelf = false;
+          if ((eType == 0xd) || (cent->bIsPlaneOnRadar != 0)) {
+            if (cent->compassMaterial == (Material *)0x0) {
               return;
             }
-            if (*(local_68->compassMaterial->info).name == '\0') {
+            if (*(cent->compassMaterial->info).name == '\0') {
               return;
             }
-            local_6c = local_68->compassMaterial;
-            if ((local_78->team == local_70) &&
-               ((local_78->team != TEAM_BAD || (local_78->ownerIndex == *(int *)(local_88 + 8))))) {
-              local_41 = '\x01';
+            material = cent->compassMaterial;
+            if ((veh->team == myTeam) &&
+               ((veh->team != TEAM_BAD || (veh->ownerIndex == localClientInfo->clientNum)))) {
+              friendly = true;
             }
             else {
-              local_5e = '\x01';
+              enemy = true;
             }
           }
           else {
-            local_84 = CG_GetVehicleInfo((uint)(local_68->nextState).un2.vehicleState.
-                                               vehicleInfoIndex);
-            local_6c = local_84->compassIconMaterial;
-            for (local_98 = 0; pcVar4 = local_74,
-                (int)(uint)local_98 < (com_maxclients->current).integer; local_98 = local_98 + 1) {
-              piVar1 = (int *)((int)(local_74->bgs).clientinfo + (uint)local_98 * 0x5c8);
-              if ((*piVar1 != 0) &&
-                 (piVar1[0x157] == ((CompassVehicle *)&local_78->entityNum)->entityNum)) {
-                if (local_74->clientNum == piVar1[2]) {
-                  if (local_5d != '\0') {
-                    local_6c = cgMedia.compassping_player;
+            info = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
+            material = info->compassIconMaterial;
+            for (i = 0; pcVar4 = cgameGlob, (int)(uint)i < (com_maxclients->current).integer;
+                i = i + 1) {
+              piVar1 = (int *)((int)(cgameGlob->bgs).clientinfo + (uint)i * 0x5c8);
+              if ((*piVar1 != 0) && (piVar1[0x157] == veh->entityNum)) {
+                if (cgameGlob->clientNum == piVar1[2]) {
+                  if (compassForcePlayerIcon != false) {
+                    material = cgMedia.compassping_player;
                   }
-                  local_9 = '\x01';
+                  isSelf = true;
                   break;
                 }
-                if ((piVar1[0xb] == local_70) && (piVar1[0xb] != 0)) {
-                  if (local_5d != '\0') {
-                    local_6c = cgMedia.compassping_player;
+                if ((piVar1[0xb] == myTeam) && (piVar1[0xb] != 0)) {
+                  if (compassForcePlayerIcon != false) {
+                    material = cgMedia.compassping_player;
                   }
-                  local_41 = '\x01';
+                  friendly = true;
                   break;
                 }
-                ppVar3 = &local_74->predictedPlayerState;
+                ppVar3 = &cgameGlob->predictedPlayerState;
                 _allshl();
                 if (((extraout_EAX & ppVar3->perks[0]) == 0 &&
                      (extraout_EDX & (pcVar4->predictedPlayerState).perks[1]) == 0) ||
-                   (local_89 != '\0')) {
-                  if (local_5e == '\0') {
-                    local_5e = '\x01';
+                   (clipped != false)) {
+                  if (enemy == false) {
+                    enemy = true;
                     iVar6 = piVar1[2];
-                    if ((s_compassActors[param_1] + iVar6 == (CompassActor *)0x0) &&
+                    if ((s_compassActors[localClientNum] + iVar6 == (CompassActor *)0x0) &&
                        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                                  ,0x9a5,0,"%s"), !bVar5)) {
                       pcVar2 = (code *)swi(3);
                       (*pcVar2)();
                       return;
                     }
-                    local_10 = s_compassActors[param_1][iVar6].currentFadeTimeAmount;
+                    local_10 = s_compassActors[localClientNum][iVar6].currentFadeTimeAmount;
                   }
                   else {
                     iVar6 = piVar1[2];
-                    if ((s_compassActors[param_1] + iVar6 == (CompassActor *)0x0) &&
+                    if ((s_compassActors[localClientNum] + iVar6 == (CompassActor *)0x0) &&
                        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                                  ,0x9ab,0,"%s"), !bVar5)) {
                       pcVar2 = (code *)swi(3);
                       (*pcVar2)();
                       return;
                     }
-                    local_10 = local_10 + s_compassActors[param_1][iVar6].currentFadeTimeAmount;
+                    local_10 = local_10 +
+                               s_compassActors[localClientNum][iVar6].currentFadeTimeAmount;
                   }
                 }
                 else {
-                  local_5e = '\x01';
+                  enemy = true;
                 }
               }
             }
-            if ((local_5e != '\0') && (local_84->remoteControl != 0)) goto LAB_00490d12;
+            if ((enemy != false) && (info->remoteControl != 0)) goto LAB_00490d12;
           }
-          if ((local_89 == '\0') || (local_5e != '\0')) {
-            fVar7 = CG_GetScramblerEnemyAlpha(param_1);
+          if ((clipped == false) || (enemy != false)) {
+            fVar7 = CG_GetScramblerEnemyAlpha(localClientNum);
             local_10 = (1.0 - fVar7) * local_10;
-            if (local_74->compassScrambler[0xe].startTime != 0) {
+            if (cgameGlob->compassScrambler[0xe].startTime != 0) {
               local_10 = 0.0;
             }
-            if (((param_3 == 0xd) && (local_68->bIsPlaneOnRadar != 0)) || (local_9 == '\0')) {
-              if (local_41 == '\0') {
-                if (local_5e == '\0') {
-                  bVar5 = IsHardcoreMode(param_1);
+            if (((eType == 0xd) && (cent->bIsPlaneOnRadar != 0)) || (isSelf == false)) {
+              if (friendly == false) {
+                if (enemy == false) {
+                  bVar5 = IsHardcoreMode(localClientNum);
                   if (!bVar5) {
-                    local_1c = 1.0;
+                    fadedColor = 1.0;
                     local_18 = 1.0;
                     local_14 = 1.0;
-                    CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                      local_7c,local_8,local_20,param_5->horzAlign,
-                                      param_5->vertAlign,local_5c,&local_1c,local_6c);
+                    CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                      local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor
+                                      ,material);
                   }
                 }
                 else {
                   if ((team_indicator->current).integer == 3) {
-                    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&local_54);
-                    local_1c = local_54;
+                    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&altColor);
+                    fadedColor = altColor;
                     local_18 = local_50;
                     local_14 = local_4c;
                   }
                   else {
-                    local_1c = 0.894;
+                    fadedColor = 0.894;
                     local_18 = 0.501;
                     local_14 = 0.537;
                   }
-                  local_10 = local_10 * local_64;
-                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                    local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                    local_5c,&local_1c,local_6c);
+                  local_10 = local_10 * compassFadeOutAlpha;
+                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                    local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                    material);
                 }
               }
               else {
                 if ((team_indicator->current).integer == 3) {
-                  Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&local_54);
-                  local_1c = local_54;
+                  Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&altColor);
+                  fadedColor = altColor;
                   local_18 = local_50;
                   local_14 = local_4c;
                 }
                 else {
-                  local_1c = 0.509;
+                  fadedColor = 0.509;
                   local_18 = 0.772;
                   local_14 = 0.537;
                 }
-                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                  local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                  local_5c,&local_1c,local_6c);
+                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                  local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                  material);
               }
             }
             else {
-              local_1c = 1.0;
+              fadedColor = 1.0;
               local_18 = 1.0;
               local_14 = 0.0;
-              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                local_5c,&local_1c,local_6c);
+              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                material);
             }
           }
         }
       }
 LAB_00490d12:
-      local_78 = local_78 + 1;
+      veh = veh + 1;
     }
   }
   return;
@@ -3666,8 +3799,8 @@ LAB_00490d12:
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_CompassDrawDogs(int param_1,CompassType param_2,int param_3,rectDef_s *param_4,rectDef_s *param_5
-                  ,Material *param_6,float *param_7)
+CG_CompassDrawDogs(int localClientNum,CompassType compassType,int eType,rectDef_s *parentRect,
+                  rectDef_s *rect,Material *dogMaterial,float *color)
 
 {
   code *pcVar1;
@@ -3678,126 +3811,127 @@ CG_CompassDrawDogs(int param_1,CompassType param_2,int param_3,rectDef_s *param_
   int iVar5;
   uint extraout_EDX;
   float fVar6;
-  float local_80 [2];
-  CompassDogs *local_78;
-  char local_71;
-  float local_70;
+  float yawVector [2];
+  CompassDogs *dog;
+  bool clipped;
+  float xy;
   float local_6c;
-  cg_s *local_68;
-  team_t local_64;
-  centity_s *local_60;
-  float local_5c;
-  float local_58;
-  float local_54;
-  float local_50;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  centity_s *cent;
+  float compassFadeOutAlpha;
+  float yawTo;
+  float centerY;
+  float altColor;
   float local_4c;
   float local_48;
-  char local_3d;
-  int local_3c;
-  rectDef_s local_38;
-  float local_20;
-  float local_1c;
-  float local_18;
+  bool friendly;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float w;
   
-  local_68 = CG_GetLocalClientGlobals(param_1);
-  if ((local_68->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0x9ff,0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = local_68;
-  ppVar2 = &local_68->predictedPlayerState;
+  pcVar3 = cgameGlob;
+  ppVar2 = &cgameGlob->predictedPlayerState;
   _allshl();
   if ((extraout_EAX & ppVar2->perks[0]) != 0 ||
       (extraout_EDX & (pcVar3->predictedPlayerState).perks[1]) != 0) {
-    local_5c = CG_FadeCompass(param_1,local_68->compassFadeTime,param_2);
-    fVar6 = CG_FadeCompassIcons(param_1,false);
-    local_5c = fVar6 * local_5c;
-    if (local_5c != 0.0) {
+    compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+    fVar6 = CG_FadeCompassIcons(localClientNum,false);
+    compassFadeOutAlpha = fVar6 * compassFadeOutAlpha;
+    if (compassFadeOutAlpha != 0.0) {
       CG_CompassCalcDimensions
-                (param_2,local_68,param_4,param_5,&local_38.x,&local_38.y,&local_38.w,&local_38.h);
-      local_20 = local_38.w * 0.5 + local_38.x;
-      local_54 = local_38.h * 0.5 + local_38.y;
-      local_18 = *param_7;
-      local_14 = param_7[1];
-      local_10 = param_7[2];
-      local_c = param_7[3];
-      CG_CompassUpYawVector(local_68,local_80);
-      local_78 = s_compassDogs[param_1];
-      local_64 = *(team_t *)((int)(local_68->bgs).clientinfo + local_68->clientNum * 0x5c8 + 0x2c);
-      if ((local_64 == s_compassDogs[param_1][0].team) && (local_64 != TEAM_BAD)) {
-        local_3d = '\x01';
+                (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                 &scaledRect.h);
+      centerX = scaledRect.w * 0.5 + scaledRect.x;
+      centerY = scaledRect.h * 0.5 + scaledRect.y;
+      fadedColor = *color;
+      local_14 = color[1];
+      local_10 = color[2];
+      local_c = color[3];
+      CG_CompassUpYawVector(cgameGlob,yawVector);
+      dog = s_compassDogs[localClientNum];
+      myTeam = *(team_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8 + 0x2c);
+      if ((myTeam == s_compassDogs[localClientNum][0].team) && (myTeam != TEAM_BAD)) {
+        friendly = true;
       }
       else {
-        local_3d = '\0';
+        friendly = false;
       }
-      for (local_3c = 0; local_3c < 8; local_3c = local_3c + 1) {
-        local_18 = *param_7;
-        local_14 = param_7[1];
-        local_10 = param_7[2];
-        local_c = param_7[3];
-        local_60 = CG_GetEntity(param_1,local_78->entityNum);
-        if ((local_60->nextState).eType == param_3) {
-          if (local_68->time < local_78->lastUpdate) {
-            local_78->lastUpdate = 0;
+      for (num = 0; num < 8; num = num + 1) {
+        fadedColor = *color;
+        local_14 = color[1];
+        local_10 = color[2];
+        local_c = color[3];
+        cent = CG_GetEntity(localClientNum,dog->entityNum);
+        if ((cent->nextState).eType == eType) {
+          if (cgameGlob->time < dog->lastUpdate) {
+            dog->lastUpdate = 0;
           }
-          if ((local_68->time + -0x5dc <= local_78->lastUpdate) &&
-             ((local_71 = CG_WorldPosToCompass
-                                    (param_2,local_68,&local_38,local_80,(local_68->refdef).vieworg,
-                                     local_78->lastPos,(float *)0x0,&local_70), !(bool)local_71 ||
-              ((compassClampIcons->current).enabled != false)))) {
+          if ((cgameGlob->time + -0x5dc <= dog->lastUpdate) &&
+             ((clipped = CG_WorldPosToCompass
+                                   (compassType,cgameGlob,&scaledRect,yawVector,
+                                    (cgameGlob->refdef).vieworg,dog->lastPos,(float *)0x0,&xy),
+              !clipped || ((compassClampIcons->current).enabled != false)))) {
             iVar5 = CL_LocalClient_GetActiveCount();
-            local_8 = (float)(byte)(((iVar5 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
+            w = (float)(byte)(((iVar5 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
             iVar5 = CL_LocalClient_GetActiveCount();
-            local_1c = (float)(byte)(((iVar5 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
-            local_70 = (local_20 - local_8 * 0.5) + local_70;
-            local_6c = (local_54 - local_1c * 0.5) + local_6c;
-            if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false))
-            {
-              local_58 = AngleNormalize360(local_68->refdefViewAngles[1] - local_78->lastYaw);
+            h = (float)(byte)(((iVar5 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
+            xy = (centerX - w * 0.5) + xy;
+            local_6c = (centerY - h * 0.5) + local_6c;
+            if ((compassType == COMPASS_TYPE_PARTIAL) &&
+               ((compassRotation->current).enabled != false)) {
+              yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - dog->lastYaw);
             }
             else {
-              local_58 = AngleNormalize360(local_68->compassNorthYaw - local_78->lastYaw);
+              yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - dog->lastYaw);
             }
-            local_c = local_5c;
-            if (local_3d == '\0') {
+            local_c = compassFadeOutAlpha;
+            if (friendly == false) {
               if ((team_indicator->current).integer == 3) {
-                Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&local_50);
-                local_18 = local_50;
+                Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&altColor);
+                fadedColor = altColor;
                 local_14 = local_4c;
                 local_10 = local_48;
               }
               else {
-                local_18 = 0.894;
+                fadedColor = 0.894;
                 local_14 = 0.501;
                 local_10 = 0.537;
               }
             }
             else if ((team_indicator->current).integer == 3) {
-              Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&local_50);
-              local_18 = local_50;
+              Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&altColor);
+              fadedColor = altColor;
               local_14 = local_4c;
               local_10 = local_48;
             }
             else {
-              local_18 = 0.509;
+              fadedColor = 0.509;
               local_14 = 0.772;
               local_10 = 0.537;
             }
-            if (local_71 == '\0') {
-              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_70,
-                                local_6c,local_8,local_1c,param_5->horzAlign,param_5->vertAlign,
-                                local_58,&local_18,param_6);
+            if (clipped == false) {
+              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                local_6c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                dogMaterial);
             }
           }
         }
-        local_78 = local_78 + 1;
+        dog = dog + 1;
       }
     }
   }
@@ -3812,37 +3946,37 @@ CG_CompassDrawDogs(int param_1,CompassType param_2,int param_3,rectDef_s *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-Material * __cdecl CG_GetTurretCompassMaterial(centity_s *param_1,bool param_2,bool param_3)
+Material * __cdecl CG_GetTurretCompassMaterial(centity_s *cent,bool friendly,bool isFiring)
 
 {
   Material *pMVar1;
   
-  if (((param_1->nextState).lerp.u.turret.flags & 1U) == 0) {
-    if (((param_1->nextState).lerp.u.turret.flags & 2U) == 0) {
+  if (((cent->nextState).lerp.u.turret.flags & 1U) == 0) {
+    if (((cent->nextState).lerp.u.turret.flags & 2U) == 0) {
       pMVar1 = (Material *)0x0;
     }
-    else if (param_2) {
+    else if (friendly) {
       pMVar1 = cgMedia.compass_tow_turret_friendly;
-      if (param_3) {
+      if (isFiring) {
         pMVar1 = cgMedia.compass_tow_turret_friendly_firing;
       }
     }
     else {
       pMVar1 = cgMedia.compass_tow_turret_enemy;
-      if (param_3) {
+      if (isFiring) {
         pMVar1 = cgMedia.compass_tow_turret_enemy_firing;
       }
     }
   }
-  else if (param_2) {
+  else if (friendly) {
     pMVar1 = cgMedia.compass_sentry_friendly;
-    if (param_3) {
+    if (isFiring) {
       pMVar1 = cgMedia.compass_sentry_friendly_firing;
     }
   }
   else {
     pMVar1 = cgMedia.compass_sentry_enemy;
-    if (param_3) {
+    if (isFiring) {
       pMVar1 = cgMedia.compass_sentry_enemy_firing;
     }
   }
@@ -3859,50 +3993,50 @@ Material * __cdecl CG_GetTurretCompassMaterial(centity_s *param_1,bool param_2,b
 
 void __cdecl
 CG_CompassDrawTurrets
-          (int param_1,CompassType param_2,int param_3,rectDef_s *param_4,rectDef_s *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,int eType,rectDef_s *parentRect,
+          rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_80 [2];
-  CompassTurrets *local_78;
-  char local_71;
-  int local_70;
-  float local_6c;
+  float yawVector [2];
+  CompassTurrets *turret;
+  bool clipped;
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_68;
-  cg_s *local_64;
-  team_t local_60;
-  Material *local_5c;
-  centity_s *local_58;
-  float local_54;
-  char local_4e;
-  undefined1 local_4d;
-  float local_4c;
-  float local_48;
-  bool local_41;
-  int local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  Material *material;
+  centity_s *cent;
+  float compassFadeOutAlpha;
+  bool enemy;
+  bool compassForcePlayerIcon;
+  float yawTo;
+  float centerY;
+  bool friendly;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  char local_9;
-  float local_8;
+  bool isOwnTurret;
+  float w;
   
-  local_64 = CG_GetLocalClientGlobals(param_1);
-  if ((local_64->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xa95,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (uint)local_64->clientNum) &&
+  if ((0x1f < (uint)cgameGlob->clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xa97,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -3911,104 +4045,107 @@ CG_CompassDrawTurrets
     (*pcVar1)();
     return;
   }
-  local_70 = (int)(local_64->bgs).clientinfo + local_64->clientNum * 0x5c8;
-  local_54 = CG_FadeCompass(param_1,local_64->compassFadeTime,param_2);
-  fVar4 = CG_FadeCompassIcons(param_1,false);
-  local_54 = fVar4 * local_54;
-  if (local_54 != 0.0) {
+  localClientInfo =
+       (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar4 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar4 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_64,param_4,param_5,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h);
-    local_24 = local_3c.w * 0.5 + local_3c.x;
-    local_48 = local_3c.h * 0.5 + local_3c.y;
-    local_1c = *param_6;
-    local_18 = param_6[1];
-    local_14 = param_6[2];
-    local_10 = param_6[3];
-    CG_CompassUpYawVector(local_64,local_80);
-    local_4d = Dvar_GetBool("compassForcePlayerIcon");
-    local_78 = s_compassTurrets[param_1];
-    for (local_40 = 0; local_40 < 0x20; local_40 = local_40 + 1) {
-      local_1c = *param_6;
-      local_18 = param_6[1];
-      local_14 = param_6[2];
-      local_10 = param_6[3];
-      local_58 = CG_GetEntity(param_1,local_78->entityNum);
-      if ((local_58->nextState).eType == param_3) {
-        if (local_64->time < local_78->lastUpdate) {
-          local_78->lastUpdate = 0;
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_18 = color[1];
+    local_14 = color[2];
+    local_10 = color[3];
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    compassForcePlayerIcon = Dvar_GetBool("compassForcePlayerIcon");
+    turret = s_compassTurrets[localClientNum];
+    for (num = 0; num < 0x20; num = num + 1) {
+      fadedColor = *color;
+      local_18 = color[1];
+      local_14 = color[2];
+      local_10 = color[3];
+      cent = CG_GetEntity(localClientNum,turret->entityNum);
+      if ((cent->nextState).eType == eType) {
+        if (cgameGlob->time < turret->lastUpdate) {
+          turret->lastUpdate = 0;
         }
-        if (local_64->time + -0x5dc <= local_78->lastUpdate) {
-          local_71 = CG_WorldPosToCompass
-                               (param_2,local_64,&local_3c,local_80,(local_64->refdef).vieworg,
-                                local_78->lastPos,(float *)0x0,&local_6c);
+        if (cgameGlob->time + -0x5dc <= turret->lastUpdate) {
+          clipped = CG_WorldPosToCompass
+                              (compassType,cgameGlob,&scaledRect,yawVector,
+                               (cgameGlob->refdef).vieworg,turret->lastPos,(float *)0x0,&xy);
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_8 = (float)(byte)(((iVar3 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
+          w = (float)(byte)(((iVar3 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_20 = (float)(byte)(((iVar3 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
-          local_6c = (local_24 - local_8 * 0.5) + local_6c;
-          local_68 = (local_48 - local_20 * 0.5) + local_68;
-          if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-            local_4c = AngleNormalize360(local_64->refdefViewAngles[1] - local_78->lastYaw);
+          h = (float)(byte)(((iVar3 < 2) - 1U & 0x14) + 0x14) * (compassSize->current).value;
+          xy = (centerX - w * 0.5) + xy;
+          local_68 = (centerY - h * 0.5) + local_68;
+          if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)
+             ) {
+            yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - turret->lastYaw);
           }
           else {
-            local_4c = AngleNormalize360(local_64->compassNorthYaw - local_78->lastYaw);
+            yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - turret->lastYaw);
           }
-          if (local_54 < local_10) {
-            local_10 = local_54;
+          if (compassFadeOutAlpha < local_10) {
+            local_10 = compassFadeOutAlpha;
           }
-          local_60 = *(team_t *)(local_70 + 0x2c);
-          local_41 = false;
-          local_4e = '\0';
-          if ((local_60 == local_78->team) && (local_78->team != TEAM_BAD)) {
-            local_41 = true;
+          myTeam = localClientInfo->team;
+          friendly = false;
+          enemy = false;
+          if ((myTeam == turret->team) && (turret->team != TEAM_BAD)) {
+            friendly = true;
           }
           else {
-            local_4e = '\x01';
+            enemy = true;
           }
-          local_9 = local_78->ownerIndex == local_64->clientNum;
-          if ((bool)local_9) {
-            local_41 = true;
+          isOwnTurret = turret->ownerIndex == cgameGlob->clientNum;
+          if (isOwnTurret) {
+            friendly = true;
           }
-          local_5c = CG_GetTurretCompassMaterial(local_58,local_41,local_78->firing);
-          if (((local_71 == '\0') || (local_9 != '\0')) &&
-             (((local_58->nextState).lerp.u.turret.flags & 8U) == 0)) {
-            fVar4 = CG_GetScramblerEnemyAlpha(param_1);
+          material = CG_GetTurretCompassMaterial(cent,friendly,turret->firing);
+          if (((clipped == false) || (isOwnTurret != false)) &&
+             (((cent->nextState).lerp.u.turret.flags & 8U) == 0)) {
+            fVar4 = CG_GetScramblerEnemyAlpha(localClientNum);
             local_10 = (1.0 - fVar4) * local_10;
-            if (local_64->compassScrambler[0xe].startTime != 0) {
+            if (cgameGlob->compassScrambler[0xe].startTime != 0) {
               local_10 = 0.0;
             }
-            if (local_41 == false) {
-              if (local_4e == '\0') {
-                bVar2 = IsHardcoreMode(param_1);
+            if (friendly == false) {
+              if (enemy == false) {
+                bVar2 = IsHardcoreMode(localClientNum);
                 if (!bVar2) {
-                  local_1c = 1.0;
+                  fadedColor = 1.0;
                   local_18 = 1.0;
                   local_14 = 1.0;
-                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,
-                                    local_68,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                    local_4c,&local_1c,local_5c);
+                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                    local_68,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                    material);
                 }
               }
               else {
-                if ((local_64->predictedPlayerState).satelliteTypeEnabled == 0) {
-                  local_10 = local_54 -
-                             (float)(local_64->time - local_78->beginFadeTime) /
+                if ((cgameGlob->predictedPlayerState).satelliteTypeEnabled == 0) {
+                  local_10 = compassFadeOutAlpha -
+                             (float)(cgameGlob->time - turret->beginFadeTime) /
                              ((compassSoundPingFadeTime->current).value * 1000.0);
                 }
-                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,
-                                  local_68,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                  local_4c,&local_1c,local_5c);
+                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                  local_68,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                  material);
               }
             }
             else {
-              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,
-                                local_68,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                local_4c,&local_1c,local_5c);
+              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                local_68,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                material);
             }
           }
         }
       }
-      local_78 = local_78 + 1;
+      turret = turret + 1;
     }
   }
   return;
@@ -4024,52 +4161,52 @@ CG_CompassDrawTurrets
 
 void __cdecl
 CG_CompassDrawHelicopter
-          (int param_1,CompassType param_2,int param_3,rectDef_s *param_4,rectDef_s *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,int eType,rectDef_s *parentRect,
+          rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_90 [2];
-  int local_88;
-  vehicle_info_t *local_84;
-  float local_80;
+  float yawVector [2];
+  clientInfo_t *localClientInfo;
+  vehicle_info_t *info;
+  float xy;
   float local_7c;
-  cg_s *local_78;
-  undefined4 local_74;
-  Material *local_70;
-  centity_s *local_6c;
-  float local_68;
-  bool local_61;
-  float local_60;
-  CompassHelicopter *local_5c;
-  float local_58;
-  float local_54;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  Material *material;
+  centity_s *cent;
+  float compassFadeOutAlpha;
+  bool enemy;
+  float yawTo;
+  CompassHelicopter *copter;
+  float centerY;
+  float altColor;
   float local_50;
   float local_4c;
-  char local_41;
-  int local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  bool friendly;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  char local_9;
-  float local_8;
+  bool isSelf;
+  float w;
   
-  local_78 = CG_GetLocalClientGlobals(param_1);
-  if ((local_78->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xb1a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (uint)local_78->clientNum) &&
+  if ((0x1f < (uint)cgameGlob->clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xb1c,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -4078,129 +4215,130 @@ CG_CompassDrawHelicopter
     (*pcVar1)();
     return;
   }
-  local_88 = (int)(local_78->bgs).clientinfo + local_78->clientNum * 0x5c8;
-  local_68 = CG_FadeCompass(param_1,local_78->compassFadeTime,param_2);
-  fVar4 = CG_FadeCompassIcons(param_1,false);
-  local_68 = fVar4 * local_68;
-  if (local_68 != 0.0) {
+  localClientInfo =
+       (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar4 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar4 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_78,param_4,param_5,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h);
-    local_24 = local_3c.w * 0.5 + local_3c.x;
-    local_58 = local_3c.h * 0.5 + local_3c.y;
-    local_1c = *param_6;
-    local_18 = param_6[1];
-    local_14 = param_6[2];
-    local_10 = param_6[3];
-    CG_CompassUpYawVector(local_78,local_90);
-    local_5c = s_compassHelicopter[param_1];
-    for (local_40 = 0; local_40 < 8; local_40 = local_40 + 1) {
-      local_1c = *param_6;
-      local_18 = param_6[1];
-      local_14 = param_6[2];
-      local_10 = param_6[3];
-      local_6c = CG_GetEntity(param_1,local_5c->entityNum);
-      if (((local_6c->nextState).eType == param_3) &&
-         (fVar4 = CG_VehGetHealthPercentageEntity(local_6c), fVar4 != 0.0)) {
-        if (local_78->time < local_5c->lastUpdate) {
-          local_5c->lastUpdate = 0;
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_18 = color[1];
+    local_14 = color[2];
+    local_10 = color[3];
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    copter = s_compassHelicopter[localClientNum];
+    for (num = 0; num < 8; num = num + 1) {
+      fadedColor = *color;
+      local_18 = color[1];
+      local_14 = color[2];
+      local_10 = color[3];
+      cent = CG_GetEntity(localClientNum,copter->entityNum);
+      if (((cent->nextState).eType == eType) &&
+         (fVar4 = CG_VehGetHealthPercentageEntity(cent), fVar4 != 0.0)) {
+        if (cgameGlob->time < copter->lastUpdate) {
+          copter->lastUpdate = 0;
         }
-        if (local_78->time + -0x5dc <= local_5c->lastUpdate) {
+        if (cgameGlob->time + -0x5dc <= copter->lastUpdate) {
           CG_WorldPosToCompass
-                    (param_2,local_78,&local_3c,local_90,(local_78->refdef).vieworg,
-                     local_5c->lastPos,(float *)0x0,&local_80);
+                    (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                     copter->lastPos,(float *)0x0,&xy);
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_8 = (float)(byte)(((iVar3 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
+          w = (float)(byte)(((iVar3 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_20 = (float)(byte)(((iVar3 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
-          local_80 = (local_24 - local_8 * 0.5) + local_80;
-          local_7c = (local_58 - local_20 * 0.5) + local_7c;
-          if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-            local_60 = AngleNormalize360(local_78->refdefViewAngles[1] - local_5c->lastYaw);
+          h = (float)(byte)(((iVar3 < 2) - 1U & 0x28) + 0x28) * (compassSize->current).value;
+          xy = (centerX - w * 0.5) + xy;
+          local_7c = (centerY - h * 0.5) + local_7c;
+          if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)
+             ) {
+            yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - copter->lastYaw);
           }
           else {
-            local_60 = AngleNormalize360(local_78->compassNorthYaw - local_5c->lastYaw);
+            yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - copter->lastYaw);
           }
-          if (local_68 < local_10) {
-            local_10 = local_68;
+          if (compassFadeOutAlpha < local_10) {
+            local_10 = compassFadeOutAlpha;
           }
-          fVar4 = CG_GetScramblerEnemyAlpha(param_1);
+          fVar4 = CG_GetScramblerEnemyAlpha(localClientNum);
           local_10 = (1.0 - fVar4) * local_10;
-          if (local_78->compassScrambler[0xe].startTime != 0) {
+          if (cgameGlob->compassScrambler[0xe].startTime != 0) {
             local_10 = 0.0;
           }
-          local_74 = *(undefined4 *)(local_88 + 0x2c);
-          local_41 = 0;
-          local_61 = false;
-          local_9 = '\0';
-          local_84 = CG_GetVehicleInfo((uint)(local_6c->nextState).un2.vehicleState.vehicleInfoIndex
-                                      );
-          local_70 = local_84->compassIconMaterial;
-          if (*(int *)(local_88 + 0x2c) == 0) {
-            local_61 = local_78->clientNum != local_5c->ownerIndex;
+          myTeam = localClientInfo->team;
+          friendly = false;
+          enemy = false;
+          isSelf = false;
+          info = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
+          material = info->compassIconMaterial;
+          if (localClientInfo->team == TEAM_BAD) {
+            enemy = cgameGlob->clientNum != copter->ownerIndex;
           }
           else {
-            local_61 = *(team_t *)(local_88 + 0x2c) != local_5c->team;
+            enemy = localClientInfo->team != copter->team;
           }
-          local_41 = '\x01' - (local_61 != false);
-          if (local_9 == '\0') {
-            if (local_41 == '\0') {
-              if (local_61 == false) {
-                bVar2 = IsHardcoreMode(param_1);
+          friendly = (bool)('\x01' - (enemy != false));
+          if (isSelf == false) {
+            if (friendly == false) {
+              if (enemy == false) {
+                bVar2 = IsHardcoreMode(localClientNum);
                 if (!bVar2) {
-                  local_1c = 1.0;
+                  fadedColor = 1.0;
                   local_18 = 1.0;
                   local_14 = 1.0;
-                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                    local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                    local_60,&local_1c,local_70);
+                  CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                    local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                    material);
                 }
               }
               else {
                 if ((team_indicator->current).integer == 3) {
-                  Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&local_54);
-                  local_1c = local_54;
+                  Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&altColor);
+                  fadedColor = altColor;
                   local_18 = local_50;
                   local_14 = local_4c;
                 }
                 else {
-                  local_1c = 0.894;
+                  fadedColor = 0.894;
                   local_18 = 0.501;
                   local_14 = 0.537;
                 }
-                local_10 = local_10 * local_68;
-                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                  local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                  local_60,&local_1c,local_70);
+                local_10 = local_10 * compassFadeOutAlpha;
+                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                  local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                  material);
               }
             }
             else {
               if ((team_indicator->current).integer == 3) {
-                Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&local_54);
-                local_1c = local_54;
+                Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&altColor);
+                fadedColor = altColor;
                 local_18 = local_50;
                 local_14 = local_4c;
               }
               else {
-                local_1c = 0.509;
+                fadedColor = 0.509;
                 local_18 = 0.772;
                 local_14 = 0.537;
               }
-              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                local_60,&local_1c,local_70);
+              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                material);
             }
           }
           else {
-            local_1c = 1.0;
+            fadedColor = 1.0;
             local_18 = 1.0;
             local_14 = 0.0;
-            CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,local_7c,
-                              local_8,local_20,param_5->horzAlign,param_5->vertAlign,local_60,
-                              &local_1c,local_70);
+            CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,local_7c
+                              ,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,material);
           }
         }
       }
-      local_5c = local_5c + 1;
+      copter = copter + 1;
     }
   }
   return;
@@ -4217,51 +4355,51 @@ CG_CompassDrawHelicopter
 
 void __cdecl
 CG_CompassDrawGuidedMissile
-          (int param_1,CompassType param_2,int param_3,rectDef_s *param_4,rectDef_s *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,int eType,rectDef_s *parentRect,
+          rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_8c [2];
-  int local_84;
-  float local_80;
+  float yawVector [2];
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_7c;
-  cg_s *local_78;
-  undefined4 local_74;
-  Material *local_70;
-  centity_s *local_6c;
-  float local_68;
-  bool local_61;
-  float local_60;
-  CompassGuidedMissile *local_5c;
-  float local_58;
-  float local_54;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  Material *material;
+  centity_s *cent;
+  float compassFadeOutAlpha;
+  bool enemy;
+  float yawTo;
+  CompassGuidedMissile *missile;
+  float centerY;
+  float altColor;
   float local_50;
   float local_4c;
-  char local_41;
-  int local_40;
-  rectDef_s local_3c;
-  float local_24;
-  float local_20;
-  float local_1c;
+  bool friendly;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_18;
   float local_14;
   float local_10;
-  undefined1 local_9;
-  float local_8;
+  bool isSelf;
+  float w;
   
-  local_78 = CG_GetLocalClientGlobals(param_1);
-  if ((local_78->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xba1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (uint)local_78->clientNum) &&
+  if ((0x1f < (uint)cgameGlob->clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xba3,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -4270,114 +4408,116 @@ CG_CompassDrawGuidedMissile
     (*pcVar1)();
     return;
   }
-  local_84 = (int)(local_78->bgs).clientinfo + local_78->clientNum * 0x5c8;
-  local_68 = CG_FadeCompass(param_1,local_78->compassFadeTime,param_2);
-  fVar4 = CG_FadeCompassIcons(param_1,false);
-  local_68 = fVar4 * local_68;
-  if (local_68 != 0.0) {
+  localClientInfo =
+       (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar4 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar4 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_78,param_4,param_5,&local_3c.x,&local_3c.y,&local_3c.w,&local_3c.h);
-    local_24 = local_3c.w * 0.5 + local_3c.x;
-    local_58 = local_3c.h * 0.5 + local_3c.y;
-    local_1c = *param_6;
-    local_18 = param_6[1];
-    local_14 = param_6[2];
-    local_10 = param_6[3];
-    CG_CompassUpYawVector(local_78,local_8c);
-    local_5c = s_compassGuidedMissiles[param_1];
-    for (local_40 = 0; local_40 < 0x20; local_40 = local_40 + 1) {
-      local_1c = *param_6;
-      local_18 = param_6[1];
-      local_14 = param_6[2];
-      local_10 = param_6[3];
-      local_6c = CG_GetEntity(param_1,local_5c->entityNum);
-      if ((local_6c->nextState).eType == param_3) {
-        if (local_78->time < local_5c->lastUpdate) {
-          local_5c->lastUpdate = 0;
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_18 = color[1];
+    local_14 = color[2];
+    local_10 = color[3];
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    missile = s_compassGuidedMissiles[localClientNum];
+    for (num = 0; num < 0x20; num = num + 1) {
+      fadedColor = *color;
+      local_18 = color[1];
+      local_14 = color[2];
+      local_10 = color[3];
+      cent = CG_GetEntity(localClientNum,missile->entityNum);
+      if ((cent->nextState).eType == eType) {
+        if (cgameGlob->time < missile->lastUpdate) {
+          missile->lastUpdate = 0;
         }
-        if (local_78->time + -0x5dc <= local_5c->lastUpdate) {
+        if (cgameGlob->time + -0x5dc <= missile->lastUpdate) {
           CG_WorldPosToCompass
-                    (param_2,local_78,&local_3c,local_8c,(local_78->refdef).vieworg,
-                     local_5c->lastPos,(float *)0x0,&local_80);
+                    (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                     missile->lastPos,(float *)0x0,&xy);
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_8 = (float)(byte)(((iVar3 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
+          w = (float)(byte)(((iVar3 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
           iVar3 = CL_LocalClient_GetActiveCount();
-          local_20 = (float)(byte)(((iVar3 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
-          local_80 = (local_24 - local_8 * 0.5) + local_80;
-          local_7c = (local_58 - local_20 * 0.5) + local_7c;
-          if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-            local_60 = AngleNormalize360(local_78->refdefViewAngles[1] - local_5c->lastYaw);
+          h = (float)(byte)(((iVar3 < 2) - 1U & 0xf) + 0xf) * (compassSize->current).value;
+          xy = (centerX - w * 0.5) + xy;
+          local_7c = (centerY - h * 0.5) + local_7c;
+          if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)
+             ) {
+            yawTo = AngleNormalize360(cgameGlob->refdefViewAngles[1] - missile->lastYaw);
           }
           else {
-            local_60 = AngleNormalize360(local_78->compassNorthYaw - local_5c->lastYaw);
+            yawTo = AngleNormalize360(cgameGlob->compassNorthYaw - missile->lastYaw);
           }
-          if (local_68 < local_10) {
-            local_10 = local_68;
+          if (compassFadeOutAlpha < local_10) {
+            local_10 = compassFadeOutAlpha;
           }
-          fVar4 = CG_GetScramblerEnemyAlpha(param_1);
+          fVar4 = CG_GetScramblerEnemyAlpha(localClientNum);
           local_10 = (1.0 - fVar4) * local_10;
-          if (local_78->compassScrambler[0xe].startTime != 0) {
+          if (cgameGlob->compassScrambler[0xe].startTime != 0) {
             local_10 = 0.0;
           }
-          local_74 = *(undefined4 *)(local_84 + 0x2c);
-          local_9 = 0;
-          local_70 = cgMedia.compass_guided_missile;
-          if (*(int *)(local_84 + 0x2c) == 0) {
-            local_61 = local_78->clientNum != local_5c->ownerIndex;
+          myTeam = localClientInfo->team;
+          isSelf = false;
+          material = cgMedia.compass_guided_missile;
+          if (localClientInfo->team == TEAM_BAD) {
+            enemy = cgameGlob->clientNum != missile->ownerIndex;
           }
           else {
-            local_61 = *(team_t *)(local_84 + 0x2c) != local_5c->team;
+            enemy = localClientInfo->team != missile->team;
           }
-          local_41 = '\x01' - (local_61 != false);
-          if (local_41 == '\0') {
-            if (local_61 == false) {
-              bVar2 = IsHardcoreMode(param_1);
+          friendly = (bool)('\x01' - (enemy != false));
+          if (friendly == false) {
+            if (enemy == false) {
+              bVar2 = IsHardcoreMode(localClientNum);
               if (!bVar2) {
-                local_1c = 1.0;
+                fadedColor = 1.0;
                 local_18 = 1.0;
                 local_14 = 1.0;
-                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                  local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                  local_60,&local_1c,local_70);
+                CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                  local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                  material);
               }
             }
             else {
               if ((team_indicator->current).integer == 3) {
-                Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&local_54);
-                local_1c = local_54;
+                Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,&altColor);
+                fadedColor = altColor;
                 local_18 = local_50;
                 local_14 = local_4c;
               }
               else {
-                local_1c = 0.894;
+                fadedColor = 0.894;
                 local_18 = 0.501;
                 local_14 = 0.537;
               }
-              local_10 = local_10 * local_68;
-              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,
-                                local_7c,local_8,local_20,param_5->horzAlign,param_5->vertAlign,
-                                local_60,&local_1c,local_70);
+              local_10 = local_10 * compassFadeOutAlpha;
+              CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                                local_7c,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,
+                                material);
             }
           }
           else {
             if ((team_indicator->current).integer == 3) {
-              Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&local_54);
-              local_1c = local_54;
+              Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&altColor);
+              fadedColor = altColor;
               local_18 = local_50;
               local_14 = local_4c;
             }
             else {
-              local_1c = 0.509;
+              fadedColor = 0.509;
               local_18 = 0.772;
               local_14 = 0.537;
             }
-            CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,local_7c,
-                              local_8,local_20,param_5->horzAlign,param_5->vertAlign,local_60,
-                              &local_1c,local_70);
+            CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,local_7c
+                              ,w,h,rect->horzAlign,rect->vertAlign,yawTo,&fadedColor,material);
           }
         }
       }
-      local_5c = local_5c + 1;
+      missile = missile + 1;
     }
   }
   return;
@@ -4393,147 +4533,154 @@ CG_CompassDrawGuidedMissile
 
 void __cdecl
 CG_CompassDrawScramblerFriendly
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color)
 
 {
   code *pcVar1;
-  bool bVar2;
-  int iVar3;
-  float fVar4;
-  float local_b8;
-  float local_b4;
-  float local_ac;
+  float fVar2;
+  bool bVar3;
+  int iVar4;
+  float fVar5;
+  float scissorWidth;
+  float scissorHeight;
+  float radiusPixels;
+  float compassRect;
   float local_a8;
   float local_a4;
   float local_a0 [3];
-  float local_94;
-  centity_s **local_90;
-  float local_8c [2];
-  int local_84;
-  float local_80;
+  float pixPerInch;
+  CompassScrambler *scrambler;
+  float yawVector [2];
+  clientInfo_t *localClientInfo;
+  float xy;
   float local_7c;
-  cg_s *local_78;
-  undefined4 local_74;
-  float local_70;
+  cg_s *cgameGlob;
+  team_t myTeam;
+  float scissorRect;
   float local_6c;
   float local_68;
   float local_64;
   int local_60;
   int local_5c;
-  Material *local_58;
-  float local_54;
-  float local_50;
-  float local_4c;
+  Material *material;
+  float compassFadeOutAlpha;
+  float centerY;
+  float altColor;
   float local_48;
   float local_44;
-  int local_3c;
-  rectDef_s local_38;
-  float local_20;
-  float local_1c;
-  float local_18;
+  int num;
+  rectDef_s scaledRect;
+  float centerX;
+  float h;
+  float fadedColor;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float w;
   
-  local_78 = CG_GetLocalClientGlobals(param_1);
-  if ((local_78->nextSnap == (snapshot_s *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
-                               ,0xc24,0,"%s"), !bVar2)) {
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+                               ,0xc24,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (uint)local_78->clientNum) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
+  if ((0x1f < (uint)cgameGlob->clientNum) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_compassfriendlies_mp.cpp"
                                ,0xc26,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                              ), !bVar2)) {
+                              ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_84 = (int)(local_78->bgs).clientinfo + local_78->clientNum * 0x5c8;
-  local_54 = CG_FadeCompass(param_1,local_78->compassFadeTime,param_2);
-  fVar4 = CG_FadeCompassIcons(param_1,false);
-  local_54 = fVar4 * local_54;
-  if (local_54 != 0.0) {
+  localClientInfo =
+       (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8);
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar5 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar5 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_78,param_3,param_4,&local_38.x,&local_38.y,&local_38.w,&local_38.h);
-    local_20 = local_38.w * 0.5 + local_38.x;
-    local_50 = local_38.h * 0.5 + local_38.y;
-    local_18 = *param_5;
-    local_14 = param_5[1];
-    local_10 = param_5[2];
-    local_c = param_5[3];
-    CG_CompassUpYawVector(local_78,local_8c);
-    local_58 = cgMedia.compass_scrambler_large;
-    local_90 = &local_78->closestEnemyScrambler;
-    for (local_3c = 0; local_3c < 0x10; local_3c = local_3c + 1) {
-      if (local_90[3] != (centity_s *)0x0) {
-        local_18 = *param_5;
-        local_14 = param_5[1];
-        local_10 = param_5[2];
-        local_c = param_5[3];
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_14 = color[1];
+    local_10 = color[2];
+    local_c = color[3];
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    material = cgMedia.compass_scrambler_large;
+    scrambler = (CompassScrambler *)&cgameGlob->closestEnemyScrambler;
+    for (num = 0; num < 0x10; num = num + 1) {
+      if (scrambler->handle != 0) {
+        fadedColor = *color;
+        local_14 = color[1];
+        local_10 = color[2];
+        local_c = color[3];
         CG_WorldPosToCompass
-                  (param_2,local_78,&local_38,local_8c,(local_78->refdef).vieworg,(float *)local_90,
-                   &local_80,(float *)0x0);
+                  (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                   scrambler->pos,&xy,(float *)0x0);
         CG_CompassCalcDimensions
-                  (param_2,local_78,param_3,param_4,&local_ac,&local_a8,&local_a4,local_a0);
-        if (param_2 == COMPASS_TYPE_PARTIAL) {
-          local_94 = (compassMaxRange->current).value;
+                  (compassType,cgameGlob,parentRect,rect,&compassRect,&local_a8,&local_a4,local_a0);
+        if (compassType == COMPASS_TYPE_PARTIAL) {
+          fVar5 = (compassMaxRange->current).value;
         }
         else {
-          local_94 = local_78->compassMapWorldSize[1];
+          fVar5 = cgameGlob->compassMapWorldSize[1];
         }
-        local_94 = local_a0[0] / local_94;
-        local_8 = local_94 * 1000.0 * 2.0;
-        local_1c = local_94 * 1000.0 * 2.0;
-        local_80 = (local_20 - local_8 * 0.5) + local_80;
-        local_7c = (local_50 - local_1c * 0.5) + local_7c;
-        if (local_54 < local_c) {
-          local_c = local_54;
+        pixPerInch = local_a0[0] / fVar5;
+        w = pixPerInch * 1000.0 * 2.0;
+        h = pixPerInch * 1000.0 * 2.0;
+        xy = (centerX - w * 0.5) + xy;
+        local_7c = (centerY - h * 0.5) + local_7c;
+        if (compassFadeOutAlpha < local_c) {
+          local_c = compassFadeOutAlpha;
         }
-        fVar4 = CG_GetScramblerEnemyAlpha(param_1);
-        local_c = (1.0 - fVar4) * local_c;
-        local_74 = *(undefined4 *)(local_84 + 0x2c);
+        fVar5 = CG_GetScramblerEnemyAlpha(localClientNum);
+        local_c = (1.0 - fVar5) * local_c;
+        myTeam = localClientInfo->team;
         if ((team_indicator->current).integer == 3) {
-          Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&local_4c);
-          local_18 = local_4c;
+          Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,&altColor);
+          fadedColor = altColor;
           local_14 = local_48;
           local_10 = local_44;
         }
         else {
-          local_18 = 0.509;
+          fadedColor = 0.509;
           local_14 = 0.772;
           local_10 = 0.537;
         }
-        if (param_2 == COMPASS_TYPE_PARTIAL) {
-          local_70 = param_4->x;
-          local_6c = param_4->y;
-          local_68 = param_4->w;
-          local_64 = param_4->h;
-          local_60 = param_4->horzAlign;
-          local_5c = param_4->vertAlign;
-          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_70,&local_6c
-                             ,&local_68,&local_64,local_60,local_5c);
-          local_b4 = local_64;
-          local_b8 = local_68;
-          iVar3 = CL_LocalClient_GetActiveCount();
-          if (1 < iVar3) {
-            local_b8 = local_b8 * 1.5;
-            local_b4 = local_b4 * 1.5;
+        if (compassType == COMPASS_TYPE_PARTIAL) {
+          scissorRect = rect->x;
+          local_6c = rect->y;
+          local_68 = rect->w;
+          local_64 = rect->h;
+          local_60 = rect->horzAlign;
+          local_5c = rect->vertAlign;
+          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&scissorRect
+                             ,&local_6c,&local_68,&local_64,local_60,local_5c);
+          fVar2 = local_64;
+          fVar5 = local_68;
+          scissorWidth = local_68;
+          scissorHeight = local_64;
+          iVar4 = CL_LocalClient_GetActiveCount();
+          if (1 < iVar4) {
+            scissorWidth = fVar5 * 1.5;
+            scissorHeight = fVar2 * 1.5;
           }
-          R_AddCmdSetScissorValues(true,(int)local_70,(int)local_6c,(int)local_b8,(int)local_b4);
+          R_AddCmdSetScissorValues
+                    (true,(int)scissorRect,(int)local_6c,(int)scissorWidth,(int)scissorHeight);
         }
-        CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_80,local_7c,
-                          local_8,local_1c,param_4->horzAlign,param_4->vertAlign,0.0,&local_18,
-                          local_58);
-        if (param_2 == COMPASS_TYPE_PARTIAL) {
+        CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,local_7c,w,h
+                          ,rect->horzAlign,rect->vertAlign,0.0,&fadedColor,material);
+        if (compassType == COMPASS_TYPE_PARTIAL) {
           R_AddCmdSetScissorValues(false,0,0,0,0);
         }
       }
-      local_90 = local_90 + 4;
+      scrambler = scrambler + 1;
     }
   }
   return;
@@ -4544,96 +4691,96 @@ CG_CompassDrawScramblerFriendly
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_ResetCompassData(int param_1,int param_2)
+void __cdecl CG_ResetCompassData(int localClientNum,int time)
 
 {
-  int local_48;
-  int local_44;
-  int local_40;
-  int local_3c;
-  int local_38;
-  int local_34;
-  int local_30;
-  CompassFakeFire *local_2c;
-  int local_28;
-  int local_24;
-  CompassDogs *local_20;
-  CompassTurrets *local_1c;
-  CompassArtillery *local_18;
-  CompassHelicopter *local_14;
-  CompassVehicle *local_10;
-  CompassGuidedMissile *local_c;
-  CompassActor *local_8;
+  int i_8;
+  int i_7;
+  int i_6;
+  int i_5;
+  int i_4;
+  int i_3;
+  int entNum;
+  CompassFakeFire *fakefire;
+  int i_2;
+  int i;
+  CompassDogs *dog;
+  CompassTurrets *turret;
+  CompassArtillery *artillery;
+  CompassHelicopter *helicopter;
+  CompassVehicle *vehicle;
+  CompassGuidedMissile *missile;
+  CompassActor *actor;
   
-  local_8 = s_compassActors[param_1];
-  for (local_24 = 0; local_24 < 0x20; local_24 = local_24 + 1) {
-    if (param_2 < local_8->lastUpdate) {
-      local_8->lastUpdate = 0;
+  actor = s_compassActors[localClientNum];
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (time < actor->lastUpdate) {
+      actor->lastUpdate = 0;
     }
-    if (param_2 < local_8->beginFadeTime) {
-      local_8->beginFadeTime = 0;
+    if (time < actor->beginFadeTime) {
+      actor->beginFadeTime = 0;
     }
-    if (param_2 < local_8->beginRadarFadeTime) {
-      local_8->beginRadarFadeTime = 0;
+    if (time < actor->beginRadarFadeTime) {
+      actor->beginRadarFadeTime = 0;
     }
-    if (param_2 < local_8->beginSatelliteFadeTime) {
-      local_8->beginSatelliteFadeTime = 0;
+    if (time < actor->beginSatelliteFadeTime) {
+      actor->beginSatelliteFadeTime = 0;
     }
-    if (param_2 < local_8->beginStaticImageFadeTime) {
-      local_8->beginStaticImageFadeTime = 0;
+    if (time < actor->beginStaticImageFadeTime) {
+      actor->beginStaticImageFadeTime = 0;
     }
-    local_8 = local_8 + 1;
+    actor = actor + 1;
   }
-  for (local_28 = 0; local_28 < 0x20; local_28 = local_28 + 1) {
-    local_2c = s_compassFakeFire[param_1][local_28];
-    for (local_30 = 0; local_30 < 8; local_30 = local_30 + 1) {
-      if (param_2 < local_2c->beginFadeTime) {
-        local_2c->beginFadeTime = 0;
+  for (i_2 = 0; i_2 < 0x20; i_2 = i_2 + 1) {
+    fakefire = s_compassFakeFire[localClientNum][i_2];
+    for (entNum = 0; entNum < 8; entNum = entNum + 1) {
+      if (time < fakefire->beginFadeTime) {
+        fakefire->beginFadeTime = 0;
       }
-      local_2c = local_2c + 1;
+      fakefire = fakefire + 1;
     }
   }
-  local_10 = s_compassVehicles[param_1];
-  for (local_34 = 0; local_34 < 0x10; local_34 = local_34 + 1) {
-    if (param_2 < local_10->lastUpdate) {
-      local_10->lastUpdate = 0;
+  vehicle = s_compassVehicles[localClientNum];
+  for (i_3 = 0; i_3 < 0x10; i_3 = i_3 + 1) {
+    if (time < vehicle->lastUpdate) {
+      vehicle->lastUpdate = 0;
     }
-    local_10 = local_10 + 1;
+    vehicle = vehicle + 1;
   }
-  local_20 = s_compassDogs[param_1];
-  for (local_38 = 0; local_38 < 8; local_38 = local_38 + 1) {
-    if (param_2 < local_20->lastUpdate) {
-      local_20->lastUpdate = 0;
+  dog = s_compassDogs[localClientNum];
+  for (i_4 = 0; i_4 < 8; i_4 = i_4 + 1) {
+    if (time < dog->lastUpdate) {
+      dog->lastUpdate = 0;
     }
-    local_20 = local_20 + 1;
+    dog = dog + 1;
   }
-  local_18 = s_compassArtillery[param_1];
-  for (local_3c = 0; local_3c < 6; local_3c = local_3c + 1) {
-    if (param_2 < local_18->fireTime) {
-      local_18->fireTime = 0;
+  artillery = s_compassArtillery[localClientNum];
+  for (i_5 = 0; i_5 < 6; i_5 = i_5 + 1) {
+    if (time < artillery->fireTime) {
+      artillery->fireTime = 0;
     }
-    local_18 = local_18 + 1;
+    artillery = artillery + 1;
   }
-  local_14 = s_compassHelicopter[param_1];
-  for (local_40 = 0; local_40 < 8; local_40 = local_40 + 1) {
-    if (param_2 < local_14->lastUpdate) {
-      local_14->lastUpdate = 0;
+  helicopter = s_compassHelicopter[localClientNum];
+  for (i_6 = 0; i_6 < 8; i_6 = i_6 + 1) {
+    if (time < helicopter->lastUpdate) {
+      helicopter->lastUpdate = 0;
     }
-    local_14 = local_14 + 1;
+    helicopter = helicopter + 1;
   }
-  local_1c = s_compassTurrets[param_1];
-  for (local_44 = 0; local_44 < 0x20; local_44 = local_44 + 1) {
-    if (param_2 < local_1c->lastUpdate) {
-      local_1c->lastUpdate = 0;
+  turret = s_compassTurrets[localClientNum];
+  for (i_7 = 0; i_7 < 0x20; i_7 = i_7 + 1) {
+    if (time < turret->lastUpdate) {
+      turret->lastUpdate = 0;
     }
-    local_1c = local_1c + 1;
+    turret = turret + 1;
   }
-  local_c = s_compassGuidedMissiles[param_1];
-  for (local_48 = 0; local_48 < 0x20; local_48 = local_48 + 1) {
-    if (param_2 < local_c->lastUpdate) {
-      local_c->lastUpdate = 0;
+  missile = s_compassGuidedMissiles[localClientNum];
+  for (i_8 = 0; i_8 < 0x20; i_8 = i_8 + 1) {
+    if (time < missile->lastUpdate) {
+      missile->lastUpdate = 0;
     }
-    local_c = local_c + 1;
+    missile = missile + 1;
   }
   return;
 }

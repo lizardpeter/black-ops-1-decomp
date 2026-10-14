@@ -7,72 +7,68 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SetClientViewAngle(gentity_s *param_1,float *param_2)
+void __cdecl SetClientViewAngle(gentity_s *ent,float *angle)
 
 {
   gclient_s *pgVar1;
   float fVar2;
-  float local_18;
-  float local_14 [3];
-  int local_8;
+  float fDelta;
+  float newAngle [3];
+  int i;
   
-  local_14[0] = *param_2;
-  local_14[1] = param_2[1];
-  local_14[2] = param_2[2];
-  if ((((param_1->client->ps).pm_flags & 1U) != 0) && (((param_1->client->ps).eFlags & 0x300U) == 0)
-     ) {
-    fVar2 = AngleDelta((param_1->client->ps).proneDirection,param_2[1]);
-    local_18 = AngleNormalize180(fVar2);
-    if (((bg_prone_yawcap->current).value <= local_18 &&
-         local_18 != (bg_prone_yawcap->current).value) ||
-       (local_18 < -(bg_prone_yawcap->current).value)) {
-      if (local_18 < (bg_prone_yawcap->current).value ||
-          local_18 == (bg_prone_yawcap->current).value) {
-        local_18 = local_18 + (bg_prone_yawcap->current).value;
+  newAngle[0] = *angle;
+  newAngle[1] = angle[1];
+  newAngle[2] = angle[2];
+  if ((((ent->client->ps).pm_flags & 1U) != 0) && (((ent->client->ps).eFlags & 0x300U) == 0)) {
+    fVar2 = AngleDelta((ent->client->ps).proneDirection,angle[1]);
+    fVar2 = AngleNormalize180(fVar2);
+    if (((bg_prone_yawcap->current).value <= fVar2 && fVar2 != (bg_prone_yawcap->current).value) ||
+       (fVar2 < -(bg_prone_yawcap->current).value)) {
+      if (fVar2 < (bg_prone_yawcap->current).value || fVar2 == (bg_prone_yawcap->current).value) {
+        fDelta = fVar2 + (bg_prone_yawcap->current).value;
       }
       else {
-        local_18 = local_18 - (bg_prone_yawcap->current).value;
+        fDelta = fVar2 - (bg_prone_yawcap->current).value;
       }
-      (param_1->client->ps).delta_angles[1] = (param_1->client->ps).delta_angles[1] + local_18;
-      if (local_18 <= 0.0) {
-        local_14[1] = AngleNormalize360((param_1->client->ps).proneDirection +
+      (ent->client->ps).delta_angles[1] = (ent->client->ps).delta_angles[1] + fDelta;
+      if (fDelta <= 0.0) {
+        newAngle[1] = AngleNormalize360((ent->client->ps).proneDirection +
                                         (bg_prone_yawcap->current).value);
       }
       else {
-        local_14[1] = AngleNormalize360((param_1->client->ps).proneDirection -
+        newAngle[1] = AngleNormalize360((ent->client->ps).proneDirection -
                                         (bg_prone_yawcap->current).value);
       }
     }
-    fVar2 = AngleDelta((param_1->client->ps).proneTorsoPitch,local_14[0]);
-    local_18 = AngleNormalize180(fVar2);
-    if ((45.0 < local_18) || (local_18 < -45.0)) {
-      if (local_18 <= 45.0) {
-        local_18 = local_18 + 45.0;
+    fVar2 = AngleDelta((ent->client->ps).proneTorsoPitch,newAngle[0]);
+    fVar2 = AngleNormalize180(fVar2);
+    if ((45.0 < fVar2) || (fVar2 < -45.0)) {
+      if (fVar2 <= 45.0) {
+        fDelta = fVar2 + 45.0;
       }
       else {
-        local_18 = local_18 - 45.0;
+        fDelta = fVar2 - 45.0;
       }
-      (param_1->client->ps).delta_angles[0] = (param_1->client->ps).delta_angles[0] + local_18;
-      if (local_18 <= 0.0) {
-        local_14[0] = AngleNormalize180((param_1->client->ps).proneTorsoPitch + 45.0);
+      (ent->client->ps).delta_angles[0] = (ent->client->ps).delta_angles[0] + fDelta;
+      if (fDelta <= 0.0) {
+        newAngle[0] = AngleNormalize180((ent->client->ps).proneTorsoPitch + 45.0);
       }
       else {
-        local_14[0] = AngleNormalize180((param_1->client->ps).proneTorsoPitch - 45.0);
+        newAngle[0] = AngleNormalize180((ent->client->ps).proneTorsoPitch - 45.0);
       }
     }
   }
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    fVar2 = AngleNormalize180(local_14[local_8] -
-                              (float)(param_1->client->sess).cmd.angles[local_8] * 0.005493164);
-    (param_1->client->ps).delta_angles[local_8] = fVar2;
+  for (i = 0; i < 3; i = i + 1) {
+    fVar2 = AngleNormalize180(newAngle[i] - (float)(ent->client->sess).cmd.angles[i] * 0.005493164);
+    (ent->client->ps).delta_angles[i] = fVar2;
   }
-  (param_1->r).currentAngles[0] = local_14[0];
-  (param_1->r).currentAngles[1] = local_14[1];
-  (param_1->r).currentAngles[2] = local_14[2];
-  pgVar1 = param_1->client;
-  (pgVar1->ps).viewangles[0] = (param_1->r).currentAngles[0];
-  (pgVar1->ps).viewangles[1] = (param_1->r).currentAngles[1];
-  (pgVar1->ps).viewangles[2] = (param_1->r).currentAngles[2];
+  (ent->r).currentAngles[0] = newAngle[0];
+  (ent->r).currentAngles[1] = newAngle[1];
+  (ent->r).currentAngles[2] = newAngle[2];
+  pgVar1 = ent->client;
+  (pgVar1->ps).viewangles[0] = (ent->r).currentAngles[0];
+  (pgVar1->ps).viewangles[1] = (ent->r).currentAngles[1];
+  (pgVar1->ps).viewangles[2] = (ent->r).currentAngles[2];
   Com_Printf(0,"SetClientViewAngle() - (%3.0f, %3.0f, %3.0f), delta (%3.0f, %3.0f, %3.0f)\n");
   return;
 }
@@ -85,7 +81,7 @@ void __cdecl SetClientViewAngle(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_GetPlayerViewOrigin_Internal(playerState_s *param_1,float *param_2,bool param_3)
+void __cdecl G_GetPlayerViewOrigin_Internal(playerState_s *ps,float *origin,bool useBodyPosition)
 
 {
   float fVar1;
@@ -93,15 +89,17 @@ void __cdecl G_GetPlayerViewOrigin_Internal(playerState_s *param_1,float *param_
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  uint uVar6;
-  float local_70;
+  uint weaponIndex;
+  int weapon;
+  gentity_s *vehicle;
+  float viewAxis;
   float local_6c;
   float local_68;
-  float local_4c;
+  float offsetVec;
   float local_48;
   float local_44;
-  ushort local_40;
-  float local_3c;
+  ushort vehicleTag;
+  float playerMtx;
   float local_38;
   float local_34;
   float local_30;
@@ -113,112 +111,113 @@ void __cdecl G_GetPlayerViewOrigin_Internal(playerState_s *param_1,float *param_
   float local_18;
   float local_14;
   float local_10;
-  WeaponDef *local_c;
-  gentity_s *local_8;
+  WeaponDef *weapDef;
+  gentity_s *turretEnt;
   
-  if ((param_1->eFlags & 0x300U) == 0) {
-    if (((param_1->eFlags & 0x4000U) == 0) || ((param_3 && ((param_1->eFlags2 & 0x10000000U) != 0)))
-       ) {
-      BG_GetPlayerViewOrigin(param_1,param_2,level.time);
+  if ((ps->eFlags & 0x300U) == 0) {
+    if (((ps->eFlags & 0x4000U) == 0) || ((useBodyPosition && ((ps->eFlags2 & 0x10000000U) != 0))))
+    {
+      BG_GetPlayerViewOrigin(ps,origin,level.time);
     }
     else {
-      if ((param_1->viewlocked_entNum == 0x3ff) &&
+      if ((ps->viewlocked_entNum == 0x3ff) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",
                                    0x80,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      sVar2 = param_1->viewlocked_entNum;
-      local_40 = scr_const.tag_barrel;
-      if ((param_1->vehiclePos < 1) || (4 < param_1->vehiclePos)) {
-        if (param_1->vehiclePos == 0) {
-          local_40 = scr_const.tag_player;
+      sVar2 = ps->viewlocked_entNum;
+      vehicleTag = scr_const.tag_barrel;
+      if ((ps->vehiclePos < 1) || (4 < ps->vehiclePos)) {
+        if (ps->vehiclePos == 0) {
+          vehicleTag = scr_const.tag_player;
         }
       }
       else {
-        local_40 = scr_const.tag_gunner_barrel1;
+        vehicleTag = scr_const.tag_gunner_barrel1;
       }
-      iVar5 = G_DObjGetWorldTagMatrix(g_entities + sVar2,(uint)local_40,(float (*) [3])&local_3c);
+      iVar5 = G_DObjGetWorldTagMatrix(g_entities + sVar2,(uint)vehicleTag,(float (*) [3])&playerMtx)
+      ;
       if (iVar5 == 0) {
-        local_40 = scr_const.tag_player;
+        vehicleTag = scr_const.tag_player;
         iVar5 = G_DObjGetWorldTagMatrix
-                          (g_entities + sVar2,(uint)scr_const.tag_player,(float (*) [3])&local_3c);
+                          (g_entities + sVar2,(uint)scr_const.tag_player,(float (*) [3])&playerMtx);
         if (iVar5 == 0) {
           Com_Error(ERR_DROP,"\x15G_GetPlayerViewOrigin: Couldn\'t find [tag_player] on vehicle\n");
-          *param_2 = param_1->origin[0];
-          param_2[1] = param_1->origin[1];
-          param_2[2] = param_1->origin[2];
-          param_2[2] = param_2[2] + 8.0;
+          *origin = ps->origin[0];
+          origin[1] = ps->origin[1];
+          origin[2] = ps->origin[2];
+          origin[2] = origin[2] + 8.0;
           return;
         }
       }
-      uVar6 = G_GetPlayerWeapon(param_1,0);
-      local_c = BG_GetWeaponDef(uVar6);
-      *param_2 = local_18;
-      param_2[1] = local_14;
-      param_2[2] = local_10;
-      if (param_1->vehiclePos == 0) {
-        if ((param_1->eFlags2 & 0x10000000U) == 0) {
-          fVar1 = param_1->viewHeightCurrent;
-          *param_2 = fVar1 * local_24 + *param_2;
-          param_2[1] = fVar1 * local_20 + param_2[1];
-          param_2[2] = fVar1 * local_1c + param_2[2];
+      weaponIndex = G_GetPlayerWeapon(ps,0);
+      weapDef = BG_GetWeaponDef(weaponIndex);
+      *origin = local_18;
+      origin[1] = local_14;
+      origin[2] = local_10;
+      if (ps->vehiclePos == 0) {
+        if ((ps->eFlags2 & 0x10000000U) == 0) {
+          fVar1 = ps->viewHeightCurrent;
+          *origin = fVar1 * local_24 + *origin;
+          origin[1] = fVar1 * local_20 + origin[1];
+          origin[2] = fVar1 * local_1c + origin[2];
         }
         else {
-          *param_2 = local_24 * 60.0 + *param_2;
-          param_2[1] = local_20 * 60.0 + param_2[1];
-          param_2[2] = local_1c * 60.0 + param_2[2];
+          *origin = local_24 * 60.0 + *origin;
+          origin[1] = local_20 * 60.0 + origin[1];
+          origin[2] = local_1c * 60.0 + origin[2];
         }
       }
-      local_4c = 0.0;
+      offsetVec = 0.0;
       local_48 = 0.0;
       local_44 = 0.0;
-      if ((local_c != (WeaponDef *)0x0) && (uVar6 != 0)) {
-        BG_CalcVehicleTurretWeaponPosOffset(param_1->fWeaponPosFrac,local_c,&local_4c);
+      if ((weapDef != (WeaponDef *)0x0) && (weaponIndex != 0)) {
+        BG_CalcVehicleTurretWeaponPosOffset(ps->fWeaponPosFrac,weapDef,&offsetVec);
       }
-      if (ABS(local_4c) <= 200.0) {
-        *param_2 = local_4c * local_3c + *param_2;
-        param_2[1] = local_4c * local_38 + param_2[1];
-        param_2[2] = local_4c * local_34 + param_2[2];
+      if (ABS(offsetVec) <= 200.0) {
+        *origin = offsetVec * playerMtx + *origin;
+        origin[1] = offsetVec * local_38 + origin[1];
+        origin[2] = offsetVec * local_34 + origin[2];
       }
       else {
-        AnglesToAxis(param_1->viewangles,(float (*) [3])&local_70);
-        *param_2 = local_4c * local_70 + *param_2;
-        param_2[1] = local_4c * local_6c + param_2[1];
-        param_2[2] = local_4c * local_68 + param_2[2];
+        AnglesToAxis(ps->viewangles,(float (*) [3])&viewAxis);
+        *origin = offsetVec * viewAxis + *origin;
+        origin[1] = offsetVec * local_6c + origin[1];
+        origin[2] = offsetVec * local_68 + origin[2];
       }
-      *param_2 = local_48 * local_30 + *param_2;
-      param_2[1] = local_48 * local_2c + param_2[1];
-      param_2[2] = local_48 * local_28 + param_2[2];
-      *param_2 = local_44 * local_24 + *param_2;
-      param_2[1] = local_44 * local_20 + param_2[1];
-      param_2[2] = local_44 * local_1c + param_2[2];
+      *origin = local_48 * local_30 + *origin;
+      origin[1] = local_48 * local_2c + origin[1];
+      origin[2] = local_48 * local_28 + origin[2];
+      *origin = local_44 * local_24 + *origin;
+      origin[1] = local_44 * local_20 + origin[1];
+      origin[2] = local_44 * local_1c + origin[2];
     }
   }
   else {
-    if ((param_1->viewlocked == PLAYERVIEWLOCK_NONE) &&
+    if ((ps->viewlocked == PLAYERVIEWLOCK_NONE) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x6d,
                                  0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((param_1->viewlocked_entNum == 0x3ff) &&
+    if ((ps->viewlocked_entNum == 0x3ff) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x6e,
                                  0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_8 = g_entities + param_1->viewlocked_entNum;
-    iVar5 = G_DObjGetWorldTagPos(local_8,(uint)scr_const.tag_player,param_2);
+    turretEnt = g_entities + ps->viewlocked_entNum;
+    iVar5 = G_DObjGetWorldTagPos(turretEnt,(uint)scr_const.tag_player,origin);
     if (iVar5 == 0) {
       Com_Error(ERR_DROP,"\x15G_GetPlayerViewOrigin: Couldn\'t find [tag_player] on turret\n");
-      *param_2 = param_1->origin[0];
-      param_2[1] = param_1->origin[1];
-      param_2[2] = param_1->origin[2];
-      param_2[2] = param_2[2] + 8.0;
+      *origin = ps->origin[0];
+      origin[1] = ps->origin[1];
+      origin[2] = ps->origin[2];
+      origin[2] = origin[2] + 8.0;
     }
   }
   return;
@@ -227,20 +226,30 @@ void __cdecl G_GetPlayerViewOrigin_Internal(playerState_s *param_1,float *param_
 
 // 00600510  G_GetPlayerViewOrigin  (game_mp/g_client_mp.cpp:201)
 
-void __cdecl G_GetPlayerViewOrigin(playerState_s *param_1,float *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl G_GetPlayerViewOrigin(playerState_s *ps,float *origin)
 
 {
-  G_GetPlayerViewOrigin_Internal(param_1,param_2,false);
+  G_GetPlayerViewOrigin_Internal(ps,origin,false);
   return;
 }
 
 
 // 00600530  G_GetPlayerBodyViewOrigin  (game_mp/g_client_mp.cpp:206)
 
-void __cdecl G_GetPlayerBodyViewOrigin(playerState_s *param_1,float *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl G_GetPlayerBodyViewOrigin(playerState_s *ps,float *origin)
 
 {
-  G_GetPlayerViewOrigin_Internal(param_1,param_2,true);
+  G_GetPlayerViewOrigin_Internal(ps,origin,true);
   return;
 }
 
@@ -252,14 +261,13 @@ void __cdecl G_GetPlayerBodyViewOrigin(playerState_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-G_GetPlayerViewDirection(gentity_s *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl G_GetPlayerViewDirection(gentity_s *ent,float *forward,float *right,float *up)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0xd7,0,
                              "%s");
     if (!bVar2) {
@@ -268,7 +276,7 @@ G_GetPlayerViewDirection(gentity_s *param_1,float *param_2,float *param_3,float 
       return;
     }
   }
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0xd8,0,
                              "%s");
     if (!bVar2) {
@@ -277,60 +285,62 @@ G_GetPlayerViewDirection(gentity_s *param_1,float *param_2,float *param_3,float 
       return;
     }
   }
-  BG_GetPlayerViewDirection(&param_1->client->ps,param_2,param_3,param_4);
+  BG_GetPlayerViewDirection(&ent->client->ps,forward,right,up);
   return;
 }
 
 
 // 006009A0  ClientCleanName  (game_mp/g_client_mp.cpp:227)
 
-void __cdecl ClientCleanName(char *param_1,char *param_2,int param_3)
+void __cdecl ClientCleanName(char *in,char *out,int outSize)
 
 {
   char cVar1;
+  char *dest;
   char *pcVar2;
-  char *pcVar3;
-  int local_14;
-  int local_10;
-  int local_8;
+  char ch;
+  int len;
+  int colorlessLen;
+  char *p;
+  int spaces;
   
-  pcVar2 = param_2;
-  local_14 = 0;
-  local_10 = 0;
-  *param_2 = '\0';
-  local_8 = 0;
-  pcVar3 = param_1;
+  dest = out;
+  len = 0;
+  colorlessLen = 0;
+  *out = '\0';
+  spaces = 0;
+  pcVar2 = in;
 LAB_006009d0:
   do {
     do {
-      param_1 = pcVar3;
-      cVar1 = *param_1;
-      pcVar3 = param_1 + 1;
+      in = pcVar2;
+      cVar1 = *in;
+      pcVar2 = in + 1;
       if (cVar1 == '\0') {
 LAB_00600a6f:
-        *param_2 = '\0';
-        if ((*pcVar2 == '\0') || (local_10 == 0)) {
-          I_strncpyz(pcVar2,"UnnamedPlayer",param_3 + -1);
+        *out = '\0';
+        if ((*dest == '\0') || (colorlessLen == 0)) {
+          I_strncpyz(dest,"UnnamedPlayer",outSize + -1);
         }
         return;
       }
-    } while ((*pcVar2 == '\0') && (cVar1 == ' '));
+    } while ((*dest == '\0') && (cVar1 == ' '));
     if (cVar1 != '^') {
       if (cVar1 == ' ') {
-        local_8 = local_8 + 1;
-        if (3 < local_8) goto LAB_006009d0;
+        spaces = spaces + 1;
+        if (3 < spaces) goto LAB_006009d0;
       }
       else {
-        local_8 = 0;
+        spaces = 0;
       }
-      if (param_3 + -2 < local_14) goto LAB_00600a6f;
-      *param_2 = cVar1;
-      param_2 = param_2 + 1;
-      local_10 = local_10 + 1;
-      local_14 = local_14 + 1;
+      if (outSize + -2 < len) goto LAB_00600a6f;
+      *out = cVar1;
+      out = out + 1;
+      colorlessLen = colorlessLen + 1;
+      len = len + 1;
       goto LAB_006009d0;
     }
-    pcVar3 = param_1 + 2;
+    pcVar2 = in + 2;
   } while( true );
 }
 
@@ -343,28 +353,28 @@ LAB_00600a6f:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientUserinfoChanged(int param_1)
+void __cdecl ClientUserinfoChanged(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  ulong64 *puVar5;
-  uint local_824;
+  char *str;
+  ulong64 *xuid_00;
+  uint xuid;
   uint local_820;
-  gclient_s *local_818;
-  char local_814 [1024];
-  char local_414 [1024];
+  gclient_s *client;
+  char oldname [1024];
+  char userinfo [1024];
   uint local_14;
-  int *local_10;
-  gentity_s *local_c;
-  char *local_8;
+  clientInfo_t *ci;
+  gentity_s *ent;
+  char *s;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = g_entities + param_1;
-  local_818 = g_entities[param_1].client;
-  if (0x1f < (uint)param_1) {
+  ent = g_entities + clientNum;
+  client = g_entities[clientNum].client;
+  if (0x1f < (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x13d,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -373,48 +383,48 @@ void __cdecl ClientUserinfoChanged(int param_1)
       return;
     }
   }
-  SV_GetUserinfo(param_1,local_414,0x400);
-  iVar3 = Info_Validate(local_414);
+  SV_GetUserinfo(clientNum,userinfo,0x400);
+  iVar3 = Info_Validate(userinfo);
   if (iVar3 == 0) {
-    builtin_strncpy(local_414,"\\name\\badinfo",0xe);
+    builtin_strncpy(userinfo,"\\name\\badinfo",0xe);
   }
-  iVar3 = SV_IsLocalClient(param_1);
-  (local_818->sess).localClient = iVar3;
-  local_8 = Info_ValueForKey(local_414,"cg_predictItems");
-  iVar3 = atoi(local_8);
+  iVar3 = SV_IsLocalClient(clientNum);
+  (client->sess).localClient = iVar3;
+  s = Info_ValueForKey(userinfo,"cg_predictItems");
+  iVar3 = atoi(s);
   if (iVar3 == 0) {
-    (local_818->sess).predictItemPickup = 0;
+    (client->sess).predictItemPickup = 0;
   }
   else {
-    (local_818->sess).predictItemPickup = 1;
+    (client->sess).predictItemPickup = 1;
   }
-  if (((local_818->sess).connected == CON_CONNECTED) && (level.manualNameChange != 0)) {
-    local_8 = Info_ValueForKey(local_414,"name");
-    ClientCleanName(local_8,(local_818->sess).newnetname,0x20);
+  if (((client->sess).connected == CON_CONNECTED) && (level.manualNameChange != 0)) {
+    s = Info_ValueForKey(userinfo,"name");
+    ClientCleanName(s,(client->sess).newnetname,0x20);
   }
   else {
-    I_strncpyz(local_814,(local_818->sess).cs.name,0x400);
-    local_8 = Info_ValueForKey(local_414,"name");
-    ClientCleanName(local_8,(local_818->sess).cs.name,0x20);
-    I_strncpyz((local_818->sess).newnetname,(local_818->sess).cs.name,0x20);
-    local_8 = Info_ValueForKey(local_414,"clanAbbrev");
-    if (*local_8 == '\0') {
-      (local_818->sess).cs.clanAbbrev[0] = '\0';
+    I_strncpyz(oldname,(client->sess).cs.name,0x400);
+    s = Info_ValueForKey(userinfo,"name");
+    ClientCleanName(s,(client->sess).cs.name,0x20);
+    I_strncpyz((client->sess).newnetname,(client->sess).cs.name,0x20);
+    s = Info_ValueForKey(userinfo,"clanAbbrev");
+    if (*s == '\0') {
+      (client->sess).cs.clanAbbrev[0] = '\0';
     }
     else {
-      I_strncpyz((local_818->sess).cs.clanAbbrev,local_8,8);
+      I_strncpyz((client->sess).cs.clanAbbrev,s,8);
     }
-    puVar5 = (ulong64 *)&local_824;
-    pcVar4 = Info_ValueForKey(local_414,"bdOnlineUserID");
-    StringToXUID(pcVar4,puVar5);
-    if (((local_824 & 0xffffff00) == 0xffffff00) && (local_820 == 0xffffffff)) {
-      local_824 = param_1 & 0xffU | 0xffffff00;
+    xuid_00 = (ulong64 *)&xuid;
+    str = Info_ValueForKey(userinfo,"bdOnlineUserID");
+    StringToXUID(str,xuid_00);
+    if (((xuid & 0xffffff00) == 0xffffff00) && (local_820 == 0xffffffff)) {
+      xuid = clientNum & 0xffU | 0xffffff00;
       local_820 = 0xffffffff;
     }
-    (local_818->sess).cs.field12_0x78.xuid32[0] = local_824;
-    (local_818->sess).cs.field12_0x78.xuid32[1] = local_820;
+    (client->sess).cs.field12_0x78.xuid32[0] = xuid;
+    (client->sess).cs.field12_0x78.xuid32[1] = local_820;
   }
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x176,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -423,8 +433,8 @@ void __cdecl ClientUserinfoChanged(int param_1)
       return;
     }
   }
-  local_10 = (int *)(level_bgs.clientinfo + param_1 * 0x5c8);
-  if (*local_10 == 0) {
+  ci = (clientInfo_t *)(level_bgs.clientinfo + clientNum * 0x5c8);
+  if (ci->infoValid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x178,0,
                              "%s");
     if (!bVar2) {
@@ -433,10 +443,10 @@ void __cdecl ClientUserinfoChanged(int param_1)
       return;
     }
   }
-  local_10[2] = param_1;
-  I_strncpyz((char *)(local_10 + 3),(local_818->sess).cs.name,0x20);
-  local_10[0xb] = (local_818->sess).cs.team;
-  if (local_c->sentient == (sentient_s *)0x0) {
+  ci->clientNum = clientNum;
+  I_strncpyz(ci->name,(client->sess).cs.name,0x20);
+  ci->team = (client->sess).cs.team;
+  if (ent->sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x181,0,
                              "%s");
     if (!bVar2) {
@@ -445,7 +455,7 @@ void __cdecl ClientUserinfoChanged(int param_1)
       return;
     }
   }
-  local_c->sentient->eTeam = (local_818->sess).cs.team;
+  ent->sentient->eTeam = (client->sess).cs.team;
   return;
 }
 
@@ -457,10 +467,10 @@ void __cdecl ClientUserinfoChanged(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientClearFields(gclient_s *param_1)
+void __cdecl ClientClearFields(gclient_s *client)
 
 {
-  EntHandle::setEnt(&param_1->useHoldEntity,(gentity_s *)0x0);
+  EntHandle::setEnt(&client->useHoldEntity,(gentity_s *)0x0);
   return;
 }
 
@@ -469,27 +479,31 @@ void __cdecl ClientClearFields(gclient_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl ClientConnect(int param_1,uint param_2)
+char * __cdecl ClientConnect(int clientNum,uint scriptPersId)
 
 {
-  undefined4 uVar1;
+  XAnimTree_s *pXVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
-  gclient_s *pgVar5;
-  team_t tVar6;
-  sentient_s *psVar7;
-  char local_414 [1028];
+  gclient_s *client_00;
+  team_t tVar5;
+  sentient_s *psVar6;
+  gclient_s *client;
+  XAnimTree_s *pXAnimTree;
+  sentient_s *sentient;
+  entityState_s *es;
+  char userinfo [1028];
   uint local_10;
-  uchar *local_c;
-  gentity_s *local_8;
+  clientInfo_t *ci;
+  gentity_s *ent;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == 0) {
+  if (scriptPersId == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x1ad,0,
                              "%s");
     if (!bVar3) {
@@ -498,7 +512,7 @@ char * __cdecl ClientConnect(int param_1,uint param_2)
       return pcVar4;
     }
   }
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x1af,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -508,60 +522,54 @@ char * __cdecl ClientConnect(int param_1,uint param_2)
     }
   }
   bVar3 = G_OnlyConnectingPaths();
-  if ((bVar3) && (param_1 == 0)) {
+  if ((bVar3) && (clientNum == 0)) {
     Path_InitPaths();
   }
-  local_8 = g_entities + param_1;
-  pgVar5 = level.clients + param_1;
-  ClientClearFields(pgVar5);
-  memset((uchar *)pgVar5,'\0',0x29e0);
-  local_c = level_bgs.clientinfo + param_1 * 0x5c8;
-  uVar1 = *(undefined4 *)(level_bgs.clientinfo + param_1 * 0x5c8 + 0x534);
-  memset(local_c,'\0',0x5c8);
-  *(undefined4 *)(local_c + 0x534) = uVar1;
-  local_c[0] = '\x01';
-  local_c[1] = '\0';
-  local_c[2] = '\0';
-  local_c[3] = '\0';
-  local_c[4] = '\x01';
-  local_c[5] = '\0';
-  local_c[6] = '\0';
-  local_c[7] = '\0';
-  (pgVar5->sess).connected = CON_CONNECTING;
-  (pgVar5->sess).scriptPersId = param_2;
-  tVar6 = CL_GetFirstActiveLocalClient();
-  (pgVar5->sess).cs.team = tVar6;
-  (pgVar5->sess).sessionState = SESS_STATE_SPECTATOR;
-  pgVar5->spectatorClient = -1;
-  (pgVar5->sess).forceSpectatorClient = -1;
-  (pgVar5->sess).killCamEntity = -1;
-  (pgVar5->sess).killCamTargetEntity = -1;
-  G_InitGentity(local_8);
-  local_8->handler = '\0';
-  local_8->client = pgVar5;
-  AssignToSmallerType<unsigned_char>(&(local_8->s).clientNum,param_1);
-  (pgVar5->sess).cs.clientIndex = param_1;
-  AssignToSmallerType<unsigned_char>(&(pgVar5->ps).clientNum,param_1);
-  (pgVar5->ps).corpseIndex = -1;
-  (pgVar5->sess).moveSpeedScaleMultiplier = 1.0;
-  (pgVar5->ps).moveSpeedScaleMultiplier = (pgVar5->sess).moveSpeedScaleMultiplier;
-  psVar7 = Sentient_Alloc();
-  if (psVar7 == (sentient_s *)0x0) {
+  ent = g_entities + clientNum;
+  client_00 = level.clients + clientNum;
+  ClientClearFields(client_00);
+  memset((uchar *)client_00,'\0',0x29e0);
+  ci = (clientInfo_t *)(level_bgs.clientinfo + clientNum * 0x5c8);
+  pXVar1 = *(XAnimTree_s **)(level_bgs.clientinfo + clientNum * 0x5c8 + 0x534);
+  memset((uchar *)ci,'\0',0x5c8);
+  ci->pXAnimTree = pXVar1;
+  ci->infoValid = 1;
+  ci->nextValid = 1;
+  (client_00->sess).connected = CON_CONNECTING;
+  (client_00->sess).scriptPersId = scriptPersId;
+  tVar5 = CL_GetFirstActiveLocalClient();
+  (client_00->sess).cs.team = tVar5;
+  (client_00->sess).sessionState = SESS_STATE_SPECTATOR;
+  client_00->spectatorClient = -1;
+  (client_00->sess).forceSpectatorClient = -1;
+  (client_00->sess).killCamEntity = -1;
+  (client_00->sess).killCamTargetEntity = -1;
+  G_InitGentity(ent);
+  ent->handler = '\0';
+  ent->client = client_00;
+  AssignToSmallerType<unsigned_char>(&(ent->s).clientNum,clientNum);
+  (client_00->sess).cs.clientIndex = clientNum;
+  AssignToSmallerType<unsigned_char>(&(client_00->ps).clientNum,clientNum);
+  (client_00->ps).corpseIndex = -1;
+  (client_00->sess).moveSpeedScaleMultiplier = 1.0;
+  (client_00->ps).moveSpeedScaleMultiplier = (client_00->sess).moveSpeedScaleMultiplier;
+  psVar6 = Sentient_Alloc();
+  if (psVar6 == (sentient_s *)0x0) {
     Com_Error(ERR_DROP,"\x15No sentient for player.\n");
   }
-  local_8->sentient = psVar7;
-  psVar7->ent = local_8;
-  psVar7->eTeam = (pgVar5->sess).cs.team;
-  psVar7->maxVisibleDist = 8192.0;
-  psVar7->attackerAccuracy = 1.0;
-  ClientUserinfoChanged(param_1);
-  SV_GetUserinfo(param_1,local_414,0x400);
+  ent->sentient = psVar6;
+  psVar6->ent = ent;
+  psVar6->eTeam = (client_00->sess).cs.team;
+  psVar6->maxVisibleDist = 8192.0;
+  psVar6->attackerAccuracy = 1.0;
+  ClientUserinfoChanged(clientNum);
+  SV_GetUserinfo(clientNum,userinfo,0x400);
   bVar3 = G_ExitAfterToolComplete();
   if (!bVar3) {
-    Scr_PlayerConnect(local_8);
+    Scr_PlayerConnect(ent);
   }
   CalculateRanks();
-  if ((uint)(local_8->s).clientNum != (local_8->s).number) {
+  if ((uint)(ent->s).clientNum != (ent->s).number) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x203,0,
                              "%s");
     if (!bVar3) {
@@ -581,14 +589,15 @@ char * __cdecl ClientConnect(int param_1,uint param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientBegin(int param_1)
+void __cdecl ClientBegin(int clientNum)
 
 {
   code *pcVar1;
   gclient_s *pgVar2;
   bool bVar3;
+  gclient_s *client;
   
-  if ((uint)level.maxclients <= (uint)param_1) {
+  if ((uint)level.maxclients <= (uint)clientNum) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x216,0,
                              "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -598,10 +607,10 @@ void __cdecl ClientBegin(int param_1)
     }
   }
   pgVar2 = level.clients;
-  level.clients[param_1].sess.connected = CON_CONNECTED;
-  pgVar2[param_1].ps.pm_type = 4;
+  level.clients[clientNum].sess.connected = CON_CONNECTED;
+  pgVar2[clientNum].ps.pm_type = 4;
   CalculateRanks();
-  Scr_Notify(g_entities + param_1,scr_const.begin,0);
+  Scr_Notify(g_entities + clientNum,scr_const.begin,0);
   return;
 }
 
@@ -614,240 +623,242 @@ void __cdecl ClientBegin(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
+void __cdecl ClientSpawn(gentity_s *ent,float *spawn_origin,float *spawn_angles)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  gentity_s *pgVar5;
-  WeaponDef *pWVar6;
+  gclient_s *client_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  gentity_s *pgVar4;
+  WeaponDef *pWVar5;
+  clientSession_t *pcVar6;
   clientSession_t *pcVar7;
-  clientSession_t *pcVar8;
   int local_270;
   int local_268;
   int local_260;
-  int local_220;
-  float local_218;
+  int i;
+  gclient_s *client;
+  float clean_spawn_angles;
   float local_214;
   undefined4 local_210;
-  uint local_20c;
-  uint local_208;
-  clientSession_t local_204;
+  int index;
+  int iFlags;
+  clientSession_t savedSess;
   uint local_10;
-  int local_c;
-  int local_8;
+  int savedSpawnCount;
+  int savedServerTime;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  clientSession_t::clientSession_t(&local_204);
-  local_20c = (int)param_1[-0x1487a].r.mins / 0x2f8;
-  pgVar1 = param_1->client;
-  if ((uint)level.maxclients <= local_20c) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x24d,0,
+  clientSession_t::clientSession_t(&savedSess);
+  index = (int)ent[-0x1487a].r.mins / 0x2f8;
+  client_00 = ent->client;
+  if ((uint)level.maxclients <= (uint)index) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x24d,0,
                              "index doesn\'t index level.maxclients\n\t%i not in [0, %i)");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->client != level.clients + local_20c) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x24f,0,
+  if (ent->client != level.clients + index) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x24f,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((param_1->r).inuse == '\0') {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x250,0,
+  if ((ent->r).inuse == '\0') {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x250,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((((pgVar1->ps).otherFlags & 4U) != 0) && (((pgVar1->ps).eFlags & 0x300U) != 0)) {
-    if ((uint)(pgVar1->ps).clientNum != (param_1->s).number) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x255,0
+  if ((((client_00->ps).otherFlags & 4U) != 0) && (((client_00->ps).eFlags & 0x300U) != 0)) {
+    if ((uint)(client_00->ps).clientNum != (ent->s).number) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x255,0
                                ,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    if ((pgVar1->ps).viewlocked_entNum == 0x3ff) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x256,0
+    if ((client_00->ps).viewlocked_entNum == 0x3ff) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x256,0
                                ,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    iVar4 = EntHandle::isDefined(&level.gentities[(pgVar1->ps).viewlocked_entNum].r.ownerNum);
-    if (iVar4 == 0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",599,0,
+    iVar3 = EntHandle::isDefined(&level.gentities[(client_00->ps).viewlocked_entNum].r.ownerNum);
+    if (iVar3 == 0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",599,0,
                                "%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    pgVar5 = EntHandle::ent(&level.gentities[(pgVar1->ps).viewlocked_entNum].r.ownerNum);
-    if (pgVar5 != param_1) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",600,0,
+    pgVar4 = EntHandle::ent(&level.gentities[(client_00->ps).viewlocked_entNum].r.ownerNum);
+    if (pgVar4 != ent) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",600,0,
                                "%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    G_ClientStopUsingTurret(level.gentities + (pgVar1->ps).viewlocked_entNum);
+    G_ClientStopUsingTurret(level.gentities + (client_00->ps).viewlocked_entNum);
   }
-  G_EntUnlink(param_1);
-  if ((param_1->r).linked != '\0') {
-    SV_UnlinkEntity(param_1);
+  G_EntUnlink(ent);
+  if ((ent->r).linked != '\0') {
+    SV_UnlinkEntity(ent);
   }
-  AssignToSmallerType<int>(&(param_1->s).lerp.useCount,param_1->useCount + 1);
-  (param_1->s).groundEntityNum = 0x3ff;
-  Scr_SetString(&param_1->classname,(uint)scr_const.player,SCRIPTINSTANCE_SERVER);
-  param_1->clipmask = 0x2818011;
-  (param_1->r).svFlags = (param_1->r).svFlags | 1;
-  param_1->takedamage = '\0';
-  G_SetClientContents(param_1);
-  param_1->handler = '\x0e';
-  param_1->flags = 0x1000;
-  (param_1->r).mins[0] = -15.0;
-  (param_1->r).mins[1] = -15.0;
-  (param_1->r).mins[2] = 0.0;
-  (param_1->r).maxs[0] = 15.0;
-  (param_1->r).maxs[1] = 15.0;
-  (param_1->r).maxs[2] = 70.0;
-  local_208 = (pgVar1->ps).eFlags & 0x100002;
-  pcVar7 = &pgVar1->sess;
-  pcVar8 = &local_204;
-  for (iVar4 = 0x7c; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pcVar8->sessionState = pcVar7->sessionState;
+  AssignToSmallerType<int>(&(ent->s).lerp.useCount,ent->useCount + 1);
+  (ent->s).groundEntityNum = 0x3ff;
+  Scr_SetString(&ent->classname,(uint)scr_const.player,SCRIPTINSTANCE_SERVER);
+  ent->clipmask = 0x2818011;
+  (ent->r).svFlags = (ent->r).svFlags | 1;
+  ent->takedamage = '\0';
+  G_SetClientContents(ent);
+  ent->handler = '\x0e';
+  ent->flags = 0x1000;
+  (ent->r).mins[0] = -15.0;
+  (ent->r).mins[1] = -15.0;
+  (ent->r).mins[2] = 0.0;
+  (ent->r).maxs[0] = 15.0;
+  (ent->r).maxs[1] = 15.0;
+  (ent->r).maxs[2] = 70.0;
+  iFlags = (client_00->ps).eFlags & 0x100002;
+  pcVar6 = &client_00->sess;
+  pcVar7 = &savedSess;
+  for (iVar3 = 0x7c; iVar3 != 0; iVar3 = iVar3 + -1) {
+    pcVar7->sessionState = pcVar6->sessionState;
+    pcVar6 = (clientSession_t *)&pcVar6->forceSpectatorClient;
     pcVar7 = (clientSession_t *)&pcVar7->forceSpectatorClient;
-    pcVar8 = (clientSession_t *)&pcVar8->forceSpectatorClient;
   }
-  local_c = (pgVar1->ps).stats[4];
-  local_8 = pgVar1->lastServerTime;
-  ClientClearFields(pgVar1);
-  memset((uchar *)pgVar1,'\0',0x29e0);
-  pcVar7 = &local_204;
-  pcVar8 = &pgVar1->sess;
-  for (iVar4 = 0x7c; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pcVar8->sessionState = pcVar7->sessionState;
+  savedSpawnCount = (client_00->ps).stats[4];
+  savedServerTime = client_00->lastServerTime;
+  ClientClearFields(client_00);
+  memset((uchar *)client_00,'\0',0x29e0);
+  pcVar6 = &savedSess;
+  pcVar7 = &client_00->sess;
+  for (iVar3 = 0x7c; iVar3 != 0; iVar3 = iVar3 + -1) {
+    pcVar7->sessionState = pcVar6->sessionState;
+    pcVar6 = (clientSession_t *)&pcVar6->forceSpectatorClient;
     pcVar7 = (clientSession_t *)&pcVar7->forceSpectatorClient;
-    pcVar8 = (clientSession_t *)&pcVar8->forceSpectatorClient;
   }
-  pgVar1->lastServerTime = local_8;
-  pgVar1->spectatorClient = -1;
-  (pgVar1->ps).stats[4] = local_c + 1;
-  (pgVar1->ps).stats[2] = (pgVar1->sess).maxHealth;
-  (pgVar1->ps).eFlags = local_208;
-  (pgVar1->sess).cs.clientIndex = local_20c;
-  (pgVar1->sess).cs.attachedVehEntNum = 0x3ff;
-  AssignToSmallerType<unsigned_char>(&(pgVar1->ps).clientNum,local_20c);
-  (pgVar1->ps).viewlocked_entNum = 0x3ff;
-  if ((uint)level.maxclients <= (uint)(((int)pgVar1 - (int)level.clients) / 0x29e0)) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x292,0,
+  client_00->lastServerTime = savedServerTime;
+  client_00->spectatorClient = -1;
+  (client_00->ps).stats[4] = savedSpawnCount + 1;
+  (client_00->ps).stats[2] = (client_00->sess).maxHealth;
+  (client_00->ps).eFlags = iFlags;
+  (client_00->sess).cs.clientIndex = index;
+  (client_00->sess).cs.attachedVehEntNum = 0x3ff;
+  AssignToSmallerType<unsigned_char>(&(client_00->ps).clientNum,index);
+  (client_00->ps).viewlocked_entNum = 0x3ff;
+  if ((uint)level.maxclients <= (uint)(((int)client_00 - (int)level.clients) / 0x29e0)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x292,0,
                              "client - level.clients doesn\'t index level.maxclients\n\t%i not in [0, %i)"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  SV_GetUsercmd(((int)pgVar1 - (int)level.clients) / 0x29e0,&(pgVar1->sess).cmd);
-  (pgVar1->ps).eFlags = (pgVar1->ps).eFlags ^ 2;
-  (pgVar1->ps).viewHeightTarget = 0x3c;
-  (pgVar1->ps).viewHeightCurrent = 60.0;
-  (pgVar1->ps).viewHeightLerpTime = 0;
-  (pgVar1->ps).dofNearBlur = 6.0;
-  (pgVar1->ps).dofFarBlur = 1.8;
-  (pgVar1->ps).spreadOverride = 0;
-  (pgVar1->ps).spreadOverrideState = 0;
-  (pgVar1->ps).throwBackGrenadeTimeLeft = 0;
-  (pgVar1->ps).throwBackGrenadeOwner = 0x3ff;
-  for (local_220 = 0; local_220 < 0xf; local_220 = local_220 + 1) {
-    BG_PlayerSetWeaponQuickReload(&pgVar1->ps,(pgVar1->ps).heldWeapons[local_220].weapon,true);
+  SV_GetUsercmd(((int)client_00 - (int)level.clients) / 0x29e0,&(client_00->sess).cmd);
+  (client_00->ps).eFlags = (client_00->ps).eFlags ^ 2;
+  (client_00->ps).viewHeightTarget = 0x3c;
+  (client_00->ps).viewHeightCurrent = 60.0;
+  (client_00->ps).viewHeightLerpTime = 0;
+  (client_00->ps).dofNearBlur = 6.0;
+  (client_00->ps).dofFarBlur = 1.8;
+  (client_00->ps).spreadOverride = 0;
+  (client_00->ps).spreadOverrideState = 0;
+  (client_00->ps).throwBackGrenadeTimeLeft = 0;
+  (client_00->ps).throwBackGrenadeOwner = 0x3ff;
+  for (i = 0; i < 0xf; i = i + 1) {
+    BG_PlayerSetWeaponQuickReload(&client_00->ps,(client_00->ps).heldWeapons[i].weapon,true);
   }
-  pWVar6 = BG_GetWeaponDef((uint)(pgVar1->ps).weapon);
-  if (pWVar6->bDualWield == false) {
-    PM_StartWeaponAnim(&pgVar1->ps,1,0);
+  pWVar5 = BG_GetWeaponDef((uint)(client_00->ps).weapon);
+  if (pWVar5->bDualWield == false) {
+    PM_StartWeaponAnim(&client_00->ps,1,0);
   }
   else {
-    PM_StartWeaponAnim(&pgVar1->ps,1,1);
-    PM_StartWeaponAnim(&pgVar1->ps,1,0);
+    PM_StartWeaponAnim(&client_00->ps,1,1);
+    PM_StartWeaponAnim(&client_00->ps,1,0);
   }
-  G_SetOrigin(param_1,param_2);
-  (pgVar1->ps).origin[0] = *param_2;
-  (pgVar1->ps).origin[1] = param_2[1];
-  (pgVar1->ps).origin[2] = param_2[2];
-  (pgVar1->ps).pm_flags = (pgVar1->ps).pm_flags | 0x400;
-  local_218 = *param_3;
-  local_214 = param_3[1];
+  G_SetOrigin(ent,spawn_origin);
+  (client_00->ps).origin[0] = *spawn_origin;
+  (client_00->ps).origin[1] = spawn_origin[1];
+  (client_00->ps).origin[2] = spawn_origin[2];
+  (client_00->ps).pm_flags = (client_00->ps).pm_flags | 0x400;
+  clean_spawn_angles = *spawn_angles;
+  local_214 = spawn_angles[1];
   local_210 = 0;
-  SetClientViewAngle(param_1,&local_218);
-  pgVar1->inactivityTime = (g_inactivity->current).integer * 1000 + level.time;
+  SetClientViewAngle(ent,&clean_spawn_angles);
+  client_00->inactivityTime = (g_inactivity->current).integer * 1000 + level.time;
   for (local_260 = 0; local_260 < 2; local_260 = local_260 + 1) {
-    if ((pgVar1->latched_button_bits).array[local_260] != 0) {
-      bVar3 = true;
+    if ((client_00->latched_button_bits).array[local_260] != 0) {
+      bVar2 = true;
       goto LAB_006016b0;
     }
   }
-  bVar3 = false;
+  bVar2 = false;
 LAB_006016b0:
-  if (bVar3) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2c4,0,
+  if (bVar2) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2c4,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   local_268 = 0;
   do {
     if (1 < local_268) {
-      bVar3 = false;
+      bVar2 = false;
 LAB_0060172d:
-      if (bVar3) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2c5
+      if (bVar2) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2c5
                                  ,0,"%s");
-        if (!bVar3) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      bitarray<51>::resetBit(&(pgVar1->sess).cmd.button_bits,8);
-      bitarray<51>::resetBit(&(pgVar1->sess).cmd.button_bits,9);
+      bitarray<51>::resetBit(&(client_00->sess).cmd.button_bits,8);
+      bitarray<51>::resetBit(&(client_00->sess).cmd.button_bits,9);
       for (local_270 = 0; local_270 < 2; local_270 = local_270 + 1) {
-        (pgVar1->button_bits).array[local_270] = (pgVar1->sess).cmd.button_bits.array[local_270];
+        (client_00->button_bits).array[local_270] =
+             (client_00->sess).cmd.button_bits.array[local_270];
       }
       level.clientIsSpawning = 1;
-      pgVar1->lastSpawnTime = level.time;
-      (pgVar1->sess).cmd.serverTime = level.time;
-      (pgVar1->ps).commandTime = level.time + -100;
-      ClientEndFrame(param_1);
-      ClientThink_real(param_1,&(pgVar1->sess).cmd);
+      client_00->lastSpawnTime = level.time;
+      (client_00->sess).cmd.serverTime = level.time;
+      (client_00->ps).commandTime = level.time + -100;
+      ClientEndFrame(ent);
+      ClientThink_real(ent,&(client_00->sess).cmd);
       level.clientIsSpawning = 0;
-      BG_PlayerStateToEntityState(&pgVar1->ps,&param_1->s,1,'\x01');
+      BG_PlayerStateToEntityState(&client_00->ps,&ent->s,1,'\x01');
       return;
     }
-    if ((pgVar1->button_bitsSinceLastFrame).array[local_268] != 0) {
-      bVar3 = true;
+    if ((client_00->button_bitsSinceLastFrame).array[local_268] != 0) {
+      bVar2 = true;
       goto LAB_0060172d;
     }
     local_268 = local_268 + 1;
@@ -862,19 +873,21 @@ LAB_0060172d:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientDisconnect(int param_1)
+void __cdecl ClientDisconnect(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  gentity_s *pgVar3;
-  int iVar4;
-  renderOptions_s *prVar5;
-  gclient_s *pgVar6;
-  int local_14;
-  int local_8;
+  gentity_s *ent_00;
+  int iVar3;
+  renderOptions_s *prVar4;
+  gclient_s *client_00;
+  int i_2;
+  gclient_s *client;
+  gentity_s *ent;
+  int i;
   
-  if (((uint)level.maxclients <= (uint)param_1) &&
+  if (((uint)level.maxclients <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2f2,0
                                ,"clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -882,62 +895,61 @@ void __cdecl ClientDisconnect(int param_1)
     (*pcVar1)();
     return;
   }
-  pgVar6 = level.clients + param_1;
-  pgVar3 = g_entities + param_1;
-  if ((g_entities[param_1].r.inuse == '\0') &&
+  client_00 = level.clients + clientNum;
+  ent_00 = g_entities + clientNum;
+  if ((g_entities[clientNum].r.inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x2f7,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar4 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
-  if (iVar4 != 0) {
+  iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
+  if (iVar3 != 0) {
     Scr_AddString("disconnect",SCRIPTINSTANCE_SERVER);
     Scr_AddString("-1",SCRIPTINSTANCE_SERVER);
-    Scr_Notify(pgVar3,scr_const.menuresponse,2);
+    Scr_Notify(ent_00,scr_const.menuresponse,2);
   }
-  for (local_8 = 0; local_8 < level.maxclients; local_8 = local_8 + 1) {
-    if ((((level.clients[local_8].sess.connected != CON_DISCONNECTED) &&
-         (level.clients[local_8].sess.sessionState == SESS_STATE_SPECTATOR)) &&
-        (level.clients[local_8].spectatorClient == param_1)) &&
-       (level.clients[local_8].sess.archiveTime < 1)) {
-      StopFollowing(g_entities + local_8);
-      level.clients[local_8].sess.archiveTime = 0;
+  for (i = 0; i < level.maxclients; i = i + 1) {
+    if ((((level.clients[i].sess.connected != CON_DISCONNECTED) &&
+         (level.clients[i].sess.sessionState == SESS_STATE_SPECTATOR)) &&
+        (level.clients[i].spectatorClient == clientNum)) && (level.clients[i].sess.archiveTime < 1))
+    {
+      StopFollowing(g_entities + i);
+      level.clients[i].sess.archiveTime = 0;
     }
   }
-  if ((pgVar6->sess).sessionState == SESS_STATE_SPECTATOR) {
-    StopFollowing(pgVar3);
+  if ((client_00->sess).sessionState == SESS_STATE_SPECTATOR) {
+    StopFollowing(ent_00);
   }
-  if (((pgVar6->ps).eFlags & 0x4000U) != 0) {
-    VEH_UnlinkPlayer(pgVar3,false,"ClientDisconnect");
+  if (((client_00->ps).eFlags & 0x4000U) != 0) {
+    VEH_UnlinkPlayer(ent_00,false,"ClientDisconnect");
   }
-  if ((g_entities[param_1].client != pgVar6) &&
+  if ((g_entities[clientNum].client != client_00) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x317,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  HudElem_ClientDisconnect(pgVar3);
-  iVar4 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
-  if (iVar4 != 0) {
-    Scr_PlayerDisconnect(pgVar3);
+  HudElem_ClientDisconnect(ent_00);
+  iVar3 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
+  if (iVar3 != 0) {
+    Scr_PlayerDisconnect(ent_00);
   }
-  for (local_14 = 0; local_14 < 0x400; local_14 = local_14 + 1) {
-    if ((g_entities[local_14].s.renderOptions.field0_0x0.i >> 0x15 & 0x1f) - 1 == (pgVar3->s).number
-       ) {
-      prVar5 = &g_entities[local_14].s.renderOptions;
-      (prVar5->field0_0x0).i = (prVar5->field0_0x0).i & 0xfc1fffff | 0x200000;
+  for (i_2 = 0; i_2 < 0x400; i_2 = i_2 + 1) {
+    if ((g_entities[i_2].s.renderOptions.field0_0x0.i >> 0x15 & 0x1f) - 1 == (ent_00->s).number) {
+      prVar4 = &g_entities[i_2].s.renderOptions;
+      (prVar4->field0_0x0).i = (prVar4->field0_0x0).i & 0xfc1fffff | 0x200000;
     }
   }
-  G_FreeEntity(pgVar3);
-  g_entities[param_1].client = pgVar6;
-  ClientClearFields(pgVar6);
-  (pgVar6->sess).connected = CON_DISCONNECTED;
-  memset((uchar *)&(pgVar6->sess).cs,'\0',0xd0);
+  G_FreeEntity(ent_00);
+  g_entities[clientNum].client = client_00;
+  ClientClearFields(client_00);
+  (client_00->sess).connected = CON_DISCONNECTED;
+  memset((uchar *)&(client_00->sess).cs,'\0',0xd0);
   CalculateRanks();
-  if ((g_entities[param_1].client != pgVar6) &&
+  if ((g_entities[clientNum].client != client_00) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_mp.cpp",0x332,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -955,7 +967,7 @@ void __cdecl ClientDisconnect(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
+int __cdecl G_GetNonPVSPlayerInfo(gentity_s *pSelf,float *vPosition,int iLastUpdateEnt)
 
 {
   team_t tVar1;
@@ -963,32 +975,38 @@ int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
   gentity_s *pgVar3;
   int iVar4;
   uint uVar5;
-  float local_28;
+  bool showEnemies;
+  int iNewInfo;
+  int team;
+  int iCurrEnt;
+  float fScale;
   float local_24;
-  int local_20;
+  int iPos;
   int local_1c;
-  int local_18;
-  int local_8;
+  int iEntCount;
+  gentity_s *pEnt;
+  int iBaseEnt;
   
-  tVar1 = (param_1->client->sess).cs.team;
+  tVar1 = (pSelf->client->sess).cs.team;
   if (tVar1 != TEAM_SPECTATOR) {
     if (((((g_compassShowEnemies->current).enabled == false) && (level.teamHasSatellite[tVar1] == 0)
-         ) && (param_1->client->hasSatellite == 0)) &&
-       ((level.teamHasSpyplane[tVar1] == 0 && (param_1->client->hasSpyplane == 0)))) {
+         ) && (pSelf->client->hasSatellite == 0)) &&
+       ((level.teamHasSpyplane[tVar1] == 0 && (pSelf->client->hasSpyplane == 0)))) {
       bVar2 = false;
     }
     else {
       bVar2 = true;
     }
     if ((tVar1 != TEAM_BAD) || (bVar2)) {
-      if (param_3 == 0x3ff) {
-        local_8 = 0;
+      if (iLastUpdateEnt == 0x3ff) {
+        iBaseEnt = 0;
       }
       else {
-        local_8 = param_3 + 1;
+        iBaseEnt = iLastUpdateEnt + 1;
       }
-      for (local_18 = 0; local_18 < (com_maxclients->current).integer; local_18 = local_18 + 1) {
-        uVar5 = local_8 + local_18 & 0x8000001f;
+      for (iEntCount = 0; iEntCount < (com_maxclients->current).integer; iEntCount = iEntCount + 1)
+      {
+        uVar5 = iBaseEnt + iEntCount & 0x8000001f;
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xffffffe0) + 1;
         }
@@ -996,19 +1014,19 @@ int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
         if ((((g_entities[uVar5].r.inuse != '\0') && (g_entities[uVar5].client != (gclient_s *)0x0))
             && (((g_entities[uVar5].client)->sess).sessionState == SESS_STATE_PLAYING)) &&
            (((((g_entities[uVar5].client)->sess).cs.team == tVar1 || (bVar2)) &&
-            ((param_1 != pgVar3 && (iVar4 = SV_inSnapshot(param_2,(pgVar3->s).number), iVar4 == 0)))
+            ((pSelf != pgVar3 && (iVar4 = SV_inSnapshot(vPosition,(pgVar3->s).number), iVar4 == 0)))
             ))) {
-          local_20 = (int)((g_entities[uVar5].r.currentOrigin[0] - *param_2) + 0.5);
-          local_1c = (int)((g_entities[uVar5].r.currentOrigin[1] - param_2[1]) + 0.5);
-          local_28 = 1.0;
+          iPos = (int)((g_entities[uVar5].r.currentOrigin[0] - *vPosition) + 0.5);
+          local_1c = (int)((g_entities[uVar5].r.currentOrigin[1] - vPosition[1]) + 0.5);
+          fScale = 1.0;
           local_24 = 1.0;
-          if (local_20 < 0x401) {
-            if (local_20 < -0x3fe) {
-              local_28 = -1022.0 / (float)local_20;
+          if (iPos < 0x401) {
+            if (iPos < -0x3fe) {
+              fScale = -1022.0 / (float)iPos;
             }
           }
           else {
-            local_28 = 1024.0 / (float)local_20;
+            fScale = 1024.0 / (float)iPos;
           }
           if (local_1c < 0x401) {
             if (local_1c < -0x3fe) {
@@ -1018,23 +1036,23 @@ int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
           else {
             local_24 = 1024.0 / (float)local_1c;
           }
-          if ((local_28 < 1.0) || (local_24 < 1.0)) {
-            if (local_24 <= local_28) {
-              if (local_24 < local_28) {
-                local_20 = (int)((float)local_20 * local_24);
+          if ((fScale < 1.0) || (local_24 < 1.0)) {
+            if (local_24 <= fScale) {
+              if (local_24 < fScale) {
+                iPos = (int)((float)iPos * local_24);
               }
             }
             else {
-              local_1c = (int)((float)local_1c * local_28);
+              local_1c = (int)((float)local_1c * fScale);
             }
           }
-          if (local_20 < 0x401) {
-            if (local_20 < -0x3fe) {
-              local_20 = -0x3fe;
+          if (iPos < 0x401) {
+            if (iPos < -0x3fe) {
+              iPos = -0x3fe;
             }
           }
           else {
-            local_20 = 0x400;
+            iPos = 0x400;
           }
           if (local_1c < 0x401) {
             if (local_1c < -0x3fe) {
@@ -1045,7 +1063,7 @@ int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
             local_1c = 0x400;
           }
           return (pgVar3->s).number & 0x3fU |
-                 (((int)(local_20 + 2 + (local_20 + 2 >> 0x1f & 3U)) >> 2) + 0xffU & 0x1ff) << 6 |
+                 (((int)(iPos + 2 + (iPos + 2 >> 0x1f & 3U)) >> 2) + 0xffU & 0x1ff) << 6 |
                  (((int)(local_1c + 2 + (local_1c + 2 >> 0x1f & 3U)) >> 2) + 0xffU & 0x1ff) << 0xf |
                  (int)(g_entities[uVar5].r.currentAngles[1] * 0.7111111) << 0x18;
         }
@@ -1062,29 +1080,35 @@ int __cdecl G_GetNonPVSPlayerInfo(gentity_s *param_1,float *param_2,int param_3)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl G_BroadcastVoice(gentity_s *param_1,VoicePacket_t *param_2)
+void __cdecl G_BroadcastVoice(gentity_s *talker,VoicePacket_t *voicePacket)
 
 {
   bool bVar1;
   int iVar2;
-  int local_c;
+  gclient_s *client;
+  int otherPlayer;
+  gentity_s *ent;
   
-  param_1->client->lastVoiceTime = level.time;
-  for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-    if (((((g_entities[local_c].r.inuse != '\0') && (g_entities[local_c].client != (gclient_s *)0x0)
-          ) && ((((g_entities[local_c].client)->sess).sessionState == SESS_STATE_INTERMISSION ||
-                ((((voice_global->current).enabled != false ||
-                  (iVar2 = OnSameTeam(param_1,g_entities + local_c), iVar2 != 0)) ||
-                 ((param_1->client->sess).cs.team == TEAM_BAD)))))) &&
-        ((((g_entities[local_c].client)->sess).sessionState == (param_1->client->sess).sessionState
-         || (((((g_entities[local_c].client)->sess).sessionState == SESS_STATE_DEAD ||
-              ((param_1->client->sess).sessionState == SESS_STATE_DEAD)) &&
-             ((voice_deadChat->current).enabled != false)))))) &&
-       (((param_1 != g_entities + local_c || ((voice_localEcho->current).enabled != false)) &&
-        ((bVar1 = SV_ClientHasClientMuted(local_c,(param_1->s).number), !bVar1 &&
-         (bVar1 = SV_ClientWantsVoiceData(local_c), bVar1)))))) {
-      SV_QueueVoicePacket((param_1->s).number,local_c,param_2);
+  talker->client->lastVoiceTime = level.time;
+  for (otherPlayer = 0; otherPlayer < (com_maxclients->current).integer;
+      otherPlayer = otherPlayer + 1) {
+    if (((((g_entities[otherPlayer].r.inuse != '\0') &&
+          (g_entities[otherPlayer].client != (gclient_s *)0x0)) &&
+         ((((g_entities[otherPlayer].client)->sess).sessionState == SESS_STATE_INTERMISSION ||
+          ((((voice_global->current).enabled != false ||
+            (iVar2 = OnSameTeam(talker,g_entities + otherPlayer), iVar2 != 0)) ||
+           ((talker->client->sess).cs.team == TEAM_BAD)))))) &&
+        ((((g_entities[otherPlayer].client)->sess).sessionState ==
+          (talker->client->sess).sessionState ||
+         (((((g_entities[otherPlayer].client)->sess).sessionState == SESS_STATE_DEAD ||
+           ((talker->client->sess).sessionState == SESS_STATE_DEAD)) &&
+          ((voice_deadChat->current).enabled != false)))))) &&
+       (((talker != g_entities + otherPlayer || ((voice_localEcho->current).enabled != false)) &&
+        ((bVar1 = SV_ClientHasClientMuted(otherPlayer,(talker->s).number), !bVar1 &&
+         (bVar1 = SV_ClientWantsVoiceData(otherPlayer), bVar1)))))) {
+      SV_QueueVoicePacket((talker->s).number,otherPlayer,voicePacket);
     }
   }
   return;

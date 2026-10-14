@@ -4,41 +4,43 @@
 
 void __cdecl
 jpeg_add_quant_table
-          (jpeg_compress_struct *param_1,int param_2,uint *param_3,int param_4,uchar param_5)
+          (jpeg_compress_struct *cinfo,int which_tbl,uint *basic_table,int scale_factor,
+          uchar force_baseline)
 
 {
   JQUANT_TBL **ppJVar1;
   JQUANT_TBL *pJVar2;
-  int local_c;
-  int local_8;
+  JQUANT_TBL **qtblptr;
+  long temp;
+  int i;
   
-  if (param_1->global_state != 100) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 100) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if ((param_2 < 0) || (3 < param_2)) {
-    param_1->err->msg_code = 0x1f;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if ((which_tbl < 0) || (3 < which_tbl)) {
+    cinfo->err->msg_code = 0x1f;
+    (cinfo->err->msg_parm).i[0] = which_tbl;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  ppJVar1 = param_1->quant_tbl_ptrs + param_2;
+  ppJVar1 = cinfo->quant_tbl_ptrs + which_tbl;
   if (*ppJVar1 == (JQUANT_TBL *)0x0) {
-    pJVar2 = jpeg_alloc_quant_table((jpeg_common_struct *)param_1);
+    pJVar2 = jpeg_alloc_quant_table((jpeg_common_struct *)cinfo);
     *ppJVar1 = pJVar2;
   }
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    local_c = (int)(param_3[local_8] * param_4 + 0x32) / 100;
-    if (local_c < 1) {
-      local_c = 1;
+  for (i = 0; i < 0x40; i = i + 1) {
+    temp = (int)(basic_table[i] * scale_factor + 0x32) / 100;
+    if (temp < 1) {
+      temp = 1;
     }
-    if (0x7fff < local_c) {
-      local_c = 0x7fff;
+    if (0x7fff < temp) {
+      temp = 0x7fff;
     }
-    if ((param_5 != '\0') && (0xff < local_c)) {
-      local_c = 0xff;
+    if ((force_baseline != '\0') && (0xff < temp)) {
+      temp = 0xff;
     }
-    (*ppJVar1)->quantval[local_8] = (ushort)local_c;
+    (*ppJVar1)->quantval[i] = (ushort)temp;
   }
   (*ppJVar1)->sent_table = '\0';
   return;
@@ -47,171 +49,171 @@ jpeg_add_quant_table
 
 // 00B423C0  jpeg_set_linear_quality  (jpeg-6/jcparam.c:71)
 
-void __cdecl jpeg_set_linear_quality(jpeg_compress_struct *param_1,int param_2,uchar param_3)
+void __cdecl
+jpeg_set_linear_quality(jpeg_compress_struct *cinfo,int scale_factor,uchar force_baseline)
 
 {
-  jpeg_add_quant_table(param_1,0,std_luminance_quant_tbl,param_2,param_3);
-  jpeg_add_quant_table(param_1,1,std_chrominance_quant_tbl,param_2,param_3);
+  jpeg_add_quant_table(cinfo,0,std_luminance_quant_tbl,scale_factor,force_baseline);
+  jpeg_add_quant_table(cinfo,1,std_chrominance_quant_tbl,scale_factor,force_baseline);
   return;
 }
 
 
 // 00B42400  jpeg_quality_scaling  (jpeg-6/jcparam.c:111)
 
-int __cdecl jpeg_quality_scaling(int param_1)
+int __cdecl jpeg_quality_scaling(int quality)
 
 {
-  if (param_1 < 1) {
-    param_1 = 1;
+  if (quality < 1) {
+    quality = 1;
   }
-  if (100 < param_1) {
-    param_1 = 100;
+  if (100 < quality) {
+    quality = 100;
   }
-  if (param_1 < 0x32) {
-    param_1 = (int)(5000 / (longlong)param_1);
+  if (quality < 0x32) {
+    quality = (int)(5000 / (longlong)quality);
   }
   else {
-    param_1 = param_1 * -2 + 200;
+    quality = quality * -2 + 200;
   }
-  return param_1;
+  return quality;
 }
 
 
 // 00B42450  jpeg_set_quality  (jpeg-6/jcparam.c:138)
 
-void __cdecl jpeg_set_quality(jpeg_compress_struct *param_1,int param_2,uchar param_3)
+void __cdecl jpeg_set_quality(jpeg_compress_struct *cinfo,int quality,uchar force_baseline)
 
 {
-  int iVar1;
+  int scale_factor;
   
-  iVar1 = jpeg_quality_scaling(param_2);
-  jpeg_set_linear_quality(param_1,iVar1,param_3);
+  scale_factor = jpeg_quality_scaling(quality);
+  jpeg_set_linear_quality(cinfo,scale_factor,force_baseline);
   return;
 }
 
 
 // 00B426A0  add_huff_table  (jpeg-6/jcparam.c:155)
 
-void __cdecl
-add_huff_table(jpeg_compress_struct *param_1,JHUFF_TBL **param_2,uchar *param_3,uchar *param_4)
+void __cdecl add_huff_table(jpeg_compress_struct *cinfo,JHUFF_TBL **htblptr,uchar *bits,uchar *val)
 
 {
   JHUFF_TBL *pJVar1;
-  int local_c;
-  ulong local_8;
+  int len;
+  int nsymbols;
   
-  if (*param_2 == (JHUFF_TBL *)0x0) {
-    pJVar1 = jpeg_alloc_huff_table((jpeg_common_struct *)param_1);
-    *param_2 = pJVar1;
+  if (*htblptr == (JHUFF_TBL *)0x0) {
+    pJVar1 = jpeg_alloc_huff_table((jpeg_common_struct *)cinfo);
+    *htblptr = pJVar1;
   }
-  pJVar1 = *param_2;
-  *(undefined4 *)pJVar1->bits = *(undefined4 *)param_3;
-  *(undefined4 *)(pJVar1->bits + 4) = *(undefined4 *)(param_3 + 4);
-  *(undefined4 *)(pJVar1->bits + 8) = *(undefined4 *)(param_3 + 8);
-  *(undefined4 *)(pJVar1->bits + 0xc) = *(undefined4 *)(param_3 + 0xc);
-  pJVar1->bits[0x10] = param_3[0x10];
-  local_8 = 0;
-  for (local_c = 1; local_c < 0x11; local_c = local_c + 1) {
-    local_8 = param_3[local_c] + local_8;
+  pJVar1 = *htblptr;
+  *(undefined4 *)pJVar1->bits = *(undefined4 *)bits;
+  *(undefined4 *)(pJVar1->bits + 4) = *(undefined4 *)(bits + 4);
+  *(undefined4 *)(pJVar1->bits + 8) = *(undefined4 *)(bits + 8);
+  *(undefined4 *)(pJVar1->bits + 0xc) = *(undefined4 *)(bits + 0xc);
+  pJVar1->bits[0x10] = bits[0x10];
+  nsymbols = 0;
+  for (len = 1; len < 0x11; len = len + 1) {
+    nsymbols = (uint)bits[len] + nsymbols;
   }
-  if (((int)local_8 < 1) || (0x100 < (int)local_8)) {
-    param_1->err->msg_code = 8;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if ((nsymbols < 1) || (0x100 < nsymbols)) {
+    cinfo->err->msg_code = 8;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  memcpy((*param_2)->huffval,param_4,local_8);
-  (*param_2)->sent_table = '\0';
+  memcpy((*htblptr)->huffval,val,nsymbols);
+  (*htblptr)->sent_table = '\0';
   return;
 }
 
 
 // 00B42620  std_huff_tables  (jpeg-6/jcparam.c:185)
 
-void __cdecl std_huff_tables(jpeg_compress_struct *param_1)
+void __cdecl std_huff_tables(jpeg_compress_struct *cinfo)
 
 {
-  add_huff_table(param_1,param_1->dc_huff_tbl_ptrs,"","");
-  add_huff_table(param_1,param_1->ac_huff_tbl_ptrs,"","\x01\x02\x03");
-  add_huff_table(param_1,param_1->dc_huff_tbl_ptrs + 1,"","");
-  add_huff_table(param_1,param_1->ac_huff_tbl_ptrs + 1,"","");
+  add_huff_table(cinfo,cinfo->dc_huff_tbl_ptrs,"","");
+  add_huff_table(cinfo,cinfo->ac_huff_tbl_ptrs,"","\x01\x02\x03");
+  add_huff_table(cinfo,cinfo->dc_huff_tbl_ptrs + 1,"","");
+  add_huff_table(cinfo,cinfo->ac_huff_tbl_ptrs + 1,"","");
   return;
 }
 
 
 // 00B42480  jpeg_set_defaults  (jpeg-6/jcparam.c:269)
 
-void __cdecl jpeg_set_defaults(jpeg_compress_struct *param_1)
+void __cdecl jpeg_set_defaults(jpeg_compress_struct *cinfo)
 
 {
   jpeg_component_info *pjVar1;
-  int local_8;
+  int i;
   
-  if (param_1->global_state != 100) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 100) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->comp_info == (jpeg_component_info *)0x0) {
-    pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,0,0x348);
-    param_1->comp_info = pjVar1;
+  if (cinfo->comp_info == (jpeg_component_info *)0x0) {
+    pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,0,0x348);
+    cinfo->comp_info = pjVar1;
   }
-  param_1->data_precision = 8;
-  jpeg_set_quality(param_1,0x4b,'\x01');
-  std_huff_tables(param_1);
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    param_1->arith_dc_L[local_8] = '\0';
-    param_1->arith_dc_U[local_8] = '\x01';
-    param_1->arith_ac_K[local_8] = '\x05';
+  cinfo->data_precision = 8;
+  jpeg_set_quality(cinfo,0x4b,'\x01');
+  std_huff_tables(cinfo);
+  for (i = 0; i < 0x10; i = i + 1) {
+    cinfo->arith_dc_L[i] = '\0';
+    cinfo->arith_dc_U[i] = '\x01';
+    cinfo->arith_ac_K[i] = '\x05';
   }
-  param_1->scan_info = (jpeg_scan_info *)0x0;
-  param_1->num_scans = 0;
-  param_1->raw_data_in = '\0';
-  param_1->arith_code = '\0';
-  param_1->optimize_coding = '\0';
-  if (8 < param_1->data_precision) {
-    param_1->optimize_coding = '\x01';
+  cinfo->scan_info = (jpeg_scan_info *)0x0;
+  cinfo->num_scans = 0;
+  cinfo->raw_data_in = '\0';
+  cinfo->arith_code = '\0';
+  cinfo->optimize_coding = '\0';
+  if (8 < cinfo->data_precision) {
+    cinfo->optimize_coding = '\x01';
   }
-  param_1->CCIR601_sampling = '\0';
-  param_1->smoothing_factor = 0;
-  param_1->dct_method = JDCT_ISLOW;
-  param_1->restart_interval = 0;
-  param_1->restart_in_rows = 0;
-  param_1->JFIF_major_version = '\x01';
-  param_1->JFIF_minor_version = '\x01';
-  param_1->density_unit = '\0';
-  param_1->X_density = 1;
-  param_1->Y_density = 1;
-  jpeg_default_colorspace(param_1);
+  cinfo->CCIR601_sampling = '\0';
+  cinfo->smoothing_factor = 0;
+  cinfo->dct_method = JDCT_ISLOW;
+  cinfo->restart_interval = 0;
+  cinfo->restart_in_rows = 0;
+  cinfo->JFIF_major_version = '\x01';
+  cinfo->JFIF_minor_version = '\x01';
+  cinfo->density_unit = '\0';
+  cinfo->X_density = 1;
+  cinfo->Y_density = 1;
+  jpeg_default_colorspace(cinfo);
   return;
 }
 
 
 // 00B42770  jpeg_default_colorspace  (jpeg-6/jcparam.c:360)
 
-void __cdecl jpeg_default_colorspace(jpeg_compress_struct *param_1)
+void __cdecl jpeg_default_colorspace(jpeg_compress_struct *cinfo)
 
 {
-  switch(param_1->in_color_space) {
+  switch(cinfo->in_color_space) {
   case JCS_UNKNOWN:
-    jpeg_set_colorspace(param_1,JCS_UNKNOWN);
+    jpeg_set_colorspace(cinfo,JCS_UNKNOWN);
     break;
   case JCS_GRAYSCALE:
-    jpeg_set_colorspace(param_1,JCS_GRAYSCALE);
+    jpeg_set_colorspace(cinfo,JCS_GRAYSCALE);
     break;
   case JCS_RGB:
-    jpeg_set_colorspace(param_1,JCS_YCbCr);
+    jpeg_set_colorspace(cinfo,JCS_YCbCr);
     break;
   case JCS_YCbCr:
-    jpeg_set_colorspace(param_1,JCS_YCbCr);
+    jpeg_set_colorspace(cinfo,JCS_YCbCr);
     break;
   case JCS_CMYK:
-    jpeg_set_colorspace(param_1,JCS_CMYK);
+    jpeg_set_colorspace(cinfo,JCS_CMYK);
     break;
   case JCS_YCCK:
-    jpeg_set_colorspace(param_1,JCS_YCCK);
+    jpeg_set_colorspace(cinfo,JCS_YCCK);
     break;
   default:
-    param_1->err->msg_code = 9;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 9;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   return;
 }
@@ -219,32 +221,33 @@ void __cdecl jpeg_default_colorspace(jpeg_compress_struct *param_1)
 
 // 00B42830  jpeg_set_colorspace  (jpeg-6/jcparam.c:392)
 
-void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE param_2)
+void __cdecl jpeg_set_colorspace(jpeg_compress_struct *cinfo,J_COLOR_SPACE colorspace)
 
 {
   jpeg_component_info *pjVar1;
-  int local_8;
+  jpeg_component_info *compptr;
+  int ci;
   
-  if (param_1->global_state != 100) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 100) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  param_1->jpeg_color_space = param_2;
-  param_1->write_JFIF_header = '\0';
-  param_1->write_Adobe_marker = '\0';
-  switch(param_2) {
+  cinfo->jpeg_color_space = colorspace;
+  cinfo->write_JFIF_header = '\0';
+  cinfo->write_Adobe_marker = '\0';
+  switch(colorspace) {
   case JCS_UNKNOWN:
-    param_1->num_components = param_1->input_components;
-    if ((param_1->num_components < 1) || (10 < param_1->num_components)) {
-      param_1->err->msg_code = 0x1a;
-      (param_1->err->msg_parm).i[0] = param_1->num_components;
-      (param_1->err->msg_parm).i[1] = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->num_components = cinfo->input_components;
+    if ((cinfo->num_components < 1) || (10 < cinfo->num_components)) {
+      cinfo->err->msg_code = 0x1a;
+      (cinfo->err->msg_parm).i[0] = cinfo->num_components;
+      (cinfo->err->msg_parm).i[1] = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    for (local_8 = 0; local_8 < param_1->num_components; local_8 = local_8 + 1) {
-      pjVar1 = param_1->comp_info + local_8;
-      pjVar1->component_id = local_8;
+    for (ci = 0; ci < cinfo->num_components; ci = ci + 1) {
+      pjVar1 = cinfo->comp_info + ci;
+      pjVar1->component_id = ci;
       pjVar1->h_samp_factor = 1;
       pjVar1->v_samp_factor = 1;
       pjVar1->quant_tbl_no = 0;
@@ -253,9 +256,9 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     }
     break;
   case JCS_GRAYSCALE:
-    param_1->write_JFIF_header = '\x01';
-    param_1->num_components = 1;
-    pjVar1 = param_1->comp_info;
+    cinfo->write_JFIF_header = '\x01';
+    cinfo->num_components = 1;
+    pjVar1 = cinfo->comp_info;
     pjVar1->component_id = 1;
     pjVar1->h_samp_factor = 1;
     pjVar1->v_samp_factor = 1;
@@ -264,23 +267,23 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     pjVar1->ac_tbl_no = 0;
     break;
   case JCS_RGB:
-    param_1->write_Adobe_marker = '\x01';
-    param_1->num_components = 3;
-    pjVar1 = param_1->comp_info;
+    cinfo->write_Adobe_marker = '\x01';
+    cinfo->num_components = 3;
+    pjVar1 = cinfo->comp_info;
     pjVar1->component_id = 0x52;
     pjVar1->h_samp_factor = 1;
     pjVar1->v_samp_factor = 1;
     pjVar1->quant_tbl_no = 0;
     pjVar1->dc_tbl_no = 0;
     pjVar1->ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[1].component_id = 0x47;
     pjVar1[1].h_samp_factor = 1;
     pjVar1[1].v_samp_factor = 1;
     pjVar1[1].quant_tbl_no = 0;
     pjVar1[1].dc_tbl_no = 0;
     pjVar1[1].ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[2].component_id = 0x42;
     pjVar1[2].h_samp_factor = 1;
     pjVar1[2].v_samp_factor = 1;
@@ -289,23 +292,23 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     pjVar1[2].ac_tbl_no = 0;
     break;
   case JCS_YCbCr:
-    param_1->write_JFIF_header = '\x01';
-    param_1->num_components = 3;
-    pjVar1 = param_1->comp_info;
+    cinfo->write_JFIF_header = '\x01';
+    cinfo->num_components = 3;
+    pjVar1 = cinfo->comp_info;
     pjVar1->component_id = 1;
     pjVar1->h_samp_factor = 2;
     pjVar1->v_samp_factor = 2;
     pjVar1->quant_tbl_no = 0;
     pjVar1->dc_tbl_no = 0;
     pjVar1->ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[1].component_id = 2;
     pjVar1[1].h_samp_factor = 1;
     pjVar1[1].v_samp_factor = 1;
     pjVar1[1].quant_tbl_no = 1;
     pjVar1[1].dc_tbl_no = 1;
     pjVar1[1].ac_tbl_no = 1;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[2].component_id = 3;
     pjVar1[2].h_samp_factor = 1;
     pjVar1[2].v_samp_factor = 1;
@@ -314,30 +317,30 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     pjVar1[2].ac_tbl_no = 1;
     break;
   case JCS_CMYK:
-    param_1->write_Adobe_marker = '\x01';
-    param_1->num_components = 4;
-    pjVar1 = param_1->comp_info;
+    cinfo->write_Adobe_marker = '\x01';
+    cinfo->num_components = 4;
+    pjVar1 = cinfo->comp_info;
     pjVar1->component_id = 0x43;
     pjVar1->h_samp_factor = 1;
     pjVar1->v_samp_factor = 1;
     pjVar1->quant_tbl_no = 0;
     pjVar1->dc_tbl_no = 0;
     pjVar1->ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[1].component_id = 0x4d;
     pjVar1[1].h_samp_factor = 1;
     pjVar1[1].v_samp_factor = 1;
     pjVar1[1].quant_tbl_no = 0;
     pjVar1[1].dc_tbl_no = 0;
     pjVar1[1].ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[2].component_id = 0x59;
     pjVar1[2].h_samp_factor = 1;
     pjVar1[2].v_samp_factor = 1;
     pjVar1[2].quant_tbl_no = 0;
     pjVar1[2].dc_tbl_no = 0;
     pjVar1[2].ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[3].component_id = 0x4b;
     pjVar1[3].h_samp_factor = 1;
     pjVar1[3].v_samp_factor = 1;
@@ -346,30 +349,30 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     pjVar1[3].ac_tbl_no = 0;
     break;
   case JCS_YCCK:
-    param_1->write_Adobe_marker = '\x01';
-    param_1->num_components = 4;
-    pjVar1 = param_1->comp_info;
+    cinfo->write_Adobe_marker = '\x01';
+    cinfo->num_components = 4;
+    pjVar1 = cinfo->comp_info;
     pjVar1->component_id = 1;
     pjVar1->h_samp_factor = 2;
     pjVar1->v_samp_factor = 2;
     pjVar1->quant_tbl_no = 0;
     pjVar1->dc_tbl_no = 0;
     pjVar1->ac_tbl_no = 0;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[1].component_id = 2;
     pjVar1[1].h_samp_factor = 1;
     pjVar1[1].v_samp_factor = 1;
     pjVar1[1].quant_tbl_no = 1;
     pjVar1[1].dc_tbl_no = 1;
     pjVar1[1].ac_tbl_no = 1;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[2].component_id = 3;
     pjVar1[2].h_samp_factor = 1;
     pjVar1[2].v_samp_factor = 1;
     pjVar1[2].quant_tbl_no = 1;
     pjVar1[2].dc_tbl_no = 1;
     pjVar1[2].ac_tbl_no = 1;
-    pjVar1 = param_1->comp_info;
+    pjVar1 = cinfo->comp_info;
     pjVar1[3].component_id = 4;
     pjVar1[3].h_samp_factor = 2;
     pjVar1[3].v_samp_factor = 2;
@@ -378,8 +381,8 @@ void __cdecl jpeg_set_colorspace(jpeg_compress_struct *param_1,J_COLOR_SPACE par
     pjVar1[3].ac_tbl_no = 0;
     break;
   default:
-    param_1->err->msg_code = 10;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 10;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   return;
 }

@@ -20,33 +20,37 @@ int __cdecl Demo_GetVersion(void)
 
 // 009CE430  Demo_GetNetFieldListForType  (demo/demo_version.cpp:36)
 
-NetFieldList * __cdecl Demo_GetNetFieldListForType(netFieldTypes_t param_1)
+NetFieldList * __cdecl Demo_GetNetFieldListForType(netFieldTypes_t fieldType)
 
 {
   int iVar1;
+  int netFieldsVersionIndex;
+  int version;
   
   iVar1 = Demo_GetVersion();
   if (1 - iVar1 < 0) {
     Com_Error(ERR_DROP,"\x15Invalid Version Handling. Grab Bat !!!");
   }
-  return (NetFieldList *)(param_1 * 0xc + *(int *)(&s_demoOtherNetFieldLists + (1 - iVar1) * 4));
+  return (NetFieldList *)(fieldType * 0xc + *(int *)(&s_demoOtherNetFieldLists + (1 - iVar1) * 4));
 }
 
 
 // 009CE470  Demo_GetStateFieldListForEntityType  (demo/demo_version.cpp:58)
 
-NetFieldList * __cdecl Demo_GetStateFieldListForEntityType(int param_1)
+NetFieldList * __cdecl Demo_GetStateFieldListForEntityType(int eType)
 
 {
   int iVar1;
   int local_10;
+  int netFieldsVersionIndex;
+  int version;
   
   iVar1 = Demo_GetVersion();
   if (1 - iVar1 < 0) {
     Com_Error(ERR_DROP,"\x15Invalid Version Handling. Grab Bat !!!");
   }
-  if (param_1 < 0x16) {
-    local_10 = param_1;
+  if (eType < 0x16) {
+    local_10 = eType;
   }
   else {
     local_10 = 0x15;

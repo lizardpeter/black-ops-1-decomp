@@ -14,44 +14,45 @@ void __cdecl Sys_WorkerCmdInit(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void * __cdecl jqCommitMemory(jqBatch *param_1,void *param_2,uint param_3)
+void * __cdecl jqCommitMemory(jqBatch *batch,void *input,uint dataSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint *puVar3;
-  void *pvVar4;
+  uint *dst;
+  void *pvVar3;
+  void *dest;
   
-  if (param_3 != 0) {
-    if (param_3 < 0x55) {
-      memcpy((uchar *)(param_1->ParamData + 2),param_2,param_3);
-      param_2 = param_1->ParamData + 2;
+  if (dataSize != 0) {
+    if (dataSize < 0x55) {
+      memcpy((uchar *)(batch->ParamData + 2),input,dataSize);
+      input = batch->ParamData + 2;
     }
     else {
-      puVar3 = jqAllocBatchData(param_3);
-      if ((puVar3 == (uint *)0x0) &&
+      dst = jqAllocBatchData(dataSize);
+      if ((dst == (uint *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_workercmds.cpp"
                                    ,0x42,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        pvVar4 = (void *)(*pcVar1)();
-        return pvVar4;
+        pvVar3 = (void *)(*pcVar1)();
+        return pvVar3;
       }
-      memcpy((uchar *)puVar3,param_2,param_3);
-      param_2 = puVar3;
+      memcpy((uchar *)dst,input,dataSize);
+      input = dst;
     }
   }
-  return param_2;
+  return input;
 }
 
 
 // 007B94D0  jqSafeFlush  (universal/com_workercmds.cpp:75)
 
-void __cdecl jqSafeFlush(jqBatchGroup *param_1,ulong64 param_2)
+void __cdecl jqSafeFlush(jqBatchGroup *group,ulong64 param_2)
 
 {
   undefined4 unaff_EBP;
   
-  jqFlush(param_1,CONCAT44(unaff_EBP,(undefined4)param_2));
+  jqFlush(group,CONCAT44(unaff_EBP,(undefined4)param_2));
   return;
 }
 
@@ -60,16 +61,18 @@ void __cdecl jqSafeFlush(jqBatchGroup *param_1,ulong64 param_2)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void * __cdecl jqLockData(jqBatch *param_1)
+void * __cdecl jqLockData(jqBatch *batch)
 
 {
   uint *puVar1;
+  uint dataSize;
+  jqWorkerCmd *workerCmd;
   
-  if (*(uint *)(param_1->ParamData[0] + 4) < 0x55) {
-    puVar1 = param_1->ParamData + 2;
+  if (*(uint *)(batch->ParamData[0] + 4) < 0x55) {
+    puVar1 = batch->ParamData + 2;
   }
   else {
-    puVar1 = param_1->Input;
+    puVar1 = batch->Input;
   }
   return puVar1;
 }
@@ -79,11 +82,14 @@ void * __cdecl jqLockData(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqUnlockData(jqBatch *param_1,void *param_2)
+void __cdecl jqUnlockData(jqBatch *batch,void *data)
 
 {
-  if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
-    jqFreeBatchData(param_1->Input);
+  uint dataSize;
+  jqWorkerCmd *workerCmd;
+  
+  if (0x54 < *(uint *)(batch->ParamData[0] + 4)) {
+    jqFreeBatchData(batch->Input);
   }
   return;
 }
@@ -93,30 +99,29 @@ void __cdecl jqUnlockData(jqBatch *param_1,void *param_2)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl
-Sys_AddWorkerCmdInternal(jqWorkerCmd *param_1,void *param_2,WorkerCmdConditional *param_3)
+void __cdecl Sys_AddWorkerCmdInternal(jqWorkerCmd *name,void *data,WorkerCmdConditional *cond)
 
 {
   long *plVar1;
-  jqBatch local_8c;
-  jqQueue *local_8;
+  jqBatch batch;
+  jqQueue *queue;
   
-  jqBatch::jqBatch(&local_8c);
-  local_8c.Input = jqCommitMemory(&local_8c,param_2,param_1->dataSize);
-  local_8c.Module = param_1->module;
-  local_8c.GroupID = (jqBatchGroup *)0x0;
-  if (param_3 != (WorkerCmdConditional *)0x0) {
-    local_8c.ConditionalAddress = param_3->address;
-    local_8c.ConditionalValue = param_3->value;
+  jqBatch::jqBatch(&batch);
+  batch.Input = jqCommitMemory(&batch,data,name->dataSize);
+  batch.Module = name->module;
+  batch.GroupID = (jqBatchGroup *)0x0;
+  if (cond != (WorkerCmdConditional *)0x0) {
+    batch.ConditionalAddress = cond->address;
+    batch.ConditionalValue = cond->value;
   }
-  local_8c.ParamData[0] = (uint)param_1;
-  plVar1 = &param_1->ppu_fence;
+  batch.ParamData[0] = (uint)name;
+  plVar1 = &name->ppu_fence;
   LOCK();
-  local_8c.ParamData[1] = *plVar1;
+  batch.ParamData[1] = *plVar1;
   *plVar1 = *plVar1 + 1;
   UNLOCK();
-  local_8 = param_1->queue;
-  jqAddBatch(&local_8c,local_8);
+  queue = name->queue;
+  jqAddBatch(&batch,queue);
   return;
 }
 
@@ -125,7 +130,7 @@ Sys_AddWorkerCmdInternal(jqWorkerCmd *param_1,void *param_2,WorkerCmdConditional
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl Sys_WaitWorkerCmdInternal(jqWorkerCmd *param_1)
+void __cdecl Sys_WaitWorkerCmdInternal(jqWorkerCmd *name)
 
 {
   bool bVar1;
@@ -134,22 +139,22 @@ void __cdecl Sys_WaitWorkerCmdInternal(jqWorkerCmd *param_1)
   ulong64 uVar4;
   uint in_stack_ffffffec;
   int local_10;
-  uint local_c;
+  uint startTime;
   int local_8;
   
   uVar3 = tlPcGetTick();
-  jqSafeFlush(&param_1->module->Group,(ulonglong)in_stack_ffffffec << 0x20);
+  jqSafeFlush(&name->module->Group,(ulonglong)in_stack_ffffffec << 0x20);
   bVar1 = Sys_IsMainThread();
   if (bVar1) {
     uVar4 = tlPcGetTick();
     local_10 = (int)(uVar4 >> 0x20);
-    local_c = (uint)uVar3;
-    uVar2 = (uint)uVar4 - local_c;
+    startTime = (uint)uVar3;
+    uVar2 = (uint)uVar4 - startTime;
     local_8 = (int)(uVar3 >> 0x20);
     bVar1 = CARRY4(uVar2,(uint)gMainWaitWorker);
     gMainWaitWorker._0_4_ = uVar2 + (uint)gMainWaitWorker;
     gMainWaitWorker._4_4_ =
-         gMainWaitWorker._4_4_ + ((local_10 - local_8) - (uint)((uint)uVar4 < local_c)) +
+         gMainWaitWorker._4_4_ + ((local_10 - local_8) - (uint)((uint)uVar4 < startTime)) +
          (uint)bVar1;
   }
   return;
@@ -158,12 +163,12 @@ void __cdecl Sys_WaitWorkerCmdInternal(jqWorkerCmd *param_1)
 
 // 007B9730  Sys_AssistAndWaitWorkerCmdInternalCallback  (universal/com_workercmds.cpp:230)
 
-bool __cdecl Sys_AssistAndWaitWorkerCmdInternalCallback(void *param_1)
+bool __cdecl Sys_AssistAndWaitWorkerCmdInternalCallback(void *context)
 
 {
   bool bVar1;
   
-  bVar1 = jqPoll(param_1);
+  bVar1 = jqPoll(context);
   return (bool)('\x01' - bVar1);
 }
 
@@ -172,19 +177,19 @@ bool __cdecl Sys_AssistAndWaitWorkerCmdInternalCallback(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl Sys_AssistAndWaitWorkerCmdInternal(jqWorkerCmd *param_1)
+void __cdecl Sys_AssistAndWaitWorkerCmdInternal(jqWorkerCmd *name)
 
 {
   jqBatchGroup *local_c;
   jqBatchGroup *local_8;
   
-  if (param_1 == (jqWorkerCmd *)0x0) {
+  if (name == (jqWorkerCmd *)0x0) {
     local_8 = (jqBatchGroup *)0x0;
     local_c = (jqBatchGroup *)0x0;
   }
   else {
-    local_8 = &param_1->module->Group;
-    local_c = &param_1->module->Group;
+    local_8 = &name->module->Group;
+    local_c = &name->module->Group;
   }
   jqAssistWithBatches(Sys_AssistAndWaitWorkerCmdInternalCallback,local_c,local_8);
   return;
@@ -193,13 +198,13 @@ void __cdecl Sys_AssistAndWaitWorkerCmdInternal(jqWorkerCmd *param_1)
 
 // 007B9780  Sys_AssistSingleCallback  (universal/com_workercmds.cpp:241)
 
-bool __cdecl Sys_AssistSingleCallback(void *param_1)
+bool __cdecl Sys_AssistSingleCallback(void *context)
 
 {
   int iVar1;
   
-  iVar1 = *(int *)param_1;
-  *(int *)param_1 = *(int *)param_1 + -1;
+  iVar1 = *(int *)context;
+  *(int *)context = *(int *)context + -1;
   return iVar1 == 0;
 }
 
@@ -209,10 +214,10 @@ bool __cdecl Sys_AssistSingleCallback(void *param_1)
 void __cdecl Sys_AssistSingle(void)
 
 {
-  undefined4 local_8;
+  int count;
   
-  local_8 = 1;
-  jqAssistWithBatches(Sys_AssistSingleCallback,&local_8,(jqBatchGroup *)0x0);
+  count = 1;
+  jqAssistWithBatches(Sys_AssistSingleCallback,&count,(jqBatchGroup *)0x0);
   return;
 }
 

@@ -273,41 +273,41 @@ void __thiscall ScriptTokenizer::ParseIntoTokens(ScriptTokenizer *this,char *par
   bool bVar2;
   int iVar3;
   char cVar4;
-  ulong uVar5;
-  char *pcVar6;
+  ulong count;
+  char *pcVar5;
   
   cVar1 = *param_1;
   cVar4 = '\x03';
   bVar2 = false;
-  pcVar6 = param_1;
+  pcVar5 = param_1;
   do {
     if (cVar1 == '\0') {
 LAB_007166ec:
-      uVar5 = (int)pcVar6 - (int)param_1;
-      if (uVar5 != 0) {
-        strncpy((uchar *)(this + *(int *)(this + 4) * 0x100 + 8),(uchar *)param_1,uVar5);
-        this[*(int *)(this + 4) * 0x100 + uVar5 + 8] = (ScriptTokenizer)0x0;
+      count = (int)pcVar5 - (int)param_1;
+      if (count != 0) {
+        strncpy((uchar *)(this + *(int *)(this + 4) * 0x100 + 8),(uchar *)param_1,count);
+        this[*(int *)(this + 4) * 0x100 + count + 8] = (ScriptTokenizer)0x0;
         if (this[*(int *)(this + 4) * 0x100 + 8] != (ScriptTokenizer)0x0) {
           *(int *)(this + 4) = *(int *)(this + 4) + 1;
         }
       }
       return;
     }
-    cVar1 = *pcVar6;
+    cVar1 = *pcVar5;
     switch(cVar4) {
     case '\0':
       iVar3 = isalnum((int)cVar1);
       if ((iVar3 == 0) && (cVar1 != '_')) {
 LAB_007166df:
-        if (*pcVar6 != '\0') {
-          ParseIntoTokens(this,pcVar6);
+        if (*pcVar5 != '\0') {
+          ParseIntoTokens(this,pcVar5);
         }
         goto LAB_007166ec;
       }
       break;
     case '\x01':
       iVar3 = isdigit((int)cVar1);
-      if ((iVar3 == 0) || (((cVar1 = pcVar6[-1], cVar1 != '-' && (cVar1 != '+')) && (cVar1 != '.')))
+      if ((iVar3 == 0) || (((cVar1 = pcVar5[-1], cVar1 != '-' && (cVar1 != '+')) && (cVar1 != '.')))
          ) goto LAB_007166df;
       cVar4 = '\x02';
       if (cVar1 == '.') {
@@ -334,8 +334,8 @@ LAB_007166df:
         cVar4 = '\0';
       }
     }
-    pcVar6 = pcVar6 + 1;
-    cVar1 = *pcVar6;
+    pcVar5 = pcVar5 + 1;
+    cVar1 = *pcVar5;
   } while( true );
 }
 
@@ -399,14 +399,14 @@ ParseValueFromValueList(ScriptTokenizer *param_1,scriptInstance_t param_2,uint p
   scrVarGlob_t *psVar2;
   int iVar3;
   int iVar4;
-  char *pcVar5;
-  scriptInstance_t sVar6;
-  uint uVar7;
+  char *nptr;
+  scriptInstance_t sVar5;
+  uint uVar6;
   ScriptTokenizer *extraout_ECX;
   ScriptTokenizer *extraout_ECX_00;
   ScriptTokenizer *this;
   uint unaff_ESI;
-  double dVar8;
+  double dVar7;
   
   iVar4 = FUN_00717df0();
   this = extraout_ECX;
@@ -414,24 +414,24 @@ ParseValueFromValueList(ScriptTokenizer *param_1,scriptInstance_t param_2,uint p
     FUN_00716490("Values can currently only be numbers.");
     this = extraout_ECX_00;
   }
-  pcVar5 = ScriptTokenizer::PopToken(this);
-  dVar8 = atof(pcVar5);
-  sVar6 = FUN_0072b520();
+  nptr = ScriptTokenizer::PopToken(this);
+  dVar7 = atof(nptr);
+  sVar5 = FUN_0072b520();
   psVar1 = (&gScrVarGlob)[unaff_ESI * 0x20];
   iVar3 = unaff_ESI * 0x20;
-  iVar4 = sVar6 + SCRIPTINSTANCE_CLIENT;
+  iVar4 = sVar5 + SCRIPTINSTANCE_CLIENT;
   *(undefined2 *)(psVar1 + iVar4 * 0x1c + 0xc) = 0;
   *(undefined4 *)(psVar1 + iVar4 * 0x1c + 0x10) = 0x74;
   *(undefined2 *)(psVar1 + iVar4 * 0x1c + 8) = 0;
-  FUN_00716850(sVar6,(float)dVar8);
-  FUN_007167f0(sVar6,0);
-  uVar7 = _SL_GetStringOfSize();
-  uVar7 = GetVariable(sVar6,uVar7,unaff_ESI);
+  FUN_00716850(sVar5,(float)dVar7);
+  FUN_007167f0(sVar5,0);
+  uVar6 = _SL_GetStringOfSize();
+  uVar6 = GetVariable(sVar5,uVar6,unaff_ESI);
   psVar2 = (&gScrVarGlob)[iVar3];
-  psVar1 = psVar2 + (uVar7 + 0x8000) * 0x1c + 0x10;
+  psVar1 = psVar2 + (uVar6 + 0x8000) * 0x1c + 0x10;
   *(uint *)psVar1 = *(uint *)psVar1 | 6;
-  *(ScriptTokenizer **)(psVar2 + (uVar7 + 0x8000) * 0x1c + 8) = param_1;
-  return sVar6;
+  *(ScriptTokenizer **)(psVar2 + (uVar6 + 0x8000) * 0x1c + 8) = param_1;
+  return sVar5;
 }
 
 
@@ -520,18 +520,18 @@ Scr_LoadAnimTreeAtIndex
   char *pcVar10;
   scriptInstance_t sVar11;
   int iVar12;
-  uchar *puVar13;
-  scrMemTreePub_t *psVar14;
-  void *pvVar15;
-  scrMemTreePub_t *psVar16;
+  uchar *dst;
+  scrMemTreePub_t *psVar13;
+  void *pvVar14;
+  scrMemTreePub_t *psVar15;
   scriptInstance_t in_ECX;
   uint extraout_ECX;
   uint unaff_EBP;
-  uint uVar17;
+  uint uVar16;
   VariableValue *unaff_ESI;
   char *unaff_EDI;
-  undefined4 **ppuVar18;
-  XAnim_s **ppXVar19;
+  undefined4 **ppuVar17;
+  XAnim_s **ppXVar18;
   XAnim_s *local_20;
   scriptInstance_t local_1c;
   int local_18;
@@ -547,7 +547,7 @@ Scr_LoadAnimTreeAtIndex
   sVar11 = *(scriptInstance_t *)
             (psVar3 + *(int *)(&DAT_0221da18 + (in_ECX * 0x103 + iVar7 + param_1) * 4) * 0x1c +
                       0xe0008);
-  uVar17 = *(uint *)(psVar3 + *(int *)(&DAT_0221da18 + (in_ECX * 0x103 + iVar7 + param_1) * 4) *
+  uVar16 = *(uint *)(psVar3 + *(int *)(&DAT_0221da18 + (in_ECX * 0x103 + iVar7 + param_1) * 4) *
                               0x1c + 0xe0010) >> 8;
   local_1c = sVar11;
   uVar8 = FindVariableIndexInternal2
@@ -566,18 +566,18 @@ Scr_LoadAnimTreeAtIndex
     else {
       uVar4 = *(undefined4 *)(psVar3 + *(int *)(psVar3 + (uVar8 + 0x8000) * 0x1c) * 0x1c + 0xe0008);
       if (in_ECX == SCRIPTINSTANCE_CLIENT) {
-        if (uVar17 == 0) {
+        if (uVar16 == 0) {
           iVar9 = 0;
         }
         else {
-          iVar9 = uVar17 * 0x10 + 4 + DAT_02261e84;
+          iVar9 = uVar16 * 0x10 + 4 + DAT_02261e84;
         }
-        local_8 = (undefined4 *)FUN_0071a7c0(iVar9,uVar4,uVar17,param_1);
-        ppuVar18 = &local_8;
+        local_8 = (undefined4 *)FUN_0071a7c0(iVar9,uVar4,uVar16,param_1);
+        ppuVar17 = &local_8;
         *(undefined4 **)(&DAT_0221f650 + (iVar7 + param_1) * 4) = local_8;
         local_4 = 7;
         GetVariable(sVar11,1,iVar7 + param_1);
-        SetVariableValue((scriptInstance_t)ppuVar18,(uint)unaff_EDI,unaff_ESI);
+        SetVariableValue((scriptInstance_t)ppuVar17,(uint)unaff_EDI,unaff_ESI);
         return;
       }
       local_c = (iVar7 + param_1) * 0x10;
@@ -588,13 +588,13 @@ Scr_LoadAnimTreeAtIndex
       *puVar1 = uVar8;
       cVar6 = FUN_0071a690();
       if (cVar6 == '\0') {
-        if (uVar17 == 0) {
-          psVar16 = (scrMemTreePub_t *)0x0;
+        if (uVar16 == 0) {
+          psVar15 = (scrMemTreePub_t *)0x0;
         }
         else {
-          psVar16 = (&gScrMemTreePub)[in_ECX] + uVar17 * 0x10 + 4;
+          psVar15 = (&gScrMemTreePub)[in_ECX] + uVar16 * 0x10 + 4;
         }
-        pcVar10 = va("unknown anim tree \'%s\'",psVar16);
+        pcVar10 = va("unknown anim tree \'%s\'",psVar15);
         Com_Error(ERR_DROP,pcVar10);
       }
       pcVar10 = "nodeRoot";
@@ -607,18 +607,18 @@ Scr_LoadAnimTreeAtIndex
       iVar12 = FUN_00716a00(*puVar1);
       local_20 = (XAnim_s *)
                  (uint)*(ushort *)((scrVarGlob_t *)local_20->debugName + iVar12 * 0x1c + 0x28);
-      puVar13 = Hunk_AllocAlignInternal(iVar9 * 0x54,(int)unaff_EDI);
-      DAT_03508d18[3] = puVar13;
-      memset(puVar13,'\0',iVar9 * 0x54);
+      dst = Hunk_AllocAlignInternal(iVar9 * 0x54,(int)unaff_EDI);
+      DAT_03508d18[3] = dst;
+      memset(dst,'\0',iVar9 * 0x54);
       DAT_03508d18[2] = local_18;
-      if (uVar17 == 0) {
-        psVar16 = (scrMemTreePub_t *)0x0;
+      if (uVar16 == 0) {
+        psVar15 = (scrMemTreePub_t *)0x0;
       }
       else {
-        psVar16 = (&gScrMemTreePub)[in_ECX] + uVar17 * 0x10 + 4;
+        psVar15 = (&gScrMemTreePub)[in_ECX] + uVar16 * 0x10 + 4;
       }
       local_20 = XAnimCreateAnimsWithValues
-                           ((char *)psVar16,local_18,(int)local_20,(_func_void_ptr_int *)param_2);
+                           ((char *)psVar15,local_18,(int)local_20,(_func_void_ptr_int *)param_2);
       _SL_GetStringOfSize();
       FUN_00719a00();
       SL_RemoveRefToString((scriptInstance_t)unaff_EDI,(uint)unaff_ESI);
@@ -631,37 +631,37 @@ Scr_LoadAnimTreeAtIndex
       else {
         *(undefined1 *)(*(int *)ThreadLocalStoragePointer + 0x4c) = param_3._0_1_;
       }
-      FUN_0071a750(uVar4,&local_20,uVar17,param_1,param_2);
+      FUN_0071a750(uVar4,&local_20,uVar16,param_1,param_2);
       *(undefined1 *)(*(int *)ThreadLocalStoragePointer + 0x4c) = 1;
-      FUN_0071a1b0(uVar17);
+      FUN_0071a1b0(uVar16);
       RemoveVariable((scriptInstance_t)unaff_EDI,(uint)unaff_ESI,unaff_EBP);
       RemoveRefToObject(in_ECX,*puVar1);
       pXVar5 = local_20;
-      ppXVar19 = &local_14;
+      ppXVar18 = &local_14;
       *puVar1 = 0;
       local_10 = 7;
       local_14 = local_20;
       GetVariable(local_1c,1,extraout_ECX);
-      SetVariableValue((scriptInstance_t)ppXVar19,(uint)unaff_EDI,unaff_ESI);
+      SetVariableValue((scriptInstance_t)ppXVar18,(uint)unaff_EDI,unaff_ESI);
       FUN_006bc680(pXVar5,0,0);
       *(XAnim_s **)(&DAT_0221e22c + local_c) = pXVar5;
       *(XAnim_s **)(&DAT_0221f234 + (in_ECX * 0x107 + iVar7 + param_1) * 4) = pXVar5;
-      if (uVar17 == 0) {
-        psVar16 = (scrMemTreePub_t *)0x0;
+      if (uVar16 == 0) {
+        psVar15 = (scrMemTreePub_t *)0x0;
       }
       else {
-        psVar16 = (&gScrMemTreePub)[in_ECX] + uVar17 * 0x10 + 4;
+        psVar15 = (&gScrMemTreePub)[in_ECX] + uVar16 * 0x10 + 4;
       }
-      psVar14 = psVar16;
+      psVar13 = psVar15;
       do {
-        sVar2 = *psVar14;
-        psVar14 = psVar14 + 1;
+        sVar2 = *psVar13;
+        psVar13 = psVar13 + 1;
       } while (sVar2 != (scrMemTreePub_t)0x0);
-      pvVar15 = Hunk_AllocAlignInternal((int)(psVar14 + (1 - (int)(psVar16 + 1))),(int)unaff_EDI);
-      *local_8 = pvVar15;
+      pvVar14 = Hunk_AllocAlignInternal((int)(psVar13 + (1 - (int)(psVar15 + 1))),(int)unaff_EDI);
+      *local_8 = pvVar14;
       do {
-        sVar2 = *psVar16;
-        psVar16 = psVar16 + 1;
+        sVar2 = *psVar15;
+        psVar15 = psVar15 + 1;
       } while (sVar2 != (scrMemTreePub_t)0x0);
       I_strncpyz(unaff_EDI,(char *)unaff_ESI,unaff_EBP);
     }

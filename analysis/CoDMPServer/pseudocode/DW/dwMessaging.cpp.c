@@ -14,8 +14,8 @@ void __thiscall dwLobbyEventHandler::onNewNotification(dwLobbyEventHandler *this
 
 void __thiscall
 dwLobbyEventHandler::onTeamMemberStatusUpdate
-          (dwLobbyEventHandler *this,ulong64 param_1,char *param_2,ulong64 param_3,char *param_4,
-          uchar param_5)
+          (dwLobbyEventHandler *this,ulong64 __formal_2,char *__formal_4,ulong64 __formal_7,
+          char *__formal_10,uchar param_5)
 
 {
   return;
@@ -27,18 +27,19 @@ dwLobbyEventHandler::onTeamMemberStatusUpdate
 void __thiscall dwLobbyEventHandler::onTeamProposal(dwLobbyEventHandler *this)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  int iVar5;
+  char *toastPopupDesc;
+  char *toastPopupTitle;
+  int localClientNum;
+  char *toastPopupIconName;
+  int toastPopupDuration;
   
-  iVar5 = 0xa8c;
-  pcVar1 = UI_SafeTranslateString("MENU_CLAN_INVITATION_RECEIVED");
-  pcVar2 = UI_SafeTranslateString("MENU_INVITE");
-  pcVar4 = "menu_mp_killstreak_select";
-  iVar3 = Com_ControllerIndex_GetLocalClientNum(0);
-  UI_OpenToastPopup(iVar3,pcVar4,pcVar2,pcVar1,iVar5);
+  toastPopupDuration = 0xa8c;
+  toastPopupDesc = UI_SafeTranslateString("MENU_CLAN_INVITATION_RECEIVED");
+  toastPopupTitle = UI_SafeTranslateString("MENU_INVITE");
+  toastPopupIconName = "menu_mp_killstreak_select";
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(0);
+  UI_OpenToastPopup(localClientNum,toastPopupIconName,toastPopupTitle,toastPopupDesc,
+                    toastPopupDuration);
   return;
 }
 
@@ -47,14 +48,15 @@ void __thiscall dwLobbyEventHandler::onTeamProposal(dwLobbyEventHandler *this)
 
 void __thiscall
 dwLobbyEventHandler::onGlobalInstantMessage
-          (dwLobbyEventHandler *this,ulong64 param_1,char *param_2,void *param_3,uint param_4)
+          (dwLobbyEventHandler *this,ulong64 senderID,char *senderName,void *message,
+          uint messageSize)
 
 {
   bool bVar1;
   
-  bVar1 = Live_CACValidate_DispatchMessage(param_1,param_3,param_4);
-  if (((!bVar1) && (bVar1 = Live_HandleDWChallengeResponse(param_1,param_3,param_4), !bVar1)) &&
-     (bVar1 = Live_HandleInviteMessage(param_1,param_3,param_4), !bVar1)) {
+  bVar1 = Live_CACValidate_DispatchMessage(senderID,message,messageSize);
+  if (((!bVar1) && (bVar1 = Live_HandleDWChallengeResponse(senderID,message,messageSize), !bVar1))
+     && (bVar1 = Live_HandleInviteMessage(senderID,message,messageSize), !bVar1)) {
     Com_DPrintf(0,"Unhandled instant message from %s\n");
   }
   return;
@@ -64,16 +66,16 @@ dwLobbyEventHandler::onGlobalInstantMessage
 // 005A24F0  onNotifyLeave  (DW/dwMessaging.cpp:111)
 
 void __thiscall
-dwLobbyEventHandler::onNotifyLeave(dwLobbyEventHandler *this,ulong64 param_1,bdSessionID param_2)
+dwLobbyEventHandler::onNotifyLeave(dwLobbyEventHandler *this,ulong64 userID,bdSessionID sessionID)
 
 {
   bool bVar1;
   bdSecurityID *pbVar2;
   
   pbVar2 = dwGetSessionSecID();
-  bVar1 = bdSecurityID::operator==(&param_2.m_sessionID,pbVar2);
+  bVar1 = bdSecurityID::operator==(&sessionID.m_sessionID,pbVar2);
   if (bVar1) {
-    SV_DWUserDisconnected(param_1);
+    SV_DWUserDisconnected(userID);
   }
   else {
     dwGetSessionSecID();
@@ -81,7 +83,7 @@ dwLobbyEventHandler::onNotifyLeave(dwLobbyEventHandler *this,ulong64 param_1,bdS
                 "Er, we got a notifyleave for sessionID %llu, but we\'re apparently adverting %llu. Ask Ewan."
                );
   }
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&param_2);
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
   return;
 }
 
@@ -89,33 +91,35 @@ dwLobbyEventHandler::onNotifyLeave(dwLobbyEventHandler *this,ulong64 param_1,bdS
 // 005A2560  onSessionInvite  (DW/dwMessaging.cpp:125)
 
 void __thiscall
-dwLobbyEventHandler::onSessionInvite(dwLobbyEventHandler *this,bdSessionInvite *param_1)
+dwLobbyEventHandler::onSessionInvite(dwLobbyEventHandler *this,bdSessionInvite *invite)
 
 {
-  bdSessionID bVar1;
-  int iVar2;
-  undefined4 uVar3;
-  char *pcVar4;
-  uchar *puVar5;
+  bdSessionID sessionID;
+  int iVar1;
+  undefined4 uVar2;
+  char *pcVar3;
+  uchar *password_00;
+  char *password;
+  int protocolversion;
   
-  pcVar4 = "Received invite from %s\n";
-  uVar3._0_1_ = '\x17';
-  uVar3._1_1_ = '\0';
-  uVar3._2_1_ = '\0';
-  uVar3._3_1_ = '\0';
-  iVar2 = 0x5a257c;
+  pcVar3 = "Received invite from %s\n";
+  uVar2._0_1_ = '\x17';
+  uVar2._1_1_ = '\0';
+  uVar2._2_1_ = '\0';
+  uVar2._3_1_ = '\0';
+  iVar1 = 0x5a257c;
   Com_Printf(0x17,"Received invite from %s\n");
-  if (3 < param_1->m_attachmentSize) {
-    if (*(int *)param_1->m_attachment == 0x414) {
-      puVar5 = param_1->m_attachment + 4;
-      bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,&param_1->m_sessionID);
-      bVar1.m_sessionID.ab[0] = (uchar)uVar3;
-      bVar1.m_sessionID.ab[1] = SUB41(uVar3,1);
-      bVar1.m_sessionID.ab[2] = SUB41(uVar3,2);
-      bVar1.m_sessionID.ab[3] = SUB41(uVar3,3);
-      bVar1._padding_ = iVar2;
-      bVar1.m_sessionID.ab._4_4_ = pcVar4;
-      Live_OnInvite(param_1->m_senderID,bVar1,(char *)puVar5);
+  if (3 < invite->m_attachmentSize) {
+    if (*(int *)invite->m_attachment == 0x414) {
+      password_00 = invite->m_attachment + 4;
+      bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,&invite->m_sessionID);
+      sessionID.m_sessionID.ab[0] = (uchar)uVar2;
+      sessionID.m_sessionID.ab[1] = SUB41(uVar2,1);
+      sessionID.m_sessionID.ab[2] = SUB41(uVar2,2);
+      sessionID.m_sessionID.ab[3] = SUB41(uVar2,3);
+      sessionID._padding_ = iVar1;
+      sessionID.m_sessionID.ab._4_4_ = pcVar3;
+      Live_OnInvite(invite->m_senderID,sessionID,(char *)password_00);
     }
     else {
       Com_DPrintf(0xe,"dropping invite from %s on the floor, their proto is %i, ours is %i\n");
@@ -127,7 +131,7 @@ dwLobbyEventHandler::onSessionInvite(dwLobbyEventHandler *this,bdSessionInvite *
 
 // 005A2600  onMultipleLogon  (DW/dwMessaging.cpp:161)
 
-void __thiscall dwLobbyEventHandler::onMultipleLogon(dwLobbyEventHandler *this,ulong64 param_1)
+void __thiscall dwLobbyEventHandler::onMultipleLogon(dwLobbyEventHandler *this,ulong64 userID)
 
 {
   Com_Error(ERR_FATAL,"EXE_DW_MULTIPLE_LOGON");
@@ -139,31 +143,33 @@ void __thiscall dwLobbyEventHandler::onMultipleLogon(dwLobbyEventHandler *this,u
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwMessaging_SendInstantMessage(ulong64 param_1,char *param_2,int param_3)
+TaskRecord * __cdecl
+dwMessaging_SendInstantMessage(ulong64 recipientID,char *payload,int payloadsize)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  TaskRecord *local_c;
-  bdMessaging *local_8;
+  TaskRecord *task;
+  bdMessaging *messaging;
   
-  local_c = (TaskRecord *)0x0;
-  local_8 = dwGetMessaging(0);
-  if ((((local_8 == (bdMessaging *)0x0) || (param_2 == (char *)0x0)) || (param_3 == 0)) ||
-     (param_1 == 0)) {
+  task = (TaskRecord *)0x0;
+  messaging = dwGetMessaging(0);
+  if ((((messaging == (bdMessaging *)0x0) || (payload == (char *)0x0)) || (payloadsize == 0)) ||
+     (recipientID == 0)) {
     Com_PrintWarning(0,"Failed to send instant message. You\'re doing it wrong.\n");
   }
   else {
-    local_c = TaskManager2_CreateTask(task_sendMessage,0,(TaskRecord *)0x0,0);
-    bVar1 = bdMessaging::sendGlobalInstantMessage
-                      (local_8,CONCAT44((undefined4)param_1,&local_10),param_1._4_4_,(uint)param_2);
+    task = TaskManager2_CreateTask(task_sendMessage,0,(TaskRecord *)0x0,0);
+    other_3 = bdMessaging::sendGlobalInstantMessage
+                        (messaging,CONCAT44((undefined4)recipientID,&local_10),recipientID._4_4_,
+                         (uint)payload);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    TaskManager2_StartTask(local_c);
+    TaskManager2_StartTask(task);
   }
-  return local_c;
+  return task;
 }
 
 
@@ -172,34 +178,35 @@ TaskRecord * __cdecl dwMessaging_SendInstantMessage(ulong64 param_1,char *param_
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 bdRemoteTask * __cdecl
-dwMessaging_SendDeferredInstantMessage(ulong64 param_1,void *param_2,int param_3)
+dwMessaging_SendDeferredInstantMessage(ulong64 recipientID,void *payload,int payloadsize)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdStatus bVar2;
   bdReference<bdByteBuffer> local_10;
-  bdRemoteTask *local_c;
-  bdMessaging *local_8;
+  bdRemoteTask *retval;
+  bdMessaging *messaging;
   
-  local_c = (bdRemoteTask *)0x0;
-  local_8 = dwGetMessaging(0);
-  if ((((local_8 == (bdMessaging *)0x0) || (param_2 == (void *)0x0)) || (param_3 == 0)) ||
-     (param_1 == 0)) {
+  retval = (bdRemoteTask *)0x0;
+  messaging = dwGetMessaging(0);
+  if ((((messaging == (bdMessaging *)0x0) || (payload == (void *)0x0)) || (payloadsize == 0)) ||
+     (recipientID == 0)) {
     Com_PrintWarning(0,"Failed to send message. You\'re doing it wrong.\n");
   }
   else {
     dwEnterDeferredCritsec();
     bVar1 = bdMessaging::sendGlobalInstantMessage
-                      (local_8,CONCAT44((undefined4)param_1,&local_10),param_1._4_4_,(uint)param_2);
-    local_c = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
+                      (messaging,CONCAT44((undefined4)recipientID,&local_10),recipientID._4_4_,
+                       (uint)payload);
+    retval = (bdRemoteTask *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
     dwLeaveDeferredCritsec();
-    if ((local_c != (bdRemoteTask *)0x0) &&
-       (bVar2 = bdRemoteTask::getStatus(local_c), bVar2 == BD_PENDING)) {
-      TaskManager2_DeferTaskToMainThread(local_c,task_sendMessage,(void *)0x0);
+    if ((retval != (bdRemoteTask *)0x0) &&
+       (bVar2 = bdRemoteTask::getStatus(retval), bVar2 == BD_PENDING)) {
+      TaskManager2_DeferTaskToMainThread(retval,task_sendMessage,(void *)0x0);
     }
   }
-  return local_c;
+  return retval;
 }
 
 
@@ -236,12 +243,13 @@ void __cdecl _dynamic_initializer_for__s_notifications__(void)
 
 // 005A2130  dwInitMessaging  (DW/dwMessaging.cpp:473)
 
-void __cdecl dwInitMessaging(int param_1)
+void __cdecl dwInitMessaging(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   bdLobbyService *this;
+  bdLobbyService *lobby;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -252,7 +260,7 @@ void __cdecl dwInitMessaging(int param_1)
       return;
     }
   }
-  this = dwGetLobby(param_1);
+  this = dwGetLobby(controllerIndex);
   if (this == (bdLobbyService *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\dwMessaging.cpp",0x1e0,0,"%s");
     if (!bVar2) {
@@ -271,15 +279,15 @@ void __cdecl dwInitMessaging(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwUpdateMessaging(int param_1)
+void __cdecl dwUpdateMessaging(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  bdReference<bdRemoteTask> bVar3;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  TaskRecord *local_c;
-  bdMessaging *local_8;
+  TaskRecord *task;
+  bdMessaging *messaging;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -294,12 +302,12 @@ void __cdecl dwUpdateMessaging(int param_1)
       }
     }
   }
-  local_8 = dwGetMessaging(param_1);
-  if ((s_notificationsPending != false) && (local_8 != (bdMessaging *)0x0)) {
+  messaging = dwGetMessaging(controllerIndex);
+  if ((s_notificationsPending != false) && (messaging != (bdMessaging *)0x0)) {
     bVar2 = TaskManager2_TaskIsInProgress(task_processNotifications);
     if (!bVar2) {
-      local_c = TaskManager2_CreateTask(task_processNotifications,param_1,(TaskRecord *)0x0,0);
-      if (local_c == (TaskRecord *)0x0) {
+      task = TaskManager2_CreateTask(task_processNotifications,controllerIndex,(TaskRecord *)0x0,0);
+      if (task == (TaskRecord *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\dwMessaging.cpp",0x1fa,0,
                                  "%s");
         if (!bVar2) {
@@ -309,12 +317,13 @@ void __cdecl dwUpdateMessaging(int param_1)
         }
       }
       s_notificationsPending = false;
-      bVar3 = bdMessaging::getNotifications(local_8,(bdNotification *)&local_10,0x3369f38,0,true);
+      other_3 = bdMessaging::getNotifications
+                          (messaging,(bdNotification *)&local_10,0x3369f38,0,true);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar3.m_ptr);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-      TaskManager2_StartTask(local_c);
+      TaskManager2_StartTask(task);
     }
   }
   return;
@@ -325,16 +334,16 @@ void __cdecl dwUpdateMessaging(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwProcessNotifications(TaskRecord *param_1)
+void __cdecl dwProcessNotifications(TaskRecord *task)
 
 {
   code *pcVar1;
-  bdReference<bdByteBuffer> this;
+  bdReference<bdRemoteTask> this;
   bool bVar2;
   uint uVar3;
   uint uVar4;
-  bdReference<bdByteBuffer> local_c;
-  uint local_8;
+  bdReference<bdRemoteTask> taskRef;
+  uint n;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -345,24 +354,24 @@ void __cdecl dwProcessNotifications(TaskRecord *param_1)
       return;
     }
   }
-  local_c.m_ptr = (bdByteBuffer *)(param_1->remoteTask).m_ptr;
-  if ((bdRemoteTask *)local_c.m_ptr != (bdRemoteTask *)0x0) {
-    InterlockedIncrement((LONG *)&((bdRemoteTask *)local_c.m_ptr)->field_0x4);
+  taskRef.m_ptr = (task->remoteTask).m_ptr;
+  if (taskRef.m_ptr != (bdRemoteTask *)0x0) {
+    InterlockedIncrement((LONG *)&(taskRef.m_ptr)->field_0x4);
   }
-  local_8 = 0;
+  n = 0;
   while( true ) {
-    uVar3 = bdRemoteTask::getNumResults((bdRemoteTask *)local_c.m_ptr);
-    this.m_ptr = local_c.m_ptr;
-    if (uVar3 <= local_8) break;
+    uVar3 = bdRemoteTask::getNumResults(taskRef.m_ptr);
+    this = taskRef;
+    if (uVar3 <= n) break;
     Com_DPrintf(0,"new notification: %d\n");
-    local_8 = local_8 + 1;
+    n = n + 1;
   }
-  uVar3 = bdRemoteTask::getNumResults((bdRemoteTask *)local_c.m_ptr);
-  uVar4 = bdRemoteTask::getTotalNumResults((bdRemoteTask *)this.m_ptr);
+  uVar3 = bdRemoteTask::getNumResults(taskRef.m_ptr);
+  uVar4 = bdRemoteTask::getTotalNumResults(this.m_ptr);
   if (uVar3 != uVar4) {
     s_notificationsPending = true;
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&taskRef);
   return;
 }
 

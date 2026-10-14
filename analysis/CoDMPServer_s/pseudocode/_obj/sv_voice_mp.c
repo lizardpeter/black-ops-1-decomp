@@ -59,19 +59,19 @@ void __cdecl SV_SendClientVoiceData(client_t *param_1)
 void __cdecl SV_QueueVoicePacket(int param_1,int param_2,VoicePacket_t *param_3)
 
 {
-  ulong uVar1;
+  ulong count;
   int in_EAX;
   int in_EDX;
-  int iVar2;
+  int iVar1;
   
-  iVar2 = in_EAX * 0x7c2e8 + DAT_01e5d49c;
-  if (*(int *)(iVar2 + 0x5ce24) < 0x28) {
-    uVar1 = *(ulong *)(in_EDX + 0x101);
-    *(ulong *)(*(int *)(iVar2 + 0x5ce24) * 0x105 + 0x5a65d + iVar2) = uVar1;
-    memcpy((uchar *)(*(int *)(iVar2 + 0x5ce24) * 0x105 + 0x5a55d + iVar2),(uchar *)(in_EDX + 1),
-           uVar1);
-    *(undefined1 *)(*(int *)(iVar2 + 0x5ce24) * 0x105 + 0x5a55c + iVar2) = (undefined1)param_1;
-    *(int *)(iVar2 + 0x5ce24) = *(int *)(iVar2 + 0x5ce24) + 1;
+  iVar1 = in_EAX * 0x7c2e8 + DAT_01e5d49c;
+  if (*(int *)(iVar1 + 0x5ce24) < 0x28) {
+    count = *(ulong *)(in_EDX + 0x101);
+    *(ulong *)(*(int *)(iVar1 + 0x5ce24) * 0x105 + 0x5a65d + iVar1) = count;
+    memcpy((uchar *)(*(int *)(iVar1 + 0x5ce24) * 0x105 + 0x5a55d + iVar1),(uchar *)(in_EDX + 1),
+           count);
+    *(undefined1 *)(*(int *)(iVar1 + 0x5ce24) * 0x105 + 0x5a55c + iVar1) = (undefined1)param_1;
+    *(int *)(iVar1 + 0x5ce24) = *(int *)(iVar1 + 0x5ce24) + 1;
   }
   return;
 }

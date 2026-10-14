@@ -2,20 +2,20 @@
 
 // 009602C8  calloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/calloc.c:48)
 
-void * __cdecl calloc(uint param_1,uint param_2)
+void * __cdecl calloc(uint num,uint size)
 
 {
   void *pvVar1;
   int *piVar2;
-  int local_8;
+  int errno_tmp;
   
-  local_8 = 0;
-  pvVar1 = _calloc_impl(param_1,param_2,&local_8);
-  if ((pvVar1 == (void *)0x0) && (local_8 != 0)) {
+  errno_tmp = 0;
+  pvVar1 = _calloc_impl(num,size,&errno_tmp);
+  if ((pvVar1 == (void *)0x0) && (errno_tmp != 0)) {
     piVar2 = _errno();
     if (piVar2 != (int *)0x0) {
       piVar2 = _errno();
-      *piVar2 = local_8;
+      *piVar2 = errno_tmp;
     }
   }
   return pvVar1;

@@ -17,15 +17,15 @@ int __cdecl _ioinit(void)
   byte *pbVar6;
   int *piVar7;
   int iVar8;
-  _STARTUPINFOA local_68;
-  uint local_24;
-  byte *local_20;
+  _STARTUPINFOA StartupInfo;
+  int fh;
+  int *posfhnd;
   undefined4 uStack_c;
   undefined4 local_8;
   
   uStack_c = 0xc2325c;
   local_8 = 0;
-  GetStartupInfoA(&local_68);
+  GetStartupInfoA(&StartupInfo);
   local_8 = 0xfffffffe;
   puVar2 = _calloc_crt(0x20,0x40);
   if (puVar2 == (undefined4 *)0x0) {
@@ -46,17 +46,17 @@ LAB_00c2349b:
       puVar2[0xe] = 0;
       *(undefined1 *)(puVar2 + 0xd) = 0;
     }
-    if ((local_68.cbReserved2 != 0) && ((int *)local_68.lpReserved2 != (int *)0x0)) {
-      iVar8 = *(int *)local_68.lpReserved2;
-      pbVar6 = (byte *)((int)local_68.lpReserved2 + 4);
-      local_20 = pbVar6 + iVar8;
+    if ((StartupInfo.cbReserved2 != 0) && ((int *)StartupInfo.lpReserved2 != (int *)0x0)) {
+      iVar8 = *(int *)StartupInfo.lpReserved2;
+      pbVar6 = (byte *)((int)StartupInfo.lpReserved2 + 4);
+      posfhnd = (int *)(pbVar6 + iVar8);
       if (0x7ff < iVar8) {
         iVar8 = 0x800;
       }
-      local_24 = 1;
+      fh = 1;
       while ((iVar5 = iVar8, _nhandle < iVar8 &&
              (puVar2 = _calloc_crt(0x20,0x40), iVar5 = _nhandle, puVar2 != (undefined4 *)0x0))) {
-        *(undefined4 **)(&__pioinfo + local_24 * 4) = puVar2;
+        *(undefined4 **)(&__pioinfo + fh * 4) = puVar2;
         _nhandle = _nhandle + 0x20;
         puVar1 = puVar2;
         for (; puVar2 < puVar1 + 0x200; puVar2 = puVar2 + 0x10) {
@@ -69,29 +69,28 @@ LAB_00c2349b:
           *(undefined1 *)((int)puVar2 + 0x26) = 10;
           puVar2[0xe] = 0;
           *(undefined1 *)(puVar2 + 0xd) = 0;
-          puVar1 = *(undefined4 **)(&__pioinfo + local_24 * 4);
+          puVar1 = *(undefined4 **)(&__pioinfo + fh * 4);
         }
-        local_24 = local_24 + 1;
+        fh = fh + 1;
       }
-      local_24 = 0;
+      fh = 0;
       if (0 < iVar5) {
         do {
-          pvVar4 = *(HANDLE *)local_20;
+          pvVar4 = (HANDLE)*posfhnd;
           if ((((pvVar4 != (HANDLE)0xffffffff) && (pvVar4 != (HANDLE)0xfffffffe)) &&
               ((*pbVar6 & 1) != 0)) &&
              (((*pbVar6 & 8) != 0 || (DVar3 = GetFileType(pvVar4), DVar3 != 0)))) {
-            puVar2 = (undefined4 *)
-                     ((local_24 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)local_24 >> 5) * 4));
-            *puVar2 = *(undefined4 *)local_20;
-            *(byte *)(puVar2 + 1) = *pbVar6;
-            iVar8 = __crtInitCritSecAndSpinCount((_RTL_CRITICAL_SECTION *)(puVar2 + 3),4000);
+            piVar7 = (int *)((fh & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (fh >> 5) * 4));
+            *piVar7 = *posfhnd;
+            *(byte *)(piVar7 + 1) = *pbVar6;
+            iVar8 = __crtInitCritSecAndSpinCount((_RTL_CRITICAL_SECTION *)(piVar7 + 3),4000);
             if (iVar8 == 0) goto LAB_00c2349b;
-            puVar2[2] = puVar2[2] + 1;
+            piVar7[2] = piVar7[2] + 1;
           }
-          local_24 = local_24 + 1;
+          fh = fh + 1;
           pbVar6 = pbVar6 + 1;
-          local_20 = local_20 + 4;
-        } while ((int)local_24 < iVar5);
+          posfhnd = posfhnd + 1;
+        } while (fh < iVar5);
       }
     }
     iVar8 = 0;

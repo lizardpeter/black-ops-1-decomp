@@ -12,13 +12,13 @@ void __cdecl TRACK_ui_utils(void)
 
 // 0077EEA0  Window_SetDynamicFlags  (ui/ui_utils.cpp:52)
 
-void __cdecl Window_SetDynamicFlags(int param_1,windowDef_t *param_2,int param_3)
+void __cdecl Window_SetDynamicFlags(int contextIndex,windowDef_t *w,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x35,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -28,7 +28,7 @@ void __cdecl Window_SetDynamicFlags(int param_1,windowDef_t *param_2,int param_3
       return;
     }
   }
-  if ((param_3 != 0) && ((param_3 & 0xfffffU) == 0)) {
+  if ((flags != 0) && ((flags & 0xfffffU) == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x36,0,
                              "%s\n\t(flags) = %i");
     if (!bVar2) {
@@ -37,7 +37,7 @@ void __cdecl Window_SetDynamicFlags(int param_1,windowDef_t *param_2,int param_3
       return;
     }
   }
-  if ((param_3 & 0xfff00000U) != 0) {
+  if ((flags & 0xfff00000U) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x37,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -45,51 +45,53 @@ void __cdecl Window_SetDynamicFlags(int param_1,windowDef_t *param_2,int param_3
       return;
     }
   }
-  param_2->dynamicFlags[param_1] = param_3;
+  w->dynamicFlags[contextIndex] = flags;
   return;
 }
 
 
 // 0077EF50  Window_AddDynamicFlags  (ui/ui_utils.cpp:67)
 
-void __cdecl Window_AddDynamicFlags(int param_1,windowDef_t *param_2,int param_3)
+void __cdecl Window_AddDynamicFlags(int contextIndex,windowDef_t *w,int newFlags)
 
 {
   uint uVar1;
+  int flags;
   
-  uVar1 = Window_GetDynamicFlags(param_1,param_2);
-  Window_SetDynamicFlags(param_1,param_2,uVar1 | param_3);
+  uVar1 = Window_GetDynamicFlags(contextIndex,w);
+  Window_SetDynamicFlags(contextIndex,w,uVar1 | newFlags);
   return;
 }
 
 
 // 0077EF90  Window_RemoveDynamicFlags  (ui/ui_utils.cpp:76)
 
-void __cdecl Window_RemoveDynamicFlags(int param_1,windowDef_t *param_2,int param_3)
+void __cdecl Window_RemoveDynamicFlags(int contextIndex,windowDef_t *w,int newFlags)
 
 {
   uint uVar1;
-  undefined4 local_c;
+  int modifiedFlags;
+  int flags;
   
-  uVar1 = Window_GetDynamicFlags(param_1,param_2);
-  local_c = param_3;
-  if ((param_3 & 4U) != 0) {
-    local_c = param_3 | 2;
+  uVar1 = Window_GetDynamicFlags(contextIndex,w);
+  modifiedFlags = newFlags;
+  if ((newFlags & 4U) != 0) {
+    modifiedFlags = newFlags | 2;
   }
-  Window_SetDynamicFlags(param_1,param_2,~local_c & uVar1);
+  Window_SetDynamicFlags(contextIndex,w,~modifiedFlags & uVar1);
   return;
 }
 
 
 // 0077EFF0  Window_SetStaticFlags  (ui/ui_utils.cpp:91)
 
-void __cdecl Window_SetStaticFlags(windowDef_t *param_1,int param_2)
+void __cdecl Window_SetStaticFlags(windowDef_t *w,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 != 0) && ((param_2 & 0xfff00000U) == 0)) {
+  if ((flags != 0) && ((flags & 0xfff00000U) == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x5c,0,
                              "%s\n\t(flags) = %i");
     if (!bVar2) {
@@ -98,7 +100,7 @@ void __cdecl Window_SetStaticFlags(windowDef_t *param_1,int param_2)
       return;
     }
   }
-  if ((param_2 & 0xfffffU) != 0) {
+  if ((flags & 0xfffffU) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x5d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -106,20 +108,20 @@ void __cdecl Window_SetStaticFlags(windowDef_t *param_1,int param_2)
       return;
     }
   }
-  param_1->staticFlags = param_2;
+  w->staticFlags = flags;
   return;
 }
 
 
 // 0077F070  Menu_SetCursorItem  (ui/ui_utils.cpp:99)
 
-void __cdecl Menu_SetCursorItem(int param_1,menuDef_t *param_2,int param_3)
+void __cdecl Menu_SetCursorItem(int contextIndex,menuDef_t *menu,int cursorItem)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",100,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -129,7 +131,7 @@ void __cdecl Menu_SetCursorItem(int param_1,menuDef_t *param_2,int param_3)
       return;
     }
   }
-  if (param_2 == (menuDef_t *)0x0) {
+  if (menu == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x65,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -137,33 +139,32 @@ void __cdecl Menu_SetCursorItem(int param_1,menuDef_t *param_2,int param_3)
       return;
     }
   }
-  param_2->cursorItem[param_1] = param_3;
+  menu->cursorItem[contextIndex] = cursorItem;
   return;
 }
 
 
 // 0077F0E0  Item_IsVisible  (ui/ui_utils.cpp:175)
 
-int __cdecl Item_IsVisible(int param_1,int param_2,itemDef_s *param_3)
+int __cdecl Item_IsVisible(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = Window_IsVisible(param_2,&param_3->window);
+  bVar1 = Window_IsVisible(contextIndex,&item->window);
   if (bVar1) {
-    if (((param_3->dvarFlags & 0xcU) == 0) ||
-       (iVar2 = Item_EnableShowViaDvar(param_3,4), iVar2 != 0)) {
-      if ((((uint)param_3->showBits & *(uint *)(&DAT_098dada8 + param_1 * 8)) ==
-           (uint)param_3->showBits) &&
-         ((((*(uint *)((int)&param_3->showBits + 4) & *(uint *)(&DAT_098dadac + param_1 * 8)) ==
-            *(uint *)((int)&param_3->showBits + 4) &&
-           (((uint)param_3->hideBits | *(uint *)(&DAT_098dada8 + param_1 * 8)) ==
-            (uint)param_3->hideBits)) &&
-          ((*(uint *)((int)&param_3->hideBits + 4) | *(uint *)(&DAT_098dadac + param_1 * 8)) ==
-           *(uint *)((int)&param_3->hideBits + 4))))) {
-        if (((param_3->visibleExp).filename == (char *)0x0) ||
-           (bVar1 = IsExpressionTrue(param_1,param_3,&param_3->visibleExp), bVar1)) {
+    if (((item->dvarFlags & 0xcU) == 0) || (iVar2 = Item_EnableShowViaDvar(item,4), iVar2 != 0)) {
+      if ((((uint)item->showBits & *(uint *)(&DAT_098dada8 + localClientNum * 8)) ==
+           (uint)item->showBits) &&
+         ((((*(uint *)((int)&item->showBits + 4) & *(uint *)(&DAT_098dadac + localClientNum * 8)) ==
+            *(uint *)((int)&item->showBits + 4) &&
+           (((uint)item->hideBits | *(uint *)(&DAT_098dada8 + localClientNum * 8)) ==
+            (uint)item->hideBits)) &&
+          ((*(uint *)((int)&item->hideBits + 4) | *(uint *)(&DAT_098dadac + localClientNum * 8)) ==
+           *(uint *)((int)&item->hideBits + 4))))) {
+        if (((item->visibleExp).filename == (char *)0x0) ||
+           (bVar1 = IsExpressionTrue(localClientNum,item,&item->visibleExp), bVar1)) {
           iVar2 = 1;
         }
         else {
@@ -192,42 +193,42 @@ int __cdecl Item_IsVisible(int param_1,int param_2,itemDef_s *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Item_EnableShowViaDvar(itemDef_s *param_1,int param_2)
+int __cdecl Item_EnableShowViaDvar(itemDef_s *item,int flag)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  char *pcVar5;
-  char local_40c;
+  char *s0;
+  char *testValue;
+  char val;
   char local_40b;
   uint local_c;
-  char *local_8;
+  char *p;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0xe2,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((param_1->enableDvar == (char *)0x0) || (*param_1->enableDvar == '\0')) ||
-      (param_1->dvarTest == (char *)0x0)) || (*param_1->dvarTest == '\0')) {
+  if ((((item->enableDvar == (char *)0x0) || (*item->enableDvar == '\0')) ||
+      (item->dvarTest == (char *)0x0)) || (*item->dvarTest == '\0')) {
     uVar4 = 1;
   }
   else {
-    pcVar5 = Dvar_GetVariantString(param_1->dvarTest);
-    local_8 = param_1->enableDvar;
+    s0 = Dvar_GetVariantString(item->dvarTest);
+    p = item->enableDvar;
     do {
-      iVar3 = String_Parse(&local_8,&local_40c,0x400);
+      iVar3 = String_Parse(&p,&val,0x400);
       if (iVar3 == 0) {
-        return (uint)((param_1->dvarFlags & param_2) == 0);
+        return (uint)((item->dvarFlags & flag) == 0);
       }
-    } while (((local_40c == ';') && (local_40b == '\0')) ||
-            (iVar3 = I_stricmp(pcVar5,&local_40c), iVar3 != 0));
-    uVar4 = (uint)((param_1->dvarFlags & param_2) != 0);
+    } while (((val == ';') && (local_40b == '\0')) || (iVar3 = I_stricmp(s0,&val), iVar3 != 0));
+    uVar4 = (uint)((item->dvarFlags & flag) != 0);
   }
   return uVar4;
 }
@@ -235,14 +236,14 @@ int __cdecl Item_EnableShowViaDvar(itemDef_s *param_1,int param_2)
 
 // 0077F380  Item_SetTextRect  (ui/ui_utils.cpp:252)
 
-void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
+void __cdecl Item_SetTextRect(int contextIndex,itemDef_s *item,rectDef_s *textRect)
 
 {
   code *pcVar1;
   bool bVar2;
   rectDef_s *prVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0xfd,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -252,7 +253,7 @@ void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
       return;
     }
   }
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0xfe,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -260,7 +261,7 @@ void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
       return;
     }
   }
-  if (param_3 == (rectDef_s *)0x0) {
+  if (textRect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0xff,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -268,7 +269,7 @@ void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
       return;
     }
   }
-  if ((param_3->horzAlign < 0) || (10 < param_3->horzAlign)) {
+  if ((textRect->horzAlign < 0) || (10 < textRect->horzAlign)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x100,0,
                              "%s\n\t(textRect->horzAlign) = %i");
     if (!bVar2) {
@@ -277,7 +278,7 @@ void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
       return;
     }
   }
-  if ((param_3->vertAlign < 0) || (10 < param_3->vertAlign)) {
+  if ((textRect->vertAlign < 0) || (10 < textRect->vertAlign)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x101,0,
                              "%s\n\t(textRect->vertAlign) = %i");
     if (!bVar2) {
@@ -286,29 +287,30 @@ void __cdecl Item_SetTextRect(int param_1,itemDef_s *param_2,rectDef_s *param_3)
       return;
     }
   }
-  prVar3 = ((param_2->typeData).textDef)->textRect + param_1;
-  prVar3->x = param_3->x;
-  prVar3->y = param_3->y;
-  prVar3->w = param_3->w;
-  prVar3->h = param_3->h;
-  prVar3->horzAlign = param_3->horzAlign;
-  prVar3->vertAlign = param_3->vertAlign;
+  prVar3 = ((item->typeData).textDef)->textRect + contextIndex;
+  prVar3->x = textRect->x;
+  prVar3->y = textRect->y;
+  prVar3->w = textRect->w;
+  prVar3->h = textRect->h;
+  prVar3->horzAlign = textRect->horzAlign;
+  prVar3->vertAlign = textRect->vertAlign;
   return;
 }
 
 
 // 0077F4C0  Item_GetCursorPosOffset  (ui/ui_utils.cpp:271)
 
-int __cdecl Item_GetCursorPosOffset(int param_1,itemDef_s *param_2,char *param_3,int param_4)
+int __cdecl Item_GetCursorPosOffset(int contextIndex,itemDef_s *item,char *text,int delta)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   editFieldDef_s *peVar4;
-  int local_c;
+  int pos;
+  editFieldDef_s *editPtr;
   
-  if ((param_1 != 0) &&
+  if ((contextIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x113,0,
                                "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -316,42 +318,39 @@ int __cdecl Item_GetCursorPosOffset(int param_1,itemDef_s *param_2,char *param_3
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  peVar4 = Item_GetEditFieldDef(param_2);
-  local_c = peVar4->cursorPos[param_1];
-  if (param_4 < 1) {
-    while ((local_c != 0 && (param_4 != 0))) {
-      if (((local_c < 2) ||
-          ((((param_3 + local_c + -2 == (char *)0x0 || (param_3[local_c + -2] != '^')) ||
-            (param_3[local_c + -1] == '\0')) ||
-           ((param_3[local_c + -1] == '^' || (param_3[local_c + -1] < '0')))))) ||
-         ('@' < param_3[local_c + -1])) {
-        local_c = local_c + -1;
-        param_4 = param_4 + 1;
+  peVar4 = Item_GetEditFieldDef(item);
+  pos = peVar4->cursorPos[contextIndex];
+  if (delta < 1) {
+    while ((pos != 0 && (delta != 0))) {
+      if (((pos < 2) ||
+          ((((text + pos + -2 == (char *)0x0 || (text[pos + -2] != '^')) || (text[pos + -1] == '\0')
+            ) || ((text[pos + -1] == '^' || (text[pos + -1] < '0')))))) || ('@' < text[pos + -1])) {
+        pos = pos + -1;
+        delta = delta + 1;
       }
       else {
-        local_c = local_c + -2;
+        pos = pos + -2;
       }
     }
   }
   else {
     while( true ) {
-      for (; (((param_3 + local_c != (char *)0x0 && (param_3[local_c] == '^')) &&
-              (param_3[local_c + 1] != '\0')) &&
-             (((param_3[local_c + 1] != '^' && ('/' < param_3[local_c + 1])) &&
-              (param_3[local_c + 1] < 'A')))); local_c = local_c + 2) {
+      for (; (((text + pos != (char *)0x0 && (text[pos] == '^')) && (text[pos + 1] != '\0')) &&
+             (((text[pos + 1] != '^' && ('/' < text[pos + 1])) && (text[pos + 1] < 'A'))));
+          pos = pos + 2) {
       }
-      if ((param_3[local_c] == '\0') || (param_4 == 0)) break;
-      local_c = local_c + 1;
-      param_4 = param_4 + -1;
+      if ((text[pos] == '\0') || (delta == 0)) break;
+      pos = pos + 1;
+      delta = delta + -1;
     }
   }
-  return local_c;
+  return pos;
 }
 
 
 // 0077F640  ListBox_HasValidCursorPos  (ui/ui_utils.cpp:314)
 
-bool __cdecl ListBox_HasValidCursorPos(int param_1,itemDef_s *param_2)
+bool __cdecl ListBox_HasValidCursorPos(int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
@@ -359,8 +358,10 @@ bool __cdecl ListBox_HasValidCursorPos(int param_1,itemDef_s *param_2)
   undefined1 uVar3;
   listBoxDef_s *plVar4;
   bool local_10;
+  listBoxDef_s *listPtr;
+  int cursorPos;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x13e,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -370,9 +371,9 @@ bool __cdecl ListBox_HasValidCursorPos(int param_1,itemDef_s *param_2)
       return (bool)uVar3;
     }
   }
-  plVar4 = Item_GetListBoxDef(param_2);
-  if ((plVar4->cursorPos[param_1] < plVar4->startPos[param_1]) ||
-     (plVar4->endPos[param_1] <= plVar4->cursorPos[param_1])) {
+  plVar4 = Item_GetListBoxDef(item);
+  if ((plVar4->cursorPos[contextIndex] < plVar4->startPos[contextIndex]) ||
+     (plVar4->endPos[contextIndex] <= plVar4->cursorPos[contextIndex])) {
     local_10 = false;
   }
   else {
@@ -385,50 +386,49 @@ bool __cdecl ListBox_HasValidCursorPos(int param_1,itemDef_s *param_2)
 // 0077F7A0  Item_SetScreenCoords  (ui/ui_utils.cpp:329)
 
 void __cdecl
-Item_SetScreenCoords
-          (int param_1,itemDef_s *param_2,float param_3,float param_4,int param_5,int param_6)
+Item_SetScreenCoords(int contextIndex,itemDef_s *item,float x,float y,int horzAlign,int vertAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  rectDef_s local_20;
-  rectDef_s *local_8;
+  rectDef_s newRect;
+  rectDef_s *textRect;
   
-  if ((param_2 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x14d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != (itemDef_s *)0x0) {
-    if ((param_2->window).border != '\0') {
-      param_3 = param_3 + (param_2->window).borderSize;
-      param_4 = param_4 + (param_2->window).borderSize;
+  if (item != (itemDef_s *)0x0) {
+    if ((item->window).border != '\0') {
+      x = x + (item->window).borderSize;
+      y = y + (item->window).borderSize;
     }
-    (param_2->window).rect.x = (param_2->window).rectClient.x;
-    (param_2->window).rect.y = (param_2->window).rectClient.y;
-    (param_2->window).rect.w = (param_2->window).rectClient.w;
-    (param_2->window).rect.h = (param_2->window).rectClient.h;
-    (param_2->window).rect.horzAlign = (param_2->window).rectClient.horzAlign;
-    (param_2->window).rect.vertAlign = (param_2->window).rectClient.vertAlign;
-    (param_2->window).rect.x = (param_2->window).rect.x + param_3;
-    (param_2->window).rect.y = (param_2->window).rect.y + param_4;
-    if (((param_2->window).rect.horzAlign == 0) && ((param_2->window).rect.vertAlign == 0)) {
-      (param_2->window).rect.horzAlign = param_5;
-      (param_2->window).rect.vertAlign = param_6;
+    (item->window).rect.x = (item->window).rectClient.x;
+    (item->window).rect.y = (item->window).rectClient.y;
+    (item->window).rect.w = (item->window).rectClient.w;
+    (item->window).rect.h = (item->window).rectClient.h;
+    (item->window).rect.horzAlign = (item->window).rectClient.horzAlign;
+    (item->window).rect.vertAlign = (item->window).rectClient.vertAlign;
+    (item->window).rect.x = (item->window).rect.x + x;
+    (item->window).rect.y = (item->window).rect.y + y;
+    if (((item->window).rect.horzAlign == 0) && ((item->window).rect.vertAlign == 0)) {
+      (item->window).rect.horzAlign = horzAlign;
+      (item->window).rect.vertAlign = vertAlign;
     }
-    local_8 = Item_GetTextRect(param_1,param_2);
-    iVar3 = Item_IsTextDefType(param_2);
-    if ((iVar3 != 0) && (local_8 != (rectDef_s *)0x0)) {
-      local_20.x = local_8->x;
-      local_20.y = local_8->y;
-      local_20.w = 0.0;
-      local_20.h = 0.0;
-      local_20.horzAlign = 0;
-      local_20.vertAlign = 0;
-      Item_SetTextRect(param_1,param_2,&local_20);
+    textRect = Item_GetTextRect(contextIndex,item);
+    iVar3 = Item_IsTextDefType(item);
+    if ((iVar3 != 0) && (textRect != (rectDef_s *)0x0)) {
+      newRect.x = textRect->x;
+      newRect.y = textRect->y;
+      newRect.w = 0.0;
+      newRect.h = 0.0;
+      newRect.horzAlign = 0;
+      newRect.vertAlign = 0;
+      Item_SetTextRect(contextIndex,item,&newRect);
     }
   }
   return;
@@ -437,26 +437,25 @@ Item_SetScreenCoords
 
 // 0077F6D0  Menu_UpdatePosition  (ui/ui_utils.cpp:369)
 
-void __cdecl Menu_UpdatePosition(int param_1,menuDef_t *param_2)
+void __cdecl Menu_UpdatePosition(int contextIndex,menuDef_t *menu)
 
 {
   rectDef_s *prVar1;
-  int local_14;
-  float local_10;
-  float local_c;
+  int i;
+  float x;
+  float y;
+  rectDef_s *rect;
   
-  if (param_2 != (menuDef_t *)0x0) {
-    prVar1 = Window_GetRect(&param_2->window);
-    local_10 = prVar1->x;
-    local_c = prVar1->y;
-    if ((param_2->window).border != '\0') {
-      local_10 = local_10 + (param_2->window).borderSize;
-      local_c = local_c + (param_2->window).borderSize;
+  if (menu != (menuDef_t *)0x0) {
+    prVar1 = Window_GetRect(&menu->window);
+    x = prVar1->x;
+    y = prVar1->y;
+    if ((menu->window).border != '\0') {
+      x = x + (menu->window).borderSize;
+      y = y + (menu->window).borderSize;
     }
-    for (local_14 = 0; local_14 < param_2->itemCount; local_14 = local_14 + 1) {
-      Item_SetScreenCoords
-                (param_1,param_2->items[local_14],local_10,local_c,prVar1->horzAlign,
-                 prVar1->vertAlign);
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      Item_SetScreenCoords(contextIndex,menu->items[i],x,y,prVar1->horzAlign,prVar1->vertAlign);
     }
   }
   return;
@@ -465,12 +464,12 @@ void __cdecl Menu_UpdatePosition(int param_1,menuDef_t *param_2)
 
 // 0077F920  Item_IsEditFieldDef  (ui/ui_utils.cpp:395)
 
-int __cdecl Item_IsEditFieldDef(itemDef_s *param_1)
+int __cdecl Item_IsEditFieldDef(itemDef_s *item)
 
 {
   int iVar1;
   
-  switch(param_1->dataType) {
+  switch(item->dataType) {
   case 5:
   case 7:
   case 8:
@@ -492,12 +491,12 @@ int __cdecl Item_IsEditFieldDef(itemDef_s *param_1)
 
 // 0077F990  Item_IsTextDefType  (ui/ui_utils.cpp:416)
 
-int __cdecl Item_IsTextDefType(itemDef_s *param_1)
+int __cdecl Item_IsTextDefType(itemDef_s *item)
 
 {
   int iVar1;
   
-  switch(param_1->dataType) {
+  switch(item->dataType) {
   case 1:
   case 3:
   case 4:
@@ -526,12 +525,12 @@ int __cdecl Item_IsTextDefType(itemDef_s *param_1)
 
 // 0077F9F0  Item_IsFocusDefType  (ui/ui_utils.cpp:444)
 
-int __cdecl Item_IsFocusDefType(itemDef_s *param_1)
+int __cdecl Item_IsFocusDefType(itemDef_s *item)
 
 {
   int iVar1;
   
-  switch(param_1->dataType) {
+  switch(item->dataType) {
   case 3:
   case 4:
   case 5:
@@ -560,12 +559,12 @@ int __cdecl Item_IsFocusDefType(itemDef_s *param_1)
 
 // 0077FA60  Item_IsOwnerDrawDefType  (ui/ui_utils.cpp:473)
 
-int __cdecl Item_IsOwnerDrawDefType(itemDef_s *param_1)
+int __cdecl Item_IsOwnerDrawDefType(itemDef_s *item)
 
 {
   int iVar1;
   
-  iVar1 = param_1->dataType;
+  iVar1 = item->dataType;
   if ((iVar1 == 6) || ((0x11 < iVar1 && (iVar1 < 0x15)))) {
     iVar1 = 1;
   }
@@ -578,13 +577,13 @@ int __cdecl Item_IsOwnerDrawDefType(itemDef_s *param_1)
 
 // 0077FAA0  Item_GetEditFieldDef  (ui/ui_utils.cpp:489)
 
-editFieldDef_s * __cdecl Item_GetEditFieldDef(itemDef_s *param_1)
+editFieldDef_s * __cdecl Item_GetEditFieldDef(itemDef_s *item)
 
 {
   int iVar1;
   listBoxDef_s *plVar2;
   
-  iVar1 = Item_IsEditFieldDef(param_1);
+  iVar1 = Item_IsEditFieldDef(item);
   if (iVar1 == 0) {
     Com_PrintError(0xd,
                    "Menu Error: Expecting type: ITEM_TYPE_EDITFIELD, ITEM_TYPE_NUMERICFIELD, ITEM_TYPE_DECIMALFIELD, ITEM_TYPE_VALIDFILEFIELD, ITEM_TYPE_UPREDITFIELD, ITEM_TYPE_YESNO, ITEM_TYPE_BIND, ITEM_TYPE_SLIDER, ITEM_TYPE_ALPHANUMERICFIELD\n"
@@ -592,7 +591,7 @@ editFieldDef_s * __cdecl Item_GetEditFieldDef(itemDef_s *param_1)
     plVar2 = (listBoxDef_s *)0x0;
   }
   else {
-    plVar2 = (((((param_1->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
+    plVar2 = (((((item->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
   }
   return (editFieldDef_s *)plVar2;
 }
@@ -600,14 +599,14 @@ editFieldDef_s * __cdecl Item_GetEditFieldDef(itemDef_s *param_1)
 
 // 0077FAE0  Item_GetMultiDef  (ui/ui_utils.cpp:498)
 
-multiDef_s * __cdecl Item_GetMultiDef(itemDef_s *param_1)
+multiDef_s * __cdecl Item_GetMultiDef(itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   multiDef_s *pmVar3;
   
-  if (param_1 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",499,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -615,7 +614,7 @@ multiDef_s * __cdecl Item_GetMultiDef(itemDef_s *param_1)
       return pmVar3;
     }
   }
-  if (param_1->dataType != 10) {
+  if (item->dataType != 10) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",500,0,
                              "%s\n\t(item->dataType) = %i");
     if (!bVar2) {
@@ -625,19 +624,19 @@ multiDef_s * __cdecl Item_GetMultiDef(itemDef_s *param_1)
     }
   }
   return (multiDef_s *)
-         (((((param_1->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
+         (((((item->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
 }
 
 
 // 0077FB60  Item_GetOwnerDrawDef  (ui/ui_utils.cpp:514)
 
-ownerDrawDef_s * __cdecl Item_GetOwnerDrawDef(itemDef_s *param_1)
+ownerDrawDef_s * __cdecl Item_GetOwnerDrawDef(itemDef_s *item)
 
 {
   textDef_s *ptVar1;
   
-  if (param_1->dataType == 6) {
-    ptVar1 = (param_1->typeData).textDef;
+  if (item->dataType == 6) {
+    ptVar1 = (item->typeData).textDef;
   }
   else {
     Com_PrintError(0xd,"Menu Error: Expecting type: ITEM_TYPE_OWNERDRAW\n");
@@ -649,18 +648,18 @@ ownerDrawDef_s * __cdecl Item_GetOwnerDrawDef(itemDef_s *param_1)
 
 // 0077FB90  Item_GetTextDef  (ui/ui_utils.cpp:523)
 
-textDef_s * __cdecl Item_GetTextDef(itemDef_s *param_1)
+textDef_s * __cdecl Item_GetTextDef(itemDef_s *item)
 
 {
   int iVar1;
   textDef_s *ptVar2;
   
-  iVar1 = Item_IsTextDefType(param_1);
+  iVar1 = Item_IsTextDefType(item);
   if (iVar1 == 0) {
     ptVar2 = (textDef_s *)0x0;
   }
   else {
-    ptVar2 = (param_1->typeData).textDef;
+    ptVar2 = (item->typeData).textDef;
   }
   return ptVar2;
 }
@@ -668,22 +667,22 @@ textDef_s * __cdecl Item_GetTextDef(itemDef_s *param_1)
 
 // 0077FBC0  Item_GetFocusItemDef  (ui/ui_utils.cpp:537)
 
-focusItemDef_s * __cdecl Item_GetFocusItemDef(itemDef_s *param_1)
+focusItemDef_s * __cdecl Item_GetFocusItemDef(itemDef_s *item)
 
 {
   int iVar1;
   textDef_s *ptVar2;
   
-  if (param_1->dataType == 0x15) {
-    ptVar2 = (param_1->typeData).textDef;
+  if (item->dataType == 0x15) {
+    ptVar2 = (item->typeData).textDef;
   }
   else {
-    iVar1 = Item_IsFocusDefType(param_1);
+    iVar1 = Item_IsFocusDefType(item);
     if (iVar1 == 0) {
       ptVar2 = (textDef_s *)0x0;
     }
     else {
-      ptVar2 = (textDef_s *)(((param_1->typeData).textDef)->textTypeData).focusItemDef;
+      ptVar2 = (textDef_s *)(((item->typeData).textDef)->textTypeData).focusItemDef;
     }
   }
   return (focusItemDef_s *)ptVar2;
@@ -692,13 +691,13 @@ focusItemDef_s * __cdecl Item_GetFocusItemDef(itemDef_s *param_1)
 
 // 0077FC00  Item_GetListBoxDef  (ui/ui_utils.cpp:550)
 
-listBoxDef_s * __cdecl Item_GetListBoxDef(itemDef_s *param_1)
+listBoxDef_s * __cdecl Item_GetListBoxDef(itemDef_s *item)
 
 {
   listBoxDef_s *plVar1;
   
-  if (param_1->dataType == 4) {
-    plVar1 = (((((param_1->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
+  if (item->dataType == 4) {
+    plVar1 = (((((item->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
   }
   else {
     Com_PrintError(0xd,"Menu Error: Expecting type: ITEM_TYPE_LISTBOX\n");
@@ -710,14 +709,14 @@ listBoxDef_s * __cdecl Item_GetListBoxDef(itemDef_s *param_1)
 
 // 0077FC40  Item_GetListBoxFeederID  (ui/ui_utils.cpp:558)
 
-float __cdecl Item_GetListBoxFeederID(itemDef_s *param_1)
+float __cdecl Item_GetListBoxFeederID(itemDef_s *item)
 
 {
   float fVar1;
   
-  if (param_1->dataType == 4) {
-    fVar1 = ((((((param_1->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox)
-            ->special;
+  if (item->dataType == 4) {
+    fVar1 = ((((((item->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox)->
+            special;
   }
   else {
     Com_PrintError(0xd,"Menu Error: Expecting type: ITEM_TYPE_LISTBOX\n");
@@ -729,13 +728,13 @@ float __cdecl Item_GetListBoxFeederID(itemDef_s *param_1)
 
 // 0077FC80  Item_GetEnumDvarName  (ui/ui_utils.cpp:567)
 
-enumDvarDef_s * __cdecl Item_GetEnumDvarName(itemDef_s *param_1)
+enumDvarDef_s * __cdecl Item_GetEnumDvarName(itemDef_s *item)
 
 {
   listBoxDef_s *plVar1;
   
-  if (param_1->dataType == 0xb) {
-    plVar1 = (((((param_1->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
+  if (item->dataType == 0xb) {
+    plVar1 = (((((item->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox;
   }
   else {
     Com_PrintError(0xd,"Menu Error: Expecting type: ITEM_TYPE_DVARENUM\n");
@@ -747,13 +746,13 @@ enumDvarDef_s * __cdecl Item_GetEnumDvarName(itemDef_s *param_1)
 
 // 0077FCC0  Item_GetGameMsgDef  (ui/ui_utils.cpp:576)
 
-gameMsgDef_s * __cdecl Item_GetGameMsgDef(itemDef_s *param_1)
+gameMsgDef_s * __cdecl Item_GetGameMsgDef(itemDef_s *item)
 
 {
   focusItemDef_s *pfVar1;
   
-  if (param_1->dataType == 0xf) {
-    pfVar1 = (((param_1->typeData).textDef)->textTypeData).focusItemDef;
+  if (item->dataType == 0xf) {
+    pfVar1 = (((item->typeData).textDef)->textTypeData).focusItemDef;
   }
   else {
     Com_PrintError(0xd,"Menu Error: Expecting type: ITEM_TYPE_GAME_MESSAGE_WINDOW\n");
@@ -765,39 +764,39 @@ gameMsgDef_s * __cdecl Item_GetGameMsgDef(itemDef_s *param_1)
 
 // 0077FCF0  Item_PropertiesToAnimState  (ui/ui_utils.cpp:584)
 
-void __cdecl Item_PropertiesToAnimState(itemDef_s *param_1,animParamsDef_t *param_2)
+void __cdecl Item_PropertiesToAnimState(itemDef_s *item,animParamsDef_t *animParams)
 
 {
   int iVar1;
   
-  param_2->name = (param_1->window).name;
-  (param_2->rectClient).x = (param_1->window).rectClient.x;
-  (param_2->rectClient).y = (param_1->window).rectClient.y;
-  (param_2->rectClient).w = (param_1->window).rectClient.w;
-  (param_2->rectClient).h = (param_1->window).rectClient.h;
-  (param_2->rectClient).horzAlign = (param_1->window).rectClient.horzAlign;
-  (param_2->rectClient).vertAlign = (param_1->window).rectClient.vertAlign;
-  param_2->borderSize = (param_1->window).borderSize;
-  param_2->rotation = (param_1->window).rotation;
-  param_2->foreColor[0] = (param_1->window).foreColor[0];
-  param_2->foreColor[1] = (param_1->window).foreColor[1];
-  param_2->foreColor[2] = (param_1->window).foreColor[2];
-  param_2->foreColor[3] = (param_1->window).foreColor[3];
-  param_2->backColor[0] = (param_1->window).backColor[0];
-  param_2->backColor[1] = (param_1->window).backColor[1];
-  param_2->backColor[2] = (param_1->window).backColor[2];
-  param_2->backColor[3] = (param_1->window).backColor[3];
-  param_2->borderColor[0] = (param_1->window).borderColor[0];
-  param_2->borderColor[1] = (param_1->window).borderColor[1];
-  param_2->borderColor[2] = (param_1->window).borderColor[2];
-  param_2->borderColor[3] = (param_1->window).borderColor[3];
-  param_2->outlineColor[0] = (param_1->window).outlineColor[0];
-  param_2->outlineColor[1] = (param_1->window).outlineColor[1];
-  param_2->outlineColor[2] = (param_1->window).outlineColor[2];
-  param_2->outlineColor[3] = (param_1->window).outlineColor[3];
-  iVar1 = Item_IsTextDefType(param_1);
+  animParams->name = (item->window).name;
+  (animParams->rectClient).x = (item->window).rectClient.x;
+  (animParams->rectClient).y = (item->window).rectClient.y;
+  (animParams->rectClient).w = (item->window).rectClient.w;
+  (animParams->rectClient).h = (item->window).rectClient.h;
+  (animParams->rectClient).horzAlign = (item->window).rectClient.horzAlign;
+  (animParams->rectClient).vertAlign = (item->window).rectClient.vertAlign;
+  animParams->borderSize = (item->window).borderSize;
+  animParams->rotation = (item->window).rotation;
+  animParams->foreColor[0] = (item->window).foreColor[0];
+  animParams->foreColor[1] = (item->window).foreColor[1];
+  animParams->foreColor[2] = (item->window).foreColor[2];
+  animParams->foreColor[3] = (item->window).foreColor[3];
+  animParams->backColor[0] = (item->window).backColor[0];
+  animParams->backColor[1] = (item->window).backColor[1];
+  animParams->backColor[2] = (item->window).backColor[2];
+  animParams->backColor[3] = (item->window).backColor[3];
+  animParams->borderColor[0] = (item->window).borderColor[0];
+  animParams->borderColor[1] = (item->window).borderColor[1];
+  animParams->borderColor[2] = (item->window).borderColor[2];
+  animParams->borderColor[3] = (item->window).borderColor[3];
+  animParams->outlineColor[0] = (item->window).outlineColor[0];
+  animParams->outlineColor[1] = (item->window).outlineColor[1];
+  animParams->outlineColor[2] = (item->window).outlineColor[2];
+  animParams->outlineColor[3] = (item->window).outlineColor[3];
+  iVar1 = Item_IsTextDefType(item);
   if (iVar1 != 0) {
-    param_2->textScale = ((param_1->typeData).textDef)->textscale;
+    animParams->textScale = ((item->typeData).textDef)->textscale;
   }
   return;
 }
@@ -805,39 +804,39 @@ void __cdecl Item_PropertiesToAnimState(itemDef_s *param_1,animParamsDef_t *para
 
 // 0077FE80  Item_AnimStateToProperties  (ui/ui_utils.cpp:598)
 
-void __cdecl Item_AnimStateToProperties(animParamsDef_t *param_1,itemDef_s *param_2)
+void __cdecl Item_AnimStateToProperties(animParamsDef_t *animParams,itemDef_s *item)
 
 {
   int iVar1;
   
-  (param_2->window).name = param_1->name;
-  (param_2->window).rectClient.x = (param_1->rectClient).x;
-  (param_2->window).rectClient.y = (param_1->rectClient).y;
-  (param_2->window).rectClient.w = (param_1->rectClient).w;
-  (param_2->window).rectClient.h = (param_1->rectClient).h;
-  (param_2->window).rectClient.horzAlign = (param_1->rectClient).horzAlign;
-  (param_2->window).rectClient.vertAlign = (param_1->rectClient).vertAlign;
-  (param_2->window).borderSize = param_1->borderSize;
-  (param_2->window).rotation = param_1->rotation;
-  (param_2->window).foreColor[0] = param_1->foreColor[0];
-  (param_2->window).foreColor[1] = param_1->foreColor[1];
-  (param_2->window).foreColor[2] = param_1->foreColor[2];
-  (param_2->window).foreColor[3] = param_1->foreColor[3];
-  (param_2->window).backColor[0] = param_1->backColor[0];
-  (param_2->window).backColor[1] = param_1->backColor[1];
-  (param_2->window).backColor[2] = param_1->backColor[2];
-  (param_2->window).backColor[3] = param_1->backColor[3];
-  (param_2->window).borderColor[0] = param_1->borderColor[0];
-  (param_2->window).borderColor[1] = param_1->borderColor[1];
-  (param_2->window).borderColor[2] = param_1->borderColor[2];
-  (param_2->window).borderColor[3] = param_1->borderColor[3];
-  (param_2->window).outlineColor[0] = param_1->outlineColor[0];
-  (param_2->window).outlineColor[1] = param_1->outlineColor[1];
-  (param_2->window).outlineColor[2] = param_1->outlineColor[2];
-  (param_2->window).outlineColor[3] = param_1->outlineColor[3];
-  iVar1 = Item_IsTextDefType(param_2);
+  (item->window).name = animParams->name;
+  (item->window).rectClient.x = (animParams->rectClient).x;
+  (item->window).rectClient.y = (animParams->rectClient).y;
+  (item->window).rectClient.w = (animParams->rectClient).w;
+  (item->window).rectClient.h = (animParams->rectClient).h;
+  (item->window).rectClient.horzAlign = (animParams->rectClient).horzAlign;
+  (item->window).rectClient.vertAlign = (animParams->rectClient).vertAlign;
+  (item->window).borderSize = animParams->borderSize;
+  (item->window).rotation = animParams->rotation;
+  (item->window).foreColor[0] = animParams->foreColor[0];
+  (item->window).foreColor[1] = animParams->foreColor[1];
+  (item->window).foreColor[2] = animParams->foreColor[2];
+  (item->window).foreColor[3] = animParams->foreColor[3];
+  (item->window).backColor[0] = animParams->backColor[0];
+  (item->window).backColor[1] = animParams->backColor[1];
+  (item->window).backColor[2] = animParams->backColor[2];
+  (item->window).backColor[3] = animParams->backColor[3];
+  (item->window).borderColor[0] = animParams->borderColor[0];
+  (item->window).borderColor[1] = animParams->borderColor[1];
+  (item->window).borderColor[2] = animParams->borderColor[2];
+  (item->window).borderColor[3] = animParams->borderColor[3];
+  (item->window).outlineColor[0] = animParams->outlineColor[0];
+  (item->window).outlineColor[1] = animParams->outlineColor[1];
+  (item->window).outlineColor[2] = animParams->outlineColor[2];
+  (item->window).outlineColor[3] = animParams->outlineColor[3];
+  iVar1 = Item_IsTextDefType(item);
   if (iVar1 != 0) {
-    ((param_2->typeData).textDef)->textscale = param_1->textScale;
+    ((item->typeData).textDef)->textscale = animParams->textScale;
   }
   return;
 }
@@ -845,30 +844,31 @@ void __cdecl Item_AnimStateToProperties(animParamsDef_t *param_1,itemDef_s *para
 
 // 00780270  hashForString  (ui/ui_utils.cpp:618)
 
-long __cdecl hashForString(char *param_1)
+long __cdecl hashForString(char *str)
 
 {
   int iVar1;
-  uint local_10;
-  int local_8;
+  long hash;
+  int letter;
+  int i;
   
-  local_10 = 0;
-  for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-    iVar1 = tolower((int)param_1[local_8]);
-    local_10 = (local_8 + 0x77) * iVar1 + local_10;
+  hash = 0;
+  for (i = 0; str[i] != '\0'; i = i + 1) {
+    iVar1 = tolower((int)str[i]);
+    hash = (i + 0x77) * iVar1 + hash;
   }
-  return local_10 & 0x7ff;
+  return hash & 0x7ff;
 }
 
 
 // 00780010  UI_Alloc  (ui/ui_utils.cpp:637)
 
-void * __cdecl UI_Alloc(int param_1,int param_2)
+void * __cdecl UI_Alloc(int size,int alignment)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocAlign(param_1,param_2,"UI_Alloc",0x24);
+  pvVar1 = Hunk_AllocAlign(size,alignment,"UI_Alloc",0x24);
   return pvVar1;
 }
 
@@ -885,7 +885,7 @@ void __cdecl String_Init(void)
 
 // 00780050  String_Alloc  (ui/ui_utils.cpp:649)
 
-char * __cdecl String_Alloc(char *param_1)
+char * __cdecl String_Alloc(char *p)
 
 {
   byte bVar1;
@@ -901,8 +901,11 @@ char * __cdecl String_Alloc(char *param_1)
   int local_28;
   byte *local_20;
   byte *local_1c;
-  stringDef_s *local_18;
-  stringDef_s *local_8;
+  stringDef_s *str;
+  long hash;
+  int len;
+  char *s;
+  stringDef_s *last;
   
   bVar4 = Sys_IsMainThread();
   if ((!bVar4) &&
@@ -912,24 +915,23 @@ char * __cdecl String_Alloc(char *param_1)
     pcVar5 = (char *)(*pcVar3)();
     return pcVar5;
   }
-  if (param_1 == (char *)0x0) {
+  if (p == (char *)0x0) {
     pcVar5 = (char *)0x0;
   }
   else {
     pcVar5 = staticNULL;
-    if (*param_1 != '\0') {
-      lVar6 = hashForString(param_1);
-      for (local_18 = g_strHandle[lVar6]; local_18 != (stringDef_s *)0x0; local_18 = local_18->next)
-      {
-        if ((local_18->str == (char *)0x0) &&
+    if (*p != '\0') {
+      lVar6 = hashForString(p);
+      for (str = g_strHandle[lVar6]; str != (stringDef_s *)0x0; str = str->next) {
+        if ((str->str == (char *)0x0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x2a1,0,
                                      "%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           pcVar5 = (char *)(*pcVar3)();
           return pcVar5;
         }
-        local_1c = (byte *)local_18->str;
-        local_20 = (byte *)param_1;
+        local_1c = (byte *)str->str;
+        local_20 = (byte *)p;
         do {
           bVar1 = *local_20;
           bVar4 = bVar1 < *local_1c;
@@ -948,16 +950,16 @@ LAB_0078014a:
         local_28 = 0;
 LAB_00780152:
         if (local_28 == 0) {
-          return local_18->str;
+          return str->str;
         }
       }
-      local_30 = param_1;
+      local_30 = p;
       do {
         cVar2 = *local_30;
         local_30 = local_30 + 1;
       } while (cVar2 != '\0');
-      pcVar5 = UI_Alloc((int)(local_30 + (1 - (int)(param_1 + 1))),1);
-      local_40 = param_1;
+      pcVar5 = UI_Alloc((int)(local_30 + (1 - (int)(p + 1))),1);
+      local_40 = p;
       local_44 = pcVar5;
       do {
         cVar2 = *local_40;
@@ -965,20 +967,19 @@ LAB_00780152:
         local_40 = local_40 + 1;
         local_44 = local_44 + 1;
       } while (cVar2 != '\0');
-      local_18 = g_strHandle[lVar6];
-      local_8 = local_18;
-      for (; (local_18 != (stringDef_s *)0x0 && (local_18->next != (stringDef_s *)0x0));
-          local_18 = local_18->next) {
-        local_8 = local_18;
+      str = g_strHandle[lVar6];
+      last = str;
+      for (; (str != (stringDef_s *)0x0 && (str->next != (stringDef_s *)0x0)); str = str->next) {
+        last = str;
       }
       psVar7 = UI_Alloc(8,4);
       psVar7->next = (stringDef_s *)0x0;
       psVar7->str = pcVar5;
-      if (local_8 == (stringDef_s *)0x0) {
+      if (last == (stringDef_s *)0x0) {
         g_strHandle[lVar6] = psVar7;
       }
       else {
-        local_8->next = psVar7;
+        last->next = psVar7;
       }
     }
   }
@@ -988,44 +989,46 @@ LAB_00780152:
 
 // 007802E0  Int_Parse  (ui/ui_utils.cpp:710)
 
-int __cdecl Int_Parse(char **param_1,int *param_2)
+int __cdecl Int_Parse(char **p,int *i)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  char *token;
   
-  pcVar1 = Com_ParseOnLine(param_1);
-  if ((pcVar1 == (char *)0x0) || (*pcVar1 == '\0')) {
-    iVar2 = 0;
+  nptr = Com_ParseOnLine(p);
+  if ((nptr == (char *)0x0) || (*nptr == '\0')) {
+    iVar1 = 0;
   }
   else {
-    iVar2 = atoi(pcVar1);
-    *param_2 = iVar2;
-    iVar2 = 1;
+    iVar1 = atoi(nptr);
+    *i = iVar1;
+    iVar1 = 1;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 00780330  Float_Parse  (ui/ui_utils.cpp:726)
 
-int __cdecl Float_Parse(char **param_1,float *param_2)
+int __cdecl Float_Parse(char **p,float *f)
 
 {
-  char *pcVar1;
-  int iVar2;
-  double dVar3;
+  char *nptr;
+  int iVar1;
+  double dVar2;
+  char *token;
   
-  pcVar1 = Com_ParseOnLine(param_1);
-  if ((pcVar1 == (char *)0x0) || (*pcVar1 == '\0')) {
-    iVar2 = 0;
+  nptr = Com_ParseOnLine(p);
+  if ((nptr == (char *)0x0) || (*nptr == '\0')) {
+    iVar1 = 0;
   }
   else {
-    dVar3 = atof(pcVar1);
-    *param_2 = (float)dVar3;
-    iVar2 = 1;
+    dVar2 = atof(nptr);
+    *f = (float)dVar2;
+    iVar1 = 1;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -1039,61 +1042,63 @@ void __cdecl UI_GetGameTypesList_LoadObj(void)
 {
   char cVar1;
   int iVar2;
+  char *filename;
   char *pcVar3;
-  char *pcVar4;
   char *local_1028;
-  char *local_1024;
-  char *local_101c;
-  char *local_1018;
-  char local_1014 [4096];
+  char *pszFileName;
+  int iLen;
+  char *pBuffParse;
+  char *pToken;
+  char szGameTypeList [4096];
   uint local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int i;
+  char *pBuff;
+  int iNumGameTypeScripts;
   
-  local_8 = 0x78042d;
+  iNumGameTypeScripts = 0x78042d;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = FS_GetFileList("maps/mp/gametypes","gsc",FS_LIST_PURE_ONLY,local_1014,0x1000);
-  local_1024 = local_1014;
-  local_10 = 0;
+  iNumGameTypeScripts =
+       FS_GetFileList("maps/mp/gametypes","gsc",FS_LIST_PURE_ONLY,szGameTypeList,0x1000);
+  pszFileName = szGameTypeList;
+  i = 0;
   do {
-    if (local_8 <= local_10) {
+    if (iNumGameTypeScripts <= i) {
       return;
     }
-    local_1028 = local_1024;
-    pcVar4 = local_1024 + 1;
+    local_1028 = pszFileName;
+    pcVar3 = pszFileName + 1;
     do {
       cVar1 = *local_1028;
       local_1028 = local_1028 + 1;
     } while (cVar1 != '\0');
-    if (*local_1024 != '_') {
-      iVar2 = I_stricmp(local_1024 + (int)(local_1028 + (-4 - (int)pcVar4)),".gsc");
+    if (*pszFileName != '_') {
+      iVar2 = I_stricmp(pszFileName + (int)(local_1028 + (-4 - (int)pcVar3)),".gsc");
       if (iVar2 == 0) {
-        local_1024[(int)(local_1028 + (-4 - (int)pcVar4))] = '\0';
+        pszFileName[(int)(local_1028 + (-4 - (int)pcVar3))] = '\0';
       }
       if ((DAT_098b5434 == 0x20) || (DAT_098b8fc0 == 0x20)) {
         Com_Printf(0xd,"Too many game type scripts found! Only loading the first %i\n");
         return;
       }
-      I_strncpyz(&DAT_098b5438 + DAT_098b5434 * 0x74,local_1024,0xc);
+      I_strncpyz(&DAT_098b5438 + DAT_098b5434 * 0x74,pszFileName,0xc);
       I_strncpyz(&DAT_098b8fc4 + DAT_098b8fc0 * 0x74,&DAT_098b5438 + DAT_098b5434 * 0x74,0xc);
-      pcVar3 = va("%s%s%s.txt");
-      local_101c = UI_GetMenuBuffer(pcVar3);
-      local_c = local_101c;
-      if (local_101c == (char *)0x0) {
+      filename = va("%s%s%s.txt");
+      pBuffParse = UI_GetMenuBuffer(filename);
+      pBuff = pBuffParse;
+      if (pBuffParse == (char *)0x0) {
         I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,&DAT_098b5438 + DAT_098b5434 * 0x74,0x20);
         I_strncpyz(&DAT_098b8fd0 + DAT_098b8fc0 * 0x74,&DAT_098b5444 + DAT_098b5434 * 0x74,0x20);
       }
       else {
-        local_1018 = Com_Parse(&local_101c);
-        I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,local_1018,0x20);
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,pToken,0x20);
         I_strncpyz(&DAT_098b8fd0 + DAT_098b8fc0 * 0x74,&DAT_098b5444 + DAT_098b5434 * 0x74,0x20);
       }
       DAT_098b5434 = DAT_098b5434 + 1;
       DAT_098b8fc0 = DAT_098b8fc0 + 1;
     }
-    local_1024 = local_1024 + (int)(local_1028 + (1 - (int)pcVar4));
-    local_10 = local_10 + 1;
+    pszFileName = pszFileName + (int)(local_1028 + (1 - (int)pcVar3));
+    i = i + 1;
   } while( true );
 }
 
@@ -1107,21 +1112,22 @@ void __cdecl UI_GetGameTypesList_FastFile(void)
 
 {
   char *pcVar1;
-  bool bVar2;
-  int iVar3;
-  char *local_18;
-  char *local_14;
-  XAssetHeader local_10;
-  char *local_c;
-  XModelPiece *local_8;
+  bool errorIfMissing;
+  int waitTime;
+  char *pszFileName;
+  char *pBuffParse;
+  char *pToken;
+  RawFile *gametypesFile;
+  char *pBuff;
+  char *gametypesBuf;
   
-  iVar3 = -1;
-  bVar2 = true;
+  waitTime = -1;
+  errorIfMissing = true;
   pcVar1 = va("%sgametypes/_gametypes.txt");
-  local_10 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,pcVar1,bVar2,iVar3);
-  if (local_10.xmodelPieces != (XModelPieces *)0x0) {
-    local_8 = (local_10.xmodelPieces)->pieces;
-    while (pcVar1 = Com_Parse((char **)&local_8), local_8 != (XModelPiece *)0x0) {
+  gametypesFile = (RawFile *)DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,pcVar1,errorIfMissing,waitTime);
+  if (gametypesFile != (RawFile *)0x0) {
+    gametypesBuf = *(char **)&(((Material *)gametypesFile)->info).pad;
+    while (pcVar1 = Com_Parse(&gametypesBuf), gametypesBuf != (char *)0x0) {
       if ((DAT_098b5434 == 0x20) || (DAT_098b8fc0 == 0x20)) {
         Com_Printf(0xd,"Too many game type scripts found! Only loading the first %i\n");
         return;
@@ -1129,22 +1135,22 @@ void __cdecl UI_GetGameTypesList_FastFile(void)
       I_strncpyz(&DAT_098b5438 + DAT_098b5434 * 0x74,pcVar1,0xc);
       I_strncpyz(&DAT_098b8fc4 + DAT_098b8fc0 * 0x74,&DAT_098b5438 + DAT_098b5434 * 0x74,0xc);
       pcVar1 = va("%sgametypes/%s.txt");
-      local_18 = UI_GetMenuBuffer(pcVar1);
-      local_c = local_18;
-      if (local_18 == (char *)0x0) {
+      pBuffParse = UI_GetMenuBuffer(pcVar1);
+      pBuff = pBuffParse;
+      if (pBuffParse == (char *)0x0) {
         I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,&DAT_098b5438 + DAT_098b5434 * 0x74,0x20);
         I_strncpyz(&DAT_098b8fd0 + DAT_098b8fc0 * 0x74,&DAT_098b5444 + DAT_098b5434 * 0x74,0x20);
         I_strncpyz(&DAT_098b5464 + DAT_098b5434 * 0x74,&DAT_098b5444 + DAT_098b5434 * 0x74,0x20);
       }
       else {
-        local_14 = Com_Parse(&local_18);
-        I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,local_14,0x20);
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(&DAT_098b5444 + DAT_098b5434 * 0x74,pToken,0x20);
         I_strncpyz(&DAT_098b8fd0 + DAT_098b8fc0 * 0x74,&DAT_098b5444 + DAT_098b5434 * 0x74,0x20);
-        local_14 = Com_Parse(&local_18);
-        I_strncpyz(&DAT_098b5484 + DAT_098b5434 * 0x74,local_14,0x20);
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(&DAT_098b5484 + DAT_098b5434 * 0x74,pToken,0x20);
         I_strncpyz(&DAT_098b9010 + DAT_098b8fc0 * 0x74,&DAT_098b5484 + DAT_098b5434 * 0x74,0x20);
-        local_14 = Com_Parse(&local_18);
-        I_strncpyz(&DAT_098b5464 + DAT_098b5434 * 0x74,local_14,0x20);
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(&DAT_098b5464 + DAT_098b5434 * 0x74,pToken,0x20);
       }
       DAT_098b5434 = DAT_098b5434 + 1;
       DAT_098b8fc0 = DAT_098b8fc0 + 1;
@@ -1188,6 +1194,7 @@ char * __cdecl UI_GetBusyDotsIndicator(void)
   int iVar1;
   uint uVar2;
   char *pcVar3;
+  int time;
   
   iVar1 = Sys_Milliseconds();
   uVar2 = iVar1 / 500 & 3;
@@ -1212,10 +1219,11 @@ char * __cdecl UI_GetBusyDotsIndicator(void)
 void __cdecl UI_ListMenus_f(void)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  Menus_PrintAllLoadedMenus(&puVar1->uiDC);
+  dc = UI_GetInfo(0);
+  Menus_PrintAllLoadedMenus(&dc->uiDC);
   return;
 }
 
@@ -1228,12 +1236,12 @@ void __cdecl CL_SelectStringTableEntryInDvar_f(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  char *pcVar6;
-  StringTable **ppSVar7;
-  StringTable *local_c;
-  int local_8;
+  uint seed;
+  int iVar4;
+  char *dvarName;
+  StringTable **tablePtr;
+  StringTable *table;
+  int row;
   
   bVar1 = G_ExitAfterToolComplete();
   if (!bVar1) {
@@ -1242,19 +1250,19 @@ void __cdecl CL_SelectStringTableEntryInDvar_f(void)
       Com_Printf(0x10,"usage: selectStringTableEntryInDvar <tableFileName> <columnNum> <dvarName>");
     }
     else {
-      ppSVar7 = &local_c;
+      tablePtr = &table;
       pcVar3 = Cmd_Argv(1);
-      StringTable_GetAsset(pcVar3,ppSVar7);
-      uVar4 = Sys_Milliseconds();
-      srand(uVar4);
-      iVar2 = local_c->rowCount;
-      iVar5 = rand();
-      local_8 = (int)(((float)iVar2 * (float)iVar5) / 32767.0);
+      StringTable_GetAsset(pcVar3,tablePtr);
+      seed = Sys_Milliseconds();
+      srand(seed);
+      iVar2 = table->rowCount;
+      iVar4 = rand();
+      row = (int)(((float)iVar2 * (float)iVar4) / 32767.0);
       pcVar3 = Cmd_Argv(2);
       iVar2 = atoi(pcVar3);
-      pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,iVar2);
-      pcVar6 = Cmd_Argv(3);
-      Dvar_SetStringByName(pcVar6,pcVar3);
+      pcVar3 = StringTable_GetColumnValueForRow(table,row,iVar2);
+      dvarName = Cmd_Argv(3);
+      Dvar_SetStringByName(dvarName,pcVar3);
     }
   }
   return;
@@ -1263,7 +1271,7 @@ void __cdecl CL_SelectStringTableEntryInDvar_f(void)
 
 // 00780AC0  UI_VerifyString  (ui/ui_utils.cpp:1053)
 
-bool __cdecl UI_VerifyString(char *param_1,wchar_t *param_2)
+bool __cdecl UI_VerifyString(char *str,wchar_t *__formal)
 
 {
   char cVar1;
@@ -1272,39 +1280,40 @@ bool __cdecl UI_VerifyString(char *param_1,wchar_t *param_2)
   undefined1 uVar4;
   bool local_24;
   char *local_14;
-  bool local_9;
-  uint local_8;
+  uint bufflen;
+  bool hasNonSpace;
+  uint idx;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_utils.cpp",0x422,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_14 = param_1;
+  local_14 = str;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  local_9 = false;
-  local_8 = 0;
+  hasNonSpace = false;
+  idx = 0;
   while( true ) {
-    if ((uint)((int)local_14 - (int)(param_1 + 1)) <= local_8) {
-      return local_9;
+    if ((uint)((int)local_14 - (int)(str + 1)) <= idx) {
+      return hasNonSpace;
     }
-    if ((((((param_1[local_8] == '^') || (param_1[local_8] == -0x5c)) || (param_1[local_8] == '{'))
-         || ((param_1[local_8] == '}' || (param_1[local_8] == '@')))) ||
-        ((param_1[local_8] == '%' || ((param_1[local_8] == '\\' || (param_1[local_8] == ';')))))) ||
-       ((param_1[local_8] == '\"' || (param_1[local_8] < ' ')))) break;
-    if ((local_9 == false) && (param_1[local_8] == ' ')) {
+    if ((((((str[idx] == '^') || (str[idx] == -0x5c)) || (str[idx] == '{')) ||
+         ((str[idx] == '}' || (str[idx] == '@')))) ||
+        ((str[idx] == '%' || ((str[idx] == '\\' || (str[idx] == ';')))))) ||
+       ((str[idx] == '\"' || (str[idx] < ' ')))) break;
+    if ((hasNonSpace == false) && (str[idx] == ' ')) {
       local_24 = false;
     }
     else {
       local_24 = true;
     }
-    local_9 = local_24;
-    local_8 = local_8 + 1;
+    hasNonSpace = local_24;
+    idx = idx + 1;
   }
   return false;
 }

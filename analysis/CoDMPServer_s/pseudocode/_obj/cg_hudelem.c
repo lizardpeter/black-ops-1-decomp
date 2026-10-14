@@ -185,24 +185,24 @@ void __cdecl CG_TranslateHudElemMessage(int param_1,char *param_2,char *param_3,
   uchar uVar1;
   char cVar2;
   char *in_EAX;
-  uchar *puVar3;
+  uchar *src;
   char *in_ECX;
-  uchar *puVar4;
-  ulong uVar5;
+  uchar *puVar3;
+  ulong count;
   uchar *unaff_EDI;
   ulong local_8 [2];
   
-  puVar3 = (uchar *)SEH_LocalizeTextMessage(in_ECX,in_EAX,0);
-  puVar4 = puVar3;
+  src = (uchar *)SEH_LocalizeTextMessage(in_ECX,in_EAX,0);
+  puVar3 = src;
   do {
-    uVar1 = *puVar4;
-    puVar4 = puVar4 + 1;
+    uVar1 = *puVar3;
+    puVar3 = puVar3 + 1;
   } while (uVar1 != '\0');
-  uVar5 = (int)puVar4 - (int)(puVar3 + 1);
-  if (uVar5 + 1 < 0x101) {
-    local_8[0] = uVar5;
-    memcpy(unaff_EDI,puVar3,uVar5);
-    unaff_EDI[uVar5] = '\0';
+  count = (int)puVar3 - (int)(src + 1);
+  if (count + 1 < 0x101) {
+    local_8[0] = count;
+    memcpy(unaff_EDI,src,count);
+    unaff_EDI[count] = '\0';
     local_8[1] = 0;
     do {
       cVar2 = FUN_00478fa0(param_1,local_8 + 1,local_8);

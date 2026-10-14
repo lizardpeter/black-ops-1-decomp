@@ -351,51 +351,51 @@ void __cdecl HECmd_GetTextWidth(uint param_1)
 
 {
   game_hudelem_s *pgVar1;
-  char *pcVar2;
-  int iVar3;
+  char *maxChars;
+  int iVar2;
   int extraout_EAX;
-  Font_s *pFVar4;
+  Font_s *pFVar3;
   int unaff_ESI;
-  game_hudelem_s **ppgVar5;
+  game_hudelem_s **ppgVar4;
   char *unaff_EDI;
-  float fVar6;
+  float fVar5;
   char acStack_80 [128];
   
   if (param_1 >> 0x10 == 1) {
-    ppgVar5 = &g_hudelems + (param_1 & 0xffff) * 0x1f;
+    ppgVar4 = &g_hudelems + (param_1 & 0xffff) * 0x1f;
   }
   else {
     _DAT_02462630 = 0xffffffff;
     FUN_007374c0();
     DAT_024c2816 = 0;
     FUN_0072faf0();
-    ppgVar5 = (game_hudelem_s **)0x0;
+    ppgVar4 = (game_hudelem_s **)0x0;
   }
-  if (*(char *)(ppgVar5 + 0x19) != '\x01') {
+  if (*(char *)(ppgVar4 + 0x19) != '\x01') {
     FUN_007374c0();
     DAT_024c2816 = 0;
     FUN_0072faf0();
   }
   SV_GetConfigstring(0x80,unaff_EDI,unaff_ESI);
-  pcVar2 = SEH_LocalizeTextMessage(acStack_80,acStack_80,0);
-  if (pcVar2 == (char *)0x0) {
-    pcVar2 = acStack_80;
+  maxChars = SEH_LocalizeTextMessage(acStack_80,acStack_80,0);
+  if (maxChars == (char *)0x0) {
+    maxChars = acStack_80;
   }
-  pgVar1 = ppgVar5[3];
+  pgVar1 = ppgVar4[3];
   if ((((ui_smallFont == (dvar_s *)0x0) ||
-       (pFVar4 = DAT_01eb8160, (ui_smallFont->current).value < (float)pgVar1)) &&
+       (pFVar3 = DAT_01eb8160, (ui_smallFont->current).value < (float)pgVar1)) &&
       ((ui_extraBigFont == (dvar_s *)0x0 ||
-       (pFVar4 = DAT_01eb8170, (float)pgVar1 < (ui_extraBigFont->current).value)))) &&
+       (pFVar3 = DAT_01eb8170, (float)pgVar1 < (ui_extraBigFont->current).value)))) &&
      ((ui_bigFont == (dvar_s *)0x0 ||
-      (pFVar4 = DAT_01eb815c, (float)pgVar1 < (ui_bigFont->current).value)))) {
-    pFVar4 = DAT_01eb816c;
+      (pFVar3 = DAT_01eb815c, (float)pgVar1 < (ui_bigFont->current).value)))) {
+    pFVar3 = DAT_01eb816c;
   }
-  fVar6 = 48.0 / (float)pFVar4->pixelHeight;
-  iVar3 = R_TextWidth(pcVar2,0,pFVar4);
-  fVar6 = (float)iVar3 * fVar6 + 0.5;
+  fVar5 = 48.0 / (float)pFVar3->pixelHeight;
+  iVar2 = R_TextWidth(maxChars,0,pFVar3);
+  fVar5 = (float)iVar2 * fVar5 + 0.5;
   floorf();
   _ftol2_sse();
-  Scr_AddInt(extraout_EAX / 2,(scriptInstance_t)fVar6);
+  Scr_AddInt(extraout_EAX / 2,(scriptInstance_t)fVar5);
   return;
 }
 

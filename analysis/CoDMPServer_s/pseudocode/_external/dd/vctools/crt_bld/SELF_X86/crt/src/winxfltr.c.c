@@ -2,7 +2,7 @@
 
 // 00960EEA  _initp_misc_winxfltr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winxfltr.c:105)
 
-void __cdecl _initp_misc_winxfltr(void *param_1)
+void __cdecl _initp_misc_winxfltr(void *enull)
 
 {
   return;
@@ -11,7 +11,7 @@ void __cdecl _initp_misc_winxfltr(void *param_1)
 
 // 0096E5F2  _XcptFilter  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/winxfltr.c:206)
 
-int __cdecl _XcptFilter(ulong param_1,_EXCEPTION_POINTERS *param_2)
+int __cdecl _XcptFilter(ulong xcptnum,_EXCEPTION_POINTERS *pxcptinfoptrs)
 
 {
   ulong *puVar1;
@@ -22,6 +22,7 @@ int __cdecl _XcptFilter(ulong param_1,_EXCEPTION_POINTERS *param_2)
   ulong *puVar6;
   int iVar7;
   int iVar8;
+  void *oldpxcptinfoptrs;
   
   p_Var5 = _getptd_noexit();
   iVar7 = 0;
@@ -29,10 +30,10 @@ int __cdecl _XcptFilter(ulong param_1,_EXCEPTION_POINTERS *param_2)
     puVar1 = p_Var5->_pxcptacttab;
     puVar6 = puVar1;
     do {
-      if (*puVar6 == param_1) break;
+      if (*puVar6 == xcptnum) break;
       puVar6 = puVar6 + 3;
     } while (puVar6 < puVar1 + _XcptActTabCount * 3);
-    if ((puVar1 + _XcptActTabCount * 3 <= puVar6) || (*puVar6 != param_1)) {
+    if ((puVar1 + _XcptActTabCount * 3 <= puVar6) || (*puVar6 != xcptnum)) {
       puVar6 = (ulong *)0x0;
     }
     if ((puVar6 == (ulong *)0x0) || (pcVar2 = (code *)puVar6[2], pcVar2 == (code *)0x0)) {
@@ -45,7 +46,7 @@ int __cdecl _XcptFilter(ulong param_1,_EXCEPTION_POINTERS *param_2)
     else {
       if (pcVar2 != (code *)&DAT_00000001) {
         pvVar3 = p_Var5->_tpxcptinfoptrs;
-        p_Var5->_tpxcptinfoptrs = param_2;
+        p_Var5->_tpxcptinfoptrs = pxcptinfoptrs;
         if (puVar6[1] == 8) {
           if (_First_FPE_Indx < _Num_FPE + _First_FPE_Indx) {
             iVar8 = _First_FPE_Indx * 0xc;

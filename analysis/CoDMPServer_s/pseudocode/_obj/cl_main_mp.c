@@ -1391,7 +1391,7 @@ void __cdecl CL_Disconnect(int param_1,bool param_2)
   int *piVar4;
   GlassesClient *this;
   GlassRenderer *this_00;
-  clientConnection_t *pcVar5;
+  clientConnection_t *dst;
   snd_command *unaff_EDI;
   char *pcStack_18;
   undefined4 uStack_14;
@@ -1403,7 +1403,7 @@ void __cdecl CL_Disconnect(int param_1,bool param_2)
     return;
   }
   if (DAT_00c78f44 < 6) {
-    pcVar5 = (clientConnection_t *)0x0;
+    dst = (clientConnection_t *)0x0;
   }
   else {
     if (_g_snd != 0) {
@@ -1416,14 +1416,14 @@ void __cdecl CL_Disconnect(int param_1,bool param_2)
     }
     CG_SndAutoSimReset();
     CG_SndFireReset();
-    pcVar5 = clientConnections;
+    dst = clientConnections;
   }
   if (iVar1 != 0) {
     piVar4 = (int *)SteamUser();
     (**(code **)(*piVar4 + 0x10))();
   }
-  if ((5 < iVar1) && (*(int *)(pcVar5 + 0x24390) != 0)) {
-    if (*(int *)(pcVar5 + 0x243ac) == 0) {
+  if ((5 < iVar1) && (*(int *)(dst + 0x24390) != 0)) {
+    if (*(int *)(dst + 0x243ac) == 0) {
       Com_LocalClient_GetControllerIndex(0);
     }
     else {
@@ -1440,26 +1440,26 @@ void __cdecl CL_Disconnect(int param_1,bool param_2)
     DAT_047aabb0 = 0;
   }
   DAT_01d69e04 = 0;
-  if ((5 < iVar1) && (*(int *)(pcVar5 + 0x243a4) != 0)) {
+  if ((5 < iVar1) && (*(int *)(dst + 0x243a4) != 0)) {
     FS_FCloseFile((int)unaff_EDI);
-    *(undefined4 *)(pcVar5 + 0x243a4) = 0;
-    if (*(int *)(pcVar5 + 0x9e9e8) != 0) {
+    *(undefined4 *)(dst + 0x243a4) = 0;
+    if (*(int *)(dst + 0x9e9e8) != 0) {
       FS_FCloseFile((int)unaff_EDI);
-      *(undefined4 *)(pcVar5 + 0x9e9e8) = 0;
+      *(undefined4 *)(dst + 0x9e9e8) = 0;
     }
-    *(undefined4 *)(pcVar5 + 0x24394) = 0;
-    *(undefined4 *)(pcVar5 + 0x24390) = 0;
+    *(undefined4 *)(dst + 0x24394) = 0;
+    *(undefined4 *)(dst + 0x24390) = 0;
   }
   SCR_StopCinematic((int)unaff_EDI);
-  if ((5 < iVar1) && (*(int *)(pcVar5 + 0x130) - *(int *)(pcVar5 + 0x134) < 0x81)) {
+  if ((5 < iVar1) && (*(int *)(dst + 0x130) - *(int *)(dst + 0x134) < 0x81)) {
     CL_AddReliableCommand(param_1,(char *)unaff_EDI);
     CL_WritePacket((int)unaff_EDI);
     CL_WritePacket((int)unaff_EDI);
     CL_WritePacket((int)unaff_EDI);
   }
   if (3 < iVar1) {
-    if (pcVar5 == (clientConnection_t *)0x0) goto LAB_004efae7;
-    dwCloseConnection((netadr_t *)(pcVar5 + 0x10));
+    if (dst == (clientConnection_t *)0x0) goto LAB_004efae7;
+    dwCloseConnection((netadr_t *)(dst + 0x10));
     dwNetPump();
     dwNetPump();
     bdSessionID::bdSessionID((bdSessionID *)&pcStack_18);
@@ -1469,10 +1469,10 @@ void __cdecl CL_Disconnect(int param_1,bool param_2)
     DAT_0495eb44 = 0;
     bdTaskResult::~bdTaskResult((bdTaskResult *)&pcStack_18);
   }
-  if (pcVar5 != (clientConnection_t *)0x0) {
-    *(undefined4 *)(pcVar5 + 0xaff40) = 0;
-    *(undefined4 *)(pcVar5 + 0xaff44) = 0;
-    *(undefined4 *)(pcVar5 + 0xaff48) = 0;
+  if (dst != (clientConnection_t *)0x0) {
+    *(undefined4 *)(dst + 0xaff40) = 0;
+    *(undefined4 *)(dst + 0xaff44) = 0;
+    *(undefined4 *)(dst + 0xaff48) = 0;
   }
 LAB_004efae7:
   if (clients != (clientActive_t *)0x0) {
@@ -1484,7 +1484,7 @@ LAB_004efae7:
   _DAT_00c79050 = 0;
   _DAT_00c79058 = 0;
   if (5 < iVar1) {
-    memset((uchar *)pcVar5,'\0',0xaff50);
+    memset((uchar *)dst,'\0',0xaff50);
   }
   (&DAT_00c78f44)[param_1 * 4] = 0;
   if (DAT_047ab1c8 == 0) {
@@ -1892,7 +1892,7 @@ void __cdecl CL_Vid_Restart_Complete_f(void)
   LPVOID pvVar3;
   snd_command *psVar4;
   undefined1 unaff_BL;
-  uchar *lpAddress_00;
+  uchar *dst;
   MemoryFile *unaff_ESI;
   int iVar5;
   FastCriticalSection *unaff_EDI;
@@ -1928,7 +1928,7 @@ void __cdecl CL_Vid_Restart_Complete_f(void)
   LOCK();
   DAT_02534458 = DAT_02534458 + -1;
   UNLOCK();
-  lpAddress_00 = (uchar *)0x0;
+  dst = (uchar *)0x0;
   local_8080 = (MemoryFile *)0x0;
   if (((uint)clientUIActives >> 5 & 1) != 0) {
     lpAddress = VirtualAlloc((LPVOID)0x0,0xa00000,0x2000,4);
@@ -1947,13 +1947,13 @@ void __cdecl CL_Vid_Restart_Complete_f(void)
           local_802c = local_8028;
           local_8080 = local_8028;
         }
-        lpAddress_00 = (uchar *)_Z_TryVirtualAllocInternal(local_8080);
-        if (lpAddress_00 == (uchar *)0x0) {
+        dst = (uchar *)_Z_TryVirtualAllocInternal(local_8080);
+        if (dst == (uchar *)0x0) {
                     /* WARNING: Subroutine does not return */
           Sys_OutOfMemErrorInternal
                     ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x860);
         }
-        memcpy(lpAddress_00,local_8030,(ulong)local_8080);
+        memcpy(dst,local_8030,(ulong)local_8080);
         VirtualFree(local_8030,0,0x8000);
         goto LAB_004f04fb;
       }
@@ -2030,15 +2030,15 @@ LAB_004f04fb:
     CL_InitCGame(0);
     CL_SendPureChecksums(0);
   }
-  if (lpAddress_00 != (uchar *)0x0) {
+  if (dst != (uchar *)0x0) {
     if (((uint)clientUIActives >> 5 & 1) != 0) {
-      MemFile_InitForReading(local_8080,(int)lpAddress_00,unaff_EDI,SUB41(unaff_ESI,0));
+      MemFile_InitForReading(local_8080,(int)dst,unaff_EDI,SUB41(unaff_ESI,0));
       CL_ArchiveClientState((int)unaff_EDI,unaff_ESI,(int)puVar11);
       if (local_800f == '\0') {
         local_8020 = -1;
       }
     }
-    VirtualFree(lpAddress_00,0,0x8000);
+    VirtualFree(dst,0,0x8000);
   }
   return;
 }
@@ -2488,15 +2488,15 @@ void __cdecl CL_CheckForResend(int param_1)
   bdTrulyRandomImpl *pbVar8;
   uint uVar9;
   uchar *puVar10;
-  ulong uVar11;
-  netsrc_t nVar12;
-  taskCompleteResults tVar13;
-  int iVar14;
+  ulong count;
+  netsrc_t nVar11;
+  taskCompleteResults tVar12;
+  int iVar13;
   char *unaff_EDI;
-  bool bVar15;
-  __uint64 _Var16;
+  bool bVar14;
+  __uint64 _Var15;
+  undefined8 uVar16;
   undefined8 uVar17;
-  undefined8 uVar18;
   ulong local_c50;
   char local_c4c [32];
   undefined1 local_c2c [36];
@@ -2506,25 +2506,25 @@ void __cdecl CL_CheckForResend(int param_1)
   undefined1 auStack_7fe [1014];
   uchar local_408 [1032];
   
-  iVar14 = DAT_0354aa44;
+  iVar13 = DAT_0354aa44;
   pcVar6 = clientConnections;
   iVar4 = DAT_00c78f44;
   if (((DAT_00c78f44 == 4) || (DAT_00c78f44 == 5)) || (DAT_00c78f44 == 7)) {
     if (DAT_00c78f44 == 7) {
-      bVar15 = SBORROW4(DAT_0354aa44 - *(int *)(clientConnections + 8),100);
+      bVar14 = SBORROW4(DAT_0354aa44 - *(int *)(clientConnections + 8),100);
       iVar3 = (DAT_0354aa44 - *(int *)(clientConnections + 8)) + -100;
     }
     else {
-      bVar15 = SBORROW4(DAT_0354aa44 - *(int *)(clientConnections + 0x20),3000);
+      bVar14 = SBORROW4(DAT_0354aa44 - *(int *)(clientConnections + 0x20),3000);
       iVar3 = (DAT_0354aa44 - *(int *)(clientConnections + 0x20)) + -3000;
     }
-    if (((bVar15 == iVar3 < 0) && (*(int *)(clientConnections + 0x24394) == 0)) &&
+    if (((bVar14 == iVar3 < 0) && (*(int *)(clientConnections + 0x24394) == 0)) &&
        (DAT_0268df84 != 2)) {
       *(int *)(clientConnections + 0x24) = *(int *)(clientConnections + 0x24) + 1;
-      *(int *)(pcVar6 + 0x20) = iVar14;
+      *(int *)(pcVar6 + 0x20) = iVar13;
       if (iVar4 == 4) {
-        tVar13 = dwGetAddrHandleConnectionTaskStatus(*(int *)(pcVar6 + 0x1c));
-        if (tVar13 != 0) {
+        tVar12 = dwGetAddrHandleConnectionTaskStatus(*(int *)(pcVar6 + 0x1c));
+        if (tVar12 != 0) {
           builtin_memcpy(local_408 + 8,"enge",5);
           puVar10 = local_408;
           builtin_memcpy(local_408,"getchall",8);
@@ -2537,10 +2537,10 @@ void __cdecl CL_CheckForResend(int param_1)
             (*DAT_04a59a68)(&pbcl,1,local_408,&local_c50);
           }
           FUN_004efe30();
-          uVar17 = *(undefined8 *)(pcVar6 + 0x10);
-          va("getchallenge 0 \"%s\"",local_c2c,uVar17,*(undefined8 *)(pcVar6 + 0x18));
-          nVar12 = Com_LocalClient_GetNetworkID((int)uVar17);
-          NET_OutOfBandPrint(nVar12);
+          uVar16 = *(undefined8 *)(pcVar6 + 0x10);
+          va("getchallenge 0 \"%s\"",local_c2c,uVar16,*(undefined8 *)(pcVar6 + 0x18));
+          nVar11 = Com_LocalClient_GetNetworkID((int)uVar16);
+          NET_OutOfBandPrint(nVar11);
           *(undefined4 *)(pcVar6 + 0xaff48) = 0;
           *(undefined4 *)(pcVar6 + 0xaff44) = 0;
         }
@@ -2553,23 +2553,23 @@ void __cdecl CL_CheckForResend(int param_1)
           }
           else {
             pcVar7 = pcVar7 + -1;
-            iVar14 = 0x400;
+            iVar13 = 0x400;
             iVar4 = 0x23 - (int)pcVar7;
             do {
               cVar1 = pcVar7[1];
               pcVar7 = pcVar7 + 1;
               pcVar7[(int)(local_c2c + iVar4)] = cVar1;
               if (cVar1 == '\0') break;
-              iVar14 = iVar14 + -1;
-            } while (iVar14 != 0);
+              iVar13 = iVar13 + -1;
+            } while (iVar13 != 0);
             local_809 = 0;
           }
           pcVar7 = va("%i");
           Info_SetValueForKey((char *)local_c08,"protocol",pcVar7);
           pcVar7 = va("%i");
           Info_SetValueForKey((char *)local_c08,"challenge",pcVar7);
-          _Var16 = LiveSteam_GetUid();
-          Int64ToString(_Var16,unaff_EDI);
+          _Var15 = LiveSteam_GetUid();
+          Int64ToString(_Var15,unaff_EDI);
           Info_SetValueForKey((char *)local_c08,"steamid",local_c4c);
           pcVar7 = va("%i");
           Info_SetValueForKey((char *)local_c08,"qport",pcVar7);
@@ -2601,19 +2601,19 @@ void __cdecl CL_CheckForResend(int param_1)
             uVar2 = *puVar10;
             puVar10 = puVar10 + 1;
           } while (uVar2 != '\0');
-          uVar11 = (int)puVar10 - (int)(local_c08 + 1);
-          memcpy(local_808 + 9,local_c08,uVar11);
-          auStack_7fe[uVar11 - 1] = 0x22;
-          auStack_7fe[uVar11] = 0;
-          local_c50 = uVar11 + 10;
+          count = (int)puVar10 - (int)(local_c08 + 1);
+          memcpy(local_808 + 9,local_c08,count);
+          auStack_7fe[count - 1] = 0x22;
+          auStack_7fe[count] = 0;
+          local_c50 = count + 10;
           memcpy(local_408,local_808,local_c50);
           if (DAT_04a59a68 != (code *)0x0) {
             (*DAT_04a59a68)(&pbcl,2,local_408,&local_c50);
           }
-          uVar17 = *(undefined8 *)(pcVar6 + 0x10);
-          uVar18 = *(undefined8 *)(pcVar6 + 0x18);
-          nVar12 = Com_LocalClient_GetNetworkID((int)uVar17);
-          NET_OutOfBandData(nVar12,uVar17,uVar18);
+          uVar16 = *(undefined8 *)(pcVar6 + 0x10);
+          uVar17 = *(undefined8 *)(pcVar6 + 0x18);
+          nVar11 = Com_LocalClient_GetNetworkID((int)uVar16);
+          NET_OutOfBandData(nVar11,uVar16,uVar17);
           dvar_modifiedFlags = dvar_modifiedFlags & 0xfffffffd;
           return;
         }
@@ -3328,20 +3328,20 @@ void __cdecl CL_DrawLogo(int param_1)
 {
   int iVar1;
   int iVar2;
+  float h;
   float fVar3;
-  float fVar4;
   int in_EAX;
-  int iVar5;
-  float fVar6;
+  int iVar4;
+  float s0;
   float local_14;
   float local_10;
   float local_c;
   float local_8;
   
-  iVar5 = DAT_0354aa44 - _DAT_0354aa4c;
-  iVar1 = iVar5;
+  iVar4 = DAT_0354aa44 - _DAT_0354aa4c;
+  iVar1 = iVar4;
   iVar2 = DAT_0354aa54;
-  if (iVar5 < DAT_0354aa54) {
+  if (iVar4 < DAT_0354aa54) {
 LAB_004f2f4b:
     local_14 = (float)iVar1 / (float)iVar2;
     if (local_14 < 0.0) {
@@ -3350,28 +3350,28 @@ LAB_004f2f4b:
     }
     if (local_14 <= 1.0) goto LAB_004f2f64;
   }
-  else if (DAT_0354aa50 - DAT_0354aa58 < iVar5) {
-    iVar1 = DAT_0354aa50 - iVar5;
+  else if (DAT_0354aa50 - DAT_0354aa58 < iVar4) {
+    iVar1 = DAT_0354aa50 - iVar4;
     iVar2 = DAT_0354aa58;
     goto LAB_004f2f4b;
   }
   local_14 = 1.0;
 LAB_004f2f64:
-  fVar3 = (float)DAT_047aaae4;
+  h = (float)DAT_047aaae4;
   local_8 = 1.0;
   if (DAT_047aaae4 < 0) {
+    h = h + 4.2949673e+09;
+  }
+  fVar3 = (float)DAT_047aaae8;
+  if (DAT_047aaae8 < 0) {
     fVar3 = fVar3 + 4.2949673e+09;
   }
-  fVar4 = (float)DAT_047aaae8;
-  if (DAT_047aaae8 < 0) {
-    fVar4 = fVar4 + 4.2949673e+09;
-  }
-  fVar6 = fVar4 * 2.0 * 0.33333334;
+  s0 = fVar3 * 2.0 * 0.33333334;
   local_10 = local_14;
   local_c = local_14;
-  R_AddCmdDrawStretchPicW(0.0,0.0,1.0,fVar3,fVar6,0.0,0.0,1.0,1.0,&local_14,DAT_0354aa5c);
-  R_AddCmdDrawStretchPicW(0.0,fVar6,1.0,fVar3,fVar4 - fVar6,0.0,0.0,1.0,1.0,&local_14,DAT_0354aa60);
-  if (DAT_0354aa50 < iVar5) {
+  R_AddCmdDrawStretchPicW(0.0,0.0,1.0,h,s0,0.0,0.0,1.0,1.0,&local_14,DAT_0354aa5c);
+  R_AddCmdDrawStretchPicW(0.0,s0,1.0,h,fVar3 - s0,0.0,0.0,1.0,1.0,&local_14,DAT_0354aa60);
+  if (DAT_0354aa50 < iVar4) {
     (&DAT_00c78f44)[in_EAX * 4] = 0;
   }
   return;
@@ -3482,76 +3482,76 @@ void __cdecl CL_InitOnceForAllClients(void)
 
 {
   undefined1 auVar1 [12];
-  DWORD DVar2;
-  undefined4 uVar3;
-  cmd_function_s *pcVar4;
+  DWORD seed;
+  undefined4 uVar2;
+  cmd_function_s *pcVar3;
   char *unaff_ESI;
   cmd_function_s *unaff_EDI;
-  int iVar5;
-  uint uVar6;
-  char *pcVar7;
-  ushort uVar8;
-  undefined4 uVar9;
-  char *pcVar10;
+  int iVar4;
+  uint uVar5;
+  char *pcVar6;
+  ushort uVar7;
+  undefined4 uVar8;
+  char *pcVar9;
+  undefined4 uVar10;
   undefined4 uVar11;
-  undefined4 uVar12;
-  ushort uVar13;
+  ushort uVar12;
   uint local_30;
   uint uStack_2c;
   undefined8 local_28;
   undefined1 local_20 [28];
   
-  DVar2 = timeGetTime();
-  srand(DVar2);
+  seed = timeGetTime();
+  srand(seed);
   Con_Init();
   CL_InitInput();
-  uVar9 = (undefined4)local_28;
-  uVar11 = (undefined4)((ulonglong)local_28 >> 0x20);
+  uVar8 = (undefined4)local_28;
+  uVar10 = (undefined4)((ulonglong)local_28 >> 0x20);
   killOnlyTrailFX =
        (dvar_s *)
-       FUN_006a0df0("killOnlyTrailFX",0,0,CONCAT44(uStack_2c,1),uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("killOnlyTrailFX",0,0,CONCAT44(uStack_2c,1),uVar8,uVar10,0,0,0,0,
                     "Kill only trail FX on host migration");
-  pcVar7 = (char *)0x0;
-  uVar13 = 0xe6b8;
+  pcVar6 = (char *)0x0;
+  uVar12 = 0xe6b8;
   cl_noprint = (dvar_s *)
-               FUN_006a0df0("cl_noprint",0,0,(ulonglong)uStack_2c << 0x20,uVar9,uVar11,0,0,0,0,
+               FUN_006a0df0("cl_noprint",0,0,(ulonglong)uStack_2c << 0x20,uVar8,uVar10,0,0,0,0,
                             "Print nothing to the console");
-  playlist = _Dvar_RegisterInt("playlist",0x40,4,0xa2e6c4,uVar13,pcVar7);
-  pcVar7 = &DAT_7fffffff;
-  uVar13 = 0xe6ec;
+  playlist = _Dvar_RegisterInt("playlist",0x40,4,0xa2e6c4,uVar12,pcVar6);
+  pcVar6 = &DAT_7fffffff;
+  uVar12 = 0xe6ec;
   category = _Dvar_RegisterInt("category",0x7fffffff,0,0xa2e6d8,(ushort)unaff_EDI,unaff_ESI);
-  pcVar10 = &DAT_7fffffff;
-  uVar8 = 0xe71c;
-  categoryPlaylist = _Dvar_RegisterInt("categoryPlaylist",0x7fffffff,0,0xa2e6f8,uVar13,pcVar7);
-  pcVar7 = &DAT_7fffffff;
-  uVar13 = 0xe74c;
-  wagerCategory = _Dvar_RegisterInt("wagerCategory",0x7fffffff,0,0xa2e730,uVar8,pcVar10);
+  pcVar9 = &DAT_7fffffff;
+  uVar7 = 0xe71c;
+  categoryPlaylist = _Dvar_RegisterInt("categoryPlaylist",0x7fffffff,0,0xa2e6f8,uVar12,pcVar6);
+  pcVar6 = &DAT_7fffffff;
+  uVar12 = 0xe74c;
+  wagerCategory = _Dvar_RegisterInt("wagerCategory",0x7fffffff,0,0xa2e730,uVar7,pcVar9);
   wagerCategoryPlaylist =
-       _Dvar_RegisterInt("wagerCategoryPlaylist",0x7fffffff,0,0xa2e75c,uVar13,pcVar7);
+       _Dvar_RegisterInt("wagerCategoryPlaylist",0x7fffffff,0,0xa2e75c,uVar12,pcVar6);
   customGameMode = _Dvar_RegisterInt("customGameMode",3,0,0xa2e7a0,(ushort)unaff_EDI,unaff_ESI);
-  iVar5 = 0;
+  iVar4 = 0;
   do {
-    uVar3 = FUN_006a0df0(*(undefined4 *)((int)&customClassDvars + iVar5),7,1,CONCAT44(uStack_2c,""),
-                         uVar9,uVar11,0,0,0,0,"Custom class name");
-    *(undefined4 *)((int)&customclass + iVar5) = uVar3;
-    iVar5 = iVar5 + 4;
-  } while (iVar5 < 0x28);
-  uVar6 = 0;
+    uVar2 = FUN_006a0df0(*(undefined4 *)((int)&customClassDvars + iVar4),7,1,CONCAT44(uStack_2c,""),
+                         uVar8,uVar10,0,0,0,0,"Custom class name");
+    *(undefined4 *)((int)&customclass + iVar4) = uVar2;
+    iVar4 = iVar4 + 4;
+  } while (iVar4 < 0x28);
+  uVar5 = 0;
   do {
-    pcVar7 = SEH_LocalizeTextMessage(*(char **)((int)&offlineClassNames + uVar6),"dvar string",1);
-    if ((pcVar7 == (char *)0x0) || (*pcVar7 == '\0')) {
-      pcVar7 = "";
+    pcVar6 = SEH_LocalizeTextMessage(*(char **)((int)&offlineClassNames + uVar5),"dvar string",1);
+    if ((pcVar6 == (char *)0x0) || (*pcVar6 == '\0')) {
+      pcVar6 = "";
     }
-    FUN_006a0df0(*(undefined4 *)((int)&offlineClassDvars + uVar6),7,0x40,CONCAT44(uStack_2c,pcVar7),
-                 uVar9,uVar11,0,0,0,0,"Offline custom class name");
-    uVar6 = uVar6 + 4;
-  } while (uVar6 < 0x14);
+    FUN_006a0df0(*(undefined4 *)((int)&offlineClassDvars + uVar5),7,0x40,CONCAT44(uStack_2c,pcVar6),
+                 uVar8,uVar10,0,0,0,0,"Offline custom class name");
+    uVar5 = uVar5 + 4;
+  } while (uVar5 < 0x14);
   cl_hudDrawsBehindUI =
        (dvar_s *)
-       FUN_006a0df0("cl_hudDrawsBehindUI",0,0,CONCAT44(uStack_2c,1),uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_hudDrawsBehindUI",0,0,CONCAT44(uStack_2c,1),uVar8,uVar10,0,0,0,0,
                     "Should the HUD draw when the UI is up?");
   cl_voice = (dvar_s *)
-             FUN_006a0df0("cl_voice",0,3,CONCAT44(uStack_2c,1),uVar9,uVar11,0,0,0,0,
+             FUN_006a0df0("cl_voice",0,3,CONCAT44(uStack_2c,1),uVar8,uVar10,0,0,0,0,
                           "Use voice communications");
   cl_timeout = _Dvar_RegisterFloat((char *)0x0,3600.0,0.0,1.49608e-38,(ushort)unaff_EDI,unaff_ESI);
   cl_connectTimeout =
@@ -3559,91 +3559,91 @@ void __cdecl CL_InitOnceForAllClients(void)
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
   local_20._0_4_ = 10;
-  uVar3 = auVar1._4_4_;
-  uVar12 = auVar1._8_4_;
+  uVar2 = auVar1._4_4_;
+  uVar11 = auVar1._8_4_;
   cl_connectionAttempts =
        (dvar_s *)
-       FUN_006a0df0("cl_connectionAttempts",5,0,local_20._0_8_,uVar3,uVar12,0,0xffff,uVar9,uVar11,
+       FUN_006a0df0("cl_connectionAttempts",5,0,local_20._0_8_,uVar2,uVar11,0,0xffff,uVar8,uVar10,
                     "Maximum number of connection attempts before aborting");
   cl_shownet = (dvar_s *)
-               FUN_006a0df0("cl_shownet",5,0,0,uVar3,uVar12,0xfffffffe,4,uVar9,uVar11,
+               FUN_006a0df0("cl_shownet",5,0,0,uVar2,uVar11,0xfffffffe,4,uVar8,uVar10,
                             "Display network debugging information");
   cl_shownuments =
        (dvar_s *)
-       FUN_006a0df0("cl_shownuments",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_shownuments",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                     "Show the number of entities");
   cl_showServerCommands =
        (dvar_s *)
-       FUN_006a0df0("cl_showServerCommands",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_showServerCommands",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                     "Enable debugging information for server commands");
   cl_showSend = (dvar_s *)
-                FUN_006a0df0("cl_showSend",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+                FUN_006a0df0("cl_showSend",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                              "Enable debugging information for sent commands");
   cl_showTimeDelta =
        (dvar_s *)
-       FUN_006a0df0("cl_showTimeDelta",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_showTimeDelta",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                     "Enable debugging information for time delta");
   cl_freezeDemo =
        (dvar_s *)
-       FUN_006a0df0("cl_freezeDemo",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_freezeDemo",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                     "cl_freezeDemo is used to lock a demo in place for single frame advances");
   cl_debugLocalClientReliableCmds =
        (dvar_s *)
-       FUN_006a0df0("cl_debugLocalClientReliableCmds",0,0,0x400000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_debugLocalClientReliableCmds",0,0,0x400000000,uVar8,uVar10,0,0,0,0,
                     "Enable debugging information for client commands");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   cl_avidemo = (dvar_s *)
-               FUN_006a0df0("cl_avidemo",5,0,0,0,local_20._12_4_,0,0xffff,uVar9,uVar11,
+               FUN_006a0df0("cl_avidemo",5,0,0,0,local_20._12_4_,0,0xffff,uVar8,uVar10,
                             "AVI demo frames per second");
   cl_forceavidemo =
        (dvar_s *)
-       FUN_006a0df0("cl_forceavidemo",0,0,0x7fffffff00000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_forceavidemo",0,0,0x7fffffff00000000,uVar8,uVar10,0,0,0,0,
                     "Record AVI demo even if client is not active");
   cl_clientDemoName =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoName",7,0,0x7fffffff00a04ada,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_clientDemoName",7,0,0x7fffffff00a04ada,uVar8,uVar10,0,0,0,0,
                     "Current recording/playing demo name");
   cl_clientDemoUseMemoryBuffer =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoUseMemoryBuffer",0,0,0x7fffffff00000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_clientDemoUseMemoryBuffer",0,0,0x7fffffff00000000,uVar8,uVar10,0,0,0,0,
                     "Used to toggle between memory buffer/ continuous file write mode");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
-  uVar3 = local_20._8_4_;
-  uVar12 = local_20._12_4_;
+  uVar2 = local_20._8_4_;
+  uVar11 = local_20._12_4_;
   cl_clientDemoType =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoType",5,0,0,uVar3,uVar12,0,0xffff,uVar9,uVar11,
+       FUN_006a0df0("cl_clientDemoType",5,0,0,uVar2,uVar11,0,0xffff,uVar8,uVar10,
                     "Client Demo Type where:\n 0:Button Press for start & stop\n 1:Button Press to start. Records till ui_clientDemoMaxRecordTime seconds\n 2: Cool Moment Capture Mode\n"
                    );
   local_20._0_4_ = 10;
   cl_clientDemoMaxRecordTime =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoMaxRecordTime",5,0,local_20._0_8_,uVar3,uVar12,0,0xffff,uVar9,
-                    uVar11,"Max record time for a client demo");
+       FUN_006a0df0("cl_clientDemoMaxRecordTime",5,0,local_20._0_8_,uVar2,uVar11,0,0xffff,uVar8,
+                    uVar10,"Max record time for a client demo");
   local_20._0_4_ = 6;
   local_20._0_16_ = CONCAT124(auVar1,local_20._0_4_);
   cl_clientDemoRequestPingTime =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoRequestPingTime",5,0,local_20._0_8_,uVar3,uVar12,0,0xffff,uVar9,
-                    uVar11,
+       FUN_006a0df0("cl_clientDemoRequestPingTime",5,0,local_20._0_8_,uVar2,uVar11,0,0xffff,uVar8,
+                    uVar10,
                     "The time (in seconds) between which we request our next uncompressed packet\n")
   ;
   cl_clientDemoCoolMomentExtendEnabled =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoCoolMomentExtendEnabled",0,0,0x7fffffff00000000,uVar9,uVar11,0,0,0
+       FUN_006a0df0("cl_clientDemoCoolMomentExtendEnabled",0,0,0x7fffffff00000000,uVar8,uVar10,0,0,0
                     ,0,
                     "Used to toggle between extended cool capture mode and normal cool capture mode."
                    );
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
   local_20._0_4_ = 3;
-  uVar3 = auVar1._4_4_;
-  uVar12 = auVar1._8_4_;
+  uVar2 = auVar1._4_4_;
+  uVar11 = auVar1._8_4_;
   cl_clientDemoCoolMomentExtendTime =
        (dvar_s *)
-       FUN_006a0df0("cl_clientDemoCoolMomentExtendTime",5,0,local_20._0_8_,uVar3,uVar12,0,0xffff,
-                    uVar9,uVar11,"Max extended record time for the Cool Moment Capture system");
+       FUN_006a0df0("cl_clientDemoCoolMomentExtendTime",5,0,local_20._0_8_,uVar2,uVar11,0,0xffff,
+                    uVar8,uVar10,"Max extended record time for the Cool Moment Capture system");
   cl_yawspeed = _Dvar_RegisterFloat((char *)0xff7fffff,3.4028235e+38,1.4013e-45,1.4962953e-38,
                                     (ushort)unaff_EDI,unaff_ESI);
   cl_pitchspeed =
@@ -3655,12 +3655,12 @@ void __cdecl CL_InitOnceForAllClients(void)
   local_20._0_16_ = CONCAT124(auVar1,local_20._0_4_);
   cl_maxpackets =
        (dvar_s *)
-       FUN_006a0df0("cl_maxpackets",5,1,local_20._0_8_,uVar3,uVar12,0xf,100,uVar9,uVar11,
+       FUN_006a0df0("cl_maxpackets",5,1,local_20._0_8_,uVar2,uVar11,0xf,100,uVar8,uVar10,
                     "Maximum number of packets sent per frame");
   local_20._0_4_ = 1;
   local_20._0_16_ = CONCAT124(auVar1,local_20._0_4_);
   cl_packetdup = (dvar_s *)
-                 FUN_006a0df0("cl_packetdup",5,1,local_20._0_8_,uVar3,uVar12,0,5,uVar9,uVar11,
+                 FUN_006a0df0("cl_packetdup",5,1,local_20._0_8_,uVar2,uVar11,0,5,uVar8,uVar10,
                               "Enable packet duplication");
   cl_sensitivity =
        _Dvar_RegisterFloat((char *)0x3c23d70a,100.0,1.4013e-45,1.4963379e-38,(ushort)unaff_EDI,
@@ -3668,25 +3668,25 @@ void __cdecl CL_InitOnceForAllClients(void)
   cl_mouseAccel =
        _Dvar_RegisterFloat((char *)0x0,100.0,1.4013e-45,1.4963407e-38,(ushort)unaff_EDI,unaff_ESI);
   cl_freelook = (dvar_s *)
-                FUN_006a0df0("cl_freelook",0,1,0x500000001,uVar9,uVar11,0,0,0,0,
+                FUN_006a0df0("cl_freelook",0,1,0x500000001,uVar8,uVar10,0,0,0,0,
                              "Enable looking with mouse");
   cl_showMouseRate =
        (dvar_s *)
-       FUN_006a0df0("cl_showmouserate",0,0,0x500000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_showmouserate",0,0,0x500000000,uVar8,uVar10,0,0,0,0,
                     "Print mouse rate debugging information to the console");
   cl_allowDownload =
        (dvar_s *)
-       FUN_006a0df0("cl_allowDownload",0,1,0x500000001,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_allowDownload",0,1,0x500000001,uVar8,uVar10,0,0,0,0,
                     "Allow client downloads from the server");
   cl_wwwDownload =
        (dvar_s *)
-       FUN_006a0df0("cl_wwwDownload",0,3,0x500000001,uVar9,uVar11,0,0,0,0,"Download files via HTTP")
+       FUN_006a0df0("cl_wwwDownload",0,3,0x500000001,uVar8,uVar10,0,0,0,0,"Download files via HTTP")
   ;
   cl_talking = (dvar_s *)
-               FUN_006a0df0("cl_talking",0,0,0x500000000,uVar9,uVar11,0,0,0,0,"Client is talking");
+               FUN_006a0df0("cl_talking",0,0,0x500000000,uVar8,uVar10,0,0,0,0,"Client is talking");
   cl_inGameVideo =
        (dvar_s *)
-       FUN_006a0df0("r_inGameVideo",0,1,0x500000001,uVar9,uVar11,0,0,0,0,"Allow in game cinematics")
+       FUN_006a0df0("r_inGameVideo",0,1,0x500000001,uVar8,uVar10,0,0,0,0,"Allow in game cinematics")
   ;
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
@@ -3694,15 +3694,15 @@ void __cdecl CL_InitOnceForAllClients(void)
   cl_serverStatusResendTime =
        (dvar_s *)
        FUN_006a0df0("cl_serverStatusResendTime",5,0,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,0,0xe10
-                    ,uVar9,uVar11,"Time in milliseconds to resend a server status message");
+                    ,uVar8,uVar10,"Time in milliseconds to resend a server status message");
   local_20._0_4_ = 5;
   local_20._0_16_ = CONCAT124(auVar1,local_20._0_4_);
   cl_maxppf = (dvar_s *)
-              FUN_006a0df0("cl_maxppf",5,1,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1,10,uVar9,
-                           uVar11,"Maximum servers to ping per frame in server browser");
+              FUN_006a0df0("cl_maxppf",5,1,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1,10,uVar8,
+                           uVar10,"Maximum servers to ping per frame in server browser");
   cl_bypassMouseInput =
        (dvar_s *)
-       FUN_006a0df0("cl_bypassMouseInput",0,0,0xa00000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_bypassMouseInput",0,0,0xa00000000,uVar8,uVar10,0,0,0,0,
                     "Bypass UI mouse input and send directly to the game");
   m_pitch = _Dvar_RegisterFloat(DAT_00af36d8,1.0,1.4013e-45,1.4964136e-38,(ushort)unaff_EDI,
                                 unaff_ESI);
@@ -3713,43 +3713,43 @@ void __cdecl CL_InitOnceForAllClients(void)
   m_side = _Dvar_RegisterFloat(DAT_00af36d8,1.0,1.4013e-45,1.4964253e-38,(ushort)unaff_EDI,unaff_ESI
                               );
   m_filter = (dvar_s *)
-             FUN_006a0df0("m_filter",0,1,0xa00000000,uVar9,uVar11,0,0,0,0,
+             FUN_006a0df0("m_filter",0,1,0xa00000000,uVar8,uVar10,0,0,0,0,
                           "Allow mouse movement smoothing");
   ui_custom_newname =
        (dvar_s *)
-       FUN_006a0df0("ui_custom_newname",7,0,0xa00a04ada,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("ui_custom_newname",7,0,0xa00a04ada,uVar8,uVar10,0,0,0,0,
                     "New name of custom class entered by player.");
   cl_socketpool_enabled =
        (dvar_s *)
-       FUN_006a0df0("cl_socketpool_enabled",0,0,0xa00000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_socketpool_enabled",0,0,0xa00000000,uVar8,uVar10,0,0,0,0,
                     "True is socketpool technology is enabled");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
   local_20._0_4_ = 10;
   cl_socketpool_size =
        (dvar_s *)
-       FUN_006a0df0("cl_socketpool_size",5,0,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,0,0x32,uVar9,
-                    uVar11,"Number of sockets to use for server browser socket pool");
+       FUN_006a0df0("cl_socketpool_size",5,0,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,0,0x32,uVar8,
+                    uVar10,"Number of sockets to use for server browser socket pool");
   ui_clantag_new =
        (dvar_s *)
-       FUN_006a0df0("ui_clantag_new",7,0,0x3200a04ada,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("ui_clantag_new",7,0,0x3200a04ada,uVar8,uVar10,0,0,0,0,
                     "New name of clan tag entered by player.");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
-  uVar3 = local_20._12_4_;
+  uVar2 = local_20._12_4_;
   cl_demoFFSpeed =
        (dvar_s *)
-       FUN_006a0df0("cl_demoFFSpeed",5,0,0,0,uVar3,0,0xffff,uVar9,uVar11,"Timedemo playback speed");
+       FUN_006a0df0("cl_demoFFSpeed",5,0,0,0,uVar2,0,0xffff,uVar8,uVar10,"Timedemo playback speed");
   cl_demoSkipToTime =
        (dvar_s *)
-       FUN_006a0df0("cl_demoSkipToTime",5,0,0,0,uVar3,0,0xffff,uVar9,uVar11,
+       FUN_006a0df0("cl_demoSkipToTime",5,0,0,0,uVar2,0,0xffff,uVar8,uVar10,
                     "Demo skip to servertime");
   cl_demoLiveStreaming =
        (dvar_s *)
-       FUN_006a0df0("cl_demoLiveStreaming",5,0,0,0,uVar3,0,2,uVar9,uVar11,
+       FUN_006a0df0("cl_demoLiveStreaming",5,0,0,0,uVar2,0,2,uVar8,uVar10,
                     "Saves current server time to a file for live streaming");
   input_invertPitch =
        (dvar_s *)
-       FUN_006a0df0("input_invertPitch",0,1,0x200000000,uVar9,uVar11,0,0,0,0,"Invert gamepad pitch")
+       FUN_006a0df0("input_invertPitch",0,1,0x200000000,uVar8,uVar10,0,0,0,0,"Invert gamepad pitch")
   ;
   input_viewSensitivity =
        _Dvar_RegisterFloat((char *)0x38d1b717,5.0,1.4013e-45,1.4964915e-38,(ushort)unaff_EDI,
@@ -3757,65 +3757,65 @@ void __cdecl CL_InitOnceForAllClients(void)
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   team_indicator =
        (dvar_s *)
-       FUN_006a0df0("team_indicator",5,1,0,0,local_20._12_4_,0,3,uVar9,uVar11,
+       FUN_006a0df0("team_indicator",5,1,0,0,local_20._12_4_,0,3,uVar8,uVar10,
                     "The team indicator modes : 0 - Full Name ; 1 - Abbreviated ; 2 - Icon Only");
   cl_motdString =
        (dvar_s *)
-       FUN_006a0df0("cl_motdString",7,0x40,0x300a04ada,uVar9,uVar11,0,0,0,0,"Message of the day");
+       FUN_006a0df0("cl_motdString",7,0x40,0x300a04ada,uVar8,uVar10,0,0,0,0,"Message of the day");
   cl_ingame = (dvar_s *)
-              FUN_006a0df0("cl_ingame",0,0x40,0x300000000,uVar9,uVar11,0,0,0,0,
+              FUN_006a0df0("cl_ingame",0,0x40,0x300000000,uVar8,uVar10,0,0,0,0,
                            "True if the game is active");
   cl_wasconnected =
        (dvar_s *)
-       FUN_006a0df0("cl_wasconnected",0,0x40,0x300000000,uVar9,uVar11,0,0,0,0,
+       FUN_006a0df0("cl_wasconnected",0,0x40,0x300000000,uVar8,uVar10,0,0,0,0,
                     "True if client was connected when we started connecting to a new server");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
   local_20._0_4_ = 800;
-  FUN_006a0df0("cl_maxPing",5,1,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,0x14,2000,uVar9,uVar11,
+  FUN_006a0df0("cl_maxPing",5,1,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,0x14,2000,uVar8,uVar10,
                "Maximum ping for the client");
-  name = (dvar_s *)FUN_006a0df0(&s_name,7,0x42,0x7d000a2f554,uVar9,uVar11,0,0,0,0,"Player name");
+  name = (dvar_s *)FUN_006a0df0(&s_name,7,0x42,0x7d000a2f554,uVar8,uVar10,0,0,0,0,"Player name");
   clanName = (dvar_s *)
-             FUN_006a0df0("clanName",7,3,0x7d000a04ada,uVar9,uVar11,0,0,0,0,"Your clan abbreviation"
+             FUN_006a0df0("clanName",7,3,0x7d000a04ada,uVar8,uVar10,0,0,0,0,"Your clan abbreviation"
                          );
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   auVar1 = local_20._4_12_;
   local_20._0_4_ = 25000;
-  FUN_006a0df0("rate",5,3,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1000,25000,uVar9,uVar11,
+  FUN_006a0df0("rate",5,3,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1000,25000,uVar8,uVar10,
                "Player\'s preferred baud rate");
   local_20._0_4_ = 0x14;
   local_20._0_16_ = CONCAT124(auVar1,local_20._0_4_);
-  FUN_006a0df0("snaps",5,3,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1,0x1e,uVar9,uVar11,
+  FUN_006a0df0("snaps",5,3,local_20._0_8_,auVar1._4_4_,auVar1._8_4_,1,0x1e,uVar8,uVar10,
                "Snapshot rate");
-  FUN_006a0df0("cl_punkbuster",0,0x42,0x1e00000000,uVar9,uVar11,0,0,0,0,
+  FUN_006a0df0("cl_punkbuster",0,0x42,0x1e00000000,uVar8,uVar10,0,0,0,0,
                "Determines whether PunkBuster is enabled");
-  FUN_006a0df0("password",7,2,0x1e00a04ada,uVar9,uVar11,0,0,0,0,"password");
+  FUN_006a0df0("password",7,2,0x1e00a04ada,uVar8,uVar10,0,0,0,0,"password");
   nextdemo = (dvar_s *)
-             FUN_006a0df0("nextdemo",7,0,0x1e00a04ada,uVar9,uVar11,0,0,0,0,"The next demo to play");
+             FUN_006a0df0("nextdemo",7,0,0x1e00a04ada,uVar8,uVar10,0,0,0,0,"The next demo to play");
   local_20._4_12_ = SUB1612((undefined1  [16])0x0,4);
   mortarStrikesLeft =
        (dvar_s *)
-       FUN_006a0df0("mortarStrikesLeft",5,0,0,0,local_20._12_4_,0,3,uVar9,uVar11,
+       FUN_006a0df0("mortarStrikesLeft",5,0,0,0,local_20._12_4_,0,3,uVar8,uVar10,
                     "Mortar locations not positioned yet");
-  FUN_006a0df0("hud_enable",0,1,0x300000001,uVar9,uVar11,0,0,0,0,"Enable the HUD display");
-  FUN_006a0df0("cg_blood",0,1,0x300000001,uVar9,uVar11,0,0,0,0,"Show blood");
+  FUN_006a0df0("hud_enable",0,1,0x300000001,uVar8,uVar10,0,0,0,0,"Enable the HUD display");
+  FUN_006a0df0("cg_blood",0,1,0x300000001,uVar8,uVar10,0,0,0,0,"Show blood");
   local_30 = (uint)g_allowMature;
-  FUN_006a0df0("cg_allow_mature",0,0x40,CONCAT44(3,local_30),uVar9,uVar11,0,0,0,0,
+  FUN_006a0df0("cg_allow_mature",0,0x40,CONCAT44(3,local_30),uVar8,uVar10,0,0,0,0,
                "Controls Mature Content selectability");
   if (g_allowMature == false) {
-    uVar3 = 0x41;
+    uVar2 = 0x41;
   }
   else {
-    uVar3 = 1;
+    uVar2 = 1;
   }
   local_30 = (uint)(g_allowMature != false);
-  FUN_006a0df0("cg_mature",0,uVar3,CONCAT44(3,local_30),uVar9,uVar11,0,0,0,0,"Show Mature Content");
+  FUN_006a0df0("cg_mature",0,uVar2,CONCAT44(3,local_30),uVar8,uVar10,0,0,0,0,"Show Mature Content");
   cl_serverchallenge =
        _Dvar_RegisterInt64("cl_serverchallenge",0,0x7fffffff00000000,0xa2f68800000000,
                            (ushort)unaff_EDI,unaff_ESI);
-  motd = (dvar_s *)FUN_006a0df0("motd",7,0,0x300a04ada,uVar9,uVar11,0,0,0,0,"Message of the day");
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  motd = (dvar_s *)FUN_006a0df0("motd",7,0,0x300a04ada,uVar8,uVar10,0,0,0,0,"Message of the day");
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff474 = "cmd";
     _DAT_04fff480 = CL_ForwardToServer_f;
     _DAT_04fff470 = DAT_01c7d2f4;
@@ -3825,8 +3825,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","cmd");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff45c = "configstrings";
     _DAT_04fff468 = CL_Configstrings_f;
     _DAT_04fff458 = DAT_01c7d2f4;
@@ -3836,8 +3836,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","configstrings");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff444 = "clientinfo";
     _DAT_04fff450 = CL_Clientinfo_f;
     _DAT_04fff440 = DAT_01c7d2f4;
@@ -3847,8 +3847,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","clientinfo");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff42c = "vid_restart";
     _DAT_04fff438 = operator_delete;
     _DAT_04fff428 = DAT_01c7d2f4;
@@ -3859,8 +3859,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","vid_restart");
   }
   Cmd_AddServerCommandInternal((char *)CL_Vid_Restart_f,(_func_void *)&DAT_04fff410,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff3fc = "vid_restart_complete";
     _DAT_04fff408 = operator_delete;
     _DAT_04fff3f8 = DAT_01c7d2f4;
@@ -3872,8 +3872,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   }
   Cmd_AddServerCommandInternal
             ((char *)CL_Vid_Restart_Complete_f,(_func_void *)&DAT_04fff3e0,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff3cc = "snd_restart";
     _DAT_04fff3d8 = operator_delete;
     _DAT_04fff3c8 = DAT_01c7d2f4;
@@ -3884,8 +3884,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","snd_restart");
   }
   Cmd_AddServerCommandInternal((char *)CL_Snd_Restart_f,(_func_void *)&DAT_04fff3b0,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff39c = "disconnect";
     _DAT_04fff3a8 = operator_delete;
     _DAT_04fff398 = DAT_01c7d2f4;
@@ -3896,8 +3896,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","disconnect");
   }
   Cmd_AddServerCommandInternal(&LAB_004f0220,(_func_void *)&DAT_04fff380,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff36c = "record";
     _DAT_04fff378 = CL_Record_f;
     _DAT_04fff368 = DAT_01c7d2f4;
@@ -3907,8 +3907,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","record");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff354 = "stoprecord";
     _DAT_04fff360 = CL_StopRecord_f;
     _DAT_04fff350 = DAT_01c7d2f4;
@@ -3918,8 +3918,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","stoprecord");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff33c = "demo";
     _DAT_04fff348 = operator_delete;
     _DAT_04fff338 = DAT_01c7d2f4;
@@ -3930,8 +3930,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","demo");
   }
   Cmd_AddServerCommandInternal(&LAB_004ef050,(_func_void *)&DAT_04fff320,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff30c = "timedemo";
     _DAT_04fff318 = operator_delete;
     _DAT_04fff308 = DAT_01c7d2f4;
@@ -3942,14 +3942,14 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","timedemo");
   }
   Cmd_AddServerCommandInternal(&LAB_004ef050,(_func_void *)&DAT_04fff2f0,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  pcVar4->autoCompleteDir = "demos";
-  pcVar4->autoCompleteExt = "dm_8";
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  pcVar4->autoCompleteDir = "demos";
-  pcVar4->autoCompleteExt = "dm_8";
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  pcVar3->autoCompleteDir = "demos";
+  pcVar3->autoCompleteExt = "dm_8";
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  pcVar3->autoCompleteDir = "demos";
+  pcVar3->autoCompleteExt = "dm_8";
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff2dc = "toggledemorecording";
     _DAT_04fff2e8 = CL_ToggleDemoRecording_f;
     _DAT_04fff2d8 = DAT_01c7d2f4;
@@ -3959,8 +3959,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","toggledemorecording");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff2c4 = "ui_animate";
     _DAT_04fff2d0 = CL_AnimateUI_f;
     _DAT_04fff2c0 = DAT_01c7d2f4;
@@ -3970,8 +3970,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ui_animate");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff2ac = "ui_resetSelectedPlayerXuid";
     _DAT_04fff2b8 = CL_ResetSelectedPlayerXuid_f;
     _DAT_04fff2a8 = DAT_01c7d2f4;
@@ -3981,8 +3981,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ui_resetSelectedPlayerXuid");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff294 = "logo";
     _DAT_04fff2a0 = FUN_004f3090;
     _DAT_04fff290 = DAT_01c7d2f4;
@@ -3992,8 +3992,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","logo");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff27c = "connect";
     _DAT_04fff288 = operator_delete;
     _DAT_04fff278 = DAT_01c7d2f4;
@@ -4004,8 +4004,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","connect");
   }
   Cmd_AddServerCommandInternal((char *)CL_Connect_f,(_func_void *)&DAT_04fff260,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff24c = "reconnect";
     _DAT_04fff258 = operator_delete;
     _DAT_04fff248 = DAT_01c7d2f4;
@@ -4016,8 +4016,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","reconnect");
   }
   Cmd_AddServerCommandInternal((char *)CL_Reconnect_f,(_func_void *)&DAT_04fff230,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff21c = "findservers";
     _DAT_04fff228 = CL_FindServers_f;
     _DAT_04fff218 = DAT_01c7d2f4;
@@ -4029,8 +4029,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   }
   DAT_00c8a0bc = 0;
   DAT_00c8a0d4._0_4_ = 1;
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff204 = &s_rcon;
     _DAT_04fff210 = CL_Rcon_f;
     _DAT_04fff200 = DAT_01c7d2f4;
@@ -4040,8 +4040,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n",&s_rcon);
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff1ec = "showContextItem";
     _DAT_04fff1f8 = CL_ShowContextualItemUI_f;
     _DAT_04fff1e8 = DAT_01c7d2f4;
@@ -4051,8 +4051,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","showContextItem");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff1d4 = "ping";
     _DAT_04fff1e0 = operator_delete;
     _DAT_04fff1d0 = DAT_01c7d2f4;
@@ -4063,8 +4063,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ping");
   }
   Cmd_AddServerCommandInternal((char *)operator_delete,(_func_void *)&DAT_04fff1b8,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff1a4 = "serverstatus";
     _DAT_04fff1b0 = operator_delete;
     _DAT_04fff1a0 = DAT_01c7d2f4;
@@ -4075,8 +4075,8 @@ void __cdecl CL_InitOnceForAllClients(void)
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","serverstatus");
   }
   Cmd_AddServerCommandInternal((char *)operator_delete,(_func_void *)&DAT_04fff188,unaff_EDI);
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff174 = "setenv";
     _DAT_04fff180 = CL_Setenv_f;
     _DAT_04fff170 = DAT_01c7d2f4;
@@ -4086,8 +4086,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setenv");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff15c = "showip";
     _DAT_04fff168 = CL_ShowIP_f;
     _DAT_04fff158 = DAT_01c7d2f4;
@@ -4097,8 +4097,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","showip");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff144 = "toggleMenu";
     _DAT_04fff150 = CL_ToggleMenu_f;
     _DAT_04fff140 = DAT_01c7d2f4;
@@ -4108,8 +4108,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","toggleMenu");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff12c = "fs_openedList";
     _DAT_04fff138 = CL_OpenedIWDList_f;
     _DAT_04fff128 = DAT_01c7d2f4;
@@ -4119,8 +4119,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","fs_openedList");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff114 = "fs_referencedList";
     _DAT_04fff120 = CL_ReferencedIWDList_f;
     _DAT_04fff110 = DAT_01c7d2f4;
@@ -4130,8 +4130,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","fs_referencedList");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff0fc = "updatehunkusage";
     _DAT_04fff108 = CL_UpdateLevelHunkUsage;
     _DAT_04fff0f8 = DAT_01c7d2f4;
@@ -4141,8 +4141,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","updatehunkusage");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff0e4 = "startSingleplayer";
     _DAT_04fff0f0 = CL_startSingleplayer_f;
     _DAT_04fff0e0 = DAT_01c7d2f4;
@@ -4152,8 +4152,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","startSingleplayer");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff0cc = "cubemapShot";
     _DAT_04fff0d8 = CL_CubemapShot_f;
     _DAT_04fff0c8 = DAT_01c7d2f4;
@@ -4163,8 +4163,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","cubemapShot");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff0b4 = "openScriptMenu";
     _DAT_04fff0c0 = &LAB_004f3520;
     _DAT_04fff0b0 = DAT_01c7d2f4;
@@ -4174,8 +4174,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","openScriptMenu");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff09c = "ui_keyboard_new";
     _DAT_04fff0a8 = UI_Keyboard_New_f;
     _DAT_04fff098 = DAT_01c7d2f4;
@@ -4185,8 +4185,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ui_keyboard_new");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff084 = "ui_clear_keyboard_active";
     _DAT_04fff090 = UI_Clear_Keyboard_Active_f;
     _DAT_04fff080 = DAT_01c7d2f4;
@@ -4196,8 +4196,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ui_clear_keyboard_active");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff06c = "ui_keyboard_complete";
     _DAT_04fff078 = UI_Keyboard_Complete_f;
     _DAT_04fff068 = DAT_01c7d2f4;
@@ -4207,8 +4207,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","ui_keyboard_complete");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff054 = "updateListboxPos";
     _DAT_04fff060 = UI_UpdateListboxPos_f;
     _DAT_04fff050 = DAT_01c7d2f4;
@@ -4218,8 +4218,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","updateListboxPos");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff03c = "clearKeyStates";
     _DAT_04fff048 = UI_KeyClearStates_f;
     _DAT_04fff038 = DAT_01c7d2f4;
@@ -4229,8 +4229,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","clearKeyStates");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff024 = "selectStringTableEntryInDvar";
     _DAT_04fff030 = CL_SelectStringTableEntryInDvar_f;
     _DAT_04fff020 = DAT_01c7d2f4;
@@ -4240,8 +4240,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","selectStringTableEntryInDvar");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04fff00c = "resetStats";
     _DAT_04fff018 = &LAB_004f3810;
     _DAT_04fff008 = DAT_01c7d2f4;
@@ -4251,8 +4251,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","resetStats");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffeff4 = "uploadStats";
     _DAT_04fff000 = &LAB_004f3830;
     _DAT_04ffeff0 = DAT_01c7d2f4;
@@ -4264,8 +4264,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   }
   UI_EmblemRegisterCmds();
   UI_RegisterCmds();
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffefdc = "setupviewport";
     _DAT_04ffefe8 = &LAB_004f2bb0;
     _DAT_04ffefd8 = DAT_01c7d2f4;
@@ -4277,8 +4277,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   }
   CL_Platform_RegisterDvars();
   CL_RegisterCommands();
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffefc4 = "provisionallydisableallclients";
     _DAT_04ffefd0 = CL_Command_ProvisionallyDisableAllClients;
     _DAT_04ffefc0 = DAT_01c7d2f4;
@@ -4288,8 +4288,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","provisionallydisableallclients");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffefac = "disableallbutprimaryclients";
     _DAT_04ffefb8 = CL_Command_DisableAllButPrimaryClients;
     _DAT_04ffefa8 = DAT_01c7d2f4;
@@ -4299,8 +4299,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","disableallbutprimaryclients");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef94 = "disableallclients";
     _DAT_04ffefa0 = CL_Command_DisableAllClients;
     _DAT_04ffef90 = DAT_01c7d2f4;
@@ -4310,8 +4310,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","disableallclients");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef7c = "setclientbeingusedandprimary";
     _DAT_04ffef88 = CL_Command_SetClientBeingUsedAndPrimaryAndActive;
     _DAT_04ffef78 = DAT_01c7d2f4;
@@ -4321,8 +4321,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientbeingusedandprimary");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef64 = "setclientbeingusedandprimaryandactive";
     _DAT_04ffef70 = CL_Command_SetClientBeingUsedAndPrimaryAndActive;
     _DAT_04ffef60 = DAT_01c7d2f4;
@@ -4332,8 +4332,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientbeingusedandprimaryandactive");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef4c = "setclientbeingused";
     _DAT_04ffef58 = CL_Command_SetClientBeingUsedAndActive;
     _DAT_04ffef48 = DAT_01c7d2f4;
@@ -4343,8 +4343,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientbeingused");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef34 = "setclientbeingusedandactive";
     _DAT_04ffef40 = CL_Command_SetClientBeingUsedAndActive;
     _DAT_04ffef30 = DAT_01c7d2f4;
@@ -4354,8 +4354,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientbeingusedandactive");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef1c = "setclientnotbeingused";
     _DAT_04ffef28 = CL_Command_DisableAllClients;
     _DAT_04ffef18 = DAT_01c7d2f4;
@@ -4365,8 +4365,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientnotbeingused");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffef04 = "setclientprimary";
     _DAT_04ffef10 = CL_Command_SetClientPrimary;
     _DAT_04ffef00 = DAT_01c7d2f4;
@@ -4376,8 +4376,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","setclientprimary");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffeeec = "signclientout";
     _DAT_04ffeef8 = operator_delete;
     _DAT_04ffeee8 = DAT_01c7d2f4;
@@ -4387,8 +4387,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","signclientout");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffeed4 = "SetCategoryFilter";
     _DAT_04ffeee0 = &LAB_004f3610;
     _DAT_04ffeed0 = DAT_01c7d2f4;
@@ -4398,8 +4398,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","SetCategoryFilter");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffeebc = "SetPrevPlaylist";
     _DAT_04ffeec8 = &LAB_004f36a0;
     _DAT_04ffeeb8 = DAT_01c7d2f4;
@@ -4409,8 +4409,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","SetPrevPlaylist");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffeea4 = "GetPrevPlaylist";
     _DAT_04ffeeb0 = &LAB_004f36b0;
     _DAT_04ffeea0 = DAT_01c7d2f4;
@@ -4420,8 +4420,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","GetPrevPlaylist");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffee8c = "getOldCustomName";
     _DAT_04ffee98 = &LAB_004f36c0;
     _DAT_04ffee88 = DAT_01c7d2f4;
@@ -4431,8 +4431,8 @@ void __cdecl CL_InitOnceForAllClients(void)
   else {
     Com_Printf(0x10,"Cmd_AddCommand: %s already defined\n","getOldCustomName");
   }
-  pcVar4 = Cmd_FindCommand((char *)unaff_EDI);
-  if (pcVar4 == (cmd_function_s *)0x0) {
+  pcVar3 = Cmd_FindCommand((char *)unaff_EDI);
+  if (pcVar3 == (cmd_function_s *)0x0) {
     _DAT_04ffee74 = "setNewCustomName";
     _DAT_04ffee80 = &LAB_004f3760;
     _DAT_04ffee70 = DAT_01c7d2f4;
@@ -4459,12 +4459,12 @@ void __cdecl CL_InitOnceForAllClients(void)
   UI_Gametype_Custom_Init();
   DAT_00c74cd8 = 0;
   Scr_InitVariables((scriptInstance_t)unaff_EDI);
-  iVar5 = 0;
+  iVar4 = 0;
   do {
-    *(undefined4 *)(PTR_gClientClassMap_00ad879c + iVar5 + 4) = 0;
-    *(undefined4 *)(PTR_gClientClassMap_00ad879c + iVar5) = 0;
-    iVar5 = iVar5 + 0x10;
-  } while (iVar5 < 0x50);
+    *(undefined4 *)(PTR_gClientClassMap_00ad879c + iVar4 + 4) = 0;
+    *(undefined4 *)(PTR_gClientClassMap_00ad879c + iVar4) = 0;
+    iVar4 = iVar4 + 0x10;
+  } while (iVar4 < 0x50);
   FUN_0072f8e0(1);
   DAT_02260abc = 0;
   DAT_0221fa5c = 0;
@@ -5223,23 +5223,23 @@ bdFastArray<void_(__cdecl*)(void)>::increaseCapacity
 {
   int iVar1;
   uint uVar2;
-  uchar *puVar3;
+  uchar *dst;
   
   uVar2 = *(uint *)(this + 4);
   if (param_1 <= uVar2) {
     param_1 = uVar2;
   }
   iVar1 = uVar2 + param_1;
-  puVar3 = (uchar *)0x0;
+  dst = (uchar *)0x0;
   if (iVar1 != 0) {
-    puVar3 = bdMemory::allocate(iVar1 * 4);
+    dst = bdMemory::allocate(iVar1 * 4);
     if (*(int *)(this + 8) != 0) {
-      memcpy(puVar3,*(uchar **)this,*(int *)(this + 8) * 4);
+      memcpy(dst,*(uchar **)this,*(int *)(this + 8) * 4);
     }
   }
   bdMemory::deallocate(*(void **)this);
   *(int *)(this + 4) = iVar1;
-  *(uchar **)this = puVar3;
+  *(uchar **)this = dst;
   return;
 }
 

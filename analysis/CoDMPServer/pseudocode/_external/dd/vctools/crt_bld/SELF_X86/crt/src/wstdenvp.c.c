@@ -7,42 +7,42 @@ int __cdecl _wsetenvp(void)
 {
   ushort **ppuVar1;
   uint uVar2;
-  ushort *puVar3;
-  wchar_t *pwVar4;
-  int iVar5;
+  ushort *_Dst;
+  wchar_t *pwVar3;
+  int iVar4;
   
-  iVar5 = 0;
-  pwVar4 = (wchar_t *)_wenvptr;
+  iVar4 = 0;
+  pwVar3 = (wchar_t *)_wenvptr;
   if (_wenvptr == (ushort *)0x0) {
-    iVar5 = -1;
+    iVar4 = -1;
   }
   else {
-    for (; *pwVar4 != L'\0'; pwVar4 = pwVar4 + uVar2 + 1) {
-      if (*pwVar4 != L'=') {
-        iVar5 = iVar5 + 1;
+    for (; *pwVar3 != L'\0'; pwVar3 = pwVar3 + uVar2 + 1) {
+      if (*pwVar3 != L'=') {
+        iVar4 = iVar4 + 1;
       }
-      uVar2 = wcslen(pwVar4);
+      uVar2 = wcslen(pwVar3);
     }
-    ppuVar1 = _calloc_crt(iVar5 + 1,4);
-    pwVar4 = (wchar_t *)_wenvptr;
+    ppuVar1 = _calloc_crt(iVar4 + 1,4);
+    pwVar3 = (wchar_t *)_wenvptr;
     _wenviron = ppuVar1;
     if (ppuVar1 == (ushort **)0x0) {
-      iVar5 = -1;
+      iVar4 = -1;
     }
     else {
-      for (; *pwVar4 != L'\0'; pwVar4 = pwVar4 + uVar2) {
-        uVar2 = wcslen(pwVar4);
+      for (; *pwVar3 != L'\0'; pwVar3 = pwVar3 + uVar2) {
+        uVar2 = wcslen(pwVar3);
         uVar2 = uVar2 + 1;
-        if (*pwVar4 != L'=') {
-          puVar3 = _calloc_crt(uVar2,2);
-          *ppuVar1 = puVar3;
-          if (puVar3 == (ushort *)0x0) {
+        if (*pwVar3 != L'=') {
+          _Dst = _calloc_crt(uVar2,2);
+          *ppuVar1 = _Dst;
+          if (_Dst == (ushort *)0x0) {
             free(_wenviron);
             _wenviron = (ushort **)0x0;
             return -1;
           }
-          iVar5 = wcscpy_s(puVar3,uVar2,pwVar4);
-          if (iVar5 != 0) {
+          iVar4 = wcscpy_s(_Dst,uVar2,pwVar3);
+          if (iVar4 != 0) {
             _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
           }
           ppuVar1 = ppuVar1 + 1;
@@ -52,9 +52,9 @@ int __cdecl _wsetenvp(void)
       _wenvptr = (ushort *)0x0;
       *ppuVar1 = (ushort *)0x0;
       __env_initialized = 1;
-      iVar5 = 0;
+      iVar4 = 0;
     }
   }
-  return iVar5;
+  return iVar4;
 }
 

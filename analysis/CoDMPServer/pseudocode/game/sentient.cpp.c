@@ -13,7 +13,8 @@ sentient_s * __cdecl Sentient_Alloc(void)
   code *pcVar1;
   bool bVar2;
   sentient_s *psVar3;
-  int local_c;
+  int i;
+  sentient_s *pSentient;
   
   if ((level.sentients == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x36,0,"%s"),
@@ -22,15 +23,15 @@ sentient_s * __cdecl Sentient_Alloc(void)
     psVar3 = (sentient_s *)(*pcVar1)();
     return psVar3;
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0x2f < local_c) {
+    if (0x2f < i) {
       Com_DPrintf(0xf,"Sentient allocation failed\n");
       return (sentient_s *)0x0;
     }
-    psVar3 = level.sentients + local_c;
+    psVar3 = level.sentients + i;
     if (psVar3->inuse == false) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
   memset((uchar *)psVar3,'\0',0x90);
   psVar3->inuse = true;
@@ -40,21 +41,24 @@ sentient_s * __cdecl Sentient_Alloc(void)
 
 // 0092F170  Sentient_Free  (game/sentient.cpp:81)
 
+/* WARNING: Variable defined which should be unmapped: pActor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Sentient_Free(sentient_s *param_1)
+void __cdecl Sentient_Free(sentient_s *sentient)
 
 {
   gentity_s *pgVar1;
   code *pcVar2;
   bool bVar3;
   actor_s *paVar4;
-  int local_8;
+  actor_s *pActor;
+  gentity_s *ent;
+  int i;
   
-  if ((param_1 == (sentient_s *)0x0) &&
+  if ((sentient == (sentient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x56,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -68,80 +72,80 @@ void __cdecl Sentient_Free(sentient_s *param_1)
     (*pcVar2)();
     return;
   }
-  if (((param_1 < level.sentients) || (level.sentients + 0x30 <= param_1)) &&
+  if (((sentient < level.sentients) || (level.sentients + 0x30 <= sentient)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x58,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((level.sentients + ((int)param_1 - (int)level.sentients) / 0x90 != param_1) &&
+  if ((level.sentients + ((int)sentient - (int)level.sentients) / 0x90 != sentient) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x59,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->ent == (gentity_s *)0x0) &&
+  if ((sentient->ent == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x5a,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->ent->actor != (actor_s *)0x0) &&
+  if ((sentient->ent->actor != (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x5b,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pgVar1 = param_1->ent;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    paVar4 = level.actors + local_8;
+  pgVar1 = sentient->ent;
+  for (i = 0; i < 0x10; i = i + 1) {
+    paVar4 = level.actors + i;
     if ((paVar4->inuse != 0) && (paVar4->pPileUpEnt == pgVar1)) {
       Actor_ClearPileUp(paVar4);
     }
   }
-  G_FreeEntityRefs(param_1->ent);
-  Sentient_Dissociate(param_1);
-  param_1->ent->sentient = (sentient_s *)0x0;
-  SentientHandleDissociate(param_1);
-  memset((uchar *)param_1,0xf0,0x90);
-  param_1->inuse = false;
+  G_FreeEntityRefs(sentient->ent);
+  Sentient_Dissociate(sentient);
+  sentient->ent->sentient = (sentient_s *)0x0;
+  SentientHandleDissociate(sentient);
+  memset((uchar *)sentient,0xf0,0x90);
+  sentient->inuse = false;
   return;
 }
 
 
 // 0092F360  Sentient_Dissociate  (game/sentient.cpp:131)
 
+/* WARNING: Variable defined which should be unmapped: other */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Sentient_Dissociate(sentient_s *param_1)
+void __cdecl Sentient_Dissociate(sentient_s *pSentient)
 
 {
   sentient_s *psVar1;
-  sentient_s *psVar2;
   gentity_s *in_stack_fffffff4;
-  team_t tVar3;
-  int in_stack_fffffff8;
+  team_t eOtherTeam;
+  sentient_s *other;
   
-  psVar2 = (sentient_s *)0x0;
-  Sentient_SetEnemy((sentient_s *)0x0,in_stack_fffffff4,in_stack_fffffff8);
-  if (param_1->pClaimedNode != (pathnode_t *)0x0) {
-    Path_RelinquishNodeNow(param_1);
+  psVar1 = (sentient_s *)0x0;
+  Sentient_SetEnemy((sentient_s *)0x0,in_stack_fffffff4,(int)other);
+  if (pSentient->pClaimedNode != (pathnode_t *)0x0) {
+    Path_RelinquishNodeNow(pSentient);
   }
-  tVar3 = param_1->eTeam;
-  param_1->eTeam = TEAM_SPECTATOR;
-  psVar1 = Sentient_FirstSentient((int)psVar2);
-  while (psVar1 != (sentient_s *)0x0) {
-    if (psVar1 != param_1) {
-      Sentient_DissociateSentient(psVar1,param_1,tVar3);
+  eOtherTeam = pSentient->eTeam;
+  pSentient->eTeam = TEAM_SPECTATOR;
+  other = Sentient_FirstSentient((int)psVar1);
+  while (other != (sentient_s *)0x0) {
+    if (other != pSentient) {
+      Sentient_DissociateSentient(other,pSentient,eOtherTeam);
     }
-    psVar1 = Sentient_NextSentient(psVar2,tVar3);
+    other = Sentient_NextSentient(psVar1,eOtherTeam);
   }
   return;
 }
@@ -154,69 +158,71 @@ void __cdecl Sentient_Dissociate(sentient_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Sentient_DissociateSentient(sentient_s *param_1,sentient_s *param_2,team_t param_3)
+void __cdecl Sentient_DissociateSentient(sentient_s *self,sentient_s *other,team_t eOtherTeam)
 
 {
-  actor_s *paVar1;
-  gclient_s *pgVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  gentity_s *pgVar6;
-  int local_10;
+  actor_s *self_00;
+  gclient_s *pgVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  gentity_s *pgVar5;
+  int i;
+  gclient_s *client;
+  actor_s *actor;
   
-  if (param_1 == (sentient_s *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xac,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if (self == (sentient_s *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xac,0,"%s");
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (param_1 == param_2) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xad,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if (self == other) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xad,0,"%s");
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (param_2 == (sentient_s *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xae,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if (other == (sentient_s *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xae,0,"%s");
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (param_2->eTeam != TEAM_SPECTATOR) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xaf,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  if (other->eTeam != TEAM_SPECTATOR) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xaf,0,"%s");
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  paVar1 = param_1->ent->actor;
-  if (paVar1 != (actor_s *)0x0) {
-    Actor_DissociateSentient(paVar1,param_2,param_3);
+  self_00 = self->ent->actor;
+  if (self_00 != (actor_s *)0x0) {
+    Actor_DissociateSentient(self_00,other,eOtherTeam);
   }
-  pgVar2 = param_1->ent->client;
-  if ((pgVar2 != (gclient_s *)0x0) &&
-     ((pgVar2->ps).throwBackGrenadeOwner == (param_2->ent->s).number)) {
-    (pgVar2->ps).throwBackGrenadeOwner = 0x3fe;
+  pgVar1 = self->ent->client;
+  if ((pgVar1 != (gclient_s *)0x0) && ((pgVar1->ps).throwBackGrenadeOwner == (other->ent->s).number)
+     ) {
+    (pgVar1->ps).throwBackGrenadeOwner = 0x3fe;
   }
-  iVar5 = EntHandle::isDefined(&param_1->targetEnt);
-  if (iVar5 != 0) {
-    pgVar6 = EntHandle::ent(&param_1->targetEnt);
-    if ((pgVar6->sentient == param_2) && (paVar1 != (actor_s *)0x0)) {
-      paVar1->lastEnemySightPosValid = false;
+  iVar4 = EntHandle::isDefined(&self->targetEnt);
+  if (iVar4 != 0) {
+    pgVar5 = EntHandle::ent(&self->targetEnt);
+    if ((pgVar5->sentient == other) && (self_00 != (actor_s *)0x0)) {
+      self_00->lastEnemySightPosValid = false;
     }
   }
-  for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    if ((param_1->meleeAttackerSpot[local_10] != 0) &&
-       (param_1->meleeAttackerSpot[local_10] == (param_2->ent->s).number)) {
-      param_1->meleeAttackerSpot[local_10] = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    if ((self->meleeAttackerSpot[i] != 0) && (self->meleeAttackerSpot[i] == (other->ent->s).number))
+    {
+      self->meleeAttackerSpot[i] = 0;
     }
   }
   return;
@@ -238,6 +244,8 @@ void __cdecl Sentient_GetOrigin(sentient_s *param_1,float *param_2)
   bool bVar3;
   int *in_ECX;
   undefined4 *in_EDX;
+  float *vOriginOut;
+  sentient_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xd5,0,"%s");
@@ -294,6 +302,8 @@ void __cdecl Sentient_GetVelocity(sentient_s *param_1,float *param_2)
   bool bVar3;
   int *in_ECX;
   undefined4 *in_EDX;
+  float *vVelOut;
+  sentient_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0xf9,0,"%s");
@@ -345,6 +355,8 @@ void __cdecl Sentient_GetVelocity(sentient_s *param_1,float *param_2)
 
 // 0092F7F0  Sentient_GetEyePosition  (game/sentient.cpp:294)
 
+/* WARNING: Variable defined which should be unmapped: vEyePosOut */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -356,27 +368,28 @@ void __cdecl Sentient_GetEyePosition(sentient_s *param_1,float *param_2)
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  float *in_ECX;
   actor_s *in_EDX;
-  float *extraout_var;
-  float *pfVar4;
+  float *vEyePosOut;
+  sentient_s *self;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Sentient_GetEyePosition");
-  pfVar4 = extraout_var;
-  if ((extraout_var == (float *)0x0) &&
+  if ((in_ECX == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",299,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*pfVar4 == 0.0) &&
+  if ((*in_ECX == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",300,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((*(int *)((int)*pfVar4 + 0x148) == 0) && (*(int *)((int)*pfVar4 + 0x144) == 0)) &&
+  if (((*(int *)((int)*in_ECX + 0x148) == 0) && (*(int *)((int)*in_ECX + 0x144) == 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x12d,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -390,11 +403,11 @@ void __cdecl Sentient_GetEyePosition(sentient_s *param_1,float *param_2)
     (*pcVar1)();
     return;
   }
-  if (*(int *)((int)*pfVar4 + 0x148) == 0) {
-    G_GetPlayerViewOrigin(*(playerState_s **)((int)*pfVar4 + 0x144),(float *)in_EDX);
+  if (*(int *)((int)*in_ECX + 0x148) == 0) {
+    G_GetPlayerViewOrigin(*(playerState_s **)((int)*in_ECX + 0x144),(float *)in_EDX);
   }
   else {
-    Actor_GetEyePosition(in_EDX,pfVar4);
+    Actor_GetEyePosition(in_EDX,in_ECX);
   }
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -406,6 +419,8 @@ void __cdecl Sentient_GetEyePosition(sentient_s *param_1,float *param_2)
 
 // 0092F940  Sentient_GetThirdPersonEyePosition  (game/sentient.cpp:322)
 
+/* WARNING: Variable defined which should be unmapped: vEyePosOut */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -419,6 +434,8 @@ void __cdecl Sentient_GetThirdPersonEyePosition(sentient_s *param_1,float *param
   bool bVar3;
   float *in_ECX;
   actor_s *in_EDX;
+  float *vEyePosOut;
+  sentient_s *self;
   
   if (in_ECX == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x145,0,"%s");
@@ -470,6 +487,8 @@ void __cdecl Sentient_GetThirdPersonEyePosition(sentient_s *param_1,float *param
 
 // 0092FAA0  Sentient_GetDebugEyePosition  (game/sentient.cpp:355)
 
+/* WARNING: Variable defined which should be unmapped: vEyePosOut */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -482,6 +501,8 @@ void __cdecl Sentient_GetDebugEyePosition(sentient_s *param_1,float *param_2)
   bool bVar2;
   float *in_ECX;
   actor_s *in_EDX;
+  float *vEyePosOut;
+  sentient_s *self;
   
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x166,0,"%s");
@@ -527,6 +548,7 @@ void __cdecl Sentient_GetDebugEyePosition(sentient_s *param_1,float *param_2)
 
 // 0092FBC0  Sentient_NearestNode  (game/sentient.cpp:431)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -540,13 +562,17 @@ pathnode_t * __cdecl Sentient_NearestNode(sentient_s *param_1)
   pathnode_t *ppVar3;
   sentient_s *in_ECX;
   float fVar4;
+  sentient_s *self;
   float *in_stack_fffffca8;
-  int local_32c;
-  float local_328;
-  pathnode_t *local_31c;
-  int local_318;
-  pathsort_t local_314 [64];
-  float local_10;
+  float dist2;
+  int ni;
+  float best_dist2;
+  float PATH_MAX_CLIENT_ATNODE_DISTANCE;
+  float RECHECK_NEAREST_NODE_DISTANCE_SQR;
+  pathnode_t *node;
+  int iNodeCount;
+  pathsort_t nodes [64];
+  float vOrigin;
   float local_c;
   float local_8;
   
@@ -560,7 +586,7 @@ pathnode_t * __cdecl Sentient_NearestNode(sentient_s *param_1)
   }
   if ((in_ECX->bNearestNodeValid != '\0') && (in_ECX->ent->client != (gclient_s *)0x0)) {
     Sentient_GetOrigin(in_ECX,in_stack_fffffca8);
-    fVar4 = Vec3DistanceSq(&local_10,in_ECX->vNearestNodeCheckPos);
+    fVar4 = Vec3DistanceSq(&vOrigin,in_ECX->vNearestNodeCheckPos);
     if (10000.0 < fVar4) {
       in_ECX->bNearestNodeValid = '\0';
       in_ECX->pNearestNode = (pathnode_t *)0x0;
@@ -568,18 +594,18 @@ pathnode_t * __cdecl Sentient_NearestNode(sentient_s *param_1)
   }
   if (in_ECX->bNearestNodeValid == '\0') {
     Sentient_GetOrigin(in_ECX,in_stack_fffffca8);
-    local_31c = Path_NearestNodeNotCrossPlanes
-                          (&local_10,local_314,-2,192.0,(float (*) [2])0x0,(float *)0x0,0,&local_318
-                           ,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
-    if (((local_31c == (pathnode_t *)0x0) && (local_318 == 0)) &&
+    node = Path_NearestNodeNotCrossPlanes
+                     (&vOrigin,nodes,-2,192.0,(float (*) [2])0x0,(float *)0x0,0,&iNodeCount,0x40,
+                      NEAREST_NODE_DO_HEIGHT_CHECK);
+    if (((node == (pathnode_t *)0x0) && (iNodeCount == 0)) &&
        (in_ECX->ent->client != (gclient_s *)0x0)) {
-      local_31c = Path_NearestNodeNotCrossPlanes
-                            (&local_10,local_314,-2,512.0,(float (*) [2])0x0,(float *)0x0,0,
-                             &local_318,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
+      node = Path_NearestNodeNotCrossPlanes
+                       (&vOrigin,nodes,-2,512.0,(float (*) [2])0x0,(float *)0x0,0,&iNodeCount,0x40,
+                        NEAREST_NODE_DO_HEIGHT_CHECK);
     }
-    if (local_31c == (pathnode_t *)0x0) {
-      if (local_318 != 0) {
-        if (local_314[0].node == (pathnode_t *)0x0) {
+    if (node == (pathnode_t *)0x0) {
+      if (iNodeCount != 0) {
+        if (nodes[0].node == (pathnode_t *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x1d7,0,
                                    "%s");
           if (!bVar2) {
@@ -588,26 +614,26 @@ pathnode_t * __cdecl Sentient_NearestNode(sentient_s *param_1)
             return ppVar3;
           }
         }
-        in_ECX->pNearestNode = local_314[0].node;
-        local_328 = Vec3DistanceSq((in_ECX->ent->r).currentOrigin,
-                                   ((local_314[0].node)->constant).vOrigin);
-        for (local_32c = 1; local_32c < local_318; local_32c = local_32c + 1) {
-          fVar4 = Vec3DistanceSq((in_ECX->ent->r).currentOrigin,
-                                 ((local_314[local_32c].node)->constant).vOrigin);
-          if (fVar4 < local_328) {
-            in_ECX->pNearestNode = local_314[local_32c].node;
-            local_328 = fVar4;
+        in_ECX->pNearestNode = nodes[0].node;
+        best_dist2 = Vec3DistanceSq((in_ECX->ent->r).currentOrigin,
+                                    ((nodes[0].node)->constant).vOrigin);
+        for (ni = 1; ni < iNodeCount; ni = ni + 1) {
+          fVar4 = Vec3DistanceSq((in_ECX->ent->r).currentOrigin,((nodes[ni].node)->constant).vOrigin
+                                );
+          if (fVar4 < best_dist2) {
+            in_ECX->pNearestNode = nodes[ni].node;
+            best_dist2 = fVar4;
           }
         }
       }
       in_ECX->bNearestNodeBad = '\x01';
     }
     else {
-      in_ECX->pNearestNode = local_31c;
+      in_ECX->pNearestNode = node;
       in_ECX->bNearestNodeBad = '\0';
     }
     in_ECX->bNearestNodeValid = '\x01';
-    in_ECX->vNearestNodeCheckPos[0] = local_10;
+    in_ECX->vNearestNodeCheckPos[0] = vOrigin;
     in_ECX->vNearestNodeCheckPos[1] = local_c;
     in_ECX->vNearestNodeCheckPos[2] = local_8;
   }
@@ -625,13 +651,15 @@ pathnode_t * __cdecl Sentient_NearestNode(sentient_s *param_1)
 
 // 0092FF00  Sentient_NearestNodeSuppressed  (game/sentient.cpp:502)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 pathnode_t * __cdecl
-Sentient_NearestNodeSuppressed(sentient_s *param_1,float (*param_2) [2],float *param_3,int param_4)
+Sentient_NearestNodeSuppressed
+          (sentient_s *fDist,float (*iPlaneCount) [2],float *param_3,int param_4)
 
 {
   code *pcVar1;
@@ -639,9 +667,10 @@ Sentient_NearestNodeSuppressed(sentient_s *param_1,float (*param_2) [2],float *p
   pathnode_t *ppVar3;
   float *in_ECX;
   sentient_s *in_EDX;
-  int local_318;
-  pathsort_t local_314 [64];
-  float local_10 [3];
+  sentient_s *self;
+  int iNodeCount;
+  pathsort_t nodes [64];
+  float vOrigin [3];
   
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x1fd,0,"%s");
@@ -653,8 +682,8 @@ Sentient_NearestNodeSuppressed(sentient_s *param_1,float (*param_2) [2],float *p
   }
   Sentient_GetOrigin(in_EDX,in_ECX);
   ppVar3 = Path_NearestNodeNotCrossPlanes
-                     (local_10,local_314,-2,192.0,(float (*) [2])in_EDX,(float *)param_1,
-                      (int)param_2,&local_318,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
+                     (vOrigin,nodes,-2,192.0,(float (*) [2])in_EDX,(float *)fDist,(int)iPlaneCount,
+                      &iNodeCount,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
   return ppVar3;
 }
 
@@ -672,6 +701,7 @@ void __cdecl Sentient_InvalidateNearestNode(sentient_s *param_1)
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  sentient_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x20d,0,"%s");
@@ -688,12 +718,14 @@ void __cdecl Sentient_InvalidateNearestNode(sentient_s *param_1)
 
 // 0092FFE0  Sentient_SetEnemy  (game/sentient.cpp:537)
 
+/* WARNING: Variable defined which should be unmapped: enemy */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Sentient_SetEnemy(sentient_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Sentient_SetEnemy(sentient_s *bNotify,gentity_s *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -705,6 +737,10 @@ void __cdecl Sentient_SetEnemy(sentient_s *param_1,gentity_s *param_2,int param_
   uint uVar7;
   float *in_ECX;
   actor_s *in_EDX;
+  gentity_s *enemy;
+  sentient_s *self;
+  gentity_s *myEnemy;
+  actor_s *actor;
   
   if ((in_ECX == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x220,0,"%s")
@@ -728,7 +764,7 @@ void __cdecl Sentient_SetEnemy(sentient_s *param_1,gentity_s *param_2,int param_
   }
   else {
     pgVar4 = EntHandle::ent((EntHandle *)(in_ECX + 0xe));
-    if ((((param_1 != (sentient_s *)0x0) && (pgVar4->sentient != (sentient_s *)0x0)) &&
+    if ((((bNotify != (sentient_s *)0x0) && (pgVar4->sentient != (sentient_s *)0x0)) &&
         (in_ECX[10] != 0.0)) && ((int)in_ECX[10] <= level.time)) {
       Actor_BroadcastTeamEvent((sentient_s *)in_EDX,(ai_event_t)in_ECX);
       in_ECX[10] = 0.0;
@@ -738,7 +774,7 @@ void __cdecl Sentient_SetEnemy(sentient_s *param_1,gentity_s *param_2,int param_
       return;
     }
     if (pgVar4->sentient != (sentient_s *)0x0) {
-      if ((param_1 != (sentient_s *)0x0) && (in_ECX[10] != 0.0)) {
+      if ((bNotify != (sentient_s *)0x0) && (in_ECX[10] != 0.0)) {
         Actor_BroadcastTeamEvent((sentient_s *)in_EDX,(ai_event_t)in_ECX);
         in_ECX[10] = 0.0;
       }
@@ -746,16 +782,15 @@ void __cdecl Sentient_SetEnemy(sentient_s *param_1,gentity_s *param_2,int param_
     }
   }
   iVar3 = *(int *)((int)*in_ECX + 0x148);
-  if ((in_EDX == (actor_s *)0x0) || ((sentient_s *)in_EDX->bProneOK == (sentient_s *)0x0)) {
+  if ((in_EDX == (actor_s *)0x0) || (in_EDX->bProneOK == 0)) {
     in_ECX[10] = 0.0;
   }
   else {
-    ((sentient_s *)in_EDX->bProneOK)->attackerCount =
-         ((sentient_s *)in_EDX->bProneOK)->attackerCount + 1;
+    *(int *)(in_EDX->bProneOK + 0x2c) = *(int *)(in_EDX->bProneOK + 0x2c) + 1;
     in_ECX[10] = (float)(level.time + 1000);
   }
   EntHandle::setEnt((EntHandle *)(in_ECX + 0xe),(gentity_s *)in_EDX);
-  if ((param_1 != (sentient_s *)0x0) &&
+  if ((bNotify != (sentient_s *)0x0) &&
      (iVar6 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER), iVar6 != 0)) {
     Scr_Notify((gentity_s *)*in_ECX,scr_const.enemy,0);
   }
@@ -802,7 +837,8 @@ sentient_s * __cdecl Sentient_FirstSentient(int param_1)
   bool bVar2;
   sentient_s *psVar3;
   uint in_ECX;
-  int local_8;
+  int iTeamFlags;
+  int i;
   
   if ((0xf < (int)in_ECX) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x2a3,0,"%s")
@@ -811,17 +847,17 @@ sentient_s * __cdecl Sentient_FirstSentient(int param_1)
     psVar3 = (sentient_s *)(*pcVar1)();
     return psVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x2f < local_8) {
+    if (0x2f < i) {
       return (sentient_s *)0x0;
     }
-    if ((level.sentients[local_8].inuse != false) &&
-       (((1 << ((byte)level.sentients[local_8].eTeam & 0x1f) & in_ECX) != 0 ||
-        (level.sentients[local_8].eTeam == TEAM_BAD)))) break;
-    local_8 = local_8 + 1;
+    if ((level.sentients[i].inuse != false) &&
+       (((1 << ((byte)level.sentients[i].eTeam & 0x1f) & in_ECX) != 0 ||
+        (level.sentients[i].eTeam == TEAM_BAD)))) break;
+    i = i + 1;
   }
-  return level.sentients + local_8;
+  return level.sentients + i;
 }
 
 
@@ -840,7 +876,9 @@ sentient_s * __cdecl Sentient_NextSentient(sentient_s *param_1,int param_2)
   sentient_s *psVar3;
   sentient_s *in_ECX;
   uint in_EDX;
-  int local_8;
+  int iTeamFlags;
+  sentient_s *pPrevSentient;
+  int i;
   
   if ((0xf < (int)in_EDX) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x2c4,0,"%s")
@@ -870,16 +908,16 @@ sentient_s * __cdecl Sentient_NextSentient(sentient_s *param_1,int param_2)
     psVar3 = (sentient_s *)(*pcVar1)();
     return psVar3;
   }
-  local_8 = ((int)in_ECX - (int)level.sentients) / 0x90;
+  i = ((int)in_ECX - (int)level.sentients) / 0x90;
   do {
-    local_8 = local_8 + 1;
-    if (0x2f < local_8) {
+    i = i + 1;
+    if (0x2f < i) {
       return (sentient_s *)0x0;
     }
-  } while ((level.sentients[local_8].inuse == false) ||
-          (((1 << ((byte)level.sentients[local_8].eTeam & 0x1f) & in_EDX) == 0 &&
-           (level.sentients[local_8].eTeam != TEAM_BAD))));
-  return level.sentients + local_8;
+  } while ((level.sentients[i].inuse == false) ||
+          (((1 << ((byte)level.sentients[i].eTeam & 0x1f) & in_EDX) == 0 &&
+           (level.sentients[i].eTeam != TEAM_BAD))));
+  return level.sentients + i;
 }
 
 
@@ -921,6 +959,7 @@ void __cdecl Sentient_SetTeam(sentient_s *param_1,team_t param_2)
   bool bVar2;
   int in_ECX;
   int in_EDX;
+  sentient_s *self;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x30a,0,"%s")
@@ -958,6 +997,9 @@ void __cdecl Sentient_ClaimNode(sentient_s *param_1,pathnode_t *param_2)
   sentient_s *in_ECX;
   pathnode_t *in_EDX;
   actor_s *in_stack_ffffffec;
+  pathnode_t *node;
+  sentient_s *self;
+  bool isStealingNode;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x324,0,"%s");
@@ -1014,6 +1056,8 @@ void __cdecl Sentient_ClaimNode(sentient_s *param_1,pathnode_t *param_2)
 
 // 00930710  Sentient_NodeClaimRevoked  (game/sentient.cpp:833)
 
+/* WARNING: Variable defined which should be unmapped: node */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -1026,6 +1070,8 @@ void __cdecl Sentient_NodeClaimRevoked(sentient_s *param_1,pathnode_t *param_2)
   bool bVar2;
   int *in_ECX;
   actor_s *in_EDX;
+  pathnode_t *node;
+  sentient_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x345,0,"%s");
@@ -1074,10 +1120,10 @@ void __cdecl Sentient_NodeClaimRevoked(sentient_s *param_1,pathnode_t *param_2)
 
 // 00930830  Sentient_StealClaimNode  (game/sentient.cpp:855)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Sentient_StealClaimNode(sentient_s *param_1,sentient_s *param_2)
 
@@ -1086,6 +1132,9 @@ void __cdecl Sentient_StealClaimNode(sentient_s *param_1,sentient_s *param_2)
   bool bVar2;
   sentient_s *in_ECX;
   int *in_EDX;
+  sentient_s *other;
+  sentient_s *self;
+  pathnode_t *node;
   
   if ((in_ECX == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient.cpp",0x35a,0,"%s")
@@ -1117,50 +1166,52 @@ void __cdecl Sentient_StealClaimNode(sentient_s *param_1,sentient_s *param_2)
 
 // 009308F0  Sentient_BanNearNodes  (game/sentient.cpp:876)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Sentient_BanNearNodes(sentient_s *param_1)
 
 {
-  pathnode_t *ppVar1;
-  int iVar2;
+  pathnode_t *node_00;
+  int iVar1;
   int in_ECX;
-  float local_330;
+  sentient_s *self;
+  pathnode_t *node;
+  float delta;
   float local_32c;
-  int local_328;
-  float local_324;
+  int iNodeCount;
+  float origin;
   float local_320;
-  pathsort_t local_31c [64];
-  pathnode_t *local_18;
-  float local_14;
+  pathsort_t nodes [64];
+  pathnode_t *pTestNode;
+  float forward;
   float local_10;
-  team_t local_c;
-  int local_8;
+  team_t eTeam;
+  int i;
   
   if (-1 < level.time - *(int *)(in_ECX + 0x88)) {
     *(int *)(in_ECX + 0x88) = level.time + 0x1356;
-    ppVar1 = *(pathnode_t **)(in_ECX + 0x60);
-    if ((ppVar1 != (pathnode_t *)0x0) && (iVar2 = Path_IsValidClaimNode(ppVar1), iVar2 != 0)) {
-      local_328 = Path_NodesInCylinder((ppVar1->constant).vOrigin,80.0,80.0,local_31c,0x40,0x83ffc);
-      local_c = *(team_t *)(in_ECX + 4);
-      local_14 = (ppVar1->constant).forward[0];
-      local_10 = (ppVar1->constant).forward[1];
-      local_324 = (ppVar1->constant).vOrigin[0];
-      local_320 = (ppVar1->constant).vOrigin[1];
-      for (local_8 = 0; local_8 < local_328; local_8 = local_8 + 1) {
-        local_18 = local_31c[local_8].node;
-        if ((((local_18->constant).spawnflags & 0x8000) != 0) &&
-           ((local_18->dynamic).iFreeTime != 0x7fffffff)) {
-          local_330 = local_324 - (local_18->constant).vOrigin[0];
-          local_32c = local_320 - (local_18->constant).vOrigin[1];
-          Vec2Normalize(&local_330);
-          if ((local_14 * local_330 + local_10 * local_32c <= -0.5) &&
-             (0.5 <= (local_18->constant).forward[0] * local_330 +
-                     (local_18->constant).forward[1] * local_32c)) {
-            Path_MarkNodeInvalid(local_18,local_c);
+    node_00 = *(pathnode_t **)(in_ECX + 0x60);
+    if ((node_00 != (pathnode_t *)0x0) && (iVar1 = Path_IsValidClaimNode(node_00), iVar1 != 0)) {
+      iNodeCount = Path_NodesInCylinder((node_00->constant).vOrigin,80.0,80.0,nodes,0x40,0x83ffc);
+      eTeam = *(team_t *)(in_ECX + 4);
+      forward = (node_00->constant).forward[0];
+      local_10 = (node_00->constant).forward[1];
+      origin = (node_00->constant).vOrigin[0];
+      local_320 = (node_00->constant).vOrigin[1];
+      for (i = 0; i < iNodeCount; i = i + 1) {
+        pTestNode = nodes[i].node;
+        if ((((pTestNode->constant).spawnflags & 0x8000) != 0) &&
+           ((pTestNode->dynamic).iFreeTime != 0x7fffffff)) {
+          delta = origin - (pTestNode->constant).vOrigin[0];
+          local_32c = local_320 - (pTestNode->constant).vOrigin[1];
+          Vec2Normalize(&delta);
+          if ((forward * delta + local_10 * local_32c <= -0.5) &&
+             (0.5 <= (pTestNode->constant).forward[0] * delta +
+                     (pTestNode->constant).forward[1] * local_32c)) {
+            Path_MarkNodeInvalid(pTestNode,eTeam);
           }
         }
       }
@@ -1173,14 +1224,15 @@ void __cdecl Sentient_BanNearNodes(sentient_s *param_1)
 // 00930B40  G_InitSentients  (game/sentient.cpp:997)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl G_InitSentients(void)
 
 {
-  int local_8;
+  sentient_s *sentient;
+  int i;
   
   glob.lastTime = 0;
   glob.lastSample = 0;
@@ -1192,8 +1244,8 @@ void __cdecl G_InitSentients(void)
   glob.playerTrail[1][2] = 0.0;
   glob.sampleTime[0] = 0;
   glob.sampleTime[1] = 0;
-  for (local_8 = 0; local_8 < 0x30; local_8 = local_8 + 1) {
-    level.sentients[local_8].inuse = false;
+  for (i = 0; i < 0x30; i = i + 1) {
+    level.sentients[i].inuse = false;
   }
   Actor_InitThreatBiasGroups();
   return;
@@ -1213,6 +1265,8 @@ bool __cdecl Sentient_NearestNodeDirty(sentient_s *param_1,bool param_2)
   undefined4 *in_ECX;
   char in_DL;
   bool local_10;
+  bool originChanged;
+  sentient_s *self;
   
   if (in_DL != '\0') {
     *(undefined1 *)((int)in_ECX + 0x17) = 1;

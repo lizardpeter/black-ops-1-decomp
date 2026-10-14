@@ -2,10 +2,10 @@
 
 // 00A52190  AllocateVertexStream2Buffer  (gfx_d3d/r_vertexstream2.cpp:19)
 
-bool __cdecl AllocateVertexStream2Buffer(uint param_1,int param_2)
+bool __cdecl AllocateVertexStream2Buffer(uint stream2ByteSize,int location)
 
 {
-  R_AllocDynamicVertexBuffer(&stream2VertexBuffer,param_1,false,1,"vertexStream2");
+  R_AllocDynamicVertexBuffer(&stream2VertexBuffer,stream2ByteSize,false,1,"vertexStream2");
   return stream2VertexBuffer != (IDirect3DVertexBuffer9 *)0x0;
 }
 
@@ -22,30 +22,32 @@ void __cdecl FreeVertexStream2Buffer(void)
 
 // 00A52090  R_VertexStream2_Init  (gfx_d3d/r_vertexstream2.cpp:95)
 
-void __cdecl R_VertexStream2_Init(uint param_1,int param_2)
+void __cdecl R_VertexStream2_Init(uint stream2ByteSize,int location)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *dst;
+  float *vbPtr;
+  bool allocateOk;
   
   Com_Printf(8,"vertex stream 2: --------------------------\n");
   Com_Printf(8,"vertex stream 2: needs %u bytes\n");
-  if (stream2AllocatedSize == param_1) {
+  if (stream2AllocatedSize == stream2ByteSize) {
     Com_Printf(8,"vertex stream 2: already allocated %u bytes\n");
   }
-  else if (param_1 != 0) {
+  else if (stream2ByteSize != 0) {
     if (stream2AllocatedSize != 0) {
       R_VertexStream2_Shutdown();
     }
-    bVar1 = AllocateVertexStream2Buffer(param_1,param_2);
+    bVar1 = AllocateVertexStream2Buffer(stream2ByteSize,location);
     if (bVar1) {
       Com_Printf(8,"vertex stream 2: vertex buffer allocate ok\n");
-      puVar2 = R_LockVertexBuffer(stream2VertexBuffer,0,0,0);
-      if (puVar2 != (uchar *)0x0) {
-        memset(puVar2,'\0',param_1);
+      dst = R_LockVertexBuffer(stream2VertexBuffer,0,0,0);
+      if (dst != (uchar *)0x0) {
+        memset(dst,'\0',stream2ByteSize);
         R_UnlockVertexBuffer(stream2VertexBuffer);
       }
-      stream2AllocatedSize = param_1;
+      stream2AllocatedSize = stream2ByteSize;
     }
     else {
       Com_Printf(8,"vertex stream 2: vertex buffer allocate failed\n");
@@ -71,18 +73,18 @@ void __cdecl R_VertexStream2_Shutdown(void)
 
 // 00A52200  R_VertexStream2_Lock  (gfx_d3d/r_vertexstream2.cpp:148)
 
-uchar * __cdecl R_VertexStream2_Lock(uint *param_1)
+uchar * __cdecl R_VertexStream2_Lock(uint *stream2LockedSize)
 
 {
   uchar *puVar1;
   
   if (stream2AllocatedSize == 0) {
-    *param_1 = 0;
+    *stream2LockedSize = 0;
     puVar1 = (uchar *)0x0;
   }
   else {
     puVar1 = R_LockVertexBuffer(stream2VertexBuffer,0,0,0);
-    *param_1 = stream2AllocatedSize;
+    *stream2LockedSize = stream2AllocatedSize;
   }
   return puVar1;
 }
@@ -105,12 +107,12 @@ void __cdecl R_VertexStream2_Unlock(void)
 void __cdecl R_VertexStream2_Clear(void)
 
 {
-  uchar *puVar1;
-  ulong local_8;
+  uchar *dst;
+  uint stream2Size;
   
-  puVar1 = R_VertexStream2_Lock(&local_8);
-  if (puVar1 != (uchar *)0x0) {
-    memset(puVar1,'\0',local_8);
+  dst = R_VertexStream2_Lock(&stream2Size);
+  if (dst != (uchar *)0x0) {
+    memset(dst,'\0',stream2Size);
   }
   R_VertexStream2_Unlock();
   return;

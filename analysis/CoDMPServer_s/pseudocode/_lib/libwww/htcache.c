@@ -5,34 +5,34 @@
 undefined4 _HTCacheIndex_write(void)
 
 {
-  char *pcVar1;
-  _iobuf *p_Var2;
-  int iVar3;
-  int iVar4;
-  int *piVar5;
+  char *file;
+  _iobuf *stream;
+  int iVar1;
+  int iVar2;
+  int *piVar3;
   
   if (((DAT_035477a8 != 0) && (DAT_035477b0 != 0)) &&
-     (pcVar1 = (char *)FUN_008908d0(), pcVar1 != (char *)0x0)) {
-    p_Var2 = fopen(pcVar1,"wb");
-    if (p_Var2 == (_iobuf *)0x0) {
-      free(pcVar1);
+     (file = (char *)FUN_008908d0(), file != (char *)0x0)) {
+    stream = fopen(file,"wb");
+    if (stream == (_iobuf *)0x0) {
+      free(file);
       return 0;
     }
-    iVar4 = 0;
+    iVar2 = 0;
     do {
-      piVar5 = *(int **)(iVar4 + DAT_035477b0);
-      if (piVar5 != (int *)0x0) {
-        while ((piVar5 = (int *)piVar5[1], piVar5 != (int *)0x0 && (*piVar5 != 0))) {
-          iVar3 = fprintf(p_Var2,"%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n");
-          if (iVar3 < 0) {
+      piVar3 = *(int **)(iVar2 + DAT_035477b0);
+      if (piVar3 != (int *)0x0) {
+        while ((piVar3 = (int *)piVar3[1], piVar3 != (int *)0x0 && (*piVar3 != 0))) {
+          iVar1 = fprintf(stream,"%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n");
+          if (iVar1 < 0) {
             return 0;
           }
         }
       }
-      iVar4 = iVar4 + 4;
-    } while (iVar4 < 0x95c);
-    fclose(p_Var2);
-    free(pcVar1);
+      iVar2 = iVar2 + 4;
+    } while (iVar2 < 0x95c);
+    fclose(stream);
+    free(file);
   }
   return 0;
 }
@@ -68,65 +68,65 @@ int _HTCache_find(void)
 {
   byte bVar1;
   int in_EAX;
-  byte *pbVar2;
-  int iVar3;
+  byte *pBlock;
+  int iVar2;
   int in_ECX;
-  byte *pbVar4;
-  int iVar5;
-  int *piVar6;
-  byte *pbVar7;
-  bool bVar8;
+  byte *pbVar3;
+  int iVar4;
+  int *piVar5;
+  byte *pbVar6;
+  bool bVar7;
   
   if (((DAT_035477a0 != 0) && (in_EAX != 0)) && (DAT_035477b0 != 0)) {
-    iVar5 = 0;
+    iVar4 = 0;
     if (in_ECX == 0) {
-      pbVar2 = (byte *)_HTAnchor_address();
+      pBlock = (byte *)_HTAnchor_address();
     }
     else {
       _HTSACopy();
-      pbVar2 = (byte *)0x0;
+      pBlock = (byte *)0x0;
     }
-    bVar1 = *pbVar2;
-    pbVar7 = pbVar2;
+    bVar1 = *pBlock;
+    pbVar6 = pBlock;
     while (bVar1 != 0) {
-      iVar5 = (int)(iVar5 * 3 + (uint)bVar1) % 599;
-      pbVar4 = pbVar7 + 1;
-      pbVar7 = pbVar7 + 1;
-      bVar1 = *pbVar4;
+      iVar4 = (int)(iVar4 * 3 + (uint)bVar1) % 599;
+      pbVar3 = pbVar6 + 1;
+      pbVar6 = pbVar6 + 1;
+      bVar1 = *pbVar3;
     }
-    piVar6 = *(int **)(DAT_035477b0 + iVar5 * 4);
-    if (piVar6 == (int *)0x0) {
-      free(pbVar2);
+    piVar5 = *(int **)(DAT_035477b0 + iVar4 * 4);
+    if (piVar5 == (int *)0x0) {
+      free(pBlock);
       return 0;
     }
     do {
-      piVar6 = (int *)piVar6[1];
-      if ((piVar6 == (int *)0x0) || (iVar5 = *piVar6, iVar5 == 0)) break;
-      pbVar7 = *(byte **)(iVar5 + 4);
-      pbVar4 = pbVar2;
+      piVar5 = (int *)piVar5[1];
+      if ((piVar5 == (int *)0x0) || (iVar4 = *piVar5, iVar4 == 0)) break;
+      pbVar6 = *(byte **)(iVar4 + 4);
+      pbVar3 = pBlock;
       do {
-        bVar1 = *pbVar7;
-        bVar8 = bVar1 < *pbVar4;
-        if (bVar1 != *pbVar4) {
+        bVar1 = *pbVar6;
+        bVar7 = bVar1 < *pbVar3;
+        if (bVar1 != *pbVar3) {
 LAB_008919d6:
-          iVar3 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+          iVar2 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
           goto LAB_008919db;
         }
         if (bVar1 == 0) break;
-        bVar1 = pbVar7[1];
-        bVar8 = bVar1 < pbVar4[1];
-        if (bVar1 != pbVar4[1]) goto LAB_008919d6;
-        pbVar7 = pbVar7 + 2;
-        pbVar4 = pbVar4 + 2;
+        bVar1 = pbVar6[1];
+        bVar7 = bVar1 < pbVar3[1];
+        if (bVar1 != pbVar3[1]) goto LAB_008919d6;
+        pbVar6 = pbVar6 + 2;
+        pbVar3 = pbVar3 + 2;
       } while (bVar1 != 0);
-      iVar3 = 0;
+      iVar2 = 0;
 LAB_008919db:
-      if (iVar3 == 0) {
-        free(pbVar2);
-        return iVar5;
+      if (iVar2 == 0) {
+        free(pBlock);
+        return iVar4;
       }
-    } while (piVar6 != (int *)0x0);
-    free(pbVar2);
+    } while (piVar5 != (int *)0x0);
+    free(pBlock);
   }
   return 0;
 }
@@ -187,28 +187,28 @@ undefined4 _HTCache_writeMeta(int param_1,int param_2)
 
 {
   int in_EAX;
-  char *pcVar1;
-  _iobuf *p_Var2;
-  undefined4 uVar3;
+  char *file;
+  _iobuf *stream;
+  undefined4 uVar1;
   
   if (((in_EAX == 0) || (param_1 == 0)) || (param_2 == 0)) {
     return 0;
   }
-  pcVar1 = (char *)FUN_00891b20();
-  if (pcVar1 == (char *)0x0) {
+  file = (char *)FUN_00891b20();
+  if (file == (char *)0x0) {
     _HTCache_remove();
     return 0;
   }
-  p_Var2 = fopen(pcVar1,"wb");
-  if (p_Var2 == (_iobuf *)0x0) {
+  stream = fopen(file,"wb");
+  if (stream == (_iobuf *)0x0) {
     _HTCache_remove();
-    free(pcVar1);
+    free(file);
     return 0;
   }
-  uVar3 = FUN_00891b90(p_Var2);
-  fclose(p_Var2);
-  free(pcVar1);
-  return uVar3;
+  uVar1 = FUN_00891b90(stream);
+  fclose(stream);
+  free(file);
+  return uVar1;
 }
 
 

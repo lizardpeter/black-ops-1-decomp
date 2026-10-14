@@ -4,17 +4,18 @@
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadValueNoXor(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadValueNoXor(msg_t *msg,int bits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_14;
-  uint local_10;
-  uint local_8;
+  int local_14;
+  int j;
+  int partialBits;
+  int value;
   
-  if (param_2 < 0) {
+  if (bits < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x19,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -22,19 +23,19 @@ int __cdecl MSG_ReadValueNoXor(msg_t *param_1,int param_2)
       return iVar3;
     }
   }
-  local_10 = param_2 & 7;
-  if (local_10 == 0) {
+  j = bits & 7;
+  if (j == 0) {
     local_14 = 0;
   }
   else {
-    local_14 = MSG_ReadBits(param_1,local_10);
+    local_14 = MSG_ReadBits(msg,j);
   }
-  local_8 = local_14;
-  for (; (int)local_10 < param_2; local_10 = local_10 + 8) {
-    iVar3 = MSG_ReadByte(param_1);
-    local_8 = iVar3 << ((byte)local_10 & 0x1f) | local_8;
+  value = local_14;
+  for (; j < bits; j = j + 8) {
+    iVar3 = MSG_ReadByte(msg);
+    value = iVar3 << ((byte)j & 0x1f) | value;
   }
-  return local_8;
+  return value;
 }
 
 
@@ -42,45 +43,48 @@ int __cdecl MSG_ReadValueNoXor(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadValue(msg_t *param_1,int *param_2,int *param_3,int param_4,int param_5)
+int __cdecl MSG_ReadValue(msg_t *msg,int *fromF,int *toF,int bits,int size)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uint uVar4;
+  uint uVar3;
+  int iVar4;
+  uint uVar5;
   int local_18;
-  uint local_10;
-  uint local_8;
+  int absbits;
+  int mask;
+  int sgn;
+  int value;
   
-  if (param_4 < 0) {
-    local_18 = -param_4;
+  if (bits < 0) {
+    local_18 = -bits;
   }
   else {
-    local_18 = param_4;
+    local_18 = bits;
   }
-  local_8 = MSG_ReadValueNoXor(param_1,local_18);
+  uVar3 = MSG_ReadValueNoXor(msg,local_18);
   if (0x20 < local_18) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x30,0,
                              "%s\n\t(absbits) = %i");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
   }
   if (local_18 == 0x20) {
-    local_10 = 0xffffffff;
+    mask = -1;
   }
   else {
-    local_10 = (1 << ((byte)local_18 & 0x1f)) - 1;
+    mask = (1 << ((byte)local_18 & 0x1f)) + -1;
   }
-  uVar4 = MSG_GetField(param_2,param_5);
-  local_8 = uVar4 & local_10 ^ local_8;
-  if ((param_4 < 0) && ((1 << ((byte)local_18 - 1 & 0x1f) & local_8) != 0)) {
-    local_8 = local_10 ^ 0xffffffff | local_8;
+  uVar5 = MSG_GetField(fromF,size);
+  value = uVar5 & mask ^ uVar3;
+  if ((bits < 0) && ((1 << ((byte)local_18 - 1 & 0x1f) & value) != 0)) {
+    value = mask ^ 0xffffffffU | value;
   }
-  return local_8;
+  return value;
 }
 
 
@@ -88,7 +92,7 @@ int __cdecl MSG_ReadValue(msg_t *param_1,int *param_2,int *param_3,int param_4,i
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadDeltaAngle(msg_t *param_1,float param_2)
+float __cdecl MSG_ReadDeltaAngle(msg_t *msg,float oldFloat)
 
 {
   short sVar1;
@@ -97,18 +101,24 @@ float __cdecl MSG_ReadDeltaAngle(msg_t *param_1,float param_2)
   int iVar4;
   uint uVar5;
   float10 fVar6;
-  short local_18;
-  float local_c;
+  short delta_2;
+  short newVal_2;
+  short delta;
+  short sign;
+  short newVal;
+  int index;
+  float newFloat;
+  short oldVal;
   
-  local_18 = 1;
-  iVar4 = MSG_ReadBit(param_1);
+  sign = 1;
+  iVar4 = MSG_ReadBit(msg);
   if (iVar4 == 1) {
-    iVar4 = MSG_ReadBit(param_1);
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 != 0) {
-      local_18 = -1;
+      sign = -1;
     }
     iVar4 = GetMinBitCountForNum(7);
-    uVar5 = MSG_ReadBits(param_1,iVar4);
+    uVar5 = MSG_ReadBits(msg,iVar4);
     if (6 < uVar5) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x52,0,
                                "index doesn\'t index COMMON_ANGLE_DELTA_ARRAYCOUNT\n\t%i not in [0, %i)"
@@ -128,20 +138,19 @@ float __cdecl MSG_ReadDeltaAngle(msg_t *param_1,float param_2)
         return (float)fVar6;
       }
     }
-    local_c = (float)(int)(short)((short)(int)(param_2 * 182.04445) + local_18 * sVar1) *
-              0.005493164;
+    newFloat = (float)(int)(short)((short)(int)(oldFloat * 182.04445) + sign * sVar1) * 0.005493164;
   }
   else {
-    iVar4 = MSG_ReadBit(param_1);
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 0) {
-      local_c = MSG_ReadAngle16(param_1);
+      newFloat = MSG_ReadAngle16(msg);
     }
     else {
-      iVar4 = MSG_ReadBit(param_1);
+      iVar4 = MSG_ReadBit(msg);
       if (iVar4 != 0) {
-        local_18 = -1;
+        sign = -1;
       }
-      iVar4 = MSG_ReadBits(param_1,0xc);
+      iVar4 = MSG_ReadBits(msg,0xc);
       if ((short)iVar4 == 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x6a,0,"%s");
         if (!bVar3) {
@@ -150,11 +159,11 @@ float __cdecl MSG_ReadDeltaAngle(msg_t *param_1,float param_2)
           return (float)fVar6;
         }
       }
-      local_c = (float)(int)(short)((short)(int)(param_2 * 182.04445) + local_18 * (short)iVar4) *
-                0.005493164;
+      newFloat = (float)(int)(short)((short)(int)(oldFloat * 182.04445) + sign * (short)iVar4) *
+                 0.005493164;
     }
   }
-  return local_c;
+  return newFloat;
 }
 
 
@@ -162,16 +171,18 @@ float __cdecl MSG_ReadDeltaAngle(msg_t *param_1,float param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadLastChangedField(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadLastChangedField(msg_t *msg,int totalFields)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int lastChanged;
+  int idealBits;
   
-  iVar3 = GetMinBitCountForNum(param_2);
-  iVar3 = MSG_ReadBits(param_1,iVar3);
-  if (param_2 < iVar3) {
+  iVar3 = GetMinBitCountForNum(totalFields);
+  iVar3 = MSG_ReadBits(msg,iVar3);
+  if (totalFields < iVar3) {
     va("lastChanged was %i, totalFields is %i\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x85,0,"%s\n\t%s"
                             );
@@ -189,23 +200,23 @@ int __cdecl MSG_ReadLastChangedField(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadNumFieldsSkipped(msg_t *param_1,int param_2,int param_3)
+int __cdecl MSG_ReadNumFieldsSkipped(msg_t *msg,int skippedFieldBits,int maxVal)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   byte bVar4;
-  int local_c;
-  int local_8;
+  int numSkipped;
+  int bits;
   
-  local_c = 0;
-  if (param_2 == 1) {
+  numSkipped = 0;
+  if (skippedFieldBits == 1) {
     do {
-      local_c = local_c + 1;
-      iVar3 = MSG_ReadBit(param_1);
+      numSkipped = numSkipped + 1;
+      iVar3 = MSG_ReadBit(msg);
     } while (iVar3 == 0);
-    if ((param_3 < local_c) &&
+    if ((maxVal < numSkipped) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0xaa,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -214,22 +225,22 @@ int __cdecl MSG_ReadNumFieldsSkipped(msg_t *param_1,int param_2,int param_3)
     }
   }
   else {
-    iVar3 = MSG_ReadBit(param_1);
+    iVar3 = MSG_ReadBit(msg);
     if (iVar3 == 0) {
-      local_c = 1;
-      local_8 = MSG_ReadBits(param_1,param_2);
-      bVar4 = (byte)param_2;
-      if (((1 << (bVar4 & 0x1f)) + -1 < local_8) &&
+      numSkipped = 1;
+      bits = MSG_ReadBits(msg,skippedFieldBits);
+      bVar4 = (byte)skippedFieldBits;
+      if (((1 << (bVar4 & 0x1f)) + -1 < bits) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0xcc,0,"%s"
                                   ), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      while (local_8 == (1 << (bVar4 & 0x1f)) + -1) {
-        local_c = local_c + -1 + (1 << (bVar4 & 0x1f));
-        local_8 = MSG_ReadBits(param_1,param_2);
-        if (((1 << (bVar4 & 0x1f)) + -1 < local_8) &&
+      while (bits == (1 << (bVar4 & 0x1f)) + -1) {
+        numSkipped = numSkipped + -1 + (1 << (bVar4 & 0x1f));
+        bits = MSG_ReadBits(msg,skippedFieldBits);
+        if (((1 << (bVar4 & 0x1f)) + -1 < bits) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0xd8,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -237,29 +248,33 @@ int __cdecl MSG_ReadNumFieldsSkipped(msg_t *param_1,int param_2,int param_3)
           return iVar3;
         }
       }
-      local_c = local_c + local_8;
+      numSkipped = numSkipped + bits;
     }
     else {
-      local_c = 1;
+      numSkipped = 1;
     }
   }
-  return local_c;
+  return numSkipped;
 }
 
 
 // 006E29A0  MSG_CopyFieldOver  (qcommon/msg.cpp:254)
 
-void __cdecl MSG_CopyFieldOver(NetField *param_1,void *param_2,void *param_3,int param_4)
+void __cdecl MSG_CopyFieldOver(NetField *stateFields,void *from,void *to,int fieldNum)
 
 {
   int iVar1;
   int iVar2;
   int *piVar3;
   undefined2 local_18;
+  NetField *field;
+  int *toF;
+  int *fromF;
   
-  piVar3 = (int *)((int)param_3 + param_1[param_4].offset);
-  iVar2 = MSG_GetField((int *)((int)param_2 + param_1[param_4].offset),param_1[param_4].size);
-  iVar1 = param_1[param_4].size;
+  piVar3 = (int *)((int)to + stateFields[fieldNum].offset);
+  iVar2 = MSG_GetField((int *)((int)from + stateFields[fieldNum].offset),stateFields[fieldNum].size)
+  ;
+  iVar1 = stateFields[fieldNum].size;
   if (iVar1 == 1) {
     local_18._0_1_ = (undefined1)iVar2;
     *(undefined1 *)piVar3 = (undefined1)local_18;
@@ -280,35 +295,41 @@ void __cdecl MSG_CopyFieldOver(NetField *param_1,void *param_2,void *param_3,int
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_ReadDeltaFields(msg_t *param_1,int param_2,void *param_3,void *param_4,int param_5,
-                   NetField *param_6,int param_7,bool param_8)
+MSG_ReadDeltaFields(msg_t *msg,int time,void *from,void *to,int numFields,NetField *stateFields,
+                   int skippedFieldBits,bool isEntity)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_20;
-  int local_8;
+  int lastChanged;
+  int nextChanged;
+  int *eTypeFromF;
+  int *eTypeToF;
+  NetField *field;
+  int lc;
+  bool xorValues;
+  int i;
   
-  iVar3 = MSG_ReadBit(param_1);
+  iVar3 = MSG_ReadBit(msg);
   if (iVar3 == 0) {
-    for (local_8 = 0; local_8 < param_5; local_8 = local_8 + 1) {
-      MSG_CopyFieldOver(param_6,param_3,param_4,local_8);
+    for (i = 0; i < numFields; i = i + 1) {
+      MSG_CopyFieldOver(stateFields,from,to,i);
     }
   }
   else {
-    local_20 = -1;
-    iVar3 = MSG_ReadLastChangedField(param_1,param_5);
-    if (param_5 < iVar3) {
+    nextChanged = -1;
+    iVar3 = MSG_ReadLastChangedField(msg,numFields);
+    if (numFields < iVar3) {
       Com_PrintError(0x1e,"Got lastChanged field of %i, but there are only %i fields\n");
-      param_1->overflowed = 1;
+      msg->overflowed = 1;
     }
     else {
-      while (local_20 != iVar3) {
-        iVar4 = MSG_ReadNumFieldsSkipped(param_1,param_7,iVar3 - local_20);
-        iVar4 = iVar4 + local_20;
-        if (iVar4 <= local_20) {
+      while (nextChanged != iVar3) {
+        iVar4 = MSG_ReadNumFieldsSkipped(msg,skippedFieldBits,iVar3 - nextChanged);
+        iVar4 = iVar4 + nextChanged;
+        if (iVar4 <= nextChanged) {
           va("lastChanged was %i, nextChanged is %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x147,0,
                                    "%s\n\t%s");
@@ -318,7 +339,7 @@ MSG_ReadDeltaFields(msg_t *param_1,int param_2,void *param_3,void *param_4,int p
             return;
           }
         }
-        local_8 = local_20;
+        i = nextChanged;
         if (iVar3 < iVar4) {
           va("nextChanged is %i, lc is %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x148,0,
@@ -329,20 +350,20 @@ MSG_ReadDeltaFields(msg_t *param_1,int param_2,void *param_3,void *param_4,int p
             return;
           }
         }
-        while (local_8 = local_8 + 1, local_8 < iVar4) {
-          MSG_CopyFieldOver(param_6,param_3,param_4,local_8);
+        while (i = i + 1, i < iVar4) {
+          MSG_CopyFieldOver(stateFields,from,to,i);
         }
-        MSG_ReadDeltaField(param_1,param_2,param_3,param_4,param_6 + iVar4,0,false);
-        local_20 = iVar4;
+        MSG_ReadDeltaField(msg,time,from,to,stateFields + iVar4,0,false);
+        nextChanged = iVar4;
       }
-      for (local_8 = 0; local_8 < iVar3; local_8 = local_8 + 1) {
-        if (param_6[local_8].changeHints == '\x02') {
-          MSG_ReadDeltaField(param_1,param_2,param_3,param_4,param_6 + local_8,0,false);
+      for (i = 0; i < iVar3; i = i + 1) {
+        if (stateFields[i].changeHints == '\x02') {
+          MSG_ReadDeltaField(msg,time,from,to,stateFields + i,0,false);
         }
       }
-      while (local_8 = iVar3 + 1, local_8 < param_5) {
-        MSG_CopyFieldOver(param_6,param_3,param_4,local_8);
-        iVar3 = local_8;
+      while (i = iVar3 + 1, i < numFields) {
+        MSG_CopyFieldOver(stateFields,from,to,i);
+        iVar3 = i;
       }
     }
   }
@@ -355,15 +376,15 @@ MSG_ReadDeltaFields(msg_t *param_1,int param_2,void *param_3,void *param_4,int p
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 int __cdecl
-MSG_ReadDeltaStruct(msg_t *param_1,int param_2,void *param_3,void *param_4,uint param_5,int param_6,
-                   int param_7,NetField *param_8,int param_9,bool param_10)
+MSG_ReadDeltaStruct(msg_t *msg,int time,void *from,void *to,uint number,int numFields,int indexBits,
+                   NetField *stateFields,int skippedFieldBits,bool isEntity)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)(1 << ((byte)param_7 & 0x1f)) <= param_5) {
+  if ((uint)(1 << ((byte)indexBits & 0x1f)) <= number) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg.cpp",0x188,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -371,7 +392,7 @@ MSG_ReadDeltaStruct(msg_t *param_1,int param_2,void *param_3,void *param_4,uint 
       return iVar3;
     }
   }
-  iVar3 = MSG_ReadBit(param_1);
+  iVar3 = MSG_ReadBit(msg);
   if (iVar3 == 1) {
     if ((cl_shownet != (dvar_s *)0x0) &&
        ((1 < (cl_shownet->current).integer || ((cl_shownet->current).integer == -1)))) {
@@ -380,8 +401,8 @@ MSG_ReadDeltaStruct(msg_t *param_1,int param_2,void *param_3,void *param_4,uint 
     iVar3 = 1;
   }
   else {
-    *(uint *)param_4 = param_5;
-    MSG_ReadDeltaFields(param_1,param_2,param_3,param_4,param_6,param_8,param_9,param_10);
+    *(uint *)to = number;
+    MSG_ReadDeltaFields(msg,time,from,to,numFields,stateFields,skippedFieldBits,isEntity);
     iVar3 = 0;
   }
   return iVar3;
@@ -392,8 +413,7 @@ MSG_ReadDeltaStruct(msg_t *param_1,int param_2,void *param_3,void *param_4,uint 
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-MSG_ReadDeltaMatchState(msg_t *param_1,int param_2,MatchState *param_3,MatchState *param_4)
+void __cdecl MSG_ReadDeltaMatchState(msg_t *msg,int time,MatchState *from,MatchState *to)
 
 {
   bool bVar1;
@@ -403,19 +423,19 @@ MSG_ReadDeltaMatchState(msg_t *param_1,int param_2,MatchState *param_3,MatchStat
   NetField *local_88;
   uint local_84;
   
-  local_84 = MSG_ReadEntityIndex(param_1,1);
+  local_84 = MSG_ReadEntityIndex(msg,1);
   bVar1 = Demo_IsPlaying();
   pNVar2 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,bVar1);
   local_88 = pNVar2->array;
   bVar1 = Demo_IsPlaying();
   pNVar2 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,bVar1);
   local_8c = pNVar2->count;
-  if (param_3 == (MatchState *)0x0) {
+  if (from == (MatchState *)0x0) {
     memset(local_180,'\0',0x80);
-    MSG_ReadDeltaStruct(param_1,param_2,local_180,param_4,local_84,local_8c,1,local_88,1,false);
+    MSG_ReadDeltaStruct(msg,time,local_180,to,local_84,local_8c,1,local_88,1,false);
   }
   else {
-    MSG_ReadDeltaStruct(param_1,param_2,param_3,param_4,local_84,local_8c,1,local_88,1,false);
+    MSG_ReadDeltaStruct(msg,time,from,to,local_84,local_8c,1,local_88,1,false);
   }
   return;
 }
@@ -428,31 +448,31 @@ MSG_ReadDeltaMatchState(msg_t *param_1,int param_2,MatchState *param_3,MatchStat
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 int __cdecl
-MSG_ReadDeltaClient(msg_t *param_1,int param_2,clientState_s *param_3,clientState_s *param_4,
-                   int param_5)
+MSG_ReadDeltaClient(msg_t *msg,int time,clientState_s *from,clientState_s *to,int number)
 
 {
-  uint uVar1;
-  bool bVar2;
-  NetFieldList *pNVar3;
-  int iVar4;
-  clientState_s local_dc;
+  uint numFields_00;
+  bool bVar1;
+  NetFieldList *pNVar2;
+  int iVar3;
+  int numFields;
+  clientState_s dummy;
   uint local_c;
-  NetField *local_8;
+  NetField *fields;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = Demo_IsPlaying();
-  pNVar3 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,bVar2);
-  local_8 = pNVar3->array;
-  bVar2 = Demo_IsPlaying();
-  pNVar3 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,bVar2);
-  uVar1 = pNVar3->count;
-  if (param_3 == (clientState_s *)0x0) {
-    param_3 = &local_dc;
-    memset((uchar *)&local_dc,'\0',0xd0);
+  bVar1 = Demo_IsPlaying();
+  pNVar2 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,bVar1);
+  fields = pNVar2->array;
+  bVar1 = Demo_IsPlaying();
+  pNVar2 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,bVar1);
+  numFields_00 = pNVar2->count;
+  if (from == (clientState_s *)0x0) {
+    from = &dummy;
+    memset((uchar *)&dummy,'\0',0xd0);
   }
-  iVar4 = MSG_ReadDeltaStruct(param_1,param_2,param_3,param_4,param_5,uVar1,5,local_8,1,false);
-  return iVar4;
+  iVar3 = MSG_ReadDeltaStruct(msg,time,from,to,number,numFields_00,5,fields,1,false);
+  return iVar3;
 }
 
 
@@ -461,34 +481,34 @@ MSG_ReadDeltaClient(msg_t *param_1,int param_2,clientState_s *param_3,clientStat
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 int __cdecl
-MSG_ReadDeltaEntity(msg_t *param_1,int param_2,entityState_s *param_3,entityState_s *param_4,
-                   int param_5)
+MSG_ReadDeltaEntity(msg_t *msg,int time,entityState_s *from,entityState_s *to,int number)
 
 {
   int iVar1;
+  int numFields;
   
-  iVar1 = MSG_ReadDeltaEntityStruct(param_1,param_2,param_3,param_4,param_5,0x4a,3);
+  iVar1 = MSG_ReadDeltaEntityStruct(msg,time,from,to,number,0x4a,3);
   return iVar1;
 }
 
 
 // 006E2580  MSG_GetField  (qcommon/msg.h:539)
 
-int __cdecl MSG_GetField(int *param_1,int param_2)
+int __cdecl MSG_GetField(int *i,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 == 1) {
-    iVar3 = (int)(char)*param_1;
+  if (size == 1) {
+    iVar3 = (int)(char)*i;
   }
-  else if (param_2 == 2) {
-    iVar3 = (int)(short)*param_1;
+  else if (size == 2) {
+    iVar3 = (int)(short)*i;
   }
-  else if (param_2 == 4) {
-    iVar3 = *param_1;
+  else if (size == 4) {
+    iVar3 = *i;
   }
   else {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../qcommon/msg.h",0x223,0,

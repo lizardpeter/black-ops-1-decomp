@@ -22,7 +22,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_contractsBuffer__(void)
 
 // 0095AC70  LiveContracts_GetTokenString  (live/live_contracts.cpp:122)
 
-char * __cdecl LiveContracts_GetTokenString(char *param_1)
+char * __cdecl LiveContracts_GetTokenString(char *token)
 
 {
   char cVar1;
@@ -33,13 +33,16 @@ char * __cdecl LiveContracts_GetTokenString(char *param_1)
   uchar *local_28;
   uchar *local_24;
   char *local_14;
+  int newStringBufferLen;
+  char *newBufferString;
+  int len;
   
-  local_14 = param_1;
+  local_14 = token;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  local_14 = local_14 + ((s_contractsStringBufferLen + 1) - (int)(param_1 + 1));
+  local_14 = local_14 + ((s_contractsStringBufferLen + 1) - (int)(token + 1));
   pcVar5 = (char *)(s_contractsBuffer + s_contractsStringBufferLen);
   if ((0x10000 < (int)local_14) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x7f,0,
@@ -49,7 +52,7 @@ char * __cdecl LiveContracts_GetTokenString(char *param_1)
     return pcVar5;
   }
   if ((int)local_14 < 0x10001) {
-    local_24 = (uchar *)param_1;
+    local_24 = (uchar *)token;
     local_28 = (uchar *)pcVar5;
     do {
       uVar2 = *local_24;
@@ -72,97 +75,96 @@ char * __cdecl LiveContracts_GetTokenString(char *param_1)
 bool __cdecl LiveContracts_ValidateContracts(void)
 
 {
-  int local_20;
-  undefined4 local_18;
-  char local_14 [4];
-  int local_10;
-  int local_c;
-  int local_8;
+  int j_2;
+  int contractIndex_2;
+  int j;
+  char foundOneContract [4];
+  int i_2;
+  int contractIndex;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (s_numContracts <= local_8) {
-      local_10 = 0;
+    if (s_numContracts <= i) {
+      i_2 = 0;
       do {
-        if (s_numContractCycles <= local_10) {
+        if (s_numContractCycles <= i_2) {
           return true;
         }
-        local_14[0] = '\0';
-        local_14[1] = '\0';
-        local_14[2] = '\0';
-        for (local_18 = 0; local_18 < s_numContracts; local_18 = local_18 + 1) {
-          if ((1 << ((byte)local_10 & 0x1f) & contracts[s_contractDisplayOrder[local_18]].cycle) !=
-              0) {
-            *(undefined1 *)
-             ((int)&local_18 + contracts[s_contractDisplayOrder[local_18]].category + 3) = 1;
+        foundOneContract[0] = '\0';
+        foundOneContract[1] = '\0';
+        foundOneContract[2] = '\0';
+        for (j = 0; j < s_numContracts; j = j + 1) {
+          if ((1 << ((byte)i_2 & 0x1f) & contracts[s_contractDisplayOrder[j]].cycle) != 0) {
+            *(undefined1 *)((int)&j + contracts[s_contractDisplayOrder[j]].category + 3) = 1;
           }
         }
-        for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-          if (local_14[local_20] == '\0') {
+        for (j_2 = 0; j_2 < 3; j_2 = j_2 + 1) {
+          if (foundOneContract[j_2] == '\0') {
             Com_PrintError(0x10,
                            "Contract error: cycle %i does not have any contracts in category %i\n");
             return false;
           }
         }
-        local_10 = local_10 + 1;
+        i_2 = i_2 + 1;
       } while( true );
     }
-    local_c = s_contractDisplayOrder[local_8];
-    if (contracts[local_c].name == (char *)0x0) {
+    contractIndex = s_contractDisplayOrder[i];
+    if (contracts[contractIndex].name == (char *)0x0) {
       Com_PrintError(0x10,"Contract error: contract %i does not have a name\n");
       return false;
     }
-    if (contracts[local_c].description == (char *)0x0) {
+    if (contracts[contractIndex].description == (char *)0x0) {
       Com_PrintError(0x10,"Contract error: contract %i does not have a description\n");
     }
-    if ((contracts[local_c].category == '\0') || (3 < contracts[local_c].category)) {
+    if ((contracts[contractIndex].category == '\0') || (3 < contracts[contractIndex].category)) {
       Com_PrintError(0x10,
                      "Contract error: contract %i has an invalid category of %i. Must be between 1 and %i.\n"
                     );
       return false;
     }
-    if (contracts[local_c].cost < 1) {
+    if (contracts[contractIndex].cost < 1) {
       Com_PrintError(0x10,
                      "Contract error: contract %i has an invalid cost of %i. Must be greater than zero.\n"
                     );
       return false;
     }
-    if (contracts[local_c].statType == (char *)0x0) {
+    if (contracts[contractIndex].statType == (char *)0x0) {
       Com_PrintError(0x10,"Contract error: contract %i does not have a stat type.\n");
       return false;
     }
-    if (contracts[local_c].statName == (char *)0x0) {
+    if (contracts[contractIndex].statName == (char *)0x0) {
       Com_PrintError(0x10,"Contract error: contract %i does not have a stat name.\n");
       return false;
     }
-    if (contracts[local_c].count < 1) {
+    if (contracts[contractIndex].count < 1) {
       Com_PrintError(0x10,
                      "Contract error: contract %i has an invalid count of %i. Must be greater than zero.\n"
                     );
       return false;
     }
-    if (contracts[local_c].expirationType == (char *)0x0) {
+    if (contracts[contractIndex].expirationType == (char *)0x0) {
       Com_PrintError(0x10,"Contract error: contract %i does not have an expiration type.\n");
       return false;
     }
-    if (contracts[local_c].expirationData < 1) break;
-    if (contracts[local_c].rewardXP < 0) {
+    if (contracts[contractIndex].expirationData < 1) break;
+    if (contracts[contractIndex].rewardXP < 0) {
       Com_PrintError(1,
                      "Contract error: contract %i has an invalid rewardxp of %i. Must be greater than or equal to zero.\n"
                     );
       return false;
     }
-    if (contracts[local_c].rewardCP < 0) {
+    if (contracts[contractIndex].rewardCP < 0) {
       Com_PrintError(1,
                      "Contract error: contract %i has an invalid rewardcp of %i. Must be greater than or equal to zero.\n"
                     );
       return false;
     }
-    if ((contracts[local_c].rewardXP < 1) && (contracts[local_c].rewardCP < 1)) {
+    if ((contracts[contractIndex].rewardXP < 1) && (contracts[contractIndex].rewardCP < 1)) {
       Com_PrintError(0x10,"Contract error: contract %i does not have a reward\n");
       return false;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   Com_PrintError(0x10,
                  "Contract error: contract %i has invalid expiration data of %i. Must be greater than zero.\n"
@@ -175,7 +177,7 @@ bool __cdecl LiveContracts_ValidateContracts(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LiveContracts_ParseContracts(char *param_1)
+void __cdecl LiveContracts_ParseContracts(char *buffer)
 
 {
   code *pcVar1;
@@ -183,40 +185,43 @@ void __cdecl LiveContracts_ParseContracts(char *param_1)
   bool bVar3;
   int iVar4;
   char *pcVar5;
-  uchar local_458;
-  uchar local_454;
-  char local_444 [1028];
+  int category;
+  int timesPurchasable;
+  int i_5;
+  bool validatedExpirationType;
+  int cycleNumber_2;
+  char tokenString [1028];
   uint local_40;
-  uint local_3c;
-  char local_35;
-  uint local_34;
-  char local_2d;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  char *local_18;
-  int local_14;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  int i_4;
+  bool validatedReqType;
+  int i_3;
+  bool validatedStatType;
+  int i_2;
+  int cycleNumber;
+  int desiredContractCycleInterval;
+  int i;
+  int currentParseBlockType;
+  int contractIndex;
+  int requirementIndex;
+  char *token;
+  int lineNumber;
+  char *p;
   
   local_40 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = (char *)0x0;
-  local_14 = 0;
+  contractIndex = 0;
+  requirementIndex = 0;
   memset((uchar *)contracts,'\0',0xd800);
-  for (local_20 = 0; local_20 < 0x200; local_20 = local_20 + 1) {
-    s_contractDisplayOrder[local_20] = -1;
+  for (i = 0; i < 0x200; i = i + 1) {
+    s_contractDisplayOrder[i] = -1;
   }
-  local_c = 0;
+  lineNumber = 0;
   s_numContracts = 0;
   s_contractsStringBufferLen = 0;
   memset((uchar *)s_contractCycleTickerMessages,'\0',0x180);
-  local_1c = 0;
+  currentParseBlockType = 0;
   Com_BeginParseSession("contracts");
   Com_SetSpaceDelimited(1);
-  local_8 = param_1;
+  p = buffer;
 LAB_00959893:
   do {
     while( true ) {
@@ -224,9 +229,9 @@ LAB_00959893:
         while( true ) {
           while( true ) {
             do {
-              local_c = local_c + 1;
-              local_10 = Com_ParseOnLine(&local_8);
-              if (local_8 == (char *)0x0) {
+              lineNumber = lineNumber + 1;
+              token = Com_ParseOnLine(&p);
+              if (p == (char *)0x0) {
                 bVar3 = LiveContracts_ValidateContracts();
                 if ((!bVar3) &&
                    (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp"
@@ -239,312 +244,313 @@ LAB_00959893:
                 Com_EndParseSession();
                 return;
               }
-            } while ((local_10 == (char *)0x0) || (*local_8 == '\0'));
-            if (*local_10 != '\0') break;
-            Com_SkipRestOfLine(&local_8);
+            } while ((token == (char *)0x0) || (*p == '\0'));
+            if (*token != '\0') break;
+            Com_SkipRestOfLine(&p);
           }
-          iVar4 = I_stricmp(local_10,"contract");
+          iVar4 = I_stricmp(token,"contract");
           if (iVar4 != 0) break;
           if (s_numContracts < 0x200) {
-            local_10 = Com_ParseOnLine(&local_8);
-            if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+            token = Com_ParseOnLine(&p);
+            if ((token == (char *)0x0) || (*p == '\0')) {
               Com_Printf(0x10,
                          "Contract error: line %i: Expected contract number after contract command\n"
                         );
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
             else {
-              local_18 = (char *)atoi(local_10);
-              if (((int)local_18 < 0) || (0x1ff < (int)local_18)) {
+              contractIndex = atoi(token);
+              if ((contractIndex < 0) || (0x1ff < contractIndex)) {
                 Com_Printf(0x10,
                            "Contract error: line %i: Invalid contract number %i after contract command\n"
                           );
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                if (contracts[(int)local_18].name != (char *)0x0) {
+                if (contracts[contractIndex].name != (char *)0x0) {
                   Com_Printf(0x10,"Contract error: line %i: Contract number %i defined twice.\n");
                 }
-                if ((contracts[(int)local_18].name != (char *)0x0) &&
+                if ((contracts[contractIndex].name != (char *)0x0) &&
                    (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp"
                                              ,0x13d,0,"%s"), !bVar3)) {
                   pcVar1 = (code *)swi(3);
                   (*pcVar1)();
                   return;
                 }
-                local_1c = 1;
-                local_14 = 0;
-                Com_SkipRestOfLine(&local_8);
+                currentParseBlockType = 1;
+                requirementIndex = 0;
+                Com_SkipRestOfLine(&p);
               }
             }
           }
           else {
             Com_Printf(0x10,"Contract error: line %i: Maximum number of contracts exceeded.\n");
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
         }
-        iVar4 = I_stricmp(local_10,"cycleInterval");
+        iVar4 = I_stricmp(token,"cycleInterval");
         if (iVar4 != 0) break;
-        if (local_1c == 1) {
+        if (currentParseBlockType == 1) {
           Com_Printf(0x10,
                      "Contract error: line %i: cycleInterval command must be used before declaring any contracts\n"
                     );
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
         }
         else {
-          local_10 = Com_ParseOnLine(&local_8);
-          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+          token = Com_ParseOnLine(&p);
+          if ((token == (char *)0x0) || (*p == '\0')) {
             Com_Printf(0x10,
                        "Contract error: line %i: Expected number of seconds after cycleInterval command\n"
                       );
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
           else {
-            local_24 = atoi(local_10);
-            if ((local_24 < 1) &&
+            desiredContractCycleInterval = atoi(token);
+            if ((desiredContractCycleInterval < 1) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp"
                                          ,0x156,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            if (local_24 < 1) {
+            if (desiredContractCycleInterval < 1) {
               Com_Printf(0x10,
                          "Contract error: line %i: Number of seconds for cycleInterval must be a positive integer\n"
                         );
             }
             else {
-              s_contractCycleInterval = local_24;
+              s_contractCycleInterval = desiredContractCycleInterval;
             }
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
         }
       }
-      iVar4 = I_stricmp(local_10,"cycleOffset");
+      iVar4 = I_stricmp(token,"cycleOffset");
       if (iVar4 != 0) break;
-      if (local_1c == 1) {
+      if (currentParseBlockType == 1) {
         Com_Printf(0x10,
                    "Contract error: line %i: cycleOffset command must be used before declaring any contracts\n"
                   );
-        Com_SkipRestOfLine(&local_8);
+        Com_SkipRestOfLine(&p);
       }
       else {
-        local_10 = Com_ParseOnLine(&local_8);
-        if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+        token = Com_ParseOnLine(&p);
+        if ((token == (char *)0x0) || (*p == '\0')) {
           Com_Printf(0x10,
                      "Contract error: line %i: Expected number of seconds after cycleOffset command\n"
                     );
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
         }
         else {
-          s_contractCycleOffset = atoi(local_10);
-          Com_SkipRestOfLine(&local_8);
+          s_contractCycleOffset = atoi(token);
+          Com_SkipRestOfLine(&p);
         }
       }
     }
-    iVar4 = I_stricmp(local_10,"cycleMessage");
+    iVar4 = I_stricmp(token,"cycleMessage");
     if (iVar4 != 0) {
-      iVar4 = I_stricmp(local_10,"visible");
+      iVar4 = I_stricmp(token,"visible");
       if (iVar4 == 0) {
         if ((s_numContracts == 0) ||
-           (s_contractCycleTickerMessages[0x1f][s_numContracts + 2] != local_18)) {
-          s_contractDisplayOrder[s_numContracts] = (int)local_18;
+           (s_contractCycleTickerMessages[0x1f][s_numContracts + 2] != (char *)contractIndex)) {
+          s_contractDisplayOrder[s_numContracts] = contractIndex;
           s_numContracts = s_numContracts + 1;
         }
-        Com_SkipRestOfLine(&local_8);
+        Com_SkipRestOfLine(&p);
       }
       else {
-        iVar4 = I_stricmp(local_10,"name");
+        iVar4 = I_stricmp(token,"name");
         if (iVar4 == 0) {
-          local_10 = Com_ParseOnLine(&local_8);
-          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+          token = Com_ParseOnLine(&p);
+          if ((token == (char *)0x0) || (*p == '\0')) {
             Com_Printf(0x10,"Contract error: line %i: Expected language name after name command\n");
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
           else {
             iVar4 = SEH_GetCurrentLanguage();
             pcVar5 = SEH_GetLanguageName(iVar4);
-            iVar4 = I_stricmp(local_10,pcVar5);
+            iVar4 = I_stricmp(token,pcVar5);
             if (iVar4 == 0) {
-              local_10 = Com_ParseOnLine(&local_8);
-              if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+              token = Com_ParseOnLine(&p);
+              if ((token == (char *)0x0) || (*p == '\0')) {
                 Com_Printf(0x10,
                            "Contract error: line %i: Expected contract name after name <language> command\n"
                           );
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                Com_SkipRestOfLine(&local_8);
-                pcVar5 = LiveContracts_GetTokenString(local_10);
-                contracts[(int)local_18].name = pcVar5;
+                Com_SkipRestOfLine(&p);
+                pcVar5 = LiveContracts_GetTokenString(token);
+                contracts[contractIndex].name = pcVar5;
               }
             }
             else {
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
           }
         }
         else {
-          iVar4 = I_stricmp(local_10,"desc");
+          iVar4 = I_stricmp(token,"desc");
           if (iVar4 == 0) {
-            local_10 = Com_ParseOnLine(&local_8);
-            if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+            token = Com_ParseOnLine(&p);
+            if ((token == (char *)0x0) || (*p == '\0')) {
               Com_Printf(0x10,"Contract error: line %i: Expected language name after desc command\n"
                         );
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
             else {
               iVar4 = SEH_GetCurrentLanguage();
               pcVar5 = SEH_GetLanguageName(iVar4);
-              iVar4 = I_stricmp(local_10,pcVar5);
+              iVar4 = I_stricmp(token,pcVar5);
               if (iVar4 == 0) {
-                local_10 = Com_ParseOnLine(&local_8);
-                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                token = Com_ParseOnLine(&p);
+                if ((token == (char *)0x0) || (*p == '\0')) {
                   Com_Printf(0x10,
                              "Contract error: line %i: Expected contract description after desc <language> command\n"
                             );
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                 }
                 else {
-                  Com_SkipRestOfLine(&local_8);
-                  pcVar5 = LiveContracts_GetTokenString(local_10);
-                  contracts[(int)local_18].description = pcVar5;
+                  Com_SkipRestOfLine(&p);
+                  pcVar5 = LiveContracts_GetTokenString(token);
+                  contracts[contractIndex].description = pcVar5;
                 }
               }
               else {
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
             }
           }
           else {
-            iVar4 = I_stricmp(local_10,"cost");
+            iVar4 = I_stricmp(token,"cost");
             if (iVar4 == 0) {
-              local_10 = Com_ParseOnLine(&local_8);
-              if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+              token = Com_ParseOnLine(&p);
+              if ((token == (char *)0x0) || (*p == '\0')) {
                 Com_Printf(0x10,"Contract error: line %i: Expected value after cost command\n");
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                iVar4 = atoi(local_10);
-                contracts[(int)local_18].cost = iVar4;
-                Com_SkipRestOfLine(&local_8);
+                iVar4 = atoi(token);
+                contracts[contractIndex].cost = iVar4;
+                Com_SkipRestOfLine(&p);
               }
             }
             else {
-              iVar4 = I_stricmp(local_10,"stat");
+              iVar4 = I_stricmp(token,"stat");
               if (iVar4 == 0) {
-                local_10 = Com_ParseOnLine(&local_8);
-                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                token = Com_ParseOnLine(&p);
+                if ((token == (char *)0x0) || (*p == '\0')) {
                   Com_Printf(0x10,"Contract error: line %i: Expected stat type after stat command\n"
                             );
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                 }
                 else {
-                  pcVar5 = LiveContracts_GetTokenString(local_10);
-                  contracts[(int)local_18].statType = pcVar5;
-                  local_8 = local_8 + 1;
-                  local_2d = '\0';
-                  for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-                    iVar4 = I_strcmp(validStatTypes[local_34],contracts[(int)local_18].statType);
+                  pcVar5 = LiveContracts_GetTokenString(token);
+                  contracts[contractIndex].statType = pcVar5;
+                  p = p + 1;
+                  validatedStatType = false;
+                  for (i_3 = 0; (uint)i_3 < 3; i_3 = i_3 + 1) {
+                    iVar4 = I_strcmp(validStatTypes[i_3],contracts[contractIndex].statType);
                     if (iVar4 == 0) {
-                      local_2d = '\x01';
+                      validatedStatType = true;
                       break;
                     }
                   }
-                  if (local_2d == '\0') {
+                  if (validatedStatType == false) {
                     Com_Printf(0x10,
                                "Contract error: line %i: Unknown stat type after stat command\n");
                   }
-                  local_10 = Com_ParseOnLine(&local_8);
-                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                  token = Com_ParseOnLine(&p);
+                  if ((token == (char *)0x0) || (*p == '\0')) {
                     Com_Printf(0x10,
                                "Contract error: line %i: Expected stat name after type in stat command\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
                   else {
-                    Com_SkipRestOfLine(&local_8);
-                    pcVar5 = LiveContracts_GetTokenString(local_10);
-                    contracts[(int)local_18].statName = pcVar5;
+                    Com_SkipRestOfLine(&p);
+                    pcVar5 = LiveContracts_GetTokenString(token);
+                    contracts[contractIndex].statName = pcVar5;
                   }
                 }
               }
               else {
-                iVar4 = I_stricmp(local_10,"require");
+                iVar4 = I_stricmp(token,"require");
                 if (iVar4 == 0) {
-                  local_10 = Com_ParseOnLine(&local_8);
-                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                  token = Com_ParseOnLine(&p);
+                  if ((token == (char *)0x0) || (*p == '\0')) {
                     Com_Printf(0x10,"Contract error: line %i: Expected name after require command\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
-                  else if (local_14 < 5) {
-                    pcVar5 = LiveContracts_GetTokenString(local_10);
-                    *(char **)((int)local_18 * 0x6c + 0xa4a7988 + local_14 * 8) = pcVar5;
-                    local_8 = local_8 + 1;
-                    local_35 = '\0';
-                    for (local_3c = 0; local_3c < 0xb; local_3c = local_3c + 1) {
-                      iVar4 = I_strcmp(validRequirementTypes[local_3c],
-                                       *(char **)((int)local_18 * 0x6c + 0xa4a7988 + local_14 * 8));
+                  else if (requirementIndex < 5) {
+                    pcVar5 = LiveContracts_GetTokenString(token);
+                    *(char **)(contractIndex * 0x6c + 0xa4a7988 + requirementIndex * 8) = pcVar5;
+                    p = p + 1;
+                    validatedReqType = false;
+                    for (i_4 = 0; (uint)i_4 < 0xb; i_4 = i_4 + 1) {
+                      iVar4 = I_strcmp(validRequirementTypes[i_4],
+                                       *(char **)(contractIndex * 0x6c + 0xa4a7988 +
+                                                 requirementIndex * 8));
                       if (iVar4 == 0) {
-                        local_35 = '\x01';
+                        validatedReqType = true;
                         break;
                       }
                     }
-                    if (local_35 == '\0') {
+                    if (validatedReqType == false) {
                       Com_Printf(0x10,
                                  "Contract error: line %i: Unknown requirement type after require command\n"
                                 );
                     }
-                    local_10 = Com_ParseOnLine(&local_8);
-                    if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                    token = Com_ParseOnLine(&p);
+                    if ((token == (char *)0x0) || (*p == '\0')) {
                       Com_Printf(0x10,
                                  "Contract error: line %i: Expected requirement data after name when using require command\n"
                                 );
-                      Com_SkipRestOfLine(&local_8);
+                      Com_SkipRestOfLine(&p);
                     }
                     else {
-                      Com_SkipRestOfLine(&local_8);
-                      pcVar5 = LiveContracts_GetTokenString(local_10);
-                      *(char **)((int)local_18 * 0x6c + 0xa4a798c + local_14 * 8) = pcVar5;
-                      local_14 = local_14 + 1;
+                      Com_SkipRestOfLine(&p);
+                      pcVar5 = LiveContracts_GetTokenString(token);
+                      *(char **)(contractIndex * 0x6c + 0xa4a798c + requirementIndex * 8) = pcVar5;
+                      requirementIndex = requirementIndex + 1;
                     }
                   }
                   else {
                     Com_Printf(0x10,"Contract error: line %i: Too many requirements specified\n");
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
                 }
                 else {
-                  iVar4 = I_stricmp(local_10,"count");
+                  iVar4 = I_stricmp(token,"count");
                   if (iVar4 == 0) {
-                    local_10 = Com_ParseOnLine(&local_8);
-                    if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                    token = Com_ParseOnLine(&p);
+                    if ((token == (char *)0x0) || (*p == '\0')) {
                       Com_Printf(0x10,
                                  "Contract error: line %i: Expected number after count command\n");
-                      Com_SkipRestOfLine(&local_8);
+                      Com_SkipRestOfLine(&p);
                     }
                     else {
-                      iVar4 = atoi(local_10);
-                      contracts[(int)local_18].count = iVar4;
-                      Com_SkipRestOfLine(&local_8);
+                      iVar4 = atoi(token);
+                      contracts[contractIndex].count = iVar4;
+                      Com_SkipRestOfLine(&p);
                     }
                   }
                   else {
-                    iVar4 = I_stricmp(local_10,"cycle");
+                    iVar4 = I_stricmp(token,"cycle");
                     if (iVar4 == 0) {
-                      local_10 = Com_ParseOnLine(&local_8);
-                      if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                      token = Com_ParseOnLine(&p);
+                      if ((token == (char *)0x0) || (*p == '\0')) {
                         Com_Printf(0x10,
                                    "Contract error: line %i: Expected comma-separated list of numbers after cycle command\n"
                                   );
-                        Com_SkipRestOfLine(&local_8);
+                        Com_SkipRestOfLine(&p);
                       }
                       else {
-                        I_strncpyz(local_444,local_10,0x400);
-                        local_10 = strtok(local_444,",");
-                        while (local_10 != (char *)0x0) {
-                          iVar4 = atoi(local_10);
+                        I_strncpyz(tokenString,token,0x400);
+                        token = strtok(tokenString,",");
+                        while (token != (char *)0x0) {
+                          iVar4 = atoi(token);
                           if (((iVar4 < 0) || (0x1f < iVar4)) &&
                              (bVar3 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp"
@@ -557,55 +563,55 @@ LAB_00959893:
                             if (s_numContractCycles + -1 <= iVar4) {
                               s_numContractCycles = iVar4 + 1;
                             }
-                            contracts[(int)local_18].cycle =
-                                 1 << ((byte)iVar4 & 0x1f) | contracts[(int)local_18].cycle;
+                            contracts[contractIndex].cycle =
+                                 1 << ((byte)iVar4 & 0x1f) | contracts[contractIndex].cycle;
                           }
-                          local_10 = strtok((char *)0x0,",");
+                          token = strtok((char *)0x0,",");
                         }
-                        Com_SkipRestOfLine(&local_8);
+                        Com_SkipRestOfLine(&p);
                       }
                     }
                     else {
-                      iVar4 = I_stricmp(local_10,"progressInterval");
+                      iVar4 = I_stricmp(token,"progressInterval");
                       if (iVar4 == 0) {
-                        local_10 = Com_ParseOnLine(&local_8);
-                        if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                        token = Com_ParseOnLine(&p);
+                        if ((token == (char *)0x0) || (*p == '\0')) {
                           Com_Printf(0x10,
                                      "Contract error: line %i: Expected number after progressInterval command\n"
                                     );
-                          Com_SkipRestOfLine(&local_8);
+                          Com_SkipRestOfLine(&p);
                         }
                         else {
-                          iVar4 = atoi(local_10);
-                          contracts[(int)local_18].progressInterval = iVar4;
-                          if (contracts[(int)local_18].progressInterval < 1) {
-                            contracts[(int)local_18].progressInterval = 0;
+                          iVar4 = atoi(token);
+                          contracts[contractIndex].progressInterval = iVar4;
+                          if (contracts[contractIndex].progressInterval < 1) {
+                            contracts[contractIndex].progressInterval = 0;
                             Com_Printf(0x10,
                                        "Contract error: line %i: Progress interval must be a positive integer\n"
                                       );
                           }
-                          Com_SkipRestOfLine(&local_8);
+                          Com_SkipRestOfLine(&p);
                         }
                       }
                       else {
-                        iVar4 = I_stricmp(local_10,"expirationtype");
+                        iVar4 = I_stricmp(token,"expirationtype");
                         if (iVar4 == 0) {
-                          local_10 = Com_ParseOnLine(&local_8);
-                          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                          token = Com_ParseOnLine(&p);
+                          if ((token == (char *)0x0) || (*p == '\0')) {
                             Com_Printf(0x10,
                                        "Contract error: line %i: Expected type after expirationtype command\n"
                                       );
-                            Com_SkipRestOfLine(&local_8);
+                            Com_SkipRestOfLine(&p);
                           }
                           else {
-                            Com_SkipRestOfLine(&local_8);
-                            pcVar5 = LiveContracts_GetTokenString(local_10);
-                            contracts[(int)local_18].expirationType = pcVar5;
+                            Com_SkipRestOfLine(&p);
+                            pcVar5 = LiveContracts_GetTokenString(token);
+                            contracts[contractIndex].expirationType = pcVar5;
                             bVar2 = false;
                             bVar3 = false;
                             while (!bVar3) {
                               iVar4 = I_strcmp(validExpirationTypes[0],
-                                               contracts[(int)local_18].expirationType);
+                                               contracts[contractIndex].expirationType);
                               if (iVar4 == 0) {
                                 bVar2 = true;
                                 break;
@@ -620,154 +626,155 @@ LAB_00959893:
                           }
                         }
                         else {
-                          iVar4 = I_stricmp(local_10,"expirationdata");
+                          iVar4 = I_stricmp(token,"expirationdata");
                           if (iVar4 == 0) {
-                            local_10 = Com_ParseOnLine(&local_8);
-                            if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                            token = Com_ParseOnLine(&p);
+                            if ((token == (char *)0x0) || (*p == '\0')) {
                               Com_Printf(0x10,
                                          "Contract error: line %i: Expected value after expirationdata command\n"
                                         );
-                              Com_SkipRestOfLine(&local_8);
+                              Com_SkipRestOfLine(&p);
                             }
                             else {
-                              iVar4 = atoi(local_10);
-                              contracts[(int)local_18].expirationData = iVar4;
-                              Com_SkipRestOfLine(&local_8);
+                              iVar4 = atoi(token);
+                              contracts[contractIndex].expirationData = iVar4;
+                              Com_SkipRestOfLine(&p);
                             }
                           }
                           else {
-                            iVar4 = I_stricmp(local_10,"resetOn");
+                            iVar4 = I_stricmp(token,"resetOn");
                             if (iVar4 == 0) {
-                              local_10 = Com_ParseOnLine(&local_8);
-                              if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                              token = Com_ParseOnLine(&p);
+                              if ((token == (char *)0x0) || (*p == '\0')) {
                                 Com_Printf(0x10,
                                            "Contract error: line %i: Expected reset conditions after resetOn command\n"
                                           );
-                                Com_SkipRestOfLine(&local_8);
+                                Com_SkipRestOfLine(&p);
                               }
                               else {
-                                Com_SkipRestOfLine(&local_8);
-                                pcVar5 = LiveContracts_GetTokenString(local_10);
-                                contracts[(int)local_18].resetProgressEvents = pcVar5;
+                                Com_SkipRestOfLine(&p);
+                                pcVar5 = LiveContracts_GetTokenString(token);
+                                contracts[contractIndex].resetProgressEvents = pcVar5;
                               }
                             }
                             else {
-                              iVar4 = I_stricmp(local_10,"rewardxp");
+                              iVar4 = I_stricmp(token,"rewardxp");
                               if (iVar4 == 0) {
-                                local_10 = Com_ParseOnLine(&local_8);
-                                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                token = Com_ParseOnLine(&p);
+                                if ((token == (char *)0x0) || (*p == '\0')) {
                                   Com_Printf(0x10,
                                              "Contract error: line %i: Expected number after rewardxp command\n"
                                             );
-                                  Com_SkipRestOfLine(&local_8);
+                                  Com_SkipRestOfLine(&p);
                                 }
                                 else {
-                                  iVar4 = atoi(local_10);
-                                  contracts[(int)local_18].rewardXP = iVar4;
-                                  Com_SkipRestOfLine(&local_8);
+                                  iVar4 = atoi(token);
+                                  contracts[contractIndex].rewardXP = iVar4;
+                                  Com_SkipRestOfLine(&p);
                                 }
                               }
                               else {
-                                iVar4 = I_stricmp(local_10,"rewardcp");
+                                iVar4 = I_stricmp(token,"rewardcp");
                                 if (iVar4 == 0) {
-                                  local_10 = Com_ParseOnLine(&local_8);
-                                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                  token = Com_ParseOnLine(&p);
+                                  if ((token == (char *)0x0) || (*p == '\0')) {
                                     Com_Printf(0x10,
                                                "Contract error: line %i: Expected number after rewardcp command\n"
                                               );
-                                    Com_SkipRestOfLine(&local_8);
+                                    Com_SkipRestOfLine(&p);
                                   }
                                   else {
-                                    iVar4 = atoi(local_10);
-                                    contracts[(int)local_18].rewardCP = iVar4;
-                                    Com_SkipRestOfLine(&local_8);
+                                    iVar4 = atoi(token);
+                                    contracts[contractIndex].rewardCP = iVar4;
+                                    Com_SkipRestOfLine(&p);
                                   }
                                 }
                                 else {
-                                  iVar4 = I_stricmp(local_10,"inventory");
+                                  iVar4 = I_stricmp(token,"inventory");
                                   if (iVar4 == 0) {
-                                    local_10 = Com_ParseOnLine(&local_8);
-                                    if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                    token = Com_ParseOnLine(&p);
+                                    if ((token == (char *)0x0) || (*p == '\0')) {
                                       Com_Printf(0x10,
                                                  "Contract error: line %i: Expected number after inventory command\n"
                                                 );
-                                      Com_SkipRestOfLine(&local_8);
+                                      Com_SkipRestOfLine(&p);
                                     }
                                     else {
-                                      iVar4 = atoi(local_10);
+                                      iVar4 = atoi(token);
                                       if ((iVar4 < 1) || (0xff < iVar4)) {
                                         Com_Printf(0x10,
                                                   "Contract error: line %i: Invalid value for inventory. Must be between 1 and 255 inclusive.\n"
                                                   );
                                       }
                                       else {
-                                        local_454 = (uchar)iVar4;
-                                        contracts[(int)local_18].timesPurchasable = local_454;
+                                        timesPurchasable._0_1_ = (uchar)iVar4;
+                                        contracts[contractIndex].timesPurchasable =
+                                             (uchar)timesPurchasable;
                                       }
-                                      Com_SkipRestOfLine(&local_8);
+                                      Com_SkipRestOfLine(&p);
                                     }
                                   }
                                   else {
-                                    iVar4 = I_stricmp(local_10,"unlockLevel");
+                                    iVar4 = I_stricmp(token,"unlockLevel");
                                     if (iVar4 == 0) {
-                                      local_10 = Com_ParseOnLine(&local_8);
-                                      if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                      token = Com_ParseOnLine(&p);
+                                      if ((token == (char *)0x0) || (*p == '\0')) {
                                         Com_Printf(0x10,
                                                   "Contract error: line %i: Expected number after unlockLevel command\n"
                                                   );
-                                        Com_SkipRestOfLine(&local_8);
+                                        Com_SkipRestOfLine(&p);
                                       }
                                       else {
-                                        iVar4 = atoi(local_10);
-                                        contracts[(int)local_18].unlockLevel = iVar4;
-                                        Com_SkipRestOfLine(&local_8);
+                                        iVar4 = atoi(token);
+                                        contracts[contractIndex].unlockLevel = iVar4;
+                                        Com_SkipRestOfLine(&p);
                                       }
                                     }
                                     else {
-                                      iVar4 = I_stricmp(local_10,"cooldown");
+                                      iVar4 = I_stricmp(token,"cooldown");
                                       if (iVar4 == 0) {
-                                        local_10 = Com_ParseOnLine(&local_8);
-                                        if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                        token = Com_ParseOnLine(&p);
+                                        if ((token == (char *)0x0) || (*p == '\0')) {
                                           Com_Printf(0x10,
                                                   "Contract error: line %i: Expected number after cooldown command\n"
                                                   );
-                                          Com_SkipRestOfLine(&local_8);
+                                          Com_SkipRestOfLine(&p);
                                         }
                                         else {
-                                          iVar4 = atoi(local_10);
-                                          contracts[(int)local_18].cooldown = iVar4 * 0x3c;
-                                          Com_SkipRestOfLine(&local_8);
+                                          iVar4 = atoi(token);
+                                          contracts[contractIndex].cooldown = iVar4 * 0x3c;
+                                          Com_SkipRestOfLine(&p);
                                         }
                                       }
                                       else {
-                                        iVar4 = I_stricmp(local_10,"category");
+                                        iVar4 = I_stricmp(token,"category");
                                         if (iVar4 == 0) {
-                                          local_10 = Com_ParseOnLine(&local_8);
-                                          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                                          token = Com_ParseOnLine(&p);
+                                          if ((token == (char *)0x0) || (*p == '\0')) {
                                             Com_Printf(0x10,
                                                   "Contract error: line %i: Expected number after category command\n"
                                                   );
-                                            Com_SkipRestOfLine(&local_8);
+                                            Com_SkipRestOfLine(&p);
                                           }
                                           else {
-                                            iVar4 = atoi(local_10);
+                                            iVar4 = atoi(token);
                                             if ((iVar4 < 1) || (0xff < iVar4)) {
                                               Com_Printf(0x10,
                                                   "Contract error: line %i: Invalid value for category. Must be between 1 and 255 inclusive.\n"
                                                   );
                                             }
                                             else {
-                                              local_458 = (uchar)iVar4;
-                                              contracts[(int)local_18].category = local_458;
+                                              category._0_1_ = (uchar)iVar4;
+                                              contracts[contractIndex].category = (uchar)category;
                                             }
-                                            Com_SkipRestOfLine(&local_8);
+                                            Com_SkipRestOfLine(&p);
                                           }
                                         }
                                         else {
                                           Com_Printf(0x10,
                                                   "Contract error: line %i: Unrecognized command %s\n"
                                                   );
-                                          Com_SkipRestOfLine(&local_8);
+                                          Com_SkipRestOfLine(&p);
                                         }
                                       }
                                     }
@@ -788,54 +795,54 @@ LAB_00959893:
       }
       goto LAB_00959893;
     }
-    if (local_1c == 1) {
+    if (currentParseBlockType == 1) {
       Com_Printf(0x10,
                  "Contract error: line %i: cycleMessage command must be used before declaring any contracts\n"
                 );
-      Com_SkipRestOfLine(&local_8);
+      Com_SkipRestOfLine(&p);
     }
     else {
-      local_10 = Com_ParseOnLine(&local_8);
-      if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+      token = Com_ParseOnLine(&p);
+      if ((token == (char *)0x0) || (*p == '\0')) {
         Com_Printf(0x10,
                    "Contract error: line %i: Expected cycle number after cycleMessage command\n");
-        Com_SkipRestOfLine(&local_8);
+        Com_SkipRestOfLine(&p);
       }
       else {
-        local_28 = atoi(local_10);
-        if ((local_28 < 0) || (0x1f < local_28)) {
+        cycleNumber = atoi(token);
+        if ((cycleNumber < 0) || (0x1f < cycleNumber)) {
           Com_Printf(0x10,"Contract error: line %i: Cycle number must be in the range [0,%d)\n");
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
         }
         else {
-          local_10 = Com_ParseOnLine(&local_8);
-          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+          token = Com_ParseOnLine(&p);
+          if ((token == (char *)0x0) || (*p == '\0')) {
             Com_Printf(0x10,
                        "Contract error: line %i: Expected language after cycle number in cycleMessage command\n"
                       );
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
           else {
             iVar4 = SEH_GetCurrentLanguage();
             pcVar5 = SEH_GetLanguageName(iVar4);
-            iVar4 = I_stricmp(local_10,pcVar5);
+            iVar4 = I_stricmp(token,pcVar5);
             if (iVar4 == 0) {
-              local_10 = Com_ParseOnLine(&local_8);
-              if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+              token = Com_ParseOnLine(&p);
+              if ((token == (char *)0x0) || (*p == '\0')) {
                 Com_Printf(0x10,
                            "Contract error: line %i: Expected message after cycle number in cycleMessage command\n"
                           );
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                Com_SkipRestOfLine(&local_8);
-                for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-                  if (s_contractCycleTickerMessages[local_28][local_2c] == (char *)0x0) {
-                    pcVar5 = LiveContracts_GetTokenString(local_10);
-                    s_contractCycleTickerMessages[local_28][local_2c] = pcVar5;
+                Com_SkipRestOfLine(&p);
+                for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+                  if (s_contractCycleTickerMessages[cycleNumber][i_2] == (char *)0x0) {
+                    pcVar5 = LiveContracts_GetTokenString(token);
+                    s_contractCycleTickerMessages[cycleNumber][i_2] = pcVar5;
                     break;
                   }
-                  if (local_2c == 2) {
+                  if (i_2 == 2) {
                     Com_Printf(0x10,
                                "Contract error: line %i: Too many contract cycle messages specified for cycle %i\n"
                               );
@@ -844,7 +851,7 @@ LAB_00959893:
               }
             }
             else {
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
           }
         }
@@ -913,7 +920,7 @@ int __cdecl LiveContracts_GetTimeUntilNextCycle(void)
 
 // 0095CB00  FilteredContractListSort  (live/live_contracts.cpp:860)
 
-int __cdecl FilteredContractListSort(void *param_1,void *param_2)
+int __cdecl FilteredContractListSort(void *a,void *b)
 
 {
   int iVar1;
@@ -921,9 +928,14 @@ int __cdecl FilteredContractListSort(void *param_1,void *param_2)
   bool bVar3;
   int iVar4;
   int iVar5;
+  int levelDifference;
+  int contractIndexA;
+  int A;
+  int B;
+  int contractIndexB;
   
-  iVar1 = *(int *)param_1;
-  iVar2 = *(int *)param_2;
+  iVar1 = *(int *)a;
+  iVar2 = *(int *)b;
   iVar4 = s_contractDisplayOrder[iVar1];
   iVar5 = s_contractDisplayOrder[iVar2];
   bVar3 = LiveContracts_IsContractLocked(contractSortControllerIndex,iVar4);
@@ -959,49 +971,52 @@ int __cdecl FilteredContractListSort(void *param_1,void *param_2)
 
 // 0095C910  LiveContracts_RebuildFilteredList  (live/live_contracts.cpp:885)
 
-void __cdecl LiveContracts_RebuildFilteredList(int param_1)
+void __cdecl LiveContracts_RebuildFilteredList(int controllerIndex)
 
 {
   bool bVar1;
-  int iVar2;
-  ContractStatus_t CVar3;
-  int local_1c;
-  int local_10;
-  int local_c;
-  int local_8;
+  int activeContractIndex_00;
+  ContractStatus_t CVar2;
+  int i_2;
+  bool isInCurrentCycle;
+  int activeContractIndex;
+  int contractIndex;
+  int i;
+  int maxContracts;
   
   if ((ui_showAllContracts == (dvar_s *)0x0) || ((ui_showAllContracts->current).enabled == false)) {
-    local_8 = s_numContracts;
+    maxContracts = s_numContracts;
   }
   else {
-    local_8 = 0x200;
+    maxContracts = 0x200;
   }
   LiveContracts_CalculateCurrentContractCycle();
   s_contractFilteredListCount = 0;
-  local_c = 0;
+  i = 0;
   do {
-    if (local_8 <= local_c) {
+    if (maxContracts <= i) {
       if ((ui_showAllContracts == (dvar_s *)0x0) ||
          ((ui_showAllContracts->current).enabled == false)) {
-        contractSortControllerIndex = param_1;
+        contractSortControllerIndex = controllerIndex;
         qsort(s_contractFilteredList,s_contractFilteredListCount,4,FilteredContractListSort);
-        for (local_1c = 0; local_1c < s_contractFilteredListCount; local_1c = local_1c + 1) {
-          s_contractFilteredList[local_1c] =
-               s_contractDisplayOrder[s_contractFilteredList[local_1c]];
+        for (i_2 = 0; i_2 < s_contractFilteredListCount; i_2 = i_2 + 1) {
+          s_contractFilteredList[i_2] = s_contractDisplayOrder[s_contractFilteredList[i_2]];
         }
       }
       return;
     }
     if ((ui_showAllContracts == (dvar_s *)0x0) || ((ui_showAllContracts->current).enabled == false))
     {
-      local_10 = s_contractDisplayOrder[local_c];
+      contractIndex = s_contractDisplayOrder[i];
 LAB_0095c9a8:
-      if (((s_contractFilter == 0) || (s_contractFilter == (uint)contracts[local_10].category)) &&
-         ((iVar2 = LiveContracts_GetActiveContractIndex(param_1,local_10), iVar2 < 0 ||
-          (CVar3 = LiveContracts_GetActiveContractStatus(param_1,iVar2),
-          CVar3 != CONTRACT_IN_PROGRESS)))) {
+      if (((s_contractFilter == 0) || (s_contractFilter == (uint)contracts[contractIndex].category))
+         && ((activeContractIndex_00 =
+                   LiveContracts_GetActiveContractIndex(controllerIndex,contractIndex),
+             activeContractIndex_00 < 0 ||
+             (CVar2 = LiveContracts_GetActiveContractStatus(controllerIndex,activeContractIndex_00),
+             CVar2 != CONTRACT_IN_PROGRESS)))) {
         if ((s_numContractCycles == 0) ||
-           ((1 << ((byte)s_contractCycle & 0x1f) & contracts[local_10].cycle) != 0)) {
+           ((1 << ((byte)s_contractCycle & 0x1f) & contracts[contractIndex].cycle) != 0)) {
           bVar1 = true;
         }
         else {
@@ -1012,23 +1027,23 @@ LAB_0095c9a8:
           bVar1 = true;
         }
         if (bVar1) {
-          s_contractFilteredList[s_contractFilteredListCount] = local_c;
+          s_contractFilteredList[s_contractFilteredListCount] = i;
           s_contractFilteredListCount = s_contractFilteredListCount + 1;
         }
       }
     }
-    else if (contracts[local_c].name != (char *)0x0) {
-      local_10 = local_c;
+    else if (contracts[i].name != (char *)0x0) {
+      contractIndex = i;
       goto LAB_0095c9a8;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0095B1B0  LiveContracts_GetContractsCountForList  (live/live_contracts.cpp:956)
 
-int __cdecl LiveContracts_GetContractsCountForList(int param_1)
+int __cdecl LiveContracts_GetContractsCountForList(int controllerIndex)
 
 {
   return s_contractFilteredListCount;
@@ -1037,14 +1052,14 @@ int __cdecl LiveContracts_GetContractsCountForList(int param_1)
 
 // 0095B1C0  LiveContracts_GetContractIndexFromListIndex  (live/live_contracts.cpp:961)
 
-int __cdecl LiveContracts_GetContractIndexFromListIndex(int param_1,int param_2)
+int __cdecl LiveContracts_GetContractIndexFromListIndex(int controllerIndex,int listIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_2 < 0) || (s_contractFilteredListCount <= param_2)) {
+  if ((listIndex < 0) || (s_contractFilteredListCount <= listIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x3c2,0,
                              "%s\n\t(listIndex) = %i");
     if (!bVar2) {
@@ -1053,22 +1068,22 @@ int __cdecl LiveContracts_GetContractIndexFromListIndex(int param_1,int param_2)
       return iVar3;
     }
   }
-  return s_contractFilteredList[param_2];
+  return s_contractFilteredList[listIndex];
 }
 
 
 // 0095B240  LiveContracts_ValidateContractIndex  (live/live_contracts.cpp:967)
 
-bool __cdecl LiveContracts_ValidateContractIndex(int param_1)
+bool __cdecl LiveContracts_ValidateContractIndex(int contractIndex)
 
 {
   bool bVar1;
   
-  if (param_1 < 0) {
+  if (contractIndex < 0) {
     bVar1 = false;
   }
-  else if (param_1 < 0x200) {
-    if (contracts[param_1].name == (char *)0x0) {
+  else if (contractIndex < 0x200) {
+    if (contracts[contractIndex].name == (char *)0x0) {
       bVar1 = false;
     }
     else {
@@ -1084,15 +1099,15 @@ bool __cdecl LiveContracts_ValidateContractIndex(int param_1)
 
 // 0095B210  LiveContracts_GetContractName  (live/live_contracts.cpp:978)
 
-char * __cdecl LiveContracts_GetContractName(int param_1)
+char * __cdecl LiveContracts_GetContractName(int index)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    pcVar2 = contracts[param_1].name;
+    pcVar2 = contracts[index].name;
   }
   else {
     pcVar2 = "";
@@ -1103,15 +1118,15 @@ char * __cdecl LiveContracts_GetContractName(int param_1)
 
 // 0095B280  LiveContracts_GetContractDesc  (live/live_contracts.cpp:986)
 
-char * __cdecl LiveContracts_GetContractDesc(int param_1)
+char * __cdecl LiveContracts_GetContractDesc(int index)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    pcVar2 = contracts[param_1].description;
+    pcVar2 = contracts[index].description;
   }
   else {
     pcVar2 = "";
@@ -1122,15 +1137,15 @@ char * __cdecl LiveContracts_GetContractDesc(int param_1)
 
 // 0095B2B0  LiveContracts_GetContractStatType  (live/live_contracts.cpp:994)
 
-char * __cdecl LiveContracts_GetContractStatType(int param_1)
+char * __cdecl LiveContracts_GetContractStatType(int index)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    pcVar2 = contracts[param_1].statType;
+    pcVar2 = contracts[index].statType;
   }
   else {
     pcVar2 = "";
@@ -1141,15 +1156,15 @@ char * __cdecl LiveContracts_GetContractStatType(int param_1)
 
 // 0095B2E0  LiveContracts_GetContractStatName  (live/live_contracts.cpp:1002)
 
-char * __cdecl LiveContracts_GetContractStatName(int param_1)
+char * __cdecl LiveContracts_GetContractStatName(int index)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    pcVar2 = contracts[param_1].statName;
+    pcVar2 = contracts[index].statName;
   }
   else {
     pcVar2 = "";
@@ -1160,15 +1175,15 @@ char * __cdecl LiveContracts_GetContractStatName(int param_1)
 
 // 0095B310  LiveContracts_GetContractCost  (live/live_contracts.cpp:1010)
 
-int __cdecl LiveContracts_GetContractCost(int param_1)
+int __cdecl LiveContracts_GetContractCost(int index)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    iVar2 = contracts[param_1].cost;
+    iVar2 = contracts[index].cost;
   }
   else {
     iVar2 = 0;
@@ -1179,16 +1194,16 @@ int __cdecl LiveContracts_GetContractCost(int param_1)
 
 // 0095B340  LiveContracts_GetRequirementType  (live/live_contracts.cpp:1018)
 
-char * __cdecl LiveContracts_GetRequirementType(int param_1,int param_2)
+char * __cdecl LiveContracts_GetRequirementType(int contractIndex,int requirementIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  bVar2 = LiveContracts_ValidateContractIndex(param_1);
+  bVar2 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar2) {
-    if ((param_2 < 0) || (4 < param_2)) {
+    if ((requirementIndex < 0) || (4 < requirementIndex)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x3fe,0
                                ,"%s\n\t(requirementIndex) = %i");
       if (!bVar2) {
@@ -1197,14 +1212,14 @@ char * __cdecl LiveContracts_GetRequirementType(int param_1,int param_2)
         return pcVar3;
       }
     }
-    if ((param_2 < 0) || (4 < param_2)) {
+    if ((requirementIndex < 0) || (4 < requirementIndex)) {
       pcVar3 = (char *)0x0;
     }
-    else if (*(int *)(param_1 * 0x6c + 0xa4a7988 + param_2 * 8) == 0) {
+    else if (*(int *)(contractIndex * 0x6c + 0xa4a7988 + requirementIndex * 8) == 0) {
       pcVar3 = (char *)0x0;
     }
     else {
-      pcVar3 = *(char **)(param_1 * 0x6c + 0xa4a7988 + param_2 * 8);
+      pcVar3 = *(char **)(contractIndex * 0x6c + 0xa4a7988 + requirementIndex * 8);
     }
   }
   else {
@@ -1216,16 +1231,16 @@ char * __cdecl LiveContracts_GetRequirementType(int param_1,int param_2)
 
 // 0095B3D0  LiveContracts_GetRequirementData  (live/live_contracts.cpp:1033)
 
-char * __cdecl LiveContracts_GetRequirementData(int param_1,int param_2)
+char * __cdecl LiveContracts_GetRequirementData(int contractIndex,int requirementIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  bVar2 = LiveContracts_ValidateContractIndex(param_1);
+  bVar2 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar2) {
-    if ((param_2 < 0) || (4 < param_2)) {
+    if ((requirementIndex < 0) || (4 < requirementIndex)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x40d,0
                                ,"%s\n\t(requirementIndex) = %i");
       if (!bVar2) {
@@ -1234,14 +1249,14 @@ char * __cdecl LiveContracts_GetRequirementData(int param_1,int param_2)
         return pcVar3;
       }
     }
-    if ((param_2 < 0) || (4 < param_2)) {
+    if ((requirementIndex < 0) || (4 < requirementIndex)) {
       pcVar3 = (char *)0x0;
     }
-    else if (*(int *)(param_1 * 0x6c + 0xa4a798c + param_2 * 8) == 0) {
+    else if (*(int *)(contractIndex * 0x6c + 0xa4a798c + requirementIndex * 8) == 0) {
       pcVar3 = (char *)0x0;
     }
     else {
-      pcVar3 = *(char **)(param_1 * 0x6c + 0xa4a798c + param_2 * 8);
+      pcVar3 = *(char **)(contractIndex * 0x6c + 0xa4a798c + requirementIndex * 8);
     }
   }
   else {
@@ -1253,15 +1268,15 @@ char * __cdecl LiveContracts_GetRequirementData(int param_1,int param_2)
 
 // 0095B460  LiveContracts_GetResetConditions  (live/live_contracts.cpp:1048)
 
-char * __cdecl LiveContracts_GetResetConditions(int param_1)
+char * __cdecl LiveContracts_GetResetConditions(int contractIndex)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    pcVar2 = contracts[param_1].resetProgressEvents;
+    pcVar2 = contracts[contractIndex].resetProgressEvents;
   }
   else {
     pcVar2 = (char *)0x0;
@@ -1272,15 +1287,15 @@ char * __cdecl LiveContracts_GetResetConditions(int param_1)
 
 // 0095B490  LiveContracts_GetContractRewardXP  (live/live_contracts.cpp:1056)
 
-int __cdecl LiveContracts_GetContractRewardXP(int param_1)
+int __cdecl LiveContracts_GetContractRewardXP(int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar2 = contracts[param_1].rewardXP;
+    iVar2 = contracts[contractIndex].rewardXP;
   }
   else {
     iVar2 = 0;
@@ -1291,15 +1306,15 @@ int __cdecl LiveContracts_GetContractRewardXP(int param_1)
 
 // 0095B4C0  LiveContracts_GetContractRewardCP  (live/live_contracts.cpp:1064)
 
-int __cdecl LiveContracts_GetContractRewardCP(int param_1)
+int __cdecl LiveContracts_GetContractRewardCP(int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar2 = contracts[param_1].rewardCP;
+    iVar2 = contracts[contractIndex].rewardCP;
   }
   else {
     iVar2 = 0;
@@ -1310,15 +1325,15 @@ int __cdecl LiveContracts_GetContractRewardCP(int param_1)
 
 // 0095B4F0  LiveContracts_GetContractRequiredCount  (live/live_contracts.cpp:1072)
 
-int __cdecl LiveContracts_GetContractRequiredCount(int param_1)
+int __cdecl LiveContracts_GetContractRequiredCount(int index)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    iVar2 = contracts[param_1].count;
+    iVar2 = contracts[index].count;
   }
   else {
     iVar2 = 0;
@@ -1329,15 +1344,15 @@ int __cdecl LiveContracts_GetContractRequiredCount(int param_1)
 
 // 0095B520  LiveContracts_GetExpirationType  (live/live_contracts.cpp:1080)
 
-char * __cdecl LiveContracts_GetExpirationType(int param_1)
+char * __cdecl LiveContracts_GetExpirationType(int index)
 
 {
   bool bVar1;
   char *pcVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    pcVar2 = contracts[param_1].expirationType;
+    pcVar2 = contracts[index].expirationType;
   }
   else {
     pcVar2 = "";
@@ -1348,15 +1363,15 @@ char * __cdecl LiveContracts_GetExpirationType(int param_1)
 
 // 0095B550  LiveContracts_GetExpirationData  (live/live_contracts.cpp:1088)
 
-int __cdecl LiveContracts_GetExpirationData(int param_1)
+int __cdecl LiveContracts_GetExpirationData(int index)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(index);
   if (bVar1) {
-    iVar2 = contracts[param_1].expirationData;
+    iVar2 = contracts[index].expirationData;
   }
   else {
     iVar2 = 0;
@@ -1367,17 +1382,17 @@ int __cdecl LiveContracts_GetExpirationData(int param_1)
 
 // 0095B580  LiveContracts_GetTimesPurchasable  (live/live_contracts.cpp:1096)
 
-int __cdecl LiveContracts_GetTimesPurchasable(int param_1)
+int __cdecl LiveContracts_GetTimesPurchasable(int contractIndex)
 
 {
   bool bVar1;
   uint uVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
     if ((ui_showAllContracts == (dvar_s *)0x0) || ((ui_showAllContracts->current).enabled == false))
     {
-      uVar2 = (uint)contracts[param_1].timesPurchasable;
+      uVar2 = (uint)contracts[contractIndex].timesPurchasable;
     }
     else {
       uVar2 = 0;
@@ -1392,17 +1407,17 @@ int __cdecl LiveContracts_GetTimesPurchasable(int param_1)
 
 // 0095B5D0  LiveContracts_GetCooldownTime  (live/live_contracts.cpp:1109)
 
-int __cdecl LiveContracts_GetCooldownTime(int param_1)
+int __cdecl LiveContracts_GetCooldownTime(int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
     if ((ui_showAllContracts == (dvar_s *)0x0) || ((ui_showAllContracts->current).enabled == false))
     {
-      iVar2 = contracts[param_1].cooldown;
+      iVar2 = contracts[contractIndex].cooldown;
     }
     else {
       iVar2 = 0;
@@ -1417,15 +1432,15 @@ int __cdecl LiveContracts_GetCooldownTime(int param_1)
 
 // 0095BE90  LiveContracts_GetProgressInterval  (live/live_contracts.cpp:1122)
 
-int __cdecl LiveContracts_GetProgressInterval(int param_1)
+int __cdecl LiveContracts_GetProgressInterval(int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar2 = contracts[param_1].progressInterval;
+    iVar2 = contracts[contractIndex].progressInterval;
   }
   else {
     iVar2 = 0;
@@ -1436,7 +1451,7 @@ int __cdecl LiveContracts_GetProgressInterval(int param_1)
 
 // 0095B6F0  LiveContracts_GetStatBuffer  (live/live_contracts.cpp:1130)
 
-char * __cdecl LiveContracts_GetStatBuffer(int param_1)
+char * __cdecl LiveContracts_GetStatBuffer(int controllerIndex)
 
 {
   code *pcVar1;
@@ -1444,7 +1459,7 @@ char * __cdecl LiveContracts_GetStatBuffer(int param_1)
   char *pcVar3;
   uchar *puVar4;
   
-  if (0 < param_1) {
+  if (0 < controllerIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x46b,0,
                              "%s");
     if (!bVar2) {
@@ -1453,7 +1468,7 @@ char * __cdecl LiveContracts_GetStatBuffer(int param_1)
       return pcVar3;
     }
   }
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+  puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
   return (char *)puVar4;
 }
 
@@ -1466,14 +1481,14 @@ char * __cdecl LiveContracts_GetStatBuffer(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl LiveContracts_SV_GetStatBuffer(int param_1)
+char * __cdecl LiveContracts_SV_GetStatBuffer(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((clientNum < 0) || (0x1f < clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x471,0,
                              "%s\n\t(clientNum) = %i");
     if (!bVar2) {
@@ -1482,8 +1497,8 @@ char * __cdecl LiveContracts_SV_GetStatBuffer(int param_1)
       return pcVar3;
     }
   }
-  if ((*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c88) != -1) ||
-     (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c8c) != 7)) {
+  if ((*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c88) != -1) ||
+     (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c8c) != 7)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x472,0,
                              "%s");
     if (!bVar2) {
@@ -1492,7 +1507,7 @@ char * __cdecl LiveContracts_SV_GetStatBuffer(int param_1)
       return pcVar3;
     }
   }
-  if (*(int *)((int)svs.clients + param_1 * 0x84d00) < 2) {
+  if (*(int *)((int)svs.clients + clientNum * 0x84d00) < 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x473,0,
                              "%s");
     if (!bVar2) {
@@ -1501,21 +1516,21 @@ char * __cdecl LiveContracts_SV_GetStatBuffer(int param_1)
       return pcVar3;
     }
   }
-  return (char *)((int)svs.clients + param_1 * 0x84d00 + 0x6ff11);
+  return (char *)((int)svs.clients + clientNum * 0x84d00 + 0x6ff11);
 }
 
 
 // 0095B620  LiveContracts_GetUnlockLevel  (live/live_contracts.cpp:1149)
 
-int __cdecl LiveContracts_GetUnlockLevel(int param_1)
+int __cdecl LiveContracts_GetUnlockLevel(int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_1);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar2 = contracts[param_1].unlockLevel;
+    iVar2 = contracts[contractIndex].unlockLevel;
   }
   else {
     iVar2 = 0;
@@ -1526,17 +1541,17 @@ int __cdecl LiveContracts_GetUnlockLevel(int param_1)
 
 // 0095B650  LiveContracts_IsContractLocked  (live/live_contracts.cpp:1157)
 
-bool __cdecl LiveContracts_IsContractLocked(int param_1,int param_2)
+bool __cdecl LiveContracts_IsContractLocked(int controllerIndex,int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_2);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar2 = LiveContracts_GetUnlockLevel(param_2);
-    iVar3 = LiveStats_GetRank(param_1);
+    iVar2 = LiveContracts_GetUnlockLevel(contractIndex);
+    iVar3 = LiveStats_GetRank(controllerIndex);
     bVar1 = iVar3 + 1 < iVar2;
   }
   else {
@@ -1548,17 +1563,18 @@ bool __cdecl LiveContracts_IsContractLocked(int param_1,int param_2)
 
 // 0095B6A0  LiveContracts_GetTimesPurchased  (live/live_contracts.cpp:1165)
 
-int __cdecl LiveContracts_GetTimesPurchased(int param_1,int param_2)
+int __cdecl LiveContracts_GetTimesPurchased(int controllerIndex,int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *buffer;
+  char *statBuffer;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_2);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    pcVar3 = LiveContracts_GetStatBuffer(param_1);
-    iVar2 = LiveStats_GetContractStat(pcVar3,param_2,CONTRACT_STAT_TIMES_PURCHASED);
+    buffer = LiveContracts_GetStatBuffer(controllerIndex);
+    iVar2 = LiveStats_GetContractStat(buffer,contractIndex,CONTRACT_STAT_TIMES_PURCHASED);
   }
   else {
     iVar2 = 0;
@@ -1569,17 +1585,18 @@ int __cdecl LiveContracts_GetTimesPurchased(int param_1,int param_2)
 
 // 0095B740  LiveContracts_GetLastTimeDeactivated  (live/live_contracts.cpp:1177)
 
-int __cdecl LiveContracts_GetLastTimeDeactivated(int param_1,int param_2)
+int __cdecl LiveContracts_GetLastTimeDeactivated(int controllerIndex,int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *buffer;
+  char *statBuffer;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_2);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    pcVar3 = LiveContracts_GetStatBuffer(param_1);
-    iVar2 = LiveStats_GetContractStat(pcVar3,param_2,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
+    buffer = LiveContracts_GetStatBuffer(controllerIndex);
+    iVar2 = LiveStats_GetContractStat(buffer,contractIndex,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
   }
   else {
     iVar2 = 0;
@@ -1590,22 +1607,25 @@ int __cdecl LiveContracts_GetLastTimeDeactivated(int param_1,int param_2)
 
 // 0095B790  LiveContracts_GetTimeUntilCooledDown  (live/live_contracts.cpp:1189)
 
-int __cdecl LiveContracts_GetTimeUntilCooledDown(int param_1,int param_2)
+int __cdecl LiveContracts_GetTimeUntilCooledDown(int controllerIndex,int contractIndex)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   int iVar4;
+  int timeRemaining;
+  int lastTimeDeactivated;
+  int cooldown;
   
-  bVar1 = LiveContracts_ValidateContractIndex(param_2);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar3 = LiveContracts_GetCooldownTime(param_2);
+    iVar3 = LiveContracts_GetCooldownTime(contractIndex);
     if (iVar3 == 0) {
       iVar2 = 0;
     }
     else {
-      iVar4 = LiveContracts_GetLastTimeDeactivated(param_1,param_2);
+      iVar4 = LiveContracts_GetLastTimeDeactivated(controllerIndex,contractIndex);
       if (iVar4 == 0) {
         iVar2 = 0;
       }
@@ -1629,66 +1649,68 @@ int __cdecl LiveContracts_GetTimeUntilCooledDown(int param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LiveContracts_ActivateContract(int param_1,int param_2,int param_3)
+void __cdecl LiveContracts_ActivateContract(int controllerIndex,int index,int activeContractIndex)
 
 {
   bool bVar1;
-  char *pcVar2;
-  ContractStatus_t CVar3;
-  int iVar4;
-  int iVar5;
-  pointsSpent_t pVar6;
-  char local_c0 [32];
-  int local_a0;
-  char local_9c [128];
+  char *buffer_00;
+  ContractStatus_t CVar2;
+  int iVar3;
+  int currencyAmount;
+  pointsSpent_t reasonType;
+  char *buffer;
+  char gamertag [32];
+  int currentCP;
+  char xuidString [128];
   uint local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  ulong64 local_c;
+  int existingActiveContractIndex;
+  int contractStat;
+  int newCP;
+  ulong64 xuid;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar2 = LiveContracts_GetStatBuffer(param_1);
-  if ((param_3 < 0) || (2 < param_3)) {
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  if ((activeContractIndex < 0) || (2 < activeContractIndex)) {
     Com_Printf(0x10,"ERROR: Attempted to activate contract in an invalid slot!");
   }
   else {
-    bVar1 = LiveContracts_ValidateContractIndex(param_2);
+    bVar1 = LiveContracts_ValidateContractIndex(index);
     if (bVar1) {
-      local_18 = LiveContracts_GetActiveContractIndex(param_1,param_2);
-      if (-1 < local_18) {
-        CVar3 = LiveContracts_GetActiveContractStatus(param_1,local_18);
-        if (CVar3 == CONTRACT_IN_PROGRESS) {
+      existingActiveContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+      if (-1 < existingActiveContractIndex) {
+        CVar2 = LiveContracts_GetActiveContractStatus(controllerIndex,existingActiveContractIndex);
+        if (CVar2 == CONTRACT_IN_PROGRESS) {
           return;
         }
-        LiveContracts_DeactivateContract(param_1,local_18);
+        LiveContracts_DeactivateContract(controllerIndex,existingActiveContractIndex);
       }
-      local_a0 = LiveStats_GetCurrency(param_1);
-      local_10 = LiveContracts_GetContractCost(param_2);
-      local_10 = local_a0 - local_10;
-      if (local_10 < 0) {
+      currentCP = LiveStats_GetCurrency(controllerIndex);
+      iVar3 = LiveContracts_GetContractCost(index);
+      newCP = currentCP - iVar3;
+      if (newCP < 0) {
         Com_Printf(0x10,"ERROR: Not enough CP to activate contract!");
       }
       else {
-        LiveContracts_DeactivateContract(param_1,param_3);
-        Live_UserGetName(param_1,local_c0,0x20);
-        local_c = Live_GetXuid(param_1);
-        XUIDToString(&local_c,local_9c);
-        pVar6 = POINTSSPENT_CONTRACT;
-        iVar5 = param_2;
-        iVar4 = LiveContracts_GetContractCost(param_2);
-        LiveStats_SpendCurrency(param_1,iVar4,pVar6,iVar5);
-        LiveStats_SetActiveContractStat(pcVar2,param_3,CONTRACT_STAT_INDEX,param_2 + 1);
-        LiveStats_SetActiveContractStat(pcVar2,param_3,CONTRACT_STAT_PROGRESS,0);
-        LiveStats_SetActiveContractStat(pcVar2,param_3,CONTRACT_STAT_TIME_PLAYED,0);
-        local_14 = LiveStats_GetContractStat(pcVar2,param_2,CONTRACT_STAT_TIMES_PURCHASED);
-        LiveStats_SetContractStat(pcVar2,param_2,CONTRACT_STAT_TIMES_PURCHASED,local_14 + 1);
-        LiveStats_SetContractStat(pcVar2,param_2,CONTRACT_STAT_LAST_TIME_DEACTIVATED,0);
-        LiveStats_GetIntPlayerStat(param_1,&local_14,CONTRACT_STAT_CP_SPENT);
-        iVar5 = LiveContracts_GetContractCost(param_2);
-        LiveStats_SetIntPlayerStat(param_1,CONTRACT_STAT_CP_SPENT,iVar5 + local_14);
-        LiveStats_GetIntPlayerStat(param_1,&local_14,CONTRACT_STAT_NUM_PURCHASED);
-        LiveStats_SetIntPlayerStat(param_1,CONTRACT_STAT_NUM_PURCHASED,local_14 + 1);
+        LiveContracts_DeactivateContract(controllerIndex,activeContractIndex);
+        Live_UserGetName(controllerIndex,gamertag,0x20);
+        xuid = Live_GetXuid(controllerIndex);
+        XUIDToString(&xuid,xuidString);
+        reasonType = POINTSSPENT_CONTRACT;
+        iVar3 = index;
+        currencyAmount = LiveContracts_GetContractCost(index);
+        LiveStats_SpendCurrency(controllerIndex,currencyAmount,reasonType,iVar3);
+        LiveStats_SetActiveContractStat(buffer_00,activeContractIndex,CONTRACT_STAT_INDEX,index + 1)
+        ;
+        LiveStats_SetActiveContractStat(buffer_00,activeContractIndex,CONTRACT_STAT_PROGRESS,0);
+        LiveStats_SetActiveContractStat(buffer_00,activeContractIndex,CONTRACT_STAT_TIME_PLAYED,0);
+        contractStat = LiveStats_GetContractStat(buffer_00,index,CONTRACT_STAT_TIMES_PURCHASED);
+        LiveStats_SetContractStat(buffer_00,index,CONTRACT_STAT_TIMES_PURCHASED,contractStat + 1);
+        LiveStats_SetContractStat(buffer_00,index,CONTRACT_STAT_LAST_TIME_DEACTIVATED,0);
+        LiveStats_GetIntPlayerStat(controllerIndex,&contractStat,CONTRACT_STAT_CP_SPENT);
+        iVar3 = LiveContracts_GetContractCost(index);
+        LiveStats_SetIntPlayerStat(controllerIndex,CONTRACT_STAT_CP_SPENT,iVar3 + contractStat);
+        LiveStats_GetIntPlayerStat(controllerIndex,&contractStat,CONTRACT_STAT_NUM_PURCHASED);
+        LiveStats_SetIntPlayerStat(controllerIndex,CONTRACT_STAT_NUM_PURCHASED,contractStat + 1);
       }
     }
     else {
@@ -1701,30 +1723,34 @@ void __cdecl LiveContracts_ActivateContract(int param_1,int param_2,int param_3)
 
 // 0095BAA0  LiveContracts_DeactivateContract  (live/live_contracts.cpp:1280)
 
-void __cdecl LiveContracts_DeactivateContract(int param_1,int param_2)
+void __cdecl LiveContracts_DeactivateContract(int controllerIndex,int activeContractIndex)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int iVar4;
+  char *buffer_00;
+  int contractIndex_00;
+  int iVar2;
+  char *buffer;
+  int contractIndex;
   
-  pcVar2 = LiveContracts_GetStatBuffer(param_1);
-  if ((param_2 < 0) || (2 < param_2)) {
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  if ((activeContractIndex < 0) || (2 < activeContractIndex)) {
     Com_Printf(0x10,
                "ERROR: Attempted to deactivate a contract with an invalid active contract slot!\n");
   }
   else {
-    iVar3 = LiveContracts_GetIndexForActiveContract(param_1,param_2);
-    bVar1 = LiveContracts_ValidateContractIndex(iVar3);
+    contractIndex_00 = LiveContracts_GetIndexForActiveContract(controllerIndex,activeContractIndex);
+    bVar1 = LiveContracts_ValidateContractIndex(contractIndex_00);
     if (bVar1) {
-      iVar4 = LiveStats_GetContractStat(pcVar2,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
-      if (iVar4 == 0) {
-        iVar4 = LiveStorage_GetUTC();
-        LiveStats_SetContractStat(pcVar2,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar4);
+      iVar2 = LiveStats_GetContractStat
+                        (buffer_00,contractIndex_00,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
+      if (iVar2 == 0) {
+        iVar2 = LiveStorage_GetUTC();
+        LiveStats_SetContractStat
+                  (buffer_00,contractIndex_00,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar2);
       }
     }
-    LiveStats_SetActiveContractStat(pcVar2,param_2,CONTRACT_STAT_INDEX,0);
+    LiveStats_SetActiveContractStat(buffer_00,activeContractIndex,CONTRACT_STAT_INDEX,0);
   }
   return;
 }
@@ -1732,63 +1758,67 @@ void __cdecl LiveContracts_DeactivateContract(int param_1,int param_2)
 
 // 0095BB50  LiveContracts_GetNumActiveContracts  (live/live_contracts.cpp:1297)
 
-int __cdecl LiveContracts_GetNumActiveContracts(int param_1)
+int __cdecl LiveContracts_GetNumActiveContracts(int controllerIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
-  undefined4 local_10;
-  undefined4 local_8;
+  char *buffer_00;
+  int iVar1;
+  int activeContractIndex;
+  int i;
+  char *buffer;
+  int numActiveContracts;
   
-  pcVar1 = LiveContracts_GetStatBuffer(param_1);
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-    iVar2 = LiveStats_GetActiveContractStat(pcVar1,local_10,CONTRACT_STAT_INDEX);
-    if (0 < iVar2) {
-      local_8 = local_8 + 1;
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  numActiveContracts = 0;
+  for (i = 0; i < 3; i = i + 1) {
+    iVar1 = LiveStats_GetActiveContractStat(buffer_00,i,CONTRACT_STAT_INDEX);
+    if (0 < iVar1) {
+      numActiveContracts = numActiveContracts + 1;
     }
   }
-  return local_8;
+  return numActiveContracts;
 }
 
 
 // 0095BBC0  LiveContracts_GetNumContractsInProgress  (live/live_contracts.cpp:1310)
 
-int __cdecl LiveContracts_GetNumContractsInProgress(int param_1)
+int __cdecl LiveContracts_GetNumContractsInProgress(int controllerIndex)
 
 {
   ContractStatus_t CVar1;
-  undefined4 local_c;
-  undefined4 local_8;
+  int i;
+  int numContractsInProgress;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    CVar1 = LiveContracts_GetActiveContractStatus(param_1,local_c);
+  numContractsInProgress = 0;
+  for (i = 0; i < 3; i = i + 1) {
+    CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,i);
     if (CVar1 == CONTRACT_IN_PROGRESS) {
-      local_8 = local_8 + 1;
+      numContractsInProgress = numContractsInProgress + 1;
     }
   }
-  return local_8;
+  return numContractsInProgress;
 }
 
 
 // 0095BC10  LiveContracts_GetActiveContractIndex  (live/live_contracts.cpp:1321)
 
-int __cdecl LiveContracts_GetActiveContractIndex(int param_1,int param_2)
+int __cdecl LiveContracts_GetActiveContractIndex(int controllerIndex,int contractIndex)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int local_c;
+  char *buffer_00;
+  int iVar2;
+  int activeContractIndex;
+  int i;
+  char *buffer;
   
-  pcVar2 = LiveContracts_GetStatBuffer(param_1);
-  bVar1 = LiveContracts_ValidateContractIndex(param_2);
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      iVar3 = LiveStats_GetActiveContractStat(pcVar2,local_c,CONTRACT_STAT_INDEX);
-      if (iVar3 == param_2 + 1) {
-        return local_c;
+    for (i = 0; i < 3; i = i + 1) {
+      iVar2 = LiveStats_GetActiveContractStat(buffer_00,i,CONTRACT_STAT_INDEX);
+      if (iVar2 == contractIndex + 1) {
+        return i;
       }
     }
   }
@@ -1798,19 +1828,20 @@ int __cdecl LiveContracts_GetActiveContractIndex(int param_1,int param_2)
 
 // 0095BCC0  LiveContracts_GetIndexForActiveContract_Internal  (live/live_contracts.cpp:1335)
 
-int __cdecl LiveContracts_GetIndexForActiveContract_Internal(char *param_1,int param_2)
+int __cdecl LiveContracts_GetIndexForActiveContract_Internal(char *buffer,int activeContractIndex)
 
 {
   bool bVar1;
   int iVar2;
+  int contractIndex;
   
-  if ((param_2 < 0) || (2 < param_2)) {
+  if ((activeContractIndex < 0) || (2 < activeContractIndex)) {
     Com_Printf(0x10,"ERROR: Attempted to get contract index for an invalid active contract slot!\n")
     ;
     iVar2 = -1;
   }
   else {
-    iVar2 = LiveStats_GetActiveContractStat(param_1,param_2,CONTRACT_STAT_INDEX);
+    iVar2 = LiveStats_GetActiveContractStat(buffer,activeContractIndex,CONTRACT_STAT_INDEX);
     iVar2 = iVar2 + -1;
     bVar1 = LiveContracts_ValidateContractIndex(iVar2);
     if (!bVar1) {
@@ -1823,103 +1854,114 @@ int __cdecl LiveContracts_GetIndexForActiveContract_Internal(char *param_1,int p
 
 // 0095BC90  LiveContracts_GetIndexForActiveContract  (live/live_contracts.cpp:1351)
 
-int __cdecl LiveContracts_GetIndexForActiveContract(int param_1,int param_2)
+int __cdecl LiveContracts_GetIndexForActiveContract(int controllerIndex,int activeContractIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *buffer_00;
+  int iVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_GetStatBuffer(param_1);
-  iVar2 = LiveContracts_GetIndexForActiveContract_Internal(pcVar1,param_2);
-  return iVar2;
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  iVar1 = LiveContracts_GetIndexForActiveContract_Internal(buffer_00,activeContractIndex);
+  return iVar1;
 }
 
 
 // 0095BD80  LiveContracts_GetActiveContractProgress_Internal  (live/live_contracts.cpp:1357)
 
-int __cdecl LiveContracts_GetActiveContractProgress_Internal(char *param_1,int param_2,bool param_3)
+int __cdecl
+LiveContracts_GetActiveContractProgress_Internal
+          (char *buffer,int activeContractIndex,bool getInternalValue)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
-  int local_c;
-  int local_8;
+  int requiredCount;
+  int contractIndex;
+  int progressInterval;
+  int progress;
   
-  if ((param_2 < 0) || (2 < param_2)) {
+  if ((activeContractIndex < 0) || (2 < activeContractIndex)) {
     Com_Printf(0x10,
                "ERROR: Attempted to get contract progress for an invalid active contract slot!\n");
-    local_8 = 0;
+    progress = 0;
   }
   else {
-    iVar2 = LiveStats_GetActiveContractStat(param_1,param_2,CONTRACT_STAT_INDEX);
+    iVar2 = LiveStats_GetActiveContractStat(buffer,activeContractIndex,CONTRACT_STAT_INDEX);
     iVar2 = iVar2 + -1;
     if (iVar2 < 0) {
       Com_Printf(0x10,
                  "ERROR: Attempted to get contract progress for an empty active contract slot!\n");
-      local_8 = 0;
+      progress = 0;
     }
     else {
       bVar1 = LiveContracts_ValidateContractIndex(iVar2);
       if (bVar1) {
         iVar3 = LiveContracts_GetContractRequiredCount(iVar2);
-        local_c = LiveContracts_GetProgressInterval(iVar2);
-        local_8 = LiveStats_GetActiveContractStat(param_1,param_2,CONTRACT_STAT_PROGRESS);
-        if (param_3) {
-          if (local_c == 0) {
-            local_c = 1;
+        progressInterval = LiveContracts_GetProgressInterval(iVar2);
+        progress = LiveStats_GetActiveContractStat
+                             (buffer,activeContractIndex,CONTRACT_STAT_PROGRESS);
+        if (getInternalValue) {
+          if (progressInterval == 0) {
+            progressInterval = 1;
           }
-          if (iVar3 * local_c < local_8) {
-            local_8 = iVar3 * local_c;
+          if (iVar3 * progressInterval < progress) {
+            progress = iVar3 * progressInterval;
           }
         }
         else {
-          if (local_c != 0) {
-            local_8 = local_8 / local_c;
+          if (progressInterval != 0) {
+            progress = progress / progressInterval;
           }
-          if (iVar3 < local_8) {
-            local_8 = iVar3;
+          if (iVar3 < progress) {
+            progress = iVar3;
           }
         }
       }
       else {
-        local_8 = 0;
+        progress = 0;
       }
     }
   }
-  return local_8;
+  return progress;
 }
 
 
 // 0095BD20  LiveContracts_GetActiveContractProgress  (live/live_contracts.cpp:1400)
 
-int __cdecl LiveContracts_GetActiveContractProgress(int param_1,int param_2)
+int __cdecl LiveContracts_GetActiveContractProgress(int controllerIndex,int activeContractIndex)
 
 {
   int iVar1;
   connstate_t cVar2;
-  uchar *puVar3;
+  uchar *buffer_00;
+  char *buffer;
+  bool isInGame;
   
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1);
+  iVar1 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
   cVar2 = CL_GetLocalClientConnectionState(iVar1);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,-(cVar2 == CA_ACTIVE) & STATS_LOCATION_GLOBAL,true);
-  iVar1 = LiveContracts_GetActiveContractProgress_Internal((char *)puVar3,param_2,false);
+  buffer_00 = LiveStorage_GetStatsBuffer
+                        (controllerIndex,-(cVar2 == CA_ACTIVE) & STATS_LOCATION_GLOBAL,true);
+  iVar1 = LiveContracts_GetActiveContractProgress_Internal
+                    ((char *)buffer_00,activeContractIndex,false);
   return iVar1;
 }
 
 
 // 0095BF80  LiveContracts_GetCombatTimePassed_Internal  (live/live_contracts.cpp:1411)
 
-int __cdecl LiveContracts_GetCombatTimePassed_Internal(char *param_1,int param_2)
+int __cdecl LiveContracts_GetCombatTimePassed_Internal(char *buffer,int activeContractIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int timePlayedSinceStart;
   
-  local_8 = LiveStats_GetActiveContractStat(param_1,param_2,CONTRACT_STAT_TIME_PLAYED);
-  if (local_8 < 0) {
+  timePlayedSinceStart =
+       LiveStats_GetActiveContractStat(buffer,activeContractIndex,CONTRACT_STAT_TIME_PLAYED);
+  if (timePlayedSinceStart < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x588,0,
                              "%s");
     if (!bVar2) {
@@ -1928,73 +1970,78 @@ int __cdecl LiveContracts_GetCombatTimePassed_Internal(char *param_1,int param_2
       return iVar3;
     }
   }
-  if (local_8 < 0) {
-    local_8 = 0;
+  if (timePlayedSinceStart < 0) {
+    timePlayedSinceStart = 0;
   }
-  return local_8;
+  return timePlayedSinceStart;
 }
 
 
 // 0095BEF0  LiveContracts_GetCombatTimeLeft_Internal  (live/live_contracts.cpp:1424)
 
-int __cdecl LiveContracts_GetCombatTimeLeft_Internal(char *param_1,int param_2)
+int __cdecl LiveContracts_GetCombatTimeLeft_Internal(char *buffer,int activeContractIndex)
 
 {
   bool bVar1;
+  int contractIndex;
   int iVar2;
-  int iVar3;
-  int local_10;
+  int timeLeft;
+  int timePlayedSinceStart;
+  int index;
   
-  iVar2 = LiveContracts_GetIndexForActiveContract_Internal(param_1,param_2);
-  bVar1 = LiveContracts_ValidateContractIndex(iVar2);
+  contractIndex = LiveContracts_GetIndexForActiveContract_Internal(buffer,activeContractIndex);
+  bVar1 = LiveContracts_ValidateContractIndex(contractIndex);
   if (bVar1) {
-    iVar3 = I_stricmp(contracts[iVar2].expirationType,validExpirationTypes[0]);
-    if (iVar3 == 0) {
-      local_10 = LiveContracts_GetCombatTimePassed_Internal(param_1,param_2);
-      local_10 = contracts[iVar2].expirationData - local_10;
-      if (local_10 < 0) {
-        local_10 = 0;
+    iVar2 = I_stricmp(contracts[contractIndex].expirationType,validExpirationTypes[0]);
+    if (iVar2 == 0) {
+      iVar2 = LiveContracts_GetCombatTimePassed_Internal(buffer,activeContractIndex);
+      timeLeft = contracts[contractIndex].expirationData - iVar2;
+      if (timeLeft < 0) {
+        timeLeft = 0;
       }
     }
     else {
-      local_10 = -1;
+      timeLeft = -1;
     }
   }
   else {
-    local_10 = -1;
+    timeLeft = -1;
   }
-  return local_10;
+  return timeLeft;
 }
 
 
 // 0095BEC0  LiveContracts_GetCombatTimeLeft  (live/live_contracts.cpp:1440)
 
-int __cdecl LiveContracts_GetCombatTimeLeft(int param_1,int param_2)
+int __cdecl LiveContracts_GetCombatTimeLeft(int controllerIndex,int activeContractIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *buffer_00;
+  int iVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_GetStatBuffer(param_1);
-  iVar2 = LiveContracts_GetCombatTimeLeft_Internal(pcVar1,param_2);
-  return iVar2;
+  buffer_00 = LiveContracts_GetStatBuffer(controllerIndex);
+  iVar1 = LiveContracts_GetCombatTimeLeft_Internal(buffer_00,activeContractIndex);
+  return iVar1;
 }
 
 
 // 0095C100  LiveContracts_IsActiveContractExpired_Internal  (live/live_contracts.cpp:1446)
 
-bool __cdecl LiveContracts_IsActiveContractExpired_Internal(char *param_1,int param_2)
+bool __cdecl LiveContracts_IsActiveContractExpired_Internal(char *buffer,int activeContractIndex)
 
 {
   bool bVar1;
   int iVar2;
+  int timeLeft;
+  int index;
   
-  iVar2 = LiveContracts_GetIndexForActiveContract_Internal(param_1,param_2);
+  iVar2 = LiveContracts_GetIndexForActiveContract_Internal(buffer,activeContractIndex);
   bVar1 = LiveContracts_ValidateContractIndex(iVar2);
   if (bVar1) {
     iVar2 = I_stricmp(contracts[iVar2].expirationType,validExpirationTypes[0]);
     if ((iVar2 == 0) &&
-       (iVar2 = LiveContracts_GetCombatTimeLeft_Internal(param_1,param_2), iVar2 < 1)) {
+       (iVar2 = LiveContracts_GetCombatTimeLeft_Internal(buffer,activeContractIndex), iVar2 < 1)) {
       return true;
     }
     bVar1 = false;
@@ -2008,7 +2055,8 @@ bool __cdecl LiveContracts_IsActiveContractExpired_Internal(char *param_1,int pa
 
 // 0095BFE0  LiveContracts_GetActiveContractStatus_Internal  (live/live_contracts.cpp:1462)
 
-ContractStatus_t __cdecl LiveContracts_GetActiveContractStatus_Internal(char *param_1,int param_2)
+ContractStatus_t __cdecl
+LiveContracts_GetActiveContractStatus_Internal(char *buffer,int activeContractIndex)
 
 {
   bool bVar1;
@@ -2016,24 +2064,27 @@ ContractStatus_t __cdecl LiveContracts_GetActiveContractStatus_Internal(char *pa
   int iVar3;
   int iVar4;
   int iVar5;
+  int contractIndex;
+  int progress;
+  int count;
   
-  if ((param_2 < 0) || (2 < param_2)) {
+  if ((activeContractIndex < 0) || (2 < activeContractIndex)) {
     CVar2 = CONTRACT_EMPTY;
   }
   else {
-    iVar3 = LiveStats_GetActiveContractStat(param_1,param_2,CONTRACT_STAT_INDEX);
+    iVar3 = LiveStats_GetActiveContractStat(buffer,activeContractIndex,CONTRACT_STAT_INDEX);
     iVar3 = iVar3 + -1;
     bVar1 = LiveContracts_ValidateContractIndex(iVar3);
     if (bVar1) {
-      iVar4 = LiveContracts_GetActiveContractProgress_Internal(param_1,param_2,false);
+      iVar4 = LiveContracts_GetActiveContractProgress_Internal(buffer,activeContractIndex,false);
       iVar5 = LiveContracts_GetContractRequiredCount(iVar3);
       if (iVar4 < iVar5) {
-        bVar1 = LiveContracts_IsActiveContractExpired_Internal(param_1,param_2);
+        bVar1 = LiveContracts_IsActiveContractExpired_Internal(buffer,activeContractIndex);
         if (bVar1) {
-          iVar4 = LiveStats_GetContractStat(param_1,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
+          iVar4 = LiveStats_GetContractStat(buffer,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
           if (iVar4 == 0) {
             iVar4 = LiveStorage_GetUTC();
-            LiveStats_SetContractStat(param_1,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar4);
+            LiveStats_SetContractStat(buffer,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar4);
           }
           CVar2 = CONTRACT_EXPIRED;
         }
@@ -2042,10 +2093,10 @@ ContractStatus_t __cdecl LiveContracts_GetActiveContractStatus_Internal(char *pa
         }
       }
       else {
-        iVar4 = LiveStats_GetContractStat(param_1,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
+        iVar4 = LiveStats_GetContractStat(buffer,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED);
         if (iVar4 == 0) {
           iVar4 = LiveStorage_GetUTC();
-          LiveStats_SetContractStat(param_1,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar4);
+          LiveStats_SetContractStat(buffer,iVar3,CONTRACT_STAT_LAST_TIME_DEACTIVATED,iVar4);
         }
         CVar2 = CONTRACT_COMPLETE;
       }
@@ -2060,61 +2111,77 @@ ContractStatus_t __cdecl LiveContracts_GetActiveContractStatus_Internal(char *pa
 
 // 0095C180  LiveContracts_GetActiveContractStatus  (live/live_contracts.cpp:1494)
 
-ContractStatus_t __cdecl LiveContracts_GetActiveContractStatus(int param_1,int param_2)
+ContractStatus_t __cdecl
+LiveContracts_GetActiveContractStatus(int controllerIndex,int activeContractIndex)
 
 {
-  int iVar1;
-  connstate_t cVar2;
-  uchar *puVar3;
-  ContractStatus_t CVar4;
+  int localClientNum;
+  connstate_t cVar1;
+  uchar *buffer_00;
+  ContractStatus_t CVar2;
+  char *buffer;
+  bool isInGame;
   
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  cVar2 = CL_GetLocalClientConnectionState(iVar1);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,-(cVar2 == CA_ACTIVE) & STATS_LOCATION_GLOBAL,true);
-  CVar4 = LiveContracts_GetActiveContractStatus_Internal((char *)puVar3,param_2);
-  return CVar4;
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
+  buffer_00 = LiveStorage_GetStatsBuffer
+                        (controllerIndex,-(cVar1 == CA_ACTIVE) & STATS_LOCATION_GLOBAL,true);
+  CVar2 = LiveContracts_GetActiveContractStatus_Internal((char *)buffer_00,activeContractIndex);
+  return CVar2;
 }
 
 
 // 0095C1E0  LiveContracts_SV_GetIndexForActiveContract  (live/live_contracts.cpp:1505)
 
-int __cdecl LiveContracts_SV_GetIndexForActiveContract(int param_1,int param_2)
+int __cdecl LiveContracts_SV_GetIndexForActiveContract(int clientNum,int activeContractIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *buffer_00;
+  int iVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_SV_GetStatBuffer(param_1);
-  iVar2 = LiveContracts_GetIndexForActiveContract_Internal(pcVar1,param_2);
-  return iVar2;
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  iVar1 = LiveContracts_GetIndexForActiveContract_Internal(buffer_00,activeContractIndex);
+  return iVar1;
 }
 
 
 // 0095C300  LiveContracts_SV_GetActiveContractProgress  (live/live_contracts.cpp:1511)
 
-int __cdecl LiveContracts_SV_GetActiveContractProgress(int param_1,int param_2)
+int __cdecl LiveContracts_SV_GetActiveContractProgress(int clientNum,int activeContractIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *buffer_00;
+  int iVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_SV_GetStatBuffer(param_1);
-  iVar2 = LiveContracts_GetActiveContractProgress_Internal(pcVar1,param_2,false);
-  return iVar2;
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  iVar1 = LiveContracts_GetActiveContractProgress_Internal(buffer_00,activeContractIndex,false);
+  return iVar1;
 }
 
 
 // 0095C330  LiveContracts_SV_IncrementActiveContractProgress  (live/live_contracts.cpp:1517)
 
-void __cdecl LiveContracts_SV_IncrementActiveContractProgress(int param_1,int param_2,int param_3)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl
+LiveContracts_SV_IncrementActiveContractProgress
+          (int clientNum,int activeContractIndex,int increment)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  ContractStatus_t CVar4;
-  int iVar5;
-  ddlState_t local_14;
+  char *buffer_00;
+  ContractStatus_t CVar3;
+  int iVar4;
+  char *buffer;
+  int currentProgress;
+  ddlState_t searchState;
   
   if (((com_sv_running->current).enabled == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x5f2,0
@@ -2123,20 +2190,21 @@ void __cdecl LiveContracts_SV_IncrementActiveContractProgress(int param_1,int pa
     (*pcVar1)();
     return;
   }
-  if (((param_2 < 0) || (9 < param_2)) &&
+  if (((activeContractIndex < 0) || (9 < activeContractIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x5f4,0
                                ,"%s\n\t(activeContractIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = LiveContracts_SV_GetStatBuffer(param_1);
-  CVar4 = LiveContracts_GetActiveContractStatus_Internal(pcVar3,param_2);
-  if (CVar4 == CONTRACT_IN_PROGRESS) {
-    iVar5 = LiveContracts_GetActiveContractProgress_Internal(pcVar3,param_2,true);
-    bVar2 = LiveStats_GetActiveContractStatState(param_2,CONTRACT_STAT_PROGRESS,&local_14);
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  CVar3 = LiveContracts_GetActiveContractStatus_Internal(buffer_00,activeContractIndex);
+  if (CVar3 == CONTRACT_IN_PROGRESS) {
+    iVar4 = LiveContracts_GetActiveContractProgress_Internal(buffer_00,activeContractIndex,true);
+    bVar2 = LiveStats_GetActiveContractStatState
+                      (activeContractIndex,CONTRACT_STAT_PROGRESS,&searchState);
     if (bVar2) {
-      SV_SetClientDIntStat(param_1,&local_14,iVar5 + param_3);
+      SV_SetClientDIntStat(clientNum,&searchState,iVar4 + increment);
     }
   }
   return;
@@ -2145,15 +2213,19 @@ void __cdecl LiveContracts_SV_IncrementActiveContractProgress(int param_1,int pa
 
 // 0095C420  LiveContracts_SV_ResetActiveContractProgress  (live/live_contracts.cpp:1536)
 
-void __cdecl LiveContracts_SV_ResetActiveContractProgress(int param_1,int param_2)
+void __cdecl LiveContracts_SV_ResetActiveContractProgress(int clientNum,int activeContractIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  ContractStatus_t CVar4;
+  char *buffer_00;
+  ContractStatus_t CVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
+  char *buffer;
+  int contractIndex;
+  int progressInterval;
+  int progress;
   
   if (((com_sv_running->current).enabled == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x606,0
@@ -2162,21 +2234,22 @@ void __cdecl LiveContracts_SV_ResetActiveContractProgress(int param_1,int param_
     (*pcVar1)();
     return;
   }
-  if (((param_2 < 0) || (9 < param_2)) &&
+  if (((activeContractIndex < 0) || (9 < activeContractIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x608,0
                                ,"%s\n\t(activeContractIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = LiveContracts_SV_GetStatBuffer(param_1);
-  CVar4 = LiveContracts_GetActiveContractStatus_Internal(pcVar3,param_2);
-  if (CVar4 == CONTRACT_IN_PROGRESS) {
-    iVar5 = LiveContracts_GetIndexForActiveContract_Internal(pcVar3,param_2);
-    bVar2 = LiveContracts_ValidateContractIndex(iVar5);
-    if ((bVar2) && (iVar5 = LiveContracts_GetProgressInterval(iVar5), 1 < iVar5)) {
-      iVar6 = LiveContracts_GetActiveContractProgress_Internal(pcVar3,param_2,true);
-      LiveContracts_SV_IncrementActiveContractProgress(param_1,param_2,-(iVar6 % iVar5));
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  CVar3 = LiveContracts_GetActiveContractStatus_Internal(buffer_00,activeContractIndex);
+  if (CVar3 == CONTRACT_IN_PROGRESS) {
+    iVar4 = LiveContracts_GetIndexForActiveContract_Internal(buffer_00,activeContractIndex);
+    bVar2 = LiveContracts_ValidateContractIndex(iVar4);
+    if ((bVar2) && (iVar4 = LiveContracts_GetProgressInterval(iVar4), 1 < iVar4)) {
+      iVar5 = LiveContracts_GetActiveContractProgress_Internal(buffer_00,activeContractIndex,true);
+      LiveContracts_SV_IncrementActiveContractProgress
+                (clientNum,activeContractIndex,-(iVar5 % iVar4));
     }
   }
   return;
@@ -2185,15 +2258,23 @@ void __cdecl LiveContracts_SV_ResetActiveContractProgress(int param_1,int param_
 
 // 0095C530  LiveContracts_SV_IncrementActiveContractTime  (live/live_contracts.cpp:1563)
 
-void __cdecl LiveContracts_SV_IncrementActiveContractTime(int param_1,int param_2,int param_3)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl
+LiveContracts_SV_IncrementActiveContractTime(int clientNum,int activeContractIndex,int increment)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  ContractStatus_t CVar4;
-  ddlState_t local_18;
-  int local_8;
+  char *buffer_00;
+  ContractStatus_t CVar3;
+  char *buffer;
+  ddlState_t searchState;
+  int currentTime;
   
   if (((com_sv_running->current).enabled == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x620,0
@@ -2202,21 +2283,22 @@ void __cdecl LiveContracts_SV_IncrementActiveContractTime(int param_1,int param_
     (*pcVar1)();
     return;
   }
-  if (((param_2 < 0) || (9 < param_2)) &&
+  if (((activeContractIndex < 0) || (9 < activeContractIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x622,0
                                ,"%s\n\t(activeContractIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (0 < param_3) {
-    pcVar3 = LiveContracts_SV_GetStatBuffer(param_1);
-    CVar4 = LiveContracts_GetActiveContractStatus_Internal(pcVar3,param_2);
-    if (CVar4 == CONTRACT_IN_PROGRESS) {
-      local_8 = LiveContracts_GetCombatTimePassed_Internal(pcVar3,param_2);
-      bVar2 = LiveStats_GetActiveContractStatState(param_2,CONTRACT_STAT_TIME_PLAYED,&local_18);
+  if (0 < increment) {
+    buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+    CVar3 = LiveContracts_GetActiveContractStatus_Internal(buffer_00,activeContractIndex);
+    if (CVar3 == CONTRACT_IN_PROGRESS) {
+      currentTime = LiveContracts_GetCombatTimePassed_Internal(buffer_00,activeContractIndex);
+      bVar2 = LiveStats_GetActiveContractStatState
+                        (activeContractIndex,CONTRACT_STAT_TIME_PLAYED,&searchState);
       if (bVar2) {
-        SV_SetClientDIntStat(param_1,&local_18,local_8 + param_3);
+        SV_SetClientDIntStat(clientNum,&searchState,currentTime + increment);
       }
     }
   }
@@ -2226,60 +2308,65 @@ void __cdecl LiveContracts_SV_IncrementActiveContractTime(int param_1,int param_
 
 // 0095C620  LiveContracts_SV_GetActiveContractStatus  (live/live_contracts.cpp:1585)
 
-ContractStatus_t __cdecl LiveContracts_SV_GetActiveContractStatus(int param_1,int param_2)
+ContractStatus_t __cdecl
+LiveContracts_SV_GetActiveContractStatus(int clientNum,int activeContractIndex)
 
 {
-  char *pcVar1;
-  ContractStatus_t CVar2;
+  char *buffer_00;
+  ContractStatus_t CVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_SV_GetStatBuffer(param_1);
-  CVar2 = LiveContracts_GetActiveContractStatus_Internal(pcVar1,param_2);
-  return CVar2;
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  CVar1 = LiveContracts_GetActiveContractStatus_Internal(buffer_00,activeContractIndex);
+  return CVar1;
 }
 
 
 // 0095C650  LiveContracts_SV_GetCombatTimePassed  (live/live_contracts.cpp:1591)
 
-int __cdecl LiveContracts_SV_GetCombatTimePassed(int param_1,int param_2)
+int __cdecl LiveContracts_SV_GetCombatTimePassed(int clientNum,int activeContractIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *buffer_00;
+  int iVar1;
+  char *buffer;
   
-  pcVar1 = LiveContracts_SV_GetStatBuffer(param_1);
-  iVar2 = LiveContracts_GetCombatTimePassed_Internal(pcVar1,param_2);
-  return iVar2;
+  buffer_00 = LiveContracts_SV_GetStatBuffer(clientNum);
+  iVar1 = LiveContracts_GetCombatTimePassed_Internal(buffer_00,activeContractIndex);
+  return iVar1;
 }
 
 
 // 0095C680  LiveContracts_SVMergeBuffers  (live/live_contracts.cpp:1600)
 
-void __cdecl LiveContracts_SVMergeBuffers(uchar *param_1,uchar *param_2)
+void __cdecl LiveContracts_SVMergeBuffers(uchar *cacbuffer,uchar *globalbuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_10;
+  int i;
+  int cac_contractidx;
+  int global_contractidx;
   
-  if (((param_1 == (uchar *)0x0) || (param_2 == (uchar *)0x0)) &&
+  if (((cacbuffer == (uchar *)0x0) || (globalbuffer == (uchar *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x641,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (uchar *)0x0) && (param_2 != (uchar *)0x0)) {
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      iVar3 = LiveContracts_GetIndexForActiveContract_Internal((char *)param_1,local_10);
-      iVar4 = LiveContracts_GetIndexForActiveContract_Internal((char *)param_2,local_10);
+  if ((cacbuffer != (uchar *)0x0) && (globalbuffer != (uchar *)0x0)) {
+    for (i = 0; i < 3; i = i + 1) {
+      iVar3 = LiveContracts_GetIndexForActiveContract_Internal((char *)cacbuffer,i);
+      iVar4 = LiveContracts_GetIndexForActiveContract_Internal((char *)globalbuffer,i);
       if (iVar3 != iVar4) {
         Com_DPrintf(0xf,"CACValidate: contractindex mismatch!\n");
         Com_DPrintf(0xf,"CACValidate: setting global contractidx to %i\n");
-        LiveStats_SetActiveContractStat((char *)param_2,local_10,CONTRACT_STAT_INDEX,iVar3 + 1);
-        LiveStats_SetActiveContractStat((char *)param_2,local_10,CONTRACT_STAT_PROGRESS,0);
-        LiveStats_SetActiveContractStat((char *)param_2,local_10,CONTRACT_STAT_TIME_PLAYED,0);
+        LiveStats_SetActiveContractStat((char *)globalbuffer,i,CONTRACT_STAT_INDEX,iVar3 + 1);
+        LiveStats_SetActiveContractStat((char *)globalbuffer,i,CONTRACT_STAT_PROGRESS,0);
+        LiveStats_SetActiveContractStat((char *)globalbuffer,i,CONTRACT_STAT_TIME_PLAYED,0);
       }
     }
   }
@@ -2289,17 +2376,20 @@ void __cdecl LiveContracts_SVMergeBuffers(uchar *param_1,uchar *param_2)
 
 // 0095C7A0  LiveContracts_CLMergeBuffers  (live/live_contracts.cpp:1635)
 
-void __cdecl LiveContracts_CLMergeBuffers(uchar *param_1,uchar *param_2)
+void __cdecl LiveContracts_CLMergeBuffers(uchar *cacbuffer,uchar *globalbuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
-  int iVar5;
-  int local_14;
+  int newValue;
+  int newValue_00;
+  int i;
+  int global_progress;
+  int global_contractidx;
+  int global_timeplayed;
   
-  if ((param_1 == (uchar *)0x0) || (param_2 == (uchar *)0x0)) {
+  if ((cacbuffer == (uchar *)0x0) || (globalbuffer == (uchar *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_contracts.cpp",0x664,0,
                              "%s");
     if (!bVar2) {
@@ -2308,13 +2398,13 @@ void __cdecl LiveContracts_CLMergeBuffers(uchar *param_1,uchar *param_2)
       return;
     }
   }
-  for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-    iVar3 = LiveContracts_GetIndexForActiveContract_Internal((char *)param_2,local_14);
-    iVar4 = LiveStats_GetActiveContractStat((char *)param_2,local_14,CONTRACT_STAT_PROGRESS);
-    iVar5 = LiveStats_GetActiveContractStat((char *)param_2,local_14,CONTRACT_STAT_TIME_PLAYED);
-    LiveStats_SetActiveContractStat((char *)param_1,local_14,CONTRACT_STAT_INDEX,iVar3 + 1);
-    LiveStats_SetActiveContractStat((char *)param_1,local_14,CONTRACT_STAT_PROGRESS,iVar4);
-    LiveStats_SetActiveContractStat((char *)param_1,local_14,CONTRACT_STAT_TIME_PLAYED,iVar5);
+  for (i = 0; i < 3; i = i + 1) {
+    iVar3 = LiveContracts_GetIndexForActiveContract_Internal((char *)globalbuffer,i);
+    newValue = LiveStats_GetActiveContractStat((char *)globalbuffer,i,CONTRACT_STAT_PROGRESS);
+    newValue_00 = LiveStats_GetActiveContractStat((char *)globalbuffer,i,CONTRACT_STAT_TIME_PLAYED);
+    LiveStats_SetActiveContractStat((char *)cacbuffer,i,CONTRACT_STAT_INDEX,iVar3 + 1);
+    LiveStats_SetActiveContractStat((char *)cacbuffer,i,CONTRACT_STAT_PROGRESS,newValue);
+    LiveStats_SetActiveContractStat((char *)cacbuffer,i,CONTRACT_STAT_TIME_PLAYED,newValue_00);
   }
   return;
 }
@@ -2322,12 +2412,12 @@ void __cdecl LiveContracts_CLMergeBuffers(uchar *param_1,uchar *param_2)
 
 // 0095C8B0  SV_CACValidate_GetIndexForActiveContract  (live/live_contracts.cpp:1656)
 
-int __cdecl SV_CACValidate_GetIndexForActiveContract(uchar *param_1,int param_2)
+int __cdecl SV_CACValidate_GetIndexForActiveContract(uchar *cacbuffer,int activeindex)
 
 {
   int iVar1;
   
-  iVar1 = LiveContracts_GetIndexForActiveContract_Internal((char *)param_1,param_2);
+  iVar1 = LiveContracts_GetIndexForActiveContract_Internal((char *)cacbuffer,activeindex);
   return iVar1;
 }
 
@@ -2338,12 +2428,12 @@ void __cdecl LiveContracts_SetFilterCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    s_contractFilter = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    s_contractFilter = atoi(nptr);
     LiveContracts_RebuildFilteredList(0);
   }
   return;

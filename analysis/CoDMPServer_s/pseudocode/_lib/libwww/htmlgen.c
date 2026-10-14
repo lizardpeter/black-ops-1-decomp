@@ -7,12 +7,12 @@
 undefined4 * _HTMLGenerator(undefined4 param_1,undefined4 param_2,undefined4 param_3)
 
 {
-  undefined4 *puVar1;
-  undefined4 uVar2;
-  int iVar3;
+  undefined4 *pBlock;
+  undefined4 uVar1;
+  int iVar2;
   
-  puVar1 = (undefined4 *)_HTMemory_calloc(1);
-  if (puVar1 == (undefined4 *)0x0) {
+  pBlock = (undefined4 *)_HTMemory_calloc(1);
+  if (pBlock == (undefined4 *)0x0) {
     if (DAT_03547718 != (code *)0x0) {
       (*DAT_03547718)("HTMLGenerator",
                       "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTMLGen.c",0x191);
@@ -20,29 +20,29 @@ undefined4 * _HTMLGenerator(undefined4 param_1,undefined4 param_2,undefined4 par
                     /* WARNING: Subroutine does not return */
     abort();
   }
-  *puVar1 = &PTR_s_text_html_009d430c;
-  puVar1[2] = &PTR_PTR_00ac0e68;
-  uVar2 = _HTAtom_for("text/html",param_2,param_3,param_1);
-  iVar3 = _HTStreamStack(uVar2);
-  puVar1[1] = iVar3;
-  if (iVar3 == 0) {
-    free(puVar1);
+  *pBlock = &PTR_s_text_html_009d430c;
+  pBlock[2] = &PTR_PTR_00ac0e68;
+  uVar1 = _HTAtom_for("text/html",param_2,param_3,param_1);
+  iVar2 = _HTStreamStack(uVar1);
+  pBlock[1] = iVar2;
+  if (iVar2 == 0) {
+    free(pBlock);
     DAT_034f8f30 = &PTR_s_ErrorStream_009d42d4;
-    puVar1 = (undefined4 *)0x0;
+    pBlock = (undefined4 *)0x0;
     _DAT_00000004 = &DAT_034f8f30;
   }
-  puVar1[0x19] = puVar1 + 4;
-  puVar1[0x1a] = 0;
-  puVar1[0x1b] = 0;
-  puVar1[0x1c] = 0;
-  puVar1[0x1d] = 0;
-  puVar1[0x1e] = 0;
-  puVar1[0x1f] = 0;
-  puVar1[0x20] = 0;
-  puVar1[0x21] = 0;
-  puVar1[0x22] = 0;
-  puVar1[0x23] = 0;
-  puVar1[0x24] = 0;
-  return puVar1;
+  pBlock[0x19] = pBlock + 4;
+  pBlock[0x1a] = 0;
+  pBlock[0x1b] = 0;
+  pBlock[0x1c] = 0;
+  pBlock[0x1d] = 0;
+  pBlock[0x1e] = 0;
+  pBlock[0x1f] = 0;
+  pBlock[0x20] = 0;
+  pBlock[0x21] = 0;
+  pBlock[0x22] = 0;
+  pBlock[0x23] = 0;
+  pBlock[0x24] = 0;
+  return pBlock;
 }
 

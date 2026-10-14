@@ -27,13 +27,13 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
 {
   undefined4 uVar1;
   undefined4 uVar2;
-  uchar *puVar3;
+  uchar *string;
   undefined1 *extraout_EAX;
-  int iVar4;
+  int iVar3;
   undefined1 *extraout_EAX_00;
   undefined1 *extraout_EAX_01;
+  undefined4 uVar4;
   undefined4 uVar5;
-  undefined4 uVar6;
   undefined4 local_24;
   uchar *local_20;
   uchar *local_14;
@@ -43,31 +43,31 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
   local_24 = 0xcc;
   uVar1 = _HTChunk_new(0x40);
   uVar2 = _HTParse(param_2,"",0x10);
-  puVar3 = (uchar *)_HTParse(param_2,"",8);
-  strchr(puVar3,'@');
+  string = (uchar *)_HTParse(param_2,"",8);
+  strchr(string,'@');
   local_14 = (uchar *)0x0;
   local_c = (undefined1 *)0x0;
-  iVar4 = _HTAlert_interactive();
-  if (iVar4 == 0) {
+  iVar3 = _HTAlert_interactive();
+  if (iVar3 == 0) {
     _HTMemory_free(uVar2);
-    _HTMemory_free(puVar3);
+    _HTMemory_free(string);
     _HTChunk_delete(uVar1);
     local_24 = 0xffffffff;
   }
   else {
-    local_20 = puVar3;
+    local_20 = string;
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
-      strchr(puVar3,':');
+      strchr(string,':');
       local_c = extraout_EAX_00;
       if (extraout_EAX_00 != (undefined1 *)0x0) {
         *extraout_EAX_00 = 0;
         local_c = extraout_EAX_00 + 1;
         _HTUnEscape(local_c);
       }
-      _HTUnEscape(puVar3);
+      _HTUnEscape(string);
       local_20 = extraout_EAX + 1;
-      local_14 = puVar3;
+      local_14 = string;
     }
     strchr(local_20,':');
     local_8 = extraout_EAX_01;
@@ -75,14 +75,14 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
       *extraout_EAX_01 = 0;
       local_8 = extraout_EAX_01 + 1;
     }
-    iVar4 = _HTLib_secure();
-    if (iVar4 == 0) {
+    iVar3 = _HTLib_secure();
+    if (iVar3 == 0) {
       FUN_00bdafe0(local_14);
       FUN_00bdafe0(local_c);
       FUN_00bdafe0(local_20);
       FUN_00bdafe0(local_8);
-      iVar4 = strcasecomp(uVar2,"telnet");
-      if (iVar4 == 0) {
+      iVar3 = strcasecomp(uVar2,"telnet");
+      if (iVar3 == 0) {
         _HTChunk_puts(uVar1,"telnet ");
         _HTChunk_puts(uVar1,local_20);
         if (local_8 != (undefined1 *)0x0) {
@@ -91,8 +91,8 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
         }
       }
       else {
-        iVar4 = strcasecomp(uVar2,"rlogin");
-        if (iVar4 == 0) {
+        iVar3 = strcasecomp(uVar2,"rlogin");
+        if (iVar3 == 0) {
           _HTChunk_puts(uVar1,"rlogin ");
           if (local_14 != (uchar *)0x0) {
             _HTChunk_puts(uVar1,"-l ");
@@ -102,8 +102,8 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
           _HTChunk_puts(uVar1,local_20);
         }
         else {
-          iVar4 = strcasecomp(uVar2,"tn3270");
-          if (iVar4 == 0) {
+          iVar3 = strcasecomp(uVar2,"tn3270");
+          if (iVar3 == 0) {
             _HTChunk_puts(uVar1,"tn3270 ");
             _HTChunk_puts(uVar1,local_20);
           }
@@ -113,31 +113,31 @@ undefined4 FUN_00bdac00(undefined4 param_1,undefined4 param_2)
         }
       }
       if (local_14 != (uchar *)0x0) {
-        uVar5 = _HTChunk_new(0x80);
-        iVar4 = strcasecomp(uVar2,"rlogin",uVar5);
-        if (iVar4 != 0) {
-          _HTChunk_puts(uVar5,"user <");
-          _HTChunk_puts(uVar5,local_14);
-          _HTChunk_putc(uVar5,0x3e);
+        uVar4 = _HTChunk_new(0x80);
+        iVar3 = strcasecomp(uVar2,"rlogin",uVar4);
+        if (iVar3 != 0) {
+          _HTChunk_puts(uVar4,"user <");
+          _HTChunk_puts(uVar4,local_14);
+          _HTChunk_putc(uVar4,0x3e);
         }
         if (local_c != (undefined1 *)0x0) {
-          _HTChunk_puts(uVar5," and password <");
-          _HTChunk_puts(uVar5,local_c);
-          _HTChunk_putc(uVar5,0x3e);
+          _HTChunk_puts(uVar4," and password <");
+          _HTChunk_puts(uVar4,local_c);
+          _HTChunk_putc(uVar4,0x3e);
         }
-        uVar6 = _HTChunk_size(uVar5,"HTLoadTelnet");
-        uVar6 = _HTChunk_data(uVar5,uVar6);
-        _HTRequest_addError(param_1,8,0,0x4c,uVar6);
-        _HTChunk_delete(uVar5);
+        uVar5 = _HTChunk_size(uVar4,"HTLoadTelnet");
+        uVar5 = _HTChunk_data(uVar4,uVar5);
+        _HTRequest_addError(param_1,8,0,0x4c,uVar5);
+        _HTChunk_delete(uVar4);
       }
       _HTMemory_free(uVar2);
-      _HTMemory_free(puVar3);
+      _HTMemory_free(string);
       _HTChunk_delete(uVar1);
     }
     else {
       _HTRequest_addError(param_1,1,0,0x4b,0,0,"HTLoadTelnet");
       _HTMemory_free(uVar2);
-      _HTMemory_free(puVar3);
+      _HTMemory_free(string);
       _HTChunk_delete(uVar1);
       local_24 = 0xcc;
     }

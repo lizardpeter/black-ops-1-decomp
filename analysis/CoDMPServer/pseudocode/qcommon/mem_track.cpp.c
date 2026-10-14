@@ -2,37 +2,38 @@
 
 // 006E22D0  bitarray<54>  (qcommon/bitarray.h:25)
 
-bitarray<54> * __thiscall bitarray<54>::bitarray<54>(bitarray<54> *this,int param_1)
+bitarray<54> * __thiscall bitarray<54>::bitarray<54>(bitarray<54> *this,int this)
 
 {
   uint in_stack_00000008;
   int local_10;
-  uint *local_8;
+  int v;
+  char *argList;
   
   for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    *(undefined4 *)(param_1 + local_10 * 4) = 0;
+    *(undefined4 *)(this + local_10 * 4) = 0;
   }
-  setBit((bitarray<54> *)param_1,in_stack_00000008);
-  local_8 = (uint *)&stack0x0000000c;
+  setBit((bitarray<54> *)this,in_stack_00000008);
+  argList = &stack0x0000000c;
   while( true ) {
-    if (*local_8 == 0xffffffff) break;
-    setBit((bitarray<54> *)param_1,*local_8);
-    local_8 = local_8 + 1;
+    if (*(uint *)argList == 0xffffffff) break;
+    setBit((bitarray<54> *)this,*(uint *)argList);
+    argList = argList + 4;
   }
-  return (bitarray<54> *)param_1;
+  return (bitarray<54> *)this;
 }
 
 
 // 006E2340  testBit  (qcommon/bitarray.h:108)
 
-bool __thiscall bitarray<54>::testBit(bitarray<54> *this,uint param_1)
+bool __thiscall bitarray<54>::testBit(bitarray<54> *this,uint pos)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (0x35 < param_1) {
+  if (0x35 < pos) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/bitarray.h",
                              0x6d,0,"%s");
     if (!bVar2) {
@@ -41,19 +42,19 @@ bool __thiscall bitarray<54>::testBit(bitarray<54> *this,uint param_1)
       return (bool)uVar3;
     }
   }
-  return (0x80000000U >> ((byte)param_1 & 0x1f) & this->array[param_1 >> 5]) != 0;
+  return (0x80000000U >> ((byte)pos & 0x1f) & this->array[pos >> 5]) != 0;
 }
 
 
 // 006E23A0  setBit  (qcommon/bitarray.h:114)
 
-void __thiscall bitarray<54>::setBit(bitarray<54> *this,uint param_1)
+void __thiscall bitarray<54>::setBit(bitarray<54> *this,uint pos)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x35 < param_1) {
+  if (0x35 < pos) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/bitarray.h",
                              0x73,0,"%s");
     if (!bVar2) {
@@ -62,17 +63,17 @@ void __thiscall bitarray<54>::setBit(bitarray<54> *this,uint param_1)
       return;
     }
   }
-  this->array[param_1 >> 5] = 0x80000000U >> ((byte)param_1 & 0x1f) | this->array[param_1 >> 5];
+  this->array[pos >> 5] = 0x80000000U >> ((byte)pos & 0x1f) | this->array[pos >> 5];
   return;
 }
 
 
 // 006E2120  mb  (qcommon/mem_track.cpp:159)
 
-float __cdecl mb(int param_1)
+float __cdecl mb(int n)
 
 {
-  return (float)param_1 / 1048576.0;
+  return (float)n / 1048576.0;
 }
 
 
@@ -97,14 +98,14 @@ void __cdecl TRACK_memtrack(void)
 
 // 006DF470  track_addbasicinfo  (qcommon/mem_track.cpp:217)
 
-void __cdecl track_addbasicinfo(meminfo_t *param_1,int param_2,int param_3,int param_4)
+void __cdecl track_addbasicinfo(meminfo_t *info,int type,int location,int size)
 
 {
   bool bVar1;
   
-  param_1->typeTotal[param_2][param_3] = param_1->typeTotal[param_2][param_3] + param_4;
-  param_1->total[param_3] = param_1->total[param_3] + param_4;
-  switch(param_2) {
+  info->typeTotal[type][location] = info->typeTotal[type][location] + size;
+  info->total[location] = info->total[location] + size;
+  switch(type) {
   case 0:
   case 1:
   case 3:
@@ -116,9 +117,9 @@ void __cdecl track_addbasicinfo(meminfo_t *param_1,int param_2,int param_3,int p
     bVar1 = true;
   }
   if (bVar1) {
-    param_1->nonSwapTotal = param_1->nonSwapTotal + param_4;
+    info->nonSwapTotal = info->nonSwapTotal + size;
   }
-  switch(param_2) {
+  switch(type) {
   case 0:
   case 1:
   case 3:
@@ -132,7 +133,7 @@ void __cdecl track_addbasicinfo(meminfo_t *param_1,int param_2,int param_3,int p
     bVar1 = true;
   }
   if (bVar1) {
-    param_1->nonSwapMinSpecTotal = param_1->nonSwapMinSpecTotal + param_4;
+    info->nonSwapMinSpecTotal = info->nonSwapMinSpecTotal + size;
   }
   return;
 }
@@ -140,28 +141,27 @@ void __cdecl track_addbasicinfo(meminfo_t *param_1,int param_2,int param_3,int p
 
 // 006E1290  track_addbasicmeminfo  (qcommon/mem_track.cpp:237)
 
-void __cdecl track_addbasicmeminfo(meminfo_t *param_1,meminfo_t *param_2)
+void __cdecl track_addbasicmeminfo(meminfo_t *sum,meminfo_t *in)
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int type;
   
-  for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 0x36; local_8 = local_8 + 1) {
-      param_1->typeTotal[local_8][local_c] =
-           param_1->typeTotal[local_8][local_c] + param_2->typeTotal[local_8][local_c];
+  for (j = 0; j < 2; j = j + 1) {
+    for (type = 0; type < 0x36; type = type + 1) {
+      sum->typeTotal[type][j] = sum->typeTotal[type][j] + in->typeTotal[type][j];
     }
-    param_1->total[local_c] = param_1->total[local_c] + param_2->total[local_c];
+    sum->total[j] = sum->total[j] + in->total[j];
   }
-  param_1->nonSwapTotal = param_1->nonSwapTotal + param_2->nonSwapTotal;
-  param_1->nonSwapMinSpecTotal = param_1->nonSwapMinSpecTotal + param_2->nonSwapMinSpecTotal;
+  sum->nonSwapTotal = sum->nonSwapTotal + in->nonSwapTotal;
+  sum->nonSwapMinSpecTotal = sum->nonSwapMinSpecTotal + in->nonSwapMinSpecTotal;
   return;
 }
 
 
 // 006DF320  track_static_alloc_internal_simple  (qcommon/mem_track.cpp:258)
 
-void __cdecl track_static_alloc_internal_simple(void *param_1,int param_2,char *param_3,int param_4)
+void __cdecl track_static_alloc_internal_simple(void *ptr,int size,char *name,int memTrack)
 
 {
   char cVar1;
@@ -170,6 +170,8 @@ void __cdecl track_static_alloc_internal_simple(void *param_1,int param_2,char *
   bool bVar4;
   mem_track_t *local_14;
   char *local_10;
+  mem_track_t *mem_track;
+  int usageType;
   
   track_init();
   if (0x7ff < g_staticsMemTrackCount) {
@@ -181,7 +183,7 @@ void __cdecl track_static_alloc_internal_simple(void *param_1,int param_2,char *
       return;
     }
   }
-  if (param_2 < 1) {
+  if (size < 1) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x109,0,
                              "%s");
     if (!bVar4) {
@@ -192,8 +194,8 @@ void __cdecl track_static_alloc_internal_simple(void *param_1,int param_2,char *
   }
   iVar3 = g_staticsMemTrackCount;
   local_14 = g_staticsMemTrack + g_staticsMemTrackCount;
-  g_staticsMemTrack[g_staticsMemTrackCount].size[0] = param_2;
-  if (*param_3 == '\0') {
+  g_staticsMemTrack[g_staticsMemTrackCount].size[0] = size;
+  if (*name == '\0') {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x10d,0,
                              "%s");
     if (!bVar4) {
@@ -202,17 +204,17 @@ void __cdecl track_static_alloc_internal_simple(void *param_1,int param_2,char *
       return;
     }
   }
-  local_10 = param_3;
+  local_10 = name;
   do {
     cVar1 = *local_10;
     local_14->name[0] = cVar1;
     local_10 = local_10 + 1;
     local_14 = (mem_track_t *)(local_14->name + 1);
   } while (cVar1 != '\0');
-  g_staticsMemTrack[iVar3].type = (uchar)param_4;
+  g_staticsMemTrack[iVar3].type = (uchar)memTrack;
   g_staticsMemTrack[iVar3].usageType = '\0';
   g_staticsMemTrack[iVar3].filename = g_mem_track_filename;
-  track_addbasicinfo(&g_info,param_4,0,param_2);
+  track_addbasicinfo(&g_info,memTrack,0,size);
   g_staticsMemTrackCount = g_staticsMemTrackCount + 1;
   return;
 }
@@ -293,12 +295,14 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 006DF5B0  track_static_alloc_internal  (qcommon/mem_track.cpp:291)
 
-void __cdecl track_static_alloc_internal(void *param_1,int param_2,char *param_3,int param_4)
+void __cdecl track_static_alloc_internal(void *ptr,int size,char *name,int type)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_InitializeCriticalSections();
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  track_static_alloc_internal_simple(param_1,param_2,param_3,param_4);
+  track_static_alloc_internal_simple(ptr,size,name,type);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -309,8 +313,8 @@ void __cdecl track_static_alloc_internal(void *param_1,int param_2,char *param_3
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 TempMemInfo * __cdecl
-GetTempMemInfo(int param_1,char *param_2,int param_3,int param_4,TempMemInfo *param_5,int *param_6,
-              bool param_7)
+GetTempMemInfo(int permanent,char *name,int type,int usageType,TempMemInfo *tempMemInfoArray,
+              int *tempMemInfoCount,bool add_if_missing)
 
 {
   char cVar1;
@@ -322,72 +326,72 @@ GetTempMemInfo(int param_1,char *param_2,int param_3,int param_4,TempMemInfo *pa
   TempMemInfo *pTVar7;
   mem_track_t *local_cc;
   char *local_c8;
-  int local_c4 [44];
+  int foundTempMemInfo [44];
   uint local_14;
-  int local_10;
-  TempMemInfo *local_c;
-  int local_8;
+  int i;
+  TempMemInfo *tempMemInfo;
+  int count;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = *param_6;
-  local_10 = 0;
-  local_c = param_5;
+  count = *tempMemInfoCount;
+  i = 0;
+  tempMemInfo = tempMemInfoArray;
   do {
-    if (local_8 <= local_10) {
-      if (param_7) {
-        if ((param_2 == (char *)0x0) &&
+    if (count <= i) {
+      if (add_if_missing) {
+        if ((name == (char *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",
                                      0x149,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pTVar5 = (TempMemInfo *)(*pcVar2)();
           return pTVar5;
         }
-        *param_6 = *param_6 + 1;
-        if ((0x5db < *param_6) &&
+        *tempMemInfoCount = *tempMemInfoCount + 1;
+        if ((0x5db < *tempMemInfoCount) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",
                                      0x14b,0,"%s\n\t(*tempMemInfoCount) = %i"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pTVar5 = (TempMemInfo *)(*pcVar2)();
           return pTVar5;
         }
-        local_c->permanent = param_1;
-        local_c8 = param_2;
-        local_cc = &local_c->data;
+        tempMemInfo->permanent = permanent;
+        local_c8 = name;
+        local_cc = &tempMemInfo->data;
         do {
           cVar1 = *local_c8;
           local_cc->name[0] = cVar1;
           local_c8 = local_c8 + 1;
           local_cc = (mem_track_t *)(local_cc->name + 1);
         } while (cVar1 != '\0');
-        (local_c->data).type = (uchar)param_3;
-        (local_c->data).usageType = (uchar)param_4;
-        (local_c->data).size[0] = 0;
-        (local_c->data).size[1] = 0;
-        (local_c->data).filename = "";
-        (local_c->data).count = 0;
-        local_c->high = 0;
-        local_c->low = 0;
-        local_c->hunkSize = 0;
-        local_c->highExtra = 0;
+        (tempMemInfo->data).type = (uchar)type;
+        (tempMemInfo->data).usageType = (uchar)usageType;
+        (tempMemInfo->data).size[0] = 0;
+        (tempMemInfo->data).size[1] = 0;
+        (tempMemInfo->data).filename = "";
+        (tempMemInfo->data).count = 0;
+        tempMemInfo->high = 0;
+        tempMemInfo->low = 0;
+        tempMemInfo->hunkSize = 0;
+        tempMemInfo->highExtra = 0;
 LAB_006df9c6:
-        pTVar5 = local_c;
-        piVar6 = local_c4;
+        pTVar5 = tempMemInfo;
+        piVar6 = foundTempMemInfo;
         for (iVar4 = 0x2b; iVar4 != 0; iVar4 = iVar4 + -1) {
           *piVar6 = pTVar5->permanent;
           pTVar5 = (TempMemInfo *)&pTVar5->high;
           piVar6 = piVar6 + 1;
         }
-        for (; 0 < local_10; local_10 = local_10 + -1) {
-          pTVar5 = param_5 + local_10 + -1;
-          pTVar7 = param_5 + local_10;
+        for (; 0 < i; i = i + -1) {
+          pTVar5 = tempMemInfoArray + i + -1;
+          pTVar7 = tempMemInfoArray + i;
           for (iVar4 = 0x2b; iVar4 != 0; iVar4 = iVar4 + -1) {
             pTVar7->permanent = pTVar5->permanent;
             pTVar5 = (TempMemInfo *)&pTVar5->high;
             pTVar7 = (TempMemInfo *)&pTVar7->high;
           }
         }
-        piVar6 = local_c4;
-        pTVar5 = param_5;
+        piVar6 = foundTempMemInfo;
+        pTVar5 = tempMemInfoArray;
         for (iVar4 = 0x2b; iVar4 != 0; iVar4 = iVar4 + -1) {
           pTVar5->permanent = *piVar6;
           piVar6 = piVar6 + 1;
@@ -395,39 +399,41 @@ LAB_006df9c6:
         }
       }
       else {
-        param_5 = (TempMemInfo *)0x0;
+        tempMemInfoArray = (TempMemInfo *)0x0;
       }
-      return param_5;
+      return tempMemInfoArray;
     }
-    local_c = param_5 + local_10;
-    if ((((param_2 == (char *)0x0) ||
-         (iVar4 = _stricmp(param_5[local_10].data.name,param_2), iVar4 == 0)) &&
-        (local_c->permanent == param_1)) && ((uint)(local_c->data).usageType == param_4)) {
-      if (local_10 == 0) {
-        return local_c;
+    tempMemInfo = tempMemInfoArray + i;
+    if ((((name == (char *)0x0) ||
+         (iVar4 = _stricmp(tempMemInfoArray[i].data.name,name), iVar4 == 0)) &&
+        (tempMemInfo->permanent == permanent)) && ((uint)(tempMemInfo->data).usageType == usageType)
+       ) {
+      if (i == 0) {
+        return tempMemInfo;
       }
       goto LAB_006df9c6;
     }
-    local_10 = local_10 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    tempMemInfo = tempMemInfo + 1;
   } while( true );
 }
 
 
 // 006DFCD0  CheckHighMemInfo  (qcommon/mem_track.cpp:356)
 
-void __cdecl CheckHighMemInfo(TempMemInfo *param_1,int param_2,int param_3)
+void __cdecl CheckHighMemInfo(TempMemInfo *tempMemInfo,int hunkSize,int location)
 
 {
   int iVar1;
+  int size;
   
-  iVar1 = (param_1->data).size[param_3];
-  if (param_1->high < iVar1) {
-    param_1->high = iVar1;
+  iVar1 = (tempMemInfo->data).size[location];
+  if (tempMemInfo->high < iVar1) {
+    tempMemInfo->high = iVar1;
   }
-  if (param_1->hunkSize < param_2) {
-    param_1->hunkSize = param_2;
-    param_1->highExtra = iVar1;
+  if (tempMemInfo->hunkSize < hunkSize) {
+    tempMemInfo->hunkSize = hunkSize;
+    tempMemInfo->highExtra = iVar1;
   }
   return;
 }
@@ -437,44 +443,44 @@ void __cdecl CheckHighMemInfo(TempMemInfo *param_1,int param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl track_flush_physical_alloc(char *param_1,int param_2)
+void __cdecl track_flush_physical_alloc(char *name,int type)
 
 {
   char cVar1;
   int iVar2;
   char *local_a8;
-  int local_a4;
-  int local_a0;
-  char local_9c;
+  int j_2;
+  int j;
+  char test_name;
   undefined1 auStack_9b [131];
   uint local_18;
-  int local_14;
-  TempMemInfo *local_10;
-  int local_c;
-  TempMemInfo *local_8;
+  int len;
+  TempMemInfo *mainTempMemInfo;
+  int i;
+  TempMemInfo *tempMemInfo;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(&local_9c,"%s::");
-  local_a8 = &local_9c;
+  sprintf(&test_name,"%s::");
+  local_a8 = &test_name;
   do {
     cVar1 = *local_a8;
     local_a8 = local_a8 + 1;
   } while (cVar1 != '\0');
-  local_14 = (int)local_a8 - (int)auStack_9b;
-  local_10 = GetTempMemInfo(0,param_1,param_2,7,g_physicalMemInfoArray,&g_physicalMemInfoCount,false
-                           );
-  for (local_c = 0; local_c < g_physicalMemInfoCount; local_c = local_c + 1) {
-    local_8 = g_physicalMemInfoArray + local_c;
-    iVar2 = I_strnicmp(g_physicalMemInfoArray[local_c].data.name,&local_9c,local_14);
+  len = (int)local_a8 - (int)auStack_9b;
+  mainTempMemInfo =
+       GetTempMemInfo(0,name,type,7,g_physicalMemInfoArray,&g_physicalMemInfoCount,false);
+  for (i = 0; i < g_physicalMemInfoCount; i = i + 1) {
+    tempMemInfo = g_physicalMemInfoArray + i;
+    iVar2 = I_strnicmp(g_physicalMemInfoArray[i].data.name,&test_name,len);
     if (iVar2 == 0) {
-      if (local_10 != (TempMemInfo *)0x0) {
-        for (local_a0 = 0; local_a0 < 2; local_a0 = local_a0 + 1) {
-          (local_10->data).size[local_a0] =
-               (local_10->data).size[local_a0] + (local_8->data).size[local_a0];
+      if (mainTempMemInfo != (TempMemInfo *)0x0) {
+        for (j = 0; j < 2; j = j + 1) {
+          (mainTempMemInfo->data).size[j] =
+               (mainTempMemInfo->data).size[j] + (tempMemInfo->data).size[j];
         }
       }
-      for (local_a4 = 0; local_a4 < 2; local_a4 = local_a4 + 1) {
-        (local_8->data).size[local_a4] = 0;
+      for (j_2 = 0; j_2 < 2; j_2 = j_2 + 1) {
+        (tempMemInfo->data).size[j_2] = 0;
       }
     }
   }
@@ -504,7 +510,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 006DFA30  track_set_max_memory_level  (qcommon/mem_track.cpp:411)
 
-void __cdecl track_set_max_memory_level(char *param_1)
+void __cdecl track_set_max_memory_level(char *mapName)
 
 {
   g_maxMemoryLevel = 0xdc00000;
@@ -514,11 +520,11 @@ void __cdecl track_set_max_memory_level(char *param_1)
 
 // 006DFFB0  CheckLowMemInfo  (qcommon/mem_track.cpp:436)
 
-void __cdecl CheckLowMemInfo(TempMemInfo *param_1,int param_2)
+void __cdecl CheckLowMemInfo(TempMemInfo *tempMemInfo,int location)
 
 {
-  if ((param_1->data).size[param_2] < param_1->low) {
-    param_1->low = (param_1->data).size[param_2];
+  if ((tempMemInfo->data).size[location] < tempMemInfo->low) {
+    tempMemInfo->low = (tempMemInfo->data).size[location];
   }
   return;
 }
@@ -527,16 +533,18 @@ void __cdecl CheckLowMemInfo(TempMemInfo *param_1,int param_2)
 // 006DFC50  AddTempMemInfo  (qcommon/mem_track.cpp:442)
 
 void __cdecl
-AddTempMemInfo(int param_1,int param_2,int param_3,char *param_4,int param_5,int param_6,int param_7
-              ,TempMemInfo *param_8,int *param_9)
+AddTempMemInfo(int size,int hunkSize,int permanent,char *name,int type,int location,int usageType,
+              TempMemInfo *tempMemInfoArray,int *tempMemInfoCount)
 
 {
-  TempMemInfo *pTVar1;
+  TempMemInfo *tempMemInfo_00;
+  TempMemInfo *tempMemInfo;
   
-  pTVar1 = GetTempMemInfo(param_3,param_4,param_5,param_7,param_8,param_9,true);
-  (pTVar1->data).size[param_6] = (pTVar1->data).size[param_6] + param_1;
-  (pTVar1->data).count = (pTVar1->data).count + 1;
-  CheckHighMemInfo(pTVar1,param_2,param_6);
+  tempMemInfo_00 =
+       GetTempMemInfo(permanent,name,type,usageType,tempMemInfoArray,tempMemInfoCount,true);
+  (tempMemInfo_00->data).size[location] = (tempMemInfo_00->data).size[location] + size;
+  (tempMemInfo_00->data).count = (tempMemInfo_00->data).count + 1;
+  CheckHighMemInfo(tempMemInfo_00,hunkSize,location);
   return;
 }
 
@@ -544,17 +552,19 @@ AddTempMemInfo(int param_1,int param_2,int param_3,char *param_4,int param_5,int
 // 006DFF30  RemoveTempMemInfo  (qcommon/mem_track.cpp:498)
 
 void __cdecl
-RemoveTempMemInfo(int param_1,int param_2,char *param_3,int param_4,int param_5,int param_6,
-                 TempMemInfo *param_7,int *param_8)
+RemoveTempMemInfo(int size,int permanent,char *name,int type,int location,int usageType,
+                 TempMemInfo *tempMemInfoArray,int *tempMemInfoCount)
 
 {
-  TempMemInfo *pTVar1;
+  TempMemInfo *tempMemInfo_00;
+  TempMemInfo *tempMemInfo;
   
-  pTVar1 = GetTempMemInfo(param_2,param_3,param_4,param_6,param_7,param_8,false);
-  if (pTVar1 != (TempMemInfo *)0x0) {
-    (pTVar1->data).size[param_5] = (pTVar1->data).size[param_5] - param_1;
-    (pTVar1->data).count = (pTVar1->data).count + -1;
-    CheckLowMemInfo(pTVar1,param_5);
+  tempMemInfo_00 =
+       GetTempMemInfo(permanent,name,type,usageType,tempMemInfoArray,tempMemInfoCount,false);
+  if (tempMemInfo_00 != (TempMemInfo *)0x0) {
+    (tempMemInfo_00->data).size[location] = (tempMemInfo_00->data).size[location] - size;
+    (tempMemInfo_00->data).count = (tempMemInfo_00->data).count + -1;
+    CheckLowMemInfo(tempMemInfo_00,location);
   }
   return;
 }
@@ -562,8 +572,7 @@ RemoveTempMemInfo(int param_1,int param_2,char *param_3,int param_4,int param_5,
 
 // 006DFA40  track_z_alloc  (qcommon/mem_track.cpp:512)
 
-void __cdecl
-track_z_alloc(int param_1,char *param_2,int param_3,void *param_4,int param_5,int param_6)
+void __cdecl track_z_alloc(int size,char *name,int type,void *pos,int project,int overhead)
 
 {
   char cVar1;
@@ -572,8 +581,10 @@ track_z_alloc(int param_1,char *param_2,int param_3,void *param_4,int param_5,in
   mem_track_node_s *pmVar4;
   mem_track_node_s *local_24;
   char *local_20;
+  mem_track_node_s *node;
+  Smp_CriticalSectionBlock csb;
   
-  if ((param_1 < 0) &&
+  if ((size < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x203,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -581,24 +592,24 @@ track_z_alloc(int param_1,char *param_2,int param_3,void *param_4,int param_5,in
     return;
   }
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  g_staticsMemTrack[0].size[0] = g_staticsMemTrack[0].size[0] + param_6;
-  track_addbasicinfo(&g_info,0,0,param_6);
-  if (param_3 != 0x33) {
-    AddTempMemInfo(param_1,0,0,param_2,param_3,0,2,g_mallocMemInfoArray,&g_mallocMemInfoCount);
-    g_malloc_mem_size = g_malloc_mem_size + param_1;
+  g_staticsMemTrack[0].size[0] = g_staticsMemTrack[0].size[0] + overhead;
+  track_addbasicinfo(&g_info,0,0,overhead);
+  if (type != 0x33) {
+    AddTempMemInfo(size,0,0,name,type,0,2,g_mallocMemInfoArray,&g_mallocMemInfoCount);
+    g_malloc_mem_size = g_malloc_mem_size + size;
     if (g_malloc_mem_high < g_malloc_mem_size) {
       g_malloc_mem_high = g_malloc_mem_size;
     }
   }
-  pmVar4 = (mem_track_node_s *)((int)param_4 + -0xa4);
-  if ((*param_2 == '\0') &&
+  pmVar4 = (mem_track_node_s *)((int)pos + -0xa4);
+  if ((*name == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x214,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_20 = param_2;
+  local_20 = name;
   local_24 = pmVar4;
   do {
     cVar1 = *local_20;
@@ -606,19 +617,19 @@ track_z_alloc(int param_1,char *param_2,int param_3,void *param_4,int param_5,in
     local_20 = local_20 + 1;
     local_24 = (mem_track_node_s *)((local_24->data).name + 1);
   } while (cVar1 != '\0');
-  *(char **)((int)param_4 + -0x24) = "";
-  *(int *)((int)param_4 + -0x20) = param_1;
-  *(undefined4 *)((int)param_4 + -0x1c) = 0;
-  *(undefined1 *)((int)param_4 + -0x14) = (undefined1)param_3;
-  *(undefined1 *)((int)param_4 + -0x13) = 2;
-  *(mem_track_node_s **)((int)param_4 + -4) = g_ZMallocMemTrackList;
-  *(undefined4 *)((int)param_4 + -8) = 0;
-  *(int *)((int)param_4 + -0xc) = param_5;
+  *(char **)((int)pos + -0x24) = "";
+  *(int *)((int)pos + -0x20) = size;
+  *(undefined4 *)((int)pos + -0x1c) = 0;
+  *(undefined1 *)((int)pos + -0x14) = (undefined1)type;
+  *(undefined1 *)((int)pos + -0x13) = 2;
+  *(mem_track_node_s **)((int)pos + -4) = g_ZMallocMemTrackList;
+  *(undefined4 *)((int)pos + -8) = 0;
+  *(int *)((int)pos + -0xc) = project;
   if (g_ZMallocMemTrackList != (mem_track_node_s *)0x0) {
     g_ZMallocMemTrackList->prev = pmVar4;
   }
   g_ZMallocMemTrackList = pmVar4;
-  track_addbasicinfo(&g_info,param_3,0,param_1);
+  track_addbasicinfo(&g_info,type,0,size);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -629,48 +640,50 @@ track_z_alloc(int param_1,char *param_2,int param_3,void *param_4,int param_5,in
 /* WARNING: Removing unreachable block (ram,0x006dfda2) */
 /* WARNING: Removing unreachable block (ram,0x006dfdc7) */
 
-void __cdecl track_z_free(int param_1,void *param_2,int param_3)
+void __cdecl track_z_free(int type,void *pos,int overhead)
 
 {
   code *pcVar1;
   bool bVar2;
+  mem_track_node_s *node;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  if (((uint)*(byte *)((int)param_2 + -0x14) != param_1) &&
+  if (((uint)*(byte *)((int)pos + -0x14) != type) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x22e,0,
                                "node->data.type == type\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  g_staticsMemTrack[0].size[0] = g_staticsMemTrack[0].size[0] - param_3;
-  track_addbasicinfo(&g_info,0,0,-param_3);
-  if (param_1 != 0x33) {
-    g_malloc_mem_size = g_malloc_mem_size - *(int *)((int)param_2 + -0x20);
+  g_staticsMemTrack[0].size[0] = g_staticsMemTrack[0].size[0] - overhead;
+  track_addbasicinfo(&g_info,0,0,-overhead);
+  if (type != 0x33) {
+    g_malloc_mem_size = g_malloc_mem_size - *(int *)((int)pos + -0x20);
     if (g_malloc_mem_size < 0) {
       g_malloc_mem_size = 0;
     }
-    RemoveTempMemInfo(*(int *)((int)param_2 + -0x20),0,(char *)((int)param_2 + -0xa4),param_1,0,2,
+    RemoveTempMemInfo(*(int *)((int)pos + -0x20),0,(char *)((int)pos + -0xa4),type,0,2,
                       g_mallocMemInfoArray,&g_mallocMemInfoCount);
   }
-  track_addbasicinfo(&g_info,param_1,0,-*(int *)((int)param_2 + -0x20));
-  if ((mem_track_node_s *)((int)param_2 + -0xa4) == g_ZMallocMemTrackList) {
-    g_ZMallocMemTrackList = *(mem_track_node_s **)((int)param_2 + -4);
+  track_addbasicinfo(&g_info,type,0,-*(int *)((int)pos + -0x20));
+  if ((mem_track_node_s *)((int)pos + -0xa4) == g_ZMallocMemTrackList) {
+    g_ZMallocMemTrackList = *(mem_track_node_s **)((int)pos + -4);
     if (g_ZMallocMemTrackList != (mem_track_node_s *)0x0) {
       g_ZMallocMemTrackList->prev = (mem_track_node_s *)0x0;
     }
   }
   else {
-    if ((*(int *)((int)param_2 + -8) == 0) &&
+    if ((*(int *)((int)pos + -8) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x248,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *(undefined4 *)(*(int *)((int)param_2 + -8) + 0xa0) = *(undefined4 *)((int)param_2 + -4);
-    if (*(int *)((int)param_2 + -4) != 0) {
-      *(undefined4 *)(*(int *)((int)param_2 + -4) + 0x9c) = *(undefined4 *)((int)param_2 + -8);
+    *(undefined4 *)(*(int *)((int)pos + -8) + 0xa0) = *(undefined4 *)((int)pos + -4);
+    if (*(int *)((int)pos + -4) != 0) {
+      *(undefined4 *)(*(int *)((int)pos + -4) + 0x9c) = *(undefined4 *)((int)pos + -8);
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
@@ -680,12 +693,14 @@ void __cdecl track_z_free(int param_1,void *param_2,int param_3)
 
 // 006DFFE0  track_z_commit  (qcommon/mem_track.cpp:594)
 
-void __cdecl track_z_commit(int param_1,int param_2)
+void __cdecl track_z_commit(int size,int type)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  track_addbasicinfo(&g_virtualMemInfo,param_2,0,param_1);
-  track_addbasicinfo(&g_info,param_2,0,param_1);
+  track_addbasicinfo(&g_virtualMemInfo,type,0,size);
+  track_addbasicinfo(&g_info,type,0,size);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -693,12 +708,14 @@ void __cdecl track_z_commit(int param_1,int param_2)
 
 // 006E0050  track_z_decommit  (qcommon/mem_track.cpp:603)
 
-void __cdecl track_z_decommit(int param_1,int param_2)
+void __cdecl track_z_decommit(int size,int type)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  track_addbasicinfo(&g_virtualMemInfo,param_2,0,-param_1);
-  track_addbasicinfo(&g_info,param_2,0,-param_1);
+  track_addbasicinfo(&g_virtualMemInfo,type,0,-size);
+  track_addbasicinfo(&g_info,type,0,-size);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -706,14 +723,15 @@ void __cdecl track_z_decommit(int param_1,int param_2)
 
 // 006E00C0  track_physical_alloc  (qcommon/mem_track.cpp:613)
 
-void __cdecl track_physical_alloc(int param_1,char *param_2,int param_3,int param_4)
+void __cdecl track_physical_alloc(int size,char *name,int type,int location)
 
 {
   code *pcVar1;
   bool bVar2;
+  Smp_CriticalSectionBlock csb;
   
   track_init();
-  if (param_1 != 0) {
+  if (size != 0) {
     Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
     if ((0x5db < g_physicalMemInfoCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x26d,0
@@ -722,15 +740,14 @@ void __cdecl track_physical_alloc(int param_1,char *param_2,int param_3,int para
       (*pcVar1)();
       return;
     }
-    if (param_1 < 1) {
-      RemoveTempMemInfo(-param_1,0,param_2,param_3,param_4,7,g_physicalMemInfoArray,
-                        &g_physicalMemInfoCount);
+    if (size < 1) {
+      RemoveTempMemInfo(-size,0,name,type,location,7,g_physicalMemInfoArray,&g_physicalMemInfoCount)
+      ;
     }
     else {
-      AddTempMemInfo(param_1,0,0,param_2,param_3,param_4,7,g_physicalMemInfoArray,
-                     &g_physicalMemInfoCount);
+      AddTempMemInfo(size,0,0,name,type,location,7,g_physicalMemInfoArray,&g_physicalMemInfoCount);
     }
-    track_addbasicinfo(&g_info,param_3,param_4,param_1);
+    track_addbasicinfo(&g_info,type,location,size);
     Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   }
   return;
@@ -749,11 +766,13 @@ void __cdecl track_temp_reset(void)
 
 // 006E01B0  track_temp_alloc  (qcommon/mem_track.cpp:641)
 
-void __cdecl track_temp_alloc(int param_1,int param_2,int param_3,char *param_4)
+void __cdecl track_temp_alloc(int size,int hunkSize,int permanent,char *name)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  AddTempMemInfo(param_1,param_2,param_3,param_4,0xb,0,6,g_tempMemInfoArray,&g_tempMemInfoCount);
+  AddTempMemInfo(size,hunkSize,permanent,name,0xb,0,6,g_tempMemInfoArray,&g_tempMemInfoCount);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -761,11 +780,13 @@ void __cdecl track_temp_alloc(int param_1,int param_2,int param_3,char *param_4)
 
 // 006E0210  track_temp_free  (qcommon/mem_track.cpp:662)
 
-void __cdecl track_temp_free(int param_1,int param_2,char *param_3)
+void __cdecl track_temp_free(int size,int permanent,char *name)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  RemoveTempMemInfo(param_1,param_2,param_3,0xb,0,6,g_tempMemInfoArray,&g_tempMemInfoCount);
+  RemoveTempMemInfo(size,permanent,name,0xb,0,6,g_tempMemInfoArray,&g_tempMemInfoCount);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -773,15 +794,17 @@ void __cdecl track_temp_free(int param_1,int param_2,char *param_3)
 
 // 006E0270  track_temp_clear  (qcommon/mem_track.cpp:669)
 
-void __cdecl track_temp_clear(int param_1)
+void __cdecl track_temp_clear(int permanent)
 
 {
-  int local_10;
+  int i;
+  TempMemInfo *tempMemInfo;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  for (local_10 = 0; local_10 < g_tempMemInfoCount; local_10 = local_10 + 1) {
-    if (g_tempMemInfoArray[local_10].permanent == param_1) {
-      g_tempMemInfoArray[local_10].data.size[0] = 0;
+  for (i = 0; i < g_tempMemInfoCount; i = i + 1) {
+    if (g_tempMemInfoArray[i].permanent == permanent) {
+      g_tempMemInfoArray[i].data.size[0] = 0;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
@@ -791,12 +814,14 @@ void __cdecl track_temp_clear(int param_1)
 
 // 006E02F0  track_temp_high_alloc  (qcommon/mem_track.cpp:686)
 
-void __cdecl track_temp_high_alloc(int param_1,int param_2,int param_3,char *param_4)
+void __cdecl track_temp_high_alloc(int size,int hunkSize,int permanent,char *name)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  AddTempMemInfo(param_1,param_2,param_3,param_4,0xb,0,6,g_tempHighMemInfoArray,
-                 &g_tempHighMemInfoCount);
+  AddTempMemInfo(size,hunkSize,permanent,name,0xb,0,6,g_tempHighMemInfoArray,&g_tempHighMemInfoCount
+                );
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -814,19 +839,20 @@ void __cdecl track_temp_high_reset(void)
 
 // 006E0350  track_temp_high_clear  (qcommon/mem_track.cpp:700)
 
-void __cdecl track_temp_high_clear(int param_1)
+void __cdecl track_temp_high_clear(int permanent)
 
 {
-  int local_10;
-  TempMemInfo *local_c;
+  int i;
+  TempMemInfo *tempMemInfo;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  local_c = g_tempHighMemInfoArray;
-  for (local_10 = 0; local_10 < g_tempHighMemInfoCount; local_10 = local_10 + 1) {
-    if (local_c->permanent == param_1) {
-      (local_c->data).size[0] = 0;
+  tempMemInfo = g_tempHighMemInfoArray;
+  for (i = 0; i < g_tempHighMemInfoCount; i = i + 1) {
+    if (tempMemInfo->permanent == permanent) {
+      (tempMemInfo->data).size[0] = 0;
     }
-    local_c = local_c + 1;
+    tempMemInfo = tempMemInfo + 1;
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -835,20 +861,21 @@ void __cdecl track_temp_high_clear(int param_1)
 
 // 006E03D0  track_userhunk_freerange  (qcommon/mem_track.cpp:717)
 
-void __cdecl track_userhunk_freerange(void *param_1,uint param_2)
+void __cdecl track_userhunk_freerange(void *low,uint size)
 
 {
   int iVar1;
   mem_track_t *pmVar2;
   mem_track_t *pmVar3;
-  int local_c;
+  int i;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  for (local_c = 0; local_c < g_userhunk_track_count; local_c = local_c + 1) {
-    if (((int)param_1 <= g_userhunk_track[local_c].pos) &&
-       (g_userhunk_track[local_c].pos < (int)((int)param_1 + param_2))) {
+  for (i = 0; i < g_userhunk_track_count; i = i + 1) {
+    if (((int)low <= g_userhunk_track[i].pos) && (g_userhunk_track[i].pos < (int)((int)low + size)))
+    {
       pmVar2 = g_userhunk_track + g_userhunk_track_count + -1;
-      pmVar3 = g_userhunk_track + local_c;
+      pmVar3 = g_userhunk_track + i;
       for (iVar1 = 0x26; iVar1 != 0; iVar1 = iVar1 + -1) {
         *(undefined4 *)pmVar3->name = *(undefined4 *)pmVar2->name;
         pmVar2 = (mem_track_t *)(pmVar2->name + 4);
@@ -856,7 +883,7 @@ void __cdecl track_userhunk_freerange(void *param_1,uint param_2)
       }
       memset((uchar *)(g_userhunk_track + g_userhunk_track_count + -1),'\0',0x98);
       g_userhunk_track_count = g_userhunk_track_count + -1;
-      local_c = local_c + -1;
+      i = i + -1;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
@@ -866,7 +893,7 @@ void __cdecl track_userhunk_freerange(void *param_1,uint param_2)
 
 // 006E04C0  track_userhunk_free  (qcommon/mem_track.cpp:732)
 
-void __cdecl track_userhunk_free(void *param_1)
+void __cdecl track_userhunk_free(void *ptr)
 
 {
   code *pcVar1;
@@ -874,12 +901,13 @@ void __cdecl track_userhunk_free(void *param_1)
   int iVar3;
   mem_track_t *pmVar4;
   mem_track_t *pmVar5;
-  int local_c;
+  int i;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  local_c = 0;
+  i = 0;
   do {
-    if (g_userhunk_track_count <= local_c) {
+    if (g_userhunk_track_count <= i) {
 LAB_006e0550:
       g_userhunk_track_count = g_userhunk_track_count + -1;
       if ((g_userhunk_track_count < 0) &&
@@ -892,10 +920,10 @@ LAB_006e0550:
       Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
       return;
     }
-    if ((void *)g_userhunk_track[local_c].pos == param_1) {
-      if (local_c != g_userhunk_track_count + -1) {
+    if ((void *)g_userhunk_track[i].pos == ptr) {
+      if (i != g_userhunk_track_count + -1) {
         pmVar4 = g_userhunk_track + g_userhunk_track_count + -1;
-        pmVar5 = g_userhunk_track + local_c;
+        pmVar5 = g_userhunk_track + i;
         for (iVar3 = 0x26; iVar3 != 0; iVar3 = iVar3 + -1) {
           *(undefined4 *)pmVar5->name = *(undefined4 *)pmVar4->name;
           pmVar4 = (mem_track_t *)(pmVar4->name + 4);
@@ -904,14 +932,14 @@ LAB_006e0550:
       }
       goto LAB_006e0550;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 006E05A0  track_userhunk_alloc  (qcommon/mem_track.cpp:753)
 
-void __cdecl track_userhunk_alloc(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl track_userhunk_alloc(int size,int pos,char *name,int type)
 
 {
   char cVar1;
@@ -920,6 +948,8 @@ void __cdecl track_userhunk_alloc(int param_1,int param_2,char *param_3,int para
   bool bVar4;
   mem_track_t *local_1c;
   char *local_18;
+  mem_track_t *mem_track;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
   if (0xff < g_userhunk_track_count) {
@@ -933,8 +963,8 @@ void __cdecl track_userhunk_alloc(int param_1,int param_2,char *param_3,int para
   }
   iVar3 = g_userhunk_track_count;
   local_1c = g_userhunk_track + g_userhunk_track_count;
-  g_userhunk_track[g_userhunk_track_count].size[0] = param_1;
-  if (*param_3 == '\0') {
+  g_userhunk_track[g_userhunk_track_count].size[0] = size;
+  if (*name == '\0') {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x2f9,0,
                              "%s");
     if (!bVar4) {
@@ -943,18 +973,18 @@ void __cdecl track_userhunk_alloc(int param_1,int param_2,char *param_3,int para
       return;
     }
   }
-  local_18 = param_3;
+  local_18 = name;
   do {
     cVar1 = *local_18;
     local_1c->name[0] = cVar1;
     local_18 = local_18 + 1;
     local_1c = (mem_track_t *)(local_1c->name + 1);
   } while (cVar1 != '\0');
-  g_userhunk_track[iVar3].type = (uchar)param_4;
+  g_userhunk_track[iVar3].type = (uchar)type;
   g_userhunk_track[iVar3].usageType = '\b';
   g_userhunk_track[iVar3].filename = "";
-  g_userhunk_track[iVar3].pos = param_2;
-  track_addbasicinfo(&g_info,param_4,0,param_1);
+  g_userhunk_track[iVar3].pos = pos;
+  track_addbasicinfo(&g_info,type,0,size);
   g_userhunk_track_count = g_userhunk_track_count + 1;
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -966,7 +996,7 @@ void __cdecl track_userhunk_alloc(int param_1,int param_2,char *param_3,int para
 /* WARNING: Removing unreachable block (ram,0x006e073e) */
 /* WARNING: Removing unreachable block (ram,0x006e0763) */
 
-void __cdecl track_hunk_alloc(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl track_hunk_alloc(int size,int pos,char *name,int type)
 
 {
   char cVar1;
@@ -975,10 +1005,12 @@ void __cdecl track_hunk_alloc(int param_1,int param_2,char *param_3,int param_4)
   bool bVar4;
   mem_track_t *local_1c;
   char *local_18;
+  mem_track_t *mem_track;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] - param_1;
-  track_addbasicinfo(&g_info,1,0,-param_1);
+  g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] - size;
+  track_addbasicinfo(&g_info,1,0,-size);
   if ((0x7ffff < g_hunk_track_count) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x310,0,
                                "%s"), !bVar4)) {
@@ -988,26 +1020,26 @@ void __cdecl track_hunk_alloc(int param_1,int param_2,char *param_3,int param_4)
   }
   iVar3 = g_hunk_track_count;
   local_1c = g_hunk_track + g_hunk_track_count;
-  g_hunk_track[g_hunk_track_count].size[0] = param_1;
-  if ((*param_3 == '\0') &&
+  g_hunk_track[g_hunk_track_count].size[0] = size;
+  if ((*name == '\0') &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x314,0,
                                "%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_18 = param_3;
+  local_18 = name;
   do {
     cVar1 = *local_18;
     local_1c->name[0] = cVar1;
     local_18 = local_18 + 1;
     local_1c = (mem_track_t *)(local_1c->name + 1);
   } while (cVar1 != '\0');
-  g_hunk_track[iVar3].type = (uchar)param_4;
+  g_hunk_track[iVar3].type = (uchar)type;
   g_hunk_track[iVar3].usageType = '\x03';
   g_hunk_track[iVar3].filename = "";
-  g_hunk_track[iVar3].pos = param_2;
-  track_addbasicinfo(&g_info,param_4,0,param_1);
+  g_hunk_track[iVar3].pos = pos;
+  track_addbasicinfo(&g_info,type,0,size);
   g_hunk_track_count = g_hunk_track_count + 1;
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -1016,7 +1048,7 @@ void __cdecl track_hunk_alloc(int param_1,int param_2,char *param_3,int param_4)
 
 // 006E0890  track_hunk_allocLow  (qcommon/mem_track.cpp:803)
 
-void __cdecl track_hunk_allocLow(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl track_hunk_allocLow(int size,int pos,char *name,int type)
 
 {
   char cVar1;
@@ -1025,10 +1057,12 @@ void __cdecl track_hunk_allocLow(int param_1,int param_2,char *param_3,int param
   bool bVar4;
   mem_track_t *local_1c;
   char *local_18;
+  mem_track_t *mem_track;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] - param_1;
-  track_addbasicinfo(&g_info,1,0,-param_1);
+  g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] - size;
+  track_addbasicinfo(&g_info,1,0,-size);
   if (g_staticsMemTrack[1].size[0] < 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x32b,0,
                              "%s");
@@ -1049,8 +1083,8 @@ void __cdecl track_hunk_allocLow(int param_1,int param_2,char *param_3,int param
   }
   iVar3 = g_hunklow_track_count;
   local_1c = g_hunklow_track + g_hunklow_track_count;
-  g_hunklow_track[g_hunklow_track_count].size[0] = param_1;
-  if (*param_3 == '\0') {
+  g_hunklow_track[g_hunklow_track_count].size[0] = size;
+  if (*name == '\0') {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x331,0,
                              "%s");
     if (!bVar4) {
@@ -1059,18 +1093,18 @@ void __cdecl track_hunk_allocLow(int param_1,int param_2,char *param_3,int param
       return;
     }
   }
-  local_18 = param_3;
+  local_18 = name;
   do {
     cVar1 = *local_18;
     local_1c->name[0] = cVar1;
     local_18 = local_18 + 1;
     local_1c = (mem_track_t *)(local_1c->name + 1);
   } while (cVar1 != '\0');
-  g_hunklow_track[iVar3].type = (uchar)param_4;
+  g_hunklow_track[iVar3].type = (uchar)type;
   g_hunklow_track[iVar3].usageType = '\x03';
   g_hunklow_track[iVar3].filename = "";
-  g_hunklow_track[iVar3].pos = param_2;
-  track_addbasicinfo(&g_info,param_4,0,param_1);
+  g_hunklow_track[iVar3].pos = pos;
+  track_addbasicinfo(&g_info,type,0,size);
   g_hunklow_track_count = g_hunklow_track_count + 1;
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -1079,11 +1113,13 @@ void __cdecl track_hunk_allocLow(int param_1,int param_2,char *param_3,int param
 
 // 006E0A30  track_set_hunk_size  (qcommon/mem_track.cpp:832)
 
-void __cdecl track_set_hunk_size(int param_1)
+void __cdecl track_set_hunk_size(int size)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  g_staticsMemTrack[1].size[0] = param_1;
+  g_staticsMemTrack[1].size[0] = size;
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -1091,20 +1127,24 @@ void __cdecl track_set_hunk_size(int param_1)
 
 // 006E0A70  track_hunk_ClearToMarkHigh  (qcommon/mem_track.cpp:844)
 
-void __cdecl track_hunk_ClearToMarkHigh(int param_1)
+void __cdecl track_hunk_ClearToMarkHigh(int mark)
 
 {
+  int size_00;
   int iVar1;
-  int iVar2;
+  mem_track_t *info;
+  int size;
+  int type;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
   while ((g_hunk_track_count != 0 &&
-         (iVar2 = g_hunk_track_count + -1, param_1 < g_hunk_track[iVar2].pos))) {
+         (iVar1 = g_hunk_track_count + -1, mark < g_hunk_track[iVar1].pos))) {
     g_hunk_track_count = g_hunk_track_count + -1;
-    iVar1 = g_hunk_track[iVar2].size[0];
-    track_addbasicinfo(&g_info,(uint)g_hunk_track[iVar2].type,0,-iVar1);
-    track_addbasicinfo(&g_info,1,0,iVar1);
-    g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] + iVar1;
+    size_00 = g_hunk_track[iVar1].size[0];
+    track_addbasicinfo(&g_info,(uint)g_hunk_track[iVar1].type,0,-size_00);
+    track_addbasicinfo(&g_info,1,0,size_00);
+    g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] + size_00;
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -1113,20 +1153,24 @@ void __cdecl track_hunk_ClearToMarkHigh(int param_1)
 
 // 006E0B50  track_hunk_ClearToMarkLow  (qcommon/mem_track.cpp:873)
 
-void __cdecl track_hunk_ClearToMarkLow(int param_1)
+void __cdecl track_hunk_ClearToMarkLow(int mark)
 
 {
+  int size_00;
   int iVar1;
-  int iVar2;
+  mem_track_t *info;
+  int size;
+  int type;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
   while ((g_hunklow_track_count != 0 &&
-         (iVar2 = g_hunklow_track_count + -1, param_1 < g_hunklow_track[iVar2].pos))) {
+         (iVar1 = g_hunklow_track_count + -1, mark < g_hunklow_track[iVar1].pos))) {
     g_hunklow_track_count = g_hunklow_track_count + -1;
-    iVar1 = g_hunklow_track[iVar2].size[0];
-    track_addbasicinfo(&g_info,(uint)g_hunklow_track[iVar2].type,0,-iVar1);
-    track_addbasicinfo(&g_info,1,0,iVar1);
-    g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] + iVar1;
+    size_00 = g_hunklow_track[iVar1].size[0];
+    track_addbasicinfo(&g_info,(uint)g_hunklow_track[iVar1].type,0,-size_00);
+    track_addbasicinfo(&g_info,1,0,size_00);
+    g_staticsMemTrack[1].size[0] = g_staticsMemTrack[1].size[0] + size_00;
   }
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
@@ -1138,6 +1182,8 @@ void __cdecl track_hunk_ClearToMarkLow(int param_1)
 void __cdecl track_hunk_ClearToStart(void)
 
 {
+  Smp_CriticalSectionBlock csb;
+  
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
   track_temp_reset();
   track_temp_high_reset();
@@ -1154,6 +1200,8 @@ void __cdecl track_init(void)
   int iVar1;
   mem_track_t *pmVar2;
   int in_stack_ffffffe8;
+  mem_track_t *mem_track;
+  Smp_CriticalSectionBlock csb;
   
   Sys_InitializeCriticalSections();
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
@@ -1321,7 +1369,7 @@ void __cdecl track_init(void)
 
 // 006E2130  mem_track_compare  (qcommon/mem_track.cpp:1333)
 
-int __cdecl mem_track_compare(void *param_1,void *param_2)
+int __cdecl mem_track_compare(void *elem1,void *elem2)
 
 {
   byte bVar1;
@@ -1329,36 +1377,36 @@ int __cdecl mem_track_compare(void *param_1,void *param_2)
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_10;
+  int i;
+  mem_track_t *mem_track2;
+  mem_track_t *mem_track1;
   
-  for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    if (*(int *)((int)param_1 + local_10 * 4 + 0x84) != *(int *)((int)param_2 + local_10 * 4 + 0x84)
-       ) {
-      return *(int *)((int)param_1 + local_10 * 4 + 0x84) -
-             *(int *)((int)param_2 + local_10 * 4 + 0x84);
+  for (i = 0; i < 2; i = i + 1) {
+    if (*(int *)((int)elem1 + i * 4 + 0x84) != *(int *)((int)elem2 + i * 4 + 0x84)) {
+      return *(int *)((int)elem1 + i * 4 + 0x84) - *(int *)((int)elem2 + i * 4 + 0x84);
     }
   }
-  if (*(byte *)((int)param_1 + 0x90) < *(byte *)((int)param_2 + 0x90)) {
+  if (*(byte *)((int)elem1 + 0x90) < *(byte *)((int)elem2 + 0x90)) {
     local_20 = -1;
   }
-  else if (*(byte *)((int)param_2 + 0x90) < *(byte *)((int)param_1 + 0x90)) {
+  else if (*(byte *)((int)elem2 + 0x90) < *(byte *)((int)elem1 + 0x90)) {
     local_20 = 1;
   }
-  else if (*(byte *)((int)param_1 + 0x91) < *(byte *)((int)param_2 + 0x91)) {
+  else if (*(byte *)((int)elem1 + 0x91) < *(byte *)((int)elem2 + 0x91)) {
     local_20 = -1;
   }
-  else if (*(byte *)((int)param_2 + 0x91) < *(byte *)((int)param_1 + 0x91)) {
+  else if (*(byte *)((int)elem2 + 0x91) < *(byte *)((int)elem1 + 0x91)) {
     local_20 = 1;
   }
-  else if (param_1 == (void *)0x0) {
+  else if (elem1 == (void *)0x0) {
     local_20 = -1;
   }
-  else if (param_2 == (void *)0x0) {
+  else if (elem2 == (void *)0x0) {
     local_20 = 1;
   }
   else {
-    local_14 = param_2;
-    local_18 = param_1;
+    local_14 = elem2;
+    local_18 = elem1;
     do {
       bVar1 = *local_18;
       bVar2 = bVar1 < *local_14;
@@ -1381,13 +1429,14 @@ LAB_006e227c:
 
 // 006E1200  track_getbasicinfo  (qcommon/mem_track.cpp:1373)
 
-void __cdecl track_getbasicinfo(meminfo_t *param_1)
+void __cdecl track_getbasicinfo(meminfo_t *info)
 
 {
   code *pcVar1;
   bool bVar2;
+  Smp_CriticalSectionBlock csb;
   
-  if (param_1 == (meminfo_t *)0x0) {
+  if (info == (meminfo_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x55e,0,
                              "%s");
     if (!bVar2) {
@@ -1397,8 +1446,8 @@ void __cdecl track_getbasicinfo(meminfo_t *param_1)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  memset((uchar *)param_1,'\0',0x1c0);
-  track_addbasicmeminfo(param_1,&g_info);
+  memset((uchar *)info,'\0',0x1c0);
+  track_addbasicmeminfo(info,&g_info);
   Sys_LeaveCriticalSection(CRITSECT_MEMTRACK);
   return;
 }
@@ -1409,47 +1458,48 @@ void __cdecl track_getbasicinfo(meminfo_t *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl track_printf(char *param_1)
+void __cdecl track_printf(char *fmt_2)
 
 {
-  char local_100c [4095];
+  char *argptr_2;
+  char msg_2 [4095];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_100c,0x1000,param_1,&stack0x00000008);
+  _vsnprintf(msg_2,0x1000,fmt_2,&stack0x00000008);
   local_d = 0;
-  Com_PrintMessage(0,local_100c,0);
+  Com_PrintMessage(0,msg_2,0);
   return;
 }
 
 
 // 006E13B0  track_shutdown  (qcommon/mem_track.cpp:1412)
 
-void __cdecl track_shutdown(int param_1)
+void __cdecl track_shutdown(int project)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  mem_track_node_s *local_10;
-  int local_c;
+  char *fmt;
+  mem_track_node_s *node;
+  int leak_size;
+  Smp_CriticalSectionBlock csb;
   
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  local_c = 0;
-  for (local_10 = g_ZMallocMemTrackList; local_10 != (mem_track_node_s *)0x0;
-      local_10 = local_10->next) {
-    if (((local_10->project == param_1) && (param_1 == 0)) &&
-       (iVar3 = I_stricmp((char *)local_10,"MSS_MallocCallback"), iVar3 == 0)) {
-      local_c = local_c + (local_10->data).size[0];
+  leak_size = 0;
+  for (node = g_ZMallocMemTrackList; node != (mem_track_node_s *)0x0; node = node->next) {
+    if (((node->project == project) && (project == 0)) &&
+       (iVar3 = I_stricmp((char *)node,"MSS_MallocCallback"), iVar3 == 0)) {
+      leak_size = leak_size + (node->data).size[0];
       track_printf("Error: memory leak of \'%s\' in %s");
     }
   }
-  if (local_c != 0) {
-    pcVar4 = va("Total memory leak in \'%s\': %d");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x599,0,
-                             pcVar4);
+  if (leak_size != 0) {
+    fmt = va("Total memory leak in \'%s\': %d");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x599,0,fmt
+                            );
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -1468,172 +1518,163 @@ void __cdecl track_PrintInfo(void)
 {
   byte bVar1;
   code *pcVar2;
-  uint uVar3;
-  void *pvVar4;
-  bool bVar5;
-  byte *pbVar6;
-  mem_track_node_s *pmVar7;
-  int iVar8;
-  byte *pbVar9;
-  mem_track_t *pmVar10;
-  undefined4 *puVar11;
-  mem_track_node_s *pmVar12;
+  bool bVar3;
+  mem_track_node_s *pmVar4;
+  int iVar5;
+  int iVar6;
+  mem_track_t *pmVar7;
+  mem_track_t *pmVar8;
   int local_250;
   byte *local_248;
   byte *local_244;
   int local_23c;
-  byte *local_234;
-  byte *local_230;
-  int local_218;
-  uint local_214;
-  mem_track_node_s *local_210;
-  mem_track_node_s *local_20c;
-  int local_204 [4];
+  mem_track_t *local_234;
+  mem_track_t *local_230;
+  int k;
+  int j;
+  mem_track_t *mem_track;
+  mem_track_node_s *node;
+  mem_track_t *mem_track2;
+  int info [4];
   int aiStack_1f4 [8];
   undefined4 local_1d4;
   undefined4 local_164;
   undefined4 local_12c;
   undefined4 local_ec;
   undefined4 local_54;
-  uint local_44;
-  uint local_40;
-  bitarray<54> local_3c;
-  int local_34;
-  void *local_30;
-  char local_29;
-  int local_28;
-  int local_24;
-  int local_20;
+  int len2;
+  int len;
+  bitarray<54> physExclusions;
+  int lramTotal;
+  mem_track_t *sorted_mem_track;
+  bool addedLine;
+  int reportedStreamBufferTot;
+  int nodeCount;
+  int reportedPhysTot;
   int local_1c;
-  int local_18;
-  uint local_14;
-  uint local_10;
-  CriticalSection local_c;
-  int local_8;
+  int mramTotal;
+  int type;
+  int i;
+  Smp_CriticalSectionBlock csb;
+  int reportedExtraStreamBufferTot;
   
-  local_c = CRITSECT_MEMTRACK;
+  csb.mCS = CRITSECT_MEMTRACK;
   Sys_EnterCriticalSection(CRITSECT_MEMTRACK);
-  memset((uchar *)local_204,'\0',0x1c0);
-  local_24 = 0;
-  for (local_20c = g_ZMallocMemTrackList; local_20c != (mem_track_node_s *)0x0;
-      local_20c = local_20c->next) {
-    local_24 = local_24 + 1;
+  memset((uchar *)info,'\0',0x1c0);
+  nodeCount = 0;
+  for (node = g_ZMallocMemTrackList; node != (mem_track_node_s *)0x0; node = node->next) {
+    nodeCount = nodeCount + 1;
   }
-  local_24 = local_24 + g_physicalMemInfoCount;
-  local_44 = g_staticsMemTrackCount + g_userhunk_track_count + g_hunk_track_count +
-             g_hunklow_track_count + local_24;
-  local_30 = malloc(local_44 * 0x98);
-  if (local_30 == (void *)0x0) {
+  nodeCount = nodeCount + g_physicalMemInfoCount;
+  len2 = g_staticsMemTrackCount + g_userhunk_track_count + g_hunk_track_count +
+         g_hunklow_track_count + nodeCount;
+  sorted_mem_track = malloc(len2 * 0x98);
+  if (sorted_mem_track == (mem_track_t *)0x0) {
     track_printf("track_PrintInfo: out of memory\n");
-    Sys_LeaveCriticalSection(local_c);
+    Sys_LeaveCriticalSection(csb.mCS);
   }
   else {
-    local_40 = 0;
-    Com_Memcpy(local_30,g_staticsMemTrack,g_staticsMemTrackCount * 0x98);
-    local_40 = local_40 + g_staticsMemTrackCount;
-    Com_Memcpy((void *)(local_40 * 0x98 + (int)local_30),g_userhunk_track,
-               g_userhunk_track_count * 0x98);
-    local_40 = local_40 + g_userhunk_track_count;
-    Com_Memcpy((void *)(local_40 * 0x98 + (int)local_30),g_hunk_track,g_hunk_track_count * 0x98);
-    local_40 = local_40 + g_hunk_track_count;
-    Com_Memcpy((void *)(local_40 * 0x98 + (int)local_30),g_hunklow_track,
-               g_hunklow_track_count * 0x98);
-    local_40 = local_40 + g_hunklow_track_count;
-    pmVar7 = (mem_track_node_s *)(local_40 * 0x98 + (int)local_30);
-    local_20c = g_ZMallocMemTrackList;
-    local_210 = pmVar7;
-    while (local_20c != (mem_track_node_s *)0x0) {
-      pmVar7 = local_20c;
-      pmVar12 = local_210;
-      for (iVar8 = 0x26; iVar8 != 0; iVar8 = iVar8 + -1) {
-        *(undefined4 *)(pmVar12->data).name = *(undefined4 *)(pmVar7->data).name;
-        pmVar7 = (mem_track_node_s *)((pmVar7->data).name + 4);
-        pmVar12 = (mem_track_node_s *)((pmVar12->data).name + 4);
+    len = 0;
+    Com_Memcpy(sorted_mem_track,g_staticsMemTrack,g_staticsMemTrackCount * 0x98);
+    len = len + g_staticsMemTrackCount;
+    Com_Memcpy(sorted_mem_track + len,g_userhunk_track,g_userhunk_track_count * 0x98);
+    len = len + g_userhunk_track_count;
+    Com_Memcpy(sorted_mem_track + len,g_hunk_track,g_hunk_track_count * 0x98);
+    len = len + g_hunk_track_count;
+    Com_Memcpy(sorted_mem_track + len,g_hunklow_track,g_hunklow_track_count * 0x98);
+    len = len + g_hunklow_track_count;
+    pmVar4 = (mem_track_node_s *)(sorted_mem_track + len);
+    node = g_ZMallocMemTrackList;
+    mem_track = (mem_track_t *)pmVar4;
+    while (node != (mem_track_node_s *)0x0) {
+      pmVar4 = node;
+      pmVar7 = mem_track;
+      for (iVar5 = 0x26; iVar5 != 0; iVar5 = iVar5 + -1) {
+        *(undefined4 *)pmVar7->name = *(undefined4 *)(pmVar4->data).name;
+        pmVar4 = (mem_track_node_s *)((pmVar4->data).name + 4);
+        pmVar7 = (mem_track_t *)(pmVar7->name + 4);
       }
-      local_210 = (mem_track_node_s *)&local_210->project;
-      pmVar7 = local_20c->next;
-      local_20c = pmVar7;
+      mem_track = mem_track + 1;
+      pmVar4 = node->next;
+      node = pmVar4;
     }
-    bitarray<54>::bitarray<54>((bitarray<54> *)pmVar7,(int)&local_3c);
-    local_20 = 0;
+    bitarray<54>::bitarray<54>((bitarray<54> *)pmVar4,(int)&physExclusions);
+    reportedPhysTot = 0;
     local_1c = 0;
-    local_8 = 0;
-    local_28 = 0;
-    for (local_10 = 0; (int)local_10 < g_physicalMemInfoCount; local_10 = local_10 + 1) {
-      pmVar10 = &g_physicalMemInfoArray[local_10].data;
-      pmVar7 = local_210;
-      for (iVar8 = 0x26; iVar8 != 0; iVar8 = iVar8 + -1) {
-        *(undefined4 *)(pmVar7->data).name = *(undefined4 *)pmVar10->name;
-        pmVar10 = (mem_track_t *)(pmVar10->name + 4);
-        pmVar7 = (mem_track_node_s *)((pmVar7->data).name + 4);
+    reportedStreamBufferTot = 0;
+    for (i = 0; i < g_physicalMemInfoCount; i = i + 1) {
+      pmVar7 = &g_physicalMemInfoArray[i].data;
+      pmVar8 = mem_track;
+      for (iVar5 = 0x26; iVar5 != 0; iVar5 = iVar5 + -1) {
+        *(undefined4 *)pmVar8->name = *(undefined4 *)pmVar7->name;
+        pmVar7 = (mem_track_t *)(pmVar7->name + 4);
+        pmVar8 = (mem_track_t *)(pmVar8->name + 4);
       }
-      bVar5 = bitarray<54>::testBit(&local_3c,(uint)(local_210->data).type);
-      if ((!bVar5) && ((local_210->data).usageType == '\a')) {
-        if ((local_210->data).type == '-') {
-          local_28 = local_28 + (local_210->data).size[1];
+      bVar3 = bitarray<54>::testBit(&physExclusions,(uint)mem_track->type);
+      if ((!bVar3) && (mem_track->usageType == '\a')) {
+        if (mem_track->type == '-') {
+          reportedStreamBufferTot = reportedStreamBufferTot + mem_track->size[1];
         }
-        else if ((local_210->data).type == '.') {
-          local_8 = local_8 + (local_210->data).size[1];
-        }
-        else {
-          local_20 = local_20 + (local_210->data).size[0];
-          local_1c = local_1c + (local_210->data).size[1];
+        else if (mem_track->type != '.') {
+          reportedPhysTot = reportedPhysTot + mem_track->size[0];
+          local_1c = local_1c + mem_track->size[1];
         }
       }
-      local_210 = (mem_track_node_s *)&local_210->project;
+      mem_track = mem_track + 1;
     }
-    local_40 = local_40 + local_24;
-    uVar3 = local_40;
-    if ((local_40 != local_44) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x64d,0
-                                 ,"%s"), uVar3 = local_40, !bVar5)) {
+    len = len + nodeCount;
+    iVar5 = len;
+    if ((len != len2) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x64d,0
+                                 ,"%s"), iVar5 = len, !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
 LAB_006e1867:
-    local_10 = uVar3 - 1;
-    if (-1 < (int)local_10) {
-      local_214 = uVar3 - 2;
+    i = iVar5 + -1;
+    if (-1 < i) {
+      j = iVar5 + -2;
 LAB_006e188e:
-      uVar3 = local_10;
-      if ((int)local_214 < 0) goto LAB_006e1867;
-      pbVar9 = (byte *)(local_10 * 0x98 + (int)local_30);
-      pbVar6 = (byte *)(local_214 * 0x98 + (int)local_30);
-      if ((((pbVar9[0x90] == pbVar6[0x90]) && (pbVar9 != (byte *)0x0)) && (pbVar6 != (byte *)0x0))
-         && ((*(int *)(pbVar9 + 0x80) != 0 &&
-             (local_234 = pbVar9, local_230 = pbVar6, *(int *)(pbVar6 + 0x80) != 0)))) {
+      iVar5 = i;
+      if (j < 0) goto LAB_006e1867;
+      pmVar7 = sorted_mem_track + i;
+      pmVar8 = sorted_mem_track + j;
+      if ((((pmVar7->type == pmVar8->type) && (pmVar7 != (mem_track_t *)0x0)) &&
+          (pmVar8 != (mem_track_t *)0x0)) &&
+         ((pmVar7->filename != (char *)0x0 &&
+          (local_234 = pmVar7, local_230 = pmVar8, pmVar8->filename != (char *)0x0)))) {
         do {
-          bVar1 = *local_234;
-          bVar5 = bVar1 < *local_230;
-          if (bVar1 != *local_230) {
+          bVar1 = local_234->name[0];
+          bVar3 = bVar1 < (byte)local_230->name[0];
+          if (bVar1 != local_230->name[0]) {
 LAB_006e199a:
-            local_23c = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
+            local_23c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
             goto LAB_006e19a5;
           }
           if (bVar1 == 0) break;
-          bVar1 = local_234[1];
-          bVar5 = bVar1 < local_230[1];
-          if (bVar1 != local_230[1]) goto LAB_006e199a;
-          local_234 = local_234 + 2;
-          local_230 = local_230 + 2;
+          bVar1 = local_234->name[1];
+          bVar3 = bVar1 < (byte)local_230->name[1];
+          if (bVar1 != local_230->name[1]) goto LAB_006e199a;
+          local_234 = (mem_track_t *)(local_234->name + 2);
+          local_230 = (mem_track_t *)(local_230->name + 2);
         } while (bVar1 != 0);
         local_23c = 0;
 LAB_006e19a5:
         if (local_23c == 0) {
-          local_244 = *(byte **)(pbVar6 + 0x80);
-          local_248 = *(byte **)(pbVar9 + 0x80);
+          local_244 = (byte *)pmVar8->filename;
+          local_248 = (byte *)pmVar7->filename;
           do {
             bVar1 = *local_248;
-            bVar5 = bVar1 < *local_244;
+            bVar3 = bVar1 < *local_244;
             if (bVar1 != *local_244) {
 LAB_006e1a40:
-              local_250 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
+              local_250 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
               goto LAB_006e1a4b;
             }
             if (bVar1 == 0) break;
             bVar1 = local_248[1];
-            bVar5 = bVar1 < local_244[1];
+            bVar3 = bVar1 < local_244[1];
             if (bVar1 != local_244[1]) goto LAB_006e1a40;
             local_248 = local_248 + 2;
             local_244 = local_244 + 2;
@@ -1641,63 +1682,55 @@ LAB_006e1a40:
           local_250 = 0;
 LAB_006e1a4b:
           if (local_250 == 0) {
-            for (local_218 = 0; local_218 < 2; local_218 = local_218 + 1) {
-              *(int *)(pbVar6 + local_218 * 4 + 0x84) =
-                   *(int *)(pbVar6 + local_218 * 4 + 0x84) + *(int *)(pbVar9 + local_218 * 4 + 0x84)
-              ;
+            for (k = 0; k < 2; k = k + 1) {
+              pmVar8->size[k] = pmVar8->size[k] + pmVar7->size[k];
             }
-            local_40 = local_40 - 1;
-            puVar11 = (undefined4 *)(local_40 * 0x98 + (int)local_30);
-            for (iVar8 = 0x26; iVar8 != 0; iVar8 = iVar8 + -1) {
-              *(undefined4 *)pbVar9 = *puVar11;
-              puVar11 = puVar11 + 1;
-              pbVar9 = pbVar9 + 4;
+            len = len + -1;
+            pmVar8 = sorted_mem_track + len;
+            for (iVar6 = 0x26; iVar6 != 0; iVar6 = iVar6 + -1) {
+              *(undefined4 *)pmVar7->name = *(undefined4 *)pmVar8->name;
+              pmVar8 = (mem_track_t *)(pmVar8->name + 4);
+              pmVar7 = (mem_track_t *)(pmVar7->name + 4);
             }
             goto LAB_006e1867;
           }
         }
       }
-      local_214 = local_214 + -1;
+      j = j + -1;
       goto LAB_006e188e;
     }
-    for (local_10 = 0; uVar3 = local_10, pvVar4 = local_30, (int)local_10 < (int)local_40;
-        local_10 = local_10 + 1) {
-      if (*(char *)((int)local_30 + local_10 * 0x98 + 0x91) != '\b') {
-        local_14 = (uint)*(byte *)((int)local_30 + local_10 * 0x98 + 0x90);
-        if ((*(int *)((int)local_30 + local_10 * 0x98 + 0x84) < 0) &&
-           (*(int *)((int)local_30 + local_10 * 0x98 + 0x88) < 0)) {
+    for (i = 0; iVar5 = i, pmVar7 = sorted_mem_track, i < len; i = i + 1) {
+      if (sorted_mem_track[i].usageType != '\b') {
+        type = (uint)sorted_mem_track[i].type;
+        if ((sorted_mem_track[i].size[0] < 0) && (sorted_mem_track[i].size[1] < 0)) {
           va("%s, %s, %i, %i, %s, %s\n");
-          bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x66a
+          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\mem_track.cpp",0x66a
                                    ,0,"%s\n\t%s");
-          if (!bVar5) {
+          if (!bVar3) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
         }
-        for (local_214 = 0; (int)local_214 < 2; local_214 = local_214 + 1) {
-          if (0 < *(int *)((int)pvVar4 + local_214 * 4 + uVar3 * 0x98 + 0x84)) {
-            aiStack_1f4[local_14 * 2 + local_214] =
-                 aiStack_1f4[local_14 * 2 + local_214] +
-                 *(int *)((int)pvVar4 + local_214 * 4 + uVar3 * 0x98 + 0x84);
-            local_204[local_214] =
-                 local_204[local_214] + *(int *)((int)pvVar4 + local_214 * 4 + uVar3 * 0x98 + 0x84);
-            switch(local_14) {
+        for (j = 0; j < 2; j = j + 1) {
+          if (0 < pmVar7[iVar5].size[j]) {
+            aiStack_1f4[type * 2 + j] = aiStack_1f4[type * 2 + j] + pmVar7[iVar5].size[j];
+            info[j] = info[j] + pmVar7[iVar5].size[j];
+            switch(type) {
             case 0:
             case 1:
             case 3:
             case 0x24:
             case 0x33:
-              bVar5 = false;
+              bVar3 = false;
               break;
             default:
-              bVar5 = true;
+              bVar3 = true;
             }
-            if (bVar5) {
-              local_204[2] = local_204[2] +
-                             *(int *)((int)pvVar4 + local_214 * 4 + uVar3 * 0x98 + 0x84);
+            if (bVar3) {
+              info[2] = info[2] + pmVar7[iVar5].size[j];
             }
-            switch(local_14) {
+            switch(type) {
             case 0:
             case 1:
             case 3:
@@ -1705,68 +1738,66 @@ LAB_006e1a4b:
             case 0x11:
             case 0x24:
             case 0x33:
-              bVar5 = false;
+              bVar3 = false;
               break;
             default:
-              bVar5 = true;
+              bVar3 = true;
             }
-            if (bVar5) {
-              local_204[3] = local_204[3] +
-                             *(int *)((int)pvVar4 + local_214 * 4 + uVar3 * 0x98 + 0x84);
+            if (bVar3) {
+              info[3] = info[3] + pmVar7[iVar5].size[j];
             }
           }
         }
       }
     }
-    qsort(local_30,local_40,0x98,mem_track_compare);
+    qsort(sorted_mem_track,len,0x98,mem_track_compare);
     local_1d4 = 0xffffffff;
     local_164 = 0xffffffff;
     local_12c = 0xffffffff;
     local_ec = 0xffffffff;
     local_54 = 0xffffffff;
     track_printf("\n%-18s  %-10s  %7s  %7s  %-26s  %s\n\n");
-    for (local_214 = 0; (int)local_214 < 9; local_214 = local_214 + 1) {
-      for (local_10 = 0; (int)local_10 < (int)local_40; local_10 = local_10 + 1) {
-        local_14 = (uint)*(byte *)((int)local_30 + local_10 * 0x98 + 0x90);
-        if ((*(byte *)((int)local_30 + local_10 * 0x98 + 0x91) == local_214) &&
-           ((0x1fff < *(int *)((int)local_30 + local_10 * 0x98 + 0x84) ||
-            (0x1fff < *(int *)((int)local_30 + local_10 * 0x98 + 0x88))))) {
+    for (j = 0; j < 9; j = j + 1) {
+      for (i = 0; i < len; i = i + 1) {
+        type = (int)sorted_mem_track[i].type;
+        if (((uint)sorted_mem_track[i].usageType == j) &&
+           ((0x1fff < sorted_mem_track[i].size[0] || (0x1fff < sorted_mem_track[i].size[1])))) {
           track_printf("%-18s, %-10s, %7i, %7i, %-26s, %s\n");
         }
       }
     }
     track_printf("\ntotals:\n");
     track_printf("%-20s -MRAM- \t-LRAM-\n");
-    local_29 = '\0';
-    local_18 = 0;
-    local_34 = 0;
-    for (local_10 = 0; (int)local_10 < 0x36; local_10 = local_10 + 1) {
-      if (aiStack_1f4[local_10 * 2] < 0) {
-        if (local_29 != '\0') {
+    addedLine = false;
+    mramTotal = 0;
+    lramTotal = 0;
+    for (i = 0; i < 0x36; i = i + 1) {
+      if (aiStack_1f4[i * 2] < 0) {
+        if (addedLine != false) {
           track_printf("------------------------------------\n");
         }
       }
       else {
-        local_18 = local_18 + aiStack_1f4[local_10 * 2];
-        local_34 = local_34 + aiStack_1f4[local_10 * 2 + 1];
-        if ((0x400 < aiStack_1f4[local_10 * 2]) || (0x400 < aiStack_1f4[local_10 * 2 + 1])) {
-          mb(aiStack_1f4[local_10 * 2 + 1]);
-          mb(aiStack_1f4[local_10 * 2]);
+        mramTotal = mramTotal + aiStack_1f4[i * 2];
+        lramTotal = lramTotal + aiStack_1f4[i * 2 + 1];
+        if ((0x400 < aiStack_1f4[i * 2]) || (0x400 < aiStack_1f4[i * 2 + 1])) {
+          mb(aiStack_1f4[i * 2 + 1]);
+          mb(aiStack_1f4[i * 2]);
           track_printf("%-20s %6.2f \t%6.2f\n");
-          local_29 = '\x01';
+          addedLine = true;
         }
       }
     }
-    mb(local_34);
-    mb(local_18);
+    mb(lramTotal);
+    mb(mramTotal);
     track_printf("%-20s %6.2f \t%6.2f\n");
-    mb(local_204[2]);
+    mb(info[2]);
     track_printf("current total      %5.1f\n");
-    mb(local_204[3]);
+    mb(info[3]);
     track_printf("min pc total       %5.1f\n");
     track_printf("\n\n");
-    free(local_30);
-    Sys_LeaveCriticalSection(local_c);
+    free(sorted_mem_track);
+    Sys_LeaveCriticalSection(csb.mCS);
   }
   return;
 }

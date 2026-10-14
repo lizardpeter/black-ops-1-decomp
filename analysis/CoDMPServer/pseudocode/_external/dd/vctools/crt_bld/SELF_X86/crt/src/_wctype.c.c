@@ -2,16 +2,16 @@
 
 // 00C1C0B6  _isleadbyte_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_wctype.c:55)
 
-int __cdecl _isleadbyte_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isleadbyte_l(int c,localeinfo_struct *plocinfo)
 
 {
   ushort uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1 & 0xff];
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c & 0xff];
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1 & 0x8000;
 }
@@ -19,12 +19,12 @@ int __cdecl _isleadbyte_l(int param_1,localeinfo_struct *param_2)
 
 // 00C1C0EE  isleadbyte  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_wctype.c:63)
 
-int __cdecl isleadbyte(int param_1)
+int __cdecl isleadbyte(int c)
 
 {
   int iVar1;
   
-  iVar1 = _isleadbyte_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isleadbyte_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

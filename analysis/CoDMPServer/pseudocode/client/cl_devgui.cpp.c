@@ -2,27 +2,30 @@
 
 // 0054F560  CL_DevGuiFrame  (client/cl_devgui.cpp:40)
 
-void __cdecl CL_DevGuiFrame(int param_1)
+void __cdecl CL_DevGuiFrame(int localClientNum)
 
 {
-  dvar_s *pdVar1;
-  int iVar2;
-  int local_18;
-  char *local_8;
+  dvar_s *dvar_00;
+  int controllerIndex;
+  int dvarIndex;
+  char *dir;
+  char *name;
+  dvar_s *dvar;
+  char *cmd;
   
-  for (local_18 = 0; local_18 != clGuiGlob.mapDirCount; local_18 = local_18 + 1) {
-    pdVar1 = clGuiGlob.mapEnumDvar[local_18];
-    if (pdVar1->modified != false) {
-      Dvar_ClearModified(pdVar1);
-      Dvar_EnumToString(pdVar1);
-      if (clGuiGlob.mapDirs[local_18][0] == '\0') {
-        local_8 = va("devmap %s");
+  for (dvarIndex = 0; dvarIndex != clGuiGlob.mapDirCount; dvarIndex = dvarIndex + 1) {
+    dvar_00 = clGuiGlob.mapEnumDvar[dvarIndex];
+    if (dvar_00->modified != false) {
+      Dvar_ClearModified(dvar_00);
+      Dvar_EnumToString(dvar_00);
+      if (clGuiGlob.mapDirs[dvarIndex][0] == '\0') {
+        cmd = va("devmap %s");
       }
       else {
-        local_8 = va("devmap %s/%s");
+        cmd = va("devmap %s/%s");
       }
-      iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-      Cmd_ExecuteSingleCommand(param_1,iVar2,local_8);
+      controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+      Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,cmd);
     }
   }
   return;
@@ -31,51 +34,56 @@ void __cdecl CL_DevGuiFrame(int param_1)
 
 // 0054F8E0  CL_AddMapDirSlider  (client/cl_devgui.cpp:72)
 
-void __cdecl CL_AddMapDirSlider(char *param_1,int param_2,char *param_3)
+void __cdecl CL_AddMapDirSlider(char *dir,int locationFlags,char *locationName)
 
 {
-  dvar_s *pdVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  char **ppcVar5;
-  int local_14;
-  int local_8;
+  dvar_s *dvar_00;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  char **stringTable;
+  char *devguiPath;
+  char *fullDir;
+  int fileIndex;
+  char **fileList;
+  dvar_s *dvar;
+  int fileCount;
   
-  pcVar4 = va("%s%s");
-  ppcVar5 = FS_ListFilesInLocation(pcVar4,"d3dbsp",FS_LIST_PURE_ONLY,&local_8,param_2,0);
-  if ((local_8 < 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x53,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  pcVar3 = va("%s%s");
+  stringTable = FS_ListFilesInLocation(pcVar3,"d3dbsp",FS_LIST_PURE_ONLY,&fileCount,locationFlags,0)
+  ;
+  if ((fileCount < 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x53,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if (local_8 != 0) {
-    if ((ppcVar5 == (char **)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x57,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (fileCount != 0) {
+    if ((stringTable == (char **)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x57,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     if ((7 < clGuiGlob.mapDirCount) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x58,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0x58,0,
+                                 "%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    for (local_14 = 0; local_14 != local_8; local_14 = local_14 + 1) {
-      Com_StripExtension(ppcVar5[local_14],ppcVar5[local_14]);
+    for (fileIndex = 0; fileIndex != fileCount; fileIndex = fileIndex + 1) {
+      Com_StripExtension(stringTable[fileIndex],stringTable[fileIndex]);
     }
-    I_strncpyz(clGuiGlob.mapDirs[clGuiGlob.mapDirCount],param_1,0x40);
-    clGuiGlob.mapNames[clGuiGlob.mapDirCount] = ppcVar5;
-    pdVar1 = clGuiGlob.mapEnumDvar[clGuiGlob.mapDirCount];
-    Dvar_UpdateEnumDomain(pdVar1,ppcVar5);
-    Dvar_SetInt(pdVar1,0);
-    pcVar4 = va("Main:1/Maps:3/%s//maps//%s");
-    DevGui_AddDvar(pcVar4,pdVar1);
+    I_strncpyz(clGuiGlob.mapDirs[clGuiGlob.mapDirCount],dir,0x40);
+    clGuiGlob.mapNames[clGuiGlob.mapDirCount] = stringTable;
+    dvar_00 = clGuiGlob.mapEnumDvar[clGuiGlob.mapDirCount];
+    Dvar_UpdateEnumDomain(dvar_00,stringTable);
+    Dvar_SetInt(dvar_00,0);
+    pcVar3 = va("Main:1/Maps:3/%s//maps//%s");
+    DevGui_AddDvar(pcVar3,dvar_00);
     clGuiGlob.mapDirCount = clGuiGlob.mapDirCount + 1;
   }
   return;
@@ -84,19 +92,19 @@ void __cdecl CL_AddMapDirSlider(char *param_1,int param_2,char *param_3)
 
 // 0054F860  CL_CreateMapMenuEntriesForLocation  (client/cl_devgui.cpp:107)
 
-void __cdecl CL_CreateMapMenuEntriesForLocation(int param_1,char *param_2)
+void __cdecl CL_CreateMapMenuEntriesForLocation(int locationFlags,char *locationName)
 
 {
-  int local_10;
-  char **local_c;
-  int local_8;
+  int dirCount;
+  char **dirList;
+  int dirIndex;
   
-  CL_AddMapDirSlider("",param_1,param_2);
-  local_c = FS_ListFiles("maps","/",FS_LIST_PURE_ONLY,&local_10,0xb);
-  for (local_8 = 0; local_8 != local_10; local_8 = local_8 + 1) {
-    CL_AddMapDirSlider(local_c[local_8],param_1,param_2);
+  CL_AddMapDirSlider("",locationFlags,locationName);
+  dirList = FS_ListFiles("maps","/",FS_LIST_PURE_ONLY,&dirCount,0xb);
+  for (dirIndex = 0; dirIndex != dirCount; dirIndex = dirIndex + 1) {
+    CL_AddMapDirSlider(dirList[dirIndex],locationFlags,locationName);
   }
-  Sys_FreeFileList(local_c);
+  Sys_FreeFileList(dirList);
   return;
 }
 
@@ -123,10 +131,10 @@ void __cdecl CL_RegisterDevGuiDvars(void)
 void __cdecl CL_UnregisterDevGuiDvars(void)
 
 {
-  int local_8;
+  int dvarIndex;
   
-  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    Dvar_UpdateEnumDomain(clGuiGlob.mapEnumDvar[local_8],emptyEnumList);
+  for (dvarIndex = 0; dvarIndex < 8; dvarIndex = dvarIndex + 1) {
+    Dvar_UpdateEnumDomain(clGuiGlob.mapEnumDvar[dvarIndex],emptyEnumList);
   }
   return;
 }
@@ -195,7 +203,7 @@ void __cdecl CL_DestroyDevGui(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int dvarIndex;
   
   if (!clGuiGlob.inited) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_devgui.cpp",0xdc,0,"%s")
@@ -209,8 +217,8 @@ void __cdecl CL_DestroyDevGui(void)
   clGuiGlob.inited = false;
   DevGui_RemoveMenu("Main:1/Maps:3");
   CL_UnregisterDevGuiDvars();
-  for (local_8 = 0; local_8 != clGuiGlob.mapDirCount; local_8 = local_8 + 1) {
-    Sys_FreeFileList(clGuiGlob.mapNames[local_8]);
+  for (dvarIndex = 0; dvarIndex != clGuiGlob.mapDirCount; dvarIndex = dvarIndex + 1) {
+    Sys_FreeFileList(clGuiGlob.mapNames[dvarIndex]);
   }
   return;
 }

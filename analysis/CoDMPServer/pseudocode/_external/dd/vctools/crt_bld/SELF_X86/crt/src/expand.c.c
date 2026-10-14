@@ -6,36 +6,36 @@ int __cdecl _is_LFH_enabled(void)
 
 {
   HMODULE hModule;
-  FARPROC pFVar1;
-  _func___cdecl_int_void_ptr__HEAP_INFORMATION_CLASS_void_ptr_ulong_ulong_ptr *p_Var2;
-  code *pcVar3;
-  int iVar4;
-  void *pvVar5;
-  undefined4 uVar6;
-  int *piVar7;
+  FARPROC ptr;
+  _func___cdecl_int_void_ptr__HEAP_INFORMATION_CLASS_void_ptr_ulong_ulong_ptr *p_Var1;
+  code *pcVar2;
+  int iVar3;
+  void *pvVar4;
+  undefined4 uVar5;
+  long *plVar6;
+  undefined4 uVar7;
   undefined4 uVar8;
-  undefined4 uVar9;
-  int local_8;
+  long heaptype;
   
-  local_8 = -1;
+  heaptype = -1;
   if (bInitialized == 0) {
     hModule = GetModuleHandleW(L"kernel32.dll");
     if (hModule != (HMODULE)0x0) {
-      pFVar1 = GetProcAddress(hModule,"HeapQueryInformation");
-      pfnHeapQueryInformation = _encode_pointer(pFVar1);
+      ptr = GetProcAddress(hModule,"HeapQueryInformation");
+      pfnHeapQueryInformation = _encode_pointer(ptr);
     }
     bInitialized = 1;
   }
-  p_Var2 = _encoded_null();
-  if (pfnHeapQueryInformation != p_Var2) {
-    uVar9 = 0;
-    uVar8 = 4;
-    piVar7 = &local_8;
-    uVar6 = 0;
-    pvVar5 = _crtheap;
-    pcVar3 = _decode_pointer(pfnHeapQueryInformation);
-    iVar4 = (*pcVar3)(pvVar5,uVar6,piVar7,uVar8,uVar9);
-    if ((iVar4 != 0) && (local_8 == 2)) {
+  p_Var1 = _encoded_null();
+  if (pfnHeapQueryInformation != p_Var1) {
+    uVar8 = 0;
+    uVar7 = 4;
+    plVar6 = &heaptype;
+    uVar5 = 0;
+    pvVar4 = _crtheap;
+    pcVar2 = _decode_pointer(pfnHeapQueryInformation);
+    iVar3 = (*pcVar2)(pvVar4,uVar5,plVar6,uVar7,uVar8);
+    if ((iVar3 != 0) && (heaptype == 2)) {
       return 1;
     }
   }
@@ -48,67 +48,68 @@ int __cdecl _is_LFH_enabled(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void * __cdecl _expand(void *param_1,uint param_2)
+void * __cdecl _expand(void *pBlock,uint newsize)
 
 {
   int *piVar1;
-  tagHeader *ptVar2;
-  int iVar3;
-  DWORD DVar4;
-  SIZE_T SVar5;
-  LPVOID pvVar6;
-  void *local_20;
+  tagHeader *pHeader_00;
+  int iVar2;
+  DWORD oserrno;
+  SIZE_T SVar3;
+  LPVOID pvVar4;
+  tagHeader *pHeader;
+  void *pvReturn;
   
-  if (param_1 == (void *)0x0) {
+  if (pBlock == (void *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return (void *)0x0;
   }
-  if (0xffffffe0 < param_2) {
+  if (0xffffffe0 < newsize) {
     piVar1 = _errno();
     *piVar1 = 0xc;
     return (void *)0x0;
   }
   if (__active_heap == 3) {
     _lock(4);
-    ptVar2 = __sbh_find_block(param_1);
-    if (((ptVar2 != (tagHeader *)0x0) && (local_20 = (void *)0x0, param_2 <= __sbh_threshold)) &&
-       (iVar3 = __sbh_resize_block(ptVar2,param_1,param_2), iVar3 != 0)) {
-      local_20 = param_1;
+    pHeader_00 = __sbh_find_block(pBlock);
+    if (((pHeader_00 != (tagHeader *)0x0) && (pvReturn = (void *)0x0, newsize <= __sbh_threshold))
+       && (iVar2 = __sbh_resize_block(pHeader_00,pBlock,newsize), iVar2 != 0)) {
+      pvReturn = pBlock;
     }
     FUN_00c27b7e();
-    if (ptVar2 != (tagHeader *)0x0) {
-      return local_20;
+    if (pHeader_00 != (tagHeader *)0x0) {
+      return pvReturn;
     }
-    if (param_2 == 0) {
-      param_2 = 1;
+    if (newsize == 0) {
+      newsize = 1;
     }
-    param_1 = HeapReAlloc(_crtheap,0x10,param_1,param_2 + 0xf & 0xfffffff0);
-    local_20 = param_1;
-    pvVar6 = param_1;
+    pBlock = HeapReAlloc(_crtheap,0x10,pBlock,newsize + 0xf & 0xfffffff0);
+    pvReturn = pBlock;
+    pvVar4 = pBlock;
   }
   else {
-    if (param_2 == 0) {
-      param_2 = 1;
+    if (newsize == 0) {
+      newsize = 1;
     }
-    SVar5 = HeapSize(_crtheap,0,param_1);
-    pvVar6 = HeapReAlloc(_crtheap,0x10,param_1,param_2);
-    if (pvVar6 != (LPVOID)0x0) {
-      return pvVar6;
+    SVar3 = HeapSize(_crtheap,0,pBlock);
+    pvVar4 = HeapReAlloc(_crtheap,0x10,pBlock,newsize);
+    if (pvVar4 != (LPVOID)0x0) {
+      return pvVar4;
     }
-    local_20 = (LPVOID)0x0;
-    if ((0x4000 < SVar5) || (SVar5 < param_2)) goto LAB_00c27b57;
-    pvVar6 = (LPVOID)_is_LFH_enabled();
+    pvReturn = (LPVOID)0x0;
+    if ((0x4000 < SVar3) || (SVar3 < newsize)) goto LAB_00c27b57;
+    pvVar4 = (LPVOID)_is_LFH_enabled();
   }
-  if (pvVar6 != (LPVOID)0x0) {
-    return param_1;
+  if (pvVar4 != (LPVOID)0x0) {
+    return pBlock;
   }
 LAB_00c27b57:
   piVar1 = _errno();
-  DVar4 = GetLastError();
-  iVar3 = _get_errno_from_oserr(DVar4);
-  *piVar1 = iVar3;
-  return local_20;
+  oserrno = GetLastError();
+  iVar2 = _get_errno_from_oserr(oserrno);
+  *piVar1 = iVar2;
+  return pvReturn;
 }
 

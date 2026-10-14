@@ -302,32 +302,32 @@ void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
   short sVar1;
   int iVar2;
   char cVar3;
-  uchar *puVar4;
-  gentity_s *pgVar5;
+  uchar *str1;
+  gentity_s *pgVar4;
   int extraout_EAX;
-  uint uVar6;
+  uint uVar5;
   actor_s *extraout_ECX;
-  int iVar7;
+  int iVar6;
   DObj *unaff_EDI;
   
   iVar2 = *(int *)param_1;
-  puVar4 = (uchar *)GetPairValue(param_2,"classname");
+  str1 = (uchar *)GetPairValue(param_2,"classname");
   if (*(int *)(param_1 + 4) < 1) {
-    iVar7 = -1;
+    iVar6 = -1;
   }
   else {
-    iVar7 = *(int *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10);
+    iVar6 = *(int *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10);
   }
   if (iVar2 == 4) {
     G_CallSpawn(param_2);
-    pgVar5 = FindEntity(param_2,iVar7);
-    g_radiant_selected_ent = pgVar5;
-    if (pgVar5 != (gentity_s *)0x0) {
+    pgVar4 = FindEntity(param_2,iVar6);
+    g_radiant_selected_ent = pgVar4;
+    if (pgVar4 != (gentity_s *)0x0) {
       if (0 < *(int *)(param_1 + 4)) {
-        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar5;
+        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar4;
       }
       AddSavedCommand(param_1);
-      if (*(int *)(pgVar5 + 0x148) != 0) {
+      if (*(int *)(pgVar4 + 0x148) != 0) {
         Actor_FinishSpawning((actor_s *)unaff_EDI);
         Actor_InitAnimScript((actor_s *)unaff_EDI);
       }
@@ -339,20 +339,20 @@ void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
     }
   }
   else if (iVar2 == 5) {
-    pgVar5 = FindEntity(param_2,iVar7);
-    if (pgVar5 != (gentity_s *)0x0) {
+    pgVar4 = FindEntity(param_2,iVar6);
+    if (pgVar4 != (gentity_s *)0x0) {
       if (0 < *(int *)(param_1 + 4)) {
-        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar5;
+        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar4;
       }
       AddSavedCommand(param_1);
       cVar3 = FUN_005fb440();
-      if (*(int *)(pgVar5 + 0x148) == 0) {
-        G_FreeEntity(pgVar5);
+      if (*(int *)(pgVar4 + 0x148) == 0) {
+        G_FreeEntity(pgVar4);
       }
       else {
         Actor_ClearPath(extraout_ECX);
         Scr_NotifyNum_Internal
-                  (SCRIPTINSTANCE_SERVER,*(int *)pgVar5,0,(uint)DAT_01c78dac,0,(uint)unaff_EDI);
+                  (SCRIPTINSTANCE_SERVER,*(int *)pgVar4,0,(uint)DAT_01c78dac,0,(uint)unaff_EDI);
         G_FreeEntityDelay((gentity_s *)unaff_EDI);
       }
       if (cVar3 != '\0') {
@@ -363,36 +363,36 @@ void __cdecl G_ProcessEntityCommand(RadiantCommand *param_1,SpawnVar *param_2)
   }
   else {
     if (iVar2 == 3) {
-      pgVar5 = FindEntity(param_2,iVar7);
+      pgVar4 = FindEntity(param_2,iVar6);
     }
     else {
-      pgVar5 = g_radiant_selected_ent;
-      if (((iVar2 != 2) && (pgVar5 = (gentity_s *)0x0, iVar2 == 0)) &&
-         (pgVar5 = FindEntity(param_2,iVar7), g_radiant_selected_ent = pgVar5,
-         pgVar5 == (gentity_s *)0x0)) {
+      pgVar4 = g_radiant_selected_ent;
+      if (((iVar2 != 2) && (pgVar4 = (gentity_s *)0x0, iVar2 == 0)) &&
+         (pgVar4 = FindEntity(param_2,iVar6), g_radiant_selected_ent = pgVar4,
+         pgVar4 == (gentity_s *)0x0)) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find entity %s.  Maps out of sync (Radiant/Game), re-bsp!\n"
-                   ,puVar4);
+                   ,str1);
       }
     }
-    strstr(puVar4,(uchar *)"actor_");
-    if (pgVar5 != (gentity_s *)0x0) {
+    strstr(str1,(uchar *)"actor_");
+    if (pgVar4 != (gentity_s *)0x0) {
       G_ParseEntityFields(param_2,(gentity_s *)(uint)(extraout_EAX != 0),(int)unaff_EDI);
-      if ((*(short *)(pgVar5 + 0xbe) == 0x11) || (*(short *)(pgVar5 + 0xbe) == 0x12)) {
+      if ((*(short *)(pgVar4 + 0xbe) == 0x11) || (*(short *)(pgVar4 + 0xbe) == 0x12)) {
         Actor_droptofloor((gentity_s *)unaff_EDI);
       }
-      G_SetupDestructible(pgVar5,(SpawnVar *)unaff_EDI);
+      G_SetupDestructible(pgVar4,(SpawnVar *)unaff_EDI);
       G_DObjUpdate((gentity_s *)unaff_EDI);
-      sVar1 = (&DAT_01cedda8)[*(int *)pgVar5];
+      sVar1 = (&DAT_01cedda8)[*(int *)pgVar4];
       if (((sVar1 != 0) && ((DObj *)(&DAT_01cef1a8 + sVar1 * 0x7c) != (DObj *)0x0)) &&
-         (*(int *)(pgVar5 + 0x14c) == 0)) {
-        uVar6 = DObjGetContents(unaff_EDI);
-        *(uint *)(pgVar5 + 0x108) = *(uint *)(pgVar5 + 0x108) | uVar6;
-        DObjCalcBounds((DObj *)(&DAT_01cef1a8 + sVar1 * 0x7c),(float *)(pgVar5 + 0xf0),
-                       (float *)(pgVar5 + 0xfc));
+         (*(int *)(pgVar4 + 0x14c) == 0)) {
+        uVar5 = DObjGetContents(unaff_EDI);
+        *(uint *)(pgVar4 + 0x108) = *(uint *)(pgVar4 + 0x108) | uVar5;
+        DObjCalcBounds((DObj *)(&DAT_01cef1a8 + sVar1 * 0x7c),(float *)(pgVar4 + 0xf0),
+                       (float *)(pgVar4 + 0xfc));
       }
       if (0 < *(int *)(param_1 + 4)) {
-        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar5;
+        *(undefined4 *)(&DAT_01d90ad8 + *(int *)(param_1 + 4) * 0x10) = *(undefined4 *)pgVar4;
       }
       cVar3 = FUN_005fb440();
       if (cVar3 != '\0') {
@@ -414,18 +414,18 @@ void __cdecl G_ProcessCameraCommand(SpawnVar *param_1)
 {
   cg_s *pcVar1;
   SpawnVar *in_EAX;
-  char *pcVar2;
-  char *pcVar3;
+  char *string;
+  char *string_00;
   
-  pcVar2 = GetPairValue(in_EAX,"origin");
-  pcVar3 = GetPairValue(in_EAX,"angles");
+  string = GetPairValue(in_EAX,"origin");
+  string_00 = GetPairValue(in_EAX,"angles");
   pcVar1 = cgArray;
   if (cgArray != (cg_s *)0x0) {
-    if (pcVar2 != (char *)0x0) {
-      sscanf(pcVar2,"%f %f %f");
+    if (string != (char *)0x0) {
+      sscanf(string,"%f %f %f");
     }
-    if (pcVar3 != (char *)0x0) {
-      sscanf(pcVar3,"%f %f %f");
+    if (string_00 != (char *)0x0) {
+      sscanf(string_00,"%f %f %f");
     }
     *(uint *)(pcVar1 + 0x5b758) = *(uint *)(pcVar1 + 0x5b758) ^ 0x80000000;
     *(undefined4 *)(pcVar1 + 0x5b764) = 1;
@@ -480,14 +480,14 @@ void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2
   int iVar1;
   GfxStaticModelDrawInst *pGVar2;
   dvar_s *pdVar3;
-  char *pcVar4;
-  char *pcVar5;
-  char *pcVar6;
-  int iVar7;
-  int iVar8;
+  char *string;
+  char *string_00;
+  char *nptr;
+  int iVar4;
+  int iVar5;
   float *unaff_ESI;
   float *unaff_EDI;
-  double dVar9;
+  double dVar6;
   float local_50;
   float local_4c;
   float local_48;
@@ -508,9 +508,9 @@ void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2
   float local_8;
   float local_4;
   
-  pcVar4 = GetPairValue(param_2,"origin");
-  pcVar5 = GetPairValue(param_2,"angles");
-  pcVar6 = GetPairValue(param_2,"modelscale");
+  string = GetPairValue(param_2,"origin");
+  string_00 = GetPairValue(param_2,"angles");
+  nptr = GetPairValue(param_2,"modelscale");
   local_50 = 1.0;
   local_4c = 0.0;
   local_48 = 0.0;
@@ -519,62 +519,62 @@ void __cdecl G_ProcessMiscModelCommand(RadiantCommand *param_1,SpawnVar *param_2
   local_3c = 0;
   local_38 = 0;
   if ((cgArray != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
-    if (pcVar4 != (char *)0x0) {
-      sscanf(pcVar4,"%f %f %f");
+    if (string != (char *)0x0) {
+      sscanf(string,"%f %f %f");
     }
-    if (pcVar5 != (char *)0x0) {
-      sscanf(pcVar5,"%f %f %f");
+    if (string_00 != (char *)0x0) {
+      sscanf(string_00,"%f %f %f");
     }
-    if (pcVar6 != (char *)0x0) {
-      dVar9 = atof(pcVar6);
-      local_50 = (float)dVar9;
+    if (nptr != (char *)0x0) {
+      dVar6 = atof(nptr);
+      local_50 = (float)dVar6;
     }
-    iVar8 = *(int *)(param_1 + 4);
+    iVar5 = *(int *)(param_1 + 4);
     iVar1 = *(int *)param_1;
-    if (iVar8 < 1) {
-      iVar7 = -1;
+    if (iVar5 < 1) {
+      iVar4 = -1;
     }
     else {
-      iVar7 = *(int *)(&DAT_01d90ad8 + iVar8 * 0x10);
+      iVar4 = *(int *)(&DAT_01d90ad8 + iVar5 * 0x10);
     }
     if (iVar1 == 0) {
-      g_selected_misc_model = G_FindMiscModel(&local_4c,iVar7);
+      g_selected_misc_model = G_FindMiscModel(&local_4c,iVar4);
       if (g_selected_misc_model < 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find misc_model.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
         return;
       }
-      if (0 < iVar8) {
-        *(int *)(&DAT_01d90ad8 + iVar8 * 0x10) = g_selected_misc_model;
+      if (0 < iVar5) {
+        *(int *)(&DAT_01d90ad8 + iVar5 * 0x10) = g_selected_misc_model;
         return;
       }
     }
     else {
-      iVar8 = g_selected_misc_model;
+      iVar5 = g_selected_misc_model;
       if (iVar1 != 2) {
         if (iVar1 != 3) {
           return;
         }
-        iVar8 = G_FindMiscModel(&local_4c,iVar7);
+        iVar5 = G_FindMiscModel(&local_4c,iVar4);
       }
-      if (-1 < iVar8) {
+      if (-1 < iVar5) {
         pGVar2 = ((rgp.world)->dpvs).smodelDrawInsts;
-        pGVar2[iVar8].placement.origin[0] = local_4c;
-        pGVar2[iVar8].placement.origin[1] = local_48;
-        pGVar2[iVar8].placement.origin[2] = local_44;
+        pGVar2[iVar5].placement.origin[0] = local_4c;
+        pGVar2[iVar5].placement.origin[1] = local_48;
+        pGVar2[iVar5].placement.origin[2] = local_44;
         AnglesToAxis(unaff_EDI,unaff_ESI);
         pdVar3 = r_cacheSModelLighting;
-        pGVar2[iVar8].placement.axis[0][0] = local_24;
-        pGVar2[iVar8].placement.axis[0][1] = local_20;
-        pGVar2[iVar8].placement.axis[0][2] = local_1c;
-        pGVar2[iVar8].placement.axis[1][0] = local_18;
-        pGVar2[iVar8].placement.axis[1][1] = local_14;
-        pGVar2[iVar8].placement.axis[1][2] = local_10;
-        pGVar2[iVar8].placement.axis[2][0] = local_c;
-        pGVar2[iVar8].placement.axis[2][1] = local_8;
-        pGVar2[iVar8].placement.axis[2][2] = local_4;
-        pGVar2[iVar8].placement.scale = local_50;
+        pGVar2[iVar5].placement.axis[0][0] = local_24;
+        pGVar2[iVar5].placement.axis[0][1] = local_20;
+        pGVar2[iVar5].placement.axis[0][2] = local_1c;
+        pGVar2[iVar5].placement.axis[1][0] = local_18;
+        pGVar2[iVar5].placement.axis[1][1] = local_14;
+        pGVar2[iVar5].placement.axis[1][2] = local_10;
+        pGVar2[iVar5].placement.axis[2][0] = local_c;
+        pGVar2[iVar5].placement.axis[2][1] = local_8;
+        pGVar2[iVar5].placement.axis[2][2] = local_4;
+        pGVar2[iVar5].placement.scale = local_50;
         if ((pdVar3 != (dvar_s *)0x0) && (pdVar3->name != (char *)0x0)) {
           if (pdVar3->type == DVAR_TYPE_BOOL) {
             local_34 = (char *)CONCAT31(local_34._1_3_,1);
@@ -658,14 +658,14 @@ void __cdecl G_ProcessCoronaCommand(RadiantCommand *param_1,SpawnVar *param_2)
 {
   int iVar1;
   int iVar2;
-  char *pcVar3;
-  char *pcVar4;
-  char *pcVar5;
-  char *pcVar6;
-  int iVar7;
-  int iVar8;
-  GfxLightCorona *pGVar9;
-  double dVar10;
+  char *string;
+  char *string_00;
+  char *nptr;
+  char *nptr_00;
+  int iVar3;
+  int iVar4;
+  GfxLightCorona *pGVar5;
+  double dVar6;
   float local_20;
   float local_1c;
   float local_18;
@@ -675,10 +675,10 @@ void __cdecl G_ProcessCoronaCommand(RadiantCommand *param_1,SpawnVar *param_2)
   float local_8;
   float local_4;
   
-  pcVar3 = GetPairValue(param_2,"origin");
-  pcVar4 = GetPairValue(param_2,"color");
-  pcVar5 = GetPairValue(param_2,"radius");
-  pcVar6 = GetPairValue(param_2,"intensity");
+  string = GetPairValue(param_2,"origin");
+  string_00 = GetPairValue(param_2,"color");
+  nptr = GetPairValue(param_2,"radius");
+  nptr_00 = GetPairValue(param_2,"intensity");
   local_20 = 20.0;
   local_1c = 1.0;
   local_18 = 0.0;
@@ -688,59 +688,59 @@ void __cdecl G_ProcessCoronaCommand(RadiantCommand *param_1,SpawnVar *param_2)
   local_8 = 0.0;
   local_4 = 0.0;
   if ((cgArray != (cg_s *)0x0) && (rgp.world != (GfxWorld *)0x0)) {
-    if (pcVar3 != (char *)0x0) {
-      sscanf(pcVar3,"%f %f %f");
+    if (string != (char *)0x0) {
+      sscanf(string,"%f %f %f");
     }
-    if (pcVar4 != (char *)0x0) {
-      sscanf(pcVar4,"%f %f %f");
+    if (string_00 != (char *)0x0) {
+      sscanf(string_00,"%f %f %f");
     }
-    if (pcVar5 != (char *)0x0) {
-      dVar10 = atof(pcVar5);
-      local_20 = (float)dVar10;
+    if (nptr != (char *)0x0) {
+      dVar6 = atof(nptr);
+      local_20 = (float)dVar6;
     }
-    if (pcVar6 != (char *)0x0) {
-      dVar10 = atof(pcVar6);
-      local_1c = (float)dVar10;
+    if (nptr_00 != (char *)0x0) {
+      dVar6 = atof(nptr_00);
+      local_1c = (float)dVar6;
     }
     iVar1 = *(int *)(param_1 + 4);
     iVar2 = *(int *)param_1;
     if (iVar1 < 1) {
-      iVar7 = -1;
+      iVar3 = -1;
     }
     else {
-      iVar7 = *(int *)(&DAT_01d90ad8 + iVar1 * 0x10);
+      iVar3 = *(int *)(&DAT_01d90ad8 + iVar1 * 0x10);
     }
     if (iVar2 == 0) {
-      iVar8 = G_FindCorona(&local_18,iVar7);
-      g_selected_corona = iVar8;
-      if (iVar8 < 0) {
+      iVar4 = G_FindCorona(&local_18,iVar3);
+      g_selected_corona = iVar4;
+      if (iVar4 < 0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find misc_model.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
       else if (0 < iVar1) {
-        *(int *)(&DAT_01d90ad8 + iVar1 * 0x10) = iVar8;
+        *(int *)(&DAT_01d90ad8 + iVar1 * 0x10) = iVar4;
       }
     }
     else {
-      iVar8 = g_selected_corona;
+      iVar4 = g_selected_corona;
       if (iVar2 != 2) {
         if (iVar2 != 3) {
           return;
         }
-        iVar8 = G_FindCorona(&local_18,iVar7);
+        iVar4 = G_FindCorona(&local_18,iVar3);
       }
     }
-    if (-1 < iVar8) {
-      pGVar9 = (rgp.world)->coronas + iVar8;
-      pGVar9->origin[0] = local_18;
-      pGVar9->origin[1] = local_14;
-      pGVar9->origin[2] = local_10;
-      pGVar9->color[0] = local_c;
-      pGVar9->color[1] = local_8;
-      pGVar9->color[2] = local_4;
-      pGVar9->radius = local_20;
-      pGVar9->intensity = local_1c;
+    if (-1 < iVar4) {
+      pGVar5 = (rgp.world)->coronas + iVar4;
+      pGVar5->origin[0] = local_18;
+      pGVar5->origin[1] = local_14;
+      pGVar5->origin[2] = local_10;
+      pGVar5->color[0] = local_c;
+      pGVar5->color[1] = local_8;
+      pGVar5->color[2] = local_4;
+      pGVar5->radius = local_20;
+      pGVar5->intensity = local_1c;
     }
   }
   return;
@@ -976,34 +976,34 @@ uint __cdecl CG_FindStruct(SpawnVar *param_1,int param_2)
 
 {
   SpawnVar *in_EAX;
-  char *pcVar1;
-  int iVar2;
-  SpawnVar *pSVar3;
+  char *string;
+  int iVar1;
+  SpawnVar *pSVar2;
   scriptInstance_t unaff_ESI;
   scriptInstance_t unaff_EDI;
-  float *pfVar4;
+  float *pfVar3;
   float afStack_c [3];
   
   afStack_c[0] = 0.0;
   afStack_c[1] = 0.0;
   afStack_c[2] = 0.0;
-  pcVar1 = GetPairValue(in_EAX,"origin");
-  if (pcVar1 != (char *)0x0) {
-    sscanf(pcVar1,"%f %f %f");
+  string = GetPairValue(in_EAX,"origin");
+  if (string != (char *)0x0) {
+    sscanf(string,"%f %f %f");
   }
-  pfVar4 = afStack_c;
-  Scr_AddVector(pfVar4,unaff_EDI);
-  Scr_AddExecThread(_DAT_00c1f83c,1,(uint)pfVar4);
-  pSVar3 = (SpawnVar *)0x0;
+  pfVar3 = afStack_c;
+  Scr_AddVector(pfVar3,unaff_EDI);
+  Scr_AddExecThread(_DAT_00c1f83c,1,(uint)pfVar3);
+  pSVar2 = (SpawnVar *)0x0;
   if (0 < (int)param_1) {
-    pSVar3 = param_1;
+    pSVar2 = param_1;
   }
-  iVar2 = Scr_GetType(unaff_EDI,unaff_ESI);
-  if (iVar2 != 0) {
-    pSVar3 = (SpawnVar *)Scr_GetObject(0,unaff_EDI);
+  iVar1 = Scr_GetType(unaff_EDI,unaff_ESI);
+  if (iVar1 != 0) {
+    pSVar2 = (SpawnVar *)Scr_GetObject(0,unaff_EDI);
   }
   Scr_ClearOutParams(unaff_EDI);
-  return (uint)pSVar3;
+  return (uint)pSVar2;
 }
 
 

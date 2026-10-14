@@ -13,70 +13,70 @@ void __cdecl G_ParseHitLocDmgTable(void)
   bool bVar2;
   undefined2 uVar3;
   char *pcVar4;
-  uchar *puVar5;
+  uchar *string;
   int extraout_EAX;
   int extraout_EAX_00;
-  char *pcVar6;
+  char *pcVar5;
+  int iVar6;
   int iVar7;
-  int iVar8;
-  undefined2 *puVar9;
-  undefined4 *puVar10;
+  undefined2 *puVar8;
+  undefined4 *puVar9;
   char *unaff_EDI;
-  int *piVar11;
+  int *piVar10;
   undefined4 local_40f0;
   int local_40ec [57];
   undefined1 local_4008 [16380];
   undefined4 uStack_c;
   
   uStack_c = 0x563110;
-  iVar8 = 0;
-  puVar9 = &DAT_01ac8d04;
-  piVar11 = local_40ec;
+  iVar7 = 0;
+  puVar8 = &DAT_01ac8d04;
+  piVar10 = local_40ec;
   do {
-    pcVar6 = *(char **)((int)&PTR_s_none_00ae3400 + iVar8);
-    *(float *)((int)&g_fHitLocDamageMult + iVar8) = 1.0;
-    piVar11[-1] = (int)pcVar6;
-    *piVar11 = iVar8;
-    piVar11[1] = 7;
-    pcVar4 = pcVar6;
+    pcVar5 = *(char **)((int)&PTR_s_none_00ae3400 + iVar7);
+    *(float *)((int)&g_fHitLocDamageMult + iVar7) = 1.0;
+    piVar10[-1] = (int)pcVar5;
+    *piVar10 = iVar7;
+    piVar10[1] = 7;
+    pcVar4 = pcVar5;
     do {
       cVar1 = *pcVar4;
       pcVar4 = pcVar4 + 1;
     } while (cVar1 != '\0');
-    uVar3 = _SL_GetStringOfSize(0,pcVar6,1,pcVar4 + (1 - (int)(pcVar6 + 1)));
-    *puVar9 = uVar3;
-    puVar9 = puVar9 + 1;
-    piVar11 = piVar11 + 3;
-    iVar8 = iVar8 + 4;
-  } while ((int)puVar9 < 0x1ac8d2a);
+    uVar3 = _SL_GetStringOfSize(0,pcVar5,1,pcVar4 + (1 - (int)(pcVar5 + 1)));
+    *puVar8 = uVar3;
+    puVar8 = puVar8 + 1;
+    piVar10 = piVar10 + 3;
+    iVar7 = iVar7 + 4;
+  } while ((int)puVar8 < 0x1ac8d2a);
   _DAT_01ac7f78 = 0;
   if ((useFastFile->current).enabled == false) {
-    puVar5 = (uchar *)FUN_005e8b30("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE",
+    string = (uchar *)FUN_005e8b30("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE",
                                    local_4008);
   }
   else {
-    puVar5 = (uchar *)FUN_005e8c30("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE");
+    string = (uchar *)FUN_005e8c30("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE");
   }
-  strchr(puVar5,'\"');
+  strchr(string,'\"');
   if (extraout_EAX == 0) {
-    strchr(puVar5,';');
+    strchr(string,';');
     if (extraout_EAX_00 == 0) goto LAB_005631f9;
   }
   Com_Error(ERR_DROP,"\x15File [%s] is not a valid %s\n","info/mp_lochit_dmgtable",
             "hitloc damage table");
 LAB_005631f9:
   bVar2 = false;
-  puVar10 = &local_40f0;
-  iVar8 = 0x13;
+  puVar9 = &local_40f0;
+  iVar7 = 0x13;
   do {
-    pcVar6 = Info_ValueForKey((char *)*puVar10,unaff_EDI);
-    if (*pcVar6 != '\0') {
-      iVar7 = FUN_006abf60(&g_fHitLocDamageMult,puVar10,pcVar6,0,0,&LAB_005630e0);
-      bVar2 = (bool)(bVar2 | iVar7 == 0);
+    pcVar5 = Info_ValueForKey((char *)*puVar9,unaff_EDI);
+    if (*pcVar5 != '\0') {
+      iVar6 = FUN_006abf60(&g_fHitLocDamageMult,puVar9,pcVar5,0,0,&LAB_005630e0);
+      bVar2 = (bool)(bVar2 | iVar6 == 0);
     }
-    puVar10 = puVar10 + 3;
-    iVar8 = iVar8 + -1;
-  } while (iVar8 != 0);
+    puVar9 = puVar9 + 3;
+    iVar7 = iVar7 + -1;
+  } while (iVar7 != 0);
   if (bVar2) {
     Com_Error(ERR_DROP,"\x15Error parsing hitloc damage table %s\n","info/mp_lochit_dmgtable");
   }

@@ -7,6 +7,7 @@ void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *param_1)
 {
   int iVar1;
   tlSystemCallbacks *ptVar2;
+  tlSystemCallbacks *Callbacks;
   
   ptVar2 = &tlCurSystemCallbacks;
   for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -23,6 +24,8 @@ void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *param_1)
 bool __cdecl tlFatalHandler(char *param_1)
 
 {
+  char *Msg;
+  
   if (tlCurSystemCallbacks.CriticalError != (_func___cdecl_void_char_ptr *)0x0) {
     (*tlCurSystemCallbacks.CriticalError)(param_1);
     return false;
@@ -38,6 +41,7 @@ bool __cdecl tlFatalHandler(char *param_1)
 void __cdecl tlFatal(char *param_1)
 
 {
+  char *Format;
   char local_204 [512];
   uint local_4;
   
@@ -57,6 +61,7 @@ void __cdecl tlSetFileServerRootPC(char *param_1)
 {
   char cVar1;
   int iVar2;
+  char *Path;
   
   iVar2 = (int)tlHostPrefix - (int)param_1;
   do {
@@ -71,8 +76,9 @@ void __cdecl tlSetFileServerRootPC(char *param_1)
 // 008E02B0  tlReadFile  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:390)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: bytesRead */
 
-bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param_4)
+bool __cdecl tlReadFile(char *File,tlFileBuf *Align,uint Flags,uint param_4)
 
 {
   char cVar1;
@@ -82,16 +88,18 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
   char *pcVar5;
   uint uVar6;
   HANDLE hFile;
-  DWORD DVar7;
+  DWORD Align_00;
   uchar *lpBuffer;
-  uint uVar8;
-  undefined4 local_208;
+  uint uVar7;
+  char *FileName;
+  ulong bytesRead;
+  undefined4 Work;
   char local_204 [512];
   uint local_4;
   
-  local_4 = __security_cookie ^ (uint)&local_208;
+  local_4 = __security_cookie ^ (uint)&Work;
   if (tlCurSystemCallbacks.ReadFile != (_func___cdecl_bool_char_ptr_tlFileBuf_ptr_uint_uint *)0x0) {
-    bVar2 = (*tlCurSystemCallbacks.ReadFile)(param_1,param_2,param_3,param_4);
+    bVar2 = (*tlCurSystemCallbacks.ReadFile)(File,Align,Flags,param_4);
     return bVar2;
   }
   pcVar5 = tlHostPrefix;
@@ -99,8 +107,8 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
     pcVar3 = pcVar5;
     pcVar5 = pcVar3 + 1;
   } while (*pcVar3 != '\0');
-  iVar4 = strncmp(param_1,tlHostPrefix,(uint)(pcVar3 + -0xaf5090));
-  pcVar5 = param_1;
+  iVar4 = strncmp(File,tlHostPrefix,(uint)(pcVar3 + -0xaf5090));
+  pcVar5 = File;
   if (iVar4 == 0) {
     local_204[0] = '\0';
   }
@@ -116,20 +124,20 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
     cVar1 = *pcVar5;
     pcVar5 = pcVar5 + 1;
   } while (cVar1 != '\0');
-  uVar6 = (int)pcVar5 - (int)param_1;
-  pcVar5 = (char *)((int)&local_208 + 3);
+  uVar6 = (int)pcVar5 - (int)File;
+  pcVar5 = (char *)((int)&Work + 3);
   do {
     pcVar3 = pcVar5 + 1;
     pcVar5 = pcVar5 + 1;
   } while (*pcVar3 != '\0');
-  for (uVar8 = uVar6 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *(undefined4 *)pcVar5 = *(undefined4 *)param_1;
-    param_1 = param_1 + 4;
+  for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
+    *(undefined4 *)pcVar5 = *(undefined4 *)File;
+    File = File + 4;
     pcVar5 = pcVar5 + 4;
   }
   for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-    *pcVar5 = *param_1;
-    param_1 = param_1 + 1;
+    *pcVar5 = *File;
+    File = File + 1;
     pcVar5 = pcVar5 + 1;
   }
   pcVar5 = local_204;
@@ -145,11 +153,11 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
   if (hFile == (HANDLE)0xffffffff) {
     return false;
   }
-  DVar7 = GetFileSize(hFile,(LPDWORD)0x0);
-  param_2->Size = DVar7;
-  lpBuffer = tlMemAlloc(DVar7,param_3,param_4);
-  param_2->Buf = lpBuffer;
-  ReadFile(hFile,lpBuffer,param_2->Size,&local_208,(LPOVERLAPPED)0x0);
+  Align_00 = GetFileSize(hFile,(LPDWORD)0x0);
+  Align->Size = Align_00;
+  lpBuffer = tlMemAlloc(Align_00,Flags,param_4);
+  Align->Buf = lpBuffer;
+  ReadFile(hFile,lpBuffer,Align->Size,&Work,(LPOVERLAPPED)0x0);
   CloseHandle(hFile);
   return true;
 }
@@ -157,22 +165,23 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
 
 // 008E0060  tlMemAlloc  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:419)
 
-void * __cdecl tlMemAlloc(uint param_1,uint param_2,uint param_3)
+void * __cdecl tlMemAlloc(uint Align,uint Flags,uint param_3)
 
 {
   void *pvVar1;
+  uint Size;
   
-  if ((param_2 == 0) && ((param_1 & 0xf) == 0)) {
-    param_2 = 0;
+  if ((Flags == 0) && ((Align & 0xf) == 0)) {
+    Flags = 0;
   }
   tlMemAllocCounter = tlMemAllocCounter + 1;
   if (tlCurSystemCallbacks.MemAlloc == (_func___cdecl_void_ptr_uint_uint_uint *)0x0) {
-    pvVar1 = _aligned_malloc(param_1,param_2);
+    pvVar1 = _aligned_malloc(Align,Flags);
   }
   else {
-    pvVar1 = (*tlCurSystemCallbacks.MemAlloc)(param_1,param_2,param_3);
+    pvVar1 = (*tlCurSystemCallbacks.MemAlloc)(Align,Flags,param_3);
   }
-  if ((((param_3 & 2) == 0) && (pvVar1 == (void *)0x0)) && (param_1 != 0)) {
+  if ((((param_3 & 2) == 0) && (pvVar1 == (void *)0x0)) && (Align != 0)) {
     tlFatal("Memory allocation failed. %d bytes, %d align");
   }
   return pvVar1;
@@ -181,21 +190,22 @@ void * __cdecl tlMemAlloc(uint param_1,uint param_2,uint param_3)
 
 // 008E00D0  tlMemRealloc  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:447)
 
-void * __cdecl tlMemRealloc(void *param_1,uint param_2,uint param_3,uint param_4)
+void * __cdecl tlMemRealloc(void *Size,uint Align,uint Flags,uint param_4)
 
 {
   void *pvVar1;
+  void *Ptr;
   
-  if ((param_3 == 0) && ((param_2 & 0xf) == 0)) {
-    param_3 = 0;
+  if ((Flags == 0) && ((Align & 0xf) == 0)) {
+    Flags = 0;
   }
   if (tlCurSystemCallbacks.MemRealloc == (_func___cdecl_void_ptr_void_ptr_uint_uint_uint *)0x0) {
-    pvVar1 = _aligned_realloc(param_1,param_2,param_3);
+    pvVar1 = _aligned_realloc(Size,Align,Flags);
   }
   else {
-    pvVar1 = (*tlCurSystemCallbacks.MemRealloc)(param_1,param_2,param_3,param_4);
+    pvVar1 = (*tlCurSystemCallbacks.MemRealloc)(Size,Align,Flags,param_4);
   }
-  if ((((param_4 & 2) == 0) && (pvVar1 == (void *)0x0)) && (param_2 != 0)) {
+  if ((((param_4 & 2) == 0) && (pvVar1 == (void *)0x0)) && (Align != 0)) {
     tlFatal("Memory reallocation failed.");
   }
   return pvVar1;
@@ -207,6 +217,8 @@ void * __cdecl tlMemRealloc(void *param_1,uint param_2,uint param_3,uint param_4
 void __cdecl tlMemFree(void *param_1)
 
 {
+  void *Ptr;
+  
   tlMemAllocCounter = tlMemAllocCounter + -1;
   if (tlCurSystemCallbacks.MemFree != (_func___cdecl_void_void_ptr *)0x0) {
                     /* WARNING: Could not recover jumptable at 0x008e014f. Too many branches */
@@ -224,6 +236,8 @@ void __cdecl tlMemFree(void *param_1)
 void __cdecl tlReleaseFile(tlFileBuf *param_1)
 
 {
+  tlFileBuf *File;
+  
   if (tlCurSystemCallbacks.ReleaseFile != (_func___cdecl_void_tlFileBuf_ptr *)0x0) {
                     /* WARNING: Could not recover jumptable at 0x008e0169. Too many branches */
                     /* WARNING: Treating indirect jump as call */

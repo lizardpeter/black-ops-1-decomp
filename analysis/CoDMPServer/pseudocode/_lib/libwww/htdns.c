@@ -214,7 +214,7 @@ undefined4 _HTGetHostByName(int param_1,byte *param_2,undefined4 param_3)
   code *pcVar3;
   int iVar4;
   long64 lVar5;
-  ulong uVar6;
+  ulong count;
   undefined4 *local_40;
   uint local_3c;
   int local_38;
@@ -301,9 +301,9 @@ LAB_00be3b63:
         }
       }
       *(undefined4 **)(param_1 + 0x74) = local_8;
-      uVar6 = local_8[4];
+      count = local_8[4];
       iVar4 = _HTHost_home(param_1);
-      memcpy((uchar *)(local_c + 4),*(uchar **)(local_8[6] + iVar4 * 4),uVar6);
+      memcpy((uchar *)(local_c + 4),*(uchar **)(local_8[6] + iVar4 * 4),count);
     }
   }
   return local_10;

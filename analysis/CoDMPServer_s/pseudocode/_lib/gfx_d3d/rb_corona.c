@@ -7,6 +7,7 @@ uint __cdecl RB_HW_ReadOcclusionQuery(IDirect3DQuery9 *param_1)
 {
   int iVar1;
   int *unaff_ESI;
+  ulong pixelCount;
   
   iVar1 = (**(code **)(*unaff_ESI + 0x1c))();
   while (iVar1 == 1) {
@@ -36,6 +37,7 @@ void __cdecl RB_DrawCoronas(int param_1)
   CoronaState *unaff_EDI;
   float *pfVar6;
   float fVar7;
+  int localClientNum;
   int local_4;
   
   pCVar5 = coronaState + param_1;
@@ -243,7 +245,7 @@ void __cdecl RB_FreeCoronaSpriteQueries(void)
 // 0080F620  RB_DrawWaypoint  (gfx_d3d/rb_corona.cpp:649)
 
 void __cdecl
-RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,float param_5,
+RB_DrawWaypoint(Material *dist,GfxColor radius,float *screenSize,float alignBottom,float param_5,
                bool param_6,bool param_7,bool param_8)
 
 {
@@ -263,7 +265,9 @@ RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,
   float fVar11;
   float fVar12;
   float fVar13;
+  GfxColor color;
   uchar in_stack_fffffff4;
+  bool forceNear;
   
   bVar2 = R_StreamTouchMaterialAndCheck(in_EAX,(int)unaff_ESI);
   if (bVar2) {
@@ -293,10 +297,10 @@ RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][3] * fVar5 +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] * fVar12 +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][3];
-    if (param_4._0_1_ != '\0') {
-      param_3 = (float *)(fVar5 * (float)param_3);
+    if (alignBottom._0_1_ != '\0') {
+      screenSize = (float *)(fVar5 * (float)screenSize);
     }
-    fVar13 = ((float)param_3 / fVar5) * 2.0;
+    fVar13 = ((float)screenSize / fVar5) * 2.0;
     fVar12 = ((float)gfxCmdBufSourceState.renderTargetHeight * fVar13) /
              (float)gfxCmdBufSourceState.renderTargetWidth;
     if ((in_EAX != (Material *)0x0) && (in_EAX->textureCount != '\0')) {
@@ -307,7 +311,7 @@ RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,
       fVar12 = (float)rg.hiResShotTiles * fVar12;
       fVar13 = (float)rg.hiResShotTiles * fVar13;
     }
-    pGVar3 = RB_SetTessQuad((GfxColor)param_1);
+    pGVar3 = RB_SetTessQuad((GfxColor)dist);
     pGVar3->xyzw[0] = fVar7;
     pGVar3->xyzw[1] = fVar9;
     pGVar3->xyzw[2] = fVar10;
@@ -393,10 +397,10 @@ RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,
       pGVar3[3].xyzw[2] = pGVar3[3].xyzw[2] * fVar5;
       pGVar3[3].xyzw[3] = 1.0;
     }
-    *(GfxColor *)(pGVar3->xyzw + 3) = param_2;
-    *(GfxColor *)(pGVar3[1].xyzw + 3) = param_2;
-    *(GfxColor *)(pGVar3[2].xyzw + 3) = param_2;
-    *(GfxColor *)(pGVar3[3].xyzw + 3) = param_2;
+    *(GfxColor *)(pGVar3->xyzw + 3) = radius;
+    *(GfxColor *)(pGVar3[1].xyzw + 3) = radius;
+    *(GfxColor *)(pGVar3[2].xyzw + 3) = radius;
+    *(GfxColor *)(pGVar3[3].xyzw + 3) = radius;
     RB_DrawTessSurface();
     if (tess.indexCount != 0) {
       RB_DrawTessSurface();

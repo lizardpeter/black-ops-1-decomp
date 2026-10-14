@@ -2,7 +2,7 @@
 
 // 00C24211  _initp_eh_hooks  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/hooks.cpp:75)
 
-void __cdecl _initp_eh_hooks(void *param_1)
+void __cdecl _initp_eh_hooks(void *enull)
 
 {
   __pInconsistency = _encode_pointer(terminate);

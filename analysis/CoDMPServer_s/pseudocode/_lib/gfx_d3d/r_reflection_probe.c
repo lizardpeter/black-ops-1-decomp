@@ -32,6 +32,8 @@ void __cdecl R_CalcCubeMapViewValues(refdef_s *param_1,CubemapShot param_2,int p
 {
   undefined4 uVar1;
   undefined4 *in_EAX;
+  CubemapShot cubemapShot;
+  int cubemapSize;
   
   in_EAX[2] = 0x102;
   in_EAX[3] = 0x102;
@@ -108,25 +110,29 @@ LAB_007fe7a3:
 
 // 007FEC40  R_GenerateReflections  (gfx_d3d/r_reflection_probe.cpp:185)
 
-void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uint param_3)
+/* WARNING: Variable defined which should be unmapped: probeIndex */
+
+void __cdecl R_GenerateReflections(char *probeCount,GfxReflectionProbe *param_2,uint param_3)
 
 {
   bool bVar1;
   DiskGfxReflectionProbe *pDVar2;
-  DiskGfxReflectionProbe *pDVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
-  float *pfVar7;
-  char *pcVar8;
+  DiskGfxReflectionProbe *probeCount_00;
+  int iVar3;
+  uint uVar4;
+  uint size;
+  float *pfVar5;
+  char *pcVar6;
   int unaff_ESI;
-  char *pcVar9;
+  char *pcVar7;
   DiskGfxReflectionProbe *unaff_EDI;
-  char *pcVar10;
-  DiskGfxReflectionProbe *pDStack_2c;
-  DiskGfxReflectionProbe *pDStack_28;
+  char *pcVar8;
+  GfxReflectionProbe *probes;
+  uint probeIndex;
+  uint lumpProbeCount;
+  DiskGfxReflectionProbe *probeRawLumpData;
   DiskGfxReflectionProbe *pDStack_24;
-  int iStack_20;
+  uint lumpSize;
   uint uStack_1c;
   DiskGfxReflectionProbe *pDStack_18;
   char *pcStack_14;
@@ -140,58 +146,59 @@ void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uin
                 "You can only generate reflections for BSP version %i, but the BSP is version %i.  You need to recompile the map."
                );
     }
-    pDVar2 = Com_GetBspLump(LUMP_REFLECTION_PROBES,0x406e0,(uint *)&pDStack_28);
+    pDVar2 = Com_GetBspLump(LUMP_REFLECTION_PROBES,0x406e0,(uint *)&probeRawLumpData);
     pDStack_24 = pDVar2;
     if (param_2 == (GfxReflectionProbe *)0x0) {
       Com_SaveLump(LUMP_REFLECTION_PROBES,(void *)0x0,0,COM_SAVE_LUMP_AND_CLOSE);
     }
     else {
-      uVar6 = (int)param_2 * 0x406e0;
-      uStack_1c = uVar6;
-      pDVar3 = malloc(uVar6);
-      pDStack_18 = pDVar3;
-      if (pDVar3 == (DiskGfxReflectionProbe *)0x0) {
+      size = (int)param_2 * 0x406e0;
+      uStack_1c = size;
+      probeCount_00 = malloc(size);
+      pDStack_18 = probeCount_00;
+      if (probeCount_00 == (DiskGfxReflectionProbe *)0x0) {
                     /* WARNING: Subroutine does not return */
         FUN_00699280();
       }
-      Com_Memset(pDVar3,0,uVar6);
-      pDStack_2c = (DiskGfxReflectionProbe *)0x0;
-      if (pDStack_28 != (DiskGfxReflectionProbe *)0x0) {
-        pfVar7 = (float *)(param_1 + 8);
-        iVar5 = (int)pDVar2 - (int)pDVar3;
-        pcVar8 = pDVar3->colorCorrectionFilename;
-        iStack_20 = iVar5;
+      Com_Memset(probeCount_00,0,size);
+      lumpProbeCount = 0;
+      if (probeRawLumpData != (DiskGfxReflectionProbe *)0x0) {
+        pfVar5 = (float *)(probeCount + 8);
+        uVar4 = (int)pDVar2 - (int)probeCount_00;
+        pcVar6 = probeCount_00->colorCorrectionFilename;
+        lumpSize = uVar4;
         do {
-          pcVar9 = pcVar8 + iVar5;
-          pcVar10 = pcVar8;
-          for (iVar4 = 0x10; iVar4 != 0; iVar4 = iVar4 + -1) {
-            *(undefined4 *)pcVar10 = *(undefined4 *)pcVar9;
-            pcVar9 = pcVar9 + 4;
-            pcVar10 = pcVar10 + 4;
+          pcVar7 = pcVar6 + uVar4;
+          pcVar8 = pcVar6;
+          for (iVar3 = 0x10; iVar3 != 0; iVar3 = iVar3 + -1) {
+            *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
+            pcVar7 = pcVar7 + 4;
+            pcVar8 = pcVar8 + 4;
           }
-          ((DiskGfxReflectionProbe *)(pcVar8 + -0x40660))->origin[0] = pfVar7[-2];
-          *(float *)(pcVar8 + -0x4065c) = pfVar7[-1];
-          *(float *)(pcVar8 + -0x40658) = *pfVar7;
+          ((DiskGfxReflectionProbe *)(pcVar6 + -0x40660))->origin[0] = pfVar5[-2];
+          *(float *)(pcVar6 + -0x4065c) = pfVar5[-1];
+          *(float *)(pcVar6 + -0x40658) = *pfVar5;
           if ((r_reflectionProbeRegenerateAll->current).enabled == false) {
             bVar1 = R_CopyReflectionsFromLumpData(pDStack_24,unaff_EDI,unaff_ESI);
-            *(bool *)((int)&pcStack_14 + (int)pDStack_2c) = !bVar1;
-            iVar5 = iStack_20;
+            *(bool *)((int)&pcStack_14 + lumpProbeCount) = !bVar1;
+            uVar4 = lumpSize;
           }
           else {
-            *(undefined1 *)((int)&pcStack_14 + (int)pDStack_2c) = 1;
+            *(undefined1 *)((int)&pcStack_14 + lumpProbeCount) = 1;
           }
-          pDStack_2c = (DiskGfxReflectionProbe *)((int)pDStack_2c->origin + 1);
-          pfVar7 = pfVar7 + 6;
-          pcVar8 = pcVar8 + 0x406e0;
-          uVar6 = uStack_1c;
-          pDVar3 = pDStack_18;
-        } while (pDStack_2c < pDStack_28);
+          lumpProbeCount = lumpProbeCount + 1;
+          pfVar5 = pfVar5 + 6;
+          pcVar6 = pcVar6 + 0x406e0;
+          size = uStack_1c;
+          probeCount_00 = pDStack_18;
+        } while (lumpProbeCount < probeRawLumpData);
       }
-      R_GenerateReflectionRawDataAll(pDStack_28,(int)&pcStack_14,(bool *)unaff_EDI);
-      iVar5 = 0x29;
-      Com_SaveLump(LUMP_REFLECTION_PROBES,pDVar3,uVar6,COM_SAVE_LUMP_AND_CLOSE);
-      R_GenerateReflectionImages((GfxReflectionProbe *)param_1,pDVar3,(int)param_2,0,iVar5);
-      free(pDVar3);
+      R_GenerateReflectionRawDataAll(probeRawLumpData,(int)&pcStack_14,(bool *)unaff_EDI);
+      iVar3 = 0x29;
+      Com_SaveLump(LUMP_REFLECTION_PROBES,probeCount_00,size,COM_SAVE_LUMP_AND_CLOSE);
+      R_GenerateReflectionImages
+                ((GfxReflectionProbe *)probeCount,probeCount_00,(int)param_2,0,iVar3);
+      free(probeCount_00);
     }
     if (r_reflectionProbeGenerate != (dvar_s *)0x0) {
       if ((((r_reflectionProbeGenerate->current).enabled != false) &&
@@ -218,6 +225,8 @@ void __cdecl R_GenerateReflections(char *param_1,GfxReflectionProbe *param_2,uin
 
 // 007FF4C0  R_GenerateDummyReflectionImages  (gfx_d3d/r_reflection_probe.cpp:613)
 
+/* WARNING: Variable defined which should be unmapped: probeCount */
+
 void __cdecl
 R_GenerateDummyReflectionImages
           (GfxReflectionProbe *param_1,DiskGfxDummyReflectionProbe *param_2,int param_3,int param_4,
@@ -230,6 +239,8 @@ R_GenerateDummyReflectionImages
   int iVar3;
   float *pfVar4;
   int unaff_EDI;
+  GfxReflectionProbe *probes;
+  int probeCount;
   
   if (s_numColorCorrectionDataEntries == 0) {
     R_LoadColorCorrectionData();
@@ -257,85 +268,90 @@ R_GenerateDummyReflectionImages
 
 // 007FF530  R_GenerateReflectionImages  (gfx_d3d/r_reflection_probe.cpp:643)
 
+/* WARNING: Variable defined which should be unmapped: pixels */
+
 void __cdecl
 R_GenerateReflectionImages
-          (GfxReflectionProbe *param_1,DiskGfxReflectionProbe *param_2,int param_3,int param_4,
-          int param_5)
+          (GfxReflectionProbe *probeRawData,DiskGfxReflectionProbe *probeCount,int probeBaseIndex,
+          int param_4,int param_5)
 
 {
-  uchar *puVar1;
-  GfxReflectionProbeVolumeData *pGVar2;
-  GfxImage *pGVar3;
-  float *pfVar4;
-  uint uVar5;
-  float *pfVar6;
+  uchar *dst;
+  GfxReflectionProbeVolumeData *pGVar1;
+  GfxImage *pGVar2;
+  float *pfVar3;
+  uint uVar4;
+  float *pfVar5;
+  int iVar6;
   int iVar7;
-  int iVar8;
   int unaff_EDI;
-  uint *puVar9;
+  uint *puVar8;
+  GfxReflectionProbe *probes;
+  uchar *pixels;
+  int probeHighMipSize;
   
   if ((s_numColorCorrectionDataEntries == 0) &&
      (R_LoadColorCorrectionData(), s_numColorCorrectionDataEntries == 0)) {
     R_CreateDefaultColorCorrectionEntry();
   }
-  puVar1 = (uchar *)_Hunk_AllocateTempMemoryInternal();
-  iVar8 = 0;
-  if (0 < param_3) {
-    puVar9 = &param_2->probeVolumeCount;
-    pfVar6 = param_1->origin + 2;
+  dst = (uchar *)_Hunk_AllocateTempMemoryInternal();
+  iVar7 = 0;
+  if (0 < probeBaseIndex) {
+    puVar8 = &probeCount->probeVolumeCount;
+    pfVar5 = probeRawData->origin + 2;
     do {
-      ((GfxReflectionProbe *)(pfVar6 + -2))->origin[0] =
-           ((DiskGfxReflectionProbe *)(puVar9 + -0x10197))->origin[0];
-      pfVar6[-1] = (float)puVar9[-0x10196];
-      *pfVar6 = (float)puVar9[-0x10195];
-      uVar5 = *puVar9;
-      pfVar6[3] = (float)uVar5;
-      if (uVar5 != 0) {
-        pGVar2 = Hunk_AllocAlignInternal(*puVar9 * 0x60,unaff_EDI);
-        uVar5 = 0;
-        pfVar6[2] = (float)pGVar2;
-        if (*puVar9 != 0) {
-          pfVar4 = (float *)(puVar9 + -0x17a);
-          iVar7 = 0;
+      ((GfxReflectionProbe *)(pfVar5 + -2))->origin[0] =
+           ((DiskGfxReflectionProbe *)(puVar8 + -0x10197))->origin[0];
+      pfVar5[-1] = (float)puVar8[-0x10196];
+      *pfVar5 = (float)puVar8[-0x10195];
+      uVar4 = *puVar8;
+      pfVar5[3] = (float)uVar4;
+      if (uVar4 != 0) {
+        pGVar1 = Hunk_AllocAlignInternal(*puVar8 * 0x60,unaff_EDI);
+        uVar4 = 0;
+        pfVar5[2] = (float)pGVar1;
+        if (*puVar8 != 0) {
+          pfVar3 = (float *)(puVar8 + -0x17a);
+          iVar6 = 0;
           do {
-            pGVar2 = (GfxReflectionProbeVolumeData *)pfVar6[2];
-            *(float *)((int)pGVar2->volumePlanes[0] + iVar7) = pfVar4[-6];
-            uVar5 = uVar5 + 1;
-            *(float *)((int)pGVar2->volumePlanes[0] + iVar7 + 4) = pfVar4[-5];
-            *(float *)((int)pGVar2->volumePlanes[0] + iVar7 + 8) = pfVar4[-4];
-            *(float *)((int)pGVar2->volumePlanes[0] + iVar7 + 0xc) = pfVar4[-3];
-            *(float *)((int)pGVar2->volumePlanes[1] + iVar7) = (*(float (*) [4])(pfVar4 + -2))[0];
-            *(float *)((int)pGVar2->volumePlanes[1] + iVar7 + 4) = pfVar4[-1];
-            *(float *)((int)pGVar2->volumePlanes[1] + iVar7 + 8) = *pfVar4;
-            *(float *)((int)pGVar2->volumePlanes[1] + iVar7 + 0xc) = pfVar4[1];
-            *(float *)((int)pGVar2->volumePlanes[2] + iVar7) = pfVar4[2];
-            *(float *)((int)pGVar2->volumePlanes[2] + iVar7 + 4) = pfVar4[3];
-            *(float *)((int)pGVar2->volumePlanes[2] + iVar7 + 8) = pfVar4[4];
-            *(float *)((int)pGVar2->volumePlanes[2] + iVar7 + 0xc) = pfVar4[5];
-            *(float *)((int)pGVar2->volumePlanes[3] + iVar7) = pfVar4[6];
-            *(float *)((int)pGVar2->volumePlanes[3] + iVar7 + 4) = pfVar4[7];
-            *(float *)((int)pGVar2->volumePlanes[3] + iVar7 + 8) = pfVar4[8];
-            *(float *)((int)pGVar2->volumePlanes[3] + iVar7 + 0xc) = pfVar4[9];
-            *(float *)((int)pGVar2->volumePlanes[4] + iVar7) = pfVar4[10];
-            *(float *)((int)pGVar2->volumePlanes[4] + iVar7 + 4) = pfVar4[0xb];
-            *(float *)((int)pGVar2->volumePlanes[4] + iVar7 + 8) = pfVar4[0xc];
-            *(float *)((int)pGVar2->volumePlanes[4] + iVar7 + 0xc) = pfVar4[0xd];
-            *(float *)((int)pGVar2->volumePlanes[5] + iVar7) = pfVar4[0xe];
-            *(float *)((int)pGVar2->volumePlanes[5] + iVar7 + 4) = pfVar4[0xf];
-            *(float *)((int)pGVar2->volumePlanes[5] + iVar7 + 8) = pfVar4[0x10];
-            *(float *)((int)pGVar2->volumePlanes[5] + iVar7 + 0xc) = pfVar4[0x11];
-            pfVar4 = pfVar4 + 0x18;
-            iVar7 = iVar7 + 0x60;
-          } while (uVar5 < *puVar9);
+            pGVar1 = (GfxReflectionProbeVolumeData *)pfVar5[2];
+            *(float *)((int)pGVar1->volumePlanes[0] + iVar6) = pfVar3[-6];
+            uVar4 = uVar4 + 1;
+            *(float *)((int)pGVar1->volumePlanes[0] + iVar6 + 4) = pfVar3[-5];
+            *(float *)((int)pGVar1->volumePlanes[0] + iVar6 + 8) = pfVar3[-4];
+            *(float *)((int)pGVar1->volumePlanes[0] + iVar6 + 0xc) = pfVar3[-3];
+            *(float *)((int)pGVar1->volumePlanes[1] + iVar6) = (*(float (*) [4])(pfVar3 + -2))[0];
+            *(float *)((int)pGVar1->volumePlanes[1] + iVar6 + 4) = pfVar3[-1];
+            *(float *)((int)pGVar1->volumePlanes[1] + iVar6 + 8) = *pfVar3;
+            *(float *)((int)pGVar1->volumePlanes[1] + iVar6 + 0xc) = pfVar3[1];
+            *(float *)((int)pGVar1->volumePlanes[2] + iVar6) = pfVar3[2];
+            *(float *)((int)pGVar1->volumePlanes[2] + iVar6 + 4) = pfVar3[3];
+            *(float *)((int)pGVar1->volumePlanes[2] + iVar6 + 8) = pfVar3[4];
+            *(float *)((int)pGVar1->volumePlanes[2] + iVar6 + 0xc) = pfVar3[5];
+            *(float *)((int)pGVar1->volumePlanes[3] + iVar6) = pfVar3[6];
+            *(float *)((int)pGVar1->volumePlanes[3] + iVar6 + 4) = pfVar3[7];
+            *(float *)((int)pGVar1->volumePlanes[3] + iVar6 + 8) = pfVar3[8];
+            *(float *)((int)pGVar1->volumePlanes[3] + iVar6 + 0xc) = pfVar3[9];
+            *(float *)((int)pGVar1->volumePlanes[4] + iVar6) = pfVar3[10];
+            *(float *)((int)pGVar1->volumePlanes[4] + iVar6 + 4) = pfVar3[0xb];
+            *(float *)((int)pGVar1->volumePlanes[4] + iVar6 + 8) = pfVar3[0xc];
+            *(float *)((int)pGVar1->volumePlanes[4] + iVar6 + 0xc) = pfVar3[0xd];
+            *(float *)((int)pGVar1->volumePlanes[5] + iVar6) = pfVar3[0xe];
+            *(float *)((int)pGVar1->volumePlanes[5] + iVar6 + 4) = pfVar3[0xf];
+            *(float *)((int)pGVar1->volumePlanes[5] + iVar6 + 8) = pfVar3[0x10];
+            *(float *)((int)pGVar1->volumePlanes[5] + iVar6 + 0xc) = pfVar3[0x11];
+            pfVar3 = pfVar3 + 0x18;
+            iVar6 = iVar6 + 0x60;
+          } while (uVar4 < *puVar8);
         }
       }
-      memcpy(puVar1,(uchar *)(puVar9 + -0x10194),0x40050);
-      pGVar3 = R_GenerateReflectionImageFromRawData((uchar *)(iVar8 + param_4),0x100,unaff_EDI);
-      pfVar6[1] = (float)pGVar3;
-      iVar8 = iVar8 + 1;
-      puVar9 = puVar9 + 0x101b8;
-      pfVar6 = pfVar6 + 6;
-    } while (iVar8 < param_3);
+      memcpy(dst,(uchar *)(puVar8 + -0x10194),0x40050);
+      pGVar2 = R_GenerateReflectionImageFromRawData((uchar *)(iVar7 + param_4),0x100,unaff_EDI);
+      pfVar5[1] = (float)pGVar2;
+      iVar7 = iVar7 + 1;
+      puVar8 = puVar8 + 0x101b8;
+      pfVar5 = pfVar5 + 6;
+    } while (iVar7 < probeBaseIndex);
   }
   _Hunk_FreeTempMemory();
   return;

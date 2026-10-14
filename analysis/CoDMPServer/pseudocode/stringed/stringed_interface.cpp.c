@@ -2,26 +2,27 @@
 
 // 0072A9A0  SE_LoadFileData  (stringed/stringed_interface.cpp:20)
 
-uchar * __cdecl SE_LoadFileData(char *param_1)
+uchar * __cdecl SE_LoadFileData(char *psFileName)
 
 {
   int iVar1;
-  void *local_8;
+  int len;
+  uchar *pvLoadedData;
   
-  iVar1 = FS_ReadFile(param_1,&local_8);
-  return (uchar *)((iVar1 < 1) - 1 & (uint)local_8);
+  iVar1 = FS_ReadFile(psFileName,&pvLoadedData);
+  return (uchar *)((iVar1 < 1) - 1 & (uint)pvLoadedData);
 }
 
 
 // 0072A9D0  SE_FreeFileDataAfterLoad  (stringed/stringed_interface.cpp:32)
 
-void __cdecl SE_FreeFileDataAfterLoad(uchar *param_1)
+void __cdecl SE_FreeFileDataAfterLoad(uchar *psLoadedFile)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (uchar *)0x0) {
+  if (psLoadedFile == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_interface.cpp",
                              0x21,0,"%s");
     if (!bVar2) {
@@ -30,7 +31,7 @@ void __cdecl SE_FreeFileDataAfterLoad(uchar *param_1)
       return;
     }
   }
-  FS_FreeFile(param_1);
+  FS_FreeFile(psLoadedFile);
   return;
 }
 
@@ -40,47 +41,47 @@ void __cdecl SE_FreeFileDataAfterLoad(uchar *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-SE_R_ListFiles(char *param_1,char *param_2,
-              basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *param_3
-              )
+SE_R_ListFiles(char *psExtension,char *psDir,
+              basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
+              *strResults)
 
 {
   char cVar1;
   char *local_e4;
-  char local_9c;
+  char sFilename;
   undefined1 auStack_9b [63];
-  char local_5c [64];
+  char sDirName [64];
   uint local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  char **local_c;
-  char **local_8;
+  int numdirs;
+  int numSysFiles;
+  int i;
+  char **sysFiles;
+  char **dirFiles;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = FS_ListFiles(param_2,"/",FS_LIST_PURE_ONLY,&local_18,0xb);
-  for (local_10 = 0; local_10 < local_18; local_10 = local_10 + 1) {
-    if ((*local_8[local_10] != '\0') && (*local_8[local_10] != '.')) {
-      sprintf(local_5c,"%s/%s");
-      SE_R_ListFiles(param_1,local_5c,param_3);
+  dirFiles = FS_ListFiles(psDir,"/",FS_LIST_PURE_ONLY,&numdirs,0xb);
+  for (i = 0; i < numdirs; i = i + 1) {
+    if ((*dirFiles[i] != '\0') && (*dirFiles[i] != '.')) {
+      sprintf(sDirName,"%s/%s");
+      SE_R_ListFiles(psExtension,sDirName,strResults);
     }
   }
-  local_c = FS_ListFiles(param_2,param_1,FS_LIST_PURE_ONLY,&local_14,0xb);
-  for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {
-    sprintf(&local_9c,"%s/%s");
-    local_e4 = &local_9c;
+  sysFiles = FS_ListFiles(psDir,psExtension,FS_LIST_PURE_ONLY,&numSysFiles,0xb);
+  for (i = 0; i < numSysFiles; i = i + 1) {
+    sprintf(&sFilename,"%s/%s");
+    local_e4 = &sFilename;
     do {
       cVar1 = *local_e4;
       local_e4 = local_e4 + 1;
     } while (cVar1 != '\0');
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::append
-              (param_3,&local_9c,(int)local_e4 - (int)auStack_9b);
+              (strResults,&sFilename,(int)local_e4 - (int)auStack_9b);
     std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::append
-              (param_3,1,';');
+              (strResults,1,';');
     giFilesFound = giFilesFound + 1;
   }
-  Sys_FreeFileList(local_c);
-  Sys_FreeFileList(local_8);
+  Sys_FreeFileList(sysFiles);
+  Sys_FreeFileList(dirFiles);
   return;
 }
 
@@ -88,9 +89,9 @@ SE_R_ListFiles(char *param_1,char *param_2,
 // 0072AA10  SE_BuildFileList  (stringed/stringed_interface.cpp:80)
 
 int __cdecl
-SE_BuildFileList(char *param_1,
+SE_BuildFileList(char *psStartDir,
                 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>
-                *param_2)
+                *strResults)
 
 {
   char *pcVar1;
@@ -104,8 +105,8 @@ SE_BuildFileList(char *param_1,
     pcVar1 = local_48 + 1;
   } while (*local_48 != '\0');
   std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::assign
-            (param_2,"",(uint)(local_48 + -0xc60bf9));
-  SE_R_ListFiles("str",param_1,param_2);
+            (strResults,"",(uint)(local_48 + -0xc60bf9));
+  SE_R_ListFiles("str",psStartDir,strResults);
   return giFilesFound;
 }
 
@@ -115,8 +116,8 @@ SE_BuildFileList(char *param_1,
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::append
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *param_1,
-          uint param_2,uint param_3)
+          basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *_Right,
+          uint _Roff,uint _Count)
 
 {
   bool bVar1;
@@ -124,25 +125,26 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   _Bxty *local_44;
   _Bxty *local_40;
   _Bxty *local_3c;
+  uint _Num;
   
-  if (param_1->_Mysize < param_2) {
+  if (_Right->_Mysize < _Roff) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  uVar2 = param_1->_Mysize - param_2;
-  if (uVar2 < param_3) {
-    param_3 = uVar2;
+  uVar2 = _Right->_Mysize - _Roff;
+  if (uVar2 < _Count) {
+    _Count = uVar2;
   }
-  if ((param_3 < -this->_Mysize - 1) && (this->_Mysize <= this->_Mysize + param_3)) {
-    if (param_3 != 0) {
-      uVar2 = this->_Mysize + param_3;
+  if ((_Count < -this->_Mysize - 1) && (this->_Mysize <= this->_Mysize + _Count)) {
+    if (_Count != 0) {
+      uVar2 = this->_Mysize + _Count;
       bVar1 = _Grow(this,uVar2,false);
       if (bVar1) {
-        if (param_1->_Myres < 0x10) {
-          local_3c = &param_1->_Bx;
+        if (_Right->_Myres < 0x10) {
+          local_3c = &_Right->_Bx;
         }
         else {
-          local_3c = (_Bxty *)(param_1->_Bx)._Ptr;
+          local_3c = (_Bxty *)(_Right->_Bx)._Ptr;
         }
         if (this->_Myres < 0x10) {
           local_40 = &this->_Bx;
@@ -151,7 +153,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
           local_40 = (_Bxty *)(this->_Bx)._Ptr;
         }
         memcpy_s((char *)((int)local_40 + this->_Mysize),this->_Myres - this->_Mysize,
-                 (char *)((int)local_3c + param_2),param_3);
+                 (char *)((int)local_3c + _Roff),_Count);
         this->_Mysize = uVar2;
         if (this->_Myres < 0x10) {
           local_44 = &this->_Bx;
@@ -174,18 +176,18 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::append
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          char *param_1,uint param_2)
+          char *_Ptr,uint _Count)
 
 {
   bool bVar1;
-  uint uVar2;
+  uint _Newsize;
   _Bxty *local_54;
   _Bxty *local_50;
   _Bxty *local_4c;
+  uint _Num;
   
   bVar1 = basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Inside
-                    ((basic_string<char,std::char_traits<char>,std::allocator<char>_> *)this,param_1
-                    );
+                    ((basic_string<char,std::char_traits<char>,std::allocator<char>_> *)this,_Ptr);
   if (bVar1) {
     if (this->_Myres < 0x10) {
       local_4c = &this->_Bx;
@@ -193,16 +195,16 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
     else {
       local_4c = (_Bxty *)(this->_Bx)._Ptr;
     }
-    this = append(this,this,(int)param_1 - (int)local_4c,param_2);
+    this = append(this,this,(int)_Ptr - (int)local_4c,_Count);
   }
   else {
-    if ((-this->_Mysize - 1 <= param_2) || (this->_Mysize + param_2 < this->_Mysize)) {
+    if ((-this->_Mysize - 1 <= _Count) || (this->_Mysize + _Count < this->_Mysize)) {
                     /* WARNING: Subroutine does not return */
       _String_base::_Xlen();
     }
-    if (param_2 != 0) {
-      uVar2 = this->_Mysize + param_2;
-      bVar1 = _Grow(this,uVar2,false);
+    if (_Count != 0) {
+      _Newsize = this->_Mysize + _Count;
+      bVar1 = _Grow(this,_Newsize,false);
       if (bVar1) {
         if (this->_Myres < 0x10) {
           local_50 = &this->_Bx;
@@ -210,16 +212,15 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
         else {
           local_50 = (_Bxty *)(this->_Bx)._Ptr;
         }
-        memcpy_s((char *)((int)local_50 + this->_Mysize),this->_Myres - this->_Mysize,param_1,
-                 param_2);
-        this->_Mysize = uVar2;
+        memcpy_s((char *)((int)local_50 + this->_Mysize),this->_Myres - this->_Mysize,_Ptr,_Count);
+        this->_Mysize = _Newsize;
         if (this->_Myres < 0x10) {
           local_54 = &this->_Bx;
         }
         else {
           local_54 = (_Bxty *)(this->_Bx)._Ptr;
         }
-        local_54->_Buf[uVar2] = '\0';
+        local_54->_Buf[_Newsize] = '\0';
       }
     }
   }
@@ -232,30 +233,31 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::append
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,char param_2)
+          uint _Count,char _Ch)
 
 {
   bool bVar1;
-  uint uVar2;
+  uint _Newsize;
   _Bxty *local_28;
+  uint _Num;
   
-  if (-this->_Mysize - 1 <= param_1) {
+  if (-this->_Mysize - 1 <= _Count) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xlen();
   }
-  if (param_1 != 0) {
-    uVar2 = this->_Mysize + param_1;
-    bVar1 = _Grow(this,uVar2,false);
+  if (_Count != 0) {
+    _Newsize = this->_Mysize + _Count;
+    bVar1 = _Grow(this,_Newsize,false);
     if (bVar1) {
-      _Chassign(this,this->_Mysize,param_1,param_2);
-      this->_Mysize = uVar2;
+      _Chassign(this,this->_Mysize,_Count,_Ch);
+      this->_Mysize = _Newsize;
       if (this->_Myres < 0x10) {
         local_28 = &this->_Bx;
       }
       else {
         local_28 = (_Bxty *)(this->_Bx)._Ptr;
       }
-      local_28->_Buf[uVar2] = '\0';
+      local_28->_Buf[_Newsize] = '\0';
     }
   }
   return this;
@@ -267,20 +269,20 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
 void __thiscall
 std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_>::_Chassign
           (basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this,
-          uint param_1,uint param_2,char param_3)
+          uint _Off,uint _Count,char _Ch)
 
 {
   _Bxty *local_14;
   _Bxty *local_10;
   
-  if (param_2 == 1) {
+  if (_Count == 1) {
     if (this->_Myres < 0x10) {
       local_10 = &this->_Bx;
     }
     else {
       local_10 = (_Bxty *)(this->_Bx)._Ptr;
     }
-    local_10->_Buf[param_1] = param_3;
+    local_10->_Buf[_Off] = _Ch;
   }
   else {
     if (this->_Myres < 0x10) {
@@ -289,7 +291,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
     else {
       local_14 = (_Bxty *)(this->_Bx)._Ptr;
     }
-    memset((uchar *)(local_14->_Buf + param_1),param_3,param_2);
+    memset((uchar *)(local_14->_Buf + _Off),_Ch,_Count);
   }
   return;
 }

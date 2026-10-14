@@ -7,22 +7,23 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_GrenadeIndicator_GetPlayerPosition(cg_s *param_1,float *param_2)
+void __cdecl CG_GrenadeIndicator_GetPlayerPosition(cg_s *cgameGlob,float *playerOrigin)
 
 {
   float *pfVar1;
   
-  *param_2 = (param_1->predictedPlayerState).origin[0];
-  param_2[1] = (param_1->predictedPlayerState).origin[1];
-  param_2[2] = (param_1->predictedPlayerState).origin[2];
-  if ((((param_1->predictedPlayerState).eFlags & 0x4000U) != 0) &&
-     (((param_1->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) {
-    pfVar1 = CG_GetEntityOrigin(param_1->localClientNum,
-                                *(uint *)((int)(param_1->bgs).clientinfo +
-                                         (uint)(param_1->nextSnap->ps).clientNum * 0x5c8 + 0x55c));
-    *param_2 = *pfVar1;
-    param_2[1] = pfVar1[1];
-    param_2[2] = pfVar1[2];
+  *playerOrigin = (cgameGlob->predictedPlayerState).origin[0];
+  playerOrigin[1] = (cgameGlob->predictedPlayerState).origin[1];
+  playerOrigin[2] = (cgameGlob->predictedPlayerState).origin[2];
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) != 0) &&
+     (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) {
+    pfVar1 = CG_GetEntityOrigin(cgameGlob->localClientNum,
+                                *(uint *)((int)(cgameGlob->bgs).clientinfo +
+                                         (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x55c))
+    ;
+    *playerOrigin = *pfVar1;
+    playerOrigin[1] = pfVar1[1];
+    playerOrigin[2] = pfVar1[2];
   }
   return;
 }
@@ -35,32 +36,33 @@ void __cdecl CG_GrenadeIndicator_GetPlayerPosition(cg_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawFlashDamage(cg_s *param_1)
+void __cdecl CG_DrawFlashDamage(cg_s *cgameGlob)
 
 {
   bool bVar1;
-  int local_28;
-  float local_24;
-  float local_20;
-  int local_1c;
-  float local_18;
-  float local_14 [4];
+  int displayHeight;
+  float sidebuffer;
+  float displayAspect;
+  int displayWidth;
+  float redFlash;
+  float col [4];
   
-  if ((((param_1->nextSnap != (snapshot_s *)0x0) && (param_1->cameraMode != 1)) &&
+  if ((((cgameGlob->nextSnap != (snapshot_s *)0x0) && (cgameGlob->cameraMode != 1)) &&
       (bVar1 = Demo_IsThirdPersonCamera(), !bVar1)) &&
-     ((bVar1 = Demo_IsMovieCamera(), !bVar1 && (param_1->time < param_1->v_dmg_time)))) {
-    local_18 = ABS(((float)(param_1->v_dmg_time - param_1->time) * param_1->v_dmg_pitch) / 500.0);
-    if (5.0 < local_18) {
-      local_18 = 5.0;
+     ((bVar1 = Demo_IsMovieCamera(), !bVar1 && (cgameGlob->time < cgameGlob->v_dmg_time)))) {
+    redFlash = ABS(((float)(cgameGlob->v_dmg_time - cgameGlob->time) * cgameGlob->v_dmg_pitch) /
+                   500.0);
+    if (5.0 < redFlash) {
+      redFlash = 5.0;
     }
-    local_14[0] = 0.2;
-    local_14[1] = 0.0;
-    local_14[2] = 0.0;
-    local_14[3] = (local_18 / 5.0) * 0.7;
-    local_24 = 10.0;
-    CL_GetScreenDimensions(&local_1c,&local_28,&local_20);
-    UI_FillRectPhysical(-local_24,-local_24,(float)local_1c + local_24,(float)local_28 + local_24,
-                        local_14);
+    col[0] = 0.2;
+    col[1] = 0.0;
+    col[2] = 0.0;
+    col[3] = (redFlash / 5.0) * 0.7;
+    sidebuffer = 10.0;
+    CL_GetScreenDimensions(&displayWidth,&displayHeight,&displayAspect);
+    UI_FillRectPhysical(-sidebuffer,-sidebuffer,(float)displayWidth + sidebuffer,
+                        (float)displayHeight + sidebuffer,col);
   }
   return;
 }
@@ -73,16 +75,18 @@ void __cdecl CG_DrawFlashDamage(cg_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawDamageDirectionIndicators(int param_1)
+void __cdecl CG_DrawDamageDirectionIndicators(int localClientNum)
 
 {
   float fVar1;
   bool bVar2;
   int iVar3;
-  ScreenPlacement *pSVar4;
-  float fVar5;
+  ScreenPlacement *scrPlace_00;
+  float fVar4;
   float local_84;
-  float local_5c;
+  int t;
+  ScreenPlacement *scrPlace;
+  float xy;
   float local_58;
   float local_54;
   float local_50;
@@ -90,75 +94,75 @@ void __cdecl CG_DrawDamageDirectionIndicators(int param_1)
   float local_48;
   float local_44;
   float local_40;
-  cg_s *local_3c;
-  int local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  int local_20;
-  float local_1c;
-  float local_18;
+  cg_s *cgameGlob;
+  int slot;
+  float halfWidth;
+  float yaw;
+  float height;
+  float angle;
+  float radius;
+  int maxTime;
+  float centerY;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float centerX;
   
-  local_3c = CG_GetLocalClientGlobals(param_1);
-  if (((((local_3c->nextSnap != (snapshot_s *)0x0) && (local_3c->cameraMode != 1)) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (((((cgameGlob->nextSnap != (snapshot_s *)0x0) && (cgameGlob->cameraMode != 1)) &&
        (bVar2 = Demo_IsThirdPersonCamera(), !bVar2)) &&
-      ((bVar2 = Demo_IsMovieCamera(), !bVar2 && (bVar2 = CG_Flashbanged(param_1), !bVar2)))) &&
-     (((local_3c->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
-    iVar3 = param_1 * 0x78;
-    pSVar4 = (ScreenPlacement *)(&scrPlaceView + iVar3);
-    bVar2 = CG_GetWeapReticleZoom(local_3c,&local_28);
+      ((bVar2 = Demo_IsMovieCamera(), !bVar2 && (bVar2 = CG_Flashbanged(localClientNum), !bVar2))))
+     && (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
+    iVar3 = localClientNum * 0x78;
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + iVar3);
+    bVar2 = CG_GetWeapReticleZoom(cgameGlob,&angle);
     if (bVar2) {
       if ((cg_hudDamageIconInScope->current).enabled == false) {
         return;
       }
-      CG_CalcCrosshairPosition(local_3c,&local_8,&local_1c);
-      local_8 = ScrPlace_ApplyX(pSVar4,local_8,2);
-      local_1c = ScrPlace_ApplyY(pSVar4,local_1c,2);
+      CG_CalcCrosshairPosition(cgameGlob,&centerX,&centerY);
+      centerX = ScrPlace_ApplyX(scrPlace_00,centerX,2);
+      centerY = ScrPlace_ApplyY(scrPlace_00,centerY,2);
     }
     else {
-      local_8 = ScrPlace_ApplyX(pSVar4,0.0,2);
-      local_1c = ScrPlace_ApplyY(pSVar4,0.0,2);
+      centerX = ScrPlace_ApplyX(scrPlace_00,0.0,2);
+      centerY = ScrPlace_ApplyY(scrPlace_00,0.0,2);
     }
     fVar1 = (cg_hudDamageIconWidth->current).value;
-    fVar5 = ScrPlace_HiResGetScale();
-    local_34 = fVar5 * fVar1 * pSVar4->scaleVirtualToReal[0] * 0.5;
+    fVar4 = ScrPlace_HiResGetScale();
+    halfWidth = fVar4 * fVar1 * scrPlace_00->scaleVirtualToReal[0] * 0.5;
     fVar1 = (cg_hudDamageIconHeight->current).value;
-    fVar5 = ScrPlace_HiResGetScale();
-    local_2c = fVar5 * fVar1 * *(float *)(&DAT_02d9e684 + iVar3);
+    fVar4 = ScrPlace_HiResGetScale();
+    height = fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + iVar3);
     fVar1 = (cg_hudDamageIconOffset->current).value;
-    fVar5 = ScrPlace_HiResGetScale();
-    local_24 = fVar5 * fVar1 * *(float *)(&DAT_02d9e684 + iVar3);
-    local_5c = local_34;
-    local_58 = local_24 + local_2c;
-    local_54 = -local_34;
-    local_50 = local_24 + local_2c;
-    local_4c = -local_34;
-    local_44 = local_34;
-    local_18 = 1.0;
+    fVar4 = ScrPlace_HiResGetScale();
+    radius = fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + iVar3);
+    xy = halfWidth;
+    local_58 = radius + height;
+    local_54 = -halfWidth;
+    local_50 = radius + height;
+    local_4c = -halfWidth;
+    local_44 = halfWidth;
+    color = 1.0;
     local_14 = 1.0;
     local_10 = 1.0;
     local_c = 1.0;
-    local_48 = local_24;
-    local_40 = local_24;
-    for (local_38 = 0; local_38 < 8; local_38 = local_38 + 1) {
-      local_20 = local_3c->viewDamage[local_38].duration;
-      iVar3 = local_3c->time - local_3c->viewDamage[local_38].time;
-      if ((0 < iVar3) && (iVar3 < local_20)) {
-        local_30 = vectoyaw((local_3c->refdef).viewaxis[0]);
-        local_28 = local_30 - local_3c->viewDamage[local_38].yaw;
-        local_84 = 2.0 - ((float)iVar3 * 2.0) / (float)local_20;
+    local_48 = radius;
+    local_40 = radius;
+    for (slot = 0; slot < 8; slot = slot + 1) {
+      maxTime = cgameGlob->viewDamage[slot].duration;
+      iVar3 = cgameGlob->time - cgameGlob->viewDamage[slot].time;
+      if ((0 < iVar3) && (iVar3 < maxTime)) {
+        yaw = vectoyaw((cgameGlob->refdef).viewaxis[0]);
+        angle = yaw - cgameGlob->viewDamage[slot].yaw;
+        local_84 = 2.0 - ((float)iVar3 * 2.0) / (float)maxTime;
         if (0.0 <= local_84 - 1.0) {
           local_84 = 1.0;
         }
         local_c = local_84;
         CG_DrawRotatedQuadPic
-                  (pSVar4,local_8,local_1c,(float (*) [2])&local_5c,local_28,&local_18,
+                  (scrPlace_00,centerX,centerY,(float (*) [2])&xy,angle,&color,
                    cgMedia.damageMaterial);
       }
     }
@@ -176,7 +180,8 @@ void __cdecl CG_DrawDamageDirectionIndicators(int param_1)
 
 void __cdecl
 CG_DrawWarningPointer
-          (int param_1,float param_2,float param_3,float *param_4,float *param_5,float param_6)
+          (int localClientNum,float centerX,float centerY,float *grenadeOffset,float *color,
+          float radiusOffset)
 
 {
   float fVar1;
@@ -186,16 +191,24 @@ CG_DrawWarningPointer
   float10 fVar5;
   cg_s *pcVar6;
   int iVar7;
-  ScreenPlacement *pSVar8;
-  float10 fVar9;
+  ScreenPlacement *scrPlace_00;
+  float10 fVar8;
+  float fVar9;
   float fVar10;
   float fVar11;
   float fVar12;
   float fVar13;
   float fVar14;
   float fVar15;
-  float fVar16;
-  float local_24;
+  ScreenPlacement *scrPlace;
+  float radiusScale;
+  cg_s *cgameGlob;
+  float width;
+  float height;
+  float yaw;
+  float sinYaw;
+  float cosYaw;
+  float grenade_vertices;
   float local_20;
   float local_1c;
   float local_18;
@@ -204,38 +217,38 @@ CG_DrawWarningPointer
   float local_c;
   float local_8;
   
-  pcVar6 = CG_GetLocalClientGlobals(param_1);
-  iVar7 = param_1 * 0x78;
-  pSVar8 = (ScreenPlacement *)(&scrPlaceView + iVar7);
-  fVar16 = (cg_hudGrenadePointerWidth->current).value;
+  pcVar6 = CG_GetLocalClientGlobals(localClientNum);
+  iVar7 = localClientNum * 0x78;
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + iVar7);
+  fVar15 = (cg_hudGrenadePointerWidth->current).value;
   fVar1 = (cg_hudGrenadePointerHeight->current).value;
-  fVar10 = (cg_hudGrenadeIconOffset->current).value + param_6;
+  fVar9 = (cg_hudGrenadeIconOffset->current).value + radiusOffset;
   fVar2 = (cg_hudGrenadePointerPivot->current).value;
   fVar3 = (cg_hudGrenadePointerPivot->current).vector[1];
-  fVar11 = vectoyaw(param_4);
-  fVar12 = AngleNormalize360(fVar11 - (pcVar6->predictedPlayerState).viewangles[1]);
-  fVar5 = (float10)fcos((float10)(fVar12 * 0.017453292));
-  fVar9 = (float10)fsin((float10)(fVar12 * 0.017453292));
+  fVar10 = vectoyaw(grenadeOffset);
+  fVar11 = AngleNormalize360(fVar10 - (pcVar6->predictedPlayerState).viewangles[1]);
+  fVar5 = (float10)fcos((float10)(fVar11 * 0.017453292));
+  fVar8 = (float10)fsin((float10)(fVar11 * 0.017453292));
+  fVar12 = ScrPlace_HiResGetScale();
+  fVar10 = scrPlace_00->scaleVirtualToReal[0];
   fVar13 = ScrPlace_HiResGetScale();
-  fVar11 = pSVar8->scaleVirtualToReal[0];
-  fVar14 = ScrPlace_HiResGetScale();
   fVar4 = *(float *)(&DAT_02d9e684 + iVar7);
-  fVar15 = ScrPlace_HiResGetScale();
-  local_24 = fVar15 * -fVar2 * pSVar8->scaleVirtualToReal[0];
-  local_c = local_24;
-  fVar15 = ScrPlace_HiResGetScale();
-  local_1c = fVar15 * (fVar16 - fVar2) * pSVar8->scaleVirtualToReal[0];
+  fVar14 = ScrPlace_HiResGetScale();
+  grenade_vertices = fVar14 * -fVar2 * scrPlace_00->scaleVirtualToReal[0];
+  local_c = grenade_vertices;
+  fVar14 = ScrPlace_HiResGetScale();
+  local_1c = fVar14 * (fVar15 - fVar2) * scrPlace_00->scaleVirtualToReal[0];
   local_14 = local_1c;
-  fVar16 = ScrPlace_HiResGetScale();
-  local_20 = fVar16 * -fVar3 * *(float *)(&DAT_02d9e684 + iVar7);
+  fVar15 = ScrPlace_HiResGetScale();
+  local_20 = fVar15 * -fVar3 * *(float *)(&DAT_02d9e684 + iVar7);
   local_18 = local_20;
-  fVar16 = ScrPlace_HiResGetScale();
-  local_10 = fVar16 * (fVar1 - fVar3) * *(float *)(&DAT_02d9e684 + iVar7);
+  fVar15 = ScrPlace_HiResGetScale();
+  local_10 = fVar15 * (fVar1 - fVar3) * *(float *)(&DAT_02d9e684 + iVar7);
   local_8 = local_10;
   CG_DrawRotatedQuadPic
-            (pSVar8,param_2 - fVar13 * (float)fVar9 * fVar10 * fVar11,
-             param_3 - fVar14 * (float)fVar5 * fVar10 * fVar4,(float (*) [2])&local_24,-fVar12,
-             param_5,cgMedia.grenadePointer);
+            (scrPlace_00,centerX - fVar12 * (float)fVar8 * fVar9 * fVar10,
+             centerY - fVar13 * (float)fVar5 * fVar9 * fVar4,(float (*) [2])&grenade_vertices,
+             -fVar11,color,cgMedia.grenadePointer);
   return;
 }
 
@@ -248,8 +261,8 @@ CG_DrawWarningPointer
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawWarningIcon(int param_1,float param_2,float param_3,float *param_4,float *param_5,
-                  Material *param_6,float param_7)
+CG_DrawWarningIcon(int localClientNum,float centerX,float centerY,float *grenadeOffset,float *color,
+                  Material *material,float radiusOffset)
 
 {
   float fVar1;
@@ -260,7 +273,15 @@ CG_DrawWarningIcon(int param_1,float param_2,float param_3,float *param_4,float 
   float fVar6;
   float fVar7;
   float fVar8;
-  float local_24;
+  ScreenPlacement *scrPlace;
+  float radiusScale;
+  cg_s *cgameGlob;
+  float width;
+  float height;
+  float yaw;
+  float sinYaw;
+  float cosYaw;
+  float grenade_vertices;
   float local_20;
   float local_1c;
   float local_18;
@@ -269,32 +290,33 @@ CG_DrawWarningIcon(int param_1,float param_2,float param_3,float *param_4,float 
   float local_c;
   float local_8;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  iVar4 = param_1 * 0x78;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  iVar4 = localClientNum * 0x78;
   fVar8 = (cg_hudGrenadeIconWidth->current).value;
   fVar1 = (cg_hudGrenadeIconHeight->current).value;
-  fVar6 = (cg_hudGrenadeIconOffset->current).value + param_7;
-  fVar7 = vectoyaw(param_4);
+  fVar6 = (cg_hudGrenadeIconOffset->current).value + radiusOffset;
+  fVar7 = vectoyaw(grenadeOffset);
   fVar7 = AngleNormalize360(fVar7 - (pcVar3->predictedPlayerState).viewangles[1]);
   fVar2 = (float10)fcos((float10)(fVar7 * 0.017453292));
   fVar5 = (float10)fsin((float10)(fVar7 * 0.017453292));
   fVar7 = ScrPlace_HiResGetScale();
-  local_24 = fVar7 * (-(fVar8 * 0.5) - (float)fVar5 * fVar6) * *(float *)(&scrPlaceView + iVar4) +
-             param_2;
-  local_c = local_24;
+  grenade_vertices =
+       fVar7 * (-(fVar8 * 0.5) - (float)fVar5 * fVar6) * *(float *)(&scrPlaceView + iVar4) + centerX
+  ;
+  local_c = grenade_vertices;
   fVar7 = ScrPlace_HiResGetScale();
   local_1c = fVar7 * (fVar8 * 0.5 - (float)fVar5 * fVar6) * *(float *)(&scrPlaceView + iVar4) +
-             param_2;
+             centerX;
   local_14 = local_1c;
   fVar8 = ScrPlace_HiResGetScale();
   local_20 = fVar8 * (-(fVar1 * 0.5) - (float)fVar2 * fVar6) * *(float *)(&DAT_02d9e684 + iVar4) +
-             param_3;
+             centerY;
   local_18 = local_20;
   fVar8 = ScrPlace_HiResGetScale();
   local_10 = fVar8 * (fVar1 * 0.5 - (float)fVar2 * fVar6) * *(float *)(&DAT_02d9e684 + iVar4) +
-             param_3;
+             centerY;
   local_8 = local_10;
-  R_AddCmdDrawQuadPic((float (*) [2])&local_24,param_5,param_6);
+  R_AddCmdDrawQuadPic((float (*) [2])&grenade_vertices,color,material);
   return;
 }
 
@@ -316,7 +338,8 @@ void __cdecl CG_ClearHudGrenades(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_AddHudGrenade_PositionCheck(cg_s *param_1,centity_s *param_2,WeaponDef *param_3)
+float __cdecl
+CG_AddHudGrenade_PositionCheck(cg_s *cgameGlob,centity_s *grenadeEnt,WeaponDef *weapDef)
 
 {
   code *pcVar1;
@@ -329,61 +352,65 @@ float __cdecl CG_AddHudGrenade_PositionCheck(cg_s *param_1,centity_s *param_2,We
   float local_5c;
   float local_54;
   float local_4c;
-  float local_18;
+  float maxOffsetSquared;
+  float height;
+  float maxHeight;
+  float playerOrigin;
   float local_14;
   float local_10;
-  float local_8;
+  float grenadeOffsetSquared;
+  float maxOffset;
   
-  GetCeilingHeight(param_1);
-  if ((param_2 == (centity_s *)0x0) &&
+  GetCeilingHeight(cgameGlob);
+  if ((grenadeEnt == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_indicators.cpp",
                                0x37d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  CG_GrenadeIndicator_GetPlayerPosition(param_1,&local_18);
-  fVar4 = (param_2->pose).origin[0] - local_18;
-  fVar5 = (param_2->pose).origin[1] - local_14;
-  fVar6 = (param_2->pose).origin[2] - local_10;
-  if ((((param_3->projExplosion == WEAPPROJEXP_GRENADE) ||
-       (param_3->projExplosion == WEAPPROJEXP_HEAVY)) ||
-      (param_3->projExplosion == WEAPPROJEXP_FIRE)) || (param_3->bShowIndicator != false)) {
-    bVar2 = IsHardcoreMode(param_1->localClientNum);
+  CG_GrenadeIndicator_GetPlayerPosition(cgameGlob,&playerOrigin);
+  fVar4 = (grenadeEnt->pose).origin[0] - playerOrigin;
+  fVar5 = (grenadeEnt->pose).origin[1] - local_14;
+  fVar6 = (grenadeEnt->pose).origin[2] - local_10;
+  if ((((weapDef->projExplosion == WEAPPROJEXP_GRENADE) ||
+       (weapDef->projExplosion == WEAPPROJEXP_HEAVY)) ||
+      (weapDef->projExplosion == WEAPPROJEXP_FIRE)) || (weapDef->bShowIndicator != false)) {
+    bVar2 = IsHardcoreMode(cgameGlob->localClientNum);
     if (bVar2) {
-      local_8 = 0.0;
+      maxOffset = 0.0;
     }
-    else if (param_3->iIndicatorRadius == 0) {
+    else if (weapDef->iIndicatorRadius == 0) {
       if ((cg_hudGrenadeIconMaxRangeFrag->current).value == 0.0) {
-        local_8 = 0.0;
+        maxOffset = 0.0;
       }
       else {
-        local_54 = (float)param_3->iExplosionRadius;
+        local_54 = (float)weapDef->iExplosionRadius;
         if (0.0 <= (cg_hudGrenadeIconMaxRangeFrag->current).value - local_54) {
           local_54 = (cg_hudGrenadeIconMaxRangeFrag->current).value;
         }
-        local_8 = local_54;
+        maxOffset = local_54;
       }
     }
     else {
-      local_8 = (float)param_3->iIndicatorRadius;
+      maxOffset = (float)weapDef->iIndicatorRadius;
     }
   }
   else {
-    if ((param_3->projExplosion != WEAPPROJEXP_FLASHBANG) &&
+    if ((weapDef->projExplosion != WEAPPROJEXP_FLASHBANG) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_indicators.cpp",
                                  0x395,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    local_8 = (cg_hudGrenadeIconMaxRangeFlash->current).value;
+    maxOffset = (cg_hudGrenadeIconMaxRangeFlash->current).value;
   }
   fVar4 = fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6;
-  if (fVar4 <= local_8 * local_8) {
+  if (fVar4 <= maxOffset * maxOffset) {
     if (0.0 <= fVar6) {
-      if ((param_3->stickiness == WEAPSTICKINESS_ALL) ||
-         (param_3->stickiness == WEAPSTICKINESS_ALL_NO_SENTIENTS)) {
+      if ((weapDef->stickiness == WEAPSTICKINESS_ALL) ||
+         (weapDef->stickiness == WEAPSTICKINESS_ALL_NO_SENTIENTS)) {
         bVar2 = true;
       }
       else {
@@ -391,8 +418,8 @@ float __cdecl CG_AddHudGrenade_PositionCheck(cg_s *param_1,centity_s *param_2,We
       }
       if (!bVar2) {
         fVar5 = (cg_hudGrenadeIconMaxHeight->current).value +
-                (param_1->predictedPlayerState).viewHeightCurrent;
-        local_5c = param_1->heightToCeiling + 70.0;
+                (cgameGlob->predictedPlayerState).viewHeightCurrent;
+        local_5c = cgameGlob->heightToCeiling + 70.0;
         if (0.0 <= local_5c - fVar5) {
           local_5c = fVar5;
         }
@@ -404,7 +431,7 @@ float __cdecl CG_AddHudGrenade_PositionCheck(cg_s *param_1,centity_s *param_2,We
     else if (fVar6 < -(cg_hudGrenadeIconMaxHeight->current).value) {
       return 0.0;
     }
-    fVar4 = fVar4 / (local_8 * local_8);
+    fVar4 = fVar4 / (maxOffset * maxOffset);
     local_4c = fVar4;
     if (0.0 <= fVar4 - 1.0) {
       local_4c = 1.0;
@@ -428,89 +455,97 @@ float __cdecl CG_AddHudGrenade_PositionCheck(cg_s *param_1,centity_s *param_2,We
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddHudGrenade(cg_s *param_1,centity_s *param_2)
+void __cdecl CG_AddHudGrenade(cg_s *cgameGlob,centity_s *grenadeEnt)
 
 {
   int iVar1;
   code *pcVar2;
   uint uVar3;
   bool bVar4;
-  WeaponDef *pWVar5;
-  int iVar6;
-  float *pfVar7;
-  float fVar8;
+  WeaponDef *weapDef_00;
+  int iVar5;
+  float *pfVar6;
+  float fVar7;
   float local_48;
   float local_40;
-  Material *local_18;
-  float local_14;
+  playerState_s *ps;
+  entityState_s *state;
+  int globalClientNum;
+  Material *material;
+  float maxSpeedSq;
+  float danger_ratio;
+  int grenadeParentClientNum;
+  WeaponDef *weapDef;
   
-  if (((param_2->nextState).eType != 4) &&
+  if (((grenadeEnt->nextState).eType != 4) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_indicators.cpp",
                                0x3c3,0,"%s\n\t(state->eType) = %i"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)(param_2->nextState).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(param_2->nextState).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(param_2->nextState).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(grenadeEnt->nextState).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(grenadeEnt->nextState).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(grenadeEnt->nextState).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_indicators.cpp",
                                0x3c5,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_2->linkInfo == (cLinkInfo_s *)0x0) ||
-      (param_2->linkInfo->linkEnt != (uint)(param_1->predictedPlayerState).clientNum)) &&
-     ((param_2->nextState).lerp.u.turret.ownerNum == 0)) {
-    iVar6 = param_1->clientNum;
-    iVar1 = (param_2->nextState).lerp.u.loopFx.period;
-    pWVar5 = BG_GetWeaponDef((uint)(param_2->nextState).weapon);
-    if ((((pWVar5->weapType == WEAPTYPE_GRENADE) || (pWVar5->weapType == WEAPTYPE_MINE)) ||
-        (pWVar5->weapType == WEAPTYPE_PROJECTILE)) &&
-       (((((pWVar5->projExplosion == WEAPPROJEXP_GRENADE ||
-           (pWVar5->projExplosion == WEAPPROJEXP_FIRE)) ||
-          (pWVar5->projExplosion == WEAPPROJEXP_FLASHBANG)) ||
-         ((pWVar5->projExplosion == WEAPPROJEXP_HEAVY || (pWVar5->bShowIndicator != false)))) &&
-        (((pWVar5->timedDetonation != false &&
-          (fVar8 = CG_AddHudGrenade_PositionCheck(param_1,param_2,pWVar5), fVar8 != 0.0)) &&
-         ((((*(int *)((int)(param_1->bgs).clientinfo + iVar1 * 0x5c8 + 0x2c) !=
-             *(int *)((int)(param_1->bgs).clientinfo + iVar6 * 0x5c8 + 0x2c) ||
-            (*(int *)((int)(param_1->bgs).clientinfo + iVar6 * 0x5c8 + 0x2c) == 0)) ||
-           (iVar1 == iVar6)) || (iVar6 = BG_GetFriendlyFireStatus(), iVar6 != 0)))))))) {
-      if (((pWVar5->projExplosion == WEAPPROJEXP_GRENADE) ||
-          (pWVar5->projExplosion == WEAPPROJEXP_HEAVY)) ||
-         (pWVar5->projExplosion == WEAPPROJEXP_FIRE)) {
-        local_14 = (bg_maxGrenadeIndicatorSpeed->current).value *
-                   (bg_maxGrenadeIndicatorSpeed->current).value;
+  if (((grenadeEnt->linkInfo == (cLinkInfo_s *)0x0) ||
+      (grenadeEnt->linkInfo->linkEnt != (uint)(cgameGlob->predictedPlayerState).clientNum)) &&
+     ((grenadeEnt->nextState).lerp.u.turret.ownerNum == 0)) {
+    iVar5 = cgameGlob->clientNum;
+    iVar1 = (grenadeEnt->nextState).lerp.u.loopFx.period;
+    weapDef_00 = BG_GetWeaponDef((uint)(grenadeEnt->nextState).weapon);
+    if ((((weapDef_00->weapType == WEAPTYPE_GRENADE) || (weapDef_00->weapType == WEAPTYPE_MINE)) ||
+        (weapDef_00->weapType == WEAPTYPE_PROJECTILE)) &&
+       (((((weapDef_00->projExplosion == WEAPPROJEXP_GRENADE ||
+           (weapDef_00->projExplosion == WEAPPROJEXP_FIRE)) ||
+          (weapDef_00->projExplosion == WEAPPROJEXP_FLASHBANG)) ||
+         ((weapDef_00->projExplosion == WEAPPROJEXP_HEAVY || (weapDef_00->bShowIndicator != false)))
+         ) && (((weapDef_00->timedDetonation != false &&
+                (fVar7 = CG_AddHudGrenade_PositionCheck(cgameGlob,grenadeEnt,weapDef_00),
+                fVar7 != 0.0)) &&
+               ((((*(int *)((int)(cgameGlob->bgs).clientinfo + iVar1 * 0x5c8 + 0x2c) !=
+                   *(int *)((int)(cgameGlob->bgs).clientinfo + iVar5 * 0x5c8 + 0x2c) ||
+                  (*(int *)((int)(cgameGlob->bgs).clientinfo + iVar5 * 0x5c8 + 0x2c) == 0)) ||
+                 (iVar1 == iVar5)) || (iVar5 = BG_GetFriendlyFireStatus(), iVar5 != 0)))))))) {
+      if (((weapDef_00->projExplosion == WEAPPROJEXP_GRENADE) ||
+          (weapDef_00->projExplosion == WEAPPROJEXP_HEAVY)) ||
+         (weapDef_00->projExplosion == WEAPPROJEXP_FIRE)) {
+        maxSpeedSq = (bg_maxGrenadeIndicatorSpeed->current).value *
+                     (bg_maxGrenadeIndicatorSpeed->current).value;
       }
       else {
-        local_14 = 1.0;
+        maxSpeedSq = 1.0;
       }
-      if ((((param_2->nextState).clientLinkInfo.parentEnt != 0) ||
-          (pfVar7 = (param_2->nextState).lerp.pos.trDelta,
-          *pfVar7 * *pfVar7 +
-          (param_2->nextState).lerp.pos.trDelta[1] * (param_2->nextState).lerp.pos.trDelta[1] +
-          (param_2->nextState).lerp.pos.trDelta[2] * (param_2->nextState).lerp.pos.trDelta[2] <=
-          local_14)) && (g_hudGrenadeCount < 0x20)) {
-        if (((pWVar5->projExplosion == WEAPPROJEXP_GRENADE) ||
-            (pWVar5->projExplosion == WEAPPROJEXP_HEAVY)) ||
-           (pWVar5->projExplosion == WEAPPROJEXP_FIRE)) {
-          if (((param_1->nextSnap->ps).cursorHint < 8) ||
-             ((param_1->nextSnap->ps).cursorHintEntIndex != (param_2->nextState).number)) {
-            if (pWVar5->indicatorIcon == (Material *)0x0) {
-              local_18 = cgMedia.grenadeIconFrag;
+      if ((((grenadeEnt->nextState).clientLinkInfo.parentEnt != 0) ||
+          (pfVar6 = (grenadeEnt->nextState).lerp.pos.trDelta,
+          *pfVar6 * *pfVar6 +
+          (grenadeEnt->nextState).lerp.pos.trDelta[1] * (grenadeEnt->nextState).lerp.pos.trDelta[1]
+          + (grenadeEnt->nextState).lerp.pos.trDelta[2] *
+            (grenadeEnt->nextState).lerp.pos.trDelta[2] <= maxSpeedSq)) &&
+         (g_hudGrenadeCount < 0x20)) {
+        if (((weapDef_00->projExplosion == WEAPPROJEXP_GRENADE) ||
+            (weapDef_00->projExplosion == WEAPPROJEXP_HEAVY)) ||
+           (weapDef_00->projExplosion == WEAPPROJEXP_FIRE)) {
+          if (((cgameGlob->nextSnap->ps).cursorHint < 8) ||
+             ((cgameGlob->nextSnap->ps).cursorHintEntIndex != (grenadeEnt->nextState).number)) {
+            if (weapDef_00->indicatorIcon == (Material *)0x0) {
+              material = cgMedia.grenadeIconFrag;
             }
             else {
-              local_18 = pWVar5->indicatorIcon;
+              material = weapDef_00->indicatorIcon;
             }
           }
           else {
-            local_18 = cgMedia.grenadeIconThrowBack;
+            material = cgMedia.grenadeIconThrowBack;
           }
         }
         else {
-          if ((pWVar5->projExplosion != WEAPPROJEXP_FLASHBANG) &&
+          if ((weapDef_00->projExplosion != WEAPPROJEXP_FLASHBANG) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_indicators.cpp"
                                        ,0x40a,0,"%s\n\t(weapDef->projExplosion) = %i"), !bVar4)) {
             pcVar2 = (code *)swi(3);
@@ -520,25 +555,25 @@ void __cdecl CG_AddHudGrenade(cg_s *param_1,centity_s *param_2)
           if ((cg_hudGrenadeIconEnabledFlash->current).enabled == false) {
             return;
           }
-          local_18 = cgMedia.grenadeIconFlash;
+          material = cgMedia.grenadeIconFlash;
         }
         uVar3 = g_hudGrenadeCount;
-        g_hudGrenades[g_hudGrenadeCount].origin[0] = (param_2->pose).origin[0];
-        g_hudGrenades[uVar3].origin[1] = (param_2->pose).origin[1];
-        g_hudGrenades[uVar3].origin[2] = (param_2->pose).origin[2];
-        g_hudGrenades[g_hudGrenadeCount].predicted_dmg_ratio = 1.0 - fVar8;
-        g_hudGrenades[g_hudGrenadeCount].material = local_18;
-        if ((param_2->nextState).lerp.u.actor.team == 0) {
+        g_hudGrenades[g_hudGrenadeCount].origin[0] = (grenadeEnt->pose).origin[0];
+        g_hudGrenades[uVar3].origin[1] = (grenadeEnt->pose).origin[1];
+        g_hudGrenades[uVar3].origin[2] = (grenadeEnt->pose).origin[2];
+        g_hudGrenades[g_hudGrenadeCount].predicted_dmg_ratio = 1.0 - fVar7;
+        g_hudGrenades[g_hudGrenadeCount].material = material;
+        if ((grenadeEnt->nextState).lerp.u.actor.team == 0) {
           g_hudGrenades[g_hudGrenadeCount].predicted_time_ratio = 1.0;
         }
         else {
-          fVar8 = (float)(param_1->time - (param_2->nextState).lerp.u.missile.launchTime) /
-                  (float)(param_2->nextState).lerp.u.actor.team;
-          local_40 = fVar8;
-          if (0.0 <= fVar8 - 1.0) {
+          fVar7 = (float)(cgameGlob->time - (grenadeEnt->nextState).lerp.u.missile.launchTime) /
+                  (float)(grenadeEnt->nextState).lerp.u.actor.team;
+          local_40 = fVar7;
+          if (0.0 <= fVar7 - 1.0) {
             local_40 = 1.0;
           }
-          if (0.0 - fVar8 < 0.0) {
+          if (0.0 - fVar7 < 0.0) {
             local_48 = local_40;
           }
           else {
@@ -561,7 +596,7 @@ void __cdecl CG_AddHudGrenade(cg_s *param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawGrenadeIndicators(int param_1)
+void __cdecl CG_DrawGrenadeIndicators(int localClientNum)
 
 {
   float fVar1;
@@ -572,87 +607,93 @@ void __cdecl CG_DrawGrenadeIndicators(int param_1)
   float in_stack_ffffff94;
   float local_68;
   float local_5c;
-  float local_40;
+  float amplitude;
+  float bias;
+  float danger_ratio;
+  float grenadeOffset;
   float local_3c;
   float local_38;
-  uint local_34;
-  cg_s *local_30;
-  float local_2c;
+  uint entityIndex;
+  cg_s *cgameGlob;
+  float playerOrigin;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
-  float local_18 [5];
+  float angle;
+  float centerY;
+  float color [4];
+  float centerX;
   
-  local_30 = CG_GetLocalClientGlobals(param_1);
-  if ((((local_30->nextSnap != (snapshot_s *)0x0) && ((local_30->predictedPlayerState).pm_type != 4)
-       ) && (((local_30->predictedPlayerState).otherFlags & 2U) == 0)) &&
-     (((local_30->cameraMode != 1 && (bVar2 = Demo_IsGameHudHidden(), !bVar2)) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((((cgameGlob->nextSnap != (snapshot_s *)0x0) &&
+       ((cgameGlob->predictedPlayerState).pm_type != 4)) &&
+      (((cgameGlob->predictedPlayerState).otherFlags & 2U) == 0)) &&
+     (((cgameGlob->cameraMode != 1 && (bVar2 = Demo_IsGameHudHidden(), !bVar2)) &&
       (g_hudGrenadeCount != 0)))) {
-    bVar2 = CG_GetWeapReticleZoom(local_30,&local_20);
+    bVar2 = CG_GetWeapReticleZoom(cgameGlob,&angle);
     if (bVar2) {
       if ((cg_hudGrenadeIconInScope->current).enabled == false) {
         return;
       }
-      CG_CalcCrosshairPosition(local_30,local_18 + 4,&local_1c);
-      local_18[4] = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_18[4],
-                                    2);
-      local_1c = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c,2);
+      CG_CalcCrosshairPosition(cgameGlob,&centerX,&centerY);
+      centerX = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),centerX,2
+                               );
+      centerY = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),centerY,2
+                               );
       local_68 = in_stack_ffffff90;
       local_5c = in_stack_ffffff94;
     }
     else {
-      local_18[4] = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,2);
-      local_1c = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,2);
+      centerX = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,2);
+      centerY = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,2);
       local_68 = in_stack_ffffff90;
       local_5c = in_stack_ffffff94;
     }
-    CG_GrenadeIndicator_GetPlayerPosition(local_30,&local_2c);
-    for (local_34 = 0; local_34 < g_hudGrenadeCount; local_34 = local_34 + 1) {
-      local_40 = g_hudGrenades[local_34].origin[0] - local_2c;
-      local_3c = g_hudGrenades[local_34].origin[1] - local_28;
-      local_38 = g_hudGrenades[local_34].origin[2] - local_24;
+    CG_GrenadeIndicator_GetPlayerPosition(cgameGlob,&playerOrigin);
+    for (entityIndex = 0; entityIndex < g_hudGrenadeCount; entityIndex = entityIndex + 1) {
+      grenadeOffset = g_hudGrenades[entityIndex].origin[0] - playerOrigin;
+      local_3c = g_hudGrenades[entityIndex].origin[1] - local_28;
+      local_38 = g_hudGrenades[entityIndex].origin[2] - local_24;
       if ((cg_hudGrenadeIndicatorFadeUp->current).enabled == false) {
-        local_18[0] = 1.0;
-        local_18[1] = 1.0;
-        local_18[2] = 1.0;
-        local_18[3] = 1.0;
+        color[0] = 1.0;
+        color[1] = 1.0;
+        color[2] = 1.0;
+        color[3] = 1.0;
         fVar3 = ((cg_hudGrenadePointerPulseMax->current).value -
                 (cg_hudGrenadePointerPulseMin->current).value) * 0.5;
         fVar1 = (cg_hudGrenadePointerPulseMin->current).value;
-        dVar4 = (double)((float)local_30->time * 0.0062831854 *
+        dVar4 = (double)((float)cgameGlob->time * 0.0062831854 *
                         (cg_hudGrenadePointerPulseFreq->current).value);
         __libm_sse2_sin((double)CONCAT44(local_5c,local_68));
-        local_18[3] = (float)dVar4 * fVar3 + fVar1 + fVar3;
+        color[3] = (float)dVar4 * fVar3 + fVar1 + fVar3;
       }
       else {
         Vec4Lerp(&(cg_hudGrenadeIndicatorStartColor->current).value,
                  &(cg_hudGrenadeIndicatorTargetColor->current).value,
-                 g_hudGrenades[local_34].predicted_time_ratio,local_18);
-        fVar1 = g_hudGrenades[local_34].predicted_dmg_ratio;
+                 g_hudGrenades[entityIndex].predicted_time_ratio,color);
+        fVar1 = g_hudGrenades[entityIndex].predicted_dmg_ratio;
         local_5c = fVar1;
         if (0.0 <= fVar1 - 1.0) {
           local_5c = 1.0;
         }
-        local_18[3] = local_5c;
+        color[3] = local_5c;
         if (0.0 <= 0.1 - fVar1) {
           local_5c = 0.1;
-          local_18[3] = local_5c;
+          color[3] = local_5c;
         }
       }
-      if (local_18[3] - 1.0 < 0.0) {
-        local_68 = local_18[3];
+      if (color[3] - 1.0 < 0.0) {
+        local_68 = color[3];
       }
       else {
         local_68 = 1.0;
       }
-      if (0.0 <= 0.0 - local_18[3]) {
+      if (0.0 <= 0.0 - color[3]) {
         local_68 = 0.0;
       }
-      local_18[3] = local_68;
-      CG_DrawWarningPointer(param_1,local_18[4],local_1c,&local_40,local_18,0.0);
-      CG_DrawWarningIcon(param_1,local_18[4],local_1c,&local_40,local_18,
-                         g_hudGrenades[local_34].material,0.0);
+      color[3] = local_68;
+      CG_DrawWarningPointer(localClientNum,centerX,centerY,&grenadeOffset,color,0.0);
+      CG_DrawWarningIcon(localClientNum,centerX,centerY,&grenadeOffset,color,
+                         g_hudGrenades[entityIndex].material,0.0);
     }
   }
   return;

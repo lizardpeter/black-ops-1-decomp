@@ -2,65 +2,66 @@
 
 // 00AFA200  R_BoundsInCell_r  (gfx_d3d/r_dpvs_entity.cpp:115)
 
-int __cdecl R_BoundsInCell_r(mnode_t *param_1,int param_2,float *param_3,float *param_4)
+int __cdecl R_BoundsInCell_r(mnode_t *node,int findCellIndex,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  float local_5c [4];
-  float local_4c [3];
-  uint local_40;
-  int local_3c;
-  cplane_s *local_38;
-  uint local_34;
-  int local_30;
-  mnode_t *local_2c;
-  float local_28;
+  float localmaxs [3];
+  float dist;
+  float localmins [3];
+  uint type;
+  int side;
+  cplane_s *plane;
+  int cellIndex;
+  int result;
+  mnode_t *leftNode;
+  float mins2;
   float local_24;
   float local_20;
-  int local_1c;
-  float local_18 [3];
-  mnode_t *local_c;
-  int local_8;
+  int cellCount;
+  float maxs2 [3];
+  mnode_t *rightNode;
+  int planeIndex;
   
-  local_1c = g_worldDpvsPlanes->cellCount + 1;
-  local_28 = *param_3;
-  local_24 = param_3[1];
-  local_20 = param_3[2];
-  local_18[0] = *param_4;
-  local_18[1] = param_4[1];
-  local_18[2] = param_4[2];
+  cellCount = g_worldDpvsPlanes->cellCount + 1;
+  mins2 = *mins;
+  local_24 = mins[1];
+  local_20 = mins[2];
+  maxs2[0] = *maxs;
+  maxs2[1] = maxs[1];
+  maxs2[2] = maxs[2];
   while( true ) {
     while( true ) {
-      local_34 = (uint)param_1->cellIndex;
-      local_8 = local_34 - local_1c;
-      if (local_8 < 0) {
-        if (local_34 == 0) {
+      cellIndex = (int)node->cellIndex;
+      planeIndex = cellIndex - cellCount;
+      if (planeIndex < 0) {
+        if (cellIndex == 0) {
           uVar3 = 0;
         }
         else {
-          uVar3 = (uint)(local_34 - 1 == param_2);
+          uVar3 = (uint)(cellIndex - 1U == findCellIndex);
         }
         return uVar3;
       }
-      local_38 = g_worldDpvsPlanes->planes + local_8;
-      local_3c = BoxOnPlaneSide(&local_28,local_18,local_38);
-      if (local_3c != 3) break;
-      local_40 = (uint)local_38->type;
-      local_c = (mnode_t *)(&param_1->cellIndex + param_1->rightChildOffset);
-      if (local_40 < 3) {
-        local_5c[3] = local_38->dist;
-        local_4c[0] = local_28;
-        local_4c[1] = local_24;
-        local_4c[2] = local_20;
-        local_4c[local_40] = local_5c[3];
-        local_5c[0] = local_18[0];
-        local_5c[1] = local_18[1];
-        local_5c[2] = local_18[2];
-        local_5c[local_40] = local_5c[3];
-        iVar4 = BoxOnPlaneSide(local_4c,local_18,local_38);
+      plane = g_worldDpvsPlanes->planes + planeIndex;
+      side = BoxOnPlaneSide(&mins2,maxs2,plane);
+      if (side != 3) break;
+      type = (uint)plane->type;
+      rightNode = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
+      if (type < 3) {
+        dist = plane->dist;
+        localmins[0] = mins2;
+        localmins[1] = local_24;
+        localmins[2] = local_20;
+        localmins[type] = dist;
+        localmaxs[0] = maxs2[0];
+        localmaxs[1] = maxs2[1];
+        localmaxs[2] = maxs2[2];
+        localmaxs[type] = dist;
+        iVar4 = BoxOnPlaneSide(localmins,maxs2,plane);
         if ((iVar4 != 1) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp"
                                      ,0xc9,0,"%s"), !bVar2)) {
@@ -68,31 +69,30 @@ int __cdecl R_BoundsInCell_r(mnode_t *param_1,int param_2,float *param_3,float *
           iVar4 = (*pcVar1)();
           return iVar4;
         }
-        if (local_5c[3] < local_18[local_40]) {
-          local_2c = param_1 + 1;
-          local_30 = R_BoundsInCell_r(local_2c,param_2,local_4c,local_18);
-          if (local_30 != 0) {
+        if (dist < maxs2[type]) {
+          leftNode = node + 1;
+          result = R_BoundsInCell_r(leftNode,findCellIndex,localmins,maxs2);
+          if (result != 0) {
             return 1;
           }
         }
-        local_18[0] = local_5c[0];
-        local_18[1] = local_5c[1];
-        local_18[2] = local_5c[2];
+        maxs2[0] = localmaxs[0];
+        maxs2[1] = localmaxs[1];
+        maxs2[2] = localmaxs[2];
       }
       else {
-        local_2c = param_1 + 1;
-        iVar4 = R_BoundsInCell_r(local_2c,param_2,&local_28,local_18);
+        leftNode = node + 1;
+        iVar4 = R_BoundsInCell_r(leftNode,findCellIndex,&mins2,maxs2);
         if (iVar4 != 0) {
           return 1;
         }
       }
-      param_1 = local_c;
+      node = rightNode;
     }
-    if (((local_3c != 1) && (local_3c != 2)) &&
+    if (((side != 1) && (side != 2)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp",
                                  0x126,0,"%s\n\t(side) = %i"), !bVar2)) break;
-    param_1 = (mnode_t *)(&param_1[1].cellIndex + (param_1->rightChildOffset - 2) * (local_3c + -1))
-    ;
+    node = (mnode_t *)(&node[1].cellIndex + (node->rightChildOffset - 2) * (side + -1));
   }
   pcVar1 = (code *)swi(3);
   iVar4 = (*pcVar1)();
@@ -102,57 +102,59 @@ int __cdecl R_BoundsInCell_r(mnode_t *param_1,int param_2,float *param_3,float *
 
 // 00AFA1E0  R_BoundsInCell  (gfx_d3d/r_dpvs_entity.cpp:346)
 
-int __cdecl R_BoundsInCell(mnode_t *param_1,int param_2,float *param_3,float *param_4)
+int __cdecl R_BoundsInCell(mnode_t *node,int findCellIndex,float *mins,float *maxs)
 
 {
   int iVar1;
   
-  iVar1 = R_BoundsInCell_r(param_1,param_2,param_3,param_4);
+  iVar1 = R_BoundsInCell_r(node,findCellIndex,mins,maxs);
   return iVar1;
 }
 
 
 // 00AFA020  R_AddEntitySurfacesInFrustumCmd  (gfx_d3d/r_dpvs_entity.cpp:385)
 
-void __cdecl R_AddEntitySurfacesInFrustumCmd(void *param_1)
+void __cdecl R_AddEntitySurfacesInFrustumCmd(void *data)
 
 {
   ushort uVar1;
   code *pcVar2;
   GfxSceneEntityCull *pGVar3;
   bool bVar4;
-  DObjAnimMat *pDVar5;
-  int iVar6;
-  float fVar7;
+  DObjAnimMat *boneMatrix_00;
+  int iVar5;
+  float fVar6;
   DpvsPlane *local_24;
   int local_20;
-  DObj *local_14;
-  GfxSceneEntity *local_10;
-  DpvsPlane *local_c;
-  GfxSceneEntity *local_8;
+  DObjAnimMat *boneMatrix;
+  DpvsEntityCmd *dpvsEntity;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
+  DpvsPlane *planes;
+  GfxSceneEntity *sceneEnt;
   
-  local_8 = *(GfxSceneEntity **)param_1;
-  pDVar5 = R_UpdateSceneEntBounds(local_8,&local_10,&local_14,1);
-  if (pDVar5 == (DObjAnimMat *)0x0) {
-    if (local_10 != (GfxSceneEntity *)0x0) {
-      CG_UsedDObjCalcPose((local_10->info).pose);
+  sceneEnt = *(GfxSceneEntity **)data;
+  boneMatrix_00 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,1);
+  if (boneMatrix_00 == (DObjAnimMat *)0x0) {
+    if (localSceneEnt != (GfxSceneEntity *)0x0) {
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
   }
   else {
-    if ((local_10 == (GfxSceneEntity *)0x0) &&
+    if ((localSceneEnt == (GfxSceneEntity *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp",
                                  0x1a0,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_24 = *(DpvsPlane **)((int)param_1 + 4);
-    uVar1 = *(ushort *)((int)param_1 + 8);
-    pGVar3 = &local_10->cull;
-    local_c = local_24;
+    local_24 = *(DpvsPlane **)((int)data + 4);
+    uVar1 = *(ushort *)((int)data + 8);
+    pGVar3 = &localSceneEnt->cull;
+    planes = local_24;
     for (local_20 = 0; local_20 < (int)(uint)uVar1; local_20 = local_20 + 1) {
-      fVar7 = R_DpvsPlaneMaxSignedDistToBox(local_24,pGVar3->mins);
-      if (fVar7 <= 0.0) {
+      fVar6 = R_DpvsPlaneMaxSignedDistToBox(local_24,pGVar3->mins);
+      if (fVar6 <= 0.0) {
         bVar4 = true;
         goto LAB_00afa11e;
       }
@@ -161,22 +163,22 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(void *param_1)
     bVar4 = false;
 LAB_00afa11e:
     if ((bVar4) ||
-       (iVar6 = R_BoundsInCell((mnode_t *)g_worldDpvsPlanes->nodes,
-                               (uint)*(ushort *)((int)param_1 + 10),(local_10->cull).mins,
-                               (local_10->cull).maxs), iVar6 == 0)) {
-      CG_UsedDObjCalcPose((local_10->info).pose);
+       (iVar5 = R_BoundsInCell((mnode_t *)g_worldDpvsPlanes->nodes,(uint)*(ushort *)((int)data + 10)
+                               ,(localSceneEnt->cull).mins,(localSceneEnt->cull).maxs), iVar5 == 0))
+    {
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
     else {
-      CG_CullIn((local_10->info).pose);
-      R_SkinSceneDObj(local_8,local_10,local_14,pDVar5,0);
-      if ((local_10->entnum == gfxCfg.entnumNone) &&
+      CG_CullIn((localSceneEnt->info).pose);
+      R_SkinSceneDObj(sceneEnt,localSceneEnt,obj,boneMatrix_00,0);
+      if ((localSceneEnt->entnum == gfxCfg.entnumNone) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp",
                                    0x1e0,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      *(undefined1 *)((uint)local_10->entnum + *(int *)((int)param_1 + 0xc)) = 1;
+      *(undefined1 *)((uint)localSceneEnt->entnum + *(int *)((int)data + 0xc)) = 1;
     }
   }
   return;
@@ -185,39 +187,40 @@ LAB_00afa11e:
 
 // 00AFA490  R_ForceAddEntitySurfacesInFrustumCmd  (gfx_d3d/r_dpvs_entity.cpp:486)
 
-void __cdecl R_ForceAddEntitySurfacesInFrustumCmd(GfxSceneEntity *param_1,uchar *param_2)
+void __cdecl R_ForceAddEntitySurfacesInFrustumCmd(GfxSceneEntity *sceneEnt,uchar *entVisData)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObjAnimMat *pDVar3;
-  DObj *local_c;
-  GfxSceneEntity *local_8;
+  DObjAnimMat *boneMatrix_00;
+  DObjAnimMat *boneMatrix;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
   
-  pDVar3 = R_UpdateSceneEntBounds(param_1,&local_8,&local_c,1);
-  if (pDVar3 == (DObjAnimMat *)0x0) {
-    if (local_8 != (GfxSceneEntity *)0x0) {
-      CG_UsedDObjCalcPose((local_8->info).pose);
+  boneMatrix_00 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,1);
+  if (boneMatrix_00 == (DObjAnimMat *)0x0) {
+    if (localSceneEnt != (GfxSceneEntity *)0x0) {
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
   }
   else {
-    if ((local_8 == (GfxSceneEntity *)0x0) &&
+    if ((localSceneEnt == (GfxSceneEntity *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp",
                                  0x1fa,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    CG_CullIn((local_8->info).pose);
-    R_SkinSceneDObj(param_1,local_8,local_c,pDVar3,0);
-    if ((local_8->entnum == gfxCfg.entnumNone) &&
+    CG_CullIn((localSceneEnt->info).pose);
+    R_SkinSceneDObj(sceneEnt,localSceneEnt,obj,boneMatrix_00,0);
+    if ((localSceneEnt->entnum == gfxCfg.entnumNone) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_entity.cpp",
                                  0x20c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2[local_8->entnum] = '\x01';
+    entVisData[localSceneEnt->entnum] = '\x01';
   }
   return;
 }

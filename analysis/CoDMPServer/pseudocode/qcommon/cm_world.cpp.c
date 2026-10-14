@@ -12,7 +12,7 @@ void __cdecl TRACK_cm_world(void)
 
 // 006C5950  CM_AllocWorldSector  (qcommon/cm_world.cpp:82)
 
-ushort __cdecl CM_AllocWorldSector(float *param_1,float *param_2)
+ushort __cdecl CM_AllocWorldSector(float *mins,float *maxs)
 
 {
   code *pcVar1;
@@ -20,19 +20,21 @@ ushort __cdecl CM_AllocWorldSector(float *param_1,float *param_2)
   ushort uVar3;
   uint uVar4;
   ushort local_1a;
-  float local_10 [2];
-  ushort local_8;
+  worldSector_s *node;
+  ushort nodeIndex;
+  float size [2];
+  ushort axis;
   
   uVar3 = cm_world.freeHead;
   if (cm_world.freeHead == 0) {
     uVar3 = 0;
   }
   else {
-    local_10[0] = *param_2 - *param_1;
-    local_10[1] = param_2[1] - param_1[1];
-    local_1a = (ushort)(*param_2 - *param_1 <= param_2[1] - param_1[1]);
-    local_8 = local_1a;
-    if (512.0 < local_10[local_1a]) {
+    size[0] = *maxs - *mins;
+    size[1] = maxs[1] - mins[1];
+    local_1a = (ushort)(*maxs - *mins <= maxs[1] - mins[1]);
+    axis = local_1a;
+    if (512.0 < size[local_1a]) {
       uVar4 = (uint)cm_world.freeHead;
       if ((cm_world.sectors[uVar4].contents.contentsStaticModels != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",100,0,
@@ -63,8 +65,8 @@ ushort __cdecl CM_AllocWorldSector(float *param_1,float *param_2)
         return uVar3;
       }
       cm_world.freeHead = cm_world.sectors[uVar4].tree.u.parent;
-      cm_world.sectors[uVar4].tree.axis = local_8;
-      cm_world.sectors[uVar4].tree.dist = (param_2[local_8] + param_1[local_8]) * 0.5;
+      cm_world.sectors[uVar4].tree.axis = axis;
+      cm_world.sectors[uVar4].tree.dist = (maxs[axis] + mins[axis]) * 0.5;
       if ((cm_world.sectors[uVar4].tree.child[0] != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x6e,0
                                    ,"%s"), !bVar2)) {
@@ -96,13 +98,13 @@ void __cdecl CM_ClearWorld(void)
   code *pcVar1;
   bool bVar2;
   ushort local_12;
-  uint local_8;
+  uint i;
   
   memset((uchar *)&cm_world,'\0',0x601c);
   CM_ModelBounds(0,cm_world.mins,cm_world.maxs);
   cm_world.freeHead = 2;
-  for (local_8 = 2; local_8 < 0x3ff; local_8 = local_8 + 1) {
-    cm_world.sectors[local_8].tree.u.parent = (short)local_8 + 1;
+  for (i = 2; i < 0x3ff; i = i + 1) {
+    cm_world.sectors[i].tree.u.parent = (short)i + 1;
   }
   cm_world.sectors[0x3ff].tree.u.parent = 0;
   local_12 = (ushort)(cm_world.maxs[0] - cm_world.mins[0] <= cm_world.maxs[1] - cm_world.mins[1]);
@@ -146,22 +148,24 @@ void __cdecl CM_LinkWorld(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CM_UnlinkEntity(svEntity_s *param_1)
+void __cdecl CM_UnlinkEntity(svEntity_s *ent)
 
 {
   ushort uVar1;
   code *pcVar2;
   uint uVar3;
   bool bVar4;
-  worldSector_s *local_18;
-  uint local_14;
-  ushort local_10;
+  worldSector_s *node;
+  int contents;
+  ushort nodeIndex;
+  svEntity_s *scan;
+  ushort parentNodeIndex;
   
-  local_10 = param_1->worldSector;
-  if (local_10 != 0) {
-    local_18 = cm_world.sectors + local_10;
-    param_1->worldSector = 0;
-    if ((cm_world.sectors[local_10].contents.entities == 0) &&
+  nodeIndex = ent->worldSector;
+  if (nodeIndex != 0) {
+    node = cm_world.sectors + nodeIndex;
+    ent->worldSector = 0;
+    if ((cm_world.sectors[nodeIndex].contents.entities == 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x172,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
@@ -169,16 +173,16 @@ void __cdecl CM_UnlinkEntity(svEntity_s *param_1)
       return;
     }
     if ((svEntity_s *)
-        (sv.configstrings + (uint)cm_world.sectors[local_10].contents.entities * 0xb4 + 0xc09) ==
-        param_1) {
-      cm_world.sectors[local_10].contents.entities = param_1->nextEntityInWorldSector;
+        (sv.configstrings + (uint)cm_world.sectors[nodeIndex].contents.entities * 0xb4 + 0xc09) ==
+        ent) {
+      cm_world.sectors[nodeIndex].contents.entities = ent->nextEntityInWorldSector;
     }
     else {
-      uVar1 = cm_world.sectors[local_10].contents.entities;
+      uVar1 = cm_world.sectors[nodeIndex].contents.entities;
       while (uVar3 = (uint)uVar1,
             (svEntity_s *)
-            (sv.configstrings + (uint)sv.configstrings[uVar3 * 0xb4 + 0xc0a] * 0xb4 + 0xc09) !=
-            param_1) {
+            (sv.configstrings + (uint)sv.configstrings[uVar3 * 0xb4 + 0xc0a] * 0xb4 + 0xc09) != ent)
+      {
         if ((sv.configstrings[uVar3 * 0xb4 + 0xc0a] == 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",
                                      0x181,0,"%s"), !bVar4)) {
@@ -188,30 +192,30 @@ void __cdecl CM_UnlinkEntity(svEntity_s *param_1)
         }
         uVar1 = sv.configstrings[uVar3 * 0xb4 + 0xc0a];
       }
-      sv.configstrings[uVar3 * 0xb4 + 0xc0a] = param_1->nextEntityInWorldSector;
+      sv.configstrings[uVar3 * 0xb4 + 0xc0a] = ent->nextEntityInWorldSector;
     }
     while( true ) {
-      if (((((local_18->contents).entities != 0) || ((local_18->contents).staticModels != 0)) ||
-          ((local_18->tree).child[0] != 0)) || ((local_18->tree).child[1] != 0)) goto LAB_006c502f;
-      if (((local_18->contents).contentsStaticModels != 0) &&
+      if (((((node->contents).entities != 0) || ((node->contents).staticModels != 0)) ||
+          ((node->tree).child[0] != 0)) || ((node->tree).child[1] != 0)) goto LAB_006c502f;
+      if (((node->contents).contentsStaticModels != 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x187,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      (local_18->contents).contentsEntities = 0;
-      if ((local_18->tree).u.parent == 0) break;
-      uVar1 = (local_18->tree).u.parent;
-      (local_18->tree).u.parent = cm_world.freeHead;
-      cm_world.freeHead = local_10;
-      local_18 = cm_world.sectors + uVar1;
-      if (cm_world.sectors[uVar1].tree.child[0] == local_10) {
+      (node->contents).contentsEntities = 0;
+      if ((node->tree).u.parent == 0) break;
+      uVar1 = (node->tree).u.parent;
+      (node->tree).u.parent = cm_world.freeHead;
+      cm_world.freeHead = nodeIndex;
+      node = cm_world.sectors + uVar1;
+      if (cm_world.sectors[uVar1].tree.child[0] == nodeIndex) {
         cm_world.sectors[uVar1].tree.child[0] = 0;
-        local_10 = uVar1;
+        nodeIndex = uVar1;
       }
       else {
-        if ((cm_world.sectors[uVar1].tree.child[1] != local_10) &&
+        if ((cm_world.sectors[uVar1].tree.child[1] != nodeIndex) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",
                                      0x19d,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
@@ -219,10 +223,10 @@ void __cdecl CM_UnlinkEntity(svEntity_s *param_1)
           return;
         }
         cm_world.sectors[uVar1].tree.child[1] = 0;
-        local_10 = uVar1;
+        nodeIndex = uVar1;
       }
     }
-    if ((local_10 != 1) &&
+    if ((nodeIndex != 1) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x18c,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
@@ -231,13 +235,13 @@ void __cdecl CM_UnlinkEntity(svEntity_s *param_1)
     }
 LAB_006c502f:
     while( true ) {
-      local_14 = cm_world.sectors[(local_18->tree).child[0]].contents.contentsEntities |
-                 cm_world.sectors[(local_18->tree).child[1]].contents.contentsEntities;
-      if ((local_18->contents).entities != 0) {
-        uVar1 = (local_18->contents).entities;
+      contents = cm_world.sectors[(node->tree).child[0]].contents.contentsEntities |
+                 cm_world.sectors[(node->tree).child[1]].contents.contentsEntities;
+      if ((node->contents).entities != 0) {
+        uVar1 = (node->contents).entities;
         while( true ) {
           uVar3 = (uint)uVar1;
-          local_14 = local_14 |
+          contents = contents |
                      *(uint *)((int)((sv.gentities)->r).absmin +
                               sv.gentitySize * ((int)(uVar3 * 0x168 + -0x168) / 0x168) + -4) |
                      sv.svEntities[uVar3 - 1].linkcontents;
@@ -245,10 +249,10 @@ LAB_006c502f:
           uVar1 = sv.configstrings[uVar3 * 0xb4 + 0xc0a];
         }
       }
-      (local_18->contents).contentsEntities = local_14;
-      uVar1 = (local_18->tree).u.parent;
+      (node->contents).contentsEntities = contents;
+      uVar1 = (node->tree).u.parent;
       if (uVar1 == 0) break;
-      local_18 = cm_world.sectors + uVar1;
+      node = cm_world.sectors + uVar1;
     }
   }
   return;
@@ -262,38 +266,40 @@ LAB_006c502f:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CM_AddEntityToNode(svEntity_s *param_1,ushort param_2)
+void __cdecl CM_AddEntityToNode(svEntity_s *ent,ushort childNodeIndex)
 
 {
   uint uVar1;
-  ushort *local_c;
+  ushort *prevEnt;
+  uint entnum;
   
-  uVar1 = (int)&param_1[-0x6c063].baseline.s.lerp.pos / 0x168;
-  for (local_c = &cm_world.sectors[param_2].contents.entities; *local_c - 1 <= uVar1;
-      local_c = sv.configstrings + (uint)*local_c * 0xb4 + 0xc0a) {
+  uVar1 = (int)&ent[-0x6c063].baseline.s.lerp.pos / 0x168;
+  for (prevEnt = &cm_world.sectors[childNodeIndex].contents.entities; *prevEnt - 1 <= uVar1;
+      prevEnt = sv.configstrings + (uint)*prevEnt * 0xb4 + 0xc0a) {
   }
-  param_1->worldSector = param_2;
-  param_1->nextEntityInWorldSector = *local_c;
-  *local_c = (short)uVar1 + 1;
+  ent->worldSector = childNodeIndex;
+  ent->nextEntityInWorldSector = *prevEnt;
+  *prevEnt = (short)uVar1 + 1;
   return;
 }
 
 
 // 006C5B40  CM_AddStaticModelToNode  (qcommon/cm_world.cpp:461)
 
-void __cdecl CM_AddStaticModelToNode(cStaticModel_s *param_1,ushort param_2)
+void __cdecl CM_AddStaticModelToNode(cStaticModel_s *staticModel,ushort childNodeIndex)
 
 {
   uint uVar1;
-  cStaticModel_s *local_8;
+  uint modelnum;
+  ushort *prevStaticModel;
   
-  uVar1 = ((int)param_1 - (int)cm.staticModelList) / 0x50;
-  local_8 = (cStaticModel_s *)&cm_world.sectors[param_2].contents.staticModels;
-  while ((local_8->writable).nextModelInWorldSector - 1 <= uVar1) {
-    local_8 = cm.staticModelList + ((local_8->writable).nextModelInWorldSector - 1);
+  uVar1 = ((int)staticModel - (int)cm.staticModelList) / 0x50;
+  for (prevStaticModel = &cm_world.sectors[childNodeIndex].contents.staticModels;
+      *prevStaticModel - 1 <= uVar1;
+      prevStaticModel = (ushort *)(cm.staticModelList + (*prevStaticModel - 1))) {
   }
-  (param_1->writable).nextModelInWorldSector = (local_8->writable).nextModelInWorldSector;
-  (local_8->writable).nextModelInWorldSector = (short)uVar1 + 1;
+  (staticModel->writable).nextModelInWorldSector = *prevStaticModel;
+  *prevStaticModel = (short)uVar1 + 1;
   return;
 }
 
@@ -305,7 +311,7 @@ void __cdecl CM_AddStaticModelToNode(cStaticModel_s *param_1,ushort param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CM_SortNode(ushort param_1,float *param_2,float *param_3)
+void __cdecl CM_SortNode(ushort nodeIndex,float *mins,float *maxs)
 
 {
   float *pfVar1;
@@ -314,144 +320,151 @@ void __cdecl CM_SortNode(ushort param_1,float *param_2,float *param_3)
   int iVar4;
   bool bVar5;
   uint uVar6;
-  cStaticModel_s *pcVar7;
+  cStaticModel_s *staticModel_00;
+  uint uVar7;
+  svEntity_s *ent_00;
   uint uVar8;
-  svEntity_s *psVar9;
-  uint uVar10;
-  ushort local_28;
-  svEntity_s *local_24;
-  ushort local_14;
-  cStaticModel_s *local_c;
-  ushort local_8;
+  worldSector_s *node;
+  ushort modelnum;
+  svEntity_s *prevEnt;
+  float dist;
+  svEntity_s *ent;
+  cStaticModel_s *staticModel;
+  ushort entnum;
+  int axis;
+  cStaticModel_s *prevStaticModel;
+  ushort childNodeIndex;
   
-  uVar6 = (uint)param_1;
-  uVar10 = (uint)cm_world.sectors[uVar6].tree.axis;
+  uVar6 = (uint)nodeIndex;
+  uVar8 = (uint)cm_world.sectors[uVar6].tree.axis;
   fVar2 = cm_world.sectors[uVar6].tree.dist;
-  local_24 = (svEntity_s *)0x0;
-  local_14 = cm_world.sectors[uVar6].contents.entities;
-  while (local_14 != 0) {
-    uVar8 = (uint)local_14;
-    iVar4 = uVar8 * 0x168;
-    psVar9 = (svEntity_s *)(sv.configstrings + uVar8 * 0xb4 + 0xc09);
-    if (*(float *)(iVar4 + 0x97e8b10 + uVar10 * 4) <= fVar2) {
-      pfVar1 = (float *)(iVar4 + 0x97e8b1c + uVar10 * 4);
+  prevEnt = (svEntity_s *)0x0;
+  entnum = cm_world.sectors[uVar6].contents.entities;
+  while (entnum != 0) {
+    uVar7 = (uint)entnum;
+    iVar4 = uVar7 * 0x168;
+    ent_00 = (svEntity_s *)(sv.configstrings + uVar7 * 0xb4 + 0xc09);
+    if (*(float *)(iVar4 + 0x97e8b10 + uVar8 * 4) <= fVar2) {
+      pfVar1 = (float *)(iVar4 + 0x97e8b1c + uVar8 * 4);
       if (*pfVar1 <= fVar2 && fVar2 != *pfVar1) {
-        local_8 = cm_world.sectors[uVar6].tree.child[1];
-        if (local_8 == 0) {
-          local_8 = CM_AllocWorldSector(param_2,param_3);
-          if (local_8 == 0) goto LAB_006c55f5;
-          cm_world.sectors[uVar6].tree.child[1] = local_8;
-          cm_world.sectors[local_8].tree.u.parent = param_1;
+        childNodeIndex = cm_world.sectors[uVar6].tree.child[1];
+        if (childNodeIndex == 0) {
+          childNodeIndex = CM_AllocWorldSector(mins,maxs);
+          if (childNodeIndex == 0) goto LAB_006c55f5;
+          cm_world.sectors[uVar6].tree.child[1] = childNodeIndex;
+          cm_world.sectors[childNodeIndex].tree.u.parent = nodeIndex;
         }
         goto LAB_006c560b;
       }
 LAB_006c55f5:
-      local_14 = sv.configstrings[uVar8 * 0xb4 + 0xc0a];
-      local_24 = psVar9;
+      entnum = sv.configstrings[uVar7 * 0xb4 + 0xc0a];
+      prevEnt = ent_00;
     }
     else {
-      local_8 = cm_world.sectors[uVar6].tree.child[0];
-      if (local_8 == 0) {
-        local_8 = CM_AllocWorldSector(param_2,param_3);
-        if (local_8 == 0) goto LAB_006c55f5;
-        cm_world.sectors[uVar6].tree.child[0] = local_8;
-        cm_world.sectors[local_8].tree.u.parent = param_1;
+      childNodeIndex = cm_world.sectors[uVar6].tree.child[0];
+      if (childNodeIndex == 0) {
+        childNodeIndex = CM_AllocWorldSector(mins,maxs);
+        if (childNodeIndex == 0) goto LAB_006c55f5;
+        cm_world.sectors[uVar6].tree.child[0] = childNodeIndex;
+        cm_world.sectors[childNodeIndex].tree.u.parent = nodeIndex;
       }
 LAB_006c560b:
-      local_14 = sv.configstrings[uVar8 * 0xb4 + 0xc0a];
-      if (((local_24 == (svEntity_s *)0x0) &&
+      entnum = sv.configstrings[uVar7 * 0xb4 + 0xc0a];
+      if (((prevEnt == (svEntity_s *)0x0) &&
           ((svEntity_s *)
            (sv.configstrings + (uint)cm_world.sectors[uVar6].contents.entities * 0xb4 + 0xc09) !=
-           psVar9)) &&
+           ent_00)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x21b,
                                    0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if (((local_24 != (svEntity_s *)0x0) &&
-          ((svEntity_s *)(sv.configstrings + (uint)local_24->nextEntityInWorldSector * 0xb4 + 0xc09)
-           != psVar9)) &&
+      if (((prevEnt != (svEntity_s *)0x0) &&
+          ((svEntity_s *)(sv.configstrings + (uint)prevEnt->nextEntityInWorldSector * 0xb4 + 0xc09)
+           != ent_00)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x21c,
                                    0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      CM_AddEntityToNode(psVar9,local_8);
-      cm_world.sectors[local_8].contents.contentsEntities =
-           cm_world.sectors[local_8].contents.contentsEntities |
+      CM_AddEntityToNode(ent_00,childNodeIndex);
+      cm_world.sectors[childNodeIndex].contents.contentsEntities =
+           cm_world.sectors[childNodeIndex].contents.contentsEntities |
            *(uint *)((int)((sv.gentities)->r).absmin +
                     sv.gentitySize * ((iVar4 + -0x168) / 0x168) + -4);
-      cm_world.sectors[local_8].contents.contentsEntities =
-           cm_world.sectors[local_8].contents.contentsEntities |
-           sv.svEntities[uVar8 - 1].linkcontents;
-      if (local_24 == (svEntity_s *)0x0) {
-        cm_world.sectors[uVar6].contents.entities = local_14;
+      cm_world.sectors[childNodeIndex].contents.contentsEntities =
+           cm_world.sectors[childNodeIndex].contents.contentsEntities |
+           sv.svEntities[uVar7 - 1].linkcontents;
+      if (prevEnt == (svEntity_s *)0x0) {
+        cm_world.sectors[uVar6].contents.entities = entnum;
       }
       else {
-        local_24->nextEntityInWorldSector = local_14;
+        prevEnt->nextEntityInWorldSector = entnum;
       }
     }
   }
-  local_c = (cStaticModel_s *)0x0;
-  local_28 = cm_world.sectors[uVar6].contents.staticModels;
+  prevStaticModel = (cStaticModel_s *)0x0;
+  modelnum = cm_world.sectors[uVar6].contents.staticModels;
   do {
     while( true ) {
-      if (local_28 == 0) {
+      if (modelnum == 0) {
         return;
       }
-      pcVar7 = cm.staticModelList + (local_28 - 1);
-      if (pcVar7->absmin[uVar10] <= fVar2) break;
-      local_8 = cm_world.sectors[uVar6].tree.child[0];
-      if (local_8 == 0) {
-        local_8 = CM_AllocWorldSector(param_2,param_3);
-        if (local_8 == 0) goto LAB_006c5842;
-        cm_world.sectors[uVar6].tree.child[0] = local_8;
-        cm_world.sectors[local_8].tree.u.parent = param_1;
+      staticModel_00 = cm.staticModelList + (modelnum - 1);
+      if (staticModel_00->absmin[uVar8] <= fVar2) break;
+      childNodeIndex = cm_world.sectors[uVar6].tree.child[0];
+      if (childNodeIndex == 0) {
+        childNodeIndex = CM_AllocWorldSector(mins,maxs);
+        if (childNodeIndex == 0) goto LAB_006c5842;
+        cm_world.sectors[uVar6].tree.child[0] = childNodeIndex;
+        cm_world.sectors[childNodeIndex].tree.u.parent = nodeIndex;
       }
 LAB_006c5857:
-      local_28 = (pcVar7->writable).nextModelInWorldSector;
-      if (((local_c == (cStaticModel_s *)0x0) &&
-          (cm.staticModelList + (cm_world.sectors[uVar6].contents.staticModels - 1) != pcVar7)) &&
+      modelnum = (staticModel_00->writable).nextModelInWorldSector;
+      if (((prevStaticModel == (cStaticModel_s *)0x0) &&
+          (cm.staticModelList + (cm_world.sectors[uVar6].contents.staticModels - 1) !=
+           staticModel_00)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x250,
                                    0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if (((local_c != (cStaticModel_s *)0x0) &&
-          (cm.staticModelList + ((local_c->writable).nextModelInWorldSector - 1) != pcVar7)) &&
+      if (((prevStaticModel != (cStaticModel_s *)0x0) &&
+          (cm.staticModelList + ((prevStaticModel->writable).nextModelInWorldSector - 1) !=
+           staticModel_00)) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x251,
                                    0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      CM_AddStaticModelToNode(pcVar7,local_8);
-      uVar8 = XModelGetContents(pcVar7->xmodel);
-      cm_world.sectors[local_8].contents.contentsStaticModels =
-           uVar8 | cm_world.sectors[local_8].contents.contentsStaticModels;
-      if (local_c == (cStaticModel_s *)0x0) {
-        cm_world.sectors[uVar6].contents.staticModels = local_28;
+      CM_AddStaticModelToNode(staticModel_00,childNodeIndex);
+      uVar7 = XModelGetContents(staticModel_00->xmodel);
+      cm_world.sectors[childNodeIndex].contents.contentsStaticModels =
+           uVar7 | cm_world.sectors[childNodeIndex].contents.contentsStaticModels;
+      if (prevStaticModel == (cStaticModel_s *)0x0) {
+        cm_world.sectors[uVar6].contents.staticModels = modelnum;
       }
       else {
-        (local_c->writable).nextModelInWorldSector = local_28;
+        (prevStaticModel->writable).nextModelInWorldSector = modelnum;
       }
     }
-    if (pcVar7->absmax[uVar10] <= fVar2 && fVar2 != pcVar7->absmax[uVar10]) {
-      local_8 = cm_world.sectors[uVar6].tree.child[1];
-      if (local_8 == 0) {
-        local_8 = CM_AllocWorldSector(param_2,param_3);
-        if (local_8 == 0) goto LAB_006c5842;
-        cm_world.sectors[uVar6].tree.child[1] = local_8;
-        cm_world.sectors[local_8].tree.u.parent = param_1;
+    if (staticModel_00->absmax[uVar8] <= fVar2 && fVar2 != staticModel_00->absmax[uVar8]) {
+      childNodeIndex = cm_world.sectors[uVar6].tree.child[1];
+      if (childNodeIndex == 0) {
+        childNodeIndex = CM_AllocWorldSector(mins,maxs);
+        if (childNodeIndex == 0) goto LAB_006c5842;
+        cm_world.sectors[uVar6].tree.child[1] = childNodeIndex;
+        cm_world.sectors[childNodeIndex].tree.u.parent = nodeIndex;
       }
       goto LAB_006c5857;
     }
 LAB_006c5842:
-    local_28 = (pcVar7->writable).nextModelInWorldSector;
-    local_c = pcVar7;
+    modelnum = (staticModel_00->writable).nextModelInWorldSector;
+    prevStaticModel = staticModel_00;
   } while( true );
 }
 
@@ -463,7 +476,7 @@ LAB_006c5842:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CM_LinkEntity(svEntity_s *param_1,float *param_2,float *param_3,uint param_4)
+void __cdecl CM_LinkEntity(svEntity_s *ent,float *absmin,float *absmax,uint clipHandle)
 
 {
   float fVar1;
@@ -471,18 +484,21 @@ void __cdecl CM_LinkEntity(svEntity_s *param_1,float *param_2,float *param_3,uin
   code *pcVar3;
   bool bVar4;
   uint uVar5;
-  ushort local_2c;
-  float local_24 [2];
-  cmodel_t *local_1c;
-  cLeaf_s *local_18;
-  float local_14 [2];
-  uint local_c;
-  uint local_8;
+  worldSector_s *node;
+  int contents;
+  ushort nodeIndex;
+  float dist;
+  float mins [2];
+  cmodel_t *cmod;
+  cLeaf_s *leaf;
+  float maxs [2];
+  int axis;
+  int linkcontents;
   
-  local_1c = CM_ClipHandleToModel(param_4);
-  local_18 = &local_1c->leaf;
+  cmod = CM_ClipHandleToModel(clipHandle);
+  leaf = &cmod->leaf;
   uVar2 = *(uint *)((int)((sv.gentities)->r).absmin +
-                   sv.gentitySize * ((int)&param_1[-0x6c063].baseline.s.lerp.pos / 0x168) + -4);
+                   sv.gentitySize * ((int)&ent[-0x6c063].baseline.s.lerp.pos / 0x168) + -4);
   if ((uVar2 == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x26e,0,
                                "%s"), !bVar4)) {
@@ -490,63 +506,63 @@ void __cdecl CM_LinkEntity(svEntity_s *param_1,float *param_2,float *param_3,uin
     (*pcVar3)();
     return;
   }
-  local_8 = local_18->brushContents | local_18->terrainContents;
-  if (local_8 == 0) {
-    CM_UnlinkEntity(param_1);
+  linkcontents = leaf->brushContents | leaf->terrainContents;
+  if (linkcontents == 0) {
+    CM_UnlinkEntity(ent);
   }
   else {
 LAB_006c51be:
-    local_24[0] = cm_world.mins[0];
-    local_24[1] = cm_world.mins[1];
-    local_14[0] = cm_world.maxs[0];
-    local_14[1] = cm_world.maxs[1];
-    local_2c = 1;
+    mins[0] = cm_world.mins[0];
+    mins[1] = cm_world.mins[1];
+    maxs[0] = cm_world.maxs[0];
+    maxs[1] = cm_world.maxs[1];
+    nodeIndex = 1;
     while( true ) {
       while( true ) {
-        cm_world.sectors[local_2c].contents.contentsEntities =
-             cm_world.sectors[local_2c].contents.contentsEntities | uVar2;
-        cm_world.sectors[local_2c].contents.contentsEntities =
-             cm_world.sectors[local_2c].contents.contentsEntities | local_8;
-        uVar5 = (uint)local_2c;
-        local_c = (uint)cm_world.sectors[uVar5].tree.axis;
+        cm_world.sectors[nodeIndex].contents.contentsEntities =
+             cm_world.sectors[nodeIndex].contents.contentsEntities | uVar2;
+        cm_world.sectors[nodeIndex].contents.contentsEntities =
+             cm_world.sectors[nodeIndex].contents.contentsEntities | linkcontents;
+        uVar5 = (uint)nodeIndex;
+        axis = (int)cm_world.sectors[uVar5].tree.axis;
         fVar1 = cm_world.sectors[uVar5].tree.dist;
-        if (param_2[local_c] <= fVar1) break;
-        local_24[local_c] = fVar1;
+        if (absmin[axis] <= fVar1) break;
+        mins[axis] = fVar1;
         if (cm_world.sectors[uVar5].tree.child[0] == 0) goto LAB_006c536b;
-        local_2c = cm_world.sectors[uVar5].tree.child[0];
+        nodeIndex = cm_world.sectors[uVar5].tree.child[0];
       }
-      if (fVar1 < param_3[local_c] || fVar1 == param_3[local_c]) break;
-      local_14[local_c] = fVar1;
+      if (fVar1 < absmax[axis] || fVar1 == absmax[axis]) break;
+      maxs[axis] = fVar1;
       if (cm_world.sectors[uVar5].tree.child[1] == 0) goto LAB_006c536b;
-      local_2c = cm_world.sectors[uVar5].tree.child[1];
+      nodeIndex = cm_world.sectors[uVar5].tree.child[1];
     }
-    if ((local_2c == param_1->worldSector) && ((~local_8 & param_1->linkcontents) == 0)) {
-      param_1->linkcontents = local_8;
-      param_1->linkmin[0] = *param_2;
-      param_1->linkmin[1] = param_2[1];
-      param_1->linkmin[2] = param_2[2];
-      param_1->linkmax[0] = *param_3;
-      param_1->linkmax[1] = param_3[1];
-      param_1->linkmax[2] = param_3[2];
+    if ((nodeIndex == ent->worldSector) && ((~linkcontents & ent->linkcontents) == 0)) {
+      ent->linkcontents = linkcontents;
+      ent->linkmin[0] = *absmin;
+      ent->linkmin[1] = absmin[1];
+      ent->linkmin[2] = absmin[2];
+      ent->linkmax[0] = *absmax;
+      ent->linkmax[1] = absmax[1];
+      ent->linkmax[2] = absmax[2];
       return;
     }
 LAB_006c536b:
-    if (param_1->worldSector != 0) {
-      if ((local_2c == param_1->worldSector) && ((~local_8 & param_1->linkcontents) == 0))
+    if (ent->worldSector != 0) {
+      if ((nodeIndex == ent->worldSector) && ((~linkcontents & ent->linkcontents) == 0))
       goto LAB_006c53b7;
-      CM_UnlinkEntity(param_1);
+      CM_UnlinkEntity(ent);
       goto LAB_006c51be;
     }
-    CM_AddEntityToNode(param_1,local_2c);
+    CM_AddEntityToNode(ent,nodeIndex);
 LAB_006c53b7:
-    param_1->linkcontents = local_8;
-    param_1->linkmin[0] = *param_2;
-    param_1->linkmin[1] = param_2[1];
-    param_1->linkmin[2] = param_2[2];
-    param_1->linkmax[0] = *param_3;
-    param_1->linkmax[1] = param_3[1];
-    param_1->linkmax[2] = param_3[2];
-    CM_SortNode(local_2c,local_24,local_14);
+    ent->linkcontents = linkcontents;
+    ent->linkmin[0] = *absmin;
+    ent->linkmin[1] = absmin[1];
+    ent->linkmin[2] = absmin[2];
+    ent->linkmax[0] = *absmax;
+    ent->linkmax[1] = absmax[1];
+    ent->linkmax[2] = absmax[2];
+    CM_SortNode(nodeIndex,mins,maxs);
   }
   return;
 }
@@ -554,7 +570,7 @@ LAB_006c53b7:
 
 // 006C5C40  CM_LinkStaticModel  (qcommon/cm_world.cpp:699)
 
-void __cdecl CM_LinkStaticModel(cStaticModel_s *param_1)
+void __cdecl CM_LinkStaticModel(cStaticModel_s *staticModel)
 
 {
   float fVar1;
@@ -562,11 +578,14 @@ void __cdecl CM_LinkStaticModel(cStaticModel_s *param_1)
   bool bVar3;
   uint uVar4;
   uint uVar5;
-  ushort local_20;
-  float local_18 [4];
-  uint local_8;
+  int contents;
+  worldSector_s *node;
+  ushort nodeIndex;
+  float dist;
+  float mins [4];
+  int axis;
   
-  uVar4 = XModelGetContents(param_1->xmodel);
+  uVar4 = XModelGetContents(staticModel->xmodel);
   if ((uVar4 == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x2c5,0,
                                "%s"), !bVar3)) {
@@ -574,31 +593,30 @@ void __cdecl CM_LinkStaticModel(cStaticModel_s *param_1)
     (*pcVar2)();
     return;
   }
-  local_18[0] = cm_world.mins[0];
-  local_18[1] = cm_world.mins[1];
-  local_18[2] = cm_world.maxs[0];
-  local_18[3] = cm_world.maxs[1];
-  local_20 = 1;
+  mins[0] = cm_world.mins[0];
+  mins[1] = cm_world.mins[1];
+  mins[2] = cm_world.maxs[0];
+  mins[3] = cm_world.maxs[1];
+  nodeIndex = 1;
   while( true ) {
     while( true ) {
-      cm_world.sectors[local_20].contents.contentsStaticModels =
-           cm_world.sectors[local_20].contents.contentsStaticModels | uVar4;
-      uVar5 = (uint)local_20;
-      local_8 = (uint)cm_world.sectors[uVar5].tree.axis;
+      cm_world.sectors[nodeIndex].contents.contentsStaticModels =
+           cm_world.sectors[nodeIndex].contents.contentsStaticModels | uVar4;
+      uVar5 = (uint)nodeIndex;
+      axis = (int)cm_world.sectors[uVar5].tree.axis;
       fVar1 = cm_world.sectors[uVar5].tree.dist;
-      if (fVar1 < param_1->absmin[local_8]) break;
-      if ((fVar1 < param_1->absmax[local_8] || fVar1 == param_1->absmax[local_8]) ||
-         (local_18[local_8 + 2] = fVar1, cm_world.sectors[uVar5].tree.child[1] == 0))
-      goto LAB_006c5d83;
-      local_20 = cm_world.sectors[uVar5].tree.child[1];
+      if (fVar1 < staticModel->absmin[axis]) break;
+      if ((fVar1 < staticModel->absmax[axis] || fVar1 == staticModel->absmax[axis]) ||
+         (mins[axis + 2] = fVar1, cm_world.sectors[uVar5].tree.child[1] == 0)) goto LAB_006c5d83;
+      nodeIndex = cm_world.sectors[uVar5].tree.child[1];
     }
-    local_18[local_8] = fVar1;
+    mins[axis] = fVar1;
     if (cm_world.sectors[uVar5].tree.child[0] == 0) break;
-    local_20 = cm_world.sectors[uVar5].tree.child[0];
+    nodeIndex = cm_world.sectors[uVar5].tree.child[0];
   }
 LAB_006c5d83:
-  CM_AddStaticModelToNode(param_1,local_20);
-  CM_SortNode(local_20,local_18,local_18 + 2);
+  CM_AddStaticModelToNode(staticModel,nodeIndex);
+  CM_SortNode(nodeIndex,mins,mins + 2);
   return;
 }
 
@@ -611,24 +629,24 @@ void __cdecl CM_LinkAllStaticModels(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  cStaticModel_s *local_c;
-  uint local_8;
+  cStaticModel_s *staticModel;
+  uint i;
   
-  local_8 = 0;
-  local_c = cm.staticModelList;
+  i = 0;
+  staticModel = cm.staticModelList;
   while( true ) {
-    if (cm.numStaticModels <= local_8) {
+    if (cm.numStaticModels <= i) {
       return;
     }
-    if ((local_c->xmodel == (XModel *)0x0) &&
+    if ((staticModel->xmodel == (XModel *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x2f8,0,
                                  "%s"), !bVar2)) break;
-    iVar3 = XModelGetContents(local_c->xmodel);
+    iVar3 = XModelGetContents(staticModel->xmodel);
     if (iVar3 != 0) {
-      CM_LinkStaticModel(local_c);
+      CM_LinkStaticModel(staticModel);
     }
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    staticModel = staticModel + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -643,7 +661,7 @@ void __cdecl CM_LinkAllStaticModels(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CM_AreaEntities_r(uint param_1,areaParms_t *param_2)
+void __cdecl CM_AreaEntities_r(uint nodeIndex,areaParms_t *ap)
 
 {
   worldTree_s *pwVar1;
@@ -652,81 +670,91 @@ void __cdecl CM_AreaEntities_r(uint param_1,areaParms_t *param_2)
   ushort uVar4;
   int iVar5;
   int iVar6;
-  uint local_c;
+  worldSector_s *node;
+  uint nextNodeIndex;
+  gentity_s *gcheck;
+  uint entnum;
+  svEntity_s *check;
   
   do {
-    if ((cm_world.sectors[param_1].contents.contentsEntities & param_2->contentmask) == 0) {
+    if ((cm_world.sectors[nodeIndex].contents.contentsEntities & ap->contentmask) == 0) {
       return;
     }
-    uVar4 = cm_world.sectors[param_1].contents.entities;
-    while (local_c = (uint)uVar4, local_c != 0) {
-      iVar5 = local_c * 0x168 + -0x168;
+    uVar4 = cm_world.sectors[nodeIndex].contents.entities;
+    while (entnum = (uint)uVar4, entnum != 0) {
+      iVar5 = entnum * 0x168 + -0x168;
       iVar6 = sv.gentitySize * (iVar5 / 0x168);
-      if (((((*(uint *)((int)((sv.gentities)->r).absmin + iVar6 + -4) & param_2->contentmask) != 0)
-           && (fVar3 = *(float *)((int)((sv.gentities)->r).absmin + iVar6),
-              fVar3 < *param_2->maxs || fVar3 == *param_2->maxs)) &&
+      if (((((*(uint *)((int)((sv.gentities)->r).absmin + iVar6 + -4) & ap->contentmask) != 0) &&
+           (fVar3 = *(float *)((int)((sv.gentities)->r).absmin + iVar6),
+           fVar3 < *ap->maxs || fVar3 == *ap->maxs)) &&
           (pfVar2 = (float *)((int)((sv.gentities)->r).absmax + iVar6),
-          *param_2->mins < *pfVar2 || *param_2->mins == *pfVar2)) &&
+          *ap->mins < *pfVar2 || *ap->mins == *pfVar2)) &&
          (((fVar3 = *(float *)((int)((sv.gentities)->r).absmin + iVar6 + 4),
-           fVar3 < param_2->maxs[1] || fVar3 == param_2->maxs[1] &&
+           fVar3 < ap->maxs[1] || fVar3 == ap->maxs[1] &&
            (pfVar2 = (float *)((int)((sv.gentities)->r).absmax + iVar6 + 4),
-           param_2->mins[1] < *pfVar2 || param_2->mins[1] == *pfVar2)) &&
+           ap->mins[1] < *pfVar2 || ap->mins[1] == *pfVar2)) &&
           ((fVar3 = *(float *)((int)((sv.gentities)->r).absmin + iVar6 + 8),
-           fVar3 < param_2->maxs[2] || fVar3 == param_2->maxs[2] &&
+           fVar3 < ap->maxs[2] || fVar3 == ap->maxs[2] &&
            (pfVar2 = (float *)((int)((sv.gentities)->r).absmax + iVar6 + 8),
-           param_2->mins[2] < *pfVar2 || param_2->mins[2] == *pfVar2)))))) {
-        if (param_2->count == param_2->maxcount) {
+           ap->mins[2] < *pfVar2 || ap->mins[2] == *pfVar2)))))) {
+        if (ap->count == ap->maxcount) {
           Com_DPrintf(0x10,"CM_AreaEntities: MAXCOUNT\n");
           return;
         }
-        param_2->list[param_2->count] = iVar5 / 0x168;
-        param_2->count = param_2->count + 1;
+        ap->list[ap->count] = iVar5 / 0x168;
+        ap->count = ap->count + 1;
       }
-      uVar4 = sv.configstrings[local_c * 0xb4 + 0xc0a];
+      uVar4 = sv.configstrings[entnum * 0xb4 + 0xc0a];
     }
-    pwVar1 = &cm_world.sectors[param_1].tree;
-    if (param_2->maxs[cm_world.sectors[param_1].tree.axis] < pwVar1->dist ||
-        param_2->maxs[cm_world.sectors[param_1].tree.axis] == pwVar1->dist) {
-      if (cm_world.sectors[param_1].tree.dist <= param_2->mins[cm_world.sectors[param_1].tree.axis])
+    pwVar1 = &cm_world.sectors[nodeIndex].tree;
+    if (ap->maxs[cm_world.sectors[nodeIndex].tree.axis] < pwVar1->dist ||
+        ap->maxs[cm_world.sectors[nodeIndex].tree.axis] == pwVar1->dist) {
+      if (cm_world.sectors[nodeIndex].tree.dist <= ap->mins[cm_world.sectors[nodeIndex].tree.axis])
       {
         return;
       }
-      uVar4 = cm_world.sectors[param_1].tree.child[1];
+      uVar4 = cm_world.sectors[nodeIndex].tree.child[1];
     }
     else {
-      fVar3 = cm_world.sectors[param_1].tree.dist;
-      if (fVar3 < param_2->mins[cm_world.sectors[param_1].tree.axis] ||
-          fVar3 == param_2->mins[cm_world.sectors[param_1].tree.axis]) {
-        uVar4 = cm_world.sectors[param_1].tree.child[0];
+      fVar3 = cm_world.sectors[nodeIndex].tree.dist;
+      if (fVar3 < ap->mins[cm_world.sectors[nodeIndex].tree.axis] ||
+          fVar3 == ap->mins[cm_world.sectors[nodeIndex].tree.axis]) {
+        uVar4 = cm_world.sectors[nodeIndex].tree.child[0];
       }
       else {
-        uVar4 = cm_world.sectors[param_1].tree.child[1];
-        CM_AreaEntities_r((uint)cm_world.sectors[param_1].tree.child[0],param_2);
+        uVar4 = cm_world.sectors[nodeIndex].tree.child[1];
+        CM_AreaEntities_r((uint)cm_world.sectors[nodeIndex].tree.child[0],ap);
       }
     }
-    param_1 = (uint)uVar4;
+    nodeIndex = (uint)uVar4;
   } while( true );
 }
 
 
 // 006C5DB0  CM_AreaEntities  (qcommon/cm_world.cpp:845)
 
-int __cdecl CM_AreaEntities(float *param_1,float *param_2,int *param_3,int param_4,int param_5)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+int __cdecl CM_AreaEntities(float *mins,float *maxs,int *entityList,int maxcount,int contentmask)
 
 {
   int iVar1;
   DWORD DVar2;
-  areaParms_t local_20;
+  areaParms_t ap;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"CM_AreaEntities");
-  local_20.mins = param_1;
-  local_20.maxs = param_2;
-  local_20.list = param_3;
-  local_20.count = 0;
-  local_20.maxcount = param_4;
-  local_20.contentmask = param_5;
-  CM_AreaEntities_r(1,&local_20);
-  iVar1 = local_20.count;
+  ap.mins = mins;
+  ap.maxs = maxs;
+  ap.list = entityList;
+  ap.count = 0;
+  ap.maxcount = maxcount;
+  ap.contentmask = contentmask;
+  CM_AreaEntities_r(1,&ap);
+  iVar1 = ap.count;
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -738,8 +766,7 @@ int __cdecl CM_AreaEntities(float *param_1,float *param_2,int *param_3,int param
 // 006C6170  CM_PointTraceStaticModels_r  (qcommon/cm_world.cpp:870)
 
 void __cdecl
-CM_PointTraceStaticModels_r
-          (locTraceWork_t *param_1,ushort param_2,float *param_3,float *param_4,trace_t *param_5)
+CM_PointTraceStaticModels_r(locTraceWork_t *tw,ushort nodeIndex,float *p1_,float *p2,trace_t *trace)
 
 {
   code *pcVar1;
@@ -752,50 +779,53 @@ CM_PointTraceStaticModels_r
   uint local_4c;
   uint local_48;
   float local_44;
-  ushort local_38;
-  float local_2c [4];
-  float local_1c;
-  float local_18;
+  int side;
+  worldSector_s *node;
+  ushort modelnum;
+  float t1;
+  float frac;
+  float p1 [4];
+  float t2;
+  float mid;
   float local_14;
   float local_10;
   float local_c;
-  cStaticModel_s *local_8;
+  cStaticModel_s *check;
   
-  local_2c[0] = *param_3;
-  local_2c[1] = param_3[1];
-  local_2c[2] = param_3[2];
-  local_2c[3] = param_3[3];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
+  p1[3] = p1_[3];
   while( true ) {
     while( true ) {
-      uVar5 = (uint)param_2;
+      uVar5 = (uint)nodeIndex;
       iVar6 = uVar5 * 0x18;
-      if ((cm_world.sectors[uVar5].contents.contentsStaticModels & param_1->contents) == 0) {
+      if ((cm_world.sectors[uVar5].contents.contentsStaticModels & tw->contents) == 0) {
         return;
       }
-      local_38 = cm_world.sectors[uVar5].contents.staticModels;
-      while (local_38 != 0) {
-        local_8 = cm.staticModelList + (local_38 - 1);
-        uVar3 = XModelGetContents(local_8->xmodel);
-        if (((uVar3 & param_1->contents) != 0) &&
-           (iVar4 = intersect_extents_aabb
-                              (&param_1->extents,local_8->absmin,local_8->absmax,param_5->fraction),
-           iVar4 != 0)) {
-          CM_TraceStaticModel(local_8,param_5,(float *)&param_1->extents,
-                              (float *)&(param_1->extents).end,param_1->contents);
+      modelnum = cm_world.sectors[uVar5].contents.staticModels;
+      while (modelnum != 0) {
+        check = cm.staticModelList + (modelnum - 1);
+        uVar3 = XModelGetContents(check->xmodel);
+        if (((uVar3 & tw->contents) != 0) &&
+           (iVar4 = intersect_extents_aabb(&tw->extents,check->absmin,check->absmax,trace->fraction)
+           , iVar4 != 0)) {
+          CM_TraceStaticModel(check,trace,(float *)&tw->extents,(float *)&(tw->extents).end,
+                              tw->contents);
         }
-        local_38 = (local_8->writable).nextModelInWorldSector;
+        modelnum = (check->writable).nextModelInWorldSector;
       }
-      fVar7 = local_2c[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-      local_44 = param_4[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-      local_1c = local_44;
+      fVar7 = p1[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+      local_44 = p2[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+      t2 = local_44;
       if (fVar7 * local_44 < 0.0) break;
       if (0.0 <= local_44 - fVar7) {
         local_44 = fVar7;
       }
       local_48 = (uint)(local_44 < 0.0);
-      param_2 = *(ushort *)(iVar6 + 0x3f41268 + local_48 * 2);
+      nodeIndex = *(ushort *)(iVar6 + 0x3f41268 + local_48 * 2);
     }
-    if (param_5->fraction <= local_2c[3]) {
+    if (trace->fraction <= p1[3]) {
       return;
     }
     if ((fVar7 - local_44 == 0.0) &&
@@ -805,7 +835,7 @@ CM_PointTraceStaticModels_r
       (*pcVar1)();
       return;
     }
-    fVar7 = fVar7 / (fVar7 - local_1c);
+    fVar7 = fVar7 / (fVar7 - t2);
     if ((fVar7 < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x390,0,
                                  "%s"), !bVar2)) break;
@@ -816,18 +846,17 @@ CM_PointTraceStaticModels_r
       (*pcVar1)();
       return;
     }
-    local_18 = (*param_4 - local_2c[0]) * fVar7 + local_2c[0];
-    local_14 = (param_4[1] - local_2c[1]) * fVar7 + local_2c[1];
-    local_10 = (param_4[2] - local_2c[2]) * fVar7 + local_2c[2];
-    local_c = (param_4[3] - local_2c[3]) * fVar7 + local_2c[3];
-    local_4c = (uint)(0.0 <= local_1c);
-    CM_PointTraceStaticModels_r
-              (param_1,*(ushort *)(iVar6 + 0x3f41268 + local_4c * 2),local_2c,&local_18,param_5);
-    param_2 = *(ushort *)(iVar6 + 0x3f41268 + (1 - local_4c) * 2);
-    local_2c[0] = local_18;
-    local_2c[1] = local_14;
-    local_2c[2] = local_10;
-    local_2c[3] = local_c;
+    mid = (*p2 - p1[0]) * fVar7 + p1[0];
+    local_14 = (p2[1] - p1[1]) * fVar7 + p1[1];
+    local_10 = (p2[2] - p1[2]) * fVar7 + p1[2];
+    local_c = (p2[3] - p1[3]) * fVar7 + p1[3];
+    local_4c = (uint)(0.0 <= t2);
+    CM_PointTraceStaticModels_r(tw,*(ushort *)(iVar6 + 0x3f41268 + local_4c * 2),p1,&mid,trace);
+    nodeIndex = *(ushort *)(iVar6 + 0x3f41268 + (1 - local_4c) * 2);
+    p1[0] = mid;
+    p1[1] = local_14;
+    p1[2] = local_10;
+    p1[3] = local_c;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -839,41 +868,42 @@ CM_PointTraceStaticModels_r
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CM_PointTraceStaticModels(trace_t *param_1,float *param_2,float *param_3,int param_4)
+void __cdecl CM_PointTraceStaticModels(trace_t *results,float *start,float *end,int contentmask)
 
 {
   DWORD DVar1;
-  locTraceWork_t local_5c;
+  PIXProfile pixProfile;
+  locTraceWork_t tw;
   uint local_28;
-  float local_24;
+  float start_;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end_;
   float local_10;
   float local_c;
   float local_8;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"pointtracestaticmodels");
-  TraceExtents::TraceExtents(&local_5c.extents);
-  local_5c.contents = param_4;
-  local_5c.extents.start.vec.v[0] = *param_2;
-  local_5c.extents.start.vec.v[1] = param_2[1];
-  local_5c.extents.start.vec.v[2] = param_2[2];
-  local_5c.extents.end.vec.v[0] = *param_3;
-  local_5c.extents.end.vec.v[1] = param_3[1];
-  local_5c.extents.end.vec.v[2] = param_3[2];
-  CM_CalcTraceExtents(&local_5c.extents);
-  local_24 = local_5c.extents.start.vec.v[0];
-  local_20 = local_5c.extents.start.vec.v[1];
-  local_1c = local_5c.extents.start.vec.v[2];
+  TraceExtents::TraceExtents(&tw.extents);
+  tw.contents = contentmask;
+  tw.extents.start.vec.v[0] = *start;
+  tw.extents.start.vec.v[1] = start[1];
+  tw.extents.start.vec.v[2] = start[2];
+  tw.extents.end.vec.v[0] = *end;
+  tw.extents.end.vec.v[1] = end[1];
+  tw.extents.end.vec.v[2] = end[2];
+  CM_CalcTraceExtents(&tw.extents);
+  start_ = tw.extents.start.vec.v[0];
+  local_20 = tw.extents.start.vec.v[1];
+  local_1c = tw.extents.start.vec.v[2];
   local_18 = 0;
-  local_14 = local_5c.extents.end.vec.v[0];
-  local_10 = local_5c.extents.end.vec.v[1];
-  local_c = local_5c.extents.end.vec.v[2];
-  local_8 = param_1->fraction;
-  CM_PointTraceStaticModels_r(&local_5c,1,&local_24,&local_14,param_1);
+  end_ = tw.extents.end.vec.v[0];
+  local_10 = tw.extents.end.vec.v[1];
+  local_c = tw.extents.end.vec.v[2];
+  local_8 = results->fraction;
+  CM_PointTraceStaticModels_r(&tw,1,&start_,&end_,results);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -885,8 +915,7 @@ void __cdecl CM_PointTraceStaticModels(trace_t *param_1,float *param_2,float *pa
 // 006C6590  CM_PointTraceStaticModelsComplete_r  (qcommon/cm_world.cpp:955)
 
 int __cdecl
-CM_PointTraceStaticModelsComplete_r
-          (staticmodeltrace_t *param_1,ushort param_2,float *param_3,float *param_4)
+CM_PointTraceStaticModelsComplete_r(staticmodeltrace_t *clip,ushort nodeIndex,float *p1_,float *p2)
 
 {
   code *pcVar1;
@@ -899,46 +928,51 @@ CM_PointTraceStaticModelsComplete_r
   uint local_44;
   uint local_40;
   float local_3c;
-  ushort local_30;
-  float local_24 [4];
-  float local_14;
+  int side;
+  worldSector_s *node;
+  ushort modelnum;
+  float t1;
+  float frac;
+  float p1 [3];
+  float t2;
+  float mid;
   float local_10;
   float local_c;
-  cStaticModel_s *local_8;
+  cStaticModel_s *check;
   
-  local_24[0] = *param_3;
-  local_24[1] = param_3[1];
-  local_24[2] = param_3[2];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
   while( true ) {
     while( true ) {
-      uVar3 = (uint)param_2;
+      uVar3 = (uint)nodeIndex;
       iVar4 = uVar3 * 0x18;
-      if ((cm_world.sectors[uVar3].contents.contentsStaticModels & param_1->contents) == 0) {
+      if ((cm_world.sectors[uVar3].contents.contentsStaticModels & clip->contents) == 0) {
         return 1;
       }
-      local_30 = cm_world.sectors[uVar3].contents.staticModels;
-      while (local_30 != 0) {
-        local_8 = cm.staticModelList + (local_30 - 1);
-        uVar5 = XModelGetContents(local_8->xmodel);
-        if ((((uVar5 & param_1->contents) != 0) &&
-            (iVar6 = intersect_extents_aabb(&param_1->extents,local_8->absmin,local_8->absmax,1.0),
+      modelnum = cm_world.sectors[uVar3].contents.staticModels;
+      while (modelnum != 0) {
+        check = cm.staticModelList + (modelnum - 1);
+        uVar5 = XModelGetContents(check->xmodel);
+        if ((((uVar5 & clip->contents) != 0) &&
+            (iVar6 = intersect_extents_aabb(&clip->extents,check->absmin,check->absmax,1.0),
             iVar6 != 0)) &&
            (iVar6 = CM_TraceStaticModelComplete
-                              (local_8,(float *)param_1,(float *)&(param_1->extents).end,
-                               param_1->contents), iVar6 == 0)) {
+                              (check,(float *)clip,(float *)&(clip->extents).end,clip->contents),
+           iVar6 == 0)) {
           return 0;
         }
-        local_30 = (local_8->writable).nextModelInWorldSector;
+        modelnum = (check->writable).nextModelInWorldSector;
       }
-      fVar7 = local_24[cm_world.sectors[uVar3].tree.axis] - cm_world.sectors[uVar3].tree.dist;
-      local_3c = param_4[cm_world.sectors[uVar3].tree.axis] - cm_world.sectors[uVar3].tree.dist;
-      local_24[3] = local_3c;
+      fVar7 = p1[cm_world.sectors[uVar3].tree.axis] - cm_world.sectors[uVar3].tree.dist;
+      local_3c = p2[cm_world.sectors[uVar3].tree.axis] - cm_world.sectors[uVar3].tree.dist;
+      t2 = local_3c;
       if (fVar7 * local_3c < 0.0) break;
       if (0.0 <= local_3c - fVar7) {
         local_3c = fVar7;
       }
       local_40 = (uint)(local_3c < 0.0);
-      param_2 = *(ushort *)(iVar4 + 0x3f41268 + local_40 * 2);
+      nodeIndex = *(ushort *)(iVar4 + 0x3f41268 + local_40 * 2);
     }
     if ((fVar7 - local_3c == 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x3e1,0,
@@ -947,7 +981,7 @@ CM_PointTraceStaticModelsComplete_r
       iVar4 = (*pcVar1)();
       return iVar4;
     }
-    fVar7 = fVar7 / (fVar7 - local_24[3]);
+    fVar7 = fVar7 / (fVar7 - t2);
     if ((fVar7 < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x3e3,0,
                                  "%s"), !bVar2)) break;
@@ -958,19 +992,19 @@ CM_PointTraceStaticModelsComplete_r
       iVar4 = (*pcVar1)();
       return iVar4;
     }
-    local_14 = (*param_4 - local_24[0]) * fVar7 + local_24[0];
-    local_10 = (param_4[1] - local_24[1]) * fVar7 + local_24[1];
-    local_c = (param_4[2] - local_24[2]) * fVar7 + local_24[2];
-    local_44 = (uint)(0.0 <= local_24[3]);
+    mid = (*p2 - p1[0]) * fVar7 + p1[0];
+    local_10 = (p2[1] - p1[1]) * fVar7 + p1[1];
+    local_c = (p2[2] - p1[2]) * fVar7 + p1[2];
+    local_44 = (uint)(0.0 <= t2);
     iVar6 = CM_PointTraceStaticModelsComplete_r
-                      (param_1,*(ushort *)(iVar4 + 0x3f41268 + local_44 * 2),local_24,&local_14);
+                      (clip,*(ushort *)(iVar4 + 0x3f41268 + local_44 * 2),p1,&mid);
     if (iVar6 == 0) {
       return 0;
     }
-    param_2 = *(ushort *)(iVar4 + 0x3f41268 + (1 - local_44) * 2);
-    local_24[0] = local_14;
-    local_24[1] = local_10;
-    local_24[2] = local_c;
+    nodeIndex = *(ushort *)(iVar4 + 0x3f41268 + (1 - local_44) * 2);
+    p1[0] = mid;
+    p1[1] = local_10;
+    p1[2] = local_c;
   }
   pcVar1 = (code *)swi(3);
   iVar4 = (*pcVar1)();
@@ -982,27 +1016,27 @@ CM_PointTraceStaticModelsComplete_r
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl CM_PointTraceStaticModelsComplete(float *param_1,float *param_2,int param_3)
+int __cdecl CM_PointTraceStaticModelsComplete(float *start,float *end,int contentmask)
 
 {
   int iVar1;
-  float4 local_40;
+  float4 clip;
   float4 local_30 [2];
   int local_10;
   uint local_c;
+  int result;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  TraceExtents::TraceExtents((TraceExtents *)&local_40);
-  local_10 = param_3;
-  local_40.v[0] = *param_1;
-  local_40.v[1] = param_1[1];
-  local_40.v[2] = param_1[2];
-  local_30[0]._0_4_ = *param_2;
-  local_30[0]._4_4_ = param_2[1];
-  local_30[0]._8_4_ = param_2[2];
-  CM_CalcTraceExtents((TraceExtents *)&local_40);
-  iVar1 = CM_PointTraceStaticModelsComplete_r
-                    ((staticmodeltrace_t *)&local_40,1,local_40.v,local_30[0].v);
+  TraceExtents::TraceExtents((TraceExtents *)&clip);
+  local_10 = contentmask;
+  clip.v[0] = *start;
+  clip.v[1] = start[1];
+  clip.v[2] = start[2];
+  local_30[0]._0_4_ = *end;
+  local_30[0]._4_4_ = end[1];
+  local_30[0]._8_4_ = end[2];
+  CM_CalcTraceExtents((TraceExtents *)&clip);
+  iVar1 = CM_PointTraceStaticModelsComplete_r((staticmodeltrace_t *)&clip,1,clip.v,local_30[0].v);
   return iVar1;
 }
 
@@ -1015,8 +1049,7 @@ int __cdecl CM_PointTraceStaticModelsComplete(float *param_1,float *param_2,int 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CM_ClipMoveToEntities_r
-          (moveclip_t *param_1,ushort param_2,float *param_3,float *param_4,trace_t *param_5)
+CM_ClipMoveToEntities_r(moveclip_t *clip,ushort nodeIndex,float *p1,float *p2,trace_t *trace)
 
 {
   float fVar1;
@@ -1031,105 +1064,111 @@ CM_ClipMoveToEntities_r
   float local_64;
   float local_60;
   float local_5c;
-  uint local_58;
-  float local_44;
-  float local_38;
-  uint local_2c;
-  float local_28;
+  int side;
+  worldSector_s *node;
+  float diff;
+  float t;
+  float t1;
+  float frac;
+  float offset;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  uint entnum;
+  float mid;
   float local_24;
   float local_20;
   float local_1c;
-  svEntity_s *local_18;
-  float local_14 [4];
+  svEntity_s *check;
+  float p [4];
   
-  local_14[0] = *param_3;
-  local_14[1] = param_3[1];
-  local_14[2] = param_3[2];
-  local_14[3] = param_3[3];
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
+  p[3] = p1[3];
   while( true ) {
     while( true ) {
       while( true ) {
-        uVar5 = (uint)param_2;
-        if ((cm_world.sectors[uVar5].contents.contentsEntities & param_1->contentmask) == 0) {
+        uVar5 = (uint)nodeIndex;
+        if ((cm_world.sectors[uVar5].contents.contentsEntities & clip->contentmask) == 0) {
           return;
         }
         uVar2 = cm_world.sectors[uVar5].contents.entities;
-        while (local_2c = (uint)uVar2, local_2c != 0) {
-          local_18 = (svEntity_s *)(sv.configstrings + local_2c * 0xb4 + 0xc09);
-          if ((param_1->contentmask & sv.svEntities[local_2c - 1].linkcontents) != 0) {
-            SV_TraceCapsuleToEntity(param_1,local_18,param_5);
+        while (entnum = (uint)uVar2, entnum != 0) {
+          check = (svEntity_s *)(sv.configstrings + entnum * 0xb4 + 0xc09);
+          if ((clip->contentmask & sv.svEntities[entnum - 1].linkcontents) != 0) {
+            SV_TraceCapsuleToEntity(clip,check,trace);
           }
-          uVar2 = local_18->nextEntityInWorldSector;
+          uVar2 = check->nextEntityInWorldSector;
         }
-        local_64 = local_14[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-        fVar6 = param_4[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-        fVar1 = param_1->outerSize[cm_world.sectors[uVar5].tree.axis];
+        local_64 = p[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+        fVar6 = p2[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+        fVar1 = clip->outerSize[cm_world.sectors[uVar5].tree.axis];
         local_5c = fVar6;
         if (0.0 <= fVar6 - local_64) {
           local_5c = local_64;
         }
         if (local_5c < fVar1) break;
-        param_2 = cm_world.sectors[uVar5].tree.child[0];
+        nodeIndex = cm_world.sectors[uVar5].tree.child[0];
       }
       local_60 = fVar6;
       if (0.0 <= local_64 - fVar6) {
         local_60 = local_64;
       }
       if (-fVar1 < local_60) break;
-      param_2 = cm_world.sectors[uVar5].tree.child[1];
+      nodeIndex = cm_world.sectors[uVar5].tree.child[1];
     }
-    if (param_5->fraction <= local_14[3]) {
+    if (trace->fraction <= p[3]) {
       return;
     }
     fVar6 = fVar6 - local_64;
     if (fVar6 == 0.0) {
-      local_58 = 0;
-      local_44 = 1.0;
-      local_38 = 0.0;
+      side = 0;
+      frac = 1.0;
+      frac2 = 0.0;
     }
     else {
       if (0.0 <= fVar6) {
         local_64 = -local_64;
       }
-      local_38 = (local_64 - fVar1) * (1.0 / ABS(fVar6));
-      local_44 = (local_64 + fVar1) * (1.0 / ABS(fVar6));
+      frac2 = (local_64 - fVar1) * (1.0 / ABS(fVar6));
+      frac = (local_64 + fVar1) * (1.0 / ABS(fVar6));
       local_68 = (uint)(0.0 <= fVar6);
-      local_58 = local_68;
+      side = local_68;
     }
-    if ((local_44 < 0.0) &&
+    if ((frac < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x44e,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (1.0 - local_44 < 0.0) {
+    if (1.0 - frac < 0.0) {
       local_6c = 1.0;
     }
     else {
-      local_6c = local_44;
+      local_6c = frac;
     }
-    local_28 = (*param_4 - local_14[0]) * local_6c + local_14[0];
-    local_24 = (param_4[1] - local_14[1]) * local_6c + local_14[1];
-    local_20 = (param_4[2] - local_14[2]) * local_6c + local_14[2];
-    local_1c = (param_4[3] - local_14[3]) * local_6c + local_14[3];
-    CM_ClipMoveToEntities_r
-              (param_1,*(ushort *)(uVar5 * 0x18 + 0x3f41268 + local_58 * 2),local_14,&local_28,
-               param_5);
-    if ((1.0 < local_38) &&
+    mid = (*p2 - p[0]) * local_6c + p[0];
+    local_24 = (p2[1] - p[1]) * local_6c + p[1];
+    local_20 = (p2[2] - p[2]) * local_6c + p[2];
+    local_1c = (p2[3] - p[3]) * local_6c + p[3];
+    CM_ClipMoveToEntities_r(clip,*(ushort *)(uVar5 * 0x18 + 0x3f41268 + side * 2),p,&mid,trace);
+    if ((1.0 < frac2) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x458,0,
                                  "%s\n\t(frac2) = %g"), !bVar4)) break;
-    if (local_38 - 0.0 < 0.0) {
+    if (frac2 - 0.0 < 0.0) {
       local_70 = 0.0;
     }
     else {
-      local_70 = local_38;
+      local_70 = frac2;
     }
-    local_14[0] = (*param_4 - local_14[0]) * local_70 + local_14[0];
-    local_14[1] = (param_4[1] - local_14[1]) * local_70 + local_14[1];
-    local_14[2] = (param_4[2] - local_14[2]) * local_70 + local_14[2];
-    local_14[3] = (param_4[3] - local_14[3]) * local_70 + local_14[3];
-    param_2 = *(ushort *)(uVar5 * 0x18 + 0x3f41268 + (1 - local_58) * 2);
+    p[0] = (*p2 - p[0]) * local_70 + p[0];
+    p[1] = (p2[1] - p[1]) * local_70 + p[1];
+    p[2] = (p2[2] - p[2]) * local_70 + p[2];
+    p[3] = (p2[3] - p[3]) * local_70 + p[3];
+    nodeIndex = *(ushort *)(uVar5 * 0x18 + 0x3f41268 + (1 - side) * 2);
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -1139,38 +1178,39 @@ CM_ClipMoveToEntities_r
 
 // 006C68D0  CM_ClipMoveToEntities  (qcommon/cm_world.cpp:1125)
 
-void __cdecl CM_ClipMoveToEntities(moveclip_t *param_1,trace_t *param_2)
+void __cdecl CM_ClipMoveToEntities(moveclip_t *clip,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_24;
+  PIXProfile pixProfile;
+  float start;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end;
   float local_10;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"clipmoveentities");
-  if ((1.0 < param_2->fraction) &&
+  if ((1.0 < trace->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x46c,0,
                                "%s\n\t(trace->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = (param_1->extents).start.vec.v[0];
-  local_20 = (param_1->extents).start.vec.v[1];
-  local_1c = (param_1->extents).start.vec.v[2];
-  local_14 = (param_1->extents).end.vec.v[0];
-  local_10 = (param_1->extents).end.vec.v[1];
-  local_c = (param_1->extents).end.vec.v[2];
+  start = (clip->extents).start.vec.v[0];
+  local_20 = (clip->extents).start.vec.v[1];
+  local_1c = (clip->extents).start.vec.v[2];
+  end = (clip->extents).end.vec.v[0];
+  local_10 = (clip->extents).end.vec.v[1];
+  local_c = (clip->extents).end.vec.v[2];
   local_18 = 0;
-  local_8 = param_2->fraction;
-  CM_ClipMoveToEntities_r(param_1,1,&local_24,&local_14,param_2);
+  local_8 = trace->fraction;
+  CM_ClipMoveToEntities_r(clip,1,&start,&end,trace);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1186,8 +1226,7 @@ void __cdecl CM_ClipMoveToEntities(moveclip_t *param_1,trace_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl
-CM_ClipSightTraceToEntities_r(sightclip_t *param_1,ushort param_2,float *param_3,float *param_4)
+int __cdecl CM_ClipSightTraceToEntities_r(sightclip_t *clip,ushort nodeIndex,float *p1,float *p2)
 
 {
   float fVar1;
@@ -1203,102 +1242,110 @@ CM_ClipSightTraceToEntities_r(sightclip_t *param_1,ushort param_2,float *param_3
   float local_60;
   float local_5c;
   float local_58;
-  uint local_54;
-  float local_40;
-  float local_34;
-  uint local_28;
-  float local_20;
+  int side;
+  worldSector_s *node;
+  float diff;
+  float t;
+  float t1;
+  float frac;
+  float offset;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  uint entnum;
+  int hitNum;
+  float mid;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10 [3];
+  svEntity_s *check;
+  float p [3];
   
-  local_10[0] = *param_3;
-  local_10[1] = param_3[1];
-  local_10[2] = param_3[2];
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
   while( true ) {
     while( true ) {
       while( true ) {
-        uVar5 = (uint)param_2;
-        if ((cm_world.sectors[uVar5].contents.contentsEntities & param_1->contentmask) == 0) {
+        uVar5 = (uint)nodeIndex;
+        if ((cm_world.sectors[uVar5].contents.contentsEntities & clip->contentmask) == 0) {
           return 0;
         }
         uVar2 = cm_world.sectors[uVar5].contents.entities;
-        while (local_28 = (uint)uVar2, local_28 != 0) {
-          local_14 = (local_28 - 1) * 0x168 + 0x97e8b28;
-          iVar6 = SV_SightTraceCapsuleToEntity(param_1,local_28 - 1);
+        while (entnum = (uint)uVar2, entnum != 0) {
+          check = (svEntity_s *)(sv.configstrings + entnum * 0xb4 + 0xc09);
+          iVar6 = SV_SightTraceCapsuleToEntity(clip,entnum - 1);
           if (iVar6 != 0) {
             return iVar6;
           }
-          uVar2 = *(ushort *)(local_14 + 2);
+          uVar2 = check->nextEntityInWorldSector;
         }
-        local_60 = local_10[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-        fVar7 = param_4[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-        fVar1 = param_1->outerSize[cm_world.sectors[uVar5].tree.axis];
+        local_60 = p[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+        fVar7 = p2[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+        fVar1 = clip->outerSize[cm_world.sectors[uVar5].tree.axis];
         local_58 = fVar7;
         if (0.0 <= fVar7 - local_60) {
           local_58 = local_60;
         }
         if (local_58 < fVar1) break;
-        param_2 = cm_world.sectors[uVar5].tree.child[0];
+        nodeIndex = cm_world.sectors[uVar5].tree.child[0];
       }
       local_5c = fVar7;
       if (0.0 <= local_60 - fVar7) {
         local_5c = local_60;
       }
       if (-fVar1 < local_5c) break;
-      param_2 = cm_world.sectors[uVar5].tree.child[1];
+      nodeIndex = cm_world.sectors[uVar5].tree.child[1];
     }
     fVar7 = fVar7 - local_60;
     if (fVar7 == 0.0) {
-      local_54 = 0;
-      local_40 = 1.0;
-      local_34 = 0.0;
+      side = 0;
+      frac = 1.0;
+      frac2 = 0.0;
     }
     else {
       if (0.0 <= fVar7) {
         local_60 = -local_60;
       }
-      local_34 = (local_60 - fVar1) * (1.0 / ABS(fVar7));
-      local_40 = (local_60 + fVar1) * (1.0 / ABS(fVar7));
+      frac2 = (local_60 - fVar1) * (1.0 / ABS(fVar7));
+      frac = (local_60 + fVar1) * (1.0 / ABS(fVar7));
       local_64 = (uint)(0.0 <= fVar7);
-      local_54 = local_64;
+      side = local_64;
     }
-    if ((local_40 < 0.0) &&
+    if ((frac < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x4bc,0,
                                  "%s"), !bVar4)) break;
-    if (1.0 - local_40 < 0.0) {
+    if (1.0 - frac < 0.0) {
       local_68 = 1.0;
     }
     else {
-      local_68 = local_40;
+      local_68 = frac;
     }
-    local_20 = (*param_4 - local_10[0]) * local_68 + local_10[0];
-    local_1c = (param_4[1] - local_10[1]) * local_68 + local_10[1];
-    local_18 = (param_4[2] - local_10[2]) * local_68 + local_10[2];
+    mid = (*p2 - p[0]) * local_68 + p[0];
+    local_1c = (p2[1] - p[1]) * local_68 + p[1];
+    local_18 = (p2[2] - p[2]) * local_68 + p[2];
     iVar6 = CM_ClipSightTraceToEntities_r
-                      (param_1,*(ushort *)(uVar5 * 0x18 + 0x3f41268 + local_54 * 2),local_10,
-                       &local_20);
+                      (clip,*(ushort *)(uVar5 * 0x18 + 0x3f41268 + side * 2),p,&mid);
     if (iVar6 != 0) {
       return iVar6;
     }
-    if ((1.0 < local_34) &&
+    if ((1.0 < frac2) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x4c7,0,
                                  "%s\n\t(frac2) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       iVar6 = (*pcVar3)();
       return iVar6;
     }
-    if (local_34 - 0.0 < 0.0) {
+    if (frac2 - 0.0 < 0.0) {
       local_6c = 0.0;
     }
     else {
-      local_6c = local_34;
+      local_6c = frac2;
     }
-    local_10[0] = (*param_4 - local_10[0]) * local_6c + local_10[0];
-    local_10[1] = (param_4[1] - local_10[1]) * local_6c + local_10[1];
-    local_10[2] = (param_4[2] - local_10[2]) * local_6c + local_10[2];
-    param_2 = *(ushort *)(uVar5 * 0x18 + 0x3f41268 + (1 - local_54) * 2);
+    p[0] = (*p2 - p[0]) * local_6c + p[0];
+    p[1] = (p2[1] - p[1]) * local_6c + p[1];
+    p[2] = (p2[2] - p[2]) * local_6c + p[2];
+    nodeIndex = *(ushort *)(uVar5 * 0x18 + 0x3f41268 + (1 - side) * 2);
   }
   pcVar3 = (code *)swi(3);
   iVar6 = (*pcVar3)();
@@ -1308,12 +1355,13 @@ CM_ClipSightTraceToEntities_r(sightclip_t *param_1,ushort param_2,float *param_3
 
 // 006C6EA0  CM_ClipSightTraceToEntities  (qcommon/cm_world.cpp:1235)
 
-int __cdecl CM_ClipSightTraceToEntities(sightclip_t *param_1)
+int __cdecl CM_ClipSightTraceToEntities(sightclip_t *clip)
 
 {
   int iVar1;
+  int hitNum;
   
-  iVar1 = CM_ClipSightTraceToEntities_r(param_1,1,param_1->start,param_1->end);
+  iVar1 = CM_ClipSightTraceToEntities_r(clip,1,clip->start,clip->end);
   return iVar1;
 }
 
@@ -1327,8 +1375,8 @@ int __cdecl CM_ClipSightTraceToEntities(sightclip_t *param_1)
 
 void __cdecl
 CM_PointTraceToEntities_r
-          (pointtrace_t *param_1,ushort param_2,float *param_3,float *param_4,trace_t *param_5,
-          col_context_t *param_6)
+          (pointtrace_t *clip,ushort nodeIndex,float *p1,float *p2,trace_t *trace,
+          col_context_t *context)
 
 {
   ushort uVar1;
@@ -1341,44 +1389,50 @@ CM_PointTraceToEntities_r
   uint local_60;
   uint local_5c;
   float local_4c;
-  uint local_2c;
-  float local_28;
+  gentity_s *ent;
+  int side;
+  worldSector_s *node;
+  float t1;
+  float frac;
+  float t2;
+  uint entnum;
+  float mid;
   float local_24;
   float local_20;
   float local_1c;
-  svEntity_s *local_18;
-  float local_14 [4];
+  svEntity_s *check;
+  float p [4];
   
-  local_14[0] = *param_3;
-  local_14[1] = param_3[1];
-  local_14[2] = param_3[2];
-  local_14[3] = param_3[3];
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
+  p[3] = p1[3];
   while( true ) {
     while( true ) {
-      uVar5 = (uint)param_2;
+      uVar5 = (uint)nodeIndex;
       iVar6 = uVar5 * 0x18;
-      if ((cm_world.sectors[uVar5].contents.contentsEntities & param_1->contentmask) == 0) {
+      if ((cm_world.sectors[uVar5].contents.contentsEntities & clip->contentmask) == 0) {
         return;
       }
       uVar1 = cm_world.sectors[uVar5].contents.entities;
-      while (local_2c = (uint)uVar1, local_2c != 0) {
-        local_18 = (svEntity_s *)(sv.configstrings + local_2c * 0xb4 + 0xc09);
-        if ((param_6->collide_entity_func == (_func___cdecl_int_int_col_context_t_ptr *)0x0) ||
-           (iVar4 = (*param_6->collide_entity_func)(local_2c - 1,param_6), iVar4 != 0)) {
-          SV_TracePointToEntity(param_1,local_18,param_5);
+      while (entnum = (uint)uVar1, entnum != 0) {
+        check = (svEntity_s *)(sv.configstrings + entnum * 0xb4 + 0xc09);
+        if ((context->collide_entity_func == (_func___cdecl_int_int_col_context_t_ptr *)0x0) ||
+           (iVar4 = (*context->collide_entity_func)(entnum - 1,context), iVar4 != 0)) {
+          SV_TracePointToEntity(clip,check,trace);
         }
-        uVar1 = local_18->nextEntityInWorldSector;
+        uVar1 = check->nextEntityInWorldSector;
       }
-      fVar7 = local_14[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
-      local_4c = param_4[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+      fVar7 = p[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
+      local_4c = p2[cm_world.sectors[uVar5].tree.axis] - cm_world.sectors[uVar5].tree.dist;
       if (fVar7 * local_4c < 0.0) break;
       if (0.0 <= local_4c - fVar7) {
         local_4c = fVar7;
       }
       local_5c = (uint)(local_4c < 0.0);
-      param_2 = *(ushort *)(iVar6 + 0x3f41268 + local_5c * 2);
+      nodeIndex = *(ushort *)(iVar6 + 0x3f41268 + local_5c * 2);
     }
-    if (param_5->fraction <= local_14[3]) {
+    if (trace->fraction <= p[3]) {
       return;
     }
     fVar7 = fVar7 / (fVar7 - local_4c);
@@ -1392,19 +1446,18 @@ CM_PointTraceToEntities_r
     if ((1.0 < fVar7) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x50f,0,
                                  "%s"), !bVar3)) break;
-    local_28 = (*param_4 - local_14[0]) * fVar7 + local_14[0];
-    local_24 = (param_4[1] - local_14[1]) * fVar7 + local_14[1];
-    local_20 = (param_4[2] - local_14[2]) * fVar7 + local_14[2];
-    local_1c = (param_4[3] - local_14[3]) * fVar7 + local_14[3];
+    mid = (*p2 - p[0]) * fVar7 + p[0];
+    local_24 = (p2[1] - p[1]) * fVar7 + p[1];
+    local_20 = (p2[2] - p[2]) * fVar7 + p[2];
+    local_1c = (p2[3] - p[3]) * fVar7 + p[3];
     local_60 = (uint)(0.0 <= local_4c);
     CM_PointTraceToEntities_r
-              (param_1,*(ushort *)(iVar6 + 0x3f41268 + local_60 * 2),local_14,&local_28,param_5,
-               param_6);
-    param_2 = *(ushort *)(iVar6 + 0x3f41268 + (1 - local_60) * 2);
-    local_14[0] = local_28;
-    local_14[1] = local_24;
-    local_14[2] = local_20;
-    local_14[3] = local_1c;
+              (clip,*(ushort *)(iVar6 + 0x3f41268 + local_60 * 2),p,&mid,trace,context);
+    nodeIndex = *(ushort *)(iVar6 + 0x3f41268 + (1 - local_60) * 2);
+    p[0] = mid;
+    p[1] = local_24;
+    p[2] = local_20;
+    p[3] = local_1c;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -1414,38 +1467,44 @@ CM_PointTraceToEntities_r
 
 // 006C7320  CM_PointTraceToEntities  (qcommon/cm_world.cpp:1312)
 
-void __cdecl CM_PointTraceToEntities(pointtrace_t *param_1,trace_t *param_2,col_context_t *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CM_PointTraceToEntities(pointtrace_t *clip,trace_t *trace,col_context_t *context)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_24;
+  PIXProfile pixProfile;
+  float start;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end;
   float local_10;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"pointtraceentities");
-  if ((1.0 < param_2->fraction) &&
+  if ((1.0 < trace->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_world.cpp",0x527,0,
                                "%s\n\t(trace->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = (param_1->extents).start.vec.v[0];
-  local_20 = (param_1->extents).start.vec.v[1];
-  local_1c = (param_1->extents).start.vec.v[2];
-  local_14 = (param_1->extents).end.vec.v[0];
-  local_10 = (param_1->extents).end.vec.v[1];
-  local_c = (param_1->extents).end.vec.v[2];
+  start = (clip->extents).start.vec.v[0];
+  local_20 = (clip->extents).start.vec.v[1];
+  local_1c = (clip->extents).start.vec.v[2];
+  end = (clip->extents).end.vec.v[0];
+  local_10 = (clip->extents).end.vec.v[1];
+  local_c = (clip->extents).end.vec.v[2];
   local_18 = 0;
-  local_8 = param_2->fraction;
-  CM_PointTraceToEntities_r(param_1,1,&local_24,&local_14,param_2,param_3);
+  local_8 = trace->fraction;
+  CM_PointTraceToEntities_r(clip,1,&start,&end,trace,context);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1462,8 +1521,7 @@ void __cdecl CM_PointTraceToEntities(pointtrace_t *param_1,trace_t *param_2,col_
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-CM_PointSightTraceToEntities_r
-          (sightpointtrace_t *param_1,ushort param_2,float *param_3,float *param_4)
+CM_PointSightTraceToEntities_r(sightpointtrace_t *clip,ushort nodeIndex,float *p1,float *p2)
 
 {
   ushort uVar1;
@@ -1476,20 +1534,26 @@ CM_PointSightTraceToEntities_r
   uint local_3c;
   uint local_38;
   float local_34;
-  uint local_1c;
-  float local_14;
+  int side;
+  worldSector_s *node;
+  float t1;
+  float frac;
+  float t2;
+  uint entnum;
+  int hitNum;
+  float mid;
   float local_10;
   float local_c;
-  int local_8;
+  svEntity_s *check;
   
-  uVar4 = (uint)param_2;
+  uVar4 = (uint)nodeIndex;
   iVar5 = uVar4 * 0x18;
-  if ((cm_world.sectors[uVar4].contents.contentsEntities & param_1->contentmask) == 0) {
+  if ((cm_world.sectors[uVar4].contents.contentsEntities & clip->contentmask) == 0) {
     iVar5 = 0;
   }
   else {
-    fVar7 = param_3[cm_world.sectors[uVar4].tree.axis] - cm_world.sectors[uVar4].tree.dist;
-    local_34 = param_4[cm_world.sectors[uVar4].tree.axis] - cm_world.sectors[uVar4].tree.dist;
+    fVar7 = p1[cm_world.sectors[uVar4].tree.axis] - cm_world.sectors[uVar4].tree.dist;
+    local_34 = p2[cm_world.sectors[uVar4].tree.axis] - cm_world.sectors[uVar4].tree.dist;
     if (fVar7 * local_34 < 0.0) {
       fVar7 = fVar7 / (fVar7 - local_34);
       if ((fVar7 < 0.0) &&
@@ -1506,18 +1570,17 @@ CM_PointSightTraceToEntities_r
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      local_14 = (*param_4 - *param_3) * fVar7 + *param_3;
-      local_10 = (param_4[1] - param_3[1]) * fVar7 + param_3[1];
-      local_c = (param_4[2] - param_3[2]) * fVar7 + param_3[2];
+      mid = (*p2 - *p1) * fVar7 + *p1;
+      local_10 = (p2[1] - p1[1]) * fVar7 + p1[1];
+      local_c = (p2[2] - p1[2]) * fVar7 + p1[2];
       local_3c = (uint)(0.0 <= local_34);
       iVar6 = CM_PointSightTraceToEntities_r
-                        (param_1,*(ushort *)(iVar5 + 0x3f41268 + local_3c * 2),param_3,&local_14);
+                        (clip,*(ushort *)(iVar5 + 0x3f41268 + local_3c * 2),p1,&mid);
       if (iVar6 != 0) {
         return iVar6;
       }
       iVar5 = CM_PointSightTraceToEntities_r
-                        (param_1,*(ushort *)(iVar5 + 0x3f41268 + (1 - local_3c) * 2),&local_14,
-                         param_4);
+                        (clip,*(ushort *)(iVar5 + 0x3f41268 + (1 - local_3c) * 2),&mid,p2);
     }
     else {
       if (0.0 <= local_34 - fVar7) {
@@ -1525,17 +1588,17 @@ CM_PointSightTraceToEntities_r
       }
       local_38 = (uint)(local_34 < 0.0);
       iVar5 = CM_PointSightTraceToEntities_r
-                        (param_1,*(ushort *)(iVar5 + 0x3f41268 + local_38 * 2),param_3,param_4);
+                        (clip,*(ushort *)(iVar5 + 0x3f41268 + local_38 * 2),p1,p2);
     }
     if (iVar5 == 0) {
       uVar1 = cm_world.sectors[uVar4].contents.entities;
-      while (local_1c = (uint)uVar1, local_1c != 0) {
-        local_8 = (local_1c - 1) * 0x168 + 0x97e8b28;
-        iVar5 = SV_SightTracePointToEntity(param_1,local_1c - 1);
+      while (entnum = (uint)uVar1, entnum != 0) {
+        check = (svEntity_s *)(sv.configstrings + entnum * 0xb4 + 0xc09);
+        iVar5 = SV_SightTracePointToEntity(clip,entnum - 1);
         if (iVar5 != 0) {
           return iVar5;
         }
-        uVar1 = *(ushort *)(local_8 + 2);
+        uVar1 = check->nextEntityInWorldSector;
       }
       iVar5 = 0;
     }
@@ -1546,12 +1609,13 @@ CM_PointSightTraceToEntities_r
 
 // 006C77A0  CM_PointSightTraceToEntities  (qcommon/cm_world.cpp:1388)
 
-int __cdecl CM_PointSightTraceToEntities(sightpointtrace_t *param_1)
+int __cdecl CM_PointSightTraceToEntities(sightpointtrace_t *clip)
 
 {
   int iVar1;
+  int hitNum;
   
-  iVar1 = CM_PointSightTraceToEntities_r(param_1,1,param_1->start,param_1->end);
+  iVar1 = CM_PointSightTraceToEntities_r(clip,1,clip->start,clip->end);
   return iVar1;
 }
 

@@ -9,10 +9,10 @@ int __cdecl hmac_init(int param_1,int param_2,uchar *param_3,uint param_4)
 {
   int iVar1;
   int iVar2;
-  uchar *puVar3;
+  uchar *dst;
+  int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
+  uint uVar5;
   uint uStack_8;
   uint uStack_4;
   
@@ -40,49 +40,49 @@ int __cdecl hmac_init(int param_1,int param_2,uchar *param_3,uint param_4)
   if (iVar2 == 0) {
     return 0xd;
   }
-  puVar3 = (uchar *)tom_game_malloc(*(undefined4 *)(&DAT_00afec64 + iVar1));
-  *(uchar **)(param_1 + 0xe8) = puVar3;
-  if (puVar3 == (uchar *)0x0) {
+  dst = (uchar *)tom_game_malloc(*(undefined4 *)(&DAT_00afec64 + iVar1));
+  *(uchar **)(param_1 + 0xe8) = dst;
+  if (dst == (uchar *)0x0) {
     tom_game_free(iVar2);
     return 0xd;
   }
   if (*(uint *)(&DAT_00afec64 + iVar1) < param_4) {
     uStack_8 = *(uint *)(&DAT_00afec64 + iVar1);
-    iVar4 = hash_memory(param_2,param_3,param_4,puVar3,&uStack_8);
-    if (iVar4 == 0) {
+    iVar3 = hash_memory(param_2,param_3,param_4,dst,&uStack_8);
+    if (iVar3 == 0) {
       if (uStack_4 < *(uint *)(&DAT_00afec64 + iVar1)) {
-        iVar4 = *(uint *)(&DAT_00afec64 + iVar1) - uStack_4;
-        iVar5 = *(int *)(param_1 + 0xe8) + uStack_4;
+        iVar3 = *(uint *)(&DAT_00afec64 + iVar1) - uStack_4;
+        iVar4 = *(int *)(param_1 + 0xe8) + uStack_4;
         goto LAB_009442fd;
       }
       goto LAB_00944305;
     }
   }
   else {
-    memcpy(puVar3,param_3,param_4);
+    memcpy(dst,param_3,param_4);
     if (param_4 < *(uint *)(&DAT_00afec64 + iVar1)) {
-      iVar4 = *(uint *)(&DAT_00afec64 + iVar1) - param_4;
-      iVar5 = *(int *)(param_1 + 0xe8) + param_4;
+      iVar3 = *(uint *)(&DAT_00afec64 + iVar1) - param_4;
+      iVar4 = *(int *)(param_1 + 0xe8) + param_4;
 LAB_009442fd:
-      zeromem(iVar5,iVar4);
+      zeromem(iVar4,iVar3);
     }
 LAB_00944305:
-    uVar6 = 0;
+    uVar5 = 0;
     if (*(int *)(&DAT_00afec64 + iVar1) != 0) {
       do {
-        *(byte *)(uVar6 + iVar2) = *(byte *)(*(int *)(param_1 + 0xe8) + uVar6) ^ 0x36;
-        uVar6 = uVar6 + 1;
-      } while (uVar6 < *(uint *)(&DAT_00afec64 + iVar1));
+        *(byte *)(uVar5 + iVar2) = *(byte *)(*(int *)(param_1 + 0xe8) + uVar5) ^ 0x36;
+        uVar5 = uVar5 + 1;
+      } while (uVar5 < *(uint *)(&DAT_00afec64 + iVar1));
     }
-    iVar4 = (**(code **)(&DAT_00afecac + iVar1))(param_1);
-    if ((iVar4 == 0) &&
-       (iVar4 = (**(code **)(&DAT_00afecb0 + iVar1))
-                          (param_1,iVar2,*(undefined4 *)(&DAT_00afec64 + iVar1)), iVar4 == 0))
+    iVar3 = (**(code **)(&DAT_00afecac + iVar1))(param_1);
+    if ((iVar3 == 0) &&
+       (iVar3 = (**(code **)(&DAT_00afecb0 + iVar1))
+                          (param_1,iVar2,*(undefined4 *)(&DAT_00afec64 + iVar1)), iVar3 == 0))
     goto LAB_0094436b;
   }
   tom_game_free(*(undefined4 *)(param_1 + 0xe8));
 LAB_0094436b:
   tom_game_free(iVar2);
-  return iVar4;
+  return iVar3;
 }
 

@@ -2,14 +2,14 @@
 
 // 00865980  Ragdoll_BodyBoneOrientations  (ragdoll/ragdoll_controller.cpp:36)
 
-BoneOrientation * __cdecl Ragdoll_BodyBoneOrientations(RagdollBody *param_1)
+BoneOrientation * __cdecl Ragdoll_BodyBoneOrientations(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   BoneOrientation *pBVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                              0x25,0,"%s");
     if (!bVar2) {
@@ -18,7 +18,7 @@ BoneOrientation * __cdecl Ragdoll_BodyBoneOrientations(RagdollBody *param_1)
       return pBVar3;
     }
   }
-  if (1 < (uint)param_1->curOrientationBuffer) {
+  if (1 < (uint)body->curOrientationBuffer) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                              0x26,0,
                              "body->curOrientationBuffer doesn\'t index 2\n\t%i not in [0, %i)");
@@ -28,20 +28,20 @@ BoneOrientation * __cdecl Ragdoll_BodyBoneOrientations(RagdollBody *param_1)
       return pBVar3;
     }
   }
-  return param_1->boneOrientations[param_1->curOrientationBuffer];
+  return body->boneOrientations[body->curOrientationBuffer];
 }
 
 
 // 00865A00  Ragdoll_BodyPrevBoneOrientations  (ragdoll/ragdoll_controller.cpp:44)
 
-BoneOrientation * __cdecl Ragdoll_BodyPrevBoneOrientations(RagdollBody *param_1)
+BoneOrientation * __cdecl Ragdoll_BodyPrevBoneOrientations(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   BoneOrientation *pBVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                              0x2d,0,"%s");
     if (!bVar2) {
@@ -50,7 +50,7 @@ BoneOrientation * __cdecl Ragdoll_BodyPrevBoneOrientations(RagdollBody *param_1)
       return pBVar3;
     }
   }
-  if (1 < (uint)param_1->curOrientationBuffer) {
+  if (1 < (uint)body->curOrientationBuffer) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                              0x2e,0,
                              "body->curOrientationBuffer doesn\'t index 2\n\t%i not in [0, %i)");
@@ -60,103 +60,107 @@ BoneOrientation * __cdecl Ragdoll_BodyPrevBoneOrientations(RagdollBody *param_1)
       return pBVar3;
     }
   }
-  return param_1->boneOrientations[param_1->curOrientationBuffer ^ 1];
+  return body->boneOrientations[body->curOrientationBuffer ^ 1];
 }
 
 
 // 00865A80  Ragdoll_DoControllers  (ragdoll/ragdoll_controller.cpp:52)
 
-void __cdecl Ragdoll_DoControllers(cpose_t *param_1,DObj *param_2,int *param_3)
+void __cdecl Ragdoll_DoControllers(cpose_t *pose,DObj *obj,int *partBits)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  RagdollBody *pRVar4;
+  RagdollBody *body_00;
+  DObjAnimMat *pDVar4;
   DObjAnimMat *pDVar5;
-  DObjAnimMat *pDVar6;
-  float fVar7;
-  int local_28;
-  BoneOrientation *local_24;
-  LerpBone *local_14;
-  int local_c;
-  Bone *local_8;
+  float fVar6;
+  int handle;
+  BoneOrientation *boneOrientation;
+  RagdollBody *body;
+  DObjAnimMat *boneMat;
+  DObjAnimMat *skel;
+  LerpBone *lerpBone;
+  int boneIdx;
+  int i;
+  Bone *bone;
   
-  if ((param_1 == (cpose_t *)0x0) &&
+  if ((pose == (cpose_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                                0x3f,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_controller.cpp",
                                0x40,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->isRagdoll != '\0') &&
-     ((param_1->ragdollHandle != 0 || (param_1->killcamRagdollHandle != 0)))) {
-    if (param_1->killcamRagdollHandle == 0) {
-      local_28 = param_1->ragdollHandle;
+  if ((pose->isRagdoll != '\0') && ((pose->ragdollHandle != 0 || (pose->killcamRagdollHandle != 0)))
+     ) {
+    if (pose->killcamRagdollHandle == 0) {
+      handle = pose->ragdollHandle;
     }
     else {
-      local_28 = param_1->killcamRagdollHandle;
+      handle = pose->killcamRagdollHandle;
     }
-    pRVar4 = Ragdoll_HandleBody(local_28);
-    bVar3 = Ragdoll_BodyPoseValid(pRVar4);
-    if ((bVar3) && (pDVar5 = DObjGetRotTransArray(param_2), pDVar5 != (DObjAnimMat *)0x0)) {
-      local_8 = pRVar4->bones;
-      local_24 = Ragdoll_BodyBoneOrientations(pRVar4);
-      for (local_c = 0; local_c < pRVar4->numBones; local_c = local_c + 1) {
-        bVar1 = local_8->animBones[0];
-        bVar3 = DObjSetSkelRotTransIndex(param_2,param_3,(uint)bVar1);
+    body_00 = Ragdoll_HandleBody(handle);
+    bVar3 = Ragdoll_BodyPoseValid(body_00);
+    if ((bVar3) && (pDVar4 = DObjGetRotTransArray(obj), pDVar4 != (DObjAnimMat *)0x0)) {
+      bone = body_00->bones;
+      boneOrientation = Ragdoll_BodyBoneOrientations(body_00);
+      for (i = 0; i < body_00->numBones; i = i + 1) {
+        bVar1 = bone->animBones[0];
+        bVar3 = DObjSetSkelRotTransIndex(obj,partBits,(uint)bVar1);
         if (bVar3) {
-          pDVar6 = pDVar5 + bVar1;
-          pDVar6->trans[0] = local_24->origin[0];
-          pDVar6->trans[1] = local_24->origin[1];
-          pDVar6->trans[2] = local_24->origin[2];
-          pDVar6->quat[0] = local_24->orientation[0];
-          pDVar6->quat[1] = local_24->orientation[1];
-          pDVar6->quat[2] = local_24->orientation[2];
-          pDVar6->quat[3] = local_24->orientation[3];
-          fVar7 = Vec4LengthSq(pDVar6->quat);
-          if (fVar7 == 0.0) {
-            pDVar6->quat[3] = 1.0;
-            pDVar6->transWeight = 2.0;
+          pDVar5 = pDVar4 + bVar1;
+          pDVar5->trans[0] = boneOrientation->origin[0];
+          pDVar5->trans[1] = boneOrientation->origin[1];
+          pDVar5->trans[2] = boneOrientation->origin[2];
+          pDVar5->quat[0] = boneOrientation->orientation[0];
+          pDVar5->quat[1] = boneOrientation->orientation[1];
+          pDVar5->quat[2] = boneOrientation->orientation[2];
+          pDVar5->quat[3] = boneOrientation->orientation[3];
+          fVar6 = Vec4LengthSq(pDVar5->quat);
+          if (fVar6 == 0.0) {
+            pDVar5->quat[3] = 1.0;
+            pDVar5->transWeight = 2.0;
           }
           else {
-            pDVar6->transWeight = 2.0 / fVar7;
+            pDVar5->transWeight = 2.0 / fVar6;
           }
         }
-        local_8 = local_8 + 1;
-        local_24 = local_24 + 1;
+        bone = bone + 1;
+        boneOrientation = boneOrientation + 1;
       }
-      local_14 = pRVar4->lerpBones;
-      for (local_c = 0; local_c < pRVar4->numLerpBones; local_c = local_c + 1) {
-        bVar1 = local_14->animBone;
-        bVar3 = DObjSetSkelRotTransIndex(param_2,param_3,(uint)bVar1);
+      lerpBone = body_00->lerpBones;
+      for (i = 0; i < body_00->numLerpBones; i = i + 1) {
+        bVar1 = lerpBone->animBone;
+        bVar3 = DObjSetSkelRotTransIndex(obj,partBits,(uint)bVar1);
         if (bVar3) {
-          pDVar6 = pDVar5 + bVar1;
-          pDVar6->trans[0] = local_24->origin[0];
-          pDVar6->trans[1] = local_24->origin[1];
-          pDVar6->trans[2] = local_24->origin[2];
-          pDVar6->quat[0] = local_24->orientation[0];
-          pDVar6->quat[1] = local_24->orientation[1];
-          pDVar6->quat[2] = local_24->orientation[2];
-          pDVar6->quat[3] = local_24->orientation[3];
-          fVar7 = Vec4LengthSq(pDVar6->quat);
-          if (fVar7 == 0.0) {
-            pDVar6->quat[3] = 1.0;
-            pDVar6->transWeight = 2.0;
+          pDVar5 = pDVar4 + bVar1;
+          pDVar5->trans[0] = boneOrientation->origin[0];
+          pDVar5->trans[1] = boneOrientation->origin[1];
+          pDVar5->trans[2] = boneOrientation->origin[2];
+          pDVar5->quat[0] = boneOrientation->orientation[0];
+          pDVar5->quat[1] = boneOrientation->orientation[1];
+          pDVar5->quat[2] = boneOrientation->orientation[2];
+          pDVar5->quat[3] = boneOrientation->orientation[3];
+          fVar6 = Vec4LengthSq(pDVar5->quat);
+          if (fVar6 == 0.0) {
+            pDVar5->quat[3] = 1.0;
+            pDVar5->transWeight = 2.0;
           }
           else {
-            pDVar6->transWeight = 2.0 / fVar7;
+            pDVar5->transWeight = 2.0 / fVar6;
           }
         }
-        local_14 = local_14 + 1;
-        local_24 = local_24 + 1;
+        lerpBone = lerpBone + 1;
+        boneOrientation = boneOrientation + 1;
       }
     }
   }

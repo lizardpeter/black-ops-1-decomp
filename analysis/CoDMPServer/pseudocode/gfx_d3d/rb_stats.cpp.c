@@ -12,13 +12,13 @@ void __cdecl TRACK_rb_stats(void)
 
 // 00B31C20  R_TrackPrims  (gfx_d3d/rb_stats.cpp:106)
 
-void __cdecl R_TrackPrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarget param_2)
+void __cdecl R_TrackPrims(GfxCmdBufPrimState *state,GfxPrimStatsTarget target)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->backupPrimStats != (GfxPrimStats *)0x0) {
+  if (state->backupPrimStats != (GfxPrimStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x6b,0,"%s")
     ;
     if (!bVar2) {
@@ -27,7 +27,7 @@ void __cdecl R_TrackPrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarget param_2
       return;
     }
   }
-  if (param_1->viewStats == (GfxViewStats *)0x0) {
+  if (state->viewStats == (GfxViewStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x6c,0,"%s")
     ;
     if (!bVar2) {
@@ -36,8 +36,8 @@ void __cdecl R_TrackPrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarget param_2
       return;
     }
   }
-  if ((param_1->primStats != (GfxPrimStats *)0x0) &&
-     (param_1->primStats != param_1->viewStats->primStats + param_2)) {
+  if ((state->primStats != (GfxPrimStats *)0x0) &&
+     (state->primStats != state->viewStats->primStats + target)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x6d,0,
                              "%s\n\t(target) = %i");
     if (!bVar2) {
@@ -46,20 +46,20 @@ void __cdecl R_TrackPrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarget param_2
       return;
     }
   }
-  param_1->primStats = param_1->viewStats->primStats + param_2;
+  state->primStats = state->viewStats->primStats + target;
   return;
 }
 
 
 // 00B31CF0  RB_TrackImmediatePrims  (gfx_d3d/rb_stats.cpp:114)
 
-void __cdecl RB_TrackImmediatePrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarget param_2)
+void __cdecl RB_TrackImmediatePrims(GfxCmdBufPrimState *state,GfxPrimStatsTarget target)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->backupPrimStats != (GfxPrimStats *)0x0) {
+  if (state->backupPrimStats != (GfxPrimStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x79,0,"%s")
     ;
     if (!bVar2) {
@@ -68,7 +68,7 @@ void __cdecl RB_TrackImmediatePrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarg
       return;
     }
   }
-  if (param_1->viewStats == (GfxViewStats *)0x0) {
+  if (state->viewStats == (GfxViewStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x7a,0,"%s")
     ;
     if (!bVar2) {
@@ -77,47 +77,48 @@ void __cdecl RB_TrackImmediatePrims(GfxCmdBufPrimState *param_1,GfxPrimStatsTarg
       return;
     }
   }
-  param_1->backupPrimStats = param_1->primStats;
-  param_1->primStats = param_1->viewStats->primStats + param_2;
+  state->backupPrimStats = state->primStats;
+  state->primStats = state->viewStats->primStats + target;
   return;
 }
 
 
 // 00B31D80  RB_EndTrackImmediatePrims  (gfx_d3d/rb_stats.cpp:128)
 
-void __cdecl RB_EndTrackImmediatePrims(GfxCmdBufPrimState *param_1)
+void __cdecl RB_EndTrackImmediatePrims(GfxCmdBufPrimState *state)
 
 {
-  param_1->primStats = param_1->backupPrimStats;
-  param_1->backupPrimStats = (GfxPrimStats *)0x0;
+  state->primStats = state->backupPrimStats;
+  state->backupPrimStats = (GfxPrimStats *)0x0;
   return;
 }
 
 
 // 00B31DB0  RB_TrackDrawPrimCall  (gfx_d3d/rb_stats.cpp:134)
 
-void __cdecl RB_TrackDrawPrimCall(GfxCmdBufPrimState *param_1,int param_2)
+void __cdecl RB_TrackDrawPrimCall(GfxCmdBufPrimState *state,int triCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int histogramIndex;
   
-  if (param_1->primStats != (GfxPrimStats *)0x0) {
-    if ((param_1->primStats == (GfxPrimStats *)0x0) &&
+  if (state->primStats != (GfxPrimStats *)0x0) {
+    if ((state->primStats == (GfxPrimStats *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_stats.cpp",0x8b,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->primStats->triCount = param_1->primStats->triCount + param_2;
-    param_1->primStats->primCount = param_1->primStats->primCount + 1;
-    for (local_8 = 0; (local_8 < 0xf && (drawPrimHistogramLimit[local_8] < param_2));
-        local_8 = local_8 + 1) {
+    state->primStats->triCount = state->primStats->triCount + triCount;
+    state->primStats->primCount = state->primStats->primCount + 1;
+    for (histogramIndex = 0;
+        (histogramIndex < 0xf && (drawPrimHistogramLimit[histogramIndex] < triCount));
+        histogramIndex = histogramIndex + 1) {
     }
-    param_1->viewStats->drawPrimHistogram[local_8] =
-         param_1->viewStats->drawPrimHistogram[local_8] + 1;
+    state->viewStats->drawPrimHistogram[histogramIndex] =
+         state->viewStats->drawPrimHistogram[histogramIndex] + 1;
   }
   return;
 }
@@ -125,92 +126,104 @@ void __cdecl RB_TrackDrawPrimCall(GfxCmdBufPrimState *param_1,int param_2)
 
 // 00B32170  RB_Stats_TotalIndexCount  (gfx_d3d/rb_stats.cpp:152)
 
-int __cdecl RB_Stats_TotalIndexCount(GfxFrameStats *param_1)
+int __cdecl RB_Stats_TotalIndexCount(GfxFrameStats *frameStats)
 
 {
-  int local_18;
-  int local_c;
-  int local_8;
+  int totalIndexCount;
+  GfxViewStats *viewStats;
+  GfxPrimStats *primStats;
+  int primIndex;
+  int viewIndex;
   
-  local_18 = 0;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-      local_18 = g_frameStatsCur.viewStats[local_8].primStats[local_c].staticIndexCount +
-                 g_frameStatsCur.viewStats[local_8].primStats[local_c].dynamicIndexCount + local_18;
+  totalIndexCount = 0;
+  for (viewIndex = 0; viewIndex < 2; viewIndex = viewIndex + 1) {
+    for (primIndex = 0; primIndex < 10; primIndex = primIndex + 1) {
+      totalIndexCount =
+           g_frameStatsCur.viewStats[viewIndex].primStats[primIndex].staticIndexCount +
+           g_frameStatsCur.viewStats[viewIndex].primStats[primIndex].dynamicIndexCount +
+           totalIndexCount;
     }
   }
-  return local_18;
+  return totalIndexCount;
 }
 
 
 // 00B31E90  RB_Stats_TotalVertexCount  (gfx_d3d/rb_stats.cpp:192)
 
-int __cdecl RB_Stats_TotalVertexCount(GfxFrameStats *param_1)
+int __cdecl RB_Stats_TotalVertexCount(GfxFrameStats *frameStats)
 
 {
-  int local_18;
-  int local_c;
-  int local_8;
+  int totalVertexCount;
+  GfxViewStats *viewStats;
+  GfxPrimStats *primStats;
+  int primIndex;
+  int viewIndex;
   
-  local_18 = 0;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-      local_18 = g_frameStatsCur.viewStats[local_8].primStats[local_c].staticVertexCount +
-                 g_frameStatsCur.viewStats[local_8].primStats[local_c].dynamicVertexCount + local_18
-      ;
+  totalVertexCount = 0;
+  for (viewIndex = 0; viewIndex < 2; viewIndex = viewIndex + 1) {
+    for (primIndex = 0; primIndex < 10; primIndex = primIndex + 1) {
+      totalVertexCount =
+           g_frameStatsCur.viewStats[viewIndex].primStats[primIndex].staticVertexCount +
+           g_frameStatsCur.viewStats[viewIndex].primStats[primIndex].dynamicVertexCount +
+           totalVertexCount;
     }
   }
-  return local_18;
+  return totalVertexCount;
 }
 
 
 // 00B31F10  RB_Stats_TotalPrimCount  (gfx_d3d/rb_stats.cpp:213)
 
-int __cdecl RB_Stats_TotalPrimCount(GfxFrameStats *param_1)
+int __cdecl RB_Stats_TotalPrimCount(GfxFrameStats *frameStats)
 
 {
-  int local_14;
-  int local_c;
-  int local_8;
+  GfxViewStats *viewStats;
+  int totalPrimCount;
+  GfxPrimStats *primStats;
+  int primIndex;
+  int viewIndex;
   
-  local_14 = 0;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-      local_14 = local_14 + g_frameStatsCur.viewStats[local_8].primStats[local_c].primCount;
+  totalPrimCount = 0;
+  for (viewIndex = 0; viewIndex < 2; viewIndex = viewIndex + 1) {
+    for (primIndex = 0; primIndex < 10; primIndex = primIndex + 1) {
+      totalPrimCount =
+           totalPrimCount + g_frameStatsCur.viewStats[viewIndex].primStats[primIndex].primCount;
     }
   }
-  return local_14;
+  return totalPrimCount;
 }
 
 
 // 00B31F90  RB_Stats_ViewIndexCount  (gfx_d3d/rb_stats.cpp:234)
 
-int __cdecl RB_Stats_ViewIndexCount(GfxViewStats *param_1)
+int __cdecl RB_Stats_ViewIndexCount(GfxViewStats *viewStats)
 
 {
-  int local_10;
-  int local_8;
+  int totalIndexCount;
+  GfxPrimStats *primStats;
+  int primIndex;
   
-  local_10 = 0;
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    local_10 = param_1->primStats[local_8].staticIndexCount +
-               param_1->primStats[local_8].dynamicIndexCount + local_10;
+  totalIndexCount = 0;
+  for (primIndex = 0; primIndex < 10; primIndex = primIndex + 1) {
+    totalIndexCount =
+         viewStats->primStats[primIndex].staticIndexCount +
+         viewStats->primStats[primIndex].dynamicIndexCount + totalIndexCount;
   }
-  return local_10;
+  return totalIndexCount;
 }
 
 
 // 00B32440  RB_Stats_AccumulatePrimStats  (gfx_d3d/rb_stats.cpp:249)
 
-void __cdecl RB_Stats_AccumulatePrimStats(GfxPrimStats *param_1,GfxPrimStats *param_2)
+void __cdecl RB_Stats_AccumulatePrimStats(GfxPrimStats *primStats,GfxPrimStats *total)
 
 {
-  param_2->primCount = param_2->primCount + param_1->primCount;
-  param_2->triCount = param_2->triCount + param_1->triCount;
-  param_2->staticIndexCount = param_2->staticIndexCount + param_1->staticIndexCount;
-  param_2->staticVertexCount = param_2->staticVertexCount + param_1->staticVertexCount;
-  param_2->dynamicIndexCount = param_2->dynamicIndexCount + param_1->dynamicIndexCount;
-  param_2->dynamicVertexCount = param_2->dynamicVertexCount + param_1->dynamicVertexCount;
+  total->primCount = total->primCount + primStats->primCount;
+  total->triCount = total->triCount + primStats->triCount;
+  total->staticIndexCount = total->staticIndexCount + primStats->staticIndexCount;
+  total->staticVertexCount = total->staticVertexCount + primStats->staticVertexCount;
+  total->dynamicIndexCount = total->dynamicIndexCount + primStats->dynamicIndexCount;
+  total->dynamicVertexCount = total->dynamicVertexCount + primStats->dynamicVertexCount;
   return;
 }
 
@@ -219,36 +232,36 @@ void __cdecl RB_Stats_AccumulatePrimStats(GfxPrimStats *param_1,GfxPrimStats *pa
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl RB_Stats_SummarizePrimStats(char *param_1,GfxPrimStats *param_2)
+void __cdecl RB_Stats_SummarizePrimStats(char *label,GfxPrimStats *primStats)
 
 {
-  char local_28 [32];
+  char text [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   Com_Printf(8,"|%-14s");
-  if (param_2->primCount != 0) {
-    _itoa(param_2->primCount,local_28,10);
+  if (primStats->primCount != 0) {
+    _itoa(primStats->primCount,text,10);
   }
   Com_Printf(8,"|%5s");
-  if (param_2->triCount != 0) {
-    _itoa(param_2->triCount,local_28,10);
+  if (primStats->triCount != 0) {
+    _itoa(primStats->triCount,text,10);
   }
   Com_Printf(8,"|%7s");
-  if (param_2->staticIndexCount != 0) {
-    _itoa(param_2->staticIndexCount,local_28,10);
+  if (primStats->staticIndexCount != 0) {
+    _itoa(primStats->staticIndexCount,text,10);
   }
   Com_Printf(8,"|%7s");
-  if (param_2->staticVertexCount != 0) {
-    _itoa(param_2->staticVertexCount,local_28,10);
+  if (primStats->staticVertexCount != 0) {
+    _itoa(primStats->staticVertexCount,text,10);
   }
   Com_Printf(8,"|%7s");
-  if (param_2->dynamicIndexCount != 0) {
-    _itoa(param_2->dynamicIndexCount,local_28,10);
+  if (primStats->dynamicIndexCount != 0) {
+    _itoa(primStats->dynamicIndexCount,text,10);
   }
   Com_Printf(8,"|%7s");
-  if (param_2->dynamicVertexCount != 0) {
-    _itoa(param_2->dynamicVertexCount,local_28,10);
+  if (primStats->dynamicVertexCount != 0) {
+    _itoa(primStats->dynamicVertexCount,text,10);
   }
   Com_Printf(8,"|%7s|\n");
   return;
@@ -257,53 +270,55 @@ void __cdecl RB_Stats_SummarizePrimStats(char *param_1,GfxPrimStats *param_2)
 
 // 00B321F0  RB_Stats_Summarize  (gfx_d3d/rb_stats.cpp:272)
 
-void __cdecl RB_Stats_Summarize(char *param_1,GfxViewStats *param_2)
+void __cdecl RB_Stats_Summarize(char *label,GfxViewStats *viewStats)
 
 {
   int iVar1;
-  GfxPrimStats local_30;
-  int local_18;
-  int local_14;
-  GfxPrimStats *local_10;
-  int local_c;
-  int local_8;
+  int barBlocks;
+  GfxPrimStats total;
+  int barIndex;
+  int maxPrimsInHistogram;
+  GfxPrimStats *primStats;
+  int primIndex;
+  int histogramIndex;
   
   Com_Printf(8,"\n=== %s Geometry (%i drawsurfs) ===\n");
   Com_Printf(8,"+--------------+-----+-------+-------+-------+-------+-------+\n");
   Com_Printf(8,"|geometry type |prims|   tris|s indxs|s verts|d indxs|d verts|\n");
   Com_Printf(8,"+--------------+-----+-------+-------+-------+-------+-------+\n");
-  local_30.primCount = 0;
-  local_30.triCount = 0;
-  local_30.staticIndexCount = 0;
-  local_30.staticVertexCount = 0;
-  local_30.dynamicIndexCount = 0;
-  local_30.dynamicVertexCount = 0;
-  for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-    local_10 = param_2->primStats + local_c;
-    RB_Stats_SummarizePrimStats(primStatsLabel[local_c],local_10);
-    RB_Stats_AccumulatePrimStats(local_10,&local_30);
+  total.primCount = 0;
+  total.triCount = 0;
+  total.staticIndexCount = 0;
+  total.staticVertexCount = 0;
+  total.dynamicIndexCount = 0;
+  total.dynamicVertexCount = 0;
+  for (primIndex = 0; primIndex < 10; primIndex = primIndex + 1) {
+    primStats = viewStats->primStats + primIndex;
+    RB_Stats_SummarizePrimStats(primStatsLabel[primIndex],primStats);
+    RB_Stats_AccumulatePrimStats(primStats,&total);
   }
   Com_Printf(8,"+--------------+-----+-------+-------+-------+-------+-------+\n");
-  RB_Stats_SummarizePrimStats("total",&local_30);
+  RB_Stats_SummarizePrimStats("total",&total);
   Com_Printf(8,"+--------------+-----+-------+-------+-------+-------+-------+\n");
-  local_14 = 0;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    if (local_14 < param_2->drawPrimHistogram[local_8]) {
-      local_14 = param_2->drawPrimHistogram[local_8];
+  maxPrimsInHistogram = 0;
+  for (histogramIndex = 0; histogramIndex < 0x10; histogramIndex = histogramIndex + 1) {
+    if (maxPrimsInHistogram < viewStats->drawPrimHistogram[histogramIndex]) {
+      maxPrimsInHistogram = viewStats->drawPrimHistogram[histogramIndex];
     }
   }
-  if (local_14 != 0) {
+  if (maxPrimsInHistogram != 0) {
     Com_Printf(8,"\nTriangles Per Primitive Histogram:\n");
-    for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-      if (local_8 < 0xf) {
+    for (histogramIndex = 0; histogramIndex < 0x10; histogramIndex = histogramIndex + 1) {
+      if (histogramIndex < 0xf) {
         Com_Printf(8,"<= %4i: ");
       }
       else {
         Com_Printf(8," > %4i: ");
       }
       Com_Printf(8,"%3i (%4.1f%%) ");
-      iVar1 = (local_14 / 2 + param_2->drawPrimHistogram[local_8] * 0x28) / local_14;
-      for (local_18 = 0; local_18 < iVar1; local_18 = local_18 + 1) {
+      iVar1 = (maxPrimsInHistogram / 2 + viewStats->drawPrimHistogram[histogramIndex] * 0x28) /
+              maxPrimsInHistogram;
+      for (barIndex = 0; barIndex < iVar1; barIndex = barIndex + 1) {
         Com_Printf(8,"#");
       }
       Com_Printf(8,"\n");
@@ -315,16 +330,16 @@ void __cdecl RB_Stats_Summarize(char *param_1,GfxViewStats *param_2)
 
 // 00B32090  RB_Stats_Display  (gfx_d3d/rb_stats.cpp:322)
 
-void __cdecl RB_Stats_Display(GfxFrameStats *param_1)
+void __cdecl RB_Stats_Display(GfxFrameStats *frameStats)
 
 {
-  RB_Stats_Summarize("Visible",param_1->viewStats);
-  RB_Stats_Summarize("Shadow",param_1->viewStats + 1);
+  RB_Stats_Summarize("Visible",frameStats->viewStats);
+  RB_Stats_Summarize("Shadow",frameStats->viewStats + 1);
   Com_Printf(8,"SUMMARY:\n");
   Com_Printf(8,"%i raw tris (%i geo, %i fx)\n");
-  RB_Stats_TotalIndexCount(param_1);
+  RB_Stats_TotalIndexCount(frameStats);
   Com_Printf(8,"%i total tris\n");
-  RB_Stats_TotalPrimCount(param_1);
+  RB_Stats_TotalPrimCount(frameStats);
   Com_Printf(8,"%i total prims\n");
   return;
 }
@@ -338,19 +353,19 @@ void __cdecl RB_Stats_f(void)
   int iVar1;
   char *pcVar2;
   char *pcVar3;
-  GfxFrameStats *local_8;
+  GfxFrameStats *frameStats;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
     R_SyncRenderThread();
-    local_8 = &g_frameStatsCur;
+    frameStats = &g_frameStatsCur;
     iVar1 = Cmd_Argc();
     if (iVar1 == 2) {
       pcVar3 = "max";
       pcVar2 = Cmd_Argv(1);
       iVar1 = I_stricmp(pcVar2,pcVar3);
       if (iVar1 == 0) {
-        local_8 = &backEnd.frameStatsMax;
+        frameStats = &backEnd.frameStatsMax;
       }
       else {
         pcVar3 = "cur";
@@ -363,7 +378,7 @@ void __cdecl RB_Stats_f(void)
         }
       }
     }
-    RB_Stats_Display(local_8);
+    RB_Stats_Display(frameStats);
   }
   else {
     Cmd_Argv(0);
@@ -375,16 +390,19 @@ void __cdecl RB_Stats_f(void)
 
 // 00B32650  RB_Stats_UpdateMaxs  (gfx_d3d/rb_stats.cpp:371)
 
-void __cdecl RB_Stats_UpdateMaxs(GfxFrameStats *param_1,GfxFrameStats *param_2)
+void __cdecl RB_Stats_UpdateMaxs(GfxFrameStats *frameStatsCur,GfxFrameStats *frameStatsMax)
 
 {
-  int local_10;
+  int *arrayCur;
+  int index;
+  int count;
+  int *arrayMax;
   
-  for (local_10 = 0; local_10 < 0x9f; local_10 = local_10 + 1) {
-    if ((&param_2->viewStats[0].primStats[0].primCount)[local_10] <
-        (&param_1->viewStats[0].primStats[0].primCount)[local_10]) {
-      (&param_2->viewStats[0].primStats[0].primCount)[local_10] =
-           (&param_1->viewStats[0].primStats[0].primCount)[local_10];
+  for (index = 0; index < 0x9f; index = index + 1) {
+    if ((&frameStatsMax->viewStats[0].primStats[0].primCount)[index] <
+        (&frameStatsCur->viewStats[0].primStats[0].primCount)[index]) {
+      (&frameStatsMax->viewStats[0].primStats[0].primCount)[index] =
+           (&frameStatsCur->viewStats[0].primStats[0].primCount)[index];
     }
   }
   return;
@@ -399,138 +417,143 @@ void __cdecl RB_DrawPrimHistogramOverlay(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  float fVar3;
-  float fVar4;
-  Font_s *pFVar5;
-  float fVar6;
-  GfxColor GVar7;
+  char *text;
+  float fVar2;
+  float y_00;
+  Font_s *font;
+  float x_00;
+  GfxColor color;
   char *local_ac;
-  int local_80;
-  int local_78 [7];
-  char *local_5c;
-  GfxColor local_58 [3];
-  int local_4c;
-  int local_48 [2];
-  float local_40;
-  float local_3c;
-  int local_38;
-  int local_34;
-  int local_30;
-  ulong local_2c [3];
+  float x0;
+  GfxColor white;
+  int rowMax;
+  float x1;
+  int subTotalPrims [6];
+  uint subTotalIndex;
+  char *caption;
+  GfxColor colorNow [3];
+  int historyIndex;
+  int totalPrims [2];
+  float wMax;
+  float countWidth;
+  int maxPrimsInHistogram;
+  int curCount;
+  int viewStatsIndex;
+  ulong colorPeak [3];
   uint local_20;
-  float local_1c;
-  ulong local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float fontHeight;
+  GfxColor black;
+  int histogramIndex;
+  float x;
+  float y;
+  float w;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_38 = 0;
-  for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
-    for (local_30 = 0; local_30 < 2; local_30 = local_30 + 1) {
-      if (local_38 < *(int *)(local_30 * 0x138 + 0xb0026e8 + local_14 * 4)) {
-        local_38 = *(int *)(local_30 * 0x138 + 0xb0026e8 + local_14 * 4);
+  maxPrimsInHistogram = 0;
+  for (histogramIndex = 0; histogramIndex < 0x10; histogramIndex = histogramIndex + 1) {
+    for (viewStatsIndex = 0; viewStatsIndex < 2; viewStatsIndex = viewStatsIndex + 1) {
+      if (maxPrimsInHistogram < *(int *)(viewStatsIndex * 0x138 + 0xb0026e8 + histogramIndex * 4)) {
+        maxPrimsInHistogram = *(int *)(viewStatsIndex * 0x138 + 0xb0026e8 + histogramIndex * 4);
       }
     }
   }
-  if (local_38 != 0) {
+  if (maxPrimsInHistogram != 0) {
     iVar1 = R_TextHeight(backEnd.debugFont);
-    local_1c = (float)iVar1;
+    fontHeight = (float)iVar1;
     iVar1 = R_TextWidth("8888 ",5,backEnd.debugFont);
-    local_3c = (float)iVar1;
+    countWidth = (float)iVar1;
     iVar1 = R_TextWidth("8888:",5,backEnd.debugFont);
-    fVar3 = (float)iVar1 + 48.0 + 4.0;
-    local_c = 48.0;
-    local_40 = (156.0 - local_3c) - 4.0;
-    local_18 = 0xff000000;
-    local_58[0].packed = 0xffff4040;
-    local_2c[0] = 0xffa00000;
-    local_58[1] = (GfxColor)0xffffff40;
-    local_2c[1] = 0xffa0a000;
-    local_58[2] = (GfxColor)0xff40ff40;
-    local_2c[2] = 0xff00a000;
-    local_48[0] = 0;
-    local_48[1] = 0;
-    local_78[0] = 0;
-    local_78[1] = 0;
-    local_78[2] = 0;
-    local_78[3] = 0;
-    local_78[4] = 0;
-    local_78[5] = 0;
-    for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
-      if (local_14 < 0xf) {
+    fVar2 = (float)iVar1 + 48.0 + 4.0;
+    y = 48.0;
+    wMax = (156.0 - countWidth) - 4.0;
+    black.packed = 0xff000000;
+    colorNow[0].packed = 0xffff4040;
+    colorPeak[0] = 0xffa00000;
+    colorNow[1] = (GfxColor)0xffffff40;
+    colorPeak[1] = 0xffa0a000;
+    colorNow[2] = (GfxColor)0xff40ff40;
+    colorPeak[2] = 0xff00a000;
+    totalPrims[0] = 0;
+    totalPrims[1] = 0;
+    subTotalPrims[0] = 0;
+    subTotalPrims[1] = 0;
+    subTotalPrims[2] = 0;
+    subTotalPrims[3] = 0;
+    subTotalPrims[4] = 0;
+    subTotalPrims[5] = 0;
+    for (histogramIndex = 0; histogramIndex < 0x10; histogramIndex = histogramIndex + 1) {
+      if (histogramIndex < 0xf) {
         local_ac = va("%4i:");
       }
       else {
         local_ac = "more:";
       }
-      local_5c = local_ac;
-      RB_DrawText(local_ac,backEnd.debugFont,48.0,(local_c + local_1c) - 1.0,(GfxColor)0xffffffff);
-      local_10 = fVar3;
-      if ((local_14 == 0xf) || (300 < drawPrimHistogramLimit[local_14])) {
-        local_78[6] = 2;
+      caption = local_ac;
+      RB_DrawText(local_ac,backEnd.debugFont,48.0,(y + fontHeight) - 1.0,(GfxColor)0xffffffff);
+      x = fVar2;
+      if ((histogramIndex == 0xf) || (300 < drawPrimHistogramLimit[histogramIndex])) {
+        subTotalIndex = 2;
       }
-      else if (drawPrimHistogramLimit[local_14] < 0x33) {
-        local_78[6] = 0;
+      else if (drawPrimHistogramLimit[histogramIndex] < 0x33) {
+        subTotalIndex = 0;
       }
       else {
-        local_78[6] = 1;
+        subTotalIndex = 1;
       }
-      for (local_30 = 0; local_30 < 2; local_30 = local_30 + 1) {
-        local_34 = *(int *)(local_30 * 0x138 + 0xb538218 + local_14 * 4);
-        local_78[local_30 * 3 + local_78[6]] = local_78[local_30 * 3 + local_78[6]] + local_34;
-        local_48[local_30] = local_48[local_30] + local_34;
-        if (local_34 != 0) {
-          GVar7 = local_58[local_78[6]];
-          fVar4 = (local_c + local_1c) - 1.0;
-          pFVar5 = backEnd.debugFont;
-          fVar6 = local_10;
-          pcVar2 = va("%4i");
-          RB_DrawText(pcVar2,pFVar5,fVar6,fVar4,GVar7);
+      for (viewStatsIndex = 0; viewStatsIndex < 2; viewStatsIndex = viewStatsIndex + 1) {
+        curCount = *(int *)(viewStatsIndex * 0x138 + 0xb538218 + histogramIndex * 4);
+        subTotalPrims[viewStatsIndex * 3 + subTotalIndex] =
+             subTotalPrims[viewStatsIndex * 3 + subTotalIndex] + curCount;
+        totalPrims[viewStatsIndex] = totalPrims[viewStatsIndex] + curCount;
+        if (curCount != 0) {
+          color = colorNow[subTotalIndex];
+          y_00 = (y + fontHeight) - 1.0;
+          font = backEnd.debugFont;
+          x_00 = x;
+          text = va("%4i");
+          RB_DrawText(text,font,x_00,y_00,color);
         }
-        local_10 = local_10 + local_3c;
-        local_80 = local_34;
-        for (local_4c = 0; local_4c < 0x40; local_4c = local_4c + 1) {
-          if (local_80 < histogramHistory[local_4c][local_30][local_14]) {
-            local_80 = histogramHistory[local_4c][local_30][local_14];
+        x = x + countWidth;
+        rowMax = curCount;
+        for (historyIndex = 0; historyIndex < 0x40; historyIndex = historyIndex + 1) {
+          if (rowMax < histogramHistory[historyIndex][viewStatsIndex][histogramIndex]) {
+            rowMax = histogramHistory[historyIndex][viewStatsIndex][histogramIndex];
           }
         }
-        if (local_80 != 0) {
-          local_8 = ((float)local_80 * local_40) / (float)local_38;
-          RB_DrawStretchPic(rgp.whiteMaterial,local_10 - 2.0,local_c + 2.0,local_8 + 4.0,
-                            local_1c - 4.0,0.0,0.0,1.0,1.0,local_18,GFX_PRIM_STATS_DEBUG);
-          RB_DrawStretchPic(rgp.whiteMaterial,local_10,local_c + 4.0,local_8,local_1c - 8.0,0.0,0.0,
-                            1.0,1.0,local_2c[local_78[6]],GFX_PRIM_STATS_DEBUG);
-          if (local_34 != 0) {
-            local_8 = ((float)local_34 * local_40) / (float)local_38;
-            RB_DrawStretchPic(rgp.whiteMaterial,local_10,local_c + 4.0,local_8,local_1c - 8.0,0.0,
-                              0.0,1.0,1.0,local_58[local_78[6]].packed,GFX_PRIM_STATS_DEBUG);
+        if (rowMax != 0) {
+          w = ((float)rowMax * wMax) / (float)maxPrimsInHistogram;
+          RB_DrawStretchPic(rgp.whiteMaterial,x - 2.0,y + 2.0,w + 4.0,fontHeight - 4.0,0.0,0.0,1.0,
+                            1.0,black.packed,GFX_PRIM_STATS_DEBUG);
+          RB_DrawStretchPic(rgp.whiteMaterial,x,y + 4.0,w,fontHeight - 8.0,0.0,0.0,1.0,1.0,
+                            colorPeak[subTotalIndex],GFX_PRIM_STATS_DEBUG);
+          if (curCount != 0) {
+            w = ((float)curCount * wMax) / (float)maxPrimsInHistogram;
+            RB_DrawStretchPic(rgp.whiteMaterial,x,y + 4.0,w,fontHeight - 8.0,0.0,0.0,1.0,1.0,
+                              colorNow[subTotalIndex].packed,GFX_PRIM_STATS_DEBUG);
           }
         }
-        histogramHistory[histogramHistoryIndex & 0x3f][local_30][local_14] = local_34;
-        local_10 = local_40 + 4.0 + local_10;
+        histogramHistory[histogramHistoryIndex & 0x3f][viewStatsIndex][histogramIndex] = curCount;
+        x = wMax + 4.0 + x;
       }
-      local_c = local_c + local_1c;
+      y = y + fontHeight;
     }
-    local_10 = fVar3;
-    for (local_30 = 0; local_30 < 2; local_30 = local_30 + 1) {
-      local_10 = local_10 + local_3c;
-      if (local_48[local_30] == 0) {
-        local_10 = local_40 + 4.0 + local_10;
+    x = fVar2;
+    for (viewStatsIndex = 0; viewStatsIndex < 2; viewStatsIndex = viewStatsIndex + 1) {
+      x = x + countWidth;
+      if (totalPrims[viewStatsIndex] == 0) {
+        x = wMax + 4.0 + x;
       }
       else {
-        RB_DrawStretchPic(rgp.whiteMaterial,local_10 - 2.0,local_c + 2.0,local_40 + 4.0,
-                          local_1c - 4.0,0.0,0.0,1.0,1.0,local_18,GFX_PRIM_STATS_DEBUG);
-        for (local_78[6] = 0; (uint)local_78[6] < 3; local_78[6] = local_78[6] + 1) {
-          local_8 = ((float)local_78[local_30 * 3 + local_78[6]] * local_40) /
-                    (float)local_48[local_30];
-          RB_DrawStretchPic(rgp.whiteMaterial,local_10,local_c + 4.0,local_8,local_1c - 8.0,0.0,0.0,
-                            1.0,1.0,local_58[local_78[6]].packed,GFX_PRIM_STATS_DEBUG);
-          local_10 = local_10 + local_8;
+        RB_DrawStretchPic(rgp.whiteMaterial,x - 2.0,y + 2.0,wMax + 4.0,fontHeight - 4.0,0.0,0.0,1.0,
+                          1.0,black.packed,GFX_PRIM_STATS_DEBUG);
+        for (subTotalIndex = 0; subTotalIndex < 3; subTotalIndex = subTotalIndex + 1) {
+          w = ((float)subTotalPrims[viewStatsIndex * 3 + subTotalIndex] * wMax) /
+              (float)totalPrims[viewStatsIndex];
+          RB_DrawStretchPic(rgp.whiteMaterial,x,y + 4.0,w,fontHeight - 8.0,0.0,0.0,1.0,1.0,
+                            colorNow[subTotalIndex].packed,GFX_PRIM_STATS_DEBUG);
+          x = x + w;
         }
-        local_10 = local_10 + 4.0;
+        x = x + 4.0;
       }
     }
     histogramHistoryIndex = histogramHistoryIndex + 1;

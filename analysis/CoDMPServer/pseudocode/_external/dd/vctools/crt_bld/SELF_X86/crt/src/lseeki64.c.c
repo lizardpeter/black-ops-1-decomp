@@ -5,44 +5,45 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-long64 __cdecl _lseeki64(int param_1,long64 param_2,int param_3)
+long64 __cdecl _lseeki64(int fh,long64 param_2,int param_3)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
   int in_stack_ffffffc8;
-  undefined8 local_28;
+  undefined8 r;
+  int _Expr_val;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
         puVar1 = __doserrno();
         *puVar1 = 0;
         piVar2 = _errno();
         *piVar2 = 9;
         _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-        local_28._4_4_ = 0xffffffff;
-        local_28._0_4_ = 0xffffffff;
+        r._4_4_ = 0xffffffff;
+        r._0_4_ = 0xffffffff;
       }
       else {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          local_28 = -1;
+          r = -1;
         }
         else {
-          local_28 = _lseeki64_nolock(param_1,param_2,in_stack_ffffffc8);
+          r = _lseeki64_nolock(fh,param_2,in_stack_ffffffc8);
         }
         FUN_00c2bae1();
       }
@@ -54,28 +55,28 @@ long64 __cdecl _lseeki64(int param_1,long64 param_2,int param_3)
     *piVar2 = 9;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  local_28._0_4_ = 0xffffffff;
-  local_28._4_4_ = 0xffffffff;
+  r._0_4_ = 0xffffffff;
+  r._4_4_ = 0xffffffff;
 LAB_00c2badb:
-  return CONCAT44(local_28._4_4_,(undefined4)local_28);
+  return CONCAT44(r._4_4_,(undefined4)r);
 }
 
 
 // 00C2B94D  _lseeki64_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseeki64.c:120)
 
-long64 __cdecl _lseeki64_nolock(int param_1,long64 param_2,int param_3)
+long64 __cdecl _lseeki64_nolock(int fh,long64 param_2,int param_3)
 
 {
   byte *pbVar1;
   HANDLE hFile;
   int *piVar2;
   DWORD DVar3;
-  DWORD DVar4;
+  DWORD oserrno;
   LONG in_stack_00000008;
   LONG local_8;
   
   local_8 = (LONG)param_2;
-  hFile = (HANDLE)_get_osfhandle(param_1);
+  hFile = (HANDLE)_get_osfhandle(fh);
   if (hFile == (HANDLE)0xffffffff) {
     piVar2 = _errno();
     *piVar2 = 9;
@@ -86,13 +87,13 @@ LAB_00c2b97e:
   else {
     DVar3 = SetFilePointer(hFile,in_stack_00000008,&local_8,param_2._4_4_);
     if (DVar3 == 0xffffffff) {
-      DVar4 = GetLastError();
-      if (DVar4 != 0) {
-        _dosmaperr(DVar4);
+      oserrno = GetLastError();
+      if (oserrno != 0) {
+        _dosmaperr(oserrno);
         goto LAB_00c2b97e;
       }
     }
-    pbVar1 = (byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + (param_1 & 0x1fU) * 0x40);
+    pbVar1 = (byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + (fh & 0x1fU) * 0x40);
     *pbVar1 = *pbVar1 & 0xfd;
   }
   return CONCAT44(local_8,DVar3);

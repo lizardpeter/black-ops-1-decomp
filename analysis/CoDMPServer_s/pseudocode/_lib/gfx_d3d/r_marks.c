@@ -2,18 +2,22 @@
 
 // 007E9650  R_BoxSurfaces  (gfx_d3d/r_marks.cpp:951)
 
+/* WARNING: Variable defined which should be unmapped: listCount */
+
 void __cdecl
-R_BoxSurfaces(float *param_1,float *param_2,_func___cdecl_int_int_void_ptr **param_3,void *param_4,
-             GfxSurface ***param_5,uint param_6,uint *param_7,uint param_8)
+R_BoxSurfaces(float *mins,float *maxs,_func___cdecl_int_int_void_ptr **allowSurf,
+             void *callbackContext,GfxSurface ***surfLists,uint surfListSize,uint *param_7,
+             uint param_8)
 
 {
   uint *unaff_ESI;
   uchar local_90 [140];
+  uint listCount;
   
   Com_Memset(local_90,0,(rgp.world)->cellBitsCount);
   *unaff_ESI = 0;
-  R_BoxSurfaces_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,param_1,param_2,param_3,param_4,param_5
-                  ,param_6,unaff_ESI,1,local_90);
+  R_BoxSurfaces_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,mins,maxs,allowSurf,callbackContext,
+                  surfLists,surfListSize,unaff_ESI,1,local_90);
   return;
 }
 
@@ -21,8 +25,8 @@ R_BoxSurfaces(float *param_1,float *param_2,_func___cdecl_int_int_void_ptr **par
 // 007E96C0  R_BoxStaticModels  (gfx_d3d/r_marks.cpp:979)
 
 int __cdecl
-R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,ushort *param_4,
-                 int param_5)
+R_BoxStaticModels(float *mins,float *maxs,_func___cdecl_int_int *allowSModel,ushort *smodelList,
+                 int smodelListSize)
 
 {
   int local_94;
@@ -30,8 +34,8 @@ R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,u
   
   Com_Memset(local_90,0,(rgp.world)->cellBitsCount);
   local_94 = 0;
-  R_BoxStaticModels_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,param_1,param_2,param_3,param_4,
-                      param_5,&local_94,local_90);
+  R_BoxStaticModels_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,mins,maxs,allowSModel,smodelList,
+                      smodelListSize,&local_94,local_90);
   return local_94;
 }
 
@@ -40,7 +44,7 @@ R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,u
 
 void __cdecl
 R_MarkUtil_GetDObjAnimMatAndHideParts
-          (DObj *param_1,cpose_t *param_2,DObjAnimMat **param_3,uint *param_4)
+          (DObj *outBoneMtxList,cpose_t *param_2,DObjAnimMat **param_3,uint *param_4)
 
 {
   undefined4 uVar1;
@@ -48,6 +52,7 @@ R_MarkUtil_GetDObjAnimMatAndHideParts
   DObj *extraout_EDX;
   int unaff_ESI;
   undefined8 *unaff_EDI;
+  cpose_t *pose;
   int *in_stack_ffffffc4;
   char *in_stack_ffffffc8;
   undefined8 local_24;
@@ -68,7 +73,7 @@ R_MarkUtil_GetDObjAnimMatAndHideParts
   local_c[0] = 0;
   local_c[1] = 0;
   DObjGetSurfaces((DObj *)&local_24,in_stack_ffffffc4,in_stack_ffffffc8);
-  pDVar2 = CG_DObjCalcPose((cpose_t *)param_1,extraout_EDX,in_stack_ffffffc4);
+  pDVar2 = CG_DObjCalcPose((cpose_t *)outBoneMtxList,extraout_EDX,in_stack_ffffffc4);
   uVar1 = *(undefined4 *)(unaff_ESI + 0x6c);
   *unaff_EDI = *(undefined8 *)(unaff_ESI + 0x5c);
   unaff_EDI[1] = *(undefined8 *)(unaff_ESI + 100);
@@ -82,7 +87,7 @@ R_MarkUtil_GetDObjAnimMatAndHideParts
 
 void __cdecl
 R_MarkFragments_Begin
-          (MarkInfo *param_1,MarkFragmentsAgainstEnum param_2,float *param_3,float (*param_4) [3],
+          (MarkInfo *origin,MarkFragmentsAgainstEnum axis,float *radius,float (*param_4) [3],
           float param_5,float *param_6,Material *param_7)
 
 {
@@ -92,19 +97,20 @@ R_MarkFragments_Begin
   MarkClipPlaneSet *unaff_EBP;
   float *unaff_ESI;
   float *unaff_EDI;
+  MarkFragmentsAgainstEnum markAgainst;
   
-  *unaff_ESI = *(float *)param_2;
-  unaff_ESI[1] = *(float *)(param_2 + 4);
-  unaff_ESI[2] = *(float *)(param_2 + 8);
-  unaff_ESI[0xc] = *param_3;
-  unaff_ESI[0xd] = param_3[1];
-  unaff_ESI[0xe] = param_3[2];
-  unaff_ESI[0xf] = param_3[3];
-  unaff_ESI[0x10] = param_3[4];
-  unaff_ESI[0x11] = param_3[5];
-  unaff_ESI[0x12] = param_3[6];
-  unaff_ESI[0x13] = param_3[7];
-  unaff_ESI[0x14] = param_3[8];
+  *unaff_ESI = *(float *)axis;
+  unaff_ESI[1] = *(float *)(axis + 4);
+  unaff_ESI[2] = *(float *)(axis + 8);
+  unaff_ESI[0xc] = *radius;
+  unaff_ESI[0xd] = radius[1];
+  unaff_ESI[0xe] = radius[2];
+  unaff_ESI[0xf] = radius[3];
+  unaff_ESI[0x10] = radius[4];
+  unaff_ESI[0x11] = radius[5];
+  unaff_ESI[0x12] = radius[6];
+  unaff_ESI[0x13] = radius[7];
+  unaff_ESI[0x14] = radius[8];
   unaff_ESI[0x4e] = *in_EDX;
   unaff_ESI[0x4f] = in_EDX[1];
   unaff_ESI[0x50] = in_EDX[2];
@@ -112,12 +118,12 @@ R_MarkFragments_Begin
   unaff_ESI[0x15] = (float)param_4;
   *(byte *)(unaff_ESI + 0x51) = (byte)(*(uint *)((int)in_ECX + 4) >> 1) & 1;
   *(byte *)((int)unaff_ESI + 0x145) = (byte)(*(uint *)((int)in_ECX + 4) >> 4) & 1;
-  unaff_ESI[0x52] = (float)param_1;
+  unaff_ESI[0x52] = (float)origin;
   R_GetMarkFragmentBounds
             (*param_4,(float (*) [3])(unaff_ESI + 0x1b),(float)(unaff_ESI + 0x1e),unaff_EDI,
              (float *)unaff_EBP);
   R_GetMarkFragmentClipPlanes(unaff_ESI,(float (*) [3])unaff_ESI[0x15],(float)unaff_EDI,unaff_EBP);
-  if (param_1 == (MarkInfo *)0x0) {
+  if (origin == (MarkInfo *)0x0) {
     unaff_ESI[0x125] = 0.0;
     return;
   }
@@ -132,19 +138,20 @@ R_MarkFragments_Begin
 // 007EBC40  R_MarkFragments_AddDObj  (gfx_d3d/r_marks.cpp:2398)
 
 bool __cdecl
-R_MarkFragments_AddDObj(MarkInfo *param_1,DObj *param_2,cpose_t *param_3,ushort param_4)
+R_MarkFragments_AddDObj(MarkInfo *entityIndex,DObj *param_2,cpose_t *param_3,ushort param_4)
 
 {
   undefined4 *puVar1;
   int in_ECX;
   undefined4 in_EDX;
+  cpose_t *pose;
   
   if (*(int *)(in_ECX + 0x310) == 0x20) {
     return false;
   }
   puVar1 = (undefined4 *)(in_ECX + 400 + *(int *)(in_ECX + 0x310) * 0xc);
   *puVar1 = in_EDX;
-  puVar1[1] = param_1;
+  puVar1[1] = entityIndex;
   *(undefined2 *)(puVar1 + 2) = param_2._0_2_;
   *(int *)(in_ECX + 0x310) = *(int *)(in_ECX + 0x310) + 1;
   return true;
@@ -154,19 +161,21 @@ R_MarkFragments_AddDObj(MarkInfo *param_1,DObj *param_2,cpose_t *param_3,ushort 
 // 007EBC80  R_MarkFragments_AddBModel  (gfx_d3d/r_marks.cpp:2413)
 
 bool __cdecl
-R_MarkFragments_AddBModel(MarkInfo *param_1,GfxBrushModel *param_2,cpose_t *param_3,ushort param_4)
+R_MarkFragments_AddBModel
+          (MarkInfo *entityIndex,GfxBrushModel *param_2,cpose_t *param_3,ushort param_4)
 
 {
   undefined4 *puVar1;
   int in_ECX;
   undefined4 in_EDX;
+  cpose_t *pose;
   
   if (*(int *)(in_ECX + 0x494) == 0x20) {
     return false;
   }
   puVar1 = (undefined4 *)(in_ECX + 0x314 + *(int *)(in_ECX + 0x494) * 0xc);
   *puVar1 = in_EDX;
-  puVar1[1] = param_1;
+  puVar1[1] = entityIndex;
   *(undefined2 *)(puVar1 + 2) = param_2._0_2_;
   *(int *)(in_ECX + 0x494) = *(int *)(in_ECX + 0x494) + 1;
   return true;
@@ -176,7 +185,7 @@ R_MarkFragments_AddBModel(MarkInfo *param_1,GfxBrushModel *param_2,cpose_t *para
 // 007EBCC0  R_MarkFragments_Go  (gfx_d3d/r_marks.cpp:2431)
 
 void __cdecl
-R_MarkFragments_Go(MarkInfo *param_1,
+R_MarkFragments_Go(MarkInfo *callbackContext,
                   _func___cdecl_void_void_ptr_int_FxMarkTri_ptr_int_FxMarkPoint_ptr_float_ptr_float_ptr_float_ptr_bool
                   *param_2,void *param_3,int param_4,FxMarkTri *param_5,int param_6,
                   FxMarkPoint *param_7)
@@ -186,21 +195,23 @@ R_MarkFragments_Go(MarkInfo *param_1,
   FxMarkTri *in_EAX;
   FxMarkPoint *in_ECX;
   MarkInfo *unaff_EDI;
+  MarkInfo *markInfo;
   
-  param_1->tris = in_EAX;
-  param_1->maxTris = 0xff;
-  param_1->maxPoints = 0x2fd;
-  param_1->points = in_ECX;
-  param_1->usedTriCount = 0;
-  param_1->usedPointCount = 0;
-  param_1->callback =
+  callbackContext->tris = in_EAX;
+  callbackContext->maxTris = 0xff;
+  callbackContext->maxPoints = 0x2fd;
+  callbackContext->points = in_ECX;
+  callbackContext->usedTriCount = 0;
+  callbackContext->usedPointCount = 0;
+  callbackContext->callback =
        (_func___cdecl_void_void_ptr_int_FxMarkTri_ptr_int_FxMarkPoint_ptr_float_ptr_float_ptr_float_ptr_bool
         *)&LAB_0053f7c0;
-  param_1->callbackContext = param_2;
-  if (param_1->markAgainst == MARK_FRAGMENTS_AGAINST_BRUSHES) {
+  callbackContext->callbackContext = param_2;
+  if (callbackContext->markAgainst == MARK_FRAGMENTS_AGAINST_BRUSHES) {
     bVar1 = R_MarkFragments_WorldBrushes(unaff_EDI);
-    if ((!bVar1) || (bVar1 = R_MarkFragments_EntBrushes(param_1), !bVar1)) goto LAB_007ebd3c;
-    bVar1 = R_MarkFragments_Glass(param_1);
+    if ((!bVar1) || (bVar1 = R_MarkFragments_EntBrushes(callbackContext), !bVar1))
+    goto LAB_007ebd3c;
+    bVar1 = R_MarkFragments_Glass(callbackContext);
   }
   else {
     bVar1 = R_MarkFragments_StaticModels(unaff_EDI);
@@ -213,8 +224,9 @@ R_MarkFragments_Go(MarkInfo *param_1,
 LAB_007ebd3c:
   Com_Printf(0xe,
              "R_MarkFragments: Too many triangles to mark, max %d radius %.2f at %.2f %.2f %.2f\n",
-             param_1->maxTris,(double)param_1->radius,(double)param_1->origin[0],
-             (double)param_1->origin[1],(double)param_1->origin[2]);
+             callbackContext->maxTris,(double)callbackContext->radius,
+             (double)callbackContext->origin[0],(double)callbackContext->origin[1],
+             (double)callbackContext->origin[2]);
   return;
 }
 

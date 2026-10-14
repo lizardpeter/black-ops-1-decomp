@@ -3,8 +3,9 @@
 // 00800AC0  XModelBad  (xanim/xmodel.cpp:55)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl XModelBad(XModel *param_1)
+int __cdecl XModelBad(XModel *model)
 
 {
   code *pcVar1;
@@ -12,7 +13,7 @@ int __cdecl XModelBad(XModel *param_1)
   byte bVar3;
   int iVar4;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",0x38,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -21,10 +22,10 @@ int __cdecl XModelBad(XModel *param_1)
     }
   }
   if ((useFastFile->current).enabled == false) {
-    bVar3 = param_1->bad;
+    bVar3 = model->bad;
   }
   else {
-    bVar3 = DB_IsXAssetDefault(ASSET_TYPE_XMODEL,param_1->name);
+    bVar3 = DB_IsXAssetDefault(ASSET_TYPE_XMODEL,model->name);
   }
   return (uint)bVar3;
 }
@@ -42,14 +43,14 @@ void __cdecl TRACK_xmodel(void)
 
 // 00800B50  XModelReleaseResources  (xanim/xmodel.cpp:81)
 
-void __cdecl XModelReleaseResources(XModel *param_1)
+void __cdecl XModelReleaseResources(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint surfIndex;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",0x54,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -57,8 +58,8 @@ void __cdecl XModelReleaseResources(XModel *param_1)
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_1->numsurfs; local_8 = local_8 + 1) {
-    XSurfaceReleaseResources(param_1->surfs + local_8);
+  for (surfIndex = 0; surfIndex < model->numsurfs; surfIndex = surfIndex + 1) {
+    XSurfaceReleaseResources(model->surfs + surfIndex);
   }
   return;
 }
@@ -66,16 +67,18 @@ void __cdecl XModelReleaseResources(XModel *param_1)
 
 // 00800BC0  XModelPartsFree  (xanim/xmodel.cpp:95)
 
-void __cdecl XModelPartsFree(XModelPartsLoad *param_1)
+void __cdecl XModelPartsFree(XModelPartsLoad *modelParts)
 
 {
   byte bVar1;
   ushort *puVar2;
   code *pcVar3;
   bool bVar4;
-  int local_c;
+  int size;
+  int i;
+  ushort *boneNames;
   
-  if (param_1 == (XModelPartsLoad *)0x0) {
+  if (modelParts == (XModelPartsLoad *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",100,0,"%s");
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
@@ -83,10 +86,10 @@ void __cdecl XModelPartsFree(XModelPartsLoad *param_1)
       return;
     }
   }
-  puVar2 = param_1->boneNames;
-  bVar1 = param_1->numBones;
-  for (local_c = 0; local_c < (int)(uint)bVar1; local_c = local_c + 1) {
-    SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)puVar2[local_c]);
+  puVar2 = modelParts->boneNames;
+  bVar1 = modelParts->numBones;
+  for (i = 0; i < (int)(uint)bVar1; i = i + 1) {
+    SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)puVar2[i]);
   }
   return;
 }
@@ -97,6 +100,9 @@ void __cdecl XModelPartsFree(XModelPartsLoad *param_1)
 XModelPartsLoad * __cdecl XModelCreateDefaultParts(void)
 
 {
+  XModelPartsLoad *model;
+  ushort *boneNames;
+  
   g_default.modelParts.parentList = g_default.parentList;
   g_default.modelParts.boneNames = g_default.boneNames;
   g_default.modelParts.quats = (short *)0x0;
@@ -112,22 +118,25 @@ XModelPartsLoad * __cdecl XModelCreateDefaultParts(void)
 
 // 00800E00  XModelMakeDefault  (xanim/xmodel.cpp:137)
 
-void __cdecl XModelMakeDefault(XModel *param_1)
+void __cdecl XModelMakeDefault(XModel *model)
 
 {
-  XModelPartsLoad *pXVar1;
-  XModel *pXVar2;
+  XModelPartsLoad *modelParts;
+  XModel *model_00;
+  float *mins;
+  float *maxs;
+  XBoneInfo *boneInfo;
   
-  param_1->bad = true;
-  pXVar2 = param_1;
-  pXVar1 = XModelCreateDefaultParts();
-  XModelCopyXModelParts(pXVar1,pXVar2);
-  memset((uchar *)param_1->lodInfo,'\0',0x80);
-  param_1->numLods = 1;
-  param_1->collLod = 0;
-  param_1->name = "DEFAULT";
-  param_1->surfs = (XSurface *)0x0;
-  param_1->materialHandles = g_materials;
+  model->bad = true;
+  model_00 = model;
+  modelParts = XModelCreateDefaultParts();
+  XModelCopyXModelParts(modelParts,model_00);
+  memset((uchar *)model->lodInfo,'\0',0x80);
+  model->numLods = 1;
+  model->collLod = 0;
+  model->name = "DEFAULT";
+  model->surfs = (XSurface *)0x0;
+  model->materialHandles = g_materials;
   g_materials[0] = Material_RegisterHandle("mc/$default",8);
   g_default.boneInfo.bounds[0][0] = -16.0;
   g_default.boneInfo.bounds[0][1] = -16.0;
@@ -135,32 +144,33 @@ void __cdecl XModelMakeDefault(XModel *param_1)
   g_default.boneInfo.bounds[1][0] = 16.0;
   g_default.boneInfo.bounds[1][1] = 16.0;
   g_default.boneInfo.bounds[1][2] = 16.0;
-  (param_1->field18_0xb8).localBoneInfo = &g_default.boneInfo;
+  (model->field18_0xb8).localBoneInfo = &g_default.boneInfo;
   return;
 }
 
 
 // 00800DD0  XModelCreateDefault  (xanim/xmodel.cpp:174)
 
-XModel * __cdecl XModelCreateDefault(_func___cdecl_void_ptr_int *param_1)
+XModel * __cdecl XModelCreateDefault(_func___cdecl_void_ptr_int *Alloc)
 
 {
-  XModel *pXVar1;
+  XModel *model_00;
+  XModel *model;
   
-  pXVar1 = (*param_1)(0x17c);
-  XModelMakeDefault(pXVar1);
-  return pXVar1;
+  model_00 = (*Alloc)(0x17c);
+  XModelMakeDefault(model_00);
+  return model_00;
 }
 
 
 // 00800C40  XModelPartsFindData  (xanim/xmodel.cpp:185)
 
-XModelPartsLoad * __cdecl XModelPartsFindData(char *param_1)
+XModelPartsLoad * __cdecl XModelPartsFindData(char *name)
 
 {
   XModelPartsLoad *pXVar1;
   
-  pXVar1 = Hunk_FindDataForFile(4,param_1);
+  pXVar1 = Hunk_FindDataForFile(4,name);
   return pXVar1;
 }
 
@@ -168,22 +178,22 @@ XModelPartsLoad * __cdecl XModelPartsFindData(char *param_1)
 // 00800C60  XModelPartsSetData  (xanim/xmodel.cpp:191)
 
 void __cdecl
-XModelPartsSetData(char *param_1,XModelPartsLoad *param_2,_func___cdecl_void_ptr_int *param_3)
+XModelPartsSetData(char *name,XModelPartsLoad *modelParts,_func___cdecl_void_ptr_int *Alloc)
 
 {
-  Hunk_SetDataForFile(4,param_1,param_2,param_3);
+  Hunk_SetDataForFile(4,name,modelParts,Alloc);
   return;
 }
 
 
 // 00800C80  XModelSurfsFindData  (xanim/xmodel.cpp:197)
 
-XModelSurfs * __cdecl XModelSurfsFindData(char *param_1)
+XModelSurfs * __cdecl XModelSurfsFindData(char *name)
 
 {
   XModelSurfs *pXVar1;
   
-  pXVar1 = Hunk_FindDataForFile(3,param_1);
+  pXVar1 = Hunk_FindDataForFile(3,name);
   return pXVar1;
 }
 
@@ -191,24 +201,25 @@ XModelSurfs * __cdecl XModelSurfsFindData(char *param_1)
 // 00800CA0  XModelSurfsSetData  (xanim/xmodel.cpp:203)
 
 void __cdecl
-XModelSurfsSetData(char *param_1,XModelSurfs *param_2,_func___cdecl_void_ptr_int *param_3)
+XModelSurfsSetData(char *name,XModelSurfs *modelSurfs,_func___cdecl_void_ptr_int *Alloc)
 
 {
-  Hunk_SetDataForFile(3,param_1,param_2,param_3);
+  Hunk_SetDataForFile(3,name,modelSurfs,Alloc);
   return;
 }
 
 
 // 00800DA0  XModelDefaultModel  (xanim/xmodel.cpp:225)
 
-XModel * __cdecl XModelDefaultModel(char *param_1,_func___cdecl_void_ptr_int *param_2)
+XModel * __cdecl XModelDefaultModel(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
-  XModel *pXVar1;
+  XModel *data;
+  XModel *model;
   
-  pXVar1 = XModelCreateDefault(param_2);
-  Hunk_SetDataForFile(5,param_1,pXVar1,param_2);
-  return pXVar1;
+  data = XModelCreateDefault(Alloc);
+  Hunk_SetDataForFile(5,name,data,Alloc);
+  return data;
 }
 
 
@@ -216,27 +227,28 @@ XModel * __cdecl XModelDefaultModel(char *param_1,_func___cdecl_void_ptr_int *pa
 
 XModel * __cdecl
 XModelPrecache_LoadObj
-          (char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_void_ptr_int *param_3)
+          (char *name,_func___cdecl_void_ptr_int *Alloc,_func___cdecl_void_ptr_int *AllocColl)
 
 {
-  XModel *pXVar1;
-  char *pcVar2;
+  XModel *data;
+  char *pcVar1;
+  XModel *model;
   
-  pXVar1 = Hunk_FindDataForFile(5,param_1);
-  if (pXVar1 == (XModel *)0x0) {
+  data = Hunk_FindDataForFile(5,name);
+  if (data == (XModel *)0x0) {
     ProfLoad_Begin("Load xmodel");
-    pXVar1 = XModelLoad(param_1,param_2,param_3);
+    data = XModelLoad(name,Alloc,AllocColl);
     ProfLoad_End();
-    if (pXVar1 == (XModel *)0x0) {
+    if (data == (XModel *)0x0) {
       Com_PrintError(0x13,"ERROR: Cannot find xmodel \'%s\'.\n");
-      pXVar1 = XModelDefaultModel(param_1,param_2);
+      data = XModelDefaultModel(name,Alloc);
     }
     else {
-      pcVar2 = Hunk_SetDataForFile(5,param_1,pXVar1,param_2);
-      pXVar1->name = pcVar2;
+      pcVar1 = Hunk_SetDataForFile(5,name,data,Alloc);
+      data->name = pcVar1;
     }
   }
-  return pXVar1;
+  return data;
 }
 
 
@@ -247,12 +259,12 @@ XModelPrecache_LoadObj
 
 XModel * __cdecl
 XModelPrecache_FastFile
-          (char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_void_ptr_int *param_3)
+          (char *name,_func___cdecl_void_ptr_int *Alloc,_func___cdecl_void_ptr_int *AllocColl)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_XMODEL,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_XMODEL,name,true,-1);
   return (XModel *)XVar1.xmodelPieces;
 }
 
@@ -260,8 +272,7 @@ XModelPrecache_FastFile
 // 00800CC0  XModelPrecache  (xanim/xmodel.cpp:288)
 
 XModel * __cdecl
-XModelPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_void_ptr_int *param_3
-              )
+XModelPrecache(char *name,_func___cdecl_void_ptr_int *Alloc,_func___cdecl_void_ptr_int *AllocColl)
 
 {
   XModel *pXVar1;
@@ -273,59 +284,59 @@ XModelPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_v
   else {
     local_c = XModelPrecache_FastFile;
   }
-  pXVar1 = (XModel *)(*local_c)(param_1,param_2,param_3);
+  pXVar1 = (XModel *)(*local_c)(name,Alloc,AllocColl);
   return pXVar1;
 }
 
 
 // 00800FA0  XModelBoneNames  (xanim/xmodel.cpp:299)
 
-ushort * __cdecl XModelBoneNames(XModel *param_1)
+ushort * __cdecl XModelBoneNames(XModel *model)
 
 {
-  return (param_1->field5_0x8).localBoneNames;
+  return (model->field5_0x8).localBoneNames;
 }
 
 
 // 00800FB0  XModelGetRadius  (xanim/xmodel.cpp:310)
 
-float __cdecl XModelGetRadius(XModel *param_1)
+float __cdecl XModelGetRadius(XModel *model)
 
 {
-  return param_1->radius;
+  return model->radius;
 }
 
 
 // 00800FC0  XModelGetBounds  (xanim/xmodel.cpp:321)
 
-void __cdecl XModelGetBounds(XModel *param_1,float *param_2,float *param_3)
+void __cdecl XModelGetBounds(XModel *model,float *mins,float *maxs)
 
 {
-  *param_2 = param_1->mins[0];
-  param_2[1] = param_1->mins[1];
-  param_2[2] = param_1->mins[2];
-  *param_3 = param_1->maxs[0];
-  param_3[1] = param_1->maxs[1];
-  param_3[2] = param_1->maxs[2];
+  *mins = model->mins[0];
+  mins[1] = model->mins[1];
+  mins[2] = model->mins[2];
+  *maxs = model->maxs[0];
+  maxs[1] = model->maxs[1];
+  maxs[2] = model->maxs[2];
   return;
 }
 
 
 // 00801030  XModelGetMemUsage  (xanim/xmodel.cpp:333)
 
-int __cdecl XModelGetMemUsage(XModel *param_1)
+int __cdecl XModelGetMemUsage(XModel *model)
 
 {
-  return param_1->memUsage;
+  return model->memUsage;
 }
 
 
 // 00801040  XModelRenderString  (xanim/xmodel.cpp:338)
 
-void __cdecl XModelRenderString(float *param_1,char *param_2)
+void __cdecl XModelRenderString(float *pos,char *string)
 
 {
-  XSurfaceRenderString(param_1,param_2);
+  XSurfaceRenderString(pos,string);
   return;
 }
 
@@ -335,107 +346,109 @@ void __cdecl XModelRenderString(float *param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-XModelTraceLine(XModel *param_1,trace_t *param_2,float *param_3,float *param_4,int param_5)
+XModelTraceLine(XModel *model,trace_t *results,float *localStart,float *localEnd,int contentmask)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  int iVar4;
-  float fVar5;
+  XModelCollSurf_s *pXVar4;
+  int iVar5;
+  XModelCollTri_s *pXVar6;
+  float fVar7;
+  float fVar8;
+  float fVar9;
+  float fVar10;
+  float fVar11;
+  float fVar12;
+  float fVar13;
   float local_ac;
   int local_84;
-  int local_7c;
-  float4 local_78;
+  float endDist;
+  int j;
+  float4 boneExtents;
   float local_68;
   float local_64;
   float local_60;
   uint local_48;
-  float local_44;
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
-  XModelCollTri_s *local_2c;
-  float local_28;
-  int local_24;
-  float local_20;
-  XModelCollSurf_s *local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  uint local_8;
+  float t;
+  PIXProfile pixProfile;
+  float hitFrac;
+  XModelCollTri_s *ctri;
+  float frac;
+  int partIndex;
+  float startDist;
+  XModelCollSurf_s *csurf;
+  float s;
+  uint i;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"xmodeltraceline");
-  TraceExtents::TraceExtents((TraceExtents *)&local_78);
-  if (param_1->collLod < 0) {
+  TraceExtents::TraceExtents((TraceExtents *)&boneExtents);
+  if (model->collLod < 0) {
     local_84 = -1;
     DVar3 = GetCurrentThreadId();
+    partIndex = local_84;
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    local_24 = -1;
-    local_78.v[0] = *param_3;
-    local_78.v[1] = param_3[1];
-    local_78.v[2] = param_3[2];
-    local_68 = *param_4;
-    local_64 = param_4[1];
-    local_60 = param_4[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_78);
-    local_3c = local_68 - local_78.v[0];
-    local_38 = local_64 - local_78.v[1];
-    local_34 = local_60 - local_78.v[2];
-    for (local_8 = 0; local_84 = local_24, local_8 < (uint)param_1->numCollSurfs;
-        local_8 = local_8 + 1) {
-      local_1c = param_1->collSurfs + local_8;
-      if (((local_1c->contents & param_5) != 0) &&
-         (iVar4 = intersect_extents_aabb
-                            ((TraceExtents *)&local_78,local_1c->mins,local_1c->maxs,
-                             param_2->fraction), iVar4 != 0)) {
-        for (local_7c = 0; local_7c < local_1c->numCollTris; local_7c = local_7c + 1) {
-          local_2c = local_1c->collTris + local_7c;
-          fVar5 = (local_68 * local_2c->plane[0] + local_64 * local_2c->plane[1] +
-                  local_60 * local_2c->plane[2]) - local_2c->plane[3];
-          if ((fVar5 < 0.0) &&
-             (local_20 = (local_78.v[0] * local_2c->plane[0] + local_78.v[1] * local_2c->plane[1] +
-                         local_78.v[2] * local_2c->plane[2]) - local_2c->plane[3], 0.0 < local_20))
-          {
-            local_ac = (local_20 - 0.125) / (local_20 - fVar5);
+    partIndex = -1;
+    boneExtents.v[0] = *localStart;
+    boneExtents.v[1] = localStart[1];
+    boneExtents.v[2] = localStart[2];
+    local_68 = *localEnd;
+    local_64 = localEnd[1];
+    local_60 = localEnd[2];
+    CM_CalcTraceExtents((TraceExtents *)&boneExtents);
+    fVar7 = local_68 - boneExtents.v[0];
+    fVar8 = local_64 - boneExtents.v[1];
+    fVar9 = local_60 - boneExtents.v[2];
+    for (i = 0; i < (uint)model->numCollSurfs; i = i + 1) {
+      pXVar4 = model->collSurfs + i;
+      if (((pXVar4->contents & contentmask) != 0) &&
+         (iVar5 = intersect_extents_aabb
+                            ((TraceExtents *)&boneExtents,pXVar4->mins,pXVar4->maxs,
+                             results->fraction), iVar5 != 0)) {
+        for (j = 0; j < pXVar4->numCollTris; j = j + 1) {
+          pXVar6 = pXVar4->collTris + j;
+          fVar11 = (local_68 * pXVar6->plane[0] + local_64 * pXVar6->plane[1] +
+                   local_60 * pXVar6->plane[2]) - pXVar6->plane[3];
+          if ((fVar11 < 0.0) &&
+             (fVar12 = (boneExtents.v[0] * pXVar6->plane[0] + boneExtents.v[1] * pXVar6->plane[1] +
+                       boneExtents.v[2] * pXVar6->plane[2]) - pXVar6->plane[3], 0.0 < fVar12)) {
+            local_ac = (fVar12 - 0.125) / (fVar12 - fVar11);
             if (local_ac - 0.0 < 0.0) {
               local_ac = 0.0;
             }
-            local_28 = local_ac;
-            if (local_ac < param_2->fraction) {
-              local_30 = local_20 / (local_20 - fVar5);
-              local_18 = local_30 * local_3c + local_78.v[0];
-              local_14 = local_30 * local_38 + local_78.v[1];
-              local_10 = local_30 * local_34 + local_78.v[2];
-              local_c = (local_18 * local_2c->svec[0] + local_14 * local_2c->svec[1] +
-                        local_10 * local_2c->svec[2]) - local_2c->svec[3];
-              if ((((-0.001 <= local_c) && (local_c <= 1.001)) &&
-                  (local_44 = (local_18 * local_2c->tvec[0] + local_14 * local_2c->tvec[1] +
-                              local_10 * local_2c->tvec[2]) - local_2c->tvec[3], -0.001 <= local_44)
-                  ) && (local_c + local_44 <= 1.001)) {
-                local_24 = local_1c->boneIdx;
-                param_2->startsolid = false;
-                param_2->allsolid = false;
-                param_2->fraction = local_ac;
-                if (((param_2->fraction < 0.0) || (1.0 < param_2->fraction)) &&
+            if (local_ac < results->fraction) {
+              fVar12 = fVar12 / (fVar12 - fVar11);
+              fVar11 = fVar12 * fVar7 + boneExtents.v[0];
+              fVar10 = fVar12 * fVar8 + boneExtents.v[1];
+              fVar12 = fVar12 * fVar9 + boneExtents.v[2];
+              fVar13 = (fVar11 * pXVar6->svec[0] + fVar10 * pXVar6->svec[1] +
+                       fVar12 * pXVar6->svec[2]) - pXVar6->svec[3];
+              if ((((-0.001 <= fVar13) && (fVar13 <= 1.001)) &&
+                  (t = (fVar11 * pXVar6->tvec[0] + fVar10 * pXVar6->tvec[1] +
+                       fVar12 * pXVar6->tvec[2]) - pXVar6->tvec[3], -0.001 <= t)) &&
+                 (fVar13 + t <= 1.001)) {
+                partIndex = pXVar4->boneIdx;
+                results->startsolid = false;
+                results->allsolid = false;
+                results->fraction = local_ac;
+                if (((results->fraction < 0.0) || (1.0 < results->fraction)) &&
                    (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",
                                              0x2af,1,"%s\n\t(results->fraction) = %g"), !bVar2)) {
                   pcVar1 = (code *)swi(3);
-                  iVar4 = (*pcVar1)();
-                  return iVar4;
+                  iVar5 = (*pcVar1)();
+                  return iVar5;
                 }
-                param_2->sflags = local_1c->surfFlags;
-                param_2->cflags = local_1c->contents;
-                (param_2->normal).vec.v[0] = local_2c->plane[0];
-                (param_2->normal).vec.v[1] = local_2c->plane[1];
-                (param_2->normal).vec.v[2] = local_2c->plane[2];
+                results->sflags = pXVar4->surfFlags;
+                results->cflags = pXVar4->contents;
+                (results->normal).vec.v[0] = pXVar6->plane[0];
+                (results->normal).vec.v[1] = pXVar6->plane[1];
+                (results->normal).vec.v[2] = pXVar6->plane[2];
               }
             }
           }
@@ -447,7 +460,7 @@ XModelTraceLine(XModel *param_1,trace_t *param_2,float *param_3,float *param_4,i
       _D3DPERF_EndEvent_0();
     }
   }
-  return local_84;
+  return partIndex;
 }
 
 
@@ -457,8 +470,8 @@ XModelTraceLine(XModel *param_1,trace_t *param_2,float *param_3,float *param_4,i
 
 int __cdecl
 XModelTraceLineAnimated
-          (DObj *param_1,uint param_2,int param_3,trace_t *param_4,DObjAnimMat *param_5,
-          float *param_6,float *param_7,int param_8)
+          (DObj *obj,uint modelIndex,int baseBoneIndex,trace_t *results,DObjAnimMat *boneMtxList,
+          float *localStart,float *localEnd,int contentmask)
 
 {
   code *pcVar1;
@@ -466,53 +479,56 @@ XModelTraceLineAnimated
   DWORD DVar3;
   int iVar4;
   float fVar5;
+  float fVar6;
   float local_220;
   int local_158;
-  int local_150;
-  float4 local_14c;
+  float endDist;
+  int j;
+  float4 boneExtents;
   float4 local_13c [2];
   uint local_11c;
-  DObjAnimMat *local_118;
-  float local_114;
-  float local_10c;
+  DObjAnimMat *baseMatList;
+  float t;
+  PIXProfile pixProfile;
+  float delta;
   float local_108;
   float local_104;
-  float local_100 [12];
-  float local_d0;
-  float local_cc;
+  float invBaseMat [12];
+  float hitFrac;
+  float localStart2;
   float local_c8;
   float local_c4;
-  XModelCollTri_s *local_c0;
-  float local_bc;
-  XModel *local_b8;
-  int local_b4;
-  float local_b0;
-  XModelCollSurf_s *local_ac;
-  float local_a8;
+  XModelCollTri_s *ctri;
+  float frac;
+  XModel *model;
+  int partIndex;
+  float startDist;
+  XModelCollSurf_s *csurf;
+  float localEnd2;
   float local_a4;
   float local_a0;
-  int local_9c;
-  float local_98 [3];
-  float local_8c [9];
+  int globalBoneIndex;
+  float hit [3];
+  float mat [9];
   float local_68;
   float local_64;
   float local_60;
-  uint local_5c [5];
-  DObjAnimMat *local_48;
-  float local_44;
-  uint local_40;
-  int local_3c;
-  float local_38 [9];
+  uint hidePartBits [5];
+  DObjAnimMat *baseMat;
+  float s;
+  uint i;
+  int boneIdx;
+  float axis [9];
   float local_14;
   float local_10;
   float local_c;
-  DObjAnimMat *local_8;
+  DObjAnimMat *boneMtx;
   
   local_11c = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"xmodeltracelineanimated");
-  TraceExtents::TraceExtents((TraceExtents *)&local_14c);
-  local_b8 = (param_1->field14_0x78).localModels[param_2];
-  if (local_b8->collLod < 0) {
+  TraceExtents::TraceExtents((TraceExtents *)&boneExtents);
+  model = (obj->field14_0x78).localModels[modelIndex];
+  if (model->collLod < 0) {
     local_158 = -1;
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -520,97 +536,95 @@ XModelTraceLineAnimated
     }
   }
   else {
-    local_b4 = -1;
-    local_118 = XModelGetBasePose(local_b8);
-    DObjGetHidePartBits(param_1,local_5c);
-    for (local_40 = 0; local_158 = local_b4, local_40 < (uint)local_b8->numCollSurfs;
-        local_40 = local_40 + 1) {
-      local_ac = local_b8->collSurfs + local_40;
-      if ((local_ac->contents & param_8) != 0) {
-        local_3c = local_ac->boneIdx;
-        local_9c = param_3 + local_3c;
-        if ((0x80000000U >> ((byte)local_9c & 0x1f) & local_5c[local_9c >> 5]) == 0) {
-          local_8 = param_5 + local_3c;
-          local_48 = local_118 + local_3c;
-          if ((((local_8->quat[0] == local_48->quat[0]) && (local_8->quat[1] == local_48->quat[1]))
-              && (local_8->quat[2] == local_48->quat[2])) && (local_8->quat[3] == local_48->quat[3])
-             ) {
+    partIndex = -1;
+    baseMatList = XModelGetBasePose(model);
+    DObjGetHidePartBits(obj,hidePartBits);
+    for (i = 0; local_158 = partIndex, i < (uint)model->numCollSurfs; i = i + 1) {
+      csurf = model->collSurfs + i;
+      if ((csurf->contents & contentmask) != 0) {
+        boneIdx = csurf->boneIdx;
+        globalBoneIndex = baseBoneIndex + boneIdx;
+        if ((0x80000000U >> ((byte)globalBoneIndex & 0x1f) & hidePartBits[globalBoneIndex >> 5]) ==
+            0) {
+          boneMtx = boneMtxList + boneIdx;
+          baseMat = baseMatList + boneIdx;
+          if ((((boneMtx->quat[0] == baseMat->quat[0]) && (boneMtx->quat[1] == baseMat->quat[1])) &&
+              (boneMtx->quat[2] == baseMat->quat[2])) && (boneMtx->quat[3] == baseMat->quat[3])) {
             bVar2 = true;
           }
           else {
             bVar2 = false;
           }
           if (bVar2) {
-            if (((local_8->trans[0] == local_48->trans[0]) &&
-                (local_8->trans[1] == local_48->trans[1])) &&
-               (local_8->trans[2] == local_48->trans[2])) {
+            if (((boneMtx->trans[0] == baseMat->trans[0]) &&
+                (boneMtx->trans[1] == baseMat->trans[1])) &&
+               (boneMtx->trans[2] == baseMat->trans[2])) {
               bVar2 = true;
             }
             else {
               bVar2 = false;
             }
             if (!bVar2) goto LAB_0080183f;
-            local_14c.v[0] = *param_6;
-            local_14c.v[1] = param_6[1];
-            local_14c.v[2] = param_6[2];
-            local_13c[0]._0_4_ = *param_7;
-            local_13c[0]._4_4_ = param_7[1];
-            local_13c[0]._8_4_ = param_7[2];
+            boneExtents.v[0] = *localStart;
+            boneExtents.v[1] = localStart[1];
+            boneExtents.v[2] = localStart[2];
+            local_13c[0]._0_4_ = *localEnd;
+            local_13c[0]._4_4_ = localEnd[1];
+            local_13c[0]._8_4_ = localEnd[2];
           }
           else {
 LAB_0080183f:
-            ConvertQuatToInverseMat(local_48,(float (*) [3])local_100);
-            ConvertQuatToMat(local_8,(float (*) [3])local_8c);
-            local_68 = local_8->trans[0];
-            local_64 = local_8->trans[1];
-            local_60 = local_8->trans[2];
-            MatrixMultiply43((float (*) [3])local_100,(float (*) [3])local_8c,
-                             (float (*) [3])local_38);
-            local_cc = *param_6 - local_14;
-            local_c8 = param_6[1] - local_10;
-            local_c4 = param_6[2] - local_c;
-            local_a8 = *param_7 - local_14;
-            local_a4 = param_7[1] - local_10;
-            local_a0 = param_7[2] - local_c;
-            MatrixTransposeTransformVector(&local_cc,(float (*) [3])local_38,local_14c.v);
-            MatrixTransposeTransformVector(&local_a8,(float (*) [3])local_38,local_13c[0].v);
+            ConvertQuatToInverseMat(baseMat,(float (*) [3])invBaseMat);
+            ConvertQuatToMat(boneMtx,(float (*) [3])mat);
+            local_68 = boneMtx->trans[0];
+            local_64 = boneMtx->trans[1];
+            local_60 = boneMtx->trans[2];
+            MatrixMultiply43((float (*) [3])invBaseMat,(float (*) [3])mat,(float (*) [3])axis);
+            localStart2 = *localStart - local_14;
+            local_c8 = localStart[1] - local_10;
+            local_c4 = localStart[2] - local_c;
+            localEnd2 = *localEnd - local_14;
+            local_a4 = localEnd[1] - local_10;
+            local_a0 = localEnd[2] - local_c;
+            MatrixTransposeTransformVector(&localStart2,(float (*) [3])axis,boneExtents.v);
+            MatrixTransposeTransformVector(&localEnd2,(float (*) [3])axis,local_13c[0].v);
           }
-          CM_CalcTraceExtents((TraceExtents *)&local_14c);
+          CM_CalcTraceExtents((TraceExtents *)&boneExtents);
           iVar4 = intersect_extents_aabb
-                            ((TraceExtents *)&local_14c,local_ac->mins,local_ac->maxs,
-                             param_4->fraction);
+                            ((TraceExtents *)&boneExtents,csurf->mins,csurf->maxs,results->fraction)
+          ;
           if (iVar4 != 0) {
-            local_10c = (float)local_13c[0]._0_4_ - local_14c.v[0];
-            local_108 = (float)local_13c[0]._4_4_ - local_14c.v[1];
-            local_104 = (float)local_13c[0]._8_4_ - local_14c.v[2];
-            for (local_150 = 0; local_150 < local_ac->numCollTris; local_150 = local_150 + 1) {
-              local_c0 = local_ac->collTris + local_150;
-              fVar5 = ((float)local_13c[0]._0_4_ * local_c0->plane[0] +
-                       (float)local_13c[0]._4_4_ * local_c0->plane[1] +
-                      (float)local_13c[0]._8_4_ * local_c0->plane[2]) - local_c0->plane[3];
+            delta = (float)local_13c[0]._0_4_ - boneExtents.v[0];
+            local_108 = (float)local_13c[0]._4_4_ - boneExtents.v[1];
+            local_104 = (float)local_13c[0]._8_4_ - boneExtents.v[2];
+            for (j = 0; j < csurf->numCollTris; j = j + 1) {
+              ctri = csurf->collTris + j;
+              fVar5 = ((float)local_13c[0]._0_4_ * ctri->plane[0] +
+                       (float)local_13c[0]._4_4_ * ctri->plane[1] +
+                      (float)local_13c[0]._8_4_ * ctri->plane[2]) - ctri->plane[3];
               if (fVar5 < 0.0) {
-                local_b0 = Vec3Dot(local_14c.v,local_c0->plane);
-                local_b0 = local_b0 - local_c0->plane[3];
-                if (0.0 < local_b0) {
-                  local_220 = (local_b0 - 0.125) / (local_b0 - fVar5);
+                fVar6 = Vec3Dot(boneExtents.v,ctri->plane);
+                startDist = fVar6 - ctri->plane[3];
+                if (0.0 < startDist) {
+                  local_220 = (startDist - 0.125) / (startDist - fVar5);
                   if (local_220 - 0.0 < 0.0) {
                     local_220 = 0.0;
                   }
-                  local_bc = local_220;
-                  if (local_220 < param_4->fraction) {
-                    local_d0 = local_b0 / (local_b0 - fVar5);
-                    Vec3Mad(local_14c.v,local_d0,&local_10c,local_98);
-                    local_44 = Vec3Dot(local_98,local_c0->svec);
-                    local_44 = local_44 - local_c0->svec[3];
-                    if ((-0.001 <= local_44) && (local_44 <= 1.001)) {
-                      local_114 = Vec3Dot(local_98,local_c0->tvec);
-                      local_114 = local_114 - local_c0->tvec[3];
-                      if ((-0.001 <= local_114) && (local_44 + local_114 <= 1.001)) {
-                        local_b4 = local_ac->boneIdx;
-                        param_4->startsolid = false;
-                        param_4->allsolid = false;
-                        param_4->fraction = local_bc;
-                        if (((param_4->fraction < 0.0) || (1.0 < param_4->fraction)) &&
+                  frac = local_220;
+                  if (local_220 < results->fraction) {
+                    hitFrac = startDist / (startDist - fVar5);
+                    Vec3Mad(boneExtents.v,hitFrac,&delta,hit);
+                    fVar5 = Vec3Dot(hit,ctri->svec);
+                    s = fVar5 - ctri->svec[3];
+                    if ((-0.001 <= s) && (s <= 1.001)) {
+                      fVar5 = Vec3Dot(hit,ctri->tvec);
+                      t = fVar5 - ctri->tvec[3];
+                      if ((-0.001 <= t) && (s + t <= 1.001)) {
+                        partIndex = csurf->boneIdx;
+                        results->startsolid = false;
+                        results->allsolid = false;
+                        results->fraction = frac;
+                        if (((results->fraction < 0.0) || (1.0 < results->fraction)) &&
                            (bVar2 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp"
                                                   ,0x3a0,1,"%s\n\t(results->fraction) = %g"), !bVar2
@@ -619,9 +633,9 @@ LAB_0080183f:
                           iVar4 = (*pcVar1)();
                           return iVar4;
                         }
-                        param_4->sflags = local_ac->surfFlags;
-                        param_4->cflags = local_ac->contents;
-                        Vec3Copy(local_c0->plane,(float *)param_4);
+                        results->sflags = csurf->surfFlags;
+                        results->cflags = csurf->contents;
+                        Vec3Copy(ctri->plane,(float *)results);
                       }
                     }
                   }
@@ -644,27 +658,32 @@ LAB_0080183f:
 // 00802150  XModelTraceLineAnimatedPartBits  (xanim/xmodel.cpp:951)
 
 void __cdecl
-XModelTraceLineAnimatedPartBits(DObj *param_1,uint param_2,int param_3,int param_4,int *param_5)
+XModelTraceLineAnimatedPartBits
+          (DObj *obj,uint modelIndex,int baseBoneIndex,int contentmask,int *partBits)
 
 {
   XModel *pXVar1;
   byte bVar2;
   int iVar3;
-  uint local_20 [5];
-  uint local_c;
-  int local_8;
+  int iVar4;
+  XModel *model;
+  XModelCollSurf_s *csurf;
+  int globalBoneIndex;
+  uint hidePartBits [5];
+  uint i;
+  int boneIdx;
   
-  pXVar1 = (param_1->field14_0x78).localModels[param_2];
+  pXVar1 = (obj->field14_0x78).localModels[modelIndex];
   if (-1 < pXVar1->collLod) {
-    DObjGetHidePartBits(param_1,local_20);
-    for (local_c = 0; local_c < (uint)pXVar1->numCollSurfs; local_c = local_c + 1) {
-      if ((pXVar1->collSurfs[local_c].contents & param_4) != 0) {
-        local_8 = pXVar1->collSurfs[local_c].boneIdx;
-        local_8 = param_3 + local_8;
-        iVar3 = local_8 >> 5;
-        bVar2 = (byte)local_8;
-        if ((0x80000000U >> (bVar2 & 0x1f) & local_20[iVar3]) == 0) {
-          param_5[iVar3] = 0x80000000U >> (bVar2 & 0x1f) | param_5[iVar3];
+    DObjGetHidePartBits(obj,hidePartBits);
+    for (i = 0; i < (uint)pXVar1->numCollSurfs; i = i + 1) {
+      if ((pXVar1->collSurfs[i].contents & contentmask) != 0) {
+        boneIdx = pXVar1->collSurfs[i].boneIdx;
+        iVar4 = baseBoneIndex + boneIdx;
+        iVar3 = iVar4 >> 5;
+        bVar2 = (byte)iVar4;
+        if ((0x80000000U >> (bVar2 & 0x1f) & hidePartBits[iVar3]) == 0) {
+          partBits[iVar3] = 0x80000000U >> (bVar2 & 0x1f) | partBits[iVar3];
         }
       }
     }
@@ -690,7 +709,7 @@ XModelTraceLineAnimatedPartBits(DObj *param_1,uint param_2,int param_3,int param
 
 void __cdecl
 XSurfaceVisitTrianglesInAabb_ConvertAabb
-          (XSurfaceCollisionTree *param_1,float *param_2,float *param_3,int *param_4,int *param_5)
+          (XSurfaceCollisionTree *tree,float *aabbMins,float *aabbMaxs,int *mins,int *maxs)
 
 {
   float fVar1;
@@ -721,22 +740,22 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
   float local_4c;
   float local_44;
   
-  fVar1 = param_2[1];
-  fVar2 = param_1->trans[1];
-  fVar3 = param_2[2];
-  fVar4 = param_1->trans[2];
-  fVar5 = *param_3;
-  fVar6 = param_1->trans[0];
-  fVar7 = param_3[1];
-  fVar8 = param_1->trans[1];
-  fVar9 = param_3[2];
-  fVar10 = param_1->trans[2];
-  fVar11 = param_1->scale[1];
-  fVar12 = param_1->scale[2];
-  fVar13 = param_1->scale[0];
-  fVar14 = param_1->scale[1];
-  fVar15 = param_1->scale[2];
-  local_44 = (*param_2 + param_1->trans[0]) * param_1->scale[0] - 0.5;
+  fVar1 = aabbMins[1];
+  fVar2 = tree->trans[1];
+  fVar3 = aabbMins[2];
+  fVar4 = tree->trans[2];
+  fVar5 = *aabbMaxs;
+  fVar6 = tree->trans[0];
+  fVar7 = aabbMaxs[1];
+  fVar8 = tree->trans[1];
+  fVar9 = aabbMaxs[2];
+  fVar10 = tree->trans[2];
+  fVar11 = tree->scale[1];
+  fVar12 = tree->scale[2];
+  fVar13 = tree->scale[0];
+  fVar14 = tree->scale[1];
+  fVar15 = tree->scale[2];
+  local_44 = (*aabbMins + tree->trans[0]) * tree->scale[0] - 0.5;
   if (-1e+06 <= local_44) {
     if (1e+06 < local_44) {
       local_44 = 1e+06;
@@ -746,7 +765,7 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_44 = -1e+06;
   }
   local_7c = (int)(longlong)ROUND(local_44);
-  *param_4 = local_7c;
+  *mins = local_7c;
   local_4c = (fVar1 + fVar2) * fVar11 - 0.5;
   if (-1e+06 <= local_4c) {
     if (1e+06 < local_4c) {
@@ -757,7 +776,7 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_4c = -1e+06;
   }
   local_8c = (int)(longlong)ROUND(local_4c);
-  param_4[1] = local_8c;
+  mins[1] = local_8c;
   local_54 = (fVar3 + fVar4) * fVar12 - 0.5;
   if (-1e+06 <= local_54) {
     if (1e+06 < local_54) {
@@ -768,7 +787,7 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_54 = -1e+06;
   }
   local_9c = (int)(longlong)ROUND(local_54);
-  param_4[2] = local_9c;
+  mins[2] = local_9c;
   local_5c = (fVar5 + fVar6) * fVar13 + 0.5;
   if (-1e+06 <= local_5c) {
     if (1e+06 < local_5c) {
@@ -779,7 +798,7 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_5c = -1e+06;
   }
   local_ac = (int)(longlong)ROUND(local_5c);
-  *param_5 = local_ac;
+  *maxs = local_ac;
   local_64 = (fVar7 + fVar8) * fVar14 + 0.5;
   if (-1e+06 <= local_64) {
     if (1e+06 < local_64) {
@@ -790,7 +809,7 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_64 = -1e+06;
   }
   local_bc = (int)(longlong)ROUND(local_64);
-  param_5[1] = local_bc;
+  maxs[1] = local_bc;
   local_6c = (fVar9 + fVar10) * fVar15 + 0.5;
   if (-1e+06 <= local_6c) {
     if (1e+06 < local_6c) {
@@ -801,23 +820,25 @@ XSurfaceVisitTrianglesInAabb_ConvertAabb
     local_6c = -1e+06;
   }
   local_cc = (int)(longlong)ROUND(local_6c);
-  param_5[2] = local_cc;
+  maxs[2] = local_cc;
   return;
 }
 
 
 // 00802A00  PrefetchArrayIndexed  (xanim/xmodel.cpp:1089)
 
-void __cdecl PrefetchArrayIndexed(void *param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl PrefetchArrayIndexed(void *mem,uint elementCount,uint index,uint elementSize)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
-  uint local_c;
+  uint umem;
+  uchar *memIter;
+  uchar *memLast;
   
-  pvVar3 = (void *)(param_3 * param_4 + (int)param_1);
-  if (param_2 == 0) {
+  pvVar3 = (void *)(index * elementSize + (int)mem);
+  if (elementCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",0x447,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -825,8 +846,9 @@ void __cdecl PrefetchArrayIndexed(void *param_1,uint param_2,uint param_3,uint p
       return;
     }
   }
-  for (local_c = (uint)pvVar3 & 0xffffff80;
-      local_c <= ((int)pvVar3 + param_2 * param_4 + -1 & 0xffffff80); local_c = local_c + 0x80) {
+  for (memIter = (uchar *)((uint)pvVar3 & 0xffffff80);
+      memIter <= (uchar *)((int)pvVar3 + elementCount * elementSize + -1 & 0xffffff80);
+      memIter = memIter + 0x80) {
   }
   return;
 }
@@ -836,66 +858,71 @@ void __cdecl PrefetchArrayIndexed(void *param_1,uint param_2,uint param_3,uint p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessVertices(XSurfaceGetTriCandidatesLocals *param_1)
+bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessVertices(XSurfaceGetTriCandidatesLocals *locals)
 
 {
   uchar *puVar1;
   uchar *puVar2;
   bool bVar3;
-  uchar *local_2c [3];
+  GfxPackedVertex *pv0;
+  GfxPackedVertex *pv1;
+  uchar *verts1 [3];
   ushort auStack_20 [4];
   uint local_18;
-  uchar *local_14 [3];
-  uint local_8;
+  uchar *verts0 [3];
+  uint vertIter;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    auStack_20[local_8] = param_1->vertexQueue[param_1->vertexQueueBegin][local_8];
+  for (vertIter = 0; vertIter < 3; vertIter = vertIter + 1) {
+    auStack_20[vertIter] = locals->vertexQueue[locals->vertexQueueBegin][vertIter];
   }
-  puVar1 = param_1->inVertices0;
-  puVar2 = param_1->inVertices1;
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-    local_14[local_8] = puVar1 + (uint)auStack_20[local_8] * 0x20;
-    local_2c[local_8] = puVar2 + (uint)auStack_20[local_8] * 0x20 + 0x18;
+  puVar1 = locals->inVertices0;
+  puVar2 = locals->inVertices1;
+  for (vertIter = 0; vertIter != 3; vertIter = vertIter + 1) {
+    verts0[vertIter] = puVar1 + (uint)auStack_20[vertIter] * 0x20;
+    verts1[vertIter] = puVar2 + (uint)auStack_20[vertIter] * 0x20 + 0x18;
   }
-  param_1->vertexQueueBegin = param_1->vertexQueueBegin + 1 & 3;
-  bVar3 = (*param_1->visitorFunc)(param_1->visitorContext,local_14,local_2c);
+  locals->vertexQueueBegin = locals->vertexQueueBegin + 1 & 3;
+  bVar3 = (*locals->visitorFunc)(locals->visitorContext,verts0,verts1);
   return bVar3;
 }
 
 
 // 00802B70  XSurfaceVisitTrianglesInAabb_ProcessTriangles  (xanim/xmodel.cpp:1206)
 
-bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessTriangles(XSurfaceGetTriCandidatesLocals *param_1)
+bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessTriangles(XSurfaceGetTriCandidatesLocals *locals)
 
 {
   ushort uVar1;
   uint uVar2;
   uint uVar3;
   bool bVar4;
-  int local_18;
-  uint local_14;
-  ushort *local_10;
+  ushort index;
+  uint vertIter;
+  uint triangleIter;
+  ushort *indexPtr;
+  uint triangleCount;
+  uint triangleBegin;
   
-  uVar2 = param_1->triangleQueue[param_1->triangleQueueBegin].beginIndex;
-  uVar3 = param_1->triangleQueue[param_1->triangleQueueBegin].count;
-  param_1->triangleQueueBegin = param_1->triangleQueueBegin + 1 & 3;
-  local_10 = param_1->inIndices + uVar2 * 3;
-  local_14 = 0;
+  uVar2 = locals->triangleQueue[locals->triangleQueueBegin].beginIndex;
+  uVar3 = locals->triangleQueue[locals->triangleQueueBegin].count;
+  locals->triangleQueueBegin = locals->triangleQueueBegin + 1 & 3;
+  indexPtr = locals->inIndices + uVar2 * 3;
+  triangleIter = 0;
   while( true ) {
-    if (local_14 == uVar3) {
+    if (triangleIter == uVar3) {
       return true;
     }
-    for (local_18 = 0; local_18 != 3; local_18 = local_18 + 1) {
-      uVar1 = *local_10;
-      PrefetchArrayIndexed(param_1->inVertices0,1,(uint)uVar1,(uint)param_1->vertexSize0);
-      local_10 = local_10 + 1;
-      param_1->vertexQueue[param_1->vertexQueueEnd][local_18] = uVar1;
+    for (vertIter = 0; vertIter != 3; vertIter = vertIter + 1) {
+      uVar1 = *indexPtr;
+      PrefetchArrayIndexed(locals->inVertices0,1,(uint)uVar1,(uint)locals->vertexSize0);
+      indexPtr = indexPtr + 1;
+      locals->vertexQueue[locals->vertexQueueEnd][vertIter] = uVar1;
     }
-    param_1->vertexQueueEnd = param_1->vertexQueueEnd + 1 & 3;
-    if ((param_1->vertexQueueBegin == param_1->vertexQueueEnd) &&
-       (bVar4 = XSurfaceVisitTrianglesInAabb_ProcessVertices(param_1), !bVar4)) break;
-    local_14 = local_14 + 1;
+    locals->vertexQueueEnd = locals->vertexQueueEnd + 1 & 3;
+    if ((locals->vertexQueueBegin == locals->vertexQueueEnd) &&
+       (bVar4 = XSurfaceVisitTrianglesInAabb_ProcessVertices(locals), !bVar4)) break;
+    triangleIter = triangleIter + 1;
   }
   return false;
 }
@@ -903,39 +930,42 @@ bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessTriangles(XSurfaceGetTriCandida
 
 // 00802C90  XSurfaceVisitTrianglesInAabb_ProcessLeaf  (xanim/xmodel.cpp:1243)
 
-bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessLeaf(XSurfaceGetTriCandidatesLocals *param_1)
+bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessLeaf(XSurfaceGetTriCandidatesLocals *locals)
 
 {
   XSurfaceCollisionLeaf *pXVar1;
   bool bVar2;
   uint uVar3;
-  uint local_18;
-  uint local_14;
-  uint local_c;
+  XSurfaceCollisionLeaf *leaf;
+  uint indexCount;
+  uint indexBeginIndex;
+  uint leafBeginIndex;
+  uint leafIndex;
+  uint leafEndIndex;
   
-  local_c = param_1->leafQueue[param_1->leafQueueBegin].beginIndex;
-  uVar3 = local_c + param_1->leafQueue[param_1->leafQueueBegin].count;
-  param_1->leafQueueBegin = param_1->leafQueueBegin + 1 & 3;
+  leafIndex = locals->leafQueue[locals->leafQueueBegin].beginIndex;
+  uVar3 = leafIndex + locals->leafQueue[locals->leafQueueBegin].count;
+  locals->leafQueueBegin = locals->leafQueueBegin + 1 & 3;
   while( true ) {
-    if (local_c == uVar3) {
+    if (leafIndex == uVar3) {
       return true;
     }
-    pXVar1 = param_1->tree->leafs + local_c;
+    pXVar1 = locals->tree->leafs + leafIndex;
     if (pXVar1->triangleBeginIndex < 0x8000) {
-      local_14 = (uint)pXVar1->triangleBeginIndex;
-      local_18 = 1;
+      indexBeginIndex = (uint)pXVar1->triangleBeginIndex;
+      indexCount = 1;
     }
     else {
-      local_14 = pXVar1->triangleBeginIndex - 0x8000;
-      local_18 = 2;
+      indexBeginIndex = pXVar1->triangleBeginIndex - 0x8000;
+      indexCount = 2;
     }
-    PrefetchArrayIndexed(param_1->inIndices + local_14 * 3,local_18 * 3,0,2);
-    param_1->triangleQueue[param_1->triangleQueueEnd].beginIndex = local_14;
-    param_1->triangleQueue[param_1->triangleQueueEnd].count = local_18;
-    param_1->triangleQueueEnd = param_1->triangleQueueEnd + 1 & 3;
-    if ((param_1->triangleQueueBegin == param_1->triangleQueueEnd) &&
-       (bVar2 = XSurfaceVisitTrianglesInAabb_ProcessTriangles(param_1), !bVar2)) break;
-    local_c = local_c + 1;
+    PrefetchArrayIndexed(locals->inIndices + indexBeginIndex * 3,indexCount * 3,0,2);
+    locals->triangleQueue[locals->triangleQueueEnd].beginIndex = indexBeginIndex;
+    locals->triangleQueue[locals->triangleQueueEnd].count = indexCount;
+    locals->triangleQueueEnd = locals->triangleQueueEnd + 1 & 3;
+    if ((locals->triangleQueueBegin == locals->triangleQueueEnd) &&
+       (bVar2 = XSurfaceVisitTrianglesInAabb_ProcessTriangles(locals), !bVar2)) break;
+    leafIndex = leafIndex + 1;
   }
   return false;
 }
@@ -943,53 +973,59 @@ bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessLeaf(XSurfaceGetTriCandidatesLo
 
 // 00802DD0  XSurfaceVisitTrianglesInAabb_ProcessNode  (xanim/xmodel.cpp:1285)
 
-bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessNode(XSurfaceGetTriCandidatesLocals *param_1)
+bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessNode(XSurfaceGetTriCandidatesLocals *locals)
 
 {
   bool bVar1;
+  uint elementCount;
   uint uVar2;
-  uint uVar3;
-  XSurfaceCollisionNode *pXVar4;
-  uint uVar5;
-  uint local_10;
+  XSurfaceCollisionNode *pXVar3;
+  uint uVar4;
+  uint childBeginIndex;
+  uint childCount;
+  XSurfaceCollisionNode *node;
+  XSurfaceCollisionAabb *nodeAabb;
+  uint nodeIndex;
+  uint nodeEndIndex;
+  uint nodeBeginIndex;
   
-  local_10 = param_1->nodeQueue[param_1->nodeQueueBegin].beginIndex;
-  uVar3 = local_10 + param_1->nodeQueue[param_1->nodeQueueBegin].count;
-  param_1->nodeQueueBegin = param_1->nodeQueueBegin + 1 & 0x3f;
+  nodeIndex = locals->nodeQueue[locals->nodeQueueBegin].beginIndex;
+  uVar2 = nodeIndex + locals->nodeQueue[locals->nodeQueueBegin].count;
+  locals->nodeQueueBegin = locals->nodeQueueBegin + 1 & 0x3f;
   do {
-    if (local_10 == uVar3) {
+    if (nodeIndex == uVar2) {
       return true;
     }
-    pXVar4 = param_1->tree->nodes + local_10;
-    if ((((((int)(uint)(pXVar4->aabb).mins[0] <= param_1->maxs[0]) &&
-          (param_1->mins[0] <= (int)(uint)(pXVar4->aabb).maxs[0])) &&
-         ((int)(uint)(pXVar4->aabb).mins[1] <= param_1->maxs[1])) &&
-        ((param_1->mins[1] <= (int)(uint)(pXVar4->aabb).maxs[1] &&
-         ((int)(uint)(pXVar4->aabb).mins[2] <= param_1->maxs[2])))) &&
-       (param_1->mins[2] <= (int)(uint)(pXVar4->aabb).maxs[2])) {
-      uVar5 = (uint)pXVar4->childBeginIndex;
-      uVar2 = (uint)pXVar4->childCount;
-      if (uVar2 < 0x8000) {
-        PrefetchArrayIndexed(param_1->tree->nodes + uVar5,uVar2,0,0x10);
-        param_1->nodeQueue[param_1->nodeQueueEnd].beginIndex = uVar5;
-        param_1->nodeQueue[param_1->nodeQueueEnd].count = uVar2;
-        param_1->nodeQueueEnd = param_1->nodeQueueEnd + 1 & 0x3f;
-        if (param_1->nodeQueueBegin == param_1->nodeQueueEnd) {
+    pXVar3 = locals->tree->nodes + nodeIndex;
+    if ((((((int)(uint)(pXVar3->aabb).mins[0] <= locals->maxs[0]) &&
+          (locals->mins[0] <= (int)(uint)(pXVar3->aabb).maxs[0])) &&
+         ((int)(uint)(pXVar3->aabb).mins[1] <= locals->maxs[1])) &&
+        ((locals->mins[1] <= (int)(uint)(pXVar3->aabb).maxs[1] &&
+         ((int)(uint)(pXVar3->aabb).mins[2] <= locals->maxs[2])))) &&
+       (locals->mins[2] <= (int)(uint)(pXVar3->aabb).maxs[2])) {
+      uVar4 = (uint)pXVar3->childBeginIndex;
+      elementCount = (uint)pXVar3->childCount;
+      if (elementCount < 0x8000) {
+        PrefetchArrayIndexed(locals->tree->nodes + uVar4,elementCount,0,0x10);
+        locals->nodeQueue[locals->nodeQueueEnd].beginIndex = uVar4;
+        locals->nodeQueue[locals->nodeQueueEnd].count = elementCount;
+        locals->nodeQueueEnd = locals->nodeQueueEnd + 1 & 0x3f;
+        if (locals->nodeQueueBegin == locals->nodeQueueEnd) {
           return false;
         }
       }
       else {
-        PrefetchArrayIndexed(param_1->tree->leafs + uVar5,uVar2 - 0x8000,0,2);
-        param_1->leafQueue[param_1->leafQueueEnd].beginIndex = uVar5;
-        param_1->leafQueue[param_1->leafQueueEnd].count = uVar2 - 0x8000;
-        param_1->leafQueueEnd = param_1->leafQueueEnd + 1 & 3;
-        if ((param_1->leafQueueBegin == param_1->leafQueueEnd) &&
-           (bVar1 = XSurfaceVisitTrianglesInAabb_ProcessLeaf(param_1), !bVar1)) {
+        PrefetchArrayIndexed(locals->tree->leafs + uVar4,elementCount - 0x8000,0,2);
+        locals->leafQueue[locals->leafQueueEnd].beginIndex = uVar4;
+        locals->leafQueue[locals->leafQueueEnd].count = elementCount - 0x8000;
+        locals->leafQueueEnd = locals->leafQueueEnd + 1 & 3;
+        if ((locals->leafQueueBegin == locals->leafQueueEnd) &&
+           (bVar1 = XSurfaceVisitTrianglesInAabb_ProcessLeaf(locals), !bVar1)) {
           return false;
         }
       }
     }
-    local_10 = local_10 + 1;
+    nodeIndex = nodeIndex + 1;
   } while( true );
 }
 
@@ -998,75 +1034,74 @@ bool __cdecl XSurfaceVisitTrianglesInAabb_ProcessNode(XSurfaceGetTriCandidatesLo
 
 bool __cdecl
 XSurfaceVisitTrianglesInAabb
-          (XSurface *param_1,uint param_2,float *param_3,float *param_4,
-          _func___cdecl_bool_void_ptr_uchar_ptr_ptr_uchar_ptr_ptr *param_5,void *param_6)
+          (XSurface *surface,uint vertListIndex,float *aabbMins,float *aabbMaxs,
+          _func___cdecl_bool_void_ptr_uchar_ptr_ptr_uchar_ptr_ptr *visitorFunc,void *visitorContext)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  XSurfaceGetTriCandidatesLocals local_2bc;
-  XRigidVertList *local_8;
+  XSurfaceGetTriCandidatesLocals locals;
+  XRigidVertList *vertList;
   
-  if ((param_1->vertListCount <= param_2) &&
+  if ((surface->vertListCount <= vertListIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",0x548,0,
                                "%s\n\t(vertListIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = param_1->vertList + param_2;
-  local_2bc.tree = local_8->collisionTree;
-  if ((local_2bc.tree == (XSurfaceCollisionTree *)0x0) &&
+  vertList = surface->vertList + vertListIndex;
+  locals.tree = vertList->collisionTree;
+  if ((locals.tree == (XSurfaceCollisionTree *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp",0x54b,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  PrefetchArrayIndexed((local_2bc.tree)->nodes,1,0,0x10);
-  local_2bc.visitorFunc = param_5;
-  local_2bc.visitorContext = param_6;
-  local_2bc.inIndices = param_1->triIndices;
-  local_2bc.inVertices0 = (uchar *)param_1->verts0;
-  local_2bc.inVertices1 = (uchar *)param_1->verts0;
-  XSurfaceVisitTrianglesInAabb_ConvertAabb
-            (local_2bc.tree,param_3,param_4,local_2bc.mins,local_2bc.maxs);
-  local_2bc.nodeQueue[0].beginIndex = 0;
-  local_2bc.nodeQueue[0].count = 1;
-  local_2bc.nodeQueueBegin = 0;
-  local_2bc.nodeQueueEnd = 1;
-  local_2bc.leafQueueBegin = 0;
-  local_2bc.leafQueueEnd = 0;
-  local_2bc.triangleQueueBegin = 0;
-  local_2bc.triangleQueueEnd = 0;
-  local_2bc.vertexQueueBegin = 0;
-  local_2bc.vertexQueueEnd = 0;
-  local_2bc.surfaceFlags = param_1->flags;
-  local_2bc.vertexSize0 = 0x20;
+  PrefetchArrayIndexed((locals.tree)->nodes,1,0,0x10);
+  locals.visitorFunc = visitorFunc;
+  locals.visitorContext = visitorContext;
+  locals.inIndices = surface->triIndices;
+  locals.inVertices0 = (uchar *)surface->verts0;
+  locals.inVertices1 = (uchar *)surface->verts0;
+  XSurfaceVisitTrianglesInAabb_ConvertAabb(locals.tree,aabbMins,aabbMaxs,locals.mins,locals.maxs);
+  locals.nodeQueue[0].beginIndex = 0;
+  locals.nodeQueue[0].count = 1;
+  locals.nodeQueueBegin = 0;
+  locals.nodeQueueEnd = 1;
+  locals.leafQueueBegin = 0;
+  locals.leafQueueEnd = 0;
+  locals.triangleQueueBegin = 0;
+  locals.triangleQueueEnd = 0;
+  locals.vertexQueueBegin = 0;
+  locals.vertexQueueEnd = 0;
+  locals.surfaceFlags = surface->flags;
+  locals.vertexSize0 = 0x20;
   do {
-    if (local_2bc.nodeQueueBegin == local_2bc.nodeQueueEnd) {
+    if (locals.nodeQueueBegin == locals.nodeQueueEnd) {
       do {
-        if (local_2bc.leafQueueBegin == local_2bc.leafQueueEnd) {
+        if (locals.leafQueueBegin == locals.leafQueueEnd) {
           do {
-            if (local_2bc.triangleQueueBegin == local_2bc.triangleQueueEnd) {
+            if (locals.triangleQueueBegin == locals.triangleQueueEnd) {
               do {
-                if (local_2bc.vertexQueueBegin == local_2bc.vertexQueueEnd) {
+                if (locals.vertexQueueBegin == locals.vertexQueueEnd) {
                   return true;
                 }
-                bVar2 = XSurfaceVisitTrianglesInAabb_ProcessVertices(&local_2bc);
+                bVar2 = XSurfaceVisitTrianglesInAabb_ProcessVertices(&locals);
               } while (bVar2);
               return false;
             }
-            bVar2 = XSurfaceVisitTrianglesInAabb_ProcessTriangles(&local_2bc);
+            bVar2 = XSurfaceVisitTrianglesInAabb_ProcessTriangles(&locals);
           } while (bVar2);
           return false;
         }
-        bVar2 = XSurfaceVisitTrianglesInAabb_ProcessLeaf(&local_2bc);
+        bVar2 = XSurfaceVisitTrianglesInAabb_ProcessLeaf(&locals);
       } while (bVar2);
       return false;
     }
-    bVar2 = XSurfaceVisitTrianglesInAabb_ProcessNode(&local_2bc);
+    bVar2 = XSurfaceVisitTrianglesInAabb_ProcessNode(&locals);
   } while (bVar2);
   return false;
 }
@@ -1074,7 +1109,7 @@ XSurfaceVisitTrianglesInAabb
 
 // 00801DC0  ConvertQuatToInverseMat  (universal/com_math.h:1597)
 
-void __cdecl ConvertQuatToInverseMat(DObjAnimMat *param_1,float (*param_2) [3])
+void __cdecl ConvertQuatToInverseMat(DObjAnimMat *mat,float (*axis) [3])
 
 {
   code *pcVar1;
@@ -1088,11 +1123,20 @@ void __cdecl ConvertQuatToInverseMat(DObjAnimMat *param_1,float (*param_2) [3])
   float fVar9;
   float fVar10;
   float fVar11;
+  float yy;
+  float xy;
+  float zz;
+  float zw;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
   
-  if ((((((uint)param_1->quat[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->quat[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->quat[2] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->quat[3] & 0x7f800000) == 0x7f800000)) {
+  if ((((((uint)mat->quat[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)mat->quat[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)mat->quat[2] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)mat->quat[3] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x641,0,"%s"
                             );
     if (!bVar2) {
@@ -1101,7 +1145,7 @@ void __cdecl ConvertQuatToInverseMat(DObjAnimMat *param_1,float (*param_2) [3])
       return;
     }
   }
-  if (((uint)param_1->transWeight & 0x7f800000) == 0x7f800000) {
+  if (((uint)mat->transWeight & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x642,0,"%s"
                             );
     if (!bVar2) {
@@ -1110,37 +1154,34 @@ void __cdecl ConvertQuatToInverseMat(DObjAnimMat *param_1,float (*param_2) [3])
       return;
     }
   }
-  fVar5 = param_1->transWeight;
-  fVar3 = fVar5 * param_1->quat[0];
-  fVar4 = fVar5 * param_1->quat[1];
-  fVar5 = fVar5 * param_1->quat[2];
-  fVar6 = fVar3 * param_1->quat[0];
-  fVar7 = fVar3 * param_1->quat[1];
-  fVar8 = fVar3 * param_1->quat[2];
-  fVar3 = fVar3 * param_1->quat[3];
-  fVar9 = fVar4 * param_1->quat[1];
-  fVar10 = fVar4 * param_1->quat[2];
-  fVar4 = fVar4 * param_1->quat[3];
-  fVar11 = fVar5 * param_1->quat[2];
-  fVar5 = fVar5 * param_1->quat[3];
-  (*param_2)[0] = 1.0 - (fVar9 + fVar11);
-  (*param_2)[1] = fVar7 - fVar5;
-  (*param_2)[2] = fVar8 + fVar4;
-  param_2[1][0] = fVar7 + fVar5;
-  param_2[1][1] = 1.0 - (fVar6 + fVar11);
-  param_2[1][2] = fVar10 - fVar3;
-  param_2[2][0] = fVar8 - fVar4;
-  param_2[2][1] = fVar10 + fVar3;
-  param_2[2][2] = 1.0 - (fVar6 + fVar9);
-  param_2[3][0] =
-       -(param_1->trans[0] * (*param_2)[0] + param_1->trans[1] * param_2[1][0] +
-        param_1->trans[2] * param_2[2][0]);
-  param_2[3][1] =
-       -(param_1->trans[0] * (*param_2)[1] + param_1->trans[1] * param_2[1][1] +
-        param_1->trans[2] * param_2[2][1]);
-  param_2[3][2] =
-       -(param_1->trans[0] * (*param_2)[2] + param_1->trans[1] * param_2[1][2] +
-        param_1->trans[2] * param_2[2][2]);
+  fVar5 = mat->transWeight;
+  fVar3 = fVar5 * mat->quat[0];
+  fVar4 = fVar5 * mat->quat[1];
+  fVar5 = fVar5 * mat->quat[2];
+  fVar6 = fVar3 * mat->quat[0];
+  fVar7 = fVar3 * mat->quat[1];
+  fVar8 = fVar3 * mat->quat[2];
+  fVar3 = fVar3 * mat->quat[3];
+  fVar9 = fVar4 * mat->quat[1];
+  fVar10 = fVar4 * mat->quat[2];
+  fVar4 = fVar4 * mat->quat[3];
+  fVar11 = fVar5 * mat->quat[2];
+  fVar5 = fVar5 * mat->quat[3];
+  (*axis)[0] = 1.0 - (fVar9 + fVar11);
+  (*axis)[1] = fVar7 - fVar5;
+  (*axis)[2] = fVar8 + fVar4;
+  axis[1][0] = fVar7 + fVar5;
+  axis[1][1] = 1.0 - (fVar6 + fVar11);
+  axis[1][2] = fVar10 - fVar3;
+  axis[2][0] = fVar8 - fVar4;
+  axis[2][1] = fVar10 + fVar3;
+  axis[2][2] = 1.0 - (fVar6 + fVar9);
+  axis[3][0] = -(mat->trans[0] * (*axis)[0] + mat->trans[1] * axis[1][0] +
+                mat->trans[2] * axis[2][0]);
+  axis[3][1] = -(mat->trans[0] * (*axis)[1] + mat->trans[1] * axis[1][1] +
+                mat->trans[2] * axis[2][1]);
+  axis[3][2] = -(mat->trans[0] * (*axis)[2] + mat->trans[1] * axis[1][2] +
+                mat->trans[2] * axis[2][2]);
   return;
 }
 

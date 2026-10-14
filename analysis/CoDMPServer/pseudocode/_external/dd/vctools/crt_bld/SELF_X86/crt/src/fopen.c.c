@@ -5,13 +5,14 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-_iobuf * __cdecl _fsopen(char *param_1,char *param_2,int param_3)
+_iobuf * __cdecl _fsopen(char *file,char *mode,int shflag)
 
 {
   int *piVar1;
   _iobuf *p_Var2;
+  _iobuf *retval;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) || (*param_2 == '\0')) {
+  if (((file == (char *)0x0) || (mode == (char *)0x0)) || (*mode == '\0')) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
@@ -23,8 +24,8 @@ _iobuf * __cdecl _fsopen(char *param_1,char *param_2,int param_3)
       *piVar1 = 0x18;
     }
     else {
-      if (*param_1 != '\0') {
-        p_Var2 = _openfile(param_1,param_2,param_3,p_Var2);
+      if (*file != '\0') {
+        p_Var2 = _openfile(file,mode,shflag,p_Var2);
         FUN_00c0fdb5();
         return p_Var2;
       }
@@ -39,12 +40,12 @@ _iobuf * __cdecl _fsopen(char *param_1,char *param_2,int param_3)
 
 // 00C0FDBF  fopen  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fopen.c:123)
 
-_iobuf * __cdecl fopen(char *param_1,char *param_2)
+_iobuf * __cdecl fopen(char *file,char *mode)
 
 {
   _iobuf *p_Var1;
   
-  p_Var1 = _fsopen(param_1,param_2,0x40);
+  p_Var1 = _fsopen(file,mode,0x40);
   return p_Var1;
 }
 

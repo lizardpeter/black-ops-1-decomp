@@ -2,7 +2,7 @@
 
 // 006CA870  Com_CanPrimaryLightAffectPoint  (qcommon/com_bsp.cpp:18)
 
-bool __cdecl Com_CanPrimaryLightAffectPoint(ComPrimaryLight *param_1,float *param_2)
+bool __cdecl Com_CanPrimaryLightAffectPoint(ComPrimaryLight *light,float *point)
 
 {
   code *pcVar1;
@@ -12,55 +12,57 @@ bool __cdecl Com_CanPrimaryLightAffectPoint(ComPrimaryLight *param_1,float *para
   float fVar5;
   float fVar6;
   float fVar7;
-  float local_20;
-  float local_10;
+  float lightRadius;
+  float cosHalfFov;
+  float spotDotTimesDist;
+  float distSq;
   
-  if ((param_1 == (ComPrimaryLight *)0x0) &&
+  if ((light == (ComPrimaryLight *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp.cpp",0x18,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_1->type != '\x02') && (param_1->type != '\x03')) &&
+  if (((light->type != '\x02') && (light->type != '\x03')) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp.cpp",0x19,0,
                                "%s\n\t(light->type) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((point == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp.cpp",0x1a,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  fVar4 = param_1->origin[0] - *param_2;
-  fVar5 = param_1->origin[1] - param_2[1];
-  fVar6 = param_1->origin[2] - param_2[2];
+  fVar4 = light->origin[0] - *point;
+  fVar5 = light->origin[1] - point[1];
+  fVar6 = light->origin[2] - point[2];
   fVar7 = fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6;
-  local_20 = param_1->radius;
-  if (param_1->type == '\x02') {
-    local_20 = local_20 / param_1->cosHalfFovOuter;
+  lightRadius = light->radius;
+  if (light->type == '\x02') {
+    lightRadius = lightRadius / light->cosHalfFovOuter;
   }
-  if (fVar7 < local_20 * local_20) {
-    if ((param_1->type == '\x03') || (param_1->rotationLimit <= -param_1->cosHalfFovOuter)) {
+  if (fVar7 < lightRadius * lightRadius) {
+    if ((light->type == '\x03') || (light->rotationLimit <= -light->cosHalfFovOuter)) {
       bVar2 = true;
     }
     else {
-      fVar4 = fVar4 * param_1->dir[0] + fVar5 * param_1->dir[1] + fVar6 * param_1->dir[2];
-      if (param_1->rotationLimit == 1.0) {
-        local_10 = param_1->cosHalfFovOuter;
+      fVar4 = fVar4 * light->dir[0] + fVar5 * light->dir[1] + fVar6 * light->dir[2];
+      if (light->rotationLimit == 1.0) {
+        cosHalfFov = light->cosHalfFovOuter;
       }
       else {
-        local_10 = CosOfSumOfArcCos(param_1->cosHalfFovOuter,param_1->rotationLimit);
-        if (local_10 <= 0.0) {
-          return fVar4 <= local_10 * param_1->radius;
+        cosHalfFov = CosOfSumOfArcCos(light->cosHalfFovOuter,light->rotationLimit);
+        if (cosHalfFov <= 0.0) {
+          return fVar4 <= cosHalfFov * light->radius;
         }
       }
       if (0.0 < fVar4) {
-        if (local_10 * local_10 * fVar7 <= fVar4 * fVar4) {
+        if (cosHalfFov * cosHalfFov * fVar7 <= fVar4 * fVar4) {
           bVar2 = true;
         }
         else {
@@ -104,12 +106,14 @@ void __cdecl Com_UnloadWorld(void)
 
 // 006CAAE0  CosOfSumOfArcCos  (universal/com_math.h:1086)
 
-float __cdecl CosOfSumOfArcCos(float param_1,float param_2)
+float __cdecl CosOfSumOfArcCos(float cos0,float cos1)
 
 {
   float10 extraout_ST0;
+  float sinSq1;
+  float sinSq0;
   
   _CIsqrt();
-  return param_1 * param_2 - (float)extraout_ST0;
+  return cos0 * cos1 - (float)extraout_ST0;
 }
 

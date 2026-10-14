@@ -2,30 +2,30 @@
 
 // 005B9D30  DynEnt_IsValidClassName  (DynEntity/DynEntity_load_obj.cpp:154)
 
-bool __cdecl DynEnt_IsValidClassName(char *param_1)
+bool __cdecl DynEnt_IsValidClassName(char *className)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  uint local_8;
+  int classIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((className == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x9d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  classIndex = 0;
   while( true ) {
-    if (1 < local_8) {
+    if (1 < (uint)classIndex) {
       return false;
     }
-    iVar4 = I_stricmp(param_1,dynEntClassNames[local_8]);
+    iVar4 = I_stricmp(className,dynEntClassNames[classIndex]);
     if (iVar4 == 0) break;
-    local_8 = local_8 + 1;
+    classIndex = classIndex + 1;
   }
   return true;
 }
@@ -33,30 +33,30 @@ bool __cdecl DynEnt_IsValidClassName(char *param_1)
 
 // 005B9F00  DynEnt_IsValidConstraintName  (DynEntity/DynEntity_load_obj.cpp:181)
 
-bool __cdecl DynEnt_IsValidConstraintName(char *param_1)
+bool __cdecl DynEnt_IsValidConstraintName(char *className)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  uint local_8;
+  int classIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((className == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0xb8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  classIndex = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < (uint)classIndex) {
       return false;
     }
-    iVar4 = I_stricmp(param_1,dynEntConstraintClassNames[local_8]);
+    iVar4 = I_stricmp(className,dynEntConstraintClassNames[classIndex]);
     if (iVar4 == 0) break;
-    local_8 = local_8 + 1;
+    classIndex = classIndex + 1;
   }
   return true;
 }
@@ -64,32 +64,32 @@ bool __cdecl DynEnt_IsValidConstraintName(char *param_1)
 
 // 005BBB80  DynEnt_GetType  (DynEntity/DynEntity_load_obj.cpp:196)
 
-DynEntityType __cdecl DynEnt_GetType(char *param_1)
+DynEntityType __cdecl DynEnt_GetType(char *typeName)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityType DVar3;
   int iVar4;
-  DynEntityType local_8;
+  int type;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((typeName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,199,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     DVar3 = (*pcVar1)();
     return DVar3;
   }
-  local_8 = DYNENT_TYPE_INVALID;
+  type = 0;
   while( true ) {
-    if (2 < (int)local_8) {
+    if (2 < type) {
       return DYNENT_TYPE_INVALID;
     }
-    iVar4 = I_stricmp(param_1,dynEntProps[local_8].name);
+    iVar4 = I_stricmp(typeName,dynEntProps[type].name);
     if (iVar4 == 0) break;
-    local_8 = local_8 + DYNENT_TYPE_CLUTTER;
+    type = type + 1;
   }
-  return local_8;
+  return type;
 }
 
 
@@ -97,49 +97,49 @@ DynEntityType __cdecl DynEnt_GetType(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DynEnt_GetEntityCountFromString(char *param_1,int *param_2,int *param_3)
+void __cdecl DynEnt_GetEntityCountFromString(char *entityString,int *entCount,int *constraintCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_94 [64];
-  char *local_54;
-  char *local_50;
-  char local_4c [68];
+  char key [64];
+  char *ptr;
+  char *token;
+  char value [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((entityString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0xd9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_54 = param_1;
-  *param_2 = 0;
-  *param_3 = 0;
+  ptr = entityString;
+  *entCount = 0;
+  *constraintCount = 0;
   do {
-    local_50 = Com_Parse(&local_54);
-    if ((local_54 == (char *)0x0) || (*local_50 != '{')) {
+    token = Com_Parse(&ptr);
+    if ((ptr == (char *)0x0) || (*token != '{')) {
       return;
     }
-    while ((local_50 = Com_Parse(&local_54), local_54 != (char *)0x0 && (*local_50 != '}'))) {
-      I_strncpyz(local_94,local_50,0x40);
-      local_50 = Com_Parse(&local_54);
-      if (local_54 == (char *)0x0) break;
-      I_strncpyz(local_4c,local_50,0x40);
-      iVar3 = I_stricmp(local_94,"classname");
+    while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token != '}'))) {
+      I_strncpyz(key,token,0x40);
+      token = Com_Parse(&ptr);
+      if (ptr == (char *)0x0) break;
+      I_strncpyz(value,token,0x40);
+      iVar3 = I_stricmp(key,"classname");
       if (iVar3 == 0) {
-        bVar2 = DynEnt_IsValidClassName(local_4c);
+        bVar2 = DynEnt_IsValidClassName(value);
         if (bVar2) {
-          *param_2 = *param_2 + 1;
+          *entCount = *entCount + 1;
         }
         else {
-          bVar2 = DynEnt_IsValidConstraintName(local_4c);
+          bVar2 = DynEnt_IsValidConstraintName(value);
           if (bVar2) {
-            *param_3 = *param_3 + 1;
+            *constraintCount = *constraintCount + 1;
           }
         }
       }
@@ -168,70 +168,72 @@ void __cdecl LoadRopeParams(void)
   char *local_1d4;
   char *local_1c8;
   char *local_1c4;
-  undefined4 local_1bc [16];
+  bool is_rope;
+  bool is_dent;
+  undefined4 params [16];
   char local_17c [64];
   undefined2 local_13c;
   char local_13a [64];
   char local_fa [100];
-  char local_96;
-  char local_95;
-  char local_94 [64];
-  char *local_54;
-  char *local_50;
-  char local_4c [68];
+  bool is_ent;
+  bool is_info;
+  char key [64];
+  char *ptr;
+  char *token;
+  char value [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54 = Com_EntityString((int *)0x0);
+  ptr = Com_EntityString((int *)0x0);
   num_dents = 0;
   num_ents = 0;
   num_infos = 0;
   num_ropes = 0;
   do {
-    local_50 = Com_Parse(&local_54);
-    if ((local_54 == (char *)0x0) || (*local_50 != '{')) {
+    token = Com_Parse(&ptr);
+    if ((ptr == (char *)0x0) || (*token != '{')) {
       return;
     }
-    Com_Memset(local_1bc,0,0x120);
+    Com_Memset(params,0,0x120);
     bVar2 = false;
-    local_95 = '\0';
-    local_96 = '\0';
+    is_info = false;
+    is_ent = false;
     bVar3 = false;
     while( true ) {
-      local_50 = Com_Parse(&local_54);
-      if ((local_54 == (char *)0x0) || (*local_50 == '}')) break;
-      I_strncpyz(local_94,local_50,0x40);
-      local_50 = Com_Parse(&local_54);
-      if (local_54 == (char *)0x0) break;
-      I_strncpyz(local_4c,local_50,0x40);
-      iVar5 = I_stricmp(local_94,"classname");
+      token = Com_Parse(&ptr);
+      if ((ptr == (char *)0x0) || (*token == '}')) break;
+      I_strncpyz(key,token,0x40);
+      token = Com_Parse(&ptr);
+      if (ptr == (char *)0x0) break;
+      I_strncpyz(value,token,0x40);
+      iVar5 = I_stricmp(key,"classname");
       if (iVar5 == 0) {
-        iVar5 = I_stricmp(local_4c,"rope");
+        iVar5 = I_stricmp(value,"rope");
         if (iVar5 == 0) {
           bVar2 = true;
         }
         else {
-          iVar5 = I_stricmp(local_4c,"info_null");
+          iVar5 = I_stricmp(value,"info_null");
           if (iVar5 == 0) {
-            local_95 = '\x01';
+            is_info = true;
           }
           else {
-            iVar5 = I_stricmp(local_4c,"script_model");
+            iVar5 = I_stricmp(value,"script_model");
             if (iVar5 == 0) {
-              local_96 = '\x01';
+              is_ent = true;
             }
             else {
-              iVar5 = I_stricmp(local_4c,"script_brushmodel");
+              iVar5 = I_stricmp(value,"script_brushmodel");
               if (iVar5 == 0) {
-                local_96 = '\x01';
+                is_ent = true;
               }
               else {
-                iVar5 = I_stricmp(local_4c,"dyn_model");
+                iVar5 = I_stricmp(value,"dyn_model");
                 if (iVar5 == 0) {
                   bVar3 = true;
                 }
                 else {
-                  iVar5 = I_stricmp(local_4c,"dyn_brushmodel");
+                  iVar5 = I_stricmp(value,"dyn_brushmodel");
                   if (iVar5 == 0) {
                     bVar3 = true;
                   }
@@ -242,19 +244,19 @@ void __cdecl LoadRopeParams(void)
         }
       }
       else {
-        iVar5 = I_stricmp(local_94,"origin");
+        iVar5 = I_stricmp(key,"origin");
         if (iVar5 == 0) {
-          sscanf(local_4c,"%f %f %f");
+          sscanf(value,"%f %f %f");
         }
         else {
-          iVar5 = I_stricmp(local_94,"angles");
+          iVar5 = I_stricmp(key,"angles");
           if (iVar5 == 0) {
-            sscanf(local_4c,"%f %f %f");
+            sscanf(value,"%f %f %f");
           }
           else {
-            iVar5 = I_stricmp(local_94,"targetname");
+            iVar5 = I_stricmp(key,"targetname");
             if (iVar5 == 0) {
-              local_1c4 = local_4c;
+              local_1c4 = value;
               local_1c8 = local_17c;
               do {
                 cVar1 = *local_1c4;
@@ -266,9 +268,9 @@ void __cdecl LoadRopeParams(void)
               local_13c = (undefined2)uVar4;
             }
             else {
-              iVar5 = I_stricmp(local_94,"target");
+              iVar5 = I_stricmp(key,"target");
               if (iVar5 == 0) {
-                local_1d4 = local_4c;
+                local_1d4 = value;
                 local_1d8 = local_13a;
                 do {
                   cVar1 = *local_1d4;
@@ -278,9 +280,9 @@ void __cdecl LoadRopeParams(void)
                 } while (cVar1 != '\0');
               }
               else {
-                iVar5 = I_stricmp(local_94,"target2");
+                iVar5 = I_stricmp(key,"target2");
                 if (iVar5 == 0) {
-                  local_1e4 = local_4c;
+                  local_1e4 = value;
                   local_1e8 = local_fa;
                   do {
                     cVar1 = *local_1e4;
@@ -296,7 +298,7 @@ void __cdecl LoadRopeParams(void)
       }
     }
     if (bVar2) {
-      puVar6 = local_1bc;
+      puVar6 = params;
       pnVar7 = rope_params + num_ropes;
       for (iVar5 = 0x48; iVar5 != 0; iVar5 = iVar5 + -1) {
         *(undefined4 *)pnVar7->classname = *puVar6;
@@ -305,8 +307,8 @@ void __cdecl LoadRopeParams(void)
       }
       num_ropes = num_ropes + 1;
     }
-    if (local_95 != '\0') {
-      puVar6 = local_1bc;
+    if (is_info != false) {
+      puVar6 = params;
       pnVar7 = info_params + num_infos;
       for (iVar5 = 0x48; iVar5 != 0; iVar5 = iVar5 + -1) {
         *(undefined4 *)pnVar7->classname = *puVar6;
@@ -315,8 +317,8 @@ void __cdecl LoadRopeParams(void)
       }
       num_infos = num_infos + 1;
     }
-    if (local_96 != '\0') {
-      puVar6 = local_1bc;
+    if (is_ent != false) {
+      puVar6 = params;
       pnVar7 = ents_params + num_ents;
       for (iVar5 = 0x48; iVar5 != 0; iVar5 = iVar5 + -1) {
         *(undefined4 *)pnVar7->classname = *puVar6;
@@ -326,7 +328,7 @@ void __cdecl LoadRopeParams(void)
       num_ents = num_ents + 1;
     }
     if (bVar3) {
-      puVar6 = local_1bc;
+      puVar6 = params;
       pnVar7 = dents_params + num_dents;
       for (iVar5 = 0x48; iVar5 != 0; iVar5 = iVar5 + -1) {
         *(undefined4 *)pnVar7->classname = *puVar6;
@@ -415,7 +417,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 // 005BABF0  DynEnt_CreateConstraint  (DynEntity/DynEntity_load_obj.cpp:357)
 
 bool __cdecl
-DynEnt_CreateConstraint(PhysConstraint *param_1,DynEntityConstraintCreateParams *param_2)
+DynEnt_CreateConstraint(PhysConstraint *constraint,DynEntityConstraintCreateParams *params)
 
 {
   char cVar1;
@@ -426,94 +428,94 @@ DynEnt_CreateConstraint(PhysConstraint *param_1,DynEntityConstraintCreateParams 
   Material *pMVar6;
   uint uVar7;
   char *local_38;
-  int local_8;
+  int j;
   
-  param_1->attach_point_type1 = ATTACH_POINT_WORLD;
-  param_1->attach_point_type2 = ATTACH_POINT_WORLD;
-  param_1->target_index1 = -1;
-  param_1->target_index2 = -1;
-  param_1->constraintHandle = 0;
-  param_1->rope_index = -1;
-  param_1->type = CONSTRAINT_NONE;
-  iVar5 = I_stricmp("dyn_hingeconstraint",param_2->classname);
+  constraint->attach_point_type1 = ATTACH_POINT_WORLD;
+  constraint->attach_point_type2 = ATTACH_POINT_WORLD;
+  constraint->target_index1 = -1;
+  constraint->target_index2 = -1;
+  constraint->constraintHandle = 0;
+  constraint->rope_index = -1;
+  constraint->type = CONSTRAINT_NONE;
+  iVar5 = I_stricmp("dyn_hingeconstraint",params->classname);
   if (iVar5 == 0) {
-    param_1->type = CONSTRAINT_HINGE;
-    param_1->minAngle = param_2->minAngle;
-    param_1->maxAngle = param_2->maxAngle;
+    constraint->type = CONSTRAINT_HINGE;
+    constraint->minAngle = params->minAngle;
+    constraint->maxAngle = params->maxAngle;
   }
   else {
-    iVar5 = I_stricmp("dyn_pointconstraint",param_2->classname);
+    iVar5 = I_stricmp("dyn_pointconstraint",params->classname);
     if (iVar5 == 0) {
-      param_1->type = CONSTRAINT_POINT;
+      constraint->type = CONSTRAINT_POINT;
     }
     else {
-      iVar5 = I_stricmp("rope",param_2->classname);
+      iVar5 = I_stricmp("rope",params->classname);
       if (iVar5 == 0) {
-        param_1->type = CONSTRAINT_ROPE;
-        param_1->minAngle = param_2->width;
-        if (param_2->materialname[0] != '\0') {
-          pMVar6 = Material_RegisterHandle(param_2->materialname,8);
-          param_1->material = pMVar6;
+        constraint->type = CONSTRAINT_ROPE;
+        constraint->minAngle = params->width;
+        if (params->materialname[0] != '\0') {
+          pMVar6 = Material_RegisterHandle(params->materialname,8);
+          constraint->material = pMVar6;
         }
-        if ((param_2->spawnflags & 1U) != 0) {
-          param_1->flags = param_1->flags | 1;
+        if ((params->spawnflags & 1U) != 0) {
+          constraint->flags = constraint->flags | 1;
         }
       }
       else {
-        iVar5 = I_stricmp("dyn_lightconstraint",param_2->classname);
+        iVar5 = I_stricmp("dyn_lightconstraint",params->classname);
         if (iVar5 == 0) {
-          param_1->type = CONSTRAINT_LIGHT;
-          iVar5 = atoi(param_2->target2);
-          param_1->target_index2 = iVar5;
-          param_1->centity_num[0] = -1;
+          constraint->type = CONSTRAINT_LIGHT;
+          iVar5 = atoi(params->target2);
+          constraint->target_index2 = iVar5;
+          constraint->centity_num[0] = -1;
         }
       }
     }
   }
-  if ((param_1->type == CONSTRAINT_NONE) &&
+  if ((constraint->type == CONSTRAINT_NONE) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x18d,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  uVar7 = SL_GetLowercaseString(param_2->targetname,0,SCRIPTINSTANCE_SERVER);
-  param_1->targetname = (ushort)uVar7;
-  param_1->damp = param_2->damp;
-  param_1->pos[0] = param_2->origin[0];
-  param_1->pos[1] = param_2->origin[1];
-  param_1->pos[2] = param_2->origin[2];
-  param_1->pos2[0] = param_2->origin[0];
-  param_1->pos2[1] = param_2->origin[1];
-  param_1->pos2[2] = param_2->origin[2];
-  param_1->dir[0] = param_2->angles[0];
-  param_1->dir[1] = param_2->angles[1];
-  param_1->dir[2] = param_2->angles[2];
-  param_1->min_health = param_2->health;
-  param_1->distance = param_2->distance;
-  param_1->scale[0] = param_2->force_scale;
-  param_1->scale[1] = param_2->scale;
-  param_1->timeout = (int)(param_2->timeout * 1000.0);
-  if (param_1->type == CONSTRAINT_ROPE) {
-    for (local_8 = 0; local_8 < num_infos; local_8 = local_8 + 1) {
-      local_38 = info_params[local_8].targetname;
+  uVar7 = SL_GetLowercaseString(params->targetname,0,SCRIPTINSTANCE_SERVER);
+  constraint->targetname = (ushort)uVar7;
+  constraint->damp = params->damp;
+  constraint->pos[0] = params->origin[0];
+  constraint->pos[1] = params->origin[1];
+  constraint->pos[2] = params->origin[2];
+  constraint->pos2[0] = params->origin[0];
+  constraint->pos2[1] = params->origin[1];
+  constraint->pos2[2] = params->origin[2];
+  constraint->dir[0] = params->angles[0];
+  constraint->dir[1] = params->angles[1];
+  constraint->dir[2] = params->angles[2];
+  constraint->min_health = params->health;
+  constraint->distance = params->distance;
+  constraint->scale[0] = params->force_scale;
+  constraint->scale[1] = params->scale;
+  constraint->timeout = (int)(params->timeout * 1000.0);
+  if (constraint->type == CONSTRAINT_ROPE) {
+    for (j = 0; j < num_infos; j = j + 1) {
+      local_38 = info_params[j].targetname;
       do {
         cVar1 = *local_38;
         local_38 = local_38 + 1;
       } while (cVar1 != '\0');
-      if (local_38 != info_params[local_8].targetname + 1) {
-        iVar5 = I_stricmp(info_params[local_8].targetname,param_2->target);
+      if (local_38 != info_params[j].targetname + 1) {
+        iVar5 = I_stricmp(info_params[j].targetname,params->target);
         if (iVar5 == 0) {
-          param_1->pos[0] = info_params[local_8].origin[0];
-          param_1->pos[1] = info_params[local_8].origin[1];
-          param_1->pos[2] = info_params[local_8].origin[2];
+          constraint->pos[0] = info_params[j].origin[0];
+          constraint->pos[1] = info_params[j].origin[1];
+          constraint->pos[2] = info_params[j].origin[2];
         }
         else {
-          iVar5 = I_stricmp(info_params[local_8].targetname,param_2->target2);
+          iVar5 = I_stricmp(info_params[j].targetname,params->target2);
           if (iVar5 == 0) {
-            param_1->pos2[0] = info_params[local_8].origin[0];
-            param_1->pos2[1] = info_params[local_8].origin[1];
-            param_1->pos2[2] = info_params[local_8].origin[2];
+            constraint->pos2[0] = info_params[j].origin[0];
+            constraint->pos2[1] = info_params[j].origin[1];
+            constraint->pos2[2] = info_params[j].origin[2];
           }
         }
       }
@@ -549,15 +551,16 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 void __cdecl
 DynEnt_GetEntityConstraintParams
-          (DynEntityConstraintCreateParams *param_1,PhysConstraint *param_2,int param_3)
+          (DynEntityConstraintCreateParams *constraintParams,PhysConstraint *constraints,
+          int dynEntConstraintCount)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  DynEntityConstraintCreateParams *pDVar5;
-  double dVar6;
+  DynEntityConstraintCreateParams *params;
+  double dVar5;
   char *local_ec;
   char *local_e8;
   char *local_dc;
@@ -568,28 +571,28 @@ DynEnt_GetEntityConstraintParams
   char *local_b8;
   DynEntityConstraintCreateParams *local_ac;
   char *local_a8;
-  bool local_a1;
-  char local_9c [68];
-  char *local_58;
-  char *local_54;
-  int local_50;
-  char local_4c [68];
+  bool isDynEntConstraint;
+  char key [68];
+  char *ptr;
+  char *token;
+  int count;
+  char value [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58 = Com_EntityString((int *)0x0);
-  if ((local_58 == (char *)0x0) &&
+  ptr = Com_EntityString((int *)0x0);
+  if ((ptr == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x1ba,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_50 = 0;
+  count = 0;
   do {
-    local_54 = Com_Parse(&local_58);
-    if ((local_58 == (char *)0x0) || (*local_54 != '{')) {
-      if ((local_50 != param_3) &&
+    token = Com_Parse(&ptr);
+    if ((ptr == (char *)0x0) || (*token != '{')) {
+      if ((count != dynEntConstraintCount) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x232,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -598,24 +601,24 @@ DynEnt_GetEntityConstraintParams
       }
       return;
     }
-    local_a1 = false;
-    if (0x1fe < local_50) {
+    isDynEntConstraint = false;
+    if (0x1fe < count) {
       Com_Error(ERR_DROP,"Max number of contraints exceeded (%d)\n");
       return;
     }
-    pDVar5 = param_1 + local_50;
-    Com_Memset(pDVar5,0,0x18c);
-    while ((local_54 = Com_Parse(&local_58), local_58 != (char *)0x0 && (*local_54 != '}'))) {
-      I_strncpyz(local_9c,local_54,0x40);
-      local_54 = Com_Parse(&local_58);
-      if (local_58 == (char *)0x0) break;
-      I_strncpyz(local_4c,local_54,0x40);
-      iVar4 = I_stricmp(local_9c,"classname");
+    params = constraintParams + count;
+    Com_Memset(params,0,0x18c);
+    while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token != '}'))) {
+      I_strncpyz(key,token,0x40);
+      token = Com_Parse(&ptr);
+      if (ptr == (char *)0x0) break;
+      I_strncpyz(value,token,0x40);
+      iVar4 = I_stricmp(key,"classname");
       if (iVar4 == 0) {
-        local_a1 = DynEnt_IsValidConstraintName(local_4c);
-        if (local_a1) {
-          local_a8 = local_4c;
-          local_ac = pDVar5;
+        isDynEntConstraint = DynEnt_IsValidConstraintName(value);
+        if (isDynEntConstraint) {
+          local_a8 = value;
+          local_ac = params;
           do {
             cVar1 = *local_a8;
             local_ac->classname[0] = cVar1;
@@ -625,26 +628,26 @@ DynEnt_GetEntityConstraintParams
         }
       }
       else {
-        iVar4 = I_stricmp(local_9c,"origin");
+        iVar4 = I_stricmp(key,"origin");
         if (iVar4 == 0) {
-          sscanf(local_4c,"%f %f %f");
+          sscanf(value,"%f %f %f");
         }
         else {
-          iVar4 = I_stricmp(local_9c,"angles");
+          iVar4 = I_stricmp(key,"angles");
           if (iVar4 == 0) {
-            sscanf(local_4c,"%f %f %f");
+            sscanf(value,"%f %f %f");
           }
           else {
-            iVar4 = I_stricmp(local_9c,"health");
+            iVar4 = I_stricmp(key,"health");
             if (iVar4 == 0) {
-              iVar4 = atoi(local_4c);
-              pDVar5->health = iVar4;
+              iVar4 = atoi(value);
+              params->health = iVar4;
             }
             else {
-              iVar4 = I_stricmp(local_9c,"targetname");
+              iVar4 = I_stricmp(key,"targetname");
               if (iVar4 == 0) {
-                local_b8 = local_4c;
-                local_bc = pDVar5->targetname;
+                local_b8 = value;
+                local_bc = params->targetname;
                 do {
                   cVar1 = *local_b8;
                   *local_bc = cVar1;
@@ -653,10 +656,10 @@ DynEnt_GetEntityConstraintParams
                 } while (cVar1 != '\0');
               }
               else {
-                iVar4 = I_stricmp(local_9c,"target");
+                iVar4 = I_stricmp(key,"target");
                 if (iVar4 == 0) {
-                  local_c8 = local_4c;
-                  local_cc = pDVar5->target;
+                  local_c8 = value;
+                  local_cc = params->target;
                   do {
                     cVar1 = *local_c8;
                     *local_cc = cVar1;
@@ -665,10 +668,10 @@ DynEnt_GetEntityConstraintParams
                   } while (cVar1 != '\0');
                 }
                 else {
-                  iVar4 = I_stricmp(local_9c,"target2");
+                  iVar4 = I_stricmp(key,"target2");
                   if (iVar4 == 0) {
-                    local_d8 = local_4c;
-                    local_dc = pDVar5->target2;
+                    local_d8 = value;
+                    local_dc = params->target2;
                     do {
                       cVar1 = *local_d8;
                       *local_dc = cVar1;
@@ -677,58 +680,58 @@ DynEnt_GetEntityConstraintParams
                     } while (cVar1 != '\0');
                   }
                   else {
-                    iVar4 = I_stricmp(local_9c,"min_angle");
+                    iVar4 = I_stricmp(key,"min_angle");
                     if (iVar4 == 0) {
-                      dVar6 = atof(local_4c);
-                      pDVar5->minAngle = (float)dVar6;
+                      dVar5 = atof(value);
+                      params->minAngle = (float)dVar5;
                     }
                     else {
-                      iVar4 = I_stricmp(local_9c,"max_angle");
+                      iVar4 = I_stricmp(key,"max_angle");
                       if (iVar4 == 0) {
-                        dVar6 = atof(local_4c);
-                        pDVar5->maxAngle = (float)dVar6;
+                        dVar5 = atof(value);
+                        params->maxAngle = (float)dVar5;
                       }
                       else {
-                        iVar4 = I_stricmp(local_9c,"length");
+                        iVar4 = I_stricmp(key,"length");
                         if (iVar4 == 0) {
-                          dVar6 = atof(local_4c);
-                          pDVar5->distance = (float)dVar6;
+                          dVar5 = atof(value);
+                          params->distance = (float)dVar5;
                         }
                         else {
-                          iVar4 = I_stricmp(local_9c,"length_scale");
+                          iVar4 = I_stricmp(key,"length_scale");
                           if (iVar4 == 0) {
-                            dVar6 = atof(local_4c);
-                            pDVar5->scale = (float)dVar6;
+                            dVar5 = atof(value);
+                            params->scale = (float)dVar5;
                           }
                           else {
-                            iVar4 = I_stricmp(local_9c,"distance");
+                            iVar4 = I_stricmp(key,"distance");
                             if (iVar4 == 0) {
-                              dVar6 = atof(local_4c);
-                              pDVar5->distance = (float)dVar6;
+                              dVar5 = atof(value);
+                              params->distance = (float)dVar5;
                             }
                             else {
-                              iVar4 = I_stricmp(local_9c,"width");
+                              iVar4 = I_stricmp(key,"width");
                               if (iVar4 == 0) {
-                                dVar6 = atof(local_4c);
-                                pDVar5->width = (float)dVar6;
+                                dVar5 = atof(value);
+                                params->width = (float)dVar5;
                               }
                               else {
-                                iVar4 = I_stricmp(local_9c,"force_scale");
+                                iVar4 = I_stricmp(key,"force_scale");
                                 if (iVar4 == 0) {
-                                  dVar6 = atof(local_4c);
-                                  pDVar5->force_scale = (float)dVar6;
+                                  dVar5 = atof(value);
+                                  params->force_scale = (float)dVar5;
                                 }
                                 else {
-                                  iVar4 = I_stricmp(local_9c,"damp");
+                                  iVar4 = I_stricmp(key,"damp");
                                   if (iVar4 == 0) {
-                                    dVar6 = atof(local_4c);
-                                    pDVar5->damp = (float)dVar6;
+                                    dVar5 = atof(value);
+                                    params->damp = (float)dVar5;
                                   }
                                   else {
-                                    iVar4 = I_stricmp(local_9c,"material");
+                                    iVar4 = I_stricmp(key,"material");
                                     if (iVar4 == 0) {
-                                      local_e8 = local_4c;
-                                      local_ec = pDVar5->materialname;
+                                      local_e8 = value;
+                                      local_ec = params->materialname;
                                       do {
                                         cVar1 = *local_e8;
                                         *local_ec = cVar1;
@@ -737,16 +740,16 @@ DynEnt_GetEntityConstraintParams
                                       } while (cVar1 != '\0');
                                     }
                                     else {
-                                      iVar4 = I_stricmp(local_9c,"spawnflags");
+                                      iVar4 = I_stricmp(key,"spawnflags");
                                       if (iVar4 == 0) {
-                                        iVar4 = atoi(local_4c);
-                                        pDVar5->spawnflags = iVar4;
+                                        iVar4 = atoi(value);
+                                        params->spawnflags = iVar4;
                                       }
                                       else {
-                                        iVar4 = I_stricmp(local_9c,"timeout");
+                                        iVar4 = I_stricmp(key,"timeout");
                                         if (iVar4 == 0) {
-                                          dVar6 = atof(local_4c);
-                                          pDVar5->timeout = (float)dVar6;
+                                          dVar5 = atof(value);
+                                          params->timeout = (float)dVar5;
                                         }
                                       }
                                     }
@@ -766,17 +769,17 @@ DynEnt_GetEntityConstraintParams
         }
       }
     }
-    if (local_a1 != false) {
-      if ((param_3 <= local_50) &&
+    if (isDynEntConstraint != false) {
+      if ((dynEntConstraintCount <= count) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x22c,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      bVar3 = DynEnt_CreateConstraint(param_2 + local_50,pDVar5);
+      bVar3 = DynEnt_CreateConstraint(constraints + count,params);
       if (bVar3) {
-        local_50 = local_50 + 1;
+        count = count + 1;
       }
     }
   } while( true );
@@ -785,14 +788,14 @@ DynEnt_GetEntityConstraintParams
 
 // 005BBC40  DynEnt_AllocXModel  (DynEntity/DynEntity_load_obj.cpp:568)
 
-void * __cdecl DynEnt_AllocXModel(int param_1)
+void * __cdecl DynEnt_AllocXModel(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x239,0,"%s");
     if (!bVar2) {
@@ -801,21 +804,21 @@ void * __cdecl DynEnt_AllocXModel(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1,"DynEnt_AllocXModel",0x16);
+  pvVar3 = Hunk_Alloc(size,"DynEnt_AllocXModel",0x16);
   return pvVar3;
 }
 
 
 // 005BBC90  DynEnt_AllocXModelColl  (DynEntity/DynEntity_load_obj.cpp:574)
 
-void * __cdecl DynEnt_AllocXModelColl(int param_1)
+void * __cdecl DynEnt_AllocXModelColl(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x23f,0,"%s");
     if (!bVar2) {
@@ -824,21 +827,21 @@ void * __cdecl DynEnt_AllocXModelColl(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1,"DynEnt_AllocXModelColl",0x1c);
+  pvVar3 = Hunk_Alloc(size,"DynEnt_AllocXModelColl",0x1c);
   return pvVar3;
 }
 
 
 // 005BBBF0  DynEnt_XModelPrecache  (DynEntity/DynEntity_load_obj.cpp:580)
 
-XModel * __cdecl DynEnt_XModelPrecache(char *param_1)
+XModel * __cdecl DynEnt_XModelPrecache(char *modelName)
 
 {
   code *pcVar1;
   bool bVar2;
   XModel *pXVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (modelName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x245,0,"%s");
     if (!bVar2) {
@@ -847,21 +850,21 @@ XModel * __cdecl DynEnt_XModelPrecache(char *param_1)
       return pXVar3;
     }
   }
-  pXVar3 = XModelPrecache(param_1,DynEnt_AllocXModel,DynEnt_AllocXModelColl);
+  pXVar3 = XModelPrecache(modelName,DynEnt_AllocXModel,DynEnt_AllocXModelColl);
   return pXVar3;
 }
 
 
 // 005B89B0  DynEnt_AllocPhysPreset  (DynEntity/DynEntity_load_obj.cpp:586)
 
-void * __cdecl DynEnt_AllocPhysPreset(int param_1)
+void * __cdecl DynEnt_AllocPhysPreset(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x24b,0,"%s");
     if (!bVar2) {
@@ -870,21 +873,21 @@ void * __cdecl DynEnt_AllocPhysPreset(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1,"DynEnt_AllocPhysPreset",0x16);
+  pvVar3 = Hunk_Alloc(size,"DynEnt_AllocPhysPreset",0x16);
   return pvVar3;
 }
 
 
 // 005B8A50  DynEnt_AllocXModelPieces  (DynEntity/DynEntity_load_obj.cpp:592)
 
-void * __cdecl DynEnt_AllocXModelPieces(int param_1)
+void * __cdecl DynEnt_AllocXModelPieces(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x251,0,"%s");
     if (!bVar2) {
@@ -893,21 +896,21 @@ void * __cdecl DynEnt_AllocXModelPieces(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1,"DynEnt_AllocXModelPieces",0x16);
+  pvVar3 = Hunk_Alloc(size,"DynEnt_AllocXModelPieces",0x16);
   return pvVar3;
 }
 
 
 // 005B8960  DynEnt_PhysPresetPrecache  (DynEntity/DynEntity_load_obj.cpp:598)
 
-PhysPreset * __cdecl DynEnt_PhysPresetPrecache(char *param_1)
+PhysPreset * __cdecl DynEnt_PhysPresetPrecache(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysPreset *pPVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              599,0,"%s");
     if (!bVar2) {
@@ -916,21 +919,21 @@ PhysPreset * __cdecl DynEnt_PhysPresetPrecache(char *param_1)
       return pPVar3;
     }
   }
-  pPVar3 = PhysPresetPrecache(param_1,DynEnt_AllocPhysPreset);
+  pPVar3 = PhysPresetPrecache(name,DynEnt_AllocPhysPreset);
   return pPVar3;
 }
 
 
 // 005B8A00  DynEnt_XModelPiecesPrecache  (DynEntity/DynEntity_load_obj.cpp:604)
 
-XModelPieces * __cdecl DynEnt_XModelPiecesPrecache(char *param_1)
+XModelPieces * __cdecl DynEnt_XModelPiecesPrecache(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   XModelPieces *pXVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x25d,0,"%s");
     if (!bVar2) {
@@ -939,7 +942,7 @@ XModelPieces * __cdecl DynEnt_XModelPiecesPrecache(char *param_1)
       return pXVar3;
     }
   }
-  pXVar3 = XModelPiecesPrecache(param_1,DynEnt_AllocXModelPieces);
+  pXVar3 = XModelPiecesPrecache(name,DynEnt_AllocXModelPieces);
   return pXVar3;
 }
 
@@ -947,8 +950,9 @@ XModelPieces * __cdecl DynEnt_XModelPiecesPrecache(char *param_1)
 // 005BAFF0  FindConstraints  (DynEntity/DynEntity_load_obj.cpp:611)
 
 bool __cdecl
-FindConstraints(char *param_1,float *param_2,float *param_3,AttachPointType param_4,
-               DynEntityConstraintCreateParams *param_5,int param_6,int *param_7)
+FindConstraints(char *targetname,float *origin,float *angles,AttachPointType attach_type,
+               DynEntityConstraintCreateParams *constraintParams,int numConstraints,
+               int *outConstraints)
 
 {
   code *pcVar1;
@@ -957,110 +961,110 @@ FindConstraints(char *param_1,float *param_2,float *param_3,AttachPointType para
   undefined1 uVar4;
   uint uVar5;
   int iVar6;
-  int local_48;
-  int local_40;
-  float local_3c [9];
+  int j;
+  int i;
+  float xform [9];
   float local_18;
   float local_14;
   float local_10;
-  ushort local_c;
-  int local_8;
+  ushort targetname_hash;
+  int count;
   
-  if (*param_1 == '\0') {
+  if (*targetname == '\0') {
     bVar3 = false;
   }
   else {
-    AnglesToAxis(param_3,(float (*) [3])local_3c);
-    local_18 = *param_2;
-    local_14 = param_2[1];
-    local_10 = param_2[2];
-    local_8 = 0;
-    uVar5 = SL_GetLowercaseString(param_1,0,SCRIPTINSTANCE_SERVER);
-    local_c = (ushort)uVar5;
-    local_40 = 0;
-    while ((pPVar2 = cm.constraints, local_40 < param_6 && (local_8 < 4))) {
-      iVar6 = I_stricmp(param_1,param_5[local_40].target2);
+    AnglesToAxis(angles,(float (*) [3])xform);
+    local_18 = *origin;
+    local_14 = origin[1];
+    local_10 = origin[2];
+    count = 0;
+    uVar5 = SL_GetLowercaseString(targetname,0,SCRIPTINSTANCE_SERVER);
+    targetname_hash = (ushort)uVar5;
+    i = 0;
+    while ((pPVar2 = cm.constraints, i < numConstraints && (count < 4))) {
+      iVar6 = I_stricmp(targetname,constraintParams[i].target2);
       if (iVar6 == 0) {
-        pPVar2[local_40].attach_point_type2 = param_4;
-        pPVar2[local_40].target_ent2 = local_c;
+        pPVar2[i].attach_point_type2 = attach_type;
+        pPVar2[i].target_ent2 = targetname_hash;
         MatrixTransposeTransformVector43
-                  (param_5[local_40].origin,(float (*) [3])local_3c,pPVar2[local_40].pos2);
-        if ((3 < local_8) &&
+                  (constraintParams[i].origin,(float (*) [3])xform,pPVar2[i].pos2);
+        if ((3 < count) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                      ,0x27c,0,"%s"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           uVar4 = (*pcVar1)();
           return (bool)uVar4;
         }
-        if (param_7 != (int *)0x0) {
-          param_7[local_8] = local_40;
-          local_8 = local_8 + 1;
+        if (outConstraints != (int *)0x0) {
+          outConstraints[count] = i;
+          count = count + 1;
         }
       }
-      iVar6 = I_stricmp(param_1,param_5[local_40].target);
+      iVar6 = I_stricmp(targetname,constraintParams[i].target);
       if (iVar6 == 0) {
-        pPVar2[local_40].attach_point_type1 = param_4;
-        pPVar2[local_40].target_ent1 = local_c;
+        pPVar2[i].attach_point_type1 = attach_type;
+        pPVar2[i].target_ent1 = targetname_hash;
         MatrixTransposeTransformVector43
-                  (param_5[local_40].origin,(float (*) [3])local_3c,pPVar2[local_40].pos);
-        if ((3 < local_8) &&
+                  (constraintParams[i].origin,(float (*) [3])xform,pPVar2[i].pos);
+        if ((3 < count) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                      ,0x284,0,"%s"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           uVar4 = (*pcVar1)();
           return (bool)uVar4;
         }
-        if (param_7 != (int *)0x0) {
-          param_7[local_8] = local_40;
-          local_8 = local_8 + 1;
+        if (outConstraints != (int *)0x0) {
+          outConstraints[count] = i;
+          count = count + 1;
         }
       }
-      local_48 = 0;
-      while ((local_48 < num_infos && (local_8 < 4))) {
-        iVar6 = I_stricmp(info_params[local_48].target,param_1);
+      j = 0;
+      while ((j < num_infos && (count < 4))) {
+        iVar6 = I_stricmp(info_params[j].target,targetname);
         if (iVar6 == 0) {
-          iVar6 = I_stricmp(info_params[local_48].targetname,param_5[local_40].target2);
+          iVar6 = I_stricmp(info_params[j].targetname,constraintParams[i].target2);
           if (iVar6 == 0) {
-            pPVar2[local_40].attach_point_type2 = param_4;
-            pPVar2[local_40].target_ent2 = local_c;
+            pPVar2[i].attach_point_type2 = attach_type;
+            pPVar2[i].target_ent2 = targetname_hash;
             MatrixTransposeTransformVector43
-                      (info_params[local_48].origin,(float (*) [3])local_3c,pPVar2[local_40].pos2);
-            if ((3 < local_8) &&
+                      (info_params[j].origin,(float (*) [3])xform,pPVar2[i].pos2);
+            if ((3 < count) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                          ,0x296,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
               uVar4 = (*pcVar1)();
               return (bool)uVar4;
             }
-            if (param_7 != (int *)0x0) {
-              param_7[local_8] = local_40;
-              local_8 = local_8 + 1;
+            if (outConstraints != (int *)0x0) {
+              outConstraints[count] = i;
+              count = count + 1;
             }
           }
-          iVar6 = I_stricmp(info_params[local_48].targetname,param_5[local_40].target);
+          iVar6 = I_stricmp(info_params[j].targetname,constraintParams[i].target);
           if (iVar6 == 0) {
-            pPVar2[local_40].attach_point_type1 = param_4;
-            pPVar2[local_40].target_ent1 = local_c;
+            pPVar2[i].attach_point_type1 = attach_type;
+            pPVar2[i].target_ent1 = targetname_hash;
             MatrixTransposeTransformVector43
-                      (info_params[local_48].origin,(float (*) [3])local_3c,pPVar2[local_40].pos);
-            if ((3 < local_8) &&
+                      (info_params[j].origin,(float (*) [3])xform,pPVar2[i].pos);
+            if ((3 < count) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                          ,0x29e,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
               uVar4 = (*pcVar1)();
               return (bool)uVar4;
             }
-            if (param_7 != (int *)0x0) {
-              param_7[local_8] = local_40;
-              local_8 = local_8 + 1;
+            if (outConstraints != (int *)0x0) {
+              outConstraints[count] = i;
+              count = count + 1;
             }
           }
         }
-        local_48 = local_48 + 1;
+        j = j + 1;
       }
-      local_40 = local_40 + 1;
+      i = i + 1;
     }
-    bVar3 = 0 < local_8;
+    bVar3 = 0 < count;
   }
   return bVar3;
 }
@@ -1068,7 +1072,7 @@ FindConstraints(char *param_1,float *param_2,float *param_3,AttachPointType para
 
 // 005BBE80  DynEnt_Strcpy  (DynEntity/DynEntity_load_obj.cpp:681)
 
-void __cdecl DynEnt_Strcpy(char **param_1,char *param_2)
+void __cdecl DynEnt_Strcpy(char **memberString,char *keyValue)
 
 {
   char cVar1;
@@ -1076,15 +1080,16 @@ void __cdecl DynEnt_Strcpy(char **param_1,char *param_2)
   char *local_20;
   char *local_1c;
   char *local_c;
+  char *buf;
   
-  local_c = param_2;
+  local_c = keyValue;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  pcVar2 = Hunk_AllocLowAlign((int)(local_c + (1 - (int)(param_2 + 1))),1,"DynEnt_AllocPhysPreset",0
-                             );
-  local_1c = param_2;
+  pcVar2 = Hunk_AllocLowAlign((int)(local_c + (1 - (int)(keyValue + 1))),1,"DynEnt_AllocPhysPreset",
+                              0);
+  local_1c = keyValue;
   local_20 = pcVar2;
   do {
     cVar1 = *local_1c;
@@ -1092,7 +1097,7 @@ void __cdecl DynEnt_Strcpy(char **param_1,char *param_2)
     local_1c = local_1c + 1;
     local_20 = local_20 + 1;
   } while (cVar1 != '\0');
-  *param_1 = pcVar2;
+  *memberString = pcVar2;
   return;
 }
 
@@ -1100,59 +1105,60 @@ void __cdecl DynEnt_Strcpy(char **param_1,char *param_2)
 // 005BBCE0  DynEnt_AutoCreatePhysPreset  (DynEntity/DynEntity_load_obj.cpp:691)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: physPreset */
 
 PhysPreset * __cdecl
-DynEnt_AutoCreatePhysPreset(DynEntityDef *param_1,DynEntityCreateParams *param_2)
+DynEnt_AutoCreatePhysPreset(DynEntityDef *dynEntDef,DynEntityCreateParams *params)
 
 {
   int iVar1;
-  PhysPreset *pPVar2;
-  char local_30 [32];
+  char name [32];
   uint local_10;
-  int local_c;
+  int i;
+  PhysPreset *physPreset;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->xModel != (XModel *)0x0) {
-    for (local_c = 0; local_c < numAutoPhysPresets; local_c = local_c + 1) {
-      pPVar2 = autoPhysPresets[local_c];
-      if ((pPVar2->name != (char *)0x0) &&
-         (iVar1 = I_stricmp(pPVar2->name,param_1->xModel->name), iVar1 == 0)) {
-        return pPVar2;
+  if (dynEntDef->xModel != (XModel *)0x0) {
+    for (i = 0; i < numAutoPhysPresets; i = i + 1) {
+      physPreset = autoPhysPresets[i];
+      if ((physPreset->name != (char *)0x0) &&
+         (iVar1 = I_stricmp(physPreset->name,dynEntDef->xModel->name), iVar1 == 0)) {
+        return physPreset;
       }
     }
   }
-  pPVar2 = Hunk_Alloc(0x54,"DynEnt_AllocPhysPreset",0x16);
-  memset((uchar *)pPVar2,'\0',0x54);
-  if (param_1->xModel == (XModel *)0x0) {
-    sprintf(local_30,"%d");
-    DynEnt_Strcpy(&pPVar2->name,local_30);
+  physPreset = Hunk_Alloc(0x54,"DynEnt_AllocPhysPreset",0x16);
+  memset((uchar *)physPreset,'\0',0x54);
+  if (dynEntDef->xModel == (XModel *)0x0) {
+    sprintf(name,"%d");
+    DynEnt_Strcpy(&physPreset->name,name);
   }
   else {
-    DynEnt_Strcpy(&pPVar2->name,param_1->xModel->name);
+    DynEnt_Strcpy(&physPreset->name,dynEntDef->xModel->name);
   }
-  if (0.0 < param_2->mass) {
-    pPVar2->mass = param_2->mass;
+  if (0.0 < params->mass) {
+    physPreset->mass = params->mass;
   }
-  if (0.0 < param_2->bounce) {
-    pPVar2->bounce = param_2->bounce;
+  if (0.0 < params->bounce) {
+    physPreset->bounce = params->bounce;
   }
-  if (0.0 < param_2->friction) {
-    pPVar2->friction = param_2->friction;
+  if (0.0 < params->friction) {
+    physPreset->friction = params->friction;
   }
-  pPVar2->flags = pPVar2->flags | 1;
+  physPreset->flags = physPreset->flags | 1;
   if (numAutoPhysPresets < 0x200) {
-    autoPhysPresets[numAutoPhysPresets] = pPVar2;
+    autoPhysPresets[numAutoPhysPresets] = physPreset;
     numAutoPhysPresets = numAutoPhysPresets + 1;
   }
-  return pPVar2;
+  return physPreset;
 }
 
 
 // 005BB3A0  DynEnt_Create  (DynEntity/DynEntity_load_obj.cpp:743)
 
 bool __cdecl
-DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
-             DynEntityConstraintCreateParams *param_3,int param_4)
+DynEnt_Create(DynEntityDef *dynEntDef,DynEntityCreateParams *params,
+             DynEntityConstraintCreateParams *constraintParams,int numConstraints)
 
 {
   code *pcVar1;
@@ -1166,60 +1172,63 @@ DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
   XModelPieces *pXVar9;
   DynEntityProps *pDVar10;
   PhysPreset *pPVar11;
-  int local_2c;
-  int local_28;
-  ushort local_18;
-  int local_14 [4];
+  int i_2;
+  int i;
+  PhysPreset *preset;
+  cmodel_t *cmod;
+  bool autoCreated;
+  int brushModel;
+  int constraints [4];
   
-  if ((param_1 == (DynEntityDef *)0x0) &&
+  if ((dynEntDef == (DynEntityDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x2ea,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (DynEntityCreateParams *)0x0) &&
+  if ((params == (DynEntityCreateParams *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x2eb,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((((uint)param_2->origin[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2->origin[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2->origin[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)params->origin[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)params->origin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)params->origin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x2ed,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((((uint)param_2->angles[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2->angles[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2->angles[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)params->angles[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)params->angles[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)params->angles[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x2ee,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  Com_Memset(param_1,0,0x54);
-  if (param_2->typeName[0] == '\0') {
-    param_1->type = DYNENT_TYPE_CLUTTER;
+  Com_Memset(dynEntDef,0,0x54);
+  if (params->typeName[0] == '\0') {
+    dynEntDef->type = DYNENT_TYPE_CLUTTER;
   }
   else {
-    DVar4 = DynEnt_GetType(param_2->typeName);
-    param_1->type = DVar4;
-    if (param_1->type == DYNENT_TYPE_INVALID) {
+    DVar4 = DynEnt_GetType(params->typeName);
+    dynEntDef->type = DVar4;
+    if (dynEntDef->type == DYNENT_TYPE_INVALID) {
       Com_Error(ERR_DROP,"Invalid Dyn Entity type [%s]\n");
       return false;
     }
   }
-  if (param_2->modelName[0] == '*') {
-    uVar5 = atoi(param_2->modelName + 1);
-    local_18 = (ushort)uVar5;
-    param_1->brushModel = local_18;
-    if ((param_1->brushModel != uVar5) &&
+  if (params->modelName[0] == '*') {
+    uVar5 = atoi(params->modelName + 1);
+    brushModel._0_2_ = (ushort)uVar5;
+    dynEntDef->brushModel = (ushort)brushModel;
+    if ((dynEntDef->brushModel != uVar5) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                  ,0x309,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1235,28 +1244,28 @@ DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    param_1->contents =
+    dynEntDef->contents =
          cm.cmodels[uVar5].leaf.brushContents | cm.cmodels[uVar5].leaf.terrainContents;
   }
   else {
-    pXVar7 = DynEnt_XModelPrecache(param_2->modelName);
-    param_1->xModel = pXVar7;
-    if (param_1->xModel == (XModel *)0x0) {
+    pXVar7 = DynEnt_XModelPrecache(params->modelName);
+    dynEntDef->xModel = pXVar7;
+    if (dynEntDef->xModel == (XModel *)0x0) {
       Com_Error(ERR_DROP,"Couldn\'t find xmodel [%s] for Dyn Entity.\n");
       return false;
     }
-    iVar8 = XModelGetContents(param_1->xModel);
-    param_1->contents = iVar8;
-    if (param_1->xModel->collLod < 0) {
+    iVar8 = XModelGetContents(dynEntDef->xModel);
+    dynEntDef->contents = iVar8;
+    if (dynEntDef->xModel->collLod < 0) {
       Com_Error(ERR_DROP,"Dyn Entity xmodel [%s] has no collision LOD set.\n");
       return false;
     }
   }
-  if (param_2->physModelName[0] == '*') {
-    uVar5 = atoi(param_2->physModelName + 1);
-    local_18 = (ushort)uVar5;
-    param_1->physicsBrushModel = local_18;
-    if ((param_1->physicsBrushModel != uVar5) &&
+  if (params->physModelName[0] == '*') {
+    uVar5 = atoi(params->physModelName + 1);
+    brushModel._0_2_ = (ushort)uVar5;
+    dynEntDef->physicsBrushModel = (ushort)brushModel;
+    if ((dynEntDef->physicsBrushModel != uVar5) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                  ,0x327,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1264,60 +1273,61 @@ DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
       return (bool)uVar3;
     }
   }
-  if (param_2->destroyFxFile[0] != '\0') {
-    pFVar6 = FX_Register(param_2->destroyFxFile);
-    param_1->destroyFx = pFVar6;
-    if (param_1->destroyFx == (FxEffectDef *)0x0) {
+  if (params->destroyFxFile[0] != '\0') {
+    pFVar6 = FX_Register(params->destroyFxFile);
+    dynEntDef->destroyFx = pFVar6;
+    if (dynEntDef->destroyFx == (FxEffectDef *)0x0) {
       Com_Error(ERR_DROP,"Couldn\'t find fx [%s] for Dyn Entity.\n");
       return false;
     }
   }
-  if (param_2->destroySound[0] != '\0') {
-    uVar5 = SND_HashName(param_2->destroySound);
-    param_1->destroySound = uVar5;
-    if (param_1->destroySound == 0) {
+  if (params->destroySound[0] != '\0') {
+    uVar5 = SND_HashName(params->destroySound);
+    dynEntDef->destroySound = uVar5;
+    if (dynEntDef->destroySound == 0) {
       Com_Error(ERR_DROP,"Couldn\'t find destroy sound [%s] for Dyn Entity.\n");
       return false;
     }
   }
-  if (param_2->destroyedModelName[0] != '\0') {
-    pXVar7 = DynEnt_XModelPrecache(param_2->destroyedModelName);
-    param_1->destroyedxModel = pXVar7;
-    if (param_1->destroyedxModel == (XModel *)0x0) {
+  if (params->destroyedModelName[0] != '\0') {
+    pXVar7 = DynEnt_XModelPrecache(params->destroyedModelName);
+    dynEntDef->destroyedxModel = pXVar7;
+    if (dynEntDef->destroyedxModel == (XModel *)0x0) {
       Com_Error(ERR_DROP,"Couldn\'t find destroyed xmodel [%s] for Dyn Entity.\n");
       return false;
     }
-    iVar8 = XModelGetContents(param_1->destroyedxModel);
-    param_1->contents = iVar8;
-    if (param_1->destroyedxModel->collLod < 0) {
+    iVar8 = XModelGetContents(dynEntDef->destroyedxModel);
+    dynEntDef->contents = iVar8;
+    if (dynEntDef->destroyedxModel->collLod < 0) {
       Com_Error(ERR_DROP,"Dyn Entity destroyed xmodel [%s] has no collision LOD set.\n");
       return false;
     }
   }
-  if (param_2->destroyPiecesFile[0] != '\0') {
-    pXVar9 = DynEnt_XModelPiecesPrecache(param_2->destroyPiecesFile);
-    param_1->destroyPieces = pXVar9;
-    if (param_1->destroyPieces == (XModelPieces *)0x0) {
+  if (params->destroyPiecesFile[0] != '\0') {
+    pXVar9 = DynEnt_XModelPiecesPrecache(params->destroyPiecesFile);
+    dynEntDef->destroyPieces = pXVar9;
+    if (dynEntDef->destroyPieces == (XModelPieces *)0x0) {
       Com_Error(ERR_DROP,"Couldn\'t find pieces [%s] for Dyn Entity.\n");
       return false;
     }
   }
-  param_1->physPreset = (PhysPreset *)0x0;
-  pDVar10 = DynEnt_GetEntityProps(param_1->type);
+  dynEntDef->physPreset = (PhysPreset *)0x0;
+  pDVar10 = DynEnt_GetEntityProps(dynEntDef->type);
   if (pDVar10->usePhysics != false) {
-    if ((param_1->xModel != (XModel *)0x0) && (param_1->xModel->physPreset != (PhysPreset *)0x0)) {
-      param_1->physPreset = param_1->xModel->physPreset;
+    if ((dynEntDef->xModel != (XModel *)0x0) && (dynEntDef->xModel->physPreset != (PhysPreset *)0x0)
+       ) {
+      dynEntDef->physPreset = dynEntDef->xModel->physPreset;
     }
-    if ((param_1->destroyedxModel != (XModel *)0x0) &&
-       (param_1->destroyedxModel->physPreset != (PhysPreset *)0x0)) {
-      param_1->physPreset = param_1->destroyedxModel->physPreset;
+    if ((dynEntDef->destroyedxModel != (XModel *)0x0) &&
+       (dynEntDef->destroyedxModel->physPreset != (PhysPreset *)0x0)) {
+      dynEntDef->physPreset = dynEntDef->destroyedxModel->physPreset;
     }
-    if (param_2->physPresetFile[0] != '\0') {
-      pPVar11 = DynEnt_PhysPresetPrecache(param_2->physPresetFile);
-      param_1->physPreset = pPVar11;
+    if (params->physPresetFile[0] != '\0') {
+      pPVar11 = DynEnt_PhysPresetPrecache(params->physPresetFile);
+      dynEntDef->physPreset = pPVar11;
     }
-    if (param_1->physPreset == (PhysPreset *)0x0) {
-      pPVar11 = DynEnt_AutoCreatePhysPreset(param_1,param_2);
+    if (dynEntDef->physPreset == (PhysPreset *)0x0) {
+      pPVar11 = DynEnt_AutoCreatePhysPreset(dynEntDef,params);
       if ((pPVar11 == (PhysPreset *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x36d,0,"%s"), !bVar2)) {
@@ -1326,44 +1336,44 @@ DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
         return (bool)uVar3;
       }
       if (pPVar11 != (PhysPreset *)0x0) {
-        param_1->physPreset = pPVar11;
+        dynEntDef->physPreset = pPVar11;
       }
     }
   }
-  uVar5 = SL_GetLowercaseString(param_2->targetname,0,SCRIPTINSTANCE_SERVER);
-  param_1->targetname = (ushort)uVar5;
-  uVar5 = SL_GetLowercaseString(param_2->target,0,SCRIPTINSTANCE_SERVER);
-  param_1->target = (ushort)uVar5;
-  (param_1->pose).origin[0] = param_2->origin[0];
-  (param_1->pose).origin[1] = param_2->origin[1];
-  (param_1->pose).origin[2] = param_2->origin[2];
-  AnglesToQuat(param_2->angles,(param_1->pose).quat);
-  param_1->health = param_2->health;
-  if ((param_1->destroyedxModel != (XModel *)0x0) && (param_1->health == 0)) {
-    param_1->health = 1;
+  uVar5 = SL_GetLowercaseString(params->targetname,0,SCRIPTINSTANCE_SERVER);
+  dynEntDef->targetname = (ushort)uVar5;
+  uVar5 = SL_GetLowercaseString(params->target,0,SCRIPTINSTANCE_SERVER);
+  dynEntDef->target = (ushort)uVar5;
+  (dynEntDef->pose).origin[0] = params->origin[0];
+  (dynEntDef->pose).origin[1] = params->origin[1];
+  (dynEntDef->pose).origin[2] = params->origin[2];
+  AnglesToQuat(params->angles,(dynEntDef->pose).quat);
+  dynEntDef->health = params->health;
+  if ((dynEntDef->destroyedxModel != (XModel *)0x0) && (dynEntDef->health == 0)) {
+    dynEntDef->health = 1;
   }
-  if (param_2->startInPhysics != false) {
-    param_1->flags = param_1->flags | 1;
+  if (params->startInPhysics != false) {
+    dynEntDef->flags = dynEntDef->flags | 1;
   }
-  if (param_2->autoActivate != false) {
-    param_1->flags = param_1->flags | 2;
+  if (params->autoActivate != false) {
+    dynEntDef->flags = dynEntDef->flags | 2;
   }
-  if (param_2->noBulletDamage != false) {
-    param_1->flags = param_1->flags | 4;
+  if (params->noBulletDamage != false) {
+    dynEntDef->flags = dynEntDef->flags | 4;
   }
-  if (param_2->noExplosiveDamage != false) {
-    param_1->flags = param_1->flags | 8;
+  if (params->noExplosiveDamage != false) {
+    dynEntDef->flags = dynEntDef->flags | 8;
   }
-  if (param_2->alwaysFloats != false) {
-    param_1->flags = param_1->flags | 0x10;
+  if (params->alwaysFloats != false) {
+    dynEntDef->flags = dynEntDef->flags | 0x10;
   }
-  for (local_28 = 0; local_28 < 4; local_28 = local_28 + 1) {
-    local_14[local_28] = 0x1ff;
+  for (i = 0; i < 4; i = i + 1) {
+    constraints[i] = 0x1ff;
   }
-  FindConstraints(param_2->targetname,param_2->origin,param_2->angles,ATTACH_POINT_DYNENT,param_3,
-                  param_4,local_14);
-  for (local_2c = 0; local_2c < 4; local_2c = local_2c + 1) {
-    param_1->physConstraints[local_2c] = (short)local_14[local_2c];
+  FindConstraints(params->targetname,params->origin,params->angles,ATTACH_POINT_DYNENT,
+                  constraintParams,numConstraints,constraints);
+  for (i_2 = 0; i_2 < 4; i_2 = i_2 + 1) {
+    dynEntDef->physConstraints[i_2] = (short)constraints[i_2];
   }
   return true;
 }
@@ -1371,29 +1381,36 @@ DynEnt_Create(DynEntityDef *param_1,DynEntityCreateParams *param_2,
 
 // 005BBF20  DynEnt_CompareEntities  (DynEntity/DynEntity_load_obj.cpp:919)
 
-int __cdecl DynEnt_CompareEntities(void *param_1,void *param_2)
+int __cdecl DynEnt_CompareEntities(void *arg0,void *arg1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  int diff;
+  DynEntityDef *dynEntDef1;
+  int hasModel0;
+  DynEntityDef *dynEntDef0;
+  int value1;
+  int hasModel1;
+  int value0;
   
-  if ((param_1 == (void *)0x0) &&
+  if ((arg0 == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x3a0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (void *)0x0) &&
+  if ((arg1 == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x3a1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((2 < *(uint *)param_1) &&
+  if ((2 < *(uint *)arg0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x3a6,0,
                                "dynEntDef0->type doesn\'t index DYNENT_TYPE_COUNT\n\t%i not in [0, %i)"
@@ -1402,7 +1419,7 @@ int __cdecl DynEnt_CompareEntities(void *param_1,void *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((2 < *(uint *)param_2) &&
+  if ((2 < *(uint *)arg1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x3a7,0,
                                "dynEntDef1->type doesn\'t index DYNENT_TYPE_COUNT\n\t%i not in [0, %i)"
@@ -1411,45 +1428,44 @@ int __cdecl DynEnt_CompareEntities(void *param_1,void *param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  uVar4 = (uint)(*(int *)((int)param_1 + 0x20) != 0);
-  iVar3 = uVar4 - (*(int *)((int)param_2 + 0x20) != 0);
+  uVar4 = (uint)(*(int *)((int)arg0 + 0x20) != 0);
+  iVar3 = uVar4 - (*(int *)((int)arg1 + 0x20) != 0);
   if ((iVar3 == 0) &&
-     (iVar3 = (uint)(dynEntProps[*(int *)param_1].clientOnly != false) -
-              (uint)(dynEntProps[*(int *)param_2].clientOnly != false), iVar3 == 0)) {
+     (iVar3 = (uint)(dynEntProps[*(int *)arg0].clientOnly != false) -
+              (uint)(dynEntProps[*(int *)arg1].clientOnly != false), iVar3 == 0)) {
     if (uVar4 == 0) {
-      if ((*(int *)((int)param_1 + 0x20) != 0) &&
+      if ((*(int *)((int)arg0 + 0x20) != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x3be,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      if ((*(int *)((int)param_2 + 0x20) != 0) &&
+      if ((*(int *)((int)arg1 + 0x20) != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x3bf,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      iVar3 = (uint)*(ushort *)((int)param_1 + 0x28) - (uint)*(ushort *)((int)param_2 + 0x28);
+      iVar3 = (uint)*(ushort *)((int)arg0 + 0x28) - (uint)*(ushort *)((int)arg1 + 0x28);
     }
     else {
-      if ((*(int *)((int)param_1 + 0x20) == 0) &&
+      if ((*(int *)((int)arg0 + 0x20) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x3b9,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      if ((*(int *)((int)param_2 + 0x20) == 0) &&
+      if ((*(int *)((int)arg1 + 0x20) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x3ba,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      iVar3 = (-(uint)(*(uint *)((int)param_1 + 0x20) < *(uint *)((int)param_2 + 0x20)) & 0xfffffffe
-              ) + 1;
+      iVar3 = (-(uint)(*(uint *)((int)arg0 + 0x20) < *(uint *)((int)arg1 + 0x20)) & 0xfffffffe) + 1;
     }
   }
   return iVar3;
@@ -1458,14 +1474,15 @@ int __cdecl DynEnt_CompareEntities(void *param_1,void *param_2)
 
 // 005BC150  DynEnt_Alloc  (DynEntity/DynEntity_load_obj.cpp:964)
 
-void * __cdecl DynEnt_Alloc(int param_1,int param_2)
+void * __cdecl DynEnt_Alloc(int count,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
+  void *buf;
   
-  if (param_1 < 1) {
+  if (count < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x3c7,0,"%s");
     if (!bVar2) {
@@ -1474,7 +1491,7 @@ void * __cdecl DynEnt_Alloc(int param_1,int param_2)
       return pvVar3;
     }
   }
-  if (param_2 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x3c8,0,"%s");
     if (!bVar2) {
@@ -1483,80 +1500,80 @@ void * __cdecl DynEnt_Alloc(int param_1,int param_2)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1 * param_2,"DynEnt_LoadEntities",10);
-  Com_Memset(pvVar3,0,param_1 * param_2);
+  pvVar3 = Hunk_Alloc(count * size,"DynEnt_LoadEntities",10);
+  Com_Memset(pvVar3,0,count * size);
   return pvVar3;
 }
 
 
 // 005BC1F0  GetAttachPointsInWorldSpace  (DynEntity/DynEntity_load_obj.cpp:977)
 
-void __cdecl GetAttachPointsInWorldSpace(PhysConstraint *param_1,float *param_2,float *param_3)
+void __cdecl GetAttachPointsInWorldSpace(PhysConstraint *constraint,float *p0,float *p1)
 
 {
   AttachPointType AVar1;
-  int local_44;
-  int local_40;
-  int local_3c;
-  int local_38;
-  float local_34 [9];
+  int i_4;
+  int i_3;
+  int i_2;
+  int i;
+  float xform [9];
   float local_10;
   float local_c;
   float local_8;
   
-  AVar1 = param_1->attach_point_type1;
+  AVar1 = constraint->attach_point_type1;
   if (AVar1 == ATTACH_POINT_WORLD) {
-    *param_2 = param_1->pos[0];
-    param_2[1] = param_1->pos[1];
-    param_2[2] = param_1->pos[2];
+    *p0 = constraint->pos[0];
+    p0[1] = constraint->pos[1];
+    p0[2] = constraint->pos[2];
   }
   else if (AVar1 == ATTACH_POINT_DYNENT) {
-    for (local_3c = 0; local_3c < num_dents; local_3c = local_3c + 1) {
-      if (param_1->target_ent1 == dents_params[local_3c].targetname_hash) {
-        AnglesToAxis(dents_params[local_3c].angles,(float (*) [3])local_34);
-        local_10 = dents_params[local_3c].origin[0];
-        local_c = dents_params[local_3c].origin[1];
-        local_8 = dents_params[local_3c].origin[2];
-        MatrixTransformVector43(param_1->pos,(float (*) [3])local_34,param_2);
+    for (i_2 = 0; i_2 < num_dents; i_2 = i_2 + 1) {
+      if (constraint->target_ent1 == dents_params[i_2].targetname_hash) {
+        AnglesToAxis(dents_params[i_2].angles,(float (*) [3])xform);
+        local_10 = dents_params[i_2].origin[0];
+        local_c = dents_params[i_2].origin[1];
+        local_8 = dents_params[i_2].origin[2];
+        MatrixTransformVector43(constraint->pos,(float (*) [3])xform,p0);
       }
     }
   }
   else if (AVar1 == ATTACH_POINT_ENT) {
-    for (local_38 = 0; local_38 < num_ents; local_38 = local_38 + 1) {
-      if (param_1->target_ent1 == ents_params[local_38].targetname_hash) {
-        AnglesToAxis(ents_params[local_38].angles,(float (*) [3])local_34);
-        local_10 = ents_params[local_38].origin[0];
-        local_c = ents_params[local_38].origin[1];
-        local_8 = ents_params[local_38].origin[2];
-        MatrixTransformVector43(param_1->pos,(float (*) [3])local_34,param_2);
+    for (i = 0; i < num_ents; i = i + 1) {
+      if (constraint->target_ent1 == ents_params[i].targetname_hash) {
+        AnglesToAxis(ents_params[i].angles,(float (*) [3])xform);
+        local_10 = ents_params[i].origin[0];
+        local_c = ents_params[i].origin[1];
+        local_8 = ents_params[i].origin[2];
+        MatrixTransformVector43(constraint->pos,(float (*) [3])xform,p0);
       }
     }
   }
-  AVar1 = param_1->attach_point_type2;
+  AVar1 = constraint->attach_point_type2;
   if (AVar1 == ATTACH_POINT_WORLD) {
-    *param_3 = param_1->pos2[0];
-    param_3[1] = param_1->pos2[1];
-    param_3[2] = param_1->pos2[2];
+    *p1 = constraint->pos2[0];
+    p1[1] = constraint->pos2[1];
+    p1[2] = constraint->pos2[2];
   }
   else if (AVar1 == ATTACH_POINT_DYNENT) {
-    for (local_44 = 0; local_44 < num_dents; local_44 = local_44 + 1) {
-      if (param_1->target_ent2 == dents_params[local_44].targetname_hash) {
-        AnglesToAxis(dents_params[local_44].angles,(float (*) [3])local_34);
-        local_10 = dents_params[local_44].origin[0];
-        local_c = dents_params[local_44].origin[1];
-        local_8 = dents_params[local_44].origin[2];
-        MatrixTransformVector43(param_1->pos2,(float (*) [3])local_34,param_3);
+    for (i_4 = 0; i_4 < num_dents; i_4 = i_4 + 1) {
+      if (constraint->target_ent2 == dents_params[i_4].targetname_hash) {
+        AnglesToAxis(dents_params[i_4].angles,(float (*) [3])xform);
+        local_10 = dents_params[i_4].origin[0];
+        local_c = dents_params[i_4].origin[1];
+        local_8 = dents_params[i_4].origin[2];
+        MatrixTransformVector43(constraint->pos2,(float (*) [3])xform,p1);
       }
     }
   }
   else if (AVar1 == ATTACH_POINT_ENT) {
-    for (local_40 = 0; local_40 < num_ents; local_40 = local_40 + 1) {
-      if (param_1->target_ent2 == ents_params[local_40].targetname_hash) {
-        AnglesToAxis(ents_params[local_40].angles,(float (*) [3])local_34);
-        local_10 = ents_params[local_40].origin[0];
-        local_c = ents_params[local_40].origin[1];
-        local_8 = ents_params[local_40].origin[2];
-        MatrixTransformVector43(param_1->pos2,(float (*) [3])local_34,param_3);
+    for (i_3 = 0; i_3 < num_ents; i_3 = i_3 + 1) {
+      if (constraint->target_ent2 == ents_params[i_3].targetname_hash) {
+        AnglesToAxis(ents_params[i_3].angles,(float (*) [3])xform);
+        local_10 = ents_params[i_3].origin[0];
+        local_c = ents_params[i_3].origin[1];
+        local_8 = ents_params[i_3].origin[2];
+        MatrixTransformVector43(constraint->pos2,(float (*) [3])xform,p1);
       }
     }
   }
@@ -1588,8 +1605,8 @@ void __cdecl DynEnt_LoadEntities(void)
   DynEntityDef *pDVar13;
   float fVar14;
   double dVar15;
-  int *piVar16;
-  int *piVar17;
+  int *entCount;
+  int *constraintCount;
   char *pcStack_31aec;
   char *pcStack_31ae8;
   char *pcStack_31adc;
@@ -1612,6 +1629,7 @@ void __cdecl DynEnt_LoadEntities(void)
   char *pcStack_31a58;
   DynEntityCreateParams *pDStack_31a4c;
   char *pcStack_31a48;
+  float len2;
   float fStack_31a34;
   float fStack_31a30;
   float fStack_31a2c;
@@ -1619,29 +1637,30 @@ void __cdecl DynEnt_LoadEntities(void)
   float fStack_31a24;
   float fStack_31a20;
   PhysConstraint *pPStack_31a1c;
-  int iStack_31a18;
-  int iStack_31a14;
+  int ci;
+  int i_3;
   PhysConstraint *pPStack_31a10;
-  int iStack_31a0c;
-  DynEntityDef *pDStack_31a08;
-  ushort uStack_31a04;
-  int iStack_31a00;
-  DynEntityDef *pDStack_319fc;
-  uint uStack_319f8;
-  uint uStack_319f4;
-  DynEntityDrawType DStack_319f0;
-  DynEntityDrawType DStack_319ec;
-  int iStack_319e8;
-  void *pvStack_319e4;
-  int iStack_319e0;
+  int i_2;
+  DynEntityDef *def_2;
+  ushort dynEntId;
+  int i;
+  DynEntityDef *def;
+  int id;
+  int spawnflags;
+  uint drawType;
+  DynEntityCollType collType;
+  int dynEntIndex;
+  DynEntityDef *dynEntDefList;
+  int dynEntStringCount;
   DynEntityConstraintCreateParams aDStack_319dc [511];
-  uint local_360;
-  char local_35c [64];
-  DynEntityCreateParams local_31c;
-  char *local_58;
-  char local_51;
-  char *local_50;
-  char local_4c [7];
+  DynEntityDef *dynEntDef;
+  int dynEntCount;
+  char key [64];
+  DynEntityCreateParams params;
+  char *ptr;
+  bool isDynEnt;
+  char *token;
+  char value [7];
   char local_45 [61];
   uint local_8;
   
@@ -1672,30 +1691,30 @@ void __cdecl DynEnt_LoadEntities(void)
   cm.dynEntCount[2] = 0;
   cm.dynEntCount[3] = 0;
   cm.constraints = (PhysConstraint *)0x0;
-  piVar17 = &cm.num_constraints;
-  piVar16 = &iStack_319e0;
+  constraintCount = &cm.num_constraints;
+  entCount = &dynEntStringCount;
   pcVar7 = Com_EntityString((int *)0x0);
-  DynEnt_GetEntityCountFromString(pcVar7,piVar16,piVar17);
+  DynEnt_GetEntityCountFromString(pcVar7,entCount,constraintCount);
   if (0x1fe < cm.num_constraints) {
     Com_Error(ERR_DROP,"Max number of contraints exceeded [%d]\n");
   }
-  if (0xfff < iStack_319e0) {
+  if (0xfff < dynEntStringCount) {
     Com_Error(ERR_DROP,"Found [%d] Dyn Entities, Max is [%d]\n");
   }
-  iStack_319e0 = iStack_319e0 + 0x100;
-  pvStack_319e4 = Hunk_Alloc(iStack_319e0 * 0x54,"DynEnt_LoadDefs",10);
-  local_360 = 0;
+  dynEntStringCount = dynEntStringCount + 0x100;
+  dynEntDefList = Hunk_Alloc(dynEntStringCount * 0x54,"DynEnt_LoadDefs",10);
+  dynEntCount = 0;
   if (cm.num_constraints != 0) {
     cm.constraints = DynEnt_Alloc(cm.num_constraints,0xa8);
     DynEnt_GetEntityConstraintParams(aDStack_319dc,cm.constraints,cm.num_constraints);
   }
-  local_58 = Com_EntityString((int *)0x0);
+  ptr = Com_EntityString((int *)0x0);
   do {
-    local_50 = Com_Parse(&local_58);
-    if ((local_58 == (char *)0x0) || (*local_50 != '{')) {
-      qsort(pvStack_319e4,local_360,0x54,DynEnt_CompareEntities);
-      for (iStack_319e8 = 0; iStack_319e8 < (int)local_360; iStack_319e8 = iStack_319e8 + 1) {
-        pDVar13 = (DynEntityDef *)(iStack_319e8 * 0x54 + (int)pvStack_319e4);
+    token = Com_Parse(&ptr);
+    if ((ptr == (char *)0x0) || (*token != '{')) {
+      qsort(dynEntDefList,dynEntCount,0x54,DynEnt_CompareEntities);
+      for (dynEntIndex = 0; dynEntIndex < dynEntCount; dynEntIndex = dynEntIndex + 1) {
+        pDVar13 = dynEntDefList + dynEntIndex;
         if (pDVar13->xModel == (XModel *)0x0) {
           if ((pDVar13->brushModel == 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
@@ -1704,24 +1723,24 @@ void __cdecl DynEnt_LoadEntities(void)
             (*pcVar2)();
             return;
           }
-          DStack_319f0 = 1;
+          drawType = 1;
           pDVar13->flags = pDVar13->flags | 0x400;
         }
         else {
-          DStack_319f0 = 0;
+          drawType = 0;
           pDVar13->flags = pDVar13->flags | 0x200;
         }
-        if (cm.dynEntDefList[DStack_319f0] == (DynEntityDef *)0x0) {
-          cm.dynEntDefList[DStack_319f0] = pDVar13;
+        if (cm.dynEntDefList[drawType] == (DynEntityDef *)0x0) {
+          cm.dynEntDefList[drawType] = pDVar13;
         }
-        cm.dynEntCount[DStack_319f0] = cm.dynEntCount[DStack_319f0] + 1;
-        DStack_319ec = DStack_319f0 + DYNENT_DRAW_COUNT;
-        cm.dynEntCount[DStack_319f0 + 2] = cm.dynEntCount[DStack_319f0 + 2] + 1;
+        cm.dynEntCount[drawType] = cm.dynEntCount[drawType] + 1;
+        collType = drawType + DYNENT_COLL_SERVER_FIRST;
+        cm.dynEntCount[drawType + 2] = cm.dynEntCount[drawType + 2] + 1;
       }
       if (cm.dynEntDefList[0] == (DynEntityDef *)0x0) {
-        cm.dynEntDefList[0] = (DynEntityDef *)(local_360 * 0x54 + (int)pvStack_319e4);
+        cm.dynEntDefList[0] = dynEntDefList + dynEntCount;
       }
-      if (((cm.dynEntCount._0_4_ & 0xffff) + ((uint)cm.dynEntCount._0_4_ >> 0x10) != local_360) &&
+      if (((cm.dynEntCount._0_4_ & 0xffff) + ((uint)cm.dynEntCount._0_4_ >> 0x10) != dynEntCount) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x4f8,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1731,44 +1750,41 @@ void __cdecl DynEnt_LoadEntities(void)
       uVar3 = cm.dynEntCount._0_4_;
       cm.originalDynEntCount = cm.dynEntCount[0];
       cm.dynEntCount[0] = cm.dynEntCount[0] + 0x100;
-      for (uStack_319f8 = uVar3 & 0xffff; (int)uStack_319f8 < (int)(cm.originalDynEntCount + 0x100);
-          uStack_319f8 = uStack_319f8 + 1) {
-        pDStack_319fc = DynEnt_GetEntityDef((ushort)uStack_319f8,DYNENT_DRAW_MODEL);
-        for (iStack_31a00 = 0; iStack_31a00 < 4; iStack_31a00 = iStack_31a00 + 1) {
-          pDStack_319fc->physConstraints[iStack_31a00] = 0x1ff;
+      for (id = uVar3 & 0xffff; id < (int)(cm.originalDynEntCount + 0x100); id = id + 1) {
+        def = DynEnt_GetEntityDef((ushort)id,DYNENT_DRAW_MODEL);
+        for (i = 0; i < 4; i = i + 1) {
+          def->physConstraints[i] = 0x1ff;
         }
       }
-      for (DStack_319f0 = DYNENT_DRAW_MODEL; DStack_319f0 < DYNENT_DRAW_COUNT;
-          DStack_319f0 = DStack_319f0 + DYNENT_DRAW_BRUSH) {
-        DStack_319ec = DStack_319f0;
-        uVar5 = DynEnt_GetEntityCount(DStack_319f0);
-        for (uStack_31a04 = 0; uStack_31a04 < uVar5; uStack_31a04 = uStack_31a04 + 1) {
-          pDStack_31a08 = DynEnt_GetEntityDef(uStack_31a04,DStack_319f0);
-          for (iStack_31a0c = 0; iStack_31a0c < 4; iStack_31a0c = iStack_31a0c + 1) {
-            if (pDStack_31a08->physConstraints[iStack_31a0c] != 0x1ff) {
-              pPStack_31a10 = cm.constraints + pDStack_31a08->physConstraints[iStack_31a0c];
+      for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+        collType = drawType;
+        uVar5 = DynEnt_GetEntityCount(drawType);
+        for (dynEntId = 0; dynEntId < uVar5; dynEntId = dynEntId + 1) {
+          def_2 = DynEnt_GetEntityDef(dynEntId,drawType);
+          for (i_2 = 0; i_2 < 4; i_2 = i_2 + 1) {
+            if (def_2->physConstraints[i_2] != 0x1ff) {
+              pPStack_31a10 = cm.constraints + def_2->physConstraints[i_2];
               if ((pPStack_31a10->attach_point_type1 == ATTACH_POINT_DYNENT) &&
-                 (pPStack_31a10->target_ent1 == pDStack_31a08->targetname)) {
-                uVar6 = DynEnt_GetClientAbsId(uStack_31a04,DStack_319f0);
+                 (pPStack_31a10->target_ent1 == def_2->targetname)) {
+                uVar6 = DynEnt_GetClientAbsId(dynEntId,drawType);
                 pPStack_31a10->target_index1 = (uint)uVar6;
               }
               if ((pPStack_31a10->attach_point_type2 == ATTACH_POINT_DYNENT) &&
-                 (pPStack_31a10->target_ent2 == pDStack_31a08->targetname)) {
-                uVar6 = DynEnt_GetClientAbsId(uStack_31a04,DStack_319f0);
+                 (pPStack_31a10->target_ent2 == def_2->targetname)) {
+                uVar6 = DynEnt_GetClientAbsId(dynEntId,drawType);
                 pPStack_31a10->target_index2 = (uint)uVar6;
               }
             }
           }
         }
       }
-      for (iStack_31a14 = 0; iStack_31a14 < num_ents; iStack_31a14 = iStack_31a14 + 1) {
-        FindConstraints(ents_params[iStack_31a14].targetname,ents_params[iStack_31a14].origin,
-                        ents_params[iStack_31a14].angles,ATTACH_POINT_ENT,aDStack_319dc,
-                        cm.num_constraints,(int *)0x0);
+      for (i_3 = 0; i_3 < num_ents; i_3 = i_3 + 1) {
+        FindConstraints(ents_params[i_3].targetname,ents_params[i_3].origin,ents_params[i_3].angles,
+                        ATTACH_POINT_ENT,aDStack_319dc,cm.num_constraints,(int *)0x0);
       }
       cm.max_ropes = 0;
-      for (iStack_31a18 = 0; iStack_31a18 < cm.num_constraints; iStack_31a18 = iStack_31a18 + 1) {
-        pPStack_31a1c = cm.constraints + iStack_31a18;
+      for (ci = 0; ci < cm.num_constraints; ci = ci + 1) {
+        pPStack_31a1c = cm.constraints + ci;
         if (pPStack_31a1c->type == CONSTRAINT_ROPE) {
           if (pPStack_31a1c->distance == 0.0) {
             GetAttachPointsInWorldSpace(pPStack_31a1c,&fStack_31a28,&fStack_31a34);
@@ -1794,42 +1810,42 @@ void __cdecl DynEnt_LoadEntities(void)
         cm.max_ropes = 300;
       }
       cm.ropes = Hunk_Alloc(cm.max_ropes * 0xc74,"ropes",10);
-      for (DStack_319f0 = 0; DStack_319f0 < 2; DStack_319f0 = DStack_319f0 + 1) {
-        DStack_319ec = DStack_319f0;
-        if (cm.dynEntCount[DStack_319f0] != 0) {
-          pDVar9 = DynEnt_Alloc((uint)cm.dynEntCount[DStack_319f0],0x20);
-          cm.dynEntPoseList[DStack_319f0] = pDVar9;
-          pDVar10 = DynEnt_Alloc((uint)cm.dynEntCount[DStack_319ec],0x14);
-          cm.dynEntClientList[DStack_319f0] = pDVar10;
-          pDVar11 = DynEnt_Alloc((uint)cm.dynEntCount[DStack_319ec],0x20);
-          cm.dynEntCollList[DStack_319ec] = pDVar11;
+      for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+        collType = drawType;
+        if (cm.dynEntCount[drawType] != 0) {
+          pDVar9 = DynEnt_Alloc((uint)cm.dynEntCount[drawType],0x20);
+          cm.dynEntPoseList[drawType] = pDVar9;
+          pDVar10 = DynEnt_Alloc((uint)cm.dynEntCount[collType],0x14);
+          cm.dynEntClientList[drawType] = pDVar10;
+          pDVar11 = DynEnt_Alloc((uint)cm.dynEntCount[collType],0x20);
+          cm.dynEntCollList[collType] = pDVar11;
         }
-        DStack_319ec = DStack_319f0 + 2;
-        if (cm.dynEntCount[DStack_319f0 + 2] != 0) {
-          pDVar12 = DynEnt_Alloc((uint)cm.dynEntCount[DStack_319f0 + 2],8);
-          cm.dynEntServerList[DStack_319f0] = pDVar12;
-          pDVar11 = DynEnt_Alloc((uint)cm.dynEntCount[DStack_319ec],0x20);
-          cm.dynEntCollList[DStack_319ec] = pDVar11;
+        collType = drawType + DYNENT_COLL_SERVER_FIRST;
+        if (cm.dynEntCount[drawType + 2] != 0) {
+          pDVar12 = DynEnt_Alloc((uint)cm.dynEntCount[drawType + 2],8);
+          cm.dynEntServerList[drawType] = pDVar12;
+          pDVar11 = DynEnt_Alloc((uint)cm.dynEntCount[collType],0x20);
+          cm.dynEntCollList[collType] = pDVar11;
         }
       }
       return;
     }
-    local_51 = '\0';
-    Com_Memset(&local_31c,0,700);
-    while ((local_50 = Com_Parse(&local_58), local_58 != (char *)0x0 && (*local_50 != '}'))) {
-      I_strncpyz(local_35c,local_50,0x40);
-      local_50 = Com_Parse(&local_58);
-      if (local_58 == (char *)0x0) break;
-      I_strncpyz(local_4c,local_50,0x40);
-      iVar8 = I_stricmp(local_35c,"classname");
+    isDynEnt = false;
+    Com_Memset(&params,0,700);
+    while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token != '}'))) {
+      I_strncpyz(key,token,0x40);
+      token = Com_Parse(&ptr);
+      if (ptr == (char *)0x0) break;
+      I_strncpyz(value,token,0x40);
+      iVar8 = I_stricmp(key,"classname");
       if (iVar8 == 0) {
-        local_51 = DynEnt_IsValidClassName(local_4c);
+        isDynEnt = DynEnt_IsValidClassName(value);
       }
       else {
-        iVar8 = I_stricmp(local_35c,"type");
+        iVar8 = I_stricmp(key,"type");
         if (iVar8 == 0) {
-          pcStack_31a48 = local_4c;
-          pDStack_31a4c = &local_31c;
+          pcStack_31a48 = value;
+          pDStack_31a4c = &params;
           do {
             cVar1 = *pcStack_31a48;
             pDStack_31a4c->typeName[0] = cVar1;
@@ -1838,12 +1854,12 @@ void __cdecl DynEnt_LoadEntities(void)
           } while (cVar1 != '\0');
         }
         else {
-          iVar8 = I_stricmp(local_35c,"model");
+          iVar8 = I_stricmp(key,"model");
           if (iVar8 == 0) {
-            iVar8 = Com_IsLegacyXModelName(local_4c);
+            iVar8 = Com_IsLegacyXModelName(value);
             if (iVar8 == 0) {
-              pcStack_31a68 = local_4c;
-              pcStack_31a6c = local_31c.modelName;
+              pcStack_31a68 = value;
+              pcStack_31a6c = params.modelName;
               do {
                 cVar1 = *pcStack_31a68;
                 *pcStack_31a6c = cVar1;
@@ -1853,7 +1869,7 @@ void __cdecl DynEnt_LoadEntities(void)
             }
             else {
               pcStack_31a58 = local_45;
-              pcStack_31a5c = local_31c.modelName;
+              pcStack_31a5c = params.modelName;
               do {
                 cVar1 = *pcStack_31a58;
                 *pcStack_31a5c = cVar1;
@@ -1863,12 +1879,12 @@ void __cdecl DynEnt_LoadEntities(void)
             }
           }
           else {
-            iVar8 = I_stricmp(local_35c,"destroyedModel");
+            iVar8 = I_stricmp(key,"destroyedModel");
             if (iVar8 == 0) {
-              iVar8 = Com_IsLegacyXModelName(local_4c);
+              iVar8 = Com_IsLegacyXModelName(value);
               if (iVar8 == 0) {
-                pcStack_31a88 = local_4c;
-                pcStack_31a8c = local_31c.destroyedModelName;
+                pcStack_31a88 = value;
+                pcStack_31a8c = params.destroyedModelName;
                 do {
                   cVar1 = *pcStack_31a88;
                   *pcStack_31a8c = cVar1;
@@ -1878,7 +1894,7 @@ void __cdecl DynEnt_LoadEntities(void)
               }
               else {
                 pcStack_31a78 = local_45;
-                pcStack_31a7c = local_31c.destroyedModelName;
+                pcStack_31a7c = params.destroyedModelName;
                 do {
                   cVar1 = *pcStack_31a78;
                   *pcStack_31a7c = cVar1;
@@ -1888,12 +1904,12 @@ void __cdecl DynEnt_LoadEntities(void)
               }
             }
             else {
-              iVar8 = I_stricmp(local_35c,"physicsmodel");
+              iVar8 = I_stricmp(key,"physicsmodel");
               if (iVar8 == 0) {
-                iVar8 = Com_IsLegacyXModelName(local_4c);
+                iVar8 = Com_IsLegacyXModelName(value);
                 if (iVar8 == 0) {
-                  pcStack_31aa8 = local_4c;
-                  pcStack_31aac = local_31c.physModelName;
+                  pcStack_31aa8 = value;
+                  pcStack_31aac = params.physModelName;
                   do {
                     cVar1 = *pcStack_31aa8;
                     *pcStack_31aac = cVar1;
@@ -1903,7 +1919,7 @@ void __cdecl DynEnt_LoadEntities(void)
                 }
                 else {
                   pcStack_31a98 = local_45;
-                  pcStack_31a9c = local_31c.physModelName;
+                  pcStack_31a9c = params.physModelName;
                   do {
                     cVar1 = *pcStack_31a98;
                     *pcStack_31a9c = cVar1;
@@ -1913,15 +1929,15 @@ void __cdecl DynEnt_LoadEntities(void)
                 }
               }
               else {
-                iVar8 = I_stricmp(local_35c,"destroyEfx");
+                iVar8 = I_stricmp(key,"destroyEfx");
                 if (iVar8 == 0) {
-                  Com_StripExtension(local_4c,local_31c.destroyFxFile);
+                  Com_StripExtension(value,params.destroyFxFile);
                 }
                 else {
-                  iVar8 = I_stricmp(local_35c,"destroySound");
+                  iVar8 = I_stricmp(key,"destroySound");
                   if (iVar8 == 0) {
-                    pcStack_31ab8 = local_4c;
-                    pcStack_31abc = local_31c.destroySound;
+                    pcStack_31ab8 = value;
+                    pcStack_31abc = params.destroySound;
                     do {
                       cVar1 = *pcStack_31ab8;
                       *pcStack_31abc = cVar1;
@@ -1930,30 +1946,30 @@ void __cdecl DynEnt_LoadEntities(void)
                     } while (cVar1 != '\0');
                   }
                   else {
-                    iVar8 = I_stricmp(local_35c,"destroyPieces");
+                    iVar8 = I_stricmp(key,"destroyPieces");
                     if (iVar8 == 0) {
-                      Com_StripExtension(local_4c,local_31c.destroyPiecesFile);
+                      Com_StripExtension(value,params.destroyPiecesFile);
                     }
                     else {
-                      iVar8 = I_stricmp(local_35c,"origin");
+                      iVar8 = I_stricmp(key,"origin");
                       if (iVar8 == 0) {
-                        sscanf(local_4c,"%f %f %f");
+                        sscanf(value,"%f %f %f");
                       }
                       else {
-                        iVar8 = I_stricmp(local_35c,"angles");
+                        iVar8 = I_stricmp(key,"angles");
                         if (iVar8 == 0) {
-                          sscanf(local_4c,"%f %f %f");
+                          sscanf(value,"%f %f %f");
                         }
                         else {
-                          iVar8 = I_stricmp(local_35c,"health");
+                          iVar8 = I_stricmp(key,"health");
                           if (iVar8 == 0) {
-                            local_31c.health = atoi(local_4c);
+                            params.health = atoi(value);
                           }
                           else {
-                            iVar8 = I_stricmp(local_35c,"physPreset");
+                            iVar8 = I_stricmp(key,"physPreset");
                             if (iVar8 == 0) {
-                              pcStack_31ac8 = local_4c;
-                              pcStack_31acc = local_31c.physPresetFile;
+                              pcStack_31ac8 = value;
+                              pcStack_31acc = params.physPresetFile;
                               do {
                                 cVar1 = *pcStack_31ac8;
                                 *pcStack_31acc = cVar1;
@@ -1962,15 +1978,15 @@ void __cdecl DynEnt_LoadEntities(void)
                               } while (cVar1 != '\0');
                             }
                             else {
-                              iVar8 = I_stricmp(local_35c,"centerofmass");
+                              iVar8 = I_stricmp(key,"centerofmass");
                               if (iVar8 == 0) {
-                                sscanf(local_4c,"%f %f %f");
+                                sscanf(value,"%f %f %f");
                               }
                               else {
-                                iVar8 = I_stricmp(local_35c,"targetname");
+                                iVar8 = I_stricmp(key,"targetname");
                                 if (iVar8 == 0) {
-                                  pcStack_31ad8 = local_4c;
-                                  pcStack_31adc = local_31c.targetname;
+                                  pcStack_31ad8 = value;
+                                  pcStack_31adc = params.targetname;
                                   do {
                                     cVar1 = *pcStack_31ad8;
                                     *pcStack_31adc = cVar1;
@@ -1979,10 +1995,10 @@ void __cdecl DynEnt_LoadEntities(void)
                                   } while (cVar1 != '\0');
                                 }
                                 else {
-                                  iVar8 = I_stricmp(local_35c,"target");
+                                  iVar8 = I_stricmp(key,"target");
                                   if (iVar8 == 0) {
-                                    pcStack_31ae8 = local_4c;
-                                    pcStack_31aec = local_31c.target;
+                                    pcStack_31ae8 = value;
+                                    pcStack_31aec = params.target;
                                     do {
                                       cVar1 = *pcStack_31ae8;
                                       *pcStack_31aec = cVar1;
@@ -1991,41 +2007,41 @@ void __cdecl DynEnt_LoadEntities(void)
                                     } while (cVar1 != '\0');
                                   }
                                   else {
-                                    iVar8 = I_stricmp(local_35c,"mass");
+                                    iVar8 = I_stricmp(key,"mass");
                                     if (iVar8 == 0) {
-                                      dVar15 = atof(local_4c);
-                                      local_31c.mass = (float)dVar15;
+                                      dVar15 = atof(value);
+                                      params.mass = (float)dVar15;
                                     }
                                     else {
-                                      iVar8 = I_stricmp(local_35c,"bounch");
+                                      iVar8 = I_stricmp(key,"bounch");
                                       if (iVar8 == 0) {
-                                        dVar15 = atof(local_4c);
-                                        local_31c.bounce = (float)dVar15;
+                                        dVar15 = atof(value);
+                                        params.bounce = (float)dVar15;
                                       }
                                       else {
-                                        iVar8 = I_stricmp(local_35c,"friction");
+                                        iVar8 = I_stricmp(key,"friction");
                                         if (iVar8 == 0) {
-                                          dVar15 = atof(local_4c);
-                                          local_31c.friction = (float)dVar15;
+                                          dVar15 = atof(value);
+                                          params.friction = (float)dVar15;
                                         }
                                         else {
-                                          iVar8 = I_stricmp(local_35c,"spawnflags");
+                                          iVar8 = I_stricmp(key,"spawnflags");
                                           if (iVar8 == 0) {
-                                            uStack_319f4 = atoi(local_4c);
-                                            if ((uStack_319f4 & 1) != 0) {
-                                              local_31c.startInPhysics = true;
+                                            spawnflags = atoi(value);
+                                            if ((spawnflags & 1U) != 0) {
+                                              params.startInPhysics = true;
                                             }
-                                            if ((uStack_319f4 & 2) != 0) {
-                                              local_31c.autoActivate = true;
+                                            if ((spawnflags & 2U) != 0) {
+                                              params.autoActivate = true;
                                             }
-                                            if ((uStack_319f4 & 4) != 0) {
-                                              local_31c.noBulletDamage = true;
+                                            if ((spawnflags & 4U) != 0) {
+                                              params.noBulletDamage = true;
                                             }
-                                            if ((uStack_319f4 & 8) != 0) {
-                                              local_31c.noExplosiveDamage = true;
+                                            if ((spawnflags & 8U) != 0) {
+                                              params.noExplosiveDamage = true;
                                             }
-                                            if ((uStack_319f4 & 0x10) != 0) {
-                                              local_31c.alwaysFloats = true;
+                                            if ((spawnflags & 0x10U) != 0) {
+                                              params.alwaysFloats = true;
                                             }
                                           }
                                         }
@@ -2047,18 +2063,17 @@ void __cdecl DynEnt_LoadEntities(void)
         }
       }
     }
-    if (local_51 != '\0') {
-      if ((iStack_319e0 <= (int)local_360) &&
+    if (isDynEnt != false) {
+      if ((dynEntStringCount <= dynEntCount) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                    ,0x4d1,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      bVar4 = DynEnt_Create((DynEntityDef *)(local_360 * 0x54 + (int)pvStack_319e4),&local_31c,
-                            aDStack_319dc,cm.num_constraints);
+      bVar4 = DynEnt_Create(dynEntDefList + dynEntCount,&params,aDStack_319dc,cm.num_constraints);
       if (bVar4) {
-        local_360 = local_360 + 1;
+        dynEntCount = dynEntCount + 1;
       }
     }
   } while( true );
@@ -2067,14 +2082,14 @@ void __cdecl DynEnt_LoadEntities(void)
 
 // 005BC570  DynEnt_GetEntityProps  (DynEntity/DynEntity_load_obj.cpp:1379)
 
-DynEntityProps * __cdecl DynEnt_GetEntityProps(DynEntityType param_1)
+DynEntityProps * __cdecl DynEnt_GetEntityProps(DynEntityType dynEntType)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityProps *pDVar3;
   
-  if (param_1 == DYNENT_TYPE_INVALID) {
+  if (dynEntType == DYNENT_TYPE_INVALID) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x564,0,"%s");
     if (!bVar2) {
@@ -2083,7 +2098,7 @@ DynEntityProps * __cdecl DynEnt_GetEntityProps(DynEntityType param_1)
       return pDVar3;
     }
   }
-  if (DYNENT_TYPE_DESTRUCT < param_1) {
+  if (DYNENT_TYPE_DESTRUCT < dynEntType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x565,0,
                              "dynEntType doesn\'t index DYNENT_TYPE_COUNT\n\t%i not in [0, %i)");
@@ -2093,21 +2108,22 @@ DynEntityProps * __cdecl DynEnt_GetEntityProps(DynEntityType param_1)
       return pDVar3;
     }
   }
-  return dynEntProps + param_1;
+  return dynEntProps + dynEntType;
 }
 
 
 // 005BC5E0  DynEnt_GetId  (DynEntity/DynEntity_load_obj.cpp:1387)
 
-ushort __cdecl DynEnt_GetId(DynEntityDef *param_1,DynEntityDrawType param_2)
+ushort __cdecl DynEnt_GetId(DynEntityDef *dynEntDef,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   uint uVar4;
+  ushort dynEntId;
   
-  if (param_1 == (DynEntityDef *)0x0) {
+  if (dynEntDef == (DynEntityDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x56e,0,"%s");
     if (!bVar2) {
@@ -2116,8 +2132,8 @@ ushort __cdecl DynEnt_GetId(DynEntityDef *param_1,DynEntityDrawType param_2)
       return uVar3;
     }
   }
-  uVar4 = ((int)param_1 - (int)cm.dynEntDefList[param_2]) / 0x54;
-  if ((uint)cm.dynEntCount[param_2] <= (uVar4 & 0xffff)) {
+  uVar4 = ((int)dynEntDef - (int)cm.dynEntDefList[drawType]) / 0x54;
+  if ((uint)cm.dynEntCount[drawType] <= (uVar4 & 0xffff)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x572,1,
                              "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( drawType )]\n\t%i not in [0, %i)"
@@ -2134,14 +2150,15 @@ ushort __cdecl DynEnt_GetId(DynEntityDef *param_1,DynEntityDrawType param_2)
 
 // 005BC680  DynEnt_GetAbsId  (DynEntity/DynEntity_load_obj.cpp:1400)
 
-ushort __cdecl DynEnt_GetAbsId(DynEntityDef *param_1)
+ushort __cdecl DynEnt_GetAbsId(DynEntityDef *dynEntDef)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  ushort absId;
   
-  if (param_1 == (DynEntityDef *)0x0) {
+  if (dynEntDef == (DynEntityDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x57b,0,"%s");
     if (!bVar2) {
@@ -2150,7 +2167,7 @@ ushort __cdecl DynEnt_GetAbsId(DynEntityDef *param_1)
       return uVar3;
     }
   }
-  uVar3 = (ushort)(((int)param_1 - (int)cm.dynEntDefList[0]) / 0x54);
+  uVar3 = (ushort)(((int)dynEntDef - (int)cm.dynEntDefList[0]) / 0x54);
   if (0xfff < uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x57f,1,"absId doesn\'t index DYNENT_MAX_COUNT\n\t%i not in [0, %i)");
@@ -2166,12 +2183,12 @@ ushort __cdecl DynEnt_GetAbsId(DynEntityDef *param_1)
 
 // 005BC710  DynEnt_Valid  (DynEntity/DynEntity_load_obj.cpp:1413)
 
-bool __cdecl DynEnt_Valid(ushort param_1)
+bool __cdecl DynEnt_Valid(ushort absDynEntId)
 
 {
   bool bVar1;
   
-  if (((uint)param_1 < cm.originalDynEntCount + 0x100) && (cm.dynEntCount[0] <= param_1)) {
+  if (((uint)absDynEntId < cm.originalDynEntCount + 0x100) && (cm.dynEntCount[0] <= absDynEntId)) {
     bVar1 = false;
   }
   else {
@@ -2185,39 +2202,39 @@ bool __cdecl DynEnt_Valid(ushort param_1)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-ushort __cdecl DynEnt_GetEntityCount(DynEntityCollType param_1)
+ushort __cdecl DynEnt_GetEntityCount(DynEntityCollType collType)
 
 {
-  return cm.dynEntCount[param_1];
+  return cm.dynEntCount[collType];
 }
 
 
 // 005BC760  DynEnt_GetEntityDef  (DynEntity/DynEntity_load_obj.cpp:1433)
 
-DynEntityDef * __cdecl DynEnt_GetEntityDef(ushort param_1)
+DynEntityDef * __cdecl DynEnt_GetEntityDef(ushort absDynEntId)
 
 {
   DynEntityDef *pDVar1;
-  DynEntityDrawType local_c;
-  ushort local_8 [2];
+  DynEntityDrawType drawType;
+  ushort id;
   
-  DynEnt_GetClientIdDrawType(param_1,local_8,&local_c);
-  pDVar1 = DynEnt_GetEntityDef(local_8[0],local_c);
+  DynEnt_GetClientIdDrawType(absDynEntId,&id,&drawType);
+  pDVar1 = DynEnt_GetEntityDef(id,drawType);
   return pDVar1;
 }
 
 
 // 005BC790  DynEnt_GetClientPose  (DynEntity/DynEntity_load_obj.cpp:1441)
 
-DynEntityPose * __cdecl DynEnt_GetClientPose(ushort param_1)
+DynEntityPose * __cdecl DynEnt_GetClientPose(ushort absDynEntId)
 
 {
   DynEntityPose *pDVar1;
-  DynEntityDrawType local_c;
-  ushort local_8 [2];
+  DynEntityDrawType drawType;
+  ushort id;
   
-  DynEnt_GetClientIdDrawType(param_1,local_8,&local_c);
-  pDVar1 = DynEnt_GetClientPose(local_8[0],local_c);
+  DynEnt_GetClientIdDrawType(absDynEntId,&id,&drawType);
+  pDVar1 = DynEnt_GetClientPose(id,drawType);
   return pDVar1;
 }
 
@@ -2233,14 +2250,14 @@ DynEntityPose * __cdecl DynEnt_GetClientModelPoseList(void)
 
 // 005BC7D0  DynEnt_GetClientPose  (DynEntity/DynEntity_load_obj.cpp:1464)
 
-DynEntityPose * __cdecl DynEnt_GetClientPose(ushort param_1,DynEntityDrawType param_2)
+DynEntityPose * __cdecl DynEnt_GetClientPose(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityPose *pDVar3;
   
-  if (cm.dynEntCount[param_2] <= param_1) {
+  if (cm.dynEntCount[drawType] <= dynEntId) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x5b9,0,
                              "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( drawType )]\n\t%i not in [0, %i)"
@@ -2251,20 +2268,20 @@ DynEntityPose * __cdecl DynEnt_GetClientPose(ushort param_1,DynEntityDrawType pa
       return pDVar3;
     }
   }
-  return cm.dynEntPoseList[param_2] + param_1;
+  return cm.dynEntPoseList[drawType] + dynEntId;
 }
 
 
 // 005BC830  DynEnt_GetServerEntity  (DynEntity/DynEntity_load_obj.cpp:1472)
 
-DynEntityServer * __cdecl DynEnt_GetServerEntity(ushort param_1,DynEntityDrawType param_2)
+DynEntityServer * __cdecl DynEnt_GetServerEntity(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityServer *pDVar3;
   
-  if (cm.dynEntCount[param_2 + DYNENT_DRAW_COUNT] <= param_1) {
+  if (cm.dynEntCount[drawType + DYNENT_DRAW_COUNT] <= dynEntId) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x5c1,0,
                              "dynEntId doesn\'t index cm.dynEntCount[DynEntGetServerCollType( drawType )]\n\t%i not in [0, %i)"
@@ -2275,26 +2292,27 @@ DynEntityServer * __cdecl DynEnt_GetServerEntity(ushort param_1,DynEntityDrawTyp
       return pDVar3;
     }
   }
-  return cm.dynEntServerList[param_2] + param_1;
+  return cm.dynEntServerList[drawType] + dynEntId;
 }
 
 
 // 005BC890  DynEnt_GetClientIdDrawType  (DynEntity/DynEntity_load_obj.cpp:1479)
 
-void __cdecl DynEnt_GetClientIdDrawType(ushort param_1,ushort *param_2,DynEntityDrawType *param_3)
+void __cdecl DynEnt_GetClientIdDrawType(ushort absId,ushort *outId,DynEntityDrawType *drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  ushort brushid;
   
-  if ((uint)param_1 < cm.originalDynEntCount + 0x100) {
-    *param_2 = param_1;
-    *param_3 = DYNENT_DRAW_MODEL;
+  if ((uint)absId < cm.originalDynEntCount + 0x100) {
+    *outId = absId;
+    *drawType = DYNENT_DRAW_MODEL;
   }
   else {
-    uVar3 = (param_1 - cm.originalDynEntCount) - 0x100;
-    if (cm.dynEntClientList[0] + param_1 != cm.dynEntClientList[1] + uVar3) {
+    uVar3 = (absId - cm.originalDynEntCount) - 0x100;
+    if (cm.dynEntClientList[0] + absId != cm.dynEntClientList[1] + uVar3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x5d0,0,"%s");
       if (!bVar2) {
@@ -2303,8 +2321,8 @@ void __cdecl DynEnt_GetClientIdDrawType(ushort param_1,ushort *param_2,DynEntity
         return;
       }
     }
-    *param_2 = uVar3;
-    *param_3 = DYNENT_DRAW_BRUSH;
+    *outId = uVar3;
+    *drawType = DYNENT_DRAW_BRUSH;
   }
   return;
 }
@@ -2312,20 +2330,21 @@ void __cdecl DynEnt_GetClientIdDrawType(ushort param_1,ushort *param_2,DynEntity
 
 // 005BC930  DynEnt_GetClientEntity  (DynEntity/DynEntity_load_obj.cpp:1495)
 
-DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort param_1)
+DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort id)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityClient *pDVar3;
   ushort uVar4;
+  ushort brushid;
   
-  if ((uint)param_1 < cm.originalDynEntCount + 0x100) {
-    pDVar3 = cm.dynEntClientList[0] + param_1;
+  if ((uint)id < cm.originalDynEntCount + 0x100) {
+    pDVar3 = cm.dynEntClientList[0] + id;
   }
   else {
-    uVar4 = (param_1 - cm.originalDynEntCount) - 0x100;
-    if (cm.dynEntClientList[0] + param_1 != cm.dynEntClientList[1] + uVar4) {
+    uVar4 = (id - cm.originalDynEntCount) - 0x100;
+    if (cm.dynEntClientList[0] + id != cm.dynEntClientList[1] + uVar4) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp"
                                ,0x5df,0,"%s");
       if (!bVar2) {
@@ -2342,29 +2361,31 @@ DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort param_1)
 
 // 005BC9D0  DynEnt_GetClientAbsId  (DynEntity/DynEntity_load_obj.cpp:1509)
 
-ushort __cdecl DynEnt_GetClientAbsId(ushort param_1,DynEntityDrawType param_2)
+ushort __cdecl DynEnt_GetClientAbsId(ushort dynEntId,DynEntityDrawType drawType)
 
 {
-  if (param_2 != DYNENT_DRAW_MODEL) {
-    param_1 = cm.originalDynEntCount + 0x100 + param_1;
+  ushort id;
+  
+  if (drawType != DYNENT_DRAW_MODEL) {
+    dynEntId = cm.originalDynEntCount + 0x100 + dynEntId;
   }
-  return param_1;
+  return dynEntId;
 }
 
 
 // 005BCA10  DynEnt_GetXModelUsageCount  (DynEntity/DynEntity_load_obj.cpp:1888)
 
-int __cdecl DynEnt_GetXModelUsageCount(XModel *param_1)
+int __cdecl DynEnt_GetXModelUsageCount(XModel *xModel)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_10;
-  ushort local_c;
-  int local_8;
+  uint drawType;
+  ushort dynEntId;
+  int count;
   
-  if (param_1 == (XModel *)0x0) {
+  if (xModel == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_load_obj.cpp",
                              0x765,0,"%s");
     if (!bVar2) {
@@ -2373,14 +2394,14 @@ int __cdecl DynEnt_GetXModelUsageCount(XModel *param_1)
       return iVar3;
     }
   }
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    for (local_c = 0; local_c < cm.dynEntCount[local_10]; local_c = local_c + 1) {
-      if (cm.dynEntDefList[local_10][local_c].xModel == param_1) {
-        local_8 = local_8 + 1;
+  count = 0;
+  for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+    for (dynEntId = 0; dynEntId < cm.dynEntCount[drawType]; dynEntId = dynEntId + 1) {
+      if (cm.dynEntDefList[drawType][dynEntId].xModel == xModel) {
+        count = count + 1;
       }
     }
   }
-  return local_8;
+  return count;
 }
 

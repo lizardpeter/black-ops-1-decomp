@@ -2,7 +2,7 @@
 
 // 00882390  ikMatrixIdentity44  (ik/ik_math.cpp:220)
 
-void __cdecl ikMatrixIdentity44(float (*param_1) [4])
+void __cdecl ikMatrixIdentity44(float (*out) [4])
 
 {
   code *pcVar1;
@@ -10,7 +10,7 @@ void __cdecl ikMatrixIdentity44(float (*param_1) [4])
   int iVar3;
   float *pfVar4;
   
-  if (param_1 == (float (*) [4])0x0) {
+  if (out == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0xdd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -21,9 +21,9 @@ void __cdecl ikMatrixIdentity44(float (*param_1) [4])
   iVar3 = 0x10;
   pfVar4 = ikIdentityMatrix44[0];
   for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    (*param_1)[0] = *pfVar4;
+    (*out)[0] = *pfVar4;
     pfVar4 = pfVar4 + 1;
-    param_1 = (float (*) [4])((int)param_1 + 4);
+    out = (float (*) [4])((int)out + 4);
   }
   return;
 }
@@ -31,38 +31,38 @@ void __cdecl ikMatrixIdentity44(float (*param_1) [4])
 
 // 008823E0  ikMatrixSet44  (ik/ik_math.cpp:227)
 
-void __cdecl ikMatrixSet44(float (*param_1) [4],float *param_2,float (*param_3) [3],float param_4)
+void __cdecl ikMatrixSet44(float (*out_2) [4],float *origin_2,float (*axis_2) [3],float scale_2)
 
 {
-  (*param_1)[0] = (*param_3)[0] * param_4;
-  (*param_1)[1] = (*param_3)[1] * param_4;
-  (*param_1)[2] = (*param_3)[2] * param_4;
-  (*param_1)[3] = 0.0;
-  param_1[1][0] = param_3[1][0] * param_4;
-  param_1[1][1] = param_3[1][1] * param_4;
-  param_1[1][2] = param_3[1][2] * param_4;
-  param_1[1][3] = 0.0;
-  param_1[2][0] = param_3[2][0] * param_4;
-  param_1[2][1] = param_3[2][1] * param_4;
-  param_1[2][2] = param_3[2][2] * param_4;
-  param_1[2][3] = 0.0;
-  param_1[3][0] = *param_2;
-  param_1[3][1] = param_2[1];
-  param_1[3][2] = param_2[2];
-  param_1[3][3] = 1.0;
+  (*out_2)[0] = (*axis_2)[0] * scale_2;
+  (*out_2)[1] = (*axis_2)[1] * scale_2;
+  (*out_2)[2] = (*axis_2)[2] * scale_2;
+  (*out_2)[3] = 0.0;
+  out_2[1][0] = axis_2[1][0] * scale_2;
+  out_2[1][1] = axis_2[1][1] * scale_2;
+  out_2[1][2] = axis_2[1][2] * scale_2;
+  out_2[1][3] = 0.0;
+  out_2[2][0] = axis_2[2][0] * scale_2;
+  out_2[2][1] = axis_2[2][1] * scale_2;
+  out_2[2][2] = axis_2[2][2] * scale_2;
+  out_2[2][3] = 0.0;
+  out_2[3][0] = *origin_2;
+  out_2[3][1] = origin_2[1];
+  out_2[3][2] = origin_2[2];
+  out_2[3][3] = 1.0;
   return;
 }
 
 
 // 00882510  ikMatrixTransformVector34  (ik/ik_math.cpp:549)
 
-void __cdecl ikMatrixTransformVector34(float *param_1,float (*param_2) [4],float *param_3)
+void __cdecl ikMatrixTransformVector34(float *in1,float (*in2) [4],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x226,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -70,16 +70,16 @@ void __cdecl ikMatrixTransformVector34(float *param_1,float (*param_2) [4],float
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * param_2[1][0] + param_1[2] * param_2[2][0];
-  param_3[1] = *param_1 * (*param_2)[1] + param_1[1] * param_2[1][1] + param_1[2] * param_2[2][1];
-  param_3[2] = *param_1 * (*param_2)[2] + param_1[1] * param_2[1][2] + param_1[2] * param_2[2][2];
+  *out = *in1 * (*in2)[0] + in1[1] * in2[1][0] + in1[2] * in2[2][0];
+  out[1] = *in1 * (*in2)[1] + in1[1] * in2[1][1] + in1[2] * in2[2][1];
+  out[2] = *in1 * (*in2)[2] + in1[1] * in2[1][2] + in1[2] * in2[2][2];
   return;
 }
 
 
 // 00882600  ikQuatTransToMatrix44  (ik/ik_math.cpp:578)
 
-void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3) [4])
+void __cdecl ikQuatTransToMatrix44(float *quat,float *trans,float (*out) [4])
 
 {
   float fVar1;
@@ -94,12 +94,30 @@ void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3
   float fVar10;
   float fVar11;
   float fVar12;
+  float yy;
+  float ww;
+  float xy;
+  float z;
+  float zz;
+  float zw;
+  float scaledX;
+  float scaledY;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
+  float scale;
+  float magSqr;
+  float x;
+  float y;
+  float w;
   
-  fVar10 = *param_1;
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  fVar3 = param_1[3];
-  if (fVar10 != *param_1) {
+  fVar10 = *quat;
+  fVar1 = quat[1];
+  fVar2 = quat[2];
+  fVar3 = quat[3];
+  if (fVar10 != *quat) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x24c,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -107,7 +125,7 @@ void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3
       return;
     }
   }
-  if (fVar1 != param_1[1]) {
+  if (fVar1 != quat[1]) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x24d,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -115,7 +133,7 @@ void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3
       return;
     }
   }
-  if (fVar2 != param_1[2]) {
+  if (fVar2 != quat[2]) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x24e,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -123,7 +141,7 @@ void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3
       return;
     }
   }
-  if (fVar3 != param_1[3]) {
+  if (fVar3 != quat[3]) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x24f,0,"%s");
     if (!bVar5) {
       pcVar4 = (code *)swi(3);
@@ -148,32 +166,32 @@ void __cdecl ikQuatTransToMatrix44(float *param_1,float *param_2,float (*param_3
   fVar11 = fVar6 * fVar1 * fVar2;
   fVar12 = fVar6 * fVar1 * fVar3;
   fVar6 = fVar6 * fVar2 * fVar3;
-  (*param_3)[0] = 1.0 - (fVar8 + fVar9);
-  (*param_3)[1] = fVar10 * fVar1 + fVar6;
-  (*param_3)[2] = fVar10 * fVar2 - fVar12;
-  (*param_3)[3] = 0.0;
-  param_3[1][0] = fVar10 * fVar1 - fVar6;
-  param_3[1][1] = 1.0 - (fVar7 + fVar9);
-  param_3[1][2] = fVar11 + fVar10 * fVar3;
-  param_3[1][3] = 0.0;
-  param_3[2][0] = fVar10 * fVar2 + fVar12;
-  param_3[2][1] = fVar11 - fVar10 * fVar3;
-  param_3[2][2] = 1.0 - (fVar7 + fVar8);
-  param_3[2][3] = 0.0;
-  param_3[3][0] = *param_2;
-  param_3[3][1] = param_2[1];
-  param_3[3][2] = param_2[2];
-  param_3[3][3] = 1.0;
+  (*out)[0] = 1.0 - (fVar8 + fVar9);
+  (*out)[1] = fVar10 * fVar1 + fVar6;
+  (*out)[2] = fVar10 * fVar2 - fVar12;
+  (*out)[3] = 0.0;
+  out[1][0] = fVar10 * fVar1 - fVar6;
+  out[1][1] = 1.0 - (fVar7 + fVar9);
+  out[1][2] = fVar11 + fVar10 * fVar3;
+  out[1][3] = 0.0;
+  out[2][0] = fVar10 * fVar2 + fVar12;
+  out[2][1] = fVar11 - fVar10 * fVar3;
+  out[2][2] = 1.0 - (fVar7 + fVar8);
+  out[2][3] = 0.0;
+  out[3][0] = *trans;
+  out[3][1] = trans[1];
+  out[3][2] = trans[2];
+  out[3][3] = 1.0;
   return;
 }
 
 
 // 00882990  ikMatrix44ToQuatTrans  (ik/ik_math.cpp:644)
 
-void __cdecl ikMatrix44ToQuatTrans(float (*param_1) [4],float *param_2,float *param_3)
+void __cdecl ikMatrix44ToQuatTrans(float (*mat) [4],float *quat,float *trans)
 
 {
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -183,32 +201,33 @@ void __cdecl ikMatrix44ToQuatTrans(float (*param_1) [4],float *param_2,float *pa
   float local_c;
   float local_8;
   
-  local_28 = (*param_1)[0];
-  local_24 = (*param_1)[1];
-  local_20 = (*param_1)[2];
-  local_1c = param_1[1][0];
-  local_18 = param_1[1][1];
-  local_14 = param_1[1][2];
-  local_10 = param_1[2][0];
-  local_c = param_1[2][1];
-  local_8 = param_1[2][2];
-  ikAxisToQuat((float (*) [3])&local_28,param_2);
-  *param_3 = param_1[3][0];
-  param_3[1] = param_1[3][1];
-  param_3[2] = param_1[3][2];
+  axis = (*mat)[0];
+  local_24 = (*mat)[1];
+  local_20 = (*mat)[2];
+  local_1c = mat[1][0];
+  local_18 = mat[1][1];
+  local_14 = mat[1][2];
+  local_10 = mat[2][0];
+  local_c = mat[2][1];
+  local_8 = mat[2][2];
+  ikAxisToQuat((float (*) [3])&axis,quat);
+  *trans = mat[3][0];
+  trans[1] = mat[3][1];
+  trans[2] = mat[3][2];
   return;
 }
 
 
 // 00882A60  ikAxisToQuat  (ik/ik_math.cpp:656)
 
-void __cdecl ikAxisToQuat(float (*param_1) [3],float *param_2)
+void __cdecl ikAxisToQuat(float (*mat) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_4c [4];
+  float invLength;
+  float test [4];
   float local_3c;
   float local_38;
   float local_34;
@@ -221,33 +240,33 @@ void __cdecl ikAxisToQuat(float (*param_1) [3],float *param_2)
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int best;
+  float testSizeSq;
   
-  local_4c[0] = param_1[1][2] - param_1[2][1];
-  local_4c[1] = param_1[2][0] - (*param_1)[2];
-  local_4c[2] = (*param_1)[1] - param_1[1][0];
-  local_4c[3] = (*param_1)[0] + param_1[1][1] + param_1[2][2] + 1.0;
-  local_8 = Vec4LengthSq(local_4c);
-  if (local_8 < 1.0) {
-    local_3c = param_1[2][0] + (*param_1)[2];
-    local_38 = param_1[2][1] + param_1[1][2];
-    local_34 = ((param_1[2][2] - param_1[1][1]) - (*param_1)[0]) + 1.0;
-    local_30 = local_4c[2];
-    local_8 = Vec4LengthSq(local_4c + 4);
-    if (local_8 < 1.0) {
-      local_2c = (((*param_1)[0] - param_1[1][1]) - param_1[2][2]) + 1.0;
-      local_28 = param_1[1][0] + (*param_1)[1];
+  test[0] = mat[1][2] - mat[2][1];
+  test[1] = mat[2][0] - (*mat)[2];
+  test[2] = (*mat)[1] - mat[1][0];
+  test[3] = (*mat)[0] + mat[1][1] + mat[2][2] + 1.0;
+  testSizeSq = Vec4LengthSq(test);
+  if (testSizeSq < 1.0) {
+    local_3c = mat[2][0] + (*mat)[2];
+    local_38 = mat[2][1] + mat[1][2];
+    local_34 = ((mat[2][2] - mat[1][1]) - (*mat)[0]) + 1.0;
+    local_30 = test[2];
+    testSizeSq = Vec4LengthSq(test + 4);
+    if (testSizeSq < 1.0) {
+      local_2c = (((*mat)[0] - mat[1][1]) - mat[2][2]) + 1.0;
+      local_28 = mat[1][0] + (*mat)[1];
       local_24 = local_3c;
-      local_20 = local_4c[0];
-      local_8 = Vec4LengthSq(&local_2c);
-      if (local_8 < 1.0) {
+      local_20 = test[0];
+      testSizeSq = Vec4LengthSq(&local_2c);
+      if (testSizeSq < 1.0) {
         local_1c = local_28;
-        local_18 = ((param_1[1][1] - (*param_1)[0]) - param_1[2][2]) + 1.0;
+        local_18 = ((mat[1][1] - (*mat)[0]) - mat[2][2]) + 1.0;
         local_14 = local_38;
-        local_10 = local_4c[1];
-        local_8 = Vec4LengthSq(&local_1c);
-        if (local_8 < 1.0) {
+        local_10 = test[1];
+        testSizeSq = Vec4LengthSq(&local_1c);
+        if (testSizeSq < 1.0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x2c0,0,
                                    "%s\n\t(testSizeSq) = %g");
           if (!bVar2) {
@@ -256,20 +275,20 @@ void __cdecl ikAxisToQuat(float (*param_1) [3],float *param_2)
             return;
           }
         }
-        local_c = 3;
+        best = 3;
       }
       else {
-        local_c = 2;
+        best = 2;
       }
     }
     else {
-      local_c = 1;
+      best = 1;
     }
   }
   else {
-    local_c = 0;
+    best = 0;
   }
-  if (local_8 == 0.0) {
+  if (testSizeSq == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x2c5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -277,37 +296,36 @@ void __cdecl ikAxisToQuat(float (*param_1) [3],float *param_2)
       return;
     }
   }
-  fVar3 = 1.0 / SQRT(local_8);
-  *param_2 = fVar3 * local_4c[local_c * 4];
-  param_2[1] = fVar3 * local_4c[local_c * 4 + 1];
-  param_2[2] = fVar3 * local_4c[local_c * 4 + 2];
-  param_2[3] = fVar3 * local_4c[local_c * 4 + 3];
+  fVar3 = 1.0 / SQRT(testSizeSq);
+  *out = fVar3 * test[best * 4];
+  out[1] = fVar3 * test[best * 4 + 1];
+  out[2] = fVar3 * test[best * 4 + 2];
+  out[3] = fVar3 * test[best * 4 + 3];
   return;
 }
 
 
 // 00882D50  ikMat44Set  (ik/ik_math.cpp:719)
 
-void __cdecl
-ikMat44Set(float (*param_1) [4],float *param_2,float *param_3,float *param_4,float *param_5)
+void __cdecl ikMat44Set(float (*mat) [4],float *v1,float *v2,float *v3,float *pos)
 
 {
-  (*param_1)[0] = *param_2;
-  (*param_1)[1] = param_2[1];
-  (*param_1)[2] = param_2[2];
-  param_1[1][0] = *param_3;
-  param_1[1][1] = param_3[1];
-  param_1[1][2] = param_3[2];
-  param_1[2][0] = *param_4;
-  param_1[2][1] = param_4[1];
-  param_1[2][2] = param_4[2];
-  param_1[3][0] = *param_5;
-  param_1[3][1] = param_5[1];
-  param_1[3][2] = param_5[2];
-  (*param_1)[3] = 0.0;
-  param_1[1][3] = 0.0;
-  param_1[2][3] = 0.0;
-  param_1[3][3] = 1.0;
+  (*mat)[0] = *v1;
+  (*mat)[1] = v1[1];
+  (*mat)[2] = v1[2];
+  mat[1][0] = *v2;
+  mat[1][1] = v2[1];
+  mat[1][2] = v2[2];
+  mat[2][0] = *v3;
+  mat[2][1] = v3[1];
+  mat[2][2] = v3[2];
+  mat[3][0] = *pos;
+  mat[3][1] = pos[1];
+  mat[3][2] = pos[2];
+  (*mat)[3] = 0.0;
+  mat[1][3] = 0.0;
+  mat[2][3] = 0.0;
+  mat[3][3] = 1.0;
   return;
 }
 
@@ -318,7 +336,7 @@ ikMat44Set(float (*param_1) [4],float *param_2,float *param_3,float *param_4,flo
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
 void __cdecl
-ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*param_4) [4])
+ikCalcBoneModelMatrix_r(IKState *ikState,int boneNum,float *inMatArray,float (*out) [4])
 
 {
   float fVar1;
@@ -376,18 +394,18 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_18 = param_3;
+  local_18 = inMatArray;
   local_1c = (float (*) [4] [4])0x0;
-  if ((float (*) [4] [4])param_3 == param_1->matArrayPostIK) {
-    local_1c = param_1->matArrayCache;
+  if ((float (*) [4] [4])inMatArray == ikState->matArrayPostIK) {
+    local_1c = ikState->matArrayCache;
   }
-  else if ((float (*) [4] [4])param_3 == param_1->matArrayPreIK) {
-    local_1c = param_1->matArrayCachePre;
+  else if ((float (*) [4] [4])inMatArray == ikState->matArrayPreIK) {
+    local_1c = ikState->matArrayCachePre;
   }
-  if ((local_1c == (float (*) [4] [4])0x0) || (local_1c[param_2][3][3] == 0.0)) {
-    local_88 = ((param_1->field9_0x18).localIkSystem)->ikBoneParents[param_2];
+  if ((local_1c == (float (*) [4] [4])0x0) || (local_1c[boneNum][3][3] == 0.0)) {
+    local_88 = ((ikState->field9_0x18).localIkSystem)->ikBoneParents[boneNum];
     if (local_88 == IKBONE_NONE) {
-      pfVar33 = param_3 + param_2 * 0x10;
+      pfVar33 = inMatArray + boneNum * 0x10;
       fVar1 = pfVar33[1];
       fVar2 = pfVar33[2];
       fVar3 = pfVar33[3];
@@ -403,41 +421,41 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
       fVar13 = pfVar33[0xd];
       fVar14 = pfVar33[0xe];
       fVar15 = pfVar33[0xf];
-      (*param_4)[0] = *pfVar33;
-      (*param_4)[1] = fVar1;
-      (*param_4)[2] = fVar2;
-      (*param_4)[3] = fVar3;
-      param_4[1][0] = fVar4;
-      param_4[1][1] = fVar5;
-      param_4[1][2] = fVar6;
-      param_4[1][3] = fVar7;
-      param_4[2][0] = fVar8;
-      param_4[2][1] = fVar9;
-      param_4[2][2] = fVar10;
-      param_4[2][3] = fVar11;
-      param_4[3][0] = fVar12;
-      param_4[3][1] = fVar13;
-      param_4[3][2] = fVar14;
-      param_4[3][3] = fVar15;
-      ikNormalizedMatrixAssert_func(param_4);
+      (*out)[0] = *pfVar33;
+      (*out)[1] = fVar1;
+      (*out)[2] = fVar2;
+      (*out)[3] = fVar3;
+      out[1][0] = fVar4;
+      out[1][1] = fVar5;
+      out[1][2] = fVar6;
+      out[1][3] = fVar7;
+      out[2][0] = fVar8;
+      out[2][1] = fVar9;
+      out[2][2] = fVar10;
+      out[2][3] = fVar11;
+      out[3][0] = fVar12;
+      out[3][1] = fVar13;
+      out[3][2] = fVar14;
+      out[3][3] = fVar15;
+      ikNormalizedMatrixAssert_func(out);
       if (local_1c != (float (*) [4] [4])0x0) {
-        local_1c = local_1c + param_2;
-        fVar1 = (*param_4)[1];
-        fVar2 = (*param_4)[2];
-        fVar3 = (*param_4)[3];
-        fVar4 = param_4[1][0];
-        fVar5 = param_4[1][1];
-        fVar6 = param_4[1][2];
-        fVar7 = param_4[1][3];
-        fVar8 = param_4[2][0];
-        fVar9 = param_4[2][1];
-        fVar10 = param_4[2][2];
-        fVar11 = param_4[2][3];
-        fVar12 = param_4[3][0];
-        fVar13 = param_4[3][1];
-        fVar14 = param_4[3][2];
-        fVar15 = param_4[3][3];
-        (*local_1c)[0][0] = (*param_4)[0];
+        local_1c = local_1c + boneNum;
+        fVar1 = (*out)[1];
+        fVar2 = (*out)[2];
+        fVar3 = (*out)[3];
+        fVar4 = out[1][0];
+        fVar5 = out[1][1];
+        fVar6 = out[1][2];
+        fVar7 = out[1][3];
+        fVar8 = out[2][0];
+        fVar9 = out[2][1];
+        fVar10 = out[2][2];
+        fVar11 = out[2][3];
+        fVar12 = out[3][0];
+        fVar13 = out[3][1];
+        fVar14 = out[3][2];
+        fVar15 = out[3][3];
+        (*local_1c)[0][0] = (*out)[0];
         (*local_1c)[0][1] = fVar1;
         (*local_1c)[0][2] = fVar2;
         (*local_1c)[0][3] = fVar3;
@@ -453,13 +471,13 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
         (*local_1c)[3][1] = fVar13;
         (*local_1c)[3][2] = fVar14;
         (*local_1c)[3][3] = fVar15;
-        param_1->cacheActive = 1;
+        ikState->cacheActive = 1;
       }
     }
     else if ((local_1c == (float (*) [4] [4])0x0) || (local_1c[local_88][3][3] == 0.0)) {
-      ikCalcBoneModelMatrix_r(param_1,local_88,param_3,(float (*) [4])&local_1d0);
+      ikCalcBoneModelMatrix_r(ikState,local_88,inMatArray,(float (*) [4])&local_1d0);
       ikNormalizedMatrixAssert_func((float (*) [4])&local_1d0);
-      pfVar33 = local_18 + param_2 * 0x10;
+      pfVar33 = local_18 + boneNum * 0x10;
       fVar1 = *pfVar33;
       fVar2 = pfVar33[1];
       fVar3 = pfVar33[2];
@@ -476,49 +494,41 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
       fVar14 = pfVar33[0xd];
       fVar15 = pfVar33[0xe];
       fVar16 = pfVar33[0xf];
-      (*param_4)[0] = fVar1 * local_1d0 + fVar2 * local_1c0 + fVar3 * local_1b0 + fVar4 * local_1a0;
-      (*param_4)[1] = fVar1 * local_1cc + fVar2 * local_1bc + fVar3 * local_1ac + fVar4 * local_19c;
-      (*param_4)[2] = fVar1 * local_1c8 + fVar2 * local_1b8 + fVar3 * local_1a8 + fVar4 * local_198;
-      (*param_4)[3] = fVar1 * local_1c4 + fVar2 * local_1b4 + fVar3 * local_1a4 + fVar4 * local_194;
-      param_4[1][0] = fVar5 * local_1d0 + fVar6 * local_1c0 + fVar7 * local_1b0 + fVar8 * local_1a0;
-      param_4[1][1] = fVar5 * local_1cc + fVar6 * local_1bc + fVar7 * local_1ac + fVar8 * local_19c;
-      param_4[1][2] = fVar5 * local_1c8 + fVar6 * local_1b8 + fVar7 * local_1a8 + fVar8 * local_198;
-      param_4[1][3] = fVar5 * local_1c4 + fVar6 * local_1b4 + fVar7 * local_1a4 + fVar8 * local_194;
-      param_4[2][0] =
-           fVar9 * local_1d0 + fVar10 * local_1c0 + fVar11 * local_1b0 + fVar12 * local_1a0;
-      param_4[2][1] =
-           fVar9 * local_1cc + fVar10 * local_1bc + fVar11 * local_1ac + fVar12 * local_19c;
-      param_4[2][2] =
-           fVar9 * local_1c8 + fVar10 * local_1b8 + fVar11 * local_1a8 + fVar12 * local_198;
-      param_4[2][3] =
-           fVar9 * local_1c4 + fVar10 * local_1b4 + fVar11 * local_1a4 + fVar12 * local_194;
-      param_4[3][0] =
-           fVar13 * local_1d0 + fVar14 * local_1c0 + fVar15 * local_1b0 + fVar16 * local_1a0;
-      param_4[3][1] =
-           fVar13 * local_1cc + fVar14 * local_1bc + fVar15 * local_1ac + fVar16 * local_19c;
-      param_4[3][2] =
-           fVar13 * local_1c8 + fVar14 * local_1b8 + fVar15 * local_1a8 + fVar16 * local_198;
-      param_4[3][3] =
-           fVar13 * local_1c4 + fVar14 * local_1b4 + fVar15 * local_1a4 + fVar16 * local_194;
-      ikNormalizedMatrixAssert_func(param_4);
+      (*out)[0] = fVar1 * local_1d0 + fVar2 * local_1c0 + fVar3 * local_1b0 + fVar4 * local_1a0;
+      (*out)[1] = fVar1 * local_1cc + fVar2 * local_1bc + fVar3 * local_1ac + fVar4 * local_19c;
+      (*out)[2] = fVar1 * local_1c8 + fVar2 * local_1b8 + fVar3 * local_1a8 + fVar4 * local_198;
+      (*out)[3] = fVar1 * local_1c4 + fVar2 * local_1b4 + fVar3 * local_1a4 + fVar4 * local_194;
+      out[1][0] = fVar5 * local_1d0 + fVar6 * local_1c0 + fVar7 * local_1b0 + fVar8 * local_1a0;
+      out[1][1] = fVar5 * local_1cc + fVar6 * local_1bc + fVar7 * local_1ac + fVar8 * local_19c;
+      out[1][2] = fVar5 * local_1c8 + fVar6 * local_1b8 + fVar7 * local_1a8 + fVar8 * local_198;
+      out[1][3] = fVar5 * local_1c4 + fVar6 * local_1b4 + fVar7 * local_1a4 + fVar8 * local_194;
+      out[2][0] = fVar9 * local_1d0 + fVar10 * local_1c0 + fVar11 * local_1b0 + fVar12 * local_1a0;
+      out[2][1] = fVar9 * local_1cc + fVar10 * local_1bc + fVar11 * local_1ac + fVar12 * local_19c;
+      out[2][2] = fVar9 * local_1c8 + fVar10 * local_1b8 + fVar11 * local_1a8 + fVar12 * local_198;
+      out[2][3] = fVar9 * local_1c4 + fVar10 * local_1b4 + fVar11 * local_1a4 + fVar12 * local_194;
+      out[3][0] = fVar13 * local_1d0 + fVar14 * local_1c0 + fVar15 * local_1b0 + fVar16 * local_1a0;
+      out[3][1] = fVar13 * local_1cc + fVar14 * local_1bc + fVar15 * local_1ac + fVar16 * local_19c;
+      out[3][2] = fVar13 * local_1c8 + fVar14 * local_1b8 + fVar15 * local_1a8 + fVar16 * local_198;
+      out[3][3] = fVar13 * local_1c4 + fVar14 * local_1b4 + fVar15 * local_1a4 + fVar16 * local_194;
+      ikNormalizedMatrixAssert_func(out);
       if (local_1c != (float (*) [4] [4])0x0) {
-        local_1c = local_1c + param_2;
-        fVar1 = (*param_4)[1];
-        fVar2 = (*param_4)[2];
-        fVar3 = (*param_4)[3];
-        fVar4 = param_4[1][0];
-        fVar5 = param_4[1][1];
-        fVar6 = param_4[1][2];
-        fVar7 = param_4[1][3];
-        fVar8 = param_4[2][0];
-        fVar9 = param_4[2][1];
-        fVar10 = param_4[2][2];
-        fVar11 = param_4[2][3];
-        fVar12 = param_4[3][0];
-        fVar13 = param_4[3][1];
-        fVar14 = param_4[3][2];
-        fVar15 = param_4[3][3];
-        (*local_1c)[0][0] = (*param_4)[0];
+        local_1c = local_1c + boneNum;
+        fVar1 = (*out)[1];
+        fVar2 = (*out)[2];
+        fVar3 = (*out)[3];
+        fVar4 = out[1][0];
+        fVar5 = out[1][1];
+        fVar6 = out[1][2];
+        fVar7 = out[1][3];
+        fVar8 = out[2][0];
+        fVar9 = out[2][1];
+        fVar10 = out[2][2];
+        fVar11 = out[2][3];
+        fVar12 = out[3][0];
+        fVar13 = out[3][1];
+        fVar14 = out[3][2];
+        fVar15 = out[3][3];
+        (*local_1c)[0][0] = (*out)[0];
         (*local_1c)[0][1] = fVar1;
         (*local_1c)[0][2] = fVar2;
         (*local_1c)[0][3] = fVar3;
@@ -534,14 +544,14 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
         (*local_1c)[3][1] = fVar13;
         (*local_1c)[3][2] = fVar14;
         (*local_1c)[3][3] = fVar15;
-        param_1->cacheActive = 1;
+        ikState->cacheActive = 1;
       }
     }
     else {
       ikNormalizedMatrixAssert_func(local_1c[local_88]);
-      ikNormalizedMatrixAssert_func((float (*) [4])(local_18 + param_2 * 0x10));
+      ikNormalizedMatrixAssert_func((float (*) [4])(local_18 + boneNum * 0x10));
       local_1c = local_1c + local_88;
-      local_18 = local_18 + param_2 * 0x10;
+      local_18 = local_18 + boneNum * 0x10;
       fVar1 = *local_18;
       fVar2 = local_18[1];
       fVar3 = local_18[2];
@@ -574,27 +584,27 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
       fVar30 = (*local_1c)[3][1];
       fVar31 = (*local_1c)[3][2];
       fVar32 = (*local_1c)[3][3];
-      (*param_4)[0] = fVar1 * fVar17 + fVar2 * fVar21 + fVar3 * fVar25 + fVar4 * fVar29;
-      (*param_4)[1] = fVar1 * fVar18 + fVar2 * fVar22 + fVar3 * fVar26 + fVar4 * fVar30;
-      (*param_4)[2] = fVar1 * fVar19 + fVar2 * fVar23 + fVar3 * fVar27 + fVar4 * fVar31;
-      (*param_4)[3] = fVar1 * fVar20 + fVar2 * fVar24 + fVar3 * fVar28 + fVar4 * fVar32;
-      param_4[1][0] = fVar5 * fVar17 + fVar6 * fVar21 + fVar7 * fVar25 + fVar8 * fVar29;
-      param_4[1][1] = fVar5 * fVar18 + fVar6 * fVar22 + fVar7 * fVar26 + fVar8 * fVar30;
-      param_4[1][2] = fVar5 * fVar19 + fVar6 * fVar23 + fVar7 * fVar27 + fVar8 * fVar31;
-      param_4[1][3] = fVar5 * fVar20 + fVar6 * fVar24 + fVar7 * fVar28 + fVar8 * fVar32;
-      param_4[2][0] = fVar9 * fVar17 + fVar10 * fVar21 + fVar11 * fVar25 + fVar12 * fVar29;
-      param_4[2][1] = fVar9 * fVar18 + fVar10 * fVar22 + fVar11 * fVar26 + fVar12 * fVar30;
-      param_4[2][2] = fVar9 * fVar19 + fVar10 * fVar23 + fVar11 * fVar27 + fVar12 * fVar31;
-      param_4[2][3] = fVar9 * fVar20 + fVar10 * fVar24 + fVar11 * fVar28 + fVar12 * fVar32;
-      param_4[3][0] = fVar13 * fVar17 + fVar14 * fVar21 + fVar15 * fVar25 + fVar16 * fVar29;
-      param_4[3][1] = fVar13 * fVar18 + fVar14 * fVar22 + fVar15 * fVar26 + fVar16 * fVar30;
-      param_4[3][2] = fVar13 * fVar19 + fVar14 * fVar23 + fVar15 * fVar27 + fVar16 * fVar31;
-      param_4[3][3] = fVar13 * fVar20 + fVar14 * fVar24 + fVar15 * fVar28 + fVar16 * fVar32;
+      (*out)[0] = fVar1 * fVar17 + fVar2 * fVar21 + fVar3 * fVar25 + fVar4 * fVar29;
+      (*out)[1] = fVar1 * fVar18 + fVar2 * fVar22 + fVar3 * fVar26 + fVar4 * fVar30;
+      (*out)[2] = fVar1 * fVar19 + fVar2 * fVar23 + fVar3 * fVar27 + fVar4 * fVar31;
+      (*out)[3] = fVar1 * fVar20 + fVar2 * fVar24 + fVar3 * fVar28 + fVar4 * fVar32;
+      out[1][0] = fVar5 * fVar17 + fVar6 * fVar21 + fVar7 * fVar25 + fVar8 * fVar29;
+      out[1][1] = fVar5 * fVar18 + fVar6 * fVar22 + fVar7 * fVar26 + fVar8 * fVar30;
+      out[1][2] = fVar5 * fVar19 + fVar6 * fVar23 + fVar7 * fVar27 + fVar8 * fVar31;
+      out[1][3] = fVar5 * fVar20 + fVar6 * fVar24 + fVar7 * fVar28 + fVar8 * fVar32;
+      out[2][0] = fVar9 * fVar17 + fVar10 * fVar21 + fVar11 * fVar25 + fVar12 * fVar29;
+      out[2][1] = fVar9 * fVar18 + fVar10 * fVar22 + fVar11 * fVar26 + fVar12 * fVar30;
+      out[2][2] = fVar9 * fVar19 + fVar10 * fVar23 + fVar11 * fVar27 + fVar12 * fVar31;
+      out[2][3] = fVar9 * fVar20 + fVar10 * fVar24 + fVar11 * fVar28 + fVar12 * fVar32;
+      out[3][0] = fVar13 * fVar17 + fVar14 * fVar21 + fVar15 * fVar25 + fVar16 * fVar29;
+      out[3][1] = fVar13 * fVar18 + fVar14 * fVar22 + fVar15 * fVar26 + fVar16 * fVar30;
+      out[3][2] = fVar13 * fVar19 + fVar14 * fVar23 + fVar15 * fVar27 + fVar16 * fVar31;
+      out[3][3] = fVar13 * fVar20 + fVar14 * fVar24 + fVar15 * fVar28 + fVar16 * fVar32;
     }
   }
   else {
-    ikNormalizedMatrixAssert_func(local_1c[param_2]);
-    local_1c = local_1c + param_2;
+    ikNormalizedMatrixAssert_func(local_1c[boneNum]);
+    local_1c = local_1c + boneNum;
     fVar1 = (*local_1c)[0][1];
     fVar2 = (*local_1c)[0][2];
     fVar3 = (*local_1c)[0][3];
@@ -610,22 +620,22 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
     fVar13 = (*local_1c)[3][1];
     fVar14 = (*local_1c)[3][2];
     fVar15 = (*local_1c)[3][3];
-    (*param_4)[0] = (*local_1c)[0][0];
-    (*param_4)[1] = fVar1;
-    (*param_4)[2] = fVar2;
-    (*param_4)[3] = fVar3;
-    param_4[1][0] = fVar4;
-    param_4[1][1] = fVar5;
-    param_4[1][2] = fVar6;
-    param_4[1][3] = fVar7;
-    param_4[2][0] = fVar8;
-    param_4[2][1] = fVar9;
-    param_4[2][2] = fVar10;
-    param_4[2][3] = fVar11;
-    param_4[3][0] = fVar12;
-    param_4[3][1] = fVar13;
-    param_4[3][2] = fVar14;
-    param_4[3][3] = fVar15;
+    (*out)[0] = (*local_1c)[0][0];
+    (*out)[1] = fVar1;
+    (*out)[2] = fVar2;
+    (*out)[3] = fVar3;
+    out[1][0] = fVar4;
+    out[1][1] = fVar5;
+    out[1][2] = fVar6;
+    out[1][3] = fVar7;
+    out[2][0] = fVar8;
+    out[2][1] = fVar9;
+    out[2][2] = fVar10;
+    out[2][3] = fVar11;
+    out[3][0] = fVar12;
+    out[3][1] = fVar13;
+    out[3][2] = fVar14;
+    out[3][3] = fVar15;
   }
   return;
 }
@@ -635,10 +645,10 @@ ikCalcBoneModelMatrix_r(IKState *param_1,int param_2,float *param_3,float (*para
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl ikCalcBoneModelMatrix(IKState *param_1,int param_2,float *param_3,float (*param_4) [4])
+void __cdecl ikCalcBoneModelMatrix(IKState *ikState,int boneNum,float *inMatArray,float (*out) [4])
 
 {
-  ikCalcBoneModelMatrix_r(param_1,param_2,param_3,param_4);
+  ikCalcBoneModelMatrix_r(ikState,boneNum,inMatArray,out);
   return;
 }
 
@@ -651,26 +661,30 @@ void __cdecl ikCalcBoneModelMatrix(IKState *param_1,int param_2,float *param_3,f
 /* WARNING: Removing unreachable block (ram,0x008846f2) */
 
 void __cdecl
-ikSolve2D(float *param_1,float *param_2,float param_3,float param_4,float param_5,float param_6,
-         float *param_7,float *param_8,float *param_9,float *param_10,float *param_11)
+ikSolve2D(float *BaseJoint,float *ModelTarget,float UpperIKc,float LowerIKc,float UpperIKInvc,
+         float LowerIKInvc,float *ModelTargetDir,float *SinUpper,float *CosUpper,float *SinLower,
+         float *CosLower)
 
 {
   float fVar1;
   float fVar2;
   float local_20;
   float local_18;
+  float tmp_C;
+  float tmp_InvC;
   
-  *param_7 = *param_2 - *param_1;
-  param_7[1] = param_2[1] - param_1[1];
-  param_7[2] = param_2[2] - param_1[2];
-  fVar1 = SQRT(*param_7 * *param_7 + param_7[1] * param_7[1] + param_7[2] * param_7[2]);
+  *ModelTargetDir = *ModelTarget - *BaseJoint;
+  ModelTargetDir[1] = ModelTarget[1] - BaseJoint[1];
+  ModelTargetDir[2] = ModelTarget[2] - BaseJoint[2];
+  fVar1 = SQRT(*ModelTargetDir * *ModelTargetDir + ModelTargetDir[1] * ModelTargetDir[1] +
+               ModelTargetDir[2] * ModelTargetDir[2]);
   fVar2 = 1.0 / fVar1;
-  *param_7 = fVar2 * *param_7;
-  param_7[1] = fVar2 * param_7[1];
-  param_7[2] = fVar2 * param_7[2];
-  *param_9 = param_5 * fVar2 + param_3 * fVar1;
-  *param_11 = param_6 * fVar2 + param_4 * fVar1;
-  local_18 = *param_9;
+  *ModelTargetDir = fVar2 * *ModelTargetDir;
+  ModelTargetDir[1] = fVar2 * ModelTargetDir[1];
+  ModelTargetDir[2] = fVar2 * ModelTargetDir[2];
+  *CosUpper = UpperIKInvc * fVar2 + UpperIKc * fVar1;
+  *CosLower = LowerIKInvc * fVar2 + LowerIKc * fVar1;
+  local_18 = *CosUpper;
   if (-1.0 <= local_18) {
     if (1.0 < local_18) {
       local_18 = 1.0;
@@ -679,8 +693,8 @@ ikSolve2D(float *param_1,float *param_2,float param_3,float param_4,float param_
   else {
     local_18 = -1.0;
   }
-  *param_9 = local_18;
-  local_20 = *param_11;
+  *CosUpper = local_18;
+  local_20 = *CosLower;
   if (-1.0 <= local_20) {
     if (1.0 < local_20) {
       local_20 = 1.0;
@@ -689,9 +703,9 @@ ikSolve2D(float *param_1,float *param_2,float param_3,float param_4,float param_
   else {
     local_20 = -1.0;
   }
-  *param_11 = local_20;
-  *param_8 = SQRT(1.0 - *param_9 * *param_9);
-  *param_10 = SQRT(1.0 - *param_11 * *param_11);
+  *CosLower = local_20;
+  *SinUpper = SQRT(1.0 - *CosUpper * *CosUpper);
+  *SinLower = SQRT(1.0 - *CosLower * *CosLower);
   return;
 }
 
@@ -702,9 +716,9 @@ ikSolve2D(float *param_1,float *param_2,float param_3,float param_4,float param_
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 void __cdecl
-ikMap2DTo3D(float param_1,float param_2,float param_3,float param_4,float param_5,float *param_6,
-           float *param_7,float *param_8,float param_9,float param_10,float (*param_11) [4],
-           float (*param_12) [4])
+ikMap2DTo3D(float UpperLimbLength,float SinUpper,float CosUpper,float SinLower,float CosLower,
+           float *ModelBaseJoint,float *ModelTargetDir,float *ModelMidJointDir,float sinTwist,
+           float cosTwist,float (*UpperLocalToModel) [4],float (*LowerLocalToModel) [4])
 
 {
   float fVar1;
@@ -736,62 +750,82 @@ ikMap2DTo3D(float param_1,float param_2,float param_3,float param_4,float param_
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  Vec3Cross(param_7,param_8,local_20);
+  Vec3Cross(ModelTargetDir,ModelMidJointDir,local_20);
   fVar8 = Vec3Normalize(local_20);
   if (fVar8 < 0.01) {
     local_20[0] = 0.0;
     local_20[1] = 0.0;
     local_20[2] = 1.0;
   }
-  Vec3Cross(local_20,param_7,local_2c);
-  ikMat44Set((float (*) [4])&local_70,param_7,local_2c,local_20,param_6);
+  Vec3Cross(local_20,ModelTargetDir,local_2c);
+  ikMat44Set((float (*) [4])&local_70,ModelTargetDir,local_2c,local_20,ModelBaseJoint);
   ikNormalizedMatrixAssert_func((float (*) [4])&local_70);
-  fVar8 = param_2 * param_10;
-  fVar1 = param_2 * param_9;
-  fVar2 = -param_2;
-  fVar3 = param_3 * param_10;
-  fVar4 = param_3 * param_9;
-  fVar5 = -param_9;
-  (*param_11)[0] = param_3 * local_70 + fVar8 * local_60 + fVar1 * local_50 + local_40 * 0.0;
-  (*param_11)[1] = param_3 * local_6c + fVar8 * local_5c + fVar1 * local_4c + local_3c * 0.0;
-  (*param_11)[2] = param_3 * local_68 + fVar8 * local_58 + fVar1 * local_48 + local_38 * 0.0;
-  (*param_11)[3] = param_3 * local_64 + fVar8 * local_54 + fVar1 * local_44 + local_34 * 0.0;
-  param_11[1][0] = fVar2 * local_70 + fVar3 * local_60 + fVar4 * local_50 + local_40 * 0.0;
-  param_11[1][1] = fVar2 * local_6c + fVar3 * local_5c + fVar4 * local_4c + local_3c * 0.0;
-  param_11[1][2] = fVar2 * local_68 + fVar3 * local_58 + fVar4 * local_48 + local_38 * 0.0;
-  param_11[1][3] = fVar2 * local_64 + fVar3 * local_54 + fVar4 * local_44 + local_34 * 0.0;
-  param_11[2][0] = local_70 * 0.0 + fVar5 * local_60 + param_10 * local_50 + local_40 * 0.0;
-  param_11[2][1] = local_6c * 0.0 + fVar5 * local_5c + param_10 * local_4c + local_3c * 0.0;
-  param_11[2][2] = local_68 * 0.0 + fVar5 * local_58 + param_10 * local_48 + local_38 * 0.0;
-  param_11[2][3] = local_64 * 0.0 + fVar5 * local_54 + param_10 * local_44 + local_34 * 0.0;
-  param_11[3][0] = local_70 * 0.0 + local_60 * 0.0 + local_50 * 0.0 + local_40 * 1.0;
-  param_11[3][1] = local_6c * 0.0 + local_5c * 0.0 + local_4c * 0.0 + local_3c * 1.0;
-  param_11[3][2] = local_68 * 0.0 + local_58 * 0.0 + local_48 * 0.0 + local_38 * 1.0;
-  param_11[3][3] = local_64 * 0.0 + local_54 * 0.0 + local_44 * 0.0 + local_34 * 1.0;
-  fVar8 = -param_4 * param_10;
-  fVar1 = -param_4 * param_9;
-  fVar2 = param_5 * param_10;
-  fVar3 = param_5 * param_9;
-  fVar4 = -param_9;
-  fVar5 = param_1 * param_3;
-  fVar6 = param_1 * param_2 * param_10;
-  fVar7 = param_1 * param_2 * param_9;
-  (*param_12)[0] = param_5 * local_70 + fVar8 * local_60 + fVar1 * local_50 + local_40 * 0.0;
-  (*param_12)[1] = param_5 * local_6c + fVar8 * local_5c + fVar1 * local_4c + local_3c * 0.0;
-  (*param_12)[2] = param_5 * local_68 + fVar8 * local_58 + fVar1 * local_48 + local_38 * 0.0;
-  (*param_12)[3] = param_5 * local_64 + fVar8 * local_54 + fVar1 * local_44 + local_34 * 0.0;
-  param_12[1][0] = param_4 * local_70 + fVar2 * local_60 + fVar3 * local_50 + local_40 * 0.0;
-  param_12[1][1] = param_4 * local_6c + fVar2 * local_5c + fVar3 * local_4c + local_3c * 0.0;
-  param_12[1][2] = param_4 * local_68 + fVar2 * local_58 + fVar3 * local_48 + local_38 * 0.0;
-  param_12[1][3] = param_4 * local_64 + fVar2 * local_54 + fVar3 * local_44 + local_34 * 0.0;
-  param_12[2][0] = local_70 * 0.0 + fVar4 * local_60 + param_10 * local_50 + local_40 * 0.0;
-  param_12[2][1] = local_6c * 0.0 + fVar4 * local_5c + param_10 * local_4c + local_3c * 0.0;
-  param_12[2][2] = local_68 * 0.0 + fVar4 * local_58 + param_10 * local_48 + local_38 * 0.0;
-  param_12[2][3] = local_64 * 0.0 + fVar4 * local_54 + param_10 * local_44 + local_34 * 0.0;
-  param_12[3][0] = fVar5 * local_70 + fVar6 * local_60 + fVar7 * local_50 + local_40 * 1.0;
-  param_12[3][1] = fVar5 * local_6c + fVar6 * local_5c + fVar7 * local_4c + local_3c * 1.0;
-  param_12[3][2] = fVar5 * local_68 + fVar6 * local_58 + fVar7 * local_48 + local_38 * 1.0;
-  param_12[3][3] = fVar5 * local_64 + fVar6 * local_54 + fVar7 * local_44 + local_34 * 1.0;
+  fVar8 = SinUpper * cosTwist;
+  fVar1 = SinUpper * sinTwist;
+  fVar2 = -SinUpper;
+  fVar3 = CosUpper * cosTwist;
+  fVar4 = CosUpper * sinTwist;
+  fVar5 = -sinTwist;
+  (*UpperLocalToModel)[0] =
+       CosUpper * local_70 + fVar8 * local_60 + fVar1 * local_50 + local_40 * 0.0;
+  (*UpperLocalToModel)[1] =
+       CosUpper * local_6c + fVar8 * local_5c + fVar1 * local_4c + local_3c * 0.0;
+  (*UpperLocalToModel)[2] =
+       CosUpper * local_68 + fVar8 * local_58 + fVar1 * local_48 + local_38 * 0.0;
+  (*UpperLocalToModel)[3] =
+       CosUpper * local_64 + fVar8 * local_54 + fVar1 * local_44 + local_34 * 0.0;
+  UpperLocalToModel[1][0] = fVar2 * local_70 + fVar3 * local_60 + fVar4 * local_50 + local_40 * 0.0;
+  UpperLocalToModel[1][1] = fVar2 * local_6c + fVar3 * local_5c + fVar4 * local_4c + local_3c * 0.0;
+  UpperLocalToModel[1][2] = fVar2 * local_68 + fVar3 * local_58 + fVar4 * local_48 + local_38 * 0.0;
+  UpperLocalToModel[1][3] = fVar2 * local_64 + fVar3 * local_54 + fVar4 * local_44 + local_34 * 0.0;
+  UpperLocalToModel[2][0] = local_70 * 0.0 + fVar5 * local_60 + cosTwist * local_50 + local_40 * 0.0
+  ;
+  UpperLocalToModel[2][1] = local_6c * 0.0 + fVar5 * local_5c + cosTwist * local_4c + local_3c * 0.0
+  ;
+  UpperLocalToModel[2][2] = local_68 * 0.0 + fVar5 * local_58 + cosTwist * local_48 + local_38 * 0.0
+  ;
+  UpperLocalToModel[2][3] = local_64 * 0.0 + fVar5 * local_54 + cosTwist * local_44 + local_34 * 0.0
+  ;
+  UpperLocalToModel[3][0] = local_70 * 0.0 + local_60 * 0.0 + local_50 * 0.0 + local_40 * 1.0;
+  UpperLocalToModel[3][1] = local_6c * 0.0 + local_5c * 0.0 + local_4c * 0.0 + local_3c * 1.0;
+  UpperLocalToModel[3][2] = local_68 * 0.0 + local_58 * 0.0 + local_48 * 0.0 + local_38 * 1.0;
+  UpperLocalToModel[3][3] = local_64 * 0.0 + local_54 * 0.0 + local_44 * 0.0 + local_34 * 1.0;
+  fVar8 = -SinLower * cosTwist;
+  fVar1 = -SinLower * sinTwist;
+  fVar2 = CosLower * cosTwist;
+  fVar3 = CosLower * sinTwist;
+  fVar4 = -sinTwist;
+  fVar5 = UpperLimbLength * CosUpper;
+  fVar6 = UpperLimbLength * SinUpper * cosTwist;
+  fVar7 = UpperLimbLength * SinUpper * sinTwist;
+  (*LowerLocalToModel)[0] =
+       CosLower * local_70 + fVar8 * local_60 + fVar1 * local_50 + local_40 * 0.0;
+  (*LowerLocalToModel)[1] =
+       CosLower * local_6c + fVar8 * local_5c + fVar1 * local_4c + local_3c * 0.0;
+  (*LowerLocalToModel)[2] =
+       CosLower * local_68 + fVar8 * local_58 + fVar1 * local_48 + local_38 * 0.0;
+  (*LowerLocalToModel)[3] =
+       CosLower * local_64 + fVar8 * local_54 + fVar1 * local_44 + local_34 * 0.0;
+  LowerLocalToModel[1][0] =
+       SinLower * local_70 + fVar2 * local_60 + fVar3 * local_50 + local_40 * 0.0;
+  LowerLocalToModel[1][1] =
+       SinLower * local_6c + fVar2 * local_5c + fVar3 * local_4c + local_3c * 0.0;
+  LowerLocalToModel[1][2] =
+       SinLower * local_68 + fVar2 * local_58 + fVar3 * local_48 + local_38 * 0.0;
+  LowerLocalToModel[1][3] =
+       SinLower * local_64 + fVar2 * local_54 + fVar3 * local_44 + local_34 * 0.0;
+  LowerLocalToModel[2][0] = local_70 * 0.0 + fVar4 * local_60 + cosTwist * local_50 + local_40 * 0.0
+  ;
+  LowerLocalToModel[2][1] = local_6c * 0.0 + fVar4 * local_5c + cosTwist * local_4c + local_3c * 0.0
+  ;
+  LowerLocalToModel[2][2] = local_68 * 0.0 + fVar4 * local_58 + cosTwist * local_48 + local_38 * 0.0
+  ;
+  LowerLocalToModel[2][3] = local_64 * 0.0 + fVar4 * local_54 + cosTwist * local_44 + local_34 * 0.0
+  ;
+  LowerLocalToModel[3][0] = fVar5 * local_70 + fVar6 * local_60 + fVar7 * local_50 + local_40 * 1.0;
+  LowerLocalToModel[3][1] = fVar5 * local_6c + fVar6 * local_5c + fVar7 * local_4c + local_3c * 1.0;
+  LowerLocalToModel[3][2] = fVar5 * local_68 + fVar6 * local_58 + fVar7 * local_48 + local_38 * 1.0;
+  LowerLocalToModel[3][3] = fVar5 * local_64 + fVar6 * local_54 + fVar7 * local_44 + local_34 * 1.0;
   return;
 }
 
@@ -802,8 +836,8 @@ ikMap2DTo3D(float param_1,float param_2,float param_3,float param_4,float param_
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
 void __cdecl
-ikSolveLegJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,float *param_4,
-               float (*param_5) [4],float (*param_6) [4],bool param_7)
+ikSolveLegJoint(IKState *ikState,IKJointBones *jointBones,IKJointVars *jointVars,float *footPos,
+               float (*outParentMat) [4],float (*outJointMat) [4],bool flipHack)
 
 {
   code *pcVar1;
@@ -905,12 +939,12 @@ ikSolveLegJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_15 = param_1->ikBoneToObjBone[param_2->childBone] != 0xa1;
+  local_15 = ikState->ikBoneToObjBone[jointBones->childBone] != 0xa1;
   if ((bool)local_15) {
     ikCalcBoneModelMatrix
-              (param_1,param_2->parentBone,(float *)param_1->matArrayPostIK,(float (*) [4])&local_60
-              );
-    local_b8 = param_1->matArrayPostIK + param_2->jointBone;
+              (ikState,jointBones->parentBone,(float *)ikState->matArrayPostIK,
+               (float (*) [4])&local_60);
+    local_b8 = ikState->matArrayPostIK + jointBones->jointBone;
     local_68 = &local_60;
     local_ac = &local_50;
     local_b0 = &local_40;
@@ -988,115 +1022,116 @@ ikSolveLegJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
     local_158 = local_110;
     local_154 = local_10c;
     ikCalcBoneModelMatrix
-              (param_1,param_2->childBone,(float *)param_1->matArrayPreIK,(float (*) [4])local_1e0);
-    if (param_7) {
+              (ikState,jointBones->childBone,(float *)ikState->matArrayPreIK,
+               (float (*) [4])local_1e0);
+    if (flipHack) {
       IK_FlipHack((float (*) [4])&local_60);
       IK_FlipHack((float (*) [4])&local_190);
       IK_FlipHack((float (*) [4])local_1e0);
     }
     local_1e4 = &local_30;
-    local_1f0 = *param_4 - local_30;
-    local_1ec = param_4[1] - local_2c;
-    local_1e8 = param_4[2] - local_28;
+    local_1f0 = *footPos - local_30;
+    local_1ec = footPos[1] - local_2c;
+    local_1e8 = footPos[2] - local_28;
     local_1f4 = Vec3Normalize(&local_1f0);
-    if ((param_3->UpperLength + param_3->LowerLength) - fMaxFootReachSubtract < local_1f4) {
-      local_1f8 = (param_3->UpperLength + param_3->LowerLength) - fMaxFootReachSubtract;
+    if ((jointVars->UpperLength + jointVars->LowerLength) - fMaxFootReachSubtract < local_1f4) {
+      local_1f8 = (jointVars->UpperLength + jointVars->LowerLength) - fMaxFootReachSubtract;
       local_1fc = &local_30;
-      *param_4 = local_1f8 * local_1f0 + local_30;
-      param_4[1] = local_1f8 * local_1ec + local_2c;
-      param_4[2] = local_1f8 * local_1e8 + local_28;
+      *footPos = local_1f8 * local_1f0 + local_30;
+      footPos[1] = local_1f8 * local_1ec + local_2c;
+      footPos[2] = local_1f8 * local_1e8 + local_28;
     }
-    ikSolve2D(&local_30,param_4,param_3->UpperIKc,param_3->LowerIKc,param_3->UpperIKInvc,
-              param_3->LowerIKInvc,local_218,&local_20c,&local_208,&local_204,&local_200);
+    ikSolve2D(&local_30,footPos,jointVars->UpperIKc,jointVars->LowerIKc,jointVars->UpperIKInvc,
+              jointVars->LowerIKInvc,local_218,&local_20c,&local_208,&local_204,&local_200);
     Vec3Cross(&local_40,local_218,local_224);
     local_228 = &local_30;
-    ikMap2DTo3D(param_3->UpperLength,local_20c,local_208,local_204,local_200,local_234,local_218,
-                local_224,0.0,1.0,param_5,param_6);
-    if (((((((uint)(*param_5)[0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)(*param_5)[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)(*param_5)[2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)(*param_5)[3] & 0x7f800000) == 0x7f800000)) &&
+    ikMap2DTo3D(jointVars->UpperLength,local_20c,local_208,local_204,local_200,local_234,local_218,
+                local_224,0.0,1.0,outParentMat,outJointMat);
+    if (((((((uint)(*outParentMat)[0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)(*outParentMat)[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)(*outParentMat)[2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)(*outParentMat)[3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x39d,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_5[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_5[1][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_5[1][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_5[1][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outParentMat[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outParentMat[1][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outParentMat[1][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outParentMat[1][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x39e,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_5[2][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_5[2][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_5[2][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_5[2][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outParentMat[2][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outParentMat[2][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outParentMat[2][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outParentMat[2][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x39f,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((((uint)param_5[3][0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_5[3][1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_5[3][2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_5[3][3] & 0x7f800000) == 0x7f800000)) &&
+    if (((((((uint)outParentMat[3][0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)outParentMat[3][1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)outParentMat[3][2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)outParentMat[3][3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3a0,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)(*param_6)[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)(*param_6)[1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)(*param_6)[2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)(*param_6)[3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)(*outJointMat)[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)(*outJointMat)[1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)(*outJointMat)[2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)(*outJointMat)[3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3a2,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_6[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_6[1][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_6[1][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_6[1][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outJointMat[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outJointMat[1][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outJointMat[1][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outJointMat[1][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3a3,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((((uint)param_6[2][0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_6[2][1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_6[2][2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_6[2][3] & 0x7f800000) == 0x7f800000)) &&
+    if (((((((uint)outJointMat[2][0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)outJointMat[2][1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)outJointMat[2][2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)outJointMat[2][3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3a4,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_6[3][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_6[3][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_6[3][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_6[3][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outJointMat[3][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outJointMat[3][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outJointMat[3][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outJointMat[3][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3a5,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    ikNormalizedMatrixAssert_func(param_5);
-    ikNormalizedMatrixAssert_func(param_6);
-    if (param_7) {
-      IK_FlipHack(param_5);
-      IK_FlipHack(param_6);
+    ikNormalizedMatrixAssert_func(outParentMat);
+    ikNormalizedMatrixAssert_func(outJointMat);
+    if (flipHack) {
+      IK_FlipHack(outParentMat);
+      IK_FlipHack(outJointMat);
     }
   }
   return;
@@ -1109,8 +1144,8 @@ ikSolveLegJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
 void __cdecl
-ikSolveArmJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,float *param_4,
-               float (*param_5) [4],float (*param_6) [4],bool param_7)
+ikSolveArmJoint(IKState *ikState,IKJointBones *jointBones,IKJointVars *jointVars,float *handPos,
+               float (*outParentMat) [4],float (*outJointMat) [4],bool flipHack)
 
 {
   code *pcVar1;
@@ -1214,12 +1249,12 @@ ikSolveArmJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_15 = param_1->ikBoneToObjBone[param_2->childBone] != 0xa1;
+  local_15 = ikState->ikBoneToObjBone[jointBones->childBone] != 0xa1;
   if ((bool)local_15) {
     ikCalcBoneModelMatrix
-              (param_1,param_2->parentBone,(float *)param_1->matArrayPostIK,(float (*) [4])&local_60
-              );
-    local_b8 = param_1->matArrayPostIK + param_2->jointBone;
+              (ikState,jointBones->parentBone,(float *)ikState->matArrayPostIK,
+               (float (*) [4])&local_60);
+    local_b8 = ikState->matArrayPostIK + jointBones->jointBone;
     local_68 = &local_60;
     local_ac = &local_50;
     local_b0 = &local_40;
@@ -1297,117 +1332,118 @@ ikSolveArmJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
     local_158 = local_110;
     local_154 = local_10c;
     ikCalcBoneModelMatrix
-              (param_1,param_2->childBone,(float *)param_1->matArrayPreIK,(float (*) [4])local_1e0);
-    if (param_7) {
+              (ikState,jointBones->childBone,(float *)ikState->matArrayPreIK,
+               (float (*) [4])local_1e0);
+    if (flipHack) {
       IK_FlipHack((float (*) [4])&local_60);
       IK_FlipHack((float (*) [4])&local_190);
       IK_FlipHack((float (*) [4])local_1e0);
     }
     local_1e4 = &local_30;
-    local_1f0 = *param_4 - local_30;
-    local_1ec = param_4[1] - local_2c;
-    local_1e8 = param_4[2] - local_28;
+    local_1f0 = *handPos - local_30;
+    local_1ec = handPos[1] - local_2c;
+    local_1e8 = handPos[2] - local_28;
     local_1f4 = Vec3Normalize(&local_1f0);
-    if ((param_3->UpperLength + param_3->LowerLength) - fMaxHandReachSubtract < local_1f4) {
-      local_1f8 = (param_3->UpperLength + param_3->LowerLength) - fMaxHandReachSubtract;
+    if ((jointVars->UpperLength + jointVars->LowerLength) - fMaxHandReachSubtract < local_1f4) {
+      local_1f8 = (jointVars->UpperLength + jointVars->LowerLength) - fMaxHandReachSubtract;
       local_1fc = &local_30;
-      *param_4 = local_1f8 * local_1f0 + local_30;
-      param_4[1] = local_1f8 * local_1ec + local_2c;
-      param_4[2] = local_1f8 * local_1e8 + local_28;
+      *handPos = local_1f8 * local_1f0 + local_30;
+      handPos[1] = local_1f8 * local_1ec + local_2c;
+      handPos[2] = local_1f8 * local_1e8 + local_28;
     }
-    ikSolve2D(&local_30,param_4,param_3->UpperIKc,param_3->LowerIKc,param_3->UpperIKInvc,
-              param_3->LowerIKInvc,local_218,&local_20c,&local_208,&local_204,&local_200);
+    ikSolve2D(&local_30,handPos,jointVars->UpperIKc,jointVars->LowerIKc,jointVars->UpperIKInvc,
+              jointVars->LowerIKInvc,local_218,&local_20c,&local_208,&local_204,&local_200);
     local_21c = 0.0;
     local_220 = 1.0;
     Vec3Cross(&local_40,local_218,local_22c);
     local_230 = &local_30;
-    ikMap2DTo3D(param_3->UpperLength,local_20c,local_208,local_204,local_200,local_23c,local_218,
-                local_22c,local_21c,local_220,param_5,param_6);
-    if (((((((uint)(*param_5)[0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)(*param_5)[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)(*param_5)[2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)(*param_5)[3] & 0x7f800000) == 0x7f800000)) &&
+    ikMap2DTo3D(jointVars->UpperLength,local_20c,local_208,local_204,local_200,local_23c,local_218,
+                local_22c,local_21c,local_220,outParentMat,outJointMat);
+    if (((((((uint)(*outParentMat)[0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)(*outParentMat)[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)(*outParentMat)[2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)(*outParentMat)[3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3e3,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_5[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_5[1][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_5[1][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_5[1][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outParentMat[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outParentMat[1][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outParentMat[1][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outParentMat[1][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3e4,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_5[2][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_5[2][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_5[2][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_5[2][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outParentMat[2][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outParentMat[2][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outParentMat[2][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outParentMat[2][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3e5,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((((uint)param_5[3][0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_5[3][1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_5[3][2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_5[3][3] & 0x7f800000) == 0x7f800000)) &&
+    if (((((((uint)outParentMat[3][0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)outParentMat[3][1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)outParentMat[3][2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)outParentMat[3][3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3e6,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)(*param_6)[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)(*param_6)[1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)(*param_6)[2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)(*param_6)[3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)(*outJointMat)[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)(*outJointMat)[1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)(*outJointMat)[2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)(*outJointMat)[3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",1000,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_6[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_6[1][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_6[1][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_6[1][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outJointMat[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outJointMat[1][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outJointMat[1][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outJointMat[1][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3e9,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((((uint)param_6[2][0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_6[2][1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_6[2][2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_6[2][3] & 0x7f800000) == 0x7f800000)) &&
+    if (((((((uint)outJointMat[2][0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)outJointMat[2][1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)outJointMat[2][2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)outJointMat[2][3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3ea,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_6[3][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_6[3][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_6[3][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_6[3][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)outJointMat[3][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)outJointMat[3][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)outJointMat[3][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)outJointMat[3][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x3eb,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    ikNormalizedMatrixAssert_func(param_5);
-    ikNormalizedMatrixAssert_func(param_6);
-    if (param_7) {
-      IK_FlipHack(param_5);
-      IK_FlipHack(param_6);
+    ikNormalizedMatrixAssert_func(outParentMat);
+    ikNormalizedMatrixAssert_func(outJointMat);
+    if (flipHack) {
+      IK_FlipHack(outParentMat);
+      IK_FlipHack(outJointMat);
     }
   }
   return;
@@ -1416,15 +1452,15 @@ ikSolveArmJoint(IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,floa
 
 // 00887BF0  IK_FlipHack  (ik/ik_math.cpp:1019)
 
-void __cdecl IK_FlipHack(float (*param_1) [4])
+void __cdecl IK_FlipHack(float (*mat) [4])
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    param_1[local_8][0] = -param_1[local_8][0];
-    param_1[local_8][1] = -param_1[local_8][1];
-    param_1[local_8][2] = -param_1[local_8][2];
+  for (i = 0; i < 2; i = i + 1) {
+    mat[i][0] = -mat[i][0];
+    mat[i][1] = -mat[i][1];
+    mat[i][2] = -mat[i][2];
   }
   return;
 }
@@ -1434,7 +1470,7 @@ void __cdecl IK_FlipHack(float (*param_1) [4])
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
+void __cdecl ikNormalizedMatrixAssert_func(float (*mat) [4])
 
 {
   code *pcVar1;
@@ -1442,52 +1478,53 @@ void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
   float (*pafVar3) [4];
   float (*pafVar4) [4];
   float fVar5;
-  int local_10;
-  float local_8;
+  int j;
+  float len;
+  float dot;
   
   if ((ikSystem.dvars[0xe] != (dvar_s *)0x0) && ((ikSystem.dvars[0xe]->current).enabled != false)) {
-    if (((((uint)(*param_1)[0] & 0x7f800000) == 0x7f800000) ||
-        (((((uint)(*param_1)[1] & 0x7f800000) == 0x7f800000 ||
-          (((uint)(*param_1)[2] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)(*param_1)[3] & 0x7f800000) == 0x7f800000)))) &&
+    if (((((uint)(*mat)[0] & 0x7f800000) == 0x7f800000) ||
+        (((((uint)(*mat)[1] & 0x7f800000) == 0x7f800000 ||
+          (((uint)(*mat)[2] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)(*mat)[3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x419,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_1[1][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1[1][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_1[1][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_1[1][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)mat[1][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)mat[1][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)mat[1][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)mat[1][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x41a,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)param_1[2][0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1[2][1] & 0x7f800000) == 0x7f800000)) ||
-        ((((uint)param_1[2][2] & 0x7f800000) == 0x7f800000 ||
-         (((uint)param_1[2][3] & 0x7f800000) == 0x7f800000)))) &&
+    if ((((((uint)mat[2][0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)mat[2][1] & 0x7f800000) == 0x7f800000)) ||
+        ((((uint)mat[2][2] & 0x7f800000) == 0x7f800000 ||
+         (((uint)mat[2][3] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x41b,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((((((uint)param_1[3][0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_1[3][1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_1[3][2] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1[3][3] & 0x7f800000) == 0x7f800000)) &&
+    if (((((((uint)mat[3][0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)mat[3][1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)mat[3][2] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)mat[3][3] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x41c,0,"%s"),
        !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      if (param_1[local_10][3] != 0.0) {
+    for (j = 0; j < 3; j = j + 1) {
+      if (mat[j][3] != 0.0) {
         va("mat[%i][3] == %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x421,0,
                                  "%s\n\t%s");
@@ -1497,7 +1534,7 @@ void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
           return;
         }
       }
-      fVar5 = Abs((phys_vec3 *)(param_1 + local_10));
+      fVar5 = Abs((phys_vec3 *)(mat + j));
       if (0.002 <= ABS(1.0 - fVar5)) {
         va("len == %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x423,0,
@@ -1509,7 +1546,7 @@ void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
         }
       }
     }
-    if (0.002 <= ABS(1.0 - param_1[3][3])) {
+    if (0.002 <= ABS(1.0 - mat[3][3])) {
       va("mat[3][3] == %f");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x426,0,
                                "%s\n\t%s");
@@ -1519,19 +1556,18 @@ void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
         return;
       }
     }
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      if (local_10 < 2) {
-        pafVar4 = param_1 + local_10 + 1;
-        pafVar3 = param_1 + local_10;
-        local_8 = (*pafVar3)[0] * (*pafVar4)[0] + (*pafVar3)[1] * (*pafVar4)[1] +
-                  (*pafVar3)[2] * (*pafVar4)[2];
+    for (j = 0; j < 3; j = j + 1) {
+      if (j < 2) {
+        pafVar4 = mat + j + 1;
+        pafVar3 = mat + j;
+        dot = (*pafVar3)[0] * (*pafVar4)[0] + (*pafVar3)[1] * (*pafVar4)[1] +
+              (*pafVar3)[2] * (*pafVar4)[2];
       }
       else {
-        pafVar3 = param_1 + local_10;
-        local_8 = (*pafVar3)[0] * (*param_1)[0] + (*pafVar3)[1] * (*param_1)[1] +
-                  (*pafVar3)[2] * (*param_1)[2];
+        pafVar3 = mat + j;
+        dot = (*pafVar3)[0] * (*mat)[0] + (*pafVar3)[1] * (*mat)[1] + (*pafVar3)[2] * (*mat)[2];
       }
-      if (0.002 <= ABS(local_8)) {
+      if (0.002 <= ABS(dot)) {
         va("dot == %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.cpp",0x434,0,
                                  "%s\n\t%s");
@@ -1554,7 +1590,7 @@ void __cdecl ikNormalizedMatrixAssert_func(float (*param_1) [4])
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl ikRotateBone(IKState *param_1,IKBoneNames param_2,float *param_3,bool param_4)
+void __cdecl ikRotateBone(IKState *ikState,IKBoneNames boneName,float *rot,bool local)
 
 {
   float fVar1;
@@ -1648,29 +1684,29 @@ void __cdecl ikRotateBone(IKState *param_1,IKBoneNames param_2,float *param_3,bo
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_15 = '\x01';
-  bVar11 = IK_IsCalcBone(param_1,param_2);
+  bVar11 = IK_IsCalcBone(ikState,boneName);
   if (bVar11) {
-    local_1c = param_1->matArrayPostIK + param_2;
-    local_20 = param_2 - IKBONE_LHAND;
-    switch(param_2) {
+    local_1c = ikState->matArrayPostIK + boneName;
+    local_20 = boneName - IKBONE_LHAND;
+    switch(boneName) {
     case IKBONE_LHAND:
-      local_1c = param_1->handMats;
+      local_1c = ikState->handMats;
       break;
     default:
       local_15 = '\0';
       break;
     case IKBONE_RHAND:
-      local_1c = param_1->handMats + 1;
+      local_1c = ikState->handMats + 1;
       break;
     case IKBONE_LFOOT:
-      local_1c = param_1->footMats;
+      local_1c = ikState->footMats;
       break;
     case IKBONE_RFOOT:
-      local_1c = param_1->footMats + 1;
+      local_1c = ikState->footMats + 1;
     }
-    AnglesToAxis(param_3,(float (*) [3])local_44);
+    AnglesToAxis(rot,(float (*) [3])local_44);
     ikMatrixSet44((float (*) [4])&local_90,vec3_origin,(float (*) [3])local_44,1.0);
-    if (param_4) {
+    if (local) {
       fVar1 = (*local_1c)[0][0];
       fVar2 = (*local_1c)[0][1];
       fVar3 = (*local_1c)[0][2];
@@ -1702,11 +1738,11 @@ void __cdecl ikRotateBone(IKState *param_1,IKBoneNames param_2,float *param_3,bo
     }
     else {
       ikCalcBoneModelMatrix
-                (param_1,*(int *)(&IKBoneParents + param_2 * 4),(float *)param_1->matArrayPostIK,
+                (ikState,*(int *)(&IKBoneParents + boneName * 4),(float *)ikState->matArrayPostIK,
                  (float (*) [4])&local_d0);
       if (local_15 == '\0') {
         ikCalcBoneModelMatrix
-                  (param_1,param_2,(float *)param_1->matArrayPostIK,(float (*) [4])&local_110);
+                  (ikState,boneName,(float *)ikState->matArrayPostIK,(float (*) [4])&local_110);
         local_150 = local_110 * local_90 + local_10c * local_80 + local_108 * local_70;
         local_14c = local_110 * local_8c + local_10c * local_7c + local_108 * local_6c;
         local_148 = local_110 * local_88 + local_10c * local_78 + local_108 * local_68;
@@ -1795,13 +1831,13 @@ void __cdecl ikRotateBone(IKState *param_1,IKBoneNames param_2,float *param_3,bo
         (*local_1c)[2][3] = 0.0;
       }
     }
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
-    if (param_2 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)param_2 & 0x1f) | param_1->modifiedIKBones;
+    if (boneName != IKBONE_NONE) {
+      ikState->modifiedIKBones = 1 << ((byte)boneName & 0x1f) | ikState->modifiedIKBones;
     }
   }
   return;
@@ -1810,19 +1846,18 @@ void __cdecl ikRotateBone(IKState *param_1,IKBoneNames param_2,float *param_3,bo
 
 // 008891B0  ikMatrixLerp44  (ik/ik_math.cpp:1146)
 
-void __cdecl
-ikMatrixLerp44(float (*param_1) [4],float (*param_2) [4],float param_3,float (*param_4) [4])
+void __cdecl ikMatrixLerp44(float (*from) [4],float (*to) [4],float lerp,float (*res) [4])
 
 {
   float fVar1;
-  float local_58;
+  float aFrom;
   float local_54;
   float local_50;
-  float local_4c [3];
-  float local_40;
+  float pLerped [3];
+  float aLerped;
   float local_3c;
   float local_38;
-  float local_34;
+  float axis;
   float local_30;
   float local_2c;
   float local_28;
@@ -1831,39 +1866,39 @@ ikMatrixLerp44(float (*param_1) [4],float (*param_2) [4],float param_3,float (*p
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float aTo;
   float local_c;
   float local_8;
   
-  local_34 = (*param_1)[0];
-  local_30 = (*param_1)[1];
-  local_2c = (*param_1)[2];
-  local_28 = param_1[1][0];
-  local_24 = param_1[1][1];
-  local_20 = param_1[1][2];
-  local_1c = param_1[2][0];
-  local_18 = param_1[2][1];
-  local_14 = param_1[2][2];
-  AxisToAngles((float (*) [3])&local_34,&local_58);
-  local_34 = (*param_2)[0];
-  local_30 = (*param_2)[1];
-  local_2c = (*param_2)[2];
-  local_28 = param_2[1][0];
-  local_24 = param_2[1][1];
-  local_20 = param_2[1][2];
-  local_1c = param_2[2][0];
-  local_18 = param_2[2][1];
-  local_14 = param_2[2][2];
-  AxisToAngles((float (*) [3])&local_34,&local_10);
-  fVar1 = AngleNormalize180(local_10 - local_58);
-  local_40 = fVar1 * param_3 + local_58;
+  axis = (*from)[0];
+  local_30 = (*from)[1];
+  local_2c = (*from)[2];
+  local_28 = from[1][0];
+  local_24 = from[1][1];
+  local_20 = from[1][2];
+  local_1c = from[2][0];
+  local_18 = from[2][1];
+  local_14 = from[2][2];
+  AxisToAngles((float (*) [3])&axis,&aFrom);
+  axis = (*to)[0];
+  local_30 = (*to)[1];
+  local_2c = (*to)[2];
+  local_28 = to[1][0];
+  local_24 = to[1][1];
+  local_20 = to[1][2];
+  local_1c = to[2][0];
+  local_18 = to[2][1];
+  local_14 = to[2][2];
+  AxisToAngles((float (*) [3])&axis,&aTo);
+  fVar1 = AngleNormalize180(aTo - aFrom);
+  aLerped = fVar1 * lerp + aFrom;
   fVar1 = AngleNormalize180(local_c - local_54);
-  local_3c = fVar1 * param_3 + local_54;
+  local_3c = fVar1 * lerp + local_54;
   fVar1 = AngleNormalize180(local_8 - local_50);
-  local_38 = fVar1 * param_3 + local_50;
-  AnglesToAxis(&local_40,(float (*) [3])&local_34);
-  Vec3Lerp(param_1[3],param_2[3],param_3,local_4c);
-  ikMatrixSet44(param_4,local_4c,(float (*) [3])&local_34,1.0);
+  local_38 = fVar1 * lerp + local_50;
+  AnglesToAxis(&aLerped,(float (*) [3])&axis);
+  Vec3Lerp(from[3],to[3],lerp,pLerped);
+  ikMatrixSet44(res,pLerped,(float (*) [3])&axis,1.0);
   return;
 }
 

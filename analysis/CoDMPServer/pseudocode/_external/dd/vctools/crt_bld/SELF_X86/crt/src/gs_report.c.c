@@ -29,21 +29,21 @@ void __cdecl __report_gsfailure(void)
   byte in_ID;
   void *unaff_retaddr;
   UINT uExitCode;
-  uint local_32c;
+  uint cookie;
   uint local_328;
   
   GS_ContextRecord.EFlags =
        (uint)(in_NT & 1) * 0x4000 | (uint)SBORROW4((int)&stack0xfffffffc,0x328) * 0x800 |
-       (uint)(in_IF & 1) * 0x200 | (uint)(in_TF & 1) * 0x100 | (uint)((int)&local_32c < 0) * 0x80 |
+       (uint)(in_IF & 1) * 0x200 | (uint)(in_TF & 1) * 0x100 | (uint)((int)&cookie < 0) * 0x80 |
        (uint)(&stack0x00000000 == (undefined1 *)0x32c) * 0x40 | (uint)(in_AF & 1) * 0x10 |
-       (uint)((POPCOUNT((uint)&local_32c & 0xff) & 1U) == 0) * 4 |
+       (uint)((POPCOUNT((uint)&cookie & 0xff) & 1U) == 0) * 4 |
        (uint)(&stack0xfffffffc < (undefined1 *)0x328) | (uint)(in_ID & 1) * 0x200000 |
        (uint)(in_VIP & 1) * 0x100000 | (uint)(in_VIF & 1) * 0x80000 | (uint)(in_AC & 1) * 0x40000;
   GS_ContextRecord.Esp = (ulong)&stack0x00000004;
   GS_ContextRecord.ContextFlags = 0x10001;
   GS_ExceptionRecord.ExceptionCode = 0xc0000409;
   GS_ExceptionRecord.ExceptionFlags = 1;
-  local_32c = __security_cookie;
+  cookie = __security_cookie;
   local_328 = __security_cookie_complement;
   GS_ExceptionRecord.ExceptionAddress = unaff_retaddr;
   GS_ContextRecord.SegGs._0_2_ = in_GS;

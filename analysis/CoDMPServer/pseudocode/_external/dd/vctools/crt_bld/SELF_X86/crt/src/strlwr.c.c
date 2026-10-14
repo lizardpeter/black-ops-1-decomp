@@ -2,7 +2,7 @@
 
 // 00C11E29  _strlwr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlwr.c:61)
 
-char * __cdecl _strlwr(char *param_1)
+char * __cdecl _strlwr(char *string)
 
 {
   char cVar1;
@@ -10,15 +10,15 @@ char * __cdecl _strlwr(char *param_1)
   char *pcVar3;
   
   if (__locale_changed == 0) {
-    if (param_1 == (char *)0x0) {
+    if (string == (char *)0x0) {
       piVar2 = _errno();
       *piVar2 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-      param_1 = (char *)0x0;
+      string = (char *)0x0;
     }
     else {
-      cVar1 = *param_1;
-      pcVar3 = param_1;
+      cVar1 = *string;
+      pcVar3 = string;
       while (cVar1 != '\0') {
         cVar1 = *pcVar3;
         if (('@' < cVar1) && (cVar1 < '[')) {
@@ -30,9 +30,9 @@ char * __cdecl _strlwr(char *param_1)
     }
   }
   else {
-    _strlwr_s_l(param_1,0xffffffff,(localeinfo_struct *)0x0);
+    _strlwr_s_l(string,0xffffffff,(localeinfo_struct *)0x0);
   }
-  return param_1;
+  return string;
 }
 
 
@@ -41,108 +41,109 @@ char * __cdecl _strlwr(char *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Function: _alloca_probe_16 replaced with injection: alloca_probe */
 
-int __cdecl _strlwr_s_l_stat(char *param_1,uint param_2,localeinfo_struct *param_3)
+int __cdecl _strlwr_s_l_stat(char *string,uint sizeInBytes,localeinfo_struct *plocinfo)
 
 {
   char cVar1;
-  ulong uVar2;
-  int *piVar3;
-  uint uVar4;
-  undefined4 *puVar5;
-  int iVar6;
-  char *local_c;
+  ulong Locale;
+  int *piVar2;
+  uint uVar3;
+  undefined4 *puVar4;
+  int iVar5;
+  int dstsize;
+  uchar *dst;
   
-  if (param_1 != (char *)0x0) {
-    uVar4 = strnlen(param_1,param_2);
-    if (uVar4 < param_2) {
-      uVar2 = param_3->locinfo->lc_handle[2];
-      if (uVar2 == 0) {
-        cVar1 = *param_1;
+  if (string != (char *)0x0) {
+    uVar3 = strnlen(string,sizeInBytes);
+    if (uVar3 < sizeInBytes) {
+      Locale = plocinfo->locinfo->lc_handle[2];
+      if (Locale == 0) {
+        cVar1 = *string;
         while (cVar1 != '\0') {
-          cVar1 = *param_1;
+          cVar1 = *string;
           if (('@' < cVar1) && (cVar1 < '[')) {
-            *param_1 = cVar1 + ' ';
+            *string = cVar1 + ' ';
           }
-          param_1 = param_1 + 1;
-          cVar1 = *param_1;
+          string = string + 1;
+          cVar1 = *string;
         }
         return 0;
       }
-      uVar4 = __crtLCMapStringA(param_3,uVar2,0x100,param_1,-1,(char *)0x0,0,
-                                param_3->locinfo->lc_codepage,1);
-      if (uVar4 == 0) {
-        piVar3 = _errno();
-        *piVar3 = 0x2a;
+      uVar3 = __crtLCMapStringA(plocinfo,Locale,0x100,string,-1,(char *)0x0,0,
+                                plocinfo->locinfo->lc_codepage,1);
+      if (uVar3 == 0) {
+        piVar2 = _errno();
+        *piVar2 = 0x2a;
         goto LAB_00c11d1a;
       }
-      if (param_2 < uVar4) {
-        *param_1 = '\0';
-        piVar3 = _errno();
-        iVar6 = 0x22;
+      if (sizeInBytes < uVar3) {
+        *string = '\0';
+        piVar2 = _errno();
+        iVar5 = 0x22;
         goto LAB_00c11c97;
       }
-      if (((int)uVar4 < 1) || (0xffffffe0 / uVar4 == 0)) {
-        local_c = (char *)0x0;
+      if (((int)uVar3 < 1) || (0xffffffe0 / uVar3 == 0)) {
+        dst = (uchar *)0x0;
       }
-      else if (uVar4 + 8 < 0x401) {
-        puVar5 = (undefined4 *)&stack0xffffffe4;
-        local_c = &stack0xffffffe4;
+      else if (uVar3 + 8 < 0x401) {
+        puVar4 = (undefined4 *)&stack0xffffffe4;
+        dst = &stack0xffffffe4;
         if (&stack0x00000000 != (undefined1 *)0x1c) {
 LAB_00c11d77:
-          local_c = (char *)(puVar5 + 2);
+          dst = (uchar *)(puVar4 + 2);
         }
       }
       else {
-        puVar5 = malloc(uVar4 + 8);
-        local_c = (char *)0x0;
-        if (puVar5 != (undefined4 *)0x0) {
-          *puVar5 = 0xdddd;
+        puVar4 = malloc(uVar3 + 8);
+        dst = (uchar *)0x0;
+        if (puVar4 != (undefined4 *)0x0) {
+          *puVar4 = 0xdddd;
           goto LAB_00c11d77;
         }
       }
-      if (local_c != (char *)0x0) {
-        iVar6 = __crtLCMapStringA(param_3,param_3->locinfo->lc_handle[2],0x100,param_1,-1,local_c,
-                                  uVar4,param_3->locinfo->lc_codepage,1);
-        if (iVar6 == 0) {
-          piVar3 = _errno();
-          iVar6 = 0x2a;
-          *piVar3 = 0x2a;
+      if (dst != (uchar *)0x0) {
+        iVar5 = __crtLCMapStringA(plocinfo,plocinfo->locinfo->lc_handle[2],0x100,string,-1,
+                                  (char *)dst,uVar3,plocinfo->locinfo->lc_codepage,1);
+        if (iVar5 == 0) {
+          piVar2 = _errno();
+          iVar5 = 0x2a;
+          *piVar2 = 0x2a;
         }
         else {
-          iVar6 = strcpy_s(param_1,param_2,local_c);
+          iVar5 = strcpy_s(string,sizeInBytes,(char *)dst);
         }
-        _freea(local_c);
-        return iVar6;
+        _freea(dst);
+        return iVar5;
       }
-      piVar3 = _errno();
-      *piVar3 = 0xc;
+      piVar2 = _errno();
+      *piVar2 = 0xc;
 LAB_00c11d1a:
-      piVar3 = _errno();
-      return *piVar3;
+      piVar2 = _errno();
+      return *piVar2;
     }
-    *param_1 = '\0';
+    *string = '\0';
   }
-  piVar3 = _errno();
-  iVar6 = 0x16;
+  piVar2 = _errno();
+  iVar5 = 0x16;
 LAB_00c11c97:
-  *piVar3 = iVar6;
+  *piVar2 = iVar5;
   _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-  return iVar6;
+  return iVar5;
 }
 
 
 // 00C11DF5  _strlwr_s_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strlwr.c:202)
 
-int __cdecl _strlwr_s_l(char *param_1,uint param_2,localeinfo_struct *param_3)
+int __cdecl _strlwr_s_l(char *string,uint sizeInBytes,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_3);
-  iVar1 = _strlwr_s_l_stat(param_1,param_2,&local_14.localeinfo);
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  iVar1 = _strlwr_s_l_stat(string,sizeInBytes,&_loc_update.localeinfo);
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return iVar1;
 }
@@ -150,11 +151,11 @@ int __cdecl _strlwr_s_l(char *param_1,uint param_2,localeinfo_struct *param_3)
 
 // 00C11C52  _freea  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/malloc.h:252)
 
-void __cdecl _freea(void *param_1)
+void __cdecl _freea(void *_Memory)
 
 {
-  if ((param_1 != (void *)0x0) && (*(int *)((int)param_1 + -8) == 0xdddd)) {
-    free((int *)((int)param_1 + -8));
+  if ((_Memory != (void *)0x0) && (*(int *)((int)_Memory + -8) == 0xdddd)) {
+    free((int *)((int)_Memory + -8));
   }
   return;
 }

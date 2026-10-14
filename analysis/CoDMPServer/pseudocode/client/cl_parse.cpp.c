@@ -7,21 +7,21 @@
 
 void __cdecl
 CL_ParsePacketMatchState
-          (clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *param_4,
-          clSnapshot_t *param_5)
+          (clientActive_t *cl,msg_t *msg,int time,clSnapshot_t *oldframe,clSnapshot_t *newframe)
 
 {
   uint uVar1;
-  MatchState *local_8;
+  MatchState *newMatchState;
+  MatchState *oldMatchState;
   
-  local_8 = (MatchState *)0x0;
-  if (param_4 != (clSnapshot_t *)0x0) {
-    local_8 = param_1->parseMatchStates + (param_4->parseMatchStateNum & 0x1f);
+  oldMatchState = (MatchState *)0x0;
+  if (oldframe != (clSnapshot_t *)0x0) {
+    oldMatchState = cl->parseMatchStates + (oldframe->parseMatchStateNum & 0x1f);
   }
-  uVar1 = param_1->parseMatchStateNum;
-  param_5->parseMatchStateNum = param_1->parseMatchStateNum;
-  MSG_ReadDeltaMatchState(param_2,param_3,local_8,param_1->parseMatchStates + (uVar1 & 0x1f));
-  param_1->parseMatchStateNum = param_1->parseMatchStateNum + 1;
+  uVar1 = cl->parseMatchStateNum;
+  newframe->parseMatchStateNum = cl->parseMatchStateNum;
+  MSG_ReadDeltaMatchState(msg,time,oldMatchState,cl->parseMatchStates + (uVar1 & 0x1f));
+  cl->parseMatchStateNum = cl->parseMatchStateNum + 1;
   return;
 }
 

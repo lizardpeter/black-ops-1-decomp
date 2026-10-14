@@ -485,12 +485,12 @@ char * __cdecl UI_GetGameTypeName(char *param_1,bool param_2)
 void __cdecl UI_GenerateHeatMapTextureCallback(void *param_1)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   undefined1 auStack_8 [8];
   
-  puVar1 = (uchar *)0x0;
+  dst = (uchar *)0x0;
   (**(code **)(**(int **)param_1 + 0x4c))(*(int **)param_1,0,auStack_8,0,0x2000);
-  memcpy(puVar1,*(uchar **)((int)param_1 + 0x20),
+  memcpy(dst,*(uchar **)((int)param_1 + 0x20),
          (uint)*(ushort *)((int)param_1 + 0x16) * (uint)*(ushort *)((int)param_1 + 0x14) * 4);
   (**(code **)(**(int **)param_1 + 0x50))(*(int **)param_1,0);
   VirtualFree(*(LPVOID *)((int)param_1 + 0x20),0,0x8000);
@@ -511,15 +511,15 @@ void __cdecl UI_GenerateHeatMapTexture(int param_1)
   code *pcVar3;
   void *pvVar4;
   int iVar5;
-  char *pcVar6;
-  DWORD DVar7;
+  char *nptr;
+  DWORD DVar6;
   LargeLocal *in_ECX;
   LargeLocal *this;
-  DWORD *pDVar8;
+  DWORD *pDVar7;
   char *unaff_EDI;
-  char cVar9;
-  long64 lVar10;
-  undefined4 uVar11;
+  char cVar8;
+  long64 lVar9;
+  undefined4 uVar10;
   undefined4 uStack_8;
   int iStack_4;
   
@@ -552,51 +552,51 @@ void __cdecl UI_GenerateHeatMapTexture(int param_1)
 LAB_006450a1:
     bVar1 = Dvar_GetBool(unaff_EDI);
     if (!bVar1) {
-      lVar10 = CONCAT44((&DAT_025d768c)[param_1 * 0x12],(&DAT_025d7688)[param_1 * 0x12]);
+      lVar9 = CONCAT44((&DAT_025d768c)[param_1 * 0x12],(&DAT_025d7688)[param_1 * 0x12]);
       goto LAB_00645110;
     }
   }
   else {
     if (*(int *)(iVar5 + 0x10) == 0) {
-      cVar9 = *(char *)(iVar5 + 0x18);
+      cVar8 = *(char *)(iVar5 + 0x18);
     }
     else {
       iVar5 = atoi(*(char **)(iVar5 + 0x18));
-      cVar9 = iVar5 != 0;
+      cVar8 = iVar5 != 0;
     }
-    if (cVar9 == '\0') goto LAB_006450a1;
+    if (cVar8 == '\0') goto LAB_006450a1;
   }
   iVar5 = Com_HashString("selectedPlayerXuid",0);
   iVar5 = FUN_0069fda0(iVar5);
   if (iVar5 == 0) {
-    pcVar6 = "";
+    nptr = "";
   }
   else if (*(int *)(iVar5 + 0x10) == 6) {
     if (*(int *)(iVar5 + 0x58) == 0) {
-      pcVar6 = "";
+      nptr = "";
     }
     else {
-      pcVar6 = *(char **)(*(int *)(iVar5 + 0x5c) + *(int *)(iVar5 + 0x18) * 4);
+      nptr = *(char **)(*(int *)(iVar5 + 0x5c) + *(int *)(iVar5 + 0x18) * 4);
     }
   }
   else {
-    pcVar6 = *(char **)(iVar5 + 0x18);
+    nptr = *(char **)(iVar5 + 0x18);
   }
-  lVar10 = _atoi64(pcVar6);
+  lVar9 = _atoi64(nptr);
 LAB_00645110:
-  uVar11 = (undefined4)((ulonglong)lVar10 >> 0x20);
+  uVar10 = (undefined4)((ulonglong)lVar9 >> 0x20);
   MatchRecord_GenerateHeatMapData
             (puVar2,(uint)*(ushort *)((int)pvVar4 + 0x14),(uint)*(ushort *)((int)pvVar4 + 0x16),
-             (int)lVar10,CONCAT44(unaff_EDI,uVar11));
-  FUN_00644e00(puVar2,(int)lVar10,uVar11,ui_heatMapColorForPlayer);
+             (int)lVar9,CONCAT44(unaff_EDI,uVar10));
+  FUN_00644e00(puVar2,(int)lVar9,uVar10,ui_heatMapColorForPlayer);
   RB_Resource_CallbackParam(UI_GenerateHeatMapTextureCallback,pvVar4);
-  pDVar8 = (DWORD *)(*(int *)ThreadLocalStoragePointer + 0x54);
-  if (*pDVar8 == 0) {
-    pDVar8 = (DWORD *)(*(int *)ThreadLocalStoragePointer + 0x54);
-    DVar7 = GetCurrentThreadId();
-    *pDVar8 = DVar7;
+  pDVar7 = (DWORD *)(*(int *)ThreadLocalStoragePointer + 0x54);
+  if (*pDVar7 == 0) {
+    pDVar7 = (DWORD *)(*(int *)ThreadLocalStoragePointer + 0x54);
+    DVar6 = GetCurrentThreadId();
+    *pDVar7 = DVar6;
   }
-  if (*pDVar8 == DAT_01da49a4) {
+  if (*pDVar7 == DAT_01da49a4) {
     DAT_03508c40 = uStack_8;
     return;
   }

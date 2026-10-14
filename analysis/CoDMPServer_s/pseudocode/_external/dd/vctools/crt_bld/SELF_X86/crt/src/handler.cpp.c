@@ -2,17 +2,17 @@
 
 // 0096C86E  _initp_heap_handler  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/handler.cpp:31)
 
-void __cdecl _initp_heap_handler(void *param_1)
+void __cdecl _initp_heap_handler(void *enull)
 
 {
-  _pnhHeap = param_1;
+  _pnhHeap = enull;
   return;
 }
 
 
 // 0096C87D  _callnewh  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/handler.cpp:131)
 
-int __cdecl _callnewh(uint param_1)
+int __cdecl _callnewh(uint size)
 
 {
   code *pcVar1;
@@ -20,7 +20,7 @@ int __cdecl _callnewh(uint param_1)
   
   pcVar1 = _decode_pointer(_pnhHeap);
   if (pcVar1 != (code *)0x0) {
-    iVar2 = (*pcVar1)(param_1);
+    iVar2 = (*pcVar1)(size);
     if (iVar2 != 0) {
       return 1;
     }

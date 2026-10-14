@@ -2,12 +2,12 @@
 
 // 004A46B0  CG_GetPicWidth  (cgame/cg_drawtools.cpp:44)
 
-float __cdecl CG_GetPicWidth(Material *param_1)
+float __cdecl CG_GetPicWidth(Material *mat)
 
 {
   Material *pMVar1;
   
-  pMVar1 = Material_FromHandle(param_1);
+  pMVar1 = Material_FromHandle(mat);
   return (float)((pMVar1->textureTable->u).image)->width;
 }
 
@@ -16,8 +16,8 @@ float __cdecl CG_GetPicWidth(Material *param_1)
 
 void __cdecl
 CG_DrawRotatedPicPhysicalW
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          float param_6,float param_7,float *param_8,Material *param_9)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float width,float height,float angle,
+          float *color,Material *material)
 
 {
   float10 fVar1;
@@ -25,43 +25,45 @@ CG_DrawRotatedPicPhysicalW
   float fVar3;
   float fVar4;
   float fVar5;
-  float local_48 [8];
-  int local_28;
-  float local_24;
+  float cos;
+  float halfWidth;
+  float verts [8];
+  int i;
+  float scale;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
+  float halfHeight;
+  float center;
   float local_c;
-  float local_8;
+  float sin;
   
-  fVar1 = (float10)fcos((float10)(param_7 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(param_7 * 0.017453292));
-  local_8 = (float)fVar2;
+  fVar1 = (float10)fcos((float10)(angle * 0.017453292));
+  fVar2 = (float10)fsin((float10)(angle * 0.017453292));
+  sin = (float)fVar2;
   fVar3 = ScrPlace_HiResGetScale();
-  fVar3 = ((param_5 * 0.5) / fVar3) * param_1->scaleRealToVirtual[0];
+  fVar3 = ((width * 0.5) / fVar3) * scrPlace->scaleRealToVirtual[0];
   fVar4 = ScrPlace_HiResGetScale();
-  local_14 = ((param_6 * 0.5) / fVar4) * param_1->scaleRealToVirtual[1];
+  halfHeight = ((height * 0.5) / fVar4) * scrPlace->scaleRealToVirtual[1];
   fVar4 = ScrPlace_HiResGetScale();
-  local_10 = (param_2 / fVar4) * param_1->scaleRealToVirtual[0] + fVar3;
+  center = (x / fVar4) * scrPlace->scaleRealToVirtual[0] + fVar3;
   fVar4 = ScrPlace_HiResGetScale();
-  local_c = (param_3 / fVar4) * param_1->scaleRealToVirtual[1] + local_14;
-  local_24 = (float)fVar1 * fVar3;
-  local_20 = local_8 * fVar3;
-  local_1c = local_8 * local_14;
-  local_18 = (float)fVar1 * local_14;
-  for (local_28 = 0; local_28 < 4; local_28 = local_28 + 1) {
-    fVar3 = sign[local_28][1] * local_1c;
-    fVar4 = sign[local_28][0] * local_24 + local_10;
+  local_c = (y / fVar4) * scrPlace->scaleRealToVirtual[1] + halfHeight;
+  scale = (float)fVar1 * fVar3;
+  local_20 = sin * fVar3;
+  local_1c = sin * halfHeight;
+  local_18 = (float)fVar1 * halfHeight;
+  for (i = 0; i < 4; i = i + 1) {
+    fVar3 = sign[i][1] * local_1c;
+    fVar4 = sign[i][0] * scale + center;
     fVar5 = ScrPlace_HiResGetScale();
-    local_48[local_28 * 2] = fVar5 * (fVar4 - fVar3) * param_1->scaleVirtualToReal[0];
-    fVar3 = sign[local_28][1] * local_18;
-    fVar4 = sign[local_28][0] * local_20 + local_c;
+    verts[i * 2] = fVar5 * (fVar4 - fVar3) * scrPlace->scaleVirtualToReal[0];
+    fVar3 = sign[i][1] * local_18;
+    fVar4 = sign[i][0] * local_20 + local_c;
     fVar5 = ScrPlace_HiResGetScale();
-    local_48[local_28 * 2 + 1] = fVar5 * (fVar4 + fVar3) * param_1->scaleVirtualToReal[1];
+    verts[i * 2 + 1] = fVar5 * (fVar4 + fVar3) * scrPlace->scaleVirtualToReal[1];
   }
-  R_AddCmdDrawQuadPicW((float (*) [2])local_48,param_4,param_8,param_9);
+  R_AddCmdDrawQuadPicW((float (*) [2])verts,w,color,material);
   return;
 }
 
@@ -70,11 +72,11 @@ CG_DrawRotatedPicPhysicalW
 
 void __cdecl
 CG_DrawRotatedPicPhysical
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          float param_6,float *param_7,Material *param_8)
+          (ScreenPlacement *scrPlace,float x,float y,float width,float height,float angle,
+          float *color,Material *material)
 
 {
-  CG_DrawRotatedPicPhysicalW(param_1,param_2,param_3,1.0,param_4,param_5,param_6,param_7,param_8);
+  CG_DrawRotatedPicPhysicalW(scrPlace,x,y,1.0,width,height,angle,color,material);
   return;
 }
 
@@ -82,14 +84,12 @@ CG_DrawRotatedPicPhysical
 // 004A49E0  CG_DrawRotatedPicW  (cgame/cg_drawtools.cpp:99)
 
 void __cdecl
-CG_DrawRotatedPicW(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,int param_7,int param_8,float param_9,float *param_10,
-                  Material *param_11)
+CG_DrawRotatedPicW(ScreenPlacement *scrPlace,float x,float y,float w,float width,float height,
+                  int horzAlign,int vertAlign,float angle,float *color,Material *material)
 
 {
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_5,&param_6,param_7,param_8);
-  CG_DrawRotatedPicPhysicalW
-            (param_1,param_2,param_3,param_4,param_5,param_6,param_9,param_10,param_11);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&width,&height,horzAlign,vertAlign);
+  CG_DrawRotatedPicPhysicalW(scrPlace,x,y,w,width,height,angle,color,material);
   return;
 }
 
@@ -97,12 +97,12 @@ CG_DrawRotatedPicW(ScreenPlacement *param_1,float param_2,float param_3,float pa
 // 004A4A50  CG_DrawRotatedPic  (cgame/cg_drawtools.cpp:105)
 
 void __cdecl
-CG_DrawRotatedPic(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                 int param_6,int param_7,float param_8,float *param_9,Material *param_10)
+CG_DrawRotatedPic(ScreenPlacement *scrPlace,float x,float y,float width,float height,int horzAlign,
+                 int vertAlign,float angle,float *color,Material *material)
 
 {
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  CG_DrawRotatedPicPhysical(param_1,param_2,param_3,param_4,param_5,param_8,param_9,param_10);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&width,&height,horzAlign,vertAlign);
+  CG_DrawRotatedPicPhysical(scrPlace,x,y,width,height,angle,color,material);
   return;
 }
 
@@ -111,8 +111,8 @@ CG_DrawRotatedPic(ScreenPlacement *param_1,float param_2,float param_3,float par
 
 void __cdecl
 CG_DrawRotatedQuadPic
-          (ScreenPlacement *param_1,float param_2,float param_3,float (*param_4) [2],float param_5,
-          float *param_6,Material *param_7)
+          (ScreenPlacement *scrPlace,float x,float y,float (*verts) [2],float angle,float *color,
+          Material *material)
 
 {
   float fVar1;
@@ -125,41 +125,41 @@ CG_DrawRotatedQuadPic
   float fVar8;
   float fVar9;
   float fVar10;
-  float local_2c [8];
-  float local_c;
-  int local_8;
+  float c;
+  float xy [8];
+  float s;
+  int i;
   
-  fVar2 = (float10)fcos((float10)(param_5 * 0.017453292));
-  fVar3 = (float10)fsin((float10)(param_5 * 0.017453292));
-  local_c = (float)fVar3;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
+  fVar2 = (float10)fcos((float10)(angle * 0.017453292));
+  fVar3 = (float10)fsin((float10)(angle * 0.017453292));
+  s = (float)fVar3;
+  for (i = 0; i < 4; i = i + 1) {
     fVar6 = ScrPlace_HiResGetScale();
-    fVar1 = param_1->scaleRealToVirtual[0];
-    fVar5 = param_4[local_8][0];
+    fVar1 = scrPlace->scaleRealToVirtual[0];
+    fVar5 = verts[i][0];
     fVar7 = ScrPlace_HiResGetScale();
-    fVar10 = param_1->scaleRealToVirtual[0];
-    fVar4 = param_4[local_8][1];
+    fVar10 = scrPlace->scaleRealToVirtual[0];
+    fVar4 = verts[i][1];
     fVar8 = ScrPlace_HiResGetScale();
-    fVar4 = (fVar4 / fVar8) * param_1->scaleRealToVirtual[1] * local_c;
+    fVar4 = (fVar4 / fVar8) * scrPlace->scaleRealToVirtual[1] * s;
     fVar8 = ScrPlace_HiResGetScale();
-    local_2c[local_8 * 2] =
-         fVar8 * (((fVar5 / fVar7) * fVar10 * (float)fVar2 + (param_2 / fVar6) * fVar1) - fVar4) *
-         param_1->scaleVirtualToReal[0];
+    xy[i * 2] = fVar8 * (((fVar5 / fVar7) * fVar10 * (float)fVar2 + (x / fVar6) * fVar1) - fVar4) *
+                scrPlace->scaleVirtualToReal[0];
     fVar7 = ScrPlace_HiResGetScale();
-    fVar1 = param_1->scaleRealToVirtual[1];
-    fVar5 = param_4[local_8][0];
+    fVar1 = scrPlace->scaleRealToVirtual[1];
+    fVar5 = verts[i][0];
     fVar8 = ScrPlace_HiResGetScale();
-    fVar10 = param_1->scaleRealToVirtual[0];
-    fVar4 = param_4[local_8][1];
+    fVar10 = scrPlace->scaleRealToVirtual[0];
+    fVar4 = verts[i][1];
     fVar9 = ScrPlace_HiResGetScale();
-    fVar6 = param_1->scaleRealToVirtual[1];
-    fVar5 = (fVar5 / fVar8) * fVar10 * local_c;
+    fVar6 = scrPlace->scaleRealToVirtual[1];
+    fVar5 = (fVar5 / fVar8) * fVar10 * s;
     fVar10 = ScrPlace_HiResGetScale();
-    local_2c[local_8 * 2 + 1] =
-         fVar10 * (fVar5 + (param_3 / fVar7) * fVar1 + (fVar4 / fVar9) * fVar6 * (float)fVar2) *
-         param_1->scaleVirtualToReal[1];
+    xy[i * 2 + 1] =
+         fVar10 * (fVar5 + (y / fVar7) * fVar1 + (fVar4 / fVar9) * fVar6 * (float)fVar2) *
+         scrPlace->scaleVirtualToReal[1];
   }
-  R_AddCmdDrawQuadPic((float (*) [2])local_2c,param_6,param_7);
+  R_AddCmdDrawQuadPic((float (*) [2])xy,color,material);
   return;
 }
 
@@ -167,44 +167,48 @@ CG_DrawRotatedQuadPic
 // 004A4CB0  CG_DrawVLine  (cgame/cg_drawtools.cpp:135)
 
 void __cdecl
-CG_DrawVLine(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-            int param_6,int param_7,float *param_8,Material *param_9)
+CG_DrawVLine(ScreenPlacement *scrPlace,float x,float top,float lineWidth,float height,int horzAlign,
+            int vertAlign,float *color,Material *material)
 
 {
-  float local_34 [8];
-  int local_14;
-  float local_10;
-  float local_c;
+  float halfWidth;
+  float verts [8];
+  int i;
+  float halfHeight;
+  float center;
   float local_8;
   
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  local_10 = param_5 * 0.5;
-  local_c = param_2;
-  local_8 = param_3 + local_10;
-  for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
-    local_34[local_14 * 2] = sign[local_14][0] * param_4 * 0.5 + local_c;
-    local_34[local_14 * 2 + 1] = sign[local_14][1] * local_10 + local_8;
+  ScrPlace_ApplyRect(scrPlace,&x,&top,&lineWidth,&height,horzAlign,vertAlign);
+  halfHeight = height * 0.5;
+  center = x;
+  local_8 = top + halfHeight;
+  for (i = 0; i < 4; i = i + 1) {
+    verts[i * 2] = sign[i][0] * lineWidth * 0.5 + center;
+    verts[i * 2 + 1] = sign[i][1] * halfHeight + local_8;
   }
-  R_AddCmdDrawQuadPic((float (*) [2])local_34,param_8,param_9);
+  R_AddCmdDrawQuadPic((float (*) [2])verts,color,material);
   return;
 }
 
 
 // 004A4D90  Vec2NormalizeTo  (universal/com_vector.h:209)
 
-float __cdecl Vec2NormalizeTo(float *param_1,float *param_2)
+float __cdecl Vec2NormalizeTo(float *v,float *out)
 
 {
   float fVar1;
   float local_14;
+  float safeLength;
+  float ilength;
+  float length;
   
-  fVar1 = SQRT(*param_1 * *param_1 + param_1[1] * param_1[1]);
+  fVar1 = SQRT(*v * *v + v[1] * v[1]);
   local_14 = fVar1;
   if (0.0 <= -fVar1) {
     local_14 = 1.0;
   }
-  *param_2 = *param_1 * (1.0 / local_14);
-  param_2[1] = param_1[1] * (1.0 / local_14);
+  *out = *v * (1.0 / local_14);
+  out[1] = v[1] * (1.0 / local_14);
   return fVar1;
 }
 
@@ -212,18 +216,20 @@ float __cdecl Vec2NormalizeTo(float *param_1,float *param_2)
 // 004A4E40  CG_DrawStringExt  (cgame/cg_drawtools.cpp:247)
 
 void __cdecl
-CG_DrawStringExt(ScreenPlacement *param_1,float param_2,float param_3,char *param_4,float *param_5,
-                int param_6,int param_7,float param_8,int param_9)
+CG_DrawStringExt(ScreenPlacement *scrPlace,float x,float y,char *string,float *setColor,
+                int forceColor,int shadow,float charHeight,int adjust)
 
 {
-  Font_s *pFVar1;
+  Font_s *font_00;
+  Font_s *font;
+  float fontScale;
   
-  if (param_5 == (float *)0x0) {
-    param_5 = colorWhite;
+  if (setColor == (float *)0x0) {
+    setColor = colorWhite;
   }
-  pFVar1 = UI_GetFontHandle(param_1,5,param_8 / 48.0);
-  UI_DrawText(param_1,param_4,0x7fffffff,pFVar1,param_2,param_8 * 0.8 + param_3,1,1,param_8 / 48.0,
-              param_5,-(uint)(param_7 != 0) & 3);
+  font_00 = UI_GetFontHandle(scrPlace,5,charHeight / 48.0);
+  UI_DrawText(scrPlace,string,0x7fffffff,font_00,x,charHeight * 0.8 + y,1,1,charHeight / 48.0,
+              setColor,-(uint)(shadow != 0) & 3);
   return;
 }
 
@@ -231,15 +237,18 @@ CG_DrawStringExt(ScreenPlacement *param_1,float param_2,float param_3,char *para
 // 004A4EE0  CG_DrawDevString  (cgame/cg_drawtools.cpp:264)
 
 int __cdecl
-CG_DrawDevString(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                char *param_6,float *param_7,int param_8,Font_s *param_9)
+CG_DrawDevString(ScreenPlacement *scrPlace,float x,float y,float xScale,float yScale,char *s,
+                float *color,int align,Font_s *font)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  float width;
+  float height;
+  int step;
   
-  if ((((param_8 & 3U) != 1) && ((param_8 & 3U) != 2)) && ((param_8 & 3U) != 3)) {
+  if ((((align & 3U) != 1) && ((align & 3U) != 2)) && ((align & 3U) != 3)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",0x117,0,
                              "%s");
     if (!bVar2) {
@@ -248,15 +257,15 @@ CG_DrawDevString(ScreenPlacement *param_1,float param_2,float param_3,float para
       return iVar3;
     }
   }
-  if ((param_8 & 3U) == 2) {
-    iVar3 = R_TextWidth(param_6,0,param_9);
-    param_2 = param_2 - (float)iVar3 * param_4;
+  if ((align & 3U) == 2) {
+    iVar3 = R_TextWidth(s,0,font);
+    x = x - (float)iVar3 * xScale;
   }
-  else if ((param_8 & 3U) == 3) {
-    iVar3 = R_TextWidth(param_6,0,param_9);
-    param_2 = param_2 - (float)iVar3 * param_4 * 0.5;
+  else if ((align & 3U) == 3) {
+    iVar3 = R_TextWidth(s,0,font);
+    x = x - (float)iVar3 * xScale * 0.5;
   }
-  if ((((param_8 & 0xcU) != 4) && ((param_8 & 0xcU) != 8)) && ((param_8 & 0xcU) != 0xc)) {
+  if ((((align & 0xcU) != 4) && ((align & 0xcU) != 8)) && ((align & 0xcU) != 0xc)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",0x123,0,
                              "%s");
     if (!bVar2) {
@@ -265,14 +274,14 @@ CG_DrawDevString(ScreenPlacement *param_1,float param_2,float param_3,float para
       return iVar3;
     }
   }
-  iVar3 = R_TextHeight(param_9);
-  if ((param_8 & 0xcU) == 4) {
-    param_3 = param_3 + (float)iVar3 * param_5;
+  iVar3 = R_TextHeight(font);
+  if ((align & 0xcU) == 4) {
+    y = y + (float)iVar3 * yScale;
   }
-  else if ((param_8 & 0xcU) == 0xc) {
-    param_3 = (float)iVar3 * param_5 * 0.5 + param_3;
+  else if ((align & 0xcU) == 0xc) {
+    y = (float)iVar3 * yScale * 0.5 + y;
   }
-  CL_DrawText(param_1,param_6,0x7fffffff,param_9,param_2,param_3,1,1,param_4,param_5,param_7,0);
+  CL_DrawText(scrPlace,s,0x7fffffff,font,x,y,1,1,xScale,yScale,color,0);
   return iVar3;
 }
 
@@ -280,21 +289,20 @@ CG_DrawDevString(ScreenPlacement *param_1,float param_2,float param_3,float para
 // 004A50B0  CG_DrawBigDevString  (cgame/cg_drawtools.cpp:315)
 
 int __cdecl
-CG_DrawBigDevString(ScreenPlacement *param_1,float param_2,float param_3,char *param_4,float param_5
-                   ,int param_6)
+CG_DrawBigDevString(ScreenPlacement *scrPlace,float x,float y,char *s,float alpha,int align)
 
 {
   int iVar1;
-  float local_14;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = 1.0;
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
-  local_8 = param_5;
-  iVar1 = CG_DrawBigDevStringColor(param_1,param_2,param_3,param_4,&local_14,param_6);
+  local_8 = alpha;
+  iVar1 = CG_DrawBigDevStringColor(scrPlace,x,y,s,&color,align);
   return iVar1;
 }
 
@@ -302,15 +310,12 @@ CG_DrawBigDevString(ScreenPlacement *param_1,float param_2,float param_3,char *p
 // 004A5120  CG_DrawBigDevStringColor  (cgame/cg_drawtools.cpp:324)
 
 int __cdecl
-CG_DrawBigDevStringColor
-          (ScreenPlacement *param_1,float param_2,float param_3,char *param_4,float *param_5,
-          int param_6)
+CG_DrawBigDevStringColor(ScreenPlacement *scrPlace,float x,float y,char *s,float *color,int align)
 
 {
   int iVar1;
   
-  iVar1 = CG_DrawDevString(param_1,param_2,param_3,1.0,1.0,param_4,param_5,param_6,
-                           cgMedia.bigDevFont);
+  iVar1 = CG_DrawDevString(scrPlace,x,y,1.0,1.0,s,color,align,cgMedia.bigDevFont);
   return iVar1;
 }
 
@@ -318,31 +323,29 @@ CG_DrawBigDevStringColor
 // 004A5160  CG_DrawSmallDevStringColor  (cgame/cg_drawtools.cpp:339)
 
 int __cdecl
-CG_DrawSmallDevStringColor
-          (ScreenPlacement *param_1,float param_2,float param_3,char *param_4,float *param_5,
-          int param_6)
+CG_DrawSmallDevStringColor(ScreenPlacement *scrPlace,float x,float y,char *s,float *color,int align)
 
 {
   int iVar1;
   
-  iVar1 = CG_DrawDevString(param_1,param_2,param_3,0.563,0.563,param_4,param_5,param_6,
-                           cgMedia.smallDevFont);
+  iVar1 = CG_DrawDevString(scrPlace,x,y,0.563,0.563,s,color,align,cgMedia.smallDevFont);
   return iVar1;
 }
 
 
 // 004A51B0  CG_FadeAlpha  (cgame/cg_drawtools.cpp:345)
 
-float __cdecl CG_FadeAlpha(int param_1,int param_2,int param_3,int param_4)
+float __cdecl CG_FadeAlpha(int timeNow,int startMsec,int totalMsec,int fadeMsec)
 
 {
   float fVar1;
+  int t;
   
-  if ((param_4 < 1) || (param_4 <= param_3 - (param_1 - param_2))) {
+  if ((fadeMsec < 1) || (fadeMsec <= totalMsec - (timeNow - startMsec))) {
     fVar1 = 1.0;
   }
   else {
-    fVar1 = ((float)(param_3 - (param_1 - param_2)) * 1.0) / (float)param_4;
+    fVar1 = ((float)(totalMsec - (timeNow - startMsec)) * 1.0) / (float)fadeMsec;
   }
   return fVar1;
 }
@@ -350,16 +353,17 @@ float __cdecl CG_FadeAlpha(int param_1,int param_2,int param_3,int param_4)
 
 // 004A51F0  CG_FadeColor  (cgame/cg_drawtools.cpp:359)
 
-float * __cdecl CG_FadeColor(int param_1,int param_2,int param_3,int param_4)
+float * __cdecl CG_FadeColor(int timeNow,int startMsec,int totalMsec,int fadeMsec)
 
 {
   float *pfVar1;
+  int t;
   
-  if (param_2 == 0) {
+  if (startMsec == 0) {
     pfVar1 = (float *)0x0;
   }
-  else if (param_1 - param_2 < param_3) {
-    color[3] = CG_FadeAlpha(param_1,param_2,param_3,param_4);
+  else if (timeNow - startMsec < totalMsec) {
+    color[3] = CG_FadeAlpha(timeNow,startMsec,totalMsec,fadeMsec);
     color[2] = 1.0;
     color[1] = 1.0;
     color[0] = 1.0;
@@ -379,7 +383,7 @@ float * __cdecl CG_FadeColor(int param_1,int param_2,int param_3,int param_4)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_MiniMapChanged(int param_1)
+void __cdecl CG_MiniMapChanged(int localClientNum)
 
 {
   float fVar1;
@@ -388,32 +392,33 @@ void __cdecl CG_MiniMapChanged(int param_1)
   char *pcVar4;
   float fVar5;
   double dVar6;
-  char *local_2c;
-  char *local_28;
-  float local_c;
+  cg_s *cgameGlob;
+  char *string;
+  char *material;
+  float lowerRight;
   
-  local_2c = CL_GetConfigString(0x60d);
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  local_28 = Com_Parse(&local_2c);
-  pMVar3 = Material_RegisterHandle(local_28,7);
+  string = CL_GetConfigString(0x60d);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  material = Com_Parse(&string);
+  pMVar3 = Material_RegisterHandle(material,7);
   pcVar2->compassMapMaterial = pMVar3;
-  pcVar4 = Com_Parse(&local_2c);
+  pcVar4 = Com_Parse(&string);
   dVar6 = atof(pcVar4);
   pcVar2->compassMapUpperLeft[0] = (float)dVar6;
-  pcVar4 = Com_Parse(&local_2c);
+  pcVar4 = Com_Parse(&string);
   dVar6 = atof(pcVar4);
   pcVar2->compassMapUpperLeft[1] = (float)dVar6;
-  pcVar4 = Com_Parse(&local_2c);
+  pcVar4 = Com_Parse(&string);
   dVar6 = atof(pcVar4);
-  local_c = (float)dVar6;
-  pcVar4 = Com_Parse(&local_2c);
+  lowerRight = (float)dVar6;
+  pcVar4 = Com_Parse(&string);
   dVar6 = atof(pcVar4);
   fVar1 = pcVar2->compassNorth[1];
-  local_c = local_c - pcVar2->compassMapUpperLeft[0];
+  lowerRight = lowerRight - pcVar2->compassMapUpperLeft[0];
   fVar5 = (float)dVar6 - pcVar2->compassMapUpperLeft[1];
   pcVar2->compassMapWorldSize[0] =
-       local_c * pcVar2->compassNorth[1] + fVar5 * -pcVar2->compassNorth[0];
-  pcVar2->compassMapWorldSize[1] = local_c * -pcVar2->compassNorth[0] + fVar5 * -fVar1;
+       lowerRight * pcVar2->compassNorth[1] + fVar5 * -pcVar2->compassNorth[0];
+  pcVar2->compassMapWorldSize[1] = lowerRight * -pcVar2->compassNorth[0] + fVar5 * -fVar1;
   if (pcVar2->compassMapWorldSize[0] == 0.0) {
     pcVar2->compassMapWorldSize[0] = 1000.0;
   }
@@ -431,39 +436,41 @@ void __cdecl CG_MiniMapChanged(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_NorthDirectionChanged(int param_1)
+void __cdecl CG_NorthDirectionChanged(int localClientNum)
 
 {
   float10 fVar1;
-  char *pcVar2;
-  cg_s *pcVar3;
-  float10 fVar4;
-  double dVar5;
+  char *nptr;
+  cg_s *pcVar2;
+  float10 fVar3;
+  double dVar4;
+  cg_s *cgameGlob;
+  char *pszString;
   
-  pcVar2 = CL_GetConfigString(0x60c);
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  dVar5 = atof(pcVar2);
-  pcVar3->compassNorthYaw = (float)dVar5;
-  fVar4 = (float10)(pcVar3->compassNorthYaw * 0.017453292);
-  fVar1 = (float10)fcos(fVar4);
-  fVar4 = (float10)fsin(fVar4);
-  pcVar3->compassNorth[0] = (float)fVar1;
-  pcVar3->compassNorth[1] = (float)fVar4;
-  CG_MiniMapChanged(param_1);
+  nptr = CL_GetConfigString(0x60c);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  dVar4 = atof(nptr);
+  pcVar2->compassNorthYaw = (float)dVar4;
+  fVar3 = (float10)(pcVar2->compassNorthYaw * 0.017453292);
+  fVar1 = (float10)fcos(fVar3);
+  fVar3 = (float10)fsin(fVar3);
+  pcVar2->compassNorth[0] = (float)fVar1;
+  pcVar2->compassNorth[1] = (float)fVar3;
+  CG_MiniMapChanged(localClientNum);
   return;
 }
 
 
 // 004A46E0  Material_FromHandle  (gfx_d3d/r_material.h:536)
 
-Material * __cdecl Material_FromHandle(Material *param_1)
+Material * __cdecl Material_FromHandle(Material *handle)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
   
-  if (param_1 == (Material *)0x0) {
+  if (handle == (Material *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../gfx_d3d/r_material.h",
                              0x21a,0,"%s");
     if (!bVar2) {
@@ -472,7 +479,7 @@ Material * __cdecl Material_FromHandle(Material *param_1)
       return pMVar3;
     }
   }
-  if ((param_1->info).name == (char *)0x0) {
+  if ((handle->info).name == (char *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../gfx_d3d/r_material.h",
                              0x21b,0,"%s");
     if (!bVar2) {
@@ -481,7 +488,7 @@ Material * __cdecl Material_FromHandle(Material *param_1)
       return pMVar3;
     }
   }
-  if (*(param_1->info).name == '\0') {
+  if (*(handle->info).name == '\0') {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../gfx_d3d/r_material.h",
                              0x21d,0,"%s");
     if (!bVar2) {
@@ -490,47 +497,46 @@ Material * __cdecl Material_FromHandle(Material *param_1)
       return pMVar3;
     }
   }
-  return param_1;
+  return handle;
 }
 
 
 // 004A5730  CG_DebugBoxOriented  (cgame/cg_drawtools.cpp:663)
 
 void __cdecl
-CG_DebugBoxOriented(float *param_1,float *param_2,float *param_3,float (*param_4) [3],float *param_5
-                   ,int param_6,int param_7)
+CG_DebugBoxOriented(float *origin,float *mins,float *maxs,float (*rotation) [3],float *color,
+                   int depthTest,int duration)
 
 {
   float local_88;
-  uint local_78;
-  float local_74;
+  uint j;
+  float rotated;
   float local_70;
   float local_6c;
-  uint local_68;
+  uint i;
   float afStack_64 [24];
   
-  for (local_68 = 0; local_68 < 8; local_68 = local_68 + 1) {
-    for (local_78 = 0; local_78 < 3; local_78 = local_78 + 1) {
-      if ((1 << ((byte)local_78 & 0x1f) & local_68) == 0) {
-        local_88 = param_2[local_78];
+  for (i = 0; i < 8; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      if ((1 << ((byte)j & 0x1f) & i) == 0) {
+        local_88 = mins[j];
       }
       else {
-        local_88 = param_3[local_78];
+        local_88 = maxs[j];
       }
-      afStack_64[local_68 * 3 + local_78] = local_88;
+      afStack_64[i * 3 + j] = local_88;
     }
-    MatrixTransformVector(afStack_64 + local_68 * 3,param_4,&local_74);
-    afStack_64[local_68 * 3] = local_74;
-    afStack_64[local_68 * 3 + 1] = local_70;
-    afStack_64[local_68 * 3 + 2] = local_6c;
-    afStack_64[local_68 * 3] = afStack_64[local_68 * 3] + *param_1;
-    afStack_64[local_68 * 3 + 1] = afStack_64[local_68 * 3 + 1] + param_1[1];
-    afStack_64[local_68 * 3 + 2] = afStack_64[local_68 * 3 + 2] + param_1[2];
+    MatrixTransformVector(afStack_64 + i * 3,rotation,&rotated);
+    afStack_64[i * 3] = rotated;
+    afStack_64[i * 3 + 1] = local_70;
+    afStack_64[i * 3 + 2] = local_6c;
+    afStack_64[i * 3] = afStack_64[i * 3] + *origin;
+    afStack_64[i * 3 + 1] = afStack_64[i * 3 + 1] + origin[1];
+    afStack_64[i * 3 + 2] = afStack_64[i * 3 + 2] + origin[2];
   }
-  for (local_68 = 0; local_68 < 0xc; local_68 = local_68 + 1) {
+  for (i = 0; i < 0xc; i = i + 1) {
     G_DebugLineWithDuration
-              (afStack_64 + edge[local_68][0] * 3,afStack_64 + edge[local_68][1] * 3,param_5,param_6
-               ,param_7);
+              (afStack_64 + edge[i][0] * 3,afStack_64 + edge[i][1] * 3,color,depthTest,duration);
   }
   return;
 }
@@ -538,30 +544,32 @@ CG_DebugBoxOriented(float *param_1,float *param_2,float *param_3,float (*param_4
 
 // 004A5B80  CG_ScoreboardTeamColor  (cgame/cg_drawtools.cpp:767)
 
-void __cdecl CG_ScoreboardTeamColor(int param_1,int param_2,float *param_3)
+void __cdecl CG_ScoreboardTeamColor(int localClientNum,int team,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  UILocalVarContext *pUVar4;
-  UILocalVar *pUVar5;
-  char *pcVar6;
-  StringTable *local_28;
-  float local_24;
+  UILocalVarContext *context;
+  UILocalVar *pUVar4;
+  char *pcVar5;
+  UILocalVar *var;
+  char *teamName;
+  StringTable *tablePtr;
+  float COLOR_ALLIES;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14;
+  float COLOR_AXIS;
   float local_10;
   float local_c;
   float local_8;
   
-  local_24 = 0.384;
+  COLOR_ALLIES = 0.384;
   local_20 = 0.725;
   local_1c = 0.725;
   local_18 = 1.0;
-  local_14 = 0.619;
+  COLOR_AXIS = 0.619;
   local_10 = 0.043;
   local_c = 0.058;
   local_8 = 1.0;
@@ -570,55 +578,55 @@ void __cdecl CG_ScoreboardTeamColor(int param_1,int param_2,float *param_3)
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    pcVar6 = "ui_team";
-    iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-    pUVar4 = UI_UIContext_GetLocalVarsContext(iVar3);
-    pUVar5 = UILocalVar_Find(pUVar4,pcVar6);
-    StringTable_GetAsset("mp/mapsTable.csv",&local_28);
+    pcVar5 = "ui_team";
+    iVar3 = Com_LocalClient_GetUIContextIndex(localClientNum);
+    context = UI_UIContext_GetLocalVarsContext(iVar3);
+    pUVar4 = UILocalVar_Find(context,pcVar5);
+    StringTable_GetAsset("mp/mapsTable.csv",&tablePtr);
     iVar3 = 1;
-    pcVar6 = Dvar_GetString("mapname");
-    StringTable_Lookup(local_28,0,pcVar6,iVar3);
-    switch(param_2) {
+    pcVar5 = Dvar_GetString("mapname");
+    StringTable_Lookup(tablePtr,0,pcVar5,iVar3);
+    switch(team) {
     case 0:
-      if ((pUVar5 == (UILocalVar *)0x0) ||
-         (iVar3 = I_strcmp((pUVar5->u).string,"opfor"), iVar3 != 0)) {
-        if ((pUVar5 == (UILocalVar *)0x0) ||
-           (iVar3 = I_strcmp((pUVar5->u).string,"marines"), iVar3 != 0)) {
-          Dvar_GetUnpackedColor(cg_ScoresColor_Free,param_3);
+      if ((pUVar4 == (UILocalVar *)0x0) ||
+         (iVar3 = I_strcmp((pUVar4->u).string,"opfor"), iVar3 != 0)) {
+        if ((pUVar4 == (UILocalVar *)0x0) ||
+           (iVar3 = I_strcmp((pUVar4->u).string,"marines"), iVar3 != 0)) {
+          Dvar_GetUnpackedColor(cg_ScoresColor_Free,color);
         }
         else {
-          *param_3 = local_24;
-          param_3[1] = local_20;
-          param_3[2] = local_1c;
-          param_3[3] = local_18;
+          *color = COLOR_ALLIES;
+          color[1] = local_20;
+          color[2] = local_1c;
+          color[3] = local_18;
         }
       }
       else {
-        *param_3 = local_14;
-        param_3[1] = local_10;
-        param_3[2] = local_c;
-        param_3[3] = local_8;
+        *color = COLOR_AXIS;
+        color[1] = local_10;
+        color[2] = local_c;
+        color[3] = local_8;
       }
       break;
     case 1:
-      *param_3 = local_14;
-      param_3[1] = local_10;
-      param_3[2] = local_c;
-      param_3[3] = local_8;
+      *color = COLOR_AXIS;
+      color[1] = local_10;
+      color[2] = local_c;
+      color[3] = local_8;
       break;
     case 2:
-      *param_3 = local_24;
-      param_3[1] = local_20;
-      param_3[2] = local_1c;
-      param_3[3] = local_18;
+      *color = COLOR_ALLIES;
+      color[1] = local_20;
+      color[2] = local_1c;
+      color[3] = local_18;
       break;
     case 3:
-      Dvar_GetUnpackedColor(cg_ScoresColor_Spectator,param_3);
+      Dvar_GetUnpackedColor(cg_ScoresColor_Spectator,color);
       break;
     default:
-      pcVar6 = va("Unknown team: %i");
+      pcVar5 = va("Unknown team: %i");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",0x335,0,
-                               pcVar6);
+                               pcVar5);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
@@ -637,7 +645,7 @@ void __cdecl CG_ScoreboardTeamColor(int param_1,int param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_RelativeTeamColor(int param_1,float *param_2,int param_3)
+void __cdecl CG_RelativeTeamColor(int clientNum,float *color,int localClientNum)
 
 {
   float fVar1;
@@ -646,9 +654,14 @@ void __cdecl CG_RelativeTeamColor(int param_1,float *param_2,int param_3)
   int iVar4;
   cg_s *pcVar5;
   int iVar6;
+  clientInfo_t *otherPlayer;
+  cg_s *cgameGlob;
+  clientInfo_t *localPlayer;
+  float savedAlpha;
+  int teamIndicator;
   
-  iVar4 = CG_GetTeamIndicator(param_3);
-  pcVar5 = CG_GetLocalClientGlobals(param_3);
+  iVar4 = CG_GetTeamIndicator(localClientNum);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
   if ((0x1f < (uint)pcVar5->clientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",0x344,0,
                                "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -657,29 +670,29 @@ void __cdecl CG_RelativeTeamColor(int param_1,float *param_2,int param_3)
     (*pcVar2)();
     return;
   }
-  iVar6 = param_1 * 0x5c8;
-  fVar1 = param_2[3];
+  iVar6 = clientNum * 0x5c8;
+  fVar1 = color[3];
   if (*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) == 3) {
-    Dvar_GetUnpackedColor(cg_TeamColor_Spectator,param_2);
+    Dvar_GetUnpackedColor(cg_TeamColor_Spectator,color);
   }
-  else if ((param_1 == pcVar5->clientNum) ||
+  else if ((clientNum == pcVar5->clientNum) ||
           ((*(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c) != 0 &&
            (*(int *)((int)(pcVar5->bgs).clientinfo + pcVar5->clientNum * 0x5c8 + 0x2c) ==
             *(int *)((int)(pcVar5->bgs).clientinfo + iVar6 + 0x2c))))) {
     if (iVar4 == 3) {
-      Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,param_2);
+      Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,color);
     }
     else {
-      Dvar_GetUnpackedColor(cg_TeamColor_MyTeam,param_2);
+      Dvar_GetUnpackedColor(cg_TeamColor_MyTeam,color);
     }
   }
   else if (iVar4 == 3) {
-    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,param_2);
+    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,color);
   }
   else {
-    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeam,param_2);
+    Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeam,color);
   }
-  param_2[3] = fVar1;
+  color[3] = fVar1;
   return;
 }
 
@@ -692,103 +705,103 @@ void __cdecl CG_RelativeTeamColor(int param_1,float *param_2,int param_3)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_XModelDebugBoxes(int param_1,centity_s *param_2,float *param_3,int *param_4,int param_5)
+CG_XModelDebugBoxes(int localClientNum,centity_s *cent,float *color,int *partBits,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
-  XModel *pXVar3;
-  DObjAnimMat *local_334;
-  uint local_330;
-  XBoneInfo *local_32c [160];
-  int local_ac;
-  int local_a8;
-  DObj *local_a4;
-  float local_a0;
+  XModel *pose;
+  DObjAnimMat *boneMatrix;
+  uint j;
+  XBoneInfo *boneInfoArray [160];
+  int numBones;
+  int boneIndex;
+  DObj *obj;
+  float start;
   undefined4 local_9c;
   undefined4 local_98;
-  float local_94;
+  float end;
   undefined4 local_90;
   undefined4 local_8c;
-  int local_88;
-  float local_84 [9];
+  int size;
+  float boneAxis [9];
   float local_60;
   float local_5c;
   float local_58;
-  int local_54;
-  int (*local_50) [3];
-  float local_4c;
+  int localBoneIndex;
+  int (*tempBoxVerts) [3];
+  float org;
   float local_48;
   float local_44;
-  XBoneInfo *local_40;
-  float local_3c [9];
-  float local_18;
+  XBoneInfo *boneInfo;
+  float axis [9];
+  float vec;
   undefined4 local_14;
   undefined4 local_10;
-  int local_c;
-  int local_8;
+  int modelCount;
+  int modelIndex;
   
-  local_a4 = Com_GetClientDObj((param_2->nextState).number,param_1);
-  if ((local_a4 == (DObj *)0x0) &&
+  obj = Com_GetClientDObj((cent->nextState).number,localClientNum);
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",900,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_ac = DObjNumBones(local_a4);
-  if ((0xa0 < local_ac) &&
+  numBones = DObjNumBones(obj);
+  if ((0xa0 < numBones) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_drawtools.cpp",0x387,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  DObjGetBoneInfo(local_a4,local_32c);
-  local_334 = DObjGetRotTransArray(local_a4);
-  AnglesToAxis((param_2->pose).angles,(float (*) [3])local_3c);
-  local_c = DObjGetNumModels(local_a4);
-  local_a8 = 0;
-  for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-    pXVar3 = DObjGetModel(local_a4,local_8);
-    local_88 = XModelNumBones(pXVar3);
-    bVar2 = DObjIgnoreCollision(local_a4,local_8);
+  DObjGetBoneInfo(obj,boneInfoArray);
+  boneMatrix = DObjGetRotTransArray(obj);
+  AnglesToAxis((cent->pose).angles,(float (*) [3])axis);
+  modelCount = DObjGetNumModels(obj);
+  boneIndex = 0;
+  for (modelIndex = 0; modelIndex < modelCount; modelIndex = modelIndex + 1) {
+    pose = DObjGetModel(obj,modelIndex);
+    size = XModelNumBones(pose);
+    bVar2 = DObjIgnoreCollision(obj,modelIndex);
     if (bVar2) {
-      local_a8 = local_a8 + local_88;
-      local_334 = local_334 + local_88;
+      boneIndex = boneIndex + size;
+      boneMatrix = boneMatrix + size;
     }
     else {
-      for (local_54 = 0; local_54 < local_88; local_54 = local_54 + 1) {
-        if ((param_4 == (int *)0x0) ||
-           ((0x80000000U >> ((byte)local_a8 & 0x1f) & param_4[local_a8 >> 5]) != 0)) {
-          local_40 = local_32c[local_a8];
-          local_50 = boxVerts;
-          ConvertQuatToMat(local_334,(float (*) [3])local_84);
-          local_60 = local_334->trans[0];
-          local_5c = local_334->trans[1];
-          local_58 = local_334->trans[2];
-          for (local_330 = 0; local_330 < 0xc; local_330 = local_330 + 1) {
-            local_4c = local_40->bounds[(*local_50)[0]][0];
-            local_48 = local_40->bounds[(*local_50)[1]][1];
-            local_44 = local_40->bounds[(*local_50)[2]][2];
-            MatrixTransformVector43(&local_4c,(float (*) [3])local_84,&local_18);
-            local_a0 = local_18;
+      for (localBoneIndex = 0; localBoneIndex < size; localBoneIndex = localBoneIndex + 1) {
+        if ((partBits == (int *)0x0) ||
+           ((0x80000000U >> ((byte)boneIndex & 0x1f) & partBits[boneIndex >> 5]) != 0)) {
+          boneInfo = boneInfoArray[boneIndex];
+          tempBoxVerts = boxVerts;
+          ConvertQuatToMat(boneMatrix,(float (*) [3])boneAxis);
+          local_60 = boneMatrix->trans[0];
+          local_5c = boneMatrix->trans[1];
+          local_58 = boneMatrix->trans[2];
+          for (j = 0; j < 0xc; j = j + 1) {
+            org = boneInfo->bounds[(*tempBoxVerts)[0]][0];
+            local_48 = boneInfo->bounds[(*tempBoxVerts)[1]][1];
+            local_44 = boneInfo->bounds[(*tempBoxVerts)[2]][2];
+            MatrixTransformVector43(&org,(float (*) [3])boneAxis,&vec);
+            start = vec;
             local_9c = local_14;
             local_98 = local_10;
-            local_4c = local_40->bounds[local_50[1][0]][0];
-            local_48 = local_40->bounds[local_50[1][1]][1];
-            local_44 = local_40->bounds[local_50[1][2]][2];
-            local_50 = local_50 + 1;
-            MatrixTransformVector43(&local_4c,(float (*) [3])local_84,&local_18);
-            local_94 = local_18;
+            org = boneInfo->bounds[tempBoxVerts[1][0]][0];
+            local_48 = boneInfo->bounds[tempBoxVerts[1][1]][1];
+            local_44 = boneInfo->bounds[tempBoxVerts[1][2]][2];
+            tempBoxVerts = tempBoxVerts + 1;
+            MatrixTransformVector43(&org,(float (*) [3])boneAxis,&vec);
+            end = vec;
             local_90 = local_14;
             local_8c = local_10;
-            local_50 = local_50 + 1;
-            G_DebugLineWithDuration(&local_a0,&local_94,param_3,0,param_5);
+            tempBoxVerts = tempBoxVerts + 1;
+            G_DebugLineWithDuration(&start,&end,color,0,duration);
           }
         }
-        local_334 = local_334 + 1;
-        local_a8 = local_a8 + 1;
+        boneMatrix = boneMatrix + 1;
+        boneIndex = boneIndex + 1;
       }
     }
   }
@@ -798,7 +811,7 @@ CG_XModelDebugBoxes(int param_1,centity_s *param_2,float *param_3,int *param_4,i
 
 // 004A6320  ConvertQuatToMat  (universal/com_math.h:1497)
 
-void __cdecl ConvertQuatToMat(DObjAnimMat *param_1,float (*param_2) [3])
+void __cdecl ConvertQuatToMat(DObjAnimMat *mat,float (*axis) [3])
 
 {
   code *pcVar1;
@@ -812,11 +825,20 @@ void __cdecl ConvertQuatToMat(DObjAnimMat *param_1,float (*param_2) [3])
   float fVar9;
   float fVar10;
   float fVar11;
+  float yy;
+  float xy;
+  float zz;
+  float zw;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
   
-  if ((((((uint)param_1->quat[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->quat[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->quat[2] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->quat[3] & 0x7f800000) == 0x7f800000)) {
+  if ((((((uint)mat->quat[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)mat->quat[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)mat->quat[2] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)mat->quat[3] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x5dd,0,"%s"
                             );
     if (!bVar2) {
@@ -825,7 +847,7 @@ void __cdecl ConvertQuatToMat(DObjAnimMat *param_1,float (*param_2) [3])
       return;
     }
   }
-  if (((uint)param_1->transWeight & 0x7f800000) == 0x7f800000) {
+  if (((uint)mat->transWeight & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x5de,0,"%s"
                             );
     if (!bVar2) {
@@ -834,28 +856,28 @@ void __cdecl ConvertQuatToMat(DObjAnimMat *param_1,float (*param_2) [3])
       return;
     }
   }
-  fVar5 = param_1->transWeight;
-  fVar3 = fVar5 * param_1->quat[0];
-  fVar4 = fVar5 * param_1->quat[1];
-  fVar5 = fVar5 * param_1->quat[2];
-  fVar6 = fVar3 * param_1->quat[0];
-  fVar7 = fVar3 * param_1->quat[1];
-  fVar8 = fVar3 * param_1->quat[2];
-  fVar3 = fVar3 * param_1->quat[3];
-  fVar9 = fVar4 * param_1->quat[1];
-  fVar10 = fVar4 * param_1->quat[2];
-  fVar4 = fVar4 * param_1->quat[3];
-  fVar11 = fVar5 * param_1->quat[2];
-  fVar5 = fVar5 * param_1->quat[3];
-  (*param_2)[0] = 1.0 - (fVar9 + fVar11);
-  (*param_2)[1] = fVar7 + fVar5;
-  (*param_2)[2] = fVar8 - fVar4;
-  param_2[1][0] = fVar7 - fVar5;
-  param_2[1][1] = 1.0 - (fVar6 + fVar11);
-  param_2[1][2] = fVar10 + fVar3;
-  param_2[2][0] = fVar8 + fVar4;
-  param_2[2][1] = fVar10 - fVar3;
-  param_2[2][2] = 1.0 - (fVar6 + fVar9);
+  fVar5 = mat->transWeight;
+  fVar3 = fVar5 * mat->quat[0];
+  fVar4 = fVar5 * mat->quat[1];
+  fVar5 = fVar5 * mat->quat[2];
+  fVar6 = fVar3 * mat->quat[0];
+  fVar7 = fVar3 * mat->quat[1];
+  fVar8 = fVar3 * mat->quat[2];
+  fVar3 = fVar3 * mat->quat[3];
+  fVar9 = fVar4 * mat->quat[1];
+  fVar10 = fVar4 * mat->quat[2];
+  fVar4 = fVar4 * mat->quat[3];
+  fVar11 = fVar5 * mat->quat[2];
+  fVar5 = fVar5 * mat->quat[3];
+  (*axis)[0] = 1.0 - (fVar9 + fVar11);
+  (*axis)[1] = fVar7 + fVar5;
+  (*axis)[2] = fVar8 - fVar4;
+  axis[1][0] = fVar7 - fVar5;
+  axis[1][1] = 1.0 - (fVar6 + fVar11);
+  axis[1][2] = fVar10 + fVar3;
+  axis[2][0] = fVar8 + fVar4;
+  axis[2][1] = fVar10 - fVar3;
+  axis[2][2] = 1.0 - (fVar6 + fVar9);
   return;
 }
 

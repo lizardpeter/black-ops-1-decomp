@@ -2,7 +2,7 @@
 
 // 0098F0B0  __libm_sse2_log  (line unknown)
 
-double __cdecl __libm_sse2_log(double param_1)
+double __cdecl __libm_sse2_log(double x)
 
 {
   double dVar1;

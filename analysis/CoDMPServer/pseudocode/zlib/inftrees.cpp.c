@@ -5,295 +5,291 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-inflate_table(codetype param_1,ushort *param_2,uint param_3,code **param_4,uint *param_5,
-             ushort *param_6)
+inflate_table(codetype type,ushort *lens,uint codes,code **table,uint *bits,ushort *work)
 
 {
   char cVar1;
   int iVar2;
   byte bVar3;
   byte bVar4;
-  short local_dc;
-  short local_d8;
-  ushort local_d4;
-  short local_d0;
-  short local_cc;
-  short local_c8;
-  short local_c4;
-  short local_c0;
-  short local_bc;
-  short local_b8;
-  short local_b4;
-  short local_b0;
-  short local_ac;
-  short local_a8;
-  short local_a4;
-  short local_a0;
-  uint local_9c;
-  uint local_98;
-  ushort local_94;
-  uint local_90;
-  uint local_8c;
-  int local_88;
+  ushort count9;
+  ushort count14;
+  ushort count0;
+  ushort count3;
+  ushort count5;
+  ushort count11;
+  ushort count7;
+  ushort count13;
+  ushort count1;
+  ushort count4;
+  ushort count10;
+  ushort count8;
+  ushort count15;
+  ushort count2;
+  ushort count6;
+  ushort count12;
+  uint max;
+  uint used;
+  ushort this_val;
+  uint low;
+  uint sym;
+  uint fill;
   ushort auStack_84 [17];
-  uchar local_61;
-  uint local_60;
-  int local_5c;
-  uint local_58;
-  int local_54;
-  code *local_50;
-  uint local_4c;
-  uint local_48;
-  uint local_44;
-  uint local_40;
-  uint local_3c;
-  uint local_38;
-  ushort *local_34;
-  byte local_2d;
-  ushort *local_2c;
-  ushort local_28 [16];
+  uchar this_op;
+  uint incr;
+  int end;
+  uint len;
+  int left;
+  code *next;
+  uint root;
+  uint curr;
+  uint drop;
+  uint mask;
+  uint min;
+  uint huff;
+  ushort *base;
+  uchar this_bits;
+  ushort *extra;
+  ushort count [16];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_d4 = 0;
-  local_bc = 0;
-  local_a8 = 0;
-  local_d0 = 0;
-  local_b8 = 0;
-  local_cc = 0;
-  local_a4 = 0;
-  local_c4 = 0;
-  local_b0 = 0;
-  local_dc = 0;
-  local_b4 = 0;
-  local_c8 = 0;
-  local_a0 = 0;
-  local_c0 = 0;
-  local_d8 = 0;
-  local_ac = 0;
-  for (local_8c = 0; local_8c < param_3; local_8c = local_8c + 1) {
-    switch(param_2[local_8c]) {
+  count0 = 0;
+  count1 = 0;
+  count2 = 0;
+  count3 = 0;
+  count4 = 0;
+  count5 = 0;
+  count6 = 0;
+  count7 = 0;
+  count8 = 0;
+  count9 = 0;
+  count10 = 0;
+  count11 = 0;
+  count12 = 0;
+  count13 = 0;
+  count14 = 0;
+  count15 = 0;
+  for (sym = 0; sym < codes; sym = sym + 1) {
+    switch(lens[sym]) {
     case 0:
-      local_d4 = local_d4 + 1;
+      count0 = count0 + 1;
       break;
     case 1:
-      local_bc = local_bc + 1;
+      count1 = count1 + 1;
       break;
     case 2:
-      local_a8 = local_a8 + 1;
+      count2 = count2 + 1;
       break;
     case 3:
-      local_d0 = local_d0 + 1;
+      count3 = count3 + 1;
       break;
     case 4:
-      local_b8 = local_b8 + 1;
+      count4 = count4 + 1;
       break;
     case 5:
-      local_cc = local_cc + 1;
+      count5 = count5 + 1;
       break;
     case 6:
-      local_a4 = local_a4 + 1;
+      count6 = count6 + 1;
       break;
     case 7:
-      local_c4 = local_c4 + 1;
+      count7 = count7 + 1;
       break;
     case 8:
-      local_b0 = local_b0 + 1;
+      count8 = count8 + 1;
       break;
     case 9:
-      local_dc = local_dc + 1;
+      count9 = count9 + 1;
       break;
     case 10:
-      local_b4 = local_b4 + 1;
+      count10 = count10 + 1;
       break;
     case 0xb:
-      local_c8 = local_c8 + 1;
+      count11 = count11 + 1;
       break;
     case 0xc:
-      local_a0 = local_a0 + 1;
+      count12 = count12 + 1;
       break;
     case 0xd:
-      local_c0 = local_c0 + 1;
+      count13 = count13 + 1;
       break;
     case 0xe:
-      local_d8 = local_d8 + 1;
+      count14 = count14 + 1;
       break;
     case 0xf:
-      local_ac = local_ac + 1;
+      count15 = count15 + 1;
     }
   }
-  local_28[0] = local_d4;
-  local_28[1] = local_bc;
-  local_28[2] = local_a8;
-  local_28[3] = local_d0;
-  local_28[4] = local_b8;
-  local_28[5] = local_cc;
-  local_28[6] = local_a4;
-  local_28[7] = local_c4;
-  local_28[8] = local_b0;
-  local_28[9] = local_dc;
-  local_28[10] = local_b4;
-  local_28[0xb] = local_c8;
-  local_28[0xc] = local_a0;
-  local_28[0xd] = local_c0;
-  local_28[0xe] = local_d8;
-  local_28[0xf] = local_ac;
-  local_4c = *param_5;
-  for (local_9c = 0xf; (local_9c != 0 && (local_28[local_9c] == 0)); local_9c = local_9c - 1) {
+  count[0] = count0;
+  count[1] = count1;
+  count[2] = count2;
+  count[3] = count3;
+  count[4] = count4;
+  count[5] = count5;
+  count[6] = count6;
+  count[7] = count7;
+  count[8] = count8;
+  count[9] = count9;
+  count[10] = count10;
+  count[0xb] = count11;
+  count[0xc] = count12;
+  count[0xd] = count13;
+  count[0xe] = count14;
+  count[0xf] = count15;
+  root = *bits;
+  for (max = 0xf; (max != 0 && (count[max] == 0)); max = max - 1) {
   }
-  if (local_9c < *param_5) {
-    local_4c = local_9c;
+  if (max < *bits) {
+    root = max;
   }
-  if (local_9c == 0) {
-    (*param_4)->op = '@';
-    (*param_4)->bits = '\x01';
-    (*param_4)->val = 0;
-    (*param_4)[1].op = '@';
-    (*param_4)[1].bits = '\x01';
-    (*param_4)[1].val = 0;
-    *param_4 = *param_4 + 2;
-    *param_4 = *param_4 + 2;
-    *param_5 = 1;
+  if (max == 0) {
+    (*table)->op = '@';
+    (*table)->bits = '\x01';
+    (*table)->val = 0;
+    (*table)[1].op = '@';
+    (*table)[1].bits = '\x01';
+    (*table)[1].val = 0;
+    *table = *table + 2;
+    *table = *table + 2;
+    *bits = 1;
     iVar2 = 0;
   }
   else {
-    for (local_3c = 1; (local_3c < 0x10 && (local_28[local_3c] == 0)); local_3c = local_3c + 1) {
+    for (min = 1; (min < 0x10 && (count[min] == 0)); min = min + 1) {
     }
-    if (local_4c < local_3c) {
-      local_4c = local_3c;
+    if (root < min) {
+      root = min;
     }
-    local_54 = 1;
-    for (local_58 = 1; local_58 < 0x10; local_58 = local_58 + 1) {
-      local_54 = local_54 * 2;
-      local_54 = local_54 - (uint)local_28[local_58];
-      if (local_54 < 0) {
+    left = 1;
+    for (len = 1; len < 0x10; len = len + 1) {
+      left = left * 2;
+      left = left - (uint)count[len];
+      if (left < 0) {
         return -1;
       }
     }
-    if ((local_54 < 1) || ((param_1 != CODES && (local_9c == 1)))) {
+    if ((left < 1) || ((type != CODES && (max == 1)))) {
       auStack_84[1] = 0;
-      for (local_58 = 1; local_58 < 0xf; local_58 = local_58 + 1) {
-        auStack_84[local_58 + 1] = auStack_84[local_58] + local_28[local_58];
+      for (len = 1; len < 0xf; len = len + 1) {
+        auStack_84[len + 1] = auStack_84[len] + count[len];
       }
-      for (local_8c = 0; local_8c < param_3; local_8c = local_8c + 1) {
-        if (param_2[local_8c] != 0) {
-          param_6[auStack_84[param_2[local_8c]]] = (ushort)local_8c;
-          auStack_84[param_2[local_8c]] = auStack_84[param_2[local_8c]] + 1;
+      for (sym = 0; sym < codes; sym = sym + 1) {
+        if (lens[sym] != 0) {
+          work[auStack_84[lens[sym]]] = (ushort)sym;
+          auStack_84[lens[sym]] = auStack_84[lens[sym]] + 1;
         }
       }
-      if (param_1 == CODES) {
-        local_2c = param_6;
-        local_34 = param_6;
-        local_5c = 0x13;
+      if (type == CODES) {
+        extra = work;
+        base = work;
+        end = 0x13;
       }
-      else if (param_1 == LENS) {
-        local_34 = &lenfix[0x1af].val;
-        local_2c = &lenfix[0x19f].val;
-        local_5c = 0x100;
+      else if (type == LENS) {
+        base = &lenfix[0x1af].val;
+        extra = &lenfix[0x19f].val;
+        end = 0x100;
       }
       else {
-        local_34 = dbase;
-        local_2c = dext;
-        local_5c = -1;
+        base = dbase;
+        extra = dext;
+        end = -1;
       }
-      local_38 = 0;
-      local_8c = 0;
-      local_58 = local_3c;
-      local_50 = *param_4;
-      local_48 = local_4c;
-      local_44 = 0;
-      local_90 = 0xffffffff;
-      bVar3 = (byte)local_4c;
-      local_98 = 1 << (bVar3 & 0x1f);
-      local_40 = local_98 - 1;
-      if ((param_1 == LENS) && (0x5af < local_98)) {
+      huff = 0;
+      sym = 0;
+      len = min;
+      next = *table;
+      curr = root;
+      drop = 0;
+      low = 0xffffffff;
+      bVar3 = (byte)root;
+      used = 1 << (bVar3 & 0x1f);
+      mask = used - 1;
+      if ((type == LENS) && (0x5af < used)) {
         iVar2 = 1;
       }
       else {
 LAB_00810143:
         do {
-          bVar4 = (byte)local_44;
-          cVar1 = (char)local_58;
-          local_2d = cVar1 - bVar4;
-          if ((int)(uint)param_6[local_8c] < local_5c) {
-            local_61 = '\0';
-            local_94 = param_6[local_8c];
+          bVar4 = (byte)drop;
+          cVar1 = (char)len;
+          this_bits = cVar1 - bVar4;
+          if ((int)(uint)work[sym] < end) {
+            this_op = '\0';
+            this_val = work[sym];
           }
-          else if (local_5c < (int)(uint)param_6[local_8c]) {
-            local_61 = (uchar)local_2c[param_6[local_8c]];
-            local_94 = local_34[param_6[local_8c]];
+          else if (end < (int)(uint)work[sym]) {
+            this_op = (uchar)extra[work[sym]];
+            this_val = base[work[sym]];
           }
           else {
-            local_61 = '`';
-            local_94 = 0;
+            this_op = '`';
+            this_val = 0;
           }
-          local_88 = 1 << ((byte)local_48 & 0x1f);
-          local_3c = 1 << ((byte)local_48 & 0x1f);
+          fill = 1 << ((byte)curr & 0x1f);
+          min = 1 << ((byte)curr & 0x1f);
           do {
-            local_88 = local_88 - (1 << (cVar1 - bVar4 & 0x1f));
-            local_50[(local_38 >> (bVar4 & 0x1f)) + local_88].op = local_61;
-            local_50[(local_38 >> (bVar4 & 0x1f)) + local_88].bits = cVar1 - bVar4;
-            local_50[(local_38 >> (bVar4 & 0x1f)) + local_88].val = local_94;
-          } while (local_88 != 0);
-          for (local_60 = 1 << (cVar1 - 1U & 0x1f); (local_38 & local_60) != 0;
-              local_60 = local_60 >> 1) {
+            fill = fill - (1 << (cVar1 - bVar4 & 0x1f));
+            next[(huff >> (bVar4 & 0x1f)) + fill].op = this_op;
+            next[(huff >> (bVar4 & 0x1f)) + fill].bits = cVar1 - bVar4;
+            next[(huff >> (bVar4 & 0x1f)) + fill].val = this_val;
+          } while (fill != 0);
+          for (incr = 1 << (cVar1 - 1U & 0x1f); (huff & incr) != 0; incr = incr >> 1) {
           }
-          if (local_60 == 0) {
-            local_38 = 0;
+          if (incr == 0) {
+            huff = 0;
           }
           else {
-            local_38 = (local_60 - 1 & local_38) + local_60;
+            huff = (incr - 1 & huff) + incr;
           }
-          local_8c = local_8c + 1;
-          local_28[local_58] = local_28[local_58] - 1;
-          if (local_28[local_58] == 0) {
-            if (local_58 == local_9c) {
-              local_2d = cVar1 - bVar4;
-              while (local_38 != 0) {
-                if ((local_44 != 0) && ((local_38 & local_40) != local_90)) {
-                  local_44 = 0;
-                  local_58 = local_4c;
-                  local_50 = *param_4;
-                  local_2d = bVar3;
+          sym = sym + 1;
+          count[len] = count[len] - 1;
+          if (count[len] == 0) {
+            if (len == max) {
+              this_bits = cVar1 - bVar4;
+              while (huff != 0) {
+                if ((drop != 0) && ((huff & mask) != low)) {
+                  drop = 0;
+                  len = root;
+                  next = *table;
+                  this_bits = bVar3;
                 }
-                bVar4 = (byte)local_44;
-                local_50[local_38 >> (bVar4 & 0x1f)].op = '@';
-                local_50[local_38 >> (bVar4 & 0x1f)].bits = local_2d;
-                local_50[local_38 >> (bVar4 & 0x1f)].val = 0;
-                for (local_60 = 1 << ((char)local_58 - 1U & 0x1f); (local_38 & local_60) != 0;
-                    local_60 = local_60 >> 1) {
+                bVar4 = (byte)drop;
+                next[huff >> (bVar4 & 0x1f)].op = '@';
+                next[huff >> (bVar4 & 0x1f)].bits = this_bits;
+                next[huff >> (bVar4 & 0x1f)].val = 0;
+                for (incr = 1 << ((char)len - 1U & 0x1f); (huff & incr) != 0; incr = incr >> 1) {
                 }
-                if (local_60 == 0) {
-                  local_38 = 0;
+                if (incr == 0) {
+                  huff = 0;
                 }
                 else {
-                  local_38 = (local_60 - 1 & local_38) + local_60;
+                  huff = (incr - 1 & huff) + incr;
                 }
               }
-              *param_4 = *param_4 + local_98;
-              *param_5 = local_4c;
+              *table = *table + used;
+              *bits = root;
               return 0;
             }
-            local_58 = (uint)param_2[param_6[local_8c]];
+            len = (uint)lens[work[sym]];
           }
-        } while ((local_58 <= local_4c) || ((local_38 & local_40) == local_90));
-        if (local_44 == 0) {
-          local_44 = local_4c;
+        } while ((len <= root) || ((huff & mask) == low));
+        if (drop == 0) {
+          drop = root;
         }
-        local_50 = local_50 + local_3c;
-        local_54 = 1 << ((byte)(local_58 - local_44) & 0x1f);
-        for (local_48 = local_58 - local_44; local_48 + local_44 < local_9c; local_48 = local_48 + 1
-            ) {
-          local_54 = local_54 - (uint)local_28[local_48 + local_44];
-          if (local_54 < 1) break;
-          local_54 = local_54 * 2;
+        next = next + min;
+        left = 1 << ((byte)(len - drop) & 0x1f);
+        for (curr = len - drop; curr + drop < max; curr = curr + 1) {
+          left = left - (uint)count[curr + drop];
+          if (left < 1) break;
+          left = left * 2;
         }
-        local_98 = (1 << ((byte)local_48 & 0x1f)) + local_98;
-        if ((param_1 != LENS) || (local_98 < 0x5b0)) {
-          local_90 = local_38 & local_40;
-          (*param_4)[local_90].op = (byte)local_48;
-          (*param_4)[local_90].bits = bVar3;
-          (*param_4)[local_90].val = (ushort)((int)local_50 - (int)*param_4 >> 2);
+        used = (1 << ((byte)curr & 0x1f)) + used;
+        if ((type != LENS) || (used < 0x5b0)) {
+          low = huff & mask;
+          (*table)[low].op = (byte)curr;
+          (*table)[low].bits = bVar3;
+          (*table)[low].val = (ushort)((int)next - (int)*table >> 2);
           goto LAB_00810143;
         }
         iVar2 = 1;

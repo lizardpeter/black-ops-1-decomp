@@ -5,14 +5,14 @@
 void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(void *param_1)
 
 {
-  uint uVar1;
+  uint dynModelList;
   undefined4 *in_EAX;
   uchar *unaff_EDI;
   
-  uVar1 = ((rgp.world)->dpvsDyn).dynEntClientWordCount[0];
+  dynModelList = ((rgp.world)->dpvsDyn).dynEntClientWordCount[0];
   R_CullDynModelInCell
-            (((rgp.world)->dpvsDyn).dynEntCellBits[0] + in_EAX[1] * uVar1,uVar1,cm.dynEntPoseList[0]
-             ,(DpvsPlane *)*in_EAX,
+            (((rgp.world)->dpvsDyn).dynEntCellBits[0] + in_EAX[1] * dynModelList,dynModelList,
+             cm.dynEntPoseList[0],(DpvsPlane *)*in_EAX,
              (int)((rgp.world)->dpvsDyn).dynEntVisData[0][*(ushort *)(in_EAX + 2)],unaff_EDI);
   return;
 }

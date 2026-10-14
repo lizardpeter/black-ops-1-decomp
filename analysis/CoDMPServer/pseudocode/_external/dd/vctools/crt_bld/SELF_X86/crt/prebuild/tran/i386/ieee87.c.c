@@ -108,7 +108,7 @@ uint __cdecl __hw_cw_sse2(uint param_1)
 
 // 00C2EFDA  _control87  (line unknown)
 
-uint __cdecl _control87(uint param_1,uint param_2)
+uint __cdecl _control87(uint newctrl,uint mask)
 
 {
   ushort uVar1;
@@ -118,6 +118,8 @@ uint __cdecl _control87(uint param_1,uint param_2)
   uint uVar5;
   uint unaff_EDI;
   ushort in_FPUControlWord;
+  short oldCw;
+  short newCw;
   
   uVar5 = 0;
   if ((in_FPUControlWord & 1) != 0) {
@@ -159,7 +161,7 @@ uint __cdecl _control87(uint param_1,uint param_2)
   if ((in_FPUControlWord & 0x1000) != 0) {
     uVar5 = uVar5 | 0x40000;
   }
-  uVar3 = ~param_2 & uVar5 | param_1 & param_2;
+  uVar3 = ~mask & uVar5 | newctrl & mask;
   if (uVar3 != uVar5) {
     uVar1 = _hw_cw(unaff_EDI);
     uVar3 = 0;
@@ -245,7 +247,7 @@ uint __cdecl _control87(uint param_1,uint param_2)
     else if (uVar4 == 0x8040) {
       uVar5 = uVar5 | 0x1000000;
     }
-    if ((~(param_2 & 0x308031f) & uVar5 | param_2 & 0x308031f & param_1) != uVar5) {
+    if ((~(mask & 0x308031f) & uVar5 | mask & 0x308031f & newctrl) != uVar5) {
       uVar5 = __hw_cw_sse2(unaff_EDI);
       __set_fpsr_sse2(uVar5);
       uVar5 = 0;

@@ -4,42 +4,42 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _atodbl_l(_CRT_DOUBLE *param_1,char *param_2,localeinfo_struct *param_3)
+int __cdecl _atodbl_l(_CRT_DOUBLE *d,char *str,localeinfo_struct *plocinfo)
 
 {
   INTRNCVT_STATUS IVar1;
-  char *local_2c;
-  _LocaleUpdate local_28;
-  uint local_18;
-  _LDBL12 local_14;
+  char *EndPtr;
+  _LocaleUpdate _loc_update;
+  uint retval1;
+  _LDBL12 ld12;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _LocaleUpdate::_LocaleUpdate(&local_28,param_3);
-  local_18 = __strgtold12_l(&local_14,&local_2c,param_2,0,0,0,0,&local_28.localeinfo);
-  IVar1 = _ld12tod(&local_14,param_1);
-  if ((local_18 & 3) == 0) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  retval1 = __strgtold12_l(&ld12,&EndPtr,str,0,0,0,0,&_loc_update.localeinfo);
+  IVar1 = _ld12tod(&ld12,d);
+  if ((retval1 & 3) == 0) {
     if (IVar1 == INTRNCVT_OVERFLOW) {
 LAB_00c2a10b:
-      if (local_28.updated != false) {
-        (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 3;
     }
     if (IVar1 != INTRNCVT_UNDERFLOW) {
 LAB_00c2a13d:
-      if (local_28.updated != false) {
-        (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 0;
     }
   }
-  else if ((local_18 & 1) == 0) {
-    if ((local_18 & 2) == 0) goto LAB_00c2a13d;
+  else if ((retval1 & 1) == 0) {
+    if ((retval1 & 2) == 0) goto LAB_00c2a13d;
     goto LAB_00c2a10b;
   }
-  if (local_28.updated != false) {
-    (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return 4;
 }
@@ -49,42 +49,42 @@ LAB_00c2a13d:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl _atoflt_l(_CRT_FLOAT *param_1,char *param_2,localeinfo_struct *param_3)
+int __cdecl _atoflt_l(_CRT_FLOAT *d,char *str,localeinfo_struct *plocinfo)
 
 {
   INTRNCVT_STATUS IVar1;
-  char *local_2c;
-  _LocaleUpdate local_28;
-  uint local_18;
-  _LDBL12 local_14;
+  char *EndPtr;
+  _LocaleUpdate _loc_update;
+  uint retval1;
+  _LDBL12 ld12;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _LocaleUpdate::_LocaleUpdate(&local_28,param_3);
-  local_18 = __strgtold12_l(&local_14,&local_2c,param_2,0,0,0,0,&local_28.localeinfo);
-  IVar1 = _ld12tof(&local_14,param_1);
-  if ((local_18 & 3) == 0) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  retval1 = __strgtold12_l(&ld12,&EndPtr,str,0,0,0,0,&_loc_update.localeinfo);
+  IVar1 = _ld12tof(&ld12,d);
+  if ((retval1 & 3) == 0) {
     if (IVar1 == INTRNCVT_OVERFLOW) {
 LAB_00c2a1b3:
-      if (local_28.updated != false) {
-        (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 3;
     }
     if (IVar1 != INTRNCVT_UNDERFLOW) {
 LAB_00c2a1e5:
-      if (local_28.updated != false) {
-        (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 0;
     }
   }
-  else if ((local_18 & 1) == 0) {
-    if ((local_18 & 2) == 0) goto LAB_00c2a1e5;
+  else if ((retval1 & 1) == 0) {
+    if ((retval1 & 2) == 0) goto LAB_00c2a1e5;
     goto LAB_00c2a1b3;
   }
-  if (local_28.updated != false) {
-    (local_28.ptd)->_ownlocale = (local_28.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return 4;
 }

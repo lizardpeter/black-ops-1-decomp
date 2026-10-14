@@ -7,7 +7,7 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
 {
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar1;
+  uchar *dst;
   int extraout_EAX_01;
   int extraout_EAX_02;
   uchar *extraout_EAX_03;
@@ -45,8 +45,8 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
     strlen(param_1);
     strlen((uchar *)param_2);
     local_30 = extraout_EAX + 10 + extraout_EAX_00;
-    puVar1 = (uchar *)_HTMemory_malloc(local_30);
-    if (puVar1 == (uchar *)0x0) {
+    dst = (uchar *)_HTMemory_malloc(local_30);
+    if (dst == (uchar *)0x0) {
       _HTMemory_outofmem("parse space",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTParse.c",0x87)
       ;
@@ -55,7 +55,7 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
     _HTSACopy(&local_20,param_2);
     FUN_00bc36a0(local_2c,&local_1c);
     FUN_00bc36a0(local_20,&local_44);
-    *puVar1 = '\0';
+    *dst = '\0';
     if (local_1c == (uchar *)0x0) {
       local_4c = local_44;
     }
@@ -64,8 +64,8 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
     }
     local_28 = local_4c;
     if ((((param_3 & 0x10) != 0) && (local_4c != (uchar *)0x0)) &&
-       (strcat(puVar1,local_4c), (param_3 & 1) != 0)) {
-      strcat(puVar1,":");
+       (strcat(dst,local_4c), (param_3 & 1) != 0)) {
+      strcat(dst,":");
     }
     if (((local_1c != (uchar *)0x0) && (local_44 != (uchar *)0x0)) &&
        (strcmp(local_1c,local_44), extraout_EAX_01 != 0)) {
@@ -76,7 +76,7 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
     }
     if (((param_3 & 8) != 0) && ((local_18 != (uchar *)0x0 || (local_40 != (uchar *)0x0)))) {
       if ((param_3 & 1) != 0) {
-        strcat(puVar1,(uchar *)"//");
+        strcat(dst,(uchar *)"//");
       }
       if (local_18 == (uchar *)0x0) {
         local_50 = local_40;
@@ -84,7 +84,7 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
       else {
         local_50 = local_18;
       }
-      strcat(puVar1,local_50);
+      strcat(dst,local_50);
     }
     if (((local_18 != (uchar *)0x0) && (local_40 != (uchar *)0x0)) &&
        (strcmp(local_18,local_40), extraout_EAX_02 != 0)) {
@@ -97,48 +97,48 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
         if (local_3c == (uchar *)0x0) {
           if (local_10 == (uchar *)0x0) {
             if (local_38 == (uchar *)0x0) {
-              strcat(puVar1,(uchar *)"/");
+              strcat(dst,(uchar *)"/");
             }
             else {
-              strcat(puVar1,local_38);
+              strcat(dst,local_38);
             }
           }
           else {
-            strcat(puVar1,local_10);
+            strcat(dst,local_10);
           }
         }
         else {
-          strcat(puVar1,(uchar *)"/");
-          strcat(puVar1,local_3c);
+          strcat(dst,(uchar *)"/");
+          strcat(dst,local_3c);
           if (local_10 != (uchar *)0x0) {
-            strchr(puVar1,'?');
+            strchr(dst,'?');
             local_8 = extraout_EAX_03;
             if (extraout_EAX_03 == (uchar *)0x0) {
-              strlen(puVar1);
-              local_8 = puVar1 + extraout_EAX_04 + -1;
+              strlen(dst);
+              local_8 = dst + extraout_EAX_04 + -1;
             }
             for (; *local_8 != '/'; local_8 = local_8 + -1) {
             }
             local_8[1] = '\0';
-            strcat(puVar1,local_10);
+            strcat(dst,local_10);
           }
         }
       }
       else {
         if ((param_3 & 1) != 0) {
-          strcat(puVar1,(uchar *)"/");
+          strcat(dst,(uchar *)"/");
         }
-        strcat(puVar1,local_14);
+        strcat(dst,local_14);
       }
     }
     if (((param_3 & 2) != 0) && ((local_c != (uchar *)0x0 || (local_34 != (uchar *)0x0)))) {
       if ((local_14 == (uchar *)0x0) || (local_c == (uchar *)0x0)) {
         if ((local_14 == (uchar *)0x0) && (local_c == (uchar *)0x0)) {
-          strcat(puVar1,(uchar *)"");
+          strcat(dst,(uchar *)"");
         }
         else {
           if ((param_3 & 1) != 0) {
-            strcat(puVar1,(uchar *)"#");
+            strcat(dst,(uchar *)"#");
           }
           if (local_c == (uchar *)0x0) {
             local_54 = local_34;
@@ -146,22 +146,22 @@ undefined4 _HTParse(uchar *param_1,char *param_2,uint param_3)
           else {
             local_54 = local_c;
           }
-          strcat(puVar1,local_54);
+          strcat(dst,local_54);
         }
       }
       else {
         if ((param_3 & 1) != 0) {
-          strcat(puVar1,(uchar *)"#");
+          strcat(dst,(uchar *)"#");
         }
-        strcat(puVar1,local_c);
+        strcat(dst,local_c);
       }
     }
     _HTMemory_free(local_20);
     local_20 = 0;
     _HTMemory_free(local_2c);
     local_2c = 0;
-    _HTSACopy(&local_24,puVar1);
-    _HTMemory_free(puVar1);
+    _HTSACopy(&local_24,dst);
+    _HTMemory_free(dst);
   }
   return local_24;
 }

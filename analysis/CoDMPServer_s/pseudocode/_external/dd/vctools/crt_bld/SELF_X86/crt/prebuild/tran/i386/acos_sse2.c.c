@@ -2,7 +2,7 @@
 
 // 00990858  __libm_sse2_acos  (line unknown)
 
-double __cdecl __libm_sse2_acos(double param_1)
+double __cdecl __libm_sse2_acos(double x)
 
 {
   uint uVar1;

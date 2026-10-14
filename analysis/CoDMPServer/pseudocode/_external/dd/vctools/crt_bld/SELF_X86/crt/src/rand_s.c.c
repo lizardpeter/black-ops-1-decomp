@@ -2,10 +2,10 @@
 
 // 00C24594  _initp_misc_rand_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand_s.c:58)
 
-void __cdecl _initp_misc_rand_s(void *param_1)
+void __cdecl _initp_misc_rand_s(void *enull)
 
 {
-  g_pfnRtlGenRandom = param_1;
+  g_pfnRtlGenRandom = enull;
   return;
 }
 

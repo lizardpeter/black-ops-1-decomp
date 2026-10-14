@@ -2,16 +2,17 @@
 
 // 0088E8B0  Flame_ClipVelocity  (flame/flame_physics.cpp:62)
 
-void __cdecl Flame_ClipVelocity(float *param_1,float *param_2,float *param_3)
+void __cdecl Flame_ClipVelocity(float *in,float *normal,float *out)
 
 {
   float fVar1;
+  float parallel;
   
-  fVar1 = *param_1 * *param_2 + param_1[1] * param_2[1] + param_1[2] * param_2[2];
+  fVar1 = *in * *normal + in[1] * normal[1] + in[2] * normal[2];
   fVar1 = -(fVar1 - FLAME_OVERCLIP * ABS(fVar1));
-  *param_3 = fVar1 * *param_2 + *param_1;
-  param_3[1] = fVar1 * param_2[1] + param_1[1];
-  param_3[2] = fVar1 * param_2[2] + param_1[2];
+  *out = fVar1 * *normal + *in;
+  out[1] = fVar1 * normal[1] + in[1];
+  out[2] = fVar1 * normal[2] + in[2];
   return;
 }
 
@@ -39,65 +40,65 @@ void __cdecl _dynamic_initializer_for__cl_flame_proftimer__(void)
 // 0088E990  trace_sphere  (flame/flame_physics.cpp:81)
 
 void __cdecl
-trace_sphere(trace_t *param_1,float *param_2,float *param_3,float param_4,col_context_t *param_5)
+trace_sphere(trace_t *trace,float *start,float *end,float radius,col_context_t *context)
 
 {
   CollisionAabbTree *pCVar1;
   CollisionAabbTree *pCVar2;
   code *pcVar3;
   bool bVar4;
-  int local_54;
-  float local_50;
+  int i;
+  float dir;
   float local_4c;
   float local_48;
-  float local_44;
+  float rvec;
   float local_40;
   float local_3c;
-  col_prim_t *local_38;
-  float local_34;
+  col_prim_t *prim;
+  float mx;
   float local_30;
   float local_2c;
-  float local_28;
+  float bounds;
   float local_24;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_44 = param_4;
-  local_40 = param_4;
-  local_3c = param_4;
-  Vec3Min(param_2,param_3,&local_28);
-  Vec3Max(param_2,param_3,&local_1c);
-  local_28 = local_28 - local_44;
+  rvec = radius;
+  local_40 = radius;
+  local_3c = radius;
+  Vec3Min(start,end,&bounds);
+  Vec3Max(start,end,&local_1c);
+  bounds = bounds - rvec;
   local_24 = local_24 - local_40;
   local_20 = local_20 - local_3c;
-  local_1c = local_1c + local_44;
+  local_1c = local_1c + rvec;
   local_18 = local_18 + local_40;
   local_14 = local_14 + local_3c;
-  local_50 = *param_3 - *param_2;
-  local_4c = param_3[1] - param_2[1];
-  local_48 = param_3[2] - param_2[2];
-  param_1->fraction = 1.0;
-  local_38 = param_5->prims;
-  for (local_54 = 0; local_54 < param_5->nprims; local_54 = local_54 + 1) {
-    if (local_38->type == 0) {
-      pCVar1 = (local_38->field1_0x4).tree;
-      pCVar2 = (local_38->field1_0x4).tree;
-      local_10 = pCVar2->origin[0] - pCVar1->halfSize[0];
+  dir = *end - *start;
+  local_4c = end[1] - start[1];
+  local_48 = end[2] - start[2];
+  trace->fraction = 1.0;
+  prim = context->prims;
+  for (i = 0; i < context->nprims; i = i + 1) {
+    if (prim->type == 0) {
+      pCVar1 = (prim->field1_0x4).tree;
+      pCVar2 = (prim->field1_0x4).tree;
+      mn = pCVar2->origin[0] - pCVar1->halfSize[0];
       local_c = pCVar2->origin[1] - pCVar1->halfSize[1];
       local_8 = pCVar2->origin[2] - pCVar1->halfSize[2];
-      pCVar1 = (local_38->field1_0x4).tree;
-      pCVar2 = (local_38->field1_0x4).tree;
-      local_34 = pCVar2->origin[0] + pCVar1->halfSize[0];
+      pCVar1 = (prim->field1_0x4).tree;
+      pCVar2 = (prim->field1_0x4).tree;
+      mx = pCVar2->origin[0] + pCVar1->halfSize[0];
       local_30 = pCVar2->origin[1] + pCVar1->halfSize[1];
       local_2c = pCVar2->origin[2] + pCVar1->halfSize[2];
-      if (((local_34 < local_28) || (local_30 < local_24)) ||
+      if (((mx < bounds) || (local_30 < local_24)) ||
          ((local_2c < local_20 ||
-          (((local_1c < local_10 || (local_18 < local_c)) || (local_14 < local_8)))))) {
+          (((local_1c < mn || (local_18 < local_c)) || (local_14 < local_8)))))) {
         bVar4 = false;
       }
       else {
@@ -105,14 +106,14 @@ trace_sphere(trace_t *param_1,float *param_2,float *param_3,float param_4,col_co
       }
       if (bVar4) {
         trace_sphere_through_partition
-                  (param_2,&local_50,&param_1->fraction,param_4,(local_38->field1_0x4).tree,
-                   (float *)param_1,&param_1->sflags);
+                  (start,&dir,&trace->fraction,radius,(prim->field1_0x4).tree,(float *)trace,
+                   &trace->sflags);
       }
     }
     else {
-      pCVar1 = (local_38->field1_0x4).tree;
-      pCVar2 = (local_38->field1_0x4).tree;
-      if (((((pCVar1->halfSize[0] < local_28) || (pCVar1->halfSize[1] < local_24)) ||
+      pCVar1 = (prim->field1_0x4).tree;
+      pCVar2 = (prim->field1_0x4).tree;
+      if (((((pCVar1->halfSize[0] < bounds) || (pCVar1->halfSize[1] < local_24)) ||
            (pCVar1->halfSize[2] < local_20)) ||
           ((local_1c < pCVar2->origin[0] || (local_18 < pCVar2->origin[1])))) ||
          (local_14 < pCVar2->origin[2])) {
@@ -123,41 +124,41 @@ trace_sphere(trace_t *param_1,float *param_2,float *param_3,float param_4,col_co
       }
       if (bVar4) {
         trace_sphere_through_brush
-                  (param_2,&local_50,&param_1->fraction,param_4,(local_38->field1_0x4).brush,
-                   (float *)param_1,&param_1->sflags);
+                  (start,&dir,&trace->fraction,radius,(prim->field1_0x4).brush,(float *)trace,
+                   &trace->sflags);
       }
     }
-    local_38 = local_38 + 1;
+    prim = prim + 1;
   }
-  if (param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (trace->fraction == 1.0) {
+    if ((trace == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    trace->hitType = TRACE_HITTYPE_NONE;
+    trace->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((trace == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    trace->hitType = TRACE_HITTYPE_ENTITY;
+    trace->hitId = 0x3fe;
   }
-  if (0.0 < param_1->fraction) {
-    if (1.0 < param_1->fraction) {
-      param_1->fraction = 1.0;
+  if (0.0 < trace->fraction) {
+    if (1.0 < trace->fraction) {
+      trace->fraction = 1.0;
     }
   }
   else {
-    param_1->fraction = 0.0;
+    trace->fraction = 0.0;
   }
   return;
 }
@@ -167,14 +168,14 @@ trace_sphere(trace_t *param_1,float *param_2,float *param_3,float param_4,col_co
 
 flameGeneric_s ** __thiscall
 phys_static_array<flameGeneric_s_*,1000>::operator[]
-          (phys_static_array<flameGeneric_s_*,1000> *this,int param_1)
+          (phys_static_array<flameGeneric_s_*,1000> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   flameGeneric_s **ppfVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -183,7 +184,7 @@ phys_static_array<flameGeneric_s_*,1000>::operator[]
       return ppfVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
@@ -207,8 +208,7 @@ void __thiscall colgeom_visitor_inlined_t<500>::reset(colgeom_visitor_inlined_t<
 // 00892F10  visit  (physics/phys_visitor.h:130)
 
 void __thiscall
-colgeom_visitor_inlined_t<500>::visit
-          (colgeom_visitor_inlined_t<500> *this,CollisionAabbTree *param_1)
+colgeom_visitor_inlined_t<500>::visit(colgeom_visitor_inlined_t<500> *this,CollisionAabbTree *tree)
 
 {
   int iVar1;
@@ -217,7 +217,7 @@ colgeom_visitor_inlined_t<500>::visit
     iVar1 = this->nprims;
     this->nprims = this->nprims + 1;
     this->prims[iVar1].type = 0;
-    this->prims[iVar1].field1_0x4.tree = param_1;
+    this->prims[iVar1].field1_0x4.tree = tree;
   }
   return;
 }
@@ -226,16 +226,17 @@ colgeom_visitor_inlined_t<500>::visit
 // 0088F020  Flame_Server_Trace  (flame/flame_physics.cpp:131)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Flame_Server_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float *param_4,
-                  float *param_5,float *param_6,col_context_t *param_7,ushort (*param_8) [2] [100],
-                  int *param_9,int *param_10,int param_11,int *param_12,int *param_13,int *param_14,
-                  int *param_15)
+Flame_Server_Trace(trace_t *trace,flameGeneric_s *gen,float *startPos,float *mins,float *maxs,
+                  float *endPos,col_context_t *context,ushort (*dynEnts) [2] [100],int *dynEntsCount
+                  ,int *ents,int entsCount,int *close_characters,int *close_characters_count,
+                  int *close_triggers,int *close_triggers_count)
 
 {
   bool bVar1;
@@ -243,103 +244,104 @@ Flame_Server_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float
   trace_t *ptVar3;
   float *pfVar4;
   trace_t *ptVar5;
-  float local_13c;
+  float hitDir;
   float local_138;
   float local_134;
-  float local_130 [3];
-  DynEntityColl *local_124;
-  int local_120;
-  ushort local_11c;
-  int local_118;
-  int local_114;
-  DynEntityDrawType local_110;
-  float local_10c [4];
+  float hitPos [3];
+  DynEntityColl *coll;
+  DynEntityCollType colType;
+  ushort id;
+  int i_2;
+  int num;
+  int drawType;
+  float old_trace [4];
   float local_fc;
-  float local_d4;
+  float center;
   float local_d0;
   float local_cc;
-  float local_c8;
-  float local_c4;
-  char local_bd;
-  int local_bc;
-  int local_b8;
-  float4 local_b4;
+  float size;
+  float dist2;
+  bool character_collision;
+  gentity_s *ent;
+  int i;
+  float4 clip;
   float4 local_a4 [2];
   IgnoreEntParams *local_84;
   undefined4 local_80;
   undefined4 local_7c;
   uchar_0_ *local_78;
-  IgnoreEntParams local_70;
-  gentity_s *local_64;
-  trace_t local_60;
+  IgnoreEntParams ignoreEntParams;
+  gentity_s *owner;
+  trace_t trace2;
   uint local_28;
-  float local_24;
+  float bounds;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  svEntity_s *local_8;
+  uint entnum;
+  svEntity_s *check;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  TraceExtents::TraceExtents((TraceExtents *)&local_b4);
-  trace_sphere(param_1,param_3,param_6,radius,param_7);
-  if (0.0 < param_1->fraction) {
-    Vec3Min(param_3,param_6,&local_24);
-    Vec3Max(param_3,param_6,&local_18);
+  TraceExtents::TraceExtents((TraceExtents *)&clip);
+  trace_sphere(trace,startPos,endPos,radius,context);
+  if (0.0 < trace->fraction) {
+    Vec3Min(startPos,endPos,&bounds);
+    Vec3Max(startPos,endPos,&local_18);
     local_80 = 0x2c0ec33;
-    local_b4.v[0] = *param_3;
-    local_b4.v[1] = param_3[1];
-    local_b4.v[2] = param_3[2];
-    local_a4[0]._0_4_ = *param_6;
-    local_a4[0]._4_4_ = param_6[1];
-    local_a4[0]._8_4_ = param_6[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_b4);
+    clip.v[0] = *startPos;
+    clip.v[1] = startPos[1];
+    clip.v[2] = startPos[2];
+    local_a4[0]._0_4_ = *endPos;
+    local_a4[0]._4_4_ = endPos[1];
+    local_a4[0]._8_4_ = endPos[2];
+    CM_CalcTraceExtents((TraceExtents *)&clip);
     local_7c = 1;
     local_78 = &bulletPriorityMap;
-    SV_SetupIgnoreEntParams(&local_70,param_2->stream->entityNum);
-    local_64 = g_entities + param_2->stream->entityNum;
-    local_70.ignoreChildren = false;
-    local_84 = &local_70;
-    for (local_b8 = 0; local_b8 < param_11; local_b8 = local_b8 + 1) {
+    SV_SetupIgnoreEntParams(&ignoreEntParams,gen->stream->entityNum);
+    owner = g_entities + gen->stream->entityNum;
+    ignoreEntParams.ignoreChildren = false;
+    local_84 = &ignoreEntParams;
+    for (i = 0; i < entsCount; i = i + 1) {
       local_7c = 1;
-      local_c = param_10[local_b8];
-      local_bd = '\0';
-      local_bc = (int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_c + -0x18;
-      if ((local_bc != 0) && (*(int *)(local_bc + 0x144) != 0)) {
-        local_bd = '\x01';
+      entnum = ents[i];
+      character_collision = false;
+      ent = (gentity_s *)
+            ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * entnum + -0x18);
+      if ((ent != (gentity_s *)0x0) && (ent->client != (gclient_s *)0x0)) {
+        character_collision = true;
       }
-      if (local_bd == '\0') {
-        local_8 = sv.svEntities + local_c;
-        if (((((sv.svEntities[local_c].linkmax[0] < local_24) ||
-              (sv.svEntities[local_c].linkmax[1] < local_20)) ||
-             (sv.svEntities[local_c].linkmax[2] < local_1c)) ||
-            ((local_18 < sv.svEntities[local_c].linkmin[0] ||
-             (local_14 < sv.svEntities[local_c].linkmin[1])))) ||
-           (local_10 < sv.svEntities[local_c].linkmin[2])) {
+      if (character_collision == false) {
+        check = sv.svEntities + entnum;
+        if (((((sv.svEntities[entnum].linkmax[0] < bounds) ||
+              (sv.svEntities[entnum].linkmax[1] < local_20)) ||
+             (sv.svEntities[entnum].linkmax[2] < local_1c)) ||
+            ((local_18 < sv.svEntities[entnum].linkmin[0] ||
+             (local_14 < sv.svEntities[entnum].linkmin[1])))) ||
+           (local_10 < sv.svEntities[entnum].linkmin[2])) {
           bVar1 = false;
         }
         else {
           bVar1 = true;
         }
         if (bVar1) {
-          if (*(ushort *)(local_bc + 0x164) == scr_const.trigger_damage) {
-            ptVar3 = param_1;
-            pfVar4 = local_10c;
+          if (ent->classname == scr_const.trigger_damage) {
+            ptVar3 = trace;
+            pfVar4 = old_trace;
             for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
               *pfVar4 = (ptVar3->normal).vec.v[0];
               ptVar3 = (trace_t *)((int)&(ptVar3->normal).vec + 4);
               pfVar4 = pfVar4 + 1;
             }
-            SV_TracePointToEntity((pointtrace_t *)&local_b4,local_8,param_1);
-            if (param_1->fraction <= local_fc && local_fc != param_1->fraction) {
-              if (*param_15 < 0x10) {
-                param_14[*param_15] = local_c;
-                *param_15 = *param_15 + 1;
+            SV_TracePointToEntity((pointtrace_t *)&clip,check,trace);
+            if (trace->fraction <= local_fc && local_fc != trace->fraction) {
+              if (*close_triggers_count < 0x10) {
+                close_triggers[*close_triggers_count] = entnum;
+                *close_triggers_count = *close_triggers_count + 1;
               }
-              pfVar4 = local_10c;
-              ptVar3 = param_1;
+              pfVar4 = old_trace;
+              ptVar3 = trace;
               for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
                 (ptVar3->normal).vec.v[0] = *pfVar4;
                 pfVar4 = pfVar4 + 1;
@@ -348,69 +350,65 @@ Flame_Server_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float
             }
           }
           else {
-            SV_TracePointToEntity((pointtrace_t *)&local_b4,local_8,param_1);
-            if (param_1->fraction <= 0.0) {
+            SV_TracePointToEntity((pointtrace_t *)&clip,check,trace);
+            if (trace->fraction <= 0.0) {
               return;
             }
           }
         }
       }
-      else if (*param_13 < 0x10) {
-        local_c4 = point_aabb_dist2(param_6,(float *)(local_bc + 0x10c),(float *)(local_bc + 0x118))
-        ;
-        local_c8 = (param_2->size).current *
-                   param_2->stream->flameVars->flameVar_collisionVolumeScale;
-        if ((local_c4 < local_c8 * local_c8) && (param_2->stream->entityNum != local_c)) {
-          local_d4 = *(float *)(local_bc + 0x10c) * 0.5 + *(float *)(local_bc + 0x118) * 0.5;
-          local_d0 = *(float *)(local_bc + 0x110) * 0.5 + *(float *)(local_bc + 0x11c) * 0.5;
-          local_cc = *(float *)(local_bc + 0x114) * 0.5 + *(float *)(local_bc + 0x120) * 0.5;
-          iVar2 = collide_segment(param_3,&local_d4,param_7);
+      else if (*close_characters_count < 0x10) {
+        dist2 = point_aabb_dist2(endPos,(ent->r).absmin,(ent->r).absmax);
+        size = (gen->size).current * gen->stream->flameVars->flameVar_collisionVolumeScale;
+        if ((dist2 < size * size) && (gen->stream->entityNum != entnum)) {
+          center = (ent->r).absmin[0] * 0.5 + (ent->r).absmax[0] * 0.5;
+          local_d0 = (ent->r).absmin[1] * 0.5 + (ent->r).absmax[1] * 0.5;
+          local_cc = (ent->r).absmin[2] * 0.5 + (ent->r).absmax[2] * 0.5;
+          iVar2 = collide_segment(startPos,&center,context);
           if (iVar2 == 0) {
-            param_12[*param_13] = local_c;
-            *param_13 = *param_13 + 1;
+            close_characters[*close_characters_count] = entnum;
+            *close_characters_count = *close_characters_count + 1;
           }
         }
       }
     }
-    for (local_110 = DYNENT_DRAW_MODEL; (int)local_110 < 2;
-        local_110 = local_110 + DYNENT_DRAW_BRUSH) {
-      local_114 = param_9[local_110];
-      for (local_118 = 0; local_118 < local_114; local_118 = local_118 + 1) {
-        local_11c = (*param_8)[local_110][local_118];
-        local_120 = local_110 + DYNENT_DRAW_COUNT;
-        local_124 = cm.dynEntCollList[local_110 + DYNENT_DRAW_COUNT] + local_11c;
-        if (local_124->linkMaxs[2] <= local_1c && local_1c != local_124->linkMaxs[2]) break;
-        if ((((local_124->linkMaxs[0] < local_24) || (local_124->linkMaxs[1] < local_20)) ||
-            (local_124->linkMaxs[2] < local_1c)) ||
-           (((local_18 < local_124->linkMins[0] || (local_14 < local_124->linkMins[1])) ||
-            (local_10 < local_124->linkMins[2])))) {
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      num = dynEntsCount[drawType];
+      for (i_2 = 0; i_2 < num; i_2 = i_2 + 1) {
+        id = (*dynEnts)[drawType][i_2];
+        colType = drawType + DYNENT_COLL_SERVER_FIRST;
+        coll = cm.dynEntCollList[drawType + 2] + id;
+        if (coll->linkMaxs[2] <= local_1c && local_1c != coll->linkMaxs[2]) break;
+        if ((((coll->linkMaxs[0] < bounds) || (coll->linkMaxs[1] < local_20)) ||
+            (coll->linkMaxs[2] < local_1c)) ||
+           (((local_18 < coll->linkMins[0] || (local_14 < coll->linkMins[1])) ||
+            (local_10 < coll->linkMins[2])))) {
           bVar1 = false;
         }
         else {
           bVar1 = true;
         }
         if ((bVar1) &&
-           (DynEntSv_PointTrace(local_11c,local_110,(pointtrace_t *)&local_b4,param_1),
-           param_1->fraction <= 0.0)) {
+           (DynEntSv_PointTrace(id,drawType,(pointtrace_t *)&clip,trace), trace->fraction <= 0.0)) {
           return;
         }
       }
     }
-    ptVar3 = param_1;
-    ptVar5 = &local_60;
+    ptVar3 = trace;
+    ptVar5 = &trace2;
     for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
       (ptVar5->normal).vec.v[0] = (ptVar3->normal).vec.v[0];
       ptVar3 = (trace_t *)((int)&(ptVar3->normal).vec + 4);
       ptVar5 = (trace_t *)((int)&(ptVar5->normal).vec + 4);
     }
-    GlassSv_PointTrace((pointtrace_t *)&local_b4,&local_60);
-    if ((local_60.fraction < param_1->fraction) && (local_60.hitType == TRACE_HITTYPE_GLASS)) {
-      Vec3Lerp(local_b4.v,local_a4[0].v,local_60.fraction,local_130);
-      local_13c = (float)local_a4[0]._0_4_ - local_b4.v[0];
-      local_138 = (float)local_a4[0]._4_4_ - local_b4.v[1];
-      local_134 = (float)local_a4[0]._8_4_ - local_b4.v[2];
-      Vec3Normalize(&local_13c);
-      GlassSv_Damage((uint)local_60.hitId,10000,0x11,local_130,&local_13c);
+    GlassSv_PointTrace((pointtrace_t *)&clip,&trace2);
+    if ((trace2.fraction < trace->fraction) && (trace2.hitType == TRACE_HITTYPE_GLASS)) {
+      Vec3Lerp(clip.v,local_a4[0].v,trace2.fraction,hitPos);
+      hitDir = (float)local_a4[0]._0_4_ - clip.v[0];
+      local_138 = (float)local_a4[0]._4_4_ - clip.v[1];
+      local_134 = (float)local_a4[0]._8_4_ - clip.v[2];
+      Vec3Normalize(&hitDir);
+      GlassSv_Damage((uint)trace2.hitId,10000,0x11,hitPos,&hitDir);
     }
   }
   return;
@@ -420,7 +418,7 @@ Flame_Server_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float
 // 00892F60  visit  (physics/phys_visitor.h:140)
 
 void __thiscall
-colgeom_visitor_inlined_t<500>::visit(colgeom_visitor_inlined_t<500> *this,cbrush_t *param_1)
+colgeom_visitor_inlined_t<500>::visit(colgeom_visitor_inlined_t<500> *this,cbrush_t *brush)
 
 {
   int iVar1;
@@ -429,7 +427,7 @@ colgeom_visitor_inlined_t<500>::visit(colgeom_visitor_inlined_t<500> *this,cbrus
     iVar1 = this->nprims;
     this->nprims = this->nprims + 1;
     this->prims[iVar1].type = 1;
-    this->prims[iVar1].field1_0x4.brush = param_1;
+    this->prims[iVar1].field1_0x4.brush = brush;
   }
   return;
 }
@@ -439,11 +437,10 @@ colgeom_visitor_inlined_t<500>::visit(colgeom_visitor_inlined_t<500> *this,cbrus
 
 void __thiscall
 colgeom_visitor_inlined_t<500>::update
-          (colgeom_visitor_inlined_t<500> *this,float *param_1,float *param_2,int param_3,
-          float *param_4)
+          (colgeom_visitor_inlined_t<500> *this,float *_mn,float *_mx,int mask,float *expand_vec)
 
 {
-  char local_5c;
+  bool local_5c;
   float local_44;
   float local_40;
   float local_3c;
@@ -453,37 +450,37 @@ colgeom_visitor_inlined_t<500>::update
   float local_2c;
   float local_28;
   float local_24;
-  char local_1d;
-  float local_1c;
+  bool inside;
+  float mx;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_2c = (float)this->_padding_ - *param_1;
-  local_28 = (float)this->_padding_ - param_1[1];
-  local_24 = (float)this->_padding_ - param_1[2];
-  local_38 = *param_2 - (float)this->_padding_;
-  local_34 = param_2[1] - (float)this->_padding_;
-  local_30 = param_2[2] - (float)this->_padding_;
+  local_2c = (float)this->_padding_ - *_mn;
+  local_28 = (float)this->_padding_ - _mn[1];
+  local_24 = (float)this->_padding_ - _mn[2];
+  local_38 = *_mx - (float)this->_padding_;
+  local_34 = _mx[1] - (float)this->_padding_;
+  local_30 = _mx[2] - (float)this->_padding_;
   Vec3Max(&local_2c,&local_38,&local_44);
   if (((0.0 <= local_44) || (0.0 <= local_40)) || (0.0 <= local_3c)) {
-    local_5c = '\0';
+    local_5c = false;
   }
   else {
-    local_5c = '\x01';
+    local_5c = true;
   }
-  local_1d = local_5c;
-  if ((this->_padding_ != param_3) || (local_5c == '\0')) {
-    local_10 = *param_1 - *param_4;
-    local_c = param_1[1] - param_4[1];
-    local_8 = param_1[2] - param_4[2];
-    local_1c = *param_2 + *param_4;
-    local_18 = param_2[1] + param_4[1];
-    local_14 = param_2[2] + param_4[2];
+  inside = local_5c;
+  if ((this->_padding_ != mask) || (local_5c == false)) {
+    mn = *_mn - *expand_vec;
+    local_c = _mn[1] - expand_vec[1];
+    local_8 = _mn[2] - expand_vec[2];
+    mx = *_mx + *expand_vec;
+    local_18 = _mx[1] + expand_vec[1];
+    local_14 = _mx[2] + expand_vec[2];
     reset(this);
-    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&local_10,&local_1c,param_3);
+    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&mn,&mx,mask);
     if (this->nprims == 500) {
       StatMon_Warning(8,3000,"code_warning_collision");
       this->nprims = 0;
@@ -501,46 +498,47 @@ colgeom_visitor_inlined_t<500>::update
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl
-Flame_Client_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float *param_4,
-                  float *param_5,float *param_6,col_context_t *param_7,ushort (*param_8) [2] [100],
-                  int *param_9,int *param_10,int param_11,int *param_12,int *param_13)
+Flame_Client_Trace(trace_t *trace,flameGeneric_s *gen,float *startPos,float *mins,float *maxs,
+                  float *endPos,col_context_t *context,ushort (*dynEnts) [2] [100],int *dynEntsCount
+                  ,int *ents,int entsCount,int *close_characters,int *close_characters_count)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   trace_t *ptVar4;
-  float local_10c;
+  float absMin;
   float local_108;
   float local_104;
-  float local_100;
+  float absMax;
   float local_fc;
   float local_f8;
-  undefined4 local_f4;
+  undefined4 actorMins;
   undefined4 local_f0;
   undefined4 local_ec;
-  float local_e8;
-  float local_e4;
-  undefined4 local_e0;
+  float size;
+  float dist2;
+  undefined4 actorMaxs;
   undefined4 local_dc;
   undefined4 local_d8;
-  uint local_d4;
-  DObj *local_d0;
-  undefined1 local_c9;
-  centity_s *local_c8;
-  int local_c4;
-  int local_c0;
-  DynEntityPose *local_bc;
-  DynEntityDef *local_b8;
-  DynEntityColl *local_b4;
-  DynEntityDrawType local_b0;
-  ushort local_ac;
-  int local_a8;
-  int local_a4;
-  DynEntityDrawType local_a0;
-  float4 local_9c;
+  int contents;
+  DObj *dobj;
+  bool character_collision;
+  centity_s *ent;
+  int entnum;
+  int i_2;
+  DynEntityPose *dynEntPose;
+  DynEntityDef *dynEntDef;
+  DynEntityColl *coll;
+  DynEntityCollType colType;
+  ushort id;
+  int i;
+  int num;
+  int drawType;
+  float4 clip;
   float local_8c;
   float local_88;
   float local_84;
@@ -548,9 +546,9 @@ Flame_Client_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float
   undefined4 local_68;
   undefined4 local_64;
   uchar_0_ *local_60;
-  trace_t local_58;
+  trace_t trace2;
   uint local_20;
-  float local_1c;
+  float bounds;
   float local_18;
   float local_14;
   float local_10;
@@ -558,108 +556,107 @@ Flame_Client_Trace(trace_t *param_1,flameGeneric_s *param_2,float *param_3,float
   float local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  TraceExtents::TraceExtents((TraceExtents *)&local_9c);
-  trace_sphere(param_1,param_3,param_6,radius,param_7);
-  if (0.0 < param_1->fraction) {
-    Vec3Min(param_3,param_6,&local_1c);
-    Vec3Max(param_3,param_6,&local_10);
+  TraceExtents::TraceExtents((TraceExtents *)&clip);
+  trace_sphere(trace,startPos,endPos,radius,context);
+  if (0.0 < trace->fraction) {
+    Vec3Min(startPos,endPos,&bounds);
+    Vec3Max(startPos,endPos,&local_10);
     local_68 = 0x2c0ec33;
-    local_9c.v[0] = *param_3;
-    local_9c.v[1] = param_3[1];
-    local_9c.v[2] = param_3[2];
-    local_8c = *param_6;
-    local_88 = param_6[1];
-    local_84 = param_6[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_9c);
+    clip.v[0] = *startPos;
+    clip.v[1] = startPos[1];
+    clip.v[2] = startPos[2];
+    local_8c = *endPos;
+    local_88 = endPos[1];
+    local_84 = endPos[2];
+    CM_CalcTraceExtents((TraceExtents *)&clip);
     local_64 = 1;
     local_60 = &bulletPriorityMap;
     local_6c = 0;
-    for (local_a0 = DYNENT_DRAW_MODEL; (int)local_a0 < 2; local_a0 = local_a0 + DYNENT_DRAW_BRUSH) {
-      local_a4 = param_9[local_a0];
-      for (local_a8 = 0; local_a8 < local_a4; local_a8 = local_a8 + 1) {
-        local_ac = (*param_8)[local_a0][local_a8];
-        local_b0 = local_a0;
-        local_b4 = cm.dynEntCollList[local_a0] + local_ac;
-        if (local_b4->linkMaxs[2] <= local_14 && local_14 != local_b4->linkMaxs[2]) break;
-        if (((((local_b4->linkMaxs[0] < local_1c) || (local_b4->linkMaxs[1] < local_18)) ||
-             (local_b4->linkMaxs[2] < local_14)) ||
-            ((local_10 < local_b4->linkMins[0] || (local_c < local_b4->linkMins[1])))) ||
-           (local_8 < local_b4->linkMins[2])) {
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      num = dynEntsCount[drawType];
+      for (i = 0; i < num; i = i + 1) {
+        id = (*dynEnts)[drawType][i];
+        colType = drawType;
+        coll = cm.dynEntCollList[drawType] + id;
+        if (coll->linkMaxs[2] <= local_14 && local_14 != coll->linkMaxs[2]) break;
+        if (((((coll->linkMaxs[0] < bounds) || (coll->linkMaxs[1] < local_18)) ||
+             (coll->linkMaxs[2] < local_14)) ||
+            ((local_10 < coll->linkMins[0] || (local_c < coll->linkMins[1])))) ||
+           (local_8 < coll->linkMins[2])) {
           bVar2 = false;
         }
         else {
           bVar2 = true;
         }
         if (bVar2) {
-          local_b8 = DynEnt_GetEntityDef(local_ac,local_a0);
-          local_bc = DynEnt_GetClientPose(local_ac,local_a0);
-          if (local_a0 == DYNENT_DRAW_MODEL) {
-            DynEnt_PointTraceToModel(local_b8,&local_bc->pose,(pointtrace_t *)&local_9c,param_1);
+          dynEntDef = DynEnt_GetEntityDef(id,drawType);
+          dynEntPose = DynEnt_GetClientPose(id,drawType);
+          if (drawType == 0) {
+            DynEnt_PointTraceToModel(dynEntDef,&dynEntPose->pose,(pointtrace_t *)&clip,trace);
           }
           else {
-            if ((local_a0 != DYNENT_DRAW_BRUSH) &&
+            if ((drawType != 1) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp"
                                          ,0x133,0,"%s\n\t(drawType) = %i"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            DynEnt_PointTraceToBrush(local_b8,&local_bc->pose,(pointtrace_t *)&local_9c,param_1);
+            DynEnt_PointTraceToBrush(dynEntDef,&dynEntPose->pose,(pointtrace_t *)&clip,trace);
           }
-          if (param_1->fraction <= 0.0) {
+          if (trace->fraction <= 0.0) {
             return;
           }
         }
       }
     }
-    for (local_c0 = 0; local_c0 < param_11; local_c0 = local_c0 + 1) {
-      local_c4 = param_10[local_c0];
-      if (((param_2->stream->entityNum < 0x21) || (param_2->stream->entityNum != local_c4 + 0x20))
-         && (param_2->stream->entityNum != local_c4)) {
-        local_c9 = 0;
-        local_c8 = CG_GetEntity(0,local_c4);
-        local_d0 = Com_GetClientDObj(local_c4,0);
-        if (local_d0 != (DObj *)0x0) {
-          local_d4 = CG_GetEntityDObjContents(local_c8,local_d0);
-          local_c9 = (local_d4 & 0x2008000) != 0;
-          if ((bool)local_c9) {
-            local_f4 = 0xc1700000;
+    for (i_2 = 0; i_2 < entsCount; i_2 = i_2 + 1) {
+      entnum = ents[i_2];
+      if (((gen->stream->entityNum < 0x21) || (gen->stream->entityNum != entnum + 0x20)) &&
+         (gen->stream->entityNum != entnum)) {
+        character_collision = false;
+        ent = CG_GetEntity(0,entnum);
+        dobj = Com_GetClientDObj(entnum,0);
+        if (dobj != (DObj *)0x0) {
+          contents = CG_GetEntityDObjContents(ent,dobj);
+          character_collision = (contents & 0x2008000U) != 0;
+          if (character_collision) {
+            actorMins = 0xc1700000;
             local_f0 = 0xc1700000;
             local_ec = 0;
-            local_e0 = 0x41700000;
+            actorMaxs = 0x41700000;
             local_dc = 0x41700000;
             local_d8 = 0x42400000;
-            local_10c = (local_c8->pose).origin[0] + -15.0;
-            local_108 = (local_c8->pose).origin[1] + -15.0;
-            local_104 = (local_c8->pose).origin[2] + 0.0;
-            local_100 = (local_c8->pose).origin[0] + 15.0;
-            local_fc = (local_c8->pose).origin[1] + 15.0;
-            local_f8 = (local_c8->pose).origin[2] + 48.0;
-            local_e4 = point_aabb_dist2(param_6,&local_10c,&local_100);
-            local_e8 = (param_2->size).current *
-                       param_2->stream->flameVars->flameVar_collisionVolumeScale;
-            if (((local_e4 < local_e8 * local_e8) && (param_2->stream->entityNum != local_c4)) &&
-               (*param_13 < 0x10)) {
-              param_12[*param_13] = local_c4;
-              *param_13 = *param_13 + 1;
+            absMin = (ent->pose).origin[0] + -15.0;
+            local_108 = (ent->pose).origin[1] + -15.0;
+            local_104 = (ent->pose).origin[2] + 0.0;
+            absMax = (ent->pose).origin[0] + 15.0;
+            local_fc = (ent->pose).origin[1] + 15.0;
+            local_f8 = (ent->pose).origin[2] + 48.0;
+            dist2 = point_aabb_dist2(endPos,&absMin,&absMax);
+            size = (gen->size).current * gen->stream->flameVars->flameVar_collisionVolumeScale;
+            if (((dist2 < size * size) && (gen->stream->entityNum != entnum)) &&
+               (*close_characters_count < 0x10)) {
+              close_characters[*close_characters_count] = entnum;
+              *close_characters_count = *close_characters_count + 1;
             }
           }
-          else if (((local_c8->destructible != (Destructible *)0x0) &&
-                   (bVar2 = CG_DestructibleIsClientOnly(local_c8->destructible), bVar2)) &&
-                  (CG_PointTraceToEntity((pointtrace_t *)&local_9c,local_c4,param_1),
-                  param_1->fraction <= 0.0)) {
+          else if (((ent->destructible != (Destructible *)0x0) &&
+                   (bVar2 = CG_DestructibleIsClientOnly(ent->destructible), bVar2)) &&
+                  (CG_PointTraceToEntity((pointtrace_t *)&clip,entnum,trace), trace->fraction <= 0.0
+                  )) {
             return;
           }
         }
       }
     }
-    ptVar4 = &local_58;
+    ptVar4 = &trace2;
     for (iVar3 = 0xe; iVar3 != 0; iVar3 = iVar3 + -1) {
-      (ptVar4->normal).vec.v[0] = (param_1->normal).vec.v[0];
-      param_1 = (trace_t *)((int)&(param_1->normal).vec + 4);
+      (ptVar4->normal).vec.v[0] = (trace->normal).vec.v[0];
+      trace = (trace_t *)((int)&(trace->normal).vec + 4);
       ptVar4 = (trace_t *)((int)&(ptVar4->normal).vec + 4);
     }
-    GlassCl_TracePoint((pointtrace_t *)&local_9c,&local_58);
+    GlassCl_TracePoint((pointtrace_t *)&clip,&trace2);
   }
   return;
 }
@@ -740,11 +737,18 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 0088EDD0  Flame_Phys_Collision  (flame/flame_physics.cpp:383)
 
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
 Flame_Phys_Collision
-          (bool param_1,trace_t *param_2,flameGeneric_s *param_3,col_context_t *param_4,
-          ushort (*param_5) [2] [100],int *param_6,int *param_7,int param_8,int *param_9,
-          int *param_10,int *param_11,int *param_12)
+          (bool is_server,trace_t *trace,flameGeneric_s *gen,col_context_t *context,
+          ushort (*dynEnts) [2] [100],int *dynEntsCount,int *ents,int entsCount,
+          int *close_characters,int *close_characters_count,int *close_triggers,
+          int *close_triggers_count)
 
 {
   code *pcVar1;
@@ -755,20 +759,20 @@ Flame_Phys_Collision
   int local_38;
   uint local_34;
   int local_30;
-  float local_1c;
+  float endPos;
   float local_18;
   float local_14;
-  float local_10;
+  float startPos;
   float local_c;
   float local_8;
   
-  local_10 = (param_3->phys).origin[0];
-  local_c = (param_3->phys).origin[1];
-  local_8 = (param_3->phys).origin[2];
-  local_1c = (param_3->phys).newPos[0];
-  local_18 = (param_3->phys).newPos[1];
-  local_14 = (param_3->phys).newPos[2];
-  if (((((uint)local_10 & 0x7f800000) == 0x7f800000) || (((uint)local_c & 0x7f800000) == 0x7f800000)
+  startPos = (gen->phys).origin[0];
+  local_c = (gen->phys).origin[1];
+  local_8 = (gen->phys).origin[2];
+  endPos = (gen->phys).newPos[0];
+  local_18 = (gen->phys).newPos[1];
+  local_14 = (gen->phys).newPos[2];
+  if (((((uint)startPos & 0x7f800000) == 0x7f800000) || (((uint)local_c & 0x7f800000) == 0x7f800000)
       ) || (((uint)local_8 & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",0x188,0,
                              "%s");
@@ -778,13 +782,14 @@ Flame_Phys_Collision
       return;
     }
   }
-  if (param_1) {
+  if (is_server) {
     sv_flame_proftimer.stamp = tlPcGetTick();
     bVar2 = 0xfffffffe < (uint)sv_flame_proftimer.calls;
     sv_flame_proftimer.calls._0_4_ = (uint)sv_flame_proftimer.calls + 1;
     sv_flame_proftimer.calls._4_4_ = sv_flame_proftimer.calls._4_4_ + (uint)bVar2;
-    Flame_Server_Trace(param_2,param_3,&local_10,mins,maxs,&local_1c,param_4,param_5,param_6,param_7
-                       ,param_8,param_9,param_10,param_11,param_12);
+    Flame_Server_Trace(trace,gen,&startPos,mins,maxs,&endPos,context,dynEnts,dynEntsCount,ents,
+                       entsCount,close_characters,close_characters_count,close_triggers,
+                       close_triggers_count);
     uVar3 = tlPcGetTick();
     local_34 = (uint)uVar3;
     local_30 = (int)(uVar3 >> 0x20);
@@ -803,8 +808,8 @@ Flame_Phys_Collision
     bVar2 = 0xfffffffe < (uint)cl_flame_proftimer.calls;
     cl_flame_proftimer.calls._0_4_ = (uint)cl_flame_proftimer.calls + 1;
     cl_flame_proftimer.calls._4_4_ = cl_flame_proftimer.calls._4_4_ + (uint)bVar2;
-    Flame_Client_Trace(param_2,param_3,&local_10,mins,maxs,&local_1c,param_4,param_5,param_6,param_7
-                       ,param_8,param_9,param_10);
+    Flame_Client_Trace(trace,gen,&startPos,mins,maxs,&endPos,context,dynEnts,dynEntsCount,ents,
+                       entsCount,close_characters,close_characters_count);
     uVar4 = tlPcGetTick();
     uVar3 = CONCAT44(sv_flame_proftimer.stamp._4_4_,(uint)sv_flame_proftimer.stamp);
     local_3c = (uint)uVar4;
@@ -848,7 +853,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0088FF80  Flame_Phys_Collision_Response  (flame/flame_physics.cpp:409)
 
-void __cdecl Flame_Phys_Collision_Response(bool param_1,trace_t *param_2,flameGeneric_s *param_3)
+void __cdecl Flame_Phys_Collision_Response(bool is_server,trace_t *trace,flameGeneric_s *gen)
 
 {
   float fVar1;
@@ -856,74 +861,73 @@ void __cdecl Flame_Phys_Collision_Response(bool param_1,trace_t *param_2,flameGe
   code *pcVar3;
   bool bVar4;
   float fVar5;
-  phys_vec3 local_34;
+  float len;
+  phys_vec3 dir;
   float local_24;
   float local_20;
-  float local_1c;
+  float newVel;
   float local_18;
   float local_14;
   
-  local_34.w = (param_3->phys).origin[0];
-  local_24 = (param_3->phys).origin[1];
-  local_20 = (param_3->phys).origin[2];
-  fVar5 = (param_3->phys).newPos[0];
-  fVar1 = (param_3->phys).newPos[1];
-  fVar2 = (param_3->phys).newPos[2];
-  if ((((((uint)local_34.w & 0x7f800000) == 0x7f800000) ||
-       (((uint)local_24 & 0x7f800000) == 0x7f800000)) ||
-      (((uint)local_20 & 0x7f800000) == 0x7f800000)) &&
+  dir.w = (gen->phys).origin[0];
+  local_24 = (gen->phys).origin[1];
+  local_20 = (gen->phys).origin[2];
+  fVar5 = (gen->phys).newPos[0];
+  fVar1 = (gen->phys).newPos[1];
+  fVar2 = (gen->phys).newPos[2];
+  if ((((((uint)dir.w & 0x7f800000) == 0x7f800000) || (((uint)local_24 & 0x7f800000) == 0x7f800000))
+      || (((uint)local_20 & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",0x1a1,0
                                ,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_34.x = fVar5 - local_34.w;
-  local_34.y = fVar1 - local_24;
-  local_34.z = fVar2 - local_20;
-  if (param_2->fraction == 1.0) {
-    (param_3->phys).origin[0] = fVar5;
-    (param_3->phys).origin[1] = fVar1;
-    (param_3->phys).origin[2] = fVar2;
+  dir.x = fVar5 - dir.w;
+  dir.y = fVar1 - local_24;
+  dir.z = fVar2 - local_20;
+  if (trace->fraction == 1.0) {
+    (gen->phys).origin[0] = fVar5;
+    (gen->phys).origin[1] = fVar1;
+    (gen->phys).origin[2] = fVar2;
   }
   else {
-    if (param_2->fraction == 0.0) {
-      (param_2->normal).vec.v[0] = local_34.x;
-      (param_2->normal).vec.v[1] = local_34.y;
-      (param_2->normal).vec.v[2] = local_34.z;
-      fVar5 = Abs(&local_34);
+    if (trace->fraction == 0.0) {
+      (trace->normal).vec.v[0] = dir.x;
+      (trace->normal).vec.v[1] = dir.y;
+      (trace->normal).vec.v[2] = dir.z;
+      fVar5 = Abs(&dir);
       if (fVar5 <= 0.0001) {
-        (param_3->phys).origin[0] = local_34.w;
-        (param_3->phys).origin[1] = local_24;
-        (param_3->phys).origin[2] = local_20;
+        (gen->phys).origin[0] = dir.w;
+        (gen->phys).origin[1] = local_24;
+        (gen->phys).origin[2] = local_20;
         return;
       }
       fVar5 = -1.0 / fVar5;
-      (param_2->normal).vec.v[0] = fVar5 * (param_2->normal).vec.v[0];
-      (param_2->normal).vec.v[1] = fVar5 * (param_2->normal).vec.v[1];
-      (param_2->normal).vec.v[2] = fVar5 * (param_2->normal).vec.v[2];
+      (trace->normal).vec.v[0] = fVar5 * (trace->normal).vec.v[0];
+      (trace->normal).vec.v[1] = fVar5 * (trace->normal).vec.v[1];
+      (trace->normal).vec.v[2] = fVar5 * (trace->normal).vec.v[2];
     }
-    if (flame_freeze_id < param_3->id) {
-      flame_freeze_id = param_3->id;
+    if (flame_freeze_id < gen->id) {
+      flame_freeze_id = gen->id;
     }
-    fVar5 = Flame_Random(param_1);
+    fVar5 = Flame_Random(is_server);
     if (fVar5 < 0.7) {
-      param_3->delete_chunk = 1;
+      gen->delete_chunk = 1;
     }
-    Flame_ClipVelocity((param_3->phys).velocity,(float *)param_2,&local_1c);
-    (param_3->phys).velocity[0] = local_1c;
-    (param_3->phys).velocity[1] = local_18;
-    (param_3->phys).velocity[2] = local_14;
-    fVar5 = param_3->stream->flameVars->flameVar_collisionSpeedScale;
-    (param_3->phys).velocity[0] = fVar5 * (param_3->phys).velocity[0];
-    (param_3->phys).velocity[1] = fVar5 * (param_3->phys).velocity[1];
-    (param_3->phys).velocity[2] = fVar5 * (param_3->phys).velocity[2];
+    Flame_ClipVelocity((gen->phys).velocity,(float *)trace,&newVel);
+    (gen->phys).velocity[0] = newVel;
+    (gen->phys).velocity[1] = local_18;
+    (gen->phys).velocity[2] = local_14;
+    fVar5 = gen->stream->flameVars->flameVar_collisionSpeedScale;
+    (gen->phys).velocity[0] = fVar5 * (gen->phys).velocity[0];
+    (gen->phys).velocity[1] = fVar5 * (gen->phys).velocity[1];
+    (gen->phys).velocity[2] = fVar5 * (gen->phys).velocity[2];
     fVar1 = FLAME_OVERCLIP;
-    fVar5 = param_2->fraction;
-    (param_3->phys).origin[0] =
-         FLAME_OVERCLIP * (param_2->normal).vec.v[0] + fVar5 * local_34.x + local_34.w;
-    (param_3->phys).origin[1] = fVar1 * (param_2->normal).vec.v[1] + fVar5 * local_34.y + local_24;
-    (param_3->phys).origin[2] = fVar1 * (param_2->normal).vec.v[2] + fVar5 * local_34.z + local_20;
+    fVar5 = trace->fraction;
+    (gen->phys).origin[0] = FLAME_OVERCLIP * (trace->normal).vec.v[0] + fVar5 * dir.x + dir.w;
+    (gen->phys).origin[1] = fVar1 * (trace->normal).vec.v[1] + fVar5 * dir.y + local_24;
+    (gen->phys).origin[2] = fVar1 * (trace->normal).vec.v[2] + fVar5 * dir.z + local_20;
   }
   return;
 }
@@ -935,132 +939,133 @@ void __cdecl Flame_Phys_Collision_Response(bool param_1,trace_t *param_2,flameGe
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl
-Flame_Impact_Process(bool param_1,flameGeneric_s *param_2,trace_t *param_3,int *param_4,int param_5)
+Flame_Impact_Process(bool is_server,flameGeneric_s *gen,trace_t *trace,int *models,int models_count)
 
 {
   int iVar1;
-  float fVar2;
-  TerrainFireSource TVar3;
+  float pSpread;
+  TerrainFireSource fireSrc;
   float local_94;
   float local_90;
   int local_8c;
-  char local_88;
+  bool local_88;
   gentity_s *local_84;
   gentity_s *local_80;
-  float local_68;
+  float dir_3;
   float local_64;
   undefined4 local_60;
-  centity_s *local_5c;
-  undefined1 local_55;
-  DynEntityDrawType local_54;
-  ushort local_50;
-  undefined1 local_49;
-  float local_48;
+  centity_s *cent;
+  bool isWall;
+  DynEntityDrawType drawType_2;
+  ushort hitEntId_3;
+  bool targetIsAlive;
+  bool targetWasAlive;
+  float dir_2;
   float local_44;
   undefined4 local_40;
-  int local_3c;
-  hitLocation_t local_38;
-  float local_34;
+  int dflags;
+  hitLocation_t hitLoc;
+  float dir;
   float local_30;
   undefined4 local_2c;
-  float local_28;
-  DynEntityDrawType local_24;
-  int local_20;
-  float local_1c;
-  ushort local_18;
-  char local_11;
-  gentity_s *local_10;
-  gentity_s *local_c;
-  ushort local_8;
+  float flameDamageDuration;
+  DynEntityDrawType drawType;
+  int flameDamage;
+  float flameDamageInterval;
+  ushort hitEntId_2;
+  bool hitFlesh;
+  gentity_s *attacker;
+  gentity_s *hitEnt;
+  ushort hitEntId;
   
-  if (param_1) {
-    local_8 = Trace_GetEntityHitId(param_3);
-    if (local_8 == 0x3fe) {
+  if (is_server) {
+    hitEntId = Trace_GetEntityHitId(trace);
+    if (hitEntId == 0x3fe) {
       local_80 = (gentity_s *)0x0;
     }
     else {
       local_80 = (gentity_s *)
-                 ((int)((sv.gentities)->s).lerp.pos.trBase + (uint)local_8 * sv.gentitySize + -0x18)
-      ;
+                 ((int)((sv.gentities)->s).lerp.pos.trBase + (uint)hitEntId * sv.gentitySize + -0x18
+                 );
     }
-    local_c = local_80;
-    if (local_8 == 0x3fe) {
+    hitEnt = local_80;
+    if (hitEntId == 0x3fe) {
       local_84 = (gentity_s *)0x0;
     }
     else {
       local_84 = (gentity_s *)
                  ((int)((sv.gentities)->s).lerp.pos.trBase +
-                 sv.gentitySize * param_2->stream->entityNum + -0x18);
+                 sv.gentitySize * gen->stream->entityNum + -0x18);
     }
-    local_10 = local_84;
+    attacker = local_84;
     if (local_80 != (gentity_s *)0x0) {
-      if (((local_80->s).eType == 1) || (((local_80->s).eType == 2 && (param_3->sflags == 0)))) {
-        local_88 = '\x01';
+      if (((local_80->s).eType == 1) || (((local_80->s).eType == 2 && (trace->sflags == 0)))) {
+        local_88 = true;
       }
       else {
-        local_88 = '\0';
+        local_88 = false;
       }
-      local_11 = local_88;
-      if (local_88 != '\0') {
-        param_3->sflags = 0x700000;
+      hitFlesh = local_88;
+      if (local_88 != false) {
+        trace->sflags = 0x700000;
       }
-      if ((local_84->s).number != (uint)local_8) {
-        if (0.0 < (float)param_2->stream->damage) {
-          local_8c = param_2->stream->damage;
+      if ((local_84->s).number != (uint)hitEntId) {
+        if (0.0 < (float)gen->stream->damage) {
+          local_8c = gen->stream->damage;
         }
         else {
           local_8c = (int)(default_flameVars_initialHitDamage->current).value;
         }
-        local_20 = local_8c;
-        if (0.0 < param_2->stream->damageDuration) {
-          local_90 = param_2->stream->damageDuration;
+        flameDamage = local_8c;
+        if (0.0 < gen->stream->damageDuration) {
+          local_90 = gen->stream->damageDuration;
         }
         else {
-          local_90 = (float)(default_flameVars_timedDamageDuration->current).integer;
+          local_90 = (default_flameVars_timedDamageDuration->current).value;
         }
-        local_28 = local_90;
-        if (0.0 < param_2->stream->damageInterval) {
-          local_94 = param_2->stream->damageInterval;
+        flameDamageDuration = local_90;
+        if (0.0 < gen->stream->damageInterval) {
+          local_94 = gen->stream->damageInterval;
         }
         else {
-          local_94 = (float)(default_flameVars_timedDamageInterval->current).integer;
+          local_94 = (default_flameVars_timedDamageInterval->current).value;
         }
-        local_1c = local_94;
+        flameDamageInterval = local_94;
         Flame_trigger_damage
-                  (local_80,local_84,local_8c,(float *)param_2,0x11,(param_2->phys).velocity,
-                   (uint)param_3->partGroup,-1);
-        local_18 = Trace_GetDynEntHitId(param_3,&local_24);
-        if (local_18 != 0xffff) {
-          local_34 = 0.0;
+                  (local_80,local_84,local_8c,(float *)gen,0x11,(gen->phys).velocity,
+                   (uint)trace->partGroup,-1);
+        hitEntId_2 = Trace_GetDynEntHitId(trace,&drawType);
+        if (hitEntId_2 != 0xffff) {
+          dir = 0.0;
           local_30 = 1.0;
           local_2c = 0;
-          DynEntSv_Damage(local_18,local_24,(float *)param_2,&local_34,local_20,false);
+          DynEntSv_Damage(hitEntId_2,drawType,(float *)gen,&dir,flameDamage,false);
         }
-        if (local_c != (gentity_s *)0x0) {
-          local_48 = 0.0;
+        if (hitEnt != (gentity_s *)0x0) {
+          dir_2 = 0.0;
           local_44 = 1.0;
           local_40 = 0;
-          local_3c = 0;
-          local_49 = 0 < local_c->health;
-          local_38 = (hitLocation_t)param_3->partGroup;
+          dflags = 0;
+          targetWasAlive = 0 < hitEnt->health;
+          hitLoc = (hitLocation_t)trace->partGroup;
           iVar1 = G_GetTime();
-          if ((local_c->flame_timed_damage[0].end_timestamp <= iVar1) ||
-             (local_c->flame_timed_damage[0].end_timestamp == 0)) {
-            local_c->flame_timed_damage[0].attacker = local_10;
-            local_c->flame_timed_damage[0].damage = 0;
-            local_c->flame_timed_damage[0].damageDuration = local_28;
-            local_c->flame_timed_damage[0].damageInterval = local_1c;
+          if ((hitEnt->flame_timed_damage[0].end_timestamp <= iVar1) ||
+             (hitEnt->flame_timed_damage[0].end_timestamp == 0)) {
+            hitEnt->flame_timed_damage[0].attacker = attacker;
+            hitEnt->flame_timed_damage[0].damage = 0;
+            hitEnt->flame_timed_damage[0].damageDuration = flameDamageDuration;
+            hitEnt->flame_timed_damage[0].damageInterval = flameDamageInterval;
             iVar1 = G_GetTime();
-            local_c->flame_timed_damage[0].start_timestamp = iVar1;
+            hitEnt->flame_timed_damage[0].start_timestamp = iVar1;
             iVar1 = G_GetTime();
-            local_c->flame_timed_damage[0].end_timestamp = iVar1 + (int)local_1c;
-            if ((local_10->r).inuse != '\0') {
+            hitEnt->flame_timed_damage[0].end_timestamp = iVar1 + (int)flameDamageInterval;
+            if ((attacker->r).inuse != '\0') {
               iVar1 = G_GetTime();
-              G_Damage(local_c,local_10,local_10,&local_48,(float *)param_2,local_20,local_3c,0x11,
-                       -1,local_38,(uint)param_3->modelIndex,(uint)param_3->partName,
-                       level.time - iVar1);
+              G_Damage(hitEnt,attacker,attacker,&dir_2,(float *)gen,flameDamage,dflags,0x11,-1,
+                       hitLoc,(uint)trace->modelIndex,(uint)trace->partName,level.time - iVar1);
             }
           }
         }
@@ -1068,33 +1073,31 @@ Flame_Impact_Process(bool param_1,flameGeneric_s *param_2,trace_t *param_3,int *
     }
   }
   else {
-    if ((0.0 < param_3->fraction) &&
-       (local_55 = ABS((param_3->normal).vec.v[2]) < 0.3,
-       (param_3->sflags & 0x3f00000U) != 0x1400000)) {
-      if ((bool)local_55) {
-        CG_SetFireToWall(0,(float *)param_2,param_4,param_5,TFS_FLAMETHROWER);
+    if ((0.0 < trace->fraction) &&
+       (isWall = ABS((trace->normal).vec.v[2]) < 0.3, (trace->sflags & 0x3f00000U) != 0x1400000)) {
+      if (isWall) {
+        CG_SetFireToWall(0,(float *)gen,models,models_count,TFS_FLAMETHROWER);
       }
       else {
-        TVar3 = TFS_FLAMETHROWER;
-        fVar2 = 1.0;
+        fireSrc = TFS_FLAMETHROWER;
+        pSpread = 1.0;
         iVar1 = G_GetWeaponIndexForName("m2_flamethrower_mp");
-        CG_SetFireToTerrain((float *)param_2,1.0,param_2->stream->entityNum,iVar1,fVar2,param_4,
-                            param_5,TVar3);
+        CG_SetFireToTerrain((float *)gen,1.0,gen->stream->entityNum,iVar1,pSpread,models,
+                            models_count,fireSrc);
       }
     }
-    local_50 = Trace_GetDynEntHitId(param_3,&local_54);
-    if (local_50 != 0xffff) {
-      DynEntCl_FlameDamage(0,local_50,local_54,(float *)param_2,(param_2->phys).velocity,5);
+    hitEntId_3 = Trace_GetDynEntHitId(trace,&drawType_2);
+    if (hitEntId_3 != 0xffff) {
+      DynEntCl_FlameDamage(0,hitEntId_3,drawType_2,(float *)gen,(gen->phys).velocity,5);
     }
-    local_50 = Trace_GetEntityHitId(param_3);
-    if (((local_50 != 0x3ff) && (local_50 != 0x3fe)) &&
-       (local_5c = CG_GetEntity(0,(uint)local_50), local_5c->destructible != (Destructible *)0x0)) {
-      local_68 = 0.0;
+    hitEntId_3 = Trace_GetEntityHitId(trace);
+    if (((hitEntId_3 != 0x3ff) && (hitEntId_3 != 0x3fe)) &&
+       (cent = CG_GetEntity(0,(uint)hitEntId_3), cent->destructible != (Destructible *)0x0)) {
+      dir_3 = 0.0;
       local_64 = 1.0;
       local_60 = 0;
       CG_DestructibleDamage
-                (local_5c,(centity_s *)0x0,&local_68,(float *)param_2,param_2->stream->damage,0x11,0
-                 ,0,1);
+                (cent,(centity_s *)0x0,&dir_3,(float *)gen,gen->stream->damage,0x11,0,0,1);
     }
   }
   return;
@@ -1103,24 +1106,32 @@ Flame_Impact_Process(bool param_1,flameGeneric_s *param_2,trace_t *param_3,int *
 
 // 008908E0  Flame_Phys_Update_Items  (flame/flame_physics.cpp:660)
 
-void __cdecl Flame_Phys_Update_Items(bool param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Phys_Update_Items(bool is_server,int localClientNum)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   flameGeneric_s **ppfVar4;
-  flameGeneric_s **ppfVar5;
-  DWORD DVar6;
-  int iVar7;
+  flameGeneric_s **_First;
+  DWORD DVar5;
+  int localClientNum_00;
   phys_static_array<flameGeneric_s_*,1000> *local_54;
   char *local_30;
-  int local_20;
-  flameStream_s *local_1c;
-  int local_10;
-  int local_8;
+  flameGeneric_s *gen;
+  int i;
+  flameStream_s *prevStream;
+  PIXProfile pixProfile;
+  int startIndex;
+  int nflames;
+  int count;
   
-  if (param_1) {
+  if (is_server) {
     local_54 = &sv_flames;
   }
   else {
@@ -1128,7 +1139,7 @@ void __cdecl Flame_Phys_Update_Items(bool param_1,int param_2)
   }
   iVar1 = local_54->m_alloc_count;
   if (iVar1 != 0) {
-    if (param_1) {
+    if (is_server) {
       local_30 = "sv_flame_physics";
     }
     else {
@@ -1136,48 +1147,48 @@ void __cdecl Flame_Phys_Update_Items(bool param_1,int param_2)
     }
     PIXBeginNamedEvent(-1,local_30);
     ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,0);
-    ppfVar5 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,0);
+    _First = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,0);
     std::_Sort<flameGeneric_s_*_*,int,Flame_SortByStream>
-              (ppfVar5,ppfVar4 + iVar1,(int)(ppfVar4 + iVar1) - (int)ppfVar5 >> 2,
+              (_First,ppfVar4 + iVar1,(int)(ppfVar4 + iVar1) - (int)_First >> 2,
                (Flame_SortByStream)0x0);
     ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,0);
-    local_1c = (*ppfVar4)->stream;
-    local_10 = 0;
-    local_8 = 0;
-    for (local_20 = 0; local_20 < iVar1; local_20 = local_20 + 1) {
-      ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,local_20);
-      if ((*ppfVar4)->stream == local_1c) {
-        local_8 = local_8 + 1;
+    prevStream = (*ppfVar4)->stream;
+    startIndex = 0;
+    count = 0;
+    for (i = 0; i < iVar1; i = i + 1) {
+      ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,i);
+      if ((*ppfVar4)->stream == prevStream) {
+        count = count + 1;
       }
       else {
-        if ((local_8 < 1) &&
+        if ((count < 1) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                      0x2ac,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        iVar7 = param_2;
-        ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,local_10);
-        Flame_Phys_Update_Items_PerStream(param_1,local_8,ppfVar4,iVar7);
-        local_10 = local_10 + local_8;
-        local_8 = 0;
-        if (local_20 < iVar1 + -1) {
-          ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,local_20 + 1);
-          local_1c = (*ppfVar4)->stream;
+        localClientNum_00 = localClientNum;
+        ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,startIndex);
+        Flame_Phys_Update_Items_PerStream(is_server,count,ppfVar4,localClientNum_00);
+        startIndex = startIndex + count;
+        count = 0;
+        if (i < iVar1 + -1) {
+          ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,i + 1);
+          prevStream = (*ppfVar4)->stream;
         }
         else {
-          local_1c = (flameStream_s *)0x0;
+          prevStream = (flameStream_s *)0x0;
         }
       }
     }
-    if (0 < local_8) {
-      ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,local_10);
-      Flame_Phys_Update_Items_PerStream(param_1,local_8,ppfVar4,param_2);
+    if (0 < count) {
+      ppfVar4 = phys_static_array<flameGeneric_s_*,1000>::operator[](local_54,startIndex);
+      Flame_Phys_Update_Items_PerStream(is_server,count,ppfVar4,localClientNum);
     }
     local_54->m_alloc_count = 0;
-    DVar6 = GetCurrentThreadId();
-    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -1220,7 +1231,8 @@ void __cdecl _dynamic_initializer_for__cl_flame_chunks_proximity_cache__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **param_3,int param_4)
+Flame_Phys_Update_Items_PerStream
+          (bool is_server,int nitems,flameGeneric_s **items,int localClientNum)
 
 {
   code *pcVar1;
@@ -1234,30 +1246,30 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
   float local_9ac;
   float local_9a8;
   float local_990;
-  int local_97c;
-  int local_978;
-  float local_974 [4];
-  flameGeneric_s *local_964;
-  int local_960;
-  uint local_95c;
-  DynEntityDrawType local_958;
-  float local_954;
+  int ti;
+  int ci;
+  float genClr [4];
+  flameGeneric_s *gen_2;
+  int i_3;
+  int num;
+  int drawType;
+  float clr;
   float local_950;
   float local_94c;
   float local_948;
-  float local_944 [3];
-  cg_s *local_938;
-  float local_934;
-  int local_930;
-  flameGeneric_s *local_92c;
-  int local_928;
-  col_context_t local_924;
-  int local_8fc;
-  int local_8f8;
-  float local_8f4;
-  int local_8f0;
-  int local_8ec [128];
-  float4 local_6ec;
+  float center_2 [3];
+  cg_s *cgameGlob;
+  float dist;
+  int i_2;
+  flameGeneric_s *gen;
+  int i;
+  col_context_t context;
+  int close_characters_count;
+  int models_count;
+  float nearestClientDist;
+  int numLocalClients;
+  int ents [128];
+  float4 trace2;
   undefined4 local_6dc;
   undefined4 local_6d4;
   undefined4 local_6d0;
@@ -1265,73 +1277,73 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
   undefined2 local_6ca;
   undefined2 local_6c8;
   undefined2 local_6c4;
-  uint local_6b4 [2];
-  float local_6ac;
+  int dynEntsCount [2];
+  float mx;
   float local_6a8;
   float local_6a4;
-  int local_6a0;
-  ushort local_69c [34];
-  float local_658;
-  float local_654;
+  int close_triggers_count;
+  ushort close_characters [34];
+  float lod;
+  float expand_vec;
   float local_650;
   float local_64c;
-  undefined4 local_648;
-  int local_644;
-  float4 local_640;
+  int max_models;
+  int skip;
+  float4 trace;
   float local_630;
-  colgeom_visitor_inlined_t<500> *local_608;
-  float local_604;
+  colgeom_visitor_inlined_t<500> *proximity_cache;
+  float mn;
   float local_600;
   float local_5fc;
-  int local_5f8;
-  int local_5f4 [257];
-  int local_1f0;
-  ushort local_1ec [34];
-  float local_1a8 [3];
-  ushort local_19c [202];
+  int entsCount;
+  int models [257];
+  int skipcounter;
+  ushort close_triggers [34];
+  float center [3];
+  ushort dynEnts [202];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_604 = 3.4028235e+38;
+  mn = 3.4028235e+38;
   local_600 = 3.4028235e+38;
   local_5fc = 3.4028235e+38;
-  local_6ac = -3.4028235e+38;
+  mx = -3.4028235e+38;
   local_6a8 = -3.4028235e+38;
   local_6a4 = -3.4028235e+38;
-  if ((param_2 < 1) &&
+  if ((nitems < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",0x2c7,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*param_3)->stream != (flameStream_s *)0x0) {
-    for (local_928 = 0; local_928 < param_2; local_928 = local_928 + 1) {
-      local_92c = param_3[local_928];
-      Vec3Min((float *)local_92c,&local_604,&local_604);
-      Vec3Min((local_92c->phys).newPos,&local_604,&local_604);
-      Vec3Max((float *)local_92c,&local_6ac,&local_6ac);
-      Vec3Max((local_92c->phys).newPos,&local_6ac,&local_6ac);
+  if ((*items)->stream != (flameStream_s *)0x0) {
+    for (i = 0; i < nitems; i = i + 1) {
+      gen = items[i];
+      Vec3Min((float *)gen,&mn,&mn);
+      Vec3Min((gen->phys).newPos,&mn,&mn);
+      Vec3Max((float *)gen,&mx,&mx);
+      Vec3Max((gen->phys).newPos,&mx,&mx);
     }
-    local_604 = local_604 - size[0];
+    mn = mn - size[0];
     local_600 = local_600 - size[1];
     local_5fc = local_5fc - size[2];
-    local_6ac = local_6ac + size[0];
+    mx = mx + size[0];
     local_6a8 = local_6a8 + size[1];
     local_6a4 = local_6a4 + size[2];
-    Vec3Lerp(&local_604,&local_6ac,0.5,local_1a8);
-    local_8f4 = 3.4028235e+38;
-    local_8f0 = CL_LocalClient_GetActiveCount();
-    for (local_930 = 0; local_930 < local_8f0; local_930 = local_930 + 1) {
-      local_938 = CG_GetLocalClientGlobals(local_930);
-      local_934 = Vec3Distance((local_938->refdef).vieworg,local_1a8);
-      local_9a8 = local_934;
-      if (0.0 <= local_934 - local_8f4) {
-        local_9a8 = local_8f4;
+    Vec3Lerp(&mn,&mx,0.5,center);
+    nearestClientDist = 3.4028235e+38;
+    numLocalClients = CL_LocalClient_GetActiveCount();
+    for (i_2 = 0; i_2 < numLocalClients; i_2 = i_2 + 1) {
+      cgameGlob = CG_GetLocalClientGlobals(i_2);
+      dist = Vec3Distance((cgameGlob->refdef).vieworg,center);
+      local_9a8 = dist;
+      if (0.0 <= dist - nearestClientDist) {
+        local_9a8 = nearestClientDist;
       }
-      local_8f4 = local_9a8;
+      nearestClientDist = local_9a8;
     }
-    fVar7 = local_8f4 / 1000.0;
+    fVar7 = nearestClientDist / 1000.0;
     local_990 = fVar7;
     if (0.0 <= fVar7 - 1.0) {
       local_990 = 1.0;
@@ -1342,103 +1354,100 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
     else {
       local_9ac = 0.0;
     }
-    local_658 = local_9ac;
+    lod = local_9ac;
     if ((flame_debug_render != (dvar_s *)0x0) && (1 < (flame_debug_render->current).integer)) {
-      local_944[0] = 0.0;
-      local_944[1] = 0.0;
-      local_944[2] = 0.0;
-      local_954 = 1.0;
+      center_2[0] = 0.0;
+      center_2[1] = 0.0;
+      center_2[2] = 0.0;
+      clr = 1.0;
       local_950 = 1.0;
       local_94c = 1.0;
       local_948 = 1.0;
-      G_DebugBox(local_944,&local_604,&local_6ac,0.0,&local_954,1,3);
+      G_DebugBox(center_2,&mn,&mx,0.0,&clr,1,3);
     }
-    if (param_1) {
+    if (is_server) {
       local_9b0 = &sv_flame_chunks_proximity_cache;
     }
     else {
       local_9b0 = &cl_flame_chunks_proximity_cache;
     }
-    local_608 = local_9b0;
+    proximity_cache = local_9b0;
     colgeom_visitor_inlined_t<500>::reset(local_9b0);
-    local_654 = 1.0;
+    expand_vec = 1.0;
     local_650 = 1.0;
     local_64c = 1.0;
-    (**(code **)(local_608->_padding_ + 0x14))(&local_604,&local_6ac,0x2c0ec33,&local_654);
-    col_context_t::col_context_t(&local_924);
-    local_924.prims = local_608->prims;
-    local_924.nprims = local_608->nprims;
-    for (local_958 = DYNENT_DRAW_MODEL; (int)local_958 < 2;
-        local_958 = local_958 + DYNENT_DRAW_BRUSH) {
-      if (param_1) {
-        local_95c = 0;
-        uVar3 = DynEntSv_AreaEntities
-                          (local_958,&local_604,&local_6ac,-1,100,local_19c + local_958 * 100);
+    (**(code **)(proximity_cache->_padding_ + 0x14))(&mn,&mx,0x2c0ec33,&expand_vec);
+    col_context_t::col_context_t(&context);
+    context.prims = proximity_cache->prims;
+    context.nprims = proximity_cache->nprims;
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      if (is_server) {
+        num = 0;
+        uVar3 = DynEntSv_AreaEntities(drawType,&mn,&mx,-1,100,dynEnts + drawType * 100);
       }
       else {
-        uVar3 = DynEntCl_AreaEntities
-                          (local_958,&local_604,&local_6ac,-1,100,local_19c + local_958 * 100);
+        uVar3 = DynEntCl_AreaEntities(drawType,&mn,&mx,-1,100,dynEnts + drawType * 100);
       }
-      local_95c = (uint)uVar3;
-      local_6b4[local_958] = local_95c;
+      num = (int)uVar3;
+      dynEntsCount[drawType] = num;
     }
-    if (param_1) {
-      local_5f8 = CM_AreaEntities(&local_604,&local_6ac,local_8ec,0x80,0x2c0ec33);
+    if (is_server) {
+      entsCount = CM_AreaEntities(&mn,&mx,ents,0x80,0x2c0ec33);
     }
     else {
-      local_5f8 = CG_AreaEntities(&local_604,&local_6ac,local_8ec,0x80,0x2c0ec33);
+      entsCount = CG_AreaEntities(&mn,&mx,ents,0x80,0x2c0ec33);
     }
-    local_8fc = 0;
-    local_6a0 = 0;
-    local_648 = 0x100;
-    local_8f8 = 0;
-    R_GetStaticModels(&local_604,&local_6ac,local_5f4,&local_8f8,0x100);
-    local_644 = 1;
-    local_1f0 = 1;
-    local_640.v[0] = 0.0;
-    local_640.v[1] = 0.0;
-    local_640.v[2] = 0.0;
-    local_640.v[3] = 0.0;
-    local_6ec.v[0] = 0.0;
-    local_6ec.v[1] = 0.0;
-    local_6ec.v[2] = 0.0;
-    local_6ec.v[3] = 0.0;
-    for (local_960 = 0; local_960 < param_2; local_960 = local_960 + 1) {
-      local_964 = param_3[local_960];
+    close_characters_count = 0;
+    close_triggers_count = 0;
+    max_models = 0x100;
+    models_count = 0;
+    R_GetStaticModels(&mn,&mx,models,&models_count,0x100);
+    skip = 1;
+    skipcounter = 1;
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    trace2.v[0] = 0.0;
+    trace2.v[1] = 0.0;
+    trace2.v[2] = 0.0;
+    trace2.v[3] = 0.0;
+    for (i_3 = 0; i_3 < nitems; i_3 = i_3 + 1) {
+      gen_2 = items[i_3];
       if ((flame_debug_render != (dvar_s *)0x0) && (1 < (flame_debug_render->current).integer)) {
-        if (param_1) {
-          local_974[0] = 0.0;
-          local_974[2] = 1.0;
+        if (is_server) {
+          genClr[0] = 0.0;
+          genClr[2] = 1.0;
         }
         else {
-          local_974[0] = 1.0;
-          local_974[2] = 0.0;
+          genClr[0] = 1.0;
+          genClr[2] = 0.0;
         }
-        local_974[3] = 1.0;
-        local_974[1] = 0.0;
-        G_DebugStar((float *)local_964,local_974,3);
+        genClr[3] = 1.0;
+        genClr[1] = 0.0;
+        G_DebugStar((float *)gen_2,genClr,3);
       }
-      local_1f0 = local_1f0 + -1;
-      if ((local_960 == 0) || (local_1f0 == 0)) {
+      skipcounter = skipcounter + -1;
+      if ((i_3 == 0) || (skipcounter == 0)) {
         Flame_Phys_Collision
-                  (param_1,(trace_t *)&local_640,local_964,&local_924,
-                   (ushort (*) [2] [100])local_19c,(int *)local_6b4,local_8ec,local_5f8,
-                   (int *)local_69c,&local_8fc,(int *)local_1ec,&local_6a0);
-        pfVar5 = &local_640;
-        pfVar6 = &local_6ec;
+                  (is_server,(trace_t *)&trace,gen_2,&context,(ushort (*) [2] [100])dynEnts,
+                   dynEntsCount,ents,entsCount,(int *)close_characters,&close_characters_count,
+                   (int *)close_triggers,&close_triggers_count);
+        pfVar5 = &trace;
+        pfVar6 = &trace2;
         for (iVar4 = 0xe; iVar4 != 0; iVar4 = iVar4 + -1) {
           pfVar6->v[0] = pfVar5->v[0];
           pfVar5 = (float4 *)(pfVar5->v + 1);
           pfVar6 = (float4 *)(pfVar6->v + 1);
         }
-        local_1f0 = local_644;
+        skipcounter = skip;
       }
-      Flame_Phys_Collision_Response(param_1,(trace_t *)&local_640,local_964);
+      Flame_Phys_Collision_Response(is_server,(trace_t *)&trace,gen_2);
       if ((local_630 < 1.0) && (0.0 < local_630)) {
-        Flame_Impact_Process(param_1,local_964,(trace_t *)&local_640,local_5f4,local_8f8);
+        Flame_Impact_Process(is_server,gen_2,(trace_t *)&trace,models,models_count);
       }
-      for (local_978 = 0; local_978 < local_8fc; local_978 = local_978 + 1) {
-        uVar3 = local_69c[local_978 * 2];
+      for (ci = 0; ci < close_characters_count; ci = ci + 1) {
+        uVar3 = close_characters[ci * 2];
         if ((&stack0x00000000 == (undefined1 *)0x6ec) &&
            (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                      ,0xaf,0,"%s"), !bVar2)) {
@@ -1453,10 +1462,10 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
         local_6c8 = 0;
         local_6c4 = 0;
         local_6cc = uVar3;
-        Flame_Impact_Process(param_1,local_964,(trace_t *)&local_6ec,local_5f4,local_8f8);
+        Flame_Impact_Process(is_server,gen_2,(trace_t *)&trace2,models,models_count);
       }
-      for (local_97c = 0; local_97c < local_6a0; local_97c = local_97c + 1) {
-        uVar3 = local_1ec[local_97c * 2];
+      for (ti = 0; ti < close_triggers_count; ti = ti + 1) {
+        uVar3 = close_triggers[ti * 2];
         if ((&stack0x00000000 == (undefined1 *)0x6ec) &&
            (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                      ,0xaf,0,"%s"), !bVar2)) {
@@ -1471,7 +1480,7 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
         local_6c8 = 0;
         local_6c4 = 0;
         local_6cc = uVar3;
-        Flame_Impact_Process(param_1,local_964,(trace_t *)&local_6ec,local_5f4,local_8f8);
+        Flame_Impact_Process(is_server,gen_2,(trace_t *)&trace2,models,models_count);
       }
     }
   }
@@ -1481,37 +1490,36 @@ Flame_Phys_Update_Items_PerStream(bool param_1,int param_2,flameGeneric_s **para
 
 // 0088F7B0  point_aabb_dist2  (universal/com_vector.h:799)
 
-float __cdecl point_aabb_dist2(float *param_1,float *param_2,float *param_3)
+float __cdecl point_aabb_dist2(float *a,float *mn,float *mx)
 
 {
-  float local_10;
+  float a_proj;
   float local_c;
   float local_8;
   
-  local_10 = *param_1;
-  local_c = param_1[1];
-  local_8 = param_1[2];
-  if (*param_3 <= local_10 && local_10 != *param_3) {
-    local_10 = *param_3;
+  a_proj = *a;
+  local_c = a[1];
+  local_8 = a[2];
+  if (*mx <= a_proj && a_proj != *mx) {
+    a_proj = *mx;
   }
-  if (param_3[1] <= local_c && local_c != param_3[1]) {
-    local_c = param_3[1];
+  if (mx[1] <= local_c && local_c != mx[1]) {
+    local_c = mx[1];
   }
-  if (param_3[2] <= local_8 && local_8 != param_3[2]) {
-    local_8 = param_3[2];
+  if (mx[2] <= local_8 && local_8 != mx[2]) {
+    local_8 = mx[2];
   }
-  if (local_10 < *param_2) {
-    local_10 = *param_2;
+  if (a_proj < *mn) {
+    a_proj = *mn;
   }
-  if (local_c < param_2[1]) {
-    local_c = param_2[1];
+  if (local_c < mn[1]) {
+    local_c = mn[1];
   }
-  if (local_8 < param_2[2]) {
-    local_8 = param_2[2];
+  if (local_8 < mn[2]) {
+    local_8 = mn[2];
   }
-  return (*param_1 - local_10) * (*param_1 - local_10) +
-         (param_1[1] - local_c) * (param_1[1] - local_c) +
-         (param_1[2] - local_8) * (param_1[2] - local_8);
+  return (*a - a_proj) * (*a - a_proj) + (a[1] - local_c) * (a[1] - local_c) +
+         (a[2] - local_8) * (a[2] - local_8);
 }
 
 
@@ -1519,7 +1527,7 @@ float __cdecl point_aabb_dist2(float *param_1,float *param_2,float *param_3)
 
 void __cdecl
 Flame_Phys_Update_Item_Stream
-          (flameGeneric_s *param_1,int param_2,phys_static_array<flameGeneric_s_*,1000> *param_3)
+          (flameGeneric_s *gen,int time,phys_static_array<flameGeneric_s_*,1000> *flames)
 
 {
   int iVar1;
@@ -1528,34 +1536,37 @@ Flame_Phys_Update_Item_Stream
   bool bVar4;
   float fVar5;
   float fVar6;
+  float frametime;
+  float sizeAdd;
+  float lifeFrac;
   
-  if ((param_1->age).lastUpdateTime < param_2) {
-    fVar5 = (float)(param_2 - (param_1->age).lastUpdateTime) * 0.001;
-    (param_1->age).lastUpdateTime = param_2;
-    iVar1 = (param_1->age).lastUpdateTime;
-    iVar2 = (param_1->age).startTime;
-    fVar6 = Flame_CalcTimeScale((param_1->age).startTime,(param_1->age).endTime);
+  if ((gen->age).lastUpdateTime < time) {
+    fVar5 = (float)(time - (gen->age).lastUpdateTime) * 0.001;
+    (gen->age).lastUpdateTime = time;
+    iVar1 = (gen->age).lastUpdateTime;
+    iVar2 = (gen->age).startTime;
+    fVar6 = Flame_CalcTimeScale((gen->age).startTime,(gen->age).endTime);
     if (fVar6 * (float)(iVar1 - iVar2) < 1.0) {
-      if ((((uint)(param_1->size).rate & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).rate & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x380,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      fVar6 = (param_1->size).rate;
-      (param_1->phys).rotation = (param_1->phys).rotVel * fVar5 + (param_1->phys).rotation;
-      (param_1->size).current = (param_1->size).current + fVar6 * fVar5;
-      if ((((uint)(param_1->size).current & 0x7f800000) == 0x7f800000) &&
+      fVar6 = (gen->size).rate;
+      (gen->phys).rotation = (gen->phys).rotVel * fVar5 + (gen->phys).rotation;
+      (gen->size).current = (gen->size).current + fVar6 * fVar5;
+      if ((((uint)(gen->size).current & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x388,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      (param_1->phys).newPos[0] = fVar5 * (param_1->phys).velocity[0] + (param_1->phys).origin[0];
-      (param_1->phys).newPos[1] = fVar5 * (param_1->phys).velocity[1] + (param_1->phys).origin[1];
-      (param_1->phys).newPos[2] = fVar5 * (param_1->phys).velocity[2] + (param_1->phys).origin[2];
+      (gen->phys).newPos[0] = fVar5 * (gen->phys).velocity[0] + (gen->phys).origin[0];
+      (gen->phys).newPos[1] = fVar5 * (gen->phys).velocity[1] + (gen->phys).origin[1];
+      (gen->phys).newPos[2] = fVar5 * (gen->phys).velocity[2] + (gen->phys).origin[2];
     }
   }
   return;
@@ -1566,7 +1577,7 @@ Flame_Phys_Update_Item_Stream
 
 void __cdecl
 Flame_Phys_Update_Item_Chunk
-          (flameGeneric_s *param_1,int param_2,phys_static_array<flameGeneric_s_*,1000> *param_3)
+          (flameGeneric_s *gen,int time,phys_static_array<flameGeneric_s_*,1000> *flames)
 
 {
   float fVar1;
@@ -1585,36 +1596,46 @@ Flame_Phys_Update_Item_Chunk
   float fVar14;
   float local_60;
   flameGeneric_s **local_4c;
+  flameTable *vars;
+  float ageScale;
+  float frametime;
+  float sizeAdd;
+  float gravityStart;
+  float lifeFrac;
+  float scale;
+  float gravityEnd;
+  float friction;
+  float speedScale;
   
-  if ((param_1->age).lastUpdateTime < param_2) {
-    pfVar7 = param_1->stream->flameVars;
+  if ((gen->age).lastUpdateTime < time) {
+    pfVar7 = gen->stream->flameVars;
     fVar1 = pfVar7->flameVar_streamChunkGravityStart;
     fVar2 = pfVar7->flameVar_streamChunkGravityEnd;
     fVar3 = pfVar7->flameVar_streamChunkDecel;
     fVar4 = pfVar7->flameVar_streamChunkSizeSpeedScale;
     fVar5 = pfVar7->flameVar_streamChunkSizeAgeScale;
-    fVar12 = (float)(param_2 - (param_1->age).lastUpdateTime) * 0.001;
-    (param_1->age).lastUpdateTime = param_2;
-    iVar8 = (param_1->age).lastUpdateTime;
-    iVar9 = (param_1->age).startTime;
-    fVar13 = Flame_CalcTimeScale((param_1->age).startTime,(param_1->age).endTime);
+    fVar12 = (float)(time - (gen->age).lastUpdateTime) * 0.001;
+    (gen->age).lastUpdateTime = time;
+    iVar8 = (gen->age).lastUpdateTime;
+    iVar9 = (gen->age).startTime;
+    fVar13 = Flame_CalcTimeScale((gen->age).startTime,(gen->age).endTime);
     fVar13 = fVar13 * (float)(iVar8 - iVar9);
     if (fVar13 < 1.0) {
-      if ((((uint)(param_1->size).rate & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).rate & 0x7f800000) == 0x7f800000) &&
          (bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                     0x3ab,0,"%s"), !bVar11)) {
         pcVar10 = (code *)swi(3);
         (*pcVar10)();
         return;
       }
-      fVar6 = (param_1->size).rate;
-      fVar14 = Abs((phys_vec3 *)(param_1->phys).velocity);
-      (param_1->phys).rotation = (param_1->phys).rotVel * fVar12 + (param_1->phys).rotation;
-      (param_1->size).current =
-           (param_1->size).current +
-           ((1.0 - fVar14 * (param_1->phys).invStartSpeed) * fVar4 * 2.0 + (1.0 - fVar4)) *
+      fVar6 = (gen->size).rate;
+      fVar14 = Abs((phys_vec3 *)(gen->phys).velocity);
+      (gen->phys).rotation = (gen->phys).rotVel * fVar12 + (gen->phys).rotation;
+      (gen->size).current =
+           (gen->size).current +
+           ((1.0 - fVar14 * (gen->phys).invStartSpeed) * fVar4 * 2.0 + (1.0 - fVar4)) *
            ((1.0 - fVar5) + fVar5 * 2.0 * fVar13) * fVar6 * fVar12;
-      if ((((uint)(param_1->size).current & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).current & 0x7f800000) == 0x7f800000) &&
          (bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                     0x3b7,0,"%s"), !bVar11)) {
         pcVar10 = (code *)swi(3);
@@ -1625,24 +1646,24 @@ Flame_Phys_Update_Item_Chunk
       if (local_60 - 0.0 < 0.0) {
         local_60 = 0.0;
       }
-      (param_1->phys).velocity[0] = local_60 * (param_1->phys).velocity[0];
-      (param_1->phys).velocity[1] = local_60 * (param_1->phys).velocity[1];
-      (param_1->phys).velocity[2] = local_60 * (param_1->phys).velocity[2];
-      (param_1->phys).gravity = (fVar2 - fVar1) * fVar13 + fVar1;
-      (param_1->phys).velocity[2] = (param_1->phys).velocity[2] - fVar12 * (param_1->phys).gravity;
-      (param_1->phys).newPos[0] = fVar12 * (param_1->phys).velocity[0] + (param_1->phys).origin[0];
-      (param_1->phys).newPos[1] = fVar12 * (param_1->phys).velocity[1] + (param_1->phys).origin[1];
-      (param_1->phys).newPos[2] = fVar12 * (param_1->phys).velocity[2] + (param_1->phys).origin[2];
-      if (param_3->m_alloc_count != 1000) {
-        if (param_3->m_alloc_count < 1000) {
-          local_4c = param_3->m_slot_array + param_3->m_alloc_count;
-          param_3->m_alloc_count = param_3->m_alloc_count + 1;
+      (gen->phys).velocity[0] = local_60 * (gen->phys).velocity[0];
+      (gen->phys).velocity[1] = local_60 * (gen->phys).velocity[1];
+      (gen->phys).velocity[2] = local_60 * (gen->phys).velocity[2];
+      (gen->phys).gravity = (fVar2 - fVar1) * fVar13 + fVar1;
+      (gen->phys).velocity[2] = (gen->phys).velocity[2] - fVar12 * (gen->phys).gravity;
+      (gen->phys).newPos[0] = fVar12 * (gen->phys).velocity[0] + (gen->phys).origin[0];
+      (gen->phys).newPos[1] = fVar12 * (gen->phys).velocity[1] + (gen->phys).origin[1];
+      (gen->phys).newPos[2] = fVar12 * (gen->phys).velocity[2] + (gen->phys).origin[2];
+      if (flames->m_alloc_count != 1000) {
+        if (flames->m_alloc_count < 1000) {
+          local_4c = flames->m_slot_array + flames->m_alloc_count;
+          flames->m_alloc_count = flames->m_alloc_count + 1;
         }
         else {
           tlFatal("phys array add overflow.");
           local_4c = (flameGeneric_s **)0x0;
         }
-        *local_4c = param_1;
+        *local_4c = gen;
       }
     }
   }
@@ -1654,7 +1675,7 @@ Flame_Phys_Update_Item_Chunk
 
 void __cdecl
 Flame_Phys_Update_Item_Fire
-          (flameGeneric_s *param_1,int param_2,phys_static_array<flameGeneric_s_*,1000> *param_3)
+          (flameGeneric_s *gen,int time,phys_static_array<flameGeneric_s_*,1000> *flames)
 
 {
   float fVar1;
@@ -1669,30 +1690,38 @@ Flame_Phys_Update_Item_Fire
   float fVar10;
   float fVar11;
   float local_44;
+  flameTable *vars;
+  float frametime;
+  float sizeAdd;
+  float gravityStart;
+  float lifeFrac;
+  float scale;
+  float gravityEnd;
+  float friction;
   
-  if ((param_1->age).lastUpdateTime < param_2) {
-    pfVar5 = param_1->stream->flameVars;
+  if ((gen->age).lastUpdateTime < time) {
+    pfVar5 = gen->stream->flameVars;
     fVar1 = pfVar5->flameVar_fireGravity;
     fVar2 = pfVar5->flameVar_fireGravityEnd;
     fVar3 = pfVar5->flameVar_fireFriction;
-    fVar10 = (float)(param_2 - (param_1->age).lastUpdateTime) * 0.001;
-    (param_1->age).lastUpdateTime = param_2;
-    iVar6 = (param_1->age).lastUpdateTime;
-    iVar7 = (param_1->age).startTime;
-    fVar11 = Flame_CalcTimeScale((param_1->age).startTime,(param_1->age).endTime);
+    fVar10 = (float)(time - (gen->age).lastUpdateTime) * 0.001;
+    (gen->age).lastUpdateTime = time;
+    iVar6 = (gen->age).lastUpdateTime;
+    iVar7 = (gen->age).startTime;
+    fVar11 = Flame_CalcTimeScale((gen->age).startTime,(gen->age).endTime);
     fVar11 = fVar11 * (float)(iVar6 - iVar7);
     if (fVar11 < 1.0) {
-      if ((((uint)(param_1->size).rate & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).rate & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",999
                                    ,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
         (*pcVar8)();
         return;
       }
-      fVar4 = (param_1->size).rate;
-      (param_1->phys).rotation = (param_1->phys).rotVel * fVar10 + (param_1->phys).rotation;
-      (param_1->size).current = (param_1->size).current + fVar4 * fVar10;
-      if ((((uint)(param_1->size).current & 0x7f800000) == 0x7f800000) &&
+      fVar4 = (gen->size).rate;
+      (gen->phys).rotation = (gen->phys).rotVel * fVar10 + (gen->phys).rotation;
+      (gen->size).current = (gen->size).current + fVar4 * fVar10;
+      if ((((uint)(gen->size).current & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x3ef,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
@@ -1703,17 +1732,17 @@ Flame_Phys_Update_Item_Fire
       if (local_44 - 0.0 < 0.0) {
         local_44 = 0.0;
       }
-      (param_1->phys).velocity[0] = local_44 * (param_1->phys).velocity[0];
-      (param_1->phys).velocity[1] = local_44 * (param_1->phys).velocity[1];
-      (param_1->phys).velocity[2] = local_44 * (param_1->phys).velocity[2];
-      (param_1->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
-      (param_1->phys).velocity[2] = (param_1->phys).velocity[2] - fVar10 * (param_1->phys).gravity;
-      (param_1->phys).newPos[0] = fVar10 * (param_1->phys).velocity[0] + (param_1->phys).origin[0];
-      (param_1->phys).newPos[1] = fVar10 * (param_1->phys).velocity[1] + (param_1->phys).origin[1];
-      (param_1->phys).newPos[2] = fVar10 * (param_1->phys).velocity[2] + (param_1->phys).origin[2];
-      (param_1->phys).origin[0] = (param_1->phys).newPos[0];
-      (param_1->phys).origin[1] = (param_1->phys).newPos[1];
-      (param_1->phys).origin[2] = (param_1->phys).newPos[2];
+      (gen->phys).velocity[0] = local_44 * (gen->phys).velocity[0];
+      (gen->phys).velocity[1] = local_44 * (gen->phys).velocity[1];
+      (gen->phys).velocity[2] = local_44 * (gen->phys).velocity[2];
+      (gen->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
+      (gen->phys).velocity[2] = (gen->phys).velocity[2] - fVar10 * (gen->phys).gravity;
+      (gen->phys).newPos[0] = fVar10 * (gen->phys).velocity[0] + (gen->phys).origin[0];
+      (gen->phys).newPos[1] = fVar10 * (gen->phys).velocity[1] + (gen->phys).origin[1];
+      (gen->phys).newPos[2] = fVar10 * (gen->phys).velocity[2] + (gen->phys).origin[2];
+      (gen->phys).origin[0] = (gen->phys).newPos[0];
+      (gen->phys).origin[1] = (gen->phys).newPos[1];
+      (gen->phys).origin[2] = (gen->phys).newPos[2];
     }
   }
   return;
@@ -1724,7 +1753,7 @@ Flame_Phys_Update_Item_Fire
 
 void __cdecl
 Flame_Phys_Update_Item_Smoke
-          (flameGeneric_s *param_1,int param_2,phys_static_array<flameGeneric_s_*,1000> *param_3)
+          (flameGeneric_s *gen,int time,phys_static_array<flameGeneric_s_*,1000> *flames)
 
 {
   float fVar1;
@@ -1739,30 +1768,38 @@ Flame_Phys_Update_Item_Smoke
   float fVar10;
   float fVar11;
   float local_44;
+  flameTable *vars;
+  float frametime;
+  float sizeAdd;
+  float gravityStart;
+  float lifeFrac;
+  float scale;
+  float gravityEnd;
+  float friction;
   
-  if ((param_1->age).lastUpdateTime < param_2) {
-    pfVar5 = param_1->stream->flameVars;
+  if ((gen->age).lastUpdateTime < time) {
+    pfVar5 = gen->stream->flameVars;
     fVar1 = pfVar5->flameVar_smokeGravity;
     fVar2 = pfVar5->flameVar_smokeGravityEnd;
     fVar3 = pfVar5->flameVar_smokeFriction;
-    fVar10 = (float)(param_2 - (param_1->age).lastUpdateTime) * 0.001;
-    (param_1->age).lastUpdateTime = param_2;
-    iVar6 = (param_1->age).lastUpdateTime;
-    iVar7 = (param_1->age).startTime;
-    fVar11 = Flame_CalcTimeScale((param_1->age).startTime,(param_1->age).endTime);
+    fVar10 = (float)(time - (gen->age).lastUpdateTime) * 0.001;
+    (gen->age).lastUpdateTime = time;
+    iVar6 = (gen->age).lastUpdateTime;
+    iVar7 = (gen->age).startTime;
+    fVar11 = Flame_CalcTimeScale((gen->age).startTime,(gen->age).endTime);
     fVar11 = fVar11 * (float)(iVar6 - iVar7);
     if (fVar11 < 1.0) {
-      if ((((uint)(param_1->size).rate & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).rate & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x41b,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
         (*pcVar8)();
         return;
       }
-      fVar4 = (param_1->size).rate;
-      (param_1->phys).rotation = (param_1->phys).rotVel * fVar10 + (param_1->phys).rotation;
-      (param_1->size).current = (param_1->size).current + fVar4 * fVar10;
-      if ((((uint)(param_1->size).current & 0x7f800000) == 0x7f800000) &&
+      fVar4 = (gen->size).rate;
+      (gen->phys).rotation = (gen->phys).rotVel * fVar10 + (gen->phys).rotation;
+      (gen->size).current = (gen->size).current + fVar4 * fVar10;
+      if ((((uint)(gen->size).current & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x423,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
@@ -1773,17 +1810,17 @@ Flame_Phys_Update_Item_Smoke
       if (local_44 - 0.0 < 0.0) {
         local_44 = 0.0;
       }
-      (param_1->phys).velocity[0] = local_44 * (param_1->phys).velocity[0];
-      (param_1->phys).velocity[1] = local_44 * (param_1->phys).velocity[1];
-      (param_1->phys).velocity[2] = local_44 * (param_1->phys).velocity[2];
-      (param_1->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
-      (param_1->phys).velocity[2] = (param_1->phys).velocity[2] - fVar10 * (param_1->phys).gravity;
-      (param_1->phys).newPos[0] = fVar10 * (param_1->phys).velocity[0] + (param_1->phys).origin[0];
-      (param_1->phys).newPos[1] = fVar10 * (param_1->phys).velocity[1] + (param_1->phys).origin[1];
-      (param_1->phys).newPos[2] = fVar10 * (param_1->phys).velocity[2] + (param_1->phys).origin[2];
-      (param_1->phys).origin[0] = (param_1->phys).newPos[0];
-      (param_1->phys).origin[1] = (param_1->phys).newPos[1];
-      (param_1->phys).origin[2] = (param_1->phys).newPos[2];
+      (gen->phys).velocity[0] = local_44 * (gen->phys).velocity[0];
+      (gen->phys).velocity[1] = local_44 * (gen->phys).velocity[1];
+      (gen->phys).velocity[2] = local_44 * (gen->phys).velocity[2];
+      (gen->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
+      (gen->phys).velocity[2] = (gen->phys).velocity[2] - fVar10 * (gen->phys).gravity;
+      (gen->phys).newPos[0] = fVar10 * (gen->phys).velocity[0] + (gen->phys).origin[0];
+      (gen->phys).newPos[1] = fVar10 * (gen->phys).velocity[1] + (gen->phys).origin[1];
+      (gen->phys).newPos[2] = fVar10 * (gen->phys).velocity[2] + (gen->phys).origin[2];
+      (gen->phys).origin[0] = (gen->phys).newPos[0];
+      (gen->phys).origin[1] = (gen->phys).newPos[1];
+      (gen->phys).origin[2] = (gen->phys).newPos[2];
     }
   }
   return;
@@ -1794,7 +1831,7 @@ Flame_Phys_Update_Item_Smoke
 
 void __cdecl
 Flame_Phys_Update_Item_Drip
-          (flameGeneric_s *param_1,int param_2,phys_static_array<flameGeneric_s_*,1000> *param_3)
+          (flameGeneric_s *gen,int time,phys_static_array<flameGeneric_s_*,1000> *flames)
 
 {
   float fVar1;
@@ -1810,30 +1847,38 @@ Flame_Phys_Update_Item_Drip
   float fVar11;
   float local_4c;
   flameGeneric_s **local_40;
+  flameTable *vars;
+  float frametime;
+  float sizeAdd;
+  float gravityStart;
+  float lifeFrac;
+  float scale;
+  float gravityEnd;
+  float friction;
   
-  if ((param_1->age).lastUpdateTime < param_2) {
-    pfVar5 = param_1->stream->flameVars;
+  if ((gen->age).lastUpdateTime < time) {
+    pfVar5 = gen->stream->flameVars;
     fVar1 = pfVar5->flameVar_dripsGravity;
     fVar2 = pfVar5->flameVar_dripsGravityEnd;
     fVar3 = pfVar5->flameVar_dripsFriction;
-    fVar10 = (float)(param_2 - (param_1->age).lastUpdateTime) * 0.001;
-    (param_1->age).lastUpdateTime = param_2;
-    iVar6 = (param_1->age).lastUpdateTime;
-    iVar7 = (param_1->age).startTime;
-    fVar11 = Flame_CalcTimeScale((param_1->age).startTime,(param_1->age).endTime);
+    fVar10 = (float)(time - (gen->age).lastUpdateTime) * 0.001;
+    (gen->age).lastUpdateTime = time;
+    iVar6 = (gen->age).lastUpdateTime;
+    iVar7 = (gen->age).startTime;
+    fVar11 = Flame_CalcTimeScale((gen->age).startTime,(gen->age).endTime);
     fVar11 = fVar11 * (float)(iVar6 - iVar7);
     if (fVar11 < 1.0) {
-      if ((((uint)(param_1->size).rate & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)(gen->size).rate & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x44f,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
         (*pcVar8)();
         return;
       }
-      fVar4 = (param_1->size).rate;
-      (param_1->phys).rotation = (param_1->phys).rotVel * fVar10 + (param_1->phys).rotation;
-      (param_1->size).current = (param_1->size).current + fVar4 * fVar10;
-      if ((((uint)(param_1->size).current & 0x7f800000) == 0x7f800000) &&
+      fVar4 = (gen->size).rate;
+      (gen->phys).rotation = (gen->phys).rotVel * fVar10 + (gen->phys).rotation;
+      (gen->size).current = (gen->size).current + fVar4 * fVar10;
+      if ((((uint)(gen->size).current & 0x7f800000) == 0x7f800000) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_physics.cpp",
                                    0x457,0,"%s"), !bVar9)) {
         pcVar8 = (code *)swi(3);
@@ -1844,24 +1889,24 @@ Flame_Phys_Update_Item_Drip
       if (local_4c - 0.0 < 0.0) {
         local_4c = 0.0;
       }
-      (param_1->phys).velocity[0] = local_4c * (param_1->phys).velocity[0];
-      (param_1->phys).velocity[1] = local_4c * (param_1->phys).velocity[1];
-      (param_1->phys).velocity[2] = local_4c * (param_1->phys).velocity[2];
-      (param_1->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
-      (param_1->phys).velocity[2] = (param_1->phys).velocity[2] - fVar10 * (param_1->phys).gravity;
-      (param_1->phys).newPos[0] = fVar10 * (param_1->phys).velocity[0] + (param_1->phys).origin[0];
-      (param_1->phys).newPos[1] = fVar10 * (param_1->phys).velocity[1] + (param_1->phys).origin[1];
-      (param_1->phys).newPos[2] = fVar10 * (param_1->phys).velocity[2] + (param_1->phys).origin[2];
-      if (param_3->m_alloc_count != 1000) {
-        if (param_3->m_alloc_count < 1000) {
-          local_40 = param_3->m_slot_array + param_3->m_alloc_count;
-          param_3->m_alloc_count = param_3->m_alloc_count + 1;
+      (gen->phys).velocity[0] = local_4c * (gen->phys).velocity[0];
+      (gen->phys).velocity[1] = local_4c * (gen->phys).velocity[1];
+      (gen->phys).velocity[2] = local_4c * (gen->phys).velocity[2];
+      (gen->phys).gravity = (fVar2 - fVar1) * fVar11 + fVar1;
+      (gen->phys).velocity[2] = (gen->phys).velocity[2] - fVar10 * (gen->phys).gravity;
+      (gen->phys).newPos[0] = fVar10 * (gen->phys).velocity[0] + (gen->phys).origin[0];
+      (gen->phys).newPos[1] = fVar10 * (gen->phys).velocity[1] + (gen->phys).origin[1];
+      (gen->phys).newPos[2] = fVar10 * (gen->phys).velocity[2] + (gen->phys).origin[2];
+      if (flames->m_alloc_count != 1000) {
+        if (flames->m_alloc_count < 1000) {
+          local_40 = flames->m_slot_array + flames->m_alloc_count;
+          flames->m_alloc_count = flames->m_alloc_count + 1;
         }
         else {
           tlFatal("phys array add overflow.");
           local_40 = (flameGeneric_s **)0x0;
         }
-        *local_40 = param_1;
+        *local_40 = gen;
       }
     }
   }
@@ -1873,36 +1918,37 @@ Flame_Phys_Update_Item_Drip
 
 void __cdecl
 std::_Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,int param_2,int param_3,flameGeneric_s *param_4,
-          Flame_SortByStream param_5)
+          (flameGeneric_s **_First,int _Hole,int _Bottom,flameGeneric_s *_Val,
+          Flame_SortByStream _Pred)
 
 {
   int iVar1;
   int iVar2;
   int local_10;
-  int local_c;
+  int _Idx;
+  int _Top;
   
-  iVar2 = param_2;
+  iVar2 = _Hole;
   while( true ) {
-    iVar1 = param_2 * 2;
-    local_c = iVar1 + 2;
-    if (param_3 <= local_c) break;
-    if (param_1[local_c]->stream < param_1[iVar1 + 1]->stream) {
-      local_c = iVar1 + 1;
+    iVar1 = _Hole * 2;
+    _Idx = iVar1 + 2;
+    if (_Bottom <= _Idx) break;
+    if (_First[_Idx]->stream < _First[iVar1 + 1]->stream) {
+      _Idx = iVar1 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
-  while ((local_10 = (param_2 + -1) / 2, iVar2 < param_2 &&
-         (param_1[local_10]->stream < param_4->stream))) {
-    param_1[param_2] = param_1[local_10];
-    param_2 = local_10;
+  while ((local_10 = (_Hole + -1) / 2, iVar2 < _Hole && (_First[local_10]->stream < _Val->stream)))
+  {
+    _First[_Hole] = _First[local_10];
+    _Hole = local_10;
   }
-  param_1[param_2] = param_4;
+  _First[_Hole] = _Val;
   return;
 }
 
@@ -1911,16 +1957,16 @@ std::_Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>
 
 void __cdecl
 std::pop_heap<flameGeneric_s_*_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,Flame_SortByStream param_3)
+          (flameGeneric_s **_First,flameGeneric_s **_Last,Flame_SortByStream _Pred)
 
 {
-  flameGeneric_s *pfVar1;
+  flameGeneric_s *_Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    pfVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,pfVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -1930,19 +1976,19 @@ std::pop_heap<flameGeneric_s_*_*,Flame_SortByStream>
 
 void __cdecl
 std::make_heap<flameGeneric_s_*_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,Flame_SortByStream param_3)
+          (flameGeneric_s **_First,flameGeneric_s **_Last,Flame_SortByStream _Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<flameGeneric_s_*_*,int,flameGeneric_s_*,Flame_SortByStream>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -1953,34 +1999,36 @@ std::make_heap<flameGeneric_s_*_*,Flame_SortByStream>
 
 void __cdecl
 std::_Insertion_sort1<flameGeneric_s_*_*,Flame_SortByStream,flameGeneric_s_*>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,Flame_SortByStream param_3,
-          flameGeneric_s **param_4)
+          (flameGeneric_s **_First,flameGeneric_s **_Last,Flame_SortByStream _Pred,
+          flameGeneric_s **__formal)
 
 {
   flameGeneric_s *pfVar1;
   flameGeneric_s **ppfVar2;
-  flameGeneric_s **ppfVar3;
-  flameGeneric_s **local_c;
-  flameGeneric_s **local_8;
+  flameGeneric_s **_Last_10;
+  flameGeneric_s **_First1;
+  flameGeneric_s *_Val;
+  flameGeneric_s **_Next1;
+  flameGeneric_s **_Next;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (ppfVar3 = local_8 + 1, ppfVar3 != param_2) {
-      pfVar1 = *ppfVar3;
-      local_c = ppfVar3;
-      if (pfVar1->stream < (*param_1)->stream) {
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Last_10 = _Next + 1, _Last_10 != _Last) {
+      pfVar1 = *_Last_10;
+      _Next1 = _Last_10;
+      if (pfVar1->stream < (*_First)->stream) {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  (param_1,ppfVar3,local_8 + 2);
-        *param_1 = pfVar1;
-        local_8 = ppfVar3;
+                  (_First,_Last_10,_Next + 2);
+        *_First = pfVar1;
+        _Next = _Last_10;
       }
       else {
-        while (ppfVar2 = local_c + -1, pfVar1->stream < (*ppfVar2)->stream) {
-          *local_c = *ppfVar2;
-          local_c = ppfVar2;
+        while (ppfVar2 = _Next1 + -1, pfVar1->stream < (*ppfVar2)->stream) {
+          *_Next1 = *ppfVar2;
+          _Next1 = ppfVar2;
         }
-        *local_c = pfVar1;
-        local_8 = ppfVar3;
+        *_Next1 = pfVar1;
+        _Next = _Last_10;
       }
     }
   }
@@ -1992,26 +2040,26 @@ std::_Insertion_sort1<flameGeneric_s_*_*,Flame_SortByStream,flameGeneric_s_*>
 
 void __cdecl
 std::_Med3<flameGeneric_s_*_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,flameGeneric_s **param_3,
-          Flame_SortByStream param_4)
+          (flameGeneric_s **_First,flameGeneric_s **_Mid,flameGeneric_s **_Last,
+          Flame_SortByStream _Pred)
 
 {
   flameGeneric_s *pfVar1;
   
-  if (((*param_2)->stream < (*param_1)->stream) && (param_2 != param_1)) {
-    pfVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pfVar1;
+  if (((*_Mid)->stream < (*_First)->stream) && (_Mid != _First)) {
+    pfVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pfVar1;
   }
-  if (((*param_3)->stream < (*param_2)->stream) && (param_3 != param_2)) {
-    pfVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = pfVar1;
+  if (((*_Last)->stream < (*_Mid)->stream) && (_Last != _Mid)) {
+    pfVar1 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = pfVar1;
   }
-  if (((*param_2)->stream < (*param_1)->stream) && (param_2 != param_1)) {
-    pfVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pfVar1;
+  if (((*_Mid)->stream < (*_First)->stream) && (_Mid != _First)) {
+    pfVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pfVar1;
   }
   return;
 }
@@ -2021,24 +2069,23 @@ std::_Med3<flameGeneric_s_*_*,Flame_SortByStream>
 
 void __cdecl
 std::_Median<flameGeneric_s_*_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,flameGeneric_s **param_3,
-          Flame_SortByStream param_4)
+          (flameGeneric_s **_First,flameGeneric_s **_Mid,flameGeneric_s **_Last,
+          Flame_SortByStream _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
-    _Med3<flameGeneric_s_*_*,Flame_SortByStream>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
-    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
-    _Med3<flameGeneric_s_*_*,Flame_SortByStream>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
+    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
+    _Med3<flameGeneric_s_*_*,Flame_SortByStream>(_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -2048,128 +2095,111 @@ std::_Median<flameGeneric_s_*_*,Flame_SortByStream>
 
 pair<flameGeneric_s_*_*,flameGeneric_s_*_*> __cdecl
 std::_Unguarded_partition<flameGeneric_s_*_*,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,Flame_SortByStream param_3)
+          (flameGeneric_s **param_1,flameGeneric_s **_First,Flame_SortByStream _Last)
 
 {
   flameGeneric_s *pfVar1;
-  undefined4 uVar2;
-  flameGeneric_s *pfVar3;
-  undefined1 *puVar4;
-  flameGeneric_s *pfVar5;
-  pair<flameGeneric_s_*_*,flameGeneric_s_*_*> pVar6;
+  flameGeneric_s **ppfVar2;
+  flameGeneric_s **ppfVar3;
+  pair<flameGeneric_s_*_*,flameGeneric_s_*_*> pVar4;
   undefined3 in_stack_0000000d;
   Flame_SortByStream in_stack_00000010;
-  flameGeneric_s *local_18;
-  flameGeneric_s *local_14;
-  flameGeneric_s *local_10;
-  flameGeneric_s *local_c;
+  flameGeneric_s **_Plast;
+  flameGeneric_s **_Glast;
+  flameGeneric_s **_Pfirst;
+  flameGeneric_s **_Gfirst;
+  flameGeneric_s **_Mid;
   
-  local_10 = (flameGeneric_s *)
-             (param_2 +
-             (((int)_param_3 - (int)param_2 >> 2) - ((int)_param_3 - (int)param_2 >> 0x1f) >> 1));
-  _Median<flameGeneric_s_*_*,Flame_SortByStream>
-            (param_2,(flameGeneric_s **)local_10,(flameGeneric_s **)&_param_3[-1].field_0x5c,
-             in_stack_00000010);
-  local_18 = (flameGeneric_s *)((local_10->phys).origin + 1);
-  while (((param_2 < local_10 &&
-          (((flameGeneric_s *)(local_10->phys).origin[0])->stream <=
-           *(flameStream_s **)(*(int *)&local_10[-1].field_0x5c + 0x58))) &&
-         (*(flameStream_s **)(*(int *)&local_10[-1].field_0x5c + 0x58) <=
-          ((flameGeneric_s *)(local_10->phys).origin[0])->stream))) {
-    local_10 = (flameGeneric_s *)&local_10[-1].field_0x5c;
+  _Pfirst = _First + (((int)__Last - (int)_First >> 2) - ((int)__Last - (int)_First >> 0x1f) >> 1);
+  _Median<flameGeneric_s_*_*,Flame_SortByStream>(_First,_Pfirst,__Last + -1,in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  for (; ((_First < _Pfirst && ((*_Pfirst)->stream <= _Pfirst[-1]->stream)) &&
+         (_Pfirst[-1]->stream <= (*_Pfirst)->stream)); _Pfirst = _Pfirst + -1) {
   }
-  while (((local_18 < _param_3 &&
-          (((flameGeneric_s *)(local_10->phys).origin[0])->stream <=
-           ((flameGeneric_s *)(local_18->phys).origin[0])->stream)) &&
-         (((flameGeneric_s *)(local_18->phys).origin[0])->stream <=
-          ((flameGeneric_s *)(local_10->phys).origin[0])->stream))) {
-    local_18 = (flameGeneric_s *)((local_18->phys).origin + 1);
+  for (; ((_Plast < __Last && ((*_Pfirst)->stream <= (*_Plast)->stream)) &&
+         ((*_Plast)->stream <= (*_Pfirst)->stream)); _Plast = _Plast + 1) {
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pfVar3 = local_c;
-  pfVar5 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  ppfVar2 = _Gfirst;
+  ppfVar3 = _Pfirst;
   do {
-    while (local_10 = pfVar5, local_c = pfVar3, _param_3 <= local_c) {
+    while (_Pfirst = ppfVar3, _Gfirst = ppfVar2, __Last <= _Gfirst) {
 LAB_00892895:
-      for (; param_2 < local_14; local_14 = (flameGeneric_s *)&local_14[-1].field_0x5c) {
-        if (((flameGeneric_s *)(local_10->phys).origin[0])->stream <=
-            *(flameStream_s **)(*(int *)&local_14[-1].field_0x5c + 0x58)) {
-          if (((flameGeneric_s *)(local_10->phys).origin[0])->stream <
-              *(flameStream_s **)(*(int *)&local_14[-1].field_0x5c + 0x58)) break;
-          local_10 = (flameGeneric_s *)&local_10[-1].field_0x5c;
-          puVar4 = &local_14[-1].field_0x5c;
-          if (local_10 != (flameGeneric_s *)puVar4) {
-            uVar2 = *(undefined4 *)local_10;
-            *(undefined4 *)local_10 = *(undefined4 *)puVar4;
-            *(undefined4 *)puVar4 = uVar2;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        if ((*_Pfirst)->stream <= _Glast[-1]->stream) {
+          if ((*_Pfirst)->stream < _Glast[-1]->stream) break;
+          _Pfirst = _Pfirst + -1;
+          ppfVar2 = _Glast + -1;
+          if (_Pfirst != ppfVar2) {
+            pfVar1 = *_Pfirst;
+            *_Pfirst = *ppfVar2;
+            *ppfVar2 = pfVar1;
           }
         }
       }
-      if ((local_14 == (flameGeneric_s *)param_2) && (local_c == _param_3)) {
-        *param_1 = local_10;
-        param_1[1] = local_18;
-        pVar6.second = (flameGeneric_s **)local_10;
-        pVar6.first = param_1;
-        return pVar6;
+      if ((_Glast == _First) && (_Gfirst == __Last)) {
+        *param_1 = (flameGeneric_s *)_Pfirst;
+        param_1[1] = (flameGeneric_s *)_Plast;
+        pVar4.second = _Pfirst;
+        pVar4.first = param_1;
+        return pVar4;
       }
-      if (local_14 == (flameGeneric_s *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          pfVar3 = (flameGeneric_s *)(local_10->phys).origin[0];
-          (local_10->phys).origin[0] = (float)(local_18->phys).origin[0];
-          (local_18->phys).origin[0] = (float)pfVar3;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          pfVar1 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = pfVar1;
         }
-        local_18 = (flameGeneric_s *)((local_18->phys).origin + 1);
-        pfVar5 = (flameGeneric_s *)((local_10->phys).origin + 1);
-        pfVar3 = (flameGeneric_s *)((local_c->phys).origin + 1);
-        if (local_10 != local_c) {
-          pfVar1 = (flameGeneric_s *)(local_10->phys).origin[0];
-          (local_10->phys).origin[0] = (float)(local_c->phys).origin[0];
-          (local_c->phys).origin[0] = (float)pfVar1;
+        _Plast = _Plast + 1;
+        ppfVar2 = _Gfirst + 1;
+        ppfVar3 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          pfVar1 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = pfVar1;
         }
       }
-      else if (local_c == _param_3) {
-        local_14 = (flameGeneric_s *)&local_14[-1].field_0x5c;
-        pfVar5 = (flameGeneric_s *)&local_10[-1].field_0x5c;
-        if ((local_14 != pfVar5) && (local_14 != pfVar5)) {
-          uVar2 = *(undefined4 *)local_14;
-          *(undefined4 *)local_14 = *(undefined4 *)pfVar5;
-          *(undefined4 *)pfVar5 = uVar2;
+      else if (_Gfirst == __Last) {
+        _Glast = _Glast + -1;
+        ppfVar3 = _Pfirst + -1;
+        if ((_Glast != ppfVar3) && (_Glast != ppfVar3)) {
+          pfVar1 = *_Glast;
+          *_Glast = *ppfVar3;
+          *ppfVar3 = pfVar1;
         }
-        local_18 = (flameGeneric_s *)&local_18[-1].field_0x5c;
-        pfVar3 = local_c;
-        if (pfVar5 != local_18) {
-          uVar2 = *(undefined4 *)pfVar5;
-          *(undefined4 *)pfVar5 = *(undefined4 *)local_18;
-          *(undefined4 *)local_18 = uVar2;
+        _Plast = _Plast + -1;
+        ppfVar2 = _Gfirst;
+        if (ppfVar3 != _Plast) {
+          pfVar1 = *ppfVar3;
+          *ppfVar3 = *_Plast;
+          *_Plast = pfVar1;
         }
       }
       else {
-        local_14 = (flameGeneric_s *)&local_14[-1].field_0x5c;
-        if (local_c != local_14) {
-          pfVar3 = (flameGeneric_s *)(local_c->phys).origin[0];
-          (local_c->phys).origin[0] = (float)*(flameGeneric_s **)local_14;
-          *(flameGeneric_s **)local_14 = pfVar3;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pfVar1 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = pfVar1;
         }
-        pfVar3 = (flameGeneric_s *)((local_c->phys).origin + 1);
-        pfVar5 = local_10;
+        ppfVar2 = _Gfirst + 1;
+        ppfVar3 = _Pfirst;
       }
     }
-    pfVar3 = local_18;
-    if (((flameGeneric_s *)(local_c->phys).origin[0])->stream <=
-        ((flameGeneric_s *)(local_10->phys).origin[0])->stream) {
-      if (((flameGeneric_s *)(local_c->phys).origin[0])->stream <
-          ((flameGeneric_s *)(local_10->phys).origin[0])->stream) goto LAB_00892895;
-      pfVar3 = (flameGeneric_s *)((local_18->phys).origin + 1);
-      if (local_18 != local_c) {
-        pfVar5 = (flameGeneric_s *)(local_18->phys).origin[0];
-        (local_18->phys).origin[0] = (float)(local_c->phys).origin[0];
-        (local_c->phys).origin[0] = (float)pfVar5;
+    ppfVar2 = _Plast;
+    if ((*_Gfirst)->stream <= (*_Pfirst)->stream) {
+      if ((*_Gfirst)->stream < (*_Pfirst)->stream) goto LAB_00892895;
+      ppfVar2 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        pfVar1 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = pfVar1;
       }
     }
-    local_18 = pfVar3;
-    pfVar3 = (flameGeneric_s *)((local_c->phys).origin + 1);
-    pfVar5 = local_10;
+    _Plast = ppfVar2;
+    ppfVar2 = _Gfirst + 1;
+    ppfVar3 = _Pfirst;
   } while( true );
 }
 
@@ -2178,37 +2208,36 @@ LAB_00892895:
 
 void __cdecl
 std::_Sort<flameGeneric_s_*_*,int,Flame_SortByStream>
-          (flameGeneric_s **param_1,flameGeneric_s **param_2,int param_3,Flame_SortByStream param_4)
+          (flameGeneric_s **_First,flameGeneric_s **_Last,int _Ideal,Flame_SortByStream _Pred)
 
 {
   flameGeneric_s **local_ac;
-  flameGeneric_s *local_10;
+  flameGeneric_s *_Mid;
   flameGeneric_s **local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
-    _Unguarded_partition<flameGeneric_s_*_*,Flame_SortByStream>(&local_10,param_1,SUB41(param_2,0));
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
-      _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>
-                (param_1,(flameGeneric_s **)local_10,param_3,param_4);
-      param_1 = local_c;
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
+    _Unguarded_partition<flameGeneric_s_*_*,Flame_SortByStream>(&_Mid,_First,SUB41(_Last,0));
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
+      _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>(_First,(flameGeneric_s **)_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>(local_c,param_2,param_3,param_4);
-      param_2 = (flameGeneric_s **)local_10;
+      _Sort<flameGeneric_s_*_*,int,Flame_SortByStream>(local_c,_Last,_Ideal,_Pred);
+      _Last = (flameGeneric_s **)_Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<flameGeneric_s_*_*,Flame_SortByStream,flameGeneric_s_*>
-                (param_1,param_2,param_4,(flameGeneric_s **)0x0);
+                (_First,_Last,_Pred,(flameGeneric_s **)0x0);
     }
   }
   else {
-    make_heap<flameGeneric_s_*_*,Flame_SortByStream>(param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
-      pop_heap<flameGeneric_s_*_*,Flame_SortByStream>(param_1,local_ac,param_4);
+    make_heap<flameGeneric_s_*_*,Flame_SortByStream>(_First,_Last,_Pred);
+    for (local_ac = _Last; 1 < (int)local_ac - (int)_First >> 2; local_ac = local_ac + -1) {
+      pop_heap<flameGeneric_s_*_*,Flame_SortByStream>(_First,local_ac,_Pred);
     }
   }
   return;

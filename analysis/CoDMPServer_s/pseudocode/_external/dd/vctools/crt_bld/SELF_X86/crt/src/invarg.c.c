@@ -2,10 +2,10 @@
 
 // 0095F39D  _initp_misc_invarg  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c:64)
 
-void __cdecl _initp_misc_invarg(void *param_1)
+void __cdecl _initp_misc_invarg(void *enull)
 
 {
-  __pInvalidArgHandler = param_1;
+  __pInvalidArgHandler = enull;
   return;
 }
 
@@ -13,7 +13,8 @@ void __cdecl _initp_misc_invarg(void *param_1)
 // 0095F4D4  _invalid_parameter  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/invarg.c:96)
 
 void __cdecl
-_invalid_parameter(wchar_t *param_1,wchar_t *param_2,wchar_t *param_3,uint param_4,uint param_5)
+_invalid_parameter(wchar_t *pszExpression,wchar_t *pszFunction,wchar_t *pszFile,uint nLine,
+                  uint pReserved)
 
 {
   code *UNRECOVERED_JUMPTABLE;
@@ -26,7 +27,7 @@ _invalid_parameter(wchar_t *param_1,wchar_t *param_2,wchar_t *param_3,uint param
     return;
   }
   _crt_debugger_hook(2);
-  _invoke_watson(param_1,param_2,param_3,param_4,param_5);
+  _invoke_watson(pszExpression,pszFunction,pszFile,nLine,pReserved);
   return;
 }
 
@@ -46,27 +47,28 @@ void __cdecl _invalid_parameter_noinfo(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-_invoke_watson(wchar_t *param_1,wchar_t *param_2,wchar_t *param_3,uint param_4,uint param_5)
+_invoke_watson(wchar_t *pszExpression,wchar_t *pszFunction,wchar_t *pszFile,uint nLine,
+              uint pReserved)
 
 {
   BOOL BVar1;
   LONG LVar2;
   HANDLE hProcess;
   UINT uExitCode;
-  EXCEPTION_RECORD local_32c;
-  _EXCEPTION_POINTERS local_2dc;
-  undefined4 local_2d4;
+  EXCEPTION_RECORD ExceptionRecord;
+  _EXCEPTION_POINTERS ExceptionPointers;
+  undefined4 ContextRecord;
   
-  local_32c.ExceptionCode = 0;
-  memset((uchar *)&local_32c.ExceptionFlags,'\0',0x4c);
-  local_2dc.ExceptionRecord = &local_32c;
-  local_2dc.ContextRecord = (PCONTEXT)&local_2d4;
-  local_2d4 = 0x10001;
-  local_32c.ExceptionCode = 0xc0000417;
-  local_32c.ExceptionFlags = 1;
+  ExceptionRecord.ExceptionCode = 0;
+  memset((uchar *)&ExceptionRecord.ExceptionFlags,'\0',0x4c);
+  ExceptionPointers.ExceptionRecord = &ExceptionRecord;
+  ExceptionPointers.ContextRecord = (PCONTEXT)&ContextRecord;
+  ContextRecord = 0x10001;
+  ExceptionRecord.ExceptionCode = 0xc0000417;
+  ExceptionRecord.ExceptionFlags = 1;
   BVar1 = IsDebuggerPresent();
   SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)0x0);
-  LVar2 = UnhandledExceptionFilter(&local_2dc);
+  LVar2 = UnhandledExceptionFilter(&ExceptionPointers);
   if ((LVar2 == 0) && (BVar1 == 0)) {
     _crt_debugger_hook(2);
   }

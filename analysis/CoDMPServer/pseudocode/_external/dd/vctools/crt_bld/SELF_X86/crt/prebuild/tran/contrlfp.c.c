@@ -2,28 +2,28 @@
 
 // 00C2A4F8  _controlfp_s  (line unknown)
 
-int __cdecl _controlfp_s(uint *param_1,uint param_2,uint param_3)
+int __cdecl _controlfp_s(uint *_CurrentState,uint newctrl,uint mask)
 
 {
   uint uVar1;
   int *piVar2;
   int iVar3;
   
-  uVar1 = param_3 & 0xfff7ffff;
-  if ((param_2 & uVar1 & 0xfcf0fce0) == 0) {
-    if (param_1 == (uint *)0x0) {
-      _control87(param_2,uVar1);
+  uVar1 = mask & 0xfff7ffff;
+  if ((newctrl & uVar1 & 0xfcf0fce0) == 0) {
+    if (_CurrentState == (uint *)0x0) {
+      _control87(newctrl,uVar1);
     }
     else {
-      uVar1 = _control87(param_2,uVar1);
-      *param_1 = uVar1;
+      uVar1 = _control87(newctrl,uVar1);
+      *_CurrentState = uVar1;
     }
     iVar3 = 0;
   }
   else {
-    if (param_1 != (uint *)0x0) {
+    if (_CurrentState != (uint *)0x0) {
       uVar1 = _control87(0,0);
-      *param_1 = uVar1;
+      *_CurrentState = uVar1;
     }
     piVar2 = _errno();
     iVar3 = 0x16;

@@ -20,20 +20,22 @@ void __cdecl TRACK_files(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_SV_FileExists(char *param_1,char *param_2)
+int __cdecl FS_SV_FileExists(char *file,char *dir)
 
 {
-  _iobuf *p_Var1;
-  char local_10c [260];
+  _iobuf *stream;
+  char *basepath;
+  _iobuf *f;
+  char testpath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  FS_BuildOSPath((fs_homepath->current).string,param_2,param_1,local_10c);
-  p_Var1 = FS_FileOpenReadBinary(local_10c);
-  if (p_Var1 != (_iobuf *)0x0) {
-    FS_FileClose(p_Var1);
+  FS_BuildOSPath((fs_homepath->current).string,dir,file,testpath);
+  stream = FS_FileOpenReadBinary(testpath);
+  if (stream != (_iobuf *)0x0) {
+    FS_FileClose(stream);
   }
-  return (uint)(p_Var1 != (_iobuf *)0x0);
+  return (uint)(stream != (_iobuf *)0x0);
 }
 
 
@@ -41,16 +43,18 @@ int __cdecl FS_SV_FileExists(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_SV_FOpenFileWrite(char *param_1,char *param_2)
+int __cdecl FS_SV_FOpenFileWrite(char *filename,char *dir)
 
 {
   int iVar1;
+  char *basepath;
+  int f;
   
   FS_CheckFileSystemStarted();
   if ((fs_debug->current).integer != 0) {
     Com_Printf(10,"FS_SV_FOpenFileWrite: opening %s\n");
   }
-  iVar1 = FS_FOpenFileWriteCurrentThread(param_1,param_2,(fs_homepath->current).string);
+  iVar1 = FS_FOpenFileWriteCurrentThread(filename,dir,(fs_homepath->current).string);
   if ((iVar1 == 0) && ((fs_debug->current).integer != 0)) {
     Com_Printf(10,"FS_SV_FOpenFileWrite: failed to open %s\n");
   }
@@ -62,63 +66,63 @@ int __cdecl FS_SV_FOpenFileWrite(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_SV_FOpenFileRead(char *param_1,char *param_2,int *param_3)
+int __cdecl FS_SV_FOpenFileRead(char *filename,char *dir,int *fp)
 
 {
   int iVar1;
   _iobuf *p_Var2;
-  char local_114 [260];
+  char ospath [260];
   uint local_10;
-  char *local_c;
-  int local_8;
+  char *basepath;
+  int f;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  f = 0;
   FS_CheckFileSystemStarted();
   if ((fs_debug->current).integer != 0) {
     Com_Printf(10,"FS_SV_FOpenFileRead: opening %s\n");
   }
-  local_c = (fs_homepath->current).string;
-  FS_BuildOSPath(local_c,param_2,param_1,local_114);
-  local_8 = FS_HandleForFileCurrentThread(param_1);
-  if (local_8 == 0) {
+  basepath = (fs_homepath->current).string;
+  FS_BuildOSPath(basepath,dir,filename,ospath);
+  f = FS_HandleForFileCurrentThread(filename);
+  if (f == 0) {
     iVar1 = 0;
   }
   else {
-    fsh[local_8].zipFile = (iwd_t *)0x0;
-    fsh[local_8].handleSync = 0;
-    p_Var2 = FS_FileOpenReadBinary(local_114);
-    fsh[local_8].handleFiles.file.o = p_Var2;
-    if (fsh[local_8].handleFiles.file.o == (_iobuf *)0x0) {
+    fsh[f].zipFile = (iwd_t *)0x0;
+    fsh[f].handleSync = 0;
+    p_Var2 = FS_FileOpenReadBinary(ospath);
+    fsh[f].handleFiles.file.o = p_Var2;
+    if (fsh[f].handleFiles.file.o == (_iobuf *)0x0) {
       iVar1 = I_stricmp((fs_homepath->current).string,(fs_basepath->current).string);
       if (iVar1 != 0) {
-        FS_BuildOSPath((fs_basepath->current).string,param_2,param_1,local_114);
+        FS_BuildOSPath((fs_basepath->current).string,dir,filename,ospath);
         if ((fs_debug->current).integer != 0) {
           Com_Printf(10,"FS_SV_FOpenFileRead (fs_basepath): %s\n");
         }
-        p_Var2 = FS_FileOpenReadBinary(local_114);
-        fsh[local_8].handleFiles.file.o = p_Var2;
+        p_Var2 = FS_FileOpenReadBinary(ospath);
+        fsh[f].handleFiles.file.o = p_Var2;
       }
     }
-    if (fsh[local_8].handleFiles.file.o == (_iobuf *)0x0) {
-      FS_BuildOSPath((fs_cdpath->current).string,param_2,param_1,local_114);
+    if (fsh[f].handleFiles.file.o == (_iobuf *)0x0) {
+      FS_BuildOSPath((fs_cdpath->current).string,dir,filename,ospath);
       if ((fs_debug->current).integer != 0) {
         Com_Printf(10,"FS_SV_FOpenFileRead (fs_cdpath) : %s\n");
       }
-      p_Var2 = FS_FileOpenReadBinary(local_114);
-      fsh[local_8].handleFiles.file.o = p_Var2;
+      p_Var2 = FS_FileOpenReadBinary(ospath);
+      fsh[f].handleFiles.file.o = p_Var2;
     }
-    if (fsh[local_8].handleFiles.file.o == (_iobuf *)0x0) {
+    if (fsh[f].handleFiles.file.o == (_iobuf *)0x0) {
       if ((fs_debug->current).integer != 0) {
         Com_Printf(10,"FS_SV_FOpenFileRead: failed to open %s\n");
       }
-      *param_3 = 0;
+      *fp = 0;
       iVar1 = 0;
     }
     else {
-      I_strncpyz(fsh[local_8].name,param_1,0x100);
-      *param_3 = local_8;
-      iVar1 = FS_filelength(local_8);
+      I_strncpyz(fsh[f].name,filename,0x100);
+      *fp = f;
+      iVar1 = FS_filelength(f);
     }
   }
   return iVar1;
@@ -129,27 +133,27 @@ int __cdecl FS_SV_FOpenFileRead(char *param_1,char *param_2,int *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl FS_SV_Rename(char *param_1,char *param_2,char *param_3)
+void __cdecl FS_SV_Rename(char *from,char *to,char *dir)
 
 {
   int iVar1;
-  char local_214 [260];
-  char *local_110;
-  char local_10c [260];
+  char to_ospath [260];
+  char *basepath;
+  char from_ospath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   FS_CheckFileSystemStarted();
-  local_110 = (fs_homepath->current).string;
-  FS_BuildOSPath(local_110,param_3,param_1,local_10c);
-  FS_BuildOSPath(local_110,param_3,param_2,local_214);
+  basepath = (fs_homepath->current).string;
+  FS_BuildOSPath(basepath,dir,from,from_ospath);
+  FS_BuildOSPath(basepath,dir,to,to_ospath);
   if ((fs_debug->current).integer != 0) {
     Com_Printf(10,"FS_SV_Rename: %s --> %s\n");
   }
-  iVar1 = rename(local_10c,local_214);
+  iVar1 = rename(from_ospath,to_ospath);
   if (iVar1 != 0) {
-    FS_CopyFile(local_10c,local_214);
-    FS_Remove(local_10c);
+    FS_CopyFile(from_ospath,to_ospath);
+    FS_Remove(from_ospath);
   }
   return;
 }
@@ -157,18 +161,18 @@ void __cdecl FS_SV_Rename(char *param_1,char *param_2,char *param_3)
 
 // 006DB7D0  Sys_CountFileList  (qcommon/files.cpp:341)
 
-uint __cdecl Sys_CountFileList(char **param_1)
+uint __cdecl Sys_CountFileList(char **list)
 
 {
-  uint local_8;
+  int i;
   
-  local_8 = 0;
-  if (param_1 != (char **)0x0) {
-    for (; *param_1 != (char *)0x0; param_1 = param_1 + 1) {
-      local_8 = local_8 + 1;
+  i = 0;
+  if (list != (char **)0x0) {
+    for (; *list != (char *)0x0; list = list + 1) {
+      i = i + 1;
     }
   }
-  return local_8;
+  return i;
 }
 
 
@@ -176,14 +180,14 @@ uint __cdecl Sys_CountFileList(char **param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_GetModList(char *param_1,int param_2)
+int __cdecl FS_GetModList(char *listbuf,int bufsize)
 
 {
   char cVar1;
   int iVar2;
-  _iobuf *p_Var3;
-  uint uVar4;
-  char *pcVar5;
+  _iobuf *stream;
+  uint uVar3;
+  char *pcVar4;
   char *local_180;
   char *local_17c;
   char *local_170;
@@ -192,90 +196,92 @@ int __cdecl FS_GetModList(char *param_1,int param_2)
   char *local_150;
   char *local_14c;
   char *local_13c;
-  int local_134;
-  int local_12c;
-  int local_128;
-  int local_124;
-  char *local_120;
-  char local_11c [256];
+  _iobuf *file;
+  int nMods;
+  int nDescLen;
+  int descHandle;
+  char *basepath;
+  int dummy;
+  char *name;
+  char descPath [256];
   uint local_1c;
-  uint local_18;
-  char *local_14;
-  char *local_10;
-  int local_c;
-  char **local_8;
+  int nPotential;
+  int nLen;
+  int nTotal;
+  int i;
+  char **pFiles;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (char **)0x0;
-  *param_1 = '\0';
-  local_10 = (char *)0x0;
-  local_18 = 0;
-  local_134 = 0;
-  local_128 = (fs_homepath->current).integer;
-  Com_sprintf(local_11c,0x100,"%s/%s");
-  local_8 = Sys_ListFiles(local_11c,(char *)0x0,(char *)0x0,&local_124,1);
-  local_18 = Sys_CountFileList(local_8);
-  for (local_c = 0; local_c < (int)local_18; local_c = local_c + 1) {
-    local_120 = local_8[local_c];
-    local_13c = local_120;
+  pFiles = (char **)0x0;
+  *listbuf = '\0';
+  nTotal = 0;
+  nPotential = 0;
+  nMods = 0;
+  basepath = (fs_homepath->current).string;
+  Com_sprintf(descPath,0x100,"%s/%s");
+  pFiles = Sys_ListFiles(descPath,(char *)0x0,(char *)0x0,&dummy,1);
+  nPotential = Sys_CountFileList(pFiles);
+  for (i = 0; i < nPotential; i = i + 1) {
+    name = pFiles[i];
+    local_13c = name;
     do {
       cVar1 = *local_13c;
       local_13c = local_13c + 1;
     } while (cVar1 != '\0');
-    local_14 = local_13c + (1 - (int)(local_120 + 1));
-    local_150 = local_11c;
-    local_14c = local_120;
+    nLen = (int)(local_13c + (1 - (int)(name + 1)));
+    local_150 = descPath;
+    local_14c = name;
     do {
       cVar1 = *local_14c;
       *local_150 = cVar1;
       local_14c = local_14c + 1;
       local_150 = local_150 + 1;
     } while (cVar1 != '\0');
-    I_strncat(local_11c,0x100,"/description.txt");
-    iVar2 = FS_SV_FOpenFileRead(local_11c,"mods",&local_12c);
-    if ((iVar2 < 1) || (local_12c == 0)) {
+    I_strncat(descPath,0x100,"/description.txt");
+    iVar2 = FS_SV_FOpenFileRead(descPath,"mods",&descHandle);
+    if ((iVar2 < 1) || (descHandle == 0)) {
       Com_Printf(10,"FS_GetModList: failed to open %s\n");
-      local_11c[0] = '\0';
+      descPath[0] = '\0';
     }
     else {
-      p_Var3 = FS_FileForHandle(local_12c);
-      Com_Memset(local_11c,0,0x100);
-      uVar4 = FS_FileRead(local_11c,0x30,p_Var3);
-      if (-1 < (int)uVar4) {
-        local_11c[uVar4] = '\0';
+      stream = FS_FileForHandle(descHandle);
+      Com_Memset(descPath,0,0x100);
+      uVar3 = FS_FileRead(descPath,0x30,stream);
+      if (-1 < (int)uVar3) {
+        descPath[uVar3] = '\0';
       }
-      FS_FCloseFile(local_12c);
+      FS_FCloseFile(descHandle);
     }
-    local_15c = local_11c;
+    local_15c = descPath;
     do {
       cVar1 = *local_15c;
       local_15c = local_15c + 1;
     } while (cVar1 != '\0');
-    local_15c = local_15c + (1 - (int)(local_11c + 1));
-    if (param_2 <= (int)(local_10 + (int)local_14 + 2 + (int)local_15c)) break;
-    local_16c = local_120;
-    local_170 = param_1;
+    local_15c = local_15c + (1 - (int)(descPath + 1));
+    if (bufsize <= (int)(local_15c + nTotal + nLen + 2)) break;
+    local_16c = name;
+    local_170 = listbuf;
     do {
       cVar1 = *local_16c;
       *local_170 = cVar1;
       local_16c = local_16c + 1;
       local_170 = local_170 + 1;
     } while (cVar1 != '\0');
-    pcVar5 = param_1 + (int)local_14;
-    local_17c = local_11c;
-    local_180 = pcVar5;
+    pcVar4 = listbuf + nLen;
+    local_17c = descPath;
+    local_180 = pcVar4;
     do {
       cVar1 = *local_17c;
       *local_180 = cVar1;
       local_17c = local_17c + 1;
       local_180 = local_180 + 1;
     } while (cVar1 != '\0');
-    param_1 = pcVar5 + (int)local_15c;
-    local_10 = local_14 + (int)local_15c + (int)local_10;
-    local_134 = local_134 + 1;
+    listbuf = pcVar4 + (int)local_15c;
+    nTotal = (int)(local_15c + nTotal + nLen);
+    nMods = nMods + 1;
   }
-  Sys_FreeFileList(local_8);
-  return local_134;
+  Sys_FreeFileList(pFiles);
+  return nMods;
 }
 
 
@@ -285,30 +291,30 @@ void __cdecl FS_Dir_f(void)
 
 {
   int iVar1;
-  char *local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  char **local_8;
+  char *path;
+  char *extension;
+  int ndirs;
+  int i;
+  char **dirnames;
   
   iVar1 = Cmd_Argc();
   if ((1 < iVar1) && (iVar1 = Cmd_Argc(), iVar1 < 4)) {
     iVar1 = Cmd_Argc();
     if (iVar1 == 2) {
-      local_18 = Cmd_Argv(1);
-      local_14 = "";
+      path = Cmd_Argv(1);
+      extension = "";
     }
     else {
-      local_18 = Cmd_Argv(1);
-      local_14 = Cmd_Argv(2);
+      path = Cmd_Argv(1);
+      extension = Cmd_Argv(2);
     }
     Com_Printf(0,"Directory of %s %s\n");
     Com_Printf(0,"---------------\n");
-    local_8 = FS_ListFiles(local_18,local_14,FS_LIST_PURE_ONLY,&local_10,0xb);
-    for (local_c = 0; local_c < local_10; local_c = local_c + 1) {
+    dirnames = FS_ListFiles(path,extension,FS_LIST_PURE_ONLY,&ndirs,0xb);
+    for (i = 0; i < ndirs; i = i + 1) {
       Com_Printf(0,"%s\n");
     }
-    Sys_FreeFileList(local_8);
+    Sys_FreeFileList(dirnames);
     return;
   }
   Com_Printf(0,"usage: dir <directory> [extension]\n");
@@ -322,10 +328,10 @@ void __cdecl FS_NewDir_f(void)
 
 {
   int iVar1;
-  int local_14;
-  int local_10;
-  char *local_c;
-  char **local_8;
+  int ndirs;
+  int i;
+  char *filter;
+  char **dirnames;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -333,16 +339,16 @@ void __cdecl FS_NewDir_f(void)
     Com_Printf(0,"example: fdir *q3dm*.bsp\n");
   }
   else {
-    local_c = Cmd_Argv(1);
+    filter = Cmd_Argv(1);
     Com_Printf(0,"---------------\n");
-    local_8 = FS_ListFilteredFiles(fs_searchpaths,"","",local_c,FS_LIST_PURE_ONLY,&local_14,0xb);
-    FS_SortFileList(local_8,local_14);
-    for (local_10 = 0; local_10 < local_14; local_10 = local_10 + 1) {
-      FS_ConvertPath(local_8[local_10]);
+    dirnames = FS_ListFilteredFiles(fs_searchpaths,"","",filter,FS_LIST_PURE_ONLY,&ndirs,0xb);
+    FS_SortFileList(dirnames,ndirs);
+    for (i = 0; i < ndirs; i = i + 1) {
+      FS_ConvertPath(dirnames[i]);
       Com_Printf(0,"%s\n");
     }
     Com_Printf(0,"%d files listed\n");
-    Sys_FreeFileList(local_8);
+    Sys_FreeFileList(dirnames);
   }
   return;
 }
@@ -354,12 +360,12 @@ void __cdecl FS_TouchFile_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *name;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    FS_TouchFile(pcVar2);
+    name = Cmd_Argv(1);
+    FS_TouchFile(name);
   }
   else {
     Com_Printf(0,"Usage: touchFile <file>\n");
@@ -372,60 +378,60 @@ void __cdecl FS_TouchFile_f(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_iwIwd(char *param_1,char *param_2)
+int __cdecl FS_iwIwd(char *iwd,char *base)
 
 {
   uchar uVar1;
   char *pcVar2;
   int iVar3;
-  int extraout_EAX;
-  uchar *puVar4;
+  char *extraout_EAX;
+  uchar *str2;
   int extraout_EAX_00;
   uchar *local_70;
   uchar *local_6c;
   uchar *local_60;
   uchar *local_5c;
-  uchar local_54 [10];
-  undefined1 auStack_4a [58];
+  uchar szFile [10];
+  char acStack_4a [58];
   uint local_10;
-  int local_c;
-  int local_8;
+  char *pszLoc;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < 0x1c; local_8 = local_8 + 1) {
+  for (i = 0; i < 0x1c; i = i + 1) {
     pcVar2 = va("%s/iw_%02d");
-    iVar3 = FS_FilenameCompare(param_1,pcVar2);
+    iVar3 = FS_FilenameCompare(iwd,pcVar2);
     if (iVar3 == 0) {
       return 1;
     }
   }
-  strstr((uchar *)param_1,(uchar *)"localized_");
-  if (extraout_EAX != 0) {
-    local_5c = (uchar *)param_1;
-    local_60 = local_54;
-    local_c = extraout_EAX;
+  strstr((uchar *)iwd,(uchar *)"localized_");
+  if (extraout_EAX != (char *)0x0) {
+    local_5c = (uchar *)iwd;
+    local_60 = szFile;
+    pszLoc = extraout_EAX;
     do {
       uVar1 = *local_5c;
       *local_60 = uVar1;
       local_5c = local_5c + 1;
       local_60 = local_60 + 1;
     } while (uVar1 != '\0');
-    auStack_4a[local_c - (int)param_1] = 0;
+    pszLoc[(int)(acStack_4a + -(int)iwd)] = '\0';
     pcVar2 = va("%s/localized_");
-    iVar3 = FS_FilenameCompare((char *)local_54,pcVar2);
+    iVar3 = FS_FilenameCompare((char *)szFile,pcVar2);
     if (iVar3 == 0) {
-      local_6c = (uchar *)(local_c + 10);
-      local_70 = local_54;
+      local_6c = (uchar *)(pszLoc + 10);
+      local_70 = szFile;
       do {
         uVar1 = *local_6c;
         *local_70 = uVar1;
         local_6c = local_6c + 1;
         local_70 = local_70 + 1;
       } while (uVar1 != '\0');
-      I_strlwr((char *)local_54);
-      for (local_8 = 0; local_8 < 0x1c; local_8 = local_8 + 1) {
-        puVar4 = (uchar *)va("_iw%02d");
-        strstr(local_54,puVar4);
+      I_strlwr((char *)szFile);
+      for (i = 0; i < 0x1c; i = i + 1) {
+        str2 = (uchar *)va("_iw%02d");
+        strstr(szFile,str2);
         if (extraout_EAX_00 != 0) {
           return 1;
         }
@@ -440,27 +446,27 @@ int __cdecl FS_iwIwd(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl FS_serverPak(char *param_1)
+int __cdecl FS_serverPak(char *pak)
 
 {
   uchar uVar1;
   int extraout_EAX;
   uchar *local_54;
   uchar *local_50;
-  uchar local_4c [68];
+  uchar szFile [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50 = (uchar *)param_1;
-  local_54 = local_4c;
+  local_50 = (uchar *)pak;
+  local_54 = szFile;
   do {
     uVar1 = *local_50;
     *local_54 = uVar1;
     local_50 = local_50 + 1;
     local_54 = local_54 + 1;
   } while (uVar1 != '\0');
-  I_strlwr((char *)local_4c);
-  strstr(local_4c,(uchar *)"_svr_");
+  I_strlwr((char *)szFile);
+  strstr(szFile,(uchar *)"_svr_");
   return (uint)(extraout_EAX != 0);
 }
 
@@ -469,7 +475,7 @@ int __cdecl FS_serverPak(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-FS_SERVER_COMPARE_RESULT __cdecl FS_CompareIwds(char *param_1,int param_2,int param_3)
+FS_SERVER_COMPARE_RESULT __cdecl FS_CompareIwds(char *needediwds,int len,int dlstring)
 
 {
   char cVar1;
@@ -477,90 +483,88 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareIwds(char *param_1,int param_2,int pa
   int iVar3;
   int extraout_EAX;
   char *pcVar4;
-  char *pcVar5;
+  char *dir;
   char *local_130;
-  char local_124 [256];
+  char *dirNameEnd;
+  char dirName [256];
   uint local_24;
-  int local_20;
-  uint local_1c;
-  uint local_18;
-  int local_14;
-  int local_10;
-  searchpath_s *local_c;
-  int local_8;
+  int gameDirNameLength;
+  int isBaseDir;
+  int isUserMapIWD;
+  int userMapDirAdded;
+  int haveiwd;
+  searchpath_s *sp;
+  int i;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (fs_numServerReferencedIwds == 0) {
     FVar2 = FILES_MATCH;
   }
   else {
-    *param_1 = '\0';
-    local_14 = 0;
+    *needediwds = '\0';
+    userMapDirAdded = 0;
     local_130 = (fs_gameDirVar->current).string;
     pcVar4 = local_130 + 1;
     do {
       cVar1 = *local_130;
       local_130 = local_130 + 1;
     } while (cVar1 != '\0');
-    local_20 = (int)local_130 - (int)pcVar4;
-    local_1c = (uint)(local_20 == 0);
-    for (local_8 = 0; local_8 < fs_numServerReferencedIwds; local_8 = local_8 + 1) {
-      local_10 = 0;
-      if ((local_1c != 0) ||
-         (iVar3 = FS_serverPak(fs_serverReferencedIwdNames[local_8]), iVar3 == 0)) {
-        iVar3 = I_strnicmp(fs_serverReferencedIwdNames[local_8],"usermaps",8);
-        local_18 = (uint)(iVar3 == 0);
-        if ((local_18 != 0) && (local_14 == 0)) {
-          strchr((uchar *)(fs_serverReferencedIwdNames[local_8] + 9),'/');
+    gameDirNameLength = (int)local_130 - (int)pcVar4;
+    isBaseDir = (int)(gameDirNameLength == 0);
+    for (i = 0; i < fs_numServerReferencedIwds; i = i + 1) {
+      haveiwd = 0;
+      if ((isBaseDir != 0) || (iVar3 = FS_serverPak(fs_serverReferencedIwdNames[i]), iVar3 == 0)) {
+        iVar3 = I_strnicmp(fs_serverReferencedIwdNames[i],"usermaps",8);
+        isUserMapIWD = (int)(iVar3 == 0);
+        if ((isUserMapIWD != 0) && (userMapDirAdded == 0)) {
+          strchr((uchar *)(fs_serverReferencedIwdNames[i] + 9),'/');
           if (extraout_EAX == 0) {
             Com_Error(ERR_DROP,"\x15Invalid IWD info from server: %s");
           }
-          I_strncpyz(local_124,fs_serverReferencedIwdNames[local_8],
-                     (extraout_EAX - (int)fs_serverReferencedIwdNames[local_8]) + 1);
-          FS_AddUserMapDirIWDs(local_124);
-          local_14 = 1;
+          I_strncpyz(dirName,fs_serverReferencedIwdNames[i],
+                     (extraout_EAX - (int)fs_serverReferencedIwdNames[i]) + 1);
+          FS_AddUserMapDirIWDs(dirName);
+          userMapDirAdded = 1;
         }
-        for (local_c = fs_searchpaths; local_c != (searchpath_s *)0x0; local_c = local_c->next) {
-          if ((local_c->iwd != (iwd_t *)0x0) &&
-             (local_c->iwd->checksum == fs_serverReferencedIwds[local_8])) {
-            local_10 = 1;
+        for (sp = fs_searchpaths; sp != (searchpath_s *)0x0; sp = sp->next) {
+          if ((sp->iwd != (iwd_t *)0x0) && (sp->iwd->checksum == fs_serverReferencedIwds[i])) {
+            haveiwd = 1;
             break;
           }
         }
-        if (((local_10 == 0) && (fs_serverReferencedIwdNames[local_8] != (char *)0x0)) &&
-           (*fs_serverReferencedIwdNames[local_8] != '\0')) {
-          if (((local_1c != 0) ||
-              ((iVar3 = I_strnicmp(fs_serverReferencedIwdNames[local_8],
-                                   (fs_gameDirVar->current).string,local_20), iVar3 != 0 &&
-               (local_18 == 0)))) ||
-             (iVar3 = FS_iwIwd(fs_serverReferencedIwdNames[local_8],"main"), iVar3 != 0)) {
-            I_strncpyz(param_1,fs_serverReferencedIwdNames[local_8],param_2);
-            I_strncat(param_1,param_2,".iwd");
+        if (((haveiwd == 0) && (fs_serverReferencedIwdNames[i] != (char *)0x0)) &&
+           (*fs_serverReferencedIwdNames[i] != '\0')) {
+          if (((isBaseDir != 0) ||
+              ((iVar3 = I_strnicmp(fs_serverReferencedIwdNames[i],(fs_gameDirVar->current).string,
+                                   gameDirNameLength), iVar3 != 0 && (isUserMapIWD == 0)))) ||
+             (iVar3 = FS_iwIwd(fs_serverReferencedIwdNames[i],"main"), iVar3 != 0)) {
+            I_strncpyz(needediwds,fs_serverReferencedIwdNames[i],len);
+            I_strncat(needediwds,len,".iwd");
             return NOT_DOWNLOADABLE;
           }
-          if (param_3 == 0) {
-            I_strncat(param_1,param_2,fs_serverReferencedIwdNames[local_8]);
-            I_strncat(param_1,param_2,".iwd");
-            pcVar5 = "";
+          if (dlstring == 0) {
+            I_strncat(needediwds,len,fs_serverReferencedIwdNames[i]);
+            I_strncat(needediwds,len,".iwd");
+            dir = "";
             pcVar4 = va("%s.iwd");
-            iVar3 = FS_SV_FileExists(pcVar4,pcVar5);
+            iVar3 = FS_SV_FileExists(pcVar4,dir);
             if (iVar3 != 0) {
-              I_strncat(param_1,param_2," (local file exists with wrong checksum)");
+              I_strncat(needediwds,len," (local file exists with wrong checksum)");
             }
-            I_strncat(param_1,param_2,"\n");
+            I_strncat(needediwds,len,"\n");
           }
           else {
-            I_strncat(param_1,param_2,"@");
-            I_strncat(param_1,param_2,fs_serverReferencedIwdNames[local_8]);
-            I_strncat(param_1,param_2,".iwd");
-            I_strncat(param_1,param_2,"@");
-            I_strncat(param_1,param_2,fs_serverReferencedIwdNames[local_8]);
-            I_strncat(param_1,param_2,".iwd");
+            I_strncat(needediwds,len,"@");
+            I_strncat(needediwds,len,fs_serverReferencedIwdNames[i]);
+            I_strncat(needediwds,len,".iwd");
+            I_strncat(needediwds,len,"@");
+            I_strncat(needediwds,len,fs_serverReferencedIwdNames[i]);
+            I_strncat(needediwds,len,".iwd");
           }
         }
       }
     }
-    if (*param_1 == '\0') {
+    if (*needediwds == '\0') {
       FVar2 = FILES_MATCH;
     }
     else {
@@ -576,7 +580,7 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareIwds(char *param_1,int param_2,int pa
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *param_1,int param_2,int param_3)
+FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *neededFFs,int len,int dlstring)
 
 {
   char cVar1;
@@ -589,21 +593,22 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *param_1,int param_2,int par
   char *local_160;
   char *local_14c;
   char *local_13c;
-  char local_124 [260];
+  int gameDirNameLength;
+  char ffNameCopy [260];
   uint local_20;
-  int local_1c;
-  char *local_18;
-  int local_14;
-  uint local_10;
-  int local_c;
-  FF_DIR local_8;
+  int usermapDirNameLength;
+  char *ffName;
+  int fileSize;
+  int isSameFile;
+  int i;
+  FF_DIR ffDir;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (fs_numServerReferencedFFs == 0) {
     FVar3 = FILES_MATCH;
   }
   else {
-    *param_1 = '\0';
+    *neededFFs = '\0';
     local_13c = (fs_gameDirVar->current).string;
     pcVar6 = local_13c + 1;
     do {
@@ -616,29 +621,29 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *param_1,int param_2,int par
       cVar1 = *local_14c;
       local_14c = local_14c + 1;
     } while (cVar1 != '\0');
-    local_1c = (int)local_14c - (int)pcVar4;
-    for (local_c = 0; local_c < fs_numServerReferencedFFs; local_c = local_c + 1) {
-      local_8 = FFD_DEFAULT;
-      local_18 = fs_serverReferencedFFNames[local_c];
-      local_14 = DB_FileSize(local_18,FFD_DEFAULT);
-      if (local_14 == 0) {
+    usermapDirNameLength = (int)local_14c - (int)pcVar4;
+    for (i = 0; i < fs_numServerReferencedFFs; i = i + 1) {
+      ffDir = FFD_DEFAULT;
+      ffName = fs_serverReferencedFFNames[i];
+      fileSize = DB_FileSize(ffName,FFD_DEFAULT);
+      if (fileSize == 0) {
         if ((fs_usermapDir == (dvar_s *)0x0) || (*(fs_usermapDir->current).string == '\0')) {
           bVar2 = false;
         }
         else {
           bVar2 = true;
         }
-        if ((bVar2) &&
-           (iVar5 = I_strnicmp(fs_serverReferencedFFNames[local_c],"usermaps",8), iVar5 == 0)) {
-          local_160 = fs_serverReferencedFFNames[local_c];
+        if ((bVar2) && (iVar5 = I_strnicmp(fs_serverReferencedFFNames[i],"usermaps",8), iVar5 == 0))
+        {
+          local_160 = fs_serverReferencedFFNames[i];
           pcVar4 = local_160 + 1;
           do {
             cVar1 = *local_160;
             local_160 = local_160 + 1;
           } while (cVar1 != '\0');
           if (9 < (uint)((int)local_160 - (int)pcVar4)) {
-            local_18 = fs_serverReferencedFFNames[local_c] + 9;
-            local_8 = FFD_USER_MAP;
+            ffName = fs_serverReferencedFFNames[i] + 9;
+            ffDir = FFD_USER_MAP;
           }
         }
         else {
@@ -648,64 +653,63 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *param_1,int param_2,int par
           else {
             bVar2 = true;
           }
-          if ((bVar2) &&
-             (iVar5 = I_strnicmp(fs_serverReferencedFFNames[local_c],"mods",4), iVar5 == 0)) {
-            local_174 = fs_serverReferencedFFNames[local_c];
+          if ((bVar2) && (iVar5 = I_strnicmp(fs_serverReferencedFFNames[i],"mods",4), iVar5 == 0)) {
+            local_174 = fs_serverReferencedFFNames[i];
             pcVar4 = local_174 + 1;
             do {
               cVar1 = *local_174;
               local_174 = local_174 + 1;
             } while (cVar1 != '\0');
             if (local_13c + (1 - (int)pcVar6) < local_174 + -(int)pcVar4) {
-              local_18 = local_13c + (int)(fs_serverReferencedFFNames[local_c] + (1 - (int)pcVar6));
-              local_8 = FFD_MOD_DIR;
+              ffName = local_13c + (int)(fs_serverReferencedFFNames[i] + (1 - (int)pcVar6));
+              ffDir = FFD_MOD_DIR;
             }
           }
           else {
-            local_18 = fs_serverReferencedFFNames[local_c];
-            local_8 = FFD_DEFAULT;
+            ffName = fs_serverReferencedFFNames[i];
+            ffDir = FFD_DEFAULT;
           }
         }
-        local_14 = DB_FileSize(local_18,local_8);
+        fileSize = DB_FileSize(ffName,ffDir);
       }
-      local_10 = (uint)(local_14 == fs_serverReferencedFFCheckSums[local_c]);
-      if (((local_10 == 0) && (fs_serverReferencedFFNames[local_c] != (char *)0x0)) &&
-         (*fs_serverReferencedFFNames[local_c] != '\0')) {
-        if (local_8 == FFD_DEFAULT) {
-          I_strncpyz(param_1,fs_serverReferencedFFNames[local_c],param_2);
-          I_strncat(param_1,param_2,".ff");
+      isSameFile = (int)(fileSize == fs_serverReferencedFFCheckSums[i]);
+      if (((isSameFile == 0) && (fs_serverReferencedFFNames[i] != (char *)0x0)) &&
+         (*fs_serverReferencedFFNames[i] != '\0')) {
+        if (ffDir == FFD_DEFAULT) {
+          I_strncpyz(neededFFs,fs_serverReferencedFFNames[i],len);
+          I_strncat(neededFFs,len,".ff");
           return NOT_DOWNLOADABLE;
         }
-        I_strncpyz(local_124,fs_serverReferencedFFNames[local_c],0x100);
-        if (param_3 == 0) {
-          I_strncat(param_1,param_2,local_124);
-          I_strncat(param_1,param_2,".ff");
-          if (local_14 != 0) {
-            I_strncat(param_1,param_2," (local file exists with wrong filesize)");
+        I_strncpyz(ffNameCopy,fs_serverReferencedFFNames[i],0x100);
+        if (dlstring == 0) {
+          I_strncat(neededFFs,len,ffNameCopy);
+          I_strncat(neededFFs,len,".ff");
+          if (fileSize != 0) {
+            I_strncat(neededFFs,len," (local file exists with wrong filesize)");
           }
-          I_strncat(param_1,param_2,"\n");
+          I_strncat(neededFFs,len,"\n");
         }
         else {
-          I_strncat(param_1,param_2,"@");
-          I_strncat(param_1,param_2,local_124);
-          I_strncat(param_1,param_2,".ff");
-          I_strncat(param_1,param_2,"@");
-          I_strncat(param_1,param_2,local_124);
-          I_strncat(param_1,param_2,".ff");
-          if (local_8 == FFD_USER_MAP) {
-            I_strncat(param_1,param_2,"@");
-            I_strncat(param_1,param_2,local_124);
-            I_strncat(param_1,param_2,"_load");
-            I_strncat(param_1,param_2,".ff");
-            I_strncat(param_1,param_2,"@");
-            I_strncat(param_1,param_2,local_124);
-            I_strncat(param_1,param_2,"_load");
-            I_strncat(param_1,param_2,".ff");
+          I_strncat(neededFFs,len,"@");
+          I_strncat(neededFFs,len,ffNameCopy);
+          I_strncat(neededFFs,len,".ff");
+          I_strncat(neededFFs,len,"@");
+          I_strncat(neededFFs,len,ffNameCopy);
+          I_strncat(neededFFs,len,".ff");
+          if (ffDir == FFD_USER_MAP) {
+            I_strncat(neededFFs,len,"@");
+            I_strncat(neededFFs,len,ffNameCopy);
+            I_strncat(neededFFs,len,"_load");
+            I_strncat(neededFFs,len,".ff");
+            I_strncat(neededFFs,len,"@");
+            I_strncat(neededFFs,len,ffNameCopy);
+            I_strncat(neededFFs,len,"_load");
+            I_strncat(neededFFs,len,".ff");
           }
         }
       }
     }
-    if (*param_1 == '\0') {
+    if (*neededFFs == '\0') {
       FVar3 = FILES_MATCH;
     }
     else {
@@ -721,7 +725,7 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareFFs(char *param_1,int param_2,int par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-FS_SERVER_COMPARE_RESULT __cdecl FS_CompareWithServerFiles(char *param_1,int param_2,int param_3)
+FS_SERVER_COMPARE_RESULT __cdecl FS_CompareWithServerFiles(char *neededFiles,int len,int dlstring)
 
 {
   char cVar1;
@@ -729,26 +733,26 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareWithServerFiles(char *param_1,int par
   bool bVar3;
   FS_SERVER_COMPARE_RESULT FVar4;
   char *local_418;
-  char local_414 [1024];
+  char buffer [1024];
   uint local_14;
-  FS_SERVER_COMPARE_RESULT local_10;
-  int local_c;
-  FS_SERVER_COMPARE_RESULT local_8;
+  FS_SERVER_COMPARE_RESULT iwdCompareResult;
+  int neededIWDStrLen;
+  FS_SERVER_COMPARE_RESULT ffCompareResult;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  *param_1 = '\0';
-  local_10 = FS_CompareIwds(param_1,param_2,param_3);
-  if (local_10 == NOT_DOWNLOADABLE) {
+  *neededFiles = '\0';
+  iwdCompareResult = FS_CompareIwds(neededFiles,len,dlstring);
+  if (iwdCompareResult == NOT_DOWNLOADABLE) {
     FVar4 = NOT_DOWNLOADABLE;
   }
   else {
-    local_418 = param_1;
+    local_418 = neededFiles;
     do {
       cVar1 = *local_418;
       local_418 = local_418 + 1;
     } while (cVar1 != '\0');
-    local_c = (int)local_418 - (int)(param_1 + 1);
-    if (param_2 < local_c) {
+    neededIWDStrLen = (int)local_418 - (int)(neededFiles + 1);
+    if (len < neededIWDStrLen) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x361,0,"%s")
       ;
       if (!bVar3) {
@@ -757,10 +761,10 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareWithServerFiles(char *param_1,int par
         return FVar4;
       }
     }
-    local_8 = FS_CompareFFs(param_1 + local_c,param_2 - local_c,param_3);
-    if (local_8 == NOT_DOWNLOADABLE) {
-      if (0 < local_c) {
-        if (0x400 < param_2) {
+    ffCompareResult = FS_CompareFFs(neededFiles + neededIWDStrLen,len - neededIWDStrLen,dlstring);
+    if (ffCompareResult == NOT_DOWNLOADABLE) {
+      if (0 < neededIWDStrLen) {
+        if (0x400 < len) {
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x369,0,
                                    "%s");
           if (!bVar3) {
@@ -769,12 +773,12 @@ FS_SERVER_COMPARE_RESULT __cdecl FS_CompareWithServerFiles(char *param_1,int par
             return FVar4;
           }
         }
-        I_strncpyz(local_414,param_1 + local_c,param_2);
-        I_strncpyz(param_1,local_414,param_2);
+        I_strncpyz(buffer,neededFiles + neededIWDStrLen,len);
+        I_strncpyz(neededFiles,buffer,len);
       }
       FVar4 = NOT_DOWNLOADABLE;
     }
-    else if ((local_10 == NEED_DOWNLOAD) || (local_8 == NEED_DOWNLOAD)) {
+    else if ((iwdCompareResult == NEED_DOWNLOAD) || (ffCompareResult == NEED_DOWNLOAD)) {
       FVar4 = NEED_DOWNLOAD;
     }
     else {
@@ -819,17 +823,16 @@ void __cdecl FS_SetRestrictions(void)
 
 {
   int iVar1;
-  searchpath_s *local_8;
+  searchpath_s *path;
   
   if ((fs_restrict->current).enabled != false) {
     Dvar_SetBool(fs_restrict,true);
     Com_Printf(10,"\nRunning in restricted demo mode.\n\n");
     FS_Shutdown(0);
     FS_Startup("demomain",true);
-    for (local_8 = fs_searchpaths; local_8 != (searchpath_s *)0x0; local_8 = local_8->next) {
-      iVar1 = FS_UseSearchPath(local_8);
-      if (((iVar1 != 0) && (local_8->iwd != (iwd_t *)0x0)) &&
-         (local_8->iwd->checksum != -0x4e0a6a0b)) {
+    for (path = fs_searchpaths; path != (searchpath_s *)0x0; path = path->next) {
+      iVar1 = FS_UseSearchPath(path);
+      if (((iVar1 != 0) && (path->iwd != (iwd_t *)0x0)) && (path->iwd->checksum != -0x4e0a6a0b)) {
         Com_Error(ERR_FATAL,"Corrupted iw0.iwd: %u");
       }
     }
@@ -840,26 +843,26 @@ void __cdecl FS_SetRestrictions(void)
 
 // 006DC920  FS_LoadedIwds  (qcommon/files.cpp:981)
 
-void __cdecl FS_LoadedIwds(char **param_1,char **param_2)
+void __cdecl FS_LoadedIwds(char **checksums,char **names)
 
 {
-  char *pcVar1;
-  searchpath_s *local_8;
+  char *src;
+  searchpath_s *search;
   
   info2[0] = '\0';
   info3[0] = '\0';
-  for (local_8 = fs_searchpaths; local_8 != (searchpath_s *)0x0; local_8 = local_8->next) {
-    if ((local_8->iwd != (iwd_t *)0x0) && (local_8->bLocalized == 0)) {
-      pcVar1 = va("%i ");
-      I_strncat(info2,0x4000,pcVar1);
+  for (search = fs_searchpaths; search != (searchpath_s *)0x0; search = search->next) {
+    if ((search->iwd != (iwd_t *)0x0) && (search->bLocalized == 0)) {
+      src = va("%i ");
+      I_strncat(info2,0x4000,src);
       if (info3[0] != '\0') {
         I_strncat(info3,0x4000," ");
       }
-      I_strncat(info3,0x4000,local_8->iwd->iwdBasename);
+      I_strncat(info3,0x4000,search->iwd->iwdBasename);
     }
   }
-  *param_1 = info2;
-  *param_2 = info3;
+  *checksums = info2;
+  *names = info3;
   return;
 }
 
@@ -869,14 +872,14 @@ void __cdecl FS_LoadedIwds(char **param_1,char **param_2)
 char * __cdecl FS_LoadedIwdPureChecksums(void)
 
 {
-  char *pcVar1;
-  searchpath_s *local_8;
+  char *src;
+  searchpath_s *search;
   
   info4[0] = '\0';
-  for (local_8 = fs_searchpaths; local_8 != (searchpath_s *)0x0; local_8 = local_8->next) {
-    if ((local_8->iwd != (iwd_t *)0x0) && (local_8->bLocalized == 0)) {
-      pcVar1 = va("%i ");
-      I_strncat(info4,0x4000,pcVar1);
+  for (search = fs_searchpaths; search != (searchpath_s *)0x0; search = search->next) {
+    if ((search->iwd != (iwd_t *)0x0) && (search->bLocalized == 0)) {
+      src = va("%i ");
+      I_strncat(info4,0x4000,src);
     }
   }
   return info4;
@@ -885,45 +888,45 @@ char * __cdecl FS_LoadedIwdPureChecksums(void)
 
 // 006DCA70  FS_ReferencedIwds  (qcommon/files.cpp:1051)
 
-void __cdecl FS_ReferencedIwds(char **param_1,char **param_2)
+void __cdecl FS_ReferencedIwds(char **checksums,char **names)
 
 {
   char *pcVar1;
   int iVar2;
-  iwd_pure_check_s *local_c;
-  searchpath_s *local_8;
+  iwd_pure_check_s *iwd;
+  searchpath_s *search;
   
   info5[0] = '\0';
   info8[0] = '\0';
-  for (local_c = fs_iwdPureChecks; local_c != (iwd_pure_check_s *)0x0; local_c = local_c->next) {
+  for (iwd = fs_iwdPureChecks; iwd != (iwd_pure_check_s *)0x0; iwd = iwd->next) {
     pcVar1 = va("%i ");
     I_strncat(info5,0x4000,pcVar1);
     if (info8[0] != '\0') {
       I_strncat(info8,0x4000," ");
     }
-    I_strncat(info8,0x4000,local_c->iwdGamename);
+    I_strncat(info8,0x4000,iwd->iwdGamename);
     I_strncat(info8,0x4000,"/");
-    I_strncat(info8,0x4000,local_c->iwdBasename);
+    I_strncat(info8,0x4000,iwd->iwdBasename);
   }
   if (*(fs_gameDirVar->current).string != '\0') {
-    for (local_8 = fs_searchpaths; local_8 != (searchpath_s *)0x0; local_8 = local_8->next) {
-      if ((((local_8->iwd != (iwd_t *)0x0) && (local_8->bLocalized == 0)) &&
-          (local_8->iwd->referenced == '\0')) &&
-         ((iVar2 = I_stricmp(local_8->iwd->iwdGamename,(fs_gameDirVar->current).string), iVar2 == 0
-          || (iVar2 = I_strnicmp(local_8->iwd->iwdGamename,"usermaps",8), iVar2 == 0)))) {
+    for (search = fs_searchpaths; search != (searchpath_s *)0x0; search = search->next) {
+      if ((((search->iwd != (iwd_t *)0x0) && (search->bLocalized == 0)) &&
+          (search->iwd->referenced == '\0')) &&
+         ((iVar2 = I_stricmp(search->iwd->iwdGamename,(fs_gameDirVar->current).string), iVar2 == 0
+          || (iVar2 = I_strnicmp(search->iwd->iwdGamename,"usermaps",8), iVar2 == 0)))) {
         pcVar1 = va("%i ");
         I_strncat(info5,0x4000,pcVar1);
         if (info8[0] != '\0') {
           I_strncat(info8,0x4000," ");
         }
-        I_strncat(info8,0x4000,local_8->iwd->iwdGamename);
+        I_strncat(info8,0x4000,search->iwd->iwdGamename);
         I_strncat(info8,0x4000,"/");
-        I_strncat(info8,0x4000,local_8->iwd->iwdBasename);
+        I_strncat(info8,0x4000,search->iwd->iwdBasename);
       }
     }
   }
-  *param_1 = info5;
-  *param_2 = info8;
+  *checksums = info5;
+  *names = info8;
   return;
 }
 
@@ -939,7 +942,9 @@ char * __cdecl FS_ReferencedIwdPureChecksums(void)
   char *local_34;
   char *local_24;
   char *local_14;
-  searchpath_s *local_c;
+  int checksum;
+  searchpath_s *search;
+  int numIwds;
   
   info6[0] = '\0';
   local_14 = info6;
@@ -969,9 +974,9 @@ char * __cdecl FS_ReferencedIwdPureChecksums(void)
     pcVar2 = local_44 + 1;
   } while (*local_44 != '\0');
   *local_44 = ' ';
-  for (local_c = fs_searchpaths; local_c != (searchpath_s *)0x0; local_c = local_c->next) {
-    if (((local_c->iwd != (iwd_t *)0x0) && (local_c->bLocalized == 0)) &&
-       (local_c->iwd->referenced != '\0')) {
+  for (search = fs_searchpaths; search != (searchpath_s *)0x0; search = search->next) {
+    if (((search->iwd != (iwd_t *)0x0) && (search->bLocalized == 0)) &&
+       (search->iwd->referenced != '\0')) {
       pcVar2 = va("%i ");
       I_strncat(info6,0x4000,pcVar2);
     }
@@ -991,8 +996,9 @@ char * __cdecl FS_ReferencedIwdPureChecksums(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Removing unreachable block (ram,0x006dd1e2) */
 /* WARNING: Removing unreachable block (ram,0x006dd207) */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl FS_PureServerSetLoadedIwds(char *param_1,char *param_2)
+bool __cdecl FS_PureServerSetLoadedIwds(char *iwdSums,char *iwdNames)
 
 {
   code *pcVar1;
@@ -1000,106 +1006,107 @@ bool __cdecl FS_PureServerSetLoadedIwds(char *param_1,char *param_2)
   undefined1 uVar3;
   char *pcVar4;
   int iVar5;
-  char *pcVar6;
-  scriptInstance_t sVar7;
-  int local_2024;
-  int local_2020;
-  int local_201c;
-  bool local_2016;
-  int local_2014 [1025];
-  int local_1010;
-  undefined4 local_100c [1025];
-  iwd_pure_check_s *local_8;
+  char *name;
+  scriptInstance_t inst;
+  int j;
+  int c;
+  int d;
+  bool needFullRestart;
+  bool iwdReferencedByServer;
+  int serverIwds [1025];
+  int i;
+  undefined4 serverIwdNames [1025];
+  iwd_pure_check_s *pureCheckInfo;
   
-  local_8 = (iwd_pure_check_s *)0x6dce8d;
-  local_2016 = false;
-  if ((param_1 == (char *)0x0) &&
+  pureCheckInfo = (iwd_pure_check_s *)0x6dce8d;
+  needFullRestart = false;
+  if ((iwdSums == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x5ef,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((iwdNames == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x5f0,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  Cmd_TokenizeString(param_1);
-  local_2020 = Cmd_Argc();
-  if (0x400 < local_2020) {
-    local_2020 = 0x400;
+  Cmd_TokenizeString(iwdSums);
+  c = Cmd_Argc();
+  if (0x400 < c) {
+    c = 0x400;
   }
-  for (local_1010 = 0; local_1010 < local_2020; local_1010 = local_1010 + 1) {
-    pcVar4 = Cmd_Argv(local_1010);
+  for (i = 0; i < c; i = i + 1) {
+    pcVar4 = Cmd_Argv(i);
     iVar5 = atoi(pcVar4);
-    local_2014[local_1010] = iVar5;
+    serverIwds[i] = iVar5;
   }
   Cmd_EndTokenizedString();
-  Cmd_TokenizeString(param_2);
-  local_201c = Cmd_Argc();
-  if (0x400 < local_201c) {
-    local_201c = 0x400;
+  Cmd_TokenizeString(iwdNames);
+  d = Cmd_Argc();
+  if (0x400 < d) {
+    d = 0x400;
   }
-  for (local_1010 = 0; local_1010 < local_201c; local_1010 = local_1010 + 1) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+  for (i = 0; i < d; i = i + 1) {
+    inst = SCRIPTINSTANCE_SERVER;
     iVar5 = 0xb;
-    pcVar6 = "FS_PureServerSetLoadedIwds";
-    pcVar4 = Cmd_Argv(local_1010);
-    pcVar4 = CopyString(pcVar4,pcVar6,iVar5,sVar7);
-    local_100c[local_1010] = pcVar4;
+    name = "FS_PureServerSetLoadedIwds";
+    pcVar4 = Cmd_Argv(i);
+    pcVar4 = CopyString(pcVar4,name,iVar5,inst);
+    serverIwdNames[i] = pcVar4;
   }
   Cmd_EndTokenizedString();
-  if (local_2020 != local_201c) {
+  if (c != d) {
     Com_Error(ERR_DROP,"iwd sum/name mismatch");
   }
-  local_8 = fs_iwdPureChecks;
+  pureCheckInfo = fs_iwdPureChecks;
   do {
-    if ((local_2020 == 0) || (local_8 == (iwd_pure_check_s *)0x0)) goto LAB_006dd0c9;
+    if ((c == 0) || (pureCheckInfo == (iwd_pure_check_s *)0x0)) goto LAB_006dd0c9;
     bVar2 = false;
-    for (local_1010 = 0; local_1010 < local_2020; local_1010 = local_1010 + 1) {
-      if ((local_2014[local_1010] == local_8->checksum) &&
-         (iVar5 = I_stricmp((char *)local_100c[local_1010],local_8->iwdBasename), iVar5 == 0)) {
+    for (i = 0; i < c; i = i + 1) {
+      if ((serverIwds[i] == pureCheckInfo->checksum) &&
+         (iVar5 = I_stricmp((char *)serverIwdNames[i],pureCheckInfo->iwdBasename), iVar5 == 0)) {
         bVar2 = true;
         break;
       }
     }
     if (!bVar2) {
-      local_2016 = true;
+      needFullRestart = true;
 LAB_006dd0c9:
-      if ((local_2016 == false) && (local_2020 == fs_numServerIwds)) {
-        for (local_1010 = 0; local_1010 < local_2020; local_1010 = local_1010 + 1) {
-          local_2024 = 0;
+      if ((needFullRestart == false) && (c == fs_numServerIwds)) {
+        for (i = 0; i < c; i = i + 1) {
+          j = 0;
           while( true ) {
-            if (fs_numServerIwds <= local_2024) goto LAB_006dd20c;
-            if ((local_2014[local_1010] == fs_serverIwds[local_2024]) &&
-               (iVar5 = I_stricmp((char *)local_100c[local_1010],fs_serverIwdNames[local_2024]),
-               iVar5 == 0)) break;
-            local_2024 = local_2024 + 1;
+            if (fs_numServerIwds <= j) goto LAB_006dd20c;
+            if ((serverIwds[i] == fs_serverIwds[j]) &&
+               (iVar5 = I_stricmp((char *)serverIwdNames[i],fs_serverIwdNames[j]), iVar5 == 0))
+            break;
+            j = j + 1;
           }
         }
-        for (local_1010 = 0; local_1010 < local_201c; local_1010 = local_1010 + 1) {
-          FreeString((char *)local_100c[local_1010],0xb,SCRIPTINSTANCE_SERVER);
+        for (i = 0; i < d; i = i + 1) {
+          FreeString((char *)serverIwdNames[i],0xb,SCRIPTINSTANCE_SERVER);
         }
-        local_2016 = false;
+        needFullRestart = false;
       }
       else {
 LAB_006dd20c:
         SND_StopSounds(SND_STOP_STREAMED);
         FS_ShutdownServerIwdNames();
-        fs_numServerIwds = local_2020;
-        if (local_2020 != 0) {
+        fs_numServerIwds = c;
+        if (c != 0) {
           Com_DPrintf(10,"Connected to a pure server.\n");
-          Com_Memcpy(fs_serverIwds,local_2014,fs_numServerIwds << 2);
-          Com_Memcpy(fs_serverIwdNames,local_100c,fs_numServerIwds << 2);
+          Com_Memcpy(fs_serverIwds,serverIwds,fs_numServerIwds << 2);
+          Com_Memcpy(fs_serverIwdNames,serverIwdNames,fs_numServerIwds << 2);
           fs_fakeChkSum = 0;
         }
       }
-      return local_2016;
+      return needFullRestart;
     }
-    local_8 = local_8->next;
+    pureCheckInfo = pureCheckInfo->next;
   } while( true );
 }
 
@@ -1107,20 +1114,21 @@ LAB_006dd20c:
 // 006DD2C0  FS_ServerSetReferencedFiles  (qcommon/files.cpp:1615)
 
 int __cdecl
-FS_ServerSetReferencedFiles(char *param_1,char *param_2,int param_3,int *param_4,char **param_5)
+FS_ServerSetReferencedFiles
+          (char *fileSums,char *fileNames,int maxFiles,int *fs_sums,char **fs_names)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  char *pcVar5;
-  scriptInstance_t sVar6;
-  int local_10;
-  int local_c;
-  int local_8;
+  char *name;
+  scriptInstance_t inst;
+  int c;
+  int d;
+  int i;
   
-  if (param_1 == (char *)0x0) {
+  if (fileSums == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x652,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1128,7 +1136,7 @@ FS_ServerSetReferencedFiles(char *param_1,char *param_2,int param_3,int *param_4
       return iVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (fileNames == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x653,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1136,7 +1144,7 @@ FS_ServerSetReferencedFiles(char *param_1,char *param_2,int param_3,int *param_4
       return iVar3;
     }
   }
-  if (param_3 == 0) {
+  if (maxFiles == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x654,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1144,7 +1152,7 @@ FS_ServerSetReferencedFiles(char *param_1,char *param_2,int param_3,int *param_4
       return iVar3;
     }
   }
-  if (param_4 == (int *)0x0) {
+  if (fs_sums == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x655,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1152,74 +1160,74 @@ FS_ServerSetReferencedFiles(char *param_1,char *param_2,int param_3,int *param_4
       return iVar3;
     }
   }
-  Cmd_TokenizeString(param_1);
-  local_10 = Cmd_Argc();
-  if (param_3 < local_10) {
-    local_10 = param_3;
+  Cmd_TokenizeString(fileSums);
+  c = Cmd_Argc();
+  if (maxFiles < c) {
+    c = maxFiles;
   }
-  for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
-    pcVar4 = Cmd_Argv(local_8);
+  for (i = 0; i < c; i = i + 1) {
+    pcVar4 = Cmd_Argv(i);
     iVar3 = atoi(pcVar4);
-    param_4[local_8] = iVar3;
+    fs_sums[i] = iVar3;
   }
   Cmd_EndTokenizedString();
-  if ((param_2 == (char *)0x0) || (*param_2 == '\0')) {
-    if (local_10 != 0) {
+  if ((fileNames == (char *)0x0) || (*fileNames == '\0')) {
+    if (c != 0) {
       Com_Error(ERR_DROP,"file sum/name mismatch");
     }
   }
   else {
-    Cmd_TokenizeString(param_2);
-    local_c = Cmd_Argc();
-    if (param_3 < local_c) {
-      local_c = param_3;
+    Cmd_TokenizeString(fileNames);
+    d = Cmd_Argc();
+    if (maxFiles < d) {
+      d = maxFiles;
     }
-    if (local_10 != local_c) {
+    if (c != d) {
       Com_Error(ERR_DROP,"file sum/name mismatch");
     }
-    for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    for (i = 0; i < d; i = i + 1) {
+      inst = SCRIPTINSTANCE_SERVER;
       iVar3 = 0xb;
-      pcVar5 = "FS_ServerSetReferencedFiles";
-      pcVar4 = Cmd_Argv(local_8);
-      pcVar4 = CopyString(pcVar4,pcVar5,iVar3,sVar6);
-      param_5[local_8] = pcVar4;
+      name = "FS_ServerSetReferencedFiles";
+      pcVar4 = Cmd_Argv(i);
+      pcVar4 = CopyString(pcVar4,name,iVar3,inst);
+      fs_names[i] = pcVar4;
     }
     Cmd_EndTokenizedString();
   }
-  return local_10;
+  return c;
 }
 
 
 // 006DD290  FS_ServerSetReferencedIwds  (qcommon/files.cpp:1672)
 
-void __cdecl FS_ServerSetReferencedIwds(char *param_1,char *param_2)
+void __cdecl FS_ServerSetReferencedIwds(char *iwdSums,char *iwdNames)
 
 {
   FS_ShutdownServerReferencedIwds();
   fs_numServerReferencedIwds =
        FS_ServerSetReferencedFiles
-                 (param_1,param_2,0x400,fs_serverReferencedIwds,fs_serverReferencedIwdNames);
+                 (iwdSums,iwdNames,0x400,fs_serverReferencedIwds,fs_serverReferencedIwdNames);
   return;
 }
 
 
 // 006DD490  FS_ServerSetReferencedFFs  (qcommon/files.cpp:1686)
 
-void __cdecl FS_ServerSetReferencedFFs(char *param_1,char *param_2)
+void __cdecl FS_ServerSetReferencedFFs(char *FFSums,char *FFNames)
 
 {
   FS_ShutdownServerReferencedFFs();
   fs_numServerReferencedFFs =
        FS_ServerSetReferencedFiles
-                 (param_1,param_2,0x400,fs_serverReferencedFFCheckSums,fs_serverReferencedFFNames);
+                 (FFSums,FFNames,0x400,fs_serverReferencedFFCheckSums,fs_serverReferencedFFNames);
   return;
 }
 
 
 // 006DD4C0  FS_GetMapBaseName  (qcommon/files.cpp:1696)
 
-char * __cdecl FS_GetMapBaseName(char *param_1)
+char * __cdecl FS_GetMapBaseName(char *mapname)
 
 {
   char cVar1;
@@ -1228,10 +1236,10 @@ char * __cdecl FS_GetMapBaseName(char *param_1)
   char *pcVar4;
   int iVar5;
   char *local_10;
-  int local_c;
-  ulong local_8;
+  int c;
+  int len;
   
-  if (param_1 == (char *)0x0) {
+  if (mapname == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\files.cpp",0x6a5,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1239,25 +1247,25 @@ char * __cdecl FS_GetMapBaseName(char *param_1)
       return pcVar4;
     }
   }
-  iVar5 = I_strnicmp(param_1,"maps/mp/",8);
+  iVar5 = I_strnicmp(mapname,"maps/mp/",8);
   if (iVar5 == 0) {
-    param_1 = param_1 + 8;
+    mapname = mapname + 8;
   }
-  local_10 = param_1;
+  local_10 = mapname;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_10 - (int)(param_1 + 1);
-  iVar5 = I_stricmp(param_1 + (local_8 - 3),"bsp");
+  len = (int)local_10 - (int)(mapname + 1);
+  iVar5 = I_stricmp(mapname + len + -3,"bsp");
   if (iVar5 == 0) {
-    local_8 = local_8 - 7;
+    len = len + -7;
   }
-  memcpy((uchar *)basename,(uchar *)param_1,local_8);
-  basename[local_8] = '\0';
-  for (local_c = 0; local_c < (int)local_8; local_c = local_c + 1) {
-    if (basename[local_c] == '%') {
-      basename[local_c] = '_';
+  memcpy((uchar *)basename,(uchar *)mapname,len);
+  basename[len] = '\0';
+  for (c = 0; c < len; c = c + 1) {
+    if (basename[c] == '%') {
+      basename[c] = '_';
     }
   }
   return basename;

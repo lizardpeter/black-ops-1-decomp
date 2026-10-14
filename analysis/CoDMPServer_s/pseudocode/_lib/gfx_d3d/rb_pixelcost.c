@@ -47,85 +47,88 @@ Material * __cdecl R_PixelCost_GetAccumulationMaterial(Material *param_1)
 
 // 0084C360  R_PixelCost_BeginSurface  (gfx_d3d/rb_pixelcost.cpp:327)
 
-void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext param_1)
+void __cdecl R_PixelCost_BeginSurface(void)
 
 {
-  int iVar1;
-  uint uVar2;
-  GfxPixelCostRecord *pGVar3;
+  short *psVar1;
+  int iVar2;
+  uint uVar3;
+  GfxPixelCostRecord *pGVar4;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   int in_stack_fffffff4;
   int iStack_4;
   
-  iVar1 = pixelCostGlob.expectedCount;
+  iVar2 = pixelCostGlob.expectedCount;
   if (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_COST) {
-    iStack_4 = CONCAT31(iStack_4._1_3_,(param_1.field0_0x0._s_0.state)->techType);
+    iStack_4 = CONCAT31(iStack_4._1_3_,*(undefined1 *)(in_stack_00000008 + 200));
     if ((pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material !=
-         (param_1.field0_0x0._s_0.state)->material) ||
+         *(Material **)(in_stack_00000008 + 0xc4)) ||
        (*(int *)((int)&pixelCostGlob.records[pixelCostGlob.recordCount].key + 4) != iStack_4)) {
-      pGVar3 = pixelCostGlob.records + pixelCostGlob.expectedCount;
+      pGVar4 = pixelCostGlob.records + pixelCostGlob.expectedCount;
       pixelCostGlob.records[pixelCostGlob.expectedCount].key.mtl.material =
-           (param_1.field0_0x0._s_0.state)->material;
-      *(int *)((int)&pixelCostGlob.records[iVar1].key + 4) = iStack_4;
-      pGVar3->costHistory[0] = 0;
-      pGVar3->costHistory[1] = 0;
-      pGVar3->costHistory[2] = 0;
-      pGVar3->costHistory[3] = 0;
-      pGVar3 = pixelCostGlob.records + iVar1;
-      pGVar3->costHistory[4] = 0;
-      pGVar3->costHistory[5] = 0;
-      pGVar3->costHistory[6] = 0;
-      pGVar3->costHistory[7] = 0;
-      pGVar3 = pixelCostGlob.records + iVar1;
-      pGVar3->costHistory[8] = 0;
-      pGVar3->costHistory[9] = 0;
-      pGVar3->costHistory[10] = 0;
-      pGVar3->costHistory[0xb] = 0;
+           *(Material **)(in_stack_00000008 + 0xc4);
+      *(int *)((int)&pixelCostGlob.records[iVar2].key + 4) = iStack_4;
+      pGVar4->costHistory[0] = 0;
+      pGVar4->costHistory[1] = 0;
+      pGVar4->costHistory[2] = 0;
+      pGVar4->costHistory[3] = 0;
+      pGVar4 = pixelCostGlob.records + iVar2;
+      pGVar4->costHistory[4] = 0;
+      pGVar4->costHistory[5] = 0;
+      pGVar4->costHistory[6] = 0;
+      pGVar4->costHistory[7] = 0;
+      pGVar4 = pixelCostGlob.records + iVar2;
+      pGVar4->costHistory[8] = 0;
+      pGVar4->costHistory[9] = 0;
+      pGVar4->costHistory[10] = 0;
+      pGVar4->costHistory[0xb] = 0;
     }
     pixelCostGlob.expectedCount = pixelCostGlob.expectedCount + 1;
-    uVar2 = r_glob.backEndFrameCount & 0x80000003;
-    if ((int)uVar2 < 0) {
-      uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
+    uVar3 = r_glob.backEndFrameCount & 0x80000003;
+    if ((int)uVar3 < 0) {
+      uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
     }
-    (**(code **)((int)*gfxAssets.pixelCountQuery[uVar2] + 0x18))(gfxAssets.pixelCountQuery[uVar2],2)
+    (**(code **)((int)*gfxAssets.pixelCountQuery[uVar3] + 0x18))(gfxAssets.pixelCountQuery[uVar3],2)
     ;
     return;
   }
   if (pixelCostMode != GFX_PIXEL_COST_MODE_MEASURE_MSEC) {
-    uVar2 = RB_PixelCost_GetCostForRecordIndex(in_stack_fffffff4);
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x22][0] =
-         ((float)((int)uVar2 >> 6) + 0.01) * 0.003921569;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x22][1] =
-         ((float)((int)uVar2 >> 4 & 3) + 0.01) * 0.003921569;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x22][2] =
-         ((float)((int)uVar2 >> 2 & 3) + 0.01) * 0.003921569;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x22][3] =
-         ((float)(uVar2 & 3) + 0.01) * 0.003921569;
-    (param_1.field0_0x0._s_0.source)->constVersions[0x22] =
-         (param_1.field0_0x0._s_0.source)->constVersions[0x22] + 1;
+    uVar3 = RB_PixelCost_GetCostForRecordIndex(in_stack_fffffff4);
+    *(float *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0x27) =
+         ((float)((int)uVar3 >> 6) + 0.01) * 0.003921569;
+    *(float *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x13c) =
+         ((float)((int)uVar3 >> 4 & 3) + 0.01) * 0.003921569;
+    *(float *)((context.field0_0x0._s_0.state)->pixelShaderConstState + 0x28) =
+         ((float)((int)uVar3 >> 2 & 3) + 0.01) * 0.003921569;
+    *(float *)((int)(context.field0_0x0._s_0.state)->pixelShaderConstState + 0x144) =
+         ((float)(uVar3 & 3) + 0.01) * 0.003921569;
+    psVar1 = (short *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState + 0x62c);
+    *psVar1 = *psVar1 + 1;
     return;
   }
-  iStack_4 = CONCAT31(iStack_4._1_3_,(param_1.field0_0x0._s_0.state)->techType);
+  iStack_4 = CONCAT31(iStack_4._1_3_,*(undefined1 *)(in_stack_00000008 + 200));
   if ((pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material !=
-       (param_1.field0_0x0._s_0.state)->material) ||
+       *(Material **)(in_stack_00000008 + 0xc4)) ||
      (*(int *)((int)&pixelCostGlob.records[pixelCostGlob.recordCount].key + 4) != iStack_4)) {
-    pGVar3 = pixelCostGlob.records + pixelCostGlob.expectedCount;
+    pGVar4 = pixelCostGlob.records + pixelCostGlob.expectedCount;
     pixelCostGlob.records[pixelCostGlob.expectedCount].key.mtl.material =
-         (param_1.field0_0x0._s_0.state)->material;
-    *(int *)((int)&pixelCostGlob.records[iVar1].key + 4) = iStack_4;
-    pGVar3->costHistory[0] = 0;
-    pGVar3->costHistory[1] = 0;
-    pGVar3->costHistory[2] = 0;
-    pGVar3->costHistory[3] = 0;
-    pGVar3 = pixelCostGlob.records + iVar1;
-    pGVar3->costHistory[4] = 0;
-    pGVar3->costHistory[5] = 0;
-    pGVar3->costHistory[6] = 0;
-    pGVar3->costHistory[7] = 0;
-    pGVar3 = pixelCostGlob.records + iVar1;
-    pGVar3->costHistory[8] = 0;
-    pGVar3->costHistory[9] = 0;
-    pGVar3->costHistory[10] = 0;
-    pGVar3->costHistory[0xb] = 0;
+         *(Material **)(in_stack_00000008 + 0xc4);
+    *(int *)((int)&pixelCostGlob.records[iVar2].key + 4) = iStack_4;
+    pGVar4->costHistory[0] = 0;
+    pGVar4->costHistory[1] = 0;
+    pGVar4->costHistory[2] = 0;
+    pGVar4->costHistory[3] = 0;
+    pGVar4 = pixelCostGlob.records + iVar2;
+    pGVar4->costHistory[4] = 0;
+    pGVar4->costHistory[5] = 0;
+    pGVar4->costHistory[6] = 0;
+    pGVar4->costHistory[7] = 0;
+    pGVar4 = pixelCostGlob.records + iVar2;
+    pGVar4->costHistory[8] = 0;
+    pGVar4->costHistory[9] = 0;
+    pGVar4->costHistory[10] = 0;
+    pGVar4->costHistory[0xb] = 0;
   }
   pixelCostGlob.expectedCount = pixelCostGlob.expectedCount + 1;
   return;
@@ -134,12 +137,13 @@ void __cdecl R_PixelCost_BeginSurface(GfxCmdBufContext param_1)
 
 // 0084C500  R_PixelCost_EndSurface  (gfx_d3d/rb_pixelcost.cpp:362)
 
-void __cdecl R_PixelCost_EndSurface(GfxCmdBufContext param_1)
+void __cdecl R_PixelCost_EndSurface(void)
 
 {
   uint uVar1;
   int iVar2;
   int extraout_EAX;
+  GfxCmdBufContext context;
   IDirect3DQuery9 *pIVar3;
   
   if (pixelCostMode != GFX_PIXEL_COST_MODE_MEASURE_COST) {

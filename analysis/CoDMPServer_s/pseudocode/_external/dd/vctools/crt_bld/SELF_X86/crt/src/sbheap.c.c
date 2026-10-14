@@ -2,7 +2,7 @@
 
 // 00968C11  __sbh_find_block  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c:306)
 
-tagHeader * __cdecl __sbh_find_block(void *param_1)
+tagHeader * __cdecl __sbh_find_block(void *pvAlloc)
 
 {
   tagHeader *ptVar1;
@@ -12,7 +12,7 @@ tagHeader * __cdecl __sbh_find_block(void *param_1)
     if (__sbh_pHeaderList + __sbh_cntHeaderList <= ptVar1) {
       return (tagHeader *)0x0;
     }
-    if ((uint)((int)param_1 - (int)ptVar1->pHeapData) < 0x100000) break;
+    if ((uint)((int)pvAlloc - (int)ptVar1->pHeapData) < 0x100000) break;
     ptVar1 = ptVar1 + 1;
   }
   return ptVar1;
@@ -21,7 +21,7 @@ tagHeader * __cdecl __sbh_find_block(void *param_1)
 
 // 00968C41  __sbh_free_block  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c:381)
 
-void __cdecl __sbh_free_block(tagHeader *param_1,void *param_2)
+void __cdecl __sbh_free_block(tagHeader *pHeader,void *pvAlloc)
 
 {
   uint *puVar1;
@@ -31,122 +31,126 @@ void __cdecl __sbh_free_block(tagHeader *param_1,void *param_2)
   char cVar5;
   tagRegion *ptVar6;
   uint uVar7;
-  byte bVar8;
-  uint uVar9;
-  tagHeader *ptVar10;
+  int iVar8;
+  byte bVar9;
+  uint uVar10;
   tagHeader *ptVar11;
-  uint *puVar12;
-  uint uVar13;
+  tagHeader *ptVar12;
+  int *piVar13;
   uint uVar14;
-  uint local_8;
+  uint uVar15;
+  tagGroup *pGroup;
+  int sizeNext;
+  int sizePrev;
+  int sizeEntry;
   
-  ptVar6 = param_1->pRegion;
-  puVar12 = (uint *)((int)param_2 + -4);
-  uVar14 = (uint)((int)param_2 - (int)param_1->pHeapData) >> 0xf;
-  ptVar4 = ptVar6->grpHeadList + uVar14;
-  local_8 = *puVar12 - 1;
-  if ((local_8 & 1) == 0) {
-    puVar1 = (uint *)(local_8 + (int)puVar12);
-    uVar13 = *puVar1;
-    uVar7 = *(uint *)((int)param_2 + -8);
-    if ((uVar13 & 1) == 0) {
-      uVar9 = ((int)uVar13 >> 4) - 1;
-      if (0x3f < uVar9) {
-        uVar9 = 0x3f;
+  ptVar6 = pHeader->pRegion;
+  piVar13 = (int *)((int)pvAlloc + -4);
+  uVar15 = (uint)((int)pvAlloc - (int)pHeader->pHeapData) >> 0xf;
+  ptVar4 = ptVar6->grpHeadList + uVar15;
+  sizeEntry = *piVar13 - 1;
+  if ((sizeEntry & 1U) == 0) {
+    puVar1 = (uint *)(sizeEntry + (int)piVar13);
+    uVar14 = *puVar1;
+    uVar7 = *(uint *)((int)pvAlloc + -8);
+    if ((uVar14 & 1) == 0) {
+      uVar10 = ((int)uVar14 >> 4) - 1;
+      if (0x3f < uVar10) {
+        uVar10 = 0x3f;
       }
       if (puVar1[1] == puVar1[2]) {
-        if (uVar9 < 0x20) {
-          pcVar3 = ptVar6->cntRegionSize + uVar9;
-          uVar9 = ~(0x80000000U >> ((byte)uVar9 & 0x1f));
-          ptVar6->bitvGroupHi[uVar14] = ptVar6->bitvGroupHi[uVar14] & uVar9;
+        if (uVar10 < 0x20) {
+          pcVar3 = ptVar6->cntRegionSize + uVar10;
+          uVar10 = ~(0x80000000U >> ((byte)uVar10 & 0x1f));
+          ptVar6->bitvGroupHi[uVar15] = ptVar6->bitvGroupHi[uVar15] & uVar10;
           *pcVar3 = *pcVar3 + -1;
           if (*pcVar3 == '\0') {
-            param_1->bitvEntryHi = param_1->bitvEntryHi & uVar9;
+            pHeader->bitvEntryHi = pHeader->bitvEntryHi & uVar10;
           }
         }
         else {
-          pcVar3 = ptVar6->cntRegionSize + uVar9;
-          uVar9 = ~(0x80000000U >> ((byte)uVar9 - 0x20 & 0x1f));
-          ptVar6->bitvGroupLo[uVar14] = ptVar6->bitvGroupLo[uVar14] & uVar9;
+          pcVar3 = ptVar6->cntRegionSize + uVar10;
+          uVar10 = ~(0x80000000U >> ((byte)uVar10 - 0x20 & 0x1f));
+          ptVar6->bitvGroupLo[uVar15] = ptVar6->bitvGroupLo[uVar15] & uVar10;
           *pcVar3 = *pcVar3 + -1;
           if (*pcVar3 == '\0') {
-            param_1->bitvEntryLo = param_1->bitvEntryLo & uVar9;
+            pHeader->bitvEntryLo = pHeader->bitvEntryLo & uVar10;
           }
         }
       }
-      local_8 = local_8 + uVar13;
+      sizeEntry = sizeEntry + uVar14;
       *(uint *)(puVar1[2] + 4) = puVar1[1];
       *(uint *)(puVar1[1] + 8) = puVar1[2];
     }
-    ptVar10 = (tagHeader *)(((int)local_8 >> 4) - 1);
-    if ((tagHeader *)0x3f < ptVar10) {
-      ptVar10 = (tagHeader *)0x3f;
+    ptVar11 = (tagHeader *)((sizeEntry >> 4) - 1);
+    if ((tagHeader *)0x3f < ptVar11) {
+      ptVar11 = (tagHeader *)0x3f;
     }
-    ptVar11 = param_1;
+    ptVar12 = pHeader;
     if ((uVar7 & 1) == 0) {
-      puVar12 = (uint *)((int)puVar12 - uVar7);
-      ptVar11 = (tagHeader *)(((int)uVar7 >> 4) - 1);
+      piVar13 = (int *)((int)piVar13 - uVar7);
+      ptVar12 = (tagHeader *)(((int)uVar7 >> 4) - 1);
+      if ((tagHeader *)0x3f < ptVar12) {
+        ptVar12 = (tagHeader *)0x3f;
+      }
+      sizeEntry = sizeEntry + uVar7;
+      ptVar11 = (tagHeader *)((sizeEntry >> 4) - 1);
       if ((tagHeader *)0x3f < ptVar11) {
         ptVar11 = (tagHeader *)0x3f;
       }
-      local_8 = local_8 + uVar7;
-      ptVar10 = (tagHeader *)(((int)local_8 >> 4) - 1);
-      if ((tagHeader *)0x3f < ptVar10) {
-        ptVar10 = (tagHeader *)0x3f;
-      }
-      if (ptVar11 != ptVar10) {
-        if (puVar12[1] == puVar12[2]) {
-          if (ptVar11 < (tagHeader *)0x20) {
-            uVar13 = ~(0x80000000U >> ((byte)ptVar11 & 0x1f));
-            ptVar6->bitvGroupHi[uVar14] = ptVar6->bitvGroupHi[uVar14] & uVar13;
-            pcVar3 = (char *)((int)&ptVar11->bitvEntryLo + (int)ptVar6);
+      if (ptVar12 != ptVar11) {
+        if (piVar13[1] == piVar13[2]) {
+          if (ptVar12 < (tagHeader *)0x20) {
+            uVar14 = ~(0x80000000U >> ((byte)ptVar12 & 0x1f));
+            ptVar6->bitvGroupHi[uVar15] = ptVar6->bitvGroupHi[uVar15] & uVar14;
+            pcVar3 = (char *)((int)&ptVar12->bitvEntryLo + (int)ptVar6);
             *pcVar3 = *pcVar3 + -1;
             if (*pcVar3 == '\0') {
-              param_1->bitvEntryHi = param_1->bitvEntryHi & uVar13;
+              pHeader->bitvEntryHi = pHeader->bitvEntryHi & uVar14;
             }
           }
           else {
-            uVar13 = ~(0x80000000U >> ((byte)ptVar11 - 0x20 & 0x1f));
-            ptVar6->bitvGroupLo[uVar14] = ptVar6->bitvGroupLo[uVar14] & uVar13;
-            pcVar3 = (char *)((int)&ptVar11->bitvEntryLo + (int)ptVar6);
+            uVar14 = ~(0x80000000U >> ((byte)ptVar12 - 0x20 & 0x1f));
+            ptVar6->bitvGroupLo[uVar15] = ptVar6->bitvGroupLo[uVar15] & uVar14;
+            pcVar3 = (char *)((int)&ptVar12->bitvEntryLo + (int)ptVar6);
             *pcVar3 = *pcVar3 + -1;
             if (*pcVar3 == '\0') {
-              param_1->bitvEntryLo = param_1->bitvEntryLo & uVar13;
+              pHeader->bitvEntryLo = pHeader->bitvEntryLo & uVar14;
             }
           }
         }
-        *(uint *)(puVar12[2] + 4) = puVar12[1];
-        *(uint *)(puVar12[1] + 8) = puVar12[2];
+        *(int *)(piVar13[2] + 4) = piVar13[1];
+        *(int *)(piVar13[1] + 8) = piVar13[2];
       }
     }
-    if (((uVar7 & 1) != 0) || (ptVar11 != ptVar10)) {
-      pptVar2 = &ptVar4->listHead[(int)((int)&ptVar10[-1].pRegion + 3)].pEntryPrev;
-      uVar13 = (uint)pptVar2[1];
-      puVar12[2] = (uint)pptVar2;
-      puVar12[1] = uVar13;
-      pptVar2[1] = (tagEntry *)puVar12;
-      *(uint **)(puVar12[1] + 8) = puVar12;
-      if (puVar12[1] == puVar12[2]) {
-        cVar5 = *(char *)((int)&ptVar10->bitvEntryLo + (int)ptVar6);
-        *(char *)((int)&ptVar10->bitvEntryLo + (int)ptVar6) = cVar5 + '\x01';
-        bVar8 = (byte)ptVar10;
-        if (ptVar10 < (tagHeader *)0x20) {
+    if (((uVar7 & 1) != 0) || (ptVar12 != ptVar11)) {
+      pptVar2 = &ptVar4->listHead[(int)((int)&ptVar11[-1].pRegion + 3)].pEntryPrev;
+      iVar8 = (int)pptVar2[1];
+      piVar13[2] = (int)pptVar2;
+      piVar13[1] = iVar8;
+      pptVar2[1] = (tagEntry *)piVar13;
+      *(int **)(piVar13[1] + 8) = piVar13;
+      if (piVar13[1] == piVar13[2]) {
+        cVar5 = *(char *)((int)&ptVar11->bitvEntryLo + (int)ptVar6);
+        *(char *)((int)&ptVar11->bitvEntryLo + (int)ptVar6) = cVar5 + '\x01';
+        bVar9 = (byte)ptVar11;
+        if (ptVar11 < (tagHeader *)0x20) {
           if (cVar5 == '\0') {
-            param_1->bitvEntryHi = param_1->bitvEntryHi | 0x80000000U >> (bVar8 & 0x1f);
+            pHeader->bitvEntryHi = pHeader->bitvEntryHi | 0x80000000U >> (bVar9 & 0x1f);
           }
-          ptVar6->bitvGroupHi[uVar14] = ptVar6->bitvGroupHi[uVar14] | 0x80000000U >> (bVar8 & 0x1f);
+          ptVar6->bitvGroupHi[uVar15] = ptVar6->bitvGroupHi[uVar15] | 0x80000000U >> (bVar9 & 0x1f);
         }
         else {
           if (cVar5 == '\0') {
-            param_1->bitvEntryLo = param_1->bitvEntryLo | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
+            pHeader->bitvEntryLo = pHeader->bitvEntryLo | 0x80000000U >> (bVar9 - 0x20 & 0x1f);
           }
-          ptVar6->bitvGroupLo[uVar14] =
-               ptVar6->bitvGroupLo[uVar14] | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
+          ptVar6->bitvGroupLo[uVar15] =
+               ptVar6->bitvGroupLo[uVar15] | 0x80000000U >> (bVar9 - 0x20 & 0x1f);
         }
       }
     }
-    *puVar12 = local_8;
-    *(uint *)((local_8 - 4) + (int)puVar12) = local_8;
+    *piVar13 = sizeEntry;
+    *(int *)(sizeEntry + -4 + (int)piVar13) = sizeEntry;
     ptVar4->cntEntries = ptVar4->cntEntries + -1;
     if (ptVar4->cntEntries == 0) {
       if (__sbh_pHeaderDefer != (tagHeader *)0x0) {
@@ -167,14 +171,14 @@ void __cdecl __sbh_free_block(tagHeader *param_1,void *param_2)
                   (__sbh_cntHeaderList * 0x14 - (int)__sbh_pHeaderDefer) + -0x14 +
                   (int)__sbh_pHeaderList);
           __sbh_cntHeaderList = __sbh_cntHeaderList + -1;
-          if (__sbh_pHeaderDefer < param_1) {
-            param_1 = param_1 + -1;
+          if (__sbh_pHeaderDefer < pHeader) {
+            pHeader = pHeader + -1;
           }
           __sbh_pHeaderScan = __sbh_pHeaderList;
         }
       }
-      __sbh_pHeaderDefer = param_1;
-      __sbh_indGroupDefer = uVar14;
+      __sbh_pHeaderDefer = pHeader;
+      __sbh_indGroupDefer = uVar15;
     }
   }
   return;
@@ -183,7 +187,7 @@ void __cdecl __sbh_free_block(tagHeader *param_1,void *param_2)
 
 // 009693F0  __sbh_alloc_block  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c:632)
 
-void * __cdecl __sbh_alloc_block(int param_1)
+void * __cdecl __sbh_alloc_block(int intSize)
 
 {
   uint *puVar1;
@@ -204,74 +208,77 @@ void * __cdecl __sbh_alloc_block(int param_1)
   tagHeader *ptVar16;
   uint uVar17;
   int iVar18;
-  uint local_c;
-  int local_8;
+  int sizeEntry;
+  tagGroup *pGroup;
+  uint bitvEntryLo;
+  int indGroupUse;
   
   ptVar7 = __sbh_pHeaderList + __sbh_cntHeaderList;
-  uVar9 = param_1 + 0x17U & 0xfffffff0;
-  iVar10 = ((int)(param_1 + 0x17U) >> 4) + -1;
+  uVar9 = intSize + 0x17U & 0xfffffff0;
+  iVar10 = ((int)(intSize + 0x17U) >> 4) + -1;
   bVar8 = (byte)iVar10;
-  param_1 = (int)__sbh_pHeaderScan;
+  intSize = (int)__sbh_pHeaderScan;
   if (iVar10 < 0x20) {
     uVar17 = 0xffffffff >> (bVar8 & 0x1f);
-    local_c = 0xffffffff;
+    bitvEntryLo = 0xffffffff;
   }
   else {
     uVar17 = 0;
-    local_c = 0xffffffff >> (bVar8 - 0x20 & 0x1f);
+    bitvEntryLo = 0xffffffff >> (bVar8 - 0x20 & 0x1f);
   }
-  while (((uint)param_1 < ptVar7 &&
-         ((((tagHeader *)param_1)->bitvEntryLo & local_c) == 0 &&
-          (((tagHeader *)param_1)->bitvEntryHi & uVar17) == 0))) {
-    param_1 = (int)(param_1 + 0x14);
+  while (((uint)intSize < ptVar7 &&
+         ((((tagHeader *)intSize)->bitvEntryLo & bitvEntryLo) == 0 &&
+          (((tagHeader *)intSize)->bitvEntryHi & uVar17) == 0))) {
+    intSize = (int)(intSize + 0x14);
   }
   ptVar15 = __sbh_pHeaderList;
-  if ((tagHeader *)param_1 == ptVar7) {
+  if ((tagHeader *)intSize == ptVar7) {
     while ((ptVar15 < __sbh_pHeaderScan &&
-           ((ptVar15->bitvEntryLo & local_c) == 0 && (ptVar15->bitvEntryHi & uVar17) == 0))) {
+           ((ptVar15->bitvEntryLo & bitvEntryLo) == 0 && (ptVar15->bitvEntryHi & uVar17) == 0))) {
       ptVar15 = ptVar15 + 1;
     }
-    param_1 = (int)ptVar15;
+    intSize = (int)ptVar15;
     if (ptVar15 == __sbh_pHeaderScan) {
       for (; (ptVar15 < ptVar7 && (ptVar15->bitvCommit == 0)); ptVar15 = ptVar15 + 1) {
       }
       ptVar16 = __sbh_pHeaderList;
-      param_1 = (int)ptVar15;
+      intSize = (int)ptVar15;
       if (ptVar15 == ptVar7) {
         for (; (ptVar16 < __sbh_pHeaderScan && (ptVar16->bitvCommit == 0)); ptVar16 = ptVar16 + 1) {
         }
-        param_1 = (int)ptVar16;
+        intSize = (int)ptVar16;
         if ((ptVar16 == __sbh_pHeaderScan) &&
-           (param_1 = (int)__sbh_alloc_new_region(), (tagHeader *)param_1 == (tagHeader *)0x0)) {
+           (intSize = (int)__sbh_alloc_new_region(), (tagHeader *)intSize == (tagHeader *)0x0)) {
           return (void *)0x0;
         }
       }
-      iVar10 = __sbh_alloc_new_group((tagHeader *)param_1);
-      **(int **)(param_1 + 0x10) = iVar10;
-      if (**(int **)(param_1 + 0x10) == -1) {
+      iVar10 = __sbh_alloc_new_group((tagHeader *)intSize);
+      **(int **)(intSize + 0x10) = iVar10;
+      if (**(int **)(intSize + 0x10) == -1) {
         return (void *)0x0;
       }
     }
   }
-  piVar6 = *(int **)(param_1 + 0x10);
-  local_8 = *piVar6;
-  if ((local_8 == -1) ||
-     ((piVar6[local_8 + 0x31] & local_c) == 0 && (piVar6[local_8 + 0x11] & uVar17) == 0)) {
-    local_8 = 0;
+  piVar6 = *(int **)(intSize + 0x10);
+  indGroupUse = *piVar6;
+  if ((indGroupUse == -1) ||
+     ((piVar6[indGroupUse + 0x31] & bitvEntryLo) == 0 && (piVar6[indGroupUse + 0x11] & uVar17) == 0)
+     ) {
+    indGroupUse = 0;
     puVar11 = (uint *)(piVar6 + 0x11);
     uVar13 = piVar6[0x31];
-    while ((uVar13 & local_c) == 0 && (*puVar11 & uVar17) == 0) {
-      local_8 = local_8 + 1;
+    while ((uVar13 & bitvEntryLo) == 0 && (*puVar11 & uVar17) == 0) {
+      indGroupUse = indGroupUse + 1;
       puVar1 = puVar11 + 0x21;
       puVar11 = puVar11 + 1;
       uVar13 = *puVar1;
     }
   }
-  piVar4 = piVar6 + local_8 * 0x81 + 0x51;
+  piVar4 = piVar6 + indGroupUse * 0x81 + 0x51;
   iVar10 = 0;
-  uVar17 = piVar6[local_8 + 0x11] & uVar17;
+  uVar17 = piVar6[indGroupUse + 0x11] & uVar17;
   if (uVar17 == 0) {
-    uVar17 = piVar6[local_8 + 0x31] & local_c;
+    uVar17 = piVar6[indGroupUse + 0x31] & bitvEntryLo;
     iVar10 = 0x20;
   }
   for (; -1 < (int)uVar17; uVar17 = uVar17 * 2) {
@@ -283,25 +290,25 @@ void * __cdecl __sbh_alloc_block(int param_1)
   if (0x3f < iVar18) {
     iVar18 = 0x3f;
   }
-  __sbh_pHeaderScan = (tagHeader *)param_1;
+  __sbh_pHeaderScan = (tagHeader *)intSize;
   if (iVar18 != iVar10) {
     if (piVar14[1] == piVar14[2]) {
       if (iVar10 < 0x20) {
         pcVar3 = (char *)((int)piVar6 + iVar10 + 4);
         uVar17 = ~(0x80000000U >> ((byte)iVar10 & 0x1f));
-        piVar6[local_8 + 0x11] = uVar17 & piVar6[local_8 + 0x11];
+        piVar6[indGroupUse + 0x11] = uVar17 & piVar6[indGroupUse + 0x11];
         *pcVar3 = *pcVar3 + -1;
         if (*pcVar3 == '\0') {
-          *(uint *)param_1 = *(uint *)param_1 & uVar17;
+          *(uint *)intSize = *(uint *)intSize & uVar17;
         }
       }
       else {
         pcVar3 = (char *)((int)piVar6 + iVar10 + 4);
         uVar17 = ~(0x80000000U >> ((byte)iVar10 - 0x20 & 0x1f));
-        piVar6[local_8 + 0x31] = piVar6[local_8 + 0x31] & uVar17;
+        piVar6[indGroupUse + 0x31] = piVar6[indGroupUse + 0x31] & uVar17;
         *pcVar3 = *pcVar3 + -1;
         if (*pcVar3 == '\0') {
-          *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) & uVar17;
+          *(uint *)(intSize + 4) = *(uint *)(intSize + 4) & uVar17;
         }
       }
     }
@@ -320,15 +327,16 @@ void * __cdecl __sbh_alloc_block(int param_1)
       bVar8 = (byte)iVar18;
       if (iVar18 < 0x20) {
         if (cVar5 == '\0') {
-          *(uint *)param_1 = *(uint *)param_1 | 0x80000000U >> (bVar8 & 0x1f);
+          *(uint *)intSize = *(uint *)intSize | 0x80000000U >> (bVar8 & 0x1f);
         }
-        piVar6[local_8 + 0x11] = piVar6[local_8 + 0x11] | 0x80000000U >> (bVar8 & 0x1f);
+        piVar6[indGroupUse + 0x11] = piVar6[indGroupUse + 0x11] | 0x80000000U >> (bVar8 & 0x1f);
       }
       else {
         if (cVar5 == '\0') {
-          *(uint *)(param_1 + 4) = *(uint *)(param_1 + 4) | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
+          *(uint *)(intSize + 4) = *(uint *)(intSize + 4) | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
         }
-        piVar6[local_8 + 0x31] = piVar6[local_8 + 0x31] | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
+        piVar6[indGroupUse + 0x31] =
+             piVar6[indGroupUse + 0x31] | 0x80000000U >> (bVar8 - 0x20 & 0x1f);
       }
     }
   }
@@ -342,11 +350,11 @@ LAB_00969692:
   *(uint *)((int)piVar14 + (uVar9 - 4)) = uVar9 + 1;
   iVar10 = *piVar4;
   *piVar4 = iVar10 + 1;
-  if (((iVar10 == 0) && ((tagHeader *)param_1 == __sbh_pHeaderDefer)) &&
-     (local_8 == __sbh_indGroupDefer)) {
+  if (((iVar10 == 0) && ((tagHeader *)intSize == __sbh_pHeaderDefer)) &&
+     (indGroupUse == __sbh_indGroupDefer)) {
     __sbh_pHeaderDefer = (tagHeader *)0x0;
   }
-  *piVar6 = local_8;
+  *piVar6 = indGroupUse;
   return piVar14 + 1;
 }
 
@@ -390,7 +398,7 @@ tagHeader * __cdecl __sbh_alloc_new_region(void)
 
 // 00969007  __sbh_alloc_new_group  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c:958)
 
-int __cdecl __sbh_alloc_new_group(tagHeader *param_1)
+int __cdecl __sbh_alloc_new_group(tagHeader *pHeader)
 
 {
   tagEntry *ptVar1;
@@ -403,10 +411,12 @@ int __cdecl __sbh_alloc_new_group(tagHeader *param_1)
   int iVar8;
   int iVar9;
   LPVOID lpAddress;
+  tagGroup *pGroup;
+  void *pHeapEndPage;
   
-  ptVar3 = param_1->pRegion;
+  ptVar3 = pHeader->pRegion;
   iVar9 = 0;
-  for (uVar4 = param_1->bitvCommit; -1 < (int)uVar4; uVar4 = uVar4 * 2) {
+  for (uVar4 = pHeader->bitvCommit; -1 < (int)uVar4; uVar4 = uVar4 * 2) {
     iVar9 = iVar9 + 1;
   }
   ptVar1 = (tagEntry *)(ptVar3->grpHeadList + iVar9);
@@ -418,7 +428,7 @@ int __cdecl __sbh_alloc_new_group(tagHeader *param_1)
     ptVar5 = (tagEntry *)&ptVar5->pEntryPrev;
     iVar8 = iVar8 + -1;
   } while (iVar8 != 0);
-  lpAddress = (LPVOID)(iVar9 * 0x8000 + (int)param_1->pHeapData);
+  lpAddress = (LPVOID)(iVar9 * 0x8000 + (int)pHeader->pHeapData);
   pvVar6 = VirtualAlloc(lpAddress,0x8000,0x1000,4);
   if (pvVar6 == (LPVOID)0x0) {
     iVar9 = -1;
@@ -447,9 +457,9 @@ int __cdecl __sbh_alloc_new_group(tagHeader *param_1)
     cVar2 = ptVar3->cntRegionSize[0x3f];
     ptVar3->cntRegionSize[0x3f] = cVar2 + '\x01';
     if (cVar2 == '\0') {
-      param_1->bitvEntryLo = param_1->bitvEntryLo | 1;
+      pHeader->bitvEntryLo = pHeader->bitvEntryLo | 1;
     }
-    param_1->bitvCommit = param_1->bitvCommit & ~(0x80000000U >> ((byte)iVar9 & 0x1f));
+    pHeader->bitvCommit = pHeader->bitvCommit & ~(0x80000000U >> ((byte)iVar9 & 0x1f));
   }
   return iVar9;
 }
@@ -457,7 +467,7 @@ int __cdecl __sbh_alloc_new_group(tagHeader *param_1)
 
 // 0096910F  __sbh_resize_block  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sbheap.c:1061)
 
-int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
+int __cdecl __sbh_resize_block(tagHeader *pHeader,void *pvAlloc,int intNew)
 
 {
   tagEntry **pptVar1;
@@ -472,39 +482,41 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
   uint uVar10;
   uint uVar11;
   uint uVar12;
-  uint local_c;
+  tagGroup *pGroup;
+  uint indNext;
+  int sizeNext;
   
-  ptVar7 = param_1->pRegion;
-  uVar9 = (uint)((int)param_2 - (int)param_1->pHeapData) >> 0xf;
-  uVar11 = param_3 + 0x17U & 0xfffffff0;
-  iVar8 = *(int *)((int)param_2 + -4) + -1;
-  puVar2 = (uint *)(*(int *)((int)param_2 + -4) + -5 + (int)param_2);
+  ptVar7 = pHeader->pRegion;
+  uVar9 = (uint)((int)pvAlloc - (int)pHeader->pHeapData) >> 0xf;
+  uVar11 = intNew + 0x17U & 0xfffffff0;
+  iVar8 = *(int *)((int)pvAlloc + -4) + -1;
+  puVar2 = (uint *)(*(int *)((int)pvAlloc + -4) + -5 + (int)pvAlloc);
   uVar12 = *puVar2;
   if (iVar8 < (int)uVar11) {
     if (((uVar12 & 1) != 0) || ((int)(uVar12 + iVar8) < (int)uVar11)) {
       return 0;
     }
-    local_c = ((int)uVar12 >> 4) - 1;
-    if (0x3f < local_c) {
-      local_c = 0x3f;
+    indNext = ((int)uVar12 >> 4) - 1;
+    if (0x3f < indNext) {
+      indNext = 0x3f;
     }
     if (puVar2[1] == puVar2[2]) {
-      if (local_c < 0x20) {
-        pcVar3 = ptVar7->cntRegionSize + local_c;
-        uVar10 = ~(0x80000000U >> ((byte)local_c & 0x1f));
+      if (indNext < 0x20) {
+        pcVar3 = ptVar7->cntRegionSize + indNext;
+        uVar10 = ~(0x80000000U >> ((byte)indNext & 0x1f));
         ptVar7->bitvGroupHi[uVar9] = ptVar7->bitvGroupHi[uVar9] & uVar10;
         *pcVar3 = *pcVar3 + -1;
         if (*pcVar3 == '\0') {
-          param_1->bitvEntryHi = param_1->bitvEntryHi & uVar10;
+          pHeader->bitvEntryHi = pHeader->bitvEntryHi & uVar10;
         }
       }
       else {
-        pcVar3 = ptVar7->cntRegionSize + local_c;
-        uVar10 = ~(0x80000000U >> ((byte)local_c - 0x20 & 0x1f));
+        pcVar3 = ptVar7->cntRegionSize + indNext;
+        uVar10 = ~(0x80000000U >> ((byte)indNext - 0x20 & 0x1f));
         ptVar7->bitvGroupLo[uVar9] = ptVar7->bitvGroupLo[uVar9] & uVar10;
         *pcVar3 = *pcVar3 + -1;
         if (*pcVar3 == '\0') {
-          param_1->bitvEntryLo = param_1->bitvEntryLo & uVar10;
+          pHeader->bitvEntryLo = pHeader->bitvEntryLo & uVar10;
         }
       }
     }
@@ -513,7 +525,7 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
     iVar8 = uVar12 + (iVar8 - uVar11);
     if (0 < iVar8) {
       uVar12 = (iVar8 >> 4) - 1;
-      iVar4 = (int)param_2 + (uVar11 - 4);
+      iVar4 = (int)pvAlloc + (uVar11 - 4);
       if (0x3f < uVar12) {
         uVar12 = 0x3f;
       }
@@ -527,32 +539,32 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
         ptVar7->cntRegionSize[uVar12] = cVar6 + '\x01';
         if (uVar12 < 0x20) {
           if (cVar6 == '\0') {
-            param_1->bitvEntryHi = param_1->bitvEntryHi | 0x80000000U >> ((byte)uVar12 & 0x1f);
+            pHeader->bitvEntryHi = pHeader->bitvEntryHi | 0x80000000U >> ((byte)uVar12 & 0x1f);
           }
           puVar2 = ptVar7->bitvGroupHi;
         }
         else {
           if (cVar6 == '\0') {
-            param_1->bitvEntryLo =
-                 param_1->bitvEntryLo | 0x80000000U >> ((byte)uVar12 - 0x20 & 0x1f);
+            pHeader->bitvEntryLo =
+                 pHeader->bitvEntryLo | 0x80000000U >> ((byte)uVar12 - 0x20 & 0x1f);
           }
           puVar2 = ptVar7->bitvGroupLo;
           uVar12 = uVar12 - 0x20;
         }
         puVar2[uVar9] = puVar2[uVar9] | 0x80000000U >> ((byte)uVar12 & 0x1f);
       }
-      piVar5 = (int *)((int)param_2 + (uVar11 - 4));
+      piVar5 = (int *)((int)pvAlloc + (uVar11 - 4));
       *piVar5 = iVar8;
       *(int *)(iVar8 + -4 + (int)piVar5) = iVar8;
     }
-    *(uint *)((int)param_2 + -4) = uVar11 + 1;
-    *(uint *)((int)param_2 + (uVar11 - 8)) = uVar11 + 1;
+    *(uint *)((int)pvAlloc + -4) = uVar11 + 1;
+    *(uint *)((int)pvAlloc + (uVar11 - 8)) = uVar11 + 1;
   }
   else if ((int)uVar11 < iVar8) {
-    param_3 = iVar8 - uVar11;
-    *(uint *)((int)param_2 + -4) = uVar11 + 1;
-    piVar5 = (int *)((int)param_2 + (uVar11 - 4));
-    uVar10 = (param_3 >> 4) - 1;
+    intNew = iVar8 - uVar11;
+    *(uint *)((int)pvAlloc + -4) = uVar11 + 1;
+    piVar5 = (int *)((int)pvAlloc + (uVar11 - 4));
+    uVar10 = (intNew >> 4) - 1;
     piVar5[-1] = uVar11 + 1;
     if (0x3f < uVar10) {
       uVar10 = 0x3f;
@@ -569,7 +581,7 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
           ptVar7->bitvGroupHi[uVar9] = ptVar7->bitvGroupHi[uVar9] & uVar11;
           *pcVar3 = *pcVar3 + -1;
           if (*pcVar3 == '\0') {
-            param_1->bitvEntryHi = param_1->bitvEntryHi & uVar11;
+            pHeader->bitvEntryHi = pHeader->bitvEntryHi & uVar11;
           }
         }
         else {
@@ -578,14 +590,14 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
           ptVar7->bitvGroupLo[uVar9] = ptVar7->bitvGroupLo[uVar9] & uVar11;
           *pcVar3 = *pcVar3 + -1;
           if (*pcVar3 == '\0') {
-            param_1->bitvEntryLo = param_1->bitvEntryLo & uVar11;
+            pHeader->bitvEntryLo = pHeader->bitvEntryLo & uVar11;
           }
         }
       }
       *(uint *)(puVar2[2] + 4) = puVar2[1];
       *(uint *)(puVar2[1] + 8) = puVar2[2];
-      param_3 = param_3 + uVar12;
-      uVar10 = (param_3 >> 4) - 1;
+      intNew = intNew + uVar12;
+      uVar10 = (intNew >> 4) - 1;
       if (0x3f < uVar10) {
         uVar10 = 0x3f;
       }
@@ -601,21 +613,21 @@ int __cdecl __sbh_resize_block(tagHeader *param_1,void *param_2,int param_3)
       ptVar7->cntRegionSize[uVar10] = cVar6 + '\x01';
       if (uVar10 < 0x20) {
         if (cVar6 == '\0') {
-          param_1->bitvEntryHi = param_1->bitvEntryHi | 0x80000000U >> ((byte)uVar10 & 0x1f);
+          pHeader->bitvEntryHi = pHeader->bitvEntryHi | 0x80000000U >> ((byte)uVar10 & 0x1f);
         }
         puVar2 = ptVar7->bitvGroupHi;
       }
       else {
         if (cVar6 == '\0') {
-          param_1->bitvEntryLo = param_1->bitvEntryLo | 0x80000000U >> ((byte)uVar10 - 0x20 & 0x1f);
+          pHeader->bitvEntryLo = pHeader->bitvEntryLo | 0x80000000U >> ((byte)uVar10 - 0x20 & 0x1f);
         }
         puVar2 = ptVar7->bitvGroupLo;
         uVar10 = uVar10 - 0x20;
       }
       puVar2[uVar9] = puVar2[uVar9] | 0x80000000U >> ((byte)uVar10 & 0x1f);
     }
-    *piVar5 = param_3;
-    *(int *)(param_3 + -4 + (int)piVar5) = param_3;
+    *piVar5 = intNew;
+    *(int *)(intNew + -4 + (int)piVar5) = intNew;
   }
   return 1;
 }

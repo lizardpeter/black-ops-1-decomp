@@ -337,10 +337,10 @@ int __cdecl DDL_MoveTo(ddlState_t *param_1,ddlState_t *param_2,int param_3,...)
 int __cdecl DDL_MoveToPath(ddlState_t *param_1,ddlState_t *param_2,int param_3,char **param_4)
 
 {
-  ddlState_t *pdVar1;
+  ddlState_t *nptr;
+  int iVar1;
   int iVar2;
   int iVar3;
-  int iVar4;
   ddlState_t *unaff_EDI;
   int local_10;
   int iStack_c;
@@ -348,27 +348,27 @@ int __cdecl DDL_MoveToPath(ddlState_t *param_1,ddlState_t *param_2,int param_3,c
   undefined4 uStack_4;
   
   if ((*(ddlState_t **)param_3 != (ddlState_t *)0x0) &&
-     (iVar2 = DDL_Lookup_MoveTo(*(ddlState_t **)param_3,(char *)&local_10,unaff_EDI), iVar2 != 0)) {
-    iVar4 = 1;
-    iVar2 = local_8;
+     (iVar1 = DDL_Lookup_MoveTo(*(ddlState_t **)param_3,(char *)&local_10,unaff_EDI), iVar1 != 0)) {
+    iVar3 = 1;
+    iVar1 = local_8;
     if (1 < (int)param_2) {
       do {
-        pdVar1 = *(ddlState_t **)(param_3 + iVar4 * 4);
-        if (pdVar1 != (ddlState_t *)0x0) {
-          if (((iVar2 == 0) || (*(int *)(iVar2 + 0x24) < 2)) || (*(int *)(iVar2 + 0x28) != -1)) {
-            iVar3 = DDL_Lookup_MoveTo(pdVar1,(char *)&local_10,unaff_EDI);
-            iVar2 = local_8;
-            if (iVar3 == 0) {
+        nptr = *(ddlState_t **)(param_3 + iVar3 * 4);
+        if (nptr != (ddlState_t *)0x0) {
+          if (((iVar1 == 0) || (*(int *)(iVar1 + 0x24) < 2)) || (*(int *)(iVar1 + 0x28) != -1)) {
+            iVar2 = DDL_Lookup_MoveTo(nptr,(char *)&local_10,unaff_EDI);
+            iVar1 = local_8;
+            if (iVar2 == 0) {
               return 0;
             }
           }
           else {
-            iStack_c = atoi((char *)pdVar1);
-            local_10 = local_10 + (*(int *)(iVar2 + 4) / *(int *)(iVar2 + 0x24)) * iStack_c;
+            iStack_c = atoi((char *)nptr);
+            local_10 = local_10 + (*(int *)(iVar1 + 4) / *(int *)(iVar1 + 0x24)) * iStack_c;
           }
         }
-        iVar4 = iVar4 + 1;
-      } while (iVar4 < (int)param_2);
+        iVar3 = iVar3 + 1;
+      } while (iVar3 < (int)param_2);
     }
     *(ulonglong *)param_1 = CONCAT44(iStack_c,local_10);
     *(ulonglong *)(param_1 + 8) = CONCAT44(uStack_4,local_8);

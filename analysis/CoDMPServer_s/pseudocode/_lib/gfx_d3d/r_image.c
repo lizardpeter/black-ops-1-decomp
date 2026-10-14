@@ -45,6 +45,7 @@ GfxImage * __cdecl Image_AllocProg(int param_1,uchar param_2,uchar param_3)
   int iVar1;
   uchar in_CL;
   char *unaff_ESI;
+  uchar category;
   
   g_imageProgs[in_EAX].name = g_imageProgNames[in_EAX];
   g_imageProgs[in_EAX].category = (uchar)param_1;
@@ -58,7 +59,10 @@ GfxImage * __cdecl Image_AllocProg(int param_1,uchar param_2,uchar param_3)
 
 // 0082F7D0  Image_Alloc  (gfx_d3d/r_image.cpp:506)
 
-GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int param_4,float param_5)
+/* WARNING: Variable defined which should be unmapped: gamma */
+
+GfxImage * __cdecl
+Image_Alloc(char *category,uchar semantic,uchar imageTrack,int param_4,float param_5)
 
 {
   char cVar1;
@@ -66,17 +70,19 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
   GfxImage *pGVar3;
   int iVar4;
   char *unaff_EDI;
+  char *name;
+  float gamma;
   
-  pcVar2 = param_1;
+  pcVar2 = category;
   do {
     cVar1 = *pcVar2;
     pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
-  pGVar3 = Hunk_AllocAlignInternal((int)(pcVar2 + (0x35 - (int)(param_1 + 1))),(int)unaff_EDI);
+  pGVar3 = Hunk_AllocAlignInternal((int)(pcVar2 + (0x35 - (int)(category + 1))),(int)unaff_EDI);
   pGVar3->name = (char *)(pGVar3 + 1);
-  memcpy((uchar *)(pGVar3 + 1),(uchar *)param_1,(ulong)(pcVar2 + (1 - (int)(param_1 + 1))));
-  pGVar3->semantic = param_3;
-  pGVar3->category = param_2;
+  memcpy((uchar *)(pGVar3 + 1),(uchar *)category,(ulong)(pcVar2 + (1 - (int)(category + 1))));
+  pGVar3->semantic = imageTrack;
+  pGVar3->category = semantic;
   pGVar3->track = (uchar)param_4;
   iVar4 = Image_GetAvailableHashLocation(unaff_EDI);
   imageGlobals.imageHashTable[iVar4] = pGVar3;
@@ -88,7 +94,7 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
 
 void __cdecl
 Image_Create2DTexture_PC
-          (GfxImage *param_1,ushort param_2,ushort param_3,int param_4,int param_5,
+          (GfxImage *mipmapCount,ushort imageFormat,ushort param_3,int param_4,int param_5,
           _D3DFORMAT param_6)
 
 {
@@ -97,10 +103,11 @@ Image_Create2DTexture_PC
   uint in_EDX;
   undefined2 unaff_DI;
   undefined1 uVar2;
+  ushort width;
   undefined2 in_stack_0000000a;
   undefined2 in_stack_0000000e;
   
-  *(undefined2 *)(in_EAX + 0x14) = param_1._0_2_;
+  *(undefined2 *)(in_EAX + 0x14) = mipmapCount._0_2_;
   *(undefined2 *)(in_EAX + 0x16) = unaff_DI;
   *(undefined2 *)(in_EAX + 0x18) = 1;
   *(undefined1 *)(in_EAX + 4) = 3;
@@ -123,31 +130,35 @@ Image_Create2DTexture_PC
     uVar2 = 2;
   }
   (**(code **)((int)*dx.device + 0x5c))
-            (dx.device,(uint)param_1 & 0xffff,unaff_DI,_param_2,uVar1,_param_3,uVar2);
+            (dx.device,(uint)mipmapCount & 0xffff,unaff_DI,_imageFormat,uVar1,_param_3,uVar2);
   return;
 }
 
 
 // 0082F8E0  Image_Create3DTexture_PC  (gfx_d3d/r_image.cpp:696)
 
+/* WARNING: Variable defined which should be unmapped: imageFlags */
+
 void __cdecl
 Image_Create3DTexture_PC
-          (GfxImage *param_1,ushort param_2,ushort param_3,ushort param_4,int param_5,int param_6,
-          _D3DFORMAT param_7)
+          (GfxImage *mipmapCount,ushort imageFormat,ushort param_3,ushort param_4,int param_5,
+          int param_6,_D3DFORMAT param_7)
 
 {
   ushort in_CX;
   ushort in_DX;
   ushort unaff_SI;
+  GfxImage *image;
   undefined2 in_stack_0000000a;
   undefined2 in_stack_0000000e;
+  int imageFlags;
   
-  param_1->depth = in_CX;
-  param_1->height = in_DX;
-  param_1->width = unaff_SI;
-  param_1->mapType = '\x04';
+  mipmapCount->depth = in_CX;
+  mipmapCount->height = in_DX;
+  mipmapCount->width = unaff_SI;
+  mipmapCount->mapType = '\x04';
   (**(code **)((int)*dx.device + 0x60))
-            (dx.device,unaff_SI,in_DX,in_CX,_param_2,0,_param_3,1,param_1,0);
+            (dx.device,unaff_SI,in_DX,in_CX,_imageFormat,0,_param_3,1,mipmapCount,0);
   return;
 }
 
@@ -155,12 +166,13 @@ Image_Create3DTexture_PC
 // 0082F930  Image_CreateCubeTexture_PC  (gfx_d3d/r_image.cpp:738)
 
 void __cdecl
-Image_CreateCubeTexture_PC(GfxImage *param_1,ushort param_2,int param_3,_D3DFORMAT param_4)
+Image_CreateCubeTexture_PC(GfxImage *imageFormat,ushort param_2,int param_3,_D3DFORMAT param_4)
 
 {
   bool bVar1;
   int in_EAX;
   undefined2 in_CX;
+  int mipmapCount;
   undefined2 in_stack_0000000a;
   
   bVar1 = gfxMetrics.canMipCubemaps;
@@ -169,18 +181,20 @@ Image_CreateCubeTexture_PC(GfxImage *param_1,ushort param_2,int param_3,_D3DFORM
   *(undefined2 *)(in_EAX + 0x18) = 1;
   *(undefined1 *)(in_EAX + 4) = 5;
   if (!bVar1) {
-    param_1 = (GfxImage *)&DAT_00000001;
+    imageFormat = (GfxImage *)&DAT_00000001;
   }
-  (**(code **)((int)*dx.device + 100))(dx.device,in_CX,param_1,0,_param_2,1);
+  (**(code **)((int)*dx.device + 100))(dx.device,in_CX,imageFormat,0,_param_2,1);
   return;
 }
 
 
 // 0082F980  Image_SetupRenderTarget  (gfx_d3d/r_image.cpp:768)
 
+/* WARNING: Variable defined which should be unmapped: name */
+
 void __cdecl
 Image_SetupRenderTarget
-          (GfxImage *param_1,ushort param_2,ushort param_3,_D3DFORMAT param_4,char *param_5,
+          (GfxImage *imageFormat,ushort param_2,ushort param_3,_D3DFORMAT param_4,char *param_5,
           uint param_6)
 
 {
@@ -189,43 +203,46 @@ Image_SetupRenderTarget
   int iVar2;
   undefined4 uVar3;
   GfxImage *unaff_ESI;
-  uint uVar4;
+  uint depth;
+  ushort width;
   undefined2 in_stack_0000000a;
+  char *name;
   
-  uVar4 = (uint)in_AX;
+  depth = (uint)in_AX;
   iVar2 = _stricmp(unaff_ESI->name,"$16bit_system");
   if ((iVar2 != 0) &&
      (iVar2 = _stricmp(unaff_ESI->name,"$8bit_system"), pdVar1 = r_loadForRenderer, iVar2 != 0)) {
-    unaff_ESI->width = (ushort)param_1;
+    unaff_ESI->width = (ushort)imageFormat;
     unaff_ESI->height = in_AX;
     unaff_ESI->depth = 1;
     if ((pdVar1->current).enabled == false) {
       return;
     }
     uVar3 = 1;
-    unaff_ESI->width = (ushort)param_1;
+    unaff_ESI->width = (ushort)imageFormat;
     unaff_ESI->height = in_AX;
     unaff_ESI->depth = 1;
     unaff_ESI->mapType = '\x03';
     if (((_param_2 == D3DFMT_D24S8) || (_param_2 == D3DFMT_D24X8)) || (_param_2 == D3DFMT_D16)) {
       uVar3 = 2;
     }
-    (**(code **)((int)*dx.device + 0x5c))(dx.device,(uint)param_1 & 0xffff,uVar4,1,uVar3,_param_2,0)
-    ;
-    Image_TrackTexture(unaff_ESI,0x20003,_param_2,(uint)param_1 & 0xffff,uVar4,1);
+    (**(code **)((int)*dx.device + 0x5c))
+              (dx.device,(uint)imageFormat & 0xffff,depth,1,uVar3,_param_2,0);
+    Image_TrackTexture(unaff_ESI,0x20003,_param_2,(uint)imageFormat & 0xffff,depth,1);
     return;
   }
   pdVar1 = r_loadForRenderer;
-  unaff_ESI->width = (ushort)param_1;
+  unaff_ESI->width = (ushort)imageFormat;
   unaff_ESI->height = in_AX;
   unaff_ESI->depth = 1;
   if ((pdVar1->current).enabled != false) {
     unaff_ESI->depth = 1;
-    unaff_ESI->width = (ushort)param_1;
+    unaff_ESI->width = (ushort)imageFormat;
     unaff_ESI->height = in_AX;
     unaff_ESI->mapType = '\x03';
-    (**(code **)((int)*dx.device + 0x5c))(dx.device,(uint)param_1 & 0xffff,in_AX,1,0,_param_2,2);
-    Image_TrackTexture(unaff_ESI,0x103,_param_2,(uint)param_1 & 0xffff,uVar4,1);
+    (**(code **)((int)*dx.device + 0x5c))(dx.device,(uint)imageFormat & 0xffff,in_AX,1,0,_param_2,2)
+    ;
+    Image_TrackTexture(unaff_ESI,0x103,_param_2,(uint)imageFormat & 0xffff,depth,1);
   }
   return;
 }
@@ -286,7 +303,7 @@ void __cdecl Image_PicmipForSemantic(uchar param_1,Picmip *param_2)
 
 // 0082FB70  R_DelayLoadImage  (gfx_d3d/r_image.cpp:902)
 
-void __cdecl R_DelayLoadImage(XAssetHeader param_1,void *param_2)
+void __cdecl R_DelayLoadImage(XAssetHeader data,void *param_2)
 
 {
   int iVar1;
@@ -294,12 +311,13 @@ void __cdecl R_DelayLoadImage(XAssetHeader param_1,void *param_2)
   bool bVar3;
   _func___cdecl_int_char_ptr_int_ptr *unaff_ESI;
   GfxImage *unaff_EDI;
+  XAssetHeader header;
   
   pdVar2 = r_loadForRenderer;
-  if ((param_1.model)->lodRampType != '\0') {
-    iVar1 = *(int *)&((param_1.material)->info).field_0xc;
-    (param_1.model)->lodRampType = '\0';
-    *(undefined8 *)((param_1.image)->cardMemory).platform = 0;
+  if ((data.model)->lodRampType != '\0') {
+    iVar1 = *(int *)&((data.material)->info).field_0xc;
+    (data.model)->lodRampType = '\0';
+    *(undefined8 *)((data.image)->cardMemory).platform = 0;
     if ((pdVar2->current).enabled != false) {
       Sys_LockWrite((FastCriticalSection *)unaff_EDI);
       bVar3 = Image_LoadFromFileWithReader((GfxImage *)0x0,SUB41(unaff_EDI,0),unaff_ESI);
@@ -320,109 +338,116 @@ void __cdecl R_DelayLoadImage(XAssetHeader param_1,void *param_2)
 
 // 0082FBD0  Load_Texture  (gfx_d3d/r_image.cpp:930)
 
+/* WARNING: Variable defined which should be unmapped: data */
+
 void __cdecl Load_Texture(GfxImageLoadDef **param_1,GfxImage *param_2)
 
 {
-  uchar *puVar1;
-  uchar uVar2;
-  GfxImageLoadDef *pGVar3;
-  _D3DFORMAT _Var4;
-  GfxImage *pGVar5;
-  dvar_s *pdVar6;
-  bool bVar7;
+  uchar *src;
+  uchar uVar1;
+  GfxImageLoadDef *pGVar2;
+  _D3DFORMAT mipWidth;
+  GfxImage *imageBuffer;
+  dvar_s *pdVar3;
+  bool bVar4;
+  ushort uVar5;
+  uint uVar6;
+  uchar *puVar7;
+  uchar *dst;
   ushort uVar8;
-  uint uVar9;
-  uchar *puVar10;
-  uchar *puVar11;
-  ushort uVar12;
-  byte bVar13;
-  int iVar14;
-  int iVar15;
-  int iVar16;
+  byte bVar9;
+  int flags;
+  int iVar10;
+  int iVar11;
   uint unaff_ESI;
   uint unaff_EDI;
+  uchar *data;
   uchar *local_14;
+  _D3DFORMAT imageFormat;
+  GfxImageLoadDef *loadDef;
+  GfxImageLoadDef **remoteLoadDef;
   
-  pdVar6 = r_loadForRenderer;
-  pGVar5 = varGfxImage;
-  pGVar3 = varGfxTextureLoad->loadDef;
+  pdVar3 = r_loadForRenderer;
+  imageBuffer = varGfxImage;
+  pGVar2 = varGfxTextureLoad->loadDef;
   (varGfxImage->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
-  if ((pdVar6 != (dvar_s *)0x0) && ((pdVar6->current).enabled != false)) {
-    _Var4 = pGVar3->format;
-    iVar15 = pGVar3->resourceSize;
-    pGVar5->delayLoadPixels = false;
-    if (iVar15 == 0) {
-      if (pGVar5->category != '\x05') {
-        iVar15 = (pGVar5->cardMemory).platform[0];
-        *(undefined8 *)(pGVar5->cardMemory).platform = 0;
-        bVar7 = Image_LoadFromFile((GfxImage *)0x0,SUB41(unaff_EDI,0));
-        if (!bVar7) {
-          Com_Error(ERR_DROP,"Couldn\'t load image \'%s\'\n",pGVar5->name);
+  if ((pdVar3 != (dvar_s *)0x0) && ((pdVar3->current).enabled != false)) {
+    mipWidth = pGVar2->format;
+    iVar10 = pGVar2->resourceSize;
+    imageBuffer->delayLoadPixels = false;
+    if (iVar10 == 0) {
+      if (imageBuffer->category != '\x05') {
+        iVar10 = (imageBuffer->cardMemory).platform[0];
+        *(undefined8 *)(imageBuffer->cardMemory).platform = 0;
+        bVar4 = Image_LoadFromFile((GfxImage *)0x0,SUB41(unaff_EDI,0));
+        if (!bVar4) {
+          Com_Error(ERR_DROP,"Couldn\'t load image \'%s\'\n",imageBuffer->name);
         }
         LOCK();
-        DAT_00c8cdac = DAT_00c8cdac + iVar15;
+        DAT_00c8cdac = DAT_00c8cdac + iVar10;
         UNLOCK();
         return;
       }
-      bVar13 = (byte)*(undefined2 *)&r_picmip_water->current;
-      uVar8 = pGVar5->width >> (bVar13 & 0x1f);
+      bVar9 = (byte)*(undefined2 *)&r_picmip_water->current;
+      uVar5 = imageBuffer->width >> (bVar9 & 0x1f);
+      if (uVar5 < 4) {
+        uVar5 = 4;
+      }
+      uVar8 = imageBuffer->height >> (bVar9 & 0x1f);
       if (uVar8 < 4) {
         uVar8 = 4;
       }
-      uVar12 = pGVar5->height >> (bVar13 & 0x1f);
-      if (uVar12 < 4) {
-        uVar12 = 4;
-      }
-      *(undefined8 *)(pGVar5->cardMemory).platform = 0;
-      uVar2 = pGVar3->levelCount;
-      pGVar5->width = uVar8;
-      pGVar5->height = uVar12;
-      pGVar5->depth = 1;
-      pGVar5->mapType = '\x03';
-      (**(code **)((int)*dx.device + 0x5c))(dx.device,uVar8,uVar12,uVar2,0x200,_Var4,0,pGVar5,0);
+      *(undefined8 *)(imageBuffer->cardMemory).platform = 0;
+      uVar1 = pGVar2->levelCount;
+      imageBuffer->width = uVar5;
+      imageBuffer->height = uVar8;
+      imageBuffer->depth = 1;
+      imageBuffer->mapType = '\x03';
+      (**(code **)((int)*dx.device + 0x5c))
+                (dx.device,uVar5,uVar8,uVar1,0x200,mipWidth,0,imageBuffer,0);
       return;
     }
-    if ((pGVar5->mapType == '\x03') || (iVar15 = 6, pGVar5->mapType == '\x04')) {
-      iVar15 = 1;
+    if ((imageBuffer->mapType == '\x03') || (iVar10 = 6, imageBuffer->mapType == '\x04')) {
+      iVar10 = 1;
     }
-    puVar1 = pGVar3->data;
-    local_14 = puVar1;
-    puVar10 = puVar1;
-    if ((pGVar3->flags & 2) == 0) {
-      iVar14 = 1;
-      for (uVar9 = 1;
-          ((uVar9 < pGVar5->width || (uVar9 < pGVar5->height)) || (uVar9 < pGVar5->depth));
-          uVar9 = uVar9 * 2) {
-        iVar14 = iVar14 + 1;
+    src = pGVar2->data;
+    local_14 = src;
+    puVar7 = src;
+    if ((pGVar2->flags & 2) == 0) {
+      flags = 1;
+      for (uVar6 = 1;
+          ((uVar6 < imageBuffer->width || (uVar6 < imageBuffer->height)) ||
+          (uVar6 < imageBuffer->depth)); uVar6 = uVar6 * 2) {
+        flags = flags + 1;
       }
     }
     else {
-      iVar14 = 1;
+      flags = 1;
     }
-    for (; iVar15 != 0; iVar15 = iVar15 + -1) {
-      iVar16 = 0;
-      if (0 < iVar14) {
+    for (; iVar10 != 0; iVar10 = iVar10 + -1) {
+      iVar11 = 0;
+      if (0 < flags) {
         do {
-          uVar8 = pGVar5->width >> ((byte)iVar16 & 0x1f);
-          uVar9 = (uint)uVar8;
-          if (uVar8 < 2) {
-            uVar9 = 1;
+          uVar5 = imageBuffer->width >> ((byte)iVar11 & 0x1f);
+          uVar6 = (uint)uVar5;
+          if (uVar5 < 2) {
+            uVar6 = 1;
           }
-          uVar9 = Image_GetCardMemoryAmountForMipLevel(_Var4,uVar9,unaff_EDI,unaff_ESI);
-          puVar10 = local_14 + uVar9;
-          iVar16 = iVar16 + 1;
-          local_14 = puVar10;
-        } while (iVar16 < iVar14);
+          uVar6 = Image_GetCardMemoryAmountForMipLevel(mipWidth,uVar6,unaff_EDI,unaff_ESI);
+          puVar7 = local_14 + uVar6;
+          iVar11 = iVar11 + 1;
+          local_14 = puVar7;
+        } while (iVar11 < flags);
       }
     }
-    puVar11 = (uchar *)_Z_TryVirtualAllocInternal(puVar10 + (-0xc - (int)pGVar3));
-    if (puVar11 == (uchar *)0x0) {
+    dst = (uchar *)_Z_TryVirtualAllocInternal(puVar7 + (-0xc - (int)pGVar2));
+    if (dst == (uchar *)0x0) {
                     /* WARNING: Subroutine does not return */
       Sys_OutOfMemErrorInternal
                 ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x860);
     }
-    memcpy(puVar11,puVar1,(ulong)(puVar10 + (-0xc - (int)pGVar3)));
-    RB_Resource_CreateTexture(pGVar5,puVar11,iVar14,0,_Var4);
+    memcpy(dst,src,(ulong)(puVar7 + (-0xc - (int)pGVar2)));
+    RB_Resource_CreateTexture(imageBuffer,dst,flags,0,mipWidth);
   }
   return;
 }
@@ -455,7 +480,7 @@ void __cdecl R_EnumImages(_func___cdecl_void_XAssetHeader_void_ptr *param_1,void
 // 00830070  R_DownsampleMipMapBilinear  (gfx_d3d/r_image.cpp:2136)
 
 void __cdecl
-R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uchar *param_5)
+R_DownsampleMipMapBilinear(uchar *srcHeight,int param_2,int param_3,int param_4,uchar *param_5)
 
 {
   byte *in_EAX;
@@ -464,15 +489,16 @@ R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uc
   int iVar2;
   undefined1 *puVar3;
   byte *pbVar4;
+  int srcWidth;
   undefined1 *local_10;
   int local_c;
-  int local_4;
+  int texelPitch;
   
-  if ((param_1 != &DAT_00000001) || (param_2 != 1)) {
-    iVar2 = (int)param_1 >> 1;
-    local_4 = param_2 >> 1;
-    if ((iVar2 == 0) || (local_4 == 0)) {
-      iVar2 = iVar2 + local_4;
+  if ((srcHeight != &DAT_00000001) || (param_2 != 1)) {
+    iVar2 = (int)srcHeight >> 1;
+    texelPitch = param_2 >> 1;
+    if ((iVar2 == 0) || (texelPitch == 0)) {
+      iVar2 = iVar2 + texelPitch;
       if (0 < iVar2) {
         do {
           *in_ECX = (char)((int)((uint)in_EAX[1] + (uint)*in_EAX) >> 1);
@@ -484,15 +510,15 @@ R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uc
     }
     else {
       local_10 = in_ECX;
-      if (0 < local_4) {
+      if (0 < texelPitch) {
         do {
           if (0 < iVar2) {
-            pbVar1 = in_EAX + (int)param_1;
+            pbVar1 = in_EAX + (int)srcHeight;
             puVar3 = local_10;
             pbVar4 = in_EAX;
             local_c = iVar2;
             do {
-              *puVar3 = (char)((int)((uint)pbVar1[1 - (int)param_1] + (uint)pbVar1[1] +
+              *puVar3 = (char)((int)((uint)pbVar1[1 - (int)srcHeight] + (uint)pbVar1[1] +
                                      (uint)*pbVar4 + (uint)*pbVar1) >> 2);
               puVar3 = puVar3 + 1;
               pbVar4 = pbVar4 + 2;
@@ -501,9 +527,9 @@ R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uc
             } while (local_c != 0);
           }
           local_10 = local_10 + iVar2;
-          in_EAX = in_EAX + (int)param_1 * 2;
-          local_4 = local_4 + -1;
-        } while (local_4 != 0);
+          in_EAX = in_EAX + (int)srcHeight * 2;
+          texelPitch = texelPitch + -1;
+        } while (texelPitch != 0);
         return;
       }
     }

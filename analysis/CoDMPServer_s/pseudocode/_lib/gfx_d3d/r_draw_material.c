@@ -85,11 +85,9 @@ uchar __cdecl R_Get_NvFloatZLitTech(Material *param_1,uchar param_2)
 
 // 0086CDD0  R_GetTechType  (gfx_d3d/r_draw_material.cpp:536)
 
-/* WARNING: Type propagation algorithm not settling */
+/* WARNING: Variable defined which should be unmapped: context */
 
-uchar __cdecl
-R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_3,
-             GfxDrawSurf param_4)
+uchar __cdecl R_GetTechType(void)
 
 {
   uchar uVar1;
@@ -97,16 +95,22 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
   uint uVar3;
   uint uVar4;
   GfxDrawSurf *unaff_EDI;
+  GfxCmdBufContext context;
+  uchar uStack00000008;
+  int in_stack_0000000c;
+  uchar in_stack_00000010;
+  uint in_stack_00000014;
+  uint in_stack_00000018;
   
-  uVar4 = (uint)param_4.packed._4_4_ >> 0x13 & 0xf;
-  switch(param_3) {
+  uVar4 = in_stack_00000018 >> 0x13 & 0xf;
+  switch(in_stack_00000010) {
   case '\x05':
   case '\x06':
-    if ((dx.supportsIntZ) && ((param_1.field0_0x0._s_0.state)->renderTargetId != '\x16')) {
-      if (param_3 == '\x05') {
+    if ((dx.supportsIntZ) && (*(char *)(_uStack00000008 + 0x1128) != '\x16')) {
+      if (in_stack_00000010 == '\x05') {
         return '\a';
       }
-      if (param_3 == '\x06') {
+      if (in_stack_00000010 == '\x06') {
         return '\b';
       }
     }
@@ -114,16 +118,17 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
   case '\n':
     uVar3 = R_GfxDrawSurf_GetFade(unaff_EDI);
     bVar2 = TechLit_NeedsCharredTech(unaff_EDI);
-    uVar1 = (((param_1.field0_0x0._s_0.source)->input).data)->primaryLightTechType[uVar4]
-            [uVar3 != 0][bVar2][(uint)param_4.packed._4_4_ >> 0xb & 0xff];
-    if ((param_2->isMissileCamera != false) || ((param_4.packed & 0x200000000000000) != 0)) {
+    uVar1 = *(uchar *)((bVar2 + 0x885 + ((uint)(uVar3 != 0) + uVar4 * 2) * 2) * 0x100 +
+                       (in_stack_00000018 >> 0xb & 0xff) +
+                      (int)context.field0_0x0._s_0.state[1].vertexShaderConstState[0x8b]);
+    if ((*(char *)(in_stack_0000000c + 0x4c) != '\0') || ((in_stack_00000018 & 0x2000000) != 0)) {
       uVar1 = RemoveSunShadowTech((uchar)unaff_EDI);
     }
     if ((byte)(uVar1 - 10) < 7) {
-      uVar4 = (uint)param_4.packed._0_4_ >> 0x1d & 1;
-      if ((uVar4 == 0) || ((param_4.packed & 0x40000000) == 0)) {
+      uVar4 = in_stack_00000014 >> 0x1d & 1;
+      if ((uVar4 == 0) || ((in_stack_00000014 & 0x40000000) == 0)) {
         if (uVar4 == 0) {
-          if ((param_4.packed & 0x40000000) != 0) {
+          if ((in_stack_00000014 & 0x40000000) != 0) {
             uVar1 = uVar1 + '\a';
           }
         }
@@ -138,21 +143,20 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
     if (dx.supportsIntZ == false) {
       return uVar1;
     }
-    if ((param_1.field0_0x0._s_0.state)->renderTargetId == '\x16') {
+    if (*(char *)(_uStack00000008 + 0x1128) == '\x16') {
       return uVar1;
     }
-    uVar1 = R_Get_NvFloatZLitTech
-                      ((Material *)param_1.field0_0x0._s_0.source,param_1.field0_0x0._4_1_);
+    uVar1 = R_Get_NvFloatZLitTech((Material *)context.field0_0x0._s_0.state,uStack00000008);
     return uVar1;
   case 's':
   case 't':
   case 'u':
     bVar2 = TechLit_NeedsCharredTech(unaff_EDI);
     if (bVar2) {
-      if (param_3 == 's') {
+      if (in_stack_00000010 == 's') {
         return 'v';
       }
-      if (param_3 == 't') {
+      if (in_stack_00000010 == 't') {
         return 'w';
       }
       return 'x';
@@ -163,121 +167,106 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
       return 0x80;
     }
   }
-  return param_3;
+  return in_stack_00000010;
 }
 
 
 // 0086D050  R_GetPossibleTechniqueTypes  (gfx_d3d/r_draw_material.cpp:711)
 
-uint __cdecl R_GetPossibleTechniqueTypes(uchar param_1,GfxDrawSurf param_2,uchar *param_3)
+uint __cdecl R_GetPossibleTechniqueTypes(void)
 
 {
   char *pcVar1;
   char in_DL;
-  uint3 in_stack_00000005;
+  uint uVar2;
+  GfxDrawSurf drawSurf;
+  char *in_stack_0000000c;
   
-  *(char *)param_2.packed._0_4_ = in_DL;
-  pcVar1 = (char *)(param_2.packed._0_4_ + 1);
+  *in_stack_0000000c = in_DL;
+  pcVar1 = in_stack_0000000c + 1;
   if (((byte)(in_DL - 10U) < 0x69) && ((byte)(in_DL - 0x11U) < 0x15)) {
-    if (((in_stack_00000005 >> 0x15 & 1) != 0) && ((in_stack_00000005 & 0x400000) != 0)) {
+    uVar2 = (uint)drawSurf.packed._4_4_ >> 0x1d & 1;
+    if ((uVar2 != 0) && ((drawSurf.packed._4_4_ & 0x40000000) != 0)) {
       *pcVar1 = in_DL + -0x15;
-      *(undefined1 *)(param_2.packed._0_4_ + 2) = 0xff;
-      return (uint)((undefined1 *)(param_2.packed._0_4_ + 2) + (1 - param_2._0_4_));
+      in_stack_0000000c[2] = -1;
+      return (uint)(in_stack_0000000c + 2 + (1 - (int)in_stack_0000000c));
     }
-    if ((in_stack_00000005 & 0x400000) != 0) {
+    if ((drawSurf.packed._4_4_ & 0x40000000) != 0) {
       *pcVar1 = in_DL + -7;
-      *(undefined1 *)(param_2.packed._0_4_ + 2) = 0xff;
-      return (uint)((undefined1 *)(param_2.packed._0_4_ + 2) + (1 - param_2._0_4_));
+      in_stack_0000000c[2] = -1;
+      return (uint)(in_stack_0000000c + 2 + (1 - (int)in_stack_0000000c));
     }
-    if ((in_stack_00000005 >> 0x15 & 1) != 0) {
+    if (uVar2 != 0) {
       *pcVar1 = in_DL + -0xe;
-      pcVar1 = (char *)(param_2.packed._0_4_ + 2);
+      pcVar1 = in_stack_0000000c + 2;
     }
   }
   *pcVar1 = -1;
-  return (uint)(pcVar1 + (1 - param_2._0_4_));
+  return (uint)(pcVar1 + (1 - (int)in_stack_0000000c));
 }
 
 
 // 0086D0E0  R_SetTechnique  (gfx_d3d/r_draw_material.cpp:761)
 
 int __cdecl
-R_SetTechnique(GfxCmdBufContext param_1,GfxCmdBufContext *param_2,GfxDrawSurfListInfo *param_3,
-              GfxDrawSurf param_4)
+R_SetTechnique(GfxCmdBufContext prepassContext,GfxCmdBufContext *param_2,
+              GfxDrawSurfListInfo *drawSurf,GfxDrawSurf param_4)
 
 {
   short *psVar1;
   GfxCmdBufState *pGVar2;
   GfxCmdBufState *pGVar3;
-  GfxDrawSurf GVar4;
-  GfxCmdBufContext GVar5;
-  GfxCmdBufContext GVar6;
-  GfxDrawSurf GVar7;
-  GfxDrawSurf GVar8;
-  GfxDrawSurf GVar9;
-  GfxPixelCostMode GVar10;
-  byte bVar11;
-  GfxDrawSurfListInfo *in_EAX;
-  int iVar12;
-  Material *pMVar13;
-  GfxCmdBufSourceState *pGVar14;
-  uint uVar15;
+  GfxCmdBufContext GVar4;
+  GfxDrawSurf GVar5;
+  GfxPixelCostMode GVar6;
+  byte bVar7;
+  int in_EAX;
+  int iVar8;
+  Material *pMVar9;
+  GfxCmdBufSourceState *pGVar10;
+  uint uVar11;
   GfxViewInfo *unaff_ESI;
-  uint uVar16;
+  uint uVar12;
   GfxDrawSurf *unaff_EDI;
-  float fVar17;
-  undefined4 uVar18;
-  GfxCmdBufContext *pGVar19;
-  code *pcVar20;
-  uint uStack_10;
-  uint uStack_c;
+  float fVar13;
+  code *context;
   
-  GVar5.field0_0x0._s_0.state = (GfxCmdBufState *)param_2;
-  GVar5.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state;
-  GVar8.packed._4_4_ = param_4.packed._0_4_;
-  GVar8.packed._0_4_ = param_3;
-  uVar18 = param_1.field0_0x0._s_0.state;
-  pGVar19 = param_2;
-  bVar11 = R_GetTechType(GVar5,in_EAX,in_EAX->baseTechType,GVar8);
-  GVar4.packed._4_4_ = uVar18;
-  GVar4.packed._0_4_ = &uStack_10;
-  R_GetPossibleTechniqueTypes((uchar)param_3,GVar4,(uchar *)pGVar19);
-  if (bVar11 < 2) {
-    pcVar20 = R_SetPrepassMaterial;
+  bVar7 = R_GetTechType();
+  R_GetPossibleTechniqueTypes();
+  if (bVar7 < 2) {
+    context = R_SetPrepassMaterial;
   }
   else {
-    if ((in_EAX->baseTechType == '\n') &&
-       (*(uint *)((int)param_1.field0_0x0._s_0.state[1].pixelShaderConstState + 100) !=
+    if ((*(char *)(in_EAX + 8) == '\n') &&
+       (*(uint *)((int)prepassContext.field0_0x0._s_0.state[1].pixelShaderConstState + 100) !=
         ((uint)param_4.packed._0_4_ >> 0xb & 0xff))) {
       R_SetShadowableLight
-                ((GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state,(uint)unaff_EDI,unaff_ESI);
+                ((GfxCmdBufSourceState *)prepassContext.field0_0x0._s_0.state,(uint)unaff_EDI,
+                 unaff_ESI);
     }
-    pcVar20 = R_SetMaterial;
+    context = R_SetMaterial;
   }
-  GVar6.field0_0x0._s_0.state = (GfxCmdBufState *)param_2;
-  GVar6.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state;
-  GVar9.packed._4_4_ = unaff_EDI;
-  GVar9.packed._0_4_ = param_4.packed._0_4_;
-  iVar12 = R_TrySetMaterialWithFunc(pcVar20,GVar6,GVar9,(uchar *)unaff_ESI);
-  if (iVar12 != 0) {
-    if ((((param_1.field0_0x0._s_0.source)->matrices).matrix[0].m[0][1] != 0.0) &&
-       (GVar7.packed._4_4_ = param_4.packed._0_4_, GVar7.packed._0_4_ = param_3,
-       iVar12 = R_SetPrepassMaterial
-                          ((GfxCmdBufContext)
-                           *(GfxCmdBufContext_u_0 *)
-                            ((param_1.field0_0x0._s_0.source)->matrices).matrix[0].m[0],GVar7,'\0'),
-       iVar12 == 0)) {
-      ((param_1.field0_0x0._s_0.source)->matrices).matrix[0].m[0][1] = 0.0;
+  GVar4.field0_0x0._s_0.state = (GfxCmdBufState *)param_2;
+  GVar4.field0_0x0._s_0.source = (GfxCmdBufSourceState *)prepassContext.field0_0x0._s_0.state;
+  GVar5.packed._4_4_ = unaff_EDI;
+  GVar5.packed._0_4_ = param_4.packed._0_4_;
+  iVar8 = R_TrySetMaterialWithFunc(context,GVar4,GVar5,(uchar *)unaff_ESI);
+  if (iVar8 != 0) {
+    if ((((prepassContext.field0_0x0._s_0.source)->matrices).matrix[0].m[0][1] != 0.0) &&
+       (iVar8 = R_SetPrepassMaterial(), iVar8 == 0)) {
+      ((prepassContext.field0_0x0._s_0.source)->matrices).matrix[0].m[0][1] = 0.0;
     }
-    GVar10 = pixelCostMode;
+    GVar6 = pixelCostMode;
     param_2[0x225].field0_0x0._s_0.state = param_2[0x18].field0_0x0._s_0.state;
     *(undefined1 *)&param_2[0x226].field0_0x0 = *(undefined1 *)&param_2[0x19].field0_0x0;
-    if (2 < (int)GVar10) {
-      pMVar13 = R_PixelCost_GetAccumulationMaterial((Material *)&unaff_EDI->fields);
-      uStack_10 = (*(uint *)&(pMVar13->info).drawSurf ^ (uint)param_3) & 0x80000000 ^ (uint)param_3;
-      uStack_c = (*(uint *)((int)&(pMVar13->info).drawSurf + 4) ^ param_4.packed._0_4_) & 0x7ff ^
-                 param_4.packed._0_4_;
-      pGVar2 = (GfxCmdBufState *)rgp.sortedMaterials[uStack_10 >> 0x1f | (uStack_c & 0x7ff) << 1];
+    if (2 < (int)GVar6) {
+      pMVar9 = R_PixelCost_GetAccumulationMaterial((Material *)&unaff_EDI->fields);
+      uVar11 = (*(uint *)&(pMVar9->info).drawSurf ^ (uint)drawSurf) & 0x80000000 ^ (uint)drawSurf;
+      pGVar2 = (GfxCmdBufState *)
+               rgp.sortedMaterials
+               [uVar11 >> 0x1f |
+                (((*(uint *)((int)&(pMVar9->info).drawSurf + 4) ^ param_4.packed._0_4_) & 0x7ff ^
+                 param_4.packed._0_4_) & 0x7ff) << 1];
       pGVar3 = (GfxCmdBufState *)
                ((Material_u_176 *)&(pGVar2->prim).streams[1].offset)->localTechniqueSet->techniques
                [4];
@@ -285,26 +274,29 @@ R_SetTechnique(GfxCmdBufContext param_1,GfxCmdBufContext *param_2,GfxDrawSurfLis
       param_2[0x19].field0_0x0._s_0.state = pGVar3;
       if ((pGVar3 != (GfxCmdBufState *)0x0) &&
          (((*(ushort *)((int)pGVar3->refSamplerState + 4) & 0x10) == 0 ||
-          ((short)param_1.field0_0x0._s_0.state[1].vertexShaderConstState[0xbe] != 0)))) {
-        uVar16 = (uint)param_4.packed._0_4_ >> 0x13 & 0xf;
-        if ((uVar16 == 2) && (uVar15 = uStack_10 >> 0x10 & 0xf, uVar15 != 0)) {
-          fVar17 = (float)uVar15 * 0.0625;
-          *(float *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x25) = fVar17;
-          *(float *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 300) = fVar17;
-          *(float *)((param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x26) = fVar17;
-          *(float *)((int)(param_1.field0_0x0._s_0.state)->pixelShaderConstState + 0x134) = fVar17;
-          psVar1 = (short *)((int)param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x62a);
+          ((short)prepassContext.field0_0x0._s_0.state[1].vertexShaderConstState[0xbe] != 0)))) {
+        uVar12 = (uint)param_4.packed._0_4_ >> 0x13 & 0xf;
+        if ((uVar12 == 2) && (uVar11 = uVar11 >> 0x10 & 0xf, uVar11 != 0)) {
+          fVar13 = (float)uVar11 * 0.0625;
+          *(float *)((prepassContext.field0_0x0._s_0.state)->pixelShaderConstState + 0x25) = fVar13;
+          *(float *)((int)(prepassContext.field0_0x0._s_0.state)->pixelShaderConstState + 300) =
+               fVar13;
+          *(float *)((prepassContext.field0_0x0._s_0.state)->pixelShaderConstState + 0x26) = fVar13;
+          *(float *)((int)(prepassContext.field0_0x0._s_0.state)->pixelShaderConstState + 0x134) =
+               fVar13;
+          psVar1 = (short *)((int)prepassContext.field0_0x0._s_0.state[1].vertexShaderConstState +
+                            0x62a);
           *psVar1 = *psVar1 + 1;
         }
-        pGVar14 = (GfxCmdBufSourceState *)
+        pGVar10 = (GfxCmdBufSourceState *)
                   RB_ShaderConstantSetFromDrawSurf
                             (*(GfxBackEndData **)
-                              (param_1.field0_0x0._s_0.state[1].vertexShaderConstState + 0x8b),
-                             unaff_EDI);
-        if (pGVar14 != (GfxCmdBufSourceState *)0x0) {
-          RB_ApplyShaderConstantSet(pGVar14,(ShaderConstantSet *)&unaff_EDI->fields);
+                              (prepassContext.field0_0x0._s_0.state[1].vertexShaderConstState + 0x8b
+                              ),unaff_EDI);
+        if (pGVar10 != (GfxCmdBufSourceState *)0x0) {
+          RB_ApplyShaderConstantSet(pGVar10,(ShaderConstantSet *)&unaff_EDI->fields);
         }
-        if ((uVar16 != 0) || ((((MaterialInfo *)pGVar2->refSamplerState)->gameFlags & 8) == 0)) {
+        if ((uVar12 != 0) || ((((MaterialInfo *)pGVar2->refSamplerState)->gameFlags & 8) == 0)) {
           *(undefined1 *)&param_2[0x19].field0_0x0 = 4;
         }
       }

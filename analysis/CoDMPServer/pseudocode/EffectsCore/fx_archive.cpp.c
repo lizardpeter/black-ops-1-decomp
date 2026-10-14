@@ -2,14 +2,16 @@
 
 // 005C0680  FX_GetElemVisuals  (EffectsCore/fx_draw.h:87)
 
-FxElemVisuals __cdecl FX_GetElemVisuals(FxElemDef *param_1,int param_2)
+FxElemVisuals __cdecl FX_GetElemVisuals(FxElemDef *elemDef,int randomSeed)
 
 {
   code *pcVar1;
   bool bVar2;
   FxElemVisuals FVar3;
+  int visualIndex;
+  FxElemVisuals *localVisuals;
   
-  if (param_1->visualCount == '\0') {
+  if (elemDef->visualCount == '\0') {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_draw.h",0x5c,0,
                              "%s\n\t(elemDef->visualCount) = %i");
     if (!bVar2) {
@@ -18,15 +20,15 @@ FxElemVisuals __cdecl FX_GetElemVisuals(FxElemDef *param_1,int param_2)
       return (FxElemVisuals)FVar3.anonymous;
     }
   }
-  if (param_1->visualCount == '\x01') {
-    FVar3 = (FxElemVisuals)(param_1->visuals).markArray;
+  if (elemDef->visualCount == '\x01') {
+    FVar3 = (FxElemVisuals)(elemDef->visuals).markArray;
   }
   else {
     FVar3 = (FxElemVisuals)
             ((FxElemVisuals *)
-            (((param_1->visuals).markArray)->materials +
-            ((int)((uint)*(ushort *)(&fx_randomTable + (param_2 * 2 + 0x2a) * 2) *
-                  (uint)param_1->visualCount) >> 0x10)))->anonymous;
+            (((elemDef->visuals).markArray)->materials +
+            ((int)((uint)*(ushort *)(&fx_randomTable + (randomSeed * 2 + 0x2a) * 2) *
+                  (uint)elemDef->visualCount) >> 0x10)))->anonymous;
   }
   return (FxElemVisuals)FVar3.anonymous;
 }
@@ -34,15 +36,16 @@ FxElemVisuals __cdecl FX_GetElemVisuals(FxElemDef *param_1,int param_2)
 
 // 005C0720  MemFile_WriteCString  (universal/memfile.h:142)
 
-void __cdecl MemFile_WriteCString(MemoryFile *param_1,char *param_2)
+void __cdecl MemFile_WriteCString(MemoryFile *memFile,char *string)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *local_c;
+  int len;
   
-  if (param_2 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\../universal/memfile.h"
                              ,0x90,0,"%s");
     if (!bVar3) {
@@ -51,12 +54,12 @@ void __cdecl MemFile_WriteCString(MemoryFile *param_1,char *param_2)
       return;
     }
   }
-  local_c = param_2;
+  local_c = string;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  MemFile_WriteData(param_1,(int)(local_c + (1 - (int)(param_2 + 1))),param_2);
+  MemFile_WriteData(memFile,(int)(local_c + (1 - (int)(string + 1))),string);
   return;
 }
 
@@ -136,14 +139,14 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 005C0580  FX_EffectFromHandle  (EffectsCore/fx_system.h:398)
 
-FxEffect * __cdecl FX_EffectFromHandle(FxSystem *param_1,ushort param_2)
+FxEffect * __cdecl FX_EffectFromHandle(FxSystem *system,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxEffect *pFVar3;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",399,0,
                              "%s");
     if (!bVar2) {
@@ -152,7 +155,7 @@ FxEffect * __cdecl FX_EffectFromHandle(FxSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  if ((0xcfff < param_2) || ((uint)param_2 % 0x34 != 0)) {
+  if ((0xcfff < handle) || ((uint)handle % 0x34 != 0)) {
     va("%p %i");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",400,0,
                              "%s\n\t%s");
@@ -162,7 +165,7 @@ FxEffect * __cdecl FX_EffectFromHandle(FxSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  return (FxEffect *)((param_1->effects->effect).firstElemHandle + (uint)param_2 * 2 + -2);
+  return (FxEffect *)((system->effects->effect).firstElemHandle + (uint)handle * 2 + -2);
 }
 
 
@@ -190,14 +193,14 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 FxElem * __cdecl
 FX_PoolFromHandle_Generic<FxElem,FxElemContainer,2048>
-          (FxPool<FxElem,FxElemContainer> *param_1,ushort param_2)
+          (FxPool<FxElem,FxElemContainer> *poolArray,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxElem *pFVar3;
   
-  if ((0x5fff < param_2) || ((uint)param_2 % 0xc != 0)) {
+  if ((0x5fff < handle) || ((uint)handle % 0xc != 0)) {
     va("%p %i size=%d limit=%d handlescale=%d");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1d1,0,
                              "%s\n\t%s");
@@ -207,20 +210,20 @@ FX_PoolFromHandle_Generic<FxElem,FxElemContainer,2048>
       return pFVar3;
     }
   }
-  return (FxElem *)((int)&param_1->field0_0x0 + (uint)param_2 * 4);
+  return (FxElem *)((int)&poolArray->field0_0x0 + (uint)handle * 4);
 }
 
 
 // 005C0630  FX_ElemFromHandle  (EffectsCore/fx_system.h:478)
 
-FxElem * __cdecl FX_ElemFromHandle(FxSystem *param_1,ushort param_2)
+FxElem * __cdecl FX_ElemFromHandle(FxSystem *system,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxElem *pFVar3;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1df,0,
                              "%s");
     if (!bVar2) {
@@ -229,7 +232,7 @@ FxElem * __cdecl FX_ElemFromHandle(FxSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  pFVar3 = FX_PoolFromHandle_Generic<FxElem,FxElemContainer,2048>(param_1->elems,param_2);
+  pFVar3 = FX_PoolFromHandle_Generic<FxElem,FxElemContainer,2048>(system->elems,handle);
   return pFVar3;
 }
 

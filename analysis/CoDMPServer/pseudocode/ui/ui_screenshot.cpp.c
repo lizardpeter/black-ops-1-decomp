@@ -2,13 +2,13 @@
 
 // 0075A1C0  UI_Screenshot_Success  (ui/ui_screenshot.cpp:64)
 
-void __cdecl UI_Screenshot_Success(dwFileShareReadFileTask *param_1)
+void __cdecl UI_Screenshot_Success(dwFileShareReadFileTask *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->buffer == s_buffer) {
+  if (task->buffer == s_buffer) {
     if (s_state != SCREENSHOT_DOWNLOADING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp",0x43,0,
                                "%s");
@@ -26,13 +26,13 @@ void __cdecl UI_Screenshot_Success(dwFileShareReadFileTask *param_1)
 
 // 0075A210  UI_Screenshot_Failure  (ui/ui_screenshot.cpp:73)
 
-void __cdecl UI_Screenshot_Failure(dwFileShareReadFileTask *param_1)
+void __cdecl UI_Screenshot_Failure(dwFileShareReadFileTask *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->buffer == s_buffer) && (s_state != SCREENSHOT_IDLE)) {
+  if ((task->buffer == s_buffer) && (s_state != SCREENSHOT_IDLE)) {
     if (s_state != SCREENSHOT_DOWNLOADING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp",0x4e,0,
                                "%s");
@@ -88,25 +88,30 @@ void __cdecl UI_ScreenshotShutdown(void)
 
 // 0075A300  UI_ScreenshotDecompressCallback  (ui/ui_screenshot.cpp:113)
 
-void __cdecl UI_ScreenshotDecompressCallback(void *param_1)
+void __cdecl UI_ScreenshotDecompressCallback(void *data)
 
 {
   int iVar1;
   int iVar2;
-  undefined1 local_c [4];
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  ScreenshotDecompressParams *Params;
+  undefined1 rect [4];
   uchar *local_8;
   
   s_image = Z_VirtualAlloc(0x34,"TempImage",0x17);
   Image_Create2DTexture_PC
-            (s_image,*(ushort *)((int)param_1 + 4),*(ushort *)((int)param_1 + 8),1,0,
-             *(_D3DFORMAT *)((int)param_1 + 0xc));
+            (s_image,*(ushort *)((int)data + 4),*(ushort *)((int)data + 8),1,0,
+             *(_D3DFORMAT *)((int)data + 0xc));
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("s_image->texture.map->LockRect(0, &rect, 0, 0x00002000L)\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   iVar2 = (**(code **)((int)*(s_image->texture).basemap + 0x4c))
-                    ((s_image->texture).basemap,0,local_c,0,0x2000);
+                    ((s_image->texture).basemap,0,rect,0,0x2000);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -117,7 +122,7 @@ void __cdecl UI_ScreenshotDecompressCallback(void *param_1)
               "C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp (%i) s_image->texture.map->LockRect(0, &rect, 0, 0x00002000L) failed: %s\n"
              );
   }
-  memcpy(local_8,*(uchar **)param_1,*(int *)((int)param_1 + 4) * *(int *)((int)param_1 + 8) * 4);
+  memcpy(local_8,*(uchar **)data,*(int *)((int)data + 4) * *(int *)((int)data + 8) * 4);
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("s_image->texture.map->UnlockRect(0)\n");
@@ -134,29 +139,29 @@ void __cdecl UI_ScreenshotDecompressCallback(void *param_1)
               "C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp (%i) s_image->texture.map->UnlockRect(0) failed: %s\n"
              );
   }
-  Z_VirtualFree(*(void **)param_1,0x17);
+  Z_VirtualFree(*(void **)data,0x17);
   return;
 }
 
 
 // 0075A610  UI_ScreenshotDecompress  (ui/ui_screenshot.cpp:131)
 
-bool __cdecl UI_ScreenshotDecompress(int param_1,int param_2)
+bool __cdecl UI_ScreenshotDecompress(int localClientNum,int contextIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uiInfo_s *puVar4;
-  char *pcVar5;
-  char *pcVar6;
-  char *pcVar7;
-  int iVar8;
-  uchar *local_18;
+  uiInfo_s *dc;
+  char *menuName;
+  char *itemName;
+  char *newStateName;
+  int milliseconds;
+  uchar *Params;
   int local_14;
   int local_10;
   _D3DFORMAT local_c;
-  void *local_8;
+  void *jpeg;
   
   if ((s_image != (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp",0x88,0,
@@ -165,19 +170,19 @@ bool __cdecl UI_ScreenshotDecompress(int param_1,int param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = R_ReadJpgSetup(s_buffer,s_jpegSize,&local_14,&local_10,&local_c);
-  bVar2 = local_8 != (void *)0x0;
+  jpeg = R_ReadJpgSetup(s_buffer,s_jpegSize,&local_14,&local_10,&local_c);
+  bVar2 = jpeg != (void *)0x0;
   if (bVar2) {
-    local_18 = Z_VirtualAlloc(local_14 * local_10 * 4,"TempImage",0x17);
-    R_ReadJpg(local_8,local_18,local_14 << 2,local_10);
-    RB_Resource_CallbackParam(UI_ScreenshotDecompressCallback,&local_18);
+    Params = Z_VirtualAlloc(local_14 * local_10 * 4,"TempImage",0x17);
+    R_ReadJpg(jpeg,Params,local_14 << 2,local_10);
+    RB_Resource_CallbackParam(UI_ScreenshotDecompressCallback,&Params);
     RB_Resource_Flush();
-    iVar8 = 500;
-    pcVar7 = "expand";
-    pcVar6 = "*";
-    pcVar5 = "menu_screenshot";
-    puVar4 = UI_UIContext_GetInfo(param_2);
-    UI_AnimateItem(param_1,&puVar4->uiDC,pcVar5,pcVar6,pcVar7,iVar8);
+    milliseconds = 500;
+    newStateName = "expand";
+    itemName = "*";
+    menuName = "menu_screenshot";
+    dc = UI_UIContext_GetInfo(contextIndex);
+    UI_AnimateItem(localClientNum,&dc->uiDC,menuName,itemName,newStateName,milliseconds);
   }
   return bVar2;
 }
@@ -185,40 +190,43 @@ bool __cdecl UI_ScreenshotDecompress(int param_1,int param_2)
 
 // 0075A700  UI_ScreenshotHandleInput  (ui/ui_screenshot.cpp:212)
 
-void __cdecl UI_ScreenshotHandleInput(int param_1,int param_2)
+void __cdecl UI_ScreenshotHandleInput(int localClientNum,int contextIndex)
 
 {
-  uiInfo_s *puVar1;
-  menuDef_t *pmVar2;
-  itemDef_s *piVar3;
-  int iVar4;
+  uiInfo_s *dc;
+  menuDef_t *menu;
+  itemDef_s *piVar1;
+  int iVar2;
   float local_1c;
   float local_18;
+  float ratio;
+  uiInfo_s *uiInfo;
+  itemDef_s *previewItem;
+  menuDef_t *emblemMenu;
   
-  puVar1 = UI_GetInfo(param_1);
-  pmVar2 = Menus_FindByName(&puVar1->uiDC,"menu_screenshot");
-  piVar3 = Menu_FindItemByName(pmVar2,"screenshot");
-  iVar4 = Rect_ContainsPoint((puVar1->uiDC).contextIndex,&(piVar3->window).rect,
-                             (puVar1->uiDC).cursor.x,(puVar1->uiDC).cursor.y);
-  if (iVar4 != 0) {
-    iVar4 = Key_IsDown(param_1,200);
-    if ((iVar4 == 0) || (iVar4 = Key_IsDown(param_1,0xc9), iVar4 != 0)) {
-      iVar4 = Key_IsDown(param_1,200);
-      if ((iVar4 != 0) && (iVar4 = Key_IsDown(param_1,0xc9), iVar4 != 0)) {
+  dc = UI_GetInfo(localClientNum);
+  menu = Menus_FindByName(&dc->uiDC,"menu_screenshot");
+  piVar1 = Menu_FindItemByName(menu,"screenshot");
+  iVar2 = Rect_ContainsPoint((dc->uiDC).contextIndex,&(piVar1->window).rect,(dc->uiDC).cursor.x,
+                             (dc->uiDC).cursor.y);
+  if (iVar2 != 0) {
+    iVar2 = Key_IsDown(localClientNum,200);
+    if ((iVar2 == 0) || (iVar2 = Key_IsDown(localClientNum,0xc9), iVar2 != 0)) {
+      iVar2 = Key_IsDown(localClientNum,200);
+      if ((iVar2 != 0) && (iVar2 = Key_IsDown(localClientNum,0xc9), iVar2 != 0)) {
         s_screenshotZoom =
              s_screenshotZoom -
-             (((puVar1->uiDC).cursor.y - (puVar1->uiDC).prevCursor.y) /
-             (float)(puVar1->uiDC).screenHeight) * 8.0;
+             (((dc->uiDC).cursor.y - (dc->uiDC).prevCursor.y) / (float)(dc->uiDC).screenHeight) *
+             8.0;
       }
     }
     else {
       s_center_x = s_center_x -
-                   ((((puVar1->uiDC).cursor.x - (puVar1->uiDC).prevCursor.x) /
-                    (piVar3->window).rect.w) / (s_screenshotZoom + 1.0)) *
-                   ((puVar1->uiDC).screenAspect / 1.3333334);
+                   ((((dc->uiDC).cursor.x - (dc->uiDC).prevCursor.x) / (piVar1->window).rect.w) /
+                   (s_screenshotZoom + 1.0)) * ((dc->uiDC).screenAspect / 1.3333334);
       s_center_y = s_center_y -
-                   (((puVar1->uiDC).cursor.y - (puVar1->uiDC).prevCursor.y) /
-                   (piVar3->window).rect.h) / (s_screenshotZoom + 1.0);
+                   (((dc->uiDC).cursor.y - (dc->uiDC).prevCursor.y) / (piVar1->window).rect.h) /
+                   (s_screenshotZoom + 1.0);
     }
     if (s_screenshotZoom - 1.0 < 0.0) {
       local_18 = s_screenshotZoom;
@@ -241,7 +249,7 @@ void __cdecl UI_ScreenshotHandleInput(int param_1,int param_2)
 
 // 0075A4E0  UI_ScreenshotUpdate  (ui/ui_screenshot.cpp:239)
 
-void __cdecl UI_ScreenshotUpdate(int param_1,int param_2)
+void __cdecl UI_ScreenshotUpdate(int localClientNum,int contextIndex)
 
 {
   code *pcVar1;
@@ -251,7 +259,7 @@ void __cdecl UI_ScreenshotUpdate(int param_1,int param_2)
   if (bVar2) {
     if (s_state == SCREENSHOT_DOWNLOADED) {
       R_BeginRemoteScreenUpdate();
-      bVar2 = UI_ScreenshotDecompress(param_1,param_2);
+      bVar2 = UI_ScreenshotDecompress(localClientNum,contextIndex);
       if (bVar2) {
         if ((s_image == (GfxImage *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp",
@@ -268,8 +276,8 @@ void __cdecl UI_ScreenshotUpdate(int param_1,int param_2)
       R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
     }
     else if (s_state == SCREENSHOT_CREATED) {
-      UI_ScreenshotHandleInput(param_1,param_2);
-      bVar2 = Menu_IsMenuOpenAndVisible(param_1,"menu_screenshot");
+      UI_ScreenshotHandleInput(localClientNum,contextIndex);
+      bVar2 = Menu_IsMenuOpenAndVisible(localClientNum,"menu_screenshot");
       if (!bVar2) {
         Image_Release(s_image);
         Z_VirtualFree(s_image,0x17);
@@ -290,14 +298,14 @@ void __cdecl UI_ScreenshotUpdate(int param_1,int param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl UI_ScreenshotDownload(int param_1,int param_2,ulong64 param_3,uint param_4)
+void __cdecl UI_ScreenshotDownload(int localClientNum,int context,ulong64 fileID,uint fileSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  fileShareReadFileInfo *pfVar4;
-  fileShareReadFileInfo local_34;
+  int controllerIndex;
+  fileShareReadFileInfo *fileInfo_00;
+  fileShareReadFileInfo fileInfo;
   
   if (s_state != SCREENSHOT_IDLE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_screenshot.cpp",0x126,0,"%s"
@@ -311,21 +319,21 @@ void __cdecl UI_ScreenshotDownload(int param_1,int param_2,ulong64 param_3,uint 
   if (s_buffer == (uchar *)0x0) {
     UI_ScreenshotAlloc();
   }
-  s_jpegSize = param_4;
+  s_jpegSize = fileSize;
   s_state = SCREENSHOT_DOWNLOADING;
   s_cancel = false;
-  local_34.fileSize = param_4;
-  local_34.location = FILESHARE_LOCATION_USERSTORAGE;
-  local_34.buffer = (char *)s_buffer;
-  local_34.cacheBuffer = s_buffer;
-  local_34.bufferSize = param_4;
-  local_34.isStreamed = false;
-  local_34.successCallback = UI_Screenshot_Success;
-  local_34.failureCallback = UI_Screenshot_Failure;
-  pfVar4 = &local_34;
-  local_34.fileID = param_3;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  s_downloadTask = LiveStorage_FileShare_ReadFile(iVar3,pfVar4);
+  fileInfo.fileSize = fileSize;
+  fileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+  fileInfo.buffer = (char *)s_buffer;
+  fileInfo.cacheBuffer = s_buffer;
+  fileInfo.bufferSize = fileSize;
+  fileInfo.isStreamed = false;
+  fileInfo.successCallback = UI_Screenshot_Success;
+  fileInfo.failureCallback = UI_Screenshot_Failure;
+  fileInfo_00 = &fileInfo;
+  fileInfo.fileID = fileID;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  s_downloadTask = LiveStorage_FileShare_ReadFile(controllerIndex,fileInfo_00);
   return;
 }
 
@@ -334,56 +342,60 @@ void __cdecl UI_ScreenshotDownload(int param_1,int param_2,ulong64 param_3,uint 
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-void __cdecl UI_ScreenshotDraw(int param_1,int param_2,rectDef_s *param_3,float *param_4)
+void __cdecl UI_ScreenshotDraw(int localClientNum,int contextIndex,rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uiInfo_s *puVar4;
+  int portIndex;
+  uiInfo_s *puVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
   float local_44;
   float local_40;
   float local_38;
   float local_30;
-  float local_28;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float dx;
+  float zoom;
+  uiInfo_s *uiInfo;
+  float size;
+  int idx;
+  float x;
+  float y;
+  float h;
+  float dy;
+  float w;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  local_28 = GPad_GetButton(iVar3,GPAD_R_TRIG);
-  if (local_28 < 0.05) {
-    local_28 = s_screenshotZoom;
+  portIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  zoom = GPad_GetButton(portIndex,GPAD_R_TRIG);
+  if (zoom < 0.05) {
+    zoom = s_screenshotZoom;
   }
-  puVar4 = UI_UIContext_GetInfo(param_2);
-  fVar5 = 0.5 / (local_28 + 1.0);
-  fVar6 = GPad_GetStick(iVar3,GPAD_INVALID);
-  local_c = GPad_GetStick(iVar3,GPAD_LY);
-  if (0.1 < ABS(fVar6)) {
-    s_center_x = ((float)(puVar4->uiDC).frameTime / 1000.0) * fVar6 + s_center_x;
+  puVar3 = UI_UIContext_GetInfo(contextIndex);
+  fVar4 = 0.5 / (zoom + 1.0);
+  fVar5 = GPad_GetStick(portIndex,GPAD_INVALID);
+  dy = GPad_GetStick(portIndex,GPAD_LY);
+  if (0.1 < ABS(fVar5)) {
+    s_center_x = ((float)(puVar3->uiDC).frameTime / 1000.0) * fVar5 + s_center_x;
   }
-  if (0.1 < ABS(local_c)) {
-    s_center_y = s_center_y - ((float)(puVar4->uiDC).frameTime / 1000.0) * local_c;
+  if (0.1 < ABS(dy)) {
+    s_center_y = s_center_y - ((float)(puVar3->uiDC).frameTime / 1000.0) * dy;
   }
-  local_30 = 1.0 - fVar5;
+  local_30 = 1.0 - fVar4;
   if (s_center_x - local_30 < 0.0) {
     local_30 = s_center_x;
   }
-  local_40 = fVar5;
-  if (fVar5 - s_center_x < 0.0) {
+  local_40 = fVar4;
+  if (fVar4 - s_center_x < 0.0) {
     local_40 = local_30;
   }
   s_center_x = local_40;
-  local_38 = 1.0 - fVar5;
+  local_38 = 1.0 - fVar4;
   if (s_center_y - local_38 < 0.0) {
     local_38 = s_center_y;
   }
-  local_44 = fVar5;
-  if (fVar5 - s_center_y < 0.0) {
+  local_44 = fVar4;
+  if (fVar4 - s_center_y < 0.0) {
     local_44 = local_38;
   }
   s_center_y = local_44;
@@ -395,15 +407,15 @@ void __cdecl UI_ScreenshotDraw(int param_1,int param_2,rectDef_s *param_3,float 
       (*pcVar1)();
       return;
     }
-    local_18 = param_3->x;
-    local_14 = param_3->y;
-    local_8 = param_3->w;
-    local_10 = param_3->h;
-    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),&local_18,&local_14,
-                       &local_8,&local_10,param_3->horzAlign,param_3->vertAlign);
+    x = rect->x;
+    y = rect->y;
+    w = rect->w;
+    h = rect->h;
+    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&x,&y,&w,&h,
+                       rect->horzAlign,rect->vertAlign);
     R_AddCmdDrawStretchComposite
-              (local_18,local_14,local_8,local_10,s_center_x - fVar5,s_center_y - fVar5,
-               s_center_x + fVar5,s_center_y + fVar5,param_4,s_image);
+              (x,y,w,h,s_center_x - fVar4,s_center_y - fVar4,s_center_x + fVar4,s_center_y + fVar4,
+               color,s_image);
   }
   return;
 }
@@ -415,16 +427,16 @@ void __cdecl UI_ScreenshotDownload_f(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  int iVar3;
-  ulong64 uVar4;
+  uint fileSize;
+  int context;
+  ulong64 fileID;
   
   pcVar1 = Cmd_Argv(2);
-  uVar2 = atoi(pcVar1);
+  fileSize = atoi(pcVar1);
   pcVar1 = Cmd_Argv(1);
-  uVar4 = I_atoi64(pcVar1);
-  iVar3 = Com_ControllerIndex_GetUIContextIndex(0);
-  UI_ScreenshotDownload(0,iVar3,uVar4,uVar2);
+  fileID = I_atoi64(pcVar1);
+  context = Com_ControllerIndex_GetUIContextIndex(0);
+  UI_ScreenshotDownload(0,context,fileID,fileSize);
   return;
 }
 
@@ -449,16 +461,16 @@ void __cdecl UI_ScreenshotZoom_f(void)
 {
   float fVar1;
   int iVar2;
-  char *pcVar3;
-  double dVar4;
+  char *nptr;
+  double dVar3;
   float local_20;
   float local_18;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    pcVar3 = Cmd_Argv(1);
-    dVar4 = atof(pcVar3);
-    fVar1 = (float)dVar4 + s_screenshotZoom;
+    nptr = Cmd_Argv(1);
+    dVar3 = atof(nptr);
+    fVar1 = (float)dVar3 + s_screenshotZoom;
     local_18 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_18 = 1.0;

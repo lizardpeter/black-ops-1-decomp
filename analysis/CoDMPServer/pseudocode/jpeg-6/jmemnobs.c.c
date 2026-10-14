@@ -2,24 +2,25 @@
 
 // 00B58380  jpeg_get_small  (jpeg-6/jmemnobs.c:39)
 
-void * __cdecl jpeg_get_small(jpeg_common_struct *param_1,uint param_2)
+void * __cdecl jpeg_get_small(jpeg_common_struct *cinfo_2,uint sizeofobject_2)
 
 {
   void *pvVar1;
   jpeg_alloc *pjVar2;
+  jpeg_alloc *alloc_2;
   
-  if ((param_1->mem == (jpeg_memory_mgr *)0x0) ||
-     ((param_1->mem->alloc).malloc == (_func___cdecl_void_ptr_uint *)0x0)) {
+  if ((cinfo_2->mem == (jpeg_memory_mgr *)0x0) ||
+     ((cinfo_2->mem->alloc).malloc == (_func___cdecl_void_ptr_uint *)0x0)) {
     pjVar2 = jpeg_get_jpeg_alloc();
     if ((pjVar2 == (jpeg_alloc *)0x0) || (pjVar2->malloc == (_func___cdecl_void_ptr_uint *)0x0)) {
       pvVar1 = (void *)0x0;
     }
     else {
-      pvVar1 = (*pjVar2->malloc)(param_2);
+      pvVar1 = (*pjVar2->malloc)(sizeofobject_2);
     }
   }
   else {
-    pvVar1 = (*(param_1->mem->alloc).malloc)(param_2);
+    pvVar1 = (*(cinfo_2->mem->alloc).malloc)(sizeofobject_2);
   }
   return pvVar1;
 }
@@ -27,20 +28,21 @@ void * __cdecl jpeg_get_small(jpeg_common_struct *param_1,uint param_2)
 
 // 00B583E0  jpeg_free_small  (jpeg-6/jmemnobs.c:61)
 
-void __cdecl jpeg_free_small(jpeg_common_struct *param_1,void *param_2,uint param_3)
+void __cdecl jpeg_free_small(jpeg_common_struct *cinfo_2,void *object_2,uint sizeofobject_2)
 
 {
   jpeg_alloc *pjVar1;
+  jpeg_alloc *alloc_2;
   
-  if ((param_1->mem == (jpeg_memory_mgr *)0x0) ||
-     ((param_1->mem->alloc).free == (_func___cdecl_void_void_ptr *)0x0)) {
+  if ((cinfo_2->mem == (jpeg_memory_mgr *)0x0) ||
+     ((cinfo_2->mem->alloc).free == (_func___cdecl_void_void_ptr *)0x0)) {
     pjVar1 = jpeg_get_jpeg_alloc();
     if ((pjVar1 != (jpeg_alloc *)0x0) && (pjVar1->free != (_func___cdecl_void_void_ptr *)0x0)) {
-      (*pjVar1->free)(param_2);
+      (*pjVar1->free)(object_2);
     }
   }
   else {
-    (*(param_1->mem->alloc).free)(param_2);
+    (*(cinfo_2->mem->alloc).free)(object_2);
   }
   return;
 }
@@ -48,21 +50,24 @@ void __cdecl jpeg_free_small(jpeg_common_struct *param_1,void *param_2,uint para
 
 // 00B58440  jpeg_mem_available  (jpeg-6/jmemnobs.c:140)
 
-long __cdecl jpeg_mem_available(jpeg_common_struct *param_1,long param_2,long param_3,long param_4)
+long __cdecl
+jpeg_mem_available(jpeg_common_struct *cinfo,long min_bytes_needed,long max_bytes_needed,
+                  long already_allocated)
 
 {
-  return param_3;
+  return max_bytes_needed;
 }
 
 
 // 00B58450  jpeg_open_backing_store  (jpeg-6/jmemnobs.c:154)
 
 void __cdecl
-jpeg_open_backing_store(jpeg_common_struct *param_1,backing_store_struct *param_2,long param_3)
+jpeg_open_backing_store
+          (jpeg_common_struct *cinfo,backing_store_struct *info,long total_bytes_needed)
 
 {
-  param_1->err->msg_code = 0x31;
-  (*param_1->err->error_exit)(param_1);
+  cinfo->err->msg_code = 0x31;
+  (*cinfo->err->error_exit)(cinfo);
   return;
 }
 

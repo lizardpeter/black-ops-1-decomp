@@ -2,39 +2,39 @@
 
 // 00AA7100  R_InitShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:27)
 
-void __cdecl R_InitShaderConstantSet(ShaderConstantSet *param_1)
+void __cdecl R_InitShaderConstantSet(ShaderConstantSet *scs_2)
 
 {
-  param_1->used = '\0';
+  scs_2->used = '\0';
   return;
 }
 
 
 // 00AA7110  R_ShaderConstantSetIsUsed  (gfx_d3d/r_shader_constant_set.cpp:43)
 
-bool __cdecl R_ShaderConstantSetIsUsed(ShaderConstantSet *param_1)
+bool __cdecl R_ShaderConstantSetIsUsed(ShaderConstantSet *scs)
 
 {
-  return param_1->used != '\0';
+  return scs->used != '\0';
 }
 
 
 // 00AA7130  R_MapShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:70)
 
-bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *param_1,int param_2,char *param_3)
+bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *scs,int index,char *constantName)
 
 {
   bool bVar1;
-  uchar local_5;
+  uchar source;
   
-  if ((param_2 < 0) || (6 < param_2)) {
+  if ((index < 0) || (6 < index)) {
     bVar1 = false;
   }
   else {
-    bVar1 = R_FindScriptableConstantSource_ByName(param_3,&local_5);
+    bVar1 = R_FindScriptableConstantSource_ByName(constantName,&source);
     if (bVar1) {
-      param_1->constantSource[param_2] = local_5;
-      param_1->used = param_1->used | (byte)(1 << ((byte)param_2 & 0x1f));
+      scs->constantSource[index] = source;
+      scs->used = scs->used | (byte)(1 << ((byte)index & 0x1f));
       bVar1 = true;
     }
     else {
@@ -47,16 +47,16 @@ bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *param_1,int param_2,char 
 
 // 00AA7190  R_UnmapShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:90)
 
-bool __cdecl R_UnmapShaderConstantSet(ShaderConstantSet *param_1,int param_2)
+bool __cdecl R_UnmapShaderConstantSet(ShaderConstantSet *scs,int index)
 
 {
   bool bVar1;
   
-  if ((param_2 < 0) || (6 < param_2)) {
+  if ((index < 0) || (6 < index)) {
     bVar1 = false;
   }
   else {
-    param_1->used = param_1->used & ~(byte)(1 << ((byte)param_2 & 0x1f));
+    scs->used = scs->used & ~(byte)(1 << ((byte)index & 0x1f));
     bVar1 = true;
   }
   return bVar1;
@@ -65,69 +65,68 @@ bool __cdecl R_UnmapShaderConstantSet(ShaderConstantSet *param_1,int param_2)
 
 // 00AA71D0  R_GetConstantIndex  (gfx_d3d/r_shader_constant_set.cpp:99)
 
-int __cdecl R_GetConstantIndex(ShaderConstantSet *param_1,char *param_2)
+int __cdecl R_GetConstantIndex(ShaderConstantSet *scs,char *constantName)
 
 {
   bool bVar1;
-  int local_10;
-  uchar local_9;
-  int local_8;
+  int i;
+  uchar source;
+  int retIndex;
   
-  local_8 = -1;
-  bVar1 = R_FindScriptableConstantSource_ByName(param_2,&local_9);
+  retIndex = -1;
+  bVar1 = R_FindScriptableConstantSource_ByName(constantName,&source);
   if (bVar1) {
-    local_10 = 0;
-    while ((local_10 < 7 && (local_8 < 0))) {
-      if ((((uint)param_1->used & 1 << ((byte)local_10 & 0x1f)) != 0) &&
-         (param_1->constantSource[local_10] == local_9)) {
-        local_8 = local_10;
+    i = 0;
+    while ((i < 7 && (retIndex < 0))) {
+      if ((((uint)scs->used & 1 << ((byte)i & 0x1f)) != 0) && (scs->constantSource[i] == source)) {
+        retIndex = i;
       }
-      local_10 = local_10 + 1;
+      i = i + 1;
     }
   }
-  return local_8;
+  return retIndex;
 }
 
 
 // 00AA7250  R_GetFreeConstantIndex  (gfx_d3d/r_shader_constant_set.cpp:119)
 
-int __cdecl R_GetFreeConstantIndex(ShaderConstantSet *param_1)
+int __cdecl R_GetFreeConstantIndex(ShaderConstantSet *scs)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (6 < local_8) {
+    if (6 < i) {
       return -1;
     }
-    if (((uint)param_1->used & 1 << ((byte)local_8 & 0x1f)) == 0) break;
-    local_8 = local_8 + 1;
+    if (((uint)scs->used & 1 << ((byte)i & 0x1f)) == 0) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00AA7290  R_SetShaderConstantSetValue  (gfx_d3d/r_shader_constant_set.cpp:138)
 
-bool __cdecl R_SetShaderConstantSetValue(ShaderConstantSet *param_1,int param_2,float *param_3)
+bool __cdecl R_SetShaderConstantSetValue(ShaderConstantSet *scs,int index,float *v)
 
 {
   bool bVar1;
   float (*pafVar2) [4];
   
-  if ((param_2 < 0) || (6 < param_2)) {
+  if ((index < 0) || (6 < index)) {
     bVar1 = false;
   }
-  else if (((uint)param_1->used & 1 << ((byte)param_2 & 0x1f)) == 0) {
+  else if (((uint)scs->used & 1 << ((byte)index & 0x1f)) == 0) {
     bVar1 = false;
   }
   else {
-    pafVar2 = param_1->value + param_2;
-    (*pafVar2)[0] = *param_3;
-    (*pafVar2)[1] = param_3[1];
-    (*pafVar2)[2] = param_3[2];
-    (*pafVar2)[3] = param_3[3];
+    pafVar2 = scs->value + index;
+    (*pafVar2)[0] = *v;
+    (*pafVar2)[1] = v[1];
+    (*pafVar2)[2] = v[2];
+    (*pafVar2)[3] = v[3];
     bVar1 = true;
   }
   return bVar1;
@@ -137,71 +136,70 @@ bool __cdecl R_SetShaderConstantSetValue(ShaderConstantSet *param_1,int param_2,
 // 00AA7300  R_SetShaderConstantSetValue  (gfx_d3d/r_shader_constant_set.cpp:151)
 
 bool __cdecl
-R_SetShaderConstantSetValue
-          (ShaderConstantSet *param_1,int param_2,float param_3,float param_4,float param_5,
-          float param_6)
+R_SetShaderConstantSetValue(ShaderConstantSet *scs,int index,float x,float y,float z,float w)
 
 {
   bool bVar1;
-  float local_14;
+  float vec;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = param_3;
-  local_10 = param_4;
-  local_c = param_5;
-  local_8 = param_6;
-  bVar1 = R_SetShaderConstantSetValue(param_1,param_2,&local_14);
+  vec = x;
+  local_10 = y;
+  local_c = z;
+  local_8 = w;
+  bVar1 = R_SetShaderConstantSetValue(scs,index,&vec);
   return bVar1;
 }
 
 
 // 00AA7350  RB_ApplyShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:165)
 
-int __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *param_1,ShaderConstantSet *param_2)
+int __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *gfxSourceState,ShaderConstantSet *scs)
 
 {
-  byte bVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  uint uVar6;
-  int local_c;
-  uint local_8;
+  byte src;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  int iVar4;
+  uint uVar5;
+  uchar constantSource;
+  int i;
+  int updatedConstants;
   
-  if (param_2 == (ShaderConstantSet *)0x0) {
-    local_8 = 0;
+  if (scs == (ShaderConstantSet *)0x0) {
+    updatedConstants = 0;
   }
-  else if (param_2->used == '\0') {
-    local_8 = 0;
+  else if (scs->used == '\0') {
+    updatedConstants = 0;
   }
   else {
-    local_8 = 0;
-    for (local_c = 0; local_c < 7; local_c = local_c + 1) {
-      if (((uint)param_2->used & 1 << ((byte)local_c & 0x1f)) != 0) {
-        bVar1 = param_2->constantSource[local_c];
-        pcVar4 = R_FindScriptableConstantName_BySource(bVar1);
-        if ((pcVar4 == (char *)0x0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
-                                     ,0xb4,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          iVar5 = (*pcVar2)();
-          return iVar5;
+    updatedConstants = 0;
+    for (i = 0; i < 7; i = i + 1) {
+      if (((uint)scs->used & 1 << ((byte)i & 0x1f)) != 0) {
+        src = scs->constantSource[i];
+        pcVar3 = R_FindScriptableConstantName_BySource(src);
+        if ((pcVar3 == (char *)0x0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
+                                     ,0xb4,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          iVar4 = (*pcVar1)();
+          return iVar4;
         }
-        uVar6 = R_UpdateCodeConstantFromVec4(param_1,(uint)bVar1,param_2->value[local_c]);
-        local_8 = uVar6 | local_8;
+        uVar5 = R_UpdateCodeConstantFromVec4(gfxSourceState,(uint)src,scs->value[i]);
+        updatedConstants = uVar5 | updatedConstants;
       }
     }
   }
-  return local_8;
+  return updatedConstants;
 }
 
 
 // 00AA7630  XModelDrawSurf_EncodeIndex  (gfx_d3d/r_shader_constant_set.cpp:216)
 
-void __cdecl XModelDrawSurf_EncodeIndex(GfxDrawSurf *param_1,uint param_2)
+void __cdecl XModelDrawSurf_EncodeIndex(GfxDrawSurf *drawSurf,uint scsIndex)
 
 {
   code *pcVar1;
@@ -211,6 +209,9 @@ void __cdecl XModelDrawSurf_EncodeIndex(GfxDrawSurf *param_1,uint param_2)
   uint extraout_EAX_01;
   uint extraout_EDX;
   uint extraout_EDX_00;
+  uint customIndex;
+  uint scsIndexLowerBits;
+  uint scsIndexUpperBits;
   
   _aullshr();
   if ((extraout_EAX & 0x1c) != 0) {
@@ -223,24 +224,25 @@ void __cdecl XModelDrawSurf_EncodeIndex(GfxDrawSurf *param_1,uint param_2)
     }
   }
   _allshl();
-  *(uint *)param_1 = *(uint *)param_1 & 0xfe0fffff | extraout_EAX_00;
-  *(uint *)((int)param_1 + 4) = *(uint *)((int)param_1 + 4) | extraout_EDX;
+  *(uint *)drawSurf = *(uint *)drawSurf & 0xfe0fffff | extraout_EAX_00;
+  *(uint *)((int)drawSurf + 4) = *(uint *)((int)drawSurf + 4) | extraout_EDX;
   _allshl();
-  *(uint *)param_1 = *(uint *)param_1 & 0xfff0ffff | extraout_EAX_01;
-  *(uint *)((int)param_1 + 4) = *(uint *)((int)param_1 + 4) | extraout_EDX_00;
+  *(uint *)drawSurf = *(uint *)drawSurf & 0xfff0ffff | extraout_EAX_01;
+  *(uint *)((int)drawSurf + 4) = *(uint *)((int)drawSurf + 4) | extraout_EDX_00;
   return;
 }
 
 
 // 00AA7460  XModelDrawSurf_DecodeIndex  (gfx_d3d/r_shader_constant_set.cpp:240)
 
-uint __cdecl XModelDrawSurf_DecodeIndex(GfxDrawSurf *param_1)
+uint __cdecl XModelDrawSurf_DecodeIndex(GfxDrawSurf *drawSurf)
 
 {
   uint extraout_EAX;
   uint uVar1;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
+  uint surfType;
   
   _aullshr();
   if (((extraout_EAX & 0xf) < 7) || (10 < (extraout_EAX & 0xf))) {
@@ -259,18 +261,19 @@ uint __cdecl XModelDrawSurf_DecodeIndex(GfxDrawSurf *param_1)
 // 00AA7420  RB_ShaderConstantSetFromDrawSurf  (gfx_d3d/r_shader_constant_set.cpp:253)
 
 ShaderConstantSet * __cdecl
-RB_ShaderConstantSetFromDrawSurf(GfxBackEndData *param_1,GfxDrawSurf *param_2)
+RB_ShaderConstantSetFromDrawSurf(GfxBackEndData *backEndData,GfxDrawSurf *drawSurf)
 
 {
   uint uVar1;
   ShaderConstantSet *local_c;
+  uint index;
   
-  uVar1 = XModelDrawSurf_DecodeIndex(param_2);
+  uVar1 = XModelDrawSurf_DecodeIndex(drawSurf);
   if (uVar1 == 0) {
     local_c = (ShaderConstantSet *)0x0;
   }
   else {
-    local_c = param_1->shaderConstantSets + uVar1;
+    local_c = backEndData->shaderConstantSets + uVar1;
   }
   return local_c;
 }
@@ -278,15 +281,17 @@ RB_ShaderConstantSetFromDrawSurf(GfxBackEndData *param_1,GfxDrawSurf *param_2)
 
 // 00AA74E0  RB_ApplyShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:267)
 
-void __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *param_1,GfxDrawSurf *param_2)
+void __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *gfxSourceState,GfxDrawSurf *drawSurf)
 
 {
-  ShaderConstantSet *pSVar1;
+  ShaderConstantSet *scs;
+  ShaderConstantSet *cscEA;
+  ShaderConstantSet *csc;
   
-  pSVar1 = RB_ShaderConstantSetFromDrawSurf
-                     ((GfxBackEndData *)(param_1->viewParms).viewMatrix.m[2][0],param_2);
-  if (pSVar1 != (ShaderConstantSet *)0x0) {
-    RB_ApplyShaderConstantSet(param_1,pSVar1);
+  scs = RB_ShaderConstantSetFromDrawSurf
+                  ((GfxBackEndData *)(gfxSourceState->viewParms).viewMatrix.m[2][0],drawSurf);
+  if (scs != (ShaderConstantSet *)0x0) {
+    RB_ApplyShaderConstantSet(gfxSourceState,scs);
   }
   return;
 }
@@ -294,19 +299,19 @@ void __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *param_1,GfxDrawSurf
 
 // 00AA7520  RB_DrawSurf_Uses_ShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:283)
 
-int __cdecl RB_DrawSurf_Uses_ShaderConstantSet(GfxDrawSurf *param_1)
+int __cdecl RB_DrawSurf_Uses_ShaderConstantSet(GfxDrawSurf *drawSurf)
 
 {
   uint uVar1;
   
-  uVar1 = XModelDrawSurf_DecodeIndex(param_1);
+  uVar1 = XModelDrawSurf_DecodeIndex(drawSurf);
   return (uint)(uVar1 != 0);
 }
 
 
 // 00AA7800  CopyShaderConstantSetToBackendData  (gfx_d3d/r_shader_constant_set.cpp:298)
 
-uint __cdecl CopyShaderConstantSetToBackendData(ShaderConstantSet *param_1)
+uint __cdecl CopyShaderConstantSetToBackendData(ShaderConstantSet *scs)
 
 {
   code *pcVar1;
@@ -315,9 +320,9 @@ uint __cdecl CopyShaderConstantSetToBackendData(ShaderConstantSet *param_1)
   int iVar4;
   long *plVar5;
   ShaderConstantSet *pSVar6;
-  uint local_8;
+  int scsIndex;
   
-  if ((param_1 == (ShaderConstantSet *)0x0) &&
+  if ((scs == (ShaderConstantSet *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                                ,299,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -326,38 +331,39 @@ uint __cdecl CopyShaderConstantSetToBackendData(ShaderConstantSet *param_1)
   }
   plVar5 = &frontEndDataOut->shaderConstantSetCount;
   LOCK();
-  local_8 = *plVar5;
+  scsIndex = *plVar5;
   *plVar5 = *plVar5 + 1;
   UNLOCK();
-  if ((int)local_8 < 0x80) {
-    pSVar6 = frontEndDataOut->shaderConstantSets + local_8;
+  if (scsIndex < 0x80) {
+    pSVar6 = frontEndDataOut->shaderConstantSets + scsIndex;
     for (iVar4 = 0x1e; iVar4 != 0; iVar4 = iVar4 + -1) {
-      pSVar6->value[0][0] = param_1->value[0][0];
-      param_1 = (ShaderConstantSet *)(param_1->value[0] + 1);
+      pSVar6->value[0][0] = scs->value[0][0];
+      scs = (ShaderConstantSet *)(scs->value[0] + 1);
       pSVar6 = (ShaderConstantSet *)(pSVar6->value[0] + 1);
     }
   }
   else {
     frontEndDataOut->shaderConstantSetCount = 0x80;
     R_WarnOncePerFrame(R_WARN_MAX_SHADER_CONSTANT_SETS);
-    local_8 = 0;
+    scsIndex = 0;
   }
-  return local_8;
+  return scsIndex;
 }
 
 
 // 00AA7540  R_XModelDrawSurfEncodeShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:318)
 
-void __cdecl R_XModelDrawSurfEncodeShaderConstantSet(GfxDrawSurf *param_1,uint param_2)
+void __cdecl R_XModelDrawSurfEncodeShaderConstantSet(GfxDrawSurf *drawSurf,uint constSetIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  ShaderConstantSet *pSVar3;
+  ShaderConstantSet *scs_00;
   uint extraout_EAX;
   uint extraout_EDX;
+  ShaderConstantSet *scs;
   
-  if ((0x7f < param_2) &&
+  if ((0x7f < constSetIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                                ,0x13f,0,
                                "constSetIndex doesn\'t index ARRAY_COUNT( frontEndDataOut->shaderConstantSets )\n\t%i not in [0, %i)"
@@ -366,23 +372,23 @@ void __cdecl R_XModelDrawSurfEncodeShaderConstantSet(GfxDrawSurf *param_1,uint p
     (*pcVar1)();
     return;
   }
-  if (param_2 != 0) {
-    pSVar3 = R_ShaderConstantSet_FromFrontEndDataOut(param_2);
-    if ((pSVar3 == (ShaderConstantSet *)0x0) &&
+  if (constSetIndex != 0) {
+    scs_00 = R_ShaderConstantSet_FromFrontEndDataOut(constSetIndex);
+    if ((scs_00 == (ShaderConstantSet *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                                  ,0x144,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    bVar2 = R_ShaderConstantSet_Sets_Charred(pSVar3);
+    bVar2 = R_ShaderConstantSet_Sets_Charred(scs_00);
     if (bVar2) {
       _aullshr();
       _allshl();
-      *(uint *)param_1 = *(uint *)param_1 & 0xfe0fffff | extraout_EAX;
-      *(uint *)((int)param_1 + 4) = *(uint *)((int)param_1 + 4) | extraout_EDX;
+      *(uint *)drawSurf = *(uint *)drawSurf & 0xfe0fffff | extraout_EAX;
+      *(uint *)((int)drawSurf + 4) = *(uint *)((int)drawSurf + 4) | extraout_EDX;
     }
-    XModelDrawSurf_EncodeIndex(param_1,param_2);
+    XModelDrawSurf_EncodeIndex(drawSurf,constSetIndex);
   }
   return;
 }
@@ -390,16 +396,15 @@ void __cdecl R_XModelDrawSurfEncodeShaderConstantSet(GfxDrawSurf *param_1,uint p
 
 // 00AA7700  R_ShaderConstantSet_Sets_Charred  (gfx_d3d/r_shader_constant_set.cpp:340)
 
-bool __cdecl R_ShaderConstantSet_Sets_Charred(ShaderConstantSet *param_1)
+bool __cdecl R_ShaderConstantSet_Sets_Charred(ShaderConstantSet *scs)
 
 {
-  int local_8;
+  int i;
   
-  if (param_1 != (ShaderConstantSet *)0x0) {
-    for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-      if ((((uint)param_1->used & 1 << ((byte)local_8 & 0x1f)) != 0) &&
-         (param_1->constantSource[local_8] == 'v')) {
-        return 0.0 < param_1->value[local_8][0];
+  if (scs != (ShaderConstantSet *)0x0) {
+    for (i = 0; i < 7; i = i + 1) {
+      if ((((uint)scs->used & 1 << ((byte)i & 0x1f)) != 0) && (scs->constantSource[i] == 'v')) {
+        return 0.0 < scs->value[i][0];
       }
     }
   }
@@ -409,14 +414,14 @@ bool __cdecl R_ShaderConstantSet_Sets_Charred(ShaderConstantSet *param_1)
 
 // 00AA7780  R_ShaderConstantSet_CopyToFrontEndDataOut  (gfx_d3d/r_shader_constant_set.cpp:354)
 
-uint __cdecl R_ShaderConstantSet_CopyToFrontEndDataOut(ShaderConstantSet *param_1)
+uint __cdecl R_ShaderConstantSet_CopyToFrontEndDataOut(ShaderConstantSet *scs)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 == (ShaderConstantSet *)0x0) {
+  if (scs == (ShaderConstantSet *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                              ,0x163,0,"%s");
     if (!bVar2) {
@@ -425,7 +430,7 @@ uint __cdecl R_ShaderConstantSet_CopyToFrontEndDataOut(ShaderConstantSet *param_
       return uVar3;
     }
   }
-  bVar2 = R_ShaderConstantSetIsUsed(param_1);
+  bVar2 = R_ShaderConstantSetIsUsed(scs);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                              ,0x164,0,"%s");
@@ -435,21 +440,21 @@ uint __cdecl R_ShaderConstantSet_CopyToFrontEndDataOut(ShaderConstantSet *param_
       return uVar3;
     }
   }
-  uVar3 = CopyShaderConstantSetToBackendData(param_1);
+  uVar3 = CopyShaderConstantSetToBackendData(scs);
   return uVar3;
 }
 
 
 // 00AA78B0  R_ShaderConstantSet_FromFrontEndDataOut  (gfx_d3d/r_shader_constant_set.cpp:362)
 
-ShaderConstantSet * __cdecl R_ShaderConstantSet_FromFrontEndDataOut(uint param_1)
+ShaderConstantSet * __cdecl R_ShaderConstantSet_FromFrontEndDataOut(uint constSetindex)
 
 {
   code *pcVar1;
   bool bVar2;
   ShaderConstantSet *pSVar3;
   
-  if (0x7f < param_1) {
+  if (0x7f < constSetindex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shader_constant_set.cpp"
                              ,0x16b,0,
                              "constSetindex doesn\'t index ARRAY_COUNT( frontEndDataOut->shaderConstantSets )\n\t%i not in [0, %i)"
@@ -460,11 +465,11 @@ ShaderConstantSet * __cdecl R_ShaderConstantSet_FromFrontEndDataOut(uint param_1
       return pSVar3;
     }
   }
-  if (param_1 == 0) {
+  if (constSetindex == 0) {
     pSVar3 = (ShaderConstantSet *)0x0;
   }
   else {
-    pSVar3 = frontEndDataOut->shaderConstantSets + param_1;
+    pSVar3 = frontEndDataOut->shaderConstantSets + constSetindex;
   }
   return pSVar3;
 }
@@ -474,23 +479,24 @@ ShaderConstantSet * __cdecl R_ShaderConstantSet_FromFrontEndDataOut(uint param_1
 
 void __cdecl
 RB_SaveCurrentShaderConstantSetValues
-          (ShaderConstantSet *param_1,GfxCmdBufSourceState *param_2,ShaderConstantSet *param_3)
+          (ShaderConstantSet *destSet,GfxCmdBufSourceState *gfxSourceState,ShaderConstantSet *srcSet
+          )
 
 {
   float (*pafVar1) [4];
   float (*pafVar2) [4];
-  int local_8;
+  int i;
   
-  R_InitShaderConstantSet(param_1);
-  if ((param_3 != (ShaderConstantSet *)0x0) && (param_3->used != '\0')) {
-    *(undefined4 *)param_1->constantSource = *(undefined4 *)param_3->constantSource;
-    *(undefined2 *)(param_1->constantSource + 4) = *(undefined2 *)(param_3->constantSource + 4);
-    param_1->constantSource[6] = param_3->constantSource[6];
-    param_1->used = param_3->used;
-    for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-      if (((uint)param_1->used & 1 << ((byte)local_8 & 0x1f)) != 0) {
-        pafVar2 = param_1->value + local_8;
-        pafVar1 = (param_2->input).consts + param_1->constantSource[local_8];
+  R_InitShaderConstantSet(destSet);
+  if ((srcSet != (ShaderConstantSet *)0x0) && (srcSet->used != '\0')) {
+    *(undefined4 *)destSet->constantSource = *(undefined4 *)srcSet->constantSource;
+    *(undefined2 *)(destSet->constantSource + 4) = *(undefined2 *)(srcSet->constantSource + 4);
+    destSet->constantSource[6] = srcSet->constantSource[6];
+    destSet->used = srcSet->used;
+    for (i = 0; i < 7; i = i + 1) {
+      if (((uint)destSet->used & 1 << ((byte)i & 0x1f)) != 0) {
+        pafVar2 = destSet->value + i;
+        pafVar1 = (gfxSourceState->input).consts + destSet->constantSource[i];
         (*pafVar2)[0] = (*pafVar1)[0];
         (*pafVar2)[1] = (*pafVar1)[1];
         (*pafVar2)[2] = (*pafVar1)[2];
@@ -506,16 +512,18 @@ RB_SaveCurrentShaderConstantSetValues
 
 ScopedShaderConstantSetUndo * __thiscall
 ScopedShaderConstantSetUndo::ScopedShaderConstantSetUndo
-          (ScopedShaderConstantSetUndo *this,GfxCmdBufSourceState *param_1,
-          ShaderConstantSet *param_2)
+          (ScopedShaderConstantSetUndo *this,GfxCmdBufSourceState *sourceState,
+          ShaderConstantSet *cscEA)
 
 {
-  this->m_sourceState = param_1;
-  if (param_2 == (ShaderConstantSet *)0x0) {
+  ShaderConstantSet *csc;
+  
+  this->m_sourceState = sourceState;
+  if (cscEA == (ShaderConstantSet *)0x0) {
     R_InitShaderConstantSet(&this->m_scs);
   }
   else {
-    RB_SaveCurrentShaderConstantSetValues(&this->m_scs,param_1,param_2);
+    RB_SaveCurrentShaderConstantSetValues(&this->m_scs,sourceState,cscEA);
   }
   return this;
 }
@@ -537,62 +545,64 @@ ScopedShaderConstantSetUndo::~ScopedShaderConstantSetUndo(ScopedShaderConstantSe
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_ShaderConstantShowDebug(float *param_1,float *param_2,float param_3,ShaderConstantSet *param_4)
+R_ShaderConstantShowDebug(float *eyePos,float *objOrigin,float objRad,ShaderConstantSet *scs)
 
 {
   char *pcVar1;
   float fVar2;
-  int local_258;
-  float *local_250 [4];
+  char *constName;
+  int i;
+  float obj2eye;
+  float *colors [4];
   float *local_240;
   float *local_23c;
   float *local_238;
   float *local_234;
-  float local_230;
+  float up;
   float local_22c;
   float local_228;
-  uint local_224;
-  float *local_220;
-  char local_21c [516];
+  uint colorIndex;
+  float *color;
+  char text [516];
   uint local_18;
-  float local_14;
-  float local_10;
+  float debugRangeSq;
+  float textOrigin;
   float local_c;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_4 != (ShaderConstantSet *)0x0) &&
+  if ((scs != (ShaderConstantSet *)0x0) &&
      (0.0 < (r_shader_constant_set_debug_range->current).value)) {
-    local_14 = (r_shader_constant_set_debug_range->current).value *
-               (r_shader_constant_set_debug_range->current).value;
-    fVar2 = Vec3DistanceSq(param_1,param_2);
-    if (fVar2 <= local_14) {
-      local_230 = 0.0;
+    debugRangeSq = (r_shader_constant_set_debug_range->current).value *
+                   (r_shader_constant_set_debug_range->current).value;
+    fVar2 = Vec3DistanceSq(eyePos,objOrigin);
+    if (fVar2 <= debugRangeSq) {
+      up = 0.0;
       local_22c = 0.0;
       local_228 = 1.0;
-      fVar2 = param_3 + my_height_offset;
-      local_10 = fVar2 * 0.0 + *param_2;
-      local_c = fVar2 * 0.0 + param_2[1];
-      local_8 = fVar2 * 1.0 + param_2[2];
-      local_250[0] = colorBlue;
-      local_250[1] = colorYellow;
-      local_250[2] = colorMagenta;
-      local_250[3] = colorCyan;
+      fVar2 = objRad + my_height_offset;
+      textOrigin = fVar2 * 0.0 + *objOrigin;
+      local_c = fVar2 * 0.0 + objOrigin[1];
+      local_8 = fVar2 * 1.0 + objOrigin[2];
+      colors[0] = colorBlue;
+      colors[1] = colorYellow;
+      colors[2] = colorMagenta;
+      colors[3] = colorCyan;
       local_240 = colorWhite;
       local_23c = colorOrange;
       local_238 = colorRed;
       local_234 = colorGreen;
-      local_224 = (uint)param_4 >> 5 & 7;
-      local_220 = local_250[local_224];
-      R_AddDebugLine(&frontEndDataOut->debugGlobals,param_2,&local_10,local_220,0);
-      for (local_258 = 0; local_258 < 7; local_258 = local_258 + 1) {
-        if ((((uint)param_4->used & 1 << ((byte)local_258 & 0x1f)) != 0) &&
-           (pcVar1 = R_FindScriptableConstantName_BySource(param_4->constantSource[local_258]),
+      colorIndex = (uint)scs >> 5 & 7;
+      color = colors[colorIndex];
+      R_AddDebugLine(&frontEndDataOut->debugGlobals,objOrigin,&textOrigin,color,0);
+      for (i = 0; i < 7; i = i + 1) {
+        if ((((uint)scs->used & 1 << ((byte)i & 0x1f)) != 0) &&
+           (pcVar1 = R_FindScriptableConstantName_BySource(scs->constantSource[i]),
            pcVar1 != (char *)0x0)) {
-          _snprintf(local_21c,0x200,"%d:%s %.2f %.2f %.2f %.2f");
-          R_AddDebugString(&frontEndDataOut->debugGlobals,&local_10,local_220,my_scale,local_21c);
+          _snprintf(text,0x200,"%d:%s %.2f %.2f %.2f %.2f");
+          R_AddDebugString(&frontEndDataOut->debugGlobals,&textOrigin,color,my_scale,text);
           fVar2 = -my_vert_spacing;
-          local_10 = fVar2 * local_230 + local_10;
+          textOrigin = fVar2 * up + textOrigin;
           local_c = fVar2 * local_22c + local_c;
           local_8 = fVar2 * local_228 + local_8;
         }

@@ -12,6 +12,7 @@ int __cdecl _getdrive(void)
   byte *lpBuffer;
   int *piVar3;
   int iVar4;
+  int memfree;
   byte abStack_110 [264];
   uint uStack_8;
   

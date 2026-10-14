@@ -15,6 +15,7 @@ void __cdecl R_SortWorldSurfaces(void)
   uchar *puVar8;
   uint uVar9;
   uint local_10;
+  uint worldSurfCount;
   
   pGVar3 = ((rgp.world)->dpvs).surfaces;
   uVar4 = (rgp.world)->models->surfaceCount;
@@ -50,7 +51,7 @@ void __cdecl R_SortWorldSurfaces(void)
 
 void __cdecl
 R_AddCodeMeshDrawSurf
-          (Material *param_1,r_double_index_t *param_2,uint param_3,uint param_4,uint param_5,
+          (Material *indexCount,r_double_index_t *argOffset,uint argCount,uint fxName,uint region,
           char *param_6,uint param_7)
 
 {
@@ -62,6 +63,7 @@ R_AddCodeMeshDrawSurf
   FxCodeMeshData *pFVar6;
   int unaff_ESI;
   uint unaff_EDI;
+  r_double_index_t *indices;
   
   if ((*(int *)(*(int *)(unaff_ESI + 0xb0) + 8 + (uint)gfxDrawMethod.emissiveTechType * 4) == 0) ||
      ((*(byte *)(unaff_ESI + 4) & 2) != 0)) {
@@ -79,10 +81,10 @@ R_AddCodeMeshDrawSurf
     UNLOCK();
     if (uVar1 < 0x800) {
       pFVar6 = frontEndDataOut->codeMeshes + uVar1;
-      pFVar6->triCount = (uint)param_2 / 3;
-      pFVar6->indices = (ushort *)param_1;
-      pFVar6->argOffset = (ushort)param_3;
-      pFVar6->argCount = (ushort)param_4;
+      pFVar6->triCount = (uint)argOffset / 3;
+      pFVar6->indices = (ushort *)indexCount;
+      pFVar6->argOffset = (ushort)argCount;
+      pFVar6->argCount = (ushort)fxName;
       pGVar5 = R_AllocFxDrawSurf(unaff_EDI);
       if (pGVar5 != (GfxDrawSurf *)0x0) {
         *(undefined4 *)pGVar5 = *(undefined4 *)(unaff_ESI + 0x10);
@@ -106,10 +108,12 @@ R_AddCodeMeshDrawSurf
 
 // 008393E0  R_AddRopeCodeMeshDrawSurf  (gfx_d3d/r_drawsurf.cpp:723)
 
+/* WARNING: Variable defined which should be unmapped: argCount */
+
 void __cdecl
 R_AddRopeCodeMeshDrawSurf
-          (Material *param_1,r_double_index_t *param_2,uint param_3,uint param_4,uint param_5,
-          uint param_6,uint param_7)
+          (Material *indexCount,r_double_index_t *argOffset,uint primaryLightIndex,uint param_4,
+          uint param_5,uint param_6,uint param_7)
 
 {
   uint uVar1;
@@ -120,6 +124,8 @@ R_AddRopeCodeMeshDrawSurf
   GfxDrawSurf *pGVar5;
   FxCodeMeshData *pFVar6;
   uint unaff_EDI;
+  r_double_index_t *indices;
+  uint argCount;
   
   plVar4 = &frontEndDataOut->codeMeshCount;
   LOCK();
@@ -131,10 +137,10 @@ R_AddRopeCodeMeshDrawSurf
     return;
   }
   pFVar6 = frontEndDataOut->codeMeshes + uVar1;
-  pFVar6->triCount = (uint)param_2 / 3;
-  pFVar6->indices = (ushort *)param_1;
+  pFVar6->triCount = (uint)argOffset / 3;
+  pFVar6->indices = (ushort *)indexCount;
   pFVar6->argCount = 1;
-  pFVar6->argOffset = (ushort)param_3;
+  pFVar6->argOffset = (ushort)primaryLightIndex;
   pGVar5 = R_AllocFxDrawSurf(unaff_EDI);
   if (pGVar5 != (GfxDrawSurf *)0x0) {
     *(undefined4 *)pGVar5 = *(undefined4 *)(in_EAX + 0x10);
@@ -154,9 +160,11 @@ R_AddRopeCodeMeshDrawSurf
 
 // 008394B0  R_AddGlassDrawSurf  (gfx_d3d/r_drawsurf.cpp:811)
 
+/* WARNING: Variable defined which should be unmapped: drawsurfRegion */
+
 void __cdecl
-R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,uint param_5,
-                  uint param_6,uint param_7)
+R_AddGlassDrawSurf(Material *indices,ushort *indexCount,uint lightHandle,uint primaryLightIndex,
+                  uint param_5,uint param_6,uint param_7)
 
 {
   uint in_EAX;
@@ -165,6 +173,8 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
   FxCodeMeshData *pFVar3;
   uint unaff_EDI;
   uint uVar4;
+  Material *material;
+  uint drawsurfRegion;
   
   plVar1 = &frontEndDataOut->codeMeshCount;
   LOCK();
@@ -176,15 +186,15 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
     return;
   }
   pFVar3 = frontEndDataOut->codeMeshes + uVar4;
-  pFVar3->triCount = param_3 / 3;
-  pFVar3->indices = param_2;
+  pFVar3->triCount = lightHandle / 3;
+  pFVar3->indices = indexCount;
   pFVar3->argCount = 0;
   pFVar3->argOffset = 0;
-  pFVar3->lightHandle = param_4;
+  pFVar3->lightHandle = primaryLightIndex;
   pGVar2 = R_AllocFxDrawSurf(unaff_EDI);
   if (pGVar2 != (GfxDrawSurf *)0x0) {
-    *(undefined4 *)pGVar2 = *(undefined4 *)&(param_1->info).drawSurf;
-    *(undefined4 *)((int)pGVar2 + 4) = *(undefined4 *)((int)&(param_1->info).drawSurf + 4);
+    *(undefined4 *)pGVar2 = *(undefined4 *)&(indices->info).drawSurf;
+    *(undefined4 *)((int)pGVar2 + 4) = *(undefined4 *)((int)&(indices->info).drawSurf + 4);
     *(uint *)((int)pGVar2 + 4) = *(uint *)((int)pGVar2 + 4) | 0x780000;
     (pGVar2->fields).objectId = (ushort)uVar4;
     *(undefined4 *)pGVar2 = *(undefined4 *)pGVar2;
@@ -204,8 +214,8 @@ R_AddGlassDrawSurf(Material *param_1,ushort *param_2,uint param_3,uint param_4,u
 
 void __cdecl
 R_AddMarkMeshDrawSurf
-          (Material *param_1,GfxMarkContext *param_2,ushort *param_3,uint param_4,float *param_5,
-          uint param_6)
+          (Material *indices,GfxMarkContext *indexCount,ushort *hitNormal,uint visLightsMask,
+          float *param_5,uint param_6)
 
 {
   FxMarkMeshData *pFVar1;
@@ -215,14 +225,15 @@ R_AddMarkMeshDrawSurf
   long *plVar4;
   GfxDrawSurf *pGVar5;
   uint unaff_ESI;
+  Material *material;
   
-  if (((param_1->field8_0xb0).localTechniqueSet)->techniques
+  if (((indices->field8_0xb0).localTechniqueSet)->techniques
       [gfxDrawMethod.litTechType[0xc][0][0][0]] == (MaterialTechnique *)0x0) {
     R_WarnOncePerFrame(R_WARN_NONLIGHTMAP_MARK_MATERIAL);
     return;
   }
-  if (((((param_1->field8_0xb0).localTechniqueSet)->techniques[0x81] == (MaterialTechnique *)0x0) &&
-      (((param_1->info).gameFlags >> 8 & 1) == 0)) && ((param_1->info).sortKey < 0x18)) {
+  if (((((indices->field8_0xb0).localTechniqueSet)->techniques[0x81] == (MaterialTechnique *)0x0) &&
+      (((indices->info).gameFlags >> 8 & 1) == 0)) && ((indices->info).sortKey < 0x18)) {
     R_WarnOncePerFrame(R_WARN_NONLIGHTMAP_MARK_MATERIAL);
     return;
   }
@@ -236,17 +247,17 @@ R_AddMarkMeshDrawSurf
     return;
   }
   pFVar1 = frontEndDataOut->markMeshes + uVar2;
-  pFVar1->triCount = (uint)param_3 / 3;
-  pFVar1->indices = (ushort *)param_2;
+  pFVar1->triCount = (uint)hitNormal / 3;
+  pFVar1->indices = (ushort *)indexCount;
   pFVar1->modelIndex = *(ushort *)(in_EAX + 4);
   pFVar1->modelTypeAndSurf = in_EAX[3];
-  pFVar1->normal[0] = *(float *)param_4;
-  pFVar1->normal[1] = *(float *)(param_4 + 4);
-  pFVar1->normal[2] = *(float *)(param_4 + 8);
+  pFVar1->normal[0] = *(float *)visLightsMask;
+  pFVar1->normal[1] = *(float *)(visLightsMask + 4);
+  pFVar1->normal[2] = *(float *)(visLightsMask + 8);
   pGVar5 = R_AllocFxDrawSurf(unaff_ESI);
   if (pGVar5 != (GfxDrawSurf *)0x0) {
-    *(undefined4 *)pGVar5 = *(undefined4 *)&(param_1->info).drawSurf;
-    *(undefined4 *)((int)pGVar5 + 4) = *(undefined4 *)((int)&(param_1->info).drawSurf + 4);
+    *(undefined4 *)pGVar5 = *(undefined4 *)&(indices->info).drawSurf;
+    *(undefined4 *)((int)pGVar5 + 4) = *(undefined4 *)((int)&(indices->info).drawSurf + 4);
     (pGVar5->fields).objectId = (ushort)uVar2;
     bVar3 = *in_EAX;
     *(undefined4 *)((int)pGVar5 + 4) = *(undefined4 *)((int)pGVar5 + 4);
@@ -269,19 +280,21 @@ R_AddMarkMeshDrawSurf
 
 // 00839780  R_AddParticleCloudDrawSurf  (gfx_d3d/r_drawsurf.cpp:1002)
 
+/* WARNING: Variable defined which should be unmapped: cloudIndex */
+
 bool __cdecl R_AddParticleCloudDrawSurf(uint param_1,Material *param_2)
 
 {
   undefined4 uVar1;
   GfxDrawSurf *pGVar2;
   int unaff_ESI;
-  uint unaff_retaddr;
+  uint cloudIndex;
   
   if (*(int *)(*(int *)(unaff_ESI + 0xb0) + 8 + (uint)gfxDrawMethod.emissiveTechType * 4) == 0) {
     R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL);
   }
   else {
-    pGVar2 = R_AllocFxDrawSurf(unaff_retaddr);
+    pGVar2 = R_AllocFxDrawSurf(cloudIndex);
     if (pGVar2 != (GfxDrawSurf *)0x0) {
       *(undefined4 *)pGVar2 = *(undefined4 *)(unaff_ESI + 0x10);
       uVar1 = *(undefined4 *)(unaff_ESI + 0x14);
@@ -308,6 +321,7 @@ bool __cdecl R_ReserveCodeMeshIndices(int param_1,r_double_index_t **param_2)
   uint uVar2;
   int in_EDX;
   uint uVar3;
+  r_double_index_t **indicesOut;
   
   pGVar1 = frontEndDataOut->codeMeshPtr;
   uVar2 = pGVar1->indexCount;
@@ -324,16 +338,17 @@ bool __cdecl R_ReserveCodeMeshIndices(int param_1,r_double_index_t **param_2)
 
 // 00839850  R_ReserveCodeMeshVerts  (gfx_d3d/r_drawsurf.cpp:1210)
 
-bool __cdecl R_ReserveCodeMeshVerts(int param_1,ushort *param_2)
+bool __cdecl R_ReserveCodeMeshVerts(int baseVertex,ushort *param_2)
 
 {
   GfxMeshData *pGVar1;
   uint uVar2;
+  int vertCount;
   
   pGVar1 = frontEndDataOut->codeMeshPtr;
   if ((pGVar1->vb).verts != (uchar *)0x0) {
     uVar2 = (pGVar1->vb).used;
-    (pGVar1->vb).used = (pGVar1->vb).used + pGVar1->vertSize * param_1;
+    (pGVar1->vb).used = (pGVar1->vb).used + pGVar1->vertSize * baseVertex;
     if ((pGVar1->vb).used <= (pGVar1->vb).total) {
       *param_2 = (ushort)(uVar2 / pGVar1->vertSize);
       return true;
@@ -352,6 +367,7 @@ bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
   int iVar1;
   int iVar2;
   int unaff_ESI;
+  uint *argOffsetOut;
   
   do {
     iVar1 = frontEndDataOut->codeMeshArgsCount;
@@ -374,20 +390,21 @@ bool __cdecl R_ReserveCodeMeshArgs(int param_1,uint *param_2)
 
 // 008398F0  R_ReserveMarkMeshVerts  (gfx_d3d/r_drawsurf.cpp:1268)
 
-bool __cdecl R_ReserveMarkMeshVerts(int param_1,ushort *param_2)
+bool __cdecl R_ReserveMarkMeshVerts(int baseVertex,ushort *param_2)
 
 {
   GfxVertexBufferState *pGVar1;
   uint uVar2;
   GfxMeshData *pGVar3;
   GfxBackEndData *pGVar4;
+  int vertCount;
   
   pGVar4 = frontEndDataOut;
   pGVar3 = &frontEndDataOut->markMesh;
   pGVar1 = &(frontEndDataOut->markMesh).vb;
   if ((frontEndDataOut->markMesh).vb.verts != (uchar *)0x0) {
     uVar2 = pGVar1->used;
-    pGVar1->used = pGVar1->used + (frontEndDataOut->markMesh).vertSize * param_1;
+    pGVar1->used = pGVar1->used + (frontEndDataOut->markMesh).vertSize * baseVertex;
     if (pGVar1->used <= (pGVar4->markMesh).vb.total) {
       *param_2 = (ushort)(uVar2 / pGVar3->vertSize);
       return true;
@@ -404,6 +421,7 @@ GfxPackedVertex * __cdecl R_GetCodeMeshVerts(ushort param_1)
 
 {
   uchar *puVar1;
+  ushort baseVertex;
   
   puVar1 = (frontEndDataOut->codeMeshPtr->vb).verts;
   if (puVar1 == (uchar *)0x0) {

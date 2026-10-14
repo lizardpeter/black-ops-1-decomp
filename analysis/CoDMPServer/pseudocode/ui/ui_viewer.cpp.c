@@ -111,7 +111,7 @@ void __thiscall UIViewer::State::Invalidate(State *this)
 
 // 007845D0  HasPlayerChanged  (ui/ui_viewer.cpp:228)
 
-bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *param_1)
+bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *o)
 
 {
   byte bVar1;
@@ -130,7 +130,7 @@ bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *param_1)
   bVar9 = true;
   local_c = 0;
   pPVar4 = &this->playerParams;
-  pPVar6 = &param_1->playerParams;
+  pPVar6 = &o->playerParams;
   do {
     if (iVar3 == 0) break;
     iVar3 = iVar3 + -1;
@@ -148,7 +148,7 @@ bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *param_1)
     iVar3 = 8;
     bVar8 = true;
     pSVar5 = this;
-    pSVar7 = param_1;
+    pSVar7 = o;
     do {
       pSVar7 = (State *)pSVar7->faction;
       pSVar5 = (State *)pSVar5->faction;
@@ -156,7 +156,7 @@ bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *param_1)
       iVar3 = iVar3 + -1;
       bVar8 = *(int *)pSVar5 == *(int *)pSVar7;
     } while (bVar8);
-    if ((bVar8) && (this->locked == param_1->locked)) {
+    if ((bVar8) && (this->locked == o->locked)) {
       return false;
     }
   }
@@ -166,7 +166,7 @@ bool __thiscall UIViewer::State::HasPlayerChanged(State *this,State *param_1)
 
 // 00784550  operator!=  (ui/ui_viewer.cpp:230)
 
-bool __thiscall UIViewer::State::operator!=(State *this,State *param_1)
+bool __thiscall UIViewer::State::operator!=(State *this,State *o)
 
 {
   undefined1 uVar1;
@@ -178,13 +178,13 @@ bool __thiscall UIViewer::State::operator!=(State *this,State *param_1)
   bool bVar7;
   int local_c;
   
-  if ((this->mode == param_1->mode) && (bVar3 = HasPlayerChanged(this,param_1), !bVar3)) {
+  if ((this->mode == o->mode) && (bVar3 = HasPlayerChanged(this,o), !bVar3)) {
     iVar4 = 0x20;
     bVar3 = false;
     bVar7 = true;
     local_c = 0;
     pWVar5 = &this->weaponParams;
-    pWVar6 = &param_1->weaponParams;
+    pWVar6 = &o->weaponParams;
     do {
       if (iVar4 == 0) break;
       iVar4 = iVar4 + -1;
@@ -260,13 +260,13 @@ void __cdecl UI_ViewerRotateRightRepeatEnabled_f(void)
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __thiscall UIViewer::Init(UIViewer *this,bool param_1)
+void __thiscall UIViewer::Init(UIViewer *this,bool _ingame)
 
 {
   code *pcVar1;
   bool bVar2;
   dvar_s *pdVar3;
-  int local_8;
+  int i;
   
   if (this->inited == false) {
     pdVar3 = _Dvar_RegisterBool("uiViewer_loaded",false,0,
@@ -344,8 +344,8 @@ void __thiscall UIViewer::Init(UIViewer *this,bool param_1)
     Cmd_AddCommandInternal
               ("viewerRotateRightRepeatEnabled",UI_ViewerRotateRightRepeatEnabled_f,
                (cmd_function_s *)&UI_ViewerRotateRightRepeatEnabled_f_VAR);
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      this->dobjsPool[local_8] = (DObj *)(this->dobjsBuffer + local_8 * 0x7c);
+    for (i = 0; i < 1; i = i + 1) {
+      this->dobjsPool[i] = (DObj *)(this->dobjsBuffer + i * 0x7c);
     }
     StringTable_GetAsset
               ("mp/ui_viewer_camera.csv",(StringTable **)(this->cameraOverrides[2].attachment + 4));
@@ -356,12 +356,12 @@ void __thiscall UIViewer::Init(UIViewer *this,bool param_1)
     this->mapLoaded = false;
     this->show = false;
     this->deferredShow = false;
-    this->ingame = param_1;
+    this->ingame = _ingame;
     Dvar_SetBool(this->ingameDvar,this->ingame);
     this[1].prevState.mode = 0;
   }
   this->nDrawDobjs = 0;
-  if (this->ingame != param_1) {
+  if (this->ingame != _ingame) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x1f7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -397,14 +397,17 @@ void __thiscall UIViewer::Shutdown(UIViewer *this)
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall UIViewer::LoadMap(UIViewer *this)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint local_8;
+  char *mapname;
+  int i;
   
   if (this->inited == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x209,0,"%s");
@@ -417,8 +420,8 @@ void __thiscall UIViewer::LoadMap(UIViewer *this)
   if (this->ingame == false) {
     LoadWorld(comWorld.name);
     R_SortWorldSurfaces();
-    pcVar3 = va("%s");
-    CG_InitExposure(0,pcVar3);
+    mapname = va("%s");
+    CG_InitExposure(0,mapname);
     Material_Sort();
     R_ClearSkyboxModel();
     CL_FinishLoadingModels();
@@ -429,8 +432,8 @@ void __thiscall UIViewer::LoadMap(UIViewer *this)
   if (this->deferredShow != false) {
     Show(this);
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    this->playerWeaponHistory[local_8] = 0;
+  for (i = 0; (uint)i < 4; i = i + 1) {
+    this->playerWeaponHistory[i] = 0;
   }
   this->nextPlayerWeaponHistory = 0;
   this->mapLoaded = true;
@@ -441,11 +444,11 @@ void __thiscall UIViewer::LoadMap(UIViewer *this)
 
 // 00781310  Show  (ui/ui_viewer.cpp:554)
 
-/* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "Mode": Some values do not have unique names */
 
 void __thiscall UIViewer::Show(UIViewer *this)
 
@@ -455,7 +458,8 @@ void __thiscall UIViewer::Show(UIViewer *this)
   XAnimTree_s *pXVar3;
   cg_s *pcVar4;
   ulong64 uVar5;
-  int local_c;
+  int i;
+  cg_s *cgameGlob;
   
   if (this->show == false) {
     if (this->mapLoaded == false) {
@@ -509,8 +513,8 @@ void __thiscall UIViewer::Show(UIViewer *this)
       memset((uchar *)&this->pmove,'\0',0x910);
       memset((uchar *)&this->ps,'\0',0x26a4);
       (this->pmove).ps = &this->ps;
-      for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-        DrawDobj::Init(this->drawDobjs + local_c);
+      for (i = 0; i < 1; i = i + 1) {
+        DrawDobj::Init(this->drawDobjs + i);
       }
       this->show = true;
       this->deferredShow = false;
@@ -551,7 +555,7 @@ void __thiscall UIViewer::Hide(UIViewer *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall UIViewer::UpdateCamera(UIViewer *this,refdef_s *param_1,float param_2)
+void __thiscall UIViewer::UpdateCamera(UIViewer *this,refdef_s *refdef,float deltaTime)
 
 {
   int iVar1;
@@ -571,29 +575,29 @@ void __thiscall UIViewer::UpdateCamera(UIViewer *this,refdef_s *param_1,float pa
   float local_60;
   float local_5c;
   undefined4 local_58;
-  float local_4c [4];
-  float local_3c;
-  float local_38 [4];
-  float local_28 [4];
-  undefined4 local_18;
-  float local_14;
-  cg_s *local_10;
-  int local_c;
-  float local_8;
+  float quatEnd [4];
+  float frac;
+  float quat [4];
+  float quatStart [4];
+  float ANIM_TIME;
+  float deltaTime_2;
+  cg_s *cgameGlob;
+  int localClientNum;
+  float YAW_SPEED;
   
   if ((this->cameraControl->current).enabled == false) {
     if (((this->mode == MODE_PLAYER) || (this->mode == MODE_WEAPON)) ||
        (this->mode == MODE_EDIT_PLAYER_BODY)) {
-      local_8 = 180.0;
-      local_10 = CG_GetLocalClientGlobals(0);
-      local_c = local_10->localClientNum;
-      iVar1 = Key_IsDown(local_c,0x9c);
+      YAW_SPEED = 180.0;
+      cgameGlob = CG_GetLocalClientGlobals(0);
+      localClientNum = cgameGlob->localClientNum;
+      iVar1 = Key_IsDown(localClientNum,0x9c);
       if (iVar1 == 0) {
-        iVar1 = Key_IsDown(local_c,200);
+        iVar1 = Key_IsDown(localClientNum,200);
         if ((iVar1 == 0) || (s_viewerRotateLeftRepeatEnabled == false)) {
-          iVar1 = Key_IsDown(local_c,0x9d);
+          iVar1 = Key_IsDown(localClientNum,0x9d);
           if (iVar1 == 0) {
-            iVar1 = Key_IsDown(local_c,200);
+            iVar1 = Key_IsDown(localClientNum,200);
             if ((iVar1 == 0) || (s_viewerRotateRightRepeatEnabled == false)) {
               s_viewerRotateLeftRepeatEnabled = false;
               s_viewerRotateRightRepeatEnabled = false;
@@ -601,14 +605,14 @@ void __thiscall UIViewer::UpdateCamera(UIViewer *this,refdef_s *param_1,float pa
             }
           }
           s_viewerRotateLeftRepeatEnabled = false;
-          (this->camera).yaw = local_8 * 1.0 * param_2 + (this->camera).yaw;
+          (this->camera).yaw = YAW_SPEED * 1.0 * deltaTime + (this->camera).yaw;
           fVar2 = AngleNormalize180((this->camera).yaw);
           (this->camera).yaw = fVar2;
           goto LAB_00781926;
         }
       }
       s_viewerRotateRightRepeatEnabled = false;
-      (this->camera).yaw = local_8 * -1.0 * param_2 + (this->camera).yaw;
+      (this->camera).yaw = YAW_SPEED * -1.0 * deltaTime + (this->camera).yaw;
       fVar2 = AngleNormalize180((this->camera).yaw);
       (this->camera).yaw = fVar2;
     }
@@ -618,9 +622,9 @@ void __thiscall UIViewer::UpdateCamera(UIViewer *this,refdef_s *param_1,float pa
   }
 LAB_00781926:
   if (this->cameraAnim != false) {
-    local_18 = 0x3eaa7efa;
-    local_14 = (float)(cls.realtime - this->cameraAnimStartTime) * 0.001;
-    if ((local_14 < 0.0) || (0.333 < local_14)) {
+    ANIM_TIME = 0.333;
+    deltaTime_2 = (float)(cls.realtime - this->cameraAnimStartTime) * 0.001;
+    if ((deltaTime_2 < 0.0) || (0.333 < deltaTime_2)) {
       this->cameraAnim = false;
       (this->camera).lookAt[0] = (this->cameraAnimEnd).lookAt[0];
       (this->camera).lookAt[1] = (this->cameraAnimEnd).lookAt[1];
@@ -630,11 +634,11 @@ LAB_00781926:
       (this->camera).pitch = (this->cameraAnimEnd).pitch;
     }
     else {
-      local_3c = local_14 / 0.333;
-      Vec3Lerp((this->cameraAnimStart).lookAt,(this->cameraAnimEnd).lookAt,local_3c,
+      frac = deltaTime_2 / 0.333;
+      Vec3Lerp((this->cameraAnimStart).lookAt,(this->cameraAnimEnd).lookAt,frac,
                (this->camera).lookAt);
       (this->camera).dist =
-           ((this->cameraAnimEnd).dist - (this->cameraAnimStart).dist) * local_3c +
+           ((this->cameraAnimEnd).dist - (this->cameraAnimStart).dist) * frac +
            (this->cameraAnimStart).dist;
       local_6c = &this->cameraAnimStart;
       local_68 = (this->cameraAnimStart).pitch;
@@ -642,22 +646,22 @@ LAB_00781926:
       local_58 = 0;
       local_60 = local_68;
       local_5c = local_64;
-      AnglesToQuat(&local_60,local_28);
+      AnglesToQuat(&local_60,quatStart);
       local_84 = &this->cameraAnimEnd;
       local_80 = (this->cameraAnimEnd).pitch;
       local_7c = (this->cameraAnimEnd).yaw;
       local_70 = 0;
       local_78 = local_80;
       local_74 = local_7c;
-      AnglesToQuat(&local_78,local_4c);
-      QuatSlerp(local_28,local_4c,local_3c,local_38);
-      QuatToAxis(local_38,(float (*) [3])local_a8);
+      AnglesToQuat(&local_78,quatEnd);
+      QuatSlerp(quatStart,quatEnd,frac,quat);
+      QuatToAxis(quat,(float (*) [3])local_a8);
       AxisToSignedAngles((float (*) [3])local_a8,&local_b4);
       (this->camera).yaw = local_b0;
       (this->camera).pitch = local_b4;
     }
   }
-  CameraParams::SetRefDef(&this->camera,param_1);
+  CameraParams::SetRefDef(&this->camera,refdef);
   return;
 }
 
@@ -667,25 +671,25 @@ LAB_00781926:
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __thiscall UIViewer::CameraParams::SetRefDef(CameraParams *this,refdef_s *param_1)
+void __thiscall UIViewer::CameraParams::SetRefDef(CameraParams *this,refdef_s *refdef)
 
 {
   dvar_s *pdVar1;
   float fVar2;
-  float local_10 [3];
+  float angles [3];
   
-  local_10[0] = this->pitch;
-  local_10[2] = 0.0;
-  local_10[1] = 0.0;
-  AnglesToAxis(local_10,param_1->viewaxis);
+  angles[0] = this->pitch;
+  angles[2] = 0.0;
+  angles[1] = 0.0;
+  AnglesToAxis(angles,refdef->viewaxis);
   fVar2 = -this->dist;
-  param_1->vieworg[0] = fVar2 * param_1->viewaxis[0][0] + this->lookAt[0];
-  param_1->vieworg[1] = fVar2 * param_1->viewaxis[0][1] + this->lookAt[1];
-  param_1->vieworg[2] = fVar2 * param_1->viewaxis[0][2] + this->lookAt[2];
+  refdef->vieworg[0] = fVar2 * refdef->viewaxis[0][0] + this->lookAt[0];
+  refdef->vieworg[1] = fVar2 * refdef->viewaxis[0][1] + this->lookAt[1];
+  refdef->vieworg[2] = fVar2 * refdef->viewaxis[0][2] + this->lookAt[2];
   pdVar1 = uiViewer.sceneOrigin;
-  param_1->vieworg[0] = param_1->vieworg[0] + ((uiViewer.sceneOrigin)->current).value;
-  param_1->vieworg[1] = param_1->vieworg[1] + (pdVar1->current).vector[1];
-  param_1->vieworg[2] = param_1->vieworg[2] + (pdVar1->current).vector[2];
+  refdef->vieworg[0] = refdef->vieworg[0] + ((uiViewer.sceneOrigin)->current).value;
+  refdef->vieworg[1] = refdef->vieworg[1] + (pdVar1->current).vector[1];
+  refdef->vieworg[2] = refdef->vieworg[2] + (pdVar1->current).vector[2];
   return;
 }
 
@@ -698,14 +702,16 @@ void __thiscall UIViewer::CameraParams::SetRefDef(CameraParams *this,refdef_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObj * __thiscall UIViewer::AllocDobj(UIViewer *this,uint *param_1)
+DObj * __thiscall UIViewer::AllocDobj(UIViewer *this,uint *entnum)
 
 {
   DObj *pDVar1;
   centity_s *pcVar2;
   uint uVar3;
-  uchar uVar4;
-  ulong uVar5;
+  uchar value;
+  ulong count;
+  centity_s *cent;
+  DObj *obj;
   
   uVar3 = this->nextDobj + 1U & 0x80000000;
   if ((int)uVar3 < 0) {
@@ -714,17 +720,17 @@ DObj * __thiscall UIViewer::AllocDobj(UIViewer *this,uint *param_1)
   this->nextDobj = uVar3;
   pDVar1 = this->dobjsPool[this->nextDobj];
   if (this->ingame == false) {
-    *param_1 = this->nextDobj;
+    *entnum = this->nextDobj;
   }
   else {
     pcVar2 = CG_Spawn(0);
-    *param_1 = (pcVar2->nextState).number;
+    *entnum = (pcVar2->nextState).number;
   }
-  uVar5 = 0x328;
-  uVar4 = '\0';
-  pcVar2 = CG_GetEntity(0,*param_1);
-  memset((uchar *)pcVar2,uVar4,uVar5);
-  *param_1 = *param_1 + 1;
+  count = 0x328;
+  value = '\0';
+  pcVar2 = CG_GetEntity(0,*entnum);
+  memset((uchar *)pcVar2,value,count);
+  *entnum = *entnum + 1;
   return pDVar1;
 }
 
@@ -762,6 +768,7 @@ XAnimTree_s * __thiscall UIViewer::GetAnimTree(UIViewer *this)
 {
   cg_s *pcVar1;
   XAnimTree_s *pXVar2;
+  cg_s *cgameGlob;
   
   if (this->ingame == false) {
     pXVar2 = this->animTree;
@@ -776,17 +783,18 @@ XAnimTree_s * __thiscall UIViewer::GetAnimTree(UIViewer *this)
 
 // 00781DE0  GetBGS  (ui/ui_viewer.cpp:902)
 
-/* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "Mode": Some values do not have unique names */
 
 bgs_t * __thiscall UIViewer::GetBGS(UIViewer *this)
 
 {
   cg_s *pcVar1;
   bgs_t *pbVar2;
+  cg_s *cgameGlob;
   
   if (this->ingame == false) {
     pbVar2 = &this->bgs;
@@ -803,16 +811,19 @@ bgs_t * __thiscall UIViewer::GetBGS(UIViewer *this)
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall UIViewer::FreeDobjs(UIViewer *this)
 
 {
   ushort uVar1;
-  int local_8;
+  int i;
   
   if (this->ingame != false) {
-    for (local_8 = 0; local_8 < this->nDrawDobjs; local_8 = local_8 + 1) {
-      uVar1 = DObjGetEntNum(this->drawDobjs[local_8].dobj);
+    for (i = 0; i < this->nDrawDobjs; i = i + 1) {
+      uVar1 = DObjGetEntNum(this->drawDobjs[i].dobj);
       CG_Free(0,uVar1 - 1);
     }
   }
@@ -827,48 +838,48 @@ void __thiscall UIViewer::FreeDobjs(UIViewer *this)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __thiscall UIViewer::GetLoadout(UIViewer *this,loadoutSlot_t param_1,bool param_2)
+int __thiscall UIViewer::GetLoadout(UIViewer *this,loadoutSlot_t loadoutSlot,bool defaultIfZero)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
+  char *className;
+  char *slotName;
   char *local_24;
-  char *local_1c;
+  char *ops;
   char *local_18;
   char *local_14;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  char *custom;
+  int ret;
+  char *cust1;
   
-  local_8 = BG_UnlockablesGetLoadoutSlotName(param_1);
-  local_c = 0xffffffff;
+  cust1 = BG_UnlockablesGetLoadoutSlotName(loadoutSlot);
+  ret = -1;
   if (this->ingame != false) {
     iVar1 = Dvar_GetInt("ui_multi_s");
     if (iVar1 != 0) {
-      pcVar3 = local_8;
-      pcVar2 = Dvar_GetString("ui_class");
-      local_c = BG_UnlockablesGetDefaultClassSlotIndexFromName(pcVar2,pcVar3);
+      slotName = cust1;
+      className = Dvar_GetString("ui_class");
+      ret = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,slotName);
       goto LAB_00781f5f;
     }
   }
   if (this->ingame == false) {
-    local_24 = (char *)(this->customname->current).integer;
+    local_24 = (this->customname->current).string;
   }
   else {
     local_24 = Dvar_GetString("ui_custom_name");
   }
-  local_10 = local_24;
-  local_1c = "cacLoadouts";
+  custom = local_24;
+  ops = "cacLoadouts";
   local_18 = local_24;
-  local_14 = local_8;
+  local_14 = cust1;
   LiveStats_GetCacDDLState();
-  local_c = LiveStats_GetDDLIntStat(this->controllerIndex,&local_1c,3);
+  ret = LiveStats_GetDDLIntStat(this->controllerIndex,&ops,3);
 LAB_00781f5f:
-  if ((param_2) && (local_c == 0)) {
-    local_c = BG_UnlockablesGetActualDefaultItem(param_1);
+  if ((defaultIfZero) && (ret == 0)) {
+    ret = BG_UnlockablesGetActualDefaultItem(loadoutSlot);
   }
-  return local_c;
+  return ret;
 }
 
 
@@ -901,47 +912,46 @@ PlayerParams * __thiscall UIViewer::PlayerParams::PlayerParams(PlayerParams *thi
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-WeaponParams * __thiscall UIViewer::WeaponParams::WeaponParams(WeaponParams *this,int param_1)
+WeaponParams * __thiscall UIViewer::WeaponParams::WeaponParams(WeaponParams *this,int slot)
 
 {
   int iVar1;
   uint uVar2;
   
-  this->weaponSlot = param_1;
-  iVar1 = GetLoadout((UIViewer *)&uiViewer,-(uint)(param_1 != 0) & LOADOUTSLOT_SECONDARY_WEAPON,true
-                    );
+  this->weaponSlot = slot;
+  iVar1 = GetLoadout((UIViewer *)&uiViewer,-(uint)(slot != 0) & LOADOUTSLOT_SECONDARY_WEAPON,true);
   this->weaponIndex = iVar1;
   iVar1 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_TOP,false);
+                     (-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_TOP,false);
   this->attachTopIndex = iVar1;
   iVar1 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_BOTTOM,false);
+                     (-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_BOTTOM,false);
   this->attachBottomIndex = iVar1;
   iVar1 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_TRIGGER,false);
+                     (-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_TRIGGER,false);
   this->attachTriggerIndex = iVar1;
   iVar1 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_MUZZLE,false);
+                     (-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_ATTACHMENT_MUZZLE,false);
   this->attachMuzzleIndex = iVar1;
   (this->weaponOptions).field0_0x0.i = 0;
-  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_CAMO,
+  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_CAMO,
                      false);
   (this->weaponOptions).field0_0x0.i =
        (this->weaponOptions).field0_0x0.i & 0xffffffc0 | uVar2 & 0x3f;
-  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_LENS,
+  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_LENS,
                      false);
   (this->weaponOptions).field0_0x0.i =
        (this->weaponOptions).field0_0x0.i & 0xfffffc3f | (uVar2 & 0xf) << 6;
-  uVar2 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_RETICLE,false);
+  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_RETICLE,
+                     false);
   (this->weaponOptions).field0_0x0.i =
        (this->weaponOptions).field0_0x0.i & 0xffff03ff | (uVar2 & 0x3f) << 10;
   uVar2 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_RETICLE_COLOR,false);
+                     (-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_RETICLE_COLOR,false);
   (this->weaponOptions).field0_0x0.i =
        (this->weaponOptions).field0_0x0.i & 0xfff8ffff | (uVar2 & 7) << 0x10;
-  uVar2 = GetLoadout((UIViewer *)&uiViewer,
-                     (-(uint)(param_1 != 0) & 0xc) + LOADOUTSLOT_PRIMARY_EMBLEM,false);
+  uVar2 = GetLoadout((UIViewer *)&uiViewer,(-(uint)(slot != 0) & 0xc) + LOADOUTSLOT_PRIMARY_EMBLEM,
+                     false);
   (this->weaponOptions).field0_0x0.i =
        (this->weaponOptions).field0_0x0.i & 0xfff7ffff | (uVar2 & 1) << 0x13;
   (this->weaponOptions).field0_0x0.i = (this->weaponOptions).field0_0x0.i & 0xfc1fffff | 0x200000;
@@ -958,37 +968,41 @@ WeaponParams * __thiscall UIViewer::WeaponParams::WeaponParams(WeaponParams *thi
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __thiscall UIViewer::Update(UIViewer *this,float param_1)
+void __thiscall UIViewer::Update(UIViewer *this,float deltaTime)
 
 {
   dvar_s *pdVar1;
   bool bVar2;
   int extraout_EAX;
-  char *pcVar3;
-  bgs_t *pbVar4;
-  centity_s *pcVar5;
-  XAnimTree_s *pXVar6;
-  int iVar7;
+  char *s0;
+  bgs_t *pbVar3;
+  centity_s *pcVar4;
+  XAnimTree_s *pXVar5;
+  int iVar6;
+  WeaponParams *pWVar7;
   WeaponParams *pWVar8;
-  WeaponParams *pWVar9;
-  sortedItemParams_t sVar10;
-  char *pcVar11;
-  clientInfo_t *pcVar12;
+  sortedItemParams_t sVar9;
+  char *s1;
+  clientInfo_t *ci;
   bool local_154;
-  pml_t local_12c;
+  pml_t pml;
   uint local_9c;
-  WeaponParams local_98;
-  WeaponParams local_78;
-  WeaponParams local_58;
-  PlayerParams local_38;
-  bool local_25;
-  WeaponParams local_24;
+  WeaponParams baseWeaponParam;
+  WeaponParams weaponParam_2;
+  WeaponParams weaponParamForCombatRecord;
+  PlayerParams playerParams;
+  bool isLocked;
+  WeaponParams weaponParam;
   
   local_9c = __security_cookie ^ (uint)&stack0xfffffffc;
   this->mode = (this->modeDvar->current).integer;
-  WeaponParams::WeaponParams(&local_24,(this->equipWeapon->current).integer);
-  PlayerParams::PlayerParams(&local_38);
+  WeaponParams::WeaponParams(&weaponParam,(this->equipWeapon->current).integer);
+  PlayerParams::PlayerParams(&playerParams);
   pdVar1 = this->sceneOrigin;
   if ((((pdVar1->current).value == this->prevSceneOrigin[0]) &&
       ((pdVar1->current).vector[1] == this->prevSceneOrigin[1])) &&
@@ -1005,19 +1019,19 @@ void __thiscall UIViewer::Update(UIViewer *this,float param_1)
     this->prevSceneOrigin[2] = (pdVar1->current).vector[2];
     State::Invalidate(&this->prevState);
   }
-  if (local_24.weaponIndex != -1) {
-    local_25 = false;
+  if (weaponParam.weaponIndex != -1) {
+    isLocked = false;
     switch(this->mode) {
     case MODE_PLAYER:
-      AddPlayerToScene(this,&local_38,&local_24,false);
+      AddPlayerToScene(this,&playerParams,&weaponParam,false);
       break;
     case MODE_EDIT_PLAYER_HEAD:
-      local_38.headIndex = DAT_098c38f8;
-      AddPlayerToScene(this,&local_38,&local_24,false);
+      playerParams.headIndex = DAT_098c38f8;
+      AddPlayerToScene(this,&playerParams,&weaponParam,false);
       break;
     case MODE_EDIT_PLAYER_BODY:
-      local_38.bodyIndex = BG_UnlockablesGetAssociatedBody(DAT_098c38f8);
-      AddPlayerToScene(this,&local_38,&local_24,false);
+      playerParams.bodyIndex = BG_UnlockablesGetAssociatedBody(DAT_098c38f8);
+      AddPlayerToScene(this,&playerParams,&weaponParam,false);
       break;
     case MODE_EDIT_PLAYER_FACE_PATTERN:
       bVar2 = BG_UnlockablesIsItemClassified(DAT_098c38f8);
@@ -1028,119 +1042,119 @@ void __thiscall UIViewer::Update(UIViewer *this,float param_1)
       else {
         local_154 = false;
       }
-      local_25 = local_154;
-      local_38.facePatternIndex = ~-(uint)(local_154 != false) & DAT_098c38fc;
-      AddPlayerToScene(this,&local_38,&local_24,local_154);
+      isLocked = local_154;
+      playerParams.facePatternIndex = ~-(uint)(local_154 != false) & DAT_098c38fc;
+      AddPlayerToScene(this,&playerParams,&weaponParam,local_154);
       break;
     case MODE_EDIT_PLAYER_FACE_PATTERN_COLOR:
-      local_38.faceColorIndex = DAT_098c38fc;
-      AddPlayerToScene(this,&local_38,&local_24,false);
+      playerParams.faceColorIndex = DAT_098c38fc;
+      AddPlayerToScene(this,&playerParams,&weaponParam,false);
       break;
     case MODE_CHOOSE_CLASS_PLAYER:
-      AddPlayerToScene(this,&local_38,&local_24,false);
+      AddPlayerToScene(this,&playerParams,&weaponParam,false);
       break;
     case MODE_COMBAT_RECORD:
-      local_58.weaponIndex = -1;
-      local_58.attachTopIndex = -1;
-      local_58.attachBottomIndex = -1;
-      local_58.attachTriggerIndex = -1;
-      local_58.attachMuzzleIndex = -1;
-      local_58.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0xffffffff;
-      local_58.currentAttachmentPoint = -1;
-      local_58.weaponSlot = WEAPON_PRIMARY;
-      sVar10 = ITEM_INDEX;
+      weaponParamForCombatRecord.weaponIndex = -1;
+      weaponParamForCombatRecord.attachTopIndex = -1;
+      weaponParamForCombatRecord.attachBottomIndex = -1;
+      weaponParamForCombatRecord.attachTriggerIndex = -1;
+      weaponParamForCombatRecord.attachMuzzleIndex = -1;
+      weaponParamForCombatRecord.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0xffffffff;
+      weaponParamForCombatRecord.currentAttachmentPoint = -1;
+      weaponParamForCombatRecord.weaponSlot = WEAPON_PRIMARY;
+      sVar9 = ITEM_INDEX;
       bVar2 = Dvar_GetBool("ui_showFriendsCombatRecord");
-      LiveCombatRecord_GetSortedItemData(0,bVar2,sVar10);
+      LiveCombatRecord_GetSortedItemData(0,bVar2,sVar9);
       _ftol2_sse();
-      local_58.attachTopIndex = 0;
-      local_58.attachBottomIndex = 0;
-      local_58.attachTriggerIndex = 0;
-      local_58.attachMuzzleIndex = 0;
-      local_58.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
-      sVar10 = ITEM_INDEX;
+      weaponParamForCombatRecord.attachTopIndex = 0;
+      weaponParamForCombatRecord.attachBottomIndex = 0;
+      weaponParamForCombatRecord.attachTriggerIndex = 0;
+      weaponParamForCombatRecord.attachMuzzleIndex = 0;
+      weaponParamForCombatRecord.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
+      sVar9 = ITEM_INDEX;
       bVar2 = Dvar_GetBool("ui_showFriendsCombatRecord");
-      LiveCombatRecord_GetSortedItemData(6,bVar2,sVar10);
+      LiveCombatRecord_GetSortedItemData(6,bVar2,sVar9);
       _ftol2_sse();
-      local_38.bodyIndex = extraout_EAX;
-      AddPlayerToScene(this,&local_38,&local_58,false);
+      playerParams.bodyIndex = extraout_EAX;
+      AddPlayerToScene(this,&playerParams,&weaponParamForCombatRecord,false);
       break;
     case MODE_WEAPON:
-      AddWeaponToScene(this,&local_24,&local_24);
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
       break;
     case MODE_EDIT_WEAPON:
-      local_78.weaponSlot = ~WEAPON_PRIMARY;
-      local_78.weaponIndex = -1;
-      local_78.attachTopIndex = -1;
-      local_78.attachBottomIndex = -1;
-      local_78.attachTriggerIndex = -1;
-      local_78.attachMuzzleIndex = -1;
-      local_78.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0xffffffff;
-      local_78.currentAttachmentPoint = -1;
-      pcVar11 = "primary";
-      pcVar3 = Dvar_GetString("selected_loadout_slot");
-      iVar7 = I_strcmp(pcVar3,pcVar11);
-      local_78.weaponSlot = (WeaponSlot)(iVar7 != 0);
-      local_78.weaponIndex = DAT_098c38f8;
-      local_78.attachTopIndex = 0;
-      local_78.attachBottomIndex = 0;
-      local_78.attachTriggerIndex = 0;
-      local_78.attachMuzzleIndex = 0;
-      local_78.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
+      weaponParam_2.weaponSlot = ~WEAPON_PRIMARY;
+      weaponParam_2.weaponIndex = -1;
+      weaponParam_2.attachTopIndex = -1;
+      weaponParam_2.attachBottomIndex = -1;
+      weaponParam_2.attachTriggerIndex = -1;
+      weaponParam_2.attachMuzzleIndex = -1;
+      weaponParam_2.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0xffffffff;
+      weaponParam_2.currentAttachmentPoint = -1;
+      s1 = "primary";
+      s0 = Dvar_GetString("selected_loadout_slot");
+      iVar6 = I_strcmp(s0,s1);
+      weaponParam_2.weaponSlot = (WeaponSlot)(iVar6 != 0);
+      weaponParam_2.weaponIndex = DAT_098c38f8;
+      weaponParam_2.attachTopIndex = 0;
+      weaponParam_2.attachBottomIndex = 0;
+      weaponParam_2.attachTriggerIndex = 0;
+      weaponParam_2.attachMuzzleIndex = 0;
+      weaponParam_2.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
       bVar2 = BG_UnlockablesIsItemClassified(DAT_098c38f8);
       if (bVar2) {
         State::Invalidate(&this->prevState);
         FreeDobjs(this);
       }
       else {
-        AddWeaponToScene(this,&local_78,&local_78);
+        AddWeaponToScene(this,&weaponParam_2,&weaponParam_2);
       }
       break;
     case MODE_EDIT_CAMO:
-      local_24.weaponOptions.field0_0x0 =
+      weaponParam.weaponOptions.field0_0x0 =
            (renderOptions_s_u_0)
-           ((uint)local_24.weaponOptions.field0_0x0 & 0xffffffc0 | DAT_098c391c & 0x3f);
-      AddWeaponToScene(this,&local_24,&local_24);
+           ((uint)weaponParam.weaponOptions.field0_0x0 & 0xffffffc0 | DAT_098c391c & 0x3f);
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
       break;
     case MODE_EDIT_ATTACHMENT_TOP:
     case MODE_EDIT_ATTACHMENT_BOTTOM:
     case MODE_EDIT_ATTACHMENT_TRIGGER:
     case MODE_EDIT_ATTACHMENT_MUZZLE:
-      pWVar8 = &local_24;
-      pWVar9 = &local_98;
-      for (iVar7 = 8; iVar7 != 0; iVar7 = iVar7 + -1) {
-        pWVar9->weaponSlot = pWVar8->weaponSlot;
+      pWVar7 = &weaponParam;
+      pWVar8 = &baseWeaponParam;
+      for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
+        pWVar8->weaponSlot = pWVar7->weaponSlot;
+        pWVar7 = (WeaponParams *)&pWVar7->weaponIndex;
         pWVar8 = (WeaponParams *)&pWVar8->weaponIndex;
-        pWVar9 = (WeaponParams *)&pWVar9->weaponIndex;
       }
-      SetAttachmentIndex(this,&local_24,DAT_098c3910);
-      ClearAttachmentIndex(this,&local_98);
-      local_24.currentAttachmentPoint = DAT_098c3910;
-      AddWeaponToScene(this,&local_24,&local_98);
+      SetAttachmentIndex(this,&weaponParam,DAT_098c3910);
+      ClearAttachmentIndex(this,&baseWeaponParam);
+      weaponParam.currentAttachmentPoint = DAT_098c3910;
+      AddWeaponToScene(this,&weaponParam,&baseWeaponParam);
       break;
     case MODE_EDIT_TAG:
-      local_24.weaponOptions.field0_0x0 =
+      weaponParam.weaponOptions.field0_0x0 =
            (renderOptions_s_u_0)
-           ((uint)local_24.weaponOptions.field0_0x0 & 0xffefffff | (DAT_098c391c & 1) << 0x14);
-      AddWeaponToScene(this,&local_24,&local_24);
+           ((uint)weaponParam.weaponOptions.field0_0x0 & 0xffefffff | (DAT_098c391c & 1) << 0x14);
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
       break;
     case MODE_EDIT_EMBLEM:
-      local_24.weaponOptions.field0_0x0 =
+      weaponParam.weaponOptions.field0_0x0 =
            (renderOptions_s_u_0)
-           ((uint)local_24.weaponOptions.field0_0x0 & 0xfff7ffff | (DAT_098c391c & 1) << 0x13);
-      AddWeaponToScene(this,&local_24,&local_24);
+           ((uint)weaponParam.weaponOptions.field0_0x0 & 0xfff7ffff | (DAT_098c391c & 1) << 0x13);
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
       break;
     case MODE_AAR_WEAPON:
-      local_24.weaponSlot = WEAPON_PRIMARY;
-      local_24.weaponIndex = Dvar_GetInt("ui_aar_curr_unlocked_weapon_index");
-      local_24.attachTopIndex = 0;
-      local_24.attachBottomIndex = 0;
-      local_24.attachTriggerIndex = 0;
-      local_24.attachMuzzleIndex = 0;
-      local_24.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
-      AddWeaponToScene(this,&local_24,&local_24);
+      weaponParam.weaponSlot = WEAPON_PRIMARY;
+      weaponParam.weaponIndex = Dvar_GetInt("ui_aar_curr_unlocked_weapon_index");
+      weaponParam.attachTopIndex = 0;
+      weaponParam.attachBottomIndex = 0;
+      weaponParam.attachTriggerIndex = 0;
+      weaponParam.attachMuzzleIndex = 0;
+      weaponParam.weaponOptions.field0_0x0.i = (renderOptions_s_u_0)0x0;
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
       break;
     case MODE_CHOOSE_CLASS_WEAPON:
-      AddWeaponToScene(this,&local_24,&local_24);
+      AddWeaponToScene(this,&weaponParam,&weaponParam);
     }
     if (0 < this->nDrawDobjs) {
       if (((int)this->mode < 0) || (6 < (int)this->mode)) {
@@ -1150,28 +1164,28 @@ void __thiscall UIViewer::Update(UIViewer *this,float param_1)
         bVar2 = true;
       }
       if (bVar2) {
-        pbVar4 = GetBGS(this);
-        *(bgs_t **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = pbVar4;
-        local_12c.groundTrace.normal.vec.v[0] = 0.0;
-        local_12c.groundTrace.normal.vec.v[1] = 0.0;
-        local_12c.groundTrace.normal.vec.v[2] = 0.0;
-        local_12c.groundTrace.normal.vec.v[3] = 0.0;
-        memset((uchar *)&local_12c,'\0',0x8c);
-        local_12c.msec = (int)(param_1 * 1000.0);
-        PM_Weapon(&this->pmove,&local_12c);
-        pcVar5 = GetPlayerEntity(this);
-        pcVar5->nextValid = 1;
-        pcVar5 = GetPlayerEntity(this);
-        (pcVar5->nextState).eType = 1;
-        pcVar5 = GetPlayerEntity(this);
-        *(int *)&(pcVar5->nextState).un2 = (int)(this->ps).legsAnim;
-        pcVar5 = GetPlayerEntity(this);
-        *(int *)((int)&(pcVar5->nextState).un2 + 4) = (int)(this->ps).torsoAnim;
-        pXVar6 = GetAnimTree(this);
-        (this->bgs).clientinfo[0].pXAnimTree = pXVar6;
-        pcVar12 = (this->bgs).clientinfo;
-        pcVar5 = GetPlayerEntity(this);
-        BG_PlayerAnimation(0,&pcVar5->nextState,pcVar12);
+        pbVar3 = GetBGS(this);
+        *(bgs_t **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = pbVar3;
+        pml.groundTrace.normal.vec.v[0] = 0.0;
+        pml.groundTrace.normal.vec.v[1] = 0.0;
+        pml.groundTrace.normal.vec.v[2] = 0.0;
+        pml.groundTrace.normal.vec.v[3] = 0.0;
+        memset((uchar *)&pml,'\0',0x8c);
+        pml.msec = (int)(deltaTime * 1000.0);
+        PM_Weapon(&this->pmove,&pml);
+        pcVar4 = GetPlayerEntity(this);
+        pcVar4->nextValid = 1;
+        pcVar4 = GetPlayerEntity(this);
+        (pcVar4->nextState).eType = 1;
+        pcVar4 = GetPlayerEntity(this);
+        *(int *)&(pcVar4->nextState).un2 = (int)(this->ps).legsAnim;
+        pcVar4 = GetPlayerEntity(this);
+        *(int *)((int)&(pcVar4->nextState).un2 + 4) = (int)(this->ps).torsoAnim;
+        pXVar5 = GetAnimTree(this);
+        (this->bgs).clientinfo[0].pXAnimTree = pXVar5;
+        ci = (this->bgs).clientinfo;
+        pcVar4 = GetPlayerEntity(this);
+        BG_PlayerAnimation(0,&pcVar4->nextState,ci);
         *(undefined4 *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = 0;
       }
     }
@@ -1187,23 +1201,24 @@ void __thiscall UIViewer::Update(UIViewer *this,float param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
+void __thiscall UIViewer::DrawScene(UIViewer *this,uint eyeToRender)
 
 {
   bool bVar1;
   float fVar2;
   double dVar3;
   float local_28;
-  int local_24;
-  uint local_20;
-  float local_1c;
-  uint local_18;
-  float local_14;
-  int local_10;
-  cg_s *local_c;
-  float local_8;
+  int i;
+  int screenWidth;
+  float dxDzAtDefaultAspectRatio;
+  int screenHeight;
+  float aspect;
+  int nDraws;
+  cg_s *cgameGlob;
+  float deltaTime;
   
   fVar2 = (float)cls.frametime * 0.001 * (this->timeScale->current).value;
   local_28 = fVar2;
@@ -1213,46 +1228,45 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
   if (0.0 <= 0.0 - fVar2) {
     local_28 = 0.0;
   }
-  local_8 = local_28;
+  deltaTime = local_28;
   Update(this,local_28);
   if (this->ingame == false) {
     IK_UpdateTimeAll(cls.realtime,0,true);
     R_ClearScene(0);
     CL_ResetSkeletonCache(0);
   }
-  local_c = CG_GetLocalClientGlobals(0);
+  cgameGlob = CG_GetLocalClientGlobals(0);
   if (this->ingame == false) {
-    memset((uchar *)&local_c->refdef,'\0',0x18510);
-    (local_c->refdef).exposure = ((rgp.world)->sunParse).sunSettings[0].exposure;
+    memset((uchar *)&cgameGlob->refdef,'\0',0x18510);
+    (cgameGlob->refdef).exposure = ((rgp.world)->sunParse).sunSettings[0].exposure;
     dVar3 = (double)((this->fov->current).value * 0.017453292 * 0.5);
     __libm_sse2_tan((double)CONCAT44(this,local_28));
-    local_1c = (float)dVar3;
-    (local_c->refdef).tanHalfFovX = local_1c;
-    (local_c->refdef).tanHalfFovY = local_1c;
-    (local_c->refdef).fov_x = (float)(this->fov->current).integer;
-    (local_c->refdef).x = 0;
-    (local_c->refdef).y = 0;
-    local_20 = 0x200;
-    local_18 = 0x200;
-    CL_GetScreenDimensions((int *)&local_20,(int *)&local_18,&local_14);
-    (local_c->refdef).width = local_20;
-    (local_c->refdef).height = local_18;
-    (local_c->refdef).localClientNum = 0;
+    dxDzAtDefaultAspectRatio = (float)dVar3;
+    (cgameGlob->refdef).tanHalfFovX = dxDzAtDefaultAspectRatio;
+    (cgameGlob->refdef).tanHalfFovY = dxDzAtDefaultAspectRatio;
+    (cgameGlob->refdef).fov_x = (float)(this->fov->current).integer;
+    (cgameGlob->refdef).x = 0;
+    (cgameGlob->refdef).y = 0;
+    screenWidth = 0x200;
+    screenHeight = 0x200;
+    CL_GetScreenDimensions(&screenWidth,&screenHeight,&aspect);
+    (cgameGlob->refdef).width = screenWidth;
+    (cgameGlob->refdef).height = screenHeight;
+    (cgameGlob->refdef).localClientNum = 0;
   }
-  UpdateCamera(this,&local_c->refdef,local_8);
-  R_SetLodOrigin(&local_c->refdef);
-  local_10 = 0;
-  for (local_24 = 0; local_24 < this->nDrawDobjs; local_24 = local_24 + 1) {
-    bVar1 = DrawDobj::Draw(this->drawDobjs + local_24,local_8,(this->lightMultiplier->current).value
-                          );
-    local_10 = (uint)bVar1 + local_10;
+  UpdateCamera(this,&cgameGlob->refdef,deltaTime);
+  R_SetLodOrigin(&cgameGlob->refdef);
+  nDraws = 0;
+  for (i = 0; i < this->nDrawDobjs; i = i + 1) {
+    bVar1 = DrawDobj::Draw(this->drawDobjs + i,deltaTime,(this->lightMultiplier->current).value);
+    nDraws = (uint)bVar1 + nDraws;
   }
-  Dvar_SetBool(this->streaming,local_10 == 0);
+  Dvar_SetBool(this->streaming,nDraws == 0);
   if ((this->dumpAnims->current).enabled != false) {
     DObjDisplayAnim(this->drawDobjs[0].dobj,"After DObjInitServerTime\n");
   }
   if (this->ingame == false) {
-    R_InitPrimaryLights((local_c->refdef).primaryLights);
+    R_InitPrimaryLights((cgameGlob->refdef).primaryLights);
     R_ClearShadowedPrimaryLightHistory(0);
     CG_VisionSetApplyToRefdef(0,false);
     Sys_WaitWorkerCmdInternal(&dobj_skelWorkerCmd);
@@ -1262,7 +1276,7 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
     R_UI3D_SetupBackendData
               ((GfxUI3DBackend *)
                ((int)frontEndDataOut->viewInfo + frontEndDataOut->viewInfoIndex * 0x38e0 + 0x37e4));
-    CL_RenderScene(&local_c->refdef,0);
+    CL_RenderScene(&cgameGlob->refdef,0);
   }
   return;
 }
@@ -1285,16 +1299,16 @@ void __thiscall UIViewer::DrawDobj::Init(DrawDobj *this)
 // 00782DD0  Set  (ui/ui_viewer.cpp:1282)
 
 void __thiscall
-UIViewer::DrawDobj::Set(DrawDobj *this,WeaponParams *param_1,WeaponVariantDef *param_2,bool param_3)
+UIViewer::DrawDobj::Set(DrawDobj *this,WeaponParams *weapParam,WeaponVariantDef *wvd,bool hero)
 
 {
-  PlayerParams local_14;
+  PlayerParams playerParams;
   
-  local_14.bodyIndex = -1;
-  local_14.headIndex = -1;
-  local_14.facePatternIndex = -1;
-  local_14.faceColorIndex = -1;
-  Set(this,&local_14,param_1,param_2,param_3,false);
+  playerParams.bodyIndex = -1;
+  playerParams.headIndex = -1;
+  playerParams.facePatternIndex = -1;
+  playerParams.faceColorIndex = -1;
+  Set(this,&playerParams,weapParam,wvd,hero,false);
   return;
 }
 
@@ -1303,17 +1317,17 @@ UIViewer::DrawDobj::Set(DrawDobj *this,WeaponParams *param_1,WeaponVariantDef *p
 
 void __thiscall
 UIViewer::DrawDobj::Set
-          (DrawDobj *this,PlayerParams *param_1,WeaponParams *param_2,WeaponVariantDef *param_3,
-          bool param_4,bool param_5)
+          (DrawDobj *this,PlayerParams *playerParams,WeaponParams *weapParam,WeaponVariantDef *wvd,
+          bool hero,bool lock)
 
 {
-  (this->weaponOptions).field0_0x0 = (param_2->weaponOptions).field0_0x0;
+  (this->weaponOptions).field0_0x0 = (weapParam->weaponOptions).field0_0x0;
   (this->weaponOptions).field0_0x0.i =
-       (this->weaponOptions).field0_0x0.i & 0x3ffffff | param_1->facePatternIndex << 0x1a;
-  this->heroLighting = param_4;
+       (this->weaponOptions).field0_0x0.i & 0x3ffffff | playerParams->facePatternIndex << 0x1a;
+  this->heroLighting = hero;
   this->startTime = cls.realtime;
-  this->weaponVariantDef = param_3;
-  this->locked = param_5;
+  this->weaponVariantDef = wvd;
+  this->locked = lock;
   return;
 }
 
@@ -1323,118 +1337,119 @@ UIViewer::DrawDobj::Set
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __thiscall UIViewer::DrawDobj::Draw(DrawDobj *this,float param_1,float param_2)
+bool __thiscall UIViewer::DrawDobj::Draw(DrawDobj *this,float deltaTime,float lightMultiplier)
 
 {
   bool bVar1;
   ushort uVar2;
-  char *pcVar3;
-  uint uVar4;
-  float fVar5;
-  double dVar6;
-  float *pfVar7;
-  float fVar8;
-  float fVar9;
-  float fVar10;
-  int iVar11;
-  ShaderConstantSet *pSVar12;
-  ShaderConstantSet *pSVar13;
-  float fVar14;
-  byte *pbVar15;
-  float fVar16;
-  int iVar17;
+  char *name;
+  uint uVar3;
+  float fVar4;
+  double dVar5;
+  float *lightingOrigin_00;
+  float materialTime2;
+  float burnFraction;
+  float wetness;
+  int altXModel;
+  ShaderConstantSet *dobjConstantSet;
+  ShaderConstantSet *dobjConstantSetExtraCam;
+  float lightingOriginToleranceSq;
+  uchar *puVar6;
+  float scale;
+  int iVar7;
   undefined4 in_stack_ffffff94;
-  byte local_61;
-  float local_60 [3];
-  float local_54 [9];
-  undefined4 local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  int local_1c;
-  ShaderConstantSet *local_18;
-  uint local_14;
-  float local_10 [3];
+  uchar boneIndex;
+  float origin [3];
+  float axis [9];
+  float LIGHT_CYCLE;
+  float MAX_LIGHT;
+  float deltaTime_2;
+  float ratio;
+  float l;
+  int textureOverrideIndex;
+  ShaderConstantSet *cs;
+  uint renderFxFlags;
+  float lightingOrigin [3];
   
   bVar1 = R_StreamTouchDObjAndCheck(this->dobj,0);
   if (bVar1) {
-    local_10[0] = 0.0;
-    local_10[1] = 0.0;
-    local_10[2] = 0.0;
-    local_14 = -(uint)(this->depthHack != false) & 3;
-    pcVar3 = Clan_GetName(0);
-    local_1c = CG_SetupWeaponOptionsRender
-                         (0,(this->pose).origin,this->weaponVariantDef,
-                          (renderOptions_s)
-                          *(renderOptions_s_u_0 *)&(this->weaponOptions).field0_0x0.s,
-                          &this->constantSet,pcVar3);
-    local_20 = 1.0;
+    lightingOrigin[0] = 0.0;
+    lightingOrigin[1] = 0.0;
+    lightingOrigin[2] = 0.0;
+    renderFxFlags = -(uint)(this->depthHack != false) & 3;
+    name = Clan_GetName(0);
+    textureOverrideIndex =
+         CG_SetupWeaponOptionsRender
+                   (0,(this->pose).origin,this->weaponVariantDef,
+                    (renderOptions_s)*(renderOptions_s_u_0 *)&(this->weaponOptions).field0_0x0.s,
+                    &this->constantSet,name);
+    l = 1.0;
     if (this->heroLighting != false) {
-      local_2c = 4.0;
-      local_30 = 0x40000000;
-      local_28 = (float)(cls.realtime - this->startTime) * 0.001;
-      dVar6 = (double)((local_28 * 6.2831855) / 2.0);
+      MAX_LIGHT = 4.0;
+      LIGHT_CYCLE = 2.0;
+      deltaTime_2 = (float)(cls.realtime - this->startTime) * 0.001;
+      dVar5 = (double)((deltaTime_2 * 6.2831855) / 2.0);
       __libm_sse2_sin((double)CONCAT44(in_stack_ffffff94,this));
-      local_24 = ((float)dVar6 + 1.0) * 0.5;
+      ratio = ((float)dVar5 + 1.0) * 0.5;
       if (((uiViewer.heroHighlight)->current).enabled != false) {
-        local_20 = local_2c * local_24 + 1.0;
+        l = MAX_LIGHT * ratio + 1.0;
       }
     }
     if (this->locked != false) {
-      param_2 = param_2 * 0.03;
+      lightMultiplier = lightMultiplier * 0.03;
     }
-    local_20 = local_20 * param_2;
-    R_SetShaderConstantSetValue(&this->constantSet,4,local_20,0.0,0.0,0.0);
-    R_SetShaderConstantSetValue(&this->constantSet,5,0.0,local_20,0.0,0.0);
-    R_SetShaderConstantSetValue(&this->constantSet,6,0.0,0.0,local_20,0.0);
-    pSVar12 = &this->constantSet;
-    fVar5 = this->yaw - uiViewer.camera.yaw;
+    l = l * lightMultiplier;
+    R_SetShaderConstantSetValue(&this->constantSet,4,l,0.0,0.0,0.0);
+    R_SetShaderConstantSetValue(&this->constantSet,5,0.0,l,0.0,0.0);
+    R_SetShaderConstantSetValue(&this->constantSet,6,0.0,0.0,l,0.0);
+    dobjConstantSet = &this->constantSet;
+    fVar4 = this->yaw - uiViewer.camera.yaw;
     (this->pose).angles[0] = 0.0;
-    (this->pose).angles[1] = fVar5;
+    (this->pose).angles[1] = fVar4;
     (this->pose).angles[2] = 0.0;
-    fVar16 = 1.0;
-    fVar14 = 0.0;
-    pSVar13 = (ShaderConstantSet *)0x0;
-    iVar11 = -1;
-    fVar10 = 0.0;
-    fVar9 = 0.0;
-    fVar8 = 0.0;
-    fVar5 = 0.0;
-    pfVar7 = local_10;
-    uVar4 = local_14;
-    iVar17 = local_1c;
-    local_18 = pSVar12;
+    scale = 1.0;
+    lightingOriginToleranceSq = 0.0;
+    dobjConstantSetExtraCam = (ShaderConstantSet *)0x0;
+    altXModel = -1;
+    wetness = 0.0;
+    burnFraction = 0.0;
+    materialTime2 = 0.0;
+    fVar4 = 0.0;
+    lightingOrigin_00 = lightingOrigin;
+    uVar3 = renderFxFlags;
+    iVar7 = textureOverrideIndex;
+    cs = dobjConstantSet;
     uVar2 = DObjGetEntNum(this->dobj);
-    R_AddDObjToScene(this->dobj,&this->pose,uVar2 - 1,uVar4,pfVar7,fVar5,fVar8,fVar9,fVar10,iVar11,
-                     iVar17,pSVar12,pSVar13,fVar14,fVar16);
+    R_AddDObjToScene(this->dobj,&this->pose,uVar2 - 1,uVar3,lightingOrigin_00,fVar4,materialTime2,
+                     burnFraction,wetness,altXModel,iVar7,dobjConstantSet,dobjConstantSetExtraCam,
+                     lightingOriginToleranceSq,scale);
     if (((uiViewer.drawAttachPoints)->current).enabled != false) {
-      local_61 = 0xfe;
-      iVar17 = -1;
-      pbVar15 = &local_61;
-      uVar4 = SL_FindString("tag_weapon_right",SCRIPTINSTANCE_SERVER);
-      iVar17 = DObjGetBoneIndex(this->dobj,uVar4,pbVar15,iVar17);
-      if (iVar17 != 0) {
-        iVar17 = CG_DObjGetWorldBoneMatrix
-                           (&this->pose,this->dobj,(uint)local_61,(float (*) [3])local_54,local_60);
-        if (iVar17 != 0) {
-          CL_AddDebugSphere(local_60,1.0,colorRed,0xc,0,0);
+      boneIndex = 0xfe;
+      iVar7 = -1;
+      puVar6 = &boneIndex;
+      uVar3 = SL_FindString("tag_weapon_right",SCRIPTINSTANCE_SERVER);
+      iVar7 = DObjGetBoneIndex(this->dobj,uVar3,puVar6,iVar7);
+      if (iVar7 != 0) {
+        iVar7 = CG_DObjGetWorldBoneMatrix
+                          (&this->pose,this->dobj,(uint)boneIndex,(float (*) [3])axis,origin);
+        if (iVar7 != 0) {
+          CL_AddDebugSphere(origin,1.0,colorRed,0xc,0,0);
         }
       }
-      local_61 = 0xfe;
-      iVar17 = -1;
-      pbVar15 = &local_61;
-      uVar4 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
-      iVar17 = DObjGetBoneIndex(this->dobj,uVar4,pbVar15,iVar17);
-      if (iVar17 != 0) {
-        iVar17 = CG_DObjGetWorldBoneMatrix
-                           (&this->pose,this->dobj,(uint)local_61,(float (*) [3])local_54,local_60);
-        if (iVar17 != 0) {
-          CL_AddDebugSphere(local_60,1.0,colorLtYellow,0xc,0,0);
+      boneIndex = 0xfe;
+      iVar7 = -1;
+      puVar6 = &boneIndex;
+      uVar3 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
+      iVar7 = DObjGetBoneIndex(this->dobj,uVar3,puVar6,iVar7);
+      if (iVar7 != 0) {
+        iVar7 = CG_DObjGetWorldBoneMatrix
+                          (&this->pose,this->dobj,(uint)boneIndex,(float (*) [3])axis,origin);
+        if (iVar7 != 0) {
+          CL_AddDebugSphere(origin,1.0,colorLtYellow,0xc,0,0);
         }
       }
     }
-    DObjUpdateClientInfo(this->dobj,param_1,0);
+    DObjUpdateClientInfo(this->dobj,deltaTime,0);
     bVar1 = true;
   }
   else {
@@ -1449,9 +1464,12 @@ bool __thiscall UIViewer::DrawDobj::Draw(DrawDobj *this,float param_1,float para
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,WeaponParams *param_1)
+WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,WeaponParams *weapParams)
 
 {
   char cVar1;
@@ -1468,38 +1486,42 @@ WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,Weapo
   char *local_7c;
   char *local_78;
   char *local_74;
-  uint local_6c;
-  char *local_64 [3];
+  int i;
+  char *weaponRef;
+  char *attachRefs [3];
   char *local_58;
   char cStack_55;
-  char local_54 [68];
+  char weaponDefName [68];
   uint local_10;
-  char local_9;
-  uint local_8;
+  bool isDualWield;
+  int weaponDefIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  eVar2 = BG_UnlockablesGetItemAttachment(param_1->weaponIndex,param_1->attachBottomIndex);
-  local_9 = eVar2 == ATTACHMENT_DW;
-  local_78 = BG_UnlockablesGetItemRef(param_1->weaponIndex);
-  local_64[0] = BG_UnlockablesGetItemAttachmentRef(param_1->weaponIndex,param_1->attachTopIndex);
-  if (local_9 == '\0') {
-    local_74 = BG_UnlockablesGetItemAttachmentRef(param_1->weaponIndex,param_1->attachBottomIndex);
+  eVar2 = BG_UnlockablesGetItemAttachment(weapParams->weaponIndex,weapParams->attachBottomIndex);
+  isDualWield = eVar2 == ATTACHMENT_DW;
+  local_78 = BG_UnlockablesGetItemRef(weapParams->weaponIndex);
+  attachRefs[0] =
+       BG_UnlockablesGetItemAttachmentRef(weapParams->weaponIndex,weapParams->attachTopIndex);
+  if (isDualWield == false) {
+    local_74 = BG_UnlockablesGetItemAttachmentRef
+                         (weapParams->weaponIndex,weapParams->attachBottomIndex);
   }
   else {
     local_74 = (char *)0x0;
   }
-  local_64[1] = local_74;
-  local_64[2] = BG_UnlockablesGetItemAttachmentRef(param_1->weaponIndex,param_1->attachTriggerIndex)
-  ;
-  local_58 = BG_UnlockablesGetItemAttachmentRef(param_1->weaponIndex,param_1->attachMuzzleIndex);
-  local_7c = local_54;
+  attachRefs[1] = local_74;
+  attachRefs[2] =
+       BG_UnlockablesGetItemAttachmentRef(weapParams->weaponIndex,weapParams->attachTriggerIndex);
+  local_58 = BG_UnlockablesGetItemAttachmentRef
+                       (weapParams->weaponIndex,weapParams->attachMuzzleIndex);
+  local_7c = weaponDefName;
   do {
     cVar1 = *local_78;
     *local_7c = cVar1;
     local_78 = local_78 + 1;
     local_7c = local_7c + 1;
   } while (cVar1 != '\0');
-  if (local_9 != '\0') {
+  if (isDualWield != false) {
     pcVar4 = &cStack_55;
     do {
       local_88 = pcVar4;
@@ -1509,9 +1531,9 @@ WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,Weapo
     pcVar4[1] = 'w';
     local_88[3] = '\0';
   }
-  for (local_6c = 0; local_6c < 4; local_6c = local_6c + 1) {
-    if (local_64[local_6c] != (char *)0x0) {
-      iVar3 = I_strcmp(local_64[local_6c],"none");
+  for (i = 0; (uint)i < 4; i = i + 1) {
+    if (attachRefs[i] != (char *)0x0) {
+      iVar3 = I_strcmp(attachRefs[i],"none");
       if (iVar3 != 0) {
         pcVar4 = va("_%s");
         local_90 = pcVar4;
@@ -1544,8 +1566,8 @@ WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,Weapo
     local_ac = local_ac + 1;
   } while (*pcVar4 != '\0');
   *(char (*) [4])local_ac = (char  [4])0x706d5f;
-  local_8 = BG_GetWeaponIndexForName(local_54,(_func___cdecl_void_uint *)0x0);
-  pWVar5 = BG_GetWeaponVariantDef(local_8);
+  weaponDefIndex = BG_GetWeaponIndexForName(weaponDefName,(_func___cdecl_void_uint *)0x0);
+  pWVar5 = BG_GetWeaponVariantDef(weaponDefIndex);
   return pWVar5;
 }
 
@@ -1556,13 +1578,13 @@ WeaponVariantDef * __thiscall UIViewer::GetWeaponVariantDef(UIViewer *this,Weapo
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 WeaponVariantDef * __thiscall
-UIViewer::AddWeaponXmodel(UIViewer *this,WeaponParams *param_1,DObjModel_s *param_2,bool param_3)
+UIViewer::AddWeaponXmodel(UIViewer *this,WeaponParams *weapParams,DObjModel_s *dobjModel,bool world)
 
 {
   WeaponVariantDef *pWVar1;
   
-  pWVar1 = GetWeaponVariantDef(this,param_1);
-  pWVar1 = AddWeaponXmodel(this,pWVar1,param_2,param_3);
+  pWVar1 = GetWeaponVariantDef(this,weapParams);
+  pWVar1 = AddWeaponXmodel(this,pWVar1,dobjModel,world);
   return pWVar1;
 }
 
@@ -1574,27 +1596,28 @@ UIViewer::AddWeaponXmodel(UIViewer *this,WeaponParams *param_1,DObjModel_s *para
 
 WeaponVariantDef * __thiscall
 UIViewer::AddWeaponXmodel
-          (UIViewer *this,WeaponVariantDef *param_1,DObjModel_s *param_2,bool param_3)
+          (UIViewer *this,WeaponVariantDef *weaponVariantDef,DObjModel_s *dobjModel,bool world)
 
 {
   WeaponDef *pWVar1;
   XModel *local_18;
   XModel *local_14;
-  XModel *local_8;
+  WeaponDef *weaponDef;
+  XModel *wepXmodel;
   
-  if (param_1 == (WeaponVariantDef *)0x0) {
-    param_1 = (WeaponVariantDef *)0x0;
+  if (weaponVariantDef == (WeaponVariantDef *)0x0) {
+    weaponVariantDef = (WeaponVariantDef *)0x0;
   }
   else {
-    pWVar1 = param_1->weapDef;
-    if (param_3) {
+    pWVar1 = weaponVariantDef->weapDef;
+    if (world) {
       if ((pWVar1 == (WeaponDef *)0x0) || (*pWVar1->worldModel == (XModel *)0x0)) {
         local_14 = (XModel *)0x0;
       }
       else {
         local_14 = *pWVar1->worldModel;
       }
-      local_8 = local_14;
+      wepXmodel = local_14;
     }
     else {
       if ((pWVar1 == (WeaponDef *)0x0) || (*pWVar1->gunXModel == (XModel *)0x0)) {
@@ -1603,18 +1626,18 @@ UIViewer::AddWeaponXmodel
       else {
         local_18 = *pWVar1->gunXModel;
       }
-      local_8 = local_18;
+      wepXmodel = local_18;
     }
-    if (local_8 == (XModel *)0x0) {
-      param_1 = (WeaponVariantDef *)0x0;
+    if (wepXmodel == (XModel *)0x0) {
+      weaponVariantDef = (WeaponVariantDef *)0x0;
     }
     else {
-      param_2->model = local_8;
-      param_2->boneName = 0;
-      param_2->ignoreCollision = true;
+      dobjModel->model = wepXmodel;
+      dobjModel->boneName = 0;
+      dobjModel->ignoreCollision = true;
     }
   }
-  return param_1;
+  return weaponVariantDef;
 }
 
 
@@ -1625,26 +1648,27 @@ UIViewer::AddWeaponXmodel
 
 void __thiscall
 UIViewer::HideWeaponTags
-          (UIViewer *this,DObj *param_1,WeaponVariantDef *param_2,uint *param_3,bool param_4)
+          (UIViewer *this,DObj *dobj,WeaponVariantDef *weapon,uint *partBits,bool dualWield)
 
 {
   int iVar1;
-  byte local_9;
-  int local_8;
+  uchar boneIndex;
+  int tagIndex;
   
-  for (local_8 = 0; (local_8 < 0x20 && (param_2->hideTags[local_8] != 0)); local_8 = local_8 + 1) {
-    local_9 = 0xfe;
-    if (param_4) {
+  for (tagIndex = 0; (tagIndex < 0x20 && (weapon->hideTags[tagIndex] != 0)); tagIndex = tagIndex + 1
+      ) {
+    boneIndex = 0xfe;
+    if (dualWield) {
       iVar1 = DObjGetModelBoneIndex
-                        (param_1,(*param_2->weapDef->worldModel)->name,
-                         (uint)param_2->hideTags[local_8],&local_9);
+                        (dobj,(*weapon->weapDef->worldModel)->name,(uint)weapon->hideTags[tagIndex],
+                         &boneIndex);
     }
     else {
-      iVar1 = DObjGetBoneIndex(param_1,(uint)param_2->hideTags[local_8],&local_9,-1);
+      iVar1 = DObjGetBoneIndex(dobj,(uint)weapon->hideTags[tagIndex],&boneIndex,-1);
     }
     if (iVar1 != 0) {
-      param_3[(int)(uint)local_9 >> 5] =
-           0x80000000U >> (local_9 & 0x1f) | param_3[(int)(uint)local_9 >> 5];
+      partBits[(int)(uint)boneIndex >> 5] =
+           0x80000000U >> (boneIndex & 0x1f) | partBits[(int)(uint)boneIndex >> 5];
     }
   }
   return;
@@ -1656,19 +1680,19 @@ UIViewer::HideWeaponTags
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __thiscall UIViewer::HideWeaponTags(UIViewer *this,DObj *param_1,ushort *param_2,uint *param_3)
+void __thiscall UIViewer::HideWeaponTags(UIViewer *this,DObj *dobj,ushort *hideTags,uint *partBits)
 
 {
   int iVar1;
-  byte local_9;
-  int local_8;
+  uchar boneIndex;
+  int tagIndex;
   
-  for (local_8 = 0; (local_8 < 0x20 && (param_2[local_8] != 0)); local_8 = local_8 + 1) {
-    local_9 = 0xfe;
-    iVar1 = DObjGetBoneIndex(param_1,(uint)param_2[local_8],&local_9,-1);
+  for (tagIndex = 0; (tagIndex < 0x20 && (hideTags[tagIndex] != 0)); tagIndex = tagIndex + 1) {
+    boneIndex = 0xfe;
+    iVar1 = DObjGetBoneIndex(dobj,(uint)hideTags[tagIndex],&boneIndex,-1);
     if (iVar1 != 0) {
-      param_3[(int)(uint)local_9 >> 5] =
-           0x80000000U >> (local_9 & 0x1f) | param_3[(int)(uint)local_9 >> 5];
+      partBits[(int)(uint)boneIndex >> 5] =
+           0x80000000U >> (boneIndex & 0x1f) | partBits[(int)(uint)boneIndex >> 5];
     }
   }
   return;
@@ -1681,19 +1705,19 @@ void __thiscall UIViewer::HideWeaponTags(UIViewer *this,DObj *param_1,ushort *pa
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __thiscall
-UIViewer::UnhideWeaponTags(UIViewer *this,DObj *param_1,ushort *param_2,uint *param_3)
+UIViewer::UnhideWeaponTags(UIViewer *this,DObj *dobj,ushort *hideTags,uint *partBits)
 
 {
   int iVar1;
-  byte local_9;
-  int local_8;
+  uchar boneIndex;
+  int tagIndex;
   
-  for (local_8 = 0; (local_8 < 0x20 && (param_2[local_8] != 0)); local_8 = local_8 + 1) {
-    local_9 = 0xfe;
-    iVar1 = DObjGetBoneIndex(param_1,(uint)param_2[local_8],&local_9,-1);
+  for (tagIndex = 0; (tagIndex < 0x20 && (hideTags[tagIndex] != 0)); tagIndex = tagIndex + 1) {
+    boneIndex = 0xfe;
+    iVar1 = DObjGetBoneIndex(dobj,(uint)hideTags[tagIndex],&boneIndex,-1);
     if (iVar1 != 0) {
-      param_3[(int)(uint)local_9 >> 5] =
-           ~(0x80000000U >> (local_9 & 0x1f)) & param_3[(int)(uint)local_9 >> 5];
+      partBits[(int)(uint)boneIndex >> 5] =
+           ~(0x80000000U >> (boneIndex & 0x1f)) & partBits[(int)(uint)boneIndex >> 5];
     }
   }
   return;
@@ -1704,11 +1728,14 @@ UIViewer::UnhideWeaponTags(UIViewer *this,DObj *param_1,ushort *param_2,uint *pa
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 bool __thiscall
-UIViewer::AddBodyPart(UIViewer *this,char *param_1,char *param_2,DObjModel_s *param_3,char *param_4)
+UIViewer::AddBodyPart
+          (UIViewer *this,char *partName,char *partType,DObjModel_s *dobjModel,char *bone)
 
 {
   code *pcVar1;
@@ -1719,6 +1746,10 @@ UIViewer::AddBodyPart(UIViewer *this,char *param_1,char *param_2,DObjModel_s *pa
   XAssetHeader XVar6;
   uint uVar7;
   ushort local_20;
+  XModel *xmodel;
+  char *partModelName;
+  int column;
+  int factionsRow;
   
   iVar4 = StringTable_LookupRowNumForValue
                     (*(StringTable **)(this->cameraOverrides[2].attachment + 8),1,"factions");
@@ -1743,21 +1774,21 @@ UIViewer::AddBodyPart(UIViewer *this,char *param_1,char *param_2,DObjModel_s *pa
       return (bool)uVar3;
     }
   }
-  pcVar5 = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 8),1,param_2,2
-                              ,param_1,iVar4);
+  pcVar5 = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 8),1,partType,
+                              2,partName,iVar4);
   if (((pcVar5 != (char *)0x0) && (*pcVar5 != '\0')) &&
      (XVar6 = DB_FindXAssetHeader(ASSET_TYPE_XMODEL,pcVar5,true,-1),
      XVar6.xmodelPieces != (XModelPieces *)0x0)) {
-    param_3->model = (XModel *)XVar6;
-    if (param_4 == (char *)0x0) {
+    dobjModel->model = (XModel *)XVar6;
+    if (bone == (char *)0x0) {
       local_20 = 0;
     }
     else {
-      uVar7 = SL_FindString(param_4,SCRIPTINSTANCE_SERVER);
+      uVar7 = SL_FindString(bone,SCRIPTINSTANCE_SERVER);
       local_20 = (ushort)uVar7;
     }
-    param_3->boneName = local_20;
-    param_3->ignoreCollision = true;
+    dobjModel->boneName = local_20;
+    dobjModel->ignoreCollision = true;
     return true;
   }
   return false;
@@ -1768,11 +1799,18 @@ UIViewer::AddBodyPart(UIViewer *this,char *param_1,char *param_2,DObjModel_s *pa
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
 UIViewer::UpdatePlayerDObj
-          (UIViewer *this,PlayerParams *param_1,WeaponVariantDef *param_2,WeaponParams *param_3,
-          bool param_4)
+          (UIViewer *this,PlayerParams *playerParams,WeaponVariantDef *weaponVariantDef,
+          WeaponParams *weapParams,bool locked)
 
 {
   float *pfVar1;
@@ -1782,21 +1820,22 @@ UIViewer::UpdatePlayerDObj
   char *pcVar5;
   WeaponVariantDef *pWVar6;
   uint uVar7;
-  uint uVar8;
-  DObj *pDVar9;
-  XAnimTree_s *pXVar10;
-  DObj *pDVar11;
-  char *pcVar12;
-  bool bVar13;
-  DObjModel_s *pDVar14;
-  uint *puVar15;
-  char *pcVar16;
-  int iVar17;
-  uint local_120;
-  uint local_11c [6];
-  DObjModel_s local_104 [32];
+  DObj *dobj_00;
+  XAnimTree_s *tree;
+  int iVar8;
+  DObj *buf;
+  char *pcVar9;
+  bool isLocalPlayer;
+  DObjModel_s *pDVar10;
+  uint *partBits_00;
+  char *pcVar11;
+  DObj *dobj;
+  int numModels;
+  uint entnum;
+  uint partBits [5];
+  DObjModel_s dobjModels [32];
   
-  if ((param_2 == (WeaponVariantDef *)0x0) &&
+  if ((weaponVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x5f7,0,"%s"),
      !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -1804,99 +1843,99 @@ UIViewer::UpdatePlayerDObj
     return;
   }
   FreeDobjs(this);
-  pDVar14 = local_104;
-  pcVar16 = (char *)0x0;
-  pcVar12 = "body";
-  pcVar5 = BG_UnlockablesGetItemRef(param_1->bodyIndex);
-  bVar4 = AddBodyPart(this,pcVar5,pcVar12,pDVar14,pcVar16);
-  local_120 = 1;
+  pDVar10 = dobjModels;
+  pcVar11 = (char *)0x0;
+  pcVar9 = "body";
+  pcVar5 = BG_UnlockablesGetItemRef(playerParams->bodyIndex);
+  bVar4 = AddBodyPart(this,pcVar5,pcVar9,pDVar10,pcVar11);
+  numModels = 1;
   if (bVar4) {
-    pcVar16 = "J_HEAD";
-    pDVar14 = local_104 + 1;
-    pcVar12 = "headgear";
-    pcVar5 = BG_UnlockablesGetItemRef(param_1->headIndex);
-    bVar4 = AddBodyPart(this,pcVar5,pcVar12,pDVar14,pcVar16);
+    pcVar11 = "J_HEAD";
+    pDVar10 = dobjModels + 1;
+    pcVar9 = "headgear";
+    pcVar5 = BG_UnlockablesGetItemRef(playerParams->headIndex);
+    bVar4 = AddBodyPart(this,pcVar5,pcVar9,pDVar10,pcVar11);
     if (bVar4) {
-      pDVar14 = local_104 + 2;
-      pcVar16 = "J_HEAD";
-      pcVar12 = "head_naked";
-      pcVar5 = BG_UnlockablesGetItemRef(param_1->bodyIndex);
-      bVar4 = AddBodyPart(this,pcVar5,pcVar12,pDVar14,pcVar16);
-      local_120 = 3;
+      pDVar10 = dobjModels + 2;
+      pcVar11 = "J_HEAD";
+      pcVar9 = "head_naked";
+      pcVar5 = BG_UnlockablesGetItemRef(playerParams->bodyIndex);
+      bVar4 = AddBodyPart(this,pcVar5,pcVar9,pDVar10,pcVar11);
+      numModels = 3;
       if (!bVar4) {
         return;
       }
     }
     else {
-      pcVar16 = "J_HEAD";
-      pDVar14 = local_104 + 1;
-      pcVar12 = "head";
-      pcVar5 = BG_UnlockablesGetItemRef(param_1->headIndex);
-      bVar4 = AddBodyPart(this,pcVar5,pcVar12,pDVar14,pcVar16);
+      pcVar11 = "J_HEAD";
+      pDVar10 = dobjModels + 1;
+      pcVar9 = "head";
+      pcVar5 = BG_UnlockablesGetItemRef(playerParams->headIndex);
+      bVar4 = AddBodyPart(this,pcVar5,pcVar9,pDVar10,pcVar11);
       if (bVar4) {
-        local_120 = 2;
+        numModels = 2;
       }
       else {
-        pcVar16 = "J_HEAD";
-        pDVar14 = local_104 + 1;
-        pcVar12 = "head_naked";
-        pcVar5 = BG_UnlockablesGetItemRef(param_1->bodyIndex);
-        bVar4 = AddBodyPart(this,pcVar5,pcVar12,pDVar14,pcVar16);
+        pcVar11 = "J_HEAD";
+        pDVar10 = dobjModels + 1;
+        pcVar9 = "head_naked";
+        pcVar5 = BG_UnlockablesGetItemRef(playerParams->bodyIndex);
+        bVar4 = AddBodyPart(this,pcVar5,pcVar9,pDVar10,pcVar11);
         if (bVar4) {
-          local_120 = 2;
+          numModels = 2;
         }
       }
     }
-    pWVar6 = AddWeaponXmodel(this,param_2,local_104 + local_120,true);
-    uVar7 = local_120;
+    pWVar6 = AddWeaponXmodel(this,weaponVariantDef,dobjModels + numModels,true);
+    iVar8 = numModels;
     if (pWVar6 != (WeaponVariantDef *)0x0) {
       uVar7 = SL_FindString("tag_weapon_right",SCRIPTINSTANCE_SERVER);
-      local_104[local_120].boneName = (ushort)uVar7;
-      uVar7 = local_120 + 1;
-      if (param_2->weapDef->bDualWield == false) {
-        if (param_2->weapDef->additionalMeleeModel != (XModel *)0x0) {
-          local_104[uVar7].model = param_2->weapDef->additionalMeleeModel;
-          local_104[uVar7].boneName = 0;
-          local_104[uVar7].ignoreCollision = true;
-          uVar8 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
-          local_104[uVar7].boneName = (ushort)uVar8;
-          uVar7 = local_120 + 2;
+      dobjModels[numModels].boneName = (ushort)uVar7;
+      iVar8 = numModels + 1;
+      if (weaponVariantDef->weapDef->bDualWield == false) {
+        if (weaponVariantDef->weapDef->additionalMeleeModel != (XModel *)0x0) {
+          dobjModels[iVar8].model = weaponVariantDef->weapDef->additionalMeleeModel;
+          dobjModels[iVar8].boneName = 0;
+          dobjModels[iVar8].ignoreCollision = true;
+          uVar7 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
+          dobjModels[iVar8].boneName = (ushort)uVar7;
+          iVar8 = numModels + 2;
         }
       }
       else {
         bVar4 = true;
-        pDVar14 = local_104 + uVar7;
-        pWVar6 = BG_GetWeaponVariantDef(param_2->weapDef->dualWieldWeaponIndex);
-        pWVar6 = AddWeaponXmodel(this,pWVar6,pDVar14,bVar4);
+        pDVar10 = dobjModels + iVar8;
+        pWVar6 = BG_GetWeaponVariantDef(weaponVariantDef->weapDef->dualWieldWeaponIndex);
+        pWVar6 = AddWeaponXmodel(this,pWVar6,pDVar10,bVar4);
         if (pWVar6 != (WeaponVariantDef *)0x0) {
-          uVar8 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
-          local_104[uVar7].boneName = (ushort)uVar8;
-          uVar7 = local_120 + 2;
+          uVar7 = SL_FindString("tag_weapon_left",SCRIPTINSTANCE_SERVER);
+          dobjModels[iVar8].boneName = (ushort)uVar7;
+          iVar8 = numModels + 2;
         }
       }
     }
-    local_120 = uVar7;
-    pDVar9 = AllocDobj(this,local_11c);
-    iVar17 = 0;
-    bVar13 = true;
+    numModels = iVar8;
+    dobj_00 = AllocDobj(this,&entnum);
+    iVar8 = 0;
+    isLocalPlayer = true;
     bVar4 = false;
-    pDVar11 = pDVar9;
-    pXVar10 = GetAnimTree(this);
-    DObjCreateExt(local_104,local_120,pXVar10,pDVar11,local_11c[0],bVar4,bVar13,iVar17);
-    local_11c[1] = 0;
-    local_11c[2] = 0;
-    local_11c[3] = 0;
-    local_11c[4] = 0;
-    local_11c[5] = 0;
-    HideWeaponTags(this,pDVar9,param_2,local_11c + 1,false);
-    if (param_2->weapDef->bDualWield != false) {
+    buf = dobj_00;
+    tree = GetAnimTree(this);
+    DObjCreateExt(dobjModels,numModels,tree,buf,entnum,bVar4,isLocalPlayer,iVar8);
+    partBits[0] = 0;
+    partBits[1] = 0;
+    partBits[2] = 0;
+    partBits[3] = 0;
+    partBits[4] = 0;
+    HideWeaponTags(this,dobj_00,weaponVariantDef,partBits,false);
+    if (weaponVariantDef->weapDef->bDualWield != false) {
       bVar4 = true;
-      puVar15 = local_11c + 1;
-      pWVar6 = BG_GetWeaponVariantDef(param_2->weapDef->dualWieldWeaponIndex);
-      HideWeaponTags(this,pDVar9,pWVar6,puVar15,bVar4);
+      partBits_00 = partBits;
+      pWVar6 = BG_GetWeaponVariantDef(weaponVariantDef->weapDef->dualWieldWeaponIndex);
+      HideWeaponTags(this,dobj_00,pWVar6,partBits_00,bVar4);
     }
-    DObjSetHidePartBits(pDVar9,local_11c + 1);
-    this->drawDobjs[this->nDrawDobjs].dobj = pDVar9;
+    DObjSetHidePartBits(dobj_00,partBits);
+    this->drawDobjs[this->nDrawDobjs].dobj = dobj_00;
     memset((uchar *)&this->drawDobjs[this->nDrawDobjs].pose,'\0',0x174);
     pfVar1 = this->drawDobjs[this->nDrawDobjs].pose.origin;
     pdVar2 = this->sceneOrigin;
@@ -1905,7 +1944,8 @@ UIViewer::UpdatePlayerDObj
     pfVar1[2] = (pdVar2->current).vector[2];
     this->drawDobjs[this->nDrawDobjs].yaw = 180.0;
     this->drawDobjs[this->nDrawDobjs].depthHack = false;
-    DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,param_1,param_3,param_2,false,param_4);
+    DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,playerParams,weapParams,weaponVariantDef,false,
+                  locked);
     this->nDrawDobjs = this->nDrawDobjs + 1;
   }
   return;
@@ -1920,16 +1960,16 @@ UIViewer::UpdatePlayerDObj
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall UIViewer::UpdatePlayerAnim(UIViewer *this,WeaponVariantDef *param_1)
+void __thiscall UIViewer::UpdatePlayerAnim(UIViewer *this,WeaponVariantDef *weaponVariantDef)
 
 {
   code *pcVar1;
   bool bVar2;
   bgs_t *pbVar3;
-  uint uVar4;
-  centity_s *pcVar5;
+  uint src;
+  centity_s *pcVar4;
   
-  if (param_1 == (WeaponVariantDef *)0x0) {
+  if (weaponVariantDef == (WeaponVariantDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x647,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1940,16 +1980,16 @@ void __thiscall UIViewer::UpdatePlayerAnim(UIViewer *this,WeaponVariantDef *para
   if (0 < this->nDrawDobjs) {
     pbVar3 = GetBGS(this);
     *(bgs_t **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = pbVar3;
-    uVar4 = BG_GetWeaponIndexForName(param_1->szInternalName,(_func___cdecl_void_uint *)0x0);
-    AssignToSmallerType<unsigned_short>(&(this->ps).weapon,uVar4);
-    pcVar5 = GetPlayerEntity(this);
-    (pcVar5->nextState).weapon = (this->ps).weapon;
-    pcVar5 = GetPlayerEntity(this);
-    pcVar5->nextValid = 1;
-    pcVar5 = GetPlayerEntity(this);
-    (pcVar5->nextState).eType = 1;
-    BG_SetConditionBit(0,1,param_1->weapDef->weapClass);
-    BG_SetConditionBit(0,0,param_1->weapDef->playerAnimType);
+    src = BG_GetWeaponIndexForName(weaponVariantDef->szInternalName,(_func___cdecl_void_uint *)0x0);
+    AssignToSmallerType<unsigned_short>(&(this->ps).weapon,src);
+    pcVar4 = GetPlayerEntity(this);
+    (pcVar4->nextState).weapon = (this->ps).weapon;
+    pcVar4 = GetPlayerEntity(this);
+    pcVar4->nextValid = 1;
+    pcVar4 = GetPlayerEntity(this);
+    (pcVar4->nextState).eType = 1;
+    BG_SetConditionBit(0,1,weaponVariantDef->weapDef->weapClass);
+    BG_SetConditionBit(0,0,weaponVariantDef->weapDef->playerAnimType);
     BG_SetConditionValue(0,0x16,1);
     BG_AnimScriptAnimation(&this->pmove,AISTATE_COMBAT,ANIM_MT_IDLE,1);
     *(undefined4 *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = 0;
@@ -1973,6 +2013,7 @@ char * __thiscall UIViewer::GetFaction(UIViewer *this)
 {
   cg_s *pcVar1;
   char *pcVar2;
+  cg_s *cgameGlob;
   
   if (this->ingame == false) {
     pcVar2 = Dvar_GetString("ui_faction");
@@ -1995,9 +2036,13 @@ char * __thiscall UIViewer::GetFaction(UIViewer *this)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-UIViewer::AddPlayerToScene(UIViewer *this,PlayerParams *param_1,WeaponParams *param_2,bool param_3)
+UIViewer::AddPlayerToScene
+          (UIViewer *this,PlayerParams *playerParams,WeaponParams *weapParams,bool locked)
 
 {
   char cVar1;
@@ -2019,70 +2064,72 @@ UIViewer::AddPlayerToScene(UIViewer *this,PlayerParams *param_1,WeaponParams *pa
   byte *local_94;
   char *local_88;
   char *local_84;
-  State local_64;
+  ushort newWeapon;
+  WeaponVariantDef *wepVariantDef;
+  State state;
   uint local_c;
-  bool local_6;
-  undefined1 local_5;
+  bool animate;
+  bool updated;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_84 = GetFaction(this);
-  local_64.mode = 0;
-  local_64.playerParams.bodyIndex = param_1->bodyIndex;
-  local_64.playerParams.headIndex = param_1->headIndex;
-  local_64.playerParams.facePatternIndex = param_1->facePatternIndex;
-  local_64.playerParams.faceColorIndex = param_1->faceColorIndex;
-  pWVar8 = param_2;
-  pWVar10 = &local_64.weaponParams;
+  state.mode = 0;
+  state.playerParams.bodyIndex = playerParams->bodyIndex;
+  state.playerParams.headIndex = playerParams->headIndex;
+  state.playerParams.facePatternIndex = playerParams->facePatternIndex;
+  state.playerParams.faceColorIndex = playerParams->faceColorIndex;
+  pWVar8 = weapParams;
+  pWVar10 = &state.weaponParams;
   for (iVar7 = 8; iVar7 != 0; iVar7 = iVar7 + -1) {
     pWVar10->weaponSlot = pWVar8->weaponSlot;
     pWVar8 = (WeaponParams *)&pWVar8->weaponIndex;
     pWVar10 = (WeaponParams *)&pWVar10->weaponIndex;
   }
-  local_64.locked = param_3;
-  local_64.faction[0] = '\0';
-  local_64.faction[1] = '\0';
-  local_64.faction[2] = '\0';
-  local_64.faction[3] = '\0';
-  local_64.faction[4] = '\0';
-  local_64.faction[5] = '\0';
-  local_64.faction[6] = '\0';
-  local_64.faction[7] = '\0';
-  local_64.faction[8] = '\0';
-  local_64.faction[9] = '\0';
-  local_64.faction[10] = '\0';
-  local_64.faction[0xb] = '\0';
-  local_64.faction[0xc] = '\0';
-  local_64.faction[0xd] = '\0';
-  local_64.faction[0xe] = '\0';
-  local_64.faction[0xf] = '\0';
-  local_64.faction[0x10] = '\0';
-  local_64.faction[0x11] = '\0';
-  local_64.faction[0x12] = '\0';
-  local_64.faction[0x13] = '\0';
-  local_64.faction[0x14] = '\0';
-  local_64.faction[0x15] = '\0';
-  local_64.faction[0x16] = '\0';
-  local_64.faction[0x17] = '\0';
-  local_64.faction[0x18] = '\0';
-  local_64.faction[0x19] = '\0';
-  local_64.faction[0x1a] = '\0';
-  local_64.faction[0x1b] = '\0';
-  local_64.faction[0x1c] = '\0';
-  local_64.faction[0x1d] = '\0';
-  local_64.faction[0x1e] = '\0';
-  local_64.faction[0x1f] = '\0';
-  local_88 = local_64.faction;
+  state.locked = locked;
+  state.faction[0] = '\0';
+  state.faction[1] = '\0';
+  state.faction[2] = '\0';
+  state.faction[3] = '\0';
+  state.faction[4] = '\0';
+  state.faction[5] = '\0';
+  state.faction[6] = '\0';
+  state.faction[7] = '\0';
+  state.faction[8] = '\0';
+  state.faction[9] = '\0';
+  state.faction[10] = '\0';
+  state.faction[0xb] = '\0';
+  state.faction[0xc] = '\0';
+  state.faction[0xd] = '\0';
+  state.faction[0xe] = '\0';
+  state.faction[0xf] = '\0';
+  state.faction[0x10] = '\0';
+  state.faction[0x11] = '\0';
+  state.faction[0x12] = '\0';
+  state.faction[0x13] = '\0';
+  state.faction[0x14] = '\0';
+  state.faction[0x15] = '\0';
+  state.faction[0x16] = '\0';
+  state.faction[0x17] = '\0';
+  state.faction[0x18] = '\0';
+  state.faction[0x19] = '\0';
+  state.faction[0x1a] = '\0';
+  state.faction[0x1b] = '\0';
+  state.faction[0x1c] = '\0';
+  state.faction[0x1d] = '\0';
+  state.faction[0x1e] = '\0';
+  state.faction[0x1f] = '\0';
+  local_88 = state.faction;
   do {
     cVar1 = *local_84;
     *local_88 = cVar1;
     local_84 = local_84 + 1;
     local_88 = local_88 + 1;
   } while (cVar1 != '\0');
-  local_6 = (this->prevState).mode == 0;
-  local_5 = 0;
-  bVar3 = State::operator!=(&local_64,&this->prevState);
+  animate = (this->prevState).mode == 0;
+  updated = false;
+  bVar3 = State::operator!=(&state,&this->prevState);
   if (bVar3) {
-    pWVar4 = GetWeaponVariantDef(this,param_2);
+    pWVar4 = GetWeaponVariantDef(this,weapParams);
     if (pWVar4 != (WeaponVariantDef *)0x0) {
       uVar5 = BG_GetWeaponIndexForName(pWVar4->szInternalName,(_func___cdecl_void_uint *)0x0);
       uVar6 = BG_GetWeaponIndexForName(pWVar4->szInternalName,(_func___cdecl_void_uint *)0x0);
@@ -2090,10 +2137,10 @@ UIViewer::AddPlayerToScene(UIViewer *this,PlayerParams *param_1,WeaponParams *pa
       (this->ps).weapon = (this->pmove).cmd.weapon;
       if (((this->prevState).mode == 0) && ((uVar5 & 0xffff) == this->currentPlayerWeapon)) {
         pWVar4 = BG_GetWeaponVariantDef((uint)(this->ps).weapon);
-        UpdatePlayerDObj(this,param_1,pWVar4,param_2,param_3);
+        UpdatePlayerDObj(this,playerParams,pWVar4,weapParams,locked);
       }
       else {
-        UpdatePlayerDObj(this,param_1,pWVar4,param_2,param_3);
+        UpdatePlayerDObj(this,playerParams,pWVar4,weapParams,locked);
         UpdatePlayerAnim(this,pWVar4);
       }
       iVar7 = BG_PlayerHasWeapon(&this->ps,(uint)(this->pmove).cmd.weapon);
@@ -2107,19 +2154,19 @@ UIViewer::AddPlayerToScene(UIViewer *this,PlayerParams *param_1,WeaponParams *pa
           this->nextPlayerWeaponHistory = this->nextPlayerWeaponHistory + 1;
         }
       }
-      pSVar9 = &local_64;
+      pSVar9 = &state;
       pSVar11 = &this->prevState;
       for (iVar7 = 0x16; iVar7 != 0; iVar7 = iVar7 + -1) {
         pSVar11->mode = pSVar9->mode;
         pSVar9 = (State *)pSVar9->faction;
         pSVar11 = (State *)pSVar11->faction;
       }
-      local_5 = 1;
+      updated = true;
     }
   }
   else if ((uint)(this->ps).weapon != this->currentPlayerWeapon) {
     pWVar4 = BG_GetWeaponVariantDef((uint)(this->ps).weapon);
-    UpdatePlayerDObj(this,param_1,pWVar4,param_2,param_3);
+    UpdatePlayerDObj(this,playerParams,pWVar4,weapParams,locked);
     pWVar4 = BG_GetWeaponVariantDef((uint)(this->ps).weapon);
     UpdatePlayerAnim(this,pWVar4);
   }
@@ -2149,10 +2196,10 @@ LAB_0078442b:
     else {
       local_a8 = "ingame";
     }
-    bVar3 = SetCameraPos(this,(this->playerCameraDvar->current).string,local_a8,local_6);
+    bVar3 = SetCameraPos(this,(this->playerCameraDvar->current).string,local_a8,animate);
     if (!bVar3) {
       Dvar_SetString(this->playerCameraDvar,"player");
-      SetCameraPos(this,(this->playerCameraDvar->current).string,"none",local_6);
+      SetCameraPos(this,(this->playerCameraDvar->current).string,"none",animate);
     }
     local_ac = (this->playerCameraDvar->current).string;
     local_b0 = this->playerCameraName;
@@ -2171,18 +2218,24 @@ LAB_0078442b:
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 eAttachmentPoint __cdecl GetCurrentAttachPoint(void)
 
 {
-  int iVar1;
-  eAttachment eVar2;
-  eAttachmentPoint eVar3;
+  int attachmentNum_00;
+  eAttachment attachment_00;
+  eAttachmentPoint eVar1;
+  eAttachment attachment;
+  int attachmentNum;
+  eAttachmentPoint attachPoint;
   
-  iVar1 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint(DAT_098c38f8,DAT_098c3910,0);
-  eVar2 = BG_UnlockablesGetItemAttachment(DAT_098c38f8,iVar1);
-  eVar3 = BG_GetAttachmentPointIndexFromAttachment(eVar2);
-  return eVar3;
+  attachmentNum_00 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint(DAT_098c38f8,DAT_098c3910,0);
+  attachment_00 = BG_UnlockablesGetItemAttachment(DAT_098c38f8,attachmentNum_00);
+  eVar1 = BG_GetAttachmentPointIndexFromAttachment(attachment_00);
+  return eVar1;
 }
 
 
@@ -2191,20 +2244,22 @@ eAttachmentPoint __cdecl GetCurrentAttachPoint(void)
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-int * __thiscall UIViewer::GetAttachmentIndexPtr(UIViewer *this,WeaponParams *param_1)
+int * __thiscall UIViewer::GetAttachmentIndexPtr(UIViewer *this,WeaponParams *weapParams)
 
 {
   code *pcVar1;
   bool bVar2;
   eAttachmentPoint eVar3;
   int *piVar4;
-  int *local_14 [4];
+  eAttachmentPoint attachPoint;
+  int *attachIndex [4];
   
-  local_14[0] = &param_1->attachTopIndex;
-  local_14[1] = &param_1->attachBottomIndex;
-  local_14[2] = &param_1->attachTriggerIndex;
-  local_14[3] = &param_1->attachMuzzleIndex;
+  attachIndex[0] = &weapParams->attachTopIndex;
+  attachIndex[1] = &weapParams->attachBottomIndex;
+  attachIndex[2] = &weapParams->attachTriggerIndex;
+  attachIndex[3] = &weapParams->attachMuzzleIndex;
   eVar3 = GetCurrentAttachPoint();
   if (eVar3 != ATTACHMENT_POINT_NONE) {
     if ((3 < eVar3 - ATTACHMENT_POINT_FIRST) &&
@@ -2215,7 +2270,7 @@ int * __thiscall UIViewer::GetAttachmentIndexPtr(UIViewer *this,WeaponParams *pa
       return piVar4;
     }
     if (eVar3 - ATTACHMENT_POINT_FIRST < 4) {
-      return local_14[eVar3 - ATTACHMENT_POINT_FIRST];
+      return attachIndex[eVar3 - ATTACHMENT_POINT_FIRST];
     }
   }
   return (int *)0x0;
@@ -2226,14 +2281,16 @@ int * __thiscall UIViewer::GetAttachmentIndexPtr(UIViewer *this,WeaponParams *pa
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __thiscall UIViewer::GetAttachmentIndex(UIViewer *this,WeaponParams *param_1)
+int __thiscall UIViewer::GetAttachmentIndex(UIViewer *this,WeaponParams *weapParams)
 
 {
   int *piVar1;
   int iVar2;
+  int *attachIndex;
   
-  piVar1 = GetAttachmentIndexPtr(this,param_1);
+  piVar1 = GetAttachmentIndexPtr(this,weapParams);
   if (piVar1 == (int *)0x0) {
     iVar2 = 0;
   }
@@ -2248,15 +2305,17 @@ int __thiscall UIViewer::GetAttachmentIndex(UIViewer *this,WeaponParams *param_1
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __thiscall UIViewer::SetAttachmentIndex(UIViewer *this,WeaponParams *param_1,int param_2)
+void __thiscall UIViewer::SetAttachmentIndex(UIViewer *this,WeaponParams *weapParams,int index)
 
 {
   int *piVar1;
+  int *attachIndex;
   
-  piVar1 = GetAttachmentIndexPtr(this,param_1);
+  piVar1 = GetAttachmentIndexPtr(this,weapParams);
   if (piVar1 != (int *)0x0) {
-    *piVar1 = param_2;
+    *piVar1 = index;
   }
   return;
 }
@@ -2266,13 +2325,15 @@ void __thiscall UIViewer::SetAttachmentIndex(UIViewer *this,WeaponParams *param_
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __thiscall UIViewer::ClearAttachmentIndex(UIViewer *this,WeaponParams *param_1)
+void __thiscall UIViewer::ClearAttachmentIndex(UIViewer *this,WeaponParams *weapParams)
 
 {
   int *piVar1;
+  int *attachIndex;
   
-  piVar1 = GetAttachmentIndexPtr(this,param_1);
+  piVar1 = GetAttachmentIndexPtr(this,weapParams);
   if (piVar1 != (int *)0x0) {
     *piVar1 = 0;
   }
@@ -2297,9 +2358,16 @@ char * __thiscall UIViewer::GetAttachmentSlotName(UIViewer *this)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __thiscall
-UIViewer::AddWeaponToScene(UIViewer *this,WeaponParams *param_1,WeaponParams *param_2)
+UIViewer::AddWeaponToScene(UIViewer *this,WeaponParams *weapParams,WeaponParams *baseWeapParams)
 
 {
   float *pfVar1;
@@ -2307,98 +2375,104 @@ UIViewer::AddWeaponToScene(UIViewer *this,WeaponParams *param_1,WeaponParams *pa
   Mode MVar3;
   dvar_s *pdVar4;
   bool bVar5;
-  DObj *pDVar6;
-  byte *pbVar7;
-  int iVar8;
+  DObj *dobj_00;
+  char *attachment;
+  int iVar6;
+  WeaponParams *pWVar7;
+  State *pSVar8;
   WeaponParams *pWVar9;
   State *pSVar10;
-  WeaponParams *pWVar11;
-  State *pSVar12;
   bool local_264;
   int local_258;
   byte *local_250;
   byte *local_24c;
-  byte *local_208;
-  uint local_1fc [7];
-  char local_1dd;
-  int local_1dc;
-  WeaponVariantDef *local_1d8;
-  int local_1d4;
-  DObj *local_1d0;
-  ushort local_1cc [34];
-  uint local_188;
-  char *local_184;
-  uint local_180 [6];
-  WeaponVariantDef *local_168;
-  DObjModel_s local_164 [32];
-  State local_64;
+  bool animate;
+  char *attachRef;
+  char *attachMode;
+  DObj *dobj_2;
+  uint entnum_2;
+  uint partBits_2 [5];
+  int tagIndex;
+  bool found;
+  int baseTagIndex;
+  WeaponVariantDef *baseWeaponVariantDef;
+  int numAttachmentTags;
+  DObj *dobj;
+  ushort attachmentTags [34];
+  int numModels;
+  char *weaponRef;
+  uint entnum;
+  uint partBits [5];
+  WeaponVariantDef *weaponVariantDef;
+  DObjModel_s dobjModels [32];
+  State state;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_64.mode = this->mode;
-  local_64.playerParams.bodyIndex = -1;
-  local_64.playerParams.headIndex = -1;
-  local_64.playerParams.facePatternIndex = -1;
-  local_64.playerParams.faceColorIndex = -1;
-  pWVar9 = param_1;
-  pWVar11 = &local_64.weaponParams;
-  for (iVar8 = 8; iVar8 != 0; iVar8 = iVar8 + -1) {
-    pWVar11->weaponSlot = pWVar9->weaponSlot;
+  state.mode = this->mode;
+  state.playerParams.bodyIndex = -1;
+  state.playerParams.headIndex = -1;
+  state.playerParams.facePatternIndex = -1;
+  state.playerParams.faceColorIndex = -1;
+  pWVar7 = weapParams;
+  pWVar9 = &state.weaponParams;
+  for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
+    pWVar9->weaponSlot = pWVar7->weaponSlot;
+    pWVar7 = (WeaponParams *)&pWVar7->weaponIndex;
     pWVar9 = (WeaponParams *)&pWVar9->weaponIndex;
-    pWVar11 = (WeaponParams *)&pWVar11->weaponIndex;
   }
-  local_64.locked = false;
-  local_64.faction[0] = '\0';
-  local_64.faction[1] = '\0';
-  local_64.faction[2] = '\0';
-  local_64.faction[3] = '\0';
-  local_64.faction[4] = '\0';
-  local_64.faction[5] = '\0';
-  local_64.faction[6] = '\0';
-  local_64.faction[7] = '\0';
-  local_64.faction[8] = '\0';
-  local_64.faction[9] = '\0';
-  local_64.faction[10] = '\0';
-  local_64.faction[0xb] = '\0';
-  local_64.faction[0xc] = '\0';
-  local_64.faction[0xd] = '\0';
-  local_64.faction[0xe] = '\0';
-  local_64.faction[0xf] = '\0';
-  local_64.faction[0x10] = '\0';
-  local_64.faction[0x11] = '\0';
-  local_64.faction[0x12] = '\0';
-  local_64.faction[0x13] = '\0';
-  local_64.faction[0x14] = '\0';
-  local_64.faction[0x15] = '\0';
-  local_64.faction[0x16] = '\0';
-  local_64.faction[0x17] = '\0';
-  local_64.faction[0x18] = '\0';
-  local_64.faction[0x19] = '\0';
-  local_64.faction[0x1a] = '\0';
-  local_64.faction[0x1b] = '\0';
-  local_64.faction[0x1c] = '\0';
-  local_64.faction[0x1d] = '\0';
-  local_64.faction[0x1e] = '\0';
-  local_64.faction[0x1f] = '\0';
-  bVar5 = State::operator!=(&local_64,&this->prevState);
+  state.locked = false;
+  state.faction[0] = '\0';
+  state.faction[1] = '\0';
+  state.faction[2] = '\0';
+  state.faction[3] = '\0';
+  state.faction[4] = '\0';
+  state.faction[5] = '\0';
+  state.faction[6] = '\0';
+  state.faction[7] = '\0';
+  state.faction[8] = '\0';
+  state.faction[9] = '\0';
+  state.faction[10] = '\0';
+  state.faction[0xb] = '\0';
+  state.faction[0xc] = '\0';
+  state.faction[0xd] = '\0';
+  state.faction[0xe] = '\0';
+  state.faction[0xf] = '\0';
+  state.faction[0x10] = '\0';
+  state.faction[0x11] = '\0';
+  state.faction[0x12] = '\0';
+  state.faction[0x13] = '\0';
+  state.faction[0x14] = '\0';
+  state.faction[0x15] = '\0';
+  state.faction[0x16] = '\0';
+  state.faction[0x17] = '\0';
+  state.faction[0x18] = '\0';
+  state.faction[0x19] = '\0';
+  state.faction[0x1a] = '\0';
+  state.faction[0x1b] = '\0';
+  state.faction[0x1c] = '\0';
+  state.faction[0x1d] = '\0';
+  state.faction[0x1e] = '\0';
+  state.faction[0x1f] = '\0';
+  bVar5 = State::operator!=(&state,&this->prevState);
   if (!bVar5) {
     return;
   }
   FreeDobjs(this);
-  local_188 = 0;
-  local_168 = AddWeaponXmodel(this,param_1,local_164,true);
-  local_188 = local_188 + 1;
-  if (local_168 == (WeaponVariantDef *)0x0) {
+  numModels = 0;
+  weaponVariantDef = AddWeaponXmodel(this,weapParams,dobjModels,true);
+  numModels = numModels + 1;
+  if (weaponVariantDef == (WeaponVariantDef *)0x0) {
     return;
   }
-  local_1d0 = AllocDobj(this,local_180);
-  DObjCreate(local_164,local_188,(XAnimTree_s *)0x0,local_1d0,local_180[0]);
-  local_180[1] = 0;
-  local_180[2] = 0;
-  local_180[3] = 0;
-  local_180[4] = 0;
-  local_180[5] = 0;
-  HideWeaponTags(this,local_1d0,local_168,local_180 + 1,false);
+  dobj = AllocDobj(this,&entnum);
+  DObjCreate(dobjModels,numModels,(XAnimTree_s *)0x0,dobj,entnum);
+  partBits[0] = 0;
+  partBits[1] = 0;
+  partBits[2] = 0;
+  partBits[3] = 0;
+  partBits[4] = 0;
+  HideWeaponTags(this,dobj,weaponVariantDef,partBits,false);
   MVar3 = this->mode;
   if ((((MVar3 == MODE_EDIT_ATTACHMENT_TOP) || (MVar3 == MODE_EDIT_ATTACHMENT_BOTTOM)) ||
       (MVar3 == MODE_EDIT_ATTACHMENT_TRIGGER)) || (MVar3 == MODE_EDIT_ATTACHMENT_MUZZLE)) {
@@ -2408,30 +2482,31 @@ UIViewer::AddWeaponToScene(UIViewer *this,WeaponParams *param_1,WeaponParams *pa
     bVar5 = false;
   }
   if (bVar5) {
-    local_1d8 = GetWeaponVariantDef(this,param_2);
-    local_1d4 = 0;
-    memset((uchar *)local_1cc,'\0',0x40);
-    for (local_1dc = 0; (local_1dc < 0x20 && (local_1d8->hideTags[local_1dc] != 0));
-        local_1dc = local_1dc + 1) {
-      local_1dd = '\0';
-      local_1fc[6] = 0;
+    baseWeaponVariantDef = GetWeaponVariantDef(this,baseWeapParams);
+    numAttachmentTags = 0;
+    memset((uchar *)attachmentTags,'\0',0x40);
+    for (baseTagIndex = 0;
+        (baseTagIndex < 0x20 && (baseWeaponVariantDef->hideTags[baseTagIndex] != 0));
+        baseTagIndex = baseTagIndex + 1) {
+      found = false;
+      tagIndex = 0;
       while( true ) {
-        if ((0x1f < (int)local_1fc[6]) || (local_168->hideTags[local_1fc[6]] == 0))
-        goto LAB_00784ab7;
-        if (local_168->hideTags[local_1fc[6]] == local_1d8->hideTags[local_1dc]) break;
-        local_1fc[6] = local_1fc[6] + 1;
+        if ((0x1f < tagIndex) || (weaponVariantDef->hideTags[tagIndex] == 0)) goto LAB_00784ab7;
+        if (weaponVariantDef->hideTags[tagIndex] == baseWeaponVariantDef->hideTags[baseTagIndex])
+        break;
+        tagIndex = tagIndex + 1;
       }
-      local_1dd = '\x01';
+      found = true;
 LAB_00784ab7:
-      if (local_1dd == '\0') {
-        local_1cc[local_1d4] = local_1d8->hideTags[local_1dc];
-        local_1d4 = local_1d4 + 1;
+      if (found == false) {
+        attachmentTags[numAttachmentTags] = baseWeaponVariantDef->hideTags[baseTagIndex];
+        numAttachmentTags = numAttachmentTags + 1;
       }
     }
-    HideWeaponTags(this,local_1d0,local_1cc,local_180 + 1);
+    HideWeaponTags(this,dobj,attachmentTags,partBits);
   }
-  DObjSetHidePartBits(local_1d0,local_180 + 1);
-  this->drawDobjs[this->nDrawDobjs].dobj = local_1d0;
+  DObjSetHidePartBits(dobj,partBits);
+  this->drawDobjs[this->nDrawDobjs].dobj = dobj;
   memset((uchar *)&this->drawDobjs[this->nDrawDobjs].pose,'\0',0x174);
   pfVar1 = this->drawDobjs[this->nDrawDobjs].pose.origin;
   pdVar4 = this->sceneOrigin;
@@ -2440,7 +2515,7 @@ LAB_00784ab7:
   pfVar1[2] = (pdVar4->current).vector[2];
   this->drawDobjs[this->nDrawDobjs].yaw = 90.0;
   this->drawDobjs[this->nDrawDobjs].depthHack = this->mode == MODE_EDIT_ATTACHMENT_TOP;
-  DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,param_1,local_168,false);
+  DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,weapParams,weaponVariantDef,false);
   this->nDrawDobjs = this->nDrawDobjs + 1;
   MVar3 = this->mode;
   if ((((MVar3 == MODE_EDIT_ATTACHMENT_TOP) || (MVar3 == MODE_EDIT_ATTACHMENT_BOTTOM)) ||
@@ -2451,16 +2526,16 @@ LAB_00784ab7:
     bVar5 = false;
   }
   if (bVar5) {
-    pDVar6 = AllocDobj(this,local_1fc);
-    DObjCreate(local_164,local_188,(XAnimTree_s *)0x0,pDVar6,local_1fc[0]);
-    local_1fc[1] = 0xffffffff;
-    local_1fc[2] = 0xffffffff;
-    local_1fc[3] = 0xffffffff;
-    local_1fc[4] = 0xffffffff;
-    local_1fc[5] = 0xffffffff;
-    UnhideWeaponTags(this,pDVar6,local_1cc,local_1fc + 1);
-    DObjSetHidePartBits(pDVar6,local_1fc + 1);
-    this->drawDobjs[this->nDrawDobjs].dobj = pDVar6;
+    dobj_00 = AllocDobj(this,&entnum_2);
+    DObjCreate(dobjModels,numModels,(XAnimTree_s *)0x0,dobj_00,entnum_2);
+    partBits_2[0] = 0xffffffff;
+    partBits_2[1] = 0xffffffff;
+    partBits_2[2] = 0xffffffff;
+    partBits_2[3] = 0xffffffff;
+    partBits_2[4] = 0xffffffff;
+    UnhideWeaponTags(this,dobj_00,attachmentTags,partBits_2);
+    DObjSetHidePartBits(dobj_00,partBits_2);
+    this->drawDobjs[this->nDrawDobjs].dobj = dobj_00;
     memset((uchar *)&this->drawDobjs[this->nDrawDobjs].pose,'\0',0x174);
     pfVar1 = this->drawDobjs[this->nDrawDobjs].pose.origin;
     pdVar4 = this->sceneOrigin;
@@ -2469,10 +2544,10 @@ LAB_00784ab7:
     pfVar1[2] = (pdVar4->current).vector[2];
     this->drawDobjs[this->nDrawDobjs].yaw = 90.0;
     this->drawDobjs[this->nDrawDobjs].depthHack = this->mode == MODE_EDIT_ATTACHMENT_TOP;
-    DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,param_1,local_168,true);
+    DrawDobj::Set(this->drawDobjs + this->nDrawDobjs,weapParams,weaponVariantDef,true);
     this->nDrawDobjs = this->nDrawDobjs + 1;
   }
-  local_184 = BG_UnlockablesGetItemRef(param_1->weaponIndex);
+  weaponRef = BG_UnlockablesGetItemRef(weapParams->weaponIndex);
   MVar3 = this->mode;
   if (((MVar3 == MODE_EDIT_ATTACHMENT_TOP) || (MVar3 == MODE_EDIT_ATTACHMENT_BOTTOM)) ||
      ((MVar3 == MODE_EDIT_ATTACHMENT_TRIGGER || (MVar3 == MODE_EDIT_ATTACHMENT_MUZZLE)))) {
@@ -2482,8 +2557,8 @@ LAB_00784ab7:
     bVar5 = false;
   }
   if (!bVar5) {
-    iVar8 = (this->prevState).mode;
-    if ((iVar8 < 0) || (6 < iVar8)) {
+    iVar6 = (this->prevState).mode;
+    if ((iVar6 < 0) || (6 < iVar6)) {
       bVar5 = false;
     }
     else {
@@ -2497,28 +2572,28 @@ LAB_00784ab7:
       local_264 = true;
     }
     if ((((((this->mode != MODE_EDIT_TAG) ||
-           (bVar5 = SetCameraPos(this,local_184,"tag",local_264), !bVar5)) &&
+           (bVar5 = SetCameraPos(this,weaponRef,"tag",local_264), !bVar5)) &&
           ((this->mode != MODE_EDIT_EMBLEM ||
-           (bVar5 = SetCameraPos(this,local_184,"emblem",local_264), !bVar5)))) &&
+           (bVar5 = SetCameraPos(this,weaponRef,"emblem",local_264), !bVar5)))) &&
          ((this->mode != MODE_AAR_WEAPON ||
-          (bVar5 = SetCameraPos(this,local_184,"aar",local_264), !bVar5)))) &&
+          (bVar5 = SetCameraPos(this,weaponRef,"aar",local_264), !bVar5)))) &&
         ((this->mode != MODE_CHOOSE_CLASS_WEAPON ||
-         (bVar5 = SetCameraPos(this,local_184,"ingame",local_264), !bVar5)))) &&
-       (bVar5 = SetCameraPos(this,local_184,"none",local_264), !bVar5)) {
+         (bVar5 = SetCameraPos(this,weaponRef,"ingame",local_264), !bVar5)))) &&
+       (bVar5 = SetCameraPos(this,weaponRef,"none",local_264), !bVar5)) {
       SetCameraPos(this,"default","none",local_264);
     }
     goto LAB_00785272;
   }
-  pbVar7 = (byte *)GetAttachmentSlotName(this);
-  iVar8 = GetAttachmentIndex(this,param_1);
-  local_208 = (byte *)BG_UnlockablesGetItemAttachmentRef(param_1->weaponIndex,iVar8);
-  if (local_208 == (byte *)0x0) {
+  attachment = GetAttachmentSlotName(this);
+  iVar6 = GetAttachmentIndex(this,weapParams);
+  attachRef = BG_UnlockablesGetItemAttachmentRef(weapParams->weaponIndex,iVar6);
+  if ((byte *)attachRef == (byte *)0x0) {
 LAB_00785028:
-    local_208 = pbVar7;
+    attachRef = attachment;
   }
   else {
     local_24c = &s_none;
-    local_250 = local_208;
+    local_250 = (byte *)attachRef;
     do {
       bVar2 = *local_250;
       bVar5 = bVar2 < *local_24c;
@@ -2538,19 +2613,19 @@ LAB_00785008:
 LAB_00785013:
     if (local_258 == 0) goto LAB_00785028;
   }
-  bVar5 = SetCameraPos(this,local_184,(char *)local_208,true);
-  if ((((!bVar5) && (bVar5 = SetCameraPos(this,local_184,(char *)pbVar7,true), !bVar5)) &&
-      (bVar5 = SetCameraPos(this,local_184,"none",true), !bVar5)) &&
-     (bVar5 = SetCameraPos(this,"default",(char *)local_208,true), !bVar5)) {
+  bVar5 = SetCameraPos(this,weaponRef,attachRef,true);
+  if ((((!bVar5) && (bVar5 = SetCameraPos(this,weaponRef,attachment,true), !bVar5)) &&
+      (bVar5 = SetCameraPos(this,weaponRef,"none",true), !bVar5)) &&
+     (bVar5 = SetCameraPos(this,"default",attachRef,true), !bVar5)) {
     SetCameraPos(this,"default","none",true);
   }
 LAB_00785272:
-  pSVar10 = &local_64;
-  pSVar12 = &this->prevState;
-  for (iVar8 = 0x16; iVar8 != 0; iVar8 = iVar8 + -1) {
-    pSVar12->mode = pSVar10->mode;
+  pSVar8 = &state;
+  pSVar10 = &this->prevState;
+  for (iVar6 = 0x16; iVar6 != 0; iVar6 = iVar6 + -1) {
+    pSVar10->mode = pSVar8->mode;
+    pSVar8 = (State *)pSVar8->faction;
     pSVar10 = (State *)pSVar10->faction;
-    pSVar12 = (State *)pSVar12->faction;
   }
   return;
 }
@@ -2562,41 +2637,41 @@ LAB_00785272:
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *param_1,bool param_2)
+bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *string,bool animate)
 
 {
   bool bVar1;
   double dVar2;
-  uchar local_134 [255];
+  uchar str [255];
   undefined1 local_35;
   uint local_34;
-  undefined4 local_30;
-  float local_2c;
+  int MAX_STRING;
+  float at;
   float local_28;
   undefined4 local_24;
-  float local_20 [4];
+  float vals [4];
   float local_10;
-  char *local_c;
-  int local_8;
+  char *s;
+  int i;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_30 = 0x100;
-  strncpy(local_134,(uchar *)param_1,0x100);
+  MAX_STRING = 0x100;
+  strncpy(str,(uchar *)string,0x100);
   local_35 = 0;
-  local_c = strtok((char *)local_134," ,");
-  local_8 = 0;
-  while ((local_8 < 5 && (local_c != (char *)0x0))) {
-    dVar2 = atof(local_c);
-    local_20[local_8] = (float)dVar2;
-    local_c = strtok((char *)0x0," ,");
-    local_8 = local_8 + 1;
+  s = strtok((char *)str," ,");
+  i = 0;
+  while ((i < 5 && (s != (char *)0x0))) {
+    dVar2 = atof(s);
+    vals[i] = (float)dVar2;
+    s = strtok((char *)0x0," ,");
+    i = i + 1;
   }
-  bVar1 = 4 < local_8;
+  bVar1 = 4 < i;
   if (bVar1) {
-    local_2c = 0.0;
-    local_28 = local_20[0];
-    local_24 = local_20[1];
-    SetCameraPos(this,&local_2c,local_20[2],local_20[3],local_10,param_2);
+    at = 0.0;
+    local_28 = vals[0];
+    local_24 = vals[1];
+    SetCameraPos(this,&at,vals[2],vals[3],local_10,animate);
   }
   return bVar1;
 }
@@ -2607,53 +2682,55 @@ bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *param_1,bool param_2
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *param_1,char *param_2,bool param_3)
+bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *weapon,char *attachment,bool animate)
 
 {
   byte bVar1;
   int iVar2;
-  char *pcVar3;
-  bool bVar4;
+  char *string;
+  bool bVar3;
   int local_38;
   char *local_30;
   byte *local_2c;
   int local_24;
   char *local_1c;
   byte *local_18;
-  int local_c;
+  int column;
+  int i;
+  int attachmentsRow;
   
-  strncpy((uchar *)(this->cameraOverrides[2].attachment + 0xc),(uchar *)param_1,0x20);
-  strncpy((uchar *)(this->cameraOverrides[2].params + 0x18),(uchar *)param_2,0x20);
-  local_c = 0;
+  strncpy((uchar *)(this->cameraOverrides[2].attachment + 0xc),(uchar *)weapon,0x20);
+  strncpy((uchar *)(this->cameraOverrides[2].params + 0x18),(uchar *)attachment,0x20);
+  i = 0;
   do {
-    if (this[1].prevState.mode <= local_c) {
+    if (this[1].prevState.mode <= i) {
       iVar2 = StringTable_LookupRowNumForValue
                         (*(StringTable **)(this->cameraOverrides[2].attachment + 4),0,"attachments")
       ;
       if ((iVar2 != -1) &&
          (iVar2 = StringTable_LookupColumnNumForValue
                             (*(StringTable **)(this->cameraOverrides[2].attachment + 4),iVar2,
-                             param_2), iVar2 != -1)) {
-        pcVar3 = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 4),0,
-                                    param_1,iVar2);
-        bVar4 = SetCameraPos(this,pcVar3,param_3);
-        return bVar4;
+                             attachment), iVar2 != -1)) {
+        string = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 4),0,
+                                    weapon,iVar2);
+        bVar3 = SetCameraPos(this,string,animate);
+        return bVar3;
       }
       return false;
     }
-    local_18 = (byte *)param_1;
-    local_1c = this->cameraOverrides[local_c + 3].weapon + 0x10;
+    local_18 = (byte *)weapon;
+    local_1c = this->cameraOverrides[i + 3].weapon + 0x10;
     do {
       bVar1 = *local_1c;
-      bVar4 = bVar1 < *local_18;
+      bVar3 = bVar1 < *local_18;
       if (bVar1 != *local_18) {
 LAB_00785472:
-        local_24 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
+        local_24 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
         goto LAB_0078547a;
       }
       if (bVar1 == 0) break;
       bVar1 = local_1c[1];
-      bVar4 = bVar1 < local_18[1];
+      bVar3 = bVar1 < local_18[1];
       if (bVar1 != local_18[1]) goto LAB_00785472;
       local_1c = local_1c + 2;
       local_18 = local_18 + 2;
@@ -2661,19 +2738,19 @@ LAB_00785472:
     local_24 = 0;
 LAB_0078547a:
     if (local_24 == 0) {
-      local_2c = (byte *)param_2;
-      local_30 = this->cameraOverrides[local_c + 3].attachment + 0x10;
+      local_2c = (byte *)attachment;
+      local_30 = this->cameraOverrides[i + 3].attachment + 0x10;
       do {
         bVar1 = *local_30;
-        bVar4 = bVar1 < *local_2c;
+        bVar3 = bVar1 < *local_2c;
         if (bVar1 != *local_2c) {
 LAB_007854e0:
-          local_38 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
+          local_38 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
           goto LAB_007854e8;
         }
         if (bVar1 == 0) break;
         bVar1 = local_30[1];
-        bVar4 = bVar1 < local_2c[1];
+        bVar3 = bVar1 < local_2c[1];
         if (bVar1 != local_2c[1]) goto LAB_007854e0;
         local_30 = local_30 + 2;
         local_2c = local_2c + 2;
@@ -2681,11 +2758,11 @@ LAB_007854e0:
       local_38 = 0;
 LAB_007854e8:
       if (local_38 == 0) {
-        bVar4 = SetCameraPos(this,this->cameraOverrides[local_c + 3].params + 0x10,param_3);
-        return bVar4;
+        bVar3 = SetCameraPos(this,this->cameraOverrides[i + 3].params + 0x10,animate);
+        return bVar3;
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2696,18 +2773,17 @@ LAB_007854e8:
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __thiscall
-UIViewer::SetCameraPos
-          (UIViewer *this,float *param_1,float param_2,float param_3,float param_4,bool param_5)
+UIViewer::SetCameraPos(UIViewer *this,float *lookat,float dist,float yaw,float pitch,bool animate)
 
 {
-  this->cameraAnim = param_5;
+  this->cameraAnim = animate;
   if (this->cameraAnim == false) {
-    (this->camera).lookAt[0] = *param_1;
-    (this->camera).lookAt[1] = param_1[1];
-    (this->camera).lookAt[2] = param_1[2];
-    (this->camera).dist = param_2;
-    (this->camera).yaw = param_3;
-    (this->camera).pitch = param_4;
+    (this->camera).lookAt[0] = *lookat;
+    (this->camera).lookAt[1] = lookat[1];
+    (this->camera).lookAt[2] = lookat[2];
+    (this->camera).dist = dist;
+    (this->camera).yaw = yaw;
+    (this->camera).pitch = pitch;
     (this->cameraAnimEnd).lookAt[0] = (this->camera).lookAt[0];
     (this->cameraAnimEnd).lookAt[1] = (this->camera).lookAt[1];
     (this->cameraAnimEnd).lookAt[2] = (this->camera).lookAt[2];
@@ -2723,12 +2799,12 @@ UIViewer::SetCameraPos
     (this->cameraAnimStart).dist = (this->camera).dist;
     (this->cameraAnimStart).yaw = (this->camera).yaw;
     (this->cameraAnimStart).pitch = (this->camera).pitch;
-    (this->cameraAnimEnd).lookAt[0] = *param_1;
-    (this->cameraAnimEnd).lookAt[1] = param_1[1];
-    (this->cameraAnimEnd).lookAt[2] = param_1[2];
-    (this->cameraAnimEnd).dist = param_2;
-    (this->cameraAnimEnd).yaw = param_3;
-    (this->cameraAnimEnd).pitch = param_4;
+    (this->cameraAnimEnd).lookAt[0] = *lookat;
+    (this->cameraAnimEnd).lookAt[1] = lookat[1];
+    (this->cameraAnimEnd).lookAt[2] = lookat[2];
+    (this->cameraAnimEnd).dist = dist;
+    (this->cameraAnimEnd).yaw = yaw;
+    (this->cameraAnimEnd).pitch = pitch;
   }
   return;
 }
@@ -2742,14 +2818,14 @@ UIViewer::SetCameraPos
 void __thiscall UIViewer::InitFov(UIViewer *this)
 
 {
-  char *pcVar1;
-  double dVar2;
+  char *nptr;
+  double dVar1;
+  char *str;
   
-  pcVar1 = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 4),0,"fov_x",1
-                             );
-  if ((pcVar1 != (char *)0x0) && (*pcVar1 != '\0')) {
-    dVar2 = atof(pcVar1);
-    Dvar_SetFloat(this->fov,(float)dVar2);
+  nptr = StringTable_Lookup(*(StringTable **)(this->cameraOverrides[2].attachment + 4),0,"fov_x",1);
+  if ((nptr != (char *)0x0) && (*nptr != '\0')) {
+    dVar1 = atof(nptr);
+    Dvar_SetFloat(this->fov,(float)dVar1);
   }
   return;
 }
@@ -2767,10 +2843,10 @@ void __cdecl UIViewer::SetCameraPosCmd(void)
   char *pcVar2;
   double dVar3;
   double dVar4;
-  float fVar5;
-  float fVar6;
-  undefined1 uVar7;
-  float local_10;
+  float yaw;
+  float pitch;
+  undefined1 animate;
+  float lookat;
   float local_c;
   float local_8;
   
@@ -2781,18 +2857,18 @@ void __cdecl UIViewer::SetCameraPosCmd(void)
     pcVar2 = Cmd_Argv(2);
     dVar4 = atof(pcVar2);
     local_8 = (float)dVar4;
-    local_10 = 0.0;
-    uVar7 = 0;
+    lookat = 0.0;
+    animate = 0;
     local_c = (float)dVar3;
     pcVar2 = Cmd_Argv(5);
     dVar3 = atof(pcVar2);
-    fVar6 = (float)dVar3;
+    pitch = (float)dVar3;
     pcVar2 = Cmd_Argv(4);
     dVar3 = atof(pcVar2);
-    fVar5 = (float)dVar3;
+    yaw = (float)dVar3;
     pcVar2 = Cmd_Argv(3);
     dVar3 = atof(pcVar2);
-    SetCameraPos((UIViewer *)&uiViewer,&local_10,(float)dVar3,fVar5,fVar6,(bool)uVar7);
+    SetCameraPos((UIViewer *)&uiViewer,&lookat,(float)dVar3,yaw,pitch,(bool)animate);
   }
   else {
     Com_Printf(0x10,
@@ -2833,10 +2909,10 @@ void __cdecl UIViewer::SetControllerIndexCmd(void)
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-DObj * __cdecl UIViewer::GetDObj(int param_1,int param_2)
+DObj * __cdecl UIViewer::GetDObj(int handle,int localClientNum)
 
 {
-  return uiViewer.drawDobjs[param_1].dobj;
+  return uiViewer.drawDobjs[handle].dobj;
 }
 
 
@@ -2844,17 +2920,20 @@ DObj * __cdecl UIViewer::GetDObj(int param_1,int param_2)
 
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall UIViewer::Draw(UIViewer *this,int param_1,bool param_2,uint param_3)
+void __thiscall UIViewer::Draw(UIViewer *this,int localClientNum,bool _ingame,uint eyeToRender)
 
 {
   code *pcVar1;
   bool bVar2;
   
   if (this->inited == false) {
-    Init(this,param_2);
+    Init(this,_ingame);
   }
-  if ((param_2 != this->ingame) &&
+  if ((_ingame != this->ingame) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x83b,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2885,7 +2964,7 @@ void __thiscall UIViewer::Draw(UIViewer *this,int param_1,bool param_2,uint para
     Show(this);
   }
   if (this->show != false) {
-    DrawScene(this,param_3);
+    DrawScene(this,eyeToRender);
   }
   return;
 }
@@ -2895,14 +2974,16 @@ void __thiscall UIViewer::Draw(UIViewer *this,int param_1,bool param_2,uint para
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl ForceLoadWeapon(XAssetHeader param_1,void *param_2)
+void __cdecl ForceLoadWeapon(XAssetHeader header,void *__formal)
 
 {
   WeaponDef *pWVar1;
   code *pcVar2;
   bool bVar3;
+  WeaponVariantDef *variantDef;
+  WeaponDef *weaponDef;
   
-  if (param_1.xmodelPieces == (XModelPieces *)0x0) {
+  if (header.xmodelPieces == (XModelPieces *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_viewer.cpp",0x85f,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -2910,7 +2991,7 @@ void __cdecl ForceLoadWeapon(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  pWVar1 = (param_1.weapon)->weapDef;
+  pWVar1 = (header.weapon)->weapDef;
   if (*pWVar1->gunXModel != (XModel *)0x0) {
     R_Stream_ForceLoadModel(*pWVar1->gunXModel,0);
   }
@@ -2936,9 +3017,14 @@ void __thiscall UIViewer::SetupStreamer(UIViewer *this)
   int iVar3;
   char *pcVar4;
   int iVar5;
-  XAssetHeader XVar6;
-  int local_c;
-  int local_8;
+  XAssetHeader model_00;
+  int colCount;
+  XModel *model;
+  char *modelName;
+  int rowCount;
+  char *partType;
+  int row;
+  int col;
   
   if ((((this->inited != false) && (this->streamerInited == false)) &&
       (iVar2 = Sys_IsDatabaseReady2(), iVar2 != 0)) &&
@@ -2948,19 +3034,18 @@ void __thiscall UIViewer::SetupStreamer(UIViewer *this)
     iVar2 = StringTable_RowCount(*(StringTable **)(this->cameraOverrides[2].attachment + 8));
     iVar3 = StringTable_ColumnCount(*(StringTable **)(this->cameraOverrides[2].attachment + 8));
     DB_EnumXAssets(ASSET_TYPE_WEAPON,ForceLoadWeapon,(void *)0x0,false);
-    for (local_c = 0; local_c < iVar2; local_c = local_c + 1) {
+    for (row = 0; row < iVar2; row = row + 1) {
       pcVar4 = StringTable_GetColumnValueForRow
-                         (*(StringTable **)(this->cameraOverrides[2].attachment + 8),local_c,1);
+                         (*(StringTable **)(this->cameraOverrides[2].attachment + 8),row,1);
       iVar5 = I_stricmp(pcVar4,"body");
       if ((iVar5 == 0) || (iVar5 = I_stricmp(pcVar4,"head_naked"), iVar5 == 0)) {
-        for (local_8 = 2; local_8 < iVar3; local_8 = local_8 + 1) {
+        for (col = 2; col < iVar3; col = col + 1) {
           pcVar4 = StringTable_GetColumnValueForRow
-                             (*(StringTable **)(this->cameraOverrides[2].attachment + 8),local_c,
-                              local_8);
+                             (*(StringTable **)(this->cameraOverrides[2].attachment + 8),row,col);
           if (((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) &&
-             (XVar6 = DB_FindXAssetHeader(ASSET_TYPE_XMODEL,pcVar4,true,-1),
-             XVar6.xmodelPieces != (XModelPieces *)0x0)) {
-            R_Stream_ForceLoadModel(XVar6.model,0);
+             (model_00 = DB_FindXAssetHeader(ASSET_TYPE_XMODEL,pcVar4,true,-1),
+             model_00.xmodelPieces != (XModelPieces *)0x0)) {
+            R_Stream_ForceLoadModel(model_00.model,0);
           }
         }
       }
@@ -2976,14 +3061,16 @@ void __thiscall UIViewer::SetupStreamer(UIViewer *this)
 /* WARNING: Enum "Mode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl UI_ViewerDraw(uint param_1)
+void __cdecl UI_ViewerDraw(uint eyeToRender)
 
 {
   bool bVar1;
+  int localClientNum;
+  bool ingame;
   
   bVar1 = DB_IsZoneLoaded("ui_mp");
   if (bVar1) {
-    UIViewer::Draw((UIViewer *)&uiViewer,0,false,param_1);
+    UIViewer::Draw((UIViewer *)&uiViewer,0,false,eyeToRender);
   }
   return;
 }

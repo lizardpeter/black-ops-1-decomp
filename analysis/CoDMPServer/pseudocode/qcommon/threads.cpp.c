@@ -2,11 +2,11 @@
 
 // 006F5270  SetThreadName  (<external>/projects_pc/cod/codsrc/tl/base/include/tl_thread.h:218)
 
-void __cdecl SetThreadName(ulong param_1,char *param_2)
+void __cdecl SetThreadName(ulong dwThreadID,char *szThreadName)
 
 {
   uint uStack_3c;
-  ULONG_PTR local_2c;
+  ULONG_PTR info;
   char *local_28;
   ulong local_24;
   undefined4 local_20;
@@ -22,12 +22,12 @@ void __cdecl SetThreadName(ulong param_1,char *param_2)
   uStack_3c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_1c = (undefined1 *)&uStack_3c;
   ExceptionList = &local_14;
-  local_2c = 0x1000;
-  local_28 = param_2;
-  local_24 = param_1;
+  info = 0x1000;
+  local_28 = szThreadName;
+  local_24 = dwThreadID;
   local_20 = 0;
   local_8 = 0;
-  RaiseException(0x406d1388,0,4,&local_2c);
+  RaiseException(0x406d1388,0,4,&info);
   ExceptionList = local_14;
   return;
 }
@@ -52,40 +52,40 @@ ulong __cdecl Sys_GetCurrentThreadId(void)
 
 // 006F5460  Sys_SetEvent  (qcommon/threads.cpp:265)
 
-void __cdecl Sys_SetEvent(void **param_1)
+void __cdecl Sys_SetEvent(void **event)
 
 {
-  SetEvent(*param_1);
+  SetEvent(*event);
   return;
 }
 
 
 // 006F54D0  Sys_ResetEvent  (qcommon/threads.cpp:271)
 
-void __cdecl Sys_ResetEvent(void **param_1)
+void __cdecl Sys_ResetEvent(void **event)
 
 {
-  ResetEvent(*param_1);
+  ResetEvent(*event);
   return;
 }
 
 
 // 006F5130  Sys_CreateEvent  (qcommon/threads.cpp:280)
 
-void __cdecl Sys_CreateEvent(int param_1,int param_2,void **param_3)
+void __cdecl Sys_CreateEvent(int manualReset,int initialState,void **event)
 
 {
   HANDLE pvVar1;
   
-  pvVar1 = CreateEventA((LPSECURITY_ATTRIBUTES)0x0,param_1,param_2,(LPCSTR)0x0);
-  *param_3 = pvVar1;
+  pvVar1 = CreateEventA((LPSECURITY_ATTRIBUTES)0x0,manualReset,initialState,(LPCSTR)0x0);
+  *event = pvVar1;
   return;
 }
 
 
 // 006F58C0  Sys_WaitForSingleObjectTimeout  (qcommon/threads.cpp:286)
 
-int __cdecl Sys_WaitForSingleObjectTimeout(void **param_1,uint param_2)
+int __cdecl Sys_WaitForSingleObjectTimeout(void **event,uint msec)
 
 {
   code *pcVar1;
@@ -93,7 +93,7 @@ int __cdecl Sys_WaitForSingleObjectTimeout(void **param_1,uint param_2)
   int iVar3;
   DWORD DVar4;
   
-  if (param_2 == 0xffffffff) {
+  if (msec == 0xffffffff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x11f,0,"%s")
     ;
     if (!bVar2) {
@@ -102,21 +102,22 @@ int __cdecl Sys_WaitForSingleObjectTimeout(void **param_1,uint param_2)
       return iVar3;
     }
   }
-  DVar4 = WaitForSingleObject(*param_1,param_2);
+  DVar4 = WaitForSingleObject(*event,msec);
   return (uint)(DVar4 == 0);
 }
 
 
 // 006F53F0  Sys_WaitForSingleObject  (qcommon/threads.cpp:293)
 
-void __cdecl Sys_WaitForSingleObject(void **param_1)
+void __cdecl Sys_WaitForSingleObject(void **event)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  ulong result;
   
-  DVar3 = WaitForSingleObject(*param_1,0xffffffff);
+  DVar3 = WaitForSingleObject(*event,0xffffffff);
   if (DVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x129,0,
                              "%s\n\t(result) = %i");
@@ -136,6 +137,7 @@ uint __cdecl Sys_GetDefaultWorkerThreadsCount(void)
 
 {
   uint uVar1;
+  uint cpuCount;
   
   uVar1 = Sys_GetCpuCount();
   if (uVar1 < 5) {
@@ -166,41 +168,43 @@ void __cdecl Win_InitThreads(void)
 
 {
   HANDLE hProcess;
-  uint *lpProcessAffinityMask;
+  ulong *lpProcessAffinityMask;
   ULONG_PTR *lpSystemAffinityMask;
-  uint local_98;
-  ULONG_PTR local_94;
-  uint local_90 [34];
-  uint local_8;
+  uint cpuCount;
+  ULONG_PTR systemAffinityMask;
+  ulong threadAffinityMask;
+  uint affinityMaskBits [33];
+  ulong processAffinityMask;
   
-  lpSystemAffinityMask = &local_94;
-  lpProcessAffinityMask = &local_8;
+  lpSystemAffinityMask = &systemAffinityMask;
+  lpProcessAffinityMask = &processAffinityMask;
   hProcess = GetCurrentProcess();
   GetProcessAffinityMask(hProcess,lpProcessAffinityMask,lpSystemAffinityMask);
-  s_affinityMaskForProcess = local_8;
-  local_98 = 0;
-  for (local_90[0] = 1; (~local_90[0] + 1 & local_8) != 0; local_90[0] = local_90[0] << 1) {
-    if ((local_90[0] & local_8) != 0) {
-      local_90[local_98 + 1] = local_90[0];
-      local_98 = local_98 + 1;
-      if (local_98 == 0x20) break;
+  s_affinityMaskForProcess = processAffinityMask;
+  cpuCount = 0;
+  for (threadAffinityMask = 1; (~threadAffinityMask + 1 & processAffinityMask) != 0;
+      threadAffinityMask = threadAffinityMask << 1) {
+    if ((threadAffinityMask & processAffinityMask) != 0) {
+      affinityMaskBits[cpuCount] = threadAffinityMask;
+      cpuCount = cpuCount + 1;
+      if (cpuCount == 0x20) break;
     }
   }
-  if ((local_98 == 0) || (local_98 == 1)) {
+  if ((cpuCount == 0) || (cpuCount == 1)) {
     s_cpuCount = 1;
     s_affinityMaskForCpu[0] = 0xffffffff;
   }
   else {
-    s_cpuCount = local_98;
-    s_affinityMaskForCpu[0] = local_90[1];
-    s_affinityMaskForCpu[1] = local_90[local_98];
-    if (local_98 != 2) {
-      if (local_98 == 3) {
-        s_affinityMaskForCpu[2] = local_90[2];
+    s_cpuCount = cpuCount;
+    s_affinityMaskForCpu[0] = affinityMaskBits[0];
+    s_affinityMaskForCpu[1] = affinityMaskBits[cpuCount - 1];
+    if (cpuCount != 2) {
+      if (cpuCount == 3) {
+        s_affinityMaskForCpu[2] = affinityMaskBits[1];
       }
-      else if (local_98 == 4) {
-        s_affinityMaskForCpu[2] = local_90[2];
-        s_affinityMaskForCpu[3] = local_90[3];
+      else if (cpuCount == 4) {
+        s_affinityMaskForCpu[2] = affinityMaskBits[1];
+        s_affinityMaskForCpu[3] = affinityMaskBits[2];
       }
       else {
         s_affinityMaskForCpu[0] = 0xffffffff;
@@ -211,7 +215,7 @@ void __cdecl Win_InitThreads(void)
         s_affinityMaskForCpu[5] = 0xffffffff;
         s_affinityMaskForCpu[6] = 0xffffffff;
         s_affinityMaskForCpu[7] = 0xffffffff;
-        if (7 < local_98) {
+        if (7 < cpuCount) {
           s_cpuCount = 8;
         }
       }
@@ -228,6 +232,10 @@ void __cdecl Sys_InitMainThread(void)
 {
   HANDLE hSourceProcessHandle;
   HANDLE hSourceHandle;
+  int ret;
+  void *process;
+  void *pseudoHandle;
+  int ideal_cpu;
   
   threadId[0] = Sys_GetCurrentThreadId();
   hSourceProcessHandle = GetCurrentProcess();
@@ -244,26 +252,27 @@ void __cdecl Sys_InitMainThread(void)
 
 // 006F4F50  Sys_InitThread  (qcommon/threads.cpp:883)
 
-void __cdecl Sys_InitThread(int param_1)
+void __cdecl Sys_InitThread(int threadContext)
 
 {
   *(void *(**) [5])(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x14) =
-       g_threadValues + param_1;
-  Com_InitThreadData(param_1);
+       g_threadValues + threadContext;
+  Com_InitThreadData(threadContext);
   return;
 }
 
 
 // 006F5300  Sys_ThreadMain  (qcommon/threads.cpp:899)
 
-ulong __cdecl Sys_ThreadMain(void *param_1)
+ulong __cdecl Sys_ThreadMain(void *parameter)
 
 {
   code *pcVar1;
   bool bVar2;
   ulong uVar3;
+  uint threadContext;
   
-  if ((void *)0xe < param_1) {
+  if ((void *)0xe < parameter) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x38c,0,
                              "threadContext doesn\'t index THREAD_CONTEXT_COUNT\n\t%i not in [0, %i)"
                             );
@@ -273,7 +282,7 @@ ulong __cdecl Sys_ThreadMain(void *param_1)
       return uVar3;
     }
   }
-  if (threadFunc[(int)param_1] == (_func___cdecl_void_uint *)0x0) {
+  if (threadFunc[(int)parameter] == (_func___cdecl_void_uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x38d,0,"%s")
     ;
     if (!bVar2) {
@@ -282,23 +291,24 @@ ulong __cdecl Sys_ThreadMain(void *param_1)
       return uVar3;
     }
   }
-  SetThreadName(0xffffffff,s_threadNames[(int)param_1]);
-  Sys_InitThread((int)param_1);
-  (*threadFunc[(int)param_1])((uint)param_1);
+  SetThreadName(0xffffffff,s_threadNames[(int)parameter]);
+  Sys_InitThread((int)parameter);
+  (*threadFunc[(int)parameter])((uint)parameter);
   return 0;
 }
 
 
 // 006F5150  Sys_CreateThread  (qcommon/threads.cpp:938)
 
-void __cdecl Sys_CreateThread(_func___cdecl_void_uint *param_1,uint param_2)
+void __cdecl Sys_CreateThread(_func___cdecl_void_uint *function,uint threadContext)
 
 {
   code *pcVar1;
   bool bVar2;
   HANDLE pvVar3;
+  ulong error;
   
-  if (threadFunc[param_2] != (_func___cdecl_void_uint *)0x0) {
+  if (threadFunc[threadContext] != (_func___cdecl_void_uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x3ab,0,"%s")
     ;
     if (!bVar2) {
@@ -307,7 +317,7 @@ void __cdecl Sys_CreateThread(_func___cdecl_void_uint *param_1,uint param_2)
       return;
     }
   }
-  if (0xe < param_2) {
+  if (0xe < threadContext) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x3ac,0,"%s")
     ;
     if (!bVar2) {
@@ -316,11 +326,11 @@ void __cdecl Sys_CreateThread(_func___cdecl_void_uint *param_1,uint param_2)
       return;
     }
   }
-  threadFunc[param_2] = param_1;
-  pvVar3 = CreateThread((LPSECURITY_ATTRIBUTES)0x0,0,Sys_ThreadMain,(LPVOID)param_2,4,
-                        threadId + param_2);
-  threadHandle[param_2] = pvVar3;
-  if (threadHandle[param_2] == (void *)0x0) {
+  threadFunc[threadContext] = function;
+  pvVar3 = CreateThread((LPSECURITY_ATTRIBUTES)0x0,0,Sys_ThreadMain,(LPVOID)threadContext,4,
+                        threadId + threadContext);
+  threadHandle[threadContext] = pvVar3;
+  if (threadHandle[threadContext] == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x3b0,0,"%s")
     ;
     if (!bVar2) {
@@ -329,22 +339,23 @@ void __cdecl Sys_CreateThread(_func___cdecl_void_uint *param_1,uint param_2)
       return;
     }
   }
-  if (threadHandle[param_2] == (void *)0x0) {
+  if (threadHandle[threadContext] == (void *)0x0) {
     GetLastError();
     Com_Printf(1,"error %d while creating thread %d\n");
   }
-  SetThreadName(threadId[param_2],s_threadNames[param_2]);
+  SetThreadName(threadId[threadContext],s_threadNames[threadContext]);
   return;
 }
 
 
 // 006F4F90  Sys_SpawnRenderThread  (qcommon/threads.cpp:1046)
 
-bool __cdecl Sys_SpawnRenderThread(_func___cdecl_void_uint *param_1)
+bool __cdecl Sys_SpawnRenderThread(_func___cdecl_void_uint *function)
 
 {
   bool bVar1;
-  uint local_8;
+  int ret;
+  int ideal_cpu;
   
   Sys_CreateEvent(0,0,&renderPausedEvent);
   Sys_CreateEvent(1,1,&renderCompletedEvent);
@@ -363,12 +374,12 @@ bool __cdecl Sys_SpawnRenderThread(_func___cdecl_void_uint *param_1)
   Sys_CreateEvent(1,0,&win32ScriptDebuggerDrawEvent);
   Sys_CreateEvent(1,0,&rgRegisteredEvent);
   Sys_CreateEvent(1,0,&renderEvent);
-  Sys_CreateThread(param_1,1);
+  Sys_CreateThread(function,1);
   bVar1 = threadHandle[1] != (void *)0x0;
   if (bVar1) {
     SetThreadPriority(threadHandle[1],1);
-    local_8 = (uint)(s_cpuCount != 1);
-    SetThreadIdealProcessor(threadHandle[1],local_8);
+    ideal_cpu = (int)(s_cpuCount != 1);
+    SetThreadIdealProcessor(threadHandle[1],ideal_cpu);
     Sys_ResumeThread(1);
   }
   return bVar1;
@@ -421,7 +432,7 @@ void __cdecl Sys_InitServerEvents(void)
 
 // 006F54F0  Sys_SpawnServerThread  (qcommon/threads.cpp:1208)
 
-bool __cdecl Sys_SpawnServerThread(_func___cdecl_void_uint *param_1)
+bool __cdecl Sys_SpawnServerThread(_func___cdecl_void_uint *function)
 
 {
   bool bVar1;
@@ -430,7 +441,7 @@ bool __cdecl Sys_SpawnServerThread(_func___cdecl_void_uint *param_1)
   Sys_CreateEvent(1,0,&serverCompletedEvent);
   Sys_CreateEvent(1,1,&allowServerNetworkEvent);
   Sys_CreateEvent(1,1,&serverNetworkCompletedEvent);
-  Sys_CreateThread(param_1,10);
+  Sys_CreateThread(function,10);
   bVar1 = threadHandle[10] != (void *)0x0;
   if (bVar1) {
     Sys_ResumeThread(10);
@@ -441,31 +452,32 @@ bool __cdecl Sys_SpawnServerThread(_func___cdecl_void_uint *param_1)
 
 // 006F5560  Sys_SpawnDatabaseThread  (qcommon/threads.cpp:1255)
 
-bool __cdecl Sys_SpawnDatabaseThread(_func___cdecl_void_uint *param_1)
+bool __cdecl Sys_SpawnDatabaseThread(_func___cdecl_void_uint *function)
 
 {
   bool bVar1;
-  DWORD local_8;
+  int ret;
+  int ideal_cpu;
   
   Sys_CreateEvent(0,0,&wakeDatabaseEvent);
   Sys_CreateEvent(1,1,&databaseCompletedEvent);
   Sys_CreateEvent(1,1,&databaseCompletedEvent2);
   Sys_CreateEvent(1,1,&resumedDatabaseEvent);
-  Sys_CreateThread(param_1,0xd);
+  Sys_CreateThread(function,0xd);
   if (threadHandle[0xd] == (void *)0x0) {
     bVar1 = false;
   }
   else {
     if (s_cpuCount == 1) {
-      local_8 = 0;
+      ideal_cpu = 0;
     }
     else if (s_cpuCount == 2) {
-      local_8 = 1;
+      ideal_cpu = 1;
     }
     else {
-      local_8 = 2;
+      ideal_cpu = 2;
     }
-    SetThreadIdealProcessor(threadHandle[0xd],local_8);
+    SetThreadIdealProcessor(threadHandle[0xd],ideal_cpu);
     Sys_ResumeThread(0xd);
     bVar1 = true;
   }
@@ -475,13 +487,13 @@ bool __cdecl Sys_SpawnDatabaseThread(_func___cdecl_void_uint *param_1)
 
 // 006F5620  Sys_SuspendDiscReads  (qcommon/threads.cpp:1324)
 
-void __cdecl Sys_SuspendDiscReads(ThreadOwner param_1)
+void __cdecl Sys_SuspendDiscReads(ThreadOwner owner)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == THREAD_OWNER_NONE) {
+  if (owner == THREAD_OWNER_NONE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x52d,0,"%s")
     ;
     if (!bVar2) {
@@ -490,7 +502,7 @@ void __cdecl Sys_SuspendDiscReads(ThreadOwner param_1)
       return;
     }
   }
-  g_discReadsOwner = param_1;
+  g_discReadsOwner = owner;
   Sys_ResetEvent(&resumedDatabaseEvent);
   return;
 }
@@ -498,13 +510,13 @@ void __cdecl Sys_SuspendDiscReads(ThreadOwner param_1)
 
 // 006F5670  Sys_ResumeDiscReads  (qcommon/threads.cpp:1342)
 
-void __cdecl Sys_ResumeDiscReads(ThreadOwner param_1)
+void __cdecl Sys_ResumeDiscReads(ThreadOwner owner)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == THREAD_OWNER_NONE) {
+  if (owner == THREAD_OWNER_NONE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x53f,0,"%s")
     ;
     if (!bVar2) {
@@ -513,7 +525,7 @@ void __cdecl Sys_ResumeDiscReads(ThreadOwner param_1)
       return;
     }
   }
-  if (g_discReadsOwner != param_1) {
+  if (g_discReadsOwner != owner) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x540,0,
                              "g_discReadsOwner == owner\n\t%i, %i");
     if (!bVar2) {
@@ -530,10 +542,10 @@ void __cdecl Sys_ResumeDiscReads(ThreadOwner param_1)
 
 // 006F56F0  Sys_HaveSuspendedDiscReads  (qcommon/threads.cpp:1358)
 
-int __cdecl Sys_HaveSuspendedDiscReads(ThreadOwner param_1)
+int __cdecl Sys_HaveSuspendedDiscReads(ThreadOwner owner)
 
 {
-  return (uint)(g_discReadsOwner == param_1);
+  return (uint)(g_discReadsOwner == owner);
 }
 
 
@@ -562,13 +574,13 @@ void __cdecl Sys_InitWorkerThreadContext(void)
 
 // 006F5760  Sys_ResumeThread  (qcommon/threads.cpp:1466)
 
-void __cdecl Sys_ResumeThread(uint param_1)
+void __cdecl Sys_ResumeThread(uint threadContext)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (threadHandle[param_1] == (void *)0x0) {
+  if (threadHandle[threadContext] == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0x5bc,0,"%s")
     ;
     if (!bVar2) {
@@ -577,7 +589,7 @@ void __cdecl Sys_ResumeThread(uint param_1)
       return;
     }
   }
-  ResumeThread(threadHandle[param_1]);
+  ResumeThread(threadHandle[threadContext]);
   return;
 }
 
@@ -621,6 +633,7 @@ void __cdecl Sys_FrontEndSleep(void)
 {
   int iVar1;
   DWORD DVar2;
+  int semaphore;
   
   iVar1 = R_ReleaseDXDeviceOwnership();
   PIXBeginNamedEvent(-1,"frontend sleep");
@@ -655,11 +668,11 @@ int __cdecl Sys_WaitRenderer(void)
 
 // 006F5910  Sys_WakeRenderer  (qcommon/threads.cpp:1619)
 
-void __cdecl Sys_WakeRenderer(void *param_1)
+void __cdecl Sys_WakeRenderer(void *data)
 
 {
   Sys_ResetEvent(&renderCompletedEvent);
-  smpData = param_1;
+  smpData = data;
   PIXSetMarker(-1,"set smpData");
   Sys_SetEvent(backendEvent + 1);
   Sys_SetWorkerCmdEvent();
@@ -696,6 +709,7 @@ void __cdecl Sys_SleepServer(void)
 {
   int iVar1;
   DWORD DVar2;
+  int result;
   
   PIXBeginNamedEvent(-1,"sleep server");
   iVar1 = Sys_WaitForSingleObjectTimeout(&wakeServerEvent,0);
@@ -712,12 +726,13 @@ void __cdecl Sys_SleepServer(void)
 
 // 006F5A10  Sys_WaitServer  (qcommon/threads.cpp:1674)
 
-int __cdecl Sys_WaitServer(int param_1)
+int __cdecl Sys_WaitServer(int timeout)
 
 {
   int iVar1;
+  int result;
   
-  iVar1 = Sys_WaitForSingleObjectTimeout(&serverCompletedEvent,param_1);
+  iVar1 = Sys_WaitForSingleObjectTimeout(&serverCompletedEvent,timeout);
   return iVar1;
 }
 
@@ -744,19 +759,19 @@ void __cdecl Sys_ServerCompleted(void)
 
 // 006F5A70  Sys_WaitStartServer  (qcommon/threads.cpp:1713)
 
-int __cdecl Sys_WaitStartServer(int param_1)
+int __cdecl Sys_WaitStartServer(int timeout)
 
 {
-  int local_8;
+  int start;
   
-  local_8 = Sys_WaitForSingleObjectTimeout(&wakeServerEvent,param_1);
-  if (local_8 != 0) {
+  start = Sys_WaitForSingleObjectTimeout(&wakeServerEvent,timeout);
+  if (start != 0) {
     Sys_ResetEvent(&serverCompletedEvent);
   }
   if (g_databaseStopServer != 0) {
-    local_8 = 0;
+    start = 0;
   }
-  return local_8;
+  return start;
 }
 
 
@@ -774,10 +789,10 @@ bool __cdecl Sys_IsServerThread(void)
 
 // 006F4C80  NET_Sleep  (win32/win_net.cpp:1811)
 
-void __cdecl NET_Sleep(int param_1)
+void __cdecl NET_Sleep(int msec_2)
 
 {
-  Sleep(param_1);
+  Sleep(msec_2);
   return;
 }
 
@@ -808,10 +823,13 @@ void __cdecl Sys_WaitStartDatabase(void)
 
 // 006F5B40  Sys_IsDatabaseReady  (qcommon/threads.cpp:1987)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 int __cdecl Sys_IsDatabaseReady(void)
 
 {
   int iVar1;
+  int result;
   
   iVar1 = Sys_WaitForSingleObjectTimeout(&databaseCompletedEvent,0);
   if (iVar1 != 0) {
@@ -823,12 +841,16 @@ int __cdecl Sys_IsDatabaseReady(void)
 
 // 006F5B70  Sys_SyncDatabase  (qcommon/threads.cpp:2007)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 void __cdecl Sys_SyncDatabase(void)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
+  int timeout;
+  int semaphore;
   
   iVar2 = R_ReleaseDXDeviceOwnership();
   while( true ) {
@@ -881,10 +903,13 @@ void __cdecl Sys_DatabaseCompleted2(void)
 
 // 006F5C40  Sys_IsDatabaseReady2  (qcommon/threads.cpp:2083)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 int __cdecl Sys_IsDatabaseReady2(void)
 
 {
   int iVar1;
+  int result;
   
   iVar1 = Sys_WaitForSingleObjectTimeout(&databaseCompletedEvent2,0);
   if (iVar1 != 0) {
@@ -982,12 +1007,13 @@ int __cdecl Sys_GetThreadContext(void)
   bool bVar2;
   ulong uVar3;
   int iVar4;
-  int local_c;
+  int i;
+  ulong currThread;
   
   uVar3 = Sys_GetCurrentThreadId();
-  for (local_c = 0; local_c < 0xf; local_c = local_c + 1) {
-    if (threadId[local_c] == uVar3) {
-      return local_c;
+  for (i = 0; i < 0xf; i = i + 1) {
+    if (threadId[i] == uVar3) {
+      return i;
     }
   }
   Com_Printf(1,"Current thread is not in thread table\n");
@@ -1003,22 +1029,26 @@ int __cdecl Sys_GetThreadContext(void)
 
 // 006F5DD0  Sys_SetValue  (qcommon/threads.cpp:2301)
 
-void __cdecl Sys_SetValue(int param_1,void *param_2)
+void __cdecl Sys_SetValue(int valueIndex,void *data)
 
 {
+  void **threadValues;
+  
   *(void **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x14) +
-            param_1 * 4) = param_2;
+            valueIndex * 4) = data;
   return;
 }
 
 
 // 006F5E00  Sys_GetValue  (qcommon/threads.cpp:2315)
 
-void * __cdecl Sys_GetValue(int param_1)
+void * __cdecl Sys_GetValue(int valueIndex)
 
 {
+  void **threadValues;
+  
   return *(void **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x14) +
-                   param_1 * 4);
+                   valueIndex * 4);
 }
 
 
@@ -1034,12 +1064,12 @@ void __cdecl Sys_SetWorkerCmdEvent(void)
 
 // 006F5E50  Sys_WaitBackendEvent  (qcommon/threads.cpp:2388)
 
-int __cdecl Sys_WaitBackendEvent(uint param_1)
+int __cdecl Sys_WaitBackendEvent(uint msec)
 
 {
   int iVar1;
   
-  iVar1 = Sys_WaitForSingleObjectTimeout(backendEvent + 1,param_1);
+  iVar1 = Sys_WaitForSingleObjectTimeout(backendEvent + 1,msec);
   return iVar1;
 }
 
@@ -1107,13 +1137,14 @@ void __cdecl Sys_SuspendOtherThreads(void)
 
 {
   ulong uVar1;
-  uint local_c;
+  uint threadIndex;
+  ulong currentThreadId;
   
   uVar1 = Sys_GetCurrentThreadId();
-  for (local_c = 0; local_c < 0xf; local_c = local_c + 1) {
-    if (((threadHandle[local_c] != (void *)0x0) && (threadId[local_c] != 0)) &&
-       (threadId[local_c] != uVar1)) {
-      SuspendThread(threadHandle[local_c]);
+  for (threadIndex = 0; threadIndex < 0xf; threadIndex = threadIndex + 1) {
+    if (((threadHandle[threadIndex] != (void *)0x0) && (threadId[threadIndex] != 0)) &&
+       (threadId[threadIndex] != uVar1)) {
+      SuspendThread(threadHandle[threadIndex]);
     }
   }
   return;
@@ -1216,10 +1247,10 @@ void __cdecl Sys_SetResourcesFlushedEvent(void)
 
 // 006F60E0  Sys_WaitResourcesQueuedEvent  (qcommon/threads.cpp:2630)
 
-void __cdecl Sys_WaitResourcesQueuedEvent(uint param_1)
+void __cdecl Sys_WaitResourcesQueuedEvent(uint msec)
 
 {
-  Sys_WaitForSingleObjectTimeout(&resourcesQueuedEvent,param_1);
+  Sys_WaitForSingleObjectTimeout(&resourcesQueuedEvent,msec);
   return;
 }
 
@@ -1352,27 +1383,28 @@ int __cdecl Sys_QueryD3DShutdownEvent(void)
 
 // 006F6280  Sys_SpawnStreamThread  (qcommon/threads.cpp:2749)
 
-bool __cdecl Sys_SpawnStreamThread(_func___cdecl_void_uint *param_1)
+bool __cdecl Sys_SpawnStreamThread(_func___cdecl_void_uint *function)
 
 {
   bool bVar1;
-  DWORD local_8;
+  int ret;
+  int ideal_cpu;
   
   Sys_CreateEvent(1,0,&sndInitializedEvent);
   Sys_CreateEvent(1,0,&streamCompletedEvent);
   Sys_CreateEvent(0,0,&streamEvent);
-  Sys_CreateThread(param_1,0xe);
+  Sys_CreateThread(function,0xe);
   if (threadHandle[0xe] == (void *)0x0) {
     bVar1 = false;
   }
   else {
     if ((s_cpuCount == 0) || (2 < s_cpuCount)) {
-      local_8 = 2;
+      ideal_cpu = 2;
     }
     else {
-      local_8 = 0;
+      ideal_cpu = 0;
     }
-    SetThreadIdealProcessor(threadHandle[0xe],local_8);
+    SetThreadIdealProcessor(threadHandle[0xe],ideal_cpu);
     Sys_ResumeThread(0xe);
     bVar1 = true;
   }
@@ -1427,16 +1459,17 @@ bool __cdecl Sys_IsStreamThread(void)
 
 // 006F63D0  Sys_SpawnOcclusion  (qcommon/threads.cpp:2925)
 
-void __cdecl Sys_SpawnOcclusion(_func___cdecl_void_uint *param_1)
+void __cdecl Sys_SpawnOcclusion(_func___cdecl_void_uint *function)
 
 {
   code *pcVar1;
   bool bVar2;
-  DWORD local_8;
+  int ret;
+  int ideal_cpu;
   
   if (threadHandle[0xb] == (void *)0x0) {
     Sys_CreateEvent(0,0,&occlusionEvent);
-    Sys_CreateThread(param_1,0xb);
+    Sys_CreateThread(function,0xb);
     if ((threadHandle[0xb] == (void *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\threads.cpp",0xb79,0,
                                  "%s"), !bVar2)) {
@@ -1445,12 +1478,12 @@ void __cdecl Sys_SpawnOcclusion(_func___cdecl_void_uint *param_1)
       return;
     }
     if ((s_cpuCount == 0) || (3 < s_cpuCount)) {
-      local_8 = 3;
+      ideal_cpu = 3;
     }
     else {
-      local_8 = 0;
+      ideal_cpu = 0;
     }
-    SetThreadIdealProcessor(threadHandle[0xb],local_8);
+    SetThreadIdealProcessor(threadHandle[0xb],ideal_cpu);
     SetThreadPriority(threadHandle[0xb],-1);
     Sys_ResumeThread(0xb);
   }

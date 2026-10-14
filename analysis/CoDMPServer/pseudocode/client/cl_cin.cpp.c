@@ -2,7 +2,7 @@
 
 // 005440A0  SCR_DrawCinematic  (client/cl_cin.cpp:52)
 
-void __cdecl SCR_DrawCinematic(int param_1)
+void __cdecl SCR_DrawCinematic(int localClientNum)
 
 {
   bool bVar1;
@@ -17,7 +17,7 @@ void __cdecl SCR_DrawCinematic(int param_1)
     if (bVar1) {
       Dvar_SetBool(com_movieIsPlaying,false);
     }
-    SCR_StopCinematic(param_1);
+    SCR_StopCinematic(localClientNum);
   }
   bVar1 = R_Cinematic_IsStarted();
   if (bVar1) {
@@ -32,28 +32,29 @@ void __cdecl SCR_DrawCinematic(int param_1)
 
 // 00544130  SCR_StopCinematic  (client/cl_cin.cpp:76)
 
-void __cdecl SCR_StopCinematic(int param_1)
+void __cdecl SCR_StopCinematic(int localClientNum)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  char *pcVar3;
-  int local_c;
+  char *text;
+  int clientNum;
+  bool oneClientWasChanged;
   
   if ((cin_skippable) || (bVar1 = R_Cinematic_IsFinished(), bVar1)) {
     R_Cinematic_StopPlayback();
     bVar1 = false;
-    for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-      cVar2 = CL_GetLocalClientConnectionState(local_c);
+    for (clientNum = 0; clientNum < 1; clientNum = clientNum + 1) {
+      cVar2 = CL_GetLocalClientConnectionState(clientNum);
       if ((cVar2 == CA_CINEMATIC) ||
-         (cVar2 = CL_GetLocalClientConnectionState(local_c), cVar2 == CA_UICINEMATIC)) {
+         (cVar2 = CL_GetLocalClientConnectionState(clientNum), cVar2 == CA_UICINEMATIC)) {
         bVar1 = true;
-        CL_SetLocalClientConnectionState(local_c,CA_DISCONNECTED);
+        CL_SetLocalClientConnectionState(clientNum,CA_DISCONNECTED);
       }
     }
     if ((bVar1) && (*(nextmap->current).string != '\0')) {
-      pcVar3 = va("%s\n");
-      Cbuf_AddText(0,pcVar3);
+      text = va("%s\n");
+      Cbuf_AddText(0,text);
       Dvar_SetString(nextmap,"");
     }
   }

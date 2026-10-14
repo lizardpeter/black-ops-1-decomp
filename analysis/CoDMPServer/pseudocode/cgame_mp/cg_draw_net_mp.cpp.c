@@ -7,10 +7,13 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddLagometerFrameInfo(cg_s *param_1)
+void __cdecl CG_AddLagometerFrameInfo(cg_s *cgameGlob)
 
 {
-  lagometer.frameSamples[lagometer.frameCount & 0x7f] = param_1->time - param_1->latestSnapshotTime;
+  int offset;
+  
+  lagometer.frameSamples[lagometer.frameCount & 0x7f] =
+       cgameGlob->time - cgameGlob->latestSnapshotTime;
   lagometer.frameCount = lagometer.frameCount + 1;
   return;
 }
@@ -20,15 +23,15 @@ void __cdecl CG_AddLagometerFrameInfo(cg_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_AddLagometerSnapshotInfo(snapshot_s *param_1)
+void __cdecl CG_AddLagometerSnapshotInfo(snapshot_s *snap)
 
 {
-  if (param_1 == (snapshot_s *)0x0) {
+  if (snap == (snapshot_s *)0x0) {
     lagometer.snapshotSamples[lagometer.snapshotCount & 0x7f] = -1;
   }
   else {
-    lagometer.snapshotSamples[lagometer.snapshotCount & 0x7f] = param_1->ping;
-    lagometer.snapshotFlags[lagometer.snapshotCount & 0x7f] = param_1->snapFlags;
+    lagometer.snapshotSamples[lagometer.snapshotCount & 0x7f] = snap->ping;
+    lagometer.snapshotFlags[lagometer.snapshotCount & 0x7f] = snap->snapFlags;
   }
   lagometer.snapshotCount = lagometer.snapshotCount + 1;
   return;
@@ -43,40 +46,47 @@ void __cdecl CG_AddLagometerSnapshotInfo(snapshot_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawDisconnect(int param_1)
+void __cdecl CG_DrawDisconnect(int localClientNum)
 
 {
   bool bVar1;
   cg_s *pcVar2;
   int iVar3;
-  char *pcVar4;
-  Font_s *pFVar5;
-  Material *pMVar6;
-  ScreenPlacement *pSVar7;
+  char *text;
+  Font_s *font_00;
+  Material *material;
+  ScreenPlacement *scrPlace_00;
   int local_64;
-  usercmd_s local_40;
+  Material *disconnectMaterial;
+  Font_s *font;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  int cmdNum;
+  char *s;
+  float x;
+  float y;
+  usercmd_s cmd;
   uint local_c;
-  int local_8;
+  int w;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_64 = 0; local_64 < 2; local_64 = local_64 + 1) {
-    local_40.button_bits.array[local_64] = 0;
+    cmd.button_bits.array[local_64] = 0;
   }
-  bVar1 = CL_IsServerRestarting(param_1);
+  bVar1 = CL_IsServerRestarting(localClientNum);
   if ((!bVar1) && (bVar1 = Demo_IsPlaying(), !bVar1)) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
-    iVar3 = CL_GetCurrentCmdNumber(param_1);
-    CL_GetUserCmd(param_1,iVar3 + -0x7f,&local_40);
-    if (((pcVar2->nextSnap->ps).commandTime < local_40.serverTime) &&
-       (local_40.serverTime <= pcVar2->time)) {
-      pSVar7 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-      pcVar4 = UI_SafeTranslateString("CGAME_CONNECTIONINTERUPTED");
-      pFVar5 = UI_GetFontHandle(pSVar7,0,0.5);
-      local_8 = UI_TextWidth(pcVar4,0,pFVar5,0.5);
-      UI_DrawText(pSVar7,pcVar4,0x7fffffff,pFVar5,(float)((0x280 - local_8) / 2),100.0,0,0,0.5,
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+    iVar3 = CL_GetCurrentCmdNumber(localClientNum);
+    CL_GetUserCmd(localClientNum,iVar3 + -0x7f,&cmd);
+    if (((pcVar2->nextSnap->ps).commandTime < cmd.serverTime) && (cmd.serverTime <= pcVar2->time)) {
+      scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+      text = UI_SafeTranslateString("CGAME_CONNECTIONINTERUPTED");
+      font_00 = UI_GetFontHandle(scrPlace_00,0,0.5);
+      w = UI_TextWidth(text,0,font_00,0.5);
+      UI_DrawText(scrPlace_00,text,0x7fffffff,font_00,(float)((0x280 - w) / 2),100.0,0,0,0.5,
                   colorWhite,3);
-      pMVar6 = Material_RegisterHandle("net_new_animation",7);
-      UI_DrawHandlePic(pSVar7,288.0,320.0,64.0,64.0,0,0,(float *)0x0,pMVar6);
+      material = Material_RegisterHandle("net_new_animation",7);
+      UI_DrawHandlePic(scrPlace_00,288.0,320.0,64.0,64.0,0,0,(float *)0x0,material);
     }
   }
   return;
@@ -86,75 +96,90 @@ void __cdecl CG_DrawDisconnect(int param_1)
 // 004A0030  CG_DrawLagometer  (cgame_mp/cg_draw_net_mp.cpp:706)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawLagometer(int param_1)
+void __cdecl CG_DrawLagometer(int localClientNum)
 
 {
   cgs_t *pcVar1;
   uint uVar2;
-  ScreenPlacement *pSVar3;
-  float fVar4;
-  float *local_44;
-  int local_20;
-  float local_c;
+  ScreenPlacement *scrPlace_00;
+  float fVar3;
+  float *hcolor;
+  ScreenPlacement *scrPlace;
+  float range;
+  float vscale;
+  float ah;
+  cgs_t *cgs;
+  float ax;
+  int i;
+  float ay;
+  int a;
+  float x;
+  float y;
+  float aw;
+  int color;
+  float v;
+  float mid;
   
-  pcVar1 = CG_GetLocalClientStaticGlobals(param_1);
+  pcVar1 = CG_GetLocalClientStaticGlobals(localClientNum);
   if (((cg_drawLagometer->current).enabled == false) || (pcVar1->localServer != 0)) {
-    CG_DrawDisconnect(param_1);
+    CG_DrawDisconnect(localClientNum);
   }
   else {
-    pSVar3 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    UI_DrawHandlePic(pSVar3,-55.0,-140.0,48.0,48.0,3,3,(float *)0x0,cgMedia.lagometerMaterial);
-    for (local_20 = 0; (float)local_20 < 48.0; local_20 = local_20 + 1) {
-      local_c = (float)lagometer.frameSamples[(lagometer.frameCount + -1) - local_20 & 0x7f] *
-                0.053333335;
-      if (local_c <= 0.0) {
-        if (local_c < 0.0) {
-          local_c = -local_c;
-          if (16.0 < local_c) {
-            local_c = 16.0;
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    UI_DrawHandlePic(scrPlace_00,-55.0,-140.0,48.0,48.0,3,3,(float *)0x0,cgMedia.lagometerMaterial);
+    for (a = 0; (float)a < 48.0; a = a + 1) {
+      v = (float)lagometer.frameSamples[(lagometer.frameCount + -1) - a & 0x7f] * 0.053333335;
+      if (v <= 0.0) {
+        if (v < 0.0) {
+          v = -v;
+          if (16.0 < v) {
+            v = 16.0;
           }
-          CL_DrawStretchPic(pSVar3,-7.0 - (float)local_20,-124.0,1.0,local_c,3,3,0.0,0.0,0.0,0.0,
-                            colorBlue,cgMedia.whiteMaterial);
+          CL_DrawStretchPic(scrPlace_00,-7.0 - (float)a,-124.0,1.0,v,3,3,0.0,0.0,0.0,0.0,colorBlue,
+                            cgMedia.whiteMaterial);
         }
       }
       else {
-        if (16.0 < local_c) {
-          local_c = 16.0;
+        if (16.0 < v) {
+          v = 16.0;
         }
-        CL_DrawStretchPic(pSVar3,-7.0 - (float)local_20,-124.0 - local_c,1.0,local_c,3,3,0.0,0.0,0.0
-                          ,0.0,colorYellow,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,-7.0 - (float)a,-124.0 - v,1.0,v,3,3,0.0,0.0,0.0,0.0,
+                          colorYellow,cgMedia.whiteMaterial);
       }
     }
-    for (local_20 = 0; (float)local_20 < 48.0; local_20 = local_20 + 1) {
-      uVar2 = (lagometer.snapshotCount + -1) - local_20 & 0x7f;
-      fVar4 = (float)lagometer.snapshotSamples[uVar2];
-      if (fVar4 <= 0.0) {
-        if (fVar4 < 0.0) {
-          CL_DrawStretchPic(pSVar3,-7.0 - (float)local_20,-116.0,1.0,24.0,3,3,0.0,0.0,0.0,0.0,
-                            colorRed,cgMedia.whiteMaterial);
+    for (a = 0; (float)a < 48.0; a = a + 1) {
+      uVar2 = (lagometer.snapshotCount + -1) - a & 0x7f;
+      fVar3 = (float)lagometer.snapshotSamples[uVar2];
+      if (fVar3 <= 0.0) {
+        if (fVar3 < 0.0) {
+          CL_DrawStretchPic(scrPlace_00,-7.0 - (float)a,-116.0,1.0,24.0,3,3,0.0,0.0,0.0,0.0,colorRed
+                            ,cgMedia.whiteMaterial);
         }
       }
       else {
         if ((lagometer.snapshotFlags[uVar2] & 1U) == 0) {
-          local_44 = colorGreen;
+          hcolor = colorGreen;
         }
         else {
-          local_44 = colorYellow;
+          hcolor = colorYellow;
         }
-        local_c = fVar4 * 0.026666667;
-        if (24.0 < fVar4 * 0.026666667) {
-          local_c = 24.0;
+        v = fVar3 * 0.026666667;
+        if (24.0 < fVar3 * 0.026666667) {
+          v = 24.0;
         }
-        CL_DrawStretchPic(pSVar3,-7.0 - (float)local_20,-92.0 - local_c,1.0,local_c,3,3,0.0,0.0,0.0,
-                          0.0,local_44,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,-7.0 - (float)a,-92.0 - v,1.0,v,3,3,0.0,0.0,0.0,0.0,hcolor,
+                          cgMedia.whiteMaterial);
       }
     }
     if (((cg_nopredict->current).enabled != false) ||
        ((cg_synchronousClients->current).enabled != false)) {
-      CG_DrawBigDevString(pSVar3,633.0,340.0,"snc",1.0,10);
+      CG_DrawBigDevString(scrPlace_00,633.0,340.0,"snc",1.0,10);
     }
-    CG_DrawDisconnect(param_1);
+    CG_DrawDisconnect(localClientNum);
   }
   return;
 }
@@ -164,72 +189,85 @@ void __cdecl CG_DrawLagometer(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_DrawEntityCount(int param_1)
+void __cdecl CG_DrawEntityCount(int localClientNum)
 
 {
-  float fVar1;
-  float fVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
-  ScreenPlacement *pSVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  float fVar10;
-  int iVar11;
-  Font_s *pFVar12;
-  int iVar13;
-  int iVar14;
-  float fVar15;
-  float *pfVar16;
-  int iVar17;
-  int local_18;
+  float x_00;
+  float y_00;
+  bool bVar1;
+  char *text;
+  uint uVar2;
+  ScreenPlacement *scrPlace_00;
+  float w;
+  float h;
+  float fVar3;
+  float fVar4;
+  int maxChars;
+  Font_s *font;
+  int horzAlign;
+  int vertAlign;
+  float scale;
+  float *color;
+  int style;
+  ScreenPlacement *scrPlace;
+  float range;
+  float vscale;
+  float ah;
+  cgs_t *cgs;
+  float ax;
+  int i;
+  float ay;
+  int a;
+  float x;
+  float y;
+  float aw;
+  float v;
   
-  bVar3 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
-  if ((bVar3) &&
-     (CG_GetLocalClientStaticGlobals(param_1), (drawEntityCount->current).enabled != false)) {
-    fVar1 = (drawEntityCountPos->current).value;
-    fVar2 = (drawEntityCountPos->current).vector[1];
-    pSVar6 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    fVar7 = (float)(drawEntityCountSize->current).integer;
-    fVar8 = (float)(drawEntityCountSize->current).integer;
-    iVar17 = 3;
-    pfVar16 = colorWhite;
-    fVar15 = 0.3;
-    iVar14 = 3;
-    iVar13 = 3;
-    fVar9 = fVar2 + fVar8 + 18.0;
-    fVar10 = fVar1 - 50.0;
-    iVar11 = 500;
-    pFVar12 = cgMedia.smallDevFont;
-    pcVar4 = va("Ents: %3i/%3i/%3i");
-    UI_DrawText(pSVar6,pcVar4,iVar11,pFVar12,fVar10,fVar9,iVar13,iVar14,fVar15,pfVar16,iVar17);
-    UI_DrawHandlePic(pSVar6,fVar1,fVar2,fVar7,fVar8,3,3,colorBlack,cgMedia.whiteMaterial);
-    fVar9 = fVar8 / 650.0;
-    for (local_18 = 0; (float)local_18 < fVar7; local_18 = local_18 + 1) {
-      uVar5 = (lagometer.frameCount + -1) - local_18 & 0x7f;
-      fVar10 = (float)lagometer.entitySamples[uVar5] * fVar9;
-      if (lagometer.entitySamples[uVar5] < 500) {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar7) - (float)local_18) - 1.0,(fVar2 + fVar8) - fVar10,
-                          1.0,fVar10,3,3,0.0,0.0,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
+  if ((bVar1) &&
+     (CG_GetLocalClientStaticGlobals(localClientNum), (drawEntityCount->current).enabled != false))
+  {
+    x_00 = (drawEntityCountPos->current).value;
+    y_00 = (drawEntityCountPos->current).vector[1];
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    w = (float)(drawEntityCountSize->current).integer;
+    h = (float)(drawEntityCountSize->current).integer;
+    style = 3;
+    color = colorWhite;
+    scale = 0.3;
+    vertAlign = 3;
+    horzAlign = 3;
+    fVar3 = y_00 + h + 18.0;
+    fVar4 = x_00 - 50.0;
+    maxChars = 500;
+    font = cgMedia.smallDevFont;
+    text = va("Ents: %3i/%3i/%3i");
+    UI_DrawText(scrPlace_00,text,maxChars,font,fVar4,fVar3,horzAlign,vertAlign,scale,color,style);
+    UI_DrawHandlePic(scrPlace_00,x_00,y_00,w,h,3,3,colorBlack,cgMedia.whiteMaterial);
+    fVar3 = h / 650.0;
+    for (a = 0; (float)a < w; a = a + 1) {
+      uVar2 = (lagometer.frameCount + -1) - a & 0x7f;
+      fVar4 = (float)lagometer.entitySamples[uVar2] * fVar3;
+      if (lagometer.entitySamples[uVar2] < 500) {
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - fVar4,1.0,fVar4,3,3
+                          ,0.0,0.0,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
       }
       else {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar7) - (float)local_18) - 1.0,(fVar2 + fVar8) - fVar10,
-                          1.0,fVar10,3,3,0.0,0.0,1.0,1.0,colorRed,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - fVar4,1.0,fVar4,3,3
+                          ,0.0,0.0,1.0,1.0,colorRed,cgMedia.whiteMaterial);
       }
-      fVar10 = (float)lagometer.archivedEntitySamples[uVar5] * fVar9;
-      if (lagometer.archivedEntitySamples[uVar5] < 300) {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar7) - (float)local_18) - 1.0,(fVar2 + fVar8) - fVar10,
-                          1.0,fVar10,3,3,0.0,0.0,1.0,1.0,colorMdCyan,cgMedia.whiteMaterial);
+      fVar4 = (float)lagometer.archivedEntitySamples[uVar2] * fVar3;
+      if (lagometer.archivedEntitySamples[uVar2] < 300) {
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - fVar4,1.0,fVar4,3,3
+                          ,0.0,0.0,1.0,1.0,colorMdCyan,cgMedia.whiteMaterial);
       }
       else {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar7) - (float)local_18) - 1.0,(fVar2 + fVar8) - fVar10,
-                          1.0,fVar10,3,3,0.0,0.0,1.0,1.0,colorOrange,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - fVar4,1.0,fVar4,3,3
+                          ,0.0,0.0,1.0,1.0,colorOrange,cgMedia.whiteMaterial);
       }
-      fVar10 = (float)lagometer.changedEntitySamples[uVar5] * fVar9;
-      CL_DrawStretchPic(pSVar6,((fVar1 + fVar7) - (float)local_18) - 1.0,(fVar2 + fVar8) - fVar10,
-                        1.0,fVar10,3,3,0.0,0.0,1.0,1.0,colorWhite,cgMedia.whiteMaterial);
+      fVar4 = (float)lagometer.changedEntitySamples[uVar2] * fVar3;
+      CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - fVar4,1.0,fVar4,3,3,
+                        0.0,0.0,1.0,1.0,colorWhite,cgMedia.whiteMaterial);
     }
   }
   return;
@@ -240,70 +278,84 @@ void __cdecl CG_DrawEntityCount(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_DrawServerBandwidth(int param_1)
+void __cdecl CG_DrawServerBandwidth(int localClientNum)
 
 {
-  float fVar1;
-  float fVar2;
-  bool bVar3;
-  int iVar4;
-  char *pcVar5;
-  ScreenPlacement *pSVar6;
-  uint uVar7;
-  float fVar8;
-  float fVar9;
-  float fVar10;
-  float fVar11;
-  int iVar12;
-  Font_s *pFVar13;
-  int iVar14;
-  int iVar15;
-  float fVar16;
-  int iVar17;
-  int local_1c;
-  float *local_c;
-  float local_8;
+  float x_00;
+  float y_00;
+  bool bVar1;
+  int iVar2;
+  char *text;
+  ScreenPlacement *scrPlace_00;
+  uint uVar3;
+  float w;
+  float h;
+  float y_01;
+  float x_01;
+  int maxChars;
+  Font_s *font;
+  int horzAlign;
+  int vertAlign;
+  float scale;
+  int style;
+  int bandwidthRequired;
+  ScreenPlacement *scrPlace;
+  float range;
+  int currentBandwidth;
+  float vscale;
+  float ah;
+  cgs_t *cgs;
+  float ax;
+  int i;
+  float ay;
+  int a;
+  float x;
+  float y;
+  float aw;
+  float *color;
+  float v;
   
-  bVar3 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
-  if ((bVar3) &&
-     (CG_GetLocalClientStaticGlobals(param_1), (drawServerBandwidth->current).enabled != false)) {
-    fVar1 = (drawServerBandwidthPos->current).value;
-    fVar2 = (drawServerBandwidthPos->current).vector[1];
-    pSVar6 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    fVar8 = (float)(drawServerBandwidthSize->current).integer;
-    fVar9 = (float)(drawServerBandwidthSize->current).integer;
-    iVar4 = Live_GetNecessaryBandwidth((com_maxclients->current).integer);
-    iVar4 = (int)(((float)iVar4 / 1024.0) * 0.9);
-    if (iVar4 < lagometer.serverBandwidth[lagometer.frameCount & 0x7f]) {
-      local_c = colorRed;
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
+  if ((bVar1) &&
+     (CG_GetLocalClientStaticGlobals(localClientNum),
+     (drawServerBandwidth->current).enabled != false)) {
+    x_00 = (drawServerBandwidthPos->current).value;
+    y_00 = (drawServerBandwidthPos->current).vector[1];
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    w = (float)(drawServerBandwidthSize->current).integer;
+    h = (float)(drawServerBandwidthSize->current).integer;
+    iVar2 = Live_GetNecessaryBandwidth((com_maxclients->current).integer);
+    iVar2 = (int)(((float)iVar2 / 1024.0) * 0.9);
+    if (iVar2 < lagometer.serverBandwidth[lagometer.frameCount & 0x7f]) {
+      color = colorRed;
     }
     else {
-      local_c = colorWhite;
+      color = colorWhite;
     }
-    iVar17 = 3;
-    fVar16 = 0.3;
-    iVar15 = 3;
-    iVar14 = 3;
-    fVar10 = fVar2 + fVar9 + 18.0;
-    fVar11 = fVar1 - 50.0;
-    iVar12 = 500;
-    pFVar13 = cgMedia.smallDevFont;
-    pcVar5 = va("kbps: %3i");
-    UI_DrawText(pSVar6,pcVar5,iVar12,pFVar13,fVar11,fVar10,iVar14,iVar15,fVar16,local_c,iVar17);
-    UI_DrawHandlePic(pSVar6,fVar1,fVar2,fVar8,fVar9,3,3,colorBlack,cgMedia.whiteMaterial);
-    for (local_1c = 0; (float)local_1c < fVar8; local_1c = local_1c + 1) {
-      uVar7 = (lagometer.frameCount + -1) - local_1c & 0x7f;
-      local_8 = (float)lagometer.serverBandwidth[uVar7] * (fVar9 / (float)iVar4);
-      if (fVar9 < local_8) {
-        local_8 = fVar9;
+    style = 3;
+    scale = 0.3;
+    vertAlign = 3;
+    horzAlign = 3;
+    y_01 = y_00 + h + 18.0;
+    x_01 = x_00 - 50.0;
+    maxChars = 500;
+    font = cgMedia.smallDevFont;
+    text = va("kbps: %3i");
+    UI_DrawText(scrPlace_00,text,maxChars,font,x_01,y_01,horzAlign,vertAlign,scale,color,style);
+    UI_DrawHandlePic(scrPlace_00,x_00,y_00,w,h,3,3,colorBlack,cgMedia.whiteMaterial);
+    for (a = 0; (float)a < w; a = a + 1) {
+      uVar3 = (lagometer.frameCount + -1) - a & 0x7f;
+      v = (float)lagometer.serverBandwidth[uVar3] * (h / (float)iVar2);
+      if (h < v) {
+        v = h;
       }
-      if (lagometer.serverBandwidth[uVar7] < iVar4) {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar8) - (float)local_1c) - 1.0,(fVar2 + fVar9) - local_8
-                          ,1.0,local_8,3,3,0.0,0.0,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
+      if (lagometer.serverBandwidth[uVar3] < iVar2) {
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - v,1.0,v,3,3,0.0,0.0
+                          ,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
       }
       else {
-        CL_DrawStretchPic(pSVar6,((fVar1 + fVar8) - (float)local_1c) - 1.0,(fVar2 + fVar9) - local_8
-                          ,1.0,local_8,3,3,0.0,0.0,1.0,1.0,colorRed,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - v,1.0,v,3,3,0.0,0.0
+                          ,1.0,1.0,colorRed,cgMedia.whiteMaterial);
       }
     }
   }
@@ -315,67 +367,82 @@ void __cdecl CG_DrawServerBandwidth(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_DrawServerKillcamData(int param_1)
+void __cdecl CG_DrawServerKillcamData(int localClientNum)
 
 {
-  float fVar1;
-  float fVar2;
-  bool bVar3;
-  char *pcVar4;
-  ScreenPlacement *pSVar5;
-  uint uVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  float fVar10;
-  int iVar11;
-  Font_s *pFVar12;
-  int iVar13;
-  int iVar14;
-  float fVar15;
-  int iVar16;
-  int local_1c;
-  float *local_c;
-  float local_8;
+  float x_00;
+  float y_00;
+  bool bVar1;
+  char *text;
+  ScreenPlacement *scrPlace_00;
+  uint uVar2;
+  float w;
+  float h;
+  float y_01;
+  float x_01;
+  int maxChars;
+  Font_s *font;
+  int horzAlign;
+  int vertAlign;
+  float scale;
+  int style;
+  int currentKillcamTime;
+  ScreenPlacement *scrPlace;
+  float range;
+  float vscale;
+  int killcamRequired;
+  float ah;
+  cgs_t *cgs;
+  float ax;
+  int idealKillCam;
+  int i;
+  float ay;
+  int a;
+  float x;
+  float y;
+  float aw;
+  float *color;
+  float v;
   
-  bVar3 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
-  if ((bVar3) &&
-     (CG_GetLocalClientStaticGlobals(param_1), (drawKillcamData->current).enabled != false)) {
-    fVar1 = (drawKillcamDataPos->current).value;
-    fVar2 = (drawKillcamDataPos->current).vector[1];
-    pSVar5 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    fVar7 = (float)(drawKillcamDataSize->current).integer;
-    fVar8 = (float)(drawKillcamDataSize->current).integer;
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
+  if ((bVar1) &&
+     (CG_GetLocalClientStaticGlobals(localClientNum), (drawKillcamData->current).enabled != false))
+  {
+    x_00 = (drawKillcamDataPos->current).value;
+    y_00 = (drawKillcamDataPos->current).vector[1];
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    w = (float)(drawKillcamDataSize->current).integer;
+    h = (float)(drawKillcamDataSize->current).integer;
     if (lagometer.killcamTimes[lagometer.frameCount & 0x7f] < 10000) {
-      local_c = colorRed;
+      color = colorRed;
     }
     else {
-      local_c = colorWhite;
+      color = colorWhite;
     }
-    iVar16 = 3;
-    fVar15 = 0.3;
-    iVar14 = 3;
-    iVar13 = 3;
-    fVar9 = fVar2 + fVar8 + 18.0;
-    fVar10 = fVar1 - 50.0;
-    iVar11 = 500;
-    pFVar12 = cgMedia.smallDevFont;
-    pcVar4 = va("killcam: %3i");
-    UI_DrawText(pSVar5,pcVar4,iVar11,pFVar12,fVar10,fVar9,iVar13,iVar14,fVar15,local_c,iVar16);
-    UI_DrawHandlePic(pSVar5,fVar1,fVar2,fVar7,fVar8,3,3,colorBlack,cgMedia.whiteMaterial);
-    for (local_1c = 0; (float)local_1c < fVar7; local_1c = local_1c + 1) {
-      uVar6 = (lagometer.frameCount + -1) - local_1c & 0x7f;
-      local_8 = (float)lagometer.killcamTimes[uVar6] * (fVar8 / 20000.0);
-      if (fVar8 < local_8) {
-        local_8 = fVar8;
+    style = 3;
+    scale = 0.3;
+    vertAlign = 3;
+    horzAlign = 3;
+    y_01 = y_00 + h + 18.0;
+    x_01 = x_00 - 50.0;
+    maxChars = 500;
+    font = cgMedia.smallDevFont;
+    text = va("killcam: %3i");
+    UI_DrawText(scrPlace_00,text,maxChars,font,x_01,y_01,horzAlign,vertAlign,scale,color,style);
+    UI_DrawHandlePic(scrPlace_00,x_00,y_00,w,h,3,3,colorBlack,cgMedia.whiteMaterial);
+    for (a = 0; (float)a < w; a = a + 1) {
+      uVar2 = (lagometer.frameCount + -1) - a & 0x7f;
+      v = (float)lagometer.killcamTimes[uVar2] * (h / 20000.0);
+      if (h < v) {
+        v = h;
       }
-      if (lagometer.killcamTimes[uVar6] < 10000) {
-        CL_DrawStretchPic(pSVar5,((fVar1 + fVar7) - (float)local_1c) - 1.0,(fVar2 + fVar8) - local_8
-                          ,1.0,local_8,3,3,0.0,0.0,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
+      if (lagometer.killcamTimes[uVar2] < 10000) {
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - v,1.0,v,3,3,0.0,0.0
+                          ,1.0,1.0,colorBlue,cgMedia.whiteMaterial);
       }
       else {
-        CL_DrawStretchPic(pSVar5,((fVar1 + fVar7) - (float)local_1c) - 1.0,(fVar2 + fVar8) - local_8
-                          ,1.0,local_8,3,3,0.0,0.0,1.0,1.0,colorRed,cgMedia.whiteMaterial);
+        CL_DrawStretchPic(scrPlace_00,((x_00 + w) - (float)a) - 1.0,(y_00 + h) - v,1.0,v,3,3,0.0,0.0
+                          ,1.0,1.0,colorRed,cgMedia.whiteMaterial);
       }
     }
   }

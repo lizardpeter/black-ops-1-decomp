@@ -109,32 +109,32 @@ undefined4 FUN_00bd81f0(undefined4 param_1,int param_2)
 
 {
   undefined4 uVar1;
-  uchar *puVar2;
+  uchar *string;
   undefined1 *extraout_EAX;
-  int iVar3;
-  undefined4 uVar4;
+  int iVar2;
+  undefined4 uVar3;
   int local_c;
   
   if (param_2 == 0) {
     uVar1 = 0;
   }
   else {
-    puVar2 = (uchar *)_HTParse(param_2,"",8);
-    strchr(puVar2,':');
+    string = (uchar *)_HTParse(param_2,"",8);
+    strchr(string,':');
     local_c = 0x50;
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
       local_c = atoi(extraout_EAX + 1);
     }
-    iVar3 = _HTUTree_find("w3c-pep",puVar2,local_c);
-    _HTMemory_free(puVar2);
-    if (iVar3 == 0) {
+    iVar2 = _HTUTree_find("w3c-pep",string,local_c);
+    _HTMemory_free(string);
+    if (iVar2 == 0) {
       uVar1 = 0;
     }
     else {
-      uVar4 = _HTParse(param_2,"",4);
-      uVar1 = _HTUTree_findNode(iVar3,param_1,uVar4);
-      _HTMemory_free(uVar4);
+      uVar3 = _HTParse(param_2,"",4);
+      uVar1 = _HTUTree_findNode(iVar2,param_1,uVar3);
+      _HTMemory_free(uVar3);
     }
   }
   return uVar1;

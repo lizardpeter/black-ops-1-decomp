@@ -31,22 +31,22 @@ bool __cdecl SV_IsConnectedToDW(void)
 
 // 0059FD30  dwDNSCleanup  (DW/dwLogOn_pc.cpp:238)
 
-void __cdecl dwDNSCleanup(int param_1)
+void __cdecl dwDNSCleanup(int localControllerIndex)
 
 {
-  if (g_dwControllerData[param_1].authGetHostByName != (bdGetHostByName *)0x0) {
-    bdGetHostByName::quit(g_dwControllerData[param_1].authGetHostByName);
-    if (g_dwControllerData[param_1].authGetHostByName != (bdGetHostByName *)0x0) {
-      (**(code **)(g_dwControllerData[param_1].authGetHostByName)->_padding_)(1);
+  if (g_dwControllerData[localControllerIndex].authGetHostByName != (bdGetHostByName *)0x0) {
+    bdGetHostByName::quit(g_dwControllerData[localControllerIndex].authGetHostByName);
+    if (g_dwControllerData[localControllerIndex].authGetHostByName != (bdGetHostByName *)0x0) {
+      (**(code **)(g_dwControllerData[localControllerIndex].authGetHostByName)->_padding_)(1);
     }
-    g_dwControllerData[param_1].authGetHostByName = (bdGetHostByName *)0x0;
+    g_dwControllerData[localControllerIndex].authGetHostByName = (bdGetHostByName *)0x0;
   }
-  if (g_dwControllerData[param_1].lsgGetHostByName != (bdGetHostByName *)0x0) {
-    bdGetHostByName::quit(g_dwControllerData[param_1].lsgGetHostByName);
-    if (g_dwControllerData[param_1].lsgGetHostByName != (bdGetHostByName *)0x0) {
-      (**(code **)(g_dwControllerData[param_1].lsgGetHostByName)->_padding_)(1);
+  if (g_dwControllerData[localControllerIndex].lsgGetHostByName != (bdGetHostByName *)0x0) {
+    bdGetHostByName::quit(g_dwControllerData[localControllerIndex].lsgGetHostByName);
+    if (g_dwControllerData[localControllerIndex].lsgGetHostByName != (bdGetHostByName *)0x0) {
+      (**(code **)(g_dwControllerData[localControllerIndex].lsgGetHostByName)->_padding_)(1);
     }
-    g_dwControllerData[param_1].lsgGetHostByName = (bdGetHostByName *)0x0;
+    g_dwControllerData[localControllerIndex].lsgGetHostByName = (bdGetHostByName *)0x0;
   }
   return;
 }
@@ -54,19 +54,21 @@ void __cdecl dwDNSCleanup(int param_1)
 
 // 0059E420  dwInitForController  (DW/dwLogOn_pc.cpp:257)
 
-void __cdecl dwInitForController(int param_1)
+void __cdecl dwInitForController(int localControllerIndex)
 
 {
-  g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
-  g_dwControllerData[param_1].forceLogOn = false;
-  g_dwControllerData[param_1].dwAuthTimer = 0;
-  g_dwControllerData[param_1].authGetHostByName = (bdGetHostByName *)0x0;
-  g_dwControllerData[param_1].lsgGetHostByName = (bdGetHostByName *)0x0;
-  g_dwControllerData[param_1].ticketSize = 0;
-  g_dwControllerData[param_1].ticket = (uchar *)0x0;
-  g_dwControllerData[param_1].bCachedCookie = false;
-  g_dwControllerData[param_1].logOnAttempts = 0;
-  g_dwControllerData[param_1].couldNotConnectToLSP = false;
+  DWControllerData *dwControllerData;
+  
+  g_dwControllerData[localControllerIndex].logOnStatus = DW_LOGON_ERROR;
+  g_dwControllerData[localControllerIndex].forceLogOn = false;
+  g_dwControllerData[localControllerIndex].dwAuthTimer = 0;
+  g_dwControllerData[localControllerIndex].authGetHostByName = (bdGetHostByName *)0x0;
+  g_dwControllerData[localControllerIndex].lsgGetHostByName = (bdGetHostByName *)0x0;
+  g_dwControllerData[localControllerIndex].ticketSize = 0;
+  g_dwControllerData[localControllerIndex].ticket = (uchar *)0x0;
+  g_dwControllerData[localControllerIndex].bCachedCookie = false;
+  g_dwControllerData[localControllerIndex].logOnAttempts = 0;
+  g_dwControllerData[localControllerIndex].couldNotConnectToLSP = false;
   return;
 }
 
@@ -76,10 +78,10 @@ void __cdecl dwInitForController(int param_1)
 void __cdecl dwInit(void)
 
 {
-  undefined4 local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    dwInitForController(local_8);
+  for (i = 0; i < 1; i = i + 1) {
+    dwInitForController(i);
   }
   return;
 }
@@ -90,21 +92,23 @@ void __cdecl dwInit(void)
 char * __cdecl dwSelectLSGAddress(void)
 
 {
+  char *dwLobbyFQDN;
+  
   return "cod7-pc-live.lsg.mmp3.demonware.net";
 }
 
 
 // 0059E4A0  DWDisconnectLobby  (DW/dwLogOn_pc.cpp:304)
 
-void __cdecl DWDisconnectLobby(bdLobbyService *param_1)
+void __cdecl DWDisconnectLobby(bdLobbyService *lobby)
 
 {
-  if (param_1 != (bdLobbyService *)0x0) {
+  if (lobby != (bdLobbyService *)0x0) {
     Live_ClearDWOverlappedTasks();
     Session_ClearDWOverlappedTasks();
     Demo_StopStreaming();
     MatchRecorder_ClearDWOverlappedTasks();
-    bdLobbyService::disconnect(param_1);
+    bdLobbyService::disconnect(lobby);
   }
   return;
 }
@@ -112,21 +116,21 @@ void __cdecl DWDisconnectLobby(bdLobbyService *param_1)
 
 // 0059E4D0  dw_disconnect  (DW/dwLogOn_pc.cpp:323)
 
-void __cdecl dw_disconnect(int param_1)
+void __cdecl dw_disconnect(int controllerIndex)
 
 {
-  bdLobbyService *pbVar1;
-  int local_c;
+  bdLobbyService *lobby;
+  int i;
   
-  pbVar1 = dwGetLobby(param_1);
+  lobby = dwGetLobby(controllerIndex);
   g_numAccounts = 0;
-  DWDisconnectLobby(pbVar1);
+  DWDisconnectLobby(lobby);
   Dvar_SetBoolByName("dw_active",false);
   Dvar_SetBoolByName("dw_loggedin",false);
-  local_c = 5;
-  while (local_c != 0) {
-    Dvar_SetString(dw_usernames[local_c + -1],"");
-    local_c = local_c + -1;
+  i = 5;
+  while (i != 0) {
+    Dvar_SetString(dw_usernames[i + -1],"");
+    i = i + -1;
   }
   Dvar_SetInt(dw_numaccounts,-1);
   return;
@@ -135,19 +139,19 @@ void __cdecl dw_disconnect(int param_1)
 
 // 0059E560  dwGetLogOnStatus  (DW/dwLogOn_pc.cpp:339)
 
-DWOnlineStatus __cdecl dwGetLogOnStatus(int param_1)
+DWOnlineStatus __cdecl dwGetLogOnStatus(int localControllerIndex)
 
 {
-  DWOnlineStatus local_8;
+  DWOnlineStatus status;
   
-  local_8 = DW_LIVE_DISCONNECTED;
-  if (g_dwControllerData[param_1].forceLogOn == false) {
-    switch(g_dwControllerData[param_1].logOnStatus) {
+  status = DW_LIVE_DISCONNECTED;
+  if (g_dwControllerData[localControllerIndex].forceLogOn == false) {
+    switch(g_dwControllerData[localControllerIndex].logOnStatus) {
     case DW_COULD_NOT_CONNECT:
-      local_8 = DW_LIVE_ERROR;
+      status = DW_LIVE_ERROR;
       break;
     case DW_LOGON_ERROR:
-      local_8 = DW_LIVE_DISCONNECTED;
+      status = DW_LIVE_DISCONNECTED;
       break;
     case DW_DNS_NOT_RESOLVED:
     case DW_DNS_RESOLVING:
@@ -164,35 +168,36 @@ DWOnlineStatus __cdecl dwGetLogOnStatus(int param_1)
     case DW_LOBBY_CONNECTING:
     case DW_LOGON_GETFRIENDS:
     case DW_LOGON_CHECKMESSAGES:
-      local_8 = DW_LIVE_CONNECTING;
+      status = DW_LIVE_CONNECTING;
       break;
     case DW_NEED_USERNAME:
-      local_8 = DW_WAITING_FOR_USERNAME;
+      status = DW_WAITING_FOR_USERNAME;
       break;
     case DW_LOGON_COMPLETE:
-      local_8 = DW_LIVE_CONNECTED;
+      status = DW_LIVE_CONNECTED;
     }
   }
   else {
-    local_8 = DW_LIVE_DISCONNECTED;
+    status = DW_LIVE_DISCONNECTED;
   }
-  return local_8;
+  return status;
 }
 
 
 // 0059E610  dwLogOnStart  (DW/dwLogOn_pc.cpp:405)
 
-void __cdecl dwLogOnStart(int param_1)
+void __cdecl dwLogOnStart(int controllerIndex)
 
 {
-  if (g_dwControllerData[param_1].logOnAttempts < 4) {
-    g_dwControllerData[param_1].logOnAttempts = g_dwControllerData[param_1].logOnAttempts + 1;
-    g_dwControllerData[param_1].logOnStatus = DW_DNS_NOT_RESOLVED;
-    g_dwControllerData[param_1].forceLogOn = false;
+  if (g_dwControllerData[controllerIndex].logOnAttempts < 4) {
+    g_dwControllerData[controllerIndex].logOnAttempts =
+         g_dwControllerData[controllerIndex].logOnAttempts + 1;
+    g_dwControllerData[controllerIndex].logOnStatus = DW_DNS_NOT_RESOLVED;
+    g_dwControllerData[controllerIndex].forceLogOn = false;
   }
   else {
-    g_dwControllerData[param_1].logOnStatus = DW_COULD_NOT_CONNECT;
-    dw_disconnect(param_1);
+    g_dwControllerData[controllerIndex].logOnStatus = DW_COULD_NOT_CONNECT;
+    dw_disconnect(controllerIndex);
     Dvar_SetBoolByName("dw_active",true);
   }
   return;
@@ -212,30 +217,32 @@ void __cdecl dwLogonSeAcquiredSteamTicket(void)
 
 // 0059EDE0  CL_GetSecretSauce  (DW/dwLogOn_pc.cpp:437)
 
-void __cdecl CL_GetSecretSauce(char *param_1,char *param_2)
+void __cdecl CL_GetSecretSauce(char *secretsauce,char *username)
 
 {
-  I_strncpyz(param_1,"cod42700",9);
-  param_1[8] = '\0';
+  I_strncpyz(secretsauce,"cod42700",9);
+  secretsauce[8] = '\0';
   return;
 }
 
 
 // 0059E6B0  SV_DedicatedReadCDKey  (DW/dwLogOn_pc.cpp:510)
 
-bool __cdecl SV_DedicatedReadCDKey(char *param_1,int param_2)
+bool __cdecl SV_DedicatedReadCDKey(char *cdkey,int cdkeysize)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  _iobuf *p_Var5;
-  bool local_9;
+  _iobuf *stream;
+  int licensenum;
+  bool retval;
+  _iobuf *fp;
   
   iVar4 = Dvar_GetInt("sv_licensenum");
-  local_9 = false;
-  if (param_2 < 0x19) {
+  retval = false;
+  if (cdkeysize < 0x19) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwLogOn_pc.cpp",0x205,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -243,36 +250,36 @@ bool __cdecl SV_DedicatedReadCDKey(char *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (0x18 < param_2) {
-    p_Var5 = fopen("dwkey.dat","r");
-    if (p_Var5 != (_iobuf *)0x0) {
+  if (0x18 < cdkeysize) {
+    stream = fopen("dwkey.dat","r");
+    if (stream != (_iobuf *)0x0) {
       if (iVar4 != 0) {
-        fseek(p_Var5,iVar4 * 0x1a,0);
+        fseek(stream,iVar4 * 0x1a,0);
       }
-      fread(param_1,1,0x19,p_Var5);
-      param_1[param_2 + -1] = '\0';
+      fread(cdkey,1,0x19,stream);
+      cdkey[cdkeysize + -1] = '\0';
       Com_DPrintf(0xf,"Read cdkey %s\n");
-      local_9 = true;
-      fclose(p_Var5);
+      retval = true;
+      fclose(stream);
     }
   }
-  return local_9;
+  return retval;
 }
 
 
 // 0059E790  DW_DedicatedLogonStart  (DW/dwLogOn_pc.cpp:543)
 
-void __cdecl DW_DedicatedLogonStart(int param_1)
+void __cdecl DW_DedicatedLogonStart(int controllerIndex)
 
 {
-  bdLobbyService *pbVar1;
+  bdLobbyService *lobby;
   
   if (g_svdedicatedauthstate == SV_DWNOTAUTHORIZED) {
-    pbVar1 = dwGetLobby(param_1);
-    DWDisconnectLobby(pbVar1);
+    lobby = dwGetLobby(controllerIndex);
+    DWDisconnectLobby(lobby);
   }
   dwAuthServiceCleanup();
-  g_dwControllerData[param_1].logOnStatus = DW_DNS_NOT_RESOLVED;
+  g_dwControllerData[controllerIndex].logOnStatus = DW_DNS_NOT_RESOLVED;
   g_svdedicatedauthstate = SV_DWAUTHORIZING;
   return;
 }
@@ -282,211 +289,208 @@ void __cdecl DW_DedicatedLogonStart(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl DW_DedicatedLogonComplete(int param_1,int param_2)
+void __cdecl DW_DedicatedLogonComplete(int controllerIndex,int msecs)
 
 {
-  code *pcVar1;
-  bdAddr bVar2;
-  ulong64 uVar3;
-  bdLobbyErrorCode bVar4;
-  bool bVar5;
+  DWLogonStatus DVar1;
+  code *pcVar2;
+  bdAddr bVar3;
+  ulong64 uVar4;
+  bdLobbyErrorCode bVar5;
+  bool bVar6;
+  bdStatus bVar7;
+  bdStatus bVar8;
   undefined3 extraout_var;
-  bdAuthInfo *pbVar6;
-  int iVar7;
+  bdAuthInfo *pbVar9;
+  int iVar10;
   bdLobbyService *this;
-  Status SVar8;
-  bdAuthService *this_00;
-  bdAuthTicket *pbVar9;
-  <unnamed_type_inUn> <Var10;
+  Status SVar11;
+  bdAuthService *pbVar12;
+  bdAuthTicket *pbVar13;
+  <unnamed_type_inUn> <Var14;
   bdInAddr extraout_ECX;
-  <unnamed_type_inUn> <Var11;
-  ushort uVar12;
-  uint uVar13;
-  bdAddr local_38;
-  bdLobbyService *local_30;
-  undefined4 local_2c;
-  <unnamed_type_inUn> local_28;
-  <unnamed_type_inUn> local_24;
-  uint local_20;
-  int local_1c;
-  bdStatus local_18;
-  bdAuthService *local_14;
-  bdAuthService *local_10;
-  bdStatus local_c;
-  DWLogonStatus local_8;
+  <unnamed_type_inUn> <Var15;
+  ushort uVar16;
+  uint uVar17;
+  bdAuthTicket *ticket;
+  bdAddr lsgAddr;
+  bdLobbyService *lobby;
+  int handle;
+  bdInAddr inaddr;
+  uint numLSGAddrs;
+  bdLobbyErrorCode authError;
+  DWLogonStatus status;
   
-  local_8 = g_dwControllerData[param_1].logOnStatus;
-  g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
+  DVar1 = g_dwControllerData[controllerIndex].logOnStatus;
+  g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_ERROR;
   g_svdedicatedauthstate = SV_DWAUTHORIZEFAIL;
-  <Var10.m_iaddr = local_8 - DW_DNS_NOT_RESOLVED;
-  uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
-  switch(local_8) {
+  <Var14.m_iaddr = DVar1 - DW_DNS_NOT_RESOLVED;
+  uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+  switch(DVar1) {
   case DW_DNS_NOT_RESOLVED:
-    bVar5 = dwDNSInit("cod7-pc-auth.live.demonware.net",param_1);
-    if (bVar5) {
-      g_dwControllerData[param_1].logOnStatus = DW_DNS_RESOLVING;
+    bVar6 = dwDNSInit("cod7-pc-auth.live.demonware.net",controllerIndex);
+    if (bVar6) {
+      g_dwControllerData[controllerIndex].logOnStatus = DW_DNS_RESOLVING;
       g_svdedicatedauthstate = SV_DWAUTHORIZING;
       Com_Printf(0x10,"DNS\n");
       dw_timeout = Sys_Milliseconds();
     }
-    uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+    uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
     break;
   case DW_DNS_RESOLVING:
-    local_c = dwDNSPump(param_1,&g_dwControllerData[param_1].authAddr,
-                        &g_dwControllerData[param_1].lsgAddr);
-    switch(local_c) {
+    bVar7 = dwDNSPump(controllerIndex,&g_dwControllerData[controllerIndex].authAddr,
+                      &g_dwControllerData[controllerIndex].lsgAddr);
+    switch(bVar7) {
     case BD_LOOKUP_UNINITIALIZED:
     case BD_LOOKUP_FAILED:
     case BD_LOOKUP_CANCELLED:
     case BD_LOOKUP_TIMED_OUT:
     case BD_LOOKUP_ERROR:
-      g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
+      g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_ERROR;
       break;
     case BD_LOOKUP_PENDING:
-      iVar7 = Sys_Milliseconds();
-      if (iVar7 - dw_timeout < 5000) {
-        g_dwControllerData[param_1].logOnStatus = DW_DNS_RESOLVING;
+      iVar10 = Sys_Milliseconds();
+      if (iVar10 - dw_timeout < 5000) {
+        g_dwControllerData[controllerIndex].logOnStatus = DW_DNS_RESOLVING;
         g_svdedicatedauthstate = SV_DWAUTHORIZING;
         Com_Printf(0,".");
       }
       else {
         Com_Printf(0,"giving up on DNS resolution!\n");
-        g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
+        g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_ERROR;
       }
       break;
     case BD_LOOKUP_SUCCEEDED:
       g_svdedicatedauthstate = SV_DWAUTHORIZING;
-      g_dwControllerData[param_1].logOnStatus = DW_LOGIN;
+      g_dwControllerData[controllerIndex].logOnStatus = DW_LOGIN;
     }
-    uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+    uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
     break;
   case DW_LOGIN:
-    uVar13 = 0x477d;
-    uVar12 = 0xc02;
-    <Var10.m_iaddr = param_1 * 0x54 + 0x33267f0;
-    bdInetAddr::bdInetAddr((bdInetAddr *)&stack0xffffff8c,(bdInetAddr *)<Var10);
-    local_10 = dwGetAuthService((bdInetAddr)<Var10,uVar12,uVar13);
-    if (local_10 != (bdAuthService *)0x0) {
-      bVar5 = SV_DedicatedReadCDKey(g_svcdkey,0x19);
-      if (!bVar5) {
+    uVar17 = 0x477d;
+    uVar16 = 0xc02;
+    <Var14.m_iaddr = controllerIndex * 0x54 + 0x33267f0;
+    bdInetAddr::bdInetAddr((bdInetAddr *)&stack0xffffff8c,(bdInetAddr *)<Var14);
+    pbVar12 = dwGetAuthService((bdInetAddr)<Var14,uVar16,uVar17);
+    if (pbVar12 != (bdAuthService *)0x0) {
+      bVar6 = SV_DedicatedReadCDKey(g_svcdkey,0x19);
+      if (!bVar6) {
         Com_Printf(0xf,"Failed to read dw key from file\n");
-        g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
-        uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+        g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_ERROR;
+        uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
         break;
       }
-      bVar5 = bdAuthService::authorizeDedicatedHost(local_10,g_svcdkey);
-      if (bVar5) {
-        g_dwControllerData[param_1].logOnStatus = DW_AUTHORIZING;
+      bVar6 = bdAuthService::authorizeDedicatedHost(pbVar12,g_svcdkey);
+      if (bVar6) {
+        g_dwControllerData[controllerIndex].logOnStatus = DW_AUTHORIZING;
         g_svdedicatedauthstate = SV_DWAUTHORIZING;
         Com_Printf(0x10,"DW_AUTHORIZING\n");
-        iVar7 = Sys_Milliseconds();
-        g_dwControllerData[param_1].authorizePS3TicketTimer = iVar7;
+        iVar10 = Sys_Milliseconds();
+        g_dwControllerData[controllerIndex].authorizePS3TicketTimer = iVar10;
       }
     }
-    uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+    uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
     break;
   case DW_AUTHORIZING:
-    uVar13 = 0x477d;
-    uVar12 = 0xc02;
-    bdInetAddr::bdInetAddr((bdInetAddr *)&stack0xffffff8c,&g_dwControllerData[param_1].authAddr);
-    local_14 = dwGetAuthService((bdInetAddr)<Var10,uVar12,uVar13);
-    if (local_14 != (bdAuthService *)0x0) {
-      dwLobbyPump(param_1);
-      local_18 = bdAuthService::getStatus(local_14);
-      if (local_18 == BD_READY) {
-        bVar4 = bdAuthService::getErrorCode(local_14);
-        local_1c = CONCAT31(extraout_var,bVar4);
-        if (local_1c == 700) {
+    uVar17 = 0x477d;
+    uVar16 = 0xc02;
+    bdInetAddr::bdInetAddr
+              ((bdInetAddr *)&stack0xffffff8c,&g_dwControllerData[controllerIndex].authAddr);
+    pbVar12 = dwGetAuthService((bdInetAddr)<Var14,uVar16,uVar17);
+    if (pbVar12 != (bdAuthService *)0x0) {
+      dwLobbyPump(controllerIndex);
+      bVar8 = bdAuthService::getStatus(pbVar12);
+      if (bVar8 == BD_READY) {
+        bVar5 = bdAuthService::getErrorCode(pbVar12);
+        if (CONCAT31(extraout_var,bVar5) == 700) {
           Sys_Milliseconds();
           Com_Printf(0x10,"DW_AUTHORIZED (%d msecs)\n");
-          local_24 = (<unnamed_type_inUn>)dwSelectLSGAddress();
-          bdInAddr::bdInAddr((bdInAddr *)&local_28.m_caddr);
-          local_2c = 0;
-          <Var10 = local_24;
-          local_20 = bdPlatformSocket::getHostByName
-                               (local_24.m_iaddr,(bdInAddr *)&local_28.m_caddr,1,0);
-          if (local_20 != 0) {
-            bdInetAddr::set(&g_dwControllerData[param_1].lsgAddr,(bdInAddr)local_28);
-            local_30 = dwGetLobby(param_1);
-            <Var11.m_iaddr = 0x59eb3f;
-            bdAddr::bdAddr(&local_38,&g_dwControllerData[param_1].lsgAddr,0xc02);
-            DWDisconnectLobby(local_30);
-            pbVar6 = bdAuthService::getAuthInfo(local_14);
-            bVar5 = true;
-            bdAddr::bdAddr((bdAddr *)&stack0xffffff88,&local_38);
-            bVar2._4_4_ = <Var11.m_iaddr;
-            bVar2.m_address.m_addr.inUn = (bdInAddr)(bdInAddr)<Var10.m_iaddr;
-            bVar5 = bdLobbyService::connect(local_30,bVar2,pbVar6,bVar5);
-            if (bVar5) {
-              g_dwControllerData[param_1].logOnStatus = DW_LOBBY_CONNECTING;
+          <Var14 = (<unnamed_type_inUn>)dwSelectLSGAddress();
+          bdInAddr::bdInAddr(&inaddr);
+          handle = 0;
+          uVar17 = bdPlatformSocket::getHostByName((char *)<Var14,&inaddr,1,0);
+          if (uVar17 != 0) {
+            bdInetAddr::set(&g_dwControllerData[controllerIndex].lsgAddr,inaddr);
+            lobby = dwGetLobby(controllerIndex);
+            <Var15.m_iaddr = 0x59eb3f;
+            bdAddr::bdAddr(&lsgAddr,&g_dwControllerData[controllerIndex].lsgAddr,0xc02);
+            DWDisconnectLobby(lobby);
+            pbVar9 = bdAuthService::getAuthInfo(pbVar12);
+            bVar6 = true;
+            bdAddr::bdAddr((bdAddr *)&stack0xffffff88,&lsgAddr);
+            bVar3._4_4_ = <Var15.m_iaddr;
+            bVar3.m_address.m_addr.inUn = (bdInAddr)(bdInAddr)<Var14.m_iaddr;
+            bVar6 = bdLobbyService::connect(lobby,bVar3,pbVar9,bVar6);
+            if (bVar6) {
+              g_dwControllerData[controllerIndex].logOnStatus = DW_LOBBY_CONNECTING;
               g_svdedicatedauthstate = SV_DWAUTHORIZING;
               Com_Printf(0x10,"DW_LOBBY_CONNECTING\n");
             }
-            bdInetAddr::~bdInetAddr(&local_38.m_address);
+            bdInetAddr::~bdInetAddr(&lsgAddr.m_address);
           }
         }
       }
-      else if (local_18 == BD_CONNECTING) {
+      else if (bVar8 == BD_CONNECTING) {
         g_svdedicatedauthstate = SV_DWAUTHORIZING;
-        g_dwControllerData[param_1].logOnStatus = DW_AUTHORIZING;
+        g_dwControllerData[controllerIndex].logOnStatus = DW_AUTHORIZING;
       }
-      else if (local_18 == BD_PENDING_REPLY) {
-        g_dwControllerData[param_1].logOnStatus = DW_AUTHORIZING;
-        iVar7 = Sys_Milliseconds();
-        if (iVar7 - g_dwControllerData[param_1].authorizePS3TicketTimer < 10000) {
+      else if (bVar8 == BD_PENDING_REPLY) {
+        g_dwControllerData[controllerIndex].logOnStatus = DW_AUTHORIZING;
+        iVar10 = Sys_Milliseconds();
+        if (iVar10 - g_dwControllerData[controllerIndex].authorizePS3TicketTimer < 10000) {
           g_svdedicatedauthstate = SV_DWAUTHORIZING;
-          g_dwControllerData[param_1].logOnStatus = DW_AUTHORIZING;
+          g_dwControllerData[controllerIndex].logOnStatus = DW_AUTHORIZING;
         }
         else {
           Com_Printf(0x10,"DW_AUTHORIZING TIMED OUT\n");
-          g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
+          g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_ERROR;
         }
       }
     }
-    uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+    uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
     break;
   case DW_LOBBY_CONNECTING:
-    this = dwGetLobby(param_1);
-    uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+    this = dwGetLobby(controllerIndex);
+    uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
     if (this != (bdLobbyService *)0x0) {
-      dwLobbyPump(param_1);
-      SVar8 = bdLobbyService::getStatus(this);
-      uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
-      if (SVar8 == BD_CONNECTED) {
-        uVar13 = 0x477d;
-        uVar12 = 0xc02;
-        <Var10 = extraout_ECX.inUn;
-        bdInetAddr::bdInetAddr((bdInetAddr *)&stack0xffffff8c,&g_dwControllerData[param_1].authAddr)
-        ;
-        this_00 = dwGetAuthService((bdInetAddr)<Var10,uVar12,uVar13);
+      dwLobbyPump(controllerIndex);
+      SVar11 = bdLobbyService::getStatus(this);
+      uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+      if (SVar11 == BD_CONNECTED) {
+        uVar17 = 0x477d;
+        uVar16 = 0xc02;
+        <Var14 = extraout_ECX.inUn;
+        bdInetAddr::bdInetAddr
+                  ((bdInetAddr *)&stack0xffffff8c,&g_dwControllerData[controllerIndex].authAddr);
+        pbVar12 = dwGetAuthService((bdInetAddr)<Var14,uVar16,uVar17);
         g_bdUserID = bdAuthUtility::getLicenseID(g_svcdkey);
         if (g_bdUserID == 0) {
-          bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwLogOn_pc.cpp",0x2f1,0,
+          bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwLogOn_pc.cpp",0x2f1,0,
                                    "%s");
-          if (!bVar5) {
-            pcVar1 = (code *)swi(3);
-            (*pcVar1)();
+          if (!bVar6) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
         }
-        pbVar9 = bdAuthService::getAuthTicket(this_00);
+        pbVar13 = bdAuthService::getAuthTicket(pbVar12);
         Com_DPrintf(0xf,"Got license type %u\n");
-        SV_SetLicenseType((uint)pbVar9->m_type);
+        SV_SetLicenseType((uint)pbVar13->m_type);
         g_svdedicatedauthstate = SV_DWAUTHORIZED;
-        g_dwControllerData[param_1].logOnStatus = DW_LOGON_COMPLETE;
+        g_dwControllerData[controllerIndex].logOnStatus = DW_LOGON_COMPLETE;
         Com_Printf(0x10,"DW_LOGON_COMPLETE\n");
         Dvar_SetBoolByName("dw_loggedin",true);
-        uVar3 = g_bdUserID;
+        uVar4 = g_bdUserID;
       }
-      else if (SVar8 == BD_CONNECTING) {
+      else if (SVar11 == BD_CONNECTING) {
         g_svdedicatedauthstate = SV_DWAUTHORIZING;
-        g_dwControllerData[param_1].logOnStatus = DW_LOBBY_CONNECTING;
-        uVar3 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
+        g_dwControllerData[controllerIndex].logOnStatus = DW_LOBBY_CONNECTING;
+        uVar4 = CONCAT44(g_bdUserID._4_4_,(undefined4)g_bdUserID);
       }
     }
   }
-  g_bdUserID._4_4_ = (undefined4)(uVar3 >> 0x20);
-  g_bdUserID._0_4_ = (undefined4)uVar3;
+  g_bdUserID._4_4_ = (undefined4)(uVar4 >> 0x20);
+  g_bdUserID._0_4_ = (undefined4)uVar4;
   return;
 }
 
@@ -617,9 +621,24 @@ void __cdecl DW_DedicatedLogonComplete(int param_1,int param_2)
 /* WARNING: Recovered jumptable eliminated as dead code */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwLogOnComplete(int param_1)
+void __cdecl dwLogOnComplete(int controllerIndex)
 
 {
+  int handle;
+  bdInAddr inaddr;
+  uint numLSGAddrs;
+  bdAuthTicket *ticket;
+  bdLobbyErrorCode authError;
+  char *username_2;
+  bdLobbyErrorCode errorcode_3;
+  bdLobbyErrorCode errorcode_2;
+  bool success;
+  int i;
+  bdLobbyErrorCode errorcode;
+  uint cookieSize;
+  char *cookie;
+  DWLogonStatus status;
+  
   return;
 }
 
@@ -628,7 +647,7 @@ void __cdecl dwLogOnComplete(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwLobbyPump(int param_1)
+void __cdecl dwLobbyPump(int localControllerIndex)
 
 {
   code *pcVar1;
@@ -636,6 +655,9 @@ void __cdecl dwLobbyPump(int param_1)
   bdLobbyService *this;
   bdContentStreamingBase *pbVar3;
   Status SVar4;
+  bdPooledStorage *pooledStorage;
+  bdContentStreaming *contentStreaming;
+  bdLobbyService *lobby;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -646,7 +668,7 @@ void __cdecl dwLobbyPump(int param_1)
       return;
     }
   }
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwLogOn_pc.cpp",0x5e4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -654,12 +676,12 @@ void __cdecl dwLobbyPump(int param_1)
       return;
     }
   }
-  this = dwGetLobby(param_1);
+  this = dwGetLobby(localControllerIndex);
   if (this != (bdLobbyService *)0x0) {
     dwEnterDeferredCritsec();
     bdLobbyService::pump(this);
     dwLeaveDeferredCritsec();
-    dwUpdateMessaging(param_1);
+    dwUpdateMessaging(localControllerIndex);
     pbVar3 = (bdContentStreamingBase *)bdLobbyService::getContentStreaming(this);
     if (pbVar3 != (bdContentStreamingBase *)0x0) {
       bdContentStreamingBase::pump(pbVar3);
@@ -671,7 +693,7 @@ void __cdecl dwLobbyPump(int param_1)
     }
     SVar4 = bdLobbyService::getStatus(this);
     if (SVar4 == BD_CONNECTED) {
-      g_dwControllerData[param_1].logOnStatus = DW_LOGON_COMPLETE;
+      g_dwControllerData[localControllerIndex].logOnStatus = DW_LOGON_COMPLETE;
       bVar2 = Dvar_GetBool("dw_connectafterlogin");
       if (bVar2) {
         Dvar_SetBoolByName("dw_connectafterlogin",false);
@@ -679,7 +701,7 @@ void __cdecl dwLobbyPump(int param_1)
       }
     }
     if (SVar4 != BD_CONNECTED) {
-      g_dwControllerData[param_1].logOnStatus = DW_LOGON_ERROR;
+      g_dwControllerData[localControllerIndex].logOnStatus = DW_LOGON_ERROR;
     }
   }
   return;
@@ -713,7 +735,7 @@ void __cdecl r_PumpDemonware(void)
 
 // 0059FFB0  dwDNSInit  (DW/dwLogOn_pc.cpp:1582)
 
-bool __cdecl dwDNSInit(char *param_1,int param_2)
+bool __cdecl dwDNSInit(char *authAddr,int controllerIndex)
 
 {
   bool bVar1;
@@ -722,10 +744,10 @@ bool __cdecl dwDNSInit(char *param_1,int param_2)
   bdGetHostByName *local_14;
   bdGetHostByNameConfig local_10;
   bdGetHostByName *local_c;
-  bool local_5;
+  bool ok;
   
-  local_5 = false;
-  if (g_dwControllerData[param_2].authGetHostByName == (bdGetHostByName *)0x0) {
+  ok = false;
+  if (g_dwControllerData[controllerIndex].authGetHostByName == (bdGetHostByName *)0x0) {
     local_c = bdMemory::allocate(0x38);
     if (local_c == (bdGetHostByName *)0x0) {
       local_14 = (bdGetHostByName *)0x0;
@@ -733,28 +755,28 @@ bool __cdecl dwDNSInit(char *param_1,int param_2)
     else {
       local_14 = (bdGetHostByName *)bdGetHostByName::bdGetHostByName(local_c);
     }
-    g_dwControllerData[param_2].authGetHostByName = local_14;
-    local_5 = g_dwControllerData[param_2].authGetHostByName != (bdGetHostByName *)0x0;
+    g_dwControllerData[controllerIndex].authGetHostByName = local_14;
+    ok = g_dwControllerData[controllerIndex].authGetHostByName != (bdGetHostByName *)0x0;
   }
-  if (local_5 == false) goto LAB_005a0061;
-  if (local_5 == false) {
+  if (ok == false) goto LAB_005a0061;
+  if (ok == false) {
 LAB_005a0054:
     local_18 = false;
   }
   else {
     pfVar2 = (float *)bdGetHostByNameConfig::bdGetHostByNameConfig(&local_10);
     bVar1 = bdGetHostByName::start
-                      (g_dwControllerData[param_2].authGetHostByName,param_1,
+                      (g_dwControllerData[controllerIndex].authGetHostByName,authAddr,
                        (bdGetHostByNameConfig)*pfVar2);
     if (!bVar1) goto LAB_005a0054;
     local_18 = true;
   }
-  local_5 = local_18;
+  ok = local_18;
 LAB_005a0061:
-  if (local_5 == false) {
-    dwDNSCleanup(param_2);
+  if (ok == false) {
+    dwDNSCleanup(controllerIndex);
   }
-  return local_5;
+  return ok;
 }
 
 
@@ -762,69 +784,63 @@ LAB_005a0061:
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bdStatus __cdecl dwDNSPump(int param_1,bdInetAddr *param_2,bdInetAddr *param_3)
+bdStatus __cdecl dwDNSPump(int localControllerIndex,bdInetAddr *authAddr,bdInetAddr *lsgAddr)
 
 {
   uint uVar1;
-  <unnamed_type_inUn> local_20;
-  undefined1 local_19;
-  <unnamed_type_inUn> local_18;
-  undefined1 local_11;
-  bdStatus local_10;
-  bdStatus local_c;
-  bdStatus local_8;
+  bdStatus bVar2;
+  bdInAddr inAddr_2;
+  bool addrResolved_2;
+  bdInAddr inAddr;
+  bool addrResolved;
+  bdStatus getAuthHostByNameStatus;
+  bdStatus retVal;
   
-  local_8 = 3;
-  local_10 = BD_LOOKUP_FAILED;
-  local_c = BD_LOOKUP_FAILED;
-  if (g_dwControllerData[param_1].authGetHostByName != (bdGetHostByName *)0x0) {
-    dwLobbyPump(param_1);
-    local_10 = bdGetHostByName::getStatus(g_dwControllerData[param_1].authGetHostByName);
-    if (local_10 == BD_LOOKUP_SUCCEEDED) {
+  getAuthHostByNameStatus = BD_LOOKUP_FAILED;
+  if (g_dwControllerData[localControllerIndex].authGetHostByName != (bdGetHostByName *)0x0) {
+    dwLobbyPump(localControllerIndex);
+    getAuthHostByNameStatus =
+         bdGetHostByName::getStatus(g_dwControllerData[localControllerIndex].authGetHostByName);
+    if (getAuthHostByNameStatus == BD_LOOKUP_SUCCEEDED) {
       uVar1 = bdRemoteTask::getTotalNumResults
-                        ((bdRemoteTask *)g_dwControllerData[param_1].authGetHostByName);
-      local_11 = uVar1 != 0;
-      if ((bool)local_11) {
-        bdGetHostByName::getAddressAt(g_dwControllerData[param_1].authGetHostByName,(uint)&local_18)
-        ;
-        bdInetAddr::set(param_2,(bdInAddr)local_18);
+                        ((bdRemoteTask *)g_dwControllerData[localControllerIndex].authGetHostByName)
+      ;
+      if (uVar1 == 0) {
+        getAuthHostByNameStatus = BD_LOOKUP_FAILED;
       }
       else {
-        local_10 = BD_LOOKUP_FAILED;
+        bdGetHostByName::getAddressAt
+                  (g_dwControllerData[localControllerIndex].authGetHostByName,(uint)&inAddr);
+        bdInetAddr::set(authAddr,inAddr);
       }
     }
   }
-  if (g_dwControllerData[param_1].lsgGetHostByName != (bdGetHostByName *)0x0) {
-    local_c = bdGetHostByName::getStatus(g_dwControllerData[param_1].lsgGetHostByName);
-    if (local_c == BD_LOOKUP_SUCCEEDED) {
-      uVar1 = bdRemoteTask::getTotalNumResults
-                        ((bdRemoteTask *)g_dwControllerData[param_1].lsgGetHostByName);
-      local_19 = uVar1 != 0;
-      if ((bool)local_19) {
-        bdGetHostByName::getAddressAt(g_dwControllerData[param_1].lsgGetHostByName,(uint)&local_20);
-        bdInetAddr::set(param_3,(bdInAddr)local_20);
-      }
-      else {
-        local_c = BD_LOOKUP_FAILED;
-      }
-    }
+  if (((g_dwControllerData[localControllerIndex].lsgGetHostByName != (bdGetHostByName *)0x0) &&
+      (bVar2 = bdGetHostByName::getStatus(g_dwControllerData[localControllerIndex].lsgGetHostByName)
+      , bVar2 == BD_LOOKUP_SUCCEEDED)) &&
+     (uVar1 = bdRemoteTask::getTotalNumResults
+                        ((bdRemoteTask *)g_dwControllerData[localControllerIndex].lsgGetHostByName),
+     uVar1 != 0)) {
+    bdGetHostByName::getAddressAt
+              (g_dwControllerData[localControllerIndex].lsgGetHostByName,(uint)&inAddr_2);
+    bdInetAddr::set(lsgAddr,inAddr_2);
   }
-  if (local_10 == BD_LOOKUP_FAILED) {
-    dwDNSCleanup(param_1);
-    local_8 = BD_LOOKUP_FAILED;
+  if (getAuthHostByNameStatus == BD_LOOKUP_FAILED) {
+    dwDNSCleanup(localControllerIndex);
+    retVal = BD_LOOKUP_FAILED;
   }
-  else if (local_10 == BD_LOOKUP_PENDING) {
-    local_8 = BD_LOOKUP_PENDING;
+  else if (getAuthHostByNameStatus == BD_LOOKUP_PENDING) {
+    retVal = BD_LOOKUP_PENDING;
   }
-  else if (local_10 == BD_LOOKUP_SUCCEEDED) {
-    dwDNSCleanup(param_1);
-    local_8 = BD_LOOKUP_SUCCEEDED;
+  else if (getAuthHostByNameStatus == BD_LOOKUP_SUCCEEDED) {
+    dwDNSCleanup(localControllerIndex);
+    retVal = BD_LOOKUP_SUCCEEDED;
   }
   else {
-    dwDNSCleanup(param_1);
-    local_8 = BD_LOOKUP_FAILED;
+    dwDNSCleanup(localControllerIndex);
+    retVal = BD_LOOKUP_FAILED;
   }
-  return local_8;
+  return retVal;
 }
 
 
@@ -836,7 +852,7 @@ bdStatus __cdecl dwDNSPump(int param_1,bdInetAddr *param_2,bdInetAddr *param_3)
 void __cdecl DWDedicatedLogon(void)
 
 {
-  int iVar1;
+  int msecs;
   
   SV_ResetDWState();
   Dvar_SetBoolByName("r_gfxopt_water_simulation",false);
@@ -846,8 +862,8 @@ void __cdecl DWDedicatedLogon(void)
   }
   DW_DedicatedLogonStart(0);
   while (g_svdedicatedauthstate == SV_DWAUTHORIZING) {
-    iVar1 = Sys_Milliseconds();
-    DW_DedicatedLogonComplete(0,iVar1);
+    msecs = Sys_Milliseconds();
+    DW_DedicatedLogonComplete(0,msecs);
   }
   if (g_svdedicatedauthstate != SV_DWAUTHORIZED) {
     Com_Error(ERR_DROP,"Dedicated server authentication failure.\n");
@@ -860,6 +876,12 @@ void __cdecl DWDedicatedLogon(void)
 
 
 // 005A02B0  DWDedicatedLobbyPump  (DW/dwLogOn_pc.cpp:1744)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl DWDedicatedLobbyPump(void)
 
@@ -883,19 +905,19 @@ void __cdecl DWDedicatedLobbyPump(void)
 
 // 005A03F0  isOfficialServer  (DW/dwLogOn_pc.cpp:1985)
 
-bool __cdecl isOfficialServer(int param_1)
+bool __cdecl isOfficialServer(int licensetype)
 
 {
-  return param_1 == 4;
+  return licensetype == 4;
 }
 
 
 // 005A0400  isOfficialRentedServer  (DW/dwLogOn_pc.cpp:1990)
 
-bool __cdecl isOfficialRentedServer(int param_1)
+bool __cdecl isOfficialRentedServer(int licensetype)
 
 {
-  return param_1 == 2;
+  return licensetype == 2;
 }
 
 
@@ -910,15 +932,18 @@ bool __cdecl Com_CanWriteLeaderboards(void)
   bdAuthService *this;
   bdAuthTicket *pbVar2;
   pregameStateEnum pVar3;
-  bdInetAddr extraout_var;
-  ushort uVar4;
-  uint uVar5;
+  bdInetAddr authAddr;
+  ushort authPort;
+  uint titleID;
   bool local_20;
+  bdAuthTicket *authTicket;
+  int controllerIndex;
+  bool retval;
   
-  uVar5 = 0x477d;
-  uVar4 = 0xc02;
+  titleID = 0x477d;
+  authPort = 0xc02;
   bdInetAddr::bdInetAddr((bdInetAddr *)&stack0xffffffd4,&g_dwControllerData[0].authAddr);
-  this = dwGetAuthService(extraout_var,uVar4,uVar5);
+  this = dwGetAuthService(authAddr,authPort,titleID);
   bVar1 = false;
   if (((this != (bdAuthService *)0x0) && (g_svdedicatedauthstate == SV_DWAUTHORIZED)) &&
      (pbVar2 = bdAuthService::getAuthTicket(this), pbVar2 != (bdAuthTicket *)0x0)) {

@@ -2,29 +2,29 @@
 
 // 006406D0  MemFile_WriteByte  (universal/memfile.h:152)
 
-void __cdecl MemFile_WriteByte(MemoryFile *param_1,uchar param_2)
+void __cdecl MemFile_WriteByte(MemoryFile *memFile,uchar value)
 
 {
-  if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = param_2;
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = value;
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
   return;
 }
 
 
 // 00640720  MemFile_WriteShort  (universal/memfile.h:164)
 
-void __cdecl MemFile_WriteShort(MemoryFile *param_1,short param_2)
+void __cdecl MemFile_WriteShort(MemoryFile *memFile,short value)
 
 {
-  if (0x7ff7 < param_1->cacheBufferUsed + 2U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 2U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = (uchar)param_2;
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 1] = (uchar)((ushort)param_2 >> 8);
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 2;
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = (uchar)value;
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 1] = (uchar)((ushort)value >> 8);
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 2;
   return;
 }
 

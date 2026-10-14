@@ -2,29 +2,30 @@
 
 // 006CD740  FileWrapper_Open  (universal/com_files_wrapper_stdio.h:15)
 
-int __cdecl FileWrapper_Open(char *param_1,char *param_2)
+int __cdecl FileWrapper_Open(char *ospath,char *mode)
 
 {
   code *pcVar1;
   bool bVar2;
   int *piVar3;
   _iobuf *p_Var4;
-  char *pcVar5;
-  int iVar6;
+  char *fmt;
+  int iVar5;
+  int file;
   
   piVar3 = _errno();
   *piVar3 = 0;
-  p_Var4 = fopen(param_1,param_2);
+  p_Var4 = fopen(ospath,mode);
   if (p_Var4 == (_iobuf *)0xffffffff) {
     piVar3 = _errno();
     strerror(*piVar3);
-    pcVar5 = va("Couldn\'t open file: %s %s");
+    fmt = va("Couldn\'t open file: %s %s");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../universal/com_files_wrapper_stdio.h"
-                             ,0x18,0,pcVar5);
+                             ,0x18,0,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar6 = (*pcVar1)();
-      return iVar6;
+      iVar5 = (*pcVar1)();
+      return iVar5;
     }
     p_Var4 = (_iobuf *)0x0;
   }
@@ -34,65 +35,68 @@ int __cdecl FileWrapper_Open(char *param_1,char *param_2)
 
 // 006CDA00  FileWrapper_GetFileSize  (universal/com_files_wrapper_stdio.h:83)
 
-int __cdecl FileWrapper_GetFileSize(int param_1)
+int __cdecl FileWrapper_GetFileSize(int h)
 
 {
+  long offset;
   long lVar1;
-  long lVar2;
+  long startPos;
+  long fileSize;
   
-  lVar1 = ftell((_iobuf *)param_1);
-  fseek((_iobuf *)param_1,0,2);
-  lVar2 = ftell((_iobuf *)param_1);
-  fseek((_iobuf *)param_1,lVar1,0);
-  return lVar2;
+  offset = ftell((_iobuf *)h);
+  fseek((_iobuf *)h,0,2);
+  lVar1 = ftell((_iobuf *)h);
+  fseek((_iobuf *)h,offset,0);
+  return lVar1;
 }
 
 
 // 006CD950  FileWrapper_Seek  (universal/com_files_wrapper_stdio.h:96)
 
-int __cdecl FileWrapper_Seek(int param_1,long param_2,long param_3)
+int __cdecl FileWrapper_Seek(int h,long offset,long origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_8;
+  char *fmt;
+  int iVar3;
+  long translatedOrigin;
   
-  if (param_3 == 0) {
-    local_8 = 1;
+  if (origin == 0) {
+    translatedOrigin = 1;
   }
-  else if (param_3 == 1) {
-    local_8 = 2;
+  else if (origin == 1) {
+    translatedOrigin = 2;
   }
   else {
-    if (param_3 != 2) {
-      pcVar3 = va("Bad origin %i in FS_Seek");
+    if (origin != 2) {
+      fmt = va("Bad origin %i in FS_Seek");
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../universal/com_files_wrapper_stdio.h"
-                               ,0x6f,0,pcVar3);
+                               ,0x6f,0,fmt);
       if (bVar2) {
         return 0;
       }
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
-    local_8 = 0;
+    translatedOrigin = 0;
   }
-  iVar4 = fseek((_iobuf *)param_1,param_2,local_8);
-  return iVar4;
+  iVar3 = fseek((_iobuf *)h,offset,translatedOrigin);
+  return iVar3;
 }
 
 
 // 006CD6E0  FS_FileRead  (qcommon/com_fileaccess.cpp:100)
 
-uint __cdecl FS_FileRead(void *param_1,uint param_2,_iobuf *param_3)
+uint __cdecl FS_FileRead(void *ptr,uint len,_iobuf *stream)
 
 {
   uint uVar1;
+  uint read_size;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_READ);
-  uVar1 = fread(param_1,1,param_2,param_3);
+  uVar1 = fread(ptr,1,len,stream);
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_READ);
   return uVar1;
 }
@@ -100,25 +104,26 @@ uint __cdecl FS_FileRead(void *param_1,uint param_2,_iobuf *param_3)
 
 // 006CD720  FS_FileWrite  (qcommon/com_fileaccess.cpp:118)
 
-uint __cdecl FS_FileWrite(void *param_1,uint param_2,_iobuf *param_3)
+uint __cdecl FS_FileWrite(void *ptr,uint len,_iobuf *stream)
 
 {
   uint uVar1;
   
-  uVar1 = fwrite(param_1,1,param_2,param_3);
+  uVar1 = fwrite(ptr,1,len,stream);
   return uVar1;
 }
 
 
 // 006CD7B0  FS_FileOpenReadBinary  (qcommon/com_fileaccess.cpp:180)
 
-_iobuf * __cdecl FS_FileOpenReadBinary(char *param_1)
+_iobuf * __cdecl FS_FileOpenReadBinary(char *filename)
 
 {
   _iobuf *p_Var1;
+  _iobuf *file;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_OPEN);
-  p_Var1 = (_iobuf *)FileWrapper_Open(param_1,"rb");
+  p_Var1 = (_iobuf *)FileWrapper_Open(filename,"rb");
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_OPEN);
   return p_Var1;
 }
@@ -126,13 +131,14 @@ _iobuf * __cdecl FS_FileOpenReadBinary(char *param_1)
 
 // 006CD7F0  FS_FileOpenReadText  (qcommon/com_fileaccess.cpp:201)
 
-_iobuf * __cdecl FS_FileOpenReadText(char *param_1)
+_iobuf * __cdecl FS_FileOpenReadText(char *filename)
 
 {
   _iobuf *p_Var1;
+  _iobuf *file;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_OPEN);
-  p_Var1 = (_iobuf *)FileWrapper_Open(param_1,"rt");
+  p_Var1 = (_iobuf *)FileWrapper_Open(filename,"rt");
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_OPEN);
   return p_Var1;
 }
@@ -140,13 +146,14 @@ _iobuf * __cdecl FS_FileOpenReadText(char *param_1)
 
 // 006CD830  FS_FileOpenWriteBinary  (qcommon/com_fileaccess.cpp:222)
 
-_iobuf * __cdecl FS_FileOpenWriteBinary(char *param_1)
+_iobuf * __cdecl FS_FileOpenWriteBinary(char *filename)
 
 {
   _iobuf *p_Var1;
+  _iobuf *file;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_OPEN);
-  p_Var1 = (_iobuf *)FileWrapper_Open(param_1,"wb");
+  p_Var1 = (_iobuf *)FileWrapper_Open(filename,"wb");
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_OPEN);
   return p_Var1;
 }
@@ -154,13 +161,14 @@ _iobuf * __cdecl FS_FileOpenWriteBinary(char *param_1)
 
 // 006CD870  FS_FileOpenAppendText  (qcommon/com_fileaccess.cpp:247)
 
-_iobuf * __cdecl FS_FileOpenAppendText(char *param_1)
+_iobuf * __cdecl FS_FileOpenAppendText(char *filename)
 
 {
   _iobuf *p_Var1;
+  _iobuf *file;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_OPEN);
-  p_Var1 = (_iobuf *)FileWrapper_Open(param_1,"at");
+  p_Var1 = (_iobuf *)FileWrapper_Open(filename,"at");
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_OPEN);
   return p_Var1;
 }
@@ -168,13 +176,14 @@ _iobuf * __cdecl FS_FileOpenAppendText(char *param_1)
 
 // 006CD8B0  FS_FileOpenWriteText  (qcommon/com_fileaccess.cpp:272)
 
-_iobuf * __cdecl FS_FileOpenWriteText(char *param_1)
+_iobuf * __cdecl FS_FileOpenWriteText(char *filename)
 
 {
   _iobuf *p_Var1;
+  _iobuf *file;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_OPEN);
-  p_Var1 = (_iobuf *)FileWrapper_Open(param_1,"w+t");
+  p_Var1 = (_iobuf *)FileWrapper_Open(filename,"w+t");
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_OPEN);
   return p_Var1;
 }
@@ -182,23 +191,24 @@ _iobuf * __cdecl FS_FileOpenWriteText(char *param_1)
 
 // 006CD8F0  FS_FileClose  (qcommon/com_fileaccess.cpp:299)
 
-void __cdecl FS_FileClose(_iobuf *param_1)
+void __cdecl FS_FileClose(_iobuf *stream)
 
 {
-  fclose(param_1);
+  fclose(stream);
   return;
 }
 
 
 // 006CD910  FS_FileSeek  (qcommon/com_fileaccess.cpp:312)
 
-int __cdecl FS_FileSeek(_iobuf *param_1,long param_2,int param_3)
+int __cdecl FS_FileSeek(_iobuf *file,long offset,int whence)
 
 {
   int iVar1;
+  int seek;
   
   ProfLoad_BeginTrackedValue(MAP_PROFILE_FILE_SEEK);
-  iVar1 = FileWrapper_Seek((int)param_1,param_2,param_3);
+  iVar1 = FileWrapper_Seek((int)file,offset,whence);
   ProfLoad_EndTrackedValue(MAP_PROFILE_FILE_SEEK);
   return iVar1;
 }
@@ -206,12 +216,12 @@ int __cdecl FS_FileSeek(_iobuf *param_1,long param_2,int param_3)
 
 // 006CD9E0  FS_FileGetFileSize  (qcommon/com_fileaccess.cpp:340)
 
-int __cdecl FS_FileGetFileSize(_iobuf *param_1)
+int __cdecl FS_FileGetFileSize(_iobuf *file)
 
 {
   int iVar1;
   
-  iVar1 = FileWrapper_GetFileSize((int)param_1);
+  iVar1 = FileWrapper_GetFileSize((int)file);
   return iVar1;
 }
 

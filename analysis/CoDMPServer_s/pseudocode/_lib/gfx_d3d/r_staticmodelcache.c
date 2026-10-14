@@ -52,35 +52,35 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
 void __cdecl R_FlushStaticModelCache(void)
 
 {
-  static_model_tree_t *psVar1;
-  static_model_tree_list_t *psVar2;
-  int iVar3;
-  static_model_tree_list_t **ppsVar4;
-  static_model_leaf_t *psVar5;
-  static_model_node_list_t *psVar6;
+  static_model_tree_t *leafs;
+  static_model_tree_list_t *psVar1;
+  int iVar2;
+  static_model_tree_list_t **ppsVar3;
+  static_model_leaf_t *nodeIndex;
+  static_model_node_list_t *psVar4;
   int local_4;
   
   if (s_cache.usedlist[0].next != (static_model_tree_list_t *)0x0) {
-    ppsVar4 = &s_cache.usedlist[0].next;
-    psVar6 = (static_model_node_list_t *)0x349e110;
+    ppsVar3 = &s_cache.usedlist[0].next;
+    psVar4 = (static_model_node_list_t *)0x349e110;
     local_4 = 4;
     do {
-      psVar1 = (static_model_tree_t *)*ppsVar4;
-      while (psVar1 != (static_model_tree_t *)(ppsVar4 + -1)) {
-        iVar3 = (int)(psVar1[-0x32c6e].nodes + 0x15) / 0x108;
-        psVar5 = s_cache.leafs[iVar3];
-        SMC_FreeCachedSurface_r(psVar1,psVar5,0,5);
-        psVar2 = *ppsVar4;
-        psVar2->next->prev = psVar2->prev;
-        psVar2->prev->next = psVar2->next;
-        (psVar5->freenode).prev = psVar6;
-        s_cache.leafs[iVar3][0].freenode.next = psVar6->next;
-        psVar6->next = (static_model_node_list_t *)psVar5;
-        (s_cache.leafs[iVar3][0].freenode.next)->prev = (static_model_node_list_t *)psVar5;
-        psVar1 = (static_model_tree_t *)*ppsVar4;
+      leafs = (static_model_tree_t *)*ppsVar3;
+      while (leafs != (static_model_tree_t *)(ppsVar3 + -1)) {
+        iVar2 = (int)(leafs[-0x32c6e].nodes + 0x15) / 0x108;
+        nodeIndex = s_cache.leafs[iVar2];
+        SMC_FreeCachedSurface_r(leafs,nodeIndex,0,5);
+        psVar1 = *ppsVar3;
+        psVar1->next->prev = psVar1->prev;
+        psVar1->prev->next = psVar1->next;
+        (nodeIndex->freenode).prev = psVar4;
+        s_cache.leafs[iVar2][0].freenode.next = psVar4->next;
+        psVar4->next = (static_model_node_list_t *)nodeIndex;
+        (s_cache.leafs[iVar2][0].freenode.next)->prev = (static_model_node_list_t *)nodeIndex;
+        leafs = (static_model_tree_t *)*ppsVar3;
       }
-      psVar6 = psVar6 + 6;
-      ppsVar4 = ppsVar4 + 2;
+      psVar4 = psVar4 + 6;
+      ppsVar3 = ppsVar3 + 2;
       local_4 = local_4 + -1;
     } while (local_4 != 0);
     SMC_ClearCache();

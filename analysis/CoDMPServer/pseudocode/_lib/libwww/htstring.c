@@ -175,9 +175,9 @@ int _HTSACat(int *param_1,uchar *param_2)
 int _StrAllocMCopy(int *param_1)
 
 {
-  uchar *puVar1;
+  uchar *src;
   int extraout_EAX;
-  int iVar2;
+  int iVar1;
   int extraout_EAX_00;
   int local_10;
   undefined4 *local_c;
@@ -196,8 +196,8 @@ int _StrAllocMCopy(int *param_1)
     *param_1 = 0;
   }
   if (local_10 != 0) {
-    iVar2 = _HTMemory_malloc(local_10 + 1);
-    *param_1 = iVar2;
+    iVar1 = _HTMemory_malloc(local_10 + 1);
+    *param_1 = iVar1;
     if (*param_1 == 0) {
       _HTMemory_outofmem("HTStrCpy",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTString.c",0x9f
@@ -206,10 +206,10 @@ int _StrAllocMCopy(int *param_1)
     local_8 = (uchar *)*param_1;
     local_c = (undefined4 *)&stack0x00000008;
     while( true ) {
-      puVar1 = (uchar *)*local_c;
-      if (puVar1 == (uchar *)0x0) break;
-      strcpy(local_8,puVar1);
-      strlen(puVar1);
+      src = (uchar *)*local_c;
+      if (src == (uchar *)0x0) break;
+      strcpy(local_8,src);
+      strlen(src);
       local_8 = local_8 + extraout_EAX_00;
       local_c = local_c + 1;
     }

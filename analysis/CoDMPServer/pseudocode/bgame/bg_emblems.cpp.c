@@ -24,16 +24,18 @@ int __cdecl BG_EmblemsGetColorCount(void)
 
 // 00418B20  BG_EmblemsGetUnlockedLayerCount  (bgame/bg_emblems.cpp:88)
 
-int __cdecl BG_EmblemsGetUnlockedLayerCount(int param_1)
+int __cdecl BG_EmblemsGetUnlockedLayerCount(int controllerIndex)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
-  int local_c;
+  int prestige;
+  int layer;
+  int rank;
   
-  iVar2 = LiveStats_GetRank(param_1);
-  iVar3 = LiveStats_GetPrestige(param_1);
+  iVar2 = LiveStats_GetRank(controllerIndex);
+  iVar3 = LiveStats_GetPrestige(controllerIndex);
   if ((allEmblemsUnlocked == (dvar_s *)0x0) || ((allEmblemsUnlocked->current).enabled == false)) {
     bVar1 = false;
   }
@@ -41,33 +43,33 @@ int __cdecl BG_EmblemsGetUnlockedLayerCount(int param_1)
     bVar1 = true;
   }
   if (bVar1) {
-    local_c = s_emblemSet->layerCount;
+    layer = s_emblemSet->layerCount;
   }
   else if (iVar3 < 1) {
-    for (local_c = 0;
-        (local_c < s_emblemSet->layerCount && (s_emblemSet->layers[local_c].unlockLevel <= iVar2));
-        local_c = local_c + 1) {
+    for (layer = 0;
+        (layer < s_emblemSet->layerCount && (s_emblemSet->layers[layer].unlockLevel <= iVar2));
+        layer = layer + 1) {
     }
   }
   else {
-    local_c = s_emblemSet->layerCount;
+    layer = s_emblemSet->layerCount;
   }
-  return local_c;
+  return layer;
 }
 
 
 // 00418BD0  BG_EmblemsGetLayerCost  (bgame/bg_emblems.cpp:108)
 
-int __cdecl BG_EmblemsGetLayerCost(int param_1)
+int __cdecl BG_EmblemsGetLayerCost(int layer)
 
 {
   int iVar1;
   
-  if ((param_1 < 0) || (s_emblemSet->layerCount <= param_1)) {
+  if ((layer < 0) || (s_emblemSet->layerCount <= layer)) {
     iVar1 = 0;
   }
   else {
-    iVar1 = s_emblemSet->layers[param_1].cost;
+    iVar1 = s_emblemSet->layers[layer].cost;
   }
   return iVar1;
 }
@@ -75,16 +77,16 @@ int __cdecl BG_EmblemsGetLayerCost(int param_1)
 
 // 00418C00  BG_EmblemsGetLayerUnlockLevel  (bgame/bg_emblems.cpp:116)
 
-int __cdecl BG_EmblemsGetLayerUnlockLevel(int param_1)
+int __cdecl BG_EmblemsGetLayerUnlockLevel(int layer)
 
 {
   int iVar1;
   
-  if ((param_1 < 0) || (s_emblemSet->layerCount <= param_1)) {
+  if ((layer < 0) || (s_emblemSet->layerCount <= layer)) {
     iVar1 = 0;
   }
   else {
-    iVar1 = s_emblemSet->layers[param_1].unlockLevel;
+    iVar1 = s_emblemSet->layers[layer].unlockLevel;
   }
   return iVar1;
 }
@@ -92,16 +94,17 @@ int __cdecl BG_EmblemsGetLayerUnlockLevel(int param_1)
 
 // 00418C30  BG_EmblemsGetPurchasedLayerCount  (bgame/bg_emblems.cpp:133)
 
-int __cdecl BG_EmblemsGetPurchasedLayerCount(int param_1)
+int __cdecl BG_EmblemsGetPurchasedLayerCount(int controllerIndex)
 
 {
   bool bVar1;
   uint uVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  ddlState_t searchState;
   
   if ((allEmblemsPurchased == (dvar_s *)0x0) || ((allEmblemsPurchased->current).enabled == false)) {
     bVar1 = false;
@@ -110,20 +113,20 @@ int __cdecl BG_EmblemsGetPurchasedLayerCount(int param_1)
     bVar1 = true;
   }
   if (bVar1) {
-    uVar2 = BG_EmblemsGetUnlockedLayerCount(param_1);
+    uVar2 = BG_EmblemsGetUnlockedLayerCount(controllerIndex);
   }
   else {
-    iVar6 = 2;
-    pdVar5 = &local_14;
-    pdVar3 = LiveStats_GetRootDDLState();
-    iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-    if (iVar6 == 0) {
+    iVar3 = 2;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+    if (iVar3 == 0) {
       DDL_PrintError("DDL: Error could not find layersPurchased\n");
       uVar2 = 0;
     }
     else {
-      puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      uVar2 = DDL_GetInt(&local_14,(char *)puVar4);
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      uVar2 = DDL_GetInt(&searchState,(char *)buffer_00);
     }
   }
   return uVar2;
@@ -132,51 +135,58 @@ int __cdecl BG_EmblemsGetPurchasedLayerCount(int param_1)
 
 // 00418CD0  BG_EmblemsPurchaseLayer  (bgame/bg_emblems.cpp:152)
 
-bool __cdecl BG_EmblemsPurchaseLayer(int param_1)
+/* WARNING: Variable defined which should be unmapped: buffer */
+
+bool __cdecl BG_EmblemsPurchaseLayer(int controllerIndex)
 
 {
   EmblemLayer *pEVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  ddlState_t *pdVar5;
-  uchar *puVar6;
-  ddlState_t *pdVar7;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  char *buffer;
+  int purchasedCount;
+  EmblemLayer *layer;
+  int unlockedCount;
+  int currentCP;
+  ddlState_t searchState;
   
-  iVar3 = BG_EmblemsGetPurchasedLayerCount(param_1);
-  iVar4 = BG_EmblemsGetUnlockedLayerCount(param_1);
+  iVar3 = BG_EmblemsGetPurchasedLayerCount(controllerIndex);
+  iVar4 = BG_EmblemsGetUnlockedLayerCount(controllerIndex);
   if (iVar3 == iVar4) {
     Com_PrintError(0xf,"No layers available for purchase.\n");
     bVar2 = false;
   }
   else {
     pEVar1 = s_emblemSet->layers;
-    iVar4 = LiveStats_GetCurrency(param_1);
+    iVar4 = LiveStats_GetCurrency(controllerIndex);
     if (iVar4 < pEVar1[iVar3].cost) {
       Com_PrintError(0xf,"Layer costs %d and you only have %d\n");
       bVar2 = false;
     }
     else {
       iVar4 = 2;
-      pdVar7 = &local_14;
-      pdVar5 = LiveStats_GetRootDDLState();
-      iVar4 = DDL_MoveTo(pdVar5,pdVar7,iVar4);
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
       if (iVar4 == 0) {
         DDL_PrintError("DDL: Error could not find layersPurchased\n");
         bVar2 = false;
       }
       else {
-        puVar6 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-        iVar4 = DDL_SetInt(&local_14,iVar3 + 1,(char *)puVar6);
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+        iVar4 = DDL_SetInt(&searchState,iVar3 + 1,(char *)buffer_00);
         if (iVar4 == 0) {
           DDL_PrintError("DDL: Error could not set purchased count to %d for layers\n");
           bVar2 = false;
         }
         else {
           LiveCounter_IncrementCounterValueByName
-                    ("global_emblem_layerspurchased",ZEXT48(puVar6) << 0x20);
-          LiveStats_SpendCurrency(param_1,pEVar1[iVar3].cost,POINTSSPENT_EMBLEM_LAYER,0);
+                    ("global_emblem_layerspurchased",ZEXT48(buffer_00) << 0x20);
+          LiveStats_SpendCurrency(controllerIndex,pEVar1[iVar3].cost,POINTSSPENT_EMBLEM_LAYER,0);
           BG_EmblemsFlushResults();
           bVar2 = true;
         }
@@ -195,6 +205,7 @@ CmdArgs * __cdecl Cmd_Args(void)
   code *pcVar1;
   bool bVar2;
   CmdArgs *pCVar3;
+  CmdArgs *cmd_args;
   
   pCVar3 = Sys_GetValue(4);
   if (pCVar3 == (CmdArgs *)0x0) {
@@ -212,11 +223,13 @@ CmdArgs * __cdecl Cmd_Args(void)
 
 // 00419140  ResultSort  (bgame/bg_emblems.cpp:206)
 
-int __cdecl ResultSort(void *param_1,void *param_2)
+int __cdecl ResultSort(void *a,void *b)
 
 {
-  return s_emblemSet->icons[*(short *)param_1].sortKey -
-         s_emblemSet->icons[*(short *)param_2].sortKey;
+  short A;
+  short B;
+  
+  return s_emblemSet->icons[*(short *)a].sortKey - s_emblemSet->icons[*(short *)b].sortKey;
 }
 
 
@@ -232,7 +245,7 @@ void __cdecl BG_EmblemsFlushResults(void)
 
 // 00418E40  BG_EmblemsGetResults  (bgame/bg_emblems.cpp:219)
 
-ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3)
+ResultCache * __cdecl BG_EmblemsGetResults(int controllerIndex,uint include,uint exclude)
 
 {
   EmblemIcon *pEVar1;
@@ -241,11 +254,15 @@ ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3
   ResultCache *pRVar4;
   int iVar5;
   int iVar6;
-  ResultCache *local_1c;
-  uint local_18;
-  uint local_10;
+  EmblemIcon *icon;
+  ResultCache *best;
+  uint category;
+  int currency;
+  int i;
+  ResultCache *results;
+  short id;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0xe5,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -260,80 +277,79 @@ ResultCache * __cdecl BG_EmblemsGetResults(int param_1,uint param_2,uint param_3
     pRVar4 = (ResultCache *)(*pcVar2)();
     return pRVar4;
   }
-  iVar5 = LiveStats_GetCurrency(param_1);
-  local_1c = s_resultCache;
-  local_10 = 0;
+  iVar5 = LiveStats_GetCurrency(controllerIndex);
+  best = s_resultCache;
+  i = 0;
   do {
-    if (3 < local_10) {
-      memset((uchar *)local_1c,'\0',0x818);
-      for (local_10 = 0; (int)local_10 < s_emblemSet->iconCount; local_10 = local_10 + 1) {
+    if (3 < (uint)i) {
+      memset((uchar *)best,'\0',0x818);
+      for (i = 0; i < s_emblemSet->iconCount; i = i + 1) {
         pEVar1 = s_emblemSet->icons;
-        local_18 = pEVar1[local_10].category;
-        if (local_18 == 0) {
-          local_18 = 0x80000000;
+        category = pEVar1[i].category;
+        if (category == 0) {
+          category = 0x80000000;
         }
-        if (((local_18 & 1) != 0) &&
+        if (((category & 1) != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",
                                      0x107,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pRVar4 = (ResultCache *)(*pcVar2)();
           return pRVar4;
         }
-        if (((local_18 & 2) != 0) &&
+        if (((category & 2) != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",
                                      0x108,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pRVar4 = (ResultCache *)(*pcVar2)();
           return pRVar4;
         }
-        if (pEVar1[local_10].image != (GfxImage *)0x0) {
-          bVar3 = BG_EmblemsIsIconLocked(param_1,(short)local_10);
-          if ((bVar3) || (bVar3 = BG_EmblemsIsIconLocked(param_1,(short)local_10), bVar3)) {
-            local_18 = local_18 | 1;
+        if (pEVar1[i].image != (GfxImage *)0x0) {
+          bVar3 = BG_EmblemsIsIconLocked(controllerIndex,(short)i);
+          if ((bVar3) || (bVar3 = BG_EmblemsIsIconLocked(controllerIndex,(short)i), bVar3)) {
+            category = category | 1;
           }
-          bVar3 = BG_EmblemsIsIconPurchased(param_1,(short)local_10);
+          bVar3 = BG_EmblemsIsIconPurchased(controllerIndex,(short)i);
           if (bVar3) {
-            local_18 = local_18 | 2;
+            category = category | 2;
           }
-          iVar6 = BG_EmblemsGetIconCost((short)local_10);
+          iVar6 = BG_EmblemsGetIconCost((short)i);
           if (iVar6 <= iVar5) {
-            local_18 = local_18 | 4;
+            category = category | 4;
           }
-          if (((param_2 & local_18) == param_2) && ((param_3 & local_18) == 0)) {
-            local_1c->ids[local_1c->count] = (short)local_10;
-            local_1c->count = local_1c->count + 1;
+          if (((include & category) == include) && ((exclude & category) == 0)) {
+            best->ids[best->count] = (short)i;
+            best->count = best->count + 1;
           }
         }
       }
-      qsort(local_1c->ids,local_1c->count,2,ResultSort);
-      local_1c->controllerIndex = param_1;
-      local_1c->use = s_useCount;
-      local_1c->flush = s_flushCount;
-      local_1c->include = param_2;
-      local_1c->exclude = param_3;
+      qsort(best->ids,best->count,2,ResultSort);
+      best->controllerIndex = controllerIndex;
+      best->use = s_useCount;
+      best->flush = s_flushCount;
+      best->include = include;
+      best->exclude = exclude;
 LAB_00419138:
       s_useCount = s_useCount + 1;
-      return local_1c;
+      return best;
     }
-    pRVar4 = s_resultCache + local_10;
-    if ((((s_resultCache[local_10].include == param_2) &&
-         (s_resultCache[local_10].exclude == param_3)) && (pRVar4->controllerIndex == param_1)) &&
-       (s_resultCache[local_10].flush == s_flushCount)) {
-      s_resultCache[local_10].use = s_useCount;
-      local_1c = pRVar4;
+    pRVar4 = s_resultCache + i;
+    if ((((s_resultCache[i].include == include) && (s_resultCache[i].exclude == exclude)) &&
+        (pRVar4->controllerIndex == controllerIndex)) && (s_resultCache[i].flush == s_flushCount)) {
+      s_resultCache[i].use = s_useCount;
+      best = pRVar4;
       goto LAB_00419138;
     }
-    if (s_resultCache[local_10].use < local_1c->use) {
-      local_1c = pRVar4;
+    if (s_resultCache[i].use < best->use) {
+      best = pRVar4;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0041ABB0  Cmd_Argv  (qcommon/cmd.h:226)
 
-char * __cdecl Cmd_Argv(int param_1)
+char * __cdecl Cmd_Argv(int argIndex)
 
 {
   code *pcVar1;
@@ -341,6 +357,7 @@ char * __cdecl Cmd_Argv(int param_1)
   CmdArgs *pCVar3;
   char *pcVar4;
   char *local_10;
+  CmdArgs *cmd_args;
   
   pCVar3 = Cmd_Args();
   if (7 < (uint)pCVar3->nesting) {
@@ -353,7 +370,7 @@ char * __cdecl Cmd_Argv(int param_1)
       return pcVar4;
     }
   }
-  if (param_1 < 0) {
+  if (argIndex < 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../qcommon/cmd.h",0xe5,0,
                              "%s\n\t(argIndex) = %i");
     if (!bVar2) {
@@ -362,8 +379,8 @@ char * __cdecl Cmd_Argv(int param_1)
       return pcVar4;
     }
   }
-  if (param_1 < pCVar3->argc[pCVar3->nesting]) {
-    local_10 = pCVar3->argv[pCVar3->nesting][param_1];
+  if (argIndex < pCVar3->argc[pCVar3->nesting]) {
+    local_10 = pCVar3->argv[pCVar3->nesting][argIndex];
   }
   else {
     local_10 = "";
@@ -374,12 +391,13 @@ char * __cdecl Cmd_Argv(int param_1)
 
 // 00419190  BG_EmblemsGetIconCount  (bgame/bg_emblems.cpp:299)
 
-int __cdecl BG_EmblemsGetIconCount(int param_1,uint param_2,uint param_3)
+int __cdecl BG_EmblemsGetIconCount(int controllerIndex,uint include,uint exclude)
 
 {
   ResultCache *pRVar1;
+  ResultCache *results;
   
-  pRVar1 = BG_EmblemsGetResults(param_1,param_2,param_3);
+  pRVar1 = BG_EmblemsGetResults(controllerIndex,include,exclude);
   return pRVar1->count;
 }
 
@@ -395,18 +413,19 @@ int __cdecl BG_EmblemsGetIconCount(void)
 
 // 004191D0  BG_EmblemsGetIconID  (bgame/bg_emblems.cpp:313)
 
-short __cdecl BG_EmblemsGetIconID(int param_1,int param_2,uint param_3,uint param_4)
+short __cdecl BG_EmblemsGetIconID(int controllerIndex,int index,uint include,uint exclude)
 
 {
   short sVar1;
   ResultCache *pRVar2;
+  ResultCache *results;
   
-  pRVar2 = BG_EmblemsGetResults(param_1,param_3,param_4);
+  pRVar2 = BG_EmblemsGetResults(controllerIndex,include,exclude);
   if (pRVar2->count < 1) {
     sVar1 = -1;
   }
   else {
-    sVar1 = pRVar2->ids[(param_2 % pRVar2->count + pRVar2->count) % pRVar2->count];
+    sVar1 = pRVar2->ids[(index % pRVar2->count + pRVar2->count) % pRVar2->count];
   }
   return sVar1;
 }
@@ -414,19 +433,19 @@ short __cdecl BG_EmblemsGetIconID(int param_1,int param_2,uint param_3,uint para
 
 // 00419230  BG_EmblemsGetPurchasedIconCount  (bgame/bg_emblems.cpp:343)
 
-int __cdecl BG_EmblemsGetPurchasedIconCount(int param_1)
+int __cdecl BG_EmblemsGetPurchasedIconCount(int controllerIndex)
 
 {
   int iVar1;
   
-  iVar1 = BG_EmblemsGetIconCount(param_1,2,0);
+  iVar1 = BG_EmblemsGetIconCount(controllerIndex,2,0);
   return iVar1;
 }
 
 
 // 00419250  BG_EmblemsGetIconDesc  (bgame/bg_emblems.cpp:348)
 
-char * __cdecl BG_EmblemsGetIconDesc(int param_1,short param_2)
+char * __cdecl BG_EmblemsGetIconDesc(int controllerIndex,short id)
 
 {
   code *pcVar1;
@@ -434,6 +453,8 @@ char * __cdecl BG_EmblemsGetIconDesc(int param_1,short param_2)
   char *pcVar3;
   int iVar4;
   int iVar5;
+  int purchasedCount;
+  int unclassifyAt;
   
   if ((s_emblemSet == (EmblemSet *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x15d,0,
@@ -442,18 +463,18 @@ char * __cdecl BG_EmblemsGetIconDesc(int param_1,short param_2)
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((param_2 < 0) || (s_emblemSet->iconCount <= (int)param_2)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    if (param_1 != -1) {
-      iVar4 = BG_EmblemsGetIconUnclassifyAt(param_2);
-      iVar5 = BG_EmblemsGetPurchasedIconCount(param_1);
+    if (controllerIndex != -1) {
+      iVar4 = BG_EmblemsGetIconUnclassifyAt(id);
+      iVar5 = BG_EmblemsGetPurchasedIconCount(controllerIndex);
       if (iVar5 < iVar4) {
         return "@MENU_CLASSIFIED";
       }
     }
-    pcVar3 = s_emblemSet->icons[param_2].description;
+    pcVar3 = s_emblemSet->icons[id].description;
   }
   return pcVar3;
 }
@@ -461,57 +482,64 @@ char * __cdecl BG_EmblemsGetIconDesc(int param_1,short param_2)
 
 // 004192F0  BG_EmblemsGetIconUnlockDesc  (bgame/bg_emblems.cpp:367)
 
-char * __cdecl BG_EmblemsGetIconUnlockDesc(int param_1,short param_2)
+char * __cdecl BG_EmblemsGetIconUnlockDesc(int controllerIndex,short id)
 
 {
   int iVar1;
+  int replaceInt;
   int iVar2;
   int iVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
-  char *pcVar7;
+  char *pcVar6;
+  int diff;
+  int prestige;
+  int purchasedCount;
+  int unclassifyAt;
+  int rank;
+  int unlockPLevel;
+  int unlockLevel;
   
-  iVar1 = BG_EmblemsGetIconUnlockLevel(param_2);
-  iVar2 = BG_EmblemsGetIconUnlockPLevel(param_2);
-  iVar3 = BG_EmblemsGetIconUnclassifyAt(param_2);
-  iVar4 = BG_EmblemsGetPurchasedIconCount(param_1);
-  iVar5 = LiveStats_GetRank(param_1);
-  iVar6 = LiveStats_GetPrestige(param_1);
-  if (iVar4 < iVar3) {
-    iVar3 = iVar3 - iVar4;
-    if (iVar3 < 2) {
-      pcVar7 = "@MENU_EMBLEM_ICON_CLASSIFIED_TOOLTIP_SING";
+  iVar1 = BG_EmblemsGetIconUnlockLevel(id);
+  replaceInt = BG_EmblemsGetIconUnlockPLevel(id);
+  iVar2 = BG_EmblemsGetIconUnclassifyAt(id);
+  iVar3 = BG_EmblemsGetPurchasedIconCount(controllerIndex);
+  iVar4 = LiveStats_GetRank(controllerIndex);
+  iVar5 = LiveStats_GetPrestige(controllerIndex);
+  if (iVar3 < iVar2) {
+    iVar2 = iVar2 - iVar3;
+    if (iVar2 < 2) {
+      pcVar6 = "@MENU_EMBLEM_ICON_CLASSIFIED_TOOLTIP_SING";
     }
     else {
-      pcVar7 = UI_SafeTranslateString("MENU_EMBLEM_ICON_CLASSIFIED_TOOLTIP");
-      pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar3);
+      pcVar6 = UI_SafeTranslateString("MENU_EMBLEM_ICON_CLASSIFIED_TOOLTIP");
+      pcVar6 = UI_ReplaceConversionInt(pcVar6,iVar2);
     }
   }
-  else if (iVar6 < iVar2) {
-    pcVar7 = UI_SafeTranslateString("CLASS_PRESTIGE_UNLOCK_DESC");
-    pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar2);
+  else if (iVar5 < replaceInt) {
+    pcVar6 = UI_SafeTranslateString("CLASS_PRESTIGE_UNLOCK_DESC");
+    pcVar6 = UI_ReplaceConversionInt(pcVar6,replaceInt);
   }
-  else if (iVar6 < 1) {
-    if (iVar5 < iVar1) {
+  else if (iVar5 < 1) {
+    if (iVar4 < iVar1) {
       iVar1 = iVar1 + 1;
-      pcVar7 = UI_SafeTranslateString("PERKS_UNLOCKED_AT_LV");
-      pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar1);
+      pcVar6 = UI_SafeTranslateString("PERKS_UNLOCKED_AT_LV");
+      pcVar6 = UI_ReplaceConversionInt(pcVar6,iVar1);
     }
     else {
-      pcVar7 = "";
+      pcVar6 = "";
     }
   }
   else {
-    pcVar7 = "";
+    pcVar6 = "";
   }
-  return pcVar7;
+  return pcVar6;
 }
 
 
 // 00419400  BG_EmblemsGetIconCost  (bgame/bg_emblems.cpp:402)
 
-int __cdecl BG_EmblemsGetIconCost(short param_1)
+int __cdecl BG_EmblemsGetIconCost(short id)
 
 {
   code *pcVar1;
@@ -527,11 +555,11 @@ int __cdecl BG_EmblemsGetIconCost(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->icons[param_1].cost;
+    iVar3 = s_emblemSet->icons[id].cost;
   }
   return iVar3;
 }
@@ -539,7 +567,7 @@ int __cdecl BG_EmblemsGetIconCost(short param_1)
 
 // 00419470  BG_EmblemsGetIconUnlockLevel  (bgame/bg_emblems.cpp:412)
 
-int __cdecl BG_EmblemsGetIconUnlockLevel(short param_1)
+int __cdecl BG_EmblemsGetIconUnlockLevel(short id)
 
 {
   code *pcVar1;
@@ -555,11 +583,11 @@ int __cdecl BG_EmblemsGetIconUnlockLevel(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->icons[param_1].unlockLevel;
+    iVar3 = s_emblemSet->icons[id].unlockLevel;
   }
   return iVar3;
 }
@@ -567,7 +595,7 @@ int __cdecl BG_EmblemsGetIconUnlockLevel(short param_1)
 
 // 004194E0  BG_EmblemsGetIconUnlockPLevel  (bgame/bg_emblems.cpp:422)
 
-int __cdecl BG_EmblemsGetIconUnlockPLevel(short param_1)
+int __cdecl BG_EmblemsGetIconUnlockPLevel(short id)
 
 {
   code *pcVar1;
@@ -583,11 +611,11 @@ int __cdecl BG_EmblemsGetIconUnlockPLevel(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->icons[param_1].unlockPLevel;
+    iVar3 = s_emblemSet->icons[id].unlockPLevel;
   }
   return iVar3;
 }
@@ -595,7 +623,7 @@ int __cdecl BG_EmblemsGetIconUnlockPLevel(short param_1)
 
 // 00419550  BG_EmblemsGetIconUnclassifyAt  (bgame/bg_emblems.cpp:432)
 
-int __cdecl BG_EmblemsGetIconUnclassifyAt(short param_1)
+int __cdecl BG_EmblemsGetIconUnclassifyAt(short id)
 
 {
   code *pcVar1;
@@ -611,11 +639,11 @@ int __cdecl BG_EmblemsGetIconUnclassifyAt(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->icons[param_1].unclassifyAt;
+    iVar3 = s_emblemSet->icons[id].unclassifyAt;
   }
   return iVar3;
 }
@@ -623,7 +651,7 @@ int __cdecl BG_EmblemsGetIconUnclassifyAt(short param_1)
 
 // 004195C0  BG_EmblemsGetIconDefaultColor  (bgame/bg_emblems.cpp:443)
 
-int __cdecl BG_EmblemsGetIconDefaultColor(short param_1)
+int __cdecl BG_EmblemsGetIconDefaultColor(short id)
 
 {
   code *pcVar1;
@@ -639,11 +667,11 @@ int __cdecl BG_EmblemsGetIconDefaultColor(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->icons[param_1].defaultColor;
+    iVar3 = s_emblemSet->icons[id].defaultColor;
   }
   return iVar3;
 }
@@ -651,7 +679,7 @@ int __cdecl BG_EmblemsGetIconDefaultColor(short param_1)
 
 // 00419630  BG_EmblemsGetIconImage  (bgame/bg_emblems.cpp:454)
 
-GfxImage * __cdecl BG_EmblemsGetIconImage(short param_1)
+GfxImage * __cdecl BG_EmblemsGetIconImage(short id)
 
 {
   code *pcVar1;
@@ -667,11 +695,11 @@ GfxImage * __cdecl BG_EmblemsGetIconImage(short param_1)
       return pGVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     pGVar3 = (GfxImage *)0x0;
   }
   else {
-    pGVar3 = s_emblemSet->icons[param_1].image;
+    pGVar3 = s_emblemSet->icons[id].image;
   }
   return pGVar3;
 }
@@ -679,7 +707,7 @@ GfxImage * __cdecl BG_EmblemsGetIconImage(short param_1)
 
 // 004196A0  BG_EmblemsGetIconOutlineSize  (bgame/bg_emblems.cpp:464)
 
-float __cdecl BG_EmblemsGetIconOutlineSize(short param_1)
+float __cdecl BG_EmblemsGetIconOutlineSize(short id)
 
 {
   float fVar1;
@@ -696,11 +724,11 @@ float __cdecl BG_EmblemsGetIconOutlineSize(short param_1)
       return (float)fVar4;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->iconCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->iconCount <= (int)id)) {
     fVar1 = 0.0;
   }
   else {
-    fVar1 = s_emblemSet->icons[param_1].outlineSize;
+    fVar1 = s_emblemSet->icons[id].outlineSize;
   }
   return fVar1;
 }
@@ -708,13 +736,16 @@ float __cdecl BG_EmblemsGetIconOutlineSize(short param_1)
 
 // 00419710  BG_EmblemsIsIconLocked  (bgame/bg_emblems.cpp:474)
 
-bool __cdecl BG_EmblemsIsIconLocked(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsIconLocked(int controllerIndex,short id)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   int iVar4;
+  int prestige;
+  int unlockPLevel;
+  int unlockLevel;
   
   if ((allEmblemsUnlocked == (dvar_s *)0x0) || ((allEmblemsUnlocked->current).enabled == false)) {
     bVar1 = false;
@@ -726,12 +757,12 @@ bool __cdecl BG_EmblemsIsIconLocked(int param_1,short param_2)
     bVar1 = false;
   }
   else {
-    iVar2 = BG_EmblemsGetIconUnlockLevel(param_2);
-    iVar3 = BG_EmblemsGetIconUnlockPLevel(param_2);
-    iVar4 = LiveStats_GetPrestige(param_1);
+    iVar2 = BG_EmblemsGetIconUnlockLevel(id);
+    iVar3 = BG_EmblemsGetIconUnlockPLevel(id);
+    iVar4 = LiveStats_GetPrestige(controllerIndex);
     if (iVar3 == 0) {
       if (iVar4 < 1) {
-        iVar3 = LiveStats_GetRank(param_1);
+        iVar3 = LiveStats_GetRank(controllerIndex);
         bVar1 = iVar3 < iVar2;
       }
       else {
@@ -748,12 +779,14 @@ bool __cdecl BG_EmblemsIsIconLocked(int param_1,short param_2)
 
 // 004197B0  BG_EmblemsIsIconClassified  (bgame/bg_emblems.cpp:498)
 
-bool __cdecl BG_EmblemsIsIconClassified(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsIconClassified(int controllerIndex,short id)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
+  int unclassifyAt;
+  int unlockPLevel;
   
   if ((allEmblemsUnlocked == (dvar_s *)0x0) || ((allEmblemsUnlocked->current).enabled == false)) {
     bVar1 = false;
@@ -765,12 +798,12 @@ bool __cdecl BG_EmblemsIsIconClassified(int param_1,short param_2)
     bVar1 = false;
   }
   else {
-    iVar2 = BG_EmblemsGetIconUnlockPLevel(param_2);
-    if ((iVar2 != 0) && (iVar3 = LiveStats_GetPrestige(param_1), iVar3 < iVar2)) {
+    iVar2 = BG_EmblemsGetIconUnlockPLevel(id);
+    if ((iVar2 != 0) && (iVar3 = LiveStats_GetPrestige(controllerIndex), iVar3 < iVar2)) {
       return true;
     }
-    iVar2 = BG_EmblemsGetIconUnclassifyAt(param_2);
-    iVar3 = BG_EmblemsGetPurchasedIconCount(param_1);
+    iVar2 = BG_EmblemsGetIconUnclassifyAt(id);
+    iVar3 = BG_EmblemsGetPurchasedIconCount(controllerIndex);
     if (iVar3 < iVar2) {
       bVar1 = true;
     }
@@ -784,16 +817,17 @@ bool __cdecl BG_EmblemsIsIconClassified(int param_1,short param_2)
 
 // 00419840  BG_EmblemsIsIconPurchased  (bgame/bg_emblems.cpp:521)
 
-bool __cdecl BG_EmblemsIsIconPurchased(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsIconPurchased(int controllerIndex,short id)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
   
   if ((allEmblemsPurchased == (dvar_s *)0x0) || ((allEmblemsPurchased->current).enabled == false)) {
     bVar1 = false;
@@ -805,29 +839,29 @@ bool __cdecl BG_EmblemsIsIconPurchased(int param_1,short param_2)
     bVar1 = true;
   }
   else {
-    bVar1 = BG_EmblemsIsIconLocked(param_1,param_2);
+    bVar1 = BG_EmblemsIsIconLocked(controllerIndex,id);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      iVar2 = BG_EmblemsGetIconCost(param_2);
+      iVar2 = BG_EmblemsGetIconCost(id);
       if (iVar2 == 0) {
         bVar1 = true;
       }
       else {
         va("%d");
         iVar2 = 4;
-        pdVar6 = &local_14;
-        pdVar3 = LiveStats_GetRootDDLState();
-        iVar2 = DDL_MoveTo(pdVar3,pdVar6,iVar2);
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
         if (iVar2 == 0) {
           DDL_PrintError("DDL: Error could not find emblem icon %d\n");
           bVar1 = false;
         }
         else {
-          puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-          uVar5 = DDL_GetInt(&local_14,(char *)puVar4);
-          bVar1 = uVar5 != 0;
+          buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+          uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+          bVar1 = uVar3 != 0;
         }
       }
     }
@@ -838,56 +872,61 @@ bool __cdecl BG_EmblemsIsIconPurchased(int param_1,short param_2)
 
 // 00419930  BG_EmblemsPurchaseIcon  (bgame/bg_emblems.cpp:546)
 
-bool __cdecl BG_EmblemsPurchaseIcon(int param_1,short param_2)
+/* WARNING: Variable defined which should be unmapped: buffer */
+
+bool __cdecl BG_EmblemsPurchaseIcon(int controllerIndex,short id)
 
 {
   bool bVar1;
+  int currencyAmount;
   int iVar2;
-  int iVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  char *buffer;
+  int currentCP;
+  int cost;
+  ddlState_t searchState;
   
-  bVar1 = BG_EmblemsIsIconLocked(param_1,param_2);
+  bVar1 = BG_EmblemsIsIconLocked(controllerIndex,id);
   if (bVar1) {
     Com_PrintError(0xf,"emblem icon %d is locked and cannot be purchased.\n");
     bVar1 = false;
   }
   else {
-    bVar1 = BG_EmblemsIsIconPurchased(param_1,param_2);
+    bVar1 = BG_EmblemsIsIconPurchased(controllerIndex,id);
     if (bVar1) {
       Com_PrintError(0xf,"emblem icon %d is already purchased.\n");
       bVar1 = false;
     }
     else {
-      iVar2 = BG_EmblemsGetIconCost(param_2);
-      iVar3 = LiveStats_GetCurrency(param_1);
-      if (iVar3 < iVar2) {
+      currencyAmount = BG_EmblemsGetIconCost(id);
+      iVar2 = LiveStats_GetCurrency(controllerIndex);
+      if (iVar2 < currencyAmount) {
         Com_PrintError(0xf,"emblem icon %d costs %d and you only have %d\n");
         bVar1 = false;
       }
       else {
         va("%d");
-        iVar3 = 4;
-        pdVar6 = &local_14;
-        pdVar4 = LiveStats_GetRootDDLState();
-        iVar3 = DDL_MoveTo(pdVar4,pdVar6,iVar3);
-        if (iVar3 == 0) {
+        iVar2 = 4;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+        if (iVar2 == 0) {
           DDL_PrintError("DDL: Error could not find emblem icon %d\n");
           bVar1 = false;
         }
         else {
-          puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-          iVar3 = DDL_SetInt(&local_14,1,(char *)puVar5);
-          if (iVar3 == 0) {
+          buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+          iVar2 = DDL_SetInt(&searchState,1,(char *)buffer_00);
+          if (iVar2 == 0) {
             DDL_PrintError("DDL: Error could not purchase emblem icon %d\n");
             bVar1 = false;
           }
           else {
             LiveCounter_IncrementCounterValueByName
-                      ("global_emblem_imagespurchased",ZEXT48(puVar5) << 0x20);
-            LiveStats_SpendCurrency(param_1,iVar2,POINTSSPENT_EMBLEM_ICON,0);
+                      ("global_emblem_imagespurchased",ZEXT48(buffer_00) << 0x20);
+            LiveStats_SpendCurrency(controllerIndex,currencyAmount,POINTSSPENT_EMBLEM_ICON,0);
             BG_EmblemsFlushResults();
             bVar1 = true;
           }
@@ -914,12 +953,12 @@ void __cdecl BG_EmblemsPurchaseLayer_f(void)
 void __cdecl BG_EmblemsPurchaseIcon_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  BG_EmblemsPurchaseIcon(0,(short)iVar2);
+  nptr = Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  BG_EmblemsPurchaseIcon(0,(short)iVar1);
   return;
 }
 
@@ -948,7 +987,7 @@ int __cdecl BG_EmblemsGetCategoryCount(void)
 
 // 00419B00  BG_EmblemsGetCategoryDesc  (bgame/bg_emblems.cpp:658)
 
-char * __cdecl BG_EmblemsGetCategoryDesc(int param_1)
+char * __cdecl BG_EmblemsGetCategoryDesc(int index)
 
 {
   code *pcVar1;
@@ -964,11 +1003,11 @@ char * __cdecl BG_EmblemsGetCategoryDesc(int param_1)
       return pcVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->categoryCount < param_1)) {
+  if ((index < 0) || (s_emblemSet->categoryCount < index)) {
     pcVar3 = "";
   }
   else {
-    pcVar3 = s_emblemSet->categories[param_1].description;
+    pcVar3 = s_emblemSet->categories[index].description;
   }
   return pcVar3;
 }
@@ -1020,47 +1059,51 @@ int __cdecl BG_EmblemsGetTotalBackgroundCount(void)
 
 // 00419BE0  BG_EmblemsGetPurchasedBackgroundCount  (bgame/bg_emblems.cpp:690)
 
-int __cdecl BG_EmblemsGetPurchasedBackgroundCount(int param_1)
+int __cdecl BG_EmblemsGetPurchasedBackgroundCount(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  short sVar3;
-  int iVar4;
-  int local_c;
+  short id_00;
+  int iVar3;
+  BackgroundPurchasedCount *pcount;
+  int total;
+  int idx;
+  short id;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x2b9,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  if (s_backgroundPurchasedCount[param_1].flush == s_flushCount) {
-    iVar4 = s_backgroundPurchasedCount[param_1].count;
+  if (s_backgroundPurchasedCount[controllerIndex].flush == s_flushCount) {
+    iVar3 = s_backgroundPurchasedCount[controllerIndex].count;
   }
   else {
-    s_backgroundPurchasedCount[param_1].count = 0;
-    iVar4 = BG_EmblemsGetBackgroundCount();
-    for (local_c = 0; local_c < iVar4; local_c = local_c + 1) {
-      sVar3 = BG_EmblemsGetBackgroundID(local_c);
-      bVar2 = BG_EmblemsIsBackgroundPurchased(param_1,sVar3);
+    s_backgroundPurchasedCount[controllerIndex].count = 0;
+    iVar3 = BG_EmblemsGetBackgroundCount();
+    for (idx = 0; idx < iVar3; idx = idx + 1) {
+      id_00 = BG_EmblemsGetBackgroundID(idx);
+      bVar2 = BG_EmblemsIsBackgroundPurchased(controllerIndex,id_00);
       if (bVar2) {
-        s_backgroundPurchasedCount[param_1].count = s_backgroundPurchasedCount[param_1].count + 1;
+        s_backgroundPurchasedCount[controllerIndex].count =
+             s_backgroundPurchasedCount[controllerIndex].count + 1;
       }
     }
-    s_backgroundPurchasedCount[param_1].flush = s_flushCount;
-    iVar4 = s_backgroundPurchasedCount[param_1].count;
+    s_backgroundPurchasedCount[controllerIndex].flush = s_flushCount;
+    iVar3 = s_backgroundPurchasedCount[controllerIndex].count;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 00419CB0  BG_EmblemsGetBackgroundID  (bgame/bg_emblems.cpp:721)
 
-short __cdecl BG_EmblemsGetBackgroundID(int param_1)
+short __cdecl BG_EmblemsGetBackgroundID(int index)
 
 {
   code *pcVar1;
@@ -1076,11 +1119,11 @@ short __cdecl BG_EmblemsGetBackgroundID(int param_1)
       return sVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->backgroundLookupCount <= param_1)) {
+  if ((index < 0) || (s_emblemSet->backgroundLookupCount <= index)) {
     sVar3 = -1;
   }
   else {
-    sVar3 = s_emblemSet->backgroundLookup[param_1];
+    sVar3 = s_emblemSet->backgroundLookup[index];
   }
   return sVar3;
 }
@@ -1088,13 +1131,13 @@ short __cdecl BG_EmblemsGetBackgroundID(int param_1)
 
 // 00419D10  BG_EmblemsGetBackgroundIndex  (bgame/bg_emblems.cpp:731)
 
-int __cdecl BG_EmblemsGetBackgroundIndex(short param_1)
+int __cdecl BG_EmblemsGetBackgroundIndex(short id)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int index;
   
   if ((s_emblemSet == (EmblemSet *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x2de,0,
@@ -1103,21 +1146,21 @@ int __cdecl BG_EmblemsGetBackgroundIndex(short param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (s_emblemSet->backgroundLookupCount <= local_8) {
+    if (s_emblemSet->backgroundLookupCount <= index) {
       return -1;
     }
-    if (s_emblemSet->backgroundLookup[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (s_emblemSet->backgroundLookup[index] == id) break;
+    index = index + 1;
   }
-  return local_8;
+  return index;
 }
 
 
 // 00419D90  BG_EmblemsGetBackgroundDesc  (bgame/bg_emblems.cpp:746)
 
-char * __cdecl BG_EmblemsGetBackgroundDesc(int param_1,short param_2)
+char * __cdecl BG_EmblemsGetBackgroundDesc(int controllerIndex,short id)
 
 {
   code *pcVar1;
@@ -1125,6 +1168,8 @@ char * __cdecl BG_EmblemsGetBackgroundDesc(int param_1,short param_2)
   char *pcVar3;
   int iVar4;
   int iVar5;
+  int purchasedCount;
+  int unclassifyAt;
   
   if (s_emblemSet == (EmblemSet *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x2eb,0,"%s"
@@ -1135,17 +1180,17 @@ char * __cdecl BG_EmblemsGetBackgroundDesc(int param_1,short param_2)
       return pcVar3;
     }
   }
-  if ((param_2 < 0) || (s_emblemSet->backgroundCount <= (int)param_2)) {
+  if ((id < 0) || (s_emblemSet->backgroundCount <= (int)id)) {
     pcVar3 = "";
   }
   else {
-    iVar4 = BG_EmblemsGetBackgroundUnclassifyAt(param_2);
-    iVar5 = BG_EmblemsGetPurchasedBackgroundCount(param_1);
+    iVar4 = BG_EmblemsGetBackgroundUnclassifyAt(id);
+    iVar5 = BG_EmblemsGetPurchasedBackgroundCount(controllerIndex);
     if (iVar5 < iVar4) {
       pcVar3 = "MENU_CLASSIFIED";
     }
     else {
-      pcVar3 = s_emblemSet->backgrounds[param_2].description;
+      pcVar3 = s_emblemSet->backgrounds[id].description;
     }
   }
   return pcVar3;
@@ -1154,57 +1199,64 @@ char * __cdecl BG_EmblemsGetBackgroundDesc(int param_1,short param_2)
 
 // 00419E30  BG_EmblemsGetBackgroundUnlockDesc  (bgame/bg_emblems.cpp:762)
 
-char * __cdecl BG_EmblemsGetBackgroundUnlockDesc(int param_1,short param_2)
+char * __cdecl BG_EmblemsGetBackgroundUnlockDesc(int controllerIndex,short id)
 
 {
   int iVar1;
+  int replaceInt;
   int iVar2;
   int iVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
-  char *pcVar7;
+  char *pcVar6;
+  int diff;
+  int prestige;
+  int purchasedCount;
+  int unclassifyAt;
+  int rank;
+  int unlockPLevel;
+  int unlockLevel;
   
-  iVar1 = BG_EmblemsGetBackgroundUnlockLevel(param_2);
-  iVar2 = BG_EmblemsGetBackgroundUnlockPLevel(param_2);
-  iVar3 = BG_EmblemsGetBackgroundUnclassifyAt(param_2);
-  iVar4 = BG_EmblemsGetPurchasedBackgroundCount(param_1);
-  iVar5 = LiveStats_GetRank(param_1);
-  iVar6 = LiveStats_GetPrestige(param_1);
-  if (iVar4 < iVar3) {
-    iVar3 = iVar3 - iVar4;
-    if (iVar3 < 2) {
-      pcVar7 = "@MENU_EMBLEM_BACKGROUND_CLASSIFIED_TOOLTIP_SING";
+  iVar1 = BG_EmblemsGetBackgroundUnlockLevel(id);
+  replaceInt = BG_EmblemsGetBackgroundUnlockPLevel(id);
+  iVar2 = BG_EmblemsGetBackgroundUnclassifyAt(id);
+  iVar3 = BG_EmblemsGetPurchasedBackgroundCount(controllerIndex);
+  iVar4 = LiveStats_GetRank(controllerIndex);
+  iVar5 = LiveStats_GetPrestige(controllerIndex);
+  if (iVar3 < iVar2) {
+    iVar2 = iVar2 - iVar3;
+    if (iVar2 < 2) {
+      pcVar6 = "@MENU_EMBLEM_BACKGROUND_CLASSIFIED_TOOLTIP_SING";
     }
     else {
-      pcVar7 = UI_SafeTranslateString("MENU_EMBLEM_BACKGROUND_CLASSIFIED_TOOLTIP");
-      pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar3);
+      pcVar6 = UI_SafeTranslateString("MENU_EMBLEM_BACKGROUND_CLASSIFIED_TOOLTIP");
+      pcVar6 = UI_ReplaceConversionInt(pcVar6,iVar2);
     }
   }
-  else if (iVar6 < iVar2) {
-    pcVar7 = UI_SafeTranslateString("CLASS_PRESTIGE_UNLOCK_DESC");
-    pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar2);
+  else if (iVar5 < replaceInt) {
+    pcVar6 = UI_SafeTranslateString("CLASS_PRESTIGE_UNLOCK_DESC");
+    pcVar6 = UI_ReplaceConversionInt(pcVar6,replaceInt);
   }
-  else if (iVar6 < 1) {
-    if (iVar5 < iVar1) {
+  else if (iVar5 < 1) {
+    if (iVar4 < iVar1) {
       iVar1 = iVar1 + 1;
-      pcVar7 = UI_SafeTranslateString("PERKS_UNLOCKED_AT_LV");
-      pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar1);
+      pcVar6 = UI_SafeTranslateString("PERKS_UNLOCKED_AT_LV");
+      pcVar6 = UI_ReplaceConversionInt(pcVar6,iVar1);
     }
     else {
-      pcVar7 = "";
+      pcVar6 = "";
     }
   }
   else {
-    pcVar7 = "";
+    pcVar6 = "";
   }
-  return pcVar7;
+  return pcVar6;
 }
 
 
 // 00419F40  BG_EmblemsGetBackgroundCost  (bgame/bg_emblems.cpp:798)
 
-int __cdecl BG_EmblemsGetBackgroundCost(short param_1)
+int __cdecl BG_EmblemsGetBackgroundCost(short id)
 
 {
   code *pcVar1;
@@ -1219,11 +1271,11 @@ int __cdecl BG_EmblemsGetBackgroundCost(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->backgroundCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->backgroundCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->backgrounds[param_1].cost;
+    iVar3 = s_emblemSet->backgrounds[id].cost;
   }
   return iVar3;
 }
@@ -1231,7 +1283,7 @@ int __cdecl BG_EmblemsGetBackgroundCost(short param_1)
 
 // 00419FB0  BG_EmblemsGetBackgroundUnlockLevel  (bgame/bg_emblems.cpp:808)
 
-int __cdecl BG_EmblemsGetBackgroundUnlockLevel(short param_1)
+int __cdecl BG_EmblemsGetBackgroundUnlockLevel(short id)
 
 {
   code *pcVar1;
@@ -1247,11 +1299,11 @@ int __cdecl BG_EmblemsGetBackgroundUnlockLevel(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->backgroundCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->backgroundCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->backgrounds[param_1].unlockLevel;
+    iVar3 = s_emblemSet->backgrounds[id].unlockLevel;
   }
   return iVar3;
 }
@@ -1259,7 +1311,7 @@ int __cdecl BG_EmblemsGetBackgroundUnlockLevel(short param_1)
 
 // 0041A020  BG_EmblemsGetBackgroundUnlockPLevel  (bgame/bg_emblems.cpp:818)
 
-int __cdecl BG_EmblemsGetBackgroundUnlockPLevel(short param_1)
+int __cdecl BG_EmblemsGetBackgroundUnlockPLevel(short id)
 
 {
   code *pcVar1;
@@ -1275,11 +1327,11 @@ int __cdecl BG_EmblemsGetBackgroundUnlockPLevel(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->backgroundCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->backgroundCount <= (int)id)) {
     iVar3 = -1;
   }
   else {
-    iVar3 = s_emblemSet->backgrounds[param_1].unlockPLevel;
+    iVar3 = s_emblemSet->backgrounds[id].unlockPLevel;
   }
   return iVar3;
 }
@@ -1287,7 +1339,7 @@ int __cdecl BG_EmblemsGetBackgroundUnlockPLevel(short param_1)
 
 // 0041A090  BG_EmblemsGetBackgroundUnclassifyAt  (bgame/bg_emblems.cpp:828)
 
-int __cdecl BG_EmblemsGetBackgroundUnclassifyAt(short param_1)
+int __cdecl BG_EmblemsGetBackgroundUnclassifyAt(short id)
 
 {
   code *pcVar1;
@@ -1303,11 +1355,11 @@ int __cdecl BG_EmblemsGetBackgroundUnclassifyAt(short param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (s_emblemSet->backgroundCount <= (int)param_1)) {
+  if ((id < 0) || (s_emblemSet->backgroundCount <= (int)id)) {
     iVar3 = 0;
   }
   else {
-    iVar3 = s_emblemSet->backgrounds[param_1].unclassifyAt;
+    iVar3 = s_emblemSet->backgrounds[id].unclassifyAt;
   }
   return iVar3;
 }
@@ -1315,7 +1367,7 @@ int __cdecl BG_EmblemsGetBackgroundUnclassifyAt(short param_1)
 
 // 0041A100  BG_EmblemsGetBackgroundMaterial  (bgame/bg_emblems.cpp:838)
 
-Material * __cdecl BG_EmblemsGetBackgroundMaterial(short param_1)
+Material * __cdecl BG_EmblemsGetBackgroundMaterial(short id)
 
 {
   code *pcVar1;
@@ -1330,8 +1382,8 @@ Material * __cdecl BG_EmblemsGetBackgroundMaterial(short param_1)
     return pMVar3;
   }
   pMVar3 = s_missingEmblemMaterial;
-  if ((-1 < param_1) && ((int)param_1 < s_emblemSet->backgroundCount)) {
-    pMVar3 = s_emblemSet->backgrounds[param_1].material;
+  if ((-1 < id) && ((int)id < s_emblemSet->backgroundCount)) {
+    pMVar3 = s_emblemSet->backgrounds[id].material;
   }
   return pMVar3;
 }
@@ -1339,13 +1391,16 @@ Material * __cdecl BG_EmblemsGetBackgroundMaterial(short param_1)
 
 // 0041A170  BG_EmblemsIsBackgroundLocked  (bgame/bg_emblems.cpp:849)
 
-bool __cdecl BG_EmblemsIsBackgroundLocked(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsBackgroundLocked(int controllerIndex,short id)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   int iVar4;
+  int prestige;
+  int unlockPLevel;
+  int unlockLevel;
   
   if ((allEmblemsUnlocked == (dvar_s *)0x0) || ((allEmblemsUnlocked->current).enabled == false)) {
     bVar1 = false;
@@ -1357,17 +1412,17 @@ bool __cdecl BG_EmblemsIsBackgroundLocked(int param_1,short param_2)
     bVar1 = false;
   }
   else {
-    bVar1 = BG_EmblemsIsBackgroundClassified(param_1,param_2);
+    bVar1 = BG_EmblemsIsBackgroundClassified(controllerIndex,id);
     if (bVar1) {
       bVar1 = true;
     }
     else {
-      iVar2 = BG_EmblemsGetBackgroundUnlockLevel(param_2);
-      iVar3 = BG_EmblemsGetBackgroundUnlockPLevel(param_2);
-      iVar4 = LiveStats_GetPrestige(param_1);
+      iVar2 = BG_EmblemsGetBackgroundUnlockLevel(id);
+      iVar3 = BG_EmblemsGetBackgroundUnlockPLevel(id);
+      iVar4 = LiveStats_GetPrestige(controllerIndex);
       if (iVar3 == 0) {
         if (iVar4 < 1) {
-          iVar3 = LiveStats_GetRank(param_1);
+          iVar3 = LiveStats_GetRank(controllerIndex);
           bVar1 = iVar3 < iVar2;
         }
         else {
@@ -1385,12 +1440,14 @@ bool __cdecl BG_EmblemsIsBackgroundLocked(int param_1,short param_2)
 
 // 0041A230  BG_EmblemsIsBackgroundClassified  (bgame/bg_emblems.cpp:876)
 
-bool __cdecl BG_EmblemsIsBackgroundClassified(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsBackgroundClassified(int controllerIndex,short id)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
+  int unclassifyAt;
+  int unlockPLevel;
   
   if ((allEmblemsUnlocked == (dvar_s *)0x0) || ((allEmblemsUnlocked->current).enabled == false)) {
     bVar1 = false;
@@ -1402,12 +1459,12 @@ bool __cdecl BG_EmblemsIsBackgroundClassified(int param_1,short param_2)
     bVar1 = false;
   }
   else {
-    iVar2 = BG_EmblemsGetBackgroundUnlockPLevel(param_2);
-    if ((iVar2 != 0) && (iVar3 = LiveStats_GetPrestige(param_1), iVar3 < iVar2)) {
+    iVar2 = BG_EmblemsGetBackgroundUnlockPLevel(id);
+    if ((iVar2 != 0) && (iVar3 = LiveStats_GetPrestige(controllerIndex), iVar3 < iVar2)) {
       return true;
     }
-    iVar2 = BG_EmblemsGetBackgroundUnclassifyAt(param_2);
-    iVar3 = BG_EmblemsGetPurchasedBackgroundCount(param_1);
+    iVar2 = BG_EmblemsGetBackgroundUnclassifyAt(id);
+    iVar3 = BG_EmblemsGetPurchasedBackgroundCount(controllerIndex);
     if (iVar3 < iVar2) {
       bVar1 = true;
     }
@@ -1421,102 +1478,106 @@ bool __cdecl BG_EmblemsIsBackgroundClassified(int param_1,short param_2)
 
 // 0041A2C0  BG_EmblemsIsBackgroundPurchased  (bgame/bg_emblems.cpp:899)
 
-bool __cdecl BG_EmblemsIsBackgroundPurchased(int param_1,short param_2)
+bool __cdecl BG_EmblemsIsBackgroundPurchased(int controllerIndex,short id)
 
 {
   int iVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  uint uVar4;
-  bool bVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar2;
+  bool bVar3;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
   
   if ((allEmblemsPurchased == (dvar_s *)0x0) || ((allEmblemsPurchased->current).enabled == false)) {
-    bVar5 = false;
+    bVar3 = false;
   }
   else {
-    bVar5 = true;
+    bVar3 = true;
   }
-  if (bVar5) {
-    bVar5 = true;
+  if (bVar3) {
+    bVar3 = true;
   }
   else {
-    iVar1 = BG_EmblemsGetBackgroundCost(param_2);
+    iVar1 = BG_EmblemsGetBackgroundCost(id);
     if (iVar1 == 0) {
-      bVar5 = true;
+      bVar3 = true;
     }
     else {
       va("%d");
       iVar1 = 4;
-      pdVar6 = &local_14;
-      pdVar2 = LiveStats_GetRootDDLState();
-      iVar1 = DDL_MoveTo(pdVar2,pdVar6,iVar1);
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar1 = DDL_MoveTo(searchState_00,resultState,iVar1);
       if (iVar1 == 0) {
         DDL_PrintError("DDL: Error could not find emblem background %d\n");
-        bVar5 = false;
+        bVar3 = false;
       }
       else {
-        puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-        uVar4 = DDL_GetInt(&local_14,(char *)puVar3);
-        bVar5 = uVar4 != 0;
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+        uVar2 = DDL_GetInt(&searchState,(char *)buffer_00);
+        bVar3 = uVar2 != 0;
       }
     }
   }
-  return bVar5;
+  return bVar3;
 }
 
 
 // 0041A390  BG_EmblemsPurchaseBackground  (bgame/bg_emblems.cpp:921)
 
-bool __cdecl BG_EmblemsPurchaseBackground(int param_1,short param_2)
+bool __cdecl BG_EmblemsPurchaseBackground(int controllerIndex,short id)
 
 {
   bool bVar1;
+  int currencyAmount;
   int iVar2;
-  int iVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  char *buffer;
+  int currentCP;
+  int cost;
+  ddlState_t searchState;
   
-  bVar1 = BG_EmblemsIsBackgroundLocked(param_1,param_2);
+  bVar1 = BG_EmblemsIsBackgroundLocked(controllerIndex,id);
   if (bVar1) {
     Com_PrintError(0xf,"emblem background %d is locked and cannot be purchased.\n");
     bVar1 = false;
   }
   else {
-    bVar1 = BG_EmblemsIsBackgroundPurchased(param_1,param_2);
+    bVar1 = BG_EmblemsIsBackgroundPurchased(controllerIndex,id);
     if (bVar1) {
       Com_PrintError(0xf,"emblem background %d is already purchased.\n");
       bVar1 = false;
     }
     else {
-      iVar2 = BG_EmblemsGetBackgroundCost(param_2);
-      iVar3 = LiveStats_GetCurrency(param_1);
-      if (iVar3 < iVar2) {
+      currencyAmount = BG_EmblemsGetBackgroundCost(id);
+      iVar2 = LiveStats_GetCurrency(controllerIndex);
+      if (iVar2 < currencyAmount) {
         Com_PrintError(0xf,"emblem background %d costs %d and you only have %d\n");
         bVar1 = false;
       }
       else {
         va("%d");
-        iVar3 = 4;
-        pdVar6 = &local_14;
-        pdVar4 = LiveStats_GetRootDDLState();
-        iVar3 = DDL_MoveTo(pdVar4,pdVar6,iVar3);
-        if (iVar3 == 0) {
+        iVar2 = 4;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+        if (iVar2 == 0) {
           DDL_PrintError("DDL: Error could not find emblem background %d\n");
           bVar1 = false;
         }
         else {
-          puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-          iVar3 = DDL_SetInt(&local_14,1,(char *)puVar5);
-          if (iVar3 == 0) {
+          buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+          iVar2 = DDL_SetInt(&searchState,1,(char *)buffer_00);
+          if (iVar2 == 0) {
             DDL_PrintError("DDL: Error could not purchase emblem background %d\n");
             bVar1 = false;
           }
           else {
-            LiveStats_SpendCurrency(param_1,iVar2,POINTSSPENT_IGNORE,0);
+            LiveStats_SpendCurrency(controllerIndex,currencyAmount,POINTSSPENT_IGNORE,0);
             BG_EmblemsFlushResults();
             bVar1 = true;
           }
@@ -1533,12 +1594,12 @@ bool __cdecl BG_EmblemsPurchaseBackground(int param_1,short param_2)
 void __cdecl BG_EmblemsPurchaseBackgroundByID_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  BG_EmblemsPurchaseBackground(0,(short)iVar2);
+  nptr = Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  BG_EmblemsPurchaseBackground(0,(short)iVar1);
   return;
 }
 
@@ -1548,14 +1609,14 @@ void __cdecl BG_EmblemsPurchaseBackgroundByID_f(void)
 void __cdecl BG_EmblemsPurchaseBackgroundByIndex_f(void)
 
 {
-  short sVar1;
-  char *pcVar2;
-  int iVar3;
+  short id;
+  char *nptr;
+  int index;
   
-  pcVar2 = Cmd_Argv(1);
-  iVar3 = atoi(pcVar2);
-  sVar1 = BG_EmblemsGetBackgroundID(iVar3);
-  BG_EmblemsPurchaseBackground(0,sVar1);
+  nptr = Cmd_Argv(1);
+  index = atoi(nptr);
+  id = BG_EmblemsGetBackgroundID(index);
+  BG_EmblemsPurchaseBackground(0,id);
   return;
 }
 
@@ -1565,15 +1626,16 @@ void __cdecl BG_EmblemsPurchaseBackgroundByIndex_f(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-BG_EmblemsWriteMsg(msg_t *param_1,short param_2,CompositeEmblemLayer *param_3,int param_4)
+BG_EmblemsWriteMsg(msg_t *msg,short background,CompositeEmblemLayer *layers,int layerCount)
 
 {
   code *pcVar1;
   bool bVar2;
   CompositeEmblemLayer *pCVar3;
-  int local_8;
+  CompositeEmblemLayer *layer;
+  int i;
   
-  if (0x1ff < param_2) {
+  if (0x1ff < background) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x3e4,0,"%s"
                             );
     if (!bVar2) {
@@ -1582,23 +1644,23 @@ BG_EmblemsWriteMsg(msg_t *param_1,short param_2,CompositeEmblemLayer *param_3,in
       return;
     }
   }
-  MSG_WriteBits(param_1,(int)param_2,9);
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    pCVar3 = param_3 + local_8;
+  MSG_WriteBits(msg,(int)background,9);
+  for (i = 0; i < layerCount; i = i + 1) {
+    pCVar3 = layers + i;
     if (pCVar3->icon == -1) {
-      MSG_WriteBit0(param_1);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_1);
-      MSG_WriteBits(param_1,(int)pCVar3->icon,10);
-      MSG_WriteBits(param_1,pCVar3->colorIdx,8);
-      MSG_WriteBits(param_1,(uint)pCVar3->outline,1);
-      MSG_WriteBits(param_1,(uint)pCVar3->flip,1);
-      MSG_WriteRangedFloatBits(param_1,pCVar3->pos[0],-1.0,1.0,8);
-      MSG_WriteRangedFloatBits(param_1,pCVar3->pos[1],-1.0,1.0,8);
-      MSG_WriteRangedFloatBits(param_1,pCVar3->scale[0],-4.0,4.0,8);
-      MSG_WriteRangedFloatBits(param_1,pCVar3->scale[1],-4.0,4.0,8);
-      MSG_WriteRangedFloatBits(param_1,pCVar3->angle,0.0,360.0,9);
+      MSG_WriteBit1(msg);
+      MSG_WriteBits(msg,(int)pCVar3->icon,10);
+      MSG_WriteBits(msg,pCVar3->colorIdx,8);
+      MSG_WriteBits(msg,(uint)pCVar3->outline,1);
+      MSG_WriteBits(msg,(uint)pCVar3->flip,1);
+      MSG_WriteRangedFloatBits(msg,pCVar3->pos[0],-1.0,1.0,8);
+      MSG_WriteRangedFloatBits(msg,pCVar3->pos[1],-1.0,1.0,8);
+      MSG_WriteRangedFloatBits(msg,pCVar3->scale[0],-4.0,4.0,8);
+      MSG_WriteRangedFloatBits(msg,pCVar3->scale[1],-4.0,4.0,8);
+      MSG_WriteRangedFloatBits(msg,pCVar3->angle,0.0,360.0,9);
     }
   }
   return;
@@ -1610,39 +1672,40 @@ BG_EmblemsWriteMsg(msg_t *param_1,short param_2,CompositeEmblemLayer *param_3,in
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-BG_EmblemsReadMsg(msg_t *param_1,short *param_2,CompositeEmblemLayer *param_3,int param_4)
+BG_EmblemsReadMsg(msg_t *msg,short *background,CompositeEmblemLayer *layers,int layerCount)
 
 {
   int iVar1;
-  CompositeEmblemLayer *pCVar2;
-  float fVar3;
-  int local_8;
+  CompositeEmblemLayer *layer_00;
+  float fVar2;
+  CompositeEmblemLayer *layer;
+  int i;
   
-  iVar1 = MSG_ReadBits(param_1,9);
-  *param_2 = (short)iVar1;
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    pCVar2 = param_3 + local_8;
-    CL_CompositeClearLayer(pCVar2);
-    iVar1 = MSG_ReadBit(param_1);
-    if ((iVar1 != 0) && (param_1->overflowed == 0)) {
-      iVar1 = MSG_ReadBits(param_1,10);
-      pCVar2->icon = (short)iVar1;
-      iVar1 = MSG_ReadBits(param_1,8);
-      pCVar2->colorIdx = iVar1;
-      iVar1 = MSG_ReadBit(param_1);
-      pCVar2->outline = 0 < iVar1;
-      iVar1 = MSG_ReadBit(param_1);
-      pCVar2->flip = 0 < iVar1;
-      fVar3 = MSG_ReadRangedFloatBits(param_1,-1.0,1.0,8);
-      pCVar2->pos[0] = fVar3;
-      fVar3 = MSG_ReadRangedFloatBits(param_1,-1.0,1.0,8);
-      pCVar2->pos[1] = fVar3;
-      fVar3 = MSG_ReadRangedFloatBits(param_1,-4.0,4.0,8);
-      pCVar2->scale[0] = fVar3;
-      fVar3 = MSG_ReadRangedFloatBits(param_1,-4.0,4.0,8);
-      pCVar2->scale[1] = fVar3;
-      fVar3 = MSG_ReadRangedFloatBits(param_1,0.0,360.0,9);
-      pCVar2->angle = fVar3;
+  iVar1 = MSG_ReadBits(msg,9);
+  *background = (short)iVar1;
+  for (i = 0; i < layerCount; i = i + 1) {
+    layer_00 = layers + i;
+    CL_CompositeClearLayer(layer_00);
+    iVar1 = MSG_ReadBit(msg);
+    if ((iVar1 != 0) && (msg->overflowed == 0)) {
+      iVar1 = MSG_ReadBits(msg,10);
+      layer_00->icon = (short)iVar1;
+      iVar1 = MSG_ReadBits(msg,8);
+      layer_00->colorIdx = iVar1;
+      iVar1 = MSG_ReadBit(msg);
+      layer_00->outline = 0 < iVar1;
+      iVar1 = MSG_ReadBit(msg);
+      layer_00->flip = 0 < iVar1;
+      fVar2 = MSG_ReadRangedFloatBits(msg,-1.0,1.0,8);
+      layer_00->pos[0] = fVar2;
+      fVar2 = MSG_ReadRangedFloatBits(msg,-1.0,1.0,8);
+      layer_00->pos[1] = fVar2;
+      fVar2 = MSG_ReadRangedFloatBits(msg,-4.0,4.0,8);
+      layer_00->scale[0] = fVar2;
+      fVar2 = MSG_ReadRangedFloatBits(msg,-4.0,4.0,8);
+      layer_00->scale[1] = fVar2;
+      fVar2 = MSG_ReadRangedFloatBits(msg,0.0,360.0,9);
+      layer_00->angle = fVar2;
     }
   }
   return;
@@ -1654,20 +1717,20 @@ BG_EmblemsReadMsg(msg_t *param_1,short *param_2,CompositeEmblemLayer *param_3,in
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-char * __cdecl BG_EmblemsWriteString(short param_1,CompositeEmblemLayer *param_2,int param_3)
+char * __cdecl BG_EmblemsWriteString(short background,CompositeEmblemLayer *layers,int layerCount)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uchar local_bc [132];
+  uchar msgbuf [132];
   uint local_38;
-  msg_t local_34;
+  msg_t msg;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  MSG_Init(&local_34,local_bc,0x80);
-  BG_EmblemsWriteMsg(&local_34,param_1,param_2,param_3);
-  if (local_34.overflowed != 0) {
+  MSG_Init(&msg,msgbuf,0x80);
+  BG_EmblemsWriteMsg(&msg,background,layers,layerCount);
+  if (msg.overflowed != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x425,0,"%s"
                             );
     if (!bVar2) {
@@ -1676,8 +1739,8 @@ char * __cdecl BG_EmblemsWriteString(short param_1,CompositeEmblemLayer *param_2
       return pcVar3;
     }
   }
-  if (local_34.overflowed == 0) {
-    Com_EncodeYEnc(local_34.data,local_34.cursize,result,0x100);
+  if (msg.overflowed == 0) {
+    Com_EncodeYEnc(msg.data,msg.cursize,result,0x100);
     pcVar3 = result;
   }
   else {
@@ -1693,18 +1756,18 @@ char * __cdecl BG_EmblemsWriteString(short param_1,CompositeEmblemLayer *param_2
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 bool __cdecl
-BG_EmblemsReadString(char *param_1,short *param_2,CompositeEmblemLayer *param_3,int param_4)
+BG_EmblemsReadString(char *str,short *background,CompositeEmblemLayer *layers,int layerCount)
 
 {
-  uchar local_bc [132];
+  uchar msgbuf [132];
   uint local_38;
-  msg_t local_34;
+  msg_t msg;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  MSG_Init(&local_34,local_bc,0x80);
-  local_34.cursize = Com_DecodeYEnc(param_1,local_bc,0x80);
-  BG_EmblemsReadMsg(&local_34,param_2,param_3,param_4);
-  return local_34.overflowed == 0;
+  MSG_Init(&msg,msgbuf,0x80);
+  msg.cursize = Com_DecodeYEnc(str,msgbuf,0x80);
+  BG_EmblemsReadMsg(&msg,background,layers,layerCount);
+  return msg.overflowed == 0;
 }
 
 
@@ -1718,7 +1781,7 @@ void __cdecl BG_EmblemsInit(void)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
   bVar1 = G_ExitAfterToolComplete();
   if (!bVar1) {
@@ -1729,10 +1792,10 @@ void __cdecl BG_EmblemsInit(void)
     allEmblemsPurchased =
          _Dvar_RegisterBool("allEmblemsPurchased",false,0x80,
                             "Allows all emblem icons and layers to be purchased");
-    for (local_8 = 0; local_8 < s_emblemSet->iconCount; local_8 = local_8 + 1) {
-      bg_iconNames[local_8] = s_emblemSet->icons[local_8].description;
+    for (i = 0; i < s_emblemSet->iconCount; i = i + 1) {
+      bg_iconNames[i] = s_emblemSet->icons[i].description;
     }
-    bg_iconNames[local_8] = (char *)0x0;
+    bg_iconNames[i] = (char *)0x0;
     bg_overridePlayerEmblemColor =
          _Dvar_RegisterInt("bg_overridePlayerEmblemColor",0,0,s_emblemSet->colorCount + -1,0,
                            "Set to >=0 to override player emblem, value selects color");
@@ -1766,11 +1829,11 @@ void __cdecl BG_EmblemsInit(void)
 void __cdecl BG_EmblemsClearDefaults(void)
 
 {
-  int local_8;
+  int def;
   
-  for (local_8 = 0; local_8 < 0x18; local_8 = local_8 + 1) {
-    s_defaultEmblems[local_8].maxlevel = -1;
-    s_defaultEmblems[local_8].minlevel = -1;
+  for (def = 0; def < 0x18; def = def + 1) {
+    s_defaultEmblems[def].maxlevel = -1;
+    s_defaultEmblems[def].minlevel = -1;
   }
   return;
 }
@@ -1779,54 +1842,55 @@ void __cdecl BG_EmblemsClearDefaults(void)
 // 0041AD70  BG_EmblemsSetDefaultForLevel  (bgame/bg_emblems.cpp:1149)
 
 void __cdecl
-BG_EmblemsSetDefaultForLevel(int param_1,int param_2,CompositeEmblemLayer *param_3,int param_4)
+BG_EmblemsSetDefaultForLevel
+          (int minlevel,int maxlevel,CompositeEmblemLayer *s_emblem,int layerCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int def;
   
-  if ((param_1 < 0) &&
+  if ((minlevel < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x480,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 0) &&
+  if ((maxlevel < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x481,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < param_1) &&
+  if ((maxlevel < minlevel) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x482,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  def = 0;
   while( true ) {
-    if (0x17 < local_8) {
+    if (0x17 < def) {
       Com_PrintError(0x10,"Ran out of default emblem slots\n");
       return;
     }
-    if (s_defaultEmblems[local_8].minlevel == -1) break;
-    local_8 = local_8 + 1;
+    if (s_defaultEmblems[def].minlevel == -1) break;
+    def = def + 1;
   }
-  if ((s_defaultEmblems[local_8].maxlevel != -1) &&
+  if ((s_defaultEmblems[def].maxlevel != -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_emblems.cpp",0x488,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  s_defaultEmblems[local_8].minlevel = param_1;
-  s_defaultEmblems[local_8].maxlevel = param_2;
-  s_defaultEmblems[local_8].layerCount = param_4;
-  memcpy((uchar *)s_defaultEmblems[local_8].layers,(uchar *)param_3,param_4 << 5);
+  s_defaultEmblems[def].minlevel = minlevel;
+  s_defaultEmblems[def].maxlevel = maxlevel;
+  s_defaultEmblems[def].layerCount = layerCount;
+  memcpy((uchar *)s_defaultEmblems[def].layers,(uchar *)s_emblem,layerCount << 5);
   return;
 }
 
@@ -1834,24 +1898,24 @@ BG_EmblemsSetDefaultForLevel(int param_1,int param_2,CompositeEmblemLayer *param
 // 0041AEE0  BG_EmblemsGenerateDefault  (bgame/bg_emblems.cpp:1174)
 
 void __cdecl
-BG_EmblemsGenerateDefault(int param_1,int param_2,CompositeEmblemLayer *param_3,int param_4)
+BG_EmblemsGenerateDefault(int controllerIndex,int level,CompositeEmblemLayer *layers,int layerCount)
 
 {
   int local_18;
-  int local_10;
-  int local_c;
+  int def;
+  int layer;
+  int count;
   
-  for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
-    CL_CompositeClearLayer(param_3 + local_c);
+  for (layer = 0; layer < layerCount; layer = layer + 1) {
+    CL_CompositeClearLayer(layers + layer);
   }
-  for (local_10 = 0; local_10 < 0x18; local_10 = local_10 + 1) {
-    if ((s_defaultEmblems[local_10].minlevel <= param_2) &&
-       (param_2 <= s_defaultEmblems[local_10].maxlevel)) {
-      local_18 = s_defaultEmblems[local_10].layerCount;
-      if (param_4 <= local_18) {
-        local_18 = param_4;
+  for (def = 0; def < 0x18; def = def + 1) {
+    if ((s_defaultEmblems[def].minlevel <= level) && (level <= s_defaultEmblems[def].maxlevel)) {
+      local_18 = s_defaultEmblems[def].layerCount;
+      if (layerCount <= local_18) {
+        local_18 = layerCount;
       }
-      memcpy((uchar *)param_3,(uchar *)s_defaultEmblems[local_10].layers,local_18 << 5);
+      memcpy((uchar *)layers,(uchar *)s_defaultEmblems[def].layers,local_18 << 5);
     }
   }
   return;
@@ -1860,87 +1924,89 @@ BG_EmblemsGenerateDefault(int param_1,int param_2,CompositeEmblemLayer *param_3,
 
 // 0041AFB0  SV_CACValidate_GetPurchasedEmblemLayers  (bgame/bg_emblems.cpp:1198)
 
-int __cdecl SV_CACValidate_GetPurchasedEmblemLayers(uchar *param_1)
+int __cdecl SV_CACValidate_GetPurchasedEmblemLayers(uchar *buffer)
 
 {
-  ddlState_t *pdVar1;
-  uint uVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uint uVar1;
+  ddlState_t *resultState;
+  int iVar2;
+  ddlState_t searchState;
   
-  iVar4 = 2;
-  pdVar3 = &local_14;
-  pdVar1 = LiveStats_GetRootDDLState();
-  iVar4 = DDL_MoveTo(pdVar1,pdVar3,iVar4);
-  if (iVar4 == 0) {
-    uVar2 = 0;
+  iVar2 = 2;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
+    uVar1 = 0;
   }
   else {
-    uVar2 = DDL_GetInt(&local_14,(char *)param_1);
+    uVar1 = DDL_GetInt(&searchState,(char *)buffer);
   }
-  return uVar2;
+  return uVar1;
 }
 
 
 // 0041B0B0  SV_CACValidate_IsBackgroundLockedForRank  (bgame/bg_emblems.cpp:1212)
 
-bool __cdecl SV_CACValidate_IsBackgroundLockedForRank(uchar *param_1,int param_2,short param_3)
+bool __cdecl SV_CACValidate_IsBackgroundLockedForRank(uchar *buffer,int rank,short id)
 
 {
   int iVar1;
+  int unlockLevel;
   
-  iVar1 = BG_EmblemsGetBackgroundUnlockLevel(param_3);
-  return param_2 < iVar1;
+  iVar1 = BG_EmblemsGetBackgroundUnlockLevel(id);
+  return rank < iVar1;
 }
 
 
 // 0041B190  SV_CACValidate_IsIconLockedForRank  (bgame/bg_emblems.cpp:1218)
 
-bool __cdecl SV_CACValidate_IsIconLockedForRank(uchar *param_1,int param_2,short param_3)
+bool __cdecl SV_CACValidate_IsIconLockedForRank(uchar *buffer,int rank,short id)
 
 {
   int iVar1;
+  int unlockLevel;
   
-  iVar1 = BG_EmblemsGetIconUnlockLevel(param_3);
-  return param_2 < iVar1;
+  iVar1 = BG_EmblemsGetIconUnlockLevel(id);
+  return rank < iVar1;
 }
 
 
 // 0041B000  SV_CACValidate_IsBackgroundPurchased  (bgame/bg_emblems.cpp:1224)
 
-bool __cdecl SV_CACValidate_IsBackgroundPurchased(uchar *param_1,int param_2,short param_3)
+bool __cdecl SV_CACValidate_IsBackgroundPurchased(uchar *buffer,int rank,short id)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t *pdVar3;
-  uint uVar4;
-  ddlState_t *pdVar5;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  ddlState_t searchState;
   
-  bVar1 = SV_CACValidate_IsBackgroundLockedForRank(param_1,param_2,param_3);
+  bVar1 = SV_CACValidate_IsBackgroundLockedForRank(buffer,rank,id);
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    iVar2 = BG_EmblemsGetBackgroundCost(param_3);
+    iVar2 = BG_EmblemsGetBackgroundCost(id);
     if (iVar2 == 0) {
       bVar1 = true;
     }
     else {
       va("%d");
       iVar2 = 4;
-      pdVar5 = &local_14;
-      pdVar3 = LiveStats_GetRootDDLState();
-      iVar2 = DDL_MoveTo(pdVar3,pdVar5,iVar2);
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find emblem background %d\n");
         bVar1 = false;
       }
       else {
-        uVar4 = DDL_GetInt(&local_14,(char *)param_1);
-        bVar1 = uVar4 != 0;
+        uVar3 = DDL_GetInt(&searchState,(char *)buffer);
+        bVar1 = uVar3 != 0;
       }
     }
   }
@@ -1950,38 +2016,38 @@ bool __cdecl SV_CACValidate_IsBackgroundPurchased(uchar *param_1,int param_2,sho
 
 // 0041B0E0  SV_CACValidate_IsIconPurchased  (bgame/bg_emblems.cpp:1245)
 
-bool __cdecl SV_CACValidate_IsIconPurchased(uchar *param_1,int param_2,short param_3)
+bool __cdecl SV_CACValidate_IsIconPurchased(uchar *buffer,int rank,short id)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t *pdVar3;
-  uint uVar4;
-  ddlState_t *pdVar5;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  ddlState_t searchState;
   
-  bVar1 = SV_CACValidate_IsIconLockedForRank(param_1,param_2,param_3);
+  bVar1 = SV_CACValidate_IsIconLockedForRank(buffer,rank,id);
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    iVar2 = BG_EmblemsGetIconCost(param_3);
+    iVar2 = BG_EmblemsGetIconCost(id);
     if (iVar2 == 0) {
       bVar1 = true;
     }
     else {
       va("%d");
       iVar2 = 4;
-      pdVar5 = &local_14;
-      pdVar3 = LiveStats_GetRootDDLState();
-      iVar2 = DDL_MoveTo(pdVar3,pdVar5,iVar2);
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find emblem icon %d\n");
         bVar1 = false;
       }
       else {
-        uVar4 = DDL_GetInt(&local_14,(char *)param_1);
-        bVar1 = uVar4 != 0;
+        uVar3 = DDL_GetInt(&searchState,(char *)buffer);
+        bVar1 = uVar3 != 0;
       }
     }
   }

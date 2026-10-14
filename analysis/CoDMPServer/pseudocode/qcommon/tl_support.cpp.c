@@ -2,7 +2,7 @@
 
 // 006F6920  TL_Warning  (qcommon/tl_support.cpp:20)
 
-void __cdecl TL_Warning(char *param_1)
+void __cdecl TL_Warning(char *Text)
 
 {
   Com_PrintWarning(0xe,"TL Warning: %s\n");
@@ -12,7 +12,7 @@ void __cdecl TL_Warning(char *param_1)
 
 // 006F6940  TL_ReadFile  (qcommon/tl_support.cpp:25)
 
-bool __cdecl TL_ReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param_4)
+bool __cdecl TL_ReadFile(char *FileName,tlFileBuf *File,uint Align,uint Flags)
 
 {
   TL_Warning("TL_ReadFile: no implementation");
@@ -22,7 +22,7 @@ bool __cdecl TL_ReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint para
 
 // 006F6960  TL_ReleaseFile  (qcommon/tl_support.cpp:33)
 
-void __cdecl TL_ReleaseFile(tlFileBuf *param_1)
+void __cdecl TL_ReleaseFile(tlFileBuf *File)
 
 {
   TL_Warning("TL_ReleaseFile: no implementation");
@@ -32,23 +32,25 @@ void __cdecl TL_ReleaseFile(tlFileBuf *param_1)
 
 // 006F6980  TL_DebugPrint  (qcommon/tl_support.cpp:48)
 
-void __cdecl TL_DebugPrint(char *param_1)
+void __cdecl TL_DebugPrint(char *Text)
 
 {
-  Com_Printf(0xe,param_1);
+  Com_Printf(0xe,Text);
   return;
 }
 
 
 // 006F69A0  TL_MemAlloc  (qcommon/tl_support.cpp:58)
 
-void * __cdecl TL_MemAlloc(uint param_1,uint param_2,uint param_3)
+void * __cdecl TL_MemAlloc(uint Size,uint Align,uint Flags)
 
 {
   void *pvVar1;
+  Smp_CriticalSectionBlock csb;
+  void *retVal;
   
   Sys_EnterCriticalSection(CRITSECT_TL_MEMALLOC);
-  pvVar1 = Hunk_UserAlloc(s_tlHunkUser,param_1,param_2,(char *)0x0);
+  pvVar1 = Hunk_UserAlloc(s_tlHunkUser,Size,Align,(char *)0x0);
   Sys_LeaveCriticalSection(CRITSECT_TL_MEMALLOC);
   return pvVar1;
 }
@@ -56,24 +58,23 @@ void * __cdecl TL_MemAlloc(uint param_1,uint param_2,uint param_3)
 
 // 006F6A00  TL_MemFree  (qcommon/tl_support.cpp:83)
 
-void __cdecl TL_MemFree(void *param_1)
+void __cdecl TL_MemFree(void *Ptr)
 
 {
-  Hunk_UserFree(s_tlHunkUser,param_1);
+  Hunk_UserFree(s_tlHunkUser,Ptr);
   return;
 }
 
 
 // 006F6A20  TL_CriticalError  (qcommon/tl_support.cpp:93)
 
-void __cdecl TL_CriticalError(char *param_1)
+void __cdecl TL_CriticalError(char *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\tl_support.cpp",0x5f,0,
-                           param_1);
+  bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\tl_support.cpp",0x5f,0,msg);
   if (!bVar2) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
@@ -85,22 +86,22 @@ void __cdecl TL_CriticalError(char *param_1)
 
 // 006F68B0  Sys_SetupTLCallbacks  (qcommon/tl_support.cpp:105)
 
-void __cdecl Sys_SetupTLCallbacks(int param_1)
+void __cdecl Sys_SetupTLCallbacks(int hunkMemSize)
 
 {
-  tlSystemCallbacks local_24;
+  tlSystemCallbacks callbacks;
   
-  s_tlHunkUser = Hunk_UserCreate(param_1,HU_SCHEME_DEFAULT,4,(void *)0x0,"TL_MemAlloc support",0x25)
-  ;
-  local_24.ReadFile = TL_ReadFile;
-  local_24.ReleaseFile = TL_ReleaseFile;
-  local_24.CriticalError = TL_CriticalError;
-  local_24.Warning = TL_Warning;
-  local_24.DebugPrint = TL_DebugPrint;
-  local_24.MemAlloc = TL_MemAlloc;
-  local_24.MemRealloc = CL_GetFirstActiveLocalClient;
-  local_24.MemFree = TL_MemFree;
-  tlSetSystemCallbacks(&local_24);
+  s_tlHunkUser = Hunk_UserCreate(hunkMemSize,HU_SCHEME_DEFAULT,4,(void *)0x0,"TL_MemAlloc support",
+                                 0x25);
+  callbacks.ReadFile = TL_ReadFile;
+  callbacks.ReleaseFile = TL_ReleaseFile;
+  callbacks.CriticalError = TL_CriticalError;
+  callbacks.Warning = TL_Warning;
+  callbacks.DebugPrint = TL_DebugPrint;
+  callbacks.MemAlloc = TL_MemAlloc;
+  callbacks.MemRealloc = CL_GetFirstActiveLocalClient;
+  callbacks.MemFree = TL_MemFree;
+  tlSetSystemCallbacks(&callbacks);
   return;
 }
 

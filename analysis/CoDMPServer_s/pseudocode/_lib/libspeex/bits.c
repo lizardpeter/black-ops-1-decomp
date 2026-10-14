@@ -28,6 +28,7 @@ void __cdecl speex_bits_init(SpeexBits *param_1)
 
 // 007CE610  speex_bits_read_from  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/bits.c:95)
 
+/* WARNING: Variable defined which should be unmapped: bits */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 void __cdecl speex_bits_read_from(SpeexBits *param_1,char *param_2,int param_3)
@@ -38,6 +39,7 @@ void __cdecl speex_bits_read_from(SpeexBits *param_1,char *param_2,int param_3)
   int iVar2;
   int unaff_EDI;
   char *pcVar3;
+  SpeexBits *bits;
   
   if (_DAT_01c7adb0 < in_EAX) {
     pcVar3 = "warning: %s %d\n";
@@ -73,6 +75,7 @@ void __cdecl speex_bits_read_from(SpeexBits *param_1,char *param_2,int param_3)
 
 // 007CE6D0  speex_bits_write  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/bits.c:170)
 
+/* WARNING: Variable defined which should be unmapped: bits */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 int __cdecl speex_bits_write(SpeexBits *param_1,char *param_2,int param_3)
@@ -84,6 +87,8 @@ int __cdecl speex_bits_write(SpeexBits *param_1,char *param_2,int param_3)
   int in_EAX;
   int iVar4;
   SpeexBits *unaff_EDI;
+  char *chars;
+  SpeexBits *bits;
   
   uVar3 = DAT_01c7adc8;
   uVar2 = _DAT_01c7adc4;
@@ -109,12 +114,13 @@ int __cdecl speex_bits_write(SpeexBits *param_1,char *param_2,int param_3)
 
 // 007CE730  speex_bits_pack  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/bits.c:217)
 
-void __cdecl speex_bits_pack(SpeexBits *param_1,int param_2,int param_3)
+void __cdecl speex_bits_pack(SpeexBits *nbBits,int param_2,int param_3)
 
 {
   int iVar1;
   _iobuf *p_Var2;
   int *unaff_ESI;
+  int data;
   char *pcVar3;
   
   iVar1 = param_2;
@@ -122,7 +128,7 @@ void __cdecl speex_bits_pack(SpeexBits *param_1,int param_2,int param_3)
     for (; param_2 != 0; param_2 = param_2 + -1) {
       *(byte *)(unaff_ESI[2] + *unaff_ESI) =
            *(byte *)(unaff_ESI[2] + *unaff_ESI) |
-           ((byte)((uint)param_1 >> ((byte)(iVar1 + -1) & 0x1f)) & 1) <<
+           ((byte)((uint)nbBits >> ((byte)(iVar1 + -1) & 0x1f)) & 1) <<
            (7U - (char)unaff_ESI[3] & 0x1f);
       unaff_ESI[3] = unaff_ESI[3] + 1;
       if (unaff_ESI[3] == 8) {
@@ -155,6 +161,7 @@ uint __cdecl speex_bits_unpack_unsigned(SpeexBits *param_1,int param_2)
   int iVar3;
   uint uVar4;
   int *in_EDX;
+  int nbBits;
   
   uVar4 = 0;
   if (in_EDX[1] < (int)&param_1->chars + in_EDX[3] + in_EDX[2] * 8) {
@@ -214,10 +221,13 @@ int __cdecl speex_bits_remaining(SpeexBits *param_1)
 
 // 007CE8C0  speex_bits_insert_terminator  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/bits.c:355)
 
+/* WARNING: Variable defined which should be unmapped: bits */
+
 void __cdecl speex_bits_insert_terminator(SpeexBits *param_1)
 
 {
   int unaff_ESI;
+  SpeexBits *bits;
   
   if (DAT_01c7adc8 < 7) {
     speex_bits_pack((SpeexBits *)0x0,1,unaff_ESI);

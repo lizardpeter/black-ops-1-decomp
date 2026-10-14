@@ -2,23 +2,23 @@
 
 // 00962600  strlen  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strlen.asm:54)
 
-void __cdecl strlen(uchar *param_1)
+void __cdecl strlen(uchar *buf)
 
 {
   uint uVar1;
   uint *puVar2;
   
-  while (((uint)param_1 & 3) != 0) {
-    uVar1 = *(uint *)param_1;
-    param_1 = (uchar *)((int)param_1 + 1);
+  while (((uint)buf & 3) != 0) {
+    uVar1 = *(uint *)buf;
+    buf = (uchar *)((int)buf + 1);
     if ((char)uVar1 == '\0') {
       return;
     }
   }
   while( true ) {
     do {
-      puVar2 = (uint *)param_1;
-      param_1 = (uchar *)(puVar2 + 1);
+      puVar2 = (uint *)buf;
+      buf = (uchar *)(puVar2 + 1);
     } while (((*puVar2 ^ 0xffffffff ^ *puVar2 + 0x7efefeff) & 0x81010100) == 0);
     uVar1 = *puVar2;
     if ((char)uVar1 == '\0') {

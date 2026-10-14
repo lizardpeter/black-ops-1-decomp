@@ -12,14 +12,17 @@ int __cdecl _alloc_osfhnd(void)
   int iVar2;
   undefined4 *puVar3;
   int iVar4;
-  int local_20;
+  int i;
+  int failed;
+  ioinfo *pio;
+  int fh;
   
-  local_20 = -1;
+  fh = -1;
   iVar4 = 0;
   bVar1 = false;
   iVar2 = _mtinitlocknum(0xb);
   if (iVar2 == 0) {
-    local_20 = -1;
+    fh = -1;
   }
   else {
     _lock(0xb);
@@ -37,11 +40,11 @@ int __cdecl _alloc_osfhnd(void)
             *(undefined1 *)((int)puVar3 + 5) = 10;
             puVar3[2] = 0;
           }
-          local_20 = iVar4 << 5;
-          *(undefined1 *)(*(int *)(&__pioinfo + (local_20 >> 5) * 4) + 4) = 1;
-          iVar2 = __lock_fhandle(local_20);
+          fh = iVar4 << 5;
+          *(undefined1 *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4) = 1;
+          iVar2 = __lock_fhandle(fh);
           if (iVar2 == 0) {
-            local_20 = -1;
+            fh = -1;
           }
         }
         break;
@@ -67,24 +70,24 @@ int __cdecl _alloc_osfhnd(void)
             if ((*(byte *)(puVar3 + 1) & 1) == 0) {
               *(undefined1 *)(puVar3 + 1) = 1;
               *puVar3 = 0xffffffff;
-              local_20 = ((int)puVar3 - *(int *)(&__pioinfo + iVar4 * 4) >> 6) + iVar4 * 0x20;
+              fh = ((int)puVar3 - *(int *)(&__pioinfo + iVar4 * 4) >> 6) + iVar4 * 0x20;
               break;
             }
             LeaveCriticalSection((LPCRITICAL_SECTION)(puVar3 + 3));
           }
         }
       }
-      if (local_20 != -1) break;
+      if (fh != -1) break;
     }
     FUN_00c2d0f7();
   }
-  return local_20;
+  return fh;
 }
 
 
 // 00C2CD21  _set_osfhnd  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c:213)
 
-int __cdecl _set_osfhnd(int param_1,int param_2)
+int __cdecl _set_osfhnd(int fh,int value)
 
 {
   int *piVar1;
@@ -92,24 +95,24 @@ int __cdecl _set_osfhnd(int param_1,int param_2)
   int iVar3;
   DWORD nStdHandle;
   
-  if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-    iVar3 = (param_1 & 0x1fU) * 0x40;
-    if (*(int *)(iVar3 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)) == -1) {
+  if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+    iVar3 = (fh & 0x1fU) * 0x40;
+    if (*(int *)(iVar3 + *(int *)(&__pioinfo + (fh >> 5) * 4)) == -1) {
       if (__app_type == 1) {
-        if (param_1 == 0) {
+        if (fh == 0) {
           nStdHandle = 0xfffffff6;
         }
-        else if (param_1 == 1) {
+        else if (fh == 1) {
           nStdHandle = 0xfffffff5;
         }
         else {
-          if (param_1 != 2) goto LAB_00c2cd7e;
+          if (fh != 2) goto LAB_00c2cd7e;
           nStdHandle = 0xfffffff4;
         }
-        SetStdHandle(nStdHandle,(HANDLE)param_2);
+        SetStdHandle(nStdHandle,(HANDLE)value);
       }
 LAB_00c2cd7e:
-      *(int *)(iVar3 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)) = param_2;
+      *(int *)(iVar3 + *(int *)(&__pioinfo + (fh >> 5) * 4)) = value;
       return 0;
     }
   }
@@ -123,7 +126,7 @@ LAB_00c2cd7e:
 
 // 00C2CDA2  _free_osfhnd  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c:263)
 
-int __cdecl _free_osfhnd(int param_1)
+int __cdecl _free_osfhnd(int fh)
 
 {
   int *piVar1;
@@ -131,25 +134,25 @@ int __cdecl _free_osfhnd(int param_1)
   int iVar3;
   DWORD nStdHandle;
   
-  if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-    iVar3 = (param_1 & 0x1fU) * 0x40;
-    piVar1 = (int *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + iVar3);
+  if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+    iVar3 = (fh & 0x1fU) * 0x40;
+    piVar1 = (int *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + iVar3);
     if (((*(byte *)(piVar1 + 1) & 1) != 0) && (*piVar1 != -1)) {
       if (__app_type == 1) {
-        if (param_1 == 0) {
+        if (fh == 0) {
           nStdHandle = 0xfffffff6;
         }
-        else if (param_1 == 1) {
+        else if (fh == 1) {
           nStdHandle = 0xfffffff5;
         }
         else {
-          if (param_1 != 2) goto LAB_00c2ce04;
+          if (fh != 2) goto LAB_00c2ce04;
           nStdHandle = 0xfffffff4;
         }
         SetStdHandle(nStdHandle,(HANDLE)0x0);
       }
 LAB_00c2ce04:
-      *(undefined4 *)(iVar3 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)) = 0xffffffff;
+      *(undefined4 *)(iVar3 + *(int *)(&__pioinfo + (fh >> 5) * 4)) = 0xffffffff;
       return 0;
     }
   }
@@ -163,22 +166,22 @@ LAB_00c2ce04:
 
 // 00C2CE28  _get_osfhandle  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c:312)
 
-int __cdecl _get_osfhandle(int param_1)
+int __cdecl _get_osfhandle(int fh)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
     return -1;
   }
-  if (((param_1 < 0) || ((uint)_nhandle <= (uint)param_1)) ||
-     (piVar2 = (int *)((param_1 & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (param_1 >> 5) * 4)),
+  if (((fh < 0) || ((uint)_nhandle <= (uint)fh)) ||
+     (piVar2 = (int *)((fh & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (fh >> 5) * 4)),
      (*(byte *)(piVar2 + 1) & 1) == 0)) {
     puVar1 = __doserrno();
     *puVar1 = 0;
@@ -199,41 +202,41 @@ int __cdecl _get_osfhandle(int param_1)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl __lock_fhandle(int param_1)
+int __cdecl __lock_fhandle(int fh)
 
 {
   int iVar1;
   int iVar2;
-  uint local_20;
+  int retval;
   
-  iVar2 = (param_1 & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (param_1 >> 5) * 4);
-  local_20 = 1;
+  iVar2 = (fh & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (fh >> 5) * 4);
+  retval = 1;
   if (*(int *)(iVar2 + 8) == 0) {
     _lock(10);
     if (*(int *)(iVar2 + 8) == 0) {
       iVar1 = __crtInitCritSecAndSpinCount((_RTL_CRITICAL_SECTION *)(iVar2 + 0xc),4000);
-      local_20 = (uint)(iVar1 != 0);
+      retval = (int)(iVar1 != 0);
       *(int *)(iVar2 + 8) = *(int *)(iVar2 + 8) + 1;
     }
     FUN_00c2cf36();
   }
-  if (local_20 != 0) {
+  if (retval != 0) {
     EnterCriticalSection
               ((LPCRITICAL_SECTION)
-               (*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 0xc + (param_1 & 0x1fU) * 0x40));
+               (*(int *)(&__pioinfo + (fh >> 5) * 4) + 0xc + (fh & 0x1fU) * 0x40));
   }
-  return local_20;
+  return retval;
 }
 
 
 // 00C2CF3F  _unlock_fhandle  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/osfinfo.c:489)
 
-void __cdecl _unlock_fhandle(int param_1)
+void __cdecl _unlock_fhandle(int fh)
 
 {
   LeaveCriticalSection
-            ((LPCRITICAL_SECTION)
-             (*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 0xc + (param_1 & 0x1fU) * 0x40));
+            ((LPCRITICAL_SECTION)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 0xc + (fh & 0x1fU) * 0x40))
+  ;
   return;
 }
 

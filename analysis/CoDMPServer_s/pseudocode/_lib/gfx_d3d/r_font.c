@@ -10,6 +10,7 @@ Glyph * __cdecl R_GetCharacterGlyph(Font_s *param_1,uint param_2)
   uint uVar3;
   int iVar4;
   uint unaff_EDI;
+  Font_s *font;
   
   if (unaff_EDI - 0x20 < 0x60) {
     return param_1->glyphs + (unaff_EDI - 0x20);
@@ -43,6 +44,7 @@ uint __cdecl R_FontGetRandomLetter(Font_s *param_1,int param_2)
   int in_EAX;
   int iVar1;
   uint uVar2;
+  Font_s *font;
   
   iVar1 = in_EAX * 0x41c64e6d + 0x3039;
   uVar2 = (int)(iVar1 + (iVar1 >> 0x1f & 0xffffU)) >> 0x10 & 0x7fff;
@@ -53,7 +55,9 @@ uint __cdecl R_FontGetRandomLetter(Font_s *param_1,int param_2)
 
 // 00803210  R_TextWidth  (gfx_d3d/r_font.cpp:179)
 
-int __cdecl R_TextWidth(char *param_1,int param_2,Font_s *param_3)
+/* WARNING: Variable defined which should be unmapped: maxWidth */
+
+int __cdecl R_TextWidth(char *maxChars,int font,Font_s *param_3)
 
 {
   char cVar1;
@@ -66,22 +70,24 @@ int __cdecl R_TextWidth(char *param_1,int param_2,Font_s *param_3)
   uint unaff_ESI;
   uint unaff_EDI;
   int iVar6;
+  char *text;
+  int maxWidth;
   int local_8;
   int local_4;
   
-  pcVar4 = param_1;
+  pcVar4 = maxChars;
   iVar6 = 0;
   iVar5 = 0;
   local_8 = 0;
-  if (param_2 < 1) {
-    param_2 = 0x7fffffff;
+  if (font < 1) {
+    font = 0x7fffffff;
   }
-  cVar1 = *param_1;
-  param_1 = (char *)0x0;
+  cVar1 = *maxChars;
+  maxChars = (char *)0x0;
   if (cVar1 != '\0') {
     iVar6 = 0;
     do {
-      if (param_2 <= (int)param_1) {
+      if (font <= (int)maxChars) {
         return iVar6;
       }
       uVar2 = SEH_DecodeLetter(unaff_ESI,unaff_EDI,unaff_EBP,unaff_EBX);
@@ -112,7 +118,7 @@ LAB_008032b9:
         if (local_8 < iVar5) {
           local_8 = iVar5;
         }
-        param_1 = param_1 + 1;
+        maxChars = maxChars + 1;
         iVar6 = local_8;
       }
     } while (*pcVar4 != '\0');
@@ -123,99 +129,107 @@ LAB_008032b9:
 
 // 00803300  R_TextLineWrapPosition  (gfx_d3d/r_font.cpp:316)
 
+/* WARNING: Variable defined which should be unmapped: preLetterPos */
+
 char * __cdecl
-R_TextLineWrapPosition(char *param_1,int param_2,int param_3,Font_s *param_4,float param_5)
+R_TextLineWrapPosition(char *bufferSize,int pixelsAvailable,int font,Font_s *scale,float param_5)
 
 {
   char cVar1;
   char *pcVar2;
-  uint uVar3;
-  int iVar4;
-  Glyph *pGVar5;
-  char *pcVar6;
+  uint c;
+  int iVar3;
+  Glyph *pGVar4;
+  char *pcVar5;
   int *unaff_EBX;
-  char *pcVar7;
+  char *pcVar6;
   int *unaff_EBP;
-  int iVar8;
+  int iVar7;
   uint unaff_ESI;
   uint unaff_EDI;
+  char *text;
+  char *preLetterPos;
+  char *wrapPos;
   char *local_8;
   int local_4;
   
-  iVar8 = 0;
-  if (param_2 < 1) {
-    param_2 = 0x7fffffff;
+  iVar7 = 0;
+  if (pixelsAvailable < 1) {
+    pixelsAvailable = 0x7fffffff;
   }
   local_8 = (char *)0x0;
-  cVar1 = *param_1;
+  cVar1 = *bufferSize;
   pcVar2 = (char *)0x0;
-  pcVar6 = param_1;
+  pcVar5 = bufferSize;
   do {
     if (cVar1 == '\0') {
-      if (((int)pcVar6 - (int)param_1 == param_2) && (pcVar6 = local_8, local_8 == (char *)0x0)) {
+      if (((int)pcVar5 - (int)bufferSize == pixelsAvailable) &&
+         (pcVar5 = local_8, local_8 == (char *)0x0)) {
         return pcVar2;
       }
-      return pcVar6;
+      return pcVar5;
     }
-    uVar3 = SEH_DecodeLetter(unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-    pcVar7 = pcVar6 + local_4;
-    if (uVar3 == 0xd) {
-      iVar8 = 0;
+    c = SEH_DecodeLetter(unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
+    pcVar6 = pcVar5 + local_4;
+    if (c == 0xd) {
+      iVar7 = 0;
     }
     else {
-      if (uVar3 == 10) {
-        return pcVar7;
+      if (c == 10) {
+        return pcVar6;
       }
-      if (uVar3 == 0x5e) {
-        if (((pcVar7 == (char *)0x0) || (cVar1 = *pcVar7, cVar1 == '^')) ||
+      if (c == 0x5e) {
+        if (((pcVar6 == (char *)0x0) || (cVar1 = *pcVar6, cVar1 == '^')) ||
            (((cVar1 < '0' || ('@' < cVar1)) && (cVar1 != 'F')))) {
-          if ((*pcVar7 != '\x01') && (*pcVar7 != '\x02')) goto LAB_008033bb;
-          if (param_4 != (Font_s *)0x0) {
-            iVar4 = (pcVar7[1] + -0x10) * param_4->pixelHeight + 0x10;
-            iVar8 = iVar8 + ((int)(iVar4 + (iVar4 >> 0x1f & 0x1fU)) >> 5);
+          if ((*pcVar6 != '\x01') && (*pcVar6 != '\x02')) goto LAB_008033bb;
+          if (scale != (Font_s *)0x0) {
+            iVar3 = (pcVar6[1] + -0x10) * scale->pixelHeight + 0x10;
+            iVar7 = iVar7 + ((int)(iVar3 + (iVar3 >> 0x1f & 0x1fU)) >> 5);
           }
-          if (pcVar6 != param_1) {
-            local_8 = pcVar6;
+          if (pcVar5 != bufferSize) {
+            local_8 = pcVar5;
           }
-          pcVar7 = pcVar7 + 7;
+          pcVar6 = pcVar6 + 7;
         }
         else {
-          pcVar7 = pcVar7 + 1;
+          pcVar6 = pcVar6 + 1;
         }
       }
       else {
 LAB_008033bb:
-        if (param_4 != (Font_s *)0x0) {
-          pGVar5 = R_GetCharacterGlyph(param_4,unaff_EDI);
-          iVar8 = iVar8 + (uint)pGVar5->dx;
+        if (scale != (Font_s *)0x0) {
+          pGVar4 = R_GetCharacterGlyph(scale,unaff_EDI);
+          iVar7 = iVar7 + (uint)pGVar4->dx;
         }
-        if (((pcVar6 != param_1) && (uVar3 < 0x100)) && (iVar4 = isspace(uVar3), iVar4 != 0)) {
-          local_8 = pcVar7;
+        if (((pcVar5 != bufferSize) && (c < 0x100)) && (iVar3 = isspace(c), iVar3 != 0)) {
+          local_8 = pcVar6;
         }
       }
-      if ((local_8 != (char *)0x0) && ((float)param_3 < (float)iVar8 * param_5)) {
+      if ((local_8 != (char *)0x0) && ((float)font < (float)iVar7 * param_5)) {
         return local_8;
       }
-      if (param_2 < (int)pcVar7 - (int)param_1) {
+      if (pixelsAvailable < (int)pcVar6 - (int)bufferSize) {
         if (local_8 != (char *)0x0) {
           return local_8;
         }
-        return pcVar6;
+        return pcVar5;
       }
-      if ((float)param_3 < (float)iVar8 * param_5) {
-        return pcVar6;
+      if ((float)font < (float)iVar7 * param_5) {
+        return pcVar5;
       }
     }
-    cVar1 = *pcVar7;
-    pcVar2 = pcVar6;
-    pcVar6 = pcVar7;
+    cVar1 = *pcVar6;
+    pcVar2 = pcVar5;
+    pcVar5 = pcVar6;
   } while( true );
 }
 
 
 // 00803480  R_ConsoleTextWidth  (gfx_d3d/r_font.cpp:394)
 
-int __cdecl R_ConsoleTextWidth(char *param_1,int param_2,int param_3,int param_4,Font_s *param_5)
+/* WARNING: Variable defined which should be unmapped: stopPos */
+
+int __cdecl R_ConsoleTextWidth(char *poolSize,int firstChar,int font,int param_4,Font_s *param_5)
 
 {
   uint uVar1;
@@ -231,29 +245,31 @@ int __cdecl R_ConsoleTextWidth(char *param_1,int param_2,int param_3,int param_4
   uint uVar8;
   uint unaff_ESI;
   uint unaff_EDI;
+  char *textPool;
+  int stopPos;
   
-  uVar8 = param_2 - 1;
-  uVar1 = param_3 + in_EAX;
+  uVar8 = firstChar - 1;
+  uVar1 = font + in_EAX;
   iVar4 = 0;
 joined_r0x0080349d:
   do {
-    if (param_3 == (uVar1 & uVar8)) {
+    if (font == (uVar1 & uVar8)) {
       return iVar4;
     }
     uVar5 = SEH_DecodeLetter(unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-    param_3 = param_3 + param_2 & uVar8;
+    font = font + firstChar & uVar8;
     if (uVar5 == 0x5e) {
-      pcVar2 = param_1 + param_3;
+      pcVar2 = poolSize + font;
       if ((pcVar2 != (char *)0x0) &&
          ((((cVar3 = *pcVar2, cVar3 != '^' && ('/' < cVar3)) && (cVar3 < 'A')) ||
           (((pcVar2 != (char *)0x0 && (*pcVar2 != '^')) && (*pcVar2 == 'F')))))) {
-        param_3 = param_3 + 1U & uVar8;
+        font = font + 1U & uVar8;
         goto joined_r0x0080349d;
       }
       if ((*pcVar2 == '\x01') || (*pcVar2 == '\x02')) {
-        iVar6 = (param_1[param_3 + 1U & uVar8] + -0x10) * *(int *)(param_4 + 4) + 0x10;
+        iVar6 = (poolSize[font + 1U & uVar8] + -0x10) * *(int *)(param_4 + 4) + 0x10;
         iVar4 = iVar4 + ((int)(iVar6 + (iVar6 >> 0x1f & 0x1fU)) >> 5);
-        param_3 = param_3 + 7U & uVar8;
+        font = font + 7U & uVar8;
         goto joined_r0x0080349d;
       }
     }

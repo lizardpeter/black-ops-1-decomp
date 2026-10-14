@@ -23,25 +23,25 @@ void __cdecl Load_XAssetListCustom(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_XAssetArrayCustom(int param_1)
+void __cdecl Load_XAssetArrayCustom(int count)
 
 {
-  XAsset *local_c;
-  int local_8;
+  XAsset *var;
+  int i;
   
-  Load_Stream(true,varXAsset,param_1 << 3);
-  local_c = varXAsset;
-  local_8 = 0;
+  Load_Stream(true,varXAsset,count << 3);
+  var = varXAsset;
+  i = 0;
   while( true ) {
-    if (param_1 <= local_8) {
+    if (count <= i) {
       return;
     }
-    skipShaderCreationHack = local_8 == skipLoadingMaterialsHack;
-    varXAsset = local_c;
+    skipShaderCreationHack = i == skipLoadingMaterialsHack;
+    varXAsset = var;
     Load_XAsset(false);
-    local_c = local_c + 1;
+    var = var + 1;
     if (g_load.abort != false) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return;
 }
@@ -59,34 +59,38 @@ float __cdecl DB_GetLoadedFraction(void)
   bool bVar3;
   float10 fVar4;
   double dVar5;
-  double local_34;
-  double local_1c;
+  double loadedBytesInternal;
+  double loadedBytesStream;
+  double totalBytesInternal;
+  double loadedBytesExternal;
+  double totalBytesExternal;
+  double totalBytesStream;
   
   if (g_totalSize == 0) {
     fVar1 = 0.0;
   }
   else {
     dVar5 = (double)g_totalSize * 262144.0;
-    local_34 = (double)g_loadedSize * 262144.0;
-    if ((local_34 < 0.0) &&
+    loadedBytesInternal = (double)g_loadedSize * 262144.0;
+    if ((loadedBytesInternal < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                                  0x146,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    if (dVar5 < local_34) {
-      local_34 = dVar5;
+    if (dVar5 < loadedBytesInternal) {
+      loadedBytesInternal = dVar5;
     }
-    local_1c = (double)g_loadedExternalBytes;
+    loadedBytesExternal = (double)g_loadedExternalBytes;
     if ((double)g_totalExternalBytes < (double)g_loadedExternalBytes) {
-      local_1c = (double)g_totalExternalBytes;
+      loadedBytesExternal = (double)g_totalExternalBytes;
     }
     if (g_loadedSize < g_totalSize) {
-      fVar1 = (float)((float10)local_34 / (float10)dVar5);
+      fVar1 = (float)((float10)loadedBytesInternal / (float10)dVar5);
     }
     else if (g_loadedSize < g_totalSize) {
-      fVar1 = (float)(((float10)local_34 + (float10)local_1c) /
+      fVar1 = (float)(((float10)loadedBytesInternal + (float10)loadedBytesExternal) /
                      ((float10)dVar5 + (float10)g_totalExternalBytes)) * 0.5;
     }
     else {
@@ -108,7 +112,9 @@ int __cdecl DB_FinishedLoadingAssets(void)
 
 // 0057AAB0  DB_FileReadCompletionDummyCallback  (database/db_file_load.cpp:385)
 
-void __cdecl DB_FileReadCompletionDummyCallback(ulong param_1,ulong param_2,_OVERLAPPED *param_3)
+void __cdecl
+DB_FileReadCompletionDummyCallback
+          (ulong dwErrorCode,ulong dwNumberOfBytesTransfered,_OVERLAPPED *lpOverlapped)
 
 {
   return;
@@ -117,7 +123,7 @@ void __cdecl DB_FileReadCompletionDummyCallback(ulong param_1,ulong param_2,_OVE
 
 // 0057A2D0  DB_ResetZoneSize  (database/db_file_load.cpp:392)
 
-void __cdecl DB_ResetZoneSize(int param_1)
+void __cdecl DB_ResetZoneSize(int trackLoadProgress)
 
 {
   g_totalSize = 0;
@@ -125,7 +131,7 @@ void __cdecl DB_ResetZoneSize(int param_1)
   g_totalExternalBytes = 0;
   g_loadedExternalBytes = 0;
   g_totalStreamBytes = 0;
-  g_trackLoadProgress = param_1;
+  g_trackLoadProgress = trackLoadProgress;
   return;
 }
 
@@ -192,6 +198,8 @@ int __cdecl DB_ReadData(void)
   int iVar3;
   BOOL BVar4;
   uchar *lpBuffer;
+  uchar *fileBuffer;
+  uint queuedOffset;
   
   if ((g_load.compressBufferStart == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x4b3
@@ -232,6 +240,7 @@ void __cdecl DB_ReadXFileStage(void)
   bool bVar2;
   int iVar3;
   DWORD DVar4;
+  ulong error;
   
   if (g_load.f != (void *)0x0) {
     if ((g_load.outstandingReads != 0) &&
@@ -259,6 +268,8 @@ void __cdecl DB_WaitXFileStage(void)
   bool bVar2;
   int iVar3;
   int iVar4;
+  int waitStart;
+  int readBytes;
   
   if (g_load.f == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x52f,0
@@ -293,11 +304,11 @@ void __cdecl DB_WaitXFileStage(void)
 
 // 0057A490  DB_LoadedExternalData  (database/db_file_load.cpp:1390)
 
-void __cdecl DB_LoadedExternalData(int param_1)
+void __cdecl DB_LoadedExternalData(int size)
 
 {
   LOCK();
-  g_loadedExternalBytes = g_loadedExternalBytes + param_1;
+  g_loadedExternalBytes = g_loadedExternalBytes + size;
   UNLOCK();
   return;
 }
@@ -305,31 +316,32 @@ void __cdecl DB_LoadedExternalData(int param_1)
 
 // 0057A4B0  DB_LoadXFileDataNullTerminated  (database/db_file_load.cpp:1411)
 
-int __cdecl DB_LoadXFileDataNullTerminated(uchar *param_1)
+int __cdecl DB_LoadXFileDataNullTerminated(uchar *pos)
 
 {
   uchar uVar1;
   uchar *puVar2;
+  uchar *origPos;
   
-  puVar2 = param_1;
+  puVar2 = pos;
   do {
     if (g_load.deflateBufferPos == 0x8000) {
-      DB_LoadXFileData(param_1,1);
+      DB_LoadXFileData(pos,1);
     }
     else {
-      *param_1 = g_load.deflateBuffer[g_load.deflateBufferPos];
+      *pos = g_load.deflateBuffer[g_load.deflateBufferPos];
       g_load.deflateBufferPos = g_load.deflateBufferPos + 1;
     }
-    uVar1 = *param_1;
-    param_1 = param_1 + 1;
+    uVar1 = *pos;
+    pos = pos + 1;
   } while (uVar1 != '\0');
-  return (int)param_1 - (int)puVar2;
+  return (int)pos - (int)puVar2;
 }
 
 
 // 0057A520  DB_LoadXFileSetSize  (database/db_file_load.cpp:1424)
 
-void __cdecl DB_LoadXFileSetSize(int param_1)
+void __cdecl DB_LoadXFileSetSize(int size)
 
 {
   code *pcVar1;
@@ -344,25 +356,29 @@ void __cdecl DB_LoadXFileSetSize(int param_1)
       return;
     }
   }
-  g_load.deflateRemainingFileSize = param_1;
+  g_load.deflateRemainingFileSize = size;
   return;
 }
 
 
 // 0057A560  DB_LoadXFileData  (database/db_file_load.cpp:1447)
 
-void __cdecl DB_LoadXFileData(uchar *param_1,int param_2)
+void __cdecl DB_LoadXFileData(uchar *pos,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ulong uVar4;
+  ulong count;
   uchar *in_stack_ffffffdc;
   ulong local_20;
   uint local_1c;
+  int bytesToCopy;
+  int lastAvailOutSize;
+  int err;
+  bool copyBufferToPos;
   
-  if ((param_2 == 0) &&
+  if ((size == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x5ac
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -384,8 +400,8 @@ void __cdecl DB_LoadXFileData(uchar *param_1,int param_2)
     return;
   }
 LAB_0057a5f4:
-  if (0 < param_2) {
-    if (0x8000 < g_load.deflateBufferPos + param_2) {
+  if (0 < size) {
+    if (0x8000 < g_load.deflateBufferPos + size) {
       if ((0x8000 < g_load.deflateBufferPos) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                                    0x5c2,0,"%s"), !bVar2)) {
@@ -394,15 +410,15 @@ LAB_0057a5f4:
         return;
       }
       if (g_load.deflateBufferPos < 0x8000) {
-        uVar4 = 0x8000 - g_load.deflateBufferPos;
-        if (uVar4 == 1) {
-          *param_1 = g_load.deflateBuffer[g_load.deflateBufferPos];
+        count = 0x8000 - g_load.deflateBufferPos;
+        if (count == 1) {
+          *pos = g_load.deflateBuffer[g_load.deflateBufferPos];
         }
         else {
-          memcpy(param_1,g_load.deflateBuffer + g_load.deflateBufferPos,uVar4);
+          memcpy(pos,g_load.deflateBuffer + g_load.deflateBufferPos,count);
         }
-        param_1 = param_1 + uVar4;
-        param_2 = param_2 - uVar4;
+        pos = pos + count;
+        size = size - count;
       }
       if (g_load.deflateRemainingFileSize < 0x8000) {
         local_1c = g_load.deflateRemainingFileSize;
@@ -413,13 +429,13 @@ LAB_0057a5f4:
       g_load.stream.avail_out = local_1c;
       g_load.deflateBufferPos = -local_1c + 0x8000;
       g_load.stream.next_out = &g_minimumFastFileLoaded + -local_1c;
-      if ((int)local_1c < param_2) {
+      if ((int)local_1c < size) {
         local_20 = local_1c;
       }
       else {
-        local_20 = param_2;
+        local_20 = size;
       }
-      param_2 = param_2 - local_20;
+      size = size - local_20;
       g_load.deflateRemainingFileSize = g_load.deflateRemainingFileSize - local_1c;
       do {
         if (g_load.stream.avail_in != 0) {
@@ -458,13 +474,13 @@ LAB_0057a5f4:
         DB_ReadXFileStage();
       } while( true );
     }
-    if (param_2 == 1) {
-      *param_1 = g_load.deflateBuffer[g_load.deflateBufferPos];
+    if (size == 1) {
+      *pos = g_load.deflateBuffer[g_load.deflateBufferPos];
     }
     else {
-      memcpy(param_1,g_load.deflateBuffer + g_load.deflateBufferPos,param_2);
+      memcpy(pos,g_load.deflateBuffer + g_load.deflateBufferPos,size);
     }
-    g_load.deflateBufferPos = g_load.deflateBufferPos + param_2;
+    g_load.deflateBufferPos = g_load.deflateBufferPos + size;
   }
   return;
 code_r0x0057a8b6:
@@ -476,13 +492,13 @@ code_r0x0057a8b6:
     return;
   }
   if (local_20 == 1) {
-    *param_1 = g_load.deflateBuffer[g_load.deflateBufferPos];
+    *pos = g_load.deflateBuffer[g_load.deflateBufferPos];
   }
   else {
-    memcpy(param_1,g_load.deflateBuffer + g_load.deflateBufferPos,local_20);
+    memcpy(pos,g_load.deflateBuffer + g_load.deflateBufferPos,local_20);
   }
   g_load.deflateBufferPos = g_load.deflateBufferPos + local_20;
-  param_1 = param_1 + local_20;
+  pos = pos + local_20;
   goto LAB_0057a5f4;
 }
 
@@ -504,14 +520,17 @@ void __cdecl DB_LoadXFileInternal(void)
   int *piVar6;
   int unaff_EDI;
   int *piVar7;
-  int local_3c;
+  int err;
+  bool fileIsSecure;
+  uint version;
+  int file;
   int local_38;
   uint local_34 [7];
-  DWORD local_18;
-  char *local_14;
-  int local_10 [3];
+  int fileSize;
+  char *failureReason;
+  int magic [3];
   
-  local_10[2] = __security_cookie ^ (uint)&stack0xfffffffc;
+  magic[2] = __security_cookie ^ (uint)&stack0xfffffffc;
   g_totalWait = 0;
   if (g_load.f == (void *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x6cb,0
@@ -537,13 +556,13 @@ void __cdecl DB_LoadXFileInternal(void)
       return;
     }
   }
-  local_10[0] = *(int *)g_load.stream.next_in;
-  local_10[1] = *(undefined4 *)(g_load.stream.next_in + 4);
+  magic[0] = *(int *)g_load.stream.next_in;
+  magic[1] = *(undefined4 *)(g_load.stream.next_in + 4);
   g_load.stream.next_in = g_load.stream.next_in + 8;
   g_load.stream.avail_in = g_load.stream.avail_in - 8;
   iVar5 = 2;
   bVar3 = true;
-  piVar6 = local_10;
+  piVar6 = magic;
   piVar7 = (int *)&s_IWff0100;
   do {
     if (iVar5 == 0) break;
@@ -555,7 +574,7 @@ void __cdecl DB_LoadXFileInternal(void)
   if (!bVar3) {
     iVar5 = 2;
     bVar3 = true;
-    piVar6 = local_10;
+    piVar6 = magic;
     piVar7 = (int *)&s_IWffu100;
     do {
       if (iVar5 == 0) break;
@@ -593,7 +612,7 @@ void __cdecl DB_LoadXFileInternal(void)
   }
   iVar5 = 2;
   bVar3 = true;
-  piVar6 = local_10;
+  piVar6 = magic;
   piVar7 = (int *)&s_IWffu100;
   do {
     if (iVar5 == 0) break;
@@ -603,14 +622,14 @@ void __cdecl DB_LoadXFileInternal(void)
     piVar7 = piVar7 + 1;
   } while (bVar3);
   iVar5 = DB_AuthLoad_InflateInit(&g_load.stream,!bVar3,g_load.filename);
-  local_14 = (char *)0x0;
+  failureReason = (char *)0x0;
   if (!bVar3) {
-    local_14 = "authenticated file not supported";
+    failureReason = "authenticated file not supported";
   }
   if (iVar5 != 0) {
-    local_14 = "init failed";
+    failureReason = "init failed";
   }
-  if (local_14 != (char *)0x0) {
+  if (failureReason != (char *)0x0) {
     GamerProfile_WriteSettings(unaff_EDI);
     DB_CancelLoadXFile();
     Com_Error(ERR_DROP,"Fastfile for zone \'%s\' could not be loaded (%s)");
@@ -625,12 +644,12 @@ void __cdecl DB_LoadXFileInternal(void)
     }
   }
   DB_LoadXFileSetSize(0x24);
-  DB_LoadXFileData((uchar *)&local_3c,0x24);
-  DB_LoadXFileSetSize(local_3c);
+  DB_LoadXFileData((uchar *)&file,0x24);
+  DB_LoadXFileSetSize(file);
   if (g_trackLoadProgress != 0) {
-    local_18 = GetFileSize(g_load.f,(LPDWORD)0x0);
-    if (0xfffff < local_18 + local_38) {
-      g_totalSize = ((int)(local_18 + 0x3ffff + ((int)(local_18 + 0x3ffff) >> 0x1f & 0x3ffffU)) >>
+    fileSize = GetFileSize(g_load.f,(LPDWORD)0x0);
+    if (0xfffff < (uint)(fileSize + local_38)) {
+      g_totalSize = ((int)(fileSize + 0x3ffffU + ((int)(fileSize + 0x3ffffU) >> 0x1f & 0x3ffffU)) >>
                     0x12) - g_loadedSize;
       g_loadedSize = 0;
       g_totalExternalBytes = local_38 - g_loadedExternalBytes;
@@ -676,15 +695,15 @@ void __cdecl DB_LoadXFileInternal(void)
 // 0057AFF0  DB_LoadXFile  (database/db_file_load.cpp:1958)
 
 bool __cdecl
-DB_LoadXFile(char *param_1,void *param_2,char *param_3,XBlock *param_4,_func___cdecl_void *param_5,
-            uchar *param_6,int param_7,int param_8)
+DB_LoadXFile(char *path,void *f,char *filename,XBlock *blocks,_func___cdecl_void *interrupt,
+            uchar *buf,int allocType,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (((uint)param_6 & 3) != 0) {
+  if (((uint)buf & 3) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x7a7,0
                              ,"%s");
     if (!bVar2) {
@@ -694,12 +713,12 @@ DB_LoadXFile(char *param_1,void *param_2,char *param_3,XBlock *param_4,_func___c
     }
   }
   memset((uchar *)&g_load,'\0',0x807c);
-  g_load.f = param_2;
-  g_load.filename = param_3;
-  g_load.flags = param_8;
-  g_load.blocks = param_4;
-  g_load.interrupt = param_5;
-  g_load.allocType = param_7;
+  g_load.f = f;
+  g_load.filename = filename;
+  g_load.flags = flags;
+  g_load.blocks = blocks;
+  g_load.interrupt = interrupt;
+  g_load.allocType = allocType;
   g_load.startTime = Sys_Milliseconds();
   if (g_load.compressBufferStart != (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x7bb,0
@@ -719,7 +738,7 @@ DB_LoadXFile(char *param_1,void *param_2,char *param_3,XBlock *param_4,_func___c
       return (bool)uVar3;
     }
   }
-  if (param_6 == (uchar *)0x0) {
+  if (buf == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",0x7bf,0
                              ,"%s");
     if (!bVar2) {
@@ -728,9 +747,9 @@ DB_LoadXFile(char *param_1,void *param_2,char *param_3,XBlock *param_4,_func___c
       return (bool)uVar3;
     }
   }
-  g_load.compressBufferStart = param_6;
-  g_load.compressBufferEnd = param_6 + 0x80000;
-  g_load.stream.next_in = param_6;
+  g_load.compressBufferStart = buf;
+  g_load.compressBufferEnd = buf + 0x80000;
+  g_load.stream.next_in = buf;
   g_load.stream.avail_in = 0;
   g_load.deflateBufferPos = 0x8000;
   DB_LoadXFileInternal();

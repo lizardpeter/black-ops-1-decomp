@@ -30,7 +30,7 @@ void __cdecl R_GetFogSettings(float *param_1)
 
 // 00829B80  R_SwitchFog  (gfx_d3d/r_fog.cpp:90)
 
-void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
+void __cdecl R_SwitchFog(int startTime,int transitionTime,int param_3,int param_4)
 
 {
   float fVar1;
@@ -40,14 +40,15 @@ void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
   GfxFog *pGVar4;
   int *piVar5;
   GfxFog *pGVar6;
+  int fogvar;
   
   iVar3 = in_EDX * 0x194 + 0x285d264;
   fVar1 = rg.clientFogs[in_EDX].settings[2].density;
-  rg.clientFogs[in_EDX].index = param_1;
+  rg.clientFogs[in_EDX].index = startTime;
   pGVar6 = rg.clientFogs[in_EDX].settings + 3;
   iVar2 = 0x14;
   if (fVar1 == 0.0) {
-    pGVar4 = (GfxFog *)(param_1 * 0x50 + iVar3);
+    pGVar4 = (GfxFog *)(startTime * 0x50 + iVar3);
     param_3 = 0;
   }
   else {
@@ -59,7 +60,7 @@ void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
     pGVar6 = (GfxFog *)&pGVar6->finishTime;
   }
   pGVar6 = rg.clientFogs[in_EDX].settings + 4;
-  piVar5 = (int *)(param_1 * 0x50 + iVar3);
+  piVar5 = (int *)(startTime * 0x50 + iVar3);
   pGVar4 = pGVar6;
   for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
     pGVar4->startTime = *piVar5;
@@ -71,8 +72,8 @@ void __cdecl R_SwitchFog(int param_1,int param_2,int param_3,int param_4)
     rg.clientFogs[in_EDX].settings[4].finishTime = 0;
     return;
   }
-  pGVar6->startTime = param_2;
-  rg.clientFogs[in_EDX].settings[4].finishTime = param_2 + param_3;
+  pGVar6->startTime = transitionTime;
+  rg.clientFogs[in_EDX].settings[4].finishTime = transitionTime + param_3;
   return;
 }
 

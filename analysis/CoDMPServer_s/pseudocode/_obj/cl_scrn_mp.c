@@ -434,15 +434,15 @@ void __cdecl CL_CubemapShot_f(void)
   bool bVar3;
   char *pcVar4;
   char *pcVar5;
-  CubemapShot CVar6;
-  int iVar7;
+  CubemapShot pixelBorder;
+  int iVar6;
   int unaff_ESI;
-  DemoType DVar8;
+  DemoType DVar7;
   char *unaff_EDI;
-  double dVar9;
-  DemoType DVar10;
-  CubemapShot CVar11;
-  int iVar12;
+  double dVar8;
+  DemoType DVar9;
+  CubemapShot CVar10;
+  int iVar11;
   float local_58;
   float local_54;
   float local_50;
@@ -455,13 +455,13 @@ void __cdecl CL_CubemapShot_f(void)
     return;
   }
   piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar7 = *piVar2;
-  if (2 < piVar2[iVar7 + 0x21]) {
-    if (piVar2[iVar7 + 0x21] < 3) {
+  iVar6 = *piVar2;
+  if (2 < piVar2[iVar6 + 0x21]) {
+    if (piVar2[iVar6 + 0x21] < 3) {
       pcVar4 = "";
     }
     else {
-      pcVar4 = *(char **)(piVar2[iVar7 + 0x29] + 8);
+      pcVar4 = *(char **)(piVar2[iVar6 + 0x29] + 8);
     }
     pcVar5 = pcVar4 + 1;
     do {
@@ -478,50 +478,50 @@ void __cdecl CL_CubemapShot_f(void)
         pcVar4 = pcVar4 + 1;
       } while (cVar1 != '\0');
       pcVar4 = Cmd_Argv((int)unaff_EDI);
-      CVar6 = atoi(pcVar4);
-      if ((CVar6 - CUBEMAPSHOT_FRONT < 0x3fd) &&
-         ((CVar6 & CVar6 - CUBEMAPSHOT_RIGHT) == CUBEMAPSHOT_NONE)) {
+      pixelBorder = atoi(pcVar4);
+      if ((pixelBorder - CUBEMAPSHOT_FRONT < 0x3fd) &&
+         ((pixelBorder & pixelBorder - CUBEMAPSHOT_RIGHT) == CUBEMAPSHOT_NONE)) {
         piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-        iVar7 = *piVar2;
+        iVar6 = *piVar2;
         local_50 = 0.0;
         local_4c = 0.0;
         local_48 = 0.0;
         bVar3 = false;
         local_54 = 1.0;
         local_58 = 1.333;
-        if (piVar2[iVar7 + 0x21] == 7) {
+        if (piVar2[iVar6 + 0x21] == 7) {
           pcVar4 = Cmd_Argv((int)unaff_EDI);
-          iVar7 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
-          if (iVar7 == 0) {
+          iVar6 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
+          if (iVar6 == 0) {
             pcVar4 = Cmd_Argv((int)unaff_EDI);
-            dVar9 = atof(pcVar4);
-            local_50 = (float)dVar9;
+            dVar8 = atof(pcVar4);
+            local_50 = (float)dVar8;
             pcVar4 = Cmd_Argv((int)unaff_EDI);
-            dVar9 = atof(pcVar4);
-            local_4c = (float)dVar9;
+            dVar8 = atof(pcVar4);
+            local_4c = (float)dVar8;
             pcVar4 = Cmd_Argv((int)unaff_EDI);
-            dVar9 = atof(pcVar4);
-            local_48 = (float)dVar9;
+            dVar8 = atof(pcVar4);
+            local_48 = (float)dVar8;
             bVar3 = true;
 LAB_004ff819:
             R_SyncRenderThread();
-            DVar8 = 1;
+            DVar7 = 1;
             do {
-              R_BeginCubemapShot(CVar6,1);
+              R_BeginCubemapShot(pixelBorder,1);
               R_BeginFrame();
               frontEndDataOut->cmds = s_cmdList->cmds + s_cmdList->usedTotal;
               R_ClearClientCmdList2D();
-              iVar12 = 1;
-              DVar10 = DVar8;
-              CVar11 = CVar6;
-              iVar7 = FUN_004fe550();
-              CG_DrawActiveFrame(0,iVar7,DVar10,CVar11,iVar12,(int)unaff_EDI);
+              iVar11 = 1;
+              DVar9 = DVar7;
+              CVar10 = pixelBorder;
+              iVar6 = FUN_004fe550();
+              CG_DrawActiveFrame(0,iVar6,DVar9,CVar10,iVar11,(int)unaff_EDI);
               R_EndFrame();
               R_IssueRenderCommands((uint)unaff_EDI);
-              R_CopyCubemapShot(DVar8);
+              R_CopyCubemapShot(DVar7);
               R_CubemapShotRestoreState();
-              DVar8 = DVar8 + 1;
-            } while ((int)DVar8 < 7);
+              DVar7 = DVar7 + 1;
+            } while ((int)DVar7 < 7);
             if (bVar3) {
               R_LightingFromCubemapShots(&local_50);
             }
@@ -534,20 +534,20 @@ LAB_004ff819:
             return;
           }
         }
-        else if (piVar2[iVar7 + 0x21] == 6) {
+        else if (piVar2[iVar6 + 0x21] == 6) {
           pcVar4 = Cmd_Argv((int)unaff_EDI);
-          iVar7 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
-          if (iVar7 == 0) {
+          iVar6 = I_strnicmp(pcVar4,unaff_EDI,unaff_ESI);
+          if (iVar6 == 0) {
             pcVar4 = Cmd_Argv((int)unaff_EDI);
-            dVar9 = atof(pcVar4);
-            local_54 = (float)dVar9;
+            dVar8 = atof(pcVar4);
+            local_54 = (float)dVar8;
             pcVar4 = Cmd_Argv((int)unaff_EDI);
-            dVar9 = atof(pcVar4);
-            local_58 = (float)dVar9;
+            dVar8 = atof(pcVar4);
+            local_58 = (float)dVar8;
             if ((1.0 <= local_54) && (1.0 <= local_58)) goto LAB_004ff819;
           }
         }
-        else if (piVar2[iVar7 + 0x21] == 3) goto LAB_004ff819;
+        else if (piVar2[iVar6 + 0x21] == 3) goto LAB_004ff819;
       }
     }
   }

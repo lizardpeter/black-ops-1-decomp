@@ -2,53 +2,53 @@
 
 // 00AB8DC0  R_DefaultExposureValue  (gfx_d3d/r_exposure.cpp:9)
 
-void __cdecl R_DefaultExposureValue(int param_1)
+void __cdecl R_DefaultExposureValue(int index)
 
 {
-  exposureSettings.exposureValues[param_1].blackPoint[0] = 0.0;
-  exposureSettings.exposureValues[param_1].blackPoint[1] = 0.0;
-  exposureSettings.exposureValues[param_1].blackPoint[2] = 0.0;
-  exposureSettings.exposureValues[param_1].blackPoint[3] = 8.0;
-  exposureSettings.exposureValues[param_1].whitePoint[0] = 8.0;
-  exposureSettings.exposureValues[param_1].whitePoint[1] = 8.0;
-  exposureSettings.exposureValues[param_1].whitePoint[2] = 8.0;
-  exposureSettings.exposureValues[param_1].whitePoint[3] = 0.0;
-  exposureSettings.exposureValues[param_1].linearStart[0] = 0.0;
-  exposureSettings.exposureValues[param_1].linearStart[1] = 0.0;
-  exposureSettings.exposureValues[param_1].linearStart[2] = 0.0;
-  exposureSettings.exposureValues[param_1].linearStart[3] = 0.0;
-  exposureSettings.exposureValues[param_1].linearEnd[0] = 1.0;
-  exposureSettings.exposureValues[param_1].linearEnd[1] = 1.0;
-  exposureSettings.exposureValues[param_1].linearEnd[2] = 1.0;
-  exposureSettings.exposureValues[param_1].linearEnd[3] = 0.0;
-  exposureSettings.exposureValues[param_1].remapStart[0] = 0.0;
-  exposureSettings.exposureValues[param_1].remapStart[1] = 0.0;
-  exposureSettings.exposureValues[param_1].remapStart[2] = 0.0;
-  exposureSettings.exposureValues[param_1].remapStart[3] = 0.0;
-  exposureSettings.exposureValues[param_1].remapEnd[0] = 1.0;
-  exposureSettings.exposureValues[param_1].remapEnd[1] = 1.0;
-  exposureSettings.exposureValues[param_1].remapEnd[2] = 1.0;
-  exposureSettings.exposureValues[param_1].remapEnd[3] = 0.0;
-  exposureSettings.exposureValues[param_1].scurveStart[0] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveStart[1] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveStart[2] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveStart[3] = 0.0;
-  exposureSettings.exposureValues[param_1].scurveEnd[0] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveEnd[1] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveEnd[2] = -0.5;
-  exposureSettings.exposureValues[param_1].scurveEnd[3] = 0.0;
-  exposureSettings.exposureValues[param_1].bloomCurveLDR[0] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveLDR[1] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveLDR[2] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveLDR[3] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveHDR[0] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveHDR[1] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveHDR[2] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomCurveHDR[3] = 1.0;
-  exposureSettings.exposureValues[param_1].bloomScale[0] = 0.0;
-  exposureSettings.exposureValues[param_1].bloomScale[1] = 0.0;
-  exposureSettings.exposureValues[param_1].bloomScale[2] = 0.0;
-  exposureSettings.exposureValues[param_1].bloomScale[3] = 0.0;
+  exposureSettings.exposureValues[index].blackPoint[0] = 0.0;
+  exposureSettings.exposureValues[index].blackPoint[1] = 0.0;
+  exposureSettings.exposureValues[index].blackPoint[2] = 0.0;
+  exposureSettings.exposureValues[index].blackPoint[3] = 8.0;
+  exposureSettings.exposureValues[index].whitePoint[0] = 8.0;
+  exposureSettings.exposureValues[index].whitePoint[1] = 8.0;
+  exposureSettings.exposureValues[index].whitePoint[2] = 8.0;
+  exposureSettings.exposureValues[index].whitePoint[3] = 0.0;
+  exposureSettings.exposureValues[index].linearStart[0] = 0.0;
+  exposureSettings.exposureValues[index].linearStart[1] = 0.0;
+  exposureSettings.exposureValues[index].linearStart[2] = 0.0;
+  exposureSettings.exposureValues[index].linearStart[3] = 0.0;
+  exposureSettings.exposureValues[index].linearEnd[0] = 1.0;
+  exposureSettings.exposureValues[index].linearEnd[1] = 1.0;
+  exposureSettings.exposureValues[index].linearEnd[2] = 1.0;
+  exposureSettings.exposureValues[index].linearEnd[3] = 0.0;
+  exposureSettings.exposureValues[index].remapStart[0] = 0.0;
+  exposureSettings.exposureValues[index].remapStart[1] = 0.0;
+  exposureSettings.exposureValues[index].remapStart[2] = 0.0;
+  exposureSettings.exposureValues[index].remapStart[3] = 0.0;
+  exposureSettings.exposureValues[index].remapEnd[0] = 1.0;
+  exposureSettings.exposureValues[index].remapEnd[1] = 1.0;
+  exposureSettings.exposureValues[index].remapEnd[2] = 1.0;
+  exposureSettings.exposureValues[index].remapEnd[3] = 0.0;
+  exposureSettings.exposureValues[index].scurveStart[0] = -0.5;
+  exposureSettings.exposureValues[index].scurveStart[1] = -0.5;
+  exposureSettings.exposureValues[index].scurveStart[2] = -0.5;
+  exposureSettings.exposureValues[index].scurveStart[3] = 0.0;
+  exposureSettings.exposureValues[index].scurveEnd[0] = -0.5;
+  exposureSettings.exposureValues[index].scurveEnd[1] = -0.5;
+  exposureSettings.exposureValues[index].scurveEnd[2] = -0.5;
+  exposureSettings.exposureValues[index].scurveEnd[3] = 0.0;
+  exposureSettings.exposureValues[index].bloomCurveLDR[0] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveLDR[1] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveLDR[2] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveLDR[3] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveHDR[0] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveHDR[1] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveHDR[2] = 1.0;
+  exposureSettings.exposureValues[index].bloomCurveHDR[3] = 1.0;
+  exposureSettings.exposureValues[index].bloomScale[0] = 0.0;
+  exposureSettings.exposureValues[index].bloomScale[1] = 0.0;
+  exposureSettings.exposureValues[index].bloomScale[2] = 0.0;
+  exposureSettings.exposureValues[index].bloomScale[3] = 0.0;
   return;
 }
 
@@ -58,10 +58,10 @@ void __cdecl R_DefaultExposureValue(int param_1)
 void __cdecl R_SetExposureToDefault(void)
 
 {
-  undefined4 local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    R_DefaultExposureValue(local_8);
+  for (i = 0; i < 0x100; i = i + 1) {
+    R_DefaultExposureValue(i);
   }
   return;
 }
@@ -69,14 +69,15 @@ void __cdecl R_SetExposureToDefault(void)
 
 // 00AB9260  R_LoadExposureData  (gfx_d3d/r_exposure.cpp:120)
 
-void __cdecl R_LoadExposureData(void *param_1)
+void __cdecl R_LoadExposureData(void *data)
 
 {
-  uint local_10;
+  int i;
+  uint *src;
+  uint *dest;
   
-  for (local_10 = 0; local_10 < 0x2c04; local_10 = local_10 + 1) {
-    exposureSettings.exposureValues[0].blackPoint[local_10 - 4] =
-         *(float *)((int)param_1 + local_10 * 4);
+  for (i = 0; (uint)i < 0x2c04; i = i + 1) {
+    exposureSettings.exposureValues[0].blackPoint[i + -4] = *(float *)((int)data + i * 4);
   }
   return;
 }

@@ -125,7 +125,7 @@ void __cdecl Huff_BuildFromData(huff_t *param_1,int *param_2)
   int iVar5;
   int iVar6;
   int iVar7;
-  int **ppiVar8;
+  int **base;
   int iStack_404;
   int *apiStack_400 [256];
   
@@ -198,12 +198,12 @@ void __cdecl Huff_BuildFromData(huff_t *param_1,int *param_2)
   *(int **)(*(int *)(iVar6 + 0x1d6a260) + 8) = piVar3;
   *(int *)(iVar6 + 0x1d6a268) =
        *(int *)(*piVar3 + 0xc) + *(int *)(*(int *)(iVar6 + 0x1d6a260) + 0xc);
-  ppiVar8 = apiStack_400;
+  base = apiStack_400;
   iVar6 = 0;
   iStack_404 = 0xff;
   apiStack_400[0] = piVar3;
   do {
-    qsort(ppiVar8,0x100 - iVar7,4,nodeCmp);
+    qsort(base,0x100 - iVar7,4,nodeCmp);
     iVar5 = _msgHuff * 0x14;
     piVar3 = (int *)(&DAT_01d6a25c + iVar5);
     _msgHuff = _msgHuff + 1;
@@ -213,17 +213,17 @@ void __cdecl Huff_BuildFromData(huff_t *param_1,int *param_2)
     *(undefined4 *)(iVar5 + 0x1d6a26c) = 0x101;
     *(undefined4 *)(iVar5 + 0x1d6a264) = 0;
     _DAT_01d6a258 = piVar3;
-    *piVar3 = (int)*ppiVar8;
+    *piVar3 = (int)*base;
     *(undefined4 *)(iVar5 + 0x1d6a260) = *(undefined4 *)((int)apiStack_400 + iVar6 + 4);
     *(int **)(*piVar3 + 8) = piVar3;
     *(int **)(*(int *)(iVar5 + 0x1d6a260) + 8) = piVar3;
     iVar7 = iVar7 + 1;
     iVar6 = iVar7 * 4;
     iStack_404 = iStack_404 + -1;
-    ppiVar8 = apiStack_400 + iVar7;
+    base = apiStack_400 + iVar7;
     *(int *)(iVar5 + 0x1d6a268) =
          *(int *)(*piVar3 + 0xc) + *(int *)(*(int *)(iVar5 + 0x1d6a260) + 0xc);
-    *ppiVar8 = piVar3;
+    *base = piVar3;
   } while (iStack_404 != 0);
   _DAT_01d69e50 = apiStack_400[iVar7];
   return;

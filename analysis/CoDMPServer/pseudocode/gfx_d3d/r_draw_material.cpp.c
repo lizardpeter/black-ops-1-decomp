@@ -2,43 +2,43 @@
 
 // 00B3F3D0  RemoveSunShadowTech  (gfx_d3d/r_draw_material.cpp:50)
 
-uchar __cdecl RemoveSunShadowTech(uchar param_1)
+uchar __cdecl RemoveSunShadowTech(uchar srcTech)
 
 {
-  uchar local_5;
+  uchar remappedTech;
   
-  switch(param_1) {
+  switch(srcTech) {
   case '\f':
-    local_5 = '\v';
+    remappedTech = '\v';
     break;
   default:
-    local_5 = param_1;
+    remappedTech = srcTech;
     break;
   case '(':
-    local_5 = '\'';
+    remappedTech = '\'';
     break;
   case '/':
-    local_5 = '.';
+    remappedTech = '.';
     break;
   case '6':
-    local_5 = '5';
+    remappedTech = '5';
     break;
   case '?':
-    local_5 = '=';
+    remappedTech = '=';
     break;
   case '@':
-    local_5 = '>';
+    remappedTech = '>';
     break;
   case 'K':
-    local_5 = 'J';
+    remappedTech = 'J';
   }
-  return local_5;
+  return remappedTech;
 }
 
 
 // 00B3F4A0  R_GfxDrawSurf_GetFade  (gfx_d3d/r_draw_material.cpp:78)
 
-uint __cdecl R_GfxDrawSurf_GetFade(GfxDrawSurf *param_1)
+uint __cdecl R_GfxDrawSurf_GetFade(GfxDrawSurf *drawSurf)
 
 {
   uint extraout_EAX;
@@ -59,7 +59,7 @@ uint __cdecl R_GfxDrawSurf_GetFade(GfxDrawSurf *param_1)
 
 // 00B3FC80  R_SetPrepassMaterial  (gfx_d3d/r_draw_material.cpp:95)
 
-int __cdecl R_SetPrepassMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uchar param_3)
+int __cdecl R_SetPrepassMaterial(GfxCmdBufContext context,GfxDrawSurf drawSurf,uchar techType)
 
 {
   code *pcVar1;
@@ -72,27 +72,29 @@ int __cdecl R_SetPrepassMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uc
   undefined4 uVar6;
   undefined4 uVar7;
   undefined4 uVar8;
-  Material *local_c;
+  MaterialTechnique *technique;
+  Material *material;
+  uint prepass;
   
   _aullshr();
   if ((extraout_EAX & 3) == 2) {
     iVar3 = 0;
   }
   else {
-    uVar4 = R_GfxDrawSurf_GetFade(&param_2);
+    uVar4 = R_GfxDrawSurf_GetFade(&drawSurf);
     if (uVar4 == 0) {
       _aullshr();
       uVar8 = 0;
       uVar7 = 4;
       uVar6 = 0;
       _allmul();
-      local_c = *(Material **)((int)rgp.sortedMaterials + extraout_EAX_00);
-      if (((extraout_EAX & 3) == 0) && ((local_c->stateFlags & 1) != 0)) {
-        local_c = rgp.depthPrepassMaterial;
+      material = *(Material **)((int)rgp.sortedMaterials + extraout_EAX_00);
+      if (((extraout_EAX & 3) == 0) && ((material->stateFlags & 1) != 0)) {
+        material = rgp.depthPrepassMaterial;
       }
-      (param_1.field0_0x0._s_0.state)->material = local_c;
-      pMVar5 = Material_GetTechnique(local_c,param_3);
-      (param_1.field0_0x0._s_0.state)->technique = pMVar5;
+      (context.field0_0x0._s_0.state)->material = material;
+      pMVar5 = Material_GetTechnique(material,techType);
+      (context.field0_0x0._s_0.state)->technique = pMVar5;
       if (pMVar5 == (MaterialTechnique *)0x0) {
         iVar3 = 0;
       }
@@ -115,7 +117,7 @@ int __cdecl R_SetPrepassMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uc
             return iVar3;
           }
         }
-        if (local_c == (Material *)0x0) {
+        if (material == (Material *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp"
                                    ,0xd9,0,"%s");
           if (!bVar2) {
@@ -124,8 +126,8 @@ int __cdecl R_SetPrepassMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uc
             return iVar3;
           }
         }
-        RB_ApplyShaderConstantSet(param_1.field0_0x0._s_0.source,&param_2);
-        (param_1.field0_0x0._s_0.state)->techType = param_3;
+        RB_ApplyShaderConstantSet(context.field0_0x0._s_0.source,&drawSurf);
+        (context.field0_0x0._s_0.state)->techType = techType;
         iVar3 = 1;
       }
     }
@@ -142,120 +144,130 @@ int __cdecl R_SetPrepassMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uc
 /* WARNING: Removing unreachable block (ram,0x00b40060) */
 /* WARNING: Removing unreachable block (ram,0x00b40087) */
 
-int __cdecl R_SetMaterial(GfxCmdBufContext param_1,GfxDrawSurf param_2,uchar param_3)
+int __cdecl R_SetMaterial(GfxCmdBufContext context,GfxDrawSurf drawSurf,uchar techType)
 
 {
-  Material *pMVar1;
-  code *pcVar2;
-  bool bVar3;
+  Material *material_00;
+  code *pcVar1;
+  bool bVar2;
   int extraout_EAX;
-  MaterialTechnique *pMVar4;
-  int iVar5;
-  char *pcVar6;
-  uint uVar7;
+  MaterialTechnique *pMVar3;
+  int iVar4;
+  char *text;
+  uint uVar5;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   float10 extraout_ST0;
-  float fVar8;
+  float fVar6;
+  float fadeVal;
+  bool show_penetratable_stuff;
+  bool penetrate;
+  bool nonrendery;
+  MaterialTechnique *technique;
+  int penetrationMode;
+  Material *material;
   
   while( true ) {
     _aullshr();
     _allmul();
-    pMVar1 = *(Material **)((int)rgp.sortedMaterials + extraout_EAX);
-    pMVar4 = Material_GetTechnique(pMVar1,param_3);
-    (param_1.field0_0x0._s_0.state)->material = pMVar1;
-    (param_1.field0_0x0._s_0.state)->technique = pMVar4;
-    if (pMVar4 == (MaterialTechnique *)0x0) {
+    material_00 = *(Material **)((int)rgp.sortedMaterials + extraout_EAX);
+    pMVar3 = Material_GetTechnique(material_00,techType);
+    (context.field0_0x0._s_0.state)->material = material_00;
+    (context.field0_0x0._s_0.state)->technique = pMVar3;
+    if (pMVar3 == (MaterialTechnique *)0x0) {
       return 0;
     }
     if ((r_showPenetration->current).integer == 0) break;
-    if ((((param_3 == '\0') || (param_3 == '\x01')) || (param_3 == '\x02')) || (param_3 == '\x03'))
-    {
-      bVar3 = true;
+    if ((((techType == '\0') || (techType == '\x01')) || (techType == '\x02')) ||
+       (techType == '\x03')) {
+      bVar2 = true;
     }
     else {
-      bVar3 = false;
+      bVar2 = false;
     }
-    if (((bVar3) || (param_3 == '\x04')) ||
-       (((bool)('\x01' - (((pMVar1->info).gameFlags & 0x80) != 0)) !=
+    if (((bVar2) || (techType == '\x04')) ||
+       (((bool)('\x01' - (((material_00->info).gameFlags & 0x80) != 0)) !=
          ((r_showPenetration->current).integer == 1) ||
-        (fVar8 = (param_1.field0_0x0._s_0.source)->materialTime, floor(),
-        0.5 <= fVar8 * 5.0 - (float)extraout_ST0)))) break;
-    param_3 = '\x04';
+        (fVar6 = (context.field0_0x0._s_0.source)->materialTime, floor(),
+        0.5 <= fVar6 * 5.0 - (float)extraout_ST0)))) break;
+    techType = '\x04';
   }
-  if (((pMVar4->flags & 2) != 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp",
-                               0x168,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+  if (((pMVar3->flags & 2) != 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp",
+                               0x168,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  if ((((param_3 == '\x05') || (param_3 == '\x04')) && ((pMVar4->flags & 0x10) != 0)) &&
-     ((param_1.field0_0x0._s_0.source)->constVersions[0x1c] == 0)) {
+  if ((((techType == '\x05') || (techType == '\x04')) && ((pMVar3->flags & 0x10) != 0)) &&
+     ((context.field0_0x0._s_0.source)->constVersions[0x1c] == 0)) {
     return 0;
   }
-  if ((pMVar1 == (Material *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp",
-                               0x172,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+  if ((material_00 == (Material *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp",
+                               0x172,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
   if ((r_logFile->current).integer != 0) {
-    RB_LogTechniqueType(param_3);
-    pcVar6 = va("R_SetMaterial( %s, %s, %s )\n");
-    RB_LogPrint(pcVar6);
+    RB_LogTechniqueType(techType);
+    text = va("R_SetMaterial( %s, %s, %s )\n");
+    RB_LogPrint(text);
   }
-  uVar7 = R_GfxDrawSurf_GetFade(&param_2);
-  if (uVar7 != 0) {
+  uVar5 = R_GfxDrawSurf_GetFade(&drawSurf);
+  if (uVar5 != 0) {
     _aullshr();
-    fVar8 = (float)(extraout_EAX_00 & 0xf) * 0.0625;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x21][0] = fVar8;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x21][1] = fVar8;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x21][2] = fVar8;
-    ((param_1.field0_0x0._s_0.source)->input).consts[0x21][3] = fVar8;
-    R_DirtyCodeConstant(param_1.field0_0x0._s_0.source,0x21);
+    fVar6 = (float)(extraout_EAX_00 & 0xf) * 0.0625;
+    ((context.field0_0x0._s_0.source)->input).consts[0x21][0] = fVar6;
+    ((context.field0_0x0._s_0.source)->input).consts[0x21][1] = fVar6;
+    ((context.field0_0x0._s_0.source)->input).consts[0x21][2] = fVar6;
+    ((context.field0_0x0._s_0.source)->input).consts[0x21][3] = fVar6;
+    R_DirtyCodeConstant(context.field0_0x0._s_0.source,0x21);
   }
-  RB_ApplyShaderConstantSet(param_1.field0_0x0._s_0.source,&param_2);
+  RB_ApplyShaderConstantSet(context.field0_0x0._s_0.source,&drawSurf);
   _aullshr();
-  if (((extraout_EAX_01 & 0xf) == 0) && (((pMVar1->info).gameFlags & 8) != 0)) {
+  if (((extraout_EAX_01 & 0xf) == 0) && (((material_00->info).gameFlags & 8) != 0)) {
     return 0;
   }
-  (param_1.field0_0x0._s_0.state)->techType = param_3;
+  (context.field0_0x0._s_0.state)->techType = techType;
   return 1;
 }
 
 
 // 00B3F4F0  R_Get_NvFloatZLitTech  (gfx_d3d/r_draw_material.cpp:491)
 
-uchar __cdecl R_Get_NvFloatZLitTech(Material *param_1,uchar param_2)
+uchar __cdecl R_Get_NvFloatZLitTech(Material *material,uchar originalTechType)
 
 {
-  uchar uVar1;
-  MaterialTechniqueSet *pMVar2;
-  int iVar3;
-  MaterialTechnique *pMVar4;
+  uchar techType;
+  MaterialTechniqueSet *pMVar1;
+  int iVar2;
+  MaterialTechnique *pMVar3;
+  uchar newTechType;
+  int index;
+  MaterialTechniqueSet *techSet;
   
-  if ((param_1 != (Material *)0x0) &&
-     (pMVar2 = Material_GetTechniqueSet(param_1), (pMVar2->techsetFlags & 1) != 0)) {
-    iVar3 = param_2 - 10;
-    if ((-1 < iVar3) && (iVar3 < 0x46)) {
-      uVar1 = (&DAT_00e1b11e)[param_2];
-      pMVar4 = Material_GetTechnique(param_1,uVar1);
-      if (pMVar4 != (MaterialTechnique *)0x0) {
-        param_2 = uVar1;
+  if ((material != (Material *)0x0) &&
+     (pMVar1 = Material_GetTechniqueSet(material), (pMVar1->techsetFlags & 1) != 0)) {
+    iVar2 = originalTechType - 10;
+    if ((-1 < iVar2) && (iVar2 < 0x46)) {
+      techType = (&DAT_00e1b11e)[originalTechType];
+      pMVar3 = Material_GetTechnique(material,techType);
+      if (pMVar3 != (MaterialTechnique *)0x0) {
+        originalTechType = techType;
       }
     }
   }
-  return param_2;
+  return originalTechType;
 }
 
 
 // 00B3F570  R_GetTechType  (gfx_d3d/r_draw_material.cpp:520)
 
 uchar __cdecl
-R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_3,
-             GfxDrawSurf param_4)
+R_GetTechType(GfxCmdBufContext context,GfxDrawSurfListInfo *info,uchar baseTechType,
+             GfxDrawSurf drawSurf)
 
 {
   float fVar1;
@@ -275,28 +287,34 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
   uint extraout_EAX_05;
   uint extraout_EAX_06;
   int extraout_EAX_07;
-  byte local_9;
+  GfxFadeType fadeType;
+  uint fade;
+  GfxTechCharredType charredType;
+  GfxBackEndData *data;
+  bool needsCharredTech;
+  uchar actualTechType;
+  uint surfType;
   
   _aullshr();
   uVar6 = extraout_EAX & 0xf;
-  switch(param_3) {
+  switch(baseTechType) {
   case '\x05':
   case '\x06':
-    if ((dx.supportsIntZ != false) && ((param_1.field0_0x0._s_0.state)->renderTargetId != '\x16')) {
-      if (param_3 == '\x05') {
-        param_3 = 7;
+    if ((dx.supportsIntZ != false) && ((context.field0_0x0._s_0.state)->renderTargetId != '\x16')) {
+      if (baseTechType == '\x05') {
+        baseTechType = '\a';
       }
-      else if (param_3 == '\x06') {
-        param_3 = 8;
+      else if (baseTechType == '\x06') {
+        baseTechType = '\b';
       }
     }
     break;
   default:
     break;
   case '\n':
-    bVar5 = TechLit_NeedsCharredTech(&param_4);
-    uVar7 = R_GfxDrawSurf_GetFade(&param_4);
-    fVar1 = ((param_1.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+    bVar5 = TechLit_NeedsCharredTech(&drawSurf);
+    uVar7 = R_GfxDrawSurf_GetFade(&drawSurf);
+    fVar1 = ((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
     _aullshr();
     if (*(uint *)((int)fVar1 + 0x183db0) <= (extraout_EAX_00 & 0xff)) {
       _aullshr();
@@ -311,69 +329,70 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
       }
     }
     _aullshr();
-    local_9 = *(byte *)((int)fVar1 + 0x88500 + uVar6 * 0x400 + (uint)(uVar7 != 0) * 0x200 +
-                        (uint)bVar5 * 0x100 + (extraout_EAX_01 & 0xff));
-    if (param_2->isMissileCamera == false) {
+    actualTechType =
+         *(uchar *)((int)fVar1 + 0x88500 + uVar6 * 0x400 + (uint)(uVar7 != 0) * 0x200 +
+                    (uint)bVar5 * 0x100 + (extraout_EAX_01 & 0xff));
+    if (info->isMissileCamera == false) {
       _aullshr();
       if ((extraout_EAX_02 & 1) != 0) {
-        local_9 = RemoveSunShadowTech(local_9);
+        actualTechType = RemoveSunShadowTech(actualTechType);
       }
     }
     else {
-      local_9 = RemoveSunShadowTech(local_9);
+      actualTechType = RemoveSunShadowTech(actualTechType);
     }
-    if ((9 < local_9) && (local_9 < 0x11)) {
+    if ((9 < actualTechType) && (actualTechType < 0x11)) {
       _aullshr();
       if (((extraout_EAX_03 & 1) == 0) || (_aullshr(), (extraout_EAX_04 & 1) == 0)) {
         _aullshr();
         if ((extraout_EAX_05 & 1) == 0) {
           _aullshr();
           if ((extraout_EAX_06 & 1) != 0) {
-            local_9 = local_9 + 7;
+            actualTechType = actualTechType + '\a';
           }
         }
         else {
-          local_9 = local_9 + 0xe;
+          actualTechType = actualTechType + '\x0e';
         }
       }
       else {
-        local_9 = local_9 + 0x15;
+        actualTechType = actualTechType + '\x15';
       }
     }
-    param_3 = local_9;
-    if ((dx.supportsIntZ != false) && ((param_1.field0_0x0._s_0.state)->renderTargetId != '\x16')) {
+    baseTechType = actualTechType;
+    if ((dx.supportsIntZ != false) && ((context.field0_0x0._s_0.state)->renderTargetId != '\x16')) {
       _aullshr();
       uVar4 = extraout_AL;
       _allmul();
-      param_3 = R_Get_NvFloatZLitTech
-                          (*(Material **)((int)rgp.sortedMaterials + extraout_EAX_07),uVar4);
+      baseTechType = R_Get_NvFloatZLitTech
+                               (*(Material **)((int)rgp.sortedMaterials + extraout_EAX_07),uVar4);
     }
     break;
   case 's':
   case 't':
   case 'u':
-    bVar5 = TechLit_NeedsCharredTech(&param_4);
+    bVar5 = TechLit_NeedsCharredTech(&drawSurf);
     if (bVar5) {
-      if (param_3 == 's') {
-        param_3 = 0x76;
+      if (baseTechType == 's') {
+        baseTechType = 'v';
       }
-      else if (param_3 == 't') {
-        param_3 = 0x77;
+      else if (baseTechType == 't') {
+        baseTechType = 'w';
       }
-      else if (param_3 == 'u') {
-        param_3 = 0x78;
+      else if (baseTechType == 'u') {
+        baseTechType = 'x';
       }
       else {
-        param_3 = 0x78;
+        baseTechType = 'x';
       }
     }
     break;
   case '\x7f':
     if ((uVar6 == 4) || (uVar6 == 3)) {
-      param_3 = 0x80;
+      baseTechType = 0x80;
     }
   }
-  return param_3;
+  return baseTechType;
 }
 
 
@@ -381,51 +400,53 @@ R_GetTechType(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2,uchar param_
 
 int __cdecl
 R_TrySetMaterialWithFunc
-          (_func___cdecl_int_GfxCmdBufContext_GfxDrawSurf_uchar *param_1,GfxCmdBufContext param_2,
+          (_func___cdecl_int_GfxCmdBufContext_GfxDrawSurf_uchar *func,GfxCmdBufContext context,
           GfxDrawSurf param_3,uchar *param_4)
 
 {
   GfxDrawSurf GVar1;
   int iVar2;
   undefined4 in_stack_00000010;
-  int local_18;
-  int local_14;
-  uchar local_d;
+  uint i;
+  int ret;
+  uchar techAssigned;
+  char *techName;
+  char *techAssignedName;
   
-  local_14 = 0;
-  local_d = 0xff;
-  local_18 = 0;
+  ret = 0;
+  techAssigned = 0xff;
+  i = 0;
   do {
-    if (*(char *)(param_3.packed._4_4_ + local_18) == -1) {
+    if (*(char *)(param_3.packed._4_4_ + i) == -1) {
 LAB_00b401be:
       RB_LogTechniqueType(*(uchar *)param_3.packed._4_4_);
-      if (local_d != 0xff) {
-        RB_LogTechniqueType(local_d);
+      if (techAssigned != 0xff) {
+        RB_LogTechniqueType(techAssigned);
       }
       _aullshr();
       _allmul();
       R_WarnOncePerFrame(R_WARN_MISSING_TECHNIQUE);
-      return local_14;
+      return ret;
     }
     GVar1.packed._4_4_ = param_3.packed._0_4_;
     GVar1.packed._0_4_ = in_stack_00000010;
-    iVar2 = (*param_1)(param_2,GVar1,*(uchar *)(param_3.packed._4_4_ + local_18));
+    iVar2 = (*func)(context,GVar1,*(uchar *)(param_3.packed._4_4_ + i));
     if (iVar2 != 0) {
-      if (local_18 == 0) {
+      if (i == 0) {
         return 1;
       }
-      local_d = *(uchar *)(param_3.packed._4_4_ + local_18);
-      local_14 = 1;
+      techAssigned = *(uchar *)(param_3.packed._4_4_ + i);
+      ret = 1;
       goto LAB_00b401be;
     }
-    local_18 = local_18 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00B3F930  R_GetPossibleTechniqueTypes  (gfx_d3d/r_draw_material.cpp:695)
 
-uint __cdecl R_GetPossibleTechniqueTypes(uchar param_1,GfxDrawSurf param_2,uchar *param_3)
+uint __cdecl R_GetPossibleTechniqueTypes(uchar techType,GfxDrawSurf param_2,uchar *param_3)
 
 {
   code *pcVar1;
@@ -435,17 +456,18 @@ uint __cdecl R_GetPossibleTechniqueTypes(uchar param_1,GfxDrawSurf param_2,uchar
   uint extraout_EAX_01;
   uint extraout_EAX_02;
   uint uVar3;
-  char *local_c;
+  uchar *tech;
+  uint count;
   
-  *(uchar *)param_2.packed._4_4_ = param_1;
-  local_c = (char *)(param_2.packed._4_4_ + 1);
-  if ((((9 < param_1) && (param_1 < 0x73)) && (0x10 < param_1)) && (param_1 < 0x26)) {
+  *(uchar *)param_2.packed._4_4_ = techType;
+  tech = (uchar *)(param_2.packed._4_4_ + 1);
+  if ((((9 < techType) && (techType < 0x73)) && (0x10 < techType)) && (techType < 0x26)) {
     _aullshr();
     if ((extraout_EAX & 1) != 0) {
       _aullshr();
       if ((extraout_EAX_00 & 1) != 0) {
-        *local_c = param_1 + 0xeb;
-        local_c = (char *)(param_2.packed._4_4_ + 2);
+        *tech = techType + 0xeb;
+        tech = (uchar *)(param_2.packed._4_4_ + 2);
         goto LAB_00b3fa48;
       }
     }
@@ -453,18 +475,18 @@ uint __cdecl R_GetPossibleTechniqueTypes(uchar param_1,GfxDrawSurf param_2,uchar
     if ((extraout_EAX_01 & 1) == 0) {
       _aullshr();
       if ((extraout_EAX_02 & 1) != 0) {
-        *local_c = param_1 + 0xf2;
-        local_c = (char *)(param_2.packed._4_4_ + 2);
+        *tech = techType + 0xf2;
+        tech = (uchar *)(param_2.packed._4_4_ + 2);
       }
     }
     else {
-      *local_c = param_1 + 0xf9;
-      local_c = (char *)(param_2.packed._4_4_ + 2);
+      *tech = techType + 0xf9;
+      tech = (uchar *)(param_2.packed._4_4_ + 2);
     }
   }
 LAB_00b3fa48:
-  *local_c = -1;
-  if ((char *)0x4 < local_c + (1 - param_2._4_4_)) {
+  *tech = 0xff;
+  if ((uchar *)0x4 < tech + (1 - param_2._4_4_)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_material.cpp",0x2e2
                              ,0,"%s");
     if (!bVar2) {
@@ -473,69 +495,71 @@ LAB_00b3fa48:
       return uVar3;
     }
   }
-  return (uint)(local_c + (1 - param_2._4_4_));
+  return (uint)(tech + (1 - param_2._4_4_));
 }
 
 
 // 00B3FAA0  R_SetTechnique  (gfx_d3d/r_draw_material.cpp:745)
 
 int __cdecl
-R_SetTechnique(GfxCmdBufContext param_1,GfxCmdBufContext *param_2,GfxDrawSurfListInfo *param_3,
-              GfxDrawSurf param_4)
+R_SetTechnique(GfxCmdBufContext context,GfxCmdBufContext *prepassContext,GfxDrawSurfListInfo *info,
+              GfxDrawSurf drawSurf)
 
 {
+  GfxDrawSurf drawSurf_00;
   GfxDrawSurf GVar1;
   GfxDrawSurf GVar2;
   GfxDrawSurf GVar3;
-  GfxDrawSurf GVar4;
-  byte bVar5;
-  int iVar6;
+  byte techType_00;
+  int iVar4;
   uint extraout_EAX;
   uint extraout_EAX_00;
   uint extraout_EDX;
   uchar *unaff_ESI;
-  GfxViewInfo *pGVar7;
-  undefined1 local_8 [4];
+  GfxViewInfo *viewInfo;
+  uchar techType;
+  undefined1 techTypes [4];
   
-  bVar5 = R_GetTechType(param_1,param_3,param_3->baseTechType,param_4);
-  GVar2.packed._4_4_ = local_8;
-  GVar2.packed._0_4_ = param_4.packed._4_4_;
-  R_GetPossibleTechniqueTypes(bVar5,GVar2,unaff_ESI);
-  if (bVar5 < 2) {
-    GVar3.packed._4_4_ = local_8;
-    GVar3.packed._0_4_ = param_4.packed._4_4_;
-    iVar6 = R_TrySetMaterialWithFunc(R_SetPrepassMaterial,param_1,GVar3,unaff_ESI);
-    if (iVar6 == 0) {
+  techType_00 = R_GetTechType(context,info,info->baseTechType,drawSurf);
+  GVar1.packed._4_4_ = techTypes;
+  GVar1.packed._0_4_ = drawSurf.packed._4_4_;
+  R_GetPossibleTechniqueTypes(techType_00,GVar1,unaff_ESI);
+  if (techType_00 < 2) {
+    GVar2.packed._4_4_ = techTypes;
+    GVar2.packed._0_4_ = drawSurf.packed._4_4_;
+    iVar4 = R_TrySetMaterialWithFunc(R_SetPrepassMaterial,context,GVar2,unaff_ESI);
+    if (iVar4 == 0) {
       return 0;
     }
   }
   else {
-    if (param_3->baseTechType == '\n') {
-      pGVar7 = param_3->viewInfo;
+    if (info->baseTechType == '\n') {
+      viewInfo = info->viewInfo;
       _aullshr();
-      R_SetShadowableLight(param_1.field0_0x0._s_0.source,extraout_EAX & 0xff,pGVar7);
+      R_SetShadowableLight(context.field0_0x0._s_0.source,extraout_EAX & 0xff,viewInfo);
     }
-    GVar4.packed._4_4_ = local_8;
-    GVar4.packed._0_4_ = param_4.packed._4_4_;
-    iVar6 = R_TrySetMaterialWithFunc(R_SetMaterial,param_1,GVar4,unaff_ESI);
-    if (iVar6 == 0) {
+    GVar3.packed._4_4_ = techTypes;
+    GVar3.packed._0_4_ = drawSurf.packed._4_4_;
+    iVar4 = R_TrySetMaterialWithFunc(R_SetMaterial,context,GVar3,unaff_ESI);
+    if (iVar4 == 0) {
       return 0;
     }
   }
-  if (((param_2->field0_0x0)._s_0.state != (GfxCmdBufState *)0x0) &&
-     (iVar6 = R_SetPrepassMaterial((GfxCmdBufContext)(param_2->field0_0x0)._s_0,param_4,'\0'),
-     iVar6 == 0)) {
-    (param_2->field0_0x0)._s_0.state = (GfxCmdBufState *)0x0;
+  if (((prepassContext->field0_0x0)._s_0.state != (GfxCmdBufState *)0x0) &&
+     (iVar4 = R_SetPrepassMaterial
+                        ((GfxCmdBufContext)(prepassContext->field0_0x0)._s_0,drawSurf,'\0'),
+     iVar4 == 0)) {
+    (prepassContext->field0_0x0)._s_0.state = (GfxCmdBufState *)0x0;
   }
-  (param_1.field0_0x0._s_0.state)->origMaterial = (param_1.field0_0x0._s_0.state)->material;
-  (param_1.field0_0x0._s_0.state)->origTechType = (param_1.field0_0x0._s_0.state)->techType;
+  (context.field0_0x0._s_0.state)->origMaterial = (context.field0_0x0._s_0.state)->material;
+  (context.field0_0x0._s_0.state)->origTechType = (context.field0_0x0._s_0.state)->techType;
   if (2 < (int)pixelCostMode) {
-    R_PixelCost_GetAccumulationMaterial((param_1.field0_0x0._s_0.state)->material);
+    R_PixelCost_GetAccumulationMaterial((context.field0_0x0._s_0.state)->material);
     _aullshr();
     _allshl();
-    GVar1.packed._4_4_ = param_4.packed._4_4_ & 0xfffff800 | extraout_EDX;
-    GVar1.packed._0_4_ = param_4.packed._0_4_ & 0x7fffffff | extraout_EAX_00;
-    R_SetMaterial(param_1,GVar1,'\x04');
+    drawSurf_00.packed._4_4_ = drawSurf.packed._4_4_ & 0xfffff800 | extraout_EDX;
+    drawSurf_00.packed._0_4_ = drawSurf.packed._0_4_ & 0x7fffffff | extraout_EAX_00;
+    R_SetMaterial(context,drawSurf_00,'\x04');
   }
   return 1;
 }
@@ -546,20 +570,20 @@ R_SetTechnique(GfxCmdBufContext param_1,GfxCmdBufContext *param_2,GfxDrawSurfLis
 /* WARNING: Removing unreachable block (ram,0x00b4029e) */
 /* WARNING: Removing unreachable block (ram,0x00b402c5) */
 
-void __cdecl R_SetGameTime(GfxCmdBufSourceState *param_1,float param_2)
+void __cdecl R_SetGameTime(GfxCmdBufSourceState *source,float gameTime)
 
 {
-  float local_14;
+  float gameTimeVec;
   float local_10;
   float local_c;
   float local_8;
   
-  R_CalcGameTimeVec(param_2,&local_14);
-  (param_1->input).consts[0x20][0] = local_14;
-  (param_1->input).consts[0x20][1] = local_10;
-  (param_1->input).consts[0x20][2] = local_c;
-  (param_1->input).consts[0x20][3] = local_8;
-  R_DirtyCodeConstant(param_1,0x20);
+  R_CalcGameTimeVec(gameTime,&gameTimeVec);
+  (source->input).consts[0x20][0] = gameTimeVec;
+  (source->input).consts[0x20][1] = local_10;
+  (source->input).consts[0x20][2] = local_c;
+  (source->input).consts[0x20][3] = local_8;
+  R_DirtyCodeConstant(source,0x20);
   return;
 }
 
@@ -568,18 +592,18 @@ void __cdecl R_SetGameTime(GfxCmdBufSourceState *param_1,float param_2)
 
 int __cdecl
 R_UpdateMaterialTime
-          (GfxCmdBufSourceState *param_1,float param_2,float param_3,float param_4,float param_5)
+          (GfxCmdBufSourceState *source,float materialTime,float burn,float fade,float wetness)
 
 {
   bool bVar1;
   
-  param_1[1].matrices.matrix[0].m[1][0] = param_3;
-  param_1[1].matrices.matrix[0].m[1][1] = param_4;
-  param_1[1].matrices.matrix[0].m[1][2] = param_5;
-  bVar1 = param_2 != param_1[1].matrices.matrix[0].m[0][3];
+  source[1].matrices.matrix[0].m[1][0] = burn;
+  source[1].matrices.matrix[0].m[1][1] = fade;
+  source[1].matrices.matrix[0].m[1][2] = wetness;
+  bVar1 = materialTime != source[1].matrices.matrix[0].m[0][3];
   if (bVar1) {
-    param_1[1].matrices.matrix[0].m[0][3] = param_2;
-    R_SetGameTime(param_1,param_1->materialTime - param_2);
+    source[1].matrices.matrix[0].m[0][3] = materialTime;
+    R_SetGameTime(source,source->materialTime - materialTime);
   }
   return (uint)bVar1;
 }

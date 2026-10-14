@@ -29,6 +29,8 @@ void __cdecl _dynamic_initializer_for__TRACKINST_clVehAnimClients__(void)
 void __cdecl VehAnim_RegisterDvars(void)
 
 {
+  ushort demoFlag;
+  
   vehanim_enable = _Dvar_RegisterBool("vehanim_enable",true,0x80,"Enable player vehicle anims");
   vehanim_debug =
        _Dvar_RegisterBool("vehanim_debug",false,0x80,"Show debug information for vehicle anims");
@@ -59,28 +61,30 @@ void __cdecl VehAnim_Init(void)
 
 // 0044EFE0  VehAnim_GetAnimDelta  (bgame/bg_vehicle_anim.cpp:137)
 
-void __cdecl VehAnim_GetAnimDelta(XAnimTree_s *param_1,int param_2,float *param_3,float *param_4)
+void __cdecl VehAnim_GetAnimDelta(XAnimTree_s *tree,int animIndex,float *rot,float *trans)
 
 {
-  XAnim_s *pXVar1;
-  code *pcVar2;
-  bool bVar3;
-  float fVar4;
+  XAnim_s *anims;
+  code *pcVar1;
+  bool bVar2;
+  float time;
+  float frac;
+  XAnim_s *pXAnims;
   
   BG_CheckThread();
   if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_vehicle_anim.cpp",0x90,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_vehicle_anim.cpp",0x90,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pXVar1 = *(XAnim_s **)
-            (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
-  fVar4 = XAnimGetTime(param_1,param_2);
-  XAnimGetAbsDelta(pXVar1,param_2,param_3,param_4,fVar4);
+  anims = *(XAnim_s **)
+           (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
+  time = XAnimGetTime(tree,animIndex);
+  XAnimGetAbsDelta(anims,animIndex,rot,trans,time);
   return;
 }
 
@@ -91,32 +95,31 @@ void __cdecl VehAnim_GetAnimDelta(XAnimTree_s *param_1,int param_2,float *param_
 
 void __cdecl
 VehAnim_UpdatePosRot
-          (int param_1,entityState_s *param_2,clientInfo_t *param_3,int param_4,float *param_5,
-          float *param_6)
+          (int localClientNum,entityState_s *es,clientInfo_t *ci,int handler,float *origin,
+          float *angles)
 
 {
   float fVar1;
-  float local_8c [9];
-  float local_68 [12];
-  float local_38;
-  float local_34 [2];
-  int local_2c;
-  float local_28 [9];
+  float finalAxis [9];
+  float trans [12];
+  float yaw;
+  float rot [2];
+  int i;
+  float axis [9];
   
   if ((vehanim_enable->current).enabled != false) {
-    VehAnim_GetAnimDelta
-              (param_3->pXAnimTree,(param_2->un2).animState.state & 0xfffffbff,local_34,local_68);
-    AnglesToAxis(param_6,(float (*) [3])local_28);
-    for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-      fVar1 = local_68[local_2c];
-      *param_5 = fVar1 * local_28[local_2c * 3] + *param_5;
-      param_5[1] = fVar1 * local_28[local_2c * 3 + 1] + param_5[1];
-      param_5[2] = fVar1 * local_28[local_2c * 3 + 2] + param_5[2];
+    VehAnim_GetAnimDelta(ci->pXAnimTree,(es->un2).animState.state & 0xfffffbff,rot,trans);
+    AnglesToAxis(angles,(float (*) [3])axis);
+    for (i = 0; i < 3; i = i + 1) {
+      fVar1 = trans[i];
+      *origin = fVar1 * axis[i * 3] + *origin;
+      origin[1] = fVar1 * axis[i * 3 + 1] + origin[1];
+      origin[2] = fVar1 * axis[i * 3 + 2] + origin[2];
     }
-    local_38 = RotationToYaw(local_34);
-    YawToAxis(local_38,(float (*) [3])(local_68 + 3));
-    MatrixMultiply((float (*) [3])(local_68 + 3),(float (*) [3])local_28,(float (*) [3])local_8c);
-    AxisToAngles((float (*) [3])local_8c,param_6);
+    yaw = RotationToYaw(rot);
+    YawToAxis(yaw,(float (*) [3])(trans + 3));
+    MatrixMultiply((float (*) [3])(trans + 3),(float (*) [3])axis,(float (*) [3])finalAxis);
+    AxisToAngles((float (*) [3])finalAxis,angles);
   }
   return;
 }

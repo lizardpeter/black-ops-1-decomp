@@ -2,15 +2,18 @@
 
 // 005446E0  R_HW_InsertFence  (gfx_d3d/r_fence_pc.h:8)
 
-void __cdecl R_HW_InsertFence(IDirect3DQuery9 **param_1)
+void __cdecl R_HW_InsertFence(IDirect3DQuery9 **fence)
 
 {
   int iVar1;
   int iVar2;
-  int iVar3;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
   R_AssertDXDeviceOwnership();
-  *param_1 = dx.fencePool[dx.nextFence];
+  *fence = dx.fencePool[dx.nextFence];
   dx.nextFence = (dx.nextFence + 1) % 8;
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   R_AssertDXDeviceOwnership();
@@ -18,13 +21,13 @@ void __cdecl R_HW_InsertFence(IDirect3DQuery9 **param_1)
     RB_LogPrint("(*fence)->Issue( (1 << 0) )\n");
   }
   iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar3 = (**(code **)((int)**param_1 + 0x18))(*param_1,1);
+  hr_00 = (**(code **)((int)**fence + 0x18))(*fence,1);
   if (iVar2 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar3 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar3);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_fence_pc.h (%i) (*fence)->Issue( (1 << 0) ) failed: %s\n"
              );
@@ -38,24 +41,25 @@ void __cdecl R_HW_InsertFence(IDirect3DQuery9 **param_1)
 
 // 00544C10  R_HW_IsFencePending  (gfx_d3d/r_fence_pc.h:25)
 
-int __cdecl R_HW_IsFencePending(IDirect3DQuery9 **param_1)
+int __cdecl R_HW_IsFencePending(IDirect3DQuery9 **fence)
 
 {
   int iVar1;
   int local_14;
-  undefined1 local_c [4];
-  int local_8;
+  HRESULT hr;
+  undefined1 data [4];
+  int sem;
   
-  local_8 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  if (*param_1 == (IDirect3DQuery9 *)0x0) {
-    if (local_8 != 0) {
+  sem = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  if (*fence == (IDirect3DQuery9 *)0x0) {
+    if (sem != 0) {
       R_ReleaseDXDeviceOwnership();
     }
     local_14 = 0;
   }
   else {
-    iVar1 = (**(code **)((int)**param_1 + 0x1c))(*param_1,local_c,4,1);
-    if (local_8 != 0) {
+    iVar1 = (**(code **)((int)**fence + 0x1c))(*fence,data,4,1);
+    if (sem != 0) {
       R_ReleaseDXDeviceOwnership();
     }
     if ((iVar1 == 0) || (iVar1 == -0x7789f798)) {
@@ -83,39 +87,40 @@ GfxImage * __cdecl CL_CompositeSetupImage(void)
 
 // 00544200  CL_CompositeSetupImageCallback  (client/cl_compositing.cpp:80)
 
-void __cdecl CL_CompositeSetupImageCallback(void *param_1)
+void __cdecl CL_CompositeSetupImageCallback(void *param)
 
 {
   GfxImage *pGVar1;
+  GfxImage **image;
   
   pGVar1 = CL_CompositeSetupImage();
-  *(GfxImage **)param_1 = pGVar1;
+  *(GfxImage **)param = pGVar1;
   return;
 }
 
 
 // 00544240  CL_CompositeReleaseImage  (client/cl_compositing.cpp:87)
 
-void __cdecl CL_CompositeReleaseImage(GfxImage *param_1)
+void __cdecl CL_CompositeReleaseImage(GfxImage *image)
 
 {
-  R_StreamAlloc_ReleaseTempImage(param_1);
+  R_StreamAlloc_ReleaseTempImage(image);
   return;
 }
 
 
 // 00544260  CL_CompositeValidateImage  (client/cl_compositing.cpp:99)
 
-bool __cdecl CL_CompositeValidateImage(GfxImage *param_1)
+bool __cdecl CL_CompositeValidateImage(GfxImage *image)
 
 {
   bool bVar1;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar1 = false;
   }
   else {
-    bVar1 = R_StreamImageCheck(param_1,0);
+    bVar1 = R_StreamImageCheck(image,0);
   }
   return bVar1;
 }
@@ -123,14 +128,15 @@ bool __cdecl CL_CompositeValidateImage(GfxImage *param_1)
 
 // 00544280  CL_CompositePushEmblem  (client/cl_compositing.cpp:111)
 
-int __cdecl CL_CompositePushEmblem(CompositeEmblemLayer *param_1,int param_2)
+int __cdecl CL_CompositePushEmblem(CompositeEmblemLayer *layers,int layerCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  CompositeJob *pCVar4;
-  int local_c;
+  CompositeJob *dst;
+  int idx;
+  CompositeJob *job;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -140,31 +146,30 @@ int __cdecl CL_CompositePushEmblem(CompositeEmblemLayer *param_1,int param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  for (local_c = 0; (local_c < 4 && (s_jobs[local_c].state != COMPOSITE_STATE_IDLE));
-      local_c = local_c + 1) {
+  for (idx = 0; (idx < 4 && (s_jobs[idx].state != COMPOSITE_STATE_IDLE)); idx = idx + 1) {
   }
-  if (local_c == 4) {
+  if (idx == 4) {
     iVar3 = 0;
   }
   else {
-    pCVar4 = s_jobs + local_c;
-    if ((pCVar4->state != COMPOSITE_STATE_IDLE) &&
+    dst = s_jobs + idx;
+    if ((dst->state != COMPOSITE_STATE_IDLE) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",
                                  0x7f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    memset((uchar *)pCVar4,'\0',0x19c);
-    s_jobs[local_c].type = COMPOSITE_EMBLEM;
-    pCVar4->state = COMPOSITE_STATE_PRE;
-    memcpy((uchar *)s_jobs[local_c].layers,(uchar *)param_1,param_2 << 5);
-    s_jobs[local_c].layerCount = param_2;
+    memset((uchar *)dst,'\0',0x19c);
+    s_jobs[idx].type = COMPOSITE_EMBLEM;
+    dst->state = COMPOSITE_STATE_PRE;
+    memcpy((uchar *)s_jobs[idx].layers,(uchar *)layers,layerCount << 5);
+    s_jobs[idx].layerCount = layerCount;
     s_jobID = s_jobID + 1;
     if (s_jobID < 0) {
       s_jobID = 1;
     }
-    s_jobs[local_c].id = s_jobID;
+    s_jobs[idx].id = s_jobID;
     iVar3 = s_jobID;
   }
   return iVar3;
@@ -173,13 +178,13 @@ int __cdecl CL_CompositePushEmblem(CompositeEmblemLayer *param_1,int param_2)
 
 // 005443B0  CL_CompositePushCancel  (client/cl_compositing.cpp:149)
 
-bool __cdecl CL_CompositePushCancel(int param_1)
+bool __cdecl CL_CompositePushCancel(int id)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_8;
+  int idx;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -189,28 +194,28 @@ bool __cdecl CL_CompositePushCancel(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < idx) {
       return false;
     }
-    if (s_jobs[local_8].id == param_1) break;
-    local_8 = local_8 + 1;
+    if (s_jobs[idx].id == id) break;
+    idx = idx + 1;
   }
-  s_jobs[local_8].cancel = true;
+  s_jobs[idx].cancel = true;
   return true;
 }
 
 
 // 00544430  CL_CompositeIsComplete  (client/cl_compositing.cpp:167)
 
-bool __cdecl CL_CompositeIsComplete(int param_1)
+bool __cdecl CL_CompositeIsComplete(int id)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_8;
+  int idx;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -220,14 +225,13 @@ bool __cdecl CL_CompositeIsComplete(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < idx) {
       return false;
     }
-    if ((s_jobs[local_8].id == param_1) && (s_jobs[local_8].state == COMPOSITE_STATE_COMPLETE))
-    break;
-    local_8 = local_8 + 1;
+    if ((s_jobs[idx].id == id) && (s_jobs[idx].state == COMPOSITE_STATE_COMPLETE)) break;
+    idx = idx + 1;
   }
   return true;
 }
@@ -235,13 +239,13 @@ bool __cdecl CL_CompositeIsComplete(int param_1)
 
 // 005444B0  CL_CompositePopImage  (client/cl_compositing.cpp:182)
 
-GfxImage * __cdecl CL_CompositePopImage(int param_1)
+GfxImage * __cdecl CL_CompositePopImage(int id)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
-  int local_8;
+  int idx;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -251,28 +255,27 @@ GfxImage * __cdecl CL_CompositePopImage(int param_1)
     pGVar3 = (GfxImage *)(*pcVar1)();
     return pGVar3;
   }
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < idx) {
       return (GfxImage *)0x0;
     }
-    if ((s_jobs[local_8].id == param_1) && (s_jobs[local_8].state == COMPOSITE_STATE_COMPLETE))
-    break;
-    local_8 = local_8 + 1;
+    if ((s_jobs[idx].id == id) && (s_jobs[idx].state == COMPOSITE_STATE_COMPLETE)) break;
+    idx = idx + 1;
   }
-  s_jobs[local_8].state = COMPOSITE_STATE_IDLE;
-  return s_jobs[local_8].resultImage;
+  s_jobs[idx].state = COMPOSITE_STATE_IDLE;
+  return s_jobs[idx].resultImage;
 }
 
 
 // 00544550  CL_CompositeUseGenerated  (client/cl_compositing.cpp:200)
 
-bool __cdecl CL_CompositeUseGenerated(float param_1,float param_2)
+bool __cdecl CL_CompositeUseGenerated(float w,float h)
 
 {
   undefined1 local_8;
   
-  if ((192.0 < param_1) || (192.0 < param_2)) {
+  if ((192.0 < w) || (192.0 < h)) {
     local_8 = false;
   }
   else {
@@ -284,41 +287,42 @@ bool __cdecl CL_CompositeUseGenerated(float param_1,float param_2)
 
 // 005445A0  CL_CompositeCheckStreaming  (client/cl_compositing.cpp:205)
 
-bool __cdecl CL_CompositeCheckStreaming(CompositeEmblemLayer *param_1,int param_2)
+bool __cdecl CL_CompositeCheckStreaming(CompositeEmblemLayer *layers,int layerCount)
 
 {
   bool bVar1;
-  GfxImage *pGVar2;
-  bool local_9;
-  int local_8;
+  GfxImage *image_00;
+  GfxImage *image;
+  bool valid;
+  int idx;
   
-  local_9 = true;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pGVar2 = BG_EmblemsGetIconImage(param_1[local_8].icon);
-    if (pGVar2 != (GfxImage *)0x0) {
-      bVar1 = R_StreamTouchImageAndCheck(pGVar2,0);
+  valid = true;
+  for (idx = 0; idx < layerCount; idx = idx + 1) {
+    image_00 = BG_EmblemsGetIconImage(layers[idx].icon);
+    if (image_00 != (GfxImage *)0x0) {
+      bVar1 = R_StreamTouchImageAndCheck(image_00,0);
       if (!bVar1) {
-        local_9 = false;
+        valid = false;
       }
     }
   }
-  return local_9;
+  return valid;
 }
 
 
 // 00544610  CL_CompositeEmblemCallback  (client/cl_compositing.cpp:351)
 
-void __cdecl CL_CompositeEmblemCallback(GfxImage *param_1)
+void __cdecl CL_CompositeEmblemCallback(GfxImage *result)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int idx;
   
   R_HW_InsertFence(&s_compositingFence);
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < idx) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x16f
                                ,0,"emblem render callback without active emblem render");
       if (bVar2) {
@@ -328,31 +332,32 @@ void __cdecl CL_CompositeEmblemCallback(GfxImage *param_1)
       (*pcVar1)();
       return;
     }
-    if (s_jobs[local_8].state == COMPOSITE_STATE_RENDERING) break;
-    local_8 = local_8 + 1;
+    if (s_jobs[idx].state == COMPOSITE_STATE_RENDERING) break;
+    idx = idx + 1;
   }
-  if ((s_jobs[local_8].type != COMPOSITE_EMBLEM) &&
+  if ((s_jobs[idx].type != COMPOSITE_EMBLEM) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x168
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  s_jobs[local_8].state = COMPOSITE_STATE_POST;
-  s_jobs[local_8].renderImage = param_1;
+  s_jobs[idx].state = COMPOSITE_STATE_POST;
+  s_jobs[idx].renderImage = result;
   return;
 }
 
 
 // 005447E0  CL_PCCopyImageGenMIPCallback  (client/cl_compositing.cpp:372)
 
-void __cdecl CL_PCCopyImageGenMIPCallback(void *param_1)
+void __cdecl CL_PCCopyImageGenMIPCallback(void *job)
 
 {
   code *pcVar1;
   bool bVar2;
+  CompositeJob *pJob;
   
-  if (param_1 == (void *)0x0) {
+  if (job == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x177,0
                              ,"%s");
     if (!bVar2) {
@@ -361,7 +366,7 @@ void __cdecl CL_PCCopyImageGenMIPCallback(void *param_1)
       return;
     }
   }
-  *(undefined4 *)param_1 = 6;
+  *(undefined4 *)job = 6;
   return;
 }
 
@@ -377,13 +382,15 @@ void __cdecl CL_CompositeRender(void)
   bool bVar4;
   int iVar5;
   CompositeJob *pCVar6;
-  int local_10;
+  int idx;
+  CompositeJob *job;
+  bool renderBusy;
   
   bVar4 = false;
   bVar3 = Sys_IsMainThread();
   if (bVar3) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      pCVar6 = s_jobs + local_10;
+    for (idx = 0; idx < 4; idx = idx + 1) {
+      pCVar6 = s_jobs + idx;
       CVar1 = pCVar6->state;
       if (CVar1 == COMPOSITE_STATE_RENDERING) {
         if ((bVar4) &&
@@ -403,17 +410,17 @@ void __cdecl CL_CompositeRender(void)
           (*pcVar2)();
           return;
         }
-        if ((s_jobs[local_10].resultImage != (GfxImage *)0x0) &&
+        if ((s_jobs[idx].resultImage != (GfxImage *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp"
                                      ,0x19c,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if (s_jobs[local_10].cancel == false) {
-          RB_Resource_CallbackParam(CL_CompositeSetupImageCallback,&s_jobs[local_10].resultImage);
+        if (s_jobs[idx].cancel == false) {
+          RB_Resource_CallbackParam(CL_CompositeSetupImageCallback,&s_jobs[idx].resultImage);
           RB_Resource_Flush();
-          if (s_jobs[local_10].resultImage != (GfxImage *)0x0) {
+          if (s_jobs[idx].resultImage != (GfxImage *)0x0) {
             pCVar6->state = COMPOSITE_STATE_POST_ALLOCED;
             goto LAB_005449bb;
           }
@@ -435,14 +442,14 @@ LAB_005449bb:
         bVar4 = true;
         iVar5 = R_HW_IsFencePending(&s_compositingFence);
         if (iVar5 == 0) {
-          if ((s_jobs[local_10].renderImage == (GfxImage *)0x0) &&
+          if ((s_jobs[idx].renderImage == (GfxImage *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp"
                                        ,0x1bc,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if ((s_jobs[local_10].resultImage == (GfxImage *)0x0) &&
+          if ((s_jobs[idx].resultImage == (GfxImage *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp"
                                        ,0x1bd,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
@@ -451,42 +458,39 @@ LAB_005449bb:
           }
           pCVar6->state = COMPOSITE_STATE_PC_WAITING_FOR_GPU;
           R_BeginCompositingCmdList();
-          R_AddCmdPCCopyImageGenMIP
-                    (CL_PCCopyImageGenMIPCallback,s_jobs[local_10].resultImage,pCVar6);
+          R_AddCmdPCCopyImageGenMIP(CL_PCCopyImageGenMIPCallback,s_jobs[idx].resultImage,pCVar6);
           R_AddCmdEndOfList();
         }
       }
     }
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      pCVar6 = s_jobs + local_10;
+    for (idx = 0; idx < 4; idx = idx + 1) {
+      pCVar6 = s_jobs + idx;
       if (pCVar6->state == COMPOSITE_STATE_PRE) {
-        if (s_jobs[local_10].cancel != false) {
+        if (s_jobs[idx].cancel != false) {
           pCVar6->state = COMPOSITE_STATE_IDLE;
         }
-        if (((!bVar4) && (s_jobs[local_10].type == COMPOSITE_EMBLEM)) &&
-           (bVar3 = CL_CompositeCheckStreaming(s_jobs[local_10].layers,s_jobs[local_10].layerCount),
-           bVar3)) {
+        if (((!bVar4) && (s_jobs[idx].type == COMPOSITE_EMBLEM)) &&
+           (bVar3 = CL_CompositeCheckStreaming(s_jobs[idx].layers,s_jobs[idx].layerCount), bVar3)) {
           pCVar6->state = COMPOSITE_STATE_RENDERING;
           bVar4 = true;
           R_BeginCompositingCmdList();
           R_AddCmdProjectionSet2D();
           R_AddCmdClearScreen(1,colorBlackBlank,1.0,'\0');
           CL_CompositeDrawEmblemPhysical
-                    (0.0,0.0,256.0,256.0,colorWhite,s_jobs[local_10].layers,
-                     s_jobs[local_10].layerCount);
+                    (0.0,0.0,256.0,256.0,colorWhite,s_jobs[idx].layers,s_jobs[idx].layerCount);
           R_AddCmdResolveComposite(CL_CompositeEmblemCallback);
           R_AddCmdEndOfList();
         }
       }
-      else if ((pCVar6->state == COMPOSITE_STATE_COMPLETE) && (s_jobs[local_10].cancel != false)) {
-        if ((s_jobs[local_10].resultImage == (GfxImage *)0x0) &&
+      else if ((pCVar6->state == COMPOSITE_STATE_COMPLETE) && (s_jobs[idx].cancel != false)) {
+        if ((s_jobs[idx].resultImage == (GfxImage *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp"
                                      ,0x207,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        CL_CompositeReleaseImage(s_jobs[local_10].resultImage);
+        CL_CompositeReleaseImage(s_jobs[idx].resultImage);
         pCVar6->state = COMPOSITE_STATE_IDLE;
       }
     }
@@ -507,20 +511,21 @@ LAB_005449bb:
 
 // 00545290  UV_Transform  (client/cl_compositing.cpp:530)
 
-void __cdecl UV_Transform(float (*param_1) [3],float *param_2)
+void __cdecl UV_Transform(float (*mat) [3],float *vec)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
+  float temp;
   
-  fVar1 = (*param_1)[0];
-  fVar2 = param_2[1];
-  fVar3 = param_1[1][0];
-  fVar4 = param_1[2][0];
-  param_2[1] = *param_2 * (*param_1)[1] + param_2[1] * param_1[1][1] + param_1[2][1];
-  *param_2 = *param_2 * fVar1 + fVar2 * fVar3 + fVar4;
+  fVar1 = (*mat)[0];
+  fVar2 = vec[1];
+  fVar3 = mat[1][0];
+  fVar4 = mat[2][0];
+  vec[1] = *vec * (*mat)[1] + vec[1] * mat[1][1] + mat[2][1];
+  *vec = *vec * fVar1 + fVar2 * fVar3 + fVar4;
   return;
 }
 
@@ -531,8 +536,7 @@ void __cdecl UV_Transform(float (*param_1) [3],float *param_2)
 
 bool __cdecl
 CL_CompositeDrawEmblemPhysical
-          (float param_1,float param_2,float param_3,float param_4,float *param_5,
-          CompositeEmblemLayer *param_6,int param_7)
+          (float x,float y,float w,float h,float *color,CompositeEmblemLayer *layers,int layerCount)
 
 {
   bool bVar1;
@@ -579,19 +583,19 @@ CL_CompositeDrawEmblemPhysical
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  bVar1 = CL_CompositeCheckStreaming(param_6,param_7);
+  bVar1 = CL_CompositeCheckStreaming(layers,layerCount);
   if (bVar1) {
     local_18 = Material_Register("emblem_lut",3);
-    local_68.xy[0] = param_1;
-    local_68.xy[1] = param_2;
-    local_54 = (param_1 + param_3) - 1.0;
-    local_50 = param_2;
-    local_40 = (param_1 + param_3) - 1.0;
-    local_3c = (param_2 + param_4) - 1.0;
-    local_2c = param_1;
-    local_28 = (param_2 + param_4) - 1.0;
+    local_68.xy[0] = x;
+    local_68.xy[1] = y;
+    local_54 = (x + w) - 1.0;
+    local_50 = y;
+    local_40 = (x + w) - 1.0;
+    local_3c = (y + h) - 1.0;
+    local_2c = x;
+    local_28 = (y + h) - 1.0;
     for (local_6c = 0; local_6c < 4; local_6c = local_6c + 1) {
-      R_ConvertColorToBytes(param_5,(&local_68)[local_6c].color.array);
+      R_ConvertColorToBytes(color,(&local_68)[local_6c].color.array);
     }
     local_70 = 0x3ef5c28f;
     local_74 = 0x3dcccccd;
@@ -599,7 +603,7 @@ CL_CompositeDrawEmblemPhysical
     local_7c = 0x42800000;
     local_80 = 0x3ec28f5c;
     local_84 = 0xc37a0000;
-    local_8c = ((param_3 - 314.0) / -250.0) * 0.38 + 0.1;
+    local_8c = ((w - 314.0) / -250.0) * 0.38 + 0.1;
     local_90 = local_8c;
     if (0.0 <= local_8c - 0.48) {
       local_90 = 0.48;
@@ -611,7 +615,7 @@ CL_CompositeDrawEmblemPhysical
       local_94 = 0.1;
     }
     local_88 = local_94;
-    while (local_98 = param_7 + -1, -1 < local_98) {
+    while (local_98 = layerCount + -1, -1 < local_98) {
       local_b8[0] = -0.5;
       local_b8[1] = -0.5;
       local_b8[2] = 0.5;
@@ -620,7 +624,7 @@ CL_CompositeDrawEmblemPhysical
       local_b8[5] = 0.5;
       local_b8[6] = -0.5;
       local_b8[7] = 0.5;
-      local_bc = param_6 + local_98;
+      local_bc = layers + local_98;
       local_c0 = BG_EmblemsGetIconImage(local_bc->icon);
       if (local_bc->outline == false) {
         local_c4 = 0.0;
@@ -628,9 +632,9 @@ CL_CompositeDrawEmblemPhysical
       else {
         local_c4 = BG_EmblemsGetIconOutlineSize(local_bc->icon);
       }
-      param_7 = local_98;
+      layerCount = local_98;
       if ((local_c0 != (GfxImage *)0x0) &&
-         (bVar1 = R_StreamTouchImageAndCheck(local_c0,0), param_7 = local_98, bVar1)) {
+         (bVar1 = R_StreamTouchImageAndCheck(local_c0,0), layerCount = local_98, bVar1)) {
         MatrixIdentity33((float (*) [3])local_e8);
         local_d0 = 0x3f000000;
         local_cc = 0x3f000000;
@@ -671,7 +675,7 @@ CL_CompositeDrawEmblemPhysical
         }
         R_AddCmdDrawEmblemLayer
                   (local_18,local_c0,local_bc->colorIdx,local_c4,in_stack_fffffe94,&local_68);
-        param_7 = local_98;
+        layerCount = local_98;
       }
     }
     bVar1 = true;
@@ -685,14 +689,14 @@ CL_CompositeDrawEmblemPhysical
 
 // 00545310  CL_CompositeIsLayerEmpty  (client/cl_compositing.cpp:641)
 
-bool __cdecl CL_CompositeIsLayerEmpty(CompositeEmblemLayer *param_1)
+bool __cdecl CL_CompositeIsLayerEmpty(CompositeEmblemLayer *layer)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (CompositeEmblemLayer *)0x0) {
+  if (layer == (CompositeEmblemLayer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x282,0
                              ,"%s");
     if (!bVar2) {
@@ -701,19 +705,19 @@ bool __cdecl CL_CompositeIsLayerEmpty(CompositeEmblemLayer *param_1)
       return (bool)uVar3;
     }
   }
-  return param_1->icon == -1;
+  return layer->icon == -1;
 }
 
 
 // 00545360  CL_CompositeResetLayer  (client/cl_compositing.cpp:647)
 
-void __cdecl CL_CompositeResetLayer(CompositeEmblemLayer *param_1)
+void __cdecl CL_CompositeResetLayer(CompositeEmblemLayer *layer)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (CompositeEmblemLayer *)0x0) {
+  if (layer == (CompositeEmblemLayer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x288,0
                              ,"%s");
     if (!bVar2) {
@@ -722,26 +726,26 @@ void __cdecl CL_CompositeResetLayer(CompositeEmblemLayer *param_1)
       return;
     }
   }
-  param_1->pos[0] = 0.0;
-  param_1->pos[1] = 0.0;
-  param_1->scale[0] = 0.0;
-  param_1->scale[1] = 0.0;
-  param_1->angle = 0.0;
-  param_1->outline = false;
-  param_1->flip = false;
+  layer->pos[0] = 0.0;
+  layer->pos[1] = 0.0;
+  layer->scale[0] = 0.0;
+  layer->scale[1] = 0.0;
+  layer->angle = 0.0;
+  layer->outline = false;
+  layer->flip = false;
   return;
 }
 
 
 // 005453F0  CL_CompositeClearLayer  (client/cl_compositing.cpp:659)
 
-void __cdecl CL_CompositeClearLayer(CompositeEmblemLayer *param_1)
+void __cdecl CL_CompositeClearLayer(CompositeEmblemLayer *layer)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (CompositeEmblemLayer *)0x0) {
+  if (layer == (CompositeEmblemLayer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_compositing.cpp",0x294,0
                              ,"%s");
     if (!bVar2) {
@@ -750,15 +754,15 @@ void __cdecl CL_CompositeClearLayer(CompositeEmblemLayer *param_1)
       return;
     }
   }
-  param_1->pos[0] = 0.0;
-  param_1->pos[1] = 0.0;
-  param_1->scale[0] = 0.0;
-  param_1->scale[1] = 0.0;
-  param_1->angle = 0.0;
-  param_1->outline = false;
-  param_1->flip = false;
-  param_1->colorIdx = 0;
-  param_1->icon = -1;
+  layer->pos[0] = 0.0;
+  layer->pos[1] = 0.0;
+  layer->scale[0] = 0.0;
+  layer->scale[1] = 0.0;
+  layer->angle = 0.0;
+  layer->outline = false;
+  layer->flip = false;
+  layer->colorIdx = 0;
+  layer->icon = -1;
   return;
 }
 

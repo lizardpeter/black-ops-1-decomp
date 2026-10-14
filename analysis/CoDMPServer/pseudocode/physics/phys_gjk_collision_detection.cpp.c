@@ -2,7 +2,7 @@
 
 // 0083FC40  phys_Unitize  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:78)
 
-phys_vec3 * __cdecl phys_Unitize(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1)
+phys_vec3 * __cdecl phys_Unitize(phys_vec3 *__return_storage_ptr__,phys_vec3 *a)
 
 {
   float fVar1;
@@ -11,8 +11,9 @@ phys_vec3 * __cdecl phys_Unitize(phys_vec3 *__return_storage_ptr__,phys_vec3 *pa
   bool bVar4;
   phys_vec3 *ppVar5;
   float fVar6;
+  float na;
   
-  fVar6 = Abs(param_1);
+  fVar6 = Abs(a);
   if (fVar6 <= 0.0) {
     bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x50,
                       "na > 0.0f","");
@@ -23,9 +24,9 @@ phys_vec3 * __cdecl phys_Unitize(phys_vec3 *__return_storage_ptr__,phys_vec3 *pa
     }
   }
   fVar6 = 1.0 / fVar6;
-  fVar1 = param_1->y;
-  fVar2 = param_1->z;
-  __return_storage_ptr__->x = param_1->x * fVar6;
+  fVar1 = a->y;
+  fVar2 = a->z;
+  __return_storage_ptr__->x = a->x * fVar6;
   __return_storage_ptr__->y = fVar1 * fVar6;
   __return_storage_ptr__->z = fVar2 * fVar6;
   return __return_storage_ptr__;
@@ -37,38 +38,38 @@ phys_vec3 * __cdecl phys_Unitize(phys_vec3 *__return_storage_ptr__,phys_vec3 *pa
 phys_gjk_cache_info_internal * __thiscall
 phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
 ::find(phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-       *this,phys_gjk_geom_id_pair_key *param_1)
+       *this,phys_gjk_geom_id_pair_key *key)
 
 {
   bool bVar1;
-  phys_gjk_cache_info_internal *local_8;
+  phys_gjk_cache_info_internal *cur;
   
-  local_8 = this->m_tree_root;
+  cur = this->m_tree_root;
   while( true ) {
-    if (local_8 == (phys_gjk_cache_info_internal *)0x0) {
+    if (cur == (phys_gjk_cache_info_internal *)0x0) {
       return (phys_gjk_cache_info_internal *)0x0;
     }
-    if ((param_1->m_id1 == local_8->_padding_) && (param_1->m_id2 == local_8->_padding_)) {
+    if ((key->m_id1 == cur->_padding_) && (key->m_id2 == cur->_padding_)) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
     if (bVar1) break;
-    if (param_1->m_id1 == local_8->_padding_) {
-      bVar1 = param_1->m_id2 < (uint)local_8->_padding_;
+    if (key->m_id1 == cur->_padding_) {
+      bVar1 = key->m_id2 < (uint)cur->_padding_;
     }
     else {
-      bVar1 = param_1->m_id1 < (uint)local_8->_padding_;
+      bVar1 = key->m_id1 < (uint)cur->_padding_;
     }
     if (bVar1) {
-      local_8 = (local_8->m_avl_tree_node).m_left;
+      cur = (cur->m_avl_tree_node).m_left;
     }
     else {
-      local_8 = (local_8->m_avl_tree_node).m_right;
+      cur = (cur->m_avl_tree_node).m_right;
     }
   }
-  return local_8;
+  return cur;
 }
 
 
@@ -162,7 +163,7 @@ void * __thiscall gjk_entity_info_t::get_ent(gjk_entity_info_t *this)
 
 // 00840070  update_swapped  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_gjk_cache_system.h:92)
 
-void __thiscall phys_gjk_cache_info::update_swapped(phys_gjk_cache_info *this,bool param_1)
+void __thiscall phys_gjk_cache_info::update_swapped(phys_gjk_cache_info *this,bool swapped)
 
 {
   int iVar1;
@@ -178,8 +179,8 @@ void __thiscall phys_gjk_cache_info::update_swapped(phys_gjk_cache_info *this,bo
   uint local_18;
   phys_gjk_cache_info *local_14;
   
-  if (param_1 != ((this->m_flags & 2) != 0)) {
-    if (param_1) {
+  if (swapped != ((this->m_flags & 2) != 0)) {
+    if (swapped) {
       this->m_flags = this->m_flags | 2;
       local_18 = this->m_flags;
     }
@@ -220,131 +221,131 @@ void __thiscall phys_gjk_cache_info::update_swapped(phys_gjk_cache_info *this,bo
 void __thiscall
 phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
 ::add(phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-      *this,phys_gjk_geom_id_pair_key *param_1,phys_gjk_cache_info_internal *param_2)
+      *this,phys_gjk_geom_id_pair_key *key,phys_gjk_cache_info_internal *data)
 
 {
   phys_gjk_cache_info_internal *ppVar1;
   uint uVar2;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  *ppVar3;
-  code *pcVar4;
-  bool bVar5;
-  int *piVar6;
+  *root;
+  code *pcVar3;
+  bool bVar4;
+  int *piVar5;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  **pppVar7;
+  **pppVar6;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  **local_108;
+  **cur_item;
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-  *local_104 [64];
+  *the_stack [64];
   
-  local_104[0] = this;
-  local_108 = local_104;
-  while ((*local_108)->m_tree_root != (phys_gjk_cache_info_internal *)0x0) {
-    ppVar1 = (*local_108)->m_tree_root;
-    if ((0x1f < (int)local_108 + (8 - (int)local_104) >> 3) &&
-       (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0x67
-                          ,"cur_item + 1 - the_stack < 32",""), bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+  the_stack[0] = this;
+  cur_item = the_stack;
+  while ((*cur_item)->m_tree_root != (phys_gjk_cache_info_internal *)0x0) {
+    ppVar1 = (*cur_item)->m_tree_root;
+    if ((0x1f < (int)cur_item + (8 - (int)the_stack) >> 3) &&
+       (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0x67
+                          ,"cur_item + 1 - the_stack < 32",""), bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    pppVar7 = local_108 + 2;
-    if (param_1->m_id1 == ppVar1->_padding_) {
-      bVar5 = param_1->m_id2 < (uint)ppVar1->_padding_;
+    pppVar6 = cur_item + 2;
+    if (key->m_id1 == ppVar1->_padding_) {
+      bVar4 = key->m_id2 < (uint)ppVar1->_padding_;
     }
     else {
-      bVar5 = param_1->m_id1 < (uint)ppVar1->_padding_;
+      bVar4 = key->m_id1 < (uint)ppVar1->_padding_;
     }
-    if (bVar5) {
-      local_108[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                      *)0xffffffff;
-      *pppVar7 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+    if (bVar4) {
+      cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                     *)0xffffffff;
+      *pppVar6 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
                   *)&ppVar1->m_avl_tree_node;
-      local_108 = pppVar7;
+      cur_item = pppVar6;
     }
     else {
-      if (param_1->m_id1 == ppVar1->_padding_) {
-        bVar5 = (uint)ppVar1->_padding_ < param_1->m_id2;
+      if (key->m_id1 == ppVar1->_padding_) {
+        bVar4 = (uint)ppVar1->_padding_ < key->m_id2;
       }
       else {
-        bVar5 = (uint)ppVar1->_padding_ < param_1->m_id1;
+        bVar4 = (uint)ppVar1->_padding_ < key->m_id1;
       }
-      if ((!bVar5) &&
-         (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x70,"key > accessor::get_avl_key(root)",""), bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+      if ((!bVar4) &&
+         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x70,"key > accessor::get_avl_key(root)",""), bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      local_108[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-                      *)0x1;
-      *pppVar7 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+      cur_item[1] = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+                     *)0x1;
+      *pppVar6 = (phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
                   *)&(ppVar1->m_avl_tree_node).m_right;
-      local_108 = pppVar7;
+      cur_item = pppVar6;
     }
   }
-  (*local_108)->m_tree_root = param_2;
-  (param_2->m_avl_tree_node).m_left = (phys_gjk_cache_info_internal *)0x0;
-  (param_2->m_avl_tree_node).m_right = (phys_gjk_cache_info_internal *)0x0;
-  (param_2->m_avl_tree_node).m_balance = 0;
-  uVar2 = param_1->m_id2;
-  param_2->_padding_ = param_1->m_id1;
-  param_2->_padding_ = uVar2;
+  (*cur_item)->m_tree_root = data;
+  (data->m_avl_tree_node).m_left = (phys_gjk_cache_info_internal *)0x0;
+  (data->m_avl_tree_node).m_right = (phys_gjk_cache_info_internal *)0x0;
+  (data->m_avl_tree_node).m_balance = 0;
+  uVar2 = key->m_id2;
+  data->_padding_ = key->m_id1;
+  data->_padding_ = uVar2;
   do {
-    if (local_108 <= local_104) {
+    if (cur_item <= the_stack) {
       return;
     }
-    ppVar3 = local_108[-2];
-    piVar6 = &(ppVar3->m_tree_root->m_avl_tree_node).m_balance;
-    *piVar6 = (int)&local_108[-1]->m_tree_root + *piVar6;
-    if ((ppVar3->m_tree_root->m_avl_tree_node).m_balance == -2) {
-      if ((((((ppVar3->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance != -1) &&
-          ((((ppVar3->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance != 1)) &&
-         (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+    root = cur_item[-2];
+    piVar5 = &(root->m_tree_root->m_avl_tree_node).m_balance;
+    *piVar5 = (int)&cur_item[-1]->m_tree_root + *piVar5;
+    if ((root->m_tree_root->m_avl_tree_node).m_balance == -2) {
+      if ((((((root->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance != -1) &&
+          ((((root->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance != 1)) &&
+         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0x82,
                             "accessor::get_avl_node(accessor::get_avl_node(root)->m_left)->m_balance == -1 || accessor::get_avl_node(accessor::get_avl_node(root)->m_left)->m_balance == 1"
-                            ,""), bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+                            ,""), bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      if ((((ppVar3->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance == 1) {
-        rotate_left(this,&(ppVar3->m_tree_root->m_avl_tree_node).m_left);
+      if ((((root->m_tree_root->m_avl_tree_node).m_left)->m_avl_tree_node).m_balance == 1) {
+        rotate_left(this,&(root->m_tree_root->m_avl_tree_node).m_left);
       }
-      rotate_right(this,&ppVar3->m_tree_root);
-      if (((ppVar3->m_tree_root->m_avl_tree_node).m_balance != 0) &&
-         (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x86,"accessor::get_avl_node(root)->m_balance == 0",""), bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+      rotate_right(this,&root->m_tree_root);
+      if (((root->m_tree_root->m_avl_tree_node).m_balance != 0) &&
+         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x86,"accessor::get_avl_node(root)->m_balance == 0",""), bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
     }
-    else if ((ppVar3->m_tree_root->m_avl_tree_node).m_balance == 2) {
-      if ((((((ppVar3->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance != -1) &&
-          ((((ppVar3->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance != 1)) &&
-         (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+    else if ((root->m_tree_root->m_avl_tree_node).m_balance == 2) {
+      if ((((((root->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance != -1) &&
+          ((((root->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance != 1)) &&
+         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0x8a,
                             "accessor::get_avl_node(accessor::get_avl_node(root)->m_right)->m_balance == -1 || accessor::get_avl_node(accessor::get_avl_node(root)->m_right)->m_balance == 1"
-                            ,""), bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+                            ,""), bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      if ((((ppVar3->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance == -1) {
-        rotate_right(this,&(ppVar3->m_tree_root->m_avl_tree_node).m_right);
+      if ((((root->m_tree_root->m_avl_tree_node).m_right)->m_avl_tree_node).m_balance == -1) {
+        rotate_right(this,&(root->m_tree_root->m_avl_tree_node).m_right);
       }
-      rotate_left(this,&ppVar3->m_tree_root);
-      if (((ppVar3->m_tree_root->m_avl_tree_node).m_balance != 0) &&
-         (bVar5 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            0x8e,"accessor::get_avl_node(root)->m_balance == 0",""), bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+      rotate_left(this,&root->m_tree_root);
+      if (((root->m_tree_root->m_avl_tree_node).m_balance != 0) &&
+         (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
+                            0x8e,"accessor::get_avl_node(root)->m_balance == 0",""), bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
     }
-    local_108 = local_108 + -2;
-    if ((ppVar3->m_tree_root->m_avl_tree_node).m_balance == 0) {
+    cur_item = cur_item + -2;
+    if ((root->m_tree_root->m_avl_tree_node).m_balance == 0) {
       return;
     }
   } while( true );
@@ -370,18 +371,19 @@ void __thiscall gjk_geom_info_t::calc_aabb(gjk_geom_info_t *this)
 
 // 008432F0  is_in_skip_list  (physics/phys_gjk_collision_detection.h:167)
 
-bool __thiscall gjk_query_input::is_in_skip_list(gjk_query_input *this,gjk_geom_info_t *param_1)
+bool __thiscall gjk_query_input::is_in_skip_list(gjk_query_input *this,gjk_geom_info_t *gi_)
 
 {
-  gjk_geom_info_t *local_8;
+  gjk_geom_info_t *gi;
+  gjk_geom_info_t *gi_i;
   
-  local_8 = (this->m_geom_skip_list).m_first;
+  gi_i = (this->m_geom_skip_list).m_first;
   while( true ) {
-    if (local_8 == (gjk_geom_info_t *)0x0) {
+    if (gi_i == (gjk_geom_info_t *)0x0) {
       return false;
     }
-    if (local_8 == param_1) break;
-    local_8 = local_8->m_next_link;
+    if (gi_i == gi_) break;
+    gi_i = gi_i->m_next_link;
   }
   return true;
 }
@@ -389,19 +391,20 @@ bool __thiscall gjk_query_input::is_in_skip_list(gjk_query_input *this,gjk_geom_
 
 // 00840430  visit_skip_list  (physics/phys_gjk_collision_detection.h:178)
 
-void __thiscall gjk_query_input::visit_skip_list(gjk_query_input *this,int param_1)
+void __thiscall gjk_query_input::visit_skip_list(gjk_query_input *this,int query_visitor_count)
 
 {
   code *pcVar1;
   bool bVar2;
-  gjk_geom_info_t *local_8;
+  gjk_geom_info_t *gi;
+  gjk_geom_info_t *gi_i;
   
-  local_8 = (this->m_geom_skip_list).m_first;
+  gi_i = (this->m_geom_skip_list).m_first;
   do {
-    if (local_8 == (gjk_geom_info_t *)0x0) {
+    if (gi_i == (gjk_geom_info_t *)0x0) {
       return;
     }
-    if (local_8->m_query_visitor_count == param_1) {
+    if (gi_i->m_query_visitor_count == query_visitor_count) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                                ,0xb6,0,"%s");
       if (!bVar2) {
@@ -410,8 +413,8 @@ void __thiscall gjk_query_input::visit_skip_list(gjk_query_input *this,int param
         return;
       }
     }
-    local_8->m_query_visitor_count = param_1;
-    local_8 = local_8->m_next_link;
+    gi_i->m_query_visitor_count = query_visitor_count;
+    gi_i = gi_i->m_next_link;
   } while( true );
 }
 
@@ -420,11 +423,13 @@ void __thiscall gjk_query_input::visit_skip_list(gjk_query_input *this,int param
 
 bool __cdecl
 phys_are_aabb_overlapping
-          (phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4)
+          (phys_vec3 *aabb1_min,phys_vec3 *aabb1_max,phys_vec3 *aabb2_min,phys_vec3 *aabb2_max)
 
 {
-  if ((((param_1->x <= param_4->x) && (param_1->y <= param_4->y)) && (param_1->z <= param_4->z)) &&
-     (((param_3->x <= param_2->x && (param_3->y <= param_2->y)) && (param_3->z <= param_2->z)))) {
+  if ((((aabb1_min->x <= aabb2_max->x) && (aabb1_min->y <= aabb2_max->y)) &&
+      (aabb1_min->z <= aabb2_max->z)) &&
+     (((aabb2_min->x <= aabb1_max->x && (aabb2_min->y <= aabb1_max->y)) &&
+      (aabb2_min->z <= aabb1_max->z)))) {
     return true;
   }
   return false;
@@ -449,8 +454,8 @@ bool __thiscall cached_query_info_t::aabb_is_valid(cached_query_info_t *this)
 
 void __thiscall
 cached_query_info_t::init_query
-          (cached_query_info_t *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,
-          int param_4,uint param_5)
+          (cached_query_info_t *this,phys_vec3 *query_aabb_min,phys_vec3 *query_aabb_max,
+          phys_vec3 *extra,int query_contents,uint query_flags)
 
 {
   float fVar1;
@@ -458,22 +463,22 @@ cached_query_info_t::init_query
   float fVar3;
   float fVar4;
   
-  fVar1 = param_1->y;
-  fVar2 = param_3->y;
-  fVar3 = param_1->z;
-  fVar4 = param_3->z;
-  (this->m_query_aabb_min).x = param_1->x - param_3->x;
+  fVar1 = query_aabb_min->y;
+  fVar2 = extra->y;
+  fVar3 = query_aabb_min->z;
+  fVar4 = extra->z;
+  (this->m_query_aabb_min).x = query_aabb_min->x - extra->x;
   (this->m_query_aabb_min).y = fVar1 - fVar2;
   (this->m_query_aabb_min).z = fVar3 - fVar4;
-  fVar1 = param_2->y;
-  fVar2 = param_3->y;
-  fVar3 = param_2->z;
-  fVar4 = param_3->z;
-  (this->m_query_aabb_max).x = param_2->x + param_3->x;
+  fVar1 = query_aabb_max->y;
+  fVar2 = extra->y;
+  fVar3 = query_aabb_max->z;
+  fVar4 = extra->z;
+  (this->m_query_aabb_max).x = query_aabb_max->x + extra->x;
   (this->m_query_aabb_max).y = fVar1 + fVar2;
   (this->m_query_aabb_max).z = fVar3 + fVar4;
-  this->m_query_contents = param_4;
-  this->m_query_flags = param_5;
+  this->m_query_contents = query_contents;
+  this->m_query_flags = query_flags;
   return;
 }
 
@@ -482,8 +487,8 @@ cached_query_info_t::init_query
 
 void __thiscall
 cached_query_info_t::add_query
-          (cached_query_info_t *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,
-          int param_4,uint param_5)
+          (cached_query_info_t *this,phys_vec3 *query_aabb_min,phys_vec3 *query_aabb_max,
+          phys_vec3 *extra,int query_contents,uint query_flags)
 
 {
   float fVar1;
@@ -520,14 +525,14 @@ cached_query_info_t::add_query
   float local_18;
   cached_query_info_t *local_14;
   
-  local_18 = param_1->x;
-  local_1c = param_2->x;
+  local_18 = query_aabb_min->x;
+  local_1c = query_aabb_max->x;
   if (local_18 <= local_1c) {
-    local_20 = param_1->y;
-    local_24 = param_2->y;
+    local_20 = query_aabb_min->y;
+    local_24 = query_aabb_max->y;
     if (local_20 <= local_24) {
-      local_28 = param_1->z;
-      local_2c = param_2->z;
+      local_28 = query_aabb_min->z;
+      local_2c = query_aabb_max->z;
       if (local_28 <= local_2c) {
         local_30 = 1;
         goto LAB_008433ec;
@@ -546,7 +551,7 @@ LAB_008433ec:
       return;
     }
   }
-  if (param_4 == 0) {
+  if (query_contents == 0) {
     bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                              ,0xeb,0,"%s");
     if (!bVar6) {
@@ -555,7 +560,7 @@ LAB_008433ec:
       return;
     }
   }
-  if (param_5 == 0) {
+  if (query_flags == 0) {
     bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                              ,0xec,0,"%s");
     if (!bVar6) {
@@ -566,42 +571,42 @@ LAB_008433ec:
   }
   bVar6 = is_empty(local_14);
   if (bVar6) {
-    init_query(local_14,param_1,param_2,param_3,param_4,param_5);
+    init_query(local_14,query_aabb_min,query_aabb_max,extra,query_contents,query_flags);
   }
   else {
-    local_50.x = (local_14->m_query_aabb_min).x + param_3->x;
-    local_50.y = (local_14->m_query_aabb_min).y + param_3->y;
-    local_50.z = (local_14->m_query_aabb_min).z + param_3->z;
+    local_50.x = (local_14->m_query_aabb_min).x + extra->x;
+    local_50.y = (local_14->m_query_aabb_min).y + extra->y;
+    local_50.z = (local_14->m_query_aabb_min).z + extra->z;
     local_3c = local_50.z;
     local_38 = local_50.y;
     local_34 = local_50.x;
-    local_64 = phys_min(&local_60,&local_50,param_1);
-    local_80 = local_64->x - param_3->x;
-    local_7c = local_64->y - param_3->y;
-    local_78 = local_64->z - param_3->z;
+    local_64 = phys_min(&local_60,&local_50,query_aabb_min);
+    local_80 = local_64->x - extra->x;
+    local_7c = local_64->y - extra->y;
+    local_78 = local_64->z - extra->z;
     (local_14->m_query_aabb_min).x = local_80;
     (local_14->m_query_aabb_min).y = local_7c;
     (local_14->m_query_aabb_min).z = local_78;
     local_84 = &local_14->m_query_aabb_max;
-    local_a0.x = local_84->x - param_3->x;
-    local_a0.y = (local_14->m_query_aabb_max).y - param_3->y;
-    local_a0.z = (local_14->m_query_aabb_max).z - param_3->z;
+    local_a0.x = local_84->x - extra->x;
+    local_a0.y = (local_14->m_query_aabb_max).y - extra->y;
+    local_a0.z = (local_14->m_query_aabb_max).z - extra->z;
     local_90 = local_a0.z;
     local_8c = local_a0.y;
     local_88 = local_a0.x;
     local_70 = local_78;
     local_6c = local_7c;
     local_68 = local_80;
-    ppVar7 = phys_max(&local_b0,&local_a0,param_2);
+    ppVar7 = phys_max(&local_b0,&local_a0,query_aabb_max);
     fVar1 = ppVar7->y;
-    fVar2 = param_3->y;
+    fVar2 = extra->y;
     fVar3 = ppVar7->z;
-    fVar4 = param_3->z;
-    (local_14->m_query_aabb_max).x = ppVar7->x + param_3->x;
+    fVar4 = extra->z;
+    (local_14->m_query_aabb_max).x = ppVar7->x + extra->x;
     (local_14->m_query_aabb_max).y = fVar1 + fVar2;
     (local_14->m_query_aabb_max).z = fVar3 + fVar4;
-    local_14->m_query_contents = local_14->m_query_contents | param_4;
-    local_14->m_query_flags = local_14->m_query_flags | param_5;
+    local_14->m_query_contents = local_14->m_query_contents | query_contents;
+    local_14->m_query_flags = local_14->m_query_flags | query_flags;
   }
   return;
 }
@@ -610,47 +615,50 @@ LAB_008433ec:
 // 00840B20  get_bpei  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_broad_phase.h:249)
 
 broad_phase_environment_info * __thiscall
-bpei_database_t::get_bpei(bpei_database_t *this,bpei_database_id param_1)
+bpei_database_t::get_bpei(bpei_database_t *this,bpei_database_id database_id)
 
 {
   code *pcVar1;
-  bpei_database_id bVar2;
-  bool bVar3;
-  broad_phase_environment_info *pbVar4;
-  broad_phase_environment_info *local_8;
+  bpei_database_id database_id_00;
+  bool bVar2;
+  broad_phase_environment_info *pbVar3;
+  broad_phase_environment_info *bpei;
   
-  local_8 = phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-            ::find(&this->m_bpei_map,&param_1);
-  if (local_8 == (broad_phase_environment_info *)0x0) {
-    bVar2.m_id2 = param_1.m_id2;
-    bVar2.m_id1 = param_1.m_id1;
-    local_8 = create_bpei(this,bVar2);
-    local_8->m_next_bpei = this->m_bpei_list;
-    this->m_bpei_list = local_8;
+  bpei = phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
+         ::find(&this->m_bpei_map,&database_id);
+  if (bpei == (broad_phase_environment_info *)0x0) {
+    database_id_00.m_id2 = database_id.m_id2;
+    database_id_00.m_id1 = database_id.m_id1;
+    bpei = create_bpei(this,database_id_00);
+    bpei->m_next_bpei = this->m_bpei_list;
+    this->m_bpei_list = bpei;
   }
-  if (local_8 == (broad_phase_environment_info *)0x0) {
-    bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase.h"
+  if (bpei == (broad_phase_environment_info *)0x0) {
+    bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase.h"
                       ,0x101,"bpei","");
-    if (bVar3) {
+    if (bVar2) {
       pcVar1 = (code *)swi(3);
-      pbVar4 = (broad_phase_environment_info *)(*pcVar1)();
-      return pbVar4;
+      pbVar3 = (broad_phase_environment_info *)(*pcVar1)();
+      return pbVar3;
     }
   }
-  return local_8;
+  return bpei;
 }
 
 
 // 00843890  is_subset_aabb  (physics/phys_gjk_collision_detection.h:251)
 
 bool __thiscall
-cached_query_info_t::is_subset_aabb(cached_query_info_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+cached_query_info_t::is_subset_aabb
+          (cached_query_info_t *this,phys_vec3 *query_aabb_min,phys_vec3 *query_aabb_max)
 
 {
-  if (((((this->m_query_aabb_min).x <= param_1->x) && ((this->m_query_aabb_min).y <= param_1->y)) &&
-      ((this->m_query_aabb_min).z <= param_1->z)) &&
-     (((param_2->x <= (this->m_query_aabb_max).x && (param_2->y <= (this->m_query_aabb_max).y)) &&
-      (param_2->z <= (this->m_query_aabb_max).z)))) {
+  if (((((this->m_query_aabb_min).x <= query_aabb_min->x) &&
+       ((this->m_query_aabb_min).y <= query_aabb_min->y)) &&
+      ((this->m_query_aabb_min).z <= query_aabb_min->z)) &&
+     (((query_aabb_max->x <= (this->m_query_aabb_max).x &&
+       (query_aabb_max->y <= (this->m_query_aabb_max).y)) &&
+      (query_aabb_max->z <= (this->m_query_aabb_max).z)))) {
     return true;
   }
   return false;
@@ -685,14 +693,16 @@ void __cdecl _dynamic_initializer_for__PHYS_X_VEC__(void)
 
 bool __thiscall
 cached_query_info_t::is_subset
-          (cached_query_info_t *this,phys_vec3 *param_1,phys_vec3 *param_2,int param_3,uint param_4)
+          (cached_query_info_t *this,phys_vec3 *query_aabb_min,phys_vec3 *query_aabb_max,
+          int query_contents,uint query_flags)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (((param_2->x < param_1->x) || (param_2->y < param_1->y)) || (param_2->z < param_1->z)) {
+  if (((query_aabb_max->x < query_aabb_min->x) || (query_aabb_max->y < query_aabb_min->y)) ||
+     (query_aabb_max->z < query_aabb_min->z)) {
     bVar2 = false;
   }
   else {
@@ -705,14 +715,14 @@ cached_query_info_t::is_subset
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == 0) &&
+  if ((query_contents == 0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                                ,0x10d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == 0) &&
+  if ((query_flags == 0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                                ,0x10e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -720,9 +730,9 @@ cached_query_info_t::is_subset
     return (bool)uVar3;
   }
   bVar2 = is_empty(this);
-  if ((((!bVar2) && (bVar2 = is_subset_aabb(this,param_1,param_2), bVar2)) &&
-      ((this->m_query_contents & param_3) == param_3)) &&
-     ((this->m_query_flags & param_4) == param_4)) {
+  if ((((!bVar2) && (bVar2 = is_subset_aabb(this,query_aabb_min,query_aabb_max), bVar2)) &&
+      ((this->m_query_contents & query_contents) == query_contents)) &&
+     ((this->m_query_flags & query_flags) == query_flags)) {
     return true;
   }
   return false;
@@ -783,23 +793,23 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 void __thiscall bpei_database_t::update_database(bpei_database_t *this)
 
 {
-  broad_phase_environment_info *local_c;
-  broad_phase_environment_info **local_8;
+  broad_phase_environment_info *bpei;
+  broad_phase_environment_info **prev_next;
   
-  local_8 = &this->m_bpei_list;
-  local_c = *local_8;
-  while (local_c != (broad_phase_environment_info *)0x0) {
-    if (local_c->m_data == (void *)0x0) {
-      *local_8 = local_c->m_next_bpei;
+  prev_next = &this->m_bpei_list;
+  bpei = *prev_next;
+  while (bpei != (broad_phase_environment_info *)0x0) {
+    if (bpei->m_data == (void *)0x0) {
+      *prev_next = bpei->m_next_bpei;
       phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-      ::remove(&this->m_bpei_map,&local_c->m_database_id);
-      phys_simple_allocator<broad_phase_environment_info>::free(&this->m_bpei_allocator,local_c);
+      ::remove(&this->m_bpei_map,&bpei->m_database_id);
+      phys_simple_allocator<broad_phase_environment_info>::free(&this->m_bpei_allocator,bpei);
     }
     else {
-      local_8 = &local_c->m_next_bpei;
-      local_c->m_data = (void *)0x0;
+      prev_next = &bpei->m_next_bpei;
+      bpei->m_data = (void *)0x0;
     }
-    local_c = *local_8;
+    bpei = *prev_next;
   }
   return;
 }
@@ -809,42 +819,43 @@ void __thiscall bpei_database_t::update_database(bpei_database_t *this)
 
 phys_gjk_cache_info * __thiscall
 phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
-          (phys_heap_gjk_cache_system_avl_tree *this,uint param_1,uint param_2,bool param_3)
+          (phys_heap_gjk_cache_system_avl_tree *this,uint id1,uint id2,bool __formal)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   phys_gjk_cache_info *ppVar4;
-  phys_gjk_geom_id_pair_key local_14;
-  bool local_9;
-  phys_gjk_cache_info_internal *local_8;
+  uint temp;
+  phys_gjk_geom_id_pair_key key;
+  bool swapped;
+  phys_gjk_cache_info_internal *gjk_ci;
   
-  uVar2 = param_1;
-  if ((param_1 == param_2) &&
+  uVar2 = id1;
+  if ((id1 == id2) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_gjk_cache_system.h"
                         ,0x135,"id1 != id2",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     ppVar4 = (phys_gjk_cache_info *)(*pcVar1)();
     return ppVar4;
   }
-  local_9 = param_2 < param_1;
-  if (local_9) {
-    param_1 = param_2;
-    param_2 = uVar2;
+  swapped = id2 < id1;
+  if (swapped) {
+    id1 = id2;
+    id2 = uVar2;
   }
-  if ((param_2 <= param_1) &&
+  if ((id2 <= id1) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_gjk_cache_system.h"
                         ,0x18,"id1 < id2",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     ppVar4 = (phys_gjk_cache_info *)(*pcVar1)();
     return ppVar4;
   }
-  local_14.m_id1 = param_1;
-  local_14.m_id2 = param_2;
-  local_8 = phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-            ::find(&this->m_search_tree,&local_14);
-  if (local_8 == (phys_gjk_cache_info_internal *)0x0) {
+  key.m_id1 = id1;
+  key.m_id2 = id2;
+  gjk_ci = phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
+           ::find(&this->m_search_tree,&key);
+  if (gjk_ci == (phys_gjk_cache_info_internal *)0x0) {
     if (this->m_max_num_gjk_ci <= (this->m_list_phys_gjk_cache_info_internal).m_count) {
       if (((pai_gjk_cache_system_max_num_gjk_ci.m_hits_total_count <
             pai_gjk_cache_system_max_num_gjk_ci.m_max_hits_total) ||
@@ -878,9 +889,9 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
       UNLOCK();
     }
     if ((this->m_list_phys_gjk_cache_info_internal).m_count < this->m_max_num_gjk_ci) {
-      local_8 = phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal>
-                ::allocate(&this->m_list_phys_gjk_cache_info_internal);
-      if (local_8 == (phys_gjk_cache_info_internal *)0x0) {
+      gjk_ci = phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal>
+               ::allocate(&this->m_list_phys_gjk_cache_info_internal);
+      if (gjk_ci == (phys_gjk_cache_info_internal *)0x0) {
         if (((pai_gjk_cache_system_create_gjk_ci.m_hits_total_count <
               pai_gjk_cache_system_create_gjk_ci.m_max_hits_total) ||
             (pai_gjk_cache_system_create_gjk_ci.m_max_hits_total == 0)) &&
@@ -909,38 +920,38 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
              pai_gjk_cache_system_create_gjk_ci.m_hits_frame_count + 1;
         UNLOCK();
       }
-      if (local_8 != (phys_gjk_cache_info_internal *)0x0) {
-        local_8->_padding_ = local_14.m_id1;
-        local_8->_padding_ = local_14.m_id2;
-        local_8->_padding_ = 0;
-        if (local_9 == false) {
-          local_8->_padding_ = local_8->_padding_ & 0xfffffffd;
+      if (gjk_ci != (phys_gjk_cache_info_internal *)0x0) {
+        gjk_ci->_padding_ = key.m_id1;
+        gjk_ci->_padding_ = key.m_id2;
+        gjk_ci->_padding_ = 0;
+        if (swapped == false) {
+          gjk_ci->_padding_ = gjk_ci->_padding_ & 0xfffffffd;
         }
         else {
-          local_8->_padding_ = local_8->_padding_ | 2;
+          gjk_ci->_padding_ = gjk_ci->_padding_ | 2;
         }
         phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-        ::add(&this->m_search_tree,&local_14,local_8);
-        local_8->m_next_gjk_ci = this->m_list_head;
-        this->m_list_head = local_8;
+        ::add(&this->m_search_tree,&key,gjk_ci);
+        gjk_ci->m_next_gjk_ci = this->m_list_head;
+        this->m_list_head = gjk_ci;
       }
     }
   }
   else {
-    phys_gjk_cache_info::update_swapped((phys_gjk_cache_info *)local_8,local_9);
+    phys_gjk_cache_info::update_swapped((phys_gjk_cache_info *)gjk_ci,swapped);
   }
-  return (phys_gjk_cache_info *)local_8;
+  return (phys_gjk_cache_info *)gjk_ci;
 }
 
 
 // 0083FD00  gjk_collision_epilog  (physics/phys_gjk_collision_detection.cpp:320)
 
-void __cdecl gjk_collision_epilog(bool param_1)
+void __cdecl gjk_collision_epilog(bool is_server_thread)
 
 {
   int unaff_EBP;
   
-  if (param_1) {
+  if (is_server_thread) {
     GamerProfile_WriteSettings(unaff_EBP);
   }
   return;
@@ -950,26 +961,26 @@ void __cdecl gjk_collision_epilog(bool param_1)
 // 0083FD20  get_gjk_cache_info  (physics/phys_gjk_collision_detection.cpp:338)
 
 phys_gjk_cache_info * __cdecl
-get_gjk_cache_info(phys_heap_gjk_cache_system_avl_tree *param_1,gjk_base_t *param_2,
-                  gjk_base_t *param_3)
+get_gjk_cache_info(phys_heap_gjk_cache_system_avl_tree *gjk_cache,gjk_base_t *cg1,gjk_base_t *cg2)
 
 {
-  uint uVar1;
-  uint uVar2;
-  phys_gjk_cache_info *ppVar3;
-  undefined1 uVar4;
+  uint id2;
+  uint id1;
+  phys_gjk_cache_info *ppVar1;
+  undefined1 __formal;
+  phys_gjk_cache_info *gjk_ci;
   
-  if ((param_1 == (phys_heap_gjk_cache_system_avl_tree *)0x0) || (g_use_gjk_cache == 0)) {
-    ppVar3 = (phys_gjk_cache_info *)0x0;
+  if ((gjk_cache == (phys_heap_gjk_cache_system_avl_tree *)0x0) || (g_use_gjk_cache == 0)) {
+    ppVar1 = (phys_gjk_cache_info *)0x0;
   }
   else {
-    uVar4 = 1;
-    uVar1 = gjk_base_t::get_geom_id(param_3);
-    uVar2 = gjk_base_t::get_geom_id(param_2);
-    ppVar3 = phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
-                       (param_1,uVar2,uVar1,(bool)uVar4);
+    __formal = 1;
+    id2 = gjk_base_t::get_geom_id(cg2);
+    id1 = gjk_base_t::get_geom_id(cg1);
+    ppVar1 = phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info
+                       (gjk_cache,id1,id2,(bool)__formal);
   }
-  return ppVar3;
+  return ppVar1;
 }
 
 
@@ -998,7 +1009,7 @@ void __thiscall gjk_query_output::reset_cache(gjk_query_output *this)
 
 // 008404C0  calc_query_aabb  (physics/phys_gjk_collision_detection.cpp:393)
 
-void __thiscall gjk_query_output::calc_query_aabb(gjk_query_output *this,gjk_query_input *param_1)
+void __thiscall gjk_query_output::calc_query_aabb(gjk_query_output *this,gjk_query_input *input)
 
 {
   float fVar1;
@@ -1049,29 +1060,29 @@ void __thiscall gjk_query_output::calc_query_aabb(gjk_query_output *this,gjk_que
   phys_vec3 *local_18;
   gjk_query_output *local_14;
   
-  local_18 = &param_1->m_cg_position;
-  local_40 = local_18->x + (param_1->m_cg_aabb_min).x;
-  local_3c = (param_1->m_cg_position).y + (param_1->m_cg_aabb_min).y;
-  local_38 = (param_1->m_cg_position).z + (param_1->m_cg_aabb_min).z;
+  local_18 = &input->m_cg_position;
+  local_40 = local_18->x + (input->m_cg_aabb_min).x;
+  local_3c = (input->m_cg_position).y + (input->m_cg_aabb_min).y;
+  local_38 = (input->m_cg_position).z + (input->m_cg_aabb_min).z;
   local_44 = &this->m_query_aabb_min;
   local_44->x = local_40;
   (this->m_query_aabb_min).y = local_3c;
   (this->m_query_aabb_min).z = local_38;
-  local_48 = &param_1->m_cg_aabb_max;
-  local_4c = &param_1->m_cg_position;
+  local_48 = &input->m_cg_aabb_max;
+  local_4c = &input->m_cg_position;
   local_70 = local_4c->x + local_48->x;
-  local_6c = (param_1->m_cg_position).y + (param_1->m_cg_aabb_max).y;
-  local_68 = (param_1->m_cg_position).z + (param_1->m_cg_aabb_max).z;
+  local_6c = (input->m_cg_position).y + (input->m_cg_aabb_max).y;
+  local_68 = (input->m_cg_position).z + (input->m_cg_aabb_max).z;
   local_74 = &this->m_query_aabb_max;
   local_74->x = local_70;
   (this->m_query_aabb_max).y = local_6c;
   (this->m_query_aabb_max).z = local_68;
-  local_78 = &param_1->m_cg_translation;
+  local_78 = &input->m_cg_translation;
   local_7c = &this->m_query_aabb_min;
   local_a0.x = local_7c->x + local_78->x;
-  local_a0.y = (this->m_query_aabb_min).y + (param_1->m_cg_translation).y;
-  local_a0.z = (this->m_query_aabb_min).z + (param_1->m_cg_translation).z;
-  local_a4 = &param_1->m_ac_eps_vec;
+  local_a0.y = (this->m_query_aabb_min).y + (input->m_cg_translation).y;
+  local_a0.z = (this->m_query_aabb_min).z + (input->m_cg_translation).z;
+  local_a4 = &input->m_ac_eps_vec;
   local_88 = local_a0.z;
   local_84 = local_a0.y;
   local_80 = local_a0.x;
@@ -1090,12 +1101,12 @@ void __thiscall gjk_query_output::calc_query_aabb(gjk_query_output *this,gjk_que
   local_e4->x = local_e0;
   (local_14->m_query_aabb_min).y = local_dc;
   (local_14->m_query_aabb_min).z = local_d8;
-  local_e8 = &param_1->m_cg_translation;
+  local_e8 = &input->m_cg_translation;
   local_ec = &local_14->m_query_aabb_max;
   local_110.x = local_ec->x + local_e8->x;
-  local_110.y = (local_14->m_query_aabb_max).y + (param_1->m_cg_translation).y;
-  local_110.z = (local_14->m_query_aabb_max).z + (param_1->m_cg_translation).z;
-  local_114 = &param_1->m_ac_eps_vec;
+  local_110.y = (local_14->m_query_aabb_max).y + (input->m_cg_translation).y;
+  local_110.z = (local_14->m_query_aabb_max).z + (input->m_cg_translation).z;
+  local_114 = &input->m_ac_eps_vec;
   local_f8 = local_110.z;
   local_f4 = local_110.y;
   local_f0 = local_110.x;
@@ -1126,15 +1137,15 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_TIMES_2__(void)
 
 // 00840390  query_prolog  (physics/phys_gjk_collision_detection.cpp:401)
 
-void __thiscall gjk_query_output::query_prolog(gjk_query_output *this,gjk_query_input *param_1)
+void __thiscall gjk_query_output::query_prolog(gjk_query_output *this,gjk_query_input *input)
 
 {
   (this->m_list_geom_info).m_first = (gjk_geom_info_t *)0x0;
   (this->m_list_geom_info).m_last_next_ptr = &(this->m_list_geom_info).m_first;
   (this->m_list_geom_info).m_alloc_count = 0;
   this->m_query_visitor_count = this->m_query_visitor_count + 1;
-  gjk_query_input::visit_skip_list(param_1,this->m_query_visitor_count);
-  calc_query_aabb(this,param_1);
+  gjk_query_input::visit_skip_list(input,this->m_query_visitor_count);
+  calc_query_aabb(this,input);
   phys_transient_allocator::reset_to_state(&this->m_allocator,&this->m_allocator_state);
   return;
 }
@@ -1173,13 +1184,13 @@ void __thiscall gjk_query_output::query_epilog(gjk_query_output *this)
 // 008409B0  allocate  (physics/phys_gjk_collision_detection.cpp:446)
 
 void * __thiscall
-gjk_query_output::allocate(gjk_query_output *this,int param_1,int param_2,bool param_3)
+gjk_query_output::allocate(gjk_query_output *this,int size,int alignment,bool no_error)
 
 {
   void *pvVar1;
   
   pvVar1 = phys_transient_allocator::allocate
-                     (&this->m_allocator,param_1,param_2,(uint)param_3,
+                     (&this->m_allocator,size,alignment,(uint)no_error,
                       "gjk player trace out of memory.");
   return pvVar1;
 }
@@ -1188,18 +1199,19 @@ gjk_query_output::allocate(gjk_query_output *this,int param_1,int param_2,bool p
 // 008409E0  get_local_query_aabb  (physics/phys_gjk_collision_detection.cpp:451)
 
 void __thiscall
-gjk_query_output::get_local_query_aabb(gjk_query_output *this,float *param_1,float *param_2)
+gjk_query_output::get_local_query_aabb
+          (gjk_query_output *this,float *local_query_aabb_min,float *local_query_aabb_max)
 
 {
-  Phys_NitrousVecToVec3(&this->m_local_query_aabb_min,param_1);
-  Phys_NitrousVecToVec3(&this->m_local_query_aabb_max,param_2);
+  Phys_NitrousVecToVec3(&this->m_local_query_aabb_min,local_query_aabb_min);
+  Phys_NitrousVecToVec3(&this->m_local_query_aabb_max,local_query_aabb_max);
   return;
 }
 
 
 // 00840A20  query_create_prolog  (physics/phys_gjk_collision_detection.cpp:457)
 
-bool __thiscall gjk_query_output::query_create_prolog(gjk_query_output *this,void *param_1)
+bool __thiscall gjk_query_output::query_create_prolog(gjk_query_output *this,void *geom)
 
 {
   code *pcVar1;
@@ -1208,7 +1220,7 @@ bool __thiscall gjk_query_output::query_create_prolog(gjk_query_output *this,voi
   void *pvVar4;
   broad_phase_environment_info *pbVar5;
   
-  if ((param_1 == (void *)0x0) &&
+  if ((geom == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                ,0x1ca,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1232,7 +1244,7 @@ bool __thiscall gjk_query_output::query_create_prolog(gjk_query_output *this,voi
   }
   pvVar4 = gjk_entity_info_t::get_ent(this->m_local_ent_info);
   (this->m_local_database_id).m_id1 = (uint)pvVar4;
-  (this->m_local_database_id).m_id2 = (uint)param_1;
+  (this->m_local_database_id).m_id2 = (uint)geom;
   pbVar5 = bpei_database_t::get_bpei(&this->m_bpei_database,this->m_local_database_id);
   this->m_local_bpei = pbVar5;
   return this->m_local_bpei->m_data == (void *)0x0;
@@ -1241,14 +1253,14 @@ bool __thiscall gjk_query_output::query_create_prolog(gjk_query_output *this,voi
 
 // 00840C00  query_create_epilog  (physics/phys_gjk_collision_detection.cpp:471)
 
-void __thiscall gjk_query_output::query_create_epilog(gjk_query_output *this,gjk_base_t *param_1)
+void __thiscall gjk_query_output::query_create_epilog(gjk_query_output *this,gjk_base_t *gjk_geom)
 
 {
   code *pcVar1;
   bool bVar2;
   gjk_geom_info_t *pgVar3;
   
-  if (param_1 == (gjk_base_t *)0x0) {
+  if (gjk_geom == (gjk_base_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x1d8,0,"%s");
     if (!bVar2) {
@@ -1291,8 +1303,8 @@ void __thiscall gjk_query_output::query_create_epilog(gjk_query_output *this,gjk
       return;
     }
   }
-  gjk_base_t::set_geom_id_new(param_1,this->m_local_bpei->m_gjk_geom_id);
-  pgVar3 = create_geom_info(this,param_1,this->m_local_ent_info,(float *)0x0,(float *)0x0);
+  gjk_base_t::set_geom_id_new(gjk_geom,this->m_local_bpei->m_gjk_geom_id);
+  pgVar3 = create_geom_info(this,gjk_geom,this->m_local_ent_info,(float *)0x0,(float *)0x0);
   this->m_local_bpei->m_data = pgVar3;
   return;
 }
@@ -1302,7 +1314,7 @@ void __thiscall gjk_query_output::query_create_epilog(gjk_query_output *this,gjk
 
 bool __thiscall
 gjk_query_output::query_create_prolog_1
-          (gjk_query_output *this,float *param_1,float *param_2,void *param_3)
+          (gjk_query_output *this,float *local_aabb_min,float *local_aabb_max,void *geom)
 
 {
   code *pcVar1;
@@ -1333,13 +1345,13 @@ gjk_query_output::query_create_prolog_1
       return (bool)uVar3;
     }
   }
-  Phys_Vec3ToNitrousVec(&local_30,param_1);
-  Phys_Vec3ToNitrousVec(&local_40,param_2);
+  Phys_Vec3ToNitrousVec(&local_30,local_aabb_min);
+  Phys_Vec3ToNitrousVec(&local_40,local_aabb_max);
   bVar2 = phys_are_aabb_overlapping
                     (&local_14->m_local_query_aabb_min,&local_14->m_local_query_aabb_max,&local_30,
                      &local_40);
   if (bVar2) {
-    uVar3 = (**(code **)(*(int *)local_14 + 0xc))(param_3);
+    uVar3 = (**(code **)(*(int *)local_14 + 0xc))(geom);
   }
   else {
     uVar3 = 0;
@@ -1350,10 +1362,11 @@ gjk_query_output::query_create_prolog_1
 
 // 00840F30  query_create_epilog_1  (physics/phys_gjk_collision_detection.cpp:494)
 
-void __thiscall gjk_query_output::query_create_epilog_1(gjk_query_output *this,gjk_base_t *param_1)
+void __thiscall
+gjk_query_output::query_create_epilog_1(gjk_query_output *this,gjk_base_t *gjk_geom_2)
 
 {
-  (**(code **)(*(int *)this + 0x10))(param_1);
+  (**(code **)(*(int *)this + 0x10))(gjk_geom_2);
   return;
 }
 
@@ -1361,16 +1374,16 @@ void __thiscall gjk_query_output::query_create_epilog_1(gjk_query_output *this,g
 // 00840F50  get_ent_info  (physics/phys_gjk_collision_detection.cpp:499)
 
 broad_phase_environment_info * __thiscall
-gjk_query_output::get_ent_info(gjk_query_output *this,uint param_1)
+gjk_query_output::get_ent_info(gjk_query_output *this,uint ent_id)
 
 {
-  bpei_database_id bVar1;
-  broad_phase_environment_info *pbVar2;
+  bpei_database_id database_id;
+  broad_phase_environment_info *pbVar1;
   
-  bVar1.m_id2 = 0;
-  bVar1.m_id1 = param_1;
-  pbVar2 = bpei_database_t::get_bpei(&this->m_bpei_database,bVar1);
-  return pbVar2;
+  database_id.m_id2 = 0;
+  database_id.m_id1 = ent_id;
+  pbVar1 = bpei_database_t::get_bpei(&this->m_bpei_database,database_id);
+  return pbVar1;
 }
 
 
@@ -1378,7 +1391,7 @@ gjk_query_output::get_ent_info(gjk_query_output *this,uint param_1)
 
 void __thiscall
 gjk_query_output::set_local_query_info
-          (gjk_query_output *this,gjk_query_input *param_1,gjk_entity_info_t *param_2)
+          (gjk_query_output *this,gjk_query_input *input,gjk_entity_info_t *ent_info)
 
 {
   code *pcVar1;
@@ -1386,11 +1399,11 @@ gjk_query_output::set_local_query_info
   void *pvVar3;
   
   phys_calc_local_aabb
-            (&this->m_query_aabb_min,&this->m_query_aabb_max,&param_2->m_mat,
+            (&this->m_query_aabb_min,&this->m_query_aabb_max,&ent_info->m_mat,
              &this->m_local_query_aabb_min,&this->m_local_query_aabb_max);
-  this->m_local_query_input = param_1;
-  this->m_local_ent_info = param_2;
-  pvVar3 = gjk_entity_info_t::get_ent(param_2);
+  this->m_local_query_input = input;
+  this->m_local_ent_info = ent_info;
+  pvVar3 = gjk_entity_info_t::get_ent(ent_info);
   if (pvVar3 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x1fd,0,"%s");
@@ -1410,14 +1423,15 @@ gjk_query_output::set_local_query_info
 
 gjk_geom_info_t * __thiscall
 gjk_query_output::create_geom_info
-          (gjk_query_output *this,gjk_base_t *param_1,gjk_entity_info_t *param_2,float *param_3,
-          float *param_4)
+          (gjk_query_output *this,gjk_base_t *cg,gjk_entity_info_t *ent_info,float *aabb_min,
+          float *aabb_max)
 
 {
   code *pcVar1;
   bool bVar2;
   gjk_geom_info_t *pgVar3;
   gjk_geom_info_t *local_40;
+  gjk_geom_info_t *gi;
   
   this->m_geom_count = this->m_geom_count + 1;
   local_40 = phys_transient_allocator::allocate
@@ -1425,22 +1439,22 @@ gjk_query_output::create_geom_info
   if (local_40 == (gjk_geom_info_t *)0x0) {
     local_40 = (gjk_geom_info_t *)0x0;
   }
-  local_40->m_cg = param_1;
-  local_40->m_ent_info = param_2;
+  local_40->m_cg = cg;
+  local_40->m_ent_info = ent_info;
   local_40->m_query_visitor_count = -1;
-  if (param_3 == (float *)0x0) {
+  if (aabb_min == (float *)0x0) {
     gjk_geom_info_t::calc_aabb(local_40);
   }
   else {
-    if ((param_4 == (float *)0x0) &&
+    if ((aabb_max == (float *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                  ,0x209,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pgVar3 = (gjk_geom_info_t *)(*pcVar1)();
       return pgVar3;
     }
-    Phys_Vec3ToNitrousVec(param_3,&local_40->m_aabb_min);
-    Phys_Vec3ToNitrousVec(param_4,&local_40->m_aabb_max);
+    Phys_Vec3ToNitrousVec(aabb_min,&local_40->m_aabb_min);
+    Phys_Vec3ToNitrousVec(aabb_max,&local_40->m_aabb_max);
   }
   local_40->m_total_next_link = this->m_total_list_geom_info;
   this->m_total_list_geom_info = local_40;
@@ -1456,6 +1470,7 @@ gjk_entity_info_t * __thiscall gjk_query_output::create_entity_info(gjk_query_ou
 
 {
   gjk_entity_info_t *local_38;
+  gjk_entity_info_t *ent_info;
   
   this->m_ent_count = this->m_ent_count + 1;
   local_38 = phys_transient_allocator::allocate
@@ -1476,40 +1491,39 @@ gjk_entity_info_t * __thiscall gjk_query_output::create_entity_info(gjk_query_ou
 
 void __thiscall
 gjk_query_output::add
-          (gjk_query_output *this,gjk_query_input *param_1,CollisionPartition *param_2,
-          CollisionAabbTree *param_3)
+          (gjk_query_output *this,gjk_query_input *input,CollisionPartition *partition,
+          CollisionAabbTree *tree)
 
 {
-  bpei_database_id bVar1;
-  gjk_geom_info_t *pgVar2;
-  float local_2c;
+  bpei_database_id database_id_00;
+  gjk_geom_info_t *pgVar1;
+  float aabb_max;
   float local_28;
   float local_24;
-  gjk_partition_t *local_20;
-  float local_1c;
+  gjk_base_t *cg;
+  float aabb_min;
   float local_18;
   float local_14;
-  CollisionPartition *local_10;
+  CollisionPartition *database_id;
   undefined4 local_c;
-  broad_phase_environment_info *local_8;
+  broad_phase_environment_info *bpei;
   
-  local_10 = param_2;
+  database_id = partition;
   local_c = 0;
-  bVar1.m_id2 = 0;
-  bVar1.m_id1 = (uint)param_2;
-  local_8 = bpei_database_t::get_bpei(&this->m_bpei_database,bVar1);
-  if (local_8->m_data == (void *)0x0) {
-    local_20 = gjk_partition_t::create(param_3,(gjk_collision_visitor *)this);
-    gjk_base_t::set_geom_id_new((gjk_base_t *)local_20,local_8->m_gjk_geom_id);
-    local_1c = param_3->origin[0] - param_3->halfSize[0];
-    local_18 = param_3->origin[1] - param_3->halfSize[1];
-    local_14 = param_3->origin[2] - param_3->halfSize[2];
-    local_2c = param_3->origin[0] + param_3->halfSize[0];
-    local_28 = param_3->origin[1] + param_3->halfSize[1];
-    local_24 = param_3->origin[2] + param_3->halfSize[2];
-    pgVar2 = create_geom_info(this,(gjk_base_t *)local_20,(gjk_entity_info_t *)0x0,&local_1c,
-                              &local_2c);
-    local_8->m_data = pgVar2;
+  database_id_00.m_id2 = 0;
+  database_id_00.m_id1 = (uint)partition;
+  bpei = bpei_database_t::get_bpei(&this->m_bpei_database,database_id_00);
+  if (bpei->m_data == (void *)0x0) {
+    cg = (gjk_base_t *)gjk_partition_t::create(tree,(gjk_collision_visitor *)this);
+    gjk_base_t::set_geom_id_new(cg,bpei->m_gjk_geom_id);
+    aabb_min = tree->origin[0] - tree->halfSize[0];
+    local_18 = tree->origin[1] - tree->halfSize[1];
+    local_14 = tree->origin[2] - tree->halfSize[2];
+    aabb_max = tree->origin[0] + tree->halfSize[0];
+    local_28 = tree->origin[1] + tree->halfSize[1];
+    local_24 = tree->origin[2] + tree->halfSize[2];
+    pgVar1 = create_geom_info(this,cg,(gjk_entity_info_t *)0x0,&aabb_min,&aabb_max);
+    bpei->m_data = pgVar1;
   }
   return;
 }
@@ -1519,24 +1533,27 @@ gjk_query_output::add
 
 void __thiscall
 gjk_query_output::add
-          (gjk_query_output *this,gjk_query_input *param_1,cbrush_t *param_2,float *param_3,
-          float *param_4)
+          (gjk_query_output *this,gjk_query_input *input,cbrush_t *brush,float *query_mins,
+          float *query_maxs)
 
 {
-  bpei_database_id bVar1;
-  broad_phase_environment_info *pbVar2;
+  bpei_database_id database_id;
+  broad_phase_environment_info *pbVar1;
   gjk_base_t *this_00;
-  gjk_geom_info_t *pgVar3;
+  gjk_geom_info_t *pgVar2;
+  int stype;
+  gjk_base_t *cg;
+  broad_phase_environment_info *bpei;
   
-  bVar1.m_id2 = 0;
-  bVar1.m_id1 = (uint)param_2;
-  pbVar2 = bpei_database_t::get_bpei(&this->m_bpei_database,bVar1);
-  if (pbVar2->m_data == (void *)0x0) {
-    this_00 = gjk_brush_t::create(param_2,(int)(param_2->axial_sflags[0][0] & 0x3f00000U) >> 0x14,
+  database_id.m_id2 = 0;
+  database_id.m_id1 = (uint)brush;
+  pbVar1 = bpei_database_t::get_bpei(&this->m_bpei_database,database_id);
+  if (pbVar1->m_data == (void *)0x0) {
+    this_00 = gjk_brush_t::create(brush,(int)(brush->axial_sflags[0][0] & 0x3f00000U) >> 0x14,
                                   (gjk_collision_visitor *)this);
-    gjk_base_t::set_geom_id_new(this_00,pbVar2->m_gjk_geom_id);
-    pgVar3 = create_geom_info(this,this_00,(gjk_entity_info_t *)0x0,param_2->mins,param_2->maxs);
-    pbVar2->m_data = pgVar3;
+    gjk_base_t::set_geom_id_new(this_00,pbVar1->m_gjk_geom_id);
+    pgVar2 = create_geom_info(this,this_00,(gjk_entity_info_t *)0x0,brush->mins,brush->maxs);
+    pbVar1->m_data = pgVar2;
   }
   return;
 }
@@ -1549,13 +1566,12 @@ gjk_query_output::add
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall
-gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,gentity_s *param_2)
+void __thiscall gjk_query_output::add(gjk_query_output *this,gjk_query_input *input,gentity_s *gent)
 
 {
-  gjk_entity_info_t *pgVar1;
-  code *pcVar2;
-  bool bVar3;
+  gjk_entity_info_t *ent_info;
+  code *pcVar1;
+  bool bVar2;
   float local_5c [9];
   phys_vec3 *local_38;
   phys_vec3 *local_34;
@@ -1565,51 +1581,51 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,gentity_s 
   gentity_s *local_18;
   gjk_query_output *local_14;
   
-  local_18 = param_2;
+  local_18 = gent;
   local_14 = this;
-  local_1c = get_ent_info(this,(uint)param_2);
+  local_1c = get_ent_info(this,(uint)gent);
   if (local_1c->m_data == (void *)0x0) {
     local_20 = create_entity_info(local_14);
     local_20->m_ent_type = ET_GENT;
-    local_20->m_ent = param_2;
-    if (((param_2->s).eType == 0x11) || ((param_2->s).eType == 1)) {
+    local_20->m_ent = gent;
+    if (((gent->s).eType == 0x11) || ((gent->s).eType == 1)) {
       phys_mat44::operator=(&local_20->m_mat,&::PHYS_IDENTITY_MATRIX);
-      local_34 = Phys_Vec3ToNitrousVec(&local_30,(param_2->r).currentOrigin);
+      local_34 = Phys_Vec3ToNitrousVec(&local_30,(gent->r).currentOrigin);
       local_38 = &(local_20->m_mat).w;
       local_38->x = local_34->x;
       (local_20->m_mat).w.y = local_34->y;
       (local_20->m_mat).w.z = local_34->z;
     }
     else {
-      AnglesToAxis((param_2->r).currentAngles,(float (*) [3])local_5c);
+      AnglesToAxis((gent->r).currentAngles,(float (*) [3])local_5c);
       Phys_AxisToNitrousMat((float (*) [3])local_5c,&local_20->m_mat);
-      Phys_Vec3ToNitrousVec((param_2->r).currentOrigin,&(local_20->m_mat).w);
+      Phys_Vec3ToNitrousVec((gent->r).currentOrigin,&(local_20->m_mat).w);
     }
     local_1c->m_data = local_20;
   }
   if (local_1c->m_data == (void *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x24e,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = local_1c->m_data;
-  if (pgVar1->m_ent_type != ET_GENT) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+  ent_info = local_1c->m_data;
+  if (ent_info->m_ent_type != ET_GENT) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x250,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (pgVar1->m_query_visitor_count != local_14->m_gent_query_visitor_count) {
-    pgVar1->m_query_visitor_count = local_14->m_gent_query_visitor_count;
-    set_local_query_info(local_14,param_1,pgVar1);
-    create_gjk_geom(param_2,(gjk_collision_visitor *)local_14,true,param_1->m_contents,false);
+  if (ent_info->m_query_visitor_count != local_14->m_gent_query_visitor_count) {
+    ent_info->m_query_visitor_count = local_14->m_gent_query_visitor_count;
+    set_local_query_info(local_14,input,ent_info);
+    create_gjk_geom(gent,(gjk_collision_visitor *)local_14,true,input->m_contents,false);
   }
   return;
 }
@@ -1626,6 +1642,7 @@ phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_i
 
 {
   phys_gjk_cache_info_internal *local_38;
+  void *slot;
   
   local_38 = PMM_ALLOC(0x90,0x10);
   if (local_38 == (phys_gjk_cache_info_internal *)0x0) {
@@ -1651,13 +1668,12 @@ phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_i
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall
-gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,centity_s *param_2)
+void __thiscall gjk_query_output::add(gjk_query_output *this,gjk_query_input *input,centity_s *cent)
 
 {
-  gjk_entity_info_t *pgVar1;
-  code *pcVar2;
-  bool bVar3;
+  gjk_entity_info_t *ent_info;
+  code *pcVar1;
+  bool bVar2;
   float local_5c [9];
   phys_vec3 *local_38;
   phys_vec3 *local_34;
@@ -1667,52 +1683,52 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,centity_s 
   centity_s *local_18;
   gjk_query_output *local_14;
   
-  local_18 = param_2;
+  local_18 = cent;
   local_14 = this;
-  local_1c = get_ent_info(this,(uint)param_2);
+  local_1c = get_ent_info(this,(uint)cent);
   if (local_1c->m_data == (void *)0x0) {
     local_20 = create_entity_info(local_14);
     local_20->m_ent_type = ET_CENT;
-    local_20->m_ent = param_2;
-    if (((param_2->nextState).eType == 0x11) || ((param_2->nextState).eType == 1)) {
+    local_20->m_ent = cent;
+    if (((cent->nextState).eType == 0x11) || ((cent->nextState).eType == 1)) {
       phys_mat44::operator=(&local_20->m_mat,&::PHYS_IDENTITY_MATRIX);
-      local_34 = Phys_Vec3ToNitrousVec(&local_30,(param_2->pose).origin);
+      local_34 = Phys_Vec3ToNitrousVec(&local_30,(cent->pose).origin);
       local_38 = &(local_20->m_mat).w;
       local_38->x = local_34->x;
       (local_20->m_mat).w.y = local_34->y;
       (local_20->m_mat).w.z = local_34->z;
     }
     else {
-      AnglesToAxis((param_2->pose).angles,(float (*) [3])local_5c);
+      AnglesToAxis((cent->pose).angles,(float (*) [3])local_5c);
       Phys_AxisToNitrousMat((float (*) [3])local_5c,&local_20->m_mat);
-      Phys_Vec3ToNitrousVec((param_2->pose).origin,&(local_20->m_mat).w);
+      Phys_Vec3ToNitrousVec((cent->pose).origin,&(local_20->m_mat).w);
     }
     local_1c->m_data = local_20;
   }
   if (local_1c->m_data == (void *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x26b,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = local_1c->m_data;
-  if (pgVar1->m_ent_type != ET_CENT) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+  ent_info = local_1c->m_data;
+  if (ent_info->m_ent_type != ET_CENT) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x26d,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (pgVar1->m_query_visitor_count != local_14->m_cent_query_visitor_count) {
-    pgVar1->m_query_visitor_count = local_14->m_cent_query_visitor_count;
-    set_local_query_info(local_14,param_1,pgVar1);
-    create_gjk_geom(cgCollWorldLocalClientNum,param_2,(gjk_collision_visitor *)local_14,true,
-                    param_1->m_contents,false,false);
+  if (ent_info->m_query_visitor_count != local_14->m_cent_query_visitor_count) {
+    ent_info->m_query_visitor_count = local_14->m_cent_query_visitor_count;
+    set_local_query_info(local_14,input,ent_info);
+    create_gjk_geom(cgCollWorldLocalClientNum,cent,(gjk_collision_visitor *)local_14,true,
+                    input->m_contents,false,false);
   }
   return;
 }
@@ -1720,8 +1736,7 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,centity_s 
 
 // 00843BD0  gjk_trace_plane_1d  (physics/phys_gjk_collision_detection.h:617)
 
-bool __cdecl
-gjk_trace_plane_1d(float param_1,float param_2,float *param_3,float *param_4,bool param_5)
+bool __cdecl gjk_trace_plane_1d(float d1,float d2,float *min_t,float *max_t,bool use_iw_logic)
 
 {
   code *pcVar1;
@@ -1729,10 +1744,12 @@ gjk_trace_plane_1d(float param_1,float param_2,float *param_3,float *param_4,boo
   undefined1 uVar3;
   float fVar4;
   float local_14;
+  float delta_2;
+  float delta;
   
-  if (param_1 <= 0.0) {
-    if (0.0 < param_2) {
-      fVar4 = param_1 - param_2;
+  if (d1 <= 0.0) {
+    if (0.0 < d2) {
+      fVar4 = d1 - d2;
       if ((0.0 <= fVar4) &&
          (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                                    ,0x284,0,"%s"), !bVar2)) {
@@ -1740,28 +1757,28 @@ gjk_trace_plane_1d(float param_1,float param_2,float *param_3,float *param_4,boo
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (!param_5) {
-        param_1 = param_1 - 0.0625;
+      if (!use_iw_logic) {
+        d1 = d1 - 0.0625;
       }
-      if ((param_1 < *param_4 * fVar4) && (*param_4 = param_1 / fVar4, *param_4 <= *param_3)) {
+      if ((d1 < *max_t * fVar4) && (*max_t = d1 / fVar4, *max_t <= *min_t)) {
         return false;
       }
     }
   }
   else {
-    if (0.125 <= param_1) {
+    if (0.125 <= d1) {
       local_14 = 0.125;
     }
     else {
-      local_14 = param_1;
+      local_14 = d1;
     }
-    if (local_14 <= param_2) {
-      if ((param_1 <= 0.0625) && (!param_5)) {
+    if (local_14 <= d2) {
+      if ((d1 <= 0.0625) && (!use_iw_logic)) {
         return true;
       }
       return false;
     }
-    fVar4 = param_1 - param_2;
+    fVar4 = d1 - d2;
     if ((fVar4 <= 0.0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.h"
                                  ,0x275,0,"%s"), !bVar2)) {
@@ -1769,8 +1786,7 @@ gjk_trace_plane_1d(float param_1,float param_2,float *param_3,float *param_4,boo
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((*param_3 * fVar4 < param_1 - 0.125) &&
-       (*param_3 = (param_1 - 0.125) / fVar4, *param_4 <= *param_3)) {
+    if ((*min_t * fVar4 < d1 - 0.125) && (*min_t = (d1 - 0.125) / fVar4, *max_t <= *min_t)) {
       return false;
     }
   }
@@ -1780,30 +1796,29 @@ gjk_trace_plane_1d(float param_1,float param_2,float *param_3,float *param_4,boo
 
 // 008417B0  add  (physics/phys_gjk_collision_detection.cpp:632)
 
-void __thiscall
-gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,Glass *param_2)
+void __thiscall gjk_query_output::add(gjk_query_output *this,gjk_query_input *input,Glass *glass)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_38 [9];
-  gjk_entity_info_t *local_14;
-  broad_phase_environment_info *local_10;
-  gjk_entity_info_t *local_c;
-  Glass *local_8;
+  gjk_entity_info_t *ent_info_2;
+  broad_phase_environment_info *bpei;
+  gjk_entity_info_t *ent_info;
+  uint glass_id;
   
-  local_8 = param_2;
-  local_10 = get_ent_info(this,(uint)param_2);
-  if (local_10->m_data == (void *)0x0) {
-    local_14 = create_entity_info(this);
-    local_14->m_ent_type = ET_GLASS;
-    local_14->m_ent = param_2;
-    AnglesToAxis(param_2->angles,(float (*) [3])local_38);
-    Phys_AxisToNitrousMat((float (*) [3])local_38,&local_14->m_mat);
-    Phys_Vec3ToNitrousVec(param_2->origin,&(local_14->m_mat).w);
-    local_10->m_data = local_14;
+  glass_id = (uint)glass;
+  bpei = get_ent_info(this,(uint)glass);
+  if (bpei->m_data == (void *)0x0) {
+    ent_info_2 = create_entity_info(this);
+    ent_info_2->m_ent_type = ET_GLASS;
+    ent_info_2->m_ent = glass;
+    AnglesToAxis(glass->angles,(float (*) [3])local_38);
+    Phys_AxisToNitrousMat((float (*) [3])local_38,&ent_info_2->m_mat);
+    Phys_Vec3ToNitrousVec(glass->origin,&(ent_info_2->m_mat).w);
+    bpei->m_data = ent_info_2;
   }
-  if (local_10->m_data == (void *)0x0) {
+  if (bpei->m_data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x282,0,"%s");
     if (!bVar2) {
@@ -1812,8 +1827,8 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,Glass *par
       return;
     }
   }
-  local_c = local_10->m_data;
-  if (local_c->m_ent_type != ET_GLASS) {
+  ent_info = bpei->m_data;
+  if (ent_info->m_ent_type != ET_GLASS) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x284,0,"%s");
     if (!bVar2) {
@@ -1822,10 +1837,10 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,Glass *par
       return;
     }
   }
-  if (local_c->m_query_visitor_count != this->m_gent_query_visitor_count) {
-    local_c->m_query_visitor_count = this->m_gent_query_visitor_count;
-    set_local_query_info(this,param_1,local_c);
-    create_gjk_geom(param_2,(gjk_collision_visitor *)this,param_1->m_contents);
+  if (ent_info->m_query_visitor_count != this->m_gent_query_visitor_count) {
+    ent_info->m_query_visitor_count = this->m_gent_query_visitor_count;
+    set_local_query_info(this,input,ent_info);
+    create_gjk_geom(glass,(gjk_collision_visitor *)this,input->m_contents);
   }
   return;
 }
@@ -1834,37 +1849,37 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,Glass *par
 // 008418F0  add  (physics/phys_gjk_collision_detection.cpp:654)
 
 void __thiscall
-gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,DynEntityDef *param_2)
+gjk_query_output::add(gjk_query_output *this,gjk_query_input *input,DynEntityDef *dent)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_48 [9];
   DynEntityDrawType local_24;
-  DynEntityPose *local_20;
-  DynEntityDrawType local_1c;
-  gjk_entity_info_t *local_18;
-  ushort local_14;
-  DynEntityDef *local_10;
-  broad_phase_environment_info *local_c;
-  gjk_entity_info_t *local_8;
+  DynEntityPose *dynEntPose;
+  DynEntityDrawType drawType;
+  gjk_entity_info_t *ent_info_2;
+  ushort dynEntId;
+  uint dent_id;
+  broad_phase_environment_info *bpei;
+  gjk_entity_info_t *ent_info;
   
-  local_10 = param_2;
-  local_c = get_ent_info(this,(uint)param_2);
-  if (local_c->m_data == (void *)0x0) {
-    local_18 = create_entity_info(this);
-    local_18->m_ent_type = ET_DENT;
-    local_18->m_ent = param_2;
-    local_24 = (DynEntityDrawType)(param_2->xModel == (XModel *)0x0);
-    local_1c = local_24;
-    local_14 = DynEnt_GetId(param_2,local_24);
-    local_20 = DynEnt_GetClientPose(local_14,local_1c);
-    UnitQuatToAxis((float *)local_20,(float (*) [3])local_48);
-    Phys_AxisToNitrousMat((float (*) [3])local_48,&local_18->m_mat);
-    Phys_Vec3ToNitrousVec((local_20->pose).origin,&(local_18->m_mat).w);
-    local_c->m_data = local_18;
+  dent_id = (uint)dent;
+  bpei = get_ent_info(this,(uint)dent);
+  if (bpei->m_data == (void *)0x0) {
+    ent_info_2 = create_entity_info(this);
+    ent_info_2->m_ent_type = ET_DENT;
+    ent_info_2->m_ent = dent;
+    local_24 = (DynEntityDrawType)(dent->xModel == (XModel *)0x0);
+    drawType = local_24;
+    dynEntId = DynEnt_GetId(dent,local_24);
+    dynEntPose = DynEnt_GetClientPose(dynEntId,drawType);
+    UnitQuatToAxis((float *)dynEntPose,(float (*) [3])local_48);
+    Phys_AxisToNitrousMat((float (*) [3])local_48,&ent_info_2->m_mat);
+    Phys_Vec3ToNitrousVec((dynEntPose->pose).origin,&(ent_info_2->m_mat).w);
+    bpei->m_data = ent_info_2;
   }
-  if (local_c->m_data == (void *)0x0) {
+  if (bpei->m_data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x29b,0,"%s");
     if (!bVar2) {
@@ -1873,8 +1888,8 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,DynEntityD
       return;
     }
   }
-  local_8 = local_c->m_data;
-  if (local_8->m_ent_type != ET_DENT) {
+  ent_info = bpei->m_data;
+  if (ent_info->m_ent_type != ET_DENT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x29d,0,"%s");
     if (!bVar2) {
@@ -1883,10 +1898,10 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,DynEntityD
       return;
     }
   }
-  if (local_8->m_query_visitor_count != this->m_dent_query_visitor_count) {
-    local_8->m_query_visitor_count = this->m_dent_query_visitor_count;
-    set_local_query_info(this,param_1,local_8);
-    create_gjk_geom(param_2,(gjk_collision_visitor *)this,param_1->m_contents);
+  if (ent_info->m_query_visitor_count != this->m_dent_query_visitor_count) {
+    ent_info->m_query_visitor_count = this->m_dent_query_visitor_count;
+    set_local_query_info(this,input,ent_info);
+    create_gjk_geom(dent,(gjk_collision_visitor *)this,input->m_contents);
   }
   return;
 }
@@ -1895,75 +1910,76 @@ gjk_query_output::add(gjk_query_output *this,gjk_query_input *param_1,DynEntityD
 // 008439A0  gjk_trace_aabb  (physics/phys_gjk_collision_detection.h:661)
 
 bool __cdecl
-gjk_trace_aabb(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4,
-              float *param_5)
+gjk_trace_aabb(phys_vec3 *p0,phys_vec3 *dir,phys_vec3 *aabb_min,phys_vec3 *aabb_max,float *t_)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float fVar4;
-  int local_10;
-  float local_c;
-  float local_8;
+  float d1;
+  float d2;
+  int i;
+  float min_t;
+  float max_t;
   
-  local_c = 0.0;
-  local_8 = 1.0;
-  local_10 = 0;
+  min_t = 0.0;
+  max_t = 1.0;
+  i = 0;
   while( true ) {
-    if (2 < local_10) {
-      *param_5 = local_c;
+    if (2 < i) {
+      *t_ = min_t;
       return true;
     }
-    if (((local_10 < 0) || (2 < local_10)) &&
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (((local_10 < 0) || (2 < local_10)) &&
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    fVar4 = (&param_1->x)[local_10] - (&param_4->x)[local_10];
-    if (((local_10 < 0) || (2 < local_10)) &&
+    fVar4 = (&p0->x)[i] - (&aabb_max->x)[i];
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) break;
-    bVar2 = gjk_trace_plane_1d(fVar4,fVar4 + (&param_2->x)[local_10],&local_c,&local_8,false);
+    bVar2 = gjk_trace_plane_1d(fVar4,fVar4 + (&dir->x)[i],&min_t,&max_t,false);
     if (!bVar2) {
       return false;
     }
-    if (((local_10 < 0) || (2 < local_10)) &&
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (((local_10 < 0) || (2 < local_10)) &&
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    fVar4 = -((&param_1->x)[local_10] - (&param_3->x)[local_10]);
-    if (((local_10 < 0) || (2 < local_10)) &&
+    fVar4 = -((&p0->x)[i] - (&aabb_min->x)[i]);
+    if (((i < 0) || (2 < i)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    bVar2 = gjk_trace_plane_1d(fVar4,fVar4 - (&param_2->x)[local_10],&local_c,&local_8,false);
+    bVar2 = gjk_trace_plane_1d(fVar4,fVar4 - (&dir->x)[i],&min_t,&max_t,false);
     if (!bVar2) {
       return false;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   uVar3 = (*pcVar1)();
@@ -1973,84 +1989,89 @@ gjk_trace_aabb(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec
 
 // 00841A70  gjk_query_prims  (physics/phys_gjk_collision_detection.cpp:679)
 
-void __cdecl gjk_query_prims(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_prims(gjk_query_input *input,gjk_query_output *output)
 
 {
-  CollisionAabbTree *pCVar1;
-  cbrush_t *pcVar2;
-  code *pcVar3;
-  bool bVar4;
-  int local_2c;
-  col_prim_t *local_28;
-  float local_20;
+  CollisionAabbTree *tree_00;
+  cbrush_t *brush_00;
+  code *pcVar1;
+  bool bVar2;
+  cbrush_t *brush;
+  CollisionPartition *partition;
+  dmaterial_t *materialInfo;
+  CollisionAabbTree *tree;
+  int i;
+  col_prim_t *prim;
+  col_prim_t *prims;
+  float query_maxs;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int nprims;
+  float query_mins;
   float local_c;
   float local_8;
   
-  if ((param_1->m_proximity_data->overflow != false) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
-                               ,0x2a8,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((input->m_proximity_data->overflow != false) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+                               ,0x2a8,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_28 = param_1->m_proximity_data->prims;
-  local_14 = param_1->m_proximity_data->nprims;
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,&local_10);
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,&local_20);
-  local_2c = 0;
+  prim = input->m_proximity_data->prims;
+  nprims = input->m_proximity_data->nprims;
+  Phys_NitrousVecToVec3(&output->m_query_aabb_min,&query_mins);
+  Phys_NitrousVecToVec3(&output->m_query_aabb_max,&query_maxs);
+  i = 0;
   do {
-    if (local_14 <= local_2c) {
+    if (nprims <= i) {
       return;
     }
-    if (local_28->type == 0) {
-      pCVar1 = (local_28->field1_0x4).tree;
-      if ((param_1->m_contents & cm.materials[pCVar1->materialIndex].contentFlags) != 0) {
-        if (((local_20 < pCVar1->origin[0] - pCVar1->halfSize[0]) ||
-            (local_1c < pCVar1->origin[1] - pCVar1->halfSize[1])) ||
-           ((local_18 < pCVar1->origin[2] - pCVar1->halfSize[2] ||
-            (((pCVar1->origin[0] + pCVar1->halfSize[0] < local_10 ||
-              (pCVar1->origin[1] + pCVar1->halfSize[1] < local_c)) ||
-             (pCVar1->origin[2] + pCVar1->halfSize[2] < local_8)))))) {
-          bVar4 = false;
+    if (prim->type == 0) {
+      tree_00 = (prim->field1_0x4).tree;
+      if ((input->m_contents & cm.materials[tree_00->materialIndex].contentFlags) != 0) {
+        if (((query_maxs < tree_00->origin[0] - tree_00->halfSize[0]) ||
+            (local_1c < tree_00->origin[1] - tree_00->halfSize[1])) ||
+           ((local_18 < tree_00->origin[2] - tree_00->halfSize[2] ||
+            (((tree_00->origin[0] + tree_00->halfSize[0] < query_mins ||
+              (tree_00->origin[1] + tree_00->halfSize[1] < local_c)) ||
+             (tree_00->origin[2] + tree_00->halfSize[2] < local_8)))))) {
+          bVar2 = false;
         }
         else {
-          bVar4 = true;
+          bVar2 = true;
         }
-        if (bVar4) {
-          gjk_query_output::add(param_2,param_1,cm.partitions + (pCVar1->u).firstChildIndex,pCVar1);
+        if (bVar2) {
+          gjk_query_output::add(output,input,cm.partitions + (tree_00->u).firstChildIndex,tree_00);
         }
       }
     }
     else {
-      if ((local_28->type != 1) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
-                                   ,0x2c6,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if ((prim->type != 1) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+                                   ,0x2c6,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      pcVar2 = (local_28->field1_0x4).brush;
-      if ((param_1->m_contents & pcVar2->contents) != 0) {
-        if ((((local_20 < pcVar2->mins[0]) || (local_1c < pcVar2->mins[1])) ||
-            (local_18 < pcVar2->mins[2])) ||
-           (((pcVar2->maxs[0] < local_10 || (pcVar2->maxs[1] < local_c)) ||
-            (pcVar2->maxs[2] < local_8)))) {
-          bVar4 = false;
+      brush_00 = (prim->field1_0x4).brush;
+      if ((input->m_contents & brush_00->contents) != 0) {
+        if ((((query_maxs < brush_00->mins[0]) || (local_1c < brush_00->mins[1])) ||
+            (local_18 < brush_00->mins[2])) ||
+           (((brush_00->maxs[0] < query_mins || (brush_00->maxs[1] < local_c)) ||
+            (brush_00->maxs[2] < local_8)))) {
+          bVar2 = false;
         }
         else {
-          bVar4 = true;
+          bVar2 = true;
         }
-        if (bVar4) {
-          gjk_query_output::add(param_2,param_1,pcVar2,&local_10,&local_20);
+        if (bVar2) {
+          gjk_query_output::add(output,input,brush_00,&query_mins,&query_maxs);
         }
       }
     }
-    local_2c = local_2c + 1;
-    local_28 = local_28 + 1;
+    i = i + 1;
+    prim = prim + 1;
   } while( true );
 }
 
@@ -2060,38 +2081,41 @@ void __cdecl gjk_query_prims(gjk_query_input *param_1,gjk_query_output *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl gjk_query_terrain(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_terrain(gjk_query_input *input,gjk_query_output *output)
 
 {
-  int local_10a8;
-  int local_10a0;
-  colgeom_visitor_t local_109c;
+  CollisionAabbTree *tree;
+  CollisionPartition *partition;
+  int i_2;
+  cbrush_t *brush;
+  int i;
+  colgeom_visitor_t visitor;
   int local_102c;
   undefined4 auStack_1028 [512];
   int local_828;
   undefined4 auStack_824 [513];
   uint local_20;
-  float local_1c [3];
-  float local_10 [2];
+  float query_maxs [3];
+  float query_mins [2];
   undefined4 uStack_8;
   
   uStack_8 = 0x841d4d;
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_10);
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_1c);
-  colgeom_visitor_t::colgeom_visitor_t(&local_109c);
-  local_109c._padding_ = (int)static_colgeom_visitor_t::vftable;
+  Phys_NitrousVecToVec3(&output->m_query_aabb_min,query_mins);
+  Phys_NitrousVecToVec3(&output->m_query_aabb_max,query_maxs);
+  colgeom_visitor_t::colgeom_visitor_t(&visitor);
+  visitor._padding_ = (int)static_colgeom_visitor_t::vftable;
   local_102c = 0;
   local_828 = 0;
-  colgeom_visitor_t::intersect_box(&local_109c,local_10,local_1c,param_1->m_contents);
-  for (local_10a0 = 0; local_10a0 < local_828; local_10a0 = local_10a0 + 1) {
-    gjk_query_output::add(param_2,param_1,(cbrush_t *)auStack_824[local_10a0],local_10,local_1c);
+  colgeom_visitor_t::intersect_box(&visitor,query_mins,query_maxs,input->m_contents);
+  for (i = 0; i < local_828; i = i + 1) {
+    gjk_query_output::add(output,input,(cbrush_t *)auStack_824[i],query_mins,query_maxs);
   }
-  for (local_10a8 = 0; local_10a8 < local_102c; local_10a8 = local_10a8 + 1) {
+  for (i_2 = 0; i_2 < local_102c; i_2 = i_2 + 1) {
     gjk_query_output::add
-              (param_2,param_1,
-               cm.partitions + (((CollisionAabbTree *)auStack_1028[local_10a8])->u).firstChildIndex,
-               (CollisionAabbTree *)auStack_1028[local_10a8]);
+              (output,input,
+               cm.partitions + (((CollisionAabbTree *)auStack_1028[i_2])->u).firstChildIndex,
+               (CollisionAabbTree *)auStack_1028[i_2]);
   }
   return;
 }
@@ -2104,29 +2128,29 @@ void __cdecl gjk_query_terrain(gjk_query_input *param_1,gjk_query_output *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl query_should_pass_gentity(gjk_query_input *param_1,gentity_s *param_2)
+bool __cdecl query_should_pass_gentity(gjk_query_input *input,gentity_s *gent)
 
 {
   int iVar1;
   uint uVar2;
   
-  if (param_1->m_pass_entity_num != 0x3ff) {
-    if ((param_2->s).number == param_1->m_pass_entity_num) {
+  if (input->m_pass_entity_num != 0x3ff) {
+    if ((gent->s).number == input->m_pass_entity_num) {
       return true;
     }
-    iVar1 = EntHandle::isDefined(&(param_2->r).ownerNum);
+    iVar1 = EntHandle::isDefined(&(gent->r).ownerNum);
     if (iVar1 != 0) {
-      uVar2 = EntHandle::entnum(&(param_2->r).ownerNum);
-      if (uVar2 == param_1->m_pass_entity_num) {
+      uVar2 = EntHandle::entnum(&(gent->r).ownerNum);
+      if (uVar2 == input->m_pass_entity_num) {
         return true;
       }
-      uVar2 = EntHandle::entnum(&(param_2->r).ownerNum);
-      if (uVar2 == param_1->m_pass_owner_num) {
+      uVar2 = EntHandle::entnum(&(gent->r).ownerNum);
+      if (uVar2 == input->m_pass_owner_num) {
         return true;
       }
     }
   }
-  return ((param_2->s).lerp.eFlags2 & 0x1000000U) != 0;
+  return ((gent->s).lerp.eFlags2 & 0x1000000U) != 0;
 }
 
 
@@ -2138,40 +2162,43 @@ bool __cdecl query_should_pass_gentity(gjk_query_input *param_1,gentity_s *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl gjk_query_gents(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_gents(gjk_query_input *input,gjk_query_output *output)
 
 {
   bool bVar1;
   int iVar2;
-  gentity_s *pgVar3;
+  gentity_s *gent_00;
   DObj *local_1038;
-  int local_1028;
-  int local_1024 [1025];
-  float local_20 [3];
-  int local_14;
-  float local_10 [2];
+  DObj *dobj;
+  gentity_s *gent;
+  int gentnum;
+  int i;
+  int touch [1025];
+  float query_maxs [3];
+  int num;
+  float query_mins [2];
   undefined4 uStack_8;
   
   uStack_8 = 0x841ebd;
-  param_2->m_gent_query_visitor_count = param_2->m_gent_query_visitor_count + 1;
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_10);
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_20);
-  local_14 = CM_AreaEntities(local_10,local_20,local_1024,0x400,param_1->m_contents);
-  for (local_1028 = 0; local_1028 < local_14; local_1028 = local_1028 + 1) {
-    pgVar3 = g_entities + local_1024[local_1028];
-    bVar1 = query_should_pass_gentity(param_1,pgVar3);
+  output->m_gent_query_visitor_count = output->m_gent_query_visitor_count + 1;
+  Phys_NitrousVecToVec3(&output->m_query_aabb_min,query_mins);
+  Phys_NitrousVecToVec3(&output->m_query_aabb_max,query_maxs);
+  num = CM_AreaEntities(query_mins,query_maxs,touch,0x400,input->m_contents);
+  for (i = 0; i < num; i = i + 1) {
+    gent_00 = g_entities + touch[i];
+    bVar1 = query_should_pass_gentity(input,gent_00);
     if (!bVar1) {
-      bVar1 = BG_ClipMoveToDobj(&pgVar3->s);
+      bVar1 = BG_ClipMoveToDobj(&gent_00->s);
       if (bVar1) {
-        local_1038 = Com_GetServerDObj((pgVar3->s).number);
+        local_1038 = Com_GetServerDObj((gent_00->s).number);
       }
       else {
         local_1038 = (DObj *)0x0;
       }
       if ((local_1038 == (DObj *)0x0) ||
          ((iVar2 = DObjHasCollmap(local_1038), iVar2 != 0 &&
-          (iVar2 = DObjHasContents(local_1038,param_1->m_contents), iVar2 != 0)))) {
-        gjk_query_output::add(param_2,param_1,pgVar3);
+          (iVar2 = DObjHasContents(local_1038,input->m_contents), iVar2 != 0)))) {
+        gjk_query_output::add(output,input,gent_00);
       }
     }
   }
@@ -2187,78 +2214,84 @@ void __cdecl gjk_query_gents(gjk_query_input *param_1,gjk_query_output *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl gjk_query_cents(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_cents(gjk_query_input *input,gjk_query_output *output)
 
 {
-  int iVar1;
-  bool bVar2;
-  centity_s *pcVar3;
-  int iVar4;
-  uint uVar5;
+  int localClientNum;
+  bool bVar1;
+  centity_s *pcVar2;
+  int iVar3;
+  uint uVar4;
   DObj *local_105c;
-  int local_1028;
-  int local_1024 [1025];
-  float local_20 [3];
-  int local_14;
-  float local_10 [2];
+  int contents;
+  DObj *dobj;
+  int centnum;
+  int localclientnum;
+  centity_s *cent;
+  entityState_s *es;
+  int i;
+  int touch [1025];
+  float query_maxs [3];
+  int num;
+  float query_mins [2];
   undefined4 uStack_8;
   
   uStack_8 = 0x8420bd;
-  param_2->m_cent_query_visitor_count = param_2->m_cent_query_visitor_count + 1;
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_10);
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_20);
-  local_14 = CG_AreaEntities(local_10,local_20,local_1024,0x400,param_1->m_contents);
-  local_1028 = 0;
+  output->m_cent_query_visitor_count = output->m_cent_query_visitor_count + 1;
+  Phys_NitrousVecToVec3(&output->m_query_aabb_min,query_mins);
+  Phys_NitrousVecToVec3(&output->m_query_aabb_max,query_maxs);
+  num = CG_AreaEntities(query_mins,query_maxs,touch,0x400,input->m_contents);
+  i = 0;
   do {
-    if (local_14 <= local_1028) {
+    if (num <= i) {
       return;
     }
-    iVar4 = local_1024[local_1028];
-    pcVar3 = CG_GetEntity(0,iVar4);
-    iVar1 = cgCollWorldLocalClientNum;
-    if (((pcVar3->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
-      if (iVar4 == param_1->m_pass_entity_num) {
-        bVar2 = true;
+    iVar3 = touch[i];
+    pcVar2 = CG_GetEntity(0,iVar3);
+    localClientNum = cgCollWorldLocalClientNum;
+    if (((pcVar2->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
+      if (iVar3 == input->m_pass_entity_num) {
+        bVar1 = true;
       }
       else {
-        bVar2 = false;
+        bVar1 = false;
       }
     }
     else {
-      bVar2 = true;
+      bVar1 = true;
     }
-    if ((!bVar2) && (iVar4 < 0x400)) {
-      pcVar3 = CG_GetEntity(cgCollWorldLocalClientNum,iVar4);
-      if (((pcVar3->nextState).lerp.eFlags & 1U) == 0) {
-        bVar2 = BG_ClipMoveToDobj(&pcVar3->nextState);
-        if (bVar2) {
-          local_105c = Com_GetClientDObj(iVar4,iVar1);
+    if ((!bVar1) && (iVar3 < 0x400)) {
+      pcVar2 = CG_GetEntity(cgCollWorldLocalClientNum,iVar3);
+      if (((pcVar2->nextState).lerp.eFlags & 1U) == 0) {
+        bVar1 = BG_ClipMoveToDobj(&pcVar2->nextState);
+        if (bVar1) {
+          local_105c = Com_GetClientDObj(iVar3,localClientNum);
         }
         else {
           local_105c = (DObj *)0x0;
         }
         if (local_105c == (DObj *)0x0) {
-          if (((pcVar3->nextState).solid != 0) &&
-             (((pcVar3->nextState).solid != 0xffffff ||
-              (((pcVar3->nextState).lerp.eFlags & 1U) == 0)))) {
-            uVar5 = CG_GetEntityBModelContents(pcVar3);
-            uVar5 = uVar5 & param_1->m_contents;
+          if (((pcVar2->nextState).solid != 0) &&
+             (((pcVar2->nextState).solid != 0xffffff ||
+              (((pcVar2->nextState).lerp.eFlags & 1U) == 0)))) {
+            uVar4 = CG_GetEntityBModelContents(pcVar2);
+            uVar4 = uVar4 & input->m_contents;
             goto joined_r0x008422fd;
           }
         }
         else {
-          iVar4 = DObjHasCollmap(local_105c);
-          if (iVar4 != 0) {
-            uVar5 = DObjHasContents(local_105c,param_1->m_contents);
+          iVar3 = DObjHasCollmap(local_105c);
+          if (iVar3 != 0) {
+            uVar4 = DObjHasContents(local_105c,input->m_contents);
 joined_r0x008422fd:
-            if (uVar5 != 0) {
-              gjk_query_output::add(param_2,param_1,pcVar3);
+            if (uVar4 != 0) {
+              gjk_query_output::add(output,input,pcVar2);
             }
           }
         }
       }
     }
-    local_1028 = local_1028 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2267,28 +2300,29 @@ joined_r0x008422fd:
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl gjk_query_glass(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_glass(gjk_query_input *input,gjk_query_output *output)
 
 {
-  uint local_1028;
-  float local_1020 [3];
-  uint local_1014;
-  float local_1010 [3];
-  Glass *local_1004 [1023];
+  uint i;
+  int MAX_GLASSES;
+  float query_maxs [3];
+  uint num;
+  float query_mins [3];
+  Glass *glasses [1023];
   undefined4 uStack_8;
   
   uStack_8 = 0x84232d;
-  if ((param_1->m_contents & 0x10U) != 0) {
-    Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_1010);
-    Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_1020);
-    if (param_1->m_is_server_thread == false) {
-      local_1014 = GlassCl_AreaGlasses(local_1010,local_1020,local_1004,0x400);
+  if ((input->m_contents & 0x10U) != 0) {
+    Phys_NitrousVecToVec3(&output->m_query_aabb_min,query_mins);
+    Phys_NitrousVecToVec3(&output->m_query_aabb_max,query_maxs);
+    if (input->m_is_server_thread == false) {
+      num = GlassCl_AreaGlasses(query_mins,query_maxs,glasses,0x400);
     }
     else {
-      local_1014 = GlassSv_AreaGlasses(local_1010,local_1020,local_1004,0x400);
+      num = GlassSv_AreaGlasses(query_mins,query_maxs,glasses,0x400);
     }
-    for (local_1028 = 0; local_1028 < local_1014; local_1028 = local_1028 + 1) {
-      gjk_query_output::add(param_2,param_1,local_1004[local_1028]);
+    for (i = 0; i < num; i = i + 1) {
+      gjk_query_output::add(output,input,glasses[i]);
     }
   }
   return;
@@ -2300,45 +2334,48 @@ void __cdecl gjk_query_glass(gjk_query_input *param_1,gjk_query_output *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x00842547) */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl gjk_query_dents(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_dents(gjk_query_input *input,gjk_query_output *output)
 
 {
-  ushort uVar1;
-  DynEntityDef *pDVar2;
-  DynEntityProps *pDVar3;
-  DynEntityClient *pDVar4;
-  int local_2040;
-  DynEntityDrawType local_203c;
-  DynEntityAreaParms local_2038;
-  ushort local_2024 [4098];
+  ushort dynEntId_00;
+  DynEntityDef *dynEntDef_00;
+  DynEntityProps *pDVar1;
+  DynEntityClient *pDVar2;
+  DynEntityClient *dynEntityClient;
+  DynEntityDef *dynEntDef;
+  ushort dynEntId;
+  int i;
+  int drawType;
+  DynEntityAreaParms areaParms;
+  ushort hitEnts [4098];
   uint local_20;
-  float local_1c [3];
-  float local_10 [2];
+  float query_maxs [3];
+  float query_mins [2];
   undefined4 uStack_8;
   
   uStack_8 = 0x84242d;
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  param_2->m_dent_query_visitor_count = param_2->m_dent_query_visitor_count + 1;
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_10);
-  Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_1c);
-  local_2038.mins = local_10;
-  local_2038.maxs = local_1c;
-  local_2038.contentMask = param_1->m_contents;
-  local_2038.list = local_2024;
-  local_2038.maxCount = 0x1000;
-  for (local_203c = DYNENT_DRAW_MODEL; (int)local_203c < 2;
-      local_203c = local_203c + DYNENT_DRAW_BRUSH) {
-    local_2038.count = 0;
-    DynEntCl_AreaEntities_r(local_203c,1,&local_2038);
-    for (local_2040 = 0; local_2040 < (int)(uint)local_2038.count; local_2040 = local_2040 + 1) {
-      pDVar2 = DynEnt_GetEntityDef(local_2024[local_2040],local_203c);
-      if (((pDVar2->flags & 2U) != 0) &&
-         (pDVar3 = DynEnt_GetEntityProps(pDVar2->type), pDVar3->usePhysics != false)) {
-        uVar1 = DynEnt_GetId(pDVar2,local_203c);
-        pDVar4 = DynEnt_GetClientEntity(uVar1,local_203c);
-        if (pDVar4->physObjId == 0) {
-          gjk_query_output::add(param_2,param_1,pDVar2);
+  output->m_dent_query_visitor_count = output->m_dent_query_visitor_count + 1;
+  Phys_NitrousVecToVec3(&output->m_query_aabb_min,query_mins);
+  Phys_NitrousVecToVec3(&output->m_query_aabb_max,query_maxs);
+  areaParms.mins = query_mins;
+  areaParms.maxs = query_maxs;
+  areaParms.contentMask = input->m_contents;
+  areaParms.list = hitEnts;
+  areaParms.maxCount = 0x1000;
+  for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+    areaParms.count = 0;
+    DynEntCl_AreaEntities_r(drawType,1,&areaParms);
+    for (i = 0; i < (int)(uint)areaParms.count; i = i + 1) {
+      dynEntDef_00 = DynEnt_GetEntityDef(hitEnts[i],drawType);
+      if (((dynEntDef_00->flags & 2U) != 0) &&
+         (pDVar1 = DynEnt_GetEntityProps(dynEntDef_00->type), pDVar1->usePhysics != false)) {
+        dynEntId_00 = DynEnt_GetId(dynEntDef_00,drawType);
+        pDVar2 = DynEnt_GetClientEntity(dynEntId_00,drawType);
+        if (pDVar2->physObjId == 0) {
+          gjk_query_output::add(output,input,dynEntDef_00);
         }
       }
     }
@@ -2349,56 +2386,61 @@ void __cdecl gjk_query_dents(gjk_query_input *param_1,gjk_query_output *param_2)
 
 // 008425F0  gjk_query  (physics/phys_gjk_collision_detection.cpp:981)
 
-void __cdecl gjk_query(gjk_query_input *param_1,gjk_query_output *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl gjk_query(gjk_query_input *input,gjk_query_output *output)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_28 [3];
-  undefined4 local_1c;
+  float mins [3];
+  undefined4 expand_vec;
   undefined4 local_18;
   float local_14;
-  float local_10 [3];
+  float maxs [3];
   
-  param_2->m_total_query_count = param_2->m_total_query_count + 1;
-  if ((param_1->m_gjk_query_flags & 1) != 0) {
-    if (param_1->m_proximity_data == (colgeom_visitor_inlined_t<200> *)0x0) {
-      gjk_query_terrain(param_1,param_2);
+  output->m_total_query_count = output->m_total_query_count + 1;
+  if ((input->m_gjk_query_flags & 1) != 0) {
+    if (input->m_proximity_data == (colgeom_visitor_inlined_t<200> *)0x0) {
+      gjk_query_terrain(input,output);
     }
     else {
-      Phys_NitrousVecToVec3(&param_2->m_query_aabb_min,local_28);
-      Phys_NitrousVecToVec3(&param_2->m_query_aabb_max,local_10);
-      local_1c = 0x428c0000;
+      Phys_NitrousVecToVec3(&output->m_query_aabb_min,mins);
+      Phys_NitrousVecToVec3(&output->m_query_aabb_max,maxs);
+      expand_vec = 0x428c0000;
       local_18 = 0x428c0000;
       local_14 = 20.0;
-      (**(code **)(param_1->m_proximity_data->_padding_ + 0x14))
-                (local_28,local_10,param_1->m_proximity_mask,&local_1c);
-      if (((param_1->m_proximity_mask & param_1->m_contents) != param_1->m_contents) &&
+      (**(code **)(input->m_proximity_data->_padding_ + 0x14))
+                (mins,maxs,input->m_proximity_mask,&expand_vec);
+      if (((input->m_proximity_mask & input->m_contents) != input->m_contents) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                    ,0x3e2,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_1->m_proximity_data->overflow == false) {
-        gjk_query_prims(param_1,param_2);
+      if (input->m_proximity_data->overflow == false) {
+        gjk_query_prims(input,output);
       }
       else {
-        gjk_query_terrain(param_1,param_2);
+        gjk_query_terrain(input,output);
       }
     }
   }
-  if ((param_1->m_gjk_query_flags & 2) != 0) {
-    if (param_1->m_is_server_thread == false) {
-      gjk_query_cents(param_1,param_2);
+  if ((input->m_gjk_query_flags & 2) != 0) {
+    if (input->m_is_server_thread == false) {
+      gjk_query_cents(input,output);
     }
     else {
-      gjk_query_gents(param_1,param_2);
+      gjk_query_gents(input,output);
     }
-    gjk_query_glass(param_1,param_2);
+    gjk_query_glass(input,output);
   }
-  if ((param_1->m_gjk_query_flags & 4) != 0) {
-    gjk_query_dents(param_1,param_2);
+  if ((input->m_gjk_query_flags & 4) != 0) {
+    gjk_query_dents(input,output);
   }
   return;
 }
@@ -2408,7 +2450,8 @@ void __cdecl gjk_query(gjk_query_input *param_1,gjk_query_output *param_2)
 
 void __thiscall
 gjk_query_output::cached_query_resize
-          (gjk_query_output *this,bool param_1,colgeom_visitor_inlined_t<200> *param_2,int param_3)
+          (gjk_query_output *this,bool is_server_thread,
+          colgeom_visitor_inlined_t<200> *proximity_data,int proximity_mask)
 
 {
   float fVar1;
@@ -2446,9 +2489,9 @@ gjk_query_output::cached_query_resize
   local_a0.m_contents = (local_14->m_cached_query_info).m_query_contents;
   local_a0.m_pass_entity_num = 0x3ff;
   local_a0.m_pass_owner_num = 0x3ff;
-  local_a0.m_is_server_thread = param_1;
-  local_a0.m_proximity_data = param_2;
-  local_a0.m_proximity_mask = param_3;
+  local_a0.m_is_server_thread = is_server_thread;
+  local_a0.m_proximity_data = proximity_data;
+  local_a0.m_proximity_mask = proximity_mask;
   local_a0.m_gjk_query_flags = (local_14->m_cached_query_info).m_query_flags;
   local_a0.m_geom_skip_list.m_first = (gjk_geom_info_t *)0x0;
   local_a0.m_geom_skip_list.m_last_next_ptr = &local_a0.m_geom_skip_list.m_first;
@@ -2492,8 +2535,8 @@ void __cdecl _dynamic_initializer_for__CACHED_QUERY_RESIZE_EXTRA__(void)
 
 void __thiscall
 gjk_query_output::cached_query_prolog
-          (gjk_query_output *this,bool param_1,colgeom_visitor_inlined_t<200> *param_2,int param_3,
-          phys_vec3 *param_4)
+          (gjk_query_output *this,bool is_server_thread,
+          colgeom_visitor_inlined_t<200> *proximity_data,int proximity_mask,phys_vec3 *start_origin)
 
 {
   char *pcVar1;
@@ -2540,13 +2583,13 @@ gjk_query_output::cached_query_prolog
       }
     }
     local_18 = &(local_14->m_accum_query_info).m_query_aabb_max;
-    local_40.x = local_18->x + param_4->x;
-    local_40.y = (local_14->m_accum_query_info).m_query_aabb_max.y + param_4->y;
-    local_40.z = (local_14->m_accum_query_info).m_query_aabb_max.z + param_4->z;
+    local_40.x = local_18->x + start_origin->x;
+    local_40.y = (local_14->m_accum_query_info).m_query_aabb_max.y + start_origin->y;
+    local_40.z = (local_14->m_accum_query_info).m_query_aabb_max.z + start_origin->z;
     local_44 = &local_14->m_accum_query_info;
-    local_60.x = (local_44->m_query_aabb_min).x + param_4->x;
-    local_60.y = (local_14->m_accum_query_info).m_query_aabb_min.y + param_4->y;
-    local_60.z = (local_14->m_accum_query_info).m_query_aabb_min.z + param_4->z;
+    local_60.x = (local_44->m_query_aabb_min).x + start_origin->x;
+    local_60.y = (local_14->m_accum_query_info).m_query_aabb_min.y + start_origin->y;
+    local_60.z = (local_14->m_accum_query_info).m_query_aabb_min.z + start_origin->z;
     local_50 = local_60.z;
     local_4c = local_60.y;
     local_48 = local_60.x;
@@ -2557,9 +2600,9 @@ gjk_query_output::cached_query_prolog
               (&local_14->m_cached_query_info,&local_60,&local_40,&CACHED_QUERY_RESIZE_EXTRA,
                (local_14->m_accum_query_info).m_query_contents,
                (local_14->m_accum_query_info).m_query_flags);
-    cached_query_resize(local_14,param_1,param_2,param_3);
+    cached_query_resize(local_14,is_server_thread,proximity_data,proximity_mask);
   }
-  accum_query_reset(local_14,param_4);
+  accum_query_reset(local_14,start_origin);
   pcVar1 = (local_14->m_allocator).m_cur;
   pcVar2 = (local_14->m_allocator).m_end;
   uVar3 = (local_14->m_allocator).m_total_memory_allocated;
@@ -2607,12 +2650,12 @@ void __thiscall gjk_query_output::cached_query_epilog(gjk_query_output *this)
 
 // 00842FB0  accum_query_reset  (physics/phys_gjk_collision_detection.cpp:1087)
 
-void __thiscall gjk_query_output::accum_query_reset(gjk_query_output *this,phys_vec3 *param_1)
+void __thiscall gjk_query_output::accum_query_reset(gjk_query_output *this,phys_vec3 *start_origin)
 
 {
-  (this->m_accum_start_origin).x = param_1->x;
-  (this->m_accum_start_origin).y = param_1->y;
-  (this->m_accum_start_origin).z = param_1->z;
+  (this->m_accum_start_origin).x = start_origin->x;
+  (this->m_accum_start_origin).y = start_origin->y;
+  (this->m_accum_start_origin).z = start_origin->z;
   (this->m_accum_query_info).m_query_contents = 0;
   (this->m_accum_query_info).m_query_flags = 0;
   return;
@@ -2626,30 +2669,30 @@ void __thiscall gjk_query_output::accum_query_reset(gjk_query_output *this,phys_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl query_should_pass_entity(gjk_query_input *param_1,gjk_entity_info_t *param_2)
+bool __cdecl query_should_pass_entity(gjk_query_input *input,gjk_entity_info_t *ent_info)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  gentity_s *pgVar5;
-  centity_s *pcVar6;
+  int entityIndex;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  gentity_s *gent;
+  centity_s *pcVar4;
   bool local_d;
   
-  if (param_2 == (gjk_entity_info_t *)0x0) {
+  if (ent_info == (gjk_entity_info_t *)0x0) {
     local_d = false;
   }
-  else if (param_2->m_ent_type == ET_GENT) {
-    pgVar5 = gjk_entity_info_t::get_gent(param_2);
-    local_d = query_should_pass_gentity(param_1,pgVar5);
+  else if (ent_info->m_ent_type == ET_GENT) {
+    gent = gjk_entity_info_t::get_gent(ent_info);
+    local_d = query_should_pass_gentity(input,gent);
   }
-  else if (param_2->m_ent_type == ET_CENT) {
-    pcVar6 = gjk_entity_info_t::get_cent(param_2);
-    iVar1 = (pcVar6->nextState).number;
-    pcVar6 = CG_GetEntity(0,iVar1);
-    if (((pcVar6->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
-      if (iVar1 == param_1->m_pass_entity_num) {
+  else if (ent_info->m_ent_type == ET_CENT) {
+    pcVar4 = gjk_entity_info_t::get_cent(ent_info);
+    entityIndex = (pcVar4->nextState).number;
+    pcVar4 = CG_GetEntity(0,entityIndex);
+    if (((pcVar4->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
+      if (entityIndex == input->m_pass_entity_num) {
         local_d = true;
       }
       else {
@@ -2660,18 +2703,18 @@ bool __cdecl query_should_pass_entity(gjk_query_input *param_1,gjk_entity_info_t
       local_d = true;
     }
   }
-  else if (param_2->m_ent_type == ET_GLASS) {
+  else if (ent_info->m_ent_type == ET_GLASS) {
     local_d = false;
   }
   else {
-    if ((param_2->m_ent_type != ET_DENT) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
-                                 ,0x458,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      uVar4 = (*pcVar2)();
-      return (bool)uVar4;
+    if ((ent_info->m_ent_type != ET_DENT) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
+                                 ,0x458,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
-    gjk_entity_info_t::get_dent(param_2);
+    gjk_entity_info_t::get_dent(ent_info);
     local_d = false;
   }
   return local_d;
@@ -2680,7 +2723,7 @@ bool __cdecl query_should_pass_entity(gjk_query_input *param_1,gjk_entity_info_t
 
 // 00843010  gjk_query_cached  (physics/phys_gjk_collision_detection.cpp:1121)
 
-void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2)
+void __cdecl gjk_query_cached(gjk_query_input *input,gjk_query_output *output)
 
 {
   code *pcVar1;
@@ -2692,7 +2735,7 @@ void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2
   uint local_18;
   gjk_geom_info_t *local_14;
   
-  if (param_1->m_contents == 0) {
+  if (input->m_contents == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                              ,0x462,0,"%s");
     if (!bVar2) {
@@ -2701,28 +2744,27 @@ void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2
       return;
     }
   }
-  param_2->m_total_cached_query_count = param_2->m_total_cached_query_count + 1;
+  output->m_total_cached_query_count = output->m_total_cached_query_count + 1;
   bVar2 = cached_query_info_t::is_subset
-                    (&param_2->m_cached_query_info,&param_2->m_query_aabb_min,
-                     &param_2->m_query_aabb_max,param_1->m_contents,param_1->m_gjk_query_flags);
+                    (&output->m_cached_query_info,&output->m_query_aabb_min,
+                     &output->m_query_aabb_max,input->m_contents,input->m_gjk_query_flags);
   if (!bVar2) {
     cached_query_info_t::add_query
-              (&param_2->m_cached_query_info,&param_2->m_query_aabb_min,&param_2->m_query_aabb_max,
-               &CACHED_QUERY_RESIZE_EXTRA,param_1->m_contents,param_1->m_gjk_query_flags);
+              (&output->m_cached_query_info,&output->m_query_aabb_min,&output->m_query_aabb_max,
+               &CACHED_QUERY_RESIZE_EXTRA,input->m_contents,input->m_gjk_query_flags);
     gjk_query_output::cached_query_resize
-              (param_2,param_1->m_is_server_thread,param_1->m_proximity_data,
-               param_1->m_proximity_mask);
+              (output,input->m_is_server_thread,input->m_proximity_data,input->m_proximity_mask);
   }
   cached_query_info_t::add_query
-            (&param_2->m_accum_query_info,&param_2->m_query_aabb_min,&param_2->m_query_aabb_max,
-             &PHYS_ZERO_VEC,param_1->m_contents,param_1->m_gjk_query_flags);
-  local_14 = param_2->m_total_list_geom_info;
+            (&output->m_accum_query_info,&output->m_query_aabb_min,&output->m_query_aabb_max,
+             &PHYS_ZERO_VEC,input->m_contents,input->m_gjk_query_flags);
+  local_14 = output->m_total_list_geom_info;
   do {
     if (local_14 == (gjk_geom_info_t *)0x0) {
       return;
     }
     uVar3 = gjk_base_t::get_contents(local_14->m_cg);
-    if ((uVar3 & param_1->m_contents) != 0) {
+    if ((uVar3 & input->m_contents) != 0) {
       if (local_14->m_ent_info == (gjk_entity_info_t *)0x0) {
         local_18 = 1;
       }
@@ -2732,10 +2774,10 @@ void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2
       else {
         local_18 = 2;
       }
-      if ((local_18 & param_1->m_gjk_query_flags) != 0) {
-        bVar2 = query_should_pass_entity(param_1,local_14->m_ent_info);
-        if ((!bVar2) && (local_14->m_query_visitor_count != param_2->m_query_visitor_count)) {
-          bVar2 = gjk_query_input::is_in_skip_list(param_1,local_14);
+      if ((local_18 & input->m_gjk_query_flags) != 0) {
+        bVar2 = query_should_pass_entity(input,local_14->m_ent_info);
+        if ((!bVar2) && (local_14->m_query_visitor_count != output->m_query_visitor_count)) {
+          bVar2 = gjk_query_input::is_in_skip_list(input,local_14);
           if (bVar2) {
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                      ,0x47d,0,"%s");
@@ -2745,15 +2787,15 @@ void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2
               return;
             }
           }
-          local_14->m_query_visitor_count = param_2->m_query_visitor_count;
+          local_14->m_query_visitor_count = output->m_query_visitor_count;
           local_1c = 0.0;
-          operator-(&local_30,&local_14->m_aabb_min,&param_1->m_cg_aabb_max);
-          operator-(&local_40,&local_14->m_aabb_max,&param_1->m_cg_aabb_min);
-          bVar2 = gjk_trace_aabb(&param_1->m_cg_position,&param_1->m_cg_translation,&local_30,
-                                 &local_40,&local_1c);
+          operator-(&local_30,&local_14->m_aabb_min,&input->m_cg_aabb_max);
+          operator-(&local_40,&local_14->m_aabb_max,&input->m_cg_aabb_min);
+          bVar2 = gjk_trace_aabb(&input->m_cg_position,&input->m_cg_translation,&local_30,&local_40,
+                                 &local_1c);
           if (bVar2) {
             local_14->m_hit_time = local_1c;
-            phys_link_list<gjk_geom_info_t>::add(&param_2->m_list_geom_info,local_14);
+            phys_link_list<gjk_geom_info_t>::add(&output->m_list_geom_info,local_14);
           }
         }
       }
@@ -2775,7 +2817,7 @@ void __cdecl gjk_query_cached(gjk_query_input *param_1,gjk_query_output *param_2
 /* WARNING: Removing unreachable block (ram,0x00844065) */
 
 void __cdecl
-setup_gjk_capsule(float *param_1,float *param_2,float param_3,gjk_double_sphere_t *param_4)
+setup_gjk_capsule(float *mins,float *maxs,float radius_adjust,gjk_double_sphere_t *gjk_capsule)
 
 {
   code *pcVar1;
@@ -2784,33 +2826,33 @@ setup_gjk_capsule(float *param_1,float *param_2,float param_3,gjk_double_sphere_
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  Phys_Vec3ToNitrousVec(param_1,&local_20);
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
+  Phys_Vec3ToNitrousVec(mins,&local_20);
+  Phys_Vec3ToNitrousVec(maxs,&local_30);
   local_54 = local_30.x - local_20.x;
   if (local_30.z - local_20.z < local_54) {
     local_54 = local_30.z - local_20.z;
   }
   local_54 = local_54 * 0.5;
-  param_4->m_list_center[0].x = local_30.x - local_54;
-  param_4->m_list_center[0].y = local_30.y - local_54;
-  param_4->m_list_center[0].z = local_30.z - local_54;
-  param_4->m_list_center[1].x = local_20.x + local_54;
-  param_4->m_list_center[1].y = local_20.y + local_54;
-  param_4->m_list_center[1].z = local_20.z + local_54;
-  param_4->m_list_radius[0] = 0.0;
-  param_4->m_list_radius[1] = 0.0;
-  param_4->m_geom_radius = local_54 + param_3;
-  if ((param_4->m_geom_radius <= 0.0) &&
+  gjk_capsule->m_list_center[0].x = local_30.x - local_54;
+  gjk_capsule->m_list_center[0].y = local_30.y - local_54;
+  gjk_capsule->m_list_center[0].z = local_30.z - local_54;
+  gjk_capsule->m_list_center[1].x = local_20.x + local_54;
+  gjk_capsule->m_list_center[1].y = local_20.y + local_54;
+  gjk_capsule->m_list_center[1].z = local_20.z + local_54;
+  gjk_capsule->m_list_radius[0] = 0.0;
+  gjk_capsule->m_list_radius[1] = 0.0;
+  gjk_capsule->m_geom_radius = local_54 + radius_adjust;
+  if ((gjk_capsule->m_geom_radius <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                ,0x4a9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_4->m_center).x = ((local_30.x - local_54) + local_20.x + local_54) * 0.5;
-  (param_4->m_center).y = ((local_30.y - local_54) + local_20.y + local_54) * 0.5;
-  (param_4->m_center).z = ((local_30.z - local_54) + local_20.z + local_54) * 0.5;
-  param_4->m_count = 2;
+  (gjk_capsule->m_center).x = ((local_30.x - local_54) + local_20.x + local_54) * 0.5;
+  (gjk_capsule->m_center).y = ((local_30.y - local_54) + local_20.y + local_54) * 0.5;
+  (gjk_capsule->m_center).z = ((local_30.z - local_54) + local_20.z + local_54) * 0.5;
+  gjk_capsule->m_count = 2;
   return;
 }
 
@@ -2826,7 +2868,8 @@ setup_gjk_capsule(float *param_1,float *param_2,float param_3,gjk_double_sphere_
 /* WARNING: Removing unreachable block (ram,0x008444e5) */
 /* WARNING: Removing unreachable block (ram,0x00844505) */
 
-void __cdecl setup_gjk_cylinder(float *param_1,float *param_2,float param_3,gjk_cylinder_t *param_4)
+void __cdecl
+setup_gjk_cylinder(float *mins,float *maxs,float radius_adjust,gjk_cylinder_t *gjk_cylinder)
 
 {
   float fVar1;
@@ -2834,21 +2877,21 @@ void __cdecl setup_gjk_cylinder(float *param_1,float *param_2,float param_3,gjk_
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  Phys_Vec3ToNitrousVec(param_1,&local_20);
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
+  Phys_Vec3ToNitrousVec(mins,&local_20);
+  Phys_Vec3ToNitrousVec(maxs,&local_30);
   local_54 = local_30.x - local_20.x;
   fVar1 = local_30.z - local_20.z;
   if (fVar1 < local_54) {
     local_54 = fVar1;
   }
-  param_4->halfHeight = fVar1 * 0.5;
-  param_4->radius = local_54 * 0.5;
-  param_4->direction = 2;
-  param_4->m_geom_radius = param_3;
-  phys_mat44::operator=(&param_4->xform,&PHYS_IDENTITY_MATRIX);
-  (param_4->xform).w.x = 0.0;
-  (param_4->xform).w.y = 0.0;
-  (param_4->xform).w.z = (local_20.z + local_30.z) * 0.5;
+  gjk_cylinder->halfHeight = fVar1 * 0.5;
+  gjk_cylinder->radius = local_54 * 0.5;
+  gjk_cylinder->direction = 2;
+  gjk_cylinder->m_geom_radius = radius_adjust;
+  phys_mat44::operator=(&gjk_cylinder->xform,&PHYS_IDENTITY_MATRIX);
+  (gjk_cylinder->xform).w.x = 0.0;
+  (gjk_cylinder->xform).w.y = 0.0;
+  (gjk_cylinder->xform).w.z = (local_20.z + local_30.z) * 0.5;
   return;
 }
 
@@ -2857,7 +2900,7 @@ void __cdecl setup_gjk_cylinder(float *param_1,float *param_2,float param_3,gjk_
 
 /* WARNING: This function may have set the stack pointer */
 
-void __cdecl adjust_gjk_polygon_cylinder_query_aabb(float *param_1,float *param_2)
+void __cdecl adjust_gjk_polygon_cylinder_query_aabb(float *mins,float *maxs)
 
 {
   undefined4 unaff_EBP;
@@ -2870,25 +2913,25 @@ void __cdecl adjust_gjk_polygon_cylinder_query_aabb(float *param_1,float *param_
     __libm_sse2_cos((double)CONCAT44(unaff_retaddr,unaff_EBP));
     radius_scale_factor = 1.0 / (float)dVar1;
   }
-  *param_1 = *param_1 - 0.125;
-  param_1[1] = param_1[1] - 0.125;
-  param_1[2] = param_1[2] - 0.125;
-  *param_2 = *param_2 + 0.125;
-  param_2[1] = param_2[1] + 0.125;
-  param_2[2] = param_2[2] + 0.125;
-  *param_1 = *param_1 * radius_scale_factor;
-  param_1[1] = param_1[1] * radius_scale_factor;
-  param_1[2] = param_1[2] * radius_scale_factor;
-  *param_2 = *param_2 * radius_scale_factor;
-  param_2[1] = param_2[1] * radius_scale_factor;
-  param_2[2] = param_2[2] * radius_scale_factor;
+  *mins = *mins - 0.125;
+  mins[1] = mins[1] - 0.125;
+  mins[2] = mins[2] - 0.125;
+  *maxs = *maxs + 0.125;
+  maxs[1] = maxs[1] + 0.125;
+  maxs[2] = maxs[2] + 0.125;
+  *mins = *mins * radius_scale_factor;
+  mins[1] = mins[1] * radius_scale_factor;
+  mins[2] = mins[2] * radius_scale_factor;
+  *maxs = *maxs * radius_scale_factor;
+  maxs[1] = maxs[1] * radius_scale_factor;
+  maxs[2] = maxs[2] * radius_scale_factor;
   return;
 }
 
 
 // 00844780  is_walkable  (physics/phys_gjk_collision_detection.cpp:1286)
 
-bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *hit_point,phys_vec3 *up)
 
 {
   code *pcVar1;
@@ -2954,7 +2997,7 @@ bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys
     if (((local_74 < 0) || (2 < local_74)) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20
                           ,"i >= 0 && i < 3",""), bVar2)) break;
-    fVar4 = -(&param_1->x)[local_74];
+    fVar4 = -(&hit_point->x)[local_74];
     fVar5 = -local_40[local_74];
     if ((fVar5 * 0.999 <= fVar4) || (fVar5 <= fVar4 * 0.999)) {
       bVar2 = true;
@@ -2962,10 +3005,10 @@ bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys
     else {
       bVar2 = false;
     }
-    if ((!bVar2) || (-(&param_2->x)[local_74] < 0.7)) {
+    if ((!bVar2) || (-(&up->x)[local_74] < 0.7)) {
       if (local_18 < fVar4 - fVar5) {
         local_18 = fVar4 - fVar5;
-        local_1c = -(&param_2->x)[local_74];
+        local_1c = -(&up->x)[local_74];
       }
       bVar2 = false;
     }
@@ -2996,7 +3039,7 @@ bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    fVar4 = (&param_1->x)[local_74];
+    fVar4 = (&hit_point->x)[local_74];
     fVar5 = local_70[local_74];
     if ((fVar5 * 0.999 <= fVar4) || (fVar5 <= fVar4 * 0.999)) {
       bVar2 = true;
@@ -3004,10 +3047,10 @@ bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys
     else {
       bVar2 = false;
     }
-    if ((!bVar2) || ((&param_2->x)[local_74] < 0.7)) {
+    if ((!bVar2) || ((&up->x)[local_74] < 0.7)) {
       if (local_18 < fVar4 - fVar5) {
         local_18 = fVar4 - fVar5;
-        local_1c = (&param_2->x)[local_74];
+        local_1c = (&up->x)[local_74];
       }
       bVar2 = false;
     }
@@ -3027,7 +3070,7 @@ bool __thiscall gjk_aabb_t::is_walkable(gjk_aabb_t *this,phys_vec3 *param_1,phys
 
 // 00844BD0  is_walkable  (physics/phys_gjk_collision_detection.cpp:1302)
 
-bool __cdecl is_walkable(cbrush_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+bool __cdecl is_walkable(cbrush_t *brush,phys_vec3 *hit_point_loc,phys_vec3 *up_loc)
 
 {
   float fVar1;
@@ -3064,13 +3107,14 @@ bool __cdecl is_walkable(cbrush_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3
     if (2 < local_1c) {
       local_50 = 0;
       while( true ) {
-        if (param_1->numsides <= local_50) {
+        if (brush->numsides <= local_50) {
           return 0.7 <= local_18;
         }
-        local_54 = param_1->sides + local_50;
+        local_54 = brush->sides + local_50;
         Phys_Vec3ToNitrousVec(local_54->plane->normal,&local_70);
-        fVar5 = local_70.x * param_3->x + local_70.y * param_3->y + local_70.z * param_3->z;
-        fVar6 = param_2->x * local_70.x + param_2->y * local_70.y + param_2->z * local_70.z;
+        fVar5 = local_70.x * up_loc->x + local_70.y * up_loc->y + local_70.z * up_loc->z;
+        fVar6 = hit_point_loc->x * local_70.x + hit_point_loc->y * local_70.y +
+                hit_point_loc->z * local_70.z;
         fVar1 = local_54->plane->dist;
         if ((fVar1 * 0.999 <= fVar6) || (fVar1 <= fVar6 * 0.999)) {
           bVar3 = true;
@@ -3107,9 +3151,9 @@ bool __cdecl is_walkable(cbrush_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_20 = -(&param_2->x)[local_1c];
-    local_24 = -param_1->mins[local_1c];
-    local_28 = -(&param_3->x)[local_1c];
+    local_20 = -(&hit_point_loc->x)[local_1c];
+    local_24 = -brush->mins[local_1c];
+    local_28 = -(&up_loc->x)[local_1c];
     local_2c = 0x3f7fbe77;
     if ((local_24 * 0.999 <= local_20) || (local_24 <= local_20 * 0.999)) {
       local_2d = '\x01';
@@ -3143,9 +3187,9 @@ bool __cdecl is_walkable(cbrush_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_38 = (&param_2->x)[local_1c];
-    local_3c = param_1->maxs[local_1c];
-    local_40 = (&param_3->x)[local_1c];
+    local_38 = (&hit_point_loc->x)[local_1c];
+    local_3c = brush->maxs[local_1c];
+    local_40 = (&up_loc->x)[local_1c];
     local_44 = 0x3f7fbe77;
     if ((local_3c * 0.999 <= local_38) || (local_3c <= local_38 * 0.999)) {
       local_45 = '\x01';
@@ -3175,7 +3219,7 @@ bool __cdecl is_walkable(cbrush_t *param_1,phys_vec3 *param_2,phys_vec3 *param_3
 
 // 00845000  is_walkable  (physics/phys_gjk_collision_detection.cpp:1342)
 
-bool __cdecl is_walkable(CollisionPartition *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+bool __cdecl is_walkable(CollisionPartition *partition,phys_vec3 *hit_point_loc,phys_vec3 *up_loc)
 
 {
   bool bVar1;
@@ -3205,10 +3249,10 @@ bool __cdecl is_walkable(CollisionPartition *param_1,phys_vec3 *param_2,phys_vec
   local_18 = 0.0;
   local_1c = 0;
   do {
-    if ((int)(uint)param_1->triCount <= local_1c) {
+    if ((int)(uint)partition->triCount <= local_1c) {
       return 0.7 <= local_18;
     }
-    local_20 = param_1->firstTri + local_1c;
+    local_20 = partition->firstTri + local_1c;
     local_24 = cm.triIndices + local_20 * 3;
     local_28 = cm.verts + *local_24;
     local_2c = cm.verts + local_24[1];
@@ -3223,10 +3267,11 @@ bool __cdecl is_walkable(CollisionPartition *param_1,phys_vec3 *param_2,phys_vec
     Phys_Vec3ToNitrousVec(&local_54,&local_70);
     fVar4 = Abs(&local_70);
     if (0.0001 < fVar4) {
-      fVar2 = (param_2->x * local_70.x + param_2->y * local_70.y + param_2->z * local_70.z) / fVar4;
+      fVar2 = (hit_point_loc->x * local_70.x + hit_point_loc->y * local_70.y +
+              hit_point_loc->z * local_70.z) / fVar4;
       fVar3 = ((*local_28)[0] * local_54 + (*local_28)[1] * local_50 + (*local_28)[2] * local_4c) /
               fVar4;
-      fVar4 = (local_70.x * param_3->x + local_70.y * param_3->y + local_70.z * param_3->z) / fVar4;
+      fVar4 = (local_70.x * up_loc->x + local_70.y * up_loc->y + local_70.z * up_loc->z) / fVar4;
       if ((fVar3 * 0.999 <= fVar2) || (fVar3 <= fVar2 * 0.999)) {
         bVar1 = true;
       }
@@ -3255,7 +3300,7 @@ bool __cdecl is_walkable(CollisionPartition *param_1,phys_vec3 *param_2,phys_vec
 // 008452E0  project  (physics/phys_gjk_collision_detection.cpp:1390)
 
 void __cdecl
-project(phys_vec3 *param_1,phys_static_array<geom_plane,128> *param_2,phys_vec3 *param_3)
+project(phys_vec3 *point,phys_static_array<geom_plane,128> *list_geom_plane,phys_vec3 *result)
 
 {
   float *pfVar1;
@@ -3315,28 +3360,28 @@ project(phys_vec3 *param_1,phys_static_array<geom_plane,128> *param_2,phys_vec3 
   geom_plane *local_18;
   geom_plane *local_14;
   
-  local_14 = param_2->m_slot_array;
-  local_18 = param_2->m_slot_array;
-  local_1c = param_2->m_slot_array + param_2->m_alloc_count;
+  local_14 = list_geom_plane->m_slot_array;
+  local_18 = list_geom_plane->m_slot_array;
+  local_1c = list_geom_plane->m_slot_array + list_geom_plane->m_alloc_count;
   local_20 = local_1c;
   for (; local_1c != local_18; local_18 = local_18 + 1) {
     local_24 = local_18;
     local_18->m_lambda = 0.0;
   }
-  local_40 = param_1->x;
-  local_3c = param_1->y;
-  local_38 = param_1->z;
-  local_34 = param_1->w;
+  local_40 = point->x;
+  local_3c = point->y;
+  local_38 = point->z;
+  local_34 = point->w;
   local_44 = 0.0;
   local_48 = 0;
   local_4c = 0xffffffff;
-  for (local_50 = 0; local_54 = param_2->m_alloc_count, local_50 < param_2->m_alloc_count;
-      local_50 = local_50 + 1) {
+  for (local_50 = 0; local_54 = list_geom_plane->m_alloc_count,
+      local_50 < list_geom_plane->m_alloc_count; local_50 = local_50 + 1) {
     local_58 = (geom_plane *)0x0;
     local_5c = 1e+13;
-    local_60 = param_2->m_slot_array;
-    local_64 = param_2->m_slot_array;
-    local_68 = param_2->m_slot_array + param_2->m_alloc_count;
+    local_60 = list_geom_plane->m_slot_array;
+    local_64 = list_geom_plane->m_slot_array;
+    local_68 = list_geom_plane->m_slot_array + list_geom_plane->m_alloc_count;
     local_6c = local_68;
     for (; local_68 != local_64; local_64 = local_64 + 1) {
       local_70 = local_64;
@@ -3392,8 +3437,8 @@ project(phys_vec3 *param_1,phys_static_array<geom_plane,128> *param_2,phys_vec3 
     local_90 = local_84;
     afStack_a0[local_7c] =
          local_58->m_right_side -
-         (param_1->x * (local_58->m_normal).x + param_1->y * (local_58->m_normal).y +
-         param_1->z * (local_58->m_normal).z);
+         (point->x * (local_58->m_normal).x + point->y * (local_58->m_normal).y +
+         point->z * (local_58->m_normal).z);
     afStack_e0[local_7c * 5] = 1.0;
     auStack_f0[local_7c] = local_58;
     for (local_f4 = 0; local_f4 < (int)local_90; local_f4 = local_f4 + 1) {
@@ -3486,9 +3531,9 @@ project(phys_vec3 *param_1,phys_static_array<geom_plane,128> *param_2,phys_vec3 
     if (local_104 < local_44) break;
     local_44 = local_104;
     local_48 = local_108;
-    local_40 = param_1->x;
-    local_3c = param_1->y;
-    local_38 = param_1->z;
+    local_40 = point->x;
+    local_3c = point->y;
+    local_38 = point->z;
     for (local_15c = 0; local_15c < 4; local_15c = local_15c + 1) {
       if ((1 << ((byte)local_15c & 0x1f) & local_108) != 0) {
         pfVar1 = (float *)auStack_f0[local_15c];
@@ -3499,16 +3544,16 @@ project(phys_vec3 *param_1,phys_static_array<geom_plane,128> *param_2,phys_vec3 
       }
     }
   }
-  param_3->x = local_40;
-  param_3->y = local_3c;
-  param_3->z = local_38;
+  result->x = local_40;
+  result->y = local_3c;
+  result->z = local_38;
   return;
 }
 
 
 // 008461F0  get_material_from_brush  (physics/phys_gjk_collision_detection.cpp:1640)
 
-void __cdecl get_material_from_brush(cbrush_t *param_1,int *param_2)
+void __cdecl get_material_from_brush(cbrush_t *brush,int *sflags)
 
 {
   byte bVar1;
@@ -3518,15 +3563,16 @@ void __cdecl get_material_from_brush(cbrush_t *param_1,int *param_2)
   int local_34;
   dmaterial_t *local_2c;
   byte *local_28;
-  uint local_20;
-  float local_10;
-  uint local_c;
+  uint j;
+  float best_dot;
+  uint i;
+  float dot;
   
   if (s_caulk_sflags == 0x7fffffff) {
     s_caulk_sflags = 0x7ffffffe;
-    for (local_c = 0; local_c < cm.numMaterials; local_c = local_c + 1) {
+    for (i = 0; i < cm.numMaterials; i = i + 1) {
       local_28 = &s_caulk;
-      local_2c = cm.materials + local_c;
+      local_2c = cm.materials + i;
       do {
         bVar1 = local_2c->material[0];
         bVar3 = bVar1 < *local_28;
@@ -3545,35 +3591,35 @@ LAB_008462ab:
       local_34 = 0;
 LAB_008462b3:
       if (local_34 == 0) {
-        s_caulk_sflags = cm.materials[local_c].surfaceFlags;
+        s_caulk_sflags = cm.materials[i].surfaceFlags;
         break;
       }
     }
   }
-  *param_2 = param_1->axial_sflags[1][2];
-  if (*param_2 == s_caulk_sflags) {
-    *param_2 = 0x7fffffff;
-    local_10 = -10.0;
-    for (local_c = 0; local_c < param_1->numsides; local_c = local_c + 1) {
-      if (param_1->sides[local_c].sflags != s_caulk_sflags) {
-        pcVar2 = param_1->sides[local_c].plane;
+  *sflags = brush->axial_sflags[1][2];
+  if (*sflags == s_caulk_sflags) {
+    *sflags = 0x7fffffff;
+    best_dot = -10.0;
+    for (i = 0; i < brush->numsides; i = i + 1) {
+      if (brush->sides[i].sflags != s_caulk_sflags) {
+        pcVar2 = brush->sides[i].plane;
         fVar4 = pcVar2->normal[0] * 0.0 + pcVar2->normal[1] * 0.0 + pcVar2->normal[2] * 1.0;
-        if (local_10 < fVar4) {
-          *param_2 = param_1->sides[local_c].sflags;
-          local_10 = fVar4;
+        if (best_dot < fVar4) {
+          *sflags = brush->sides[i].sflags;
+          best_dot = fVar4;
         }
       }
     }
-    if (*param_2 == 0x7fffffff) {
-      for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-        for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-          if (param_1->axial_sflags[local_c][local_20] != s_caulk_sflags) {
-            *param_2 = param_1->axial_sflags[local_c][local_20];
+    if (*sflags == 0x7fffffff) {
+      for (i = 0; i < 2; i = i + 1) {
+        for (j = 0; j < 3; j = j + 1) {
+          if (brush->axial_sflags[i][j] != s_caulk_sflags) {
+            *sflags = brush->axial_sflags[i][j];
             return;
           }
         }
       }
-      *param_2 = s_caulk_sflags;
+      *sflags = s_caulk_sflags;
     }
   }
   return;
@@ -3587,7 +3633,7 @@ LAB_008462b3:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl fill_results(gjk_trace_output_t *param_1,bool param_2,trace_t *param_3)
+void __cdecl fill_results(gjk_trace_output_t *gto,bool is_walkable,trace_t *results)
 
 {
   ushort uVar1;
@@ -3597,103 +3643,106 @@ void __cdecl fill_results(gjk_trace_output_t *param_1,bool param_2,trace_t *para
   gentity_s *pgVar5;
   centity_s *pcVar6;
   int iVar7;
-  cbrush_t *pcVar8;
+  cbrush_t *brush_00;
+  dmaterial_t *materialInfo;
+  gjk_partition_t *gjk_partition;
+  cbrush_t *brush;
   
-  param_3->fraction = param_1->m_hit_time;
-  param_3->allsolid = false;
-  param_3->startsolid = param_1->m_hit_dist <= 0.0 && param_1->m_hit_dist != 0.0;
-  Phys_NitrousVecToVec3(&param_1->m_hit_normal,(float *)param_3);
-  param_3->walkable = param_2;
-  if (param_1->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
-    if ((param_3 == (trace_t *)0x0) &&
+  results->fraction = gto->m_hit_time;
+  results->allsolid = false;
+  results->startsolid = gto->m_hit_dist <= 0.0 && gto->m_hit_dist != 0.0;
+  Phys_NitrousVecToVec3(&gto->m_hit_normal,(float *)results);
+  results->walkable = is_walkable;
+  if (gto->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_3->hitType = TRACE_HITTYPE_ENTITY;
-    param_3->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_GENT) {
-    pgVar5 = gjk_entity_info_t::get_gent(param_1->m_gi->m_ent_info);
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_GENT) {
+    pgVar5 = gjk_entity_info_t::get_gent(gto->m_gi->m_ent_info);
     iVar7 = (pgVar5->s).number;
-    if ((param_3 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_3->hitType = TRACE_HITTYPE_ENTITY;
-    param_3->hitId = (ushort)iVar7;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = (ushort)iVar7;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_CENT) {
-    pcVar6 = gjk_entity_info_t::get_cent(param_1->m_gi->m_ent_info);
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_CENT) {
+    pcVar6 = gjk_entity_info_t::get_cent(gto->m_gi->m_ent_info);
     iVar7 = (pcVar6->nextState).number;
-    if ((param_3 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_3->hitType = TRACE_HITTYPE_ENTITY;
-    param_3->hitId = (ushort)iVar7;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = (ushort)iVar7;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
-    if ((param_3 == (trace_t *)0x0) &&
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_3->hitType = TRACE_HITTYPE_ENTITY;
-    param_3->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
   else {
-    if ((param_1->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
+    if ((gto->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                  ,0x6b5,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_3 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_3->hitType = TRACE_HITTYPE_ENTITY;
-    param_3->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  iVar7 = (**(code **)(*(int *)param_1->m_gi->m_cg + 0x34))();
+  iVar7 = (**(code **)(*(int *)gto->m_gi->m_cg + 0x34))();
   if (iVar7 == 0) {
-    iVar7 = (**(code **)(*(int *)param_1->m_gi->m_cg + 0x28))();
+    iVar7 = (**(code **)(*(int *)gto->m_gi->m_cg + 0x28))();
     pdVar3 = cm.materials;
     if (iVar7 == 3) {
-      uVar1 = *(ushort *)((int)param_1->m_gi->m_cg[1].m_aabb_mn_loc.x + 0xc);
-      param_3->sflags = cm.materials[uVar1].surfaceFlags;
-      param_3->cflags = pdVar3[uVar1].contentFlags;
+      uVar1 = *(ushort *)((int)gto->m_gi->m_cg[1].m_aabb_mn_loc.x + 0xc);
+      results->sflags = cm.materials[uVar1].surfaceFlags;
+      results->cflags = pdVar3[uVar1].contentFlags;
     }
     else {
-      param_3->cflags = 0;
-      param_3->sflags = 0;
+      results->cflags = 0;
+      results->sflags = 0;
     }
   }
   else {
-    pcVar8 = (cbrush_t *)(**(code **)(*(int *)param_1->m_gi->m_cg + 0x34))();
-    param_3->cflags = pcVar8->contents;
-    get_material_from_brush(pcVar8,&param_3->sflags);
+    brush_00 = (cbrush_t *)(**(code **)(*(int *)gto->m_gi->m_cg + 0x34))();
+    results->cflags = brush_00->contents;
+    get_material_from_brush(brush_00,&results->sflags);
   }
-  param_3->modelIndex = 0;
-  param_3->partName = 0;
-  param_3->partGroup = 0;
-  param_3->boneIndex = 0xfe;
-  param_3->staticModel = (cStaticModel_s *)0x0;
+  results->modelIndex = 0;
+  results->partName = 0;
+  results->partGroup = 0;
+  results->boneIndex = 0xfe;
+  results->staticModel = (cStaticModel_s *)0x0;
   return;
 }
 
@@ -3705,7 +3754,7 @@ void __cdecl fill_results(gjk_trace_output_t *param_1,bool param_2,trace_t *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl fill_results_type_and_id(gjk_trace_output_t *param_1,trace_t *param_2)
+void __cdecl fill_results_type_and_id(gjk_trace_output_t *gto,trace_t *results)
 
 {
   code *pcVar1;
@@ -3716,73 +3765,73 @@ void __cdecl fill_results_type_and_id(gjk_trace_output_t *param_1,trace_t *param
   centity_s *pcVar6;
   Glass *pGVar7;
   
-  if (param_1->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
-    if ((param_2 == (trace_t *)0x0) &&
+  if (gto->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_ENTITY;
-    param_2->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_GENT) {
-    pgVar5 = gjk_entity_info_t::get_gent(param_1->m_gi->m_ent_info);
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_GENT) {
+    pgVar5 = gjk_entity_info_t::get_gent(gto->m_gi->m_ent_info);
     iVar2 = (pgVar5->s).number;
-    if ((param_2 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_ENTITY;
-    param_2->hitId = (ushort)iVar2;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = (ushort)iVar2;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_CENT) {
-    pcVar6 = gjk_entity_info_t::get_cent(param_1->m_gi->m_ent_info);
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_CENT) {
+    pcVar6 = gjk_entity_info_t::get_cent(gto->m_gi->m_ent_info);
     iVar2 = (pcVar6->nextState).number;
-    if ((param_2 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_ENTITY;
-    param_2->hitId = (ushort)iVar2;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = (ushort)iVar2;
   }
-  else if (param_1->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
-    pGVar7 = gjk_entity_info_t::get_glass(param_1->m_gi->m_ent_info);
+  else if (gto->m_gi->m_ent_info->m_ent_type == ET_GLASS) {
+    pGVar7 = gjk_entity_info_t::get_glass(gto->m_gi->m_ent_info);
     uVar3 = pGVar7->index;
-    if ((param_2 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_GLASS;
-    param_2->hitId = (ushort)uVar3;
+    results->hitType = TRACE_HITTYPE_GLASS;
+    results->hitId = (ushort)uVar3;
   }
   else {
-    if ((param_1->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
+    if ((gto->m_gi->m_ent_info->m_ent_type != ET_DENT) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_gjk_collision_detection.cpp"
                                  ,0x6e5,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_ENTITY;
-    param_2->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
   return;
 }
@@ -3790,20 +3839,20 @@ void __cdecl fill_results_type_and_id(gjk_trace_output_t *param_1,trace_t *param
 
 // 00846A40  fill_results_no_hit  (physics/phys_gjk_collision_detection.cpp:1774)
 
-void __cdecl fill_results_no_hit(trace_t *param_1)
+void __cdecl fill_results_no_hit(trace_t *results)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  param_1->fraction = 1.0;
-  param_1->allsolid = false;
-  param_1->startsolid = false;
-  (param_1->normal).vec.v[0] = 0.0;
-  (param_1->normal).vec.v[1] = 0.0;
-  (param_1->normal).vec.v[2] = 0.0;
-  param_1->walkable = false;
-  if (param_1 == (trace_t *)0x0) {
+  results->fraction = 1.0;
+  results->allsolid = false;
+  results->startsolid = false;
+  (results->normal).vec.v[0] = 0.0;
+  (results->normal).vec.v[1] = 0.0;
+  (results->normal).vec.v[2] = 0.0;
+  results->walkable = false;
+  if (results == (trace_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h",
                              0xaf,0,"%s");
     if (!bVar2) {
@@ -3812,22 +3861,22 @@ void __cdecl fill_results_no_hit(trace_t *param_1)
       return;
     }
   }
-  param_1->hitType = TRACE_HITTYPE_NONE;
-  param_1->hitId = 0;
-  param_1->cflags = 0;
-  param_1->sflags = 0;
-  param_1->modelIndex = 0;
-  param_1->partName = 0;
-  param_1->partGroup = 0;
-  param_1->boneIndex = 0xfe;
-  param_1->staticModel = (cStaticModel_s *)0x0;
+  results->hitType = TRACE_HITTYPE_NONE;
+  results->hitId = 0;
+  results->cflags = 0;
+  results->sflags = 0;
+  results->modelIndex = 0;
+  results->partName = 0;
+  results->partGroup = 0;
+  results->boneIndex = 0xfe;
+  results->staticModel = (cStaticModel_s *)0x0;
   return;
 }
 
 
 // 00846B20  is_walkable  (physics/phys_gjk_collision_detection.cpp:1817)
 
-bool __cdecl is_walkable(gjk_trace_output_t *param_1)
+bool __cdecl is_walkable(gjk_trace_output_t *gto)
 
 {
   undefined1 uVar1;
@@ -3844,23 +3893,23 @@ bool __cdecl is_walkable(gjk_trace_output_t *param_1)
   gjk_entity_info_t *local_18;
   float local_14;
   
-  if (param_1->m_is_foot == false) {
+  if (gto->m_is_foot == false) {
     uVar1 = 0;
   }
   else {
-    local_14 = (param_1->m_hit_normal).z;
+    local_14 = (gto->m_hit_normal).z;
     if (local_14 < 0.7) {
-      if (param_1->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
-        local_50 = (param_1->m_hit_point).x;
-        local_4c = (param_1->m_hit_point).y;
-        local_48 = (param_1->m_hit_point).z;
+      if (gto->m_gi->m_ent_info == (gjk_entity_info_t *)0x0) {
+        local_50 = (gto->m_hit_point).x;
+        local_4c = (gto->m_hit_point).y;
+        local_48 = (gto->m_hit_point).z;
         local_80 = PHYS_Z_VEC.x;
         local_7c = PHYS_Z_VEC.y;
         local_78 = PHYS_Z_VEC.z;
       }
       else {
-        local_18 = param_1->m_gi->m_ent_info;
-        local_34 = phys_full_inv_multiply(&local_30,&local_18->m_mat,&param_1->m_hit_point);
+        local_18 = gto->m_gi->m_ent_info;
+        local_34 = phys_full_inv_multiply(&local_30,&local_18->m_mat,&gto->m_hit_point);
         local_50 = local_34->x;
         local_4c = local_34->y;
         local_48 = local_34->z;
@@ -3869,7 +3918,7 @@ bool __cdecl is_walkable(gjk_trace_output_t *param_1)
         local_7c = local_64->y;
         local_78 = local_64->z;
       }
-      uVar1 = (**(code **)(*(int *)param_1->m_gi->m_cg + 0x30))(&local_50,&local_80);
+      uVar1 = (**(code **)(*(int *)gto->m_gi->m_cg + 0x30))(&local_50,&local_80);
     }
     else {
       uVar1 = 1;
@@ -3882,16 +3931,16 @@ bool __cdecl is_walkable(gjk_trace_output_t *param_1)
 // 008401C0  operator=  (line unknown)
 
 cached_simplex_info * __thiscall
-cached_simplex_info::operator=(cached_simplex_info *this,cached_simplex_info *param_1)
+cached_simplex_info::operator=(cached_simplex_info *this,cached_simplex_info *__that)
 
 {
   phys_vec3 *ppVar1;
   phys_vec3 *ppVar2;
-  uint local_8;
+  uint _S1;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    ppVar1 = param_1->m_indices + local_8;
-    ppVar2 = this->m_indices + local_8;
+  for (_S1 = 0; _S1 < 3; _S1 = _S1 + 1) {
+    ppVar1 = __that->m_indices + _S1;
+    ppVar2 = this->m_indices + _S1;
     ppVar2->x = ppVar1->x;
     ppVar2->y = ppVar1->y;
     ppVar2->z = ppVar1->z;

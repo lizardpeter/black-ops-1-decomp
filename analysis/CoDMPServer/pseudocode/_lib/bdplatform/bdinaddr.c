@@ -46,16 +46,16 @@ void __thiscall bdInAddr::fromString(bdInAddr *this,char *param_1)
 uint __thiscall bdInAddr::toString(bdInAddr *this,char *param_1,uint param_2)
 
 {
-  char *pcVar1;
+  char *src;
   uint extraout_EAX;
   uint local_c;
   
-  pcVar1 = (char *)Ordinal_12((this->inUn).m_iaddr);
-  if (pcVar1 != (char *)0x0) {
-    bdStrlcpy(param_1,pcVar1,param_2);
+  src = (char *)Ordinal_12((this->inUn).m_iaddr);
+  if (src != (char *)0x0) {
+    bdStrlcpy(param_1,src,param_2);
   }
   local_c = 0;
-  if (pcVar1 != (char *)0x0) {
+  if (src != (char *)0x0) {
     strlen((uchar *)param_1);
     local_c = extraout_EAX;
   }

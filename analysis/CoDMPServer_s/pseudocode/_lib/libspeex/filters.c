@@ -2,7 +2,7 @@
 
 // 007DB480  bw_lpc  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:53)
 
-void __cdecl bw_lpc(float param_1,float *param_2,float *param_3,int param_4)
+void __cdecl bw_lpc(float lpc_in,float *lpc_out,float *param_3,int param_4)
 
 {
   float fVar1;
@@ -12,24 +12,25 @@ void __cdecl bw_lpc(float param_1,float *param_2,float *param_3,int param_4)
   float *pfVar4;
   int iVar5;
   int iVar6;
+  float gamma;
   
-  fVar2 = param_1;
+  fVar2 = lpc_in;
   iVar6 = 0;
   if (3 < in_EAX) {
     iVar5 = (in_EAX - 4U >> 2) + 1;
     iVar6 = iVar5 * 4;
     pfVar3 = param_3 + 1;
-    pfVar4 = param_2 + 3;
+    pfVar4 = lpc_out + 3;
     do {
       iVar5 = iVar5 + -1;
-      pfVar3[-1] = param_1 * pfVar4[-3];
-      *pfVar3 = param_1 * fVar2 *
-                *(float *)((int)param_2 + (-0x10 - (int)param_3) + (int)(pfVar3 + 4));
-      fVar1 = param_1 * fVar2 * fVar2;
+      pfVar3[-1] = lpc_in * pfVar4[-3];
+      *pfVar3 = lpc_in * fVar2 *
+                *(float *)((int)lpc_out + (-0x10 - (int)param_3) + (int)(pfVar3 + 4));
+      fVar1 = lpc_in * fVar2 * fVar2;
       pfVar3[1] = fVar1 * pfVar4[-1];
       fVar1 = fVar1 * fVar2;
       pfVar3[2] = fVar1 * *pfVar4;
-      param_1 = fVar1 * fVar2;
+      lpc_in = fVar1 * fVar2;
       pfVar3 = pfVar3 + 4;
       pfVar4 = pfVar4 + 4;
     } while (iVar5 != 0);
@@ -39,8 +40,8 @@ void __cdecl bw_lpc(float param_1,float *param_2,float *param_3,int param_4)
     pfVar3 = param_3 + iVar6;
     do {
       iVar5 = iVar5 + -1;
-      *pfVar3 = param_1 * *(float *)((int)pfVar3 + ((int)param_2 - (int)param_3));
-      param_1 = param_1 * fVar2;
+      *pfVar3 = lpc_in * *(float *)((int)pfVar3 + ((int)lpc_out - (int)param_3));
+      lpc_in = lpc_in * fVar2;
       pfVar3 = pfVar3 + 1;
     } while (iVar5 != 0);
   }
@@ -50,7 +51,7 @@ void __cdecl bw_lpc(float param_1,float *param_2,float *param_3,int param_4)
 
 // 007DB550  signal_mul  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:102)
 
-void __cdecl signal_mul(float *param_1,float *param_2,float param_3,int param_4)
+void __cdecl signal_mul(float *y,float *scale,float param_3,int param_4)
 
 {
   int in_EAX;
@@ -58,17 +59,18 @@ void __cdecl signal_mul(float *param_1,float *param_2,float param_3,int param_4)
   float *pfVar2;
   int iVar3;
   int iVar4;
+  float *x;
   
   iVar4 = 0;
   if (3 < in_EAX) {
     iVar3 = (in_EAX - 4U >> 2) + 1;
     iVar4 = iVar3 * 4;
-    pfVar1 = param_2 + 1;
-    pfVar2 = param_1 + 3;
+    pfVar1 = scale + 1;
+    pfVar2 = y + 3;
     do {
       iVar3 = iVar3 + -1;
       pfVar1[-1] = pfVar2[-3] * param_3;
-      *pfVar1 = *(float *)((int)param_1 + (-0x10 - (int)param_2) + (int)(pfVar1 + 4)) * param_3;
+      *pfVar1 = *(float *)((int)y + (-0x10 - (int)scale) + (int)(pfVar1 + 4)) * param_3;
       pfVar1[1] = pfVar2[-1] * param_3;
       pfVar1[2] = *pfVar2 * param_3;
       pfVar1 = pfVar1 + 4;
@@ -77,10 +79,10 @@ void __cdecl signal_mul(float *param_1,float *param_2,float param_3,int param_4)
   }
   if (iVar4 < in_EAX) {
     iVar3 = in_EAX - iVar4;
-    pfVar1 = param_2 + iVar4;
+    pfVar1 = scale + iVar4;
     do {
       iVar3 = iVar3 + -1;
-      *pfVar1 = *(float *)((int)pfVar1 + ((int)param_1 - (int)param_2)) * param_3;
+      *pfVar1 = *(float *)((int)pfVar1 + ((int)y - (int)scale)) * param_3;
       pfVar1 = pfVar1 + 1;
     } while (iVar3 != 0);
   }
@@ -90,7 +92,7 @@ void __cdecl signal_mul(float *param_1,float *param_2,float param_3,int param_4)
 
 // 007DB5E0  signal_div  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:109)
 
-void __cdecl signal_div(float *param_1,float *param_2,float param_3,int param_4)
+void __cdecl signal_div(float *y,float *scale,float param_3,int param_4)
 
 {
   float fVar1;
@@ -99,18 +101,19 @@ void __cdecl signal_div(float *param_1,float *param_2,float param_3,int param_4)
   float *pfVar3;
   int iVar4;
   int iVar5;
+  float *x;
   
   fVar1 = 1.0 / param_3;
   iVar5 = 0;
   if (3 < in_EAX) {
     iVar4 = (in_EAX - 4U >> 2) + 1;
     iVar5 = iVar4 * 4;
-    pfVar2 = param_2 + 1;
-    pfVar3 = param_1 + 3;
+    pfVar2 = scale + 1;
+    pfVar3 = y + 3;
     do {
       iVar4 = iVar4 + -1;
       pfVar2[-1] = pfVar3[-3] * fVar1;
-      *pfVar2 = *(float *)((int)param_1 + (-0x10 - (int)param_2) + (int)(pfVar2 + 4)) * fVar1;
+      *pfVar2 = *(float *)((int)y + (-0x10 - (int)scale) + (int)(pfVar2 + 4)) * fVar1;
       pfVar2[1] = pfVar3[-1] * fVar1;
       pfVar2[2] = *pfVar3 * fVar1;
       pfVar2 = pfVar2 + 4;
@@ -119,10 +122,10 @@ void __cdecl signal_div(float *param_1,float *param_2,float param_3,int param_4)
   }
   if (iVar5 < in_EAX) {
     iVar4 = in_EAX - iVar5;
-    pfVar2 = param_2 + iVar5;
+    pfVar2 = scale + iVar5;
     do {
       iVar4 = iVar4 + -1;
-      *pfVar2 = *(float *)((int)pfVar2 + ((int)param_1 - (int)param_2)) * fVar1;
+      *pfVar2 = *(float *)((int)pfVar2 + ((int)y - (int)scale)) * fVar1;
       pfVar2 = pfVar2 + 1;
     } while (iVar4 != 0);
   }
@@ -132,12 +135,16 @@ void __cdecl signal_div(float *param_1,float *param_2,float param_3,int param_4)
 
 // 007DB670  compute_rms  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:198)
 
+/* WARNING: Variable defined which should be unmapped: sum */
+
 float __cdecl compute_rms(float *param_1,int param_2)
 
 {
   int iVar1;
   int iVar2;
   float10 extraout_ST0;
+  int len;
+  float sum;
   
   iVar2 = 0;
   if (3 < (int)param_1) {
@@ -157,8 +164,7 @@ float __cdecl compute_rms(float *param_1,int param_2)
 // 007DB720  filter_mem2  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:233)
 
 void __cdecl
-filter_mem2(float *param_1,float *param_2,float *param_3,float *param_4,int param_5,int param_6,
-           float *param_7)
+filter_mem2(float *num,float *den,float *ord,float *mem,int param_5,int param_6,float *param_7)
 
 {
   float *pfVar1;
@@ -172,48 +178,50 @@ filter_mem2(float *param_1,float *param_2,float *param_3,float *param_4,int para
   int iVar7;
   float *pfVar8;
   int iVar9;
+  float *x;
   int local_c;
+  float xi;
   
   if (0 < in_EAX) {
     pfVar8 = in_ECX;
     local_c = in_EAX;
     do {
-      fVar2 = *(float *)(((int)param_1 - (int)in_ECX) + (int)pfVar8);
+      fVar2 = *(float *)(((int)num - (int)in_ECX) + (int)pfVar8);
       iVar9 = 0;
       fVar3 = fVar2 + *(float *)param_5;
       fVar4 = -fVar3;
-      if (3 < (int)param_4 + -1) {
+      if (3 < (int)mem + -1) {
         pfVar5 = (float *)(param_5 + 4);
-        pfVar6 = param_3 + 2;
+        pfVar6 = ord + 2;
         iVar7 = iVar9;
         do {
-          pfVar1 = (float *)((int)pfVar5 + ((int)param_3 - param_5));
+          pfVar1 = (float *)((int)pfVar5 + ((int)ord - param_5));
           iVar9 = iVar7 + 4;
-          pfVar5[-1] = pfVar6[-2] * fVar4 + param_2[iVar7] * fVar2 + *pfVar5;
+          pfVar5[-1] = pfVar6[-2] * fVar4 + den[iVar7] * fVar2 + *pfVar5;
           *pfVar5 = fVar4 * *pfVar1 +
-                    *(float *)((int)pfVar1 + ((int)param_2 - (int)param_3)) * fVar2 + pfVar5[1];
+                    *(float *)((int)pfVar1 + ((int)den - (int)ord)) * fVar2 + pfVar5[1];
           pfVar5[1] = *pfVar6 * fVar4 +
-                      *(float *)((int)pfVar6 + ((int)param_2 - (int)param_3)) * fVar2 + pfVar5[2];
-          pfVar5[2] = pfVar6[1] * fVar4 + param_2[iVar7 + 3] * fVar2 + pfVar5[3];
+                      *(float *)((int)pfVar6 + ((int)den - (int)ord)) * fVar2 + pfVar5[2];
+          pfVar5[2] = pfVar6[1] * fVar4 + den[iVar7 + 3] * fVar2 + pfVar5[3];
           pfVar5 = pfVar5 + 4;
           pfVar6 = pfVar6 + 4;
           iVar7 = iVar9;
-        } while (iVar9 < (int)(param_4 + -1));
+        } while (iVar9 < (int)(mem + -1));
       }
-      if (iVar9 < (int)param_4 + -1) {
-        iVar7 = ((int)param_4 + -1) - iVar9;
+      if (iVar9 < (int)mem + -1) {
+        iVar7 = ((int)mem + -1) - iVar9;
         pfVar5 = (float *)(param_5 + iVar9 * 4);
         do {
-          pfVar6 = (float *)((int)pfVar5 + ((int)param_3 - param_5));
+          pfVar6 = (float *)((int)pfVar5 + ((int)ord - param_5));
           iVar7 = iVar7 + -1;
           *pfVar5 = *pfVar6 * fVar4 +
-                    *(float *)((int)pfVar6 + ((int)param_2 - (int)param_3)) * fVar2 + pfVar5[1];
+                    *(float *)((int)pfVar6 + ((int)den - (int)ord)) * fVar2 + pfVar5[1];
           pfVar5 = pfVar5 + 1;
         } while (iVar7 != 0);
       }
       local_c = local_c + -1;
-      *(float *)(param_5 + -4 + (int)param_4 * 4) =
-           param_2[(int)param_4 + -1] * fVar2 - fVar3 * param_3[(int)param_4 + -1];
+      *(float *)(param_5 + -4 + (int)mem * 4) =
+           den[(int)mem + -1] * fVar2 - fVar3 * ord[(int)mem + -1];
       *pfVar8 = fVar3;
       pfVar8 = pfVar8 + 1;
     } while (local_c != 0);
@@ -224,8 +232,7 @@ filter_mem2(float *param_1,float *param_2,float *param_3,float *param_4,int para
 
 // 007DB880  iir_mem2  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:274)
 
-void __cdecl
-iir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,float *param_6)
+void __cdecl iir_mem2(float *y,float *ord,float *param_3,int param_4,int param_5,float *param_6)
 
 {
   float fVar1;
@@ -239,26 +246,28 @@ iir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
   int iVar7;
   float *unaff_ESI;
   float *pfVar8;
+  float *den;
   int local_c;
+  float yi;
   
   if (0 < in_EAX) {
     iVar7 = (int)param_3 + -1;
-    pfVar8 = param_2;
+    pfVar8 = ord;
     local_c = in_EAX;
     do {
       iVar6 = 0;
-      fVar1 = *(float *)((in_ECX - (int)param_2) + (int)pfVar8) + *unaff_ESI;
+      fVar1 = *(float *)((in_ECX - (int)ord) + (int)pfVar8) + *unaff_ESI;
       fVar2 = -fVar1;
       if (3 < iVar7) {
         iVar5 = ((int)param_3 - 5U >> 2) + 1;
         iVar6 = iVar5 * 4;
         pfVar3 = unaff_ESI + 1;
-        pfVar4 = param_1 + 3;
+        pfVar4 = y + 3;
         do {
           iVar5 = iVar5 + -1;
           pfVar3[-1] = pfVar4[-3] * fVar2 + *pfVar3;
-          *pfVar3 = *(float *)((int)param_1 + (-0x10 - (int)unaff_ESI) + (int)(pfVar3 + 4)) * fVar2
-                    + pfVar3[1];
+          *pfVar3 = *(float *)((int)y + (-0x10 - (int)unaff_ESI) + (int)(pfVar3 + 4)) * fVar2 +
+                    pfVar3[1];
           pfVar3[1] = pfVar4[-1] * fVar2 + pfVar3[2];
           pfVar3[2] = *pfVar4 * fVar2 + pfVar3[3];
           pfVar3 = pfVar3 + 4;
@@ -270,12 +279,12 @@ iir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
         pfVar3 = unaff_ESI + iVar6;
         do {
           iVar5 = iVar5 + -1;
-          *pfVar3 = *(float *)(((int)param_1 - (int)unaff_ESI) + (int)pfVar3) * fVar2 + pfVar3[1];
+          *pfVar3 = *(float *)(((int)y - (int)unaff_ESI) + (int)pfVar3) * fVar2 + pfVar3[1];
           pfVar3 = pfVar3 + 1;
         } while (iVar5 != 0);
       }
       local_c = local_c + -1;
-      unaff_ESI[(int)param_3 + -1] = fVar2 * param_1[(int)param_3 + -1];
+      unaff_ESI[(int)param_3 + -1] = fVar2 * y[(int)param_3 + -1];
       *pfVar8 = fVar1;
       pfVar8 = pfVar8 + 1;
     } while (local_c != 0);
@@ -286,8 +295,7 @@ iir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
 
 // 007DB970  fir_mem2  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:315)
 
-void __cdecl
-fir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,float *param_6)
+void __cdecl fir_mem2(float *y,float *ord,float *param_3,int param_4,int param_5,float *param_6)
 
 {
   float fVar1;
@@ -301,26 +309,28 @@ fir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
   int iVar7;
   float *unaff_ESI;
   float *pfVar8;
+  float *num;
   int local_c;
+  float xi;
   
   if (0 < in_EAX) {
     iVar7 = (int)param_3 + -1;
-    pfVar8 = param_2;
+    pfVar8 = ord;
     local_c = in_EAX;
     do {
-      fVar1 = *(float *)((in_ECX - (int)param_2) + (int)pfVar8);
+      fVar1 = *(float *)((in_ECX - (int)ord) + (int)pfVar8);
       iVar6 = 0;
       fVar2 = *unaff_ESI;
       if (3 < iVar7) {
         iVar5 = ((int)param_3 - 5U >> 2) + 1;
         iVar6 = iVar5 * 4;
         pfVar3 = unaff_ESI + 1;
-        pfVar4 = param_1 + 3;
+        pfVar4 = y + 3;
         do {
           iVar5 = iVar5 + -1;
           pfVar3[-1] = pfVar4[-3] * fVar1 + *pfVar3;
-          *pfVar3 = *(float *)((int)param_1 + (-0x10 - (int)unaff_ESI) + (int)(pfVar3 + 4)) * fVar1
-                    + pfVar3[1];
+          *pfVar3 = *(float *)((int)y + (-0x10 - (int)unaff_ESI) + (int)(pfVar3 + 4)) * fVar1 +
+                    pfVar3[1];
           pfVar3[1] = pfVar4[-1] * fVar1 + pfVar3[2];
           pfVar3[2] = *pfVar4 * fVar1 + pfVar3[3];
           pfVar3 = pfVar3 + 4;
@@ -332,12 +342,12 @@ fir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
         pfVar3 = unaff_ESI + iVar6;
         do {
           iVar5 = iVar5 + -1;
-          *pfVar3 = *(float *)(((int)param_1 - (int)unaff_ESI) + (int)pfVar3) * fVar1 + pfVar3[1];
+          *pfVar3 = *(float *)(((int)y - (int)unaff_ESI) + (int)pfVar3) * fVar1 + pfVar3[1];
           pfVar3 = pfVar3 + 1;
         } while (iVar5 != 0);
       }
       local_c = local_c + -1;
-      unaff_ESI[(int)param_3 + -1] = fVar1 * param_1[(int)param_3 + -1];
+      unaff_ESI[(int)param_3 + -1] = fVar1 * y[(int)param_3 + -1];
       *pfVar8 = fVar1 + fVar2;
       pfVar8 = pfVar8 + 1;
     } while (local_c != 0);
@@ -349,8 +359,8 @@ fir_mem2(float *param_1,float *param_2,float *param_3,int param_4,int param_5,fl
 // 007DBA70  residue_percep_zero  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:355)
 
 void __cdecl
-residue_percep_zero(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                   int param_6,int param_7,char *param_8)
+residue_percep_zero(float *awk1,float *awk2,float *y,float *N,float *ord,int param_6,int param_7,
+                   char *param_8)
 
 {
   int in_EAX;
@@ -361,6 +371,7 @@ residue_percep_zero(float *param_1,float *param_2,float *param_3,float *param_4,
   undefined4 *puVar2;
   int unaff_EDI;
   undefined4 *puVar3;
+  float *ak;
   
   puVar2 = (undefined4 *)((-in_EAX & 3U) + in_EAX);
   iVar1 = param_6;
@@ -371,7 +382,7 @@ residue_percep_zero(float *param_1,float *param_2,float *param_3,float *param_4,
       puVar3 = puVar3 + 1;
     }
   }
-  filter_mem2(in_EDX,param_1,param_2,(float *)param_6,(int)puVar2,unaff_EDI,unaff_ESI);
+  filter_mem2(in_EDX,awk1,awk2,(float *)param_6,(int)puVar2,unaff_EDI,unaff_ESI);
   iVar1 = param_6;
   if (0 < param_6) {
     for (; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -379,7 +390,7 @@ residue_percep_zero(float *param_1,float *param_2,float *param_3,float *param_4,
       puVar2 = puVar2 + 1;
     }
   }
-  fir_mem2(param_3,param_4,(float *)param_6,unaff_EDI,(int)unaff_ESI,unaff_EBP);
+  fir_mem2(y,N,(float *)param_6,unaff_EDI,(int)unaff_ESI,unaff_EBP);
   return;
 }
 
@@ -388,8 +399,7 @@ residue_percep_zero(float *param_1,float *param_2,float *param_3,float *param_4,
 
 void __cdecl
 compute_impulse_response
-          (float *param_1,float *param_2,float *param_3,float *param_4,int param_5,int param_6,
-          char *param_7)
+          (float *awk1,float *awk2,float *y,float *N,int ord,int param_6,char *param_7)
 
 {
   float fVar1;
@@ -405,20 +415,24 @@ compute_impulse_response
   int iVar10;
   float *pfVar11;
   int iVar12;
+  float *ak;
+  float ny1i;
+  int i;
   float *local_c;
+  float *mem2;
   
   iVar3 = in_EAX + (-in_EAX & 3U) + param_6 * 4;
   pfVar9 = (float *)((-iVar3 & 3U) + iVar3);
-  *param_4 = 1.0;
+  *N = 1.0;
   pfVar8 = (float *)(iVar3 + param_6 * -4);
   iVar3 = 0;
   if (3 < param_6) {
     iVar10 = (param_6 - 4U >> 2) + 1;
     iVar3 = iVar10 * 4;
-    pfVar5 = param_2 + 1;
-    pfVar6 = param_4 + 3;
+    pfVar5 = awk2 + 1;
+    pfVar6 = N + 3;
     do {
-      *(float *)((int)param_4 + (-0x10 - (int)param_2) + (int)(pfVar5 + 4)) = pfVar5[-1];
+      *(float *)((int)N + (-0x10 - (int)awk2) + (int)(pfVar5 + 4)) = pfVar5[-1];
       iVar10 = iVar10 + -1;
       pfVar6[-1] = *pfVar5;
       *pfVar6 = pfVar5[1];
@@ -428,17 +442,17 @@ compute_impulse_response
     } while (iVar10 != 0);
   }
   if (iVar3 < param_6) {
-    local_c = param_4 + iVar3 + 1;
+    local_c = N + iVar3 + 1;
     do {
-      *local_c = param_2[iVar3];
+      *local_c = awk2[iVar3];
       iVar3 = iVar3 + 1;
       local_c = local_c + 1;
     } while (iVar3 < param_6);
   }
   iVar3 = iVar3 + 1;
-  if (iVar3 < param_5) {
-    pfVar5 = param_4 + iVar3;
-    for (iVar10 = param_5 - iVar3; iVar10 != 0; iVar10 = iVar10 + -1) {
+  if (iVar3 < ord) {
+    pfVar5 = N + iVar3;
+    for (iVar10 = ord - iVar3; iVar10 != 0; iVar10 = iVar10 + -1) {
       *pfVar5 = 1e-15;
       pfVar5 = pfVar5 + 1;
     }
@@ -454,32 +468,31 @@ compute_impulse_response
     } while (local_c != (float *)0x0);
   }
   local_c = (float *)0x0;
-  if (0 < param_5) {
+  if (0 < ord) {
     iVar3 = param_6 + -1;
     do {
       iVar10 = 0;
-      fVar2 = -(param_4[(int)local_c] + *pfVar8);
-      fVar1 = param_4[(int)local_c] + *pfVar8 + *pfVar9;
-      param_4[(int)local_c] = fVar1;
+      fVar2 = -(N[(int)local_c] + *pfVar8);
+      fVar1 = N[(int)local_c] + *pfVar8 + *pfVar9;
+      N[(int)local_c] = fVar1;
       fVar1 = -fVar1;
       if (3 < iVar3) {
         pfVar5 = pfVar8 + 1;
         pfVar6 = pfVar9 + 2;
-        pfVar7 = param_1 + 3;
+        pfVar7 = awk1 + 3;
         do {
-          pfVar11 = param_3 + iVar10;
+          pfVar11 = y + iVar10;
           iVar10 = iVar10 + 4;
           pfVar4 = pfVar5 + 4;
           pfVar5[-1] = *pfVar11 * fVar2 + *pfVar5;
           pfVar6[-2] = pfVar7[-3] * fVar1 + *(float *)((int)pfVar5 + ((int)pfVar9 - (int)pfVar8));
-          *pfVar5 = *(float *)((int)param_3 + (-0x10 - (int)pfVar8) + (int)pfVar4) * fVar2 +
-                    pfVar5[1];
+          *pfVar5 = *(float *)((int)y + (-0x10 - (int)pfVar8) + (int)pfVar4) * fVar2 + pfVar5[1];
           *(float *)((int)pfVar5 + ((int)pfVar9 - (int)pfVar8)) =
-               *(float *)((int)param_1 + (-0x10 - (int)pfVar8) + (int)pfVar4) * fVar1 + *pfVar6;
-          pfVar11 = (float *)(((int)param_1 - (int)pfVar9) + (int)pfVar6);
-          pfVar5[1] = *(float *)((int)pfVar11 + ((int)param_3 - (int)param_1)) * fVar2 + pfVar5[2];
+               *(float *)((int)awk1 + (-0x10 - (int)pfVar8) + (int)pfVar4) * fVar1 + *pfVar6;
+          pfVar11 = (float *)(((int)awk1 - (int)pfVar9) + (int)pfVar6);
+          pfVar5[1] = *(float *)((int)pfVar11 + ((int)y - (int)awk1)) * fVar2 + pfVar5[2];
           *pfVar6 = *pfVar11 * fVar1 + pfVar6[1];
-          pfVar5[2] = *(float *)((int)pfVar7 + ((int)param_3 - (int)param_1)) * fVar2 + pfVar5[3];
+          pfVar5[2] = *(float *)((int)pfVar7 + ((int)y - (int)awk1)) * fVar2 + pfVar5[3];
           pfVar6[1] = *pfVar7 * fVar1 + pfVar6[2];
           pfVar5 = pfVar4;
           pfVar6 = pfVar6 + 4;
@@ -492,18 +505,18 @@ compute_impulse_response
         pfVar6 = pfVar9 + iVar10 + 1;
         do {
           iVar12 = iVar12 + -1;
-          *pfVar5 = *(float *)(((int)param_3 - (int)pfVar8) + (int)pfVar5) * fVar2 +
+          *pfVar5 = *(float *)(((int)y - (int)pfVar8) + (int)pfVar5) * fVar2 +
                     *(float *)((int)pfVar8 + (-4 - (int)pfVar9) + (int)(pfVar6 + 1));
-          pfVar6[-1] = *(float *)((int)param_1 + (-4 - (int)pfVar8) + (int)(pfVar5 + 1)) * fVar1 +
+          pfVar6[-1] = *(float *)((int)awk1 + (-4 - (int)pfVar8) + (int)(pfVar5 + 1)) * fVar1 +
                        *pfVar6;
           pfVar5 = pfVar5 + 1;
           pfVar6 = pfVar6 + 1;
         } while (iVar12 != 0);
       }
       local_c = (float *)((int)local_c + 1);
-      pfVar8[param_6 + -1] = param_3[param_6 + -1] * fVar2;
-      pfVar9[param_6 + -1] = fVar1 * param_1[param_6 + -1];
-    } while ((int)local_c < param_5);
+      pfVar8[param_6 + -1] = y[param_6 + -1] * fVar2;
+      pfVar9[param_6 + -1] = fVar1 * awk1[param_6 + -1];
+    } while ((int)local_c < ord);
   }
   return;
 }
@@ -512,8 +525,8 @@ compute_impulse_response
 // 007DBDB0  qmf_decomp  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:402)
 
 void __cdecl
-qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param_5,int param_6,
-          float *param_7,char *param_8)
+qmf_decomp(float *y1,float *y2,float *N,float *mem,int stack,int param_6,float *param_7,
+          char *param_8)
 
 {
   int iVar1;
@@ -526,6 +539,8 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
   int iVar8;
   undefined4 *puVar9;
   float *pfVar10;
+  float *xx;
+  float *aa;
   
   iVar7 = param_6 + 0x100 + (-param_6 & 3U);
   iVar6 = (-iVar7 & 3U) + iVar7;
@@ -548,7 +563,7 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
   iVar8 = 0xf;
   iVar1 = 0x3c;
   puVar4 = (undefined4 *)(iVar6 + 8);
-  puVar9 = (undefined4 *)(param_5 + 0xf4);
+  puVar9 = (undefined4 *)(stack + 0xf4);
   do {
     puVar4[-2] = puVar9[1];
     iVar8 = iVar8 + -1;
@@ -558,17 +573,17 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
     puVar4 = puVar4 + 4;
     puVar9 = puVar9 + -4;
   } while (iVar8 != 0);
-  puVar4 = (undefined4 *)(param_5 + 8);
+  puVar4 = (undefined4 *)(stack + 8);
   do {
     iVar1 = iVar1 + 1;
     *(undefined4 *)(iVar6 + -4 + iVar1 * 4) = *puVar4;
     puVar4 = puVar4 + -1;
   } while (iVar1 < 0x3f);
   iVar1 = 0;
-  if (3 < (int)param_4) {
-    iVar8 = ((uint)(param_4 + -1) >> 2) + 1;
+  if (3 < (int)mem) {
+    iVar8 = ((uint)(mem + -1) >> 2) + 1;
     iVar1 = iVar8 * 4;
-    pfVar5 = param_1 + 2;
+    pfVar5 = y1 + 2;
     pfVar10 = (float *)(iVar6 + 0x104);
     do {
       pfVar10[-2] = pfVar5[-2];
@@ -580,47 +595,47 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
       pfVar10 = pfVar10 + 4;
     } while (iVar8 != 0);
   }
-  if (iVar1 < (int)param_4) {
+  if (iVar1 < (int)mem) {
     pfVar5 = (float *)(iVar6 + 0xfc + iVar1 * 4);
     do {
-      pfVar10 = param_1 + iVar1;
+      pfVar10 = y1 + iVar1;
       iVar1 = iVar1 + 1;
       *pfVar5 = *pfVar10;
       pfVar5 = pfVar5 + 1;
-    } while (iVar1 < (int)param_4);
+    } while (iVar1 < (int)mem);
   }
-  if (0 < (int)param_4) {
+  if (0 < (int)mem) {
     iVar6 = iVar6 - (int)pfVar2;
-    iVar1 = (int)param_2 - (int)param_3;
-    param_6 = ((int)param_4 - 1U >> 1) + 1;
+    iVar1 = (int)y2 - (int)N;
+    param_6 = ((int)mem - 1U >> 1) + 1;
     do {
-      *(undefined4 *)(iVar1 + (int)param_3) = 0;
-      *param_3 = 0.0;
+      *(undefined4 *)(iVar1 + (int)N) = 0;
+      *N = 0.0;
       iVar8 = 0;
       pfVar5 = pfVar2;
       pfVar10 = (float *)(iVar6 + (int)pfVar2);
       do {
         iVar8 = iVar8 + 2;
-        *(float *)(iVar1 + (int)param_3) =
+        *(float *)(iVar1 + (int)N) =
              (*pfVar5 + *pfVar10) * *(float *)(iVar7 + -0x108 + iVar8 * 4) +
-             *(float *)(iVar1 + (int)param_3);
-        *param_3 = *param_3 - (*pfVar10 - *pfVar5) * *(float *)(iVar7 + -0x108 + iVar8 * 4);
-        *(float *)(iVar1 + (int)param_3) =
+             *(float *)(iVar1 + (int)N);
+        *N = *N - (*pfVar10 - *pfVar5) * *(float *)(iVar7 + -0x108 + iVar8 * 4);
+        *(float *)(iVar1 + (int)N) =
              (pfVar5[-1] + pfVar10[1]) * *(float *)(iVar7 + -0x104 + iVar8 * 4) +
-             *(float *)(iVar1 + (int)param_3);
-        *param_3 = (pfVar10[1] - pfVar5[-1]) * *(float *)(iVar7 + -0x104 + iVar8 * 4) + *param_3;
+             *(float *)(iVar1 + (int)N);
+        *N = (pfVar10[1] - pfVar5[-1]) * *(float *)(iVar7 + -0x104 + iVar8 * 4) + *N;
         pfVar5 = pfVar5 + -2;
         pfVar10 = pfVar10 + 2;
       } while (iVar8 < 0x20);
       pfVar2 = pfVar2 + 2;
-      param_3 = param_3 + 1;
+      N = N + 1;
       param_6 = param_6 + -1;
     } while (param_6 != 0);
   }
   iVar6 = 0xf;
   iVar7 = 0x3c;
-  pfVar2 = (float *)(param_5 + 8);
-  pfVar5 = param_1 + (int)param_4 + -2;
+  pfVar2 = (float *)(stack + 8);
+  pfVar5 = y1 + (int)mem + -2;
   do {
     pfVar2[-2] = pfVar5[1];
     iVar6 = iVar6 + -1;
@@ -630,10 +645,10 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
     pfVar2 = pfVar2 + 4;
     pfVar5 = pfVar5 + -4;
   } while (iVar6 != 0);
-  pfVar2 = param_1 + (int)param_4 + -0x3d;
+  pfVar2 = y1 + (int)mem + -0x3d;
   do {
     iVar7 = iVar7 + 1;
-    *(float *)(param_5 + -4 + iVar7 * 4) = *pfVar2;
+    *(float *)(stack + -4 + iVar7 * 4) = *pfVar2;
     pfVar2 = pfVar2 + -1;
   } while (iVar7 < 0x3f);
   return;
@@ -642,9 +657,9 @@ qmf_decomp(float *param_1,float *param_2,float *param_3,float *param_4,int param
 
 // 007DBFF0  fir_mem_up  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:442)
 
-void __cdecl
-fir_mem_up(float *param_1,float *param_2,float *param_3,int param_4,int param_5,float *param_6,
-          char *param_7)
+/* WARNING: Variable defined which should be unmapped: y1 */
+
+void __cdecl fir_mem_up(float *a,float *y,float *N,int mem,int param_5,float *param_6,char *param_7)
 
 {
   float fVar1;
@@ -655,101 +670,107 @@ fir_mem_up(float *param_1,float *param_2,float *param_3,int param_4,int param_5,
   int iVar5;
   float *pfVar6;
   float *pfVar7;
-  float *pfVar8;
-  int iVar9;
-  float *pfVar10;
+  undefined4 *puVar8;
+  float *pfVar9;
+  int iVar10;
   float *pfVar11;
-  int iVar12;
+  float *pfVar12;
   int iVar13;
-  float *local_20;
-  float *local_1c;
-  float *local_18;
+  int iVar14;
+  float *x;
+  float y1;
+  float y2;
+  float y3;
+  float a0;
+  float x0;
+  float a1;
+  int M;
   
-  iVar12 = (-in_EAX & 3U) + in_EAX;
-  iVar5 = param_4 / 2;
-  iVar13 = 0;
+  iVar13 = (-in_EAX & 3U) + in_EAX;
+  iVar5 = mem / 2;
+  iVar14 = 0;
   if (3 < iVar5) {
-    iVar9 = (iVar5 - 4U >> 2) + 1;
-    pfVar10 = param_1 + iVar5 + -1;
-    iVar13 = iVar9 * 4;
-    pfVar6 = (float *)(iVar12 + 0x10);
-    local_20 = param_1 + iVar5 + -4;
-    local_1c = param_1 + iVar5 + -3;
-    local_18 = param_1 + iVar5 + -2;
+    iVar10 = (iVar5 - 4U >> 2) + 1;
+    pfVar11 = a + iVar5 + -1;
+    iVar14 = iVar10 * 4;
+    puVar8 = (undefined4 *)(iVar13 + 0x10);
+    y2 = (float)(a + iVar5 + -4);
+    y3 = (float)(a + iVar5 + -3);
+    a0 = (float)(a + iVar5 + -2);
     do {
-      pfVar6[-4] = *pfVar10;
-      pfVar6[-2] = *local_18;
-      *pfVar6 = *local_1c;
-      pfVar6[2] = *local_20;
-      pfVar10 = pfVar10 + -4;
-      iVar9 = iVar9 + -1;
-      pfVar6 = pfVar6 + 8;
-      local_20 = local_20 + -4;
-      local_1c = local_1c + -4;
-      local_18 = local_18 + -4;
-    } while (iVar9 != 0);
+      puVar8[-4] = *pfVar11;
+      puVar8[-2] = *(undefined4 *)a0;
+      *puVar8 = *(undefined4 *)y3;
+      puVar8[2] = *(undefined4 *)y2;
+      pfVar11 = pfVar11 + -4;
+      iVar10 = iVar10 + -1;
+      puVar8 = puVar8 + 8;
+      y2 = (float)((int)y2 + -0x10);
+      y3 = (float)((int)y3 + -0x10);
+      a0 = (float)((int)a0 + -0x10);
+    } while (iVar10 != 0);
   }
-  if (iVar13 < iVar5) {
-    pfVar10 = param_1 + (iVar5 - iVar13) + -1;
+  if (iVar14 < iVar5) {
+    pfVar11 = a + (iVar5 - iVar14) + -1;
     do {
-      iVar13 = iVar13 + 1;
-      *(float *)(iVar12 + -8 + iVar13 * 8) = *pfVar10;
-      pfVar10 = pfVar10 + -1;
-    } while (iVar13 < iVar5);
+      iVar14 = iVar14 + 1;
+      *(float *)(iVar13 + -8 + iVar14 * 8) = *pfVar11;
+      pfVar11 = pfVar11 + -1;
+    } while (iVar14 < iVar5);
   }
-  pfVar11 = (float *)(param_5 + 4);
-  pfVar10 = (float *)(iVar12 + param_4 * 4);
-  iVar13 = 0x20;
-  pfVar6 = pfVar11;
-  pfVar7 = pfVar10;
+  pfVar12 = (float *)(param_5 + 4);
+  pfVar11 = (float *)(iVar13 + mem * 4);
+  iVar14 = 0x20;
+  pfVar6 = pfVar12;
+  pfVar7 = pfVar11;
   do {
     fVar1 = *pfVar6;
     pfVar6 = pfVar6 + 2;
     *pfVar7 = fVar1;
     pfVar7 = pfVar7 + 2;
-    iVar13 = iVar13 + -1;
-  } while (iVar13 != 0);
-  if (0 < param_4) {
-    iVar13 = (param_4 - 1U >> 2) + 1;
-    pfVar6 = param_3 + 2;
+    iVar14 = iVar14 + -1;
+  } while (iVar14 != 0);
+  if (0 < mem) {
+    iVar14 = (mem - 1U >> 2) + 1;
+    pfVar6 = N + 2;
     do {
-      local_18 = (float *)0x0;
-      local_1c = (float *)0x0;
-      local_20 = (float *)0x0;
+      a0 = 0.0;
+      y3 = 0.0;
+      y2 = 0.0;
       iVar5 = 0x10;
-      param_4 = 0;
-      fVar1 = pfVar10[-4];
-      pfVar7 = param_2 + 2;
-      pfVar8 = pfVar10;
+      mem = 0;
+      fVar1 = pfVar11[-4];
+      pfVar7 = y + 2;
+      pfVar9 = pfVar11;
       do {
         iVar5 = iVar5 + -1;
-        fVar2 = pfVar8[-2];
+        fVar2 = pfVar9[-2];
         fVar4 = fVar1 * pfVar7[-2];
         fVar3 = pfVar7[-1] * fVar1;
-        fVar1 = *pfVar8;
-        param_4 = (int)((float)param_4 + pfVar7[-2] * fVar2 + fVar1 * *pfVar7);
-        local_20 = (float *)(pfVar7[1] * fVar1 + (float)local_20 + pfVar7[-1] * fVar2);
-        local_1c = (float *)((float)local_1c + fVar4 + fVar2 * *pfVar7);
-        local_18 = (float *)(fVar2 * pfVar7[1] + (float)local_18 + fVar3);
+        fVar1 = *pfVar9;
+        mem = (int)((float)mem + pfVar7[-2] * fVar2 + fVar1 * *pfVar7);
+        y2 = pfVar7[1] * fVar1 + y2 + pfVar7[-1] * fVar2;
+        y3 = y3 + fVar4 + fVar2 * *pfVar7;
+        a0 = fVar2 * pfVar7[1] + a0 + fVar3;
         pfVar7 = pfVar7 + 4;
-        pfVar8 = pfVar8 + 4;
+        pfVar9 = pfVar9 + 4;
       } while (iVar5 != 0);
-      pfVar10 = pfVar10 + -4;
-      iVar13 = iVar13 + -1;
-      pfVar6[-2] = (float)param_4;
-      pfVar6[-1] = (float)local_20;
-      *pfVar6 = (float)local_1c;
-      pfVar6[1] = (float)local_18;
+      pfVar11 = pfVar11 + -4;
+      iVar14 = iVar14 + -1;
+      pfVar6[-2] = (float)mem;
+      pfVar6[-1] = y2;
+      *pfVar6 = y3;
+      pfVar6[1] = a0;
       pfVar6 = pfVar6 + 4;
-    } while (iVar13 != 0);
+    } while (iVar14 != 0);
   }
-  iVar13 = 0;
+  iVar14 = 0;
   do {
-    iVar5 = iVar13 * 4;
-    iVar13 = iVar13 + 2;
-    *pfVar11 = *(float *)(iVar12 + iVar5);
-    pfVar11 = pfVar11 + 2;
-  } while (iVar13 < 0x3f);
+    iVar5 = iVar14 * 4;
+    iVar14 = iVar14 + 2;
+    *pfVar12 = *(float *)(iVar13 + iVar5);
+    pfVar12 = pfVar12 + 2;
+  } while (iVar14 < 0x3f);
   return;
 }
 
@@ -757,7 +778,7 @@ fir_mem_up(float *param_1,float *param_2,float *param_3,int param_4,int param_5,
 // 007DC230  comb_filter  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/filters.c:518)
 
 void __cdecl
-comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5,int param_6,
+comb_filter(float *nsf,float *pitch,float *pitch_gain,int comb_gain,int param_5,int param_6,
            float *param_7,float param_8,CombFilterMem *param_9)
 
 {
@@ -776,20 +797,23 @@ comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5
   int *unaff_ESI;
   int unaff_EDI;
   float fVar12;
-  float *pfStack_10;
+  float *new_exc;
+  float step;
+  float exc_energy;
   float fStack_8;
+  float *ak;
   
-  fStack_8 = compute_rms(param_2,unaff_EDI);
-  fVar12 = *(float *)(param_4 + 4);
-  if (*(float *)(param_4 + 4) < 0.0) {
+  fStack_8 = compute_rms(pitch,unaff_EDI);
+  fVar12 = *(float *)(comb_gain + 4);
+  if (*(float *)(comb_gain + 4) < 0.0) {
     fVar12 = -fVar12;
   }
-  fVar2 = *(float *)param_4;
-  if (*(float *)param_4 <= 0.0) {
+  fVar2 = *(float *)comb_gain;
+  if (*(float *)comb_gain <= 0.0) {
     fVar2 = fVar2 * -0.5;
   }
-  fVar3 = *(float *)(param_4 + 8);
-  if (*(float *)(param_4 + 8) <= 0.0) {
+  fVar3 = *(float *)(comb_gain + 8);
+  if (*(float *)(comb_gain + 8) <= 0.0) {
     fVar3 = fVar3 * -0.5;
   }
   fVar4 = (float)unaff_ESI[2];
@@ -814,29 +838,29 @@ comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5
     param_5 = (int)((fVar12 + fVar12) * (float)param_5);
   }
   iVar8 = 0;
-  fVar2 = 1.0 / (float)(int)param_2;
+  fVar2 = 1.0 / (float)(int)pitch;
   fVar12 = 0.0;
-  if (3 < (int)param_2) {
-    pfVar7 = (float *)(in_EAX + (int)param_3 * -4 + 4);
+  if (3 < (int)pitch) {
+    pfVar7 = (float *)(in_EAX + (int)pitch_gain * -4 + 4);
     iVar11 = iVar8;
-    pfVar9 = param_1 + 1;
-    pfStack_10 = (float *)(in_EAX + 0xc);
+    pfVar9 = nsf + 1;
+    step = (float)(in_EAX + 0xc);
     do {
       fVar12 = fVar12 + fVar2;
       pfVar1 = (float *)(in_EAX + (iVar11 - *unaff_ESI) * 4);
-      pfVar9[-1] = pfStack_10[-3] +
+      pfVar9[-1] = *(float *)((int)step + -0xc) +
                    (float)param_5 *
-                   ((pfVar7[-2] * *(float *)(param_4 + 8) +
-                    pfVar7[-1] * *(float *)(param_4 + 4) + *pfVar7 * *(float *)param_4) * fVar12 +
-                   (1.0 - fVar12) *
-                   (pfVar1[-1] * (float)unaff_ESI[3] +
-                   *pfVar1 * (float)unaff_ESI[2] + pfVar1[1] * (float)unaff_ESI[1]));
+                   ((pfVar7[-2] * *(float *)(comb_gain + 8) +
+                    pfVar7[-1] * *(float *)(comb_gain + 4) + *pfVar7 * *(float *)comb_gain) * fVar12
+                   + (1.0 - fVar12) *
+                     (pfVar1[-1] * (float)unaff_ESI[3] +
+                     *pfVar1 * (float)unaff_ESI[2] + pfVar1[1] * (float)unaff_ESI[1]));
       iVar8 = iVar11 - *unaff_ESI;
       fVar12 = fVar12 + fVar2;
-      *pfVar9 = *(float *)((int)pfVar9 + (in_EAX - (int)param_1)) +
+      *pfVar9 = *(float *)((int)pfVar9 + (in_EAX - (int)nsf)) +
                 (float)param_5 *
-                ((*(float *)(param_4 + 8) * pfVar7[-1] +
-                 *(float *)param_4 * pfVar7[1] + *pfVar7 * *(float *)(param_4 + 4)) * fVar12 +
+                ((*(float *)(comb_gain + 8) * pfVar7[-1] +
+                 *(float *)comb_gain * pfVar7[1] + *pfVar7 * *(float *)(comb_gain + 4)) * fVar12 +
                 (1.0 - fVar12) *
                 (*(float *)(in_EAX + iVar8 * 4) * (float)unaff_ESI[3] +
                 *(float *)(in_EAX + 4 + iVar8 * 4) * (float)unaff_ESI[2] +
@@ -844,55 +868,55 @@ comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5
       iVar10 = iVar11 - *unaff_ESI;
       fVar12 = fVar12 + fVar2;
       iVar8 = iVar11 + 4;
-      pfVar9[1] = pfStack_10[-1] +
+      pfVar9[1] = *(float *)((int)step + -4) +
                   (float)param_5 *
-                  ((*pfVar7 * *(float *)(param_4 + 8) +
-                   pfVar7[1] * *(float *)(param_4 + 4) + *(float *)param_4 * pfVar7[2]) * fVar12 +
-                  (1.0 - fVar12) *
-                  (*(float *)(in_EAX + 4 + iVar10 * 4) * (float)unaff_ESI[3] +
-                  *(float *)(in_EAX + 8 + iVar10 * 4) * (float)unaff_ESI[2] +
-                  *(float *)(in_EAX + 0xc + iVar10 * 4) * (float)unaff_ESI[1]));
+                  ((*pfVar7 * *(float *)(comb_gain + 8) +
+                   pfVar7[1] * *(float *)(comb_gain + 4) + *(float *)comb_gain * pfVar7[2]) * fVar12
+                  + (1.0 - fVar12) *
+                    (*(float *)(in_EAX + 4 + iVar10 * 4) * (float)unaff_ESI[3] +
+                    *(float *)(in_EAX + 8 + iVar10 * 4) * (float)unaff_ESI[2] +
+                    *(float *)(in_EAX + 0xc + iVar10 * 4) * (float)unaff_ESI[1]));
       iVar11 = iVar11 - *unaff_ESI;
       fVar12 = fVar12 + fVar2;
-      pfVar9[2] = *pfStack_10 +
+      pfVar9[2] = *(float *)step +
                   (float)param_5 *
-                  ((*(float *)(param_4 + 8) * pfVar7[1] +
-                   pfVar7[2] * *(float *)(param_4 + 4) + pfVar7[3] * *(float *)param_4) * fVar12 +
-                  (1.0 - fVar12) *
-                  (*(float *)(in_EAX + 8 + iVar11 * 4) * (float)unaff_ESI[3] +
-                  *(float *)(in_EAX + 0xc + iVar11 * 4) * (float)unaff_ESI[2] +
-                  *(float *)(in_EAX + 0x10 + iVar11 * 4) * (float)unaff_ESI[1]));
+                  ((*(float *)(comb_gain + 8) * pfVar7[1] +
+                   pfVar7[2] * *(float *)(comb_gain + 4) + pfVar7[3] * *(float *)comb_gain) * fVar12
+                  + (1.0 - fVar12) *
+                    (*(float *)(in_EAX + 8 + iVar11 * 4) * (float)unaff_ESI[3] +
+                    *(float *)(in_EAX + 0xc + iVar11 * 4) * (float)unaff_ESI[2] +
+                    *(float *)(in_EAX + 0x10 + iVar11 * 4) * (float)unaff_ESI[1]));
       pfVar7 = pfVar7 + 4;
       iVar11 = iVar8;
       pfVar9 = pfVar9 + 4;
-      pfStack_10 = pfStack_10 + 4;
-    } while (iVar8 < (int)param_2 + -3);
+      step = (float)((int)step + 0x10);
+    } while (iVar8 < (int)pitch + -3);
   }
-  if (iVar8 < (int)param_2) {
-    pfVar7 = (float *)(in_EAX + -4 + (iVar8 - (int)param_3) * 4);
-    pfVar9 = param_1 + iVar8;
+  if (iVar8 < (int)pitch) {
+    pfVar7 = (float *)(in_EAX + -4 + (iVar8 - (int)pitch_gain) * 4);
+    pfVar9 = nsf + iVar8;
     do {
       fVar12 = fVar12 + fVar2;
       iVar11 = iVar8 - *unaff_ESI;
       iVar8 = iVar8 + 1;
       pfVar1 = (float *)(in_EAX + iVar11 * 4);
-      *pfVar9 = *(float *)((in_EAX - (int)param_1) + -4 + (int)(pfVar9 + 1)) +
+      *pfVar9 = *(float *)((in_EAX - (int)nsf) + -4 + (int)(pfVar9 + 1)) +
                 (float)param_5 *
-                ((*(float *)(param_4 + 8) * *pfVar7 +
-                 pfVar7[2] * *(float *)param_4 + pfVar7[1] * *(float *)(param_4 + 4)) * fVar12 +
+                ((*(float *)(comb_gain + 8) * *pfVar7 +
+                 pfVar7[2] * *(float *)comb_gain + pfVar7[1] * *(float *)(comb_gain + 4)) * fVar12 +
                 (1.0 - fVar12) *
                 (pfVar1[-1] * (float)unaff_ESI[3] +
                 *pfVar1 * (float)unaff_ESI[2] + pfVar1[1] * (float)unaff_ESI[1]));
       pfVar7 = pfVar7 + 1;
       pfVar9 = pfVar9 + 1;
-    } while (iVar8 < (int)param_2);
+    } while (iVar8 < (int)pitch);
   }
-  unaff_ESI[1] = *(int *)param_4;
-  unaff_ESI[2] = *(int *)(param_4 + 4);
-  iVar8 = *(int *)(param_4 + 8);
-  *unaff_ESI = (int)param_3;
+  unaff_ESI[1] = *(int *)comb_gain;
+  unaff_ESI[2] = *(int *)(comb_gain + 4);
+  iVar8 = *(int *)(comb_gain + 8);
+  *unaff_ESI = (int)pitch_gain;
   unaff_ESI[3] = iVar8;
-  fVar12 = compute_rms(param_2,unaff_EDI);
+  fVar12 = compute_rms(pitch,unaff_EDI);
   if (fVar12 < fStack_8) {
     fStack_8 = fVar12;
   }
@@ -901,11 +925,11 @@ comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5
     fStack_8 = 0.5;
   }
   iVar8 = 0;
-  if (3 < (int)param_2) {
+  if (3 < (int)pitch) {
     fVar12 = fStack_8 * 0.04;
-    iVar11 = ((uint)(param_2 + -1) >> 2) + 1;
+    iVar11 = ((uint)(pitch + -1) >> 2) + 1;
     iVar8 = iVar11 * 4;
-    pfVar7 = param_1 + 2;
+    pfVar7 = nsf + 2;
     do {
       iVar11 = iVar11 + -1;
       fVar2 = (float)unaff_ESI[4] * 0.96 + fVar12;
@@ -923,16 +947,16 @@ comb_filter(float *param_1,float *param_2,float *param_3,int param_4,int param_5
       pfVar7 = pfVar7 + 4;
     } while (iVar11 != 0);
   }
-  if ((int)param_2 <= iVar8) {
+  if ((int)pitch <= iVar8) {
     return;
   }
   do {
     iVar11 = iVar8 + 1;
     fVar12 = (float)unaff_ESI[4] * 0.96 + fStack_8 * 0.04;
     unaff_ESI[4] = (int)fVar12;
-    param_1[iVar8] = fVar12 * param_1[iVar8];
+    nsf[iVar8] = fVar12 * nsf[iVar8];
     iVar8 = iVar11;
-  } while (iVar11 < (int)param_2);
+  } while (iVar11 < (int)pitch);
   return;
 }
 

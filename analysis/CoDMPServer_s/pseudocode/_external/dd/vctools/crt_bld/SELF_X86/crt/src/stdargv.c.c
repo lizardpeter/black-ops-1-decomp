@@ -5,14 +5,14 @@
 int __cdecl _setargv(void)
 
 {
-  uint uVar1;
-  uint uVar2;
-  char **ppcVar3;
+  uint cb;
+  int iVar1;
+  char **argv;
   int *unaff_ESI;
   int *unaff_EDI;
-  uint uStack_10;
-  uint uStack_c;
-  char *pcStack_8;
+  int numchars;
+  int numargs;
+  char *cmdstart;
   
   if (__mbctype_initialized == 0) {
     __initmbctable();
@@ -20,17 +20,17 @@ int __cdecl _setargv(void)
   _pgmname[0x104] = '\0';
   GetModuleFileNameA((HMODULE)0x0,_pgmname,0x104);
   _pgmptr = _pgmname;
-  if ((_acmdln == (char *)0x0) || (pcStack_8 = _acmdln, *_acmdln == '\0')) {
-    pcStack_8 = _pgmname;
+  if ((_acmdln == (char *)0x0) || (cmdstart = _acmdln, *_acmdln == '\0')) {
+    cmdstart = _pgmname;
   }
-  parse_cmdline((char *)0x0,(char **)0x0,(char *)&uStack_c,unaff_EDI,unaff_ESI);
-  uVar2 = uStack_c;
-  if ((uStack_c < 0x3fffffff) && (uStack_10 != 0xffffffff)) {
-    uVar1 = uStack_c * 4 + uStack_10;
-    if ((uStack_10 <= uVar1) && (ppcVar3 = _malloc_crt(uVar1), ppcVar3 != (char **)0x0)) {
-      parse_cmdline((char *)ppcVar3,ppcVar3 + uVar2,(char *)&uStack_c,unaff_EDI,unaff_ESI);
-      __argc = uStack_c - 1;
-      __argv = ppcVar3;
+  parse_cmdline((char *)0x0,(char **)0x0,(char *)&numargs,unaff_EDI,unaff_ESI);
+  iVar1 = numargs;
+  if (((uint)numargs < 0x3fffffff) && (numchars != -1)) {
+    cb = numargs * 4 + numchars;
+    if (((uint)numchars <= cb) && (argv = _malloc_crt(cb), argv != (char **)0x0)) {
+      parse_cmdline((char *)argv,argv + iVar1,(char *)&numargs,unaff_EDI,unaff_ESI);
+      __argc = numargs + -1;
+      __argv = argv;
       return 0;
     }
   }
@@ -40,7 +40,7 @@ int __cdecl _setargv(void)
 
 // 0096ED62  parse_cmdline  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stdargv.c:221)
 
-void __cdecl parse_cmdline(char *param_1,char **param_2,char *param_3,int *param_4,int *param_5)
+void __cdecl parse_cmdline(char *argv,char **args,char *numargs,int *param_4,int *param_5)
 
 {
   bool bVar1;
@@ -53,18 +53,19 @@ void __cdecl parse_cmdline(char *param_1,char **param_2,char *param_3,int *param
   byte *pbVar7;
   byte *pbVar8;
   int *unaff_EDI;
+  int inquote;
   
   *unaff_EDI = 0;
-  param_3[0] = '\x01';
-  param_3[1] = '\0';
-  param_3[2] = '\0';
-  param_3[3] = '\0';
-  if (param_1 != (char *)0x0) {
-    *(char ***)param_1 = param_2;
-    param_1 = param_1 + 4;
+  numargs[0] = '\x01';
+  numargs[1] = '\0';
+  numargs[2] = '\0';
+  numargs[3] = '\0';
+  if (argv != (char *)0x0) {
+    *(char ***)argv = args;
+    argv = argv + 4;
   }
   bVar2 = false;
-  ppcVar5 = param_2;
+  ppcVar5 = args;
   do {
     if (*in_EDX == 0x22) {
       bVar2 = !bVar2;
@@ -75,20 +76,20 @@ void __cdecl parse_cmdline(char *param_1,char **param_2,char *param_3,int *param
       *unaff_EDI = *unaff_EDI + 1;
       if (ppcVar5 != (char **)0x0) {
         *(byte *)ppcVar5 = *in_EDX;
-        param_2 = (char **)((int)ppcVar5 + 1);
+        args = (char **)((int)ppcVar5 + 1);
       }
       bVar6 = *in_EDX;
       pbVar7 = in_EDX + 1;
       iVar3 = _ismbblead((uint)bVar6);
       if (iVar3 != 0) {
         *unaff_EDI = *unaff_EDI + 1;
-        if (param_2 != (char **)0x0) {
-          *(byte *)param_2 = *pbVar7;
-          param_2 = (char **)((int)param_2 + 1);
+        if (args != (char **)0x0) {
+          *(byte *)args = *pbVar7;
+          args = (char **)((int)args + 1);
         }
         pbVar7 = in_EDX + 2;
       }
-      ppcVar5 = param_2;
+      ppcVar5 = args;
       if (bVar6 == 0) {
         pbVar7 = pbVar7 + -1;
         goto LAB_0096edf6;
@@ -105,11 +106,11 @@ LAB_0096edf6:
     for (; (*pbVar7 == 0x20 || (*pbVar7 == 9)); pbVar7 = pbVar7 + 1) {
     }
     if (*pbVar7 == 0) break;
-    if (param_1 != (char *)0x0) {
-      *(char ***)param_1 = ppcVar5;
-      param_1 = param_1 + 4;
+    if (argv != (char *)0x0) {
+      *(char ***)argv = ppcVar5;
+      argv = argv + 4;
     }
-    *(int *)param_3 = *(int *)param_3 + 1;
+    *(int *)numargs = *(int *)numargs + 1;
     while( true ) {
       bVar1 = true;
       uVar4 = 0;
@@ -133,7 +134,7 @@ LAB_0096edf6:
           ppcVar5 = (char **)((int)ppcVar5 + 1);
         }
         *unaff_EDI = *unaff_EDI + 1;
-        param_2 = ppcVar5;
+        args = ppcVar5;
       }
       bVar6 = *pbVar7;
       if ((bVar6 == 0) || ((!bVar2 && ((bVar6 == 0x20 || (bVar6 == 9)))))) break;
@@ -148,33 +149,33 @@ LAB_0096edf6:
         else {
           iVar3 = _ismbblead((int)(char)bVar6);
           if (iVar3 != 0) {
-            *(byte *)param_2 = *pbVar7;
+            *(byte *)args = *pbVar7;
             pbVar7 = pbVar7 + 1;
             *unaff_EDI = *unaff_EDI + 1;
-            param_2 = (char **)((int)param_2 + 1);
+            args = (char **)((int)args + 1);
           }
-          *(byte *)param_2 = *pbVar7;
-          param_2 = (char **)((int)param_2 + 1);
+          *(byte *)args = *pbVar7;
+          args = (char **)((int)args + 1);
         }
         *unaff_EDI = *unaff_EDI + 1;
-        ppcVar5 = param_2;
+        ppcVar5 = args;
       }
       pbVar7 = pbVar7 + 1;
     }
     if (ppcVar5 != (char **)0x0) {
       *(byte *)ppcVar5 = 0;
       ppcVar5 = (char **)((int)ppcVar5 + 1);
-      param_2 = ppcVar5;
+      args = ppcVar5;
     }
     *unaff_EDI = *unaff_EDI + 1;
   }
-  if (param_1 != (char *)0x0) {
-    param_1[0] = '\0';
-    param_1[1] = '\0';
-    param_1[2] = '\0';
-    param_1[3] = '\0';
+  if (argv != (char *)0x0) {
+    argv[0] = '\0';
+    argv[1] = '\0';
+    argv[2] = '\0';
+    argv[3] = '\0';
   }
-  *(int *)param_3 = *(int *)param_3 + 1;
+  *(int *)numargs = *(int *)numargs + 1;
   return;
 }
 

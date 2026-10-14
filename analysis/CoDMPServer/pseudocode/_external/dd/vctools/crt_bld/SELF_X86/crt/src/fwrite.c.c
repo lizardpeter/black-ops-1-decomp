@@ -5,16 +5,17 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-uint __cdecl fwrite(void *param_1,uint param_2,uint param_3,_iobuf *param_4)
+uint __cdecl fwrite(void *buffer,uint size,uint count,_iobuf *stream)
 
 {
   int *piVar1;
   uint uVar2;
+  uint retval;
   
-  if ((param_2 != 0) && (param_3 != 0)) {
-    if (param_4 != (_iobuf *)0x0) {
-      _lock_file(param_4);
-      uVar2 = _fwrite_nolock(param_1,param_2,param_3,param_4);
+  if ((size != 0) && (count != 0)) {
+    if (stream != (_iobuf *)0x0) {
+      _lock_file(stream);
+      uVar2 = _fwrite_nolock(buffer,size,count,stream);
       FUN_00c0fcf1();
       return uVar2;
     }
@@ -28,85 +29,86 @@ uint __cdecl fwrite(void *param_1,uint param_2,uint param_3,_iobuf *param_4)
 
 // 00C0FB17  _fwrite_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fwrite.c:99)
 
-uint __cdecl _fwrite_nolock(void *param_1,uint param_2,uint param_3,_iobuf *param_4)
+uint __cdecl _fwrite_nolock(void *buffer,uint size,uint num,_iobuf *stream)
 
 {
   int *piVar1;
   int iVar2;
   uint uVar3;
   uint uVar4;
+  uint count;
   uint uVar5;
   uint uVar6;
-  uint uVar7;
-  uchar *puVar8;
-  uint local_c;
-  uchar *local_8;
+  uchar *buf;
+  uint total;
+  uint bufsize;
+  char *data;
   
-  if ((param_2 != 0) && (param_3 != 0)) {
-    if ((param_4 != (_iobuf *)0x0) &&
-       ((param_1 != (void *)0x0 && (param_3 <= (uint)(0xffffffff / (ulonglong)param_2))))) {
-      uVar7 = param_2 * param_3;
-      uVar6 = uVar7;
-      if ((param_4->_flag & 0x10cU) == 0) {
-        local_c = 0x1000;
+  if ((size != 0) && (num != 0)) {
+    if ((stream != (_iobuf *)0x0) &&
+       ((buffer != (void *)0x0 && (num <= (uint)(0xffffffff / (ulonglong)size))))) {
+      uVar6 = size * num;
+      uVar5 = uVar6;
+      if ((stream->_flag & 0x10cU) == 0) {
+        bufsize = 0x1000;
       }
       else {
-        local_c = param_4->_bufsiz;
+        bufsize = stream->_bufsiz;
       }
       do {
         while( true ) {
-          if (uVar6 == 0) {
-            return param_3;
+          if (uVar5 == 0) {
+            return num;
           }
-          uVar4 = param_4->_flag & 0x108;
+          uVar4 = stream->_flag & 0x108;
           if (uVar4 == 0) break;
-          uVar3 = param_4->_cnt;
+          uVar3 = stream->_cnt;
           if (uVar3 == 0) break;
           if ((int)uVar3 < 0) {
-            param_4->_flag = param_4->_flag | 0x20;
+            stream->_flag = stream->_flag | 0x20;
             goto LAB_00c0fc64;
           }
-          uVar5 = uVar6;
-          if (uVar3 <= uVar6) {
-            uVar5 = uVar3;
+          count = uVar5;
+          if (uVar3 <= uVar5) {
+            count = uVar3;
           }
-          memcpy((uchar *)param_4->_ptr,param_1,uVar5);
-          param_4->_cnt = param_4->_cnt - uVar5;
-          param_4->_ptr = param_4->_ptr + uVar5;
-          uVar6 = uVar6 - uVar5;
+          memcpy((uchar *)stream->_ptr,buffer,count);
+          stream->_cnt = stream->_cnt - count;
+          stream->_ptr = stream->_ptr + count;
+          uVar5 = uVar5 - count;
 LAB_00c0fc20:
-          local_8 = (uchar *)((int)param_1 + uVar5);
-          param_1 = local_8;
+          data = (char *)((int)buffer + count);
+          buffer = data;
         }
-        if (local_c <= uVar6) {
-          if ((uVar4 != 0) && (iVar2 = _flush(param_4), iVar2 != 0)) goto LAB_00c0fc64;
-          uVar4 = uVar6;
-          if (local_c != 0) {
-            uVar4 = uVar6 - uVar6 % local_c;
+        if (bufsize <= uVar5) {
+          if ((uVar4 != 0) && (iVar2 = _flush(stream), iVar2 != 0)) goto LAB_00c0fc64;
+          uVar4 = uVar5;
+          if (bufsize != 0) {
+            uVar4 = uVar5 - uVar5 % bufsize;
           }
-          puVar8 = param_1;
+          buf = buffer;
           uVar3 = uVar4;
-          iVar2 = _fileno(param_4);
-          uVar3 = _write(iVar2,puVar8,uVar3);
+          iVar2 = _fileno(stream);
+          uVar3 = _write(iVar2,buf,uVar3);
           if (uVar3 != 0xffffffff) {
-            uVar5 = uVar4;
+            count = uVar4;
             if (uVar3 <= uVar4) {
-              uVar5 = uVar3;
+              count = uVar3;
             }
-            uVar6 = uVar6 - uVar5;
+            uVar5 = uVar5 - count;
             if (uVar4 <= uVar3) goto LAB_00c0fc20;
           }
-          param_4->_flag = param_4->_flag | 0x20;
+          stream->_flag = stream->_flag | 0x20;
 LAB_00c0fc64:
-          return (uVar7 - uVar6) / param_2;
+          return (uVar6 - uVar5) / size;
         }
-        iVar2 = _flsbuf((int)(char)*(uchar *)param_1,param_4);
+        iVar2 = _flsbuf((int)(char)*(uchar *)buffer,stream);
         if (iVar2 == -1) goto LAB_00c0fc64;
-        param_1 = (void *)((int)param_1 + 1);
-        local_c = param_4->_bufsiz;
-        uVar6 = uVar6 - 1;
-        if ((int)local_c < 1) {
-          local_c = 1;
+        buffer = (void *)((int)buffer + 1);
+        bufsize = stream->_bufsiz;
+        uVar5 = uVar5 - 1;
+        if ((int)bufsize < 1) {
+          bufsize = 1;
         }
       } while( true );
     }

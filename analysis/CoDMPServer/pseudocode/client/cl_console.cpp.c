@@ -2,16 +2,16 @@
 
 // 006C7D60  strlen_noncrt  (qcommon/cmd.cpp:191)
 
-int __cdecl strlen_noncrt(char *param_1)
+int __cdecl strlen_noncrt(char *str_2)
 
 {
-  int local_8;
+  int count_2;
   
-  local_8 = 0;
-  for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-    local_8 = local_8 + 1;
+  count_2 = 0;
+  for (; *str_2 != '\0'; str_2 = str_2 + 1) {
+    count_2 = count_2 + 1;
   }
-  return local_8;
+  return count_2;
 }
 
 
@@ -30,7 +30,7 @@ void __cdecl TRACK_cl_console(void)
 void __cdecl Con_ToggleConsole(void)
 
 {
-  int local_8;
+  int localClientNum;
   
   Con_Restricted_ResetLists();
   Field_Clear(&g_consoleField);
@@ -39,8 +39,8 @@ void __cdecl Con_ToggleConsole(void)
   g_consoleField.charHeight = g_console_char_height;
   g_consoleField.fixedSize = 1;
   con.outputVisible = false;
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    clientUIActives[local_8].keyCatchers = clientUIActives[local_8].keyCatchers ^ 1;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    clientUIActives[localClientNum].keyCatchers = clientUIActives[localClientNum].keyCatchers ^ 1;
   }
   return;
 }
@@ -48,26 +48,28 @@ void __cdecl Con_ToggleConsole(void)
 
 // 00546CF0  SetupChatField  (client/cl_console.cpp:350)
 
-void __cdecl SetupChatField(int param_1,int param_2,int param_3)
+void __cdecl SetupChatField(int localClientNum,int teamChat,int widthInPixels)
 
 {
   clientUIActive_t *pcVar1;
-  int local_10;
-  int local_c;
-  float local_8;
+  clientUIActive_t *cl;
+  field_t *chatField;
+  int width;
+  int height;
+  float aspect;
   
-  CL_GetScreenDimensions(&local_10,&local_c,&local_8);
-  playerKeys[param_1].chat_team = param_2;
-  Field_Clear(&playerKeys[param_1].chatField);
-  playerKeys[param_1].chatField.widthInPixels = param_3;
-  playerKeys[param_1].chatField.fixedSize = 0;
-  if (local_c < 0x301) {
-    playerKeys[param_1].chatField.charHeight = 16.0;
+  CL_GetScreenDimensions(&width,&height,&aspect);
+  playerKeys[localClientNum].chat_team = teamChat;
+  Field_Clear(&playerKeys[localClientNum].chatField);
+  playerKeys[localClientNum].chatField.widthInPixels = widthInPixels;
+  playerKeys[localClientNum].chatField.fixedSize = 0;
+  if (height < 0x301) {
+    playerKeys[localClientNum].chatField.charHeight = 16.0;
   }
   else {
-    playerKeys[param_1].chatField.charHeight = 10.0;
+    playerKeys[localClientNum].chatField.charHeight = 10.0;
   }
-  pcVar1 = CL_GetLocalClientUIGlobals(param_1);
+  pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
   pcVar1->keyCatchers = pcVar1->keyCatchers ^ 0x20;
   return;
 }
@@ -78,6 +80,8 @@ void __cdecl SetupChatField(int param_1,int param_2,int param_3)
 void __cdecl Con_ChatModePublic_f(void)
 
 {
+  int localClientNum;
+  
   SetupChatField(0,0,0x24c);
   return;
 }
@@ -88,6 +92,8 @@ void __cdecl Con_ChatModePublic_f(void)
 void __cdecl Con_ChatModeTeam_f(void)
 
 {
+  int localClientNum;
+  
   SetupChatField(0,1,0x21f);
   return;
 }
@@ -117,41 +123,42 @@ void __cdecl Con_Echo_f(void)
 
 // 00545540  Con_GetTextCopy  (client/cl_console.cpp:456)
 
-void __cdecl Con_GetTextCopy(char *param_1,int param_2)
+void __cdecl Con_GetTextCopy(char *text,int maxSize)
 
 {
-  int iVar1;
-  int local_c;
-  int local_8;
+  int count;
+  int end;
+  int begin;
+  int totalSize;
   
-  iVar1 = con.consoleWindow.textBufPos;
+  count = con.consoleWindow.textBufPos;
   if (con.consoleWindow.activeLineCount == 0) {
-    *param_1 = '\0';
+    *text = '\0';
   }
   else {
-    local_c = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
-    local_8 = con.consoleWindow.textBufPos - local_c;
-    if (local_8 < 0) {
-      local_8 = local_8 + con.consoleWindow.textBufSize;
+    begin = con.consoleWindow.lines[con.consoleWindow.firstLineIndex].textBufPos;
+    totalSize = con.consoleWindow.textBufPos - begin;
+    if (totalSize < 0) {
+      totalSize = totalSize + con.consoleWindow.textBufSize;
     }
-    if (param_2 + -1 < local_8) {
-      local_c = (local_8 - (param_2 + -1)) + local_c;
-      if (con.consoleWindow.textBufSize < local_c) {
-        local_c = local_c - con.consoleWindow.textBufSize;
+    if (maxSize + -1 < totalSize) {
+      begin = (totalSize - (maxSize + -1)) + begin;
+      if (con.consoleWindow.textBufSize < begin) {
+        begin = begin - con.consoleWindow.textBufSize;
       }
-      local_8 = param_2 + -1;
+      totalSize = maxSize + -1;
     }
-    if (local_c < con.consoleWindow.textBufPos) {
-      memcpy((uchar *)param_1,(uchar *)(con.consoleWindow.circularTextBuffer + local_c),
-             con.consoleWindow.textBufPos - local_c);
+    if (begin < con.consoleWindow.textBufPos) {
+      memcpy((uchar *)text,(uchar *)(con.consoleWindow.circularTextBuffer + begin),
+             con.consoleWindow.textBufPos - begin);
     }
     else {
-      memcpy((uchar *)param_1,(uchar *)(con.consoleWindow.circularTextBuffer + local_c),
-             con.consoleWindow.textBufSize - local_c);
-      memcpy((uchar *)(param_1 + (con.consoleWindow.textBufSize - local_c)),
-             (uchar *)con.consoleWindow.circularTextBuffer,iVar1);
+      memcpy((uchar *)text,(uchar *)(con.consoleWindow.circularTextBuffer + begin),
+             con.consoleWindow.textBufSize - begin);
+      memcpy((uchar *)(text + (con.consoleWindow.textBufSize - begin)),
+             (uchar *)con.consoleWindow.circularTextBuffer,count);
     }
-    param_1[local_8] = '\0';
+    text[totalSize] = '\0';
   }
   return;
 }
@@ -159,7 +166,7 @@ void __cdecl Con_GetTextCopy(char *param_1,int param_2)
 
 // 005456D0  Con_ResetMessageWindowTimes  (client/cl_console.cpp:495)
 
-void __cdecl Con_ResetMessageWindowTimes(MessageWindow *param_1,int param_2)
+void __cdecl Con_ResetMessageWindowTimes(MessageWindow *msgwnd,int serverTime)
 
 {
   Message *pMVar1;
@@ -168,14 +175,18 @@ void __cdecl Con_ResetMessageWindowTimes(MessageWindow *param_1,int param_2)
   code *pcVar4;
   bool bVar5;
   uint uVar6;
-  int local_10;
+  int duration;
+  Message *message;
+  int lineOffset;
+  MessageLine *line;
+  int lineIndex;
   
-  local_10 = 0;
+  lineOffset = 0;
   do {
-    if (param_1->activeLineCount <= local_10) {
+    if (msgwnd->activeLineCount <= lineOffset) {
       return;
     }
-    if (param_1->lineCount < 1) {
+    if (msgwnd->lineCount < 1) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x1f8,0,
                                "%s\n\t(msgwnd->lineCount) = %i");
       if (!bVar5) {
@@ -184,8 +195,8 @@ void __cdecl Con_ResetMessageWindowTimes(MessageWindow *param_1,int param_2)
         return;
       }
     }
-    uVar6 = (param_1->firstLineIndex + local_10) % param_1->lineCount;
-    if ((uint)param_1->lineCount <= uVar6) {
+    uVar6 = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
+    if ((uint)msgwnd->lineCount <= uVar6) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x1fb,0,
                                "lineIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)");
       if (!bVar5) {
@@ -194,8 +205,8 @@ void __cdecl Con_ResetMessageWindowTimes(MessageWindow *param_1,int param_2)
         return;
       }
     }
-    pMVar2 = param_1->lines;
-    if ((uint)param_1->lineCount <= (uint)pMVar2[uVar6].messageIndex) {
+    pMVar2 = msgwnd->lines;
+    if ((uint)msgwnd->lineCount <= (uint)pMVar2[uVar6].messageIndex) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x1fe,0,
                                "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                               );
@@ -205,36 +216,37 @@ void __cdecl Con_ResetMessageWindowTimes(MessageWindow *param_1,int param_2)
         return;
       }
     }
-    pMVar1 = param_1->messages + pMVar2[uVar6].messageIndex;
+    pMVar1 = msgwnd->messages + pMVar2[uVar6].messageIndex;
     iVar3 = pMVar1->startTime;
-    pMVar1->startTime = param_2;
-    pMVar1->endTime = param_2 + (pMVar1->endTime - iVar3);
-    local_10 = local_10 + 1;
+    pMVar1->startTime = serverTime;
+    pMVar1->endTime = serverTime + (pMVar1->endTime - iVar3);
+    lineOffset = lineOffset + 1;
   } while( true );
 }
 
 
 // 00545640  Con_TimeJumped  (client/cl_console.cpp:521)
 
-void __cdecl Con_TimeJumped(int param_1,int param_2)
+void __cdecl Con_TimeJumped(int localClientNum,int serverTime)
 
 {
-  uint local_8;
+  uint gameWindowIndex;
   
-  Con_ResetMessageWindowTimes(&con.consoleWindow,param_2);
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
+  Con_ResetMessageWindowTimes(&con.consoleWindow,serverTime);
+  for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
     Con_ResetMessageWindowTimes
-              ((MessageWindow *)(param_1 * 0x3ea4 + 0xfa5a3c + local_8 * 0x34),param_2);
+              ((MessageWindow *)(localClientNum * 0x3ea4 + 0xfa5a3c + gameWindowIndex * 0x34),
+               serverTime);
   }
-  Con_ResetMessageWindowTimes(&con.messageBuffer[param_1].miniconWindow,param_2);
-  Con_ResetMessageWindowTimes(&con.messageBuffer[param_1].errorWindow,param_2);
+  Con_ResetMessageWindowTimes(&con.messageBuffer[localClientNum].miniconWindow,serverTime);
+  Con_ResetMessageWindowTimes(&con.messageBuffer[localClientNum].errorWindow,serverTime);
   return;
 }
 
 
 // 005458C0  Con_NudgeMessageWindowTimes  (client/cl_console.cpp:534)
 
-void __cdecl Con_NudgeMessageWindowTimes(MessageWindow *param_1,int param_2,int param_3)
+void __cdecl Con_NudgeMessageWindowTimes(MessageWindow *msgwnd,int serverTimeNudge,int serverTime)
 
 {
   Message *pMVar1;
@@ -243,24 +255,28 @@ void __cdecl Con_NudgeMessageWindowTimes(MessageWindow *param_1,int param_2,int 
   bool bVar4;
   MessageLine *pMVar5;
   uint uVar6;
-  int local_14;
-  int local_10;
+  int duration;
+  Message *message;
+  int lineOffset;
+  int lastMessageIndex;
+  MessageLine *line;
+  int lineIndex;
   
-  local_10 = -1;
-  local_14 = 0;
+  lastMessageIndex = -1;
+  lineOffset = 0;
   while( true ) {
-    if (param_1->activeLineCount <= local_14) {
+    if (msgwnd->activeLineCount <= lineOffset) {
       return;
     }
-    if ((param_1->lineCount < 1) &&
+    if ((msgwnd->lineCount < 1) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x221,0
                                  ,"%s\n\t(msgwnd->lineCount) = %i"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    uVar6 = (param_1->firstLineIndex + local_14) % param_1->lineCount;
-    if (((uint)param_1->lineCount <= uVar6) &&
+    uVar6 = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
+    if (((uint)msgwnd->lineCount <= uVar6) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x224,0
                                  ,"lineIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)")
        , !bVar4)) {
@@ -268,28 +284,28 @@ void __cdecl Con_NudgeMessageWindowTimes(MessageWindow *param_1,int param_2,int 
       (*pcVar3)();
       return;
     }
-    pMVar5 = param_1->lines + uVar6;
-    if (((uint)param_1->lineCount <= (uint)pMVar5->messageIndex) &&
+    pMVar5 = msgwnd->lines + uVar6;
+    if (((uint)msgwnd->lineCount <= (uint)pMVar5->messageIndex) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x227,0
                                  ,
                                  "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                                 ), !bVar4)) break;
-    if (pMVar5->messageIndex != local_10) {
-      local_10 = pMVar5->messageIndex;
-      pMVar1 = param_1->messages + pMVar5->messageIndex;
-      pMVar1->startTime = pMVar1->startTime + param_2;
-      pMVar1->endTime = pMVar1->endTime + param_2;
+    if (pMVar5->messageIndex != lastMessageIndex) {
+      lastMessageIndex = pMVar5->messageIndex;
+      pMVar1 = msgwnd->messages + pMVar5->messageIndex;
+      pMVar1->startTime = pMVar1->startTime + serverTimeNudge;
+      pMVar1->endTime = pMVar1->endTime + serverTimeNudge;
       if (pMVar1->startTime < 0) {
         pMVar1->endTime = pMVar1->endTime - pMVar1->startTime;
         pMVar1->startTime = 0;
       }
-      if (param_3 + 1000 < pMVar1->startTime) {
+      if (serverTime + 1000 < pMVar1->startTime) {
         iVar2 = pMVar1->startTime;
-        pMVar1->startTime = param_3 + 1000;
+        pMVar1->startTime = serverTime + 1000;
         pMVar1->endTime = pMVar1->startTime + (pMVar1->endTime - iVar2);
       }
     }
-    local_14 = local_14 + 1;
+    lineOffset = lineOffset + 1;
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -301,35 +317,39 @@ void __cdecl Con_NudgeMessageWindowTimes(MessageWindow *param_1,int param_2,int 
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Con_TimeNudged(int param_1,int param_2)
+void __cdecl Con_TimeNudged(int localClientNum,int serverTimeNudge)
 
 {
-  int iVar1;
-  clientActive_t *pcVar2;
-  uint local_c;
+  int serverTime_00;
+  clientActive_t *pcVar1;
+  uint gameWindowIndex;
+  int serverTime;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  iVar1 = pcVar2->serverTime;
-  Con_NudgeMessageWindowTimes(&con.consoleWindow,param_2,iVar1);
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  serverTime_00 = pcVar1->serverTime;
+  Con_NudgeMessageWindowTimes(&con.consoleWindow,serverTimeNudge,serverTime_00);
+  for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
     Con_NudgeMessageWindowTimes
-              ((MessageWindow *)(param_1 * 0x3ea4 + 0xfa5a3c + local_c * 0x34),param_2,iVar1);
+              ((MessageWindow *)(localClientNum * 0x3ea4 + 0xfa5a3c + gameWindowIndex * 0x34),
+               serverTimeNudge,serverTime_00);
   }
-  Con_NudgeMessageWindowTimes(&con.messageBuffer[param_1].miniconWindow,param_2,iVar1);
-  Con_NudgeMessageWindowTimes(&con.messageBuffer[param_1].errorWindow,param_2,iVar1);
+  Con_NudgeMessageWindowTimes
+            (&con.messageBuffer[localClientNum].miniconWindow,serverTimeNudge,serverTime_00);
+  Con_NudgeMessageWindowTimes
+            (&con.messageBuffer[localClientNum].errorWindow,serverTimeNudge,serverTime_00);
   return;
 }
 
 
 // 00545AB0  Con_ClearMessageWindow  (client/cl_console.cpp:593)
 
-void __cdecl Con_ClearMessageWindow(MessageWindow *param_1)
+void __cdecl Con_ClearMessageWindow(MessageWindow *msgwnd)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (MessageWindow *)0x0) {
+  if (msgwnd == (MessageWindow *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x252,0,
                              "%s");
     if (!bVar2) {
@@ -338,7 +358,7 @@ void __cdecl Con_ClearMessageWindow(MessageWindow *param_1)
       return;
     }
   }
-  if (param_1->messages == (Message *)0x0) {
+  if (msgwnd->messages == (Message *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x253,0,
                              "%s");
     if (!bVar2) {
@@ -347,7 +367,7 @@ void __cdecl Con_ClearMessageWindow(MessageWindow *param_1)
       return;
     }
   }
-  if (param_1->lines == (MessageLine *)0x0) {
+  if (msgwnd->lines == (MessageLine *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x254,0,
                              "%s");
     if (!bVar2) {
@@ -356,23 +376,24 @@ void __cdecl Con_ClearMessageWindow(MessageWindow *param_1)
       return;
     }
   }
-  param_1->textBufPos = 0;
-  param_1->messageIndex = 0;
-  param_1->firstLineIndex = 0;
-  param_1->activeLineCount = 0;
+  msgwnd->textBufPos = 0;
+  msgwnd->messageIndex = 0;
+  msgwnd->firstLineIndex = 0;
+  msgwnd->activeLineCount = 0;
   return;
 }
 
 
 // 00545A60  Con_ClearNotify  (client/cl_console.cpp:606)
 
-void __cdecl Con_ClearNotify(int param_1)
+void __cdecl Con_ClearNotify(int localClientNum)
 
 {
-  undefined4 local_8;
+  uint gameWindowIndex;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    Con_ClearMessageWindow((MessageWindow *)(param_1 * 0x3ea4 + 0xfa5a3c + local_8 * 0x34));
+  for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
+    Con_ClearMessageWindow
+              ((MessageWindow *)(localClientNum * 0x3ea4 + 0xfa5a3c + gameWindowIndex * 0x34));
   }
   return;
 }
@@ -380,20 +401,20 @@ void __cdecl Con_ClearNotify(int param_1)
 
 // 0054AE40  Con_ClearMiniConsole  (client/cl_console.cpp:614)
 
-void __cdecl Con_ClearMiniConsole(int param_1)
+void __cdecl Con_ClearMiniConsole(int localClientNum)
 
 {
-  Con_ClearMessageWindow(&con.messageBuffer[param_1].miniconWindow);
+  Con_ClearMessageWindow(&con.messageBuffer[localClientNum].miniconWindow);
   return;
 }
 
 
 // 00545B70  Con_ClearErrors  (client/cl_console.cpp:622)
 
-void __cdecl Con_ClearErrors(int param_1)
+void __cdecl Con_ClearErrors(int localClientNum)
 
 {
-  Con_ClearMessageWindow(&con.messageBuffer[param_1].errorWindow);
+  Con_ClearMessageWindow(&con.messageBuffer[localClientNum].errorWindow);
   return;
 }
 
@@ -451,14 +472,14 @@ void __cdecl Con_CheckResize(void)
 
 void __cdecl
 Con_InitMessageWindow
-          (MessageWindow *param_1,Message *param_2,MessageLine *param_3,char *param_4,int param_5,
-          int param_6,int param_7,int param_8,int param_9,int param_10)
+          (MessageWindow *msgwnd,Message *messages,MessageLine *lines,char *text,int lineCount,
+          int padding,int textPoolSize,int scrollTime,int fadeIn,int fadeOut)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (MessageWindow *)0x0) {
+  if (msgwnd == (MessageWindow *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x28d,0,
                              "%s");
     if (!bVar2) {
@@ -467,7 +488,7 @@ Con_InitMessageWindow
       return;
     }
   }
-  if (param_3 == (MessageLine *)0x0) {
+  if (lines == (MessageLine *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x28e,0,
                              "%s");
     if (!bVar2) {
@@ -476,7 +497,7 @@ Con_InitMessageWindow
       return;
     }
   }
-  if (param_5 < param_6) {
+  if (lineCount < padding) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x28f,0,
                              "lineCount >= padding\n\t%i, %i");
     if (!bVar2) {
@@ -485,18 +506,18 @@ Con_InitMessageWindow
       return;
     }
   }
-  param_1->lines = param_3;
-  param_1->messages = param_2;
-  param_1->circularTextBuffer = param_4;
-  param_1->textBufPos = 0;
-  param_1->textBufSize = param_7;
-  param_1->firstLineIndex = 0;
-  param_1->activeLineCount = 0;
-  param_1->messageIndex = 0;
-  param_1->lineCount = param_5;
-  param_1->padding = param_6;
-  param_1->scrollTime = param_8;
-  if (param_10 < 1) {
+  msgwnd->lines = lines;
+  msgwnd->messages = messages;
+  msgwnd->circularTextBuffer = text;
+  msgwnd->textBufPos = 0;
+  msgwnd->textBufSize = textPoolSize;
+  msgwnd->firstLineIndex = 0;
+  msgwnd->activeLineCount = 0;
+  msgwnd->messageIndex = 0;
+  msgwnd->lineCount = lineCount;
+  msgwnd->padding = padding;
+  msgwnd->scrollTime = scrollTime;
+  if (fadeOut < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2a1,0,
                              "%s\n\t(fadeOut) = %i");
     if (!bVar2) {
@@ -505,8 +526,8 @@ Con_InitMessageWindow
       return;
     }
   }
-  param_1->fadeIn = param_9;
-  param_1->fadeOut = param_10;
+  msgwnd->fadeIn = fadeIn;
+  msgwnd->fadeOut = fadeOut;
   return;
 }
 
@@ -548,7 +569,9 @@ void __cdecl Con_OneTimeInit(void)
   char *local_34;
   char *local_24;
   char *local_14;
-  uint local_c;
+  char *dvarName;
+  uint gameWindowIndex;
+  char *dvarDesc;
   
   con_inputBoxColor =
        _Dvar_RegisterVec4("con_inputBoxColor",0.25,0.25,0.2,1.0,0.0,1.0,1,
@@ -565,9 +588,9 @@ void __cdecl Con_OneTimeInit(void)
   con_outputWindowColor =
        _Dvar_RegisterVec4("con_outputWindowColor",0.35,0.35,0.3,0.75,0.0,1.0,1,
                           "Color of the console output");
-  local_c = 0;
+  gameWindowIndex = 0;
   do {
-    if (2 < local_c) {
+    if (2 < gameWindowIndex) {
       con_errormessagetime =
            _Dvar_RegisterFloat("con_errormessagetime",8.0,0.0,3.4028235e+38,1,
                                "Onscreen time for error messages in seconds");
@@ -618,15 +641,15 @@ void __cdecl Con_OneTimeInit(void)
       con.initialized = 1;
       return;
     }
-    pcVar5 = con_gameMsgWindowNMsgTime_Names[local_c];
-    pcVar6 = con_gameMsgWindowNMsgTime_Descs[local_c];
+    pcVar5 = con_gameMsgWindowNMsgTime_Names[gameWindowIndex];
+    pcVar6 = con_gameMsgWindowNMsgTime_Descs[gameWindowIndex];
     sprintf(pcVar5,"con_gameMsgWindow%dMsgTime");
     local_14 = pcVar5;
     do {
       cVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_14 - (local_c * 0x1a + 0xf83b91) != 0x19) {
+    if ((int)local_14 - (gameWindowIndex * 0x1a + 0xf83b91) != 0x19) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2cb,0,
                                "%s");
       if (!bVar3) {
@@ -641,7 +664,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_24;
       local_24 = local_24 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_24 - (local_c * 0x45 + 0xf93e31) != 0x44) {
+    if ((int)local_24 - (gameWindowIndex * 0x45 + 0xf93e31) != 0x44) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2cb,0,
                                "%s");
       if (!bVar3) {
@@ -650,18 +673,18 @@ void __cdecl Con_OneTimeInit(void)
         return;
       }
     }
-    pdVar4 = _Dvar_RegisterFloat(pcVar5,defaultGameMessageTimes[local_c],0.0,3.4028235e+38,1,pcVar6)
-    ;
-    con_gameMsgWindowNMsgTime[local_c] = pdVar4;
-    pcVar6 = con_gameMsgWindowNLineCount_Names[local_c];
-    pcVar5 = con_gameMsgWindowNLineCount_Descs[local_c];
+    pdVar4 = _Dvar_RegisterFloat(pcVar5,defaultGameMessageTimes[gameWindowIndex],0.0,3.4028235e+38,1
+                                 ,pcVar6);
+    con_gameMsgWindowNMsgTime[gameWindowIndex] = pdVar4;
+    pcVar6 = con_gameMsgWindowNLineCount_Names[gameWindowIndex];
+    pcVar5 = con_gameMsgWindowNLineCount_Descs[gameWindowIndex];
     sprintf(pcVar6,"con_gameMsgWindow%dLineCount");
     local_34 = pcVar6;
     do {
       cVar1 = *local_34;
       local_34 = local_34 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_34 - (local_c * 0x1c + 0xf83cc9) != 0x1b) {
+    if ((int)local_34 - (gameWindowIndex * 0x1c + 0xf83cc9) != 0x1b) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2ce,0,
                                "%s");
       if (!bVar3) {
@@ -676,7 +699,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_44;
       local_44 = local_44 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_44 - (local_c * 0x49 + 0xf83be9) != 0x48) {
+    if ((int)local_44 - (gameWindowIndex * 0x49 + 0xf83be9) != 0x48) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2ce,0,
                                "%s");
       if (!bVar3) {
@@ -685,17 +708,18 @@ void __cdecl Con_OneTimeInit(void)
         return;
       }
     }
-    pdVar4 = _Dvar_RegisterInt(pcVar6,defaultGameMessageWindowLineCounts[local_c],1,9,1,pcVar5);
-    con_gameMsgWindowNLineCount[local_c] = pdVar4;
-    pcVar5 = con_gameMsgWindowNScrollTime_Names[local_c];
-    pcVar6 = con_gameMsgWindowNScrollTime_Descs[local_c];
+    pdVar4 = _Dvar_RegisterInt(pcVar6,defaultGameMessageWindowLineCounts[gameWindowIndex],1,9,1,
+                               pcVar5);
+    con_gameMsgWindowNLineCount[gameWindowIndex] = pdVar4;
+    pcVar5 = con_gameMsgWindowNScrollTime_Names[gameWindowIndex];
+    pcVar6 = con_gameMsgWindowNScrollTime_Descs[gameWindowIndex];
     sprintf(pcVar5,"con_gameMsgWindow%dScrollTime");
     local_54 = pcVar5;
     do {
       cVar1 = *local_54;
       local_54 = local_54 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_54 - (local_c * 0x1d + 0xfa8111) != 0x1c) {
+    if ((int)local_54 - (gameWindowIndex * 0x1d + 0xfa8111) != 0x1c) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d2,0,
                                "%s");
       if (!bVar3) {
@@ -711,7 +735,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_64;
       local_64 = local_64 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_64 - (local_c * 0x54 + 0xf83d29) != 0x53) {
+    if ((int)local_64 - (gameWindowIndex * 0x54 + 0xf83d29) != 0x53) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d2,0,
                                "%s");
       if (!bVar3) {
@@ -721,16 +745,16 @@ void __cdecl Con_OneTimeInit(void)
       }
     }
     pdVar4 = _Dvar_RegisterFloat(pcVar5,0.25,0.0,3.4028235e+38,1,pcVar6);
-    con_gameMsgWindowNScrollTime[local_c] = pdVar4;
-    pcVar6 = con_gameMsgWindowNFadeInTime_Names[local_c];
-    pcVar5 = con_gameMsgWindowNFadeInTime_Descs[local_c];
+    con_gameMsgWindowNScrollTime[gameWindowIndex] = pdVar4;
+    pcVar6 = con_gameMsgWindowNFadeInTime_Names[gameWindowIndex];
+    pcVar5 = con_gameMsgWindowNFadeInTime_Descs[gameWindowIndex];
     sprintf(pcVar6,"con_gameMsgWindow%dFadeInTime");
     local_74 = pcVar6;
     do {
       cVar1 = *local_74;
       local_74 = local_74 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_74 - (local_c * 0x1d + 0xf73581) != 0x1c) {
+    if ((int)local_74 - (gameWindowIndex * 0x1d + 0xf73581) != 0x1c) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d5,0,
                                "%s");
       if (!bVar3) {
@@ -745,7 +769,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_84;
       local_84 = local_84 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_84 - (local_c * 0x36 + 0xfa8171) != 0x35) {
+    if ((int)local_84 - (gameWindowIndex * 0x36 + 0xfa8171) != 0x35) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d5,0,
                                "%s");
       if (!bVar3) {
@@ -754,23 +778,23 @@ void __cdecl Con_OneTimeInit(void)
         return;
       }
     }
-    if (local_c == 2) {
+    if (gameWindowIndex == 2) {
       local_94 = 0.75;
     }
     else {
       local_94 = 0.25;
     }
     pdVar4 = _Dvar_RegisterFloat(pcVar6,local_94,0.0,3.4028235e+38,1,pcVar5);
-    con_gameMsgWindowNFadeInTime[local_c] = pdVar4;
-    pcVar6 = con_gameMsgWindowNFadeOutTime_Names[local_c];
-    pcVar5 = con_gameMsgWindowNFadeOutTime_Descs[local_c];
+    con_gameMsgWindowNFadeInTime[gameWindowIndex] = pdVar4;
+    pcVar6 = con_gameMsgWindowNFadeOutTime_Names[gameWindowIndex];
+    pcVar5 = con_gameMsgWindowNFadeOutTime_Descs[gameWindowIndex];
     sprintf(pcVar6,"con_gameMsgWindow%dFadeOutTime");
     local_98 = pcVar6;
     do {
       cVar1 = *local_98;
       local_98 = local_98 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_98 - (local_c * 0x1e + 0xf93f01) != 0x1d) {
+    if ((int)local_98 - (gameWindowIndex * 0x1e + 0xf93f01) != 0x1d) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d8,0,
                                "%s");
       if (!bVar3) {
@@ -785,7 +809,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_a8;
       local_a8 = local_a8 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_a8 - (local_c * 0x37 + 0xf839d9) != 0x36) {
+    if ((int)local_a8 - (gameWindowIndex * 0x37 + 0xf839d9) != 0x36) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2d8,0,
                                "%s");
       if (!bVar3) {
@@ -794,23 +818,23 @@ void __cdecl Con_OneTimeInit(void)
         return;
       }
     }
-    if (local_c == 1) {
+    if (gameWindowIndex == 1) {
       local_b8 = 0.01;
     }
     else {
       local_b8 = 0.5;
     }
     pdVar4 = _Dvar_RegisterFloat(pcVar6,local_b8,0.01,3.4028235e+38,1,pcVar5);
-    con_gameMsgWindowNFadeOutTime[local_c] = pdVar4;
-    pcVar6 = con_gameMsgWindowNSplitscreenScale_Names[local_c];
-    pcVar5 = con_gameMsgWindowNSplitscreenScale_Descs[local_c];
+    con_gameMsgWindowNFadeOutTime[gameWindowIndex] = pdVar4;
+    pcVar6 = con_gameMsgWindowNSplitscreenScale_Names[gameWindowIndex];
+    pcVar5 = con_gameMsgWindowNSplitscreenScale_Descs[gameWindowIndex];
     sprintf(pcVar6,"con_gameMsgWindow%dSplitscreenScale");
     local_bc = pcVar6;
     do {
       cVar1 = *local_bc;
       local_bc = local_bc + 1;
     } while (cVar1 != '\0');
-    if ((int)local_bc - (local_c * 0x23 + 0xf93f69) != 0x22) {
+    if ((int)local_bc - (gameWindowIndex * 0x23 + 0xf93f69) != 0x22) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2db,0,
                                "%s");
       if (!bVar3) {
@@ -825,7 +849,7 @@ void __cdecl Con_OneTimeInit(void)
       cVar1 = *local_cc;
       local_cc = local_cc + 1;
     } while (cVar1 != '\0');
-    if ((int)local_cc - (local_c * 0x30 + 0xf83a99) != 0x2f) {
+    if ((int)local_cc - (gameWindowIndex * 0x30 + 0xf83a99) != 0x2f) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x2db,0,
                                "%s");
       if (!bVar3) {
@@ -835,8 +859,8 @@ void __cdecl Con_OneTimeInit(void)
       }
     }
     pdVar4 = _Dvar_RegisterFloat(pcVar6,1.5,0.0,3.4028235e+38,1,pcVar5);
-    con_gameMsgWindowNSplitscreenScale[local_c] = pdVar4;
-    local_c = local_c + 1;
+    con_gameMsgWindowNSplitscreenScale[gameWindowIndex] = pdVar4;
+    gameWindowIndex = gameWindowIndex + 1;
   } while( true );
 }
 
@@ -848,7 +872,7 @@ void __cdecl Con_Init(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
   con_restricted = _Dvar_RegisterBool("monkeytoy",false,1,"Restrict console access");
   con_restricted_access =
@@ -861,11 +885,11 @@ void __cdecl Con_Init(void)
   g_consoleField.widthInPixels = g_console_field_width;
   g_consoleField.charHeight = g_console_char_height;
   g_consoleField.fixedSize = 1;
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    Field_Clear(historyEditLines + local_8);
-    historyEditLines[local_8].widthInPixels = g_console_field_width;
-    historyEditLines[local_8].charHeight = g_console_char_height;
-    historyEditLines[local_8].fixedSize = 1;
+  for (i = 0; i < 0x20; i = i + 1) {
+    Field_Clear(historyEditLines + i);
+    historyEditLines[i].widthInPixels = g_console_field_width;
+    historyEditLines[i].charHeight = g_console_char_height;
+    historyEditLines[i].fixedSize = 1;
   }
   conDrawInputGlob.matchIndex = -1;
   Cmd_AddCommandInternal
@@ -904,21 +928,21 @@ void __cdecl Con_InitClientAssets(void)
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-int __cdecl Con_GetDefaultMsgDuration(print_msg_dest_t param_1)
+int __cdecl Con_GetDefaultMsgDuration(print_msg_dest_t dest)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == CON_DEST_MINICON) {
+  if (dest == CON_DEST_MINICON) {
     iVar3 = (int)ROUND((con_minicontime->current).value * 1000.0 + 9.313226e-10);
   }
-  else if (param_1 == CON_DEST_ERROR) {
+  else if (dest == CON_DEST_ERROR) {
     iVar3 = (int)ROUND((con_errormessagetime->current).value * 1000.0 + 9.313226e-10);
   }
   else {
-    if (((int)param_1 < 3) || (5 < (int)param_1)) {
+    if (((int)dest < 3) || (5 < (int)dest)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x347,0,
                                "%s");
       if (!bVar2) {
@@ -927,8 +951,7 @@ int __cdecl Con_GetDefaultMsgDuration(print_msg_dest_t param_1)
         return iVar3;
       }
     }
-    iVar3 = (int)ROUND((con_gameMsgWindowNLineCount[param_1]->current).value * 1000.0 + 9.313226e-10
-                      );
+    iVar3 = (int)ROUND((con_gameMsgWindowNLineCount[dest]->current).value * 1000.0 + 9.313226e-10);
   }
   return iVar3;
 }
@@ -938,15 +961,16 @@ int __cdecl Con_GetDefaultMsgDuration(print_msg_dest_t param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Con_UpdateMessage(int param_1,MessageWindow *param_2,int param_3)
+void __cdecl Con_UpdateMessage(int localClientNum,MessageWindow *msgwnd,int duration)
 
 {
   Message *pMVar1;
   code *pcVar2;
   bool bVar3;
   clientActive_t *pcVar4;
+  Message *message;
   
-  if (param_2 == (MessageWindow *)0x0) {
+  if (msgwnd == (MessageWindow *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x351,0,
                              "%s");
     if (!bVar3) {
@@ -955,7 +979,7 @@ void __cdecl Con_UpdateMessage(int param_1,MessageWindow *param_2,int param_3)
       return;
     }
   }
-  if ((uint)param_2->lineCount <= (uint)param_2->messageIndex) {
+  if ((uint)msgwnd->lineCount <= (uint)msgwnd->messageIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x352,0,
                              "msgwnd->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                             );
@@ -965,7 +989,7 @@ void __cdecl Con_UpdateMessage(int param_1,MessageWindow *param_2,int param_3)
       return;
     }
   }
-  if (param_2->lineCount == 0) {
+  if (msgwnd->lineCount == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x355,0,
                              "%s");
     if (!bVar3) {
@@ -974,29 +998,29 @@ void __cdecl Con_UpdateMessage(int param_1,MessageWindow *param_2,int param_3)
       return;
     }
   }
-  param_2->messageIndex = (param_2->messageIndex + 1) % param_2->lineCount;
-  pMVar1 = param_2->messages + param_2->messageIndex;
+  msgwnd->messageIndex = (msgwnd->messageIndex + 1) % msgwnd->lineCount;
+  pMVar1 = msgwnd->messages + msgwnd->messageIndex;
   pMVar1->startTime = 0;
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
   if (pcVar4 != (clientActive_t *)0x0) {
-    pcVar4 = CL_GetLocalClientGlobals(param_1);
+    pcVar4 = CL_GetLocalClientGlobals(localClientNum);
     pMVar1->startTime = pcVar4->serverTime;
   }
-  pMVar1->endTime = pMVar1->startTime + param_3;
+  pMVar1->endTime = pMVar1->startTime + duration;
   return;
 }
 
 
 // 00548200  Con_FreeFirstMessageWindowLine  (client/cl_console.cpp:865)
 
-void __cdecl Con_FreeFirstMessageWindowLine(MessageWindow *param_1)
+void __cdecl Con_FreeFirstMessageWindowLine(MessageWindow *msgwnd)
 
 {
   code *pcVar1;
   bool bVar2;
   int local_8;
   
-  if (param_1->activeLineCount < 1) {
+  if (msgwnd->activeLineCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x362,0,
                              "%s");
     if (!bVar2) {
@@ -1005,12 +1029,12 @@ void __cdecl Con_FreeFirstMessageWindowLine(MessageWindow *param_1)
       return;
     }
   }
-  param_1->activeLineCount = param_1->activeLineCount + -1;
-  param_1->firstLineIndex = param_1->firstLineIndex + 1;
-  if (param_1->firstLineIndex == param_1->lineCount) {
-    param_1->firstLineIndex = 0;
+  msgwnd->activeLineCount = msgwnd->activeLineCount + -1;
+  msgwnd->firstLineIndex = msgwnd->firstLineIndex + 1;
+  if (msgwnd->firstLineIndex == msgwnd->lineCount) {
+    msgwnd->firstLineIndex = 0;
   }
-  if ((param_1 == &con.consoleWindow) &&
+  if ((msgwnd == &con.consoleWindow) &&
      (con.displayLineOffset = con.displayLineOffset + -1,
      con.displayLineOffset < con.visibleLineCount)) {
     if (con.consoleWindow.activeLineCount < con.visibleLineCount) {
@@ -1027,7 +1051,7 @@ void __cdecl Con_FreeFirstMessageWindowLine(MessageWindow *param_1)
 
 // 00548440  Con_NeedToFreeMessageWindowLine  (client/cl_console.cpp:883)
 
-bool __cdecl Con_NeedToFreeMessageWindowLine(MessageWindow *param_1,int param_2)
+bool __cdecl Con_NeedToFreeMessageWindowLine(MessageWindow *msgwnd,int charCount)
 
 {
   int iVar1;
@@ -1038,30 +1062,32 @@ bool __cdecl Con_NeedToFreeMessageWindowLine(MessageWindow *param_1,int param_2)
   uint uVar6;
   bool local_14;
   bool local_10;
+  int pastLastChar;
+  MessageLine *line;
   
-  if (param_1->activeLineCount == 0) {
+  if (msgwnd->activeLineCount == 0) {
     local_14 = false;
   }
   else {
-    if ((param_1->lineCount < 1) &&
+    if ((msgwnd->lineCount < 1) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x37a,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       uVar5 = (*pcVar3)();
       return (bool)uVar5;
     }
-    iVar1 = param_1->firstLineIndex;
-    pMVar2 = param_1->lines;
-    if (((param_1->textBufSize - 1U & param_1->textBufSize) != 0) &&
+    iVar1 = msgwnd->firstLineIndex;
+    pMVar2 = msgwnd->lines;
+    if (((msgwnd->textBufSize - 1U & msgwnd->textBufSize) != 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x37d,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       uVar5 = (*pcVar3)();
       return (bool)uVar5;
     }
-    uVar6 = param_1->textBufPos + param_2 & param_1->textBufSize - 1U;
-    if ((int)uVar6 < param_1->textBufPos) {
-      if ((pMVar2[iVar1].textBufPos < param_1->textBufPos) &&
+    uVar6 = msgwnd->textBufPos + charCount & msgwnd->textBufSize - 1U;
+    if ((int)uVar6 < msgwnd->textBufPos) {
+      if ((pMVar2[iVar1].textBufPos < msgwnd->textBufPos) &&
          ((int)uVar6 <= pMVar2[iVar1].textBufPos)) {
         local_14 = false;
       }
@@ -1069,7 +1095,7 @@ bool __cdecl Con_NeedToFreeMessageWindowLine(MessageWindow *param_1,int param_2)
         local_14 = true;
       }
     }
-    else if ((pMVar2[iVar1].textBufPos < param_1->textBufPos) ||
+    else if ((pMVar2[iVar1].textBufPos < msgwnd->textBufPos) ||
             ((int)uVar6 <= pMVar2[iVar1].textBufPos)) {
       local_10 = false;
       local_14 = local_10;
@@ -1085,14 +1111,15 @@ bool __cdecl Con_NeedToFreeMessageWindowLine(MessageWindow *param_1,int param_2)
 
 // 005482C0  Con_CopyCurrentConsoleLineText  (client/cl_console.cpp:903)
 
-void __cdecl Con_CopyCurrentConsoleLineText(MessageWindow *param_1,MessageLine *param_2)
+void __cdecl Con_CopyCurrentConsoleLineText(MessageWindow *msgwnd,MessageLine *msgLine)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint count;
+  uint poolRemaining;
   
-  if (param_2 == (MessageLine *)0x0) {
+  if (msgLine == (MessageLine *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x38a,0,
                              "%s");
     if (!bVar2) {
@@ -1102,24 +1129,24 @@ void __cdecl Con_CopyCurrentConsoleLineText(MessageWindow *param_1,MessageLine *
     }
   }
   while( true ) {
-    bVar2 = Con_NeedToFreeMessageWindowLine(param_1,con.lineOffset + 1);
+    bVar2 = Con_NeedToFreeMessageWindowLine(msgwnd,con.lineOffset + 1);
     if (!bVar2) break;
-    Con_FreeFirstMessageWindowLine(param_1);
+    Con_FreeFirstMessageWindowLine(msgwnd);
   }
-  uVar3 = param_1->textBufSize - param_1->textBufPos;
-  if (uVar3 < con.lineOffset) {
-    memcpy((uchar *)(param_1->circularTextBuffer + param_1->textBufPos),(uchar *)con.textTempLine,
-           uVar3);
-    memcpy((uchar *)param_1->circularTextBuffer,(uchar *)((int)&con + uVar3 + 0x10038),
-           con.lineOffset - uVar3);
+  count = msgwnd->textBufSize - msgwnd->textBufPos;
+  if (count < con.lineOffset) {
+    memcpy((uchar *)(msgwnd->circularTextBuffer + msgwnd->textBufPos),(uchar *)con.textTempLine,
+           count);
+    memcpy((uchar *)msgwnd->circularTextBuffer,(uchar *)((int)&con + count + 0x10038),
+           con.lineOffset - count);
   }
   else {
-    memcpy((uchar *)(param_1->circularTextBuffer + param_1->textBufPos),(uchar *)con.textTempLine,
+    memcpy((uchar *)(msgwnd->circularTextBuffer + msgwnd->textBufPos),(uchar *)con.textTempLine,
            con.lineOffset);
   }
-  param_2->textBufPos = param_1->textBufPos;
-  param_2->textBufSize = con.lineOffset;
-  if ((param_1->textBufSize - 1U & param_1->textBufSize) != 0) {
+  msgLine->textBufPos = msgwnd->textBufPos;
+  msgLine->textBufSize = con.lineOffset;
+  if ((msgwnd->textBufSize - 1U & msgwnd->textBufSize) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x39d,0,
                              "%s");
     if (!bVar2) {
@@ -1128,33 +1155,35 @@ void __cdecl Con_CopyCurrentConsoleLineText(MessageWindow *param_1,MessageLine *
       return;
     }
   }
-  param_1->textBufPos = param_1->textBufPos + con.lineOffset & param_1->textBufSize - 1U;
-  param_1->circularTextBuffer[param_1->textBufPos] = '\n';
-  param_1->textBufPos = param_1->textBufPos + 1U & param_1->textBufSize - 1U;
+  msgwnd->textBufPos = msgwnd->textBufPos + con.lineOffset & msgwnd->textBufSize - 1U;
+  msgwnd->circularTextBuffer[msgwnd->textBufPos] = '\n';
+  msgwnd->textBufPos = msgwnd->textBufPos + 1U & msgwnd->textBufSize - 1U;
   return;
 }
 
 
 // 005487D0  LatestActiveTypewrittenLineIdx  (client/cl_console.cpp:943)
 
-int __cdecl LatestActiveTypewrittenLineIdx(MessageWindow *param_1)
+int __cdecl LatestActiveTypewrittenLineIdx(MessageWindow *msgwnd)
 
 {
   int iVar1;
-  int local_8;
+  MessageLine *line;
+  int lineIdx;
+  int idx;
   
-  if (param_1->activeLineCount == 0) {
+  if (msgwnd->activeLineCount == 0) {
     iVar1 = -1;
   }
   else {
-    local_8 = param_1->activeLineCount;
+    idx = msgwnd->activeLineCount;
     do {
-      local_8 = local_8 + -1;
-      if (local_8 < 0) {
+      idx = idx + -1;
+      if (idx < 0) {
         return -1;
       }
-      iVar1 = (param_1->firstLineIndex + local_8) % param_1->lineCount;
-    } while ((param_1->lines[iVar1].flags & 1U) == 0);
+      iVar1 = (msgwnd->firstLineIndex + idx) % msgwnd->lineCount;
+    } while ((msgwnd->lines[iVar1].flags & 1U) == 0);
   }
   return iVar1;
 }
@@ -1162,25 +1191,25 @@ int __cdecl LatestActiveTypewrittenLineIdx(MessageWindow *param_1)
 
 // 005485C0  PrintableCharsCount  (client/cl_console.cpp:965)
 
-int __cdecl PrintableCharsCount(MessageWindow *param_1,MessageLine *param_2)
+int __cdecl PrintableCharsCount(MessageWindow *msgwnd,MessageLine *line)
 
 {
   char cVar1;
   code *pcVar2;
   int iVar3;
   bool bVar4;
-  int local_18;
-  char local_14;
+  int usedCharCnt;
+  char c;
   char local_13;
-  uint local_10;
-  int local_c;
-  int local_8;
+  int letter;
+  int printedCnt;
+  int idx;
   
-  if (param_2->textBufSize == 0) {
+  if (line->textBufSize == 0) {
     bVar4 = true;
   }
   else {
-    bVar4 = (param_1->textBufSize - 1U & param_1->textBufSize) == 0;
+    bVar4 = (msgwnd->textBufSize - 1U & msgwnd->textBufSize) == 0;
   }
   if ((!bVar4) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x3c9,0,
@@ -1189,64 +1218,64 @@ int __cdecl PrintableCharsCount(MessageWindow *param_1,MessageLine *param_2)
     iVar3 = (*pcVar2)();
     return iVar3;
   }
-  local_c = 0;
-  local_8 = 0;
-  while (local_8 < param_2->textBufSize) {
-    local_14 = param_1->circularTextBuffer
-               [param_2->textBufPos + local_8 & param_1->textBufSize - 1U];
-    local_13 = param_1->circularTextBuffer
-               [param_2->textBufPos + 1 + local_8 & param_1->textBufSize - 1U];
-    local_10 = SEH_DecodeLetter((int)local_14,(int)local_13,&local_18,(int *)0x0);
-    local_8 = local_8 + local_18;
-    local_c = local_c + 1;
-    if ((local_10 == 0x5e) &&
-       (((((cVar1 = param_1->circularTextBuffer
-                    [param_2->textBufPos + local_8 & param_1->textBufSize - 1U],
+  printedCnt = 0;
+  idx = 0;
+  while (idx < line->textBufSize) {
+    c = msgwnd->circularTextBuffer[line->textBufPos + idx & msgwnd->textBufSize - 1U];
+    local_13 = msgwnd->circularTextBuffer[line->textBufPos + 1 + idx & msgwnd->textBufSize - 1U];
+    letter = SEH_DecodeLetter((int)c,(int)local_13,&usedCharCnt,(int *)0x0);
+    idx = idx + usedCharCnt;
+    printedCnt = printedCnt + 1;
+    if ((letter == 0x5e) &&
+       (((((cVar1 = msgwnd->circularTextBuffer[line->textBufPos + idx & msgwnd->textBufSize - 1U],
            &stack0x00000000 != (undefined1 *)0x14 && (cVar1 != '^')) && ('/' < cVar1)) &&
          (cVar1 < 'A')) ||
         (((&stack0x00000000 != (undefined1 *)0x14 && (cVar1 != '^')) && (cVar1 == 'F')))))) {
-      local_8 = local_8 + 1;
+      idx = idx + 1;
     }
   }
-  return local_c;
+  return printedCnt;
 }
 
 
 // 00548550  PrintTimeTotal  (client/cl_console.cpp:998)
 
-int __cdecl PrintTimeTotal(MessageWindow *param_1,MessageLine *param_2)
+int __cdecl PrintTimeTotal(MessageWindow *msgwnd,MessageLine *line)
 
 {
-  int iVar1;
-  char *local_8;
+  char *pcVar1;
+  int iVar2;
+  int printCnt;
+  int time;
   
-  if ((param_2->flags & 1U) == 0) {
-    local_8 = (char *)0x0;
+  if ((line->flags & 1U) == 0) {
+    pcVar1 = (char *)0x0;
   }
   else {
-    iVar1 = PrintableCharsCount(param_1,param_2);
-    local_8 = (char *)(iVar1 * (con_typewriterPrintSpeed->current).integer);
-    if ((int)local_8 < (con_typewriterDecayStartTime->current).integer) {
-      local_8 = (con_typewriterDecayStartTime->current).string;
+    iVar2 = PrintableCharsCount(msgwnd,line);
+    time = iVar2 * (con_typewriterPrintSpeed->current).integer;
+    if (time < (con_typewriterDecayStartTime->current).integer) {
+      time = (con_typewriterDecayStartTime->current).integer;
     }
-    local_8 = local_8 + (int)(con_typewriterDecayDuration->current).string;
+    pcVar1 = (con_typewriterDecayDuration->current).string + time;
   }
-  return (int)local_8;
+  return (int)pcVar1;
 }
 
 
 // 00548840  PrintTimeWriteOut  (client/cl_console.cpp:1017)
 
-int __cdecl PrintTimeWriteOut(MessageWindow *param_1,MessageLine *param_2)
+int __cdecl PrintTimeWriteOut(MessageWindow *msgwnd,MessageLine *line)
 
 {
   int iVar1;
+  int printCnt;
   
-  if ((param_2->flags & 1U) == 0) {
+  if ((line->flags & 1U) == 0) {
     iVar1 = 0;
   }
   else {
-    iVar1 = PrintableCharsCount(param_1,param_2);
+    iVar1 = PrintableCharsCount(msgwnd,line);
     iVar1 = iVar1 * (con_typewriterPrintSpeed->current).integer;
   }
   return iVar1;
@@ -1257,7 +1286,7 @@ int __cdecl PrintTimeWriteOut(MessageWindow *param_1,MessageLine *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl GetNextValidPrintTimeForLine(int param_1,MessageWindow *param_2,int param_3)
+int __cdecl GetNextValidPrintTimeForLine(int localClientNum,MessageWindow *msgwnd,int flags)
 
 {
   int iVar1;
@@ -1265,20 +1294,24 @@ int __cdecl GetNextValidPrintTimeForLine(int param_1,MessageWindow *param_2,int 
   int iVar3;
   clientActive_t *pcVar4;
   int iVar5;
+  int nextPrintTime;
+  MessageLine *line;
+  int lineIdx;
+  int serverTime;
   
-  if ((param_3 & 1U) == 0) {
+  if ((flags & 1U) == 0) {
     iVar3 = 0;
   }
   else {
-    pcVar4 = CL_GetLocalClientGlobals(param_1);
+    pcVar4 = CL_GetLocalClientGlobals(localClientNum);
     iVar1 = pcVar4->serverTime;
-    iVar5 = LatestActiveTypewrittenLineIdx(param_2);
+    iVar5 = LatestActiveTypewrittenLineIdx(msgwnd);
     if (iVar5 == -1) {
       iVar3 = iVar1 + 0xfa;
     }
     else {
-      pMVar2 = param_2->lines;
-      iVar3 = PrintTimeWriteOut(param_2,pMVar2 + iVar5);
+      pMVar2 = msgwnd->lines;
+      iVar3 = PrintTimeWriteOut(msgwnd,pMVar2 + iVar5);
       iVar3 = pMVar2[iVar5].typingStartTime + 0x96 + iVar3;
       if (iVar3 - iVar1 < 0xfa) {
         iVar3 = iVar1 + 0xfa;
@@ -1293,7 +1326,8 @@ int __cdecl GetNextValidPrintTimeForLine(int param_1,MessageWindow *param_2,int 
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int param_3,int param_4)
+void __cdecl
+Con_UpdateMessageWindowLine(int localClientNum,MessageWindow *msgwnd,int linefeed,int flags)
 
 {
   Message *pMVar1;
@@ -1303,9 +1337,13 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
   int iVar5;
   MessageLine *pMVar6;
   uint uVar7;
-  int local_8;
+  int newPadLineOffset;
+  Message *message;
+  int imod;
+  MessageLine *line;
+  int serverTime;
   
-  if (param_2 == (MessageWindow *)0x0) {
+  if (msgwnd == (MessageWindow *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x427,0,
                              "%s");
     if (!bVar3) {
@@ -1314,7 +1352,7 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
       return;
     }
   }
-  if ((uint)param_2->lineCount <= (uint)param_2->firstLineIndex) {
+  if ((uint)msgwnd->lineCount <= (uint)msgwnd->firstLineIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x428,0,
                              "msgwnd->firstLineIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                             );
@@ -1324,7 +1362,7 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
       return;
     }
   }
-  if ((uint)param_2->lineCount <= (uint)param_2->messageIndex) {
+  if ((uint)msgwnd->lineCount <= (uint)msgwnd->messageIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x429,0,
                              "msgwnd->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                             );
@@ -1334,34 +1372,33 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
       return;
     }
   }
-  local_8 = 0;
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
+  serverTime = 0;
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
   if (pcVar4 != (clientActive_t *)0x0) {
-    pcVar4 = CL_GetLocalClientGlobals(param_1);
-    local_8 = pcVar4->serverTime;
+    pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+    serverTime = pcVar4->serverTime;
   }
-  pMVar6 = param_2->lines +
-           (param_2->firstLineIndex + param_2->activeLineCount) % param_2->lineCount;
-  pMVar6->messageIndex = param_2->messageIndex;
+  pMVar6 = msgwnd->lines + (msgwnd->firstLineIndex + msgwnd->activeLineCount) % msgwnd->lineCount;
+  pMVar6->messageIndex = msgwnd->messageIndex;
   pMVar6->typingStartTime = 0;
   pMVar6->lastTypingSoundTime = 0;
-  pMVar6->flags = param_4;
-  iVar5 = GetNextValidPrintTimeForLine(param_1,param_2,param_4);
+  pMVar6->flags = flags;
+  iVar5 = GetNextValidPrintTimeForLine(localClientNum,msgwnd,flags);
   pMVar6->typingStartTime = iVar5;
   if (pMVar6->typingStartTime != 0) {
-    iVar5 = PrintTimeTotal(param_2,pMVar6);
-    param_2->messages[pMVar6->messageIndex].endTime = iVar5 + pMVar6->typingStartTime;
+    iVar5 = PrintTimeTotal(msgwnd,pMVar6);
+    msgwnd->messages[pMVar6->messageIndex].endTime = iVar5 + pMVar6->typingStartTime;
   }
-  Con_CopyCurrentConsoleLineText(param_2,pMVar6);
-  if (param_3 != 0) {
-    if (param_2->activeLineCount == param_2->lineCount) {
-      Con_FreeFirstMessageWindowLine(param_2);
+  Con_CopyCurrentConsoleLineText(msgwnd,pMVar6);
+  if (linefeed != 0) {
+    if (msgwnd->activeLineCount == msgwnd->lineCount) {
+      Con_FreeFirstMessageWindowLine(msgwnd);
     }
-    param_2->activeLineCount = param_2->activeLineCount + 1;
-    iVar5 = param_2->activeLineCount - (param_2->lineCount - param_2->padding);
+    msgwnd->activeLineCount = msgwnd->activeLineCount + 1;
+    iVar5 = msgwnd->activeLineCount - (msgwnd->lineCount - msgwnd->padding);
     if (0 < iVar5) {
-      uVar7 = (param_2->firstLineIndex + -1 + iVar5) % param_2->lineCount;
-      if ((uint)param_2->lineCount <= uVar7) {
+      uVar7 = (msgwnd->firstLineIndex + -1 + iVar5) % msgwnd->lineCount;
+      if ((uint)msgwnd->lineCount <= uVar7) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x447,0
                                  ,"imod doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)");
         if (!bVar3) {
@@ -1370,8 +1407,8 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
           return;
         }
       }
-      pMVar6 = param_2->lines;
-      if ((uint)param_2->lineCount <= (uint)pMVar6[uVar7].messageIndex) {
+      pMVar6 = msgwnd->lines;
+      if ((uint)msgwnd->lineCount <= (uint)pMVar6[uVar7].messageIndex) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x449,0
                                  ,
                                  "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
@@ -1382,8 +1419,8 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
           return;
         }
       }
-      pMVar1 = param_2->messages + pMVar6[uVar7].messageIndex;
-      if (local_8 < pMVar1->endTime - param_2->fadeOut) {
+      pMVar1 = msgwnd->messages + pMVar6[uVar7].messageIndex;
+      if (serverTime < pMVar1->endTime - msgwnd->fadeOut) {
         if (pMVar1->endTime < pMVar1->startTime) {
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x44e
                                    ,0,"message->endTime >= message->startTime\n\t%i, %i");
@@ -1393,7 +1430,7 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
             return;
           }
         }
-        pMVar1->endTime = local_8 + param_2->fadeOut;
+        pMVar1->endTime = serverTime + msgwnd->fadeOut;
       }
     }
   }
@@ -1405,24 +1442,24 @@ void __cdecl Con_UpdateMessageWindowLine(int param_1,MessageWindow *param_2,int 
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-MessageWindow * __cdecl Con_GetDestWindow(int param_1,print_msg_dest_t param_2)
+MessageWindow * __cdecl Con_GetDestWindow(int localClientNum,print_msg_dest_t dest)
 
 {
   code *pcVar1;
   bool bVar2;
   MessageWindow *pMVar3;
   
-  if (param_2 == CON_DEST_CONSOLE) {
+  if (dest == CON_DEST_CONSOLE) {
     pMVar3 = &con.consoleWindow;
   }
-  else if (param_2 == CON_DEST_MINICON) {
-    pMVar3 = &con.messageBuffer[param_1].miniconWindow;
+  else if (dest == CON_DEST_MINICON) {
+    pMVar3 = &con.messageBuffer[localClientNum].miniconWindow;
   }
-  else if (param_2 == CON_DEST_ERROR) {
-    pMVar3 = &con.messageBuffer[param_1].errorWindow;
+  else if (dest == CON_DEST_ERROR) {
+    pMVar3 = &con.messageBuffer[localClientNum].errorWindow;
   }
   else {
-    if (((int)param_2 < 3) || (5 < (int)param_2)) {
+    if (((int)dest < 3) || (5 < (int)dest)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x465,0,
                                "%s");
       if (!bVar2) {
@@ -1431,7 +1468,7 @@ MessageWindow * __cdecl Con_GetDestWindow(int param_1,print_msg_dest_t param_2)
         return pMVar3;
       }
     }
-    pMVar3 = (MessageWindow *)(param_1 * 0x3ea4 + 0xfa5a3c + (param_2 - CON_DEST_GAME1) * 0x34);
+    pMVar3 = (MessageWindow *)(localClientNum * 0x3ea4 + 0xfa5a3c + (dest - CON_DEST_GAME1) * 0x34);
   }
   return pMVar3;
 }
@@ -1443,22 +1480,22 @@ MessageWindow * __cdecl Con_GetDestWindow(int param_1,print_msg_dest_t param_2)
 
 void __cdecl
 Con_UpdateNotifyMessageWindow
-          (int param_1,int param_2,int param_3,int param_4,print_msg_dest_t param_5)
+          (int localClientNum,int channel,int duration,int flags,print_msg_dest_t dest)
 
 {
   bool bVar1;
-  MessageWindow *pMVar2;
+  MessageWindow *msgwnd;
   
-  bVar1 = Con_IsChannelVisible(param_5,param_2,param_4);
+  bVar1 = Con_IsChannelVisible(dest,channel,flags);
   if (bVar1) {
-    if (param_3 == 0) {
-      param_3 = Con_GetDefaultMsgDuration(param_5);
+    if (duration == 0) {
+      duration = Con_GetDefaultMsgDuration(dest);
     }
-    if (param_3 < 0) {
-      param_3 = 0;
+    if (duration < 0) {
+      duration = 0;
     }
-    pMVar2 = Con_GetDestWindow(param_1,param_5);
-    Con_UpdateMessage(param_1,pMVar2,param_3);
+    msgwnd = Con_GetDestWindow(localClientNum,dest);
+    Con_UpdateMessage(localClientNum,msgwnd,duration);
   }
   return;
 }
@@ -1468,14 +1505,14 @@ Con_UpdateNotifyMessageWindow
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_UpdateNotifyMessage(int param_1,int param_2,int param_3,int param_4)
+void __cdecl Con_UpdateNotifyMessage(int localClientNum,int channel,int duration,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
-  print_msg_dest_t local_8;
+  uint dest;
   
-  bVar2 = Con_IsChannelOpen(param_2);
+  bVar2 = Con_IsChannelOpen(channel);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x47e,0,
                              "%s");
@@ -1485,9 +1522,9 @@ void __cdecl Con_UpdateNotifyMessage(int param_1,int param_2,int param_3,int par
       return;
     }
   }
-  Con_UpdateNotifyMessageWindow(param_1,param_2,param_3,param_4,CON_DEST_MINICON);
-  for (local_8 = CON_DEST_GAME1; local_8 < CON_DEST_COUNT; local_8 = local_8 + CON_DEST_MINICON) {
-    Con_UpdateNotifyMessageWindow(param_1,param_2,param_3,param_4,local_8);
+  Con_UpdateNotifyMessageWindow(localClientNum,channel,duration,flags,CON_DEST_MINICON);
+  for (dest = 3; dest < 6; dest = dest + 1) {
+    Con_UpdateNotifyMessageWindow(localClientNum,channel,duration,flags,dest);
   }
   if (com_developer == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x486,0,
@@ -1499,7 +1536,7 @@ void __cdecl Con_UpdateNotifyMessage(int param_1,int param_2,int param_3,int par
     }
   }
   if ((com_developer->current).integer != 0) {
-    Con_UpdateNotifyMessageWindow(param_1,param_2,param_3,param_4,CON_DEST_ERROR);
+    Con_UpdateNotifyMessageWindow(localClientNum,channel,duration,flags,CON_DEST_ERROR);
   }
   return;
 }
@@ -1511,18 +1548,18 @@ void __cdecl Con_UpdateNotifyMessage(int param_1,int param_2,int param_3,int par
 
 void __cdecl
 Con_UpdateNotifyLineWindow
-          (int param_1,int param_2,bool param_3,int param_4,print_msg_dest_t param_5)
+          (int localClientNum,int channel,bool lineFeed,int flags,print_msg_dest_t dest)
 
 {
   bool bVar1;
-  MessageWindow *pMVar2;
-  uint uVar3;
+  MessageWindow *msgwnd;
+  uint linefeed;
   
-  bVar1 = Con_IsChannelVisible(param_5,param_2,param_4);
+  bVar1 = Con_IsChannelVisible(dest,channel,flags);
   if (bVar1) {
-    uVar3 = (uint)param_3;
-    pMVar2 = Con_GetDestWindow(param_1,param_5);
-    Con_UpdateMessageWindowLine(param_1,pMVar2,uVar3,param_4);
+    linefeed = (uint)lineFeed;
+    msgwnd = Con_GetDestWindow(localClientNum,dest);
+    Con_UpdateMessageWindowLine(localClientNum,msgwnd,linefeed,flags);
   }
   return;
 }
@@ -1532,14 +1569,14 @@ Con_UpdateNotifyLineWindow
 
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Con_UpdateNotifyLine(int param_1,int param_2,bool param_3,int param_4)
+void __cdecl Con_UpdateNotifyLine(int localClientNum,int channel,bool lineFeed,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
-  print_msg_dest_t local_8;
+  uint dest;
   
-  bVar2 = Con_IsChannelOpen(param_2);
+  bVar2 = Con_IsChannelOpen(channel);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x499,0,
                              "%s");
@@ -1549,10 +1586,10 @@ void __cdecl Con_UpdateNotifyLine(int param_1,int param_2,bool param_3,int param
       return;
     }
   }
-  Con_UpdateNotifyLineWindow(param_1,param_2,param_3,param_4,CON_DEST_CONSOLE);
-  Con_UpdateNotifyLineWindow(param_1,param_2,param_3,param_4,CON_DEST_MINICON);
-  for (local_8 = CON_DEST_GAME1; local_8 < CON_DEST_COUNT; local_8 = local_8 + CON_DEST_MINICON) {
-    Con_UpdateNotifyLineWindow(param_1,param_2,param_3,param_4,local_8);
+  Con_UpdateNotifyLineWindow(localClientNum,channel,lineFeed,flags,CON_DEST_CONSOLE);
+  Con_UpdateNotifyLineWindow(localClientNum,channel,lineFeed,flags,CON_DEST_MINICON);
+  for (dest = 3; dest < 6; dest = dest + 1) {
+    Con_UpdateNotifyLineWindow(localClientNum,channel,lineFeed,flags,dest);
   }
   if (com_developer == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x4a2,0,
@@ -1564,7 +1601,7 @@ void __cdecl Con_UpdateNotifyLine(int param_1,int param_2,bool param_3,int param
     }
   }
   if ((com_developer->current).integer != 0) {
-    Con_UpdateNotifyLineWindow(param_1,param_2,param_3,param_4,CON_DEST_ERROR);
+    Con_UpdateNotifyLineWindow(localClientNum,channel,lineFeed,flags,CON_DEST_ERROR);
   }
   return;
 }
@@ -1572,10 +1609,10 @@ void __cdecl Con_UpdateNotifyLine(int param_1,int param_2,bool param_3,int param
 
 // 00548880  Con_Linefeed  (client/cl_console.cpp:1193)
 
-void __cdecl Con_Linefeed(int param_1,int param_2,int param_3)
+void __cdecl Con_Linefeed(int localClientNum,int channel,int flags)
 
 {
-  Con_UpdateNotifyLine(param_1,param_2,true,param_3);
+  Con_UpdateNotifyLine(localClientNum,channel,true,flags);
   con.lineOffset = 0;
   if (con.displayLineOffset == con.consoleWindow.activeLineCount + -1) {
     con.displayLineOffset = con.displayLineOffset + 1;
@@ -1590,34 +1627,41 @@ void __cdecl Con_InitMessageBuffer(void)
 
 {
   int iVar1;
-  int local_18;
-  uint local_8;
+  int lineCount;
+  int fadeOutTime;
+  int localClientNum;
+  int fadeInTime;
+  MessageBuffer *msgBuf;
+  int scrollTime;
+  uint gameWindowIndex;
   
-  for (local_18 = 0; local_18 < 1; local_18 = local_18 + 1) {
-    iVar1 = local_18 * 0x3ea4;
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    iVar1 = localClientNum * 0x3ea4;
+    for (gameWindowIndex = 0; gameWindowIndex < 3; gameWindowIndex = gameWindowIndex + 1) {
       Con_InitMessageWindow
-                ((MessageWindow *)(iVar1 + 0xfa5a3c + local_8 * 0x34),
-                 (Message *)(iVar1 + 0xfa5e38 + local_8 * 0x60),
-                 (MessageLine *)(iVar1 + 0xfa5ad8 + local_8 * 0x120),
-                 (char *)(local_8 * 0x800 + iVar1 + 0xfa423c),
-                 (con_gameMsgWindowNLineCount[local_8]->current).integer + 3,3,0x800,
-                 (int)ROUND((con_gameMsgWindowNScrollTime[local_8]->current).value * 1000.0 +
-                            9.313226e-10),
-                 (int)ROUND((con_gameMsgWindowNFadeInTime[local_8]->current).value * 1000.0 +
-                            9.313226e-10),
-                 (int)ROUND((con_gameMsgWindowNFadeOutTime[local_8]->current).value * 1000.0 +
-                            9.313226e-10));
+                ((MessageWindow *)(iVar1 + 0xfa5a3c + gameWindowIndex * 0x34),
+                 (Message *)(iVar1 + 0xfa5e38 + gameWindowIndex * 0x60),
+                 (MessageLine *)(iVar1 + 0xfa5ad8 + gameWindowIndex * 0x120),
+                 (char *)(gameWindowIndex * 0x800 + iVar1 + 0xfa423c),
+                 (con_gameMsgWindowNLineCount[gameWindowIndex]->current).integer + 3,3,0x800,
+                 (int)ROUND((con_gameMsgWindowNScrollTime[gameWindowIndex]->current).value * 1000.0
+                            + 9.313226e-10),
+                 (int)ROUND((con_gameMsgWindowNFadeInTime[gameWindowIndex]->current).value * 1000.0
+                            + 9.313226e-10),
+                 (int)ROUND((con_gameMsgWindowNFadeOutTime[gameWindowIndex]->current).value * 1000.0
+                            + 9.313226e-10));
     }
     Con_InitMessageWindow
-              (&con.messageBuffer[local_18].miniconWindow,
-               con.messageBuffer[local_18].miniconMessages,con.messageBuffer[local_18].miniconLines,
-               con.messageBuffer[local_18].miniconText,(con_miniconlines->current).integer,0,0x1000,
-               0,0,1);
+              (&con.messageBuffer[localClientNum].miniconWindow,
+               con.messageBuffer[localClientNum].miniconMessages,
+               con.messageBuffer[localClientNum].miniconLines,
+               con.messageBuffer[localClientNum].miniconText,(con_miniconlines->current).integer,0,
+               0x1000,0,0,1);
     Con_InitMessageWindow
-              (&con.messageBuffer[local_18].errorWindow,con.messageBuffer[local_18].errorMessages,
-               con.messageBuffer[local_18].errorLines,con.messageBuffer[local_18].errorText,5,0,
-               0x400,0,1,1);
+              (&con.messageBuffer[localClientNum].errorWindow,
+               con.messageBuffer[localClientNum].errorMessages,
+               con.messageBuffer[localClientNum].errorLines,
+               con.messageBuffer[localClientNum].errorText,5,0,0x400,0,1,1);
   }
   return;
 }
@@ -1627,18 +1671,19 @@ void __cdecl Con_InitMessageBuffer(void)
 
 char * __cdecl
 CL_TextLineWrapPosition
-          (char *param_1,int param_2,int param_3,Font_s *param_4,float param_5,int param_6)
+          (char *txt,int bufferSize,int pixelsAvailable,Font_s *font,float scale,int lineBroken)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  char *lineWrapPos;
   
-  if (param_6 != 0) {
-    for (; *param_1 == ' '; param_1 = param_1 + 1) {
+  if (lineBroken != 0) {
+    for (; *txt == ' '; txt = txt + 1) {
     }
   }
-  pcVar3 = R_TextLineWrapPosition(param_1,param_2,param_3,param_4,param_5);
+  pcVar3 = R_TextLineWrapPosition(txt,bufferSize,pixelsAvailable,font,scale);
   if (pcVar3 == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x4e1,0,
                              "%s");
@@ -1656,7 +1701,8 @@ CL_TextLineWrapPosition
 
 char __cdecl
 CL_ConsolePrint_AddLine
-          (int param_1,int param_2,char *param_3,int param_4,int param_5,char param_6,int param_7)
+          (int localClientNum,int channel,char *txt,int duration,int pixelWidth,char color,int flags
+          )
 
 {
   code *pcVar1;
@@ -1665,21 +1711,24 @@ CL_ConsolePrint_AddLine
   bool bVar4;
   char cVar5;
   char *pcVar6;
-  uint local_28;
-  int local_24;
-  Font_s *local_20;
-  float local_1c;
-  char *local_10;
-  char *local_8;
+  int c;
+  int atStartOfBrokenLine;
+  Font_s *font;
+  float xScale;
+  int fontEnum;
+  float height;
+  char *wrapPosition;
+  float fontScale;
+  char *text;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((txt == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x4f4,0,
                                "%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     cVar5 = (*pcVar1)();
     return cVar5;
   }
-  if (((param_6 < '0') || ('@' < param_6)) &&
+  if (((color < '0') || ('@' < color)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x4f5,0,
                                "color not in [COLOR_FIRST, COLOR_LAST]\n\t%i not in [%i, %i]"),
      !bVar4)) {
@@ -1689,44 +1738,43 @@ CL_ConsolePrint_AddLine
   }
   if (callDepth == 0) {
     callDepth = 1;
-    Con_UpdateNotifyMessage(param_1,param_2,param_4,param_7);
-    if ((param_2 != con.prevChannel) && (con.lineOffset != 0)) {
-      Con_Linefeed(param_1,con.prevChannel,param_7);
+    Con_UpdateNotifyMessage(localClientNum,channel,duration,flags);
+    if ((channel != con.prevChannel) && (con.lineOffset != 0)) {
+      Con_Linefeed(localClientNum,con.prevChannel,flags);
     }
-    if (((param_2 == 2) || (param_2 == 3)) || (param_2 == 4)) {
+    if (((channel == 2) || (channel == 3)) || (channel == 4)) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
     if (bVar4) {
-      local_20 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                  (param_2 != 3) - 1 & 4,0.25);
-      local_1c = R_NormalizedTextScale(local_20,0.25);
+      font = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                              (channel != 3) - 1 & 4,0.25);
+      xScale = R_NormalizedTextScale(font,0.25);
     }
     else {
-      local_20 = cls.consoleFont;
-      local_1c = 1.0;
+      font = cls.consoleFont;
+      xScale = 1.0;
     }
-    if (param_5 == 0) {
-      param_5 = con.visiblePixelWidth;
+    if (pixelWidth == 0) {
+      pixelWidth = con.visiblePixelWidth;
     }
-    local_10 = CL_TextLineWrapPosition(param_3,0x200 - con.lineOffset,param_5,local_20,local_1c,0);
-    if ((param_3 == local_10) && (con.lineOffset != 0)) {
-      Con_Linefeed(param_1,param_2,param_7);
-      local_10 = CL_TextLineWrapPosition(param_3,0x200 - con.lineOffset,param_5,local_20,local_1c,0)
-      ;
+    wrapPosition = CL_TextLineWrapPosition(txt,0x200 - con.lineOffset,pixelWidth,font,xScale,0);
+    if ((txt == wrapPosition) && (con.lineOffset != 0)) {
+      Con_Linefeed(localClientNum,channel,flags);
+      wrapPosition = CL_TextLineWrapPosition(txt,0x200 - con.lineOffset,pixelWidth,font,xScale,0);
     }
-    local_8 = param_3;
-    local_24 = 0;
-    while (*local_8 != '\0') {
-      local_28 = SEH_ReadCharFromString(&local_8,(int *)0x0);
-      if (local_28 == 10) {
-        if (local_10 == (char *)0x0) {
-          local_10 = local_8;
+    text = txt;
+    atStartOfBrokenLine = 0;
+    while (*text != '\0') {
+      c = SEH_ReadCharFromString(&text,(int *)0x0);
+      if (c == 10) {
+        if (wrapPosition == (char *)0x0) {
+          wrapPosition = text;
         }
-        else if (((local_20 != (Font_s *)0x0) && (local_10 != local_8)) && (*local_8 != '\0')) {
-          if (local_20 == (Font_s *)0x0) {
+        else if (((font != (Font_s *)0x0) && (wrapPosition != text)) && (*text != '\0')) {
+          if (font == (Font_s *)0x0) {
             pcVar6 = "NULL";
           }
           else {
@@ -1742,11 +1790,10 @@ CL_ConsolePrint_AddLine
           }
         }
       }
-      else if (local_28 == 0x5e) {
-        if ((((local_8 == (char *)0x0) || (*local_8 == '^')) ||
-            ((*local_8 < '0' || ('@' < *local_8)))) &&
-           (((local_8 == (char *)0x0 || (*local_8 == '^')) || (*local_8 != 'F')))) {
-          if ((*local_8 != '\x01') && (*local_8 != '\x02')) goto LAB_00547690;
+      else if (c == 0x5e) {
+        if ((((text == (char *)0x0) || (*text == '^')) || ((*text < '0' || ('@' < *text)))) &&
+           (((text == (char *)0x0 || (*text == '^')) || (*text != 'F')))) {
+          if ((*text != '\x01') && (*text != '\x02')) goto LAB_00547690;
           if ((0x1f8 < con.lineOffset) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                        0x53d,0,
@@ -1756,7 +1803,7 @@ CL_ConsolePrint_AddLine
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          bVar4 = IsValidMaterialHandle(*(Material **)(local_8 + 3));
+          bVar4 = IsValidMaterialHandle(*(Material **)(text + 3));
           if ((!bVar4) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                        0x53f,0,"%s"), !bVar4)) {
@@ -1768,11 +1815,11 @@ CL_ConsolePrint_AddLine
           uVar3 = con.lineOffset;
           iVar2 = con.lineOffset + 1;
           con.lineOffset = con.lineOffset + 1;
-          *(undefined4 *)(con.textTempLine + iVar2) = *(undefined4 *)local_8;
-          *(undefined2 *)(con.textTempLine + uVar3 + 5) = *(undefined2 *)(local_8 + 4);
-          con.textTempLine[uVar3 + 7] = local_8[6];
+          *(undefined4 *)(con.textTempLine + iVar2) = *(undefined4 *)text;
+          *(undefined2 *)(con.textTempLine + uVar3 + 5) = *(undefined2 *)(text + 4);
+          con.textTempLine[uVar3 + 7] = text[6];
           con.lineOffset = con.lineOffset + 7;
-          local_8 = local_8 + 7;
+          text = text + 7;
           if ((0x200 < con.lineOffset) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                        0x545,0,
@@ -1782,7 +1829,7 @@ CL_ConsolePrint_AddLine
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          local_24 = 0;
+          atStartOfBrokenLine = 0;
         }
         else {
           if ((0x1fe < con.lineOffset) &&
@@ -1794,11 +1841,11 @@ CL_ConsolePrint_AddLine
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          param_6 = *local_8;
+          color = *text;
           con.textTempLine[con.lineOffset] = '^';
           iVar2 = con.lineOffset + 1;
           con.lineOffset = con.lineOffset + 1;
-          con.textTempLine[iVar2] = param_6;
+          con.textTempLine[iVar2] = color;
           con.lineOffset = con.lineOffset + 1;
           if ((0x200 < con.lineOffset) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
@@ -1809,14 +1856,14 @@ CL_ConsolePrint_AddLine
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          local_8 = local_8 + 1;
-          local_24 = 0;
+          text = text + 1;
+          atStartOfBrokenLine = 0;
         }
       }
       else {
 LAB_00547690:
-        if ((local_28 != 0x20) || (local_24 == 0)) {
-          if (0xff < (int)local_28) {
+        if ((c != 0x20) || (atStartOfBrokenLine == 0)) {
+          if (0xff < c) {
             if ((0x1ff < con.lineOffset) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp"
                                          ,0x554,0,
@@ -1826,9 +1873,9 @@ LAB_00547690:
               cVar5 = (*pcVar1)();
               return cVar5;
             }
-            con.textTempLine[con.lineOffset] = (char)(local_28 >> 8);
+            con.textTempLine[con.lineOffset] = (char)((uint)c >> 8);
             con.lineOffset = con.lineOffset + 1;
-            local_28 = local_28 & 0xff;
+            c = c & 0xff;
             if ((0x200 < con.lineOffset) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp"
                                          ,0x558,0,
@@ -1848,7 +1895,7 @@ LAB_00547690:
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          con.textTempLine[con.lineOffset] = (char)local_28;
+          con.textTempLine[con.lineOffset] = (char)c;
           con.lineOffset = con.lineOffset + 1;
           if ((0x200 < con.lineOffset) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
@@ -1859,13 +1906,13 @@ LAB_00547690:
             cVar5 = (*pcVar1)();
             return cVar5;
           }
-          local_24 = 0;
+          atStartOfBrokenLine = 0;
         }
       }
-      if (local_8 == local_10) {
-        Con_Linefeed(param_1,param_2,param_7);
-        if ((local_28 != 10) && (local_24 = 1, param_6 != '7')) {
-          if (((param_6 < '0') || ('@' < param_6)) &&
+      if (text == wrapPosition) {
+        Con_Linefeed(localClientNum,channel,flags);
+        if ((c != 10) && (atStartOfBrokenLine = 1, color != '7')) {
+          if (((color < '0') || ('@' < color)) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                        0x56b,0,
                                        "color not in [COLOR_FIRST, COLOR_LAST]\n\t%i not in [%i, %i]"
@@ -1884,7 +1931,7 @@ LAB_00547690:
             return cVar5;
           }
           con.textTempLine[con.lineOffset] = '^';
-          con.textTempLine[con.lineOffset + 1] = param_6;
+          con.textTempLine[con.lineOffset + 1] = color;
           con.lineOffset = con.lineOffset + 2;
           if ((0x200 < con.lineOffset) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
@@ -1896,28 +1943,29 @@ LAB_00547690:
             return cVar5;
           }
         }
-        local_10 = CL_TextLineWrapPosition
-                             (local_8,0x200 - con.lineOffset,param_5,local_20,local_1c,local_24);
+        wrapPosition = CL_TextLineWrapPosition
+                                 (text,0x200 - con.lineOffset,pixelWidth,font,xScale,
+                                  atStartOfBrokenLine);
       }
     }
     if (con.lineOffset != 0) {
-      if (((param_2 == 2) || (param_2 == 3)) || (param_2 == 4)) {
+      if (((channel == 2) || (channel == 3)) || (channel == 4)) {
         bVar4 = true;
       }
       else {
         bVar4 = false;
       }
       if (bVar4) {
-        Con_Linefeed(param_1,param_2,param_7);
+        Con_Linefeed(localClientNum,channel,flags);
       }
       else {
-        Con_UpdateNotifyLine(param_1,param_2,false,param_7);
+        Con_UpdateNotifyLine(localClientNum,channel,false,flags);
       }
     }
-    con.prevChannel = param_2;
+    con.prevChannel = channel;
     callDepth = callDepth + -1;
   }
-  return param_6;
+  return color;
 }
 
 
@@ -1926,20 +1974,22 @@ LAB_00547690:
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
 void __cdecl
-CL_ConsolePrint(int param_1,int param_2,char *param_3,int param_4,int param_5,int param_6)
+CL_ConsolePrint(int localClientNum,int channel,char *txt,int duration,int pixelWidth,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
+  char color;
+  char *lineStart;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((txt == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x594,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((cl_noprint != (dvar_s *)0x0) && ((cl_noprint->current).enabled == false)) && (param_2 != 6))
+  if (((cl_noprint != (dvar_s *)0x0) && ((cl_noprint->current).enabled == false)) && (channel != 6))
   {
     if (((con.initialized == 0) && (Con_OneTimeInit(), con.initialized == 0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x59f,0
@@ -1948,9 +1998,9 @@ CL_ConsolePrint(int param_1,int param_2,char *param_3,int param_4,int param_5,in
       (*pcVar1)();
       return;
     }
-    Con_IsChannelVisible(CON_DEST_CONSOLE,param_2,param_6);
+    Con_IsChannelVisible(CON_DEST_CONSOLE,channel,flags);
     Sys_EnterCriticalSection(CRITSECT_CONSOLE);
-    CL_ConsolePrint_AddLine(param_1,param_2,param_3,param_4,param_5,'7',param_6);
+    CL_ConsolePrint_AddLine(localClientNum,channel,txt,duration,pixelWidth,'7',flags);
     Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
   }
   return;
@@ -1980,14 +2030,14 @@ void __cdecl CL_ConsoleFixPosition(void)
 
 // 00548B00  CL_AddMessageChar  (client/cl_console.cpp:1505)
 
-int __cdecl CL_AddMessageChar(char *param_1,uint param_2,uint param_3,char param_4)
+int __cdecl CL_AddMessageChar(char *msg,uint msgLen,uint msgMaxLen,char c)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_4 == '\0') {
+  if (c == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x5e2,0,
                              "%s");
     if (!bVar2) {
@@ -1996,7 +2046,7 @@ int __cdecl CL_AddMessageChar(char *param_1,uint param_2,uint param_3,char param
       return iVar3;
     }
   }
-  if (param_3 < param_2 + 1) {
+  if (msgMaxLen < msgLen + 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x5e3,0,
                              "%s");
     if (!bVar2) {
@@ -2005,16 +2055,16 @@ int __cdecl CL_AddMessageChar(char *param_1,uint param_2,uint param_3,char param
       return iVar3;
     }
   }
-  param_1[param_2] = param_4;
-  return param_2 + 1;
+  msg[msgLen] = c;
+  return msgLen + 1;
 }
 
 
 // 00548B80  CL_AddMessageIcon  (client/cl_console.cpp:1531)
 
 int __cdecl
-CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,float param_5,
-                 float param_6,bool param_7)
+CL_AddMessageIcon(char *msg,uint msgLen,uint msgMaxLen,Material *iconShader,float iconWidth,
+                 float iconHeight,bool horzFlipIcon)
 
 {
   code *pcVar1;
@@ -2025,22 +2075,24 @@ CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,floa
   char local_48;
   int local_40;
   int local_24;
+  Material **handleInText;
+  uint startMsgLen;
   
-  if ((param_5 <= 0.0) &&
+  if ((iconWidth <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x5fe,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_6 <= 0.0) &&
+  if ((iconHeight <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x5ff,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  bVar2 = IsValidMaterialHandle(param_4);
+  bVar2 = IsValidMaterialHandle(iconShader);
   if ((!bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x602,0,
                                "%s"), !bVar2)) {
@@ -2048,9 +2100,9 @@ CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,floa
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  uVar4 = CL_AddMessageChar(param_1,param_2,param_3,'^');
-  uVar4 = CL_AddMessageChar(param_1,uVar4,param_3,param_7 + '\x01');
-  local_24 = (int)ROUND(param_5 * 32.0 + 9.313226e-10);
+  uVar4 = CL_AddMessageChar(msg,msgLen,msgMaxLen,'^');
+  uVar4 = CL_AddMessageChar(msg,uVar4,msgMaxLen,horzFlipIcon + '\x01');
+  local_24 = (int)ROUND(iconWidth * 32.0 + 9.313226e-10);
   if (0x7e < local_24) {
     local_24 = 0x7f;
   }
@@ -2060,8 +2112,8 @@ CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,floa
   else {
     local_48 = (char)local_24;
   }
-  uVar4 = CL_AddMessageChar(param_1,uVar4,param_3,local_48 + '\x10');
-  local_40 = (int)ROUND(param_6 * 32.0 + 9.313226e-10);
+  uVar4 = CL_AddMessageChar(msg,uVar4,msgMaxLen,local_48 + '\x10');
+  local_40 = (int)ROUND(iconHeight * 32.0 + 9.313226e-10);
   if (0x7e < local_40) {
     local_40 = 0x7f;
   }
@@ -2071,16 +2123,16 @@ CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,floa
   else {
     local_4c = (char)local_40;
   }
-  iVar3 = CL_AddMessageChar(param_1,uVar4,param_3,local_4c + '\x10');
-  if ((param_3 < iVar3 + 4U) &&
+  iVar3 = CL_AddMessageChar(msg,uVar4,msgMaxLen,local_4c + '\x10');
+  if ((msgMaxLen < iVar3 + 4U) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x60f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  *(Material **)(param_1 + iVar3) = param_4;
-  if (((iVar3 + 4) - param_2 != 8) &&
+  *(Material **)(msg + iVar3) = iconShader;
+  if (((iVar3 + 4) - msgLen != 8) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x615,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2097,7 +2149,8 @@ CL_AddMessageIcon(char *param_1,uint param_2,uint param_3,Material *param_4,floa
 
 void __cdecl
 CL_ReviveMessagePrint
-          (int param_1,char *param_2,Material *param_3,float param_4,float param_5,bool param_6)
+          (int localClientNum,char *reviveString,Material *iconShader,float iconWidth,
+          float iconHeight,bool horzFlipIcon)
 
 {
   code *pcVar1;
@@ -2105,16 +2158,17 @@ CL_ReviveMessagePrint
   uint uVar3;
   char *local_418;
   uint local_414;
-  char local_40c [1024];
+  uint reviveMsgLen;
+  char reviveMsg [1024];
   uint local_c;
-  int local_8;
+  int pixelWidth;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_414 = CL_AddMessageIcon(local_40c,0,0x400,param_3,param_4,param_5,param_6);
-  for (local_418 = param_2; *local_418 != '\0'; local_418 = local_418 + 1) {
-    local_414 = CL_AddMessageChar(local_40c,local_414,0x400,*local_418);
+  local_414 = CL_AddMessageIcon(reviveMsg,0,0x400,iconShader,iconWidth,iconHeight,horzFlipIcon);
+  for (local_418 = reviveString; *local_418 != '\0'; local_418 = local_418 + 1) {
+    local_414 = CL_AddMessageChar(reviveMsg,local_414,0x400,*local_418);
   }
-  uVar3 = CL_AddMessageChar(local_40c,local_414,0x400,'\n');
+  uVar3 = CL_AddMessageChar(reviveMsg,local_414,0x400,'\n');
   if (0x3ff < uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x629,0,
                              "reviveMsgLen < ARRAY_COUNT( reviveMsg )\n\t%i, %i");
@@ -2124,9 +2178,9 @@ CL_ReviveMessagePrint
       return;
     }
   }
-  local_40c[uVar3] = '\0';
-  local_8 = con.visiblePixelWidth;
-  CL_ConsolePrint(param_1,5,local_40c,0,con.visiblePixelWidth,0);
+  reviveMsg[uVar3] = '\0';
+  pixelWidth = con.visiblePixelWidth;
+  CL_ConsolePrint(localClientNum,5,reviveMsg,0,con.visiblePixelWidth,0);
   return;
 }
 
@@ -2137,8 +2191,9 @@ CL_ReviveMessagePrint
 
 void __cdecl
 CL_DeathMessagePrint
-          (int param_1,char *param_2,char param_3,char *param_4,char param_5,Material *param_6,
-          float param_7,float param_8,bool param_9)
+          (int localClientNum,char *attackerName,char attackerColorIndex,char *victimName,
+          char victimColorIndex,Material *iconShader,float iconWidth,float iconHeight,
+          bool horzFlipIcon)
 
 {
   code *pcVar1;
@@ -2151,36 +2206,37 @@ CL_DeathMessagePrint
   uint local_420;
   char *local_41c;
   uint local_418;
-  uint local_414;
-  char local_40c [1024];
+  uint deathMsgLen;
+  int pixelWidth;
+  char deathMsg [1024];
   uint local_c;
-  uint local_8;
+  int color;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (char *)0x0) &&
+  if ((attackerName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x640,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (char *)0x0) &&
+  if ((victimName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x641,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((((&stack0x00000000 == (undefined1 *)0xffffffec) || (param_5 == '^')) || (param_5 < '0')) ||
-      ('@' < param_5)) &&
+  if (((((&stack0x00000000 == (undefined1 *)0xffffffec) || (victimColorIndex == '^')) ||
+       (victimColorIndex < '0')) || ('@' < victimColorIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x642,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((&stack0x00000000 == (undefined1 *)0xfffffff4) || (param_3 == '^')) ||
-      ((param_3 < '0' || ('@' < param_3)))) &&
+  if ((((&stack0x00000000 == (undefined1 *)0xfffffff4) || (attackerColorIndex == '^')) ||
+      ((attackerColorIndex < '0' || ('@' < attackerColorIndex)))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x643,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2196,14 +2252,14 @@ CL_DeathMessagePrint
       (*pcVar1)();
       return;
     }
-    local_414 = 0;
+    deathMsgLen = 0;
     if (con.lineOffset != 0) {
-      Con_Linefeed(param_1,con.prevChannel,0);
+      Con_Linefeed(localClientNum,con.prevChannel,0);
     }
     bVar3 = ColorIndex('7');
-    local_8 = (uint)bVar3;
-    if (*param_2 != '\0') {
-      if (((param_3 < '0') || ('@' < param_3)) &&
+    color = (int)bVar3;
+    if (*attackerName != '\0') {
+      if (((attackerColorIndex < '0') || ('@' < attackerColorIndex)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x65a
                                    ,0,
                                    "attackerColorIndex not in [COLOR_FIRST, COLOR_LAST]\n\t%i not in [%i, %i]"
@@ -2212,17 +2268,18 @@ CL_DeathMessagePrint
         (*pcVar1)();
         return;
       }
-      uVar4 = CL_AddMessageChar(local_40c,0,0x400,'^');
-      local_418 = CL_AddMessageChar(local_40c,uVar4,0x400,param_3);
-      for (local_41c = param_2; *local_41c != '\0'; local_41c = local_41c + 1) {
-        local_418 = CL_AddMessageChar(local_40c,local_418,0x400,*local_41c);
+      uVar4 = CL_AddMessageChar(deathMsg,0,0x400,'^');
+      local_418 = CL_AddMessageChar(deathMsg,uVar4,0x400,attackerColorIndex);
+      for (local_41c = attackerName; *local_41c != '\0'; local_41c = local_41c + 1) {
+        local_418 = CL_AddMessageChar(deathMsg,local_418,0x400,*local_41c);
       }
-      uVar4 = CL_AddMessageChar(local_40c,local_418,0x400,'^');
-      uVar4 = CL_AddMessageChar(local_40c,uVar4,0x400,'7');
-      local_414 = CL_AddMessageChar(local_40c,uVar4,0x400,' ');
+      uVar4 = CL_AddMessageChar(deathMsg,local_418,0x400,'^');
+      uVar4 = CL_AddMessageChar(deathMsg,uVar4,0x400,'7');
+      deathMsgLen = CL_AddMessageChar(deathMsg,uVar4,0x400,' ');
     }
-    uVar4 = CL_AddMessageIcon(local_40c,local_414,0x400,param_6,param_7,param_8,param_9);
-    if (((param_5 < '0') || ('@' < param_5)) &&
+    uVar4 = CL_AddMessageIcon(deathMsg,deathMsgLen,0x400,iconShader,iconWidth,iconHeight,
+                              horzFlipIcon);
+    if (((victimColorIndex < '0') || ('@' < victimColorIndex)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x665,0
                                  ,
                                  "victimColorIndex not in [COLOR_FIRST, COLOR_LAST]\n\t%i not in [%i, %i]"
@@ -2231,22 +2288,22 @@ CL_DeathMessagePrint
       (*pcVar1)();
       return;
     }
-    uVar4 = CL_AddMessageChar(local_40c,uVar4,0x400,' ');
-    uVar4 = CL_AddMessageChar(local_40c,uVar4,0x400,'^');
-    local_420 = CL_AddMessageChar(local_40c,uVar4,0x400,param_5);
-    for (local_424 = param_4; *local_424 != '\0'; local_424 = local_424 + 1) {
-      local_420 = CL_AddMessageChar(local_40c,local_420,0x400,*local_424);
+    uVar4 = CL_AddMessageChar(deathMsg,uVar4,0x400,' ');
+    uVar4 = CL_AddMessageChar(deathMsg,uVar4,0x400,'^');
+    local_420 = CL_AddMessageChar(deathMsg,uVar4,0x400,victimColorIndex);
+    for (local_424 = victimName; *local_424 != '\0'; local_424 = local_424 + 1) {
+      local_420 = CL_AddMessageChar(deathMsg,local_420,0x400,*local_424);
     }
-    local_414 = local_420;
-    if (*param_2 == '\0') {
-      local_428 = CL_AddMessageChar(local_40c,local_420,0x400,' ');
+    deathMsgLen = local_420;
+    if (*attackerName == '\0') {
+      local_428 = CL_AddMessageChar(deathMsg,local_420,0x400,' ');
       for (local_42c = UI_SafeTranslateString("CGAME_QUAKE_SUICIDE"); *local_42c != '\0';
           local_42c = local_42c + 1) {
-        local_428 = CL_AddMessageChar(local_40c,local_428,0x400,*local_42c);
+        local_428 = CL_AddMessageChar(deathMsg,local_428,0x400,*local_42c);
       }
-      local_414 = local_428;
+      deathMsgLen = local_428;
     }
-    uVar4 = CL_AddMessageChar(local_40c,local_414,0x400,'\n');
+    uVar4 = CL_AddMessageChar(deathMsg,deathMsgLen,0x400,'\n');
     if ((0x3ff < uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x676,0
                                  ,"deathMsgLen < ARRAY_COUNT( deathMsg )\n\t%i, %i"), !bVar2)) {
@@ -2254,8 +2311,8 @@ CL_DeathMessagePrint
       (*pcVar1)();
       return;
     }
-    local_40c[uVar4] = '\0';
-    CL_ConsolePrint(param_1,5,local_40c,0,con.visiblePixelWidth,0);
+    deathMsg[uVar4] = '\0';
+    CL_ConsolePrint(localClientNum,5,deathMsg,0,con.visiblePixelWidth,0);
   }
   return;
 }
@@ -2264,35 +2321,38 @@ CL_DeathMessagePrint
 // 00549380  Con_AutoCompleteFromList  (client/cl_console.cpp:1821)
 
 void __cdecl
-Con_AutoCompleteFromList(char **param_1,uint param_2,char *param_3,char *param_4,uint param_5)
+Con_AutoCompleteFromList
+          (char **strings,uint stringCount,char *prefix,char *completed,uint sizeofCompleted)
 
 {
   char cVar1;
-  char *pcVar2;
-  int iVar3;
+  char *s1;
+  int iVar2;
   char *local_18;
-  int local_10;
-  uint local_8;
+  char *string;
+  uint charIndex;
+  uint prefixLen;
+  uint stringIndex;
   
-  local_18 = param_3;
+  local_18 = prefix;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  *param_4 = '\0';
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pcVar2 = param_1[local_8];
-    iVar3 = I_strnicmp(param_3,pcVar2,(int)local_18 - (int)(param_3 + 1));
-    if (iVar3 == 0) {
-      local_10 = (int)local_18 - (int)(param_3 + 1);
-      if (*param_4 == '\0') {
-        I_strncpyz(param_4,pcVar2,param_5);
+  *completed = '\0';
+  for (stringIndex = 0; stringIndex < stringCount; stringIndex = stringIndex + 1) {
+    s1 = strings[stringIndex];
+    iVar2 = I_strnicmp(prefix,s1,(int)local_18 - (int)(prefix + 1));
+    if (iVar2 == 0) {
+      charIndex = (int)local_18 - (int)(prefix + 1);
+      if (*completed == '\0') {
+        I_strncpyz(completed,s1,sizeofCompleted);
       }
       else {
-        for (; (pcVar2[local_10] == param_4[local_10] && (param_4[local_10] != '\0'));
-            local_10 = local_10 + 1) {
+        for (; (s1[charIndex] == completed[charIndex] && (completed[charIndex] != '\0'));
+            charIndex = charIndex + 1) {
         }
-        param_4[local_10] = '\0';
+        completed[charIndex] = '\0';
       }
     }
   }
@@ -2306,19 +2366,19 @@ char * __cdecl Con_TokenizeInput(void)
 
 {
   int iVar1;
-  char *local_8;
+  char *cmd;
   
   Cmd_TokenizeStringNoEval(g_consoleField.buffer);
-  local_8 = Cmd_Argv(0);
-  if ((*local_8 == '\\') || (*local_8 == '/')) {
-    local_8 = local_8 + 1;
+  cmd = Cmd_Argv(0);
+  if ((*cmd == '\\') || (*cmd == '/')) {
+    cmd = cmd + 1;
   }
   while( true ) {
-    iVar1 = isspace((int)*local_8);
+    iVar1 = isspace((int)*cmd);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    cmd = cmd + 1;
   }
-  return local_8;
+  return cmd;
 }
 
 
@@ -2328,19 +2388,19 @@ bool __cdecl Con_AnySpaceAfterCommand(void)
 
 {
   int iVar1;
-  int local_8;
+  int charIndex;
   
-  local_8 = 0;
-  while (iVar1 = isspace((int)g_consoleField.buffer[local_8]), iVar1 != 0) {
-    local_8 = local_8 + 1;
+  charIndex = 0;
+  while (iVar1 = isspace((int)g_consoleField.buffer[charIndex]), iVar1 != 0) {
+    charIndex = charIndex + 1;
   }
   while( true ) {
-    if (g_consoleField.buffer[local_8] == '\0') {
+    if (g_consoleField.buffer[charIndex] == '\0') {
       return false;
     }
-    iVar1 = isspace((int)g_consoleField.buffer[local_8]);
+    iVar1 = isspace((int)g_consoleField.buffer[charIndex]);
     if (iVar1 != 0) break;
-    local_8 = local_8 + 1;
+    charIndex = charIndex + 1;
   }
   return true;
 }
@@ -2348,14 +2408,14 @@ bool __cdecl Con_AnySpaceAfterCommand(void)
 
 // 0054B7B0  ConDrawInput_TextWidth  (client/cl_console.cpp:1888)
 
-int __cdecl ConDrawInput_TextWidth(char *param_1)
+int __cdecl ConDrawInput_TextWidth(char *text)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (text == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x761,0,
                              "%s");
     if (!bVar2) {
@@ -2364,20 +2424,20 @@ int __cdecl ConDrawInput_TextWidth(char *param_1)
       return iVar3;
     }
   }
-  iVar3 = R_TextWidth(param_1,0,cls.consoleFont);
+  iVar3 = R_TextWidth(text,0,cls.consoleFont);
   return iVar3;
 }
 
 
 // 0054B6C0  ConDrawInput_Text  (client/cl_console.cpp:1895)
 
-void __cdecl ConDrawInput_Text(char *param_1,float *param_2)
+void __cdecl ConDrawInput_Text(char *str,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (str == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x768,0,
                              "%s");
     if (!bVar2) {
@@ -2386,21 +2446,21 @@ void __cdecl ConDrawInput_Text(char *param_1,float *param_2)
       return;
     }
   }
-  R_AddCmdDrawText(param_1,0x7fffffff,cls.consoleFont,conDrawInputGlob.x,
-                   conDrawInputGlob.y + conDrawInputGlob.fontHeight,1.0,1.0,0.0,param_2,0);
+  R_AddCmdDrawText(str,0x7fffffff,cls.consoleFont,conDrawInputGlob.x,
+                   conDrawInputGlob.y + conDrawInputGlob.fontHeight,1.0,1.0,0.0,color,0);
   return;
 }
 
 
 // 0054BC10  ConDrawInput_TextLimitChars  (client/cl_console.cpp:1902)
 
-void __cdecl ConDrawInput_TextLimitChars(char *param_1,int param_2,float *param_3)
+void __cdecl ConDrawInput_TextLimitChars(char *str,int maxChars,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (str == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x76f,0,
                              "%s");
     if (!bVar2) {
@@ -2409,22 +2469,22 @@ void __cdecl ConDrawInput_TextLimitChars(char *param_1,int param_2,float *param_
       return;
     }
   }
-  R_AddCmdDrawText(param_1,param_2,cls.consoleFont,conDrawInputGlob.x,
-                   conDrawInputGlob.y + conDrawInputGlob.fontHeight,1.0,1.0,0.0,param_3,0);
+  R_AddCmdDrawText(str,maxChars,cls.consoleFont,conDrawInputGlob.x,
+                   conDrawInputGlob.y + conDrawInputGlob.fontHeight,1.0,1.0,0.0,color,0);
   return;
 }
 
 
 // 0054B740  ConDrawInput_TextAndOver  (client/cl_console.cpp:1922)
 
-void __cdecl ConDrawInput_TextAndOver(char *param_1,float *param_2)
+void __cdecl ConDrawInput_TextAndOver(char *str,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (str == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x783,0,
                              "%s");
     if (!bVar2) {
@@ -2433,8 +2493,8 @@ void __cdecl ConDrawInput_TextAndOver(char *param_1,float *param_2)
       return;
     }
   }
-  ConDrawInput_Text(param_1,param_2);
-  iVar3 = ConDrawInput_TextWidth(param_1);
+  ConDrawInput_Text(str,color);
+  iVar3 = ConDrawInput_TextWidth(str);
   conDrawInputGlob.x = (float)iVar3 + conDrawInputGlob.x;
   return;
 }
@@ -2442,29 +2502,24 @@ void __cdecl ConDrawInput_TextAndOver(char *param_1,float *param_2)
 
 // 0054B8B0  ConDraw_Box  (client/cl_console.cpp:1931)
 
-void __cdecl ConDraw_Box(float param_1,float param_2,float param_3,float param_4,float *param_5)
+void __cdecl ConDraw_Box(float x,float y,float w,float h,float *color)
 
 {
-  float local_14;
+  float darkColor;
   float local_10;
   float local_c;
   float local_8;
   
-  if (param_5[3] != 0.0) {
-    R_AddCmdDrawStretchPic
-              (param_1,param_2,param_3,param_4,0.0,0.0,0.0,0.0,param_5,cls.whiteMaterial);
-    local_14 = *param_5 * 0.5;
-    local_10 = param_5[1] * 0.5;
-    local_c = param_5[2] * 0.5;
-    local_8 = param_5[3];
-    R_AddCmdDrawStretchPic(param_1,param_2,2.0,param_4,0.0,0.0,0.0,0.0,&local_14,cls.whiteMaterial);
-    R_AddCmdDrawStretchPic
-              ((param_1 + param_3) - 2.0,param_2,2.0,param_4,0.0,0.0,0.0,0.0,&local_14,
-               cls.whiteMaterial);
-    R_AddCmdDrawStretchPic(param_1,param_2,param_3,2.0,0.0,0.0,0.0,0.0,&local_14,cls.whiteMaterial);
-    R_AddCmdDrawStretchPic
-              (param_1,(param_2 + param_4) - 2.0,param_3,2.0,0.0,0.0,0.0,0.0,&local_14,
-               cls.whiteMaterial);
+  if (color[3] != 0.0) {
+    R_AddCmdDrawStretchPic(x,y,w,h,0.0,0.0,0.0,0.0,color,cls.whiteMaterial);
+    darkColor = *color * 0.5;
+    local_10 = color[1] * 0.5;
+    local_c = color[2] * 0.5;
+    local_8 = color[3];
+    R_AddCmdDrawStretchPic(x,y,2.0,h,0.0,0.0,0.0,0.0,&darkColor,cls.whiteMaterial);
+    R_AddCmdDrawStretchPic((x + w) - 2.0,y,2.0,h,0.0,0.0,0.0,0.0,&darkColor,cls.whiteMaterial);
+    R_AddCmdDrawStretchPic(x,y,w,2.0,0.0,0.0,0.0,0.0,&darkColor,cls.whiteMaterial);
+    R_AddCmdDrawStretchPic(x,(y + h) - 2.0,w,2.0,0.0,0.0,0.0,0.0,&darkColor,cls.whiteMaterial);
   }
   return;
 }
@@ -2472,13 +2527,18 @@ void __cdecl ConDraw_Box(float param_1,float param_2,float param_3,float param_4
 
 // 0054B800  ConDrawInput_Box  (client/cl_console.cpp:1950)
 
-void __cdecl ConDrawInput_Box(int param_1,float *param_2)
+void __cdecl ConDrawInput_Box(int lines,float *color)
 
 {
+  float x;
+  float y;
+  float h;
+  float w;
+  
   ConDraw_Box(conDrawInputGlob.x - 6.0,conDrawInputGlob.y - 6.0,
               (con.screenMax[0] - con.screenMin[0]) -
               ((conDrawInputGlob.x - 6.0) - con.screenMin[0]),
-              (float)param_1 * conDrawInputGlob.fontHeight + 12.0,param_2);
+              (float)lines * conDrawInputGlob.fontHeight + 12.0,color);
   return;
 }
 
@@ -2487,7 +2547,7 @@ void __cdecl ConDrawInput_Box(int param_1,float *param_2)
 
 int __cdecl
 Con_GetAutoCompleteColorCodedStringDiscontiguous
-          (char *param_1,char *param_2,int param_3,char *param_4)
+          (char *query,char *matchToText,int matchTextLen,char *colorCoded)
 
 {
   char cVar1;
@@ -2498,13 +2558,14 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
   char *local_28;
   char *local_24;
   char *local_20;
-  int local_1c;
-  int local_18;
-  bool local_11;
-  int local_10;
-  char *local_c;
+  int matchLetter;
+  int colorCodedPos;
+  bool wasMatching;
+  int matchTextPos;
+  char *queryPos;
+  bool isMatching;
   
-  if (param_1 == (char *)0x0) {
+  if (query == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7b7,0,
                              "%s");
     if (!bVar3) {
@@ -2513,7 +2574,7 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
       return iVar4;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (matchToText == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7b8,0,
                              "%s");
     if (!bVar3) {
@@ -2522,7 +2583,7 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
       return iVar4;
     }
   }
-  if (param_3 == 0) {
+  if (matchTextLen == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7b9,0,
                              "%s");
     if (!bVar3) {
@@ -2531,18 +2592,18 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
       return iVar4;
     }
   }
-  local_11 = false;
-  local_10 = 0;
-  local_18 = 0;
-  local_1c = tolower((int)*param_2);
-  for (local_c = param_1; *local_c != '\0'; local_c = local_c + 1) {
-    iVar4 = tolower((int)*local_c);
-    bVar3 = iVar4 == local_1c;
+  wasMatching = false;
+  matchTextPos = 0;
+  colorCodedPos = 0;
+  matchLetter = tolower((int)*matchToText);
+  for (queryPos = query; *queryPos != '\0'; queryPos = queryPos + 1) {
+    iVar4 = tolower((int)*queryPos);
+    bVar3 = iVar4 == matchLetter;
     if (bVar3) {
-      local_10 = local_10 + 1;
-      local_1c = tolower((int)param_2[local_10]);
+      matchTextPos = matchTextPos + 1;
+      matchLetter = tolower((int)matchToText[matchTextPos]);
     }
-    if (bVar3 != local_11) {
+    if (bVar3 != wasMatching) {
       if (bVar3) {
         local_20 = "^2";
       }
@@ -2550,26 +2611,26 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
         local_20 = "^7";
       }
       local_24 = local_20;
-      local_28 = param_4 + local_18;
+      local_28 = colorCoded + colorCodedPos;
       do {
         cVar1 = *local_24;
         *local_28 = cVar1;
         local_24 = local_24 + 1;
         local_28 = local_28 + 1;
       } while (cVar1 != '\0');
-      local_18 = local_18 + 2;
-      local_11 = bVar3;
+      colorCodedPos = colorCodedPos + 2;
+      wasMatching = bVar3;
     }
-    param_4[local_18] = *local_c;
-    local_18 = local_18 + 1;
+    colorCoded[colorCodedPos] = *queryPos;
+    colorCodedPos = colorCodedPos + 1;
   }
-  builtin_strncpy(param_4 + local_18,"^7 ",4);
-  local_34 = param_4;
+  builtin_strncpy(colorCoded + colorCodedPos,"^7 ",4);
+  local_34 = colorCoded;
   do {
     cVar1 = *local_34;
     local_34 = local_34 + 1;
   } while (cVar1 != '\0');
-  if (local_34 == param_4 + 1) {
+  if (local_34 == colorCoded + 1) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7d8,0,
                              "%s");
     if (!bVar3) {
@@ -2578,14 +2639,15 @@ Con_GetAutoCompleteColorCodedStringDiscontiguous
       return iVar4;
     }
   }
-  return local_18 + 3;
+  return colorCodedPos + 3;
 }
 
 
 // 0054CB10  Con_GetAutoCompleteColorCodedStringContiguous  (client/cl_console.cpp:2014)
 
 int __cdecl
-Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int param_3,char *param_4)
+Con_GetAutoCompleteColorCodedStringContiguous
+          (char *query,char *matchToText,int matchTextLen,char *colorCoded)
 
 {
   char cVar1;
@@ -2595,7 +2657,7 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
   int iVar5;
   char *pcVar6;
   uchar *puVar7;
-  ulong uVar8;
+  ulong count;
   char *local_64;
   char *local_58;
   char *local_54;
@@ -2604,9 +2666,11 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
   uchar *local_28;
   uchar *local_24;
   char *local_14;
-  uchar *local_10;
+  int colorCodedPos;
+  char *queryPos;
+  int len;
   
-  if (param_1 == (char *)0x0) {
+  if (query == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7e3,0,
                              "%s");
     if (!bVar4) {
@@ -2615,7 +2679,7 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
       return iVar5;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (matchToText == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7e4,0,
                              "%s");
     if (!bVar4) {
@@ -2624,7 +2688,7 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
       return iVar5;
     }
   }
-  if (param_3 == 0) {
+  if (matchTextLen == 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7e5,0,
                              "%s");
     if (!bVar4) {
@@ -2633,15 +2697,15 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
       return iVar5;
     }
   }
-  local_10 = (uchar *)0x0;
-  local_34 = (uchar *)I_stristr(param_1,param_2);
+  colorCodedPos = 0;
+  local_34 = (uchar *)I_stristr(query,matchToText);
   if (local_34 == (uchar *)0x0) {
-    local_44 = param_1;
+    local_44 = query;
     do {
       cVar1 = *local_44;
       local_44 = local_44 + 1;
     } while (cVar1 != '\0');
-    if (local_44 == param_1 + 1) {
+    if (local_44 == query + 1) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x7fe,0,
                                "%s");
       if (!bVar4) {
@@ -2650,8 +2714,8 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
         return iVar5;
       }
     }
-    local_54 = param_1;
-    local_58 = param_4;
+    local_54 = query;
+    local_58 = colorCoded;
     do {
       cVar1 = *local_54;
       *local_58 = cVar1;
@@ -2660,49 +2724,49 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
     } while (cVar1 != '\0');
   }
   else {
-    strncpy((uchar *)param_4,(uchar *)param_1,(int)local_34 - (int)param_1);
-    pcVar6 = param_4 + ((int)local_34 - (int)param_1);
+    strncpy((uchar *)colorCoded,(uchar *)query,(int)local_34 - (int)query);
+    pcVar6 = colorCoded + ((int)local_34 - (int)query);
     pcVar6[0] = '^';
     pcVar6[1] = '2';
     pcVar6[2] = '\0';
-    iVar5 = ((int)local_34 - (int)param_1) + 2;
-    local_14 = param_2;
+    iVar5 = ((int)local_34 - (int)query) + 2;
+    local_14 = matchToText;
     do {
       cVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (cVar1 != '\0');
-    uVar8 = (int)local_14 - (int)(param_2 + 1);
-    strncpy((uchar *)(param_4 + iVar5),local_34,uVar8);
-    iVar5 = iVar5 + uVar8;
-    pcVar6 = param_4 + iVar5;
+    count = (int)local_14 - (int)(matchToText + 1);
+    strncpy((uchar *)(colorCoded + iVar5),local_34,count);
+    iVar5 = iVar5 + count;
+    pcVar6 = colorCoded + iVar5;
     pcVar6[0] = '^';
     pcVar6[1] = '7';
     pcVar6[2] = '\0';
     iVar5 = iVar5 + 2;
-    local_24 = local_34 + uVar8;
-    local_28 = (uchar *)(param_4 + iVar5);
+    local_24 = local_34 + count;
+    local_28 = (uchar *)(colorCoded + iVar5);
     do {
       uVar2 = *local_24;
       *local_28 = uVar2;
       local_24 = local_24 + 1;
       local_28 = local_28 + 1;
     } while (uVar2 != '\0');
-    local_34 = local_34 + uVar8;
+    local_34 = local_34 + count;
     puVar7 = local_34 + 1;
     do {
       uVar2 = *local_34;
       local_34 = local_34 + 1;
     } while (uVar2 != '\0');
-    param_4[(int)(local_34 + (iVar5 - (int)puVar7))] = ' ';
-    local_10 = local_34 + (iVar5 - (int)puVar7) + 1;
-    param_4[(int)local_10] = '\0';
+    colorCoded[(int)(local_34 + (iVar5 - (int)puVar7))] = ' ';
+    colorCodedPos = (int)(local_34 + (iVar5 - (int)puVar7) + 1);
+    colorCoded[colorCodedPos] = '\0';
   }
-  local_64 = param_4;
+  local_64 = colorCoded;
   do {
     cVar1 = *local_64;
     local_64 = local_64 + 1;
   } while (cVar1 != '\0');
-  if (local_64 == param_4 + 1) {
+  if (local_64 == colorCoded + 1) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x802,0,
                              "%s");
     if (!bVar4) {
@@ -2711,7 +2775,7 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
       return iVar5;
     }
   }
-  return (int)local_10;
+  return colorCodedPos;
 }
 
 
@@ -2719,33 +2783,34 @@ Con_GetAutoCompleteColorCodedStringContiguous(char *param_1,char *param_2,int pa
 
 int __cdecl
 Con_GetAutoCompleteColorCodedString
-          (char *param_1,char *param_2,int param_3,bool param_4,char *param_5,char *param_6)
+          (char *query,char *matchToText,int matchTextLen,bool isDvarCommand,char *originalCommand,
+          char *colorCoded)
 
 {
   int iVar1;
-  int local_8;
+  uint prefixLen;
   
-  if (param_4) {
-    local_8 = sprintf(param_6,"^2%s ");
+  if (isDvarCommand) {
+    prefixLen = sprintf(colorCoded,"^2%s ");
   }
   else {
-    local_8 = 0;
+    prefixLen = 0;
   }
   if ((con_matchPrefixOnly->current).enabled == false) {
     iVar1 = Con_GetAutoCompleteColorCodedStringDiscontiguous
-                      (param_1,param_2,param_3,param_6 + local_8);
+                      (query,matchToText,matchTextLen,colorCoded + prefixLen);
   }
   else {
-    iVar1 = Con_GetAutoCompleteColorCodedStringContiguous(param_1,param_2,param_3,param_6 + local_8)
-    ;
+    iVar1 = Con_GetAutoCompleteColorCodedStringContiguous
+                      (query,matchToText,matchTextLen,colorCoded + prefixLen);
   }
-  return iVar1 + local_8;
+  return iVar1 + prefixLen;
 }
 
 
 // 00549550  Con_IsAutoCompleteMatch  (client/cl_console.cpp:2072)
 
-bool __cdecl Con_IsAutoCompleteMatch(char *param_1,char *param_2,int param_3)
+bool __cdecl Con_IsAutoCompleteMatch(char *query,char *matchToText,int matchTextLen)
 
 {
   code *pcVar1;
@@ -2753,25 +2818,25 @@ bool __cdecl Con_IsAutoCompleteMatch(char *param_1,char *param_2,int param_3)
   undefined1 uVar3;
   char cVar4;
   int iVar5;
-  int local_10;
-  int local_c;
-  char *local_8;
+  int matchLetter;
+  int matchTextPos;
+  char *queryPos;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((query == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x81d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((matchToText == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x81e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == 0) &&
+  if ((matchTextLen == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x81f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2779,24 +2844,24 @@ bool __cdecl Con_IsAutoCompleteMatch(char *param_1,char *param_2,int param_3)
     return (bool)uVar3;
   }
   if ((con_ignoreMatchPrefixOnly == false) && ((con_matchPrefixOnly->current).enabled != false)) {
-    iVar5 = I_strnicmp(param_1,param_2,param_3);
+    iVar5 = I_strnicmp(query,matchToText,matchTextLen);
     cVar4 = '\x01' - (iVar5 != 0);
   }
   else {
-    local_c = 0;
-    local_10 = tolower((int)*param_2);
-    for (local_8 = param_1; *local_8 != '\0'; local_8 = local_8 + 1) {
-      iVar5 = tolower((int)*local_8);
-      if (iVar5 == local_10) {
-        local_c = local_c + 1;
-        if (local_c == param_3) {
+    matchTextPos = 0;
+    matchLetter = tolower((int)*matchToText);
+    for (queryPos = query; *queryPos != '\0'; queryPos = queryPos + 1) {
+      iVar5 = tolower((int)*queryPos);
+      if (iVar5 == matchLetter) {
+        matchTextPos = matchTextPos + 1;
+        if (matchTextPos == matchTextLen) {
           return true;
         }
-        local_10 = tolower((int)param_2[local_c]);
+        matchLetter = tolower((int)matchToText[matchTextPos]);
       }
-      else if (((con_matchPrefixOnly->current).enabled != false) && (local_c != 0)) {
-        local_c = 0;
-        local_10 = tolower((int)*param_2);
+      else if (((con_matchPrefixOnly->current).enabled != false) && (matchTextPos != 0)) {
+        matchTextPos = 0;
+        matchLetter = tolower((int)*matchToText);
       }
     }
     cVar4 = '\0';
@@ -2807,18 +2872,18 @@ bool __cdecl Con_IsAutoCompleteMatch(char *param_1,char *param_2,int param_3)
 
 // 0054BAD0  ConDrawInput_IncrMatchCounter  (client/cl_console.cpp:2114)
 
-void __cdecl ConDrawInput_IncrMatchCounter(char *param_1)
+void __cdecl ConDrawInput_IncrMatchCounter(char *str)
 
 {
   bool bVar1;
   
-  bVar1 = Con_IsAutoCompleteMatch(param_1,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
+  bVar1 = Con_IsAutoCompleteMatch(str,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
   if (bVar1) {
     if (conDrawInputGlob.matchCount == conDrawInputGlob.matchIndex) {
-      I_strncpyz(conDrawInputGlob.autoCompleteChoice,param_1,0x40);
+      I_strncpyz(conDrawInputGlob.autoCompleteChoice,str,0x40);
     }
     conDrawInputGlob.matchCount = conDrawInputGlob.matchCount + 1;
-    if (param_1[conDrawInputGlob.inputTextLen] == '\0') {
+    if (str[conDrawInputGlob.inputTextLen] == '\0') {
       conDrawInputGlob.hasExactMatch = true;
     }
   }
@@ -2828,30 +2893,30 @@ void __cdecl ConDrawInput_IncrMatchCounter(char *param_1)
 
 // 0054BB40  ConDrawInput_DvarMatch  (client/cl_console.cpp:2127)
 
-void __cdecl ConDrawInput_DvarMatch(char *param_1)
+void __cdecl ConDrawInput_DvarMatch(char *str)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  float *pfVar5;
+  char *str_00;
+  int maxChars;
+  float *color;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x850,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Con_IsAutoCompleteMatch(param_1,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
+  bVar2 = Con_IsAutoCompleteMatch(str,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
   if (bVar2) {
-    ConDrawInput_TextLimitChars(param_1,0x18,con_inputDvarMatchColor);
+    ConDrawInput_TextLimitChars(str,0x18,con_inputDvarMatchColor);
     conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
-    pfVar5 = con_inputDvarValueColor;
-    iVar4 = 0x28;
-    pcVar3 = Dvar_GetVariantString(param_1);
-    ConDrawInput_TextLimitChars(pcVar3,iVar4,pfVar5);
+    color = con_inputDvarValueColor;
+    maxChars = 0x28;
+    str_00 = Dvar_GetVariantString(str);
+    ConDrawInput_TextLimitChars(str_00,maxChars,color);
     conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
   }
@@ -2865,25 +2930,25 @@ int __cdecl ConDrawInput_TextFieldFirstArgChar(void)
 
 {
   int iVar1;
-  int local_8;
+  int charIndex;
   
-  local_8 = 0;
+  charIndex = 0;
   while( true ) {
-    iVar1 = isspace((int)g_consoleField.buffer[local_8]);
+    iVar1 = isspace((int)g_consoleField.buffer[charIndex]);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    charIndex = charIndex + 1;
   }
   while( true ) {
-    iVar1 = isspace((int)g_consoleField.buffer[local_8]);
+    iVar1 = isspace((int)g_consoleField.buffer[charIndex]);
     if (iVar1 != 0) break;
-    local_8 = local_8 + 1;
+    charIndex = charIndex + 1;
   }
   while( true ) {
-    iVar1 = isspace((int)g_consoleField.buffer[local_8]);
+    iVar1 = isspace((int)g_consoleField.buffer[charIndex]);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    charIndex = charIndex + 1;
   }
-  return local_8;
+  return charIndex;
 }
 
 
@@ -2891,90 +2956,90 @@ int __cdecl ConDrawInput_TextFieldFirstArgChar(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl ConDrawInput_AutoCompleteArg(char **param_1,int param_2)
+void __cdecl ConDrawInput_AutoCompleteArg(char **stringList,int stringCount)
 
 {
   char cVar1;
   int iVar2;
   char *pcVar3;
-  Font_s *pFVar4;
+  Font_s *font;
   char *local_4a8;
   char *local_498;
   char *local_488;
-  int local_47c;
-  uint local_478;
-  char acStack_474 [1028];
+  int matchIndex;
+  int matchCount;
+  undefined1 auStack_474 [1028];
   uint local_70;
-  int local_6c;
-  int local_68;
-  int local_64;
-  char *local_60;
-  int local_5c [16];
-  char *local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  int prefixLen;
+  int matchLenMax;
+  int matchLen;
+  char *prefix;
+  int matches [16];
+  int matchBufferUsed;
+  int stringIndex;
+  float x;
+  float y;
+  float h;
+  float w;
   
   local_70 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_60 = Cmd_Argv(1);
-  local_488 = local_60;
+  prefix = Cmd_Argv(1);
+  local_488 = prefix;
   do {
     cVar1 = *local_488;
     local_488 = local_488 + 1;
   } while (cVar1 != '\0');
-  local_6c = (int)local_488 - (int)(local_60 + 1);
-  if (local_6c != 0) {
-    local_478 = 0;
-    local_1c = (char *)0x0;
-    local_68 = 0;
-    for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {
-      iVar2 = I_strnicmp(local_60,param_1[local_18],local_6c);
+  prefixLen = (int)local_488 - (int)(prefix + 1);
+  if (prefixLen != 0) {
+    matchCount = 0;
+    matchBufferUsed = 0;
+    matchLenMax = 0;
+    for (stringIndex = 0; stringIndex < stringCount; stringIndex = stringIndex + 1) {
+      iVar2 = I_strnicmp(prefix,stringList[stringIndex],prefixLen);
       if (iVar2 == 0) {
-        if (local_478 == 0x10) {
+        if (matchCount == 0x10) {
           return;
         }
-        local_498 = param_1[local_18];
+        local_498 = stringList[stringIndex];
         pcVar3 = local_498 + 1;
         do {
           cVar1 = *local_498;
           local_498 = local_498 + 1;
         } while (cVar1 != '\0');
-        if ((char *)0x3ff < local_498 + ((int)local_1c - (int)pcVar3)) {
+        if ((char *)0x3ff < local_498 + (matchBufferUsed - (int)pcVar3)) {
           return;
         }
-        local_5c[local_478] = (int)(acStack_474 + (int)local_1c);
-        Com_StripExtension(param_1[local_18],(char *)local_5c[local_478]);
-        local_4a8 = (char *)local_5c[local_478];
+        matches[matchCount] = (int)(auStack_474 + matchBufferUsed);
+        Com_StripExtension(stringList[stringIndex],(char *)matches[matchCount]);
+        local_4a8 = (char *)matches[matchCount];
         pcVar3 = local_4a8 + 1;
         do {
           cVar1 = *local_4a8;
           local_4a8 = local_4a8 + 1;
         } while (cVar1 != '\0');
-        local_1c = local_4a8 + (int)(local_1c + (1 - (int)pcVar3));
-        local_64 = ConDrawInput_TextWidth((char *)local_5c[local_478]);
-        if (local_68 < local_64) {
-          local_68 = local_64;
+        matchBufferUsed = (int)(local_4a8 + ((matchBufferUsed + 1) - (int)pcVar3));
+        matchLen = ConDrawInput_TextWidth((char *)matches[matchCount]);
+        if (matchLenMax < matchLen) {
+          matchLenMax = matchLen;
         }
-        local_478 = local_478 + 1;
+        matchCount = matchCount + 1;
       }
     }
-    if (local_478 != 0) {
-      qsort(local_5c,local_478,4,Scr_CompareScriptWindowsNames);
-      pFVar4 = cls.consoleFont;
+    if (matchCount != 0) {
+      qsort(matches,matchCount,4,Scr_CompareScriptWindowsNames);
+      font = cls.consoleFont;
       iVar2 = ConDrawInput_TextFieldFirstArgChar();
-      iVar2 = R_TextWidth(g_consoleField.buffer,iVar2,pFVar4);
-      local_14 = ((float)iVar2 + conDrawInputGlob.leftX) - 6.0;
-      local_10 = con.screenMin[1] + conDrawInputGlob.fontHeight + 6.0;
-      local_8 = (float)local_68 + 12.0;
-      local_c = (float)(int)local_478 * conDrawInputGlob.fontHeight + 12.0;
-      ConDraw_Box(local_14,local_10,local_8,local_c,&(con_inputHintBoxColor->current).value);
-      conDrawInputGlob.leftX = local_14 + 6.0;
-      conDrawInputGlob.y = local_10 + 6.0;
-      for (local_47c = 0; conDrawInputGlob.x = conDrawInputGlob.leftX, local_47c < (int)local_478;
-          local_47c = local_47c + 1) {
-        ConDrawInput_Text((char *)local_5c[local_47c],con_inputDvarInfoColor);
+      iVar2 = R_TextWidth(g_consoleField.buffer,iVar2,font);
+      x = ((float)iVar2 + conDrawInputGlob.leftX) - 6.0;
+      y = con.screenMin[1] + conDrawInputGlob.fontHeight + 6.0;
+      w = (float)matchLenMax + 12.0;
+      h = (float)matchCount * conDrawInputGlob.fontHeight + 12.0;
+      ConDraw_Box(x,y,w,h,&(con_inputHintBoxColor->current).value);
+      conDrawInputGlob.leftX = x + 6.0;
+      conDrawInputGlob.y = y + 6.0;
+      for (matchIndex = 0; conDrawInputGlob.x = conDrawInputGlob.leftX, matchIndex < matchCount;
+          matchIndex = matchIndex + 1) {
+        ConDrawInput_Text((char *)matches[matchIndex],con_inputDvarInfoColor);
         conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
       }
     }
@@ -2985,7 +3050,7 @@ void __cdecl ConDrawInput_AutoCompleteArg(char **param_1,int param_2)
 
 // 0054C4B0  ConDrawInput_GetDvarDescriptionLines  (client/cl_console.cpp:2227)
 
-int __cdecl ConDrawInput_GetDvarDescriptionLines(dvar_s *param_1)
+int __cdecl ConDrawInput_GetDvarDescriptionLines(dvar_s *dvar)
 
 {
   char cVar1;
@@ -2994,10 +3059,11 @@ int __cdecl ConDrawInput_GetDvarDescriptionLines(dvar_s *param_1)
   int iVar4;
   char *pcVar5;
   char *local_14;
-  int local_10;
-  int local_c;
+  int linecount;
+  int index;
+  int length;
   
-  if (param_1->description == (char *)0x0) {
+  if (dvar->description == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x8b8,0,
                              "%s");
     if (!bVar3) {
@@ -3006,19 +3072,19 @@ int __cdecl ConDrawInput_GetDvarDescriptionLines(dvar_s *param_1)
       return iVar4;
     }
   }
-  local_14 = param_1->description;
+  local_14 = dvar->description;
   pcVar5 = local_14 + 1;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  local_10 = 1;
-  for (local_c = 0; local_c < (int)local_14 - (int)pcVar5; local_c = local_c + 1) {
-    if (param_1->description[local_c] == '\n') {
-      local_10 = local_10 + 1;
+  linecount = 1;
+  for (index = 0; index < (int)local_14 - (int)pcVar5; index = index + 1) {
+    if (dvar->description[index] == '\n') {
+      linecount = linecount + 1;
     }
   }
-  return local_10;
+  return linecount;
 }
 
 
@@ -3026,7 +3092,7 @@ int __cdecl ConDrawInput_GetDvarDescriptionLines(dvar_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl ConDrawInput_DetailedDvarMatch(char *param_1)
+void __cdecl ConDrawInput_DetailedDvarMatch(char *str)
 
 {
   code *pcVar1;
@@ -3036,47 +3102,47 @@ void __cdecl ConDrawInput_DetailedDvarMatch(char *param_1)
   int iVar5;
   float *pfVar6;
   int *in_stack_fffffbd8;
-  int local_420;
-  int local_418;
-  char local_414 [1024];
+  int lineCount;
+  bool hasLatchedValue;
+  int infoLineCount;
+  char dvarInfo [1024];
   uint local_14;
-  int local_10;
-  dvar_s *local_c;
-  int local_8;
+  int descriptionLineCount;
+  dvar_s *dvar;
+  int lineIndex;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x8cd,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar3 = Con_IsAutoCompleteMatch(param_1,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
+  bVar3 = Con_IsAutoCompleteMatch(str,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
   if ((bVar3) &&
-     ((conDrawInputGlob.hasExactMatch == false || (param_1[conDrawInputGlob.inputTextLen] == '\0')))
-     ) {
-    local_c = Dvar_FindVar(param_1);
-    if ((local_c == (dvar_s *)0x0) &&
+     ((conDrawInputGlob.hasExactMatch == false || (str[conDrawInputGlob.inputTextLen] == '\0')))) {
+    dvar = Dvar_FindVar(str);
+    if ((dvar == (dvar_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x8d5,0
                                  ,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    bVar3 = Dvar_HasLatchedValue(local_c);
+    bVar3 = Dvar_HasLatchedValue(dvar);
     if (bVar3) {
-      local_420 = 3;
+      lineCount = 3;
     }
     else {
-      local_420 = 2;
+      lineCount = 2;
     }
-    ConDrawInput_Box(local_420,&(con_inputHintBoxColor->current).value);
-    ConDrawInput_TextLimitChars(param_1,0x18,con_inputDvarMatchColor);
+    ConDrawInput_Box(lineCount,&(con_inputHintBoxColor->current).value);
+    ConDrawInput_TextLimitChars(str,0x18,con_inputDvarMatchColor);
     conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
     pfVar6 = con_inputDvarValueColor;
     iVar5 = 0x28;
-    pcVar4 = Dvar_DisplayableValue(local_c);
+    pcVar4 = Dvar_DisplayableValue(dvar);
     ConDrawInput_TextLimitChars(pcVar4,iVar5,pfVar6);
     conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
@@ -3085,7 +3151,7 @@ void __cdecl ConDrawInput_DetailedDvarMatch(char *param_1)
       conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
       pfVar6 = con_inputDvarInactiveValueColor;
       iVar5 = 0x28;
-      pcVar4 = Dvar_DisplayableLatchedValue(local_c);
+      pcVar4 = Dvar_DisplayableLatchedValue(dvar);
       ConDrawInput_TextLimitChars(pcVar4,iVar5,pfVar6);
       conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     }
@@ -3094,35 +3160,36 @@ void __cdecl ConDrawInput_DetailedDvarMatch(char *param_1)
     conDrawInputGlob.x = conDrawInputGlob.x + 200.0;
     pfVar6 = con_inputDvarInactiveValueColor;
     iVar5 = 0x28;
-    pcVar4 = Dvar_DisplayableResetValue(local_c);
+    pcVar4 = Dvar_DisplayableResetValue(dvar);
     ConDrawInput_TextLimitChars(pcVar4,iVar5,pfVar6);
     conDrawInputGlob.y =
          conDrawInputGlob.y + conDrawInputGlob.fontHeight + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
-    DVar2.integer64.max._4_4_ = local_414;
-    DVar2._0_12_ = *(undefined1 (*) [12])((int)&local_c->domain + 4);
+    DVar2.integer64.max._4_4_ = dvarInfo;
+    DVar2._0_12_ = *(undefined1 (*) [12])((int)&dvar->domain + 4);
     Dvar_DomainToString_GetLines
-              (local_c->type,DVar2,(char *)0x400,(int)&local_418,in_stack_fffffbd8);
-    if (local_c->description == (char *)0x0) {
-      local_10 = 0;
+              (dvar->type,DVar2,(char *)0x400,(int)&infoLineCount,in_stack_fffffbd8);
+    if (dvar->description == (char *)0x0) {
+      descriptionLineCount = 0;
     }
     else {
-      local_10 = ConDrawInput_GetDvarDescriptionLines(local_c);
+      descriptionLineCount = ConDrawInput_GetDvarDescriptionLines(dvar);
     }
-    ConDrawInput_Box(local_10 + 1 + local_418,&(con_inputHintBoxColor->current).value);
-    if (local_c->description != (char *)0x0) {
-      ConDrawInput_Text(local_c->description,con_inputDvarDescriptionColor);
-      for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
+    ConDrawInput_Box(descriptionLineCount + 1 + infoLineCount,
+                     &(con_inputHintBoxColor->current).value);
+    if (dvar->description != (char *)0x0) {
+      ConDrawInput_Text(dvar->description,con_inputDvarDescriptionColor);
+      for (lineIndex = 0; lineIndex < descriptionLineCount; lineIndex = lineIndex + 1) {
         conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
         conDrawInputGlob.x = conDrawInputGlob.leftX;
       }
     }
-    ConDrawInput_Text(local_414,con_inputDvarInfoColor);
+    ConDrawInput_Text(dvarInfo,con_inputDvarInfoColor);
     conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
-    if ((local_c->type == DVAR_TYPE_ENUM) && (iVar5 = Cmd_Argc(), iVar5 == 2)) {
+    if ((dvar->type == DVAR_TYPE_ENUM) && (iVar5 = Cmd_Argc(), iVar5 == 2)) {
       ConDrawInput_AutoCompleteArg
-                ((local_c->domain).enumeration.strings,(local_c->domain).enumeration.stringCount);
+                ((dvar->domain).enumeration.strings,(dvar->domain).enumeration.stringCount);
     }
   }
   return;
@@ -3131,35 +3198,33 @@ void __cdecl ConDrawInput_DetailedDvarMatch(char *param_1)
 
 // 0054C560  ConDrawInput_DetailedCmdMatch  (client/cl_console.cpp:2316)
 
-void __cdecl ConDrawInput_DetailedCmdMatch(char *param_1)
+void __cdecl ConDrawInput_DetailedCmdMatch(char *str)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
-  char **local_8;
+  int fileCount;
+  char **files;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x912,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Con_IsAutoCompleteMatch(param_1,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
+  bVar2 = Con_IsAutoCompleteMatch(str,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
   if ((bVar2) &&
-     ((conDrawInputGlob.hasExactMatch == false || (param_1[conDrawInputGlob.inputTextLen] == '\0')))
-     ) {
+     ((conDrawInputGlob.hasExactMatch == false || (str[conDrawInputGlob.inputTextLen] == '\0')))) {
     ConDrawInput_Box(1,&(con_inputHintBoxColor->current).value);
-    ConDrawInput_Text(param_1,con_inputCommandMatchColor);
+    ConDrawInput_Text(str,con_inputCommandMatchColor);
     conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
     iVar3 = Cmd_Argc();
-    if ((iVar3 == 2) && (local_8 = Cmd_GetAutoCompleteFileList(param_1,&local_c,0xb), local_c != 0))
-    {
-      ConDrawInput_AutoCompleteArg(local_8,local_c);
-      Sys_FreeFileList(local_8);
+    if ((iVar3 == 2) && (files = Cmd_GetAutoCompleteFileList(str,&fileCount,0xb), fileCount != 0)) {
+      ConDrawInput_AutoCompleteArg(files,fileCount);
+      Sys_FreeFileList(files);
     }
   }
   return;
@@ -3168,22 +3233,22 @@ void __cdecl ConDrawInput_DetailedCmdMatch(char *param_1)
 
 // 0054C670  ConDrawInput_CmdMatch  (client/cl_console.cpp:2348)
 
-void __cdecl ConDrawInput_CmdMatch(char *param_1)
+void __cdecl ConDrawInput_CmdMatch(char *str)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x92d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Con_IsAutoCompleteMatch(param_1,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
+  bVar2 = Con_IsAutoCompleteMatch(str,conDrawInputGlob.inputText,conDrawInputGlob.inputTextLen);
   if (bVar2) {
-    ConDrawInput_Text(param_1,con_inputCommandMatchColor);
+    ConDrawInput_Text(str,con_inputCommandMatchColor);
     conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
     conDrawInputGlob.x = conDrawInputGlob.leftX;
   }
@@ -3195,28 +3260,30 @@ void __cdecl ConDrawInput_CmdMatch(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Con_DrawAutoCompleteChoice(int param_1,bool param_2,char *param_3)
+void __cdecl Con_DrawAutoCompleteChoice(int localClientNum,bool isDvarCommand,char *originalCommand)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  int iVar4;
+  int drawLen_00;
   char *local_11c;
-  char local_114;
+  int drawLen;
+  char colorCodedLine;
   char acStack_113 [255];
   uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int cursorPos;
+  int x;
+  int y;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = Con_GetAutoCompleteColorCodedString
-                       (conDrawInputGlob.autoCompleteChoice,conDrawInputGlob.inputText,
-                        conDrawInputGlob.inputTextLen,param_2,param_3,&local_114);
-  local_c = (int)conDrawInputGlob.x;
-  local_8 = (int)conDrawInputGlob.y;
-  local_11c = &local_114;
+  cursorPos = Con_GetAutoCompleteColorCodedString
+                        (conDrawInputGlob.autoCompleteChoice,conDrawInputGlob.inputText,
+                         conDrawInputGlob.inputTextLen,isDvarCommand,originalCommand,&colorCodedLine
+                        );
+  x = (int)conDrawInputGlob.x;
+  y = (int)conDrawInputGlob.y;
+  local_11c = &colorCodedLine;
   do {
     cVar1 = *local_11c;
     local_11c = local_11c + 1;
@@ -3230,8 +3297,8 @@ void __cdecl Con_DrawAutoCompleteChoice(int param_1,bool param_2,char *param_3)
       return;
     }
   }
-  iVar4 = SEH_PrintStrlen(&local_114);
-  if (iVar4 < 1) {
+  drawLen_00 = SEH_PrintStrlen(&colorCodedLine);
+  if (drawLen_00 < 1) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0x945,0,
                              "%s\n\t(colorCodedLine) = %s");
     if (!bVar3) {
@@ -3240,17 +3307,18 @@ void __cdecl Con_DrawAutoCompleteChoice(int param_1,bool param_2,char *param_3)
       return;
     }
   }
-  Field_DrawTextOverride(param_1,&g_consoleField,local_c,local_8,5,5,&local_114,iVar4,local_10);
+  Field_DrawTextOverride
+            (localClientNum,&g_consoleField,x,y,5,5,&colorCodedLine,drawLen_00,cursorPos);
   return;
 }
 
 
 // 0054CE10  Con_DrawInputPrompt  (client/cl_console.cpp:2379)
 
-void __cdecl Con_DrawInputPrompt(int param_1)
+void __cdecl Con_DrawInputPrompt(int localClientNum)
 
 {
-  Field_Draw(param_1,&g_consoleField,(int)conDrawInputGlob.x,(int)conDrawInputGlob.y,5,5);
+  Field_Draw(localClientNum,&g_consoleField,(int)conDrawInputGlob.x,(int)conDrawInputGlob.y,5,5);
   return;
 }
 
@@ -3266,38 +3334,38 @@ bool __cdecl Con_HasTooManyMatchesToShow(void)
 
 // 005496F0  Con_IsDvarCommand  (client/cl_console.cpp:2391)
 
-bool __cdecl Con_IsDvarCommand(char *param_1)
+bool __cdecl Con_IsDvarCommand(char *cmd)
 
 {
   bool bVar1;
   int iVar2;
   
-  iVar2 = I_stricmp(param_1,"set");
+  iVar2 = I_stricmp(cmd,"set");
   if (iVar2 == 0) {
     bVar1 = true;
   }
   else {
-    iVar2 = I_stricmp(param_1,"seta");
+    iVar2 = I_stricmp(cmd,"seta");
     if (iVar2 == 0) {
       bVar1 = true;
     }
     else {
-      iVar2 = I_stricmp(param_1,"sets");
+      iVar2 = I_stricmp(cmd,"sets");
       if (iVar2 == 0) {
         bVar1 = true;
       }
       else {
-        iVar2 = I_stricmp(param_1,"reset");
+        iVar2 = I_stricmp(cmd,"reset");
         if (iVar2 == 0) {
           bVar1 = true;
         }
         else {
-          iVar2 = I_stricmp(param_1,"toggle");
+          iVar2 = I_stricmp(cmd,"toggle");
           if (iVar2 == 0) {
             bVar1 = true;
           }
           else {
-            iVar2 = I_stricmp(param_1,"togglep");
+            iVar2 = I_stricmp(cmd,"togglep");
             if (iVar2 == 0) {
               bVar1 = true;
             }
@@ -3316,17 +3384,18 @@ bool __cdecl Con_IsDvarCommand(char *param_1)
 // 00549790  Con_ForEach  (client/cl_console.cpp:2408)
 
 void __cdecl
-Con_ForEach(bool param_1,_func___cdecl_void_char_ptr *param_2,_func___cdecl_void_char_ptr *param_3)
+Con_ForEach(bool isDvarCommand,_func___cdecl_void_char_ptr *callbackDvar,
+           _func___cdecl_void_char_ptr *callbackCmd)
 
 {
-  Con_Restricted_ForEach(param_1,param_2,param_3);
+  Con_Restricted_ForEach(isDvarCommand,callbackDvar,callbackCmd);
   return;
 }
 
 
 // 0054B1E0  Con_DrawInput  (client/cl_console.cpp:2419)
 
-void __cdecl Con_DrawInput(int param_1)
+void __cdecl Con_DrawInput(int localClientNum)
 
 {
   char cVar1;
@@ -3337,6 +3406,12 @@ void __cdecl Con_DrawInput(int param_1)
   char *local_50;
   bool local_4c;
   char *local_3c;
+  int matchCount;
+  char *tooManyMatchesStr;
+  int inputTextLenPrev;
+  char *promptString;
+  bool isDvarCommand;
+  char *originalCommand;
   
   bVar3 = Sys_IsMainThread();
   if (((!bVar3) && (bVar3 = Sys_IsRenderThread(), !bVar3)) &&
@@ -3346,7 +3421,7 @@ void __cdecl Con_DrawInput(int param_1)
     (*pcVar2)();
     return;
   }
-  bVar3 = Key_IsCatcherActive(param_1,1);
+  bVar3 = Key_IsCatcherActive(localClientNum,1);
   if (bVar3) {
     Com_GetBuildName();
     Com_GetBuildNumber();
@@ -3375,7 +3450,7 @@ void __cdecl Con_DrawInput(int param_1)
     pcVar4 = conDrawInputGlob.inputText;
     if (conDrawInputGlob.inputTextLen == 0) {
       Con_AllowAutoCompleteCycling(false);
-      Con_DrawInputPrompt(param_1);
+      Con_DrawInputPrompt(localClientNum);
       Cmd_EndTokenizedString();
     }
     else {
@@ -3396,7 +3471,7 @@ void __cdecl Con_DrawInput(int param_1)
         conDrawInputGlob.inputTextLen = (int)local_50 - (int)(conDrawInputGlob.inputText + 1);
         if (conDrawInputGlob.inputTextLen == 0) {
           Con_AllowAutoCompleteCycling(false);
-          Con_DrawInputPrompt(param_1);
+          Con_DrawInputPrompt(localClientNum);
           Cmd_EndTokenizedString();
           return;
         }
@@ -3427,7 +3502,7 @@ void __cdecl Con_DrawInput(int param_1)
       }
       iVar5 = conDrawInputGlob.matchCount;
       if (conDrawInputGlob.matchCount == 0) {
-        Con_DrawInputPrompt(param_1);
+        Con_DrawInputPrompt(localClientNum);
         Cmd_EndTokenizedString();
       }
       else {
@@ -3436,10 +3511,10 @@ void __cdecl Con_DrawInput(int param_1)
           conDrawInputGlob.matchIndex = -1;
         }
         if (conDrawInputGlob.matchIndex < 0) {
-          Con_DrawInputPrompt(param_1);
+          Con_DrawInputPrompt(localClientNum);
         }
         else {
-          Con_DrawAutoCompleteChoice(param_1,local_4c,pcVar4);
+          Con_DrawAutoCompleteChoice(localClientNum,local_4c,pcVar4);
         }
         conDrawInputGlob.y =
              conDrawInputGlob.y + conDrawInputGlob.fontHeight + conDrawInputGlob.fontHeight;
@@ -3468,7 +3543,7 @@ void __cdecl Con_DrawInput(int param_1)
 
 // 005497B0  Con_CycleAutoComplete  (client/cl_console.cpp:2553)
 
-bool __cdecl Con_CycleAutoComplete(int param_1)
+bool __cdecl Con_CycleAutoComplete(int step)
 
 {
   bool bVar1;
@@ -3479,7 +3554,7 @@ bool __cdecl Con_CycleAutoComplete(int param_1)
       bVar1 = Con_AnySpaceAfterCommand();
       if (bVar1) goto LAB_005497ec;
     }
-    conDrawInputGlob.matchIndex = conDrawInputGlob.matchIndex + param_1;
+    conDrawInputGlob.matchIndex = conDrawInputGlob.matchIndex + step;
     if (conDrawInputGlob.matchIndex < 0) {
       conDrawInputGlob.matchIndex = conDrawInputGlob.matchCount + -1;
     }
@@ -3525,6 +3600,7 @@ bool __cdecl Con_CommitToAutoComplete(void)
   char *local_1c;
   char *local_10;
   ConDrawInputGlob *local_c;
+  char *originalCommand;
   
   bVar3 = Con_HasActiveAutoComplete();
   if (bVar3) {
@@ -3584,17 +3660,17 @@ bool __cdecl Con_CancelAutoComplete(void)
 
 // 005499A0  Con_AllowAutoCompleteCycling  (client/cl_console.cpp:2610)
 
-void __cdecl Con_AllowAutoCompleteCycling(bool param_1)
+void __cdecl Con_AllowAutoCompleteCycling(bool isAllowed)
 
 {
-  conDrawInputGlob.mayAutoComplete = param_1;
+  conDrawInputGlob.mayAutoComplete = isAllowed;
   return;
 }
 
 
 // 00549FF0  Con_ShouldProcessMessage  (client/cl_console.cpp:2615)
 
-bool __cdecl Con_ShouldProcessMessage(Message *param_1,int param_2)
+bool __cdecl Con_ShouldProcessMessage(Message *message,int serverTime)
 
 {
   code *pcVar1;
@@ -3603,7 +3679,7 @@ bool __cdecl Con_ShouldProcessMessage(Message *param_1,int param_2)
   
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
-    if (param_2 + 1000 < param_1->startTime) {
+    if (serverTime + 1000 < message->startTime) {
       bVar2 = false;
     }
     else {
@@ -3611,7 +3687,7 @@ bool __cdecl Con_ShouldProcessMessage(Message *param_1,int param_2)
     }
   }
   else {
-    if ((param_1->startTime < 0) || (param_2 + 1000 < param_1->startTime)) {
+    if ((message->startTime < 0) || (serverTime + 1000 < message->startTime)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xa3a,0,
                                "message->startTime not in [0, serverTime + CON_MSG_TIME_DRIFT_BUFFER]\n\t%i not in [%i, %i]"
                               );
@@ -3629,21 +3705,22 @@ bool __cdecl Con_ShouldProcessMessage(Message *param_1,int param_2)
 
 // 0054A4D0  LineVisible  (client/cl_console.cpp:2631)
 
-bool __cdecl LineVisible(MessageWindow *param_1,int param_2,int param_3)
+bool __cdecl LineVisible(MessageWindow *msgwnd,int lineIdx,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  MessageLine *line;
   
-  if ((param_1 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xa4a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return param_1->lines[param_2].typingStartTime <= param_3;
+  return msgwnd->lines[lineIdx].typingStartTime <= time;
 }
 
 
@@ -3651,35 +3728,41 @@ bool __cdecl LineVisible(MessageWindow *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl TypewriterSounds(int param_1,MessageWindow *param_2,MessageLine *param_3)
+void __cdecl TypewriterSounds(int localClientNum,MessageWindow *msgwnd,MessageLine *line)
 
 {
   int iVar1;
   int iVar2;
   clientActive_t *pcVar3;
   int iVar4;
-  SndEntHandle SVar5;
-  int iVar6;
-  int local_8;
+  SndEntHandle entHandle;
+  int iVar5;
+  int lastReqTime;
+  clientActive_t *cl;
+  int typeoutTime;
+  int timeElapsed;
+  int printCnt;
+  int lastSoundTime;
+  int decayStartTime;
   
   if ((con_typewriterEnabledSounds->current).enabled != false) {
-    pcVar3 = CL_GetLocalClientGlobals(param_1);
-    iVar6 = pcVar3->serverTime - param_3->typingStartTime;
-    iVar1 = param_3->lastTypingSoundTime;
-    iVar2 = param_3->typingStartTime;
-    iVar4 = PrintableCharsCount(param_2,param_3);
+    pcVar3 = CL_GetLocalClientGlobals(localClientNum);
+    iVar5 = pcVar3->serverTime - line->typingStartTime;
+    iVar1 = line->lastTypingSoundTime;
+    iVar2 = line->typingStartTime;
+    iVar4 = PrintableCharsCount(msgwnd,line);
     iVar4 = iVar4 * (con_typewriterPrintSpeed->current).integer;
-    local_8 = (con_typewriterDecayStartTime->current).integer;
+    decayStartTime = (con_typewriterDecayStartTime->current).integer;
     if ((con_typewriterDecayStartTime->current).integer < iVar4) {
-      local_8 = iVar4;
+      decayStartTime = iVar4;
     }
-    if (((iVar6 <= local_8) && (iVar6 <= iVar4)) &&
+    if (((iVar5 <= decayStartTime) && (iVar5 <= iVar4)) &&
        (iVar1 - iVar2 <
-        (iVar6 / (con_typewriterPrintSpeed->current).integer) *
+        (iVar5 / (con_typewriterPrintSpeed->current).integer) *
         (con_typewriterPrintSpeed->current).integer)) {
-      SVar5 = SND_EntHandle(param_1,0xfff,0,false,true,TEAM_BAD);
-      SND_Play("uin_typewriter",0,1.0,SVar5,(float *)0x0,(float *)0x0,false);
-      param_3->lastTypingSoundTime = pcVar3->serverTime;
+      entHandle = SND_EntHandle(localClientNum,0xfff,0,false,true,TEAM_BAD);
+      SND_Play("uin_typewriter",0,1.0,entHandle,(float *)0x0,(float *)0x0,false);
+      line->lastTypingSoundTime = pcVar3->serverTime;
     }
   }
   return;
@@ -3692,109 +3775,106 @@ void __cdecl TypewriterSounds(int param_1,MessageWindow *param_2,MessageLine *pa
 
 void __cdecl
 Con_DrawMessageLineOnHUD
-          (int param_1,ScreenPlacement *param_2,int param_3,int param_4,int param_5,int param_6,
-          int param_7,Font_s *param_8,MessageWindow *param_9,int param_10,float *param_11,
-          int param_12,float param_13,int param_14)
+          (int localClientNum,ScreenPlacement *scrPlace,int x,int y,int charHeight,int horzAlign,
+          int vertAlign,Font_s *font,MessageWindow *msgwnd,int lineIdx,float *color,int textStyle,
+          float msgwndScale,int textAlignMode)
 
 {
   bool bVar1;
   clientActive_t *pcVar2;
   int iVar3;
-  DvarValue *local_34;
-  float local_30;
+  float *glowColor;
+  float typewriterColor;
   float local_2c;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  int local_14;
-  MessageLine *local_10;
-  float local_c;
-  float local_8;
+  float xScale;
+  float yAdj;
+  float xAdj;
+  int time;
+  MessageLine *line;
+  float fontScale;
+  float yScale;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  local_14 = pcVar2->serverTime;
-  bVar1 = LineVisible(param_9,param_10,local_14);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  time = pcVar2->serverTime;
+  bVar1 = LineVisible(msgwnd,lineIdx,time);
   if (bVar1) {
-    local_10 = param_9->lines + param_10;
-    if ((local_10->flags & 1U) != 0) {
-      param_8 = UI_GetFontHandle((ScreenPlacement *)0x0,1,1.0);
+    line = msgwnd->lines + lineIdx;
+    if ((line->flags & 1U) != 0) {
+      font = UI_GetFontHandle((ScreenPlacement *)0x0,1,1.0);
     }
-    local_c = (float)param_5 / 48.0;
-    local_20 = R_NormalizedTextScale(param_8,local_c * param_13);
-    local_8 = local_20;
-    if ((param_14 & 3U) == 1) {
-      iVar3 = R_ConsoleTextWidth(param_9->circularTextBuffer,param_9->textBufSize,
-                                 local_10->textBufPos,local_10->textBufSize,param_8);
-      param_3 = param_3 - (int)((float)iVar3 * local_20 * 0.5);
+    fontScale = (float)charHeight / 48.0;
+    xScale = R_NormalizedTextScale(font,fontScale * msgwndScale);
+    yScale = xScale;
+    if ((textAlignMode & 3U) == 1) {
+      iVar3 = R_ConsoleTextWidth(msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,
+                                 line->textBufSize,font);
+      x = x - (int)((float)iVar3 * xScale * 0.5);
     }
-    else if ((param_14 & 3U) == 2) {
-      iVar3 = R_ConsoleTextWidth(param_9->circularTextBuffer,param_9->textBufSize,
-                                 local_10->textBufPos,local_10->textBufSize,param_8);
-      param_3 = param_3 - (int)((float)iVar3 * local_20);
+    else if ((textAlignMode & 3U) == 2) {
+      iVar3 = R_ConsoleTextWidth(msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,
+                                 line->textBufSize,font);
+      x = x - (int)((float)iVar3 * xScale);
     }
-    if ((param_14 & 0xcU) == 4) {
-      iVar3 = R_TextHeight(param_8);
-      param_4 = (int)((float)iVar3 * local_8) + param_4;
+    if ((textAlignMode & 0xcU) == 4) {
+      iVar3 = R_TextHeight(font);
+      y = (int)((float)iVar3 * yScale) + y;
     }
-    else if ((param_14 & 0xcU) == 8) {
-      iVar3 = R_TextHeight(param_8);
-      param_4 = (int)((float)iVar3 * local_8 * 0.5) + param_4;
+    else if ((textAlignMode & 0xcU) == 8) {
+      iVar3 = R_TextHeight(font);
+      y = (int)((float)iVar3 * yScale * 0.5) + y;
     }
-    local_18 = (float)param_3;
-    local_1c = (float)param_4;
-    ScrPlace_ApplyRect(param_2,&local_18,&local_1c,&local_20,&local_8,param_6,param_7);
-    if ((local_10->flags & 1U) == 0) {
-      if ((local_10->flags & 0x20U) == 0) {
+    xAdj = (float)x;
+    yAdj = (float)y;
+    ScrPlace_ApplyRect(scrPlace,&xAdj,&yAdj,&xScale,&yScale,horzAlign,vertAlign);
+    if ((line->flags & 1U) == 0) {
+      if ((line->flags & 0x20U) == 0) {
         R_AddCmdDrawConsoleText
-                  (param_9->circularTextBuffer,param_9->textBufSize,local_10->textBufPos,
-                   local_10->textBufSize,param_8,local_18,local_1c,local_20,local_8,param_11,
-                   param_12);
+                  (msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,line->textBufSize
+                   ,font,xAdj,yAdj,xScale,yScale,color,textStyle);
       }
       else {
         R_AddCmdDrawConsoleTextSubtitle
-                  (param_9->circularTextBuffer,param_9->textBufSize,local_10->textBufPos,
-                   local_10->textBufSize,param_8,local_18,local_1c,local_20,local_8,param_11,
-                   param_12,MY_GLOWCOLOR);
+                  (msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,line->textBufSize
+                   ,font,xAdj,yAdj,xScale,yScale,color,textStyle,MY_GLOWCOLOR);
       }
     }
-    else if ((local_10->flags & 0x40U) == 0) {
-      TypewriterSounds(param_1,param_9,local_10);
+    else if ((line->flags & 0x40U) == 0) {
+      TypewriterSounds(localClientNum,msgwnd,line);
       R_AddCmdDrawConsoleTextTypewriterFX
-                (param_9->circularTextBuffer,param_9->textBufSize,local_10->textBufPos,
-                 local_10->textBufSize,param_8,local_18,local_1c,local_20,local_8,param_11,param_12,
-                 local_10->typingStartTime,(con_typewriterPrintSpeed->current).integer,
+                (msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,line->textBufSize,
+                 font,xAdj,yAdj,xScale,yScale,color,textStyle,line->typingStartTime,
+                 (con_typewriterPrintSpeed->current).integer,
                  (con_typewriterDecayStartTime->current).integer,
                  (con_typewriterDecayDuration->current).integer);
     }
     else {
-      local_30 = (float)(con_typewriterColorBase->current).integer;
+      typewriterColor = (float)(con_typewriterColorBase->current).integer;
       local_2c = (con_typewriterColorBase->current).vector[1];
       local_28 = (con_typewriterColorBase->current).vector[2];
       local_24 = 1.0;
-      if ((local_10->flags & 0x10U) == 0) {
-        if ((local_10->flags & 4U) == 0) {
-          if ((local_10->flags & 8U) == 0) {
-            local_34 = &con_typewriterColorGlowUpdated->current;
+      if ((line->flags & 0x10U) == 0) {
+        if ((line->flags & 4U) == 0) {
+          if ((line->flags & 8U) == 0) {
+            glowColor = (float *)&con_typewriterColorGlowUpdated->current;
           }
           else {
-            local_34 = &con_typewriterColorGlowFailed->current;
+            glowColor = (float *)&con_typewriterColorGlowFailed->current;
           }
         }
         else {
-          local_34 = &con_typewriterColorGlowCompleted->current;
+          glowColor = (float *)&con_typewriterColorGlowCompleted->current;
         }
       }
       else {
-        local_34 = &con_typewriterColorGlowCheckpoint->current;
+        glowColor = (float *)&con_typewriterColorGlowCheckpoint->current;
       }
-      TypewriterSounds(param_1,param_9,local_10);
+      TypewriterSounds(localClientNum,msgwnd,line);
       R_AddCmdDrawConsoleTextPulseFX
-                (param_9->circularTextBuffer,param_9->textBufSize,local_10->textBufPos,
-                 local_10->textBufSize,param_8,local_18,local_1c,local_20,local_8,&local_30,param_12
-                 ,&local_34->value,local_10->typingStartTime,
-                 (con_typewriterPrintSpeed->current).integer,
+                (msgwnd->circularTextBuffer,msgwnd->textBufSize,line->textBufPos,line->textBufSize,
+                 font,xAdj,yAdj,xScale,yScale,&typewriterColor,textStyle,glowColor,
+                 line->typingStartTime,(con_typewriterPrintSpeed->current).integer,
                  (con_typewriterDecayStartTime->current).integer,
                  (con_typewriterDecayDuration->current).integer,cgMedia.textDecodeCharacters,
                  cgMedia.textDecodeCharactersGlow);
@@ -3806,22 +3886,24 @@ Con_DrawMessageLineOnHUD
 
 // 0054A640  Con_CullFinishedLines  (client/cl_console.cpp:2787)
 
-void __cdecl Con_CullFinishedLines(int param_1,MessageWindow *param_2)
+void __cdecl Con_CullFinishedLines(int serverTime,MessageWindow *msgwnd)
 
 {
   int iVar1;
   MessageLine *pMVar2;
   code *pcVar3;
   bool bVar4;
+  Message *message;
+  MessageLine *line;
   
-  if ((param_2 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xae7,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_2->lineCount < 1) &&
+  if ((msgwnd->lineCount < 1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xae8,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -3829,20 +3911,20 @@ void __cdecl Con_CullFinishedLines(int param_1,MessageWindow *param_2)
     return;
   }
   while( true ) {
-    if (param_2->activeLineCount == 0) {
+    if (msgwnd->activeLineCount == 0) {
       return;
     }
-    iVar1 = param_2->firstLineIndex;
-    pMVar2 = param_2->lines;
-    if (((uint)param_2->lineCount <= (uint)pMVar2[iVar1].messageIndex) &&
+    iVar1 = msgwnd->firstLineIndex;
+    pMVar2 = msgwnd->lines;
+    if (((uint)msgwnd->lineCount <= (uint)pMVar2[iVar1].messageIndex) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xaee,0
                                  ,
                                  "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                                 ), !bVar4)) break;
-    if (param_1 - param_2->messages[pMVar2[iVar1].messageIndex].endTime < 0) {
+    if (serverTime - msgwnd->messages[pMVar2[iVar1].messageIndex].endTime < 0) {
       return;
     }
-    Con_FreeFirstMessageWindowLine(param_2);
+    Con_FreeFirstMessageWindowLine(msgwnd);
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -3852,61 +3934,62 @@ void __cdecl Con_CullFinishedLines(int param_1,MessageWindow *param_2)
 
 // 0054A730  Con_GetMessageAlpha  (client/cl_console.cpp:2809)
 
-float __cdecl Con_GetMessageAlpha(Message *param_1,MessageWindow *param_2,int param_3,bool param_4)
+float __cdecl
+Con_GetMessageAlpha(Message *message,MessageWindow *msgwnd,int serverTime,bool scrollsIntoPlace)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float local_c;
-  float local_8;
+  float curalpha;
   
-  local_8 = 1.0;
-  if ((param_1 == (Message *)0x0) &&
+  curalpha = 1.0;
+  if ((message == (Message *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xafc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_2 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xafd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if (param_1->endTime - param_3 < param_2->fadeOut) {
-    if ((param_2->fadeOut < 1) &&
+  if (message->endTime - serverTime < msgwnd->fadeOut) {
+    if ((msgwnd->fadeOut < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb04,0
                                  ,"%s\n\t(msgwnd->fadeOut) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    local_8 = ((float)(param_1->endTime - param_3) / (float)param_2->fadeOut) * 1.0;
+    curalpha = ((float)(message->endTime - serverTime) / (float)msgwnd->fadeOut) * 1.0;
   }
-  if ((param_4) && (param_2->fadeIn < param_2->scrollTime)) {
-    if (param_3 - param_1->startTime < param_2->scrollTime) {
-      if (param_3 - param_1->startTime <= param_2->scrollTime - param_2->fadeIn) {
+  if ((scrollsIntoPlace) && (msgwnd->fadeIn < msgwnd->scrollTime)) {
+    if (serverTime - message->startTime < msgwnd->scrollTime) {
+      if (serverTime - message->startTime <= msgwnd->scrollTime - msgwnd->fadeIn) {
         return 0.0;
       }
-      if ((param_2->fadeIn < 1) &&
+      if ((msgwnd->fadeIn < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb10
                                    ,0,"%s\n\t(msgwnd->fadeIn) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      local_8 = ((float)(param_3 - (param_1->startTime + (param_2->scrollTime - param_2->fadeIn))) /
-                (float)param_2->fadeIn) * local_8;
+      curalpha = ((float)(serverTime - (message->startTime + (msgwnd->scrollTime - msgwnd->fadeIn)))
+                 / (float)msgwnd->fadeIn) * curalpha;
     }
   }
-  else if ((param_2->fadeIn != 0) && (param_3 - param_1->startTime < param_2->fadeIn)) {
-    local_8 = ((float)(param_3 - param_1->startTime) / (float)param_2->fadeIn) * local_8;
+  else if ((msgwnd->fadeIn != 0) && (serverTime - message->startTime < msgwnd->fadeIn)) {
+    curalpha = ((float)(serverTime - message->startTime) / (float)msgwnd->fadeIn) * curalpha;
   }
-  local_c = local_8;
-  if (0.0 <= 0.0 - local_8) {
+  local_c = curalpha;
+  if (0.0 <= 0.0 - curalpha) {
     local_c = 0.0;
   }
   return local_c;
@@ -3919,9 +4002,9 @@ float __cdecl Con_GetMessageAlpha(Message *param_1,MessageWindow *param_2,int pa
 
 void __cdecl
 Con_DrawMessageWindowNewToOld
-          (int param_1,MessageWindow *param_2,int param_3,int param_4,int param_5,int param_6,
-          int param_7,bool param_8,Font_s *param_9,float *param_10,int param_11,float param_12,
-          int param_13)
+          (int localClientNum,MessageWindow *msgwnd,int x,int y,int hudCharHeight,int horzAlign,
+          int vertAlign,bool up,Font_s *font,float *color,int textStyle,float msgwndScale,
+          int textAlignMode)
 
 {
   code *pcVar1;
@@ -3931,54 +4014,54 @@ Con_DrawMessageWindowNewToOld
   float fVar5;
   float local_64;
   float local_38;
-  float local_34;
+  float finalColor;
   float local_30;
   float local_2c;
   float local_28;
-  Message *local_24;
-  float local_20;
-  int local_1c;
-  uint local_18;
-  int local_14;
-  MessageLine *local_10;
-  int local_c;
-  int local_8;
+  Message *message;
+  float lerpFactor;
+  int lineOffset;
+  int imod;
+  int time;
+  MessageLine *line;
+  int charHeight;
+  int serverTime;
   
-  if ((param_2 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb2e,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
-  local_8 = pcVar4->serverTime;
-  Con_CullFinishedLines(local_8,param_2);
-  local_c = param_5;
-  if (!param_8) {
-    param_4 = param_4 - param_5;
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+  serverTime = pcVar4->serverTime;
+  Con_CullFinishedLines(serverTime,msgwnd);
+  charHeight = hudCharHeight;
+  if (!up) {
+    y = y - hudCharHeight;
   }
-  local_1c = 0;
+  lineOffset = 0;
   while( true ) {
-    if (param_2->activeLineCount <= local_1c) {
-      local_34 = *param_10;
-      local_30 = param_10[1];
-      local_2c = param_10[2];
-      local_28 = param_10[3];
-      local_1c = param_2->activeLineCount;
+    if (msgwnd->activeLineCount <= lineOffset) {
+      finalColor = *color;
+      local_30 = color[1];
+      local_2c = color[2];
+      local_28 = color[3];
+      lineOffset = msgwnd->activeLineCount;
       while( true ) {
-        local_1c = local_1c + -1;
-        if (local_1c < 0) {
+        lineOffset = lineOffset + -1;
+        if (lineOffset < 0) {
           return;
         }
-        local_18 = (param_2->firstLineIndex + local_1c) % param_2->lineCount;
-        if (((uint)param_2->lineCount <= local_18) &&
+        imod = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
+        if (((uint)msgwnd->lineCount <= (uint)imod) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                      0xb57,0,
                                      "imod doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"),
            !bVar3)) break;
-        local_10 = param_2->lines + local_18;
-        if (((uint)param_2->lineCount <= (uint)local_10->messageIndex) &&
+        line = msgwnd->lines + imod;
+        if (((uint)msgwnd->lineCount <= (uint)line->messageIndex) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                      0xb5a,0,
                                      "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
@@ -3987,34 +4070,34 @@ Con_DrawMessageWindowNewToOld
           (*pcVar1)();
           return;
         }
-        local_24 = param_2->messages + local_10->messageIndex;
-        iVar2 = local_c;
-        if (param_8) {
-          iVar2 = -local_c;
+        message = msgwnd->messages + line->messageIndex;
+        iVar2 = charHeight;
+        if (up) {
+          iVar2 = -charHeight;
         }
-        param_4 = param_4 + iVar2;
-        if (local_8 - local_24->endTime < 0) {
-          local_28 = Con_GetMessageAlpha(local_24,param_2,local_8,true);
-          local_28 = local_28 * param_10[3];
+        y = y + iVar2;
+        if (serverTime - message->endTime < 0) {
+          local_28 = Con_GetMessageAlpha(message,msgwnd,serverTime,true);
+          local_28 = local_28 * color[3];
           Con_DrawMessageLineOnHUD
-                    (param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,param_4,
-                     local_c,param_6,param_7,param_9,param_2,local_18,&local_34,param_11,param_12,
-                     param_13);
+                    (localClientNum,(ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,
+                     charHeight,horzAlign,vertAlign,font,msgwnd,imod,&finalColor,textStyle,
+                     msgwndScale,textAlignMode);
         }
       }
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2->lineCount < 1) &&
+    if ((msgwnd->lineCount < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb39,0
                                  ,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = (param_2->firstLineIndex + local_1c) % param_2->lineCount;
-    if (((uint)param_2->lineCount <= local_18) &&
+    imod = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
+    if (((uint)msgwnd->lineCount <= (uint)imod) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb3b,0
                                  ,"imod doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"),
        !bVar3)) {
@@ -4022,16 +4105,16 @@ Con_DrawMessageWindowNewToOld
       (*pcVar1)();
       return;
     }
-    local_10 = param_2->lines + local_18;
-    if (((uint)param_2->lineCount <= (uint)local_10->messageIndex) &&
+    line = msgwnd->lines + imod;
+    if (((uint)msgwnd->lineCount <= (uint)line->messageIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb3d,0
                                  ,
                                  "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                                 ), !bVar3)) break;
-    local_24 = param_2->messages + local_10->messageIndex;
-    bVar3 = Con_ShouldProcessMessage(local_24,local_8);
-    if ((bVar3) && (local_14 = local_8 - local_24->startTime, local_14 < param_2->scrollTime)) {
-      fVar5 = 1.0 - (float)local_14 / (float)param_2->scrollTime;
+    message = msgwnd->messages + line->messageIndex;
+    bVar3 = Con_ShouldProcessMessage(message,serverTime);
+    if ((bVar3) && (time = serverTime - message->startTime, time < msgwnd->scrollTime)) {
+      fVar5 = 1.0 - (float)time / (float)msgwnd->scrollTime;
       local_38 = fVar5;
       if (0.0 <= fVar5 - 1.0) {
         local_38 = 1.0;
@@ -4042,15 +4125,15 @@ Con_DrawMessageWindowNewToOld
       else {
         local_64 = 0.0;
       }
-      local_20 = local_64;
-      if (param_8) {
-        param_4 = param_4 + (int)ROUND((float)local_c * local_64 + 9.313226e-10);
+      lerpFactor = local_64;
+      if (up) {
+        y = y + (int)ROUND((float)charHeight * local_64 + 9.313226e-10);
       }
       else {
-        param_4 = param_4 - (int)ROUND((float)local_c * local_64 + 9.313226e-10);
+        y = y - (int)ROUND((float)charHeight * local_64 + 9.313226e-10);
       }
     }
-    local_1c = local_1c + 1;
+    lineOffset = lineOffset + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -4064,65 +4147,66 @@ Con_DrawMessageWindowNewToOld
 
 void __cdecl
 Con_DrawMessageWindowOldToNew
-          (int param_1,MessageWindow *param_2,int param_3,int param_4,int param_5,int param_6,
-          int param_7,bool param_8,Font_s *param_9,float *param_10,int param_11,float param_12,
-          int param_13)
+          (int localClientNum,MessageWindow *msgwnd,int x,int y,int charHeight,int horzAlign,
+          int vertAlign,bool up,Font_s *font,float *color,int textStyle,float msgwndScale,
+          int textAlignMode)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   clientActive_t *pcVar4;
-  float local_34;
+  clientActive_t *cl;
+  float finalColor;
   float local_30;
   float local_2c;
   float local_28;
-  Message *local_24;
-  int local_20;
-  uint local_1c;
-  int local_18;
-  MessageLine *local_14;
-  int local_10;
-  undefined4 local_c;
-  int local_8;
+  Message *message;
+  int lineOffset;
+  int imod;
+  int time;
+  MessageLine *line;
+  int v;
+  int groupsize;
+  int serverTime;
   
-  if ((param_2 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb7a,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
-  local_8 = pcVar4->serverTime;
-  Con_CullFinishedLines(local_8,param_2);
-  local_c = 0;
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+  serverTime = pcVar4->serverTime;
+  Con_CullFinishedLines(serverTime,msgwnd);
+  groupsize = 0;
   if ((zombietron->current).enabled != false) {
-    param_4 = param_4 + 0x50;
+    y = y + 0x50;
   }
-  local_10 = param_4;
-  if (param_8) {
-    local_10 = param_4 - param_5;
+  v = y;
+  if (up) {
+    v = y - charHeight;
   }
-  local_34 = *param_10;
-  local_30 = param_10[1];
-  local_2c = param_10[2];
-  local_28 = param_10[3];
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
-  local_20 = 0;
+  finalColor = *color;
+  local_30 = color[1];
+  local_2c = color[2];
+  local_28 = color[3];
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+  lineOffset = 0;
   while( true ) {
-    if (param_2->activeLineCount <= local_20) {
+    if (msgwnd->activeLineCount <= lineOffset) {
       return;
     }
-    if ((param_2->lineCount < 1) &&
+    if ((msgwnd->lineCount < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb90,0
                                  ,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_1c = (param_2->firstLineIndex + local_20) % param_2->lineCount;
-    if (((uint)param_2->lineCount <= local_1c) &&
+    imod = (msgwnd->firstLineIndex + lineOffset) % msgwnd->lineCount;
+    if (((uint)msgwnd->lineCount <= (uint)imod) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb92,0
                                  ,"imod doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"),
        !bVar3)) {
@@ -4130,49 +4214,46 @@ Con_DrawMessageWindowOldToNew
       (*pcVar1)();
       return;
     }
-    local_14 = param_2->lines + local_1c;
-    if (((uint)param_2->lineCount <= (uint)local_14->messageIndex) &&
+    line = msgwnd->lines + imod;
+    if (((uint)msgwnd->lineCount <= (uint)line->messageIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xb94,0
                                  ,
                                  "line->messageIndex doesn\'t index msgwnd->lineCount\n\t%i not in [0, %i)"
                                 ), !bVar3)) break;
-    local_24 = param_2->messages + local_14->messageIndex;
-    bVar3 = Con_ShouldProcessMessage(local_24,local_8);
-    if ((bVar3) && (pcVar4->serverTime <= local_24->endTime)) {
-      if ((local_24->endTime - param_2->scrollTime < pcVar4->serverTime) &&
-         (local_18 = pcVar4->serverTime - (local_24->endTime - param_2->scrollTime), 0 < local_18))
-      {
-        if ((param_2->scrollTime < 1) &&
+    message = msgwnd->messages + line->messageIndex;
+    bVar3 = Con_ShouldProcessMessage(message,serverTime);
+    if ((bVar3) && (pcVar4->serverTime <= message->endTime)) {
+      if ((message->endTime - msgwnd->scrollTime < pcVar4->serverTime) &&
+         (time = pcVar4->serverTime - (message->endTime - msgwnd->scrollTime), 0 < time)) {
+        if ((msgwnd->scrollTime < 1) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                                      0xba3,0,"%s\n\t(msgwnd->scrollTime) = %i"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (param_8) {
-          local_10 = local_10 +
-                     (int)ROUND(((float)local_18 / (float)param_2->scrollTime) * (float)param_5 +
-                                9.313226e-10);
+        if (up) {
+          v = v + (int)ROUND(((float)time / (float)msgwnd->scrollTime) * (float)charHeight +
+                             9.313226e-10);
         }
         else {
-          local_10 = local_10 -
-                     (int)ROUND(((float)local_18 / (float)param_2->scrollTime) * (float)param_5 +
-                                9.313226e-10);
+          v = v - (int)ROUND(((float)time / (float)msgwnd->scrollTime) * (float)charHeight +
+                             9.313226e-10);
         }
       }
-      local_28 = Con_GetMessageAlpha(local_24,param_2,pcVar4->serverTime,false);
-      local_28 = local_28 * param_10[3];
+      local_28 = Con_GetMessageAlpha(message,msgwnd,pcVar4->serverTime,false);
+      local_28 = local_28 * color[3];
       Con_DrawMessageLineOnHUD
-                (param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,local_10,
-                 param_5,param_6,param_7,param_9,param_2,local_1c,&local_34,param_11,param_12,
-                 param_13);
-      iVar2 = param_5;
-      if (param_8) {
-        iVar2 = -param_5;
+                (localClientNum,(ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,v,
+                 charHeight,horzAlign,vertAlign,font,msgwnd,imod,&finalColor,textStyle,msgwndScale,
+                 textAlignMode);
+      iVar2 = charHeight;
+      if (up) {
+        iVar2 = -charHeight;
       }
-      local_10 = local_10 + iVar2;
+      v = v + iVar2;
     }
-    local_20 = local_20 + 1;
+    lineOffset = lineOffset + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -4184,14 +4265,15 @@ Con_DrawMessageWindowOldToNew
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl CL_ShouldntDrawMessageWindow(int param_1)
+bool __cdecl CL_ShouldntDrawMessageWindow(int localClientNum)
 
 {
   bool bVar1;
   clientActive_t *pcVar2;
+  clientActive_t *cl;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  if (((pcVar2->snap).ps.pm_type != 5) && (bVar1 = CL_ShouldDisplayHud(param_1), !bVar1)) {
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  if (((pcVar2->snap).ps.pm_type != 5) && (bVar1 = CL_ShouldDisplayHud(localClientNum), !bVar1)) {
     return true;
   }
   return false;
@@ -4200,37 +4282,39 @@ bool __cdecl CL_ShouldntDrawMessageWindow(int param_1)
 
 // 00549A90  Con_DrawMessageWindow  (client/cl_console.cpp:3019)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl
 Con_DrawMessageWindow
-          (int param_1,MessageWindow *param_2,int param_3,int param_4,int param_5,int param_6,
-          int param_7,Font_s *param_8,float *param_9,int param_10,float param_11,
-          msgwnd_mode_t param_12,int param_13)
+          (int localClientNum,MessageWindow *msgwnd,int x,int y,int charHeight,int horzAlign,
+          int vertAlign,Font_s *font,float *color,int textStyle,float msgwndScale,msgwnd_mode_t mode
+          ,int textAlignMode)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 == (MessageWindow *)0x0) &&
+  if ((msgwnd == (MessageWindow *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xbcc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = CL_ShouldntDrawMessageWindow(param_1);
+  bVar2 = CL_ShouldntDrawMessageWindow(localClientNum);
   if (!bVar2) {
-    switch(param_12) {
+    switch(mode) {
     case MWM_BOTTOMUP_ALIGN_TOP:
     case MWM_TOPDOWN_ALIGN_BOTTOM:
       Con_DrawMessageWindowOldToNew
-                (param_1,param_2,param_3,param_4,param_5,param_6,param_7,
-                 param_12 == MWM_TOPDOWN_ALIGN_BOTTOM,param_8,param_9,param_10,param_11,param_13);
+                (localClientNum,msgwnd,x,y,charHeight,horzAlign,vertAlign,
+                 mode == MWM_TOPDOWN_ALIGN_BOTTOM,font,color,textStyle,msgwndScale,textAlignMode);
       break;
     case MWM_BOTTOMUP_ALIGN_BOTTOM:
     case MWM_TOPDOWN_ALIGN_TOP:
       Con_DrawMessageWindowNewToOld
-                (param_1,param_2,param_3,param_4,param_5,param_6,param_7,
-                 param_12 == MWM_BOTTOMUP_ALIGN_BOTTOM,param_8,param_9,param_10,param_11,param_13);
+                (localClientNum,msgwnd,x,y,charHeight,horzAlign,vertAlign,
+                 mode == MWM_BOTTOMUP_ALIGN_BOTTOM,font,color,textStyle,msgwndScale,textAlignMode);
       break;
     default:
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xbde,0,
@@ -4250,15 +4334,18 @@ Con_DrawMessageWindow
 
 void __cdecl
 Con_DrawGameMessageWindow
-          (int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,Font_s *param_7,
-          float param_8,float *param_9,int param_10,int param_11,msgwnd_mode_t param_12)
+          (int localClientNum,int windowIndex,int xPos,int yPos,int horzAlign,int vertAlign,
+          Font_s *font,float fontScale,float *color,int textStyle,int textAlignMode,
+          msgwnd_mode_t mode)
 
 {
   code *pcVar1;
   bool bVar2;
+  float msgwndScale;
+  int charHeight;
   
   if ((cg_paused->current).integer == 0) {
-    if ((2 < (uint)param_2) &&
+    if ((2 < (uint)windowIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xbfb,0
                                  ,
                                  "windowIndex doesn\'t index GAMEMSG_WINDOW_COUNT\n\t%i not in [0, %i)"
@@ -4268,9 +4355,10 @@ Con_DrawGameMessageWindow
       return;
     }
     Con_DrawMessageWindow
-              (param_1,(MessageWindow *)(param_1 * 0x3ea4 + 0xfa5a3c + param_2 * 0x34),param_3,
-               param_4,(int)ROUND(param_8 * 48.0 + 9.313226e-10),param_5,param_6,param_7,param_9,
-               param_10,1.0,param_12,param_11);
+              (localClientNum,
+               (MessageWindow *)(localClientNum * 0x3ea4 + 0xfa5a3c + windowIndex * 0x34),xPos,yPos,
+               (int)ROUND(fontScale * 48.0 + 9.313226e-10),horzAlign,vertAlign,font,color,textStyle,
+               1.0,mode,textAlignMode);
   }
   return;
 }
@@ -4278,18 +4366,20 @@ Con_DrawGameMessageWindow
 
 // 0054AD20  Con_DrawMiniConsole  (client/cl_console.cpp:3073)
 
-void __cdecl Con_DrawMiniConsole(int param_1,int param_2,int param_3,float param_4)
+void __cdecl Con_DrawMiniConsole(int localClientNum,int xPos,int yPos,float alpha)
 
 {
   code *pcVar1;
   bool bVar2;
-  Font_s *pFVar3;
-  float local_14;
+  Font_s *font_00;
+  Font_s *font;
+  float msgwndScale;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  pFVar3 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0,1.0);
+  font_00 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0,1.0);
   if (((con_miniconlines->current).integer < 0) || (100 < (con_miniconlines->current).integer)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xc12,0,
                              "%s\n\t(con_miniconlines->current.integer) = %i");
@@ -4301,50 +4391,51 @@ void __cdecl Con_DrawMiniConsole(int param_1,int param_2,int param_3,float param
   }
   if (con.messageBuffer[0].miniconWindow.lineCount != (con_miniconlines->current).integer) {
     con.messageBuffer[0].miniconWindow.lineCount = (con_miniconlines->current).integer;
-    Con_ClearMiniConsole(param_1);
+    Con_ClearMiniConsole(localClientNum);
   }
-  local_14 = 1.0;
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
-  local_8 = param_4;
+  local_8 = alpha;
   Con_DrawMessageWindow
-            (param_1,&con.messageBuffer[param_1].miniconWindow,param_2,param_3,0xc,1,1,pFVar3,
-             &local_14,3,1.0,MWM_BOTTOMUP_ALIGN_TOP,4);
+            (localClientNum,&con.messageBuffer[localClientNum].miniconWindow,xPos,yPos,0xc,1,1,
+             font_00,&color,3,1.0,MWM_BOTTOMUP_ALIGN_TOP,4);
   return;
 }
 
 
 // 0054AE60  Con_DrawErrors  (client/cl_console.cpp:3103)
 
-void __cdecl Con_DrawErrors(int param_1,int param_2,int param_3,float param_4)
+void __cdecl Con_DrawErrors(int localClientNum,int xPos,int yPos,float alpha)
 
 {
-  Font_s *pFVar1;
-  float local_14;
+  Font_s *font_00;
+  Font_s *font;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0,1.0);
-  local_14 = 1.0;
+  font_00 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0,1.0);
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
-  local_8 = param_4;
+  local_8 = alpha;
   Con_DrawMessageWindow
-            (param_1,&con.messageBuffer[param_1].errorWindow,param_2,param_3,0xc,1,1,pFVar1,
-             &local_14,3,1.0,MWM_BOTTOMUP_ALIGN_TOP,4);
+            (localClientNum,&con.messageBuffer[localClientNum].errorWindow,xPos,yPos,0xc,1,1,font_00
+             ,&color,3,1.0,MWM_BOTTOMUP_ALIGN_TOP,4);
   return;
 }
 
 
 // 0054AF00  Con_IsValidGameMessageWindow  (client/cl_console.cpp:3116)
 
-bool __cdecl Con_IsValidGameMessageWindow(int param_1)
+bool __cdecl Con_IsValidGameMessageWindow(int windowIndex)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0) || (2 < param_1)) {
+  if ((windowIndex < 0) || (2 < windowIndex)) {
     local_8 = false;
   }
   else {
@@ -4356,14 +4447,15 @@ bool __cdecl Con_IsValidGameMessageWindow(int param_1)
 
 // 0054AF30  Con_IsGameMessageWindowActive  (client/cl_console.cpp:3122)
 
-bool __cdecl Con_IsGameMessageWindowActive(int param_1,int param_2)
+bool __cdecl Con_IsGameMessageWindowActive(int localClientNum,int windowIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  MessageWindow *msgwnd;
   
-  if (2 < (uint)param_2) {
+  if (2 < (uint)windowIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xc35,0,
                              "windowIndex doesn\'t index GAMEMSG_WINDOW_COUNT\n\t%i not in [0, %i)")
     ;
@@ -4373,41 +4465,46 @@ bool __cdecl Con_IsGameMessageWindowActive(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return 0 < con.messageBuffer[param_1].gamemsgWindows[param_2].activeLineCount;
+  return 0 < con.messageBuffer[localClientNum].gamemsgWindows[windowIndex].activeLineCount;
 }
 
 
 // 0054AF90  Con_DrawSay  (client/cl_console.cpp:3135)
 
-void __cdecl Con_DrawSay(int param_1,int param_2,int param_3)
+void __cdecl Con_DrawSay(int localClientNum,int x,int y)
 
 {
   bool bVar1;
-  Font_s *pFVar2;
-  int iVar3;
-  float fVar4;
-  char *local_10;
+  Font_s *font_00;
+  int iVar2;
+  float fVar3;
+  float textY;
+  float textX;
+  Font_s *font;
+  ScreenPlacement *scrPlace;
+  char *string;
+  field_t *chatField;
+  float normalizedScale;
   
-  bVar1 = Key_IsCatcherActive(param_1,0x20);
+  bVar1 = Key_IsCatcherActive(localClientNum,0x20);
   if (bVar1) {
-    if (playerKeys[param_1].chat_team == 0) {
+    if (playerKeys[localClientNum].chat_team == 0) {
       SEH_SafeTranslateString("EXE_SAY");
-      local_10 = va("%s: ");
+      string = va("%s: ");
     }
     else {
       SEH_SafeTranslateString("EXE_SAYTEAM");
-      local_10 = va("%s: ");
+      string = va("%s: ");
     }
-    fVar4 = playerKeys[param_1].chatField.charHeight / 48.0;
-    pFVar2 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0,fVar4);
-    fVar4 = R_NormalizedTextScale(pFVar2,fVar4);
-    iVar3 = R_TextHeight(pFVar2);
-    CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_10,0x7fffffff,pFVar2,
-                (float)param_2,(float)((int)((float)iVar3 * fVar4) + param_3),1,1,fVar4,fVar4,
-                colorWhite,3);
-    iVar3 = R_TextWidth(local_10,0,pFVar2);
-    Field_Draw(param_1,&playerKeys[param_1].chatField,(int)((float)iVar3 * fVar4) + param_2,param_3,
-               1,1);
+    fVar3 = playerKeys[localClientNum].chatField.charHeight / 48.0;
+    font_00 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0,fVar3);
+    fVar3 = R_NormalizedTextScale(font_00,fVar3);
+    iVar2 = R_TextHeight(font_00);
+    CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),string,0x7fffffff,font_00
+                ,(float)x,(float)((int)((float)iVar2 * fVar3) + y),1,1,fVar3,fVar3,colorWhite,3);
+    iVar2 = R_TextWidth(string,0,font_00);
+    Field_Draw(localClientNum,&playerKeys[localClientNum].chatField,(int)((float)iVar2 * fVar3) + x,
+               y,1,1);
   }
   return;
 }
@@ -4425,26 +4522,29 @@ void __cdecl Con_ToggleConsoleOutput(void)
 
 // 0054CFD0  Con_DrawOutputScrollBar  (client/cl_console.cpp:3177)
 
-void __cdecl Con_DrawOutputScrollBar(float param_1,float param_2,float param_3,float param_4)
+void __cdecl Con_DrawOutputScrollBar(float x,float y,float width,float height)
 
 {
   float10 extraout_ST0;
+  float x_00;
   float fVar1;
-  float fVar2;
   float local_2c;
   float local_24;
   float local_14;
+  float frac;
+  float scale;
+  float proportionalHeight;
   
-  fVar1 = (param_1 + param_3) - 10.0;
-  ConDraw_Box(fVar1,param_2,10.0,param_4,&(con_outputBarColor->current).value);
+  x_00 = (x + width) - 10.0;
+  ConDraw_Box(x_00,y,10.0,height,&(con_outputBarColor->current).value);
   if (con.visibleLineCount < con.consoleWindow.activeLineCount) {
-    fVar2 = (float)(con.displayLineOffset - con.visibleLineCount) *
+    fVar1 = (float)(con.displayLineOffset - con.visibleLineCount) *
             (1.0 / (float)(con.consoleWindow.activeLineCount - con.visibleLineCount));
-    local_14 = fVar2;
-    if (0.0 <= fVar2 - 1.0) {
+    local_14 = fVar1;
+    if (0.0 <= fVar1 - 1.0) {
       local_14 = 1.0;
     }
-    if (0.0 - fVar2 < 0.0) {
+    if (0.0 - fVar1 < 0.0) {
       local_24 = local_14;
     }
     else {
@@ -4455,11 +4555,11 @@ void __cdecl Con_DrawOutputScrollBar(float param_1,float param_2,float param_3,f
     if (0.0 <= 10.0 - local_2c) {
       local_2c = 10.0;
     }
-    ConDraw_Box(fVar1,(((param_2 + param_4) - local_2c) - param_2) * local_24 + param_2,10.0,
-                local_2c,&(con_outputSliderColor->current).value);
+    ConDraw_Box(x_00,(((y + height) - local_2c) - y) * local_24 + y,10.0,local_2c,
+                &(con_outputSliderColor->current).value);
   }
   else {
-    ConDraw_Box(fVar1,param_2,10.0,param_4,&(con_outputSliderColor->current).value);
+    ConDraw_Box(x_00,y,10.0,height,&(con_outputSliderColor->current).value);
   }
   return;
 }
@@ -4467,18 +4567,19 @@ void __cdecl Con_DrawOutputScrollBar(float param_1,float param_2,float param_3,f
 
 // 0054D1D0  Con_DrawOutputText  (client/cl_console.cpp:3201)
 
-void __cdecl Con_DrawOutputText(float param_1,float param_2,float param_3,float param_4)
+void __cdecl Con_DrawOutputText(float x,float y,float width,float height)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_28;
-  int local_24;
-  float local_1c [4];
-  int local_c;
-  int local_8;
+  int rowCount;
+  int firstRow;
+  MessageLine *line;
+  float color [4];
+  int lineIndex;
+  int rowIndex;
   
-  CL_LookupColor('7',local_1c);
+  CL_LookupColor('7',color);
   if (con.fontHeight == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xc8b,0,
                              "%s");
@@ -4488,21 +4589,21 @@ void __cdecl Con_DrawOutputText(float param_1,float param_2,float param_3,float 
       return;
     }
   }
-  local_28 = con.visibleLineCount;
-  local_24 = con.displayLineOffset - con.visibleLineCount;
-  if (local_24 < 0) {
-    param_2 = param_2 - (float)(local_24 * con.fontHeight);
-    local_28 = con.visibleLineCount + local_24;
-    local_24 = 0;
+  rowCount = con.visibleLineCount;
+  firstRow = con.displayLineOffset - con.visibleLineCount;
+  if (firstRow < 0) {
+    y = y - (float)(firstRow * con.fontHeight);
+    rowCount = con.visibleLineCount + firstRow;
+    firstRow = 0;
   }
-  for (local_8 = 0; local_8 < local_28; local_8 = local_8 + 1) {
-    local_c = (con.consoleWindow.firstLineIndex + local_24 + local_8) % con.consoleWindow.lineCount;
-    param_2 = (float)con.fontHeight + param_2;
+  for (rowIndex = 0; rowIndex < rowCount; rowIndex = rowIndex + 1) {
+    lineIndex = (con.consoleWindow.firstLineIndex + firstRow + rowIndex) %
+                con.consoleWindow.lineCount;
+    y = (float)con.fontHeight + y;
     R_AddCmdDrawConsoleText
               (con.consoleWindow.circularTextBuffer,con.consoleWindow.textBufSize,
-               con.consoleWindow.lines[local_c].textBufPos,
-               con.consoleWindow.lines[local_c].textBufSize,cls.consoleFont,param_1,param_2,1.0,1.0,
-               local_1c,0);
+               con.consoleWindow.lines[lineIndex].textBufPos,
+               con.consoleWindow.lines[lineIndex].textBufSize,cls.consoleFont,x,y,1.0,1.0,color,0);
   }
   return;
 }
@@ -4523,13 +4624,14 @@ char * __cdecl Con_GetVersionString(void)
 
 // 0054D300  Con_DrawOutputVersion  (client/cl_console.cpp:3239)
 
-void __cdecl Con_DrawOutputVersion(float param_1,float param_2,float param_3,float param_4)
+void __cdecl Con_DrawOutputVersion(float x,float y,float width,float height)
 
 {
-  char *pcVar1;
+  char *string;
+  char *versionString;
   
-  pcVar1 = Con_GetVersionString();
-  SCR_DrawSmallStringExt((int)param_1,(int)((param_4 - 16.0) + param_2),pcVar1,con_versionColor);
+  string = Con_GetVersionString();
+  SCR_DrawSmallStringExt((int)x,(int)((height - 16.0) + y),string,con_versionColor);
   return;
 }
 
@@ -4543,6 +4645,10 @@ void __cdecl Con_DrawOuputWindow(void)
   float fVar2;
   float fVar3;
   float fVar4;
+  float width;
+  float height;
+  float x;
+  float y;
   
   fVar4 = con.screenMin[0];
   fVar1 = con.screenMax[0] - con.screenMin[0];
@@ -4562,39 +4668,39 @@ void __cdecl Con_DrawOuputWindow(void)
 
 // 0054B170  Con_DrawSolidConsole  (client/cl_console.cpp:3283)
 
-void __cdecl Con_DrawSolidConsole(int param_1)
+void __cdecl Con_DrawSolidConsole(int localClientNum)
 
 {
   bool bVar1;
   
   Sys_EnterCriticalSection(CRITSECT_CONSOLE);
   if (con.lineOffset != 0) {
-    Con_Linefeed(param_1,con.prevChannel,0);
+    Con_Linefeed(localClientNum,con.prevChannel,0);
   }
   Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
-  bVar1 = Key_IsCatcherActive(param_1,1);
+  bVar1 = Key_IsCatcherActive(localClientNum,1);
   if (!bVar1) {
     con.outputVisible = false;
   }
   if (con.outputVisible != false) {
     Con_DrawOuputWindow();
   }
-  Con_DrawInput(param_1);
+  Con_DrawInput(localClientNum);
   return;
 }
 
 
 // 0054B140  Con_DrawConsole  (client/cl_console.cpp:3311)
 
-void __cdecl Con_DrawConsole(int param_1)
+void __cdecl Con_DrawConsole(int localClientNum)
 
 {
   bool bVar1;
   
   Con_CheckResize();
-  bVar1 = Key_IsCatcherActive(param_1,1);
+  bVar1 = Key_IsCatcherActive(localClientNum,1);
   if (bVar1) {
-    Con_DrawSolidConsole(param_1);
+    Con_DrawSolidConsole(localClientNum);
   }
   return;
 }
@@ -4667,21 +4773,21 @@ void __cdecl Con_Bottom(void)
 
 // 0054D450  Con_Close  (client/cl_console.cpp:3347)
 
-void __cdecl Con_Close(int param_1)
+void __cdecl Con_Close(int localClientNum)
 
 {
   bool bVar1;
-  int local_8;
+  int client;
   
-  bVar1 = CL_LocalClient_IsCUIFlagSet(param_1,2);
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,2);
   if (bVar1) {
     Field_Clear(&g_consoleField);
     Con_CancelAutoComplete();
-    Con_ClearNotify(param_1);
-    Con_ClearMiniConsole(param_1);
-    Con_ClearErrors(param_1);
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      clientUIActives[local_8].keyCatchers = clientUIActives[local_8].keyCatchers & 0xfffffffe;
+    Con_ClearNotify(localClientNum);
+    Con_ClearMiniConsole(localClientNum);
+    Con_ClearErrors(localClientNum);
+    for (client = 0; client < 1; client = client + 1) {
+      clientUIActives[client].keyCatchers = clientUIActives[client].keyCatchers & 0xfffffffe;
     }
   }
   return;
@@ -4690,12 +4796,12 @@ void __cdecl Con_Close(int param_1)
 
 // 0054D4E0  Con_IsActive  (client/cl_console.cpp:3365)
 
-bool __cdecl Con_IsActive(int param_1)
+bool __cdecl Con_IsActive(int localClientNum)
 
 {
   bool bVar1;
   
-  bVar1 = Key_IsCatcherActive(param_1,1);
+  bVar1 = Key_IsCatcherActive(localClientNum,1);
   return bVar1;
 }
 
@@ -4706,7 +4812,8 @@ bool __cdecl Con_IsActive(int param_1)
 
 void __cdecl
 CL_PlayTextFXPulseSounds
-          (int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int *param_7)
+          (int localClientNum,int currentTime,int strLength,int fxBirthTime,int fxLetterTime,
+          int fxDecayStartTime,int *soundTimeKeeper)
 
 {
   int iVar1;
@@ -4715,35 +4822,39 @@ CL_PlayTextFXPulseSounds
   int iVar4;
   int iVar5;
   SndEntHandle SVar6;
-  int local_8;
+  int lastReqTime;
+  int typeoutTime;
+  int timeElapsed;
+  int lastSoundTime;
+  int decayStartTime;
   
-  iVar4 = param_2 - param_4;
-  iVar1 = *param_7;
-  iVar5 = param_3 * param_5;
-  local_8 = param_6;
-  if (param_6 < iVar5) {
-    local_8 = iVar5;
+  iVar4 = currentTime - fxBirthTime;
+  iVar1 = *soundTimeKeeper;
+  iVar5 = strLength * fxLetterTime;
+  decayStartTime = fxDecayStartTime;
+  if (fxDecayStartTime < iVar5) {
+    decayStartTime = iVar5;
   }
   if (-1 < iVar4) {
-    if (local_8 < iVar4) {
-      if (iVar1 - param_4 < local_8) {
-        SVar6 = SND_EntHandle(param_1,0xfff,0,false,true,TEAM_BAD);
+    if (decayStartTime < iVar4) {
+      if (iVar1 - fxBirthTime < decayStartTime) {
+        SVar6 = SND_EntHandle(localClientNum,0xfff,0,false,true,TEAM_BAD);
         SND_Play("uin_pulse_text_delete",0,1.0,SVar6,(float *)0x0,(float *)0x0,false);
-        *param_7 = param_2;
+        *soundTimeKeeper = currentTime;
       }
     }
     else if (iVar4 < iVar5) {
-      if ((param_5 == 0) &&
+      if ((fxLetterTime == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xd4c
                                    ,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (iVar1 - param_4 < (iVar4 / param_5) * param_5) {
-        SVar6 = SND_EntHandle(param_1,0xfff,0,false,true,TEAM_BAD);
+      if (iVar1 - fxBirthTime < (iVar4 / fxLetterTime) * fxLetterTime) {
+        SVar6 = SND_EntHandle(localClientNum,0xfff,0,false,true,TEAM_BAD);
         SND_Play("uin_pulse_text_type",0,1.0,SVar6,(float *)0x0,(float *)0x0,false);
-        *param_7 = param_2;
+        *soundTimeKeeper = currentTime;
       }
     }
   }
@@ -4753,28 +4864,28 @@ CL_PlayTextFXPulseSounds
 
 // 0054D770  Con_Restricted_SigleExist  (client/cl_console.cpp:3467)
 
-int __cdecl Con_Restricted_SigleExist(char *param_1)
+int __cdecl Con_Restricted_SigleExist(char *name)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_restricted_count <= local_8) {
+    if (g_restricted_count <= i) {
       return -1;
     }
-    iVar1 = I_strcmp(g_restricted + local_8 * 0x41,param_1);
+    iVar1 = I_strcmp(g_restricted + i * 0x41,name);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 0054D640  Con_Restricted_Add  (client/cl_console.cpp:3479)
 
-void __cdecl Con_Restricted_Add(char *param_1)
+void __cdecl Con_Restricted_Add(char *name)
 
 {
   char cVar1;
@@ -4782,6 +4893,7 @@ void __cdecl Con_Restricted_Add(char *param_1)
   bool bVar3;
   int iVar4;
   char *local_c;
+  int existIndex;
   
   bVar3 = Sys_IsMainThread();
   if ((!bVar3) &&
@@ -4791,23 +4903,23 @@ void __cdecl Con_Restricted_Add(char *param_1)
     (*pcVar2)();
     return;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xd9b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = Con_Restricted_SigleExist(param_1);
+  iVar4 = Con_Restricted_SigleExist(name);
   if (iVar4 == -1) {
     if (g_restricted_count < 0x400) {
-      local_c = param_1;
+      local_c = name;
       do {
         cVar1 = *local_c;
         local_c = local_c + 1;
       } while (cVar1 != '\0');
-      if ((uint)((int)local_c - (int)(param_1 + 1)) < 0x40) {
-        I_strncpyz(g_restricted + g_restricted_count * 0x41,param_1,0x40);
+      if ((uint)((int)local_c - (int)(name + 1)) < 0x40) {
+        I_strncpyz(g_restricted + g_restricted_count * 0x41,name,0x40);
         g_restricted[g_restricted_count * 0x41 + 0x40] = 1;
         g_restricted_count = g_restricted_count + 1;
       }
@@ -4825,13 +4937,13 @@ void __cdecl Con_Restricted_Add(char *param_1)
 
 // 0054D7C0  Con_Restricted_SetState  (client/cl_console.cpp:3527)
 
-void __cdecl Con_Restricted_SetState(e_restricted_initState param_1)
+void __cdecl Con_Restricted_SetState(e_restricted_initState state)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (RESTRICTED_PROTECTED < param_1) {
+  if (RESTRICTED_PROTECTED < state) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",0xdc8,0,
                              "state doesn\'t index RESTRICTED_STATE_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -4840,7 +4952,7 @@ void __cdecl Con_Restricted_SetState(e_restricted_initState param_1)
       return;
     }
   }
-  g_restricted_state = param_1;
+  g_restricted_state = state;
   return;
 }
 
@@ -4891,7 +5003,7 @@ void __cdecl Con_Restricted_InitLists(void)
   bool bVar1;
   int iVar2;
   char *local_c;
-  StringTable *local_8;
+  StringTable *table;
   
   Con_Restricted_ShutDown();
   iVar2 = SV_GetLicenseType();
@@ -4902,15 +5014,15 @@ void __cdecl Con_Restricted_InitLists(void)
   else {
     local_c = "mp/devconsole_restrict_access_dedicated_mp.csv";
   }
-  StringTable_GetAsset(local_c,&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset(local_c,&table);
+  if (table == (StringTable *)0x0) {
     bVar1 = Dvar_GetBool("con_restricted_access");
     if (bVar1) {
       Com_DPrintf(0x10,"ConAccess: the table asset was not found.\n");
     }
   }
   else {
-    Con_Restricted_LoadTable(local_8);
+    Con_Restricted_LoadTable(table);
     iVar2 = SV_GetLicenseType();
     g_restricted_ranked = SV_IsServerRanked(iVar2);
     Con_Restricted_SetState(RESTRICTED_PROTECTED);
@@ -4921,23 +5033,24 @@ void __cdecl Con_Restricted_InitLists(void)
 
 // 0054D910  Con_Restricted_LoadTable  (client/cl_console.cpp:3583)
 
-void __cdecl Con_Restricted_LoadTable(StringTable *param_1)
+void __cdecl Con_Restricted_LoadTable(StringTable *table)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int local_c;
+  char *name_00;
+  int row;
+  char *name;
   
-  if (param_1 == (StringTable *)0x0) {
+  if (table == (StringTable *)0x0) {
     bVar1 = Dvar_GetBool("con_restricted_access");
     if (bVar1) {
       Com_DPrintf(0x10,"ConAccess: no table loaded.\n");
     }
   }
   else {
-    for (local_c = 0; local_c < param_1->rowCount; local_c = local_c + 1) {
-      pcVar2 = StringTable_GetColumnValueForRow(param_1,local_c,0);
-      Con_Restricted_Add(pcVar2);
+    for (row = 0; row < table->rowCount; row = row + 1) {
+      name_00 = StringTable_GetColumnValueForRow(table,row,0);
+      Con_Restricted_Add(name_00);
     }
   }
   return;
@@ -4950,20 +5063,21 @@ void __cdecl Con_Restricted_SetLists(void)
 
 {
   bool bVar1;
-  dvar_s *pdVar2;
-  int local_c;
+  dvar_s *dvar_00;
+  int i;
+  dvar_s *dvar;
   
-  for (local_c = 0; local_c < g_restricted_count; local_c = local_c + 1) {
-    if (g_restricted[local_c * 0x41 + 0x40] != '\0') {
-      pdVar2 = Dvar_FindVar(g_restricted + local_c * 0x41);
-      if (pdVar2 == (dvar_s *)0x0) {
-        bVar1 = Cmd_SetConAccess(g_restricted + local_c * 0x41);
+  for (i = 0; i < g_restricted_count; i = i + 1) {
+    if (g_restricted[i * 0x41 + 0x40] != '\0') {
+      dvar_00 = Dvar_FindVar(g_restricted + i * 0x41);
+      if (dvar_00 == (dvar_s *)0x0) {
+        bVar1 = Cmd_SetConAccess(g_restricted + i * 0x41);
         if ((!bVar1) && (bVar1 = Dvar_GetBool("con_restricted_access"), bVar1)) {
           Com_DPrintf(0x10,"ConAccess: Couldn\'t find: %s.\n");
         }
       }
       else {
-        Dvar_AddFlags(pdVar2,0x10000);
+        Dvar_AddFlags(dvar_00,0x10000);
       }
     }
   }
@@ -4980,7 +5094,7 @@ void __cdecl Con_Restricted_ResetLists(void)
   bool bVar2;
   bool bVar3;
   e_restricted_initState eVar4;
-  int iVar5;
+  int licensetype;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -5005,8 +5119,8 @@ void __cdecl Con_Restricted_ResetLists(void)
       Con_Restricted_InitLists();
     }
     bVar2 = g_restricted_ranked;
-    iVar5 = SV_GetLicenseType();
-    bVar3 = SV_IsServerRanked(iVar5);
+    licensetype = SV_GetLicenseType();
+    bVar3 = SV_IsServerRanked(licensetype);
     if (bVar2 != bVar3) {
       Con_Restricted_InitLists();
     }
@@ -5032,12 +5146,13 @@ void __cdecl Con_Restricted_Reset(void)
 
 void __cdecl
 Con_Restricted_ForEach
-          (bool param_1,_func___cdecl_void_char_ptr *param_2,_func___cdecl_void_char_ptr *param_3)
+          (bool isDvarCommand,_func___cdecl_void_char_ptr *callbackDvar,
+          _func___cdecl_void_char_ptr *callbackCmd)
 
 {
-  Dvar_ForEachConsoleAccessName(param_2);
-  if (!param_1) {
-    Cmd_ForEachConsoleAccessName(param_3);
+  Dvar_ForEachConsoleAccessName(callbackDvar);
+  if (!isDvarCommand) {
+    Cmd_ForEachConsoleAccessName(callbackCmd);
   }
   return;
 }
@@ -5045,53 +5160,53 @@ Con_Restricted_ForEach
 
 // 0054DC90  Con_Restricted_RestrictBuf  (client/cl_console.cpp:3683)
 
-int __cdecl
-Con_Restricted_RestrictBuf(char *param_1,int param_2,int param_3,char *param_4,int param_5)
+int __cdecl Con_Restricted_RestrictBuf(char *buf,int start,int length,char *buffer,int buffer_size)
 
 {
   bool bVar1;
   int iVar2;
-  int local_c;
-  int local_8;
+  int quotes;
+  int size;
+  int i;
   
   bVar1 = false;
-  memset((uchar *)param_4,'\0',param_5);
-  I_strncat(param_4,param_5,"#dcr#");
-  local_c = 5;
-  local_8 = param_2;
+  memset((uchar *)buffer,'\0',buffer_size);
+  I_strncat(buffer,buffer_size,"#dcr#");
+  size = 5;
+  i = start;
   while( true ) {
-    if (param_3 <= local_8) {
-      return local_8;
+    if (length <= i) {
+      return i;
     }
-    if (param_1[local_8] == '\"') {
+    if (buf[i] == '\"') {
       bVar1 = (bool)(bVar1 ^ 1);
     }
-    if (param_1[local_8] == '\n') {
-      return local_8;
+    if (buf[i] == '\n') {
+      return i;
     }
-    if (param_1[local_8] == '\r') {
-      return local_8;
+    if (buf[i] == '\r') {
+      return i;
     }
-    if (param_5 <= local_c + 1) break;
-    param_4[local_c] = param_1[local_8];
-    iVar2 = local_c + 1;
-    if ((!bVar1) && (param_1[local_8] == ';')) {
-      if (param_5 <= local_c + 6) {
-        return local_8;
+    if (buffer_size <= size + 1) break;
+    buffer[size] = buf[i];
+    iVar2 = size + 1;
+    if ((!bVar1) && (buf[i] == ';')) {
+      if (buffer_size <= size + 6) {
+        return i;
       }
-      I_strncat(param_4,param_5,"#dcr#");
-      iVar2 = local_c + 6;
+      I_strncat(buffer,buffer_size,"#dcr#");
+      iVar2 = size + 6;
     }
-    local_c = iVar2;
-    local_8 = local_8 + 1;
+    size = iVar2;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 0054DB50  Con_Restricted_ExecuteBuf  (client/cl_console.cpp:3726)
 
-void __cdecl Con_Restricted_ExecuteBuf(int param_1,int param_2,char *param_3)
+void __cdecl Con_Restricted_ExecuteBuf(int localClientNum,int controllerIndex,char *buffer)
 
 {
   bool bVar1;
@@ -5101,15 +5216,15 @@ void __cdecl Con_Restricted_ExecuteBuf(int param_1,int param_2,char *param_3)
   if (bVar1) {
     eVar2 = Con_Restricted_GetState();
     if (eVar2 == RESTRICTED_CONFIGURING) {
-      Cbuf_ExecuteBuffer(param_1,param_2,param_3);
+      Cbuf_ExecuteBuffer(localClientNum,controllerIndex,buffer);
     }
     else {
       Con_Restricted_ResetLists();
-      Cbuf_ExecuteBuffer_Restricted(param_1,param_2,param_3);
+      Cbuf_ExecuteBuffer_Restricted(localClientNum,controllerIndex,buffer);
     }
   }
   else {
-    Cbuf_ExecuteBuffer(param_1,param_2,param_3);
+    Cbuf_ExecuteBuffer(localClientNum,controllerIndex,buffer);
   }
   return;
 }
@@ -5120,30 +5235,30 @@ void __cdecl Con_Restricted_ExecuteBuf(int param_1,int param_2,char *param_3)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Con_Restricted_AddBuf(char *param_1)
+void __cdecl Con_Restricted_AddBuf(char *buf)
 
 {
   bool bVar1;
-  int local_1010;
-  char local_100c [4096];
+  int start;
+  char restricted_buf [4096];
   uint local_c;
-  int local_8;
+  int length;
   
-  local_8 = 0x54dbcd;
+  length = 0x54dbcd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar1 = Dvar_GetBool("con_restricted_access");
   if (bVar1) {
     Con_Restricted_ResetLists();
-    local_8 = strlen_noncrt(param_1);
-    local_1010 = 0;
+    length = strlen_noncrt(buf);
+    start = 0;
     do {
-      local_1010 = Con_Restricted_RestrictBuf(param_1,local_1010,local_8,local_100c,0x1000);
-      Cbuf_AddText(0,local_100c);
+      start = Con_Restricted_RestrictBuf(buf,start,length,restricted_buf,0x1000);
+      Cbuf_AddText(0,restricted_buf);
       Cbuf_AddText(0,"\n");
-    } while (local_1010 < local_8);
+    } while (start < length);
   }
   else {
-    Cbuf_AddText(0,param_1);
+    Cbuf_AddText(0,buf);
     Cbuf_AddText(0,"\n");
   }
   return;
@@ -5152,15 +5267,16 @@ void __cdecl Con_Restricted_AddBuf(char *param_1)
 
 // 0054DDA0  Con_Restricted_ValidateConfig  (client/cl_console.cpp:3779)
 
-bool __cdecl Con_Restricted_ValidateConfig(char *param_1)
+bool __cdecl Con_Restricted_ValidateConfig(char *fileName)
 
 {
   int iVar1;
-  void *local_8;
+  int fileSize;
+  char *text;
   
-  iVar1 = FS_ReadFile(param_1,&local_8);
+  iVar1 = FS_ReadFile(fileName,&text);
   if (-1 < iVar1) {
-    FS_FreeFile(local_8);
+    FS_FreeFile(text);
   }
   return -1 < iVar1;
 }

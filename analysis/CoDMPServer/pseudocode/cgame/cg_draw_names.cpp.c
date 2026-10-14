@@ -32,51 +32,54 @@ void __cdecl CG_ClearPlayerDetails(void)
 
 // 0049D470  CG_InitPlayerDetails  (cgame/cg_draw_names.cpp:126)
 
-void __cdecl CG_InitPlayerDetails(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_InitPlayerDetails(int localClientNum,int targetClientNum)
 
 {
-  PlayerDetails *pPVar1;
-  char cVar2;
-  char *pcVar3;
-  int iVar4;
+  PlayerDetails *buf;
+  char cVar1;
+  char *pcVar2;
+  int iVar3;
   char *local_2c;
   PlayerDetails *local_1c;
   char *local_c;
+  PlayerDetails *currentPlayerDetails;
   
-  pPVar1 = playerDetails[param_1] + param_2;
-  iVar4 = CL_GetClientName(param_1,param_2,pPVar1->gamerTag,0x20,false);
-  if (iVar4 == 0) {
+  buf = playerDetails[localClientNum] + targetClientNum;
+  iVar3 = CL_GetClientName(localClientNum,targetClientNum,buf->gamerTag,0x20,false);
+  if (iVar3 == 0) {
     Com_PrintError(0xe,"Unable to get name for client num: %i\n");
   }
   else {
-    local_c = pPVar1->gamerTag;
+    local_c = buf->gamerTag;
     do {
-      cVar2 = *local_c;
+      cVar1 = *local_c;
       local_c = local_c + 1;
-    } while (cVar2 != '\0');
-    pPVar1->gamerTagDisplayLength = (int)local_c - (int)(pPVar1->gamerTag + 1);
-    iVar4 = CL_GetClientName(param_1,param_2,pPVar1->fullDisplayName,0x26,true);
-    if (iVar4 == 0) {
+    } while (cVar1 != '\0');
+    buf->gamerTagDisplayLength = (int)local_c - (int)(buf->gamerTag + 1);
+    iVar3 = CL_GetClientName(localClientNum,targetClientNum,buf->fullDisplayName,0x26,true);
+    if (iVar3 == 0) {
       Com_PrintError(0xe,"Unable to get name for client num: %i\n");
     }
     else {
-      local_1c = pPVar1;
+      local_1c = buf;
       do {
-        pcVar3 = local_1c->fullDisplayName;
+        pcVar2 = local_1c->fullDisplayName;
         local_1c = (PlayerDetails *)(local_1c->fullDisplayName + 1);
-      } while (*pcVar3 != '\0');
-      pPVar1->fullDisplayNameLength = (int)local_1c - (int)(pPVar1->fullDisplayName + 1);
-      iVar4 = CL_GetClientClanName(param_1,param_2,pPVar1->clanDisplayName,7);
-      if (iVar4 == 0) {
+      } while (*pcVar2 != '\0');
+      buf->fullDisplayNameLength = (int)local_1c - (int)(buf->fullDisplayName + 1);
+      iVar3 = CL_GetClientClanName(localClientNum,targetClientNum,buf->clanDisplayName,7);
+      if (iVar3 == 0) {
         Com_PrintError(0xe,"Unable to get name for client num: %i\n");
       }
       else {
-        local_2c = pPVar1->clanDisplayName;
+        local_2c = buf->clanDisplayName;
         do {
-          cVar2 = *local_2c;
+          cVar1 = *local_2c;
           local_2c = local_2c + 1;
-        } while (cVar2 != '\0');
-        pPVar1->clanDisplayLength = (int)local_2c - (int)(pPVar1->clanDisplayName + 1);
+        } while (cVar1 != '\0');
+        buf->clanDisplayLength = (int)local_2c - (int)(buf->clanDisplayName + 1);
       }
     }
   }
@@ -86,7 +89,7 @@ void __cdecl CG_InitPlayerDetails(int param_1,int param_2)
 
 // 0049DFE0  CG_GetViewAxisProjections  (cgame/cg_draw_names.cpp:155)
 
-void __cdecl CG_GetViewAxisProjections(refdef_s *param_1,float *param_2,float *param_3)
+void __cdecl CG_GetViewAxisProjections(refdef_s *refdef,float *worldPoint,float *projections)
 
 {
   float (*pafVar1) [3];
@@ -96,17 +99,17 @@ void __cdecl CG_GetViewAxisProjections(refdef_s *param_1,float *param_2,float *p
   float fVar5;
   float fVar6;
   float fVar7;
-  int local_8;
+  int i;
   
-  fVar2 = *param_2;
-  fVar3 = param_1->vieworg[0];
-  fVar4 = param_2[1];
-  fVar5 = param_1->vieworg[1];
-  fVar6 = param_2[2];
-  fVar7 = param_1->vieworg[2];
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    pafVar1 = param_1->viewaxis + local_8;
-    param_3[local_8] =
+  fVar2 = *worldPoint;
+  fVar3 = refdef->vieworg[0];
+  fVar4 = worldPoint[1];
+  fVar5 = refdef->vieworg[1];
+  fVar6 = worldPoint[2];
+  fVar7 = refdef->vieworg[2];
+  for (i = 0; i < 3; i = i + 1) {
+    pafVar1 = refdef->viewaxis + i;
+    projections[i] =
          (fVar2 - fVar3) * (*pafVar1)[0] + (fVar4 - fVar5) * (*pafVar1)[1] +
          (fVar6 - fVar7) * (*pafVar1)[2];
   }
@@ -121,29 +124,34 @@ void __cdecl CG_GetViewAxisProjections(refdef_s *param_1,float *param_2,float *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_CalcNamePosition(int param_1,float *param_2,float *param_3,float *param_4)
+bool __cdecl CG_CalcNamePosition(int localClientNum,float *origin,float *xOut,float *yOut)
 
 {
   cg_s *pcVar1;
   int iVar2;
-  float local_20;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float projections;
   float local_1c;
   float local_18;
-  refdef_s *local_14;
+  refdef_s *refdef;
+  float x;
+  float y;
+  float w;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_14 = &pcVar1->refdef;
-  iVar2 = param_1 * 0x78;
-  CG_GetViewAxisProjections(local_14,param_2,&local_20);
-  if (0.0 <= local_20) {
-    *param_3 = *(float *)(&DAT_02d9e6c0 + iVar2) * 0.5 *
-               (1.0 - (local_1c / local_14->tanHalfFovX) / local_20) +
-               *(float *)(&DAT_02d9e6b8 + iVar2);
-    *param_4 = *(float *)(&DAT_02d9e6c4 + iVar2) * 0.5 *
-               (1.0 - (local_18 / local_14->tanHalfFovY) / local_20) +
-               *(float *)(&DAT_02d9e6bc + iVar2);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  refdef = &pcVar1->refdef;
+  iVar2 = localClientNum * 0x78;
+  CG_GetViewAxisProjections(refdef,origin,&projections);
+  if (0.0 <= projections) {
+    *xOut = *(float *)(&DAT_02d9e6c0 + iVar2) * 0.5 *
+            (1.0 - (local_1c / refdef->tanHalfFovX) / projections) +
+            *(float *)(&DAT_02d9e6b8 + iVar2);
+    *yOut = *(float *)(&DAT_02d9e6c4 + iVar2) * 0.5 *
+            (1.0 - (local_18 / refdef->tanHalfFovY) / projections) +
+            *(float *)(&DAT_02d9e6bc + iVar2);
   }
-  return 0.0 <= local_20;
+  return 0.0 <= projections;
 }
 
 
@@ -154,10 +162,10 @@ bool __cdecl CG_CalcNamePosition(int param_1,float *param_2,float *param_3,float
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CalcVehicleNamePosition(int param_1,centity_s *param_2,float (*param_3) [3])
+void __cdecl CG_CalcVehicleNamePosition(int localClientNum,centity_s *cent,float (*origin) [3])
 
 {
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -167,19 +175,19 @@ void __cdecl CG_CalcVehicleNamePosition(int param_1,centity_s *param_2,float (*p
   float local_c;
   float local_8;
   
-  (*param_3)[0] = (param_2->pose).origin[0];
-  (*param_3)[1] = (param_2->pose).origin[1];
-  (*param_3)[2] = (param_2->pose).origin[2];
-  AnglesToAxis((param_2->pose).angles,(float (*) [3])&local_28);
-  (*param_3)[0] = local_28 * -80.0 + (*param_3)[0];
-  (*param_3)[1] = local_24 * -80.0 + (*param_3)[1];
-  (*param_3)[2] = local_20 * -80.0 + (*param_3)[2];
-  (*param_3)[0] = local_1c * 0.0 + (*param_3)[0];
-  (*param_3)[1] = local_18 * 0.0 + (*param_3)[1];
-  (*param_3)[2] = local_14 * 0.0 + (*param_3)[2];
-  (*param_3)[0] = local_10 * 75.0 + (*param_3)[0];
-  (*param_3)[1] = local_c * 75.0 + (*param_3)[1];
-  (*param_3)[2] = local_8 * 75.0 + (*param_3)[2];
+  (*origin)[0] = (cent->pose).origin[0];
+  (*origin)[1] = (cent->pose).origin[1];
+  (*origin)[2] = (cent->pose).origin[2];
+  AnglesToAxis((cent->pose).angles,(float (*) [3])&axis);
+  (*origin)[0] = axis * -80.0 + (*origin)[0];
+  (*origin)[1] = local_24 * -80.0 + (*origin)[1];
+  (*origin)[2] = local_20 * -80.0 + (*origin)[2];
+  (*origin)[0] = local_1c * 0.0 + (*origin)[0];
+  (*origin)[1] = local_18 * 0.0 + (*origin)[1];
+  (*origin)[2] = local_14 * 0.0 + (*origin)[2];
+  (*origin)[0] = local_10 * 75.0 + (*origin)[0];
+  (*origin)[1] = local_c * 75.0 + (*origin)[1];
+  (*origin)[2] = local_8 * 75.0 + (*origin)[2];
   return;
 }
 
@@ -191,196 +199,204 @@ void __cdecl CG_CalcVehicleNamePosition(int param_1,centity_s *param_2,float (*p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,int param_4)
+void __cdecl CG_DrawOverheadNames(int localClientNum,centity_s *cent,float alpha,int mode)
 
 {
   bool bVar1;
-  Font_s *pFVar2;
-  int iVar3;
+  Font_s *font_00;
+  int iVar2;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
+  float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
-  float fVar8;
-  int local_98;
-  float local_90;
-  float local_8c;
+  float iconSize;
+  float newscale;
+  float aspect;
+  float rankSize;
+  float distFrac;
+  int prestige;
+  Font_s *font;
+  float nameX;
+  float origin;
   float local_88;
   float local_84;
-  char local_7d;
-  float *local_7c;
-  cg_s *local_78;
-  Material *local_74;
-  int local_70;
-  float local_6c;
-  float local_68;
+  bool drawRank;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  Material *material;
+  int rank;
+  float distanceScale;
+  float viewPos;
   float local_64;
   float local_60;
-  float local_5c;
-  float local_58;
-  char *local_54;
-  PlayerDetails *local_50;
-  float local_4c;
-  int local_48;
-  float local_44 [3];
+  float textSize;
+  float distance;
+  char *rankText;
+  PlayerDetails *currentPlayerDetails;
+  float scaleY;
+  int entnum;
+  float glow [3];
   float local_38;
-  float local_34;
-  playerState_s *local_30;
-  float local_2c;
+  float scale;
+  playerState_s *ps;
+  float color;
   float local_28;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
-  PlayerDetails *local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float x;
+  float y;
+  char *text;
+  float scaleX;
+  float distanceSq;
+  float w;
   
-  local_74 = (Material *)0x0;
-  local_7d = '\x01';
-  local_14 = (PlayerDetails *)0xc60bf9;
-  if (0.001 < param_3) {
-    local_48 = (param_2->nextState).number;
-    local_78 = CG_GetLocalClientGlobals(param_1);
-    local_7c = (float *)(&scrPlaceView + param_1 * 0x78);
-    if ((((param_2->pose).eType != '\x0e') ||
+  material = (Material *)0x0;
+  drawRank = true;
+  text = "";
+  if (0.001 < alpha) {
+    entnum = (cent->nextState).number;
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    if ((((cent->pose).eType != '\x0e') ||
         ((bVar1 = CG_IsVehicleRemoteControl
-                            ((uint)(param_2->nextState).un2.vehicleState.vehicleInfoIndex), !bVar1
-         && (local_48 = CG_GetDriverClientNumFromVehicle(param_1,param_2),
-            local_48 < (com_maxclients->current).integer)))) &&
-       (((param_2->nextState).lerp.eFlags & 0x40000U) == 0)) {
-      local_50 = playerDetails[param_1] + local_48;
-      local_30 = &local_78->nextSnap->ps;
-      pFVar2 = UI_GetFontHandle((ScreenPlacement *)0x0,(cg_overheadNamesFont->current).integer,1.0);
-      CG_InitPlayerDetails(param_1,local_48);
-      if (((local_78->clientNum != local_48) ||
-          (((local_78->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) ||
+                            ((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex), !bVar1 &&
+         (entnum = CG_GetDriverClientNumFromVehicle(localClientNum,cent),
+         entnum < (com_maxclients->current).integer)))) &&
+       (((cent->nextState).lerp.eFlags & 0x40000U) == 0)) {
+      currentPlayerDetails = playerDetails[localClientNum] + entnum;
+      ps = &cgameGlob->nextSnap->ps;
+      font_00 = UI_GetFontHandle((ScreenPlacement *)0x0,(cg_overheadNamesFont->current).integer,1.0)
+      ;
+      CG_InitPlayerDetails(localClientNum,entnum);
+      if (((cgameGlob->clientNum != entnum) ||
+          (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) ||
          (bVar1 = Demo_IsMovieCamera(), bVar1)) {
-        if ((param_2->nextState).eType == 0xe) {
-          CG_CalcVehicleNamePosition(param_1,param_2,(float (*) [3])&local_8c);
+        if ((cent->nextState).eType == 0xe) {
+          CG_CalcVehicleNamePosition(localClientNum,cent,(float (*) [3])&origin);
         }
         else {
-          iVar3 = CachedTag_GetTagPos(param_2,(uint)scr_const.j_head,&local_8c,
+          iVar2 = CachedTag_GetTagPos(cent,(uint)scr_const.j_head,&origin,
                                       (cg_overheadNamesTagUpdateInterval->current).integer,false);
-          if (iVar3 < 1) {
-            local_8c = (param_2->pose).origin[0];
-            local_88 = (param_2->pose).origin[1];
-            local_84 = (param_2->pose).origin[2] + 82.0;
+          if (iVar2 < 1) {
+            origin = (cent->pose).origin[0];
+            local_88 = (cent->pose).origin[1];
+            local_84 = (cent->pose).origin[2] + 82.0;
           }
           else {
             local_84 = local_84 + 10.0;
           }
         }
-        switch(param_4) {
+        switch(mode) {
         case 0:
-          local_7d = '\0';
-          local_14 = (PlayerDetails *)local_50->gamerTag;
+          drawRank = false;
+          text = currentPlayerDetails->gamerTag;
           break;
         case 1:
-          local_14 = (PlayerDetails *)local_50->clanDisplayName;
+          text = currentPlayerDetails->clanDisplayName;
           break;
         case 2:
-          local_14 = local_50;
+          text = currentPlayerDetails->fullDisplayName;
           break;
         default:
           Com_PrintError(0xe,"Bad Overhead Display Mode for client num: %i\n");
           break;
         case 5:
-          local_14 = (PlayerDetails *)0xc60bf9;
+          text = "";
         }
-        CG_RelativeTeamColor(local_48,&local_2c,param_1);
-        local_20 = param_3;
-        bVar1 = CG_CalcNamePosition(param_1,&local_8c,&local_90,&local_18);
+        CG_RelativeTeamColor(entnum,&color,localClientNum);
+        local_20 = alpha;
+        bVar1 = CG_CalcNamePosition(localClientNum,&origin,&nameX,&y);
         if (bVar1) {
-          local_1c = local_90;
-          local_68 = (local_78->refdef).vieworg[0];
-          local_64 = (local_78->refdef).vieworg[1];
-          local_60 = (local_78->refdef).vieworg[2];
-          local_c = Vec3DistanceSq(&local_68,&local_8c);
-          local_58 = SQRT(local_c);
+          x = nameX;
+          viewPos = (cgameGlob->refdef).vieworg[0];
+          local_64 = (cgameGlob->refdef).vieworg[1];
+          local_60 = (cgameGlob->refdef).vieworg[2];
+          distanceSq = Vec3DistanceSq(&viewPos,&origin);
+          distance = SQRT(distanceSq);
           if ((cg_overheadNamesNearDist->current).value * (cg_overheadNamesNearDist->current).value
-              <= local_c) {
-            if (local_c <=
+              <= distanceSq) {
+            if (distanceSq <=
                 (cg_overheadNamesFarDist->current).value * (cg_overheadNamesFarDist->current).value)
             {
-              fVar4 = (local_58 - (cg_overheadNamesNearDist->current).value) /
+              fVar3 = (distance - (cg_overheadNamesNearDist->current).value) /
                       ((cg_overheadNamesFarDist->current).value -
                       (cg_overheadNamesNearDist->current).value);
-              local_6c = fVar4 * (cg_overheadNamesFarScale->current).value + (1.0 - fVar4);
+              distanceScale = fVar3 * (cg_overheadNamesFarScale->current).value + (1.0 - fVar3);
             }
             else {
-              local_6c = (cg_overheadNamesFarScale->current).value;
+              distanceScale = (cg_overheadNamesFarScale->current).value;
             }
           }
           else {
-            local_6c = 1.0;
+            distanceScale = 1.0;
           }
-          fVar5 = R_NormalizedTextScale(pFVar2,(cg_overheadNamesSize->current).value * local_6c);
-          local_34 = fVar5;
+          fVar4 = R_NormalizedTextScale
+                            (font_00,(cg_overheadNamesSize->current).value * distanceScale);
+          scale = fVar4;
+          fVar5 = ScrPlace_HiResGetScale();
+          fVar3 = scrPlace->scaleRealToVirtual[1];
           fVar6 = ScrPlace_HiResGetScale();
-          fVar4 = local_7c[5];
-          fVar7 = ScrPlace_HiResGetScale();
-          local_10 = fVar7 * (fVar5 / fVar6) * fVar4 * *local_7c;
-          local_4c = local_34;
-          iVar3 = R_TextHeight(pFVar2);
-          local_5c = (float)iVar3 * local_34;
-          fVar4 = local_10 * 0.5;
-          iVar3 = R_TextWidth(local_14->fullDisplayName,0x20,pFVar2);
-          local_1c = local_1c - fVar4 * (float)iVar3;
+          scaleX = fVar6 * (fVar4 / fVar5) * fVar3 * scrPlace->scaleVirtualToReal[0];
+          scaleY = scale;
+          iVar2 = R_TextHeight(font_00);
+          textSize = (float)iVar2 * scale;
+          fVar3 = scaleX * 0.5;
+          iVar2 = R_TextWidth(text,0x20,font_00);
+          x = x - fVar3 * (float)iVar2;
           floor();
-          local_1c = (float)extraout_ST0;
+          x = (float)extraout_ST0;
           floor();
-          local_18 = (float)extraout_ST0_00;
-          Dvar_GetUnpackedColor(cg_overheadNamesGlow,local_44);
-          local_38 = local_38 * param_3;
-          local_8 = local_58;
-          ScrPlace_HiResApplyRect(&local_1c,&local_18,&local_10,&local_4c);
+          y = (float)extraout_ST0_00;
+          Dvar_GetUnpackedColor(cg_overheadNamesGlow,glow);
+          local_38 = local_38 * alpha;
+          w = distance;
+          ScrPlace_HiResApplyRect(&x,&y,&scaleX,&scaleY);
           CL_DrawTextPhysicalWithEffects
-                    (local_14->fullDisplayName,0x20,pFVar2,local_1c,local_18,local_8,local_10,
-                     local_4c,&local_2c,3,local_44,(Material *)0x0,(Material *)0x0,0,0,0,0);
-          if (local_7d != '\0') {
+                    (text,0x20,font_00,x,y,w,scaleX,scaleY,&color,3,glow,(Material *)0x0,
+                     (Material *)0x0,0,0,0,0);
+          if (drawRank != false) {
             if ((cl_playerRank->current).integer < 0) {
-              local_70 = *(int *)((int)(local_78->bgs).clientinfo + local_48 * 0x5c8 + 0x38);
+              rank = *(int *)((int)(cgameGlob->bgs).clientinfo + entnum * 0x5c8 + 0x38);
             }
             else {
-              local_70 = (cl_playerRank->current).integer;
+              rank = (cl_playerRank->current).integer;
             }
             if ((cl_playerPrestige->current).integer < 0) {
-              local_98 = *(int *)((int)(local_78->bgs).clientinfo + local_48 * 0x5c8 + 0x3c);
+              prestige = *(int *)((int)(cgameGlob->bgs).clientinfo + entnum * 0x5c8 + 0x3c);
             }
             else {
-              local_98 = (cl_playerPrestige->current).integer;
+              prestige = (cl_playerPrestige->current).integer;
             }
             if ((zombiemode->current).enabled == false) {
-              CL_GetRankIcon(local_70,local_98,&local_74);
+              CL_GetRankIcon(rank,prestige,&material);
             }
-            if (local_74 != (Material *)0x0) {
-              fVar5 = (cg_overheadIconSize->current).value * local_5c;
-              fVar7 = R_NormalizedTextScale(pFVar2,(cg_overheadRankSize->current).value * local_6c);
-              fVar6 = ScrPlace_HiResGetScale();
-              fVar4 = local_7c[5];
-              fVar8 = ScrPlace_HiResGetScale();
-              local_10 = fVar8 * (fVar7 / fVar6) * fVar4 * *local_7c;
-              fVar4 = local_10 / fVar7;
-              local_54 = CL_GetRankData(local_70,MP_RANKTABLE_DISPLAYLEVEL);
-              fVar6 = local_6c * 2.0;
-              iVar3 = R_TextWidth(local_54,0x20,pFVar2);
-              local_1c = local_1c - (fVar6 + fVar5 + (float)iVar3 * fVar7) * fVar4;
-              local_2c = 1.0;
+            if (material != (Material *)0x0) {
+              fVar4 = (cg_overheadIconSize->current).value * textSize;
+              fVar6 = R_NormalizedTextScale
+                                (font_00,(cg_overheadRankSize->current).value * distanceScale);
+              fVar5 = ScrPlace_HiResGetScale();
+              fVar3 = scrPlace->scaleRealToVirtual[1];
+              fVar7 = ScrPlace_HiResGetScale();
+              scaleX = fVar7 * (fVar6 / fVar5) * fVar3 * scrPlace->scaleVirtualToReal[0];
+              fVar3 = scaleX / fVar6;
+              rankText = CL_GetRankData(rank,MP_RANKTABLE_DISPLAYLEVEL);
+              fVar5 = distanceScale * 2.0;
+              iVar2 = R_TextWidth(rankText,0x20,font_00);
+              x = x - (fVar5 + fVar4 + (float)iVar2 * fVar6) * fVar3;
+              color = 1.0;
               local_28 = 1.0;
               local_24 = 1.0;
-              local_20 = param_3;
+              local_20 = alpha;
               CL_DrawStretchPicPhysicalW
-                        (local_1c,local_18 - (fVar5 + local_5c) * 0.5,local_8,fVar5 * fVar4,fVar5,
-                         0.0,0.0,1.0,1.0,&local_2c,local_74);
-              iVar3 = R_TextHeight(pFVar2);
-              local_1c = fVar5 * fVar4 + local_1c;
-              CL_DrawTextPhysical(local_54,3,pFVar2,local_1c,
-                                  (float)iVar3 * local_34 * 0.25 + local_18,local_8,fVar7 * fVar4,
-                                  fVar7,&local_2c,3);
+                        (x,y - (fVar4 + textSize) * 0.5,w,fVar4 * fVar3,fVar4,0.0,0.0,1.0,1.0,&color
+                         ,material);
+              iVar2 = R_TextHeight(font_00);
+              x = fVar4 * fVar3 + x;
+              CL_DrawTextPhysical(rankText,3,font_00,x,(float)iVar2 * scale * 0.25 + y,w,
+                                  fVar6 * fVar3,fVar6,&color,3);
             }
           }
         }
@@ -393,24 +409,26 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
 
 // 0049E210  CG_FadeCrosshairNameAlpha  (cgame/cg_draw_names.cpp:504)
 
-float __cdecl CG_FadeCrosshairNameAlpha(int param_1,int param_2,int param_3,int param_4,int param_5)
+float __cdecl
+CG_FadeCrosshairNameAlpha(int time,int startMsec,int lastMsec,int fadeInMsec,int fadeOutMsec)
 
 {
   int iVar1;
   undefined4 local_c;
+  int timeSinceLastOver;
   
-  iVar1 = param_1 - param_3;
-  if (iVar1 < param_5) {
-    if (param_3 - param_2 < param_4) {
-      if (param_4 == 0) {
+  iVar1 = time - lastMsec;
+  if (iVar1 < fadeOutMsec) {
+    if (lastMsec - startMsec < fadeInMsec) {
+      if (fadeInMsec == 0) {
         local_c = 1.0;
       }
       else {
-        local_c = ((float)(param_3 - param_2) * 1.0) / (float)param_4;
+        local_c = ((float)(lastMsec - startMsec) * 1.0) / (float)fadeInMsec;
       }
     }
-    else if (iVar1 < param_5) {
-      local_c = ((float)(param_5 - iVar1) * 1.0) / (float)param_5;
+    else if (iVar1 < fadeOutMsec) {
+      local_c = ((float)(fadeOutMsec - iVar1) * 1.0) / (float)fadeOutMsec;
     }
     else {
       local_c = 1.0;
@@ -430,10 +448,10 @@ float __cdecl CG_FadeCrosshairNameAlpha(int param_1,int param_2,int param_3,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_TraceEntIsEntity(int param_1,centity_s *param_2)
+bool __cdecl CG_TraceEntIsEntity(int traceEnt,centity_s *cent)
 
 {
-  return param_1 == (param_2->nextState).number;
+  return traceEnt == (cent->nextState).number;
 }
 
 
@@ -445,7 +463,7 @@ bool __cdecl CG_TraceEntIsEntity(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_CanSeeFriendlyHead(int param_1,centity_s *param_2)
+bool __cdecl CG_CanSeeFriendlyHead(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
@@ -453,86 +471,89 @@ bool __cdecl CG_CanSeeFriendlyHead(int param_1,centity_s *param_2)
   DObj *pDVar3;
   int iVar4;
   float fVar5;
-  float local_90 [3];
-  float local_84;
+  DObj *obj;
+  bool checkTraceEnt;
+  cg_s *cgameGlob;
+  float contactEnd [3];
+  float start;
   float local_80;
   float local_7c;
-  float local_78;
+  float end;
   float local_74;
   float local_70;
-  float local_6c;
+  float eyeDelta;
   float local_68;
   float local_64;
-  float4 local_60;
+  float4 trace;
   float local_50;
   uint local_28;
-  char local_21;
-  playerState_s *local_20;
-  uint local_1c;
-  float local_18;
+  bool do_frustum_check;
+  playerState_s *ps;
+  int clientNum;
+  float playerDir;
   float local_14;
   float local_10;
-  ushort local_c;
-  float local_8;
+  ushort hitEntId;
+  float dot;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_60.v[0] = 0.0;
-  local_60.v[1] = 0.0;
-  local_60.v[2] = 0.0;
-  local_60.v[3] = 0.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
   if ((cg_drawThroughWalls->current).enabled == false) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
-    local_20 = &pcVar2->nextSnap->ps;
-    pDVar3 = Com_GetClientDObj((param_2->nextState).number,param_1);
-    if ((((param_2->nextState).eType != 1) || (pDVar3 == (DObj *)0x0)) ||
-       (iVar4 = CachedTag_GetTagPos(param_2,(uint)scr_const.j_head,&local_78,
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+    ps = &pcVar2->nextSnap->ps;
+    pDVar3 = Com_GetClientDObj((cent->nextState).number,localClientNum);
+    if ((((cent->nextState).eType != 1) || (pDVar3 == (DObj *)0x0)) ||
+       (iVar4 = CachedTag_GetTagPos(cent,(uint)scr_const.j_head,&end,
                                     (cg_canSeeFriendlyFrustumUpdateInterval->current).integer,false)
        , iVar4 == 0)) {
-      local_78 = (param_2->pose).origin[0];
-      local_74 = (param_2->pose).origin[1];
-      local_70 = (param_2->pose).origin[2] + 10.0;
+      end = (cent->pose).origin[0];
+      local_74 = (cent->pose).origin[1];
+      local_70 = (cent->pose).origin[2] + 10.0;
     }
-    local_84 = (pcVar2->refdef).vieworg[0];
+    start = (pcVar2->refdef).vieworg[0];
     local_80 = (pcVar2->refdef).vieworg[1];
     local_7c = (pcVar2->refdef).vieworg[2];
-    local_18 = (pcVar2->refdef).viewaxis[0][0];
+    playerDir = (pcVar2->refdef).viewaxis[0][0];
     local_14 = (pcVar2->refdef).viewaxis[0][1];
     local_10 = (pcVar2->refdef).viewaxis[0][2];
-    local_8 = local_18 * (local_78 - (pcVar2->refdef).vieworg[0]) +
-              local_14 * (local_74 - (pcVar2->refdef).vieworg[1]) +
-              local_10 * (local_70 - (pcVar2->refdef).vieworg[2]) + 15.0;
-    if (0.0 <= local_8) {
-      local_21 = '\0';
-      fVar5 = Vec3DistanceSq((pcVar2->predictedPlayerState).origin,&local_78);
+    dot = playerDir * (end - (pcVar2->refdef).vieworg[0]) +
+          local_14 * (local_74 - (pcVar2->refdef).vieworg[1]) +
+          local_10 * (local_70 - (pcVar2->refdef).vieworg[2]) + 15.0;
+    if (0.0 <= dot) {
+      do_frustum_check = false;
+      fVar5 = Vec3DistanceSq((pcVar2->predictedPlayerState).origin,&end);
       if ((cg_canSeeFriendlyFrustumMinDistance->current).value < fVar5) {
-        local_21 = '\x01';
+        do_frustum_check = true;
       }
-      if (local_21 != '\0') {
-        CG_PlayerInViewFrustum(param_1,param_2);
+      if (do_frustum_check != false) {
+        CG_PlayerInViewFrustum(localClientNum,cent);
       }
-      if ((local_21 == '\0') ||
-         (iVar4 = R_CullPoint(pcVar2->localClientNum,&local_78,
+      if ((do_frustum_check == false) ||
+         (iVar4 = R_CullPoint(pcVar2->localClientNum,&end,
                               (cg_canSeeFriendlyFrustumExpand->current).value), iVar4 == 0)) {
-        local_6c = local_78 - (pcVar2->refdef).vieworg[0];
+        eyeDelta = end - (pcVar2->refdef).vieworg[0];
         local_68 = local_74 - (pcVar2->refdef).vieworg[1];
         local_64 = local_70 - (pcVar2->refdef).vieworg[2];
-        if (0.0 <= local_6c * (pcVar2->refdef).viewaxis[0][0] +
+        if (0.0 <= eyeDelta * (pcVar2->refdef).viewaxis[0][0] +
                    local_68 * (pcVar2->refdef).viewaxis[0][1] +
                    local_64 * (pcVar2->refdef).viewaxis[0][2]) {
-          fVar5 = Vec3DistanceSq(&local_84,&local_78);
+          fVar5 = Vec3DistanceSq(&start,&end);
           if (fVar5 <= (cg_overheadNamesMaxDist->current).value *
                        (cg_overheadNamesMaxDist->current).value) {
             bVar1 = Demo_IsMovieCamera();
             if (bVar1) {
-              local_1c = 0xffffffff;
+              clientNum = -1;
             }
             else {
-              local_1c = (uint)local_20->clientNum;
+              clientNum = (int)ps->clientNum;
             }
-            CG_LocationalTrace((trace_t *)&local_60,&local_84,&local_78,local_1c,0x280b001,false,
+            CG_LocationalTrace((trace_t *)&trace,&start,&end,clientNum,0x280b001,false,
                                (col_context_t *)0x0);
             if ((((pcVar2->nextSnap->ps).otherFlags & 6U) == 0) ||
-               ((param_2->nextState).number != (uint)(pcVar2->nextSnap->ps).clientNum)) {
+               ((cent->nextState).number != (uint)(pcVar2->nextSnap->ps).clientNum)) {
               bVar1 = false;
             }
             else {
@@ -544,13 +565,13 @@ bool __cdecl CG_CanSeeFriendlyHead(int param_1,centity_s *param_2)
               }
             }
             else {
-              local_c = Trace_GetEntityHitId((trace_t *)&local_60);
-              bVar1 = CG_TraceEntIsEntity((uint)local_c,param_2);
+              hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+              bVar1 = CG_TraceEntIsEntity((uint)hitEntId,cent);
               if (!bVar1) {
                 return false;
               }
             }
-            Vec3Lerp(&local_84,&local_78,local_50,local_90);
+            Vec3Lerp(&start,&end,local_50,contactEnd);
             bVar1 = true;
           }
           else {
@@ -583,18 +604,22 @@ bool __cdecl CG_CanSeeFriendlyHead(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_CheckIfDrivingRemoteControlVehicle(int param_1,ushort param_2)
+int __cdecl CG_CheckIfDrivingRemoteControlVehicle(int localClientNum,ushort EntId)
 
 {
   centity_s *pcVar1;
   uint uVar2;
+  centity_s *ParentEnt;
+  cg_s *cgameGlob;
+  ushort ParentID;
+  centity_s *ent;
   
-  pcVar1 = CG_GetEntity(param_1,(uint)param_2);
-  CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetEntity(localClientNum,(uint)EntId);
+  CG_GetLocalClientGlobals(localClientNum);
   if (((((pcVar1->pose).eType == '\x0e') &&
-       (uVar2 = CG_GetDriverClientNumFromVehicle(param_1,pcVar1),
+       (uVar2 = CG_GetDriverClientNumFromVehicle(localClientNum,pcVar1),
        (int)(uVar2 & 0xffff) < (com_maxclients->current).integer)) &&
-      (pcVar1 = CG_GetEntity(param_1,uVar2 & 0xffff), pcVar1->nextValid != 0)) &&
+      (pcVar1 = CG_GetEntity(localClientNum,uVar2 & 0xffff), pcVar1->nextValid != 0)) &&
      (((pcVar1->nextState).lerp.eFlags2 & 0x10000000U) != 0)) {
     return 1;
   }
@@ -612,7 +637,7 @@ int __cdecl CG_CheckIfDrivingRemoteControlVehicle(int param_1,ushort param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
+void __cdecl CG_ScanForCrosshairEntityInternal(int localClientNum)
 
 {
   uint *puVar1;
@@ -623,54 +648,56 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
   uint extraout_EAX;
   uint uVar6;
   uint extraout_EDX;
-  float local_dc;
-  IgnoreEntParams local_d0;
-  col_context_t local_c4;
-  int local_9c;
-  float local_98;
+  float enemyCrosshairRange;
+  int weaponIndex;
+  int actorOwner;
+  IgnoreEntParams ignoreEntParams;
+  col_context_t context;
+  int ci;
+  float diff;
   float local_94;
   float local_90;
-  float local_8c;
-  int local_84;
-  uint local_80;
-  float local_7c [3];
-  cg_s *local_70;
-  char local_69;
-  float local_68;
+  float fCheckDist;
+  PIXProfile pixProfile;
+  int fadeOutTime;
+  float contactEnd [3];
+  cg_s *cgameGlob;
+  bool owner;
+  float start;
   float local_64;
   float local_60;
-  float local_5c;
+  float end;
   float local_58;
   float local_54;
-  uint local_50;
-  centity_s *local_4c;
-  float4 local_48;
+  uint hitEntTeam;
+  centity_s *hitEnt;
+  float4 trace;
   float local_38;
   uint local_10;
-  WeaponDef *local_c;
-  ushort local_8;
+  WeaponDef *weapDef;
+  ushort hitEntId;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_48.v[0] = 0.0;
-  local_48.v[1] = 0.0;
-  local_48.v[2] = 0.0;
-  local_48.v[3] = 0.0;
-  local_50 = 0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  hitEntTeam = 0;
   PIXBeginNamedEvent(-1,"CG_ScanForCrosshairEntity");
-  local_84 = (cg_friendlyNameFadeOut->current).integer;
-  local_69 = '\0';
-  local_8c = 8192.0;
-  local_70 = CG_GetLocalClientGlobals(param_1);
-  if ((local_70->nextSnap == (snapshot_s *)0x0) &&
+  fadeOutTime = (cg_friendlyNameFadeOut->current).integer;
+  owner = false;
+  fCheckDist = 8192.0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_names.cpp",0x2cc,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  (local_70->predictedPlayerState).weapFlags =
-       (local_70->predictedPlayerState).weapFlags & 0xffffffe7;
-  bVar3 = CG_Flashbanged(param_1);
+  (cgameGlob->predictedPlayerState).weapFlags =
+       (cgameGlob->predictedPlayerState).weapFlags & 0xffffffe7;
+  bVar3 = CG_Flashbanged(localClientNum);
   if (bVar3) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -678,7 +705,7 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
     }
   }
   else {
-    bVar3 = CG_Flared(param_1);
+    bVar3 = CG_Flared(localClientNum);
     if (bVar3) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -686,50 +713,50 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
       }
     }
     else {
-      local_68 = (local_70->refdef).vieworg[0];
-      local_64 = (local_70->refdef).vieworg[1];
-      local_60 = (local_70->refdef).vieworg[2];
-      local_5c = local_8c * (local_70->refdef).viewaxis[0][0] + local_68;
-      local_58 = local_8c * (local_70->refdef).viewaxis[0][1] + local_64;
-      local_54 = local_8c * (local_70->refdef).viewaxis[0][2] + local_60;
-      local_d0.baseEntity = (int)(local_70->nextSnap->ps).clientNum;
-      local_d0.ignoreSelf = true;
-      local_d0.ignoreChildren = false;
-      local_d0.ignoreSiblings = false;
-      local_d0.parentEntity = -1;
-      local_d0.ignoreParent = false;
-      local_9c = (int)(local_70->bgs).clientinfo +
-                 (uint)(local_70->predictedPlayerState).clientNum * 0x5c8;
-      if (*(int *)(local_9c + 0x55c) != 0x3ff) {
-        local_d0.parentEntity = *(int *)(local_9c + 0x55c);
-        local_d0.ignoreParent = true;
-        if (((*(int *)(local_9c + 0x560) == 0) &&
-            ((local_70->predictedPlayerState).fWeaponPosFrac != 1.0)) &&
-           (((local_70->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
-          Vec3Lerp(&local_68,&local_5c,0.05,&local_68);
+      start = (cgameGlob->refdef).vieworg[0];
+      local_64 = (cgameGlob->refdef).vieworg[1];
+      local_60 = (cgameGlob->refdef).vieworg[2];
+      end = fCheckDist * (cgameGlob->refdef).viewaxis[0][0] + start;
+      local_58 = fCheckDist * (cgameGlob->refdef).viewaxis[0][1] + local_64;
+      local_54 = fCheckDist * (cgameGlob->refdef).viewaxis[0][2] + local_60;
+      ignoreEntParams.baseEntity = (int)(cgameGlob->nextSnap->ps).clientNum;
+      ignoreEntParams.ignoreSelf = true;
+      ignoreEntParams.ignoreChildren = false;
+      ignoreEntParams.ignoreSiblings = false;
+      ignoreEntParams.parentEntity = -1;
+      ignoreEntParams.ignoreParent = false;
+      ci = (int)(cgameGlob->bgs).clientinfo +
+           (uint)(cgameGlob->predictedPlayerState).clientNum * 0x5c8;
+      if (*(int *)(ci + 0x55c) != 0x3ff) {
+        ignoreEntParams.parentEntity = *(int *)(ci + 0x55c);
+        ignoreEntParams.ignoreParent = true;
+        if (((*(int *)(ci + 0x560) == 0) &&
+            ((cgameGlob->predictedPlayerState).fWeaponPosFrac != 1.0)) &&
+           (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
+          Vec3Lerp(&start,&end,0.05,&start);
         }
       }
-      col_context_t::col_context_t(&local_c4);
-      local_c4.ignoreEntParams = &local_d0;
-      CG_LocationalTrace((trace_t *)&local_48,&local_68,&local_5c,
-                         (uint)(local_70->nextSnap->ps).clientNum,0x280b001,false,&local_c4);
+      col_context_t::col_context_t(&context);
+      context.ignoreEntParams = &ignoreEntParams;
+      CG_LocationalTrace((trace_t *)&trace,&start,&end,(uint)(cgameGlob->nextSnap->ps).clientNum,
+                         0x280b001,false,&context);
       if (1.0 <= local_38) {
-        local_8 = 0x3ff;
+        hitEntId = 0x3ff;
       }
       else {
-        local_8 = Trace_GetEntityHitId((trace_t *)&local_48);
-        Vec3Lerp(&local_68,&local_5c,local_38,local_7c);
+        hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+        Vec3Lerp(&start,&end,local_38,contactEnd);
       }
-      local_4c = CG_GetEntity(param_1,(uint)local_8);
-      if (((local_4c->pose).eType == '\x0e') &&
-         (iVar5 = CG_CheckIfDrivingRemoteControlVehicle(param_1,local_8), iVar5 == 0)) {
-        iVar5 = CG_GetDriverClientNumFromVehicle(param_1,local_4c);
-        local_8 = (ushort)iVar5;
+      hitEnt = CG_GetEntity(localClientNum,(uint)hitEntId);
+      if (((hitEnt->pose).eType == '\x0e') &&
+         (iVar5 = CG_CheckIfDrivingRemoteControlVehicle(localClientNum,hitEntId), iVar5 == 0)) {
+        iVar5 = CG_GetDriverClientNumFromVehicle(localClientNum,hitEnt);
+        hitEntId = (ushort)iVar5;
       }
-      if ((((int)(uint)local_8 < (com_maxclients->current).integer) ||
-          ((local_4c->nextState).eType == 0x11)) ||
-         (iVar5 = CG_CheckIfDrivingRemoteControlVehicle(param_1,local_8), iVar5 != 0)) {
-        if ((0x1f < (local_70->nextSnap->ps).clientNum) &&
+      if ((((int)(uint)hitEntId < (com_maxclients->current).integer) ||
+          ((hitEnt->nextState).eType == 0x11)) ||
+         (iVar5 = CG_CheckIfDrivingRemoteControlVehicle(localClientNum,hitEntId), iVar5 != 0)) {
+        if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_names.cpp",
                                      0x315,0,
                                      "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -738,29 +765,30 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
           (*pcVar2)();
           return;
         }
-        local_80 = *(uint *)((int)(local_70->bgs).clientinfo +
-                            (uint)(local_70->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-        if (local_80 != 3) {
-          if ((local_4c->nextState).eType == 0x11) {
-            local_50 = (local_4c->nextState).lerp.u.actor.team;
-            if ((uint)(local_70->nextSnap->ps).clientNum ==
-                (int)(uint)(local_4c->nextState).faction.iHeadIconTeam >> 2) {
-              local_69 = '\x01';
+        uVar6 = *(uint *)((int)(cgameGlob->bgs).clientinfo +
+                         (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+        if (uVar6 != 3) {
+          if ((hitEnt->nextState).eType == 0x11) {
+            hitEntTeam = (hitEnt->nextState).lerp.u.actor.team;
+            if ((uint)(cgameGlob->nextSnap->ps).clientNum ==
+                (int)(uint)(hitEnt->nextState).faction.iHeadIconTeam >> 2) {
+              owner = true;
             }
           }
-          else if ((((local_4c->nextState).eType == 0xe) || ((local_4c->nextState).eType == 0xf)) ||
-                  ((local_4c->nextState).eType == 0x10)) {
-            local_50 = (local_4c->nextState).faction.iHeadIconTeam & 3;
+          else if ((((hitEnt->nextState).eType == 0xe) || ((hitEnt->nextState).eType == 0xf)) ||
+                  ((hitEnt->nextState).eType == 0x10)) {
+            hitEntTeam = (hitEnt->nextState).faction.iHeadIconTeam & 3;
           }
-          else if ((int)(uint)local_8 < (com_maxclients->current).integer) {
-            local_50 = *(uint *)((int)(local_70->bgs).clientinfo + (uint)local_8 * 0x5c8 + 0x2c);
+          else if ((int)(uint)hitEntId < (com_maxclients->current).integer) {
+            hitEntTeam = *(uint *)((int)(cgameGlob->bgs).clientinfo + (uint)hitEntId * 0x5c8 + 0x2c)
+            ;
           }
-          if (((local_50 == local_80) && (local_80 != 0)) || (local_69 != '\0')) {
-            (local_70->predictedPlayerState).weapFlags =
-                 (local_70->predictedPlayerState).weapFlags | 8;
+          if (((hitEntTeam == uVar6) && (uVar6 != 0)) || (owner != false)) {
+            (cgameGlob->predictedPlayerState).weapFlags =
+                 (cgameGlob->predictedPlayerState).weapFlags | 8;
           }
           else {
-            if (((local_4c->nextState).lerp.eFlags & 0x40000U) != 0) {
+            if (((hitEnt->nextState).lerp.eFlags & 0x40000U) != 0) {
               DVar4 = GetCurrentThreadId();
               if (DVar4 != (DWORD)g_DXDeviceThread) {
                 return;
@@ -771,7 +799,7 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
               _D3DPERF_EndEvent_0();
               return;
             }
-            puVar1 = (uint *)((int)(local_70->bgs).clientinfo + (uint)local_8 * 0x5c8 + 0x44);
+            puVar1 = (uint *)((int)(cgameGlob->bgs).clientinfo + (uint)hitEntId * 0x5c8 + 0x44);
             _allshl();
             if ((extraout_EAX & *puVar1) != 0 || (extraout_EDX & puVar1[1]) != 0) {
               DVar4 = GetCurrentThreadId();
@@ -784,19 +812,19 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
               _D3DPERF_EndEvent_0();
               return;
             }
-            local_98 = (local_4c->pose).origin[0] - local_68;
-            local_94 = (local_4c->pose).origin[1] - local_64;
-            local_90 = (local_4c->pose).origin[2] - local_60;
-            uVar6 = CG_GetPlayerWeapon(&local_70->predictedPlayerState,param_1);
-            local_c = BG_GetWeaponDef(uVar6);
-            if (((local_70->predictedPlayerState).weapFlags & 0x400000U) == 0) {
-              local_dc = local_c->enemyCrosshairRange;
+            diff = (hitEnt->pose).origin[0] - start;
+            local_94 = (hitEnt->pose).origin[1] - local_64;
+            local_90 = (hitEnt->pose).origin[2] - local_60;
+            uVar6 = CG_GetPlayerWeapon(&cgameGlob->predictedPlayerState,localClientNum);
+            weapDef = BG_GetWeaponDef(uVar6);
+            if (((cgameGlob->predictedPlayerState).weapFlags & 0x400000U) == 0) {
+              enemyCrosshairRange = weapDef->enemyCrosshairRange;
             }
             else {
-              local_dc = 600.0;
+              enemyCrosshairRange = 600.0;
             }
-            if (local_dc * local_dc <
-                local_98 * local_98 + local_94 * local_94 + local_90 * local_90) {
+            if (enemyCrosshairRange * enemyCrosshairRange <
+                diff * diff + local_94 * local_94 + local_90 * local_90) {
               DVar4 = GetCurrentThreadId();
               if (DVar4 != (DWORD)g_DXDeviceThread) {
                 return;
@@ -807,7 +835,7 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
               _D3DPERF_EndEvent_0();
               return;
             }
-            bVar3 = FX_ClientVisibilityTest(param_1,&local_68,local_7c);
+            bVar3 = FX_ClientVisibilityTest(localClientNum,&start,contactEnd);
             if (!bVar3) {
               DVar4 = GetCurrentThreadId();
               if (DVar4 != (DWORD)g_DXDeviceThread) {
@@ -819,19 +847,19 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
               _D3DPERF_EndEvent_0();
               return;
             }
-            (local_70->predictedPlayerState).weapFlags =
-                 (local_70->predictedPlayerState).weapFlags | 0x10;
-            local_84 = (cg_enemyNameFadeOut->current).integer;
+            (cgameGlob->predictedPlayerState).weapFlags =
+                 (cgameGlob->predictedPlayerState).weapFlags | 0x10;
+            fadeOutTime = (cg_enemyNameFadeOut->current).integer;
           }
         }
-        bVar3 = FX_ClientVisibilityTest(param_1,&local_68,local_7c);
+        bVar3 = FX_ClientVisibilityTest(localClientNum,&start,contactEnd);
         if (bVar3) {
-          if ((local_70->crosshairClientNum != (uint)local_8) ||
-             (local_84 < local_70->time - local_70->crosshairClientLastTime)) {
-            local_70->crosshairClientNum = (uint)local_8;
-            local_70->crosshairClientStartTime = local_70->time;
+          if ((cgameGlob->crosshairClientNum != (uint)hitEntId) ||
+             (fadeOutTime < cgameGlob->time - cgameGlob->crosshairClientLastTime)) {
+            cgameGlob->crosshairClientNum = (uint)hitEntId;
+            cgameGlob->crosshairClientStartTime = cgameGlob->time;
           }
-          local_70->crosshairClientLastTime = local_70->time;
+          cgameGlob->crosshairClientLastTime = cgameGlob->time;
           DVar4 = GetCurrentThreadId();
           if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -858,23 +886,30 @@ void __cdecl CG_ScanForCrosshairEntityInternal(int param_1)
 
 // 0049E790  CG_ScanForCrosshairEntity  (cgame/cg_draw_names.cpp:903)
 
-void __cdecl CG_ScanForCrosshairEntity(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_ScanForCrosshairEntity(int localClientNum)
 
 {
-  CG_ScanForCrosshairEntityInternal(param_1);
+  CG_ScanForCrosshairEntityInternal(localClientNum);
   return;
 }
 
 
 // 0049F300  compareEntityDist  (cgame/cg_draw_names.cpp:1006)
 
-int __cdecl compareEntityDist(void *param_1,void *param_2)
+int __cdecl compareEntityDist(void *v1,void *v2)
 
 {
   undefined4 local_10;
+  DrawNameEntity *ed1;
+  DrawNameEntity *ed2;
   
-  if (*(float *)((int)param_2 + 0xc) < *(float *)((int)param_1 + 0xc) ||
-      *(float *)((int)param_2 + 0xc) == *(float *)((int)param_1 + 0xc)) {
+  if (*(float *)((int)v2 + 0xc) < *(float *)((int)v1 + 0xc) ||
+      *(float *)((int)v2 + 0xc) == *(float *)((int)v1 + 0xc)) {
     local_10 = -1;
   }
   else {
@@ -891,7 +926,7 @@ int __cdecl compareEntityDist(void *param_1,void *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_AddDrawName(int param_1,int param_2,float param_3,int param_4)
+void __cdecl CG_AddDrawName(int localClientNum,int entnum,float alpha,int teamIndicator)
 
 {
   code *pcVar1;
@@ -899,10 +934,12 @@ void __cdecl CG_AddDrawName(int param_1,int param_2,float param_3,int param_4)
   cg_s *pcVar3;
   centity_s *pcVar4;
   float fVar5;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  if (0.001 < param_3) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    pcVar4 = CG_GetEntity(param_1,param_2);
+  if (0.001 < alpha) {
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+    pcVar4 = CG_GetEntity(localClientNum,entnum);
     if (0x1f < (uint)numDrawNameEntities) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_names.cpp",0x402,0
                                ,"%s");
@@ -912,9 +949,9 @@ void __cdecl CG_AddDrawName(int param_1,int param_2,float param_3,int param_4)
         return;
       }
     }
-    drawNameEntities[numDrawNameEntities].entnum = param_2;
-    drawNameEntities[numDrawNameEntities].alpha = param_3;
-    drawNameEntities[numDrawNameEntities].teamIndicator = param_4;
+    drawNameEntities[numDrawNameEntities].entnum = entnum;
+    drawNameEntities[numDrawNameEntities].alpha = alpha;
+    drawNameEntities[numDrawNameEntities].teamIndicator = teamIndicator;
     fVar5 = Vec3DistanceSq((pcVar3->refdef).vieworg,(pcVar4->pose).origin);
     drawNameEntities[numDrawNameEntities].dist = fVar5;
     numDrawNameEntities = numDrawNameEntities + 1;
@@ -930,30 +967,32 @@ void __cdecl CG_AddDrawName(int param_1,int param_2,float param_3,int param_4)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawNames(int param_1)
+void __cdecl CG_DrawNames(int localClientNum)
 
 {
-  float fVar1;
-  centity_s *pcVar2;
-  int local_8;
+  float alpha_00;
+  centity_s *cent_00;
+  centity_s *cent;
+  float alpha;
+  int i;
   
   if (0 < numDrawNameEntities) {
     qsort(drawNameEntities,numDrawNameEntities,0x10,compareEntityDist);
-    for (local_8 = 0; local_8 < numDrawNameEntities; local_8 = local_8 + 1) {
-      pcVar2 = CG_GetEntity(param_1,drawNameEntities[local_8].entnum);
-      fVar1 = drawNameEntities[local_8].alpha;
-      switch(drawNameEntities[local_8].teamIndicator) {
+    for (i = 0; i < numDrawNameEntities; i = i + 1) {
+      cent_00 = CG_GetEntity(localClientNum,drawNameEntities[i].entnum);
+      alpha_00 = drawNameEntities[i].alpha;
+      switch(drawNameEntities[i].teamIndicator) {
       case 0:
-        CG_DrawOverheadNames(param_1,pcVar2,fVar1,2);
+        CG_DrawOverheadNames(localClientNum,cent_00,alpha_00,2);
         break;
       case 1:
-        CG_DrawOverheadNames(param_1,pcVar2,fVar1,0);
+        CG_DrawOverheadNames(localClientNum,cent_00,alpha_00,0);
         break;
       case 2:
-        CG_DrawOverheadNames(param_1,pcVar2,fVar1,5);
+        CG_DrawOverheadNames(localClientNum,cent_00,alpha_00,5);
         break;
       case 3:
-        CG_DrawOverheadNames(param_1,pcVar2,fVar1,2);
+        CG_DrawOverheadNames(localClientNum,cent_00,alpha_00,2);
         break;
       default:
         Com_PrintError(0xe,"Bad Overhead Team Indicator option for client num: %i\n");
@@ -967,7 +1006,7 @@ void __cdecl CG_DrawNames(int param_1)
 
 // 0049F340  CG_GetTeamIndicator  (cgame/cg_draw_names.cpp:1095)
 
-int __cdecl CG_GetTeamIndicator(int param_1)
+int __cdecl CG_GetTeamIndicator(int localClientNum)
 
 {
   return (team_indicator->current).integer;
@@ -981,32 +1020,35 @@ int __cdecl CG_GetTeamIndicator(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_IsValidCrosshairEntity(int param_1,cg_s *param_2,centity_s *param_3,int param_4)
+bool __cdecl
+CG_IsValidCrosshairEntity(int localClientNum,cg_s *cgameGlob,centity_s *cent,int entNum)
 
 {
   int *piVar1;
   bool bVar2;
-  centity_s *pcVar3;
-  int iVar4;
+  centity_s *vehicle;
+  int iVar3;
+  int driverEntNum;
+  centity_s *vehCent;
+  bool allowOccupant;
   
-  if (param_3->nextValid == 0) {
+  if (cent->nextValid == 0) {
     bVar2 = false;
   }
-  else if (((param_3->nextState).eType == 1) || ((param_3->nextState).eType == 0xe)) {
-    if ((((param_3->nextState).lerp.eFlags & 0x20U) == 0) || ((param_3->nextState).eType == 0xe)) {
-      if (((param_3->nextState).eType == 0xe) &&
+  else if (((cent->nextState).eType == 1) || ((cent->nextState).eType == 0xe)) {
+    if ((((cent->nextState).lerp.eFlags & 0x20U) == 0) || ((cent->nextState).eType == 0xe)) {
+      if (((cent->nextState).eType == 0xe) &&
          (bVar2 = CG_IsVehicleRemoteControl
-                            ((uint)(param_3->nextState).un2.vehicleState.vehicleInfoIndex), bVar2))
-      {
+                            ((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex), bVar2)) {
         return false;
       }
-      if (param_4 != param_2->crosshairClientNum) {
+      if (entNum != cgameGlob->crosshairClientNum) {
         bVar2 = false;
-        piVar1 = (int *)((int)(param_2->bgs).clientinfo + param_4 * 0x5c8);
+        piVar1 = (int *)((int)(cgameGlob->bgs).clientinfo + entNum * 0x5c8);
         if ((((*piVar1 != 0) && (piVar1[0x157] != 0x3ff)) &&
-            (pcVar3 = CG_GetEntity(param_1,piVar1[0x157]), pcVar3 != (centity_s *)0x0)) &&
-           (iVar4 = CG_GetDriverClientNumFromVehicle(param_1,pcVar3),
-           iVar4 == param_2->crosshairClientNum)) {
+            (vehicle = CG_GetEntity(localClientNum,piVar1[0x157]), vehicle != (centity_s *)0x0)) &&
+           (iVar3 = CG_GetDriverClientNumFromVehicle(localClientNum,vehicle),
+           iVar3 == cgameGlob->crosshairClientNum)) {
           bVar2 = true;
         }
         if (!bVar2) {
@@ -1033,12 +1075,13 @@ bool __cdecl CG_IsValidCrosshairEntity(int param_1,cg_s *param_2,centity_s *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ShouldDrawCrosshairNames(cg_s *param_1)
+bool __cdecl ShouldDrawCrosshairNames(cg_s *cgameGlob)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  playerState_s *ps;
   
   if ((cg_drawCrosshairNames->current).enabled == false) {
     bVar2 = false;
@@ -1048,11 +1091,11 @@ bool __cdecl ShouldDrawCrosshairNames(cg_s *param_1)
     if (bVar2) {
       bVar2 = false;
     }
-    else if ((com_maxclients->current).integer < param_1->crosshairClientNum) {
+    else if ((com_maxclients->current).integer < cgameGlob->crosshairClientNum) {
       bVar2 = false;
     }
     else {
-      if (0x1f < (param_1->nextSnap->ps).clientNum) {
+      if (0x1f < (cgameGlob->nextSnap->ps).clientNum) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_names.cpp",0x496
                                  ,0,
                                  "cgameGlob->nextSnap->ps.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1063,17 +1106,17 @@ bool __cdecl ShouldDrawCrosshairNames(cg_s *param_1)
           return (bool)uVar3;
         }
       }
-      if (*(int *)((int)(param_1->bgs).clientinfo + (uint)(param_1->nextSnap->ps).clientNum * 0x5c8)
-          == 0) {
+      if (*(int *)((int)(cgameGlob->bgs).clientinfo +
+                  (uint)(cgameGlob->nextSnap->ps).clientNum * 0x5c8) == 0) {
         bVar2 = false;
       }
-      else if ((param_1->renderingThirdPerson == TP_FOR_MODEL) &&
-              (((param_1->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
+      else if ((cgameGlob->renderingThirdPerson == TP_FOR_MODEL) &&
+              (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) == 0)) {
         bVar2 = false;
       }
-      else if ((((param_1->predictedPlayerState).eFlags & 0x4000U) == 0) ||
-              ((param_1->predictedPlayerState).vehicleType != 6)) {
-        if (0x1f < (uint)param_1->crosshairClientNum) {
+      else if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) ||
+              ((cgameGlob->predictedPlayerState).vehicleType != 6)) {
+        if (0x1f < (uint)cgameGlob->crosshairClientNum) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_names.cpp",
                                    0x4a7,0,
                                    "cgameGlob->crosshairClientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1084,7 +1127,8 @@ bool __cdecl ShouldDrawCrosshairNames(cg_s *param_1)
             return (bool)uVar3;
           }
         }
-        if (*(int *)((int)(param_1->bgs).clientinfo + param_1->crosshairClientNum * 0x5c8) == 0) {
+        if (*(int *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->crosshairClientNum * 0x5c8) == 0)
+        {
           bVar2 = false;
         }
         else {
@@ -1107,51 +1151,60 @@ bool __cdecl ShouldDrawCrosshairNames(cg_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawCrosshairNames(int param_1)
+void __cdecl CG_DrawCrosshairNames(int localClientNum)
 
 {
-  int iVar1;
-  int iVar2;
-  snapshot_s *psVar3;
-  bool bVar4;
-  cg_s *pcVar5;
-  centity_s *pcVar6;
-  int iVar7;
-  int local_28;
-  int local_c;
-  float local_8;
+  int startMsec;
+  int lastMsec;
+  snapshot_s *psVar1;
+  bool bVar2;
+  cg_s *cgameGlob_00;
+  centity_s *vehicle;
+  int iVar3;
+  int teamIndicator;
+  int entityIndex;
+  int inViewLast;
+  cg_s *cgameGlob;
+  int myTeam;
+  snapshot_s *nextSnap;
+  centity_s *cent;
+  int inViewStart;
+  int entnum;
+  float alpha;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  bVar4 = ShouldDrawCrosshairNames(pcVar5);
-  if (bVar4) {
-    iVar1 = pcVar5->crosshairClientStartTime;
-    iVar2 = pcVar5->crosshairClientLastTime;
-    psVar3 = pcVar5->nextSnap;
-    for (local_28 = 0; local_28 < psVar3->numEntities; local_28 = local_28 + 1) {
-      local_c = psVar3->entities[local_28].number;
-      pcVar6 = CG_GetEntity(param_1,local_c);
-      if ((((pcVar6->nextState).eType != 0xe) ||
-          (local_c = CG_GetDriverClientNumFromVehicle(param_1,pcVar6),
-          local_c < (com_maxclients->current).integer)) &&
-         (bVar4 = CG_IsValidCrosshairEntity(param_1,pcVar5,pcVar6,local_c), bVar4)) {
-        iVar7 = *(int *)((int)(pcVar5->bgs).clientinfo +
-                        (uint)(pcVar5->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-        GamerProfile_WriteSettings(param_1);
-        if ((iVar7 == 3) ||
-           ((iVar7 != 0 &&
-            (iVar7 == *(int *)((int)(pcVar5->bgs).clientinfo +
-                              pcVar5->crosshairClientNum * 0x5c8 + 0x2c))))) {
-          local_8 = CG_FadeCrosshairNameAlpha
-                              (pcVar5->time,iVar1,iVar2,(cg_friendlyNameFadeIn->current).integer,
-                               (cg_friendlyNameFadeOut->current).integer);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  bVar2 = ShouldDrawCrosshairNames(cgameGlob_00);
+  if (bVar2) {
+    startMsec = cgameGlob_00->crosshairClientStartTime;
+    lastMsec = cgameGlob_00->crosshairClientLastTime;
+    psVar1 = cgameGlob_00->nextSnap;
+    for (entityIndex = 0; entityIndex < psVar1->numEntities; entityIndex = entityIndex + 1) {
+      entnum = psVar1->entities[entityIndex].number;
+      vehicle = CG_GetEntity(localClientNum,entnum);
+      if ((((vehicle->nextState).eType != 0xe) ||
+          (entnum = CG_GetDriverClientNumFromVehicle(localClientNum,vehicle),
+          entnum < (com_maxclients->current).integer)) &&
+         (bVar2 = CG_IsValidCrosshairEntity(localClientNum,cgameGlob_00,vehicle,entnum), bVar2)) {
+        iVar3 = *(int *)((int)(cgameGlob_00->bgs).clientinfo +
+                        (uint)(cgameGlob_00->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+        GamerProfile_WriteSettings(localClientNum);
+        if ((iVar3 == 3) ||
+           ((iVar3 != 0 &&
+            (iVar3 == *(int *)((int)(cgameGlob_00->bgs).clientinfo +
+                              cgameGlob_00->crosshairClientNum * 0x5c8 + 0x2c))))) {
+          alpha = CG_FadeCrosshairNameAlpha
+                            (cgameGlob_00->time,startMsec,lastMsec,
+                             (cg_friendlyNameFadeIn->current).integer,
+                             (cg_friendlyNameFadeOut->current).integer);
         }
         else {
-          local_8 = CG_FadeCrosshairNameAlpha
-                              (pcVar5->time,iVar1,iVar2,(cg_enemyNameFadeIn->current).integer,
-                               (cg_enemyNameFadeOut->current).integer);
+          alpha = CG_FadeCrosshairNameAlpha
+                            (cgameGlob_00->time,startMsec,lastMsec,
+                             (cg_enemyNameFadeIn->current).integer,
+                             (cg_enemyNameFadeOut->current).integer);
         }
-        iVar7 = CG_GetTeamIndicator(param_1);
-        CG_AddDrawName(param_1,local_c,local_8,iVar7);
+        iVar3 = CG_GetTeamIndicator(localClientNum);
+        CG_AddDrawName(localClientNum,entnum,alpha,iVar3);
       }
     }
   }
@@ -1166,24 +1219,25 @@ void __cdecl CG_DrawCrosshairNames(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ShouldDrawFriendlyName(int param_1,centity_s *param_2,int param_3,int param_4)
+bool __cdecl ShouldDrawFriendlyName(int localClientNum,centity_s *cent,int entnum,int team)
 
 {
   bool bVar1;
   cg_s *pcVar2;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if (((param_2->nextState).lerp.eFlags & 0x20U) == 0) {
-    if ((param_2->nextState).eType == 1) {
-      if (param_4 == 0) {
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  if (((cent->nextState).lerp.eFlags & 0x20U) == 0) {
+    if ((cent->nextState).eType == 1) {
+      if (team == 0) {
         bVar1 = false;
       }
-      else if ((param_4 == 3) ||
-              (param_4 == *(int *)((int)(pcVar2->bgs).clientinfo + param_3 * 0x5c8 + 0x2c))) {
+      else if ((team == 3) ||
+              (team == *(int *)((int)(pcVar2->bgs).clientinfo + entnum * 0x5c8 + 0x2c))) {
         if ((((pcVar2->nextSnap->ps).eFlags & 0x4000U) == 0) ||
            ((pcVar2->nextSnap->ps).vehicleType != 6)) {
           if ((((pcVar2->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (param_3 != (uint)(pcVar2->nextSnap->ps).clientNum)) {
+             (entnum != (uint)(pcVar2->nextSnap->ps).clientNum)) {
             bVar1 = false;
           }
           else {
@@ -1222,23 +1276,23 @@ bool __cdecl ShouldDrawFriendlyName(int param_1,centity_s *param_2,int param_3,i
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetVehicleDriverEntNum(cg_s *param_1,centity_s *param_2,int param_3)
+int __cdecl GetVehicleDriverEntNum(cg_s *cgameGlob,centity_s *cent,int entnum)
 
 {
   int *piVar1;
-  ushort local_8;
+  ushort i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((com_maxclients->current).integer <= (int)(uint)local_8) {
-      return param_3;
+    if ((com_maxclients->current).integer <= (int)(uint)i) {
+      return entnum;
     }
-    piVar1 = (int *)((int)(param_1->bgs).clientinfo + (uint)local_8 * 0x5c8);
-    if (((*piVar1 != 0) && (piVar1[0x157] == (param_2->nextState).number)) && (piVar1[0x158] == 0))
+    piVar1 = (int *)((int)(cgameGlob->bgs).clientinfo + (uint)i * 0x5c8);
+    if (((*piVar1 != 0) && (piVar1[0x157] == (cent->nextState).number)) && (piVar1[0x158] == 0))
     break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return (uint)local_8;
+  return (uint)i;
 }
 
 
@@ -1249,58 +1303,64 @@ int __cdecl GetVehicleDriverEntNum(cg_s *param_1,centity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawFriendlyNames(int param_1)
+void __cdecl CG_DrawFriendlyNames(int localClientNum)
 
 {
-  int iVar1;
-  snapshot_s *psVar2;
+  int team_00;
+  snapshot_s *psVar1;
+  bool bVar2;
   bool bVar3;
-  bool bVar4;
-  cg_s *pcVar5;
-  int iVar6;
-  float fVar7;
-  int local_28;
-  centity_s *local_14;
-  int local_10;
+  cg_s *cgameGlob_00;
+  int teamIndicator;
+  float alpha_00;
+  int entityIndex;
+  int team;
+  bool flashed;
+  cg_s *cgameGlob;
+  snapshot_s *nextSnap;
+  centity_s *cent;
+  int entnum;
+  playerState_s *ps;
+  float alpha;
   
-  if (((cg_drawFriendlyNames->current).enabled != false) && (bVar3 = Demo_IsGameHudHidden(), !bVar3)
+  if (((cg_drawFriendlyNames->current).enabled != false) && (bVar2 = Demo_IsGameHudHidden(), !bVar2)
      ) {
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
-    iVar1 = *(int *)((int)(pcVar5->bgs).clientinfo +
-                    (uint)(pcVar5->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
-    psVar2 = pcVar5->nextSnap;
-    bVar3 = CG_Flashbanged(param_1);
-    if ((bVar3) || (bVar3 = CG_Flared(param_1), bVar3)) {
-      bVar3 = true;
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    team_00 = *(int *)((int)(cgameGlob_00->bgs).clientinfo +
+                      (uint)(cgameGlob_00->nextSnap->ps).clientNum * 0x5c8 + 0x2c);
+    psVar1 = cgameGlob_00->nextSnap;
+    bVar2 = CG_Flashbanged(localClientNum);
+    if ((bVar2) || (bVar2 = CG_Flared(localClientNum), bVar2)) {
+      bVar2 = true;
     }
     else {
-      bVar3 = false;
+      bVar2 = false;
     }
-    for (local_28 = 0; local_28 < psVar2->numEntities; local_28 = local_28 + 1) {
-      local_10 = psVar2->entities[local_28].number;
-      local_14 = CG_GetEntity(param_1,local_10);
-      if ((local_14->nextState).eType == 0xe) {
-        local_10 = GetVehicleDriverEntNum(pcVar5,local_14,local_10);
-        local_14 = CG_GetEntity(param_1,local_10);
+    for (entityIndex = 0; entityIndex < psVar1->numEntities; entityIndex = entityIndex + 1) {
+      entnum = psVar1->entities[entityIndex].number;
+      cent = CG_GetEntity(localClientNum,entnum);
+      if ((cent->nextState).eType == 0xe) {
+        entnum = GetVehicleDriverEntNum(cgameGlob_00,cent,entnum);
+        cent = CG_GetEntity(localClientNum,entnum);
       }
-      bVar4 = ShouldDrawFriendlyName(param_1,local_14,local_10,iVar1);
-      if (bVar4) {
-        if ((bVar3) || (bVar4 = CG_CanSeeFriendlyHead(param_1,local_14), !bVar4)) {
-          overheadFade[local_10].visible = false;
+      bVar3 = ShouldDrawFriendlyName(localClientNum,cent,entnum,team_00);
+      if (bVar3) {
+        if ((bVar2) || (bVar3 = CG_CanSeeFriendlyHead(localClientNum,cent), !bVar3)) {
+          overheadFade[entnum].visible = false;
         }
-        else if (overheadFade[local_10].visible == false) {
-          overheadFade[local_10].visible = true;
-          overheadFade[local_10].startTime = pcVar5->time;
+        else if (overheadFade[entnum].visible == false) {
+          overheadFade[entnum].visible = true;
+          overheadFade[entnum].startTime = cgameGlob_00->time;
         }
-        if (overheadFade[local_10].visible != false) {
-          overheadFade[local_10].lastTime = pcVar5->time;
+        if (overheadFade[entnum].visible != false) {
+          overheadFade[entnum].lastTime = cgameGlob_00->time;
         }
-        fVar7 = CG_FadeCrosshairNameAlpha
-                          (pcVar5->time,overheadFade[local_10].startTime,
-                           overheadFade[local_10].lastTime,(cg_friendlyNameFadeIn->current).integer,
-                           (cg_friendlyNameFadeOut->current).integer);
-        iVar6 = CG_GetTeamIndicator(param_1);
-        CG_AddDrawName(param_1,local_10,fVar7,iVar6);
+        alpha_00 = CG_FadeCrosshairNameAlpha
+                             (cgameGlob_00->time,overheadFade[entnum].startTime,
+                              overheadFade[entnum].lastTime,(cg_friendlyNameFadeIn->current).integer
+                              ,(cg_friendlyNameFadeOut->current).integer);
+        teamIndicator = CG_GetTeamIndicator(localClientNum);
+        CG_AddDrawName(localClientNum,entnum,alpha_00,teamIndicator);
       }
     }
   }
@@ -1315,7 +1375,7 @@ void __cdecl CG_DrawFriendlyNames(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawVisibleNames(int param_1)
+void __cdecl CG_DrawVisibleNames(int localClientNum)
 
 {
   int *piVar1;
@@ -1323,78 +1383,84 @@ void __cdecl CG_DrawVisibleNames(int param_1)
   bool bVar3;
   bool bVar4;
   cg_s *pcVar5;
-  centity_s *pcVar6;
-  int iVar7;
-  float fVar8;
-  ushort local_34;
-  int local_2c;
-  int local_14;
-  uint local_10;
+  centity_s *cent_00;
+  int teamIndicator;
+  float alpha_00;
+  ushort i;
+  bool noDrawOverride;
+  int entityIndex;
+  int team;
+  bool flashed;
+  cg_s *cgameGlob;
+  snapshot_s *nextSnap;
+  centity_s *cent;
+  int timeNow;
+  int entnum;
+  playerState_s *ps;
+  float alpha;
   
   if ((cg_drawFriendlyNames->current).enabled != false) {
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
+    pcVar5 = CG_GetLocalClientGlobals(localClientNum);
     psVar2 = pcVar5->nextSnap;
     bVar3 = Demo_IsPlaying();
     if (bVar3) {
-      local_14 = Sys_Milliseconds();
+      timeNow = Sys_Milliseconds();
     }
     else {
-      local_14 = pcVar5->time;
+      timeNow = pcVar5->time;
     }
-    bVar3 = CG_Flashbanged(param_1);
-    if ((bVar3) || (bVar3 = CG_Flared(param_1), bVar3)) {
+    bVar3 = CG_Flashbanged(localClientNum);
+    if ((bVar3) || (bVar3 = CG_Flared(localClientNum), bVar3)) {
       bVar3 = true;
     }
     else {
       bVar3 = false;
     }
-    for (local_2c = 0; local_2c < psVar2->numEntities; local_2c = local_2c + 1) {
-      local_10 = psVar2->entities[local_2c].number;
-      pcVar6 = CG_GetEntity(param_1,local_10);
+    for (entityIndex = 0; entityIndex < psVar2->numEntities; entityIndex = entityIndex + 1) {
+      entnum = psVar2->entities[entityIndex].number;
+      cent_00 = CG_GetEntity(localClientNum,entnum);
       bVar4 = false;
-      if ((pcVar6->pose).eType == '\x0e') {
-        for (local_34 = 0; (int)(uint)local_34 < (com_maxclients->current).integer;
-            local_34 = local_34 + 1) {
-          piVar1 = (int *)((int)(pcVar5->bgs).clientinfo + (uint)local_34 * 0x5c8);
-          if (((*piVar1 != 0) && (piVar1[0x157] == (pcVar6->nextState).number)) &&
+      if ((cent_00->pose).eType == '\x0e') {
+        for (i = 0; (int)(uint)i < (com_maxclients->current).integer; i = i + 1) {
+          piVar1 = (int *)((int)(pcVar5->bgs).clientinfo + (uint)i * 0x5c8);
+          if (((*piVar1 != 0) && (piVar1[0x157] == (cent_00->nextState).number)) &&
              (piVar1[0x158] == 0)) {
-            local_10 = (uint)local_34;
+            entnum = (int)i;
             bVar4 = true;
             break;
           }
         }
       }
-      if ((((pcVar6->nextState).eType == 1) || ((pcVar6->nextState).eType == 0xe)) &&
-         ((bVar4 || (((pcVar6->nextState).lerp.eFlags & 0x20U) == 0)))) {
+      if ((((cent_00->nextState).eType == 1) || ((cent_00->nextState).eType == 0xe)) &&
+         ((bVar4 || (((cent_00->nextState).lerp.eFlags & 0x20U) == 0)))) {
         if ((((pcVar5->nextSnap->ps).otherFlags & 6U) == 0) ||
-           (local_10 != (pcVar5->nextSnap->ps).clientNum)) {
+           (entnum != (uint)(pcVar5->nextSnap->ps).clientNum)) {
           bVar4 = false;
         }
         else {
           bVar4 = true;
         }
         if ((!bVar4) || (pcVar5->renderingThirdPerson != TP_OFF)) {
-          if ((bVar3) || (bVar4 = CG_CanSeeFriendlyHead(param_1,pcVar6), !bVar4)) {
-            overheadFade[local_10].visible = false;
+          if ((bVar3) || (bVar4 = CG_CanSeeFriendlyHead(localClientNum,cent_00), !bVar4)) {
+            overheadFade[entnum].visible = false;
           }
-          else if (overheadFade[local_10].visible == false) {
-            overheadFade[local_10].visible = true;
-            overheadFade[local_10].startTime = local_14;
+          else if (overheadFade[entnum].visible == false) {
+            overheadFade[entnum].visible = true;
+            overheadFade[entnum].startTime = timeNow;
           }
-          if (overheadFade[local_10].visible != false) {
-            overheadFade[local_10].lastTime = local_14;
+          if (overheadFade[entnum].visible != false) {
+            overheadFade[entnum].lastTime = timeNow;
           }
-          fVar8 = CG_FadeCrosshairNameAlpha
-                            (local_14,overheadFade[local_10].startTime,
-                             overheadFade[local_10].lastTime,
-                             (cg_friendlyNameFadeIn->current).integer,
-                             (cg_friendlyNameFadeOut->current).integer);
-          iVar7 = CG_GetTeamIndicator(param_1);
-          CG_AddDrawName(param_1,local_10,fVar8,iVar7);
+          alpha_00 = CG_FadeCrosshairNameAlpha
+                               (timeNow,overheadFade[entnum].startTime,overheadFade[entnum].lastTime
+                                ,(cg_friendlyNameFadeIn->current).integer,
+                                (cg_friendlyNameFadeOut->current).integer);
+          teamIndicator = CG_GetTeamIndicator(localClientNum);
+          CG_AddDrawName(localClientNum,entnum,alpha_00,teamIndicator);
         }
       }
     }
-    CG_DrawNames(param_1);
+    CG_DrawNames(localClientNum);
   }
   return;
 }

@@ -2,12 +2,12 @@
 
 // 00B442E0  error_exit  (jpeg-6/jerror.c:77)
 
-void __cdecl error_exit(jpeg_common_struct *param_1)
+void __cdecl error_exit(jpeg_common_struct *cinfo)
 
 {
-  (*param_1->err->output_message)(param_1);
-  jpeg_destroy(param_1);
-  (*param_1->err->exit)();
+  (*cinfo->err->output_message)(cinfo);
+  jpeg_destroy(cinfo);
+  (*cinfo->err->exit)();
   return;
 }
 
@@ -16,35 +16,36 @@ void __cdecl error_exit(jpeg_common_struct *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl output_message(jpeg_common_struct *param_1)
+void __cdecl output_message(jpeg_common_struct *cinfo)
 
 {
-  char local_d4 [204];
+  char buffer [204];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  (*param_1->err->format_message)(param_1,local_d4);
-  (*param_1->err->printf)(local_d4);
+  (*cinfo->err->format_message)(cinfo,buffer);
+  (*cinfo->err->printf)(buffer);
   return;
 }
 
 
 // 00B44360  emit_message  (jpeg-6/jerror.c:134)
 
-void __cdecl emit_message(jpeg_common_struct *param_1,int param_2)
+void __cdecl emit_message(jpeg_common_struct *cinfo,int msg_level)
 
 {
   jpeg_error_mgr *pjVar1;
+  jpeg_error_mgr *err;
   
-  pjVar1 = param_1->err;
-  if (param_2 < 0) {
+  pjVar1 = cinfo->err;
+  if (msg_level < 0) {
     if ((pjVar1->num_warnings == 0) || (2 < pjVar1->trace_level)) {
-      (*pjVar1->output_message)(param_1);
+      (*pjVar1->output_message)(cinfo);
     }
     pjVar1->num_warnings = pjVar1->num_warnings + 1;
   }
-  else if (param_2 <= pjVar1->trace_level) {
-    (*pjVar1->output_message)(param_1);
+  else if (msg_level <= pjVar1->trace_level) {
+    (*pjVar1->output_message)(cinfo);
   }
   return;
 }
@@ -52,46 +53,50 @@ void __cdecl emit_message(jpeg_common_struct *param_1,int param_2)
 
 // 00B443D0  format_message  (jpeg-6/jerror.c:163)
 
-void __cdecl format_message(jpeg_common_struct *param_1,char *param_2)
+void __cdecl format_message(jpeg_common_struct *cinfo,char *buffer)
 
 {
   char cVar1;
   jpeg_error_mgr *pjVar2;
   int iVar3;
   bool bVar4;
-  char *local_c;
-  char *local_8;
+  char ch;
+  uchar isstring;
+  jpeg_error_mgr *err;
+  int msg_code;
+  char *msgptr;
+  char *msgtext;
   
-  pjVar2 = param_1->err;
+  pjVar2 = cinfo->err;
   iVar3 = pjVar2->msg_code;
-  local_8 = (char *)0x0;
+  msgtext = (char *)0x0;
   if ((iVar3 < 1) || (pjVar2->last_jpeg_message < iVar3)) {
     if ((pjVar2->addon_message_table != (char **)0x0) &&
        ((pjVar2->first_addon_message <= iVar3 && (iVar3 <= pjVar2->last_addon_message)))) {
-      local_8 = pjVar2->addon_message_table[iVar3 - pjVar2->first_addon_message];
+      msgtext = pjVar2->addon_message_table[iVar3 - pjVar2->first_addon_message];
     }
   }
   else {
-    local_8 = pjVar2->jpeg_message_table[iVar3];
+    msgtext = pjVar2->jpeg_message_table[iVar3];
   }
-  if (local_8 == (char *)0x0) {
+  if (msgtext == (char *)0x0) {
     (pjVar2->msg_parm).i[0] = iVar3;
-    local_8 = *pjVar2->jpeg_message_table;
+    msgtext = *pjVar2->jpeg_message_table;
   }
   bVar4 = false;
-  local_c = local_8;
+  msgptr = msgtext;
   do {
-    cVar1 = *local_c;
-    local_c = local_c + 1;
+    cVar1 = *msgptr;
+    msgptr = msgptr + 1;
     if (cVar1 == '\0') goto LAB_00b444a0;
   } while (cVar1 != '%');
-  bVar4 = *local_c == 's';
+  bVar4 = *msgptr == 's';
 LAB_00b444a0:
   if (bVar4) {
-    sprintf(param_2,local_8);
+    sprintf(buffer,msgtext);
   }
   else {
-    sprintf(param_2,local_8);
+    sprintf(buffer,msgtext);
   }
   return;
 }
@@ -99,11 +104,11 @@ LAB_00b444a0:
 
 // 00B44510  reset_error_mgr  (jpeg-6/jerror.c:218)
 
-void __cdecl reset_error_mgr(jpeg_common_struct *param_1)
+void __cdecl reset_error_mgr(jpeg_common_struct *cinfo)
 
 {
-  param_1->err->num_warnings = 0;
-  param_1->err->msg_code = 0;
+  cinfo->err->num_warnings = 0;
+  cinfo->err->msg_code = 0;
   return;
 }
 
@@ -111,25 +116,24 @@ void __cdecl reset_error_mgr(jpeg_common_struct *param_1)
 // 00B44230  jpeg_std_error  (jpeg-6/jerror.c:237)
 
 jpeg_error_mgr * __cdecl
-jpeg_std_error(jpeg_error_mgr *param_1,_func___cdecl_void *param_2,
-              _func___cdecl_void_char_ptr *param_3)
+jpeg_std_error(jpeg_error_mgr *err,_func___cdecl_void *exit,_func___cdecl_void_char_ptr *printf)
 
 {
-  param_1->error_exit = error_exit;
-  param_1->emit_message = emit_message;
-  param_1->output_message = output_message;
-  param_1->format_message = format_message;
-  param_1->reset_error_mgr = reset_error_mgr;
-  param_1->trace_level = 0;
-  param_1->num_warnings = 0;
-  param_1->msg_code = 0;
-  param_1->jpeg_message_table = jpeg_std_message_table;
-  param_1->last_jpeg_message = 0x7b;
-  param_1->addon_message_table = (char **)0x0;
-  param_1->first_addon_message = 0;
-  param_1->last_addon_message = 0;
-  param_1->exit = param_2;
-  param_1->printf = param_3;
-  return param_1;
+  err->error_exit = error_exit;
+  err->emit_message = emit_message;
+  err->output_message = output_message;
+  err->format_message = format_message;
+  err->reset_error_mgr = reset_error_mgr;
+  err->trace_level = 0;
+  err->num_warnings = 0;
+  err->msg_code = 0;
+  err->jpeg_message_table = jpeg_std_message_table;
+  err->last_jpeg_message = 0x7b;
+  err->addon_message_table = (char **)0x0;
+  err->first_addon_message = 0;
+  err->last_addon_message = 0;
+  err->exit = exit;
+  err->printf = printf;
+  return err;
 }
 

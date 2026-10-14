@@ -7,7 +7,7 @@
 void __cdecl Com_InitClientGameStates(void)
 
 {
-  int local_8;
+  int client;
   
   clientGameStates[0].flags = 0;
   clientGameStates[0].localClientNum = 0;
@@ -15,9 +15,9 @@ void __cdecl Com_InitClientGameStates(void)
   clientGameStates[0].uiContextIndex = 0;
   clientGameStates[0].networkID = NS_CLIENT1;
   clientGameStates[0]._17_3_ = 0;
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    clientGameStates[local_8].localClientNum = local_8;
-    *(int *)&clientGameStates[local_8].networkID = local_8;
+  for (client = 0; client < 1; client = client + 1) {
+    clientGameStates[client].localClientNum = client;
+    *(int *)&clientGameStates[client].networkID = client;
   }
   return;
 }
@@ -27,7 +27,7 @@ void __cdecl Com_InitClientGameStates(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SwapClients(int param_1,int param_2)
+void __cdecl SwapClients(int clientA,int clientB)
 
 {
   int iVar1;
@@ -38,50 +38,50 @@ void __cdecl SwapClients(int param_1,int param_2)
   undefined3 uVar6;
   netsrc_t nVar7;
   undefined3 uVar8;
-  uchar *puVar9;
-  LargeLocal local_c;
+  uchar *dst;
+  LargeLocal clientConnectionTemp_large_local;
   
-  LargeLocal::LargeLocal(&local_c,0xaff48);
-  puVar9 = LargeLocal::GetBuf(&local_c);
-  iVar1 = clientUIActives[param_1].flags;
-  iVar2 = clientUIActives[param_1].keyCatchers;
-  cVar3 = clientUIActives[param_1].connectionState;
-  iVar4 = clientUIActives[param_1].nextScrollTime;
-  clientUIActives[param_1].flags = clientUIActives[param_2].flags;
-  clientUIActives[param_1].keyCatchers = clientUIActives[param_2].keyCatchers;
-  clientUIActives[param_1].connectionState = clientUIActives[param_2].connectionState;
-  clientUIActives[param_1].nextScrollTime = clientUIActives[param_2].nextScrollTime;
-  clientUIActives[param_2].flags = iVar1;
-  clientUIActives[param_2].keyCatchers = iVar2;
-  clientUIActives[param_2].connectionState = cVar3;
-  clientUIActives[param_2].nextScrollTime = iVar4;
-  iVar1 = clientGameStates[param_1].flags;
-  iVar2 = clientGameStates[param_1].localClientNum;
-  iVar4 = clientGameStates[param_1].controllerIndex;
-  iVar5 = clientGameStates[param_1].uiContextIndex;
-  nVar7 = clientGameStates[param_1].networkID;
-  uVar8 = *(undefined3 *)&clientGameStates[param_1].field_0x11;
-  clientGameStates[param_1].flags = clientGameStates[param_2].flags;
-  clientGameStates[param_1].localClientNum = clientGameStates[param_2].localClientNum;
-  clientGameStates[param_1].controllerIndex = clientGameStates[param_2].controllerIndex;
-  clientGameStates[param_1].uiContextIndex = clientGameStates[param_2].uiContextIndex;
-  uVar6 = *(undefined3 *)&clientGameStates[param_2].field_0x11;
-  clientGameStates[param_1].networkID = clientGameStates[param_2].networkID;
-  *(undefined3 *)&clientGameStates[param_1].field_0x11 = uVar6;
-  clientGameStates[param_2].flags = iVar1;
-  clientGameStates[param_2].localClientNum = iVar2;
-  clientGameStates[param_2].controllerIndex = iVar4;
-  clientGameStates[param_2].uiContextIndex = iVar5;
-  clientGameStates[param_2].networkID = nVar7;
-  *(undefined3 *)&clientGameStates[param_2].field_0x11 = uVar8;
-  clientGameStates[param_1].localClientNum = param_1;
-  clientGameStates[param_2].localClientNum = param_2;
+  LargeLocal::LargeLocal(&clientConnectionTemp_large_local,0xaff48);
+  dst = LargeLocal::GetBuf(&clientConnectionTemp_large_local);
+  iVar1 = clientUIActives[clientA].flags;
+  iVar2 = clientUIActives[clientA].keyCatchers;
+  cVar3 = clientUIActives[clientA].connectionState;
+  iVar4 = clientUIActives[clientA].nextScrollTime;
+  clientUIActives[clientA].flags = clientUIActives[clientB].flags;
+  clientUIActives[clientA].keyCatchers = clientUIActives[clientB].keyCatchers;
+  clientUIActives[clientA].connectionState = clientUIActives[clientB].connectionState;
+  clientUIActives[clientA].nextScrollTime = clientUIActives[clientB].nextScrollTime;
+  clientUIActives[clientB].flags = iVar1;
+  clientUIActives[clientB].keyCatchers = iVar2;
+  clientUIActives[clientB].connectionState = cVar3;
+  clientUIActives[clientB].nextScrollTime = iVar4;
+  iVar1 = clientGameStates[clientA].flags;
+  iVar2 = clientGameStates[clientA].localClientNum;
+  iVar4 = clientGameStates[clientA].controllerIndex;
+  iVar5 = clientGameStates[clientA].uiContextIndex;
+  nVar7 = clientGameStates[clientA].networkID;
+  uVar8 = *(undefined3 *)&clientGameStates[clientA].field_0x11;
+  clientGameStates[clientA].flags = clientGameStates[clientB].flags;
+  clientGameStates[clientA].localClientNum = clientGameStates[clientB].localClientNum;
+  clientGameStates[clientA].controllerIndex = clientGameStates[clientB].controllerIndex;
+  clientGameStates[clientA].uiContextIndex = clientGameStates[clientB].uiContextIndex;
+  uVar6 = *(undefined3 *)&clientGameStates[clientB].field_0x11;
+  clientGameStates[clientA].networkID = clientGameStates[clientB].networkID;
+  *(undefined3 *)&clientGameStates[clientA].field_0x11 = uVar6;
+  clientGameStates[clientB].flags = iVar1;
+  clientGameStates[clientB].localClientNum = iVar2;
+  clientGameStates[clientB].controllerIndex = iVar4;
+  clientGameStates[clientB].uiContextIndex = iVar5;
+  clientGameStates[clientB].networkID = nVar7;
+  *(undefined3 *)&clientGameStates[clientB].field_0x11 = uVar8;
+  clientGameStates[clientA].localClientNum = clientA;
+  clientGameStates[clientB].localClientNum = clientB;
   if (clientConnections != (clientConnection_t *)0x0) {
-    memcpy(puVar9,(uchar *)(clientConnections + param_1),0xaff48);
-    memcpy((uchar *)(clientConnections + param_1),(uchar *)(clientConnections + param_2),0xaff48);
-    memcpy((uchar *)(clientConnections + param_2),puVar9,0xaff48);
+    memcpy(dst,(uchar *)(clientConnections + clientA),0xaff48);
+    memcpy((uchar *)(clientConnections + clientA),(uchar *)(clientConnections + clientB),0xaff48);
+    memcpy((uchar *)(clientConnections + clientB),dst,0xaff48);
   }
-  LargeLocal::~LargeLocal(&local_c);
+  LargeLocal::~LargeLocal(&clientConnectionTemp_large_local);
   return;
 }
 
@@ -95,59 +95,59 @@ void __cdecl Com_LocalClients_CompressClients(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int testIndex;
+  int swapIndex;
+  int cgsIndex_2;
+  int activeIndex;
+  int cgsIndex;
+  int lastUsedIndex;
   
-  local_8 = 0;
-  local_c = 0;
+  lastUsedIndex = 0;
+  cgsIndex = 0;
   do {
-    if (0 < local_c) {
-      local_14 = 0;
+    if (0 < cgsIndex) {
+      cgsIndex_2 = 0;
       while( true ) {
-        if (local_8 < local_14) {
+        if (lastUsedIndex < cgsIndex_2) {
           return;
         }
-        bVar2 = Com_LocalClient_IsBeingUsed(local_14);
+        bVar2 = Com_LocalClient_IsBeingUsed(cgsIndex_2);
         if ((!bVar2) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",
                                      0x6c,0,"%s"), !bVar2)) break;
-        local_18 = local_14;
-        local_1c = local_14;
-        while (local_1c = local_1c + 1, local_1c <= local_8) {
-          if (clientGameStates[local_1c].controllerIndex <
-              clientGameStates[local_14].controllerIndex) {
-            local_18 = local_1c;
+        swapIndex = cgsIndex_2;
+        testIndex = cgsIndex_2;
+        while (testIndex = testIndex + 1, testIndex <= lastUsedIndex) {
+          if (clientGameStates[testIndex].controllerIndex <
+              clientGameStates[cgsIndex_2].controllerIndex) {
+            swapIndex = testIndex;
           }
         }
-        if (local_18 != local_14) {
-          SwapClients(local_14,local_18);
+        if (swapIndex != cgsIndex_2) {
+          SwapClients(cgsIndex_2,swapIndex);
         }
-        local_14 = local_14 + 1;
+        cgsIndex_2 = cgsIndex_2 + 1;
       }
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    bVar2 = Com_LocalClient_IsBeingUsed(local_c);
-    local_10 = local_c;
+    bVar2 = Com_LocalClient_IsBeingUsed(cgsIndex);
+    activeIndex = cgsIndex;
     if (bVar2) {
-      local_8 = local_c;
+      lastUsedIndex = cgsIndex;
     }
     else {
       do {
-        local_10 = local_10 + 1;
-        if (0 < local_10) goto LAB_006ccc96;
-        bVar2 = Com_LocalClient_IsBeingUsed(local_10);
+        activeIndex = activeIndex + 1;
+        if (0 < activeIndex) goto LAB_006ccc96;
+        bVar2 = Com_LocalClient_IsBeingUsed(activeIndex);
       } while (!bVar2);
-      SwapClients(local_c,local_10);
-      local_8 = local_c;
+      SwapClients(cgsIndex,activeIndex);
+      lastUsedIndex = cgsIndex;
     }
 LAB_006ccc96:
-    local_c = local_c + 1;
+    cgsIndex = cgsIndex + 1;
   } while( true );
 }
 
@@ -159,13 +159,13 @@ LAB_006ccc96:
 void __cdecl Com_LocalClients_AssignUIContextsForInGame(void)
 
 {
-  int local_c;
-  int local_8;
+  int cgsIndex;
+  int contextIndex;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    clientGameStates[local_c].uiContextIndex = local_8;
-    local_8 = local_8 + 1;
+  contextIndex = 0;
+  for (cgsIndex = 0; cgsIndex < 1; cgsIndex = cgsIndex + 1) {
+    clientGameStates[cgsIndex].uiContextIndex = contextIndex;
+    contextIndex = contextIndex + 1;
   }
   return;
 }
@@ -178,10 +178,11 @@ void __cdecl Com_LocalClients_AssignUIContextsForInGame(void)
 void __cdecl Com_LocalClients_AssignUIContextsForFrontEnd(void)
 
 {
-  int local_c;
+  int cgsIndex;
+  int contextIndex;
   
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    clientGameStates[local_c].uiContextIndex = 0;
+  for (cgsIndex = 0; cgsIndex < 1; cgsIndex = cgsIndex + 1) {
+    clientGameStates[cgsIndex].uiContextIndex = 0;
   }
   return;
 }
@@ -191,15 +192,15 @@ void __cdecl Com_LocalClients_AssignUIContextsForFrontEnd(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Com_LocalClient_GetUIContextIndex(int param_1)
+int __cdecl Com_LocalClient_GetUIContextIndex(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int cgsIndex;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xa2,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -207,9 +208,9 @@ int __cdecl Com_LocalClient_GetUIContextIndex(int param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  cgsIndex = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < cgsIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xab,0,
                                "%s");
       if (bVar2) {
@@ -219,10 +220,10 @@ int __cdecl Com_LocalClient_GetUIContextIndex(int param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (clientGameStates[local_8].localClientNum == param_1) break;
-    local_8 = local_8 + 1;
+    if (clientGameStates[cgsIndex].localClientNum == localClientNum) break;
+    cgsIndex = cgsIndex + 1;
   }
-  return clientGameStates[local_8].uiContextIndex;
+  return clientGameStates[cgsIndex].uiContextIndex;
 }
 
 
@@ -230,15 +231,15 @@ int __cdecl Com_LocalClient_GetUIContextIndex(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Com_LocalClient_GetControllerIndex(int param_1)
+int __cdecl Com_LocalClient_GetControllerIndex(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int cgsIndex;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xb1,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -246,9 +247,9 @@ int __cdecl Com_LocalClient_GetControllerIndex(int param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  cgsIndex = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < cgsIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xba,0,
                                "%s");
       if (bVar2) {
@@ -258,10 +259,10 @@ int __cdecl Com_LocalClient_GetControllerIndex(int param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (clientGameStates[local_8].localClientNum == param_1) break;
-    local_8 = local_8 + 1;
+    if (clientGameStates[cgsIndex].localClientNum == localClientNum) break;
+    cgsIndex = cgsIndex + 1;
   }
-  return clientGameStates[local_8].controllerIndex;
+  return clientGameStates[cgsIndex].controllerIndex;
 }
 
 
@@ -269,15 +270,15 @@ int __cdecl Com_LocalClient_GetControllerIndex(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-netsrc_t __cdecl Com_LocalClient_GetNetworkID(int param_1)
+netsrc_t __cdecl Com_LocalClient_GetNetworkID(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   netsrc_t nVar3;
-  int local_8;
+  int cgsIndex;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xc0,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -285,9 +286,9 @@ netsrc_t __cdecl Com_LocalClient_GetNetworkID(int param_1)
     nVar3 = (*pcVar1)();
     return nVar3;
   }
-  local_8 = 0;
+  cgsIndex = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < cgsIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xc9,0,
                                "%s");
       if (bVar2) {
@@ -297,10 +298,10 @@ netsrc_t __cdecl Com_LocalClient_GetNetworkID(int param_1)
       nVar3 = (*pcVar1)();
       return nVar3;
     }
-    if (clientGameStates[local_8].localClientNum == param_1) break;
-    local_8 = local_8 + 1;
+    if (clientGameStates[cgsIndex].localClientNum == localClientNum) break;
+    cgsIndex = cgsIndex + 1;
   }
-  return (netsrc_t)*(undefined4 *)&clientGameStates[local_8].networkID;
+  return (netsrc_t)*(undefined4 *)&clientGameStates[cgsIndex].networkID;
 }
 
 
@@ -308,13 +309,13 @@ netsrc_t __cdecl Com_LocalClient_GetNetworkID(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Com_LocalClient_SetControllerIndex(int param_1,int param_2)
+void __cdecl Com_LocalClient_SetControllerIndex(int localClientNum,int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xd0,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -324,7 +325,7 @@ void __cdecl Com_LocalClient_SetControllerIndex(int param_1,int param_2)
       return;
     }
   }
-  clientGameStates[param_1].controllerIndex = param_2;
+  clientGameStates[localClientNum].controllerIndex = controllerIndex;
   return;
 }
 
@@ -336,10 +337,10 @@ void __cdecl Com_LocalClient_SetControllerIndex(int param_1,int param_2)
 void __cdecl Com_LocalClient_ClearAllPrimary(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    clientGameStates[local_8].flags = clientGameStates[local_8].flags & 0xfffffffd;
+  for (i = 0; i < 1; i = i + 1) {
+    clientGameStates[i].flags = clientGameStates[i].flags & 0xfffffffd;
   }
   return;
 }
@@ -349,13 +350,13 @@ void __cdecl Com_LocalClient_ClearAllPrimary(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Com_LocalClient_SetPrimary(int param_1,bool param_2)
+void __cdecl Com_LocalClient_SetPrimary(int localClientNum,bool primary)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0xef,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -363,12 +364,12 @@ void __cdecl Com_LocalClient_SetPrimary(int param_1,bool param_2)
     (*pcVar1)();
     return;
   }
-  if (param_2) {
+  if (primary) {
     Com_LocalClient_ClearAllPrimary();
-    clientGameStates[param_1].flags = clientGameStates[param_1].flags | 2;
+    clientGameStates[localClientNum].flags = clientGameStates[localClientNum].flags | 2;
   }
   else {
-    clientGameStates[param_1].flags = clientGameStates[param_1].flags & 0xfffffffd;
+    clientGameStates[localClientNum].flags = clientGameStates[localClientNum].flags & 0xfffffffd;
   }
   return;
 }
@@ -382,12 +383,12 @@ int __cdecl Com_LocalClients_GetPrimary(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    bVar2 = Com_LocalClient_IsPrimary(local_8);
+  for (i = 0; i < 1; i = i + 1) {
+    bVar2 = Com_LocalClient_IsPrimary(i);
     if (bVar2) {
-      return local_8;
+      return i;
     }
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x105,0,
@@ -405,14 +406,14 @@ int __cdecl Com_LocalClients_GetPrimary(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Com_LocalClient_IsPrimary(int param_1)
+bool __cdecl Com_LocalClient_IsPrimary(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x10b,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -422,7 +423,7 @@ bool __cdecl Com_LocalClient_IsPrimary(int param_1)
       return (bool)uVar3;
     }
   }
-  return (clientGameStates[param_1].flags & 2U) != 0;
+  return (clientGameStates[localClientNum].flags & 2U) != 0;
 }
 
 
@@ -430,14 +431,14 @@ bool __cdecl Com_LocalClient_IsPrimary(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Com_LocalClient_IsBeingUsed(int param_1)
+bool __cdecl Com_LocalClient_IsBeingUsed(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x111,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -447,7 +448,7 @@ bool __cdecl Com_LocalClient_IsBeingUsed(int param_1)
       return (bool)uVar3;
     }
   }
-  return (clientGameStates[param_1].flags & 1U) != 0;
+  return (clientGameStates[localClientNum].flags & 1U) != 0;
 }
 
 
@@ -455,13 +456,13 @@ bool __cdecl Com_LocalClient_IsBeingUsed(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Com_LocalClient_SetBeingUsed(int param_1,bool param_2)
+void __cdecl Com_LocalClient_SetBeingUsed(int localClientNum,bool beingUsed)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x117,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -471,11 +472,11 @@ void __cdecl Com_LocalClient_SetBeingUsed(int param_1,bool param_2)
       return;
     }
   }
-  if (param_2) {
-    clientGameStates[param_1].flags = clientGameStates[param_1].flags | 1;
+  if (beingUsed) {
+    clientGameStates[localClientNum].flags = clientGameStates[localClientNum].flags | 1;
   }
   else {
-    clientGameStates[param_1].flags = clientGameStates[param_1].flags & 0xfffffffe;
+    clientGameStates[localClientNum].flags = clientGameStates[localClientNum].flags & 0xfffffffe;
   }
   return;
 }
@@ -487,17 +488,17 @@ int __cdecl Com_LocalClients_GetUsedControllerCount(void)
 
 {
   bool bVar1;
-  undefined4 local_c;
-  undefined4 local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    bVar1 = Com_LocalClient_IsBeingUsed(local_c);
+  count = 0;
+  for (i = 0; i < 1; i = i + 1) {
+    bVar1 = Com_LocalClient_IsBeingUsed(i);
     if (bVar1) {
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -505,15 +506,15 @@ int __cdecl Com_LocalClients_GetUsedControllerCount(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Com_ControllerIndex_GetLocalClientNum(int param_1)
+int __cdecl Com_ControllerIndex_GetLocalClientNum(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int cgsIndex;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x166,0
                                ,"controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -521,9 +522,9 @@ int __cdecl Com_ControllerIndex_GetLocalClientNum(int param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  cgsIndex = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < cgsIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x171,0
                                ,"%s");
       if (bVar2) {
@@ -533,10 +534,10 @@ int __cdecl Com_ControllerIndex_GetLocalClientNum(int param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (clientGameStates[local_8].controllerIndex == param_1) break;
-    local_8 = local_8 + 1;
+    if (clientGameStates[cgsIndex].controllerIndex == controllerIndex) break;
+    cgsIndex = cgsIndex + 1;
   }
-  return clientGameStates[local_8].localClientNum;
+  return clientGameStates[cgsIndex].localClientNum;
 }
 
 
@@ -544,15 +545,15 @@ int __cdecl Com_ControllerIndex_GetLocalClientNum(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Com_ControllerIndex_GetUIContextIndex(int param_1)
+int __cdecl Com_ControllerIndex_GetUIContextIndex(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int cgsIndex;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x18b,0
                                ,"controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -560,9 +561,9 @@ int __cdecl Com_ControllerIndex_GetUIContextIndex(int param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  cgsIndex = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < cgsIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_clients.cpp",0x195,0
                                ,"%s");
       if (bVar2) {
@@ -572,10 +573,10 @@ int __cdecl Com_ControllerIndex_GetUIContextIndex(int param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (clientGameStates[local_8].controllerIndex == param_1) break;
-    local_8 = local_8 + 1;
+    if (clientGameStates[cgsIndex].controllerIndex == controllerIndex) break;
+    cgsIndex = cgsIndex + 1;
   }
-  return clientGameStates[local_8].uiContextIndex;
+  return clientGameStates[cgsIndex].uiContextIndex;
 }
 
 
@@ -594,6 +595,8 @@ int __cdecl Com_ControllerIndex_GetUIContextIndex(int param_1)
 int __cdecl Com_ControllerIndexes_GetPrimary(void)
 
 {
+  int i;
+  
   return 0;
 }
 

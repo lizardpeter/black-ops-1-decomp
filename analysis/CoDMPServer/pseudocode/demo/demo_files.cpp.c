@@ -16,7 +16,7 @@ void __cdecl Demo_InitFileHandlerSystem(void)
 
 // 009BBC40  Demo_AllocateMemoryFromStreamBuffer  (demo/demo_files.cpp:59)
 
-void __cdecl Demo_AllocateMemoryFromStreamBuffer(int param_1)
+void __cdecl Demo_AllocateMemoryFromStreamBuffer(int size)
 
 {
   code *pcVar1;
@@ -30,9 +30,9 @@ void __cdecl Demo_AllocateMemoryFromStreamBuffer(int param_1)
       (*pcVar1)();
       return;
     }
-    s_fileHandler.ptr = Z_VirtualAlloc(param_1,"demoDownloadBuffer",0xb);
+    s_fileHandler.ptr = Z_VirtualAlloc(size,"demoDownloadBuffer",0xb);
     s_fileHandler.offset = 0;
-    s_fileHandler.size = param_1;
+    s_fileHandler.size = size;
   }
   return;
 }
@@ -40,7 +40,7 @@ void __cdecl Demo_AllocateMemoryFromStreamBuffer(int param_1)
 
 // 009BBCB0  Demo_ReturnStreamBufferMemory  (demo/demo_files.cpp:86)
 
-void __cdecl Demo_ReturnStreamBufferMemory(int param_1)
+void __cdecl Demo_ReturnStreamBufferMemory(int size)
 
 {
   code *pcVar1;
@@ -89,11 +89,13 @@ char * __cdecl Demo_GetStreamAllocatedBuffer(void)
 
 // 009BBD50  Demo_GetDemoPath  (demo/demo_files.cpp:141)
 
-void __cdecl Demo_GetDemoPath(char *param_1)
+void __cdecl Demo_GetDemoPath(char *demoPath)
 
 {
+  char *basepath;
+  
   if ((demo_usefilesystem->current).enabled != false) {
-    FS_BuildOSPath((fs_homepath->current).string,"demos","",param_1);
+    FS_BuildOSPath((fs_homepath->current).string,"demos","",demoPath);
   }
   return;
 }
@@ -103,11 +105,12 @@ void __cdecl Demo_GetDemoPath(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Demo_OpenFileWrite(char *param_1,char *param_2,bool param_3)
+int __cdecl Demo_OpenFileWrite(char *filename,char *dir,bool supressErrors)
 
 {
   int iVar1;
-  char local_10c [260];
+  int handle;
+  char name [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -115,10 +118,10 @@ int __cdecl Demo_OpenFileWrite(char *param_1,char *param_2,bool param_3)
     iVar1 = 1;
   }
   else {
-    Com_sprintf(local_10c,0x100,"%s");
-    iVar1 = FS_SV_FOpenFileWrite(local_10c,"demos");
+    Com_sprintf(name,0x100,"%s");
+    iVar1 = FS_SV_FOpenFileWrite(name,"demos");
     if (iVar1 == 0) {
-      if (!param_3) {
+      if (!supressErrors) {
         Com_PrintError(0,"ERROR: couldn\'t open file for write.\n");
       }
       iVar1 = 0;
@@ -132,16 +135,16 @@ int __cdecl Demo_OpenFileWrite(char *param_1,char *param_2,bool param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Demo_OpenFileRead(char *param_1,char *param_2,bool param_3)
+int __cdecl Demo_OpenFileRead(char *filename,char *dir,bool supressErrors)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_110;
-  char local_10c [256];
+  int handle;
+  char ospath [256];
   uint local_c;
-  int local_8;
+  int size;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((demo_usefilesystem->current).enabled == false) {
@@ -152,81 +155,82 @@ int __cdecl Demo_OpenFileRead(char *param_1,char *param_2,bool param_3)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_110 = 1;
+    handle = 1;
   }
   else {
-    Com_sprintf(local_10c,0x100,"%s");
-    local_8 = FS_SV_FOpenFileRead(local_10c,"demos",&local_110);
-    if ((local_110 == 0) || (local_8 == 0)) {
-      if (!param_3) {
+    Com_sprintf(ospath,0x100,"%s");
+    size = FS_SV_FOpenFileRead(ospath,"demos",&handle);
+    if ((handle == 0) || (size == 0)) {
+      if (!supressErrors) {
         Com_PrintError(0,"ERROR: couldn\'t open file for read.\n");
       }
-      if (local_110 != 0) {
-        FS_FCloseFile(local_110);
+      if (handle != 0) {
+        FS_FCloseFile(handle);
       }
-      local_110 = 0;
+      handle = 0;
     }
   }
-  return local_110;
+  return handle;
 }
 
 
 // 009BBF20  Demo_Write  (demo/demo_files.cpp:321)
 
-int __cdecl Demo_Write(void *param_1,int param_2,int param_3)
+int __cdecl Demo_Write(void *buffer,int len,int handle)
 
 {
   bool bVar1;
+  ulong bytesWritten;
   
   if ((demo_usefilesystem->current).enabled == false) {
     bVar1 = Demo_IsRecording();
     if (bVar1) {
-      Demo_SaveToStreamBuffer(param_1,param_2);
+      Demo_SaveToStreamBuffer(buffer,len);
     }
     else if (s_fileHandler.ptr == (uchar *)0x0) {
-      param_2 = 0;
+      len = 0;
     }
     else {
-      memcpy(s_fileHandler.ptr + s_fileHandler.offset,param_1,param_2);
-      s_fileHandler.offset = s_fileHandler.offset + param_2;
+      memcpy(s_fileHandler.ptr + s_fileHandler.offset,buffer,len);
+      s_fileHandler.offset = s_fileHandler.offset + len;
     }
   }
   else {
-    param_2 = FS_WriteToDemo(param_1,param_2,param_3);
+    len = FS_WriteToDemo(buffer,len,handle);
   }
-  return param_2;
+  return len;
 }
 
 
 // 009BBFC0  Demo_Read  (demo/demo_files.cpp:377)
 
-int __cdecl Demo_Read(void *param_1,int param_2,int param_3)
+int __cdecl Demo_Read(void *buffer,int len,int handle)
 
 {
-  int local_8;
+  ulong bytesRead;
   
   if ((demo_usefilesystem->current).enabled == false) {
-    memcpy(param_1,s_fileHandler.ptr + s_fileHandler.offset,param_2);
-    s_fileHandler.offset = s_fileHandler.offset + param_2;
-    local_8 = param_2;
+    memcpy(buffer,s_fileHandler.ptr + s_fileHandler.offset,len);
+    s_fileHandler.offset = s_fileHandler.offset + len;
+    bytesRead = len;
   }
   else {
-    local_8 = FS_Read(param_1,param_2,param_3);
+    bytesRead = FS_Read(buffer,len,handle);
   }
-  return local_8;
+  return bytesRead;
 }
 
 
 // 009BC030  Demo_CloseFile  (demo/demo_files.cpp:410)
 
-void __cdecl Demo_CloseFile(int param_1)
+void __cdecl Demo_CloseFile(int handle)
 
 {
   if ((demo_usefilesystem->current).enabled == false) {
     s_fileHandler.offset = 0;
   }
   else {
-    FS_FCloseFile(param_1);
+    FS_FCloseFile(handle);
   }
   return;
 }
@@ -234,39 +238,39 @@ void __cdecl Demo_CloseFile(int param_1)
 
 // 009BC060  Demo_SeekFile  (demo/demo_files.cpp:431)
 
-int __cdecl Demo_SeekFile(int param_1,long param_2,int param_3)
+int __cdecl Demo_SeekFile(int handle,long offset,int origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *fmt;
+  int iVar3;
   
   if ((demo_usefilesystem->current).enabled == false) {
-    if (param_3 == 0) {
-      s_fileHandler.offset = s_fileHandler.offset + param_2;
+    if (origin == 0) {
+      s_fileHandler.offset = s_fileHandler.offset + offset;
     }
-    else if (param_3 == 1) {
-      s_fileHandler.offset = s_fileHandler.size + param_2;
+    else if (origin == 1) {
+      s_fileHandler.offset = s_fileHandler.size + offset;
     }
-    else if (param_3 == 2) {
-      s_fileHandler.offset = param_2;
+    else if (origin == 2) {
+      s_fileHandler.offset = offset;
     }
     else {
-      pcVar3 = va("Bad origin %i in FS_Seek");
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_files.cpp",0x1c0,0,
-                               pcVar3);
+      fmt = va("Bad origin %i in FS_Seek");
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_files.cpp",0x1c0,0,fmt
+                              );
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        iVar4 = (*pcVar1)();
-        return iVar4;
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      param_2 = 0;
+      offset = 0;
     }
   }
   else {
-    param_2 = FS_Seek(param_1,param_2,param_3);
+    offset = FS_Seek(handle,offset,origin);
   }
-  return param_2;
+  return offset;
 }
 

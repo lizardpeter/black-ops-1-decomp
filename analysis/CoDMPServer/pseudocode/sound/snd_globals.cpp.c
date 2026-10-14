@@ -2,7 +2,7 @@
 
 // 00946A80  SND_GroupCategory  (sound/snd_globals.cpp:12)
 
-snd_category_t __cdecl SND_GroupCategory(uint param_1)
+snd_category_t __cdecl SND_GroupCategory(uint group)
 
 {
   code *pcVar1;
@@ -12,26 +12,26 @@ snd_category_t __cdecl SND_GroupCategory(uint param_1)
   snd_group *psVar5;
   
   uVar3 = SND_GetGroupCount();
-  if ((uVar3 <= param_1) &&
+  if ((uVar3 <= group) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0xd,0,
                                "%s\n\t(group) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  psVar5 = SND_GetGroupByIndex(param_1);
+  psVar5 = SND_GetGroupByIndex(group);
   return psVar5->category;
 }
 
 
 // 00946AD0  SND_GroupGetAttenuation  (sound/snd_globals.cpp:24)
 
-float __cdecl SND_GroupGetAttenuation(uint param_1)
+float __cdecl SND_GroupGetAttenuation(uint group)
 
 {
   snd_group *psVar1;
   
-  psVar1 = SND_GetGroupByIndex(param_1);
+  psVar1 = SND_GetGroupByIndex(group);
   return (float)psVar1->attenuationMp / 65535.0;
 }
 
@@ -51,14 +51,14 @@ uint __cdecl SND_GetGroupCount(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_group * __cdecl SND_GetGroupByIndex(uint param_1)
+snd_group * __cdecl SND_GetGroupByIndex(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_group *psVar3;
   
-  if ((g_snd.global_constants)->groupCount <= param_1) {
+  if ((g_snd.global_constants)->groupCount <= index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x25,0,
                              "index doesn\'t index g_snd.global_constants->groupCount\n\t%i not in [0, %i)"
                             );
@@ -68,7 +68,7 @@ snd_group * __cdecl SND_GetGroupByIndex(uint param_1)
       return psVar3;
     }
   }
-  return (g_snd.global_constants)->groups + param_1;
+  return (g_snd.global_constants)->groups + index;
 }
 
 
@@ -76,13 +76,13 @@ snd_group * __cdecl SND_GetGroupByIndex(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_master * __cdecl SND_GetMaster(uint param_1)
+snd_master * __cdecl SND_GetMaster(uint id)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_master *psVar3;
-  uint local_8;
+  uint i;
   
   if ((g_snd.global_constants == (SndDriverGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x2c,0,
@@ -92,13 +92,13 @@ snd_master * __cdecl SND_GetMaster(uint param_1)
     return psVar3;
   }
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->masterCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->masters[local_8].id == param_1) {
-        return (g_snd.global_constants)->masters + local_8;
+    for (i = 0; i < (g_snd.global_constants)->masterCount; i = i + 1) {
+      if ((g_snd.global_constants)->masters[i].id == id) {
+        return (g_snd.global_constants)->masters + i;
       }
     }
   }
-  if (g_snd.defaultHash == param_1) {
+  if (g_snd.defaultHash == id) {
     psVar3 = (snd_master *)0x0;
   }
   else {
@@ -110,28 +110,29 @@ snd_master * __cdecl SND_GetMaster(uint param_1)
 
 // 00946C10  SND_GetMasterByConfig  (sound/snd_globals.cpp:67)
 
-snd_master * __cdecl SND_GetMasterByConfig(uint param_1)
+snd_master * __cdecl SND_GetMasterByConfig(uint i)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_master *psVar3;
   uint uVar4;
-  char *local_30 [4];
+  int setup;
+  char *snames [4];
   char *local_20;
   undefined4 local_1c;
   char *local_18;
   char *local_14;
   undefined4 local_10;
-  char *local_c;
-  uint local_8;
+  char *sname;
+  int level;
   
   uVar4 = (snd_menu_speaker_setup->current).unsignedInt;
-  local_8 = (snd_menu_listen_level->current).unsignedInt;
-  local_30[0] = "tv_quiet";
-  local_30[1] = "tv_loud";
-  local_30[2] = (char *)0x0;
-  local_30[3] = "surround_quiet";
+  level = (snd_menu_listen_level->current).integer;
+  snames[0] = "tv_quiet";
+  snames[1] = "tv_loud";
+  snames[2] = (char *)0x0;
+  snames[3] = "surround_quiet";
   local_20 = "surround_loud";
   local_1c = 0;
   local_18 = "headphone_quiet";
@@ -146,7 +147,7 @@ snd_master * __cdecl SND_GetMasterByConfig(uint param_1)
       return psVar3;
     }
   }
-  if (((int)local_8 < 0) || (3 < local_8)) {
+  if ((level < 0) || (3 < (uint)level)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x4e,0,
                              "level not in [0, ARRAY_COUNT(snames[0])]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -155,8 +156,8 @@ snd_master * __cdecl SND_GetMasterByConfig(uint param_1)
       return psVar3;
     }
   }
-  local_c = local_30[uVar4 * 3 + local_8];
-  uVar4 = SND_HashName(local_c);
+  sname = snames[uVar4 * 3 + level];
+  uVar4 = SND_HashName(sname);
   psVar3 = SND_GetMaster(uVar4);
   return psVar3;
 }
@@ -167,18 +168,18 @@ snd_master * __cdecl SND_GetMasterByConfig(uint param_1)
 snd_master * __cdecl SND_GetMasterCurrent(void)
 
 {
-  uint uVar1;
-  snd_master *psVar2;
+  uint id;
+  snd_master *psVar1;
   
   if (((snd_master_override->current).integer == 0) ||
      (*(snd_master_override->current).string == '\0')) {
-    psVar2 = SND_GetMasterByConfig((snd_menu_speaker_setup->current).unsignedInt);
+    psVar1 = SND_GetMasterByConfig((snd_menu_speaker_setup->current).unsignedInt);
   }
   else {
-    uVar1 = SND_HashName((snd_master_override->current).string);
-    psVar2 = SND_GetMaster(uVar1);
+    id = SND_HashName((snd_master_override->current).string);
+    psVar1 = SND_GetMaster(id);
   }
-  return psVar2;
+  return psVar1;
 }
 
 
@@ -186,13 +187,13 @@ snd_master * __cdecl SND_GetMasterCurrent(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_curve * __cdecl SND_GetCurveById(uint param_1)
+snd_curve * __cdecl SND_GetCurveById(uint id)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_curve *psVar3;
-  uint local_8;
+  uint i;
   
   if ((g_snd.global_constants == (SndDriverGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x67,0,
@@ -202,13 +203,13 @@ snd_curve * __cdecl SND_GetCurveById(uint param_1)
     return psVar3;
   }
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->curveCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->curves[local_8].id == param_1) {
-        return (g_snd.global_constants)->curves + local_8;
+    for (i = 0; i < (g_snd.global_constants)->curveCount; i = i + 1) {
+      if ((g_snd.global_constants)->curves[i].id == id) {
+        return (g_snd.global_constants)->curves + i;
       }
     }
   }
-  if (g_snd.defaultHash == param_1) {
+  if (g_snd.defaultHash == id) {
     psVar3 = (g_snd.global_constants)->curves;
   }
   else {
@@ -222,7 +223,7 @@ snd_curve * __cdecl SND_GetCurveById(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_curve * __cdecl SND_GetCurveByIndex(uint param_1)
+snd_curve * __cdecl SND_GetCurveByIndex(uint i)
 
 {
   code *pcVar1;
@@ -238,7 +239,7 @@ snd_curve * __cdecl SND_GetCurveByIndex(uint param_1)
       return psVar3;
     }
   }
-  if (param_1 == 0xffffffff) {
+  if (i == 0xffffffff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x80,0,"%s"
                             );
     if (!bVar2) {
@@ -247,7 +248,7 @@ snd_curve * __cdecl SND_GetCurveByIndex(uint param_1)
       return psVar3;
     }
   }
-  if ((g_snd.global_constants)->curveCount <= param_1) {
+  if ((g_snd.global_constants)->curveCount <= i) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x81,0,"%s"
                             );
     if (!bVar2) {
@@ -256,7 +257,7 @@ snd_curve * __cdecl SND_GetCurveByIndex(uint param_1)
       return psVar3;
     }
   }
-  return (g_snd.global_constants)->curves + param_1;
+  return (g_snd.global_constants)->curves + i;
 }
 
 
@@ -264,7 +265,7 @@ snd_curve * __cdecl SND_GetCurveByIndex(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_pan * __cdecl SND_GetPanByIndex(int param_1)
+snd_pan * __cdecl SND_GetPanByIndex(int i)
 
 {
   code *pcVar1;
@@ -280,7 +281,7 @@ snd_pan * __cdecl SND_GetPanByIndex(int param_1)
       return psVar3;
     }
   }
-  if ((g_snd.global_constants)->panCount <= (uint)param_1) {
+  if ((g_snd.global_constants)->panCount <= (uint)i) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x8b,0,
                              "i doesn\'t index g_snd.global_constants->panCount\n\t%i not in [0, %i)"
                             );
@@ -290,7 +291,7 @@ snd_pan * __cdecl SND_GetPanByIndex(int param_1)
       return psVar3;
     }
   }
-  return (g_snd.global_constants)->pans + param_1;
+  return (g_snd.global_constants)->pans + i;
 }
 
 
@@ -298,13 +299,13 @@ snd_pan * __cdecl SND_GetPanByIndex(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_FindContextIndex(uint param_1)
+int __cdecl SND_FindContextIndex(uint type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  uint i;
   
   if ((g_snd.global_constants == (SndDriverGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0x93,0,
@@ -313,15 +314,15 @@ int __cdecl SND_FindContextIndex(uint param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((g_snd.global_constants)->contextCount <= local_8) {
+    if ((g_snd.global_constants)->contextCount <= i) {
       return -1;
     }
-    if ((g_snd.global_constants)->contexts[local_8].type == param_1) break;
-    local_8 = local_8 + 1;
+    if ((g_snd.global_constants)->contexts[i].type == type) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -329,77 +330,78 @@ int __cdecl SND_FindContextIndex(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl SND_FindContextValueIndex(uint param_1,uint param_2)
+int __cdecl SND_FindContextValueIndex(uint type,uint value)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  int t;
   
-  iVar1 = SND_FindContextIndex(param_1);
-  local_c = 0;
+  iVar1 = SND_FindContextIndex(type);
+  i = 0;
   while( true ) {
-    if (7 < local_c) {
+    if (7 < i) {
       return -1;
     }
-    if ((g_snd.global_constants)->contexts[iVar1].values[local_c] == param_2) break;
-    local_c = local_c + 1;
+    if ((g_snd.global_constants)->contexts[iVar1].values[i] == value) break;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
 // 00947000  Snd_CurveEval  (sound/snd_globals.cpp:180)
 
-float __cdecl Snd_CurveEval(snd_curve *param_1,float param_2)
+float __cdecl Snd_CurveEval(snd_curve *curve,float x)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  int local_8;
+  float dx;
+  float t;
+  float w;
+  int i;
   
-  if ((param_2 < 0.0) &&
+  if ((x < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0xb5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((1.0 < param_2) &&
+  if ((1.0 < x) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0xb6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_1 == (snd_curve *)0x0) &&
+  if ((curve == (snd_curve *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_globals.cpp",0xb7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if (param_1->points[0][0] < param_2) {
-    if (param_2 < param_1->points[7][0]) {
-      for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
-        if ((param_2 <= param_1->points[local_8][0]) &&
-           (param_1->points[local_8 + -1][0] <= param_2)) {
-          fVar4 = (param_2 - param_1->points[local_8 + -1][0]) /
-                  (param_1->points[local_8][0] - param_1->points[local_8 + -1][0]);
-          return fVar4 * param_1->points[local_8][1] +
-                 (1.0 - fVar4) * param_1->points[local_8 + -1][1];
+  if (curve->points[0][0] < x) {
+    if (x < curve->points[7][0]) {
+      for (i = 1; i < 8; i = i + 1) {
+        if ((x <= curve->points[i][0]) && (curve->points[i + -1][0] <= x)) {
+          fVar4 = (x - curve->points[i + -1][0]) / (curve->points[i][0] - curve->points[i + -1][0]);
+          return fVar4 * curve->points[i][1] + (1.0 - fVar4) * curve->points[i + -1][1];
         }
       }
       Com_PrintError(9,"invalid curve data in curve \'%s\'\n");
       fVar4 = 0.0;
     }
     else {
-      fVar4 = param_1->points[7][1];
+      fVar4 = curve->points[7][1];
     }
   }
   else {
-    fVar4 = param_1->points[0][1];
+    fVar4 = curve->points[0][1];
   }
   return fVar4;
 }
@@ -407,14 +409,14 @@ float __cdecl Snd_CurveEval(snd_curve *param_1,float param_2)
 
 // 00947190  Snd_CurveEvalOverRange  (sound/snd_globals.cpp:211)
 
-float __cdecl Snd_CurveEvalOverRange(snd_curve *param_1,float param_2,float param_3,float param_4)
+float __cdecl Snd_CurveEvalOverRange(snd_curve *curve,float x,float minimum,float maximum)
 
 {
   float fVar1;
   float local_10;
   float local_8;
   
-  fVar1 = (param_2 - param_3) / (param_4 - param_3);
+  fVar1 = (x - minimum) / (maximum - minimum);
   local_8 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_8 = 1.0;
@@ -425,7 +427,7 @@ float __cdecl Snd_CurveEvalOverRange(snd_curve *param_1,float param_2,float para
   else {
     local_10 = 0.0;
   }
-  fVar1 = Snd_CurveEval(param_1,local_10);
+  fVar1 = Snd_CurveEval(curve,local_10);
   return fVar1;
 }
 

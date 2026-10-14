@@ -164,20 +164,20 @@ int __cdecl FS_HandleForFile(char *param_1,FsThread param_2)
 int __cdecl FS_filelength(int param_1)
 
 {
-  _iobuf *p_Var1;
+  _iobuf *stream;
   int in_EAX;
-  long lVar2;
-  long lVar3;
+  long offset;
+  long lVar1;
   
   if (*(int *)(&DAT_01f4158c + in_EAX * 0x11c) != 0) {
     return *(int *)((&fsh)[in_EAX * 0x47] + 0x44);
   }
-  p_Var1 = (_iobuf *)(&fsh)[in_EAX * 0x47];
-  lVar2 = ftell(p_Var1);
-  fseek(p_Var1,0,2);
-  lVar3 = ftell(p_Var1);
-  fseek(p_Var1,lVar2,0);
-  return lVar3;
+  stream = (_iobuf *)(&fsh)[in_EAX * 0x47];
+  offset = ftell(stream);
+  fseek(stream,0,2);
+  lVar1 = ftell(stream);
+  fseek(stream,offset,0);
+  return lVar1;
 }
 
 
@@ -262,13 +262,13 @@ int __cdecl FS_OSFPathExists(char *param_1)
 
 {
   int *piVar1;
-  _iobuf *p_Var2;
+  _iobuf *stream;
   
   piVar1 = _errno();
   *piVar1 = 0;
-  p_Var2 = fopen(param_1,"rb");
-  if ((p_Var2 != (_iobuf *)0xffffffff) && (p_Var2 != (_iobuf *)0x0)) {
-    fclose(p_Var2);
+  stream = fopen(param_1,"rb");
+  if ((stream != (_iobuf *)0xffffffff) && (stream != (_iobuf *)0x0)) {
+    fclose(stream);
     return 1;
   }
   return 0;
@@ -285,46 +285,46 @@ void __cdecl FS_CopyFile(char *param_1,char *param_2)
   char *in_EAX;
   int *piVar1;
   _iobuf *p_Var2;
-  long lVar3;
-  uint uVar4;
-  void *pvVar5;
-  uint uVar6;
-  int iVar7;
+  long offset;
+  uint size;
+  void *buffer;
+  uint uVar3;
+  int iVar4;
   char *unaff_EDI;
   
   piVar1 = _errno();
   *piVar1 = 0;
   p_Var2 = fopen(param_1,"rb");
   if ((p_Var2 != (_iobuf *)0xffffffff) && (p_Var2 != (_iobuf *)0x0)) {
-    lVar3 = ftell(p_Var2);
+    offset = ftell(p_Var2);
     fseek(p_Var2,0,2);
-    uVar4 = ftell(p_Var2);
-    fseek(p_Var2,lVar3,0);
-    pvVar5 = malloc(uVar4);
-    if (pvVar5 == (void *)0x0) {
+    size = ftell(p_Var2);
+    fseek(p_Var2,offset,0);
+    buffer = malloc(size);
+    if (buffer == (void *)0x0) {
                     /* WARNING: Subroutine does not return */
       FUN_00699280();
     }
-    Com_Memset(pvVar5,0,uVar4);
-    uVar6 = fread(pvVar5,1,uVar4,p_Var2);
-    if (uVar6 != uVar4) {
+    Com_Memset(buffer,0,size);
+    uVar3 = fread(buffer,1,size,p_Var2);
+    if (uVar3 != size) {
       Com_Error(ERR_FATAL,"\x15Short read in FS_CopyFile()\n");
     }
     fclose(p_Var2);
-    iVar7 = FS_CreatePath(unaff_EDI);
-    if (iVar7 == 0) {
+    iVar4 = FS_CreatePath(unaff_EDI);
+    if (iVar4 == 0) {
       piVar1 = _errno();
       *piVar1 = 0;
       p_Var2 = fopen(in_EAX,"wb");
       if ((p_Var2 != (_iobuf *)0xffffffff) && (p_Var2 != (_iobuf *)0x0)) {
-        uVar6 = fwrite(pvVar5,1,uVar4,p_Var2);
-        if (uVar6 != uVar4) {
+        uVar3 = fwrite(buffer,1,size,p_Var2);
+        if (uVar3 != size) {
           Com_Error(ERR_FATAL,"\x15Short write in FS_CopyFile()\n");
         }
         fclose(p_Var2);
       }
     }
-    free(pvVar5);
+    free(buffer);
   }
   return;
 }
@@ -337,29 +337,29 @@ void __cdecl FS_CopyFile(char *param_1,char *param_2)
 void __cdecl FS_FCloseFile(int param_1)
 
 {
-  fileHandleData_t *pfVar1;
+  fileHandleData_t *pBlock;
   int in_EAX;
-  int iVar2;
+  int iVar1;
   
   if ((fs_debug->current).integer != 0) {
-    iVar2 = Sys_GetThreadContext();
+    iVar1 = Sys_GetThreadContext();
     Com_Printf(10,"FS_FCloseFile from thread \'%s\', handle \'%i\', filename \'%s\'\n",
-               (&PTR_s_Main_00ae00e4)[iVar2]);
+               (&PTR_s_Main_00ae00e4)[iVar1]);
   }
-  iVar2 = in_EAX * 0x11c;
-  if (*(int *)(&DAT_01f4158c + iVar2) != 0) {
+  iVar1 = in_EAX * 0x11c;
+  if (*(int *)(&DAT_01f4158c + iVar1) != 0) {
     unzCloseCurrentFile((&fsh)[in_EAX * 0x47]);
-    if (*(int *)(&DAT_01f4157c + iVar2) == 0) {
-      *(undefined4 *)(*(int *)(&DAT_01f4158c + iVar2) + 0x30c) = 0;
+    if (*(int *)(&DAT_01f4157c + iVar1) == 0) {
+      *(undefined4 *)(*(int *)(&DAT_01f4158c + iVar1) + 0x30c) = 0;
     }
     else {
-      pfVar1 = (&fsh)[in_EAX * 0x47];
-      if (pfVar1 != (fileHandleData_t *)0x0) {
-        if (*(int *)(pfVar1 + 0x7c) != 0) {
-          unzCloseCurrentFile(pfVar1);
+      pBlock = (&fsh)[in_EAX * 0x47];
+      if (pBlock != (fileHandleData_t *)0x0) {
+        if (*(int *)(pBlock + 0x7c) != 0) {
+          unzCloseCurrentFile(pBlock);
         }
-        fclose(*(_iobuf **)pfVar1);
-        free(pfVar1);
+        fclose(*(_iobuf **)pBlock);
+        free(pBlock);
       }
     }
     Com_Memset(&fsh + in_EAX * 0x47,0,0x11c);
@@ -639,45 +639,45 @@ int __cdecl FS_Delete(char *param_1)
 int __cdecl FS_Read(void *param_1,int param_2,int param_3)
 
 {
-  _iobuf *p_Var1;
-  bool bVar2;
-  int iVar3;
-  uint uVar4;
-  uint uVar5;
+  _iobuf *stream;
+  bool bVar1;
+  int iVar2;
+  uint uVar3;
+  uint count;
   
   if (param_3 == 0) {
     return 0;
   }
   if (*(int *)(&DAT_01f4158c + param_3 * 0x11c) == 0) {
-    p_Var1 = (_iobuf *)(&fsh)[param_3 * 0x47];
-    bVar2 = false;
-    uVar5 = param_2;
+    stream = (_iobuf *)(&fsh)[param_3 * 0x47];
+    bVar1 = false;
+    count = param_2;
     if (param_2 == 0) {
       return 0;
     }
     do {
-      uVar4 = fread(param_1,1,uVar5,p_Var1);
-      if (uVar4 == 0) {
-        if (bVar2) {
-          return param_2 - uVar5;
+      uVar3 = fread(param_1,1,count,stream);
+      if (uVar3 == 0) {
+        if (bVar1) {
+          return param_2 - count;
         }
-        bVar2 = true;
+        bVar1 = true;
       }
-      else if (uVar4 == 0xffffffff) {
+      else if (uVar3 == 0xffffffff) {
         if ((0x31 < param_3) && (param_3 < 0x3d)) {
           return -1;
         }
         Com_Error(ERR_FATAL,"\x15FS_Read: -1 bytes read");
       }
-      uVar5 = uVar5 - uVar4;
-      param_1 = (void *)((int)param_1 + uVar4);
-      if (uVar5 == 0) {
+      count = count - uVar3;
+      param_1 = (void *)((int)param_1 + uVar3);
+      if (count == 0) {
         return param_2;
       }
     } while( true );
   }
-  iVar3 = unzReadCurrentFile(param_1);
-  return iVar3;
+  iVar2 = unzReadCurrentFile(param_1);
+  return iVar2;
 }
 
 
@@ -688,37 +688,37 @@ int __cdecl FS_Read(void *param_1,int param_2,int param_3)
 int __cdecl FS_Write(void *param_1,int param_2,int param_3)
 
 {
-  _iobuf *p_Var1;
-  bool bVar2;
-  uint uVar3;
+  _iobuf *stream;
+  bool bVar1;
+  uint uVar2;
   void *in_ECX;
-  void *pvVar4;
+  void *count;
   
   if (param_2 == 0) {
     return 0;
   }
-  p_Var1 = (_iobuf *)(&fsh)[param_2 * 0x47];
-  bVar2 = false;
-  pvVar4 = param_1;
+  stream = (_iobuf *)(&fsh)[param_2 * 0x47];
+  bVar1 = false;
+  count = param_1;
   do {
-    if (pvVar4 == (void *)0x0) {
+    if (count == (void *)0x0) {
       if (*(int *)(&DAT_01f41580 + param_2 * 0x11c) != 0) {
-        fflush(p_Var1);
+        fflush(stream);
       }
       return (int)param_1;
     }
-    uVar3 = fwrite(in_ECX,1,(uint)pvVar4,p_Var1);
-    if (uVar3 == 0) {
-      if (bVar2) {
+    uVar2 = fwrite(in_ECX,1,(uint)count,stream);
+    if (uVar2 == 0) {
+      if (bVar1) {
         return 0;
       }
-      bVar2 = true;
+      bVar1 = true;
     }
-    else if (uVar3 == 0xffffffff) {
+    else if (uVar2 == 0xffffffff) {
       return 0;
     }
-    pvVar4 = (void *)((int)pvVar4 - uVar3);
-    in_ECX = (void *)((int)in_ECX + uVar3);
+    count = (void *)((int)count - uVar2);
+    in_ECX = (void *)((int)in_ECX + uVar2);
   } while( true );
 }
 
@@ -905,7 +905,7 @@ int __cdecl FS_GetFileOsPath(char *param_1,char *param_2)
   searchpath_s *psVar1;
   char cVar2;
   int *piVar3;
-  _iobuf *p_Var4;
+  _iobuf *stream;
   char *unaff_EDI;
   undefined1 local_100 [256];
   
@@ -926,9 +926,9 @@ int __cdecl FS_GetFileOsPath(char *param_1,char *param_2)
       FUN_0068e750(*(int *)(psVar1 + 8),*(int *)(psVar1 + 8) + 0x100,local_100);
       piVar3 = _errno();
       *piVar3 = 0;
-      p_Var4 = fopen(unaff_EDI,"rb");
-      if ((p_Var4 != (_iobuf *)0xffffffff) && (p_Var4 != (_iobuf *)0x0)) {
-        fclose(p_Var4);
+      stream = fopen(unaff_EDI,"rb");
+      if ((stream != (_iobuf *)0xffffffff) && (stream != (_iobuf *)0x0)) {
+        fclose(stream);
         return 0;
       }
     }
@@ -1283,47 +1283,47 @@ void __cdecl FS_SortFileList(char **param_1,int param_2)
 {
   char **ppcVar1;
   int iVar2;
-  uchar *puVar3;
-  int iVar4;
+  uchar *src;
+  int iVar3;
   char *unaff_EBX;
+  int iVar4;
+  uint size;
   int iVar5;
-  uint uVar6;
-  int iVar7;
   char *unaff_EDI;
   
-  uVar6 = param_2 * 4 + 4;
-  puVar3 = malloc(uVar6);
-  if (puVar3 == (uchar *)0x0) {
+  size = param_2 * 4 + 4;
+  src = malloc(size);
+  if (src == (uchar *)0x0) {
                     /* WARNING: Subroutine does not return */
     FUN_00699280();
   }
-  Com_Memset(puVar3,0,uVar6);
-  iVar5 = 0;
-  puVar3[0] = '\0';
-  puVar3[1] = '\0';
-  puVar3[2] = '\0';
-  puVar3[3] = '\0';
+  Com_Memset(src,0,size);
+  iVar4 = 0;
+  src[0] = '\0';
+  src[1] = '\0';
+  src[2] = '\0';
+  src[3] = '\0';
   if (0 < param_2) {
     do {
-      iVar7 = 0;
-      iVar2 = iVar5;
-      if (0 < iVar5) {
+      iVar5 = 0;
+      iVar2 = iVar4;
+      if (0 < iVar4) {
         do {
-          iVar4 = FS_PathCmp(unaff_EBX,unaff_EDI);
-          if (iVar4 < 0) break;
-          iVar7 = iVar7 + 1;
-        } while (iVar7 < iVar5);
+          iVar3 = FS_PathCmp(unaff_EBX,unaff_EDI);
+          if (iVar3 < 0) break;
+          iVar5 = iVar5 + 1;
+        } while (iVar5 < iVar4);
       }
-      for (; iVar7 < iVar2; iVar2 = iVar2 + -1) {
-        *(undefined4 *)(puVar3 + iVar2 * 4) = *(undefined4 *)(puVar3 + iVar2 * 4 + -4);
+      for (; iVar5 < iVar2; iVar2 = iVar2 + -1) {
+        *(undefined4 *)(src + iVar2 * 4) = *(undefined4 *)(src + iVar2 * 4 + -4);
       }
-      ppcVar1 = param_1 + iVar5;
-      iVar5 = iVar5 + 1;
-      *(char **)(puVar3 + iVar7 * 4) = *ppcVar1;
-    } while (iVar5 < param_2);
+      ppcVar1 = param_1 + iVar4;
+      iVar4 = iVar4 + 1;
+      *(char **)(src + iVar5 * 4) = *ppcVar1;
+    } while (iVar4 < param_2);
   }
-  memcpy((uchar *)param_1,puVar3,param_2 * 4);
-  free(puVar3);
+  memcpy((uchar *)param_1,src,param_2 * 4);
+  free(src);
   return;
 }
 
@@ -1495,28 +1495,28 @@ void __cdecl FS_AddUserMapDirIWDs(char *param_1)
 void __cdecl FS_Shutdown(int param_1)
 
 {
-  CStringEdPackage *pCVar1;
+  CStringEdPackage *pBlock;
   CStringEdPackage *in_ECX;
   CStringEdPackage *this;
-  int *piVar2;
+  int *piVar1;
   int unaff_EDI;
   
   if (TheStringPackage != (CStringEdPackage *)0x0) {
     CStringEdPackage::Clear(in_ECX);
-    pCVar1 = TheStringPackage;
+    pBlock = TheStringPackage;
     if (TheStringPackage != (CStringEdPackage *)0x0) {
       CStringEdPackage::~CStringEdPackage(this);
-      free(pCVar1);
+      free(pBlock);
     }
     TheStringPackage = (CStringEdPackage *)0x0;
   }
-  piVar2 = &DAT_01f416a0;
+  piVar1 = &DAT_01f416a0;
   do {
-    if (*piVar2 != 0) {
+    if (*piVar1 != 0) {
       FS_FCloseFile(unaff_EDI);
     }
-    piVar2 = piVar2 + 0x47;
-  } while ((int)piVar2 < 0x1f4632c);
+    piVar1 = piVar1 + 0x47;
+  } while ((int)piVar1 < 0x1f4632c);
   FUN_00692180();
   fs_searchpaths = (searchpath_s *)0x0;
   Cmd_RemoveCommand("path");
@@ -1715,13 +1715,13 @@ void __cdecl FS_ShutDownIwdPureCheckReferences(void)
 
 {
   iwd_pure_check_s *piVar1;
-  iwd_pure_check_s *piVar2;
+  iwd_pure_check_s *pBlock;
   
-  piVar2 = fs_iwdPureChecks;
-  while (piVar2 != (iwd_pure_check_s *)0x0) {
-    piVar1 = *(iwd_pure_check_s **)piVar2;
-    free(piVar2);
-    piVar2 = piVar1;
+  pBlock = fs_iwdPureChecks;
+  while (pBlock != (iwd_pure_check_s *)0x0) {
+    piVar1 = *(iwd_pure_check_s **)pBlock;
+    free(pBlock);
+    pBlock = piVar1;
   }
   fs_iwdPureChecks = (iwd_pure_check_s *)0x0;
   return;

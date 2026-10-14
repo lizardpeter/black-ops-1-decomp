@@ -164,7 +164,7 @@ undefined4 _HTProxy_find(int param_1)
 {
   uchar uVar1;
   uchar uVar2;
-  uchar *puVar3;
+  uchar *string;
   undefined1 *extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
@@ -189,16 +189,16 @@ undefined4 _HTProxy_find(int param_1)
   else {
     local_8 = (uchar *)_HTParse(param_1,"",0x10);
     if (DAT_0b548ab8 != (undefined4 *)0x0) {
-      puVar3 = (uchar *)_HTParse(param_1,"",8);
+      string = (uchar *)_HTParse(param_1,"",8);
       local_14 = 0;
-      strchr(puVar3,':');
+      strchr(string,':');
       if (extraout_EAX != (undefined1 *)0x0) {
         *extraout_EAX = 0;
         if (extraout_EAX[1] != '\0') {
           local_14 = atoi(extraout_EAX + 1);
         }
       }
-      if (*puVar3 != '\0') {
+      if (*string != '\0') {
         local_24 = DAT_0b548ab8;
         do {
           do {
@@ -215,21 +215,21 @@ undefined4 _HTProxy_find(int param_1)
                   || ((local_38[2] != 0 && (local_38[2] != local_14))));
           strlen((uchar *)local_38[1]);
           local_2c = (uchar *)(extraout_EAX_01 + local_38[1]);
-          strlen(puVar3);
-          local_28 = puVar3 + extraout_EAX_02;
+          strlen(string);
+          local_28 = string + extraout_EAX_02;
           do {
-            if ((local_2c < (uchar *)local_38[1]) || (local_28 < puVar3)) break;
+            if ((local_2c < (uchar *)local_38[1]) || (local_28 < string)) break;
             uVar1 = *local_28;
             uVar2 = *local_2c;
             local_28 = local_28 + -1;
             local_2c = local_2c + -1;
           } while (uVar2 == uVar1);
         } while ((local_2c != (uchar *)(local_38[1] + -1)) ||
-                ((local_28 != puVar3 + -1 && (*local_28 != '.'))));
+                ((local_28 != string + -1 && (*local_28 != '.'))));
         local_c = 1;
       }
 LAB_00be136f:
-      _HTMemory_free(puVar3);
+      _HTMemory_free(string);
     }
     if (((local_c == 0) || (DAT_0b548abc != 0)) && ((local_c != 0 || (DAT_0b548abc == 0)))) {
       local_34 = DAT_0b548ab0;

@@ -6,7 +6,7 @@
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
+void __cdecl IK_Layer_TerrainMapping(IKState *ikState)
 
 {
   float *pfVar1;
@@ -354,36 +354,36 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_18 = 9;
-  local_1c = IKImport_GetLayerLerp(param_1,IKLAYER_TERRAIN_MAPPING,_DAT_00e12704);
+  local_1c = IKImport_GetLayerLerp(ikState,IKLAYER_TERRAIN_MAPPING,_DAT_00e12704);
   if (0.0 < local_1c) {
-    local_61 = param_1->entityNum < 0x20;
-    if (param_1->bJointVarsValid != 0) {
+    local_61 = ikState->entityNum < 0x20;
+    if (ikState->bJointVarsValid != 0) {
       bVar13 = IKImport_GetVar_IK_Foot_Test();
       if (bVar13) {
-        local_62 = param_1->ikBoneToObjBone[0x12] != 0xa1;
-        if ((((bool)local_62) && (local_63 = param_1->ikBoneToObjBone[0x15] != 0xa1, (bool)local_63)
-            ) && (param_1->lastFrameMS[9] != param_1->timeMS)) {
-          param_1->lastFrameMS[9] = param_1->timeMS;
-          bVar13 = IK_IsCalcBone(param_1,0x12);
+        local_62 = ikState->ikBoneToObjBone[0x12] != 0xa1;
+        if ((((bool)local_62) && (local_63 = ikState->ikBoneToObjBone[0x15] != 0xa1, (bool)local_63)
+            ) && (ikState->lastFrameMS[9] != ikState->timeMS)) {
+          ikState->lastFrameMS[9] = ikState->timeMS;
+          bVar13 = IK_IsCalcBone(ikState,0x12);
           if (bVar13) {
-            local_68 = (float)(param_1->lastFrameMS[9] % 2000) - 1000.0;
+            local_68 = (float)(ikState->lastFrameMS[9] % 2000) - 1000.0;
             local_6c = ABS(local_68);
-            param_1->footMats[0][3][2] = (local_6c * 6.0) / 1000.0 + param_1->footMats[0][3][2];
+            ikState->footMats[0][3][2] = (local_6c * 6.0) / 1000.0 + ikState->footMats[0][3][2];
           }
-          bVar13 = IK_IsCalcBone(param_1,0x15);
+          bVar13 = IK_IsCalcBone(ikState,0x15);
           if (bVar13) {
-            param_1->footMats[1][3][2] =
-                 (1.0 - ABS((float)(param_1->lastFrameMS[9] % 2000) - 1000.0) / 1000.0) * 6.0 +
-                 param_1->footMats[1][3][2];
+            ikState->footMats[1][3][2] =
+                 (1.0 - ABS((float)(ikState->lastFrameMS[9] % 2000) - 1000.0) / 1000.0) * 6.0 +
+                 ikState->footMats[1][3][2];
           }
         }
       }
       else {
-        local_75 = param_1->ikBoneToObjBone[0x12] != 0xa1;
-        if ((((bool)local_75) && (local_76 = param_1->ikBoneToObjBone[0x15] != 0xa1, (bool)local_76)
-            ) && ((bVar13 = IK_IsCalcBone(param_1,0x12), bVar13 ||
-                  (bVar13 = IK_IsCalcBone(param_1,0x15), bVar13)))) {
-          local_7c = (float)(param_1->timeMS - param_1->lastFrameMS[9]) * 0.001;
+        local_75 = ikState->ikBoneToObjBone[0x12] != 0xa1;
+        if ((((bool)local_75) && (local_76 = ikState->ikBoneToObjBone[0x15] != 0xa1, (bool)local_76)
+            ) && ((bVar13 = IK_IsCalcBone(ikState,0x12), bVar13 ||
+                  (bVar13 = IK_IsCalcBone(ikState,0x15), bVar13)))) {
+          local_7c = (float)(ikState->timeMS - ikState->lastFrameMS[9]) * 0.001;
           if (local_7c <= 0.0) {
             bVar13 = Demo_IsPlaying();
             if (bVar13) {
@@ -393,7 +393,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
               local_7c = 0.0;
             }
           }
-          param_1->lastFrameMS[9] = param_1->timeMS;
+          ikState->lastFrameMS[9] = ikState->timeMS;
           local_c4[0x11] = local_7c;
           local_c4[0x10] = 30.0;
           local_c4[0xf] = 30.0;
@@ -427,31 +427,31 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
           local_f8 = 1.0;
           local_f9 = '\0';
           local_100 = local_c4[local_61];
-          ikCalcBoneModelMatrix(param_1,1,(float *)param_1->matArrayPostIK,(float (*) [4])local_60);
-          local_104 = param_1->lastTerrainMappingOrigin;
-          local_108 = param_1->entityXform + 3;
+          ikCalcBoneModelMatrix(ikState,1,(float *)ikState->matArrayPostIK,(float (*) [4])local_60);
+          local_104 = ikState->lastTerrainMappingOrigin;
+          local_108 = ikState->entityXform + 3;
           local_114 = (*local_108)[0] - *local_104;
-          local_110 = param_1->entityXform[3][1] - param_1->lastTerrainMappingOrigin[1];
-          local_10c = param_1->entityXform[3][2] - param_1->lastTerrainMappingOrigin[2];
+          local_110 = ikState->entityXform[3][1] - ikState->lastTerrainMappingOrigin[1];
+          local_10c = ikState->entityXform[3][2] - ikState->lastTerrainMappingOrigin[2];
           local_119 = local_114 * local_114 + local_110 * local_110 + local_10c * local_10c < 4096.0
           ;
           local_118 = (uint)local_119;
           if (frametimeCap < local_7c) {
             if (frametimeResetCap < local_7c) {
-              local_120 = param_1->lastTerrainMappingOrigin;
-              local_124 = param_1->entityXform + 3;
+              local_120 = ikState->lastTerrainMappingOrigin;
+              local_124 = ikState->entityXform + 3;
               *local_120 = (*local_124)[0];
-              param_1->lastTerrainMappingOrigin[1] = param_1->entityXform[3][1];
-              param_1->lastTerrainMappingOrigin[2] = param_1->entityXform[3][2];
-              param_1->lastTerrainMappingFootOffsetZ[0] = 0.0;
-              param_1->lastTerrainMappingFootOffsetZ[1] = 0.0;
-              param_1->lastTerrainMappingPelvisZ = local_28 + param_1->entityXform[3][2];
+              ikState->lastTerrainMappingOrigin[1] = ikState->entityXform[3][1];
+              ikState->lastTerrainMappingOrigin[2] = ikState->entityXform[3][2];
+              ikState->lastTerrainMappingFootOffsetZ[0] = 0.0;
+              ikState->lastTerrainMappingFootOffsetZ[1] = 0.0;
+              ikState->lastTerrainMappingPelvisZ = local_28 + ikState->entityXform[3][2];
             }
             local_7c = frametimeCapTime;
             local_c4[0x11] = frametimeCapTime;
             local_119 = false;
           }
-          local_128 = Abs((phys_vec3 *)param_1->velocity);
+          local_128 = Abs((phys_vec3 *)ikState->velocity);
           local_12c = local_128 / local_c4[0xc];
           if (1.0 - local_12c < 0.0) {
             local_130 = 1.0;
@@ -463,26 +463,26 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
           local_138 = 1.0;
           local_138 = (local_c4[local_61 + 10] - local_c4[8]) * local_130 + local_c4[8];
           local_100 = (1.0 - local_130) * local_c4[local_61] + local_c4[2] * local_130;
-          local_13c = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
+          local_13c = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
           local_140 = (1.0 - local_134) * ((1.0 - local_13c) * local_e0 + local_e4 * local_13c) +
                       local_e8 * local_134;
-          local_144 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
+          local_144 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
           local_148 = (1.0 - local_144) * local_ec + local_f0 * local_144;
-          local_14c = IKImport_GetLayerLerp(param_1,IKLAYER_TURRET_OFFSET);
+          local_14c = IKImport_GetLayerLerp(ikState,IKLAYER_TURRET_OFFSET);
           local_148 = (1.0 - local_14c) * local_148 + local_f4 * local_14c;
-          local_150 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
-          local_154 = IKImport_GetLayerLerp(param_1,IKLAYER_TURRET_OFFSET);
+          local_150 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
+          local_154 = IKImport_GetLayerLerp(ikState,IKLAYER_TURRET_OFFSET);
           local_158 = ((1.0 - local_150) * local_d0 + local_d4 * local_150) * (1.0 - local_154) +
                       local_d8 * local_154;
-          local_15c = IKImport_GetLayerLerp(param_1,IKLAYER_TURRET_OFFSET);
+          local_15c = IKImport_GetLayerLerp(ikState,IKLAYER_TURRET_OFFSET);
           local_160 = (1.0 - local_15c) * local_c4[5] + local_c4[4] * local_15c;
-          local_164 = param_1->lastTerrainMappingOrigin;
-          local_168 = param_1->entityXform + 3;
+          local_164 = ikState->lastTerrainMappingOrigin;
+          local_168 = ikState->entityXform + 3;
           *local_164 = (*local_168)[0];
-          param_1->lastTerrainMappingOrigin[1] = param_1->entityXform[3][1];
-          param_1->lastTerrainMappingOrigin[2] = param_1->entityXform[3][2];
+          ikState->lastTerrainMappingOrigin[1] = ikState->entityXform[3][1];
+          ikState->lastTerrainMappingOrigin[2] = ikState->entityXform[3][2];
           for (local_16c = 0; local_16c < 2; local_16c = local_16c + 1) {
-            local_174 = param_1->footMats + local_16c;
+            local_174 = ikState->footMats + local_16c;
             local_2f0 = (*local_174)[0][0];
             local_2ec = (*local_174)[0][1];
             local_2e8 = (*local_174)[0][2];
@@ -507,30 +507,30 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             local_21c = &local_1f0;
             local_220 = &local_1e0;
             local_394 = afStack_2a0 + local_16c * 0x10;
-            local_300 = param_1->entityLegsXform;
+            local_300 = ikState->entityLegsXform;
             local_2ac = &local_210;
             local_2f4 = &local_200;
             local_2f8 = &local_1f0;
             local_2fc = &local_1e0;
             local_340 = (*local_300)[0];
-            local_33c = param_1->entityLegsXform[0][1];
-            local_338 = param_1->entityLegsXform[0][2];
-            local_334 = param_1->entityLegsXform[0][3];
-            local_344 = param_1->entityLegsXform + 1;
+            local_33c = ikState->entityLegsXform[0][1];
+            local_338 = ikState->entityLegsXform[0][2];
+            local_334 = ikState->entityLegsXform[0][3];
+            local_344 = ikState->entityLegsXform + 1;
             local_330 = (*local_344)[0];
-            local_32c = param_1->entityLegsXform[1][1];
-            local_328 = param_1->entityLegsXform[1][2];
-            local_324 = param_1->entityLegsXform[1][3];
-            local_348 = param_1->entityLegsXform + 2;
+            local_32c = ikState->entityLegsXform[1][1];
+            local_328 = ikState->entityLegsXform[1][2];
+            local_324 = ikState->entityLegsXform[1][3];
+            local_348 = ikState->entityLegsXform + 2;
             local_320 = (*local_348)[0];
-            local_31c = param_1->entityLegsXform[2][1];
-            local_318 = param_1->entityLegsXform[2][2];
-            local_314 = param_1->entityLegsXform[2][3];
-            local_34c = param_1->entityLegsXform + 3;
+            local_31c = ikState->entityLegsXform[2][1];
+            local_318 = ikState->entityLegsXform[2][2];
+            local_314 = ikState->entityLegsXform[2][3];
+            local_34c = ikState->entityLegsXform + 3;
             local_310 = (*local_34c)[0];
-            local_30c = param_1->entityLegsXform[3][1];
-            local_308 = param_1->entityLegsXform[3][2];
-            local_304 = param_1->entityLegsXform[3][3];
+            local_30c = ikState->entityLegsXform[3][1];
+            local_308 = ikState->entityLegsXform[3][2];
+            local_304 = ikState->entityLegsXform[3][3];
             local_390 = local_2f0 * local_340 + local_2ec * local_330 + local_2e8 * local_320 +
                         local_2e4 * local_310;
             local_38c = local_2f0 * local_33c + local_2ec * local_32c + local_2e8 * local_31c +
@@ -621,8 +621,8 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
           local_3a4 = 9999999.0;
           local_3a8 = -9999999.0;
           afStack_3b8[3] =
-               param_1->jointVars[2].LowerLength + param_1->jointVars[2].UpperLength +
-               param_1->footHeightFromGround + local_c8;
+               ikState->jointVars[2].LowerLength + ikState->jointVars[2].UpperLength +
+               ikState->footHeightFromGround + local_c8;
           for (local_16c = 0; local_16c < 2; local_16c = local_16c + 1) {
             local_7c = local_c4[0x11];
             afStack_3b8[2] = 0.0;
@@ -634,7 +634,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             if (iVar14 == 1) {
               IKImport_DrawLine(&local_3d8,&local_3cc,local_16c);
             }
-            local_3dc = Abs((phys_vec3 *)(param_1->lastFootTraceGoalNormals + local_16c));
+            local_3dc = Abs((phys_vec3 *)(ikState->lastFootTraceGoalNormals + local_16c));
             iVar14 = local_16c;
             local_3dc = local_3dc - 1.0;
             if (0.1 <= ABS(local_3dc)) {
@@ -642,7 +642,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
               *local_400 = 0.0;
               afStack_3f4[iVar14 * 3 + 1] = 0.0;
               afStack_3f4[iVar14 * 3 + 2] = 1.0;
-              local_404 = param_1->lastFootTraceGoalNormals + local_16c;
+              local_404 = ikState->lastFootTraceGoalNormals + local_16c;
               local_408 = afStack_3f4 + local_16c * 3;
               (*local_404)[0] = *local_408;
               (*local_404)[1] = afStack_3f4[local_16c * 3 + 1];
@@ -650,28 +650,28 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             }
             else {
               local_3f8 = afStack_3f4 + local_16c * 3;
-              local_3fc = param_1->lastFootTraceGoalNormals + local_16c;
+              local_3fc = ikState->lastFootTraceGoalNormals + local_16c;
               *local_3f8 = (*local_3fc)[0];
               afStack_3f4[iVar14 * 3 + 1] = (*local_3fc)[1];
               afStack_3f4[iVar14 * 3 + 2] = (*local_3fc)[2];
             }
             local_40c = 0.2;
             local_410 = afStack_2a0 + local_16c * 0x10 + 0xc;
-            local_414 = param_1->lastTerrainMappingTraceFootPos + local_16c;
+            local_414 = ikState->lastTerrainMappingTraceFootPos + local_16c;
             local_41c = *local_410 - (*local_414)[0];
             local_418 = afStack_2a0[local_16c * 0x10 + 0xd] - (*local_414)[1];
             fVar15 = Vec2Length(&local_41c);
             if (fVar15 <= local_40c) {
               local_4c4 = afStack_2a0 + local_16c * 0x10 + 0xc;
-              local_4c8 = param_1->lastTerrainMappingTraceFootPos + local_16c;
+              local_4c8 = ikState->lastTerrainMappingTraceFootPos + local_16c;
               local_4d0 = *local_4c4 - (*local_4c8)[0];
               local_4cc = afStack_2a0[local_16c * 0x10 + 0xd] - (*local_4c8)[1];
               fVar15 = Vec2Length(&local_4d0);
               if (local_40c < fVar15) {
-                afStack_3b8[2] = param_1->lastTerrainMappingFootOffsetZ[local_16c];
+                afStack_3b8[2] = ikState->lastTerrainMappingFootOffsetZ[local_16c];
               }
               else {
-                afStack_3b8[2] = param_1->lastTerrainMappingTraceZ[local_16c];
+                afStack_3b8[2] = ikState->lastTerrainMappingTraceZ[local_16c];
               }
             }
             else {
@@ -684,12 +684,12 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                 local_3d8 = local_430 * afStack_2a0[local_16c * 0x10 + 4] + *(float *)local_440.w;
                 local_3d4 = local_430 * afStack_2a0[local_16c * 0x10 + 5] +
                             afStack_2a0[local_16c * 0x10 + 0xd];
-                local_3d0 = param_1->entityXform[3][2] + local_160;
-                local_3c4 = ((param_1->entityXform[3][2] - local_c4[3]) -
-                            param_1->footHeightFromGround) - local_100;
+                local_3d0 = ikState->entityXform[3][2] + local_160;
+                local_3c4 = ((ikState->entityXform[3][2] - local_c4[3]) -
+                            ikState->footHeightFromGround) - local_100;
                 local_3cc = local_3d8;
                 local_3c8 = local_3d4;
-                bVar13 = IKImport_TraceBox(param_1,&local_3d8,&local_3cc,local_3c0,&local_44c,
+                bVar13 = IKImport_TraceBox(ikState,&local_3d8,&local_3cc,local_3c0,&local_44c,
                                            &local_440.x,local_428 + local_16c * 2,(float *)0x0,true)
                 ;
                 if (bVar13) {
@@ -705,7 +705,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                       afStack_3f4[local_16c * 3] = local_440.x;
                       afStack_3f4[iVar14 * 3 + 1] = local_440.y;
                       afStack_3f4[iVar14 * 3 + 2] = local_440.z;
-                      local_464 = param_1->lastFootTraceGoalNormals + local_16c;
+                      local_464 = ikState->lastFootTraceGoalNormals + local_16c;
                       (*local_464)[0] = local_440.x;
                       (*local_464)[1] = local_440.y;
                       (*local_464)[2] = local_440.z;
@@ -723,7 +723,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                 local_474 = 0;
                 local_478 = 1.0;
                 local_47c = afStack_2a0 + local_16c * 0x10 + 4;
-                local_480 = param_1->lastFootTraceNormals + local_16c;
+                local_480 = ikState->lastFootTraceNormals + local_16c;
                 local_484 = -((*local_480)[0] * *local_47c +
                              (*local_480)[1] * afStack_2a0[local_16c * 0x10 + 5]);
                 if (local_16c == 1) {
@@ -742,24 +742,24 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                   local_48c = 0.0;
                 }
                 local_484 = local_48c;
-                fVar15 = Vec2Length(param_1->lastFootTraceNormals[local_16c]);
+                fVar15 = Vec2Length(ikState->lastFootTraceNormals[local_16c]);
                 afStack_3b8[2] = (afStack_3b8[2] - fVar15 * local_46c) - local_484 * local_470;
-                fVar15 = param_1->footMats[local_16c][3][2];
-                if ((param_1->footHeightFromGround <= fVar15 &&
-                     fVar15 != param_1->footHeightFromGround) &&
-                   (pfVar1 = param_1->entityXform[3] + 2,
+                fVar15 = ikState->footMats[local_16c][3][2];
+                if ((ikState->footHeightFromGround <= fVar15 &&
+                     fVar15 != ikState->footHeightFromGround) &&
+                   (pfVar1 = ikState->entityXform[3] + 2,
                    *pfVar1 <= afStack_3b8[2] && afStack_3b8[2] != *pfVar1)) {
-                  local_490 = (afStack_3b8[2] - param_1->entityXform[3][2]) / local_cc;
+                  local_490 = (afStack_3b8[2] - ikState->entityXform[3][2]) / local_cc;
                   local_494 = local_490;
                   if (1.0 < local_490) {
                     local_494 = 1.0;
                   }
                   afStack_3b8[2] =
                        afStack_3b8[2] -
-                       (param_1->footMats[local_16c][3][2] - param_1->footHeightFromGround) *
+                       (ikState->footMats[local_16c][3][2] - ikState->footHeightFromGround) *
                        local_494;
                 }
-                param_1->lastTerrainMappingTraceZ[local_16c] = afStack_3b8[2];
+                ikState->lastTerrainMappingTraceZ[local_16c] = afStack_3b8[2];
                 iVar14 = IKImport_GetVar_IK_Debug();
                 if (iVar14 == 1) {
                   local_498 = local_450;
@@ -777,8 +777,8 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                   local_4a8 = local_454 - 4.0;
                   IKImport_DrawLine(&local_4a0,&local_4ac,3);
                 }
-                if (param_1->lerpInfo[3].goalState != false) {
-                  local_4b0 = param_1->lastTerrainMappingTraceFootPos + local_16c;
+                if (ikState->lerpInfo[3].goalState != false) {
+                  local_4b0 = ikState->lastTerrainMappingTraceFootPos + local_16c;
                   local_4b4 = afStack_2a0 + local_16c * 0x10 + 0xc;
                   (*local_4b0)[0] = afStack_2a0[local_16c * 0x10 + 0xc];
                   (*local_4b0)[1] = afStack_2a0[local_16c * 0x10 + 0xd];
@@ -786,28 +786,28 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
               }
               iVar14 = local_16c;
               if (local_41d == '\0') {
-                afStack_3b8[2] = param_1->entityXform[3][2];
-                param_1->lastTerrainMappingTraceZ[local_16c] = afStack_3b8[2];
+                afStack_3b8[2] = ikState->entityXform[3][2];
+                ikState->lastTerrainMappingTraceZ[local_16c] = afStack_3b8[2];
                 local_4b8 = afStack_3f4 + local_16c * 3;
                 afStack_3f4[local_16c * 3] = 0.0;
                 afStack_3f4[iVar14 * 3 + 1] = 0.0;
                 afStack_3f4[iVar14 * 3 + 2] = 1.0;
-                local_4bc = param_1->lastFootTraceGoalNormals + local_16c;
+                local_4bc = ikState->lastFootTraceGoalNormals + local_16c;
                 local_4c0 = afStack_3f4 + local_16c * 3;
                 (*local_4bc)[0] = afStack_3f4[local_16c * 3];
                 (*local_4bc)[1] = afStack_3f4[local_16c * 3 + 1];
                 (*local_4bc)[2] = afStack_3f4[local_16c * 3 + 2];
               }
             }
-            if (afStack_3b8[2] < param_1->entityXform[3][2] - local_140) {
-              afStack_3b8[2] = param_1->entityXform[3][2] - local_140;
+            if (afStack_3b8[2] < ikState->entityXform[3][2] - local_140) {
+              afStack_3b8[2] = ikState->entityXform[3][2] - local_140;
             }
-            if (param_1->entityXform[3][2] + local_148 < afStack_3b8[2]) {
-              afStack_3b8[2] = param_1->entityXform[3][2] + local_148;
+            if (ikState->entityXform[3][2] + local_148 < afStack_3b8[2]) {
+              afStack_3b8[2] = ikState->entityXform[3][2] + local_148;
             }
             if (local_119 != false) {
               local_4d4 = afStack_3b8[2];
-              local_4e4[3] = afStack_3b8[2] - param_1->lastTerrainMappingFootOffsetZ[local_16c];
+              local_4e4[3] = afStack_3b8[2] - ikState->lastTerrainMappingFootOffsetZ[local_16c];
               local_4e4[2] = 128.0;
               if (ABS(local_4e4[3]) < 128.0) {
                 local_f8 = local_138;
@@ -835,7 +835,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                   if (-local_c4[0xf] * local_c4[0x11] < local_4e4[3]) {
                     local_4e4[3] = -local_c4[0xf] * local_c4[0x11];
                   }
-                  local_4f8 = param_1->lastTerrainMappingFootOffsetZ[local_16c] + local_4e4[3];
+                  local_4f8 = ikState->lastTerrainMappingFootOffsetZ[local_16c] + local_4e4[3];
                   local_4fc = local_4f8;
                   if (local_4f8 < afStack_3b8[2]) {
                     local_4fc = afStack_3b8[2];
@@ -846,7 +846,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                   if (local_4e4[3] < local_c4[0x10] * local_c4[0x11]) {
                     local_4e4[3] = local_c4[0x10] * local_c4[0x11];
                   }
-                  local_4f0 = param_1->lastTerrainMappingFootOffsetZ[local_16c] + local_4e4[3];
+                  local_4f0 = ikState->lastTerrainMappingFootOffsetZ[local_16c] + local_4e4[3];
                   local_4f4 = local_4f0;
                   if (afStack_3b8[2] < local_4f0) {
                     local_4f4 = afStack_3b8[2];
@@ -855,11 +855,11 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
                 }
               }
             }
-            local_504 = afStack_3b8[2] - param_1->entityXform[3][2];
+            local_504 = afStack_3b8[2] - ikState->entityXform[3][2];
             local_500 = local_504;
             if (local_504 < 0.0) {
               local_508 = 1.0;
-              local_50c = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
+              local_50c = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
               local_50c = (1.0 - local_134) + local_50c;
               local_510 = local_50c;
               if (0.0 <= local_50c - 1.0) {
@@ -873,34 +873,34 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
               }
               local_504 = local_504 * local_514;
             }
-            param_1->footMats[local_16c][3][2] =
-                 local_1c * local_504 + param_1->footMats[local_16c][3][2];
+            ikState->footMats[local_16c][3][2] =
+                 local_1c * local_504 + ikState->footMats[local_16c][3][2];
             if (afStack_3b8[2] < local_3a4) {
               local_3a4 = afStack_3b8[2];
             }
             if (local_3a8 < afStack_3b8[2]) {
               local_3a8 = afStack_3b8[2];
             }
-            param_1->lastTerrainMappingFootOffsetZ[local_16c] = afStack_3b8[2];
+            ikState->lastTerrainMappingFootOffsetZ[local_16c] = afStack_3b8[2];
           }
-          local_518 = param_1->lastTerrainMappingFootOffsetZ[0] -
-                      param_1->lastTerrainMappingFootOffsetZ[1];
+          local_518 = ikState->lastTerrainMappingFootOffsetZ[0] -
+                      ikState->lastTerrainMappingFootOffsetZ[1];
           if (local_dc < ABS(local_518)) {
-            local_51c = (uint)(param_1->lastTerrainMappingFootOffsetZ[1] <=
-                               param_1->lastTerrainMappingFootOffsetZ[0] &&
-                              param_1->lastTerrainMappingFootOffsetZ[0] !=
-                              param_1->lastTerrainMappingFootOffsetZ[1]);
-            local_520 = ((param_1->lastTerrainMappingFootOffsetZ[local_51c == 0] -
-                         param_1->lastTerrainMappingFootOffsetZ[local_51c]) - local_dc) * local_1c;
-            param_1->footMats[local_51c][3][2] = param_1->footMats[local_51c][3][2] + local_520;
-            param_1->lastTerrainMappingFootOffsetZ[local_51c] =
-                 param_1->lastTerrainMappingFootOffsetZ[local_51c] + local_520;
+            local_51c = (uint)(ikState->lastTerrainMappingFootOffsetZ[1] <=
+                               ikState->lastTerrainMappingFootOffsetZ[0] &&
+                              ikState->lastTerrainMappingFootOffsetZ[0] !=
+                              ikState->lastTerrainMappingFootOffsetZ[1]);
+            local_520 = ((ikState->lastTerrainMappingFootOffsetZ[local_51c == 0] -
+                         ikState->lastTerrainMappingFootOffsetZ[local_51c]) - local_dc) * local_1c;
+            ikState->footMats[local_51c][3][2] = ikState->footMats[local_51c][3][2] + local_520;
+            ikState->lastTerrainMappingFootOffsetZ[local_51c] =
+                 ikState->lastTerrainMappingFootOffsetZ[local_51c] + local_520;
             local_3a4 = local_3a4 + local_520;
           }
           local_524 = 0.0;
           local_528 = 0.0;
           local_52c = 0.75;
-          local_530 = IKImport_GetLayerLerp(param_1,IKLAYER_NOT_MOVING);
+          local_530 = IKImport_GetLayerLerp(ikState,IKLAYER_NOT_MOVING);
           local_534 = local_530;
           if (0.0 <= local_530 - 1.0) {
             local_534 = 1.0;
@@ -913,14 +913,14 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
           }
           local_524 = local_538;
           local_53c = 0.0;
-          fVar15 = IKImport_GetLayerLerp(param_1,IKLAYER_NOT_MOVING);
+          fVar15 = IKImport_GetLayerLerp(ikState,IKLAYER_NOT_MOVING);
           local_528 = (1.0 - fVar15) * local_53c;
-          bVar13 = IK_IsCalcBone(param_1,1);
+          bVar13 = IK_IsCalcBone(ikState,1);
           if (bVar13) {
             local_544 = 8.0;
-            if (local_28 <= (local_3a4 + afStack_3b8[3]) - param_1->entityXform[3][2]) {
-              if ((local_3a8 + local_158) - param_1->entityXform[3][2] <= local_28) {
-                local_548 = local_28 + param_1->entityXform[3][2];
+            if (local_28 <= (local_3a4 + afStack_3b8[3]) - ikState->entityXform[3][2]) {
+              if ((local_3a8 + local_158) - ikState->entityXform[3][2] <= local_28) {
+                local_548 = local_28 + ikState->entityXform[3][2];
               }
               else {
                 local_548 = local_3a8 + local_158;
@@ -929,7 +929,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             else {
               local_548 = local_3a4 + afStack_3b8[3];
             }
-            local_54c = local_548 - param_1->lastTerrainMappingPelvisZ;
+            local_54c = local_548 - ikState->lastTerrainMappingPelvisZ;
             if (local_119 != false) {
               local_550 = local_c4[0x11] * local_138 * local_524 * 8.0;
               local_554 = local_550;
@@ -938,47 +938,47 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
               }
               local_54c = local_54c * local_554;
             }
-            fVar15 = param_1->lastTerrainMappingPelvisZ;
-            fVar3 = param_1->entityXform[3][2];
-            param_1->lastTerrainMappingPelvisZ = param_1->lastTerrainMappingPelvisZ + local_54c;
+            fVar15 = ikState->lastTerrainMappingPelvisZ;
+            fVar3 = ikState->entityXform[3][2];
+            ikState->lastTerrainMappingPelvisZ = ikState->lastTerrainMappingPelvisZ + local_54c;
             local_540 = ((local_54c + fVar15) - (local_28 + fVar3)) * local_1c;
-            param_1->matArrayPostIK[1][3][2] = param_1->matArrayPostIK[1][3][2] + local_540;
-            bVar13 = IK_GetStatus(param_1,IKSTATUS_MOUNTED_TURRET);
+            ikState->matArrayPostIK[1][3][2] = ikState->matArrayPostIK[1][3][2] + local_540;
+            bVar13 = IK_GetStatus(ikState,IKSTATUS_MOUNTED_TURRET);
             if (!bVar13) {
-              param_1->handMats[1][3][2] = param_1->handMats[1][3][2] + local_540;
-              param_1->handMats[0][3][2] = param_1->handMats[0][3][2] + local_540;
+              ikState->handMats[1][3][2] = ikState->handMats[1][3][2] + local_540;
+              ikState->handMats[0][3][2] = ikState->handMats[0][3][2] + local_540;
             }
-            param_1->bHasActiveLayers = true;
-            if (param_1->cacheActive != 0) {
-              memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-              param_1->cacheActive = 0;
+            ikState->bHasActiveLayers = true;
+            if (ikState->cacheActive != 0) {
+              memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+              ikState->cacheActive = 0;
             }
-            param_1->modifiedIKBones = param_1->modifiedIKBones | 2;
+            ikState->modifiedIKBones = ikState->modifiedIKBones | 2;
           }
           local_558 = 0.5;
-          if (param_1->lerpInfo[1].goalState == false) {
+          if (ikState->lerpInfo[1].goalState == false) {
             for (local_16c = 0; local_16c < 2; local_16c = local_16c + 1) {
               ikCalcBoneModelMatrix
-                        (param_1,((param_1->field9_0x18).localIkSystem)->joints[local_16c + 2].
-                                 parentBone,(float *)param_1->matArrayPostIK,
+                        (ikState,((ikState->field9_0x18).localIkSystem)->joints[local_16c + 2].
+                                 parentBone,(float *)ikState->matArrayPostIK,
                          (float (*) [4])local_5a0);
-              pafVar12 = param_1->footMats[local_16c];
+              pafVar12 = ikState->footMats[local_16c];
               local_5a4 = pafVar12 + 3;
               local_5a8 = &local_570;
               local_5b0 = (*local_5a4)[0] - local_570;
               local_5ac = pafVar12[3][1] - local_56c;
               local_5b4 = local_5b0 * local_5b0 + local_5ac * local_5ac;
-              local_5b8 = Vec3DistanceSq(&local_570,param_1->footMats[local_16c][3]);
-              local_5bc = local_568 - param_1->footMats[local_16c][3][2];
+              local_5b8 = Vec3DistanceSq(&local_570,ikState->footMats[local_16c][3]);
+              local_5bc = local_568 - ikState->footMats[local_16c][3][2];
               local_5c0 = ABS(local_5bc);
               if (local_5b4 < local_5c0 * local_5c0) {
-                local_5c4 = (param_1->jointVars[local_16c + 2].LowerLength +
-                            param_1->jointVars[local_16c + 2].UpperLength) - local_558;
+                local_5c4 = (ikState->jointVars[local_16c + 2].LowerLength +
+                            ikState->jointVars[local_16c + 2].UpperLength) - local_558;
                 local_5c8 = local_5c4 * local_5c4;
                 if ((local_5c8 < local_5b8) && (local_5cc = local_5c8 - local_5b4, 0.1 < local_5cc))
                 {
                   local_5d0 = SQRT(local_5cc);
-                  param_1->footMats[local_16c][3][2] = local_568 - local_5d0;
+                  ikState->footMats[local_16c][3][2] = local_568 - local_5d0;
                 }
               }
             }
@@ -991,7 +991,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             local_5e4 = 0.0;
             local_5e0 = 1.0;
             local_5ec = 4.0;
-            local_5f0 = (param_1->footMats[local_16c][3][2] - param_1->footHeightFromGround) / 4.0;
+            local_5f0 = (ikState->footMats[local_16c][3][2] - ikState->footHeightFromGround) / 4.0;
             local_5f4 = local_5f0;
             if (0.0 <= local_5f0 - 1.0) {
               local_5f4 = 1.0;
@@ -1004,7 +1004,7 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             }
             local_5fc = 1.0 - local_5f8;
             local_600 = local_5fc;
-            if (param_1->lerpInfo[3].goalState != false) {
+            if (ikState->lerpInfo[3].goalState != false) {
               local_600 = 1.0;
             }
             local_604 = local_600;
@@ -1019,10 +1019,10 @@ void __cdecl IK_Layer_TerrainMapping(IKState *param_1)
             }
             if (local_119 == false) {
 LAB_008781c2:
-              Vec3NormalizeTo(afStack_3f4 + local_16c * 3,param_1->lastFootTraceNormals[local_16c]);
+              Vec3NormalizeTo(afStack_3f4 + local_16c * 3,ikState->lastFootTraceNormals[local_16c]);
             }
             else {
-              local_60c = param_1->lastFootTraceNormals + local_16c;
+              local_60c = ikState->lastFootTraceNormals + local_16c;
               if ((((*local_60c)[0] == 0.0) && ((*local_60c)[1] == 0.0)) && ((*local_60c)[2] == 0.0)
                  ) {
                 local_610 = 1;
@@ -1031,7 +1031,7 @@ LAB_008781c2:
                 local_610 = 0;
               }
               if (local_610 != 0) goto LAB_008781c2;
-              local_614 = Abs((phys_vec3 *)(param_1->lastFootTraceNormals + local_16c));
+              local_614 = Abs((phys_vec3 *)(ikState->lastFootTraceNormals + local_16c));
               local_614 = local_614 - 1.0;
               if (0.1 <= ABS(local_614)) goto LAB_008781c2;
               local_618 = local_7c / local_5d4;
@@ -1045,22 +1045,22 @@ LAB_008781c2:
               else {
                 local_620 = 0.0;
               }
-              Vec3Lerp(param_1->lastFootTraceNormals[local_16c],afStack_3f4 + local_16c * 3,
-                       local_620,param_1->lastFootTraceNormals[local_16c]);
-              Vec3Normalize(param_1->lastFootTraceNormals[local_16c]);
+              Vec3Lerp(ikState->lastFootTraceNormals[local_16c],afStack_3f4 + local_16c * 3,
+                       local_620,ikState->lastFootTraceNormals[local_16c]);
+              Vec3Normalize(ikState->lastFootTraceNormals[local_16c]);
             }
-            local_624 = Vec2Length(param_1->lastFootTraceNormals[local_16c]);
+            local_624 = Vec2Length(ikState->lastFootTraceNormals[local_16c]);
             if (local_5d8 < local_624) {
-              local_628 = param_1->lastFootTraceNormals + local_16c;
+              local_628 = ikState->lastFootTraceNormals + local_16c;
               local_62c = local_5d8 / local_624;
-              local_630 = param_1->lastFootTraceNormals + local_16c;
+              local_630 = ikState->lastFootTraceNormals + local_16c;
               (*local_628)[0] = local_62c * (*local_630)[0];
               (*local_628)[1] = local_62c * (*local_630)[1];
-              param_1->lastFootTraceNormals[local_16c][2] = SQRT(1.0 - local_5d8 * local_5d8);
-              Vec3Normalize(param_1->lastFootTraceNormals[local_16c]);
+              ikState->lastFootTraceNormals[local_16c][2] = SQRT(1.0 - local_5d8 * local_5d8);
+              Vec3Normalize(ikState->lastFootTraceNormals[local_16c]);
             }
             if (1.0 <= local_1c) {
-              local_64c = param_1->lastFootTraceNormals + local_16c;
+              local_64c = ikState->lastFootTraceNormals + local_16c;
               local_648 = (*local_64c)[0];
               local_644 = (*local_64c)[1];
               local_640 = (*local_64c)[2];
@@ -1069,11 +1069,11 @@ LAB_008781c2:
               local_63c[0] = 0.0;
               local_63c[1] = 0.0;
               local_63c[2] = 1.0;
-              Vec3Lerp(local_63c,param_1->lastFootTraceNormals[local_16c],local_1c,&local_648);
+              Vec3Lerp(local_63c,ikState->lastFootTraceNormals[local_16c],local_1c,&local_648);
               Vec3Normalize(&local_648);
             }
             ikMatrixIdentity44((float (*) [4])&local_690);
-            local_694 = param_1->entityLegsXform;
+            local_694 = ikState->entityLegsXform;
             if ((local_694 == (float (*) [4])&local_6e0) &&
                (bVar13 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0x7d,0,
                                           "%s"), !bVar13)) {
@@ -1105,7 +1105,7 @@ LAB_008781c2:
             Vec3Normalize(&local_680);
             Vec3Cross(&local_680,&local_670,&local_690);
             Vec3Normalize(&local_690);
-            paafVar2 = param_1->footMats + local_16c;
+            paafVar2 = ikState->footMats + local_16c;
             fVar15 = (*paafVar2)[0][0];
             fVar3 = (*paafVar2)[0][1];
             fVar4 = (*paafVar2)[0][2];
@@ -1115,7 +1115,7 @@ LAB_008781c2:
             fVar8 = (*paafVar2)[2][0];
             fVar9 = (*paafVar2)[2][1];
             fVar10 = (*paafVar2)[2][2];
-            paafVar2 = param_1->footMats + local_16c;
+            paafVar2 = ikState->footMats + local_16c;
             (*paafVar2)[0][0] = fVar15 * local_690 + fVar3 * local_680 + fVar4 * local_670;
             (*paafVar2)[0][1] = fVar15 * local_68c + fVar3 * local_67c + fVar4 * local_66c;
             (*paafVar2)[0][2] = fVar15 * local_688 + fVar3 * local_678 + fVar4 * local_668;
@@ -1134,8 +1134,8 @@ LAB_008781c2:
     }
   }
   else {
-    ikCalcBoneModelMatrix(param_1,1,(float *)param_1->matArrayPostIK,(float (*) [4])local_60);
-    param_1->lastTerrainMappingPelvisZ = local_28 + param_1->entityXform[3][2];
+    ikCalcBoneModelMatrix(ikState,1,(float *)ikState->matArrayPostIK,(float (*) [4])local_60);
+    ikState->lastTerrainMappingPelvisZ = local_28 + ikState->entityXform[3][2];
   }
   return;
 }
@@ -1147,7 +1147,7 @@ LAB_008781c2:
 
 void __cdecl
 IK_Layer_ApplyFootIK
-          (IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,float (*param_4) [4])
+          (IKState *ikState,IKJointBones *jointBones,IKJointVars *jointVars,float (*childMat) [4])
 
 {
   IKBoneNames IVar1;
@@ -1249,18 +1249,19 @@ IK_Layer_ApplyFootIK
   undefined1 local_12;
   bool local_11;
   
-  local_11 = param_2->parentBone == IKBONE_RTHIGH;
-  if (((param_1->bJointVarsValid != 0) &&
-      (local_12 = param_1->ikBoneToObjBone[param_2->childBone] != 0xa1, (bool)local_12)) &&
-     (bVar3 = IK_IsCalcBone(param_1,param_2->childBone), bVar3)) {
+  local_11 = jointBones->parentBone == IKBONE_RTHIGH;
+  if (((ikState->bJointVarsValid != 0) &&
+      (local_12 = ikState->ikBoneToObjBone[jointBones->childBone] != 0xa1, (bool)local_12)) &&
+     (bVar3 = IK_IsCalcBone(ikState,jointBones->childBone), bVar3)) {
     if (local_11 != false) {
-      IK_FlipHack(param_4);
+      IK_FlipHack(childMat);
     }
-    ikSolveLegJoint(param_1,param_2,param_3,param_4[3],(float (*) [4])&local_a0,
+    ikSolveLegJoint(ikState,jointBones,jointVars,childMat[3],(float (*) [4])&local_a0,
                     (float (*) [4])&local_60,local_11);
     ikCalcBoneModelMatrix
-              (param_1,param_2->baseBone,(float *)param_1->matArrayPostIK,(float (*) [4])&local_e0);
-    local_e4 = param_1->matArrayPostIK + param_2->parentBone;
+              (ikState,jointBones->baseBone,(float *)ikState->matArrayPostIK,
+               (float (*) [4])&local_e0);
+    local_e4 = ikState->matArrayPostIK + jointBones->parentBone;
     if ((&local_e0 == &local_130) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1299,17 +1300,17 @@ IK_Layer_ApplyFootIK
     local_13c = local_68 - local_a8;
     ikMatrixTransformVector34(&local_144,(float (*) [4])&local_130,(*local_e4)[3]);
     (*local_e4)[3][3] = 1.0;
-    ikNormalizedMatrixAssert_func(param_1->matArrayPostIK[param_2->parentBone]);
-    local_148 = param_2->parentBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    ikNormalizedMatrixAssert_func(ikState->matArrayPostIK[jointBones->parentBone]);
+    local_148 = jointBones->parentBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (local_148 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)local_148 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)local_148 & 0x1f) | ikState->modifiedIKBones;
     }
-    local_14c = param_1->matArrayPostIK + param_2->jointBone;
+    local_14c = ikState->matArrayPostIK + jointBones->jointBone;
     if ((&local_a0 == &local_190) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1348,26 +1349,26 @@ IK_Layer_ApplyFootIK
     local_19c = local_28 - local_68;
     ikMatrixTransformVector34(&local_1a4,(float (*) [4])&local_190,(*local_14c)[3]);
     (*local_14c)[3][3] = 1.0;
-    ikNormalizedMatrixAssert_func(param_1->matArrayPostIK[param_2->jointBone]);
-    local_1a8 = param_2->jointBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    ikNormalizedMatrixAssert_func(ikState->matArrayPostIK[jointBones->jointBone]);
+    local_1a8 = jointBones->jointBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (local_1a8 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)local_1a8 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)local_1a8 & 0x1f) | ikState->modifiedIKBones;
     }
     fVar4 = Vec3Distance(&local_70,&local_30);
-    if ((param_3->UpperLength + 1.0 <= fVar4) &&
+    if ((jointVars->UpperLength + 1.0 <= fVar4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x2d8,0,"%s"
                                 ), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    fVar4 = Vec3Distance(param_4[3],&local_30);
-    if ((param_3->LowerLength + 5.0 <= fVar4) &&
+    fVar4 = Vec3Distance(childMat[3],&local_30);
+    if ((jointVars->LowerLength + 5.0 <= fVar4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x2d9,0,"%s"
                                 ), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -1375,9 +1376,9 @@ IK_Layer_ApplyFootIK
       return;
     }
     if (local_11 != false) {
-      IK_FlipHack(param_4);
+      IK_FlipHack(childMat);
     }
-    local_1ac = param_1->matArrayPostIK + param_2->childBone;
+    local_1ac = ikState->matArrayPostIK + jointBones->childBone;
     if ((&local_60 == &local_1f0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1398,42 +1399,42 @@ IK_Layer_ApplyFootIK
     local_1c8 = local_38;
     local_1c4 = 0;
     (*local_1ac)[0][0] =
-         (*param_4)[0] * local_60 + (*param_4)[1] * local_5c + (*param_4)[2] * local_58;
+         (*childMat)[0] * local_60 + (*childMat)[1] * local_5c + (*childMat)[2] * local_58;
     (*local_1ac)[0][1] =
-         (*param_4)[0] * local_50 + (*param_4)[1] * local_4c + (*param_4)[2] * local_48;
+         (*childMat)[0] * local_50 + (*childMat)[1] * local_4c + (*childMat)[2] * local_48;
     (*local_1ac)[0][2] =
-         (*param_4)[0] * local_40 + (*param_4)[1] * local_3c + (*param_4)[2] * local_38;
+         (*childMat)[0] * local_40 + (*childMat)[1] * local_3c + (*childMat)[2] * local_38;
     (*local_1ac)[0][3] = 0.0;
     (*local_1ac)[1][0] =
-         param_4[1][0] * local_60 + param_4[1][1] * local_5c + param_4[1][2] * local_58;
+         childMat[1][0] * local_60 + childMat[1][1] * local_5c + childMat[1][2] * local_58;
     (*local_1ac)[1][1] =
-         param_4[1][0] * local_50 + param_4[1][1] * local_4c + param_4[1][2] * local_48;
+         childMat[1][0] * local_50 + childMat[1][1] * local_4c + childMat[1][2] * local_48;
     (*local_1ac)[1][2] =
-         param_4[1][0] * local_40 + param_4[1][1] * local_3c + param_4[1][2] * local_38;
+         childMat[1][0] * local_40 + childMat[1][1] * local_3c + childMat[1][2] * local_38;
     (*local_1ac)[1][3] = 0.0;
     (*local_1ac)[2][0] =
-         param_4[2][0] * local_60 + param_4[2][1] * local_5c + param_4[2][2] * local_58;
+         childMat[2][0] * local_60 + childMat[2][1] * local_5c + childMat[2][2] * local_58;
     (*local_1ac)[2][1] =
-         param_4[2][0] * local_50 + param_4[2][1] * local_4c + param_4[2][2] * local_48;
+         childMat[2][0] * local_50 + childMat[2][1] * local_4c + childMat[2][2] * local_48;
     (*local_1ac)[2][2] =
-         param_4[2][0] * local_40 + param_4[2][1] * local_3c + param_4[2][2] * local_38;
+         childMat[2][0] * local_40 + childMat[2][1] * local_3c + childMat[2][2] * local_38;
     (*local_1ac)[2][3] = 0.0;
     local_1f4 = &local_30;
-    local_1f8 = param_4 + 3;
+    local_1f8 = childMat + 3;
     local_204 = (*local_1f8)[0] - local_30;
-    local_200 = param_4[3][1] - local_2c;
-    local_1fc = param_4[3][2] - local_28;
+    local_200 = childMat[3][1] - local_2c;
+    local_1fc = childMat[3][2] - local_28;
     ikMatrixTransformVector34(&local_204,(float (*) [4])&local_1f0,(*local_1ac)[3]);
     (*local_1ac)[3][3] = 1.0;
-    ikNormalizedMatrixAssert_func(param_1->matArrayPostIK[param_2->childBone]);
-    IVar1 = param_2->childBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    ikNormalizedMatrixAssert_func(ikState->matArrayPostIK[jointBones->childBone]);
+    IVar1 = jointBones->childBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (IVar1 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)IVar1 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)IVar1 & 0x1f) | ikState->modifiedIKBones;
     }
   }
   return;
@@ -1446,7 +1447,7 @@ IK_Layer_ApplyFootIK
 
 void __cdecl
 IK_Layer_ApplyHandIK
-          (IKState *param_1,IKJointBones *param_2,IKJointVars *param_3,float (*param_4) [4])
+          (IKState *ikState,IKJointBones *jointBones,IKJointVars *jointVars,float (*childMat) [4])
 
 {
   IKBoneNames IVar1;
@@ -1547,18 +1548,19 @@ IK_Layer_ApplyHandIK
   undefined1 local_12;
   bool local_11;
   
-  local_11 = param_2->childBone == IKBONE_RHAND;
-  if (((param_1->bJointVarsValid != 0) &&
-      (local_12 = param_1->ikBoneToObjBone[param_2->childBone] != 0xa1, (bool)local_12)) &&
-     (bVar3 = IK_IsCalcBone(param_1,param_2->childBone), bVar3)) {
+  local_11 = jointBones->childBone == IKBONE_RHAND;
+  if (((ikState->bJointVarsValid != 0) &&
+      (local_12 = ikState->ikBoneToObjBone[jointBones->childBone] != 0xa1, (bool)local_12)) &&
+     (bVar3 = IK_IsCalcBone(ikState,jointBones->childBone), bVar3)) {
     if (local_11 != false) {
-      IK_FlipHack(param_4);
+      IK_FlipHack(childMat);
     }
-    ikSolveArmJoint(param_1,param_2,param_3,param_4[3],(float (*) [4])&local_a0,
+    ikSolveArmJoint(ikState,jointBones,jointVars,childMat[3],(float (*) [4])&local_a0,
                     (float (*) [4])&local_60,local_11);
     ikCalcBoneModelMatrix
-              (param_1,param_2->baseBone,(float *)param_1->matArrayPostIK,(float (*) [4])&local_e0);
-    local_e4 = param_1->matArrayPostIK + param_2->parentBone;
+              (ikState,jointBones->baseBone,(float *)ikState->matArrayPostIK,
+               (float (*) [4])&local_e0);
+    local_e4 = ikState->matArrayPostIK + jointBones->parentBone;
     if ((&local_e0 == &local_130) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1597,16 +1599,16 @@ IK_Layer_ApplyHandIK
     local_13c = local_68 - local_a8;
     ikMatrixTransformVector34(&local_144,(float (*) [4])&local_130,(*local_e4)[3]);
     (*local_e4)[3][3] = 1.0;
-    local_148 = param_2->parentBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    local_148 = jointBones->parentBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (local_148 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)local_148 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)local_148 & 0x1f) | ikState->modifiedIKBones;
     }
-    local_14c = param_1->matArrayPostIK + param_2->jointBone;
+    local_14c = ikState->matArrayPostIK + jointBones->jointBone;
     if ((&local_a0 == &local_190) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1645,19 +1647,19 @@ IK_Layer_ApplyHandIK
     local_19c = local_28 - local_68;
     ikMatrixTransformVector34(&local_1a4,(float (*) [4])&local_190,(*local_14c)[3]);
     (*local_14c)[3][3] = 1.0;
-    local_1a8 = param_2->jointBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    local_1a8 = jointBones->jointBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (local_1a8 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)local_1a8 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)local_1a8 & 0x1f) | ikState->modifiedIKBones;
     }
     if (local_11 != false) {
-      IK_FlipHack(param_4);
+      IK_FlipHack(childMat);
     }
-    local_1ac = param_1->matArrayPostIK + param_2->childBone;
+    local_1ac = ikState->matArrayPostIK + jointBones->childBone;
     if ((&local_60 == &local_1f0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar3)) {
@@ -1678,41 +1680,41 @@ IK_Layer_ApplyHandIK
     local_1c8 = local_38;
     local_1c4 = 0;
     (*local_1ac)[0][0] =
-         (*param_4)[0] * local_60 + (*param_4)[1] * local_5c + (*param_4)[2] * local_58;
+         (*childMat)[0] * local_60 + (*childMat)[1] * local_5c + (*childMat)[2] * local_58;
     (*local_1ac)[0][1] =
-         (*param_4)[0] * local_50 + (*param_4)[1] * local_4c + (*param_4)[2] * local_48;
+         (*childMat)[0] * local_50 + (*childMat)[1] * local_4c + (*childMat)[2] * local_48;
     (*local_1ac)[0][2] =
-         (*param_4)[0] * local_40 + (*param_4)[1] * local_3c + (*param_4)[2] * local_38;
+         (*childMat)[0] * local_40 + (*childMat)[1] * local_3c + (*childMat)[2] * local_38;
     (*local_1ac)[0][3] = 0.0;
     (*local_1ac)[1][0] =
-         param_4[1][0] * local_60 + param_4[1][1] * local_5c + param_4[1][2] * local_58;
+         childMat[1][0] * local_60 + childMat[1][1] * local_5c + childMat[1][2] * local_58;
     (*local_1ac)[1][1] =
-         param_4[1][0] * local_50 + param_4[1][1] * local_4c + param_4[1][2] * local_48;
+         childMat[1][0] * local_50 + childMat[1][1] * local_4c + childMat[1][2] * local_48;
     (*local_1ac)[1][2] =
-         param_4[1][0] * local_40 + param_4[1][1] * local_3c + param_4[1][2] * local_38;
+         childMat[1][0] * local_40 + childMat[1][1] * local_3c + childMat[1][2] * local_38;
     (*local_1ac)[1][3] = 0.0;
     (*local_1ac)[2][0] =
-         param_4[2][0] * local_60 + param_4[2][1] * local_5c + param_4[2][2] * local_58;
+         childMat[2][0] * local_60 + childMat[2][1] * local_5c + childMat[2][2] * local_58;
     (*local_1ac)[2][1] =
-         param_4[2][0] * local_50 + param_4[2][1] * local_4c + param_4[2][2] * local_48;
+         childMat[2][0] * local_50 + childMat[2][1] * local_4c + childMat[2][2] * local_48;
     (*local_1ac)[2][2] =
-         param_4[2][0] * local_40 + param_4[2][1] * local_3c + param_4[2][2] * local_38;
+         childMat[2][0] * local_40 + childMat[2][1] * local_3c + childMat[2][2] * local_38;
     (*local_1ac)[2][3] = 0.0;
     local_1f4 = &local_30;
-    local_1f8 = param_4 + 3;
+    local_1f8 = childMat + 3;
     local_204 = (*local_1f8)[0] - local_30;
-    local_200 = param_4[3][1] - local_2c;
-    local_1fc = param_4[3][2] - local_28;
+    local_200 = childMat[3][1] - local_2c;
+    local_1fc = childMat[3][2] - local_28;
     ikMatrixTransformVector34(&local_204,(float (*) [4])&local_1f0,(*local_1ac)[3]);
     (*local_1ac)[3][3] = 1.0;
-    IVar1 = param_2->childBone;
-    param_1->bHasActiveLayers = true;
-    if (param_1->cacheActive != 0) {
-      memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-      param_1->cacheActive = 0;
+    IVar1 = jointBones->childBone;
+    ikState->bHasActiveLayers = true;
+    if (ikState->cacheActive != 0) {
+      memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+      ikState->cacheActive = 0;
     }
     if (IVar1 != IKBONE_NONE) {
-      param_1->modifiedIKBones = 1 << ((byte)IVar1 & 0x1f) | param_1->modifiedIKBones;
+      ikState->modifiedIKBones = 1 << ((byte)IVar1 & 0x1f) | ikState->modifiedIKBones;
     }
   }
   return;
@@ -1727,7 +1729,7 @@ IK_Layer_ApplyHandIK
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
+void __cdecl IK_Layer_LeftHandOnGun(IKState *ikState)
 
 {
   code *pcVar1;
@@ -2026,12 +2028,12 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_18 = 0xb;
-  local_1c = IKImport_GetLayerLerp(param_1,IKLAYER_LEFT_HAND_ON_GUN,_DAT_00e1270c);
-  param_1->leftHandLastProximityLerp = 0.0;
-  if ((((0.0 < local_1c) && (local_1d = param_1->ikBoneToObjBone[10] != 0xa1, (bool)local_1d)) &&
-      (local_1e = param_1->ikBoneToObjBone[0x16] != 0xa1, (bool)local_1e)) &&
-     ((param_1->bJointVarsValid != 0 && (bVar2 = IK_IsCalcBone(param_1,10), bVar2)))) {
-    ikCalcBoneModelMatrix(param_1,0x16,(float *)param_1->matArrayPostIK,(float (*) [4])&local_60);
+  local_1c = IKImport_GetLayerLerp(ikState,IKLAYER_LEFT_HAND_ON_GUN,_DAT_00e1270c);
+  ikState->leftHandLastProximityLerp = 0.0;
+  if ((((0.0 < local_1c) && (local_1d = ikState->ikBoneToObjBone[10] != 0xa1, (bool)local_1d)) &&
+      (local_1e = ikState->ikBoneToObjBone[0x16] != 0xa1, (bool)local_1e)) &&
+     ((ikState->bJointVarsValid != 0 && (bVar2 = IK_IsCalcBone(ikState,10), bVar2)))) {
+    ikCalcBoneModelMatrix(ikState,0x16,(float *)ikState->matArrayPostIK,(float (*) [4])&local_60);
     if (bGetMat != false) {
       leftHandOffsetStatic[0] = 0.0;
       leftHandOffsetStatic[1] = 0.0;
@@ -2042,8 +2044,8 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
     if (iVar3 == 0) {
       if (bHackUseDevGuiVars == false) {
         local_7c = 100;
-        if (param_1->timeMS + -100 < param_1->leftHandChangeTime) {
-          local_80 = (float)(param_1->timeMS - param_1->leftHandChangeTime) / 100.0;
+        if (ikState->timeMS + -100 < ikState->leftHandChangeTime) {
+          local_80 = (float)(ikState->timeMS - ikState->leftHandChangeTime) / 100.0;
           local_84 = local_80;
           if (0.0 <= local_80 - 1.0) {
             local_84 = 1.0;
@@ -2055,18 +2057,18 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
             local_88 = 0.0;
           }
           local_8c = local_88;
-          Vec3Lerp(param_1->leftHandOffsetPrev,param_1->leftHandOffset,local_88,&local_6c);
-          Vec3Lerp(param_1->leftHandRotationPrev,param_1->leftHandRotation,local_8c,&local_78);
+          Vec3Lerp(ikState->leftHandOffsetPrev,ikState->leftHandOffset,local_88,&local_6c);
+          Vec3Lerp(ikState->leftHandRotationPrev,ikState->leftHandRotation,local_8c,&local_78);
         }
         else {
-          local_90 = param_1->leftHandOffset;
+          local_90 = ikState->leftHandOffset;
           local_6c = *local_90;
-          local_68 = param_1->leftHandOffset[1];
-          local_64 = param_1->leftHandOffset[2];
-          local_94 = param_1->leftHandRotation;
+          local_68 = ikState->leftHandOffset[1];
+          local_64 = ikState->leftHandOffset[2];
+          local_94 = ikState->leftHandRotation;
           local_78 = *local_94;
-          local_74 = param_1->leftHandRotation[1];
-          local_70 = param_1->leftHandRotation[2];
+          local_74 = ikState->leftHandRotation[1];
+          local_70 = ikState->leftHandRotation[2];
         }
       }
       else {
@@ -2090,7 +2092,7 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
       local_74 = leftHandRotationStatic[1];
       local_70 = leftHandRotationStatic[2];
     }
-    local_98 = param_1->handMats;
+    local_98 = ikState->handMats;
     leftHandRotationStatic[0] = local_78;
     leftHandRotationStatic[1] = local_74;
     leftHandRotationStatic[2] = local_70;
@@ -2161,14 +2163,14 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
     local_178 = local_120 * 2.3 + local_f0;
     local_174 = local_11c * 2.3 + local_ec;
     local_170 = local_118 * 2.3 + local_e8;
-    fVar9 = IKImport_GetLayerLerp(param_1,IKLAYER_SHOTGUN_ACTIVE);
+    fVar9 = IKImport_GetLayerLerp(ikState,IKLAYER_SHOTGUN_ACTIVE);
     local_17c = fVar9 * local_168[10] + local_168[0xc];
-    fVar9 = IKImport_GetLayerLerp(param_1,IKLAYER_SHOTGUN_ACTIVE);
+    fVar9 = IKImport_GetLayerLerp(ikState,IKLAYER_SHOTGUN_ACTIVE);
     local_180 = fVar9 * local_168[10] + local_168[0xb];
-    if (param_1->weaponOffsetType == IKWEAPOFS_SHOULDER) {
+    if (ikState->weaponOffsetType == IKWEAPOFS_SHOULDER) {
       local_184 = Vec3Distance(&local_178,local_168 + 3);
     }
-    else if (param_1->weaponOffsetType == IKWEAPOFS_GRENADE) {
+    else if (ikState->weaponOffsetType == IKWEAPOFS_GRENADE) {
       local_184 = Vec3Distance(&local_178,local_168);
     }
     else {
@@ -2188,7 +2190,7 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
     if (ikSystem.inViewer == false) {
       local_1c = local_1c * local_188;
     }
-    param_1->leftHandLastProximityLerp = local_188;
+    ikState->leftHandLastProximityLerp = local_188;
     if (0.01 <= local_1c) {
       local_18c = &local_f0;
       local_190 = &local_f0;
@@ -2245,7 +2247,7 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
       local_100 = fVar7;
       local_fc = fVar8;
       if (local_1c == 1.0) {
-        local_39c = param_1->handMats;
+        local_39c = ikState->handMats;
         local_2b8 = &local_120;
         local_2ec = 0;
         local_2fc = &local_110;
@@ -2280,24 +2282,24 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
         local_35c = local_f0 * local_54 + local_ec * local_44 + local_e8 * local_34 +
                     local_e4 * local_24;
         (*local_39c)[0][0] = local_398;
-        param_1->handMats[0][0][1] = local_394;
-        param_1->handMats[0][0][2] = local_390;
-        param_1->handMats[0][0][3] = local_38c;
-        local_3a0 = param_1->handMats[0] + 1;
+        ikState->handMats[0][0][1] = local_394;
+        ikState->handMats[0][0][2] = local_390;
+        ikState->handMats[0][0][3] = local_38c;
+        local_3a0 = ikState->handMats[0] + 1;
         (*local_3a0)[0] = local_388;
-        param_1->handMats[0][1][1] = local_384;
-        param_1->handMats[0][1][2] = local_380;
-        param_1->handMats[0][1][3] = local_37c;
-        local_3a4 = param_1->handMats[0] + 2;
+        ikState->handMats[0][1][1] = local_384;
+        ikState->handMats[0][1][2] = local_380;
+        ikState->handMats[0][1][3] = local_37c;
+        local_3a4 = ikState->handMats[0] + 2;
         (*local_3a4)[0] = local_378;
-        param_1->handMats[0][2][1] = local_374;
-        param_1->handMats[0][2][2] = local_370;
-        param_1->handMats[0][2][3] = local_36c;
-        local_3a8 = param_1->handMats[0] + 3;
+        ikState->handMats[0][2][1] = local_374;
+        ikState->handMats[0][2][2] = local_370;
+        ikState->handMats[0][2][3] = local_36c;
+        local_3a8 = ikState->handMats[0] + 3;
         (*local_3a8)[0] = local_368;
-        param_1->handMats[0][3][1] = local_364;
-        param_1->handMats[0][3][2] = local_360;
-        param_1->handMats[0][3][3] = local_35c;
+        ikState->handMats[0][3][1] = local_364;
+        ikState->handMats[0][3][2] = local_360;
+        ikState->handMats[0][3][3] = local_35c;
         local_2f8 = fVar9;
         local_2f4 = fVar4;
         local_2f0 = local_118;
@@ -2310,26 +2312,26 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
         local_2b4 = local_39c;
       }
       else {
-        local_3b0 = param_1->handMats;
+        local_3b0 = ikState->handMats;
         local_3f0 = (*local_3b0)[0][0];
-        local_3ec = param_1->handMats[0][0][1];
-        local_3e8 = param_1->handMats[0][0][2];
-        local_3e4 = param_1->handMats[0][0][3];
-        local_3f4 = param_1->handMats[0] + 1;
+        local_3ec = ikState->handMats[0][0][1];
+        local_3e8 = ikState->handMats[0][0][2];
+        local_3e4 = ikState->handMats[0][0][3];
+        local_3f4 = ikState->handMats[0] + 1;
         local_3e0 = (*local_3f4)[0];
-        local_3dc = param_1->handMats[0][1][1];
-        local_3d8 = param_1->handMats[0][1][2];
-        local_3d4 = param_1->handMats[0][1][3];
-        local_3f8 = param_1->handMats[0] + 2;
+        local_3dc = ikState->handMats[0][1][1];
+        local_3d8 = ikState->handMats[0][1][2];
+        local_3d4 = ikState->handMats[0][1][3];
+        local_3f8 = ikState->handMats[0] + 2;
         local_3d0 = (*local_3f8)[0];
-        local_3cc = param_1->handMats[0][2][1];
-        local_3c8 = param_1->handMats[0][2][2];
-        local_3c4 = param_1->handMats[0][2][3];
-        local_3fc = param_1->handMats[0] + 3;
+        local_3cc = ikState->handMats[0][2][1];
+        local_3c8 = ikState->handMats[0][2][2];
+        local_3c4 = ikState->handMats[0][2][3];
+        local_3fc = ikState->handMats[0] + 3;
         local_3c0 = (*local_3fc)[0];
-        local_3bc = param_1->handMats[0][3][1];
-        local_3b8 = param_1->handMats[0][3][2];
-        local_3b4 = param_1->handMats[0][3][3];
+        local_3bc = ikState->handMats[0][3][1];
+        local_3b8 = ikState->handMats[0][3][2];
+        local_3b4 = ikState->handMats[0][3][3];
         local_444 = &local_440;
         local_448 = &local_430;
         local_44c = &local_420;
@@ -2414,11 +2416,11 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
         local_408 = local_3b8;
         local_404 = local_3b4;
         ikMatrixLerp44((float (*) [4])&local_440,(float (*) [4])&local_580,local_1c,
-                       param_1->handMats[0]);
+                       ikState->handMats[0]);
       }
-      local_594 = param_1->leftHandFromRightHandMat;
-      local_598 = param_1->handMats + 1;
-      local_59c = param_1->handMats;
+      local_594 = ikState->leftHandFromRightHandMat;
+      local_598 = ikState->handMats + 1;
+      local_59c = ikState->handMats;
       if ((local_598 == (float (*) [4] [4])&local_5e0) &&
          (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
          !bVar2)) {
@@ -2479,7 +2481,7 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
       local_604[0] = 0.0;
       local_604[1] = 0.0;
       local_604[2] = local_1c * -0.9 * local_78;
-      ikRotateBone(param_1,IKBONE_LWRIST_TWIST,local_604,true);
+      ikRotateBone(ikState,IKBONE_LWRIST_TWIST,local_604,true);
     }
   }
   return;
@@ -2491,93 +2493,95 @@ void __cdecl IK_Layer_LeftHandOnGun(IKState *param_1)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Layer_PlayerControllers(IKState *param_1)
+void __cdecl IK_Layer_PlayerControllers(IKState *ikState)
 
 {
   float fVar1;
   float local_78;
-  float local_58;
+  float rot_s;
   float local_54;
   float local_50;
-  int local_4c;
-  int local_48;
-  float local_44;
+  int i_2;
+  int i;
+  float pelvisYawFeetScaleLeft;
   float local_40;
-  float local_3c;
+  float rot;
   float local_38;
   float local_34;
-  undefined4 local_30;
-  float local_2c;
+  int ikLayerName;
+  float pelvisYawFeetScaleRight;
   float local_28;
-  float local_24;
-  float local_20;
-  IKBoneNames local_1c [6];
+  float layerLerp;
+  float pitchScalar;
+  IKBoneNames ikControllerBones [6];
   
-  local_30 = 0x12;
-  local_24 = IKImport_GetLayerLerp(param_1,IKLAYER_PLAYER_CONTROLLERS,_DAT_00e12728);
-  if (0.0 < local_24) {
-    local_1c[0] = IKBONE_SPINE;
-    local_1c[1] = 3;
-    local_1c[2] = 4;
-    local_1c[3] = 5;
-    local_1c[4] = 6;
-    local_1c[5] = 1;
-    if (param_1->hasControllers != false) {
-      fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_PRONE_ACTIVE);
-      local_20 = (1.0 - fVar1) * pitchScalarDefault + pitchScalarProne * fVar1;
+  ikLayerName = 0x12;
+  layerLerp = IKImport_GetLayerLerp(ikState,IKLAYER_PLAYER_CONTROLLERS,_DAT_00e12728);
+  if (0.0 < layerLerp) {
+    ikControllerBones[0] = IKBONE_SPINE;
+    ikControllerBones[1] = 3;
+    ikControllerBones[2] = 4;
+    ikControllerBones[3] = 5;
+    ikControllerBones[4] = 6;
+    ikControllerBones[5] = 1;
+    if (ikState->hasControllers != false) {
+      fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_PRONE_ACTIVE);
+      pitchScalar = (1.0 - fVar1) * pitchScalarDefault + pitchScalarProne * fVar1;
       local_38 = 0.0;
       local_34 = 0.0;
-      for (local_48 = 0; local_48 < 6; local_48 = local_48 + 1) {
-        local_3c = param_1->controllers[local_48][0] * local_20;
-        fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_PRONE_SLOW_FADE_ACTIVE);
+      for (i = 0; i < 6; i = i + 1) {
+        rot = ikState->controllers[i][0] * pitchScalar;
+        fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_PRONE_SLOW_FADE_ACTIVE);
         if (0.0 < fVar1) {
-          local_78 = IKImport_GetLayerLerp(param_1,IKLAYER_PRONE_SLOW_FADE_ACTIVE);
+          local_78 = IKImport_GetLayerLerp(ikState,IKLAYER_PRONE_SLOW_FADE_ACTIVE);
           local_78 = local_78 + local_78;
           if (0.0 <= local_78 - 1.0) {
             local_78 = 1.0;
           }
-          local_3c = (1.0 - local_78) * local_3c;
+          rot = (1.0 - local_78) * rot;
         }
-        ikRotateBone(param_1,local_1c[local_48],&local_3c,false);
+        ikRotateBone(ikState,ikControllerBones[i],&rot,false);
       }
-      for (local_4c = 0; local_4c < 6; local_4c = local_4c + 1) {
-        local_38 = param_1->controllers[local_4c][1];
-        local_34 = param_1->controllers[local_4c][2];
-        local_3c = 0.0;
-        if ((local_1c[local_4c] != IKBONE_PELVIS) ||
-           (fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE), fVar1 <= 0.0)) {
-          ikRotateBone(param_1,local_1c[local_4c],&local_3c,false);
+      for (i_2 = 0; i_2 < 6; i_2 = i_2 + 1) {
+        local_38 = ikState->controllers[i_2][1];
+        local_34 = ikState->controllers[i_2][2];
+        rot = 0.0;
+        if ((ikControllerBones[i_2] != IKBONE_PELVIS) ||
+           (fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE), fVar1 <= 0.0)) {
+          ikRotateBone(ikState,ikControllerBones[i_2],&rot,false);
         }
         else {
-          local_50 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
-          local_58 = local_50 * local_3c;
+          local_50 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
+          rot_s = local_50 * rot;
           local_54 = local_50 * local_38;
           local_50 = local_50 * local_34;
-          ikRotateBone(param_1,IKBONE_SPINE,&local_58,false);
-          fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
+          ikRotateBone(ikState,IKBONE_SPINE,&rot_s,false);
+          fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
           if (fVar1 < 1.0) {
-            local_50 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
+            local_50 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
             local_50 = 1.0 - local_50;
-            local_58 = local_50 * local_3c;
+            rot_s = local_50 * rot;
             local_54 = local_50 * local_38;
             local_50 = local_50 * local_34;
-            ikRotateBone(param_1,IKBONE_PELVIS,&local_58,false);
+            ikRotateBone(ikState,IKBONE_PELVIS,&rot_s,false);
           }
         }
       }
-      local_44 = 0.3;
+      pelvisYawFeetScaleLeft = 0.3;
       local_40 = 0.3;
-      local_2c = 0.6;
+      pelvisYawFeetScaleRight = 0.6;
       local_28 = 0.6;
-      local_3c = 0.0;
+      rot = 0.0;
       local_38 = 0.0;
       local_34 = 0.0;
-      fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
-      local_38 = ((1.0 - fVar1) * local_44 + local_40 * fVar1) * param_1->controllers[5][1];
-      ikRotateBone(param_1,IKBONE_LFOOT,&local_3c,false);
-      fVar1 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
-      local_38 = ((1.0 - fVar1) * local_2c + local_28 * fVar1) * param_1->controllers[5][1];
-      ikRotateBone(param_1,IKBONE_RFOOT,&local_3c,false);
+      fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
+      local_38 = ((1.0 - fVar1) * pelvisYawFeetScaleLeft + local_40 * fVar1) *
+                 ikState->controllers[5][1];
+      ikRotateBone(ikState,IKBONE_LFOOT,&rot,false);
+      fVar1 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
+      local_38 = ((1.0 - fVar1) * pelvisYawFeetScaleRight + local_28 * fVar1) *
+                 ikState->controllers[5][1];
+      ikRotateBone(ikState,IKBONE_RFOOT,&rot,false);
     }
   }
   return;
@@ -2591,7 +2595,7 @@ void __cdecl IK_Layer_PlayerControllers(IKState *param_1)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
+void __cdecl IK_Layer_PlayerPitch(IKState *ikState,bool preControllers)
 
 {
   float (*paafVar1) [4] [4];
@@ -2847,14 +2851,14 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_18 = 0xd;
-  local_1c = IKImport_GetLayerLerp(param_1,IKLAYER_PLAYER_PITCH,_DAT_00e12714);
+  local_1c = IKImport_GetLayerLerp(ikState,IKLAYER_PLAYER_PITCH,_DAT_00e12714);
   if (0.0 < local_1c) {
-    local_20 = param_1->angles;
+    local_20 = ikState->angles;
     local_2c = *local_20;
     local_28 = 0.0;
     local_24 = 0.0;
-    local_30 = IKImport_GetLayerLerp(param_1,IKLAYER_CROUCH_ACTIVE);
-    local_34 = Vec2Length(param_1->velocity);
+    local_30 = IKImport_GetLayerLerp(ikState,IKLAYER_CROUCH_ACTIVE);
+    local_34 = Vec2Length(ikState->velocity);
     local_38 = local_34 / velIdleMax;
     local_3c = local_38;
     if (0.0 <= local_38 - 1.0) {
@@ -2867,8 +2871,8 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
       local_40 = 0.0;
     }
     local_44 = local_40;
-    local_48 = IKImport_GetLayerLerp(param_1,IKLAYER_NOT_MOVING);
-    local_4c = IKImport_GetLayerLerp(param_1,IKLAYER_NOT_MOVING_FAST);
+    local_48 = IKImport_GetLayerLerp(ikState,IKLAYER_NOT_MOVING);
+    local_4c = IKImport_GetLayerLerp(ikState,IKLAYER_NOT_MOVING_FAST);
     local_50 = local_4c;
     if (0.0 <= local_48 - local_4c) {
       local_50 = local_48;
@@ -2878,7 +2882,7 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
     local_5c = 0.0;
     local_58 = 0.0;
     AnglesToAxis(&local_2c,(float (*) [3])local_84);
-    if (!param_2) {
+    if (!preControllers) {
       local_88 = local_2c;
       local_8c = ABS(local_2c);
       dVar5 = (double)(local_8c / 90.0);
@@ -2901,7 +2905,7 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
         local_a8[1] = 0.0;
         local_a8[2] = 4.5;
         Vec3Lerp(local_a8 + 3,local_a8,local_30,&local_60);
-        local_dc[0xc] = IKImport_GetLayerLerp(param_1,IKLAYER_MINIGUN_ACTIVE);
+        local_dc[0xc] = IKImport_GetLayerLerp(ikState,IKLAYER_MINIGUN_ACTIVE);
         local_dc[0xc] = 1.0 - local_dc[0xc];
         local_60 = local_dc[0xc] * local_60;
         local_5c = local_dc[0xc] * local_5c;
@@ -2918,7 +2922,7 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
       local_dc[2] = -1.0;
       local_e0 = 0x42b40000;
       local_e4 = 1.0;
-      local_e8 = param_1->controller_origin_angles[1] / 90.0;
+      local_e8 = ikState->controller_origin_angles[1] / 90.0;
       local_ec = ABS(local_e8);
       dVar5 = (double)local_ec;
       __libm_sse2_pow(in_stack_fffffb10,(double)CONCAT44(in_stack_fffffb1c,in_stack_fffffb18));
@@ -2931,36 +2935,36 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
       local_60 = local_a8[6] * local_fc + local_60;
       local_5c = local_a8[6] * local_f8 + local_5c;
       local_58 = local_a8[6] * local_f4 + local_58;
-      paafVar1 = param_1->matArrayPostIK;
+      paafVar1 = ikState->matArrayPostIK;
       local_100 = paafVar1[1] + 3;
-      paafVar2 = param_1->matArrayPostIK;
+      paafVar2 = ikState->matArrayPostIK;
       local_104 = paafVar2[1] + 3;
       (*local_100)[0] = (*local_104)[0] + local_60;
       paafVar1[1][3][1] = paafVar2[1][3][1] + local_5c;
       paafVar1[1][3][2] = paafVar2[1][3][2] + local_58;
-      param_1->bHasActiveLayers = true;
-      if (param_1->cacheActive != 0) {
-        memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-        param_1->cacheActive = 0;
+      ikState->bHasActiveLayers = true;
+      if (ikState->cacheActive != 0) {
+        memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+        ikState->cacheActive = 0;
       }
-      param_1->modifiedIKBones = param_1->modifiedIKBones | 2;
+      ikState->modifiedIKBones = ikState->modifiedIKBones | 2;
       if (0.0 < local_44) {
         local_110 = local_60;
         local_10c = local_5c;
         local_108 = 0;
-        local_114 = param_1->footMats[0] + 3;
-        local_118 = param_1->footMats[0] + 3;
+        local_114 = ikState->footMats[0] + 3;
+        local_118 = ikState->footMats[0] + 3;
         (*local_114)[0] = local_44 * local_60 + (*local_118)[0];
-        param_1->footMats[0][3][1] = local_44 * local_5c + param_1->footMats[0][3][1];
-        param_1->footMats[0][3][2] = local_44 * 0.0 + param_1->footMats[0][3][2];
-        local_11c = param_1->footMats[1] + 3;
-        local_120 = param_1->footMats[1] + 3;
+        ikState->footMats[0][3][1] = local_44 * local_5c + ikState->footMats[0][3][1];
+        ikState->footMats[0][3][2] = local_44 * 0.0 + ikState->footMats[0][3][2];
+        local_11c = ikState->footMats[1] + 3;
+        local_120 = ikState->footMats[1] + 3;
         (*local_11c)[0] = local_44 * local_60 + (*local_120)[0];
-        param_1->footMats[1][3][1] = local_44 * local_5c + param_1->footMats[1][3][1];
-        param_1->footMats[1][3][2] = local_44 * 0.0 + param_1->footMats[1][3][2];
+        ikState->footMats[1][3][1] = local_44 * local_5c + ikState->footMats[1][3][1];
+        ikState->footMats[1][3][2] = local_44 * 0.0 + ikState->footMats[1][3][2];
       }
     }
-    if (param_2) {
+    if (preControllers) {
       local_124 = 0;
       local_128 = 0;
       local_12c = 0;
@@ -2970,7 +2974,7 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
         local_140 = local_134 * local_2c;
         local_13c = local_134 * local_28;
         local_138 = local_134 * local_24;
-        ikRotateBone(param_1,IKBONE_PELVIS,&local_140,false);
+        ikRotateBone(ikState,IKBONE_PELVIS,&local_140,false);
       }
       local_144 = 0x3f8ccccd;
       local_148 = local_2c;
@@ -2980,23 +2984,23 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
       local_150 = (float)dVar5 * local_1c;
       local_155 = local_2c <= 0.0;
       local_154 = (uint)(byte)local_155;
-      IKImport_GetPitchWeaponOffset(param_1,(bool)local_155,&local_164);
+      IKImport_GetPitchWeaponOffset(ikState,(bool)local_155,&local_164);
       local_164 = local_150 * local_164;
       local_160 = local_150 * local_160;
       local_15c = local_150 * local_15c;
-      local_168 = param_1->handMats[0] + 3;
-      local_16c = param_1->handMats[0] + 3;
+      local_168 = ikState->handMats[0] + 3;
+      local_16c = ikState->handMats[0] + 3;
       (*local_168)[0] = (*local_16c)[0] + local_164;
-      param_1->handMats[0][3][1] = param_1->handMats[0][3][1] + local_160;
-      param_1->handMats[0][3][2] = param_1->handMats[0][3][2] + local_15c;
-      local_170 = param_1->handMats[1] + 3;
-      local_174 = param_1->handMats[1] + 3;
+      ikState->handMats[0][3][1] = ikState->handMats[0][3][1] + local_160;
+      ikState->handMats[0][3][2] = ikState->handMats[0][3][2] + local_15c;
+      local_170 = ikState->handMats[1] + 3;
+      local_174 = ikState->handMats[1] + 3;
       (*local_170)[0] = (*local_174)[0] + local_164;
-      param_1->handMats[1][3][1] = param_1->handMats[1][3][1] + local_160;
-      param_1->handMats[1][3][2] = param_1->handMats[1][3][2] + local_15c;
+      ikState->handMats[1][3][1] = ikState->handMats[1][3][1] + local_160;
+      ikState->handMats[1][3][2] = ikState->handMats[1][3][2] + local_15c;
       if (local_2c < 0.0) {
-        ikCalcBoneModelMatrix(param_1,6,(float *)param_1->matArrayPostIK,(float (*) [4])&local_1c0);
-        local_1c4 = param_1->handMats + 1;
+        ikCalcBoneModelMatrix(ikState,6,(float *)ikState->matArrayPostIK,(float (*) [4])&local_1c0);
+        local_1c4 = ikState->handMats + 1;
         if ((&local_1c0 == &local_210) &&
            (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s")
            , !bVar4)) {
@@ -3050,15 +3054,15 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
         local_140 = local_270 * local_2c;
         local_13c = local_270 * local_28;
         local_138 = local_270 * local_24;
-        ikRotateBone(param_1,IKBONE_NECK,&local_140,false);
+        ikRotateBone(ikState,IKBONE_NECK,&local_140,false);
         local_274 = 0x3e99999a;
         local_278 = local_1c * 0.3 * local_268;
         local_140 = local_278 * local_2c;
         local_13c = local_278 * local_28;
         local_138 = local_278 * local_24;
-        ikRotateBone(param_1,IKBONE_HEAD,&local_140,false);
-        ikCalcBoneModelMatrix(param_1,6,(float *)param_1->matArrayPostIK,(float (*) [4])&local_1c0);
-        local_364 = param_1->handMats + 1;
+        ikRotateBone(ikState,IKBONE_HEAD,&local_140,false);
+        ikCalcBoneModelMatrix(ikState,6,(float *)ikState->matArrayPostIK,(float (*) [4])&local_1c0);
+        local_364 = ikState->handMats + 1;
         local_280 = &local_250;
         local_2c0 = local_250;
         local_2bc = local_24c;
@@ -3113,67 +3117,67 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
         local_324 = local_220 * local_1b4 + local_21c * local_1a4 + local_218 * local_194 +
                     local_214 * local_184;
         (*local_364)[0][0] = local_360;
-        param_1->handMats[1][0][1] = local_35c;
-        param_1->handMats[1][0][2] = local_358;
-        param_1->handMats[1][0][3] = local_354;
-        local_368 = param_1->handMats[1] + 1;
+        ikState->handMats[1][0][1] = local_35c;
+        ikState->handMats[1][0][2] = local_358;
+        ikState->handMats[1][0][3] = local_354;
+        local_368 = ikState->handMats[1] + 1;
         (*local_368)[0] = local_350;
-        param_1->handMats[1][1][1] = local_34c;
-        param_1->handMats[1][1][2] = local_348;
-        param_1->handMats[1][1][3] = local_344;
-        local_36c = param_1->handMats[1] + 2;
+        ikState->handMats[1][1][1] = local_34c;
+        ikState->handMats[1][1][2] = local_348;
+        ikState->handMats[1][1][3] = local_344;
+        local_36c = ikState->handMats[1] + 2;
         (*local_36c)[0] = local_340;
-        param_1->handMats[1][2][1] = local_33c;
-        param_1->handMats[1][2][2] = local_338;
-        param_1->handMats[1][2][3] = local_334;
-        local_370 = param_1->handMats[1] + 3;
+        ikState->handMats[1][2][1] = local_33c;
+        ikState->handMats[1][2][2] = local_338;
+        ikState->handMats[1][2][3] = local_334;
+        local_370 = ikState->handMats[1] + 3;
         (*local_370)[0] = local_330;
-        param_1->handMats[1][3][1] = local_32c;
-        param_1->handMats[1][3][2] = local_328;
-        param_1->handMats[1][3][3] = local_324;
+        ikState->handMats[1][3][1] = local_32c;
+        ikState->handMats[1][3][2] = local_328;
+        ikState->handMats[1][3][3] = local_324;
         local_27c = local_364;
       }
-      local_464 = param_1->handMats;
-      local_3d0 = param_1->handMats + 1;
-      local_380 = param_1->leftHandFromRightHandMat;
+      local_464 = ikState->handMats;
+      local_3d0 = ikState->handMats + 1;
+      local_380 = ikState->leftHandFromRightHandMat;
       local_3c0 = (*local_380)[0];
-      local_3bc = param_1->leftHandFromRightHandMat[0][1];
-      local_3b8 = param_1->leftHandFromRightHandMat[0][2];
-      local_3b4 = param_1->leftHandFromRightHandMat[0][3];
-      local_3c4 = param_1->leftHandFromRightHandMat + 1;
+      local_3bc = ikState->leftHandFromRightHandMat[0][1];
+      local_3b8 = ikState->leftHandFromRightHandMat[0][2];
+      local_3b4 = ikState->leftHandFromRightHandMat[0][3];
+      local_3c4 = ikState->leftHandFromRightHandMat + 1;
       local_3b0 = (*local_3c4)[0];
-      local_3ac = param_1->leftHandFromRightHandMat[1][1];
-      local_3a8 = param_1->leftHandFromRightHandMat[1][2];
-      local_3a4 = param_1->leftHandFromRightHandMat[1][3];
-      local_3c8 = param_1->leftHandFromRightHandMat + 2;
+      local_3ac = ikState->leftHandFromRightHandMat[1][1];
+      local_3a8 = ikState->leftHandFromRightHandMat[1][2];
+      local_3a4 = ikState->leftHandFromRightHandMat[1][3];
+      local_3c8 = ikState->leftHandFromRightHandMat + 2;
       local_3a0 = (*local_3c8)[0];
-      local_39c = param_1->leftHandFromRightHandMat[2][1];
-      local_398 = param_1->leftHandFromRightHandMat[2][2];
-      local_394 = param_1->leftHandFromRightHandMat[2][3];
-      local_3cc = param_1->leftHandFromRightHandMat + 3;
+      local_39c = ikState->leftHandFromRightHandMat[2][1];
+      local_398 = ikState->leftHandFromRightHandMat[2][2];
+      local_394 = ikState->leftHandFromRightHandMat[2][3];
+      local_3cc = ikState->leftHandFromRightHandMat + 3;
       local_390 = (*local_3cc)[0];
-      local_38c = param_1->leftHandFromRightHandMat[3][1];
-      local_388 = param_1->leftHandFromRightHandMat[3][2];
-      local_384 = param_1->leftHandFromRightHandMat[3][3];
+      local_38c = ikState->leftHandFromRightHandMat[3][1];
+      local_388 = ikState->leftHandFromRightHandMat[3][2];
+      local_384 = ikState->leftHandFromRightHandMat[3][3];
       local_410 = (*local_3d0)[0][0];
-      local_40c = param_1->handMats[1][0][1];
-      local_408 = param_1->handMats[1][0][2];
-      local_404 = param_1->handMats[1][0][3];
-      local_414 = param_1->handMats[1] + 1;
+      local_40c = ikState->handMats[1][0][1];
+      local_408 = ikState->handMats[1][0][2];
+      local_404 = ikState->handMats[1][0][3];
+      local_414 = ikState->handMats[1] + 1;
       local_400 = (*local_414)[0];
-      local_3fc = param_1->handMats[1][1][1];
-      local_3f8 = param_1->handMats[1][1][2];
-      local_3f4 = param_1->handMats[1][1][3];
-      local_418 = param_1->handMats[1] + 2;
+      local_3fc = ikState->handMats[1][1][1];
+      local_3f8 = ikState->handMats[1][1][2];
+      local_3f4 = ikState->handMats[1][1][3];
+      local_418 = ikState->handMats[1] + 2;
       local_3f0 = (*local_418)[0];
-      local_3ec = param_1->handMats[1][2][1];
-      local_3e8 = param_1->handMats[1][2][2];
-      local_3e4 = param_1->handMats[1][2][3];
-      local_41c = param_1->handMats[1] + 3;
+      local_3ec = ikState->handMats[1][2][1];
+      local_3e8 = ikState->handMats[1][2][2];
+      local_3e4 = ikState->handMats[1][2][3];
+      local_41c = ikState->handMats[1] + 3;
       local_3e0 = (*local_41c)[0];
-      local_3dc = param_1->handMats[1][3][1];
-      local_3d8 = param_1->handMats[1][3][2];
-      local_3d4 = param_1->handMats[1][3][3];
+      local_3dc = ikState->handMats[1][3][1];
+      local_3d8 = ikState->handMats[1][3][2];
+      local_3d4 = ikState->handMats[1][3][3];
       local_460 = local_3c0 * local_410 + local_3bc * local_400 + local_3b8 * local_3f0 +
                   local_3b4 * local_3e0;
       local_45c = local_3c0 * local_40c + local_3bc * local_3fc + local_3b8 * local_3ec +
@@ -3207,41 +3211,41 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
       local_424 = local_390 * local_404 + local_38c * local_3f4 + local_388 * local_3e4 +
                   local_384 * local_3d4;
       (*local_464)[0][0] = local_460;
-      param_1->handMats[0][0][1] = local_45c;
-      param_1->handMats[0][0][2] = local_458;
-      param_1->handMats[0][0][3] = local_454;
-      local_468 = param_1->handMats[0] + 1;
+      ikState->handMats[0][0][1] = local_45c;
+      ikState->handMats[0][0][2] = local_458;
+      ikState->handMats[0][0][3] = local_454;
+      local_468 = ikState->handMats[0] + 1;
       (*local_468)[0] = local_450;
-      param_1->handMats[0][1][1] = local_44c;
-      param_1->handMats[0][1][2] = local_448;
-      param_1->handMats[0][1][3] = local_444;
-      local_46c = param_1->handMats[0] + 2;
+      ikState->handMats[0][1][1] = local_44c;
+      ikState->handMats[0][1][2] = local_448;
+      ikState->handMats[0][1][3] = local_444;
+      local_46c = ikState->handMats[0] + 2;
       (*local_46c)[0] = local_440;
-      param_1->handMats[0][2][1] = local_43c;
-      param_1->handMats[0][2][2] = local_438;
-      param_1->handMats[0][2][3] = local_434;
-      local_470 = param_1->handMats[0] + 3;
+      ikState->handMats[0][2][1] = local_43c;
+      ikState->handMats[0][2][2] = local_438;
+      ikState->handMats[0][2][3] = local_434;
+      local_470 = ikState->handMats[0] + 3;
       (*local_470)[0] = local_430;
-      param_1->handMats[0][3][1] = local_42c;
-      param_1->handMats[0][3][2] = local_428;
-      param_1->handMats[0][3][3] = local_424;
+      ikState->handMats[0][3][1] = local_42c;
+      ikState->handMats[0][3][2] = local_428;
+      ikState->handMats[0][3][3] = local_424;
       local_37c = local_380;
       local_378 = local_3d0;
       local_374 = local_464;
     }
-    local_474 = param_1->handMats[0] + 3;
-    local_478 = param_1->handMats[0] + 3;
+    local_474 = ikState->handMats[0] + 3;
+    local_478 = ikState->handMats[0] + 3;
     (*local_474)[0] = (*local_478)[0] + local_60;
-    param_1->handMats[0][3][1] = param_1->handMats[0][3][1] + local_5c;
-    param_1->handMats[0][3][2] = param_1->handMats[0][3][2] + local_58;
-    local_47c = param_1->handMats[1] + 3;
-    local_480 = param_1->handMats[1] + 3;
+    ikState->handMats[0][3][1] = ikState->handMats[0][3][1] + local_5c;
+    ikState->handMats[0][3][2] = ikState->handMats[0][3][2] + local_58;
+    local_47c = ikState->handMats[1] + 3;
+    local_480 = ikState->handMats[1] + 3;
     (*local_47c)[0] = (*local_480)[0] + local_60;
-    param_1->handMats[1][3][1] = param_1->handMats[1][3][1] + local_5c;
-    param_1->handMats[1][3][2] = param_1->handMats[1][3][2] + local_58;
-    local_484 = param_1->leftHandFromRightHandMat;
-    local_488 = param_1->handMats + 1;
-    local_48c = param_1->handMats;
+    ikState->handMats[1][3][1] = ikState->handMats[1][3][1] + local_5c;
+    ikState->handMats[1][3][2] = ikState->handMats[1][3][2] + local_58;
+    local_484 = ikState->leftHandFromRightHandMat;
+    local_488 = ikState->handMats + 1;
+    local_48c = ikState->handMats;
     if ((local_488 == (float (*) [4] [4])&local_4d0) &&
        (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar4)) {
@@ -3306,7 +3310,7 @@ void __cdecl IK_Layer_PlayerPitch(IKState *param_1,bool param_2)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
+void __cdecl IK_Layer_PreventHeadClip(IKState *ikState)
 
 {
   float (*paafVar1) [4] [4];
@@ -3452,9 +3456,9 @@ void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_18 = 0x14;
-  local_1c = IKImport_GetLayerLerp(param_1,IKLAYER_PREVENT_HEAD_CLIP,_DAT_00e12730);
+  local_1c = IKImport_GetLayerLerp(ikState,IKLAYER_PREVENT_HEAD_CLIP,_DAT_00e12730);
   if (0.0 < local_1c) {
-    ikCalcBoneModelMatrix(param_1,6,(float *)param_1->matArrayPostIK,(float (*) [4])&local_60);
+    ikCalcBoneModelMatrix(ikState,6,(float *)ikState->matArrayPostIK,(float (*) [4])&local_60);
     local_64 = 0.0;
     local_68 = 12.0;
     local_6c = 14.0;
@@ -3467,31 +3471,31 @@ void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
       local_30 = local_74 * local_30;
       local_2c = local_74 * local_2c;
     }
-    local_d0 = param_1->entityLegsXform;
+    local_d0 = ikState->entityLegsXform;
     local_80 = &local_60;
     local_c4 = &local_50;
     local_c8 = &local_40;
     local_cc = &local_30;
     local_90 = local_30;
     local_110 = (*local_d0)[0];
-    local_10c = param_1->entityLegsXform[0][1];
-    local_108 = param_1->entityLegsXform[0][2];
-    local_104 = param_1->entityLegsXform[0][3];
-    local_114 = param_1->entityLegsXform + 1;
+    local_10c = ikState->entityLegsXform[0][1];
+    local_108 = ikState->entityLegsXform[0][2];
+    local_104 = ikState->entityLegsXform[0][3];
+    local_114 = ikState->entityLegsXform + 1;
     local_100 = (*local_114)[0];
-    local_fc = param_1->entityLegsXform[1][1];
-    local_f8 = param_1->entityLegsXform[1][2];
-    local_f4 = param_1->entityLegsXform[1][3];
-    local_118 = param_1->entityLegsXform + 2;
+    local_fc = ikState->entityLegsXform[1][1];
+    local_f8 = ikState->entityLegsXform[1][2];
+    local_f4 = ikState->entityLegsXform[1][3];
+    local_118 = ikState->entityLegsXform + 2;
     local_f0 = (*local_118)[0];
-    local_ec = param_1->entityLegsXform[2][1];
-    local_e8 = param_1->entityLegsXform[2][2];
-    local_e4 = param_1->entityLegsXform[2][3];
-    local_11c = param_1->entityLegsXform + 3;
+    local_ec = ikState->entityLegsXform[2][1];
+    local_e8 = ikState->entityLegsXform[2][2];
+    local_e4 = ikState->entityLegsXform[2][3];
+    local_11c = ikState->entityLegsXform + 3;
     local_e0 = (*local_11c)[0];
-    local_dc = param_1->entityLegsXform[3][1];
-    local_d8 = param_1->entityLegsXform[3][2];
-    local_d4 = param_1->entityLegsXform[3][3];
+    local_dc = ikState->entityLegsXform[3][1];
+    local_d8 = ikState->entityLegsXform[3][2];
+    local_d4 = ikState->entityLegsXform[3][3];
     local_1d4 = local_60 * local_110 + local_5c * local_100 + local_58 * local_f0 +
                 local_54 * local_e0;
     local_1d0 = local_60 * local_10c + local_5c * local_fc + local_58 * local_ec +
@@ -3556,12 +3560,12 @@ void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
     local_16c = local_1dc;
     local_168 = local_1d8;
     local_164 = local_124;
-    bVar4 = IKImport_TraceBox(param_1,&local_1e0,&local_1ec,local_64,local_204,local_1f8,-1,
+    bVar4 = IKImport_TraceBox(ikState,&local_1e0,&local_1ec,local_64,local_204,local_1f8,-1,
                               &local_1c8,false);
     if (bVar4) {
       local_208 = 12.0;
-      local_20c = param_1->entityLegsXform;
-      local_210 = param_1->entityXform;
+      local_20c = ikState->entityLegsXform;
+      local_210 = ikState->entityXform;
       if ((local_20c == (float (*) [4])&local_250) &&
          (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
          !bVar4)) {
@@ -3609,29 +3613,29 @@ void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
       local_29c = local_210[3][2] - local_20c[3][2];
       ikMatrixTransformVector34(&local_2a4,(float (*) [4])&local_250,local_260);
       local_254 = 1.0;
-      paafVar1 = param_1->matArrayPostIK;
+      paafVar1 = ikState->matArrayPostIK;
       fVar5 = -(1.0 - local_1c8) * local_208;
-      paafVar2 = param_1->matArrayPostIK;
+      paafVar2 = ikState->matArrayPostIK;
       paafVar1[1][3][0] = fVar5 * local_290 + paafVar2[1][3][0];
       paafVar1[1][3][1] = fVar5 * local_28c + paafVar2[1][3][1];
       fVar5 = -(1.0 - local_1c8) * local_208;
-      param_1->handMats[1][3][0] = fVar5 * local_290 + param_1->handMats[1][3][0];
-      param_1->handMats[1][3][1] = fVar5 * local_28c + param_1->handMats[1][3][1];
+      ikState->handMats[1][3][0] = fVar5 * local_290 + ikState->handMats[1][3][0];
+      ikState->handMats[1][3][1] = fVar5 * local_28c + ikState->handMats[1][3][1];
       fVar5 = -(1.0 - local_1c8) * local_208;
-      param_1->handMats[0][3][0] = fVar5 * local_290 + param_1->handMats[0][3][0];
-      param_1->handMats[0][3][1] = fVar5 * local_28c + param_1->handMats[0][3][1];
+      ikState->handMats[0][3][0] = fVar5 * local_290 + ikState->handMats[0][3][0];
+      ikState->handMats[0][3][1] = fVar5 * local_28c + ikState->handMats[0][3][1];
       fVar5 = -(1.0 - local_1c8) * local_208;
-      param_1->footMats[1][3][0] = fVar5 * local_290 + param_1->footMats[1][3][0];
-      param_1->footMats[1][3][1] = fVar5 * local_28c + param_1->footMats[1][3][1];
+      ikState->footMats[1][3][0] = fVar5 * local_290 + ikState->footMats[1][3][0];
+      ikState->footMats[1][3][1] = fVar5 * local_28c + ikState->footMats[1][3][1];
       fVar5 = -(1.0 - local_1c8) * local_208;
-      param_1->footMats[0][3][0] = fVar5 * local_290 + param_1->footMats[0][3][0];
-      param_1->footMats[0][3][1] = fVar5 * local_28c + param_1->footMats[0][3][1];
-      param_1->bHasActiveLayers = true;
-      if (param_1->cacheActive != 0) {
-        memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-        param_1->cacheActive = 0;
+      ikState->footMats[0][3][0] = fVar5 * local_290 + ikState->footMats[0][3][0];
+      ikState->footMats[0][3][1] = fVar5 * local_28c + ikState->footMats[0][3][1];
+      ikState->bHasActiveLayers = true;
+      if (ikState->cacheActive != 0) {
+        memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+        ikState->cacheActive = 0;
       }
-      param_1->modifiedIKBones = param_1->modifiedIKBones | 2;
+      ikState->modifiedIKBones = ikState->modifiedIKBones | 2;
     }
   }
   return;
@@ -3644,7 +3648,7 @@ void __cdecl IK_Layer_PreventHeadClip(IKState *param_1)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_ProcessLayers(IKState *param_1)
+void __cdecl IK_ProcessLayers(IKState *ikState)
 
 {
   float fVar1;
@@ -3758,13 +3762,13 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if (param_1->bJointVarsValid != 0) {
+  if (ikState->bJointVarsValid != 0) {
     if (ikSystem.inViewer) {
-      param_1->bHasActiveLayers = true;
-      param_1->bHasArmSolverLayer = true;
+      ikState->bHasActiveLayers = true;
+      ikState->bHasArmSolverLayer = true;
     }
-    GamerProfile_WriteSettings((int)param_1);
-    local_15 = param_1->ikBoneToObjBone[10] != 0xa1;
+    GamerProfile_WriteSettings((int)ikState);
+    local_15 = ikState->ikBoneToObjBone[10] != 0xa1;
     if ((!(bool)local_15) &&
        (bVar34 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x6ed,0,
                                   "%s"), !bVar34)) {
@@ -3772,8 +3776,8 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
       (*pcVar33)();
       return;
     }
-    ikCalcBoneModelMatrix(param_1,10,(float *)param_1->matArrayPostIK,param_1->handMats[0]);
-    local_16 = param_1->ikBoneToObjBone[0xf] != 0xa1;
+    ikCalcBoneModelMatrix(ikState,10,(float *)ikState->matArrayPostIK,ikState->handMats[0]);
+    local_16 = ikState->ikBoneToObjBone[0xf] != 0xa1;
     if ((!(bool)local_16) &&
        (bVar34 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x6f0,0,
                                   "%s"), !bVar34)) {
@@ -3781,10 +3785,10 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
       (*pcVar33)();
       return;
     }
-    ikCalcBoneModelMatrix(param_1,0xf,(float *)param_1->matArrayPostIK,param_1->handMats[1]);
-    local_1c = param_1->leftHandFromRightHandMat;
-    local_20 = param_1->handMats + 1;
-    local_24 = param_1->handMats;
+    ikCalcBoneModelMatrix(ikState,0xf,(float *)ikState->matArrayPostIK,ikState->handMats[1]);
+    local_1c = ikState->leftHandFromRightHandMat;
+    local_20 = ikState->handMats + 1;
+    local_24 = ikState->handMats;
     if ((local_20 == (float (*) [4] [4])&local_70) &&
        (bVar34 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
        !bVar34)) {
@@ -3832,7 +3836,7 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
     local_7c = (*local_24)[3][2] - (*local_20)[3][2];
     ikMatrixTransformVector34(&local_84,(float (*) [4])&local_70,local_1c[3]);
     local_1c[3][3] = 1.0;
-    local_85 = param_1->ikBoneToObjBone[0x12] != 0xa1;
+    local_85 = ikState->ikBoneToObjBone[0x12] != 0xa1;
     if ((!(bool)local_85) &&
        (bVar34 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x6f6,0,
                                   "%s"), !bVar34)) {
@@ -3840,8 +3844,8 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
       (*pcVar33)();
       return;
     }
-    ikCalcBoneModelMatrix(param_1,0x12,(float *)param_1->matArrayPostIK,param_1->footMats[0]);
-    local_86 = param_1->ikBoneToObjBone[0x15] != 0xa1;
+    ikCalcBoneModelMatrix(ikState,0x12,(float *)ikState->matArrayPostIK,ikState->footMats[0]);
+    local_86 = ikState->ikBoneToObjBone[0x15] != 0xa1;
     if ((!(bool)local_86) &&
        (bVar34 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_layers.cpp",0x6f9,0,
                                   "%s"), !bVar34)) {
@@ -3849,13 +3853,13 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
       (*pcVar33)();
       return;
     }
-    ikCalcBoneModelMatrix(param_1,0x15,(float *)param_1->matArrayPostIK,param_1->footMats[1]);
-    IK_Layer_LeftHandOnGun(param_1);
-    bVar34 = IKImport_IsClient(param_1);
+    ikCalcBoneModelMatrix(ikState,0x15,(float *)ikState->matArrayPostIK,ikState->footMats[1]);
+    IK_Layer_LeftHandOnGun(ikState);
+    bVar34 = IKImport_IsClient(ikState);
     if (bVar34) {
-      IK_Layer_PlayerPitch(param_1,true);
-      ikCalcBoneModelMatrix(param_1,4,(float *)param_1->matArrayPostIK,(float (*) [4])&local_d0);
-      local_d4 = param_1->handMats + 1;
+      IK_Layer_PlayerPitch(ikState,true);
+      ikCalcBoneModelMatrix(ikState,4,(float *)ikState->matArrayPostIK,(float (*) [4])&local_d0);
+      local_d4 = ikState->handMats + 1;
       if ((&local_d0 == &local_120) &&
          (bVar34 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s"),
          !bVar34)) {
@@ -3903,146 +3907,146 @@ void __cdecl IK_ProcessLayers(IKState *param_1)
       local_16c = (*local_d4)[3][2] - local_98;
       ikMatrixTransformVector34(&local_174,(float (*) [4])&local_120,&local_130);
       local_124 = 1.0;
-      IK_Layer_PlayerControllers(param_1);
-      ikCalcBoneModelMatrix(param_1,4,(float *)param_1->matArrayPostIK,(float (*) [4])&local_d0);
-      param_1->handMats[1][0][0] =
+      IK_Layer_PlayerControllers(ikState);
+      ikCalcBoneModelMatrix(ikState,4,(float *)ikState->matArrayPostIK,(float (*) [4])&local_d0);
+      ikState->handMats[1][0][0] =
            local_160 * local_d0 + local_15c * local_c0 + local_158 * local_b0 + local_154 * local_a0
       ;
-      param_1->handMats[1][0][1] =
+      ikState->handMats[1][0][1] =
            local_160 * local_cc + local_15c * local_bc + local_158 * local_ac + local_154 * local_9c
       ;
-      param_1->handMats[1][0][2] =
+      ikState->handMats[1][0][2] =
            local_160 * local_c8 + local_15c * local_b8 + local_158 * local_a8 + local_154 * local_98
       ;
-      param_1->handMats[1][0][3] =
+      ikState->handMats[1][0][3] =
            local_160 * local_c4 + local_15c * local_b4 + local_158 * local_a4 + local_154 * local_94
       ;
-      param_1->handMats[1][1][0] =
+      ikState->handMats[1][1][0] =
            local_150 * local_d0 + local_14c * local_c0 + local_148 * local_b0 + local_144 * local_a0
       ;
-      param_1->handMats[1][1][1] =
+      ikState->handMats[1][1][1] =
            local_150 * local_cc + local_14c * local_bc + local_148 * local_ac + local_144 * local_9c
       ;
-      param_1->handMats[1][1][2] =
+      ikState->handMats[1][1][2] =
            local_150 * local_c8 + local_14c * local_b8 + local_148 * local_a8 + local_144 * local_98
       ;
-      param_1->handMats[1][1][3] =
+      ikState->handMats[1][1][3] =
            local_150 * local_c4 + local_14c * local_b4 + local_148 * local_a4 + local_144 * local_94
       ;
-      param_1->handMats[1][2][0] =
+      ikState->handMats[1][2][0] =
            local_140 * local_d0 + local_13c * local_c0 + local_138 * local_b0 + local_134 * local_a0
       ;
-      param_1->handMats[1][2][1] =
+      ikState->handMats[1][2][1] =
            local_140 * local_cc + local_13c * local_bc + local_138 * local_ac + local_134 * local_9c
       ;
-      param_1->handMats[1][2][2] =
+      ikState->handMats[1][2][2] =
            local_140 * local_c8 + local_13c * local_b8 + local_138 * local_a8 + local_134 * local_98
       ;
-      param_1->handMats[1][2][3] =
+      ikState->handMats[1][2][3] =
            local_140 * local_c4 + local_13c * local_b4 + local_138 * local_a4 + local_134 * local_94
       ;
-      param_1->handMats[1][3][0] =
+      ikState->handMats[1][3][0] =
            local_130 * local_d0 + local_12c * local_c0 + local_128 * local_b0 + local_124 * local_a0
       ;
-      param_1->handMats[1][3][1] =
+      ikState->handMats[1][3][1] =
            local_130 * local_cc + local_12c * local_bc + local_128 * local_ac + local_124 * local_9c
       ;
-      param_1->handMats[1][3][2] =
+      ikState->handMats[1][3][2] =
            local_130 * local_c8 + local_12c * local_b8 + local_128 * local_a8 + local_124 * local_98
       ;
-      param_1->handMats[1][3][3] =
+      ikState->handMats[1][3][3] =
            local_130 * local_c4 + local_12c * local_b4 + local_128 * local_a4 + local_124 * local_94
       ;
-      fVar1 = param_1->leftHandFromRightHandMat[0][0];
-      fVar2 = param_1->leftHandFromRightHandMat[0][1];
-      fVar3 = param_1->leftHandFromRightHandMat[0][2];
-      fVar4 = param_1->leftHandFromRightHandMat[0][3];
-      fVar5 = param_1->leftHandFromRightHandMat[1][0];
-      fVar6 = param_1->leftHandFromRightHandMat[1][1];
-      fVar7 = param_1->leftHandFromRightHandMat[1][2];
-      fVar8 = param_1->leftHandFromRightHandMat[1][3];
-      fVar9 = param_1->leftHandFromRightHandMat[2][0];
-      fVar10 = param_1->leftHandFromRightHandMat[2][1];
-      fVar11 = param_1->leftHandFromRightHandMat[2][2];
-      fVar12 = param_1->leftHandFromRightHandMat[2][3];
-      fVar13 = param_1->leftHandFromRightHandMat[3][0];
-      fVar14 = param_1->leftHandFromRightHandMat[3][1];
-      fVar15 = param_1->leftHandFromRightHandMat[3][2];
-      fVar16 = param_1->leftHandFromRightHandMat[3][3];
-      fVar17 = param_1->handMats[1][0][0];
-      fVar18 = param_1->handMats[1][0][1];
-      fVar19 = param_1->handMats[1][0][2];
-      fVar20 = param_1->handMats[1][0][3];
-      fVar21 = param_1->handMats[1][1][0];
-      fVar22 = param_1->handMats[1][1][1];
-      fVar23 = param_1->handMats[1][1][2];
-      fVar24 = param_1->handMats[1][1][3];
-      fVar25 = param_1->handMats[1][2][0];
-      fVar26 = param_1->handMats[1][2][1];
-      fVar27 = param_1->handMats[1][2][2];
-      fVar28 = param_1->handMats[1][2][3];
-      fVar29 = param_1->handMats[1][3][0];
-      fVar30 = param_1->handMats[1][3][1];
-      fVar31 = param_1->handMats[1][3][2];
-      fVar32 = param_1->handMats[1][3][3];
-      param_1->handMats[0][0][0] = fVar1 * fVar17 + fVar2 * fVar21 + fVar3 * fVar25 + fVar4 * fVar29
+      fVar1 = ikState->leftHandFromRightHandMat[0][0];
+      fVar2 = ikState->leftHandFromRightHandMat[0][1];
+      fVar3 = ikState->leftHandFromRightHandMat[0][2];
+      fVar4 = ikState->leftHandFromRightHandMat[0][3];
+      fVar5 = ikState->leftHandFromRightHandMat[1][0];
+      fVar6 = ikState->leftHandFromRightHandMat[1][1];
+      fVar7 = ikState->leftHandFromRightHandMat[1][2];
+      fVar8 = ikState->leftHandFromRightHandMat[1][3];
+      fVar9 = ikState->leftHandFromRightHandMat[2][0];
+      fVar10 = ikState->leftHandFromRightHandMat[2][1];
+      fVar11 = ikState->leftHandFromRightHandMat[2][2];
+      fVar12 = ikState->leftHandFromRightHandMat[2][3];
+      fVar13 = ikState->leftHandFromRightHandMat[3][0];
+      fVar14 = ikState->leftHandFromRightHandMat[3][1];
+      fVar15 = ikState->leftHandFromRightHandMat[3][2];
+      fVar16 = ikState->leftHandFromRightHandMat[3][3];
+      fVar17 = ikState->handMats[1][0][0];
+      fVar18 = ikState->handMats[1][0][1];
+      fVar19 = ikState->handMats[1][0][2];
+      fVar20 = ikState->handMats[1][0][3];
+      fVar21 = ikState->handMats[1][1][0];
+      fVar22 = ikState->handMats[1][1][1];
+      fVar23 = ikState->handMats[1][1][2];
+      fVar24 = ikState->handMats[1][1][3];
+      fVar25 = ikState->handMats[1][2][0];
+      fVar26 = ikState->handMats[1][2][1];
+      fVar27 = ikState->handMats[1][2][2];
+      fVar28 = ikState->handMats[1][2][3];
+      fVar29 = ikState->handMats[1][3][0];
+      fVar30 = ikState->handMats[1][3][1];
+      fVar31 = ikState->handMats[1][3][2];
+      fVar32 = ikState->handMats[1][3][3];
+      ikState->handMats[0][0][0] = fVar1 * fVar17 + fVar2 * fVar21 + fVar3 * fVar25 + fVar4 * fVar29
       ;
-      param_1->handMats[0][0][1] = fVar1 * fVar18 + fVar2 * fVar22 + fVar3 * fVar26 + fVar4 * fVar30
+      ikState->handMats[0][0][1] = fVar1 * fVar18 + fVar2 * fVar22 + fVar3 * fVar26 + fVar4 * fVar30
       ;
-      param_1->handMats[0][0][2] = fVar1 * fVar19 + fVar2 * fVar23 + fVar3 * fVar27 + fVar4 * fVar31
+      ikState->handMats[0][0][2] = fVar1 * fVar19 + fVar2 * fVar23 + fVar3 * fVar27 + fVar4 * fVar31
       ;
-      param_1->handMats[0][0][3] = fVar1 * fVar20 + fVar2 * fVar24 + fVar3 * fVar28 + fVar4 * fVar32
+      ikState->handMats[0][0][3] = fVar1 * fVar20 + fVar2 * fVar24 + fVar3 * fVar28 + fVar4 * fVar32
       ;
-      param_1->handMats[0][1][0] = fVar5 * fVar17 + fVar6 * fVar21 + fVar7 * fVar25 + fVar8 * fVar29
+      ikState->handMats[0][1][0] = fVar5 * fVar17 + fVar6 * fVar21 + fVar7 * fVar25 + fVar8 * fVar29
       ;
-      param_1->handMats[0][1][1] = fVar5 * fVar18 + fVar6 * fVar22 + fVar7 * fVar26 + fVar8 * fVar30
+      ikState->handMats[0][1][1] = fVar5 * fVar18 + fVar6 * fVar22 + fVar7 * fVar26 + fVar8 * fVar30
       ;
-      param_1->handMats[0][1][2] = fVar5 * fVar19 + fVar6 * fVar23 + fVar7 * fVar27 + fVar8 * fVar31
+      ikState->handMats[0][1][2] = fVar5 * fVar19 + fVar6 * fVar23 + fVar7 * fVar27 + fVar8 * fVar31
       ;
-      param_1->handMats[0][1][3] = fVar5 * fVar20 + fVar6 * fVar24 + fVar7 * fVar28 + fVar8 * fVar32
+      ikState->handMats[0][1][3] = fVar5 * fVar20 + fVar6 * fVar24 + fVar7 * fVar28 + fVar8 * fVar32
       ;
-      param_1->handMats[0][2][0] =
+      ikState->handMats[0][2][0] =
            fVar9 * fVar17 + fVar10 * fVar21 + fVar11 * fVar25 + fVar12 * fVar29;
-      param_1->handMats[0][2][1] =
+      ikState->handMats[0][2][1] =
            fVar9 * fVar18 + fVar10 * fVar22 + fVar11 * fVar26 + fVar12 * fVar30;
-      param_1->handMats[0][2][2] =
+      ikState->handMats[0][2][2] =
            fVar9 * fVar19 + fVar10 * fVar23 + fVar11 * fVar27 + fVar12 * fVar31;
-      param_1->handMats[0][2][3] =
+      ikState->handMats[0][2][3] =
            fVar9 * fVar20 + fVar10 * fVar24 + fVar11 * fVar28 + fVar12 * fVar32;
-      param_1->handMats[0][3][0] =
+      ikState->handMats[0][3][0] =
            fVar13 * fVar17 + fVar14 * fVar21 + fVar15 * fVar25 + fVar16 * fVar29;
-      param_1->handMats[0][3][1] =
+      ikState->handMats[0][3][1] =
            fVar13 * fVar18 + fVar14 * fVar22 + fVar15 * fVar26 + fVar16 * fVar30;
-      param_1->handMats[0][3][2] =
+      ikState->handMats[0][3][2] =
            fVar13 * fVar19 + fVar14 * fVar23 + fVar15 * fVar27 + fVar16 * fVar31;
-      param_1->handMats[0][3][3] =
+      ikState->handMats[0][3][3] =
            fVar13 * fVar20 + fVar14 * fVar24 + fVar15 * fVar28 + fVar16 * fVar32;
     }
     else {
-      IK_Layer_PlayerControllers(param_1);
+      IK_Layer_PlayerControllers(ikState);
     }
-    bVar34 = IKImport_IsClient(param_1);
+    bVar34 = IKImport_IsClient(ikState);
     if (bVar34) {
-      IK_Layer_PlayerPitch(param_1,false);
-      IK_Layer_PreventHeadClip(param_1);
+      IK_Layer_PlayerPitch(ikState,false);
+      IK_Layer_PreventHeadClip(ikState);
     }
-    IK_Layer_TerrainMapping(param_1);
-    if (param_1->bHasActiveLayers != false) {
-      if (param_1->bHasLegSolverLayer != false) {
+    IK_Layer_TerrainMapping(ikState);
+    if (ikState->bHasActiveLayers != false) {
+      if (ikState->bHasLegSolverLayer != false) {
         IK_Layer_ApplyFootIK
-                  (param_1,((param_1->field9_0x18).localIkSystem)->joints + 2,param_1->jointVars + 2
-                   ,param_1->footMats[0]);
+                  (ikState,((ikState->field9_0x18).localIkSystem)->joints + 2,ikState->jointVars + 2
+                   ,ikState->footMats[0]);
         IK_Layer_ApplyFootIK
-                  (param_1,((param_1->field9_0x18).localIkSystem)->joints + 3,param_1->jointVars + 3
-                   ,param_1->footMats[1]);
+                  (ikState,((ikState->field9_0x18).localIkSystem)->joints + 3,ikState->jointVars + 3
+                   ,ikState->footMats[1]);
       }
-      if (param_1->bHasArmSolverLayer != false) {
+      if (ikState->bHasArmSolverLayer != false) {
         IK_Layer_ApplyHandIK
-                  (param_1,((param_1->field9_0x18).localIkSystem)->joints,param_1->jointVars,
-                   param_1->handMats[0]);
+                  (ikState,((ikState->field9_0x18).localIkSystem)->joints,ikState->jointVars,
+                   ikState->handMats[0]);
         IK_Layer_ApplyHandIK
-                  (param_1,((param_1->field9_0x18).localIkSystem)->joints + 1,param_1->jointVars + 1
-                   ,param_1->handMats[1]);
+                  (ikState,((ikState->field9_0x18).localIkSystem)->joints + 1,ikState->jointVars + 1
+                   ,ikState->handMats[1]);
       }
     }
   }

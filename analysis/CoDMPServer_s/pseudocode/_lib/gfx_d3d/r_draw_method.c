@@ -34,25 +34,26 @@ void __cdecl R_UpdateDrawMethod(GfxBackEndData *param_1,GfxViewInfo *param_2)
   byte bVar1;
   byte bVar2;
   int iVar3;
-  uchar (*pauVar4) [256];
+  undefined1 *puVar4;
   int iVar5;
   uint uVar6;
   GfxLight *local_10;
-  uchar (*local_c) [256];
-  uint local_8;
+  uint primaryLightIndex;
+  GfxFadeType fadeType;
+  GfxViewInfo *viewInfo;
   
-  local_8 = 0;
+  fadeType = GFX_TECHNIQUE_NO_FADE;
   if (frontEndDataOut->shadowableLightCount != 0) {
-    local_c = frontEndDataOut->primaryLightTechType[0][0] + 1;
+    primaryLightIndex = (uint)(frontEndDataOut->primaryLightTechType[0][0] + 1);
     local_10 = frontEndDataOut->shadowableLights;
     do {
-      iVar3 = (-(uint)((1 << ((byte)local_8 & 0x1f) &
-                       frontEndDataOut->shadowableLightHasShadowMap[(int)local_8 >> 5]) != 0) & 3) +
-              (uint)local_10->type;
+      iVar3 = (-(uint)((1 << ((byte)fadeType & 0x1f) &
+                       frontEndDataOut->shadowableLightHasShadowMap[(int)fadeType >> 5]) != 0) & 3)
+              + (uint)local_10->type;
       uVar6 = 0;
       iVar5 = iVar3 * 2;
       iVar3 = iVar3 * 4;
-      pauVar4 = local_c;
+      puVar4 = (undefined1 *)primaryLightIndex;
       do {
         if (((uVar6 == 0) || (uVar6 == 1)) || (uVar6 == 6)) {
           bVar1 = 1;
@@ -66,19 +67,19 @@ void __cdecl R_UpdateDrawMethod(GfxBackEndData *param_1,GfxViewInfo *param_2)
         else {
           bVar2 = 0;
         }
-        (*(uchar (*) [2] [256])(pauVar4 + -1))[0][0] = gfxDrawMethod.litTechType[0][0][0][iVar3];
+        puVar4[-0x100] = gfxDrawMethod.litTechType[0][0][0][iVar3];
         uVar6 = uVar6 + 1;
         iVar3 = iVar3 + 0x1c;
-        (*pauVar4)[0] = *(uchar *)(bVar2 + 0x34bd34a + iVar3);
-        pauVar4[1][0] = gfxDrawMethod.litTechType[0][0][(uint)bVar1 + iVar5][0];
-        pauVar4[2][0] = *(undefined1 *)(((uint)bVar1 + iVar5) * 2 + 0x34bd366 + (uint)bVar2);
+        *puVar4 = *(undefined1 *)(bVar2 + 0x34bd34a + iVar3);
+        puVar4[0x100] = gfxDrawMethod.litTechType[0][0][(uint)bVar1 + iVar5][0];
+        puVar4[0x200] = *(undefined1 *)(((uint)bVar1 + iVar5) * 2 + 0x34bd366 + (uint)bVar2);
         iVar5 = iVar5 + 0xe;
-        pauVar4 = pauVar4 + 4;
+        puVar4 = puVar4 + 0x400;
       } while (uVar6 < 0x10);
       local_10 = local_10 + 1;
-      local_c = (uchar (*) [256])(*local_c + 1);
-      local_8 = local_8 + 1;
-    } while (local_8 < frontEndDataOut->shadowableLightCount);
+      primaryLightIndex = primaryLightIndex + 1;
+      fadeType = fadeType + GFX_TECHNIQUE_FADE;
+    } while (fadeType < frontEndDataOut->shadowableLightCount);
   }
   return;
 }

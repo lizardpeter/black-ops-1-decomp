@@ -2,8 +2,7 @@
 
 // 00850830  R_AllocDrawSurf  (gfx_d3d/r_add_cmdbuf.h:77)
 
-int __cdecl
-R_AllocDrawSurf(GfxDelayedCmdBuf *param_1,GfxDrawSurf param_2,GfxDrawSurfList *param_3,uint param_4)
+int __cdecl R_AllocDrawSurf(void)
 
 {
   uint *puVar1;
@@ -11,10 +10,13 @@ R_AllocDrawSurf(GfxDelayedCmdBuf *param_1,GfxDrawSurf param_2,GfxDrawSurfList *p
   uint *in_EAX;
   long *plVar3;
   uint uVar4;
+  GfxDrawSurf drawSurf;
   uint in_stack_00000008;
+  uint *in_stack_0000000c;
+  uint in_stack_00000010;
   
   pGVar2 = frontEndDataOut;
-  if ((((GfxDelayedCmdBuf *)in_EAX[2] != param_1) || (in_EAX[3] != in_stack_00000008)) &&
+  if (((in_EAX[2] != drawSurf.packed._4_4_) || (in_EAX[3] != in_stack_00000008)) &&
      ((in_EAX[2] & in_EAX[3]) != 0xffffffff)) {
     in_EAX[2] = 0xffffffff;
     in_EAX[3] = 0xffffffff;
@@ -23,7 +25,7 @@ R_AllocDrawSurf(GfxDelayedCmdBuf *param_1,GfxDrawSurf param_2,GfxDrawSurfList *p
     in_EAX[1] = in_EAX[1] - 1;
   }
   pGVar2 = frontEndDataOut;
-  if ((uint)param_2.packed._4_4_ < in_EAX[1]) {
+  if (in_stack_00000010 < in_EAX[1]) {
     uVar4 = *in_EAX;
   }
   else {
@@ -47,17 +49,17 @@ R_AllocDrawSurf(GfxDelayedCmdBuf *param_1,GfxDrawSurf param_2,GfxDrawSurfList *p
     *in_EAX = uVar4;
     in_EAX[1] = 0x200;
   }
-  if (((GfxDelayedCmdBuf *)in_EAX[2] != param_1) || (in_EAX[3] != in_stack_00000008)) {
-    if (*(uint *)(param_2.packed._0_4_ + 4) <= *(uint *)param_2.packed._0_4_) {
+  if ((in_EAX[2] != drawSurf.packed._4_4_) || (in_EAX[3] != in_stack_00000008)) {
+    if (in_stack_0000000c[1] <= *in_stack_0000000c) {
       R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
       return 0;
     }
-    in_EAX[2] = (uint)param_1;
+    in_EAX[2] = drawSurf.packed._4_4_;
     in_EAX[3] = in_stack_00000008;
-    puVar1 = *(uint **)param_2.packed._0_4_;
-    *puVar1 = uVar4 & 0xffff | (uint)param_1 & 0xffff0000;
+    puVar1 = (uint *)*in_stack_0000000c;
+    *puVar1 = uVar4 & 0xffff | drawSurf.packed._4_4_ & 0xffff0000;
     puVar1[1] = in_stack_00000008;
-    *(int *)param_2.packed._0_4_ = *(int *)param_2.packed._0_4_ + 8;
+    *in_stack_0000000c = *in_stack_0000000c + 8;
   }
   return 1;
 }
@@ -73,59 +75,60 @@ int __cdecl R_GetPointLightPartitions(GfxLight *param_1)
   int iVar3;
   GfxVisibleLight *pGVar4;
   int iVar5;
-  GfxLight **ppGVar6;
+  GfxLight **keepCount;
   int unaff_ESI;
-  undefined4 *puVar7;
-  GfxLight *pGVar8;
+  undefined4 *puVar6;
+  GfxLight *pGVar7;
+  GfxLight *visibleLights;
   int local_80 [32];
   
-  ppGVar6 = (GfxLight **)0x0;
+  keepCount = (GfxLight **)0x0;
   iVar3 = 0;
   if (0 < scene.addedLightCount) {
     iVar5 = 0x29b1570;
     do {
       if (scene.isAddedLightCulled[iVar3] == false) {
-        local_80[(int)ppGVar6] = iVar5;
-        ppGVar6 = (GfxLight **)((int)ppGVar6 + 1);
+        local_80[(int)keepCount] = iVar5;
+        keepCount = (GfxLight **)((int)keepCount + 1);
       }
       iVar3 = iVar3 + 1;
       iVar5 = iVar5 + 0x170;
     } while (iVar3 < scene.addedLightCount);
   }
   ppGVar2 = (GfxLight **)(r_dlightLimit->current).integer;
-  if ((int)ppGVar2 < (int)ppGVar6) {
-    R_MostImportantLights(ppGVar6,(int)ppGVar2,unaff_ESI);
-    ppGVar6 = ppGVar2;
+  if ((int)ppGVar2 < (int)keepCount) {
+    R_MostImportantLights(keepCount,(int)ppGVar2,unaff_ESI);
+    keepCount = ppGVar2;
   }
   iVar3 = 0;
-  if (0 < (int)ppGVar6) {
+  if (0 < (int)keepCount) {
     pGVar4 = scene.visLight;
     do {
-      puVar7 = (undefined4 *)local_80[iVar3];
-      pGVar8 = param_1;
+      puVar6 = (undefined4 *)local_80[iVar3];
+      pGVar7 = param_1;
       for (iVar5 = 0x5c; iVar5 != 0; iVar5 = iVar5 + -1) {
-        uVar1 = *puVar7;
-        pGVar8->type = (char)uVar1;
-        pGVar8->canUseShadowMap = (char)((uint)uVar1 >> 8);
-        pGVar8->cullDist = (short)((uint)uVar1 >> 0x10);
-        puVar7 = puVar7 + 1;
-        pGVar8 = (GfxLight *)pGVar8->color;
+        uVar1 = *puVar6;
+        pGVar7->type = (char)uVar1;
+        pGVar7->canUseShadowMap = (char)((uint)uVar1 >> 8);
+        pGVar7->cullDist = (short)((uint)uVar1 >> 0x10);
+        puVar6 = puVar6 + 1;
+        pGVar7 = (GfxLight *)pGVar7->color;
       }
       pGVar4->drawSurfCount = 0;
       iVar3 = iVar3 + 1;
       param_1 = param_1 + 1;
       pGVar4 = pGVar4 + 1;
-    } while (iVar3 < (int)ppGVar6);
+    } while (iVar3 < (int)keepCount);
   }
   scene.visLightShadow[0].drawSurfCount = 0;
   scene.visLightShadow[1].drawSurfCount = 0;
-  return (int)ppGVar6;
+  return (int)keepCount;
 }
 
 
 // 00851060  R_CalcSpotLightPlanes  (gfx_d3d/r_light.cpp:354)
 
-void __cdecl R_CalcSpotLightPlanes(GfxLight *param_1,float param_2,float (*param_3) [4])
+void __cdecl R_CalcSpotLightPlanes(GfxLight *planes,float param_2,float (*param_3) [4])
 
 {
   float (*unaff_ESI) [3];
@@ -138,6 +141,7 @@ void __cdecl R_CalcSpotLightPlanes(GfxLight *param_1,float param_2,float (*param
   float fVar6;
   float fVar7;
   float fVar8;
+  float dynamicSpotLightNearPlaneOffset;
   float local_1c;
   float local_18;
   float local_14;
@@ -156,9 +160,9 @@ void __cdecl R_CalcSpotLightPlanes(GfxLight *param_1,float param_2,float (*param
   fVar4 = fVar6 * fVar4;
   *(float *)((int)param_2 + 4) = fVar4;
   *(float *)((int)param_2 + 0xc) =
-       -(fVar2 * (fVar8 * (float)param_1 + unaff_EDI->origin[2]) +
-         fVar4 * (fVar6 * (float)param_1 + unaff_EDI->origin[1]) +
-        fVar3 * (fVar5 * (float)param_1 + unaff_EDI->origin[0]));
+       -(fVar2 * (fVar8 * (float)planes + unaff_EDI->origin[2]) +
+         fVar4 * (fVar6 * (float)planes + unaff_EDI->origin[1]) +
+        fVar3 * (fVar5 * (float)planes + unaff_EDI->origin[0]));
   R_ComputeSpotLightCrossDirs(unaff_EDI,unaff_ESI);
   fVar1 = (float10)sqrtf(1.0 - unaff_EDI->cosHalfFovOuter * unaff_EDI->cosHalfFovOuter);
   fVar4 = unaff_EDI->cosHalfFovOuter;
@@ -222,8 +226,9 @@ void __cdecl R_GetBspLightSurfs(GfxLight *param_1,int param_2)
 
 {
   char *in_ECX;
-  GfxLight *pGVar1;
+  GfxLight *surfData;
   GfxBspDrawSurfData *unaff_EDI;
+  int visibleCount;
   undefined4 local_30;
   undefined4 local_2c;
   undefined4 local_28;
@@ -233,7 +238,7 @@ void __cdecl R_GetBspLightSurfs(GfxLight *param_1,int param_2)
   undefined4 local_10;
   undefined4 local_c;
   
-  pGVar1 = (GfxLight *)0x0;
+  surfData = (GfxLight *)0x0;
   local_30 = 0xffffffff;
   local_2c = 0;
   local_28 = 0xffffffff;
@@ -245,11 +250,11 @@ void __cdecl R_GetBspLightSurfs(GfxLight *param_1,int param_2)
   if (0 < (int)param_1) {
     do {
       if (*in_ECX != '\x03') {
-        R_GetBspSpotLightSurfs(pGVar1,(int)&local_30,unaff_EDI);
+        R_GetBspSpotLightSurfs(surfData,(int)&local_30,unaff_EDI);
       }
-      pGVar1 = (GfxLight *)&pGVar1->canUseShadowMap;
+      surfData = (GfxLight *)&surfData->canUseShadowMap;
       in_ECX = in_ECX + 0x170;
-    } while ((int)pGVar1 < (int)param_1);
+    } while ((int)surfData < (int)param_1);
   }
   return;
 }
@@ -260,27 +265,23 @@ void __cdecl R_GetBspLightSurfs(GfxLight *param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x0085185f) */
 /* WARNING: Removing unreachable block (ram,0x00851b99) */
 
-void __cdecl R_GetStaticModelLightSurfs(GfxLight *param_1,int param_2)
+void __cdecl R_GetStaticModelLightSurfs(GfxLight *visibleLights,int visibleCount)
 
 {
   ushort uVar1;
-  XModel *pXVar2;
-  Material *pMVar3;
+  uint *puVar2;
+  XModel *pXVar3;
   byte bVar4;
-  GfxDrawSurf GVar5;
-  bool bVar6;
-  uint uVar7;
+  uint uVar5;
+  uint uVar6;
+  int iVar7;
   uint uVar8;
-  ActiveModelNode *pAVar9;
-  int iVar10;
-  uint uVar11;
   uint unaff_EBX;
   uint unaff_ESI;
-  float *pfVar12;
+  float *pfVar9;
   ModelHashTable<ActiveModelNode,63,128> *this;
-  GfxDelayedCmdBuf *pGVar13;
-  GfxDrawSurfList *unaff_EDI;
-  XSurface *pXVar14;
+  ushort *unaff_EDI;
+  XSurface *list;
   int local_904;
   int local_900;
   Material **local_8f8;
@@ -288,11 +289,6 @@ void __cdecl R_GetStaticModelLightSurfs(GfxLight *param_1,int param_2)
   uint local_8ec;
   int local_8e8;
   int local_8d0;
-  int local_8cc;
-  uint *local_8c4;
-  uint local_8bc;
-  undefined4 local_8b8;
-  XSurface *local_8b4;
   undefined1 local_8b0 [8];
   float local_8a8;
   ushort *local_8a4;
@@ -303,27 +299,26 @@ void __cdecl R_GetStaticModelLightSurfs(GfxLight *param_1,int param_2)
   ushort local_810 [1030];
   
   g_staticModelLightCallback.smodelVisData = ((rgp.world)->dpvs).smodelVisData[0];
-  local_8c4 = ((rgp.world)->dpvs).lodData;
+  puVar2 = ((rgp.world)->dpvs).lodData;
   local_8ec = 0;
-  if (0 < param_2) {
-    pfVar12 = param_1->origin + 1;
+  if (0 < visibleCount) {
+    pfVar9 = visibleLights->origin + 1;
     local_8e8 = 0;
     local_900 = 0;
     do {
-      if (((((GfxLight *)(pfVar12 + -8))->type == '\x02') &&
+      if (((((GfxLight *)(pfVar9 + -8))->type == '\x02') &&
           ((r_spotLightShadows->current).enabled != false)) &&
          ((r_spotLightSModelShadows->current).enabled != false)) {
-        local_8a0 = pfVar12[2];
-        local_89c = pfVar12[-1] - local_8a0;
-        local_898 = (ushort *)(*pfVar12 - local_8a0);
-        local_894 = (float *)(pfVar12[1] - local_8a0);
-        local_8a8 = pfVar12[-1] + local_8a0;
-        local_8a4 = (ushort *)(*pfVar12 + local_8a0);
-        local_8a0 = pfVar12[1] + local_8a0;
+        local_8a0 = pfVar9[2];
+        local_89c = pfVar9[-1] - local_8a0;
+        local_898 = (ushort *)(*pfVar9 - local_8a0);
+        local_894 = (float *)(pfVar9[1] - local_8a0);
+        local_8a8 = pfVar9[-1] + local_8a0;
+        local_8a4 = (ushort *)(*pfVar9 + local_8a0);
+        local_8a0 = pfVar9[1] + local_8a0;
         if (local_8ec < 2) {
           local_8d0 = (*(int *)((int)scene.visLightShadow[0].drawSurfs + local_8e8 + -8) + local_900
                       ) * 8 + 0x29bc420;
-          local_8cc = local_8e8 + 0x29be420;
           local_904 = R_BoxStaticModels(&local_89c,&local_8a8,R_AllowStaticModelSpotLight,local_810,
                                         0x400);
         }
@@ -335,87 +330,53 @@ void __cdecl R_GetStaticModelLightSurfs(GfxLight *param_1,int param_2)
           do {
             uVar1 = local_810[local_8f4];
             this = (ModelHashTable<ActiveModelNode,63,128> *)(uint)uVar1;
-            pXVar2 = ((rgp.world)->dpvs).smodelDrawInsts[(int)this].model;
+            pXVar3 = ((rgp.world)->dpvs).smodelDrawInsts[(int)this].model;
             bVar4 = (byte)uVar1;
-            uVar11 = local_8c4[(int)this >> 4] >> (bVar4 & 0xf) * '\x02' & 3;
-            local_8b4 = pXVar2->surfs + pXVar2->lodInfo[uVar11].surfIndex;
-            uVar7 = (uint)pXVar2->lodInfo[uVar11].numsurfs;
-            local_8bc = uVar11;
+            uVar8 = puVar2[(int)this >> 4] >> (bVar4 & 0xf) * '\x02' & 3;
+            list = pXVar3->surfs + pXVar3->lodInfo[uVar8].surfIndex;
+            uVar5 = (uint)pXVar3->lodInfo[uVar8].numsurfs;
             local_8b0._4_4_ = R_GetStaticModelId((int)unaff_EDI,unaff_ESI);
             local_8b0._0_2_ = SUB42(local_8b0._4_4_,2);
-            uVar8 = (uint)(uVar1 >> 5);
-            local_8f8 = pXVar2->materialHandles + pXVar2->lodInfo[uVar11].surfIndex;
-            if ((uVar8 < 0x40) && ((g_isFoliageModel[uVar8] >> (bVar4 & 0x1f) & 1) != 0)) {
-LAB_00851a81:
-              bVar6 = false;
+            uVar6 = (uint)(uVar1 >> 5);
+            local_8f8 = pXVar3->materialHandles + pXVar3->lodInfo[uVar8].surfIndex;
+            if (((0x3f < uVar6) || ((g_isFoliageModel[uVar6] >> (bVar4 & 0x1f) & 1) == 0)) &&
+               (((r_swrk_override_enable->current).enabled == false &&
+                ((0x3f < uVar6 || ((g_fullySquashedModelBits[uVar6] >> (bVar4 & 0x1f) & 1) == 0)))))
+               ) {
+              ModelHashTable<ActiveModelNode,63,128>::FindByKey(this,(ushort)unaff_EDI);
             }
-            else {
-              if ((r_swrk_override_enable->current).enabled == false) {
-                local_8b8 = 0;
-                if ((uVar8 < 0x40) && ((g_fullySquashedModelBits[uVar8] >> (bVar4 & 0x1f) & 1) != 0)
-                   ) {
-                  pXVar14 = (XSurface *)1.0;
-                }
-                else {
-                  pAVar9 = ModelHashTable<ActiveModelNode,63,128>::FindByKey(this,(ushort)unaff_EDI)
-                  ;
-                  pXVar14 = local_8b4;
-                  if (pAVar9 != (ActiveModelNode *)0x0) {
-                    pXVar14 = (XSurface *)pAVar9->curSquashValue;
-                  }
-                }
-              }
-              else {
-                pXVar14 = (XSurface *)(r_swrk_override_characterCharredAmount->current).value;
-              }
-              bVar6 = true;
-              if ((float)pXVar14 <= 0.0) goto LAB_00851a81;
-            }
-            uVar8 = 0;
-            pXVar14 = local_8b4;
-            if (uVar7 != 0) {
+            uVar6 = 0;
+            if (uVar5 != 0) {
               do {
-                pMVar3 = *local_8f8;
-                if ((((pMVar3->info).gameFlags & 1) == 0) &&
-                   (((pMVar3->field8_0xb0).localTechniqueSet)->techniques[0x74] !=
-                    (MaterialTechnique *)0x0)) {
-                  uVar11 = *(uint *)&(pMVar3->info).drawSurf;
-                  if (bVar6) {
-                    pGVar13 = (GfxDelayedCmdBuf *)(uVar11 | 0x200000);
-                  }
-                  else {
-                    pGVar13 = (GfxDelayedCmdBuf *)(uVar11 & 0xffdfffff);
-                  }
-                  if (((((GfxLight *)(pfVar12 + -8))->type == '\x02') &&
-                      ((r_spotLightShadows->current).enabled != false)) &&
-                     ((r_spotLightSModelShadows->current).enabled != false)) {
-                    GVar5.packed._4_4_ = 3;
-                    GVar5.packed._0_4_ = &local_8d0;
-                    iVar10 = R_AllocDrawSurf(pGVar13,GVar5,unaff_EDI,unaff_ESI);
-                    if (iVar10 == 0) break;
-                    R_AddDelayedStaticModelDrawSurf
-                              ((GfxDelayedCmdBuf *)pXVar14,(XSurface *)local_8b0,(ushort *)unaff_EDI
-                               ,unaff_ESI,unaff_EBX);
-                  }
+                if (((((((*local_8f8)->info).gameFlags & 1) == 0) &&
+                     ((((*local_8f8)->field8_0xb0).localTechniqueSet)->techniques[0x74] !=
+                      (MaterialTechnique *)0x0)) && (((GfxLight *)(pfVar9 + -8))->type == '\x02'))
+                   && (((r_spotLightShadows->current).enabled != false &&
+                       ((r_spotLightSModelShadows->current).enabled != false)))) {
+                  iVar7 = R_AllocDrawSurf();
+                  if (iVar7 == 0) break;
+                  R_AddDelayedStaticModelDrawSurf
+                            ((GfxDelayedCmdBuf *)list,(XSurface *)local_8b0,unaff_EDI,unaff_ESI,
+                             unaff_EBX);
                 }
                 local_8f8 = local_8f8 + 1;
-                uVar8 = uVar8 + 1;
-                pXVar14 = pXVar14 + 1;
-              } while (uVar8 < uVar7);
+                uVar6 = uVar6 + 1;
+                list = list + 1;
+              } while (uVar6 < uVar5);
             }
             local_8f4 = local_8f4 + 1;
           } while (local_8f4 < local_904);
         }
-        if ((local_8ec < 2) && (((GfxLight *)(pfVar12 + -8))->type == '\x02')) {
+        if ((local_8ec < 2) && (((GfxLight *)(pfVar9 + -8))->type == '\x02')) {
           *(int *)((int)scene.visLightShadow[0].drawSurfs + local_8e8 + -8) =
                (local_8d0 - local_8e8) + -0x29bc420 >> 3;
         }
       }
       local_900 = local_900 + 0x401;
       local_8ec = local_8ec + 1;
-      pfVar12 = pfVar12 + 0x5c;
+      pfVar9 = pfVar9 + 0x5c;
       local_8e8 = local_8e8 + 0x2008;
-    } while ((int)local_8ec < param_2);
+    } while ((int)local_8ec < visibleCount);
   }
   return;
 }
@@ -488,7 +449,7 @@ LAB_00851a81:
 /* WARNING: Removing unreachable block (ram,0x00852507) */
 /* WARNING: Removing unreachable block (ram,0x0085252c) */
 
-void __cdecl R_GetSceneEntLightSurfs(GfxLight *param_1,int param_2)
+void __cdecl R_GetSceneEntLightSurfs(GfxLight *visibleCount,int param_2)
 
 {
   ushort uVar1;
@@ -503,71 +464,74 @@ void __cdecl R_GetSceneEntLightSurfs(GfxLight *param_1,int param_2)
   GfxWorld *pGVar10;
   float *pfVar11;
   float *unaff_EBP;
-  GfxSceneEntity *pGVar12;
+  GfxSceneEntity *techType;
   GfxDrawSurf *unaff_ESI;
-  GfxVisibleLight *pGVar13;
+  GfxVisibleLight *pGVar12;
   GfxDrawSurf *unaff_EDI;
-  GfxBackEndData *pGVar14;
-  int iVar15;
-  float fVar16;
-  uint local_18;
-  int local_10;
+  GfxBackEndData *pGVar13;
+  int iVar14;
+  float fVar15;
+  GfxLight *visibleLights;
+  uint sceneEntIndex;
+  uint sceneEntCount;
+  GfxSceneDynBrush *sceneDynBrush;
+  uchar *sceneEntVisData;
   int local_c;
-  uint local_8;
+  GfxSceneDynModel *sceneDynModel;
   
   lVar5 = scene.sceneDObjCount;
-  fVar16 = 0.0;
-  local_18 = 0;
+  fVar15 = 0.0;
+  sceneEntCount = 0;
   if (scene.sceneDObjCount != 0) {
-    pGVar12 = scene.sceneDObj;
-    pGVar14 = frontEndDataOut;
+    techType = scene.sceneDObj;
+    pGVar13 = frontEndDataOut;
     do {
-      if ((scene.sceneDObjVisData[0][local_18] == '\x01') && (0 < param_2)) {
-        pGVar13 = scene.visLightShadow;
-        pfVar11 = param_1->origin + 2;
+      if ((scene.sceneDObjVisData[0][sceneEntCount] == '\x01') && (0 < param_2)) {
+        pGVar12 = scene.visLightShadow;
+        pfVar11 = visibleCount->origin + 2;
         local_c = param_2;
         do {
           if ((((((GfxLight *)(pfVar11 + -9))->type == '\x02') &&
                ((r_spotLightShadows->current).enabled != false)) &&
               ((r_spotLightEntityShadows->current).enabled != false)) &&
-             (bVar6 = R_SpotLightIsAttachedToDobj(pGVar12->obj), !bVar6)) {
-            iVar15 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,(float *)unaff_ESI,
+             (bVar6 = R_SpotLightIsAttachedToDobj(techType->obj), !bVar6)) {
+            iVar14 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,(float *)unaff_ESI,
                                  unaff_EBP);
-            if ((iVar15 != 0) &&
-               ((pGVar14->gfxEnts[pGVar12->gfxEntIndex].renderFxFlags & 0x10) == 0)) {
-              fVar16 = 0.0;
+            if ((iVar14 != 0) &&
+               ((pGVar13->gfxEnts[techType->gfxEntIndex].renderFxFlags & 0x10) == 0)) {
+              fVar15 = 0.0;
               if (((((GfxLight *)(pfVar11 + -9))->type != '\x02') ||
                   (((r_spotLightShadows->current).enabled == false ||
                    ((r_spotLightEntityShadows->current).enabled == false)))) ||
-                 ((pGVar14->gfxEnts[pGVar12->gfxEntIndex].renderFxFlags & 1) != 0))
+                 ((pGVar13->gfxEnts[techType->gfxEntIndex].renderFxFlags & 1) != 0))
               goto LAB_00851e59;
-              iVar15 = pGVar13->drawSurfCount;
-              pGVar7 = R_AddDObjSurfaces(pGVar12,'t',pGVar13->drawSurfs + iVar15,
-                                         (GfxDrawSurf *)(pGVar13 + 1));
-              pGVar14 = frontEndDataOut;
-              pGVar13->drawSurfCount =
-                   pGVar13->drawSurfCount + ((int)pGVar7 - (int)(pGVar13->drawSurfs + iVar15) >> 3);
+              iVar14 = pGVar12->drawSurfCount;
+              pGVar7 = R_AddDObjSurfaces(techType,'t',pGVar12->drawSurfs + iVar14,
+                                         (GfxDrawSurf *)(pGVar12 + 1));
+              pGVar13 = frontEndDataOut;
+              pGVar12->drawSurfCount =
+                   pGVar12->drawSurfCount + ((int)pGVar7 - (int)(pGVar12->drawSurfs + iVar14) >> 3);
             }
-            fVar16 = 0.0;
+            fVar15 = 0.0;
           }
 LAB_00851e59:
           pfVar11 = pfVar11 + 0x5c;
-          pGVar13 = pGVar13 + 1;
+          pGVar12 = pGVar12 + 1;
           local_c = local_c + -1;
         } while (local_c != 0);
       }
-      local_18 = local_18 + 1;
-      pGVar12 = pGVar12 + 1;
-    } while (local_18 < (uint)lVar5);
+      sceneEntCount = sceneEntCount + 1;
+      techType = techType + 1;
+    } while (sceneEntCount < (uint)lVar5);
   }
   lVar5 = scene.sceneModelCount;
-  local_18 = 0;
+  sceneEntCount = 0;
   if (scene.sceneModelCount != 0) {
-    iVar15 = 0x29e3034;
+    iVar14 = 0x29e3034;
     do {
-      if ((scene.sceneModelVisData[0][local_18] == '\x01') && (0 < param_2)) {
-        pGVar13 = scene.visLightShadow;
-        pfVar11 = param_1->origin + 2;
+      if ((scene.sceneModelVisData[0][sceneEntCount] == '\x01') && (0 < param_2)) {
+        pGVar12 = scene.visLightShadow;
+        pfVar11 = visibleCount->origin + 2;
         local_c = param_2;
         do {
           if (((((GfxLight *)(pfVar11 + -9))->type == '\x02') &&
@@ -576,44 +540,44 @@ LAB_00851e59:
             pfVar8 = scene.dynamicSpotLightPlanes[0] + 1;
             uVar9 = 0;
             do {
-              if (fVar16 < ((*(float (*) [4])(pfVar8 + -1))[0] * *(float *)(iVar15 + 0x1c) +
-                            pfVar8[1] * *(float *)(iVar15 + 0x24) +
-                            *(float *)(iVar15 + 0x20) * *pfVar8 + pfVar8[2]) -
-                           *(float *)(iVar15 + 0x30)) goto LAB_00851fd7;
+              if (fVar15 < ((*(float (*) [4])(pfVar8 + -1))[0] * *(float *)(iVar14 + 0x1c) +
+                            pfVar8[1] * *(float *)(iVar14 + 0x24) +
+                            *(float *)(iVar14 + 0x20) * *pfVar8 + pfVar8[2]) -
+                           *(float *)(iVar14 + 0x30)) goto LAB_00851fd7;
               uVar9 = uVar9 + 0x10;
               pfVar8 = pfVar8 + 4;
             } while (uVar9 < 0x60);
             if (((GfxLight *)(pfVar11 + -9))->type == '\x02') {
-              iVar2 = pGVar13->drawSurfCount;
+              iVar2 = pGVar12->drawSurfCount;
               pGVar7 = R_AddXModelSurfaces((XModelDrawInfo *)0x74,
-                                           (XModel *)(pGVar13->drawSurfs + iVar2),
-                                           (char)pGVar13 + '\b',unaff_EDI,unaff_ESI);
-              fVar16 = 0.0;
-              pGVar13->drawSurfCount =
-                   pGVar13->drawSurfCount + ((int)pGVar7 - (int)(pGVar13->drawSurfs + iVar2) >> 3);
+                                           (XModel *)(pGVar12->drawSurfs + iVar2),
+                                           (char)pGVar12 + '\b',unaff_EDI,unaff_ESI);
+              fVar15 = 0.0;
+              pGVar12->drawSurfCount =
+                   pGVar12->drawSurfCount + ((int)pGVar7 - (int)(pGVar12->drawSurfs + iVar2) >> 3);
             }
           }
 LAB_00851fd7:
           pfVar11 = pfVar11 + 0x5c;
-          pGVar13 = pGVar13 + 1;
+          pGVar12 = pGVar12 + 1;
           local_c = local_c + -1;
         } while (local_c != 0);
       }
-      local_18 = local_18 + 1;
-      iVar15 = iVar15 + 0x4c;
-    } while (local_18 < (uint)lVar5);
+      sceneEntCount = sceneEntCount + 1;
+      iVar14 = iVar14 + 0x4c;
+    } while (sceneEntCount < (uint)lVar5);
   }
   puVar3 = ((rgp.world)->dpvsDyn).dynEntVisData[0][0];
   if (scene.sceneDynModelCount != 0) {
-    local_10 = 0;
-    local_8 = scene.sceneDynModelCount;
+    sceneEntVisData = (uchar *)0x0;
+    sceneDynModel = (GfxSceneDynModel *)scene.sceneDynModelCount;
     do {
       pDVar4 = cm.dynEntPoseList[0];
-      uVar1 = *(ushort *)((int)&(rgp.world)->sceneDynModel->dynEntId + local_10);
+      uVar1 = *(ushort *)(sceneEntVisData + (int)&(rgp.world)->sceneDynModel->dynEntId);
       if ((puVar3[uVar1] == '\x01') && (0 < param_2)) {
-        pGVar13 = scene.visLightShadow;
-        pfVar11 = param_1->origin + 2;
-        local_18 = param_2;
+        pGVar12 = scene.visLightShadow;
+        pfVar11 = visibleCount->origin + 2;
+        sceneEntCount = param_2;
         do {
           if (((((GfxLight *)(pfVar11 + -9))->type == '\x02') &&
               ((r_spotLightShadows->current).enabled != false)) &&
@@ -621,7 +585,7 @@ LAB_00851fd7:
             pfVar8 = scene.dynamicSpotLightPlanes[0] + 1;
             uVar9 = 0;
             do {
-              if (fVar16 < ((*(float (*) [4])(pfVar8 + -1))[0] * pDVar4[uVar1].pose.origin[0] +
+              if (fVar15 < ((*(float (*) [4])(pfVar8 + -1))[0] * pDVar4[uVar1].pose.origin[0] +
                             pfVar8[1] * pDVar4[uVar1].pose.origin[2] +
                             *pfVar8 * pDVar4[uVar1].pose.origin[1] + pfVar8[2]) -
                            pDVar4[uVar1].radius) goto LAB_008521bb;
@@ -629,85 +593,85 @@ LAB_00851fd7:
               pfVar8 = pfVar8 + 4;
             } while (uVar9 < 0x60);
             if (((GfxLight *)(pfVar11 + -9))->type == '\x02') {
-              iVar15 = pGVar13->drawSurfCount;
+              iVar14 = pGVar12->drawSurfCount;
               pGVar7 = R_AddXModelSurfaces((XModelDrawInfo *)0x74,
-                                           (XModel *)(pGVar13->drawSurfs + iVar15),
-                                           (char)pGVar13 + '\b',unaff_EDI,unaff_ESI);
-              fVar16 = 0.0;
-              pGVar13->drawSurfCount =
-                   pGVar13->drawSurfCount + ((int)pGVar7 - (int)(pGVar13->drawSurfs + iVar15) >> 3);
+                                           (XModel *)(pGVar12->drawSurfs + iVar14),
+                                           (char)pGVar12 + '\b',unaff_EDI,unaff_ESI);
+              fVar15 = 0.0;
+              pGVar12->drawSurfCount =
+                   pGVar12->drawSurfCount + ((int)pGVar7 - (int)(pGVar12->drawSurfs + iVar14) >> 3);
             }
           }
 LAB_008521bb:
           pfVar11 = pfVar11 + 0x5c;
-          pGVar13 = pGVar13 + 1;
-          local_18 = local_18 + -1;
-        } while (local_18 != 0);
+          pGVar12 = pGVar12 + 1;
+          sceneEntCount = sceneEntCount - 1;
+        } while (sceneEntCount != 0);
       }
-      local_10 = local_10 + 6;
-      local_8 = local_8 - 1;
-    } while (local_8 != 0);
+      sceneEntVisData = sceneEntVisData + 6;
+      sceneDynModel = (GfxSceneDynModel *)((int)&sceneDynModel[-1].dynEntId + 1);
+    } while (sceneDynModel != (GfxSceneDynModel *)0x0);
   }
   lVar5 = scene.sceneBrushCount;
-  local_18 = 0;
+  sceneEntCount = 0;
   if (scene.sceneBrushCount != 0) {
     do {
-      if ((scene.sceneBrushVisData[0][local_18] == '\x01') && (0 < param_2)) {
-        pGVar13 = scene.visLightShadow;
-        pfVar11 = param_1->origin + 2;
-        local_8 = param_2;
+      if ((scene.sceneBrushVisData[0][sceneEntCount] == '\x01') && (0 < param_2)) {
+        pGVar12 = scene.visLightShadow;
+        pfVar11 = visibleCount->origin + 2;
+        sceneDynModel = (GfxSceneDynModel *)param_2;
         do {
           if ((((((GfxLight *)(pfVar11 + -9))->type == '\x02') &&
                ((r_spotLightShadows->current).enabled != false)) &&
               ((r_spotLightEntityShadows->current).enabled != false)) &&
-             (iVar15 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,
-                                   (float *)unaff_ESI,unaff_EBP), iVar15 != 0)) {
-            iVar15 = pGVar13->drawSurfCount;
+             (iVar14 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,
+                                   (float *)unaff_ESI,unaff_EBP), iVar14 != 0)) {
+            iVar14 = pGVar12->drawSurfCount;
             pGVar7 = R_AddBModelSurfaces((BModelDrawInfo *)0x74,
-                                         (GfxBrushModel *)(pGVar13->drawSurfs + iVar15),
-                                         (char)pGVar13 + '\b',unaff_EDI,unaff_ESI);
-            pGVar13->drawSurfCount =
-                 pGVar13->drawSurfCount + ((int)pGVar7 - (int)(pGVar13->drawSurfs + iVar15) >> 3);
+                                         (GfxBrushModel *)(pGVar12->drawSurfs + iVar14),
+                                         (char)pGVar12 + '\b',unaff_EDI,unaff_ESI);
+            pGVar12->drawSurfCount =
+                 pGVar12->drawSurfCount + ((int)pGVar7 - (int)(pGVar12->drawSurfs + iVar14) >> 3);
           }
           pfVar11 = pfVar11 + 0x5c;
-          pGVar13 = pGVar13 + 1;
-          local_8 = local_8 + -1;
-        } while (local_8 != 0);
+          pGVar12 = pGVar12 + 1;
+          sceneDynModel = (GfxSceneDynModel *)((int)&sceneDynModel[-1].dynEntId + 1);
+        } while (sceneDynModel != (GfxSceneDynModel *)0x0);
       }
-      local_18 = local_18 + 1;
-    } while (local_18 < (uint)lVar5);
+      sceneEntCount = sceneEntCount + 1;
+    } while (sceneEntCount < (uint)lVar5);
   }
   uVar9 = scene.sceneDynBrushCount;
   puVar3 = ((rgp.world)->dpvsDyn).dynEntVisData[1][0];
-  local_18 = 0;
+  sceneEntCount = 0;
   pGVar10 = rgp.world;
   if (scene.sceneDynBrushCount != 0) {
     do {
-      if ((puVar3[pGVar10->sceneDynBrush[local_18].dynEntId] == '\x01') && (0 < param_2)) {
-        pGVar13 = scene.visLightShadow;
-        pfVar11 = param_1->origin + 2;
-        local_8 = param_2;
+      if ((puVar3[pGVar10->sceneDynBrush[sceneEntCount].dynEntId] == '\x01') && (0 < param_2)) {
+        pGVar12 = scene.visLightShadow;
+        pfVar11 = visibleCount->origin + 2;
+        sceneDynModel = (GfxSceneDynModel *)param_2;
         do {
           if (((((GfxLight *)(pfVar11 + -9))->type == '\x02') &&
               ((r_spotLightShadows->current).enabled != false)) &&
              (((r_spotLightEntityShadows->current).enabled != false &&
-              (iVar15 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,
-                                    (float *)unaff_ESI,unaff_EBP), iVar15 != 0)))) {
-            iVar15 = pGVar13->drawSurfCount;
+              (iVar14 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,
+                                    (float *)unaff_ESI,unaff_EBP), iVar14 != 0)))) {
+            iVar14 = pGVar12->drawSurfCount;
             pGVar7 = R_AddBModelSurfaces((BModelDrawInfo *)0x74,
-                                         (GfxBrushModel *)(pGVar13->drawSurfs + iVar15),
-                                         (char)pGVar13 + '\b',unaff_EDI,unaff_ESI);
-            pGVar13->drawSurfCount =
-                 pGVar13->drawSurfCount + ((int)pGVar7 - (int)(pGVar13->drawSurfs + iVar15) >> 3);
+                                         (GfxBrushModel *)(pGVar12->drawSurfs + iVar14),
+                                         (char)pGVar12 + '\b',unaff_EDI,unaff_ESI);
+            pGVar12->drawSurfCount =
+                 pGVar12->drawSurfCount + ((int)pGVar7 - (int)(pGVar12->drawSurfs + iVar14) >> 3);
           }
           pfVar11 = pfVar11 + 0x5c;
-          pGVar13 = pGVar13 + 1;
-          local_8 = local_8 + -1;
+          pGVar12 = pGVar12 + 1;
+          sceneDynModel = (GfxSceneDynModel *)((int)&sceneDynModel[-1].dynEntId + 1);
           pGVar10 = rgp.world;
-        } while (local_8 != 0);
+        } while (sceneDynModel != (GfxSceneDynModel *)0x0);
       }
-      local_18 = local_18 + 1;
-    } while (local_18 < uVar9);
+      sceneEntCount = sceneEntCount + 1;
+    } while (sceneEntCount < uVar9);
   }
   return;
 }
@@ -716,7 +680,7 @@ LAB_008521bb:
 // 008525B0  R_EmitPointLightPartitionSurfs  (gfx_d3d/r_light.cpp:1257)
 
 int __cdecl
-R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_3,float *param_4)
+R_EmitPointLightPartitionSurfs(GfxViewInfo *viewOrigin,GfxLight *param_2,int param_3,float *param_4)
 
 {
   undefined4 uVar1;
@@ -731,21 +695,23 @@ R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_
   char *pcVar8;
   int unaff_EDI;
   GfxLight *pGVar9;
+  GfxViewInfo *viewInfo;
   char *local_14;
-  GfxDrawSurf *local_10;
+  int partitionCount;
   int local_c;
   int local_8;
   
   local_c = 0;
   iVar6 = 0;
   if (0 < in_ECX) {
-    local_10 = scene.visLight[0].drawSurfs;
-    pfVar7 = param_1->pointLightPartitions[0].info.viewOrigin + 2;
+    partitionCount = 0x29b4400;
+    pfVar7 = viewOrigin->pointLightPartitions[0].info.viewOrigin + 2;
     local_14 = in_EDX;
     local_8 = in_ECX;
     do {
-      iVar6 = *(int *)(local_10 + -1);
-      qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>(local_10,unaff_EDI);
+      iVar6 = *(int *)(partitionCount + -8);
+      qsortArray<GfxReverseSortDrawSurfsInterface,GfxDrawSurf>
+                ((GfxDrawSurf *)partitionCount,unaff_EDI);
       memset((uchar *)(pfVar7 + -7),'\0',0x50);
       pGVar3 = frontEndDataOut;
       if (*local_14 == '\x02') {
@@ -760,7 +726,7 @@ R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_
         uVar4 = 't';
       }
       *(uchar *)(pfVar7 + -5) = uVar4;
-      pfVar7[-4] = (float)param_1;
+      pfVar7[-4] = (float)viewOrigin;
       pfVar7[-2] = *(float *)param_2;
       pfVar7[-1] = param_2->color[0];
       *pfVar7 = param_2->color[1];
@@ -770,7 +736,7 @@ R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_
       iVar2 = pGVar3->drawSurfCount;
       if (iVar6 != 0) {
         if (iVar6 + iVar2 < 0x8001) {
-          memcpy((uchar *)&pGVar3->drawSurfs[iVar2].packed,(uchar *)&local_10->packed,iVar6 * 8);
+          memcpy((uchar *)&pGVar3->drawSurfs[iVar2].packed,(uchar *)partitionCount,iVar6 * 8);
           frontEndDataOut->drawSurfCount = iVar6 + iVar2;
         }
         else {
@@ -796,7 +762,7 @@ R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_
         pfVar7 = pfVar7 + 0x70;
       }
       local_14 = local_14 + 0x170;
-      local_10 = local_10 + 0x401;
+      partitionCount = partitionCount + 0x2008;
       local_8 = local_8 + -1;
       iVar6 = local_c;
     } while (local_8 != 0);
@@ -809,7 +775,7 @@ R_EmitPointLightPartitionSurfs(GfxViewInfo *param_1,GfxLight *param_2,int param_
 
 void __cdecl
 std::_Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,GfxSurface **param_2,int param_3,
+          (GfxSurface **_Last,GfxSurface **_Ideal,int _Pred,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
 
 {
@@ -819,23 +785,24 @@ std::_Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
   int *unaff_EBP;
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_ESI;
   GfxSurface **unaff_EDI;
+  GfxSurface **_First;
   GfxSurface *local_c;
   GfxSurface *local_8;
   
-  iVar2 = (int)param_2 - (int)param_1;
+  iVar2 = (int)_Ideal - (int)_Last;
   do {
     iVar2 = iVar2 >> 2;
     if (iVar2 < 0x21) {
 LAB_008527c6:
-      if ((1 < iVar2) && (param_1 != param_2)) {
+      if ((1 < iVar2) && (_Last != _Ideal)) {
         _Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),GfxSurface_*>
-                  (param_1,param_2,param_4,unaff_EDI);
+                  (_Last,_Ideal,param_4,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Pred < 1) {
       if (0x20 < iVar2) {
-        if (4 < (int)((int)param_2 - (int)param_1 & 0xfffffffcU)) {
+        if (4 < (int)((int)_Ideal - (int)_Last & 0xfffffffcU)) {
           _Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
                     ((GfxSurface **)param_4,unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
         }
@@ -846,21 +813,21 @@ LAB_008527c6:
       goto LAB_008527c6;
     }
     _Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (&local_c,param_1,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
+              (&local_c,_Last,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)_Ideal);
     pGVar1 = local_8;
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if ((int)((int)local_c - (int)param_1 & 0xfffffffcU) <
-        (int)((int)param_2 - (int)local_8 & 0xfffffffcU)) {
+    _Pred = _Pred / 2 + (_Pred / 2) / 2;
+    if ((int)((int)local_c - (int)_Last & 0xfffffffcU) <
+        (int)((int)_Ideal - (int)local_8 & 0xfffffffcU)) {
       _Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-                (param_1,(GfxSurface **)local_c,param_3,param_4);
-      param_1 = (GfxSurface **)pGVar1;
+                (_Last,(GfxSurface **)local_c,_Pred,param_4);
+      _Last = (GfxSurface **)pGVar1;
     }
     else {
       _Sort<GfxSurface_*_*,int,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-                ((GfxSurface **)local_8,param_2,param_3,param_4);
-      param_2 = (GfxSurface **)local_c;
+                ((GfxSurface **)local_8,_Ideal,_Pred,param_4);
+      _Ideal = (GfxSurface **)local_c;
     }
-    iVar2 = (int)param_2 - (int)param_1;
+    iVar2 = (int)_Ideal - (int)_Last;
   } while( true );
 }
 

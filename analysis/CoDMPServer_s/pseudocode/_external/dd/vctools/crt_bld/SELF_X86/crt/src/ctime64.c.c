@@ -2,27 +2,27 @@
 
 // 0095C3E5  _ctime64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ctime64.c:88)
 
-char * __cdecl _ctime64(long64 *param_1)
+char * __cdecl _ctime64(long64 *timp)
 
 {
   int *piVar1;
   int iVar2;
   char *pcVar3;
-  tm tStack_28;
+  tm tmtemp;
   
-  if (param_1 == (long64 *)0x0) {
+  if (timp == (long64 *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  else if ((*(int *)((int)param_1 + 4) < 1) && (*(int *)((int)param_1 + 4) < 0)) {
+  else if ((*(int *)((int)timp + 4) < 1) && (*(int *)((int)timp + 4) < 0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
   }
   else {
-    iVar2 = _localtime64_s(&tStack_28,param_1);
+    iVar2 = _localtime64_s(&tmtemp,timp);
     if (iVar2 == 0) {
-      pcVar3 = asctime(&tStack_28);
+      pcVar3 = asctime(&tmtemp);
       return pcVar3;
     }
   }

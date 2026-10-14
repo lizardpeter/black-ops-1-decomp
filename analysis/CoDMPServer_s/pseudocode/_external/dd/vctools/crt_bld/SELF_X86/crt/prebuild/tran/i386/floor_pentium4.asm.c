@@ -5,47 +5,49 @@
 void __cdecl floor(void)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint newctrl;
+  int iVar1;
   uint unaff_ESI;
   ushort in_FPUControlWord;
-  double dVar3;
+  double result;
   undefined6 in_stack_00000004;
   ushort in_stack_0000000a;
-  undefined4 uVar4;
+  undefined4 uVar2;
   
   if ((__use_sse2_mathfcns != 0) &&
      ((MXCSR & 0x1f80) == 0x1f80 && (in_FPUControlWord & 0x7f) == 0x7f)) {
     _floor_pentium4();
     return;
   }
-  uVar1 = _ctrlfp(newcw,0xffff);
-  uVar4 = (undefined4)(CONCAT26(in_stack_0000000a,in_stack_00000004) >> 0x20);
+  newctrl = _ctrlfp(newcw,0xffff);
+  uVar2 = (undefined4)(CONCAT26(in_stack_0000000a,in_stack_00000004) >> 0x20);
   if ((in_stack_0000000a & 0x7ff0) == 0x7ff0) {
-    iVar2 = _sptype((double)CONCAT44(uVar4,(int)in_stack_00000004));
-    if (0 < iVar2) {
-      if (iVar2 < 3) {
-        _ctrlfp(uVar1,0xffff);
+    iVar1 = _sptype((double)CONCAT44(uVar2,(int)in_stack_00000004));
+    if (0 < iVar1) {
+      if (iVar1 < 3) {
+        _ctrlfp(newctrl,0xffff);
         return;
       }
-      if (iVar2 == 3) {
-        _handle_qnan1(0xb,(double)CONCAT44(uVar1,(int)(CONCAT26(in_stack_0000000a,in_stack_00000004)
-                                                      >> 0x20)),unaff_ESI);
+      if (iVar1 == 3) {
+        _handle_qnan1(0xb,(double)CONCAT44(newctrl,(int)(CONCAT26(in_stack_0000000a,
+                                                                  in_stack_00000004) >> 0x20)),
+                      unaff_ESI);
         return;
       }
     }
-    dVar3 = (double)CONCAT26(in_stack_0000000a,in_stack_00000004) + 1.0;
-    iVar2 = 8;
+    result = (double)CONCAT26(in_stack_0000000a,in_stack_00000004) + 1.0;
+    iVar1 = 8;
   }
   else {
-    dVar3 = _frnd((double)CONCAT44(uVar4,(int)in_stack_00000004));
-    if (((double)CONCAT26(in_stack_0000000a,in_stack_00000004) == dVar3) || ((uVar1 & 0x20) != 0)) {
-      _ctrlfp(uVar1,0xffff);
+    result = _frnd((double)CONCAT44(uVar2,(int)in_stack_00000004));
+    if (((double)CONCAT26(in_stack_0000000a,in_stack_00000004) == result) || ((newctrl & 0x20) != 0)
+       ) {
+      _ctrlfp(newctrl,0xffff);
       return;
     }
-    iVar2 = 0x10;
+    iVar1 = 0x10;
   }
-  _except1(iVar2,0xb,(double)CONCAT26(in_stack_0000000a,in_stack_00000004),dVar3,uVar1);
+  _except1(iVar1,0xb,(double)CONCAT26(in_stack_0000000a,in_stack_00000004),result,newctrl);
   return;
 }
 

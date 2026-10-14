@@ -22,37 +22,37 @@ void __cdecl TRACK_scr_stringlist(void)
 
 // 008BF4C0  SL_InitCheckLeaks  (clientscript/cscr_stringlist.cpp:120)
 
-void __cdecl SL_InitCheckLeaks(scriptInstance_t param_1)
+void __cdecl SL_InitCheckLeaks(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  Scr_ResetScrStringDebugGlob(param_1);
-  Com_Memset(gScrStringDebugGlob[_param_1],0,0x40000);
-  gScrStringDebugGlob[_param_1]->totalRefCount = 0;
+  Scr_ResetScrStringDebugGlob(inst);
+  Com_Memset(gScrStringDebugGlob[_inst],0,0x40000);
+  gScrStringDebugGlob[_inst]->totalRefCount = 0;
   return;
 }
 
 
 // 008BF540  SL_CheckLeaks  (clientscript/cscr_stringlist.cpp:129)
 
-void __cdecl SL_CheckLeaks(scriptInstance_t param_1)
+void __cdecl SL_CheckLeaks(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
-  uint local_8;
+  uint i;
   
-  if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-    if (gScrStringDebugGlob[_param_1]->ignoreLeaks == 0) {
-      for (local_8 = 1; local_8 < 0x10000; local_8 = local_8 + 1) {
-        if (gScrStringDebugGlob[_param_1]->refCount[local_8] != 0) {
-          SL_DebugConvertToString(local_8,param_1);
+  if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+    if (gScrStringDebugGlob[_inst]->ignoreLeaks == 0) {
+      for (i = 1; i < 0x10000; i = i + 1) {
+        if (gScrStringDebugGlob[_inst]->refCount[i] != 0) {
+          SL_DebugConvertToString(i,inst);
           Com_PrintError(1,"leaked string = \'%s\', refcount = %i, i = %i\n");
         }
       }
-      if ((gScrStringDebugGlob[_param_1]->totalRefCount != 0) &&
+      if ((gScrStringDebugGlob[_inst]->totalRefCount != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                    ,0x8e,0,"%s\n\t(gScrStringDebugGlob[inst]->totalRefCount) = %i"),
          !bVar2)) {
@@ -61,7 +61,7 @@ void __cdecl SL_CheckLeaks(scriptInstance_t param_1)
         return;
       }
     }
-    Scr_ClearScrStringDebugGlob(param_1);
+    Scr_ClearScrStringDebugGlob(inst);
   }
   return;
 }
@@ -69,7 +69,7 @@ void __cdecl SL_CheckLeaks(scriptInstance_t param_1)
 
 // 008BEF90  GetRefString  (clientscript/cscr_stringlist.cpp:152)
 
-RefString * __cdecl GetRefString(scriptInstance_t param_1,uint param_2)
+RefString * __cdecl GetRefString(scriptInstance_t inst,uint stringValue)
 
 {
   code *pcVar1;
@@ -77,7 +77,7 @@ RefString * __cdecl GetRefString(scriptInstance_t param_1,uint param_2)
   RefString *pRVar3;
   undefined3 in_stack_00000005;
   
-  if (param_2 == 0) {
+  if (stringValue == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x99,0,"%s");
     if (!bVar2) {
@@ -86,7 +86,7 @@ RefString * __cdecl GetRefString(scriptInstance_t param_1,uint param_2)
       return pRVar3;
     }
   }
-  if (0xfffff < param_2 << 4) {
+  if (0xfffff < stringValue << 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x9a,0,"%s");
     if (!bVar2) {
@@ -95,13 +95,13 @@ RefString * __cdecl GetRefString(scriptInstance_t param_1,uint param_2)
       return pRVar3;
     }
   }
-  return (RefString *)(gScrMemTreePub[_param_1].mt_buffer + param_2 * 0x10);
+  return (RefString *)(gScrMemTreePub[_inst].mt_buffer + stringValue * 0x10);
 }
 
 
 // 008BF1B0  GetRefString  (clientscript/cscr_stringlist.cpp:161)
 
-RefString * __cdecl GetRefString(scriptInstance_t param_1,char *param_2)
+RefString * __cdecl GetRefString(scriptInstance_t inst,char *str)
 
 {
   code *pcVar1;
@@ -109,8 +109,8 @@ RefString * __cdecl GetRefString(scriptInstance_t param_1,char *param_2)
   RefString *pRVar3;
   undefined3 in_stack_00000005;
   
-  if ((param_2 < gScrMemTreePub[_param_1].mt_buffer) ||
-     (gScrMemTreePub[_param_1].mt_buffer + 0x100000 <= param_2)) {
+  if ((str < gScrMemTreePub[_inst].mt_buffer) || (gScrMemTreePub[_inst].mt_buffer + 0x100000 <= str)
+     ) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0xa2,0,"%s");
     if (!bVar2) {
@@ -119,13 +119,13 @@ RefString * __cdecl GetRefString(scriptInstance_t param_1,char *param_2)
       return pRVar3;
     }
   }
-  return (RefString *)(param_2 + -4);
+  return (RefString *)(str + -4);
 }
 
 
 // 008BEF10  SL_ConvertToString  (clientscript/cscr_stringlist.cpp:169)
 
-char * __cdecl SL_ConvertToString(uint param_1,scriptInstance_t param_2)
+char * __cdecl SL_ConvertToString(uint stringValue,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -135,8 +135,8 @@ char * __cdecl SL_ConvertToString(uint param_1,scriptInstance_t param_2)
   undefined3 in_stack_00000009;
   char *local_8;
   
-  if (((param_1 != 0) && (gScrStringDebugGlob[_param_2] != (scrStringDebugGlob_t *)0x0)) &&
-     (gScrStringDebugGlob[_param_2]->refCount[param_1] == 0)) {
+  if (((stringValue != 0) && (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0)) &&
+     (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0xab,0,"%s\n\t(stringValue) = %i");
     if (!bVar2) {
@@ -145,11 +145,11 @@ char * __cdecl SL_ConvertToString(uint param_1,scriptInstance_t param_2)
       return pcVar3;
     }
   }
-  if (param_1 == 0) {
+  if (stringValue == 0) {
     local_8 = (char *)0x0;
   }
   else {
-    pRVar4 = GetRefString(param_2,param_1);
+    pRVar4 = GetRefString(inst,stringValue);
     local_8 = pRVar4->str;
   }
   return local_8;
@@ -158,25 +158,28 @@ char * __cdecl SL_ConvertToString(uint param_1,scriptInstance_t param_2)
 
 // 008BF010  SL_DebugConvertToString  (clientscript/cscr_stringlist.cpp:187)
 
-char * __cdecl SL_DebugConvertToString(uint param_1,scriptInstance_t param_2)
+char * __cdecl SL_DebugConvertToString(uint stringValue,scriptInstance_t inst)
 
 {
   char *pcVar1;
   RefString *pRVar2;
   uint uVar3;
   int iVar4;
-  int local_c;
+  int len;
+  char *s;
+  int i;
+  RefString *refString;
   
-  if (param_1 == 0) {
+  if (stringValue == 0) {
     pcVar1 = "<NULL>";
   }
   else {
-    pRVar2 = GetRefString(param_2,param_1);
+    pRVar2 = GetRefString(inst,stringValue);
     uVar3 = ((uint)(pRVar2->field0_0x0).data >> 0x18) - 1 & 0xff;
     pcVar1 = pRVar2->str;
     if (pcVar1[uVar3] == '\0') {
-      for (local_c = 0; local_c < (int)uVar3; local_c = local_c + 1) {
-        iVar4 = isprint((uint)(byte)pcVar1[local_c]);
+      for (i = 0; i < (int)uVar3; i = i + 1) {
+        iVar4 = isprint((uint)(byte)pcVar1[i]);
         if (iVar4 == 0) goto LAB_008bf0a2;
       }
     }
@@ -191,29 +194,30 @@ LAB_008bf0a2:
 
 // 008BF110  SL_GetRefStringLen  (clientscript/cscr_stringlist.cpp:217)
 
-int __cdecl SL_GetRefStringLen(RefString *param_1)
+int __cdecl SL_GetRefStringLen(RefString *refString)
 
 {
-  uint local_8;
+  int len;
   
-  for (local_8 = ((uint)(param_1->field0_0x0).data >> 0x18) - 1 & 0xff;
-      param_1->str[local_8] != '\0'; local_8 = local_8 + 0x100) {
+  for (len = ((uint)(refString->field0_0x0).data >> 0x18) - 1 & 0xff; refString->str[len] != '\0';
+      len = len + 0x100) {
   }
-  return local_8;
+  return len;
 }
 
 
 // 008BF0B0  SL_GetStringLen  (clientscript/cscr_stringlist.cpp:229)
 
-int __cdecl SL_GetStringLen(scriptInstance_t param_1,uint param_2)
+int __cdecl SL_GetStringLen(scriptInstance_t inst,uint stringValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  RefString *pRVar4;
+  RefString *refString_00;
+  RefString *refString;
   
-  if (param_2 == 0) {
+  if (stringValue == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0xe8,0,"%s");
     if (!bVar2) {
@@ -222,36 +226,36 @@ int __cdecl SL_GetStringLen(scriptInstance_t param_1,uint param_2)
       return iVar3;
     }
   }
-  pRVar4 = GetRefString(param_1,param_2);
-  iVar3 = SL_GetRefStringLen(pRVar4);
+  refString_00 = GetRefString(inst,stringValue);
+  iVar3 = SL_GetRefStringLen(refString_00);
   return iVar3;
 }
 
 
 // 008BF210  SL_ConvertFromRefString  (clientscript/cscr_stringlist.cpp:239)
 
-uint __cdecl SL_ConvertFromRefString(scriptInstance_t param_1,RefString *param_2)
+uint __cdecl SL_ConvertFromRefString(scriptInstance_t inst,RefString *refString)
 
 {
   int iVar1;
   undefined3 in_stack_00000005;
   
-  iVar1 = (int)param_2 - (int)gScrMemTreePub[_param_1].mt_buffer;
+  iVar1 = (int)refString - (int)gScrMemTreePub[_inst].mt_buffer;
   return (int)(iVar1 + (iVar1 >> 0x1f & 0xfU)) >> 4;
 }
 
 
 // 008BF160  SL_ConvertFromString  (clientscript/cscr_stringlist.cpp:245)
 
-uint __cdecl SL_ConvertFromString(scriptInstance_t param_1,char *param_2)
+uint __cdecl SL_ConvertFromString(scriptInstance_t inst,char *str)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  RefString *pRVar4;
+  RefString *refString;
   
-  if (param_2 == (char *)0x0) {
+  if (str == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0xf6,0,"%s");
     if (!bVar2) {
@@ -260,62 +264,65 @@ uint __cdecl SL_ConvertFromString(scriptInstance_t param_1,char *param_2)
       return uVar3;
     }
   }
-  pRVar4 = GetRefString(param_1,param_2);
-  uVar3 = SL_ConvertFromRefString(param_1,pRVar4);
+  refString = GetRefString(inst,str);
+  uVar3 = SL_ConvertFromRefString(inst,refString);
   return uVar3;
 }
 
 
 // 008BF250  GetHashCode  (clientscript/cscr_stringlist.cpp:256)
 
-uint __cdecl GetHashCode(scriptInstance_t param_1,char *param_2,uint param_3)
+uint __cdecl GetHashCode(scriptInstance_t inst,char *str,uint len)
 
 {
+  uint uVar1;
   undefined3 in_stack_00000005;
-  char *local_10;
-  uint local_c;
+  char *pos;
+  uint hash;
+  uint c;
   
-  if (param_3 < 0x100) {
-    local_c = 0;
-    local_10 = param_2;
-    for (; param_3 != 0; param_3 = param_3 - 1) {
-      local_c = local_c * 0x1f + (int)*local_10;
-      local_10 = local_10 + 1;
+  if (len < 0x100) {
+    hash = 0;
+    pos = str;
+    for (; len != 0; len = len - 1) {
+      hash = hash * 0x1f + (int)*pos;
+      pos = pos + 1;
     }
-    local_c = local_c % ((-(uint)(_param_1 != 0) & 0xffffc000) + 0x7fff);
+    uVar1 = hash % ((-(uint)(_inst != 0) & 0xffffc000) + 0x7fff);
   }
   else {
-    local_c = (param_3 >> 2) % ((-(uint)(_param_1 != 0) & 0xffffc000) + 0x7fff);
+    uVar1 = (len >> 2) % ((-(uint)(_inst != 0) & 0xffffc000) + 0x7fff);
   }
-  return local_c + 1;
+  return uVar1 + 1;
 }
 
 
 // 008BF230  Scr_GetHashCode  (clientscript/cscr_stringlist.cpp:282)
 
-uint __cdecl Scr_GetHashCode(scriptInstance_t param_1,char *param_2,uint param_3)
+uint __cdecl Scr_GetHashCode(scriptInstance_t inst,char *str,uint len)
 
 {
   uint uVar1;
   
-  uVar1 = GetHashCode(param_1,param_2,param_3);
+  uVar1 = GetHashCode(inst,str,len);
   return uVar1;
 }
 
 
 // 008BF2F0  SL_Init  (clientscript/cscr_stringlist.cpp:287)
 
-void __cdecl SL_Init(scriptInstance_t param_1)
+void __cdecl SL_Init(scriptInstance_t inst)
 
 {
   HashEntry *pHVar1;
   code *pcVar2;
   bool bVar3;
   undefined3 in_stack_00000005;
-  uint local_10;
-  uint local_8;
+  uint hash;
+  HashEntry *entry;
+  uint prev;
   
-  if (gScrStringGlob[_param_1].inited != false) {
+  if (gScrStringGlob[_inst].inited != false) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x124,0,"%s");
     if (!bVar3) {
@@ -324,14 +331,14 @@ void __cdecl SL_Init(scriptInstance_t param_1)
       return;
     }
   }
-  MT_Init(param_1);
+  MT_Init(inst);
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  (gScrStringGlob[_param_1].hashTable)->status_next = 0;
-  local_8 = 0;
-  local_10 = 1;
+  (gScrStringGlob[_inst].hashTable)->status_next = 0;
+  prev = 0;
+  hash = 1;
   do {
-    if ((-(uint)(_param_1 != 0) & 0xffffc000) + 0x8000 <= local_10) {
-      if ((gScrStringGlob[_param_1].hashTable[local_8].status_next & 0xffff) != 0) {
+    if ((-(uint)(_inst != 0) & 0xffffc000) + 0x8000 <= hash) {
+      if ((gScrStringGlob[_inst].hashTable[prev].status_next & 0xffff) != 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x141,0,"%s");
         if (!bVar3) {
@@ -340,15 +347,15 @@ void __cdecl SL_Init(scriptInstance_t param_1)
           return;
         }
       }
-      ((gScrStringGlob[_param_1].hashTable)->u).prev = local_8;
-      SL_InitCheckLeaks(param_1);
-      gScrStringGlob[_param_1].indentLevel = 0;
-      memset((uchar *)gScrStringGlob[_param_1].stringsUsed,'\0',0x80);
-      gScrStringGlob[_param_1].inited = true;
+      ((gScrStringGlob[_inst].hashTable)->u).prev = prev;
+      SL_InitCheckLeaks(inst);
+      gScrStringGlob[_inst].indentLevel = 0;
+      memset((uchar *)gScrStringGlob[_inst].stringsUsed,'\0',0x80);
+      gScrStringGlob[_inst].inited = true;
       Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
       return;
     }
-    if ((local_10 & 0x30000) != 0) {
+    if ((hash & 0x30000) != 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x139,0,"%s");
       if (!bVar3) {
@@ -357,27 +364,27 @@ void __cdecl SL_Init(scriptInstance_t param_1)
         return;
       }
     }
-    pHVar1 = gScrStringGlob[_param_1].hashTable;
-    pHVar1[local_10].status_next = 0;
-    gScrStringGlob[_param_1].hashTable[local_8].status_next =
-         gScrStringGlob[_param_1].hashTable[local_8].status_next | local_10;
-    pHVar1[local_10].u.prev = local_8;
-    local_8 = local_10;
-    local_10 = local_10 + 1;
+    pHVar1 = gScrStringGlob[_inst].hashTable;
+    pHVar1[hash].status_next = 0;
+    gScrStringGlob[_inst].hashTable[prev].status_next =
+         gScrStringGlob[_inst].hashTable[prev].status_next | hash;
+    pHVar1[hash].u.prev = prev;
+    prev = hash;
+    hash = hash + 1;
   } while( true );
 }
 
 
 // 008BF500  SL_Shutdown  (clientscript/cscr_stringlist.cpp:342)
 
-void __cdecl SL_Shutdown(scriptInstance_t param_1)
+void __cdecl SL_Shutdown(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrStringGlob[_param_1].inited != false) {
-    gScrStringGlob[_param_1].inited = false;
-    SL_CheckLeaks(param_1);
+  if (gScrStringGlob[_inst].inited != false) {
+    gScrStringGlob[_inst].inited = false;
+    SL_CheckLeaks(inst);
   }
   return;
 }
@@ -385,7 +392,7 @@ void __cdecl SL_Shutdown(scriptInstance_t param_1)
 
 // 008BF630  SL_FindStringOfSize  (clientscript/cscr_stringlist.cpp:354)
 
-uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3)
+uint __cdecl SL_FindStringOfSize(scriptInstance_t inst,char *str,uint len)
 
 {
   HashEntry *pHVar1;
@@ -396,27 +403,32 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
   char *pcVar6;
   char *pcVar7;
   undefined3 in_stack_00000005;
-  uint local_18;
-  uint local_c;
-  HashEntry *local_8;
+  uint stringValue;
+  HashEntry *entry;
+  uint hash;
+  uint newIndex;
+  uint byteLen;
+  RefString *refStr;
+  uint prev;
+  HashEntry *newEntry;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x16e,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_c = GetHashCode(param_1,param_2,param_3);
+  prev = GetHashCode(inst,str,len);
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  pHVar1 = gScrStringGlob[_param_1].hashTable + local_c;
+  pHVar1 = gScrStringGlob[_inst].hashTable + prev;
   if ((pHVar1->status_next & 0x30000) == 0x20000) {
-    pRVar5 = GetRefString(param_1,(pHVar1->u).prev);
-    if ((uint)(pRVar5->field0_0x0).data >> 0x18 == (param_3 & 0xff)) {
+    pRVar5 = GetRefString(inst,(pHVar1->u).prev);
+    if ((uint)(pRVar5->field0_0x0).data >> 0x18 == (len & 0xff)) {
       bVar3 = true;
-      uVar4 = param_3;
+      uVar4 = len;
       pcVar6 = pRVar5->str;
-      pcVar7 = param_2;
+      pcVar7 = str;
       do {
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
@@ -433,7 +445,7 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
           return uVar4;
         }
         uVar4 = (pHVar1->u).prev;
-        pcVar6 = SL_ConvertToString(uVar4,param_1);
+        pcVar6 = SL_ConvertToString(uVar4,inst);
         if ((pRVar5->str != pcVar6) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                      ,0x18a,0,"%s"), !bVar3)) {
@@ -445,22 +457,22 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
         return uVar4;
       }
     }
-    local_18 = pHVar1->status_next & 0xffff;
-    local_8 = gScrStringGlob[_param_1].hashTable + local_18;
-    while (local_8 != pHVar1) {
-      if (((local_8->status_next & 0x30000) != 0x10000) &&
+    newIndex = pHVar1->status_next & 0xffff;
+    newEntry = gScrStringGlob[_inst].hashTable + newIndex;
+    while (newEntry != pHVar1) {
+      if (((newEntry->status_next & 0x30000) != 0x10000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                    ,0x198,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         uVar4 = (*pcVar2)();
         return uVar4;
       }
-      pRVar5 = GetRefString(param_1,(local_8->u).prev);
-      if ((uint)(pRVar5->field0_0x0).data >> 0x18 == (param_3 & 0xff)) {
+      pRVar5 = GetRefString(inst,(newEntry->u).prev);
+      if ((uint)(pRVar5->field0_0x0).data >> 0x18 == (len & 0xff)) {
         bVar3 = true;
-        uVar4 = param_3;
+        uVar4 = len;
         pcVar6 = pRVar5->str;
-        pcVar7 = param_2;
+        pcVar7 = str;
         do {
           if (uVar4 == 0) break;
           uVar4 = uVar4 - 1;
@@ -469,15 +481,15 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
           pcVar7 = pcVar7 + 1;
         } while (bVar3);
         if (bVar3) {
-          gScrStringGlob[_param_1].hashTable[local_c].status_next =
-               gScrStringGlob[_param_1].hashTable[local_c].status_next & 0x30000 |
-               local_8->status_next & 0xffff;
-          local_8->status_next = local_8->status_next & 0x30000 | pHVar1->status_next & 0xffff;
-          pHVar1->status_next = pHVar1->status_next & 0x30000 | local_18;
-          uVar4 = (local_8->u).prev;
-          local_8->u = pHVar1->u;
+          gScrStringGlob[_inst].hashTable[prev].status_next =
+               gScrStringGlob[_inst].hashTable[prev].status_next & 0x30000 |
+               newEntry->status_next & 0xffff;
+          newEntry->status_next = newEntry->status_next & 0x30000 | pHVar1->status_next & 0xffff;
+          pHVar1->status_next = pHVar1->status_next & 0x30000 | newIndex;
+          uVar4 = (newEntry->u).prev;
+          newEntry->u = pHVar1->u;
           (pHVar1->u).prev = uVar4;
-          if (((local_8->status_next & 0x30000) == 0) &&
+          if (((newEntry->status_next & 0x30000) == 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                        ,0x1a5,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
@@ -491,7 +503,7 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
             uVar4 = (*pcVar2)();
             return uVar4;
           }
-          pcVar6 = SL_ConvertToString(uVar4,param_1);
+          pcVar6 = SL_ConvertToString(uVar4,inst);
           if ((pRVar5->str != pcVar6) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                        ,0x1a8,0,"%s"), !bVar3)) {
@@ -503,9 +515,9 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
           return uVar4;
         }
       }
-      local_c = local_18;
-      local_18 = local_8->status_next & 0xffff;
-      local_8 = gScrStringGlob[_param_1].hashTable + local_18;
+      prev = newIndex;
+      newIndex = newEntry->status_next & 0xffff;
+      newEntry = gScrStringGlob[_inst].hashTable + newIndex;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
@@ -515,19 +527,19 @@ uint __cdecl SL_FindStringOfSize(scriptInstance_t param_1,char *param_2,uint par
 
 // 008BF9B0  SL_FindString  (clientscript/cscr_stringlist.cpp:449)
 
-uint __cdecl SL_FindString(char *param_1,scriptInstance_t param_2)
+uint __cdecl SL_FindString(char *str,scriptInstance_t inst)
 
 {
   char cVar1;
   uint uVar2;
   char *local_8;
   
-  local_8 = param_1;
+  local_8 = str;
   do {
     cVar1 = *local_8;
     local_8 = local_8 + 1;
   } while (cVar1 != '\0');
-  uVar2 = SL_FindStringOfSize(param_2,param_1,(uint)(local_8 + (1 - (int)(param_1 + 1))));
+  uVar2 = SL_FindStringOfSize(inst,str,(uint)(local_8 + (1 - (int)(str + 1))));
   return uVar2;
 }
 
@@ -537,31 +549,31 @@ uint __cdecl SL_FindString(char *param_1,scriptInstance_t param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl SL_FindLowercaseString(char *param_1,scriptInstance_t param_2)
+uint __cdecl SL_FindLowercaseString(char *str,scriptInstance_t inst)
 
 {
   char cVar1;
   uint uVar2;
   int iVar3;
   char *local_2018;
-  char local_2014 [8196];
+  char newStr [8196];
   uint local_10;
-  char *local_c;
-  int local_8;
+  int len;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2018 = param_1;
+  local_2018 = str;
   do {
     cVar1 = *local_2018;
     local_2018 = local_2018 + 1;
   } while (cVar1 != '\0');
-  local_c = local_2018 + (1 - (int)(param_1 + 1));
-  if ((int)local_c < 0x2001) {
-    for (local_8 = 0; local_8 < (int)local_c; local_8 = local_8 + 1) {
-      iVar3 = tolower((int)param_1[local_8]);
-      local_2014[local_8] = (char)iVar3;
+  len = (int)(local_2018 + (1 - (int)(str + 1)));
+  if (len < 0x2001) {
+    for (i = 0; i < len; i = i + 1) {
+      iVar3 = tolower((int)str[i]);
+      newStr[i] = (char)iVar3;
     }
-    uVar2 = SL_FindStringOfSize(param_2,local_2014,(uint)local_c);
+    uVar2 = SL_FindStringOfSize(inst,newStr,len);
   }
   else {
     uVar2 = 0;
@@ -572,31 +584,31 @@ uint __cdecl SL_FindLowercaseString(char *param_1,scriptInstance_t param_2)
 
 // 008BFAE0  SL_IsLowercaseString  (clientscript/cscr_stringlist.cpp:481)
 
-int __cdecl SL_IsLowercaseString(uint param_1,scriptInstance_t param_2)
+int __cdecl SL_IsLowercaseString(uint stringValue,scriptInstance_t inst)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  char *local_8;
+  char *str;
   
-  if ((param_1 == 0) &&
+  if ((stringValue == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x1e4,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_8 = SL_ConvertToString(param_1,param_2);
+  str = SL_ConvertToString(stringValue,inst);
   while( true ) {
-    if (*local_8 == '\0') {
+    if (*str == '\0') {
       return 1;
     }
-    cVar1 = *local_8;
-    iVar4 = tolower((int)*local_8);
+    cVar1 = *str;
+    iVar4 = tolower((int)*str);
     if (cVar1 != (char)iVar4) break;
-    local_8 = local_8 + 1;
+    str = str + 1;
   }
   return 0;
 }
@@ -604,7 +616,7 @@ int __cdecl SL_IsLowercaseString(uint param_1,scriptInstance_t param_2)
 
 // 008BFBA0  SL_AddUserInternal  (clientscript/cscr_stringlist.cpp:500)
 
-void __cdecl SL_AddUserInternal(scriptInstance_t param_1,RefString *param_2,uint param_3)
+void __cdecl SL_AddUserInternal(scriptInstance_t inst,RefString *refStr,uint user)
 
 {
   uint uVar1;
@@ -612,12 +624,13 @@ void __cdecl SL_AddUserInternal(scriptInstance_t param_1,RefString *param_2,uint
   bool bVar3;
   uint uVar4;
   undefined3 in_stack_00000005;
+  uint str;
   
-  if (((uint)(param_2->field0_0x0).data >> 0x10 & 0xff & param_3) == 0) {
-    uVar4 = SL_ConvertFromRefString(param_1,param_2);
-    if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-      if (0xffff < gScrStringDebugGlob[_param_1]->refCount[uVar4]) {
-        SL_DebugConvertToString(uVar4,param_1);
+  if (((uint)(refStr->field0_0x0).data >> 0x10 & 0xff & user) == 0) {
+    uVar4 = SL_ConvertFromRefString(inst,refStr);
+    if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+      if (0xffff < gScrStringDebugGlob[_inst]->refCount[uVar4]) {
+        SL_DebugConvertToString(uVar4,inst);
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x201,0,"%s\n\t(SL_DebugConvertToString( str, inst )) = %s");
         if (!bVar3) {
@@ -626,8 +639,8 @@ void __cdecl SL_AddUserInternal(scriptInstance_t param_1,RefString *param_2,uint
           return;
         }
       }
-      if (gScrStringDebugGlob[_param_1]->refCount[uVar4] < 0) {
-        SL_DebugConvertToString(uVar4,param_1);
+      if (gScrStringDebugGlob[_inst]->refCount[uVar4] < 0) {
+        SL_DebugConvertToString(uVar4,inst);
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x202,0,"%s\n\t(SL_DebugConvertToString( str, inst )) = %s");
         if (!bVar3) {
@@ -637,26 +650,24 @@ void __cdecl SL_AddUserInternal(scriptInstance_t param_1,RefString *param_2,uint
         }
       }
       LOCK();
-      gScrStringDebugGlob[_param_1]->totalRefCount =
-           gScrStringDebugGlob[_param_1]->totalRefCount + 1;
+      gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + 1;
       UNLOCK();
       LOCK();
-      gScrStringDebugGlob[_param_1]->refCount[uVar4] =
-           gScrStringDebugGlob[_param_1]->refCount[uVar4] + 1;
+      gScrStringDebugGlob[_inst]->refCount[uVar4] = gScrStringDebugGlob[_inst]->refCount[uVar4] + 1;
       UNLOCK();
     }
     do {
-      uVar1 = (param_2->field0_0x0).data;
+      uVar1 = (refStr->field0_0x0).data;
       LOCK();
-      uVar4 = (param_2->field0_0x0).data;
+      uVar4 = (refStr->field0_0x0).data;
       if (uVar1 == uVar4) {
-        (param_2->field0_0x0).data = param_3 << 0x10 | uVar1;
+        (refStr->field0_0x0).data = user << 0x10 | uVar1;
         uVar4 = uVar1;
       }
       UNLOCK();
     } while (uVar4 != uVar1);
     LOCK();
-    (param_2->field0_0x0).data = (param_2->field0_0x0).data + 1;
+    (refStr->field0_0x0).data = (refStr->field0_0x0).data + 1;
     UNLOCK();
   }
   return;
@@ -665,33 +676,32 @@ void __cdecl SL_AddUserInternal(scriptInstance_t param_1,RefString *param_2,uint
 
 // 008BFB70  SL_AddUser  (clientscript/cscr_stringlist.cpp:526)
 
-void __cdecl SL_AddUser(uint param_1,uint param_2,scriptInstance_t param_3)
+void __cdecl SL_AddUser(uint stringValue,uint user,scriptInstance_t inst)
 
 {
-  RefString *pRVar1;
+  RefString *refStr;
   
-  pRVar1 = GetRefString(param_3,param_1);
-  SL_AddUserInternal(param_3,pRVar1,param_2);
+  refStr = GetRefString(inst,stringValue);
+  SL_AddUserInternal(inst,refStr,user);
   return;
 }
 
 
 // 008BFD00  SL_GetUser  (clientscript/cscr_stringlist.cpp:532)
 
-uint __cdecl SL_GetUser(uint param_1,scriptInstance_t param_2)
+uint __cdecl SL_GetUser(uint stringValue,scriptInstance_t inst)
 
 {
   RefString *pRVar1;
   
-  pRVar1 = GetRefString(param_2,param_1);
+  pRVar1 = GetRefString(inst,stringValue);
   return (uint)(pRVar1->field0_0x0).data >> 0x10 & 0xff;
 }
 
 
 // 008BFD20  SL_GetStringOfSize  (clientscript/cscr_stringlist.cpp:538)
 
-uint __cdecl
-SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint param_4,int param_5)
+uint __cdecl SL_GetStringOfSize(scriptInstance_t inst,char *str,uint user,uint len,int type)
 
 {
   HashEntry *pHVar1;
@@ -707,28 +717,34 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
   uint uVar11;
   char *pcVar12;
   undefined3 in_stack_00000005;
-  uint local_2c;
-  uint local_1c;
-  uint local_c;
-  HashEntry *local_8;
+  uint stringValue;
+  HashEntry *entry;
+  uint newNext;
+  uint hash;
+  uint newIndex;
+  uint byteLen;
+  RefString *refStr;
+  uint next;
+  uint prev;
+  HashEntry *newEntry;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((str == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x228,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     uVar6 = (*pcVar3)();
     return uVar6;
   }
-  uVar6 = GetHashCode(param_1,param_2,param_4);
+  uVar6 = GetHashCode(inst,str,len);
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  pHVar1 = gScrStringGlob[_param_1].hashTable + uVar6;
+  pHVar1 = gScrStringGlob[_inst].hashTable + uVar6;
   if ((pHVar1->status_next & 0x30000) == 0x20000) {
-    pRVar7 = GetRefString(param_1,(pHVar1->u).prev);
-    if ((uint)(pRVar7->field0_0x0).data >> 0x18 == (param_4 & 0xff)) {
+    pRVar7 = GetRefString(inst,(pHVar1->u).prev);
+    if ((uint)(pRVar7->field0_0x0).data >> 0x18 == (len & 0xff)) {
       bVar4 = true;
-      uVar9 = param_4;
+      uVar9 = len;
       pcVar8 = pRVar7->str;
-      pcVar12 = param_2;
+      pcVar12 = str;
       do {
         if (uVar9 == 0) break;
         uVar9 = uVar9 - 1;
@@ -737,7 +753,7 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
         pcVar12 = pcVar12 + 1;
       } while (bVar4);
       if (bVar4) {
-        SL_AddUserInternal(param_1,pRVar7,param_3);
+        SL_AddUserInternal(inst,pRVar7,user);
         if (((pHVar1->status_next & 0x30000) == 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                      ,0x244,0,"%s"), !bVar4)) {
@@ -746,7 +762,7 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
           return uVar6;
         }
         uVar6 = (pHVar1->u).prev;
-        pcVar8 = SL_ConvertToString(uVar6,param_1);
+        pcVar8 = SL_ConvertToString(uVar6,inst);
         if ((pRVar7->str != pcVar8) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                      ,0x247,0,"%s"), !bVar4)) {
@@ -758,23 +774,23 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
         return uVar6;
       }
     }
-    local_1c = pHVar1->status_next & 0xffff;
-    local_8 = gScrStringGlob[_param_1].hashTable + local_1c;
-    local_c = uVar6;
-    while (local_8 != pHVar1) {
-      if (((local_8->status_next & 0x30000) != 0x10000) &&
+    newIndex = pHVar1->status_next & 0xffff;
+    newEntry = gScrStringGlob[_inst].hashTable + newIndex;
+    prev = uVar6;
+    while (newEntry != pHVar1) {
+      if (((newEntry->status_next & 0x30000) != 0x10000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                    ,0x255,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         uVar6 = (*pcVar3)();
         return uVar6;
       }
-      pRVar7 = GetRefString(param_1,(local_8->u).prev);
-      if ((uint)(pRVar7->field0_0x0).data >> 0x18 == (param_4 & 0xff)) {
+      pRVar7 = GetRefString(inst,(newEntry->u).prev);
+      if ((uint)(pRVar7->field0_0x0).data >> 0x18 == (len & 0xff)) {
         bVar4 = true;
-        uVar6 = param_4;
+        uVar6 = len;
         pcVar8 = pRVar7->str;
-        pcVar12 = param_2;
+        pcVar12 = str;
         do {
           if (uVar6 == 0) break;
           uVar6 = uVar6 - 1;
@@ -783,16 +799,16 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
           pcVar12 = pcVar12 + 1;
         } while (bVar4);
         if (bVar4) {
-          gScrStringGlob[_param_1].hashTable[local_c].status_next =
-               gScrStringGlob[_param_1].hashTable[local_c].status_next & 0x30000 |
-               local_8->status_next & 0xffff;
-          local_8->status_next = local_8->status_next & 0x30000 | pHVar1->status_next & 0xffff;
-          pHVar1->status_next = pHVar1->status_next & 0x30000 | local_1c;
-          uVar6 = (local_8->u).prev;
-          local_8->u = pHVar1->u;
+          gScrStringGlob[_inst].hashTable[prev].status_next =
+               gScrStringGlob[_inst].hashTable[prev].status_next & 0x30000 |
+               newEntry->status_next & 0xffff;
+          newEntry->status_next = newEntry->status_next & 0x30000 | pHVar1->status_next & 0xffff;
+          pHVar1->status_next = pHVar1->status_next & 0x30000 | newIndex;
+          uVar6 = (newEntry->u).prev;
+          newEntry->u = pHVar1->u;
           (pHVar1->u).prev = uVar6;
-          SL_AddUserInternal(param_1,pRVar7,param_3);
-          if (((local_8->status_next & 0x30000) == 0) &&
+          SL_AddUserInternal(inst,pRVar7,user);
+          if (((newEntry->status_next & 0x30000) == 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                        ,0x264,0,"%s"), !bVar4)) {
             pcVar3 = (code *)swi(3);
@@ -806,7 +822,7 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
             uVar6 = (*pcVar3)();
             return uVar6;
           }
-          pcVar8 = SL_ConvertToString(uVar6,param_1);
+          pcVar8 = SL_ConvertToString(uVar6,inst);
           if ((pRVar7->str != pcVar8) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                        ,0x267,0,"%s"), !bVar4)) {
@@ -818,18 +834,18 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
           return uVar6;
         }
       }
-      local_c = local_1c;
-      local_1c = local_8->status_next & 0xffff;
-      local_8 = gScrStringGlob[_param_1].hashTable + local_1c;
+      prev = newIndex;
+      newIndex = newEntry->status_next & 0xffff;
+      newEntry = gScrStringGlob[_inst].hashTable + newIndex;
     }
-    uVar6 = (gScrStringGlob[_param_1].hashTable)->status_next;
+    uVar6 = (gScrStringGlob[_inst].hashTable)->status_next;
     if (uVar6 == 0) {
-      Scr_DumpScriptThreads(param_1);
-      Scr_DumpScriptVariablesDefault(param_1);
+      Scr_DumpScriptThreads(inst);
+      Scr_DumpScriptVariablesDefault(inst);
       Com_Error(ERR_DROP,"\x15exceeded maximum number of script strings\n");
     }
-    uVar5 = MT_AllocIndex(param_1,param_4 + 4,param_5);
-    pHVar2 = gScrStringGlob[_param_1].hashTable + uVar6;
+    uVar5 = MT_AllocIndex(inst,len + 4,type);
+    pHVar2 = gScrStringGlob[_inst].hashTable + uVar6;
     if (((pHVar2->status_next & 0x30000) != 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x282,0,"%s"), !bVar4)) {
@@ -838,20 +854,20 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
       return uVar6;
     }
     uVar9 = pHVar2->status_next & 0xffff;
-    (gScrStringGlob[_param_1].hashTable)->status_next = uVar9;
-    gScrStringGlob[_param_1].hashTable[uVar9].u.prev = 0;
+    (gScrStringGlob[_inst].hashTable)->status_next = uVar9;
+    gScrStringGlob[_inst].hashTable[uVar9].u.prev = 0;
     pHVar2->status_next = pHVar1->status_next & 0xffff | 0x10000;
     pHVar1->status_next = pHVar1->status_next & 0x30000 | uVar6 & 0xffff;
     pHVar2->u = pHVar1->u;
   }
   else {
     if ((pHVar1->status_next & 0x30000) == 0) {
-      uVar5 = MT_AllocIndex(param_1,param_4 + 4,param_5);
+      uVar5 = MT_AllocIndex(inst,len + 4,type);
       uVar9 = (pHVar1->u).prev;
       uVar10 = pHVar1->status_next & 0xffff;
-      gScrStringGlob[_param_1].hashTable[uVar9].status_next =
-           gScrStringGlob[_param_1].hashTable[uVar9].status_next & 0x30000 | uVar10;
-      gScrStringGlob[_param_1].hashTable[uVar10].u.prev = uVar9;
+      gScrStringGlob[_inst].hashTable[uVar9].status_next =
+           gScrStringGlob[_inst].hashTable[uVar9].status_next & 0x30000 | uVar10;
+      gScrStringGlob[_inst].hashTable[uVar10].u.prev = uVar9;
     }
     else {
       if (((pHVar1->status_next & 0x30000) != 0x10000) &&
@@ -862,25 +878,25 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
         return uVar6;
       }
       uVar9 = pHVar1->status_next & 0xffff;
-      local_c = uVar9;
-      while ((gScrStringGlob[_param_1].hashTable[local_c].status_next & 0xffff) != uVar6) {
-        local_c = gScrStringGlob[_param_1].hashTable[local_c].status_next & 0xffff;
+      prev = uVar9;
+      while ((gScrStringGlob[_inst].hashTable[prev].status_next & 0xffff) != uVar6) {
+        prev = gScrStringGlob[_inst].hashTable[prev].status_next & 0xffff;
       }
-      if ((local_c == 0) &&
+      if ((prev == 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                    ,0x2a3,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         uVar6 = (*pcVar3)();
         return uVar6;
       }
-      uVar10 = (gScrStringGlob[_param_1].hashTable)->status_next;
+      uVar10 = (gScrStringGlob[_inst].hashTable)->status_next;
       if (uVar10 == 0) {
-        Scr_DumpScriptThreads(param_1);
-        Scr_DumpScriptVariablesDefault(param_1);
+        Scr_DumpScriptThreads(inst);
+        Scr_DumpScriptVariablesDefault(inst);
         Com_Error(ERR_DROP,"\x15exceeded maximum number of script strings\n");
       }
-      uVar5 = MT_AllocIndex(param_1,param_4 + 4,param_5);
-      pHVar2 = gScrStringGlob[_param_1].hashTable + uVar10;
+      uVar5 = MT_AllocIndex(inst,len + 4,type);
+      pHVar2 = gScrStringGlob[_inst].hashTable + uVar10;
       if (((pHVar2->status_next & 0x30000) != 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                    ,0x2b2,0,"%s"), !bVar4)) {
@@ -889,10 +905,10 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
         return uVar6;
       }
       uVar11 = pHVar2->status_next & 0xffff;
-      (gScrStringGlob[_param_1].hashTable)->status_next = uVar11;
-      gScrStringGlob[_param_1].hashTable[uVar11].u.prev = 0;
-      gScrStringGlob[_param_1].hashTable[local_c].status_next =
-           gScrStringGlob[_param_1].hashTable[local_c].status_next & 0x30000 | uVar10;
+      (gScrStringGlob[_inst].hashTable)->status_next = uVar11;
+      gScrStringGlob[_inst].hashTable[uVar11].u.prev = 0;
+      gScrStringGlob[_inst].hashTable[prev].status_next =
+           gScrStringGlob[_inst].hashTable[prev].status_next & 0x30000 | uVar10;
       pHVar2->status_next = uVar9 | 0x10000;
       pHVar2->u = pHVar1->u;
     }
@@ -905,21 +921,21 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
     }
     pHVar1->status_next = uVar6 | 0x20000;
   }
-  local_2c = (uint)uVar5;
-  *(int *)(_param_1 * 0x100 + 0xe13a10 + gScrStringGlob[_param_1].indentLevel * 4) =
-       *(int *)(_param_1 * 0x100 + 0xe13a10 + gScrStringGlob[_param_1].indentLevel * 4) + 1;
-  if ((local_2c == 0) &&
+  stringValue = (uint)uVar5;
+  *(int *)(_inst * 0x100 + 0xe13a10 + gScrStringGlob[_inst].indentLevel * 4) =
+       *(int *)(_inst * 0x100 + 0xe13a10 + gScrStringGlob[_inst].indentLevel * 4) + 1;
+  if ((stringValue == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x2c6,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     uVar6 = (*pcVar3)();
     return uVar6;
   }
-  (pHVar1->u).prev = local_2c;
-  pRVar7 = GetRefString(param_1,local_2c);
-  memcpy((uchar *)pRVar7->str,(uchar *)param_2,param_4);
-  (pRVar7->field0_0x0).data = (pRVar7->field0_0x0).data & 0xff00ffffU | (param_3 & 0xff) << 0x10;
-  if ((((uint)(pRVar7->field0_0x0).data >> 0x10 & 0xff) != param_3) &&
+  (pHVar1->u).prev = stringValue;
+  pRVar7 = GetRefString(inst,stringValue);
+  memcpy((uchar *)pRVar7->str,(uchar *)str,len);
+  (pRVar7->field0_0x0).data = (pRVar7->field0_0x0).data & 0xff00ffffU | (user & 0xff) << 0x10;
+  if ((((uint)(pRVar7->field0_0x0).data >> 0x10 & 0xff) != user) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x2cd,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -927,14 +943,14 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
     return uVar6;
   }
   (pRVar7->field0_0x0).data = (pRVar7->field0_0x0).data & 0xffff0000U | 1;
-  (pRVar7->field0_0x0).data = (pRVar7->field0_0x0).data & 0xffffffU | param_4 << 0x18;
-  if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
+  (pRVar7->field0_0x0).data = (pRVar7->field0_0x0).data & 0xffffffU | len << 0x18;
+  if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
     LOCK();
-    gScrStringDebugGlob[_param_1]->totalRefCount = gScrStringDebugGlob[_param_1]->totalRefCount + 1;
+    gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + 1;
     UNLOCK();
     LOCK();
-    gScrStringDebugGlob[_param_1]->refCount[local_2c] =
-         gScrStringDebugGlob[_param_1]->refCount[local_2c] + 1;
+    gScrStringDebugGlob[_inst]->refCount[stringValue] =
+         gScrStringDebugGlob[_inst]->refCount[stringValue] + 1;
     UNLOCK();
   }
   if (((pHVar1->status_next & 0x30000) == 0) &&
@@ -944,7 +960,7 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
     uVar6 = (*pcVar3)();
     return uVar6;
   }
-  pcVar8 = SL_ConvertToString(local_2c,param_1);
+  pcVar8 = SL_ConvertToString(stringValue,inst);
   if ((pRVar7->str != pcVar8) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x2da,0,"%s"), !bVar4)) {
@@ -953,38 +969,37 @@ SL_GetStringOfSize(scriptInstance_t param_1,char *param_2,uint param_3,uint para
     return uVar6;
   }
   Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
-  return local_2c;
+  return stringValue;
 }
 
 
 // 008C0660  SL_GetString_  (clientscript/cscr_stringlist.cpp:742)
 
-uint __cdecl SL_GetString_(scriptInstance_t param_1,char *param_2,uint param_3,int param_4)
+uint __cdecl SL_GetString_(scriptInstance_t inst,char *str,uint user,int type)
 
 {
   char cVar1;
   uint uVar2;
   char *local_8;
   
-  local_8 = param_2;
+  local_8 = str;
   do {
     cVar1 = *local_8;
     local_8 = local_8 + 1;
   } while (cVar1 != '\0');
-  uVar2 = SL_GetStringOfSize(param_1,param_2,param_3,(uint)(local_8 + (1 - (int)(param_2 + 1))),
-                             param_4);
+  uVar2 = SL_GetStringOfSize(inst,str,user,(uint)(local_8 + (1 - (int)(str + 1))),type);
   return uVar2;
 }
 
 
 // 008C06C0  SL_GetString  (clientscript/cscr_stringlist.cpp:748)
 
-uint __cdecl SL_GetString(char *param_1,uint param_2,scriptInstance_t param_3)
+uint __cdecl SL_GetString(char *str,uint user,scriptInstance_t inst)
 
 {
   uint uVar1;
   
-  uVar1 = SL_GetString_(param_3,param_1,param_2,6);
+  uVar1 = SL_GetString_(inst,str,user,6);
   return uVar1;
 }
 
@@ -995,24 +1010,23 @@ uint __cdecl SL_GetString(char *param_1,uint param_2,scriptInstance_t param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uint __cdecl
-SL_GetLowercaseStringOfSize
-          (scriptInstance_t param_1,char *param_2,uint param_3,uint param_4,int param_5)
+SL_GetLowercaseStringOfSize(scriptInstance_t inst,char *str,uint user,uint len,int type)
 
 {
   uint uVar1;
   int iVar2;
-  char local_200c [8192];
+  char newStr [8192];
   uint local_c;
-  uint local_8;
+  uint i;
   
-  local_8 = 0x8c074d;
+  i = 0x8c074d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_4 < 0x2001) {
-    for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-      iVar2 = tolower((int)param_2[local_8]);
-      local_200c[local_8] = (char)iVar2;
+  if (len < 0x2001) {
+    for (i = 0; i < len; i = i + 1) {
+      iVar2 = tolower((int)str[i]);
+      newStr[i] = (char)iVar2;
     }
-    uVar1 = SL_GetStringOfSize(param_1,local_200c,param_3,param_4,param_5);
+    uVar1 = SL_GetStringOfSize(inst,newStr,user,len,type);
   }
   else {
     Com_Error(ERR_DROP,"max string length exceeded: \"%s\"");
@@ -1024,32 +1038,31 @@ SL_GetLowercaseStringOfSize
 
 // 008C06E0  SL_GetLowercaseString_  (clientscript/cscr_stringlist.cpp:778)
 
-uint __cdecl SL_GetLowercaseString_(char *param_1,uint param_2,int param_3,scriptInstance_t param_4)
+uint __cdecl SL_GetLowercaseString_(char *str,uint user,int type,scriptInstance_t inst)
 
 {
   char cVar1;
   uint uVar2;
   char *local_8;
   
-  local_8 = param_1;
+  local_8 = str;
   do {
     cVar1 = *local_8;
     local_8 = local_8 + 1;
   } while (cVar1 != '\0');
-  uVar2 = SL_GetLowercaseStringOfSize
-                    (param_4,param_1,param_2,(uint)(local_8 + (1 - (int)(param_1 + 1))),param_3);
+  uVar2 = SL_GetLowercaseStringOfSize(inst,str,user,(uint)(local_8 + (1 - (int)(str + 1))),type);
   return uVar2;
 }
 
 
 // 008C07E0  SL_GetLowercaseString  (clientscript/cscr_stringlist.cpp:784)
 
-uint __cdecl SL_GetLowercaseString(char *param_1,uint param_2,scriptInstance_t param_3)
+uint __cdecl SL_GetLowercaseString(char *str,uint user,scriptInstance_t inst)
 
 {
   uint uVar1;
   
-  uVar1 = SL_GetLowercaseString_(param_1,param_2,6,param_3);
+  uVar1 = SL_GetLowercaseString_(str,user,6,inst);
   return uVar1;
 }
 
@@ -1059,38 +1072,39 @@ uint __cdecl SL_GetLowercaseString(char *param_1,uint param_2,scriptInstance_t p
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl SL_ConvertToLowercase(scriptInstance_t param_1,uint param_2,uint param_3,int param_4)
+uint __cdecl SL_ConvertToLowercase(scriptInstance_t inst,uint stringValue,uint user,int type)
 
 {
   int iVar1;
   char *pcVar2;
-  char local_2014 [8192];
+  char *str;
+  char newStr [8192];
   uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint newStringValue;
+  uint len;
+  uint i;
   
-  local_8 = 0x8c080d;
+  i = 0x8c080d;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = SL_GetStringLen(param_1,param_2);
-  local_c = iVar1 + 1;
-  local_10 = param_2;
-  if (local_c < 0x2001) {
-    pcVar2 = SL_ConvertToString(param_2,param_1);
-    for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-      iVar1 = tolower((int)pcVar2[local_8]);
-      local_2014[local_8] = (char)iVar1;
+  iVar1 = SL_GetStringLen(inst,stringValue);
+  len = iVar1 + 1;
+  newStringValue = stringValue;
+  if (len < 0x2001) {
+    pcVar2 = SL_ConvertToString(stringValue,inst);
+    for (i = 0; i < len; i = i + 1) {
+      iVar1 = tolower((int)pcVar2[i]);
+      newStr[i] = (char)iVar1;
     }
-    local_10 = SL_GetStringOfSize(param_1,local_2014,param_3,local_c,param_4);
-    SL_RemoveRefToString(param_1,param_2);
+    newStringValue = SL_GetStringOfSize(inst,newStr,user,len,type);
+    SL_RemoveRefToString(inst,stringValue);
   }
-  return local_10;
+  return newStringValue;
 }
 
 
 // 008C08E0  SL_TransferRefToUser  (clientscript/cscr_stringlist.cpp:821)
 
-void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl SL_TransferRefToUser(scriptInstance_t inst,uint stringValue,uint user)
 
 {
   uint uVar1;
@@ -1099,15 +1113,16 @@ void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint par
   RefString *pRVar4;
   uint uVar5;
   undefined3 in_stack_00000005;
+  RefString *refStr;
   
-  pRVar4 = GetRefString(param_1,param_2);
-  if (((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & param_3) == 0) {
+  pRVar4 = GetRefString(inst,stringValue);
+  if (((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & user) == 0) {
     do {
       uVar1 = (pRVar4->field0_0x0).data;
       LOCK();
       uVar5 = (pRVar4->field0_0x0).data;
       if (uVar1 == uVar5) {
-        (pRVar4->field0_0x0).data = param_3 << 0x10 | uVar1;
+        (pRVar4->field0_0x0).data = user << 0x10 | uVar1;
         uVar5 = uVar1;
       }
       UNLOCK();
@@ -1115,7 +1130,7 @@ void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint par
   }
   else {
     if (((pRVar4->field0_0x0).data & 0xffffU) < 2) {
-      SL_DebugConvertToString(param_2,param_1);
+      SL_DebugConvertToString(stringValue,inst);
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x33e,0,"%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s")
       ;
@@ -1125,9 +1140,9 @@ void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint par
         return;
       }
     }
-    if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-      if (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0) {
-        SL_DebugConvertToString(param_2,param_1);
+    if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+      if (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0) {
+        SL_DebugConvertToString(stringValue,inst);
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x343,0,
                                  "%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s");
@@ -1138,12 +1153,11 @@ void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint par
         }
       }
       LOCK();
-      gScrStringDebugGlob[_param_1]->totalRefCount =
-           gScrStringDebugGlob[_param_1]->totalRefCount + -1;
+      gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + -1;
       UNLOCK();
       LOCK();
-      gScrStringDebugGlob[_param_1]->refCount[param_2] =
-           gScrStringDebugGlob[_param_1]->refCount[param_2] + -1;
+      gScrStringDebugGlob[_inst]->refCount[stringValue] =
+           gScrStringDebugGlob[_inst]->refCount[stringValue] + -1;
       UNLOCK();
     }
     LOCK();
@@ -1156,16 +1170,16 @@ void __cdecl SL_TransferRefToUser(scriptInstance_t param_1,uint param_2,uint par
 
 // 008C0A30  SL_CheckExists  (clientscript/cscr_stringlist.cpp:855)
 
-void __cdecl SL_CheckExists(scriptInstance_t param_1,uint param_2)
+void __cdecl SL_CheckExists(scriptInstance_t inst,uint stringValue)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if ((gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) &&
-     (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0)) {
-    SL_DebugConvertToString(param_2,param_1);
+  if ((gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) &&
+     (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0)) {
+    SL_DebugConvertToString(stringValue,inst);
     va("%d \'%s\'");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x358,0,"%s\n\t%s");
@@ -1181,17 +1195,18 @@ void __cdecl SL_CheckExists(scriptInstance_t param_1,uint param_2)
 
 // 008C0AA0  SL_AddRefToString  (clientscript/cscr_stringlist.cpp:862)
 
-void __cdecl SL_AddRefToString(uint param_1,scriptInstance_t param_2)
+void __cdecl SL_AddRefToString(uint stringValue,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   RefString *pRVar3;
   undefined3 in_stack_00000009;
+  RefString *refStr;
   
-  if (gScrStringDebugGlob[_param_2] != (scrStringDebugGlob_t *)0x0) {
-    if (gScrStringDebugGlob[_param_2]->refCount[param_1] == 0) {
-      SL_DebugConvertToString(param_1,param_2);
+  if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+    if (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0) {
+      SL_DebugConvertToString(stringValue,inst);
       va("%d \'%s\'");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x366,0,"%s\n\t%s");
@@ -1201,8 +1216,8 @@ void __cdecl SL_AddRefToString(uint param_1,scriptInstance_t param_2)
         return;
       }
     }
-    if (0xffff < gScrStringDebugGlob[_param_2]->refCount[param_1]) {
-      SL_DebugConvertToString(param_1,param_2);
+    if (0xffff < gScrStringDebugGlob[_inst]->refCount[stringValue]) {
+      SL_DebugConvertToString(stringValue,inst);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x367,0,"%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s")
       ;
@@ -1213,19 +1228,19 @@ void __cdecl SL_AddRefToString(uint param_1,scriptInstance_t param_2)
       }
     }
     LOCK();
-    gScrStringDebugGlob[_param_2]->totalRefCount = gScrStringDebugGlob[_param_2]->totalRefCount + 1;
+    gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + 1;
     UNLOCK();
     LOCK();
-    gScrStringDebugGlob[_param_2]->refCount[param_1] =
-         gScrStringDebugGlob[_param_2]->refCount[param_1] + 1;
+    gScrStringDebugGlob[_inst]->refCount[stringValue] =
+         gScrStringDebugGlob[_inst]->refCount[stringValue] + 1;
     UNLOCK();
   }
-  pRVar3 = GetRefString(param_2,param_1);
+  pRVar3 = GetRefString(inst,stringValue);
   LOCK();
   (pRVar3->field0_0x0).data = (pRVar3->field0_0x0).data + 1;
   UNLOCK();
   if (((pRVar3->field0_0x0).data & 0xffffU) == 0) {
-    SL_DebugConvertToString(param_1,param_2);
+    SL_DebugConvertToString(stringValue,inst);
     va("string: \'%s\', refCount: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x371,0,"%s\n\t%s");
@@ -1241,7 +1256,7 @@ void __cdecl SL_AddRefToString(uint param_1,scriptInstance_t param_2)
 
 // 008C0F30  SL_FreeString  (clientscript/cscr_stringlist.cpp:889)
 
-void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *param_3,uint param_4)
+void __cdecl SL_FreeString(scriptInstance_t inst,uint stringValue,RefString *refStr,uint len)
 
 {
   uint uVar1;
@@ -1249,16 +1264,20 @@ void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *para
   HashEntry *pHVar3;
   bool bVar4;
   undefined3 in_stack_00000005;
-  uint local_18;
-  uint local_c;
-  HashEntry *local_8;
+  char *str;
+  HashEntry *entry;
+  uint newIndex;
+  uint newNext;
+  uint index;
+  uint prev;
+  HashEntry *newEntry;
   
-  local_c = GetHashCode(param_1,param_3->str,param_4);
+  prev = GetHashCode(inst,refStr->str,len);
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  if (((param_3->field0_0x0).data & 0xffffU) == 0) {
-    pHVar3 = gScrStringGlob[_param_1].hashTable + local_c;
-    if (((uint)(param_3->field0_0x0).data >> 0x10 & 0xff) != 0) {
-      SL_DebugConvertToString(param_2,param_1);
+  if (((refStr->field0_0x0).data & 0xffffU) == 0) {
+    pHVar3 = gScrStringGlob[_inst].hashTable + prev;
+    if (((uint)(refStr->field0_0x0).data >> 0x10 & 0xff) != 0) {
+      SL_DebugConvertToString(stringValue,inst);
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x3a0,0,"%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s")
       ;
@@ -1268,7 +1287,7 @@ void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *para
         return;
       }
     }
-    MT_FreeIndex(param_1,param_2,param_4 + 4);
+    MT_FreeIndex(inst,stringValue,len + 4);
     if (((pHVar3->status_next & 0x30000) != 0x20000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x3a4,0,"%s\n\t(entry->status_next) = %i"), !bVar4)) {
@@ -1276,56 +1295,56 @@ void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *para
       (*pcVar2)();
       return;
     }
-    local_18 = pHVar3->status_next & 0xffff;
-    local_8 = gScrStringGlob[_param_1].hashTable + local_18;
-    if ((pHVar3->u).prev == param_2) {
-      *(int *)(_param_1 * 0x100 + 0xe13a10 + gScrStringGlob[_param_1].indentLevel * 4) =
-           *(int *)(_param_1 * 0x100 + 0xe13a10 + gScrStringGlob[_param_1].indentLevel * 4) + -1;
-      if (local_8 != pHVar3) {
-        pHVar3->status_next = local_8->status_next & 0xffff | 0x20000;
-        pHVar3->u = local_8->u;
-        gScrStringGlob[_param_1].nextFreeEntry = pHVar3;
-        local_c = local_18;
-        pHVar3 = local_8;
+    newIndex = pHVar3->status_next & 0xffff;
+    newEntry = gScrStringGlob[_inst].hashTable + newIndex;
+    if ((pHVar3->u).prev == stringValue) {
+      *(int *)(_inst * 0x100 + 0xe13a10 + gScrStringGlob[_inst].indentLevel * 4) =
+           *(int *)(_inst * 0x100 + 0xe13a10 + gScrStringGlob[_inst].indentLevel * 4) + -1;
+      if (newEntry != pHVar3) {
+        pHVar3->status_next = newEntry->status_next & 0xffff | 0x20000;
+        pHVar3->u = newEntry->u;
+        gScrStringGlob[_inst].nextFreeEntry = pHVar3;
+        prev = newIndex;
+        pHVar3 = newEntry;
       }
     }
     else {
       while( true ) {
-        if ((local_8 == pHVar3) &&
+        if ((newEntry == pHVar3) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                      ,0x3bf,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if (((local_8->status_next & 0x30000) != 0x10000) &&
+        if (((newEntry->status_next & 0x30000) != 0x10000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                      ,0x3c0,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if ((local_8->u).prev == param_2) break;
-        local_c = local_18;
-        local_18 = local_8->status_next & 0xffff;
-        local_8 = gScrStringGlob[_param_1].hashTable + local_18;
+        if ((newEntry->u).prev == stringValue) break;
+        prev = newIndex;
+        newIndex = newEntry->status_next & 0xffff;
+        newEntry = gScrStringGlob[_inst].hashTable + newIndex;
       }
-      gScrStringGlob[_param_1].hashTable[local_c].status_next =
-           gScrStringGlob[_param_1].hashTable[local_c].status_next & 0x30000 |
-           local_8->status_next & 0xffff;
-      local_c = local_18;
-      pHVar3 = local_8;
+      gScrStringGlob[_inst].hashTable[prev].status_next =
+           gScrStringGlob[_inst].hashTable[prev].status_next & 0x30000 |
+           newEntry->status_next & 0xffff;
+      prev = newIndex;
+      pHVar3 = newEntry;
     }
-    local_8 = pHVar3;
-    local_18 = local_c;
-    if (((local_8->status_next & 0x30000) == 0) &&
+    newEntry = pHVar3;
+    newIndex = prev;
+    if (((newEntry->status_next & 0x30000) == 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x3ce,0,"%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    uVar1 = (gScrStringGlob[_param_1].hashTable)->status_next;
+    uVar1 = (gScrStringGlob[_inst].hashTable)->status_next;
     if (((uVar1 & 0x30000) != 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x3d1,0,"%s"), !bVar4)) {
@@ -1333,10 +1352,10 @@ void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *para
       (*pcVar2)();
       return;
     }
-    local_8->status_next = uVar1;
-    (local_8->u).prev = 0;
-    gScrStringGlob[_param_1].hashTable[uVar1].u.prev = local_18;
-    (gScrStringGlob[_param_1].hashTable)->status_next = local_18;
+    newEntry->status_next = uVar1;
+    (newEntry->u).prev = 0;
+    gScrStringGlob[_inst].hashTable[uVar1].u.prev = newIndex;
+    (gScrStringGlob[_inst].hashTable)->status_next = newIndex;
     Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
   }
   else {
@@ -1348,41 +1367,44 @@ void __cdecl SL_FreeString(scriptInstance_t param_1,uint param_2,RefString *para
 
 // 008C0C40  SL_RemoveRefToString  (clientscript/cscr_stringlist.cpp:993)
 
-void __cdecl SL_RemoveRefToString(scriptInstance_t param_1,uint param_2)
+void __cdecl SL_RemoveRefToString(scriptInstance_t inst,uint stringValue)
 
 {
-  RefString *pRVar1;
-  int iVar2;
+  RefString *refString;
+  int iVar1;
+  RefString *refStr;
+  uint len;
   
-  pRVar1 = GetRefString(param_1,param_2);
-  iVar2 = SL_GetRefStringLen(pRVar1);
-  SL_RemoveRefToStringOfSize(param_1,param_2,iVar2 + 1);
+  refString = GetRefString(inst,stringValue);
+  iVar1 = SL_GetRefStringLen(refString);
+  SL_RemoveRefToStringOfSize(inst,stringValue,iVar1 + 1);
   return;
 }
 
 
 // 008C0C90  SL_RemoveRefToStringOfSize  (clientscript/cscr_stringlist.cpp:1009)
 
-void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t inst,uint stringValue,uint len)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  RefString *pRVar4;
+  RefString *refStr_00;
   undefined3 in_stack_00000005;
+  RefString *refStr;
   
-  pRVar4 = GetRefString(param_1,param_2);
+  refStr_00 = GetRefString(inst,stringValue);
   LOCK();
-  iVar1 = (pRVar4->field0_0x0).data;
-  (pRVar4->field0_0x0).data = (pRVar4->field0_0x0).data + -1;
+  iVar1 = (refStr_00->field0_0x0).data;
+  (refStr_00->field0_0x0).data = (refStr_00->field0_0x0).data + -1;
   UNLOCK();
   if ((iVar1 - 1U & 0xffff) == 0) {
-    SL_FreeString(param_1,param_2,pRVar4,param_3);
-    if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-      if ((gScrStringDebugGlob[_param_1]->totalRefCount == 0) ||
-         (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0)) {
-        SL_DebugConvertToString(param_2,param_1);
+    SL_FreeString(inst,stringValue,refStr_00,len);
+    if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+      if ((gScrStringDebugGlob[_inst]->totalRefCount == 0) ||
+         (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0)) {
+        SL_DebugConvertToString(stringValue,inst);
         va(
           "gScrStringDebugGlob[inst]->totalRefCount: %i, stringValue: %i, gScrStringDebugGlob[inst]->refCount[stringValue]: %i, string: \'%s\'"
           );
@@ -1394,8 +1416,8 @@ void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,ui
           return;
         }
       }
-      if (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0) {
-        SL_DebugConvertToString(param_2,param_1);
+      if (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0) {
+        SL_DebugConvertToString(stringValue,inst);
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                  ,0x40f,0,
                                  "%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s");
@@ -1406,19 +1428,18 @@ void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,ui
         }
       }
       LOCK();
-      gScrStringDebugGlob[_param_1]->totalRefCount =
-           gScrStringDebugGlob[_param_1]->totalRefCount + -1;
+      gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + -1;
       UNLOCK();
       LOCK();
-      gScrStringDebugGlob[_param_1]->refCount[param_2] =
-           gScrStringDebugGlob[_param_1]->refCount[param_2] + -1;
+      gScrStringDebugGlob[_inst]->refCount[stringValue] =
+           gScrStringDebugGlob[_inst]->refCount[stringValue] + -1;
       UNLOCK();
     }
   }
-  else if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-    if ((gScrStringDebugGlob[_param_1]->totalRefCount == 0) ||
-       (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0)) {
-      SL_DebugConvertToString(param_2,param_1);
+  else if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+    if ((gScrStringDebugGlob[_inst]->totalRefCount == 0) ||
+       (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0)) {
+      SL_DebugConvertToString(stringValue,inst);
       va(
         "gScrStringDebugGlob[inst]->totalRefCount: %i, stringValue: %i, gScrStringDebugGlob[inst]->refCount[stringValue]: %i, string: \'%s\'"
         );
@@ -1430,8 +1451,8 @@ void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,ui
         return;
       }
     }
-    if (gScrStringDebugGlob[_param_1]->refCount[param_2] == 0) {
-      SL_DebugConvertToString(param_2,param_1);
+    if (gScrStringDebugGlob[_inst]->refCount[stringValue] == 0) {
+      SL_DebugConvertToString(stringValue,inst);
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x3fd,0,"%s\n\t(SL_DebugConvertToString( stringValue, inst )) = %s")
       ;
@@ -1442,12 +1463,11 @@ void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,ui
       }
     }
     LOCK();
-    gScrStringDebugGlob[_param_1]->totalRefCount = gScrStringDebugGlob[_param_1]->totalRefCount + -1
-    ;
+    gScrStringDebugGlob[_inst]->totalRefCount = gScrStringDebugGlob[_inst]->totalRefCount + -1;
     UNLOCK();
     LOCK();
-    gScrStringDebugGlob[_param_1]->refCount[param_2] =
-         gScrStringDebugGlob[_param_1]->refCount[param_2] + -1;
+    gScrStringDebugGlob[_inst]->refCount[stringValue] =
+         gScrStringDebugGlob[_inst]->refCount[stringValue] + -1;
     UNLOCK();
   }
   return;
@@ -1458,43 +1478,46 @@ void __cdecl SL_RemoveRefToStringOfSize(scriptInstance_t param_1,uint param_2,ui
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Scr_SetStringLiveUpdateSafe(ushort *param_1,char *param_2,scriptInstance_t param_3)
+void __cdecl Scr_SetStringLiveUpdateSafe(ushort *to,char *value,scriptInstance_t inst)
 
 {
   int iVar1;
   char *pcVar2;
   RefString *pRVar3;
   uint uVar4;
-  char local_8c;
+  int substrLen;
+  char *substr;
+  RefString *refStr;
+  char pfValue;
   char acStack_8b [127];
   uint local_c;
-  char *local_8;
+  char *destString;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_1 == 0) {
-    uVar4 = SL_GetString(param_2,0,param_3);
-    *param_1 = (ushort)uVar4;
+  if (*to == 0) {
+    uVar4 = SL_GetString(value,0,inst);
+    *to = (ushort)uVar4;
   }
   else {
-    local_8 = SL_ConvertToString((uint)*param_1,SCRIPTINSTANCE_SERVER);
-    if ((local_8 == (char *)0x0) || (iVar1 = I_stricmp(local_8,param_2), iVar1 != 0)) {
-      if ((*local_8 == 'p') &&
-         ((local_8[1] == 'f' && (pcVar2 = I_stristr(local_8,"_"), pcVar2 != (char *)0x0)))) {
-        pcVar2 = pcVar2 + (2 - (int)local_8);
-        I_strncpyz(&local_8c,local_8,(int)pcVar2);
-        I_strncpyz(acStack_8b + (int)(pcVar2 + -2),param_2,0x80 - (int)pcVar2);
-        iVar1 = I_stricmp(local_8,&local_8c);
+    destString = SL_ConvertToString((uint)*to,SCRIPTINSTANCE_SERVER);
+    if ((destString == (char *)0x0) || (iVar1 = I_stricmp(destString,value), iVar1 != 0)) {
+      if ((*destString == 'p') &&
+         ((destString[1] == 'f' && (pcVar2 = I_stristr(destString,"_"), pcVar2 != (char *)0x0)))) {
+        pcVar2 = pcVar2 + (2 - (int)destString);
+        I_strncpyz(&pfValue,destString,(int)pcVar2);
+        I_strncpyz(acStack_8b + (int)(pcVar2 + -2),value,0x80 - (int)pcVar2);
+        iVar1 = I_stricmp(destString,&pfValue);
         if (iVar1 == 0) {
           return;
         }
-        param_2 = &local_8c;
+        value = &pfValue;
       }
-      pRVar3 = GetRefString(param_3,(uint)*param_1);
+      pRVar3 = GetRefString(inst,(uint)*to);
       if (((uint)(pRVar3->field0_0x0).data >> 0x10 & 4) == 0) {
-        SL_RemoveRefToString(param_3,(uint)*param_1);
+        SL_RemoveRefToString(inst,(uint)*to);
       }
-      uVar4 = SL_GetString(param_2,0,param_3);
-      *param_1 = (ushort)uVar4;
+      uVar4 = SL_GetString(value,0,inst);
+      *to = (ushort)uVar4;
     }
   }
   return;
@@ -1503,46 +1526,46 @@ void __cdecl Scr_SetStringLiveUpdateSafe(ushort *param_1,char *param_2,scriptIns
 
 // 008C1420  Scr_SetString  (clientscript/cscr_stringlist.cpp:1088)
 
-void __cdecl Scr_SetString(ushort *param_1,uint param_2,scriptInstance_t param_3)
+void __cdecl Scr_SetString(ushort *to,uint from,scriptInstance_t inst)
 
 {
-  if (param_2 != 0) {
-    SL_AddRefToString(param_2,param_3);
+  if (from != 0) {
+    SL_AddRefToString(from,inst);
   }
-  if (*param_1 != 0) {
-    SL_RemoveRefToString(param_3,(uint)*param_1);
+  if (*to != 0) {
+    SL_RemoveRefToString(inst,(uint)*to);
   }
-  *param_1 = (ushort)param_2;
+  *to = (ushort)from;
   return;
 }
 
 
 // 008C1470  Scr_SetStringFromCharString  (clientscript/cscr_stringlist.cpp:1098)
 
-void __cdecl Scr_SetStringFromCharString(ushort *param_1,char *param_2,scriptInstance_t param_3)
+void __cdecl Scr_SetStringFromCharString(ushort *to,char *from,scriptInstance_t inst)
 
 {
   uint uVar1;
   
-  if (*param_1 != 0) {
-    SL_RemoveRefToString(param_3,(uint)*param_1);
+  if (*to != 0) {
+    SL_RemoveRefToString(inst,(uint)*to);
   }
-  uVar1 = SL_GetString(param_2,0,SCRIPTINSTANCE_SERVER);
-  *param_1 = (ushort)uVar1;
+  uVar1 = SL_GetString(from,0,SCRIPTINSTANCE_SERVER);
+  *to = (ushort)uVar1;
   return;
 }
 
 
 // 008C14B0  Scr_AllocString  (clientscript/cscr_stringlist.cpp:1107)
 
-uint __cdecl Scr_AllocString(char *param_1,int param_2,scriptInstance_t param_3)
+uint __cdecl Scr_AllocString(char *s,int sys,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_2 != 1) {
+  if (sys != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
                              0x454,0,"%s");
     if (!bVar2) {
@@ -1551,7 +1574,7 @@ uint __cdecl Scr_AllocString(char *param_1,int param_2,scriptInstance_t param_3)
       return uVar3;
     }
   }
-  uVar3 = SL_GetString(param_1,1,param_3);
+  uVar3 = SL_GetString(s,1,inst);
   return uVar3;
 }
 
@@ -1560,16 +1583,16 @@ uint __cdecl Scr_AllocString(char *param_1,int param_2,scriptInstance_t param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl SL_GetStringForFloat(float param_1,scriptInstance_t param_2)
+uint __cdecl SL_GetStringForFloat(float f,scriptInstance_t inst)
 
 {
   uint uVar1;
-  char local_8c [132];
+  char tempString [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_8c,"%g");
-  uVar1 = SL_GetString_(param_2,local_8c,0,0xf);
+  sprintf(tempString,"%g");
+  uVar1 = SL_GetString_(inst,tempString,0,0xf);
   return uVar1;
 }
 
@@ -1578,16 +1601,16 @@ uint __cdecl SL_GetStringForFloat(float param_1,scriptInstance_t param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl SL_GetStringForInt(scriptInstance_t param_1,int param_2)
+uint __cdecl SL_GetStringForInt(scriptInstance_t inst,int i)
 
 {
   uint uVar1;
-  char local_8c [132];
+  char tempString [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  I_itoa(param_2,local_8c,0x80);
-  uVar1 = SL_GetString_(param_1,local_8c,0,0xf);
+  I_itoa(i,tempString,0x80);
+  uVar1 = SL_GetString_(inst,tempString,0,0xf);
   return uVar1;
 }
 
@@ -1596,23 +1619,23 @@ uint __cdecl SL_GetStringForInt(scriptInstance_t param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl SL_GetStringForVector(scriptInstance_t param_1,float *param_2)
+uint __cdecl SL_GetStringForVector(scriptInstance_t inst,float *v)
 
 {
   uint uVar1;
-  char local_8c [132];
+  char tempString [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_8c,"(%g, %g, %g)");
-  uVar1 = SL_GetString_(param_1,local_8c,0,0xf);
+  sprintf(tempString,"(%g, %g, %g)");
+  uVar1 = SL_GetString_(inst,tempString,0,0xf);
   return uVar1;
 }
 
 
 // 008C1630  SL_ShutdownSystem  (clientscript/cscr_stringlist.cpp:1142)
 
-void __cdecl SL_ShutdownSystem(scriptInstance_t param_1,uint param_2)
+void __cdecl SL_ShutdownSystem(scriptInstance_t inst,uint user)
 
 {
   HashEntry *pHVar1;
@@ -1620,9 +1643,11 @@ void __cdecl SL_ShutdownSystem(scriptInstance_t param_1,uint param_2)
   bool bVar3;
   RefString *pRVar4;
   undefined3 in_stack_00000005;
-  uint local_10;
+  uint hash;
+  HashEntry *entry;
+  RefString *refStr;
   
-  if ((param_2 == 0) &&
+  if ((user == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x47b,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1630,57 +1655,59 @@ void __cdecl SL_ShutdownSystem(scriptInstance_t param_1,uint param_2)
     return;
   }
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  local_10 = 1;
+  hash = 1;
   do {
-    if ((-(uint)(_param_1 != 0) & 0xffffc000) + 0x8000 <= local_10) {
+    if ((-(uint)(_inst != 0) & 0xffffc000) + 0x8000 <= hash) {
       Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
       return;
     }
     do {
-      pHVar1 = gScrStringGlob[_param_1].hashTable + local_10;
+      pHVar1 = gScrStringGlob[_inst].hashTable + hash;
       if (((pHVar1->status_next & 0x30000) == 0) ||
-         (pRVar4 = GetRefString(param_1,(pHVar1->u).prev),
-         ((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & param_2) == 0)) break;
+         (pRVar4 = GetRefString(inst,(pHVar1->u).prev),
+         ((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & user) == 0)) break;
       (pRVar4->field0_0x0).data =
            (pRVar4->field0_0x0).data & 0xff00ffffU |
-           ((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & ~param_2) << 0x10;
-      gScrStringGlob[_param_1].nextFreeEntry = (HashEntry *)0x0;
-      SL_RemoveRefToString(param_1,(pHVar1->u).prev);
-    } while (gScrStringGlob[_param_1].nextFreeEntry != (HashEntry *)0x0);
-    local_10 = local_10 + 1;
+           ((uint)(pRVar4->field0_0x0).data >> 0x10 & 0xff & ~user) << 0x10;
+      gScrStringGlob[_inst].nextFreeEntry = (HashEntry *)0x0;
+      SL_RemoveRefToString(inst,(pHVar1->u).prev);
+    } while (gScrStringGlob[_inst].nextFreeEntry != (HashEntry *)0x0);
+    hash = hash + 1;
   } while( true );
 }
 
 
 // 008C1770  Scr_ShutdownGameStrings  (clientscript/cscr_stringlist.cpp:1180)
 
-void __cdecl Scr_ShutdownGameStrings(scriptInstance_t param_1)
+void __cdecl Scr_ShutdownGameStrings(scriptInstance_t inst)
 
 {
-  SL_ShutdownSystem(param_1,1);
+  SL_ShutdownSystem(inst,1);
   return;
 }
 
 
 // 008C1790  SL_TransferSystem  (clientscript/cscr_stringlist.cpp:1186)
 
-void __cdecl SL_TransferSystem(uint param_1,uint param_2,scriptInstance_t param_3)
+void __cdecl SL_TransferSystem(uint from,uint to,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   RefString *pRVar3;
   undefined3 in_stack_0000000d;
-  uint local_10;
+  uint hash;
+  HashEntry *entry;
+  RefString *refStr;
   
-  if ((param_1 == 0) &&
+  if ((from == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x4a7,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == 0) &&
+  if ((to == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x4a8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1688,17 +1715,16 @@ void __cdecl SL_TransferSystem(uint param_1,uint param_2,scriptInstance_t param_
     return;
   }
   Sys_EnterCriticalSection(CRITSECT_SCRIPT_STRING);
-  for (local_10 = 1; local_10 < (-(uint)(_param_3 != 0) & 0xffffc000) + 0x8000;
-      local_10 = local_10 + 1) {
-    if (((gScrStringGlob[_param_3].hashTable[local_10].status_next & 0x30000) != 0) &&
-       (pRVar3 = GetRefString(param_3,gScrStringGlob[_param_3].hashTable[local_10].u.prev),
-       ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff & param_1) != 0)) {
+  for (hash = 1; hash < (-(uint)(_inst != 0) & 0xffffc000) + 0x8000; hash = hash + 1) {
+    if (((gScrStringGlob[_inst].hashTable[hash].status_next & 0x30000) != 0) &&
+       (pRVar3 = GetRefString(inst,gScrStringGlob[_inst].hashTable[hash].u.prev),
+       ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff & from) != 0)) {
       (pRVar3->field0_0x0).data =
            (pRVar3->field0_0x0).data & 0xff00ffffU |
-           ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff & ~param_1) << 0x10;
+           ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff & ~from) << 0x10;
       (pRVar3->field0_0x0).data =
            (pRVar3->field0_0x0).data & 0xff00ffffU |
-           ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff | param_2 & 0xff) << 0x10;
+           ((uint)(pRVar3->field0_0x0).data >> 0x10 & 0xff | to & 0xff) << 0x10;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_SCRIPT_STRING);
@@ -1708,15 +1734,15 @@ void __cdecl SL_TransferSystem(uint param_1,uint param_2,scriptInstance_t param_
 
 // 008C1940  CreateCanonicalFilename  (clientscript/cscr_stringlist.cpp:1221)
 
-void __cdecl CreateCanonicalFilename(char *param_1,char *param_2,int param_3)
+void __cdecl CreateCanonicalFilename(char *newFilename,char *filename,int count)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  uint c;
   
-  if ((param_3 == 0) &&
+  if ((count == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp"
                                ,0x4c8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1726,27 +1752,27 @@ void __cdecl CreateCanonicalFilename(char *param_1,char *param_2,int param_3)
   do {
     do {
       do {
-        local_8 = (uint)*param_2;
-        param_2 = param_2 + 1;
-      } while (local_8 == 0x5c);
-    } while (local_8 == 0x2f);
-    while (0x1f < local_8) {
-      iVar3 = tolower(local_8);
-      *param_1 = (char)iVar3;
-      param_1 = param_1 + 1;
-      param_3 = param_3 + -1;
-      if (param_3 == 0) {
+        c = (uint)*filename;
+        filename = filename + 1;
+      } while (c == 0x5c);
+    } while (c == 0x2f);
+    while (0x1f < c) {
+      iVar3 = tolower(c);
+      *newFilename = (char)iVar3;
+      newFilename = newFilename + 1;
+      count = count + -1;
+      if (count == 0) {
         Com_Error(ERR_DROP,"\x15Filename \'%s\' exceeds maximum length of %d");
       }
-      if (local_8 == 0x2f) break;
-      local_8 = (uint)*param_2;
-      param_2 = param_2 + 1;
-      if (local_8 == 0x5c) {
-        local_8 = 0x2f;
+      if (c == 0x2f) break;
+      c = (uint)*filename;
+      filename = filename + 1;
+      if (c == 0x5c) {
+        c = 0x2f;
       }
     }
-    if (local_8 == 0) {
-      *param_1 = '\0';
+    if (c == 0) {
+      *newFilename = '\0';
       return;
     }
   } while( true );
@@ -1757,16 +1783,16 @@ void __cdecl CreateCanonicalFilename(char *param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl Scr_CreateCanonicalFilename(scriptInstance_t param_1,char *param_2)
+uint __cdecl Scr_CreateCanonicalFilename(scriptInstance_t inst,char *filename)
 
 {
   uint uVar1;
-  char local_40c [1028];
+  char newFilename [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  CreateCanonicalFilename(local_40c,param_2,0x400);
-  uVar1 = SL_GetString_(param_1,local_40c,0,7);
+  CreateCanonicalFilename(newFilename,filename,0x400);
+  uVar1 = SL_GetString_(inst,newFilename,0,7);
   return uVar1;
 }
 

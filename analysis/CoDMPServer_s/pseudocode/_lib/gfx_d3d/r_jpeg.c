@@ -3,8 +3,8 @@
 // 0083DD50  R_SaveJpg  (gfx_d3d/r_jpeg.cpp:141)
 
 void __cdecl
-R_SaveJpg(char *param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar *param_6,
-         int *param_7)
+R_SaveJpg(char *filename,int quality,int image_width,int image_buffer,uchar *output_buffer,
+         uchar *used_buffer,int *param_7)
 
 {
   uint in_EAX;
@@ -13,89 +13,71 @@ R_SaveJpg(char *param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar
   uint unaff_ESI;
   jpeg_compress_struct *unaff_EDI;
   uchar uVar2;
-  undefined1 auStack_20c [20];
-  code *pcStack_1f8;
-  _func___cdecl_void_ptr_uint *p_Stack_1f4;
-  JHUFF_TBL *pJStack_1a0;
-  JHUFF_TBL *pJStack_19c;
-  char **ppcStack_198;
-  JHUFF_TBL *pJStack_194;
-  JHUFF_TBL *pJStack_190;
-  uchar auStack_18c [8];
-  code *pcStack_184;
-  code *pcStack_180;
-  undefined4 *puStack_178;
-  undefined4 *puStack_174;
-  jpeg_scan_info *pjStack_158;
-  int iStack_154;
-  uint uStack_150;
-  J_DCT_METHOD JStack_14c;
-  uint uStack_148;
-  uint uStack_a0;
+  uchar *out;
+  undefined1 auStack_208 [4];
+  jpeg_error_mgr jerr;
+  undefined1 auStack_178 [4];
+  jpeg_compress_struct cinfo;
   
-  pJStack_1a0 = (JHUFF_TBL *)0x0;
-  pJStack_19c = (JHUFF_TBL *)0x0;
-  p_Stack_1f4 = (_func___cdecl_void_ptr_uint *)0x0;
-  pJStack_190 = (JHUFF_TBL *)0x0;
-  auStack_18c[0] = '\0';
-  auStack_18c[1] = '\0';
-  auStack_18c[2] = '\0';
-  auStack_18c[3] = '\0';
-  auStack_18c[4] = '\0';
-  auStack_18c[5] = '\0';
-  auStack_18c[6] = '\0';
-  auStack_18c[7] = '\0';
-  puStack_178 = (undefined4 *)(auStack_20c + 4);
-  auStack_20c._4_4_ = error_exit;
-  auStack_20c._8_4_ = emit_message;
-  auStack_20c._12_4_ = output_message;
-  auStack_20c._16_4_ = format_message;
-  pcStack_1f8 = reset_error_mgr;
-  ppcStack_198 = jpeg_std_message_table;
-  pJStack_194 = (JHUFF_TBL *)0x7b;
-  pcStack_184 = ExitJpeg;
-  pcStack_180 = PrintfJpeg;
+  jerr.msg_parm._76_4_ = 0;
+  jerr.trace_level = 0;
+  jerr.reset_error_mgr = (_func___cdecl_void_jpeg_common_struct_ptr *)0x0;
+  jerr.last_jpeg_message = 0;
+  jerr.addon_message_table = (char **)0x0;
+  jerr.first_addon_message = 0;
+  auStack_178 = (undefined1  [4])auStack_208;
+  auStack_208 = (undefined1  [4])error_exit;
+  jerr.error_exit = emit_message;
+  jerr.emit_message = output_message;
+  jerr.output_message = format_message;
+  jerr.format_message = reset_error_mgr;
+  jerr.num_warnings = (long)jpeg_std_message_table;
+  jerr.jpeg_message_table = (char **)0x7b;
+  jerr.last_addon_message = (int)ExitJpeg;
+  jerr.exit = PrintfJpeg;
   jpeg_alloc_overrides.malloc = Z_MallocJpeg;
   jpeg_alloc_overrides.free = Z_FreeJpeg;
   jpeg_CreateCompress(unaff_EDI,unaff_ESI,unaff_EBX);
   uVar2 = (uchar)unaff_EBX;
-  puVar1 = param_5;
-  if (param_5 == (uchar *)0x0) {
+  puVar1 = output_buffer;
+  if (output_buffer == (uchar *)0x0) {
     puVar1 = (uchar *)_Hunk_AllocateTempMemoryInternal();
   }
-  if (pjStack_158 == (jpeg_scan_info *)0x0) {
-    pjStack_158 = (jpeg_scan_info *)(*(code *)*puStack_174)(&puStack_178,0,0x1c);
+  if (cinfo.alloc.free == (_func___cdecl_void_void_ptr *)0x0) {
+    cinfo.alloc.free =
+         (_func___cdecl_void_void_ptr *)
+         (*(cinfo.err)->error_exit)((jpeg_common_struct *)auStack_178);
   }
-  pjStack_158->Ss = (int)puVar1;
-  pjStack_158->component_index[1] = (int)init_destination;
-  pjStack_158->component_index[2] = (int)empty_output_buffer;
-  pjStack_158->component_index[3] = (int)term_destination;
-  pjStack_158->Se = param_3 * in_EAX * 3;
-  iStack_154 = param_3;
-  JStack_14c = JDCT_FLOAT|JDCT_IFAST;
-  uStack_148 = 2;
-  uStack_150 = in_EAX;
+  *(uchar **)(cinfo.alloc.free + 0x14) = puVar1;
+  *(code **)(cinfo.alloc.free + 8) = init_destination;
+  *(code **)(cinfo.alloc.free + 0xc) = empty_output_buffer;
+  *(code **)(cinfo.alloc.free + 0x10) = term_destination;
+  *(uint *)(cinfo.alloc.free + 0x18) = image_width * in_EAX * 3;
+  cinfo.dest = (jpeg_destination_mgr *)image_width;
+  cinfo.image_height = 3;
+  cinfo.input_components = 2;
+  cinfo.image_width = in_EAX;
   jpeg_set_defaults(unaff_EDI);
   jpeg_set_quality(unaff_EDI,unaff_ESI,uVar2);
   jpeg_start_compress(unaff_EDI,(uchar)unaff_ESI);
-  if (uStack_a0 < uStack_150) {
+  if ((uint)cinfo._212_4_ < cinfo.image_width) {
     do {
-      auStack_20c._0_4_ = uStack_a0 * param_3 * 3 + param_4;
-      jpeg_write_scanlines((jpeg_compress_struct *)auStack_20c,(uchar **)unaff_EDI,unaff_ESI);
-    } while (uStack_a0 < uStack_150);
+      out = (uchar *)(cinfo._212_4_ * image_width * 3 + image_buffer);
+      jpeg_write_scanlines((jpeg_compress_struct *)&out,(uchar **)unaff_EDI,unaff_ESI);
+    } while ((uint)cinfo._212_4_ < cinfo.image_width);
   }
   jpeg_finish_compress(unaff_EDI);
-  if (param_1 != (char *)0x0) {
+  if (filename != (char *)0x0) {
     FS_WriteFile((char *)puVar1,(void *)hackSize,(int)unaff_EDI);
   }
-  if (param_6 != (uchar *)0x0) {
-    *(int *)param_6 = hackSize;
+  if (used_buffer != (uchar *)0x0) {
+    *(int *)used_buffer = hackSize;
   }
-  if (param_5 == (uchar *)0x0) {
+  if (output_buffer == (uchar *)0x0) {
     _Hunk_FreeTempMemory();
   }
-  if (puStack_174 != (undefined4 *)0x0) {
-    (*(code *)puStack_174[10])(&puStack_178);
+  if (cinfo.err != (jpeg_error_mgr *)0x0) {
+    (*(code *)((cinfo.err)->msg_parm).i[4])(auStack_178);
   }
   jpeg_alloc_overrides.free = (_func___cdecl_void_void_ptr *)0x0;
   jpeg_alloc_overrides.malloc = (_func___cdecl_void_ptr_uint *)0x0;

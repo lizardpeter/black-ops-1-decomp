@@ -5,58 +5,58 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 _EXCEPTION_DISPOSITION __cdecl
-_except_handler4(_EXCEPTION_RECORD *param_1,_EXCEPTION_REGISTRATION_RECORD *param_2,
-                _CONTEXT *param_3,void *param_4)
+_except_handler4(_EXCEPTION_RECORD *ExceptionRecord,_EXCEPTION_REGISTRATION_RECORD *EstablisherFrame
+                ,_CONTEXT *ContextRecord,void *DispatcherContext)
 
 {
   int extraout_EAX;
   int iVar1;
   _EXCEPTION_REGISTRATION_RECORD *p_Var2;
   uint uVar3;
-  _EXCEPTION_RECORD *local_1c;
+  _EXCEPTION_RECORD *ExceptionPointers;
   _CONTEXT *local_18;
-  int *local_14;
-  _EXCEPTION_DISPOSITION local_10;
-  _EXCEPTION_REGISTRATION_RECORD *local_c;
-  undefined1 local_5;
+  _EH4_SCOPETABLE_RECORD *ScopeTableRecord;
+  _EXCEPTION_DISPOSITION Disposition;
+  ulong EnclosingLevel;
+  uchar Revalidate;
   
-  uVar3 = (uint)param_2[1].Next ^ __security_cookie;
-  local_5 = 0;
-  local_10 = ExceptionContinueSearch;
-  p_Var2 = param_2;
-  if ((param_1->ExceptionFlags & 0x66) == 0) {
-    param_2[-1].Handler =
+  uVar3 = (uint)EstablisherFrame[1].Next ^ __security_cookie;
+  Revalidate = '\0';
+  Disposition = ExceptionContinueSearch;
+  p_Var2 = EstablisherFrame;
+  if ((ExceptionRecord->ExceptionFlags & 0x66) == 0) {
+    EstablisherFrame[-1].Handler =
          (_func___cdecl__EXCEPTION_DISPOSITION__EXCEPTION_RECORD_ptr_void_ptr__CONTEXT_ptr_void_ptr
-          *)&local_1c;
-    local_c = (_EXCEPTION_REGISTRATION_RECORD *)param_2[1].Handler;
-    local_1c = param_1;
-    local_18 = param_3;
+          *)&ExceptionPointers;
+    EnclosingLevel = (ulong)EstablisherFrame[1].Handler;
+    ExceptionPointers = ExceptionRecord;
+    local_18 = ContextRecord;
     do {
       do {
-        p_Var2 = local_c;
+        p_Var2 = (_EXCEPTION_REGISTRATION_RECORD *)EnclosingLevel;
         if (p_Var2 == (_EXCEPTION_REGISTRATION_RECORD *)0xfffffffe) {
-          return local_10;
+          return Disposition;
         }
-        local_14 = (int *)(uVar3 + ((int)p_Var2 * 3 + 4) * 4);
-        local_c = (_EXCEPTION_REGISTRATION_RECORD *)*local_14;
+        ScopeTableRecord = (_EH4_SCOPETABLE_RECORD *)(uVar3 + ((int)p_Var2 * 3 + 4) * 4);
+        EnclosingLevel = ScopeTableRecord->EnclosingLevel;
       } while (*(int *)(uVar3 + ((int)p_Var2 * 3 + 5) * 4) == 0);
       __EH4_CallFilterFunc_8();
-      local_5 = 1;
+      Revalidate = '\x01';
       if (extraout_EAX < 0) {
         return ExceptionContinueExecution;
       }
     } while (extraout_EAX < 1);
-    if ((param_1->ExceptionCode == 0xe06d7363) &&
+    if ((ExceptionRecord->ExceptionCode == 0xe06d7363) &&
        (iVar1 = _IsNonwritableInCurrentImage((uchar *)&_pDestructExceptionObject), iVar1 != 0)) {
-      __DestructExceptionObject((EHExceptionRecord *)param_1,'\x01');
+      __DestructExceptionObject((EHExceptionRecord *)ExceptionRecord,'\x01');
     }
     __EH4_GlobalUnwind_4();
-    if ((_EXCEPTION_REGISTRATION_RECORD *)param_2[1].Handler != p_Var2) {
+    if ((_EXCEPTION_REGISTRATION_RECORD *)EstablisherFrame[1].Handler != p_Var2) {
       __EH4_LocalUnwind_16();
     }
-    param_2[1].Handler =
+    EstablisherFrame[1].Handler =
          (_func___cdecl__EXCEPTION_DISPOSITION__EXCEPTION_RECORD_ptr_void_ptr__CONTEXT_ptr_void_ptr
-          *)local_c;
+          *)EnclosingLevel;
     __EH4_TransferToHandler_8();
   }
   if (p_Var2[1].Handler !=
@@ -64,6 +64,6 @@ _except_handler4(_EXCEPTION_RECORD *param_1,_EXCEPTION_REGISTRATION_RECORD *para
       0xfffffffe) {
     __EH4_LocalUnwind_16();
   }
-  return local_10;
+  return Disposition;
 }
 

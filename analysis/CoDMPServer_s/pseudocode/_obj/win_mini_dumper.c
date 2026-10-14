@@ -97,7 +97,7 @@ long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *
   HANDLE pvVar3;
   int extraout_EAX;
   char *pcVar4;
-  miniDumper *lpFilename;
+  miniDumper *string;
   HMODULE hModule;
   int iVar5;
   HANDLE pvVar6;
@@ -150,8 +150,8 @@ long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *
       return 0;
     }
   }
-  lpFilename = pmVar7 + 0x108;
-  DVar11 = GetModuleFileNameA((HMODULE)0x0,(LPSTR)lpFilename,0x104);
+  string = pmVar7 + 0x108;
+  DVar11 = GetModuleFileNameA((HMODULE)0x0,(LPSTR)string,0x104);
   if (DVar11 == 0) {
 LAB_006b0096:
     hModule = LoadLibraryA("DBGHELP.DLL");
@@ -159,7 +159,7 @@ LAB_006b0096:
     pcVar8 = "Call to LoadLibrary failed to find DBGHELP.DLL.";
   }
   else {
-    strrchr((uchar *)lpFilename,'\\');
+    strrchr((uchar *)string,'\\');
     if (extraout_EAX != 0) {
       pcVar8 = (char *)(extraout_EAX + 1);
       pcVar4 = pcVar8;
@@ -170,11 +170,11 @@ LAB_006b0096:
       } while (cVar1 != '\0');
       *pcVar8 = '\0';
     }
-    iVar5 = -(int)lpFilename;
+    iVar5 = -(int)string;
     do {
-      mVar2 = *lpFilename;
-      lpFilename[(int)(local_1110 + iVar5)] = mVar2;
-      lpFilename = lpFilename + 1;
+      mVar2 = *string;
+      string[(int)(local_1110 + iVar5)] = mVar2;
+      string = string + 1;
     } while (mVar2 != (miniDumper)0x0);
     pcVar8 = (char *)((int)&local_1120.Privileges[0].Attributes + 3);
     do {

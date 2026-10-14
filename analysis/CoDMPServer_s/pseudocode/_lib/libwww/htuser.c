@@ -63,31 +63,31 @@ undefined4 _HTUserProfile_localize(void)
 undefined4 _HTUserProfile_delete(void)
 
 {
-  undefined4 *puVar1;
+  undefined4 *pBlock;
   
-  puVar1 = DAT_0354775c;
+  pBlock = DAT_0354775c;
   if (DAT_0354775c != (undefined4 *)0x0) {
     if ((void *)*DAT_0354775c != (void *)0x0) {
       free((void *)*DAT_0354775c);
     }
-    *puVar1 = 0;
-    if ((void *)puVar1[1] != (void *)0x0) {
-      free((void *)puVar1[1]);
+    *pBlock = 0;
+    if ((void *)pBlock[1] != (void *)0x0) {
+      free((void *)pBlock[1]);
     }
-    puVar1[1] = 0;
-    if ((void *)puVar1[2] != (void *)0x0) {
-      free((void *)puVar1[2]);
+    pBlock[1] = 0;
+    if ((void *)pBlock[2] != (void *)0x0) {
+      free((void *)pBlock[2]);
     }
-    puVar1[2] = 0;
-    if ((void *)puVar1[3] != (void *)0x0) {
-      free((void *)puVar1[3]);
+    pBlock[2] = 0;
+    if ((void *)pBlock[3] != (void *)0x0) {
+      free((void *)pBlock[3]);
     }
-    puVar1[3] = 0;
-    if ((void *)puVar1[4] != (void *)0x0) {
-      free((void *)puVar1[4]);
+    pBlock[3] = 0;
+    if ((void *)pBlock[4] != (void *)0x0) {
+      free((void *)pBlock[4]);
     }
-    puVar1[4] = 0;
-    free(puVar1);
+    pBlock[4] = 0;
+    free(pBlock);
     return 1;
   }
   return 0;

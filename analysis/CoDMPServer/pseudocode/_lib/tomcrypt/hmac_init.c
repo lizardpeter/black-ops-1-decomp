@@ -8,11 +8,11 @@ int __cdecl hmac_init(int param_1,int param_2,uchar *param_3,uint param_4)
 
 {
   int iVar1;
-  void *pvVar2;
-  uchar *puVar3;
-  int iVar4;
-  int iVar5;
-  uint uVar6;
+  void *ptr;
+  uchar *dst;
+  int iVar2;
+  int iVar3;
+  uint uVar4;
   uint local_8;
   uint local_4;
   
@@ -36,53 +36,53 @@ int __cdecl hmac_init(int param_1,int param_2,uchar *param_3,uint param_4)
   if (param_4 == 0) {
     return 3;
   }
-  pvVar2 = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar1));
-  if (pvVar2 == (void *)0x0) {
+  ptr = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar1));
+  if (ptr == (void *)0x0) {
     return 0xd;
   }
-  puVar3 = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar1));
-  *(uchar **)(param_1 + 0xe8) = puVar3;
-  if (puVar3 == (uchar *)0x0) {
-    tom_game_free(pvVar2);
+  dst = tom_game_malloc(*(uint *)(&DAT_0b548c84 + iVar1));
+  *(uchar **)(param_1 + 0xe8) = dst;
+  if (dst == (uchar *)0x0) {
+    tom_game_free(ptr);
     return 0xd;
   }
   if (*(uint *)(&DAT_0b548c84 + iVar1) < param_4) {
     local_8 = *(uint *)(&DAT_0b548c84 + iVar1);
-    iVar4 = hash_memory(param_2,param_3,param_4,puVar3,&local_8);
-    if (iVar4 == 0) {
+    iVar2 = hash_memory(param_2,param_3,param_4,dst,&local_8);
+    if (iVar2 == 0) {
       if (local_4 < *(uint *)(&DAT_0b548c84 + iVar1)) {
-        iVar4 = *(uint *)(&DAT_0b548c84 + iVar1) - local_4;
-        iVar5 = *(int *)(param_1 + 0xe8) + local_4;
+        iVar2 = *(uint *)(&DAT_0b548c84 + iVar1) - local_4;
+        iVar3 = *(int *)(param_1 + 0xe8) + local_4;
         goto LAB_00bf4d2d;
       }
       goto LAB_00bf4d35;
     }
   }
   else {
-    memcpy(puVar3,param_3,param_4);
+    memcpy(dst,param_3,param_4);
     if (param_4 < *(uint *)(&DAT_0b548c84 + iVar1)) {
-      iVar4 = *(uint *)(&DAT_0b548c84 + iVar1) - param_4;
-      iVar5 = *(int *)(param_1 + 0xe8) + param_4;
+      iVar2 = *(uint *)(&DAT_0b548c84 + iVar1) - param_4;
+      iVar3 = *(int *)(param_1 + 0xe8) + param_4;
 LAB_00bf4d2d:
-      zeromem(iVar5,iVar4);
+      zeromem(iVar3,iVar2);
     }
 LAB_00bf4d35:
-    uVar6 = 0;
+    uVar4 = 0;
     if (*(int *)(&DAT_0b548c84 + iVar1) != 0) {
       do {
-        *(byte *)(uVar6 + (int)pvVar2) = *(byte *)(*(int *)(param_1 + 0xe8) + uVar6) ^ 0x36;
-        uVar6 = uVar6 + 1;
-      } while (uVar6 < *(uint *)(&DAT_0b548c84 + iVar1));
+        *(byte *)(uVar4 + (int)ptr) = *(byte *)(*(int *)(param_1 + 0xe8) + uVar4) ^ 0x36;
+        uVar4 = uVar4 + 1;
+      } while (uVar4 < *(uint *)(&DAT_0b548c84 + iVar1));
     }
-    iVar4 = (**(code **)(&DAT_0b548ccc + iVar1))(param_1);
-    if ((iVar4 == 0) &&
-       (iVar4 = (**(code **)(&DAT_0b548cd0 + iVar1))
-                          (param_1,pvVar2,*(undefined4 *)(&DAT_0b548c84 + iVar1)), iVar4 == 0))
+    iVar2 = (**(code **)(&DAT_0b548ccc + iVar1))(param_1);
+    if ((iVar2 == 0) &&
+       (iVar2 = (**(code **)(&DAT_0b548cd0 + iVar1))
+                          (param_1,ptr,*(undefined4 *)(&DAT_0b548c84 + iVar1)), iVar2 == 0))
     goto LAB_00bf4d9b;
   }
   tom_game_free(*(void **)(param_1 + 0xe8));
 LAB_00bf4d9b:
-  tom_game_free(pvVar2);
-  return iVar4;
+  tom_game_free(ptr);
+  return iVar2;
 }
 

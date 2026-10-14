@@ -197,18 +197,18 @@ void __cdecl bdSingleton<bdGameInfoFactoryImpl>::destroyInstance(void)
 
 bdReference<bdAddrHandle> * __thiscall
 bdReference<bdAddrHandle>::operator=
-          (bdReference<bdAddrHandle> *this,bdReference<bdAddrHandle> *param_1)
+          (bdReference<bdAddrHandle> *this,bdReference<bdAddrHandle> *other_3)
 
 {
   bdAddrHandle *pbVar1;
   
-  if (param_1 != this) {
+  if (other_3 != this) {
     if (((this->m_ptr != (bdAddrHandle *)0x0) &&
         (pbVar1 = this->m_ptr, InterlockedDecrement(&pbVar1->_padding_), pbVar1->_padding_ == 0)) &&
        (this->m_ptr != (bdAddrHandle *)0x0)) {
       (**(code **)this->m_ptr->_padding_)(1);
     }
-    this->m_ptr = param_1->m_ptr;
+    this->m_ptr = other_3->m_ptr;
     if (this->m_ptr != (bdAddrHandle *)0x0) {
       InterlockedIncrement(&this->m_ptr->_padding_);
     }
@@ -223,26 +223,27 @@ bdReference<bdAddrHandle>::operator=
 
 void __thiscall
 bdArray<bdReference<bdGameInfo>_>::increaseCapacity
-          (bdArray<bdReference<bdGameInfo>_> *this,uint param_1)
+          (bdArray<bdReference<bdGameInfo>_> *this,uint increase)
 
 {
   uint uVar1;
   bdReference<bdGameInfo> *pbVar2;
   uint local_48;
   uint local_24;
-  bdReference<bdGameInfo> *local_c;
+  bdReference<bdGameInfo> *newData;
+  uint newCapacity;
   
-  if (this->m_capacity < param_1) {
-    local_48 = param_1;
+  if (this->m_capacity < increase) {
+    local_48 = increase;
   }
   else {
     local_48 = this->m_capacity;
   }
   local_48 = this->m_capacity + local_48;
-  local_c = (bdReference<bdGameInfo> *)0x0;
+  newData = (bdReference<bdGameInfo> *)0x0;
   if (local_48 != 0) {
-    local_c = bdMemory::allocate(local_48 * 4);
-    copyConstructArrayArray(this,local_c,this->m_data,this->m_size);
+    newData = bdMemory::allocate(local_48 * 4);
+    copyConstructArrayArray(this,newData,this->m_data,this->m_size);
   }
   uVar1 = this->m_size;
   pbVar2 = this->m_data;
@@ -251,7 +252,7 @@ bdArray<bdReference<bdGameInfo>_>::increaseCapacity
               ((bdReference<bdByteBuffer> *)(pbVar2 + local_24));
   }
   bdMemory::deallocate(this->m_data);
-  this->m_data = local_c;
+  this->m_data = newData;
   this->m_capacity = local_48;
   return;
 }
@@ -315,19 +316,19 @@ void __cdecl dwCreateLanSession(void)
   bdInetAddr local_38 [2];
   bdGameInfo *local_30;
   bdCreatorBase<bdGameInfo> *local_2c;
-  bdReference<bdByteBuffer> local_28;
-  bdSecurityID local_24;
-  bdSecurityKey local_1c;
+  bdReference<bdCommonAddr> myAddress;
+  bdSecurityID secID;
+  bdSecurityKey secKey;
   uint local_c;
-  bdReference<bdByteBuffer> local_8;
+  bdReference<bdGameInfo> game;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   this = bdSingleton<bdNetImpl>::getInstance();
   bdNetImpl::getLocalCommonAddr(this);
-  bdSecurityID::bdSecurityID(&local_24);
-  bdSecurityKey::bdSecurityKey(&local_1c);
-  dwCreateSecIDAndKey(&local_24,&local_1c);
-  dwRegisterSecIDAndKey(&local_24,&local_1c);
+  bdSecurityID::bdSecurityID(&secID);
+  bdSecurityKey::bdSecurityKey(&secKey);
+  dwCreateSecIDAndKey(&secID,&secKey);
+  dwRegisterSecIDAndKey(&secID,&secKey);
   local_2c = bdMemory::allocate(4);
   if (local_2c == (bdCreatorBase<bdGameInfo> *)0x0) {
     local_a0 = (bdCreatorBase<bdGameInfo> *)0x0;
@@ -344,29 +345,26 @@ void __cdecl dwCreateLanSession(void)
     local_7c = (bdGameInfo *)0x0;
   }
   else {
-    if ((bdCommonAddr *)local_28.m_ptr != (bdCommonAddr *)0x0) {
-      InterlockedIncrement(&(local_28.m_ptr)->_padding_);
+    if (myAddress.m_ptr != (bdCommonAddr *)0x0) {
+      InterlockedIncrement(&(myAddress.m_ptr)->_padding_);
     }
-    local_7c = (bdGameInfo *)
-               bdGameInfo::bdGameInfo
-                         (local_30,0x636f6437,&local_24,&local_1c,
-                          (bdReference<bdCommonAddr>)local_28.m_ptr);
+    local_7c = (bdGameInfo *)bdGameInfo::bdGameInfo(local_30,0x636f6437,&secID,&secKey,myAddress);
   }
-  local_8.m_ptr = (bdByteBuffer *)local_7c;
+  game.m_ptr = local_7c;
   if (local_7c != (bdGameInfo *)0x0) {
     InterlockedIncrement(&local_7c->_padding_);
   }
   uVar3 = 50000;
   <Var1.m_caddr = (<unnamed_type_m_caddr>)bdInetAddr::Any();
-  bVar2.m_ptr = (bdGameInfo *)local_8.m_ptr;
-  if ((bdGameInfo *)local_8.m_ptr != (bdGameInfo *)0x0) {
-    InterlockedIncrement(&(local_8.m_ptr)->_padding_);
+  bVar2 = game;
+  if (game.m_ptr != (bdGameInfo *)0x0) {
+    InterlockedIncrement(&(game.m_ptr)->_padding_);
   }
   this_01 = dwGetLanDiscoveryServer();
   bdLANDiscoveryServer::start(this_01,bVar2,(bdInetAddr *)<Var1,uVar3);
   bdInetAddr::~bdInetAddr(local_38);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_8);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_28);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&game);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&myAddress);
   return;
 }
 
@@ -440,11 +438,11 @@ LanDiscoveryListener::LanDiscoveryListener(LanDiscoveryListener *this)
 // 005A07A0  onDiscovery  (DW/dwMatchMaking.cpp:271)
 
 void __thiscall
-LanDiscoveryListener::onDiscovery(LanDiscoveryListener *this,bdReference<bdGameInfo> param_1)
+LanDiscoveryListener::onDiscovery(LanDiscoveryListener *this,bdReference<bdGameInfo> info)
 
 {
-  bdArray<bdReference<bdGameInfo>_>::pushBack(&this->sessions,&param_1);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&param_1);
+  bdArray<bdReference<bdGameInfo>_>::pushBack(&this->sessions,&info);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&info);
   return;
 }
 
@@ -461,25 +459,25 @@ void __thiscall LanDiscoveryListener::onDiscoveryFinished(LanDiscoveryListener *
   char *pcVar2;
   uint uVar3;
   bdReference<bdByteBuffer> local_34;
-  bdReference<bdByteBuffer> local_30;
-  char local_2c [32];
+  bdReference<bdGameInfo> info;
+  char localaddr [32];
   uint local_c;
-  uint local_8;
+  uint i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < (this->sessions).m_size; local_8 = local_8 + 1) {
-    local_30.m_ptr = (bdByteBuffer *)(this->sessions).m_data[local_8].m_ptr;
-    if ((bdGameInfo *)local_30.m_ptr != (bdGameInfo *)0x0) {
-      InterlockedIncrement(&((bdGameInfo *)local_30.m_ptr)->_padding_);
+  for (i = 0; i < (this->sessions).m_size; i = i + 1) {
+    info.m_ptr = (this->sessions).m_data[i].m_ptr;
+    if (info.m_ptr != (bdGameInfo *)0x0) {
+      InterlockedIncrement(&(info.m_ptr)->_padding_);
     }
-    bVar1 = bdGameInfo::getHostAddr((bdGameInfo *)local_30.m_ptr);
+    bVar1 = bdGameInfo::getHostAddr(info.m_ptr);
     uVar3 = 0x20;
-    pcVar2 = local_2c;
+    pcVar2 = localaddr;
     this_00 = bdCommonAddr::getLocalAddrByIndex((bdCommonAddr *)(bVar1.m_ptr)->_padding_,0);
     bdAddr::toString(this_00,pcVar2,uVar3);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_34);
     Com_Printf(0,"%d ip=%s\n");
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_30);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&info);
   }
   return;
 }
@@ -489,7 +487,7 @@ void __thiscall LanDiscoveryListener::onDiscoveryFinished(LanDiscoveryListener *
 
 void __thiscall
 bdArray<bdReference<bdGameInfo>_>::pushBack
-          (bdArray<bdReference<bdGameInfo>_> *this,bdReference<bdGameInfo> *param_1)
+          (bdArray<bdReference<bdGameInfo>_> *this,bdReference<bdGameInfo> *value)
 
 {
   bdReference<bdGameInfo> *pbVar1;
@@ -499,7 +497,7 @@ bdArray<bdReference<bdGameInfo>_>::pushBack
   }
   pbVar1 = this->m_data + this->m_size;
   if ((pbVar1 != (bdReference<bdGameInfo> *)0x0) &&
-     (pbVar1->m_ptr = param_1->m_ptr, pbVar1->m_ptr != (bdGameInfo *)0x0)) {
+     (pbVar1->m_ptr = value->m_ptr, pbVar1->m_ptr != (bdGameInfo *)0x0)) {
     InterlockedIncrement(&pbVar1->m_ptr->_padding_);
   }
   this->m_size = this->m_size + 1;
@@ -531,19 +529,20 @@ void __cdecl dwStartLanDiscovery(void)
   ushort uVar2;
   LanDiscoveryListener *pLVar3;
   bdInetAddr local_10;
-  bdLANDiscoveryClient *local_c;
-  LanDiscoveryListener *local_8;
+  bdLANDiscoveryClient *discoveryClient;
+  LanDiscoveryListener *listener;
   
-  local_c = dwGetLanDiscoveryClient();
-  local_8 = dwGetLanDiscoveryListener();
-  bdArray<bdReference<bdGameInfo>_>::clear(&local_8->sessions);
-  pLVar3 = local_8;
+  discoveryClient = dwGetLanDiscoveryClient();
+  listener = dwGetLanDiscoveryListener();
+  bdArray<bdReference<bdGameInfo>_>::clear(&listener->sessions);
+  pLVar3 = listener;
   this = dwGetLanDiscoveryClient();
   bdLANDiscoveryClient::unregisterListener(this,(bdLANDiscoveryListener *)pLVar3);
-  bdLANDiscoveryClient::registerListener(local_c,(bdLANDiscoveryListener *)local_8);
+  bdLANDiscoveryClient::registerListener(discoveryClient,(bdLANDiscoveryListener *)listener);
   uVar2 = 50000;
   bVar1 = bdInetAddr::Broadcast();
-  bdLANDiscoveryClient::discover(local_c,0x636f6437,2.0,(bdInetAddr *)bVar1.m_addr.inUn,uVar2);
+  bdLANDiscoveryClient::discover
+            (discoveryClient,0x636f6437,2.0,(bdInetAddr *)bVar1.m_addr.inUn,uVar2);
   bdInetAddr::~bdInetAddr(&local_10);
   return;
 }
@@ -552,40 +551,39 @@ void __cdecl dwStartLanDiscovery(void)
 // 005A09C0  dwGetLanSession  (DW/dwMatchMaking.cpp:325)
 
 bool __cdecl
-dwGetLanSession(int param_1,bdReference<bdCommonAddr> *param_2,bdSecurityID *param_3,
-               bdSecurityKey *param_4)
+dwGetLanSession(int index,bdReference<bdCommonAddr> *addr,bdSecurityID *id,bdSecurityKey *key)
 
 {
   undefined4 uVar1;
   bool bVar2;
   LanDiscoveryListener *pLVar3;
-  bdReference<bdCommonAddr> bVar4;
-  bdSecurityID *pbVar5;
-  bdAddr *pbVar6;
+  bdReference<bdCommonAddr> other_3;
+  bdSecurityID *pbVar4;
+  bdAddr *pbVar5;
   bdReference<bdByteBuffer> local_c;
-  bdReference<bdByteBuffer> local_8;
+  bdReference<bdGameInfo> session;
   
   pLVar3 = dwGetLanDiscoveryListener();
-  if (param_1 < (int)(pLVar3->sessions).m_size) {
+  if (index < (int)(pLVar3->sessions).m_size) {
     pLVar3 = dwGetLanDiscoveryListener();
-    local_8.m_ptr = (bdByteBuffer *)(pLVar3->sessions).m_data[param_1].m_ptr;
-    if ((bdCommonAddr *)local_8.m_ptr != (bdCommonAddr *)0x0) {
-      InterlockedIncrement(&((bdCommonAddr *)local_8.m_ptr)->_padding_);
+    session.m_ptr = (pLVar3->sessions).m_data[index].m_ptr;
+    if (session.m_ptr != (bdGameInfo *)0x0) {
+      InterlockedIncrement(&(session.m_ptr)->_padding_);
     }
-    bVar4 = bdGameInfo::getHostAddr((bdGameInfo *)local_8.m_ptr);
+    other_3 = bdGameInfo::getHostAddr(session.m_ptr);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)param_2,(bdReference<bdAddrHandle> *)bVar4.m_ptr);
+              ((bdReference<bdAddrHandle> *)addr,(bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
-    pbVar5 = bdGameInfo::getSecurityID((bdGameInfo *)local_8.m_ptr);
-    uVar1 = *(undefined4 *)(pbVar5->ab + 4);
-    *(undefined4 *)param_3->ab = *(undefined4 *)pbVar5->ab;
-    *(undefined4 *)(param_3->ab + 4) = uVar1;
-    pbVar6 = bdCommonAddr::getPublicAddr((bdCommonAddr *)local_8.m_ptr);
-    *(<unnamed_type_inUn> *)param_4->ab = (pbVar6->m_address).m_addr.inUn;
-    *(undefined4 *)(param_4->ab + 4) = *(undefined4 *)&pbVar6->m_port;
-    *(<unnamed_type_inUn> *)(param_4->ab + 8) = pbVar6[1].m_address.m_addr.inUn;
-    *(undefined4 *)(param_4->ab + 0xc) = *(undefined4 *)&pbVar6[1].m_port;
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_8);
+    pbVar4 = bdGameInfo::getSecurityID(session.m_ptr);
+    uVar1 = *(undefined4 *)(pbVar4->ab + 4);
+    *(undefined4 *)id->ab = *(undefined4 *)pbVar4->ab;
+    *(undefined4 *)(id->ab + 4) = uVar1;
+    pbVar5 = bdCommonAddr::getPublicAddr((bdCommonAddr *)session.m_ptr);
+    *(<unnamed_type_inUn> *)key->ab = (pbVar5->m_address).m_addr.inUn;
+    *(undefined4 *)(key->ab + 4) = *(undefined4 *)&pbVar5->m_port;
+    *(<unnamed_type_inUn> *)(key->ab + 8) = pbVar5[1].m_address.m_addr.inUn;
+    *(undefined4 *)(key->ab + 0xc) = *(undefined4 *)&pbVar5[1].m_port;
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&session);
     bVar2 = true;
   }
   else {
@@ -614,21 +612,22 @@ bdSecurityKey * __cdecl dwGetSessionSecKey(void)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwCreateSession(overlappedTask *param_1,MatchMakingInfo *param_2)
+void __cdecl dwCreateSession(overlappedTask *task,MatchMakingInfo *sessionInfo)
 
 {
   code *pcVar1;
   bool bVar2;
-  bdSecurityKey local_14c;
-  undefined1 local_13c [11];
-  uchar local_131;
-  bdReference<bdByteBuffer> local_130;
-  bdMatchMakingInfo local_12c;
+  bdSecurityKey *pbVar3;
+  bdSecurityKey secKey;
+  bdReference<bdRemoteTask> remoteTask;
+  bool localAddressValid;
+  bdReference<bdCommonAddr> localAddr;
+  bdMatchMakingInfo mmInfo;
   uint local_c;
-  bdMatchMaking *local_8;
+  bdMatchMaking *matchmaking;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((0x20 < (uint)param_2->_padding_) || (0x20 < (uint)param_2->_padding_)) {
+  if ((0x20 < (uint)sessionInfo->_padding_) || (0x20 < (uint)sessionInfo->_padding_)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwMatchMaking.cpp",0x15c,0,"%s"
                             );
     if (!bVar2) {
@@ -637,38 +636,36 @@ void __cdecl dwCreateSession(overlappedTask *param_1,MatchMakingInfo *param_2)
       return;
     }
   }
-  local_8 = dwGetMatchmaking(param_1->controllerIndex);
-  local_131 = '\x01';
-  bdMatchMakingInfo::bdMatchMakingInfo(&local_12c);
+  matchmaking = dwGetMatchmaking(task->controllerIndex);
+  bdMatchMakingInfo::bdMatchMakingInfo(&mmInfo);
   dwGetLocalCommonAddr();
-  local_131 = (bdCommonAddr *)local_130.m_ptr != (bdCommonAddr *)0x0;
-  if (((local_8 != (bdMatchMaking *)0x0) && ((bool)local_131)) && (param_1 != (overlappedTask *)0x0)
-     ) {
-    if ((bdCommonAddr *)local_130.m_ptr != (bdCommonAddr *)0x0) {
-      InterlockedIncrement(&(local_130.m_ptr)->_padding_);
+  if (((matchmaking != (bdMatchMaking *)0x0) && (localAddr.m_ptr != (bdCommonAddr *)0x0)) &&
+     (task != (overlappedTask *)0x0)) {
+    if (localAddr.m_ptr != (bdCommonAddr *)0x0) {
+      InterlockedIncrement(&(localAddr.m_ptr)->_padding_);
     }
-    bdMatchMakingInfo::setHostAddr
-              ((bdMatchMakingInfo *)param_2,(bdReference<bdCommonAddr>)local_130.m_ptr);
-    local_13c._4_4_ = dwGetSessionSecKey();
-    bdSecurityKey::bdSecurityKey(&local_14c);
-    MatchMakingInfo::getSessionKey(param_2,&local_14c);
-    *(undefined4 *)(uchar *)local_13c._4_4_ = local_14c.ab._0_4_;
-    *(undefined4 *)((uchar *)local_13c._4_4_ + 4) = local_14c.ab._4_4_;
-    *(undefined4 *)((uchar *)local_13c._4_4_ + 8) = local_14c.ab._8_4_;
-    *(undefined4 *)((uchar *)local_13c._4_4_ + 0xc) = local_14c.ab._12_4_;
-    bdMatchMaking::createSession(local_8,(bdMatchMakingInfo *)local_13c,(bdSessionID *)param_2);
-    if ((bdAddrHandle *)local_13c._0_4_ == (bdAddrHandle *)0x0) {
-      TaskManager_ClearTask(param_1);
+    bdMatchMakingInfo::setHostAddr((bdMatchMakingInfo *)sessionInfo,localAddr);
+    pbVar3 = dwGetSessionSecKey();
+    bdSecurityKey::bdSecurityKey(&secKey);
+    MatchMakingInfo::getSessionKey(sessionInfo,&secKey);
+    *(undefined4 *)pbVar3->ab = secKey.ab._0_4_;
+    *(undefined4 *)(pbVar3->ab + 4) = secKey.ab._4_4_;
+    *(undefined4 *)(pbVar3->ab + 8) = secKey.ab._8_4_;
+    *(undefined4 *)(pbVar3->ab + 0xc) = secKey.ab._12_4_;
+    bdMatchMaking::createSession
+              (matchmaking,(bdMatchMakingInfo *)&remoteTask,(bdSessionID *)sessionInfo);
+    if (remoteTask.m_ptr == (bdRemoteTask *)0x0) {
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(2);
     }
     else {
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)param_1,(bdReference<bdAddrHandle> *)local_13c);
+                ((bdReference<bdAddrHandle> *)task,(bdReference<bdAddrHandle> *)&remoteTask);
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_13c);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&remoteTask);
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_130);
-  bdMatchMakingInfo::~bdMatchMakingInfo(&local_12c);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&localAddr);
+  bdMatchMakingInfo::~bdMatchMakingInfo(&mmInfo);
   return;
 }
 
@@ -693,11 +690,11 @@ bdSessionID * __cdecl dwGetSessionID(void)
 
 // 005A0CE0  dwSetSessionID  (DW/dwMatchMaking.cpp:406)
 
-void __cdecl dwSetSessionID(bdSessionID *param_1)
+void __cdecl dwSetSessionID(bdSessionID *sessionID)
 
 {
-  g_sessionID.m_sessionID.ab._0_4_ = *(undefined4 *)(param_1->m_sessionID).ab;
-  g_sessionID.m_sessionID.ab._4_4_ = *(undefined4 *)((param_1->m_sessionID).ab + 4);
+  g_sessionID.m_sessionID.ab._0_4_ = *(undefined4 *)(sessionID->m_sessionID).ab;
+  g_sessionID.m_sessionID.ab._4_4_ = *(undefined4 *)((sessionID->m_sessionID).ab + 4);
   return;
 }
 
@@ -707,44 +704,47 @@ void __cdecl dwSetSessionID(bdSessionID *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwCreateSessionComplete(overlappedTask *param_1)
+taskCompleteResults __cdecl dwCreateSessionComplete(overlappedTask *task)
 
 {
   bool bVar1;
-  bdLobbyErrorCode bVar2;
-  taskCompleteResults tVar3;
-  bdSecurityKey local_20;
+  bdLobbyErrorCode lobbyError;
+  taskCompleteResults tVar2;
+  taskCompleteResults status_2;
+  bdLobbyErrorCode errorCode;
+  taskCompleteResults status;
+  bdSecurityKey key;
   uint local_10;
-  bdStatus local_c;
-  bdMatchMaking *local_8;
+  bdStatus taskStatus;
+  bdMatchMaking *matchmaking;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = dwGetMatchmaking(param_1->controllerIndex);
-  if (((local_8 == (bdMatchMaking *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-     ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  matchmaking = dwGetMatchmaking(task->controllerIndex);
+  if (((matchmaking == (bdMatchMaking *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retrieve session create status\n");
-    tVar3 = TASK_ERROR;
+    tVar2 = TASK_ERROR;
   }
   else {
-    dwLobbyPump(param_1->controllerIndex);
-    local_c = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    if (local_c == BD_DONE) {
-      bdSecurityKey::bdSecurityKey(&local_20);
-      bVar1 = MatchMakingInfo::getSessionKey(g_matchmakingInfo,&local_20);
+    dwLobbyPump(task->controllerIndex);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    if (taskStatus == BD_DONE) {
+      bdSecurityKey::bdSecurityKey(&key);
+      bVar1 = MatchMakingInfo::getSessionKey(g_matchmakingInfo,&key);
       if (bVar1) {
-        dwRegisterSecIDAndKey(&g_sessionID.m_sessionID,&local_20);
+        dwRegisterSecIDAndKey(&g_sessionID.m_sessionID,&key);
       }
     }
-    if (local_c == BD_PENDING) {
-      tVar3 = dwTaskStatusConvert(BD_PENDING,BD_NO_ERROR);
+    if (taskStatus == BD_PENDING) {
+      tVar2 = dwTaskStatusConvert(BD_PENDING,BD_NO_ERROR);
     }
     else {
-      bVar2 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
+      lobbyError = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
       Com_Printf(0,"SESSION CREATE ERROR %i\n");
-      tVar3 = dwTaskStatusConvert(local_c,bVar2);
+      tVar2 = dwTaskStatusConvert(taskStatus,lobbyError);
     }
   }
-  return tVar3;
+  return tVar2;
 }
 
 
@@ -752,17 +752,17 @@ taskCompleteResults __cdecl dwCreateSessionComplete(overlappedTask *param_1)
 
 void __thiscall
 bdArray<bdReference<bdGameInfo>_>::copyConstructArrayArray
-          (bdArray<bdReference<bdGameInfo>_> *this,bdReference<bdGameInfo> *param_1,
-          bdReference<bdGameInfo> *param_2,uint param_3)
+          (bdArray<bdReference<bdGameInfo>_> *this,bdReference<bdGameInfo> *dest,
+          bdReference<bdGameInfo> *src,uint n)
 
 {
   bdReference<bdGameInfo> *pbVar1;
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    pbVar1 = param_1 + local_8;
+  for (i = 0; i < n; i = i + 1) {
+    pbVar1 = dest + i;
     if ((pbVar1 != (bdReference<bdGameInfo> *)0x0) &&
-       (pbVar1->m_ptr = param_2[local_8].m_ptr, pbVar1->m_ptr != (bdGameInfo *)0x0)) {
+       (pbVar1->m_ptr = src[i].m_ptr, pbVar1->m_ptr != (bdGameInfo *)0x0)) {
       InterlockedIncrement(&pbVar1->m_ptr->_padding_);
     }
   }
@@ -774,40 +774,40 @@ bdArray<bdReference<bdGameInfo>_>::copyConstructArrayArray
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwUpdateSession(overlappedTask *param_1,MatchMakingInfo *param_2)
+void __cdecl dwUpdateSession(overlappedTask *task,MatchMakingInfo *sessionInfo)
 
 {
   bdReference<bdCommonAddr> bVar1;
   bdReference<bdRemoteTask> bVar2;
   undefined1 local_1c [8];
-  bdCommonAddr *local_14;
-  char local_d;
-  bdReference<bdByteBuffer> local_c;
-  bdMatchMaking *local_8;
+  bdCommonAddr *remoteTask;
+  bool localAddressValid;
+  bdReference<bdByteBuffer> localAddr;
+  bdMatchMaking *matchmaking;
   
-  local_8 = dwGetMatchmaking(param_1->controllerIndex);
+  matchmaking = dwGetMatchmaking(task->controllerIndex);
   dwGetLocalCommonAddr();
-  local_d = 1;
+  localAddressValid = true;
   bVar1 = dwGetLocalCommonAddr();
-  local_d = (bVar1.m_ptr)->_padding_ != 0;
+  localAddressValid = (bVar1.m_ptr)->_padding_ != 0;
   bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)(local_1c + 4))
   ;
-  if (((local_8 != (bdMatchMaking *)0x0) && (local_d != '\0')) && (param_1 != (overlappedTask *)0x0)
-     ) {
+  if (((matchmaking != (bdMatchMaking *)0x0) && (localAddressValid != false)) &&
+     (task != (overlappedTask *)0x0)) {
     bVar2 = bdMatchMaking::updateSession
-                      (local_8,(bdSessionID *)local_1c,(bdMatchMakingInfo *)&g_sessionID);
-    local_14 = (bdCommonAddr *)(bVar2.m_ptr)->_padding_;
+                      (matchmaking,(bdSessionID *)local_1c,(bdMatchMakingInfo *)&g_sessionID);
+    remoteTask = (bdCommonAddr *)(bVar2.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_1c);
-    if (local_14 == (bdCommonAddr *)0x0) {
-      TaskManager_ClearTask(param_1);
+    if (remoteTask == (bdCommonAddr *)0x0) {
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(3);
     }
     else {
-      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_14);
+      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,remoteTask);
       g_matchmakingInfo->m_dirty = 0;
     }
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&localAddr);
   return;
 }
 
@@ -818,46 +818,46 @@ void __cdecl dwUpdateSession(overlappedTask *param_1,MatchMakingInfo *param_2)
 /* WARNING: Removing unreachable block (ram,0x005a100e) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwUpdateSessionComplete(overlappedTask *param_1)
+taskCompleteResults __cdecl dwUpdateSessionComplete(overlappedTask *task)
 
 {
   bdLobbyErrorCode bVar1;
   undefined3 extraout_var;
-  char local_5c [68];
+  char errorStr [68];
   uint local_18;
-  int local_14;
-  bdStatus local_10;
-  taskCompleteResults local_c;
-  bdMatchMaking *local_8;
+  bdLobbyErrorCode errorCode;
+  bdStatus taskStatus;
+  taskCompleteResults status;
+  bdMatchMaking *matchmaking;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = TASK_ERROR;
-  local_8 = dwGetMatchmaking(param_1->controllerIndex);
-  if (((local_8 == (bdMatchMaking *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-     ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  status = TASK_ERROR;
+  matchmaking = dwGetMatchmaking(task->controllerIndex);
+  if (((matchmaking == (bdMatchMaking *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retrieve session update status\n");
   }
   else {
-    dwLobbyPump(param_1->controllerIndex);
-    if ((param_1->overlappedIO).m_ptr != (bdRemoteTask *)0x0) {
-      local_10 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-      local_14 = 0;
-      if (local_10 == BD_DONE) {
-        bVar1 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-        local_14 = CONCAT31(extraout_var,bVar1);
-        if (local_14 != 0) {
-          TaskManager_ClearTask(param_1);
-          dwLobbyErrorCodeToString((bdLobbyErrorCode)local_14,local_5c,0x40);
+    dwLobbyPump(task->controllerIndex);
+    if ((task->overlappedIO).m_ptr != (bdRemoteTask *)0x0) {
+      taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+      _errorCode = 0;
+      if (taskStatus == BD_DONE) {
+        bVar1 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+        _errorCode = CONCAT31(extraout_var,bVar1);
+        if (_errorCode != 0) {
+          TaskManager_ClearTask(task);
+          dwLobbyErrorCodeToString((bdLobbyErrorCode)_errorCode,errorStr,0x40);
           Com_Printf(0x10,"DW session update error %i - \'%s\'\n");
           if (g_matchmakingInfo->m_active != 0) {
             g_matchmakingInfo->m_dirty = 1;
           }
         }
       }
-      local_c = dwTaskStatusConvert(local_10,(bdLobbyErrorCode)local_14);
+      status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
     }
   }
-  return local_c;
+  return status;
 }
 
 
@@ -865,28 +865,28 @@ taskCompleteResults __cdecl dwUpdateSessionComplete(overlappedTask *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwDeleteSession(int param_1,overlappedTask *param_2)
+void __cdecl dwDeleteSession(int controllerIndex,overlappedTask *task)
 
 {
   bdReference<bdRemoteTask> bVar1;
   undefined1 local_14 [8];
-  bdNetImpl *local_c;
-  bdMatchMaking *local_8;
+  bdNetImpl *net;
+  bdMatchMaking *matchmaking;
   
-  local_c = bdSingleton<bdNetImpl>::getInstance();
-  local_8 = dwGetMatchmaking(param_1);
-  if (((local_8 != (bdMatchMaking *)0x0) && (local_c != (bdNetImpl *)0x0)) &&
-     (param_2 != (overlappedTask *)0x0)) {
-    bVar1 = bdMatchMaking::deleteSession(local_8,(bdSessionID *)local_14);
+  net = bdSingleton<bdNetImpl>::getInstance();
+  matchmaking = dwGetMatchmaking(controllerIndex);
+  if (((matchmaking != (bdMatchMaking *)0x0) && (net != (bdNetImpl *)0x0)) &&
+     (task != (overlappedTask *)0x0)) {
+    bVar1 = bdMatchMaking::deleteSession(matchmaking,(bdSessionID *)local_14);
     local_14._4_4_ = (bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_14);
     if ((bdCommonAddr *)local_14._4_4_ == (bdCommonAddr *)0x0) {
-      TaskManager_ClearTask(param_2);
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(4);
     }
     else {
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)param_2,(bdCommonAddr *)local_14._4_4_);
+                ((bdReference<bdCommonAddr> *)task,(bdCommonAddr *)local_14._4_4_);
     }
   }
   return;
@@ -914,7 +914,7 @@ void __cdecl _dynamic_initializer_for__g_sessionResults__(void)
 
 // 005A10D0  FindServerBySecID  (DW/dwMatchMaking.cpp:782)
 
-serverInfo_t * __cdecl FindServerBySecID(bdSecurityID *param_1,int param_2)
+serverInfo_t * __cdecl FindServerBySecID(bdSecurityID *secid,int source)
 
 {
   bool bVar1;
@@ -923,20 +923,20 @@ serverInfo_t * __cdecl FindServerBySecID(bdSecurityID *param_1,int param_2)
   byte *pbVar4;
   bool bVar5;
   int local_14;
-  int local_10;
-  int *local_c;
-  serverInfo_t *local_8;
+  int i;
+  int *count;
+  serverInfo_t *servers;
   
-  local_8 = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(cls.pingUpdateSource,&local_8,&local_c);
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(cls.pingUpdateSource,&servers,&count);
   if (bVar1) {
-    for (local_10 = 0; local_10 < *local_c; local_10 = local_10 + 1) {
+    for (i = 0; i < *count; i = i + 1) {
       iVar2 = 8;
       bVar1 = false;
       bVar5 = true;
       local_14 = 0;
-      puVar3 = param_1->ab;
-      pbVar4 = (byte *)((int)local_8 + local_10 * 0x178 + 0x29);
+      puVar3 = secid->ab;
+      pbVar4 = (byte *)((int)servers + i * 0x178 + 0x29);
       do {
         if (iVar2 == 0) break;
         iVar2 = iVar2 + -1;
@@ -949,7 +949,7 @@ serverInfo_t * __cdecl FindServerBySecID(bdSecurityID *param_1,int param_2)
         local_14 = (1 - (uint)bVar1) - (uint)(bVar1 != 0);
       }
       if (local_14 == 0) {
-        return (serverInfo_t *)(local_10 * 0x178 + (int)local_8);
+        return (serverInfo_t *)(i * 0x178 + (int)servers);
       }
     }
   }
@@ -959,15 +959,16 @@ serverInfo_t * __cdecl FindServerBySecID(bdSecurityID *param_1,int param_2)
 
 // 005A1170  CL_SetPingFromQOS  (DW/dwMatchMaking.cpp:803)
 
-void __cdecl CL_SetPingFromQOS(int param_1,bdSecurityID *param_2)
+void __cdecl CL_SetPingFromQOS(int ping,bdSecurityID *secid)
 
 {
   serverInfo_t *psVar1;
+  serverInfo_t *server;
   
-  psVar1 = FindServerBySecID(param_2,(ui_netSource->current).integer);
+  psVar1 = FindServerBySecID(secid,(ui_netSource->current).integer);
   if (psVar1 != (serverInfo_t *)0x0) {
     Com_DPrintf(0xe,"Setting server %s ping to %ims\n");
-    psVar1->ping = (short)param_1;
+    psVar1->ping = (short)ping;
   }
   return;
 }
@@ -977,7 +978,7 @@ void __cdecl CL_SetPingFromQOS(int param_1,bdSecurityID *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwMatchMaking_InviteDWUserSuccess(TaskRecord *param_1)
+void __cdecl dwMatchMaking_InviteDWUserSuccess(TaskRecord *task)
 
 {
   Com_Printf(0x17,"Invite success\n");
@@ -989,7 +990,7 @@ void __cdecl dwMatchMaking_InviteDWUserSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwMatchMaking_InviteDWUserFailure(TaskRecord *param_1)
+void __cdecl dwMatchMaking_InviteDWUserFailure(TaskRecord *task)
 
 {
   Com_Printf(0x17,"Invite failure\n");
@@ -1002,32 +1003,33 @@ void __cdecl dwMatchMaking_InviteDWUserFailure(TaskRecord *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(ulong64 param_1,bdSessionID param_2)
+TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(ulong64 frienduid,bdSessionID sessionID)
 
 {
-  uchar uVar1;
+  char cVar1;
   TaskRecord *pTVar2;
   connstate_t cVar3;
-  bdReference<bdRemoteTask> bVar4;
+  bdReference<bdRemoteTask> other_3;
   ulong local_84;
-  uchar *local_78;
+  char *local_78;
   ulong local_54;
-  undefined1 local_4c [8];
-  undefined8 local_44;
-  TaskRecord *local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
+  undefined1 local_4c [4];
+  char *pass;
+  undefined8 userIDs;
+  TaskRecord *task_2;
+  int protocolversion;
+  undefined4 payload;
   uchar auStack_30 [32];
-  TaskRecord *local_10;
-  bdMatchMaking *local_c;
+  TaskRecord *task;
+  bdMatchMaking *matchmaking;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = dwGetMatchmaking(0);
-  local_10 = (TaskRecord *)0x0;
-  if (local_c != (bdMatchMaking *)0x0) {
-    local_3c = TaskManager2_CreateTask(task_inviteDWUserToSession,0,(TaskRecord *)0x0,0);
-    local_38 = 0x414;
+  matchmaking = dwGetMatchmaking(0);
+  task = (TaskRecord *)0x0;
+  if (matchmaking != (bdMatchMaking *)0x0) {
+    task_2 = TaskManager2_CreateTask(task_inviteDWUserToSession,0,(TaskRecord *)0x0,0);
+    protocolversion = 0x414;
     auStack_30[0] = '\0';
     auStack_30[1] = '\0';
     auStack_30[2] = '\0';
@@ -1060,22 +1062,22 @@ TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(ulong64 param_1,bdSessi
     auStack_30[0x1d] = '\0';
     auStack_30[0x1e] = '\0';
     auStack_30[0x1f] = 0;
-    local_34 = 0x414;
-    local_44 = param_1;
+    payload = 0x414;
+    userIDs = frienduid;
     cVar3 = CL_GetLocalClientConnectionState(0);
     if (cVar3 == CA_ACTIVE) {
       if ((com_sv_running == (dvar_s *)0x0) || ((com_sv_running->current).enabled == false)) {
-        local_4c._4_4_ = Dvar_GetString("password");
+        pass = Dvar_GetString("password");
       }
       else {
-        local_4c._4_4_ = Dvar_GetString("g_password");
+        pass = Dvar_GetString("g_password");
       }
-      local_78 = (uchar *)local_4c._4_4_;
+      local_78 = pass;
       do {
-        uVar1 = *local_78;
+        cVar1 = *local_78;
         local_78 = local_78 + 1;
-      } while (uVar1 != '\0');
-      local_54 = (int)local_78 - (int)(local_4c._4_4_ + 1);
+      } while (cVar1 != '\0');
+      local_54 = (int)local_78 - (int)(pass + 1);
       if (0x1e < (int)local_54) {
         local_54 = 0x1f;
       }
@@ -1085,19 +1087,19 @@ TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(ulong64 param_1,bdSessi
       else {
         local_84 = local_54;
       }
-      memcpy(auStack_30,(uchar *)local_4c._4_4_,local_84);
+      memcpy(auStack_30,(uchar *)pass,local_84);
     }
-    bVar4 = bdMatchMaking::inviteToSession
-                      (local_c,(bdSessionID *)local_4c,(__uint64 *)&param_2,(uint)&local_44,
-                       &DAT_00000001,(uint)&local_34);
+    other_3 = bdMatchMaking::inviteToSession
+                        (matchmaking,(bdSessionID *)local_4c,(__uint64 *)&sessionID,(uint)&userIDs,
+                         &DAT_00000001,(uint)&payload);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_3c->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar4.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task_2->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_4c);
-    TaskManager2_StartTask(local_3c);
+    TaskManager2_StartTask(task_2);
   }
-  pTVar2 = local_10;
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&param_2);
+  pTVar2 = task;
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
   return pTVar2;
 }
 
@@ -1106,7 +1108,7 @@ TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(ulong64 param_1,bdSessi
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwMatchMaking_GetSessionByIDSuccess(TaskRecord *param_1)
+void __cdecl dwMatchMaking_GetSessionByIDSuccess(TaskRecord *task)
 
 {
   Com_DPrintf(0x17,"GetSessionByID success!\n");
@@ -1118,47 +1120,47 @@ void __cdecl dwMatchMaking_GetSessionByIDSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwMatchMaking_FindSessionByID(bdSessionID *param_1)
+TaskRecord * __cdecl dwMatchMaking_FindSessionByID(bdSessionID *sessionID)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   MatchMakingInfo *local_38;
   undefined1 local_18 [8];
-  MatchMakingInfo *local_10;
-  TaskRecord *local_c;
-  bdMatchMaking *local_8;
+  MatchMakingInfo *mminfo;
+  TaskRecord *task;
+  bdMatchMaking *matchmaking;
   
-  if (param_1 == (bdSessionID *)0x0) {
-    local_c = (TaskRecord *)0x0;
+  if (sessionID == (bdSessionID *)0x0) {
+    task = (TaskRecord *)0x0;
   }
   else {
-    local_8 = dwGetMatchmaking(0);
-    if (local_8 == (bdMatchMaking *)0x0) {
-      local_c = (TaskRecord *)0x0;
+    matchmaking = dwGetMatchmaking(0);
+    if (matchmaking == (bdMatchMaking *)0x0) {
+      task = (TaskRecord *)0x0;
     }
     else {
-      local_c = TaskManager2_CreateTask(task_getSessionByID,0,(TaskRecord *)0x0,0);
-      if (local_c != (TaskRecord *)0x0) {
-        local_18._4_4_ = local_c->payload;
+      task = TaskManager2_CreateTask(task_getSessionByID,0,(TaskRecord *)0x0,0);
+      if (task != (TaskRecord *)0x0) {
+        local_18._4_4_ = task->payload;
         if ((MatchMakingInfo *)local_18._4_4_ == (MatchMakingInfo *)0x0) {
           local_38 = (MatchMakingInfo *)0x0;
         }
         else {
           local_38 = MatchMakingInfo::MatchMakingInfo((MatchMakingInfo *)local_18._4_4_);
         }
-        local_10 = local_38;
-        bVar1 = bdMatchMaking::findSessionFromID
-                          (local_8,(bdSessionID *)local_18,(bdMatchMakingInfo *)param_1);
+        mminfo = local_38;
+        other_3 = bdMatchMaking::findSessionFromID
+                            (matchmaking,(bdSessionID *)local_18,(bdMatchMakingInfo *)sessionID);
         bdReference<bdAddrHandle>::operator=
-                  ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-                   (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                  ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                   (bdReference<bdAddrHandle> *)other_3.m_ptr);
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_18)
         ;
-        TaskManager2_StartTask(local_c);
+        TaskManager2_StartTask(task);
       }
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -1166,7 +1168,7 @@ TaskRecord * __cdecl dwMatchMaking_FindSessionByID(bdSessionID *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFindSessionsByEntityIDsFailure(TaskRecord *param_1)
+void __cdecl dwFindSessionsByEntityIDsFailure(TaskRecord *task)
 
 {
   Com_PrintWarning(0xe,"Find by entityID failure\n");
@@ -1179,48 +1181,50 @@ void __cdecl dwFindSessionsByEntityIDsFailure(TaskRecord *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-dwFindSessionsByEntityIDs(ulong64 *param_1,int param_2,MatchMakingInfo *param_3)
+dwFindSessionsByEntityIDs(ulong64 *serverIDs,int numservers,MatchMakingInfo *serverinfos)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  TaskRecord *local_c;
-  bdMatchMaking *local_8;
+  TaskRecord *task;
+  bdMatchMaking *matchmaking;
   
-  local_c = (TaskRecord *)0x0;
-  local_8 = dwGetMatchmaking(0);
-  if (local_8 != (bdMatchMaking *)0x0) {
-    local_c = TaskManager2_CreateTask(task_FindByEntityIDs,0,(TaskRecord *)0x0,0);
-    bVar1 = bdMatchMaking::findSessionsByEntityIDs
-                      (local_8,(__uint64 *)&local_10,(uint)param_1,(bdMatchMakingInfo *)param_2);
+  task = (TaskRecord *)0x0;
+  matchmaking = dwGetMatchmaking(0);
+  if (matchmaking != (bdMatchMaking *)0x0) {
+    task = TaskManager2_CreateTask(task_FindByEntityIDs,0,(TaskRecord *)0x0,0);
+    other_3 = bdMatchMaking::findSessionsByEntityIDs
+                        (matchmaking,(__uint64 *)&local_10,(uint)serverIDs,
+                         (bdMatchMakingInfo *)numservers);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    TaskManager2_StartTask(local_c);
+    TaskManager2_StartTask(task);
   }
-  return local_c;
+  return task;
 }
 
 
 // 005A1510  dwRegionCodeFromCountryCode  (DW/dwMatchMaking.cpp:1181)
 
-uint __cdecl dwRegionCodeFromCountryCode(char *param_1)
+uint __cdecl dwRegionCodeFromCountryCode(char *countrycode)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  int retval;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xc < local_c) {
+    if (0xc < i) {
       return 0xffffffff;
     }
-    iVar1 = I_stricmp(countries[local_c],param_1);
+    iVar1 = I_stricmp(countries[i],countrycode);
     if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  return local_c + 1;
+  return i + 1;
 }
 
 
@@ -1237,7 +1241,7 @@ bool __cdecl dwIsPagedFindInProgress(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFindSessionsPagedSuccess(TaskRecord *param_1)
+void __cdecl dwFindSessionsPagedSuccess(TaskRecord *task)
 
 {
   char *pcVar1;
@@ -1248,23 +1252,24 @@ void __cdecl dwFindSessionsPagedSuccess(TaskRecord *param_1)
   bdPagingToken *this;
   char cVar6;
   bdPagingToken *local_44;
+  findsessionparams_t *params;
   
   pbVar4 = bdLobbyService::getTaskManager((bdLobbyService *)s_pagingToken);
-  pcVar1 = param_1->payload;
+  pcVar1 = task->payload;
   if (pbVar4 == (bdRemoteTaskManager *)&DAT_00000001) {
     if (*pcVar1 == '\0') {
       Com_DPrintf(0xe,"PagedSuccess, calling again, gametype %i\n");
       cVar6 = pcVar1[8];
-      uVar5 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+      uVar5 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
       CL_ServersResponsePacket(g_sessionResults,uVar5,(bool)cVar6);
       dwFindSessionsPaged(0x414,*(int *)(pcVar1 + 4),false,(bool)pcVar1[8]);
     }
     else {
       Com_Printf(0xe,"One-shot query, pagingtoken is finished\n");
-      uVar5 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+      uVar5 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
       if (uVar5 != 0) {
         bVar3 = true;
-        uVar5 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+        uVar5 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
         CL_ServersResponsePacket(g_sessionResults,uVar5,bVar3);
       }
       if (s_pagingToken != (bdPagingToken *)0x0) {
@@ -1275,10 +1280,10 @@ void __cdecl dwFindSessionsPagedSuccess(TaskRecord *param_1)
   }
   else if (pbVar4 == (bdRemoteTaskManager *)&DAT_00000002) {
     Com_Printf(0xe,"Pagingtoken is finished\n");
-    uVar5 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+    uVar5 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
     if (uVar5 != 0) {
       cVar6 = pcVar1[8];
-      uVar5 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
+      uVar5 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
       CL_ServersResponsePacket(g_sessionResults,uVar5,(bool)cVar6);
     }
     if (s_pagingToken != (bdPagingToken *)0x0) {
@@ -1314,7 +1319,7 @@ void __cdecl dwFindSessionsPagedSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwFindSessionsPagedFailure(TaskRecord *param_1)
+void __cdecl dwFindSessionsPagedFailure(TaskRecord *task)
 
 {
   Com_PrintWarning(0,"Findsessionspaged task failed!\n");
@@ -1346,49 +1351,49 @@ bool __cdecl dwIsPagedFindTaskAlreadyStarted(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl dwFindSessionsPaged(int param_1,int param_2,bool param_3,bool param_4)
+TaskRecord * __cdecl dwFindSessionsPaged(int netCodeVersion,int servertype,bool random,bool geo)
 
 {
   TaskRecord *pTVar1;
   bool bVar2;
   ddlDef_t *pdVar3;
-  char *pcVar4;
-  bdReference<bdRemoteTask> bVar5;
+  char *countrycode;
+  bdReference<bdRemoteTask> bVar4;
   bdPagingToken *local_64;
   uint local_60;
   bdReference<bdByteBuffer> local_38;
   bdPagingToken *local_34;
-  MatchMaking_PC_GEO_Query local_30;
-  TaskRecord *local_10;
-  bdCommonAddr *local_c;
-  bdMatchMaking *local_8;
+  MatchMaking_PC_GEO_Query query;
+  TaskRecord *task;
+  bdCommonAddr *remoteTask;
+  bdMatchMaking *matchmaking;
   
   bVar2 = TaskManager2_TaskIsInProgress(task_findSessionsPaged);
   if (bVar2) {
-    local_10 = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    s_findsessionparams.servertype = param_2;
-    s_findsessionparams.random = param_3;
-    s_findsessionparams.geo = param_4;
-    local_10 = (TaskRecord *)0x0;
-    local_8 = dwGetMatchmaking(0);
-    if (local_8 != (bdMatchMaking *)0x0) {
-      MatchMaking_PC_GEO_Query::MatchMaking_PC_GEO_Query(&local_30);
-      local_30.m_memberPARAM_NETCODE_VERSION = param_1;
-      local_30.m_memberPARAM_GAMETYPE = 0xffffffff;
-      local_30.m_memberPARAM_SERVERTYPE = param_2;
+    s_findsessionparams.servertype = servertype;
+    s_findsessionparams.random = random;
+    s_findsessionparams.geo = geo;
+    task = (TaskRecord *)0x0;
+    matchmaking = dwGetMatchmaking(0);
+    if (matchmaking != (bdMatchMaking *)0x0) {
+      MatchMaking_PC_GEO_Query::MatchMaking_PC_GEO_Query(&query);
+      query.m_memberPARAM_NETCODE_VERSION = netCodeVersion;
+      query.m_memberPARAM_GAMETYPE = 0xffffffff;
+      query.m_memberPARAM_SERVERTYPE = servertype;
       pdVar3 = LiveStats_GetStatsDDL();
-      local_30.m_memberPARAM_DDL_VERSION = pdVar3->version;
-      local_30.m_memberPARAM_LICENSE = 0xffffffff;
-      if (param_4) {
-        pcVar4 = LiveSteam_GetCountryCode();
-        local_60 = dwRegionCodeFromCountryCode(pcVar4);
+      query.m_memberPARAM_DDL_VERSION = pdVar3->version;
+      query.m_memberPARAM_LICENSE = 0xffffffff;
+      if (geo) {
+        countrycode = LiveSteam_GetCountryCode();
+        local_60 = dwRegionCodeFromCountryCode(countrycode);
       }
       else {
         local_60 = 0xffffffff;
       }
-      local_30.m_memberPARAM_GEO = local_60;
+      query.m_memberPARAM_GEO = local_60;
       if (s_pagingToken == (bdPagingToken *)0x0) {
         page = 0;
         local_34 = bdMemory::allocate(0x14);
@@ -1399,33 +1404,33 @@ TaskRecord * __cdecl dwFindSessionsPaged(int param_1,int param_2,bool param_3,bo
           local_64 = (bdPagingToken *)bdPagingToken::bdPagingToken(local_34,300);
         }
         s_pagingToken = local_64;
-        if (param_3) {
+        if (random) {
           bdPagingToken::setRandomSessionID(local_64);
         }
       }
       page = page + 1;
       Com_Printf(0,"finding sessions with netcodeversion %i, type %i, page %i\n");
-      bVar5 = bdMatchMaking::findSessionsPaged
-                        (local_8,(uint)&local_38,(bdSessionParams *)&DAT_00000006,
-                         (bdPagingToken *)&local_30,(bdMatchMakingInfo *)s_pagingToken);
-      local_c = (bdCommonAddr *)(bVar5.m_ptr)->_padding_;
+      bVar4 = bdMatchMaking::findSessionsPaged
+                        (matchmaking,(uint)&local_38,(bdSessionParams *)&DAT_00000006,
+                         (bdPagingToken *)&query,(bdMatchMakingInfo *)s_pagingToken);
+      remoteTask = (bdCommonAddr *)(bVar4.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_38);
-      if (local_c == (bdCommonAddr *)0x0) {
+      if (remoteTask == (bdCommonAddr *)0x0) {
         dwConnectionErrorHandler(5);
       }
       else {
-        local_10 = TaskManager2_CreateTask(task_findSessionsPaged,0,(TaskRecord *)0x0,0);
-        local_10->payload = &s_findsessionparams;
+        task = TaskManager2_CreateTask(task_findSessionsPaged,0,(TaskRecord *)0x0,0);
+        task->payload = &s_findsessionparams;
         bdReference<bdCommonAddr>::operator=
-                  ((bdReference<bdCommonAddr> *)&local_10->remoteTask,local_c);
-        TaskManager2_StartTask(local_10);
+                  ((bdReference<bdCommonAddr> *)&task->remoteTask,remoteTask);
+        TaskManager2_StartTask(task);
       }
-      pTVar1 = local_10;
-      bdSessionParams::~bdSessionParams((bdSessionParams *)&local_30);
-      local_10 = pTVar1;
+      pTVar1 = task;
+      bdSessionParams::~bdSessionParams((bdSessionParams *)&query);
+      task = pTVar1;
     }
   }
-  return local_10;
+  return task;
 }
 
 
@@ -1511,8 +1516,8 @@ void __cdecl
 void __cdecl `dwGetLanDiscoveryListener'::__l2::_dynamic_atexit_destructor_for__listener__(void)
 
 {
-  bdArray<bdReference<bdGameInfo>_>::clear(&listener.sessions);
-  bdLANDiscoveryListener::~bdLANDiscoveryListener((bdLANDiscoveryListener *)&listener);
+  bdArray<bdReference<bdGameInfo>_>::clear(&::listener.sessions);
+  bdLANDiscoveryListener::~bdLANDiscoveryListener((bdLANDiscoveryListener *)&::listener);
   return;
 }
 

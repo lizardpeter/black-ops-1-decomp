@@ -14,16 +14,16 @@ int __cdecl Live_GetMapCount(void)
 int __cdecl UI_GetBasicTrainingGameTypeCount(void)
 
 {
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < DAT_098b80bc; local_c = local_c + 1) {
-    if (*(int *)(&DAT_098b8130 + local_c * 0x74) != 0) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (index = 0; index < DAT_098b80bc; index = index + 1) {
+    if (*(int *)(&DAT_098b8130 + index * 0x74) != 0) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -32,66 +32,67 @@ int __cdecl UI_GetBasicTrainingGameTypeCount(void)
 int __cdecl UI_FeederCount_WeaponGroups(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *loadoutName;
   
-  pcVar1 = Dvar_GetString("selected_loadout_slot");
-  iVar2 = I_stricmp(pcVar1,"primary");
-  if (iVar2 == 0) {
-    iVar2 = 5;
+  s0 = Dvar_GetString("selected_loadout_slot");
+  iVar1 = I_stricmp(s0,"primary");
+  if (iVar1 == 0) {
+    iVar1 = 5;
   }
   else {
-    iVar2 = I_stricmp(pcVar1,"secondary");
-    if (iVar2 == 0) {
-      iVar2 = 3;
+    iVar1 = I_stricmp(s0,"secondary");
+    if (iVar1 == 0) {
+      iVar1 = 3;
     }
     else {
-      iVar2 = 0;
+      iVar1 = 0;
     }
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 00734B90  UI_FeederCount_CustomClasses  (ui_mp/ui_feeders_mp.cpp:237)
 
-int __cdecl UI_FeederCount_CustomClasses(int param_1)
+int __cdecl UI_FeederCount_CustomClasses(int localClientNum)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  int local_20;
-  int local_1c;
-  int local_18 [4];
+  int controllerIndex;
+  int itemIndex;
+  int i;
+  int customClassCount;
+  int prestigeClassIndices [4];
   int local_8;
   
-  local_1c = 4;
-  local_18[0] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_1");
-  local_18[1] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_2");
-  local_18[2] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_3");
-  local_18[3] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_4");
+  customClassCount = 4;
+  prestigeClassIndices[0] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_1");
+  prestigeClassIndices[1] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_2");
+  prestigeClassIndices[2] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_3");
+  prestigeClassIndices[3] = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_4");
   local_8 = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_CLASS_5");
-  for (local_20 = 0; local_20 < 5; local_20 = local_20 + 1) {
-    iVar3 = local_18[local_20];
-    iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-    bVar1 = BG_UnlockablesIsItemLocked(iVar2,iVar3);
+  for (i = 0; i < 5; i = i + 1) {
+    itemIndex = prestigeClassIndices[i];
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
     if (!bVar1) {
-      local_1c = local_1c + 1;
+      customClassCount = customClassCount + 1;
     }
   }
-  return local_1c;
+  return customClassCount;
 }
 
 
 // 00734510  UI_GetMilestoneType  (ui_mp/ui_feeders_mp.cpp:261)
 
-int __cdecl UI_GetMilestoneType(float param_1)
+int __cdecl UI_GetMilestoneType(float feederID)
 
 {
   int iVar1;
   
-  switch((int)param_1) {
+  switch((int)feederID) {
   case 0x5c:
     iVar1 = 1;
     break;
@@ -130,25 +131,34 @@ int __cdecl UI_FeederCount_KillstreakNumKills(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eGameModes": Some values do not have unique names */
 
-int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBoxDef_s *param_4)
+int __cdecl
+UI_Project_FeederCount(int localClientNum,int contextIndex,float feederID,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  uint local_c;
+  int friendCount;
+  int milestoneType;
+  int itemIndex;
+  int numWeaponOptions;
+  int controllerIndex;
   
-  if ((param_1 == -1) &&
+  if ((localClientNum == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x126,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if ((iVar3 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",299,0,
                                "%s"), !bVar2)) {
@@ -156,12 +166,12 @@ int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBox
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  switch((int)param_3) {
+  switch((int)feederID) {
   case 1:
-    local_c = DAT_098b9e44;
+    numWeaponOptions = DAT_098b9e44;
     break;
   case 0x22:
-    local_c = 0;
+    numWeaponOptions = 0;
     break;
   case 0x23:
   case 0x24:
@@ -172,21 +182,21 @@ int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBox
   case 0x2a:
   case 0x2b:
   case 0x2c:
-    local_c = UI_FeederCount_GameVariants(param_2,param_3);
+    numWeaponOptions = UI_FeederCount_GameVariants(contextIndex,feederID);
     break;
   case 0x26:
-    local_c = DAT_098b80bc;
+    numWeaponOptions = DAT_098b80bc;
     break;
   case 0x30:
     bVar2 = Com_GameMode_IsGameMode(GAMEMODE_BASIC_TRAINING);
     if (bVar2) {
-      local_c = UI_GetBasicTrainingGameTypeCount();
+      numWeaponOptions = UI_GetBasicTrainingGameTypeCount();
     }
     else {
       bVar2 = Com_GameMode_IsGameMode(GAMEMODE_FIRST_PRIVATE_ONLINE_GAMEMODE);
-      local_c = DAT_098b80bc;
+      numWeaponOptions = DAT_098b80bc;
       if (bVar2) {
-        local_c = DAT_098b80bc + 1;
+        numWeaponOptions = DAT_098b80bc + 1;
       }
     }
     break;
@@ -194,20 +204,20 @@ int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBox
   case 0x3a:
   case 0x61:
     DAT_098c3918 = BG_UnlockablesGetSlotItemCount();
-    if (((int)DAT_098c3918 <= param_4->cursorPos[param_2]) &&
+    if (((int)DAT_098c3918 <= listPtr->cursorPos[contextIndex]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x179
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    DAT_098c38f8 = BG_UnlockablesGetItemIndexInSlot(param_4->cursorPos[param_2]);
-    DAT_098c38fc = param_4->cursorPos[param_2];
-    local_c = DAT_098c3918;
+    DAT_098c38f8 = BG_UnlockablesGetItemIndexInSlot(listPtr->cursorPos[contextIndex]);
+    DAT_098c38fc = listPtr->cursorPos[contextIndex];
+    numWeaponOptions = DAT_098c3918;
     break;
   case 0x37:
-    local_c = Friends_GetCount(iVar3,0,0);
-    Dvar_SetBoolIfChanged(ui_friendCountNotZero,0 < (int)local_c);
+    numWeaponOptions = Friends_GetCount(iVar3,0,0);
+    Dvar_SetBoolIfChanged(ui_friendCountNotZero,0 < numWeaponOptions);
     break;
   case 0x39:
     if (DAT_098c38f8 != -1) {
@@ -219,62 +229,63 @@ int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBox
       return DAT_098c3914 + -1;
     }
   default:
-    local_c = 0;
+    numWeaponOptions = 0;
     break;
   case 0x3b:
     DAT_098c3918 = BG_UnlockablesGetSlotItemCount();
-    local_c = DAT_098c3918;
+    numWeaponOptions = DAT_098c3918;
     break;
   case 0x3c:
-    local_c = 0;
+    numWeaponOptions = 0;
     if (ui_currentWeaponOptionGroup != (dvar_s *)0x0) {
-      local_c = BG_GetWeaponOptionCountForGroup((ui_currentWeaponOptionGroup->current).unsignedInt);
+      numWeaponOptions =
+           BG_GetWeaponOptionCountForGroup((ui_currentWeaponOptionGroup->current).unsignedInt);
     }
     break;
   case 0x3d:
     iVar3 = BG_UnlockablesGetSlotItemCount();
     DAT_098c3918 = iVar3 + 1;
-    local_c = DAT_098c3918;
+    numWeaponOptions = DAT_098c3918;
     break;
   case 0x41:
   case 0x42:
   case 0x43:
   case 100:
     DAT_098c3918 = BG_UnlockablesGetSlotItemCount();
-    local_c = DAT_098c3918;
+    numWeaponOptions = DAT_098c3918;
     break;
   case 0x44:
-    local_c = LiveContracts_GetContractsCountForList(iVar3);
+    numWeaponOptions = LiveContracts_GetContractsCountForList(iVar3);
     break;
   case 0x47:
   case 0x51:
-    local_c = LiveCombatRecord_GetGameTypeCount();
+    numWeaponOptions = LiveCombatRecord_GetGameTypeCount();
     break;
   case 0x48:
-    local_c = (ui_numPersonalBests->current).integer;
+    numWeaponOptions = (ui_numPersonalBests->current).integer;
     uVar4 = LiveStats_GetNumPersonalBests(iVar3);
-    if ((int)uVar4 <= (int)local_c) {
-      local_c = uVar4;
+    if ((int)uVar4 <= numWeaponOptions) {
+      numWeaponOptions = uVar4;
     }
     break;
   case 0x4e:
-    local_c = UI_FeederCount_WeaponGroups();
+    numWeaponOptions = UI_FeederCount_WeaponGroups();
     break;
   case 0x52:
   case 0x53:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_NUM_TEAMS);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_NUM_TEAMS);
     break;
   case 0x57:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_ALLIES);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_ALLIES);
     break;
   case 0x58:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_AXIS);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_AXIS);
     break;
   case 0x59:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_BAD);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_BAD);
     break;
   case 0x5a:
-    local_c = BG_UnlockablesGetClanTagFeatureCount();
+    numWeaponOptions = BG_UnlockablesGetClanTagFeatureCount();
     break;
   case 0x5c:
   case 0x5e:
@@ -282,155 +293,159 @@ int __cdecl UI_Project_FeederCount(int param_1,int param_2,float param_3,listBox
   case 0x60:
   case 0x62:
   case 99:
-    iVar3 = UI_GetMilestoneType(param_3);
+    iVar3 = UI_GetMilestoneType(feederID);
     if (iVar3 == -1) {
-      local_c = 0;
+      numWeaponOptions = 0;
     }
     else {
-      local_c = LiveStats_GetChallengeCount(iVar3);
+      numWeaponOptions = LiveStats_GetChallengeCount(iVar3);
     }
     break;
   case 0x5d:
-    local_c = UI_FeederCount_CustomClasses(param_1);
+    numWeaponOptions = UI_FeederCount_CustomClasses(localClientNum);
     break;
   case 0x66:
-    local_c = 1;
+    numWeaponOptions = 1;
     break;
   case 0x67:
-    local_c = UI_FeederCount_KillstreakNumKills();
+    numWeaponOptions = UI_FeederCount_KillstreakNumKills();
     break;
   case 0x68:
-    local_c = DAT_098b80bc;
+    numWeaponOptions = DAT_098b80bc;
     if ((xblive_basictraining->current).enabled != false) {
-      local_c = UI_GetBasicTrainingGameTypeCount();
+      numWeaponOptions = UI_GetBasicTrainingGameTypeCount();
     }
     break;
   case 0x69:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_ALLIES);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_ALLIES);
     break;
   case 0x6a:
-    local_c = CG_GetMatchScoreboardClientCount(param_1,TEAM_AXIS);
+    numWeaponOptions = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_AXIS);
     break;
   case 0x6b:
-    iVar3 = CG_GetMatchScoreboardClientCount(param_1,TEAM_BAD);
-    local_c = (int)ROUND((float)iVar3 * 0.5 + 0.5);
+    iVar3 = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_BAD);
+    numWeaponOptions = (int)ROUND((float)iVar3 * 0.5 + 0.5);
     break;
   case 0x6c:
-    iVar3 = CG_GetMatchScoreboardClientCount(param_1,TEAM_BAD);
-    local_c = (int)ROUND((float)iVar3 * 0.5 - 0.5);
+    iVar3 = CG_GetMatchScoreboardClientCount(localClientNum,TEAM_BAD);
+    numWeaponOptions = (int)ROUND((float)iVar3 * 0.5 - 0.5);
     break;
   case 0x6d:
-    local_c = Live_GetMapCount();
+    numWeaponOptions = Live_GetMapCount();
   }
-  return local_c;
+  return numWeaponOptions;
 }
 
 
 // 00734C50  UI_FeederItemText_Maps  (ui_mp/ui_feeders_mp.cpp:532)
 
 char * __cdecl
-UI_FeederItemText_Maps(int param_1,itemDef_s *param_2,int param_3,int param_4,Material **param_5)
+UI_FeederItemText_Maps(int controllerIndex,itemDef_s *item,int index,int column,Material **handle)
 
 {
   bool bVar1;
-  int iVar2;
-  listBoxDef_s *plVar3;
-  char *pcVar4;
+  int contextIndex_00;
+  listBoxDef_s *plVar2;
+  char *pcVar3;
+  listBoxDef_s *listboxPtr;
+  int mapIndex;
+  int contextIndex;
   
-  iVar2 = Com_ControllerIndex_GetUIContextIndex(param_1);
-  plVar3 = Item_GetListBoxDef(param_2);
-  if (param_4 == 0) {
-    *param_5 = DAT_098b4b78;
-    pcVar4 = "";
+  contextIndex_00 = Com_ControllerIndex_GetUIContextIndex(controllerIndex);
+  plVar2 = Item_GetListBoxDef(item);
+  if (column == 0) {
+    *handle = DAT_098b4b78;
+    pcVar3 = "";
   }
-  else if (param_4 == 1) {
-    if ((param_3 < 0) || (DAT_098b9e44 <= param_3)) {
-      pcVar4 = "";
+  else if (column == 1) {
+    if ((index < 0) || (DAT_098b9e44 <= index)) {
+      pcVar3 = "";
     }
     else {
-      pcVar4 = va("%s_CAPS");
-      pcVar4 = UI_SafeTranslateString(pcVar4);
+      pcVar3 = va("%s_CAPS");
+      pcVar3 = UI_SafeTranslateString(pcVar3);
     }
   }
-  else if (param_4 == 2) {
-    if (plVar3->cursorPos[iVar2] == param_3) {
-      bVar1 = Window_HasFocus(iVar2,&param_2->window);
+  else if (column == 2) {
+    if (plVar2->cursorPos[contextIndex_00] == index) {
+      bVar1 = Window_HasFocus(contextIndex_00,&item->window);
       if (bVar1) {
-        GamerProfile_WriteSettings((int)param_5);
+        GamerProfile_WriteSettings((int)handle);
       }
     }
-    pcVar4 = "";
+    pcVar3 = "";
   }
   else {
-    pcVar4 = "";
+    pcVar3 = "";
   }
-  return pcVar4;
+  return pcVar3;
 }
 
 
 // 007385E0  Vec4Set  (universal/com_vector.h:548)
 
-void __cdecl Vec4Set(float *param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Vec4Set(float *v,float x,float y,float z,float w)
 
 {
-  *param_1 = param_2;
-  param_1[1] = param_3;
-  param_1[2] = param_4;
-  param_1[3] = param_5;
+  *v = x;
+  v[1] = y;
+  v[2] = z;
+  v[3] = w;
   return;
 }
 
 
 // 00738620  Vec4Copy  (universal/com_vector.h:564)
 
-void __cdecl Vec4Copy(float *param_1,float *param_2)
+void __cdecl Vec4Copy(float *from,float *to)
 
 {
-  *param_2 = *param_1;
-  param_2[1] = param_1[1];
-  param_2[2] = param_1[2];
-  param_2[3] = param_1[3];
+  *to = *from;
+  to[1] = from[1];
+  to[2] = from[2];
+  to[3] = from[3];
   return;
 }
 
 
 // 00734F60  UI_GetBasicTrainingGametypeIdForNum  (ui_mp/ui_feeders_mp.cpp:585)
 
-int __cdecl UI_GetBasicTrainingGametypeIdForNum(int param_1)
+int __cdecl UI_GetBasicTrainingGametypeIdForNum(int num)
 
 {
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  index = 0;
   do {
-    if (DAT_098b80bc <= local_c) {
+    if (DAT_098b80bc <= index) {
       return 0;
     }
-    if (*(int *)(&DAT_098b8130 + local_c * 0x74) != 0) {
-      if (local_8 == param_1) {
-        return local_c;
+    if (*(int *)(&DAT_098b8130 + index * 0x74) != 0) {
+      if (count == num) {
+        return index;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    index = index + 1;
   } while( true );
 }
 
 
 // 00734D30  UI_FeederItemText_CustomGametypes  (ui_mp/ui_feeders_mp.cpp:605)
 
-char * __cdecl UI_FeederItemText_CustomGametypes(int param_1)
+char * __cdecl UI_FeederItemText_CustomGametypes(int index)
 
 {
   char *pcVar1;
+  int typeIndex;
   
-  if ((param_1 < 0) || (DAT_098b80bc <= param_1)) {
+  if ((index < 0) || (DAT_098b80bc <= index)) {
     pcVar1 = "";
   }
   else {
-    pcVar1 = UI_SafeTranslateString(&DAT_098b80cc + param_1 * 0x74);
+    pcVar1 = UI_SafeTranslateString(&DAT_098b80cc + index * 0x74);
   }
   return pcVar1;
 }
@@ -442,46 +457,47 @@ char * __cdecl UI_FeederItemText_CustomGametypes(int param_1)
 
 char * __cdecl
 UI_FeederItemText_GametypesBase
-          (int param_1,int param_2,int param_3,int param_4,itemDef_s *param_5,listBoxDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,int index,int column,itemDef_s *item,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   bool bVar1;
   int iVar2;
   Material *pMVar3;
   char *pcVar4;
-  float fVar5;
-  int local_8;
+  float feederID;
+  gameTypeInfo *gameType;
+  int realIndex;
   
-  local_8 = param_3;
-  switch(param_4) {
+  realIndex = index;
+  switch(column) {
   case 0:
-    *param_7 = DAT_098b4b78;
+    *handle = DAT_098b4b78;
     pcVar4 = "";
     break;
   case 1:
     if ((xblive_basictraining->current).enabled == false) {
-      if (-1 < param_3) {
-        fVar5 = param_6->special;
-        iVar2 = Com_ControllerIndex_GetLocalClientNum(param_2);
-        iVar2 = UI_FeederCount(iVar2,param_1,fVar5,param_6);
-        if (param_3 < iVar2) {
+      if (-1 < index) {
+        feederID = listPtr->special;
+        iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+        iVar2 = UI_FeederCount(iVar2,contextIndex,feederID,listPtr);
+        if (index < iVar2) {
           bVar1 = Com_GameMode_IsGameMode(GAMEMODE_FIRST_PRIVATE_ONLINE_GAMEMODE);
           if (bVar1) {
-            if (param_3 == 0) {
+            if (index == 0) {
               pcVar4 = UI_SafeTranslateString("CUSTOM_CUSTOM_GAME_MODE_CAPS");
               return pcVar4;
             }
-            local_8 = param_3 + -1;
+            realIndex = index + -1;
           }
-          pcVar4 = UI_SafeTranslateString(&DAT_098b80cc + local_8 * 0x74);
+          pcVar4 = UI_SafeTranslateString(&DAT_098b80cc + realIndex * 0x74);
           return pcVar4;
         }
       }
       pcVar4 = "";
     }
     else {
-      iVar2 = UI_GetBasicTrainingGametypeIdForNum(param_3);
+      iVar2 = UI_GetBasicTrainingGametypeIdForNum(index);
       if ((iVar2 < 0) || (DAT_098b80bc <= iVar2)) {
         pcVar4 = "";
       }
@@ -491,21 +507,21 @@ UI_FeederItemText_GametypesBase
     }
     break;
   case 2:
-    if ((param_6->cursorPos[param_1] == param_3) &&
-       (bVar1 = Window_HasFocus(param_1,&param_5->window), bVar1)) {
-      GamerProfile_WriteSettings((int)param_7);
+    if ((listPtr->cursorPos[contextIndex] == index) &&
+       (bVar1 = Window_HasFocus(contextIndex,&item->window), bVar1)) {
+      GamerProfile_WriteSettings((int)handle);
     }
     pcVar4 = "";
     break;
   case 3:
     bVar1 = Com_GameMode_IsGameMode(GAMEMODE_FIRST_PRIVATE_ONLINE_GAMEMODE);
     if (bVar1) {
-      local_8 = param_3 + -1;
+      realIndex = index + -1;
     }
-    iVar2 = I_strcmp(&DAT_098b80c0 + local_8 * 0x74,(ui_gametype->current).string);
+    iVar2 = I_strcmp(&DAT_098b80c0 + realIndex * 0x74,(ui_gametype->current).string);
     if ((iVar2 == 0) && ((customGameMode->current).integer != 0)) {
       pMVar3 = Material_RegisterHandle("ui_host",3);
-      *param_7 = pMVar3;
+      *handle = pMVar3;
     }
     pcVar4 = "";
     break;
@@ -520,37 +536,39 @@ UI_FeederItemText_GametypesBase
 
 char * __cdecl
 UI_FeederItemText_GametypesInGame
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle)
 
 {
   int iVar1;
   char *pcVar2;
-  float fVar3;
+  float feederID;
+  gameTypeInfo *gameType;
   
   if ((xblive_basictraining->current).enabled != false) {
-    param_3 = UI_GetBasicTrainingGametypeIdForNum(param_3);
-    if ((param_3 < 0) || (DAT_098b80bc <= param_3)) {
+    index = UI_GetBasicTrainingGametypeIdForNum(index);
+    if ((index < 0) || (DAT_098b80bc <= index)) {
       return "";
     }
-    if (param_4 != 0) {
-      if (param_4 == 1) {
-        pcVar2 = UI_SafeTranslateString(&DAT_098b80cc + param_3 * 0x74);
+    if (column != 0) {
+      if (column == 1) {
+        pcVar2 = UI_SafeTranslateString(&DAT_098b80cc + index * 0x74);
         return pcVar2;
       }
       return "";
     }
-    *param_6 = DAT_098b4b78;
+    *handle = DAT_098b4b78;
   }
-  if (-1 < param_3) {
-    fVar3 = param_5->special;
-    iVar1 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    iVar1 = UI_FeederCount(iVar1,param_1,fVar3,param_5);
-    if (param_3 < iVar1) {
-      if (param_4 == 0) {
-        *param_6 = DAT_098b4b78;
+  if (-1 < index) {
+    feederID = listPtr->special;
+    iVar1 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    iVar1 = UI_FeederCount(iVar1,contextIndex,feederID,listPtr);
+    if (index < iVar1) {
+      if (column == 0) {
+        *handle = DAT_098b4b78;
       }
-      else if (param_4 == 1) {
-        pcVar2 = UI_SafeTranslateString(&DAT_098b80cc + param_3 * 0x74);
+      else if (column == 1) {
+        pcVar2 = UI_SafeTranslateString(&DAT_098b80cc + index * 0x74);
         return pcVar2;
       }
       return "";
@@ -567,13 +585,15 @@ UI_FeederItemText_GametypesInGame
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl UI_FeederItemText_SystemLinkLobbyMembers(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_SystemLinkLobbyMembers(int localClientNum,int contextIndex)
 
 {
   cg_s *pcVar1;
   char *pcVar2;
+  cg_s *cgameGlob;
+  clientInfo_t *ci;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar1->bgs).clientinfo[0].infoValid == 0) {
     pcVar2 = "";
   }
@@ -588,26 +608,26 @@ char * __cdecl UI_FeederItemText_SystemLinkLobbyMembers(int param_1,int param_2)
 
 char * __cdecl
 UI_Feeder_HandleItemList
-          (int param_1,int param_2,int param_3,bool param_4,bool param_5,int param_6,char *param_7,
-          Material **param_8)
+          (int controllerIndex,int itemIndex,int column,bool isSelectedItem,bool itemLocked,int cost
+          ,char *itemName,Material **handle)
 
 {
   Material *pMVar1;
   char *pcVar2;
   
-  if (param_2 == -1) goto switchD_00735291_caseD_2;
-  switch(param_3) {
+  if (itemIndex == -1) goto switchD_00735291_caseD_2;
+  switch(column) {
   case 0:
-    *param_8 = DAT_098b4b78;
+    *handle = DAT_098b4b78;
     pcVar2 = "";
     break;
   case 1:
-    pcVar2 = UI_SafeTranslateString(param_7);
+    pcVar2 = UI_SafeTranslateString(itemName);
     break;
   case 3:
-    if (param_6 != 0) {
+    if (cost != 0) {
       pcVar2 = UI_SafeTranslateString("MENU_POINTS");
-      pcVar2 = UI_ReplaceConversionInt(pcVar2,param_6);
+      pcVar2 = UI_ReplaceConversionInt(pcVar2,cost);
       return pcVar2;
     }
   default:
@@ -615,15 +635,15 @@ switchD_00735291_caseD_2:
     pcVar2 = "";
     break;
   case 4:
-    if (param_5) {
+    if (itemLocked) {
       pMVar1 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-      *param_8 = pMVar1;
+      *handle = pMVar1;
     }
     pcVar2 = "";
     break;
   case 6:
-    if (param_4) {
-      GamerProfile_WriteSettings((int)param_8);
+    if (isSelectedItem) {
+      GamerProfile_WriteSettings((int)handle);
     }
     pcVar2 = "";
   }
@@ -634,53 +654,63 @@ switchD_00735291_caseD_2:
 // 00735100  UI_FeederItemText_WeaponOptions  (ui_mp/ui_feeders_mp.cpp:761)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_WeaponOptions
-          (int param_1,int param_2,int param_3,float param_4,int param_5,int param_6,
-          listBoxDef_s *param_7,Material **param_8)
+          (int localClientNum,int contextIndex,int controllerIndex,float feederID,int index,
+          int column,listBoxDef_s *listPtr,Material **handle)
 
 {
   bool bVar1;
   int iVar2;
+  int weaponOption_00;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
-  char *local_24;
-  eWeaponOptionGroup local_1c;
-  int local_14;
+  char *pcVar4;
+  char *itemName;
+  int weaponOption;
+  int currentWeaponGroup;
+  eWeaponOptionGroup weaponOptionGroup;
+  int cost;
+  int itemIndex;
+  int numWeaponOptions;
+  bool itemLocked;
+  bool isSelectedItem;
   
-  local_1c = WEAPONOPTION_GROUP_CAMO;
+  currentWeaponGroup = 0;
   if (ui_currentWeaponOptionGroup != (dvar_s *)0x0) {
-    local_1c = (ui_currentWeaponOptionGroup->current).unsignedInt;
+    currentWeaponGroup = (ui_currentWeaponOptionGroup->current).integer;
   }
-  iVar2 = BG_GetWeaponOptionCountForGroup(local_1c);
-  if ((iVar2 <= param_7->cursorPos[param_2]) && (iVar2 != 0)) {
-    param_7->startPos[param_2] = 0;
-    param_7->cursorPos[param_2] = iVar2 + -1;
-    UI_FeederSelection(param_1,param_2,param_4,iVar2 + -1);
+  iVar2 = BG_GetWeaponOptionCountForGroup(currentWeaponGroup);
+  if ((iVar2 <= listPtr->cursorPos[contextIndex]) && (iVar2 != 0)) {
+    listPtr->startPos[contextIndex] = 0;
+    listPtr->cursorPos[contextIndex] = iVar2 + -1;
+    UI_FeederSelection(localClientNum,contextIndex,feederID,iVar2 + -1);
   }
   iVar2 = DAT_098c38f8;
-  iVar3 = BG_GetWeaponOptionNumFromIndexAndGroup(param_5,local_1c);
-  local_14 = BG_GetWeaponOptionCost(iVar3);
-  iVar4 = BG_GetWeaponOptionNumFromIndexAndGroup
-                    (param_5,(ui_currentWeaponOptionGroup->current).unsignedInt);
-  bVar1 = BG_UnlockablesIsItemOptionPurchased(param_3,iVar2,iVar4);
+  weaponOption_00 = BG_GetWeaponOptionNumFromIndexAndGroup(index,currentWeaponGroup);
+  cost = BG_GetWeaponOptionCost(weaponOption_00);
+  iVar3 = BG_GetWeaponOptionNumFromIndexAndGroup
+                    (index,(ui_currentWeaponOptionGroup->current).unsignedInt);
+  bVar1 = BG_UnlockablesIsItemOptionPurchased(controllerIndex,iVar2,iVar3);
   if (bVar1) {
-    local_14 = 0;
+    cost = 0;
   }
-  bVar1 = BG_UnlockablesIsWeaponOptionLocked(param_3,iVar3);
-  iVar4 = param_7->cursorPos[param_2];
+  bVar1 = BG_UnlockablesIsWeaponOptionLocked(controllerIndex,weaponOption_00);
+  iVar3 = listPtr->cursorPos[contextIndex];
   if (bVar1) {
-    local_24 = "MENU_CLASSIFIED";
-    local_14 = 0;
+    itemName = "MENU_CLASSIFIED";
+    cost = 0;
   }
   else {
-    local_24 = BG_GetWeaponOptionDisplayName(iVar3);
+    itemName = BG_GetWeaponOptionDisplayName(weaponOption_00);
   }
-  pcVar5 = UI_Feeder_HandleItemList
-                     (param_3,iVar2,param_6,iVar4 == param_5,bVar1,local_14,local_24,param_8);
-  return pcVar5;
+  pcVar4 = UI_Feeder_HandleItemList
+                     (controllerIndex,iVar2,column,iVar3 == index,bVar1,cost,itemName,handle);
+  return pcVar4;
 }
 
 
@@ -689,23 +719,25 @@ UI_FeederItemText_WeaponOptions
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 void __cdecl
-UI_FeederItemText_CommonListColorHandler(int param_1,bool param_2,bool param_3,int param_4)
+UI_FeederItemText_CommonListColorHandler
+          (int controllerIndex,bool isSelectedItem,bool isGrey,int cost)
 
 {
   int iVar1;
+  int codPoints;
   
-  iVar1 = LiveStats_GetCurrency(param_1);
+  iVar1 = LiveStats_GetCurrency(controllerIndex);
   _DAT_098c3900 = 1.0;
   _DAT_098c3904 = 1.0;
   _DAT_098c3908 = 1.0;
-  if (param_2) {
+  if (isSelectedItem) {
     _DAT_098c3900 = 0.0;
     _DAT_098c3904 = 0.0;
     _DAT_098c3908 = 0.0;
   }
   _DAT_098c390c = 1.0;
-  if (param_4 != 0) {
-    if (iVar1 < param_4) {
+  if (cost != 0) {
+    if (iVar1 < cost) {
       _DAT_098c3900 = newUIRed[0];
       _DAT_098c3904 = newUIRed[1];
       _DAT_098c3908 = newUIRed[2];
@@ -718,7 +750,7 @@ UI_FeederItemText_CommonListColorHandler(int param_1,bool param_2,bool param_3,i
       _DAT_098c390c = newUIGreen[3];
     }
   }
-  if (param_3) {
+  if (isGrey) {
     _DAT_098c3900 = newUIGrey[0];
     _DAT_098c3904 = newUIGrey[1];
     _DAT_098c3908 = newUIGrey[2];
@@ -732,11 +764,14 @@ UI_FeederItemText_CommonListColorHandler(int param_1,bool param_2,bool param_3,i
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_Attachments
-          (int param_1,int param_2,float param_3,int param_4,int param_5,itemDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,float feederID,int index,int column,itemDef_s *item,
+          Material **handle)
 
 {
   bool bVar1;
@@ -748,110 +783,128 @@ UI_FeederItemText_Attachments
   eAttachment eVar7;
   eAttachmentPoint eVar8;
   char *pcVar9;
+  char *customClassName_00;
   char *pcVar10;
-  char *pcVar11;
-  eAttachment eVar12;
-  int iVar13;
-  Material *pMVar14;
-  int iVar15;
-  eAttachmentPoint local_4c;
-  int local_48;
-  int local_1c;
-  int local_10;
-  bool local_6;
-  bool local_5;
+  eAttachment attachment2;
+  int itemIndex_00;
+  Material *pMVar11;
+  int iVar12;
+  int currAttachPoint;
+  int numAttachmentsEquipped;
+  eAttachment currEquippedAttachment;
+  int perkProIndex;
+  eAttachment attachment;
+  char *customClassName;
+  int currEquippedAttachmentNum;
+  char *itemName;
+  char *loadoutName;
+  bool primaryWeaponSelected;
+  listBoxDef_s *listPtr;
+  eAttachmentPoint attachPoint;
+  int attachmentNum;
+  bool isSecondAttachmentOptionEnabled;
+  int perkIndex;
+  int cost;
+  int itemIndex;
+  bool isCurrentItemEquipped;
+  bool isItemGreyedOut;
+  bool isSelectedItem;
   
-  plVar4 = Item_GetListBoxDef(param_6);
-  if ((DAT_098c3914 <= plVar4->cursorPos[param_1]) && (DAT_098c3914 != 0)) {
-    plVar4->startPos[param_1] = 0;
-    plVar4->cursorPos[param_1] = DAT_098c3914 + -1;
+  plVar4 = Item_GetListBoxDef(item);
+  if ((DAT_098c3914 <= plVar4->cursorPos[contextIndex]) && (DAT_098c3914 != 0)) {
+    plVar4->startPos[contextIndex] = 0;
+    plVar4->cursorPos[contextIndex] = DAT_098c3914 + -1;
     iVar5 = DAT_098c3914 + -1;
-    iVar15 = param_1;
-    iVar6 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar6,iVar15,param_3,iVar5);
+    iVar12 = contextIndex;
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(iVar6,iVar12,feederID,iVar5);
   }
-  iVar15 = DAT_098c38f8;
-  local_48 = 0;
+  iVar12 = DAT_098c38f8;
+  numAttachmentsEquipped = 0;
   bVar3 = false;
   bVar1 = false;
-  local_5 = false;
-  local_6 = false;
+  isSelectedItem = false;
+  isItemGreyedOut = false;
   if (DAT_098c3914 == 1) {
-    local_1c = BG_UnlockablesGetItemAttachmentNumWithAttachPoint
-                         (DAT_098c38f8,param_4,(attachmentFilter->current).integer);
+    attachmentNum =
+         BG_UnlockablesGetItemAttachmentNumWithAttachPoint
+                   (DAT_098c38f8,index,(attachmentFilter->current).integer);
   }
   else {
-    local_1c = BG_UnlockablesGetItemAttachmentNumWithAttachPoint
-                         (DAT_098c38f8,param_4 + 1,(attachmentFilter->current).integer);
+    attachmentNum =
+         BG_UnlockablesGetItemAttachmentNumWithAttachPoint
+                   (DAT_098c38f8,index + 1,(attachmentFilter->current).integer);
   }
-  eVar7 = BG_UnlockablesGetItemAttachment(iVar15,local_1c);
+  eVar7 = BG_UnlockablesGetItemAttachment(iVar12,attachmentNum);
   eVar8 = BG_GetAttachmentPointIndexFromAttachment(eVar7);
-  eVar7 = BG_UnlockablesGetItemAttachment(iVar15,local_1c);
-  pcVar9 = BG_UnlockablesGetItemAttachmentDisplayName(iVar15,local_1c);
-  pcVar10 = Dvar_GetString("ui_custom_name");
-  pcVar11 = Dvar_GetString("selected_loadout_slot");
-  iVar5 = I_stricmp(pcVar11,"primary");
-  for (local_4c = ATTACHMENT_POINT_FIRST; (int)local_4c < 5;
-      local_4c = local_4c + ATTACHMENT_POINT_FIRST) {
-    BG_GetAttachmentPointName(local_4c);
-    pcVar11 = va("%sattachment%s");
-    iVar6 = BG_UnlockablesGetEquippedItemInSlot(param_2,pcVar10,pcVar11);
-    eVar12 = BG_UnlockablesGetItemAttachment(iVar15,iVar6);
-    bVar2 = BG_AreAttachmentsCompatible(eVar7,eVar12);
+  eVar7 = BG_UnlockablesGetItemAttachment(iVar12,attachmentNum);
+  pcVar9 = BG_UnlockablesGetItemAttachmentDisplayName(iVar12,attachmentNum);
+  customClassName_00 = Dvar_GetString("ui_custom_name");
+  pcVar10 = Dvar_GetString("selected_loadout_slot");
+  iVar5 = I_stricmp(pcVar10,"primary");
+  for (currAttachPoint = 1; currAttachPoint < 5; currAttachPoint = currAttachPoint + 1) {
+    BG_GetAttachmentPointName(currAttachPoint);
+    pcVar10 = va("%sattachment%s");
+    iVar6 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName_00,pcVar10);
+    attachment2 = BG_UnlockablesGetItemAttachment(iVar12,iVar6);
+    bVar2 = BG_AreAttachmentsCompatible(eVar7,attachment2);
     if (!bVar2) {
-      local_6 = true;
+      isItemGreyedOut = true;
     }
-    if (eVar12 != ATTACHMENT_NONE) {
-      local_48 = local_48 + 1;
-      if (eVar7 == eVar12) {
+    if (attachment2 != ATTACHMENT_NONE) {
+      numAttachmentsEquipped = numAttachmentsEquipped + 1;
+      if (eVar7 == attachment2) {
         bVar1 = true;
       }
-      if (local_4c == eVar8) {
-        local_6 = true;
+      if (currAttachPoint == eVar8) {
+        isItemGreyedOut = true;
       }
     }
   }
   iVar6 = BG_UnlockablesGetProfessionalIndex();
-  iVar13 = BG_UnlockablesGetProItem(iVar6);
-  bVar2 = BG_UnlockablesIsItemEquipped(param_2,pcVar10,iVar6);
-  if ((bVar2) || (bVar2 = BG_UnlockablesIsItemEquipped(param_2,pcVar10,iVar13), bVar2)) {
+  itemIndex_00 = BG_UnlockablesGetProItem(iVar6);
+  bVar2 = BG_UnlockablesIsItemEquipped(controllerIndex,customClassName_00,iVar6);
+  if ((bVar2) ||
+     (bVar2 = BG_UnlockablesIsItemEquipped(controllerIndex,customClassName_00,itemIndex_00), bVar2))
+  {
     bVar3 = true;
   }
-  if ((maxAttachmentsPerWeapon->current).integer <= local_48) {
-    local_6 = true;
+  if ((maxAttachmentsPerWeapon->current).integer <= numAttachmentsEquipped) {
+    isItemGreyedOut = true;
   }
-  if (((local_48 == 1) && (!bVar3)) || ((local_48 == 1 && (iVar5 != 0)))) {
-    local_6 = true;
+  if (((numAttachmentsEquipped == 1) && (!bVar3)) || ((numAttachmentsEquipped == 1 && (iVar5 != 0)))
+     ) {
+    isItemGreyedOut = true;
   }
-  local_10 = BG_UnlockablesGetItemAttachmentCost(iVar15,local_1c);
-  bVar3 = BG_UnlockablesIsItemAttachmentPurchased(param_2,iVar15,local_1c);
+  cost = BG_UnlockablesGetItemAttachmentCost(iVar12,attachmentNum);
+  bVar3 = BG_UnlockablesIsItemAttachmentPurchased(controllerIndex,iVar12,attachmentNum);
   if (bVar3) {
-    local_10 = 0;
+    cost = 0;
   }
-  if (plVar4->cursorPos[param_1] == param_4) {
-    DAT_098c3910 = local_1c;
-    bVar3 = Window_HasFocus(param_1,&param_6->window);
+  if (plVar4->cursorPos[contextIndex] == index) {
+    DAT_098c3910 = attachmentNum;
+    bVar3 = Window_HasFocus(contextIndex,&item->window);
     if (bVar3) {
-      local_5 = true;
+      isSelectedItem = true;
     }
   }
-  UI_FeederItemText_CommonListColorHandler(param_2,local_5,local_6,local_10);
-  if (iVar15 != -1) {
-    switch(param_5) {
+  UI_FeederItemText_CommonListColorHandler(controllerIndex,isSelectedItem,isItemGreyedOut,cost);
+  if (iVar12 != -1) {
+    switch(column) {
     case 0:
       pcVar9 = UI_SafeTranslateString(pcVar9);
       return pcVar9;
     case 1:
       if ((bVar1) && (eVar7 != ATTACHMENT_NONE)) {
-        pMVar14 = Material_RegisterHandle("menu_mp_killstreak_select",7);
-        *param_7 = pMVar14;
+        pMVar11 = Material_RegisterHandle("menu_mp_killstreak_select",7);
+        *handle = pMVar11;
         return "";
       }
       break;
     case 2:
-      if (local_10 != 0) {
+      if (cost != 0) {
         pcVar9 = UI_SafeTranslateString("MENU_POINTS");
-        pcVar9 = UI_ReplaceConversionInt(pcVar9,local_10);
+        pcVar9 = UI_ReplaceConversionInt(pcVar9,cost);
         return pcVar9;
       }
       break;
@@ -866,10 +919,14 @@ UI_FeederItemText_Attachments
 // 00736090  UI_FeederItemText_WeaponGroups  (ui_mp/ui_feeders_mp.cpp:967)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_WeaponGroups
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,Material **param_6)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,
+          Material **handle)
 
 {
   code *pcVar1;
@@ -879,12 +936,15 @@ UI_FeederItemText_WeaponGroups
   int iVar5;
   Material *pMVar6;
   bool local_1c;
-  char *local_14;
-  itemGroup_t local_10;
+  char *loadoutName;
+  char *itemName;
+  int arrayOffset;
+  listBoxDef_s *listPtr;
+  bool isSelectedItem;
   
-  plVar3 = Item_GetListBoxDef(param_3);
-  if (plVar3->cursorPos[param_2] == param_4) {
-    bVar2 = Window_HasFocus(param_2,&param_3->window);
+  plVar3 = Item_GetListBoxDef(item);
+  if (plVar3->cursorPos[contextIndex] == index) {
+    bVar2 = Window_HasFocus(contextIndex,&item->window);
     if (bVar2) {
       local_1c = true;
       goto LAB_007360db;
@@ -893,12 +953,12 @@ UI_FeederItemText_WeaponGroups
   local_1c = false;
 LAB_007360db:
   pcVar4 = Dvar_GetString("selected_loadout_slot");
-  local_14 = "";
-  local_10 = ITEMGROUP_FIRST;
+  itemName = "";
+  arrayOffset = 0;
   iVar5 = I_stricmp(pcVar4,"primary");
   if (iVar5 == 0) {
-    local_10 = param_4;
-    if ((param_4 < 0) || (4 < param_4)) {
+    arrayOffset = index;
+    if ((index < 0) || (4 < index)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x3d1,0
                                ,"%s");
       if (!bVar2) {
@@ -907,13 +967,13 @@ LAB_007360db:
         return pcVar4;
       }
     }
-    BG_UnlockablesGetItemGroupName(param_4);
-    local_14 = va("%s%s%s");
+    BG_UnlockablesGetItemGroupName(index);
+    itemName = va("%s%s%s");
   }
   iVar5 = I_stricmp(pcVar4,"secondary");
   if (iVar5 == 0) {
-    local_10 = param_4 + ITEMGROUP_PISTOL;
-    if (((int)local_10 < 5) || (7 < (int)local_10)) {
+    arrayOffset = index + ITEMGROUP_PISTOL;
+    if ((arrayOffset < 5) || (7 < arrayOffset)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x3d8,0
                                ,"%s");
       if (!bVar2) {
@@ -922,21 +982,21 @@ LAB_007360db:
         return pcVar4;
       }
     }
-    BG_UnlockablesGetItemGroupName(local_10);
-    local_14 = va("%s%s%s");
+    BG_UnlockablesGetItemGroupName(arrayOffset);
+    itemName = va("%s%s%s");
   }
-  if (param_5 == 7) {
-    pcVar4 = BG_UnlockablesGetItemGroupName(local_10);
+  if (column == 7) {
+    pcVar4 = BG_UnlockablesGetItemGroupName(arrayOffset);
     if (pcVar4 != (char *)0x0) {
-      pcVar4 = BG_UnlockablesGetItemGroupName(local_10);
-      bVar2 = BG_UnlockablesIsItemGroupNew(param_1,pcVar4);
+      pcVar4 = BG_UnlockablesGetItemGroupName(arrayOffset);
+      bVar2 = BG_UnlockablesIsItemGroupNew(controllerIndex,pcVar4);
       if (bVar2) {
         pMVar6 = Material_RegisterHandle("menu_mp_lobby_new",3);
-        *param_6 = pMVar6;
+        *handle = pMVar6;
       }
     }
   }
-  pcVar4 = UI_Feeder_HandleItemList(param_1,0,param_5,local_1c,false,0,local_14,param_6);
+  pcVar4 = UI_Feeder_HandleItemList(controllerIndex,0,column,local_1c,false,0,itemName,handle);
   return pcVar4;
 }
 
@@ -945,59 +1005,64 @@ LAB_007360db:
 
 char * __cdecl
 UI_FeederItemText_ClanTagFeatures
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,Material **param_6)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,
+          Material **handle)
 
 {
   bool bVar1;
-  uint uVar2;
-  listBoxDef_s *plVar3;
-  char *pcVar4;
-  uint uVar5;
-  Material *pMVar6;
+  uint index_00;
+  listBoxDef_s *plVar2;
+  char *pcVar3;
+  uint uVar4;
+  Material *pMVar5;
   bool local_1c;
-  int local_14;
+  listBoxDef_s *listPtr;
+  int cost;
+  bool isLocked;
+  int currClanTagFeature;
+  bool isSelectedItem;
   
-  local_14 = 0;
-  uVar2 = param_4 + 1;
-  plVar3 = Item_GetListBoxDef(param_3);
-  if ((plVar3->cursorPos[param_2] == param_4) &&
-     (bVar1 = Window_HasFocus(param_2,&param_3->window), bVar1)) {
+  cost = 0;
+  index_00 = index + 1;
+  plVar2 = Item_GetListBoxDef(item);
+  if ((plVar2->cursorPos[contextIndex] == index) &&
+     (bVar1 = Window_HasFocus(contextIndex,&item->window), bVar1)) {
     local_1c = true;
   }
   else {
     local_1c = false;
   }
-  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(param_1,uVar2);
+  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(controllerIndex,index_00);
   if (!bVar1) {
-    pcVar4 = BG_UnlockablesGetClanTagFeature(uVar2,CLANTAG_COL_COST);
-    local_14 = atoi(pcVar4);
+    pcVar3 = BG_UnlockablesGetClanTagFeature(index_00,CLANTAG_COL_COST);
+    cost = atoi(pcVar3);
   }
-  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(param_1,uVar2);
-  UI_FeederItemText_CommonListColorHandler(param_1,local_1c,bVar1,local_14);
-  switch(param_5) {
+  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(controllerIndex,index_00);
+  UI_FeederItemText_CommonListColorHandler(controllerIndex,local_1c,bVar1,cost);
+  switch(column) {
   case 0:
-    BG_UnlockablesGetClanTagFeature(uVar2,CLANTAG_COL_NAME);
-    pcVar4 = va("MPUI_CLANTAG_%s");
-    pcVar4 = UI_SafeTranslateString(pcVar4);
-    return pcVar4;
+    BG_UnlockablesGetClanTagFeature(index_00,CLANTAG_COL_NAME);
+    pcVar3 = va("MPUI_CLANTAG_%s");
+    pcVar3 = UI_SafeTranslateString(pcVar3);
+    return pcVar3;
   case 1:
-    uVar5 = BG_UnlockablesGetEquippedClanTagFeatureIndex(param_1);
-    if (uVar2 == uVar5) {
-      pMVar6 = Material_RegisterHandle("menu_mp_killstreak_select",7);
-      *param_6 = pMVar6;
+    uVar4 = BG_UnlockablesGetEquippedClanTagFeatureIndex(controllerIndex);
+    if (index_00 == uVar4) {
+      pMVar5 = Material_RegisterHandle("menu_mp_killstreak_select",7);
+      *handle = pMVar5;
     }
     break;
   case 2:
-    if ((!bVar1) && (local_14 != 0)) {
-      pcVar4 = UI_SafeTranslateString("MENU_POINTS");
-      pcVar4 = UI_ReplaceConversionInt(pcVar4,local_14);
-      return pcVar4;
+    if ((!bVar1) && (cost != 0)) {
+      pcVar3 = UI_SafeTranslateString("MENU_POINTS");
+      pcVar3 = UI_ReplaceConversionInt(pcVar3,cost);
+      return pcVar3;
     }
     break;
   case 3:
     if (bVar1) {
-      pMVar6 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-      *param_6 = pMVar6;
+      pMVar5 = Material_RegisterHandle("menu_mp_lobby_locked",3);
+      *handle = pMVar5;
     }
   }
   return "";
@@ -1008,18 +1073,22 @@ UI_FeederItemText_ClanTagFeatures
 
 char * __cdecl
 UI_FeederItemText_ClanTagFeaturesEdit
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,Material **param_6)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,
+          Material **handle)
 
 {
   char *pcVar1;
+  int clanTagColor;
+  int currEquippedClanTagFeatureIndex;
+  char *clanName;
   
-  pcVar1 = Clan_GetName(param_1);
-  BG_UnlockablesGetEquippedClanTagFeatureIndex(param_1);
+  pcVar1 = Clan_GetName(controllerIndex);
+  BG_UnlockablesGetEquippedClanTagFeatureIndex(controllerIndex);
   if ((pcVar1 == (char *)0x0) || (*pcVar1 == '\0')) {
     pcVar1 = UI_SafeTranslateString("MPUI_CREATE_CLAN_TAG_CAPS");
   }
   else {
-    Clan_GetName(param_1);
+    Clan_GetName(controllerIndex);
     pcVar1 = va("^%i%s");
   }
   return pcVar1;
@@ -1029,17 +1098,19 @@ UI_FeederItemText_ClanTagFeaturesEdit
 // 00736480  UI_FeederItemText_CustomClasses  (ui_mp/ui_feeders_mp.cpp:1060)
 
 char * __cdecl
-UI_FeederItemText_CustomClasses(int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5)
+UI_FeederItemText_CustomClasses
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column)
 
 {
   int iVar1;
   char *pcVar2;
+  int highlightedClassIndex;
   
   iVar1 = Dvar_GetInt("ui_custom_class_highlighted");
-  if (iVar1 <= param_4) {
-    param_4 = param_4 + 1;
+  if (iVar1 <= index) {
+    index = index + 1;
   }
-  pcVar2 = Dvar_GetString(*(char **)(&customClassDvars + param_4 * 4));
+  pcVar2 = Dvar_GetString(*(char **)(&customClassDvars + index * 4));
   return pcVar2;
 }
 
@@ -1048,54 +1119,64 @@ UI_FeederItemText_CustomClasses(int param_1,int param_2,itemDef_s *param_3,int p
 
 char * __cdecl
 UI_FeederItemText_CustomGametypeClasses
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column)
 
 {
   int iVar1;
+  int highlightedClassIndex;
   
   iVar1 = Dvar_GetInt("ui_custom_gametype_class_highlighted");
-  if (iVar1 <= param_4) {
-    param_4 = param_4 + 1;
+  if (iVar1 <= index) {
+    index = index + 1;
   }
-  return g_customGameModeClassDescriptions[param_4].name;
+  return g_customGameModeClassDescriptions[index].name;
 }
 
 
 // 00736500  UI_FeederItemText_ChallengesPerks  (ui_mp/ui_feeders_mp.cpp:1081)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 char * __cdecl
 UI_FeederItemText_ChallengesPerks
-          (int param_1,int param_2,float param_3,int param_4,int param_5,itemDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,float feederID,int index,int column,itemDef_s *item,
+          Material **handle)
 
 {
   bool bVar1;
   listBoxDef_s *plVar2;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
-  Material *pMVar6;
+  int localClientNum;
+  char *pcVar4;
+  Material *pMVar5;
+  char *itemName;
+  listBoxDef_s *listPtr;
+  int itemIndex;
+  bool itemPurchased;
   
-  plVar2 = Item_GetListBoxDef(param_6);
-  if ((DAT_098c3918 <= plVar2->cursorPos[param_1]) && (DAT_098c3918 != 0)) {
-    plVar2->startPos[param_1] = 0;
-    plVar2->cursorPos[param_1] = DAT_098c3918 + -1;
+  plVar2 = Item_GetListBoxDef(item);
+  if ((DAT_098c3918 <= plVar2->cursorPos[contextIndex]) && (DAT_098c3918 != 0)) {
+    plVar2->startPos[contextIndex] = 0;
+    plVar2->cursorPos[contextIndex] = DAT_098c3918 + -1;
     iVar3 = DAT_098c3918 + -1;
-    iVar4 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar4,param_1,param_3,iVar3);
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(localClientNum,contextIndex,feederID,iVar3);
   }
-  iVar3 = BG_UnlockablesGetItemIndexInSlot(param_4);
-  pcVar5 = BG_UnlockablesGetItemName(iVar3);
-  bVar1 = BG_UnlockablesIsItemPurchased(param_2,iVar3);
+  iVar3 = BG_UnlockablesGetItemIndexInSlot(index);
+  pcVar4 = BG_UnlockablesGetItemName(iVar3);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,iVar3);
   if (iVar3 != -1) {
-    if (param_5 == 0) {
-      pcVar5 = UI_SafeTranslateString(pcVar5);
-      return pcVar5;
+    if (column == 0) {
+      pcVar4 = UI_SafeTranslateString(pcVar4);
+      return pcVar4;
     }
-    if (param_5 == 1) {
+    if (column == 1) {
       if (!bVar1) {
-        pMVar6 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-        *param_7 = pMVar6;
+        pMVar5 = Material_RegisterHandle("menu_mp_lobby_locked",3);
+        *handle = pMVar5;
       }
       return "";
     }
@@ -1107,49 +1188,54 @@ UI_FeederItemText_ChallengesPerks
 // 00736600  UI_FeederItemText_ItemInSlot  (ui_mp/ui_feeders_mp.cpp:1115)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_ItemInSlot
-          (int param_1,int param_2,float param_3,int param_4,int param_5,itemDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,float feederID,int index,int column,itemDef_s *item,
+          Material **handle)
 
 {
   bool bVar1;
   listBoxDef_s *plVar2;
   int iVar3;
+  int localClientNum;
   int iVar4;
-  int iVar5;
-  itemGroup_t iVar6;
-  Material *pMVar7;
-  char *pcVar8;
+  itemGroup_t iVar5;
+  Material *pMVar6;
+  char *pcVar7;
   bool local_20;
-  char *local_1c;
-  int local_14;
-  bool local_d;
-  bool local_6;
-  bool local_5;
+  char *itemName;
+  listBoxDef_s *listPtr;
+  int cost;
+  bool itemClassified;
+  int itemIndex;
+  bool itemLocked;
+  bool isSelectedItem;
   
-  plVar2 = Item_GetListBoxDef(param_6);
-  if ((DAT_098c3918 <= plVar2->cursorPos[param_1]) && (DAT_098c3918 != 0)) {
-    plVar2->startPos[param_1] = 0;
-    plVar2->cursorPos[param_1] = DAT_098c3918 + -1;
+  plVar2 = Item_GetListBoxDef(item);
+  if ((DAT_098c3918 <= plVar2->cursorPos[contextIndex]) && (DAT_098c3918 != 0)) {
+    plVar2->startPos[contextIndex] = 0;
+    plVar2->cursorPos[contextIndex] = DAT_098c3918 + -1;
     iVar3 = DAT_098c3918 + -1;
-    iVar5 = param_1;
-    iVar4 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar4,iVar5,param_3,iVar3);
+    iVar4 = contextIndex;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(localClientNum,iVar4,feederID,iVar3);
   }
-  iVar5 = BG_UnlockablesGetItemIndexInSlot(param_4);
-  local_5 = false;
-  if ((plVar2->cursorPos[param_1] == param_4) && (param_6->animInfo->animating == 0)) {
-    DAT_098c38fc = param_4;
-    DAT_098c38f8 = iVar5;
-    bVar1 = Window_HasFocus(param_1,&param_6->window);
+  iVar4 = BG_UnlockablesGetItemIndexInSlot(index);
+  isSelectedItem = false;
+  if ((plVar2->cursorPos[contextIndex] == index) && (item->animInfo->animating == 0)) {
+    DAT_098c38fc = index;
+    DAT_098c38f8 = iVar4;
+    bVar1 = Window_HasFocus(contextIndex,&item->window);
     if (bVar1) {
-      local_5 = true;
+      isSelectedItem = true;
     }
   }
-  local_14 = BG_UnlockablesGetItemCost(iVar5);
-  bVar1 = BG_UnlockablesIsItemLocked(param_2,iVar5);
+  cost = BG_UnlockablesGetItemCost(iVar4);
+  bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,iVar4);
   if (bVar1) {
     iVar3 = Dvar_GetInt(ui_items_no_cost);
     if (iVar3 == 0) {
@@ -1159,65 +1245,75 @@ UI_FeederItemText_ItemInSlot
   }
   local_20 = false;
 LAB_00736721:
-  local_6 = local_20;
-  bVar1 = BG_UnlockablesIsItemPurchased(param_2,iVar5);
+  itemLocked = local_20;
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,iVar4);
   if ((bVar1) || (local_20 != false)) {
-    local_14 = 0;
+    cost = 0;
   }
-  local_1c = BG_UnlockablesGetItemName(iVar5);
-  local_d = BG_UnlockablesIsItemClassified(iVar5);
-  iVar6 = BG_UnlockablesGetItemGroupEnum(iVar5);
-  if ((iVar6 == ITEMGROUP_HEAD) && (local_20 != false)) {
-    local_d = true;
+  itemName = BG_UnlockablesGetItemName(iVar4);
+  itemClassified = BG_UnlockablesIsItemClassified(iVar4);
+  iVar5 = BG_UnlockablesGetItemGroupEnum(iVar4);
+  if ((iVar5 == ITEMGROUP_HEAD) && (local_20 != false)) {
+    itemClassified = true;
   }
-  if (local_d != false) {
-    local_6 = true;
-    local_14 = 0;
-    local_1c = "MENU_CLASSIFIED";
+  if (itemClassified != false) {
+    itemLocked = true;
+    cost = 0;
+    itemName = "MENU_CLASSIFIED";
   }
-  if (param_5 == 7) {
-    bVar1 = BG_UnlockablesIsItemNew(param_2,iVar5);
+  if (column == 7) {
+    bVar1 = BG_UnlockablesIsItemNew(controllerIndex,iVar4);
     if (bVar1) {
-      pMVar7 = Material_RegisterHandle("menu_mp_lobby_new",3);
-      *param_7 = pMVar7;
+      pMVar6 = Material_RegisterHandle("menu_mp_lobby_new",3);
+      *handle = pMVar6;
     }
   }
-  pcVar8 = UI_Feeder_HandleItemList(param_2,iVar5,param_5,local_5,local_6,local_14,local_1c,param_7)
-  ;
-  return pcVar8;
+  pcVar7 = UI_Feeder_HandleItemList
+                     (controllerIndex,iVar4,column,isSelectedItem,itemLocked,cost,itemName,handle);
+  return pcVar7;
 }
 
 
 // 00736810  UI_FeederItemText_CustomPerksInSlot  (ui_mp/ui_feeders_mp.cpp:1174)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 char * __cdecl
 UI_FeederItemText_CustomPerksInSlot
-          (int param_1,int param_2,float param_3,int param_4,int param_5,itemDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,float feederID,int index,int column,itemDef_s *item,
+          Material **handle)
 
 {
   bool bVar1;
-  int iVar2;
-  char *pcVar3;
-  listBoxDef_s *plVar4;
-  Material *pMVar5;
+  int itemIndex_00;
+  char *pcVar2;
+  listBoxDef_s *plVar3;
+  Material *pMVar4;
   char *local_1c;
-  bool local_6;
+  char *choiceDesc;
+  char *itemName;
+  listBoxDef_s *listPtr;
+  int itemIndex;
+  bool isSelectedItem;
+  bool isTweakable;
   
-  iVar2 = BG_UnlockablesGetItemIndexInSlot(param_4);
-  pcVar3 = BG_UnlockablesGetItemName(iVar2);
-  plVar4 = Item_GetListBoxDef(param_6);
-  local_6 = false;
-  if (plVar4->cursorPos[param_1] == param_4) {
-    DAT_098c38fc = param_4;
-    DAT_098c38f8 = iVar2;
-    bVar1 = Window_HasFocus(param_1,&param_6->window);
+  itemIndex_00 = BG_UnlockablesGetItemIndexInSlot(index);
+  pcVar2 = BG_UnlockablesGetItemName(itemIndex_00);
+  plVar3 = Item_GetListBoxDef(item);
+  isSelectedItem = false;
+  if (plVar3->cursorPos[contextIndex] == index) {
+    DAT_098c38fc = index;
+    DAT_098c38f8 = itemIndex_00;
+    bVar1 = Window_HasFocus(contextIndex,&item->window);
     if (bVar1) {
-      local_6 = true;
+      isSelectedItem = true;
     }
   }
-  bVar1 = UI_Gametype_Custom_IsPerkTweakable(iVar2);
-  if ((local_6 != false) && (param_5 == 0)) {
+  bVar1 = UI_Gametype_Custom_IsPerkTweakable(itemIndex_00);
+  if ((isSelectedItem != false) && (column == 0)) {
     if (bVar1) {
       local_1c = "";
     }
@@ -1226,62 +1322,69 @@ UI_FeederItemText_CustomPerksInSlot
     }
     Dvar_SetStringByName("ui_hint_desc",local_1c);
   }
-  if (((local_6 != false) && (!bVar1)) && (param_5 == 6)) {
-    local_6 = false;
+  if (((isSelectedItem != false) && (!bVar1)) && (column == 6)) {
+    isSelectedItem = false;
   }
-  if ((bVar1) && (param_5 == 2)) {
-    bVar1 = UI_Gametype_HasPerkChangedFromDefault(iVar2);
+  if ((bVar1) && (column == 2)) {
+    bVar1 = UI_Gametype_HasPerkChangedFromDefault(itemIndex_00);
     if (bVar1) {
       Dvar_SetStringByName("ui_custom_perk_has_changed","1");
-      pMVar5 = Material_RegisterHandle("ui_host",3);
-      *param_7 = pMVar5;
+      pMVar4 = Material_RegisterHandle("ui_host",3);
+      *handle = pMVar4;
     }
-    pcVar3 = "";
+    pcVar2 = "";
   }
   else {
-    pcVar3 = UI_Feeder_HandleItemList(param_2,iVar2,param_5,local_6,false,0,pcVar3,param_7);
+    pcVar2 = UI_Feeder_HandleItemList
+                       (controllerIndex,itemIndex_00,column,isSelectedItem,false,0,pcVar2,handle);
   }
-  return pcVar3;
+  return pcVar2;
 }
 
 
 // 00736960  UI_FeederItemText_ChallengesKillstreaks  (ui_mp/ui_feeders_mp.cpp:1217)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 char * __cdecl
 UI_FeederItemText_ChallengesKillstreaks
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-          listBoxDef_s *param_7,Material **param_8)
+          (int contextIndex,int controllerIndex,itemDef_s *item,float feederID,int index,int column,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   bool bVar1;
+  int localClientNum;
   int iVar2;
-  int iVar3;
-  char *pcVar4;
-  Material *pMVar5;
-  int iVar6;
+  char *pcVar3;
+  Material *pMVar4;
+  int index_00;
+  int itemIndex;
   
-  if ((DAT_098c3918 <= param_7->cursorPos[param_1]) && (DAT_098c3918 != 0)) {
-    param_7->startPos[param_1] = 0;
-    param_7->cursorPos[param_1] = DAT_098c3918 + -1;
-    iVar6 = DAT_098c3918 + -1;
-    iVar3 = param_1;
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar2,iVar3,param_4,iVar6);
+  if ((DAT_098c3918 <= listPtr->cursorPos[contextIndex]) && (DAT_098c3918 != 0)) {
+    listPtr->startPos[contextIndex] = 0;
+    listPtr->cursorPos[contextIndex] = DAT_098c3918 + -1;
+    index_00 = DAT_098c3918 + -1;
+    iVar2 = contextIndex;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(localClientNum,iVar2,feederID,index_00);
   }
-  iVar3 = BG_UnlockablesGetItemIndexInSlot(param_5);
-  if (param_7->cursorPos[param_1] == param_5) {
-    DAT_098c38f8 = iVar3;
+  iVar2 = BG_UnlockablesGetItemIndexInSlot(index);
+  if (listPtr->cursorPos[contextIndex] == index) {
+    DAT_098c38f8 = iVar2;
   }
-  if (iVar3 != -1) {
-    if (param_6 == 0) {
-      pcVar4 = BG_UnlockablesGetItemName(iVar3);
-      pcVar4 = UI_SafeTranslateString(pcVar4);
-      pcVar4 = UI_ToUpper(pcVar4);
-      return pcVar4;
+  if (iVar2 != -1) {
+    if (column == 0) {
+      pcVar3 = BG_UnlockablesGetItemName(iVar2);
+      pcVar3 = UI_SafeTranslateString(pcVar3);
+      pcVar3 = UI_ToUpper(pcVar3);
+      return pcVar3;
     }
-    if ((param_6 == 1) && (bVar1 = BG_UnlockablesIsItemPurchased(param_2,iVar3), !bVar1)) {
-      pMVar5 = Material_RegisterHandle("menu_mp_lobby_locked",7);
-      *param_8 = pMVar5;
+    if ((column == 1) && (bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,iVar2), !bVar1)) {
+      pMVar4 = Material_RegisterHandle("menu_mp_lobby_locked",7);
+      *handle = pMVar4;
       return "";
     }
   }
@@ -1292,224 +1395,236 @@ UI_FeederItemText_ChallengesKillstreaks
 // 00736A70  UI_FeederItemText_SortedItems  (ui_mp/ui_feeders_mp.cpp:1253)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: groupName */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_SortedItems
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-          listBoxDef_s *param_7,Material **param_8)
+          (int contextIndex,int controllerIndex,itemDef_s *item,float feederID,int index,int column,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   code *pcVar1;
   bool bVar2;
+  int localClientNum;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
-  Material *pMVar6;
-  int iVar7;
-  float fVar8;
+  char *pcVar4;
+  Material *pMVar5;
+  int index_00;
+  float feederID_00;
+  char *groupName;
   int aiStack_102c [256];
-  bool local_c29;
-  int local_c28;
+  bool isGrey;
+  int slotCount;
   int aiStack_c24 [256];
   int aiStack_824 [257];
-  int local_420;
-  int local_41c;
-  int local_418;
-  int local_414;
-  char local_40d;
+  int cost;
+  int totalItemsEquipped;
+  int currSlot;
+  int itemIndex;
+  bool isCurrentItemEquipped;
   int aiStack_40c [257];
   undefined3 uStack_8;
-  bool local_5;
+  bool isSelectedItem;
   
   uStack_8 = 0x736a7d;
-  local_5 = false;
-  if ((DAT_098c3918 <= param_7->cursorPos[param_1]) && (DAT_098c3918 != 0)) {
-    param_7->startPos[param_1] = 0;
-    param_7->cursorPos[param_1] = DAT_098c3918 + -1;
-    iVar7 = DAT_098c3918 + -1;
-    iVar4 = param_1;
-    fVar8 = param_4;
-    iVar3 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar3,iVar4,fVar8,iVar7);
+  isSelectedItem = false;
+  if ((DAT_098c3918 <= listPtr->cursorPos[contextIndex]) && (DAT_098c3918 != 0)) {
+    listPtr->startPos[contextIndex] = 0;
+    listPtr->cursorPos[contextIndex] = DAT_098c3918 + -1;
+    index_00 = DAT_098c3918 + -1;
+    iVar3 = contextIndex;
+    feederID_00 = feederID;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(localClientNum,iVar3,feederID_00,index_00);
   }
-  local_414 = BG_UnlockablesGetItemIndexInSlot(param_5);
-  local_420 = BG_UnlockablesGetItemCost(local_414);
-  bVar2 = BG_UnlockablesIsItemPurchased(param_2,local_414);
-  if ((bVar2) || (iVar4 = Dvar_GetInt(ui_items_no_cost), iVar4 != 0)) {
-    local_420 = 0;
+  itemIndex = BG_UnlockablesGetItemIndexInSlot(index);
+  cost = BG_UnlockablesGetItemCost(itemIndex);
+  bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
+  if ((bVar2) || (iVar3 = Dvar_GetInt(ui_items_no_cost), iVar3 != 0)) {
+    cost = 0;
   }
-  if (param_7->cursorPos[param_1] == param_5) {
-    DAT_098c38f8 = local_414;
+  if (listPtr->cursorPos[contextIndex] == index) {
+    DAT_098c38f8 = itemIndex;
   }
-  local_41c = 0;
-  local_418 = 0;
-  local_c28 = 0;
-  local_40d = '\0';
-  local_c29 = false;
-  local_5 = false;
-  if (param_4 == 67.0) {
-    local_c28 = Dvar_GetInt("ui_slot_count");
-    pcVar5 = Dvar_GetString("selected_group");
-    if ((0x100 < local_c28) &&
+  totalItemsEquipped = 0;
+  currSlot = 0;
+  slotCount = 0;
+  isCurrentItemEquipped = false;
+  isGrey = false;
+  isSelectedItem = false;
+  if (feederID == 67.0) {
+    slotCount = Dvar_GetInt("ui_slot_count");
+    pcVar4 = Dvar_GetString("selected_group");
+    if ((0x100 < slotCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x50c
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
-      pcVar5 = (char *)(*pcVar1)(pcVar5);
-      return pcVar5;
+      pcVar4 = (char *)(*pcVar1)(pcVar4);
+      return pcVar4;
     }
-    if (0x100 < local_c28) {
+    if (0x100 < slotCount) {
       return "";
     }
-    for (local_418 = 0; local_418 < local_c28; local_418 = local_418 + 1) {
-      pcVar5 = va("%s%d");
-      iVar4 = BG_UnlockablesGetLoadoutSlotFromString(pcVar5);
-      aiStack_824[local_418] = iVar4;
-      if (aiStack_824[local_418] == -1) {
+    for (currSlot = 0; currSlot < slotCount; currSlot = currSlot + 1) {
+      pcVar4 = va("%s%d");
+      iVar3 = BG_UnlockablesGetLoadoutSlotFromString(pcVar4);
+      aiStack_824[currSlot] = iVar3;
+      if (aiStack_824[currSlot] == -1) {
         va("%s%d");
         va("Loadout Slot %s not found");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x513
                                  ,0,"%s\n\t%s");
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
-          pcVar5 = (char *)(*pcVar1)();
-          return pcVar5;
+          pcVar4 = (char *)(*pcVar1)();
+          return pcVar4;
         }
       }
-      if (aiStack_824[local_418] == -1) {
+      if (aiStack_824[currSlot] == -1) {
         return "";
       }
-      pcVar5 = va("%s%d");
-      iVar4 = BG_UnlockablesGetEquippedItemInSlot(param_2,(char *)0x0,pcVar5);
-      aiStack_c24[local_418] = iVar4;
-      if (aiStack_c24[local_418] != -1) {
-        iVar4 = BG_UnlockablesGetItemCount(aiStack_c24[local_418]);
-        aiStack_102c[local_418] = iVar4;
+      pcVar4 = va("%s%d");
+      iVar3 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,(char *)0x0,pcVar4);
+      aiStack_c24[currSlot] = iVar3;
+      if (aiStack_c24[currSlot] != -1) {
+        iVar3 = BG_UnlockablesGetItemCount(aiStack_c24[currSlot]);
+        aiStack_102c[currSlot] = iVar3;
       }
-      iVar4 = BG_UnlockablesGetDefaultItem(aiStack_824[local_418]);
-      aiStack_40c[local_418] = iVar4;
-      if (aiStack_c24[local_418] != aiStack_40c[local_418]) {
-        if (local_414 == aiStack_c24[local_418]) {
-          local_40d = '\x01';
+      iVar3 = BG_UnlockablesGetDefaultItem(aiStack_824[currSlot]);
+      aiStack_40c[currSlot] = iVar3;
+      if (aiStack_c24[currSlot] != aiStack_40c[currSlot]) {
+        if (itemIndex == aiStack_c24[currSlot]) {
+          isCurrentItemEquipped = true;
         }
-        local_41c = local_41c + 1;
+        totalItemsEquipped = totalItemsEquipped + 1;
       }
-      iVar4 = BG_UnlockablesGetItemCount(local_414);
-      if (iVar4 == aiStack_102c[local_418]) {
-        local_c29 = true;
+      iVar3 = BG_UnlockablesGetItemCount(itemIndex);
+      if (iVar3 == aiStack_102c[currSlot]) {
+        isGrey = true;
       }
     }
   }
-  if (local_41c == local_c28) {
-    local_c29 = true;
+  if (totalItemsEquipped == slotCount) {
+    isGrey = true;
   }
-  if ((param_7->cursorPos[param_1] == param_5) &&
-     (bVar2 = Window_HasFocus(param_1,&param_3->window), bVar2)) {
-    local_5 = true;
+  if ((listPtr->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
+    isSelectedItem = true;
   }
-  UI_FeederItemText_CommonListColorHandler(param_2,local_5,local_c29,local_420);
-  if (local_414 == -1) goto switchD_00736e77_default;
-  switch(param_6) {
+  UI_FeederItemText_CommonListColorHandler(controllerIndex,isSelectedItem,isGrey,cost);
+  if (itemIndex == -1) goto switchD_00736e77_default;
+  switch(column) {
   case 0:
-    pcVar5 = BG_UnlockablesGetItemName(local_414);
-    pcVar5 = UI_SafeTranslateString(pcVar5);
-    pcVar5 = UI_ToUpper(pcVar5);
+    pcVar4 = BG_UnlockablesGetItemName(itemIndex);
+    pcVar4 = UI_SafeTranslateString(pcVar4);
+    pcVar4 = UI_ToUpper(pcVar4);
     break;
   case 1:
-    if (local_40d == '\0') {
-      pcVar5 = "";
+    if (isCurrentItemEquipped == false) {
+      pcVar4 = "";
     }
     else {
-      pMVar6 = Material_RegisterHandle("menu_mp_killstreak_select",7);
-      *param_8 = pMVar6;
-      pcVar5 = "";
+      pMVar5 = Material_RegisterHandle("menu_mp_killstreak_select",7);
+      *handle = pMVar5;
+      pcVar4 = "";
     }
     break;
   case 2:
-    if (local_420 == 0) {
-      pcVar5 = "";
+    if (cost == 0) {
+      pcVar4 = "";
     }
     else {
-      iVar4 = Dvar_GetInt(ui_items_no_cost);
-      if (iVar4 == 0) {
-        iVar4 = local_420;
-        pcVar5 = UI_SafeTranslateString("MENU_POINTS");
-        pcVar5 = UI_ReplaceConversionInt(pcVar5,iVar4);
+      iVar3 = Dvar_GetInt(ui_items_no_cost);
+      if (iVar3 == 0) {
+        iVar3 = cost;
+        pcVar4 = UI_SafeTranslateString("MENU_POINTS");
+        pcVar4 = UI_ReplaceConversionInt(pcVar4,iVar3);
       }
       else {
-        pcVar5 = "";
+        pcVar4 = "";
       }
     }
     break;
   case 3:
-    bVar2 = BG_UnlockablesIsItemLocked(param_2,local_414);
+    bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
     if (bVar2) {
-      pMVar6 = Material_RegisterHandle("menu_mp_lobby_locked",7);
-      *param_8 = pMVar6;
+      pMVar5 = Material_RegisterHandle("menu_mp_lobby_locked",7);
+      *handle = pMVar5;
       return "";
     }
   default:
 switchD_00736e77_default:
-    pcVar5 = "";
+    pcVar4 = "";
     break;
   case 4:
-    BG_UnlockablesGetItemCount(local_414);
-    pcVar5 = va("%d");
+    BG_UnlockablesGetItemCount(itemIndex);
+    pcVar4 = va("%d");
   }
-  return pcVar5;
+  return pcVar4;
 }
 
 
 // 00736FA0  UI_FeederItemText_CustomKillstreaks  (ui_mp/ui_feeders_mp.cpp:1379)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 char * __cdecl
 UI_FeederItemText_CustomKillstreaks
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-          listBoxDef_s *param_7,Material **param_8)
+          (int contextIndex,int controllerIndex,itemDef_s *item,float feederID,int index,int column,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   bool bVar1;
   bool bVar2;
-  int iVar3;
-  char *pcVar4;
-  int iVar5;
-  int iVar6;
-  int local_c;
-  bool local_5;
+  int localClientNum;
+  char *pcVar3;
+  int index_00;
+  int contextIndex_00;
+  bool isGrey;
+  int itemIndex;
+  bool isSelectedItem;
   
-  if ((DAT_098c3918 <= param_7->cursorPos[param_1]) && (DAT_098c3918 != 0)) {
-    param_7->startPos[param_1] = 0;
-    param_7->cursorPos[param_1] = DAT_098c3918 + -1;
-    iVar5 = DAT_098c3918 + -1;
-    iVar6 = param_1;
-    iVar3 = Com_ControllerIndex_GetLocalClientNum(param_2);
-    UI_FeederSelection(iVar3,iVar6,param_4,iVar5);
+  if ((DAT_098c3918 <= listPtr->cursorPos[contextIndex]) && (DAT_098c3918 != 0)) {
+    listPtr->startPos[contextIndex] = 0;
+    listPtr->cursorPos[contextIndex] = DAT_098c3918 + -1;
+    index_00 = DAT_098c3918 + -1;
+    contextIndex_00 = contextIndex;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_FeederSelection(localClientNum,contextIndex_00,feederID,index_00);
   }
-  local_c = 0;
-  if (param_5 != 0) {
-    local_c = BG_UnlockablesGetItemIndexInSlot(param_5 + -1);
+  itemIndex = 0;
+  if (index != 0) {
+    itemIndex = BG_UnlockablesGetItemIndexInSlot(index + -1);
   }
-  bVar1 = Window_HasFocus(param_1,&param_3->window);
-  local_5 = false;
-  if (param_7->cursorPos[param_1] == param_5) {
-    DAT_098c38f8 = local_c;
-    bVar2 = Window_HasFocus(param_1,&param_3->window);
+  bVar1 = Window_HasFocus(contextIndex,&item->window);
+  isSelectedItem = false;
+  if (listPtr->cursorPos[contextIndex] == index) {
+    DAT_098c38f8 = itemIndex;
+    bVar2 = Window_HasFocus(contextIndex,&item->window);
     if (bVar2) {
-      local_5 = true;
+      isSelectedItem = true;
     }
   }
-  UI_FeederItemText_CommonListColorHandler(param_2,local_5,(bool)('\x01' - bVar1),0);
-  if ((local_c == -1) || (param_6 != 0)) {
-    pcVar4 = "";
+  UI_FeederItemText_CommonListColorHandler(controllerIndex,isSelectedItem,(bool)('\x01' - bVar1),0);
+  if ((itemIndex == -1) || (column != 0)) {
+    pcVar3 = "";
   }
-  else if (param_5 == 0) {
-    pcVar4 = UI_SafeTranslateString("CUSTOM_NO_KILLSTREAK");
+  else if (index == 0) {
+    pcVar3 = UI_SafeTranslateString("CUSTOM_NO_KILLSTREAK");
   }
   else {
-    pcVar4 = BG_UnlockablesGetItemName(local_c);
-    pcVar4 = UI_SafeTranslateString(pcVar4);
-    pcVar4 = UI_ToUpper(pcVar4);
+    pcVar3 = BG_UnlockablesGetItemName(itemIndex);
+    pcVar3 = UI_SafeTranslateString(pcVar3);
+    pcVar3 = UI_ToUpper(pcVar3);
   }
-  return pcVar4;
+  return pcVar3;
 }
 
 
@@ -1519,114 +1634,116 @@ UI_FeederItemText_CustomKillstreaks
 
 char * __cdecl
 UI_FeederItemText_AARScoreboard
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          float param_7)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,float feederID)
 
 {
   bool bVar1;
-  int iVar2;
-  Material *pMVar3;
-  ddlState_t *pdVar4;
-  uint uVar5;
-  char *pcVar6;
-  ulong64 uVar7;
+  int localClientNum_00;
+  Material *pMVar2;
+  ddlState_t *pdVar3;
+  uint uVar4;
+  char *pcVar5;
+  ulong64 uVar6;
   int local_34;
   int local_30;
-  int local_24;
+  int localClientNum;
+  int nemesisXuid;
   int local_20;
-  undefined8 local_1c;
-  ddlState_t local_14;
+  undefined8 currClientXuid;
+  ddlState_t ddlState;
   
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_2);
-  local_24 = 0;
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  nemesisXuid = 0;
   local_20 = 0;
-  local_1c = 0;
-  switch(param_4) {
+  currClientXuid = 0;
+  switch(column) {
   case 0:
-    if (param_7 == 83.0) {
-      uVar5 = param_3 & 0x80000001;
-      if ((int)uVar5 < 0) {
-        uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
+    if (feederID == 83.0) {
+      uVar4 = index & 0x80000001;
+      if ((int)uVar4 < 0) {
+        uVar4 = (uVar4 - 1 | 0xfffffffe) + 1;
       }
-      if (uVar5 == 0) {
-        *param_6 = DAT_098b4b78;
+      if (uVar4 == 0) {
+        *handle = DAT_098b4b78;
       }
-      pcVar6 = "";
+      pcVar5 = "";
     }
     else {
-      LiveStats_GetNemesisXuid(param_2,(ulong64 *)&local_24);
-      pcVar6 = CG_GetMatchScoreboardInfo(iVar2,0,param_3,TEAM_NUM_TEAMS);
-      local_1c = I_atoi64(pcVar6);
-      if (((local_24 == 0 && local_20 == 0) || (local_24 != (int)local_1c)) ||
-         (local_1c._4_4_ = (int)((ulonglong)local_1c >> 0x20), local_20 != local_1c._4_4_)) {
-        uVar7 = Live_GetXuid(param_2);
-        local_34 = (int)uVar7;
-        if ((int)local_1c == local_34) {
-          local_30 = (int)(uVar7 >> 0x20);
-          if (local_1c._4_4_ == local_30) {
-            pMVar3 = Material_RegisterHandle("menu_mp_lobby_bar_party",7);
-            *param_6 = pMVar3;
+      LiveStats_GetNemesisXuid(controllerIndex,(ulong64 *)&nemesisXuid);
+      pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,0,index,TEAM_NUM_TEAMS);
+      currClientXuid = I_atoi64(pcVar5);
+      if (((nemesisXuid == 0 && local_20 == 0) || (nemesisXuid != (int)currClientXuid)) ||
+         (currClientXuid._4_4_ = (int)((ulonglong)currClientXuid >> 0x20),
+         local_20 != currClientXuid._4_4_)) {
+        uVar6 = Live_GetXuid(controllerIndex);
+        local_34 = (int)uVar6;
+        if ((int)currClientXuid == local_34) {
+          local_30 = (int)(uVar6 >> 0x20);
+          if (currClientXuid._4_4_ == local_30) {
+            pMVar2 = Material_RegisterHandle("menu_mp_lobby_bar_party",7);
+            *handle = pMVar2;
             return "";
           }
         }
-        *param_6 = DAT_098b4b78;
-        pcVar6 = "";
+        *handle = DAT_098b4b78;
+        pcVar5 = "";
       }
       else {
-        pMVar3 = Material_RegisterHandle("menu_mp_lobby_bar_nem",7);
-        *param_6 = pMVar3;
-        pcVar6 = "";
+        pMVar2 = Material_RegisterHandle("menu_mp_lobby_bar_nem",7);
+        *handle = pMVar2;
+        pcVar5 = "";
       }
     }
     break;
   case 1:
-    if (param_7 == 83.0) {
-      pcVar6 = "";
+    if (feederID == 83.0) {
+      pcVar5 = "";
     }
     else {
-      if ((param_5 == (listBoxDef_s *)0x0) || (param_5->cursorPos[param_1] != param_3)) {
-        *param_6 = DAT_098b4b78;
+      if ((listPtr == (listBoxDef_s *)0x0) || (listPtr->cursorPos[contextIndex] != index)) {
+        *handle = DAT_098b4b78;
       }
-      pcVar6 = "";
+      pcVar5 = "";
     }
     break;
   case 2:
-    if (param_7 == 83.0) {
-      CG_GetWagerPlaceForMatchScoreboard(iVar2,param_3);
-      pcVar6 = va("MPUI_ORDINAL_CAPS_%d");
-      pcVar6 = UI_SafeTranslateString(pcVar6);
+    if (feederID == 83.0) {
+      CG_GetWagerPlaceForMatchScoreboard(localClientNum_00,index);
+      pcVar5 = va("MPUI_ORDINAL_CAPS_%d");
+      pcVar5 = UI_SafeTranslateString(pcVar5);
     }
     else {
-      pcVar6 = CG_GetMatchScoreboardInfo(iVar2,param_4,param_3,TEAM_NUM_TEAMS);
+      pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,column,index,TEAM_NUM_TEAMS);
     }
     break;
   case 3:
-    if (param_7 == 83.0) {
-      pcVar6 = "";
+    if (feederID == 83.0) {
+      pcVar5 = "";
     }
     else {
-      CG_GetMatchScoreboardRankIcon(iVar2,param_3,TEAM_NUM_TEAMS,param_6);
-      pcVar6 = "";
+      CG_GetMatchScoreboardRankIcon(localClientNum_00,index,TEAM_NUM_TEAMS,handle);
+      pcVar5 = "";
     }
     break;
   case 4:
-    pcVar6 = CG_GetMatchScoreboardInfo(iVar2,param_4,param_3,TEAM_NUM_TEAMS);
+    pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,column,index,TEAM_NUM_TEAMS);
     break;
   case 5:
-    if (param_7 == 83.0) {
-      pdVar4 = LiveStats_GetRootDDLState();
-      local_14.absoluteOffset = pdVar4->absoluteOffset;
-      local_14.arrayIndex = pdVar4->arrayIndex;
-      local_14.member = pdVar4->member;
-      local_14.ddl = pdVar4->ddl;
+    if (feederID == 83.0) {
+      pdVar3 = LiveStats_GetRootDDLState();
+      ddlState.absoluteOffset = pdVar3->absoluteOffset;
+      ddlState.arrayIndex = pdVar3->arrayIndex;
+      ddlState.member = pdVar3->member;
+      ddlState.ddl = pdVar3->ddl;
       va("%d");
-      DDL_MoveTo(&local_14,&local_14,3);
-      uVar5 = LiveStats_GetDIntStat(param_2,&local_14);
-      pcVar6 = UI_SafeTranslateString("MENU_POINTS");
-      pcVar6 = UI_ReplaceConversionInt(pcVar6,uVar5);
+      DDL_MoveTo(&ddlState,&ddlState,3);
+      uVar4 = LiveStats_GetDIntStat(controllerIndex,&ddlState);
+      pcVar5 = UI_SafeTranslateString("MENU_POINTS");
+      pcVar5 = UI_ReplaceConversionInt(pcVar5,uVar4);
     }
     else {
-      pcVar6 = CG_GetMatchScoreboardInfo(iVar2,param_4,param_3,TEAM_NUM_TEAMS);
+      pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,column,index,TEAM_NUM_TEAMS);
     }
     break;
   case 6:
@@ -1634,18 +1751,18 @@ UI_FeederItemText_AARScoreboard
   case 8:
   case 9:
     bVar1 = Dvar_GetBool("ui_ingamePlayersOpen");
-    if ((bVar1) && ((param_4 == 8 || (param_4 == 9)))) {
-      CG_GetInGamePlayerListIcon(iVar2,param_4,param_3,TEAM_NUM_TEAMS,param_6);
+    if ((bVar1) && ((column == 8 || (column == 9)))) {
+      CG_GetInGamePlayerListIcon(localClientNum_00,column,index,TEAM_NUM_TEAMS,handle);
       return "";
     }
-    if (param_7 != 83.0) {
-      pcVar6 = CG_GetMatchScoreboardInfo(iVar2,param_4,param_3,TEAM_NUM_TEAMS);
-      return pcVar6;
+    if (feederID != 83.0) {
+      pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,column,index,TEAM_NUM_TEAMS);
+      return pcVar5;
     }
   default:
-    pcVar6 = "";
+    pcVar5 = "";
   }
-  return pcVar6;
+  return pcVar5;
 }
 
 
@@ -1655,46 +1772,123 @@ UI_FeederItemText_AARScoreboard
 
 char * __cdecl
 UI_FeederItemText_InGamePlayerList
-          (int param_1,int param_2,int param_3,int param_4,Material **param_5,team_t param_6)
+          (int contextIndex,int controllerIndex,int index,int column,Material **handle,team_t team)
 
 {
-  int iVar1;
-  uint uVar2;
-  Material *pMVar3;
-  char *pcVar4;
+  int localClientNum_00;
+  uint uVar1;
+  Material *pMVar2;
+  char *pcVar3;
+  int localClientNum;
   
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_2);
-  switch(param_4) {
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  switch(column) {
   case 0:
   case 4:
   case 6:
   case 7:
-    pcVar4 = CG_GetMatchInGamePlayerListInfo(iVar1,param_4,param_3,param_6,param_5);
+    pcVar3 = CG_GetMatchInGamePlayerListInfo(localClientNum_00,column,index,team,handle);
     break;
   case 1:
-    pMVar3 = Material_RegisterHandle("menu_mp_lobby_bar_name",7);
-    *param_5 = pMVar3;
+    pMVar2 = Material_RegisterHandle("menu_mp_lobby_bar_name",7);
+    *handle = pMVar2;
+    pcVar3 = "";
+    break;
+  case 2:
+    uVar1 = index & 0x80000001;
+    if ((int)uVar1 < 0) {
+      uVar1 = (uVar1 - 1 | 0xfffffffe) + 1;
+    }
+    if (uVar1 == 0) {
+      pMVar2 = Material_RegisterHandle("white",7);
+      *handle = pMVar2;
+    }
+    pcVar3 = "";
+    break;
+  case 3:
+    pMVar2 = Material_RegisterHandle("white",7);
+    *handle = pMVar2;
+    pcVar3 = "";
+    break;
+  case 5:
+    CG_GetMatchScoreboardRankIcon(localClientNum_00,index,team,handle);
+    pcVar3 = "";
+    break;
+  default:
+    pcVar3 = "";
+  }
+  return pcVar3;
+}
+
+
+// 00737570  UI_FeederItemText_InGamePlayers  (ui_mp/ui_feeders_mp.cpp:2019)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+char * __cdecl
+UI_FeederItemText_InGamePlayers
+          (int contextIndex,int controllerIndex,int index,int column,Material **handle,int feederID,
+          itemDef_s *item)
+
+{
+  code *pcVar1;
+  bool bVar2;
+  int localClientNum_00;
+  listBoxDef_s *plVar3;
+  char *pcVar4;
+  Material *pMVar5;
+  uint uVar6;
+  int localClientNum;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
+  
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  plVar3 = Item_GetListBoxDef(item);
+  if ((plVar3 == (listBoxDef_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x7e7,0
+                               ,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    pcVar4 = (char *)(*pcVar1)();
+    return pcVar4;
+  }
+  if ((plVar3->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
+    bVar2 = true;
+  }
+  else {
+    bVar2 = false;
+  }
+  switch(column) {
+  case 0:
+    pMVar5 = Material_RegisterHandle("menu_mp_lobby_bar_name",7);
+    *handle = pMVar5;
+    pcVar4 = "";
+    break;
+  case 1:
+    uVar6 = index & 0x80000001;
+    if ((int)uVar6 < 0) {
+      uVar6 = (uVar6 - 1 | 0xfffffffe) + 1;
+    }
+    if ((uVar6 == 0) || (bVar2)) {
+      pMVar5 = Material_RegisterHandle("white",7);
+      *handle = pMVar5;
+    }
     pcVar4 = "";
     break;
   case 2:
-    uVar2 = param_3 & 0x80000001;
-    if ((int)uVar2 < 0) {
-      uVar2 = (uVar2 - 1 | 0xfffffffe) + 1;
-    }
-    if (uVar2 == 0) {
-      pMVar3 = Material_RegisterHandle("white",7);
-      *param_5 = pMVar3;
-    }
+    pMVar5 = Material_RegisterHandle("white",7);
+    *handle = pMVar5;
     pcVar4 = "";
     break;
   case 3:
-    pMVar3 = Material_RegisterHandle("white",7);
-    *param_5 = pMVar3;
-    pcVar4 = "";
-    break;
+  case 4:
   case 5:
-    CG_GetMatchScoreboardRankIcon(iVar1,param_3,param_6,param_5);
-    pcVar4 = "";
+  case 6:
+  case 7:
+    pcVar4 = CG_GetMatchInGamePlayersInfo(localClientNum_00,column,index,feederID,handle);
     break;
   default:
     pcVar4 = "";
@@ -1703,98 +1897,31 @@ UI_FeederItemText_InGamePlayerList
 }
 
 
-// 00737570  UI_FeederItemText_InGamePlayers  (ui_mp/ui_feeders_mp.cpp:2019)
-
-char * __cdecl
-UI_FeederItemText_InGamePlayers
-          (int param_1,int param_2,int param_3,int param_4,Material **param_5,int param_6,
-          itemDef_s *param_7)
-
-{
-  code *pcVar1;
-  bool bVar2;
-  int iVar3;
-  listBoxDef_s *plVar4;
-  char *pcVar5;
-  Material *pMVar6;
-  uint uVar7;
-  
-  iVar3 = Com_ControllerIndex_GetLocalClientNum(param_2);
-  plVar4 = Item_GetListBoxDef(param_7);
-  if ((plVar4 == (listBoxDef_s *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x7e7,0
-                               ,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    pcVar5 = (char *)(*pcVar1)();
-    return pcVar5;
-  }
-  if ((plVar4->cursorPos[param_1] == param_3) &&
-     (bVar2 = Window_HasFocus(param_1,&param_7->window), bVar2)) {
-    bVar2 = true;
-  }
-  else {
-    bVar2 = false;
-  }
-  switch(param_4) {
-  case 0:
-    pMVar6 = Material_RegisterHandle("menu_mp_lobby_bar_name",7);
-    *param_5 = pMVar6;
-    pcVar5 = "";
-    break;
-  case 1:
-    uVar7 = param_3 & 0x80000001;
-    if ((int)uVar7 < 0) {
-      uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
-    }
-    if ((uVar7 == 0) || (bVar2)) {
-      pMVar6 = Material_RegisterHandle("white",7);
-      *param_5 = pMVar6;
-    }
-    pcVar5 = "";
-    break;
-  case 2:
-    pMVar6 = Material_RegisterHandle("white",7);
-    *param_5 = pMVar6;
-    pcVar5 = "";
-    break;
-  case 3:
-  case 4:
-  case 5:
-  case 6:
-  case 7:
-    pcVar5 = CG_GetMatchInGamePlayersInfo(iVar3,param_4,param_3,param_6,param_5);
-    break;
-  default:
-    pcVar5 = "";
-  }
-  return pcVar5;
-}
-
-
 // 007376C0  UI_FeederItemText_Contracts  (ui_mp/ui_feeders_mp.cpp:2056)
 
 char * __cdecl
 UI_FeederItemText_Contracts
-          (int param_1,int param_2,int param_3,int param_4,itemDef_s *param_5,listBoxDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,int index,int column,itemDef_s *item,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   bool bVar1;
   int iVar2;
   Material *pMVar3;
   char *pcVar4;
+  int contractIndex;
   
-  iVar2 = LiveContracts_GetContractIndexFromListIndex(param_2,param_3);
-  switch(param_4) {
+  iVar2 = LiveContracts_GetContractIndexFromListIndex(controllerIndex,index);
+  switch(column) {
   case 0:
-    *param_7 = DAT_098b4b78;
+    *handle = DAT_098b4b78;
     pcVar4 = "";
     break;
   case 1:
     pcVar4 = LiveContracts_GetContractName(iVar2);
     break;
   case 2:
-    bVar1 = LiveContracts_IsContractLocked(param_2,iVar2);
+    bVar1 = LiveContracts_IsContractLocked(controllerIndex,iVar2);
     if (bVar1) {
       pcVar4 = "";
     }
@@ -1805,17 +1932,17 @@ UI_FeederItemText_Contracts
     }
     break;
   case 3:
-    bVar1 = LiveContracts_IsContractLocked(param_2,iVar2);
+    bVar1 = LiveContracts_IsContractLocked(controllerIndex,iVar2);
     if (bVar1) {
       pMVar3 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-      *param_7 = pMVar3;
+      *handle = pMVar3;
     }
     pcVar4 = "";
     break;
   case 4:
-    if ((param_6->cursorPos[param_1] == param_3) &&
-       (bVar1 = Window_HasFocus(param_1,&param_5->window), bVar1)) {
-      GamerProfile_WriteSettings((int)param_7);
+    if ((listPtr->cursorPos[contextIndex] == index) &&
+       (bVar1 = Window_HasFocus(contextIndex,&item->window), bVar1)) {
+      GamerProfile_WriteSettings((int)handle);
     }
     pcVar4 = "";
     break;
@@ -1830,28 +1957,28 @@ UI_FeederItemText_Contracts
 
 char * __cdecl
 UI_FeederItemText_PersonalBests
-          (int param_1,int param_2,int param_3,int param_4,itemDef_s *param_5,listBoxDef_s *param_6,
-          Material **param_7)
+          (int contextIndex,int controllerIndex,int index,int column,itemDef_s *item,
+          listBoxDef_s *listPtr,Material **handle)
 
 {
   uint uVar1;
   char *pcVar2;
   
-  uVar1 = LiveStats_GetPersonalBestRating(param_2,param_3);
+  uVar1 = LiveStats_GetPersonalBestRating(controllerIndex,index);
   if (uVar1 != 0) {
-    if (param_4 == 0) {
-      LiveStats_GetPersonalBestName(param_2,param_3);
+    if (column == 0) {
+      LiveStats_GetPersonalBestName(controllerIndex,index);
       pcVar2 = va("STATS_PERSONALBEST_%s");
       pcVar2 = UI_SafeTranslateString(pcVar2);
       return pcVar2;
     }
-    if (param_4 == 1) {
-      LiveStats_GetPersonalBestValue(param_2,param_3);
+    if (column == 1) {
+      LiveStats_GetPersonalBestValue(controllerIndex,index);
       pcVar2 = va("%d");
       return pcVar2;
     }
-    if (param_4 == 2) {
-      LiveStats_GetPersonalBestDelta(param_2,param_3);
+    if (column == 2) {
+      LiveStats_GetPersonalBestDelta(controllerIndex,index);
       pcVar2 = va("%d");
       return pcVar2;
     }
@@ -1862,18 +1989,19 @@ UI_FeederItemText_PersonalBests
 
 // 00735860  UI_ChallengeCompletionStatus  (ui_mp/ui_feeders_mp.cpp:2108)
 
-char * __cdecl UI_ChallengeCompletionStatus(int param_1,int param_2,int param_3,bool *param_4)
+char * __cdecl
+UI_ChallengeCompletionStatus(int column,int currentValue,int targetValue,bool *useOwnerDraw)
 
 {
   char *pcVar1;
   
-  if (param_1 == 1) {
-    if (param_2 != param_3) {
-      *param_4 = true;
+  if (column == 1) {
+    if (currentValue != targetValue) {
+      *useOwnerDraw = true;
       return "";
     }
   }
-  else if ((param_1 == 2) && (param_2 == param_3)) {
+  else if ((column == 2) && (currentValue == targetValue)) {
     pcVar1 = UI_SafeTranslateString("STATS_CHALLENGE_COMPLETED");
     return pcVar1;
   }
@@ -1885,48 +2013,49 @@ char * __cdecl UI_ChallengeCompletionStatus(int param_1,int param_2,int param_3,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl UI_PrepareStatsMilestoneName(int param_1,int param_2,char *param_3,char *param_4)
+char * __cdecl
+UI_PrepareStatsMilestoneName(int challengeIndex,int milestone,char *statName,char *itemName)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  ConversionArguments *pCVar3;
-  int iVar4;
-  char local_43c [8];
-  char local_434 [1028];
+  char *sourceString;
+  ConversionArguments *arguments;
+  int outputStringSize;
+  char milestoneTierRoman [8];
+  char outputString [1028];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  CL_MilestoneTier_DecToRoman(param_2,local_43c,5);
-  if ((param_4 == (char *)0x0) || (param_3 == (char *)0x0)) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  CL_MilestoneTier_DecToRoman(milestone,milestoneTierRoman,5);
+  if ((itemName == (char *)0x0) || (statName == (char *)0x0)) {
     pcVar1 = "";
   }
   else {
-    pcVar1 = UI_SafeTranslateString(param_4);
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
-    pcVar1 = UI_SafeTranslateString(param_3);
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    pcVar1 = UI_SafeTranslateString(itemName);
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
+    pcVar1 = UI_SafeTranslateString(statName);
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%s");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
-    iVar4 = 0x400;
-    pcVar1 = local_434;
-    pCVar3 = &local_2c;
-    pcVar2 = UI_SafeTranslateString("STATS_STATSMILESTONES");
-    UI_ReplaceConversions(pcVar2,pCVar3,pcVar1,iVar4);
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
+    outputStringSize = 0x400;
+    pcVar1 = outputString;
+    arguments = &convArgs;
+    sourceString = UI_SafeTranslateString("STATS_STATSMILESTONES");
+    UI_ReplaceConversions(sourceString,arguments,pcVar1,outputStringSize);
     pcVar1 = va("%s");
   }
   return pcVar1;
@@ -1939,68 +2068,68 @@ char * __cdecl UI_PrepareStatsMilestoneName(int param_1,int param_2,char *param_
 
 char * __cdecl
 UI_FeederItemText_WeaponGroupMilestones
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          bool *param_7)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,bool *useOwnerDraw)
 
 {
   bool bVar1;
   char *pcVar2;
-  char *pcVar3;
-  ConversionArguments *pCVar4;
-  int iVar5;
-  char local_440 [8];
-  char *local_438;
-  char local_434 [1024];
+  char *sourceString;
+  ConversionArguments *arguments;
+  int outputStringSize;
+  char milestoneTierRoman [8];
+  char *statName;
+  char outputString [1024];
   uint local_34;
-  challengeInfo_t *local_30;
-  ConversionArguments local_2c;
+  challengeInfo_t *challenge;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_438 = (char *)0x0;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  bVar1 = LiveStats_GetChallengeInfo(&local_30,param_3,4);
+  statName = (char *)0x0;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,index,4);
   if (bVar1) {
-    if (param_4 == 0) {
-      if (local_30->type == MILESTONE_GROUP) {
-        local_438 = va("STATS_MILESTONE_STATNAME_%s");
-        CL_MilestoneTier_DecToRoman((uint)local_30->milestone,local_440,5);
-        if (local_438 != (char *)0x0) {
+    if (column == 0) {
+      if (challenge->type == MILESTONE_GROUP) {
+        statName = va("STATS_MILESTONE_STATNAME_%s");
+        CL_MilestoneTier_DecToRoman((uint)challenge->milestone,milestoneTierRoman,5);
+        if (statName != (char *)0x0) {
           pcVar2 = Dvar_GetString("weapon_group_name");
           pcVar2 = UI_SafeTranslateString(pcVar2);
-          local_2c.args[local_2c.argCount] = pcVar2;
-          local_2c.argCount = local_2c.argCount + 1;
-          pcVar2 = UI_SafeTranslateString(local_438);
-          local_2c.args[local_2c.argCount] = pcVar2;
-          local_2c.argCount = local_2c.argCount + 1;
+          convArgs.args[convArgs.argCount] = pcVar2;
+          convArgs.argCount = convArgs.argCount + 1;
+          pcVar2 = UI_SafeTranslateString(statName);
+          convArgs.args[convArgs.argCount] = pcVar2;
+          convArgs.argCount = convArgs.argCount + 1;
           pcVar2 = va("%s");
-          local_2c.args[local_2c.argCount] = pcVar2;
-          local_2c.argCount = local_2c.argCount + 1;
-          iVar5 = 0x400;
-          pcVar2 = local_434;
-          pCVar4 = &local_2c;
-          pcVar3 = UI_SafeTranslateString("STATS_STATSGROUPMILESTONES");
-          UI_ReplaceConversions(pcVar3,pCVar4,pcVar2,iVar5);
+          convArgs.args[convArgs.argCount] = pcVar2;
+          convArgs.argCount = convArgs.argCount + 1;
+          outputStringSize = 0x400;
+          pcVar2 = outputString;
+          arguments = &convArgs;
+          sourceString = UI_SafeTranslateString("STATS_STATSGROUPMILESTONES");
+          UI_ReplaceConversions(sourceString,arguments,pcVar2,outputStringSize);
           pcVar2 = va("%s");
           return pcVar2;
         }
       }
       pcVar2 = "";
     }
-    else if ((param_4 < 1) || (2 < param_4)) {
+    else if ((column < 1) || (2 < column)) {
       pcVar2 = "";
     }
     else {
       pcVar2 = UI_ChallengeCompletionStatus
-                         (param_4,local_30->currentValue,local_30->targetValue,param_7);
+                         (column,challenge->currentValue,challenge->targetValue,useOwnerDraw);
     }
   }
   else {
@@ -2016,42 +2145,43 @@ UI_FeederItemText_WeaponGroupMilestones
 
 char * __cdecl
 UI_FeederItemText_StatsMilestones
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          bool *param_7,int param_8)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,bool *useOwnerDraw,int milestoneType)
 
 {
   bool bVar1;
   char *pcVar2;
   Material *pMVar3;
-  uchar local_114 [260];
+  uchar outputString [260];
   uint local_10;
-  challengeInfo_t *local_c;
-  char local_5;
+  challengeInfo_t *challenge;
+  bool isItemPurchased;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_114,'\0',0x100);
-  bVar1 = LiveStats_GetChallengeInfo(&local_c,param_3,param_8);
+  memset(outputString,'\0',0x100);
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,index,milestoneType);
   if (bVar1) {
-    local_5 = '\x01' - ((local_c->flags & 1) != 0);
-    switch(param_4) {
+    isItemPurchased = (bool)('\x01' - ((challenge->flags & 1) != 0));
+    switch(column) {
     case 0:
-      CL_GetFrontEndMilestoneLocalizedName((char *)local_114,0x100,param_3,param_8,(char *)0x0);
+      CL_GetFrontEndMilestoneLocalizedName
+                ((char *)outputString,0x100,index,milestoneType,(char *)0x0);
       pcVar2 = va("%s");
       break;
     case 1:
     case 2:
-      if ((local_5 == '\0') || ((local_c->flags & 4) != 0)) {
+      if ((isItemPurchased == false) || ((challenge->flags & 4) != 0)) {
         pcVar2 = "";
       }
       else {
         pcVar2 = UI_ChallengeCompletionStatus
-                           (param_4,local_c->currentValue,local_c->targetValue,param_7);
+                           (column,challenge->currentValue,challenge->targetValue,useOwnerDraw);
       }
       break;
     case 3:
-      if ((local_5 == '\0') || ((local_c->flags & 4) != 0)) {
+      if ((isItemPurchased == false) || ((challenge->flags & 4) != 0)) {
         pMVar3 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-        *param_6 = pMVar3;
+        *handle = pMVar3;
       }
       pcVar2 = "";
       break;
@@ -2072,31 +2202,32 @@ UI_FeederItemText_StatsMilestones
 
 char * __cdecl
 UI_FeederItemText_GlobalChallenges
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          bool *param_7)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,bool *useOwnerDraw)
 
 {
   bool bVar1;
   char *pcVar2;
-  uchar local_40c [1024];
+  uchar outputString [1024];
   uint local_c;
-  challengeInfo_t *local_8;
+  challengeInfo_t *challenge;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_40c,'\0',0x400);
-  bVar1 = LiveStats_GetChallengeInfo(&local_8,param_3,0);
+  memset(outputString,'\0',0x400);
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,index,0);
   if (bVar1) {
-    if (param_4 == 0) {
+    if (column == 0) {
       pcVar2 = Dvar_GetString("globalChallengeType");
-      CL_GetFrontEndMilestoneLocalizedName((char *)local_40c,0x400,param_3,MILESTONE_GLOBAL,pcVar2);
+      CL_GetFrontEndMilestoneLocalizedName((char *)outputString,0x400,index,MILESTONE_GLOBAL,pcVar2)
+      ;
       pcVar2 = va("%s");
     }
-    else if ((param_4 < 1) || (2 < param_4)) {
+    else if ((column < 1) || (2 < column)) {
       pcVar2 = "";
     }
     else {
       pcVar2 = UI_ChallengeCompletionStatus
-                         (param_4,local_8->currentValue,local_8->targetValue,param_7);
+                         (column,challenge->currentValue,challenge->targetValue,useOwnerDraw);
     }
   }
   else {
@@ -2109,11 +2240,14 @@ UI_FeederItemText_GlobalChallenges
 // 00737CB0  UI_FeederItemText_ChallengesAttachments  (ui_mp/ui_feeders_mp.cpp:2267)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 char * __cdecl
 UI_FeederItemText_ChallengesAttachments
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          bool *param_7)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,bool *useOwnerDraw)
 
 {
   code *pcVar1;
@@ -2121,62 +2255,62 @@ UI_FeederItemText_ChallengesAttachments
   char *pcVar3;
   int iVar4;
   Material *pMVar5;
-  char *local_14;
-  char *local_10;
-  challengeInfo_t *local_c;
-  char local_5;
+  char *itemName;
+  char *statName;
+  challengeInfo_t *challenge;
+  bool attachmentPurchased;
   
-  local_10 = (char *)0x0;
-  local_c = (challengeInfo_t *)0x0;
-  bVar2 = LiveStats_GetChallengeInfo(&local_c,param_3,5);
+  statName = (char *)0x0;
+  challenge = (challengeInfo_t *)0x0;
+  bVar2 = LiveStats_GetChallengeInfo(&challenge,index,5);
   if (bVar2) {
-    if ((local_c == (challengeInfo_t *)0x0) &&
+    if ((challenge == (challengeInfo_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x8e2
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pcVar3 = (char *)(*pcVar1)();
       return pcVar3;
     }
-    if (local_c == (challengeInfo_t *)0x0) {
+    if (challenge == (challengeInfo_t *)0x0) {
       pcVar3 = "";
     }
     else {
-      local_5 = '\x01' - ((local_c->flags & 1) != 0);
-      switch(param_4) {
+      attachmentPurchased = (bool)('\x01' - ((challenge->flags & 1) != 0));
+      switch(column) {
       case 0:
-        if (local_c->type == MILESTONE_ATTACHMENTS) {
-          iVar4 = I_stricmp(local_c->name,"kills");
+        if (challenge->type == MILESTONE_ATTACHMENTS) {
+          iVar4 = I_stricmp(challenge->name,"kills");
           if (iVar4 == 0) {
-            local_10 = va("STATS_MILESTONE_STATNAME_MARKSMAN");
+            statName = va("STATS_MILESTONE_STATNAME_MARKSMAN");
           }
-          iVar4 = I_stricmp(local_c->name,"headshots");
+          iVar4 = I_stricmp(challenge->name,"headshots");
           if (iVar4 == 0) {
-            local_10 = va("STATS_MILESTONE_STATNAME_EXPERT");
+            statName = va("STATS_MILESTONE_STATNAME_EXPERT");
           }
         }
-        if (local_c->index < 0x18) {
-          local_14 = BG_GetAttachmentDisplayName((uint)local_c->index);
+        if (challenge->index < 0x18) {
+          itemName = BG_GetAttachmentDisplayName((uint)challenge->index);
         }
         else {
-          local_14 = BG_UnlockablesGetItemName((uint)local_c->index);
+          itemName = BG_UnlockablesGetItemName((uint)challenge->index);
         }
         pcVar3 = UI_PrepareStatsMilestoneName
-                           ((uint)local_c->index,(uint)local_c->milestone,local_10,local_14);
+                           ((uint)challenge->index,(uint)challenge->milestone,statName,itemName);
         break;
       case 1:
       case 2:
-        if (local_5 != '\0') {
+        if (attachmentPurchased != false) {
           pcVar3 = UI_ChallengeCompletionStatus
-                             (param_4,local_c->currentValue,local_c->targetValue,param_7);
+                             (column,challenge->currentValue,challenge->targetValue,useOwnerDraw);
           return pcVar3;
         }
       default:
         pcVar3 = "";
         break;
       case 3:
-        if (local_5 == '\0') {
+        if (attachmentPurchased == false) {
           pMVar5 = Material_RegisterHandle("menu_mp_lobby_locked",3);
-          *param_6 = pMVar5;
+          *handle = pMVar5;
         }
         pcVar3 = "";
       }
@@ -2193,8 +2327,8 @@ UI_FeederItemText_ChallengesAttachments
 
 char * __cdecl
 UI_FeederItemText_KillstreakNumKills
-          (int param_1,int param_2,int param_3,int param_4,listBoxDef_s *param_5,Material **param_6,
-          bool *param_7)
+          (int contextIndex,int controllerIndex,int index,int column,listBoxDef_s *listPtr,
+          Material **handle,bool *useOwnerDraw)
 
 {
   int iVar1;
@@ -2202,9 +2336,12 @@ UI_FeederItemText_KillstreakNumKills
   int iVar3;
   char *pcVar4;
   Material *pMVar5;
+  int killNum;
+  bool hasKillNumBeenSelected;
+  bool isCurrentSelectedKillstreakNum;
   
   bVar2 = false;
-  iVar1 = CustomKillstreakNums[param_3];
+  iVar1 = CustomKillstreakNums[index];
   iVar3 = Dvar_GetInt("custom_killstreak_1_kills");
   if ((((iVar1 == iVar3) && (iVar3 = Dvar_GetInt("custom_killstreak_1"), iVar3 != 0)) ||
       ((iVar3 = Dvar_GetInt("custom_killstreak_2_kills"), iVar1 == iVar3 &&
@@ -2216,13 +2353,13 @@ UI_FeederItemText_KillstreakNumKills
   Dvar_GetInt("custom_killstreak_edit_slot");
   pcVar4 = va("custom_killstreak_%d_kills");
   iVar3 = Dvar_GetInt(pcVar4);
-  switch(param_4) {
+  switch(column) {
   case 0:
-    *param_6 = DAT_098b4b78;
+    *handle = DAT_098b4b78;
     pcVar4 = "";
     break;
   case 1:
-    if (CustomKillstreakNums[param_3] == 1) {
+    if (CustomKillstreakNums[index] == 1) {
       pcVar4 = UI_SafeTranslateString("MP_KILL");
       UI_ToUpper(pcVar4);
       pcVar4 = va("%d %s");
@@ -2235,7 +2372,7 @@ UI_FeederItemText_KillstreakNumKills
   case 2:
     if (iVar1 == iVar3) {
       pMVar5 = Material_RegisterHandle("menu_mp_killstreak_select",7);
-      *param_6 = pMVar5;
+      *handle = pMVar5;
       pcVar4 = "";
     }
     else {
@@ -2246,8 +2383,8 @@ UI_FeederItemText_KillstreakNumKills
     pcVar4 = "";
     break;
   case 6:
-    if ((param_5->cursorPos[param_1] == param_3) && (!bVar2)) {
-      GamerProfile_WriteSettings((int)param_6);
+    if ((listPtr->cursorPos[contextIndex] == index) && (!bVar2)) {
+      GamerProfile_WriteSettings((int)handle);
     }
     pcVar4 = "";
   }
@@ -2258,39 +2395,45 @@ UI_FeederItemText_KillstreakNumKills
 // 007359C0  UI_Project_FeederItemText  (ui_mp/ui_feeders_mp.cpp:2380)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 char * __cdecl
 UI_Project_FeederItemText
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-          Material **param_7,float *param_8,bool *param_9)
+          (int localClientNum,int contextIndex,itemDef_s *item,float feederID,int index,int column,
+          Material **handle,float *angle,bool *useOwnerDraw)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  undefined4 uVar5;
-  int *piVar6;
-  int *piVar7;
+  int controllerIndex_00;
+  undefined4 uVar4;
+  int *piVar5;
+  int *prestige;
   char *local_1c;
   int local_18;
   int local_14;
-  int local_10;
-  int local_c;
-  listBoxDef_s *local_8;
+  int milestoneType;
+  int controllerIndex;
+  listBoxDef_s *listPtr;
   
-  local_8 = Item_GetListBoxDef(param_3);
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  if ((local_c == -1) &&
+  listPtr = Item_GetListBoxDef(item);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if ((controllerIndex == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x958,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  switch((int)param_4) {
+  switch((int)feederID) {
   case 0x22:
-    local_1c = UI_FeederItemText_SystemLinkLobbyMembers(param_1,param_2);
+    local_1c = UI_FeederItemText_SystemLinkLobbyMembers(localClientNum,contextIndex);
     break;
   case 0x23:
   case 0x24:
@@ -2301,38 +2444,38 @@ UI_Project_FeederItemText
   case 0x2a:
   case 0x2b:
   case 0x2c:
-    local_1c = UI_FeederItemText_GameVariants(param_4,param_5,param_6);
+    local_1c = UI_FeederItemText_GameVariants(feederID,index,column);
     break;
   default:
     local_1c = "";
     break;
   case 0x30:
     local_1c = UI_FeederItemText_GametypesBase
-                         (param_2,local_c,param_5,param_6,param_3,local_8,param_7);
+                         (contextIndex,controllerIndex,index,column,item,listPtr,handle);
     break;
   case 0x31:
     local_1c = UI_FeederItemText_CustomPerksInSlot
-                         (param_2,local_c,param_4,param_5,param_6,param_3,param_7);
+                         (contextIndex,controllerIndex,feederID,index,column,item,handle);
     break;
   case 0x33:
     local_1c = "";
     break;
   case 0x37:
-    bVar2 = Friends_GetByIndex(local_c,0,param_5,&friendInfo);
+    bVar2 = Friends_GetByIndex(controllerIndex,0,index,&friendInfo);
     if (bVar2) {
-      if (param_6 == 0) {
-        piVar7 = &local_18;
-        piVar6 = &local_14;
-        uVar5 = friendInfo.dwid._4_4_;
-        iVar4 = Com_LocalClient_GetControllerIndex(param_2);
-        bVar2 = PCache_GetRank(iVar4,CONCAT44(piVar6,uVar5),piVar7,(int *)param_6);
+      if (column == 0) {
+        prestige = &local_18;
+        piVar5 = &local_14;
+        uVar4 = friendInfo.dwid._4_4_;
+        controllerIndex_00 = Com_LocalClient_GetControllerIndex(contextIndex);
+        bVar2 = PCache_GetRank(controllerIndex_00,CONCAT44(piVar5,uVar4),prestige,(int *)column);
         if (bVar2) {
-          CL_GetRankIcon(local_14,local_18,param_7);
+          CL_GetRankIcon(local_14,local_18,handle);
         }
         local_1c = "";
         return local_1c;
       }
-      if (param_6 == 1) {
+      if (column == 1) {
         local_1c = friendInfo.name;
         return local_1c;
       }
@@ -2344,20 +2487,21 @@ UI_Project_FeederItemText
     break;
   case 0x39:
     local_1c = UI_FeederItemText_Attachments
-                         (param_2,local_c,param_4,param_5,param_6,param_3,param_7);
+                         (contextIndex,controllerIndex,feederID,index,column,item,handle);
     break;
   case 0x3a:
   case 0x3b:
-    local_1c = UI_FeederItemText_ItemInSlot(param_2,local_c,param_4,param_5,param_6,param_3,param_7)
-    ;
+    local_1c = UI_FeederItemText_ItemInSlot
+                         (contextIndex,controllerIndex,feederID,index,column,item,handle);
     break;
   case 0x3c:
     local_1c = UI_FeederItemText_WeaponOptions
-                         (param_1,param_2,local_c,param_4,param_5,param_6,local_8,param_7);
+                         (localClientNum,contextIndex,controllerIndex,feederID,index,column,listPtr,
+                          handle);
     break;
   case 0x3d:
     local_1c = UI_FeederItemText_CustomKillstreaks
-                         (param_2,local_c,param_3,param_4,param_5,param_6,local_8,param_7);
+                         (contextIndex,controllerIndex,item,feederID,index,column,listPtr,handle);
     break;
   case 0x3f:
     local_1c = "";
@@ -2366,97 +2510,104 @@ UI_Project_FeederItemText
   case 0x42:
   case 0x43:
     local_1c = UI_FeederItemText_SortedItems
-                         (param_2,local_c,param_3,param_4,param_5,param_6,local_8,param_7);
+                         (contextIndex,controllerIndex,item,feederID,index,column,listPtr,handle);
     break;
   case 0x44:
-    local_1c = UI_FeederItemText_Contracts(param_2,local_c,param_5,param_6,param_3,local_8,param_7);
+    local_1c = UI_FeederItemText_Contracts
+                         (contextIndex,controllerIndex,index,column,item,listPtr,handle);
     break;
   case 0x47:
   case 0x51:
-    pcVar3 = LiveCombatRecord_GetGameTypeName(param_5);
+    pcVar3 = LiveCombatRecord_GetGameTypeName(index);
     local_1c = UI_SafeTranslateString(pcVar3);
     break;
   case 0x48:
     local_1c = UI_FeederItemText_PersonalBests
-                         (param_2,local_c,param_5,param_6,param_3,local_8,param_7);
+                         (contextIndex,controllerIndex,index,column,item,listPtr,handle);
     break;
   case 0x4e:
-    local_1c = UI_FeederItemText_WeaponGroups(local_c,param_2,param_3,param_5,param_6,param_7);
+    local_1c = UI_FeederItemText_WeaponGroups(controllerIndex,contextIndex,item,index,column,handle)
+    ;
     break;
   case 0x52:
   case 0x53:
     local_1c = UI_FeederItemText_AARScoreboard
-                         (param_2,local_c,param_5,param_6,local_8,param_7,param_4);
+                         (contextIndex,controllerIndex,index,column,listPtr,handle,feederID);
     break;
   case 0x57:
     local_1c = UI_FeederItemText_InGamePlayerList
-                         (param_2,local_c,param_5,param_6,param_7,TEAM_ALLIES);
+                         (contextIndex,controllerIndex,index,column,handle,TEAM_ALLIES);
     break;
   case 0x58:
-    local_1c = UI_FeederItemText_InGamePlayerList(param_2,local_c,param_5,param_6,param_7,TEAM_AXIS)
-    ;
+    local_1c = UI_FeederItemText_InGamePlayerList
+                         (contextIndex,controllerIndex,index,column,handle,TEAM_AXIS);
     break;
   case 0x59:
-    local_1c = UI_FeederItemText_InGamePlayerList(param_2,local_c,param_5,param_6,param_7,TEAM_BAD);
+    local_1c = UI_FeederItemText_InGamePlayerList
+                         (contextIndex,controllerIndex,index,column,handle,TEAM_BAD);
     break;
   case 0x5a:
-    local_1c = UI_FeederItemText_ClanTagFeatures(local_c,param_2,param_3,param_5,param_6,param_7);
+    local_1c = UI_FeederItemText_ClanTagFeatures
+                         (controllerIndex,contextIndex,item,index,column,handle);
     break;
   case 0x5c:
   case 0x62:
   case 99:
-    local_10 = UI_GetMilestoneType(param_4);
-    if (local_10 == -1) {
+    milestoneType = UI_GetMilestoneType(feederID);
+    if (milestoneType == -1) {
       local_1c = "";
     }
     else {
       local_1c = UI_FeederItemText_StatsMilestones
-                           (param_2,local_c,param_5,param_6,local_8,param_7,param_9,local_10);
+                           (contextIndex,controllerIndex,index,column,listPtr,handle,useOwnerDraw,
+                            milestoneType);
     }
     break;
   case 0x5d:
-    local_1c = UI_FeederItemText_CustomClasses(local_c,param_2,param_3,param_5,param_6);
+    local_1c = UI_FeederItemText_CustomClasses(controllerIndex,contextIndex,item,index,column);
     break;
   case 0x5e:
     local_1c = UI_FeederItemText_WeaponGroupMilestones
-                         (param_2,local_c,param_5,param_6,local_8,param_7,param_9);
+                         (contextIndex,controllerIndex,index,column,listPtr,handle,useOwnerDraw);
     break;
   case 0x5f:
     local_1c = UI_FeederItemText_GlobalChallenges
-                         (param_2,local_c,param_5,param_6,local_8,param_7,param_9);
+                         (contextIndex,controllerIndex,index,column,listPtr,handle,useOwnerDraw);
     break;
   case 0x60:
     local_1c = UI_FeederItemText_ChallengesAttachments
-                         (param_2,local_c,param_5,param_6,local_8,param_7,param_9);
+                         (contextIndex,controllerIndex,index,column,listPtr,handle,useOwnerDraw);
     break;
   case 0x61:
     local_1c = UI_FeederItemText_ChallengesPerks
-                         (param_2,local_c,param_4,param_5,param_6,param_3,param_7);
+                         (contextIndex,controllerIndex,feederID,index,column,item,handle);
     break;
   case 100:
     local_1c = UI_FeederItemText_ChallengesKillstreaks
-                         (param_2,local_c,param_3,param_4,param_5,param_6,local_8,param_7);
+                         (contextIndex,controllerIndex,item,feederID,index,column,listPtr,handle);
     break;
   case 0x66:
     local_1c = UI_FeederItemText_ClanTagFeaturesEdit
-                         (local_c,param_2,param_3,param_5,param_6,param_7);
+                         (controllerIndex,contextIndex,item,index,column,handle);
     break;
   case 0x67:
     local_1c = UI_FeederItemText_KillstreakNumKills
-                         (param_2,local_c,param_5,param_6,local_8,param_7,param_9);
+                         (contextIndex,controllerIndex,index,column,listPtr,handle,useOwnerDraw);
     break;
   case 0x68:
-    local_1c = UI_FeederItemText_GametypesInGame(param_2,local_c,param_5,param_6,local_8,param_7);
+    local_1c = UI_FeederItemText_GametypesInGame
+                         (contextIndex,controllerIndex,index,column,listPtr,handle);
     break;
   case 0x69:
   case 0x6a:
   case 0x6b:
   case 0x6c:
     local_1c = UI_FeederItemText_InGamePlayers
-                         (param_2,local_c,param_5,param_6,param_7,(int)param_4,param_3);
+                         (contextIndex,controllerIndex,index,column,handle,(int)feederID,item);
     break;
   case 0x6d:
-    local_1c = UI_FeederItemText_CustomGametypeClasses(local_c,param_2,param_3,param_5,param_6);
+    local_1c = UI_FeederItemText_CustomGametypeClasses
+                         (controllerIndex,contextIndex,item,index,column);
   }
   return local_1c;
 }
@@ -2466,8 +2617,8 @@ UI_Project_FeederItemText
 
 bool __cdecl
 UI_FeederItemColor_Contracts
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus)
 
 {
   code *pcVar1;
@@ -2477,8 +2628,14 @@ UI_FeederItemColor_Contracts
   int iVar5;
   int iVar6;
   int iVar7;
+  int cost;
+  int codPoints;
+  int contractIndex;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
+  int activeContractIndex;
   
-  plVar4 = Item_GetListBoxDef(param_3);
+  plVar4 = Item_GetListBoxDef(item);
   if ((plVar4 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0x9d5,0
                                ,"%s"), !bVar2)) {
@@ -2486,64 +2643,65 @@ UI_FeederItemColor_Contracts
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  iVar5 = LiveContracts_GetContractIndexFromListIndex(param_1,param_4);
-  LiveContracts_GetActiveContractIndex(param_1,iVar5);
-  if ((plVar4->cursorPos[param_2] == param_4) &&
-     (bVar2 = Window_HasFocus(param_2,&param_3->window), bVar2)) {
+  iVar5 = LiveContracts_GetContractIndexFromListIndex(controllerIndex,index);
+  LiveContracts_GetActiveContractIndex(controllerIndex,iVar5);
+  if ((plVar4->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
-  *param_6 = 1.0;
-  param_6[1] = 1.0;
-  param_6[2] = 1.0;
-  param_6[3] = 1.0;
-  if (param_5 == -1) {
-    *param_6 = newUIGrey[0];
-    param_6[1] = newUIGrey[1];
-    param_6[2] = newUIGrey[2];
-    param_6[3] = newUIGrey[3];
+  *color = 1.0;
+  color[1] = 1.0;
+  color[2] = 1.0;
+  color[3] = 1.0;
+  if (column == -1) {
+    *color = newUIGrey[0];
+    color[1] = newUIGrey[1];
+    color[2] = newUIGrey[2];
+    color[3] = newUIGrey[3];
     return true;
   }
-  if ((param_5 == 0) && (!bVar2)) {
-    *param_6 = newUIFeederBackgroundColor[0];
-    param_6[1] = newUIFeederBackgroundColor[1];
-    param_6[2] = newUIFeederBackgroundColor[2];
-    param_6[3] = newUIFeederBackgroundColor[3];
+  if ((column == 0) && (!bVar2)) {
+    *color = newUIFeederBackgroundColor[0];
+    color[1] = newUIFeederBackgroundColor[1];
+    color[2] = newUIFeederBackgroundColor[2];
+    color[3] = newUIFeederBackgroundColor[3];
     return true;
   }
-  if ((param_5 != 1) && (param_5 != 2)) {
+  if ((column != 1) && (column != 2)) {
     return true;
   }
-  bVar2 = LiveContracts_IsContractLocked(param_1,iVar5);
-  if ((!bVar2) && (iVar6 = LiveContracts_GetTimeUntilCooledDown(param_1,iVar5), iVar6 < 1)) {
+  bVar2 = LiveContracts_IsContractLocked(controllerIndex,iVar5);
+  if ((!bVar2) && (iVar6 = LiveContracts_GetTimeUntilCooledDown(controllerIndex,iVar5), iVar6 < 1))
+  {
     iVar6 = LiveContracts_GetTimesPurchasable(iVar5);
     if (0 < iVar6) {
       iVar6 = LiveContracts_GetTimesPurchasable(iVar5);
-      iVar7 = LiveContracts_GetTimesPurchased(param_1,iVar5);
+      iVar7 = LiveContracts_GetTimesPurchased(controllerIndex,iVar5);
       if (iVar6 == iVar7 || iVar6 - iVar7 < 0) goto LAB_00738842;
     }
-    iVar6 = LiveStats_GetCurrency(param_1);
+    iVar6 = LiveStats_GetCurrency(controllerIndex);
     iVar5 = LiveContracts_GetContractCost(iVar5);
     if (iVar6 < iVar5) {
-      *param_6 = newUIRed[0];
-      param_6[1] = newUIRed[1];
-      param_6[2] = newUIRed[2];
-      param_6[3] = newUIRed[3];
+      *color = newUIRed[0];
+      color[1] = newUIRed[1];
+      color[2] = newUIRed[2];
+      color[3] = newUIRed[3];
       return true;
     }
-    *param_6 = newUIGreen[0];
-    param_6[1] = newUIGreen[1];
-    param_6[2] = newUIGreen[2];
-    param_6[3] = newUIGreen[3];
+    *color = newUIGreen[0];
+    color[1] = newUIGreen[1];
+    color[2] = newUIGreen[2];
+    color[3] = newUIGreen[3];
     return true;
   }
 LAB_00738842:
-  *param_6 = newUIGrey[0];
-  param_6[1] = newUIGrey[1];
-  param_6[2] = newUIGrey[2];
-  param_6[3] = newUIGrey[3];
+  *color = newUIGrey[0];
+  color[1] = newUIGrey[1];
+  color[2] = newUIGrey[2];
+  color[3] = newUIGrey[3];
   return true;
 }
 
@@ -2552,8 +2710,8 @@ LAB_00738842:
 
 bool __cdecl
 UI_FeederItemColor_ItemList
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,int param_6,
-          bool param_7,bool param_8,bool param_9,float *param_10)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,int cost,
+          bool itemPurchased,bool itemLocked,bool itemClassified,float *color)
 
 {
   code *pcVar1;
@@ -2561,8 +2719,11 @@ UI_FeederItemColor_ItemList
   undefined1 uVar3;
   listBoxDef_s *plVar4;
   int iVar5;
+  int codPoints;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
   
-  plVar4 = Item_GetListBoxDef(param_3);
+  plVar4 = Item_GetListBoxDef(item);
   if ((plVar4 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xa17,0
                                ,"%s"), !bVar2)) {
@@ -2570,53 +2731,53 @@ UI_FeederItemColor_ItemList
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((plVar4->cursorPos[param_2] == param_4) &&
-     (bVar2 = Window_HasFocus(param_2,&param_3->window), bVar2)) {
+  if ((plVar4->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
-  *param_10 = 1.0;
-  param_10[1] = 1.0;
-  param_10[2] = 1.0;
-  param_10[3] = 1.0;
-  if (param_5 == 0) {
+  *color = 1.0;
+  color[1] = 1.0;
+  color[2] = 1.0;
+  color[3] = 1.0;
+  if (column == 0) {
     if (!bVar2) {
-      *param_10 = newUIFeederBackgroundColor[0];
-      param_10[1] = newUIFeederBackgroundColor[1];
-      param_10[2] = newUIFeederBackgroundColor[2];
-      param_10[3] = newUIFeederBackgroundColor[3];
+      *color = newUIFeederBackgroundColor[0];
+      color[1] = newUIFeederBackgroundColor[1];
+      color[2] = newUIFeederBackgroundColor[2];
+      color[3] = newUIFeederBackgroundColor[3];
     }
   }
-  else if ((param_5 == 1) || (param_5 == 3)) {
-    if ((param_8) || (param_9)) {
-      *param_10 = newUIGrey[0];
-      param_10[1] = newUIGrey[1];
-      param_10[2] = newUIGrey[2];
-      param_10[3] = newUIGrey[3];
+  else if ((column == 1) || (column == 3)) {
+    if ((itemLocked) || (itemClassified)) {
+      *color = newUIGrey[0];
+      color[1] = newUIGrey[1];
+      color[2] = newUIGrey[2];
+      color[3] = newUIGrey[3];
     }
-    else if (param_7) {
+    else if (itemPurchased) {
       if (bVar2) {
-        *param_10 = 0.0;
-        param_10[1] = 0.0;
-        param_10[2] = 0.0;
-        param_10[3] = 1.0;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 1.0;
       }
     }
     else {
-      iVar5 = LiveStats_GetCurrency(param_1);
-      if (iVar5 < param_6) {
-        *param_10 = newUIRed[0];
-        param_10[1] = newUIRed[1];
-        param_10[2] = newUIRed[2];
-        param_10[3] = newUIRed[3];
+      iVar5 = LiveStats_GetCurrency(controllerIndex);
+      if (iVar5 < cost) {
+        *color = newUIRed[0];
+        color[1] = newUIRed[1];
+        color[2] = newUIRed[2];
+        color[3] = newUIRed[3];
       }
       else {
-        *param_10 = newUIGreen[0];
-        param_10[1] = newUIGreen[1];
-        param_10[2] = newUIGreen[2];
-        param_10[3] = newUIGreen[3];
+        *color = newUIGreen[0];
+        color[1] = newUIGreen[1];
+        color[2] = newUIGreen[2];
+        color[3] = newUIGreen[3];
       }
     }
   }
@@ -2626,35 +2787,46 @@ UI_FeederItemColor_ItemList
 
 // 00738BA0  UI_FeederItemColor_ItemsInSlot  (ui_mp/ui_feeders_mp.cpp:2652)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
 UI_FeederItemColor_ItemsInSlot
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus)
 
 {
   bool bVar1;
   bool bVar2;
+  int itemIndex_00;
+  int cost_00;
   int iVar3;
-  int iVar4;
-  int iVar5;
   undefined1 local_24;
+  int cost;
+  bool itemClassified;
+  int itemIndex;
+  bool itemPurchased;
+  bool itemLocked;
   
-  iVar3 = BG_UnlockablesGetItemIndexInSlot(param_4);
-  iVar4 = BG_UnlockablesGetItemCost(iVar3);
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,iVar3);
-  bVar2 = BG_UnlockablesIsItemLocked(param_1,iVar3);
+  itemIndex_00 = BG_UnlockablesGetItemIndexInSlot(index);
+  cost_00 = BG_UnlockablesGetItemCost(itemIndex_00);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex_00);
+  bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex_00);
   if (bVar2) {
-    iVar5 = Dvar_GetInt(ui_items_no_cost);
-    if (iVar5 == 0) {
+    iVar3 = Dvar_GetInt(ui_items_no_cost);
+    if (iVar3 == 0) {
       local_24 = true;
       goto LAB_00738c11;
     }
   }
   local_24 = false;
 LAB_00738c11:
-  bVar2 = BG_UnlockablesIsItemClassified(iVar3);
+  bVar2 = BG_UnlockablesIsItemClassified(itemIndex_00);
   bVar1 = UI_FeederItemColor_ItemList
-                    (param_1,param_2,param_3,param_4,param_5,iVar4,bVar1,local_24,bVar2,param_6);
+                    (controllerIndex,contextIndex,item,index,column,cost_00,bVar1,local_24,bVar2,
+                     color);
   return bVar1;
 }
 
@@ -2662,41 +2834,51 @@ LAB_00738c11:
 // 00738C60  UI_FeederItemColor_WeaponOptions  (ui_mp/ui_feeders_mp.cpp:2684)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
 UI_FeederItemColor_WeaponOptions
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus)
 
 {
-  int iVar1;
-  bool bVar2;
-  int iVar3;
-  int iVar4;
-  eWeaponOptionGroup local_1c;
-  int local_14;
-  bool local_6;
+  int itemIndex_00;
+  bool bVar1;
+  int weaponOption_00;
+  int optionIndex;
+  int weaponOption;
+  int currentWeaponGroup;
+  eWeaponOptionGroup weaponOptionGroup;
+  int cost;
+  bool itemClassified;
+  int itemIndex;
+  bool itemPurchased;
+  bool itemLocked;
   
-  iVar1 = DAT_098c38f8;
-  local_1c = WEAPONOPTION_GROUP_CAMO;
+  itemIndex_00 = DAT_098c38f8;
+  currentWeaponGroup = 0;
   if (ui_currentWeaponOptionGroup != (dvar_s *)0x0) {
-    local_1c = (ui_currentWeaponOptionGroup->current).unsignedInt;
+    currentWeaponGroup = (ui_currentWeaponOptionGroup->current).integer;
   }
-  iVar3 = BG_GetWeaponOptionNumFromIndexAndGroup(param_4,local_1c);
-  local_14 = BG_GetWeaponOptionCost(iVar3);
-  iVar4 = BG_GetWeaponOptionNumFromIndexAndGroup
-                    (param_4,(ui_currentWeaponOptionGroup->current).unsignedInt);
-  local_6 = BG_UnlockablesIsItemOptionPurchased(param_1,iVar1,iVar4);
-  if (local_14 == 0) {
-    local_6 = true;
+  weaponOption_00 = BG_GetWeaponOptionNumFromIndexAndGroup(index,currentWeaponGroup);
+  cost = BG_GetWeaponOptionCost(weaponOption_00);
+  optionIndex = BG_GetWeaponOptionNumFromIndexAndGroup
+                          (index,(ui_currentWeaponOptionGroup->current).unsignedInt);
+  itemPurchased = BG_UnlockablesIsItemOptionPurchased(controllerIndex,itemIndex_00,optionIndex);
+  if (cost == 0) {
+    itemPurchased = true;
   }
-  if (local_6 != false) {
-    local_14 = 0;
+  if (itemPurchased != false) {
+    cost = 0;
   }
-  bVar2 = BG_UnlockablesIsWeaponOptionLocked(param_1,iVar3);
-  bVar2 = UI_FeederItemColor_ItemList
-                    (param_1,param_2,param_3,param_4,param_5,local_14,local_6,bVar2,false,param_6);
-  return bVar2;
+  bVar1 = BG_UnlockablesIsWeaponOptionLocked(controllerIndex,weaponOption_00);
+  bVar1 = UI_FeederItemColor_ItemList
+                    (controllerIndex,contextIndex,item,index,column,cost,itemPurchased,bVar1,false,
+                     color);
+  return bVar1;
 }
 
 
@@ -2706,72 +2888,72 @@ UI_FeederItemColor_WeaponOptions
 
 bool __cdecl
 UI_FeederItemColor_InGamePlayerList
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7,team_t param_8)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus,team_t team)
 
 {
-  int iVar1;
-  char *pcVar2;
-  long64 lVar3;
-  ulong64 uVar4;
+  int localClientNum;
+  char *str;
+  long64 lVar1;
+  ulong64 uVar2;
   int local_18;
   int local_14;
-  int local_c;
+  int currClientXuid;
   int local_8;
   
-  switch(param_5) {
+  switch(column) {
   case 0:
   case 4:
   case 5:
-    *param_6 = white[0];
-    param_6[1] = white[1];
-    param_6[2] = white[2];
-    param_6[3] = white[3];
+    *color = white[0];
+    color[1] = white[1];
+    color[2] = white[2];
+    color[3] = white[3];
     break;
   case 1:
-    if (param_8 == TEAM_ALLIES) {
-      *param_6 = alliesColor[0];
-      param_6[1] = alliesColor[1];
-      param_6[2] = alliesColor[2];
-      param_6[3] = alliesColor[3];
+    if (team == TEAM_ALLIES) {
+      *color = alliesColor[0];
+      color[1] = alliesColor[1];
+      color[2] = alliesColor[2];
+      color[3] = alliesColor[3];
     }
-    else if (param_8 == TEAM_AXIS) {
-      *param_6 = axisColor[0];
-      param_6[1] = axisColor[1];
-      param_6[2] = axisColor[2];
-      param_6[3] = axisColor[3];
+    else if (team == TEAM_AXIS) {
+      *color = axisColor[0];
+      color[1] = axisColor[1];
+      color[2] = axisColor[2];
+      color[3] = axisColor[3];
     }
     break;
   case 2:
   case 3:
-    *param_6 = fadedBlack[0];
-    param_6[1] = fadedBlack[1];
-    param_6[2] = fadedBlack[2];
-    param_6[3] = fadedBlack[3];
+    *color = fadedBlack[0];
+    color[1] = fadedBlack[1];
+    color[2] = fadedBlack[2];
+    color[3] = fadedBlack[3];
     break;
   case 6:
   case 7:
-    iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    pcVar2 = CG_GetMatchInGamePlayerXuid(iVar1,param_4,param_8);
-    lVar3 = I_atoi64(pcVar2);
-    uVar4 = Live_GetXuid(param_1);
-    local_18 = (int)uVar4;
-    local_c = (int)lVar3;
-    if (local_18 == local_c) {
-      local_14 = (int)(uVar4 >> 0x20);
-      local_8 = (int)((ulonglong)lVar3 >> 0x20);
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    str = CG_GetMatchInGamePlayerXuid(localClientNum,index,team);
+    lVar1 = I_atoi64(str);
+    uVar2 = Live_GetXuid(controllerIndex);
+    local_18 = (int)uVar2;
+    currClientXuid = (int)lVar1;
+    if (local_18 == currClientXuid) {
+      local_14 = (int)(uVar2 >> 0x20);
+      local_8 = (int)((ulonglong)lVar1 >> 0x20);
       if (local_14 == local_8) {
-        *param_6 = playerColor[0];
-        param_6[1] = playerColor[1];
-        param_6[2] = playerColor[2];
-        param_6[3] = playerColor[3];
+        *color = playerColor[0];
+        color[1] = playerColor[1];
+        color[2] = playerColor[2];
+        color[3] = playerColor[3];
         return true;
       }
     }
-    *param_6 = white[0];
-    param_6[1] = white[1];
-    param_6[2] = white[2];
-    param_6[3] = white[3];
+    *color = white[0];
+    color[1] = white[1];
+    color[2] = white[2];
+    color[3] = white[3];
   }
   return true;
 }
@@ -2779,10 +2961,15 @@ UI_FeederItemColor_InGamePlayerList
 
 // 00738F90  UI_FeederItemColor_InGamePlayers  (ui_mp/ui_feeders_mp.cpp:2761)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 bool __cdecl
 UI_FeederItemColor_InGamePlayers
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7,int param_8)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus,int feederType)
 
 {
   code *pcVar1;
@@ -2791,90 +2978,90 @@ UI_FeederItemColor_InGamePlayers
   ulong64 uVar4;
   int local_28;
   int local_24;
-  int local_1c;
+  int currClientXUID;
   int local_18;
-  int local_10;
-  listBoxDef_s *local_c;
-  char local_5;
+  int localClientNum;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
   
-  local_10 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  CG_GetMatchInGamePlayersXUID(local_10,param_4,param_8,(ulong64 *)&local_1c);
-  local_c = Item_GetListBoxDef(param_3);
-  if ((local_c == (listBoxDef_s *)0x0) &&
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  CG_GetMatchInGamePlayersXUID(localClientNum,index,feederType,(ulong64 *)&currClientXUID);
+  listPtr = Item_GetListBoxDef(item);
+  if ((listPtr == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xad3,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((local_c->cursorPos[param_2] == param_4) &&
-     (bVar2 = Window_HasFocus(param_2,&param_3->window), bVar2)) {
-    local_5 = '\x01';
+  if ((listPtr->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
+    isRowHighlighted = true;
   }
   else {
-    local_5 = '\0';
+    isRowHighlighted = false;
   }
-  switch(param_5) {
+  switch(column) {
   case 0:
-    if (local_5 == '\0') {
-      if (param_8 == 0x69) {
-        *param_6 = alliesColor[0];
-        param_6[1] = alliesColor[1];
-        param_6[2] = alliesColor[2];
-        param_6[3] = alliesColor[3];
+    if (isRowHighlighted == false) {
+      if (feederType == 0x69) {
+        *color = alliesColor[0];
+        color[1] = alliesColor[1];
+        color[2] = alliesColor[2];
+        color[3] = alliesColor[3];
       }
-      else if (param_8 == 0x6a) {
-        *param_6 = axisColor[0];
-        param_6[1] = axisColor[1];
-        param_6[2] = axisColor[2];
-        param_6[3] = axisColor[3];
+      else if (feederType == 0x6a) {
+        *color = axisColor[0];
+        color[1] = axisColor[1];
+        color[2] = axisColor[2];
+        color[3] = axisColor[3];
       }
     }
     else {
-      *param_6 = 1.0;
-      param_6[1] = 1.0;
-      param_6[2] = 1.0;
-      param_6[3] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
     }
     break;
   case 1:
   case 2:
-    if (local_5 == '\0') {
-      *param_6 = fadedBlack[0];
-      param_6[1] = fadedBlack[1];
-      param_6[2] = fadedBlack[2];
-      param_6[3] = fadedBlack[3];
+    if (isRowHighlighted == false) {
+      *color = fadedBlack[0];
+      color[1] = fadedBlack[1];
+      color[2] = fadedBlack[2];
+      color[3] = fadedBlack[3];
     }
     else {
-      *param_6 = 1.0;
-      param_6[1] = 1.0;
-      param_6[2] = 1.0;
-      param_6[3] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
     }
     break;
   case 3:
   case 4:
   case 6:
   case 7:
-    *param_6 = white[0];
-    param_6[1] = white[1];
-    param_6[2] = white[2];
-    param_6[3] = white[3];
+    *color = white[0];
+    color[1] = white[1];
+    color[2] = white[2];
+    color[3] = white[3];
     break;
   case 5:
-    uVar4 = Live_GetXuid(param_1);
+    uVar4 = Live_GetXuid(controllerIndex);
     local_28 = (int)uVar4;
-    if ((local_28 == local_1c) && (local_24 = (int)(uVar4 >> 0x20), local_24 == local_18)) {
-      *param_6 = playerColor[0];
-      param_6[1] = playerColor[1];
-      param_6[2] = playerColor[2];
-      param_6[3] = playerColor[3];
+    if ((local_28 == currClientXUID) && (local_24 = (int)(uVar4 >> 0x20), local_24 == local_18)) {
+      *color = playerColor[0];
+      color[1] = playerColor[1];
+      color[2] = playerColor[2];
+      color[3] = playerColor[3];
     }
     else {
-      *param_6 = white[0];
-      param_6[1] = white[1];
-      param_6[2] = white[2];
-      param_6[3] = white[3];
+      *color = white[0];
+      color[1] = white[1];
+      color[2] = white[2];
+      color[3] = white[3];
     }
   }
   return true;
@@ -2885,16 +3072,18 @@ UI_FeederItemColor_InGamePlayers
 
 bool __cdecl
 UI_FeederItemColor_GlobalMilestones
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   listBoxDef_s *plVar4;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
   
-  plVar4 = Item_GetListBoxDef(param_3);
+  plVar4 = Item_GetListBoxDef(item);
   if (plVar4 == (listBoxDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xb2a,0,
                              "%s");
@@ -2904,8 +3093,8 @@ UI_FeederItemColor_GlobalMilestones
       return (bool)uVar3;
     }
   }
-  if (plVar4->cursorPos[param_2] == param_4) {
-    bVar2 = Window_HasFocus(param_2,&param_3->window);
+  if (plVar4->cursorPos[contextIndex] == index) {
+    bVar2 = Window_HasFocus(contextIndex,&item->window);
     if (bVar2) {
       bVar2 = true;
       goto LAB_00739341;
@@ -2913,15 +3102,15 @@ UI_FeederItemColor_GlobalMilestones
   }
   bVar2 = false;
 LAB_00739341:
-  *param_6 = 1.0;
-  param_6[1] = 1.0;
-  param_6[2] = 1.0;
-  param_6[3] = 1.0;
-  if (((param_5 == 0) || (param_5 == 2)) && (bVar2)) {
-    *param_6 = 0.0;
-    param_6[1] = 0.0;
-    param_6[2] = 0.0;
-    param_6[3] = 1.0;
+  *color = 1.0;
+  color[1] = 1.0;
+  color[2] = 1.0;
+  color[3] = 1.0;
+  if (((column == 0) || (column == 2)) && (bVar2)) {
+    *color = 0.0;
+    color[1] = 0.0;
+    color[2] = 0.0;
+    color[3] = 1.0;
   }
   return true;
 }
@@ -2931,8 +3120,8 @@ LAB_00739341:
 
 bool __cdecl
 UI_FeederItemColor_PerksMilestones
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus)
 
 {
   code *pcVar1;
@@ -2940,9 +3129,13 @@ UI_FeederItemColor_PerksMilestones
   undefined1 uVar3;
   bool bVar4;
   listBoxDef_s *plVar5;
-  int iVar6;
+  int itemIndex_00;
+  listBoxDef_s *listPtr;
+  bool isRowHighlighted;
+  int itemIndex;
+  bool isItemPurchased;
   
-  plVar5 = Item_GetListBoxDef(param_3);
+  plVar5 = Item_GetListBoxDef(item);
   if (plVar5 == (listBoxDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xb44,0,
                              "%s");
@@ -2952,8 +3145,8 @@ UI_FeederItemColor_PerksMilestones
       return (bool)uVar3;
     }
   }
-  if (plVar5->cursorPos[param_2] == param_4) {
-    bVar2 = Window_HasFocus(param_2,&param_3->window);
+  if (plVar5->cursorPos[contextIndex] == index) {
+    bVar2 = Window_HasFocus(contextIndex,&item->window);
     if (bVar2) {
       bVar2 = true;
       goto LAB_00739451;
@@ -2961,26 +3154,26 @@ UI_FeederItemColor_PerksMilestones
   }
   bVar2 = false;
 LAB_00739451:
-  iVar6 = BG_UnlockablesGetItemIndexInSlot(param_4);
-  bVar4 = BG_UnlockablesIsItemPurchased(param_1,iVar6);
-  *param_6 = 1.0;
-  param_6[1] = 1.0;
-  param_6[2] = 1.0;
-  param_6[3] = 1.0;
-  if (param_5 == 0) {
+  itemIndex_00 = BG_UnlockablesGetItemIndexInSlot(index);
+  bVar4 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex_00);
+  *color = 1.0;
+  color[1] = 1.0;
+  color[2] = 1.0;
+  color[3] = 1.0;
+  if (column == 0) {
     if (bVar4) {
       if (bVar2) {
-        *param_6 = 0.0;
-        param_6[1] = 0.0;
-        param_6[2] = 0.0;
-        param_6[3] = 1.0;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 1.0;
       }
     }
     else {
-      *param_6 = newUIGrey[0];
-      param_6[1] = newUIGrey[1];
-      param_6[2] = newUIGrey[2];
-      param_6[3] = newUIGrey[3];
+      *color = newUIGrey[0];
+      color[1] = newUIGrey[1];
+      color[2] = newUIGrey[2];
+      color[3] = newUIGrey[3];
     }
   }
   return true;
@@ -2991,8 +3184,8 @@ LAB_00739451:
 
 bool __cdecl
 UI_FeederItemColor_StatsMilestones
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6,
-          bool param_7,int param_8)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color,
+          bool onFocus,int milestoneType)
 
 {
   ushort uVar1;
@@ -3000,10 +3193,12 @@ UI_FeederItemColor_StatsMilestones
   bool bVar3;
   undefined1 uVar4;
   listBoxDef_s *plVar5;
-  challengeInfo_t *local_c;
-  char local_6;
+  listBoxDef_s *listPtr;
+  challengeInfo_t *challenge;
+  bool isRowHighlighted;
+  bool isItemPurchased;
   
-  plVar5 = Item_GetListBoxDef(param_3);
+  plVar5 = Item_GetListBoxDef(item);
   if (plVar5 == (listBoxDef_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xb65,0,
                              "%s");
@@ -3013,36 +3208,36 @@ UI_FeederItemColor_StatsMilestones
       return (bool)uVar4;
     }
   }
-  if (plVar5->cursorPos[param_2] == param_4) {
-    bVar3 = Window_HasFocus(param_2,&param_3->window);
+  if (plVar5->cursorPos[contextIndex] == index) {
+    bVar3 = Window_HasFocus(contextIndex,&item->window);
     if (bVar3) {
-      local_6 = '\x01';
+      isRowHighlighted = true;
       goto LAB_007395d1;
     }
   }
-  local_6 = '\0';
+  isRowHighlighted = false;
 LAB_007395d1:
-  bVar3 = LiveStats_GetChallengeInfo(&local_c,param_4,param_8);
+  bVar3 = LiveStats_GetChallengeInfo(&challenge,index,milestoneType);
   if (bVar3) {
-    uVar1 = local_c->flags;
-    *param_6 = 1.0;
-    param_6[1] = 1.0;
-    param_6[2] = 1.0;
-    param_6[3] = 1.0;
-    if ((param_5 == 0) || (param_5 == 2)) {
-      if (((uVar1 & 1) == 0) && ((local_c->flags & 4) == 0)) {
-        if (local_6 != '\0') {
-          *param_6 = 0.0;
-          param_6[1] = 0.0;
-          param_6[2] = 0.0;
-          param_6[3] = 1.0;
+    uVar1 = challenge->flags;
+    *color = 1.0;
+    color[1] = 1.0;
+    color[2] = 1.0;
+    color[3] = 1.0;
+    if ((column == 0) || (column == 2)) {
+      if (((uVar1 & 1) == 0) && ((challenge->flags & 4) == 0)) {
+        if (isRowHighlighted != false) {
+          *color = 0.0;
+          color[1] = 0.0;
+          color[2] = 0.0;
+          color[3] = 1.0;
         }
       }
       else {
-        *param_6 = newUIGrey[0];
-        param_6[1] = newUIGrey[1];
-        param_6[2] = newUIGrey[2];
-        param_6[3] = newUIGrey[3];
+        *color = newUIGrey[0];
+        color[1] = newUIGrey[1];
+        color[2] = newUIGrey[2];
+        color[3] = newUIGrey[3];
       }
     }
     bVar3 = true;
@@ -3060,143 +3255,146 @@ LAB_007395d1:
 
 bool __cdecl
 UI_FeederItemColor_AARScoreboard
-          (int param_1,int param_2,float param_3,itemDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,float feederID,itemDef_s *item,int index,int column,
+          float *color)
 
 {
   bool bVar1;
-  int iVar2;
-  team_t tVar3;
-  ddlState_t *pdVar4;
-  uint uVar5;
-  char *pcVar6;
-  long64 lVar7;
-  ulong64 uVar8;
+  int localClientNum_00;
+  team_t tVar2;
+  ddlState_t *pdVar3;
+  uint uVar4;
+  char *pcVar5;
+  long64 lVar6;
+  ulong64 uVar7;
   int local_58;
   int local_54;
   int local_50;
   int local_4c;
-  int local_2c;
+  int payout;
+  int localClientNum;
+  int nemesisXuid;
   int local_28;
-  undefined8 local_24;
-  listBoxDef_s *local_18;
-  ddlState_t local_14;
+  undefined8 currClientXuid;
+  listBoxDef_s *listBox;
+  ddlState_t ddlState;
   
-  local_2c = 0;
+  nemesisXuid = 0;
   local_28 = 0;
-  local_24 = 0;
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  local_18 = Item_GetListBoxDef(param_4);
-  switch(param_6) {
+  currClientXuid = 0;
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  listBox = Item_GetListBoxDef(item);
+  switch(column) {
   case 0:
-    if (param_3 == 83.0) {
-      *param_7 = (param_4->window).foreColor[0];
-      param_7[1] = (param_4->window).foreColor[1];
-      param_7[2] = (param_4->window).foreColor[2];
-      param_7[3] = (param_4->window).foreColor[3];
+    if (feederID == 83.0) {
+      *color = (item->window).foreColor[0];
+      color[1] = (item->window).foreColor[1];
+      color[2] = (item->window).foreColor[2];
+      color[3] = (item->window).foreColor[3];
       bVar1 = true;
     }
     else {
-      LiveStats_GetNemesisXuid(param_1,(ulong64 *)&local_2c);
-      pcVar6 = CG_GetMatchScoreboardInfo(iVar2,0,param_5,TEAM_NUM_TEAMS);
-      lVar7 = I_atoi64(pcVar6);
-      if (((local_2c == 0 && local_28 == 0) ||
-          (local_24._0_4_ = (int)lVar7, local_2c != (int)local_24)) ||
-         (local_24._4_4_ = (int)((ulonglong)lVar7 >> 0x20), local_28 != local_24._4_4_)) {
-        local_24 = lVar7;
-        uVar8 = Live_GetXuid(param_1);
-        local_50 = (int)uVar8;
-        if ((int)local_24 == local_50) {
-          local_4c = (int)(uVar8 >> 0x20);
-          if (local_24._4_4_ == local_4c) {
-            *param_7 = (param_4->window).foreColor[0];
-            param_7[1] = (param_4->window).foreColor[1];
-            param_7[2] = (param_4->window).foreColor[2];
-            param_7[3] = (param_4->window).foreColor[3];
+      LiveStats_GetNemesisXuid(controllerIndex,(ulong64 *)&nemesisXuid);
+      pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,0,index,TEAM_NUM_TEAMS);
+      lVar6 = I_atoi64(pcVar5);
+      if (((nemesisXuid == 0 && local_28 == 0) ||
+          (currClientXuid._0_4_ = (int)lVar6, nemesisXuid != (int)currClientXuid)) ||
+         (currClientXuid._4_4_ = (int)((ulonglong)lVar6 >> 0x20), local_28 != currClientXuid._4_4_))
+      {
+        currClientXuid = lVar6;
+        uVar7 = Live_GetXuid(controllerIndex);
+        local_50 = (int)uVar7;
+        if ((int)currClientXuid == local_50) {
+          local_4c = (int)(uVar7 >> 0x20);
+          if (currClientXuid._4_4_ == local_4c) {
+            *color = (item->window).foreColor[0];
+            color[1] = (item->window).foreColor[1];
+            color[2] = (item->window).foreColor[2];
+            color[3] = (item->window).foreColor[3];
             return true;
           }
         }
-        tVar3 = CG_GetMatchscoreboardTeam(iVar2,param_5);
-        if (tVar3 == TEAM_ALLIES) {
-          *param_7 = alliesColor[0];
-          param_7[1] = alliesColor[1];
-          param_7[2] = alliesColor[2];
-          param_7[3] = alliesColor[3];
+        tVar2 = CG_GetMatchscoreboardTeam(localClientNum_00,index);
+        if (tVar2 == TEAM_ALLIES) {
+          *color = alliesColor[0];
+          color[1] = alliesColor[1];
+          color[2] = alliesColor[2];
+          color[3] = alliesColor[3];
         }
         else {
-          *param_7 = axisColor[0];
-          param_7[1] = axisColor[1];
-          param_7[2] = axisColor[2];
-          param_7[3] = axisColor[3];
+          *color = axisColor[0];
+          color[1] = axisColor[1];
+          color[2] = axisColor[2];
+          color[3] = axisColor[3];
         }
-        uVar5 = param_5 & 0x80000001;
-        if ((int)uVar5 < 0) {
-          uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
+        uVar4 = index & 0x80000001;
+        if ((int)uVar4 < 0) {
+          uVar4 = (uVar4 - 1 | 0xfffffffe) + 1;
         }
-        if (uVar5 == 0) {
-          *param_7 = *param_7 * darkRowMultiplier;
-          param_7[1] = param_7[1] * darkRowMultiplier;
-          param_7[2] = param_7[2] * darkRowMultiplier;
+        if (uVar4 == 0) {
+          *color = *color * darkRowMultiplier;
+          color[1] = color[1] * darkRowMultiplier;
+          color[2] = color[2] * darkRowMultiplier;
         }
-        if (1.0 < param_7[3]) {
-          param_7[3] = 1.0;
+        if (1.0 < color[3]) {
+          color[3] = 1.0;
         }
         bVar1 = true;
       }
       else {
-        *param_7 = (param_4->window).foreColor[0];
-        param_7[1] = (param_4->window).foreColor[1];
-        param_7[2] = (param_4->window).foreColor[2];
-        param_7[3] = (param_4->window).foreColor[3];
+        *color = (item->window).foreColor[0];
+        color[1] = (item->window).foreColor[1];
+        color[2] = (item->window).foreColor[2];
+        color[3] = (item->window).foreColor[3];
         bVar1 = true;
       }
     }
     break;
   case 1:
-    if (param_3 == 83.0) {
+    if (feederID == 83.0) {
       bVar1 = false;
     }
     else {
-      *param_7 = 0.0;
-      param_7[1] = 0.0;
-      param_7[2] = 0.0;
-      param_7[3] = 0.1;
+      *color = 0.0;
+      color[1] = 0.0;
+      color[2] = 0.0;
+      color[3] = 0.1;
       bVar1 = true;
     }
     break;
   case 2:
   case 4:
   case 5:
-    if (param_3 != 83.0) {
+    if (feederID != 83.0) {
       return false;
     }
-    pdVar4 = LiveStats_GetRootDDLState();
-    local_14.absoluteOffset = pdVar4->absoluteOffset;
-    local_14.arrayIndex = pdVar4->arrayIndex;
-    local_14.member = pdVar4->member;
-    local_14.ddl = pdVar4->ddl;
+    pdVar3 = LiveStats_GetRootDDLState();
+    ddlState.absoluteOffset = pdVar3->absoluteOffset;
+    ddlState.arrayIndex = pdVar3->arrayIndex;
+    ddlState.member = pdVar3->member;
+    ddlState.ddl = pdVar3->ddl;
     va("%d");
-    DDL_MoveTo(&local_14,&local_14,3);
-    uVar5 = LiveStats_GetDIntStat(param_1,&local_14);
-    pcVar6 = CG_GetMatchScoreboardInfo(iVar2,0,param_5,TEAM_BAD);
-    local_24 = I_atoi64(pcVar6);
-    uVar8 = Live_GetXuid(param_1);
-    local_58 = (int)uVar8;
-    if ((int)local_24 == local_58) {
-      local_54 = (int)(uVar8 >> 0x20);
-      if (local_24._4_4_ == local_54) {
-        *param_7 = local_18->focusColor[0];
-        param_7[1] = local_18->focusColor[1];
-        param_7[2] = local_18->focusColor[2];
-        param_7[3] = local_18->focusColor[3];
+    DDL_MoveTo(&ddlState,&ddlState,3);
+    uVar4 = LiveStats_GetDIntStat(controllerIndex,&ddlState);
+    pcVar5 = CG_GetMatchScoreboardInfo(localClientNum_00,0,index,TEAM_BAD);
+    currClientXuid = I_atoi64(pcVar5);
+    uVar7 = Live_GetXuid(controllerIndex);
+    local_58 = (int)uVar7;
+    if ((int)currClientXuid == local_58) {
+      local_54 = (int)(uVar7 >> 0x20);
+      if (currClientXuid._4_4_ == local_54) {
+        *color = listBox->focusColor[0];
+        color[1] = listBox->focusColor[1];
+        color[2] = listBox->focusColor[2];
+        color[3] = listBox->focusColor[3];
         return true;
       }
     }
-    if ((int)uVar5 < 1) {
-      *param_7 = newUIGrey[0];
-      param_7[1] = newUIGrey[1];
-      param_7[2] = newUIGrey[2];
-      param_7[3] = newUIGrey[3];
+    if ((int)uVar4 < 1) {
+      *color = newUIGrey[0];
+      color[1] = newUIGrey[1];
+      color[2] = newUIGrey[2];
+      color[3] = newUIGrey[3];
       return true;
     }
   default:
@@ -3210,7 +3408,7 @@ UI_FeederItemColor_AARScoreboard
 
 bool __cdecl
 UI_FeederItemColor_KillstreakNumKills
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,float *param_6)
+          (int controllerIndex,int contextIndex,itemDef_s *item,int index,int column,float *color)
 
 {
   code *pcVar1;
@@ -3219,18 +3417,20 @@ UI_FeederItemColor_KillstreakNumKills
   listBoxDef_s *plVar4;
   int iVar5;
   int iVar6;
+  listBoxDef_s *listPtr;
+  int killNum;
   
-  if (param_5 != 1) {
+  if (column != 1) {
     bVar2 = UI_FeederItemColor_ItemList
-                      (param_1,param_2,param_3,param_4,param_5,0,true,false,false,param_6);
+                      (controllerIndex,contextIndex,item,index,column,0,true,false,false,color);
     return bVar2;
   }
-  *param_6 = 1.0;
-  param_6[1] = 1.0;
-  param_6[2] = 1.0;
-  param_6[3] = 1.0;
-  iVar6 = CustomKillstreakNums[param_4];
-  plVar4 = Item_GetListBoxDef(param_3);
+  *color = 1.0;
+  color[1] = 1.0;
+  color[2] = 1.0;
+  color[3] = 1.0;
+  iVar6 = CustomKillstreakNums[index];
+  plVar4 = Item_GetListBoxDef(item);
   if ((plVar4 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xbf9,0
                                ,"%s"), !bVar2)) {
@@ -3238,12 +3438,12 @@ UI_FeederItemColor_KillstreakNumKills
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((plVar4->cursorPos[param_2] == param_4) &&
-     (bVar2 = Window_HasFocus(param_2,&param_3->window), bVar2)) {
-    *param_6 = 0.0;
-    param_6[1] = 0.0;
-    param_6[2] = 0.0;
-    param_6[3] = 1.0;
+  if ((plVar4->cursorPos[contextIndex] == index) &&
+     (bVar2 = Window_HasFocus(contextIndex,&item->window), bVar2)) {
+    *color = 0.0;
+    color[1] = 0.0;
+    color[2] = 0.0;
+    color[3] = 1.0;
   }
   iVar5 = Dvar_GetInt("custom_killstreak_1_kills");
   if ((((iVar6 == iVar5) && (iVar5 = Dvar_GetInt("custom_killstreak_1"), iVar5 != 0)) ||
@@ -3251,10 +3451,10 @@ UI_FeederItemColor_KillstreakNumKills
        (iVar5 = Dvar_GetInt("custom_killstreak_2"), iVar5 != 0)))) ||
      ((iVar5 = Dvar_GetInt("custom_killstreak_3_kills"), iVar6 == iVar5 &&
       (iVar6 = Dvar_GetInt("custom_killstreak_3"), iVar6 != 0)))) {
-    *param_6 = newUIGrey[0];
-    param_6[1] = newUIGrey[1];
-    param_6[2] = newUIGrey[2];
-    param_6[3] = newUIGrey[3];
+    *color = newUIGrey[0];
+    color[1] = newUIGrey[1];
+    color[2] = newUIGrey[2];
+    color[3] = newUIGrey[3];
   }
   return true;
 }
@@ -3264,17 +3464,19 @@ UI_FeederItemColor_KillstreakNumKills
 
 void __cdecl
 UI_Project_FeederItemOwnerDraw
-          (int param_1,int param_2,float param_3,rectDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int localClientNum,int contextIndex,float feederID,rectDef_s *rect,int index,int col,
+          float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
+  int controllerIndex_00;
+  int type;
+  int milestoneType;
+  int controllerIndex;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if (iVar3 == -1) {
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (controllerIndex_00 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xc0c,0,
                              "%s");
     if (!bVar2) {
@@ -3283,9 +3485,9 @@ UI_Project_FeederItemOwnerDraw
       return;
     }
   }
-  iVar4 = UI_GetMilestoneType(param_3);
-  if (iVar4 != -1) {
-    UI_DrawStatsMilestonesFeederProgressBar(iVar3,param_2,param_4,param_5,iVar4);
+  type = UI_GetMilestoneType(feederID);
+  if (type != -1) {
+    UI_DrawStatsMilestonesFeederProgressBar(controllerIndex_00,contextIndex,rect,index,type);
   }
   return;
 }
@@ -3294,28 +3496,30 @@ UI_Project_FeederItemOwnerDraw
 // 007380D0  UI_Project_FeederItemColor  (ui_mp/ui_feeders_mp.cpp:3098)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
 bool __cdecl
 UI_Project_FeederItemColor
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-          float *param_7,bool param_8)
+          (int controllerIndex,int contextIndex,itemDef_s *item,float feederID,int index,int column,
+          float *color,bool onFocus)
 
 {
   bool bVar1;
   int iVar2;
   bool local_52;
   bool local_41;
+  int milestoneType;
   
-  switch((int)param_4) {
+  switch((int)feederID) {
   case 3:
-    if (param_6 == 1) {
-      Vec4Set(param_7,0.15,0.61,0.0,0.8);
+    if (column == 1) {
+      Vec4Set(color,0.15,0.61,0.0,0.8);
     }
-    else if (param_6 == 6) {
-      param_7[3] = 0.6;
+    else if (column == 6) {
+      color[3] = 0.6;
     }
-    else if (param_6 == 7) {
-      Vec4Set(param_7,0.81,0.15,0.04,0.8);
+    else if (column == 7) {
+      Vec4Set(color,0.81,0.15,0.04,0.8);
     }
     local_52 = true;
     break;
@@ -3323,108 +3527,110 @@ UI_Project_FeederItemColor
     local_52 = false;
     break;
   case 0x31:
-    iVar2 = BG_UnlockablesGetItemIndexInSlot(param_5);
-    if ((param_6 != 1) || (bVar1 = UI_Gametype_Custom_IsPerkTweakable(iVar2), bVar1)) {
+    iVar2 = BG_UnlockablesGetItemIndexInSlot(index);
+    if ((column != 1) || (bVar1 = UI_Gametype_Custom_IsPerkTweakable(iVar2), bVar1)) {
       local_52 = UI_FeederItemColor_ItemList
-                           (param_1,param_2,param_3,param_5,param_6,0,true,false,false,param_7);
+                           (controllerIndex,contextIndex,item,index,column,0,true,false,false,color)
+      ;
     }
     else {
-      Vec4Copy(newUIGrey,param_7);
+      Vec4Copy(newUIGrey,color);
       local_41 = true;
       local_52 = local_41;
     }
     break;
   case 0x39:
-    if ((param_6 == 0) || (param_6 == 2)) {
-      Vec4Copy((float *)&DAT_098c3900,param_7);
+    if ((column == 0) || (column == 2)) {
+      Vec4Copy((float *)&DAT_098c3900,color);
     }
     else {
-      Vec4Copy(colorWhite,param_7);
+      Vec4Copy(colorWhite,color);
     }
     local_52 = true;
     break;
   case 0x3a:
   case 0x3b:
     local_52 = UI_FeederItemColor_ItemsInSlot
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus);
     break;
   case 0x3c:
     local_52 = UI_FeederItemColor_WeaponOptions
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus);
     break;
   case 0x3d:
   case 0x41:
   case 0x42:
   case 0x43:
-    if (((param_6 == 0) || (param_6 == 2)) || (param_6 == 4)) {
-      Vec4Copy((float *)&DAT_098c3900,param_7);
+    if (((column == 0) || (column == 2)) || (column == 4)) {
+      Vec4Copy((float *)&DAT_098c3900,color);
     }
     local_52 = true;
     break;
   case 0x44:
-    local_52 = UI_FeederItemColor_Contracts(param_1,param_2,param_3,param_5,param_6,param_7,param_8)
-    ;
+    local_52 = UI_FeederItemColor_Contracts
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus);
     break;
   case 0x4e:
     local_52 = UI_FeederItemColor_ItemList
-                         (param_1,param_2,param_3,param_5,param_6,0,true,false,false,param_7);
+                         (controllerIndex,contextIndex,item,index,column,0,true,false,false,color);
     break;
   case 0x52:
   case 0x53:
     local_52 = UI_FeederItemColor_AARScoreboard
-                         (param_1,param_2,param_4,param_3,param_5,param_6,param_7);
+                         (controllerIndex,contextIndex,feederID,item,index,column,color);
     break;
   case 0x57:
     local_52 = UI_FeederItemColor_InGamePlayerList
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8,TEAM_ALLIES);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus,TEAM_ALLIES);
     break;
   case 0x58:
     local_52 = UI_FeederItemColor_InGamePlayerList
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8,TEAM_AXIS);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus,TEAM_AXIS);
     break;
   case 0x59:
     local_52 = UI_FeederItemColor_InGamePlayerList
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8,TEAM_BAD);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus,TEAM_BAD);
     break;
   case 0x5a:
-    if ((param_6 == 0) || (param_6 == 2)) {
-      Vec4Copy((float *)&DAT_098c3900,param_7);
+    if ((column == 0) || (column == 2)) {
+      Vec4Copy((float *)&DAT_098c3900,color);
     }
     else {
-      Vec4Copy(colorWhite,param_7);
+      Vec4Copy(colorWhite,color);
     }
     local_52 = true;
     break;
   case 0x5c:
   case 0x60:
   case 99:
-    iVar2 = UI_GetMilestoneType(param_4);
+    iVar2 = UI_GetMilestoneType(feederID);
     if (iVar2 != -1) {
       bVar1 = UI_FeederItemColor_StatsMilestones
-                        (param_1,param_2,param_3,param_5,param_6,param_7,param_8,iVar2);
+                        (controllerIndex,contextIndex,item,index,column,color,onFocus,iVar2);
       return bVar1;
     }
   case 0x61:
   case 100:
     local_52 = UI_FeederItemColor_PerksMilestones
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus);
     break;
   case 0x5e:
   case 0x5f:
   case 0x62:
     local_52 = UI_FeederItemColor_GlobalMilestones
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus);
     break;
   case 0x67:
     local_52 = UI_FeederItemColor_KillstreakNumKills
-                         (param_1,param_2,param_3,param_5,param_6,param_7);
+                         (controllerIndex,contextIndex,item,index,column,color);
     break;
   case 0x69:
   case 0x6a:
   case 0x6b:
   case 0x6c:
     local_52 = UI_FeederItemColor_InGamePlayers
-                         (param_1,param_2,param_3,param_5,param_6,param_7,param_8,(int)param_4);
+                         (controllerIndex,contextIndex,item,index,column,color,onFocus,(int)feederID
+                         );
   }
   return local_52;
 }
@@ -3434,26 +3640,30 @@ UI_Project_FeederItemColor
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-int __cdecl UI_FeederDoubleClick(int param_1,int param_2,float param_3,int param_4)
+int __cdecl UI_FeederDoubleClick(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
-  char *pcVar6;
-  itemGroup_t iVar7;
-  int local_8;
+  int playlistId;
+  char *pcVar4;
+  char *value;
+  itemGroup_t groupIndex;
+  int arrayOffset_2;
+  int arrayOffset;
+  char *loadoutName;
+  int controllerIndex;
+  int currentCategory;
   
   if ((xblive_wagermatch->current).enabled == false) {
-    local_8 = (category->current).integer;
+    currentCategory = (category->current).integer;
   }
   else {
-    local_8 = (wagerCategory->current).integer;
+    currentCategory = (wagerCategory->current).integer;
   }
-  if (param_3 == 26.0) {
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  if (feederID == 26.0) {
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
     if ((iVar3 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xc68
                                  ,0,"%s"), !bVar2)) {
@@ -3461,39 +3671,39 @@ int __cdecl UI_FeederDoubleClick(int param_1,int param_2,float param_3,int param
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    iVar4 = Playlist_GetPlaylistIdForNum(iVar3,param_4,local_8);
-    bVar2 = Playlist_DoWeHaveRequiredDLC(iVar3,iVar4);
+    playlistId = Playlist_GetPlaylistIdForNum(iVar3,index,currentCategory);
+    bVar2 = Playlist_DoWeHaveRequiredDLC(iVar3,playlistId);
     if (!bVar2) {
       Live_ShowMarketplaceUI(iVar3);
       return 1;
     }
   }
-  if (param_3 == 78.0) {
-    pcVar5 = Dvar_GetString("selected_loadout_slot");
-    iVar3 = I_stricmp(pcVar5,"primary");
+  if (feederID == 78.0) {
+    pcVar4 = Dvar_GetString("selected_loadout_slot");
+    iVar3 = I_stricmp(pcVar4,"primary");
     if (iVar3 == 0) {
-      if (((param_4 < 0) || (4 < param_4)) &&
+      if (((index < 0) || (4 < index)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",
                                    0xc7e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      pcVar6 = BG_UnlockablesGetItemGroupName(param_4);
-      Dvar_SetStringByName("selected_group",pcVar6);
+      value = BG_UnlockablesGetItemGroupName(index);
+      Dvar_SetStringByName("selected_group",value);
     }
-    iVar3 = I_stricmp(pcVar5,"secondary");
+    iVar3 = I_stricmp(pcVar4,"secondary");
     if (iVar3 == 0) {
-      iVar7 = param_4 + ITEMGROUP_PISTOL;
-      if ((((int)iVar7 < 5) || (7 < (int)iVar7)) &&
+      groupIndex = index + ITEMGROUP_PISTOL;
+      if ((((int)groupIndex < 5) || (7 < (int)groupIndex)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",
                                    0xc85,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      pcVar5 = BG_UnlockablesGetItemGroupName(iVar7);
-      Dvar_SetStringByName("selected_group",pcVar5);
+      pcVar4 = BG_UnlockablesGetItemGroupName(groupIndex);
+      Dvar_SetStringByName("selected_group",pcVar4);
     }
   }
   return 0;
@@ -3502,11 +3712,11 @@ int __cdecl UI_FeederDoubleClick(int param_1,int param_2,float param_3,int param
 
 // 00739F20  UI_FeederDoubleClickDlcMaps  (ui_mp/ui_feeders_mp.cpp:3234)
 
-void __cdecl UI_FeederDoubleClickDlcMaps(int param_1,int param_2,int param_3)
+void __cdecl UI_FeederDoubleClickDlcMaps(int localClientNum,int contextIndex,int index)
 
 {
-  if (*(int *)(&DAT_098b9eb4 + param_3 * 0x130) != 0) {
-    Dvar_GetBool(&DAT_098b9ea4 + param_3 * 0x130);
+  if (*(int *)(&DAT_098b9eb4 + index * 0x130) != 0) {
+    Dvar_GetBool(&DAT_098b9ea4 + index * 0x130);
   }
   return;
 }
@@ -3514,7 +3724,7 @@ void __cdecl UI_FeederDoubleClickDlcMaps(int param_1,int param_2,int param_3)
 
 // 00739F50  UI_FeederItemEnabled  (ui_mp/ui_feeders_mp.cpp:3254)
 
-int __cdecl UI_FeederItemEnabled(int param_1,int param_2,float param_3,int param_4)
+int __cdecl UI_FeederItemEnabled(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
@@ -3527,9 +3737,12 @@ int __cdecl UI_FeederItemEnabled(int param_1,int param_2,float param_3,int param
   uint uVar8;
   int iVar9;
   int iVar10;
-  int local_10;
+  int controllerIndex;
+  int currentCategory;
+  int gametypeBan;
+  int partyMemberCount;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (iVar3 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xcb9,0,
                              "%s");
@@ -3540,26 +3753,26 @@ int __cdecl UI_FeederItemEnabled(int param_1,int param_2,float param_3,int param
     }
   }
   if ((xblive_wagermatch->current).enabled == false) {
-    local_10 = (category->current).integer;
+    currentCategory = (category->current).integer;
   }
   else {
-    local_10 = (wagerCategory->current).integer;
+    currentCategory = (wagerCategory->current).integer;
   }
-  if ((param_3 == 26.0) || (param_3 == 77.0)) {
+  if ((feederID == 26.0) || (feederID == 77.0)) {
     iVar10 = 1;
     iVar9 = 0;
     iVar4 = LiveStats_GetPrestige(iVar3);
     iVar5 = LiveStats_GetXp(iVar3);
-    iVar6 = Playlist_GetPlaylistIdForNum(iVar3,param_4,local_10);
+    iVar6 = Playlist_GetPlaylistIdForNum(iVar3,index,currentCategory);
     PVar7 = Playlist_IsLocked(iVar3,iVar6,iVar5,iVar4,iVar9,iVar10);
     uVar8 = (uint)(PVar7 == PLS_UNLOCKED);
   }
-  else if ((param_3 == 28.0) || (param_3 == 76.0)) {
+  else if ((feederID == 28.0) || (feederID == 76.0)) {
     iVar10 = 1;
     iVar9 = 0;
     iVar4 = LiveStats_GetPrestige(iVar3);
     iVar5 = LiveStats_GetXp(iVar3);
-    iVar6 = Playlist_GetCategoryIdForNum(param_4);
+    iVar6 = Playlist_GetCategoryIdForNum(index);
     PVar7 = Playlist_CategoryIsLocked(iVar3,iVar6,iVar5,iVar4,iVar9,iVar10);
     uVar8 = (uint)(PVar7 == PLS_UNLOCKED);
   }
@@ -3572,15 +3785,15 @@ int __cdecl UI_FeederItemEnabled(int param_1,int param_2,float param_3,int param
 
 // 0073A0B0  UI_FeederItemImage  (ui_mp/ui_feeders_mp.cpp:3288)
 
-Material * __cdecl UI_FeederItemImage(float param_1,int param_2,int param_3)
+Material * __cdecl UI_FeederItemImage(float feederID,int index,int column)
 
 {
   Material *pMVar1;
-  int local_8;
+  int actual;
   
-  if (param_1 == 4.0) {
-    UI_SelectedMap(param_2,&local_8);
-    pMVar1 = UI_GetLevelShot(local_8);
+  if (feederID == 4.0) {
+    UI_SelectedMap(index,&actual);
+    pMVar1 = UI_GetLevelShot(actual);
   }
   else {
     pMVar1 = (Material *)0x0;
@@ -3591,14 +3804,17 @@ Material * __cdecl UI_FeederItemImage(float param_1,int param_2,int param_3)
 
 // 0073A630  UI_OverrideCursorPos_FriendsStatsCompare  (ui_mp/ui_feeders_mp.cpp:3346)
 
-void __cdecl UI_OverrideCursorPos_FriendsStatsCompare(int param_1,int param_2,listBoxDef_s *param_3)
+void __cdecl
+UI_OverrideCursorPos_FriendsStatsCompare(int localClientNum,int contextIndex,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int controllerIndex;
+  int count;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (iVar3 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xd15,0,
                              "%s");
@@ -3610,10 +3826,10 @@ void __cdecl UI_OverrideCursorPos_FriendsStatsCompare(int param_1,int param_2,li
   }
   iVar3 = Friends_GetCount(iVar3,0,0);
   if (iVar3 == 0) {
-    param_3->cursorPos[param_2] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
-  else if (iVar3 <= param_3->cursorPos[param_2]) {
-    param_3->cursorPos[param_2] = iVar3 + -1;
+  else if (iVar3 <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = iVar3 + -1;
   }
   return;
 }
@@ -3621,59 +3837,60 @@ void __cdecl UI_OverrideCursorPos_FriendsStatsCompare(int param_1,int param_2,li
 
 // 0073A0F0  UI_GetMapLoadNameForCurrentIndex  (ui_mp/ui_feeders_mp.cpp:3364)
 
-char * __cdecl UI_GetMapLoadNameForCurrentIndex(int param_1)
+char * __cdecl UI_GetMapLoadNameForCurrentIndex(int index)
 
 {
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b9e44 <= local_c) {
+    if (DAT_098b9e44 <= i) {
       Com_Printf(0x10,
                  "Warning: Invalid Map load name Index found. Setting it to the first map of the current selected map pack type\n"
                 );
       return &DAT_098b9e68;
     }
-    if (param_1 == local_8) break;
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    if (index == count) break;
+    count = count + 1;
+    i = i + 1;
   }
-  return &DAT_098b9e68 + local_c * 0x130;
+  return &DAT_098b9e68 + i * 0x130;
 }
 
 
 // 0073A160  UI_OverrideCursorPos_Maps  (ui_mp/ui_feeders_mp.cpp:3380)
 
-void __cdecl UI_OverrideCursorPos_Maps(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_Maps(int contextIndex,listBoxDef_s *listPtr)
 
 {
   bool bVar1;
   char *pcVar2;
-  char *pcVar3;
-  int iVar4;
+  char *s0;
+  int iVar3;
+  int mapCount;
   
-  iVar4 = DAT_098b9e44;
-  if (DAT_098b9e44 <= param_2->cursorPos[param_1]) {
-    param_2->cursorPos[param_1] = 0;
+  iVar3 = DAT_098b9e44;
+  if (DAT_098b9e44 <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = 0;
   }
-  if (iVar4 == 0) {
-    param_2->cursorPos[param_1] = 0;
+  if (iVar3 == 0) {
+    listPtr->cursorPos[contextIndex] = 0;
     Dvar_SetStringByName("ui_preview","");
   }
   else {
     bVar1 = Dvar_GetBool("ui_mapPackChanged");
     if (bVar1) {
-      param_2->cursorPos[param_1] = 0;
+      listPtr->cursorPos[contextIndex] = 0;
       Dvar_SetBoolByName("ui_mapPackChanged",false);
     }
     else {
-      pcVar2 = UI_GetMapLoadNameForCurrentIndex(param_2->cursorPos[param_1]);
-      pcVar3 = Dvar_GetString("ui_preview");
-      iVar4 = I_strcmp(pcVar3,pcVar2);
-      if (iVar4 != 0) {
-        pcVar2 = UI_GetMapLoadNameForCurrentIndex(param_2->cursorPos[param_1]);
+      pcVar2 = UI_GetMapLoadNameForCurrentIndex(listPtr->cursorPos[contextIndex]);
+      s0 = Dvar_GetString("ui_preview");
+      iVar3 = I_strcmp(s0,pcVar2);
+      if (iVar3 != 0) {
+        pcVar2 = UI_GetMapLoadNameForCurrentIndex(listPtr->cursorPos[contextIndex]);
         Dvar_SetStringByName("ui_preview",pcVar2);
       }
     }
@@ -3684,25 +3901,25 @@ void __cdecl UI_OverrideCursorPos_Maps(int param_1,listBoxDef_s *param_2)
 
 // 0073A340  UI_GetBasicTrainingGametypeNumFromId  (ui_mp/ui_feeders_mp.cpp:3490)
 
-int __cdecl UI_GetBasicTrainingGametypeNumFromId(int param_1)
+int __cdecl UI_GetBasicTrainingGametypeNumFromId(int id)
 
 {
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  index = 0;
   do {
-    if (DAT_098b80bc <= local_c) {
+    if (DAT_098b80bc <= index) {
       return 0;
     }
-    if (*(int *)(&DAT_098b8130 + local_c * 0x74) != 0) {
-      if (local_c == param_1) {
-        return local_8;
+    if (*(int *)(&DAT_098b8130 + index * 0x74) != 0) {
+      if (index == id) {
+        return count;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    index = index + 1;
   } while( true );
 }
 
@@ -3713,34 +3930,35 @@ int __cdecl UI_CustomGametypes_GetSelectedGameTypeIndex(void)
 
 {
   int iVar1;
-  int local_8;
+  gameTypeInfo *gameType;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b80bc <= local_8) {
+    if (DAT_098b80bc <= i) {
       return 0;
     }
-    iVar1 = I_stricmp((ui_gametype->current).string,&DAT_098b80c0 + local_8 * 0x74);
+    iVar1 = I_stricmp((ui_gametype->current).string,&DAT_098b80c0 + i * 0x74);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 0073A400  UI_CustomGametypes_IsInvalidCursorPos  (ui_mp/ui_feeders_mp.cpp:3523)
 
-bool __cdecl UI_CustomGametypes_IsInvalidCursorPos(int param_1)
+bool __cdecl UI_CustomGametypes_IsInvalidCursorPos(int cursorPos)
 
 {
   int iVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (DAT_098b80bc <= param_1)) {
+  if ((cursorPos < 0) || (DAT_098b80bc <= cursorPos)) {
     bVar2 = true;
   }
   else {
-    iVar1 = I_strcmp((ui_gametype->current).string,&DAT_098b80c0 + param_1 * 0x74);
+    iVar1 = I_strcmp((ui_gametype->current).string,&DAT_098b80c0 + cursorPos * 0x74);
     bVar2 = iVar1 != 0;
   }
   return bVar2;
@@ -3751,25 +3969,28 @@ bool __cdecl UI_CustomGametypes_IsInvalidCursorPos(int param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void __cdecl UI_OverrideCursorPos_CustomGametypes(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_CustomGametypes(int contextIndex,listBoxDef_s *listPtr)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
+  int index;
+  int typeCount;
+  int typeCursorPos;
   
   iVar2 = DAT_098b80bc + _DAT_098b62b8;
-  iVar3 = param_2->cursorPos[param_1];
-  if (iVar2 <= param_2->cursorPos[param_1]) {
+  iVar3 = listPtr->cursorPos[contextIndex];
+  if (iVar2 <= listPtr->cursorPos[contextIndex]) {
     if ((xblive_basictraining->current).enabled == false) {
-      param_2->cursorPos[param_1] = 0;
+      listPtr->cursorPos[contextIndex] = 0;
     }
     else {
-      param_2->cursorPos[param_1] = iVar3;
+      listPtr->cursorPos[contextIndex] = iVar3;
     }
   }
   if (iVar2 == 0) {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
     Dvar_SetString(ui_gametype,"");
     Dvar_SetString(ui_customModeName,"");
     Dvar_SetInt(ui_customModeIndex,-1);
@@ -3779,11 +4000,11 @@ void __cdecl UI_OverrideCursorPos_CustomGametypes(int param_1,listBoxDef_s *para
     if (bVar1) {
       iVar3 = UI_CustomGametypes_GetSelectedGameTypeIndex();
       if ((xblive_basictraining->current).enabled == false) {
-        param_2->cursorPos[param_1] = iVar3;
+        listPtr->cursorPos[contextIndex] = iVar3;
       }
       else {
         iVar3 = UI_GetBasicTrainingGametypeNumFromId(iVar3);
-        param_2->cursorPos[param_1] = iVar3;
+        listPtr->cursorPos[contextIndex] = iVar3;
       }
     }
   }
@@ -3794,14 +4015,16 @@ void __cdecl UI_OverrideCursorPos_CustomGametypes(int param_1,listBoxDef_s *para
 // 0073A440  UI_OverrideCursorPos_Gametypes  (ui_mp/ui_feeders_mp.cpp:3586)
 
 void __cdecl
-UI_OverrideCursorPos_Gametypes(int param_1,int param_2,listBoxDef_s *param_3,float param_4)
+UI_OverrideCursorPos_Gametypes
+          (int localClientNum,int contextIndex,listBoxDef_s *listPtr,float feederID)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int itemCount;
   
-  iVar3 = UI_FeederCount(param_1,param_2,param_4,param_3);
+  iVar3 = UI_FeederCount(localClientNum,contextIndex,feederID,listPtr);
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xe04,0,
                              "%s");
@@ -3811,9 +4034,9 @@ UI_OverrideCursorPos_Gametypes(int param_1,int param_2,listBoxDef_s *param_3,flo
       return;
     }
   }
-  if ((iVar3 <= param_3->cursorPos[param_2]) || (param_3->cursorPos[param_2] < 0)) {
-    param_3->cursorPos[param_2] = 0;
-    param_3->startPos[param_2] = 0;
+  if ((iVar3 <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
   return;
 }
@@ -3822,14 +4045,16 @@ UI_OverrideCursorPos_Gametypes(int param_1,int param_2,listBoxDef_s *param_3,flo
 // 0073A6C0  UI_OverrideCursorPos_GameVariants  (ui_mp/ui_feeders_mp.cpp:3607)
 
 void __cdecl
-UI_OverrideCursorPos_GameVariants(int param_1,int param_2,listBoxDef_s *param_3,int param_4)
+UI_OverrideCursorPos_GameVariants
+          (int localClientNum,int contextIndex,listBoxDef_s *listPtr,int feederID)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int itemCount;
   
-  iVar3 = UI_FeederCount(param_1,param_2,(float)param_4,param_3);
+  iVar3 = UI_FeederCount(localClientNum,contextIndex,(float)feederID,listPtr);
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xe19,0,
                              "%s");
@@ -3839,9 +4064,9 @@ UI_OverrideCursorPos_GameVariants(int param_1,int param_2,listBoxDef_s *param_3,
       return;
     }
   }
-  if ((iVar3 <= param_3->cursorPos[param_2]) || (param_3->cursorPos[param_2] < 0)) {
-    param_3->cursorPos[param_2] = 0;
-    param_3->startPos[param_2] = 0;
+  if ((iVar3 <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
   return;
 }
@@ -3850,14 +4075,16 @@ UI_OverrideCursorPos_GameVariants(int param_1,int param_2,listBoxDef_s *param_3,
 // 0073A750  UI_OverrideCursorPos_ItemsInSlot  (ui_mp/ui_feeders_mp.cpp:3619)
 
 void __cdecl
-UI_OverrideCursorPos_ItemsInSlot(int param_1,int param_2,listBoxDef_s *param_3,int param_4)
+UI_OverrideCursorPos_ItemsInSlot
+          (int localClientNum,int contextIndex,listBoxDef_s *listPtr,int feederID)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int itemCount;
   
-  iVar3 = UI_FeederCount(param_1,param_2,(float)param_4,param_3);
+  iVar3 = UI_FeederCount(localClientNum,contextIndex,(float)feederID,listPtr);
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xe25,0,
                              "%s");
@@ -3867,9 +4094,9 @@ UI_OverrideCursorPos_ItemsInSlot(int param_1,int param_2,listBoxDef_s *param_3,i
       return;
     }
   }
-  if ((iVar3 <= param_3->cursorPos[param_2]) || (param_3->cursorPos[param_2] < 0)) {
-    param_3->cursorPos[param_2] = 0;
-    param_3->startPos[param_2] = 0;
+  if ((iVar3 <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
   return;
 }
@@ -3878,16 +4105,19 @@ UI_OverrideCursorPos_ItemsInSlot(int param_1,int param_2,listBoxDef_s *param_3,i
 // 0073A7E0  UI_OverrideCursorPos_Contracts  (ui_mp/ui_feeders_mp.cpp:3631)
 
 void __cdecl
-UI_OverrideCursorPos_Contracts(int param_1,int param_2,itemDef_s *param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_Contracts
+          (int localClientNum,int contextIndex,itemDef_s *item,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uiInfo_s *puVar4;
-  int iVar5;
+  int controllerIndex;
+  uiInfo_s *uiInfo;
+  int itemCount;
   
-  iVar3 = UI_FeederCount(param_1,param_2,68.0,param_4);
+  iVar3 = UI_FeederCount(localClientNum,contextIndex,68.0,listPtr);
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xe31,0,
                              "%s");
@@ -3897,13 +4127,13 @@ UI_OverrideCursorPos_Contracts(int param_1,int param_2,itemDef_s *param_3,listBo
       return;
     }
   }
-  if ((iVar3 <= param_4->cursorPos[param_2]) || (param_4->cursorPos[param_2] < 0)) {
-    param_4->cursorPos[param_2] = 0;
-    param_4->startPos[param_2] = 0;
+  if ((iVar3 <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
-  bVar2 = Window_HasFocus(param_2,&param_3->window);
+  bVar2 = Window_HasFocus(contextIndex,&item->window);
   if (bVar2) {
-    puVar4 = UI_UIContext_GetInfo(param_2);
+    puVar4 = UI_UIContext_GetInfo(contextIndex);
     if (puVar4 == (uiInfo_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_feeders_mp.cpp",0xe3d,0
                                ,"%s");
@@ -3913,9 +4143,9 @@ UI_OverrideCursorPos_Contracts(int param_1,int param_2,itemDef_s *param_3,listBo
         return;
       }
     }
-    iVar3 = param_4->cursorPos[param_2];
-    iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-    iVar3 = LiveContracts_GetContractIndexFromListIndex(iVar5,iVar3);
+    iVar3 = listPtr->cursorPos[contextIndex];
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    iVar3 = LiveContracts_GetContractIndexFromListIndex(controllerIndex,iVar3);
     puVar4->contractIndex = iVar3;
   }
   return;
@@ -3924,14 +4154,15 @@ UI_OverrideCursorPos_Contracts(int param_1,int param_2,itemDef_s *param_3,listBo
 
 // 0073A4D0  UI_Project_OverrideCursorPos  (ui_mp/ui_feeders_mp.cpp:3652)
 
-bool __cdecl UI_Project_OverrideCursorPos(int param_1,int param_2,itemDef_s *param_3)
+bool __cdecl UI_Project_OverrideCursorPos(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   bool bVar1;
-  listBoxDef_s *plVar2;
+  listBoxDef_s *listPtr_00;
+  listBoxDef_s *listPtr;
   
-  plVar2 = Item_GetListBoxDef(param_3);
-  switch((int)plVar2->special) {
+  listPtr_00 = Item_GetListBoxDef(item);
+  switch((int)listPtr_00->special) {
   case 0x23:
   case 0x24:
   case 0x25:
@@ -3941,7 +4172,8 @@ bool __cdecl UI_Project_OverrideCursorPos(int param_1,int param_2,itemDef_s *par
   case 0x2a:
   case 0x2b:
   case 0x2c:
-    UI_OverrideCursorPos_GameVariants(param_1,param_2,plVar2,(int)plVar2->special);
+    UI_OverrideCursorPos_GameVariants
+              (localClientNum,contextIndex,listPtr_00,(int)listPtr_00->special);
     bVar1 = true;
     break;
   default:
@@ -3949,7 +4181,7 @@ bool __cdecl UI_Project_OverrideCursorPos(int param_1,int param_2,itemDef_s *par
     break;
   case 0x30:
   case 0x68:
-    UI_OverrideCursorPos_Gametypes(param_1,param_2,plVar2,plVar2->special);
+    UI_OverrideCursorPos_Gametypes(localClientNum,contextIndex,listPtr_00,listPtr_00->special);
     bVar1 = true;
     break;
   case 0x31:
@@ -3962,21 +4194,22 @@ bool __cdecl UI_Project_OverrideCursorPos(int param_1,int param_2,itemDef_s *par
   case 0x4e:
   case 0x61:
   case 100:
-    UI_OverrideCursorPos_ItemsInSlot(param_1,param_2,plVar2,(int)plVar2->special);
+    UI_OverrideCursorPos_ItemsInSlot
+              (localClientNum,contextIndex,listPtr_00,(int)listPtr_00->special);
     bVar1 = true;
     break;
   case 0x33:
     bVar1 = true;
     break;
   case 0x37:
-    UI_OverrideCursorPos_FriendsStatsCompare(param_1,param_2,plVar2);
+    UI_OverrideCursorPos_FriendsStatsCompare(localClientNum,contextIndex,listPtr_00);
     bVar1 = true;
     break;
   case 0x3f:
     bVar1 = true;
     break;
   case 0x44:
-    UI_OverrideCursorPos_Contracts(param_1,param_2,param_3,plVar2);
+    UI_OverrideCursorPos_Contracts(localClientNum,contextIndex,item,listPtr_00);
     bVar1 = true;
   }
   return bVar1;
@@ -3985,14 +4218,15 @@ bool __cdecl UI_Project_OverrideCursorPos(int param_1,int param_2,itemDef_s *par
 
 // 0073A8F0  UI_FeederSelection_Maps  (ui_mp/ui_feeders_mp.cpp:3706)
 
-void __cdecl UI_FeederSelection_Maps(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_Maps(int contextIndex,float feederID,int index)
 
 {
-  char *pcVar1;
+  char *value;
+  char *mapLoadName;
   
-  pcVar1 = UI_GetMapLoadNameForCurrentIndex(param_3);
-  if ((-1 < param_3) && (param_3 < DAT_098b9e44)) {
-    Dvar_SetStringByName("ui_preview",pcVar1);
+  value = UI_GetMapLoadNameForCurrentIndex(index);
+  if ((-1 < index) && (index < DAT_098b9e44)) {
+    Dvar_SetStringByName("ui_preview",value);
   }
   return;
 }
@@ -4000,11 +4234,13 @@ void __cdecl UI_FeederSelection_Maps(int param_1,float param_2,int param_3)
 
 // 0073A930  UI_FeederSelection_CustomGametypes  (ui_mp/ui_feeders_mp.cpp:3723)
 
-void __cdecl UI_FeederSelection_CustomGametypes(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_CustomGametypes(int contextIndex,float feederID,int index)
 
 {
-  if ((-1 < param_3) && (param_3 < DAT_098b80bc)) {
-    Dvar_SetStringByName("ui_gametype",&DAT_098b80c0 + param_3 * 0x74);
+  int typeIndex;
+  
+  if ((-1 < index) && (index < DAT_098b80bc)) {
+    Dvar_SetStringByName("ui_gametype",&DAT_098b80c0 + index * 0x74);
   }
   return;
 }
@@ -4014,24 +4250,27 @@ void __cdecl UI_FeederSelection_CustomGametypes(int param_1,float param_2,int pa
 
 /* WARNING: Enum "eGameModes": Some values do not have unique names */
 
-void __cdecl UI_FeederSelection_GametypesBase(int param_1,int param_2,float param_3,int param_4)
+void __cdecl
+UI_FeederSelection_GametypesBase(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   bool bVar1;
   int iVar2;
   int local_c;
+  int realIndex;
   
-  if ((-1 < param_4) &&
-     (iVar2 = UI_FeederCount(param_1,param_2,param_3,(listBoxDef_s *)0x0), param_4 < iVar2)) {
+  if ((-1 < index) &&
+     (iVar2 = UI_FeederCount(localClientNum,contextIndex,feederID,(listBoxDef_s *)0x0),
+     index < iVar2)) {
     if ((xblive_basictraining->current).enabled != false) {
-      param_4 = UI_GetBasicTrainingGametypeIdForNum(param_4);
+      index = UI_GetBasicTrainingGametypeIdForNum(index);
     }
     bVar1 = Com_GameMode_IsGameMode(GAMEMODE_FIRST_PRIVATE_ONLINE_GAMEMODE);
     if (bVar1) {
-      local_c = param_4 + -1;
+      local_c = index + -1;
     }
     else {
-      local_c = param_4;
+      local_c = index;
     }
     if (-1 < local_c) {
       Dvar_SetStringByName("ui_preview",&DAT_098b80c0 + local_c * 0x74);
@@ -4043,19 +4282,21 @@ void __cdecl UI_FeederSelection_GametypesBase(int param_1,int param_2,float para
 
 // 0073AA10  UI_FeederSelection_GametypesInGame  (ui_mp/ui_feeders_mp.cpp:3760)
 
-void __cdecl UI_FeederSelection_GametypesInGame(int param_1,int param_2,float param_3,int param_4)
+void __cdecl
+UI_FeederSelection_GametypesInGame(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   int iVar1;
   
-  if ((-1 < param_4) &&
-     (iVar1 = UI_FeederCount(param_1,param_2,param_3,(listBoxDef_s *)0x0), param_4 < iVar1)) {
+  if ((-1 < index) &&
+     (iVar1 = UI_FeederCount(localClientNum,contextIndex,feederID,(listBoxDef_s *)0x0),
+     index < iVar1)) {
     if ((xblive_basictraining->current).enabled != false) {
-      iVar1 = UI_GetBasicTrainingGametypeIdForNum(param_4);
-      param_4 = iVar1 + 1;
+      iVar1 = UI_GetBasicTrainingGametypeIdForNum(index);
+      index = iVar1 + 1;
     }
     Dvar_SetIntByName("ui_preview_gt_idx",1);
-    Dvar_SetStringByName("ui_preview_gt",&DAT_098b80c0 + param_4 * 0x74);
+    Dvar_SetStringByName("ui_preview_gt",&DAT_098b80c0 + index * 0x74);
   }
   return;
 }
@@ -4063,14 +4304,20 @@ void __cdecl UI_FeederSelection_GametypesInGame(int param_1,int param_2,float pa
 
 // 0073AA90  UI_Project_FeederSelection  (ui_mp/ui_feeders_mp.cpp:3928)
 
-void __cdecl UI_Project_FeederSelection(int param_1,int param_2,float param_3,int param_4)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+UI_Project_FeederSelection(int localClientNum,int contextIndex,float feederID,int index)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
+  uiInfo_s *dc;
+  int value;
   int local_8;
   
-  switch((int)param_3) {
+  switch((int)feederID) {
   case 0x23:
   case 0x24:
   case 0x25:
@@ -4080,7 +4327,7 @@ void __cdecl UI_Project_FeederSelection(int param_1,int param_2,float param_3,in
   case 0x2a:
   case 0x2b:
   case 0x2c:
-    UI_FeederSelection_GameVariants(param_1,param_2,param_3,param_4);
+    UI_FeederSelection_GameVariants(localClientNum,contextIndex,feederID,index);
     break;
   case 0x31:
   case 0x3a:
@@ -4090,35 +4337,35 @@ void __cdecl UI_Project_FeederSelection(int param_1,int param_2,float param_3,in
   case 0x43:
   case 0x61:
   case 100:
-    DAT_098c38f8 = BG_UnlockablesGetItemIndexInSlot(param_4);
-    DAT_098c38fc = param_4;
+    DAT_098c38f8 = BG_UnlockablesGetItemIndexInSlot(index);
+    DAT_098c38fc = index;
     break;
   case 0x39:
     DAT_098c3910 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint
-                             (DAT_098c38f8,param_4,(attachmentFilter->current).integer);
+                             (DAT_098c38f8,index,(attachmentFilter->current).integer);
     break;
   case 0x3d:
     local_8 = 0;
-    if (param_4 != 0) {
-      local_8 = BG_UnlockablesGetItemIndexInSlot(param_4 + -1);
+    if (index != 0) {
+      local_8 = BG_UnlockablesGetItemIndexInSlot(index + -1);
     }
     DAT_098c38f8 = local_8;
     UI_Gametype_Custom_ResolveNumKillsConflicts();
     break;
   case 0x47:
-    puVar1 = UI_UIContext_GetInfo(param_2);
-    UI_AnimateItem(param_1,&puVar1->uiDC,"match_performance_histogram","histogram_component",
+    dc = UI_UIContext_GetInfo(contextIndex);
+    UI_AnimateItem(localClientNum,&dc->uiDC,"match_performance_histogram","histogram_component",
                    "change",200);
-    iVar2 = LiveCombatRecord_GetGameTypeLbIndex(param_4);
-    Dvar_SetInt(ui_combatHistogramCurrGametype,iVar2);
+    value = LiveCombatRecord_GetGameTypeLbIndex(index);
+    Dvar_SetInt(ui_combatHistogramCurrGametype,value);
   case 0x30:
-    UI_FeederSelection_GametypesBase(param_1,param_2,param_3,param_4);
+    UI_FeederSelection_GametypesBase(localClientNum,contextIndex,feederID,index);
     break;
   case 0x67:
-    Dvar_SetInt(custom_killstreak_numkills,CustomKillstreakNums[param_4]);
+    Dvar_SetInt(custom_killstreak_numkills,CustomKillstreakNums[index]);
     break;
   case 0x68:
-    UI_FeederSelection_GametypesInGame(param_1,param_2,param_3,param_4);
+    UI_FeederSelection_GametypesInGame(localClientNum,contextIndex,feederID,index);
   }
   return;
 }
@@ -4128,23 +4375,23 @@ void __cdecl UI_Project_FeederSelection(int param_1,int param_2,float param_3,in
 
 bool __cdecl
 UI_FeederDataExtended_FriendsStatsCompare
-          (int param_1,int param_2,char *param_3,char **param_4,float *param_5)
+          (int controllerIndex,int index,char *field,char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
   
-  *param_4 = (char *)0x0;
-  iVar2 = I_stricmp(param_3,"xuid");
-  if ((iVar2 == 0) && (bVar1 = Friends_GetByIndex(param_1,0,param_2,&info), bVar1)) {
+  *stringResult = (char *)0x0;
+  iVar2 = I_stricmp(field,"xuid");
+  if ((iVar2 == 0) && (bVar1 = Friends_GetByIndex(controllerIndex,0,index,&info), bVar1)) {
     pcVar3 = va("%lld");
-    *param_4 = pcVar3;
+    *stringResult = pcVar3;
     return true;
   }
-  iVar2 = I_stricmp(param_3,"name");
-  if ((iVar2 == 0) && (bVar1 = Friends_GetByIndex(param_1,0,param_2,&info), bVar1)) {
-    *param_4 = info.name;
+  iVar2 = I_stricmp(field,"name");
+  if ((iVar2 == 0) && (bVar1 = Friends_GetByIndex(controllerIndex,0,index,&info), bVar1)) {
+    *stringResult = info.name;
     return true;
   }
   return false;
@@ -4160,74 +4407,81 @@ UI_FeederDataExtended_FriendsStatsCompare
 
 bool __cdecl
 UI_FeederDataExtended_InGamePlayers
-          (int param_1,int param_2,int param_3,char *param_4,char **param_5,float *param_6)
+          (int controllerIndex,int index,int feederType,char *field,char **stringResult,
+          float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
   cg_s *pcVar3;
   char *pcVar4;
-  int local_24;
-  int local_18;
-  int local_8;
+  int countIndex;
+  int a_count;
+  int team_2;
+  int numClients;
+  int team;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int clientIndex;
   
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
   pcVar3 = CG_GetLocalClientGlobals(iVar2);
-  if (((pcVar3 == (cg_s *)0x0) || (param_2 < 0)) || (0x1f < param_2)) {
+  if (((pcVar3 == (cg_s *)0x0) || (index < 0)) || (0x1f < index)) {
     bVar1 = false;
   }
   else {
-    param_2 = param_2 + 1;
-    switch(param_3) {
+    index = index + 1;
+    switch(feederType) {
     case 0x69:
     case 0x6a:
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             (((*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-               (*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) !=
-                (param_3 == 0x69) + 1)) || (param_2 = param_2 + -1, param_2 != 0))))) {
-        local_8 = local_8 + 1;
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             (((*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+               (*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) !=
+                (feederType == 0x69) + 1)) || (index = index + -1, index != 0))))) {
+        clientIndex = clientIndex + 1;
       }
       break;
     case 0x6b:
     case 0x6c:
-      local_18 = 0;
-      for (local_24 = 0; local_24 < 0x20; local_24 = local_24 + 1) {
-        if (*(int *)((int)(pcVar3->bgs).clientinfo + local_24 * 0x5c8) != 0) {
-          local_18 = local_18 + 1;
+      numClients = 0;
+      for (countIndex = 0; countIndex < 0x20; countIndex = countIndex + 1) {
+        if (*(int *)((int)(pcVar3->bgs).clientinfo + countIndex * 0x5c8) != 0) {
+          numClients = numClients + 1;
         }
       }
-      iVar2 = (int)ROUND((float)local_18 * 0.5 + 0.5);
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             (((*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-               (*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) != 0)) ||
-              ((((param_3 != 0x6b || (iVar2 <= local_8)) && ((param_3 != 0x6c || (local_8 < iVar2)))
-                ) || (param_2 = param_2 + -1, param_2 != 0))))))) {
-        local_8 = local_8 + 1;
+      iVar2 = (int)ROUND((float)numClients * 0.5 + 0.5);
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             (((*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+               (*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) != 0)) ||
+              ((((feederType != 0x6b || (iVar2 <= clientIndex)) &&
+                ((feederType != 0x6c || (clientIndex < iVar2)))) || (index = index + -1, index != 0)
+               )))))) {
+        clientIndex = clientIndex + 1;
       }
     }
-    if (local_8 < 0x20) {
-      iVar2 = I_stricmp(param_4,"xuid");
+    if (clientIndex < 0x20) {
+      iVar2 = I_stricmp(field,"xuid");
       if (iVar2 == 0) {
-        if ((*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x50) == 0 &&
-             *(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x54) == 0) ||
-           (((*(uint *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x50) & 0xffff0000) ==
-             0xffff0000 && (*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x54) == -1))
-           )) {
+        if ((*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x50) == 0 &&
+             *(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x54) == 0) ||
+           (((*(uint *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x50) & 0xffff0000) ==
+             0xffff0000 &&
+            (*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x54) == -1)))) {
           pcVar4 = va("0");
-          *param_5 = pcVar4;
+          *stringResult = pcVar4;
         }
         else {
           pcVar4 = va("%lld");
-          *param_5 = pcVar4;
+          *stringResult = pcVar4;
         }
         bVar1 = true;
       }
       else {
-        iVar2 = I_stricmp(param_4,"name");
+        iVar2 = I_stricmp(field,"name");
         if (iVar2 == 0) {
-          *param_5 = (char *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0xc);
+          *stringResult = (char *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0xc);
           bVar1 = true;
         }
         else {
@@ -4249,26 +4503,28 @@ UI_FeederDataExtended_InGamePlayers
 
 bool __cdecl
 UI_FeederDataExtended_AARScoreboard
-          (int param_1,int param_2,int param_3,char *param_4,char **param_5,float *param_6)
+          (int controllerIndex,int index,int feederType,char *field,char **stringResult,
+          float *floatResult)
 
 {
   bool bVar1;
+  int localClientNum_00;
   int iVar2;
-  int iVar3;
-  char *pcVar4;
+  char *pcVar3;
+  int localClientNum;
   
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  iVar3 = I_stricmp(param_4,"xuid");
-  if (iVar3 == 0) {
-    pcVar4 = CG_GetMatchScoreboardInfo(iVar2,0,param_2,TEAM_NUM_TEAMS);
-    *param_5 = pcVar4;
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  iVar2 = I_stricmp(field,"xuid");
+  if (iVar2 == 0) {
+    pcVar3 = CG_GetMatchScoreboardInfo(localClientNum_00,0,index,TEAM_NUM_TEAMS);
+    *stringResult = pcVar3;
     bVar1 = true;
   }
   else {
-    iVar3 = I_stricmp(param_4,"name");
-    if (iVar3 == 0) {
-      pcVar4 = CG_GetMatchScoreboardInfo(iVar2,4,param_2,TEAM_NUM_TEAMS);
-      *param_5 = pcVar4;
+    iVar2 = I_stricmp(field,"name");
+    if (iVar2 == 0) {
+      pcVar3 = CG_GetMatchScoreboardInfo(localClientNum_00,4,index,TEAM_NUM_TEAMS);
+      *stringResult = pcVar3;
       bVar1 = true;
     }
     else {
@@ -4281,10 +4537,15 @@ UI_FeederDataExtended_AARScoreboard
 
 // 0073AC70  UI_Project_FeederDataExtended  (ui_mp/ui_feeders_mp.cpp:4432)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 bool __cdecl
 UI_Project_FeederDataExtended
-          (int param_1,int param_2,int param_3,listBoxDef_s *param_4,char *param_5,char **param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,int feederID,listBoxDef_s *listBox,char *field,
+          char **stringResult,float *floatResult)
 
 {
   int iVar1;
@@ -4292,17 +4553,18 @@ UI_Project_FeederDataExtended
   bool local_b;
   bool local_a;
   bool local_9;
+  int index;
   
-  iVar1 = param_4->cursorPos[param_2];
-  switch(param_3) {
+  iVar1 = listBox->cursorPos[contextIndex];
+  switch(feederID) {
   case 3:
-    iVar1 = I_stricmp(param_5,"xuid");
+    iVar1 = I_stricmp(field,"xuid");
     if (iVar1 == 0) {
       local_9 = true;
       local_b = local_9;
     }
     else {
-      iVar1 = I_stricmp(param_5,"name");
+      iVar1 = I_stricmp(field,"name");
       if (iVar1 == 0) {
         local_9 = true;
         local_b = local_9;
@@ -4317,13 +4579,13 @@ UI_Project_FeederDataExtended
     local_b = false;
     break;
   case 0x33:
-    iVar1 = I_stricmp(param_5,"xuid");
+    iVar1 = I_stricmp(field,"xuid");
     if (iVar1 == 0) {
       local_a = true;
       local_b = local_a;
     }
     else {
-      iVar1 = I_stricmp(param_5,"name");
+      iVar1 = I_stricmp(field,"name");
       if (iVar1 == 0) {
         local_a = true;
         local_b = local_a;
@@ -4335,16 +4597,17 @@ UI_Project_FeederDataExtended
     }
     break;
   case 0x37:
-    local_b = UI_FeederDataExtended_FriendsStatsCompare(param_1,iVar1,param_5,param_6,param_7);
+    local_b = UI_FeederDataExtended_FriendsStatsCompare
+                        (controllerIndex,iVar1,field,stringResult,floatResult);
     break;
   case 0x38:
-    iVar1 = I_stricmp(param_5,"xuid");
+    iVar1 = I_stricmp(field,"xuid");
     if (iVar1 == 0) {
       local_c = true;
       local_b = local_c;
     }
     else {
-      iVar1 = I_stricmp(param_5,"name");
+      iVar1 = I_stricmp(field,"name");
       if (iVar1 == 0) {
         local_c = true;
         local_b = local_c;
@@ -4356,12 +4619,12 @@ UI_Project_FeederDataExtended
     }
     break;
   case 0x3f:
-    iVar1 = I_stricmp(param_5,"xuid");
+    iVar1 = I_stricmp(field,"xuid");
     if (iVar1 == 0) {
       local_b = true;
     }
     else {
-      iVar1 = I_stricmp(param_5,"name");
+      iVar1 = I_stricmp(field,"name");
       if (iVar1 == 0) {
         local_b = true;
       }
@@ -4372,13 +4635,15 @@ UI_Project_FeederDataExtended
     break;
   case 0x52:
   case 0x53:
-    local_b = UI_FeederDataExtended_AARScoreboard(param_1,iVar1,param_3,param_5,param_6,param_7);
+    local_b = UI_FeederDataExtended_AARScoreboard
+                        (controllerIndex,iVar1,feederID,field,stringResult,floatResult);
     break;
   case 0x69:
   case 0x6a:
   case 0x6b:
   case 0x6c:
-    local_b = UI_FeederDataExtended_InGamePlayers(param_1,iVar1,param_3,param_5,param_6,param_7);
+    local_b = UI_FeederDataExtended_InGamePlayers
+                        (controllerIndex,iVar1,feederID,field,stringResult,floatResult);
   }
   return local_b;
 }
@@ -4387,14 +4652,14 @@ UI_Project_FeederDataExtended
 // 0073B2B0  UI_FeederBackColor  (ui_mp/ui_feeders_mp.cpp:4464)
 
 void __cdecl
-UI_FeederBackColor(int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,
-                  float *param_6)
+UI_FeederBackColor(int localClientNum,int contextIndex,itemDef_s *item,float feederID,int index,
+                  float *color)
 
 {
-  *param_6 = (param_3->window).backColor[0];
-  param_6[1] = (param_3->window).backColor[1];
-  param_6[2] = (param_3->window).backColor[2];
-  param_6[3] = (param_3->window).backColor[3];
+  *color = (item->window).backColor[0];
+  color[1] = (item->window).backColor[1];
+  color[2] = (item->window).backColor[2];
+  color[3] = (item->window).backColor[3];
   return;
 }
 

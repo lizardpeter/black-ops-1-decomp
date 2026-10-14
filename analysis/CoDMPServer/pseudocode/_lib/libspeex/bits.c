@@ -130,7 +130,7 @@ void __cdecl speex_bits_pack(int *param_1,uint param_2,int param_3)
 {
   int iVar1;
   void *pvVar2;
-  int iVar3;
+  int size;
   
   iVar1 = param_3;
   if (param_1[6] <= (param_1[3] + param_3 >> 3) + param_1[2]) {
@@ -139,14 +139,14 @@ void __cdecl speex_bits_pack(int *param_1,uint param_2,int param_3)
       speex_warning("Do not own input buffer: not packing");
       return;
     }
-    iVar3 = (param_1[6] + 5) * 3 >> 1;
-    pvVar2 = speex_realloc((void *)*param_1,iVar3);
+    size = (param_1[6] + 5) * 3 >> 1;
+    pvVar2 = speex_realloc((void *)*param_1,size);
     if (pvVar2 == (void *)0x0) {
       speex_warning("Could not resize input buffer: not packing");
       return;
     }
-    speex_memset_bytes(pvVar2,0,iVar3);
-    param_1[6] = iVar3;
+    speex_memset_bytes(pvVar2,0,size);
+    param_1[6] = size;
     *param_1 = (int)pvVar2;
   }
   for (; param_3 != 0; param_3 = param_3 + -1) {

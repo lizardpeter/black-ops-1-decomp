@@ -2,45 +2,46 @@
 
 // 00789260  Com_SwapHullPoints  (universal/com_convexhull.cpp:9)
 
-void __cdecl Com_SwapHullPoints(uint *param_1,uint param_2,uint param_3)
+void __cdecl Com_SwapHullPoints(uint *pointOrder,uint pointIndex0,uint pointIndex1)
 
 {
   uint uVar1;
+  uint swapCache;
   
-  uVar1 = param_1[param_2];
-  param_1[param_2] = param_1[param_3];
-  param_1[param_3] = uVar1;
+  uVar1 = pointOrder[pointIndex0];
+  pointOrder[pointIndex0] = pointOrder[pointIndex1];
+  pointOrder[pointIndex1] = uVar1;
   return;
 }
 
 
 // 00789130  Com_InitialHull  (universal/com_convexhull.cpp:19)
 
-void __cdecl Com_InitialHull(float (*param_1) [2],uint *param_2,uint param_3,uint *param_4)
+void __cdecl Com_InitialHull(float (*points) [2],uint *pointOrder,uint pointCount,uint *hullOrder)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint maxIndex;
+  uint pointIndex;
+  uint minIndex;
   
-  local_8 = 0;
-  local_10 = 0;
-  *param_2 = 0;
-  for (local_c = 1; local_c < param_3; local_c = local_c + 1) {
-    param_2[local_c] = local_c;
-    if (param_1[local_c][1] < param_1[local_10][1]) {
-      if (param_1[local_c][1] <= param_1[local_8][1] && param_1[local_8][1] != param_1[local_c][1])
-      {
-        local_8 = local_c;
+  minIndex = 0;
+  maxIndex = 0;
+  *pointOrder = 0;
+  for (pointIndex = 1; pointIndex < pointCount; pointIndex = pointIndex + 1) {
+    pointOrder[pointIndex] = pointIndex;
+    if (points[pointIndex][1] < points[maxIndex][1]) {
+      if (points[pointIndex][1] <= points[minIndex][1] &&
+          points[minIndex][1] != points[pointIndex][1]) {
+        minIndex = pointIndex;
       }
     }
     else {
-      local_10 = local_c;
+      maxIndex = pointIndex;
     }
   }
-  if (local_8 == local_10) {
+  if (minIndex == maxIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",0x24
                              ,1,"%s");
     if (!bVar2) {
@@ -49,15 +50,15 @@ void __cdecl Com_InitialHull(float (*param_1) [2],uint *param_2,uint param_3,uin
       return;
     }
   }
-  *param_4 = local_8;
-  param_4[1] = local_10;
-  if (local_10 < local_8) {
-    Com_SwapHullPoints(param_2,local_8,param_3 - 1);
-    Com_SwapHullPoints(param_2,local_10,param_3 - 2);
+  *hullOrder = minIndex;
+  hullOrder[1] = maxIndex;
+  if (maxIndex < minIndex) {
+    Com_SwapHullPoints(pointOrder,minIndex,pointCount - 1);
+    Com_SwapHullPoints(pointOrder,maxIndex,pointCount - 2);
   }
   else {
-    Com_SwapHullPoints(param_2,local_10,param_3 - 1);
-    Com_SwapHullPoints(param_2,local_8,param_3 - 2);
+    Com_SwapHullPoints(pointOrder,maxIndex,pointCount - 1);
+    Com_SwapHullPoints(pointOrder,minIndex,pointCount - 2);
   }
   return;
 }
@@ -65,14 +66,14 @@ void __cdecl Com_InitialHull(float (*param_1) [2],uint *param_2,uint param_3,uin
 
 // 00789750  Com_AddPointToHull  (universal/com_convexhull.cpp:57)
 
-uint __cdecl Com_AddPointToHull(uint param_1,uint param_2,uint *param_3,uint param_4)
+uint __cdecl Com_AddPointToHull(uint pointIndex,uint newIndex,uint *hullOrder,uint hullPointCount)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_4 < param_2) &&
+  if ((hullPointCount < newIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0x3a,0,"newIndex not in [0, hullPointCount]\n\t%i not in [%i, %i]"),
      !bVar2)) {
@@ -80,9 +81,10 @@ uint __cdecl Com_AddPointToHull(uint param_1,uint param_2,uint *param_3,uint par
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  memmove((uchar *)(param_3 + param_2 + 1),(uchar *)(param_3 + param_2),(param_4 - param_2) * 4);
-  param_3[param_2] = param_1;
-  return param_4 + 1;
+  memmove((uchar *)(hullOrder + newIndex + 1),(uchar *)(hullOrder + newIndex),
+          (hullPointCount - newIndex) * 4);
+  hullOrder[newIndex] = pointIndex;
+  return hullPointCount + 1;
 }
 
 
@@ -90,255 +92,264 @@ uint __cdecl Com_AddPointToHull(uint param_1,uint param_2,uint *param_3,uint par
 
 uint __cdecl
 Com_RecursivelyGrowHull
-          (float (*param_1) [2],uint *param_2,uint param_3,uint param_4,uint param_5,uint *param_6,
-          uint param_7)
+          (float (*points) [2],uint *pointOrder,uint pointCount,uint firstIndex,uint secondIndex,
+          uint *hullOrder,uint hullPointCount)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  float local_24;
+  float edgeEq;
   float local_20;
   float local_1c;
-  float local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  float local_8;
+  float dist;
+  int topIndex;
+  int botIndex;
+  int frontIndex;
+  float frontDist;
   
-  if ((param_3 == 0) &&
+  if ((pointCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0x4b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_5 != param_4 + 1) &&
-     (((param_4 != param_7 - 1 || (param_5 != 0)) &&
+  if ((secondIndex != firstIndex + 1) &&
+     (((firstIndex != hullPointCount - 1 || (secondIndex != 0)) &&
       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                 0x4c,0,"%s"), !bVar2)))) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_24 = param_1[param_6[param_4]][1] - param_1[param_6[param_5]][1];
-  local_20 = param_1[param_6[param_5]][0] - param_1[param_6[param_4]][0];
-  Vec2Normalize(&local_24);
-  local_1c = local_24 * param_1[param_6[param_4]][0] + local_20 * param_1[param_6[param_4]][1];
-  local_8 = 0.001;
-  local_c = 0xffffffff;
-  for (local_10 = 0; local_14 = param_3 - 1, (int)local_10 <= (int)local_14; local_10 = local_10 + 1
-      ) {
-    while (local_18 = (local_24 * param_1[param_2[local_10]][0] +
-                      local_20 * param_1[param_2[local_10]][1]) - local_1c, 0.0 < local_18) {
-      if (local_8 < local_18) {
-        local_c = local_10;
-        local_8 = local_18;
+  edgeEq = points[hullOrder[firstIndex]][1] - points[hullOrder[secondIndex]][1];
+  local_20 = points[hullOrder[secondIndex]][0] - points[hullOrder[firstIndex]][0];
+  Vec2Normalize(&edgeEq);
+  local_1c = edgeEq * points[hullOrder[firstIndex]][0] + local_20 * points[hullOrder[firstIndex]][1]
+  ;
+  frontDist = 0.001;
+  frontIndex = -1;
+  for (botIndex = 0; topIndex = pointCount - 1, botIndex <= topIndex; botIndex = botIndex + 1) {
+    while (dist = (edgeEq * points[pointOrder[botIndex]][0] +
+                  local_20 * points[pointOrder[botIndex]][1]) - local_1c, 0.0 < dist) {
+      if (frontDist < dist) {
+        frontIndex = botIndex;
+        frontDist = dist;
       }
-      local_10 = local_10 + 1;
-      if ((int)local_14 < (int)local_10) goto LAB_00789a81;
+      botIndex = botIndex + 1;
+      if (topIndex < botIndex) goto LAB_00789a81;
     }
-    if (((int)local_14 < (int)local_10) &&
+    if ((topIndex < botIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                  0x66,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    while (local_18 = (local_24 * param_1[param_2[local_14]][0] +
-                      local_20 * param_1[param_2[local_14]][1]) - local_1c, local_18 <= 0.0) {
-      local_14 = local_14 - 1;
-      if ((int)local_14 < (int)local_10) goto LAB_00789a81;
+    while (dist = (edgeEq * points[pointOrder[topIndex]][0] +
+                  local_20 * points[pointOrder[topIndex]][1]) - local_1c, dist <= 0.0) {
+      topIndex = topIndex + -1;
+      if (topIndex < botIndex) goto LAB_00789a81;
     }
-    if (local_8 < local_18) {
-      local_c = local_10;
-      local_8 = local_18;
+    if (frontDist < dist) {
+      frontIndex = botIndex;
+      frontDist = dist;
     }
-    if (((int)local_14 <= (int)local_10) &&
+    if ((topIndex <= botIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                  0x78,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    Com_SwapHullPoints(param_2,local_10,local_14);
-    param_3 = local_14;
+    Com_SwapHullPoints(pointOrder,botIndex,topIndex);
+    pointCount = topIndex;
   }
 LAB_00789a81:
-  if ((local_14 != local_10 - 1) &&
+  if ((topIndex != botIndex + -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0x80,1,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (((int)local_14 < (int)local_c) &&
+  if ((topIndex < frontIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0x81,1,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (-1 < (int)local_c) {
-    Com_SwapHullPoints(param_2,local_c,local_14);
-    param_7 = Com_AddPointToHull(param_2[local_14],param_4 + 1,param_6,param_7);
-    if (local_14 != 0) {
-      if (param_5 != 0) {
-        param_5 = param_4 + 2;
+  if (-1 < frontIndex) {
+    Com_SwapHullPoints(pointOrder,frontIndex,topIndex);
+    hullPointCount =
+         Com_AddPointToHull(pointOrder[topIndex],firstIndex + 1,hullOrder,hullPointCount);
+    if (topIndex != 0) {
+      if (secondIndex != 0) {
+        secondIndex = firstIndex + 2;
       }
-      uVar3 = Com_RecursivelyGrowHull(param_1,param_2,local_14,param_4 + 1,param_5,param_6,param_7);
-      param_7 = Com_RecursivelyGrowHull(param_1,param_2,local_14,param_4,param_4 + 1,param_6,uVar3);
+      uVar3 = Com_RecursivelyGrowHull
+                        (points,pointOrder,topIndex,firstIndex + 1,secondIndex,hullOrder,
+                         hullPointCount);
+      hullPointCount =
+           Com_RecursivelyGrowHull
+                     (points,pointOrder,topIndex,firstIndex,firstIndex + 1,hullOrder,uVar3);
     }
   }
-  return param_7;
+  return hullPointCount;
 }
 
 
 // 007892A0  Com_GrowInitialHull  (universal/com_convexhull.cpp:157)
 
-uint __cdecl Com_GrowInitialHull(float (*param_1) [2],uint *param_2,uint param_3,uint *param_4)
+uint __cdecl
+Com_GrowInitialHull(float (*points) [2],uint *pointOrder,uint pointCount,uint *hullOrder)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  float local_30;
+  float edgeEq;
   float local_2c;
   float local_28;
-  float local_24;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  float local_14;
-  uint local_10;
-  float local_c;
-  uint local_8;
+  float dist;
+  int botIndex;
+  int topIndex;
+  int frontIndex;
+  float backDist;
+  int backIndex;
+  float frontDist;
+  uint hullPointCount;
   
-  if ((param_3 == 0) &&
+  if ((pointCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0xa8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_30 = param_1[param_4[1]][1] - param_1[*param_4][1];
-  local_2c = param_1[*param_4][0] - param_1[param_4[1]][0];
-  Vec2Normalize(&local_30);
-  local_28 = local_30 * param_1[*param_4][0] + local_2c * param_1[*param_4][1];
-  local_c = 0.001;
-  local_18 = 0xffffffff;
-  local_14 = -0.001;
-  local_10 = 0xffffffff;
-  local_1c = param_3;
-  for (local_20 = 0; local_1c = local_1c - 1, (int)local_20 <= (int)local_1c;
-      local_20 = local_20 + 1) {
-    while (local_24 = (local_30 * param_1[param_2[local_20]][0] +
-                      local_2c * param_1[param_2[local_20]][1]) - local_28, 0.0 <= local_24) {
-      if (local_c < local_24) {
-        local_18 = local_20;
-        local_c = local_24;
+  edgeEq = points[hullOrder[1]][1] - points[*hullOrder][1];
+  local_2c = points[*hullOrder][0] - points[hullOrder[1]][0];
+  Vec2Normalize(&edgeEq);
+  local_28 = edgeEq * points[*hullOrder][0] + local_2c * points[*hullOrder][1];
+  frontDist = 0.001;
+  frontIndex = -1;
+  backDist = -0.001;
+  backIndex = -1;
+  topIndex = pointCount;
+  for (botIndex = 0; topIndex = topIndex - 1, botIndex <= topIndex; botIndex = botIndex + 1) {
+    while (dist = (edgeEq * points[pointOrder[botIndex]][0] +
+                  local_2c * points[pointOrder[botIndex]][1]) - local_28, 0.0 <= dist) {
+      if (frontDist < dist) {
+        frontIndex = botIndex;
+        frontDist = dist;
       }
-      local_20 = local_20 + 1;
-      if ((int)local_1c < (int)local_20) goto LAB_00789564;
+      botIndex = botIndex + 1;
+      if (topIndex < botIndex) goto LAB_00789564;
     }
-    if (local_24 < local_14) {
-      local_10 = local_20;
-      local_14 = local_24;
+    if (dist < backDist) {
+      backIndex = botIndex;
+      backDist = dist;
     }
-    if (((int)local_1c < (int)local_20) &&
+    if ((topIndex < botIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                  0xcc,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    while (local_24 = (local_30 * param_1[param_2[local_1c]][0] +
-                      local_2c * param_1[param_2[local_1c]][1]) - local_28, local_24 <= 0.0) {
-      if (local_24 < local_14) {
-        local_10 = local_1c;
-        local_14 = local_24;
+    while (dist = (edgeEq * points[pointOrder[topIndex]][0] +
+                  local_2c * points[pointOrder[topIndex]][1]) - local_28, dist <= 0.0) {
+      if (dist < backDist) {
+        backIndex = topIndex;
+        backDist = dist;
       }
-      local_1c = local_1c - 1;
-      if ((int)local_1c < (int)local_20) goto LAB_00789564;
+      topIndex = topIndex + -1;
+      if (topIndex < botIndex) goto LAB_00789564;
     }
-    if (local_c < local_24) {
-      local_18 = local_20;
-      local_c = local_24;
+    if (frontDist < dist) {
+      frontIndex = botIndex;
+      frontDist = dist;
     }
-    if (((int)local_1c <= (int)local_20) &&
+    if ((topIndex <= botIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                  0xe3,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    Com_SwapHullPoints(param_2,local_20,local_1c);
-    if (local_10 == local_20) {
-      local_10 = local_1c;
+    Com_SwapHullPoints(pointOrder,botIndex,topIndex);
+    if (backIndex == botIndex) {
+      backIndex = topIndex;
     }
   }
 LAB_00789564:
-  if ((local_1c != local_20 - 1) &&
+  if ((topIndex != botIndex + -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                                0xed,1,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (((int)local_18 < 0) && ((int)local_10 < 0)) {
-    local_8 = 0;
+  if ((frontIndex < 0) && (backIndex < 0)) {
+    hullPointCount = 0;
   }
   else {
-    local_8 = 2;
-    if (-1 < (int)local_18) {
-      if (((int)local_1c < (int)local_18) &&
+    hullPointCount = 2;
+    if (-1 < frontIndex) {
+      if ((topIndex < frontIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp"
                                    ,0xf5,1,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      Com_SwapHullPoints(param_2,local_18,local_1c);
-      local_8 = Com_AddPointToHull(param_2[local_1c],2,param_4,local_8);
-      if (0 < (int)local_1c) {
-        local_8 = Com_RecursivelyGrowHull(param_1,param_2,local_1c,2,0,param_4,local_8);
-        local_8 = Com_RecursivelyGrowHull(param_1,param_2,local_1c,1,2,param_4,local_8);
+      Com_SwapHullPoints(pointOrder,frontIndex,topIndex);
+      hullPointCount = Com_AddPointToHull(pointOrder[topIndex],2,hullOrder,hullPointCount);
+      if (0 < topIndex) {
+        hullPointCount =
+             Com_RecursivelyGrowHull(points,pointOrder,topIndex,2,0,hullOrder,hullPointCount);
+        hullPointCount =
+             Com_RecursivelyGrowHull(points,pointOrder,topIndex,1,2,hullOrder,hullPointCount);
       }
     }
-    if (-1 < (int)local_10) {
-      if (((int)local_10 < (int)local_20) &&
+    if (-1 < backIndex) {
+      if ((backIndex < botIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp"
                                    ,0x103,1,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      Com_SwapHullPoints(param_2,local_10,local_20);
-      local_8 = Com_AddPointToHull(param_2[local_20],1,param_4,local_8);
-      if (param_3 != local_20 + 1) {
-        local_8 = Com_RecursivelyGrowHull
-                            (param_1,param_2 + local_20 + 1,param_3 - (local_20 + 1),1,2,param_4,
-                             local_8);
-        local_8 = Com_RecursivelyGrowHull
-                            (param_1,param_2 + local_20 + 1,param_3 - (local_20 + 1),0,1,param_4,
-                             local_8);
+      Com_SwapHullPoints(pointOrder,backIndex,botIndex);
+      hullPointCount = Com_AddPointToHull(pointOrder[botIndex],1,hullOrder,hullPointCount);
+      if (pointCount != botIndex + 1U) {
+        hullPointCount =
+             Com_RecursivelyGrowHull
+                       (points,pointOrder + botIndex + 1,pointCount - (botIndex + 1),1,2,hullOrder,
+                        hullPointCount);
+        hullPointCount =
+             Com_RecursivelyGrowHull
+                       (points,pointOrder + botIndex + 1,pointCount - (botIndex + 1),0,1,hullOrder,
+                        hullPointCount);
       }
     }
   }
-  return local_8;
+  return hullPointCount;
 }
 
 
 // 00789BA0  Com_TranslatePoints  (universal/com_convexhull.cpp:274)
 
-void __cdecl Com_TranslatePoints(float (*param_1) [2],uint param_2,float *param_3)
+void __cdecl Com_TranslatePoints(float (*points) [2],uint pointCount,float *offset)
 
 {
-  uint local_8;
+  uint pointIdx;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    param_1[local_8][0] = param_1[local_8][0] + *param_3;
-    param_1[local_8][1] = param_1[local_8][1] + param_3[1];
+  for (pointIdx = 0; pointIdx < pointCount; pointIdx = pointIdx + 1) {
+    points[pointIdx][0] = points[pointIdx][0] + *offset;
+    points[pointIdx][1] = points[pointIdx][1] + offset[1];
   }
   return;
 }
@@ -346,20 +357,20 @@ void __cdecl Com_TranslatePoints(float (*param_1) [2],uint param_2,float *param_
 
 // 00788F70  Com_ConvexHull  (universal/com_convexhull.cpp:287)
 
-uint __cdecl Com_ConvexHull(float (*param_1) [2],uint param_2,float (*param_3) [2])
+uint __cdecl Com_ConvexHull(float (*points) [2],uint pointCount,float (*hull) [2])
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_814 [256];
-  float local_414;
+  uint hullOrder [256];
+  float offset;
   float local_410;
-  uint local_40c [256];
-  uint local_c;
-  uint local_8;
+  uint pointOrder [256];
+  uint hullPointIter;
+  uint hullPointCount;
   
-  if ((param_2 < 3) || (0x100 < param_2)) {
+  if ((pointCount < 3) || (0x100 < pointCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                              0x126,0,
                              "pointCount not in [3, ARRAY_COUNT( pointOrder )]\n\t%i not in [%i, %i]"
@@ -370,7 +381,7 @@ uint __cdecl Com_ConvexHull(float (*param_1) [2],uint param_2,float (*param_3) [
       return uVar3;
     }
   }
-  if (param_3 == param_1) {
+  if (hull == points) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                              0x128,0,"%s");
     if (!bVar2) {
@@ -379,7 +390,7 @@ uint __cdecl Com_ConvexHull(float (*param_1) [2],uint param_2,float (*param_3) [
       return uVar3;
     }
   }
-  if ((param_3 < param_1 + param_2) && (param_1 < param_3 + param_2)) {
+  if ((hull < points + pointCount) && (points < hull + pointCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_convexhull.cpp",
                              0x129,0,"%s");
     if (!bVar2) {
@@ -388,16 +399,16 @@ uint __cdecl Com_ConvexHull(float (*param_1) [2],uint param_2,float (*param_3) [
       return uVar3;
     }
   }
-  local_414 = -(*param_1)[0];
-  local_410 = -(*param_1)[1];
-  Com_TranslatePoints(param_1,param_2,&local_414);
-  Com_InitialHull(param_1,local_40c,param_2,local_814);
-  local_8 = Com_GrowInitialHull(param_1,local_40c,param_2 - 2,local_814);
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    uVar3 = local_814[local_c];
-    param_3[local_c][0] = param_1[uVar3][0] - local_414;
-    param_3[local_c][1] = param_1[uVar3][1] - local_410;
+  offset = -(*points)[0];
+  local_410 = -(*points)[1];
+  Com_TranslatePoints(points,pointCount,&offset);
+  Com_InitialHull(points,pointOrder,pointCount,hullOrder);
+  hullPointCount = Com_GrowInitialHull(points,pointOrder,pointCount - 2,hullOrder);
+  for (hullPointIter = 0; hullPointIter < hullPointCount; hullPointIter = hullPointIter + 1) {
+    uVar3 = hullOrder[hullPointIter];
+    hull[hullPointIter][0] = points[uVar3][0] - offset;
+    hull[hullPointIter][1] = points[uVar3][1] - local_410;
   }
-  return local_8;
+  return hullPointCount;
 }
 

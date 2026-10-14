@@ -7,35 +7,37 @@
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_HandleDWChallengeResponse(netadr_t param_1,msg_t *param_2)
+void __cdecl SV_HandleDWChallengeResponse(netadr_t from,msg_t *msg)
 
 {
-  client_t *pcVar1;
-  int local_10;
-  int local_c;
+  client_t *client;
+  client_t *cl;
+  uint serverchallenge;
+  int qport;
   
-  if (param_2 != (msg_t *)0x0) {
-    local_c = MSG_ReadShort(param_2);
-    MSG_ReadData(param_2,&local_10,4);
+  if (msg != (msg_t *)0x0) {
+    qport = MSG_ReadShort(msg);
+    MSG_ReadData(msg,&serverchallenge,4);
     Com_DPrintf(0xf,"DWCHALLENGERESPONSE: Read server challenge %u\n");
-    pcVar1 = SV_FindClientByAddress(param_1,local_c);
-    if (pcVar1 != (client_t *)0x0) {
-      if (local_10 == *(int *)(pcVar1[1].userinfo + 0x3d4)) {
+    client = SV_FindClientByAddress(from,qport);
+    if (client != (client_t *)0x0) {
+      if (serverchallenge == *(uint *)(client[1].userinfo + 0x3d4)) {
         Com_DPrintf(0xf,"DWCHALLENGERESPONSE: Matches\n");
-        pcVar1[1].userinfo[0x3d4] = '\0';
-        pcVar1[1].userinfo[0x3d5] = '\0';
-        pcVar1[1].userinfo[0x3d6] = '\0';
-        pcVar1[1].userinfo[0x3d7] = '\0';
-        pcVar1->guid = *(int *)(pcVar1[1].userinfo + 0x3c8);
-        SV_DWReadClientCAC(pcVar1);
-        SV_DWReadClientStats(pcVar1);
+        client[1].userinfo[0x3d4] = '\0';
+        client[1].userinfo[0x3d5] = '\0';
+        client[1].userinfo[0x3d6] = '\0';
+        client[1].userinfo[0x3d7] = '\0';
+        client->guid = *(int *)(client[1].userinfo + 0x3c8);
+        SV_DWReadClientCAC(client);
+        SV_DWReadClientStats(client);
       }
       else {
         Com_DPrintf(0xf,
                     "DWCHALLENGERESPONSE: serverchallenge %u doesn\'t match what we sent client: %u. Ask Ewan.\n"
                    );
-        NET_OutOfBandPrint(NS_MAXCLIENTS,(pcVar1->header).netchan.remoteAddress,
+        NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,
                            "error\nEXE_BAD_CHALLENGE");
       }
     }
@@ -52,60 +54,60 @@ void __cdecl SV_HandleDWChallengeResponse(netadr_t param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_GetChallenge(netadr_t param_1)
+void __cdecl SV_GetChallenge(netadr_t from)
 
 {
-  netadr_t nVar1;
-  int iVar2;
-  uint uVar3;
-  char *pcVar4;
+  netadr_t adr;
+  int iVar1;
+  uint uVar2;
+  char *data;
   int local_1c;
-  netadr_t *local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  challenge_t *challenge;
+  int oldest;
+  int i;
+  int oldestTime;
   
-  nVar1 = param_1;
+  adr = from;
   if ((sv_authenticating->current).enabled == false) {
     if ((sv_dwlsgerror->current).enabled == false) {
-      local_14 = 0;
-      local_c = 0x7fffffff;
-      local_18 = &svs.challenges[0].adr;
-      local_10 = 0;
-      while ((local_10 < 0x400 &&
-             ((*(int *)local_18[2].ip != 0 ||
-              (iVar2 = NET_CompareAdr(param_1,*local_18), iVar2 == 0))))) {
-        if (*(int *)local_18[1].ip < local_c) {
-          local_c = *(int *)local_18[1].ip;
-          local_14 = local_10;
+      oldest = 0;
+      oldestTime = 0x7fffffff;
+      challenge = svs.challenges;
+      i = 0;
+      while ((i < 0x400 &&
+             ((challenge->connected != 0 ||
+              (iVar1 = NET_CompareAdr(from,challenge->adr), iVar1 == 0))))) {
+        if (challenge->time < oldestTime) {
+          oldestTime = challenge->time;
+          oldest = i;
         }
-        local_10 = local_10 + 1;
-        local_18 = local_18 + 7;
+        i = i + 1;
+        challenge = challenge + 1;
       }
-      if (local_10 == 0x400) {
-        local_18 = &svs.challenges[local_14].adr;
-        iVar2 = rand();
-        uVar3 = rand();
-        svs.challenges[local_14].challenge = iVar2 << 0x10 ^ uVar3 ^ svs.time;
-        local_18->type = param_1.type;
-        *&svs.challenges[local_14].adr.ip = param_1.ip;
-        svs.challenges[local_14].adr.port = param_1.port;
-        *(undefined2 *)&svs.challenges[local_14].adr.field_0xa = param_1._10_2_;
-        svs.challenges[local_14].adr.addrHandleIndex = param_1.addrHandleIndex;
-        svs.challenges[local_14].firstTime = svs.time;
-        svs.challenges[local_14].firstPing = 0;
+      if (i == 0x400) {
+        challenge = svs.challenges + oldest;
+        iVar1 = rand();
+        uVar2 = rand();
+        svs.challenges[oldest].challenge = iVar1 << 0x10 ^ uVar2 ^ svs.time;
+        (challenge->adr).type = from.type;
+        *&svs.challenges[oldest].adr.ip = from.ip;
+        svs.challenges[oldest].adr.port = from.port;
+        *(undefined2 *)&svs.challenges[oldest].adr.field_0xa = from._10_2_;
+        svs.challenges[oldest].adr.addrHandleIndex = from.addrHandleIndex;
+        svs.challenges[oldest].firstTime = svs.time;
+        svs.challenges[oldest].firstPing = 0;
         if (svs.time < 1) {
           local_1c = 1;
         }
         else {
           local_1c = svs.time;
         }
-        svs.challenges[local_14].time = local_1c;
-        svs.challenges[local_14].connected = 0;
+        svs.challenges[oldest].time = local_1c;
+        svs.challenges[oldest].connected = 0;
       }
-      *(int *)&local_18[1].port = svs.time;
-      pcVar4 = va("challengeResponse %i");
-      NET_OutOfBandPrint(NS_MAXCLIENTS,nVar1,pcVar4);
+      challenge->pingTime = svs.time;
+      data = va("challengeResponse %i");
+      NET_OutOfBandPrint(NS_MAXCLIENTS,adr,data);
     }
     else {
       Com_PrintWarning(0,"Dedicated server: Session update failure, rejecting incoming connection\n"
@@ -127,17 +129,19 @@ void __cdecl SV_GetChallenge(netadr_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_CacheClientStatChange(int param_1,ddlState_t *param_2,char *param_3)
+void __cdecl SV_CacheClientStatChange(int clientNum,ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   uint uVar4;
-  int local_14;
-  int local_10;
+  int offset;
+  int byteEndOffset;
+  int bitEndOffset;
+  int byteStartOffset;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x1f0,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -146,24 +150,24 @@ void __cdecl SV_CacheClientStatChange(int param_1,ddlState_t *param_2,char *para
     (*pcVar1)();
     return;
   }
-  uVar3 = param_2->member->size / param_2->member->arraySize + param_2->absoluteOffset;
-  local_14 = (int)(param_2->absoluteOffset + (param_2->absoluteOffset >> 0x1f & 7U)) >> 3;
+  uVar3 = searchState->member->size / searchState->member->arraySize + searchState->absoluteOffset;
+  offset = (int)(searchState->absoluteOffset + (searchState->absoluteOffset >> 0x1f & 7U)) >> 3;
   uVar4 = uVar3 & 0x80000007;
   if ((int)uVar4 < 0) {
     uVar4 = (uVar4 - 1 | 0xfffffff8) + 1;
   }
   if (uVar4 == 0) {
-    local_10 = (int)(uVar3 + ((int)uVar3 >> 0x1f & 7U)) >> 3;
+    byteEndOffset = (int)(uVar3 + ((int)uVar3 >> 0x1f & 7U)) >> 3;
   }
   else {
-    local_10 = ((int)(uVar3 + ((int)uVar3 >> 0x1f & 7U)) >> 3) + 1;
+    byteEndOffset = ((int)(uVar3 + ((int)uVar3 >> 0x1f & 7U)) >> 3) + 1;
   }
-  for (; local_14 < local_10; local_14 = local_14 + 1) {
-    *(byte *)((int)svs.clients + (local_14 >> 3) + param_1 * 0x84d00 + 0x838e1) =
-         *(byte *)((int)svs.clients + (local_14 >> 3) + param_1 * 0x84d00 + 0x838e1) |
-         (byte)(1 << ((byte)local_14 & 7));
+  for (; offset < byteEndOffset; offset = offset + 1) {
+    *(byte *)((int)svs.clients + (offset >> 3) + clientNum * 0x84d00 + 0x838e1) =
+         *(byte *)((int)svs.clients + (offset >> 3) + clientNum * 0x84d00 + 0x838e1) |
+         (byte)(1 << ((byte)offset & 7));
   }
-  *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c84) = 1;
+  *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c84) = 1;
   return;
 }
 
@@ -177,21 +181,22 @@ void __cdecl SV_CacheClientStatChange(int param_1,ddlState_t *param_2,char *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetClientDIntStat(int param_1,ddlState_t *param_2,uint param_3)
+void __cdecl SV_SetClientDIntStat(int clientNum,ddlState_t *searchState,uint value)
 
 {
   code *pcVar1;
   bool bVar2;
   int *piVar3;
-  ddlDef_t *pdVar4;
-  int iVar5;
-  char *local_50;
-  ddlResult_t local_4c;
+  ddlDef_t *ddl;
+  int iVar4;
+  client_t *cl;
+  char *buffer;
+  ddlResult_t oldValue;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  piVar3 = (int *)(param_1 * 0x84d00 + (int)svs.clients);
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  piVar3 = (int *)(clientNum * 0x84d00 + (int)svs.clients);
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x210,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -209,28 +214,28 @@ void __cdecl SV_SetClientDIntStat(int param_1,ddlState_t *param_2,uint param_3)
   }
   if (((piVar3[0x21322] == -1) && (piVar3[0x21323] == 7)) && (1 < *piVar3)) {
     if ((xblive_basictraining->current).enabled == false) {
-      iVar5 = param_1 * 0x84d00 + 0x6ff11;
+      iVar4 = clientNum * 0x84d00 + 0x6ff11;
     }
     else {
-      iVar5 = param_1 * 0x84d00 + 0x66209;
+      iVar4 = clientNum * 0x84d00 + 0x66209;
     }
-    local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar5);
+    buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
     if (piVar3[0x21324] == 0) {
-      pdVar4 = LiveStats_GetStatsDDL();
-      iVar5 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar4);
-      if (iVar5 == 0) {
+      ddl = LiveStats_GetStatsDDL();
+      iVar4 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not get stat. Buffer error.");
         return;
       }
       piVar3[0x21324] = 1;
     }
-    iVar5 = DDL_GetValue(param_2,&local_4c,local_50);
-    if ((iVar5 == 0) || (local_4c.intValue != param_3)) {
-      iVar5 = DDL_SetInt(param_2,param_3,local_50);
-      if (iVar5 == 0) {
+    iVar4 = DDL_GetValue(searchState,&oldValue,buffer);
+    if ((iVar4 == 0) || (oldValue.intValue != value)) {
+      iVar4 = DDL_SetInt(searchState,value,buffer);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not set stat. DDL set error.");
       }
-      SV_CacheClientStatChange(param_1,param_2,local_50);
+      SV_CacheClientStatChange(clientNum,searchState,buffer);
     }
   }
   return;
@@ -246,21 +251,22 @@ void __cdecl SV_SetClientDIntStat(int param_1,ddlState_t *param_2,uint param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetClientDStringStat(int param_1,ddlState_t *param_2,char *param_3)
+void __cdecl SV_SetClientDStringStat(int clientNum,ddlState_t *searchState,char *value)
 
 {
   code *pcVar1;
   bool bVar2;
   int *piVar3;
-  ddlDef_t *pdVar4;
-  int iVar5;
-  char *local_50;
-  ddlResult_t local_4c;
+  ddlDef_t *ddl;
+  int iVar4;
+  client_t *cl;
+  char *buffer;
+  ddlResult_t result;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  piVar3 = (int *)(param_1 * 0x84d00 + (int)svs.clients);
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  piVar3 = (int *)(clientNum * 0x84d00 + (int)svs.clients);
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x249,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -278,28 +284,28 @@ void __cdecl SV_SetClientDStringStat(int param_1,ddlState_t *param_2,char *param
   }
   if (((piVar3[0x21322] == -1) && (piVar3[0x21323] == 7)) && (1 < *piVar3)) {
     if ((xblive_basictraining->current).enabled == false) {
-      iVar5 = param_1 * 0x84d00 + 0x6ff11;
+      iVar4 = clientNum * 0x84d00 + 0x6ff11;
     }
     else {
-      iVar5 = param_1 * 0x84d00 + 0x66209;
+      iVar4 = clientNum * 0x84d00 + 0x66209;
     }
-    local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar5);
+    buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
     if (piVar3[0x21324] == 0) {
-      pdVar4 = LiveStats_GetStatsDDL();
-      iVar5 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar4);
-      if (iVar5 == 0) {
+      ddl = LiveStats_GetStatsDDL();
+      iVar4 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not get stat. Buffer error.");
         return;
       }
       piVar3[0x21324] = 1;
     }
-    iVar5 = DDL_GetValue(param_2,&local_4c,local_50);
-    if ((iVar5 == 0) || (iVar5 = I_strcmp(param_3,local_4c.stringValue), iVar5 != 0)) {
-      iVar5 = DDL_SetString(param_2,param_3,local_50);
-      if (iVar5 == 0) {
+    iVar4 = DDL_GetValue(searchState,&result,buffer);
+    if ((iVar4 == 0) || (iVar4 = I_strcmp(value,result.stringValue), iVar4 != 0)) {
+      iVar4 = DDL_SetString(searchState,value,buffer);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not set stat. DDL set error.");
       }
-      SV_CacheClientStatChange(param_1,param_2,local_50);
+      SV_CacheClientStatChange(clientNum,searchState,buffer);
     }
   }
   return;
@@ -315,22 +321,23 @@ void __cdecl SV_SetClientDStringStat(int param_1,ddlState_t *param_2,char *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetClientDInt64Stat(int param_1,ddlState_t *param_2,ulong64 param_3)
+void __cdecl SV_SetClientDInt64Stat(int clientNum,ddlState_t *searchState,ulong64 value)
 
 {
   code *pcVar1;
   bool bVar2;
   int *piVar3;
-  ddlDef_t *pdVar4;
-  int iVar5;
-  int *piVar6;
-  char *local_50;
-  ddlResult_t local_4c;
+  ddlDef_t *ddl;
+  int iVar4;
+  int *piVar5;
+  client_t *cl;
+  char *buffer;
+  ddlResult_t result;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  piVar3 = (int *)(param_1 * 0x84d00 + (int)svs.clients);
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  piVar3 = (int *)(clientNum * 0x84d00 + (int)svs.clients);
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x282,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -348,29 +355,29 @@ void __cdecl SV_SetClientDInt64Stat(int param_1,ddlState_t *param_2,ulong64 para
   }
   if (((piVar3[0x21322] == -1) && (piVar3[0x21323] == 7)) && (1 < *piVar3)) {
     if ((xblive_basictraining->current).enabled == false) {
-      iVar5 = param_1 * 0x84d00 + 0x6ff11;
+      iVar4 = clientNum * 0x84d00 + 0x6ff11;
     }
     else {
-      iVar5 = param_1 * 0x84d00 + 0x66209;
+      iVar4 = clientNum * 0x84d00 + 0x66209;
     }
-    local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar5);
-    piVar6 = piVar3;
+    buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
+    piVar5 = piVar3;
     if (piVar3[0x21324] == 0) {
-      pdVar4 = LiveStats_GetStatsDDL();
-      iVar5 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar4);
-      if (iVar5 == 0) {
+      ddl = LiveStats_GetStatsDDL();
+      iVar4 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not get stat. Buffer error.");
         return;
       }
       piVar3[0x21324] = 1;
     }
-    iVar5 = DDL_GetValue(param_2,&local_4c,local_50);
-    if ((iVar5 == 0) || (param_3 != CONCAT44(local_4c.int64Value._4_4_,local_4c.intValue))) {
-      iVar5 = DDL_SetInt64(param_2,CONCAT44(local_50,param_3._4_4_),(char *)piVar6);
-      if (iVar5 == 0) {
+    iVar4 = DDL_GetValue(searchState,&result,buffer);
+    if ((iVar4 == 0) || (value != CONCAT44(result.int64Value._4_4_,result.intValue))) {
+      iVar4 = DDL_SetInt64(searchState,CONCAT44(buffer,value._4_4_),(char *)piVar5);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not set stat. DDL set error.");
       }
-      SV_CacheClientStatChange(param_1,param_2,local_50);
+      SV_CacheClientStatChange(clientNum,searchState,buffer);
     }
   }
   return;
@@ -386,17 +393,17 @@ void __cdecl SV_SetClientDInt64Stat(int param_1,ddlState_t *param_2,ulong64 para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl SV_GetClientDIntStat(int param_1,ddlState_t *param_2)
+uint __cdecl SV_GetClientDIntStat(int clientNum,ddlState_t *searchState)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  ddlDef_t *pdVar4;
-  int iVar5;
-  char *local_50;
+  ddlDef_t *ddl;
+  int iVar4;
+  char *buffer;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x2ba,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -405,30 +412,30 @@ uint __cdecl SV_GetClientDIntStat(int param_1,ddlState_t *param_2)
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c88) == -1) &&
-     (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c8c) == 7)) {
-    if (*(int *)((int)svs.clients + param_1 * 0x84d00) < 2) {
+  if ((*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c88) == -1) &&
+     (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c8c) == 7)) {
+    if (*(int *)((int)svs.clients + clientNum * 0x84d00) < 2) {
       uVar3 = 0;
     }
     else {
-      if (((xblive_basictraining->current).enabled == false) && (param_2->member->permission == 2))
-      {
-        iVar5 = param_1 * 0x84d00 + 0x6ff11;
+      if (((xblive_basictraining->current).enabled == false) &&
+         (searchState->member->permission == 2)) {
+        iVar4 = clientNum * 0x84d00 + 0x6ff11;
       }
       else {
-        iVar5 = param_1 * 0x84d00 + 0x66209;
+        iVar4 = clientNum * 0x84d00 + 0x66209;
       }
-      local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar5);
-      if (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) == 0) {
-        pdVar4 = LiveStats_GetStatsDDL();
-        iVar5 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar4);
-        if (iVar5 == 0) {
+      buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
+      if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) == 0) {
+        ddl = LiveStats_GetStatsDDL();
+        iVar4 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+        if (iVar4 == 0) {
           DDL_PrintError("DDL: Could not get stat. Buffer error.");
           return 0;
         }
-        *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) = 1;
+        *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) = 1;
       }
-      uVar3 = DDL_GetInt(param_2,local_50);
+      uVar3 = DDL_GetInt(searchState,buffer);
     }
   }
   else {
@@ -447,17 +454,17 @@ uint __cdecl SV_GetClientDIntStat(int param_1,ddlState_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl SV_GetClientDStringStat(int param_1,ddlState_t *param_2)
+char * __cdecl SV_GetClientDStringStat(int clientNum,ddlState_t *searchState)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  ddlDef_t *pdVar4;
-  int iVar5;
-  char *local_50;
+  ddlDef_t *ddl;
+  int iVar4;
+  char *buffer;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x2e6,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -466,38 +473,39 @@ char * __cdecl SV_GetClientDStringStat(int param_1,ddlState_t *param_2)
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (((*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c88) != -1) ||
-      (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c8c) != 7)) &&
+  if (((*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c88) != -1) ||
+      (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c8c) != 7)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x2e7,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((*(int *)((int)svs.clients + param_1 * 0x84d00) < 2) &&
+  if ((*(int *)((int)svs.clients + clientNum * 0x84d00) < 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x2e8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (((xblive_basictraining->current).enabled == false) && (param_2->member->permission == 2)) {
-    iVar5 = param_1 * 0x84d00 + 0x6ff11;
+  if (((xblive_basictraining->current).enabled == false) && (searchState->member->permission == 2))
+  {
+    iVar4 = clientNum * 0x84d00 + 0x6ff11;
   }
   else {
-    iVar5 = param_1 * 0x84d00 + 0x66209;
+    iVar4 = clientNum * 0x84d00 + 0x66209;
   }
-  local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar5);
-  if (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) == 0) {
-    pdVar4 = LiveStats_GetStatsDDL();
-    iVar5 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar4);
-    if (iVar5 == 0) {
+  buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
+  if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) == 0) {
+    ddl = LiveStats_GetStatsDDL();
+    iVar4 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+    if (iVar4 == 0) {
       DDL_PrintError("DDL: Could not get stat. Buffer error.");
       return "";
     }
-    *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) = 1;
+    *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) = 1;
   }
-  pcVar3 = DDL_GetString(param_2,local_50);
+  pcVar3 = DDL_GetString(searchState,buffer);
   return pcVar3;
 }
 
@@ -511,58 +519,59 @@ char * __cdecl SV_GetClientDStringStat(int param_1,ddlState_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ulong64 __cdecl SV_GetClientDInt64Stat(int param_1,ddlState_t *param_2)
+ulong64 __cdecl SV_GetClientDInt64Stat(int clientNum,ddlState_t *searchState)
 
 {
   code *pcVar1;
   bool bVar2;
-  ddlDef_t *pdVar3;
-  int iVar4;
-  ulong64 uVar5;
-  char *local_50;
+  ddlDef_t *ddl;
+  int iVar3;
+  ulong64 uVar4;
+  char *buffer;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)param_1) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x30a,0,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar5 = (*pcVar1)();
-    return uVar5;
+    uVar4 = (*pcVar1)();
+    return uVar4;
   }
-  if (((*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c88) != -1) ||
-      (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c8c) != 7)) &&
+  if (((*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c88) != -1) ||
+      (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c8c) != 7)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x30b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar5 = (*pcVar1)();
-    return uVar5;
+    uVar4 = (*pcVar1)();
+    return uVar4;
   }
-  if ((*(int *)((int)svs.clients + param_1 * 0x84d00) < 2) &&
+  if ((*(int *)((int)svs.clients + clientNum * 0x84d00) < 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x30c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar5 = (*pcVar1)();
-    return uVar5;
+    uVar4 = (*pcVar1)();
+    return uVar4;
   }
-  if (((xblive_basictraining->current).enabled == false) && (param_2->member->permission == 2)) {
-    iVar4 = param_1 * 0x84d00 + 0x6ff11;
+  if (((xblive_basictraining->current).enabled == false) && (searchState->member->permission == 2))
+  {
+    iVar3 = clientNum * 0x84d00 + 0x6ff11;
   }
   else {
-    iVar4 = param_1 * 0x84d00 + 0x66209;
+    iVar3 = clientNum * 0x84d00 + 0x66209;
   }
-  local_50 = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar4);
-  if (*(int *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) == 0) {
-    pdVar3 = LiveStats_GetStatsDDL();
-    iVar4 = DDL_AssociateBuffer(local_50,0x9ce8,pdVar3);
-    if (iVar4 == 0) {
+  buffer = (char *)((int)(&((svs.clients)->header).netchan.remoteAddress + -2) + iVar3);
+  if (*(int *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) == 0) {
+    ddl = LiveStats_GetStatsDDL();
+    iVar3 = DDL_AssociateBuffer(buffer,0x9ce8,ddl);
+    if (iVar3 == 0) {
       DDL_PrintError("DDL: Could not get stat. Buffer error.");
       return 0;
     }
-    *(undefined4 *)((int)svs.clients + param_1 * 0x84d00 + 0x84c90) = 1;
+    *(undefined4 *)((int)svs.clients + clientNum * 0x84d00 + 0x84c90) = 1;
   }
-  uVar5 = DDL_GetInt64(param_2,local_50);
-  return uVar5;
+  uVar4 = DDL_GetInt64(searchState,buffer);
+  return uVar4;
 }
 
 
@@ -573,17 +582,19 @@ ulong64 __cdecl SV_GetClientDInt64Stat(int param_1,ddlState_t *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_UploadStats(int param_1)
+void __cdecl SV_UploadStats(int clientNum)
 
 {
-  client_t *pcVar1;
+  client_t *cl_00;
+  client_t *cl;
   
-  pcVar1 = (client_t *)(param_1 * 0x84d00 + (int)svs.clients);
-  if (2 < (pcVar1->header).state) {
-    SV_SendServerCommand(pcVar1,SV_CMD_RELIABLE,"%c");
+  cl_00 = (client_t *)(clientNum * 0x84d00 + (int)svs.clients);
+  if (2 < (cl_00->header).state) {
+    SV_SendServerCommand(cl_00,SV_CMD_RELIABLE,"%c");
     if ((xblive_wagermatch->current).enabled == false) {
-      SV_DWWriteClientStats(pcVar1);
+      SV_DWWriteClientStats(cl_00);
     }
   }
   return;
@@ -592,13 +603,19 @@ void __cdecl SV_UploadStats(int param_1)
 
 // 007065F0  SV_UploadStats  (server_mp/sv_client_mp.cpp:838)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl SV_UploadStats(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    SV_UploadStats(local_8);
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    SV_UploadStats(i);
   }
   return;
 }
@@ -608,20 +625,20 @@ void __cdecl SV_UploadStats(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_SteamAuthClientRequest(netadr_t param_1,ulong64 param_2)
+void __cdecl SV_SteamAuthClientRequest(netadr_t to,ulong64 serverSteamID)
 
 {
-  uchar *puVar1;
-  msg_t local_40;
-  LargeLocal local_10;
+  uchar *data;
+  msg_t msg;
+  LargeLocal msgBuffer_large_local;
   
-  LargeLocal::LargeLocal(&local_10,0x800);
-  puVar1 = LargeLocal::GetBuf(&local_10);
-  MSG_Init(&local_40,puVar1,0x800);
-  MSG_WriteString(&local_40,"steamauthReq");
-  MSG_WriteInt64(&local_40,CONCAT44(puVar1,param_2._4_4_));
-  NET_OutOfBandData(NS_MAXCLIENTS,param_1,local_40.data,local_40.cursize);
-  LargeLocal::~LargeLocal(&local_10);
+  LargeLocal::LargeLocal(&msgBuffer_large_local,0x800);
+  data = LargeLocal::GetBuf(&msgBuffer_large_local);
+  MSG_Init(&msg,data,0x800);
+  MSG_WriteString(&msg,"steamauthReq");
+  MSG_WriteInt64(&msg,CONCAT44(data,serverSteamID._4_4_));
+  NET_OutOfBandData(NS_MAXCLIENTS,to,msg.data,msg.cursize);
+  LargeLocal::~LargeLocal(&msgBuffer_large_local);
   return;
 }
 
@@ -631,20 +648,21 @@ void __cdecl SV_SteamAuthClientRequest(netadr_t param_1,ulong64 param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_SteamAuthClient(netadr_t param_1,msg_t *param_2)
+void __cdecl SV_SteamAuthClient(netadr_t from,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  ulong64 uVar4;
-  undefined1 local_80c [2052];
+  uint authBlobSize;
+  ulong64 clientSteamID;
+  uint authBlobLen;
+  undefined1 authBlob [2052];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar4 = MSG_ReadInt64(param_2);
-  uVar3 = MSG_ReadShort(param_2);
-  if (0x7ff < uVar3) {
+  clientSteamID = MSG_ReadInt64(msg);
+  authBlobSize = MSG_ReadShort(msg);
+  if (0x7ff < authBlobSize) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x365,
                              0,"%s");
     if (!bVar2) {
@@ -653,8 +671,8 @@ void __cdecl SV_SteamAuthClient(netadr_t param_1,msg_t *param_2)
       return;
     }
   }
-  MSG_ReadData(param_2,local_80c,uVar3);
-  LiveSteam_Server_ClientSteamAuthentication(uVar4,param_1,local_80c,uVar3);
+  MSG_ReadData(msg,authBlob,authBlobSize);
+  LiveSteam_Server_ClientSteamAuthentication(clientSteamID,from,authBlob,authBlobSize);
   return;
 }
 
@@ -667,15 +685,15 @@ void __cdecl SV_SteamAuthClient(netadr_t param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_IsTempBannedGuid(int param_1)
+int __cdecl SV_IsTempBannedGuid(int guid)
 
 {
-  uint local_8;
+  int banSlot;
   
-  if (param_1 != 0) {
-    for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-      if ((svs.tempBans[local_8].guid == param_1) &&
-         ((float)(svs.time - svs.tempBans[local_8].banTime) <=
+  if (guid != 0) {
+    for (banSlot = 0; (uint)banSlot < 0x10; banSlot = banSlot + 1) {
+      if ((svs.tempBans[banSlot].guid == guid) &&
+         ((float)(svs.time - svs.tempBans[banSlot].banTime) <=
           (sv_kickBanTime->current).value * 1000.0)) {
         return 1;
       }
@@ -687,38 +705,39 @@ int __cdecl SV_IsTempBannedGuid(int param_1)
 
 // 00706830  SV_IsBannedGuid  (server_mp/sv_client_mp.cpp:935)
 
-int __cdecl SV_IsBannedGuid(int param_1)
+int __cdecl SV_IsBannedGuid(int guid)
 
 {
   int iVar1;
-  char *local_14;
-  int local_10;
-  char *local_c;
-  char *local_8;
+  int size;
+  char *file;
+  int banned;
+  char *token;
+  char *text;
   
-  if (param_1 == 0) {
-    local_10 = 0;
+  if (guid == 0) {
+    banned = 0;
   }
   else {
-    iVar1 = FS_ReadFile("ban.txt",&local_14);
+    iVar1 = FS_ReadFile("ban.txt",&file);
     if (iVar1 < 0) {
-      local_10 = 0;
+      banned = 0;
     }
     else {
-      local_8 = local_14;
-      local_10 = 0;
-      while (local_c = Com_Parse(&local_8), *local_c != '\0') {
-        iVar1 = atoi(local_c);
-        if (iVar1 == param_1) {
-          local_10 = 1;
+      text = file;
+      banned = 0;
+      while (token = Com_Parse(&text), *token != '\0') {
+        iVar1 = atoi(token);
+        if (iVar1 == guid) {
+          banned = 1;
           break;
         }
-        Com_SkipRestOfLine(&local_8);
+        Com_SkipRestOfLine(&text);
       }
-      FS_FreeFile(local_14);
+      FS_FreeFile(file);
     }
   }
-  return local_10;
+  return banned;
 }
 
 
@@ -734,15 +753,15 @@ int __cdecl SV_FindFreeTempBanSlot(void)
 
 {
   uint uVar1;
-  uint local_c;
-  uint local_8;
+  uint oldestSlot;
+  uint banSlot;
   
-  local_c = 0;
-  for (local_8 = 0;
-      (uVar1 = local_c, local_8 < 0x10 && (uVar1 = local_8, svs.tempBans[local_8].guid != 0));
-      local_8 = local_8 + 1) {
-    if (svs.tempBans[local_8].banTime < svs.tempBans[local_c].banTime) {
-      local_c = local_8;
+  oldestSlot = 0;
+  for (banSlot = 0;
+      (uVar1 = oldestSlot, banSlot < 0x10 && (uVar1 = banSlot, svs.tempBans[banSlot].guid != 0));
+      banSlot = banSlot + 1) {
+    if (svs.tempBans[banSlot].banTime < svs.tempBans[oldestSlot].banTime) {
+      oldestSlot = banSlot;
     }
   }
   return uVar1;
@@ -757,13 +776,14 @@ int __cdecl SV_FindFreeTempBanSlot(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BanGuidBriefly(int param_1)
+void __cdecl SV_BanGuidBriefly(int guid)
 
 {
   int iVar1;
+  int banSlot;
   
   iVar1 = SV_FindFreeTempBanSlot();
-  svs.tempBans[iVar1].guid = param_1;
+  svs.tempBans[iVar1].guid = guid;
   svs.tempBans[iVar1].banTime = svs.time;
   return;
 }
@@ -778,41 +798,41 @@ void __cdecl SV_BanGuidBriefly(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BanClient(client_t *param_1)
+void __cdecl SV_BanClient(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_50;
-  char local_4c [68];
+  int file;
+  char cleanName [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (client_t *)0x0) &&
+  if ((cl == (client_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x3e5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->header).netchan.remoteAddress.type == NA_LOOPBACK) {
+  if ((cl->header).netchan.remoteAddress.type == NA_LOOPBACK) {
     SV_SendServerCommand((client_t *)0x0,SV_CMD_CAN_IGNORE,"%c \"EXE_CANNOTKICKHOSTPLAYER\"");
   }
-  else if (param_1->guid == 0) {
+  else if (cl->guid == 0) {
     Com_Printf(0xf,"Can\'t ban user, GUID is 0\n");
   }
   else {
-    iVar3 = SV_IsBannedGuid(param_1->guid);
+    iVar3 = SV_IsBannedGuid(cl->guid);
     if (iVar3 == 0) {
-      iVar3 = FS_FOpenFileByMode("ban.txt",&local_50,FS_APPEND);
+      iVar3 = FS_FOpenFileByMode("ban.txt",&file,FS_APPEND);
       if (-1 < iVar3) {
-        I_strncpyz(local_4c,param_1->name,0x40);
-        I_CleanStr(local_4c);
-        FS_Printf(local_50,"%i %s\r\n");
-        FS_FCloseFile(local_50);
-        SV_DropClient(param_1,"EXE_PLAYERKICKED",true,true);
-        param_1->lastPacketTime = svs.time;
+        I_strncpyz(cleanName,cl->name,0x40);
+        I_CleanStr(cleanName);
+        FS_Printf(file,"%i %s\r\n");
+        FS_FCloseFile(file);
+        SV_DropClient(cl,"EXE_PLAYERKICKED",true,true);
+        cl->lastPacketTime = svs.time;
       }
     }
     else {
@@ -827,63 +847,64 @@ void __cdecl SV_BanClient(client_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SV_UnbanClient(char *param_1)
+void __cdecl SV_UnbanClient(char *name)
 
 {
   char cVar1;
   int iVar2;
-  int iVar3;
+  int n;
   int local_80;
   char *local_70;
-  uchar *local_68;
-  int local_64;
-  int local_60;
-  char local_5c;
+  int nameLen;
+  char *file;
+  int fileSize;
+  int unban;
+  char cleanName;
   undefined1 auStack_5b [67];
   uint local_18;
-  uchar *local_14;
-  char *local_10;
-  uchar *local_c;
-  int local_8;
+  char *line;
+  char *token;
+  char *text;
+  int found;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_64 = FS_ReadFile("ban.txt",&local_68);
-  if (-1 < local_64) {
-    I_strncpyz(&local_5c,param_1,0x40);
-    I_CleanStr(&local_5c);
-    local_70 = &local_5c;
+  fileSize = FS_ReadFile("ban.txt",&file);
+  if (-1 < fileSize) {
+    I_strncpyz(&cleanName,name,0x40);
+    I_CleanStr(&cleanName);
+    local_70 = &cleanName;
     do {
       cVar1 = *local_70;
       local_70 = local_70 + 1;
     } while (cVar1 != '\0');
-    iVar3 = (int)local_70 - (int)auStack_5b;
-    local_8 = 0;
-    local_c = local_68;
+    n = (int)local_70 - (int)auStack_5b;
+    found = 0;
+    text = file;
     while( true ) {
-      local_14 = local_c;
-      local_10 = Com_Parse((char **)&local_c);
-      if (*local_10 == '\0') break;
-      for (; (*local_c != '\0' && ((char)*local_c < '!')); local_c = local_c + 1) {
+      line = text;
+      token = Com_Parse(&text);
+      if (*token == '\0') break;
+      for (; (*text != '\0' && (*text < '!')); text = text + 1) {
       }
-      iVar2 = I_strnicmp((char *)local_c,&local_5c,iVar3);
-      if ((iVar2 == 0) && ((local_c[iVar3] == '\r' || (local_c[iVar3] == '\n')))) {
+      iVar2 = I_strnicmp(text,&cleanName,n);
+      if ((iVar2 == 0) && ((text[n] == '\r' || (text[n] == '\n')))) {
         local_80 = 1;
       }
       else {
         local_80 = 0;
       }
-      local_60 = local_80;
-      Com_SkipRestOfLine((char **)&local_c);
-      if (local_60 != 0) {
-        local_8 = local_8 + 1;
-        memmove(local_14,local_c,(local_64 - ((int)local_c - (int)local_68)) + 1);
-        local_64 = local_64 - ((int)local_c - (int)local_14);
-        local_c = local_14;
+      unban = local_80;
+      Com_SkipRestOfLine(&text);
+      if (unban != 0) {
+        found = found + 1;
+        memmove((uchar *)line,(uchar *)text,(fileSize - ((int)text - (int)file)) + 1);
+        fileSize = fileSize - ((int)text - (int)line);
+        text = line;
       }
     }
-    FS_WriteFile("ban.txt",local_68,local_64);
-    FS_FreeFile(local_68);
-    if (local_8 == 0) {
+    FS_WriteFile("ban.txt",file,fileSize);
+    FS_FreeFile(file);
+    if (found == 0) {
       Com_Printf(0xf,"no banned user has name %s\n");
     }
     else {
@@ -896,7 +917,7 @@ void __cdecl SV_UnbanClient(char *param_1)
 
 // 00706C80  SV_UpdateSplitscreenStateForAddr  (server_mp/sv_client_mp.cpp:1253)
 
-void __cdecl SV_UpdateSplitscreenStateForAddr(netadr_t param_1)
+void __cdecl SV_UpdateSplitscreenStateForAddr(netadr_t addr)
 
 {
   return;
@@ -911,13 +932,13 @@ void __cdecl SV_UpdateSplitscreenStateForAddr(netadr_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_FreeClient(client_t *param_1)
+void __cdecl SV_FreeClient(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->header).state < 2) {
+  if ((cl->header).state < 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x51d,
                              0,"%s");
     if (!bVar2) {
@@ -926,8 +947,7 @@ void __cdecl SV_FreeClient(client_t *param_1)
       return;
     }
   }
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x51e,
                              0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -938,14 +958,14 @@ void __cdecl SV_FreeClient(client_t *param_1)
       return;
     }
   }
-  GamerProfile_WriteSettings((int)param_1);
-  SV_CloseDownload(param_1);
+  GamerProfile_WriteSettings((int)cl);
+  SV_CloseDownload(cl);
   bVar2 = SV_Loaded();
   if (bVar2) {
-    ClientDisconnect(((int)param_1 - (int)svs.clients) / 0x84d00);
+    ClientDisconnect(((int)cl - (int)svs.clients) / 0x84d00);
   }
-  SV_SetUserinfo(((int)param_1 - (int)svs.clients) / 0x84d00,"");
-  SV_FreeClientScriptId(param_1);
+  SV_SetUserinfo(((int)cl - (int)svs.clients) / 0x84d00,"");
+  SV_FreeClientScriptId(cl);
   return;
 }
 
@@ -961,15 +981,15 @@ void __cdecl SV_FreeClient(client_t *param_1)
 void __cdecl SV_FreeClients(void)
 
 {
-  client_t *local_c;
-  int local_8;
+  client_t *cl;
+  int i;
   
-  local_c = svs.clients;
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (2 < (local_c->header).state) {
-      SV_FreeClient(local_c);
+  cl = svs.clients;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (2 < (cl->header).state) {
+      SV_FreeClient(cl);
     }
-    local_c = (client_t *)(local_c[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
   return;
 }
@@ -989,7 +1009,7 @@ void __cdecl SV_FreeClients(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DirectConnect(netadr_t param_1)
+void __cdecl SV_DirectConnect(netadr_t from)
 
 {
   code *pcVar1;
@@ -999,242 +1019,248 @@ void __cdecl SV_DirectConnect(netadr_t param_1)
   int iVar5;
   long64 lVar6;
   int iVar7;
-  ulong64 *puVar8;
+  ulong64 *xuid;
   int local_4d8;
   char *local_4d4;
-  char local_4bc;
-  int local_4b8;
-  int local_4b0;
-  client_t *local_4ac;
-  byte local_49d;
-  int local_49c [3];
-  client_t *local_490;
-  char *local_48c;
-  int local_488;
-  int local_484;
-  char local_480 [36];
-  char *local_45c;
-  gentity_s *local_458;
-  char local_454 [1028];
-  gentity_s *local_50;
-  uint local_4c;
-  char *local_48;
-  int local_44;
-  uint local_40;
-  int local_3c;
-  int local_38;
-  int local_34;
-  int local_30;
-  char local_2c [36];
+  uint clientChallange;
+  uint nonce;
+  int slot;
+  int endIndex;
+  int loller;
+  int ping;
+  client_t *cl;
+  int cl_pb;
+  char *denied;
+  bool isDemoClient;
+  int uid [2];
+  int version;
+  client_t *newcl;
+  char *steamIDStr;
+  int challenge;
+  int startIndex;
+  char authSvPBguid [36];
+  char *password;
+  entityState_s *es;
+  char userinfo [1028];
+  gentity_s *ent;
+  uint scriptId;
+  char *pb_authmsg;
+  int i;
+  int clientNum;
+  int guid;
+  int count;
+  int tempslot;
+  int qport;
+  char clientPBguid [36];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_480[0] = '\0';
-  local_480[1] = '\0';
-  local_480[2] = '\0';
-  local_480[3] = '\0';
-  local_480[4] = '\0';
-  local_480[5] = '\0';
-  local_480[6] = '\0';
-  local_480[7] = '\0';
-  local_480[8] = '\0';
-  local_480[9] = '\0';
-  local_480[10] = '\0';
-  local_480[0xb] = '\0';
-  local_480[0xc] = '\0';
-  local_480[0xd] = '\0';
-  local_480[0xe] = '\0';
-  local_480[0xf] = '\0';
-  local_480[0x10] = '\0';
-  local_480[0x11] = '\0';
-  local_480[0x12] = '\0';
-  local_480[0x13] = '\0';
-  local_480[0x14] = '\0';
-  local_480[0x15] = '\0';
-  local_480[0x16] = '\0';
-  local_480[0x17] = '\0';
-  local_480[0x18] = '\0';
-  local_480[0x19] = '\0';
-  local_480[0x1a] = '\0';
-  local_480[0x1b] = '\0';
-  local_480[0x1c] = '\0';
-  local_480[0x1d] = '\0';
-  local_480[0x1e] = '\0';
-  local_480[0x1f] = '\0';
-  local_480[0x20] = 0;
-  local_2c[0] = '\0';
-  local_2c[1] = '\0';
-  local_2c[2] = '\0';
-  local_2c[3] = '\0';
-  local_2c[4] = '\0';
-  local_2c[5] = '\0';
-  local_2c[6] = '\0';
-  local_2c[7] = '\0';
-  local_2c[8] = '\0';
-  local_2c[9] = '\0';
-  local_2c[10] = '\0';
-  local_2c[0xb] = '\0';
-  local_2c[0xc] = '\0';
-  local_2c[0xd] = '\0';
-  local_2c[0xe] = '\0';
-  local_2c[0xf] = '\0';
-  local_2c[0x10] = '\0';
-  local_2c[0x11] = '\0';
-  local_2c[0x12] = '\0';
-  local_2c[0x13] = '\0';
-  local_2c[0x14] = '\0';
-  local_2c[0x15] = '\0';
-  local_2c[0x16] = '\0';
-  local_2c[0x17] = '\0';
-  local_2c[0x18] = '\0';
-  local_2c[0x19] = '\0';
-  local_2c[0x1a] = '\0';
-  local_2c[0x1b] = '\0';
-  local_2c[0x1c] = '\0';
-  local_2c[0x1d] = '\0';
-  local_2c[0x1e] = '\0';
-  local_2c[0x1f] = '\0';
-  local_2c[0x20] = 0;
+  authSvPBguid[0] = '\0';
+  authSvPBguid[1] = '\0';
+  authSvPBguid[2] = '\0';
+  authSvPBguid[3] = '\0';
+  authSvPBguid[4] = '\0';
+  authSvPBguid[5] = '\0';
+  authSvPBguid[6] = '\0';
+  authSvPBguid[7] = '\0';
+  authSvPBguid[8] = '\0';
+  authSvPBguid[9] = '\0';
+  authSvPBguid[10] = '\0';
+  authSvPBguid[0xb] = '\0';
+  authSvPBguid[0xc] = '\0';
+  authSvPBguid[0xd] = '\0';
+  authSvPBguid[0xe] = '\0';
+  authSvPBguid[0xf] = '\0';
+  authSvPBguid[0x10] = '\0';
+  authSvPBguid[0x11] = '\0';
+  authSvPBguid[0x12] = '\0';
+  authSvPBguid[0x13] = '\0';
+  authSvPBguid[0x14] = '\0';
+  authSvPBguid[0x15] = '\0';
+  authSvPBguid[0x16] = '\0';
+  authSvPBguid[0x17] = '\0';
+  authSvPBguid[0x18] = '\0';
+  authSvPBguid[0x19] = '\0';
+  authSvPBguid[0x1a] = '\0';
+  authSvPBguid[0x1b] = '\0';
+  authSvPBguid[0x1c] = '\0';
+  authSvPBguid[0x1d] = '\0';
+  authSvPBguid[0x1e] = '\0';
+  authSvPBguid[0x1f] = '\0';
+  authSvPBguid[0x20] = 0;
+  clientPBguid[0] = '\0';
+  clientPBguid[1] = '\0';
+  clientPBguid[2] = '\0';
+  clientPBguid[3] = '\0';
+  clientPBguid[4] = '\0';
+  clientPBguid[5] = '\0';
+  clientPBguid[6] = '\0';
+  clientPBguid[7] = '\0';
+  clientPBguid[8] = '\0';
+  clientPBguid[9] = '\0';
+  clientPBguid[10] = '\0';
+  clientPBguid[0xb] = '\0';
+  clientPBguid[0xc] = '\0';
+  clientPBguid[0xd] = '\0';
+  clientPBguid[0xe] = '\0';
+  clientPBguid[0xf] = '\0';
+  clientPBguid[0x10] = '\0';
+  clientPBguid[0x11] = '\0';
+  clientPBguid[0x12] = '\0';
+  clientPBguid[0x13] = '\0';
+  clientPBguid[0x14] = '\0';
+  clientPBguid[0x15] = '\0';
+  clientPBguid[0x16] = '\0';
+  clientPBguid[0x17] = '\0';
+  clientPBguid[0x18] = '\0';
+  clientPBguid[0x19] = '\0';
+  clientPBguid[0x1a] = '\0';
+  clientPBguid[0x1b] = '\0';
+  clientPBguid[0x1c] = '\0';
+  clientPBguid[0x1d] = '\0';
+  clientPBguid[0x1e] = '\0';
+  clientPBguid[0x1f] = '\0';
+  clientPBguid[0x20] = 0;
   Com_DPrintf(0xf,"SV_DirectConnect()\n");
   iVar7 = 0x400;
   pcVar3 = SV_Cmd_Argv(1);
-  I_strncpyz(local_454,pcVar3,iVar7);
-  pcVar3 = Info_ValueForKey(local_454,"protocol");
-  local_49c[2] = atoi(pcVar3);
-  if (local_49c[2] != 0x414) {
+  I_strncpyz(userinfo,pcVar3,iVar7);
+  pcVar3 = Info_ValueForKey(userinfo,"protocol");
+  version = atoi(pcVar3);
+  if (version != 0x414) {
     Com_GetBuildName();
     pcVar3 = va("error\nEXE_SERVER_IS_DIFFERENT_VER\x15%s\n");
-    NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,pcVar3);
+    NET_OutOfBandPrint(NS_MAXCLIENTS,from,pcVar3);
     Com_DPrintf(0xf,"    rejected connect from protocol version %i (should be %i)\n");
     return;
   }
-  pcVar3 = Info_ValueForKey(local_454,"challenge");
-  local_488 = atoi(pcVar3);
-  pcVar3 = Info_ValueForKey(local_454,"qport");
-  local_30 = atoi(pcVar3);
-  local_4ac = svs.clients;
-  for (local_44 = 0; local_44 < (com_maxclients->current).integer; local_44 = local_44 + 1) {
-    iVar7 = NET_CompareBaseAdr(param_1,(local_4ac->header).netchan.remoteAddress);
+  pcVar3 = Info_ValueForKey(userinfo,"challenge");
+  challenge = atoi(pcVar3);
+  pcVar3 = Info_ValueForKey(userinfo,"qport");
+  qport = atoi(pcVar3);
+  cl = svs.clients;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    iVar7 = NET_CompareBaseAdr(from,(cl->header).netchan.remoteAddress);
     if ((iVar7 != 0) &&
-       (((local_4ac->header).netchan.qport == local_30 ||
-        (param_1.port == (local_4ac->header).netchan.remoteAddress.port)))) {
-      if (svs.time - local_4ac->lastConnectTime < (sv_reconnectlimit->current).integer * 1000) {
-        NET_AdrToString(param_1);
+       (((cl->header).netchan.qport == qport ||
+        (from.port == (cl->header).netchan.remoteAddress.port)))) {
+      if (svs.time - cl->lastConnectTime < (sv_reconnectlimit->current).integer * 1000) {
+        NET_AdrToString(from);
         Com_DPrintf(0xf,"%s:reconnect rejected : too soon\n");
         return;
       }
       break;
     }
-    local_4ac = (client_t *)(local_4ac[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
-  local_3c = 0;
-  iVar7 = NET_IsLocalAddress(param_1);
+  guid = 0;
+  iVar7 = NET_IsLocalAddress(from);
   if (iVar7 == 0) {
-    for (local_44 = 0; local_44 < 0x400; local_44 = local_44 + 1) {
-      iVar7 = NET_CompareAdr(param_1,svs.challenges[local_44].adr);
-      if ((iVar7 != 0) && (local_488 == svs.challenges[local_44].challenge)) {
-        local_3c = svs.challenges[local_44].guid;
-        I_strncpyz(local_480,svs.challenges[local_44].PBguid,0x21);
-        I_strncpyz(local_2c,svs.challenges[local_44].clientPBguid,0x21);
+    for (i = 0; i < 0x400; i = i + 1) {
+      iVar7 = NET_CompareAdr(from,svs.challenges[i].adr);
+      if ((iVar7 != 0) && (challenge == svs.challenges[i].challenge)) {
+        guid = svs.challenges[i].guid;
+        I_strncpyz(authSvPBguid,svs.challenges[i].PBguid,0x21);
+        I_strncpyz(clientPBguid,svs.challenges[i].clientPBguid,0x21);
         break;
       }
     }
-    if (local_44 == 0x400) {
-      NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nEXE_BAD_CHALLENGE");
+    if (i == 0x400) {
+      NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nEXE_BAD_CHALLENGE");
       return;
     }
-    if (svs.challenges[local_44].firstPing == 0) {
-      local_4b0 = svs.time - svs.challenges[local_44].pingTime;
-      svs.challenges[local_44].firstPing = local_4b0;
+    if (svs.challenges[i].firstPing == 0) {
+      ping = svs.time - svs.challenges[i].pingTime;
+      svs.challenges[i].firstPing = ping;
     }
     else {
-      local_4b0 = svs.challenges[local_44].firstPing;
+      ping = svs.challenges[i].firstPing;
     }
-    NET_AdrToString(param_1);
+    NET_AdrToString(from);
     Com_Printf(0xf,"Client %i connecting with %i challenge ping from %s\n");
-    svs.challenges[local_44].connected = 1;
+    svs.challenges[i].connected = 1;
     if ((g_password != (dvar_s *)0x0) && (*(g_password->current).string != '\0')) {
       pcVar3 = (g_password->current).string;
-      pcVar4 = Info_ValueForKey(local_454,"password");
+      pcVar4 = Info_ValueForKey(userinfo,"password");
       iVar7 = I_strcmp(pcVar4,pcVar3);
       if (iVar7 != 0) {
-        NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nGAME_INVALIDPASSWORD");
-        Info_ValueForKey(local_454,"password");
+        NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nGAME_INVALIDPASSWORD");
+        Info_ValueForKey(userinfo,"password");
         Com_DPrintf(0xf,"Rejected connection, invalid password %s\n");
         return;
       }
     }
-    iVar7 = Sys_IsLANAddress(param_1);
+    iVar7 = Sys_IsLANAddress(from);
     if (iVar7 == 0) {
-      if (((sv_minPing->current).integer != 0) && (local_4b0 < (sv_minPing->current).integer)) {
-        NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nEXE_ERR_HIGH_PING_ONLY");
+      if (((sv_minPing->current).integer != 0) && (ping < (sv_minPing->current).integer)) {
+        NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nEXE_ERR_HIGH_PING_ONLY");
         Com_DPrintf(0xf,"Client %i rejected on a too low ping\n");
         return;
       }
-      if (((sv_maxPing->current).integer != 0) && ((sv_maxPing->current).integer < local_4b0)) {
-        NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nEXE_ERR_LOW_PING_ONLY");
+      if (((sv_maxPing->current).integer != 0) && ((sv_maxPing->current).integer < ping)) {
+        NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nEXE_ERR_LOW_PING_ONLY");
         Com_DPrintf(0xf,"Client %i rejected on a too high ping: %i\n");
         return;
       }
     }
   }
-  pcVar3 = Info_ValueForKey(local_454,"cl_punkbuster");
+  pcVar3 = Info_ValueForKey(userinfo,"cl_punkbuster");
   iVar7 = atoi(pcVar3);
-  iVar5 = NET_IsLocalAddress(param_1);
+  iVar5 = NET_IsLocalAddress(from);
   if (iVar5 == 0) {
-    local_4d4 = NET_AdrToString(param_1);
+    local_4d4 = NET_AdrToString(from);
   }
   else {
     local_4d4 = "localhost";
   }
-  local_48 = PbAuthClient(local_4d4,iVar7,local_480);
-  if (local_48 != (char *)0x0) {
-    iVar7 = I_strnicmp(local_48,"error\n",6);
+  pb_authmsg = PbAuthClient(local_4d4,iVar7,authSvPBguid);
+  if (pb_authmsg != (char *)0x0) {
+    iVar7 = I_strnicmp(pb_authmsg,"error\n",6);
     if (iVar7 != 0) {
       return;
     }
-    NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,local_48);
+    NET_OutOfBandPrint(NS_MAXCLIENTS,from,pb_authmsg);
     return;
   }
-  local_4ac = svs.clients;
-  local_48 = (char *)0x0;
-  for (local_44 = 0; local_44 < (com_maxclients->current).integer; local_44 = local_44 + 1) {
-    if ((((local_4ac->header).state != 0) &&
-        (iVar7 = NET_CompareBaseAdr(param_1,(local_4ac->header).netchan.remoteAddress), iVar7 != 0))
-       && (((local_4ac->header).netchan.qport == local_30 ||
-           (param_1.port == (local_4ac->header).netchan.remoteAddress.port)))) {
-      NET_AdrToString(param_1);
+  cl = svs.clients;
+  pb_authmsg = (char *)0x0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if ((((cl->header).state != 0) &&
+        (iVar7 = NET_CompareBaseAdr(from,(cl->header).netchan.remoteAddress), iVar7 != 0)) &&
+       (((cl->header).netchan.qport == qport ||
+        (from.port == (cl->header).netchan.remoteAddress.port)))) {
+      NET_AdrToString(from);
       Com_Printf(0xf,"%s:reconnect. same qport: %i, same port: %i\n");
-      if (2 < (local_4ac->header).state) {
-        NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nEXE_ERR_QPORT");
+      if (2 < (cl->header).state) {
+        NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nEXE_ERR_QPORT");
         return;
       }
-      local_490 = local_4ac;
+      newcl = cl;
       goto LAB_007079ab;
     }
-    local_4ac = (client_t *)(local_4ac[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
-  local_484 = Com_GetPrivateClients();
-  local_49d = 0;
+  startIndex = Com_GetPrivateClients();
+  isDemoClient = false;
   bVar2 = Demo_IsEnabled();
   if (bVar2) {
-    pcVar3 = Info_ValueForKey(local_454,"loller");
+    pcVar3 = Info_ValueForKey(userinfo,"loller");
     iVar7 = atoi(pcVar3);
-    if ((param_1.port == 0x6ed) && (iVar7 == local_30)) {
-      local_49d = 1;
-      if ((param_1.type != NA_BOT) &&
+    if ((from.port == 0x6ed) && (iVar7 == qport)) {
+      isDemoClient = true;
+      if ((from.type != NA_BOT) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                    0x74f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_490 = svs.clients;
+      newcl = svs.clients;
       goto LAB_007079ab;
     }
-    local_484 = local_484 + 1;
+    startIndex = startIndex + 1;
   }
-  local_490 = (client_t *)0x0;
+  newcl = (client_t *)0x0;
   bVar2 = Demo_IsEnabled();
   if (bVar2) {
     local_4d8 = (com_maxclients->current).integer;
@@ -1242,65 +1268,65 @@ void __cdecl SV_DirectConnect(netadr_t param_1)
     if (iVar7 <= local_4d8) {
       local_4d8 = iVar7;
     }
-    local_4b8 = local_4d8;
+    endIndex = local_4d8;
   }
   else {
-    local_4b8 = (sv_maxclients->current).integer;
+    endIndex = (sv_maxclients->current).integer;
   }
-  for (local_44 = local_484; local_44 < local_4b8; local_44 = local_44 + 1) {
-    local_4ac = (client_t *)(local_44 * 0x84d00 + (int)svs.clients);
-    if ((local_4ac->header).state == 0) {
-      local_490 = local_4ac;
-      local_45c = Info_ValueForKey(local_454,"password");
-      iVar7 = SV_GetSlotForPasswordIfFree(local_45c);
-      local_490->reservedSlot = (char)iVar7;
+  for (i = startIndex; i < endIndex; i = i + 1) {
+    cl = (client_t *)(i * 0x84d00 + (int)svs.clients);
+    if ((cl->header).state == 0) {
+      newcl = cl;
+      password = Info_ValueForKey(userinfo,"password");
+      iVar7 = SV_GetSlotForPasswordIfFree(password);
+      newcl->reservedSlot = (char)iVar7;
       break;
     }
   }
-  if (local_490 == (client_t *)0x0) {
-    local_45c = Info_ValueForKey(local_454,"password");
-    iVar7 = SV_DropClientForReservedSlot(local_45c);
+  if (newcl == (client_t *)0x0) {
+    password = Info_ValueForKey(userinfo,"password");
+    iVar7 = SV_DropClientForReservedSlot(password);
     if (iVar7 < 0) {
-      NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nEXE_SERVERISFULL");
+      NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nEXE_SERVERISFULL");
       Com_DPrintf(0xf,"Rejected a connection. com_maxclients = %d\n");
       return;
     }
     Com_DPrintf(0xf,"Accepted client for reserved slot %d, welcome!.\n");
-    local_490 = (client_t *)(iVar7 * 0x84d00 + (int)svs.clients);
-    local_4bc = (char)iVar7;
-    local_490->reservedSlot = local_4bc;
+    newcl = (client_t *)(iVar7 * 0x84d00 + (int)svs.clients);
+    slot._0_1_ = (char)iVar7;
+    newcl->reservedSlot = (char)slot;
   }
-  local_49c[0] = 0;
-  local_49c[1] = 0;
-  puVar8 = (ulong64 *)local_49c;
-  pcVar3 = Info_ValueForKey(local_454,"bdOnlineUserID");
-  StringToXUID(pcVar3,puVar8);
-  iVar7 = SV_IsBannedGuid(local_49c[0]);
-  if ((iVar7 != 0) || (iVar7 = SV_IsTempBannedGuid(local_49c[0]), iVar7 != 0)) {
-    NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"error\nPATCH_BANNED_FROM_SERVER");
+  uid[0] = 0;
+  uid[1] = 0;
+  xuid = (ulong64 *)uid;
+  pcVar3 = Info_ValueForKey(userinfo,"bdOnlineUserID");
+  StringToXUID(pcVar3,xuid);
+  iVar7 = SV_IsBannedGuid(uid[0]);
+  if ((iVar7 != 0) || (iVar7 = SV_IsTempBannedGuid(uid[0]), iVar7 != 0)) {
+    NET_OutOfBandPrint(NS_MAXCLIENTS,from,"error\nPATCH_BANNED_FROM_SERVER");
     return;
   }
-  local_4ac->reliableAcknowledge = 0;
-  local_4ac->reliableSequence = 0;
-  Demo_ClientConnected(((int)local_4ac - (int)svs.clients) / 0x84d00);
+  cl->reliableAcknowledge = 0;
+  cl->reliableSequence = 0;
+  Demo_ClientConnected(((int)cl - (int)svs.clients) / 0x84d00);
 LAB_007079ab:
-  local_34 = (int)local_490->reservedSlot;
-  memset((uchar *)local_490,'\0',0x84d00);
-  local_490->reservedSlot = (char)local_34;
-  local_40 = ((int)local_490 - (int)svs.clients) / 0x84d00;
-  Pregame_ResetDataForClient(local_40);
-  local_458 = (gentity_s *)
-              ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_40 + -0x18);
-  local_490->gentity = local_458;
-  local_50 = local_458;
-  if (((uint)(local_458->s).clientNum != (local_458->s).number) &&
+  tempslot = (int)newcl->reservedSlot;
+  memset((uchar *)newcl,'\0',0x84d00);
+  newcl->reservedSlot = (char)tempslot;
+  clientNum = ((int)newcl - (int)svs.clients) / 0x84d00;
+  Pregame_ResetDataForClient(clientNum);
+  es = (entityState_s *)
+       ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * clientNum + -0x18);
+  newcl->gentity = (gentity_s *)es;
+  ent = (gentity_s *)es;
+  if (((uint)(((gentity_s *)es)->s).clientNum != (((gentity_s *)es)->s).number) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x800,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_490->scriptId != 0) &&
+  if ((newcl->scriptId != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x802,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1309,74 +1335,74 @@ LAB_007079ab:
   }
   if ((live_service != (dvar_s *)0x0) && ((live_service->current).enabled != false)) {
     pcVar4 = "%u";
-    pcVar3 = Info_ValueForKey(local_454,"challengeNum");
+    pcVar3 = Info_ValueForKey(userinfo,"challengeNum");
     sscanf(pcVar3,pcVar4);
     pcVar4 = "%u";
-    pcVar3 = Info_ValueForKey(local_454,"nonce");
+    pcVar3 = Info_ValueForKey(userinfo,"nonce");
     sscanf(pcVar3,pcVar4);
     Com_DPrintf(0xf,"CHALLENGE RESPONSE: Read userID %llu, clientChallenge %u, nonce %u\n");
     Com_PrintWarning(0xf,"Failed to parse userId!\n");
   }
-  if ((local_490->bIsTestClient == 0) && (local_490->bIsDemoClient == 0)) {
-    local_490[1].userinfo[0x3d0] = '\x01';
-    local_490[1].userinfo[0x3d1] = '\0';
-    local_490[1].userinfo[0x3d2] = '\0';
-    local_490[1].userinfo[0x3d3] = '\0';
+  if ((newcl->bIsTestClient == 0) && (newcl->bIsDemoClient == 0)) {
+    newcl[1].userinfo[0x3d0] = '\x01';
+    newcl[1].userinfo[0x3d1] = '\0';
+    newcl[1].userinfo[0x3d2] = '\0';
+    newcl[1].userinfo[0x3d3] = '\0';
   }
-  local_4c = Scr_AllocArray(SCRIPTINSTANCE_SERVER);
-  local_490->scriptId = local_4c;
+  scriptId = Scr_AllocArray(SCRIPTINSTANCE_SERVER);
+  newcl->scriptId = scriptId;
   Com_Printf(0xf,"SV_DirectConnect: %d, 0 -> %d\n");
-  local_490->challenge = local_488;
-  if (local_4ac->guid == 0) {
+  newcl->challenge = challenge;
+  if (cl->guid == 0) {
     Com_Printf(0xf,"Connecting player #%i has a zero GUID\n");
   }
-  local_48c = Info_ValueForKey(local_454,"steamid");
-  local_490[1].userinfo[0x3ae] = '\0';
-  local_490[1].userinfo[0x3af] = '\0';
-  lVar6 = StringToInt64(local_48c);
-  *(long64 *)(local_490[1].userinfo + 0x3b0) = lVar6;
-  Netchan_Setup(NS_MAXCLIENTS,&(local_490->header).netchan,param_1,local_30,
-                local_490->netchanOutgoingBuffer,0x10000,local_490->netchanIncomingBuffer,0x800);
-  local_490->voicePacketCount = 0;
-  local_490->sendVoice = true;
-  I_strncpyz(local_490->userinfo,local_454,0x400);
+  steamIDStr = Info_ValueForKey(userinfo,"steamid");
+  newcl[1].userinfo[0x3ae] = '\0';
+  newcl[1].userinfo[0x3af] = '\0';
+  lVar6 = StringToInt64(steamIDStr);
+  *(long64 *)(newcl[1].userinfo + 0x3b0) = lVar6;
+  Netchan_Setup(NS_MAXCLIENTS,&(newcl->header).netchan,from,qport,newcl->netchanOutgoingBuffer,
+                0x10000,newcl->netchanIncomingBuffer,0x800);
+  newcl->voicePacketCount = 0;
+  newcl->sendVoice = true;
+  I_strncpyz(newcl->userinfo,userinfo,0x400);
   bVar2 = Demo_IsEnabled();
   if (bVar2) {
-    local_490->bIsDemoClient = (uint)local_49d;
+    newcl->bIsDemoClient = (uint)isDemoClient;
   }
-  pcVar3 = ClientConnect(local_40,local_490->scriptId);
+  pcVar3 = ClientConnect(clientNum,newcl->scriptId);
   if (pcVar3 == (char *)0x0) {
     Com_Printf(0xf,"Going from CS_FREE to CS_CONNECTED for %s (num %i guid %i)\n");
-    (local_490->header).state = 3;
-    local_490->nextSnapshotTime = svs.time;
-    local_490->lastSnapshotTime = -1;
-    local_490->lastPacketTime = svs.time;
-    local_490->lastConnectTime = svs.time;
-    I_strncpyz(local_490[1].userinfo + 0x36c,local_480,0x21);
-    I_strncpyz(local_490[1].userinfo + 0x38d,local_2c,0x21);
-    SV_UserinfoChanged(local_490);
-    svs.challenges[local_44].firstPing = 0;
+    (newcl->header).state = 3;
+    newcl->nextSnapshotTime = svs.time;
+    newcl->lastSnapshotTime = -1;
+    newcl->lastPacketTime = svs.time;
+    newcl->lastConnectTime = svs.time;
+    I_strncpyz(newcl[1].userinfo + 0x36c,authSvPBguid,0x21);
+    I_strncpyz(newcl[1].userinfo + 0x38d,clientPBguid,0x21);
+    SV_UserinfoChanged(newcl);
+    svs.challenges[i].firstPing = 0;
     pcVar3 = va("connectResponse %s");
-    NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,pcVar3);
-    local_490->gamestateMessageNum = -1;
-    pcVar3 = Info_ValueForKey(local_454,"name");
+    NET_OutOfBandPrint(NS_MAXCLIENTS,from,pcVar3);
+    newcl->gamestateMessageNum = -1;
+    pcVar3 = Info_ValueForKey(userinfo,"name");
     SV_BotNameUpdate(pcVar3);
-    SV_UpdateSplitscreenStateForAddr((local_490->header).netchan.remoteAddress);
-    local_38 = 0;
-    for (local_44 = 0; local_44 < (com_maxclients->current).integer; local_44 = local_44 + 1) {
-      if (2 < *(int *)((int)svs.clients + local_44 * 0x84d00)) {
-        local_38 = local_38 + 1;
+    SV_UpdateSplitscreenStateForAddr((newcl->header).netchan.remoteAddress);
+    count = 0;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (2 < *(int *)((int)svs.clients + i * 0x84d00)) {
+        count = count + 1;
       }
     }
-    if ((local_38 == 1) || (local_38 == (com_maxclients->current).integer)) {
+    if ((count == 1) || (count == (com_maxclients->current).integer)) {
       SV_Heartbeat_f();
     }
   }
   else {
     pcVar3 = va("error\n%s");
-    NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,pcVar3);
+    NET_OutOfBandPrint(NS_MAXCLIENTS,from,pcVar3);
     Com_DPrintf(0xf,"Game rejected a connection: %s.\n");
-    SV_FreeClientScriptId(local_490);
+    SV_FreeClientScriptId(newcl);
   }
   return;
 }
@@ -1396,18 +1422,19 @@ void __cdecl SV_FreeClientScriptPers(void)
 
 {
   uint uVar1;
-  client_t *local_10;
-  int local_8;
+  client_t *cl;
+  uint scriptId;
+  int i;
   
-  local_10 = svs.clients;
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (2 < (local_10->header).state) {
-      SV_FreeClientScriptId(local_10);
+  cl = svs.clients;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (2 < (cl->header).state) {
+      SV_FreeClientScriptId(cl);
       uVar1 = Scr_AllocArray(SCRIPTINSTANCE_SERVER);
-      local_10->scriptId = uVar1;
+      cl->scriptId = uVar1;
       Com_Printf(0xf,"SV_FreeClientScriptPers: %d, 0 -> %d\n");
     }
-    local_10 = (client_t *)(local_10[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
   return;
 }
@@ -1422,52 +1449,53 @@ void __cdecl SV_FreeClientScriptPers(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-SV_SendDisconnect(client_t *param_1,int param_2,char *param_3,bool param_4,char *param_5)
+SV_SendDisconnect(client_t *client,int state,char *reason,bool translationForReason,char *clientName
+                 )
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *data;
   
-  if ((param_1 == (client_t *)0x0) &&
+  if ((client == (client_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x8d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 3) &&
+  if ((state < 3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x8d5,0,"%s\n\t(state) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((reason == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x8d6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 == 5) {
-    if (param_4) {
-      SV_SendServerCommand(param_1,SV_CMD_RELIABLE,"%c \"%s\"");
+  if (state == 5) {
+    if (translationForReason) {
+      SV_SendServerCommand(client,SV_CMD_RELIABLE,"%c \"%s\"");
     }
     else {
-      SV_SendServerCommand(param_1,SV_CMD_RELIABLE,"%c \"%s^7 %s\" PB");
+      SV_SendServerCommand(client,SV_CMD_RELIABLE,"%c \"%s^7 %s\" PB");
     }
   }
   else {
-    if (((param_2 != 3) && (param_2 != 4)) &&
+    if (((state != 3) && (state != 4)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                  0x8ef,0,"%s\n\t(state) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pcVar3 = va("disconnect %s");
-    NET_OutOfBandPrint(NS_MAXCLIENTS,(param_1->header).netchan.remoteAddress,pcVar3);
+    data = va("disconnect %s");
+    NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,data);
   }
   return;
 }
@@ -1481,108 +1509,106 @@ SV_SendDisconnect(client_t *param_1,int param_2,char *param_3,bool param_4,char 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_DropClient(client_t *param_1,char *param_2,bool param_3,bool param_4)
+void __cdecl SV_DropClient(client_t *drop,char *reason,bool tellThem,bool writeStats)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  int local_40;
-  char local_38 [32];
+  int state;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  int iVar4;
+  int i_2;
+  int dropState;
+  char droppedClientName [32];
   uint local_18;
-  bool local_11;
-  netadr_t *local_10;
-  int local_c;
-  uint local_8;
+  bool translationForReason;
+  challenge_t *challenge;
+  int i;
+  int clientNum;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_1->header).state == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                               0x908,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if (((drop->header).state == 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x908,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  iVar1 = (param_1->header).state;
-  if (iVar1 == 1) {
-    if ((param_1->dropReason != (char *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                 0x90f,0,"%s\n\t(drop->dropReason) = %s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  state = (drop->header).state;
+  if (state == 1) {
+    if ((drop->dropReason != (char *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                 0x90f,0,"%s\n\t(drop->dropReason) = %s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   else {
-    param_1->dropReason = (char *)0x0;
-    if ((iVar1 < 1) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                 0x914,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    drop->dropReason = (char *)0x0;
+    if ((state < 1) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                 0x914,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    for (local_40 = 0; local_40 < 0x20; local_40 = local_40 + 1) {
-      if ((int)g_notifyLeave[local_40] == 0 && *(int *)((int)g_notifyLeave + local_40 * 8 + 4) == 0)
-      {
-        *(undefined4 *)(g_notifyLeave + local_40) = *(undefined4 *)(param_1[1].userinfo + 0x3c8);
-        *(undefined4 *)((int)g_notifyLeave + local_40 * 8 + 4) =
-             *(undefined4 *)(param_1[1].userinfo + 0x3cc);
+    for (i_2 = 0; i_2 < 0x20; i_2 = i_2 + 1) {
+      if ((int)g_notifyLeave[i_2] == 0 && *(int *)((int)g_notifyLeave + i_2 * 8 + 4) == 0) {
+        *(undefined4 *)(g_notifyLeave + i_2) = *(undefined4 *)(drop[1].userinfo + 0x3c8);
+        *(undefined4 *)((int)g_notifyLeave + i_2 * 8 + 4) =
+             *(undefined4 *)(drop[1].userinfo + 0x3cc);
       }
     }
-    if (((*(int *)(param_1[1].userinfo + 0x360) == -1) &&
-        (*(int *)(param_1[1].userinfo + 0x364) == 7)) && (param_4)) {
-      SV_DWWriteClientStats(param_1);
+    if (((*(int *)(drop[1].userinfo + 0x360) == -1) && (*(int *)(drop[1].userinfo + 0x364) == 7)) &&
+       (writeStats)) {
+      SV_DWWriteClientStats(drop);
     }
-    if ('\0' < param_1->reservedSlot) {
-      SV_FreeReservedSlot((int)param_1->reservedSlot);
+    if ('\0' < drop->reservedSlot) {
+      SV_FreeReservedSlot((int)drop->reservedSlot);
     }
-    iVar5 = 0x20;
-    pcVar4 = Com_DisplayName(param_1->name,param_1->clanAbbrev,3);
-    I_strncpyz(local_38,pcVar4,iVar5);
-    local_8 = ((int)param_1 - (int)svs.clients) / 0x84d00;
-    if (((uint)level.maxclients <= local_8) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+    iVar4 = 0x20;
+    pcVar3 = Com_DisplayName(drop->name,drop->clanAbbrev,3);
+    I_strncpyz(droppedClientName,pcVar3,iVar4);
+    clientNum = ((int)drop - (int)svs.clients) / 0x84d00;
+    if (((uint)level.maxclients <= (uint)clientNum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                  0x938,0,
                                  "clientNum doesn\'t index level.maxclients\n\t%i not in [0, %i)"),
-       !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
     if (((onlinegame->current).enabled != false) && ((com_sv_running->current).enabled != false)) {
-      MatchRecordPlayerDetails(level.clients + local_8,param_2);
+      MatchRecordPlayerDetails(level.clients + clientNum,reason);
     }
-    LiveSteam_Server_ClientSteamDisconnect(*(ulong64 *)(param_1[1].userinfo + 0x3b0));
-    SV_FreeClient(param_1);
+    LiveSteam_Server_ClientSteamDisconnect(*(ulong64 *)(drop[1].userinfo + 0x3b0));
+    SV_FreeClient(drop);
     Com_DPrintf(0xf,"Going to CS_ZOMBIE from %i for %s due to %s\n");
-    (param_1->header).state = 1;
-    if (param_1->gentity == (gentity_s *)0x0) {
-      local_10 = &svs.challenges[0].adr;
-      for (local_c = 0; local_c < 0x400; local_c = local_c + 1) {
-        iVar5 = NET_CompareAdr((param_1->header).netchan.remoteAddress,*local_10);
-        if (iVar5 != 0) {
-          local_10[2].ip[0] = '\0';
-          local_10[2].ip[1] = '\0';
-          local_10[2].ip[2] = '\0';
-          local_10[2].ip[3] = '\0';
+    (drop->header).state = 1;
+    if (drop->gentity == (gentity_s *)0x0) {
+      challenge = svs.challenges;
+      for (i = 0; i < 0x400; i = i + 1) {
+        iVar4 = NET_CompareAdr((drop->header).netchan.remoteAddress,challenge->adr);
+        if (iVar4 != 0) {
+          challenge->connected = 0;
           break;
         }
-        local_10 = local_10 + 7;
+        challenge = challenge + 1;
       }
     }
-    pcVar4 = SEH_StringEd_GetString(param_2);
-    local_11 = pcVar4 != (char *)0x0;
-    iVar5 = I_stricmp(param_2,"EXE_DISCONNECTED");
-    if (iVar5 == 0) {
+    pcVar3 = SEH_StringEd_GetString(reason);
+    translationForReason = pcVar3 != (char *)0x0;
+    iVar4 = I_stricmp(reason,"EXE_DISCONNECTED");
+    if (iVar4 == 0) {
       SV_SendServerCommand((client_t *)0x0,SV_CMD_CAN_IGNORE,"%c \"\x15%s^7 \x14%s%s\"");
     }
     else {
-      iVar5 = I_stricmp(param_2,"EXE_PLAYERKICKED_BAN");
-      if (iVar5 == 0) {
+      iVar4 = I_stricmp(reason,"EXE_PLAYERKICKED_BAN");
+      if (iVar4 == 0) {
         SV_SendServerCommand((client_t *)0x0,SV_CMD_CAN_IGNORE,"%c \"\x15%s^7 \x14%s%s\"");
       }
       else {
@@ -1591,21 +1617,20 @@ void __cdecl SV_DropClient(client_t *param_1,char *param_2,bool param_3,bool par
     }
     Com_Printf(0xf,"%i:%s %s\n");
     SV_SendServerCommand((client_t *)0x0,SV_CMD_RELIABLE,"%c %d");
-    if (param_3) {
-      SV_SendDisconnect(param_1,iVar1,param_2,local_11,local_38);
+    if (tellThem) {
+      SV_SendDisconnect(drop,state,reason,translationForReason,droppedClientName);
     }
-    if ((param_1->bIsTestClient != 0) || (param_1->bIsDemoClient != 0)) {
-      param_1->bIsDemoClient = 0;
-      param_1->bIsTestClient = 0;
-      if ((param_1->header).state == 1) {
-        (param_1->header).state = 0;
+    if ((drop->bIsTestClient != 0) || (drop->bIsDemoClient != 0)) {
+      drop->bIsDemoClient = 0;
+      drop->bIsTestClient = 0;
+      if ((drop->header).state == 1) {
+        (drop->header).state = 0;
       }
     }
-    for (local_c = 0;
-        (local_c < (com_maxclients->current).integer &&
-        (*(int *)((int)svs.clients + local_c * 0x84d00) < 3)); local_c = local_c + 1) {
+    for (i = 0; (i < (com_maxclients->current).integer &&
+                (*(int *)((int)svs.clients + i * 0x84d00) < 3)); i = i + 1) {
     }
-    if (local_c == (com_maxclients->current).integer) {
+    if (i == (com_maxclients->current).integer) {
       SV_Heartbeat_f();
     }
   }
@@ -1621,35 +1646,35 @@ void __cdecl SV_DropClient(client_t *param_1,char *param_2,bool param_3,bool par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DelayDropClient(client_t *param_1,char *param_2)
+void __cdecl SV_DelayDropClient(client_t *drop,char *reason)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (client_t *)0x0) &&
+  if ((drop == (client_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x9b9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((reason == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x9ba,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->header).state == 0) &&
+  if (((drop->header).state == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x9bc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->header).state == 1) {
-    if ((param_1->dropReason != (char *)0x0) &&
+  if ((drop->header).state == 1) {
+    if ((drop->dropReason != (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                  0x9bf,0,"%s\n\t(drop->dropReason) = %s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1657,8 +1682,8 @@ void __cdecl SV_DelayDropClient(client_t *param_1,char *param_2)
       return;
     }
   }
-  else if (param_1->dropReason == (char *)0x0) {
-    param_1->dropReason = param_2;
+  else if (drop->dropReason == (char *)0x0) {
+    drop->dropReason = reason;
   }
   return;
 }
@@ -1666,12 +1691,12 @@ void __cdecl SV_DelayDropClient(client_t *param_1,char *param_2)
 
 // 007099A0  SV_ConfigStringIsConstant  (server_mp/sv_client_mp.cpp:2515)
 
-bool __cdecl SV_ConfigStringIsConstant(int param_1)
+bool __cdecl SV_ConfigStringIsConstant(int configStringNum)
 
 {
   bool bVar1;
   
-  switch(param_1) {
+  switch(configStringNum) {
   case 0:
   case 5:
   case 6:
@@ -1679,8 +1704,8 @@ bool __cdecl SV_ConfigStringIsConstant(int param_1)
     bVar1 = false;
     break;
   default:
-    if ((param_1 < 0x143) || (0x162 < param_1)) {
-      if ((param_1 < 0x163) || (0x182 < param_1)) {
+    if ((configStringNum < 0x143) || (0x162 < configStringNum)) {
+      if ((configStringNum < 0x163) || (0x182 < configStringNum)) {
         bVar1 = true;
       }
       else {
@@ -1703,67 +1728,67 @@ bool __cdecl SV_ConfigStringIsConstant(int param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl SV_SendClientGameState(client_t *param_1)
+void __cdecl SV_SendClientGameState(client_t *client)
 
 {
   byte bVar1;
-  code *pcVar2;
-  bool bVar3;
-  uchar *puVar4;
+  char cVar2;
+  code *pcVar3;
+  bool bVar4;
+  uchar *data;
   char *pcVar5;
   int iVar6;
-  byte *pbVar7;
+  char *pcVar7;
   int extraout_EAX;
   int extraout_EAX_00;
-  uint uVar8;
-  char *pcVar9;
-  byte *local_1bc;
+  char *local_1bc;
   int local_1b4;
   byte *local_1ac;
   byte *local_1a8;
   int local_19c;
   byte *local_194;
   byte *local_190;
-  int local_188;
-  int local_184;
-  byte *local_180;
-  int local_17c;
-  entityState_s local_174;
+  int entNum;
+  int configStringCount;
+  char *c;
+  int configStringNum;
+  entityState_s nullstate;
   uint local_94;
-  int local_90;
-  int local_8c;
-  SnapshotInfo_s local_88;
-  int local_70;
-  int local_6c;
-  msg_t local_68;
-  int local_38;
-  int local_34;
-  int local_30;
-  byte *local_2c;
-  int local_28;
-  byte *local_24;
-  int local_20;
-  int local_1c;
-  entityState_s *local_18;
-  LargeLocal local_14;
-  uint local_c;
-  int local_8;
+  int numWritten;
+  int nextConstConfigStringIndex;
+  SnapshotInfo_s snapInfo;
+  int startTime;
+  int size;
+  msg_t msg;
+  int oldDebugQuick;
+  int lastStringIndex;
+  int largestString;
+  char *configString;
+  int dataStart;
+  char *constValue;
+  int f;
+  int nextConstConfigStringNumber;
+  entityState_s *base;
+  LargeLocal msgBuffer_large_local;
+  int clientNum;
+  int totalStringSize;
   
   local_94 = __security_cookie ^ (uint)&stack0xfffffffc;
-  LargeLocal::LargeLocal(&local_14,0x10000);
-  puVar4 = LargeLocal::GetBuf(&local_14);
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+  LargeLocal::LargeLocal(&msgBuffer_large_local,0x10000);
+  data = LargeLocal::GetBuf(&msgBuffer_large_local);
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)client - (int)svs.clients) / 0x84d00))
+     && (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                   0xa0e,0,
                                   "client - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+                                 ), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((((param_1->header).state != 0) && ((param_1->header).netchan.unsentFragments != 0)) &&
-     ((param_1->header).netchan.reliable_fragments != 0)) {
+  if ((((client->header).state != 0) && ((client->header).netchan.unsentFragments != 0)) &&
+     ((client->header).netchan.reliable_fragments != 0)) {
     pcVar5 = va(
                "Would have gone into INFINITE LOOP OF DOOM for client %s, unsentlength %i, state %i\n"
                );
@@ -1772,123 +1797,122 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
                "Would have gone into INFINITE LOOP OF DOOM for client %s, unsentlength %i, state %i\n"
                );
     SV_SysLog_LogMessage(0,pcVar5);
-    LargeLocal::~LargeLocal(&local_14);
+    LargeLocal::~LargeLocal(&msgBuffer_large_local);
     return;
   }
-  while ((((param_1->header).state != 0 && ((param_1->header).netchan.unsentFragments != 0)) &&
-         ((param_1->header).netchan.reliable_fragments == 0))) {
-    bVar3 = SV_Netchan_TransmitNextFragment(param_1,&(param_1->header).netchan);
-    if (!bVar3) {
+  while ((((client->header).state != 0 && ((client->header).netchan.unsentFragments != 0)) &&
+         ((client->header).netchan.reliable_fragments == 0))) {
+    bVar4 = SV_Netchan_TransmitNextFragment(client,&(client->header).netchan);
+    if (!bVar4) {
       pcVar5 = va("Dropping client %s, unsentlength %i, state %i\n");
       Com_PrintError(0,pcVar5);
       pcVar5 = va("Dropping client %s, unsentlength %i, state %i\n");
       SV_SysLog_LogMessage(0,pcVar5);
-      SV_DropClient(param_1,"EXE_TRANSMITERROR",false,true);
-      LargeLocal::~LargeLocal(&local_14);
+      SV_DropClient(client,"EXE_TRANSMITERROR",false,true);
+      LargeLocal::~LargeLocal(&msgBuffer_large_local);
       return;
     }
   }
-  if ((param_1->bIsTestClient != 0) || (param_1->bIsDemoClient != 0)) {
-    memset(param_1->stats,'\0',0x9ce8);
-    param_1[1].userinfo[0x360] = -1;
-    param_1[1].userinfo[0x361] = -1;
-    param_1[1].userinfo[0x362] = -1;
-    param_1[1].userinfo[0x363] = -1;
-    param_1[1].userinfo[0x364] = '\a';
-    param_1[1].userinfo[0x365] = '\0';
-    param_1[1].userinfo[0x366] = '\0';
-    param_1[1].userinfo[0x367] = '\0';
+  if ((client->bIsTestClient != 0) || (client->bIsDemoClient != 0)) {
+    memset(client->stats,'\0',0x9ce8);
+    client[1].userinfo[0x360] = -1;
+    client[1].userinfo[0x361] = -1;
+    client[1].userinfo[0x362] = -1;
+    client[1].userinfo[0x363] = -1;
+    client[1].userinfo[0x364] = '\a';
+    client[1].userinfo[0x365] = '\0';
+    client[1].userinfo[0x366] = '\0';
+    client[1].userinfo[0x367] = '\0';
   }
-  if ((*(int *)(param_1[1].userinfo + 0x360) != -1) || (*(int *)(param_1[1].userinfo + 0x364) != 7))
-  {
+  if ((*(int *)(client[1].userinfo + 0x360) != -1) || (*(int *)(client[1].userinfo + 0x364) != 7)) {
     Com_DPrintf(0xf,"Not sending state to %s, waiting on stats\n");
-    LargeLocal::~LargeLocal(&local_14);
+    LargeLocal::~LargeLocal(&msgBuffer_large_local);
     return;
   }
-  local_88.clientNum = 0;
-  local_88.client = (clientHeader_t *)0x0;
-  local_88.snapshotDeltaTime = 0;
-  local_88.fromBaseline = false;
-  local_88.archived = false;
-  local_88.entJustUnlinked = false;
-  local_88.demoSnapshot = false;
-  local_88.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
-  local_88.packetEntityTypeArchived = false;
-  local_88._21_3_ = 0;
+  snapInfo.clientNum = 0;
+  snapInfo.client = (clientHeader_t *)0x0;
+  snapInfo.snapshotDeltaTime = 0;
+  snapInfo.fromBaseline = false;
+  snapInfo.archived = false;
+  snapInfo.entJustUnlinked = false;
+  snapInfo.demoSnapshot = false;
+  snapInfo.packetEntityType = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
+  snapInfo.packetEntityTypeArchived = false;
+  snapInfo._21_3_ = 0;
   SV_SetServerStaticHeader();
   Com_Printf(0xf,"SV_SendClientGameState() for %s\n");
   Com_Printf(0xf,"Going from CS_CONNECTED to CS_CLIENTLOADING for %s\n");
-  (param_1->header).state = 4;
-  param_1->pureAuthentic = 0;
-  param_1->gamestateMessageNum = (param_1->header).netchan.outgoingSequence;
-  MSG_Init(&local_68,puVar4,0x10000);
-  MSG_ClearLastReferencedEntity(&local_68);
-  MSG_WriteLong(&local_68,param_1->lastClientCommand);
-  local_28 = local_68.cursize;
-  local_38 = (sv_debugPacketContentsQuick->current).integer;
-  if (0 < local_38) {
+  (client->header).state = 4;
+  client->pureAuthentic = 0;
+  client->gamestateMessageNum = (client->header).netchan.outgoingSequence;
+  MSG_Init(&msg,data,0x10000);
+  MSG_ClearLastReferencedEntity(&msg);
+  MSG_WriteLong(&msg,client->lastClientCommand);
+  dataStart = msg.cursize;
+  oldDebugQuick = (sv_debugPacketContentsQuick->current).integer;
+  if (0 < oldDebugQuick) {
     Dvar_SetInt(sv_debugPacketContentsQuick,0);
   }
-  SV_UpdateServerCommandsToClient(param_1,&local_68);
+  SV_UpdateServerCommandsToClient(client,&msg);
   Com_Printf(0xf,"Gamestate has %i bytes of server commands\n");
   if ((*(sv_mapname->current).string == '\0') &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                               0xa6c,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0xa6c,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
   if ((*(sv_gametype->current).string == '\0') &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                               0xa6d,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0xa6d,0,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  MSG_WriteByte(&local_68,1);
-  MSG_WriteLong(&local_68,param_1->reliableSequence);
-  MSG_WriteString(&local_68,(sv_mapname->current).string);
-  MSG_WriteString(&local_68,(sv_gametype->current).string);
+  MSG_WriteByte(&msg,1);
+  MSG_WriteLong(&msg,client->reliableSequence);
+  MSG_WriteString(&msg,(sv_mapname->current).string);
+  MSG_WriteString(&msg,(sv_gametype->current).string);
   iVar6 = CCS_GetChecksum();
-  MSG_WriteLong(&local_68,iVar6);
-  local_90 = 0;
-  local_30 = 0;
-  local_8 = 0;
-  local_28 = local_68.cursize;
-  MSG_WriteByte(&local_68,2);
-  local_184 = 0;
-  local_8c = 0;
-  local_1c = CCS_GetConfigStringNum(0);
-  for (local_17c = 0; local_17c < 0xcbc; local_17c = local_17c + 1) {
-    if (local_17c == 1) {
-      if ((local_1c == 1) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0xa8d,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+  MSG_WriteLong(&msg,iVar6);
+  numWritten = 0;
+  largestString = 0;
+  totalStringSize = 0;
+  dataStart = msg.cursize;
+  MSG_WriteByte(&msg,2);
+  configStringCount = 0;
+  nextConstConfigStringIndex = 0;
+  nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+  for (configStringNum = 0; configStringNum < 0xcbc; configStringNum = configStringNum + 1) {
+    if (configStringNum == 1) {
+      if ((nextConstConfigStringNumber == 1) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0xa8d,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      local_184 = local_184 + 1;
+      configStringCount = configStringCount + 1;
     }
-    else if (local_1c == local_17c) {
-      pbVar7 = (byte *)SL_ConvertToString((uint)sv.configstrings[local_17c],SCRIPTINSTANCE_SERVER);
-      local_2c = pbVar7;
-      if (local_1c < 0x60b) {
+    else if (nextConstConfigStringNumber == configStringNum) {
+      pcVar5 = SL_ConvertToString((uint)sv.configstrings[configStringNum],SCRIPTINSTANCE_SERVER);
+      configString = pcVar5;
+      if (nextConstConfigStringNumber < 0x60b) {
 LAB_00708dbe:
-        if (local_1c < 0x60b) {
-          local_190 = local_2c;
-          local_194 = (byte *)CCS_GetConfigStringValue(local_8c);
+        if (nextConstConfigStringNumber < 0x60b) {
+          local_190 = (byte *)configString;
+          local_194 = (byte *)CCS_GetConfigStringValue(nextConstConfigStringIndex);
           do {
             bVar1 = *local_194;
-            bVar3 = bVar1 < *local_190;
+            bVar4 = bVar1 < *local_190;
             if (bVar1 != *local_190) {
 LAB_00708e47:
-              local_19c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+              local_19c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
               goto LAB_00708e52;
             }
             if (bVar1 == 0) break;
             bVar1 = local_194[1];
-            bVar3 = bVar1 < local_190[1];
+            bVar4 = bVar1 < local_190[1];
             if (bVar1 != local_190[1]) goto LAB_00708e47;
             local_194 = local_194 + 2;
             local_190 = local_190 + 2;
@@ -1896,217 +1920,215 @@ LAB_00708e47:
           local_19c = 0;
 LAB_00708e52:
           if (local_19c != 0) {
-            local_184 = local_184 + 1;
+            configStringCount = configStringCount + 1;
           }
         }
       }
       else {
-        pcVar5 = CCS_GetConfigStringValue(local_8c);
-        iVar6 = I_stricmp(pcVar5,(char *)pbVar7);
+        pcVar7 = CCS_GetConfigStringValue(nextConstConfigStringIndex);
+        iVar6 = I_stricmp(pcVar7,pcVar5);
         if (iVar6 == 0) goto LAB_00708dbe;
-        local_184 = local_184 + 1;
+        configStringCount = configStringCount + 1;
       }
-      local_8c = local_8c + 1;
-      local_1c = CCS_GetConfigStringNum(local_8c);
+      nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+      nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
     }
-    else if (sv.configstrings[local_17c] != sv.emptyConfigString) {
-      local_184 = local_184 + 1;
+    else if (sv.configstrings[configStringNum] != sv.emptyConfigString) {
+      configStringCount = configStringCount + 1;
     }
   }
-  local_20 = 0;
-  if ((((param_1->header).netchan.remoteAddress.type == NA_LOOPBACK) &&
+  f = 0;
+  if ((((client->header).netchan.remoteAddress.type == NA_LOOPBACK) &&
       ((onlinegame->current).enabled != false)) &&
      ((sv_writeConfigStrings->current).enabled != false)) {
-    pcVar9 = "devOutput";
+    pcVar7 = "devOutput";
     pcVar5 = va("configStrings_pc_%s_%s.csv");
-    local_20 = FS_SV_FOpenFileWrite(pcVar5,pcVar9);
+    f = FS_SV_FOpenFileWrite(pcVar5,pcVar7);
   }
-  if (local_20 == 0) {
+  if (f == 0) {
     if ((sv_writeConfigStrings->current).enabled != false) {
       Com_Printf(0xf,"Could not write config strings to file\n");
     }
   }
   else {
     Com_Printf(0xf,"Starting writing config strings to file\n");
-    local_70 = Sys_Milliseconds();
-    for (local_17c = 0; local_17c < 0xcbc; local_17c = local_17c + 1) {
-      bVar3 = SV_ConfigStringIsConstant(local_17c);
-      if ((bVar3) && (sv.configstrings[local_17c] != sv.emptyConfigString)) {
-        local_2c = (byte *)SL_ConvertToString((uint)sv.configstrings[local_17c],
-                                              SCRIPTINSTANCE_SERVER);
-        strchr(local_2c,'\"');
-        if ((extraout_EAX == 0) && (strchr(local_2c,'\\'), extraout_EAX_00 == 0)) {
-          FS_Printf(local_20,"%i,\"%s\"\n");
+    startTime = Sys_Milliseconds();
+    for (configStringNum = 0; configStringNum < 0xcbc; configStringNum = configStringNum + 1) {
+      bVar4 = SV_ConfigStringIsConstant(configStringNum);
+      if ((bVar4) && (sv.configstrings[configStringNum] != sv.emptyConfigString)) {
+        configString = SL_ConvertToString((uint)sv.configstrings[configStringNum],
+                                          SCRIPTINSTANCE_SERVER);
+        strchr((uchar *)configString,'\"');
+        if ((extraout_EAX == 0) && (strchr((uchar *)configString,'\\'), extraout_EAX_00 == 0)) {
+          FS_Printf(f,"%i,\"%s\"\n");
         }
         else {
-          FS_Printf(local_20,"%i,\"");
-          for (local_180 = local_2c; *local_180 != 0; local_180 = local_180 + 1) {
-            if (*local_180 == 0x22) {
-              FS_Printf(local_20,"\"\"");
+          FS_Printf(f,"%i,\"");
+          for (c = configString; *c != '\0'; c = c + 1) {
+            if (*c == '\"') {
+              FS_Printf(f,"\"\"");
             }
-            else if (*local_180 == 0x5c) {
-              FS_Printf(local_20,"\\");
+            else if (*c == '\\') {
+              FS_Printf(f,"\\");
             }
             else {
-              FS_Printf(local_20,"%c");
+              FS_Printf(f,"%c");
             }
           }
-          FS_Printf(local_20,"\"\n");
+          FS_Printf(f,"\"\n");
         }
       }
     }
-    FS_FCloseFile(local_20);
+    FS_FCloseFile(f);
     Sys_Milliseconds();
     Com_Printf(0xf,"Finished writing config strings to file (%i mec)\n");
   }
-  MSG_WriteShort(&local_68,local_184);
-  local_8c = 0;
-  local_1c = CCS_GetConfigStringNum(0);
-  local_34 = -1;
-  local_17c = 0;
+  MSG_WriteShort(&msg,configStringCount);
+  nextConstConfigStringIndex = 0;
+  nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+  lastStringIndex = -1;
+  configStringNum = 0;
   do {
-    if (0xcbb < local_17c) {
-      if ((local_184 != 0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0xb49,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if (0xcbb < configStringNum) {
+      if ((configStringCount != 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0xb49,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      if ((4000 < local_68.cursize - local_28) && ((onlinegame->current).enabled != false)) {
+      if ((4000 < msg.cursize - dataStart) && ((onlinegame->current).enabled != false)) {
         StatMon_Warning(0xc,20000,"code_warning_gamestate");
       }
       Com_Printf(0xf,"Gamestate has %i bytes of config strings (%i total config strings)\n");
       Com_Printf(0xf,"   Largest config string was %i bytes\n");
       Com_Printf(0xf,"   Average config string was %i bytes\n");
-      local_28 = local_68.cursize;
-      local_90 = 0;
-      local_c = ((int)param_1 - (int)svs.clients) / 0x84d00;
-      if (((com_maxclients->current).unsignedInt <= local_c) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+      dataStart = msg.cursize;
+      numWritten = 0;
+      clientNum = ((int)client - (int)svs.clients) / 0x84d00;
+      if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                    0xb5c,0,
                                    "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                  ), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+                                  ), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      memset((uchar *)&local_174,'\0',0xe0);
-      for (local_188 = 0; local_188 < 0x400; local_188 = local_188 + 1) {
-        local_18 = &sv.svEntities[local_188].baseline.s;
-        if ((((archivedEntity_s *)local_18)->s).number != 0) {
-          MSG_WriteByte(&local_68,4);
-          local_88.clientNum = ((int)param_1 - (int)svs.clients) / 0x84d00;
-          local_88.snapshotDeltaTime = -1;
-          local_88.fromBaseline = true;
+      memset((uchar *)&nullstate,'\0',0xe0);
+      for (entNum = 0; entNum < 0x400; entNum = entNum + 1) {
+        base = &sv.svEntities[entNum].baseline.s;
+        if ((((archivedEntity_s *)base)->s).number != 0) {
+          MSG_WriteByte(&msg,4);
+          snapInfo.clientNum = ((int)client - (int)svs.clients) / 0x84d00;
+          snapInfo.snapshotDeltaTime = -1;
+          snapInfo.fromBaseline = true;
           MSG_PacketAnalyze_SetPacketEntityType
-                    (&local_88,ANALYZE_DATATYPE_ENTITYTYPE_BASELINE,false);
-          MSG_WriteEntity(&local_88,&local_68,0,&local_174,local_18,DELTA_FLAGS_FORCE);
-          local_90 = local_90 + 1;
-          local_88._12_4_ = (uint)(uint3)local_88._13_3_ << 8;
+                    (&snapInfo,ANALYZE_DATATYPE_ENTITYTYPE_BASELINE,false);
+          MSG_WriteEntity(&snapInfo,&msg,0,&nullstate,base,DELTA_FLAGS_FORCE);
+          numWritten = numWritten + 1;
+          snapInfo._12_4_ = (uint)(uint3)snapInfo._13_3_ << 8;
         }
       }
-      if (0 < local_38) {
-        Dvar_SetInt(sv_debugPacketContentsQuick,local_38);
+      if (0 < oldDebugQuick) {
+        Dvar_SetInt(sv_debugPacketContentsQuick,oldDebugQuick);
       }
       Com_Printf(0xf,"Gamestate has %i bytes of svc_baselines\n");
       Com_Printf(0xf,"Gamestate has %i bytes of gentity numbers\n");
       Com_Printf(0xf,"Gamestate has %i bytes of entity deltas\n");
-      MSG_WriteByte(&local_68,3);
-      MSG_WriteLong(&local_68,
-                    level.matchState.archivedState.matchUIVisibilityFlags |
-                    level.matchState.unarchivedState.matchUIVisibilityFlags);
-      MSG_WriteByte(&local_68,0xe);
-      MSG_WriteLong(&local_68,((int)param_1 - (int)svs.clients) / 0x84d00);
-      MSG_WriteLong(&local_68,sv.checksumFeed);
-      MSG_WriteByte(&local_68,6);
-      DynEnt_WriteGameState(&local_68);
-      MSG_WriteByte(&local_68,7);
-      Destructible_WriteGameState(&local_68);
-      MSG_WriteByte(&local_68,8);
-      Rope_WriteGameState(&local_68);
-      MSG_WriteByte(&local_68,9);
-      GlassSv_WriteGameState(&local_68);
-      UI_Gametype_Custom_WriteClientData(&local_68);
-      MSG_WriteByte(&local_68,0xe);
+      MSG_WriteByte(&msg,3);
+      MSG_WriteLong(&msg,level.matchState.archivedState.matchUIVisibilityFlags |
+                         level.matchState.unarchivedState.matchUIVisibilityFlags);
+      MSG_WriteByte(&msg,0xe);
+      MSG_WriteLong(&msg,((int)client - (int)svs.clients) / 0x84d00);
+      MSG_WriteLong(&msg,sv.checksumFeed);
+      MSG_WriteByte(&msg,6);
+      DynEnt_WriteGameState(&msg);
+      MSG_WriteByte(&msg,7);
+      Destructible_WriteGameState(&msg);
+      MSG_WriteByte(&msg,8);
+      Rope_WriteGameState(&msg);
+      MSG_WriteByte(&msg,9);
+      GlassSv_WriteGameState(&msg);
+      UI_Gametype_Custom_WriteClientData(&msg);
+      MSG_WriteByte(&msg,0xe);
       Com_DPrintf(0xf,"Sending %i bytes in gamestate to client: %i\n");
-      bVar3 = Demo_IsRecording();
-      if ((bVar3) && (uVar8 = Demo_GetDemoClientIndex(), local_c == uVar8)) {
-        Demo_WriteGamestateToBuffer(local_c,3,&local_68,(param_1->header).netchan.outgoingSequence);
+      bVar4 = Demo_IsRecording();
+      if ((bVar4) && (iVar6 = Demo_GetDemoClientIndex(), clientNum == iVar6)) {
+        Demo_WriteGamestateToBuffer(clientNum,3,&msg,(client->header).netchan.outgoingSequence);
       }
-      SV_SendMessageToClient(&local_68,param_1,true);
+      SV_SendMessageToClient(&msg,client,true);
       SV_GetServerStaticHeader();
-      LargeLocal::~LargeLocal(&local_14);
+      LargeLocal::~LargeLocal(&msgBuffer_large_local);
       return;
     }
-    if (local_17c == 1) {
-      if ((local_1c == 1) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0xaeb,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if (configStringNum == 1) {
+      if ((nextConstConfigStringNumber == 1) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0xaeb,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      local_2c = (byte *)Dvar_InfoString_Big(8);
+      configString = Dvar_InfoString_Big(8);
 LAB_00709492:
-      if ((local_184 < 0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0xb2b,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if ((configStringCount < 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0xb2b,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      if (local_17c == local_34 + 1) {
-        MSG_WriteBit1(&local_68);
+      if (configStringNum == lastStringIndex + 1) {
+        MSG_WriteBit1(&msg);
       }
       else {
-        MSG_WriteBit0(&local_68);
-        MSG_WriteBits(&local_68,local_17c,0xc);
+        MSG_WriteBit0(&msg);
+        MSG_WriteBits(&msg,configStringNum,0xc);
       }
-      local_34 = local_17c;
-      MSG_WriteBigString(&local_68,(char *)local_2c);
-      local_184 = local_184 + -1;
+      lastStringIndex = configStringNum;
+      MSG_WriteBigString(&msg,configString);
+      configStringCount = configStringCount + -1;
       if ((sv_debugConstantConfigStrings->current).enabled != false) {
         Com_Printf(0xf,"v|CS %4i: %s\n");
       }
-      local_1bc = local_2c;
+      local_1bc = configString;
       do {
-        bVar1 = *local_1bc;
+        cVar2 = *local_1bc;
         local_1bc = local_1bc + 1;
-      } while (bVar1 != 0);
-      local_6c = (int)local_1bc - (int)(local_2c + 1);
-      if (local_30 < local_6c) {
-        local_30 = local_6c;
+      } while (cVar2 != '\0');
+      size = (int)local_1bc - (int)(configString + 1);
+      if (largestString < size) {
+        largestString = size;
       }
-      local_8 = local_8 + local_6c;
-      local_90 = local_90 + 1;
+      totalStringSize = totalStringSize + size;
+      numWritten = numWritten + 1;
     }
     else {
-      local_2c = (byte *)SL_ConvertToString((uint)sv.configstrings[local_17c],SCRIPTINSTANCE_SERVER)
-      ;
-      if ((local_1c != 0) && (local_1c < local_17c)) {
+      configString = SL_ConvertToString((uint)sv.configstrings[configStringNum],
+                                        SCRIPTINSTANCE_SERVER);
+      if ((nextConstConfigStringNumber != 0) && (nextConstConfigStringNumber < configStringNum)) {
         Com_Error(ERR_DROP,
                   "Invalid line in the config string csv - config string indexes must only go up, but it went down and is now %i (line %i) - check the bottom of the file to see if it\'s corrupt"
                  );
       }
-      if (local_1c == local_17c) {
-        local_24 = (byte *)CCS_GetConfigStringValue(local_8c);
-        if ((local_17c < 0x60b) ||
-           (iVar6 = I_stricmp((char *)local_24,(char *)local_2c), iVar6 != 0)) {
-          if (local_17c < 0x60b) {
-            local_1a8 = local_2c;
-            local_1ac = local_24;
+      if (nextConstConfigStringNumber == configStringNum) {
+        constValue = CCS_GetConfigStringValue(nextConstConfigStringIndex);
+        if ((configStringNum < 0x60b) || (iVar6 = I_stricmp(constValue,configString), iVar6 != 0)) {
+          if (configStringNum < 0x60b) {
+            local_1a8 = (byte *)configString;
+            local_1ac = (byte *)constValue;
             do {
               bVar1 = *local_1ac;
-              bVar3 = bVar1 < *local_1a8;
+              bVar4 = bVar1 < *local_1a8;
               if (bVar1 != *local_1a8) {
 LAB_007092e2:
-                local_1b4 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+                local_1b4 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
                 goto LAB_007092ed;
               }
               if (bVar1 == 0) break;
               bVar1 = local_1ac[1];
-              bVar3 = bVar1 < local_1a8[1];
+              bVar4 = bVar1 < local_1a8[1];
               if (bVar1 != local_1a8[1]) goto LAB_007092e2;
               local_1ac = local_1ac + 2;
               local_1a8 = local_1a8 + 2;
@@ -2114,33 +2136,33 @@ LAB_007092e2:
             local_1b4 = 0;
 LAB_007092ed:
             if (local_1b4 == 0) {
-              local_8c = local_8c + 1;
-              local_1c = CCS_GetConfigStringNum(local_8c);
+              nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+              nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
               goto LAB_00709144;
             }
           }
-          if (sv.configstrings[local_17c] == sv.emptyConfigString) {
-            bVar3 = G_ExitAfterToolComplete();
-            if (((!bVar3) && (local_184 < 0)) &&
-               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
-                                         ,0xb0c,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+          if (sv.configstrings[configStringNum] == sv.emptyConfigString) {
+            bVar4 = G_ExitAfterToolComplete();
+            if (((!bVar4) && (configStringCount < 0)) &&
+               (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
+                                         ,0xb0c,0,"%s"), !bVar4)) {
+              pcVar3 = (code *)swi(3);
+              (*pcVar3)();
               return;
             }
-            MSG_WriteBit0(&local_68);
-            MSG_WriteBits(&local_68,local_17c,0xc);
-            local_34 = local_17c;
-            MSG_WriteBigString(&local_68,"");
+            MSG_WriteBit0(&msg);
+            MSG_WriteBits(&msg,configStringNum,0xc);
+            lastStringIndex = configStringNum;
+            MSG_WriteBigString(&msg,"");
             if ((sv_debugConstantConfigStrings->current).enabled != false) {
               Com_Printf(0xf,
                          "v|CS %4i: Sending empty config string - we had \'%s\' as the const value\n"
                         );
             }
-            local_90 = local_90 + 1;
-            local_184 = local_184 + -1;
-            local_8c = local_8c + 1;
-            local_1c = CCS_GetConfigStringNum(local_8c);
+            numWritten = numWritten + 1;
+            configStringCount = configStringCount + -1;
+            nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+            nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
           }
           else {
             if ((sv_debugConstantConfigStrings->current).enabled != false) {
@@ -2148,21 +2170,21 @@ LAB_007092ed:
                          "w|CS %4i: constant config string \'%s\' doesn\'t match our value \'%s\'\n"
                         );
             }
-            local_8c = local_8c + 1;
-            local_1c = CCS_GetConfigStringNum(local_8c);
+            nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+            nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
           }
           goto LAB_00709475;
         }
-        local_8c = local_8c + 1;
-        local_1c = CCS_GetConfigStringNum(local_8c);
+        nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+        nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
       }
       else {
 LAB_00709475:
-        if (sv.configstrings[local_17c] != sv.emptyConfigString) goto LAB_00709492;
+        if (sv.configstrings[configStringNum] != sv.emptyConfigString) goto LAB_00709492;
       }
     }
 LAB_00709144:
-    local_17c = local_17c + 1;
+    configStringNum = configStringNum + 1;
   } while( true );
 }
 
@@ -2175,7 +2197,7 @@ LAB_00709144:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ClientEnterWorld(client_t *param_1,usercmd_s *param_2)
+void __cdecl SV_ClientEnterWorld(client_t *client,usercmd_s *cmd)
 
 {
   code *pcVar1;
@@ -2184,10 +2206,12 @@ void __cdecl SV_ClientEnterWorld(client_t *param_1,usercmd_s *param_2)
   int iVar4;
   gentity_s *pgVar5;
   usercmd_s *puVar6;
+  gentity_s *ent;
+  int clientNum;
   
   Com_DPrintf(0xf,"Going from CS_CLIENTLOADING to CS_ACTIVE for %s\n");
-  (param_1->header).state = 5;
-  uVar3 = ((int)param_1 - (int)svs.clients) / 0x84d00;
+  (client->header).state = 5;
+  uVar3 = ((int)client - (int)svs.clients) / 0x84d00;
   if ((com_maxclients->current).unsignedInt <= uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xbca,
                              0,
@@ -2199,19 +2223,19 @@ void __cdecl SV_ClientEnterWorld(client_t *param_1,usercmd_s *param_2)
       return;
     }
   }
-  (param_1->header).deltaMessage = -1;
-  param_1->nextSnapshotTime = svs.time;
-  param_1->lastSnapshotTime = -1;
-  puVar6 = &param_1->lastUsercmd;
+  (client->header).deltaMessage = -1;
+  client->nextSnapshotTime = svs.time;
+  client->lastSnapshotTime = -1;
+  puVar6 = &client->lastUsercmd;
   for (iVar4 = 0xd; iVar4 != 0; iVar4 = iVar4 + -1) {
-    puVar6->serverTime = param_2->serverTime;
-    param_2 = (usercmd_s *)&param_2->button_bits;
+    puVar6->serverTime = cmd->serverTime;
+    cmd = (usercmd_s *)&cmd->button_bits;
     puVar6 = (usercmd_s *)&puVar6->button_bits;
   }
   pgVar5 = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * uVar3 + -0x18);
   (pgVar5->s).number = uVar3;
-  param_1->gentity = pgVar5;
-  ClientBegin(((int)param_1 - (int)svs.clients) / 0x84d00);
+  client->gentity = pgVar5;
+  ClientBegin(((int)client - (int)svs.clients) / 0x84d00);
   return;
 }
 
@@ -2224,13 +2248,13 @@ void __cdecl SV_ClientEnterWorld(client_t *param_1,usercmd_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_Download_Clear(client_t *param_1)
+void __cdecl SV_Download_Clear(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (client_t *)0x0) {
+  if (cl == (client_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xc03,
                              0,"%s");
     if (!bVar2) {
@@ -2239,12 +2263,12 @@ void __cdecl SV_Download_Clear(client_t *param_1)
       return;
     }
   }
-  param_1->downloading = 0;
-  if (param_1->download != 0) {
-    FS_FCloseFile(param_1->download);
+  cl->downloading = 0;
+  if (cl->download != 0) {
+    FS_FCloseFile(cl->download);
   }
-  param_1->download = 0;
-  param_1->downloadName[0] = '\0';
+  cl->download = 0;
+  cl->downloadName[0] = '\0';
   return;
 }
 
@@ -2257,20 +2281,20 @@ void __cdecl SV_Download_Clear(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_CloseDownload(client_t *param_1)
+void __cdecl SV_CloseDownload(client_t *cl)
 
 {
-  int local_8;
+  int i;
   
-  if (param_1->download != 0) {
-    FS_FCloseFile(param_1->download);
+  if (cl->download != 0) {
+    FS_FCloseFile(cl->download);
   }
-  param_1->download = 0;
-  param_1->downloadName[0] = '\0';
-  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    if (param_1->downloadBlocks[local_8] != (uchar *)0x0) {
-      Z_Free(param_1->downloadBlocks[local_8],10);
-      param_1->downloadBlocks[local_8] = (uchar *)0x0;
+  cl->download = 0;
+  cl->downloadName[0] = '\0';
+  for (i = 0; i < 8; i = i + 1) {
+    if (cl->downloadBlocks[i] != (uchar *)0x0) {
+      Z_Free(cl->downloadBlocks[i],10);
+      cl->downloadBlocks[i] = (uchar *)0x0;
     }
   }
   return;
@@ -2285,14 +2309,13 @@ void __cdecl SV_CloseDownload(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_StopDownload_f(client_t *param_1)
+void __cdecl SV_StopDownload_f(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xc3a,
                              0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2303,11 +2326,11 @@ void __cdecl SV_StopDownload_f(client_t *param_1)
       return;
     }
   }
-  if (param_1->downloadName[0] != '\0') {
+  if (cl->downloadName[0] != '\0') {
     Com_DPrintf(0,"clientDownload: %d : file \"%s\" aborted\n");
   }
-  SV_CloseDownload(param_1);
-  SV_Download_Clear(param_1);
+  SV_CloseDownload(cl);
+  SV_Download_Clear(cl);
   return;
 }
 
@@ -2320,13 +2343,13 @@ void __cdecl SV_StopDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DoneDownload_f(client_t *param_1)
+void __cdecl SV_DoneDownload_f(client_t *cl)
 
 {
   Com_DPrintf(0,"clientDownload: %s Done\n");
-  SV_Download_Clear(param_1);
+  SV_Download_Clear(cl);
   Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-  SV_SendClientGameState(param_1);
+  SV_SendClientGameState(cl);
   return;
 }
 
@@ -2339,16 +2362,17 @@ void __cdecl SV_DoneDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_RetransmitDownload_f(client_t *param_1)
+void __cdecl SV_RetransmitDownload_f(client_t *cl)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  int block;
   
-  pcVar1 = SV_Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  if (iVar2 == param_1->downloadClientBlock) {
-    param_1->downloadXmitBlock = param_1->downloadClientBlock;
+  nptr = SV_Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  if (iVar1 == cl->downloadClientBlock) {
+    cl->downloadXmitBlock = cl->downloadClientBlock;
   }
   return;
 }
@@ -2362,17 +2386,17 @@ void __cdecl SV_RetransmitDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_NextDownload_f(client_t *param_1)
+void __cdecl SV_NextDownload_f(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  uint uVar5;
+  char *nptr;
+  int iVar3;
+  uint uVar4;
+  int block;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xc75,
                              0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2383,25 +2407,25 @@ void __cdecl SV_NextDownload_f(client_t *param_1)
       return;
     }
   }
-  pcVar3 = SV_Cmd_Argv(1);
-  iVar4 = atoi(pcVar3);
-  if (iVar4 == param_1->downloadClientBlock) {
+  nptr = SV_Cmd_Argv(1);
+  iVar3 = atoi(nptr);
+  if (iVar3 == cl->downloadClientBlock) {
     Com_DPrintf(0,"clientDownload: %d : client acknowledge of block %d\n");
-    uVar5 = param_1->downloadClientBlock & 0x80000007;
-    if ((int)uVar5 < 0) {
-      uVar5 = (uVar5 - 1 | 0xfffffff8) + 1;
+    uVar4 = cl->downloadClientBlock & 0x80000007;
+    if ((int)uVar4 < 0) {
+      uVar4 = (uVar4 - 1 | 0xfffffff8) + 1;
     }
-    if (param_1->downloadBlockSize[uVar5] == 0) {
+    if (cl->downloadBlockSize[uVar4] == 0) {
       Com_Printf(0,"clientDownload: %d : file \"%s\" completed\n");
-      SV_CloseDownload(param_1);
+      SV_CloseDownload(cl);
     }
     else {
-      param_1->downloadSendTime = svs.time;
-      param_1->downloadClientBlock = param_1->downloadClientBlock + 1;
+      cl->downloadSendTime = svs.time;
+      cl->downloadClientBlock = cl->downloadClientBlock + 1;
     }
   }
   else {
-    SV_DropClient(param_1,"broken download",true,true);
+    SV_DropClient(cl,"broken download",true,true);
   }
   return;
 }
@@ -2415,17 +2439,17 @@ void __cdecl SV_NextDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BeginDownload_f(client_t *param_1)
+void __cdecl SV_BeginDownload_f(client_t *cl)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *src;
+  int destsize;
   
-  SV_CloseDownload(param_1);
-  param_1->downloading = 1;
-  iVar2 = 0x40;
-  pcVar1 = SV_Cmd_Argv(1);
-  I_strncpyz(param_1->downloadName,pcVar1,iVar2);
+  SV_CloseDownload(cl);
+  cl->downloading = 1;
+  destsize = 0x40;
+  src = SV_Cmd_Argv(1);
+  I_strncpyz(cl->downloadName,src,destsize);
   return;
 }
 
@@ -2438,13 +2462,13 @@ void __cdecl SV_BeginDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WWWDownLoad_Clear(client_t *param_1)
+void __cdecl SV_WWWDownLoad_Clear(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (client_t *)0x0) {
+  if (cl == (client_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xca8,
                              0,"%s");
     if (!bVar2) {
@@ -2453,9 +2477,9 @@ void __cdecl SV_WWWDownLoad_Clear(client_t *param_1)
       return;
     }
   }
-  SV_Download_Clear(param_1);
-  param_1->clientDownloadingWWW = 0;
-  param_1->downloadingWWW = 0;
+  SV_Download_Clear(cl);
+  cl->clientDownloadingWWW = 0;
+  cl->downloadingWWW = 0;
   return;
 }
 
@@ -2468,65 +2492,66 @@ void __cdecl SV_WWWDownLoad_Clear(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WWWDownload_f(client_t *param_1)
+void __cdecl SV_WWWDownload_f(client_t *cl)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *subcmd;
   
-  pcVar1 = SV_Cmd_Argv(1);
-  if (param_1->downloadingWWW == 0) {
+  s0 = SV_Cmd_Argv(1);
+  if (cl->downloadingWWW == 0) {
     Com_Printf(0xf,"SV_WWWDownload: unexpected wwwdl \'%s\' for client \'%s\'\n");
-    SV_DropClient(param_1,"Unexpected www download message.",true,true);
+    SV_DropClient(cl,"Unexpected www download message.",true,true);
   }
   else {
-    iVar2 = I_stricmp(pcVar1,"ack");
-    if (iVar2 == 0) {
-      if (param_1->clientDownloadingWWW != 0) {
+    iVar1 = I_stricmp(s0,"ack");
+    if (iVar1 == 0) {
+      if (cl->clientDownloadingWWW != 0) {
         Com_Printf(0xf,"WARNING: dupe wwwdl ack from client \'%s\'\n");
       }
-      param_1->clientDownloadingWWW = 1;
+      cl->clientDownloadingWWW = 1;
     }
     else {
-      iVar2 = I_stricmp(pcVar1,"bbl8r");
-      if (iVar2 == 0) {
-        SV_DropClient(param_1,"Client dropped to download files.",true,true);
+      iVar1 = I_stricmp(s0,"bbl8r");
+      if (iVar1 == 0) {
+        SV_DropClient(cl,"Client dropped to download files.",true,true);
       }
-      else if (param_1->clientDownloadingWWW == 0) {
+      else if (cl->clientDownloadingWWW == 0) {
         Com_Printf(0xf,"SV_WWWDownload: unexpected wwwdl \'%s\' for client \'%s\'\n");
-        SV_DropClient(param_1,"Unexpected www download message.",true,true);
+        SV_DropClient(cl,"Unexpected www download message.",true,true);
       }
       else {
-        iVar2 = I_stricmp(pcVar1,"done");
-        if (iVar2 == 0) {
-          SV_WWWDownLoad_Clear(param_1);
+        iVar1 = I_stricmp(s0,"done");
+        if (iVar1 == 0) {
+          SV_WWWDownLoad_Clear(cl);
         }
         else {
-          iVar2 = I_stricmp(pcVar1,"fail");
-          if (iVar2 == 0) {
-            SV_WWWDownLoad_Clear(param_1);
-            param_1->wwwFallback = 1;
+          iVar1 = I_stricmp(s0,"fail");
+          if (iVar1 == 0) {
+            SV_WWWDownLoad_Clear(cl);
+            cl->wwwFallback = 1;
             Com_Printf(0xf,
                        "Client \'%s\' reported that the http download of \'%s\' failed, falling back to a server download\n"
                       );
             Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-            SV_SendClientGameState(param_1);
+            SV_SendClientGameState(cl);
           }
           else {
-            iVar2 = I_stricmp(pcVar1,"chkfail");
-            if (iVar2 == 0) {
+            iVar1 = I_stricmp(s0,"chkfail");
+            if (iVar1 == 0) {
               Com_Printf(0xf,
                          "WARNING: client \'%s\' reports that the redirect download for \'%s\' had wrong checksum.\n"
                         );
               Com_Printf(0xf,"         you should check your download redirect configuration.\n");
-              SV_WWWDownLoad_Clear(param_1);
-              param_1->wwwFallback = 1;
+              SV_WWWDownLoad_Clear(cl);
+              cl->wwwFallback = 1;
               Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-              SV_SendClientGameState(param_1);
+              SV_SendClientGameState(cl);
             }
             else {
               Com_Printf(0xf,"SV_WWWDownload: unknown wwwdl subcommand \'%s\' for client \'%s\'\n");
-              SV_DropClient(param_1,"Unexpected www download message.",true,true);
+              SV_DropClient(cl,"Unexpected www download message.",true,true);
             }
           }
         }
@@ -2545,34 +2570,34 @@ void __cdecl SV_WWWDownload_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WWWRedirectClient(client_t *param_1,msg_t *param_2)
+void __cdecl SV_WWWRedirectClient(client_t *cl,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  uint local_8;
+  char *src;
+  int destsize;
+  int download_flag;
   
-  if ((param_1->downloadSize < 0) &&
+  if ((cl->downloadSize < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0xd0a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar4 = 0x100;
-  pcVar3 = va("%s/%s");
-  I_strncpyz(param_1->downloadURL,pcVar3,iVar4);
+  destsize = 0x100;
+  src = va("%s/%s");
+  I_strncpyz(cl->downloadURL,src,destsize);
   Com_Printf(0xf,"Redirecting client \'%s\' to %s\n");
-  param_1->downloadingWWW = 1;
-  MSG_WriteByte(param_2,0xb);
-  MSG_WriteLong(param_2,-1);
-  MSG_WriteString(param_2,param_1->downloadURL);
-  MSG_WriteLong(param_2,param_1->downloadSize);
-  local_8 = (uint)((sv_wwwDlDisconnected->current).enabled != false);
-  MSG_WriteLong(param_2,local_8);
-  SV_Download_Clear(param_1);
+  cl->downloadingWWW = 1;
+  MSG_WriteByte(msg,0xb);
+  MSG_WriteLong(msg,-1);
+  MSG_WriteString(msg,cl->downloadURL);
+  MSG_WriteLong(msg,cl->downloadSize);
+  download_flag = (int)((sv_wwwDlDisconnected->current).enabled != false);
+  MSG_WriteLong(msg,download_flag);
+  SV_Download_Clear(cl);
   return;
 }
 
@@ -2585,14 +2610,14 @@ void __cdecl SV_WWWRedirectClient(client_t *param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WriteDownloadErrorMessage(client_t *param_1,msg_t *param_2,char *param_3)
+void __cdecl SV_WriteDownloadErrorMessage(client_t *cl,msg_t *msg,char *errorMessage)
 
 {
-  MSG_WriteByte(param_2,0xb);
-  MSG_WriteLong(param_2,0);
-  MSG_WriteLong(param_2,-1);
-  MSG_WriteString(param_2,param_3);
-  SV_Download_Clear(param_1);
+  MSG_WriteByte(msg,0xb);
+  MSG_WriteLong(msg,0);
+  MSG_WriteLong(msg,-1);
+  MSG_WriteString(msg,errorMessage);
+  SV_Download_Clear(cl);
   return;
 }
 
@@ -2606,7 +2631,7 @@ void __cdecl SV_WriteDownloadErrorMessage(client_t *param_1,msg_t *param_2,char 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_WriteDownloadToClient(client_t *param_1,msg_t *param_2)
+void __cdecl SV_WriteDownloadToClient(client_t *cl,msg_t *msg)
 
 {
   code *pcVar1;
@@ -2614,149 +2639,148 @@ void __cdecl SV_WriteDownloadToClient(client_t *param_1,msg_t *param_2)
   int iVar3;
   uchar *puVar4;
   uint uVar5;
-  int local_418;
-  char local_414 [1024];
+  int rate;
+  char errorMessage [1024];
   uint local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  int iwPack;
+  int blockspersnap;
+  int curindex;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                  0xd45,0,
-                                  "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar2)) {
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0xd45,0,
+                               "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
+                              ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->downloadName[0] != '\0') && (param_1->clientDownloadingWWW == 0)) {
-    if (param_1->download != 0) {
+  if ((cl->downloadName[0] != '\0') && (cl->clientDownloadingWWW == 0)) {
+    if (cl->download != 0) {
 LAB_0070a6a4:
       while( true ) {
-        if ((7 < param_1->downloadCurrentBlock - param_1->downloadClientBlock) ||
-           (param_1->downloadSize == param_1->downloadCount)) goto LAB_0070a7af;
-        local_8 = param_1->downloadCurrentBlock & 0x80000007;
-        if ((int)local_8 < 0) {
-          local_8 = (local_8 - 1 | 0xfffffff8) + 1;
+        if ((7 < cl->downloadCurrentBlock - cl->downloadClientBlock) ||
+           (cl->downloadSize == cl->downloadCount)) goto LAB_0070a7af;
+        curindex = cl->downloadCurrentBlock & 0x80000007;
+        if (curindex < 0) {
+          curindex = (curindex - 1U | 0xfffffff8) + 1;
         }
-        if (param_1->downloadBlocks[local_8] == (uchar *)0x0) {
+        if (cl->downloadBlocks[curindex] == (uchar *)0x0) {
           puVar4 = Z_Malloc(0x800,"SV_WriteDownloadToClient",10);
-          param_1->downloadBlocks[local_8] = puVar4;
+          cl->downloadBlocks[curindex] = puVar4;
         }
-        iVar3 = FS_Read(param_1->downloadBlocks[local_8],0x800,param_1->download);
-        param_1->downloadBlockSize[local_8] = iVar3;
-        if (param_1->downloadBlockSize[local_8] < 0) break;
-        param_1->downloadCount = param_1->downloadCount + param_1->downloadBlockSize[local_8];
-        param_1->downloadCurrentBlock = param_1->downloadCurrentBlock + 1;
+        iVar3 = FS_Read(cl->downloadBlocks[curindex],0x800,cl->download);
+        cl->downloadBlockSize[curindex] = iVar3;
+        if (cl->downloadBlockSize[curindex] < 0) break;
+        cl->downloadCount = cl->downloadCount + cl->downloadBlockSize[curindex];
+        cl->downloadCurrentBlock = cl->downloadCurrentBlock + 1;
       }
-      param_1->downloadCount = param_1->downloadSize;
+      cl->downloadCount = cl->downloadSize;
 LAB_0070a7af:
-      if (((param_1->downloadCount == param_1->downloadSize) && (param_1->downloadEOF == 0)) &&
-         (param_1->downloadCurrentBlock - param_1->downloadClientBlock < 8)) {
-        uVar5 = param_1->downloadCurrentBlock & 0x80000007;
+      if (((cl->downloadCount == cl->downloadSize) && (cl->downloadEOF == 0)) &&
+         (cl->downloadCurrentBlock - cl->downloadClientBlock < 8)) {
+        uVar5 = cl->downloadCurrentBlock & 0x80000007;
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xfffffff8) + 1;
         }
-        param_1->downloadBlockSize[uVar5] = 0;
-        param_1->downloadCurrentBlock = param_1->downloadCurrentBlock + 1;
-        param_1->downloadEOF = 1;
+        cl->downloadBlockSize[uVar5] = 0;
+        cl->downloadCurrentBlock = cl->downloadCurrentBlock + 1;
+        cl->downloadEOF = 1;
       }
-      local_418 = param_1->rate;
+      rate = cl->rate;
       if ((sv_maxRate->current).integer != 0) {
         if ((sv_maxRate->current).integer < 1000) {
           Dvar_SetInt(sv_maxRate,1000);
         }
-        if ((sv_maxRate->current).integer < local_418) {
-          local_418 = (sv_maxRate->current).integer;
+        if ((sv_maxRate->current).integer < rate) {
+          rate = (sv_maxRate->current).integer;
         }
       }
-      if (local_418 == 0) {
-        local_c = 1;
+      if (rate == 0) {
+        blockspersnap = 1;
       }
       else {
-        iVar3 = (local_418 * param_1->snapshotMsec) / 1000 + 0x800;
-        local_c = (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffU)) >> 0xb;
+        iVar3 = (rate * cl->snapshotMsec) / 1000 + 0x800;
+        blockspersnap = (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffU)) >> 0xb;
       }
-      if (local_c < 0) {
-        local_c = 1;
+      if (blockspersnap < 0) {
+        blockspersnap = 1;
       }
       while( true ) {
-        if (local_c == 0) {
+        if (blockspersnap == 0) {
           return;
         }
-        if (param_1->downloadClientBlock == param_1->downloadCurrentBlock) break;
-        if (param_1->downloadXmitBlock == param_1->downloadCurrentBlock) {
-          if (svs.time - param_1->downloadSendTime < 0x3e9) {
+        if (cl->downloadClientBlock == cl->downloadCurrentBlock) break;
+        if (cl->downloadXmitBlock == cl->downloadCurrentBlock) {
+          if (svs.time - cl->downloadSendTime < 0x3e9) {
             return;
           }
-          param_1->downloadXmitBlock = param_1->downloadClientBlock;
+          cl->downloadXmitBlock = cl->downloadClientBlock;
         }
-        local_8 = param_1->downloadXmitBlock & 0x80000007;
-        if ((int)local_8 < 0) {
-          local_8 = (local_8 - 1 | 0xfffffff8) + 1;
+        curindex = cl->downloadXmitBlock & 0x80000007;
+        if (curindex < 0) {
+          curindex = (curindex - 1U | 0xfffffff8) + 1;
         }
-        local_c = local_c + -1;
-        MSG_WriteByte(param_2,0xb);
-        MSG_WriteLong(param_2,param_1->downloadXmitBlock);
-        if (param_1->downloadXmitBlock == 0) {
-          MSG_WriteLong(param_2,param_1->downloadSize);
+        blockspersnap = blockspersnap + -1;
+        MSG_WriteByte(msg,0xb);
+        MSG_WriteLong(msg,cl->downloadXmitBlock);
+        if (cl->downloadXmitBlock == 0) {
+          MSG_WriteLong(msg,cl->downloadSize);
         }
-        MSG_WriteShort(param_2,param_1->downloadBlockSize[local_8]);
-        if (param_1->downloadBlockSize[local_8] != 0) {
-          MSG_WriteData(param_2,param_1->downloadBlocks[local_8],param_1->downloadBlockSize[local_8]
-                       );
+        MSG_WriteShort(msg,cl->downloadBlockSize[curindex]);
+        if (cl->downloadBlockSize[curindex] != 0) {
+          MSG_WriteData(msg,cl->downloadBlocks[curindex],cl->downloadBlockSize[curindex]);
         }
         Com_DPrintf(0xf,"clientDownload: %d : writing block %d\n");
-        param_1->downloadXmitBlock = param_1->downloadXmitBlock + 1;
-        param_1->downloadSendTime = svs.time;
+        cl->downloadXmitBlock = cl->downloadXmitBlock + 1;
+        cl->downloadSendTime = svs.time;
       }
       return;
     }
     if ((sv_allowDownload->current).enabled == false) {
       Com_Printf(0xf,"clientDownload: %d : \"%s\" download disabled");
       if ((sv_pure->current).enabled == false) {
-        Com_sprintf(local_414,0x400,"EXE_AUTODL_SERVERDISABLED\x15%s");
+        Com_sprintf(errorMessage,0x400,"EXE_AUTODL_SERVERDISABLED\x15%s");
       }
       else {
-        Com_sprintf(local_414,0x400,"EXE_AUTODL_SERVERDISABLED_PURE\x15%s");
+        Com_sprintf(errorMessage,0x400,"EXE_AUTODL_SERVERDISABLED_PURE\x15%s");
       }
-      SV_WriteDownloadErrorMessage(param_1,param_2,local_414);
+      SV_WriteDownloadErrorMessage(cl,msg,errorMessage);
     }
     else {
-      local_10 = FS_iwIwd(param_1->downloadName,"main");
-      if (local_10 == 0) {
+      iwPack = FS_iwIwd(cl->downloadName,"main");
+      if (iwPack == 0) {
         Com_Printf(0xf,"clientDownload: %d : beginning \"%s\"\n");
-        iVar3 = FS_SV_FOpenFileRead(param_1->downloadName,(char *)0x0,&param_1->download);
-        param_1->downloadSize = iVar3;
-        if (param_1->downloadSize < 1) {
+        iVar3 = FS_SV_FOpenFileRead(cl->downloadName,(char *)0x0,&cl->download);
+        cl->downloadSize = iVar3;
+        if (cl->downloadSize < 1) {
           Com_Printf(0xf,"clientDownload: %d : \"%s\" file not found on server\n");
-          Com_sprintf(local_414,0x400,"EXE_AUTODL_FILENOTONSERVER\x15%s");
-          SV_WriteDownloadErrorMessage(param_1,param_2,local_414);
+          Com_sprintf(errorMessage,0x400,"EXE_AUTODL_FILENOTONSERVER\x15%s");
+          SV_WriteDownloadErrorMessage(cl,msg,errorMessage);
         }
         else {
-          if (((sv_wwwDownload->current).enabled == false) || (param_1->wwwOk == 0)) {
-            param_1->downloadingWWW = 0;
-            param_1->downloadXmitBlock = 0;
-            param_1->downloadClientBlock = 0;
-            param_1->downloadCurrentBlock = 0;
-            param_1->downloadCount = 0;
-            param_1->downloadEOF = 0;
+          if (((sv_wwwDownload->current).enabled == false) || (cl->wwwOk == 0)) {
+            cl->downloadingWWW = 0;
+            cl->downloadXmitBlock = 0;
+            cl->downloadClientBlock = 0;
+            cl->downloadCurrentBlock = 0;
+            cl->downloadCount = 0;
+            cl->downloadEOF = 0;
             goto LAB_0070a6a4;
           }
-          if (param_1->wwwFallback == 0) {
-            SV_WWWRedirectClient(param_1,param_2);
+          if (cl->wwwFallback == 0) {
+            SV_WWWRedirectClient(cl,msg);
           }
           else {
-            param_1->wwwFallback = 0;
+            cl->wwwFallback = 0;
           }
         }
       }
       else {
         Com_Printf(0xf,"clientDownload: %d : \"%s\" cannot download IW iwd files\n");
-        Com_sprintf(local_414,0x400,"EXE_CANTAUTODLGAMEPAK\x15%s");
-        SV_WriteDownloadErrorMessage(param_1,param_2,local_414);
+        Com_sprintf(errorMessage,0x400,"EXE_CANTAUTODLGAMEPAK\x15%s");
+        SV_WriteDownloadErrorMessage(cl,msg,errorMessage);
       }
     }
   }
@@ -2772,14 +2796,13 @@ LAB_0070a7af:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_Disconnect_f(client_t *param_1)
+void __cdecl SV_Disconnect_f(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0xe08,
                              0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -2790,7 +2813,7 @@ void __cdecl SV_Disconnect_f(client_t *param_1)
       return;
     }
   }
-  SV_DropClient(param_1,"EXE_DISCONNECTED",true,true);
+  SV_DropClient(cl,"EXE_DISCONNECTED",true,true);
   return;
 }
 
@@ -2804,7 +2827,7 @@ void __cdecl SV_Disconnect_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_VerifyIwds_f(client_t *param_1)
+void __cdecl SV_VerifyIwds_f(client_t *cl)
 
 {
   bool bVar1;
@@ -2812,36 +2835,40 @@ void __cdecl SV_VerifyIwds_f(client_t *param_1)
   char *pcVar3;
   uint uVar4;
   uint uVar5;
-  int local_2030;
-  uint local_2018;
+  int j;
+  char *pArg;
+  int nClientIwds;
+  char *pIwds;
+  int nChkSum2;
+  int bGood;
+  int nChkSum1;
   uint auStack_2014 [1024];
-  int local_1014;
-  int local_1010;
+  int nServerIwds;
+  int i;
   uint auStack_100c [1025];
-  int local_8;
+  int nCurArg;
   
-  local_8 = 0x70aaed;
+  nCurArg = 0x70aaed;
   bVar1 = true;
   iVar2 = SV_Cmd_Argc();
-  local_8 = 1;
+  nCurArg = 1;
   if (iVar2 < 2) {
     bVar1 = false;
   }
   else {
     pcVar3 = SV_Cmd_Argv(1);
     if (*pcVar3 == '#') {
-      local_1010 = 0;
-      while (local_8 = local_8 + 1, local_8 < iVar2) {
-        pcVar3 = SV_Cmd_Argv(local_8);
+      i = 0;
+      while (nCurArg = nCurArg + 1, nCurArg < iVar2) {
+        pcVar3 = SV_Cmd_Argv(nCurArg);
         uVar4 = atoi(pcVar3);
-        auStack_2014[local_1010] = uVar4;
-        local_1010 = local_1010 + 1;
+        auStack_2014[i] = uVar4;
+        i = i + 1;
       }
-      uVar4 = local_1010 - 1;
-      for (local_1010 = 0; local_1010 < (int)uVar4; local_1010 = local_1010 + 1) {
-        for (local_2030 = 0; local_2030 < (int)uVar4; local_2030 = local_2030 + 1) {
-          if ((local_1010 != local_2030) && (auStack_2014[local_1010] == auStack_2014[local_2030]))
-          {
+      uVar4 = i - 1;
+      for (i = 0; i < (int)uVar4; i = i + 1) {
+        for (j = 0; j < (int)uVar4; j = j + 1) {
+          if ((i != j) && (auStack_2014[i] == auStack_2014[j])) {
             bVar1 = false;
             break;
           }
@@ -2851,32 +2878,30 @@ void __cdecl SV_VerifyIwds_f(client_t *param_1)
       if (bVar1) {
         pcVar3 = FS_LoadedIwdPureChecksums();
         SV_Cmd_TokenizeString(pcVar3);
-        local_1014 = SV_Cmd_Argc();
-        if (0x400 < local_1014) {
-          local_1014 = 0x400;
+        nServerIwds = SV_Cmd_Argc();
+        if (0x400 < nServerIwds) {
+          nServerIwds = 0x400;
         }
-        for (local_1010 = 0; local_1010 < local_1014; local_1010 = local_1010 + 1) {
-          pcVar3 = SV_Cmd_Argv(local_1010);
+        for (i = 0; i < nServerIwds; i = i + 1) {
+          pcVar3 = SV_Cmd_Argv(i);
           uVar5 = atoi(pcVar3);
-          auStack_100c[local_1010] = uVar5;
+          auStack_100c[i] = uVar5;
         }
         SV_Cmd_EndTokenizedString();
-        for (local_1010 = 0; local_1010 < (int)uVar4; local_1010 = local_1010 + 1) {
-          for (local_2030 = 0;
-              (local_2030 < local_1014 && (auStack_2014[local_1010] != auStack_100c[local_2030]));
-              local_2030 = local_2030 + 1) {
+        for (i = 0; i < (int)uVar4; i = i + 1) {
+          for (j = 0; (j < nServerIwds && (auStack_2014[i] != auStack_100c[j])); j = j + 1) {
           }
-          if (local_1014 <= local_2030) {
+          if (nServerIwds <= j) {
             bVar1 = false;
             break;
           }
         }
         if (bVar1) {
-          local_2018 = sv.checksumFeed;
-          for (local_1010 = 0; local_1010 < (int)uVar4; local_1010 = local_1010 + 1) {
-            local_2018 = local_2018 ^ auStack_2014[local_1010];
+          nChkSum1 = sv.checksumFeed;
+          for (i = 0; i < (int)uVar4; i = i + 1) {
+            nChkSum1 = nChkSum1 ^ auStack_2014[i];
           }
-          if ((local_2018 ^ uVar4) != auStack_2014[uVar4]) {
+          if ((nChkSum1 ^ uVar4) != auStack_2014[uVar4]) {
             bVar1 = false;
           }
         }
@@ -2887,10 +2912,10 @@ void __cdecl SV_VerifyIwds_f(client_t *param_1)
     }
   }
   if (bVar1) {
-    param_1->pureAuthentic = 1;
+    cl->pureAuthentic = 1;
   }
   else {
-    param_1->pureAuthentic = 2;
+    cl->pureAuthentic = 2;
   }
   return;
 }
@@ -2904,32 +2929,33 @@ void __cdecl SV_VerifyIwds_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ResetPureClient_f(client_t *param_1)
+void __cdecl SV_ResetPureClient_f(client_t *cl)
 
 {
-  param_1->pureAuthentic = 0;
+  cl->pureAuthentic = 0;
   return;
 }
 
 
 // 0070AEB0  SV_StringToLower  (server_mp/sv_client_mp.cpp:3763)
 
-void __cdecl SV_StringToLower(char *param_1,char *param_2,int param_3)
+void __cdecl SV_StringToLower(char *source,char *dest,int size)
 
 {
   int iVar1;
-  int local_8;
+  char c;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (size <= i) {
       return;
     }
-    iVar1 = tolower((int)*param_1);
-    param_2[local_8] = (char)iVar1;
+    iVar1 = tolower((int)*source);
+    dest[i] = (char)iVar1;
     if ((char)iVar1 == '\0') break;
-    local_8 = local_8 + 1;
-    param_1 = param_1 + 1;
+    i = i + 1;
+    source = source + 1;
   }
   return;
 }
@@ -2944,52 +2970,52 @@ void __cdecl SV_StringToLower(char *param_1,char *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_ValidateName(client_t *param_1,char *param_2)
+bool __cdecl SV_ValidateName(client_t *newcl,char *name)
 
 {
   char cVar1;
   bool bVar2;
-  char *pcVar3;
+  char *source;
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  client_t *pcVar4;
-  uchar *puVar5;
-  int iVar6;
+  client_t *pcVar3;
+  uchar *dest;
+  int iVar4;
   char *local_54;
-  int local_50;
-  uchar local_48 [32];
-  uchar local_28 [32];
+  int i;
+  client_t *cl;
+  uchar nameLower [32];
+  uchar tempLower [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54 = param_2;
+  local_54 = name;
   do {
     cVar1 = *local_54;
     local_54 = local_54 + 1;
   } while (cVar1 != '\0');
-  if ((uint)((int)local_54 - (int)(param_2 + 1)) < 4) {
+  if ((uint)((int)local_54 - (int)(name + 1)) < 4) {
     bVar2 = false;
   }
   else {
-    SV_StringToLower(param_2,(char *)local_48,0x20);
-    iVar6 = 0x20;
-    puVar5 = local_28;
-    pcVar3 = Dvar_GetString("sv_noname");
-    SV_StringToLower(pcVar3,(char *)puVar5,iVar6);
-    strstr(local_48,local_28);
+    SV_StringToLower(name,(char *)nameLower,0x20);
+    iVar4 = 0x20;
+    dest = tempLower;
+    source = Dvar_GetString("sv_noname");
+    SV_StringToLower(source,(char *)dest,iVar4);
+    strstr(nameLower,tempLower);
     if (extraout_EAX == 0) {
-      strstr(local_48,(uchar *)"unknown soldier");
+      strstr(nameLower,(uchar *)"unknown soldier");
       if (extraout_EAX_00 == 0) {
-        strstr(local_48,(uchar *)"democlient");
+        strstr(nameLower,(uchar *)"democlient");
         if (extraout_EAX_01 == 0) {
-          for (local_50 = 0; local_50 < (com_maxclients->current).integer; local_50 = local_50 + 1)
-          {
-            pcVar4 = (client_t *)(local_50 * 0x84d00 + (int)svs.clients);
-            if ((pcVar4 != param_1) && ((pcVar4->header).state == 5)) {
-              SV_StringToLower(pcVar4->name,(char *)local_28,0x20);
-              iVar6 = I_strcmp((char *)local_48,(char *)local_28);
-              if (iVar6 == 0) {
+          for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+            pcVar3 = (client_t *)(i * 0x84d00 + (int)svs.clients);
+            if ((pcVar3 != newcl) && ((pcVar3->header).state == 5)) {
+              SV_StringToLower(pcVar3->name,(char *)tempLower,0x20);
+              iVar4 = I_strcmp((char *)nameLower,(char *)tempLower);
+              if (iVar4 == 0) {
                 return false;
               }
             }
@@ -3014,31 +3040,32 @@ bool __cdecl SV_ValidateName(client_t *param_1,char *param_2)
 
 // 0070B060  SV_SanitizeName  (server_mp/sv_client_mp.cpp:3828)
 
-bool __cdecl SV_SanitizeName(char *param_1,char *param_2,int param_3)
+bool __cdecl SV_SanitizeName(char *name,char *sanitizedName,int size)
 
 {
   byte bVar1;
   bool bVar2;
-  int local_c;
-  int local_8;
+  uchar c;
+  int sanitizedLength;
+  int validCharCount;
   
-  local_8 = 0;
-  local_c = 0;
-  for (; bVar1 = *param_1, bVar1 != 0; param_1 = param_1 + 1) {
+  validCharCount = 0;
+  sanitizedLength = 0;
+  for (; bVar1 = *name, bVar1 != 0; name = name + 1) {
     bVar2 = I_isalnum((uint)bVar1);
-    if (((bVar2) || (local_8 != 0)) && ((bVar2 = I_isalnum((uint)bVar1), bVar2 || (bVar1 == 0x20))))
-    {
+    if (((bVar2) || (validCharCount != 0)) &&
+       ((bVar2 = I_isalnum((uint)bVar1), bVar2 || (bVar1 == 0x20)))) {
       bVar2 = I_isalnum((uint)bVar1);
       if (bVar2) {
-        local_8 = local_8 + 1;
+        validCharCount = validCharCount + 1;
       }
-      param_2[local_c] = bVar1;
-      local_c = local_c + 1;
-      if (local_c == param_3 + -1) break;
+      sanitizedName[sanitizedLength] = bVar1;
+      sanitizedLength = sanitizedLength + 1;
+      if (sanitizedLength == size + -1) break;
     }
   }
-  param_2[local_c] = '\0';
-  return 3 < local_8;
+  sanitizedName[sanitizedLength] = '\0';
+  return 3 < validCharCount;
 }
 
 
@@ -3051,7 +3078,7 @@ bool __cdecl SV_SanitizeName(char *param_1,char *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UserinfoChanged(client_t *param_1)
+void __cdecl SV_UserinfoChanged(client_t *cl)
 
 {
   char cVar1;
@@ -3064,129 +3091,130 @@ void __cdecl SV_UserinfoChanged(client_t *param_1)
   char *local_b0;
   char *local_94;
   char *local_84;
-  int local_80;
-  char local_78 [32];
-  uint local_58;
-  netadr_t local_54;
-  int local_44;
+  int i_2;
+  int controllerIndex;
+  char filteredName [32];
+  int clientNumForXuid;
+  netadr_t addr;
+  int newXuid;
   int local_40;
-  char *local_38;
-  int local_34;
-  char local_30 [32];
+  char *val;
+  int i;
+  char cleanName [32];
   uint local_10;
-  uint local_c;
-  undefined1 local_5;
+  int clientNum;
+  bool validCharCount;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_30[0] = '\0';
-  local_30[1] = '\0';
-  local_30[2] = '\0';
-  local_30[3] = '\0';
-  local_30[4] = '\0';
-  local_30[5] = '\0';
-  local_30[6] = '\0';
-  local_30[7] = '\0';
-  local_30[8] = '\0';
-  local_30[9] = '\0';
-  local_30[10] = '\0';
-  local_30[0xb] = '\0';
-  local_30[0xc] = '\0';
-  local_30[0xd] = '\0';
-  local_30[0xe] = '\0';
-  local_30[0xf] = '\0';
-  local_30[0x10] = '\0';
-  local_30[0x11] = '\0';
-  local_30[0x12] = '\0';
-  local_30[0x13] = '\0';
-  local_30[0x14] = '\0';
-  local_30[0x15] = '\0';
-  local_30[0x16] = '\0';
-  local_30[0x17] = '\0';
-  local_30[0x18] = '\0';
-  local_30[0x19] = '\0';
-  local_30[0x1a] = '\0';
-  local_30[0x1b] = '\0';
-  local_30[0x1c] = '\0';
-  local_30[0x1d] = '\0';
-  local_30[0x1e] = '\0';
-  local_30[0x1f] = '\0';
+  cleanName[0] = '\0';
+  cleanName[1] = '\0';
+  cleanName[2] = '\0';
+  cleanName[3] = '\0';
+  cleanName[4] = '\0';
+  cleanName[5] = '\0';
+  cleanName[6] = '\0';
+  cleanName[7] = '\0';
+  cleanName[8] = '\0';
+  cleanName[9] = '\0';
+  cleanName[10] = '\0';
+  cleanName[0xb] = '\0';
+  cleanName[0xc] = '\0';
+  cleanName[0xd] = '\0';
+  cleanName[0xe] = '\0';
+  cleanName[0xf] = '\0';
+  cleanName[0x10] = '\0';
+  cleanName[0x11] = '\0';
+  cleanName[0x12] = '\0';
+  cleanName[0x13] = '\0';
+  cleanName[0x14] = '\0';
+  cleanName[0x15] = '\0';
+  cleanName[0x16] = '\0';
+  cleanName[0x17] = '\0';
+  cleanName[0x18] = '\0';
+  cleanName[0x19] = '\0';
+  cleanName[0x1a] = '\0';
+  cleanName[0x1b] = '\0';
+  cleanName[0x1c] = '\0';
+  cleanName[0x1d] = '\0';
+  cleanName[0x1e] = '\0';
+  cleanName[0x1f] = '\0';
   iVar6 = 0x20;
-  pcVar5 = local_30;
-  pcVar4 = Info_ValueForKey(param_1->userinfo,"name");
-  local_5 = SV_SanitizeName(pcVar4,pcVar5,iVar6);
-  if (((param_1->bIsTestClient != 0) || (param_1->bIsDemoClient != 0)) ||
-     (((bool)local_5 && (bVar3 = SV_ValidateName(param_1,local_30), bVar3)))) {
+  pcVar5 = cleanName;
+  pcVar4 = Info_ValueForKey(cl->userinfo,"name");
+  validCharCount = SV_SanitizeName(pcVar4,pcVar5,iVar6);
+  if (((cl->bIsTestClient != 0) || (cl->bIsDemoClient != 0)) ||
+     ((validCharCount && (bVar3 = SV_ValidateName(cl,cleanName), bVar3)))) {
     pcVar5 = va("%s");
-    Info_SetValueForKey(param_1->userinfo,"name",pcVar5);
+    Info_SetValueForKey(cl->userinfo,"name",pcVar5);
   }
   else {
     iVar6 = 0x20;
-    pcVar5 = local_30;
+    pcVar5 = cleanName;
     pcVar4 = Dvar_GetString("sv_noname");
-    local_5 = SV_SanitizeName(pcVar4,pcVar5,iVar6);
-    if ((bool)local_5) {
+    validCharCount = SV_SanitizeName(pcVar4,pcVar5,iVar6);
+    if (validCharCount) {
       pcVar5 = va("%s %d");
-      Info_SetValueForKey(param_1->userinfo,"name",pcVar5);
+      Info_SetValueForKey(cl->userinfo,"name",pcVar5);
     }
     else {
       pcVar5 = va("%s %d");
-      Info_SetValueForKey(param_1->userinfo,"name",pcVar5);
+      Info_SetValueForKey(cl->userinfo,"name",pcVar5);
     }
-    SV_SendServerCommand(param_1,SV_CMD_CAN_IGNORE,"%c \"EXE_CANNOTUSENAME\"");
+    SV_SendServerCommand(cl,SV_CMD_CAN_IGNORE,"%c \"EXE_CANNOTUSENAME\"");
   }
   iVar6 = 0x20;
-  pcVar5 = Info_ValueForKey(param_1->userinfo,"name");
-  I_strncpyz(param_1->name,pcVar5,iVar6);
+  pcVar5 = Info_ValueForKey(cl->userinfo,"name");
+  I_strncpyz(cl->name,pcVar5,iVar6);
   iVar6 = 5;
-  pcVar5 = Info_ValueForKey(param_1->userinfo,"clanAbbrev");
-  I_strncpyz(param_1->clanAbbrev,pcVar5,iVar6);
-  local_38 = Info_ValueForKey(param_1->userinfo,"rate");
-  local_84 = local_38;
+  pcVar5 = Info_ValueForKey(cl->userinfo,"clanAbbrev");
+  I_strncpyz(cl->clanAbbrev,pcVar5,iVar6);
+  val = Info_ValueForKey(cl->userinfo,"rate");
+  local_84 = val;
   do {
     cVar1 = *local_84;
     local_84 = local_84 + 1;
   } while (cVar1 != '\0');
-  if (local_84 == local_38 + 1) {
-    param_1->rate = 5000;
+  if (local_84 == val + 1) {
+    cl->rate = 5000;
   }
   else {
-    local_34 = atoi(local_38);
-    param_1->rate = local_34;
-    if (param_1->rate < 1000) {
-      param_1->rate = 1000;
+    i = atoi(val);
+    cl->rate = i;
+    if (cl->rate < 1000) {
+      cl->rate = 1000;
     }
-    else if (90000 < param_1->rate) {
-      param_1->rate = 90000;
+    else if (90000 < cl->rate) {
+      cl->rate = 90000;
     }
   }
-  local_38 = Info_ValueForKey(param_1->userinfo,"snaps");
-  local_94 = local_38;
+  val = Info_ValueForKey(cl->userinfo,"snaps");
+  local_94 = val;
   do {
     cVar1 = *local_94;
     local_94 = local_94 + 1;
   } while (cVar1 != '\0');
-  if (local_94 == local_38 + 1) {
-    param_1->snapshotMsec = 0x32;
+  if (local_94 == val + 1) {
+    cl->snapshotMsec = 0x32;
   }
   else {
-    local_34 = atoi(local_38);
-    if (local_34 < 1) {
-      local_34 = 1;
+    i = atoi(val);
+    if (i < 1) {
+      i = 1;
     }
-    else if (0x1e < local_34) {
-      local_34 = 0x1e;
+    else if (0x1e < i) {
+      i = 0x1e;
     }
-    param_1->snapshotMsec = (int)(1000 / (longlong)local_34);
+    cl->snapshotMsec = (int)(1000 / (longlong)i);
   }
-  local_38 = Info_ValueForKey(param_1->userinfo,"cl_voice");
-  iVar6 = atoi(local_38);
-  param_1->sendVoice = 0 < iVar6;
-  if (param_1->rate < 5000) {
-    param_1->sendVoice = false;
+  val = Info_ValueForKey(cl->userinfo,"cl_voice");
+  iVar6 = atoi(val);
+  cl->sendVoice = 0 < iVar6;
+  if (cl->rate < 5000) {
+    cl->sendVoice = false;
   }
-  if ((param_1->header).netchan.remoteAddress.type != NA_BOT) {
-    local_c = ((int)param_1 - (int)svs.clients) / 0x84d00;
-    if (((com_maxclients->current).unsignedInt <= local_c) &&
+  if ((cl->header).netchan.remoteAddress.type != NA_BOT) {
+    clientNum = ((int)cl - (int)svs.clients) / 0x84d00;
+    if (((com_maxclients->current).unsignedInt <= (uint)clientNum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                  0xfa3,0,
                                  "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -3195,45 +3223,46 @@ void __cdecl SV_UserinfoChanged(client_t *param_1)
       (*pcVar2)();
       return;
     }
-    local_38 = Info_ValueForKey(param_1->userinfo,"bdOnlineUserID");
-    StringToXUID(local_38,(ulong64 *)&local_44);
-    if (local_44 == 0 && local_40 == 0) {
-      *(undefined4 *)(svs.xuids + local_c) = 0;
-      *(undefined4 *)((int)svs.xuids + local_c * 8 + 4) = 0;
-      SV_SetConfigstring(local_c + 0x163,(char *)0x0);
+    val = Info_ValueForKey(cl->userinfo,"bdOnlineUserID");
+    StringToXUID(val,(ulong64 *)&newXuid);
+    if (newXuid == 0 && local_40 == 0) {
+      *(undefined4 *)(svs.xuids + clientNum) = 0;
+      *(undefined4 *)((int)svs.xuids + clientNum * 8 + 4) = 0;
+      SV_SetConfigstring(clientNum + 0x163,(char *)0x0);
       Com_Printf(0xf,"Player \'%s\' logged out of Xbox Live\n");
     }
     else {
-      if ((local_44 != (int)svs.xuids[local_c]) ||
-         (local_40 != *(int *)((int)svs.xuids + local_c * 8 + 4))) {
-        *(int *)&param_1->xuid = local_44;
-        *(int *)((int)&param_1->xuid + 4) = local_40;
-        if ((int)svs.xuids[local_c] != 0 || *(int *)((int)svs.xuids + local_c * 8 + 4) != 0) {
+      if ((newXuid != (int)svs.xuids[clientNum]) ||
+         (local_40 != *(int *)((int)svs.xuids + clientNum * 8 + 4))) {
+        *(int *)&cl->xuid = newXuid;
+        *(int *)((int)&cl->xuid + 4) = local_40;
+        if ((int)svs.xuids[clientNum] != 0 || *(int *)((int)svs.xuids + clientNum * 8 + 4) != 0) {
           Com_PrintWarning(0xf,
                            "Unregistering xuid %llx because %llx has gotten their clientNum (%i)\n")
           ;
         }
-        *(int *)(svs.xuids + local_c) = local_44;
-        *(int *)((int)svs.xuids + local_c * 8 + 4) = local_40;
+        *(int *)(svs.xuids + clientNum) = newXuid;
+        *(int *)((int)svs.xuids + clientNum * 8 + 4) = local_40;
       }
-      if ((param_1->header).netchan.remoteAddress.type == NA_LOOPBACK) {
-        NET_SetNetAdrLoopbackIP(&local_54);
+      if ((cl->header).netchan.remoteAddress.type == NA_LOOPBACK) {
+        NET_SetNetAdrLoopbackIP(&addr);
       }
       else {
-        local_54.type = (param_1->header).netchan.remoteAddress.type;
-        local_54.ip = *&(param_1->header).netchan.remoteAddress.ip;
-        local_54.port = (param_1->header).netchan.remoteAddress.port;
-        local_54._10_2_ = *(undefined2 *)&(param_1->header).netchan.remoteAddress.field_0xa;
-        local_54.addrHandleIndex = (param_1->header).netchan.remoteAddress.addrHandleIndex;
+        addr.type = (cl->header).netchan.remoteAddress.type;
+        addr.ip = *&(cl->header).netchan.remoteAddress.ip;
+        addr.port = (cl->header).netchan.remoteAddress.port;
+        addr._10_2_ = *(undefined2 *)&(cl->header).netchan.remoteAddress.field_0xa;
+        addr.addrHandleIndex = (cl->header).netchan.remoteAddress.addrHandleIndex;
       }
       Com_Printf(0xf,"Setting client %i XUID to %s\n");
-      if (((int)svs.xuids[local_c] != 0 || *(int *)((int)svs.xuids + local_c * 8 + 4) != 0) &&
-         (local_58 = Live_GetClientNumForXuid
-                               (&g_serverSession,
-                                CONCAT44(in_stack_ffffff44,
-                                         *(undefined4 *)((int)svs.xuids + local_c * 8 + 4))),
-         local_58 != local_c)) {
-        if (-1 < (int)local_58) {
+      if (((int)svs.xuids[clientNum] != 0 || *(int *)((int)svs.xuids + clientNum * 8 + 4) != 0) &&
+         (clientNumForXuid =
+               Live_GetClientNumForXuid
+                         (&g_serverSession,
+                          CONCAT44(in_stack_ffffff44,
+                                   *(undefined4 *)((int)svs.xuids + clientNum * 8 + 4))),
+         clientNumForXuid != clientNum)) {
+        if (-1 < clientNumForXuid) {
           va("%s went from client num %i to client num %i");
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                    0x1004,0,"%s\n\t%s");
@@ -3245,34 +3274,33 @@ void __cdecl SV_UserinfoChanged(client_t *param_1)
         }
         Com_ControllerIndexes_GetPrimary();
       }
-      if ((*local_38 == '\0') &&
+      if ((*val == '\0') &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                    0x1039,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      I_strncpyz(local_78,param_1->name,0x20);
-      for (local_80 = 0; (local_78[local_80] != '\0' && (local_80 < 0x20)); local_80 = local_80 + 1)
-      {
-        if (local_78[local_80] == ' ') {
-          local_78[local_80] = '\x01';
+      I_strncpyz(filteredName,cl->name,0x20);
+      for (i_2 = 0; (filteredName[i_2] != '\0' && (i_2 < 0x20)); i_2 = i_2 + 1) {
+        if (filteredName[i_2] == ' ') {
+          filteredName[i_2] = '\x01';
         }
       }
       pcVar5 = va("%s %s");
-      SV_SetConfigstring(local_c + 0x143,pcVar5);
-      pcVar5 = Info_ValueForKey(param_1->userinfo,"emblem");
-      SV_SetConfigstring(local_c + 0x163,pcVar5);
+      SV_SetConfigstring(clientNum + 0x143,pcVar5);
+      pcVar5 = Info_ValueForKey(cl->userinfo,"emblem");
+      SV_SetConfigstring(clientNum + 0x163,pcVar5);
     }
-    local_38 = Info_ValueForKey(param_1->userinfo,"cl_wwwDownload");
-    param_1->wwwOk = 0;
-    local_b0 = local_38;
+    val = Info_ValueForKey(cl->userinfo,"cl_wwwDownload");
+    cl->wwwOk = 0;
+    local_b0 = val;
     do {
       cVar1 = *local_b0;
       local_b0 = local_b0 + 1;
     } while (cVar1 != '\0');
-    if ((local_b0 != local_38 + 1) && (iVar6 = atoi(local_38), iVar6 != 0)) {
-      param_1->wwwOk = 1;
+    if ((local_b0 != val + 1) && (iVar6 = atoi(val), iVar6 != 0)) {
+      cl->wwwOk = 1;
     }
   }
   return;
@@ -3287,16 +3315,15 @@ void __cdecl SV_UserinfoChanged(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UpdateUserinfo_f(client_t *param_1)
+void __cdecl SV_UpdateUserinfo_f(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *src;
+  int destsize;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x1076
                              ,0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -3307,11 +3334,11 @@ void __cdecl SV_UpdateUserinfo_f(client_t *param_1)
       return;
     }
   }
-  iVar4 = 0x400;
-  pcVar3 = SV_Cmd_Argv(1);
-  I_strncpyz(param_1->userinfo,pcVar3,iVar4);
-  SV_UserinfoChanged(param_1);
-  ClientUserinfoChanged(((int)param_1 - (int)svs.clients) / 0x84d00);
+  destsize = 0x400;
+  src = SV_Cmd_Argv(1);
+  I_strncpyz(cl->userinfo,src,destsize);
+  SV_UserinfoChanged(cl);
+  ClientUserinfoChanged(((int)cl - (int)svs.clients) / 0x84d00);
   return;
 }
 
@@ -3324,19 +3351,20 @@ void __cdecl SV_UpdateUserinfo_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_MutePlayer_f(client_t *param_1)
+void __cdecl SV_MutePlayer_f(client_t *cl)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  int otherClient;
   
-  pcVar1 = SV_Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  if ((iVar2 < 0) || (0x20 < iVar2)) {
+  nptr = SV_Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  if ((iVar1 < 0) || (0x20 < iVar1)) {
     Com_Printf(0,"Invalid mute client %i\n");
   }
   else {
-    param_1->muteList[iVar2] = true;
+    cl->muteList[iVar1] = true;
   }
   return;
 }
@@ -3350,19 +3378,20 @@ void __cdecl SV_MutePlayer_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UnmutePlayer_f(client_t *param_1)
+void __cdecl SV_UnmutePlayer_f(client_t *cl)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  int otherClient;
   
-  pcVar1 = SV_Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  if ((iVar2 < 0) || (0x20 < iVar2)) {
+  nptr = SV_Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  if ((iVar1 < 0) || (0x20 < iVar1)) {
     Com_Printf(0,"Invalid unmute client %i\n");
   }
   else {
-    param_1->muteList[iVar2] = false;
+    cl->muteList[iVar1] = false;
   }
   return;
 }
@@ -3376,7 +3405,7 @@ void __cdecl SV_UnmutePlayer_f(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ExecuteClientCommand(client_t *param_1,char *param_2,int param_3,int param_4)
+void __cdecl SV_ExecuteClientCommand(client_t *cl,char *s,int clientOK,int fromOldServer)
 
 {
   byte bVar1;
@@ -3385,29 +3414,29 @@ void __cdecl SV_ExecuteClientCommand(client_t *param_1,char *param_2,int param_3
   int local_18;
   byte *local_10;
   byte *local_c;
-  ucmd_t *local_8;
+  ucmd_t *u;
   
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                  0x1109,0,
-                                  "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar3)) {
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x1109,0,
+                               "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
+                              ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  SV_Cmd_TokenizeString(param_2);
-  local_8 = ucmds;
+  SV_Cmd_TokenizeString(s);
+  u = ucmds;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (u->name == (char *)0x0) {
 LAB_0070baf3:
-      if (((param_3 != 0) && (local_8->name == (char *)0x0)) && (bVar3 = SV_Loaded(), bVar3)) {
-        ClientCommand(((int)param_1 - (int)svs.clients) / 0x84d00);
+      if (((clientOK != 0) && (u->name == (char *)0x0)) && (bVar3 = SV_Loaded(), bVar3)) {
+        ClientCommand(((int)cl - (int)svs.clients) / 0x84d00);
       }
       SV_Cmd_EndTokenizedString();
       return;
     }
-    local_c = (byte *)local_8->name;
+    local_c = (byte *)u->name;
     local_10 = (byte *)SV_Cmd_Argv(0);
     do {
       bVar1 = *local_10;
@@ -3427,12 +3456,12 @@ LAB_0070baba:
     local_18 = 0;
 LAB_0070bac2:
     if (local_18 == 0) {
-      if ((param_4 == 0) || (local_8->allowFromOldServer != 0)) {
-        (*local_8->func)(param_1);
+      if ((fromOldServer == 0) || (u->allowFromOldServer != 0)) {
+        (*u->func)(cl);
       }
       goto LAB_0070baf3;
     }
-    local_8 = local_8 + 1;
+    u = u + 1;
   } while( true );
 }
 
@@ -3446,7 +3475,7 @@ LAB_0070bac2:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_ClientCommand(client_t *param_1,msg_t *param_2,int param_3)
+int __cdecl SV_ClientCommand(client_t *cl,msg_t *msg,int fromOldServer)
 
 {
   code *pcVar1;
@@ -3455,57 +3484,58 @@ int __cdecl SV_ClientCommand(client_t *param_1,msg_t *param_2,int param_3)
   int iVar4;
   int iVar5;
   int local_428;
-  char local_414 [1028];
+  int seq;
+  bool floodprotect;
+  char strBuf [1028];
   uint local_10;
-  char *local_c;
-  int local_8;
+  char *s;
+  int clientOk;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 1;
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                  0x1131,0,
-                                  "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar2)) {
+  clientOk = 1;
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x1131,0,
+                               "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
+                              ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  iVar4 = MSG_ReadLong(param_2);
-  local_c = MSG_ReadString(param_2,local_414,0x400);
-  if ((((sv_floodProtect->current).integer == 0) || ((param_1->header).state < 5)) ||
-     ((param_1->header).netchan.remoteAddress.type == NA_LOOPBACK)) {
+  iVar4 = MSG_ReadLong(msg);
+  s = MSG_ReadString(msg,strBuf,0x400);
+  if ((((sv_floodProtect->current).integer == 0) || ((cl->header).state < 5)) ||
+     ((cl->header).netchan.remoteAddress.type == NA_LOOPBACK)) {
     bVar2 = false;
   }
   else {
     bVar2 = true;
   }
-  if (param_1->lastClientCommand < iVar4) {
+  if (cl->lastClientCommand < iVar4) {
     if ((sv_showCommands->current).enabled != false) {
       Com_Printf(0xf,"clientCommand: %i : %s\n");
     }
-    if (param_1->lastClientCommand + 1 < iVar4) {
+    if (cl->lastClientCommand + 1 < iVar4) {
       Com_Printf(0xf,"Client %s lost %i clientCommands\n");
-      SV_DropClient(param_1,"EXE_LOSTRELIABLECOMMANDS",true,true);
+      SV_DropClient(cl,"EXE_LOSTRELIABLECOMMANDS",true,true);
       iVar4 = 0;
     }
     else {
-      iVar5 = I_strncmp("team ",local_c,5);
-      if (((iVar5 == 0) || (iVar5 = I_strncmp("score",local_c,5), iVar5 == 0)) ||
-         (iVar5 = I_strncmp("mr ",local_c,3), iVar5 == 0)) {
+      iVar5 = I_strncmp("team ",s,5);
+      if (((iVar5 == 0) || (iVar5 = I_strncmp("score",s,5), iVar5 == 0)) ||
+         (iVar5 = I_strncmp("mr ",s,3), iVar5 == 0)) {
         bVar2 = false;
       }
-      if ((param_1->nextReliableCount < 0) &&
+      if ((cl->nextReliableCount < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                    0x115b,0,"%s\n\t(cl->nextReliableCount) = %i"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((param_3 != 0) ||
-         (((bVar2 && (param_1->nextReliableCount == 0)) && (svs.time < param_1->nextReliableTime))))
-      {
-        local_8 = 0;
+      if ((fromOldServer != 0) ||
+         (((bVar2 && (cl->nextReliableCount == 0)) && (svs.time < cl->nextReliableTime)))) {
+        clientOk = 0;
         Com_DPrintf(0xf,"client text ignored for %s: %s\n");
       }
       if (bVar2) {
@@ -3516,21 +3546,21 @@ int __cdecl SV_ClientCommand(client_t *param_1,msg_t *param_2,int param_3)
           iVar4 = (*pcVar1)();
           return iVar4;
         }
-        if (svs.time < param_1->nextReliableTime) {
-          local_428 = param_1->nextReliableCount + -1;
+        if (svs.time < cl->nextReliableTime) {
+          local_428 = cl->nextReliableCount + -1;
           if (local_428 < 1) {
             local_428 = 0;
           }
-          param_1->nextReliableCount = local_428;
+          cl->nextReliableCount = local_428;
         }
         else {
-          param_1->nextReliableCount = (sv_floodProtect->current).integer + -1;
+          cl->nextReliableCount = (sv_floodProtect->current).integer + -1;
         }
-        param_1->nextReliableTime = svs.time + 800;
+        cl->nextReliableTime = svs.time + 800;
       }
-      SV_ExecuteClientCommand(param_1,local_c,local_8,param_3);
-      param_1->lastClientCommand = iVar4;
-      Com_sprintf(param_1->lastClientCommandString,0x400,"%s");
+      SV_ExecuteClientCommand(cl,s,clientOk,fromOldServer);
+      cl->lastClientCommand = iVar4;
+      Com_sprintf(cl->lastClientCommandString,0x400,"%s");
       iVar4 = 1;
     }
   }
@@ -3549,25 +3579,25 @@ int __cdecl SV_ClientCommand(client_t *param_1,msg_t *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_ProcessClientCommands(client_t *param_1,msg_t *param_2,int param_3,int *param_4)
+int __cdecl SV_ProcessClientCommands(client_t *cl,msg_t *msg,int fromOldServer,int *lastCommand)
 
 {
   int iVar1;
   
   do {
-    iVar1 = MSG_ReadBits(param_2,3);
-    *param_4 = iVar1;
-    if (*param_4 == 3) {
+    iVar1 = MSG_ReadBits(msg,3);
+    *lastCommand = iVar1;
+    if (*lastCommand == 3) {
       return 1;
     }
-    if (*param_4 != 2) {
+    if (*lastCommand != 2) {
       return 1;
     }
-    iVar1 = SV_ClientCommand(param_1,param_2,param_3);
+    iVar1 = SV_ClientCommand(cl,msg,fromOldServer);
     if (iVar1 == 0) {
       return 0;
     }
-  } while ((param_1->header).state != 1);
+  } while ((cl->header).state != 1);
   return 0;
 }
 
@@ -3580,7 +3610,7 @@ int __cdecl SV_ProcessClientCommands(client_t *param_1,msg_t *param_2,int param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ClientThink(client_t *param_1,usercmd_s *param_2)
+void __cdecl SV_ClientThink(client_t *cl,usercmd_s *cmd)
 
 {
   code *pcVar1;
@@ -3590,29 +3620,30 @@ void __cdecl SV_ClientThink(client_t *param_1,usercmd_s *param_2)
   int iVar5;
   usercmd_s *puVar6;
   usercmd_s *puVar7;
+  PIXProfile pixProfile;
   
   pcVar3 = va("SV_ClientThink \'%s\'");
   PIXBeginNamedEvent(-1,pcVar3);
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                  0x11a0,0,
-                                  "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar2)) {
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x11a0,0,
+                               "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
+                              ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->serverTime - svs.time < 0x4e21) {
-    puVar6 = param_2;
-    puVar7 = &param_1->lastUsercmd;
+  if (cmd->serverTime - svs.time < 0x4e21) {
+    puVar6 = cmd;
+    puVar7 = &cl->lastUsercmd;
     for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
       puVar7->serverTime = puVar6->serverTime;
       puVar6 = (usercmd_s *)&puVar6->button_bits;
       puVar7 = (usercmd_s *)&puVar7->button_bits;
     }
-    if ((param_1->header).state == 5) {
-      G_SetLastServerTime(((int)param_1 - (int)svs.clients) / 0x84d00,param_2->serverTime);
-      ClientThink(((int)param_1 - (int)svs.clients) / 0x84d00);
+    if ((cl->header).state == 5) {
+      G_SetLastServerTime(((int)cl - (int)svs.clients) / 0x84d00,cmd->serverTime);
+      ClientThink(((int)cl - (int)svs.clients) / 0x84d00);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -3646,135 +3677,135 @@ void __cdecl SV_ClientThink(client_t *param_1,usercmd_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UserMove(client_t *param_1,msg_t *param_2,int param_3)
+void __cdecl SV_UserMove(client_t *cl,msg_t *msg,int delta)
 
 {
   char cVar1;
   code *pcVar2;
-  usercmd_s *puVar3;
-  bool bVar4;
-  char *pcVar5;
-  uint uVar6;
-  int iVar7;
-  float fVar8;
+  usercmd_s *from;
+  bool bVar3;
+  char *fmt;
+  uint uVar4;
+  int iVar5;
+  float fVar6;
   char *local_704;
   int local_700;
   usercmd_s *local_6fc;
   int local_6f4;
   int local_6ec;
-  int local_6e4;
-  usercmd_s local_6dc;
-  usercmd_s *local_6a8;
-  int local_6a4;
-  uint local_6a0;
-  usercmd_s local_69c [32];
+  int value_2;
+  int i_2;
+  char *pszString;
+  usercmd_s nullcmd;
+  usercmd_s *oldcmd;
+  int cmdCount;
+  int key;
+  usercmd_s cmds [32];
   uint local_18;
-  int local_14;
-  playerState_s *local_10;
-  float local_c;
-  usercmd_s *local_8;
+  int i;
+  playerState_s *ps;
+  int value;
+  usercmd_s *cmd;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_6ec = 0; local_6ec < 2; local_6ec = local_6ec + 1) {
-    local_6dc.button_bits.array[local_6ec] = 0;
+    nullcmd.button_bits.array[local_6ec] = 0;
   }
   local_700 = 0x20;
-  local_6fc = local_69c;
+  local_6fc = cmds;
   while (local_700 = local_700 + -1, -1 < local_700) {
     for (local_6f4 = 0; local_6f4 < 2; local_6f4 = local_6f4 + 1) {
       (local_6fc->button_bits).array[local_6f4] = 0;
     }
     local_6fc = local_6fc + 1;
   }
-  if (((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-     && (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                  0x11ce,0,
-                                  "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
-                                 ), !bVar4)) {
+  if (((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x11ce,0,
+                               "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
+                              ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_3 == 0) {
-    (param_1->header).deltaMessage = -1;
+  if (delta == 0) {
+    (cl->header).deltaMessage = -1;
   }
   else {
-    (param_1->header).deltaMessage = param_1->messageAcknowledge;
+    (cl->header).deltaMessage = cl->messageAcknowledge;
   }
-  if (param_1->reliableSequence - param_1->reliableAcknowledge < 0x80) {
-    local_6a4 = MSG_ReadByte(param_2);
-    if (local_6a4 < 1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+  if (cl->reliableSequence - cl->reliableAcknowledge < 0x80) {
+    cmdCount = MSG_ReadByte(msg);
+    if (cmdCount < 1) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x11e4,0,"cmdCount < 1");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
       Com_Printf(0xf,"cmdCount < 1\n");
     }
-    else if (local_6a4 < 0x21) {
-      local_6a0 = sv.checksumFeed ^ param_1->messageAcknowledge;
-      uVar6 = Com_HashKey(param_1->reliableCommandInfo[param_1->reliableAcknowledge & 0x7f].cmd,0x20
-                         );
-      local_6a0 = uVar6 ^ local_6a0;
+    else if (cmdCount < 0x21) {
+      key = sv.checksumFeed ^ cl->messageAcknowledge;
+      uVar4 = Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7f].cmd,0x20);
+      key = uVar4 ^ key;
       if ((sv_debugMessageKey->current).enabled != false) {
-        local_704 = param_1->reliableCommandInfo[param_1->reliableAcknowledge & 0x7f].cmd;
+        local_704 = cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7f].cmd;
         do {
           cVar1 = *local_704;
           local_704 = local_704 + 1;
         } while (cVar1 != '\0');
-        Com_HashKey(param_1->reliableCommandInfo[param_1->reliableAcknowledge & 0x7f].cmd,0x20);
+        Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7f].cmd,0x20);
         Com_Printf(0xf,
                    "key:%i, checksumFeed:%i, messageAcknowledge:%i, Com_HashKey:%i, servercommand(%i):\'%s\', len:%i\n"
                   );
       }
-      local_10 = SV_GameClientNum(((int)param_1 - (int)svs.clients) / 0x84d00);
-      if ((local_10 == (playerState_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0x1200,0,"%s"), !bVar4)) {
+      ps = SV_GameClientNum(((int)cl - (int)svs.clients) / 0x84d00);
+      if ((ps == (playerState_s *)0x0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0x1200,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      bVar4 = BG_ValidateWeaponNumber((uint)local_10->weapon);
-      if ((!bVar4) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                                   0x1201,0,"%s"), !bVar4)) {
+      bVar3 = BG_ValidateWeaponNumber((uint)ps->weapon);
+      if ((!bVar3) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                                   0x1201,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      MSG_SetDefaultUserCmd(local_10,&local_6dc);
-      local_8 = &local_6dc;
-      for (local_14 = 0; puVar3 = local_8, local_6a8 = local_8, local_14 < local_6a4;
-          local_14 = local_14 + 1) {
-        local_8 = local_69c + local_14;
-        MSG_ReadDeltaUsercmdKey(param_2,local_6a0,puVar3,local_69c + local_14);
-        if ((local_10->weapon != local_10->weapon) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
-                                     ,0x120c,0,"%s"), !bVar4)) {
+      MSG_SetDefaultUserCmd(ps,&nullcmd);
+      cmd = &nullcmd;
+      for (i = 0; from = cmd, oldcmd = cmd, i < cmdCount; i = i + 1) {
+        cmd = cmds + i;
+        MSG_ReadDeltaUsercmdKey(msg,key,from,cmds + i);
+        if ((ps->weapon != ps->weapon) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
+                                     ,0x120c,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        bVar4 = BG_IsWeaponValid(local_10,(uint)local_8->weapon);
-        if (!bVar4) {
-          local_8->weapon = local_10->weapon;
+        bVar3 = BG_IsWeaponValid(ps,(uint)cmd->weapon);
+        if (!bVar3) {
+          cmd->weapon = ps->weapon;
         }
-        if ((local_10->offHandIndex != (uint)(ushort)local_10->offHandIndex) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
-                                     ,0x1214,0,"%s"), !bVar4)) {
+        if ((ps->offHandIndex != (uint)(ushort)ps->offHandIndex) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp"
+                                     ,0x1214,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        bVar4 = BG_IsWeaponValid(local_10,(uint)local_8->offHandIndex);
-        if (!bVar4) {
-          local_8->offHandIndex = (ushort)local_10->offHandIndex;
+        bVar3 = BG_IsWeaponValid(ps,(uint)cmd->offHandIndex);
+        if (!bVar3) {
+          cmd->offHandIndex = (ushort)ps->offHandIndex;
         }
-        bVar4 = BG_ValidateWeaponNumber((uint)local_8->weapon);
-        if ((!bVar4) || (bVar4 = BG_ValidateWeaponNumber((uint)local_8->offHandIndex), !bVar4)) {
+        bVar3 = BG_ValidateWeaponNumber((uint)cmd->weapon);
+        if ((!bVar3) || (bVar3 = BG_ValidateWeaponNumber((uint)cmd->offHandIndex), !bVar3)) {
           Com_Printf(0xf,"###!#!#!#!#!#!#!#!#!#!#!#!#!#!#!#!###\n");
           Com_Printf(0xf,
                      "Encountered corrupt user command. This means the client\'s write key and the server read key for the net message were different\n"
@@ -3789,12 +3820,12 @@ void __cdecl SV_UserMove(client_t *param_1,msg_t *param_2,int param_3)
           Com_Printf(0xf,"angles[2] = %i(%f)\n");
           Com_Printf(0xf,"forwardmove = %i\n");
           Com_Printf(0xf,"rightmove = %i\n");
-          for (local_6e4 = 0; local_6e4 < 2; local_6e4 = local_6e4 + 1) {
+          for (i_2 = 0; i_2 < 2; i_2 = i_2 + 1) {
             Com_Printf(0xf,"buttons(field %i) = %i\n");
           }
           Com_Printf(0xf,"weapon = %i\n");
           Com_Printf(0xf,"---- %i Client Info\n");
-          switch((param_1->header).state) {
+          switch((cl->header).state) {
           case 0:
             break;
           case 1:
@@ -3836,91 +3867,91 @@ void __cdecl SV_UserMove(client_t *param_1,msg_t *param_2,int param_3)
           Com_Printf(0xf,
                      "cl->reliableCommandInfo[cl->reliableAcknowledge&(MAX_RELIABLE_COMMANDS-1)].cmd: \'%s\'\n"
                     );
-          Com_HashKey(param_1->reliableCommandInfo[param_1->reliableAcknowledge & 0x7f].cmd,0x20);
+          Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7f].cmd,0x20);
           Com_Printf(0xf,
                      "Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge&(MAX_RELIABLE_COMMANDS-1)].cmd,32): %i\n"
                     );
           Com_Printf(0xf,"key = sv.checksumFeed: %i\n");
           Com_Printf(0xf,"key ^= cl->messageAcknowledge: %i\n");
-          Com_HashKey(param_1->reliableCommandInfo[param_1->reliableAcknowledge & 0x7f].cmd,0x20);
+          Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7f].cmd,0x20);
           Com_Printf(0xf,
                      "key ^= Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge&(MAX_RELIABLE_COMMANDS-1)].cmd,32): %i\n"
                     );
           Com_Printf(0xf,"key: %i\n");
           Com_Printf(0xf,"key ^= cmd->serverTime: %i\n");
           Com_Printf(0xf,"########################################\n");
-          SV_DropClient(param_1,"\x15Corrupted network messaging detected",true,true);
+          SV_DropClient(cl,"\x15Corrupted network messaging detected",true,true);
         }
       }
-      if (0 < local_6a4) {
-        local_c = (float)MSG_ReadLong(param_2);
-        (param_1->header).predictedOrigin[0] = local_c;
-        local_c = (float)MSG_ReadLong(param_2);
-        (param_1->header).predictedOrigin[1] = local_c;
-        local_c = (float)MSG_ReadLong(param_2);
-        (param_1->header).predictedOrigin[2] = local_c;
-        iVar7 = MSG_ReadLong(param_2);
-        (param_1->header).predictedOriginServerTime = iVar7;
-        iVar7 = MSG_ReadBit(param_2);
-        if (iVar7 == 0) {
-          (param_1->header).vehicle.inVehicle = false;
+      if (0 < cmdCount) {
+        value = MSG_ReadLong(msg);
+        (cl->header).predictedOrigin[0] = (float)value;
+        value = MSG_ReadLong(msg);
+        (cl->header).predictedOrigin[1] = (float)value;
+        value = MSG_ReadLong(msg);
+        (cl->header).predictedOrigin[2] = (float)value;
+        iVar5 = MSG_ReadLong(msg);
+        (cl->header).predictedOriginServerTime = iVar5;
+        iVar5 = MSG_ReadBit(msg);
+        if (iVar5 == 0) {
+          (cl->header).vehicle.inVehicle = false;
         }
         else {
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.origin[0] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.origin[1] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.origin[2] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.angles[0] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.angles[1] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.angles[2] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.tVel[0] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.tVel[1] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.tVel[2] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.aVel[0] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.aVel[1] = fVar8;
-          fVar8 = (float)MSG_ReadLong(param_2);
-          (param_1->header).vehicle.aVel[2] = fVar8;
-          (param_1->header).vehicle.inVehicle = true;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.origin[0] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.origin[1] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.origin[2] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.angles[0] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.angles[1] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.angles[2] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.tVel[0] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.tVel[1] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.tVel[2] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.aVel[0] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.aVel[1] = fVar6;
+          fVar6 = (float)MSG_ReadLong(msg);
+          (cl->header).vehicle.aVel[2] = fVar6;
+          (cl->header).vehicle.inVehicle = true;
         }
       }
-      if (param_1->frames[param_1->messageAcknowledge & 0x1f].messageAcked < 1) {
-        iVar7 = Sys_Milliseconds();
-        param_1->frames[param_1->messageAcknowledge & 0x1f].messageAcked = iVar7;
+      if (cl->frames[cl->messageAcknowledge & 0x1f].messageAcked < 1) {
+        iVar5 = Sys_Milliseconds();
+        cl->frames[cl->messageAcknowledge & 0x1f].messageAcked = iVar5;
       }
-      if ((param_1->header).state == 4) {
-        SV_ClientEnterWorld(param_1,local_69c);
+      if ((cl->header).state == 4) {
+        SV_ClientEnterWorld(cl,cmds);
       }
-      if (((sv_pure->current).enabled == false) || (param_1->pureAuthentic != 0)) {
-        if ((param_1->header).state == 5) {
-          for (local_14 = 0; local_14 < local_6a4; local_14 = local_14 + 1) {
-            if ((local_69c[local_14].serverTime <= local_69c[local_6a4 + -1].serverTime) &&
-               ((param_1->lastUsercmd).serverTime < local_69c[local_14].serverTime)) {
-              SV_ClientThink(param_1,local_69c + local_14);
+      if (((sv_pure->current).enabled == false) || (cl->pureAuthentic != 0)) {
+        if ((cl->header).state == 5) {
+          for (i = 0; i < cmdCount; i = i + 1) {
+            if ((cmds[i].serverTime <= cmds[cmdCount + -1].serverTime) &&
+               ((cl->lastUsercmd).serverTime < cmds[i].serverTime)) {
+              SV_ClientThink(cl,cmds + i);
             }
           }
         }
         else {
-          (param_1->header).deltaMessage = -1;
+          (cl->header).deltaMessage = -1;
         }
       }
       else {
-        SV_DropClient(param_1,"EXE_CANNOTVALIDATEPURECLIENT",true,true);
+        SV_DropClient(cl,"EXE_CANNOTVALIDATEPURECLIENT",true,true);
       }
     }
     else {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                0x11eb,0,"cmdCount > MAX_PACKET_USERCMDS");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
@@ -3929,10 +3960,10 @@ void __cdecl SV_UserMove(client_t *param_1,msg_t *param_2,int param_3)
     }
   }
   else {
-    pcVar5 = va("cl->reliableSequence is %i, cl->reliableAcknowledge is %i for %s");
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x11dc
-                             ,0,pcVar5);
-    if (!bVar4) {
+    fmt = va("cl->reliableSequence is %i, cl->reliableAcknowledge is %i for %s");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x11dc
+                             ,0,fmt);
+    if (!bVar3) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
@@ -3950,22 +3981,21 @@ void __cdecl SV_UserMove(client_t *param_1,msg_t *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ExecuteClientMessage(client_t *param_1,msg_t *param_2)
+void __cdecl SV_ExecuteClientMessage(client_t *cl,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  msg_t local_74;
-  int local_44;
-  msg_t local_40;
-  uchar *local_10;
-  LargeLocal local_c;
+  msg_t msg_2;
+  int c;
+  msg_t msgCompressed;
+  uchar *msgCompressed_buf;
+  LargeLocal msgCompressed_buf_large_local;
   
-  LargeLocal::LargeLocal(&local_c,0x10000);
-  local_10 = LargeLocal::GetBuf(&local_c);
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  LargeLocal::LargeLocal(&msgCompressed_buf_large_local,0x10000);
+  msgCompressed_buf = LargeLocal::GetBuf(&msgCompressed_buf_large_local);
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x12fc
                              ,0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -3976,57 +4006,57 @@ void __cdecl SV_ExecuteClientMessage(client_t *param_1,msg_t *param_2)
       return;
     }
   }
-  MSG_Init(&local_40,local_10,0x10000);
-  local_40.cursize =
+  MSG_Init(&msgCompressed,msgCompressed_buf,0x10000);
+  msgCompressed.cursize =
        MSG_ReadBitsCompress
-                 (param_2->data + param_2->readcount,param_2->cursize - param_2->readcount,local_10,
-                  0x10000);
-  if ((((param_1->downloading == 0) && (param_1->downloadingWWW == 0)) &&
-      (param_1->clientDownloadingWWW == 0)) && (param_1->serverId != sv_serverId_value)) {
-    if ((param_1->serverId & 0xf0U) == (sv_serverId_value & 0xf0U)) {
-      if ((param_1->header).state == 4) {
-        SV_ClientEnterWorld(param_1,&param_1->lastUsercmd);
+                 (msg->data + msg->readcount,msg->cursize - msg->readcount,msgCompressed_buf,0x10000
+                 );
+  if ((((cl->downloading == 0) && (cl->downloadingWWW == 0)) && (cl->clientDownloadingWWW == 0)) &&
+     (cl->serverId != sv_serverId_value)) {
+    if ((cl->serverId & 0xf0U) == (sv_serverId_value & 0xf0U)) {
+      if ((cl->header).state == 4) {
+        SV_ClientEnterWorld(cl,&cl->lastUsercmd);
       }
-      LargeLocal::~LargeLocal(&local_c);
+      LargeLocal::~LargeLocal(&msgCompressed_buf_large_local);
     }
     else {
-      iVar3 = SV_ProcessClientCommands(param_1,&local_40,1,&local_44);
+      iVar3 = SV_ProcessClientCommands(cl,&msgCompressed,1,&c);
       if (iVar3 == 0) {
-        LargeLocal::~LargeLocal(&local_c);
+        LargeLocal::~LargeLocal(&msgCompressed_buf_large_local);
       }
       else {
-        if (param_1->gamestateMessageNum < param_1->messageAcknowledge) {
+        if (cl->gamestateMessageNum < cl->messageAcknowledge) {
           Com_DPrintf(0xf,"%s : dropped gamestate, resending\n");
           Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-          SV_SendClientGameState(param_1);
+          SV_SendClientGameState(cl);
         }
-        LargeLocal::~LargeLocal(&local_c);
+        LargeLocal::~LargeLocal(&msgCompressed_buf_large_local);
       }
     }
   }
   else {
-    iVar3 = SV_ProcessClientCommands(param_1,&local_40,0,&local_44);
+    iVar3 = SV_ProcessClientCommands(cl,&msgCompressed,0,&c);
     if (iVar3 == 0) {
-      LargeLocal::~LargeLocal(&local_c);
+      LargeLocal::~LargeLocal(&msgCompressed_buf_large_local);
     }
     else {
-      if ((((sv_pure->current).enabled != false) && (param_1->pureAuthentic == 2)) &&
-         (4 < (param_1->header).state)) {
-        param_1->nextSnapshotTime = -1;
-        param_1->lastSnapshotTime = -1;
-        SV_DropClient(param_1,"EXE_UNPURECLIENTDETECTED",true,true);
-        (param_1->header).state = 5;
-        if (((param_1->header).state == 5) || ((param_1->header).state == 1)) {
-          SV_BuildClientSnapshot(param_1);
+      if ((((sv_pure->current).enabled != false) && (cl->pureAuthentic == 2)) &&
+         (4 < (cl->header).state)) {
+        cl->nextSnapshotTime = -1;
+        cl->lastSnapshotTime = -1;
+        SV_DropClient(cl,"EXE_UNPURECLIENTDETECTED",true,true);
+        (cl->header).state = 5;
+        if (((cl->header).state == 5) || ((cl->header).state == 1)) {
+          SV_BuildClientSnapshot(cl);
         }
         SV_SetServerStaticHeader();
-        SV_BeginClientSnapshot(param_1,&local_74);
-        if (((param_1->header).state == 5) || ((param_1->header).state == 1)) {
-          SV_WriteSnapshotToClient(param_1,&local_74);
+        SV_BeginClientSnapshot(cl,&msg_2);
+        if (((cl->header).state == 5) || ((cl->header).state == 1)) {
+          SV_WriteSnapshotToClient(cl,&msg_2);
         }
-        SV_EndClientSnapshot(param_1,&local_74);
+        SV_EndClientSnapshot(cl,&msg_2);
         SV_GetServerStaticHeader();
-        (param_1->header).state = 1;
+        (cl->header).state = 1;
       }
       if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
@@ -4037,13 +4067,13 @@ void __cdecl SV_ExecuteClientMessage(client_t *param_1,msg_t *param_2)
           return;
         }
       }
-      if (local_44 == 0) {
-        SV_UserMove(param_1,&local_40,1);
+      if (c == 0) {
+        SV_UserMove(cl,&msgCompressed,1);
       }
-      else if (local_44 == 1) {
-        SV_UserMove(param_1,&local_40,0);
+      else if (c == 1) {
+        SV_UserMove(cl,&msgCompressed,0);
       }
-      else if (local_44 != 3) {
+      else if (c != 3) {
         Com_PrintWarning(0xf,"WARNING: bad command byte %i for client %i\n");
       }
       if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) {
@@ -4055,7 +4085,7 @@ void __cdecl SV_ExecuteClientMessage(client_t *param_1,msg_t *param_2)
           return;
         }
       }
-      LargeLocal::~LargeLocal(&local_c);
+      LargeLocal::~LargeLocal(&msgCompressed_buf_large_local);
     }
   }
   return;
@@ -4066,127 +4096,123 @@ void __cdecl SV_ExecuteClientMessage(client_t *param_1,msg_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Type propagation algorithm not settling */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 gentity_s * __cdecl SV_AddTestClient(void)
 
 {
   code *pcVar1;
-  netadr_t nVar2;
-  bool bVar3;
-  gentity_s *pgVar4;
-  int iVar5;
-  char *pcVar6;
-  int iVar7;
+  netadr_t a_00;
+  bool bVar2;
+  gentity_s *pgVar3;
+  int iVar4;
+  char *buf;
+  int bufLen;
   int local_4a0;
-  client_t *local_49c;
-  usercmd_s local_498;
-  char local_464 [20];
-  char *local_450;
-  char local_44c [1028];
-  int local_48;
-  undefined4 local_44;
+  client_t *cl;
+  usercmd_s nullcmd;
+  char xuidStr [20];
+  char *name;
+  char file [1028];
+  int i;
+  undefined4 a;
   undefined4 local_40;
   uint local_3c;
   int local_38;
-  undefined4 local_34;
+  undefined4 xuid;
   undefined4 local_30;
-  char local_28 [32];
+  char friendName [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_4a0 = 0; local_4a0 < 2; local_4a0 = local_4a0 + 1) {
-    local_498.button_bits.array[local_4a0] = 0;
+    nullcmd.button_bits.array[local_4a0] = 0;
   }
   if (((com_sv_running->current).enabled == false) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
-                               0x1386,0,"%s"), !bVar3)) {
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+                               0x1386,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    pgVar4 = (gentity_s *)(*pcVar1)();
-    return pgVar4;
+    pgVar3 = (gentity_s *)(*pcVar1)();
+    return pgVar3;
   }
-  iVar5 = Dvar_GetInt("developer");
-  if (iVar5 == 0) {
-    iVar5 = SV_GetLicenseType();
-    bVar3 = SV_IsServerRanked(iVar5);
-    if (bVar3) {
+  iVar4 = Dvar_GetInt("developer");
+  if (iVar4 == 0) {
+    iVar4 = SV_GetLicenseType();
+    bVar2 = SV_IsServerRanked(iVar4);
+    if (bVar2) {
       return (gentity_s *)0x0;
     }
   }
-  local_49c = svs.clients;
-  for (local_48 = 0; local_48 < (com_maxclients->current).integer; local_48 = local_48 + 1) {
-    if (((local_49c->bIsTestClient != 0) && ((local_49c->header).state != 5)) &&
-       (2 < (local_49c->header).state)) {
+  cl = svs.clients;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (((cl->bIsTestClient != 0) && ((cl->header).state != 5)) && (2 < (cl->header).state)) {
       Com_Printf(0xf,"TEST client[%d] \'%s\' removed\n");
-      SV_DropClient(local_49c,"EXE_PLAYERKICKED",false,true);
+      SV_DropClient(cl,"EXE_PLAYERKICKED",false,true);
     }
-    local_49c = (client_t *)(local_49c[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
-  local_48 = 0;
-  for (local_49c = svs.clients;
-      (local_48 < (com_maxclients->current).integer && ((local_49c->header).state != 0));
-      local_49c = (client_t *)(local_49c[1].userinfo + 0x3d8)) {
-    local_48 = local_48 + 1;
+  i = 0;
+  for (cl = svs.clients; (i < (com_maxclients->current).integer && ((cl->header).state != 0));
+      cl = (client_t *)(cl[1].userinfo + 0x3d8)) {
+    i = i + 1;
   }
-  if (local_48 == (com_maxclients->current).integer) {
+  if (i == (com_maxclients->current).integer) {
     Com_Printf(0xf,"Can\'t add bot, server is full.\n");
-    pgVar4 = (gentity_s *)0x0;
+    pgVar3 = (gentity_s *)0x0;
   }
   else {
-    iVar7 = 0x20;
-    pcVar6 = local_28;
-    iVar5 = Com_ControllerIndexes_GetPrimary();
-    bVar3 = SV_BotNameRandomFriend(iVar5,pcVar6,iVar7);
-    if (bVar3) {
-      local_450 = local_28;
+    bufLen = 0x20;
+    buf = friendName;
+    iVar4 = Com_ControllerIndexes_GetPrimary();
+    bVar2 = SV_BotNameRandomFriend(iVar4,buf,bufLen);
+    if (bVar2) {
+      name = friendName;
     }
     else {
-      local_450 = SV_BotNameRandom();
+      name = SV_BotNameRandom();
     }
-    local_34 = 0xffffff00;
+    xuid = 0xffffff00;
     local_30 = 0xffffffff;
-    XUIDToString((ulong64 *)&local_34,local_464);
-    sprintf(local_44c,
+    XUIDToString((ulong64 *)&xuid,xuidStr);
+    sprintf(file,
             "connect \"\\cg_predictItems\\1\\cl_punkbuster\\0\\cl_anonymous\\0\\color\\4\\head\\default\\model\\multi\\snaps\\20\\rate\\5000\\name\\%s\\clanAbbrev\\3arc\\bdOnlineUserID\\%s\\protocol\\%d\\qport\\%d\""
            );
-    SV_Cmd_TokenizeString(local_44c);
+    SV_Cmd_TokenizeString(file);
     local_40 = 0;
     local_38 = 0;
-    local_44 = 0;
+    a = 0;
     local_3c = (uint)botport;
     botport = botport + 1;
     SV_DirectConnect((netadr_t)(ZEXT416(local_3c) << 0x40));
     SV_Cmd_EndTokenizedString();
-    local_48 = 0;
-    local_49c = svs.clients;
-    while ((local_48 < (com_maxclients->current).integer &&
-           (((local_49c->header).state == 0 ||
-            (nVar2.ip[0] = (undefined1)local_40, nVar2.ip[1] = local_40._1_1_,
-            nVar2.ip[2] = local_40._2_1_, nVar2.ip[3] = local_40._3_1_, nVar2.type = local_44,
-            nVar2._8_4_ = local_3c, nVar2.addrHandleIndex = local_38,
-            iVar5 = NET_CompareBaseAdr(nVar2,(local_49c->header).netchan.remoteAddress), iVar5 == 0)
-            )))) {
-      local_48 = local_48 + 1;
-      local_49c = (client_t *)(local_49c[1].userinfo + 0x3d8);
+    i = 0;
+    cl = svs.clients;
+    while ((i < (com_maxclients->current).integer &&
+           (((cl->header).state == 0 ||
+            (a_00.ip[0] = (undefined1)local_40, a_00.ip[1] = local_40._1_1_,
+            a_00.ip[2] = local_40._2_1_, a_00.ip[3] = local_40._3_1_, a_00.type = a,
+            a_00._8_4_ = local_3c, a_00.addrHandleIndex = local_38,
+            iVar4 = NET_CompareBaseAdr(a_00,(cl->header).netchan.remoteAddress), iVar4 == 0))))) {
+      i = i + 1;
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
-    if (local_48 == (com_maxclients->current).integer) {
-      pgVar4 = (gentity_s *)0x0;
+    if (i == (com_maxclients->current).integer) {
+      pgVar3 = (gentity_s *)0x0;
     }
     else {
-      local_49c->bIsTestClient = 1;
+      cl->bIsTestClient = 1;
       Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-      SV_SendClientGameState(local_49c);
-      memset((uchar *)&local_498,'\0',0x34);
-      SV_ClientEnterWorld(local_49c,&local_498);
-      pgVar4 = (gentity_s *)
-               ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * local_48 + -0x18);
+      SV_SendClientGameState(cl);
+      memset((uchar *)&nullcmd,'\0',0x34);
+      SV_ClientEnterWorld(cl,&nullcmd);
+      pgVar3 = (gentity_s *)((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * i + -0x18);
     }
   }
-  return pgVar4;
+  return pgVar3;
 }
 
 
@@ -4198,14 +4224,15 @@ gentity_s * __cdecl SV_AddTestClient(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_IsTestClient(int param_1)
+bool __cdecl SV_IsTestClient(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  client_t *cl;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x13ee
                              ,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -4216,7 +4243,7 @@ bool __cdecl SV_IsTestClient(int param_1)
       return (bool)uVar3;
     }
   }
-  return *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x63910) == 1;
+  return *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63910) == 1;
 }
 
 
@@ -4228,14 +4255,15 @@ bool __cdecl SV_IsTestClient(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_IsDemoClient(int param_1)
+bool __cdecl SV_IsDemoClient(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  client_t *cl;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",0x13f9
                              ,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -4246,7 +4274,7 @@ bool __cdecl SV_IsDemoClient(int param_1)
       return (bool)uVar3;
     }
   }
-  return *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x63914) == 1;
+  return *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63914) == 1;
 }
 
 
@@ -4263,17 +4291,18 @@ bool __cdecl SV_AddDemoClient(void)
 
 {
   code *pcVar1;
-  netadr_t nVar2;
-  netadr_t nVar3;
-  undefined1 auVar4 [12];
-  client_t *pcVar5;
-  bool bVar6;
-  undefined1 uVar7;
-  int iVar8;
+  netadr_t a_00;
+  netadr_t from;
+  undefined1 auVar2 [12];
+  client_t *client;
+  bool bVar3;
+  undefined1 uVar4;
+  int iVar5;
   int local_458;
-  usercmd_s local_450;
-  char local_41c [1028];
-  undefined4 local_18;
+  client_t *cl;
+  usercmd_s nullcmd;
+  char file [1028];
+  undefined4 a;
   undefined4 local_14;
   undefined4 local_10;
   int local_c;
@@ -4281,71 +4310,71 @@ bool __cdecl SV_AddDemoClient(void)
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_458 = 0; local_458 < 2; local_458 = local_458 + 1) {
-    local_450.button_bits.array[local_458] = 0;
+    nullcmd.button_bits.array[local_458] = 0;
   }
-  bVar6 = Demo_IsRecording();
-  pcVar5 = svs.clients;
-  if (bVar6) {
+  bVar3 = Demo_IsRecording();
+  client = svs.clients;
+  if (bVar3) {
     if ((com_sv_running->current).enabled == false) {
-      bVar6 = false;
+      bVar3 = false;
     }
     else if (((svs.clients)->header).state == 0) {
-      sprintf(local_41c,
+      sprintf(file,
               "connect \"\\cg_predictItems\\1\\cl_punkbuster\\0\\cl_anonymous\\0\\color\\4\\head\\default\\model\\multi\\snaps\\20\\rate\\5000\\name\\democlient\\clanAbbrev\\3arc\\protocol\\%d\\qport\\%d\\loller\\%d\""
              );
-      SV_Cmd_TokenizeString(local_41c);
+      SV_Cmd_TokenizeString(file);
       local_14 = 0;
       local_c = 0;
-      local_18 = 0;
+      a = 0;
       local_10 = 0x6ed;
-      auVar4 = ZEXT412(0x6ed) << 0x40;
-      nVar3.addrHandleIndex = 0;
-      nVar3.type = auVar4._0_4_;
-      nVar3.ip[0] = auVar4[4];
-      nVar3.ip[1] = auVar4[5];
-      nVar3.ip[2] = auVar4[6];
-      nVar3.ip[3] = auVar4[7];
-      nVar3.port = auVar4._8_2_;
-      nVar3._10_2_ = auVar4._10_2_;
-      SV_DirectConnect(nVar3);
+      auVar2 = ZEXT412(0x6ed) << 0x40;
+      from.addrHandleIndex = 0;
+      from.type = auVar2._0_4_;
+      from.ip[0] = auVar2[4];
+      from.ip[1] = auVar2[5];
+      from.ip[2] = auVar2[6];
+      from.ip[3] = auVar2[7];
+      from.port = auVar2._8_2_;
+      from._10_2_ = auVar2._10_2_;
+      SV_DirectConnect(from);
       SV_Cmd_EndTokenizedString();
-      nVar2.ip[0] = (undefined1)local_14;
-      nVar2.ip[1] = local_14._1_1_;
-      nVar2.ip[2] = local_14._2_1_;
-      nVar2.ip[3] = local_14._3_1_;
-      nVar2.type = local_18;
-      nVar2._8_4_ = local_10;
-      nVar2.addrHandleIndex = local_c;
-      iVar8 = NET_CompareBaseAdr(nVar2,(pcVar5->header).netchan.remoteAddress);
-      if (iVar8 == 0) {
-        bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
+      a_00.ip[0] = (undefined1)local_14;
+      a_00.ip[1] = local_14._1_1_;
+      a_00.ip[2] = local_14._2_1_;
+      a_00.ip[3] = local_14._3_1_;
+      a_00.type = a;
+      a_00._8_4_ = local_10;
+      a_00.addrHandleIndex = local_c;
+      iVar5 = NET_CompareBaseAdr(a_00,(client->header).netchan.remoteAddress);
+      if (iVar5 == 0) {
+        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                  0x142a,0,"democlient needs to be client 0");
-        if (!bVar6) {
+        if (!bVar3) {
           pcVar1 = (code *)swi(3);
-          uVar7 = (*pcVar1)();
-          return (bool)uVar7;
+          uVar4 = (*pcVar1)();
+          return (bool)uVar4;
         }
       }
-      pcVar5->bIsDemoClient = 1;
+      client->bIsDemoClient = 1;
       Com_Printf(0xf,"SV_SendClientGameState() for %s file %s line %i\n");
-      SV_SendClientGameState(pcVar5);
-      memset((uchar *)&local_450,'\0',0x34);
-      SV_ClientEnterWorld(pcVar5,&local_450);
+      SV_SendClientGameState(client);
+      memset((uchar *)&nullcmd,'\0',0x34);
+      SV_ClientEnterWorld(client,&nullcmd);
       Com_Printf(0xf,"SV_AddDemoClient: democlient added.\n");
-      bVar6 = true;
+      bVar3 = true;
     }
     else {
       Cbuf_AddText(0,"wait 10; demo_stoprecord\n");
       Com_Printf(0xf,
                  "SV_AddDemoClient: can not add democlient because client[0] is being used. Recording Stopped.\n"
                 );
-      bVar6 = false;
+      bVar3 = false;
     }
   }
   else {
-    bVar6 = false;
+    bVar3 = false;
   }
-  return bVar6;
+  return bVar3;
 }
 
 
@@ -4360,18 +4389,17 @@ bool __cdecl SV_AddDemoClient(void)
 void __cdecl SV_RemoveDemoClient(void)
 
 {
-  client_t *local_c;
-  int local_8;
+  client_t *cl;
+  int i;
   
   if (svs.clients != (client_t *)0x0) {
-    local_c = svs.clients;
-    for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-      if (((local_c != (client_t *)0x0) && ((local_c->header).state != 0)) &&
-         (local_c->bIsDemoClient != 0)) {
+    cl = svs.clients;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (((cl != (client_t *)0x0) && ((cl->header).state != 0)) && (cl->bIsDemoClient != 0)) {
         Com_Printf(0xf,"SV_RemoveDemoClient: democlient removed %d.\n");
-        SV_DropClient(local_c,"EXE_DISCONNECTED",false,true);
+        SV_DropClient(cl,"EXE_DISCONNECTED",false,true);
       }
-      local_c = (client_t *)(local_c[1].userinfo + 0x3d8);
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
   }
   return;

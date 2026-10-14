@@ -46,16 +46,15 @@ void __cdecl Flame_Init_FlameVars(void)
 
 {
   dvar_s *pdVar1;
-  int local_8;
+  int i;
   
   memset((uchar *)flameVarList,'\0',0x880);
   numFlameVars = 0;
-  for (local_8 = 0; local_8 < 0x77; local_8 = local_8 + 1) {
-    if (flameVars[local_8].dvarName != (char *)0x0) {
-      pdVar1 = _Dvar_RegisterFloat(flameVars[local_8].dvarName,flameVars[local_8].defaultVal,
-                                   flameVars[local_8].minVal,flameVars[local_8].maxVal,0,
-                                   flameVars[local_8].description);
-      flameDvars[local_8] = pdVar1;
+  for (i = 0; i < 0x77; i = i + 1) {
+    if (flameVars[i].dvarName != (char *)0x0) {
+      pdVar1 = _Dvar_RegisterFloat(flameVars[i].dvarName,flameVars[i].defaultVal,flameVars[i].minVal
+                                   ,flameVars[i].maxVal,0,flameVars[i].description);
+      flameDvars[i] = pdVar1;
     }
   }
   return;
@@ -118,15 +117,15 @@ void __cdecl _dynamic_initializer_for__PHYS_X_VEC__(void)
 void __cdecl Flame_Init_Sources(void)
 
 {
-  int local_8;
+  int i;
   
   Flame_Init_DVars();
   memset((uchar *)flameSources,'\0',0x1600);
   memset(flameSourceLookup,'\0',0x3fe);
   memset((uchar *)sv_flameSources,'\0',0x1600);
   memset(sv_flameSourceLookup,'\0',0x3fe);
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    sv_flameSources[local_8].is_server_alloc = true;
+  for (i = 0; i < 0x40; i = i + 1) {
+    sv_flameSources[i].is_server_alloc = true;
   }
   return;
 }
@@ -239,20 +238,20 @@ void __cdecl Flame_Init_DVars(void)
 
 // 00893980  Flame_TableInDevGui  (flame/flame_system.cpp:307)
 
-bool __cdecl Flame_TableInDevGui(char *param_1)
+bool __cdecl Flame_TableInDevGui(char *tableName)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (numFlameTablesLoaded <= local_8) {
+    if (numFlameTablesLoaded <= i) {
       return false;
     }
-    iVar1 = I_strcmp(param_1,loadedFlameTables[local_8]);
+    iVar1 = I_strcmp(tableName,loadedFlameTables[i]);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -268,14 +267,15 @@ void __cdecl Flame_InitDevGui(void)
   uint uVar3;
   WeaponDef *pWVar4;
   char *pcVar5;
-  uint local_10;
-  int local_c;
+  uint j;
+  int i;
+  WeaponDef *weapDef;
   
   numFlameTablesLoaded = 0;
-  local_10 = 0;
+  j = 0;
   do {
     uVar3 = BG_GetNumWeapons();
-    if (uVar3 <= local_10) {
+    if (uVar3 <= j) {
       Cmd_AddCommandInternal
                 ("flame_printdvars",Flame_CMD_PrintDVarsToConsol,
                  (cmd_function_s *)&Flame_CMD_PrintDVarsToConsol_VAR);
@@ -287,12 +287,12 @@ void __cdecl Flame_InitDevGui(void)
                  (cmd_function_s *)&Flame_CMD_Use_Dvars_Toggle_VAR);
       Cbuf_InsertText(0,"devgui_cmd \"FT/Toggle Flamethrower:1\" flame_test_toggle");
       Cbuf_InsertText(0,"devgui_cmd \"FT/Toggle Dvar Use:2\" flame_use_dvars_toggle");
-      for (local_c = 0; local_c < numFlameTablesLoaded; local_c = local_c + 1) {
+      for (i = 0; i < numFlameTablesLoaded; i = i + 1) {
         pcVar5 = va("devgui_cmd \"FT/Flametables:3/%s:%i\" \"set flameVar_editingFlameTable %s\"");
         Cbuf_InsertText(0,pcVar5);
       }
-      for (local_c = 0; local_c < 0x80; local_c = local_c + 1) {
-        if (flameVars[local_c].name != (char *)0x0) {
+      for (i = 0; i < 0x80; i = i + 1) {
+        if (flameVars[i].name != (char *)0x0) {
           pcVar5 = va("devgui_dvar \"FT/Edit Dvars:4/%s:%i\" %s");
           Cbuf_InsertText(0,pcVar5);
         }
@@ -300,7 +300,7 @@ void __cdecl Flame_InitDevGui(void)
       Cbuf_InsertText(0,"devgui_cmd \"FT/Print DVars:5\" flame_printdvars");
       return;
     }
-    pWVar4 = BG_GetWeaponDef(local_10);
+    pWVar4 = BG_GetWeaponDef(j);
     if ((pWVar4 != (WeaponDef *)0x0) && (pWVar4->flameTableFirstPersonPtr != (flameTable *)0x0)) {
       bVar2 = Flame_TableInDevGui(pWVar4->flameTableFirstPerson);
       if (!bVar2) {
@@ -341,7 +341,7 @@ void __cdecl Flame_InitDevGui(void)
         numFlameTablesLoaded = numFlameTablesLoaded + 1;
       }
     }
-    local_10 = local_10 + 1;
+    j = j + 1;
   } while( true );
 }
 
@@ -394,7 +394,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 void __cdecl Flame_CMD_PrintDVarsToConsol(void)
 
 {
-  int local_8;
+  int i;
   
   Com_Printf(0,
              "\n------------------------------------------\nDumping Flamethrower Dvars...\n\n[BEGIN]\n"
@@ -402,8 +402,8 @@ void __cdecl Flame_CMD_PrintDVarsToConsol(void)
   Com_Printf(0,
              "These are the float values for the flametable %s. BE CAREFUL NOT TO CLOBBER THE MATERIAL AND SOUND NAMES IN THE WEAPONSETTINGS.GDT!\n\n"
             );
-  for (local_8 = 0; local_8 < 0x77; local_8 = local_8 + 1) {
-    if (flameVars[local_8].dvarName != (char *)0x0) {
+  for (i = 0; i < 0x77; i = i + 1) {
+    if (flameVars[i].dvarName != (char *)0x0) {
       Com_Printf(0,"    \"%s\" \"%f\"\n");
     }
   }
@@ -444,18 +444,19 @@ void __cdecl Flame_CMD_Use_Dvars_Toggle(void)
 
 // 00893E20  Flame_DVarsToFlameVars  (flame/flame_system.cpp:461)
 
-void __cdecl Flame_DVarsToFlameVars(flameTable *param_1)
+void __cdecl Flame_DVarsToFlameVars(flameTable *fTable)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  undefined4 *local_14;
-  flameTable *local_c;
-  int local_8;
+  cspField_t *field;
+  float flt;
+  float *fltptr;
+  int i;
   
-  if (param_1 == (flameTable *)0x0) {
+  if (fTable == (flameTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_system.cpp",0x1d3,0,
                              "%s");
     if (!bVar2) {
@@ -464,7 +465,7 @@ void __cdecl Flame_DVarsToFlameVars(flameTable *param_1)
       return;
     }
   }
-  if (param_1->name == (char *)0x0) {
+  if (fTable->name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_system.cpp",0x1d4,0,
                              "%s");
     if (!bVar2) {
@@ -476,26 +477,26 @@ void __cdecl Flame_DVarsToFlameVars(flameTable *param_1)
   iVar3 = I_strcmp((flameVar_editingFlameTable->current).string,
                    (flameVar_lastFlameTable->current).string);
   if (iVar3 != 0) {
-    local_c = param_1;
-    local_14 = (undefined4 *)&flameTableFields;
-    for (local_8 = 0; local_8 < 0x77; local_8 = local_8 + 1) {
-      if (local_14[2] == 7) {
-        Dvar_SetFloatByName((char *)*local_14,local_c->flameVar_streamChunkGravityStart);
+    fltptr = &fTable->flameVar_streamChunkGravityStart;
+    field = (cspField_t *)&flameTableFields;
+    for (i = 0; i < 0x77; i = i + 1) {
+      if (field->iFieldType == 7) {
+        Dvar_SetFloatByName(field->szName,*fltptr);
       }
-      local_14 = local_14 + 3;
-      local_c = (flameTable *)&local_c->flameVar_streamChunkGravityEnd;
+      field = field + 1;
+      fltptr = fltptr + 1;
     }
     Dvar_SetString(flameVar_lastFlameTable,(flameVar_editingFlameTable->current).string);
   }
-  local_14 = (undefined4 *)&flameTableFields;
-  local_c = param_1;
-  for (local_8 = 0; local_8 < 0x77; local_8 = local_8 + 1) {
-    if (local_14[2] == 7) {
-      fVar4 = Dvar_GetFloat((char *)*local_14);
-      local_c->flameVar_streamChunkGravityStart = fVar4;
+  field = (cspField_t *)&flameTableFields;
+  fltptr = &fTable->flameVar_streamChunkGravityStart;
+  for (i = 0; i < 0x77; i = i + 1) {
+    if (field->iFieldType == 7) {
+      fVar4 = Dvar_GetFloat(field->szName);
+      *fltptr = fVar4;
     }
-    local_14 = local_14 + 3;
-    local_c = (flameTable *)&local_c->flameVar_streamChunkGravityEnd;
+    field = field + 1;
+    fltptr = fltptr + 1;
   }
   return;
 }
@@ -503,28 +504,30 @@ void __cdecl Flame_DVarsToFlameVars(flameTable *param_1)
 
 // 00893F90  Flame_FindFlameTable  (flame/flame_system.cpp:496)
 
-flameTable * __cdecl Flame_FindFlameTable(char *param_1)
+flameTable * __cdecl Flame_FindFlameTable(char *tableName)
 
 {
   uint uVar1;
   WeaponDef *pWVar2;
   int iVar3;
-  uint local_10;
+  uint i;
+  uint numWeapons;
+  WeaponDef *weapDef;
   
   uVar1 = BG_GetNumWeapons();
-  local_10 = 0;
+  i = 0;
   while( true ) {
-    if (uVar1 <= local_10) {
+    if (uVar1 <= i) {
       return (flameTable *)0x0;
     }
-    pWVar2 = BG_GetWeaponDef(local_10);
+    pWVar2 = BG_GetWeaponDef(i);
     if (((pWVar2 != (WeaponDef *)0x0) && (pWVar2->flameTableFirstPersonPtr != (flameTable *)0x0)) &&
-       (iVar3 = I_strcmp(pWVar2->flameTableFirstPerson,param_1), iVar3 == 0)) break;
+       (iVar3 = I_strcmp(pWVar2->flameTableFirstPerson,tableName), iVar3 == 0)) break;
     if (((pWVar2 != (WeaponDef *)0x0) && (pWVar2->flameTableThirdPersonPtr != (flameTable *)0x0)) &&
-       (iVar3 = I_strcmp(pWVar2->flameTableThirdPerson,param_1), iVar3 == 0)) {
+       (iVar3 = I_strcmp(pWVar2->flameTableThirdPerson,tableName), iVar3 == 0)) {
       return pWVar2->flameTableThirdPersonPtr;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   }
   return pWVar2->flameTableFirstPersonPtr;
 }
@@ -532,7 +535,7 @@ flameTable * __cdecl Flame_FindFlameTable(char *param_1)
 
 // 00894050  Flame_SwayRand  (flame/flame_system.cpp:526)
 
-float __cdecl Flame_SwayRand(float param_1,float param_2,int param_3)
+float __cdecl Flame_SwayRand(float x,float y,int time)
 
 {
   float10 extraout_ST0;
@@ -552,16 +555,16 @@ float __cdecl Flame_SwayRand(float param_1,float param_2,int param_3)
 
 // 008940D0  SV_Flame_Source_Get  (flame/flame_system.cpp:537)
 
-flameSource_t * __cdecl SV_Flame_Source_Get(int param_1)
+flameSource_t * __cdecl SV_Flame_Source_Get(int entityNum)
 
 {
   flameSource_t *pfVar1;
   
-  if (sv_flameSourceLookup[param_1] == '\0') {
+  if (sv_flameSourceLookup[entityNum] == '\0') {
     pfVar1 = (flameSource_t *)0x0;
   }
   else {
-    pfVar1 = sv_flameSources + (sv_flameSourceLookup[param_1] - 1);
+    pfVar1 = sv_flameSources + (sv_flameSourceLookup[entityNum] - 1);
   }
   return pfVar1;
 }
@@ -569,16 +572,16 @@ flameSource_t * __cdecl SV_Flame_Source_Get(int param_1)
 
 // 00894100  Flame_Source_Get  (flame/flame_system.cpp:552)
 
-flameSource_t * __cdecl Flame_Source_Get(int param_1)
+flameSource_t * __cdecl Flame_Source_Get(int entityNum)
 
 {
   flameSource_t *pfVar1;
   
-  if (flameSourceLookup[param_1] == '\0') {
+  if (flameSourceLookup[entityNum] == '\0') {
     pfVar1 = (flameSource_t *)0x0;
   }
   else {
-    pfVar1 = flameSources + (flameSourceLookup[param_1] - 1);
+    pfVar1 = flameSources + (flameSourceLookup[entityNum] - 1);
   }
   return pfVar1;
 }
@@ -586,7 +589,7 @@ flameSource_t * __cdecl Flame_Source_Get(int param_1)
 
 // 00894130  Flame_Get_FlameRender  (flame/flame_system.cpp:567)
 
-flameRender_s * __cdecl Flame_Get_FlameRender(char *param_1)
+flameRender_s * __cdecl Flame_Get_FlameRender(char *name)
 
 {
   char cVar1;
@@ -601,15 +604,16 @@ flameRender_s * __cdecl Flame_Get_FlameRender(char *param_1)
   byte *local_28;
   flameRender_s *local_24;
   char *local_14;
-  flameRender_s *local_c;
-  int local_8;
+  bool is_found;
+  flameRender_s *trav;
+  int i;
   
-  local_14 = param_1;
+  local_14 = name;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  if (0x7e < (uint)((int)local_14 - (int)(param_1 + 1))) {
+  if (0x7e < (uint)((int)local_14 - (int)(name + 1))) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_system.cpp",0x243,0,
                              "%s\n\t%s");
     if (!bVar4) {
@@ -619,10 +623,10 @@ flameRender_s * __cdecl Flame_Get_FlameRender(char *param_1)
     }
   }
   bVar4 = false;
-  local_c = flameVarList;
-  local_8 = 0;
+  trav = flameVarList;
+  i = 0;
   do {
-    if (numFlameVars <= local_8) {
+    if (numFlameVars <= i) {
 LAB_0089422d:
       if (!bVar4) {
         if (0xe < numFlameVars) {
@@ -634,10 +638,10 @@ LAB_0089422d:
             return pfVar5;
           }
         }
-        local_c = flameVarList + numFlameVars;
+        trav = flameVarList + numFlameVars;
         numFlameVars = numFlameVars + 1;
-        local_38 = param_1;
-        local_3c = local_c;
+        local_38 = name;
+        local_3c = trav;
         do {
           cVar1 = *local_38;
           local_3c->name[0] = cVar1;
@@ -645,10 +649,10 @@ LAB_0089422d:
           local_3c = (flameRender_s *)(local_3c->name + 1);
         } while (cVar1 != '\0');
       }
-      return local_c;
+      return trav;
     }
-    local_24 = local_c;
-    local_28 = (byte *)param_1;
+    local_24 = trav;
+    local_28 = (byte *)name;
     do {
       bVar2 = *local_28;
       bVar6 = bVar2 < (byte)local_24->name[0];
@@ -670,15 +674,15 @@ LAB_00894216:
       bVar4 = true;
       goto LAB_0089422d;
     }
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    trav = trav + 1;
   } while( true );
 }
 
 
 // 008942D0  Flame_Item_Init  (flame/flame_system.cpp:621)
 
-void __cdecl Flame_Item_Init(flameGeneric_s *param_1,int param_2)
+void __cdecl Flame_Item_Init(flameGeneric_s *item,int itemSize)
 
 {
   flameGeneric_s *pfVar1;
@@ -686,38 +690,45 @@ void __cdecl Flame_Item_Init(flameGeneric_s *param_1,int param_2)
   flameGeneric_s *pfVar3;
   flameGeneric_s *pfVar4;
   
-  pfVar1 = (param_1->listGlobal).prev;
-  pfVar2 = (param_1->listGlobal).next;
-  pfVar3 = (param_1->listLocal).prev;
-  pfVar4 = (param_1->listLocal).next;
-  memset((uchar *)param_1,'\0',param_2);
-  (param_1->listGlobal).prev = pfVar1;
-  (param_1->listGlobal).next = pfVar2;
-  (param_1->listLocal).prev = pfVar3;
-  (param_1->listLocal).next = pfVar4;
+  pfVar1 = (item->listGlobal).prev;
+  pfVar2 = (item->listGlobal).next;
+  pfVar3 = (item->listLocal).prev;
+  pfVar4 = (item->listLocal).next;
+  memset((uchar *)item,'\0',itemSize);
+  (item->listGlobal).prev = pfVar1;
+  (item->listGlobal).next = pfVar2;
+  (item->listLocal).prev = pfVar3;
+  (item->listLocal).next = pfVar4;
   return;
 }
 
 
 // 00894330  Flame_List_Init  (flame/flame_system.cpp:637)
 
-void __cdecl Flame_List_Init(flameGeneric_s *param_1,int param_2,int param_3)
+void __cdecl Flame_List_Init(flameGeneric_s *list,int itemSize,int listSize)
 
 {
-  int local_c;
-  flameGeneric_s *local_8;
+  flameGeneric_s *header;
+  int i;
+  uchar *listTrav;
   
-  local_8 = param_1;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
-    (local_8->listGlobal).prev = (flameGeneric_s *)((int)local_8 - param_2);
-    if (local_c == 0) {
-      (local_8->listGlobal).prev = (flameGeneric_s *)0x0;
+  listTrav = (uchar *)list;
+  for (i = 0; i < listSize; i = i + 1) {
+    *(int *)(listTrav + 0x48) = (int)listTrav - itemSize;
+    if (i == 0) {
+      listTrav[0x48] = '\0';
+      listTrav[0x49] = '\0';
+      listTrav[0x4a] = '\0';
+      listTrav[0x4b] = '\0';
     }
-    (local_8->listGlobal).next = (flameGeneric_s *)((int)(local_8->phys).origin + param_2);
-    if (param_3 + -1 <= local_c) {
-      (local_8->listGlobal).next = (flameGeneric_s *)0x0;
+    *(uchar **)(listTrav + 0x4c) = listTrav + itemSize;
+    if (listSize + -1 <= i) {
+      listTrav[0x4c] = '\0';
+      listTrav[0x4d] = '\0';
+      listTrav[0x4e] = '\0';
+      listTrav[0x4f] = '\0';
     }
-    local_8 = (flameGeneric_s *)((int)(local_8->phys).origin + param_2);
+    listTrav = listTrav + itemSize;
   }
   return;
 }
@@ -726,26 +737,26 @@ void __cdecl Flame_List_Init(flameGeneric_s *param_1,int param_2,int param_3)
 // 008943B0  Flame_List_Move_Global  (flame/flame_system.cpp:667)
 
 void __cdecl
-Flame_List_Move_Global(flameGeneric_s *param_1,flameGeneric_s **param_2,flameGeneric_s **param_3)
+Flame_List_Move_Global(flameGeneric_s *item,flameGeneric_s **fromList,flameGeneric_s **toList)
 
 {
-  if (*param_2 != (flameGeneric_s *)0x0) {
-    if (param_1 == *param_2) {
-      *param_2 = (param_1->listGlobal).next;
+  if (*fromList != (flameGeneric_s *)0x0) {
+    if (item == *fromList) {
+      *fromList = (item->listGlobal).next;
     }
-    if ((param_1->listGlobal).prev != (flameGeneric_s *)0x0) {
-      (((param_1->listGlobal).prev)->listGlobal).next = (param_1->listGlobal).next;
+    if ((item->listGlobal).prev != (flameGeneric_s *)0x0) {
+      (((item->listGlobal).prev)->listGlobal).next = (item->listGlobal).next;
     }
-    if ((param_1->listGlobal).next != (flameGeneric_s *)0x0) {
-      (((param_1->listGlobal).next)->listGlobal).prev = (param_1->listGlobal).prev;
+    if ((item->listGlobal).next != (flameGeneric_s *)0x0) {
+      (((item->listGlobal).next)->listGlobal).prev = (item->listGlobal).prev;
     }
-    (param_1->listGlobal).next = (flameGeneric_s *)0x0;
-    (param_1->listGlobal).prev = (flameGeneric_s *)0x0;
-    if (*param_3 != (flameGeneric_s *)0x0) {
-      (param_1->listGlobal).next = *param_3;
-      ((*param_3)->listGlobal).prev = param_1;
+    (item->listGlobal).next = (flameGeneric_s *)0x0;
+    (item->listGlobal).prev = (flameGeneric_s *)0x0;
+    if (*toList != (flameGeneric_s *)0x0) {
+      (item->listGlobal).next = *toList;
+      ((*toList)->listGlobal).prev = item;
     }
-    *param_3 = param_1;
+    *toList = item;
   }
   return;
 }
@@ -753,53 +764,54 @@ Flame_List_Move_Global(flameGeneric_s *param_1,flameGeneric_s **param_2,flameGen
 
 // 00894440  Flame_List_Add_Local  (flame/flame_system.cpp:705)
 
-void __cdecl Flame_List_Add_Local(flameGeneric_s *param_1,flameGeneric_s **param_2)
+void __cdecl Flame_List_Add_Local(flameGeneric_s *item,flameGeneric_s **localList)
 
 {
-  (param_1->listLocal).prev = (flameGeneric_s *)0x0;
-  (param_1->listLocal).next = *param_2;
-  if (*param_2 != (flameGeneric_s *)0x0) {
-    ((*param_2)->listLocal).prev = param_1;
+  (item->listLocal).prev = (flameGeneric_s *)0x0;
+  (item->listLocal).next = *localList;
+  if (*localList != (flameGeneric_s *)0x0) {
+    ((*localList)->listLocal).prev = item;
   }
-  *param_2 = param_1;
+  *localList = item;
   return;
 }
 
 
 // 00894480  Flame_List_Sub_Local  (flame/flame_system.cpp:723)
 
-void __cdecl Flame_List_Sub_Local(flameGeneric_s *param_1,flameGeneric_s **param_2)
+void __cdecl Flame_List_Sub_Local(flameGeneric_s *item,flameGeneric_s **localList)
 
 {
-  if (*param_2 == param_1) {
-    *param_2 = (param_1->listLocal).next;
+  if (*localList == item) {
+    *localList = (item->listLocal).next;
   }
-  if ((param_1->listLocal).prev != (flameGeneric_s *)0x0) {
-    (((param_1->listLocal).prev)->listLocal).next = (param_1->listLocal).next;
+  if ((item->listLocal).prev != (flameGeneric_s *)0x0) {
+    (((item->listLocal).prev)->listLocal).next = (item->listLocal).next;
   }
-  if ((param_1->listLocal).next != (flameGeneric_s *)0x0) {
-    (((param_1->listLocal).next)->listLocal).prev = (param_1->listLocal).prev;
+  if ((item->listLocal).next != (flameGeneric_s *)0x0) {
+    (((item->listLocal).next)->listLocal).prev = (item->listLocal).prev;
   }
-  (param_1->listLocal).prev = (flameGeneric_s *)0x0;
-  (param_1->listLocal).next = (flameGeneric_s *)0x0;
+  (item->listLocal).prev = (flameGeneric_s *)0x0;
+  (item->listLocal).next = (flameGeneric_s *)0x0;
   return;
 }
 
 
 // 008944E0  CG_Flame_Age_All_Objects  (flame/flame_system.cpp:753)
 
-void __cdecl CG_Flame_Age_All_Objects(int param_1,int param_2)
+void __cdecl CG_Flame_Age_All_Objects(int time,int localClientNum)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"CG_Flame_Age_All_Objects");
   cl_flames.m_alloc_count = 0;
-  Flame_Class_Chunk_Age(false,param_1,param_2);
-  Flame_Class_Fire_Age(false,param_1,param_2);
-  Flame_Class_Smoke_Age(false,param_1,param_2);
-  Flame_Class_Stream_Age(false,param_1,param_2);
-  Flame_Class_Drips_Age(false,param_1,param_2);
+  Flame_Class_Chunk_Age(false,time,localClientNum);
+  Flame_Class_Fire_Age(false,time,localClientNum);
+  Flame_Class_Smoke_Age(false,time,localClientNum);
+  Flame_Class_Stream_Age(false,time,localClientNum);
+  Flame_Class_Drips_Age(false,time,localClientNum);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -810,18 +822,19 @@ void __cdecl CG_Flame_Age_All_Objects(int param_1,int param_2)
 
 // 00894590  SV_Flame_Age_All_Objects  (flame/flame_system.cpp:769)
 
-void __cdecl SV_Flame_Age_All_Objects(int param_1)
+void __cdecl SV_Flame_Age_All_Objects(int time)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"SV_Flame_Age_All_Objects");
   sv_flames.m_alloc_count = 0;
-  Flame_Class_Chunk_Age(true,param_1,0);
-  Flame_Class_Fire_Age(true,param_1,0);
-  Flame_Class_Smoke_Age(true,param_1,0);
-  Flame_Class_Stream_Age(true,param_1,0);
-  Flame_Class_Drips_Age(true,param_1,0);
+  Flame_Class_Chunk_Age(true,time,0);
+  Flame_Class_Fire_Age(true,time,0);
+  Flame_Class_Smoke_Age(true,time,0);
+  Flame_Class_Stream_Age(true,time,0);
+  Flame_Class_Drips_Age(true,time,0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -832,52 +845,52 @@ void __cdecl SV_Flame_Age_All_Objects(int param_1)
 
 // 00894630  Flame_Source_Alloc  (flame/flame_system.cpp:786)
 
-flameSource_t * __cdecl Flame_Source_Alloc(int param_1,int param_2)
+flameSource_t * __cdecl Flame_Source_Alloc(int entityNum,int time)
 
 {
-  flameSource_t *local_c;
-  byte local_5;
+  flameSource_t *fs;
+  uchar i;
   
-  local_5 = 0;
-  local_c = flameSources;
+  i = '\0';
+  fs = flameSources;
   while( true ) {
-    if (0x3f < local_5) {
+    if (0x3f < i) {
       return (flameSource_t *)0x0;
     }
-    if (local_c->inUse == false) break;
-    local_5 = local_5 + 1;
-    local_c = local_c + 1;
+    if (fs->inUse == false) break;
+    i = i + '\x01';
+    fs = fs + 1;
   }
-  local_c->entityNum = param_1;
-  local_c->inUse = true;
-  flameSourceLookup[param_1] = local_5 + 1;
-  Flame_Class_Source_Sound_Init(local_c);
-  return local_c;
+  fs->entityNum = entityNum;
+  fs->inUse = true;
+  flameSourceLookup[entityNum] = i + '\x01';
+  Flame_Class_Source_Sound_Init(fs);
+  return fs;
 }
 
 
 // 008946B0  SV_Flame_Source_Alloc  (flame/flame_system.cpp:812)
 
-flameSource_t * __cdecl SV_Flame_Source_Alloc(int param_1,int param_2)
+flameSource_t * __cdecl SV_Flame_Source_Alloc(int entityNum,int time)
 
 {
-  flameSource_t *local_c;
-  byte local_5;
+  flameSource_t *fs;
+  uchar i;
   
-  local_5 = 0;
-  local_c = sv_flameSources;
+  i = '\0';
+  fs = sv_flameSources;
   while( true ) {
-    if (0x3f < local_5) {
+    if (0x3f < i) {
       return (flameSource_t *)0x0;
     }
-    if (local_c->inUse == false) break;
-    local_5 = local_5 + 1;
-    local_c = local_c + 1;
+    if (fs->inUse == false) break;
+    i = i + '\x01';
+    fs = fs + 1;
   }
-  local_c->entityNum = param_1;
-  local_c->inUse = true;
-  sv_flameSourceLookup[param_1] = local_5 + 1;
-  return local_c;
+  fs->entityNum = entityNum;
+  fs->inUse = true;
+  sv_flameSourceLookup[entityNum] = i + '\x01';
+  return fs;
 }
 
 
@@ -889,30 +902,30 @@ flameSource_t * __cdecl SV_Flame_Source_Alloc(int param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Flame_Render_Sprite(cg_s *param_1,Material *param_2,flameGeneric_s *param_3,float param_4,
-                   float param_5,uchar param_6)
+Flame_Render_Sprite(cg_s *clientGlobals,Material *material,flameGeneric_s *flameGeneric,float alpha,
+                   float frame,uchar col)
 
 {
-  float local_14 [2];
+  float angles [2];
   float local_c;
-  uchar local_8;
+  uchar rgbaColor;
   uchar local_7;
   uchar local_6;
   undefined1 local_5;
   
-  local_8 = param_6;
-  local_7 = param_6;
-  local_6 = param_6;
-  local_5 = (undefined1)(int)(param_4 * 255.0);
-  AxisToAngles((param_1->refdef).viewaxis,local_14);
-  local_c = (param_3->phys).rotation;
-  if (param_5 < 0.0) {
-    param_5 = (float)((param_3->age).lastUpdateTime - (param_3->age).startTime) /
-              (float)((param_3->age).endTime - (param_3->age).startTime);
+  rgbaColor = col;
+  local_7 = col;
+  local_6 = col;
+  local_5 = (undefined1)(int)(alpha * 255.0);
+  AxisToAngles((clientGlobals->refdef).viewaxis,angles);
+  local_c = (flameGeneric->phys).rotation;
+  if (frame < 0.0) {
+    frame = (float)((flameGeneric->age).lastUpdateTime - (flameGeneric->age).startTime) /
+            (float)((flameGeneric->age).endTime - (flameGeneric->age).startTime);
   }
   R_BeginCodeMeshVerts();
   R_GenerateQuadStampCodeMeshVerts
-            (param_2,local_14,(float *)param_3,(param_3->size).current,&local_8,param_5);
+            (material,angles,(float *)flameGeneric,(flameGeneric->size).current,&rgbaColor,frame);
   R_EndCodeMeshVerts();
   return;
 }
@@ -927,7 +940,8 @@ Flame_Render_Sprite(cg_s *param_1,Material *param_2,flameGeneric_s *param_3,floa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,int param_4)
+Flame_Render_Sprites
+          (cg_s *clientGlobals,Material *material,flameGeneric_s **flameGenericList,int numItems)
 
 {
   flameGeneric_s *pfVar1;
@@ -939,12 +953,12 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
   undefined4 local_14;
   
   local_14 = 0x200;
-  Vec3PackNormAxis((param_1->refdef).viewaxis,(float (*) [3])local_38);
-  local_3c = param_3 + param_4 + -1;
+  Vec3PackNormAxis((clientGlobals->refdef).viewaxis,(float (*) [3])local_38);
+  local_3c = flameGenericList + numItems + -1;
   R_BeginCodeMeshVerts();
   local_40 = 0;
   do {
-    for (local_44 = 0; (local_40 < param_4 && (local_44 < 0x200)); local_44 = local_44 + 1) {
+    for (local_44 = 0; (local_40 < numItems && (local_44 < 0x200)); local_44 = local_44 + 1) {
       pfVar1 = *local_3c;
       local_4050[local_44].pos[0] = (pfVar1->phys).origin[0];
       local_4050[local_44].pos[1] = (pfVar1->phys).origin[1];
@@ -957,8 +971,8 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
       local_3c = local_3c + -1;
       local_40 = local_40 + 1;
     }
-    R_GenerateQuadStampCodeMeshVertsArray(param_2,local_4050,local_44,(float (*) [3])local_38);
-  } while (local_40 < param_4);
+    R_GenerateQuadStampCodeMeshVertsArray(material,local_4050,local_44,(float (*) [3])local_38);
+  } while (local_40 < numItems);
   R_EndCodeMeshVerts();
   return;
 }
@@ -966,19 +980,19 @@ Flame_Render_Sprites(cg_s *param_1,Material *param_2,flameGeneric_s **param_3,in
 
 // 00894980  Flame_GetLocalClientFlameSource  (flame/flame_system.cpp:895)
 
-int __cdecl Flame_GetLocalClientFlameSource(int param_1,int param_2)
+int __cdecl Flame_GetLocalClientFlameSource(int localClientNum,int EntNum)
 
 {
-  return param_2;
+  return EntNum;
 }
 
 
 // 008949A0  Flame_Source_Update  (flame/flame_system.cpp:942)
 
-void __cdecl Flame_Source_Update(flameSource_t *param_1,flameWeaponConfig_t *param_2,int param_3)
+void __cdecl Flame_Source_Update(flameSource_t *source,flameWeaponConfig_t *weaponConfig,int time)
 
 {
-  param_1->bIsFiring = param_2->bIsFiring;
+  source->bIsFiring = weaponConfig->bIsFiring;
   return;
 }
 
@@ -987,16 +1001,16 @@ void __cdecl Flame_Source_Update(flameSource_t *param_1,flameWeaponConfig_t *par
 
 void __cdecl
 SV_Flame_Update_Source_Internal
-          (flameSource_t *param_1,int param_2,flameWeaponConfig_t *param_3,int param_4)
+          (flameSource_t *source,int entityNum,flameWeaponConfig_t *weaponConfig,int time)
 
 {
-  if (param_3->bIsFiring != param_1->bIsFiring) {
-    param_1->currentStream = (flameStream_s *)0x0;
+  if (weaponConfig->bIsFiring != source->bIsFiring) {
+    source->currentStream = (flameStream_s *)0x0;
   }
-  if ((param_3->bIsFiring != false) || (param_3->bFireWhileIdle != false)) {
-    Flame_Class_Stream_Fire_Chunks(param_1,param_3,param_4,(flameRender_s *)0x0,0);
+  if ((weaponConfig->bIsFiring != false) || (weaponConfig->bFireWhileIdle != false)) {
+    Flame_Class_Stream_Fire_Chunks(source,weaponConfig,time,(flameRender_s *)0x0,0);
   }
-  Flame_Source_Update(param_1,param_3,param_4);
+  Flame_Source_Update(source,weaponConfig,time);
   return;
 }
 
@@ -1005,34 +1019,34 @@ SV_Flame_Update_Source_Internal
 
 void __cdecl
 CG_Flame_Update_Source_Internal
-          (flameSource_t *param_1,int param_2,flameWeaponConfig_t *param_3,int param_4,
-          flameRender_s *param_5,int param_6)
+          (flameSource_t *source,int entityNum,flameWeaponConfig_t *weaponConfig,int time,
+          flameRender_s *flameRend,int localClientNum)
 
 {
-  if (param_3->bIsFiring != param_1->bIsFiring) {
-    param_1->currentStream = (flameStream_s *)0x0;
+  if (weaponConfig->bIsFiring != source->bIsFiring) {
+    source->currentStream = (flameStream_s *)0x0;
   }
-  if ((param_3->bIsFiring != false) || (param_3->bFireWhileIdle != false)) {
-    Flame_Class_Stream_Fire_Chunks(param_1,param_3,param_4,param_5,param_6);
+  if ((weaponConfig->bIsFiring != false) || (weaponConfig->bFireWhileIdle != false)) {
+    Flame_Class_Stream_Fire_Chunks(source,weaponConfig,time,flameRend,localClientNum);
   }
-  Flame_Source_Update(param_1,param_3,param_4);
+  Flame_Source_Update(source,weaponConfig,time);
   return;
 }
 
 
 // 00894A90  SV_Flame_Update_Source  (flame/flame_system.cpp:995)
 
-void __cdecl SV_Flame_Update_Source(int param_1,flameWeaponConfig_t *param_2,int param_3)
+void __cdecl SV_Flame_Update_Source(int entityNum,flameWeaponConfig_t *weaponConfig,int time)
 
 {
   code *pcVar1;
   bool bVar2;
-  flameSource_t *local_8;
+  flameSource_t *source;
   
-  local_8 = SV_Flame_Source_Get(param_1);
-  if (local_8 == (flameSource_t *)0x0) {
-    local_8 = SV_Flame_Source_Alloc(param_1,param_3);
-    if (local_8 == (flameSource_t *)0x0) {
+  source = SV_Flame_Source_Get(entityNum);
+  if (source == (flameSource_t *)0x0) {
+    source = SV_Flame_Source_Alloc(entityNum,time);
+    if (source == (flameSource_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_system.cpp",0x3eb,0,
                                "%s\n\t%s");
       if (!bVar2) {
@@ -1042,7 +1056,7 @@ void __cdecl SV_Flame_Update_Source(int param_1,flameWeaponConfig_t *param_2,int
       }
     }
   }
-  SV_Flame_Update_Source_Internal(local_8,param_1,param_2,param_3);
+  SV_Flame_Update_Source_Internal(source,entityNum,weaponConfig,time);
   return;
 }
 
@@ -1055,7 +1069,7 @@ void __cdecl SV_Flame_Update_Source(int param_1,flameWeaponConfig_t *param_2,int
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Flame_Update_Source(int param_1)
+void __cdecl CG_Flame_Update_Source(int localClientNum)
 
 {
   byte bVar1;
@@ -1063,227 +1077,228 @@ void __cdecl CG_Flame_Update_Source(int param_1)
   centity_s *pcVar3;
   bool bVar4;
   cg_s *pcVar5;
+  int entityNum;
   int iVar6;
-  int iVar7;
-  Material **ppMVar8;
-  uint *puVar9;
-  float local_1e4;
+  Material **ppMVar7;
+  uint *puVar8;
+  float dir;
   float local_1e0;
   float local_1dc;
-  float local_1d8;
+  float start;
   float local_1d4;
   float local_1d0;
-  float4 local_1cc;
+  float4 trace;
   float local_1bc;
   uint local_194;
-  flameSource_t *local_190;
-  int local_18c;
-  centity_s *local_188;
-  int local_184;
-  uint local_180;
-  WeaponDef *local_17c;
-  int local_178;
-  vehicle_info_t *local_174;
-  byte local_16e;
-  bool local_16d;
-  flameWeaponConfig_t local_16c;
-  int local_124;
-  bool local_11d;
-  flameRender_s *local_11c;
-  byte local_115;
-  orientation_t local_114;
-  int local_e4;
-  orientation_t local_e0;
-  bool local_ad;
-  uint local_ac;
-  int local_a8;
-  ushort local_a4;
-  centity_s *local_a0;
-  cg_s *local_9c;
-  centity_s *local_98;
-  uint local_94 [32];
-  int local_14;
-  uint local_10;
-  WeaponDef *local_c;
-  uint local_8;
+  flameSource_t *source;
+  int ci;
+  centity_s *player;
+  int j;
+  int weapon;
+  WeaponDef *gunnerWeapDef;
+  int gunnerIndex;
+  vehicle_info_t *info;
+  uchar thirdBoneIndex;
+  bool isFireEvent;
+  flameWeaponConfig_t flameWeaponConfig;
+  int thirdDobjHandle;
+  bool isFirstPerson;
+  flameRender_s *flameRend;
+  uchar firstBoneIndex;
+  orientation_t thirdOrient;
+  int firstDobjHandle;
+  orientation_t firstOrient;
+  bool isFiring;
+  uint bits;
+  int indexHigh;
+  ushort boneName;
+  centity_s *centForFlags;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  uint centInNextSnapshot [32];
+  int usingVehicleTagFlash;
+  int i;
+  WeaponDef *weapDef;
+  int clientNum;
   
   local_194 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_a4 = scr_const.tag_flash;
-  local_c = (WeaponDef *)0x0;
-  local_9c = CG_GetLocalClientGlobals(param_1);
-  if ((local_9c->nextSnap != (snapshot_s *)0x0) &&
-     (((zombietron->current).enabled == false || (param_1 < 1)))) {
-    ppMVar8 = local_9c->genericMaterialMap + 0x14;
-    puVar9 = local_94;
-    for (iVar7 = 0x20; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *puVar9 = (uint)*ppMVar8;
-      ppMVar8 = ppMVar8 + 1;
-      puVar9 = puVar9 + 1;
+  boneName = scr_const.tag_flash;
+  weapDef = (WeaponDef *)0x0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap != (snapshot_s *)0x0) &&
+     (((zombietron->current).enabled == false || (localClientNum < 1)))) {
+    ppMVar7 = cgameGlob->genericMaterialMap + 0x14;
+    puVar8 = centInNextSnapshot;
+    for (iVar6 = 0x20; iVar6 != 0; iVar6 = iVar6 + -1) {
+      *puVar8 = (uint)*ppMVar7;
+      ppMVar7 = ppMVar7 + 1;
+      puVar8 = puVar8 + 1;
     }
-    local_8 = local_9c->clientNum;
-    local_94[(int)local_8 >> 5] =
-         0x80000000U >> ((byte)local_8 & 0x1f) | local_94[(int)local_8 >> 5];
-    bVar1 = (local_9c->predictedPlayerState).clientNum;
-    local_8 = (uint)bVar1;
-    iVar7 = (int)(uint)bVar1 >> 5;
-    local_94[iVar7] = 0x80000000U >> (bVar1 & 0x1f) | local_94[iVar7];
-    for (local_a8 = 0; local_a8 < 0x20; local_a8 = local_a8 + 1) {
-      local_ac = local_94[local_a8];
-      local_10 = local_a8 << 5;
-      for (; local_ac != 0; local_ac = local_ac << 1) {
-        if ((local_ac & 0x80000000) != 0) {
-          local_a0 = CG_GetEntity(param_1,local_10);
-          local_14 = 0;
-          local_98 = local_a0;
-          if (local_a0->nextValid != 0) {
-            local_c = BG_GetWeaponDef((uint)(local_a0->nextState).weapon);
-            pcVar3 = local_a0;
-            if ((local_98->nextState).eType == 0xe) {
-              local_174 = CG_GetVehicleInfo((uint)(local_98->nextState).un2.vehicleState.
-                                                  vehicleInfoIndex);
-              local_178 = 0;
+    clientNum = cgameGlob->clientNum;
+    centInNextSnapshot[clientNum >> 5] =
+         0x80000000U >> ((byte)clientNum & 0x1f) | centInNextSnapshot[clientNum >> 5];
+    bVar1 = (cgameGlob->predictedPlayerState).clientNum;
+    clientNum = (uint)bVar1;
+    iVar6 = (int)(uint)bVar1 >> 5;
+    centInNextSnapshot[iVar6] = 0x80000000U >> (bVar1 & 0x1f) | centInNextSnapshot[iVar6];
+    for (indexHigh = 0; indexHigh < 0x20; indexHigh = indexHigh + 1) {
+      bits = centInNextSnapshot[indexHigh];
+      i = indexHigh << 5;
+      for (; bits != 0; bits = bits << 1) {
+        if ((bits & 0x80000000) != 0) {
+          centForFlags = CG_GetEntity(localClientNum,i);
+          usingVehicleTagFlash = 0;
+          cent = centForFlags;
+          if (centForFlags->nextValid != 0) {
+            weapDef = BG_GetWeaponDef((uint)(centForFlags->nextState).weapon);
+            pcVar3 = centForFlags;
+            if ((cent->nextState).eType == 0xe) {
+              info = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
+              gunnerIndex = 0;
 LAB_00894d1a:
-              pcVar3 = local_a0;
-              if (local_178 < 4) {
-                local_180 = (uint)local_174->gunnerWeaponIndex[local_178];
-                local_17c = BG_GetWeaponDef(local_180);
-                if (local_17c->weapType != WEAPTYPE_GAS) goto LAB_00894d0b;
-                local_a4 = scr_const.tag_flash_gunner[local_178];
-                local_14 = 1;
-                local_c = local_17c;
-                local_184 = 0;
-                while ((pcVar3 = local_a0, local_184 < (com_maxclients->current).integer &&
-                       (((local_188 = CG_GetEntity(param_1,local_184),
-                         (local_188->nextState).eType != 1 ||
-                         (local_18c = (int)(local_9c->bgs).clientinfo +
-                                      (uint)(local_188->nextState).clientNum * 0x5c8,
-                         *(uint *)(local_18c + 0x55c) != local_10)) ||
-                        (pcVar3 = local_188, *(int *)(local_18c + 0x560) != local_178 + 1))))) {
-                  local_184 = local_184 + 1;
+              pcVar3 = centForFlags;
+              if (gunnerIndex < 4) {
+                weapon = (int)info->gunnerWeaponIndex[gunnerIndex];
+                gunnerWeapDef = BG_GetWeaponDef(weapon);
+                if (gunnerWeapDef->weapType != WEAPTYPE_GAS) goto LAB_00894d0b;
+                boneName = scr_const.tag_flash_gunner[gunnerIndex];
+                usingVehicleTagFlash = 1;
+                weapDef = gunnerWeapDef;
+                j = 0;
+                while ((pcVar3 = centForFlags, j < (com_maxclients->current).integer &&
+                       (((player = CG_GetEntity(localClientNum,j), (player->nextState).eType != 1 ||
+                         (ci = (int)(cgameGlob->bgs).clientinfo +
+                               (uint)(player->nextState).clientNum * 0x5c8,
+                         *(int *)(ci + 0x55c) != i)) ||
+                        (pcVar3 = player, *(int *)(ci + 0x560) != gunnerIndex + 1))))) {
+                  j = j + 1;
                 }
               }
             }
-            local_a0 = pcVar3;
-            if (((local_a0 != (centity_s *)0x0) && (local_c != (WeaponDef *)0x0)) &&
-               (local_c->weapType == WEAPTYPE_GAS)) {
-              local_124 = (local_98->nextState).number;
-              local_e4 = CG_WeaponDObjHandle(param_1);
-              if (((local_9c->nextSnap->ps).clientNum == local_10) &&
-                 ((((local_9c->nextSnap->ps).otherFlags & 2U) == 0 ||
-                  (local_9c->renderingThirdPerson != TP_FOR_MODEL)))) {
-                local_11d = true;
+            centForFlags = pcVar3;
+            if (((centForFlags != (centity_s *)0x0) && (weapDef != (WeaponDef *)0x0)) &&
+               (weapDef->weapType == WEAPTYPE_GAS)) {
+              thirdDobjHandle = (cent->nextState).number;
+              firstDobjHandle = CG_WeaponDObjHandle(localClientNum);
+              if (((uint)(cgameGlob->nextSnap->ps).clientNum == i) &&
+                 ((((cgameGlob->nextSnap->ps).otherFlags & 2U) == 0 ||
+                  (cgameGlob->renderingThirdPerson != TP_FOR_MODEL)))) {
+                isFirstPerson = true;
               }
               else {
-                local_11d = false;
+                isFirstPerson = false;
               }
               bVar4 = Demo_IsThirdPersonCamera();
               if ((bVar4) || (bVar4 = Demo_IsMovieCamera(), bVar4)) {
-                local_11d = false;
+                isFirstPerson = false;
               }
-              if ((local_c->bUseAltTagFlash == false) || (local_11d != false)) {
-                if (local_14 == 0) {
-                  local_a4 = scr_const.tag_flash;
+              if ((weapDef->bUseAltTagFlash == false) || (isFirstPerson != false)) {
+                if (usingVehicleTagFlash == 0) {
+                  boneName = scr_const.tag_flash;
                 }
               }
               else {
-                local_a4 = scr_const.tag_flash_alt;
+                boneName = scr_const.tag_flash_alt;
               }
-              local_115 = 0xfe;
-              local_16e = 0xfe;
-              local_16d = (local_98->nextState).eType == 0x32;
-              if (((local_98->nextState).eType == 6) &&
-                 (((local_a0->nextState).lerp.eFlags & 0x40U) != 0)) {
-                local_16d = true;
+              firstBoneIndex = 0xfe;
+              thirdBoneIndex = 0xfe;
+              isFireEvent = (cent->nextState).eType == 0x32;
+              if (((cent->nextState).eType == 6) &&
+                 (((centForFlags->nextState).lerp.eFlags & 0x40U) != 0)) {
+                isFireEvent = true;
               }
-              if ((((local_11d != false) || (local_16d != false)) ||
-                  (iVar7 = CG_GetBoneIndex(param_1,local_124,(uint)local_a4,&local_16e), iVar7 != 0)
-                  ) && ((local_11d == false ||
-                        (iVar7 = CG_GetBoneIndex(param_1,local_e4,(uint)local_a4,&local_115),
-                        iVar7 != 0)))) {
+              if ((((isFirstPerson != false) || (isFireEvent != false)) ||
+                  (iVar6 = CG_GetBoneIndex(localClientNum,thirdDobjHandle,(uint)boneName,
+                                           &thirdBoneIndex), iVar6 != 0)) &&
+                 ((isFirstPerson == false ||
+                  (iVar6 = CG_GetBoneIndex(localClientNum,firstDobjHandle,(uint)boneName,
+                                           &firstBoneIndex), iVar6 != 0)))) {
                 if ((flame_test->current).enabled == false) {
-                  if (((((local_a0->nextState).lerp.eFlags & 0x40U) == 0) ||
-                      (((local_98->nextState).lerp.eFlags & 0x300U) != 0)) ||
-                     (2 < (local_9c->predictedPlayerState).waterlevel)) {
-                    if (local_16d == false) {
-                      local_ad = false;
+                  if (((((centForFlags->nextState).lerp.eFlags & 0x40U) == 0) ||
+                      (((cent->nextState).lerp.eFlags & 0x300U) != 0)) ||
+                     (2 < (cgameGlob->predictedPlayerState).waterlevel)) {
+                    if (isFireEvent == false) {
+                      isFiring = false;
                     }
                     else {
-                      local_ad = true;
+                      isFiring = true;
                     }
                   }
                   else {
-                    local_ad = true;
+                    isFiring = true;
                   }
                 }
                 else {
-                  local_ad = true;
+                  isFiring = true;
                 }
-                if (((local_ad != false) && (local_98->bMuzzleFlash = 1, local_11d != false)) &&
-                   (local_98->lastMuzzleFlash < local_9c->time - local_c->iRechamberBoltTime)) {
-                  local_98->bMuzzleFlash = 1;
-                  local_98->lastMuzzleFlash = local_9c->time;
+                if (((isFiring != false) && (cent->bMuzzleFlash = 1, isFirstPerson != false)) &&
+                   (cent->lastMuzzleFlash < cgameGlob->time - weapDef->iRechamberBoltTime)) {
+                  cent->bMuzzleFlash = 1;
+                  cent->lastMuzzleFlash = cgameGlob->time;
                 }
-                if (local_ad != false) {
-                  if (local_11d == false) {
-                    if (local_16d == false) {
-                      FX_GetBoneOrientation(param_1,local_124,(uint)local_16e,&local_114);
+                if (isFiring != false) {
+                  if (isFirstPerson == false) {
+                    if (isFireEvent == false) {
+                      FX_GetBoneOrientation
+                                (localClientNum,thirdDobjHandle,(uint)thirdBoneIndex,&thirdOrient);
                     }
                     else {
-                      local_114.origin[0] = (local_98->pose).origin[0];
-                      local_114.origin[1] = (local_98->pose).origin[1];
-                      local_114.origin[2] = (local_98->pose).origin[2];
-                      AnglesToAxis((local_98->pose).angles,local_114.axis);
+                      thirdOrient.origin[0] = (cent->pose).origin[0];
+                      thirdOrient.origin[1] = (cent->pose).origin[1];
+                      thirdOrient.origin[2] = (cent->pose).origin[2];
+                      AnglesToAxis((cent->pose).angles,thirdOrient.axis);
                     }
                   }
                   else {
-                    FX_GetBoneOrientation(param_1,local_e4,(uint)local_115,&local_e0);
+                    FX_GetBoneOrientation
+                              (localClientNum,firstDobjHandle,(uint)firstBoneIndex,&firstOrient);
                   }
                 }
-                if (local_11d == false) {
-                  local_16c.fTable = local_c->flameTableThirdPersonPtr;
-                  local_11c = Flame_Get_FlameRender(local_c->flameTableThirdPersonPtr->name);
+                if (isFirstPerson == false) {
+                  flameWeaponConfig.fTable = weapDef->flameTableThirdPersonPtr;
+                  flameRend = Flame_Get_FlameRender(weapDef->flameTableThirdPersonPtr->name);
                 }
                 else {
-                  local_16c.fTable = local_c->flameTableFirstPersonPtr;
-                  local_11c = Flame_Get_FlameRender(local_c->flameTableFirstPersonPtr->name);
+                  flameWeaponConfig.fTable = weapDef->flameTableFirstPersonPtr;
+                  flameRend = Flame_Get_FlameRender(weapDef->flameTableFirstPersonPtr->name);
                 }
-                if (local_ad == false) {
-                  local_16c.origin[0] = (local_98->nextState).lerp.pos.trBase[0];
-                  local_16c.origin[1] = (local_98->nextState).lerp.pos.trBase[1];
-                  local_16c.origin[2] = (local_98->nextState).lerp.pos.trBase[2];
-                  local_16c.angle[0] = (local_98->nextState).lerp.apos.trBase[0];
-                  local_16c.angle[1] = (local_98->nextState).lerp.apos.trBase[1];
-                  local_16c.angle[2] = (local_98->nextState).lerp.apos.trBase[2];
+                if (isFiring == false) {
+                  flameWeaponConfig.origin[0] = (cent->nextState).lerp.pos.trBase[0];
+                  flameWeaponConfig.origin[1] = (cent->nextState).lerp.pos.trBase[1];
+                  flameWeaponConfig.origin[2] = (cent->nextState).lerp.pos.trBase[2];
+                  flameWeaponConfig.angle[0] = (cent->nextState).lerp.apos.trBase[0];
+                  flameWeaponConfig.angle[1] = (cent->nextState).lerp.apos.trBase[1];
+                  flameWeaponConfig.angle[2] = (cent->nextState).lerp.apos.trBase[2];
                 }
-                else if (local_11d == false) {
-                  local_16c.origin[0] = local_114.origin[0];
-                  local_16c.origin[1] = local_114.origin[1];
-                  local_16c.origin[2] = local_114.origin[2];
-                  AxisToAngles(local_114.axis,local_16c.angle);
+                else if (isFirstPerson == false) {
+                  flameWeaponConfig.origin[0] = thirdOrient.origin[0];
+                  flameWeaponConfig.origin[1] = thirdOrient.origin[1];
+                  flameWeaponConfig.origin[2] = thirdOrient.origin[2];
+                  AxisToAngles(thirdOrient.axis,flameWeaponConfig.angle);
                 }
                 else {
-                  local_16c.origin[0] = local_e0.origin[0];
-                  local_16c.origin[1] = local_e0.origin[1];
-                  local_16c.origin[2] = local_e0.origin[2];
-                  AxisToAngles(local_e0.axis,local_16c.angle);
+                  flameWeaponConfig.origin[0] = firstOrient.origin[0];
+                  flameWeaponConfig.origin[1] = firstOrient.origin[1];
+                  flameWeaponConfig.origin[2] = firstOrient.origin[2];
+                  AxisToAngles(firstOrient.axis,flameWeaponConfig.angle);
                 }
-                local_16c.bFireWhileIdle = false;
-                local_16c.bIsFiring = local_ad;
-                local_16c.burnRate = 1.0;
-                local_16c.strength = 1.0;
-                local_16c.thickness = 1.0;
-                local_16c.entityOrigin[0] = (local_98->nextState).lerp.pos.trBase[0];
-                local_16c.entityOrigin[1] = (local_98->nextState).lerp.pos.trBase[1];
-                local_16c.entityOrigin[2] = (local_98->nextState).lerp.pos.trBase[2];
-                local_16c.damage = local_c->damage;
-                iVar7 = Flame_GetLocalClientFlameSource(param_1,local_10);
-                local_190 = Flame_Source_Get(iVar7);
-                if (local_190 == (flameSource_t *)0x0) {
-                  pcVar5 = CG_GetLocalClientGlobals(param_1);
-                  iVar7 = pcVar5->time;
-                  iVar6 = Flame_GetLocalClientFlameSource(param_1,local_10);
-                  local_190 = Flame_Source_Alloc(iVar6,iVar7);
-                  if ((local_190 == (flameSource_t *)0x0) &&
+                flameWeaponConfig.bFireWhileIdle = false;
+                flameWeaponConfig.bIsFiring = isFiring;
+                flameWeaponConfig.burnRate = 1.0;
+                flameWeaponConfig.strength = 1.0;
+                flameWeaponConfig.thickness = 1.0;
+                flameWeaponConfig.entityOrigin[0] = (cent->nextState).lerp.pos.trBase[0];
+                flameWeaponConfig.entityOrigin[1] = (cent->nextState).lerp.pos.trBase[1];
+                flameWeaponConfig.entityOrigin[2] = (cent->nextState).lerp.pos.trBase[2];
+                flameWeaponConfig.damage = weapDef->damage;
+                iVar6 = Flame_GetLocalClientFlameSource(localClientNum,i);
+                source = Flame_Source_Get(iVar6);
+                if (source == (flameSource_t *)0x0) {
+                  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+                  iVar6 = pcVar5->time;
+                  entityNum = Flame_GetLocalClientFlameSource(localClientNum,i);
+                  source = Flame_Source_Alloc(entityNum,iVar6);
+                  if ((source == (flameSource_t *)0x0) &&
                      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_system.cpp"
                                                ,0x4f7,0,"%s\n\t%s"), !bVar4)) {
                     pcVar2 = (code *)swi(3);
@@ -1291,82 +1306,89 @@ LAB_00894d1a:
                     return;
                   }
                 }
-                if (local_190 != (flameSource_t *)0x0) {
-                  iVar7 = Flame_GetLocalClientFlameSource(param_1,local_10);
-                  local_190->entityNum = iVar7;
-                  local_190->firstDobjHandle = local_e4;
-                  local_190->firstBoneIndex = local_115;
-                  local_190->thirdDobjHandle = local_124;
-                  local_190->thirdBoneIndex = local_16e;
-                  local_190->isKillcamFlame = local_9c->inKillCam;
-                  local_190->firingThroughGeo = 0;
-                  if ((local_ad != false) && (local_11d == false)) {
-                    local_1cc.v[0] = 0.0;
-                    local_1cc.v[1] = 0.0;
-                    local_1cc.v[2] = 0.0;
-                    local_1cc.v[3] = 0.0;
-                    AngleVectors(local_16c.angle,&local_1e4,(float *)0x0,(float *)0x0);
-                    local_1d8 = local_1e4 * -23.0 + local_16c.origin[0];
-                    local_1d4 = local_1e0 * -23.0 + local_16c.origin[1];
-                    local_1d0 = local_1dc * -23.0 + local_16c.origin[2];
+                if (source != (flameSource_t *)0x0) {
+                  iVar6 = Flame_GetLocalClientFlameSource(localClientNum,i);
+                  source->entityNum = iVar6;
+                  source->firstDobjHandle = firstDobjHandle;
+                  source->firstBoneIndex = firstBoneIndex;
+                  source->thirdDobjHandle = thirdDobjHandle;
+                  source->thirdBoneIndex = thirdBoneIndex;
+                  source->isKillcamFlame = cgameGlob->inKillCam;
+                  source->firingThroughGeo = 0;
+                  if ((isFiring != false) && (isFirstPerson == false)) {
+                    trace.v[0] = 0.0;
+                    trace.v[1] = 0.0;
+                    trace.v[2] = 0.0;
+                    trace.v[3] = 0.0;
+                    AngleVectors(flameWeaponConfig.angle,&dir,(float *)0x0,(float *)0x0);
+                    start = dir * -23.0 + flameWeaponConfig.origin[0];
+                    local_1d4 = local_1e0 * -23.0 + flameWeaponConfig.origin[1];
+                    local_1d0 = local_1dc * -23.0 + flameWeaponConfig.origin[2];
                     if (0 < (flame_debug_render->current).integer) {
-                      G_DebugLineWithDuration(&local_1d8,local_16c.origin,colorRed,0,300);
+                      G_DebugLineWithDuration(&start,flameWeaponConfig.origin,colorRed,0,300);
                     }
-                    CG_LocationalTrace((trace_t *)&local_1cc,&local_1d8,local_16c.origin,
-                                       local_190->entityNum,0x280e833,false,(col_context_t *)0x0);
+                    CG_LocationalTrace((trace_t *)&trace,&start,flameWeaponConfig.origin,
+                                       source->entityNum,0x280e833,false,(col_context_t *)0x0);
                     if (local_1bc < 1.0) {
-                      local_16c.origin[0] = local_1d8;
-                      local_16c.origin[1] = local_1d4;
-                      local_16c.origin[2] = local_1d0;
-                      local_190->firingThroughGeo = 1;
+                      flameWeaponConfig.origin[0] = start;
+                      flameWeaponConfig.origin[1] = local_1d4;
+                      flameWeaponConfig.origin[2] = local_1d0;
+                      source->firingThroughGeo = 1;
                     }
                   }
-                  pcVar5 = CG_GetLocalClientGlobals(param_1);
+                  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
                   CG_Flame_Update_Source_Internal
-                            (local_190,local_10,&local_16c,pcVar5->time,local_11c,param_1);
-                  pcVar5 = CG_GetLocalClientGlobals(param_1);
+                            (source,i,&flameWeaponConfig,pcVar5->time,flameRend,localClientNum);
+                  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
                   Flame_Class_Source_Sound
-                            (param_1,local_ad,local_11d,pcVar5->time,local_16c.fTable,local_190);
+                            (localClientNum,isFiring,isFirstPerson,pcVar5->time,
+                             flameWeaponConfig.fTable,source);
                 }
               }
             }
           }
         }
-        local_10 = local_10 + 1;
+        i = i + 1;
       }
     }
   }
   return;
 LAB_00894d0b:
-  local_178 = local_178 + 1;
+  gunnerIndex = gunnerIndex + 1;
   goto LAB_00894d1a;
 }
 
 
 // 00895770  Flame_Generate_Verts  (flame/flame_system.cpp:1338)
 
-void __cdecl Flame_Generate_Verts(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Generate_Verts(int localClientNum)
 
 {
-  char *pcVar1;
-  DWORD DVar2;
-  int local_8;
+  char *Name;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  int i;
   
-  pcVar1 = va("Flame_Generate_Verts(cl=%d)");
-  PIXBeginNamedEvent(-1,pcVar1);
+  Name = va("Flame_Generate_Verts(cl=%d)");
+  PIXBeginNamedEvent(-1,Name);
   if ((flame_render->current).enabled != false) {
-    Flame_Class_Smoke_Render_All(param_1);
-    Flame_Class_Fire_Render_All(param_1);
-    Flame_Class_Drips_Render_All(param_1);
-    Flame_Class_Chunk_Render_All(param_1);
-    Flame_Class_Stream_Render_All(param_1);
-    for (local_8 = 0; local_8 < numFlameVars; local_8 = local_8 + 1) {
-      Flame_Class_Fire_Render_Local_List(param_1,(flameFire_t *)flameVarList[local_8].fireList);
-      Flame_Class_Drips_Render_Local_List(param_1,(flameDrips_t *)flameVarList[local_8].dripsList);
+    Flame_Class_Smoke_Render_All(localClientNum);
+    Flame_Class_Fire_Render_All(localClientNum);
+    Flame_Class_Drips_Render_All(localClientNum);
+    Flame_Class_Chunk_Render_All(localClientNum);
+    Flame_Class_Stream_Render_All(localClientNum);
+    for (i = 0; i < numFlameVars; i = i + 1) {
+      Flame_Class_Fire_Render_Local_List(localClientNum,(flameFire_t *)flameVarList[i].fireList);
+      Flame_Class_Drips_Render_Local_List(localClientNum,(flameDrips_t *)flameVarList[i].dripsList);
     }
   }
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1380,50 +1402,50 @@ void __cdecl Flame_Generate_Verts(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Flame_Update_ViewModel(int param_1,centity_s *param_2)
+void __cdecl CG_Flame_Update_ViewModel(int localClientNum,centity_s *cent)
 
 {
   float fVar1;
   cg_s *pcVar2;
-  int local_18;
-  int local_10;
-  int local_c;
+  int i_3;
+  float oldOffset;
+  int i_2;
+  int i;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if (((param_2->nextState).lerp.eFlags & 0x40U) == 0) {
-    for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-      fVar1 = pcVar2->flamethrowerKickOffset[local_10];
-      pcVar2->flamethrowerKickOffset[local_10] =
-           pcVar2->flamethrowerKickOffset[local_10] -
-           (*(float *)((int)&flame_kick_offset->current + local_10 * 4) *
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  if (((cent->nextState).lerp.eFlags & 0x40U) == 0) {
+    for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+      fVar1 = pcVar2->flamethrowerKickOffset[i_2];
+      pcVar2->flamethrowerKickOffset[i_2] =
+           pcVar2->flamethrowerKickOffset[i_2] -
+           (*(float *)((int)&flame_kick_offset->current + i_2 * 4) *
             (flame_kick_recover_speed->current).value * (float)pcVar2->frametime) / 1000.0;
-      if (ABS(fVar1) < ABS(pcVar2->flamethrowerKickOffset[local_10])) {
-        pcVar2->flamethrowerKickOffset[local_10] = 0.0;
+      if (ABS(fVar1) < ABS(pcVar2->flamethrowerKickOffset[i_2])) {
+        pcVar2->flamethrowerKickOffset[i_2] = 0.0;
       }
     }
   }
   else {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      pcVar2->flamethrowerKickOffset[local_c] =
-           (*(float *)((int)&flame_kick_offset->current + local_c * 4) *
-            (flame_kick_speed->current).value * (float)pcVar2->frametime) / 1000.0 +
-           pcVar2->flamethrowerKickOffset[local_c];
-      if (ABS(*(float *)((int)&flame_kick_offset->current + local_c * 4)) <
-          ABS(pcVar2->flamethrowerKickOffset[local_c])) {
-        pcVar2->flamethrowerKickOffset[local_c] =
-             *(float *)((int)&flame_kick_offset->current + local_c * 4);
+    for (i = 0; i < 3; i = i + 1) {
+      pcVar2->flamethrowerKickOffset[i] =
+           (*(float *)((int)&flame_kick_offset->current + i * 4) * (flame_kick_speed->current).value
+           * (float)pcVar2->frametime) / 1000.0 + pcVar2->flamethrowerKickOffset[i];
+      if (ABS(*(float *)((int)&flame_kick_offset->current + i * 4)) <
+          ABS(pcVar2->flamethrowerKickOffset[i])) {
+        pcVar2->flamethrowerKickOffset[i] = *(float *)((int)&flame_kick_offset->current + i * 4);
       }
     }
   }
-  for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
+  for (i_3 = 0; i_3 < 3; i_3 = i_3 + 1) {
     pcVar2->viewModelAxis[3][0] =
-         pcVar2->flamethrowerKickOffset[local_18] * pcVar2->viewModelAxis[local_18][0] +
+         pcVar2->flamethrowerKickOffset[i_3] * pcVar2->viewModelAxis[i_3][0] +
          pcVar2->viewModelAxis[3][0];
     pcVar2->viewModelAxis[3][1] =
-         pcVar2->flamethrowerKickOffset[local_18] * pcVar2->viewModelAxis[local_18][1] +
+         pcVar2->flamethrowerKickOffset[i_3] * pcVar2->viewModelAxis[i_3][1] +
          pcVar2->viewModelAxis[3][1];
     pcVar2->viewModelAxis[3][2] =
-         pcVar2->flamethrowerKickOffset[local_18] * pcVar2->viewModelAxis[local_18][2] +
+         pcVar2->flamethrowerKickOffset[i_3] * pcVar2->viewModelAxis[i_3][2] +
          pcVar2->viewModelAxis[3][2];
   }
   return;
@@ -1432,12 +1454,13 @@ void __cdecl CG_Flame_Update_ViewModel(int param_1,centity_s *param_2)
 
 // 00895B20  Flame_Random  (flame/flame_system.cpp:1405)
 
-float __cdecl Flame_Random(bool param_1)
+float __cdecl Flame_Random(bool is_server)
 
 {
   float fVar1;
+  int num;
   
-  if (param_1) {
+  if (is_server) {
     fVar1 = G_random();
   }
   else {
@@ -1450,28 +1473,29 @@ float __cdecl Flame_Random(bool param_1)
 
 // 00895B70  Flame_CRandom  (flame/flame_system.cpp:1414)
 
-float __cdecl Flame_CRandom(bool param_1)
+float __cdecl Flame_CRandom(bool is_server)
 
 {
   float fVar1;
   
-  fVar1 = Flame_Random(param_1);
+  fVar1 = Flame_Random(is_server);
   return fVar1 * 2.0 - 1.0;
 }
 
 
 // 00895B90  Flame_CalcTimeScale  (flame/flame_system.cpp:1419)
 
-float __cdecl Flame_CalcTimeScale(int param_1,int param_2)
+float __cdecl Flame_CalcTimeScale(int startTime,int endTime)
 
 {
   float fVar1;
+  int diff;
   
-  if (param_2 - param_1 < 1) {
+  if (endTime - startTime < 1) {
     fVar1 = 0.0;
   }
   else {
-    fVar1 = 1.0 / (float)(param_2 - param_1);
+    fVar1 = 1.0 / (float)(endTime - startTime);
   }
   return fVar1;
 }
@@ -1479,23 +1503,24 @@ float __cdecl Flame_CalcTimeScale(int param_1,int param_2)
 
 // 00895BC0  Flame_CalcInvStartSpeed  (flame/flame_system.cpp:1428)
 
-float __cdecl Flame_CalcInvStartSpeed(float param_1,float param_2)
+float __cdecl Flame_CalcInvStartSpeed(float invInitialSpeed,float speedScale)
 
 {
   float fVar1;
   undefined4 local_c;
+  float initialSpeed;
   
-  if (param_1 == 0.0) {
+  if (invInitialSpeed == 0.0) {
     local_c = 0.0;
   }
   else {
-    local_c = 1.0 / param_1;
+    local_c = 1.0 / invInitialSpeed;
   }
-  if (param_2 * local_c == 0.0) {
+  if (speedScale * local_c == 0.0) {
     fVar1 = 0.0;
   }
   else {
-    fVar1 = 1.0 / (param_2 * local_c);
+    fVar1 = 1.0 / (speedScale * local_c);
   }
   return fVar1;
 }

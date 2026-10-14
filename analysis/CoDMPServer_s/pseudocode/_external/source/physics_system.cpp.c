@@ -12,7 +12,7 @@ int __cdecl phys_sys::get_rbc_point_alloc_count(void)
 // 008EA790  create_rbc_point  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:1)
 
 rigid_body_constraint_point * __cdecl
-phys_sys::create_rbc_point(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_point(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   rigid_body_constraint_point *prVar1;
@@ -40,8 +40,8 @@ phys_sys::create_rbc_point(rigid_body *param_1,rigid_body *param_2,int param_3)
     *piVar2 = *piVar2 + 1;
     (ppVar3->m_list_rbc_point).m_dummy_head.m_next_T_internal = pTVar4;
     if (prVar1 != (rigid_body_constraint_point *)0x0) {
-      prVar1->_padding_ = (int)param_1;
-      pTVar4[2].m_next_T_internal = (T_internal_base *)param_2;
+      prVar1->_padding_ = (int)b2;
+      pTVar4[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar1;
   }
@@ -125,7 +125,7 @@ void __cdecl phys_sys::destroy_all_rbc_hinge(void)
 // 008EAC40  create_rbc_hinge  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:2)
 
 rigid_body_constraint_hinge * __cdecl
-phys_sys::create_rbc_hinge(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_hinge(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   rigid_body_constraint_hinge *prVar1;
@@ -133,8 +133,8 @@ phys_sys::create_rbc_hinge(rigid_body *param_1,rigid_body *param_2,int param_3)
   prVar1 = phys_free_list<rigid_body_constraint_hinge>::add
                      (&g_physics_system->m_list_rbc_hinge,param_3,"");
   if (prVar1 != (rigid_body_constraint_hinge *)0x0) {
-    *(rigid_body **)prVar1 = param_1;
-    *(rigid_body **)&prVar1->field_0x4 = param_2;
+    *(rigid_body **)prVar1 = b2;
+    *(rigid_body **)&prVar1->field_0x4 = no_error;
   }
   return prVar1;
 }
@@ -184,7 +184,7 @@ void __cdecl phys_sys::destroy_all_rbc_dist(void)
 // 008EAC70  create_rbc_dist  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:3)
 
 rigid_body_constraint_distance * __cdecl
-phys_sys::create_rbc_dist(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_dist(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   int *piVar1;
@@ -208,8 +208,8 @@ phys_sys::create_rbc_dist(rigid_body *param_1,rigid_body *param_2,int param_3)
     (ppVar2->m_list_rbc_dist).m_dummy_head.m_next_T_internal = pTVar3;
     prVar4 = (rigid_body_constraint_distance *)(pTVar3 + 2);
     if (prVar4 != (rigid_body_constraint_distance *)0x0) {
-      *(rigid_body **)prVar4 = param_1;
-      pTVar3[2].m_next_T_internal = (T_internal_base *)param_2;
+      *(rigid_body **)prVar4 = b2;
+      pTVar3[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar4;
   }
@@ -260,7 +260,7 @@ void __cdecl phys_sys::destroy_all_rbc_ragdoll(void)
 // 008EACD0  create_rbc_ragdoll  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:4)
 
 rigid_body_constraint_ragdoll * __cdecl
-phys_sys::create_rbc_ragdoll(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_ragdoll(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   rigid_body_constraint_ragdoll *prVar1;
@@ -268,8 +268,8 @@ phys_sys::create_rbc_ragdoll(rigid_body *param_1,rigid_body *param_2,int param_3
   prVar1 = phys_free_list<rigid_body_constraint_ragdoll>::add
                      (&g_physics_system->m_list_rbc_ragdoll,param_3,"");
   if (prVar1 != (rigid_body_constraint_ragdoll *)0x0) {
-    *(rigid_body **)prVar1 = param_1;
-    *(rigid_body **)&prVar1->field_0x4 = param_2;
+    *(rigid_body **)prVar1 = b2;
+    *(rigid_body **)&prVar1->field_0x4 = no_error;
   }
   return prVar1;
 }
@@ -320,7 +320,7 @@ void __cdecl phys_sys::destroy_all_rbc_wheel(void)
 // 008EAD00  create_rbc_wheel  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:5)
 
 rigid_body_constraint_wheel * __cdecl
-phys_sys::create_rbc_wheel(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_wheel(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   int *piVar1;
@@ -345,8 +345,8 @@ phys_sys::create_rbc_wheel(rigid_body *param_1,rigid_body *param_2,int param_3)
     (ppVar2->m_list_rbc_wheel).m_dummy_head.m_next_T_internal = pTVar3;
     prVar4 = (rigid_body_constraint_wheel *)(pTVar3 + 2);
     if (prVar4 != (rigid_body_constraint_wheel *)0x0) {
-      prVar4->_padding_ = (int)param_1;
-      pTVar3[2].m_next_T_internal = (T_internal_base *)param_2;
+      prVar4->_padding_ = (int)b2;
+      pTVar3[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar4;
   }
@@ -399,7 +399,7 @@ void __cdecl phys_sys::destroy_all_rbc_angular_actuator(void)
 // 008EAD70  create_rbc_angular_actuator  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:6)
 
 rigid_body_constraint_angular_actuator * __cdecl
-phys_sys::create_rbc_angular_actuator(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_angular_actuator(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   int *piVar1;
@@ -425,8 +425,8 @@ phys_sys::create_rbc_angular_actuator(rigid_body *param_1,rigid_body *param_2,in
     (ppVar2->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal = pTVar3;
     prVar4 = (rigid_body_constraint_angular_actuator *)(pTVar3 + 2);
     if (prVar4 != (rigid_body_constraint_angular_actuator *)0x0) {
-      *(rigid_body **)prVar4 = param_1;
-      pTVar3[2].m_next_T_internal = (T_internal_base *)param_2;
+      *(rigid_body **)prVar4 = b2;
+      pTVar3[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar4;
   }
@@ -478,7 +478,7 @@ void __cdecl phys_sys::destroy_all_rbc_upright(void)
 // 008EADE0  create_rbc_upright  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:7)
 
 rigid_body_constraint_upright * __cdecl
-phys_sys::create_rbc_upright(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_upright(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   int *piVar1;
@@ -500,8 +500,8 @@ phys_sys::create_rbc_upright(rigid_body *param_1,rigid_body *param_2,int param_3
     (ppVar2->m_list_rbc_upright).m_dummy_head.m_next_T_internal = pTVar3;
     prVar4 = (rigid_body_constraint_upright *)(pTVar3 + 2);
     if (prVar4 != (rigid_body_constraint_upright *)0x0) {
-      *(rigid_body **)prVar4 = param_1;
-      pTVar3[2].m_next_T_internal = (T_internal_base *)param_2;
+      *(rigid_body **)prVar4 = b2;
+      pTVar3[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar4;
   }
@@ -521,7 +521,7 @@ int __cdecl phys_sys::get_rbc_custom_orientation_alloc_count(void)
 // 008EA800  create_rbc_custom_orientation  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:8)
 
 rigid_body_constraint_custom_orientation * __cdecl
-phys_sys::create_rbc_custom_orientation(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_custom_orientation(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   rigid_body_constraint_custom_orientation *prVar1;
@@ -529,8 +529,8 @@ phys_sys::create_rbc_custom_orientation(rigid_body *param_1,rigid_body *param_2,
   prVar1 = phys_free_list<rigid_body_constraint_custom_orientation>::add
                      (&g_physics_system->m_list_rbc_custom_orientation,param_3,"");
   if (prVar1 != (rigid_body_constraint_custom_orientation *)0x0) {
-    prVar1->_padding_ = (int)param_1;
-    prVar1->_padding_ = (int)param_2;
+    prVar1->_padding_ = (int)b2;
+    prVar1->_padding_ = (int)no_error;
   }
   return prVar1;
 }
@@ -614,7 +614,7 @@ void __cdecl phys_sys::destroy_all_rbc_custom_path(void)
 // 008EAE40  create_rbc_custom_path  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:9)
 
 rigid_body_constraint_custom_path * __cdecl
-phys_sys::create_rbc_custom_path(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_custom_path(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   int *piVar1;
@@ -639,8 +639,8 @@ phys_sys::create_rbc_custom_path(rigid_body *param_1,rigid_body *param_2,int par
     (ppVar2->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal = pTVar3;
     prVar4 = (rigid_body_constraint_custom_path *)(pTVar3 + 2);
     if (prVar4 != (rigid_body_constraint_custom_path *)0x0) {
-      *(rigid_body **)prVar4 = param_1;
-      pTVar3[2].m_next_T_internal = (T_internal_base *)param_2;
+      *(rigid_body **)prVar4 = b2;
+      pTVar3[2].m_next_T_internal = (T_internal_base *)no_error;
     }
     return prVar4;
   }
@@ -660,13 +660,13 @@ int __cdecl phys_sys::get_rbc_contact_alloc_count(void)
 // 008EA830  create_rbc_contact  (<external>/projects_pc/cod/codsrc/tl/physics/include/rbc_defs/rbc_def_types.inc:11)
 
 rigid_body_constraint_contact * __cdecl
-phys_sys::create_rbc_contact(rigid_body *param_1,rigid_body *param_2,int param_3)
+phys_sys::create_rbc_contact(rigid_body *b2,rigid_body *no_error,int param_3)
 
 {
   rigid_body_constraint_contact *prVar1;
   
-  prVar1 = create(&g_physics_system->m_list_rbc_contact,(rigid_body_constraint_contact *)0x0,param_1
-                  ,param_2,param_3,"");
+  prVar1 = create(&g_physics_system->m_list_rbc_contact,(rigid_body_constraint_contact *)0x0,b2,
+                  no_error,param_3,"");
   return prVar1;
 }
 
@@ -713,6 +713,7 @@ rigid_body * __cdecl phys_sys::create_rigid_body(int param_1)
   physics_system *ppVar2;
   T_internal_base *pTVar3;
   phys_free_list<rigid_body> *ppVar4;
+  int no_error;
   
   ppVar2 = g_physics_system;
   ppVar4 = &g_physics_system->m_list_rigid_body;
@@ -739,6 +740,7 @@ user_rigid_body * __cdecl phys_sys::create_user_rigid_body(int param_1)
   physics_system *ppVar2;
   T_internal_base *pTVar3;
   phys_free_list<user_rigid_body> *ppVar4;
+  int no_error;
   
   ppVar2 = g_physics_system;
   ppVar4 = &g_physics_system->m_list_user_rigid_body;
@@ -758,28 +760,28 @@ user_rigid_body * __cdecl phys_sys::create_user_rigid_body(int param_1)
 
 // 008EC440  create  (<external>/projects_pc/cod/codsrc/tl/physics/source/physics_system.cpp:80)
 
+/* WARNING: Variable defined which should be unmapped: key */
+
 rigid_body_constraint_contact * __cdecl
-create(phys_free_list<rigid_body_constraint_contact> *param_1,rigid_body_constraint_contact *param_2
-      ,rigid_body *param_3,rigid_body *param_4,int param_5,char *param_6)
+create(phys_free_list<rigid_body_constraint_contact> *__formal,rigid_body_constraint_contact *b1,
+      rigid_body *b2,rigid_body *no_error,int error_msg,char *param_6)
 
 {
   int *piVar1;
   physics_system *ppVar2;
   rigid_body_constraint_contact *prVar3;
   T_internal_base *pTVar4;
-  rigid_body_pair_key rStack_8;
+  rigid_body_pair_key key;
   
   ppVar2 = g_physics_system;
-  if (param_3 < param_4) {
-    rStack_8.m_b1 = param_3;
-    rStack_8.m_b2 = param_4;
+  if (b2 < no_error) {
+    key.m_b2 = b2;
   }
   else {
-    rStack_8.m_b1 = param_4;
-    rStack_8.m_b2 = param_3;
+    key.m_b2 = no_error;
   }
   prVar3 = phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-           ::find(&g_physics_system->m_search_tree_rbc_contact,&rStack_8);
+           ::find(&g_physics_system->m_search_tree_rbc_contact,(rigid_body_pair_key *)&key.m_b2);
   if (prVar3 == (rigid_body_constraint_contact *)0x0) {
     pTVar4 = PMM_ALLOC(0x34,4);
     if (pTVar4 == (T_internal_base *)0x0) {
@@ -796,10 +798,10 @@ create(phys_free_list<rigid_body_constraint_contact> *param_1,rigid_body_constra
     *piVar1 = *piVar1 + 1;
     (ppVar2->m_list_rbc_contact).m_dummy_head.m_next_T_internal = pTVar4;
     if (prVar3 != (rigid_body_constraint_contact *)0x0) {
-      prVar3->_padding_ = (int)param_3;
-      pTVar4[1].m_next_T_internal = (T_internal_base *)param_4;
+      prVar3->_padding_ = (int)b2;
+      pTVar4[1].m_next_T_internal = (T_internal_base *)no_error;
       phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-      ::add(&g_physics_system->m_search_tree_rbc_contact,&rStack_8,prVar3);
+      ::add(&g_physics_system->m_search_tree_rbc_contact,(rigid_body_pair_key *)&key.m_b2,prVar3);
     }
   }
   return prVar3;
@@ -848,7 +850,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
 void __thiscall
 phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
 ::add(phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-      *this,rigid_body_pair_key *param_1,rigid_body_constraint_contact *param_2)
+      *this,rigid_body_pair_key *data,rigid_body_constraint_contact *param_2)
 
 {
   rigid_body *prVar1;
@@ -873,7 +875,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
   pppVar10 = local_100;
   local_100[0] = this;
   if (this->m_tree_root != (rigid_body_constraint_contact *)0x0) {
-    prVar1 = param_1->m_b1;
+    prVar1 = data->m_b1;
     pppVar9 = pppVar10;
     do {
       prVar7 = (*pppVar9)->m_tree_root;
@@ -881,7 +883,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
       pppVar10 = pppVar9 + 2;
       bVar13 = prVar1 < prVar2;
       if (prVar1 == prVar2) {
-        bVar13 = param_1->m_b2 < (prVar7->m_avl_key).m_b2;
+        bVar13 = data->m_b2 < (prVar7->m_avl_key).m_b2;
       }
       if (bVar13) {
         pppVar9[1] = (phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
@@ -903,8 +905,8 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
   (param_2->m_avl_tree_node).m_left = (rigid_body_constraint_contact *)0x0;
   (param_2->m_avl_tree_node).m_right = (rigid_body_constraint_contact *)0x0;
   (param_2->m_avl_tree_node).m_balance = 0;
-  (param_2->m_avl_key).m_b1 = param_1->m_b1;
-  (param_2->m_avl_key).m_b2 = param_1->m_b2;
+  (param_2->m_avl_key).m_b1 = data->m_b1;
+  (param_2->m_avl_key).m_b2 = data->m_b2;
   if (local_100 < pppVar10) {
     do {
       ppVar3 = pppVar10[-2];
@@ -1001,19 +1003,19 @@ environment_rigid_body * __cdecl phys_sys::get_environment_rigid_body(void)
 // 008EA2C0  get_rbc_contact  (<external>/projects_pc/cod/codsrc/tl/physics/source/physics_system.cpp:123)
 
 rigid_body_constraint_contact * __cdecl
-phys_sys::get_rbc_contact(rigid_body *param_1,rigid_body *param_2)
+phys_sys::get_rbc_contact(rigid_body *b2,rigid_body *param_2)
 
 {
   rigid_body_constraint_contact *prVar1;
   rigid_body_pair_key local_8;
   
-  if (param_1 < param_2) {
-    local_8.m_b1 = param_1;
+  if (b2 < param_2) {
+    local_8.m_b1 = b2;
     local_8.m_b2 = param_2;
   }
   else {
     local_8.m_b1 = param_2;
-    local_8.m_b2 = param_1;
+    local_8.m_b2 = b2;
   }
   prVar1 = phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
            ::find(&g_physics_system->m_search_tree_rbc_contact,&local_8);
@@ -1126,292 +1128,292 @@ void __cdecl phys_sys::destroy_all_user_rigid_body(void)
   phys_free_list<rigid_body_constraint_custom_orientation> *ppVar28;
   phys_free_list<rigid_body_constraint_custom_path> *ppVar29;
   phys_free_list<rigid_body_constraint_contact> *ppVar30;
+  T_internal_base *size;
   T_internal_base *pTVar31;
+  T_internal_base *size_00;
   T_internal_base *pTVar32;
+  T_internal_base *size_01;
   T_internal_base *pTVar33;
+  T_internal_base *size_02;
   T_internal_base *pTVar34;
+  T_internal_base *size_03;
   T_internal_base *pTVar35;
+  T_internal_base *size_04;
   T_internal_base *pTVar36;
+  T_internal_base *size_05;
   T_internal_base *pTVar37;
+  T_internal_base *size_06;
   T_internal_base *pTVar38;
+  T_internal_base *size_07;
   T_internal_base *pTVar39;
+  T_internal_base *size_08;
   T_internal_base *pTVar40;
-  T_internal_base *pTVar41;
-  T_internal_base *pTVar42;
-  T_internal_base *pTVar43;
-  T_internal_base *pTVar44;
-  T_internal_base *pTVar45;
-  T_internal_base *pTVar46;
-  T_internal_base *pTVar47;
-  T_internal_base *pTVar48;
-  T_internal_base *pTVar49;
-  T_internal_base *pTVar50;
-  physics_system *ppVar51;
+  physics_system *ppVar41;
   
-  pTVar31 = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
+  size = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
   ppVar21 = &g_physics_system->m_list_rbc_point;
-  ppVar51 = g_physics_system;
-  if (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar31) {
+  ppVar41 = g_physics_system;
+  if (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)size) {
     do {
-      if (((pTVar31[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar31[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar31[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar31[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar32 = pTVar31->m_next_T_internal;
+      if (((size[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar31 = size->m_next_T_internal;
       }
       else {
-        pTVar32 = pTVar31->m_next_T_internal;
-        if (pTVar31 != (T_internal_base *)0xfffffff0) {
+        pTVar31 = size->m_next_T_internal;
+        if (size != (T_internal_base *)0xfffffff0) {
           ppVar21->m_list_count = ppVar21->m_list_count + -1;
-          pTVar1 = pTVar31->m_next_T_internal;
-          pTVar2 = pTVar31->m_prev_T_internal;
+          pTVar1 = size->m_next_T_internal;
+          pTVar2 = size->m_prev_T_internal;
           pTVar2->m_next_T_internal = pTVar1;
           pTVar1->m_prev_T_internal = pTVar2;
-          PMM_FREE(pTVar31,0x60,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size,0x60,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar21 = &ppVar51->m_list_rbc_point;
-      pTVar31 = pTVar32;
-    } while (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar32);
+      ppVar21 = &ppVar41->m_list_rbc_point;
+      size = pTVar31;
+    } while (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar31);
   }
-  pTVar33 = (ppVar51->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
-  ppVar22 = &ppVar51->m_list_rbc_hinge;
-  if (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar33) {
+  size_00 = (ppVar41->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
+  ppVar22 = &ppVar41->m_list_rbc_hinge;
+  if (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)size_00) {
     do {
-      if (((pTVar33[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar33[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar33[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar33[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar34 = pTVar33->m_next_T_internal;
+      if (((size_00[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_00[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_00[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_00[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar32 = size_00->m_next_T_internal;
       }
       else {
-        pTVar34 = pTVar33->m_next_T_internal;
-        if (pTVar33 != (T_internal_base *)0xfffffff0) {
+        pTVar32 = size_00->m_next_T_internal;
+        if (size_00 != (T_internal_base *)0xfffffff0) {
           ppVar22->m_list_count = ppVar22->m_list_count + -1;
-          pTVar3 = pTVar33->m_next_T_internal;
-          pTVar4 = pTVar33->m_prev_T_internal;
+          pTVar3 = size_00->m_next_T_internal;
+          pTVar4 = size_00->m_prev_T_internal;
           pTVar4->m_next_T_internal = pTVar3;
           pTVar3->m_prev_T_internal = pTVar4;
-          PMM_FREE(pTVar33,0xe0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_00,0xe0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar22 = &ppVar51->m_list_rbc_hinge;
-      pTVar33 = pTVar34;
-    } while (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar34);
+      ppVar22 = &ppVar41->m_list_rbc_hinge;
+      size_00 = pTVar32;
+    } while (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar32);
   }
-  pTVar35 = (ppVar51->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
-  ppVar23 = &ppVar51->m_list_rbc_dist;
-  if (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar35) {
+  size_01 = (ppVar41->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
+  ppVar23 = &ppVar41->m_list_rbc_dist;
+  if (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)size_01) {
     do {
-      if (((pTVar35[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar35[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar35[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar35[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar36 = pTVar35->m_next_T_internal;
+      if (((size_01[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_01[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_01[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_01[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar33 = size_01->m_next_T_internal;
       }
       else {
-        pTVar36 = pTVar35->m_next_T_internal;
-        if (pTVar35 != (T_internal_base *)0xfffffff0) {
+        pTVar33 = size_01->m_next_T_internal;
+        if (size_01 != (T_internal_base *)0xfffffff0) {
           ppVar23->m_list_count = ppVar23->m_list_count + -1;
-          pTVar5 = pTVar35->m_next_T_internal;
-          pTVar6 = pTVar35->m_prev_T_internal;
+          pTVar5 = size_01->m_next_T_internal;
+          pTVar6 = size_01->m_prev_T_internal;
           pTVar6->m_next_T_internal = pTVar5;
           pTVar5->m_prev_T_internal = pTVar6;
-          PMM_FREE(pTVar35,0x70,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_01,0x70,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar23 = &ppVar51->m_list_rbc_dist;
-      pTVar35 = pTVar36;
-    } while (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar36);
+      ppVar23 = &ppVar41->m_list_rbc_dist;
+      size_01 = pTVar33;
+    } while (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar33);
   }
-  pTVar37 = (ppVar51->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
-  ppVar24 = &ppVar51->m_list_rbc_ragdoll;
-  if (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar37) {
+  size_02 = (ppVar41->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
+  ppVar24 = &ppVar41->m_list_rbc_ragdoll;
+  if (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)size_02) {
     do {
-      if (((pTVar37[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar37[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar37[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar37[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar38 = pTVar37->m_next_T_internal;
+      if (((size_02[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_02[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_02[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_02[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar34 = size_02->m_next_T_internal;
       }
       else {
-        pTVar38 = pTVar37->m_next_T_internal;
-        if (pTVar37 != (T_internal_base *)0xfffffff0) {
+        pTVar34 = size_02->m_next_T_internal;
+        if (size_02 != (T_internal_base *)0xfffffff0) {
           ppVar24->m_list_count = ppVar24->m_list_count + -1;
-          pTVar7 = pTVar37->m_next_T_internal;
-          pTVar8 = pTVar37->m_prev_T_internal;
+          pTVar7 = size_02->m_next_T_internal;
+          pTVar8 = size_02->m_prev_T_internal;
           pTVar8->m_next_T_internal = pTVar7;
           pTVar7->m_prev_T_internal = pTVar8;
-          PMM_FREE(pTVar37,0x130,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_02,0x130,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar24 = &ppVar51->m_list_rbc_ragdoll;
-      pTVar37 = pTVar38;
-    } while (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar38);
+      ppVar24 = &ppVar41->m_list_rbc_ragdoll;
+      size_02 = pTVar34;
+    } while (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar34);
   }
-  pTVar39 = (ppVar51->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
-  ppVar25 = &ppVar51->m_list_rbc_wheel;
-  if (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar39) {
+  size_03 = (ppVar41->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
+  ppVar25 = &ppVar41->m_list_rbc_wheel;
+  if (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)size_03) {
     do {
-      if (((pTVar39[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar39[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar39[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar39[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar40 = pTVar39->m_next_T_internal;
+      if (((size_03[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_03[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_03[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_03[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar35 = size_03->m_next_T_internal;
       }
       else {
-        pTVar40 = pTVar39->m_next_T_internal;
-        if (pTVar39 != (T_internal_base *)0xfffffff0) {
+        pTVar35 = size_03->m_next_T_internal;
+        if (size_03 != (T_internal_base *)0xfffffff0) {
           ppVar25->m_list_count = ppVar25->m_list_count + -1;
-          pTVar9 = pTVar39->m_next_T_internal;
-          pTVar10 = pTVar39->m_prev_T_internal;
+          pTVar9 = size_03->m_next_T_internal;
+          pTVar10 = size_03->m_prev_T_internal;
           pTVar10->m_next_T_internal = pTVar9;
           pTVar9->m_prev_T_internal = pTVar10;
-          PMM_FREE(pTVar39,0xe0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_03,0xe0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar25 = &ppVar51->m_list_rbc_wheel;
-      pTVar39 = pTVar40;
-    } while (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar40);
+      ppVar25 = &ppVar41->m_list_rbc_wheel;
+      size_03 = pTVar35;
+    } while (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar35);
   }
-  pTVar41 = (ppVar51->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
-  ppVar26 = &ppVar51->m_list_rbc_angular_actuator;
-  if (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar41) {
+  size_04 = (ppVar41->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
+  ppVar26 = &ppVar41->m_list_rbc_angular_actuator;
+  if (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)size_04) {
     do {
-      if (((pTVar41[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar41[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar41[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar41[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar42 = pTVar41->m_next_T_internal;
+      if (((size_04[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_04[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_04[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_04[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar36 = size_04->m_next_T_internal;
       }
       else {
-        pTVar42 = pTVar41->m_next_T_internal;
-        if (pTVar41 != (T_internal_base *)0xfffffff0) {
+        pTVar36 = size_04->m_next_T_internal;
+        if (size_04 != (T_internal_base *)0xfffffff0) {
           ppVar26->m_list_count = ppVar26->m_list_count + -1;
-          pTVar11 = pTVar41->m_next_T_internal;
-          pTVar12 = pTVar41->m_prev_T_internal;
+          pTVar11 = size_04->m_next_T_internal;
+          pTVar12 = size_04->m_prev_T_internal;
           pTVar12->m_next_T_internal = pTVar11;
           pTVar11->m_prev_T_internal = pTVar12;
-          PMM_FREE(pTVar41,0xd0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_04,0xd0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar26 = &ppVar51->m_list_rbc_angular_actuator;
-      pTVar41 = pTVar42;
-    } while (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar42);
+      ppVar26 = &ppVar41->m_list_rbc_angular_actuator;
+      size_04 = pTVar36;
+    } while (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar36);
   }
-  pTVar43 = (ppVar51->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
-  ppVar27 = &ppVar51->m_list_rbc_upright;
-  if (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar43) {
+  size_05 = (ppVar41->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
+  ppVar27 = &ppVar41->m_list_rbc_upright;
+  if (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)size_05) {
     do {
-      if (((pTVar43[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar43[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar43[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar43[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar44 = pTVar43->m_next_T_internal;
+      if (((size_05[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_05[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_05[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_05[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar37 = size_05->m_next_T_internal;
       }
       else {
-        pTVar44 = pTVar43->m_next_T_internal;
-        if (pTVar43 != (T_internal_base *)0xfffffff0) {
+        pTVar37 = size_05->m_next_T_internal;
+        if (size_05 != (T_internal_base *)0xfffffff0) {
           ppVar27->m_list_count = ppVar27->m_list_count + -1;
-          pTVar13 = pTVar43->m_next_T_internal;
-          pTVar14 = pTVar43->m_prev_T_internal;
+          pTVar13 = size_05->m_next_T_internal;
+          pTVar14 = size_05->m_prev_T_internal;
           pTVar14->m_next_T_internal = pTVar13;
           pTVar13->m_prev_T_internal = pTVar14;
-          PMM_FREE(pTVar43,0xc0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_05,0xc0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar27 = &ppVar51->m_list_rbc_upright;
-      pTVar43 = pTVar44;
-    } while (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar44);
+      ppVar27 = &ppVar41->m_list_rbc_upright;
+      size_05 = pTVar37;
+    } while (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar37);
   }
-  pTVar45 = (ppVar51->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
-  ppVar28 = &ppVar51->m_list_rbc_custom_orientation;
-  if (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar45) {
+  size_06 = (ppVar41->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
+  ppVar28 = &ppVar41->m_list_rbc_custom_orientation;
+  if (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)size_06) {
     do {
-      if (((pTVar45[1].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar45[1].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar45[1].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar45[1].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar46 = pTVar45->m_next_T_internal;
+      if (((size_06[1].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_06[1].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_06[1].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_06[1].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar38 = size_06->m_next_T_internal;
       }
       else {
-        pTVar46 = pTVar45->m_next_T_internal;
-        if (pTVar45 != (T_internal_base *)0xfffffff8) {
+        pTVar38 = size_06->m_next_T_internal;
+        if (size_06 != (T_internal_base *)0xfffffff8) {
           ppVar28->m_list_count = ppVar28->m_list_count + -1;
-          pTVar15 = pTVar45->m_next_T_internal;
-          pTVar16 = pTVar45->m_prev_T_internal;
+          pTVar15 = size_06->m_next_T_internal;
+          pTVar16 = size_06->m_prev_T_internal;
           pTVar16->m_next_T_internal = pTVar15;
           pTVar15->m_prev_T_internal = pTVar16;
-          PMM_FREE(pTVar45,0x38,4);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_06,0x38,4);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar28 = &ppVar51->m_list_rbc_custom_orientation;
-      pTVar45 = pTVar46;
-    } while (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar46);
+      ppVar28 = &ppVar41->m_list_rbc_custom_orientation;
+      size_06 = pTVar38;
+    } while (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar38);
   }
-  pTVar47 = (ppVar51->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
-  ppVar29 = &ppVar51->m_list_rbc_custom_path;
-  if (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar47) {
+  size_07 = (ppVar41->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
+  ppVar29 = &ppVar41->m_list_rbc_custom_path;
+  if (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)size_07) {
     do {
-      if (((pTVar47[2].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar47[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar47[2].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar47[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar48 = pTVar47->m_next_T_internal;
+      if (((size_07[2].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_07[2].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_07[2].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_07[2].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar39 = size_07->m_next_T_internal;
       }
       else {
-        pTVar48 = pTVar47->m_next_T_internal;
-        if (pTVar47 != (T_internal_base *)0xfffffff0) {
+        pTVar39 = size_07->m_next_T_internal;
+        if (size_07 != (T_internal_base *)0xfffffff0) {
           ppVar29->m_list_count = ppVar29->m_list_count + -1;
-          pTVar17 = pTVar47->m_next_T_internal;
-          pTVar18 = pTVar47->m_prev_T_internal;
+          pTVar17 = size_07->m_next_T_internal;
+          pTVar18 = size_07->m_prev_T_internal;
           pTVar18->m_next_T_internal = pTVar17;
           pTVar17->m_prev_T_internal = pTVar18;
-          PMM_FREE(pTVar47,0x90,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_07,0x90,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar29 = &ppVar51->m_list_rbc_custom_path;
-      pTVar47 = pTVar48;
-    } while (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar48);
+      ppVar29 = &ppVar41->m_list_rbc_custom_path;
+      size_07 = pTVar39;
+    } while (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar39);
   }
-  pTVar49 = (ppVar51->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
-  ppVar30 = &ppVar51->m_list_rbc_contact;
-  if (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar49) {
+  size_08 = (ppVar41->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
+  ppVar30 = &ppVar41->m_list_rbc_contact;
+  if (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)size_08) {
     do {
-      if (((pTVar49[1].m_prev_T_internal == (T_internal_base *)0x0) ||
-          (((uint)pTVar49[1].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
-         ((pTVar49[1].m_next_T_internal == (T_internal_base *)0x0 ||
-          (((uint)pTVar49[1].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
-        pTVar50 = pTVar49->m_next_T_internal;
+      if (((size_08[1].m_prev_T_internal == (T_internal_base *)0x0) ||
+          (((uint)size_08[1].m_prev_T_internal[0x1f].m_next_T_internal & 0x20) == 0)) &&
+         ((size_08[1].m_next_T_internal == (T_internal_base *)0x0 ||
+          (((uint)size_08[1].m_next_T_internal[0x1f].m_next_T_internal & 0x20) == 0)))) {
+        pTVar40 = size_08->m_next_T_internal;
       }
       else {
-        pTVar50 = pTVar49->m_next_T_internal;
-        if (pTVar49 != (T_internal_base *)0xfffffff8) {
+        pTVar40 = size_08->m_next_T_internal;
+        if (size_08 != (T_internal_base *)0xfffffff8) {
           ppVar30->m_list_count = ppVar30->m_list_count + -1;
-          pTVar19 = pTVar49->m_prev_T_internal;
-          pTVar20 = pTVar49->m_next_T_internal;
+          pTVar19 = size_08->m_prev_T_internal;
+          pTVar20 = size_08->m_next_T_internal;
           pTVar19->m_next_T_internal = pTVar20;
           pTVar20->m_prev_T_internal = pTVar19;
           rigid_body_constraint_contact::~rigid_body_constraint_contact
-                    ((rigid_body_constraint_contact *)(pTVar49 + 1));
-          PMM_FREE(pTVar49,0x34,4);
-          ppVar51 = g_physics_system;
+                    ((rigid_body_constraint_contact *)(size_08 + 1));
+          PMM_FREE(size_08,0x34,4);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar30 = &ppVar51->m_list_rbc_contact;
-      pTVar49 = pTVar50;
-    } while (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar50);
+      ppVar30 = &ppVar41->m_list_rbc_contact;
+      size_08 = pTVar40;
+    } while (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar40);
   }
-  phys_free_list<user_rigid_body>::remove_all(&ppVar51->m_list_user_rigid_body);
+  phys_free_list<user_rigid_body>::remove_all(&ppVar41->m_list_user_rigid_body);
   return;
 }
 
@@ -1477,291 +1479,291 @@ void __cdecl phys_sys::destroy_all_constraint(rigid_body *param_1)
   phys_free_list<rigid_body_constraint_custom_orientation> *ppVar28;
   phys_free_list<rigid_body_constraint_custom_path> *ppVar29;
   phys_free_list<rigid_body_constraint_contact> *ppVar30;
+  T_internal_base *size;
   T_internal_base *pTVar31;
+  T_internal_base *size_00;
   T_internal_base *pTVar32;
+  T_internal_base *size_01;
   T_internal_base *pTVar33;
+  T_internal_base *size_02;
   T_internal_base *pTVar34;
+  T_internal_base *size_03;
   T_internal_base *pTVar35;
+  T_internal_base *size_04;
   T_internal_base *pTVar36;
+  T_internal_base *size_05;
   T_internal_base *pTVar37;
+  T_internal_base *size_06;
   T_internal_base *pTVar38;
+  T_internal_base *size_07;
   T_internal_base *pTVar39;
+  T_internal_base *size_08;
   T_internal_base *pTVar40;
-  T_internal_base *pTVar41;
-  T_internal_base *pTVar42;
-  T_internal_base *pTVar43;
-  T_internal_base *pTVar44;
-  T_internal_base *pTVar45;
-  T_internal_base *pTVar46;
-  T_internal_base *pTVar47;
-  T_internal_base *pTVar48;
-  T_internal_base *pTVar49;
-  T_internal_base *pTVar50;
-  physics_system *ppVar51;
+  physics_system *ppVar41;
   
   fixup_wheel_constraints(param_1);
-  pTVar31 = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
+  size = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
   ppVar21 = &g_physics_system->m_list_rbc_point;
-  ppVar51 = g_physics_system;
-  if (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar31) {
+  ppVar41 = g_physics_system;
+  if (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)size) {
     do {
-      if ((((rigid_body *)pTVar31[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar31[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar31[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar31[2].m_next_T_internal != param_1)))) {
-        pTVar32 = pTVar31->m_next_T_internal;
+      if ((((rigid_body *)size[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size[2].m_next_T_internal != param_1)))) {
+        pTVar31 = size->m_next_T_internal;
       }
       else {
-        pTVar32 = pTVar31->m_next_T_internal;
-        if (pTVar31 != (T_internal_base *)0xfffffff0) {
+        pTVar31 = size->m_next_T_internal;
+        if (size != (T_internal_base *)0xfffffff0) {
           ppVar21->m_list_count = ppVar21->m_list_count + -1;
-          pTVar1 = pTVar31->m_next_T_internal;
-          pTVar2 = pTVar31->m_prev_T_internal;
+          pTVar1 = size->m_next_T_internal;
+          pTVar2 = size->m_prev_T_internal;
           pTVar2->m_next_T_internal = pTVar1;
           pTVar1->m_prev_T_internal = pTVar2;
-          PMM_FREE(pTVar31,0x60,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size,0x60,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar21 = &ppVar51->m_list_rbc_point;
-      pTVar31 = pTVar32;
-    } while (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar32);
+      ppVar21 = &ppVar41->m_list_rbc_point;
+      size = pTVar31;
+    } while (ppVar21 != (phys_free_list<rigid_body_constraint_point> *)pTVar31);
   }
-  pTVar33 = (ppVar51->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
-  ppVar22 = &ppVar51->m_list_rbc_hinge;
-  if (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar33) {
+  size_00 = (ppVar41->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
+  ppVar22 = &ppVar41->m_list_rbc_hinge;
+  if (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)size_00) {
     do {
-      if ((((rigid_body *)pTVar33[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar33[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar33[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar33[2].m_next_T_internal != param_1)))) {
-        pTVar34 = pTVar33->m_next_T_internal;
+      if ((((rigid_body *)size_00[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_00[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_00[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_00[2].m_next_T_internal != param_1)))) {
+        pTVar32 = size_00->m_next_T_internal;
       }
       else {
-        pTVar34 = pTVar33->m_next_T_internal;
-        if (pTVar33 != (T_internal_base *)0xfffffff0) {
+        pTVar32 = size_00->m_next_T_internal;
+        if (size_00 != (T_internal_base *)0xfffffff0) {
           ppVar22->m_list_count = ppVar22->m_list_count + -1;
-          pTVar3 = pTVar33->m_next_T_internal;
-          pTVar4 = pTVar33->m_prev_T_internal;
+          pTVar3 = size_00->m_next_T_internal;
+          pTVar4 = size_00->m_prev_T_internal;
           pTVar4->m_next_T_internal = pTVar3;
           pTVar3->m_prev_T_internal = pTVar4;
-          PMM_FREE(pTVar33,0xe0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_00,0xe0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar22 = &ppVar51->m_list_rbc_hinge;
-      pTVar33 = pTVar34;
-    } while (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar34);
+      ppVar22 = &ppVar41->m_list_rbc_hinge;
+      size_00 = pTVar32;
+    } while (ppVar22 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar32);
   }
-  pTVar35 = (ppVar51->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
-  ppVar23 = &ppVar51->m_list_rbc_dist;
-  if (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar35) {
+  size_01 = (ppVar41->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
+  ppVar23 = &ppVar41->m_list_rbc_dist;
+  if (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)size_01) {
     do {
-      if ((((rigid_body *)pTVar35[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar35[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar35[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar35[2].m_next_T_internal != param_1)))) {
-        pTVar36 = pTVar35->m_next_T_internal;
+      if ((((rigid_body *)size_01[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_01[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_01[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_01[2].m_next_T_internal != param_1)))) {
+        pTVar33 = size_01->m_next_T_internal;
       }
       else {
-        pTVar36 = pTVar35->m_next_T_internal;
-        if (pTVar35 != (T_internal_base *)0xfffffff0) {
+        pTVar33 = size_01->m_next_T_internal;
+        if (size_01 != (T_internal_base *)0xfffffff0) {
           ppVar23->m_list_count = ppVar23->m_list_count + -1;
-          pTVar5 = pTVar35->m_next_T_internal;
-          pTVar6 = pTVar35->m_prev_T_internal;
+          pTVar5 = size_01->m_next_T_internal;
+          pTVar6 = size_01->m_prev_T_internal;
           pTVar6->m_next_T_internal = pTVar5;
           pTVar5->m_prev_T_internal = pTVar6;
-          PMM_FREE(pTVar35,0x70,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_01,0x70,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar23 = &ppVar51->m_list_rbc_dist;
-      pTVar35 = pTVar36;
-    } while (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar36);
+      ppVar23 = &ppVar41->m_list_rbc_dist;
+      size_01 = pTVar33;
+    } while (ppVar23 != (phys_free_list<rigid_body_constraint_distance> *)pTVar33);
   }
-  pTVar37 = (ppVar51->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
-  ppVar24 = &ppVar51->m_list_rbc_ragdoll;
-  if (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar37) {
+  size_02 = (ppVar41->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
+  ppVar24 = &ppVar41->m_list_rbc_ragdoll;
+  if (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)size_02) {
     do {
-      if ((((rigid_body *)pTVar37[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar37[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar37[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar37[2].m_next_T_internal != param_1)))) {
-        pTVar38 = pTVar37->m_next_T_internal;
+      if ((((rigid_body *)size_02[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_02[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_02[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_02[2].m_next_T_internal != param_1)))) {
+        pTVar34 = size_02->m_next_T_internal;
       }
       else {
-        pTVar38 = pTVar37->m_next_T_internal;
-        if (pTVar37 != (T_internal_base *)0xfffffff0) {
+        pTVar34 = size_02->m_next_T_internal;
+        if (size_02 != (T_internal_base *)0xfffffff0) {
           ppVar24->m_list_count = ppVar24->m_list_count + -1;
-          pTVar7 = pTVar37->m_next_T_internal;
-          pTVar8 = pTVar37->m_prev_T_internal;
+          pTVar7 = size_02->m_next_T_internal;
+          pTVar8 = size_02->m_prev_T_internal;
           pTVar8->m_next_T_internal = pTVar7;
           pTVar7->m_prev_T_internal = pTVar8;
-          PMM_FREE(pTVar37,0x130,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_02,0x130,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar24 = &ppVar51->m_list_rbc_ragdoll;
-      pTVar37 = pTVar38;
-    } while (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar38);
+      ppVar24 = &ppVar41->m_list_rbc_ragdoll;
+      size_02 = pTVar34;
+    } while (ppVar24 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar34);
   }
-  pTVar39 = (ppVar51->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
-  ppVar25 = &ppVar51->m_list_rbc_wheel;
-  if (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar39) {
+  size_03 = (ppVar41->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
+  ppVar25 = &ppVar41->m_list_rbc_wheel;
+  if (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)size_03) {
     do {
-      if ((((rigid_body *)pTVar39[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar39[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar39[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar39[2].m_next_T_internal != param_1)))) {
-        pTVar40 = pTVar39->m_next_T_internal;
+      if ((((rigid_body *)size_03[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_03[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_03[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_03[2].m_next_T_internal != param_1)))) {
+        pTVar35 = size_03->m_next_T_internal;
       }
       else {
-        pTVar40 = pTVar39->m_next_T_internal;
-        if (pTVar39 != (T_internal_base *)0xfffffff0) {
+        pTVar35 = size_03->m_next_T_internal;
+        if (size_03 != (T_internal_base *)0xfffffff0) {
           ppVar25->m_list_count = ppVar25->m_list_count + -1;
-          pTVar9 = pTVar39->m_next_T_internal;
-          pTVar10 = pTVar39->m_prev_T_internal;
+          pTVar9 = size_03->m_next_T_internal;
+          pTVar10 = size_03->m_prev_T_internal;
           pTVar10->m_next_T_internal = pTVar9;
           pTVar9->m_prev_T_internal = pTVar10;
-          PMM_FREE(pTVar39,0xe0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_03,0xe0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar25 = &ppVar51->m_list_rbc_wheel;
-      pTVar39 = pTVar40;
-    } while (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar40);
+      ppVar25 = &ppVar41->m_list_rbc_wheel;
+      size_03 = pTVar35;
+    } while (ppVar25 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar35);
   }
-  pTVar41 = (ppVar51->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
-  ppVar26 = &ppVar51->m_list_rbc_angular_actuator;
-  if (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar41) {
+  size_04 = (ppVar41->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
+  ppVar26 = &ppVar41->m_list_rbc_angular_actuator;
+  if (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)size_04) {
     do {
-      if ((((rigid_body *)pTVar41[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar41[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar41[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar41[2].m_next_T_internal != param_1)))) {
-        pTVar42 = pTVar41->m_next_T_internal;
+      if ((((rigid_body *)size_04[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_04[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_04[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_04[2].m_next_T_internal != param_1)))) {
+        pTVar36 = size_04->m_next_T_internal;
       }
       else {
-        pTVar42 = pTVar41->m_next_T_internal;
-        if (pTVar41 != (T_internal_base *)0xfffffff0) {
+        pTVar36 = size_04->m_next_T_internal;
+        if (size_04 != (T_internal_base *)0xfffffff0) {
           ppVar26->m_list_count = ppVar26->m_list_count + -1;
-          pTVar11 = pTVar41->m_next_T_internal;
-          pTVar12 = pTVar41->m_prev_T_internal;
+          pTVar11 = size_04->m_next_T_internal;
+          pTVar12 = size_04->m_prev_T_internal;
           pTVar12->m_next_T_internal = pTVar11;
           pTVar11->m_prev_T_internal = pTVar12;
-          PMM_FREE(pTVar41,0xd0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_04,0xd0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar26 = &ppVar51->m_list_rbc_angular_actuator;
-      pTVar41 = pTVar42;
-    } while (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar42);
+      ppVar26 = &ppVar41->m_list_rbc_angular_actuator;
+      size_04 = pTVar36;
+    } while (ppVar26 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar36);
   }
-  pTVar43 = (ppVar51->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
-  ppVar27 = &ppVar51->m_list_rbc_upright;
-  if (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar43) {
+  size_05 = (ppVar41->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
+  ppVar27 = &ppVar41->m_list_rbc_upright;
+  if (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)size_05) {
     do {
-      if ((((rigid_body *)pTVar43[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar43[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar43[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar43[2].m_next_T_internal != param_1)))) {
-        pTVar44 = pTVar43->m_next_T_internal;
+      if ((((rigid_body *)size_05[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_05[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_05[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_05[2].m_next_T_internal != param_1)))) {
+        pTVar37 = size_05->m_next_T_internal;
       }
       else {
-        pTVar44 = pTVar43->m_next_T_internal;
-        if (pTVar43 != (T_internal_base *)0xfffffff0) {
+        pTVar37 = size_05->m_next_T_internal;
+        if (size_05 != (T_internal_base *)0xfffffff0) {
           ppVar27->m_list_count = ppVar27->m_list_count + -1;
-          pTVar13 = pTVar43->m_next_T_internal;
-          pTVar14 = pTVar43->m_prev_T_internal;
+          pTVar13 = size_05->m_next_T_internal;
+          pTVar14 = size_05->m_prev_T_internal;
           pTVar14->m_next_T_internal = pTVar13;
           pTVar13->m_prev_T_internal = pTVar14;
-          PMM_FREE(pTVar43,0xc0,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_05,0xc0,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar27 = &ppVar51->m_list_rbc_upright;
-      pTVar43 = pTVar44;
-    } while (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar44);
+      ppVar27 = &ppVar41->m_list_rbc_upright;
+      size_05 = pTVar37;
+    } while (ppVar27 != (phys_free_list<rigid_body_constraint_upright> *)pTVar37);
   }
-  pTVar45 = (ppVar51->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
-  ppVar28 = &ppVar51->m_list_rbc_custom_orientation;
-  if (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar45) {
+  size_06 = (ppVar41->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
+  ppVar28 = &ppVar41->m_list_rbc_custom_orientation;
+  if (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)size_06) {
     do {
-      if ((((rigid_body *)pTVar45[1].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar45[1].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar45[1].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar45[1].m_next_T_internal != param_1)))) {
-        pTVar46 = pTVar45->m_next_T_internal;
+      if ((((rigid_body *)size_06[1].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_06[1].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_06[1].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_06[1].m_next_T_internal != param_1)))) {
+        pTVar38 = size_06->m_next_T_internal;
       }
       else {
-        pTVar46 = pTVar45->m_next_T_internal;
-        if (pTVar45 != (T_internal_base *)0xfffffff8) {
+        pTVar38 = size_06->m_next_T_internal;
+        if (size_06 != (T_internal_base *)0xfffffff8) {
           ppVar28->m_list_count = ppVar28->m_list_count + -1;
-          pTVar15 = pTVar45->m_next_T_internal;
-          pTVar16 = pTVar45->m_prev_T_internal;
+          pTVar15 = size_06->m_next_T_internal;
+          pTVar16 = size_06->m_prev_T_internal;
           pTVar16->m_next_T_internal = pTVar15;
           pTVar15->m_prev_T_internal = pTVar16;
-          PMM_FREE(pTVar45,0x38,4);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_06,0x38,4);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar28 = &ppVar51->m_list_rbc_custom_orientation;
-      pTVar45 = pTVar46;
-    } while (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar46);
+      ppVar28 = &ppVar41->m_list_rbc_custom_orientation;
+      size_06 = pTVar38;
+    } while (ppVar28 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar38);
   }
-  pTVar47 = (ppVar51->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
-  ppVar29 = &ppVar51->m_list_rbc_custom_path;
-  if (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar47) {
+  size_07 = (ppVar41->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
+  ppVar29 = &ppVar41->m_list_rbc_custom_path;
+  if (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)size_07) {
     do {
-      if ((((rigid_body *)pTVar47[2].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar47[2].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar47[2].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar47[2].m_next_T_internal != param_1)))) {
-        pTVar48 = pTVar47->m_next_T_internal;
+      if ((((rigid_body *)size_07[2].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_07[2].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_07[2].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_07[2].m_next_T_internal != param_1)))) {
+        pTVar39 = size_07->m_next_T_internal;
       }
       else {
-        pTVar48 = pTVar47->m_next_T_internal;
-        if (pTVar47 != (T_internal_base *)0xfffffff0) {
+        pTVar39 = size_07->m_next_T_internal;
+        if (size_07 != (T_internal_base *)0xfffffff0) {
           ppVar29->m_list_count = ppVar29->m_list_count + -1;
-          pTVar17 = pTVar47->m_next_T_internal;
-          pTVar18 = pTVar47->m_prev_T_internal;
+          pTVar17 = size_07->m_next_T_internal;
+          pTVar18 = size_07->m_prev_T_internal;
           pTVar18->m_next_T_internal = pTVar17;
           pTVar17->m_prev_T_internal = pTVar18;
-          PMM_FREE(pTVar47,0x90,0x10);
-          ppVar51 = g_physics_system;
+          PMM_FREE(size_07,0x90,0x10);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar29 = &ppVar51->m_list_rbc_custom_path;
-      pTVar47 = pTVar48;
-    } while (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar48);
+      ppVar29 = &ppVar41->m_list_rbc_custom_path;
+      size_07 = pTVar39;
+    } while (ppVar29 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar39);
   }
-  pTVar49 = (ppVar51->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
-  ppVar30 = &ppVar51->m_list_rbc_contact;
-  if (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar49) {
+  size_08 = (ppVar41->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
+  ppVar30 = &ppVar41->m_list_rbc_contact;
+  if (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)size_08) {
     do {
-      if ((((rigid_body *)pTVar49[1].m_prev_T_internal == (rigid_body *)0x0) ||
-          ((rigid_body *)pTVar49[1].m_prev_T_internal != param_1)) &&
-         (((rigid_body *)pTVar49[1].m_next_T_internal == (rigid_body *)0x0 ||
-          ((rigid_body *)pTVar49[1].m_next_T_internal != param_1)))) {
-        pTVar50 = pTVar49->m_next_T_internal;
+      if ((((rigid_body *)size_08[1].m_prev_T_internal == (rigid_body *)0x0) ||
+          ((rigid_body *)size_08[1].m_prev_T_internal != param_1)) &&
+         (((rigid_body *)size_08[1].m_next_T_internal == (rigid_body *)0x0 ||
+          ((rigid_body *)size_08[1].m_next_T_internal != param_1)))) {
+        pTVar40 = size_08->m_next_T_internal;
       }
       else {
-        pTVar50 = pTVar49->m_next_T_internal;
-        if (pTVar49 != (T_internal_base *)0xfffffff8) {
+        pTVar40 = size_08->m_next_T_internal;
+        if (size_08 != (T_internal_base *)0xfffffff8) {
           ppVar30->m_list_count = ppVar30->m_list_count + -1;
-          pTVar19 = pTVar49->m_prev_T_internal;
-          pTVar20 = pTVar49->m_next_T_internal;
+          pTVar19 = size_08->m_prev_T_internal;
+          pTVar20 = size_08->m_next_T_internal;
           pTVar19->m_next_T_internal = pTVar20;
           pTVar20->m_prev_T_internal = pTVar19;
           rigid_body_constraint_contact::~rigid_body_constraint_contact
-                    ((rigid_body_constraint_contact *)(pTVar49 + 1));
-          PMM_FREE(pTVar49,0x34,4);
-          ppVar51 = g_physics_system;
+                    ((rigid_body_constraint_contact *)(size_08 + 1));
+          PMM_FREE(size_08,0x34,4);
+          ppVar41 = g_physics_system;
         }
       }
-      ppVar30 = &ppVar51->m_list_rbc_contact;
-      pTVar49 = pTVar50;
-    } while (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar50);
+      ppVar30 = &ppVar41->m_list_rbc_contact;
+      size_08 = pTVar40;
+    } while (ppVar30 != (phys_free_list<rigid_body_constraint_contact> *)pTVar40);
   }
   return;
 }
@@ -1804,301 +1806,301 @@ void __cdecl phys_sys::destroy_all_constraint_with_user_rigid_body(rigid_body *p
   phys_free_list<rigid_body_constraint_custom_orientation> *ppVar30;
   phys_free_list<rigid_body_constraint_custom_path> *ppVar31;
   phys_free_list<rigid_body_constraint_contact> *ppVar32;
+  T_internal_base *size;
   T_internal_base *pTVar33;
+  T_internal_base *size_00;
   T_internal_base *pTVar34;
+  T_internal_base *size_01;
   T_internal_base *pTVar35;
+  T_internal_base *size_02;
   T_internal_base *pTVar36;
+  T_internal_base *size_03;
   T_internal_base *pTVar37;
+  T_internal_base *size_04;
   T_internal_base *pTVar38;
+  T_internal_base *size_05;
   T_internal_base *pTVar39;
+  T_internal_base *size_06;
   T_internal_base *pTVar40;
+  T_internal_base *size_07;
   T_internal_base *pTVar41;
+  T_internal_base *size_08;
   T_internal_base *pTVar42;
-  T_internal_base *pTVar43;
-  T_internal_base *pTVar44;
-  T_internal_base *pTVar45;
-  T_internal_base *pTVar46;
-  T_internal_base *pTVar47;
-  T_internal_base *pTVar48;
-  T_internal_base *pTVar49;
-  T_internal_base *pTVar50;
-  T_internal_base *pTVar51;
-  T_internal_base *pTVar52;
-  physics_system *ppVar53;
+  physics_system *ppVar43;
   
   fixup_wheel_constraints(param_1);
-  pTVar33 = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
+  size = (g_physics_system->m_list_rbc_point).m_dummy_head.m_next_T_internal;
   ppVar23 = &g_physics_system->m_list_rbc_point;
-  ppVar53 = g_physics_system;
-  if (ppVar23 != (phys_free_list<rigid_body_constraint_point> *)pTVar33) {
+  ppVar43 = g_physics_system;
+  if (ppVar23 != (phys_free_list<rigid_body_constraint_point> *)size) {
     do {
-      prVar1 = (rigid_body *)pTVar33[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar33[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar34 = pTVar33->m_next_T_internal;
+        pTVar33 = size->m_next_T_internal;
       }
       else {
-        pTVar34 = pTVar33->m_next_T_internal;
-        if (pTVar33 != (T_internal_base *)0xfffffff0) {
+        pTVar33 = size->m_next_T_internal;
+        if (size != (T_internal_base *)0xfffffff0) {
           ppVar23->m_list_count = ppVar23->m_list_count + -1;
-          pTVar3 = pTVar33->m_next_T_internal;
-          pTVar4 = pTVar33->m_prev_T_internal;
+          pTVar3 = size->m_next_T_internal;
+          pTVar4 = size->m_prev_T_internal;
           pTVar4->m_next_T_internal = pTVar3;
           pTVar3->m_prev_T_internal = pTVar4;
-          PMM_FREE(pTVar33,0x60,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size,0x60,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar23 = &ppVar53->m_list_rbc_point;
-      pTVar33 = pTVar34;
-    } while (ppVar23 != (phys_free_list<rigid_body_constraint_point> *)pTVar34);
+      ppVar23 = &ppVar43->m_list_rbc_point;
+      size = pTVar33;
+    } while (ppVar23 != (phys_free_list<rigid_body_constraint_point> *)pTVar33);
   }
-  pTVar35 = (ppVar53->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
-  ppVar24 = &ppVar53->m_list_rbc_hinge;
-  if (ppVar24 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar35) {
+  size_00 = (ppVar43->m_list_rbc_hinge).m_dummy_head.m_next_T_internal;
+  ppVar24 = &ppVar43->m_list_rbc_hinge;
+  if (ppVar24 != (phys_free_list<rigid_body_constraint_hinge> *)size_00) {
     do {
-      prVar1 = (rigid_body *)pTVar35[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_00[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar35[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_00[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar36 = pTVar35->m_next_T_internal;
+        pTVar34 = size_00->m_next_T_internal;
       }
       else {
-        pTVar36 = pTVar35->m_next_T_internal;
-        if (pTVar35 != (T_internal_base *)0xfffffff0) {
+        pTVar34 = size_00->m_next_T_internal;
+        if (size_00 != (T_internal_base *)0xfffffff0) {
           ppVar24->m_list_count = ppVar24->m_list_count + -1;
-          pTVar5 = pTVar35->m_next_T_internal;
-          pTVar6 = pTVar35->m_prev_T_internal;
+          pTVar5 = size_00->m_next_T_internal;
+          pTVar6 = size_00->m_prev_T_internal;
           pTVar6->m_next_T_internal = pTVar5;
           pTVar5->m_prev_T_internal = pTVar6;
-          PMM_FREE(pTVar35,0xe0,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_00,0xe0,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar24 = &ppVar53->m_list_rbc_hinge;
-      pTVar35 = pTVar36;
-    } while (ppVar24 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar36);
+      ppVar24 = &ppVar43->m_list_rbc_hinge;
+      size_00 = pTVar34;
+    } while (ppVar24 != (phys_free_list<rigid_body_constraint_hinge> *)pTVar34);
   }
-  pTVar37 = (ppVar53->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
-  ppVar25 = &ppVar53->m_list_rbc_dist;
-  if (ppVar25 != (phys_free_list<rigid_body_constraint_distance> *)pTVar37) {
+  size_01 = (ppVar43->m_list_rbc_dist).m_dummy_head.m_next_T_internal;
+  ppVar25 = &ppVar43->m_list_rbc_dist;
+  if (ppVar25 != (phys_free_list<rigid_body_constraint_distance> *)size_01) {
     do {
-      prVar1 = (rigid_body *)pTVar37[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_01[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar37[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_01[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar38 = pTVar37->m_next_T_internal;
+        pTVar35 = size_01->m_next_T_internal;
       }
       else {
-        pTVar38 = pTVar37->m_next_T_internal;
-        if (pTVar37 != (T_internal_base *)0xfffffff0) {
+        pTVar35 = size_01->m_next_T_internal;
+        if (size_01 != (T_internal_base *)0xfffffff0) {
           ppVar25->m_list_count = ppVar25->m_list_count + -1;
-          pTVar7 = pTVar37->m_next_T_internal;
-          pTVar8 = pTVar37->m_prev_T_internal;
+          pTVar7 = size_01->m_next_T_internal;
+          pTVar8 = size_01->m_prev_T_internal;
           pTVar8->m_next_T_internal = pTVar7;
           pTVar7->m_prev_T_internal = pTVar8;
-          PMM_FREE(pTVar37,0x70,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_01,0x70,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar25 = &ppVar53->m_list_rbc_dist;
-      pTVar37 = pTVar38;
-    } while (ppVar25 != (phys_free_list<rigid_body_constraint_distance> *)pTVar38);
+      ppVar25 = &ppVar43->m_list_rbc_dist;
+      size_01 = pTVar35;
+    } while (ppVar25 != (phys_free_list<rigid_body_constraint_distance> *)pTVar35);
   }
-  pTVar39 = (ppVar53->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
-  ppVar26 = &ppVar53->m_list_rbc_ragdoll;
-  if (ppVar26 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar39) {
+  size_02 = (ppVar43->m_list_rbc_ragdoll).m_dummy_head.m_next_T_internal;
+  ppVar26 = &ppVar43->m_list_rbc_ragdoll;
+  if (ppVar26 != (phys_free_list<rigid_body_constraint_ragdoll> *)size_02) {
     do {
-      prVar1 = (rigid_body *)pTVar39[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_02[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar39[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_02[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar40 = pTVar39->m_next_T_internal;
+        pTVar36 = size_02->m_next_T_internal;
       }
       else {
-        pTVar40 = pTVar39->m_next_T_internal;
-        if (pTVar39 != (T_internal_base *)0xfffffff0) {
+        pTVar36 = size_02->m_next_T_internal;
+        if (size_02 != (T_internal_base *)0xfffffff0) {
           ppVar26->m_list_count = ppVar26->m_list_count + -1;
-          pTVar9 = pTVar39->m_next_T_internal;
-          pTVar10 = pTVar39->m_prev_T_internal;
+          pTVar9 = size_02->m_next_T_internal;
+          pTVar10 = size_02->m_prev_T_internal;
           pTVar10->m_next_T_internal = pTVar9;
           pTVar9->m_prev_T_internal = pTVar10;
-          PMM_FREE(pTVar39,0x130,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_02,0x130,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar26 = &ppVar53->m_list_rbc_ragdoll;
-      pTVar39 = pTVar40;
-    } while (ppVar26 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar40);
+      ppVar26 = &ppVar43->m_list_rbc_ragdoll;
+      size_02 = pTVar36;
+    } while (ppVar26 != (phys_free_list<rigid_body_constraint_ragdoll> *)pTVar36);
   }
-  pTVar41 = (ppVar53->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
-  ppVar27 = &ppVar53->m_list_rbc_wheel;
-  if (ppVar27 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar41) {
+  size_03 = (ppVar43->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
+  ppVar27 = &ppVar43->m_list_rbc_wheel;
+  if (ppVar27 != (phys_free_list<rigid_body_constraint_wheel> *)size_03) {
     do {
-      prVar1 = (rigid_body *)pTVar41[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_03[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar41[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_03[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar42 = pTVar41->m_next_T_internal;
+        pTVar37 = size_03->m_next_T_internal;
       }
       else {
-        pTVar42 = pTVar41->m_next_T_internal;
-        if (pTVar41 != (T_internal_base *)0xfffffff0) {
+        pTVar37 = size_03->m_next_T_internal;
+        if (size_03 != (T_internal_base *)0xfffffff0) {
           ppVar27->m_list_count = ppVar27->m_list_count + -1;
-          pTVar11 = pTVar41->m_next_T_internal;
-          pTVar12 = pTVar41->m_prev_T_internal;
+          pTVar11 = size_03->m_next_T_internal;
+          pTVar12 = size_03->m_prev_T_internal;
           pTVar12->m_next_T_internal = pTVar11;
           pTVar11->m_prev_T_internal = pTVar12;
-          PMM_FREE(pTVar41,0xe0,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_03,0xe0,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar27 = &ppVar53->m_list_rbc_wheel;
-      pTVar41 = pTVar42;
-    } while (ppVar27 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar42);
+      ppVar27 = &ppVar43->m_list_rbc_wheel;
+      size_03 = pTVar37;
+    } while (ppVar27 != (phys_free_list<rigid_body_constraint_wheel> *)pTVar37);
   }
-  pTVar43 = (ppVar53->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
-  ppVar28 = &ppVar53->m_list_rbc_angular_actuator;
-  if (ppVar28 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar43) {
+  size_04 = (ppVar43->m_list_rbc_angular_actuator).m_dummy_head.m_next_T_internal;
+  ppVar28 = &ppVar43->m_list_rbc_angular_actuator;
+  if (ppVar28 != (phys_free_list<rigid_body_constraint_angular_actuator> *)size_04) {
     do {
-      prVar1 = (rigid_body *)pTVar43[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_04[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar43[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_04[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar44 = pTVar43->m_next_T_internal;
+        pTVar38 = size_04->m_next_T_internal;
       }
       else {
-        pTVar44 = pTVar43->m_next_T_internal;
-        if (pTVar43 != (T_internal_base *)0xfffffff0) {
+        pTVar38 = size_04->m_next_T_internal;
+        if (size_04 != (T_internal_base *)0xfffffff0) {
           ppVar28->m_list_count = ppVar28->m_list_count + -1;
-          pTVar13 = pTVar43->m_next_T_internal;
-          pTVar14 = pTVar43->m_prev_T_internal;
+          pTVar13 = size_04->m_next_T_internal;
+          pTVar14 = size_04->m_prev_T_internal;
           pTVar14->m_next_T_internal = pTVar13;
           pTVar13->m_prev_T_internal = pTVar14;
-          PMM_FREE(pTVar43,0xd0,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_04,0xd0,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar28 = &ppVar53->m_list_rbc_angular_actuator;
-      pTVar43 = pTVar44;
-    } while (ppVar28 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar44);
+      ppVar28 = &ppVar43->m_list_rbc_angular_actuator;
+      size_04 = pTVar38;
+    } while (ppVar28 != (phys_free_list<rigid_body_constraint_angular_actuator> *)pTVar38);
   }
-  pTVar45 = (ppVar53->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
-  ppVar29 = &ppVar53->m_list_rbc_upright;
-  if (ppVar29 != (phys_free_list<rigid_body_constraint_upright> *)pTVar45) {
+  size_05 = (ppVar43->m_list_rbc_upright).m_dummy_head.m_next_T_internal;
+  ppVar29 = &ppVar43->m_list_rbc_upright;
+  if (ppVar29 != (phys_free_list<rigid_body_constraint_upright> *)size_05) {
     do {
-      prVar1 = (rigid_body *)pTVar45[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_05[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar45[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_05[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar46 = pTVar45->m_next_T_internal;
+        pTVar39 = size_05->m_next_T_internal;
       }
       else {
-        pTVar46 = pTVar45->m_next_T_internal;
-        if (pTVar45 != (T_internal_base *)0xfffffff0) {
+        pTVar39 = size_05->m_next_T_internal;
+        if (size_05 != (T_internal_base *)0xfffffff0) {
           ppVar29->m_list_count = ppVar29->m_list_count + -1;
-          pTVar15 = pTVar45->m_next_T_internal;
-          pTVar16 = pTVar45->m_prev_T_internal;
+          pTVar15 = size_05->m_next_T_internal;
+          pTVar16 = size_05->m_prev_T_internal;
           pTVar16->m_next_T_internal = pTVar15;
           pTVar15->m_prev_T_internal = pTVar16;
-          PMM_FREE(pTVar45,0xc0,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_05,0xc0,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar29 = &ppVar53->m_list_rbc_upright;
-      pTVar45 = pTVar46;
-    } while (ppVar29 != (phys_free_list<rigid_body_constraint_upright> *)pTVar46);
+      ppVar29 = &ppVar43->m_list_rbc_upright;
+      size_05 = pTVar39;
+    } while (ppVar29 != (phys_free_list<rigid_body_constraint_upright> *)pTVar39);
   }
-  pTVar47 = (ppVar53->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
-  ppVar30 = &ppVar53->m_list_rbc_custom_orientation;
-  if (ppVar30 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar47) {
+  size_06 = (ppVar43->m_list_rbc_custom_orientation).m_dummy_head.m_next_T_internal;
+  ppVar30 = &ppVar43->m_list_rbc_custom_orientation;
+  if (ppVar30 != (phys_free_list<rigid_body_constraint_custom_orientation> *)size_06) {
     do {
-      prVar1 = (rigid_body *)pTVar47[1].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_06[1].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar47[1].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_06[1].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar48 = pTVar47->m_next_T_internal;
+        pTVar40 = size_06->m_next_T_internal;
       }
       else {
-        pTVar48 = pTVar47->m_next_T_internal;
-        if (pTVar47 != (T_internal_base *)0xfffffff8) {
+        pTVar40 = size_06->m_next_T_internal;
+        if (size_06 != (T_internal_base *)0xfffffff8) {
           ppVar30->m_list_count = ppVar30->m_list_count + -1;
-          pTVar17 = pTVar47->m_next_T_internal;
-          pTVar18 = pTVar47->m_prev_T_internal;
+          pTVar17 = size_06->m_next_T_internal;
+          pTVar18 = size_06->m_prev_T_internal;
           pTVar18->m_next_T_internal = pTVar17;
           pTVar17->m_prev_T_internal = pTVar18;
-          PMM_FREE(pTVar47,0x38,4);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_06,0x38,4);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar30 = &ppVar53->m_list_rbc_custom_orientation;
-      pTVar47 = pTVar48;
-    } while (ppVar30 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar48);
+      ppVar30 = &ppVar43->m_list_rbc_custom_orientation;
+      size_06 = pTVar40;
+    } while (ppVar30 != (phys_free_list<rigid_body_constraint_custom_orientation> *)pTVar40);
   }
-  pTVar49 = (ppVar53->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
-  ppVar31 = &ppVar53->m_list_rbc_custom_path;
-  if (ppVar31 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar49) {
+  size_07 = (ppVar43->m_list_rbc_custom_path).m_dummy_head.m_next_T_internal;
+  ppVar31 = &ppVar43->m_list_rbc_custom_path;
+  if (ppVar31 != (phys_free_list<rigid_body_constraint_custom_path> *)size_07) {
     do {
-      prVar1 = (rigid_body *)pTVar49[2].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_07[2].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar49[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_07[2].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar50 = pTVar49->m_next_T_internal;
+        pTVar41 = size_07->m_next_T_internal;
       }
       else {
-        pTVar50 = pTVar49->m_next_T_internal;
-        if (pTVar49 != (T_internal_base *)0xfffffff0) {
+        pTVar41 = size_07->m_next_T_internal;
+        if (size_07 != (T_internal_base *)0xfffffff0) {
           ppVar31->m_list_count = ppVar31->m_list_count + -1;
-          pTVar19 = pTVar49->m_next_T_internal;
-          pTVar20 = pTVar49->m_prev_T_internal;
+          pTVar19 = size_07->m_next_T_internal;
+          pTVar20 = size_07->m_prev_T_internal;
           pTVar20->m_next_T_internal = pTVar19;
           pTVar19->m_prev_T_internal = pTVar20;
-          PMM_FREE(pTVar49,0x90,0x10);
-          ppVar53 = g_physics_system;
+          PMM_FREE(size_07,0x90,0x10);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar31 = &ppVar53->m_list_rbc_custom_path;
-      pTVar49 = pTVar50;
-    } while (ppVar31 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar50);
+      ppVar31 = &ppVar43->m_list_rbc_custom_path;
+      size_07 = pTVar41;
+    } while (ppVar31 != (phys_free_list<rigid_body_constraint_custom_path> *)pTVar41);
   }
-  pTVar51 = (ppVar53->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
-  ppVar32 = &ppVar53->m_list_rbc_contact;
-  if (ppVar32 != (phys_free_list<rigid_body_constraint_contact> *)pTVar51) {
+  size_08 = (ppVar43->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
+  ppVar32 = &ppVar43->m_list_rbc_contact;
+  if (ppVar32 != (phys_free_list<rigid_body_constraint_contact> *)size_08) {
     do {
-      prVar1 = (rigid_body *)pTVar51[1].m_prev_T_internal;
+      prVar1 = (rigid_body *)size_08[1].m_prev_T_internal;
       if (((prVar1 == (rigid_body *)0x0) ||
-          (prVar2 = (rigid_body *)pTVar51[1].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
+          (prVar2 = (rigid_body *)size_08[1].m_next_T_internal, prVar2 == (rigid_body *)0x0)) ||
          (((prVar1 != param_1 || ((prVar2->m_flags & 0x20) == 0)) &&
           ((prVar2 != param_1 || ((prVar1->m_flags & 0x20) == 0)))))) {
-        pTVar52 = pTVar51->m_next_T_internal;
+        pTVar42 = size_08->m_next_T_internal;
       }
       else {
-        pTVar52 = pTVar51->m_next_T_internal;
-        if (pTVar51 != (T_internal_base *)0xfffffff8) {
+        pTVar42 = size_08->m_next_T_internal;
+        if (size_08 != (T_internal_base *)0xfffffff8) {
           ppVar32->m_list_count = ppVar32->m_list_count + -1;
-          pTVar21 = pTVar51->m_prev_T_internal;
-          pTVar22 = pTVar51->m_next_T_internal;
+          pTVar21 = size_08->m_prev_T_internal;
+          pTVar22 = size_08->m_next_T_internal;
           pTVar21->m_next_T_internal = pTVar22;
           pTVar22->m_prev_T_internal = pTVar21;
           rigid_body_constraint_contact::~rigid_body_constraint_contact
-                    ((rigid_body_constraint_contact *)(pTVar51 + 1));
-          PMM_FREE(pTVar51,0x34,4);
-          ppVar53 = g_physics_system;
+                    ((rigid_body_constraint_contact *)(size_08 + 1));
+          PMM_FREE(size_08,0x34,4);
+          ppVar43 = g_physics_system;
         }
       }
-      ppVar32 = &ppVar53->m_list_rbc_contact;
-      pTVar51 = pTVar52;
-    } while (ppVar32 != (phys_free_list<rigid_body_constraint_contact> *)pTVar52);
+      ppVar32 = &ppVar43->m_list_rbc_contact;
+      size_08 = pTVar42;
+    } while (ppVar32 != (phys_free_list<rigid_body_constraint_contact> *)pTVar42);
   }
   return;
 }
@@ -2111,34 +2113,34 @@ void __cdecl phys_sys::destroy_all_unused_user_rigid_body(void)
 {
   T_internal_base *pTVar1;
   T_internal_base *pTVar2;
+  T_internal_base *size;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
-  phys_free_list<user_rigid_body> *ppVar5;
-  physics_system *ppVar6;
+  phys_free_list<user_rigid_body> *ppVar4;
+  physics_system *ppVar5;
   
-  pTVar3 = (g_physics_system->m_list_user_rigid_body).m_dummy_head.m_next_T_internal;
-  ppVar5 = &g_physics_system->m_list_user_rigid_body;
-  ppVar6 = g_physics_system;
-  if (ppVar5 != (phys_free_list<user_rigid_body> *)pTVar3) {
+  size = (g_physics_system->m_list_user_rigid_body).m_dummy_head.m_next_T_internal;
+  ppVar4 = &g_physics_system->m_list_user_rigid_body;
+  ppVar5 = g_physics_system;
+  if (ppVar4 != (phys_free_list<user_rigid_body> *)size) {
     do {
-      if (pTVar3[0x23].m_prev_T_internal == (T_internal_base *)0x0) {
-        pTVar4 = pTVar3->m_next_T_internal;
-        if (pTVar3 != (T_internal_base *)0xfffffff0) {
-          ppVar5->m_list_count = ppVar5->m_list_count + -1;
-          pTVar1 = pTVar3->m_next_T_internal;
-          pTVar2 = pTVar3->m_prev_T_internal;
+      if (size[0x23].m_prev_T_internal == (T_internal_base *)0x0) {
+        pTVar3 = size->m_next_T_internal;
+        if (size != (T_internal_base *)0xfffffff0) {
+          ppVar4->m_list_count = ppVar4->m_list_count + -1;
+          pTVar1 = size->m_next_T_internal;
+          pTVar2 = size->m_prev_T_internal;
           pTVar2->m_next_T_internal = pTVar1;
           pTVar1->m_prev_T_internal = pTVar2;
-          PMM_FREE(pTVar3,0x1c0,0x10);
-          ppVar6 = g_physics_system;
+          PMM_FREE(size,0x1c0,0x10);
+          ppVar5 = g_physics_system;
         }
       }
       else {
-        pTVar4 = pTVar3->m_next_T_internal;
+        pTVar3 = size->m_next_T_internal;
       }
-      ppVar5 = &ppVar6->m_list_user_rigid_body;
-      pTVar3 = pTVar4;
-    } while (ppVar5 != (phys_free_list<user_rigid_body> *)pTVar4);
+      ppVar4 = &ppVar5->m_list_user_rigid_body;
+      size = pTVar3;
+    } while (ppVar4 != (phys_free_list<user_rigid_body> *)pTVar3);
   }
   return;
 }
@@ -2384,6 +2386,8 @@ void __cdecl phys_sys::update_constraint_infos(void)
 void __cdecl phys_sys::set_max_delta_t(float param_1)
 
 {
+  float max_delta_t;
+  
   g_physics_system->m_max_delta_t = param_1;
   return;
 }
@@ -2403,6 +2407,8 @@ float __cdecl phys_sys::get_max_delta_t(void)
 void __cdecl phys_sys::set_v_tol(int param_1)
 
 {
+  int max_v_iters;
+  
   g_physics_system->m_max_vel_iters = param_1;
   return;
 }
@@ -2413,6 +2419,8 @@ void __cdecl phys_sys::set_v_tol(int param_1)
 void __cdecl phys_sys::get_v_tol(int *param_1)
 
 {
+  int *max_v_iters;
+  
   *param_1 = g_physics_system->m_max_vel_iters;
   return;
 }
@@ -2423,6 +2431,8 @@ void __cdecl phys_sys::get_v_tol(int *param_1)
 void __cdecl phys_sys::set_vp_tol(int param_1)
 
 {
+  int max_vp_iters;
+  
   g_physics_system->m_max_vel_pos_iters = param_1;
   return;
 }
@@ -2433,6 +2443,8 @@ void __cdecl phys_sys::set_vp_tol(int param_1)
 void __cdecl phys_sys::get_vp_tol(int *param_1)
 
 {
+  int *max_vp_iters;
+  
   *param_1 = g_physics_system->m_max_vel_pos_iters;
   return;
 }
@@ -2471,6 +2483,8 @@ int __cdecl phys_sys::get_user_rigid_body_alloc_count(void)
 void __cdecl phys_sys::phys_frame_advance(float param_1)
 
 {
+  float delta_t;
+  
   physics_system::frame_advance(g_physics_system,param_1);
   return;
 }
@@ -2511,10 +2525,12 @@ void __cdecl phys_sys::phys_shutdown(void)
 
 rigid_body_constraint_custom_orientation * __thiscall
 phys_free_list<rigid_body_constraint_custom_orientation>::add
-          (phys_free_list<rigid_body_constraint_custom_orientation> *this,int param_1,char *param_2)
+          (phys_free_list<rigid_body_constraint_custom_orientation> *this,int error_msg,
+          char *param_2)
 
 {
   T_internal_base *pTVar1;
+  int no_error;
   
   pTVar1 = PMM_ALLOC(0x38,4);
   if (pTVar1 != (T_internal_base *)0x0) {
@@ -2543,10 +2559,11 @@ phys_free_list<rigid_body_constraint_custom_orientation>::add
 
 rigid_body_constraint_hinge * __thiscall
 phys_free_list<rigid_body_constraint_hinge>::add
-          (phys_free_list<rigid_body_constraint_hinge> *this,int param_1,char *param_2)
+          (phys_free_list<rigid_body_constraint_hinge> *this,int error_msg,char *param_2)
 
 {
   T_internal_base *pTVar1;
+  int no_error;
   
   pTVar1 = PMM_ALLOC(0xe0,0x10);
   if (pTVar1 != (T_internal_base *)0x0) {
@@ -2573,10 +2590,11 @@ phys_free_list<rigid_body_constraint_hinge>::add
 
 rigid_body_constraint_ragdoll * __thiscall
 phys_free_list<rigid_body_constraint_ragdoll>::add
-          (phys_free_list<rigid_body_constraint_ragdoll> *this,int param_1,char *param_2)
+          (phys_free_list<rigid_body_constraint_ragdoll> *this,int error_msg,char *param_2)
 
 {
   T_internal_base *pTVar1;
+  int no_error;
   
   pTVar1 = PMM_ALLOC(0x130,0x10);
   if (pTVar1 != (T_internal_base *)0x0) {
@@ -2609,19 +2627,19 @@ void __thiscall phys_free_list<user_rigid_body>::remove_all(phys_free_list<user_
 
 {
   phys_free_list<user_rigid_body> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<user_rigid_body> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x1c0,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x1c0,0x10);
     ppVar1 = (phys_free_list<user_rigid_body> *)(this->m_dummy_head).m_next_T_internal;
   }
   return;
@@ -2634,19 +2652,19 @@ void __thiscall phys_free_list<rigid_body>::remove_all(phys_free_list<rigid_body
 
 {
   phys_free_list<rigid_body> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x170,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x170,0x10);
     ppVar1 = (phys_free_list<rigid_body> *)(this->m_dummy_head).m_next_T_internal;
   }
   return;
@@ -2661,19 +2679,19 @@ phys_free_list<rigid_body_constraint_point>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_point> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_point> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x60,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x60,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_point> *)(this->m_dummy_head).m_next_T_internal;
   }
   return;
@@ -2688,19 +2706,19 @@ phys_free_list<rigid_body_constraint_hinge>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_hinge> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_hinge> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0xe0,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0xe0,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_hinge> *)(this->m_dummy_head).m_next_T_internal;
   }
   return;
@@ -2715,19 +2733,19 @@ phys_free_list<rigid_body_constraint_distance>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_distance> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_distance> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x70,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x70,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_distance> *)
              (this->m_dummy_head).m_next_T_internal;
   }
@@ -2743,19 +2761,19 @@ phys_free_list<rigid_body_constraint_ragdoll>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_ragdoll> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_ragdoll> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x130,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x130,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_ragdoll> *)(this->m_dummy_head).m_next_T_internal
     ;
   }
@@ -2771,20 +2789,20 @@ phys_free_list<rigid_body_constraint_custom_orientation>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_custom_orientation> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_custom_orientation> *)
            (this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x38,4);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x38,4);
     ppVar1 = (phys_free_list<rigid_body_constraint_custom_orientation> *)
              (this->m_dummy_head).m_next_T_internal;
   }
@@ -2800,20 +2818,20 @@ phys_free_list<rigid_body_constraint_custom_path>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_custom_path> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_custom_path> *)
            (this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0x90,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0x90,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_custom_path> *)
              (this->m_dummy_head).m_next_T_internal;
   }
@@ -2829,20 +2847,20 @@ phys_free_list<rigid_body_constraint_angular_actuator>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_angular_actuator> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_angular_actuator> *)
            (this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0xd0,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0xd0,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_angular_actuator> *)
              (this->m_dummy_head).m_next_T_internal;
   }
@@ -2858,19 +2876,19 @@ phys_free_list<rigid_body_constraint_upright>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_upright> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_upright> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_next_T_internal;
-    pTVar4 = pTVar2->m_prev_T_internal;
-    pTVar4->m_next_T_internal = pTVar3;
-    pTVar3->m_prev_T_internal = pTVar4;
-    PMM_FREE(pTVar2,0xc0,0x10);
+    pTVar2 = size->m_next_T_internal;
+    pTVar3 = size->m_prev_T_internal;
+    pTVar3->m_next_T_internal = pTVar2;
+    pTVar2->m_prev_T_internal = pTVar3;
+    PMM_FREE(size,0xc0,0x10);
     ppVar1 = (phys_free_list<rigid_body_constraint_upright> *)(this->m_dummy_head).m_next_T_internal
     ;
   }
@@ -2886,21 +2904,21 @@ phys_free_list<rigid_body_constraint_contact>::remove_all
 
 {
   phys_free_list<rigid_body_constraint_contact> *ppVar1;
+  T_internal_base *size;
   T_internal_base *pTVar2;
   T_internal_base *pTVar3;
-  T_internal_base *pTVar4;
   
   ppVar1 = (phys_free_list<rigid_body_constraint_contact> *)(this->m_dummy_head).m_next_T_internal;
   while (ppVar1 != this) {
-    pTVar2 = (this->m_dummy_head).m_next_T_internal;
+    size = (this->m_dummy_head).m_next_T_internal;
     this->m_list_count = this->m_list_count + -1;
-    pTVar3 = pTVar2->m_prev_T_internal;
-    pTVar4 = pTVar2->m_next_T_internal;
-    pTVar3->m_next_T_internal = pTVar4;
-    pTVar4->m_prev_T_internal = pTVar3;
+    pTVar2 = size->m_prev_T_internal;
+    pTVar3 = size->m_next_T_internal;
+    pTVar2->m_next_T_internal = pTVar3;
+    pTVar3->m_prev_T_internal = pTVar2;
     rigid_body_constraint_contact::~rigid_body_constraint_contact
-              ((rigid_body_constraint_contact *)(pTVar2 + 1));
-    PMM_FREE(pTVar2,0x34,4);
+              ((rigid_body_constraint_contact *)(size + 1));
+    PMM_FREE(size,0x34,4);
     ppVar1 = (phys_free_list<rigid_body_constraint_contact> *)(this->m_dummy_head).m_next_T_internal
     ;
   }

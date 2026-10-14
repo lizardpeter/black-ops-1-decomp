@@ -2,39 +2,41 @@
 
 // 006CDF80  Com_LoadInfoString_LoadObj  (qcommon/com_loadutils.cpp:17)
 
-char * __cdecl Com_LoadInfoString_LoadObj(char *param_1,char *param_2,char *param_3,char *param_4)
+char * __cdecl
+Com_LoadInfoString_LoadObj(char *fileName,char *fileDesc,char *ident,char *loadBuffer)
 
 {
   char cVar1;
   int iVar2;
-  uint uVar3;
+  uint count;
   char *local_14;
-  int local_c;
-  int local_8;
+  int identLen;
+  int fileHandle;
+  int fileLen;
   
-  local_8 = FS_FOpenFileByMode(param_1,&local_c,FS_READ);
-  if (local_8 < 0) {
+  fileLen = FS_FOpenFileByMode(fileName,&fileHandle,FS_READ);
+  if (fileLen < 0) {
     Com_Error(ERR_DROP,"\x15Could not load %s [%s]\n");
   }
-  local_14 = param_3;
+  local_14 = ident;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  uVar3 = (int)local_14 - (int)(param_3 + 1);
-  FS_Read(param_4,uVar3,local_c);
-  param_4[uVar3] = '\0';
-  iVar2 = strncmp(param_4,param_3,uVar3);
+  count = (int)local_14 - (int)(ident + 1);
+  FS_Read(loadBuffer,count,fileHandle);
+  loadBuffer[count] = '\0';
+  iVar2 = strncmp(loadBuffer,ident,count);
   if (iVar2 != 0) {
     Com_Error(ERR_DROP,"\x15File [%s] is not a %s\n");
   }
-  if (0x3fff < (int)(local_8 - uVar3)) {
+  if (0x3fff < (int)(fileLen - count)) {
     Com_Error(ERR_DROP,"\x15File [%s] is too long of a %s to parse\n");
   }
-  FS_Read(param_4,local_8 - uVar3,local_c);
-  param_4[local_8 - uVar3] = '\0';
-  FS_FCloseFile(local_c);
-  return param_4;
+  FS_Read(loadBuffer,fileLen - count,fileHandle);
+  loadBuffer[fileLen - count] = '\0';
+  FS_FCloseFile(fileHandle);
+  return loadBuffer;
 }
 
 
@@ -43,68 +45,72 @@ char * __cdecl Com_LoadInfoString_LoadObj(char *param_1,char *param_2,char *para
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl Com_LoadInfoString_FastFile(char *param_1,char *param_2,char *param_3)
+char * __cdecl Com_LoadInfoString_FastFile(char *fileName,char *fileDesc,char *ident)
 
 {
   char cVar1;
-  char *pcVar2;
-  XAssetHeader XVar3;
-  int iVar4;
+  char *first;
+  XAssetHeader XVar2;
+  int iVar3;
   char *local_18;
+  char *buffer;
+  int identLen;
+  RawFile *rawfile;
   
-  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,param_1,true,-1);
-  if (XVar3.xmodelPieces == (XModelPieces *)0x0) {
+  XVar2 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,fileName,true,-1);
+  if (XVar2.xmodelPieces == (XModelPieces *)0x0) {
     Com_Error(ERR_DROP,"\x15Could not load %s file [%s]\n");
   }
-  pcVar2 = *(char **)&((XVar3.material)->info).pad;
-  local_18 = param_3;
+  first = *(char **)&((XVar2.material)->info).pad;
+  local_18 = ident;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  iVar4 = strncmp(pcVar2,param_3,(int)local_18 - (int)(param_3 + 1));
-  if (iVar4 != 0) {
+  iVar3 = strncmp(first,ident,(int)local_18 - (int)(ident + 1));
+  if (iVar3 != 0) {
     Com_Error(ERR_DROP,"\x15File [%s] is not a %s file\n");
   }
-  return pcVar2 + ((int)local_18 - (int)(param_3 + 1));
+  return first + ((int)local_18 - (int)(ident + 1));
 }
 
 
 // 006CDF00  Com_LoadInfoString  (qcommon/com_loadutils.cpp:70)
 
-char * __cdecl Com_LoadInfoString(char *param_1,char *param_2,char *param_3,char *param_4)
+char * __cdecl Com_LoadInfoString(char *fileName,char *fileDesc,char *ident,char *loadBuffer)
 
 {
   int iVar1;
-  char *local_8;
+  char *buffer;
   
   if ((useFastFile->current).enabled == false) {
-    local_8 = Com_LoadInfoString_LoadObj(param_1,param_2,param_3,param_4);
+    buffer = Com_LoadInfoString_LoadObj(fileName,fileDesc,ident,loadBuffer);
   }
   else {
-    local_8 = Com_LoadInfoString_FastFile(param_1,param_2,param_3);
+    buffer = Com_LoadInfoString_FastFile(fileName,fileDesc,ident);
   }
-  iVar1 = Info_Validate(local_8);
+  iVar1 = Info_Validate(buffer);
   if (iVar1 == 0) {
     Com_Error(ERR_DROP,"\x15File [%s] is not a valid %s\n");
   }
-  return local_8;
+  return buffer;
 }
 
 
 // 006CE180  Com_LoadRawTextFile_LoadObj  (qcommon/com_loadutils.cpp:88)
 
-char * __cdecl Com_LoadRawTextFile_LoadObj(char *param_1)
+char * __cdecl Com_LoadRawTextFile_LoadObj(char *fullpath)
 
 {
   int iVar1;
-  char *local_8;
+  int filesize;
+  char *filebuf;
   
-  iVar1 = FS_ReadFile(param_1,&local_8);
+  iVar1 = FS_ReadFile(fullpath,&filebuf);
   if (iVar1 < 0) {
-    local_8 = (char *)0x0;
+    filebuf = (char *)0x0;
   }
-  return local_8;
+  return filebuf;
 }
 
 
@@ -113,13 +119,14 @@ char * __cdecl Com_LoadRawTextFile_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl Com_LoadRawTextFile_FastFile(char *param_1)
+char * __cdecl Com_LoadRawTextFile_FastFile(char *fullpath)
 
 {
   XAssetHeader XVar1;
   XModelPiece *pXVar2;
+  RawFile *rawfile;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,fullpath,true,-1);
   if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
     pXVar2 = (XModelPiece *)0x0;
   }
@@ -132,7 +139,7 @@ char * __cdecl Com_LoadRawTextFile_FastFile(char *param_1)
 
 // 006CE140  Com_LoadRawTextFile  (qcommon/com_loadutils.cpp:114)
 
-char * __cdecl Com_LoadRawTextFile(char *param_1)
+char * __cdecl Com_LoadRawTextFile(char *fullpath)
 
 {
   char *pcVar1;
@@ -144,18 +151,18 @@ char * __cdecl Com_LoadRawTextFile(char *param_1)
   else {
     local_c = Com_LoadRawTextFile_FastFile;
   }
-  pcVar1 = (char *)(*local_c)(param_1);
+  pcVar1 = (char *)(*local_c)(fullpath);
   return pcVar1;
 }
 
 
 // 006CE1F0  Com_UnloadRawTextFile  (qcommon/com_loadutils.cpp:120)
 
-void __cdecl Com_UnloadRawTextFile(char *param_1)
+void __cdecl Com_UnloadRawTextFile(char *filebuf)
 
 {
   if ((useFastFile->current).enabled == false) {
-    FS_FreeFile(param_1);
+    FS_FreeFile(filebuf);
   }
   return;
 }

@@ -5,14 +5,16 @@
 void __cdecl RB_DrawComposites(void)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *cmds_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *cmds;
   
   PIXBeginNamedEvent(-1,"RB_DrawComposites");
-  pvVar1 = backEndData->compositingCmds;
-  if (pvVar1 == (void *)0x0) {
-    DVar2 = GetCurrentThreadId();
-    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  cmds_00 = backEndData->compositingCmds;
+  if (cmds_00 == (void *)0x0) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -21,10 +23,10 @@ void __cdecl RB_DrawComposites(void)
     R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x18');
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x18');
     R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-    RB_ExecuteRenderCommandsLoop(pvVar1,(int *)0x0);
+    RB_ExecuteRenderCommandsLoop(cmds_00,(int *)0x0);
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-    DVar2 = GetCurrentThreadId();
-    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }

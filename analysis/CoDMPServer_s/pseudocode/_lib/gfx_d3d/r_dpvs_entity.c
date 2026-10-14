@@ -2,6 +2,8 @@
 
 // 0084B210  R_AddEntitySurfacesInFrustumCmd  (gfx_d3d/r_dpvs_entity.cpp:385)
 
+/* WARNING: Variable defined which should be unmapped: boneMatrix */
+
 void __cdecl R_AddEntitySurfacesInFrustumCmd(void *param_1)
 
 {
@@ -11,6 +13,9 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(void *param_1)
   int unaff_EBP;
   DObjAnimMat *unaff_ESI;
   DObj *unaff_EDI;
+  void *data;
+  DObjAnimMat *boneMatrix;
+  DObj *obj;
   GfxSceneEntity *local_4;
   
   pGVar1 = (GfxSceneEntity *)
@@ -51,42 +56,53 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(void *param_1)
 
 // 0084B2F0  R_ForceAddEntitySurfacesInFrustumCmd  (gfx_d3d/r_dpvs_entity.cpp:486)
 
-void __cdecl R_ForceAddEntitySurfacesInFrustumCmd(GfxSceneEntity *param_1,uchar *param_2)
+/* WARNING: Variable defined which should be unmapped: localSceneEnt */
+
+void __cdecl R_ForceAddEntitySurfacesInFrustumCmd(GfxSceneEntity *entVisData,uchar *param_2)
 
 {
-  DObjAnimMat *pDVar1;
-  uint uVar2;
+  int *piVar1;
+  uchar *puVar2;
+  DObjAnimMat *boneMatrix;
+  uint uVar3;
   int unaff_EDI;
-  GfxSceneEntity *local_8;
+  GfxSceneEntity *sceneEnt;
+  GfxSceneEntity *localSceneEnt;
+  DObj *obj;
   GfxSceneEntity *local_4;
   
-  pDVar1 = R_UpdateSceneEntBounds(param_1,&local_4,(DObj **)&DAT_00000001,unaff_EDI);
-  if (pDVar1 == (DObjAnimMat *)0x0) {
-    if (local_8 != (GfxSceneEntity *)0x0) {
+  boneMatrix = R_UpdateSceneEntBounds(entVisData,&local_4,(DObj **)&DAT_00000001,unaff_EDI);
+  if (boneMatrix == (DObjAnimMat *)0x0) {
+    if (obj != (DObj *)0x0) {
       LOCK();
-      if (*(int *)((local_8->info).pose + 8) == 0) {
-        *(int *)((local_8->info).pose + 8) = 1;
+      if (*(int *)(obj->ikState + 8) == 0) {
+        *(int *)(obj->ikState + 8) = 1;
       }
       UNLOCK();
       return;
     }
   }
   else {
-    *(undefined4 *)((local_8->info).pose + 8) = 2;
-    if ((local_8->cull).state < 4) {
+    puVar2 = obj->ikState;
+    piVar1 = (obj->skel).partBits.control + 1;
+    puVar2[8] = '\x02';
+    puVar2[9] = '\0';
+    puVar2[10] = '\0';
+    puVar2[0xb] = '\0';
+    if ((uint)*piVar1 < 4) {
       LOCK();
-      uVar2 = (param_1->cull).state;
-      if (uVar2 == 2) {
-        (param_1->cull).state = 3;
-        uVar2 = 2;
+      uVar3 = (entVisData->cull).state;
+      if (uVar3 == 2) {
+        (entVisData->cull).state = 3;
+        uVar3 = 2;
       }
       UNLOCK();
-      if (uVar2 == 2) {
-        uVar2 = R_SkinSceneDObjModels(local_8,(DObj *)local_4,pDVar1);
-        (local_8->cull).state = uVar2 + 4;
+      if (uVar3 == 2) {
+        uVar3 = R_SkinSceneDObjModels((GfxSceneEntity *)obj,(DObj *)local_4,boneMatrix);
+        *piVar1 = uVar3 + 4;
       }
     }
-    param_2[local_8->entnum] = '\x01';
+    param_2[*(ushort *)((int)obj->hidePartBits + 0x12)] = '\x01';
   }
   return;
 }

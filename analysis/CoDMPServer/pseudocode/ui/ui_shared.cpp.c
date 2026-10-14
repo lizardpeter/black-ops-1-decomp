@@ -2,14 +2,14 @@
 
 // 00761CD0  Menu_GetCursorItem  (ui/ui_utils.h:48)
 
-int __cdecl Menu_GetCursorItem(int param_1,menuDef_t *param_2)
+int __cdecl Menu_GetCursorItem(int contextIndex,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x31,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -19,20 +19,20 @@ int __cdecl Menu_GetCursorItem(int param_1,menuDef_t *param_2)
       return iVar3;
     }
   }
-  return param_2->cursorItem[param_1];
+  return menu->cursorItem[contextIndex];
 }
 
 
 // 007654A0  Item_GetTextRect  (ui/ui_utils.h:55)
 
-rectDef_s * __cdecl Item_GetTextRect(int param_1,itemDef_s *param_2)
+rectDef_s * __cdecl Item_GetTextRect(int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   rectDef_s *prVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x38,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -42,7 +42,7 @@ rectDef_s * __cdecl Item_GetTextRect(int param_1,itemDef_s *param_2)
       return prVar3;
     }
   }
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x39,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -50,11 +50,11 @@ rectDef_s * __cdecl Item_GetTextRect(int param_1,itemDef_s *param_2)
       return prVar3;
     }
   }
-  if ((param_2->typeData).textDef == (textDef_s *)0x0) {
+  if ((item->typeData).textDef == (textDef_s *)0x0) {
     prVar3 = (rectDef_s *)0x0;
   }
   else {
-    prVar3 = ((param_2->typeData).textDef)->textRect + param_1;
+    prVar3 = ((item->typeData).textDef)->textRect + contextIndex;
   }
   return prVar3;
 }
@@ -62,14 +62,14 @@ rectDef_s * __cdecl Item_GetTextRect(int param_1,itemDef_s *param_2)
 
 // 0076B730  Item_GetNonTextRect  (ui/ui_utils.h:67)
 
-rectDef_s * __cdecl Item_GetNonTextRect(int param_1,itemDef_s *param_2)
+rectDef_s * __cdecl Item_GetNonTextRect(int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   rectDef_s *prVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x44,0,
                              "contextIndex doesn\'t index MAX_POSSIBLE_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -79,7 +79,7 @@ rectDef_s * __cdecl Item_GetNonTextRect(int param_1,itemDef_s *param_2)
       return prVar3;
     }
   }
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x45,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -87,7 +87,7 @@ rectDef_s * __cdecl Item_GetNonTextRect(int param_1,itemDef_s *param_2)
       return prVar3;
     }
   }
-  return &(param_2->window).rect;
+  return &(item->window).rect;
 }
 
 
@@ -95,14 +95,14 @@ rectDef_s * __cdecl Item_GetNonTextRect(int param_1,itemDef_s *param_2)
 
 reverse_iterator<char_*> __cdecl
 std::find<std::reverse_iterator<char_*>,char>
-          (reverse_iterator<char_*> param_1,reverse_iterator<char_*> param_2,char *param_3)
+          (reverse_iterator<char_*> param_1,reverse_iterator<char_*> _First,char *_Last)
 
 {
   char *in_stack_00000010;
   reverse_iterator<char_*> local_2c;
   
-  for (local_2c = param_2;
-      (local_2c != (reverse_iterator<char_*>)param_3 &&
+  for (local_2c = _First;
+      (local_2c != (reverse_iterator<char_*>)_Last &&
       (*(char *)((int)local_2c + -1) != *in_stack_00000010));
       local_2c = (reverse_iterator<char_*>)((int)local_2c + -1)) {
   }
@@ -113,14 +113,14 @@ std::find<std::reverse_iterator<char_*>,char>
 
 // 007657B0  Window_IsHorizontal  (ui/ui_utils.h:77)
 
-bool __cdecl Window_IsHorizontal(windowDef_t *param_1)
+bool __cdecl Window_IsHorizontal(windowDef_t *w)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (windowDef_t *)0x0) {
+  if (w == (windowDef_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x4e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -128,132 +128,132 @@ bool __cdecl Window_IsHorizontal(windowDef_t *param_1)
       return (bool)uVar3;
     }
   }
-  return (param_1->staticFlags & 0x200000U) != 0;
+  return (w->staticFlags & 0x200000U) != 0;
 }
 
 
 // 0076A190  Item_GetRectPlacementX  (ui/ui_shared.cpp:226)
 
-float __cdecl Item_GetRectPlacementX(int param_1,float param_2,float param_3,float param_4)
+float __cdecl Item_GetRectPlacementX(int alignX,float x0,float containerWidth,float selfWidth)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 != 0) {
-    if (param_1 == 1) {
-      param_2 = (param_3 - param_4) * 0.5 + param_2;
+  if (alignX != 0) {
+    if (alignX == 1) {
+      x0 = (containerWidth - selfWidth) * 0.5 + x0;
     }
     else {
-      if ((param_1 != 2) &&
+      if ((alignX != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xe7,0,
                                    "alignX == ITEM_ALIGN_RIGHT\n\t%i, %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      param_2 = (param_3 - param_4) + param_2;
+      x0 = (containerWidth - selfWidth) + x0;
     }
   }
-  return param_2;
+  return x0;
 }
 
 
 // 0076BB80  Item_GetTextPlacementX  (ui/ui_shared.cpp:237)
 
-float __cdecl Item_GetTextPlacementX(int param_1,float param_2,float param_3,float param_4)
+float __cdecl Item_GetTextPlacementX(int alignX,float x0,float containerWidth,float selfWidth)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 != 0) {
-    if (param_1 == 1) {
-      param_2 = (param_3 - param_4) * 0.5 + param_2;
+  if (alignX != 0) {
+    if (alignX == 1) {
+      x0 = (containerWidth - selfWidth) * 0.5 + x0;
     }
     else {
-      if ((param_1 != 2) &&
+      if ((alignX != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xf2,0,
                                    "alignX == ITEM_ALIGN_RIGHT\n\t%i, %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      param_2 = (param_3 - param_4) + param_2;
+      x0 = (containerWidth - selfWidth) + x0;
     }
   }
-  return param_2;
+  return x0;
 }
 
 
 // 00772550  Item_GetRectPlacementY  (ui/ui_shared.cpp:248)
 
-float __cdecl Item_GetRectPlacementY(int param_1,float param_2,float param_3,float param_4)
+float __cdecl Item_GetRectPlacementY(int alignY,float y0,float containerHeight,float selfHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 == 0xc) {
-    param_2 = (param_3 - param_4) + param_2;
+  if (alignY == 0xc) {
+    y0 = (containerHeight - selfHeight) + y0;
   }
-  else if (param_1 == 8) {
-    param_2 = (param_3 - param_4) * 0.5 + param_2;
+  else if (alignY == 8) {
+    y0 = (containerHeight - selfHeight) * 0.5 + y0;
   }
-  else if (((param_1 != 4) && (param_1 != 0)) &&
+  else if (((alignY != 4) && (alignY != 0)) &&
           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xfd,0,
                                     "%s\n\t(alignY) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  return param_2;
+  return y0;
 }
 
 
 // 0076BBE0  Item_GetTextPlacementY  (ui/ui_shared.cpp:259)
 
-float __cdecl Item_GetTextPlacementY(int param_1,float param_2,float param_3,float param_4)
+float __cdecl Item_GetTextPlacementY(int alignY,float y0,float containerHeight,float selfHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 != 0) {
-    if (param_1 == 4) {
-      param_2 = param_2 + param_4;
+  if (alignY != 0) {
+    if (alignY == 4) {
+      y0 = y0 + selfHeight;
     }
-    else if (param_1 == 8) {
-      param_2 = (param_3 + param_4) * 0.5 + param_2;
+    else if (alignY == 8) {
+      y0 = (containerHeight + selfHeight) * 0.5 + y0;
     }
     else {
-      if ((param_1 != 0xc) &&
+      if ((alignY != 0xc) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x10a,0,
                                    "%s\n\t(alignY) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      param_2 = param_2 + param_3;
+      y0 = y0 + containerHeight;
     }
   }
-  return param_2;
+  return y0;
 }
 
 
 // 00760440  Item_Show  (ui/ui_shared.cpp:271)
 
-void __cdecl Item_Show(int param_1,itemDef_s *param_2,int param_3)
+void __cdecl Item_Show(int contextIndex,itemDef_s *item,int bShow)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x110,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -261,11 +261,11 @@ void __cdecl Item_Show(int param_1,itemDef_s *param_2,int param_3)
       return;
     }
   }
-  if (param_3 == 0) {
-    Window_RemoveDynamicFlags(param_1,&param_2->window,4);
+  if (bShow == 0) {
+    Window_RemoveDynamicFlags(contextIndex,&item->window,4);
   }
   else {
-    Window_AddDynamicFlags(param_1,&param_2->window,4);
+    Window_AddDynamicFlags(contextIndex,&item->window,4);
   }
   return;
 }
@@ -273,13 +273,13 @@ void __cdecl Item_Show(int param_1,itemDef_s *param_2,int param_3)
 
 // 007605D0  Item_Fade  (ui/ui_shared.cpp:280)
 
-void __cdecl Item_Fade(int param_1,itemDef_s *param_2,int param_3)
+void __cdecl Item_Fade(int contextIndex,itemDef_s *item,int fadeOut)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x119,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -287,13 +287,13 @@ void __cdecl Item_Fade(int param_1,itemDef_s *param_2,int param_3)
       return;
     }
   }
-  if (param_3 == 0) {
-    Window_AddDynamicFlags(param_1,&param_2->window,0x24);
-    Window_RemoveDynamicFlags(param_1,&param_2->window,0x10);
+  if (fadeOut == 0) {
+    Window_AddDynamicFlags(contextIndex,&item->window,0x24);
+    Window_RemoveDynamicFlags(contextIndex,&item->window,0x10);
   }
   else {
-    Window_AddDynamicFlags(param_1,&param_2->window,0x14);
-    Window_RemoveDynamicFlags(param_1,&param_2->window,0x20);
+    Window_AddDynamicFlags(contextIndex,&item->window,0x14);
+    Window_RemoveDynamicFlags(contextIndex,&item->window,0x20);
   }
   return;
 }
@@ -301,16 +301,16 @@ void __cdecl Item_Fade(int param_1,itemDef_s *param_2,int param_3)
 
 // 0075ECD0  Item_SetColor  (ui/ui_shared.cpp:295)
 
-void __cdecl Item_SetColor(int param_1,itemDef_s *param_2,char *param_3,float *param_4)
+void __cdecl Item_SetColor(int contextIndex,itemDef_s *item,char *name,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float *local_8;
+  float *out;
   
-  local_8 = (float *)0x0;
-  if (param_2 == (itemDef_s *)0x0) {
+  out = (float *)0x0;
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x129,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -318,28 +318,28 @@ void __cdecl Item_SetColor(int param_1,itemDef_s *param_2,char *param_3,float *p
       return;
     }
   }
-  iVar3 = I_stricmp(param_3,"backcolor");
+  iVar3 = I_stricmp(name,"backcolor");
   if (iVar3 == 0) {
-    local_8 = (param_2->window).backColor;
+    out = (item->window).backColor;
   }
   else {
-    iVar3 = I_stricmp(param_3,"forecolor");
+    iVar3 = I_stricmp(name,"forecolor");
     if (iVar3 == 0) {
-      local_8 = (param_2->window).foreColor;
-      Window_AddDynamicFlags(param_1,&param_2->window,0x10000);
+      out = (item->window).foreColor;
+      Window_AddDynamicFlags(contextIndex,&item->window,0x10000);
     }
     else {
-      iVar3 = I_stricmp(param_3,"bordercolor");
+      iVar3 = I_stricmp(name,"bordercolor");
       if (iVar3 == 0) {
-        local_8 = (param_2->window).borderColor;
+        out = (item->window).borderColor;
       }
     }
   }
-  if (local_8 != (float *)0x0) {
-    *local_8 = *param_4;
-    local_8[1] = param_4[1];
-    local_8[2] = param_4[2];
-    local_8[3] = param_4[3];
+  if (out != (float *)0x0) {
+    *out = *color;
+    out[1] = color[1];
+    out[2] = color[2];
+    out[3] = color[3];
   }
   return;
 }
@@ -347,35 +347,35 @@ void __cdecl Item_SetColor(int param_1,itemDef_s *param_2,char *param_3,float *p
 
 // 0075D050  Menu_Setup  (ui/ui_shared.cpp:320)
 
-void __cdecl Menu_Setup(UiContext *param_1)
+void __cdecl Menu_Setup(UiContext *dc)
 
 {
-  param_1->menuCount = 0;
-  param_1->openMenuCount = 0;
-  param_1->blurMenuStackIndex = -1;
+  dc->menuCount = 0;
+  dc->openMenuCount = 0;
+  dc->blurMenuStackIndex = -1;
   Item_SetupKeywordHash();
   Menu_SetupKeywordHash();
-  UILocalVar_Init(&param_1->localVars);
+  UILocalVar_Init(&dc->localVars);
   return;
 }
 
 
 // 0075D0A0  LerpColor  (ui/ui_shared.cpp:340)
 
-void __cdecl LerpColor(float *param_1,float *param_2,float *param_3,float param_4)
+void __cdecl LerpColor(float *a,float *b,float *c,float t)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_3[local_8] = (param_2[local_8] - param_1[local_8]) * param_4 + param_1[local_8];
-    if (0.0 < param_3[local_8] || param_3[local_8] == 0.0) {
-      if (1.0 < param_3[local_8]) {
-        param_3[local_8] = 1.0;
+  for (i = 0; i < 4; i = i + 1) {
+    c[i] = (b[i] - a[i]) * t + a[i];
+    if (0.0 < c[i] || c[i] == 0.0) {
+      if (1.0 < c[i]) {
+        c[i] = 1.0;
       }
     }
     else {
-      param_3[local_8] = 0.0;
+      c[i] = 0.0;
     }
   }
   return;
@@ -384,22 +384,22 @@ void __cdecl LerpColor(float *param_1,float *param_2,float *param_3,float param_
 
 // 0075D150  Color_Parse  (ui/ui_shared.cpp:355)
 
-int __cdecl Color_Parse(char **param_1,float (*param_2) [4])
+int __cdecl Color_Parse(char **p,float (*c) [4])
 
 {
   int iVar1;
-  float local_c;
-  int local_8;
+  float f;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < i) {
       return 1;
     }
-    iVar1 = Float_Parse(param_1,&local_c);
+    iVar1 = Float_Parse(p,&f);
     if (iVar1 == 0) break;
-    (*param_2)[local_8] = local_c;
-    local_8 = local_8 + 1;
+    (*c)[i] = f;
+    i = i + 1;
   }
   return 0;
 }
@@ -407,31 +407,33 @@ int __cdecl Color_Parse(char **param_1,float (*param_2) [4])
 
 // 0075D1B0  String_Parse  (ui/ui_shared.cpp:372)
 
-int __cdecl String_Parse(char **param_1,char *param_2,int param_3)
+int __cdecl String_Parse(char **p,char *out,int len)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  char *pcVar5;
+  char *src;
+  int iVar3;
+  char *src_00;
+  char *pszTranslated;
+  char *token;
   
-  pcVar3 = Com_ParseOnLine(param_1);
-  if ((pcVar3 == (char *)0x0) &&
+  src = Com_ParseOnLine(p);
+  if ((src == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x178,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
-    iVar4 = (*pcVar1)();
-    return iVar4;
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if (*param_1 == (char *)0x0) {
-    iVar4 = 0;
+  if (*p == (char *)0x0) {
+    iVar3 = 0;
   }
   else {
-    if (*pcVar3 == '@') {
-      pcVar5 = SEH_StringEd_GetString(pcVar3 + 1);
-      if (pcVar5 != (char *)0x0) {
-        I_strncpyz(param_2,pcVar5,param_3);
+    if (*src == '@') {
+      src_00 = SEH_StringEd_GetString(src + 1);
+      if (src_00 != (char *)0x0) {
+        I_strncpyz(out,src_00,len);
         return 1;
       }
       bVar2 = Dvar_GetBool("loc_warnings");
@@ -445,88 +447,89 @@ int __cdecl String_Parse(char **param_1,char *param_2,int param_3)
         }
       }
     }
-    I_strncpyz(param_2,pcVar3,param_3);
-    iVar4 = 1;
+    I_strncpyz(out,src,len);
+    iVar3 = 1;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 0075D2C0  Command_Parse  (ui/ui_shared.cpp:406)
 
-int __cdecl Command_Parse(char **param_1,char *param_2,int param_3)
+int __cdecl Command_Parse(char **p,char *out,int len)
 
 {
   char *pcVar1;
-  char *local_20;
-  char *local_1c;
-  char *local_18;
-  char *local_10;
-  int local_c;
-  uint local_8;
+  char *firstNonWhitespace;
+  char *firstQuote;
+  char *lastQuote;
+  char *c;
+  char *lastNonWhitespace;
+  int count;
+  int quoteCount;
   
-  local_c = 0;
-  local_8 = 0;
-  local_20 = (char *)0x0;
-  local_1c = (char *)0x0;
-  local_10 = (char *)0x0;
-  local_18 = (char *)0x0;
-  *param_2 = '\0';
+  count = 0;
+  quoteCount = 0;
+  firstNonWhitespace = (char *)0x0;
+  firstQuote = (char *)0x0;
+  lastNonWhitespace = (char *)0x0;
+  lastQuote = (char *)0x0;
+  *out = '\0';
   do {
-    if (**param_1 == '\0') break;
-    if (local_c == param_3) {
+    if (**p == '\0') break;
+    if (count == len) {
       return 0;
     }
-    pcVar1 = *param_1;
-    param_2[local_c] = *pcVar1;
+    pcVar1 = *p;
+    out[count] = *pcVar1;
     if ((*pcVar1 == '\"') && (pcVar1[-1] != '\\')) {
-      local_8 = local_8 + 1;
-      if (local_1c == (char *)0x0) {
-        local_1c = param_2 + local_c;
+      quoteCount = quoteCount + 1;
+      if (firstQuote == (char *)0x0) {
+        firstQuote = out + count;
       }
-      local_18 = param_2 + local_c;
+      lastQuote = out + count;
     }
     if ((*pcVar1 != ' ') && (*pcVar1 != '\t')) {
-      if (local_20 == (char *)0x0) {
-        local_20 = param_2 + local_c;
+      if (firstNonWhitespace == (char *)0x0) {
+        firstNonWhitespace = out + count;
       }
       if (*pcVar1 != ';') {
-        local_10 = param_2 + local_c;
+        lastNonWhitespace = out + count;
       }
     }
-    local_c = local_c + 1;
-    *param_1 = *param_1 + 1;
-  } while ((*pcVar1 != ';') || ((local_8 & 1) != 0));
-  param_2[local_c] = '\0';
-  if (((local_8 == 2) &&
-      (((local_1c != (char *)0x0 && (local_18 != (char *)0x0)) && (local_1c == local_20)))) &&
-     (local_18 == local_10)) {
-    *local_1c = ' ';
-    *local_18 = ' ';
+    count = count + 1;
+    *p = *p + 1;
+  } while ((*pcVar1 != ';') || ((quoteCount & 1U) != 0));
+  out[count] = '\0';
+  if (((quoteCount == 2) &&
+      (((firstQuote != (char *)0x0 && (lastQuote != (char *)0x0)) &&
+       (firstQuote == firstNonWhitespace)))) && (lastQuote == lastNonWhitespace)) {
+    *firstQuote = ' ';
+    *lastQuote = ' ';
   }
-  return (uint)(0 < local_c);
+  return (uint)(0 < count);
 }
 
 
 // 0076BAC0  Fade  (ui/ui_shared.cpp:479)
 
 void __cdecl
-Fade(int *param_1,float *param_2,float param_3,int *param_4,int param_5,int param_6,float param_7,
-    float param_8,UiContext *param_9)
+Fade(int *flags,float *f,float clamp,int *nextTime,int offsetTime,int bFlags,float fadeAmount,
+    float fadeInAmount,UiContext *dc)
 
 {
-  if (((*param_1 & 0x30U) != 0) && (*param_4 < param_9->realTime)) {
-    *param_4 = param_9->realTime + param_5;
-    if ((*param_1 & 0x10U) == 0) {
-      *param_2 = *param_2 + param_8;
-      if ((param_3 <= *param_2) && (*param_2 = param_3, param_6 != 0)) {
-        *param_1 = *param_1 & 0xffffffdf;
+  if (((*flags & 0x30U) != 0) && (*nextTime < dc->realTime)) {
+    *nextTime = dc->realTime + offsetTime;
+    if ((*flags & 0x10U) == 0) {
+      *f = *f + fadeInAmount;
+      if ((clamp <= *f) && (*f = clamp, bFlags != 0)) {
+        *flags = *flags & 0xffffffdf;
       }
     }
     else {
-      *param_2 = *param_2 - param_7;
-      if ((param_6 != 0) && (*param_2 <= 0.0)) {
-        *param_1 = *param_1 & 0xffffffeb;
+      *f = *f - fadeAmount;
+      if ((bFlags != 0) && (*f <= 0.0)) {
+        *flags = *flags & 0xffffffeb;
       }
     }
   }
@@ -537,8 +540,8 @@ Fade(int *param_1,float *param_2,float param_3,int *param_4,int param_5,int para
 // 0076F640  Window_Paint  (ui/ui_shared.cpp:511)
 
 void __cdecl
-Window_Paint(int param_1,UiContext *param_2,windowDef_t *param_3,float param_4,float param_5,
-            float param_6,float param_7,int param_8,itemDef_s *param_9)
+Window_Paint(int localClientNum,UiContext *dc,windowDef_t *w,float fadeAmount,float fadeInAmount,
+            float fadeClamp,float fadeCycle,int itemType,itemDef_s *item)
 
 {
   code *pcVar1;
@@ -552,344 +555,344 @@ Window_Paint(int param_1,UiContext *param_2,windowDef_t *param_3,float param_4,f
   float *local_cc;
   float *local_c8;
   float *local_c4;
-  float local_a4;
+  float r;
   float local_a0;
   float local_9c;
   float local_98;
   int local_94;
   int local_90;
-  listBoxDef_s *local_8c;
-  float local_88;
+  listBoxDef_s *listPtr;
+  float fillRect;
   float local_84;
   float local_80;
   float local_7c;
   int local_78;
   int local_74;
-  float local_70;
+  float lowColor;
   float local_6c;
   float local_68;
   float local_64;
-  float local_60;
+  float lowLight;
   float local_5c;
   float local_58;
   float local_54;
-  ScreenPlacement *local_50;
-  float *local_4c;
-  float local_48;
+  ScreenPlacement *scrPlace;
+  float *foreColor;
+  float borderRect;
   float local_44;
   float local_40;
   float local_3c;
   int local_38;
   int local_34;
-  uchar local_2d;
-  float local_2c;
+  uchar style;
+  float oldColor;
   float local_28;
   float local_24;
   float local_20;
-  int local_1c;
-  rectDef_s *local_18;
-  float local_14 [4];
+  int flags;
+  rectDef_s *origRect;
+  float newColor [4];
   
-  local_18 = Window_GetRect(param_3);
-  local_88 = local_18->x;
-  local_84 = local_18->y;
-  local_80 = local_18->w;
-  local_7c = local_18->h;
-  local_78 = local_18->horzAlign;
-  local_74 = local_18->vertAlign;
-  local_50 = (ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78);
-  local_48 = local_88;
+  origRect = Window_GetRect(w);
+  fillRect = origRect->x;
+  local_84 = origRect->y;
+  local_80 = origRect->w;
+  local_7c = origRect->h;
+  local_78 = origRect->horzAlign;
+  local_74 = origRect->vertAlign;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78);
+  borderRect = fillRect;
   local_44 = local_84;
   local_40 = local_80;
   local_3c = local_7c;
   local_38 = local_78;
   local_34 = local_74;
-  if (param_8 == 4) {
-    local_8c = Item_GetListBoxDef(param_9);
-    if ((local_8c == (listBoxDef_s *)0x0) &&
+  if (itemType == 4) {
+    listPtr = Item_GetListBoxDef(item);
+    if ((listPtr == (listBoxDef_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x215,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_8c->noScrollBars == 0) &&
-       (bVar2 = Item_ListBox_RequiresScroll(param_1,param_2->contextIndex,param_9), !bVar2)) {
+    if ((listPtr->noScrollBars == 0) &&
+       (bVar2 = Item_ListBox_RequiresScroll(localClientNum,dc->contextIndex,item), !bVar2)) {
       local_40 = local_40 - 14.0;
       local_80 = local_80 - 14.0;
     }
   }
   if (g_debugMode != 0) {
-    UI_DrawRect(local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,local_18->vertAlign
-                ,1.0,colorWhite);
+    UI_DrawRect(scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                origRect->vertAlign,1.0,colorWhite);
   }
-  if ((param_3 != (windowDef_t *)0x0) && ((param_3->style != '\0' || (param_3->border != '\0')))) {
-    if ((param_3->border != '\0') && (0.0 < param_3->borderSize)) {
-      local_88 = local_88 + param_3->borderSize;
-      local_84 = local_84 + param_3->borderSize;
-      local_80 = local_80 - (param_3->borderSize + 1.0);
-      local_7c = local_7c - (param_3->borderSize + 1.0);
+  if ((w != (windowDef_t *)0x0) && ((w->style != '\0' || (w->border != '\0')))) {
+    if ((w->border != '\0') && (0.0 < w->borderSize)) {
+      fillRect = fillRect + w->borderSize;
+      local_84 = local_84 + w->borderSize;
+      local_80 = local_80 - (w->borderSize + 1.0);
+      local_7c = local_7c - (w->borderSize + 1.0);
     }
-    local_2d = param_3->style;
-    if (local_2d == '\f') {
-      local_2d = '\x03';
+    style = w->style;
+    if (style == '\f') {
+      style = '\x03';
     }
-    switch(local_2d) {
+    switch(style) {
     case '\x01':
-      if (param_3->background == (Material *)0x0) {
-        if (param_3->rotation == 0.0) {
-          UI_FillRect(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                      local_18->vertAlign,param_3->backColor);
+      if (w->background == (Material *)0x0) {
+        if (w->rotation == 0.0) {
+          UI_FillRect(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                      origRect->vertAlign,w->backColor);
         }
         else {
           UI_DrawHandlePicRotated
-                    (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,param_3->backColor,param_3->rotation,DAT_098b4b78);
+                    (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,w->backColor,w->rotation,DAT_098b4b78);
         }
       }
       else {
-        local_1c = Window_GetDynamicFlags(param_2->contextIndex,param_3);
-        Fade(&local_1c,param_3->backColor + 3,param_6,&param_3->nextTime,(int)param_7,1,param_4,
-             param_5,param_2);
-        Window_SetDynamicFlags(param_2->contextIndex,param_3,local_1c);
-        if (param_3->rotation == 0.0) {
-          UI_DrawHandlePic(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                           local_18->vertAlign,param_3->backColor,param_3->background);
+        flags = Window_GetDynamicFlags(dc->contextIndex,w);
+        Fade(&flags,w->backColor + 3,fadeClamp,&w->nextTime,(int)fadeCycle,1,fadeAmount,fadeInAmount
+             ,dc);
+        Window_SetDynamicFlags(dc->contextIndex,w,flags);
+        if (w->rotation == 0.0) {
+          UI_DrawHandlePic(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                           origRect->vertAlign,w->backColor,w->background);
         }
         else {
           UI_DrawHandlePicRotated
-                    (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,param_3->backColor,param_3->rotation,param_3->background);
+                    (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,w->backColor,w->rotation,w->background);
         }
       }
       break;
     case '\x02':
-      GamerProfile_WriteSettings((int)&local_88);
+      GamerProfile_WriteSettings((int)&fillRect);
       break;
     case '\x03':
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_9->parent->window);
+      uVar3 = Window_GetDynamicFlags(dc->contextIndex,&item->parent->window);
       if ((uVar3 & 0x2000) == 0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
           local_c4 = (float *)0x0;
         }
         else {
-          local_c4 = param_3->foreColor;
+          local_c4 = w->foreColor;
         }
-        local_4c = local_c4;
+        foreColor = local_c4;
       }
       else {
-        local_4c = param_3->foreColor;
+        foreColor = w->foreColor;
       }
-      if (param_8 == 0x11) {
-        local_2c = *local_4c;
-        local_28 = local_4c[1];
-        local_24 = local_4c[2];
-        local_20 = local_4c[3];
-        local_60 = local_2c * 0.8;
+      if (itemType == 0x11) {
+        oldColor = *foreColor;
+        local_28 = foreColor[1];
+        local_24 = foreColor[2];
+        local_20 = foreColor[3];
+        lowLight = oldColor * 0.8;
         local_5c = local_28 * 0.8;
         local_58 = local_24 * 0.8;
         local_54 = local_20 * 0.8;
-        dVar4 = (double)(param_2->realTime / 0x96);
+        dVar4 = (double)(dc->realTime / 0x96);
         __libm_sse2_sin((double)CONCAT44(in_stack_ffffff28,in_stack_ffffff24));
-        LerpColor(&local_2c,&local_60,local_14,(float)dVar4 * 0.5 + 0.5);
-        if (param_3->rotation == 0.0) {
-          UI_DrawHandlePic(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                           local_18->vertAlign,local_14,param_3->background);
+        LerpColor(&oldColor,&lowLight,newColor,(float)dVar4 * 0.5 + 0.5);
+        if (w->rotation == 0.0) {
+          UI_DrawHandlePic(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                           origRect->vertAlign,newColor,w->background);
         }
         else {
           UI_DrawHandlePicRotated
-                    (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,local_14,param_3->rotation,param_3->background);
+                    (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,newColor,w->rotation,w->background);
         }
       }
-      else if (param_3->rotation == 0.0) {
-        UI_DrawHandlePic(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                         local_18->vertAlign,local_4c,param_3->background);
+      else if (w->rotation == 0.0) {
+        UI_DrawHandlePic(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                         origRect->vertAlign,foreColor,w->background);
       }
       else {
         UI_DrawHandlePicRotated
-                  (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                   local_18->vertAlign,local_4c,param_3->rotation,param_3->background);
+                  (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                   origRect->vertAlign,foreColor,w->rotation,w->background);
       }
       break;
     case '\x05':
-      if (param_3->background != (Material *)0x0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+      if (w->background != (Material *)0x0) {
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
           local_d0 = (float *)0x0;
         }
         else {
-          local_d0 = param_3->foreColor;
+          local_d0 = w->foreColor;
         }
-        local_4c = local_d0;
-        if (param_3->rotation == 0.0) {
-          UI_DrawHandlePic(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                           local_18->vertAlign,local_d0,param_3->background);
+        foreColor = local_d0;
+        if (w->rotation == 0.0) {
+          UI_DrawHandlePic(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                           origRect->vertAlign,local_d0,w->background);
         }
         else {
           UI_DrawHandlePicRotated
-                    (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,local_d0,param_3->rotation,param_3->background);
+                    (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,local_d0,w->rotation,w->background);
         }
       }
       break;
     case '\x06':
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+      uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
       if ((uVar3 & 0x10000) == 0) {
         local_c8 = (float *)0x0;
       }
       else {
-        local_c8 = param_3->foreColor;
+        local_c8 = w->foreColor;
       }
-      local_4c = local_c8;
-      UI_DrawLoadBar(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,local_c8,param_3->background);
+      foreColor = local_c8;
+      UI_DrawLoadBar(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,local_c8,w->background);
       break;
     case '\a':
       if (DAT_098dadbc != (Material *)0x0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
           local_cc = (float *)0x0;
         }
         else {
-          local_cc = param_3->foreColor;
+          local_cc = w->foreColor;
         }
-        local_4c = local_cc;
-        UI_DrawHandlePic(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                         local_18->vertAlign,local_cc,DAT_098dadbc);
+        foreColor = local_cc;
+        UI_DrawHandlePic(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                         origRect->vertAlign,local_cc,DAT_098dadbc);
       }
       break;
     case '\b':
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_9->parent->window);
+      uVar3 = Window_GetDynamicFlags(dc->contextIndex,&item->parent->window);
       if ((uVar3 & 0x2000) == 0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
           local_d4 = (float *)0x0;
         }
         else {
-          local_d4 = param_3->foreColor;
+          local_d4 = w->foreColor;
         }
-        local_4c = local_d4;
+        foreColor = local_d4;
       }
       else {
-        local_4c = param_3->foreColor;
+        foreColor = w->foreColor;
       }
-      UI_DrawSpinner(local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                     local_18->vertAlign,local_4c);
+      UI_DrawSpinner(scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                     origRect->vertAlign,foreColor);
       break;
     case '\t':
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_9->parent->window);
+      uVar3 = Window_GetDynamicFlags(dc->contextIndex,&item->parent->window);
       if ((uVar3 & 0x2000) == 0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
-          local_4c = (float *)0x0;
+          foreColor = (float *)0x0;
         }
         else {
-          local_4c = param_3->foreColor;
+          foreColor = w->foreColor;
         }
       }
       else {
-        local_4c = param_3->foreColor;
+        foreColor = w->foreColor;
       }
       UI_DrawSpinnerLoadbar
-                (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                 local_18->vertAlign,local_4c);
+                (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                 origRect->vertAlign,foreColor);
       break;
     case '\n':
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_9->parent->window);
+      uVar3 = Window_GetDynamicFlags(dc->contextIndex,&item->parent->window);
       if ((uVar3 & 0x2000) == 0) {
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,param_3);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,w);
         if ((uVar3 & 0x10000) == 0) {
           in_stack_ffffff24 = (float *)0x0;
-          local_4c = in_stack_ffffff24;
+          foreColor = in_stack_ffffff24;
         }
         else {
-          in_stack_ffffff24 = param_3->foreColor;
-          local_4c = in_stack_ffffff24;
+          in_stack_ffffff24 = w->foreColor;
+          foreColor = in_stack_ffffff24;
         }
       }
       else {
-        local_4c = param_3->foreColor;
+        foreColor = w->foreColor;
       }
-      if (param_8 == 0x11) {
-        local_2c = *local_4c;
-        local_28 = local_4c[1];
-        local_24 = local_4c[2];
-        local_20 = local_4c[3];
-        local_60 = local_2c * 0.8;
+      if (itemType == 0x11) {
+        oldColor = *foreColor;
+        local_28 = foreColor[1];
+        local_24 = foreColor[2];
+        local_20 = foreColor[3];
+        lowLight = oldColor * 0.8;
         local_5c = local_28 * 0.8;
         local_58 = local_24 * 0.8;
         local_54 = local_20 * 0.8;
-        dVar4 = (double)(param_2->realTime / 0x96);
+        dVar4 = (double)(dc->realTime / 0x96);
         __libm_sse2_sin((double)CONCAT44(in_stack_ffffff28,in_stack_ffffff24));
-        LerpColor(&local_2c,&local_60,local_14,(float)dVar4 * 0.5 + 0.5);
+        LerpColor(&oldColor,&lowLight,newColor,(float)dVar4 * 0.5 + 0.5);
         UI_DrawHandlePicFramed
-                  (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                   local_18->vertAlign,param_3->frameSize,param_3->frameTexSize,
-                   (uint)param_3->frameSides,local_14,param_3->background);
+                  (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                   origRect->vertAlign,w->frameSize,w->frameTexSize,(uint)w->frameSides,newColor,
+                   w->background);
       }
       else {
         UI_DrawHandlePicFramed
-                  (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                   local_18->vertAlign,param_3->frameSize,param_3->frameTexSize,
-                   (uint)param_3->frameSides,local_4c,param_3->background);
+                  (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                   origRect->vertAlign,w->frameSize,w->frameTexSize,(uint)w->frameSides,foreColor,
+                   w->background);
       }
       break;
     case '\v':
-      if (param_3->background != (Material *)0x0) {
-        local_1c = Window_GetDynamicFlags(param_2->contextIndex,param_3);
-        Fade(&local_1c,param_3->backColor + 3,param_6,&param_3->nextTime,(int)param_7,1,param_4,
-             param_5,param_2);
-        Window_SetDynamicFlags(param_2->contextIndex,param_3,local_1c);
+      if (w->background != (Material *)0x0) {
+        flags = Window_GetDynamicFlags(dc->contextIndex,w);
+        Fade(&flags,w->backColor + 3,fadeClamp,&w->nextTime,(int)fadeCycle,1,fadeAmount,fadeInAmount
+             ,dc);
+        Window_SetDynamicFlags(dc->contextIndex,w,flags);
         UI_DrawHandlePicFramed
-                  (local_50,local_88,local_84,local_80,local_7c,local_18->horzAlign,
-                   local_18->vertAlign,param_3->frameSize,param_3->frameTexSize,
-                   (uint)param_3->frameSides,param_3->backColor,param_3->background);
+                  (scrPlace,fillRect,local_84,local_80,local_7c,origRect->horzAlign,
+                   origRect->vertAlign,w->frameSize,w->frameTexSize,(uint)w->frameSides,w->backColor
+                   ,w->background);
       }
     }
-    if (param_3->border == '\x01') {
-      UI_DrawRect(local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,
-                  local_18->vertAlign,param_3->borderSize,param_3->borderColor);
+    if (w->border == '\x01') {
+      UI_DrawRect(scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                  origRect->vertAlign,w->borderSize,w->borderColor);
     }
-    else if (param_3->border == '\x02') {
-      UI_DrawTopBottom(local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,
-                       local_18->vertAlign,param_3->borderSize,param_3->borderColor);
+    else if (w->border == '\x02') {
+      UI_DrawTopBottom(scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                       origRect->vertAlign,w->borderSize,w->borderColor);
     }
-    else if (param_3->border == '\x03') {
-      UI_DrawSides(local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,
-                   local_18->vertAlign,param_3->borderSize,param_3->borderColor);
+    else if (w->border == '\x03') {
+      UI_DrawSides(scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                   origRect->vertAlign,w->borderSize,w->borderColor);
     }
-    else if (param_3->border == '\x04') {
-      local_a4 = local_48;
+    else if (w->border == '\x04') {
+      r = borderRect;
       local_a0 = local_44;
       local_9c = local_40;
       local_94 = local_38;
       local_90 = local_34;
-      local_98 = param_3->borderSize;
-      GamerProfile_WriteSettings((int)&local_a4);
+      local_98 = w->borderSize;
+      GamerProfile_WriteSettings((int)&r);
       local_a0 = (local_44 + local_3c) - 1.0;
-      GamerProfile_WriteSettings((int)&local_a4);
+      GamerProfile_WriteSettings((int)&r);
     }
-    else if (param_3->border == '\x05') {
+    else if (w->border == '\x05') {
       local_68 = (ui_borderLowLightScale->current).value;
-      local_70 = local_68 * param_3->borderColor[0];
-      local_6c = local_68 * param_3->borderColor[1];
-      local_68 = local_68 * param_3->borderColor[2];
-      local_64 = param_3->borderColor[3];
+      lowColor = local_68 * w->borderColor[0];
+      local_6c = local_68 * w->borderColor[1];
+      local_68 = local_68 * w->borderColor[2];
+      local_64 = w->borderColor[3];
       UI_DrawHighlightRect
-                (local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,
-                 local_18->vertAlign,param_3->borderSize,param_3->borderColor,&local_70);
+                (scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                 origRect->vertAlign,w->borderSize,w->borderColor,&lowColor);
     }
-    else if (param_3->border == '\x06') {
+    else if (w->border == '\x06') {
       local_68 = (ui_borderLowLightScale->current).value;
-      local_70 = local_68 * param_3->borderColor[0];
-      local_6c = local_68 * param_3->borderColor[1];
-      local_68 = local_68 * param_3->borderColor[2];
-      local_64 = param_3->borderColor[3];
+      lowColor = local_68 * w->borderColor[0];
+      local_6c = local_68 * w->borderColor[1];
+      local_68 = local_68 * w->borderColor[2];
+      local_64 = w->borderColor[3];
       UI_DrawHighlightRect
-                (local_50,local_48,local_44,local_40,local_3c,local_18->horzAlign,
-                 local_18->vertAlign,param_3->borderSize,&local_70,param_3->borderColor);
+                (scrPlace,borderRect,local_44,local_40,local_3c,origRect->horzAlign,
+                 origRect->vertAlign,w->borderSize,&lowColor,w->borderColor);
     }
   }
   return;
@@ -898,14 +901,14 @@ Window_Paint(int param_1,UiContext *param_2,windowDef_t *param_3,float param_4,f
 
 // 0075FBA0  Menu_RunFocusScript  (ui/ui_shared.cpp:774)
 
-void __cdecl Menu_RunFocusScript(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_RunFocusScript(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   itemDef_s local_120;
   
-  if (param_3 == (menuDef_t *)0x0) {
+  if (menu == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x307,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -913,10 +916,10 @@ void __cdecl Menu_RunFocusScript(int param_1,UiContext *param_2,menuDef_t *param
       return;
     }
   }
-  if (param_3->onEvent != (GenericEventHandler *)0x0) {
-    local_120.parent = param_3;
-    local_120.onEvent = param_3->onEvent;
-    Item_RunEventScript(param_1,param_2,&local_120,"onFocus");
+  if (menu->onEvent != (GenericEventHandler *)0x0) {
+    local_120.parent = menu;
+    local_120.onEvent = menu->onEvent;
+    Item_RunEventScript(localClientNum,dc,&local_120,"onFocus");
   }
   return;
 }
@@ -924,14 +927,14 @@ void __cdecl Menu_RunFocusScript(int param_1,UiContext *param_2,menuDef_t *param
 
 // 0075F750  Menu_RunLeaveFocusScript  (ui/ui_shared.cpp:788)
 
-void __cdecl Menu_RunLeaveFocusScript(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_RunLeaveFocusScript(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   itemDef_s local_120;
   
-  if (param_3 == (menuDef_t *)0x0) {
+  if (menu == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x315,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -939,10 +942,10 @@ void __cdecl Menu_RunLeaveFocusScript(int param_1,UiContext *param_2,menuDef_t *
       return;
     }
   }
-  if (param_3->onEvent != (GenericEventHandler *)0x0) {
-    local_120.parent = param_3;
-    local_120.onEvent = param_3->onEvent;
-    Item_RunEventScript(param_1,param_2,&local_120,"leaveFocus");
+  if (menu->onEvent != (GenericEventHandler *)0x0) {
+    local_120.parent = menu;
+    local_120.onEvent = menu->onEvent;
+    Item_RunEventScript(localClientNum,dc,&local_120,"leaveFocus");
   }
   return;
 }
@@ -950,234 +953,239 @@ void __cdecl Menu_RunLeaveFocusScript(int param_1,UiContext *param_2,menuDef_t *
 
 // 0075F7E0  Menu_ClearFocus  (ui/ui_shared.cpp:803)
 
-itemDef_s * __cdecl Menu_ClearFocus(int param_1,UiContext *param_2,menuDef_t *param_3)
+itemDef_s * __cdecl Menu_ClearFocus(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   itemDef_s *piVar3;
   int iVar4;
-  itemDef_s *local_10;
-  int local_8;
+  itemDef_s *ret;
+  focusItemDef_s *focusPtr;
+  int i;
   
-  if (param_3 == (menuDef_t *)0x0) {
-    local_10 = (itemDef_s *)0x0;
+  if (menu == (menuDef_t *)0x0) {
+    ret = (itemDef_s *)0x0;
   }
   else {
-    local_10 = (itemDef_s *)0x0;
-    for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-      bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->items[local_8]->window);
+    ret = (itemDef_s *)0x0;
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      bVar2 = Window_HasFocus(dc->contextIndex,&menu->items[i]->window);
       if (bVar2) {
-        if ((local_10 != (itemDef_s *)0x0) &&
+        if ((ret != (itemDef_s *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x331,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           piVar3 = (itemDef_s *)(*pcVar1)();
           return piVar3;
         }
-        local_10 = param_3->items[local_8];
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->items[local_8]->window,2);
-        iVar4 = Item_IsFocusDefType(param_3->items[local_8]);
+        ret = menu->items[i];
+        Window_RemoveDynamicFlags(dc->contextIndex,&menu->items[i]->window,2);
+        iVar4 = Item_IsFocusDefType(menu->items[i]);
         if (iVar4 != 0) {
-          Item_GetFocusItemDef(param_3->items[local_8]);
-          Item_RunEventScript(param_1,param_2,param_3->items[local_8],"leaveFocus");
+          Item_GetFocusItemDef(menu->items[i]);
+          Item_RunEventScript(localClientNum,dc,menu->items[i],"leaveFocus");
         }
       }
     }
   }
-  return local_10;
+  return ret;
 }
 
 
 // 00767600  Item_LoseFocus  (ui/ui_shared.cpp:836)
 
-itemDef_s * __cdecl Item_LoseFocus(int param_1,UiContext *param_2,itemDef_s *param_3)
+itemDef_s * __cdecl Item_LoseFocus(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   int iVar1;
   
-  Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,2);
-  iVar1 = Item_IsFocusDefType(param_3);
+  Window_RemoveDynamicFlags(dc->contextIndex,&item->window,2);
+  iVar1 = Item_IsFocusDefType(item);
   if (iVar1 != 0) {
-    Item_RunEventScript(param_1,param_2,param_3,"leaveFocus");
+    Item_RunEventScript(localClientNum,dc,item,"leaveFocus");
   }
-  return param_3;
+  return item;
 }
 
 
 // 00767650  Item_IsModal  (ui/ui_shared.cpp:848)
 
-bool __cdecl Item_IsModal(itemDef_s *param_1)
+bool __cdecl Item_IsModal(itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x351,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return (param_1->window).modal != '\0';
+  return (item->window).modal != '\0';
 }
 
 
 // 0075D9F0  Item_SnapRectClientToMouse  (ui/ui_shared.cpp:868)
 
-void __cdecl
-Item_SnapRectClientToMouse(UiContext *param_1,itemDef_s *param_2,float param_3,float param_4)
+void __cdecl Item_SnapRectClientToMouse(UiContext *dc,itemDef_s *item,float x,float y)
 
 {
-  menuDef_t *pmVar1;
-  code *pcVar2;
-  int iVar3;
+  menuDef_t *menu;
+  code *pcVar1;
+  int iVar2;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  bool bVar6;
-  int iVar7;
-  ScreenPlacement *pSVar8;
-  float fVar9;
-  float fVar10;
-  float local_3c;
-  float local_34;
-  itemDef_s *local_2c;
-  int local_20;
-  float local_1c;
+  bool bVar5;
+  int iVar6;
+  ScreenPlacement *scrPlace_00;
+  float fVar7;
+  float fVar8;
+  float compareY;
+  ScreenPlacement *scrPlace;
+  float compareX;
+  float compareH;
+  itemDef_s *sbList;
+  float compareW;
+  menuDef_t *sb;
+  int i;
+  float rect;
   float local_18;
   float local_14;
   float local_10;
   int local_c;
   int local_8;
   
-  if ((param_2 == (itemDef_s *)0x0) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x372,0,"%s"),
-     !bVar6)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((item == (itemDef_s *)0x0) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x372,0,"%s"),
+     !bVar5)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  iVar7 = param_1->contextIndex * 0x78;
-  pSVar8 = (ScreenPlacement *)(&scrPlaceView + iVar7);
-  local_34 = ScrPlace_ApplyX(pSVar8,param_3,4);
-  local_3c = ScrPlace_ApplyY(pSVar8,param_4,4);
-  fVar9 = ScrPlace_ApplyX(pSVar8,(param_2->window).rect.w,4);
-  fVar10 = ScrPlace_ApplyY(pSVar8,(param_2->window).rect.h,4);
-  local_2c = (itemDef_s *)0x0;
-  iVar3 = param_1->openMenuCount;
-  while ((local_20 = iVar3 + -1, -1 < local_20 && (local_2c == (itemDef_s *)0x0))) {
-    pmVar1 = param_1->menuStack[iVar3 + -1].menu;
-    iVar3 = local_20;
-    if (pmVar1 != (menuDef_t *)0x0) {
-      local_2c = Menu_FindItemByName(pmVar1,"browser");
+  iVar6 = dc->contextIndex * 0x78;
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + iVar6);
+  compareX = ScrPlace_ApplyX(scrPlace_00,x,4);
+  compareY = ScrPlace_ApplyY(scrPlace_00,y,4);
+  fVar7 = ScrPlace_ApplyX(scrPlace_00,(item->window).rect.w,4);
+  fVar8 = ScrPlace_ApplyY(scrPlace_00,(item->window).rect.h,4);
+  sbList = (itemDef_s *)0x0;
+  iVar2 = dc->openMenuCount;
+  while ((i = iVar2 + -1, -1 < i && (sbList == (itemDef_s *)0x0))) {
+    menu = dc->menuStack[iVar2 + -1].menu;
+    iVar2 = i;
+    if (menu != (menuDef_t *)0x0) {
+      sbList = Menu_FindItemByName(menu,"browser");
     }
   }
-  if (local_2c == (itemDef_s *)0x0) {
-    fVar9 = *(float *)(&DAT_02d9e6c0 + iVar7) - fVar9;
-    if ((fVar9 <= 0.0) &&
-       (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
-                                 "%s"), !bVar6)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (sbList == (itemDef_s *)0x0) {
+    fVar7 = *(float *)(&DAT_02d9e6c0 + iVar6) - fVar7;
+    if ((fVar7 <= 0.0) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
+                                 "%s"), !bVar5)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (0.0 <= local_34) {
-      if (fVar9 < local_34) {
-        local_34 = fVar9;
+    if (0.0 <= compareX) {
+      if (fVar7 < compareX) {
+        compareX = fVar7;
       }
     }
     else {
-      local_34 = 0.0;
+      compareX = 0.0;
     }
-    fVar10 = *(float *)(&DAT_02d9e6c4 + iVar7) - fVar10;
-    if ((fVar10 <= 0.0) &&
-       (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
-                                 "%s"), !bVar6)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    fVar8 = *(float *)(&DAT_02d9e6c4 + iVar6) - fVar8;
+    if ((fVar8 <= 0.0) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
+                                 "%s"), !bVar5)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (0.0 <= local_3c) {
-      if (fVar10 < local_3c) {
-        local_3c = fVar10;
+    if (0.0 <= compareY) {
+      if (fVar8 < compareY) {
+        compareY = fVar8;
       }
     }
     else {
-      local_3c = 0.0;
+      compareY = 0.0;
     }
   }
   else {
-    local_1c = (local_2c->window).rect.x;
-    local_18 = (local_2c->window).rect.y;
-    local_14 = (local_2c->window).rect.w;
-    local_10 = (local_2c->window).rect.h;
-    local_c = (local_2c->window).rect.horzAlign;
-    local_8 = (local_2c->window).rect.vertAlign;
-    ScrPlace_ApplyRect(pSVar8,&local_1c,&local_18,&local_14,&local_10,local_c,local_8);
-    fVar4 = local_1c;
-    fVar9 = (local_1c + local_14) - fVar9;
-    if ((fVar9 <= local_1c) &&
-       (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
-                                 "%s"), !bVar6)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    rect = (sbList->window).rect.x;
+    local_18 = (sbList->window).rect.y;
+    local_14 = (sbList->window).rect.w;
+    local_10 = (sbList->window).rect.h;
+    local_c = (sbList->window).rect.horzAlign;
+    local_8 = (sbList->window).rect.vertAlign;
+    ScrPlace_ApplyRect(scrPlace_00,&rect,&local_18,&local_14,&local_10,local_c,local_8);
+    fVar3 = rect;
+    fVar7 = (rect + local_14) - fVar7;
+    if ((fVar7 <= rect) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
+                                 "%s"), !bVar5)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    fVar5 = local_18;
-    if (fVar4 <= local_34) {
-      if (fVar9 < local_34) {
-        local_34 = fVar9;
+    fVar4 = local_18;
+    if (fVar3 <= compareX) {
+      if (fVar7 < compareX) {
+        compareX = fVar7;
       }
     }
     else {
-      local_34 = fVar4;
+      compareX = fVar3;
     }
-    fVar10 = (local_18 + local_10) - fVar10;
-    if ((fVar10 <= local_18) &&
-       (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
-                                 "%s"), !bVar6)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    fVar8 = (local_18 + local_10) - fVar8;
+    if ((fVar8 <= local_18) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2da,0,
+                                 "%s"), !bVar5)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (fVar5 <= local_3c) {
-      if (fVar10 < local_3c) {
-        local_3c = fVar10;
+    if (fVar4 <= compareY) {
+      if (fVar8 < compareY) {
+        compareY = fVar8;
       }
     }
     else {
-      local_3c = fVar5;
+      compareY = fVar4;
     }
   }
-  fVar9 = ScrPlace_ApplyXinverse(pSVar8,local_34,(param_2->window).rectClient.horzAlign);
-  (param_2->window).rectClient.x = fVar9;
-  fVar9 = ScrPlace_ApplyYinverse(pSVar8,local_3c,(param_2->window).rectClient.vertAlign);
-  (param_2->window).rectClient.y = fVar9;
-  (param_2->window).rect.x = (param_2->window).rectClient.x;
-  (param_2->window).rect.y = (param_2->window).rectClient.y;
+  fVar7 = ScrPlace_ApplyXinverse(scrPlace_00,compareX,(item->window).rectClient.horzAlign);
+  (item->window).rectClient.x = fVar7;
+  fVar7 = ScrPlace_ApplyYinverse(scrPlace_00,compareY,(item->window).rectClient.vertAlign);
+  (item->window).rectClient.y = fVar7;
+  (item->window).rect.x = (item->window).rectClient.x;
+  (item->window).rect.y = (item->window).rectClient.y;
   return;
 }
 
 
 // 0075D410  Rect_ContainsPoint  (ui/ui_shared.cpp:930)
 
-int __cdecl Rect_ContainsPoint(int param_1,rectDef_s *param_2,float param_3,float param_4)
+int __cdecl Rect_ContainsPoint(int contextIndex,rectDef_s *rect,float x,float y)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_24;
+  float compareY;
+  float compareRect;
   float local_20;
   float local_1c;
   float local_18 [3];
-  ScreenPlacement *local_c;
-  float local_8;
+  ScreenPlacement *scrPlace;
+  float compareX;
   
-  if (param_2 == (rectDef_s *)0x0) {
+  if (rect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x3a8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1185,16 +1193,16 @@ int __cdecl Rect_ContainsPoint(int param_1,rectDef_s *param_2,float param_3,floa
       return iVar3;
     }
   }
-  local_24 = param_2->x;
-  local_20 = param_2->y;
-  local_1c = param_2->w;
-  local_18[0] = param_2->h;
-  local_c = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_8 = ScrPlace_ApplyX(local_c,param_3,4);
-  fVar4 = ScrPlace_ApplyY(local_c,param_4,4);
-  ScrPlace_ApplyRect(local_c,&local_24,&local_20,&local_1c,local_18,param_2->horzAlign,
-                     param_2->vertAlign);
-  if ((((local_8 < local_24) || (local_24 + local_1c < local_8)) || (fVar4 < local_20)) ||
+  compareRect = rect->x;
+  local_20 = rect->y;
+  local_1c = rect->w;
+  local_18[0] = rect->h;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  compareX = ScrPlace_ApplyX(scrPlace,x,4);
+  fVar4 = ScrPlace_ApplyY(scrPlace,y,4);
+  ScrPlace_ApplyRect(scrPlace,&compareRect,&local_20,&local_1c,local_18,rect->horzAlign,
+                     rect->vertAlign);
+  if ((((compareX < compareRect) || (compareRect + local_1c < compareX)) || (fVar4 < local_20)) ||
      (local_20 + local_18[0] < fVar4)) {
     iVar3 = 0;
   }
@@ -1207,106 +1215,106 @@ int __cdecl Rect_ContainsPoint(int param_1,rectDef_s *param_2,float param_3,floa
 
 // 0075EDC0  Menu_ItemsMatchingGroup  (ui/ui_shared.cpp:956)
 
-int __cdecl Menu_ItemsMatchingGroup(menuDef_t *param_1,char *param_2)
+int __cdecl Menu_ItemsMatchingGroup(menuDef_t *menu,char *name)
 
 {
   int extraout_EAX;
   int iVar1;
-  int local_10;
-  int local_c;
-  int local_8;
+  char *pdest;
+  int wildcard;
+  int i;
+  int count;
   
-  local_8 = 0;
-  local_10 = -1;
-  strstr((uchar *)param_2,(uchar *)"*");
+  count = 0;
+  wildcard = -1;
+  strstr((uchar *)name,(uchar *)"*");
   if (extraout_EAX != 0) {
-    local_10 = extraout_EAX - (int)param_2;
+    wildcard = extraout_EAX - (int)name;
   }
-  for (local_c = 0; local_c < param_1->itemCount; local_c = local_c + 1) {
-    if (local_10 == -1) {
-      if ((((param_1->items[local_c]->window).name != (char *)0x0) &&
-          (iVar1 = I_stricmp((param_1->items[local_c]->window).name,param_2), iVar1 == 0)) ||
-         (((param_1->items[local_c]->window).group != (char *)0x0 &&
-          (iVar1 = I_stricmp((param_1->items[local_c]->window).group,param_2), iVar1 == 0)))) {
-        local_8 = local_8 + 1;
+  for (i = 0; i < menu->itemCount; i = i + 1) {
+    if (wildcard == -1) {
+      if ((((menu->items[i]->window).name != (char *)0x0) &&
+          (iVar1 = I_stricmp((menu->items[i]->window).name,name), iVar1 == 0)) ||
+         (((menu->items[i]->window).group != (char *)0x0 &&
+          (iVar1 = I_stricmp((menu->items[i]->window).group,name), iVar1 == 0)))) {
+        count = count + 1;
       }
     }
-    else if ((((param_1->items[local_c]->window).name != (char *)0x0) &&
-             (iVar1 = I_strncmp((param_1->items[local_c]->window).name,param_2,local_10), iVar1 == 0
-             )) || (((param_1->items[local_c]->window).group != (char *)0x0 &&
-                    (iVar1 = I_strncmp((param_1->items[local_c]->window).group,param_2,local_10),
-                    iVar1 == 0)))) {
-      local_8 = local_8 + 1;
+    else if ((((menu->items[i]->window).name != (char *)0x0) &&
+             (iVar1 = I_strncmp((menu->items[i]->window).name,name,wildcard), iVar1 == 0)) ||
+            (((menu->items[i]->window).group != (char *)0x0 &&
+             (iVar1 = I_strncmp((menu->items[i]->window).group,name,wildcard), iVar1 == 0)))) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 0075D520  Menu_GetMatchingItemByNumber  (ui/ui_shared.cpp:989)
 
-itemDef_s * __cdecl Menu_GetMatchingItemByNumber(menuDef_t *param_1,int param_2,char *param_3)
+itemDef_s * __cdecl Menu_GetMatchingItemByNumber(menuDef_t *menu,int index,char *name)
 
 {
   int extraout_EAX;
   int iVar1;
-  int local_10;
-  int local_c;
-  int local_8;
+  char *pdest;
+  int wildcard;
+  int i;
+  int count;
   
-  local_8 = 0;
-  local_10 = -1;
-  strstr((uchar *)param_3,(uchar *)"*");
+  count = 0;
+  wildcard = -1;
+  strstr((uchar *)name,(uchar *)"*");
   if (extraout_EAX != 0) {
-    local_10 = extraout_EAX - (int)param_3;
+    wildcard = extraout_EAX - (int)name;
   }
-  local_c = 0;
+  i = 0;
   do {
-    if (param_1->itemCount <= local_c) {
+    if (menu->itemCount <= i) {
       return (itemDef_s *)0x0;
     }
-    if (local_10 == -1) {
-      if ((((param_1->items[local_c]->window).name != (char *)0x0) &&
-          (iVar1 = I_stricmp((param_1->items[local_c]->window).name,param_3), iVar1 == 0)) ||
-         (((param_1->items[local_c]->window).group != (char *)0x0 &&
-          (iVar1 = I_stricmp((param_1->items[local_c]->window).group,param_3), iVar1 == 0)))) {
-        if (local_8 == param_2) {
-          return param_1->items[local_c];
+    if (wildcard == -1) {
+      if ((((menu->items[i]->window).name != (char *)0x0) &&
+          (iVar1 = I_stricmp((menu->items[i]->window).name,name), iVar1 == 0)) ||
+         (((menu->items[i]->window).group != (char *)0x0 &&
+          (iVar1 = I_stricmp((menu->items[i]->window).group,name), iVar1 == 0)))) {
+        if (count == index) {
+          return menu->items[i];
         }
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
-    else if ((((param_1->items[local_c]->window).name != (char *)0x0) &&
-             (iVar1 = I_strncmp((param_1->items[local_c]->window).name,param_3,local_10), iVar1 == 0
-             )) || (((param_1->items[local_c]->window).group != (char *)0x0 &&
-                    (iVar1 = I_strncmp((param_1->items[local_c]->window).group,param_3,local_10),
-                    iVar1 == 0)))) {
-      if (local_8 == param_2) {
-        return param_1->items[local_c];
+    else if ((((menu->items[i]->window).name != (char *)0x0) &&
+             (iVar1 = I_strncmp((menu->items[i]->window).name,name,wildcard), iVar1 == 0)) ||
+            (((menu->items[i]->window).group != (char *)0x0 &&
+             (iVar1 = I_strncmp((menu->items[i]->window).group,name,wildcard), iVar1 == 0)))) {
+      if (count == index) {
+        return menu->items[i];
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00769230  Menu_GetItemIndex  (ui/ui_shared.cpp:1025)
 
-int __cdecl Menu_GetItemIndex(menuDef_t *param_1,itemDef_s *param_2)
+int __cdecl Menu_GetItemIndex(menuDef_t *menu,itemDef_s *item)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->itemCount <= local_8) {
+    if (menu->itemCount <= i) {
       return -1;
     }
-    if (param_1->items[local_8] == param_2) break;
-    local_8 = local_8 + 1;
+    if (menu->items[i] == item) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -1314,43 +1322,43 @@ int __cdecl Menu_GetItemIndex(menuDef_t *param_1,itemDef_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetColor(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetColor(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  float *local_418;
-  char local_414 [1028];
+  float *out;
+  char name [1028];
   uint local_10;
-  float local_c;
-  int local_8;
+  float f;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_414,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    local_418 = (float *)0x0;
-    iVar1 = I_stricmp(local_414,"backcolor");
+    out = (float *)0x0;
+    iVar1 = I_stricmp(name,"backcolor");
     if (iVar1 == 0) {
-      local_418 = (param_3->window).backColor;
-      Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x8000);
+      out = (item->window).backColor;
+      Window_AddDynamicFlags(dc->contextIndex,&item->window,0x8000);
     }
     else {
-      iVar1 = I_stricmp(local_414,"forecolor");
+      iVar1 = I_stricmp(name,"forecolor");
       if (iVar1 == 0) {
-        local_418 = (param_3->window).foreColor;
-        Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x10000);
+        out = (item->window).foreColor;
+        Window_AddDynamicFlags(dc->contextIndex,&item->window,0x10000);
       }
       else {
-        iVar1 = I_stricmp(local_414,"bordercolor");
+        iVar1 = I_stricmp(name,"bordercolor");
         if (iVar1 == 0) {
-          local_418 = (param_3->window).borderColor;
+          out = (item->window).borderColor;
         }
       }
     }
-    if (local_418 != (float *)0x0) {
-      local_8 = 0;
-      while ((local_8 < 4 && (iVar1 = Float_Parse(param_4,&local_c), iVar1 != 0))) {
-        local_418[local_8] = local_c;
-        local_8 = local_8 + 1;
+    if (out != (float *)0x0) {
+      i = 0;
+      while ((i < 4 && (iVar1 = Float_Parse(args,&f), iVar1 != 0))) {
+        out[i] = f;
+        i = i + 1;
       }
     }
   }
@@ -1362,19 +1370,19 @@ void __cdecl Script_SetColor(int param_1,UiContext *param_2,itemDef_s *param_3,c
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetBackground(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetBackground(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
   Material *pMVar2;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    pMVar2 = Material_RegisterHandle(local_40c,param_3->imageTrack);
-    (param_3->window).background = pMVar2;
+    pMVar2 = Material_RegisterHandle(name,item->imageTrack);
+    (item->window).background = pMVar2;
   }
   return;
 }
@@ -1382,17 +1390,17 @@ void __cdecl Script_SetBackground(int param_1,UiContext *param_2,itemDef_s *para
 
 // 0075D860  Menu_FindItemByName  (ui/ui_shared.cpp:1091)
 
-itemDef_s * __cdecl Menu_FindItemByName(menuDef_t *param_1,char *param_2)
+itemDef_s * __cdecl Menu_FindItemByName(menuDef_t *menu,char *p)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  if ((param_1 != (menuDef_t *)0x0) && (param_2 != (char *)0x0)) {
-    for (local_8 = 0; local_8 < param_1->itemCount; local_8 = local_8 + 1) {
-      if (((param_1->items[local_8]->window).name != (char *)0x0) &&
-         (iVar1 = I_stricmp(param_2,(param_1->items[local_8]->window).name), iVar1 == 0)) {
-        return param_1->items[local_8];
+  if ((menu != (menuDef_t *)0x0) && (p != (char *)0x0)) {
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      if (((menu->items[i]->window).name != (char *)0x0) &&
+         (iVar1 = I_stricmp(p,(menu->items[i]->window).name), iVar1 == 0)) {
+        return menu->items[i];
       }
     }
   }
@@ -1403,35 +1411,35 @@ itemDef_s * __cdecl Menu_FindItemByName(menuDef_t *param_1,char *param_2)
 // 00760110  Menu_FindFirstFocusableItemByName  (ui/ui_shared.cpp:1112)
 
 itemDef_s * __cdecl
-Menu_FindFirstFocusableItemByName(int param_1,UiContext *param_2,menuDef_t *param_3,char *param_4)
+Menu_FindFirstFocusableItemByName(int localClientNum,UiContext *dc,menuDef_t *menu,char *p)
 
 {
   itemDef_s *piVar1;
   int iVar2;
-  int local_c;
-  int local_8;
+  int lastItemWithName;
+  int i;
   
-  local_c = -1;
-  if ((param_3 == (menuDef_t *)0x0) || (param_4 == (char *)0x0)) {
+  lastItemWithName = -1;
+  if ((menu == (menuDef_t *)0x0) || (p == (char *)0x0)) {
     piVar1 = (itemDef_s *)0x0;
   }
   else {
-    for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-      if ((((param_3->items[local_8]->window).name != (char *)0x0) &&
-          (iVar2 = I_stricmp(param_4,(param_3->items[local_8]->window).name), iVar2 == 0)) &&
-         (param_3->items[local_8] != (itemDef_s *)0x0)) {
-        iVar2 = Item_IsVisible(param_1,param_2->contextIndex,param_3->items[local_8]);
-        if ((iVar2 != 0) && (((param_3->items[local_8]->window).staticFlags & 0x100000U) == 0)) {
-          return param_3->items[local_8];
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      if ((((menu->items[i]->window).name != (char *)0x0) &&
+          (iVar2 = I_stricmp(p,(menu->items[i]->window).name), iVar2 == 0)) &&
+         (menu->items[i] != (itemDef_s *)0x0)) {
+        iVar2 = Item_IsVisible(localClientNum,dc->contextIndex,menu->items[i]);
+        if ((iVar2 != 0) && (((menu->items[i]->window).staticFlags & 0x100000U) == 0)) {
+          return menu->items[i];
         }
-        local_c = local_8;
+        lastItemWithName = i;
       }
     }
-    if (local_c < 0) {
+    if (lastItemWithName < 0) {
       piVar1 = (itemDef_s *)0x0;
     }
     else {
-      piVar1 = param_3->items[local_c];
+      piVar1 = menu->items[lastItemWithName];
     }
   }
   return piVar1;
@@ -1440,18 +1448,17 @@ Menu_FindFirstFocusableItemByName(int param_1,UiContext *param_2,menuDef_t *para
 
 // 0075DF40  Item_FindStateByName  (ui/ui_shared.cpp:1142)
 
-animParamsDef_t * __cdecl Item_FindStateByName(itemDef_s *param_1,char *param_2)
+animParamsDef_t * __cdecl Item_FindStateByName(itemDef_s *item,char *p)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  if (((param_1 != (itemDef_s *)0x0) && (param_2 != (char *)0x0)) &&
-     (param_1->animInfo != (UIAnimInfo *)0x0)) {
-    for (local_8 = 0; local_8 < param_1->animInfo->animStateCount; local_8 = local_8 + 1) {
-      if ((param_1->animInfo->animStates[local_8]->name != (char *)0x0) &&
-         (iVar1 = I_stricmp(param_2,param_1->animInfo->animStates[local_8]->name), iVar1 == 0)) {
-        return param_1->animInfo->animStates[local_8];
+  if (((item != (itemDef_s *)0x0) && (p != (char *)0x0)) && (item->animInfo != (UIAnimInfo *)0x0)) {
+    for (i = 0; i < item->animInfo->animStateCount; i = i + 1) {
+      if ((item->animInfo->animStates[i]->name != (char *)0x0) &&
+         (iVar1 = I_stricmp(p,item->animInfo->animStates[i]->name), iVar1 == 0)) {
+        return item->animInfo->animStates[i];
       }
     }
   }
@@ -1461,11 +1468,11 @@ animParamsDef_t * __cdecl Item_FindStateByName(itemDef_s *param_1,char *param_2)
 
 // 0075E340  Item_CompleteAnimation  (ui/ui_shared.cpp:1162)
 
-void __cdecl Item_CompleteAnimation(itemDef_s *param_1)
+void __cdecl Item_CompleteAnimation(itemDef_s *item)
 
 {
-  if ((param_1->animInfo != (UIAnimInfo *)0x0) && (param_1->animInfo->animating != 0)) {
-    param_1->animInfo->animating = 0;
+  if ((item->animInfo != (UIAnimInfo *)0x0) && (item->animInfo->animating != 0)) {
+    item->animInfo->animating = 0;
   }
   return;
 }
@@ -1473,7 +1480,8 @@ void __cdecl Item_CompleteAnimation(itemDef_s *param_1)
 
 // 0075E590  Item_LerpAnimationParameters  (ui/ui_shared.cpp:1171)
 
-void __cdecl Item_LerpAnimationParameters(int param_1,int param_2,itemDef_s *param_3,float param_4)
+void __cdecl
+Item_LerpAnimationParameters(int localClientNum,int contextIndex,itemDef_s *item,float lerpValue)
 
 {
   float fVar1;
@@ -1482,98 +1490,99 @@ void __cdecl Item_LerpAnimationParameters(int param_1,int param_2,itemDef_s *par
   int iVar4;
   listBoxDef_s *plVar5;
   float fVar6;
+  listBoxDef_s *listPtr;
+  int maxScroll;
   
-  if (param_3->animInfo != (UIAnimInfo *)0x0) {
-    if (param_3->rectExpData == (rectData_s *)0x0) {
-      (param_3->window).rectClient.x =
-           (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.x +
-           (param_3->animInfo->nextAnimState).rectClient.x * param_4;
-      (param_3->window).rectClient.y =
-           (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.y +
-           (param_3->animInfo->nextAnimState).rectClient.y * param_4;
-      (param_3->window).rectClient.w =
-           (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.w +
-           (param_3->animInfo->nextAnimState).rectClient.w * param_4;
-      (param_3->window).rectClient.h =
-           (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.h +
-           (param_3->animInfo->nextAnimState).rectClient.h * param_4;
+  if (item->animInfo != (UIAnimInfo *)0x0) {
+    if (item->rectExpData == (rectData_s *)0x0) {
+      (item->window).rectClient.x =
+           (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.x +
+           (item->animInfo->nextAnimState).rectClient.x * lerpValue;
+      (item->window).rectClient.y =
+           (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.y +
+           (item->animInfo->nextAnimState).rectClient.y * lerpValue;
+      (item->window).rectClient.w =
+           (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.w +
+           (item->animInfo->nextAnimState).rectClient.w * lerpValue;
+      (item->window).rectClient.h =
+           (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.h +
+           (item->animInfo->nextAnimState).rectClient.h * lerpValue;
     }
     else {
-      if ((param_1 == -1) &&
+      if ((localClientNum == -1) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x499,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((param_3->rectExpData->rectXExp).filename == (char *)0x0) {
-        (param_3->window).rectClient.x =
-             (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.x +
-             (param_3->animInfo->nextAnimState).rectClient.x * param_4;
+      if ((item->rectExpData->rectXExp).filename == (char *)0x0) {
+        (item->window).rectClient.x =
+             (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.x +
+             (item->animInfo->nextAnimState).rectClient.x * lerpValue;
       }
       else {
-        fVar1 = (param_3->animInfo->currentAnimState).rectClient.x;
-        fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectXExp);
-        (param_3->window).rectClient.x = fVar6 * param_4 + (1.0 - param_4) * fVar1;
+        fVar1 = (item->animInfo->currentAnimState).rectClient.x;
+        fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectXExp);
+        (item->window).rectClient.x = fVar6 * lerpValue + (1.0 - lerpValue) * fVar1;
       }
-      if ((param_3->rectExpData->rectYExp).filename == (char *)0x0) {
-        (param_3->window).rectClient.y =
-             (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.y +
-             (param_3->animInfo->nextAnimState).rectClient.y * param_4;
-      }
-      else {
-        fVar1 = (param_3->animInfo->currentAnimState).rectClient.y;
-        fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectYExp);
-        (param_3->window).rectClient.y = fVar6 * param_4 + (1.0 - param_4) * fVar1;
-      }
-      if ((param_3->rectExpData->rectWExp).filename == (char *)0x0) {
-        (param_3->window).rectClient.w =
-             (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.w +
-             (param_3->animInfo->nextAnimState).rectClient.w * param_4;
+      if ((item->rectExpData->rectYExp).filename == (char *)0x0) {
+        (item->window).rectClient.y =
+             (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.y +
+             (item->animInfo->nextAnimState).rectClient.y * lerpValue;
       }
       else {
-        fVar1 = (param_3->animInfo->currentAnimState).rectClient.w;
-        fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectWExp);
-        (param_3->window).rectClient.w = fVar6 * param_4 + (1.0 - param_4) * fVar1;
+        fVar1 = (item->animInfo->currentAnimState).rectClient.y;
+        fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectYExp);
+        (item->window).rectClient.y = fVar6 * lerpValue + (1.0 - lerpValue) * fVar1;
       }
-      if ((param_3->rectExpData->rectHExp).filename == (char *)0x0) {
-        (param_3->window).rectClient.h =
-             (1.0 - param_4) * (param_3->animInfo->currentAnimState).rectClient.h +
-             (param_3->animInfo->nextAnimState).rectClient.h * param_4;
+      if ((item->rectExpData->rectWExp).filename == (char *)0x0) {
+        (item->window).rectClient.w =
+             (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.w +
+             (item->animInfo->nextAnimState).rectClient.w * lerpValue;
       }
       else {
-        fVar1 = (param_3->animInfo->currentAnimState).rectClient.h;
-        fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectHExp);
-        (param_3->window).rectClient.h = fVar6 * param_4 + (1.0 - param_4) * fVar1;
+        fVar1 = (item->animInfo->currentAnimState).rectClient.w;
+        fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectWExp);
+        (item->window).rectClient.w = fVar6 * lerpValue + (1.0 - lerpValue) * fVar1;
+      }
+      if ((item->rectExpData->rectHExp).filename == (char *)0x0) {
+        (item->window).rectClient.h =
+             (1.0 - lerpValue) * (item->animInfo->currentAnimState).rectClient.h +
+             (item->animInfo->nextAnimState).rectClient.h * lerpValue;
+      }
+      else {
+        fVar1 = (item->animInfo->currentAnimState).rectClient.h;
+        fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectHExp);
+        (item->window).rectClient.h = fVar6 * lerpValue + (1.0 - lerpValue) * fVar1;
       }
     }
-    (param_3->window).borderSize =
-         (1.0 - param_4) * (param_3->animInfo->currentAnimState).borderSize +
-         (param_3->animInfo->nextAnimState).borderSize * param_4;
-    (param_3->window).rotation =
-         (1.0 - param_4) * (param_3->animInfo->currentAnimState).rotation +
-         (param_3->animInfo->nextAnimState).rotation * param_4;
-    LerpColor((param_3->animInfo->currentAnimState).foreColor,
-              (param_3->animInfo->nextAnimState).foreColor,(param_3->window).foreColor,param_4);
-    LerpColor((param_3->animInfo->currentAnimState).backColor,
-              (param_3->animInfo->nextAnimState).backColor,(param_3->window).backColor,param_4);
-    LerpColor((param_3->animInfo->currentAnimState).borderColor,
-              (param_3->animInfo->nextAnimState).borderColor,(param_3->window).borderColor,param_4);
-    LerpColor((param_3->animInfo->currentAnimState).outlineColor,
-              (param_3->animInfo->nextAnimState).outlineColor,(param_3->window).outlineColor,param_4
-             );
-    iVar4 = Item_IsTextDefType(param_3);
+    (item->window).borderSize =
+         (1.0 - lerpValue) * (item->animInfo->currentAnimState).borderSize +
+         (item->animInfo->nextAnimState).borderSize * lerpValue;
+    (item->window).rotation =
+         (1.0 - lerpValue) * (item->animInfo->currentAnimState).rotation +
+         (item->animInfo->nextAnimState).rotation * lerpValue;
+    LerpColor((item->animInfo->currentAnimState).foreColor,(item->animInfo->nextAnimState).foreColor
+              ,(item->window).foreColor,lerpValue);
+    LerpColor((item->animInfo->currentAnimState).backColor,(item->animInfo->nextAnimState).backColor
+              ,(item->window).backColor,lerpValue);
+    LerpColor((item->animInfo->currentAnimState).borderColor,
+              (item->animInfo->nextAnimState).borderColor,(item->window).borderColor,lerpValue);
+    LerpColor((item->animInfo->currentAnimState).outlineColor,
+              (item->animInfo->nextAnimState).outlineColor,(item->window).outlineColor,lerpValue);
+    iVar4 = Item_IsTextDefType(item);
     if (iVar4 != 0) {
-      ((param_3->typeData).textDef)->textscale =
-           (1.0 - param_4) * (param_3->animInfo->currentAnimState).textScale +
-           (param_3->animInfo->nextAnimState).textScale * param_4;
+      ((item->typeData).textDef)->textscale =
+           (1.0 - lerpValue) * (item->animInfo->currentAnimState).textScale +
+           (item->animInfo->nextAnimState).textScale * lerpValue;
     }
-    if (((param_3->dataType == 4) && ((param_3->window).name != (char *)0x0)) &&
-       (iVar4 = I_strcmp((param_3->window).name,"browser"), iVar4 == 0)) {
-      plVar5 = Item_GetListBoxDef(param_3);
-      iVar4 = Item_ListBox_MaxScroll(param_1,param_2,param_3);
-      if (iVar4 < plVar5->startPos[param_2]) {
-        plVar5->startPos[param_2] = iVar4;
+    if (((item->dataType == 4) && ((item->window).name != (char *)0x0)) &&
+       (iVar4 = I_strcmp((item->window).name,"browser"), iVar4 == 0)) {
+      plVar5 = Item_GetListBoxDef(item);
+      iVar4 = Item_ListBox_MaxScroll(localClientNum,contextIndex,item);
+      if (iVar4 < plVar5->startPos[contextIndex]) {
+        plVar5->startPos[contextIndex] = iVar4;
       }
     }
   }
@@ -1583,64 +1592,64 @@ void __cdecl Item_LerpAnimationParameters(int param_1,int param_2,itemDef_s *par
 
 // 0075E380  Item_UpdateAnimation  (ui/ui_shared.cpp:1232)
 
-void __cdecl Item_UpdateAnimation(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_UpdateAnimation(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
+  int iVar3;
+  float fVar4;
   float local_18;
   float local_10;
-  float local_c;
-  int local_8;
+  float lerpValue;
+  int msElapsed;
   
-  if (param_3->animInfo != (UIAnimInfo *)0x0) {
-    if ((param_3->animInfo->animating == 0) &&
+  if (item->animInfo != (UIAnimInfo *)0x0) {
+    if ((item->animInfo->animating == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x4d6,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3->animInfo->animating == 1) {
-      local_8 = param_2->realTime - param_3->animInfo->animStartTime;
+    if (item->animInfo->animating == 1) {
+      msElapsed = dc->realTime - item->animInfo->animStartTime;
     }
     else {
-      if ((param_3->animInfo->animating != 2) &&
+      if ((item->animInfo->animating != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x4de,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = Sys_Milliseconds();
-      local_8 = local_8 - param_3->animInfo->animStartTime;
+      iVar3 = Sys_Milliseconds();
+      msElapsed = iVar3 - item->animInfo->animStartTime;
     }
-    if (local_8 < 0) {
-      local_8 = param_3->animInfo->animDuration;
+    if (msElapsed < 0) {
+      msElapsed = item->animInfo->animDuration;
     }
-    if (param_3->animInfo->animDuration == 0) {
-      local_c = 1.0;
+    if (item->animInfo->animDuration == 0) {
+      lerpValue = 1.0;
     }
     else {
-      fVar3 = (float)local_8 / (float)param_3->animInfo->animDuration;
-      local_10 = fVar3;
-      if (0.0 <= fVar3 - 1.0) {
+      fVar4 = (float)msElapsed / (float)item->animInfo->animDuration;
+      local_10 = fVar4;
+      if (0.0 <= fVar4 - 1.0) {
         local_10 = 1.0;
       }
-      if (0.0 - fVar3 < 0.0) {
+      if (0.0 - fVar4 < 0.0) {
         local_18 = local_10;
       }
       else {
         local_18 = 0.0;
       }
-      local_c = local_18;
+      lerpValue = local_18;
     }
-    Item_LerpAnimationParameters(param_1,param_2->contextIndex,param_3,local_c);
-    if (param_3->animInfo->animDuration <= local_8) {
-      param_3->animInfo->animating = 0;
-      UIAnimation_RunEventScript
-                (param_1,param_2,param_3,&param_3->animInfo->nextAnimState,"onEnter");
+    Item_LerpAnimationParameters(localClientNum,dc->contextIndex,item,lerpValue);
+    if (item->animInfo->animDuration <= msElapsed) {
+      item->animInfo->animating = 0;
+      UIAnimation_RunEventScript(localClientNum,dc,item,&item->animInfo->nextAnimState,"onEnter");
     }
   }
   return;
@@ -1650,8 +1659,8 @@ void __cdecl Item_UpdateAnimation(int param_1,UiContext *param_2,itemDef_s *para
 // 0075DFE0  Item_AnimateToState  (ui/ui_shared.cpp:1269)
 
 void __cdecl
-Item_AnimateToState(int param_1,UiContext *param_2,itemDef_s *param_3,animParamsDef_t *param_4,
-                   int param_5,bool param_6)
+Item_AnimateToState(int localClientNum,UiContext *dc,itemDef_s *item,animParamsDef_t *state,
+                   int milliseconds,bool sysTime)
 
 {
   menuDef_t *pmVar1;
@@ -1660,79 +1669,80 @@ Item_AnimateToState(int param_1,UiContext *param_2,itemDef_s *param_3,animParams
   int iVar4;
   animParamsDef_t *paVar5;
   float fVar6;
+  bool wasAnimating;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x4f8,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4 == (animParamsDef_t *)0x0) &&
+  if ((state == (animParamsDef_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x4f9,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_3->animInfo != (UIAnimInfo *)0x0) {
-    iVar4 = param_3->animInfo->animating;
-    Item_CompleteAnimation(param_3);
-    Item_PropertiesToAnimState(param_3,&param_3->animInfo->currentAnimState);
-    if (param_3->rectExpData != (rectData_s *)0x0) {
+  if (item->animInfo != (UIAnimInfo *)0x0) {
+    iVar4 = item->animInfo->animating;
+    Item_CompleteAnimation(item);
+    Item_PropertiesToAnimState(item,&item->animInfo->currentAnimState);
+    if (item->rectExpData != (rectData_s *)0x0) {
       if (iVar4 == 0) {
-        if ((param_3->rectExpData->rectXExp).filename != (char *)0x0) {
-          pmVar1 = param_3->parent;
-          fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectXExp);
-          (param_3->animInfo->currentAnimState).rectClient.x = fVar6 + (pmVar1->window).rect.x;
+        if ((item->rectExpData->rectXExp).filename != (char *)0x0) {
+          pmVar1 = item->parent;
+          fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectXExp);
+          (item->animInfo->currentAnimState).rectClient.x = fVar6 + (pmVar1->window).rect.x;
         }
-        if ((param_3->rectExpData->rectYExp).filename != (char *)0x0) {
-          pmVar1 = param_3->parent;
-          fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectYExp);
-          (param_3->animInfo->currentAnimState).rectClient.y = fVar6 + (pmVar1->window).rect.y;
+        if ((item->rectExpData->rectYExp).filename != (char *)0x0) {
+          pmVar1 = item->parent;
+          fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectYExp);
+          (item->animInfo->currentAnimState).rectClient.y = fVar6 + (pmVar1->window).rect.y;
         }
-        if ((param_3->rectExpData->rectWExp).filename != (char *)0x0) {
-          fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectWExp);
-          (param_3->animInfo->currentAnimState).rectClient.w = fVar6;
+        if ((item->rectExpData->rectWExp).filename != (char *)0x0) {
+          fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectWExp);
+          (item->animInfo->currentAnimState).rectClient.w = fVar6;
         }
-        if ((param_3->rectExpData->rectHExp).filename != (char *)0x0) {
-          fVar6 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectHExp);
-          (param_3->animInfo->currentAnimState).rectClient.h = fVar6;
+        if ((item->rectExpData->rectHExp).filename != (char *)0x0) {
+          fVar6 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectHExp);
+          (item->animInfo->currentAnimState).rectClient.h = fVar6;
         }
       }
       else {
-        if ((param_3->rectExpData->rectXExp).filename != (char *)0x0) {
-          (param_3->animInfo->currentAnimState).rectClient.x = (param_3->window).rect.x;
+        if ((item->rectExpData->rectXExp).filename != (char *)0x0) {
+          (item->animInfo->currentAnimState).rectClient.x = (item->window).rect.x;
         }
-        if ((param_3->rectExpData->rectYExp).filename != (char *)0x0) {
-          (param_3->animInfo->currentAnimState).rectClient.y = (param_3->window).rect.y;
+        if ((item->rectExpData->rectYExp).filename != (char *)0x0) {
+          (item->animInfo->currentAnimState).rectClient.y = (item->window).rect.y;
         }
-        if ((param_3->rectExpData->rectWExp).filename != (char *)0x0) {
-          (param_3->animInfo->currentAnimState).rectClient.w = (param_3->window).rect.w;
+        if ((item->rectExpData->rectWExp).filename != (char *)0x0) {
+          (item->animInfo->currentAnimState).rectClient.w = (item->window).rect.w;
         }
-        if ((param_3->rectExpData->rectHExp).filename != (char *)0x0) {
-          (param_3->animInfo->currentAnimState).rectClient.h = (param_3->window).rect.h;
+        if ((item->rectExpData->rectHExp).filename != (char *)0x0) {
+          (item->animInfo->currentAnimState).rectClient.h = (item->window).rect.h;
         }
       }
     }
-    paVar5 = &param_3->animInfo->nextAnimState;
+    paVar5 = &item->animInfo->nextAnimState;
     for (iVar4 = 0x1b; iVar4 != 0; iVar4 = iVar4 + -1) {
-      paVar5->name = param_4->name;
-      param_4 = (animParamsDef_t *)&param_4->rectClient;
+      paVar5->name = state->name;
+      state = (animParamsDef_t *)&state->rectClient;
       paVar5 = (animParamsDef_t *)&paVar5->rectClient;
     }
-    param_3->animInfo->animDuration =
-         (int)((float)param_5 * (1.0 / (ui_animSpeedScale->current).value));
-    if (param_6) {
+    item->animInfo->animDuration =
+         (int)((float)milliseconds * (1.0 / (ui_animSpeedScale->current).value));
+    if (sysTime) {
       iVar4 = Sys_Milliseconds();
-      param_3->animInfo->animStartTime = iVar4;
-      param_3->animInfo->animating = 2;
+      item->animInfo->animStartTime = iVar4;
+      item->animInfo->animating = 2;
     }
     else {
-      param_3->animInfo->animStartTime = param_2->realTime;
-      param_3->animInfo->animating = 1;
+      item->animInfo->animStartTime = dc->realTime;
+      item->animInfo->animating = 1;
     }
-    Item_UpdateAnimation(param_1,param_2,param_3);
+    Item_UpdateAnimation(localClientNum,dc,item);
   }
   return;
 }
@@ -1742,37 +1752,42 @@ Item_AnimateToState(int param_1,UiContext *param_2,itemDef_s *param_3,animParams
 
 void __cdecl
 UI_AnimateItemInternal
-          (int param_1,UiContext *param_2,char *param_3,char *param_4,char *param_5,int param_6,
-          bool param_7)
+          (int localClientNum,UiContext *dc,char *menuName,char *itemName,char *newStateName,
+          int milliseconds,bool sysTime)
 
 {
-  itemDef_s *piVar1;
+  itemDef_s *item_00;
+  bool bVar1;
   bool bVar2;
-  bool bVar3;
-  menuDef_t *pmVar4;
-  int iVar5;
-  animParamsDef_t *paVar6;
-  int local_10;
+  menuDef_t *pmVar3;
+  int iVar4;
+  animParamsDef_t *state;
+  itemDef_s *item;
+  animParamsDef_t *newState;
+  int i;
+  bool itemExists;
+  bool stateExists;
+  menuDef_t *menu;
   
-  pmVar4 = Menus_FindByName(param_2,param_3);
-  if (pmVar4 != (menuDef_t *)0x0) {
+  pmVar3 = Menus_FindByName(dc,menuName);
+  if (pmVar3 != (menuDef_t *)0x0) {
+    bVar1 = false;
     bVar2 = false;
-    bVar3 = false;
-    for (local_10 = 0; local_10 < pmVar4->itemCount; local_10 = local_10 + 1) {
-      if ((*param_4 == '*') ||
-         (((pmVar4->items[local_10]->window).name != (char *)0x0 &&
-          (iVar5 = I_stricmp(param_4,(pmVar4->items[local_10]->window).name), iVar5 == 0)))) {
-        bVar2 = true;
-        piVar1 = pmVar4->items[local_10];
-        paVar6 = Item_FindStateByName(piVar1,param_5);
-        if (paVar6 != (animParamsDef_t *)0x0) {
-          bVar3 = true;
-          Item_AnimateToState(param_1,param_2,piVar1,paVar6,param_6,param_7);
+    for (i = 0; i < pmVar3->itemCount; i = i + 1) {
+      if ((*itemName == '*') ||
+         (((pmVar3->items[i]->window).name != (char *)0x0 &&
+          (iVar4 = I_stricmp(itemName,(pmVar3->items[i]->window).name), iVar4 == 0)))) {
+        bVar1 = true;
+        item_00 = pmVar3->items[i];
+        state = Item_FindStateByName(item_00,newStateName);
+        if (state != (animParamsDef_t *)0x0) {
+          bVar2 = true;
+          Item_AnimateToState(localClientNum,dc,item_00,state,milliseconds,sysTime);
         }
       }
     }
-    if (bVar2) {
-      if (!bVar3) {
+    if (bVar1) {
+      if (!bVar2) {
         Com_PrintWarning(0x10,
                          "Warning : ui_animate - item \"%s\" in menu \"%s\" does not contain a state named \"%s\".\n"
                         );
@@ -1792,21 +1807,21 @@ UI_AnimateItemInternal
 
 void __cdecl
 UI_UpdateContextItemInternal
-          (UiContext *param_1,char *param_2,char *param_3,float param_4,float param_5)
+          (UiContext *dc,char *menuName,char *itemName,float offsetX,float offsetY)
 
 {
   menuDef_t *pmVar1;
   int iVar2;
-  int local_c;
+  int i;
+  menuDef_t *menu;
   
-  pmVar1 = Menus_FindByName(param_1,param_2);
+  pmVar1 = Menus_FindByName(dc,menuName);
   if (pmVar1 != (menuDef_t *)0x0) {
-    for (local_c = 0; local_c < pmVar1->itemCount; local_c = local_c + 1) {
-      if (((pmVar1->items[local_c]->window).name != (char *)0x0) &&
-         (iVar2 = I_stricmp(param_3,(pmVar1->items[local_c]->window).name), iVar2 == 0)) {
+    for (i = 0; i < pmVar1->itemCount; i = i + 1) {
+      if (((pmVar1->items[i]->window).name != (char *)0x0) &&
+         (iVar2 = I_stricmp(itemName,(pmVar1->items[i]->window).name), iVar2 == 0)) {
         Item_SnapRectClientToMouse
-                  (param_1,pmVar1->items[local_c],(param_1->cursor).x + param_4,
-                   (param_1->cursor).y + param_5);
+                  (dc,pmVar1->items[i],(dc->cursor).x + offsetX,(dc->cursor).y + offsetY);
         return;
       }
     }
@@ -1818,10 +1833,10 @@ UI_UpdateContextItemInternal
 // 0075D8F0  UI_UpdateContextItem  (ui/ui_shared.cpp:1373)
 
 void __cdecl
-UI_UpdateContextItem(UiContext *param_1,char *param_2,char *param_3,float param_4,float param_5)
+UI_UpdateContextItem(UiContext *dc,char *menuName,char *itemName,float offsetX,float offsetY)
 
 {
-  UI_UpdateContextItemInternal(param_1,param_2,param_3,param_4,param_5);
+  UI_UpdateContextItemInternal(dc,menuName,itemName,offsetX,offsetY);
   return;
 }
 
@@ -1829,10 +1844,11 @@ UI_UpdateContextItem(UiContext *param_1,char *param_2,char *param_3,float param_
 // 0075DDD0  UI_AnimateItem  (ui/ui_shared.cpp:1379)
 
 void __cdecl
-UI_AnimateItem(int param_1,UiContext *param_2,char *param_3,char *param_4,char *param_5,int param_6)
+UI_AnimateItem(int localClientNum,UiContext *dc,char *menuName,char *itemName,char *newStateName,
+              int milliseconds)
 
 {
-  UI_AnimateItemInternal(param_1,param_2,param_3,param_4,param_5,param_6,false);
+  UI_AnimateItemInternal(localClientNum,dc,menuName,itemName,newStateName,milliseconds,false);
   return;
 }
 
@@ -1841,29 +1857,31 @@ UI_AnimateItem(int param_1,UiContext *param_2,char *param_3,char *param_4,char *
 
 void __cdecl
 UI_AnimateItemSysTime
-          (int param_1,UiContext *param_2,char *param_3,char *param_4,char *param_5,int param_6)
+          (int localClientNum,UiContext *dc,char *menuName,char *itemName,char *newStateName,
+          int milliseconds)
 
 {
-  UI_AnimateItemInternal(param_1,param_2,param_3,param_4,param_5,param_6,true);
+  UI_AnimateItemInternal(localClientNum,dc,menuName,itemName,newStateName,milliseconds,true);
   return;
 }
 
 
 // 0075EB70  UI_SetShaderTime  (ui/ui_shared.cpp:1389)
 
-void __cdecl UI_SetShaderTime(int param_1)
+void __cdecl UI_SetShaderTime(int localClientNum)
 
 {
   ushort uVar1;
   uiInfo_s *puVar2;
-  float *pfVar3;
-  float local_14 [4];
+  float *vec;
+  uiInfo_s *uiInfo;
+  float timeVec [4];
   
-  puVar2 = UI_GetInfo(param_1);
-  R_CalcGameTimeVec((float)(puVar2->uiDC).realTime / 1000.0,local_14);
-  pfVar3 = local_14;
+  puVar2 = UI_GetInfo(localClientNum);
+  R_CalcGameTimeVec((float)(puVar2->uiDC).realTime / 1000.0,timeVec);
+  vec = timeVec;
   uVar1 = GetCodeConst_GameTimeParam();
-  R_AddCmdSetCustomConstant((uint)uVar1,pfVar3);
+  R_AddCmdSetCustomConstant((uint)uVar1,vec);
   return;
 }
 
@@ -1872,28 +1890,30 @@ void __cdecl UI_SetShaderTime(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetItemColor(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetItemColor(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
   int iVar2;
-  itemDef_s *piVar3;
-  int local_828;
-  char local_81c [1024];
-  char local_41c [1028];
+  itemDef_s *item_00;
+  int j;
+  itemDef_s *item2;
+  int count;
+  char itemname [1024];
+  char name [1028];
   uint local_18;
-  float local_14 [4];
+  float color [4];
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_81c,0x400);
-  if ((iVar1 != 0) && (iVar1 = String_Parse(param_4,local_41c,0x400), iVar1 != 0)) {
-    iVar1 = Menu_ItemsMatchingGroup(param_3->parent,local_81c);
-    iVar2 = Color_Parse(param_4,&local_14);
+  iVar1 = String_Parse(args,itemname,0x400);
+  if ((iVar1 != 0) && (iVar1 = String_Parse(args,name,0x400), iVar1 != 0)) {
+    iVar1 = Menu_ItemsMatchingGroup(item->parent,itemname);
+    iVar2 = Color_Parse(args,&color);
     if (iVar2 != 0) {
-      for (local_828 = 0; local_828 < iVar1; local_828 = local_828 + 1) {
-        piVar3 = Menu_GetMatchingItemByNumber(param_3->parent,local_828,local_81c);
-        if (piVar3 != (itemDef_s *)0x0) {
-          Item_SetColor(param_2->contextIndex,piVar3,local_41c,local_14);
+      for (j = 0; j < iVar1; j = j + 1) {
+        item_00 = Menu_GetMatchingItemByNumber(item->parent,j,itemname);
+        if (item_00 != (itemDef_s *)0x0) {
+          Item_SetColor(dc->contextIndex,item_00,name,color);
         }
       }
     }
@@ -1904,18 +1924,20 @@ void __cdecl Script_SetItemColor(int param_1,UiContext *param_2,itemDef_s *param
 
 // 007603D0  Menu_ShowItemByName  (ui/ui_shared.cpp:1430)
 
-void __cdecl Menu_ShowItemByName(int param_1,menuDef_t *param_2,char *param_3,int param_4)
+void __cdecl Menu_ShowItemByName(int contextIndex,menuDef_t *menu,char *p,int bShow)
 
 {
   int iVar1;
-  itemDef_s *piVar2;
-  undefined4 local_c;
+  itemDef_s *item_00;
+  itemDef_s *item;
+  int i;
+  int count;
   
-  iVar1 = Menu_ItemsMatchingGroup(param_2,param_3);
-  for (local_c = 0; local_c < iVar1; local_c = local_c + 1) {
-    piVar2 = Menu_GetMatchingItemByNumber(param_2,local_c,param_3);
-    if (piVar2 != (itemDef_s *)0x0) {
-      Item_Show(param_1,piVar2,param_4);
+  iVar1 = Menu_ItemsMatchingGroup(menu,p);
+  for (i = 0; i < iVar1; i = i + 1) {
+    item_00 = Menu_GetMatchingItemByNumber(menu,i,p);
+    if (item_00 != (itemDef_s *)0x0) {
+      Item_Show(contextIndex,item_00,bShow);
     }
   }
   return;
@@ -1924,18 +1946,20 @@ void __cdecl Menu_ShowItemByName(int param_1,menuDef_t *param_2,char *param_3,in
 
 // 00760560  Menu_FadeItemByName  (ui/ui_shared.cpp:1448)
 
-void __cdecl Menu_FadeItemByName(int param_1,menuDef_t *param_2,char *param_3,int param_4)
+void __cdecl Menu_FadeItemByName(int contextIndex,menuDef_t *menu,char *p,int fadeOut)
 
 {
   int iVar1;
-  itemDef_s *piVar2;
-  undefined4 local_c;
+  itemDef_s *item_00;
+  itemDef_s *item;
+  int i;
+  int count;
   
-  iVar1 = Menu_ItemsMatchingGroup(param_2,param_3);
-  for (local_c = 0; local_c < iVar1; local_c = local_c + 1) {
-    piVar2 = Menu_GetMatchingItemByNumber(param_2,local_c,param_3);
-    if (piVar2 != (itemDef_s *)0x0) {
-      Item_Fade(param_1,piVar2,param_4);
+  iVar1 = Menu_ItemsMatchingGroup(menu,p);
+  for (i = 0; i < iVar1; i = i + 1) {
+    item_00 = Menu_GetMatchingItemByNumber(menu,i,p);
+    if (item_00 != (itemDef_s *)0x0) {
+      Item_Fade(contextIndex,item_00,fadeOut);
     }
   }
   return;
@@ -1944,27 +1968,27 @@ void __cdecl Menu_FadeItemByName(int param_1,menuDef_t *param_2,char *param_3,in
 
 // 0075F910  Menus_RemoveFromStack  (ui/ui_shared.cpp:1466)
 
-int __cdecl Menus_RemoveFromStack(int param_1,UiContext *param_2,menuDef_t *param_3)
+int __cdecl Menus_RemoveFromStack(int localClientNum,UiContext *dc,menuDef_t *pMenu)
 
 {
   int iVar1;
   int iVar2;
-  int local_8;
+  int i;
   
-  iVar1 = param_2->openMenuCount;
+  iVar1 = dc->openMenuCount;
   do {
-    local_8 = iVar1 + -1;
-    if (local_8 < 0) {
+    i = iVar1 + -1;
+    if (i < 0) {
       return 0;
     }
     iVar2 = iVar1 + -1;
-    iVar1 = local_8;
-  } while (param_2->menuStack[iVar2].menu != param_3);
-  param_2->openMenuCount = param_2->openMenuCount + -1;
-  for (; local_8 < param_2->openMenuCount; local_8 = local_8 + 1) {
-    iVar1 = param_2->menuStack[local_8 + 1].localClientNum;
-    param_2->menuStack[local_8].menu = param_2->menuStack[local_8 + 1].menu;
-    param_2->menuStack[local_8].localClientNum = iVar1;
+    iVar1 = i;
+  } while (dc->menuStack[iVar2].menu != pMenu);
+  dc->openMenuCount = dc->openMenuCount + -1;
+  for (; i < dc->openMenuCount; i = i + 1) {
+    iVar1 = dc->menuStack[i + 1].localClientNum;
+    dc->menuStack[i].menu = dc->menuStack[i + 1].menu;
+    dc->menuStack[i].localClientNum = iVar1;
   }
   return 1;
 }
@@ -1972,135 +1996,136 @@ int __cdecl Menus_RemoveFromStack(int param_1,UiContext *param_2,menuDef_t *para
 
 // 00766030  Menus_AddToStack  (ui/ui_shared.cpp:1494)
 
-void __cdecl Menus_AddToStack(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_AddToStack(int localClientNum,UiContext *dc,menuDef_t *pMenu)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  Menus_RemoveFromStack(param_1,param_2,param_3);
-  if (param_2->openMenuCount == 0x10) {
+  Menus_RemoveFromStack(localClientNum,dc,pMenu);
+  if (dc->openMenuCount == 0x10) {
     Com_Error(ERR_DROP,"\x15Too many menus opened");
   }
-  param_2->openMenuCount = param_2->openMenuCount + 1;
-  local_8 = param_2->openMenuCount + -2;
+  dc->openMenuCount = dc->openMenuCount + 1;
+  i = dc->openMenuCount + -2;
   while( true ) {
-    if (local_8 < -1) {
+    if (i < -1) {
       return;
     }
-    if ((local_8 == -1) ||
-       ((param_2->menuStack[local_8].menu != (menuDef_t *)0x0 &&
-        (param_3->priority <= (param_2->menuStack[local_8].menu)->priority)))) break;
-    iVar1 = param_2->menuStack[local_8].localClientNum;
-    param_2->menuStack[local_8 + 1].menu = param_2->menuStack[local_8].menu;
-    param_2->menuStack[local_8 + 1].localClientNum = iVar1;
-    local_8 = local_8 + -1;
+    if ((i == -1) ||
+       ((dc->menuStack[i].menu != (menuDef_t *)0x0 &&
+        (pMenu->priority <= (dc->menuStack[i].menu)->priority)))) break;
+    iVar1 = dc->menuStack[i].localClientNum;
+    dc->menuStack[i + 1].menu = dc->menuStack[i].menu;
+    dc->menuStack[i + 1].localClientNum = iVar1;
+    i = i + -1;
   }
-  param_2->menuStack[local_8 + 1].menu = param_3;
-  param_2->menuStack[local_8 + 1].localClientNum = param_1;
+  dc->menuStack[i + 1].menu = pMenu;
+  dc->menuStack[i + 1].localClientNum = localClientNum;
   return;
 }
 
 
 // 0075EF30  Menus_MenuIsInStack  (ui/ui_shared.cpp:1529)
 
-int __cdecl Menus_MenuIsInStack(UiContext *param_1,menuDef_t *param_2)
+int __cdecl Menus_MenuIsInStack(UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
-  int local_8;
+  int menuIndex;
   
-  if ((param_1 == (UiContext *)0x0) &&
+  if ((dc == (UiContext *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x5fc,0,"%s"),
      !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if ((param_2 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x5fd,0,"%s"),
      !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  iVar4 = param_1->openMenuCount;
+  iVar4 = dc->openMenuCount;
   do {
-    local_8 = iVar4 + -1;
-    if (local_8 < 0) {
+    menuIndex = iVar4 + -1;
+    if (menuIndex < 0) {
       return 0;
     }
     iVar2 = iVar4 + -1;
-    iVar4 = local_8;
-  } while (param_1->menuStack[iVar2].menu != param_2);
+    iVar4 = menuIndex;
+  } while (dc->menuStack[iVar2].menu != menu);
   return 1;
 }
 
 
 // 0075EFD0  Menus_MenuInStackLocalClientNum  (ui/ui_shared.cpp:1545)
 
-int __cdecl Menus_MenuInStackLocalClientNum(UiContext *param_1,menuDef_t *param_2)
+int __cdecl Menus_MenuInStackLocalClientNum(UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int menuIndex;
   
-  if ((param_1 == (UiContext *)0x0) &&
+  if ((dc == (UiContext *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x60c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x60d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = param_1->openMenuCount;
+  menuIndex = dc->openMenuCount;
   do {
-    iVar3 = local_8;
-    local_8 = iVar3 + -1;
-    if (local_8 < 0) {
+    iVar3 = menuIndex;
+    menuIndex = iVar3 + -1;
+    if (menuIndex < 0) {
       return -1;
     }
-  } while (param_1->menuStack[iVar3 + -1].menu != param_2);
-  return param_1->menuStack[iVar3 + -1].localClientNum;
+  } while (dc->menuStack[iVar3 + -1].menu != menu);
+  return dc->menuStack[iVar3 + -1].localClientNum;
 }
 
 
 // 0075F080  Menus_FindByName  (ui/ui_shared.cpp:1563)
 
-menuDef_t * __cdecl Menus_FindByName(UiContext *param_1,char *param_2)
+menuDef_t * __cdecl Menus_FindByName(UiContext *dc,char *p)
 
 {
   menuDef_t *pmVar1;
   int iVar2;
   DWORD DVar3;
-  int local_8;
+  PIXProfile pp;
+  int i;
   
   PIXBeginNamedEvent(-1,"Menus_FindByName");
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->menuCount <= local_8) {
+    if (dc->menuCount <= i) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return (menuDef_t *)0x0;
     }
-    iVar2 = I_stricmp((param_1->Menus[local_8]->window).name,param_2);
+    iVar2 = I_stricmp((dc->Menus[i]->window).name,p);
     if (iVar2 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pmVar1 = param_1->Menus[local_8];
+  pmVar1 = dc->Menus[i];
   DVar3 = GetCurrentThreadId();
   if (DVar3 != (DWORD)g_DXDeviceThread) {
     return pmVar1;
@@ -2115,14 +2140,15 @@ menuDef_t * __cdecl Menus_FindByName(UiContext *param_1,char *param_2)
 
 // 0075F150  Menus_HideByName  (ui/ui_shared.cpp:1577)
 
-void __cdecl Menus_HideByName(UiContext *param_1,char *param_2)
+void __cdecl Menus_HideByName(UiContext *dc,char *menuName)
 
 {
   code *pcVar1;
   bool bVar2;
-  menuDef_t *pmVar3;
+  menuDef_t *w;
+  menuDef_t *menu;
   
-  if (param_1 == (UiContext *)0x0) {
+  if (dc == (UiContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x62c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2130,7 +2156,7 @@ void __cdecl Menus_HideByName(UiContext *param_1,char *param_2)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (menuName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x62d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2138,9 +2164,9 @@ void __cdecl Menus_HideByName(UiContext *param_1,char *param_2)
       return;
     }
   }
-  pmVar3 = Menus_FindByName(param_1,param_2);
-  if (pmVar3 != (menuDef_t *)0x0) {
-    Window_RemoveDynamicFlags(param_1->contextIndex,&pmVar3->window,4);
+  w = Menus_FindByName(dc,menuName);
+  if (w != (menuDef_t *)0x0) {
+    Window_RemoveDynamicFlags(dc->contextIndex,&w->window,4);
   }
   return;
 }
@@ -2148,14 +2174,15 @@ void __cdecl Menus_HideByName(UiContext *param_1,char *param_2)
 
 // 0075F1E0  Menus_ShowByName  (ui/ui_shared.cpp:1590)
 
-void __cdecl Menus_ShowByName(UiContext *param_1,char *param_2)
+void __cdecl Menus_ShowByName(UiContext *dc,char *windowName)
 
 {
   code *pcVar1;
   bool bVar2;
-  menuDef_t *pmVar3;
+  menuDef_t *w;
+  menuDef_t *menu;
   
-  if (param_1 == (UiContext *)0x0) {
+  if (dc == (UiContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x639,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2163,7 +2190,7 @@ void __cdecl Menus_ShowByName(UiContext *param_1,char *param_2)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (windowName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x63a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2171,9 +2198,9 @@ void __cdecl Menus_ShowByName(UiContext *param_1,char *param_2)
       return;
     }
   }
-  pmVar3 = Menus_FindByName(param_1,param_2);
-  if (pmVar3 != (menuDef_t *)0x0) {
-    Window_AddDynamicFlags(param_1->contextIndex,&pmVar3->window,4);
+  w = Menus_FindByName(dc,windowName);
+  if (w != (menuDef_t *)0x0) {
+    Window_AddDynamicFlags(dc->contextIndex,&w->window,4);
   }
   return;
 }
@@ -2181,38 +2208,39 @@ void __cdecl Menus_ShowByName(UiContext *param_1,char *param_2)
 
 // 00766130  Menu_LoseFocusDueToOpen  (ui/ui_shared.cpp:1603)
 
-void __cdecl Menu_LoseFocusDueToOpen(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_LoseFocusDueToOpen(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   int iVar4;
-  int local_8;
+  bool anyFound;
+  int i;
   
-  if ((param_2 == (UiContext *)0x0) &&
+  if ((dc == (UiContext *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x649,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x64a,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->window);
+  bVar2 = Window_HasFocus(dc->contextIndex,&menu->window);
   if (bVar2) {
-    Menu_RunLeaveFocusScript(param_1,param_2,param_3);
-    Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,2);
+    Menu_RunLeaveFocusScript(localClientNum,dc,menu);
+    Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,2);
     bVar2 = false;
-    for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-      bVar3 = Window_HasFocus(param_2->contextIndex,&param_3->items[local_8]->window);
-      if ((bVar3) && (iVar4 = Item_IsFocusDefType(param_3->items[local_8]), iVar4 != 0)) {
-        Item_RunEventScript(param_1,param_2,param_3->items[local_8],"leaveFocus");
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      bVar3 = Window_HasFocus(dc->contextIndex,&menu->items[i]->window);
+      if ((bVar3) && (iVar4 = Item_IsFocusDefType(menu->items[i]), iVar4 != 0)) {
+        Item_RunEventScript(localClientNum,dc,menu->items[i],"leaveFocus");
         if ((bVar2) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x65e,0,
                                      "%s"), !bVar2)) {
@@ -2230,7 +2258,7 @@ void __cdecl Menu_LoseFocusDueToOpen(int param_1,UiContext *param_2,menuDef_t *p
 
 // 0075FA90  Menu_CallOnFocusDueToOpen  (ui/ui_shared.cpp:1640)
 
-void __cdecl Menu_CallOnFocusDueToOpen(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_CallOnFocusDueToOpen(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
@@ -2238,16 +2266,17 @@ void __cdecl Menu_CallOnFocusDueToOpen(int param_1,UiContext *param_2,menuDef_t 
   bool bVar3;
   uint uVar4;
   int iVar5;
-  int local_8;
+  bool anyFound;
+  int i;
   
   bVar3 = false;
-  uVar4 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+  uVar4 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
   if ((uVar4 & 0xa0000) == 0) {
-    Menu_RunFocusScript(param_1,param_2,param_3);
-    for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-      bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->items[local_8]->window);
-      if ((bVar2) && (iVar5 = Item_IsFocusDefType(param_3->items[local_8]), iVar5 != 0)) {
-        Item_RunEventScript(param_1,param_2,param_3->items[local_8],"onFocus");
+    Menu_RunFocusScript(localClientNum,dc,menu);
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      bVar2 = Window_HasFocus(dc->contextIndex,&menu->items[i]->window);
+      if ((bVar2) && (iVar5 = Item_IsFocusDefType(menu->items[i]), iVar5 != 0)) {
+        Item_RunEventScript(localClientNum,dc,menu->items[i],"onFocus");
         if ((bVar3) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x67e,0,
                                      "%s"), !bVar3)) {
@@ -2265,13 +2294,13 @@ void __cdecl Menu_CallOnFocusDueToOpen(int param_1,UiContext *param_2,menuDef_t 
 
 // 0075F9C0  Menu_GainFocusDueToClose  (ui/ui_shared.cpp:1673)
 
-void __cdecl Menu_GainFocusDueToClose(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_GainFocusDueToClose(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (UiContext *)0x0) {
+  if (dc == (UiContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x68a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2279,7 +2308,7 @@ void __cdecl Menu_GainFocusDueToClose(int param_1,UiContext *param_2,menuDef_t *
       return;
     }
   }
-  if (param_3 == (menuDef_t *)0x0) {
+  if (menu == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x68b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2287,7 +2316,7 @@ void __cdecl Menu_GainFocusDueToClose(int param_1,UiContext *param_2,menuDef_t *
       return;
     }
   }
-  bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->window);
+  bVar2 = Window_HasFocus(dc->contextIndex,&menu->window);
   if (bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x68d,0,"%s");
     if (!bVar2) {
@@ -2296,22 +2325,22 @@ void __cdecl Menu_GainFocusDueToClose(int param_1,UiContext *param_2,menuDef_t *
       return;
     }
   }
-  Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,2);
-  Menu_CallOnFocusDueToOpen(param_1,param_2,param_3);
+  Window_AddDynamicFlags(dc->contextIndex,&menu->window,2);
+  Menu_CallOnFocusDueToOpen(localClientNum,dc,menu);
   return;
 }
 
 
 // 0075FC30  Menu_RunCloseScript  (ui/ui_shared.cpp:1684)
 
-void __cdecl Menu_RunCloseScript(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_RunCloseScript(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   itemDef_s local_120;
   
-  if (param_3 == (menuDef_t *)0x0) {
+  if (menu == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x695,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2319,11 +2348,11 @@ void __cdecl Menu_RunCloseScript(int param_1,UiContext *param_2,menuDef_t *param
       return;
     }
   }
-  bVar2 = Window_IsVisible(param_2->contextIndex,&param_3->window);
-  if ((bVar2) && (param_3->onEvent != (GenericEventHandler *)0x0)) {
-    local_120.parent = param_3;
-    local_120.onEvent = param_3->onEvent;
-    Item_RunEventScript(param_1,param_2,&local_120,"onClose");
+  bVar2 = Window_IsVisible(dc->contextIndex,&menu->window);
+  if ((bVar2) && (menu->onEvent != (GenericEventHandler *)0x0)) {
+    local_120.parent = menu;
+    local_120.onEvent = menu->onEvent;
+    Item_RunEventScript(localClientNum,dc,&local_120,"onClose");
   }
   return;
 }
@@ -2331,17 +2360,18 @@ void __cdecl Menu_RunCloseScript(int param_1,UiContext *param_2,menuDef_t *param
 
 // 0075FCE0  Menus_CompleteItemAnimations  (ui/ui_shared.cpp:1698)
 
-void __cdecl Menus_CompleteItemAnimations(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_CompleteItemAnimations(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
-  itemDef_s *piVar1;
-  int local_8;
+  itemDef_s *item_00;
+  itemDef_s *item;
+  int i;
   
-  for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-    piVar1 = param_3->items[local_8];
-    if ((piVar1->animInfo != (UIAnimInfo *)0x0) && (piVar1->animInfo->animating != 0)) {
-      piVar1->animInfo->animDuration = 0;
-      Item_UpdateAnimation(param_1,param_2,piVar1);
+  for (i = 0; i < menu->itemCount; i = i + 1) {
+    item_00 = menu->items[i];
+    if ((item_00->animInfo != (UIAnimInfo *)0x0) && (item_00->animInfo->animating != 0)) {
+      item_00->animInfo->animDuration = 0;
+      Item_UpdateAnimation(localClientNum,dc,item_00);
     }
   }
   return;
@@ -2350,30 +2380,32 @@ void __cdecl Menus_CompleteItemAnimations(int param_1,UiContext *param_2,menuDef
 
 // 0075FD70  Menus_ClearFlagsOnClose  (ui/ui_shared.cpp:1712)
 
-void __cdecl Menus_ClearFlagsOnClose(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_ClearFlagsOnClose(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
-  itemDef_s *piVar1;
-  focusItemDef_s *pfVar2;
-  uint uVar3;
-  int local_8;
+  itemDef_s *item;
+  focusItemDef_s *pfVar1;
+  uint uVar2;
+  itemDef_s *nextItem;
+  focusItemDef_s *focusPtr;
+  int i;
   
-  for (local_8 = 0; local_8 < param_3->itemCount; local_8 = local_8 + 1) {
-    piVar1 = param_3->items[local_8];
-    if (piVar1 != (itemDef_s *)0x0) {
-      pfVar2 = Item_GetFocusItemDef(piVar1);
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&piVar1->window);
-      if ((uVar3 & 0x40) != 0) {
-        if (pfVar2 != (focusItemDef_s *)0x0) {
-          Item_RunScript(param_1,param_2,piVar1,pfVar2->mouseExitText);
+  for (i = 0; i < menu->itemCount; i = i + 1) {
+    item = menu->items[i];
+    if (item != (itemDef_s *)0x0) {
+      pfVar1 = Item_GetFocusItemDef(item);
+      uVar2 = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+      if ((uVar2 & 0x40) != 0) {
+        if (pfVar1 != (focusItemDef_s *)0x0) {
+          Item_RunScript(localClientNum,dc,item,pfVar1->mouseExitText);
         }
-        Window_RemoveDynamicFlags(param_2->contextIndex,&piVar1->window,0x40);
+        Window_RemoveDynamicFlags(dc->contextIndex,&item->window,0x40);
       }
-      uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&piVar1->window);
-      if (((uVar3 & 1) != 0) &&
-         (Window_RemoveDynamicFlags(param_2->contextIndex,&piVar1->window,1),
-         pfVar2 != (focusItemDef_s *)0x0)) {
-        Item_RunScript(param_1,param_2,piVar1,pfVar2->mouseExit);
+      uVar2 = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+      if (((uVar2 & 1) != 0) &&
+         (Window_RemoveDynamicFlags(dc->contextIndex,&item->window,1),
+         pfVar1 != (focusItemDef_s *)0x0)) {
+        Item_RunScript(localClientNum,dc,item,pfVar1->mouseExit);
       }
     }
   }
@@ -2383,7 +2415,7 @@ void __cdecl Menus_ClearFlagsOnClose(int param_1,UiContext *param_2,menuDef_t *p
 
 // 0075F2B0  Menus_Close  (ui/ui_shared.cpp:1745)
 
-void __cdecl Menus_Close(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_Close(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   menuDef_t *pmVar1;
@@ -2394,99 +2426,102 @@ void __cdecl Menus_Close(int param_1,UiContext *param_2,menuDef_t *param_3)
   bool bVar6;
   int local_30;
   int local_2c;
-  int local_14;
+  bool noFocus;
+  bool hadFocus;
+  int menuNum;
+  bool closeSlideAnimStarted;
+  menuDef_t *menuDef;
+  bool closeFadingEffectStarted;
   
-  if ((param_2 == (UiContext *)0x0) &&
+  if ((dc == (UiContext *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x6d6,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x6d7,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = Menus_MenuIsInStack(param_2,param_3);
+  iVar4 = Menus_MenuIsInStack(dc,menu);
   if (iVar4 != 0) {
-    Menus_CompleteItemAnimations(param_1,param_2,param_3);
-    if (param_2->enableSlideAndFadeEffectForMenu != false) {
-      uVar5 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+    Menus_CompleteItemAnimations(localClientNum,dc,menu);
+    if (dc->enableSlideAndFadeEffectForMenu != false) {
+      uVar5 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
       bVar3 = (uVar5 & 0x40000) != 0;
-      uVar5 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+      uVar5 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
       bVar6 = (uVar5 & 0x2000) != 0;
-      if ((((0 < param_3->closeSlideSpeed) && (-1 < param_3->closeSlideDirection)) &&
-          (param_3->closeSlideDirection < 4)) && ((!bVar3 && (param_3->slideTimeCounter != -3)))) {
-        Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x40000);
+      if ((((0 < menu->closeSlideSpeed) && (-1 < menu->closeSlideDirection)) &&
+          (menu->closeSlideDirection < 4)) && ((!bVar3 && (menu->slideTimeCounter != -3)))) {
+        Window_AddDynamicFlags(dc->contextIndex,&menu->window,0x40000);
         iVar4 = Sys_Milliseconds();
-        param_3->slideTimeCounter = iVar4;
+        menu->slideTimeCounter = iVar4;
         bVar3 = true;
       }
-      if (((0 < param_3->closeFadingTime) && (!bVar6)) && (param_3->fadeTimeCounter != -3)) {
-        Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x2000);
+      if (((0 < menu->closeFadingTime) && (!bVar6)) && (menu->fadeTimeCounter != -3)) {
+        Window_AddDynamicFlags(dc->contextIndex,&menu->window,0x2000);
         iVar4 = Sys_Milliseconds();
-        param_3->fadeTimeCounter = iVar4;
+        menu->fadeTimeCounter = iVar4;
         bVar6 = true;
       }
-      if ((((bVar3) || (bVar6)) && (param_3->slideTimeCounter != -3)) &&
-         (param_3->fadeTimeCounter != -3)) {
+      if ((((bVar3) || (bVar6)) && (menu->slideTimeCounter != -3)) && (menu->fadeTimeCounter != -3))
+      {
         if ((bVar3) && (bVar6)) {
-          local_2c = param_3->closeFadingTime;
-          if (local_2c <= param_3->closeSlideSpeed) {
-            local_2c = param_3->closeSlideSpeed;
+          local_2c = menu->closeFadingTime;
+          if (local_2c <= menu->closeSlideSpeed) {
+            local_2c = menu->closeSlideSpeed;
           }
-          param_3->closeSlideSpeed = local_2c;
-          local_30 = param_3->closeFadingTime;
-          if (local_30 <= param_3->closeSlideSpeed) {
-            local_30 = param_3->closeSlideSpeed;
+          menu->closeSlideSpeed = local_2c;
+          local_30 = menu->closeFadingTime;
+          if (local_30 <= menu->closeSlideSpeed) {
+            local_30 = menu->closeSlideSpeed;
           }
-          param_3->closeFadingTime = local_30;
+          menu->closeFadingTime = local_30;
         }
         if ((bVar3) &&
-           (iVar4 = Sys_Milliseconds(), iVar4 - param_3->slideTimeCounter < param_3->closeSlideSpeed
-           )) {
+           (iVar4 = Sys_Milliseconds(), iVar4 - menu->slideTimeCounter < menu->closeSlideSpeed)) {
           return;
         }
         if ((bVar6) &&
-           (iVar4 = Sys_Milliseconds(), iVar4 - param_3->fadeTimeCounter < param_3->closeFadingTime)
-           ) {
+           (iVar4 = Sys_Milliseconds(), iVar4 - menu->fadeTimeCounter < menu->closeFadingTime)) {
           return;
         }
       }
     }
-    Menu_ClearFocus(param_1,param_2,param_3);
-    Menus_ClearFlagsOnClose(param_1,param_2,param_3);
-    Menu_RunCloseScript(param_1,param_2,param_3);
-    bVar3 = Window_HasFocus(param_2->contextIndex,&param_3->window);
-    Menus_RemoveFromStack(param_1,param_2,param_3);
+    Menu_ClearFocus(localClientNum,dc,menu);
+    Menus_ClearFlagsOnClose(localClientNum,dc,menu);
+    Menu_RunCloseScript(localClientNum,dc,menu);
+    bVar3 = Window_HasFocus(dc->contextIndex,&menu->window);
+    Menus_RemoveFromStack(localClientNum,dc,menu);
     if (bVar3) {
-      Menu_RunLeaveFocusScript(param_1,param_2,param_3);
-      iVar4 = param_2->openMenuCount;
+      Menu_RunLeaveFocusScript(localClientNum,dc,menu);
+      iVar4 = dc->openMenuCount;
       do {
-        local_14 = iVar4 + -1;
-        if (local_14 < 0) goto LAB_0075f61d;
-        pmVar1 = param_2->menuStack[iVar4 + -1].menu;
-        bVar3 = Window_IsVisible(param_2->contextIndex,&pmVar1->window);
-        iVar4 = local_14;
+        menuNum = iVar4 + -1;
+        if (menuNum < 0) goto LAB_0075f61d;
+        pmVar1 = dc->menuStack[iVar4 + -1].menu;
+        bVar3 = Window_IsVisible(dc->contextIndex,&pmVar1->window);
+        iVar4 = menuNum;
       } while (!bVar3);
-      Menu_GainFocusDueToClose(param_1,param_2,pmVar1);
+      Menu_GainFocusDueToClose(localClientNum,dc,pmVar1);
     }
 LAB_0075f61d:
-    if (0 < param_2->openMenuCount) {
+    if (0 < dc->openMenuCount) {
       bVar3 = true;
-      for (local_14 = 0; local_14 < param_2->openMenuCount; local_14 = local_14 + 1) {
-        pmVar1 = param_2->menuStack[local_14].menu;
-        bVar6 = Window_IsVisible(param_2->contextIndex,&pmVar1->window);
-        if ((bVar6) && (bVar6 = Window_HasFocus(param_2->contextIndex,&pmVar1->window), bVar6)) {
+      for (menuNum = 0; menuNum < dc->openMenuCount; menuNum = menuNum + 1) {
+        pmVar1 = dc->menuStack[menuNum].menu;
+        bVar6 = Window_IsVisible(dc->contextIndex,&pmVar1->window);
+        if ((bVar6) && (bVar6 = Window_HasFocus(dc->contextIndex,&pmVar1->window), bVar6)) {
           bVar3 = false;
           break;
         }
       }
       if (bVar3) {
-        if (((param_3->window).name == (char *)0x0) &&
+        if (((menu->window).name == (char *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x735,0,
                                      "%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -2494,28 +2529,29 @@ LAB_0075f61d:
           return;
         }
         Com_PrintWarning(0xd,"WARNING: No menu has focus after closing %s.\n Active menus: \n");
-        for (local_14 = 0; local_14 < param_2->openMenuCount; local_14 = local_14 + 1) {
+        for (menuNum = 0; menuNum < dc->openMenuCount; menuNum = menuNum + 1) {
           Com_PrintWarning(0xd,"  %d:  %s\n");
         }
       }
     }
   }
-  Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,6);
+  Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,6);
   return;
 }
 
 
 // 0075F270  Menus_CloseByName  (ui/ui_shared.cpp:1862)
 
-void __cdecl Menus_CloseByName(int param_1,UiContext *param_2,char *param_3)
+void __cdecl Menus_CloseByName(int localClientNum,UiContext *dc,char *p)
 
 {
-  menuDef_t *pmVar1;
+  menuDef_t *menu_00;
+  menuDef_t *menu;
   
-  pmVar1 = Menus_FindByName(param_2,param_3);
-  if (pmVar1 != (menuDef_t *)0x0) {
-    param_2->enableSlideAndFadeEffectForMenu = true;
-    Menus_Close(param_1,param_2,pmVar1);
+  menu_00 = Menus_FindByName(dc,p);
+  if (menu_00 != (menuDef_t *)0x0) {
+    dc->enableSlideAndFadeEffectForMenu = true;
+    Menus_Close(localClientNum,dc,menu_00);
   }
   return;
 }
@@ -2523,15 +2559,16 @@ void __cdecl Menus_CloseByName(int param_1,UiContext *param_2,char *param_3)
 
 // 0075FE70  Menus_CloseImmediateByName  (ui/ui_shared.cpp:1874)
 
-void __cdecl Menus_CloseImmediateByName(int param_1,UiContext *param_2,char *param_3)
+void __cdecl Menus_CloseImmediateByName(int localClientNum,UiContext *dc,char *p)
 
 {
-  menuDef_t *pmVar1;
+  menuDef_t *menu_00;
+  menuDef_t *menu;
   
-  pmVar1 = Menus_FindByName(param_2,param_3);
-  if (pmVar1 != (menuDef_t *)0x0) {
-    param_2->enableSlideAndFadeEffectForMenu = false;
-    Menus_Close(param_1,param_2,pmVar1);
+  menu_00 = Menus_FindByName(dc,p);
+  if (menu_00 != (menuDef_t *)0x0) {
+    dc->enableSlideAndFadeEffectForMenu = false;
+    Menus_Close(localClientNum,dc,menu_00);
   }
   return;
 }
@@ -2541,22 +2578,22 @@ void __cdecl Menus_CloseImmediateByName(int param_1,UiContext *param_2,char *par
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Menus_RemoveMenu(XAssetHeader param_1)
+void __cdecl Menus_RemoveMenu(XAssetHeader header)
 
 {
   uiInfo_s *puVar1;
-  int local_10;
-  int local_c;
+  int i;
+  int localClientNum;
+  uiInfo_s *uiInfo;
   
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    puVar1 = UI_GetInfo(local_c);
-    for (local_10 = 0; local_10 < (puVar1->uiDC).menuCount; local_10 = local_10 + 1) {
-      if ((menuDef_t *)param_1.xmodelPieces == (puVar1->uiDC).Menus[local_10]) {
-        memmove((uchar *)((puVar1->uiDC).Menus + local_10),
-                (uchar *)((puVar1->uiDC).Menus + local_10 + 1),
-                ((puVar1->uiDC).menuCount - local_10) * 4 - 4);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    puVar1 = UI_GetInfo(localClientNum);
+    for (i = 0; i < (puVar1->uiDC).menuCount; i = i + 1) {
+      if ((menuDef_t *)header.xmodelPieces == (puVar1->uiDC).Menus[i]) {
+        memmove((uchar *)((puVar1->uiDC).Menus + i),(uchar *)((puVar1->uiDC).Menus + i + 1),
+                ((puVar1->uiDC).menuCount - i) * 4 - 4);
         (puVar1->uiDC).menuCount = (puVar1->uiDC).menuCount + -1;
-        local_10 = local_10 + -1;
+        i = i + -1;
       }
     }
   }
@@ -2566,16 +2603,16 @@ void __cdecl Menus_RemoveMenu(XAssetHeader param_1)
 
 // 0075FF80  Item_DoesEventExist  (ui/ui_shared.cpp:1905)
 
-bool __cdecl Item_DoesEventExist(itemDef_s *param_1,char *param_2)
+bool __cdecl Item_DoesEventExist(itemDef_s *item,char *eventName)
 
 {
   int iVar1;
-  GenericEventHandler *local_8;
+  GenericEventHandler *eventRunner;
   
-  if ((param_1 != (itemDef_s *)0x0) && (param_1->onEvent != (GenericEventHandler *)0x0)) {
-    for (local_8 = param_1->onEvent; local_8 != (GenericEventHandler *)0x0; local_8 = local_8->next)
-    {
-      iVar1 = I_stricmp(local_8->name,param_2);
+  if ((item != (itemDef_s *)0x0) && (item->onEvent != (GenericEventHandler *)0x0)) {
+    for (eventRunner = item->onEvent; eventRunner != (GenericEventHandler *)0x0;
+        eventRunner = eventRunner->next) {
+      iVar1 = I_stricmp(eventRunner->name,eventName);
       if (iVar1 == 0) {
         return true;
       }
@@ -2587,16 +2624,16 @@ bool __cdecl Item_DoesEventExist(itemDef_s *param_1,char *param_2)
 
 // 0075FFE0  Menus_DoesEventExist  (ui/ui_shared.cpp:1930)
 
-bool __cdecl Menus_DoesEventExist(menuDef_t *param_1,char *param_2)
+bool __cdecl Menus_DoesEventExist(menuDef_t *menu,char *eventName)
 
 {
   int iVar1;
-  GenericEventHandler *local_8;
+  GenericEventHandler *eventRunner;
   
-  if ((param_1 != (menuDef_t *)0x0) && (param_1->onEvent != (GenericEventHandler *)0x0)) {
-    for (local_8 = param_1->onEvent; local_8 != (GenericEventHandler *)0x0; local_8 = local_8->next)
-    {
-      iVar1 = I_stricmp(local_8->name,param_2);
+  if ((menu != (menuDef_t *)0x0) && (menu->onEvent != (GenericEventHandler *)0x0)) {
+    for (eventRunner = menu->onEvent; eventRunner != (GenericEventHandler *)0x0;
+        eventRunner = eventRunner->next) {
+      iVar1 = I_stricmp(eventRunner->name,eventName);
       if (iVar1 == 0) {
         return true;
       }
@@ -2608,27 +2645,30 @@ bool __cdecl Menus_DoesEventExist(menuDef_t *param_1,char *param_2)
 
 // 00760040  Menus_SetFocusToItem  (ui/ui_shared.cpp:1973)
 
-void __cdecl Menus_SetFocusToItem(int param_1,UiContext *param_2,char *param_3,char *param_4)
+void __cdecl Menus_SetFocusToItem(int localClientNum,UiContext *dc,char *menuName,char *itemName)
 
 {
-  menuDef_t *pmVar1;
-  itemDef_s *piVar2;
-  rectDef_s *prVar3;
-  int iVar4;
+  menuDef_t *menu_00;
+  itemDef_s *item;
+  rectDef_s *prVar1;
+  int iVar2;
+  itemDef_s *focusItem;
+  menuDef_t *menu;
+  rectDef_s *rect;
   
-  pmVar1 = Menus_FindByName(param_2,param_3);
-  if (pmVar1 == (menuDef_t *)0x0) {
+  menu_00 = Menus_FindByName(dc,menuName);
+  if (menu_00 == (menuDef_t *)0x0) {
     Com_DPrintf(0xd,"setFocusToItem: could not find menu named \'%s\'\n");
   }
   else {
-    piVar2 = Menu_FindFirstFocusableItemByName(param_1,param_2,pmVar1,param_4);
-    if (piVar2 == (itemDef_s *)0x0) {
+    item = Menu_FindFirstFocusableItemByName(localClientNum,dc,menu_00,itemName);
+    if (item == (itemDef_s *)0x0) {
       Com_Printf(0xd,"setFocusToItem: could not find widget named \'%s\' in menu \'%s\'\n");
     }
     else {
-      prVar3 = Window_GetRect(&piVar2->window);
-      iVar4 = Item_SetFocus(param_1,param_2,piVar2,prVar3->x,prVar3->y);
-      if (iVar4 == 0) {
+      prVar1 = Window_GetRect(&item->window);
+      iVar2 = Item_SetFocus(localClientNum,dc,item,prVar1->x,prVar1->y);
+      if (iVar2 == 0) {
         Com_DPrintf(0xd,
                     "setFocus: error focusing widget \'%s\' (widget was found but could not accept focus)\n"
                    );
@@ -2641,33 +2681,34 @@ void __cdecl Menus_SetFocusToItem(int param_1,UiContext *param_2,char *param_3,c
 
 // 00760230  Menus_CloseAll  (ui/ui_shared.cpp:2002)
 
-void __cdecl Menus_CloseAll(int param_1,UiContext *param_2)
+void __cdecl Menus_CloseAll(int localClientNum,UiContext *dc)
 
 {
-  int local_8;
+  int i;
   
-  param_2->enableSlideAndFadeEffectForMenu = false;
-  for (local_8 = 0; local_8 < param_2->menuCount; local_8 = local_8 + 1) {
-    Menus_Close(param_1,param_2,param_2->Menus[local_8]);
+  dc->enableSlideAndFadeEffectForMenu = false;
+  for (i = 0; i < dc->menuCount; i = i + 1) {
+    Menus_Close(localClientNum,dc,dc->Menus[i]);
   }
-  param_2->blurMenuStackIndex = -1;
+  dc->blurMenuStackIndex = -1;
   return;
 }
 
 
 // 00760290  Menus_CloseAllBehindMain  (ui/ui_shared.cpp:2020)
 
-void __cdecl Menus_CloseAllBehindMain(int param_1,UiContext *param_2)
+void __cdecl Menus_CloseAllBehindMain(int localClientNum,UiContext *dc)
 
 {
-  menuDef_t *pmVar1;
-  int iVar2;
+  menuDef_t *menu;
+  int iVar1;
+  menuDef_t *mainMenu;
   
-  pmVar1 = Menus_FindByName(param_2,"main");
-  if ((pmVar1 != (menuDef_t *)0x0) && (iVar2 = Menus_MenuIsInStack(param_2,pmVar1), iVar2 != 0)) {
-    param_2->enableSlideAndFadeEffectForMenu = false;
-    while ((param_2->openMenuCount != 0 && (param_2->menuStack[0].menu != pmVar1))) {
-      Menus_Close(param_1,param_2,param_2->menuStack[0].menu);
+  menu = Menus_FindByName(dc,"main");
+  if ((menu != (menuDef_t *)0x0) && (iVar1 = Menus_MenuIsInStack(dc,menu), iVar1 != 0)) {
+    dc->enableSlideAndFadeEffectForMenu = false;
+    while ((dc->openMenuCount != 0 && (dc->menuStack[0].menu != menu))) {
+      Menus_Close(localClientNum,dc,dc->menuStack[0].menu);
     }
   }
   return;
@@ -2692,17 +2733,17 @@ void __cdecl UI_ClearErrors(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_Show(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Show(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menu_ShowItemByName(param_2->contextIndex,param_3->parent,local_40c,1);
+    Menu_ShowItemByName(dc->contextIndex,item->parent,name,1);
   }
   return;
 }
@@ -2712,17 +2753,17 @@ void __cdecl Script_Show(int param_1,UiContext *param_2,itemDef_s *param_3,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_Hide(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Hide(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menu_ShowItemByName(param_2->contextIndex,param_3->parent,local_40c,0);
+    Menu_ShowItemByName(dc->contextIndex,item->parent,name,0);
   }
   return;
 }
@@ -2732,17 +2773,17 @@ void __cdecl Script_Hide(int param_1,UiContext *param_2,itemDef_s *param_3,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_FadeIn(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_FadeIn(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menu_FadeItemByName(param_2->contextIndex,param_3->parent,local_40c,0);
+    Menu_FadeItemByName(dc->contextIndex,item->parent,name,0);
   }
   return;
 }
@@ -2752,17 +2793,17 @@ void __cdecl Script_FadeIn(int param_1,UiContext *param_2,itemDef_s *param_3,cha
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_FadeOut(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_FadeOut(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menu_FadeItemByName(param_2->contextIndex,param_3->parent,local_40c,1);
+    Menu_FadeItemByName(dc->contextIndex,item->parent,name,1);
   }
   return;
 }
@@ -2772,17 +2813,17 @@ void __cdecl Script_FadeOut(int param_1,UiContext *param_2,itemDef_s *param_3,ch
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ShowMenu(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ShowMenu(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menus_ShowByName(param_2,local_40c);
+    Menus_ShowByName(dc,name);
   }
   return;
 }
@@ -2792,17 +2833,17 @@ void __cdecl Script_ShowMenu(int param_1,UiContext *param_2,itemDef_s *param_3,c
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_HideMenu(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_HideMenu(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Menus_HideByName(param_2,local_40c);
+    Menus_HideByName(dc,name);
   }
   return;
 }
@@ -2812,36 +2853,36 @@ void __cdecl Script_HideMenu(int param_1,UiContext *param_2,itemDef_s *param_3,c
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_Open(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Open(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_80c [1024];
-  char local_40c [1028];
+  char *src;
+  char searchValue [1024];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    iVar1 = I_stricmp(local_40c,"dvarstring");
+    iVar1 = I_stricmp(name,"dvarstring");
     if (iVar1 == 0) {
-      String_Parse(param_4,local_40c,0x400);
-      while ((iVar1 = I_stricmp(local_40c,"("), iVar1 == 0 ||
-             (iVar1 = I_stricmp(local_40c,"\""), iVar1 == 0))) {
-        String_Parse(param_4,local_40c,0x400);
+      String_Parse(args,name,0x400);
+      while ((iVar1 = I_stricmp(name,"("), iVar1 == 0 || (iVar1 = I_stricmp(name,"\""), iVar1 == 0))
+            ) {
+        String_Parse(args,name,0x400);
       }
       iVar1 = 0x400;
-      pcVar2 = Dvar_GetString(local_40c);
-      I_strncpyz(local_80c,pcVar2,iVar1);
-      while ((iVar1 = I_stricmp(local_40c,"("), iVar1 == 0 ||
-             (iVar1 = I_stricmp(local_40c,"\""), iVar1 == 0))) {
-        String_Parse(param_4,local_40c,0x400);
+      src = Dvar_GetString(name);
+      I_strncpyz(searchValue,src,iVar1);
+      while ((iVar1 = I_stricmp(name,"("), iVar1 == 0 || (iVar1 = I_stricmp(name,"\""), iVar1 == 0))
+            ) {
+        String_Parse(args,name,0x400);
       }
-      Menus_OpenByName(param_1,param_2,local_80c);
+      Menus_OpenByName(localClientNum,dc,searchValue);
       return;
     }
-    Menus_OpenByName(param_1,param_2,local_40c);
+    Menus_OpenByName(localClientNum,dc,name);
   }
   return;
 }
@@ -2851,36 +2892,36 @@ void __cdecl Script_Open(int param_1,UiContext *param_2,itemDef_s *param_3,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_OpenImmediate(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_OpenImmediate(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_80c [1024];
-  char local_40c [1028];
+  char *src;
+  char searchValue [1024];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    iVar1 = I_stricmp(local_40c,"dvarstring");
+    iVar1 = I_stricmp(name,"dvarstring");
     if (iVar1 == 0) {
-      String_Parse(param_4,local_40c,0x400);
-      while ((iVar1 = I_stricmp(local_40c,"("), iVar1 == 0 ||
-             (iVar1 = I_stricmp(local_40c,"\""), iVar1 == 0))) {
-        String_Parse(param_4,local_40c,0x400);
+      String_Parse(args,name,0x400);
+      while ((iVar1 = I_stricmp(name,"("), iVar1 == 0 || (iVar1 = I_stricmp(name,"\""), iVar1 == 0))
+            ) {
+        String_Parse(args,name,0x400);
       }
       iVar1 = 0x400;
-      pcVar2 = Dvar_GetString(local_40c);
-      I_strncpyz(local_80c,pcVar2,iVar1);
-      while ((iVar1 = I_stricmp(local_40c,"("), iVar1 == 0 ||
-             (iVar1 = I_stricmp(local_40c,"\""), iVar1 == 0))) {
-        String_Parse(param_4,local_40c,0x400);
+      src = Dvar_GetString(name);
+      I_strncpyz(searchValue,src,iVar1);
+      while ((iVar1 = I_stricmp(name,"("), iVar1 == 0 || (iVar1 = I_stricmp(name,"\""), iVar1 == 0))
+            ) {
+        String_Parse(args,name,0x400);
       }
-      Menus_OpenImmediateByName(param_1,param_2,local_80c);
+      Menus_OpenImmediateByName(localClientNum,dc,searchValue);
       return;
     }
-    Menus_OpenImmediateByName(param_1,param_2,local_40c);
+    Menus_OpenImmediateByName(localClientNum,dc,name);
   }
   return;
 }
@@ -2890,21 +2931,20 @@ void __cdecl Script_OpenImmediate(int param_1,UiContext *param_2,itemDef_s *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_OpenForGameType(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_OpenForGameType(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_40c [1028];
+  char *p;
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Dvar_GetString(param_3->dvar);
-    pcVar2 = va(local_40c);
-    Menus_OpenByName(param_1,param_2,pcVar2);
+    Dvar_GetString(item->dvar);
+    p = va(name);
+    Menus_OpenByName(localClientNum,dc,p);
   }
   return;
 }
@@ -2914,21 +2954,20 @@ Script_OpenForGameType(int param_1,UiContext *param_2,itemDef_s *param_3,char **
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_CloseForGameType(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_CloseForGameType(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_40c [1028];
+  char *p;
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    Dvar_GetString(param_3->dvar);
-    pcVar2 = va(local_40c);
-    Menus_CloseByName(param_1,param_2,pcVar2);
+    Dvar_GetString(item->dvar);
+    p = va(name);
+    Menus_CloseByName(localClientNum,dc,p);
   }
   return;
 }
@@ -2936,46 +2975,45 @@ Script_CloseForGameType(int param_1,UiContext *param_2,itemDef_s *param_3,char *
 
 // 00760C50  RemoveMenuFromBlurStack  (ui/ui_shared.cpp:2192)
 
-bool __cdecl RemoveMenuFromBlurStack(int param_1,UiContext *param_2,char *param_3)
+bool __cdecl RemoveMenuFromBlurStack(int localClientNum,UiContext *dc,char *menuName)
 
 {
   char cVar1;
   int iVar2;
   char *local_20;
   char *local_10;
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  if (-1 < param_2->blurMenuStackIndex) {
-    if (param_3 != (char *)0x0) {
-      local_10 = param_3;
+  if (-1 < dc->blurMenuStackIndex) {
+    if (menuName != (char *)0x0) {
+      local_10 = menuName;
       do {
         cVar1 = *local_10;
         local_10 = local_10 + 1;
       } while (cVar1 != '\0');
-      if (local_10 != param_3 + 1) {
-        local_20 = param_3;
+      if (local_10 != menuName + 1) {
+        local_20 = menuName;
         do {
           cVar1 = *local_20;
           local_20 = local_20 + 1;
         } while (cVar1 != '\0');
-        if ((uint)((int)local_20 - (int)(param_3 + 1)) < 0x40) {
-          local_8 = 0;
+        if ((uint)((int)local_20 - (int)(menuName + 1)) < 0x40) {
+          i = 0;
           while( true ) {
-            if (param_2->blurMenuStackIndex < local_8) {
+            if (dc->blurMenuStackIndex < i) {
               return false;
             }
-            iVar2 = I_strnicmp(param_2->blurMenuStack[local_8].menuName,param_3,0x40);
+            iVar2 = I_strnicmp(dc->blurMenuStack[i].menuName,menuName,0x40);
             if (iVar2 == 0) break;
-            local_8 = local_8 + 1;
+            i = i + 1;
           }
-          for (local_c = local_8; local_c < param_2->blurMenuStackIndex; local_c = local_c + 1) {
-            I_strncpyz(param_2->blurMenuStack[local_c].menuName,
-                       param_2->blurMenuStack[local_c + 1].menuName,0x40);
+          for (j = i; j < dc->blurMenuStackIndex; j = j + 1) {
+            I_strncpyz(dc->blurMenuStack[j].menuName,dc->blurMenuStack[j + 1].menuName,0x40);
           }
-          param_2->blurMenuStackIndex = param_2->blurMenuStackIndex + -1;
-          if (param_2->blurMenuStackIndex < 0) {
-            UI_AnimateItem(param_1,param_2,"UIBlur","BlurItem","FadeOut",0xb4);
+          dc->blurMenuStackIndex = dc->blurMenuStackIndex + -1;
+          if (dc->blurMenuStackIndex < 0) {
+            UI_AnimateItem(localClientNum,dc,"UIBlur","BlurItem","FadeOut",0xb4);
           }
           return true;
         }
@@ -2995,45 +3033,46 @@ bool __cdecl RemoveMenuFromBlurStack(int param_1,UiContext *param_2,char *param_
 
 // 00760B00  Script_ActivateBlur  (ui/ui_shared.cpp:2229)
 
-void __cdecl Script_ActivateBlur(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ActivateBlur(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   char cVar1;
-  char *pcVar2;
-  bool bVar3;
+  char *menuName_00;
+  bool bVar2;
   char *local_1c;
   char *local_c;
+  char *menuName;
   
-  pcVar2 = (param_3->parent->window).name;
-  bVar3 = CL_AnyLocalClientStateActive();
-  if (!bVar3) {
-    if (pcVar2 != (char *)0x0) {
-      local_c = pcVar2;
+  menuName_00 = (item->parent->window).name;
+  bVar2 = CL_AnyLocalClientStateActive();
+  if (!bVar2) {
+    if (menuName_00 != (char *)0x0) {
+      local_c = menuName_00;
       do {
         cVar1 = *local_c;
         local_c = local_c + 1;
       } while (cVar1 != '\0');
-      if (local_c != pcVar2 + 1) {
-        local_1c = pcVar2;
+      if (local_c != menuName_00 + 1) {
+        local_1c = menuName_00;
         do {
           cVar1 = *local_1c;
           local_1c = local_1c + 1;
         } while (cVar1 != '\0');
-        if (0x3f < (uint)((int)local_1c - (int)(pcVar2 + 1))) {
+        if (0x3f < (uint)((int)local_1c - (int)(menuName_00 + 1))) {
           Com_PrintWarning(0xd,
                            "WARNING: Menu name %s is longer than %d characters. Blur will not function for this menu.\n"
                           );
           return;
         }
-        RemoveMenuFromBlurStack(param_1,param_2,pcVar2);
-        if (6 < param_2->blurMenuStackIndex) {
+        RemoveMenuFromBlurStack(localClientNum,dc,menuName_00);
+        if (6 < dc->blurMenuStackIndex) {
           Com_PrintWarning(0xd,"WARNING: Tried to activate blur on too many menus simultaneously!\n"
                           );
           return;
         }
-        param_2->blurMenuStackIndex = param_2->blurMenuStackIndex + 1;
-        I_strncpyz(param_2->blurMenuStack[param_2->blurMenuStackIndex].menuName,pcVar2,0x40);
-        UI_AnimateItem(param_1,param_2,"UIBlur","BlurItem","FadeIn",0xb4);
+        dc->blurMenuStackIndex = dc->blurMenuStackIndex + 1;
+        I_strncpyz(dc->blurMenuStack[dc->blurMenuStackIndex].menuName,menuName_00,0x40);
+        UI_AnimateItem(localClientNum,dc,"UIBlur","BlurItem","FadeIn",0xb4);
         return;
       }
     }
@@ -3047,14 +3086,14 @@ void __cdecl Script_ActivateBlur(int param_1,UiContext *param_2,itemDef_s *param
 
 // 00760DF0  Script_DeactivateBlur  (ui/ui_shared.cpp:2264)
 
-void __cdecl Script_DeactivateBlur(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_DeactivateBlur(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   bool bVar1;
   
   bVar1 = CL_AnyLocalClientStateActive();
   if (!bVar1) {
-    RemoveMenuFromBlurStack(param_1,param_2,(param_3->parent->window).name);
+    RemoveMenuFromBlurStack(localClientNum,dc,(item->parent->window).name);
   }
   return;
 }
@@ -3064,18 +3103,19 @@ void __cdecl Script_DeactivateBlur(int param_1,UiContext *param_2,itemDef_s *par
 
 /* WARNING: Type propagation algorithm not settling */
 
-int __cdecl GetBlurFocus(int param_1,UiContext *param_2)
+int __cdecl GetBlurFocus(int localClientNum,UiContext *dc)
 
 {
   code *pcVar1;
   bool bVar2;
   menuDef_t *pmVar3;
   int iVar4;
-  int local_10;
-  int local_c;
+  int i;
+  int blurMenuStackIndex;
+  menuDef_t *blurMenu;
   
-  pmVar3 = Menus_FindByName(param_2,"UIBlur");
-  local_c = param_2->blurMenuStackIndex;
+  pmVar3 = Menus_FindByName(dc,"UIBlur");
+  blurMenuStackIndex = dc->blurMenuStackIndex;
   if (pmVar3 == (menuDef_t *)0x0) {
     iVar4 = -1;
   }
@@ -3089,28 +3129,29 @@ int __cdecl GetBlurFocus(int param_1,UiContext *param_2)
     }
     if ((pmVar3->itemCount == 1) && (*pmVar3->items != (itemDef_s *)0x0)) {
       if (0.0 < ((*pmVar3->items)->window).foreColor[3]) {
-        if (local_c < 0) {
-          local_c = 0;
+        if (blurMenuStackIndex < 0) {
+          blurMenuStackIndex = 0;
         }
-        if (((local_c < 0) || (7 < local_c)) &&
+        if (((blurMenuStackIndex < 0) || (7 < blurMenuStackIndex)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x8f2,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar4 = (*pcVar1)();
           return iVar4;
         }
-        if ((local_c < 0) || (7 < local_c)) {
+        if ((blurMenuStackIndex < 0) || (7 < blurMenuStackIndex)) {
           iVar4 = -1;
         }
         else {
-          for (local_10 = 0; local_10 < param_2->openMenuCount; local_10 = local_10 + 1) {
-            if ((((param_2->menuStack[local_10].menu)->window).name != (char *)0x0) &&
-               (iVar4 = I_strnicmp(((param_2->menuStack[local_10].menu)->window).name,
-                                   param_2->blurMenuStack[local_c].menuName,0x40), iVar4 == 0)) {
-              return local_10;
+          for (i = 0; i < dc->openMenuCount; i = i + 1) {
+            if ((((dc->menuStack[i].menu)->window).name != (char *)0x0) &&
+               (iVar4 = I_strnicmp(((dc->menuStack[i].menu)->window).name,
+                                   dc->blurMenuStack[blurMenuStackIndex].menuName,0x40), iVar4 == 0)
+               ) {
+              return i;
             }
           }
-          RemoveMenuFromBlurStack(param_1,param_2,param_2->blurMenuStack[local_c].menuName);
+          RemoveMenuFromBlurStack(localClientNum,dc,dc->blurMenuStack[blurMenuStackIndex].menuName);
           iVar4 = 0x10;
         }
       }
@@ -3130,35 +3171,35 @@ int __cdecl GetBlurFocus(int param_1,UiContext *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_OpParse(int *param_1,char **param_2)
+void __cdecl Script_OpParse(int *operand,char **args)
 
 {
   int iVar1;
-  char local_814 [1028];
-  int local_410;
-  char local_40c [1028];
+  char op [1028];
+  int delta;
+  char arg [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  String_Parse(param_2,local_40c,0x400);
-  I_strncpyz(local_814,local_40c,0x400);
-  iVar1 = I_stricmp(local_814,"+");
+  String_Parse(args,arg,0x400);
+  I_strncpyz(op,arg,0x400);
+  iVar1 = I_stricmp(op,"+");
   if (iVar1 == 0) {
-    String_Parse(param_2,local_40c,0x400);
-    local_410 = atoi(local_40c);
-    *param_1 = *param_1 + local_410;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
+    delta = atoi(arg);
+    *operand = *operand + delta;
+    String_Parse(args,arg,0x400);
   }
   else {
-    iVar1 = I_stricmp(local_814,"-");
+    iVar1 = I_stricmp(op,"-");
     if (iVar1 == 0) {
-      String_Parse(param_2,local_40c,0x400);
-      local_410 = atoi(local_40c);
-      *param_1 = *param_1 - local_410;
-      String_Parse(param_2,local_40c,0x400);
+      String_Parse(args,arg,0x400);
+      delta = atoi(arg);
+      *operand = *operand - delta;
+      String_Parse(args,arg,0x400);
     }
     else {
-      iVar1 = I_stricmp(local_814,")");
+      iVar1 = I_stricmp(op,")");
       if (iVar1 != 0) {
         Com_PrintError(0xd,"Script_OpParse cannot handle a \'%s\'.\n");
       }
@@ -3172,22 +3213,23 @@ void __cdecl Script_OpParse(int *param_1,char **param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Script_IntParse(UiContext *param_1,char **param_2)
+int __cdecl Script_IntParse(UiContext *dc,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  int statValue;
+  char arg [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  String_Parse(param_2,local_40c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_40c,"(");
+    iVar1 = I_stricmp(arg,"(");
     if (iVar1 != 0) break;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  iVar1 = atoi(local_40c);
-  String_Parse(param_2,local_40c,0x400);
+  iVar1 = atoi(arg);
+  String_Parse(args,arg,0x400);
   return iVar1;
 }
 
@@ -3196,148 +3238,148 @@ int __cdecl Script_IntParse(UiContext *param_1,char **param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl Script_TableLookupParse(UiContext *param_1,char **param_2)
+char * __cdecl Script_TableLookupParse(UiContext *dc,char **args)
 
 {
   int iVar1;
   char *pcVar2;
-  StringTable **ppSVar3;
-  char local_81c [1024];
-  int local_41c;
-  StringTable *local_418;
-  int local_414;
-  int local_410;
-  char local_40c [1028];
+  StringTable **tablePtr_00;
+  char searchValue [1024];
+  int seachValueTemp;
+  StringTable *tablePtr;
+  int returnValueColumn;
+  int comparisonColumn;
+  char arg [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  String_Parse(param_2,local_40c,0x400);
+  String_Parse(args,arg,0x400);
   do {
-    iVar1 = I_stricmp(local_40c,"tablelookup");
+    iVar1 = I_stricmp(arg,"tablelookup");
     if (iVar1 != 0) {
-      iVar1 = I_stricmp(local_40c,",");
+      iVar1 = I_stricmp(arg,",");
       if (iVar1 != 0) {
-        iVar1 = I_stricmp(local_40c,"(");
+        iVar1 = I_stricmp(arg,"(");
         if (iVar1 != 0) break;
       }
     }
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   } while( true );
-  iVar1 = I_stricmp(local_40c,"dvarString");
+  iVar1 = I_stricmp(arg,"dvarString");
   if (iVar1 == 0) {
 LAB_00761071:
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
     while( true ) {
-      iVar1 = I_stricmp(local_40c,"(");
+      iVar1 = I_stricmp(arg,"(");
       if (iVar1 != 0) break;
-      String_Parse(param_2,local_40c,0x400);
+      String_Parse(args,arg,0x400);
     }
-    ppSVar3 = &local_418;
-    pcVar2 = Dvar_GetString(local_40c);
-    StringTable_GetAsset(pcVar2,ppSVar3);
-    String_Parse(param_2,local_40c,0x400);
+    tablePtr_00 = &tablePtr;
+    pcVar2 = Dvar_GetString(arg);
+    StringTable_GetAsset(pcVar2,tablePtr_00);
+    String_Parse(args,arg,0x400);
   }
   else {
-    iVar1 = I_stricmp(local_40c,"dvarstring");
+    iVar1 = I_stricmp(arg,"dvarstring");
     if (iVar1 == 0) goto LAB_00761071;
-    StringTable_GetAsset(local_40c,&local_418);
+    StringTable_GetAsset(arg,&tablePtr);
   }
-  String_Parse(param_2,local_40c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_40c,",");
+    iVar1 = I_stricmp(arg,",");
     if (iVar1 != 0) break;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  local_410 = atoi(local_40c);
-  String_Parse(param_2,local_40c,0x400);
+  comparisonColumn = atoi(arg);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_40c,",");
+    iVar1 = I_stricmp(arg,",");
     if (iVar1 != 0) break;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  iVar1 = I_stricmp(local_40c,"dvarInt");
+  iVar1 = I_stricmp(arg,"dvarInt");
   if (iVar1 != 0) {
-    iVar1 = I_stricmp(local_40c,"dvarint");
+    iVar1 = I_stricmp(arg,"dvarint");
     if (iVar1 != 0) {
-      iVar1 = I_stricmp(local_40c,"dvarString");
+      iVar1 = I_stricmp(arg,"dvarString");
       if (iVar1 != 0) {
-        iVar1 = I_stricmp(local_40c,"dvarstring");
+        iVar1 = I_stricmp(arg,"dvarstring");
         if (iVar1 != 0) {
-          iVar1 = I_stricmp(local_40c,"tableLookup");
+          iVar1 = I_stricmp(arg,"tableLookup");
           if (iVar1 != 0) {
-            iVar1 = I_stricmp(local_40c,"tablelookup");
+            iVar1 = I_stricmp(arg,"tablelookup");
             if (iVar1 != 0) {
-              iVar1 = I_stricmp(local_40c,"int");
+              iVar1 = I_stricmp(arg,"int");
               if (iVar1 == 0) {
-                String_Parse(param_2,local_40c,0x400);
+                String_Parse(args,arg,0x400);
                 while( true ) {
-                  iVar1 = I_stricmp(local_40c,"(");
+                  iVar1 = I_stricmp(arg,"(");
                   if (iVar1 != 0) break;
-                  String_Parse(param_2,local_40c,0x400);
+                  String_Parse(args,arg,0x400);
                 }
-                iVar1 = I_stricmp(local_40c,"tablelookup");
+                iVar1 = I_stricmp(arg,"tablelookup");
                 if (iVar1 == 0) {
                   iVar1 = 0x400;
-                  pcVar2 = Script_TableLookupParse(param_1,param_2);
-                  I_strncpyz(local_81c,pcVar2,iVar1);
+                  pcVar2 = Script_TableLookupParse(dc,args);
+                  I_strncpyz(searchValue,pcVar2,iVar1);
                 }
-                String_Parse(param_2,local_40c,0x400);
-                Script_OpParse(&local_41c,param_2);
-                _itoa(local_41c,local_81c,10);
+                String_Parse(args,arg,0x400);
+                Script_OpParse(&seachValueTemp,args);
+                _itoa(seachValueTemp,searchValue,10);
               }
               else {
-                I_strncpyz(local_81c,local_40c,0x400);
+                I_strncpyz(searchValue,arg,0x400);
               }
               goto LAB_007614d5;
             }
           }
           iVar1 = 0x400;
-          pcVar2 = Script_TableLookupParse(param_1,param_2);
-          I_strncpyz(local_81c,pcVar2,iVar1);
-          Script_OpParse(&local_41c,param_2);
-          _itoa(local_41c,local_81c,10);
+          pcVar2 = Script_TableLookupParse(dc,args);
+          I_strncpyz(searchValue,pcVar2,iVar1);
+          Script_OpParse(&seachValueTemp,args);
+          _itoa(seachValueTemp,searchValue,10);
           goto LAB_007614d5;
         }
       }
-      String_Parse(param_2,local_40c,0x400);
+      String_Parse(args,arg,0x400);
       while( true ) {
-        iVar1 = I_stricmp(local_40c,"(");
+        iVar1 = I_stricmp(arg,"(");
         if (iVar1 != 0) break;
-        String_Parse(param_2,local_40c,0x400);
+        String_Parse(args,arg,0x400);
       }
       iVar1 = 0x400;
-      pcVar2 = Dvar_GetString(local_40c);
-      I_strncpyz(local_81c,pcVar2,iVar1);
-      String_Parse(param_2,local_40c,0x400);
+      pcVar2 = Dvar_GetString(arg);
+      I_strncpyz(searchValue,pcVar2,iVar1);
+      String_Parse(args,arg,0x400);
       goto LAB_007614d5;
     }
   }
-  String_Parse(param_2,local_40c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_40c,"(");
+    iVar1 = I_stricmp(arg,"(");
     if (iVar1 != 0) break;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  local_41c = Dvar_GetInt(local_40c);
-  String_Parse(param_2,local_40c,0x400);
-  Script_OpParse(&local_41c,param_2);
-  _itoa(local_41c,local_81c,10);
+  seachValueTemp = Dvar_GetInt(arg);
+  String_Parse(args,arg,0x400);
+  Script_OpParse(&seachValueTemp,args);
+  _itoa(seachValueTemp,searchValue,10);
 LAB_007614d5:
-  String_Parse(param_2,local_40c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_40c,",");
+    iVar1 = I_stricmp(arg,",");
     if (iVar1 != 0) break;
-    String_Parse(param_2,local_40c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  iVar1 = I_stricmp(local_40c,"int");
+  iVar1 = I_stricmp(arg,"int");
   if (iVar1 == 0) {
-    local_414 = Script_IntParse(param_1,param_2);
+    returnValueColumn = Script_IntParse(dc,args);
   }
   else {
-    local_414 = atoi(local_40c);
+    returnValueColumn = atoi(arg);
   }
-  Script_OpParse(&local_414,param_2);
-  pcVar2 = StringTable_Lookup(local_418,local_410,local_81c,local_414);
+  Script_OpParse(&returnValueColumn,args);
+  pcVar2 = StringTable_Lookup(tablePtr,comparisonColumn,searchValue,returnValueColumn);
   return pcVar2;
 }
 
@@ -3347,39 +3389,38 @@ LAB_007614d5:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Script_SetDvarStringUsingTable(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_SetDvarStringUsingTable(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_80c [1024];
-  char local_40c [1024];
+  char dvarName [1024];
+  char arg [1024];
   uint local_c;
-  char *local_8;
+  char *dvarValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  String_Parse(param_4,local_40c,0x400);
-  while (iVar1 = I_stricmp(local_40c,"("), iVar1 == 0) {
-    String_Parse(param_4,local_40c,0x400);
+  String_Parse(args,arg,0x400);
+  while (iVar1 = I_stricmp(arg,"("), iVar1 == 0) {
+    String_Parse(args,arg,0x400);
   }
-  I_strncpyz(local_80c,local_40c,0x400);
-  String_Parse(param_4,local_40c,0x400);
-  while ((iVar1 = I_stricmp(local_40c,","), iVar1 == 0 ||
-         (iVar1 = I_stricmp(local_40c,"("), iVar1 == 0))) {
-    String_Parse(param_4,local_40c,0x400);
+  I_strncpyz(dvarName,arg,0x400);
+  String_Parse(args,arg,0x400);
+  while ((iVar1 = I_stricmp(arg,","), iVar1 == 0 || (iVar1 = I_stricmp(arg,"("), iVar1 == 0))) {
+    String_Parse(args,arg,0x400);
   }
-  iVar1 = I_stricmp(local_40c,"tablelookup");
+  iVar1 = I_stricmp(arg,"tablelookup");
   if (iVar1 == 0) {
-    local_8 = Script_TableLookupParse(param_2,param_4);
+    dvarValue = Script_TableLookupParse(dc,args);
   }
   else {
-    local_8 = local_40c;
+    dvarValue = arg;
   }
-  Dvar_SetFromStringByName(local_80c,local_8);
-  String_Parse(param_4,local_40c,0x400);
+  Dvar_SetFromStringByName(dvarName,dvarValue);
+  String_Parse(args,arg,0x400);
   do {
-    iVar1 = I_stricmp(local_40c,")");
+    iVar1 = I_stricmp(arg,")");
     if (iVar1 != 0) break;
-    iVar1 = String_Parse(param_4,local_40c,0x400);
+    iVar1 = String_Parse(args,arg,0x400);
   } while (iVar1 != 0);
   Com_UngetToken();
   return;
@@ -3390,7 +3431,7 @@ Script_SetDvarStringUsingTable(int param_1,UiContext *param_2,itemDef_s *param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_Close(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Close(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   byte bVar1;
@@ -3399,14 +3440,14 @@ void __cdecl Script_Close(int param_1,UiContext *param_2,itemDef_s *param_3,char
   int local_41c;
   byte *local_414;
   byte *local_410;
-  byte local_40c [1028];
+  byte name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = String_Parse(param_4,(char *)local_40c,0x400);
+  iVar2 = String_Parse(args,(char *)name,0x400);
   if (iVar2 != 0) {
     local_410 = &s_self;
-    local_414 = local_40c;
+    local_414 = name;
     do {
       bVar1 = *local_414;
       bVar3 = bVar1 < *local_410;
@@ -3425,11 +3466,11 @@ LAB_00761867:
     local_41c = 0;
 LAB_00761872:
     if (local_41c == 0) {
-      param_2->enableSlideAndFadeEffectForMenu = true;
-      Menus_Close(param_1,param_2,param_3->parent);
+      dc->enableSlideAndFadeEffectForMenu = true;
+      Menus_Close(localClientNum,dc,item->parent);
     }
     else {
-      Menus_CloseByName(param_1,param_2,(char *)local_40c);
+      Menus_CloseByName(localClientNum,dc,(char *)name);
     }
   }
   return;
@@ -3440,7 +3481,7 @@ LAB_00761872:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_CloseImmediate(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_CloseImmediate(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   byte bVar1;
@@ -3449,14 +3490,14 @@ void __cdecl Script_CloseImmediate(int param_1,UiContext *param_2,itemDef_s *par
   int local_41c;
   byte *local_414;
   byte *local_410;
-  byte local_40c [1028];
+  byte name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = String_Parse(param_4,(char *)local_40c,0x400);
+  iVar2 = String_Parse(args,(char *)name,0x400);
   if (iVar2 != 0) {
     local_410 = &s_self;
-    local_414 = local_40c;
+    local_414 = name;
     do {
       bVar1 = *local_414;
       bVar3 = bVar1 < *local_410;
@@ -3475,11 +3516,11 @@ LAB_00761987:
     local_41c = 0;
 LAB_00761992:
     if (local_41c == 0) {
-      param_2->enableSlideAndFadeEffectForMenu = false;
-      Menus_Close(param_1,param_2,param_3->parent);
+      dc->enableSlideAndFadeEffectForMenu = false;
+      Menus_Close(localClientNum,dc,item->parent);
     }
     else {
-      Menus_CloseImmediateByName(param_1,param_2,(char *)local_40c);
+      Menus_CloseImmediateByName(localClientNum,dc,(char *)name);
     }
   }
   return;
@@ -3490,19 +3531,19 @@ LAB_00761992:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_InGameOpen(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_InGameOpen(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    iVar1 = CL_LocalClientIsInGame(param_1);
+    iVar1 = CL_LocalClientIsInGame(localClientNum);
     if (iVar1 != 0) {
-      Menus_OpenByName(param_1,param_2,local_40c);
+      Menus_OpenByName(localClientNum,dc,name);
     }
   }
   return;
@@ -3513,19 +3554,19 @@ void __cdecl Script_InGameOpen(int param_1,UiContext *param_2,itemDef_s *param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_InGameClose(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_InGameClose(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,name,0x400);
   if (iVar1 != 0) {
-    iVar1 = CL_LocalClientIsInGame(param_1);
+    iVar1 = CL_LocalClientIsInGame(localClientNum);
     if (iVar1 != 0) {
-      Menus_CloseByName(param_1,param_2,local_40c);
+      Menus_CloseByName(localClientNum,dc,name);
     }
   }
   return;
@@ -3534,7 +3575,7 @@ void __cdecl Script_InGameClose(int param_1,UiContext *param_2,itemDef_s *param_
 
 // 00761B90  Menu_FocusFirstSelectableItem  (ui/ui_shared.cpp:2605)
 
-itemDef_s * __cdecl Menu_FocusFirstSelectableItem(int param_1,UiContext *param_2,menuDef_t *param_3)
+itemDef_s * __cdecl Menu_FocusFirstSelectableItem(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
@@ -3542,27 +3583,26 @@ itemDef_s * __cdecl Menu_FocusFirstSelectableItem(int param_1,UiContext *param_2
   int iVar3;
   uint uVar4;
   itemDef_s *piVar5;
-  int local_8;
+  int cursor;
   
-  iVar3 = Menu_HandleMouseMove(param_1,param_2,param_3);
+  iVar3 = Menu_HandleMouseMove(localClientNum,dc,menu);
   if (iVar3 == 0) {
-    local_8 = 0;
-    Menu_SetCursorItem(param_2->contextIndex,param_3,0);
-    while (local_8 < param_3->itemCount) {
-      iVar3 = Item_SetFocus(param_1,param_2,param_3->items[local_8],(param_2->cursor).x,
-                            (param_2->cursor).y);
+    cursor = 0;
+    Menu_SetCursorItem(dc->contextIndex,menu,0);
+    while (cursor < menu->itemCount) {
+      iVar3 = Item_SetFocus(localClientNum,dc,menu->items[cursor],(dc->cursor).x,(dc->cursor).y);
       if (iVar3 != 0) {
-        return param_3->items[local_8];
+        return menu->items[cursor];
       }
-      local_8 = local_8 + 1;
-      Menu_SetCursorItem(param_2->contextIndex,param_3,local_8);
+      cursor = cursor + 1;
+      Menu_SetCursorItem(dc->contextIndex,menu,cursor);
     }
-    Menu_SetCursorItem(param_2->contextIndex,param_3,0);
+    Menu_SetCursorItem(dc->contextIndex,menu,0);
     piVar5 = (itemDef_s *)0x0;
   }
   else {
-    uVar4 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    if (((uint)param_3->itemCount <= uVar4) &&
+    uVar4 = Menu_GetCursorItem(dc->contextIndex,menu);
+    if (((uint)menu->itemCount <= uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xa34,0,
                                  "cursor doesn\'t index menu->itemCount\n\t%i not in [0, %i)"),
        !bVar2)) {
@@ -3570,7 +3610,7 @@ itemDef_s * __cdecl Menu_FocusFirstSelectableItem(int param_1,UiContext *param_2
       piVar5 = (itemDef_s *)(*pcVar1)();
       return piVar5;
     }
-    piVar5 = param_3->items[uVar4];
+    piVar5 = menu->items[uVar4];
   }
   return piVar5;
 }
@@ -3578,21 +3618,21 @@ itemDef_s * __cdecl Menu_FocusFirstSelectableItem(int param_1,UiContext *param_2
 
 // 00761AE0  Script_FocusFirstInMenu  (ui/ui_shared.cpp:2633)
 
-void __cdecl
-Script_FocusFirstInMenu(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_FocusFirstInMenu(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   bool bVar1;
-  itemDef_s *piVar2;
+  itemDef_s *item_00;
+  itemDef_s *focusItem;
   
-  piVar2 = Menu_FocusFirstSelectableItem(param_1,param_2,param_3->parent);
-  if (piVar2 == (itemDef_s *)0x0) {
+  item_00 = Menu_FocusFirstSelectableItem(localClientNum,dc,item->parent);
+  if (item_00 == (itemDef_s *)0x0) {
     Com_Printf(0xd,"focusFirst: no itemDefs in %s were selectable\n");
   }
   else {
-    bVar1 = Item_IsTextField(piVar2);
+    bVar1 = Item_IsTextField(item_00);
     if (bVar1) {
-      Item_TextField_BeginEdit(param_1,param_2->contextIndex,piVar2);
+      Item_TextField_BeginEdit(localClientNum,dc->contextIndex,item_00);
     }
   }
   return;
@@ -3603,35 +3643,35 @@ Script_FocusFirstInMenu(int param_1,UiContext *param_2,itemDef_s *param_3,char *
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetFocus(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetFocus(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   bool bVar1;
   int iVar2;
-  char local_414 [1028];
+  char name [1028];
   uint local_10;
-  itemDef_s *local_c;
-  rectDef_s *local_8;
+  itemDef_s *focusItem;
+  rectDef_s *rect;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = String_Parse(param_4,local_414,0x400);
+  iVar2 = String_Parse(args,name,0x400);
   if (iVar2 != 0) {
-    local_c = Menu_FindFirstFocusableItemByName(param_1,param_2,param_3->parent,local_414);
-    if (local_c == (itemDef_s *)0x0) {
+    focusItem = Menu_FindFirstFocusableItemByName(localClientNum,dc,item->parent,name);
+    if (focusItem == (itemDef_s *)0x0) {
       Com_Printf(0xd,"setFocus: could not find widget named \'%s\'\n");
     }
     else {
-      local_8 = Window_GetRect(&local_c->window);
-      iVar2 = Item_SetFocus(param_1,param_2,local_c,local_8->x,local_8->y);
+      rect = Window_GetRect(&focusItem->window);
+      iVar2 = Item_SetFocus(localClientNum,dc,focusItem,rect->x,rect->y);
       if (iVar2 == 0) {
         Com_DPrintf(0xd,
                     "setFocus: error focusing widget \'%s\' (widget was found but could not accept focus)\n"
                    );
       }
       else {
-        bVar1 = Item_IsTextField(local_c);
+        bVar1 = Item_IsTextField(focusItem);
         if (bVar1) {
-          Item_TextField_BeginEdit(param_1,param_2->contextIndex,local_c);
+          Item_TextField_BeginEdit(localClientNum,dc->contextIndex,focusItem);
         }
       }
     }
@@ -3644,41 +3684,44 @@ void __cdecl Script_SetFocus(int param_1,UiContext *param_2,itemDef_s *param_3,c
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetFocusByDvar(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetFocusByDvar(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   menuDef_t *pmVar1;
-  itemDef_s *piVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  char local_414 [1028];
+  itemDef_s *item_00;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  itemDef_s *focusItem;
+  menuDef_t *parent;
+  char dvarName [1028];
   uint local_10;
-  int local_c;
-  rectDef_s *local_8;
+  int i;
+  rectDef_s *rect;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar5 = String_Parse(param_4,local_414,0x400);
-  if (iVar5 != 0) {
-    pmVar1 = param_3->parent;
+  iVar4 = String_Parse(args,dvarName,0x400);
+  if (iVar4 != 0) {
+    pmVar1 = item->parent;
     if ((pmVar1 == (menuDef_t *)0x0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xa80,0,"%s"
-                                ), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xa80,0,"%s"
+                                ), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    for (local_c = 0; local_c < pmVar1->itemCount; local_c = local_c + 1) {
-      piVar2 = pmVar1->items[local_c];
-      if (((piVar2->typeData).textDef != (textDef_s *)0x0) && ((piVar2->dvarFlags & 0x10U) != 0)) {
-        if (piVar2->dvarTest == (char *)0x0) {
+    for (i = 0; i < pmVar1->itemCount; i = i + 1) {
+      item_00 = pmVar1->items[i];
+      if (((item_00->typeData).textDef != (textDef_s *)0x0) && ((item_00->dvarFlags & 0x10U) != 0))
+      {
+        if (item_00->dvarTest == (char *)0x0) {
           Com_Error(ERR_DROP,"\x15Script_SetFocusByDvar: Item\'s dvarTest field is empty.");
         }
-        iVar5 = I_stricmp(piVar2->dvarTest,local_414);
-        if ((iVar5 == 0) && (iVar5 = Item_EnableShowViaDvar(piVar2,0x10), iVar5 != 0)) {
-          local_8 = Window_GetRect(&piVar2->window);
-          iVar5 = Item_SetFocus(param_1,param_2,piVar2,local_8->x,local_8->y);
-          if (iVar5 != 0) {
+        iVar4 = I_stricmp(item_00->dvarTest,dvarName);
+        if ((iVar4 == 0) && (iVar4 = Item_EnableShowViaDvar(item_00,0x10), iVar4 != 0)) {
+          rect = Window_GetRect(&item_00->window);
+          iVar4 = Item_SetFocus(localClientNum,dc,item_00,rect->x,rect->y);
+          if (iVar4 != 0) {
             return;
           }
         }
@@ -3693,24 +3736,26 @@ void __cdecl Script_SetFocusByDvar(int param_1,UiContext *param_2,itemDef_s *par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ChangeState(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ChangeState(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  animParamsDef_t *paVar2;
-  char local_80c [1024];
-  char local_40c [1028];
+  animParamsDef_t *state;
+  animParamsDef_t *newState;
+  int milliSeconds;
+  char newStateName [1024];
+  char milliSecondsString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_80c,0x400);
+  iVar1 = String_Parse(args,newStateName,0x400);
   if (iVar1 != 0) {
-    iVar1 = String_Parse(param_4,local_40c,0x400);
+    iVar1 = String_Parse(args,milliSecondsString,0x400);
     if (iVar1 != 0) {
-      iVar1 = atoi(local_40c);
-      paVar2 = Item_FindStateByName(param_3,local_80c);
-      if (paVar2 != (animParamsDef_t *)0x0) {
-        Item_AnimateToState(param_1,param_2,param_3,paVar2,iVar1,false);
+      iVar1 = atoi(milliSecondsString);
+      state = Item_FindStateByName(item,newStateName);
+      if (state != (animParamsDef_t *)0x0) {
+        Item_AnimateToState(localClientNum,dc,item,state,iVar1,false);
       }
     }
   }
@@ -3722,53 +3767,55 @@ void __cdecl Script_ChangeState(int param_1,UiContext *param_2,itemDef_s *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetDvar(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetDvar(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
   char *pcVar2;
-  char local_c0c [1024];
-  char local_80c [1024];
-  char local_40c [1028];
+  char *name2;
+  char *name1;
+  char secondDvarVal [1024];
+  char val [1024];
+  char dvarName [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,dvarName,0x400);
   if (iVar1 != 0) {
-    iVar1 = String_Parse(param_4,local_80c,0x400);
+    iVar1 = String_Parse(args,val,0x400);
     if (iVar1 != 0) {
-      iVar1 = I_stricmp(local_80c,"dvarString");
+      iVar1 = I_stricmp(val,"dvarString");
       if (iVar1 == 0) {
-        String_Parse(param_4,local_80c,0x400);
-        String_Parse(param_4,local_80c,0x400);
+        String_Parse(args,val,0x400);
+        String_Parse(args,val,0x400);
         iVar1 = 0x400;
-        pcVar2 = Dvar_GetString(local_80c);
-        I_strncpyz(local_c0c,pcVar2,iVar1);
-        String_Parse(param_4,local_80c,0x400);
-        iVar1 = I_stricmp(local_80c,"+");
+        pcVar2 = Dvar_GetString(val);
+        I_strncpyz(secondDvarVal,pcVar2,iVar1);
+        String_Parse(args,val,0x400);
+        iVar1 = I_stricmp(val,"+");
         if (iVar1 == 0) {
-          String_Parse(param_4,local_80c,0x400);
-          pcVar2 = Dvar_GetString(local_80c);
-          I_strncat(local_c0c,0x400,pcVar2);
-          String_Parse(param_4,local_80c,0x400);
+          String_Parse(args,val,0x400);
+          pcVar2 = Dvar_GetString(val);
+          I_strncat(secondDvarVal,0x400,pcVar2);
+          String_Parse(args,val,0x400);
         }
-        Dvar_SetFromStringByName(local_40c,local_c0c);
+        Dvar_SetFromStringByName(dvarName,secondDvarVal);
       }
       else {
-        iVar1 = I_stricmp(local_80c,"dvarInt");
+        iVar1 = I_stricmp(val,"dvarInt");
         if (iVar1 == 0) {
-          String_Parse(param_4,local_80c,0x400);
+          String_Parse(args,val,0x400);
           while( true ) {
-            iVar1 = I_stricmp(local_80c,"(");
+            iVar1 = I_stricmp(val,"(");
             if (iVar1 != 0) break;
-            String_Parse(param_4,local_80c,0x400);
+            String_Parse(args,val,0x400);
           }
-          iVar1 = Dvar_GetInt(local_80c);
-          Dvar_SetIntByName(local_40c,iVar1);
-          String_Parse(param_4,local_80c,0x400);
+          iVar1 = Dvar_GetInt(val);
+          Dvar_SetIntByName(dvarName,iVar1);
+          String_Parse(args,val,0x400);
         }
         else {
-          Dvar_SetFromStringByName(local_40c,local_80c);
+          Dvar_SetFromStringByName(dvarName,val);
         }
       }
     }
@@ -3781,20 +3828,21 @@ void __cdecl Script_SetDvar(int param_1,UiContext *param_2,itemDef_s *param_3,ch
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ResetDvar(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ResetDvar(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  dvar_s *pdVar2;
-  char local_40c [1028];
+  dvar_s *dvar_00;
+  dvar_s *dvar;
+  char dvarName [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,dvarName,0x400);
   if (iVar1 != 0) {
-    pdVar2 = Dvar_FindVar(local_40c);
-    if (pdVar2 != (dvar_s *)0x0) {
-      Dvar_Reset(pdVar2,DVAR_SOURCE_INTERNAL);
+    dvar_00 = Dvar_FindVar(dvarName);
+    if (dvar_00 != (dvar_s *)0x0) {
+      Dvar_Reset(dvar_00,DVAR_SOURCE_INTERNAL);
     }
   }
   return;
@@ -3805,18 +3853,18 @@ void __cdecl Script_ResetDvar(int param_1,UiContext *param_2,itemDef_s *param_3,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ExecKeyHandler(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ExecKeyHandler(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char val [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,val,0x400);
   if (iVar1 != 0) {
-    iVar1 = atoi(local_40c);
-    Menu_CheckOnKey(param_1,param_2,param_3->parent,iVar1);
+    iVar1 = atoi(val);
+    Menu_CheckOnKey(localClientNum,dc,item->parent,iVar1);
   }
   return;
 }
@@ -3827,19 +3875,19 @@ void __cdecl Script_ExecKeyHandler(int param_1,UiContext *param_2,itemDef_s *par
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Script_ExecHandler(int param_1,int param_2,itemDef_s *param_3,char **param_4,
-                  _func___cdecl_void_int_int_itemDef_s_ptr_char_ptr *param_5)
+Script_ExecHandler(int localClientNum,int controllerIndex,itemDef_s *item,char **args,
+                  _func___cdecl_void_int_int_itemDef_s_ptr_char_ptr *textCallback)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char val [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = Command_Parse(param_4,local_40c,0x3ff);
+  iVar1 = Command_Parse(args,val,0x3ff);
   if (iVar1 != 0) {
-    I_strncat(local_40c,0x400,"\n");
-    (*param_5)(param_1,param_2,param_3,local_40c);
+    I_strncat(val,0x400,"\n");
+    (*textCallback)(localClientNum,controllerIndex,item,val);
   }
   return;
 }
@@ -3849,23 +3897,23 @@ Script_ExecHandler(int param_1,int param_2,itemDef_s *param_3,char **param_4,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ExecKeyPress(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ExecKeyPress(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
   int iVar2;
-  char local_40c [1028];
+  char val [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_40c,0x400);
+  iVar1 = String_Parse(args,val,0x400);
   if (iVar1 != 0) {
     iVar2 = 1;
-    iVar1 = atoi(local_40c);
-    Menu_HandleKey(param_1,param_2,param_3->parent,iVar1,iVar2);
+    iVar1 = atoi(val);
+    Menu_HandleKey(localClientNum,dc,item->parent,iVar1,iVar2);
     iVar2 = 0;
-    iVar1 = atoi(local_40c);
-    Menu_HandleKey(param_1,param_2,param_3->parent,iVar1,iVar2);
+    iVar1 = atoi(val);
+    Menu_HandleKey(localClientNum,dc,item->parent,iVar1,iVar2);
   }
   return;
 }
@@ -3873,25 +3921,27 @@ void __cdecl Script_ExecKeyPress(int param_1,UiContext *param_2,itemDef_s *param
 
 // 007624E0  Script_AddTextWrapper  (ui/ui_shared.cpp:2817)
 
-void __cdecl Script_AddTextWrapper(int param_1,int param_2,itemDef_s *param_3,char *param_4)
+void __cdecl
+Script_AddTextWrapper(int localClientNum,int controllerIndex,itemDef_s *__formal,char *text)
 
 {
-  Cbuf_AddText(param_1,param_4);
+  Cbuf_AddText(localClientNum,text);
   return;
 }
 
 
 // 00762410  Script_Exec  (ui/ui_shared.cpp:2822)
 
-void __cdecl Script_Exec(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Exec(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int controllerIndex_00;
+  int controllerIndex;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if (iVar3 == -1) {
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (controllerIndex_00 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xb08,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3899,22 +3949,23 @@ void __cdecl Script_Exec(int param_1,UiContext *param_2,itemDef_s *param_3,char 
       return;
     }
   }
-  Script_ExecHandler(param_1,iVar3,param_3,param_4,Script_AddTextWrapper);
+  Script_ExecHandler(localClientNum,controllerIndex_00,item,args,Script_AddTextWrapper);
   return;
 }
 
 
 // 00762500  Script_ExecNow  (ui/ui_shared.cpp:2831)
 
-void __cdecl Script_ExecNow(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ExecNow(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int controllerIndex_00;
+  int controllerIndex;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if (iVar3 == -1) {
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (controllerIndex_00 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xb11,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3922,7 +3973,7 @@ void __cdecl Script_ExecNow(int param_1,UiContext *param_2,itemDef_s *param_3,ch
       return;
     }
   }
-  Script_ExecHandler(param_1,iVar3,param_3,param_4,Cbuf_ExecuteBufferUI);
+  Script_ExecHandler(localClientNum,controllerIndex_00,item,args,Cbuf_ExecuteBufferUI);
   return;
 }
 
@@ -3931,24 +3982,25 @@ void __cdecl Script_ExecNow(int param_1,UiContext *param_2,itemDef_s *param_3,ch
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_ExecDvar(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ExecDvar(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
-  char local_80c [1024];
-  char local_40c [1024];
+  char *src;
+  int destsize;
+  int controllerIndex;
+  char dvarName [1024];
+  char command [1024];
   uint local_c;
-  char *local_8;
+  char *dvarValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = String_Parse(param_4,local_80c,0x400);
+  iVar3 = String_Parse(args,dvarName,0x400);
   if (iVar3 != 0) {
-    local_8 = Dvar_GetVariantString(local_80c);
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+    dvarValue = Dvar_GetVariantString(dvarName);
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
     if (iVar3 == -1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xb20,0,"%s");
       if (!bVar2) {
@@ -3957,10 +4009,10 @@ void __cdecl Script_ExecDvar(int param_1,UiContext *param_2,itemDef_s *param_3,c
         return;
       }
     }
-    iVar5 = 0x400;
-    pcVar4 = va("%s\n");
-    I_strncpyz(local_40c,pcVar4,iVar5);
-    Script_AddTextWrapper(param_1,iVar3,param_3,local_40c);
+    destsize = 0x400;
+    src = va("%s\n");
+    I_strncpyz(command,src,destsize);
+    Script_AddTextWrapper(localClientNum,iVar3,item,command);
   }
   return;
 }
@@ -3972,31 +4024,32 @@ void __cdecl Script_ExecDvar(int param_1,UiContext *param_2,itemDef_s *param_3,c
 
 void __cdecl
 Script_ConditionalExecHandler
-          (int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4,
-          _func___cdecl_bool_char_ptr_char_ptr *param_5,
-          _func___cdecl_void_int_int_itemDef_s_ptr_char_ptr *param_6)
+          (int localClientNum,UiContext *dc,itemDef_s *item,char **args,
+          _func___cdecl_bool_char_ptr_char_ptr *shouldExec,
+          _func___cdecl_void_int_int_itemDef_s_ptr_char_ptr *textCallback)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_c0c [1024];
-  char local_80c [1024];
-  char local_40c [1024];
+  int controllerIndex;
+  char testValue [1024];
+  char dvarName [1024];
+  char command [1024];
   uint local_c;
-  char *local_8;
+  char *dvarValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = String_Parse(param_4,local_80c,0x400);
+  iVar3 = String_Parse(args,dvarName,0x400);
   if (iVar3 != 0) {
-    iVar3 = String_Parse(param_4,local_c0c,0x400);
+    iVar3 = String_Parse(args,testValue,0x400);
     if (iVar3 != 0) {
-      iVar3 = Command_Parse(param_4,local_40c,0x3ff);
+      iVar3 = Command_Parse(args,command,0x3ff);
       if (iVar3 != 0) {
-        local_8 = Dvar_GetVariantString(local_80c);
-        bVar2 = (*param_5)(local_8,local_c0c);
+        dvarValue = Dvar_GetVariantString(dvarName);
+        bVar2 = (*shouldExec)(dvarValue,testValue);
         if (bVar2) {
-          iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+          iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
           if (iVar3 == -1) {
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xb35,0,
                                      "%s");
@@ -4006,8 +4059,8 @@ Script_ConditionalExecHandler
               return;
             }
           }
-          I_strncat(local_40c,0x400,"\n");
-          (*param_6)(param_1,iVar3,param_3,local_40c);
+          I_strncat(command,0x400,"\n");
+          (*textCallback)(localClientNum,iVar3,item,command);
         }
       }
     }
@@ -4022,35 +4075,36 @@ Script_ConditionalExecHandler
 
 void __cdecl
 Script_ConditionalResponseHandler
-          (int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4,
-          _func___cdecl_bool_char_ptr_char_ptr *param_5)
+          (int localClientNum,UiContext *dc,itemDef_s *item,char **args,
+          _func___cdecl_bool_char_ptr_char_ptr *shouldRespond)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  int local_c14;
-  char local_c0c [1024];
-  char local_80c [1024];
-  char local_40c [1024];
+  int iIndex;
+  char *pszName;
+  char testValue [1024];
+  char dvarName [1024];
+  char command [1024];
   uint local_c;
-  char *local_8;
+  char *dvarValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = String_Parse(param_4,local_80c,0x400);
-  if (((iVar2 != 0) && (iVar2 = String_Parse(param_4,local_c0c,0x400), iVar2 != 0)) &&
-     (iVar2 = String_Parse(param_4,local_40c,0x400), iVar2 != 0)) {
-    local_8 = Dvar_GetVariantString(local_80c);
-    bVar1 = (*param_5)(local_8,local_c0c);
+  iVar2 = String_Parse(args,dvarName,0x400);
+  if (((iVar2 != 0) && (iVar2 = String_Parse(args,testValue,0x400), iVar2 != 0)) &&
+     (iVar2 = String_Parse(args,command,0x400), iVar2 != 0)) {
+    dvarValue = Dvar_GetVariantString(dvarName);
+    bVar1 = (*shouldRespond)(dvarValue,testValue);
     if (bVar1) {
-      local_c14 = 0;
-      while ((local_c14 < 0x20 &&
-             ((pcVar3 = CL_GetConfigString(local_c14 + 0x9f4), *pcVar3 == '\0' ||
-              (iVar2 = I_stricmp((param_3->parent->window).name,pcVar3), iVar2 != 0))))) {
-        local_c14 = local_c14 + 1;
+      iIndex = 0;
+      while ((iIndex < 0x20 &&
+             ((pcVar3 = CL_GetConfigString(iIndex + 0x9f4), *pcVar3 == '\0' ||
+              (iVar2 = I_stricmp((item->parent->window).name,pcVar3), iVar2 != 0))))) {
+        iIndex = iIndex + 1;
       }
       pcVar3 = va("cmd mr %i %i %s\n");
-      Cbuf_AddText(param_1,pcVar3);
+      Cbuf_AddText(localClientNum,pcVar3);
     }
   }
   return;
@@ -4059,40 +4113,40 @@ Script_ConditionalResponseHandler
 
 // 007627A0  Script_ExecIfStringsEqual  (ui/ui_shared.cpp:2916)
 
-bool __cdecl Script_ExecIfStringsEqual(char *param_1,char *param_2)
+bool __cdecl Script_ExecIfStringsEqual(char *dvarValue,char *testValue)
 
 {
   int iVar1;
   
-  iVar1 = I_stricmp(param_1,param_2);
+  iVar1 = I_stricmp(dvarValue,testValue);
   return (bool)('\x01' - (iVar1 != 0));
 }
 
 
 // 007627F0  Script_ExecIfIntsEqual  (ui/ui_shared.cpp:2922)
 
-bool __cdecl Script_ExecIfIntsEqual(char *param_1,char *param_2)
+bool __cdecl Script_ExecIfIntsEqual(char *dvarValue,char *testValue)
 
 {
   int iVar1;
   int iVar2;
   
-  iVar1 = atoi(param_1);
-  iVar2 = atoi(param_2);
+  iVar1 = atoi(dvarValue);
+  iVar2 = atoi(testValue);
   return iVar1 == iVar2;
 }
 
 
 // 00762850  Script_ExecIfFloatsEqual  (ui/ui_shared.cpp:2928)
 
-bool __cdecl Script_ExecIfFloatsEqual(char *param_1,char *param_2)
+bool __cdecl Script_ExecIfFloatsEqual(char *dvarValue,char *testValue)
 
 {
   double dVar1;
   double dVar2;
   
-  dVar1 = atof(param_2);
-  dVar2 = atof(param_1);
+  dVar1 = atof(testValue);
+  dVar2 = atof(dvarValue);
   return ABS((float)((float10)dVar2 - (float10)dVar1)) < 1e-05;
 }
 
@@ -4100,23 +4154,22 @@ bool __cdecl Script_ExecIfFloatsEqual(char *param_1,char *param_2)
 // 00762640  Script_ExecOnDvarStringValue  (ui/ui_shared.cpp:2934)
 
 void __cdecl
-Script_ExecOnDvarStringValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_ExecOnDvarStringValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfStringsEqual,Script_AddTextWrapper);
+            (localClientNum,dc,item,args,Script_ExecIfStringsEqual,Script_AddTextWrapper);
   return;
 }
 
 
 // 007627C0  Script_ExecOnDvarIntValue  (ui/ui_shared.cpp:2940)
 
-void __cdecl
-Script_ExecOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ExecOnDvarIntValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfIntsEqual,Script_AddTextWrapper);
+            (localClientNum,dc,item,args,Script_ExecIfIntsEqual,Script_AddTextWrapper);
   return;
 }
 
@@ -4124,11 +4177,11 @@ Script_ExecOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,char
 // 00762820  Script_ExecOnDvarFloatValue  (ui/ui_shared.cpp:2946)
 
 void __cdecl
-Script_ExecOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_ExecOnDvarFloatValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfFloatsEqual,Script_AddTextWrapper);
+            (localClientNum,dc,item,args,Script_ExecIfFloatsEqual,Script_AddTextWrapper);
   return;
 }
 
@@ -4136,11 +4189,11 @@ Script_ExecOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3,ch
 // 007628B0  Script_ExecNowOnDvarStringValue  (ui/ui_shared.cpp:2952)
 
 void __cdecl
-Script_ExecNowOnDvarStringValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_ExecNowOnDvarStringValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfStringsEqual,Cbuf_ExecuteBufferUI);
+            (localClientNum,dc,item,args,Script_ExecIfStringsEqual,Cbuf_ExecuteBufferUI);
   return;
 }
 
@@ -4148,11 +4201,11 @@ Script_ExecNowOnDvarStringValue(int param_1,UiContext *param_2,itemDef_s *param_
 // 007628E0  Script_ExecNowOnDvarIntValue  (ui/ui_shared.cpp:2958)
 
 void __cdecl
-Script_ExecNowOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_ExecNowOnDvarIntValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfIntsEqual,Cbuf_ExecuteBufferUI);
+            (localClientNum,dc,item,args,Script_ExecIfIntsEqual,Cbuf_ExecuteBufferUI);
   return;
 }
 
@@ -4160,11 +4213,11 @@ Script_ExecNowOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,c
 // 00762910  Script_ExecNowOnDvarFloatValue  (ui/ui_shared.cpp:2964)
 
 void __cdecl
-Script_ExecNowOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_ExecNowOnDvarFloatValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   Script_ConditionalExecHandler
-            (param_1,param_2,param_3,param_4,Script_ExecIfFloatsEqual,Cbuf_ExecuteBufferUI);
+            (localClientNum,dc,item,args,Script_ExecIfFloatsEqual,Cbuf_ExecuteBufferUI);
   return;
 }
 
@@ -4172,10 +4225,10 @@ Script_ExecNowOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3
 // 00762940  Script_RespondOnDvarStringValue  (ui/ui_shared.cpp:2969)
 
 void __cdecl
-Script_RespondOnDvarStringValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_RespondOnDvarStringValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  Script_ConditionalResponseHandler(param_1,param_2,param_3,param_4,Script_ExecIfStringsEqual);
+  Script_ConditionalResponseHandler(localClientNum,dc,item,args,Script_ExecIfStringsEqual);
   return;
 }
 
@@ -4183,10 +4236,10 @@ Script_RespondOnDvarStringValue(int param_1,UiContext *param_2,itemDef_s *param_
 // 00762AE0  Script_RespondOnDvarIntValue  (ui/ui_shared.cpp:2975)
 
 void __cdecl
-Script_RespondOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_RespondOnDvarIntValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  Script_ConditionalResponseHandler(param_1,param_2,param_3,param_4,Script_ExecIfIntsEqual);
+  Script_ConditionalResponseHandler(localClientNum,dc,item,args,Script_ExecIfIntsEqual);
   return;
 }
 
@@ -4194,10 +4247,10 @@ Script_RespondOnDvarIntValue(int param_1,UiContext *param_2,itemDef_s *param_3,c
 // 00762B10  Script_RespondOnDvarFloatValue  (ui/ui_shared.cpp:2981)
 
 void __cdecl
-Script_RespondOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_RespondOnDvarFloatValue(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  Script_ConditionalResponseHandler(param_1,param_2,param_3,param_4,Script_ExecIfFloatsEqual);
+  Script_ConditionalResponseHandler(localClientNum,dc,item,args,Script_ExecIfFloatsEqual);
   return;
 }
 
@@ -4206,21 +4259,21 @@ Script_RespondOnDvarFloatValue(int param_1,UiContext *param_2,itemDef_s *param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-UILocalVar * __cdecl Script_ParseLocalVar(UiContext *param_1,char **param_2)
+UILocalVar * __cdecl Script_ParseLocalVar(UiContext *dc,char **args)
 
 {
   int iVar1;
   UILocalVar *pUVar2;
-  char local_10c [260];
+  char varName [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_2,local_10c,0x100);
+  iVar1 = String_Parse(args,varName,0x100);
   if (iVar1 == 0) {
     pUVar2 = (UILocalVar *)0x0;
   }
   else {
-    pUVar2 = UILocalVar_FindOrCreate(&param_1->localVars,local_10c);
+    pUVar2 = UILocalVar_FindOrCreate(&dc->localVars,varName);
   }
   return pUVar2;
 }
@@ -4230,21 +4283,21 @@ UILocalVar * __cdecl Script_ParseLocalVar(UiContext *param_1,char **param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_SetLocalVarBool(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetLocalVarBool(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  UILocalVar *pUVar1;
-  int iVar2;
-  char local_10c [260];
+  UILocalVar *var_00;
+  int iVar1;
+  UILocalVar *var;
+  char string [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pUVar1 = Script_ParseLocalVar(param_2,param_4);
-  iVar2 = String_Parse(param_4,local_10c,0x100);
-  if ((iVar2 != 0) && (pUVar1 != (UILocalVar *)0x0)) {
-    iVar2 = atoi(local_10c);
-    UILocalVar_SetBool(pUVar1,iVar2 != 0);
+  var_00 = Script_ParseLocalVar(dc,args);
+  iVar1 = String_Parse(args,string,0x100);
+  if ((iVar1 != 0) && (var_00 != (UILocalVar *)0x0)) {
+    iVar1 = atoi(string);
+    UILocalVar_SetBool(var_00,iVar1 != 0);
   }
   return;
 }
@@ -4254,20 +4307,21 @@ Script_SetLocalVarBool(int param_1,UiContext *param_2,itemDef_s *param_3,char **
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Script_SetLocalVarInt(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetLocalVarInt(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  UILocalVar *pUVar1;
-  int iVar2;
-  char local_10c [260];
+  UILocalVar *var_00;
+  int iVar1;
+  UILocalVar *var;
+  char string [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pUVar1 = Script_ParseLocalVar(param_2,param_4);
-  iVar2 = String_Parse(param_4,local_10c,0x100);
-  if ((iVar2 != 0) && (pUVar1 != (UILocalVar *)0x0)) {
-    iVar2 = atoi(local_10c);
-    UILocalVar_SetInt(pUVar1,iVar2);
+  var_00 = Script_ParseLocalVar(dc,args);
+  iVar1 = String_Parse(args,string,0x100);
+  if ((iVar1 != 0) && (var_00 != (UILocalVar *)0x0)) {
+    iVar1 = atoi(string);
+    UILocalVar_SetInt(var_00,iVar1);
   }
   return;
 }
@@ -4277,22 +4331,22 @@ void __cdecl Script_SetLocalVarInt(int param_1,UiContext *param_2,itemDef_s *par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_SetLocalVarFloat(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetLocalVarFloat(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  UILocalVar *pUVar1;
-  int iVar2;
-  double dVar3;
-  char local_10c [260];
+  UILocalVar *var_00;
+  int iVar1;
+  double dVar2;
+  UILocalVar *var;
+  char string [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pUVar1 = Script_ParseLocalVar(param_2,param_4);
-  iVar2 = String_Parse(param_4,local_10c,0x100);
-  if ((iVar2 != 0) && (pUVar1 != (UILocalVar *)0x0)) {
-    dVar3 = atof(local_10c);
-    UILocalVar_SetFloat(pUVar1,(float)dVar3);
+  var_00 = Script_ParseLocalVar(dc,args);
+  iVar1 = String_Parse(args,string,0x100);
+  if ((iVar1 != 0) && (var_00 != (UILocalVar *)0x0)) {
+    dVar2 = atof(string);
+    UILocalVar_SetFloat(var_00,(float)dVar2);
   }
   return;
 }
@@ -4302,20 +4356,20 @@ Script_SetLocalVarFloat(int param_1,UiContext *param_2,itemDef_s *param_3,char *
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_SetLocalVarString(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetLocalVarString(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  UILocalVar *pUVar1;
-  int iVar2;
-  char local_10c [260];
+  UILocalVar *var_00;
+  int iVar1;
+  UILocalVar *var;
+  char string [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pUVar1 = Script_ParseLocalVar(param_2,param_4);
-  iVar2 = String_Parse(param_4,local_10c,0x100);
-  if ((iVar2 != 0) && (pUVar1 != (UILocalVar *)0x0)) {
-    UILocalVar_SetString(pUVar1,local_10c);
+  var_00 = Script_ParseLocalVar(dc,args);
+  iVar1 = String_Parse(args,string,0x100);
+  if ((iVar1 != 0) && (var_00 != (UILocalVar *)0x0)) {
+    UILocalVar_SetString(var_00,string);
   }
   return;
 }
@@ -4323,20 +4377,21 @@ Script_SetLocalVarString(int param_1,UiContext *param_2,itemDef_s *param_3,char 
 
 // 00762DC0  Script_FeederTop  (ui/ui_shared.cpp:3049)
 
-void __cdecl Script_FeederTop(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_FeederTop(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   listBoxDef_s *plVar1;
+  listBoxDef_s *listPtr;
   
-  plVar1 = Item_GetListBoxDef(param_3);
+  plVar1 = Item_GetListBoxDef(item);
   if (plVar1 != (listBoxDef_s *)0x0) {
     if (plVar1->notselectable == 0) {
-      plVar1->cursorPos[param_2->contextIndex] = 0;
-      plVar1->startPos[param_2->contextIndex] = 0;
-      UI_FeederSelection(param_1,param_2->contextIndex,plVar1->special,0);
+      plVar1->cursorPos[dc->contextIndex] = 0;
+      plVar1->startPos[dc->contextIndex] = 0;
+      UI_FeederSelection(localClientNum,dc->contextIndex,plVar1->special,0);
     }
     else {
-      plVar1->startPos[param_2->contextIndex] = 0;
+      plVar1->startPos[dc->contextIndex] = 0;
     }
   }
   return;
@@ -4345,29 +4400,34 @@ void __cdecl Script_FeederTop(int param_1,UiContext *param_2,itemDef_s *param_3,
 
 // 00762E40  Script_FeederBottom  (ui/ui_shared.cpp:3071)
 
-void __cdecl Script_FeederBottom(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_FeederBottom(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
-  listBoxDef_s *plVar1;
-  int iVar2;
-  int iVar3;
+  listBoxDef_s *listPtr_00;
+  int iVar1;
+  int viewmax_00;
   int local_1c;
+  int max;
+  listBoxDef_s *listPtr;
+  int viewmax;
+  int lastIndex;
   
-  plVar1 = Item_GetListBoxDef(param_3);
-  if (plVar1 != (listBoxDef_s *)0x0) {
-    if (plVar1->notselectable == 0) {
-      iVar2 = Item_ListBox_MaxScroll(param_1,param_2->contextIndex,param_3);
-      iVar3 = Item_ListBox_Viewmax(param_1,param_2->contextIndex,param_3);
-      local_1c = UI_FeederCount(param_1,param_2->contextIndex,plVar1->special,plVar1);
+  listPtr_00 = Item_GetListBoxDef(item);
+  if (listPtr_00 != (listBoxDef_s *)0x0) {
+    if (listPtr_00->notselectable == 0) {
+      iVar1 = Item_ListBox_MaxScroll(localClientNum,dc->contextIndex,item);
+      viewmax_00 = Item_ListBox_Viewmax(localClientNum,dc->contextIndex,item);
+      local_1c = UI_FeederCount(localClientNum,dc->contextIndex,listPtr_00->special,listPtr_00);
       local_1c = local_1c + -1;
       if (local_1c < 1) {
         local_1c = 0;
       }
-      Item_ListBox_SetCursorPos(param_1,param_2->contextIndex,param_3,iVar2,iVar3,local_1c,true);
+      Item_ListBox_SetCursorPos(localClientNum,dc->contextIndex,item,iVar1,viewmax_00,local_1c,true)
+      ;
     }
     else {
-      iVar2 = Item_ListBox_MaxScroll(param_1,param_2->contextIndex,param_3);
-      plVar1->startPos[param_2->contextIndex] = iVar2;
+      iVar1 = Item_ListBox_MaxScroll(localClientNum,dc->contextIndex,item);
+      listPtr_00->startPos[dc->contextIndex] = iVar1;
     }
   }
   return;
@@ -4380,71 +4440,71 @@ void __cdecl Script_FeederBottom(int param_1,UiContext *param_2,itemDef_s *param
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Script_SetDvarFromLocString(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+Script_SetDvarFromLocString(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_1c0c;
+  char *src;
+  char combined;
   char local_1c0b [4095];
-  char local_c0c [1024];
-  char local_80c [1024];
-  char local_40c [1024];
+  char dvarName [1024];
+  char arg [1024];
+  char dvarValue [1024];
   uint local_c;
-  char *local_8;
+  char *localizedText;
   
-  local_8 = (char *)0x762f4d;
+  localizedText = (char *)0x762f4d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  String_Parse(param_4,local_80c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_80c,"(");
+    iVar1 = I_stricmp(arg,"(");
     if (iVar1 != 0) break;
-    String_Parse(param_4,local_80c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  iVar1 = I_stricmp(local_80c,"dvarString");
+  iVar1 = I_stricmp(arg,"dvarString");
   if (iVar1 != 0) {
-    iVar1 = I_stricmp(local_80c,"dvarstring");
+    iVar1 = I_stricmp(arg,"dvarstring");
     if (iVar1 != 0) {
-      I_strncpyz(local_40c,local_80c,0x400);
+      I_strncpyz(dvarValue,arg,0x400);
       goto LAB_0076307b;
     }
   }
-  String_Parse(param_4,local_80c,0x400);
+  String_Parse(args,arg,0x400);
   while( true ) {
-    iVar1 = I_stricmp(local_80c,"(");
+    iVar1 = I_stricmp(arg,"(");
     if (iVar1 != 0) break;
-    String_Parse(param_4,local_80c,0x400);
+    String_Parse(args,arg,0x400);
   }
-  I_strncpyz(local_c0c,local_80c,0x400);
+  I_strncpyz(dvarName,arg,0x400);
   iVar1 = 0x400;
-  pcVar2 = Dvar_GetVariantString(local_c0c);
-  I_strncpyz(local_40c,pcVar2,iVar1);
+  src = Dvar_GetVariantString(dvarName);
+  I_strncpyz(dvarValue,src,iVar1);
 LAB_0076307b:
-  String_Parse(param_4,local_80c,0x400);
+  String_Parse(args,arg,0x400);
   do {
-    iVar1 = I_stricmp(local_80c,",");
+    iVar1 = I_stricmp(arg,",");
     if (iVar1 != 0) {
-      iVar1 = I_stricmp(local_80c,")");
+      iVar1 = I_stricmp(arg,")");
       if (iVar1 != 0) {
-        I_strncpyz(&local_1c0c,local_80c,0x1000);
-        if (local_1c0c == '@') {
-          local_8 = SEH_LocalizeTextMessage(local_1c0b,"dvar string",LOCMSG_NOERR);
-          if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-            I_strncpyz(&local_1c0c,local_8,0x1000);
+        I_strncpyz(&combined,arg,0x1000);
+        if (combined == '@') {
+          localizedText = SEH_LocalizeTextMessage(local_1c0b,"dvar string",LOCMSG_NOERR);
+          if ((localizedText != (char *)0x0) && (*localizedText != '\0')) {
+            I_strncpyz(&combined,localizedText,0x1000);
           }
         }
-        Dvar_SetCommand(local_40c,&local_1c0c);
-        String_Parse(param_4,local_80c,0x400);
+        Dvar_SetCommand(dvarValue,&combined);
+        String_Parse(args,arg,0x400);
         while( true ) {
-          iVar1 = I_stricmp(local_80c,")");
+          iVar1 = I_stricmp(arg,")");
           if (iVar1 != 0) break;
-          String_Parse(param_4,local_80c,0x400);
+          String_Parse(args,arg,0x400);
         }
         Com_UngetToken();
         return;
       }
     }
-    String_Parse(param_4,local_80c,0x400);
+    String_Parse(args,arg,0x400);
   } while( true );
 }
 
@@ -4455,7 +4515,7 @@ LAB_0076307b:
 /* WARNING: Removing unreachable block (ram,0x007631de) */
 /* WARNING: Removing unreachable block (ram,0x007631fa) */
 
-void __cdecl Script_Play(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_Play(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   return;
@@ -4466,49 +4526,48 @@ void __cdecl Script_Play(int param_1,UiContext *param_2,itemDef_s *param_3,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_ScriptMenuResponse(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_ScriptMenuResponse(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char *local_460;
-  char local_45c;
+  char *text;
+  int stringSize;
+  char windowName;
   uchar local_45b [67];
-  int local_418;
-  char *local_414;
-  char *local_410;
-  char local_40c [1028];
+  int iIndex;
+  char *pszName;
+  char *splitscreenSuffix;
+  char val [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = UI_AllowScriptMenuResponse(param_1);
-  if ((bVar1) && (iVar2 = String_Parse(param_4,local_40c,0x400), iVar2 != 0)) {
-    local_45c = '\0';
+  bVar1 = UI_AllowScriptMenuResponse(localClientNum);
+  if ((bVar1) && (iVar2 = String_Parse(args,val,0x400), iVar2 != 0)) {
+    windowName = '\0';
     memset(local_45b,'\0',0x3f);
-    local_410 = I_stristr((param_3->parent->window).name,"_splitscreen");
-    if (local_410 == (char *)0x0) {
-      I_strncpyz(&local_45c,(param_3->parent->window).name,0x40);
+    splitscreenSuffix = I_stristr((item->parent->window).name,"_splitscreen");
+    if (splitscreenSuffix == (char *)0x0) {
+      I_strncpyz(&windowName,(item->parent->window).name,0x40);
     }
     else {
-      local_460 = local_410 + (1 - (int)(param_3->parent->window).name);
-      if ((char *)0x40 < local_460) {
-        local_460 = (char *)0x40;
+      stringSize = (int)(splitscreenSuffix + (1 - (int)(item->parent->window).name));
+      if ((char *)0x40 < (uint)stringSize) {
+        stringSize = 0x40;
       }
-      I_strncpyz(&local_45c,(param_3->parent->window).name,(int)local_460);
+      I_strncpyz(&windowName,(item->parent->window).name,stringSize);
     }
-    local_418 = 0;
-    while ((local_418 < 0x20 &&
-           ((local_414 = CL_GetConfigString(local_418 + 0x9f4), *local_414 == '\0' ||
-            (iVar2 = I_stricmp(&local_45c,local_414), iVar2 != 0))))) {
-      local_418 = local_418 + 1;
+    iIndex = 0;
+    while ((iIndex < 0x20 &&
+           ((pszName = CL_GetConfigString(iIndex + 0x9f4), *pszName == '\0' ||
+            (iVar2 = I_stricmp(&windowName,pszName), iVar2 != 0))))) {
+      iIndex = iIndex + 1;
     }
-    if (local_418 == 0x20) {
-      local_418 = -1;
+    if (iIndex == 0x20) {
+      iIndex = -1;
     }
-    pcVar3 = va("cmd mr %i %i %s\n");
-    Cbuf_AddText(param_1,pcVar3);
+    text = va("cmd mr %i %i %s\n");
+    Cbuf_AddText(localClientNum,text);
   }
   return;
 }
@@ -4518,23 +4577,22 @@ Script_ScriptMenuResponse(int param_1,UiContext *param_2,itemDef_s *param_3,char
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Script_SetUIVisibilityBit(int param_1,UiContext *param_2,itemDef_s *param_3,char **param_4)
+void __cdecl Script_SetUIVisibilityBit(int localClientNum,UiContext *dc,itemDef_s *item,char **args)
 
 {
   int iVar1;
-  char local_114 [132];
-  int local_90;
-  char local_8c [128];
+  char valueString [132];
+  int bitShift;
+  char bitShiftString [128];
   uint local_c;
-  int local_8;
+  int value;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = String_Parse(param_4,local_8c,4);
-  if ((iVar1 != 0) && (iVar1 = String_Parse(param_4,local_114,0x80), iVar1 != 0)) {
-    local_90 = atoi(local_8c);
-    local_8 = atoi(local_114);
-    UI_SetLocalUIVisbilityBit(param_1,local_90,local_8);
+  iVar1 = String_Parse(args,bitShiftString,4);
+  if ((iVar1 != 0) && (iVar1 = String_Parse(args,valueString,0x80), iVar1 != 0)) {
+    bitShift = atoi(bitShiftString);
+    value = atoi(valueString);
+    UI_SetLocalUIVisbilityBit(localClientNum,bitShift,value);
   }
   return;
 }
@@ -4542,20 +4600,20 @@ Script_SetUIVisibilityBit(int param_1,UiContext *param_2,itemDef_s *param_3,char
 
 // 00763480  Item_IsOutcomeAccepted  (ui/ui_shared.cpp:3911)
 
-bool __cdecl Item_IsOutcomeAccepted(bool param_1,bool param_2)
+bool __cdecl Item_IsOutcomeAccepted(bool outcome,bool fireOnTrue)
 
 {
   bool bVar1;
   
-  if (param_2) {
-    if (param_1) {
+  if (fireOnTrue) {
+    if (outcome) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
   }
-  else if (param_1) {
+  else if (outcome) {
     bVar1 = false;
   }
   else {
@@ -4567,30 +4625,31 @@ bool __cdecl Item_IsOutcomeAccepted(bool param_1,bool param_2)
 
 // 007634C0  Item_ArePrereqsSatisfied  (ui/ui_shared.cpp:3938)
 
-bool __cdecl Item_ArePrereqsSatisfied(GenericEventScript *param_1,nestingStack_t *param_2)
+bool __cdecl Item_ArePrereqsSatisfied(GenericEventScript *eventScript,nestingStack_t *stack)
 
 {
   bool bVar1;
   bool bVar2;
-  int local_10;
-  ScriptCondition *local_8;
+  int i;
+  bool isPrereqSatisfied;
+  ScriptCondition *currentPrereq;
   
-  local_8 = param_1->prerequisites;
+  currentPrereq = eventScript->prerequisites;
   while( true ) {
-    if (local_8 == (ScriptCondition *)0x0) {
+    if (currentPrereq == (ScriptCondition *)0x0) {
       return true;
     }
     bVar1 = false;
-    for (local_10 = 0; local_10 < param_2->top; local_10 = local_10 + 1) {
-      if (((local_8->constructID == param_2->members[local_10].constructID) &&
-          (local_8->blockID == param_2->members[local_10].blockID)) &&
-         (bVar2 = Item_IsOutcomeAccepted(param_2->members[local_10].outcome,local_8->fireOnTrue),
-         bVar2)) {
+    for (i = 0; i < stack->top; i = i + 1) {
+      if (((currentPrereq->constructID == stack->members[i].constructID) &&
+          (currentPrereq->blockID == stack->members[i].blockID)) &&
+         (bVar2 = Item_IsOutcomeAccepted(stack->members[i].outcome,currentPrereq->fireOnTrue), bVar2
+         )) {
         bVar1 = true;
       }
     }
     if (!bVar1) break;
-    local_8 = local_8->next;
+    currentPrereq = currentPrereq->next;
   }
   return false;
 }
@@ -4600,14 +4659,15 @@ bool __cdecl Item_ArePrereqsSatisfied(GenericEventScript *param_1,nestingStack_t
 
 bool __cdecl
 Item_IsConditionSatisfied
-          (int param_1,UiContext *param_2,itemDef_s *param_3,GenericEventScript *param_4)
+          (int localClientNum,UiContext *dc,itemDef_s *item,GenericEventScript *eventScript)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  bool outcome;
   
-  if (param_1 == -1) {
+  if (localClientNum == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xf86,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -4615,7 +4675,7 @@ Item_IsConditionSatisfied
       return (bool)uVar3;
     }
   }
-  if (param_4->type == 3) {
+  if (eventScript->type == 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0xf87,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -4623,12 +4683,12 @@ Item_IsConditionSatisfied
       return (bool)uVar3;
     }
   }
-  if ((param_4->type == 3) || ((param_4->condition).filename == (char *)0x0)) {
+  if ((eventScript->type == 3) || ((eventScript->condition).filename == (char *)0x0)) {
     bVar2 = false;
   }
   else {
-    bVar2 = IsExpressionTrue(param_1,param_3,&param_4->condition);
-    bVar2 = Item_IsOutcomeAccepted(bVar2,param_4->fireOnTrue);
+    bVar2 = IsExpressionTrue(localClientNum,item,&eventScript->condition);
+    bVar2 = Item_IsOutcomeAccepted(bVar2,eventScript->fireOnTrue);
   }
   return bVar2;
 }
@@ -4636,14 +4696,15 @@ Item_IsConditionSatisfied
 
 // 00763570  Item_MarkProcessed  (ui/ui_shared.cpp:3987)
 
-void __cdecl Item_MarkProcessed(GenericEventScript *param_1,nestingStack_t *param_2,bool param_3)
+void __cdecl
+Item_MarkProcessed(GenericEventScript *eventScript,nestingStack_t *stack,bool isConditionSatisfied)
 
 {
-  if (param_2->top < 0x40) {
-    param_2->members[param_2->top].blockID = param_1->blockID;
-    param_2->members[param_2->top].constructID = param_1->constructID;
-    param_2->members[param_2->top].outcome = param_3;
-    param_2->top = param_2->top + 1;
+  if (stack->top < 0x40) {
+    stack->members[stack->top].blockID = eventScript->blockID;
+    stack->members[stack->top].constructID = eventScript->constructID;
+    stack->members[stack->top].outcome = isConditionSatisfied;
+    stack->top = stack->top + 1;
   }
   else {
     Com_PrintError(0x10,"If..Else construct stack overflow.\n");
@@ -4655,21 +4716,21 @@ void __cdecl Item_MarkProcessed(GenericEventScript *param_1,nestingStack_t *para
 // 007635E0  Item_IsBlockProcessed  (ui/ui_shared.cpp:4003)
 
 bool __cdecl
-Item_IsBlockProcessed(GenericEventScript *param_1,nestingStack_t *param_2,bool *param_3)
+Item_IsBlockProcessed(GenericEventScript *eventScript,nestingStack_t *stack,bool *result)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_2->top <= local_8) {
+    if (stack->top <= i) {
       return false;
     }
-    if ((param_2->members[local_8].blockID == param_1->blockID) &&
-       (param_2->members[local_8].constructID == param_1->constructID)) break;
-    local_8 = local_8 + 1;
+    if ((stack->members[i].blockID == eventScript->blockID) &&
+       (stack->members[i].constructID == eventScript->constructID)) break;
+    i = i + 1;
   }
-  *param_3 = param_2->members[local_8].outcome;
+  *result = stack->members[i].outcome;
   return true;
 }
 
@@ -4678,45 +4739,45 @@ Item_IsBlockProcessed(GenericEventScript *param_1,nestingStack_t *param_2,bool *
 
 void __cdecl
 Item_RunSingleEventScript
-          (int param_1,UiContext *param_2,itemDef_s *param_3,GenericEventScript *param_4)
+          (int localClientNum,UiContext *dc,itemDef_s *item,GenericEventScript *eventScript)
 
 {
   bool bVar1;
-  bool local_315;
-  nestingStack_t local_314;
-  bool local_5;
+  bool result;
+  nestingStack_t stack;
+  bool isConditionSatisfied;
   
-  local_314.top = 0;
-  for (; param_4 != (GenericEventScript *)0x0; param_4 = param_4->next) {
-    local_5 = false;
-    if ((param_4->blockID == 0) && (param_4->constructID == 0)) {
-      Item_RunScript(param_1,param_2,param_3,param_4->action);
+  stack.top = 0;
+  for (; eventScript != (GenericEventScript *)0x0; eventScript = eventScript->next) {
+    isConditionSatisfied = false;
+    if ((eventScript->blockID == 0) && (eventScript->constructID == 0)) {
+      Item_RunScript(localClientNum,dc,item,eventScript->action);
     }
     else {
-      bVar1 = Item_ArePrereqsSatisfied(param_4,&local_314);
+      bVar1 = Item_ArePrereqsSatisfied(eventScript,&stack);
       if (bVar1) {
-        if (param_4->type == 3) {
-          Item_RunScript(param_1,param_2,param_3,param_4->action);
-          local_5 = true;
+        if (eventScript->type == 3) {
+          Item_RunScript(localClientNum,dc,item,eventScript->action);
+          isConditionSatisfied = true;
         }
         else {
-          bVar1 = Item_IsBlockProcessed(param_4,&local_314,&local_315);
+          bVar1 = Item_IsBlockProcessed(eventScript,&stack,&result);
           if (bVar1) {
-            if (local_315 != false) {
-              Item_RunScript(param_1,param_2,param_3,param_4->action);
-              local_5 = true;
+            if (result != false) {
+              Item_RunScript(localClientNum,dc,item,eventScript->action);
+              isConditionSatisfied = true;
             }
           }
           else {
-            bVar1 = Item_IsConditionSatisfied(param_1,param_2,param_3,param_4);
+            bVar1 = Item_IsConditionSatisfied(localClientNum,dc,item,eventScript);
             if (bVar1) {
-              Item_RunScript(param_1,param_2,param_3,param_4->action);
-              local_5 = true;
+              Item_RunScript(localClientNum,dc,item,eventScript->action);
+              isConditionSatisfied = true;
             }
           }
         }
       }
-      Item_MarkProcessed(param_4,&local_314,local_5);
+      Item_MarkProcessed(eventScript,&stack,isConditionSatisfied);
     }
   }
   return;
@@ -4725,18 +4786,19 @@ Item_RunSingleEventScript
 
 // 00763870  Item_RunEventScript  (ui/ui_shared.cpp:4070)
 
-void __cdecl Item_RunEventScript(int param_1,UiContext *param_2,itemDef_s *param_3,char *param_4)
+void __cdecl Item_RunEventScript(int localClientNum,UiContext *dc,itemDef_s *item,char *eventName)
 
 {
   int iVar1;
-  GenericEventHandler *local_8;
+  GenericEventScript *eventScript;
+  GenericEventHandler *eventHandler;
   
-  if (param_3->onEvent != (GenericEventHandler *)0x0) {
-    for (local_8 = param_3->onEvent; local_8 != (GenericEventHandler *)0x0; local_8 = local_8->next)
-    {
-      iVar1 = I_stricmp(local_8->name,param_4);
+  if (item->onEvent != (GenericEventHandler *)0x0) {
+    for (eventHandler = item->onEvent; eventHandler != (GenericEventHandler *)0x0;
+        eventHandler = eventHandler->next) {
+      iVar1 = I_stricmp(eventHandler->name,eventName);
       if (iVar1 == 0) {
-        Item_RunSingleEventScript(param_1,param_2,param_3,local_8->eventScript);
+        Item_RunSingleEventScript(localClientNum,dc,item,eventHandler->eventScript);
         return;
       }
     }
@@ -4749,36 +4811,38 @@ void __cdecl Item_RunEventScript(int param_1,UiContext *param_2,itemDef_s *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_RunScript(int param_1,UiContext *param_2,itemDef_s *param_3,char *param_4)
+void __cdecl Item_RunScript(int localClientNum,UiContext *dc,itemDef_s *item,char *s)
 
 {
   bool bVar1;
+  int controllerIndex_00;
   int iVar2;
-  int iVar3;
-  char local_414;
+  int bRan;
+  int controllerIndex;
+  char command;
   char local_413;
   uint local_10;
-  uint local_c;
-  char *local_8;
+  uint i;
+  char *p;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  if (((param_3 != (itemDef_s *)0x0) && (param_4 != (char *)0x0)) && (*param_4 != '\0')) {
-    local_8 = param_4;
-    while (iVar3 = String_Parse(&local_8,&local_414,0x400), iVar3 != 0) {
-      if ((local_414 != ';') || (local_413 != '\0')) {
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (((item != (itemDef_s *)0x0) && (s != (char *)0x0)) && (*s != '\0')) {
+    p = s;
+    while (iVar2 = String_Parse(&p,&command,0x400), iVar2 != 0) {
+      if ((command != ';') || (local_413 != '\0')) {
         bVar1 = false;
-        for (local_c = 0; local_c < 0x32; local_c = local_c + 1) {
-          iVar3 = I_stricmp(&local_414,commandList[local_c].name);
-          if (iVar3 == 0) {
-            (*commandList[local_c].handler)(param_1,param_2,param_3,&local_8);
-            param_1 = Com_ControllerIndex_GetLocalClientNum(iVar2);
+        for (i = 0; i < 0x32; i = i + 1) {
+          iVar2 = I_stricmp(&command,commandList[i].name);
+          if (iVar2 == 0) {
+            (*commandList[i].handler)(localClientNum,dc,item,&p);
+            localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex_00);
             bVar1 = true;
             break;
           }
         }
         if (!bVar1) {
-          UI_RunMenuScript(param_1,param_2->contextIndex,&local_8,param_4);
+          UI_RunMenuScript(localClientNum,dc->contextIndex,&p,s);
         }
       }
     }
@@ -4791,18 +4855,20 @@ void __cdecl Item_RunScript(int param_1,UiContext *param_2,itemDef_s *param_3,ch
 
 void __cdecl
 UIAnimation_RunEventScript
-          (int param_1,UiContext *param_2,itemDef_s *param_3,animParamsDef_t *param_4,char *param_5)
+          (int localClientNum,UiContext *dc,itemDef_s *item,animParamsDef_t *animState,
+          char *eventName)
 
 {
   int iVar1;
-  GenericEventHandler *local_8;
+  GenericEventScript *eventScript;
+  GenericEventHandler *eventHandler;
   
-  if (param_4->onEvent != (GenericEventHandler *)0x0) {
-    for (local_8 = param_4->onEvent; local_8 != (GenericEventHandler *)0x0; local_8 = local_8->next)
-    {
-      iVar1 = I_stricmp(local_8->name,param_5);
+  if (animState->onEvent != (GenericEventHandler *)0x0) {
+    for (eventHandler = animState->onEvent; eventHandler != (GenericEventHandler *)0x0;
+        eventHandler = eventHandler->next) {
+      iVar1 = I_stricmp(eventHandler->name,eventName);
       if (iVar1 == 0) {
-        Item_RunSingleEventScript(param_1,param_2,param_3,local_8->eventScript);
+        Item_RunSingleEventScript(localClientNum,dc,item,eventHandler->eventScript);
         return;
       }
     }
@@ -4818,16 +4884,18 @@ void __cdecl UI_SetLocalVarBool_f(void)
 {
   uiInfo_s *puVar1;
   char *pcVar2;
-  UILocalVar *pUVar3;
-  int iVar4;
+  UILocalVar *var_00;
+  int iVar3;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
   puVar1 = UI_GetInfo(0);
   pcVar2 = Cmd_Argv(1);
-  pUVar3 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
-  if (pUVar3 != (UILocalVar *)0x0) {
+  var_00 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
+  if (var_00 != (UILocalVar *)0x0) {
     pcVar2 = Cmd_Argv(2);
-    iVar4 = atoi(pcVar2);
-    UILocalVar_SetBool(pUVar3,iVar4 != 0);
+    iVar3 = atoi(pcVar2);
+    UILocalVar_SetBool(var_00,iVar3 != 0);
   }
   return;
 }
@@ -4840,16 +4908,18 @@ void __cdecl UI_SetLocalVarInt_f(void)
 {
   uiInfo_s *puVar1;
   char *pcVar2;
-  UILocalVar *pUVar3;
-  int iVar4;
+  UILocalVar *var_00;
+  int i;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
   puVar1 = UI_GetInfo(0);
   pcVar2 = Cmd_Argv(1);
-  pUVar3 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
-  if (pUVar3 != (UILocalVar *)0x0) {
+  var_00 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
+  if (var_00 != (UILocalVar *)0x0) {
     pcVar2 = Cmd_Argv(2);
-    iVar4 = atoi(pcVar2);
-    UILocalVar_SetInt(pUVar3,iVar4);
+    i = atoi(pcVar2);
+    UILocalVar_SetInt(var_00,i);
   }
   return;
 }
@@ -4862,16 +4932,18 @@ void __cdecl UI_SetLocalVarFloat_f(void)
 {
   uiInfo_s *puVar1;
   char *pcVar2;
-  UILocalVar *pUVar3;
-  double dVar4;
+  UILocalVar *var_00;
+  double dVar3;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
   puVar1 = UI_GetInfo(0);
   pcVar2 = Cmd_Argv(1);
-  pUVar3 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
-  if (pUVar3 != (UILocalVar *)0x0) {
+  var_00 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
+  if (var_00 != (UILocalVar *)0x0) {
     pcVar2 = Cmd_Argv(2);
-    dVar4 = atof(pcVar2);
-    UILocalVar_SetFloat(pUVar3,(float)dVar4);
+    dVar3 = atof(pcVar2);
+    UILocalVar_SetFloat(var_00,(float)dVar3);
   }
   return;
 }
@@ -4884,14 +4956,16 @@ void __cdecl UI_SetLocalVarString_f(void)
 {
   uiInfo_s *puVar1;
   char *pcVar2;
-  UILocalVar *pUVar3;
+  UILocalVar *var_00;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
   puVar1 = UI_GetInfo(0);
   pcVar2 = Cmd_Argv(1);
-  pUVar3 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
-  if (pUVar3 != (UILocalVar *)0x0) {
+  var_00 = UILocalVar_FindOrCreate(&(puVar1->uiDC).localVars,pcVar2);
+  if (var_00 != (UILocalVar *)0x0) {
     pcVar2 = Cmd_Argv(2);
-    UILocalVar_SetString(pUVar3,pcVar2);
+    UILocalVar_SetString(var_00,pcVar2);
   }
   return;
 }
@@ -4907,32 +4981,36 @@ void __cdecl UI_FadeItem_f(void)
   itemDef_s *piVar3;
   int iVar4;
   char *pcVar5;
+  int contextIndex_00;
   int iVar6;
-  int iVar7;
-  char *pcVar8;
+  char *s1;
+  itemDef_s *fadeItem;
+  int fadeOut;
+  itemDef_s *baseItem;
+  int contextIndex;
   
   piVar3 = Cmd_ItemDef();
   if ((piVar3 != (itemDef_s *)0x0) && (iVar4 = Cmd_Argc(), iVar4 != 1)) {
-    pcVar8 = "out";
+    s1 = "out";
     pcVar5 = Cmd_Argv(1);
-    iVar4 = I_stricmp(pcVar5,pcVar8);
-    iVar6 = Com_LocalClient_GetUIContextIndex(0);
-    if ((iVar6 == -1) &&
+    iVar4 = I_stricmp(pcVar5,s1);
+    contextIndex_00 = Com_LocalClient_GetUIContextIndex(0);
+    if ((contextIndex_00 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1086,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar7 = Cmd_Argc();
-    if (iVar7 < 3) {
-      Item_Fade(iVar6,piVar3,(uint)(iVar4 == 0));
+    iVar6 = Cmd_Argc();
+    if (iVar6 < 3) {
+      Item_Fade(contextIndex_00,piVar3,(uint)(iVar4 == 0));
     }
     else {
       pcVar5 = Cmd_Argv(2);
       piVar3 = Menu_FindItemByName(piVar3->parent,pcVar5);
       if (piVar3 != (itemDef_s *)0x0) {
-        Item_Fade(iVar6,piVar3,(uint)(iVar4 == 0));
+        Item_Fade(contextIndex_00,piVar3,(uint)(iVar4 == 0));
       }
     }
   }
@@ -4948,30 +5026,33 @@ void __cdecl UI_ShowItem_f(void)
   code *pcVar1;
   bool bVar2;
   itemDef_s *piVar3;
+  int contextIndex_00;
   int iVar4;
-  int iVar5;
-  char *pcVar6;
+  char *p;
+  itemDef_s *showItem;
+  itemDef_s *baseItem;
+  int contextIndex;
   
   piVar3 = Cmd_ItemDef();
   if (piVar3 != (itemDef_s *)0x0) {
-    iVar4 = Com_LocalClient_GetUIContextIndex(0);
-    if ((iVar4 == -1) &&
+    contextIndex_00 = Com_LocalClient_GetUIContextIndex(0);
+    if ((contextIndex_00 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x109e,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar5 = Cmd_Argc();
-    if (iVar5 == 2) {
-      pcVar6 = Cmd_Argv(1);
-      piVar3 = Menu_FindItemByName(piVar3->parent,pcVar6);
+    iVar4 = Cmd_Argc();
+    if (iVar4 == 2) {
+      p = Cmd_Argv(1);
+      piVar3 = Menu_FindItemByName(piVar3->parent,p);
       if (piVar3 != (itemDef_s *)0x0) {
-        Item_Show(iVar4,piVar3,1);
+        Item_Show(contextIndex_00,piVar3,1);
       }
     }
     else {
-      Item_Show(iVar4,piVar3,1);
+      Item_Show(contextIndex_00,piVar3,1);
     }
   }
   return;
@@ -4986,30 +5067,33 @@ void __cdecl UI_HideItem_f(void)
   code *pcVar1;
   bool bVar2;
   itemDef_s *piVar3;
+  int contextIndex_00;
   int iVar4;
-  int iVar5;
-  char *pcVar6;
+  char *p;
+  itemDef_s *showItem;
+  itemDef_s *baseItem;
+  int contextIndex;
   
   piVar3 = Cmd_ItemDef();
   if (piVar3 != (itemDef_s *)0x0) {
-    iVar4 = Com_LocalClient_GetUIContextIndex(0);
-    if ((iVar4 == -1) &&
+    contextIndex_00 = Com_LocalClient_GetUIContextIndex(0);
+    if ((contextIndex_00 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x10b4,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar5 = Cmd_Argc();
-    if (iVar5 == 2) {
-      pcVar6 = Cmd_Argv(1);
-      piVar3 = Menu_FindItemByName(piVar3->parent,pcVar6);
+    iVar4 = Cmd_Argc();
+    if (iVar4 == 2) {
+      p = Cmd_Argv(1);
+      piVar3 = Menu_FindItemByName(piVar3->parent,p);
       if (piVar3 != (itemDef_s *)0x0) {
-        Item_Show(iVar4,piVar3,0);
+        Item_Show(contextIndex_00,piVar3,0);
       }
     }
     else {
-      Item_Show(iVar4,piVar3,0);
+      Item_Show(contextIndex_00,piVar3,0);
     }
   }
   return;
@@ -5021,15 +5105,16 @@ void __cdecl UI_HideItem_f(void)
 void __cdecl UI_ShowMenu_f(void)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
-  char *pcVar3;
+  uiInfo_s *dc;
+  int iVar1;
+  char *windowName;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  iVar2 = Cmd_Argc();
-  if (iVar2 == 2) {
-    pcVar3 = Cmd_Argv(1);
-    Menus_ShowByName(&puVar1->uiDC,pcVar3);
+  dc = UI_GetInfo(0);
+  iVar1 = Cmd_Argc();
+  if (iVar1 == 2) {
+    windowName = Cmd_Argv(1);
+    Menus_ShowByName(&dc->uiDC,windowName);
   }
   return;
 }
@@ -5040,15 +5125,16 @@ void __cdecl UI_ShowMenu_f(void)
 void __cdecl UI_HideMenu_f(void)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
-  char *pcVar3;
+  uiInfo_s *dc;
+  int iVar1;
+  char *menuName;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  iVar2 = Cmd_Argc();
-  if (iVar2 == 2) {
-    pcVar3 = Cmd_Argv(1);
-    Menus_HideByName(&puVar1->uiDC,pcVar3);
+  dc = UI_GetInfo(0);
+  iVar1 = Cmd_Argc();
+  if (iVar1 == 2) {
+    menuName = Cmd_Argv(1);
+    Menus_HideByName(&dc->uiDC,menuName);
   }
   return;
 }
@@ -5059,12 +5145,13 @@ void __cdecl UI_HideMenu_f(void)
 void __cdecl UI_OpenMenu_f(void)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
+  uiInfo_s *dc;
+  char *p;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  pcVar2 = Cmd_Argv(1);
-  Menus_OpenByName(0,&puVar1->uiDC,pcVar2);
+  dc = UI_GetInfo(0);
+  p = Cmd_Argv(1);
+  Menus_OpenByName(0,&dc->uiDC,p);
   return;
 }
 
@@ -5074,12 +5161,13 @@ void __cdecl UI_OpenMenu_f(void)
 void __cdecl UI_CloseMenu_f(void)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
+  uiInfo_s *dc;
+  char *p;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  pcVar2 = Cmd_Argv(1);
-  Menus_CloseByName(0,&puVar1->uiDC,pcVar2);
+  dc = UI_GetInfo(0);
+  p = Cmd_Argv(1);
+  Menus_CloseByName(0,&dc->uiDC,p);
   return;
 }
 
@@ -5089,12 +5177,13 @@ void __cdecl UI_CloseMenu_f(void)
 void __cdecl UI_OpenMenuImmediate_f(void)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
+  uiInfo_s *dc;
+  char *p;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  pcVar2 = Cmd_Argv(1);
-  Menus_OpenImmediateByName(0,&puVar1->uiDC,pcVar2);
+  dc = UI_GetInfo(0);
+  p = Cmd_Argv(1);
+  Menus_OpenImmediateByName(0,&dc->uiDC,p);
   return;
 }
 
@@ -5104,12 +5193,13 @@ void __cdecl UI_OpenMenuImmediate_f(void)
 void __cdecl UI_CloseMenuImmediate_f(void)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
+  uiInfo_s *dc;
+  char *p;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(0);
-  pcVar2 = Cmd_Argv(1);
-  Menus_CloseImmediateByName(0,&puVar1->uiDC,pcVar2);
+  dc = UI_GetInfo(0);
+  p = Cmd_Argv(1);
+  Menus_CloseImmediateByName(0,&dc->uiDC,p);
   return;
 }
 
@@ -5120,24 +5210,27 @@ void __cdecl UI_ChangeMenuOpenSlideDirection_f(void)
 
 {
   int iVar1;
-  uiInfo_s *puVar2;
-  char *pcVar3;
-  menuDef_t *pmVar4;
+  uiInfo_s *dc;
+  char *pcVar2;
+  menuDef_t *pmVar3;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
+  int newSlideDirection;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    puVar2 = UI_GetInfo(0);
-    pcVar3 = Cmd_Argv(1);
-    pmVar4 = Menus_FindByName(&puVar2->uiDC,pcVar3);
-    if (pmVar4 == (menuDef_t *)0x0) {
+    dc = UI_GetInfo(0);
+    pcVar2 = Cmd_Argv(1);
+    pmVar3 = Menus_FindByName(&dc->uiDC,pcVar2);
+    if (pmVar3 == (menuDef_t *)0x0) {
       Cmd_Argv(1);
       Com_Printf(0xd,"Couldnt find menu: %s \n");
     }
     else {
-      pcVar3 = Cmd_Argv(2);
-      iVar1 = atoi(pcVar3);
+      pcVar2 = Cmd_Argv(2);
+      iVar1 = atoi(pcVar2);
       if ((((iVar1 == 3) || (iVar1 == 2)) || (iVar1 == 1)) || (iVar1 == 0)) {
-        pmVar4->openSlideDirection = iVar1;
+        pmVar3->openSlideDirection = iVar1;
       }
       else {
         Cmd_Argv(1);
@@ -5158,24 +5251,27 @@ void __cdecl UI_ChangeMenuCloseSlideDirection_f(void)
 
 {
   int iVar1;
-  uiInfo_s *puVar2;
-  char *pcVar3;
-  menuDef_t *pmVar4;
+  uiInfo_s *dc;
+  char *pcVar2;
+  menuDef_t *pmVar3;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
+  int newSlideDirection;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    puVar2 = UI_GetInfo(0);
-    pcVar3 = Cmd_Argv(1);
-    pmVar4 = Menus_FindByName(&puVar2->uiDC,pcVar3);
-    if (pmVar4 == (menuDef_t *)0x0) {
+    dc = UI_GetInfo(0);
+    pcVar2 = Cmd_Argv(1);
+    pmVar3 = Menus_FindByName(&dc->uiDC,pcVar2);
+    if (pmVar3 == (menuDef_t *)0x0) {
       Cmd_Argv(1);
       Com_Printf(0xd,"Couldnt find menu: %s \n");
     }
     else {
-      pcVar3 = Cmd_Argv(2);
-      iVar1 = atoi(pcVar3);
+      pcVar2 = Cmd_Argv(2);
+      iVar1 = atoi(pcVar2);
       if ((((iVar1 == 3) || (iVar1 == 2)) || (iVar1 == 1)) || (iVar1 == 0)) {
-        pmVar4->closeSlideDirection = iVar1;
+        pmVar3->closeSlideDirection = iVar1;
       }
       else {
         Cmd_Argv(1);
@@ -5197,68 +5293,70 @@ void __cdecl UI_OpenToastPopup_f(void)
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uiInfo_s *puVar4;
-  char *pcVar5;
-  menuDef_t *pmVar6;
-  int iVar7;
+  int contextIndex_00;
+  uiInfo_s *dc;
+  char *pcVar3;
+  menuDef_t *w;
+  int iVar4;
   int local_48;
   int local_44;
+  uiInfo_s *uiInfo;
+  menuDef_t *toastPopupMenu;
+  int contextIndex;
   
-  iVar3 = Com_LocalClient_GetUIContextIndex(0);
-  if ((iVar3 == -1) &&
+  contextIndex_00 = Com_LocalClient_GetUIContextIndex(0);
+  if ((contextIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x113b,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  puVar4 = UI_UIContext_GetInfo(iVar3);
-  iVar7 = 0x100;
-  pcVar5 = Cmd_Argv(1);
-  I_strncpyz(puVar4->toastPopupIconName,pcVar5,iVar7);
-  iVar7 = 0x100;
-  pcVar5 = Cmd_Argv(2);
-  I_strncpyz(puVar4->toastPopupTitle,pcVar5,iVar7);
-  iVar7 = 0x100;
-  pcVar5 = Cmd_Argv(3);
-  I_strncpyz(puVar4->toastPopupDesc,pcVar5,iVar7);
-  pcVar5 = Cmd_Argv(4);
-  iVar7 = atoi(pcVar5);
-  puVar4->toastPopupDuration = iVar7;
-  puVar4->toastPopupOpened = true;
-  iVar7 = Sys_Milliseconds();
-  puVar4->toastPopupTimeCounter = iVar7;
-  pmVar6 = Menus_FindByName(&puVar4->uiDC,"menu_toast_popup");
-  if (((pmVar6->openSlideSpeed < 1) || (pmVar6->openSlideDirection < 0)) ||
-     (3 < pmVar6->openSlideDirection)) {
-    if (0 < pmVar6->openFadingTime) {
-      Window_AddDynamicFlags(iVar3,&pmVar6->window,0x80000);
-      iVar7 = Sys_Milliseconds();
-      pmVar6->fadeTimeCounter = iVar7;
+  dc = UI_UIContext_GetInfo(contextIndex_00);
+  iVar4 = 0x100;
+  pcVar3 = Cmd_Argv(1);
+  I_strncpyz(dc->toastPopupIconName,pcVar3,iVar4);
+  iVar4 = 0x100;
+  pcVar3 = Cmd_Argv(2);
+  I_strncpyz(dc->toastPopupTitle,pcVar3,iVar4);
+  iVar4 = 0x100;
+  pcVar3 = Cmd_Argv(3);
+  I_strncpyz(dc->toastPopupDesc,pcVar3,iVar4);
+  pcVar3 = Cmd_Argv(4);
+  iVar4 = atoi(pcVar3);
+  dc->toastPopupDuration = iVar4;
+  dc->toastPopupOpened = true;
+  iVar4 = Sys_Milliseconds();
+  dc->toastPopupTimeCounter = iVar4;
+  w = Menus_FindByName(&dc->uiDC,"menu_toast_popup");
+  if (((w->openSlideSpeed < 1) || (w->openSlideDirection < 0)) || (3 < w->openSlideDirection)) {
+    if (0 < w->openFadingTime) {
+      Window_AddDynamicFlags(contextIndex_00,&w->window,0x80000);
+      iVar4 = Sys_Milliseconds();
+      w->fadeTimeCounter = iVar4;
     }
   }
   else {
-    Window_AddDynamicFlags(iVar3,&pmVar6->window,0x20000);
-    iVar7 = Sys_Milliseconds();
-    pmVar6->slideTimeCounter = iVar7;
-    if (0 < pmVar6->openFadingTime) {
-      Window_AddDynamicFlags(iVar3,&pmVar6->window,0x80000);
-      local_44 = pmVar6->openFadingTime;
-      if (local_44 <= pmVar6->openSlideSpeed) {
-        local_44 = pmVar6->openSlideSpeed;
+    Window_AddDynamicFlags(contextIndex_00,&w->window,0x20000);
+    iVar4 = Sys_Milliseconds();
+    w->slideTimeCounter = iVar4;
+    if (0 < w->openFadingTime) {
+      Window_AddDynamicFlags(contextIndex_00,&w->window,0x80000);
+      local_44 = w->openFadingTime;
+      if (local_44 <= w->openSlideSpeed) {
+        local_44 = w->openSlideSpeed;
       }
-      pmVar6->openSlideSpeed = local_44;
-      local_48 = pmVar6->openFadingTime;
-      if (local_48 <= pmVar6->openSlideSpeed) {
-        local_48 = pmVar6->openSlideSpeed;
+      w->openSlideSpeed = local_44;
+      local_48 = w->openFadingTime;
+      if (local_48 <= w->openSlideSpeed) {
+        local_48 = w->openSlideSpeed;
       }
-      pmVar6->openFadingTime = local_48;
-      iVar7 = Sys_Milliseconds();
-      pmVar6->fadeTimeCounter = iVar7;
+      w->openFadingTime = local_48;
+      iVar4 = Sys_Milliseconds();
+      w->fadeTimeCounter = iVar4;
     }
   }
-  Window_RemoveDynamicFlags(iVar3,&pmVar6->window,0x42000);
+  Window_RemoveDynamicFlags(contextIndex_00,&w->window,0x42000);
   return;
 }
 
@@ -5270,46 +5368,50 @@ void __cdecl UI_FocusItem_f(void)
 {
   code *pcVar1;
   bool bVar2;
+  int contextIndex_00;
+  uiInfo_s *dc;
   int iVar3;
-  uiInfo_s *puVar4;
-  int iVar5;
-  char *pcVar6;
-  rectDef_s *prVar7;
-  itemDef_s *local_14;
+  char *p;
+  rectDef_s *prVar4;
+  uiInfo_s *uiInfo;
+  itemDef_s *focusItem;
+  itemDef_s *baseItem;
+  int contextIndex;
+  rectDef_s *rect;
   
-  local_14 = Cmd_ItemDef();
-  if (local_14 != (itemDef_s *)0x0) {
-    iVar3 = Com_LocalClient_GetUIContextIndex(0);
-    if ((iVar3 == -1) &&
+  focusItem = Cmd_ItemDef();
+  if (focusItem != (itemDef_s *)0x0) {
+    contextIndex_00 = Com_LocalClient_GetUIContextIndex(0);
+    if ((contextIndex_00 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1167,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    puVar4 = UI_UIContext_GetInfo(iVar3);
-    iVar5 = Cmd_Argc();
-    if (1 < iVar5) {
-      pcVar6 = Cmd_Argv(1);
-      local_14 = Menu_FindFirstFocusableItemByName(0,&puVar4->uiDC,local_14->parent,pcVar6);
-      if (local_14 == (itemDef_s *)0x0) {
+    dc = UI_UIContext_GetInfo(contextIndex_00);
+    iVar3 = Cmd_Argc();
+    if (1 < iVar3) {
+      p = Cmd_Argv(1);
+      focusItem = Menu_FindFirstFocusableItemByName(0,&dc->uiDC,focusItem->parent,p);
+      if (focusItem == (itemDef_s *)0x0) {
         Cmd_Argv(1);
         Com_Printf(0xd,"setFocus: could not find widget named \'%s\'\n");
         return;
       }
     }
-    prVar7 = Window_GetRect(&local_14->window);
-    iVar5 = Item_SetFocus(0,&puVar4->uiDC,local_14,prVar7->x,prVar7->y);
-    if (iVar5 == 0) {
+    prVar4 = Window_GetRect(&focusItem->window);
+    iVar3 = Item_SetFocus(0,&dc->uiDC,focusItem,prVar4->x,prVar4->y);
+    if (iVar3 == 0) {
       Cmd_Argv(1);
       Com_DPrintf(0xd,
                   "setFocus: error focusing widget \'%s\' (widget was found but could not accept focus)\n"
                  );
     }
     else {
-      bVar2 = Item_IsTextField(local_14);
+      bVar2 = Item_IsTextField(focusItem);
       if (bVar2) {
-        Item_TextField_BeginEdit(0,iVar3,local_14);
+        Item_TextField_BeginEdit(0,contextIndex_00,focusItem);
       }
     }
   }
@@ -5326,29 +5428,37 @@ void __cdecl UI_MoveFeeder_f(void)
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  listBoxDef_s *plVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  undefined1 uVar9;
+  listBoxDef_s *listPtr_00;
+  int scrollmax;
+  int viewmax_00;
+  int iVar5;
+  undefined1 autoScroll;
   int local_84;
   int local_7c;
-  itemDef_s *local_20;
+  int count;
+  int max;
+  itemDef_s *feederItem;
+  int localClientNum;
+  listBoxDef_s *listPtr;
+  int viewmax;
+  itemDef_s *baseItem;
+  int contextIndex;
+  int lastIndex;
   
-  local_20 = Cmd_ItemDef();
-  if ((local_20 != (itemDef_s *)0x0) && (iVar3 = Cmd_Argc(), iVar3 != 1)) {
+  feederItem = Cmd_ItemDef();
+  if ((feederItem != (itemDef_s *)0x0) && (iVar3 = Cmd_Argc(), iVar3 != 1)) {
     iVar3 = Cmd_Argc();
     if (2 < iVar3) {
       pcVar4 = Cmd_Argv(2);
-      local_20 = Menu_FindItemByName(local_20->parent,pcVar4);
-      if (local_20 == (itemDef_s *)0x0) {
+      feederItem = Menu_FindItemByName(feederItem->parent,pcVar4);
+      if (feederItem == (itemDef_s *)0x0) {
         Cmd_Argv(2);
         Com_Printf(0xd,"selectFeeder: could not find widget named \'%s\'\n");
         return;
       }
     }
-    plVar5 = Item_GetListBoxDef(local_20);
-    if (plVar5 != (listBoxDef_s *)0x0) {
+    listPtr_00 = Item_GetListBoxDef(feederItem);
+    if (listPtr_00 != (listBoxDef_s *)0x0) {
       iVar3 = Com_LocalClient_GetUIContextIndex(0);
       if ((iVar3 == -1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x11a6,0,
@@ -5357,50 +5467,51 @@ void __cdecl UI_MoveFeeder_f(void)
         (*pcVar1)();
         return;
       }
-      iVar6 = Item_ListBox_MaxScroll(0,iVar3,local_20);
-      iVar7 = Item_ListBox_Viewmax(0,iVar3,local_20);
-      local_7c = UI_FeederCount(0,iVar3,plVar5->special,plVar5);
+      scrollmax = Item_ListBox_MaxScroll(0,iVar3,feederItem);
+      viewmax_00 = Item_ListBox_Viewmax(0,iVar3,feederItem);
+      local_7c = UI_FeederCount(0,iVar3,listPtr_00->special,listPtr_00);
       local_7c = local_7c + -1;
       if (local_7c < 1) {
         local_7c = 0;
       }
       pcVar4 = Cmd_Argv(1);
-      iVar8 = I_stricmp("top",pcVar4);
-      if (iVar8 == 0) {
-        plVar5->startPos[iVar3] = 0;
-        if (plVar5->notselectable == 0) {
-          plVar5->cursorPos[iVar3] = 0;
-          UI_FeederSelection(0,iVar3,plVar5->special,0);
+      iVar5 = I_stricmp("top",pcVar4);
+      if (iVar5 == 0) {
+        listPtr_00->startPos[iVar3] = 0;
+        if (listPtr_00->notselectable == 0) {
+          listPtr_00->cursorPos[iVar3] = 0;
+          UI_FeederSelection(0,iVar3,listPtr_00->special,0);
         }
       }
       else {
         pcVar4 = Cmd_Argv(1);
-        iVar8 = I_stricmp("bottom",pcVar4);
-        if (iVar8 == 0) {
-          if (plVar5->notselectable == 0) {
-            Item_ListBox_SetCursorPos(0,iVar3,local_20,iVar6,iVar7,local_7c,true);
+        iVar5 = I_stricmp("bottom",pcVar4);
+        if (iVar5 == 0) {
+          if (listPtr_00->notselectable == 0) {
+            Item_ListBox_SetCursorPos(0,iVar3,feederItem,scrollmax,viewmax_00,local_7c,true);
           }
           else {
-            plVar5->startPos[iVar3] = iVar6;
+            listPtr_00->startPos[iVar3] = scrollmax;
           }
         }
-        else if (plVar5->notselectable == 0) {
-          iVar8 = (int)plVar5->special;
-          if (((iVar8 == 0x20) || (iVar8 == 0x2f)) || (iVar8 == 0x32)) {
-            local_84 = UI_FeederCount(0,iVar3,plVar5->special,plVar5);
+        else if (listPtr_00->notselectable == 0) {
+          iVar5 = (int)listPtr_00->special;
+          if (((iVar5 == 0x20) || (iVar5 == 0x2f)) || (iVar5 == 0x32)) {
+            local_84 = UI_FeederCount(0,iVar3,listPtr_00->special,listPtr_00);
             local_84 = local_84 + -1;
             if (local_84 < 1) {
               local_84 = 0;
             }
             pcVar4 = Cmd_Argv(1);
-            iVar8 = atoi(pcVar4);
-            Item_ListBox_Scroll(0,iVar3,local_20,local_84,iVar6,iVar7,iVar8);
+            iVar5 = atoi(pcVar4);
+            Item_ListBox_Scroll(0,iVar3,feederItem,local_84,scrollmax,viewmax_00,iVar5);
           }
           else {
-            uVar9 = 1;
+            autoScroll = 1;
             pcVar4 = Cmd_Argv(1);
-            iVar8 = atoi(pcVar4);
-            Item_ListBox_SetCursorPos(0,iVar3,local_20,iVar6,iVar7,iVar8,(bool)uVar9);
+            iVar5 = atoi(pcVar4);
+            Item_ListBox_SetCursorPos
+                      (0,iVar3,feederItem,scrollmax,viewmax_00,iVar5,(bool)autoScroll);
           }
         }
       }
@@ -5417,31 +5528,31 @@ void __cdecl UI_AddToFeeder_f(void)
 {
   int iVar1;
   char *pcVar2;
-  itemDef_s *piVar3;
-  int iVar4;
-  char **ppcVar5;
-  char *local_30 [10];
-  int local_8;
+  itemDef_s *item;
+  int iVar3;
+  char **args;
+  char *argArray [10];
+  int numArgs;
   
-  local_8 = 0;
+  numArgs = 0;
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
     Com_Printf(0xd,"Usage: addToFeeder <event index> <args>..\n");
   }
   else {
     while( true ) {
-      iVar4 = local_8 + 2;
+      iVar3 = numArgs + 2;
       iVar1 = Cmd_Argc();
-      if (iVar1 <= iVar4) break;
-      pcVar2 = Cmd_Argv(local_8 + 2);
-      local_30[local_8] = pcVar2;
-      local_8 = local_8 + 1;
+      if (iVar1 <= iVar3) break;
+      pcVar2 = Cmd_Argv(numArgs + 2);
+      argArray[numArgs] = pcVar2;
+      numArgs = numArgs + 1;
     }
-    ppcVar5 = local_30;
-    iVar1 = local_8;
+    args = argArray;
+    iVar1 = numArgs;
     pcVar2 = Cmd_Argv(1);
-    piVar3 = Cmd_ItemDef();
-    UI_AddToFeeder(piVar3,pcVar2,iVar1,ppcVar5);
+    item = Cmd_ItemDef();
+    UI_AddToFeeder(item,pcVar2,iVar1,args);
   }
   return;
 }
@@ -5454,15 +5565,16 @@ void __cdecl UI_AddToFeederExtended_f(void)
 {
   int iVar1;
   char *pcVar2;
-  char *pcVar3;
-  itemDef_s *piVar4;
-  int iVar5;
-  undefined1 uVar6;
-  char **ppcVar7;
-  char *local_30 [10];
-  int local_8;
+  char *onActionEvent;
+  itemDef_s *item;
+  int iVar3;
+  undefined1 disableCondition_00;
+  char **args;
+  bool disableCondition;
+  char *argArray [10];
+  int numArgs;
   
-  local_8 = 0;
+  numArgs = 0;
   iVar1 = Cmd_Argc();
   if (iVar1 < 5) {
     Com_Printf(0xd,
@@ -5470,19 +5582,19 @@ void __cdecl UI_AddToFeederExtended_f(void)
               );
   }
   else {
-    for (; iVar5 = local_8 + 4, iVar1 = Cmd_Argc(), iVar5 < iVar1; local_8 = local_8 + 1) {
-      pcVar2 = Cmd_Argv(local_8 + 4);
-      local_30[local_8] = pcVar2;
+    for (; iVar3 = numArgs + 4, iVar1 = Cmd_Argc(), iVar3 < iVar1; numArgs = numArgs + 1) {
+      pcVar2 = Cmd_Argv(numArgs + 4);
+      argArray[numArgs] = pcVar2;
     }
     pcVar2 = Cmd_Argv(3);
     iVar1 = atoi(pcVar2);
-    uVar6 = iVar1 != 0;
-    ppcVar7 = local_30;
-    iVar1 = local_8;
+    disableCondition_00 = iVar1 != 0;
+    args = argArray;
+    iVar1 = numArgs;
     pcVar2 = Cmd_Argv(2);
-    pcVar3 = Cmd_Argv(1);
-    piVar4 = Cmd_ItemDef();
-    UI_AddToFeederExtended(piVar4,pcVar3,pcVar2,(bool)uVar6,iVar1,ppcVar7);
+    onActionEvent = Cmd_Argv(1);
+    item = Cmd_ItemDef();
+    UI_AddToFeederExtended(item,onActionEvent,pcVar2,(bool)disableCondition_00,iVar1,args);
   }
   return;
 }
@@ -5496,7 +5608,8 @@ void __cdecl UI_ClearFeeder_f(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  itemDef_s *piVar4;
+  itemDef_s *item;
+  int contextIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 == 1) {
@@ -5511,8 +5624,8 @@ void __cdecl UI_ClearFeeder_f(void)
       }
     }
     bVar2 = true;
-    piVar4 = Cmd_ItemDef();
-    UI_ClearFeeder(iVar3,piVar4,bVar2);
+    item = Cmd_ItemDef();
+    UI_ClearFeeder(iVar3,item,bVar2);
   }
   else {
     Com_Printf(0xd,"Usage: clearFeeder\n");
@@ -5529,7 +5642,8 @@ void __cdecl UI_ClearFeederWithoutResetCursor_f(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  itemDef_s *piVar4;
+  itemDef_s *item;
+  int contextIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 == 1) {
@@ -5544,8 +5658,8 @@ void __cdecl UI_ClearFeederWithoutResetCursor_f(void)
       }
     }
     bVar2 = false;
-    piVar4 = Cmd_ItemDef();
-    UI_ClearFeeder(iVar3,piVar4,bVar2);
+    item = Cmd_ItemDef();
+    UI_ClearFeeder(iVar3,item,bVar2);
   }
   else {
     Com_Printf(0xd,"Usage: clearFeederWithoutResetCursor\n");
@@ -5604,38 +5718,42 @@ void __cdecl UI_RefreshFeederSelection_f(void)
 
 {
   int iVar1;
-  uiInfo_s *puVar2;
-  menuDef_t *pmVar3;
-  char *pcVar4;
-  listBoxDef_s *plVar5;
-  int iVar6;
-  itemDef_s *local_18;
-  int local_14;
+  uiInfo_s *dc;
+  menuDef_t *menu_00;
+  char *p;
+  listBoxDef_s *listPtr_00;
+  int iVar2;
+  menuDef_t *menu;
+  itemDef_s *item;
+  int selection;
+  listBoxDef_s *listPtr;
+  int contextIndex;
+  int count;
   
-  local_18 = Cmd_ItemDef();
+  item = Cmd_ItemDef();
   iVar1 = Cmd_Argc();
   if (1 < iVar1) {
-    puVar2 = UI_GetInfo(0);
-    pmVar3 = Menu_GetFocused(&puVar2->uiDC);
-    pcVar4 = Cmd_Argv(1);
-    local_18 = Menu_FindItemByName(pmVar3,pcVar4);
+    dc = UI_GetInfo(0);
+    menu_00 = Menu_GetFocused(&dc->uiDC);
+    p = Cmd_Argv(1);
+    item = Menu_FindItemByName(menu_00,p);
   }
-  if (local_18 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     Com_Printf(0xd,"refreshFeederSelection: Could not find an itemdef.\n");
   }
   else {
-    plVar5 = Item_GetListBoxDef(local_18);
-    if (plVar5 == (listBoxDef_s *)0x0) {
+    listPtr_00 = Item_GetListBoxDef(item);
+    if (listPtr_00 == (listBoxDef_s *)0x0) {
       Com_Printf(0xd,"refreshFeederSelection: No list box found for itemdef.\n");
     }
     else {
       iVar1 = Com_LocalClient_GetUIContextIndex(0);
-      iVar6 = UI_FeederCount(0,iVar1,plVar5->special,plVar5);
-      local_14 = plVar5->cursorPos[iVar1];
-      if ((local_14 < 0) || (iVar6 <= local_14)) {
-        local_14 = 0;
+      iVar2 = UI_FeederCount(0,iVar1,listPtr_00->special,listPtr_00);
+      selection = listPtr_00->cursorPos[iVar1];
+      if ((selection < 0) || (iVar2 <= selection)) {
+        selection = 0;
       }
-      UI_FeederSelection(0,iVar1,plVar5->special,local_14);
+      UI_FeederSelection(0,iVar1,listPtr_00->special,selection);
     }
   }
   return;
@@ -5649,17 +5767,17 @@ void __cdecl UI_ChangeRowStatus_f(void)
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
-  itemDef_s *piVar4;
+  int rowToChange;
+  itemDef_s *item;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 4) {
     pcVar2 = Cmd_Argv(3);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(2);
-    iVar3 = atoi(pcVar2);
-    piVar4 = Cmd_ItemDef();
-    UI_ChangeRowStatus(piVar4,iVar3,iVar1);
+    rowToChange = atoi(pcVar2);
+    item = Cmd_ItemDef();
+    UI_ChangeRowStatus(item,rowToChange,iVar1);
   }
   else {
     Com_Printf(0xd,"Usage: changeRowStatus <menu name> <row index> <new status>\n");
@@ -5673,12 +5791,12 @@ void __cdecl UI_ChangeRowStatus_f(void)
 void __cdecl UI_PlaySound_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *aliasname;
+  int context;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = Com_LocalClient_GetUIContextIndex(0);
-  UI_PlaySound(iVar2,pcVar1);
+  aliasname = Cmd_Argv(1);
+  context = Com_LocalClient_GetUIContextIndex(0);
+  UI_PlaySound(context,aliasname);
   return;
 }
 
@@ -5689,17 +5807,17 @@ void __cdecl UI_ValidatePrivateMatchGametype_f(void)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b80bc <= local_8) {
+    if (DAT_098b80bc <= i) {
       Dvar_SetString(ui_gametype,&DAT_098b80c0);
       return;
     }
-    iVar1 = I_strcmp((ui_gametype->current).string,&DAT_098b80c0 + local_8 * 0x74);
+    iVar1 = I_strcmp((ui_gametype->current).string,&DAT_098b80c0 + i * 0x74);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return;
 }
@@ -5711,6 +5829,8 @@ void __cdecl UI_SetActiveMenu_f(void)
 
 {
   int iVar1;
+  int localClientNum;
+  char *s;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
@@ -5790,17 +5910,17 @@ void __cdecl UI_RegisterCmds(void)
 
 // 00766860  Item_HasFocusEvent  (ui/ui_shared.cpp:4815)
 
-int __cdecl Item_HasFocusEvent(int param_1,UiContext *param_2,itemDef_s *param_3)
+int __cdecl Item_HasFocusEvent(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   int iVar1;
-  GenericEventHandler *local_8;
+  GenericEventHandler *eventHandler;
   
-  if (param_3->onEvent != (GenericEventHandler *)0x0) {
-    for (local_8 = param_3->onEvent; local_8 != (GenericEventHandler *)0x0; local_8 = local_8->next)
-    {
-      iVar1 = I_stricmp(local_8->name,"onfocus");
-      if ((iVar1 == 0) || (iVar1 = I_stricmp(local_8->name,"leavefocus"), iVar1 == 0)) {
+  if (item->onEvent != (GenericEventHandler *)0x0) {
+    for (eventHandler = item->onEvent; eventHandler != (GenericEventHandler *)0x0;
+        eventHandler = eventHandler->next) {
+      iVar1 = I_stricmp(eventHandler->name,"onfocus");
+      if ((iVar1 == 0) || (iVar1 = I_stricmp(eventHandler->name,"leavefocus"), iVar1 == 0)) {
         return 1;
       }
     }
@@ -5811,130 +5931,128 @@ int __cdecl Item_HasFocusEvent(int param_1,UiContext *param_2,itemDef_s *param_3
 
 // 00764FD0  Item_SetFocus  (ui/ui_shared.cpp:4840)
 
-int __cdecl
-Item_SetFocus(int param_1,UiContext *param_2,itemDef_s *param_3,float param_4,float param_5)
+int __cdecl Item_SetFocus(int localClientNum,UiContext *dc,itemDef_s *item,float x,float y)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  menuDef_t *pmVar4;
+  menuDef_t *w;
   int extraout_EAX;
-  listBoxDef_s *plVar5;
-  char local_4c;
-  rectDef_s local_38;
-  rectDef_s *local_20;
-  itemDef_s *local_1c;
-  menuDef_t *local_18;
-  focusItemDef_s *local_14;
-  menuDef_t *local_10;
-  char local_9;
-  int local_8;
+  listBoxDef_s *plVar4;
+  bool local_4c;
+  listBoxDef_s *listPtr;
+  menuDef_t *serverBrowser;
+  focusItemDef_s *oldFocusPtr;
+  rectDef_s r;
+  rectDef_s *textRect;
+  itemDef_s *oldFocus;
+  menuDef_t *focusedMenu;
+  focusItemDef_s *focusPtr;
+  menuDef_t *parent;
+  bool isFilterWindow;
+  int i;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x12ef,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_3 == (itemDef_s *)0x0) || (((param_3->window).staticFlags & 0x100000U) != 0)) ||
-     (bVar2 = Window_IsVisible(param_2->contextIndex,&param_3->window), !bVar2)) {
+  if (((item == (itemDef_s *)0x0) || (((item->window).staticFlags & 0x100000U) != 0)) ||
+     (bVar2 = Window_IsVisible(dc->contextIndex,&item->window), !bVar2)) {
     iVar3 = 0;
   }
   else {
-    local_14 = Item_GetFocusItemDef(param_3);
-    bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->window);
-    if ((bVar2) && (iVar3 = Item_IsVisible(param_1,param_2->contextIndex,param_3), iVar3 != 0)) {
+    focusPtr = Item_GetFocusItemDef(item);
+    bVar2 = Window_HasFocus(dc->contextIndex,&item->window);
+    if ((bVar2) && (iVar3 = Item_IsVisible(localClientNum,dc->contextIndex,item), iVar3 != 0)) {
       iVar3 = 1;
     }
     else {
-      local_10 = param_3->parent;
-      if (((local_10 == (menuDef_t *)0x0) || ((local_10->window).name == (char *)0x0)) ||
-         (iVar3 = I_strcmp((local_10->window).name,"filter_window"), iVar3 != 0)) {
-        local_4c = '\0';
+      parent = item->parent;
+      if (((parent == (menuDef_t *)0x0) || ((parent->window).name == (char *)0x0)) ||
+         (iVar3 = I_strcmp((parent->window).name,"filter_window"), iVar3 != 0)) {
+        local_4c = false;
       }
       else {
-        local_4c = '\x01';
+        local_4c = true;
       }
-      local_9 = local_4c;
-      if (((((local_10 == (menuDef_t *)0x0) || (local_4c != '\0')) ||
-           (bVar2 = Window_HasFocus(param_2->contextIndex,&local_10->window), bVar2)) ||
-          ((local_18 = Menu_GetFocused(param_2), local_18 == (menuDef_t *)0x0 ||
-           (iVar3 = Rect_ContainsPoint(param_2->contextIndex,&(local_18->window).rect,param_4,
-                                       param_5), iVar3 == 0)))) ||
-         (iVar3 = Rect_ContainsPoint(param_2->contextIndex,&(local_10->window).rect,param_4,param_5)
-         , iVar3 == 0)) {
-        if (((param_3->dvarFlags & 3U) == 0) ||
-           (iVar3 = Item_EnableShowViaDvar(param_3,1), iVar3 != 0)) {
-          iVar3 = Item_IsVisible(param_1,param_2->contextIndex,param_3);
+      isFilterWindow = local_4c;
+      if (((((parent == (menuDef_t *)0x0) || (local_4c != false)) ||
+           (bVar2 = Window_HasFocus(dc->contextIndex,&parent->window), bVar2)) ||
+          ((focusedMenu = Menu_GetFocused(dc), focusedMenu == (menuDef_t *)0x0 ||
+           (iVar3 = Rect_ContainsPoint(dc->contextIndex,&(focusedMenu->window).rect,x,y), iVar3 == 0
+           )))) || (iVar3 = Rect_ContainsPoint(dc->contextIndex,&(parent->window).rect,x,y),
+                   iVar3 == 0)) {
+        if (((item->dvarFlags & 3U) == 0) || (iVar3 = Item_EnableShowViaDvar(item,1), iVar3 != 0)) {
+          iVar3 = Item_IsVisible(localClientNum,dc->contextIndex,item);
           if (iVar3 == 0) {
             iVar3 = 0;
           }
           else {
-            local_1c = Menu_ClearFocus(param_1,param_2,param_3->parent);
-            if (param_3->type == 1) {
-              local_20 = Item_GetTextRect(param_2->contextIndex,param_3);
-              local_38.x = local_20->x;
-              local_38.w = local_20->w;
-              local_38.h = local_20->h;
-              local_38.y = local_20->y - local_38.h;
-              local_38.horzAlign = local_20->horzAlign;
-              local_38.vertAlign = local_20->vertAlign;
-              iVar3 = Rect_ContainsPoint(param_2->contextIndex,&local_38,param_4,param_5);
+            oldFocus = Menu_ClearFocus(localClientNum,dc,item->parent);
+            if (item->type == 1) {
+              textRect = Item_GetTextRect(dc->contextIndex,item);
+              r.x = textRect->x;
+              r.w = textRect->w;
+              r.h = textRect->h;
+              r.y = textRect->y - r.h;
+              r.horzAlign = textRect->horzAlign;
+              r.vertAlign = textRect->vertAlign;
+              iVar3 = Rect_ContainsPoint(dc->contextIndex,&r,x,y);
               if (iVar3 == 0) {
-                if (local_1c != (itemDef_s *)0x0) {
-                  iVar3 = Item_IsFocusDefType(local_1c);
+                if (oldFocus != (itemDef_s *)0x0) {
+                  iVar3 = Item_IsFocusDefType(oldFocus);
                   if (iVar3 != 0) {
-                    Item_GetFocusItemDef(local_1c);
+                    Item_GetFocusItemDef(oldFocus);
                   }
-                  Window_AddDynamicFlags(param_2->contextIndex,&local_1c->window,2);
-                  Item_RunEventScript(param_1,param_2,param_3,"onFocus");
+                  Window_AddDynamicFlags(dc->contextIndex,&oldFocus->window,2);
+                  Item_RunEventScript(localClientNum,dc,item,"onFocus");
                 }
               }
               else {
-                Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,2);
+                Window_AddDynamicFlags(dc->contextIndex,&item->window,2);
               }
             }
             else {
-              Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,2);
-              if (local_9 != '\0') {
-                pmVar4 = Menu_GetFocused(param_2);
-                if ((pmVar4 != (menuDef_t *)0x0) &&
-                   (strstr((uchar *)(pmVar4->window).name,(uchar *)"server_browser"),
-                   extraout_EAX != 0)) {
-                  Window_RemoveDynamicFlags(param_2->contextIndex,&pmVar4->window,2);
+              Window_AddDynamicFlags(dc->contextIndex,&item->window,2);
+              if (isFilterWindow != false) {
+                w = Menu_GetFocused(dc);
+                if ((w != (menuDef_t *)0x0) &&
+                   (strstr((uchar *)(w->window).name,(uchar *)"server_browser"), extraout_EAX != 0))
+                {
+                  Window_RemoveDynamicFlags(dc->contextIndex,&w->window,2);
                 }
-                Window_AddDynamicFlags(param_2->contextIndex,&param_3->parent->window,2);
+                Window_AddDynamicFlags(dc->contextIndex,&item->parent->window,2);
               }
-              Item_RunEventScript(param_1,param_2,param_3,"onFocus");
+              Item_RunEventScript(localClientNum,dc,item,"onFocus");
             }
-            for (local_8 = 0; local_8 < local_10->itemCount; local_8 = local_8 + 1) {
-              if (local_10->items[local_8] == param_3) {
-                Menu_SetCursorItem(param_2->contextIndex,local_10,local_8);
+            for (i = 0; i < parent->itemCount; i = i + 1) {
+              if (parent->items[i] == item) {
+                Menu_SetCursorItem(dc->contextIndex,parent,i);
                 break;
               }
             }
-            if (param_3->type == 4) {
-              plVar5 = Item_GetListBoxDef(param_3);
-              if ((plVar5 == (listBoxDef_s *)0x0) &&
+            if (item->type == 4) {
+              plVar4 = Item_GetListBoxDef(item);
+              if ((plVar4 == (listBoxDef_s *)0x0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",
                                            0x1361,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 iVar3 = (*pcVar1)();
                 return iVar3;
               }
-              UI_OverrideCursorPos(param_1,param_2->contextIndex,param_3);
-              if ((plVar5 != (listBoxDef_s *)0x0) && (-1 < plVar5->cursorPos[param_2->contextIndex])
-                 ) {
-                if (((param_3->parent->window).name != (char *)0x0) &&
-                   (bVar2 = Menu_IsMenuOpenAndVisible
-                                      (param_2->contextIndex,(param_3->parent->window).name), bVar2)
-                   ) {
-                  Item_RunEventScript(param_1,param_2,param_3,"onListboxSelectionChange");
+              UI_OverrideCursorPos(localClientNum,dc->contextIndex,item);
+              if ((plVar4 != (listBoxDef_s *)0x0) && (-1 < plVar4->cursorPos[dc->contextIndex])) {
+                if (((item->parent->window).name != (char *)0x0) &&
+                   (bVar2 = Menu_IsMenuOpenAndVisible(dc->contextIndex,(item->parent->window).name),
+                   bVar2)) {
+                  Item_RunEventScript(localClientNum,dc,item,"onListboxSelectionChange");
                 }
-                UI_FeederSelection(param_1,param_2->contextIndex,plVar5->special,
-                                   plVar5->cursorPos[param_2->contextIndex]);
+                UI_FeederSelection(localClientNum,dc->contextIndex,plVar4->special,
+                                   plVar4->cursorPos[dc->contextIndex]);
               }
             }
             iVar3 = 1;
@@ -5955,17 +6073,18 @@ Item_SetFocus(int param_1,UiContext *param_2,itemDef_s *param_3,float param_4,fl
 
 // 00765520  Item_ListBox_MaxScroll  (ui/ui_shared.cpp:4985)
 
-int __cdecl Item_ListBox_MaxScroll(int param_1,int param_2,itemDef_s *param_3)
+int __cdecl Item_ListBox_MaxScroll(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
-  listBoxDef_s *plVar1;
-  int iVar2;
+  listBoxDef_s *listPtr_00;
+  int iVar1;
   int local_10;
+  listBoxDef_s *listPtr;
   
-  plVar1 = Item_GetListBoxDef(param_3);
-  iVar2 = Item_ListBox_Viewmax(param_1,param_2,param_3);
-  local_10 = UI_FeederCount(param_1,param_2,plVar1->special,plVar1);
-  local_10 = local_10 - iVar2;
+  listPtr_00 = Item_GetListBoxDef(item);
+  iVar1 = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+  local_10 = UI_FeederCount(localClientNum,contextIndex,listPtr_00->special,listPtr_00);
+  local_10 = local_10 - iVar1;
   if (local_10 < 1) {
     local_10 = 0;
   }
@@ -5975,31 +6094,32 @@ int __cdecl Item_ListBox_MaxScroll(int param_1,int param_2,itemDef_s *param_3)
 
 // 00765800  Item_ListBox_GetMaxHeight  (ui/ui_shared.cpp:4995)
 
-float __cdecl Item_ListBox_GetMaxHeight(int param_1,int param_2,itemDef_s *param_3)
+float __cdecl Item_ListBox_GetMaxHeight(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   float fVar1;
-  int local_10;
-  float local_8;
+  int i;
+  float exprH;
+  float largestHeight;
   
-  if (param_3->animInfo == (UIAnimInfo *)0x0) {
-    local_8 = (param_3->window).rect.h;
+  if (item->animInfo == (UIAnimInfo *)0x0) {
+    largestHeight = (item->window).rect.h;
   }
   else {
-    local_8 = (param_3->window).rect.h;
-    if (((param_3->rectExpData != (rectData_s *)0x0) &&
-        ((param_3->rectExpData->rectHExp).filename != (char *)0x0)) &&
-       (fVar1 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectHExp), local_8 < fVar1
-       )) {
-      local_8 = fVar1;
+    largestHeight = (item->window).rect.h;
+    if (((item->rectExpData != (rectData_s *)0x0) &&
+        ((item->rectExpData->rectHExp).filename != (char *)0x0)) &&
+       (fVar1 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectHExp),
+       largestHeight < fVar1)) {
+      largestHeight = fVar1;
     }
-    for (local_10 = 0; local_10 < param_3->animInfo->animStateCount; local_10 = local_10 + 1) {
-      if (local_8 < (param_3->animInfo->animStates[local_10]->rectClient).h) {
-        local_8 = (param_3->animInfo->animStates[local_10]->rectClient).h;
+    for (i = 0; i < item->animInfo->animStateCount; i = i + 1) {
+      if (largestHeight < (item->animInfo->animStates[i]->rectClient).h) {
+        largestHeight = (item->animInfo->animStates[i]->rectClient).h;
       }
     }
   }
-  return local_8;
+  return largestHeight;
 }
 
 
@@ -6007,7 +6127,7 @@ float __cdecl Item_ListBox_GetMaxHeight(int param_1,int param_2,itemDef_s *param
 
 /* WARNING: Removing unreachable block (ram,0x00765697) */
 
-int __cdecl Item_ListBox_Viewmax(int param_1,int param_2,itemDef_s *param_3)
+int __cdecl Item_ListBox_Viewmax(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
@@ -6017,18 +6137,21 @@ int __cdecl Item_ListBox_Viewmax(int param_1,int param_2,itemDef_s *param_3)
   listBoxDef_s *plVar5;
   float local_30;
   float local_28;
-  float local_10;
-  float local_8;
+  float h;
+  listBoxDef_s *listPtr;
+  float unitSize;
+  rectDef_s *rect;
+  float totalSize;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13a8,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  prVar4 = Window_GetRect(&param_3->window);
-  plVar5 = Item_GetListBoxDef(param_3);
+  prVar4 = Window_GetRect(&item->window);
+  plVar5 = Item_GetListBoxDef(item);
   if ((plVar5 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13ac,0,"%s")
      , !bVar2)) {
@@ -6036,56 +6159,60 @@ int __cdecl Item_ListBox_Viewmax(int param_1,int param_2,itemDef_s *param_3)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  bVar2 = Window_IsHorizontal(&param_3->window);
+  bVar2 = Window_IsHorizontal(&item->window);
   if (bVar2) {
     local_28 = prVar4->w - 2.0;
     if (0.0 <= 0.0 - local_28) {
       local_28 = 0.0;
     }
-    local_8 = local_28;
-    local_10 = plVar5->elementWidth;
+    totalSize = local_28;
+    unitSize = plVar5->elementWidth;
   }
   else {
     local_30 = prVar4->h - 2.0;
     if (0.0 <= 0.0 - local_30) {
       local_30 = 0.0;
     }
-    local_8 = local_30;
-    local_10 = plVar5->elementHeight;
+    totalSize = local_30;
+    unitSize = plVar5->elementHeight;
   }
-  if ((local_8 < 0.0) &&
+  if ((totalSize < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13ba,0,
                                "%s\n\t(totalSize) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((local_10 < 0.0) &&
+  if ((unitSize < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13bb,0,
                                "%s\n\t(unitSize) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  return (int)(local_8 / local_10);
+  return (int)(totalSize / unitSize);
 }
 
 
 // 007658F0  Item_ListBox_RequiresScroll  (ui/ui_shared.cpp:5056)
 
-bool __cdecl Item_ListBox_RequiresScroll(int param_1,int param_2,itemDef_s *param_3)
+bool __cdecl Item_ListBox_RequiresScroll(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  listBoxDef_s *plVar4;
-  rectDef_s *prVar5;
+  listBoxDef_s *listPtr_00;
+  rectDef_s *prVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
+  int itemCount;
+  listBoxDef_s *listPtr;
+  int maxItemCount;
+  rectDef_s *rect;
   
-  plVar4 = Item_GetListBoxDef(param_3);
-  if (plVar4 == (listBoxDef_s *)0x0) {
+  listPtr_00 = Item_GetListBoxDef(item);
+  if (listPtr_00 == (listBoxDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13c4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -6093,17 +6220,17 @@ bool __cdecl Item_ListBox_RequiresScroll(int param_1,int param_2,itemDef_s *para
       return (bool)uVar3;
     }
   }
-  if (plVar4->noScrollBars == 0) {
-    prVar5 = Window_GetRect(&param_3->window);
-    if (0.0 < prVar5->h) {
-      bVar2 = Window_IsHorizontal(&param_3->window);
+  if (listPtr_00->noScrollBars == 0) {
+    prVar4 = Window_GetRect(&item->window);
+    if (0.0 < prVar4->h) {
+      bVar2 = Window_IsHorizontal(&item->window);
       if (bVar2) {
         bVar2 = true;
       }
       else {
-        iVar6 = Item_ListBox_Viewmax(param_1,param_2,param_3);
-        iVar7 = UI_FeederCount(param_1,param_2,plVar4->special,plVar4);
-        bVar2 = iVar6 < iVar7;
+        iVar5 = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+        iVar6 = UI_FeederCount(localClientNum,contextIndex,listPtr_00->special,listPtr_00);
+        bVar2 = iVar5 < iVar6;
       }
     }
     else {
@@ -6119,7 +6246,7 @@ bool __cdecl Item_ListBox_RequiresScroll(int param_1,int param_2,itemDef_s *para
 
 // 0076A630  Item_ListBox_ScrollHeight  (ui/ui_shared.cpp:5093)
 
-float __cdecl Item_ListBox_ScrollHeight(int param_1,int param_2,itemDef_s *param_3)
+float __cdecl Item_ListBox_ScrollHeight(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   code *pcVar1;
@@ -6127,8 +6254,9 @@ float __cdecl Item_ListBox_ScrollHeight(int param_1,int param_2,itemDef_s *param
   listBoxDef_s *plVar3;
   int iVar4;
   float10 fVar5;
+  listBoxDef_s *listPtr;
   
-  plVar3 = Item_GetListBoxDef(param_3);
+  plVar3 = Item_GetListBoxDef(item);
   if (plVar3 == (listBoxDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x13e9,0,"%s");
     if (!bVar2) {
@@ -6137,14 +6265,14 @@ float __cdecl Item_ListBox_ScrollHeight(int param_1,int param_2,itemDef_s *param
       return (float)fVar5;
     }
   }
-  iVar4 = Item_ListBox_Viewmax(param_1,param_2,param_3);
+  iVar4 = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
   return (float)iVar4 * plVar3->elementHeight - 2.0;
 }
 
 
 // 0076A6A0  Item_ListBox_ThumbPosition  (ui/ui_shared.cpp:5103)
 
-float __cdecl Item_ListBox_ThumbPosition(int param_1,int param_2,itemDef_s *param_3)
+float __cdecl Item_ListBox_ThumbPosition(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   bool bVar1;
@@ -6152,34 +6280,39 @@ float __cdecl Item_ListBox_ThumbPosition(int param_1,int param_2,itemDef_s *para
   int iVar3;
   rectDef_s *prVar4;
   float fVar5;
-  float local_18;
+  int max;
+  float pos;
+  listBoxDef_s *listPtr;
+  float size;
+  float scrollHeight;
+  rectDef_s *rect;
   
-  plVar2 = Item_GetListBoxDef(param_3);
+  plVar2 = Item_GetListBoxDef(item);
   if (plVar2 == (listBoxDef_s *)0x0) {
     fVar5 = 0.0;
   }
   else {
-    iVar3 = Item_ListBox_MaxScroll(param_1,param_2,param_3);
-    prVar4 = Window_GetRect(&param_3->window);
-    bVar1 = Window_IsHorizontal(&param_3->window);
+    iVar3 = Item_ListBox_MaxScroll(localClientNum,contextIndex,item);
+    prVar4 = Window_GetRect(&item->window);
+    bVar1 = Window_IsHorizontal(&item->window);
     if (bVar1) {
       if (iVar3 < 1) {
-        local_18 = 0.0;
+        pos = 0.0;
       }
       else {
-        local_18 = (((prVar4->w - 32.0) - 2.0) - 16.0) / (float)iVar3;
+        pos = (((prVar4->w - 32.0) - 2.0) - 16.0) / (float)iVar3;
       }
-      fVar5 = prVar4->x + 1.0 + 16.0 + (float)plVar2->startPos[param_2] * local_18;
+      fVar5 = prVar4->x + 1.0 + 16.0 + (float)plVar2->startPos[contextIndex] * pos;
     }
     else {
-      fVar5 = Item_ListBox_ScrollHeight(param_1,param_2,param_3);
+      fVar5 = Item_ListBox_ScrollHeight(localClientNum,contextIndex,item);
       if (iVar3 < 1) {
-        local_18 = 0.0;
+        pos = 0.0;
       }
       else {
-        local_18 = ((fVar5 - 32.0) - 16.0) / (float)iVar3;
+        pos = ((fVar5 - 32.0) - 16.0) / (float)iVar3;
       }
-      fVar5 = prVar4->y + 3.0 + 16.0 + (float)plVar2->startPos[param_2] * local_18;
+      fVar5 = prVar4->y + 3.0 + 16.0 + (float)plVar2->startPos[contextIndex] * pos;
     }
   }
   return fVar5;
@@ -6188,75 +6321,80 @@ float __cdecl Item_ListBox_ThumbPosition(int param_1,int param_2,itemDef_s *para
 
 // 007736A0  Item_ListBox_ThumbDrawPosition  (ui/ui_shared.cpp:5148)
 
-float __cdecl Item_ListBox_ThumbDrawPosition(int param_1,UiContext *param_2,itemDef_s *param_3)
+float __cdecl Item_ListBox_ThumbDrawPosition(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   float fVar1;
   
-  fVar1 = Item_ListBox_ThumbPosition(param_1,param_2->contextIndex,param_3);
+  fVar1 = Item_ListBox_ThumbPosition(localClientNum,dc->contextIndex,item);
   return fVar1;
 }
 
 
 // 0076A040  Item_Slider_ThumbPosition  (ui/ui_shared.cpp:5154)
 
-float __cdecl Item_Slider_ThumbPosition(itemDef_s *param_1)
+float __cdecl Item_Slider_ThumbPosition(itemDef_s *item)
 
 {
   editFieldDef_s *peVar1;
   textDef_s *ptVar2;
   rectDef_s *prVar3;
-  char *pcVar4;
-  float fVar5;
-  double dVar6;
-  float local_8;
+  char *nptr;
+  float fVar4;
+  double dVar5;
+  float range;
+  editFieldDef_s *editDef;
+  textDef_s *textDefPtr;
+  float x;
+  rectDef_s *rect;
+  float value;
   
-  peVar1 = Item_GetEditFieldDef(param_1);
-  ptVar2 = Item_GetTextDef(param_1);
+  peVar1 = Item_GetEditFieldDef(item);
+  ptVar2 = Item_GetTextDef(item);
   if (peVar1 == (editFieldDef_s *)0x0) {
-    fVar5 = 0.0;
+    fVar4 = 0.0;
   }
   else {
-    prVar3 = Window_GetRect(&param_1->window);
-    fVar5 = Item_GetRectPlacementX
+    prVar3 = Window_GetRect(&item->window);
+    fVar4 = Item_GetRectPlacementX
                       (ptVar2->textAlignMode & 3,prVar3->x + ptVar2->textalignx,prVar3->w,100.0);
-    if ((peVar1 != (editFieldDef_s *)0x0) || (param_1->dvar == (char *)0x0)) {
-      pcVar4 = Dvar_GetVariantString(param_1->dvar);
-      dVar6 = atof(pcVar4);
-      local_8 = (float)dVar6;
-      if (peVar1->minVal <= local_8) {
-        if (peVar1->maxVal <= local_8 && local_8 != peVar1->maxVal) {
-          local_8 = peVar1->maxVal;
+    if ((peVar1 != (editFieldDef_s *)0x0) || (item->dvar == (char *)0x0)) {
+      nptr = Dvar_GetVariantString(item->dvar);
+      dVar5 = atof(nptr);
+      value = (float)dVar5;
+      if (peVar1->minVal <= value) {
+        if (peVar1->maxVal <= value && value != peVar1->maxVal) {
+          value = peVar1->maxVal;
         }
       }
       else {
-        local_8 = peVar1->minVal;
+        value = peVar1->minVal;
       }
-      fVar5 = fVar5 + ((local_8 - peVar1->minVal) / (peVar1->maxVal - peVar1->minVal)) * 100.0;
+      fVar4 = fVar4 + ((value - peVar1->minVal) / (peVar1->maxVal - peVar1->minVal)) * 100.0;
     }
   }
-  return fVar5;
+  return fVar4;
 }
 
 
 // 00769FA0  Item_Slider_OverSlider  (ui/ui_shared.cpp:5188)
 
-int __cdecl Item_Slider_OverSlider(int param_1,itemDef_s *param_2,float param_3,float param_4)
+int __cdecl Item_Slider_OverSlider(int contextIndex,itemDef_s *item,float x,float y)
 
 {
   int iVar1;
-  rectDef_s local_20;
-  rectDef_s *local_8;
+  rectDef_s r;
+  rectDef_s *rect;
   
-  local_8 = Window_GetRect(&param_2->window);
-  local_20.x = Item_Slider_ThumbPosition(param_2);
-  local_20.x = local_20.x - 5.0;
-  local_20.y = local_8->y - 2.0;
-  local_20.w = 10.0;
-  local_20.h = 20.0;
-  local_20.horzAlign = local_8->horzAlign;
-  local_20.vertAlign = local_8->vertAlign;
-  iVar1 = Rect_ContainsPoint(param_1,&local_20,param_3,param_4);
+  rect = Window_GetRect(&item->window);
+  r.x = Item_Slider_ThumbPosition(item);
+  r.x = r.x - 5.0;
+  r.y = rect->y - 2.0;
+  r.w = 10.0;
+  r.h = 20.0;
+  r.horzAlign = rect->horzAlign;
+  r.vertAlign = rect->vertAlign;
+  iVar1 = Rect_ContainsPoint(contextIndex,&r,x,y);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
@@ -6269,100 +6407,100 @@ int __cdecl Item_Slider_OverSlider(int param_1,itemDef_s *param_2,float param_3,
 
 // 0076A1F0  Item_ListBox_OverLB  (ui/ui_shared.cpp:5211)
 
-int __cdecl
-Item_ListBox_OverLB(int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5)
+int __cdecl Item_ListBox_OverLB(int localClientNum,int contextIndex,itemDef_s *item,float x,float y)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  rectDef_s local_2c;
-  listBoxDef_s *local_14;
-  float local_10;
-  rectDef_s *local_c;
-  int local_8;
+  float thumbstart;
+  rectDef_s r;
+  listBoxDef_s *listPtr;
+  float listHeight;
+  rectDef_s *rect;
+  int count;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1463,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_14 = Item_GetListBoxDef(param_3);
-  local_8 = UI_FeederCount(param_1,param_2,local_14->special,local_14);
-  if ((local_14 == (listBoxDef_s *)0x0) ||
-     (bVar2 = Item_ListBox_RequiresScroll(param_1,param_2,param_3), !bVar2)) {
+  listPtr = Item_GetListBoxDef(item);
+  count = UI_FeederCount(localClientNum,contextIndex,listPtr->special,listPtr);
+  if ((listPtr == (listBoxDef_s *)0x0) ||
+     (bVar2 = Item_ListBox_RequiresScroll(localClientNum,contextIndex,item), !bVar2)) {
     return 0;
   }
-  local_c = Window_GetRect(&param_3->window);
-  local_2c.horzAlign = local_c->horzAlign;
-  local_2c.vertAlign = local_c->vertAlign;
-  bVar2 = Window_IsHorizontal(&param_3->window);
+  rect = Window_GetRect(&item->window);
+  r.horzAlign = rect->horzAlign;
+  r.vertAlign = rect->vertAlign;
+  bVar2 = Window_IsHorizontal(&item->window);
   if (bVar2) {
-    local_2c.x = local_c->x;
-    local_2c.y = (local_c->y + local_c->h) - 16.0;
-    local_2c.w = 16.0;
-    local_2c.h = 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.x = rect->x;
+    r.y = (rect->y + rect->h) - 16.0;
+    r.w = 16.0;
+    r.h = 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x100;
     }
-    local_2c.x = (local_c->x + local_c->w) - 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.x = (rect->x + rect->w) - 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x200;
     }
-    fVar4 = Item_ListBox_ThumbPosition(param_1,param_2,param_3);
-    local_2c.x = fVar4;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    fVar4 = Item_ListBox_ThumbPosition(localClientNum,contextIndex,item);
+    r.x = fVar4;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x400;
     }
-    local_2c.x = local_c->x + 16.0;
-    local_2c.w = fVar4 - local_2c.x;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.x = rect->x + 16.0;
+    r.w = fVar4 - r.x;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x800;
     }
-    local_2c.x = fVar4 + 16.0;
-    local_2c.w = (local_c->x + local_c->w) - 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.x = fVar4 + 16.0;
+    r.w = (rect->x + rect->w) - 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x1000;
     }
   }
   else {
-    local_10 = Item_ListBox_ScrollHeight(param_1,param_2,param_3);
-    local_2c.x = (local_c->x + local_c->w) - 16.0;
-    local_2c.y = local_c->y + 3.0;
-    local_2c.w = 16.0;
-    local_2c.h = 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    listHeight = Item_ListBox_ScrollHeight(localClientNum,contextIndex,item);
+    r.x = (rect->x + rect->w) - 16.0;
+    r.y = rect->y + 3.0;
+    r.w = 16.0;
+    r.h = 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x100;
     }
-    local_2c.y = (local_c->y + 3.0 + local_10) - 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.y = (rect->y + 3.0 + listHeight) - 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x200;
     }
-    fVar4 = Item_ListBox_ThumbPosition(param_1,param_2,param_3);
-    local_2c.y = fVar4;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    fVar4 = Item_ListBox_ThumbPosition(localClientNum,contextIndex,item);
+    r.y = fVar4;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x400;
     }
-    local_2c.y = local_c->y + 16.0;
-    local_2c.h = fVar4 - local_2c.y;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.y = rect->y + 16.0;
+    r.h = fVar4 - r.y;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x800;
     }
-    local_2c.y = fVar4 + 16.0;
-    local_2c.h = (local_c->y + local_10) - 16.0;
-    iVar3 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+    r.y = fVar4 + 16.0;
+    r.h = (rect->y + listHeight) - 16.0;
+    iVar3 = Rect_ContainsPoint(contextIndex,&r,x,y);
     if (iVar3 != 0) {
       return 0x1000;
     }
@@ -6373,8 +6511,7 @@ Item_ListBox_OverLB(int param_1,int param_2,itemDef_s *param_3,float param_4,flo
 
 // 0076DAF0  Item_ListBox_GetIndexForMouse  (ui/ui_shared.cpp:5302)
 
-int __cdecl
-Item_ListBox_GetIndexForMouse(int param_1,itemDef_s *param_2,float param_3,float param_4)
+int __cdecl Item_ListBox_GetIndexForMouse(int contextIndex,itemDef_s *item,float x,float y)
 
 {
   code *pcVar1;
@@ -6382,43 +6519,45 @@ Item_ListBox_GetIndexForMouse(int param_1,itemDef_s *param_2,float param_3,float
   int iVar3;
   float fVar4;
   int local_60;
-  float local_2c;
+  float compareY;
+  float compareRect;
   float local_28;
   float local_24;
   float local_20 [3];
-  ScreenPlacement *local_14;
-  float local_10;
-  listBoxDef_s *local_c;
-  rectDef_s *local_8;
+  ScreenPlacement *scrPlace;
+  float compareX;
+  listBoxDef_s *listPtr;
+  rectDef_s *rect;
   
-  if ((param_2 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x14be,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = Window_GetRect(&param_2->window);
-  local_c = Item_GetListBoxDef(param_2);
-  local_2c = local_8->x;
-  local_28 = local_8->y;
-  local_24 = local_c->elementWidth;
-  local_20[0] = local_c->elementHeight;
-  local_14 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_10 = ScrPlace_ApplyX(local_14,param_3,4);
-  fVar4 = ScrPlace_ApplyY(local_14,param_4,4);
-  ScrPlace_ApplyRect(local_14,&local_2c,&local_28,&local_24,local_20,local_8->horzAlign,
-                     local_8->vertAlign);
-  bVar2 = Window_IsHorizontal(&param_2->window);
+  rect = Window_GetRect(&item->window);
+  listPtr = Item_GetListBoxDef(item);
+  compareRect = rect->x;
+  local_28 = rect->y;
+  local_24 = listPtr->elementWidth;
+  local_20[0] = listPtr->elementHeight;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  compareX = ScrPlace_ApplyX(scrPlace,x,4);
+  fVar4 = ScrPlace_ApplyY(scrPlace,y,4);
+  ScrPlace_ApplyRect(scrPlace,&compareRect,&local_28,&local_24,local_20,rect->horzAlign,
+                     rect->vertAlign);
+  bVar2 = Window_IsHorizontal(&item->window);
   if (bVar2) {
-    local_60 = local_c->startPos[param_1] + (int)ROUND((local_10 - local_2c) / local_24 - 0.5);
+    local_60 = listPtr->startPos[contextIndex] +
+               (int)ROUND((compareX - compareRect) / local_24 - 0.5);
   }
   else {
     local_60 = (int)ROUND(((fVar4 - 2.0) - local_28) / local_20[0] - 0.5);
     if (local_60 < 1) {
       local_60 = 0;
     }
-    local_60 = local_c->startPos[param_1] + local_60;
+    local_60 = listPtr->startPos[contextIndex] + local_60;
   }
   return local_60;
 }
@@ -6427,54 +6566,54 @@ Item_ListBox_GetIndexForMouse(int param_1,itemDef_s *param_2,float param_3,float
 // 0076DE90  Item_Listbox_Mouse_Column_Set  (ui/ui_shared.cpp:5334)
 
 void __cdecl
-Item_Listbox_Mouse_Column_Set(int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5)
+Item_Listbox_Mouse_Column_Set(int localClientNum,int contextIndex,itemDef_s *item,int x,int y)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  int local_30;
-  rectDef_s local_2c;
-  ScreenPlacement_0_ *local_14;
-  rectDef_s *local_10;
-  listBoxDef_s *local_c;
-  rectDef_s *local_8;
+  int columnIndex;
+  rectDef_s boxRect;
+  ScreenPlacement *scrPlace;
+  rectDef_s *windowRect;
+  listBoxDef_s *listPtr;
+  rectDef_s *columnRect;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x14dd,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = Item_GetListBoxDef(param_3);
-  if ((local_c == (listBoxDef_s *)0x0) &&
+  listPtr = Item_GetListBoxDef(item);
+  if ((listPtr == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x14e1,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x4e < (int)local_c->special) && ((int)local_c->special < 0x51)) {
-    local_14 = &scrPlaceView + param_2 * 0x78;
-    local_10 = Window_GetRect(&param_3->window);
-    local_2c.horzAlign = local_10->horzAlign;
-    local_2c.vertAlign = local_10->vertAlign;
-    local_2c.h = local_10->h;
-    local_2c.w = local_c->columnInfo[0].rect.w;
-    for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {
-      local_8 = &local_c->columnInfo[local_30].rect;
-      local_2c.x = local_8->x + local_10->x;
-      local_2c.y = local_8->y + local_10->y;
-      iVar3 = Rect_ContainsPoint(param_2,&local_2c,(float)param_4,(float)param_5);
+  if ((0x4e < (int)listPtr->special) && ((int)listPtr->special < 0x51)) {
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+    windowRect = Window_GetRect(&item->window);
+    boxRect.horzAlign = windowRect->horzAlign;
+    boxRect.vertAlign = windowRect->vertAlign;
+    boxRect.h = windowRect->h;
+    boxRect.w = listPtr->columnInfo[0].rect.w;
+    for (columnIndex = 0; columnIndex < 3; columnIndex = columnIndex + 1) {
+      columnRect = &listPtr->columnInfo[columnIndex].rect;
+      boxRect.x = columnRect->x + windowRect->x;
+      boxRect.y = columnRect->y + windowRect->y;
+      iVar3 = Rect_ContainsPoint(contextIndex,&boxRect,(float)x,(float)y);
       if (iVar3 != 0) {
-        if ((int)local_c->special == 0x50) {
+        if ((int)listPtr->special == 0x50) {
           pcVar4 = va("%i");
           Dvar_SetCommand("fsPrivateSlotCol",pcVar4);
           return;
         }
-        if (((int)local_c->special != 0x4f) &&
+        if (((int)listPtr->special != 0x4f) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x14ff,0
                                      ,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -6494,53 +6633,61 @@ Item_Listbox_Mouse_Column_Set(int param_1,int param_2,itemDef_s *param_3,int par
 // 0076DC90  Item_ListBox_ModalSelection  (ui/ui_shared.cpp:5386)
 
 void __cdecl
-Item_ListBox_ModalSelection(int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5)
+Item_ListBox_ModalSelection(int localClientNum,int contextIndex,itemDef_s *item,int x,int y)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  listBoxDef_s *plVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  uiInfo_s *puVar8;
+  int newCursorPos;
+  code *pcVar1;
+  bool bVar2;
+  listBoxDef_s *listPtr_00;
+  int max_00;
+  int viewmax_00;
+  int iVar3;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
+  int max;
+  int newPos;
+  listBoxDef_s *listPtr;
+  int viewmax;
   
-  if ((param_3 == (itemDef_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x150e,0,"%s")
-     , !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((item == (itemDef_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x150e,0,"%s")
+     , !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  plVar4 = Item_GetListBoxDef(param_3);
-  if ((plVar4 == (listBoxDef_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1512,0,"%s")
-     , !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  listPtr_00 = Item_GetListBoxDef(item);
+  if ((listPtr_00 == (listBoxDef_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1512,0,"%s")
+     , !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  Item_Listbox_Mouse_Column_Set(param_1,param_2,param_3,param_4,param_5);
-  if ((plVar4 != (listBoxDef_s *)0x0) && (plVar4->mousePos != plVar4->cursorPos[param_2])) {
-    iVar1 = plVar4->mousePos;
-    iVar5 = Item_ListBox_MaxScroll(param_1,param_2,param_3);
-    iVar6 = Item_ListBox_Viewmax(param_1,param_2,param_3);
-    if ((plVar4->notselectable == 0) &&
-       ((-1 < iVar1 &&
-        (iVar7 = UI_FeederCount(param_1,param_2,plVar4->special,plVar4), iVar1 < iVar7)))) {
-      if (plVar4->special == 80.0) {
-        plVar4->cursorPos[param_2] = iVar1;
-        Dvar_SetInt(ui_listboxIndex,iVar1 - plVar4->startPos[param_2]);
-        UI_FeederSelection(param_1,param_2,plVar4->special,iVar1);
-        puVar8 = UI_UIContext_GetInfo(param_2);
-        if (((param_3->parent->window).name != (char *)0x0) &&
-           (bVar3 = Menu_IsMenuOpenAndVisible(param_2,(param_3->parent->window).name), bVar3)) {
-          Item_RunEventScript(param_1,&puVar8->uiDC,param_3,"onListboxSelectionChange");
+  Item_Listbox_Mouse_Column_Set(localClientNum,contextIndex,item,x,y);
+  if ((listPtr_00 != (listBoxDef_s *)0x0) &&
+     (listPtr_00->mousePos != listPtr_00->cursorPos[contextIndex])) {
+    newCursorPos = listPtr_00->mousePos;
+    max_00 = Item_ListBox_MaxScroll(localClientNum,contextIndex,item);
+    viewmax_00 = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+    if ((listPtr_00->notselectable == 0) &&
+       ((-1 < newCursorPos &&
+        (iVar3 = UI_FeederCount(localClientNum,contextIndex,listPtr_00->special,listPtr_00),
+        newCursorPos < iVar3)))) {
+      if (listPtr_00->special == 80.0) {
+        listPtr_00->cursorPos[contextIndex] = newCursorPos;
+        Dvar_SetInt(ui_listboxIndex,newCursorPos - listPtr_00->startPos[contextIndex]);
+        UI_FeederSelection(localClientNum,contextIndex,listPtr_00->special,newCursorPos);
+        dc = UI_UIContext_GetInfo(contextIndex);
+        if (((item->parent->window).name != (char *)0x0) &&
+           (bVar2 = Menu_IsMenuOpenAndVisible(contextIndex,(item->parent->window).name), bVar2)) {
+          Item_RunEventScript(localClientNum,&dc->uiDC,item,"onListboxSelectionChange");
         }
       }
       else {
-        Item_ListBox_SetCursorPos(param_1,param_2,param_3,iVar5,iVar6,iVar1,false);
+        Item_ListBox_SetCursorPos
+                  (localClientNum,contextIndex,item,max_00,viewmax_00,newCursorPos,false);
       }
     }
   }
@@ -6551,7 +6698,7 @@ Item_ListBox_ModalSelection(int param_1,int param_2,itemDef_s *param_3,int param
 // 0076D7C0  Item_ListBox_MouseEnter  (ui/ui_shared.cpp:5432)
 
 void __cdecl
-Item_ListBox_MouseEnter(int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5)
+Item_ListBox_MouseEnter(int localClientNum,int contextIndex,itemDef_s *item,float x,float y)
 
 {
   bool bVar1;
@@ -6559,41 +6706,41 @@ Item_ListBox_MouseEnter(int param_1,int param_2,itemDef_s *param_3,float param_4
   uint uVar3;
   int local_40;
   int local_3c;
-  rectDef_s local_2c;
-  listBoxDef_s *local_14;
-  int local_10;
-  int local_c;
-  rectDef_s *local_8;
+  rectDef_s r;
+  listBoxDef_s *listPtr;
+  int mousePos;
+  int i;
+  rectDef_s *rect;
   
-  local_14 = Item_GetListBoxDef(param_3);
-  if (local_14 != (listBoxDef_s *)0x0) {
-    Window_RemoveDynamicFlags(param_2,&param_3->window,0x1f00);
-    iVar2 = Item_ListBox_OverLB(param_1,param_2,param_3,param_4,param_5);
-    Window_AddDynamicFlags(param_2,&param_3->window,iVar2);
-    local_8 = Window_GetRect(&param_3->window);
-    local_2c.horzAlign = local_8->horzAlign;
-    local_2c.vertAlign = local_8->vertAlign;
-    bVar1 = Window_IsHorizontal(&param_3->window);
+  listPtr = Item_GetListBoxDef(item);
+  if (listPtr != (listBoxDef_s *)0x0) {
+    Window_RemoveDynamicFlags(contextIndex,&item->window,0x1f00);
+    iVar2 = Item_ListBox_OverLB(localClientNum,contextIndex,item,x,y);
+    Window_AddDynamicFlags(contextIndex,&item->window,iVar2);
+    rect = Window_GetRect(&item->window);
+    r.horzAlign = rect->horzAlign;
+    r.vertAlign = rect->vertAlign;
+    bVar1 = Window_IsHorizontal(&item->window);
     if (bVar1) {
-      uVar3 = Window_GetDynamicFlags(param_2,&param_3->window);
+      uVar3 = Window_GetDynamicFlags(contextIndex,&item->window);
       if ((uVar3 & 0x1f00) == 0) {
-        for (local_c = 0; local_c < local_14->numColumns; local_c = local_c + 1) {
-          if (local_14->columnInfo[local_c].elementStyle == 1) {
-            local_2c.x = local_8->x + local_14->columnInfo[local_c].rect.x;
-            local_2c.y = local_8->y + local_14->columnInfo[local_c].rect.y;
-            local_2c.h = local_14->columnInfo[local_c].rect.h;
-            local_2c.w = local_14->columnInfo[local_c].rect.w - (float)local_14->drawPadding;
-            iVar2 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+        for (i = 0; i < listPtr->numColumns; i = i + 1) {
+          if (listPtr->columnInfo[i].elementStyle == 1) {
+            r.x = rect->x + listPtr->columnInfo[i].rect.x;
+            r.y = rect->y + listPtr->columnInfo[i].rect.y;
+            r.h = listPtr->columnInfo[i].rect.h;
+            r.w = listPtr->columnInfo[i].rect.w - (float)listPtr->drawPadding;
+            iVar2 = Rect_ContainsPoint(contextIndex,&r,x,y);
             if (iVar2 != 0) {
-              local_10 = Item_ListBox_GetIndexForMouse(param_2,param_3,param_4,param_5);
-              local_3c = local_14->endPos[param_2] + -1;
-              if (local_10 <= local_3c) {
-                local_3c = local_10;
+              mousePos = Item_ListBox_GetIndexForMouse(contextIndex,item,x,y);
+              local_3c = listPtr->endPos[contextIndex] + -1;
+              if (mousePos <= local_3c) {
+                local_3c = mousePos;
               }
-              local_14->mousePos = local_3c;
-              bVar1 = Item_IsModal(param_3);
+              listPtr->mousePos = local_3c;
+              bVar1 = Item_IsModal(item);
               if (bVar1) {
-                Item_ListBox_ModalSelection(param_1,param_2,param_3,(int)param_4,(int)param_5);
+                Item_ListBox_ModalSelection(localClientNum,contextIndex,item,(int)x,(int)y);
               }
             }
           }
@@ -6601,24 +6748,24 @@ Item_ListBox_MouseEnter(int param_1,int param_2,itemDef_s *param_3,float param_4
       }
     }
     else {
-      uVar3 = Window_GetDynamicFlags(param_2,&param_3->window);
+      uVar3 = Window_GetDynamicFlags(contextIndex,&item->window);
       if ((uVar3 & 0x1f00) == 0) {
-        local_2c.x = local_8->x;
-        local_2c.y = local_8->y;
-        bVar1 = Item_ListBox_RequiresScroll(param_1,param_2,param_3);
-        local_2c.w = local_8->w - (float)(-bVar1 & 0x10);
-        local_2c.h = local_8->h;
-        iVar2 = Rect_ContainsPoint(param_2,&local_2c,param_4,param_5);
+        r.x = rect->x;
+        r.y = rect->y;
+        bVar1 = Item_ListBox_RequiresScroll(localClientNum,contextIndex,item);
+        r.w = rect->w - (float)(-bVar1 & 0x10);
+        r.h = rect->h;
+        iVar2 = Rect_ContainsPoint(contextIndex,&r,x,y);
         if (iVar2 != 0) {
-          local_10 = Item_ListBox_GetIndexForMouse(param_2,param_3,param_4,param_5);
-          local_40 = local_14->endPos[param_2] + -1;
-          if (local_10 <= local_40) {
-            local_40 = local_10;
+          mousePos = Item_ListBox_GetIndexForMouse(contextIndex,item,x,y);
+          local_40 = listPtr->endPos[contextIndex] + -1;
+          if (mousePos <= local_40) {
+            local_40 = mousePos;
           }
-          local_14->mousePos = local_40;
-          bVar1 = Item_IsModal(param_3);
+          listPtr->mousePos = local_40;
+          bVar1 = Item_IsModal(item);
           if (bVar1) {
-            Item_ListBox_ModalSelection(param_1,param_2,param_3,(int)param_4,(int)param_5);
+            Item_ListBox_ModalSelection(localClientNum,contextIndex,item,(int)x,(int)y);
           }
         }
       }
@@ -6630,55 +6777,54 @@ Item_ListBox_MouseEnter(int param_1,int param_2,itemDef_s *param_3,float param_4
 
 // 0076D560  Item_MouseEnter  (ui/ui_shared.cpp:5493)
 
-void __cdecl
-Item_MouseEnter(int param_1,UiContext *param_2,itemDef_s *param_3,float param_4,float param_5)
+void __cdecl Item_MouseEnter(int localClientNum,UiContext *dc,itemDef_s *item,float x,float y)
 
 {
   int iVar1;
-  rectDef_s local_28;
-  focusItemDef_s *local_10;
-  uint local_c;
-  rectDef_s *local_8;
+  rectDef_s r;
+  focusItemDef_s *focusPtr;
+  int flags;
+  rectDef_s *textRect;
   
-  local_8 = (rectDef_s *)0x0;
-  local_10 = Item_GetFocusItemDef(param_3);
-  iVar1 = Item_IsTextDefType(param_3);
+  textRect = (rectDef_s *)0x0;
+  focusPtr = Item_GetFocusItemDef(item);
+  iVar1 = Item_IsTextDefType(item);
   if (iVar1 != 0) {
-    local_8 = Item_GetTextRect(param_2->contextIndex,param_3);
+    textRect = Item_GetTextRect(dc->contextIndex,item);
   }
-  if (((param_3 != (itemDef_s *)0x0) && (local_8 != (rectDef_s *)0x0)) &&
-     (local_10 != (focusItemDef_s *)0x0)) {
-    local_28.x = local_8->x;
-    local_28.w = local_8->w;
-    local_28.h = local_8->h;
-    local_28.y = local_8->y - local_28.h;
-    local_28.horzAlign = local_8->horzAlign;
-    local_28.vertAlign = local_8->vertAlign;
-    if ((((param_3->dvarFlags & 3U) == 0) || (iVar1 = Item_EnableShowViaDvar(param_3,1), iVar1 != 0)
-        ) && (iVar1 = Item_IsVisible(param_1,param_2->contextIndex,param_3), iVar1 != 0)) {
-      local_c = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
-      iVar1 = Rect_ContainsPoint(param_2->contextIndex,&local_28,param_4,param_5);
+  if (((item != (itemDef_s *)0x0) && (textRect != (rectDef_s *)0x0)) &&
+     (focusPtr != (focusItemDef_s *)0x0)) {
+    r.x = textRect->x;
+    r.w = textRect->w;
+    r.h = textRect->h;
+    r.y = textRect->y - r.h;
+    r.horzAlign = textRect->horzAlign;
+    r.vertAlign = textRect->vertAlign;
+    if ((((item->dvarFlags & 3U) == 0) || (iVar1 = Item_EnableShowViaDvar(item,1), iVar1 != 0)) &&
+       (iVar1 = Item_IsVisible(localClientNum,dc->contextIndex,item), iVar1 != 0)) {
+      flags = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+      iVar1 = Rect_ContainsPoint(dc->contextIndex,&r,x,y);
       if (iVar1 == 0) {
-        if (((local_c & 0x40) != 0) && (local_10->mouseExitText != (char *)0x0)) {
-          Item_RunScript(param_1,param_2,param_3,local_10->mouseExitText);
-          Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x40);
+        if (((flags & 0x40U) != 0) && (focusPtr->mouseExitText != (char *)0x0)) {
+          Item_RunScript(localClientNum,dc,item,focusPtr->mouseExitText);
+          Window_RemoveDynamicFlags(dc->contextIndex,&item->window,0x40);
         }
-        if (((local_c & 1) == 0) && (local_10->mouseEnter != (char *)0x0)) {
-          Item_RunScript(param_1,param_2,param_3,local_10->mouseEnter);
-          Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,1);
+        if (((flags & 1U) == 0) && (focusPtr->mouseEnter != (char *)0x0)) {
+          Item_RunScript(localClientNum,dc,item,focusPtr->mouseEnter);
+          Window_AddDynamicFlags(dc->contextIndex,&item->window,1);
         }
-        if (param_3->type == 4) {
-          Item_ListBox_MouseEnter(param_1,param_2->contextIndex,param_3,param_4,param_5);
+        if (item->type == 4) {
+          Item_ListBox_MouseEnter(localClientNum,dc->contextIndex,item,x,y);
         }
       }
       else {
-        if (((local_c & 0x40) == 0) && (local_10->mouseEnterText != (char *)0x0)) {
-          Item_RunScript(param_1,param_2,param_3,local_10->mouseEnterText);
-          Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x40);
+        if (((flags & 0x40U) == 0) && (focusPtr->mouseEnterText != (char *)0x0)) {
+          Item_RunScript(localClientNum,dc,item,focusPtr->mouseEnterText);
+          Window_AddDynamicFlags(dc->contextIndex,&item->window,0x40);
         }
-        if (((local_c & 1) == 0) && (local_10->mouseEnter != (char *)0x0)) {
-          Item_RunScript(param_1,param_2,param_3,local_10->mouseEnter);
-          Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,1);
+        if (((flags & 1U) == 0) && (focusPtr->mouseEnter != (char *)0x0)) {
+          Item_RunScript(localClientNum,dc,item,focusPtr->mouseEnter);
+          Window_AddDynamicFlags(dc->contextIndex,&item->window,1);
         }
       }
     }
@@ -6689,33 +6835,34 @@ Item_MouseEnter(int param_1,UiContext *param_2,itemDef_s *param_3,float param_4,
 
 // 0076E080  Item_MouseLeave  (ui/ui_shared.cpp:5559)
 
-void __cdecl Item_MouseLeave(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_MouseLeave(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   focusItemDef_s *pfVar3;
   uint uVar4;
+  focusItemDef_s *focusPtr;
   
-  pfVar3 = Item_GetFocusItemDef(param_3);
+  pfVar3 = Item_GetFocusItemDef(item);
   if (pfVar3 != (focusItemDef_s *)0x0) {
-    if ((param_3 == (itemDef_s *)0x0) &&
+    if ((item == (itemDef_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x15bd,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3 != (itemDef_s *)0x0) {
-      uVar4 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+    if (item != (itemDef_s *)0x0) {
+      uVar4 = Window_GetDynamicFlags(dc->contextIndex,&item->window);
       if ((uVar4 & 0x40) != 0) {
-        Item_RunScript(param_1,param_2,param_3,pfVar3->mouseExitText);
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x40);
+        Item_RunScript(localClientNum,dc,item,pfVar3->mouseExitText);
+        Window_RemoveDynamicFlags(dc->contextIndex,&item->window,0x40);
       }
-      Item_RunScript(param_1,param_2,param_3,pfVar3->mouseExit);
-      Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x300);
-      if (param_3->type == 4) {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x1f00);
+      Item_RunScript(localClientNum,dc,item,pfVar3->mouseExit);
+      Window_RemoveDynamicFlags(dc->contextIndex,&item->window,0x300);
+      if (item->type == 4) {
+        Window_RemoveDynamicFlags(dc->contextIndex,&item->window,0x1f00);
       }
     }
   }
@@ -6725,13 +6872,13 @@ void __cdecl Item_MouseLeave(int param_1,UiContext *param_2,itemDef_s *param_3)
 
 // 0076E180  Item_SetMouseOver  (ui/ui_shared.cpp:5587)
 
-void __cdecl Item_SetMouseOver(UiContext *param_1,itemDef_s *param_2,int param_3)
+void __cdecl Item_SetMouseOver(UiContext *dc,itemDef_s *item,int focus)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x15d4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -6739,12 +6886,12 @@ void __cdecl Item_SetMouseOver(UiContext *param_1,itemDef_s *param_2,int param_3
       return;
     }
   }
-  if (param_2 != (itemDef_s *)0x0) {
-    if (param_3 == 0) {
-      Window_RemoveDynamicFlags(param_1->contextIndex,&param_2->window,1);
+  if (item != (itemDef_s *)0x0) {
+    if (focus == 0) {
+      Window_RemoveDynamicFlags(dc->contextIndex,&item->window,1);
     }
     else {
-      Window_AddDynamicFlags(param_1->contextIndex,&param_2->window,1);
+      Window_AddDynamicFlags(dc->contextIndex,&item->window,1);
     }
   }
   return;
@@ -6753,13 +6900,12 @@ void __cdecl Item_SetMouseOver(UiContext *param_1,itemDef_s *param_2,int param_3
 
 // 007694D0  Item_OwnerDraw_HandleKey  (ui/ui_shared.cpp:5605)
 
-int __cdecl Item_OwnerDraw_HandleKey(itemDef_s *param_1,int param_2)
+int __cdecl Item_OwnerDraw_HandleKey(itemDef_s *item,int key)
 
 {
   int iVar1;
   
-  iVar1 = UI_OwnerDrawHandleKey
-                    ((param_1->window).ownerDraw,(param_1->window).ownerDrawFlags,param_2);
+  iVar1 = UI_OwnerDrawHandleKey((item->window).ownerDraw,(item->window).ownerDrawFlags,key);
   return iVar1;
 }
 
@@ -6768,47 +6914,50 @@ int __cdecl Item_OwnerDraw_HandleKey(itemDef_s *param_1,int param_2)
 
 void __cdecl
 Item_ListBox_SetCursorPos
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,int param_6,
-          bool param_7)
+          (int localClientNum,int contextIndex,itemDef_s *item,int max,int viewmax,int newCursorPos,
+          bool autoScroll)
 
 {
   bool bVar1;
   listBoxDef_s *plVar2;
   int iVar3;
-  uiInfo_s *puVar4;
+  uiInfo_s *dc;
+  int delta;
+  uiInfo_s *uiInfo;
+  listBoxDef_s *listPtr;
   
-  plVar2 = Item_GetListBoxDef(param_3);
-  iVar3 = param_6 - plVar2->cursorPos[param_2];
-  plVar2->cursorPos[param_2] = param_6;
-  if ((plVar2->special != 54.0) && (param_7)) {
+  plVar2 = Item_GetListBoxDef(item);
+  iVar3 = newCursorPos - plVar2->cursorPos[contextIndex];
+  plVar2->cursorPos[contextIndex] = newCursorPos;
+  if ((plVar2->special != 54.0) && (autoScroll)) {
     if (iVar3 < 0) {
-      if (param_6 < 0) {
+      if (newCursorPos < 0) {
         return;
       }
-      if (param_6 < plVar2->startPos[param_2]) {
-        plVar2->startPos[param_2] = param_6;
+      if (newCursorPos < plVar2->startPos[contextIndex]) {
+        plVar2->startPos[contextIndex] = newCursorPos;
       }
     }
     else if (0 < iVar3) {
-      if (param_4 + -1 + param_5 < param_6) {
+      if (max + -1 + viewmax < newCursorPos) {
         return;
       }
-      if (plVar2->startPos[param_2] + -1 + param_5 < param_6) {
-        plVar2->startPos[param_2] = param_6 - (param_5 + -1);
+      if (plVar2->startPos[contextIndex] + -1 + viewmax < newCursorPos) {
+        plVar2->startPos[contextIndex] = newCursorPos - (viewmax + -1);
       }
     }
   }
-  Dvar_SetInt(ui_listboxIndex,param_6 - plVar2->startPos[param_2]);
-  UI_FeederSelection(param_1,param_2,plVar2->special,param_6);
-  puVar4 = UI_UIContext_GetInfo(param_2);
+  Dvar_SetInt(ui_listboxIndex,newCursorPos - plVar2->startPos[contextIndex]);
+  UI_FeederSelection(localClientNum,contextIndex,plVar2->special,newCursorPos);
+  dc = UI_UIContext_GetInfo(contextIndex);
   if ((plVar2->special == 54.0) &&
-     (*plVar2->rows[plVar2->cursorPos[param_2]].onFocusEventName != '\0')) {
-    Item_RunEventScript(param_1,&puVar4->uiDC,param_3,
-                        plVar2->rows[plVar2->cursorPos[param_2]].onFocusEventName);
+     (*plVar2->rows[plVar2->cursorPos[contextIndex]].onFocusEventName != '\0')) {
+    Item_RunEventScript(localClientNum,&dc->uiDC,item,
+                        plVar2->rows[plVar2->cursorPos[contextIndex]].onFocusEventName);
   }
-  if (((param_3->parent->window).name != (char *)0x0) &&
-     (bVar1 = Menu_IsMenuOpenAndVisible(param_2,(param_3->parent->window).name), bVar1)) {
-    Item_RunEventScript(param_1,&puVar4->uiDC,param_3,"onListboxSelectionChange");
+  if (((item->parent->window).name != (char *)0x0) &&
+     (bVar1 = Menu_IsMenuOpenAndVisible(contextIndex,(item->parent->window).name), bVar1)) {
+    Item_RunEventScript(localClientNum,&dc->uiDC,item,"onListboxSelectionChange");
   }
   return;
 }
@@ -6817,8 +6966,8 @@ Item_ListBox_SetCursorPos
 // 00768630  Item_ListBox_Page  (ui/ui_shared.cpp:5707)
 
 void __cdecl
-Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,int param_6,
-                 int param_7)
+Item_ListBox_Page(int localClientNum,int contextIndex,itemDef_s *item,int max,int scrollmax,
+                 int viewmax,int delta)
 
 {
   code *pcVar1;
@@ -6828,9 +6977,10 @@ Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int par
   int local_1c;
   int local_14;
   int local_c;
+  listBoxDef_s *listPtr;
   
-  if (param_5 != 0) {
-    plVar3 = Item_GetListBoxDef(param_3);
+  if (scrollmax != 0) {
+    plVar3 = Item_GetListBoxDef(item);
     if ((plVar3 == (listBoxDef_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1656,0,
                                  "%s"), !bVar2)) {
@@ -6838,9 +6988,9 @@ Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int par
       (*pcVar1)();
       return;
     }
-    local_c = plVar3->startPos[param_2] + param_7;
-    if (param_5 <= local_c) {
-      local_c = param_5;
+    local_c = plVar3->startPos[contextIndex] + delta;
+    if (scrollmax <= local_c) {
+      local_c = scrollmax;
     }
     if (local_c < 1) {
       local_1c = 0;
@@ -6848,11 +6998,11 @@ Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int par
     else {
       local_1c = local_c;
     }
-    plVar3->startPos[param_2] = local_1c;
+    plVar3->startPos[contextIndex] = local_1c;
     if (plVar3->notselectable == 0) {
-      local_14 = plVar3->cursorPos[param_2] + param_7;
-      if (param_4 <= local_14) {
-        local_14 = param_4;
+      local_14 = plVar3->cursorPos[contextIndex] + delta;
+      if (max <= local_14) {
+        local_14 = max;
       }
       if (local_14 < 1) {
         local_20 = 0;
@@ -6860,7 +7010,7 @@ Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int par
       else {
         local_20 = local_14;
       }
-      Item_ListBox_SetCursorPos(param_1,param_2,param_3,param_4,param_6,local_20,true);
+      Item_ListBox_SetCursorPos(localClientNum,contextIndex,item,max,viewmax,local_20,true);
     }
   }
   return;
@@ -6870,16 +7020,18 @@ Item_ListBox_Page(int param_1,int param_2,itemDef_s *param_3,int param_4,int par
 // 00765B90  Item_ListBox_Scroll  (ui/ui_shared.cpp:5727)
 
 void __cdecl
-Item_ListBox_Scroll(int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,int param_6,
-                   int param_7)
+Item_ListBox_Scroll(int localClientNum,int contextIndex,itemDef_s *item,int max,int scrollmax,
+                   int viewmax,int delta)
 
 {
   code *pcVar1;
   bool bVar2;
   listBoxDef_s *plVar3;
   int iVar4;
+  int newPos;
+  listBoxDef_s *listPtr;
   
-  plVar3 = Item_GetListBoxDef(param_3);
+  plVar3 = Item_GetListBoxDef(item);
   if ((plVar3 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1664,0,"%s")
      , !bVar2)) {
@@ -6887,9 +7039,9 @@ Item_ListBox_Scroll(int param_1,int param_2,itemDef_s *param_3,int param_4,int p
     (*pcVar1)();
     return;
   }
-  iVar4 = plVar3->startPos[param_2] + param_7;
-  if ((iVar4 <= param_5) && (-1 < iVar4)) {
-    plVar3->startPos[param_2] = iVar4;
+  iVar4 = plVar3->startPos[contextIndex] + delta;
+  if ((iVar4 <= scrollmax) && (-1 < iVar4)) {
+    plVar3->startPos[contextIndex] = iVar4;
   }
   return;
 }
@@ -6898,8 +7050,7 @@ Item_ListBox_Scroll(int param_1,int param_2,itemDef_s *param_3,int param_4,int p
 // 007676A0  Item_ListBox_HandleKey  (ui/ui_shared.cpp:5799)
 
 int __cdecl
-Item_ListBox_HandleKey
-          (int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int param_5,int param_6)
+Item_ListBox_HandleKey(int localClientNum,UiContext *dc,itemDef_s *item,int key,int down,int force)
 
 {
   code *pcVar1;
@@ -6921,117 +7072,114 @@ Item_ListBox_HandleKey
   int local_88;
   int local_70;
   int local_68;
-  rectDef_s local_48;
-  int local_30;
-  int local_2c;
-  int local_28;
-  focusItemDef_s *local_24;
-  listBoxDef_s *local_20;
-  int local_1c;
-  uint local_18;
-  rectDef_s *local_14;
-  int local_10;
-  ItemKeyHandler *local_c;
-  int local_8;
+  rectDef_s tmpRect;
+  int max;
+  int delta;
+  int validMousePosition;
+  focusItemDef_s *focusPtr;
+  listBoxDef_s *listPtr;
+  int viewmax;
+  int flags;
+  rectDef_s *rect;
+  int count;
+  ItemKeyHandler *handler;
+  int lastIndex;
   
-  local_24 = Item_GetFocusItemDef(param_3);
-  local_20 = Item_GetListBoxDef(param_3);
-  if (local_20 == (listBoxDef_s *)0x0) {
+  focusPtr = Item_GetFocusItemDef(item);
+  listPtr = Item_GetListBoxDef(item);
+  if (listPtr == (listBoxDef_s *)0x0) {
     return 0;
   }
-  local_14 = Window_GetRect(&param_3->window);
-  bVar2 = Item_IsModal(param_3);
+  rect = Window_GetRect(&item->window);
+  bVar2 = Item_IsModal(item);
   if ((bVar2) ||
-     (iVar3 = Rect_ContainsPoint(param_2->contextIndex,local_14,(param_2->cursor).x,
-                                 (param_2->cursor).y), iVar3 != 0)) {
+     (iVar3 = Rect_ContainsPoint(dc->contextIndex,rect,(dc->cursor).x,(dc->cursor).y), iVar3 != 0))
+  {
     local_88 = 1;
   }
   else {
     local_88 = 0;
   }
-  local_28 = local_88;
-  local_10 = UI_FeederCount(param_1,param_2->contextIndex,local_20->special,local_20);
-  local_8c = local_10 + -1;
+  validMousePosition = local_88;
+  count = UI_FeederCount(localClientNum,dc->contextIndex,listPtr->special,listPtr);
+  local_8c = count + -1;
   if (local_8c < 1) {
     local_8c = 0;
   }
-  local_8 = local_8c;
-  local_18 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
-  if ((param_6 != 0) || ((local_28 != 0 && ((local_18 & 2) != 0)))) {
-    UI_OverrideCursorPos(param_1,param_2->contextIndex,param_3);
-    local_30 = Item_ListBox_MaxScroll(param_1,param_2->contextIndex,param_3);
-    local_1c = Item_ListBox_Viewmax(param_1,param_2->contextIndex,param_3);
-    bVar2 = Window_IsHorizontal(&param_3->window);
+  lastIndex = local_8c;
+  flags = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+  if ((force != 0) || ((validMousePosition != 0 && ((flags & 2U) != 0)))) {
+    UI_OverrideCursorPos(localClientNum,dc->contextIndex,item);
+    max = Item_ListBox_MaxScroll(localClientNum,dc->contextIndex,item);
+    viewmax = Item_ListBox_Viewmax(localClientNum,dc->contextIndex,item);
+    bVar2 = Window_IsHorizontal(&item->window);
     if (bVar2) {
-      if ((((param_4 == 0x1e) || (param_4 == 0x16)) || (param_4 == 0x9c)) || (param_4 == 0xb9)) {
-        if ((local_20->usePaging == 0) || (param_4 != 0x16)) {
+      if ((((key == 0x1e) || (key == 0x16)) || (key == 0x9c)) || (key == 0xb9)) {
+        if ((listPtr->usePaging == 0) || (key != 0x16)) {
           local_90 = 1;
         }
         else {
-          local_90 = local_1c;
+          local_90 = viewmax;
         }
-        local_2c = local_90;
-        if (local_20->notselectable == 0) {
-          local_94 = local_20->cursorPos[param_2->contextIndex] - local_90;
+        delta = local_90;
+        if (listPtr->notselectable == 0) {
+          local_94 = listPtr->cursorPos[dc->contextIndex] - local_90;
           if (local_94 < 1) {
             local_94 = 0;
           }
-          Item_ListBox_SetCursorPos
-                    (param_1,param_2->contextIndex,param_3,local_30,local_1c,local_94,true);
+          Item_ListBox_SetCursorPos(localClientNum,dc->contextIndex,item,max,viewmax,local_94,true);
         }
         else {
-          local_98 = local_20->startPos[param_2->contextIndex] - local_90;
+          local_98 = listPtr->startPos[dc->contextIndex] - local_90;
           if (local_98 < 1) {
             local_98 = 0;
           }
-          local_20->startPos[param_2->contextIndex] = local_98;
+          listPtr->startPos[dc->contextIndex] = local_98;
         }
         return 1;
       }
-      if (((param_4 == 0x1f) || (param_4 == 0x17)) || ((param_4 == 0x9d || (param_4 == 0xbb)))) {
-        if ((local_20->usePaging == 0) || (param_4 != 0x17)) {
+      if (((key == 0x1f) || (key == 0x17)) || ((key == 0x9d || (key == 0xbb)))) {
+        if ((listPtr->usePaging == 0) || (key != 0x17)) {
           local_9c = 1;
         }
         else {
-          local_9c = local_1c;
+          local_9c = viewmax;
         }
-        local_2c = local_9c;
-        if (local_20->notselectable == 0) {
-          local_a0 = local_20->cursorPos[param_2->contextIndex] + local_9c;
-          if (local_8 <= local_a0) {
-            local_a0 = local_8;
+        delta = local_9c;
+        if (listPtr->notselectable == 0) {
+          local_a0 = listPtr->cursorPos[dc->contextIndex] + local_9c;
+          if (lastIndex <= local_a0) {
+            local_a0 = lastIndex;
           }
-          Item_ListBox_SetCursorPos
-                    (param_1,param_2->contextIndex,param_3,local_30,local_1c,local_a0,true);
+          Item_ListBox_SetCursorPos(localClientNum,dc->contextIndex,item,max,viewmax,local_a0,true);
         }
         else {
-          local_a4 = local_20->startPos[param_2->contextIndex] + local_9c;
-          if (local_30 <= local_a4) {
-            local_a4 = local_30;
+          local_a4 = listPtr->startPos[dc->contextIndex] + local_9c;
+          if (max <= local_a4) {
+            local_a4 = max;
           }
-          local_20->startPos[param_2->contextIndex] = local_a4;
+          listPtr->startPos[dc->contextIndex] = local_a4;
         }
         return 1;
       }
     }
     else {
-      bVar2 = UI_OverrideKeyPress(param_1,param_2->contextIndex,param_3,param_4);
+      bVar2 = UI_OverrideKeyPress(localClientNum,dc->contextIndex,item,key);
       if (bVar2) {
         return 1;
       }
-      switch(param_4) {
+      switch(key) {
       case 0x14:
-        if (local_20->usePaging != 0) {
-          Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,
-                            -local_1c);
+        if (listPtr->usePaging != 0) {
+          Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,-viewmax);
           return 1;
         }
       case 0x1c:
       case 0x9a:
       case 0xb7:
-        if (local_8 != 0) {
-          local_68 = local_20->cursorPos[param_2->contextIndex] + -1;
-          if ((local_8 < 1) &&
+        if (lastIndex != 0) {
+          local_68 = listPtr->cursorPos[dc->contextIndex] + -1;
+          if ((lastIndex < 1) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",
                                        0x2cf,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -7041,25 +7189,23 @@ Item_ListBox_HandleKey
           if (local_68 < 0) {
             local_68 = 0;
           }
-          else if (local_8 < local_68) {
-            local_68 = local_8;
+          else if (lastIndex < local_68) {
+            local_68 = lastIndex;
           }
-          Item_ListBox_SetCursorPos
-                    (param_1,param_2->contextIndex,param_3,local_30,local_1c,local_68,true);
+          Item_ListBox_SetCursorPos(localClientNum,dc->contextIndex,item,max,viewmax,local_68,true);
         }
         return 1;
       case 0x15:
-        if (local_20->usePaging != 0) {
-          Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,local_1c
-                           );
+        if (listPtr->usePaging != 0) {
+          Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,viewmax);
           return 1;
         }
       case 0x1d:
       case 0x9b:
       case 0xbd:
-        if (local_8 != 0) {
-          local_70 = local_20->cursorPos[param_2->contextIndex] + 1;
-          if ((local_8 < 1) &&
+        if (lastIndex != 0) {
+          local_70 = listPtr->cursorPos[dc->contextIndex] + 1;
+          if ((lastIndex < 1) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",
                                        0x2cf,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -7069,164 +7215,162 @@ Item_ListBox_HandleKey
           if (local_70 < 0) {
             local_70 = 0;
           }
-          else if (local_8 < local_70) {
-            local_70 = local_8;
+          else if (lastIndex < local_70) {
+            local_70 = lastIndex;
           }
-          Item_ListBox_SetCursorPos
-                    (param_1,param_2->contextIndex,param_3,local_30,local_1c,local_70,true);
+          Item_ListBox_SetCursorPos(localClientNum,dc->contextIndex,item,max,viewmax,local_70,true);
         }
         return 1;
       case 0xcd:
-        bVar2 = Item_IsModal(param_3);
+        bVar2 = Item_IsModal(item);
         if (bVar2) {
-          if (local_20->usePaging != 0) {
-            Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,1);
-            pmVar4 = Menu_GetFocused(param_2);
-            Menu_HandleMouseMove(param_1,param_2,pmVar4);
+          if (listPtr->usePaging != 0) {
+            Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,1);
+            pmVar4 = Menu_GetFocused(dc);
+            Menu_HandleMouseMove(localClientNum,dc,pmVar4);
           }
         }
         else {
-          Item_ListBox_Scroll(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,1);
+          Item_ListBox_Scroll(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,1);
         }
         return 1;
       case 0xce:
-        bVar2 = Item_IsModal(param_3);
+        bVar2 = Item_IsModal(item);
         if (bVar2) {
-          if (local_20->usePaging != 0) {
-            Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,-1);
-            pmVar4 = Menu_GetFocused(param_2);
-            Menu_HandleMouseMove(param_1,param_2,pmVar4);
+          if (listPtr->usePaging != 0) {
+            Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,-1);
+            pmVar4 = Menu_GetFocused(dc);
+            Menu_HandleMouseMove(localClientNum,dc,pmVar4);
           }
         }
         else {
-          Item_ListBox_Scroll(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,-1);
+          Item_ListBox_Scroll(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,-1);
         }
         return 1;
       }
     }
-    if (param_4 == 1) {
+    if (key == 1) {
       bVar2 = true;
     }
-    else if ((param_4 == 200) || (param_4 == 0xc9)) {
+    else if ((key == 200) || (key == 0xc9)) {
       bVar2 = true;
     }
-    else if ((param_4 == 0xd) || (param_4 == 0x20)) {
+    else if ((key == 0xd) || (key == 0x20)) {
       bVar2 = true;
     }
     else {
       bVar2 = false;
     }
     if (bVar2) {
-      if ((local_18 & 0x100) == 0) {
-        if ((local_18 & 0x200) == 0) {
-          if ((local_18 & 0x800) == 0) {
-            if ((local_18 & 0x1000) == 0) {
-              if ((local_18 & 0x400) == 0) {
-                if (local_20->special == 24.0) {
-                  UI_OverrideCursorPos(param_1,param_2->contextIndex,param_3);
-                  UI_FeederSelection(param_1,param_2->contextIndex,local_20->special,
-                                     local_20->cursorPos[param_2->contextIndex]);
+      if ((flags & 0x100U) == 0) {
+        if ((flags & 0x200U) == 0) {
+          if ((flags & 0x800U) == 0) {
+            if ((flags & 0x1000U) == 0) {
+              if ((flags & 0x400U) == 0) {
+                if (listPtr->special == 24.0) {
+                  UI_OverrideCursorPos(localClientNum,dc->contextIndex,item);
+                  UI_FeederSelection(localClientNum,dc->contextIndex,listPtr->special,
+                                     listPtr->cursorPos[dc->contextIndex]);
                 }
-                bVar2 = Item_IsModal(param_3);
+                bVar2 = Item_IsModal(item);
                 if (bVar2) {
-                  if (((param_4 == 200) || (param_4 == 0xc9)) &&
-                     (iVar3 = Rect_ContainsPoint(param_2->contextIndex,local_14,(param_2->cursor).x,
-                                                 (param_2->cursor).y), iVar3 == 0)) {
+                  if (((key == 200) || (key == 0xc9)) &&
+                     (iVar3 = Rect_ContainsPoint(dc->contextIndex,rect,(dc->cursor).x,(dc->cursor).y
+                                                ), iVar3 == 0)) {
                     return 0;
                   }
-                  if (((param_4 == 200) || (param_4 == 0xc9)) &&
-                     ((-1 < local_20->mousePos &&
-                      ((local_20->cursorPos[param_2->contextIndex] < 0 ||
-                       (iVar3 = UI_FeederCount(param_1,param_2->contextIndex,local_20->special,
-                                               local_20), local_20->mousePos < iVar3)))))) {
-                    local_20->cursorPos[param_2->contextIndex] = local_20->mousePos;
+                  if (((key == 200) || (key == 0xc9)) &&
+                     ((-1 < listPtr->mousePos &&
+                      ((listPtr->cursorPos[dc->contextIndex] < 0 ||
+                       (iVar3 = UI_FeederCount(localClientNum,dc->contextIndex,listPtr->special,
+                                               listPtr), listPtr->mousePos < iVar3)))))) {
+                    listPtr->cursorPos[dc->contextIndex] = listPtr->mousePos;
                   }
-                  if ((int)local_20->special == 0x4d) {
+                  if ((int)listPtr->special == 0x4d) {
                     iVar3 = UI_FeederItemEnabled
-                                      (param_1,param_2->contextIndex,local_20->special,
-                                       local_20->cursorPos[param_2->contextIndex]);
+                                      (localClientNum,dc->contextIndex,listPtr->special,
+                                       listPtr->cursorPos[dc->contextIndex]);
                     if (iVar3 == 0) {
                       return 0;
                     }
                   }
-                  else if ((int)local_20->special == 0x4e) {
+                  else if ((int)listPtr->special == 0x4e) {
                     UI_FeederDoubleClick
-                              (param_1,param_2->contextIndex,local_20->special,
-                               local_20->cursorPos[param_2->contextIndex]);
+                              (localClientNum,dc->contextIndex,listPtr->special,
+                               listPtr->cursorPos[dc->contextIndex]);
                   }
-                  if (((param_4 == 200) || (param_4 == 0x20)) || (param_4 == 0xd)) {
-                    Item_RunEventScript(param_1,param_2,param_3,"doubleClick");
+                  if (((key == 200) || (key == 0x20)) || (key == 0xd)) {
+                    Item_RunEventScript(localClientNum,dc,item,"doubleClick");
                   }
-                  else if (param_4 == 0xc9) {
-                    Item_RunEventScript(param_1,param_2,param_3,"RightClick");
+                  else if (key == 0xc9) {
+                    Item_RunEventScript(localClientNum,dc,item,"RightClick");
                   }
                 }
                 else {
                   iVar3 = UI_FeederItemEnabled
-                                    (param_1,param_2->contextIndex,local_20->special,
-                                     local_20->cursorPos[param_2->contextIndex]);
+                                    (localClientNum,dc->contextIndex,listPtr->special,
+                                     listPtr->cursorPos[dc->contextIndex]);
                   if (iVar3 == 0) {
-                    if (local_20->special == 1.0) {
+                    if (listPtr->special == 1.0) {
                       UI_FeederDoubleClickDlcMaps
-                                (param_1,param_2->contextIndex,
-                                 local_20->cursorPos[param_2->contextIndex]);
+                                (localClientNum,dc->contextIndex,
+                                 listPtr->cursorPos[dc->contextIndex]);
                     }
                   }
                   else {
                     iVar3 = UI_FeederDoubleClick
-                                      (param_1,param_2->contextIndex,local_20->special,
-                                       local_20->cursorPos[param_2->contextIndex]);
+                                      (localClientNum,dc->contextIndex,listPtr->special,
+                                       listPtr->cursorPos[dc->contextIndex]);
                     if (iVar3 == 0) {
-                      if (param_4 == 0xd) {
-                        Item_RunEventScript(param_1,param_2,param_3,"doubleClick");
+                      if (key == 0xd) {
+                        Item_RunEventScript(localClientNum,dc,item,"doubleClick");
                       }
                       else {
-                        if ((((param_2->realTime < lastListBoxClickTime) &&
-                             (bVar2 = Item_DoesEventExist(param_3,"doubleClick"), bVar2)) &&
-                            (param_4 == 200)) &&
-                           ((local_20->cursorPos[param_2->contextIndex] == local_20->mousePos &&
-                            (bVar2 = ListBox_HasValidCursorPos(param_2->contextIndex,param_3), bVar2
-                            )))) {
-                          if ((local_20->noScrollBars == 0) &&
+                        if ((((dc->realTime < lastListBoxClickTime) &&
+                             (bVar2 = Item_DoesEventExist(item,"doubleClick"), bVar2)) &&
+                            (key == 200)) &&
+                           ((listPtr->cursorPos[dc->contextIndex] == listPtr->mousePos &&
+                            (bVar2 = ListBox_HasValidCursorPos(dc->contextIndex,item), bVar2)))) {
+                          if ((listPtr->noScrollBars == 0) &&
                              (bVar2 = Item_ListBox_RequiresScroll
-                                                (param_1,param_2->contextIndex,param_3), bVar2)) {
-                            prVar5 = Window_GetRect(&param_3->window);
-                            local_48.x = prVar5->x;
-                            local_48.y = prVar5->y;
-                            local_48.h = prVar5->h;
-                            local_48.horzAlign = prVar5->horzAlign;
-                            local_48.vertAlign = prVar5->vertAlign;
-                            local_48.w = prVar5->w - 14.0;
-                            iVar3 = Rect_ContainsPoint(param_2->contextIndex,&local_48,
-                                                       (param_2->cursor).x,(param_2->cursor).y);
+                                                (localClientNum,dc->contextIndex,item), bVar2)) {
+                            prVar5 = Window_GetRect(&item->window);
+                            tmpRect.x = prVar5->x;
+                            tmpRect.y = prVar5->y;
+                            tmpRect.h = prVar5->h;
+                            tmpRect.horzAlign = prVar5->horzAlign;
+                            tmpRect.vertAlign = prVar5->vertAlign;
+                            tmpRect.w = prVar5->w - 14.0;
+                            iVar3 = Rect_ContainsPoint(dc->contextIndex,&tmpRect,(dc->cursor).x,
+                                                       (dc->cursor).y);
                             if (iVar3 != 0) {
-                              Item_RunEventScript(param_1,param_2,param_3,"doubleClick");
+                              Item_RunEventScript(localClientNum,dc,item,"doubleClick");
                             }
                           }
                           else {
-                            Item_RunEventScript(param_1,param_2,param_3,"doubleClick");
+                            Item_RunEventScript(localClientNum,dc,item,"doubleClick");
                           }
                         }
-                        lastListBoxClickTime = param_2->realTime + 300;
-                        if (local_20->cursorPos[param_2->contextIndex] != local_20->mousePos) {
-                          if ((-1 < local_20->mousePos) &&
-                             ((local_20->cursorPos[param_2->contextIndex] < 0 ||
-                              (iVar3 = UI_FeederCount(param_1,param_2->contextIndex,
-                                                      local_20->special,local_20),
-                              local_20->mousePos < iVar3)))) {
-                            local_20->cursorPos[param_2->contextIndex] = local_20->mousePos;
+                        lastListBoxClickTime = dc->realTime + 300;
+                        if (listPtr->cursorPos[dc->contextIndex] != listPtr->mousePos) {
+                          if ((-1 < listPtr->mousePos) &&
+                             ((listPtr->cursorPos[dc->contextIndex] < 0 ||
+                              (iVar3 = UI_FeederCount(localClientNum,dc->contextIndex,
+                                                      listPtr->special,listPtr),
+                              listPtr->mousePos < iVar3)))) {
+                            listPtr->cursorPos[dc->contextIndex] = listPtr->mousePos;
                           }
-                          UI_FeederSelection(param_1,param_2->contextIndex,local_20->special,
-                                             local_20->cursorPos[param_2->contextIndex]);
+                          UI_FeederSelection(localClientNum,dc->contextIndex,listPtr->special,
+                                             listPtr->cursorPos[dc->contextIndex]);
                         }
-                        if (param_4 == 0xc9) {
-                          Item_RunEventScript(param_1,param_2,param_3,"RightClick");
+                        if (key == 0xc9) {
+                          Item_RunEventScript(localClientNum,dc,item,"RightClick");
                         }
-                        else if (param_4 == 200) {
-                          for (local_c = local_24->onKey; local_c != (ItemKeyHandler *)0x0;
-                              local_c = local_c->next) {
-                            if (local_c->key == 200) {
-                              Item_RunSingleEventScript(param_1,param_2,param_3,local_c->keyScript);
+                        else if (key == 200) {
+                          for (handler = focusPtr->onKey; handler != (ItemKeyHandler *)0x0;
+                              handler = handler->next) {
+                            if (handler->key == 200) {
+                              Item_RunSingleEventScript(localClientNum,dc,item,handler->keyScript);
                               return 1;
                             }
                           }
@@ -7238,61 +7382,61 @@ Item_ListBox_HandleKey
               }
             }
             else {
-              local_b8 = local_20->startPos[param_2->contextIndex] + local_1c;
-              if (local_30 <= local_b8) {
-                local_b8 = local_30;
+              local_b8 = listPtr->startPos[dc->contextIndex] + viewmax;
+              if (max <= local_b8) {
+                local_b8 = max;
               }
-              local_20->startPos[param_2->contextIndex] = local_b8;
+              listPtr->startPos[dc->contextIndex] = local_b8;
             }
           }
           else {
-            local_b4 = local_20->startPos[param_2->contextIndex] - local_1c;
+            local_b4 = listPtr->startPos[dc->contextIndex] - viewmax;
             if (local_b4 < 1) {
               local_b4 = 0;
             }
-            local_20->startPos[param_2->contextIndex] = local_b4;
+            listPtr->startPos[dc->contextIndex] = local_b4;
           }
         }
         else {
-          local_b0 = local_20->startPos[param_2->contextIndex] + 1;
-          if (local_30 <= local_b0) {
-            local_b0 = local_30;
+          local_b0 = listPtr->startPos[dc->contextIndex] + 1;
+          if (max <= local_b0) {
+            local_b0 = max;
           }
-          local_20->startPos[param_2->contextIndex] = local_b0;
+          listPtr->startPos[dc->contextIndex] = local_b0;
         }
       }
       else {
-        local_ac = local_20->startPos[param_2->contextIndex] + -1;
+        local_ac = listPtr->startPos[dc->contextIndex] + -1;
         if (local_ac < 1) {
           local_ac = 0;
         }
-        local_20->startPos[param_2->contextIndex] = local_ac;
+        listPtr->startPos[dc->contextIndex] = local_ac;
       }
       return 1;
     }
-    if ((param_4 == 0xa5) || (param_4 == 0xb6)) {
-      Script_FeederTop(param_1,param_2,param_3,(char **)0x0);
+    if ((key == 0xa5) || (key == 0xb6)) {
+      Script_FeederTop(localClientNum,dc,item,(char **)0x0);
       return 1;
     }
-    if ((param_4 == 0xa6) || (param_4 == 0xbc)) {
-      Script_FeederBottom(param_1,param_2,param_3,(char **)0x0);
+    if ((key == 0xa6) || (key == 0xbc)) {
+      Script_FeederBottom(localClientNum,dc,item,(char **)0x0);
       return 1;
     }
-    if ((param_4 == 0xa4) || (param_4 == 0xb8)) {
-      Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,-local_1c);
+    if ((key == 0xa4) || (key == 0xb8)) {
+      Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,-viewmax);
       return 1;
     }
-    if ((param_4 == 0xa3) || (param_4 == 0xbe)) {
-      Item_ListBox_Page(param_1,param_2->contextIndex,param_3,local_8,local_30,local_1c,local_1c);
+    if ((key == 0xa3) || (key == 0xbe)) {
+      Item_ListBox_Page(localClientNum,dc->contextIndex,item,lastIndex,max,viewmax,viewmax);
       return 1;
     }
-    if ((param_4 == 0x20) || (param_4 == 0xd)) {
-      Item_RunEventScript(param_1,param_2,param_3,"doubleClick");
+    if ((key == 0x20) || (key == 0xd)) {
+      Item_RunEventScript(localClientNum,dc,item,"doubleClick");
       return 1;
     }
-    for (local_c = local_24->onKey; local_c != (ItemKeyHandler *)0x0; local_c = local_c->next) {
-      if (local_c->key == param_4) {
-        Item_RunSingleEventScript(param_1,param_2,param_3,local_c->keyScript);
+    for (handler = focusPtr->onKey; handler != (ItemKeyHandler *)0x0; handler = handler->next) {
+      if (handler->key == key) {
+        Item_RunSingleEventScript(localClientNum,dc,item,handler->keyScript);
         return 1;
       }
     }
@@ -7303,20 +7447,20 @@ Item_ListBox_HandleKey
 
 // 00769670  Item_ContainsMouse  (ui/ui_shared.cpp:6153)
 
-int __cdecl Item_ContainsMouse(UiContext *param_1,itemDef_s *param_2)
+int __cdecl Item_ContainsMouse(UiContext *dc,itemDef_s *item)
 
 {
-  rectDef_s *prVar1;
-  int iVar2;
-  float fVar3;
-  float fVar4;
+  rectDef_s *rect;
+  int iVar1;
+  float x;
+  float y;
   
-  if (param_1->isCursorVisible != 0) {
-    fVar4 = (param_1->cursor).y;
-    fVar3 = (param_1->cursor).x;
-    prVar1 = Window_GetRect(&param_2->window);
-    iVar2 = Rect_ContainsPoint(param_1->contextIndex,prVar1,fVar3,fVar4);
-    if (iVar2 != 0) {
+  if (dc->isCursorVisible != 0) {
+    y = (dc->cursor).y;
+    x = (dc->cursor).x;
+    rect = Window_GetRect(&item->window);
+    iVar1 = Rect_ContainsPoint(dc->contextIndex,rect,x,y);
+    if (iVar1 != 0) {
       return 1;
     }
   }
@@ -7326,16 +7470,16 @@ int __cdecl Item_ContainsMouse(UiContext *param_1,itemDef_s *param_2)
 
 // 00769610  Item_ShouldHandleKey  (ui/ui_shared.cpp:6160)
 
-bool __cdecl Item_ShouldHandleKey(UiContext *param_1,itemDef_s *param_2,int param_3)
+bool __cdecl Item_ShouldHandleKey(UiContext *dc,itemDef_s *item,int key)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = Window_HasFocus(param_1->contextIndex,&param_2->window);
+  bVar1 = Window_HasFocus(dc->contextIndex,&item->window);
   if (bVar1) {
-    if ((((param_3 == 200) || (param_3 == 0xc9)) || (param_3 == 0xca)) &&
-       (iVar2 = Item_ContainsMouse(param_1,param_2), iVar2 == 0)) {
+    if ((((key == 200) || (key == 0xc9)) || (key == 0xca)) &&
+       (iVar2 = Item_ContainsMouse(dc,item), iVar2 == 0)) {
       return false;
     }
     bVar1 = true;
@@ -7351,27 +7495,27 @@ bool __cdecl Item_ShouldHandleKey(UiContext *param_1,itemDef_s *param_2,int para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Item_YesNo_HandleKey(UiContext *param_1,itemDef_s *param_2,int param_3)
+int __cdecl Item_YesNo_HandleKey(UiContext *dc,itemDef_s *item,int key)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char local_24 [28];
+  char dvarString [28];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->dvar == (char *)0x0) {
+  if (item->dvar == (char *)0x0) {
     iVar2 = 0;
   }
   else {
-    bVar1 = Item_ShouldHandleKey(param_1,param_2,param_3);
+    bVar1 = Item_ShouldHandleKey(dc,item,key);
     if (bVar1) {
-      if (((param_3 == 200) || (param_3 == 0xc9)) || (param_3 == 0xca)) {
+      if (((key == 200) || (key == 0xc9)) || (key == 0xca)) {
         bVar1 = true;
       }
-      else if (((param_3 == 0xd) || (param_3 == 0x9c)) ||
-              ((param_3 == 0x9d || ((param_3 == 0xa4 || (param_3 == 0xa3)))))) {
+      else if (((key == 0xd) || (key == 0x9c)) ||
+              ((key == 0x9d || ((key == 0xa4 || (key == 0xa3)))))) {
         bVar1 = true;
       }
       else {
@@ -7379,11 +7523,11 @@ int __cdecl Item_YesNo_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
       }
       if (bVar1) {
         iVar2 = 0x19;
-        pcVar3 = Dvar_GetVariantString(param_2->dvar);
-        I_strncpyz(local_24,pcVar3,iVar2);
-        atoi(local_24);
+        pcVar3 = Dvar_GetVariantString(item->dvar);
+        I_strncpyz(dvarString,pcVar3,iVar2);
+        atoi(dvarString);
         pcVar3 = va("%i");
-        Dvar_SetFromStringByName(param_2->dvar,pcVar3);
+        Dvar_SetFromStringByName(item->dvar,pcVar3);
         iVar2 = 1;
       }
       else {
@@ -7400,13 +7544,14 @@ int __cdecl Item_YesNo_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
 
 // 007698A0  Item_Multi_CountSettings  (ui/ui_shared.cpp:6206)
 
-int __cdecl Item_Multi_CountSettings(itemDef_s *param_1)
+int __cdecl Item_Multi_CountSettings(itemDef_s *item)
 
 {
   multiDef_s *pmVar1;
   int iVar2;
+  multiDef_s *multiPtr;
   
-  pmVar1 = Item_GetMultiDef(param_1);
+  pmVar1 = Item_GetMultiDef(item);
   if (pmVar1 == (multiDef_s *)0x0) {
     iVar2 = 0;
   }
@@ -7419,7 +7564,7 @@ int __cdecl Item_Multi_CountSettings(itemDef_s *param_1)
 
 // 00769C30  Item_DvarEnum_CountSettings  (ui/ui_shared.cpp:6217)
 
-int __cdecl Item_DvarEnum_CountSettings(itemDef_s *param_1)
+int __cdecl Item_DvarEnum_CountSettings(itemDef_s *item)
 
 {
   code *pcVar1;
@@ -7427,9 +7572,11 @@ int __cdecl Item_DvarEnum_CountSettings(itemDef_s *param_1)
   enumDvarDef_s *peVar3;
   int iVar4;
   dvar_s *pdVar5;
+  enumDvarDef_s *enumDvarPtr;
+  dvar_s *enumDvar;
   
-  peVar3 = Item_GetEnumDvarName(param_1);
-  if (param_1 == (itemDef_s *)0x0) {
+  peVar3 = Item_GetEnumDvarName(item);
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x184d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7437,7 +7584,7 @@ int __cdecl Item_DvarEnum_CountSettings(itemDef_s *param_1)
       return iVar4;
     }
   }
-  if (param_1->type != 0xb) {
+  if (item->type != 0xb) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x184e,0,
                              "%s\n\t(item->type) = %i");
     if (!bVar2) {
@@ -7467,32 +7614,35 @@ int __cdecl Item_DvarEnum_CountSettings(itemDef_s *param_1)
 
 // 007698D0  Item_Multi_FindDvarByValue  (ui/ui_shared.cpp:6233)
 
-int __cdecl Item_Multi_FindDvarByValue(itemDef_s *param_1)
+int __cdecl Item_Multi_FindDvarByValue(itemDef_s *item)
 
 {
   multiDef_s *pmVar1;
   char *pcVar2;
   int iVar3;
   double dVar4;
-  int local_c;
+  multiDef_s *multiPtr;
+  char *string;
+  int i;
+  float value;
   
-  pmVar1 = Item_GetMultiDef(param_1);
+  pmVar1 = Item_GetMultiDef(item);
   if (pmVar1 != (multiDef_s *)0x0) {
     if (pmVar1->strDef == 0) {
-      pcVar2 = Dvar_GetVariantString(param_1->dvar);
+      pcVar2 = Dvar_GetVariantString(item->dvar);
       dVar4 = atof(pcVar2);
-      for (local_c = 0; local_c < pmVar1->count; local_c = local_c + 1) {
-        if (pmVar1->dvarValue[local_c] == (float)dVar4) {
-          return local_c;
+      for (i = 0; i < pmVar1->count; i = i + 1) {
+        if (pmVar1->dvarValue[i] == (float)dVar4) {
+          return i;
         }
       }
     }
     else {
-      pcVar2 = Dvar_GetVariantString(param_1->dvar);
-      for (local_c = 0; local_c < pmVar1->count; local_c = local_c + 1) {
-        iVar3 = I_stricmp(pcVar2,pmVar1->dvarStr[local_c]);
+      pcVar2 = Dvar_GetVariantString(item->dvar);
+      for (i = 0; i < pmVar1->count; i = i + 1) {
+        iVar3 = I_stricmp(pcVar2,pmVar1->dvarStr[i]);
         if (iVar3 == 0) {
-          return local_c;
+          return i;
         }
       }
     }
@@ -7503,35 +7653,38 @@ int __cdecl Item_Multi_FindDvarByValue(itemDef_s *param_1)
 
 // 00771E40  Item_Multi_Setting  (ui/ui_shared.cpp:6266)
 
-char * __cdecl Item_Multi_Setting(itemDef_s *param_1)
+char * __cdecl Item_Multi_Setting(itemDef_s *item)
 
 {
   multiDef_s *pmVar1;
   char *pcVar2;
   int iVar3;
   double dVar4;
-  int local_c;
+  multiDef_s *multiPtr;
+  char *string;
+  int i;
+  float value;
   
-  pmVar1 = Item_GetMultiDef(param_1);
+  pmVar1 = Item_GetMultiDef(item);
   if (pmVar1 == (multiDef_s *)0x0) {
     pcVar2 = "<dvarStrList or dvarFloatList not set>";
   }
   else {
     if (pmVar1->strDef == 0) {
-      pcVar2 = Dvar_GetVariantString(param_1->dvar);
+      pcVar2 = Dvar_GetVariantString(item->dvar);
       dVar4 = atof(pcVar2);
-      for (local_c = 0; local_c < pmVar1->count; local_c = local_c + 1) {
-        if (pmVar1->dvarValue[local_c] == (float)dVar4) {
-          return pmVar1->dvarList[local_c];
+      for (i = 0; i < pmVar1->count; i = i + 1) {
+        if (pmVar1->dvarValue[i] == (float)dVar4) {
+          return pmVar1->dvarList[i];
         }
       }
     }
     else {
-      pcVar2 = Dvar_GetVariantString(param_1->dvar);
-      for (local_c = 0; local_c < pmVar1->count; local_c = local_c + 1) {
-        iVar3 = I_stricmp(pcVar2,pmVar1->dvarStr[local_c]);
+      pcVar2 = Dvar_GetVariantString(item->dvar);
+      for (i = 0; i < pmVar1->count; i = i + 1) {
+        iVar3 = I_stricmp(pcVar2,pmVar1->dvarStr[i]);
         if (iVar3 == 0) {
-          return pmVar1->dvarList[local_c];
+          return pmVar1->dvarList[i];
         }
       }
     }
@@ -7543,27 +7696,30 @@ char * __cdecl Item_Multi_Setting(itemDef_s *param_1)
 
 // 00769D10  Item_DvarEnum_EnumIndex  (ui/ui_shared.cpp:6299)
 
-int __cdecl Item_DvarEnum_EnumIndex(itemDef_s *param_1)
+int __cdecl Item_DvarEnum_EnumIndex(itemDef_s *item)
 
 {
   enumDvarDef_s *peVar1;
   dvar_s *pdVar2;
   int iVar3;
-  char *pcVar4;
-  int local_10;
+  char *nptr;
+  enumDvarDef_s *enumDvarPtr;
+  int enumIndex;
+  dvar_s *enumDvar;
+  char *enumString;
   
-  peVar1 = Item_GetEnumDvarName(param_1);
+  peVar1 = Item_GetEnumDvarName(item);
   pdVar2 = Dvar_FindVar(peVar1->enumDvarName);
   if (pdVar2->type == DVAR_TYPE_ENUM) {
-    pcVar4 = Dvar_GetVariantString(param_1->dvar);
-    iVar3 = isdigit((int)*pcVar4);
-    if (((iVar3 == 0) || (iVar3 = atoi(pcVar4), iVar3 < 0)) ||
+    nptr = Dvar_GetVariantString(item->dvar);
+    iVar3 = isdigit((int)*nptr);
+    if (((iVar3 == 0) || (iVar3 = atoi(nptr), iVar3 < 0)) ||
        ((pdVar2->domain).enumeration.stringCount <= iVar3)) {
-      for (local_10 = 0; local_10 < (pdVar2->domain).enumeration.stringCount;
-          local_10 = local_10 + 1) {
-        iVar3 = I_stricmp(pcVar4,(pdVar2->domain).enumeration.strings[local_10]);
+      for (enumIndex = 0; enumIndex < (pdVar2->domain).enumeration.stringCount;
+          enumIndex = enumIndex + 1) {
+        iVar3 = I_stricmp(nptr,(pdVar2->domain).enumeration.strings[enumIndex]);
         if (iVar3 == 0) {
-          return local_10;
+          return enumIndex;
         }
       }
       iVar3 = 0;
@@ -7578,7 +7734,7 @@ int __cdecl Item_DvarEnum_EnumIndex(itemDef_s *param_1)
 
 // 00771F80  Item_DvarEnum_Setting  (ui/ui_shared.cpp:6328)
 
-char * __cdecl Item_DvarEnum_Setting(itemDef_s *param_1)
+char * __cdecl Item_DvarEnum_Setting(itemDef_s *item)
 
 {
   code *pcVar1;
@@ -7587,9 +7743,12 @@ char * __cdecl Item_DvarEnum_Setting(itemDef_s *param_1)
   char *pcVar4;
   dvar_s *pdVar5;
   int iVar6;
+  enumDvarDef_s *enumDvarPtr;
+  int enumIndex;
+  dvar_s *enumDvar;
   
-  peVar3 = Item_GetEnumDvarName(param_1);
-  if (param_1 == (itemDef_s *)0x0) {
+  peVar3 = Item_GetEnumDvarName(item);
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18bd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7597,7 +7756,7 @@ char * __cdecl Item_DvarEnum_Setting(itemDef_s *param_1)
       return pcVar4;
     }
   }
-  if (param_1->type != 0xb) {
+  if (item->type != 0xb) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18be,0,
                              "%s\n\t(item->type) = %i");
     if (!bVar2) {
@@ -7616,7 +7775,7 @@ char * __cdecl Item_DvarEnum_Setting(itemDef_s *param_1)
         pcVar4 = "";
       }
       else {
-        iVar6 = Item_DvarEnum_EnumIndex(param_1);
+        iVar6 = Item_DvarEnum_EnumIndex(item);
         if ((iVar6 < 0) || ((pdVar5->domain).enumeration.stringCount <= iVar6)) {
           va("%s %i:%i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18ca,0,
@@ -7640,78 +7799,80 @@ char * __cdecl Item_DvarEnum_Setting(itemDef_s *param_1)
 
 // 007699C0  Item_List_NextEntryForKey  (ui/ui_shared.cpp:6372)
 
-int __cdecl Item_List_NextEntryForKey(int param_1,int param_2,int param_3)
+int __cdecl Item_List_NextEntryForKey(int key,int current,int count)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_3 < 0) &&
+  if ((count < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18e5,0,
                                "%s\n\t(count) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_2 < 0) || ((param_3 <= param_2 && (param_3 != 0)))) &&
+  if (((current < 0) || ((count <= current && (count != 0)))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18e6,0,
                                "%s\n\t(current) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_3 == 0) {
-    param_2 = 0;
+  if (count == 0) {
+    current = 0;
   }
   else {
-    if ((param_1 == 200) || (param_1 == 0xca)) {
+    if ((key == 200) || (key == 0xca)) {
       bVar2 = true;
     }
-    else if ((((param_1 == 0xd) || (param_1 == 0xa3)) || (param_1 == 0x9d)) ||
-            ((param_1 == 0x1f || (param_1 == 0x17)))) {
+    else if ((((key == 0xd) || (key == 0xa3)) || (key == 0x9d)) || ((key == 0x1f || (key == 0x17))))
+    {
       bVar2 = true;
     }
     else {
       bVar2 = false;
     }
     if (bVar2) {
-      param_2 = (param_2 + 1) % param_3;
+      current = (current + 1) % count;
     }
     else {
-      if (param_1 == 0xc9) {
+      if (key == 0xc9) {
         bVar2 = true;
       }
-      else if (((param_1 == 0xa4) || (param_1 == 0x9c)) || ((param_1 == 0x1e || (param_1 == 0x16))))
-      {
+      else if (((key == 0xa4) || (key == 0x9c)) || ((key == 0x1e || (key == 0x16)))) {
         bVar2 = true;
       }
       else {
         bVar2 = false;
       }
       if (bVar2) {
-        param_2 = (param_2 + -1 + param_3) % param_3;
+        current = (current + -1 + count) % count;
       }
     }
   }
-  return param_2;
+  return current;
 }
 
 
 // 007696D0  Item_Multi_HandleKey  (ui/ui_shared.cpp:6386)
 
-int __cdecl Item_Multi_HandleKey(UiContext *param_1,itemDef_s *param_2,int param_3)
+int __cdecl Item_Multi_HandleKey(UiContext *dc,itemDef_s *item,int key)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   multiDef_s *pmVar4;
-  int iVar5;
-  char *pcVar6;
-  int local_10;
+  int count_00;
+  char *string;
+  multiDef_s *multiPtr;
+  int next;
+  int count;
+  int current;
   
-  if (param_1 == (UiContext *)0x0) {
+  if (dc == (UiContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18f8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7719,7 +7880,7 @@ int __cdecl Item_Multi_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
       return iVar3;
     }
   }
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18f9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7727,7 +7888,7 @@ int __cdecl Item_Multi_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
       return iVar3;
     }
   }
-  if (param_2->dvar == (char *)0x0) {
+  if (item->dvar == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x18fa,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7735,29 +7896,29 @@ int __cdecl Item_Multi_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
       return iVar3;
     }
   }
-  pmVar4 = Item_GetMultiDef(param_2);
+  pmVar4 = Item_GetMultiDef(item);
   if (pmVar4 == (multiDef_s *)0x0) {
     iVar3 = 0;
   }
   else {
-    bVar2 = Item_ShouldHandleKey(param_1,param_2,param_3);
+    bVar2 = Item_ShouldHandleKey(dc,item,key);
     if (bVar2) {
-      iVar3 = Item_Multi_FindDvarByValue(param_2);
-      iVar5 = Item_Multi_CountSettings(param_2);
-      local_10 = Item_List_NextEntryForKey(param_3,iVar3,iVar5);
-      if (local_10 == iVar3) {
+      iVar3 = Item_Multi_FindDvarByValue(item);
+      count_00 = Item_Multi_CountSettings(item);
+      next = Item_List_NextEntryForKey(key,iVar3,count_00);
+      if (next == iVar3) {
         iVar3 = 0;
       }
       else if (pmVar4->actionOnEnterPressOnly == 0) {
-        for (; (pmVar4->dvarList[local_10] == (char *)0x0 || (*pmVar4->dvarList[local_10] == '\0'));
-            local_10 = Item_List_NextEntryForKey(param_3,local_10,iVar5)) {
+        for (; (pmVar4->dvarList[next] == (char *)0x0 || (*pmVar4->dvarList[next] == '\0'));
+            next = Item_List_NextEntryForKey(key,next,count_00)) {
         }
         if (pmVar4->strDef == 0) {
-          pcVar6 = va("%g");
-          Dvar_SetFromStringByName(param_2->dvar,pcVar6);
+          string = va("%g");
+          Dvar_SetFromStringByName(item->dvar,string);
         }
         else {
-          Dvar_SetFromStringByName(param_2->dvar,pmVar4->dvarStr[local_10]);
+          Dvar_SetFromStringByName(item->dvar,pmVar4->dvarStr[next]);
         }
         iVar3 = 1;
       }
@@ -7775,16 +7936,19 @@ int __cdecl Item_Multi_HandleKey(UiContext *param_1,itemDef_s *param_2,int param
 
 // 00769B10  Item_DvarEnum_HandleKey  (ui/ui_shared.cpp:6426)
 
-int __cdecl Item_DvarEnum_HandleKey(UiContext *param_1,itemDef_s *param_2,int param_3)
+int __cdecl Item_DvarEnum_HandleKey(UiContext *dc,itemDef_s *item,int key)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  char *pcVar5;
+  char *string;
+  int next;
+  int count;
+  int current;
   
-  if (param_1 == (UiContext *)0x0) {
+  if (dc == (UiContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x191f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7792,7 +7956,7 @@ int __cdecl Item_DvarEnum_HandleKey(UiContext *param_1,itemDef_s *param_2,int pa
       return iVar3;
     }
   }
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1920,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7800,7 +7964,7 @@ int __cdecl Item_DvarEnum_HandleKey(UiContext *param_1,itemDef_s *param_2,int pa
       return iVar3;
     }
   }
-  if (param_2->dvar == (char *)0x0) {
+  if (item->dvar == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1921,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -7808,17 +7972,17 @@ int __cdecl Item_DvarEnum_HandleKey(UiContext *param_1,itemDef_s *param_2,int pa
       return iVar3;
     }
   }
-  bVar2 = Item_ShouldHandleKey(param_1,param_2,param_3);
+  bVar2 = Item_ShouldHandleKey(dc,item,key);
   if (bVar2) {
-    iVar3 = Item_DvarEnum_EnumIndex(param_2);
-    iVar4 = Item_DvarEnum_CountSettings(param_2);
-    iVar4 = Item_List_NextEntryForKey(param_3,iVar3,iVar4);
+    iVar3 = Item_DvarEnum_EnumIndex(item);
+    iVar4 = Item_DvarEnum_CountSettings(item);
+    iVar4 = Item_List_NextEntryForKey(key,iVar3,iVar4);
     if (iVar4 == iVar3) {
       iVar3 = 0;
     }
     else {
-      pcVar5 = va("%i");
-      Dvar_SetFromStringByName(param_2->dvar,pcVar5);
+      string = va("%i");
+      Dvar_SetFromStringByName(item->dvar,string);
       iVar3 = 1;
     }
   }
@@ -7831,12 +7995,12 @@ int __cdecl Item_DvarEnum_HandleKey(UiContext *param_1,itemDef_s *param_2,int pa
 
 // 00765C20  Item_IsTextField  (ui/ui_shared.cpp:6450)
 
-bool __cdecl Item_IsTextField(itemDef_s *param_1)
+bool __cdecl Item_IsTextField(itemDef_s *item)
 
 {
   bool bVar1;
   
-  switch(param_1->type) {
+  switch(item->type) {
   case 5:
   case 7:
   case 0xd:
@@ -7854,7 +8018,7 @@ bool __cdecl Item_IsTextField(itemDef_s *param_1)
 
 // 00765C80  Item_TextField_BeginEdit  (ui/ui_shared.cpp:6468)
 
-void __cdecl Item_TextField_BeginEdit(int param_1,int param_2,itemDef_s *param_3)
+void __cdecl Item_TextField_BeginEdit(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
   char cVar1;
@@ -7864,24 +8028,25 @@ void __cdecl Item_TextField_BeginEdit(int param_1,int param_2,itemDef_s *param_3
   char *pcVar5;
   int local_24;
   char *local_14;
-  int local_c;
+  int i;
+  editFieldDef_s *editPtr;
   
-  peVar4 = Item_GetEditFieldDef(param_3);
+  peVar4 = Item_GetEditFieldDef(item);
   if (peVar4 != (editFieldDef_s *)0x0) {
     peVar4->paintOffset = 0;
   }
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x194c,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_3->dvar == (char *)0x0) {
+  if (item->dvar == (char *)0x0) {
     local_24 = 0;
   }
   else {
-    local_14 = Dvar_GetVariantString(param_3->dvar);
+    local_14 = Dvar_GetVariantString(item->dvar);
     pcVar5 = local_14 + 1;
     do {
       cVar1 = *local_14;
@@ -7889,37 +8054,40 @@ void __cdecl Item_TextField_BeginEdit(int param_1,int param_2,itemDef_s *param_3
     } while (cVar1 != '\0');
     local_24 = (int)local_14 - (int)pcVar5;
   }
-  peVar4->cursorPos[param_2] = local_24;
+  peVar4->cursorPos[contextIndex] = local_24;
   g_editingField = 1;
-  g_editItem = param_3;
-  Key_SetOverstrikeMode(param_1,1);
-  local_c = 0;
+  g_editItem = item;
+  Key_SetOverstrikeMode(localClientNum,1);
+  i = 0;
   while( true ) {
-    if (param_3->parent->itemCount <= local_c) {
+    if (item->parent->itemCount <= i) {
       return;
     }
-    if (param_3->parent->items[local_c] == param_3) break;
-    local_c = local_c + 1;
+    if (item->parent->items[i] == item) break;
+    i = i + 1;
   }
-  Menu_SetCursorItem(param_2,param_3->parent,local_c);
+  Menu_SetCursorItem(contextIndex,item->parent,i);
   return;
 }
 
 
 // 00769280  Item_TextField_EnsureCursorVisible  (ui/ui_shared.cpp:6499)
 
-void __cdecl Item_TextField_EnsureCursorVisible(int param_1,itemDef_s *param_2,char *param_3)
+void __cdecl Item_TextField_EnsureCursorVisible(int contextIndex,itemDef_s *item,char *text)
 
 {
   editFieldDef_s *peVar1;
   int iVar2;
+  editFieldDef_s *editPtr;
+  int paintOffsetMin;
+  int cursorPos;
   
-  peVar1 = Item_GetEditFieldDef(param_2);
-  if (peVar1->cursorPos[param_1] < peVar1->paintOffset) {
-    peVar1->paintOffset = peVar1->cursorPos[param_1];
+  peVar1 = Item_GetEditFieldDef(item);
+  if (peVar1->cursorPos[contextIndex] < peVar1->paintOffset) {
+    peVar1->paintOffset = peVar1->cursorPos[contextIndex];
   }
   else if (peVar1->maxPaintChars != 0) {
-    iVar2 = Item_GetCursorPosOffset(param_1,param_2,param_3,-peVar1->maxPaintChars);
+    iVar2 = Item_GetCursorPosOffset(contextIndex,item,text,-peVar1->maxPaintChars);
     if (peVar1->paintOffset < iVar2) {
       peVar1->paintOffset = iVar2;
     }
@@ -7932,7 +8100,7 @@ void __cdecl Item_TextField_EnsureCursorVisible(int param_1,itemDef_s *param_2,c
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Item_TextField_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4)
+int __cdecl Item_TextField_HandleKey(int localClientNum,UiContext *dc,itemDef_s *item,int key)
 
 {
   uchar uVar1;
@@ -7945,216 +8113,222 @@ int __cdecl Item_TextField_HandleKey(int param_1,UiContext *param_2,itemDef_s *p
   int iVar8;
   itemDef_s *piVar9;
   uchar *local_43c;
-  uchar local_438;
+  bool local_438;
   uchar *local_428;
-  int local_41c;
-  uchar local_40d [1025];
+  int itemIndex;
+  editFieldDef_s *editPtr;
+  int len;
+  itemDef_s *newItem;
+  int cursorPos;
+  bool validInput;
+  uchar buff [1024];
   uint local_c;
-  ulong local_8;
+  int memMoveCount;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  peVar5 = Item_GetEditFieldDef(param_3);
+  peVar5 = Item_GetEditFieldDef(item);
   if (peVar5 == (editFieldDef_s *)0x0) {
     iVar6 = 0;
   }
-  else if (param_3->dvar == (char *)0x0) {
+  else if (item->dvar == (char *)0x0) {
     iVar6 = 0;
   }
   else {
-    memset(local_40d + 1,'\0',0x400);
+    memset(buff,'\0',0x400);
     iVar6 = 0x400;
-    pcVar7 = Dvar_GetVariantString(param_3->dvar);
-    I_strncpyz((char *)(local_40d + 1),pcVar7,iVar6);
-    local_428 = local_40d + 1;
+    pcVar7 = Dvar_GetVariantString(item->dvar);
+    I_strncpyz((char *)buff,pcVar7,iVar6);
+    local_428 = buff;
     do {
       uVar1 = *local_428;
       local_428 = local_428 + 1;
     } while (uVar1 != '\0');
-    local_41c = (int)local_428 - (int)(local_40d + 2);
-    if ((peVar5->maxChars != 0) && (peVar5->maxChars < local_41c)) {
-      local_41c = peVar5->maxChars;
-      local_40d[local_41c + 1] = '\0';
-      if (peVar5->maxChars < peVar5->cursorPos[param_2->contextIndex]) {
-        peVar5->cursorPos[param_2->contextIndex] = peVar5->maxChars;
+    len = (int)local_428 - (int)(buff + 1);
+    if ((peVar5->maxChars != 0) && (peVar5->maxChars < len)) {
+      len = peVar5->maxChars;
+      buff[len] = '\0';
+      if (peVar5->maxChars < peVar5->cursorPos[dc->contextIndex]) {
+        peVar5->cursorPos[dc->contextIndex] = peVar5->maxChars;
       }
     }
-    if ((param_4 & 0x400U) == 0) {
-      if ((param_4 == 0xa2) || (param_4 == 0xc1)) {
-        if (peVar5->cursorPos[param_2->contextIndex] < local_41c) {
-          iVar6 = peVar5->cursorPos[param_2->contextIndex];
-          local_8 = local_41c - iVar6;
-          if ((((int)local_8 < 1) || (local_41c < (int)local_8)) &&
+    if ((key & 0x400U) == 0) {
+      if ((key == 0xa2) || (key == 0xc1)) {
+        if (peVar5->cursorPos[dc->contextIndex] < len) {
+          iVar6 = peVar5->cursorPos[dc->contextIndex];
+          memMoveCount = len - iVar6;
+          if (((memMoveCount < 1) || (len < memMoveCount)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1a2e
                                        ,0,"%s\n\t(memMoveCount) = %i"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar6 = (*pcVar2)();
             return iVar6;
           }
-          memmove(local_40d + iVar6 + 1,local_40d + iVar6 + 2,local_8);
-          Dvar_SetFromStringByName(param_3->dvar,(char *)(local_40d + 1));
+          memmove(buff + iVar6,buff + iVar6 + 1,memMoveCount);
+          Dvar_SetFromStringByName(item->dvar,(char *)buff);
         }
         return 1;
       }
-      if ((param_4 == 0x9d) || (param_4 == 0xbb)) {
-        iVar6 = Item_GetCursorPosOffset(param_2->contextIndex,param_3,(char *)(local_40d + 1),1);
-        peVar5->cursorPos[param_2->contextIndex] = iVar6;
-        Item_TextField_EnsureCursorVisible(param_2->contextIndex,param_3,(char *)(local_40d + 1));
+      if ((key == 0x9d) || (key == 0xbb)) {
+        iVar6 = Item_GetCursorPosOffset(dc->contextIndex,item,(char *)buff,1);
+        peVar5->cursorPos[dc->contextIndex] = iVar6;
+        Item_TextField_EnsureCursorVisible(dc->contextIndex,item,(char *)buff);
         return 1;
       }
-      if ((param_4 == 0x9c) || (param_4 == 0xb9)) {
-        iVar6 = Item_GetCursorPosOffset(param_2->contextIndex,param_3,(char *)(local_40d + 1),-1);
-        peVar5->cursorPos[param_2->contextIndex] = iVar6;
-        Item_TextField_EnsureCursorVisible(param_2->contextIndex,param_3,(char *)(local_40d + 1));
+      if ((key == 0x9c) || (key == 0xb9)) {
+        iVar6 = Item_GetCursorPosOffset(dc->contextIndex,item,(char *)buff,-1);
+        peVar5->cursorPos[dc->contextIndex] = iVar6;
+        Item_TextField_EnsureCursorVisible(dc->contextIndex,item,(char *)buff);
         return 1;
       }
-      if ((param_4 == 0xa5) || (param_4 == 0xb6)) {
-        peVar5->cursorPos[param_2->contextIndex] = 0;
+      if ((key == 0xa5) || (key == 0xb6)) {
+        peVar5->cursorPos[dc->contextIndex] = 0;
         peVar5->paintOffset = 0;
         return 1;
       }
-      if ((param_4 == 0xa6) || (param_4 == 0xbc)) {
-        peVar5->cursorPos[param_2->contextIndex] = local_41c;
-        Item_TextField_EnsureCursorVisible(param_2->contextIndex,param_3,(char *)(local_40d + 1));
+      if ((key == 0xa6) || (key == 0xbc)) {
+        peVar5->cursorPos[dc->contextIndex] = len;
+        Item_TextField_EnsureCursorVisible(dc->contextIndex,item,(char *)buff);
         return 1;
       }
-      if ((param_4 == 0xa1) || (param_4 == 0xc0)) {
-        iVar6 = Key_GetOverstrikeMode(param_2->contextIndex);
-        Key_SetOverstrikeMode(param_2->contextIndex,(uint)(iVar6 == 0));
+      if ((key == 0xa1) || (key == 0xc0)) {
+        iVar6 = Key_GetOverstrikeMode(dc->contextIndex);
+        Key_SetOverstrikeMode(dc->contextIndex,(uint)(iVar6 == 0));
         return 1;
       }
     }
     else {
-      param_4 = param_4 & 0xfffffbff;
-      if (param_4 == 8) {
-        if (0 < peVar5->cursorPos[param_2->contextIndex]) {
-          iVar6 = peVar5->cursorPos[param_2->contextIndex];
-          local_8 = (local_41c + 1) - iVar6;
-          if ((((int)local_8 < 1) || (local_41c < (int)local_8)) &&
+      key = key & 0xfffffbff;
+      if (key == 8) {
+        if (0 < peVar5->cursorPos[dc->contextIndex]) {
+          iVar6 = peVar5->cursorPos[dc->contextIndex];
+          memMoveCount = (len + 1) - iVar6;
+          if (((memMoveCount < 1) || (len < memMoveCount)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x19a2
                                        ,0,"%s\n\t(memMoveCount) = %i"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar6 = (*pcVar2)();
             return iVar6;
           }
-          memmove(local_40d + iVar6,local_40d + iVar6 + 1,local_8);
+          memmove(buff + iVar6 + -1,buff + iVar6,memMoveCount);
         }
-        Dvar_SetFromStringByName(param_3->dvar,(char *)(local_40d + 1));
+        Dvar_SetFromStringByName(item->dvar,(char *)buff);
         iVar6 = 0x400;
-        pcVar7 = Dvar_GetVariantString(param_3->dvar);
-        I_strncpyz((char *)(local_40d + 1),pcVar7,iVar6);
-        iVar6 = Item_GetCursorPosOffset(param_2->contextIndex,param_3,(char *)(local_40d + 1),-1);
-        peVar5->cursorPos[param_2->contextIndex] = iVar6;
-        Item_TextField_EnsureCursorVisible(param_2->contextIndex,param_3,(char *)(local_40d + 1));
+        pcVar7 = Dvar_GetVariantString(item->dvar);
+        I_strncpyz((char *)buff,pcVar7,iVar6);
+        iVar6 = Item_GetCursorPosOffset(dc->contextIndex,item,(char *)buff,-1);
+        peVar5->cursorPos[dc->contextIndex] = iVar6;
+        Item_TextField_EnsureCursorVisible(dc->contextIndex,item,(char *)buff);
         return 1;
       }
-      if ((param_3->type == 0xd) && (bVar3 = I_isforfilename(param_4), !bVar3)) {
+      if ((item->type == 0xd) && (bVar3 = I_isforfilename(key), !bVar3)) {
         return 1;
       }
-      if ((param_4 < 0x20) || (param_3->dvar == (char *)0x0)) {
+      if ((key < 0x20) || (item->dvar == (char *)0x0)) {
         return 1;
       }
-      if (param_4 == 0x40) {
+      if (key == 0x40) {
         return 1;
       }
-      if (param_4 == 0x5e) {
+      if (key == 0x5e) {
         return 1;
       }
-      if ((param_3->type == 7) && (bVar3 = I_isdigit(param_4), !bVar3)) {
+      if ((item->type == 7) && (bVar3 = I_isdigit(key), !bVar3)) {
         return 0;
       }
-      if ((param_3->type == 0x16) && (bVar3 = I_isalnum(param_4), !bVar3)) {
+      if ((item->type == 0x16) && (bVar3 = I_isalnum(key), !bVar3)) {
         return 1;
       }
-      if (param_3->type == 0x1e) {
-        bVar3 = I_isdigit(param_4);
-        if ((bVar3) || (cVar4 = Com_GetDecimalDelimiter(), param_4 == cVar4)) {
-          local_438 = '\x01';
+      if (item->type == 0x1e) {
+        bVar3 = I_isdigit(key);
+        if ((bVar3) || (cVar4 = Com_GetDecimalDelimiter(), key == cVar4)) {
+          local_438 = true;
         }
         else {
-          local_438 = '\0';
+          local_438 = false;
         }
-        local_40d[0] = local_438;
-        if (local_438 == '\0') {
+        validInput = local_438;
+        if (local_438 == false) {
           return 0;
         }
         cVar4 = Com_GetDecimalDelimiter();
-        if (param_4 == cVar4) {
-          param_4 = 0x2e;
+        if (key == cVar4) {
+          key = 0x2e;
         }
       }
-      if (param_3->type == 0xe) {
-        param_4 = toupper(param_4);
+      if (item->type == 0xe) {
+        key = toupper(key);
       }
       bVar3 = Dvar_GetBool("ui_ignoreMousePos");
-      if (((bVar3) && (iVar6 = Menu_GetItemIndex(param_3->parent,param_3), -1 < iVar6)) &&
+      if (((bVar3) && (iVar6 = Menu_GetItemIndex(item->parent,item), -1 < iVar6)) &&
          (iVar8 = Dvar_GetInt("ui_prevTextEntryBox"), iVar6 != iVar8)) {
         Dvar_SetIntByName("ui_prevTextEntryBox",iVar6);
       }
-      iVar6 = Key_GetOverstrikeMode(param_1);
+      iVar6 = Key_GetOverstrikeMode(localClientNum);
       if (iVar6 == 0) {
-        if ((local_41c == 0xff) || ((peVar5->maxChars != 0 && (peVar5->maxChars <= local_41c)))) {
+        if ((len == 0xff) || ((peVar5->maxChars != 0 && (peVar5->maxChars <= len)))) {
           return 1;
         }
-        iVar6 = peVar5->cursorPos[param_2->contextIndex];
-        local_8 = (local_41c + 1) - iVar6;
-        if ((((int)local_8 < 1) || (local_41c + 1 < (int)local_8)) &&
+        iVar6 = peVar5->cursorPos[dc->contextIndex];
+        memMoveCount = (len + 1) - iVar6;
+        if (((memMoveCount < 1) || (len + 1 < memMoveCount)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x19fa,0
                                      ,"%s\n\t(memMoveCount) = %i"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           iVar6 = (*pcVar2)();
           return iVar6;
         }
-        memmove(local_40d + iVar6 + 2,local_40d + iVar6 + 1,local_8);
+        memmove(buff + iVar6 + 1,buff + iVar6,memMoveCount);
       }
-      else if ((peVar5->maxChars != 0) &&
-              (peVar5->maxChars <= peVar5->cursorPos[param_2->contextIndex])) {
+      else if ((peVar5->maxChars != 0) && (peVar5->maxChars <= peVar5->cursorPos[dc->contextIndex]))
+      {
         if ((peVar5->maxCharsGotoNext != 0) &&
-           ((piVar9 = Menu_SetNextCursorItem(param_1,param_2,param_3->parent,0,0),
+           ((piVar9 = Menu_SetNextCursorItem(localClientNum,dc,item->parent,0,0),
             piVar9 != (itemDef_s *)0x0 && (bVar3 = Item_IsTextField(piVar9), bVar3)))) {
           g_editItem = piVar9;
         }
         return 1;
       }
-      local_40d[peVar5->cursorPos[param_2->contextIndex] + 1] = (uchar)param_4;
-      Dvar_SetFromStringByName(param_3->dvar,(char *)(local_40d + 1));
+      buff[peVar5->cursorPos[dc->contextIndex]] = (uchar)key;
+      Dvar_SetFromStringByName(item->dvar,(char *)buff);
       iVar6 = 0x400;
-      pcVar7 = Dvar_GetVariantString(param_3->dvar);
-      I_strncpyz((char *)(local_40d + 1),pcVar7,iVar6);
-      local_43c = local_40d;
+      pcVar7 = Dvar_GetVariantString(item->dvar);
+      I_strncpyz((char *)buff,pcVar7,iVar6);
+      local_43c = buff;
       do {
+        uVar1 = *local_43c;
         local_43c = local_43c + 1;
-      } while (*local_43c != '\0');
-      iVar6 = Item_GetCursorPosOffset(param_2->contextIndex,param_3,(char *)(local_40d + 1),1);
-      peVar5->cursorPos[param_2->contextIndex] = iVar6;
-      Item_TextField_EnsureCursorVisible(param_2->contextIndex,param_3,(char *)(local_40d + 1));
-      if (((peVar5->maxChars != 0) && (peVar5->maxChars <= peVar5->cursorPos[param_2->contextIndex])
-          ) && (peVar5->maxCharsGotoNext != 0)) {
-        piVar9 = Menu_SetNextCursorItem(param_1,param_2,param_3->parent,0,0);
-        if (piVar9 != param_3) {
+      } while (uVar1 != '\0');
+      iVar6 = Item_GetCursorPosOffset(dc->contextIndex,item,(char *)buff,1);
+      peVar5->cursorPos[dc->contextIndex] = iVar6;
+      Item_TextField_EnsureCursorVisible(dc->contextIndex,item,(char *)buff);
+      if (((peVar5->maxChars != 0) && (peVar5->maxChars <= peVar5->cursorPos[dc->contextIndex])) &&
+         (peVar5->maxCharsGotoNext != 0)) {
+        piVar9 = Menu_SetNextCursorItem(localClientNum,dc,item->parent,0,0);
+        if (piVar9 != item) {
           ((((((piVar9->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).listBox)->
-          cursorPos[param_2->contextIndex] = 0;
+          cursorPos[dc->contextIndex] = 0;
         }
         if ((piVar9 != (itemDef_s *)0x0) && (bVar3 = Item_IsTextField(piVar9), bVar3)) {
           g_editItem = piVar9;
         }
       }
     }
-    if ((((param_4 == 9) || (param_4 == 0x9b)) || (param_4 == 0xbd)) &&
-       ((piVar9 = Menu_SetNextCursorItem(param_1,param_2,param_3->parent,1,0),
+    if ((((key == 9) || (key == 0x9b)) || (key == 0xbd)) &&
+       ((piVar9 = Menu_SetNextCursorItem(localClientNum,dc,item->parent,1,0),
         piVar9 != (itemDef_s *)0x0 && (bVar3 = Item_IsTextField(piVar9), bVar3)))) {
       g_editItem = piVar9;
     }
-    if (((param_4 == 0x9a) || (param_4 == 0xb7)) &&
-       ((piVar9 = Menu_SetPrevCursorItem(param_1,param_2,param_3->parent,0),
+    if (((key == 0x9a) || (key == 0xb7)) &&
+       ((piVar9 = Menu_SetPrevCursorItem(localClientNum,dc,item->parent,0),
         piVar9 != (itemDef_s *)0x0 && (bVar3 = Item_IsTextField(piVar9), bVar3)))) {
       g_editItem = piVar9;
     }
-    if ((param_4 == 0xd) || (param_4 == 0xbf)) {
-      Item_RunEventScript(param_1,param_2,param_3,"onAccept");
+    if ((key == 0xd) || (key == 0xbf)) {
+      Item_RunEventScript(localClientNum,dc,item,"onAccept");
     }
-    if (((param_4 == 0xd) || (param_4 == 0xbf)) || (param_4 == 0x1b)) {
-      if (((param_3 == (itemDef_s *)0x0) || ((param_3->window).name == (char *)0x0)) ||
-         (iVar6 = I_strcmp((param_3->window).name,"chat_text_input"), iVar6 != 0)) {
+    if (((key == 0xd) || (key == 0xbf)) || (key == 0x1b)) {
+      if (((item == (itemDef_s *)0x0) || ((item->window).name == (char *)0x0)) ||
+         (iVar6 = I_strcmp((item->window).name,"chat_text_input"), iVar6 != 0)) {
         iVar6 = 0;
       }
       else {
@@ -8171,17 +8345,18 @@ int __cdecl Item_TextField_HandleKey(int param_1,UiContext *param_2,itemDef_s *p
 
 // 0076A810  Scroll_ListBox_AutoFunc  (ui/ui_shared.cpp:6793)
 
-void __cdecl Scroll_ListBox_AutoFunc(int param_1,UiContext *param_2,void *param_3)
+void __cdecl Scroll_ListBox_AutoFunc(int localClientNum,UiContext *dc,void *p)
 
 {
-  if (*(int *)param_3 < param_2->realTime) {
-    Item_ListBox_HandleKey
-              (0,param_2,*(itemDef_s **)((int)param_3 + 0x18),*(int *)((int)param_3 + 0xc),1,0);
-    *(int *)param_3 = param_2->realTime + *(int *)((int)param_3 + 8);
+  scrollInfo_s *si;
+  
+  if (*(int *)p < dc->realTime) {
+    Item_ListBox_HandleKey(0,dc,*(itemDef_s **)((int)p + 0x18),*(int *)((int)p + 0xc),1,0);
+    *(int *)p = dc->realTime + *(int *)((int)p + 8);
   }
-  if ((*(int *)((int)param_3 + 4) < param_2->realTime) &&
-     (*(int *)((int)param_3 + 4) = param_2->realTime + 0x96, 0x14 < *(int *)((int)param_3 + 8))) {
-    *(int *)((int)param_3 + 8) = *(int *)((int)param_3 + 8) + -0x28;
+  if ((*(int *)((int)p + 4) < dc->realTime) &&
+     (*(int *)((int)p + 4) = dc->realTime + 0x96, 0x14 < *(int *)((int)p + 8))) {
+    *(int *)((int)p + 8) = *(int *)((int)p + 8) + -0x28;
   }
   return;
 }
@@ -8189,92 +8364,92 @@ void __cdecl Scroll_ListBox_AutoFunc(int param_1,UiContext *param_2,void *param_
 
 // 0076A8A0  Scroll_ListBox_ThumbFunc  (ui/ui_shared.cpp:6819)
 
-void __cdecl Scroll_ListBox_ThumbFunc(int param_1,UiContext *param_2,void *param_3)
+void __cdecl Scroll_ListBox_ThumbFunc(int localClientNum,UiContext *dc,void *p)
 
 {
   bool bVar1;
   int iVar2;
-  int local_38;
-  float local_30;
+  int pos;
+  int max;
+  float r;
   float local_2c;
   float local_28;
   float local_24 [3];
-  int *local_18;
-  listBoxDef_s *local_14;
-  rectDef_s *local_10;
-  float local_c;
-  float local_8;
+  scrollInfo_s *si;
+  listBoxDef_s *listPtr;
+  rectDef_s *rect;
+  float x;
+  float y;
   
-  if (param_2->isCursorVisible != 0) {
-    local_18 = param_3;
-    local_14 = Item_GetListBoxDef(*(itemDef_s **)((int)param_3 + 0x18));
-    if (local_14 != (listBoxDef_s *)0x0) {
-      bVar1 = Window_IsHorizontal((windowDef_t *)local_18[6]);
+  if (dc->isCursorVisible != 0) {
+    si = p;
+    listPtr = Item_GetListBoxDef(*(itemDef_s **)((int)p + 0x18));
+    if (listPtr != (listBoxDef_s *)0x0) {
+      bVar1 = Window_IsHorizontal(&si->item->window);
       if (bVar1) {
-        if ((param_2->cursor).x == (float)local_18[4]) {
+        if ((dc->cursor).x == si->xStart) {
           return;
         }
-        local_10 = Window_GetRect((windowDef_t *)local_18[6]);
-        local_30 = local_10->x;
-        local_2c = local_10->y;
-        local_28 = local_10->w;
-        local_24[0] = local_10->h;
-        local_c = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                  (param_2->cursor).x,4);
-        local_8 = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                  (param_2->cursor).y,4);
-        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_30,&local_2c,
-                           &local_28,local_24,local_10->horzAlign,local_10->vertAlign);
-        local_30 = local_30 + 16.0 + 1.0;
+        rect = Window_GetRect(&si->item->window);
+        r = rect->x;
+        local_2c = rect->y;
+        local_28 = rect->w;
+        local_24[0] = rect->h;
+        x = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                            (dc->cursor).x,4);
+        y = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                            (dc->cursor).y,4);
+        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&r,&local_2c,
+                           &local_28,local_24,rect->horzAlign,rect->vertAlign);
+        r = r + 16.0 + 1.0;
         local_2c = ((local_2c + local_24[0]) - 16.0) - 1.0;
         local_24[0] = 16.0;
         local_28 = (local_28 - 32.0) - 2.0;
-        iVar2 = Item_ListBox_MaxScroll(param_1,param_2->contextIndex,(itemDef_s *)local_18[6]);
-        local_38 = (int)(((local_c - local_30) / local_28) * (float)iVar2);
-        if (local_38 < 0) {
-          local_38 = 0;
+        iVar2 = Item_ListBox_MaxScroll(localClientNum,dc->contextIndex,si->item);
+        pos = (int)(((x - r) / local_28) * (float)iVar2);
+        if (pos < 0) {
+          pos = 0;
         }
-        else if (iVar2 < local_38) {
-          local_38 = iVar2;
+        else if (iVar2 < pos) {
+          pos = iVar2;
         }
-        local_14->startPos[param_2->contextIndex] = local_38;
-        local_18[4] = (int)(param_2->cursor).x;
+        listPtr->startPos[dc->contextIndex] = pos;
+        si->xStart = (dc->cursor).x;
       }
-      else if ((param_2->cursor).y != (float)local_18[5]) {
-        local_10 = Window_GetRect((windowDef_t *)local_18[6]);
-        local_30 = local_10->x;
-        local_2c = local_10->y;
-        local_28 = local_10->w;
-        local_24[0] = Item_ListBox_ScrollHeight
-                                (param_1,param_2->contextIndex,(itemDef_s *)local_18[6]);
-        local_c = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                  (param_2->cursor).x,4);
-        local_8 = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                  (param_2->cursor).y,4);
-        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_30,&local_2c,
-                           &local_28,local_24,local_10->horzAlign,local_10->vertAlign);
-        local_30 = ((local_30 + local_28) - 16.0) - 1.0;
+      else if ((dc->cursor).y != si->yStart) {
+        rect = Window_GetRect(&si->item->window);
+        r = rect->x;
+        local_2c = rect->y;
+        local_28 = rect->w;
+        local_24[0] = Item_ListBox_ScrollHeight(localClientNum,dc->contextIndex,si->item);
+        x = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                            (dc->cursor).x,4);
+        y = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                            (dc->cursor).y,4);
+        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&r,&local_2c,
+                           &local_28,local_24,rect->horzAlign,rect->vertAlign);
+        r = ((r + local_28) - 16.0) - 1.0;
         local_2c = local_2c + 16.0 + 1.0;
         local_24[0] = (local_24[0] - 32.0) - 2.0;
         local_28 = 16.0;
-        iVar2 = Item_ListBox_MaxScroll(param_1,param_2->contextIndex,(itemDef_s *)local_18[6]);
-        local_38 = (int)(((local_8 - local_2c) / local_24[0]) * (float)iVar2);
-        if (local_38 < 0) {
-          local_38 = 0;
+        iVar2 = Item_ListBox_MaxScroll(localClientNum,dc->contextIndex,si->item);
+        pos = (int)(((y - local_2c) / local_24[0]) * (float)iVar2);
+        if (pos < 0) {
+          pos = 0;
         }
-        else if (iVar2 < local_38) {
-          local_38 = iVar2;
+        else if (iVar2 < pos) {
+          pos = iVar2;
         }
-        local_14->startPos[param_2->contextIndex] = local_38;
-        local_18[5] = (int)(param_2->cursor).y;
+        listPtr->startPos[dc->contextIndex] = pos;
+        si->yStart = (dc->cursor).y;
       }
-      if (*local_18 < param_2->realTime) {
-        Item_ListBox_HandleKey(0,param_2,(itemDef_s *)local_18[6],local_18[3],1,0);
-        *local_18 = param_2->realTime + local_18[2];
+      if (si->nextScrollTime < dc->realTime) {
+        Item_ListBox_HandleKey(0,dc,si->item,si->scrollKey,1,0);
+        si->nextScrollTime = dc->realTime + si->adjustValue;
       }
-      if ((local_18[1] < param_2->realTime) &&
-         (local_18[1] = param_2->realTime + 0x96, 0x14 < local_18[2])) {
-        local_18[2] = local_18[2] + -0x28;
+      if ((si->nextAdjustTime < dc->realTime) &&
+         (si->nextAdjustTime = dc->realTime + 0x96, 0x14 < si->adjustValue)) {
+        si->adjustValue = si->adjustValue + -0x28;
       }
     }
   }
@@ -8284,55 +8459,54 @@ void __cdecl Scroll_ListBox_ThumbFunc(int param_1,UiContext *param_2,void *param
 
 // 0076AD10  Scroll_Slider_SetThumbPos  (ui/ui_shared.cpp:6931)
 
-void __cdecl Scroll_Slider_SetThumbPos(UiContext *param_1,itemDef_s *param_2)
+void __cdecl Scroll_Slider_SetThumbPos(UiContext *dc,itemDef_s *item)
 
 {
-  char *pcVar1;
-  float fVar2;
+  char *string;
+  float fVar1;
   float local_3c;
   float local_34;
-  float local_30;
-  float local_2c;
-  ScreenPlacement *local_28;
-  float local_24;
-  editFieldDef_s *local_20;
-  textDef_s *local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  rectDef_s *local_c;
-  float local_8;
+  float hIgnored;
+  float yIgnored;
+  ScreenPlacement *scrPlace;
+  float usableStart;
+  editFieldDef_s *editDef;
+  textDef_s *textDefPtr;
+  float cursorx;
+  float usableWidth;
+  float x;
+  rectDef_s *rect;
+  float value;
   
-  local_20 = Item_GetEditFieldDef(param_2);
-  local_1c = Item_GetTextDef(param_2);
-  if (local_20 != (editFieldDef_s *)0x0) {
-    local_c = Window_GetRect(&param_2->window);
-    local_10 = Item_GetRectPlacementX
-                         (local_1c->textAlignMode & 3,local_c->x + local_1c->textalignx,local_c->w,
-                          100.0);
-    local_28 = (ScreenPlacement *)(&scrPlaceView + param_1->contextIndex * 0x78);
-    local_18 = ScrPlace_ApplyX(local_28,(param_1->cursor).x,4);
-    local_24 = local_10 + 5.0 + 1.0;
-    local_14 = 88.0;
-    local_2c = 0.0;
-    local_30 = 0.0;
-    ScrPlace_ApplyRect(local_28,&local_24,&local_2c,&local_14,&local_30,local_c->horzAlign,
-                       local_c->vertAlign);
-    if (0.0 <= (local_18 - local_24) + 5.0) {
-      fVar2 = local_18 - local_24;
-      local_34 = fVar2;
-      if (0.0 <= fVar2 - local_14) {
-        local_34 = local_14;
+  editDef = Item_GetEditFieldDef(item);
+  textDefPtr = Item_GetTextDef(item);
+  if (editDef != (editFieldDef_s *)0x0) {
+    rect = Window_GetRect(&item->window);
+    x = Item_GetRectPlacementX
+                  (textDefPtr->textAlignMode & 3,rect->x + textDefPtr->textalignx,rect->w,100.0);
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78);
+    cursorx = ScrPlace_ApplyX(scrPlace,(dc->cursor).x,4);
+    usableStart = x + 5.0 + 1.0;
+    usableWidth = 88.0;
+    yIgnored = 0.0;
+    hIgnored = 0.0;
+    ScrPlace_ApplyRect(scrPlace,&usableStart,&yIgnored,&usableWidth,&hIgnored,rect->horzAlign,
+                       rect->vertAlign);
+    if (0.0 <= (cursorx - usableStart) + 5.0) {
+      fVar1 = cursorx - usableStart;
+      local_34 = fVar1;
+      if (0.0 <= fVar1 - usableWidth) {
+        local_34 = usableWidth;
       }
-      if (0.0 - fVar2 < 0.0) {
+      if (0.0 - fVar1 < 0.0) {
         local_3c = local_34;
       }
       else {
         local_3c = 0.0;
       }
-      local_8 = (local_20->maxVal - local_20->minVal) * (local_3c / local_14) + local_20->minVal;
-      pcVar1 = va("%g");
-      Dvar_SetFromStringByName(param_2->dvar,pcVar1);
+      value = (editDef->maxVal - editDef->minVal) * (local_3c / usableWidth) + editDef->minVal;
+      string = va("%g");
+      Dvar_SetFromStringByName(item->dvar,string);
     }
   }
   return;
@@ -8341,58 +8515,59 @@ void __cdecl Scroll_Slider_SetThumbPos(UiContext *param_1,itemDef_s *param_2)
 
 // 0076ACE0  Scroll_Slider_ThumbFunc  (ui/ui_shared.cpp:6977)
 
-void __cdecl Scroll_Slider_ThumbFunc(int param_1,UiContext *param_2,void *param_3)
+void __cdecl Scroll_Slider_ThumbFunc(int localClientNum,UiContext *dc,void *p)
 
 {
-  Scroll_Slider_SetThumbPos(param_2,*(itemDef_s **)((int)param_3 + 0x18));
+  scrollInfo_s *si;
+  
+  Scroll_Slider_SetThumbPos(dc,*(itemDef_s **)((int)p + 0x18));
   return;
 }
 
 
 // 00769DE0  Item_StartCapture  (ui/ui_shared.cpp:6988)
 
-void __cdecl Item_StartCapture(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4)
+void __cdecl Item_StartCapture(int localClientNum,UiContext *dc,itemDef_s *item,int key)
 
 {
   uint uVar1;
+  int flags;
   
-  if (param_3->type == 4) {
-    uVar1 = Item_ListBox_OverLB(param_1,param_2->contextIndex,param_3,(param_2->cursor).x,
-                                (param_2->cursor).y);
+  if (item->type == 4) {
+    uVar1 = Item_ListBox_OverLB(localClientNum,dc->contextIndex,item,(dc->cursor).x,(dc->cursor).y);
     if ((uVar1 & 0x300) == 0) {
       if ((uVar1 & 0x400) != 0) {
-        scrollInfo.scrollKey = param_4;
-        scrollInfo.item = param_3;
-        scrollInfo.xStart = (param_2->cursor).x;
-        scrollInfo.yStart = (param_2->cursor).y;
+        scrollInfo.scrollKey = key;
+        scrollInfo.item = item;
+        scrollInfo.xStart = (dc->cursor).x;
+        scrollInfo.yStart = (dc->cursor).y;
         captureData = &scrollInfo;
         captureFunc = Scroll_ListBox_ThumbFunc;
-        itemCapture = param_3;
+        itemCapture = item;
       }
     }
     else {
-      scrollInfo.nextScrollTime = param_2->realTime + 500;
-      scrollInfo.nextAdjustTime = param_2->realTime + 0x96;
+      scrollInfo.nextScrollTime = dc->realTime + 500;
+      scrollInfo.nextAdjustTime = dc->realTime + 0x96;
       scrollInfo.adjustValue = 500;
-      scrollInfo.scrollKey = param_4;
+      scrollInfo.scrollKey = key;
       scrollInfo.scrollDir = (int)((uVar1 & 0x100) != 0);
-      scrollInfo.item = param_3;
+      scrollInfo.item = item;
       captureData = &scrollInfo;
       captureFunc = Scroll_ListBox_AutoFunc;
-      itemCapture = param_3;
+      itemCapture = item;
     }
   }
-  else if ((param_3->type == 8) &&
-          (uVar1 = Item_Slider_OverSlider
-                             (param_2->contextIndex,param_3,(param_2->cursor).x,(param_2->cursor).y)
-          , (uVar1 & 0x400) != 0)) {
-    scrollInfo.scrollKey = param_4;
-    scrollInfo.item = param_3;
-    scrollInfo.xStart = (param_2->cursor).x;
-    scrollInfo.yStart = (param_2->cursor).y;
+  else if ((item->type == 8) &&
+          (uVar1 = Item_Slider_OverSlider(dc->contextIndex,item,(dc->cursor).x,(dc->cursor).y),
+          (uVar1 & 0x400) != 0)) {
+    scrollInfo.scrollKey = key;
+    scrollInfo.item = item;
+    scrollInfo.xStart = (dc->cursor).x;
+    scrollInfo.yStart = (dc->cursor).y;
     captureData = &scrollInfo;
     captureFunc = Scroll_Slider_ThumbFunc;
-    itemCapture = param_3;
+    itemCapture = item;
   }
   return;
 }
@@ -8400,7 +8575,7 @@ void __cdecl Item_StartCapture(int param_1,UiContext *param_2,itemDef_s *param_3
 
 // 0076AF30  Item_Slider_HandleKey  (ui/ui_shared.cpp:7068)
 
-int __cdecl Item_Slider_HandleKey(UiContext *param_1,itemDef_s *param_2,int param_3,int param_4)
+int __cdecl Item_Slider_HandleKey(UiContext *dc,itemDef_s *item,int key,int down)
 
 {
   bool bVar1;
@@ -8408,34 +8583,38 @@ int __cdecl Item_Slider_HandleKey(UiContext *param_1,itemDef_s *param_2,int para
   dvar_s *pdVar3;
   editFieldDef_s *peVar4;
   char *pcVar5;
+  editFieldDef_s *editDef;
+  float step;
+  dvar_s *dvar;
+  float value;
   
-  if (param_2->dvar == (char *)0x0) {
+  if (item->dvar == (char *)0x0) {
     iVar2 = 0;
   }
   else {
-    pdVar3 = Dvar_FindVar(param_2->dvar);
+    pdVar3 = Dvar_FindVar(item->dvar);
     if (pdVar3 == (dvar_s *)0x0) {
       iVar2 = 0;
     }
     else {
-      bVar1 = Item_ShouldHandleKey(param_1,param_2,param_3);
+      bVar1 = Item_ShouldHandleKey(dc,item,key);
       if (bVar1) {
-        if (((param_3 == 200) || (param_3 == 0xc9)) || (param_3 == 0xca)) {
-          Scroll_Slider_SetThumbPos(param_1,param_2);
+        if (((key == 200) || (key == 0xc9)) || (key == 0xca)) {
+          Scroll_Slider_SetThumbPos(dc,item);
           iVar2 = 1;
         }
         else {
-          peVar4 = Item_GetEditFieldDef(param_2);
+          peVar4 = Item_GetEditFieldDef(item);
           if (peVar4 == (editFieldDef_s *)0x0) {
             iVar2 = 0;
           }
           else {
-            pcVar5 = Dvar_GetVariantString(param_2->dvar);
+            pcVar5 = Dvar_GetVariantString(item->dvar);
             atof(pcVar5);
-            if ((param_3 == 0x16) || (param_3 == 0x1e)) {
+            if ((key == 0x16) || (key == 0x1e)) {
               bVar1 = true;
             }
-            else if ((param_3 == 0x9c) || (param_3 == 0xa4)) {
+            else if ((key == 0x9c) || (key == 0xa4)) {
               bVar1 = true;
             }
             else {
@@ -8443,14 +8622,14 @@ int __cdecl Item_Slider_HandleKey(UiContext *param_1,itemDef_s *param_2,int para
             }
             if (bVar1) {
               pcVar5 = va("%g");
-              Dvar_SetFromStringByName(param_2->dvar,pcVar5);
+              Dvar_SetFromStringByName(item->dvar,pcVar5);
               iVar2 = 1;
             }
             else {
-              if ((param_3 == 0x17) || (param_3 == 0x1f)) {
+              if ((key == 0x17) || (key == 0x1f)) {
                 bVar1 = true;
               }
-              else if ((param_3 == 0x9d) || (param_3 == 0xa3)) {
+              else if ((key == 0x9d) || (key == 0xa3)) {
                 bVar1 = true;
               }
               else {
@@ -8458,7 +8637,7 @@ int __cdecl Item_Slider_HandleKey(UiContext *param_1,itemDef_s *param_2,int para
               }
               if (bVar1) {
                 pcVar5 = va("%g");
-                Dvar_SetFromStringByName(param_2->dvar,pcVar5);
+                Dvar_SetFromStringByName(item->dvar,pcVar5);
                 iVar2 = 1;
               }
               else {
@@ -8479,15 +8658,14 @@ int __cdecl Item_Slider_HandleKey(UiContext *param_1,itemDef_s *param_2,int para
 
 // 00769300  Item_HandleKey  (ui/ui_shared.cpp:7124)
 
-int __cdecl
-Item_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int param_5)
+int __cdecl Item_HandleKey(int localClientNum,UiContext *dc,itemDef_s *item,int key,int down)
 
 {
   int iVar1;
   
   if (itemCapture == (itemDef_s *)0x0) {
-    if ((param_5 != 0) && (((param_4 == 200 || (param_4 == 0xc9)) || (param_4 == 0xca)))) {
-      Item_StartCapture(param_1,param_2,param_3,param_4);
+    if ((down != 0) && (((key == 200 || (key == 0xc9)) || (key == 0xca)))) {
+      Item_StartCapture(localClientNum,dc,item,key);
     }
   }
   else {
@@ -8495,16 +8673,16 @@ Item_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int
     captureFunc = (_func___cdecl_void_int_UiContext_ptr_void_ptr *)0x0;
     captureData = (void *)0x0;
   }
-  if (param_5 == 0) {
+  if (down == 0) {
     iVar1 = 0;
   }
   else {
-    switch(param_3->type) {
+    switch(item->type) {
     case 3:
       iVar1 = 0;
       break;
     case 4:
-      iVar1 = Item_ListBox_HandleKey(param_1,param_2,param_3,param_4,param_5,0);
+      iVar1 = Item_ListBox_HandleKey(localClientNum,dc,item,key,down,0);
       break;
     case 5:
     case 7:
@@ -8516,23 +8694,23 @@ Item_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int
       break;
     case 6:
     case 0x14:
-      iVar1 = Item_OwnerDraw_HandleKey(param_3,param_4);
+      iVar1 = Item_OwnerDraw_HandleKey(item,key);
       break;
     case 8:
-      iVar1 = Item_Slider_HandleKey(param_2,param_3,param_4,param_5);
+      iVar1 = Item_Slider_HandleKey(dc,item,key,down);
       break;
     case 9:
-      iVar1 = Item_YesNo_HandleKey(param_2,param_3,param_4);
+      iVar1 = Item_YesNo_HandleKey(dc,item,key);
       break;
     case 10:
-      iVar1 = Item_Multi_HandleKey(param_2,param_3,param_4);
+      iVar1 = Item_Multi_HandleKey(dc,item,key);
       break;
     case 0xb:
-      iVar1 = Item_DvarEnum_HandleKey(param_2,param_3,param_4);
+      iVar1 = Item_DvarEnum_HandleKey(dc,item,key);
       break;
     case 0xc:
     case 0x10:
-      iVar1 = Item_Bind_HandleKey(param_1,param_2,param_3,param_4,param_5);
+      iVar1 = Item_Bind_HandleKey(localClientNum,dc,item,key,down);
       break;
     default:
       iVar1 = 0;
@@ -8553,11 +8731,13 @@ Item_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int
 
 // 0076B1F0  Item_Action  (ui/ui_shared.cpp:7182)
 
-void __cdecl Item_Action(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_Action(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
-  if ((param_2->openMenuCount != 0) && (param_3 != (itemDef_s *)0x0)) {
-    Item_RunEventScript(param_1,param_2,param_3,"action");
+  char *newMenu;
+  
+  if ((dc->openMenuCount != 0) && (item != (itemDef_s *)0x0)) {
+    Item_RunEventScript(localClientNum,dc,item,"action");
   }
   return;
 }
@@ -8566,53 +8746,55 @@ void __cdecl Item_Action(int param_1,UiContext *param_2,itemDef_s *param_3)
 // 0076B250  Menu_SetPrevCursorItem  (ui/ui_shared.cpp:7206)
 
 itemDef_s * __cdecl
-Menu_SetPrevCursorItem(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4)
+Menu_SetPrevCursorItem(int localClientNum,UiContext *dc,menuDef_t *menu,int usedKeyboard)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
-  float fVar4;
-  float fVar5;
+  float x;
+  float y;
+  int oldCursor;
+  int wrapped;
   
   bVar1 = false;
-  iVar2 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-  iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
+  iVar2 = Menu_GetCursorItem(dc->contextIndex,menu);
+  iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
   if (iVar3 < 0) {
-    Menu_SetCursorItem(param_2->contextIndex,param_3,param_3->itemCount + -1);
+    Menu_SetCursorItem(dc->contextIndex,menu,menu->itemCount + -1);
     bVar1 = true;
   }
 LAB_0076b2ae:
   do {
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
     if (iVar3 < 0) {
-      Menu_SetCursorItem(param_2->contextIndex,param_3,iVar2);
+      Menu_SetCursorItem(dc->contextIndex,menu,iVar2);
       return (itemDef_s *)0x0;
     }
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    Menu_SetCursorItem(param_2->contextIndex,param_3,iVar3 + -1);
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+    Menu_SetCursorItem(dc->contextIndex,menu,iVar3 + -1);
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
     if ((iVar3 < 0) && (!bVar1)) {
       bVar1 = true;
-      Menu_SetCursorItem(param_2->contextIndex,param_3,param_3->itemCount + -1);
+      Menu_SetCursorItem(dc->contextIndex,menu,menu->itemCount + -1);
     }
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
     if (iVar3 < 0) {
-      Menu_SetCursorItem(param_2->contextIndex,param_3,iVar2);
+      Menu_SetCursorItem(dc->contextIndex,menu,iVar2);
       return (itemDef_s *)0x0;
     }
-    if (param_4 != 0) {
-      iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      iVar3 = Item_HasFocusEvent(param_1,param_2,param_3->items[iVar3]);
+    if (usedKeyboard != 0) {
+      iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+      iVar3 = Item_HasFocusEvent(localClientNum,dc,menu->items[iVar3]);
       if (iVar3 == 0) goto LAB_0076b2ae;
     }
-    fVar5 = (param_2->cursor).y;
-    fVar4 = (param_2->cursor).x;
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    iVar3 = Item_SetFocus(param_1,param_2,param_3->items[iVar3],fVar4,fVar5);
+    y = (dc->cursor).y;
+    x = (dc->cursor).x;
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+    iVar3 = Item_SetFocus(localClientNum,dc,menu->items[iVar3],x,y);
     if (iVar3 != 0) {
-      iVar2 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      return param_3->items[iVar2];
+      iVar2 = Menu_GetCursorItem(dc->contextIndex,menu);
+      return menu->items[iVar2];
     }
   } while( true );
 }
@@ -8621,7 +8803,8 @@ LAB_0076b2ae:
 // 00766480  Menu_SetNextCursorItem  (ui/ui_shared.cpp:7255)
 
 itemDef_s * __cdecl
-Menu_SetNextCursorItem(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int param_5)
+Menu_SetNextCursorItem
+          (int localClientNum,UiContext *dc,menuDef_t *menu,int usedTab,int usedKeyboard)
 
 {
   bool bVar1;
@@ -8630,80 +8813,84 @@ Menu_SetNextCursorItem(int param_1,UiContext *param_2,menuDef_t *param_3,int par
   int iVar4;
   editFieldDef_s *peVar5;
   itemDef_s *piVar6;
-  int local_c;
+  int cursorItem;
+  editFieldDef_s *editPtr;
+  int newIndex;
+  int oldCursor;
+  int wrapped;
   
   bVar1 = false;
   bVar2 = Dvar_GetBool("ui_ignoreMousePos");
   if (bVar2) {
     iVar3 = Dvar_GetInt("ui_prevTextEntryBox");
     if (iVar3 == -1) {
-      local_c = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      Dvar_SetIntByName("ui_prevTextEntryBox",local_c);
+      oldCursor = Menu_GetCursorItem(dc->contextIndex,menu);
+      Dvar_SetIntByName("ui_prevTextEntryBox",oldCursor);
     }
     else {
-      local_c = Dvar_GetInt("ui_prevTextEntryBox");
+      oldCursor = Dvar_GetInt("ui_prevTextEntryBox");
     }
-    if (local_c == -1) {
-      local_c = 0;
-      Menu_SetCursorItem(param_2->contextIndex,param_3,0);
+    if (oldCursor == -1) {
+      oldCursor = 0;
+      Menu_SetCursorItem(dc->contextIndex,menu,0);
     }
 LAB_00766517:
     do {
       iVar3 = Dvar_GetInt("ui_prevTextEntryBox");
-      if (param_3->itemCount <= iVar3) {
+      if (menu->itemCount <= iVar3) {
 LAB_0076683a:
-        Menu_SetCursorItem(param_2->contextIndex,param_3,local_c);
+        Menu_SetCursorItem(dc->contextIndex,menu,oldCursor);
         return (itemDef_s *)0x0;
       }
       iVar3 = Dvar_GetInt("ui_prevTextEntryBox");
       iVar3 = iVar3 + 1;
       Dvar_SetIntByName("ui_prevTextEntryBox",iVar3);
-      Menu_SetCursorItem(param_2->contextIndex,param_3,iVar3);
-      if (param_3->itemCount <= iVar3) {
-        if (param_4 == 0) {
-          Item_GetEditFieldDef(param_3->items[local_c]);
-          Dvar_SetIntByName("ui_prevTextEntryBox",local_c);
-          Menu_SetCursorItem(param_2->contextIndex,param_3,local_c);
-          return param_3->items[local_c];
+      Menu_SetCursorItem(dc->contextIndex,menu,iVar3);
+      if (menu->itemCount <= iVar3) {
+        if (usedTab == 0) {
+          Item_GetEditFieldDef(menu->items[oldCursor]);
+          Dvar_SetIntByName("ui_prevTextEntryBox",oldCursor);
+          Menu_SetCursorItem(dc->contextIndex,menu,oldCursor);
+          return menu->items[oldCursor];
         }
         Dvar_SetIntByName("ui_prevTextEntryBox",0);
         goto LAB_00766517;
       }
-      iVar4 = Item_IsEditFieldDef(param_3->items[iVar3]);
+      iVar4 = Item_IsEditFieldDef(menu->items[iVar3]);
     } while (((iVar4 == 0) ||
-             (peVar5 = Item_GetEditFieldDef(param_3->items[iVar3]), peVar5 == (editFieldDef_s *)0x0)
-             ) || ((peVar5->maxCharsGotoNext == 0 ||
-                   (iVar4 = Item_SetFocus(param_1,param_2,param_3->items[iVar3],
-                                          (param_3->items[iVar3]->window).rect.x,
-                                          (param_3->items[iVar3]->window).rect.y), iVar4 == 0))));
-    piVar6 = param_3->items[iVar3];
+             (peVar5 = Item_GetEditFieldDef(menu->items[iVar3]), peVar5 == (editFieldDef_s *)0x0))
+            || ((peVar5->maxCharsGotoNext == 0 ||
+                (iVar4 = Item_SetFocus(localClientNum,dc,menu->items[iVar3],
+                                       (menu->items[iVar3]->window).rect.x,
+                                       (menu->items[iVar3]->window).rect.y), iVar4 == 0))));
+    piVar6 = menu->items[iVar3];
   }
   else {
-    local_c = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    if ((local_c == -1) && (param_3->itemCount < 1)) {
-      Menu_SetCursorItem(param_2->contextIndex,param_3,0);
+    oldCursor = Menu_GetCursorItem(dc->contextIndex,menu);
+    if ((oldCursor == -1) && (menu->itemCount < 1)) {
+      Menu_SetCursorItem(dc->contextIndex,menu,0);
       bVar1 = true;
     }
     do {
-      iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      if (param_3->itemCount <= iVar3) goto LAB_0076683a;
-      iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      Menu_SetCursorItem(param_2->contextIndex,param_3,iVar3 + 1);
-      iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-      if (param_3->itemCount <= iVar3) {
+      iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+      if (menu->itemCount <= iVar3) goto LAB_0076683a;
+      iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+      Menu_SetCursorItem(dc->contextIndex,menu,iVar3 + 1);
+      iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+      if (menu->itemCount <= iVar3) {
         if (bVar1) {
-          return param_3->items[local_c];
+          return menu->items[oldCursor];
         }
         bVar1 = true;
-        Menu_SetCursorItem(param_2->contextIndex,param_3,0);
+        Menu_SetCursorItem(dc->contextIndex,menu,0);
       }
-      iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    } while (((param_5 != 0) &&
-             (iVar4 = Item_HasFocusEvent(param_1,param_2,param_3->items[iVar3]), iVar4 == 0)) ||
-            (iVar3 = Item_SetFocus(param_1,param_2,param_3->items[iVar3],(param_2->cursor).x,
-                                   (param_2->cursor).y), iVar3 == 0));
-    iVar3 = Menu_GetCursorItem(param_2->contextIndex,param_3);
-    piVar6 = param_3->items[iVar3];
+      iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+    } while (((usedKeyboard != 0) &&
+             (iVar4 = Item_HasFocusEvent(localClientNum,dc,menu->items[iVar3]), iVar4 == 0)) ||
+            (iVar3 = Item_SetFocus(localClientNum,dc,menu->items[iVar3],(dc->cursor).x,
+                                   (dc->cursor).y), iVar3 == 0));
+    iVar3 = Menu_GetCursorItem(dc->contextIndex,menu);
+    piVar6 = menu->items[iVar3];
   }
   return piVar6;
 }
@@ -8711,7 +8898,7 @@ LAB_0076683a:
 
 // 00765DC0  Menus_Open  (ui/ui_shared.cpp:7373)
 
-void __cdecl Menus_Open(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_Open(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
@@ -8720,58 +8907,57 @@ void __cdecl Menus_Open(int param_1,UiContext *param_2,menuDef_t *param_3)
   int iVar4;
   int local_20;
   int local_1c;
-  int local_8;
+  int i;
   
-  iVar4 = param_2->openMenuCount;
-  while (local_8 = iVar4 + -1, -1 < local_8) {
-    Menu_LoseFocusDueToOpen(param_1,param_2,param_2->menuStack[iVar4 + -1].menu);
-    iVar4 = local_8;
+  iVar4 = dc->openMenuCount;
+  while (i = iVar4 + -1, -1 < i) {
+    Menu_LoseFocusDueToOpen(localClientNum,dc,dc->menuStack[iVar4 + -1].menu);
+    iVar4 = i;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_2->menuCount <= local_8) {
-      Menus_AddToStack(param_1,param_2,param_3);
-      if (param_2->enableSlideAndFadeEffectForMenu != false) {
-        if (((0 < param_3->openSlideSpeed) && (-1 < param_3->openSlideDirection)) &&
-           (param_3->openSlideDirection < 4)) {
-          Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x20000);
+    if (dc->menuCount <= i) {
+      Menus_AddToStack(localClientNum,dc,menu);
+      if (dc->enableSlideAndFadeEffectForMenu != false) {
+        if (((0 < menu->openSlideSpeed) && (-1 < menu->openSlideDirection)) &&
+           (menu->openSlideDirection < 4)) {
+          Window_AddDynamicFlags(dc->contextIndex,&menu->window,0x20000);
           iVar4 = Sys_Milliseconds();
-          param_3->slideTimeCounter = iVar4;
+          menu->slideTimeCounter = iVar4;
         }
-        if (0 < param_3->openFadingTime) {
-          Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,0x80000);
+        if (0 < menu->openFadingTime) {
+          Window_AddDynamicFlags(dc->contextIndex,&menu->window,0x80000);
           iVar4 = Sys_Milliseconds();
-          param_3->fadeTimeCounter = iVar4;
+          menu->fadeTimeCounter = iVar4;
         }
-        uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+        uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
         if (((uVar3 & 0x20000) != 0) &&
-           (uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window),
-           (uVar3 & 0x80000) != 0)) {
-          local_1c = param_3->openFadingTime;
-          if (local_1c <= param_3->openSlideSpeed) {
-            local_1c = param_3->openSlideSpeed;
+           (uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->window), (uVar3 & 0x80000) != 0))
+        {
+          local_1c = menu->openFadingTime;
+          if (local_1c <= menu->openSlideSpeed) {
+            local_1c = menu->openSlideSpeed;
           }
-          param_3->openSlideSpeed = local_1c;
-          local_20 = param_3->openFadingTime;
-          if (local_20 <= param_3->openSlideSpeed) {
-            local_20 = param_3->openSlideSpeed;
+          menu->openSlideSpeed = local_1c;
+          local_20 = menu->openFadingTime;
+          if (local_20 <= menu->openSlideSpeed) {
+            local_20 = menu->openSlideSpeed;
           }
-          param_3->openFadingTime = local_20;
+          menu->openFadingTime = local_20;
         }
       }
-      Menus_SetupOpenMenu(param_1,param_2,param_3);
-      if ((0 < param_2->openMenuCount) &&
-         (param_2->menuStack[param_2->openMenuCount + -1].menu != param_3)) {
-        Menu_LoseFocusDueToOpen(param_1,param_2,param_3);
-        Menus_SetupOpenMenu(param_1,param_2,param_2->menuStack[param_2->openMenuCount + -1].menu);
+      Menus_SetupOpenMenu(localClientNum,dc,menu);
+      if ((0 < dc->openMenuCount) && (dc->menuStack[dc->openMenuCount + -1].menu != menu)) {
+        Menu_LoseFocusDueToOpen(localClientNum,dc,menu);
+        Menus_SetupOpenMenu(localClientNum,dc,dc->menuStack[dc->openMenuCount + -1].menu);
       }
       return;
     }
-    uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_2->Menus[local_8]->window);
+    uVar3 = Window_GetDynamicFlags(dc->contextIndex,&dc->Menus[i]->window);
     if (((uVar3 & 2) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1cd5,0,
                                  "%s"), !bVar2)) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -8781,71 +8967,73 @@ void __cdecl Menus_Open(int param_1,UiContext *param_2,menuDef_t *param_3)
 
 // 007662A0  Menus_OpenByName  (ui/ui_shared.cpp:7419)
 
-int __cdecl Menus_OpenByName(int param_1,UiContext *param_2,char *param_3)
+int __cdecl Menus_OpenByName(int localClientNum,UiContext *dc,char *p)
 
 {
-  menuDef_t *pmVar1;
+  menuDef_t *menu;
+  menuDef_t *pMenu;
   
-  pmVar1 = Menus_FindByName(param_2,param_3);
-  if (pmVar1 == (menuDef_t *)0x0) {
+  menu = Menus_FindByName(dc,p);
+  if (menu == (menuDef_t *)0x0) {
     Com_DPrintf(0xd,"Could not find menu \'%s\'\n");
   }
   else {
-    param_2->enableSlideAndFadeEffectForMenu = true;
-    Menus_Open(param_1,param_2,pmVar1);
+    dc->enableSlideAndFadeEffectForMenu = true;
+    Menus_Open(localClientNum,dc,menu);
   }
-  return (uint)(pmVar1 != (menuDef_t *)0x0);
+  return (uint)(menu != (menuDef_t *)0x0);
 }
 
 
 // 00766300  Menus_OpenImmediateByName  (ui/ui_shared.cpp:7436)
 
-int __cdecl Menus_OpenImmediateByName(int param_1,UiContext *param_2,char *param_3)
+int __cdecl Menus_OpenImmediateByName(int localClientNum,UiContext *dc,char *p)
 
 {
-  menuDef_t *pmVar1;
+  menuDef_t *menu;
+  menuDef_t *pMenu;
   
-  pmVar1 = Menus_FindByName(param_2,param_3);
-  if (pmVar1 == (menuDef_t *)0x0) {
+  menu = Menus_FindByName(dc,p);
+  if (menu == (menuDef_t *)0x0) {
     Com_DPrintf(0xd,"Could not find menu \'%s\'\n");
   }
   else {
-    param_2->enableSlideAndFadeEffectForMenu = false;
-    Menus_Open(param_1,param_2,pmVar1);
+    dc->enableSlideAndFadeEffectForMenu = false;
+    Menus_Open(localClientNum,dc,menu);
   }
-  return (uint)(pmVar1 != (menuDef_t *)0x0);
+  return (uint)(menu != (menuDef_t *)0x0);
 }
 
 
 // 00766360  Menus_SetupOpenMenu  (ui/ui_shared.cpp:7452)
 
-void __cdecl Menus_SetupOpenMenu(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menus_SetupOpenMenu(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   int iVar1;
   itemDef_s local_120;
   
-  Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,6);
-  Menu_CallOnFocusDueToOpen(param_1,param_2,param_3);
-  iVar1 = Menu_GetCursorItem(param_2->contextIndex,param_3);
+  Window_AddDynamicFlags(dc->contextIndex,&menu->window,6);
+  Menu_CallOnFocusDueToOpen(localClientNum,dc,menu);
+  iVar1 = Menu_GetCursorItem(dc->contextIndex,menu);
   if (iVar1 == -1) {
-    Menu_SetNextCursorItem(param_1,param_2,param_3,0,0);
+    Menu_SetNextCursorItem(localClientNum,dc,menu,0,0);
   }
-  if (param_3->onEvent != (GenericEventHandler *)0x0) {
-    local_120.parent = param_3;
-    local_120.onEvent = param_3->onEvent;
-    Item_RunEventScript(param_1,param_2,&local_120,"onOpen");
+  if (menu->onEvent != (GenericEventHandler *)0x0) {
+    local_120.parent = menu;
+    local_120.onEvent = menu->onEvent;
+    Item_RunEventScript(localClientNum,dc,&local_120,"onOpen");
   }
-  if (param_2->isCursorVisible != 0) {
+  if (dc->isCursorVisible != 0) {
     mouseLocationX = -0x80000000;
     mouseLocationY = -0x80000000;
     iVar1 = Sys_Milliseconds();
     mouseTimeUntilReadyToMove = iVar1 + 500;
   }
-  if (param_3->soundName != (char *)0x0) {
-    iVar1 = CL_LocalClientIsInGame(param_1);
+  if (menu->soundName != (char *)0x0) {
+    iVar1 = CL_LocalClientIsInGame(localClientNum);
     if (iVar1 == 0) {
-      UI_PlaySound(param_2->contextIndex,param_3->soundName);
+      UI_PlaySound(dc->contextIndex,menu->soundName);
     }
   }
   return;
@@ -8854,13 +9042,13 @@ void __cdecl Menus_SetupOpenMenu(int param_1,UiContext *param_2,menuDef_t *param
 
 // 007668D0  Menus_PrintAllLoadedMenus  (ui/ui_shared.cpp:7492)
 
-void __cdecl Menus_PrintAllLoadedMenus(UiContext *param_1)
+void __cdecl Menus_PrintAllLoadedMenus(UiContext *dc)
 
 {
-  int local_8;
+  int i;
   
   Com_Printf(0x10,"Currently loaded UI menus (CG menus not included):\n");
-  for (local_8 = 0; local_8 < param_1->menuCount; local_8 = local_8 + 1) {
+  for (i = 0; i < dc->menuCount; i = i + 1) {
     Com_Printf(0x10,"%i. %s\n");
   }
   Com_Printf(0x10,"\n%i menus total\n");
@@ -8870,69 +9058,67 @@ void __cdecl Menus_PrintAllLoadedMenus(UiContext *param_1)
 
 // 0076B5C0  Display_VisibleMenuCount  (ui/ui_shared.cpp:7509)
 
-int __cdecl Display_VisibleMenuCount(UiContext *param_1)
+int __cdecl Display_VisibleMenuCount(UiContext *dc)
 
 {
   uint uVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < param_1->menuCount; local_c = local_c + 1) {
-    uVar1 = Window_GetDynamicFlags(param_1->contextIndex,&param_1->Menus[local_c]->window);
+  count = 0;
+  for (i = 0; i < dc->menuCount; i = i + 1) {
+    uVar1 = Window_GetDynamicFlags(dc->contextIndex,&dc->Menus[i]->window);
     if ((uVar1 & 0x4004) != 0) {
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 0076B430  Menus_HandleOOBClick  (ui/ui_shared.cpp:7527)
 
-void __cdecl
-Menus_HandleOOBClick(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int param_5)
+void __cdecl Menus_HandleOOBClick(int localClientNum,UiContext *dc,menuDef_t *menu,int key,int down)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  if ((param_3 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1d6b,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_3 != (menuDef_t *)0x0) {
-    if ((param_5 != 0) && (((param_3->window).staticFlags & 0x2000000U) != 0)) {
-      Menus_Close(param_1,param_2,param_3);
+  if (menu != (menuDef_t *)0x0) {
+    if ((down != 0) && (((menu->window).staticFlags & 0x2000000U) != 0)) {
+      Menus_Close(localClientNum,dc,menu);
     }
-    Menu_ClearFocus(param_1,param_2,param_3);
-    local_8 = param_2->openMenuCount;
+    Menu_ClearFocus(localClientNum,dc,menu);
+    i = dc->openMenuCount;
     do {
-      iVar4 = local_8;
-      local_8 = iVar4 + -1;
-      if (local_8 < 0) goto LAB_0076b594;
-      iVar3 = Menu_OverActiveItem(param_2->contextIndex,param_2->menuStack[iVar4 + -1].menu,
-                                  (param_2->cursor).x,(param_2->cursor).y);
+      iVar4 = i;
+      i = iVar4 + -1;
+      if (i < 0) goto LAB_0076b594;
+      iVar3 = Menu_OverActiveItem(dc->contextIndex,dc->menuStack[iVar4 + -1].menu,(dc->cursor).x,
+                                  (dc->cursor).y);
     } while (iVar3 == 0);
-    iVar3 = param_2->openMenuCount;
-    while (local_c = iVar3 + -1, -1 < local_c) {
-      Window_RemoveDynamicFlags
-                (param_2->contextIndex,&(param_2->menuStack[iVar3 + -1].menu)->window,2);
-      iVar3 = local_c;
+    iVar3 = dc->openMenuCount;
+    while (j = iVar3 + -1, -1 < j) {
+      Window_RemoveDynamicFlags(dc->contextIndex,&(dc->menuStack[iVar3 + -1].menu)->window,2);
+      iVar3 = j;
     }
-    Window_AddDynamicFlags(param_2->contextIndex,&(param_2->menuStack[iVar4 + -1].menu)->window,6);
-    Menu_HandleKey(0,param_2,param_2->menuStack[iVar4 + -1].menu,param_4,param_5);
+    Window_AddDynamicFlags(dc->contextIndex,&(dc->menuStack[iVar4 + -1].menu)->window,6);
+    Menu_HandleKey(0,dc,dc->menuStack[iVar4 + -1].menu,key,down);
 LAB_0076b594:
-    iVar4 = Display_VisibleMenuCount(param_2);
+    iVar4 = Display_VisibleMenuCount(dc);
     if (iVar4 == 0) {
-      UI_Pause(param_1,0);
+      UI_Pause(localClientNum,0);
     }
   }
   return;
@@ -8941,11 +9127,12 @@ LAB_0076b594:
 
 // 0076B630  Item_CorrectedTextRect  (ui/ui_shared.cpp:7570)
 
-rectDef_s * __cdecl Item_CorrectedTextRect(int param_1,itemDef_s *param_2)
+rectDef_s * __cdecl Item_CorrectedTextRect(int contextIndex,itemDef_s *item)
 
 {
   int iVar1;
   rectDef_s *prVar2;
+  rectDef_s *textRect;
   
   rect.x = 0.0;
   rect.y = 0.0;
@@ -8953,9 +9140,9 @@ rectDef_s * __cdecl Item_CorrectedTextRect(int param_1,itemDef_s *param_2)
   rect.h = 0.0;
   rect.horzAlign = 0;
   rect.vertAlign = 0;
-  iVar1 = Item_IsTextDefType(param_2);
+  iVar1 = Item_IsTextDefType(item);
   if (iVar1 == 0) {
-    prVar2 = Item_GetNonTextRect(param_1,param_2);
+    prVar2 = Item_GetNonTextRect(contextIndex,item);
     rect.x = prVar2->x;
     rect.y = prVar2->y;
     rect.w = prVar2->w;
@@ -8964,7 +9151,7 @@ rectDef_s * __cdecl Item_CorrectedTextRect(int param_1,itemDef_s *param_2)
     rect.vertAlign = prVar2->vertAlign;
   }
   else {
-    prVar2 = Item_GetTextRect(param_1,param_2);
+    prVar2 = Item_GetTextRect(contextIndex,item);
     rect.x = prVar2->x;
     rect.y = prVar2->y;
     rect.w = prVar2->w;
@@ -8981,41 +9168,39 @@ rectDef_s * __cdecl Item_CorrectedTextRect(int param_1,itemDef_s *param_2)
 
 // 00766950  Menu_CheckOnKey  (ui/ui_shared.cpp:7596)
 
-int __cdecl Menu_CheckOnKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4)
+int __cdecl Menu_CheckOnKey(int localClientNum,UiContext *dc,menuDef_t *menu,int key)
 
 {
-  itemDef_s *piVar1;
-  bool bVar2;
-  int iVar3;
-  focusItemDef_s *pfVar4;
+  itemDef_s *item;
+  bool bVar1;
+  int iVar2;
+  focusItemDef_s *pfVar3;
   int local_12c;
   itemDef_s local_128;
   ItemKeyHandler *local_14;
   
-  local_14 = param_3->onKey;
+  local_14 = menu->onKey;
   while( true ) {
     if (local_14 == (ItemKeyHandler *)0x0) {
       local_12c = 0;
       do {
-        if (param_3->itemCount <= local_12c) {
+        if (menu->itemCount <= local_12c) {
           return 0;
         }
-        piVar1 = param_3->items[local_12c];
-        iVar3 = Item_IsFocusDefType(piVar1);
-        if (((((iVar3 != 0) &&
-              (bVar2 = Window_IsVisible(param_2->contextIndex,&piVar1->window), bVar2)) &&
-             ((bVar2 = Window_HasFocus(param_2->contextIndex,&piVar1->window), bVar2 ||
-              (((piVar1->window).staticFlags & 0x100000U) != 0)))) &&
-            (iVar3 = Item_IsVisible(param_1,param_2->contextIndex,piVar1), iVar3 != 0)) &&
-           ((((piVar1->dvarFlags & 3U) == 0 ||
-             (iVar3 = Item_EnableShowViaDvar(piVar1,1), iVar3 != 0)) &&
-            (pfVar4 = Item_GetFocusItemDef(param_3->items[local_12c]),
-            pfVar4 != (focusItemDef_s *)0x0)))) {
-          for (local_14 = pfVar4->onKey; local_14 != (ItemKeyHandler *)0x0;
+        item = menu->items[local_12c];
+        iVar2 = Item_IsFocusDefType(item);
+        if (((((iVar2 != 0) && (bVar1 = Window_IsVisible(dc->contextIndex,&item->window), bVar1)) &&
+             ((bVar1 = Window_HasFocus(dc->contextIndex,&item->window), bVar1 ||
+              (((item->window).staticFlags & 0x100000U) != 0)))) &&
+            (iVar2 = Item_IsVisible(localClientNum,dc->contextIndex,item), iVar2 != 0)) &&
+           ((((item->dvarFlags & 3U) == 0 || (iVar2 = Item_EnableShowViaDvar(item,1), iVar2 != 0))
+            && (pfVar3 = Item_GetFocusItemDef(menu->items[local_12c]),
+               pfVar3 != (focusItemDef_s *)0x0)))) {
+          for (local_14 = pfVar3->onKey; local_14 != (ItemKeyHandler *)0x0;
               local_14 = local_14->next) {
-            if (local_14->key == param_4) {
-              local_128.parent = param_3;
-              Item_RunSingleEventScript(param_1,param_2,&local_128,local_14->keyScript);
+            if (local_14->key == key) {
+              local_128.parent = menu;
+              Item_RunSingleEventScript(localClientNum,dc,&local_128,local_14->keyScript);
               return 1;
             }
           }
@@ -9023,32 +9208,33 @@ int __cdecl Menu_CheckOnKey(int param_1,UiContext *param_2,menuDef_t *param_3,in
         local_12c = local_12c + 1;
       } while( true );
     }
-    if ((local_14->key == -1) || (local_14->key == param_4)) break;
+    if ((local_14->key == -1) || (local_14->key == key)) break;
     local_14 = local_14->next;
   }
-  local_128.parent = param_3;
-  Item_RunSingleEventScript(param_1,param_2,&local_128,local_14->keyScript);
+  local_128.parent = menu;
+  Item_RunSingleEventScript(localClientNum,dc,&local_128,local_14->keyScript);
   return 1;
 }
 
 
 // 0076B790  Menu_ItemsAreAnimating  (ui/ui_shared.cpp:7651)
 
-bool __cdecl Menu_ItemsAreAnimating(int param_1,UiContext *param_2,menuDef_t *param_3)
+bool __cdecl Menu_ItemsAreAnimating(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   itemDef_s *piVar1;
-  int local_8;
+  itemDef_s *nextItem;
+  int menuIndex;
   
-  local_8 = 0;
+  menuIndex = 0;
   while( true ) {
-    if (param_3->itemCount <= local_8) {
+    if (menu->itemCount <= menuIndex) {
       return false;
     }
-    piVar1 = param_3->items[local_8];
+    piVar1 = menu->items[menuIndex];
     if (((piVar1->type == 0) && (piVar1->animInfo != (UIAnimInfo *)0x0)) &&
        (piVar1->animInfo->animating != 0)) break;
-    local_8 = local_8 + 1;
+    menuIndex = menuIndex + 1;
   }
   return true;
 }
@@ -9056,8 +9242,7 @@ bool __cdecl Menu_ItemsAreAnimating(int param_1,UiContext *param_2,menuDef_t *pa
 
 // 00766B70  Menu_HandleKey  (ui/ui_shared.cpp:7665)
 
-void __cdecl
-Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int param_5)
+void __cdecl Menu_HandleKey(int localClientNum,UiContext *dc,menuDef_t *menu,int key,int down)
 
 {
   code *pcVar1;
@@ -9066,8 +9251,8 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
   int iVar4;
   rectDef_s *prVar5;
   float fVar6;
-  char *pcVar7;
-  float fVar8;
+  char *buffer;
+  float fVar7;
   rectDef_s local_15c;
   listBoxDef_s *local_144;
   itemDef_s local_140;
@@ -9082,64 +9267,62 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
   local_14 = (itemDef_s *)0x0;
   local_18 = (itemDef_s *)0x0;
   local_1c = 0;
-  uVar3 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
-  if ((((uVar3 & 0xe2000) == 0) && (bVar2 = Menu_ItemsAreAnimating(param_1,param_2,param_3), !bVar2)
-      ) && (local_1c == 0)) {
+  uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
+  if ((((uVar3 & 0xe2000) == 0) && (bVar2 = Menu_ItemsAreAnimating(localClientNum,dc,menu), !bVar2))
+     && (local_1c == 0)) {
     local_1c = 1;
-    if ((g_waitingForKey == 0) || (param_5 == 0)) {
-      if ((g_editingField != 0) && (param_5 != 0)) {
-        iVar4 = Item_TextField_HandleKey(param_1,param_2,g_editItem,param_4);
+    if ((g_waitingForKey == 0) || (down == 0)) {
+      if ((g_editingField != 0) && (down != 0)) {
+        iVar4 = Item_TextField_HandleKey(localClientNum,dc,g_editItem,key);
         if (iVar4 == 0) {
           g_editingField = 0;
           g_editItem = (itemDef_s *)0x0;
           return;
         }
-        if (((param_4 != 200) && (param_4 != 0xc9)) && (param_4 != 0xca)) {
+        if (((key != 200) && (key != 0xc9)) && (key != 0xca)) {
           return;
         }
         g_editingField = 0;
         g_editItem = (itemDef_s *)0x0;
-        Display_MouseMove(0,param_2);
+        Display_MouseMove(0,dc);
       }
-      if (param_3 != (menuDef_t *)0x0) {
-        if ((((param_5 == 0) || ((param_4 & 0x400U) != 0)) ||
-            (local_20 = Key_GetBinding(param_2->contextIndex,param_4,0), local_20 == (char *)0x0))
-           || (((param_3->allowedBinding == (char *)0x0 ||
-                (iVar4 = I_stricmp(local_20,param_3->allowedBinding), iVar4 != 0)) &&
-               (iVar4 = I_stricmp(local_20,"screenshotJpeg"), iVar4 != 0)))) {
-          if (((param_5 != 0) &&
-              (local_24 = (param_3->window).staticFlags, (local_24 & 0x1000000) == 0)) &&
-             (param_3->fullScreen == 0)) {
-            fVar8 = (param_2->cursor).y;
-            fVar6 = (param_2->cursor).x;
-            prVar5 = Window_GetRect(&param_3->window);
-            iVar4 = Rect_ContainsPoint(param_2->contextIndex,prVar5,fVar6,fVar8);
+      if (menu != (menuDef_t *)0x0) {
+        if ((((down == 0) || ((key & 0x400U) != 0)) ||
+            (local_20 = Key_GetBinding(dc->contextIndex,key,0), local_20 == (char *)0x0)) ||
+           (((menu->allowedBinding == (char *)0x0 ||
+             (iVar4 = I_stricmp(local_20,menu->allowedBinding), iVar4 != 0)) &&
+            (iVar4 = I_stricmp(local_20,"screenshotJpeg"), iVar4 != 0)))) {
+          if (((down != 0) && (local_24 = (menu->window).staticFlags, (local_24 & 0x1000000) == 0))
+             && (menu->fullScreen == 0)) {
+            fVar7 = (dc->cursor).y;
+            fVar6 = (dc->cursor).x;
+            prVar5 = Window_GetRect(&menu->window);
+            iVar4 = Rect_ContainsPoint(dc->contextIndex,prVar5,fVar6,fVar7);
             if (((iVar4 == 0) && (inHandleKey == 0)) &&
-               ((param_4 == 200 || ((param_4 == 0xc9 || (param_4 == 0xca)))))) {
+               ((key == 200 || ((key == 0xc9 || (key == 0xca)))))) {
               inHandleKey = 1;
-              Menus_HandleOOBClick(param_1,param_2,param_3,param_4,param_5);
+              Menus_HandleOOBClick(localClientNum,dc,menu,key,down);
               inHandleKey = 0;
               return;
             }
           }
-          for (local_28 = 0; local_28 < param_3->itemCount; local_28 = local_28 + 1) {
-            iVar4 = Item_IsVisible(param_1,param_2->contextIndex,param_3->items[local_28]);
+          for (local_28 = 0; local_28 < menu->itemCount; local_28 = local_28 + 1) {
+            iVar4 = Item_IsVisible(localClientNum,dc->contextIndex,menu->items[local_28]);
             if ((iVar4 != 0) &&
-               (bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->items[local_28]->window),
-               bVar2)) {
-              local_18 = param_3->items[local_28];
+               (bVar2 = Window_HasFocus(dc->contextIndex,&menu->items[local_28]->window), bVar2)) {
+              local_18 = menu->items[local_28];
             }
           }
           if (((local_18 == (itemDef_s *)0x0) ||
-              (iVar4 = Item_HandleKey(param_1,param_2,local_18,param_4,param_5), iVar4 == 0)) ||
+              (iVar4 = Item_HandleKey(localClientNum,dc,local_18,key,down), iVar4 == 0)) ||
              (iVar4 = Dvar_GetInt("ui_choice_noaction"), iVar4 != 0)) {
-            if (((param_5 != 0) &&
-                (((param_4 < 1 || (0xff < param_4)) ||
-                 (iVar4 = Menu_CheckOnKey(param_1,param_2,param_3,param_4), iVar4 == 0)))) &&
-               (((param_4 != 0xcd && (param_4 != 0xce)) ||
+            if (((down != 0) &&
+                (((key < 1 || (0xff < key)) ||
+                 (iVar4 = Menu_CheckOnKey(localClientNum,dc,menu,key), iVar4 == 0)))) &&
+               (((key != 0xcd && (key != 0xce)) ||
                 ((local_18 != (itemDef_s *)0x0 && (local_18->type == 4)))))) {
-              local_2c = param_4 + -1;
-              switch(param_4) {
+              local_2c = key + -1;
+              switch(key) {
               case 1:
               case 0xd:
               case 0xe:
@@ -9149,34 +9332,34 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
                   bVar2 = Item_IsTextField(local_18);
                   if (bVar2) {
                     ((((((local_18->typeData).textDef)->textTypeData).focusItemDef)->focusTypeData).
-                    listBox)->cursorPos[param_2->contextIndex] = 0;
+                    listBox)->cursorPos[dc->contextIndex] = 0;
                     g_editingField = 1;
                     g_editItem = local_18;
-                    Key_SetOverstrikeMode(param_1,1);
+                    Key_SetOverstrikeMode(localClientNum,1);
                   }
                   else {
-                    Item_Action(param_1,param_2,local_18);
+                    Item_Action(localClientNum,dc,local_18);
                   }
                 }
                 break;
               case 2:
               case 0xf:
               case 0x1b:
-                if ((g_waitingForKey == 0) && (param_3->onEvent != (GenericEventHandler *)0x0)) {
-                  local_140.parent = param_3;
-                  local_140.onEvent = param_3->onEvent;
-                  Item_RunEventScript(param_1,param_2,&local_140,"onESC");
+                if ((g_waitingForKey == 0) && (menu->onEvent != (GenericEventHandler *)0x0)) {
+                  local_140.parent = menu;
+                  local_140.onEvent = menu->onEvent;
+                  Item_RunEventScript(localClientNum,dc,&local_140,"onESC");
                 }
                 break;
               case 0x9a:
               case 0xb7:
               case 0xce:
-                Menu_SetPrevCursorItem(param_1,param_2,param_3,1);
+                Menu_SetPrevCursorItem(localClientNum,dc,menu,1);
                 break;
               case 0x9b:
               case 0xbd:
               case 0xcd:
-                Menu_SetNextCursorItem(param_1,param_2,param_3,0,1);
+                Menu_SetNextCursorItem(localClientNum,dc,menu,0,1);
                 break;
               case 0xb1:
                 iVar4 = Dvar_GetInt("developer");
@@ -9187,51 +9370,49 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
               case 0xb2:
                 iVar4 = Dvar_GetInt("developer");
                 if (iVar4 != 0) {
-                  Cbuf_AddText(param_1,"screenshot\n");
+                  Cbuf_AddText(localClientNum,"screenshot\n");
                 }
                 break;
               case 200:
               case 0xc9:
                 if (local_18 != (itemDef_s *)0x0) {
                   if (local_18->type == 1) {
-                    fVar8 = (param_2->cursor).y;
-                    fVar6 = (param_2->cursor).x;
-                    prVar5 = Item_CorrectedTextRect(param_2->contextIndex,local_18);
-                    iVar4 = Rect_ContainsPoint(param_2->contextIndex,prVar5,fVar6,fVar8);
+                    fVar7 = (dc->cursor).y;
+                    fVar6 = (dc->cursor).x;
+                    prVar5 = Item_CorrectedTextRect(dc->contextIndex,local_18);
+                    iVar4 = Rect_ContainsPoint(dc->contextIndex,prVar5,fVar6,fVar7);
                     if (iVar4 != 0) {
-                      Item_Action(param_1,param_2,local_18);
+                      Item_Action(localClientNum,dc,local_18);
                     }
                   }
                   else {
-                    fVar8 = (param_2->cursor).y;
-                    fVar6 = (param_2->cursor).x;
+                    fVar7 = (dc->cursor).y;
+                    fVar6 = (dc->cursor).x;
                     prVar5 = Window_GetRect(&local_18->window);
-                    iVar4 = Rect_ContainsPoint(param_2->contextIndex,prVar5,fVar6,fVar8);
+                    iVar4 = Rect_ContainsPoint(dc->contextIndex,prVar5,fVar6,fVar7);
                     if (iVar4 == 0) {
                       bVar2 = Item_IsModal(local_18);
                       if (bVar2) {
-                        for (local_28 = 0; local_28 < param_3->itemCount; local_28 = local_28 + 1) {
-                          iVar4 = Item_IsVisible(param_1,param_2->contextIndex,
-                                                 param_3->items[local_28]);
+                        for (local_28 = 0; local_28 < menu->itemCount; local_28 = local_28 + 1) {
+                          iVar4 = Item_IsVisible(localClientNum,dc->contextIndex,
+                                                 menu->items[local_28]);
                           if (((iVar4 != 0) &&
                               (uVar3 = Window_GetDynamicFlags
-                                                 (param_2->contextIndex,
-                                                  &param_3->items[local_28]->window),
+                                                 (dc->contextIndex,&menu->items[local_28]->window),
                               (uVar3 & 1) != 0)) &&
-                             (((param_3->items[local_28]->window).staticFlags & 0x100000U) == 0)) {
-                            local_14 = param_3->items[local_28];
+                             (((menu->items[local_28]->window).staticFlags & 0x100000U) == 0)) {
+                            local_14 = menu->items[local_28];
                           }
                         }
                         if (((local_14 == (itemDef_s *)0x0) ||
                             (((local_14->window).staticFlags & 0x100000U) != 0)) ||
-                           (bVar2 = Window_IsVisible(param_2->contextIndex,&local_14->window),
-                           !bVar2)) {
-                          Item_LoseFocus(param_2->contextIndex,param_2,local_18);
+                           (bVar2 = Window_IsVisible(dc->contextIndex,&local_14->window), !bVar2)) {
+                          Item_LoseFocus(dc->contextIndex,dc,local_18);
                         }
                         else if (local_14->type == 4) {
-                          Item_SetFocus(param_1,param_2,local_14,(local_14->window).rect.x,
+                          Item_SetFocus(localClientNum,dc,local_14,(local_14->window).rect.x,
                                         (local_14->window).rect.y);
-                          Item_ListBox_HandleKey(param_1,param_2,local_14,param_4,param_5,0);
+                          Item_ListBox_HandleKey(localClientNum,dc,local_14,key,down,0);
                         }
                         else if ((((local_14->window).group == (char *)0x0) ||
                                  (*(local_14->window).group == '\0')) ||
@@ -9239,19 +9420,19 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
                                  ((*(local_18->window).group == '\0' ||
                                   (iVar4 = I_strcmp((local_18->window).group,
                                                     (local_14->window).group), iVar4 != 0)))))) {
-                          Item_SetFocus(param_1,param_2,local_14,(local_14->window).rect.x,
+                          Item_SetFocus(localClientNum,dc,local_14,(local_14->window).rect.x,
                                         (local_14->window).rect.y);
-                          Item_Action(param_1,param_2,local_14);
+                          Item_Action(localClientNum,dc,local_14);
                         }
                         else {
-                          Item_Action(param_1,param_2,local_14);
+                          Item_Action(localClientNum,dc,local_14);
                         }
                       }
                     }
                     else {
                       bVar2 = Item_IsTextField(local_18);
                       if (bVar2) {
-                        Item_TextField_BeginEdit(param_1,param_2->contextIndex,local_18);
+                        Item_TextField_BeginEdit(localClientNum,dc->contextIndex,local_18);
                       }
                       else if (local_18->type == 4) {
                         local_144 = Item_GetListBoxDef(local_18);
@@ -9265,7 +9446,7 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
                         }
                         if ((local_144->noScrollBars == 0) &&
                            (bVar2 = Item_ListBox_RequiresScroll
-                                              (param_1,param_2->contextIndex,local_18), bVar2)) {
+                                              (localClientNum,dc->contextIndex,local_18), bVar2)) {
                           prVar5 = Window_GetRect(&local_18->window);
                           local_15c.x = prVar5->x;
                           local_15c.y = prVar5->y;
@@ -9273,18 +9454,18 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
                           local_15c.horzAlign = prVar5->horzAlign;
                           local_15c.vertAlign = prVar5->vertAlign;
                           local_15c.w = prVar5->w - 14.0;
-                          iVar4 = Rect_ContainsPoint(param_2->contextIndex,&local_15c,
-                                                     (param_2->cursor).x,(param_2->cursor).y);
+                          iVar4 = Rect_ContainsPoint(dc->contextIndex,&local_15c,(dc->cursor).x,
+                                                     (dc->cursor).y);
                           if (iVar4 != 0) {
-                            Item_Action(param_1,param_2,local_18);
+                            Item_Action(localClientNum,dc,local_18);
                           }
                         }
                         else {
-                          Item_Action(param_1,param_2,local_18);
+                          Item_Action(localClientNum,dc,local_18);
                         }
                       }
                       else {
-                        Item_Action(param_1,param_2,local_18);
+                        Item_Action(localClientNum,dc,local_18);
                       }
                     }
                   }
@@ -9293,18 +9474,18 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
             }
           }
           else {
-            Item_Action(param_1,param_2,local_18);
+            Item_Action(localClientNum,dc,local_18);
           }
         }
         else {
-          pcVar7 = local_20;
-          iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-          Cbuf_ExecuteBuffer(param_2->contextIndex,iVar4,pcVar7);
+          buffer = local_20;
+          iVar4 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cbuf_ExecuteBuffer(dc->contextIndex,iVar4,buffer);
         }
       }
     }
     else {
-      Item_Bind_HandleKey(param_1,param_2,g_bindItem,param_4,param_5);
+      Item_Bind_HandleKey(localClientNum,dc,g_bindItem,key,down);
     }
   }
   return;
@@ -9313,32 +9494,33 @@ Menu_HandleKey(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int
 
 // 00771760  ToWindowCoords  (ui/ui_shared.cpp:8071)
 
-void __cdecl ToWindowCoords(float *param_1,float *param_2,windowDef_t *param_3)
+void __cdecl ToWindowCoords(float *x,float *y,windowDef_t *window)
 
 {
   rectDef_s *prVar1;
+  rectDef_s *rect;
   
-  prVar1 = Window_GetRect(param_3);
-  *param_1 = *param_1 + prVar1->x;
-  *param_2 = *param_2 + prVar1->y;
+  prVar1 = Window_GetRect(window);
+  *x = *x + prVar1->x;
+  *y = *y + prVar1->y;
   return;
 }
 
 
 // 007713F0  Item_GetFont  (ui/ui_shared.cpp:8081)
 
-Font_s * __cdecl Item_GetFont(int param_1,itemDef_s *param_2)
+Font_s * __cdecl Item_GetFont(int contextIndex,itemDef_s *item)
 
 {
   Font_s *pFVar1;
   
-  if ((param_2->typeData).textDef == (textDef_s *)0x0) {
-    pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0,0.55);
+  if ((item->typeData).textDef == (textDef_s *)0x0) {
+    pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),0,0.55);
   }
   else {
-    pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                              ((param_2->typeData).textDef)->fontEnum,
-                              ((param_2->typeData).textDef)->textscale);
+    pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                              ((item->typeData).textDef)->fontEnum,
+                              ((item->typeData).textDef)->textscale);
   }
   return pFVar1;
 }
@@ -9346,85 +9528,89 @@ Font_s * __cdecl Item_GetFont(int param_1,itemDef_s *param_2)
 
 // 00771460  Item_SetTextExtents  (ui/ui_shared.cpp:8091)
 
-void __cdecl Item_SetTextExtents(int param_1,itemDef_s *param_2,char *param_3)
+void __cdecl Item_SetTextExtents(int contextIndex,itemDef_s *item,char *text)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   rectDef_s *prVar4;
-  Font_s *pFVar5;
-  int iVar6;
-  char local_44;
-  float local_38;
-  rectDef_s local_2c;
-  textDef_s *local_14;
-  char *local_10;
-  char local_9;
-  uint local_8;
+  Font_s *font_00;
+  int iVar5;
+  bool local_44;
+  Font_s *font;
+  bool isOwnerDraw;
+  float xAdj;
+  rectDef_s *origTextRect;
+  bool alwaysUpdate;
+  rectDef_s newRect;
+  textDef_s *textDefPtr;
+  char *dvarString;
+  bool isDvarField;
+  int xAlignMode;
   
-  local_14 = Item_GetTextDef(param_2);
-  if ((param_3 == (char *)0x0) &&
+  textDefPtr = Item_GetTextDef(item);
+  if ((text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1fa7,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = local_14->textAlignMode & 3;
-  bVar2 = param_2->type == 6;
-  if ((bVar2) || (param_2->dvar == (char *)0x0)) {
-    local_44 = '\0';
+  xAlignMode = textDefPtr->textAlignMode & 3;
+  bVar2 = item->type == 6;
+  if ((bVar2) || (item->dvar == (char *)0x0)) {
+    local_44 = false;
   }
   else {
-    local_44 = '\x01';
+    local_44 = true;
   }
-  local_9 = local_44;
-  if ((local_8 == 0) || ((!bVar2 && (local_44 == '\0')))) {
+  isDvarField = local_44;
+  if ((xAlignMode == 0) || ((!bVar2 && (local_44 == false)))) {
     bVar3 = false;
   }
   else {
     bVar3 = true;
   }
-  if ((bVar3) || (prVar4 = Item_GetTextRect(param_1,param_2), prVar4->w == 0.0)) {
-    pFVar5 = Item_GetFont(param_1,param_2);
-    local_2c.x = local_14->textalignx;
-    local_2c.y = local_14->textaligny;
-    iVar6 = UI_TextWidth(param_3,0,pFVar5,local_14->textscale);
-    local_2c.w = (float)iVar6;
-    iVar6 = UI_TextHeight(pFVar5,local_14->textscale);
-    local_2c.h = (float)iVar6;
-    local_2c.horzAlign = (param_2->window).rect.horzAlign;
-    local_2c.vertAlign = (param_2->window).rect.vertAlign;
-    if (local_8 != 0) {
-      if (((local_8 != 2) && (local_8 != 1)) &&
+  if ((bVar3) || (prVar4 = Item_GetTextRect(contextIndex,item), prVar4->w == 0.0)) {
+    font_00 = Item_GetFont(contextIndex,item);
+    newRect.x = textDefPtr->textalignx;
+    newRect.y = textDefPtr->textaligny;
+    iVar5 = UI_TextWidth(text,0,font_00,textDefPtr->textscale);
+    newRect.w = (float)iVar5;
+    iVar5 = UI_TextHeight(font_00,textDefPtr->textscale);
+    newRect.h = (float)iVar5;
+    newRect.horzAlign = (item->window).rect.horzAlign;
+    newRect.vertAlign = (item->window).rect.vertAlign;
+    if (xAlignMode != 0) {
+      if (((xAlignMode != 2) && (xAlignMode != 1)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x1fc0,0,
                                    "%s\n\t(xAlignMode) = %i"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      iVar6 = UI_TextWidth(param_3,0,pFVar5,local_14->textscale);
-      local_38 = (param_2->window).rect.w - (float)iVar6;
+      iVar5 = UI_TextWidth(text,0,font_00,textDefPtr->textscale);
+      xAdj = (item->window).rect.w - (float)iVar5;
       if (bVar2) {
-        iVar6 = UI_OwnerDrawWidth((param_2->window).ownerDraw,pFVar5,local_14->textscale);
-        local_38 = local_38 - (float)iVar6;
+        iVar5 = UI_OwnerDrawWidth((item->window).ownerDraw,font_00,textDefPtr->textscale);
+        xAdj = xAdj - (float)iVar5;
       }
-      else if ((local_9 != '\0') && (bVar2 = Item_IsTextField(param_2), bVar2)) {
-        local_10 = Dvar_GetVariantString(param_2->dvar);
-        iVar6 = UI_TextWidth(local_10,0,pFVar5,local_14->textscale);
-        local_38 = local_38 - (float)iVar6;
+      else if ((isDvarField != false) && (bVar2 = Item_IsTextField(item), bVar2)) {
+        dvarString = Dvar_GetVariantString(item->dvar);
+        iVar5 = UI_TextWidth(dvarString,0,font_00,textDefPtr->textscale);
+        xAdj = xAdj - (float)iVar5;
       }
-      if (local_8 == 1) {
-        local_38 = local_38 * 0.5;
+      if (xAlignMode == 1) {
+        xAdj = xAdj * 0.5;
       }
-      local_2c.x = local_2c.x + local_38;
+      newRect.x = newRect.x + xAdj;
     }
-    local_2c.y = Item_GetTextPlacementY
-                           (local_14->textAlignMode & 0xc,local_2c.y,(param_2->window).rect.h,
-                            local_2c.h);
-    ToWindowCoords(&local_2c.x,&local_2c.y,&param_2->window);
-    Item_SetTextRect(param_1,param_2,&local_2c);
+    newRect.y = Item_GetTextPlacementY
+                          (textDefPtr->textAlignMode & 0xc,newRect.y,(item->window).rect.h,newRect.h
+                          );
+    ToWindowCoords(&newRect.x,&newRect.y,&item->window);
+    Item_SetTextRect(contextIndex,item,&newRect);
   }
   return;
 }
@@ -9432,74 +9618,77 @@ void __cdecl Item_SetTextExtents(int param_1,itemDef_s *param_2,char *param_3)
 
 // 0076B800  Item_TextColor  (ui/ui_shared.cpp:8154)
 
-void __cdecl Item_TextColor(UiContext *param_1,itemDef_s *param_2,float (*param_3) [4])
+/* WARNING: Variable defined which should be unmapped: var */
+
+void __cdecl Item_TextColor(UiContext *dc,itemDef_s *item,float (*newColor) [4])
 
 {
   bool bVar1;
-  UILocalVarContext *pUVar2;
-  UILocalVar *pUVar3;
-  int iVar4;
-  double dVar5;
-  char *pcVar6;
-  float local_20;
+  UILocalVarContext *context;
+  UILocalVar *pUVar2;
+  int iVar3;
+  double dVar4;
+  char *name;
+  UILocalVar *var;
+  float lowLight;
   float local_1c;
   float local_18;
   float local_14;
-  menuDef_t *local_10;
-  textDef_s *local_c;
-  int local_8;
+  menuDef_t *parent;
+  textDef_s *textDefPtr;
+  int flags;
   
-  local_10 = param_2->parent;
-  local_c = Item_GetTextDef(param_2);
-  pcVar6 = "ui_choicegroup";
-  pUVar2 = UI_UIContext_GetLocalVarsContext(param_1->contextIndex);
-  pUVar3 = UILocalVar_Find(pUVar2,pcVar6);
-  local_8 = Window_GetDynamicFlags(param_1->contextIndex,&param_2->window);
-  Fade(&local_8,(param_2->window).foreColor + 3,local_10->fadeClamp,&(param_2->window).nextTime,
-       local_10->fadeCycle,1,local_10->fadeAmount,local_10->fadeInAmount,param_1);
-  Window_SetDynamicFlags(param_1->contextIndex,&param_2->window,local_8);
-  bVar1 = Window_HasFocus(param_1->contextIndex,&param_2->window);
+  parent = item->parent;
+  textDefPtr = Item_GetTextDef(item);
+  name = "ui_choicegroup";
+  context = UI_UIContext_GetLocalVarsContext(dc->contextIndex);
+  pUVar2 = UILocalVar_Find(context,name);
+  flags = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+  Fade(&flags,(item->window).foreColor + 3,parent->fadeClamp,&(item->window).nextTime,
+       parent->fadeCycle,1,parent->fadeAmount,parent->fadeInAmount,dc);
+  Window_SetDynamicFlags(dc->contextIndex,&item->window,flags);
+  bVar1 = Window_HasFocus(dc->contextIndex,&item->window);
   if (bVar1) {
-    if (((pUVar3 == (UILocalVar *)0x0) ||
-        (iVar4 = I_strcmp((pUVar3->u).string,"popmenu"), iVar4 != 0)) ||
-       (((param_2->parent->window).staticFlags & 0x1000000U) != 0)) {
-      (*param_3)[0] = (param_2->window).foreColor[0];
-      (*param_3)[1] = (param_2->window).foreColor[1];
-      (*param_3)[2] = (param_2->window).foreColor[2];
-      (*param_3)[3] = (param_2->window).foreColor[3];
+    if (((pUVar2 == (UILocalVar *)0x0) ||
+        (iVar3 = I_strcmp((pUVar2->u).string,"popmenu"), iVar3 != 0)) ||
+       (((item->parent->window).staticFlags & 0x1000000U) != 0)) {
+      (*newColor)[0] = (item->window).foreColor[0];
+      (*newColor)[1] = (item->window).foreColor[1];
+      (*newColor)[2] = (item->window).foreColor[2];
+      (*newColor)[3] = (item->window).foreColor[3];
     }
     else {
-      (*param_3)[0] = (param_2->window).foreColor[0];
-      (*param_3)[1] = (param_2->window).foreColor[1];
-      (*param_3)[2] = (param_2->window).foreColor[2];
-      (*param_3)[3] = (param_2->window).foreColor[3];
+      (*newColor)[0] = (item->window).foreColor[0];
+      (*newColor)[1] = (item->window).foreColor[1];
+      (*newColor)[2] = (item->window).foreColor[2];
+      (*newColor)[3] = (item->window).foreColor[3];
     }
   }
-  else if ((local_c->textStyle == 1) &&
-          (((int)(param_1->realTime + (param_1->realTime >> 0x1f & 0xffU)) >> 8 & 1U) == 0)) {
-    local_20 = (param_2->window).foreColor[0] * 0.8;
-    local_1c = (param_2->window).foreColor[1] * 0.8;
-    local_18 = (param_2->window).foreColor[2] * 0.8;
-    local_14 = (param_2->window).foreColor[3] * 0.8;
-    iVar4 = param_1->realTime / 0x4b;
-    dVar5 = (double)iVar4;
-    __libm_sse2_sin((double)CONCAT44(pUVar3,(float)iVar4));
-    LerpColor((param_2->window).foreColor,&local_20,*param_3,(float)dVar5 * 0.5 + 0.5);
+  else if ((textDefPtr->textStyle == 1) &&
+          (((int)(dc->realTime + (dc->realTime >> 0x1f & 0xffU)) >> 8 & 1U) == 0)) {
+    lowLight = (item->window).foreColor[0] * 0.8;
+    local_1c = (item->window).foreColor[1] * 0.8;
+    local_18 = (item->window).foreColor[2] * 0.8;
+    local_14 = (item->window).foreColor[3] * 0.8;
+    iVar3 = dc->realTime / 0x4b;
+    dVar4 = (double)iVar3;
+    __libm_sse2_sin((double)CONCAT44(pUVar2,(float)iVar3));
+    LerpColor((item->window).foreColor,&lowLight,*newColor,(float)dVar4 * 0.5 + 0.5);
   }
   else {
-    (*param_3)[0] = (param_2->window).foreColor[0];
-    (*param_3)[1] = (param_2->window).foreColor[1];
-    (*param_3)[2] = (param_2->window).foreColor[2];
-    (*param_3)[3] = (param_2->window).foreColor[3];
+    (*newColor)[0] = (item->window).foreColor[0];
+    (*newColor)[1] = (item->window).foreColor[1];
+    (*newColor)[2] = (item->window).foreColor[2];
+    (*newColor)[3] = (item->window).foreColor[3];
   }
-  if ((((param_2->enableDvar != (char *)0x0) && (*param_2->enableDvar != '\0')) &&
-      ((param_2->dvarTest != (char *)0x0 &&
-       ((*param_2->dvarTest != '\0' && ((param_2->dvarFlags & 3U) != 0)))))) &&
-     (iVar4 = Item_EnableShowViaDvar(param_2,1), iVar4 == 0)) {
-    (*param_3)[0] = local_10->disableColor[0];
-    (*param_3)[1] = local_10->disableColor[1];
-    (*param_3)[2] = local_10->disableColor[2];
-    (*param_3)[3] = local_10->disableColor[3];
+  if ((((item->enableDvar != (char *)0x0) && (*item->enableDvar != '\0')) &&
+      ((item->dvarTest != (char *)0x0 &&
+       ((*item->dvarTest != '\0' && ((item->dvarFlags & 3U) != 0)))))) &&
+     (iVar3 = Item_EnableShowViaDvar(item,1), iVar3 == 0)) {
+    (*newColor)[0] = parent->disableColor[0];
+    (*newColor)[1] = parent->disableColor[1];
+    (*newColor)[2] = parent->disableColor[2];
+    (*newColor)[3] = parent->disableColor[3];
   }
   return;
 }
@@ -9509,31 +9698,31 @@ void __cdecl Item_TextColor(UiContext *param_1,itemDef_s *param_2,float (*param_
 
 int __cdecl
 UI_PickWordWrapLineWidth
-          (char *param_1,int param_2,Font_s *param_3,float param_4,int param_5,int param_6,
-          int param_7)
+          (char *text,int bufferSize,Font_s *font,float normalizedScale,int targetLineCount,
+          int widthGuess,int widthLimit)
 
 {
   int iVar1;
-  int local_c;
-  byte *local_8;
+  int lineCount;
+  char *p;
   
   while( true ) {
-    if (param_7 <= param_6) {
-      return param_7;
+    if (widthLimit <= widthGuess) {
+      return widthLimit;
     }
-    local_8 = (byte *)param_1;
-    local_c = 0;
-    while (*local_8 != 0) {
-      local_8 = (byte *)R_TextLineWrapPosition((char *)local_8,param_2,param_6,param_3,param_4);
-      while (iVar1 = isspace((uint)*local_8), iVar1 != 0) {
-        local_8 = local_8 + 1;
+    p = text;
+    lineCount = 0;
+    while (*p != '\0') {
+      p = R_TextLineWrapPosition(p,bufferSize,widthGuess,font,normalizedScale);
+      while (iVar1 = isspace((uint)(byte)*p), iVar1 != 0) {
+        p = p + 1;
       }
-      local_c = local_c + 1;
+      lineCount = lineCount + 1;
     }
-    if (local_c == param_5) break;
-    param_6 = param_6 + 8;
+    if (lineCount == targetLineCount) break;
+    widthGuess = widthGuess + 8;
   }
-  return param_6;
+  return widthGuess;
 }
 
 
@@ -9542,120 +9731,126 @@ UI_PickWordWrapLineWidth
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-_DrawWrappedText(ScreenPlacement *param_1,char *param_2,rectDef_s *param_3,Font_s *param_4,
-                float param_5,float param_6,float param_7,float *param_8,int param_9,int param_10,
-                rectDef_s *param_11,bool param_12,float *param_13,bool param_14)
+_DrawWrappedText(ScreenPlacement *scrPlace,char *text,rectDef_s *rect,Font_s *font,float x,float y,
+                float scale,float *color,int style,int textAlignMode,rectDef_s *textRect,
+                bool subtitle,float *subtitleGlowColor,bool cinematic)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int extraout_EAX;
-  int extraout_EAX_00;
+  int targetLineCount;
+  int widthGuess;
   char *pcVar5;
-  ulong uVar6;
+  ulong count;
+  float fVar6;
+  float normalizedScale_00;
   float fVar7;
-  float fVar8;
-  float fVar9;
-  ulonglong uVar10;
-  float local_438;
-  int local_420;
-  uchar local_414 [1028];
+  ulonglong uVar8;
+  float lineX;
+  int numLines;
+  float height;
+  float normalizedScale;
+  float textWidth;
+  int len;
+  int targetLineWidth;
+  char *wrapPosition;
+  float lineWidth;
+  uchar buff [1028];
   uint local_10;
-  uint local_c;
-  byte *local_8;
+  int xAlignMode;
+  char *p;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == param_11) &&
+  if ((rect == textRect) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2036,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_11->x = param_5 + param_3->w;
-  param_11->y = param_6;
-  param_11->w = 0.0;
-  param_11->h = 0.0;
-  fVar8 = R_NormalizedTextScale(param_4,param_7);
-  iVar3 = UI_TextHeight(param_4,param_7);
-  iVar4 = UI_TextWidth(param_2,0,param_4,param_7);
-  local_c = param_10 & 3;
-  uVar10 = CONCAT44(param_5,param_10) & 0xffffffff00000003;
-  fVar9 = Item_GetTextPlacementX((int)uVar10,(float)(uVar10 >> 0x20),param_3->w,0.0);
-  uVar10 = CONCAT44(param_6,param_10) & 0xffffffff0000000c;
-  param_6 = Item_GetTextPlacementY((int)uVar10,(float)(uVar10 >> 0x20),param_3->h,(float)iVar3);
-  if (((param_3->w == 0.0) || ((float)iVar4 < param_3->w || (float)iVar4 == param_3->w)) ||
-     (local_c != 1)) {
-    local_420 = (int)param_3->w;
+  textRect->x = x + rect->w;
+  textRect->y = y;
+  textRect->w = 0.0;
+  textRect->h = 0.0;
+  normalizedScale_00 = R_NormalizedTextScale(font,scale);
+  iVar3 = UI_TextHeight(font,scale);
+  iVar4 = UI_TextWidth(text,0,font,scale);
+  xAlignMode = textAlignMode & 3;
+  uVar8 = CONCAT44(x,textAlignMode) & 0xffffffff00000003;
+  fVar7 = Item_GetTextPlacementX((int)uVar8,(float)(uVar8 >> 0x20),rect->w,0.0);
+  uVar8 = CONCAT44(y,textAlignMode) & 0xffffffff0000000c;
+  y = Item_GetTextPlacementY((int)uVar8,(float)(uVar8 >> 0x20),rect->h,(float)iVar3);
+  if (((rect->w == 0.0) || ((float)iVar4 < rect->w || (float)iVar4 == rect->w)) || (xAlignMode != 1)
+     ) {
+    targetLineWidth = (int)rect->w;
   }
   else {
     ceil();
     _ftol2_sse();
     ceil();
     _ftol2_sse();
-    local_420 = UI_PickWordWrapLineWidth
-                          (param_2,0x400,param_4,fVar8,extraout_EAX,extraout_EAX_00,(int)param_3->w)
-    ;
+    targetLineWidth =
+         UI_PickWordWrapLineWidth
+                   (text,0x400,font,normalizedScale_00,targetLineCount,widthGuess,(int)rect->w);
   }
-  local_8 = (byte *)param_2;
+  p = text;
   do {
-    if (*local_8 == 0) {
+    if (*p == '\0') {
 LAB_0076c240:
-      param_11->h = param_6 - param_11->y;
+      textRect->h = y - textRect->y;
       return;
     }
-    pcVar5 = R_TextLineWrapPosition((char *)local_8,0x400,local_420,param_4,fVar8);
-    uVar6 = (int)pcVar5 - (int)local_8;
-    if ((int)uVar6 < 1) {
+    pcVar5 = R_TextLineWrapPosition(p,0x400,targetLineWidth,font,normalizedScale_00);
+    count = (int)pcVar5 - (int)p;
+    if ((int)count < 1) {
       Com_Printf(0xd,"WARNING: Error wrapping text: %s\n");
       goto LAB_0076c240;
     }
-    memcpy(local_414,local_8,uVar6);
-    local_414[uVar6] = '\0';
-    iVar4 = UI_TextWidth((char *)local_414,0,param_4,param_7);
-    fVar7 = (float)iVar4;
-    if (local_c == 1) {
-      local_438 = fVar9 - fVar7 * 0.5;
+    memcpy(buff,(uchar *)p,count);
+    buff[count] = '\0';
+    iVar4 = UI_TextWidth((char *)buff,0,font,scale);
+    fVar6 = (float)iVar4;
+    if (xAlignMode == 1) {
+      lineX = fVar7 - fVar6 * 0.5;
     }
     else {
-      local_438 = fVar9;
-      if (local_c == 2) {
-        local_438 = fVar9 - fVar7;
+      lineX = fVar7;
+      if (xAlignMode == 2) {
+        lineX = fVar7 - fVar6;
       }
     }
-    if (param_12) {
-      if ((param_13 == (float *)0x0) &&
+    if (subtitle) {
+      if ((subtitleGlowColor == (float *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x206f,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      UI_DrawTextWithGlow(param_1,(char *)local_414,0x7fffffff,param_4,local_438,param_6,
-                          param_3->horzAlign,param_3->vertAlign,param_7,param_8,param_9,param_13,
-                          true,param_14);
+      UI_DrawTextWithGlow(scrPlace,(char *)buff,0x7fffffff,font,lineX,y,rect->horzAlign,
+                          rect->vertAlign,scale,color,style,subtitleGlowColor,true,cinematic);
     }
     else {
-      UI_DrawText(param_1,(char *)local_414,0x7fffffff,param_4,local_438,param_6,param_3->horzAlign,
-                  param_3->vertAlign,param_7,param_8,param_9);
+      UI_DrawText(scrPlace,(char *)buff,0x7fffffff,font,lineX,y,rect->horzAlign,rect->vertAlign,
+                  scale,color,style);
     }
-    param_6 = param_6 + (float)iVar3;
-    if (param_11->w <= fVar7 && fVar7 != param_11->w) {
-      if ((param_11->x < local_438) &&
+    y = y + (float)iVar3;
+    if (textRect->w <= fVar6 && fVar6 != textRect->w) {
+      if ((textRect->x < lineX) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x207a,0,
                                    "textRect->x >= lineX\n\t%g, %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      param_11->x = local_438;
-      param_11->w = fVar7;
+      textRect->x = lineX;
+      textRect->w = fVar6;
     }
-    local_8 = local_8 + uVar6;
-    while ((*local_8 != 10 && (iVar4 = isspace((uint)*local_8), iVar4 != 0))) {
-      local_8 = local_8 + 1;
+    p = p + count;
+    while ((*p != '\n' && (iVar4 = isspace((uint)(byte)*p), iVar4 != 0))) {
+      p = p + 1;
     }
   } while( true );
 }
@@ -9664,13 +9859,12 @@ LAB_0076c240:
 // 0076BCF0  UI_DrawWrappedText  (ui/ui_shared.cpp:8446)
 
 void __cdecl
-UI_DrawWrappedText(ScreenPlacement *param_1,char *param_2,rectDef_s *param_3,Font_s *param_4,
-                  float param_5,float param_6,float param_7,float *param_8,int param_9,int param_10,
-                  rectDef_s *param_11)
+UI_DrawWrappedText(ScreenPlacement *scrPlace,char *text,rectDef_s *rect,Font_s *font,float x,float y
+                  ,float scale,float *color,int style,int textAlignMode,rectDef_s *textRect)
 
 {
-  _DrawWrappedText(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-                   param_11,false,(float *)0x0,false);
+  _DrawWrappedText(scrPlace,text,rect,font,x,y,scale,color,style,textAlignMode,textRect,false,
+                   (float *)0x0,false);
   return;
 }
 
@@ -9679,13 +9873,13 @@ UI_DrawWrappedText(ScreenPlacement *param_1,char *param_2,rectDef_s *param_3,Fon
 
 void __cdecl
 UI_DrawWrappedTextSubtitled
-          (ScreenPlacement *param_1,char *param_2,rectDef_s *param_3,Font_s *param_4,float param_5,
-          float param_6,float param_7,float *param_8,int param_9,int param_10,rectDef_s *param_11,
-          float *param_12,bool param_13)
+          (ScreenPlacement *scrPlace,char *text,rectDef_s *rect,Font_s *font,float x,float y,
+          float scale,float *color,int style,int textAlignMode,rectDef_s *textRect,
+          float *subtitleGlowColor,bool cinematic)
 
 {
-  _DrawWrappedText(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-                   param_11,true,param_12,param_13);
+  _DrawWrappedText(scrPlace,text,rect,font,x,y,scale,color,style,textAlignMode,textRect,true,
+                   subtitleGlowColor,cinematic);
   return;
 }
 
@@ -9694,26 +9888,28 @@ UI_DrawWrappedTextSubtitled
 
 void __cdecl
 Item_Text_AutoWrapped_Paint
-          (int param_1,itemDef_s *param_2,char *param_3,float *param_4,bool param_5,float *param_6,
-          bool param_7)
+          (int contextIndex,itemDef_s *item,char *text,float *color,bool subtitle,
+          float *subtitleGlowColor,bool cinematic)
 
 {
   code *pcVar1;
   bool bVar2;
   textDef_s *ptVar3;
-  Font_s *pFVar4;
-  float local_10;
-  float local_c;
-  rectDef_s *local_8;
+  Font_s *font_00;
+  Font_s *font;
+  textDef_s *textDefPtr;
+  float x;
+  float y;
+  rectDef_s *rect;
   
-  ptVar3 = Item_GetTextDef(param_2);
-  local_8 = Window_GetRect(&param_2->window);
-  pFVar4 = Item_GetFont(param_1,param_2);
-  local_10 = ptVar3->textalignx;
-  local_c = ptVar3->textaligny;
-  ToWindowCoords(&local_10,&local_c,&param_2->window);
-  if (param_5) {
-    if (param_6 == (float *)0x0) {
+  ptVar3 = Item_GetTextDef(item);
+  rect = Window_GetRect(&item->window);
+  font_00 = Item_GetFont(contextIndex,item);
+  x = ptVar3->textalignx;
+  y = ptVar3->textaligny;
+  ToWindowCoords(&x,&y,&item->window);
+  if (subtitle) {
+    if (subtitleGlowColor == (float *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x211b,0,"%s")
       ;
       if (!bVar2) {
@@ -9723,14 +9919,14 @@ Item_Text_AutoWrapped_Paint
       }
     }
     UI_DrawWrappedTextSubtitled
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,local_8,pFVar4,local_10,
-               local_c,ptVar3->textscale,param_4,ptVar3->textStyle,ptVar3->textAlignMode,
-               ptVar3->textRect + param_1,param_6,param_7);
+              ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,rect,font_00,x,y,
+               ptVar3->textscale,color,ptVar3->textStyle,ptVar3->textAlignMode,
+               ptVar3->textRect + contextIndex,subtitleGlowColor,cinematic);
   }
   else {
-    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,local_8,pFVar4,
-                       local_10,local_c,ptVar3->textscale,param_4,ptVar3->textStyle,
-                       ptVar3->textAlignMode,ptVar3->textRect + param_1);
+    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,rect,font_00,x,
+                       y,ptVar3->textscale,color,ptVar3->textStyle,ptVar3->textAlignMode,
+                       ptVar3->textRect + contextIndex);
   }
   return;
 }
@@ -9740,124 +9936,130 @@ Item_Text_AutoWrapped_Paint
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_Text_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_Text_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   float fVar1;
+  float w;
   float fVar2;
   float fVar3;
-  float fVar4;
-  bool bVar5;
-  textDef_s *ptVar6;
-  char *pcVar7;
-  int iVar8;
-  Font_s *pFVar9;
-  multiDef_s *pmVar10;
-  bool bVar11;
-  char *local_83c;
-  float local_828 [4];
-  rectDef_s *local_818;
-  char local_814 [1024];
-  rectDef_s *local_414;
-  bool local_40d;
-  char local_40c [1028];
+  bool bVar4;
+  textDef_s *ptVar5;
+  char *src;
+  int iVar6;
+  Font_s *font_00;
+  multiDef_s *pmVar7;
+  bool subtitle_00;
+  float arrowSize;
+  float rightArrowX;
+  float leftArrowX;
+  multiDef_s *multiPtr;
+  Font_s *font;
+  bool subtitle;
+  char *textPtr;
+  int staticFlags;
+  textDef_s *textDefPtr;
+  float glowAlpha;
+  bool drawArrows;
+  float color [4];
+  rectDef_s *rect;
+  char text [1024];
+  rectDef_s *textRect;
+  bool cinematic;
+  char textWithBinding [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  ptVar6 = Item_GetTextDef(param_3);
-  bVar11 = (ptVar6->itemFlags & 2U) != 0;
-  local_40d = (ptVar6->itemFlags & 2U) != 0;
-  if (bVar11) {
-    ptVar6->text = "NOT USING CINEMATIC_SUBTITLES";
+  ptVar5 = Item_GetTextDef(item);
+  subtitle_00 = (ptVar5->itemFlags & 2U) != 0;
+  cinematic = (ptVar5->itemFlags & 2U) != 0;
+  if (subtitle_00) {
+    ptVar5->text = "NOT USING CINEMATIC_SUBTITLES";
   }
-  if ((ptVar6 == (textDef_s *)0x0) || (ptVar6->text == (char *)0x0)) {
-    if ((ptVar6 == (textDef_s *)0x0) ||
-       ((ptVar6->textExpData == (textExp_s *)0x0 ||
-        ((ptVar6->textExpData->textExp).filename == (char *)0x0)))) {
-      if (param_3->dvar == (char *)0x0) {
+  if ((ptVar5 == (textDef_s *)0x0) || (ptVar5->text == (char *)0x0)) {
+    if ((ptVar5 == (textDef_s *)0x0) ||
+       ((ptVar5->textExpData == (textExp_s *)0x0 ||
+        ((ptVar5->textExpData->textExp).filename == (char *)0x0)))) {
+      if (item->dvar == (char *)0x0) {
         return;
       }
-      iVar8 = 0x400;
-      pcVar7 = Dvar_GetVariantString(param_3->dvar);
-      I_strncpyz(local_814,pcVar7,iVar8);
-      local_83c = local_814;
+      iVar6 = 0x400;
+      src = Dvar_GetVariantString(item->dvar);
+      I_strncpyz(text,src,iVar6);
+      textPtr = text;
     }
     else {
-      local_83c = GetExpressionResultString(param_1,param_3,&ptVar6->textExpData->textExp);
+      textPtr = GetExpressionResultString(localClientNum,item,&ptVar5->textExpData->textExp);
     }
   }
   else {
-    local_83c = ptVar6->text;
+    textPtr = ptVar5->text;
   }
-  if (*local_83c == '@') {
-    local_83c = UI_SafeTranslateString(local_83c + 1);
+  if (*textPtr == '@') {
+    textPtr = UI_SafeTranslateString(textPtr + 1);
   }
-  if (*local_83c != '\0') {
-    iVar8 = SEH_ReplaceDirectiveInStringWithBinding(param_1,local_83c,local_40c);
-    if (iVar8 != 0) {
-      local_83c = local_40c;
+  if (*textPtr != '\0') {
+    iVar6 = SEH_ReplaceDirectiveInStringWithBinding(localClientNum,textPtr,textWithBinding);
+    if (iVar6 != 0) {
+      textPtr = textWithBinding;
     }
-    Item_TextColor(param_2,param_3,&local_828);
-    Item_SetTextExtents(param_2->contextIndex,param_3,local_83c);
-    if (((param_3->window).staticFlags & 0x800000U) == 0) {
-      local_414 = Item_GetTextRect(param_2->contextIndex,param_3);
-      local_818 = Window_GetRect(&param_3->window);
-      pFVar9 = Item_GetFont(param_2->contextIndex,param_3);
-      fVar1 = (param_3->window).outlineColor[3];
-      bVar5 = false;
-      if ((param_3->type == 10) &&
-         (((param_3->window).dynamicFlags[param_2->contextIndex] & 2U) != 0)) {
-        pmVar10 = Item_GetMultiDef(param_3);
-        if ((pmVar10 != (multiDef_s *)0x0) && (pmVar10->actionOnEnterPressOnly == 0)) {
-          bVar5 = true;
+    Item_TextColor(dc,item,&color);
+    Item_SetTextExtents(dc->contextIndex,item,textPtr);
+    if (((item->window).staticFlags & 0x800000U) == 0) {
+      textRect = Item_GetTextRect(dc->contextIndex,item);
+      rect = Window_GetRect(&item->window);
+      font_00 = Item_GetFont(dc->contextIndex,item);
+      fVar1 = (item->window).outlineColor[3];
+      bVar4 = false;
+      if ((item->type == 10) && (((item->window).dynamicFlags[dc->contextIndex] & 2U) != 0)) {
+        pmVar7 = Item_GetMultiDef(item);
+        if ((pmVar7 != (multiDef_s *)0x0) && (pmVar7->actionOnEnterPressOnly == 0)) {
+          bVar4 = true;
         }
       }
-      else if ((param_3->type == 0xb) &&
-              (((param_3->window).dynamicFlags[param_2->contextIndex] & 2U) != 0)) {
-        bVar5 = true;
+      else if ((item->type == 0xb) && (((item->window).dynamicFlags[dc->contextIndex] & 2U) != 0)) {
+        bVar4 = true;
       }
-      if (bVar5) {
-        fVar2 = local_414->h;
-        fVar3 = local_414->x;
-        iVar8 = UI_TextWidth(local_83c,0x40,pFVar9,ptVar6->textscale);
-        fVar4 = local_414->x;
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),
-                         fVar3 - fVar2,local_414->y - fVar2,fVar2,fVar2,local_818->horzAlign,
-                         local_818->vertAlign,local_828,DAT_098b4b80);
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),
-                         (float)iVar8 + fVar4,local_414->y - fVar2,fVar2,fVar2,local_818->horzAlign,
-                         local_818->vertAlign,local_828,DAT_098b4b84);
+      if (bVar4) {
+        w = textRect->h;
+        fVar2 = textRect->x;
+        iVar6 = UI_TextWidth(textPtr,0x40,font_00,ptVar5->textscale);
+        fVar3 = textRect->x;
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),fVar2 - w,
+                         textRect->y - w,w,w,rect->horzAlign,rect->vertAlign,color,DAT_098b4b80);
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),
+                         (float)iVar6 + fVar3,textRect->y - w,w,w,rect->horzAlign,rect->vertAlign,
+                         color,DAT_098b4b84);
       }
-      if (bVar11) {
-        UI_DrawTextWithGlow((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),
-                            local_83c,0x7fffffff,pFVar9,local_414->x,local_414->y,
-                            local_818->horzAlign,local_818->vertAlign,ptVar6->textscale,local_828,
-                            ptVar6->textStyle,MY_SUBTITLE_GLOWCOLOR,bVar11,local_40d);
+      if (subtitle_00) {
+        UI_DrawTextWithGlow((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),textPtr,
+                            0x7fffffff,font_00,textRect->x,textRect->y,rect->horzAlign,
+                            rect->vertAlign,ptVar5->textscale,color,ptVar5->textStyle,
+                            MY_SUBTITLE_GLOWCOLOR,subtitle_00,cinematic);
       }
       else if (fVar1 == 0.0) {
-        if ((param_3->window).rotation == 0.0) {
-          UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),local_83c,
-                      0x7fffffff,pFVar9,local_414->x,local_414->y,local_818->horzAlign,
-                      local_818->vertAlign,ptVar6->textscale,local_828,ptVar6->textStyle);
+        if ((item->window).rotation == 0.0) {
+          UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),textPtr,
+                      0x7fffffff,font_00,textRect->x,textRect->y,rect->horzAlign,rect->vertAlign,
+                      ptVar5->textscale,color,ptVar5->textStyle);
         }
         else {
-          UI_DrawTextRotated((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),
-                             local_83c,0x7fffffff,pFVar9,local_414->x,local_414->y,
-                             local_818->horzAlign,local_818->vertAlign,ptVar6->textscale,local_828,
-                             ptVar6->textStyle,(param_3->window).rotation);
+          UI_DrawTextRotated((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),textPtr,
+                             0x7fffffff,font_00,textRect->x,textRect->y,rect->horzAlign,
+                             rect->vertAlign,ptVar5->textscale,color,ptVar5->textStyle,
+                             (item->window).rotation);
         }
       }
       else {
-        UI_DrawTextWithGlow((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),
-                            local_83c,0x7fffffff,pFVar9,local_414->x,local_414->y,
-                            local_818->horzAlign,local_818->vertAlign,ptVar6->textscale,local_828,
-                            ptVar6->textStyle,(param_3->window).outlineColor,bVar11,local_40d);
+        UI_DrawTextWithGlow((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),textPtr,
+                            0x7fffffff,font_00,textRect->x,textRect->y,rect->horzAlign,
+                            rect->vertAlign,ptVar5->textscale,color,ptVar5->textStyle,
+                            (item->window).outlineColor,subtitle_00,cinematic);
       }
     }
     else {
       Item_Text_AutoWrapped_Paint
-                (param_2->contextIndex,param_3,local_83c,local_828,bVar11,MY_SUBTITLE_GLOWCOLOR,
-                 local_40d);
+                (dc->contextIndex,item,textPtr,color,subtitle_00,MY_SUBTITLE_GLOWCOLOR,cinematic);
     }
   }
   return;
@@ -9868,105 +10070,106 @@ void __cdecl Item_Text_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_TextField_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_TextField_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   bool bVar1;
   editFieldDef_s *peVar2;
-  char *pcVar3;
-  int iVar4;
-  double dVar5;
+  char *src;
+  int iVar3;
+  double dVar4;
   undefined4 in_stack_fffffb98;
   undefined4 in_stack_fffffb9c;
-  float local_454;
+  char cursor;
+  editFieldDef_s *editPtr;
+  float lowLight;
   float local_450;
   float local_44c;
   float local_448;
-  Font_s *local_444;
-  int local_440;
-  menuDef_t *local_43c;
-  textDef_s *local_438;
-  char local_434 [1028];
+  Font_s *font;
+  int offset;
+  menuDef_t *parent;
+  textDef_s *textDefPtr;
+  char buff [1028];
   uint local_30;
-  int local_2c;
-  float local_28;
-  rectDef_s *local_24;
-  dvar_s *local_20;
-  char *local_1c;
-  rectDef_s *local_18;
-  float local_14;
+  int maxChars;
+  float x;
+  rectDef_s *rect;
+  dvar_s *dvar;
+  char *text;
+  rectDef_s *textRect;
+  float newColor;
   float local_10;
   float local_c;
   float local_8;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_43c = param_3->parent;
-  peVar2 = Item_GetEditFieldDef(param_3);
-  local_438 = Item_GetTextDef(param_3);
+  parent = item->parent;
+  peVar2 = Item_GetEditFieldDef(item);
+  textDefPtr = Item_GetTextDef(item);
   if (peVar2 != (editFieldDef_s *)0x0) {
-    Item_Text_Paint(param_1,param_2,param_3);
-    local_434[0] = '\0';
-    if (param_3->dvar != (char *)0x0) {
-      if (param_3->type == 0x1e) {
-        local_20 = Dvar_FindVar(param_3->dvar);
-        if ((local_20 != (dvar_s *)0x0) && (local_20->type == DVAR_TYPE_FLOAT)) {
-          Com_LocalizedFloatToString((local_20->current).value,local_434,0x400,2);
+    Item_Text_Paint(localClientNum,dc,item);
+    buff[0] = '\0';
+    if (item->dvar != (char *)0x0) {
+      if (item->type == 0x1e) {
+        dvar = Dvar_FindVar(item->dvar);
+        if ((dvar != (dvar_s *)0x0) && (dvar->type == DVAR_TYPE_FLOAT)) {
+          Com_LocalizedFloatToString((dvar->current).value,buff,0x400,2);
         }
       }
       else {
-        iVar4 = 0x400;
-        pcVar3 = Dvar_GetVariantString(param_3->dvar);
-        I_strncpyz(local_434,pcVar3,iVar4);
+        iVar3 = 0x400;
+        src = Dvar_GetVariantString(item->dvar);
+        I_strncpyz(buff,src,iVar3);
       }
     }
-    Item_SetTextExtents(param_2->contextIndex,param_3,local_434);
-    local_43c = param_3->parent;
-    bVar1 = Window_HasFocus(param_2->contextIndex,&param_3->window);
+    Item_SetTextExtents(dc->contextIndex,item,buff);
+    parent = item->parent;
+    bVar1 = Window_HasFocus(dc->contextIndex,&item->window);
     if (bVar1) {
-      local_454 = local_43c->focusColor[0] * 0.8;
-      local_450 = local_43c->focusColor[1] * 0.8;
-      local_44c = local_43c->focusColor[2] * 0.8;
-      local_448 = local_43c->focusColor[3] * 0.8;
-      dVar5 = (double)(param_2->realTime / 0x4b);
+      lowLight = parent->focusColor[0] * 0.8;
+      local_450 = parent->focusColor[1] * 0.8;
+      local_44c = parent->focusColor[2] * 0.8;
+      local_448 = parent->focusColor[3] * 0.8;
+      dVar4 = (double)(dc->realTime / 0x4b);
       __libm_sse2_sin((double)CONCAT44(in_stack_fffffb9c,in_stack_fffffb98));
-      LerpColor(local_43c->focusColor,&local_454,&local_14,(float)dVar5 * 0.5 + 0.5);
+      LerpColor(parent->focusColor,&lowLight,&newColor,(float)dVar4 * 0.5 + 0.5);
     }
     else {
-      local_14 = (param_3->window).foreColor[0];
-      local_10 = (param_3->window).foreColor[1];
-      local_c = (param_3->window).foreColor[2];
-      local_8 = (param_3->window).foreColor[3];
+      newColor = (item->window).foreColor[0];
+      local_10 = (item->window).foreColor[1];
+      local_c = (item->window).foreColor[2];
+      local_8 = (item->window).foreColor[3];
     }
-    if ((local_438->text == (char *)0x0) || (*local_438->text == '\0')) {
-      local_440 = 0;
+    if ((textDefPtr->text == (char *)0x0) || (*textDefPtr->text == '\0')) {
+      offset = 0;
     }
     else {
-      local_440 = 8;
+      offset = 8;
     }
-    local_18 = Item_GetTextRect(param_2->contextIndex,param_3);
-    local_28 = local_18->x + local_18->w + (float)local_440;
-    local_1c = local_434 + peVar2->paintOffset;
+    textRect = Item_GetTextRect(dc->contextIndex,item);
+    x = textRect->x + textRect->w + (float)offset;
+    text = buff + peVar2->paintOffset;
     if (peVar2->maxPaintChars == 0) {
-      local_2c = 0x7fffffff;
+      maxChars = 0x7fffffff;
     }
     else {
-      local_2c = peVar2->maxPaintChars;
+      maxChars = peVar2->maxPaintChars;
     }
-    local_444 = Item_GetFont(param_2->contextIndex,param_3);
-    if ((param_3 == g_editItem) && (g_editingField != 0)) {
-      iVar4 = Key_GetOverstrikeMode(param_2->contextIndex);
-      local_24 = Window_GetRect(&param_3->window);
+    font = Item_GetFont(dc->contextIndex,item);
+    if ((item == g_editItem) && (g_editingField != 0)) {
+      iVar3 = Key_GetOverstrikeMode(dc->contextIndex);
+      rect = Window_GetRect(&item->window);
       UI_DrawTextWithCursor
-                ((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),local_1c,local_2c
-                 ,local_444,local_28,local_18->y,local_24->horzAlign,local_24->vertAlign,
-                 local_438->textscale,&local_14,local_438->textStyle,
-                 peVar2->cursorPos[param_2->contextIndex] - peVar2->paintOffset,
-                 (-(iVar4 != 0) & 0xe3U) + 0x7c);
+                ((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),text,maxChars,font,x,
+                 textRect->y,rect->horzAlign,rect->vertAlign,textDefPtr->textscale,&newColor,
+                 textDefPtr->textStyle,peVar2->cursorPos[dc->contextIndex] - peVar2->paintOffset,
+                 (-(iVar3 != 0) & 0xe3U) + 0x7c);
     }
     else {
-      UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),local_1c,
-                  local_2c,local_444,local_28,local_18->y,local_18->horzAlign,local_18->vertAlign,
-                  local_438->textscale,&local_14,local_438->textStyle);
+      UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),text,maxChars,font,x,
+                  textRect->y,textRect->horzAlign,textRect->vertAlign,textDefPtr->textscale,
+                  &newColor,textDefPtr->textStyle);
     }
   }
   return;
@@ -9975,20 +10178,22 @@ void __cdecl Item_TextField_Paint(int param_1,UiContext *param_2,itemDef_s *para
 
 // 00771D50  Item_YesNo_Paint  (ui/ui_shared.cpp:8778)
 
-void __cdecl Item_YesNo_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_YesNo_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   textDef_s *ptVar1;
   char *pcVar2;
   double dVar3;
   float local_10;
+  textDef_s *textDefPtr;
+  float value;
   
-  ptVar1 = Item_GetTextDef(param_3);
-  if (param_3->dvar == (char *)0x0) {
+  ptVar1 = Item_GetTextDef(item);
+  if (item->dvar == (char *)0x0) {
     local_10 = 0.0;
   }
   else {
-    pcVar2 = Dvar_GetVariantString(param_3->dvar);
+    pcVar2 = Dvar_GetVariantString(item->dvar);
     dVar3 = atof(pcVar2);
     local_10 = (float)dVar3;
   }
@@ -10000,46 +10205,48 @@ void __cdecl Item_YesNo_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
     pcVar2 = UI_SafeTranslateString("EXE_YES");
     ptVar1->text = pcVar2;
   }
-  Item_Text_Paint(param_1,param_2,param_3);
+  Item_Text_Paint(localClientNum,dc,item);
   return;
 }
 
 
 // 00771E00  Item_Multi_Paint  (ui/ui_shared.cpp:8792)
 
-void __cdecl Item_Multi_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_Multi_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   textDef_s *ptVar1;
   char *pcVar2;
+  textDef_s *textDefPtr;
   
-  ptVar1 = Item_GetTextDef(param_3);
-  pcVar2 = Item_Multi_Setting(param_3);
+  ptVar1 = Item_GetTextDef(item);
+  pcVar2 = Item_Multi_Setting(item);
   ptVar1->text = pcVar2;
-  Item_Text_Paint(param_1,param_2,param_3);
+  Item_Text_Paint(localClientNum,dc,item);
   return;
 }
 
 
 // 00771F40  Item_DvarEnum_Paint  (ui/ui_shared.cpp:8801)
 
-void __cdecl Item_DvarEnum_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_DvarEnum_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   textDef_s *ptVar1;
   char *pcVar2;
+  textDef_s *textDefPtr;
   
-  ptVar1 = Item_GetTextDef(param_3);
-  pcVar2 = Item_DvarEnum_Setting(param_3);
+  ptVar1 = Item_GetTextDef(item);
+  pcVar2 = Item_DvarEnum_Setting(item);
   ptVar1->text = pcVar2;
-  Item_Text_Paint(param_1,param_2,param_3);
+  Item_Text_Paint(localClientNum,dc,item);
   return;
 }
 
 
 // 0076C8F0  GetPlatformCommand  (ui/ui_shared.cpp:8817)
 
-void __cdecl GetPlatformCommand(int param_1,char *param_2,char **param_3)
+void __cdecl GetPlatformCommand(int localClientNum,char *command,char **consoleCommand)
 
 {
   byte bVar1;
@@ -10066,7 +10273,7 @@ void __cdecl GetPlatformCommand(int param_1,char *param_2,char **param_3)
   
   if ((gpad_enabled == (dvar_s *)0x0) || ((gpad_enabled->current).enabled == false)) {
     local_8 = (byte *)0xc78638;
-    local_c = (byte *)param_2;
+    local_c = (byte *)command;
     do {
       bVar1 = *local_c;
       bVar4 = bVar1 < *local_8;
@@ -10085,14 +10292,14 @@ LAB_0076c956:
     local_14 = 0;
 LAB_0076c95e:
     if (local_14 == 0) {
-      *param_3 = "+toggleads_throw";
+      *consoleCommand = "+toggleads_throw";
       return;
     }
-    *param_3 = param_2;
+    *consoleCommand = command;
     return;
   }
   local_1c = (byte *)0xc879e8;
-  local_20 = (byte *)param_2;
+  local_20 = (byte *)command;
   do {
     bVar1 = *local_20;
     bVar4 = bVar1 < *local_1c;
@@ -10111,11 +10318,11 @@ LAB_0076c9cc:
   local_28 = 0;
 LAB_0076c9d4:
   if (local_28 == 0) {
-    *param_3 = "+usereload";
+    *consoleCommand = "+usereload";
     return;
   }
   local_30 = (byte *)0xc77e00;
-  local_34 = (byte *)param_2;
+  local_34 = (byte *)command;
   do {
     bVar1 = *local_34;
     bVar4 = bVar1 < *local_30;
@@ -10134,11 +10341,11 @@ LAB_0076ca38:
   local_3c = 0;
 LAB_0076ca40:
   if (local_3c == 0) {
-    *param_3 = "+usereload";
+    *consoleCommand = "+usereload";
     return;
   }
   local_44 = (byte *)0xc7c03c;
-  local_48 = (byte *)param_2;
+  local_48 = (byte *)command;
   do {
     bVar1 = *local_48;
     bVar4 = bVar1 < *local_44;
@@ -10157,11 +10364,11 @@ LAB_0076caa4:
   local_50 = 0;
 LAB_0076caac:
   if (local_50 == 0) {
-    *param_3 = "+holdbreath";
+    *consoleCommand = "+holdbreath";
     return;
   }
   pcVar5 = "buttons_charlie";
-  pGVar2 = GamerProfile_GetProfileSettings(param_1);
+  pGVar2 = GamerProfile_GetProfileSettings(localClientNum);
   iVar3 = I_strcmp(pGVar2->gpadButtonsConfig,pcVar5);
   if (iVar3 != 0) {
     pcVar6 = "buttons_nomad";
@@ -10175,7 +10382,7 @@ LAB_0076caac:
     }
   }
   local_58 = (byte *)0xc78638;
-  local_5c = (byte *)param_2;
+  local_5c = (byte *)command;
   do {
     bVar1 = *local_5c;
     bVar4 = bVar1 < *local_58;
@@ -10194,11 +10401,11 @@ LAB_0076cb6f:
   local_64 = 0;
 LAB_0076cb77:
   if (local_64 == 0) {
-    *param_3 = "+toggleads_throw";
+    *consoleCommand = "+toggleads_throw";
     return;
   }
 LAB_0076cb8e:
-  *param_3 = param_2;
+  *consoleCommand = command;
   return;
 }
 
@@ -10207,7 +10414,7 @@ LAB_0076cb8e:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl UI_GetSticksTranslatedString(int param_1,char *param_2,char *param_3)
+bool __cdecl UI_GetSticksTranslatedString(int localClientNum,char *command,char *keys)
 
 {
   bool bVar1;
@@ -10215,52 +10422,52 @@ bool __cdecl UI_GetSticksTranslatedString(int param_1,char *param_2,char *param_
   GamerSettingState *pGVar3;
   char *pcVar4;
   char *pcVar5;
-  char local_10c [64];
-  char local_cc [64];
-  char local_8c [64];
-  char local_4c [68];
+  char binding0 [64];
+  char binding1 [64];
+  char binding2 [64];
+  char binding3 [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = I_stricmp(param_2,"+movestick");
+  iVar2 = I_stricmp(command,"+movestick");
   if (iVar2 == 0) {
     bVar1 = Dvar_GetBool("gpad_enabled");
     if (bVar1) {
       pcVar4 = "thumbstick_default";
-      pGVar3 = GamerProfile_GetProfileSettings(param_1);
+      pGVar3 = GamerProfile_GetProfileSettings(localClientNum);
       iVar2 = I_strcmp(pGVar3->gpadSticksConfig,pcVar4);
       if (iVar2 != 0) {
         pcVar4 = "thumbstick_legacy";
-        pGVar3 = GamerProfile_GetProfileSettings(param_1);
+        pGVar3 = GamerProfile_GetProfileSettings(localClientNum);
         iVar2 = I_strcmp(pGVar3->gpadSticksConfig,pcVar4);
         if (iVar2 != 0) {
           iVar2 = 0x100;
           pcVar4 = UI_SafeTranslateString("PLATFORM_RIGHT_STICK");
-          I_strncpyz(param_3,pcVar4,iVar2);
+          I_strncpyz(keys,pcVar4,iVar2);
           return true;
         }
       }
       iVar2 = 0x100;
       pcVar4 = UI_SafeTranslateString("PLATFORM_LEFT_STICK");
-      I_strncpyz(param_3,pcVar4,iVar2);
+      I_strncpyz(keys,pcVar4,iVar2);
     }
     else {
-      UI_GetKeyBindingLocalizedString(param_1,"+forward",local_10c,0);
-      UI_GetKeyBindingLocalizedString(param_1,"+back",local_cc,0);
-      UI_GetKeyBindingLocalizedString(param_1,"+moveleft",local_8c,0);
-      UI_GetKeyBindingLocalizedString(param_1,"+moveright",local_4c,0);
+      UI_GetKeyBindingLocalizedString(localClientNum,"+forward",binding0,0);
+      UI_GetKeyBindingLocalizedString(localClientNum,"+back",binding1,0);
+      UI_GetKeyBindingLocalizedString(localClientNum,"+moveleft",binding2,0);
+      UI_GetKeyBindingLocalizedString(localClientNum,"+moveright",binding3,0);
       iVar2 = 0x100;
       pcVar4 = va("%s,%s,%s,%s");
-      I_strncpyz(param_3,pcVar4,iVar2);
+      I_strncpyz(keys,pcVar4,iVar2);
     }
     return true;
   }
-  iVar2 = I_stricmp(param_2,"+lookstick");
+  iVar2 = I_stricmp(command,"+lookstick");
   if (iVar2 != 0) {
-    iVar2 = I_stricmp(param_2,"+forward");
-    if (((((iVar2 == 0) || (iVar2 = I_stricmp(param_2,"+back"), iVar2 == 0)) ||
-         (iVar2 = I_stricmp(param_2,"+moveleft"), iVar2 == 0)) ||
-        (iVar2 = I_stricmp(param_2,"+moveright"), iVar2 == 0)) &&
+    iVar2 = I_stricmp(command,"+forward");
+    if (((((iVar2 == 0) || (iVar2 = I_stricmp(command,"+back"), iVar2 == 0)) ||
+         (iVar2 = I_stricmp(command,"+moveleft"), iVar2 == 0)) ||
+        (iVar2 = I_stricmp(command,"+moveright"), iVar2 == 0)) &&
        (bVar1 = Dvar_GetBool("gpad_enabled"), bVar1)) {
       pcVar5 = "thumbstick_default";
       pcVar4 = Dvar_GetString("gpad_sticksConfig");
@@ -10272,13 +10479,13 @@ bool __cdecl UI_GetSticksTranslatedString(int param_1,char *param_2,char *param_
         if (iVar2 != 0) {
           iVar2 = 0x100;
           pcVar4 = UI_SafeTranslateString("PLATFORM_RIGHT_STICK");
-          I_strncpyz(param_3,pcVar4,iVar2);
+          I_strncpyz(keys,pcVar4,iVar2);
           return true;
         }
       }
       iVar2 = 0x100;
       pcVar4 = UI_SafeTranslateString("PLATFORM_LEFT_STICK");
-      I_strncpyz(param_3,pcVar4,iVar2);
+      I_strncpyz(keys,pcVar4,iVar2);
       return true;
     }
     return false;
@@ -10295,18 +10502,18 @@ bool __cdecl UI_GetSticksTranslatedString(int param_1,char *param_2,char *param_
       if (iVar2 != 0) {
         iVar2 = 0x100;
         pcVar4 = UI_SafeTranslateString("PLATFORM_LEFT_STICK");
-        I_strncpyz(param_3,pcVar4,iVar2);
+        I_strncpyz(keys,pcVar4,iVar2);
         return true;
       }
     }
     iVar2 = 0x100;
     pcVar4 = UI_SafeTranslateString("PLATFORM_RIGHT_STICK");
-    I_strncpyz(param_3,pcVar4,iVar2);
+    I_strncpyz(keys,pcVar4,iVar2);
   }
   else {
     iVar2 = 0x100;
     pcVar4 = UI_SafeTranslateString("MENU_MOUSE_LOOK");
-    I_strncpyz(param_3,pcVar4,iVar2);
+    I_strncpyz(keys,pcVar4,iVar2);
   }
   return true;
 }
@@ -10316,170 +10523,169 @@ bool __cdecl UI_GetSticksTranslatedString(int param_1,char *param_2,char *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl UI_GetKeyBindingLocalizedString(int param_1,char *param_2,char *param_3,int param_4)
+int __cdecl UI_GetKeyBindingLocalizedString(int localClientNum,char *command,char *keys,int bindNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *src;
+  int iVar3;
   char *local_124;
-  char *local_114;
-  int local_110;
-  char local_10c [128];
+  char *consoleCmd;
+  int bindCount;
+  char bindings [128];
   char local_8c [128];
   uint local_c;
-  char *local_8;
+  char *conjunction;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((zombietron->current).enabled == false) {
-    GetPlatformCommand(param_1,param_2,&local_114);
+    GetPlatformCommand(localClientNum,command,&consoleCmd);
   }
   else {
-    local_114 = param_2;
+    consoleCmd = command;
   }
   if ((gpad_enabled == (dvar_s *)0x0) || ((gpad_enabled->current).enabled == false)) {
-    local_110 = CL_GetKeyBinding(param_1,param_2,&local_10c,(uint)(param_4 != 0));
-    if (local_110 == 0) {
-      local_110 = CL_GetKeyBinding(param_1,local_114,&local_10c,(uint)(param_4 != 0));
+    bindCount = CL_GetKeyBinding(localClientNum,command,&bindings,(uint)(bindNum != 0));
+    if (bindCount == 0) {
+      bindCount = CL_GetKeyBinding(localClientNum,consoleCmd,&bindings,(uint)(bindNum != 0));
     }
-    if ((local_110 == 0) && (param_4 == 0)) {
-      local_110 = CL_GetKeyBinding(param_1,local_114,&local_10c,1);
+    if ((bindCount == 0) && (bindNum == 0)) {
+      bindCount = CL_GetKeyBinding(localClientNum,consoleCmd,&bindings,1);
     }
   }
   else {
-    local_110 = CL_GetGamePadBinding(param_1,local_114,&local_10c,(uint)(param_4 != 0));
-    if ((local_110 == 0) && (param_4 == 0)) {
-      local_110 = CL_GetKeyBinding(param_1,local_114,&local_10c,1);
+    bindCount = CL_GetGamePadBinding(localClientNum,consoleCmd,&bindings,(uint)(bindNum != 0));
+    if ((bindCount == 0) && (bindNum == 0)) {
+      bindCount = CL_GetKeyBinding(localClientNum,consoleCmd,&bindings,1);
     }
   }
-  if (local_110 == 0) {
-    iVar4 = 0x100;
-    pcVar3 = UI_SafeTranslateString("KEY_UNBOUND");
-    I_strncpyz(param_3,pcVar3,iVar4);
+  if (bindCount == 0) {
+    iVar3 = 0x100;
+    src = UI_SafeTranslateString("KEY_UNBOUND");
+    I_strncpyz(keys,src,iVar3);
   }
-  else if (local_110 == 1) {
-    local_124 = SEH_StringEd_GetString(local_10c);
+  else if (bindCount == 1) {
+    local_124 = SEH_StringEd_GetString(bindings);
     if (local_124 == (char *)0x0) {
-      local_124 = local_10c;
+      local_124 = bindings;
     }
-    I_strncpyz(param_3,local_124,0x100);
+    I_strncpyz(keys,local_124,0x100);
   }
   else {
-    if ((local_110 != 2) &&
+    if ((bindCount != 2) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x230d,0,
                                  "%s\n\t(bindCount) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
-    SEH_StringEd_GetString(local_10c);
+    SEH_StringEd_GetString(bindings);
     SEH_StringEd_GetString(local_8c);
-    local_8 = UI_SafeTranslateString("KEY_OR");
-    Com_sprintf(param_3,0x100,"%s %s %s");
+    conjunction = UI_SafeTranslateString("KEY_OR");
+    Com_sprintf(keys,0x100,"%s %s %s");
   }
-  return local_110;
+  return bindCount;
 }
 
 
 // 007720C0  Item_Slider_Paint  (ui/ui_shared.cpp:8986)
 
-void __cdecl Item_Slider_Paint(UiContext *param_1,itemDef_s *param_2)
+void __cdecl Item_Slider_Paint(UiContext *dc,itemDef_s *item)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  double dVar4;
-  float fVar5;
-  int local_70;
-  float local_6c;
+  char *nptr;
+  int iVar2;
+  double dVar3;
+  float fVar4;
+  int blockNumber;
+  float lowLight;
   float local_68;
   float local_64;
   float local_60;
-  float local_5c;
-  ScreenPlacement *local_58;
-  float local_54;
-  menuDef_t *local_50;
-  float local_4c;
-  textDef_s *local_48;
-  float local_44 [9];
-  float local_20;
-  rectDef_s *local_1c;
-  float local_18;
-  float local_14;
+  float thumbPositionX;
+  ScreenPlacement *scrPlace;
+  float sliderBlockPosition;
+  menuDef_t *parent;
+  float BLOCK_EPSILON;
+  textDef_s *textDefPtr;
+  float sliderColorEmpty [8];
+  float x;
+  float y;
+  rectDef_s *rect;
+  float value;
+  float newColor;
   float local_10;
   float local_c;
   float local_8;
   
-  local_44[4] = 0.96;
-  local_44[5] = 0.58;
-  local_44[6] = 0.11;
-  local_44[7] = 1.0;
-  local_44[0] = 0.96;
-  local_44[1] = 0.58;
-  local_44[2] = 0.11;
-  local_44[3] = 0.2;
-  local_50 = param_2->parent;
-  local_48 = Item_GetTextDef(param_2);
-  local_4c = 2.0;
-  if (param_2->dvar == (char *)0x0) {
-    fVar5 = 0.0;
+  sliderColorEmpty[4] = 0.96;
+  sliderColorEmpty[5] = 0.58;
+  sliderColorEmpty[6] = 0.11;
+  sliderColorEmpty[7] = 1.0;
+  sliderColorEmpty[0] = 0.96;
+  sliderColorEmpty[1] = 0.58;
+  sliderColorEmpty[2] = 0.11;
+  sliderColorEmpty[3] = 0.2;
+  parent = item->parent;
+  textDefPtr = Item_GetTextDef(item);
+  BLOCK_EPSILON = 2.0;
+  if (item->dvar == (char *)0x0) {
+    fVar4 = 0.0;
   }
   else {
-    pcVar2 = Dvar_GetVariantString(param_2->dvar);
-    dVar4 = atof(pcVar2);
-    fVar5 = (float)dVar4;
+    nptr = Dvar_GetVariantString(item->dvar);
+    dVar3 = atof(nptr);
+    fVar4 = (float)dVar3;
   }
-  local_18 = fVar5;
-  bVar1 = Window_HasFocus(param_1->contextIndex,&param_2->window);
+  value = fVar4;
+  bVar1 = Window_HasFocus(dc->contextIndex,&item->window);
   if (bVar1) {
-    local_6c = local_50->focusColor[0] * 0.8;
-    local_68 = local_50->focusColor[1] * 0.8;
-    local_64 = local_50->focusColor[2] * 0.8;
-    local_60 = local_50->focusColor[3] * 0.8;
-    iVar3 = param_1->realTime / 0x4b;
-    dVar4 = (double)iVar3;
-    __libm_sse2_sin((double)CONCAT44((float)iVar3,fVar5));
-    LerpColor(local_50->focusColor,&local_6c,&local_14,(float)dVar4 * 0.5 + 0.5);
+    lowLight = parent->focusColor[0] * 0.8;
+    local_68 = parent->focusColor[1] * 0.8;
+    local_64 = parent->focusColor[2] * 0.8;
+    local_60 = parent->focusColor[3] * 0.8;
+    iVar2 = dc->realTime / 0x4b;
+    dVar3 = (double)iVar2;
+    __libm_sse2_sin((double)CONCAT44((float)iVar2,fVar4));
+    LerpColor(parent->focusColor,&lowLight,&newColor,(float)dVar3 * 0.5 + 0.5);
   }
   else {
-    local_14 = (param_2->window).foreColor[0];
-    local_10 = (param_2->window).foreColor[1];
-    local_c = (param_2->window).foreColor[2];
-    local_8 = (param_2->window).foreColor[3];
+    newColor = (item->window).foreColor[0];
+    local_10 = (item->window).foreColor[1];
+    local_c = (item->window).foreColor[2];
+    local_8 = (item->window).foreColor[3];
   }
-  local_1c = Window_GetRect(&param_2->window);
-  local_44[8] = Item_GetRectPlacementX
-                          (local_48->textAlignMode & 3,local_1c->x + local_48->textalignx,
-                           local_1c->w,100.0);
-  local_20 = Item_GetRectPlacementY
-                       (local_48->textAlignMode & 0xc,local_1c->y + local_48->textaligny,local_1c->h
-                        ,9.0);
-  local_58 = (ScreenPlacement *)(&scrPlaceView + param_1->contextIndex * 0x78);
-  local_5c = Item_Slider_ThumbPosition(param_2);
-  for (local_70 = 0; local_70 < 10; local_70 = local_70 + 1) {
-    local_54 = (float)(local_70 * 10) + local_44[8];
-    if (local_5c + local_4c <= local_54 + 10.0) {
-      if (local_54 <= local_5c - local_4c) {
-        UI_DrawHandlePic(local_58,local_54,local_20,4.0,9.0,local_1c->horzAlign,local_1c->vertAlign,
-                         local_44 + 4,DAT_098b4b78);
-        UI_DrawHandlePic(local_58,local_54 + 4.0,local_20,4.0,9.0,local_1c->horzAlign,
-                         local_1c->vertAlign,local_44,DAT_098b4b78);
+  rect = Window_GetRect(&item->window);
+  x = Item_GetRectPlacementX
+                (textDefPtr->textAlignMode & 3,rect->x + textDefPtr->textalignx,rect->w,100.0);
+  y = Item_GetRectPlacementY
+                (textDefPtr->textAlignMode & 0xc,rect->y + textDefPtr->textaligny,rect->h,9.0);
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78);
+  thumbPositionX = Item_Slider_ThumbPosition(item);
+  for (blockNumber = 0; blockNumber < 10; blockNumber = blockNumber + 1) {
+    sliderBlockPosition = (float)(blockNumber * 10) + x;
+    if (thumbPositionX + BLOCK_EPSILON <= sliderBlockPosition + 10.0) {
+      if (sliderBlockPosition <= thumbPositionX - BLOCK_EPSILON) {
+        UI_DrawHandlePic(scrPlace,sliderBlockPosition,y,4.0,9.0,rect->horzAlign,rect->vertAlign,
+                         sliderColorEmpty + 4,DAT_098b4b78);
+        UI_DrawHandlePic(scrPlace,sliderBlockPosition + 4.0,y,4.0,9.0,rect->horzAlign,
+                         rect->vertAlign,sliderColorEmpty,DAT_098b4b78);
       }
       else {
-        UI_DrawHandlePic(local_58,local_54,local_20,9.0,9.0,local_1c->horzAlign,local_1c->vertAlign,
-                         local_44,DAT_098b4b78);
+        UI_DrawHandlePic(scrPlace,sliderBlockPosition,y,9.0,9.0,rect->horzAlign,rect->vertAlign,
+                         sliderColorEmpty,DAT_098b4b78);
       }
     }
     else {
-      UI_DrawHandlePic(local_58,local_54,local_20,9.0,9.0,local_1c->horzAlign,local_1c->vertAlign,
-                       local_44 + 4,DAT_098b4b78);
+      UI_DrawHandlePic(scrPlace,sliderBlockPosition,y,9.0,9.0,rect->horzAlign,rect->vertAlign,
+                       sliderColorEmpty + 4,DAT_098b4b78);
     }
   }
   UI_DrawHandlePicRotated
-            (local_58,(local_5c - 3.0) - 1.0,(local_20 + 9.0) - 1.0,7.0,7.0,local_1c->horzAlign,
-             local_1c->vertAlign,local_44 + 4,-90.0,DAT_098b4b74);
+            (scrPlace,(thumbPositionX - 3.0) - 1.0,(y + 9.0) - 1.0,7.0,7.0,rect->horzAlign,
+             rect->vertAlign,sliderColorEmpty + 4,-90.0,DAT_098b4b74);
   return;
 }
 
@@ -10488,23 +10694,24 @@ void __cdecl Item_Slider_Paint(UiContext *param_1,itemDef_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_Bind_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_Bind_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   textDef_s *ptVar3;
-  int local_114;
-  char local_10c [260];
+  int bindNum;
+  textDef_s *textDefPtr;
+  char nameBind [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  ptVar3 = Item_GetTextDef(param_3);
-  if (param_3->type == 0xc) {
-    local_114 = 0;
+  ptVar3 = Item_GetTextDef(item);
+  if (item->type == 0xc) {
+    bindNum = 0;
   }
   else {
-    if (param_3->type != 0x10) {
+    if (item->type != 0x10) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2360,0,
                                "Got an unexpected bind type");
       if (bVar2) {
@@ -10514,16 +10721,16 @@ void __cdecl Item_Bind_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
       (*pcVar1)();
       return;
     }
-    local_114 = 1;
+    bindNum = 1;
   }
-  if ((g_waitingForKey == 0) || (g_bindItem != param_3)) {
-    UI_GetKeyBindingLocalizedString(param_1,param_3->dvar,local_10c,local_114);
-    ptVar3->text = local_10c;
+  if ((g_waitingForKey == 0) || (g_bindItem != item)) {
+    UI_GetKeyBindingLocalizedString(localClientNum,item->dvar,nameBind,bindNum);
+    ptVar3->text = nameBind;
   }
   else {
     ptVar3->text = "@MENU_BIND_KEY_PENDING";
   }
-  Item_Text_Paint(param_1,param_2,param_3);
+  Item_Text_Paint(localClientNum,dc,item);
   ptVar3->text = "";
   return;
 }
@@ -10540,22 +10747,22 @@ int __cdecl Display_KeyBindPending(void)
 
 // 0076CBB0  Item_Bind_HandleKey  (ui/ui_shared.cpp:9091)
 
-int __cdecl
-Item_Bind_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_4,int param_5)
+int __cdecl Item_Bind_HandleKey(int localClientNum,UiContext *dc,itemDef_s *item,int key,int down)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_14;
-  int local_c;
+  int bindNum;
+  int bindCount;
+  int boundKeys;
   int local_8;
   
-  if (param_3->type == 0xc) {
-    local_14 = 0;
+  if (item->type == 0xc) {
+    bindNum = 0;
   }
   else {
-    if (param_3->type != 0x10) {
+    if (item->type != 0x10) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2391,0,
                                "Got an unexpected bind type");
       if (bVar2) {
@@ -10565,19 +10772,19 @@ Item_Bind_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_14 = 1;
+    bindNum = 1;
   }
   if (g_waitingForKey == 0) {
-    if (param_5 != 0) {
-      if ((param_4 == 200) && (iVar3 = Item_ContainsMouse(param_2,param_3), iVar3 != 0)) {
+    if (down != 0) {
+      if ((key == 200) && (iVar3 = Item_ContainsMouse(dc,item), iVar3 != 0)) {
         bVar2 = true;
       }
       else {
-        bVar2 = param_4 == 0xd;
+        bVar2 = key == 0xd;
       }
       if (bVar2) {
         g_waitingForKey = 1;
-        g_bindItem = param_3;
+        g_bindItem = item;
         return 1;
       }
     }
@@ -10586,33 +10793,33 @@ Item_Bind_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_
   else if (g_bindItem == (itemDef_s *)0x0) {
     iVar3 = 0;
   }
-  else if ((param_4 & 0x400U) == 0) {
-    if (param_4 == 0x1b) {
+  else if ((key & 0x400U) == 0) {
+    if (key == 0x1b) {
       g_waitingForKey = 0;
       iVar3 = 1;
     }
-    else if (param_4 == 0x60) {
+    else if (key == 0x60) {
       iVar3 = 1;
     }
     else {
       Sys_EnterCriticalSection(CRITSECT_KEY_BINDINGS);
-      iVar3 = Key_GetCommandAssignment(param_1,param_3->dvar,&local_c,local_14);
-      if (local_14 == 0) {
-        if ((param_4 == 0x7f) || (iVar3 == 2)) {
-          Key_SetBinding(param_1,local_c,"",0);
-          Key_SetBinding(param_1,local_8,"",0);
+      iVar3 = Key_GetCommandAssignment(localClientNum,item->dvar,&boundKeys,bindNum);
+      if (bindNum == 0) {
+        if ((key == 0x7f) || (iVar3 == 2)) {
+          Key_SetBinding(localClientNum,boundKeys,"",0);
+          Key_SetBinding(localClientNum,local_8,"",0);
         }
-        if (param_4 != 0x7f) {
-          Key_SetBinding(param_1,param_4,param_3->dvar,0);
+        if (key != 0x7f) {
+          Key_SetBinding(localClientNum,key,item->dvar,0);
         }
       }
       else {
-        if ((param_4 == 0x7f) || (iVar3 == 2)) {
-          Key_SetBinding(param_1,local_c,"",1);
-          Key_SetBinding(param_1,local_8,"",1);
+        if ((key == 0x7f) || (iVar3 == 2)) {
+          Key_SetBinding(localClientNum,boundKeys,"",1);
+          Key_SetBinding(localClientNum,local_8,"",1);
         }
-        if (param_4 != 0x7f) {
-          Key_SetBinding(param_1,param_4,param_3->dvar,1);
+        if (key != 0x7f) {
+          Key_SetBinding(localClientNum,key,item->dvar,1);
         }
       }
       Sys_LeaveCriticalSection(CRITSECT_KEY_BINDINGS);
@@ -10629,7 +10836,7 @@ Item_Bind_HandleKey(int param_1,UiContext *param_2,itemDef_s *param_3,int param_
 
 // 00773AA0  Item_GetTextAlignAdj  (ui/ui_shared.cpp:9173)
 
-float __cdecl Item_GetTextAlignAdj(int param_1,float param_2,float param_3)
+float __cdecl Item_GetTextAlignAdj(int alignment,float width,float textWidth)
 
 {
   code *pcVar1;
@@ -10638,21 +10845,21 @@ float __cdecl Item_GetTextAlignAdj(int param_1,float param_2,float param_3)
   float local_18;
   float local_14;
   
-  if (param_1 == 1) {
-    local_14 = (param_2 - param_3) * 0.5;
+  if (alignment == 1) {
+    local_14 = (width - textWidth) * 0.5;
     if (0.0 <= 0.0 - local_14) {
       local_14 = 0.0;
     }
   }
-  else if (param_1 == 2) {
-    local_14 = param_2 - param_3;
+  else if (alignment == 2) {
+    local_14 = width - textWidth;
     if (0.0 <= 0.0 - local_14) {
       local_18 = 0.0;
       local_14 = local_18;
     }
   }
   else {
-    if ((param_1 != 0) &&
+    if ((alignment != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x23df,0,
                                  "%s\n\t(alignment) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -10667,46 +10874,46 @@ float __cdecl Item_GetTextAlignAdj(int param_1,float param_2,float param_3)
 
 // 00773B90  Item_ListBox_LanguageScale  (ui/ui_shared.cpp:9189)
 
-float __cdecl Item_ListBox_LanguageScale(language_t param_1,int param_2,int param_3)
+float __cdecl Item_ListBox_LanguageScale(language_t language,int feederID,int col)
 
 {
-  float local_8;
+  float languageMultiplier;
   
-  local_8 = 1.0;
-  if (((param_1 == LANGUAGE_RUSSIAN) || (param_1 == LANGUAGE_POLISH)) ||
-     (param_1 == LANGUAGE_JAPANESE)) {
-    switch(param_2) {
+  languageMultiplier = 1.0;
+  if (((language == LANGUAGE_RUSSIAN) || (language == LANGUAGE_POLISH)) ||
+     (language == LANGUAGE_JAPANESE)) {
+    switch(feederID) {
     case 0x12:
     case 0x18:
     case 0x1e:
     case 0x1f:
-      if (param_3 == 7) {
-        local_8 = 0.85;
+      if (col == 7) {
+        languageMultiplier = 0.85;
       }
     case 0x53:
-      if (param_3 == 4) {
-        local_8 = 0.85;
+      if (col == 4) {
+        languageMultiplier = 0.85;
       }
       break;
     case 0x20:
     case 0x32:
     case 0x65:
-      if (param_3 == 5) {
-        local_8 = 0.85;
+      if (col == 5) {
+        languageMultiplier = 0.85;
       }
       break;
     case 0x43:
-      if (param_3 == 0) {
-        local_8 = 0.82;
+      if (col == 0) {
+        languageMultiplier = 0.82;
       }
       break;
     case 0x4a:
-      if (param_3 == 0) {
-        local_8 = 0.85;
+      if (col == 0) {
+        languageMultiplier = 0.85;
       }
     }
   }
-  return local_8;
+  return languageMultiplier;
 }
 
 
@@ -10714,102 +10921,101 @@ float __cdecl Item_ListBox_LanguageScale(language_t param_1,int param_2,int para
 
 void __cdecl
 Item_ListBox_PaintTextElem
-          (int param_1,int param_2,itemDef_s *param_3,int param_4,int param_5,int param_6,
-          int param_7,int param_8,float param_9,float param_10,float param_11,float param_12,
-          bool param_13)
+          (int localClientNum,int contextIndex,itemDef_s *item,int row,int col,int maxChars,
+          int halignment,int valignment,float x,float y,float w,float h,bool onFocus)
 
 {
   bool bVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  itemDef_s *piVar5;
-  float fVar6;
-  int iVar7;
-  int iVar8;
-  float *pfVar9;
-  rectDef_s local_5c;
-  float local_44;
-  float local_40;
-  Font_s *local_3c;
-  language_t local_38;
-  ScreenPlacement *local_34;
-  bool local_2d;
-  listBoxDef_s *local_2c;
-  Material *local_28;
-  textDef_s *local_24;
-  float local_20;
-  rectDef_s *local_1c;
-  float local_18;
+  int controllerIndex;
+  uint uVar2;
+  int iVar3;
+  itemDef_s *item_00;
+  float feederID;
+  int index;
+  int column;
+  float *color_00;
+  rectDef_s ownerDrawRect;
+  float imageAngle;
+  float languageMultiplier;
+  Font_s *font;
+  language_t language;
+  ScreenPlacement *scrPlace;
+  bool optionalOwnerDraw;
+  listBoxDef_s *listPtr;
+  Material *optionalImage;
+  textDef_s *textDefPtr;
+  float xadj;
+  rectDef_s *rect;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  char *local_8;
+  char *text;
   
-  local_24 = Item_GetTextDef(param_3);
-  local_2c = Item_GetListBoxDef(param_3);
-  local_38 = SEH_GetCurrentLanguage();
-  local_40 = 1.0;
-  local_1c = Window_GetRect(&param_3->window);
-  local_34 = (ScreenPlacement *)(&scrPlaceView + param_2 * 0x78);
-  local_44 = 0.0;
-  local_2d = false;
-  local_18 = 1.0;
+  textDefPtr = Item_GetTextDef(item);
+  listPtr = Item_GetListBoxDef(item);
+  language = SEH_GetCurrentLanguage();
+  languageMultiplier = 1.0;
+  rect = Window_GetRect(&item->window);
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  imageAngle = 0.0;
+  optionalOwnerDraw = false;
+  color = 1.0;
   local_14 = 1.0;
   local_10 = 1.0;
-  local_8 = UI_FeederItemText(param_1,param_2,param_3,local_2c->special,param_4,param_5,&local_28,
-                              &local_44,&local_2d);
-  pfVar9 = &local_18;
-  fVar6 = local_2c->special;
-  iVar4 = param_2;
-  piVar5 = param_3;
-  iVar7 = param_4;
-  iVar8 = param_5;
-  bVar1 = param_13;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  UI_FeederItemColor(iVar2,iVar4,piVar5,fVar6,iVar7,iVar8,pfVar9,bVar1);
-  uVar3 = Window_GetDynamicFlags(param_2,&param_3->parent->window);
-  if ((uVar3 & 0x82000) != 0) {
-    local_c = local_c * (param_3->parent->window).foreColor[3];
+  text = UI_FeederItemText(localClientNum,contextIndex,item,listPtr->special,row,col,&optionalImage,
+                           &imageAngle,&optionalOwnerDraw);
+  color_00 = &color;
+  feederID = listPtr->special;
+  iVar3 = contextIndex;
+  item_00 = item;
+  index = row;
+  column = col;
+  bVar1 = onFocus;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  UI_FeederItemColor(controllerIndex,iVar3,item_00,feederID,index,column,color_00,bVar1);
+  uVar2 = Window_GetDynamicFlags(contextIndex,&item->parent->window);
+  if ((uVar2 & 0x82000) != 0) {
+    local_c = local_c * (item->parent->window).foreColor[3];
   }
-  if (((local_28 != (Material *)0x0) && (0.0 < param_11)) && (0.0 < param_12)) {
+  if (((optionalImage != (Material *)0x0) && (0.0 < w)) && (0.0 < h)) {
     UI_DrawHandlePicRotated
-              (local_34,param_9,param_10 + 2.0,param_11 - 1.0,param_12 - 2.0,local_1c->horzAlign,
-               local_1c->vertAlign,&local_18,local_44,local_28);
+              (scrPlace,x,y + 2.0,w - 1.0,h - 2.0,rect->horzAlign,rect->vertAlign,&color,imageAngle,
+               optionalImage);
     return;
   }
-  if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-    local_3c = Item_GetFont(param_2,param_3);
-    iVar4 = UI_TextWidth(local_8,param_6,local_3c,local_24->textscale);
-    local_20 = Item_GetTextAlignAdj(param_7,param_11,(float)iVar4);
-    bVar1 = Window_HasFocus(param_2,&param_3->window);
-    if (((bVar1) || (bVar1 = Item_IsModal(param_3), !bVar1)) &&
-       ((param_13 && (local_2c->elementHighlightColor[3] != 0.0)))) {
-      local_18 = local_2c->elementHighlightColor[0];
-      local_14 = local_2c->elementHighlightColor[1];
-      local_10 = local_2c->elementHighlightColor[2];
+  if ((text != (char *)0x0) && (*text != '\0')) {
+    font = Item_GetFont(contextIndex,item);
+    iVar3 = UI_TextWidth(text,maxChars,font,textDefPtr->textscale);
+    xadj = Item_GetTextAlignAdj(halignment,w,(float)iVar3);
+    bVar1 = Window_HasFocus(contextIndex,&item->window);
+    if (((bVar1) || (bVar1 = Item_IsModal(item), !bVar1)) &&
+       ((onFocus && (listPtr->elementHighlightColor[3] != 0.0)))) {
+      color = listPtr->elementHighlightColor[0];
+      local_14 = listPtr->elementHighlightColor[1];
+      local_10 = listPtr->elementHighlightColor[2];
     }
-    local_40 = Item_ListBox_LanguageScale(local_38,(int)local_2c->special,param_5);
-    UI_DrawText(local_34,local_8,param_6,local_3c,param_9 + local_20 + local_24->textalignx,
-                param_10 + param_12 + local_24->textaligny,local_1c->horzAlign,local_1c->vertAlign,
-                local_24->textscale * local_40,&local_18,local_24->textStyle);
+    languageMultiplier = Item_ListBox_LanguageScale(language,(int)listPtr->special,col);
+    UI_DrawText(scrPlace,text,maxChars,font,x + xadj + textDefPtr->textalignx,
+                y + h + textDefPtr->textaligny,rect->horzAlign,rect->vertAlign,
+                textDefPtr->textscale * languageMultiplier,&color,textDefPtr->textStyle);
     return;
   }
-  if (local_2d == false) {
+  if (optionalOwnerDraw == false) {
     return;
   }
-  local_18 = (param_3->window).foreColor[0];
-  local_14 = (param_3->window).foreColor[1];
-  local_10 = (param_3->window).foreColor[2];
-  local_c = (param_3->window).foreColor[3];
-  local_5c.x = param_9;
-  local_5c.y = param_10;
-  local_5c.w = param_11;
-  local_5c.h = param_12;
-  local_5c.horzAlign = local_1c->horzAlign;
-  local_5c.vertAlign = local_1c->vertAlign;
+  color = (item->window).foreColor[0];
+  local_14 = (item->window).foreColor[1];
+  local_10 = (item->window).foreColor[2];
+  local_c = (item->window).foreColor[3];
+  ownerDrawRect.x = x;
+  ownerDrawRect.y = y;
+  ownerDrawRect.w = w;
+  ownerDrawRect.h = h;
+  ownerDrawRect.horzAlign = rect->horzAlign;
+  ownerDrawRect.vertAlign = rect->vertAlign;
   UI_FeederItemOwnerDraw
-            (param_1,param_2,param_3,local_2c->special,&local_5c,param_4,param_5,&local_18);
+            (localClientNum,contextIndex,item,listPtr->special,&ownerDrawRect,row,col,&color);
   return;
 }
 
@@ -10818,17 +11024,21 @@ Item_ListBox_PaintTextElem
 
 void __cdecl
 Item_ListBox_PaintBackground
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5,int param_6)
+          (int localClientNum,int contextIndex,itemDef_s *item,float x,float y,int row)
 
 {
   code *pcVar1;
   bool bVar2;
   listBoxDef_s *plVar3;
   rectDef_s *prVar4;
-  float local_14 [4];
+  ScreenPlacement *scrPlace;
+  listBoxDef_s *listPtr;
+  Material *optionalBgImage;
+  rectDef_s *rect;
+  float color [4];
   
-  if ((param_3->window).style == '\0') {
-    plVar3 = Item_GetListBoxDef(param_3);
+  if ((item->window).style == '\0') {
+    plVar3 = Item_GetListBoxDef(item);
     if ((plVar3 == (listBoxDef_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x246b,0,
                                  "%s"), !bVar2)) {
@@ -10836,17 +11046,17 @@ Item_ListBox_PaintBackground
       (*pcVar1)();
       return;
     }
-    prVar4 = Window_GetRect(&param_3->window);
-    UI_FeederBackColor(param_1,param_2,param_3,plVar3->special,param_6,local_14);
+    prVar4 = Window_GetRect(&item->window);
+    UI_FeederBackColor(localClientNum,contextIndex,item,plVar3->special,row,color);
     if (plVar3->backgroundItemListbox == (Material *)0x0) {
-      UI_FillRect((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4 + 2.0,param_5 + 2.0,
+      UI_FillRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),x + 2.0,y + 2.0,
                   (prVar4->w - 16.0) - 4.0,plVar3->elementHeight,prVar4->horzAlign,prVar4->vertAlign
-                  ,local_14);
+                  ,color);
     }
     else {
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4 + 2.0,
-                       plVar3->elementHeight / 7.0 + param_5,(prVar4->w - 16.0) - 4.0,
-                       plVar3->elementHeight - 2.0,prVar4->horzAlign,prVar4->vertAlign,local_14,
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),x + 2.0,
+                       plVar3->elementHeight / 7.0 + y,(prVar4->w - 16.0) - 4.0,
+                       plVar3->elementHeight - 2.0,prVar4->horzAlign,prVar4->vertAlign,color,
                        plVar3->backgroundItemListbox);
     }
   }
@@ -10857,7 +11067,7 @@ Item_ListBox_PaintBackground
 // 00773E60  Item_ListBox_PaintHighlight  (ui/ui_shared.cpp:9337)
 
 void __cdecl
-Item_ListBox_PaintHighlight(int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5)
+Item_ListBox_PaintHighlight(int localClientNum,int contextIndex,itemDef_s *item,float x,float y)
 
 {
   code *pcVar1;
@@ -10866,25 +11076,25 @@ Item_ListBox_PaintHighlight(int param_1,int param_2,itemDef_s *param_3,float par
   int iVar4;
   double dVar5;
   float in_stack_ffffffb0;
-  float local_40;
+  float lowLight;
   float local_3c;
   float local_38;
   float local_34;
-  ScreenPlacement *local_30;
-  uiInfo_s *local_2c;
-  listBoxDef_s *local_28;
-  Material *local_24;
-  Material *local_20;
-  int local_1c;
-  rectDef_s *local_18;
-  float local_14;
+  ScreenPlacement *scrPlace;
+  uiInfo_s *uiInfo;
+  listBoxDef_s *listPtr;
+  Material *optionalImage;
+  Material *optionalHighlightImage;
+  int scrollbarSize;
+  rectDef_s *rect;
+  float newColor;
   float local_10;
   float local_c;
   float local_8;
   
-  local_1c = 0x10;
-  local_28 = Item_GetListBoxDef(param_3);
-  if (local_28 == (listBoxDef_s *)0x0) {
+  scrollbarSize = 0x10;
+  listPtr = Item_GetListBoxDef(item);
+  if (listPtr == (listBoxDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2484,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -10892,50 +11102,50 @@ Item_ListBox_PaintHighlight(int param_1,int param_2,itemDef_s *param_3,float par
       return;
     }
   }
-  local_18 = Window_GetRect(&param_3->window);
-  local_30 = (ScreenPlacement *)(&scrPlaceView + param_2 * 0x78);
-  local_2c = UI_UIContext_GetInfo(param_2);
-  if (local_28->noBlinkingHighlight == 0) {
-    uVar3 = Window_GetDynamicFlags(param_2,&param_3->parent->window);
+  rect = Window_GetRect(&item->window);
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  uiInfo = UI_UIContext_GetInfo(contextIndex);
+  if (listPtr->noBlinkingHighlight == 0) {
+    uVar3 = Window_GetDynamicFlags(contextIndex,&item->parent->window);
     if ((uVar3 & 0x82000) == 0) {
-      local_40 = (param_3->window).outlineColor[0] * 0.8;
-      local_3c = (param_3->window).outlineColor[1] * 0.8;
-      local_38 = (param_3->window).outlineColor[2] * 0.8;
-      local_34 = (param_3->window).outlineColor[3] * 0.8;
-      iVar4 = (local_2c->uiDC).realTime / 0x96;
+      lowLight = (item->window).outlineColor[0] * 0.8;
+      local_3c = (item->window).outlineColor[1] * 0.8;
+      local_38 = (item->window).outlineColor[2] * 0.8;
+      local_34 = (item->window).outlineColor[3] * 0.8;
+      iVar4 = (uiInfo->uiDC).realTime / 0x96;
       dVar5 = (double)iVar4;
       __libm_sse2_sin((double)CONCAT44(in_stack_ffffffb0,(float)iVar4));
-      LerpColor((param_3->window).outlineColor,&local_40,&local_14,(float)dVar5 * 0.5 + 0.5);
+      LerpColor((item->window).outlineColor,&lowLight,&newColor,(float)dVar5 * 0.5 + 0.5);
       goto LAB_00773ff8;
     }
   }
-  local_14 = (param_3->window).outlineColor[0];
-  local_10 = (param_3->window).outlineColor[1];
-  local_c = (param_3->window).outlineColor[2];
-  local_8 = (param_3->window).outlineColor[3];
+  newColor = (item->window).outlineColor[0];
+  local_10 = (item->window).outlineColor[1];
+  local_c = (item->window).outlineColor[2];
+  local_8 = (item->window).outlineColor[3];
 LAB_00773ff8:
-  bVar2 = Item_ListBox_RequiresScroll(param_1,param_2,param_3);
+  bVar2 = Item_ListBox_RequiresScroll(localClientNum,contextIndex,item);
   if (!bVar2) {
-    local_1c = 0;
+    scrollbarSize = 0;
   }
-  local_20 = local_28->highlightTexture;
-  if (local_20 == (Material *)0x0) {
-    UI_FillRect(local_30,param_4 + 2.0,param_5 + 2.0,(local_18->w - (float)local_1c) - 4.0,
-                local_28->elementHeight - 2.0,local_18->horzAlign,local_18->vertAlign,&local_14);
-    UI_DrawRect(local_30,param_4 + 1.0,param_5 + 1.0,(local_18->w - (float)local_1c) - 3.0,
-                local_28->elementHeight + 1.0,local_18->horzAlign,local_18->vertAlign,1.0,
-                local_28->selectBorder);
+  optionalHighlightImage = listPtr->highlightTexture;
+  if (optionalHighlightImage == (Material *)0x0) {
+    UI_FillRect(scrPlace,x + 2.0,y + 2.0,(rect->w - (float)scrollbarSize) - 4.0,
+                listPtr->elementHeight - 2.0,rect->horzAlign,rect->vertAlign,&newColor);
+    UI_DrawRect(scrPlace,x + 1.0,y + 1.0,(rect->w - (float)scrollbarSize) - 3.0,
+                listPtr->elementHeight + 1.0,rect->horzAlign,rect->vertAlign,1.0,
+                listPtr->selectBorder);
   }
   else {
-    UI_DrawHandlePic(local_30,param_4 + 2.0,local_28->elementHeight / 7.0 + param_5,
-                     (local_18->w - (float)local_1c) - 4.0,local_28->elementHeight - 2.0,
-                     local_18->horzAlign,local_18->vertAlign,&local_14,local_20);
+    UI_DrawHandlePic(scrPlace,x + 2.0,listPtr->elementHeight / 7.0 + y,
+                     (rect->w - (float)scrollbarSize) - 4.0,listPtr->elementHeight - 2.0,
+                     rect->horzAlign,rect->vertAlign,&newColor,optionalHighlightImage);
   }
-  local_24 = local_28->selectIcon;
-  if ((local_24 != (Material *)0x0) && (local_28->notselectable == 0)) {
-    UI_DrawHandlePic(local_30,param_4 + 3.0,local_28->elementHeight / 5.0 + param_5,
-                     local_28->elementHeight - 4.0,local_28->elementHeight - 4.0,local_18->horzAlign
-                     ,local_18->vertAlign,(float *)&stack0xffffffb0,local_24);
+  optionalImage = listPtr->selectIcon;
+  if ((optionalImage != (Material *)0x0) && (listPtr->notselectable == 0)) {
+    UI_DrawHandlePic(scrPlace,x + 3.0,listPtr->elementHeight / 5.0 + y,listPtr->elementHeight - 4.0,
+                     listPtr->elementHeight - 4.0,rect->horzAlign,rect->vertAlign,
+                     (float *)&stack0xffffffb0,optionalImage);
   }
   return;
 }
@@ -10943,244 +11153,233 @@ LAB_00773ff8:
 
 // 007726D0  Item_ListBox_Paint  (ui/ui_shared.cpp:9468)
 
-void __cdecl Item_ListBox_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_ListBox_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   float fVar1;
   bool bVar2;
   int local_64;
   float local_60;
-  bool local_49;
-  int local_48;
-  float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
-  Material *local_30;
-  int local_2c;
-  ScreenPlacement *local_28;
-  float local_24;
-  listBoxDef_s *local_20;
-  float local_1c;
-  int local_18;
-  rectDef_s *local_14;
-  float local_10;
-  float local_c;
-  int local_8;
+  bool selected;
+  int scrollbarSize;
+  float screenH;
+  float screenW;
+  float screenX;
+  float screenY;
+  float animSize;
+  Material *image;
+  int j;
+  ScreenPlacement *scrPlace;
+  float thumb;
+  listBoxDef_s *listPtr;
+  float size;
+  int i;
+  rectDef_s *rect;
+  float x;
+  float y;
+  int count;
   
-  local_20 = Item_GetListBoxDef(param_3);
-  if (local_20 != (listBoxDef_s *)0x0) {
-    local_14 = Window_GetRect(&param_3->window);
-    local_28 = (ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78);
-    local_8 = UI_FeederCount(param_1,param_2->contextIndex,local_20->special,local_20);
-    if ((local_20->noScrollBars == 0) &&
-       (bVar2 = Item_ListBox_RequiresScroll(param_1,param_2->contextIndex,param_3), !bVar2)) {
-      (param_3->window).rect.w = (param_3->window).rect.w - 16.0;
+  listPtr = Item_GetListBoxDef(item);
+  if (listPtr != (listBoxDef_s *)0x0) {
+    rect = Window_GetRect(&item->window);
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78);
+    count = UI_FeederCount(localClientNum,dc->contextIndex,listPtr->special,listPtr);
+    if ((listPtr->noScrollBars == 0) &&
+       (bVar2 = Item_ListBox_RequiresScroll(localClientNum,dc->contextIndex,item), !bVar2)) {
+      (item->window).rect.w = (item->window).rect.w - 16.0;
     }
-    bVar2 = Window_IsHorizontal(&param_3->window);
+    bVar2 = Window_IsHorizontal(&item->window);
     if (bVar2) {
-      local_10 = local_14->x + 1.0;
-      local_c = ((local_14->y + local_14->h) - 16.0) - 1.0;
-      UI_DrawHandlePic(local_28,local_10,local_c,16.0,16.0,local_14->horzAlign,local_14->vertAlign,
-                       (float *)0x0,DAT_098b4b60);
-      local_10 = local_10 + 15.0;
-      local_1c = local_14->w - 32.0;
-      UI_DrawHandlePic(local_28,local_10,local_c,local_1c + 1.0,16.0,local_14->horzAlign,
-                       local_14->vertAlign,(float *)0x0,DAT_098b4b68);
-      local_10 = (local_1c - 1.0) + local_10;
-      UI_DrawHandlePic(local_28,local_10,local_c,16.0,16.0,local_14->horzAlign,local_14->vertAlign,
-                       (float *)0x0,DAT_098b4b64);
-      local_24 = Item_ListBox_ThumbDrawPosition(param_1,param_2,param_3);
-      if ((local_10 - 16.0) - 1.0 < local_24) {
-        local_24 = (local_10 - 16.0) - 1.0;
+      x = rect->x + 1.0;
+      y = ((rect->y + rect->h) - 16.0) - 1.0;
+      UI_DrawHandlePic(scrPlace,x,y,16.0,16.0,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                       DAT_098b4b60);
+      x = x + 15.0;
+      size = rect->w - 32.0;
+      UI_DrawHandlePic(scrPlace,x,y,size + 1.0,16.0,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                       DAT_098b4b68);
+      x = (size - 1.0) + x;
+      UI_DrawHandlePic(scrPlace,x,y,16.0,16.0,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                       DAT_098b4b64);
+      thumb = Item_ListBox_ThumbDrawPosition(localClientNum,dc,item);
+      if ((x - 16.0) - 1.0 < thumb) {
+        thumb = (x - 16.0) - 1.0;
       }
-      UI_DrawHandlePic(local_28,local_24,local_c,16.0,16.0,local_14->horzAlign,local_14->vertAlign,
-                       (float *)0x0,DAT_098b4b6c);
-      local_20->endPos[param_2->contextIndex] = local_20->startPos[param_2->contextIndex];
-      local_1c = local_14->w - 2.0;
-      for (local_2c = 0; local_2c < local_20->numColumns; local_2c = local_2c + 1) {
-        if (local_20->columnInfo[local_2c].elementStyle == 1) {
-          local_10 = local_14->x + 1.0;
-          local_c = local_14->y + 1.0;
-          for (local_18 = local_20->startPos[param_2->contextIndex]; local_18 < local_8;
-              local_18 = local_18 + 1) {
-            local_30 = UI_FeederItemImage(local_20->special,local_18,local_2c);
-            if (local_30 != (Material *)0x0) {
-              UI_DrawHandlePic(local_28,local_10 + 1.0,local_c + 1.0,local_20->elementWidth - 2.0,
-                               local_20->elementHeight - 2.0,local_14->horzAlign,local_14->vertAlign
-                               ,(float *)0x0,local_30);
+      UI_DrawHandlePic(scrPlace,thumb,y,16.0,16.0,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                       DAT_098b4b6c);
+      listPtr->endPos[dc->contextIndex] = listPtr->startPos[dc->contextIndex];
+      size = rect->w - 2.0;
+      for (j = 0; j < listPtr->numColumns; j = j + 1) {
+        if (listPtr->columnInfo[j].elementStyle == 1) {
+          x = rect->x + 1.0;
+          y = rect->y + 1.0;
+          for (i = listPtr->startPos[dc->contextIndex]; i < count; i = i + 1) {
+            image = UI_FeederItemImage(listPtr->special,i,j);
+            if (image != (Material *)0x0) {
+              UI_DrawHandlePic(scrPlace,x + 1.0,y + 1.0,listPtr->elementWidth - 2.0,
+                               listPtr->elementHeight - 2.0,rect->horzAlign,rect->vertAlign,
+                               (float *)0x0,image);
             }
-            if (local_18 == local_20->cursorPos[param_2->contextIndex]) {
-              UI_DrawRect(local_28,local_10,local_c,local_20->elementWidth - 1.0,
-                          local_20->elementHeight - 1.0,local_14->horzAlign,local_14->vertAlign,
-                          (param_3->window).borderSize,(param_3->window).borderColor);
+            if (i == listPtr->cursorPos[dc->contextIndex]) {
+              UI_DrawRect(scrPlace,x,y,listPtr->elementWidth - 1.0,listPtr->elementHeight - 1.0,
+                          rect->horzAlign,rect->vertAlign,(item->window).borderSize,
+                          (item->window).borderColor);
             }
-            local_1c = local_1c - local_20->elementWidth;
-            if (local_1c < local_20->elementWidth) {
-              local_20->drawPadding = (int)local_1c;
+            size = size - listPtr->elementWidth;
+            if (size < listPtr->elementWidth) {
+              listPtr->drawPadding = (int)size;
               break;
             }
-            local_10 = local_10 + local_20->elementWidth;
-            local_20->endPos[param_2->contextIndex] = local_20->endPos[param_2->contextIndex] + 1;
+            x = x + listPtr->elementWidth;
+            listPtr->endPos[dc->contextIndex] = listPtr->endPos[dc->contextIndex] + 1;
           }
         }
       }
     }
     else {
-      if (local_20->special == 54.0) {
-        UI_ClearFeeder(param_2->contextIndex,param_3,false);
-        UI_RaiseFeederEvent(param_2->contextIndex,param_3,"Populate");
+      if (listPtr->special == 54.0) {
+        UI_ClearFeeder(dc->contextIndex,item,false);
+        UI_RaiseFeederEvent(dc->contextIndex,item,"Populate");
       }
-      UI_OverrideCursorPos(param_1,param_2->contextIndex,param_3);
-      bVar2 = Item_ListBox_RequiresScroll(param_1,param_2->contextIndex,param_3);
+      UI_OverrideCursorPos(localClientNum,dc->contextIndex,item);
+      bVar2 = Item_ListBox_RequiresScroll(localClientNum,dc->contextIndex,item);
       if (bVar2) {
-        local_10 = (local_14->x + local_14->w) - 16.0;
-        local_c = local_14->y + 3.0;
-        local_20->endPos[param_2->contextIndex] = local_20->startPos[param_2->contextIndex];
-        local_1c = Item_ListBox_ScrollHeight(param_1,param_2->contextIndex,param_3);
-        UI_DrawHandlePic(local_28,local_10,local_c,16.0,local_1c,local_14->horzAlign,
-                         local_14->vertAlign,(float *)0x0,DAT_098b4b68);
+        x = (rect->x + rect->w) - 16.0;
+        y = rect->y + 3.0;
+        listPtr->endPos[dc->contextIndex] = listPtr->startPos[dc->contextIndex];
+        size = Item_ListBox_ScrollHeight(localClientNum,dc->contextIndex,item);
+        UI_DrawHandlePic(scrPlace,x,y,16.0,size,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                         DAT_098b4b68);
         if (g_debugMode != 0) {
-          UI_DrawRect(local_28,local_10,local_c,16.0,local_1c,local_14->horzAlign,
-                      local_14->vertAlign,1.0,colorWhite);
-          UI_DrawRect(local_28,local_10,local_c,16.0,16.0,local_14->horzAlign,local_14->vertAlign,
-                      1.0,colorWhite);
-          UI_DrawRect(local_28,local_10,(local_c + local_1c) - 16.0,16.0,16.0,local_14->horzAlign,
-                      local_14->vertAlign,1.0,colorWhite);
+          UI_DrawRect(scrPlace,x,y,16.0,size,rect->horzAlign,rect->vertAlign,1.0,colorWhite);
+          UI_DrawRect(scrPlace,x,y,16.0,16.0,rect->horzAlign,rect->vertAlign,1.0,colorWhite);
+          UI_DrawRect(scrPlace,x,(y + size) - 16.0,16.0,16.0,rect->horzAlign,rect->vertAlign,1.0,
+                      colorWhite);
         }
-        local_c = (local_1c - 1.0) + local_c;
-        local_24 = Item_ListBox_ThumbDrawPosition(param_1,param_2,param_3);
-        if (local_c - 1.0 < local_24) {
-          local_24 = local_c - 1.0;
+        y = (size - 1.0) + y;
+        thumb = Item_ListBox_ThumbDrawPosition(localClientNum,dc,item);
+        if (y - 1.0 < thumb) {
+          thumb = y - 1.0;
         }
-        UI_DrawHandlePic(local_28,local_10,local_24,16.0,16.0,local_14->horzAlign,
-                         local_14->vertAlign,(float *)0x0,DAT_098b4b6c);
+        UI_DrawHandlePic(scrPlace,x,thumb,16.0,16.0,rect->horzAlign,rect->vertAlign,(float *)0x0,
+                         DAT_098b4b6c);
         if (g_debugMode != 0) {
-          UI_DrawRect(local_28,local_10,local_24,16.0,16.0,local_14->horzAlign,local_14->vertAlign,
-                      1.0,colorWhite);
+          UI_DrawRect(scrPlace,x,thumb,16.0,16.0,rect->horzAlign,rect->vertAlign,1.0,colorWhite);
         }
       }
-      local_c = local_14->y + 1.0;
-      local_1c = local_14->h - 2.0;
-      if (0.0 <= local_1c) {
-        if ((param_3->animInfo != (UIAnimInfo *)0x0) && (param_3->animInfo->animating != 0)) {
-          fVar1 = (param_3->animInfo->currentAnimState).rectClient.h;
-          local_60 = (param_3->animInfo->nextAnimState).rectClient.h;
+      y = rect->y + 1.0;
+      size = rect->h - 2.0;
+      if (0.0 <= size) {
+        if ((item->animInfo != (UIAnimInfo *)0x0) && (item->animInfo->animating != 0)) {
+          fVar1 = (item->animInfo->currentAnimState).rectClient.h;
+          local_60 = (item->animInfo->nextAnimState).rectClient.h;
           if (0.0 <= fVar1 - local_60) {
             local_60 = fVar1;
           }
-          local_34 = local_60 - 2.0;
-          if (local_1c < local_34) {
-            local_1c = local_34;
+          animSize = local_60 - 2.0;
+          if (size < animSize) {
+            size = animSize;
           }
-          if (local_1c < 0.0) {
+          if (size < 0.0) {
             return;
           }
         }
-        if ((param_3->animInfo != (UIAnimInfo *)0x0) && (param_3->animInfo->animating != 0)) {
-          local_3c = local_14->x;
-          local_38 = local_14->y;
-          local_40 = local_14->w;
-          local_44 = local_14->h;
-          ScrPlace_ApplyRect(local_28,&local_3c,&local_38,&local_40,&local_44,local_14->horzAlign,
-                             local_14->vertAlign);
+        if ((item->animInfo != (UIAnimInfo *)0x0) && (item->animInfo->animating != 0)) {
+          screenX = rect->x;
+          screenY = rect->y;
+          screenW = rect->w;
+          screenH = rect->h;
+          ScrPlace_ApplyRect(scrPlace,&screenX,&screenY,&screenW,&screenH,rect->horzAlign,
+                             rect->vertAlign);
           R_AddCmdSetScissorValues
-                    (true,(int)(local_3c + 0.5),(int)(local_38 + 0.5),(int)(local_40 + 0.5),
-                     (int)(local_44 + 0.5));
+                    (true,(int)(screenX + 0.5),(int)(screenY + 0.5),(int)(screenW + 0.5),
+                     (int)(screenH + 0.5));
         }
-        local_20->endPos[param_2->contextIndex] = local_20->startPos[param_2->contextIndex];
-        for (local_18 = local_20->startPos[param_2->contextIndex]; local_18 < local_8;
-            local_18 = local_18 + 1) {
-          local_10 = local_14->x + 1.0;
-          Item_ListBox_PaintBackground
-                    (param_1,param_2->contextIndex,param_3,local_10,local_c,local_18);
-          local_48 = 0x10;
-          bVar2 = Item_ListBox_RequiresScroll(param_1,param_2->contextIndex,param_3);
+        listPtr->endPos[dc->contextIndex] = listPtr->startPos[dc->contextIndex];
+        for (i = listPtr->startPos[dc->contextIndex]; i < count; i = i + 1) {
+          x = rect->x + 1.0;
+          Item_ListBox_PaintBackground(localClientNum,dc->contextIndex,item,x,y,i);
+          scrollbarSize = 0x10;
+          bVar2 = Item_ListBox_RequiresScroll(localClientNum,dc->contextIndex,item);
           if (!bVar2) {
-            local_48 = 0;
+            scrollbarSize = 0;
           }
-          if (local_20->elementBackgroundColor[3] != 0.0) {
-            UI_FillRect(local_28,local_10 + 2.0,local_c + 2.0,(local_14->w - (float)local_48) - 4.0,
-                        local_20->elementHeight - 2.0,local_14->horzAlign,local_14->vertAlign,
-                        local_20->elementBackgroundColor);
+          if (listPtr->elementBackgroundColor[3] != 0.0) {
+            UI_FillRect(scrPlace,x + 2.0,y + 2.0,(rect->w - (float)scrollbarSize) - 4.0,
+                        listPtr->elementHeight - 2.0,rect->horzAlign,rect->vertAlign,
+                        listPtr->elementBackgroundColor);
           }
-          if ((local_18 == local_20->cursorPos[param_2->contextIndex]) &&
-             ((bVar2 = Item_IsModal(param_3), !bVar2 ||
-              (((param_3->window).dynamicFlags[param_2->contextIndex] & 2U) != 0)))) {
-            Item_ListBox_PaintHighlight(param_1,param_2->contextIndex,param_3,local_10,local_c);
+          if ((i == listPtr->cursorPos[dc->contextIndex]) &&
+             ((bVar2 = Item_IsModal(item), !bVar2 ||
+              (((item->window).dynamicFlags[dc->contextIndex] & 2U) != 0)))) {
+            Item_ListBox_PaintHighlight(localClientNum,dc->contextIndex,item,x,y);
           }
-          local_2c = 0;
+          j = 0;
           while( true ) {
-            local_64 = local_20->numColumns;
+            local_64 = listPtr->numColumns;
             if (local_64 < 2) {
               local_64 = 1;
             }
-            if (local_64 <= local_2c) break;
-            if (local_20->columnInfo[local_2c].elementStyle == 1) {
-              local_10 = local_14->x + local_20->columnInfo[local_2c].rect.x + 1.0;
-              local_30 = UI_FeederItemImage(local_20->special,local_18,local_2c);
-              if (local_30 != (Material *)0x0) {
-                if (local_20->numColumns < 1) {
-                  UI_DrawHandlePic(local_28,local_10 + 1.0,local_c + 1.0,
-                                   local_20->elementWidth - 2.0,local_20->elementHeight - 2.0,
-                                   local_14->horzAlign,local_14->vertAlign,(float *)0x0,local_30);
+            if (local_64 <= j) break;
+            if (listPtr->columnInfo[j].elementStyle == 1) {
+              x = rect->x + listPtr->columnInfo[j].rect.x + 1.0;
+              image = UI_FeederItemImage(listPtr->special,i,j);
+              if (image != (Material *)0x0) {
+                if (listPtr->numColumns < 1) {
+                  UI_DrawHandlePic(scrPlace,x + 1.0,y + 1.0,listPtr->elementWidth - 2.0,
+                                   listPtr->elementHeight - 2.0,rect->horzAlign,rect->vertAlign,
+                                   (float *)0x0,image);
                 }
                 else {
-                  UI_DrawHandlePic(local_28,local_10 + 1.0,local_c + 1.0,
-                                   local_20->columnInfo[local_2c].rect.w - 2.0,
-                                   local_20->elementHeight - 2.0,local_14->horzAlign,
-                                   local_14->vertAlign,(float *)0x0,local_30);
+                  UI_DrawHandlePic(scrPlace,x + 1.0,y + 1.0,listPtr->columnInfo[j].rect.w - 2.0,
+                                   listPtr->elementHeight - 2.0,rect->horzAlign,rect->vertAlign,
+                                   (float *)0x0,image);
                 }
               }
-              if (local_18 == local_20->cursorPos[param_2->contextIndex]) {
-                UI_DrawRect(local_28,local_10,local_c,local_20->elementWidth - 1.0,
-                            local_20->elementHeight - 1.0,local_14->horzAlign,local_14->vertAlign,
-                            (param_3->window).borderSize,(param_3->window).borderColor);
+              if (i == listPtr->cursorPos[dc->contextIndex]) {
+                UI_DrawRect(scrPlace,x,y,listPtr->elementWidth - 1.0,listPtr->elementHeight - 1.0,
+                            rect->horzAlign,rect->vertAlign,(item->window).borderSize,
+                            (item->window).borderColor);
               }
-              local_20->endPos[param_2->contextIndex] = local_20->endPos[param_2->contextIndex] + 1;
+              listPtr->endPos[dc->contextIndex] = listPtr->endPos[dc->contextIndex] + 1;
             }
             else {
-              local_10 = local_14->x + 1.0;
-              local_49 = false;
-              if ((local_18 == local_20->cursorPos[param_2->contextIndex]) &&
-                 ((bVar2 = Item_IsModal(param_3), !bVar2 ||
-                  (((param_3->window).dynamicFlags[param_2->contextIndex] & 2U) != 0)))) {
-                local_49 = true;
+              x = rect->x + 1.0;
+              selected = false;
+              if ((i == listPtr->cursorPos[dc->contextIndex]) &&
+                 ((bVar2 = Item_IsModal(item), !bVar2 ||
+                  (((item->window).dynamicFlags[dc->contextIndex] & 2U) != 0)))) {
+                selected = true;
               }
-              if (local_20->numColumns < 1) {
+              if (listPtr->numColumns < 1) {
                 Item_ListBox_PaintTextElem
-                          (param_1,param_2->contextIndex,param_3,local_18,0,0x7fffffff,0,0xc,
-                           local_10,local_c,local_20->elementWidth,local_20->elementHeight,local_49)
-                ;
+                          (localClientNum,dc->contextIndex,item,i,0,0x7fffffff,0,0xc,x,y,
+                           listPtr->elementWidth,listPtr->elementHeight,selected);
               }
               else {
                 Item_ListBox_PaintTextElem
-                          (param_1,param_2->contextIndex,param_3,local_18,local_2c,
-                           local_20->columnInfo[local_2c].maxChars,
-                           local_20->columnInfo[local_2c].rect.horzAlign,
-                           local_20->columnInfo[local_2c].rect.vertAlign,
-                           local_10 + local_20->columnInfo[local_2c].rect.x,
-                           local_c + local_20->columnInfo[local_2c].rect.y,
-                           local_20->columnInfo[local_2c].rect.w,
-                           local_20->columnInfo[local_2c].rect.h,local_49);
+                          (localClientNum,dc->contextIndex,item,i,j,listPtr->columnInfo[j].maxChars,
+                           listPtr->columnInfo[j].rect.horzAlign,
+                           listPtr->columnInfo[j].rect.vertAlign,x + listPtr->columnInfo[j].rect.x,
+                           y + listPtr->columnInfo[j].rect.y,listPtr->columnInfo[j].rect.w,
+                           listPtr->columnInfo[j].rect.h,selected);
               }
             }
-            local_2c = local_2c + 1;
+            j = j + 1;
           }
-          local_20->endPos[param_2->contextIndex] = local_20->endPos[param_2->contextIndex] + 1;
-          local_1c = local_1c - local_20->elementHeight;
-          if (((0.0 <= local_1c) && (local_1c < local_20->elementHeight)) &&
-             ((local_18 + 1 != local_8 || (local_20->startPos[param_2->contextIndex] != 0)))) {
-            if ((param_3->animInfo == (UIAnimInfo *)0x0) || (param_3->animInfo->animating == 0)) {
-              GamerProfile_WriteSettings(param_1);
-              local_20->drawPadding = (int)(local_20->elementHeight - local_1c);
+          listPtr->endPos[dc->contextIndex] = listPtr->endPos[dc->contextIndex] + 1;
+          size = size - listPtr->elementHeight;
+          if (((0.0 <= size) && (size < listPtr->elementHeight)) &&
+             ((i + 1 != count || (listPtr->startPos[dc->contextIndex] != 0)))) {
+            if ((item->animInfo == (UIAnimInfo *)0x0) || (item->animInfo->animating == 0)) {
+              GamerProfile_WriteSettings(localClientNum);
+              listPtr->drawPadding = (int)(listPtr->elementHeight - size);
             }
             break;
           }
-          local_c = local_c + local_20->elementHeight;
+          y = y + listPtr->elementHeight;
         }
-        if ((param_3->animInfo != (UIAnimInfo *)0x0) && (param_3->animInfo->animating != 0)) {
+        if ((item->animInfo != (UIAnimInfo *)0x0) && (item->animInfo->animating != 0)) {
           R_AddCmdSetScissorValues(false,0,0,0,0);
         }
       }
@@ -11194,156 +11393,151 @@ void __cdecl Item_ListBox_Paint(int param_1,UiContext *param_2,itemDef_s *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_OwnerDraw_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_OwnerDraw_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  double dVar5;
+  char *src;
+  double dVar4;
   undefined4 in_stack_fffffbac;
   undefined4 in_stack_fffffbb0;
-  float local_448;
+  float lowLight;
   float local_444;
   float local_440;
   float local_43c;
-  Font_s *local_438;
-  char *local_434;
-  menuDef_t *local_430;
-  textDef_s *local_42c;
-  float local_428;
+  Font_s *font;
+  char *textPtr;
+  menuDef_t *parent;
+  textDef_s *textDefPtr;
+  float color;
   float local_424;
   float local_420;
   float local_41c;
-  int local_418;
-  rectDef_s *local_414;
-  rectDef_s *local_410;
-  char local_40c [1028];
+  int flags;
+  rectDef_s *rect;
+  rectDef_s *textRect;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_42c = Item_GetTextDef(param_3);
-  if ((param_3 == (itemDef_s *)0x0) &&
+  textDefPtr = Item_GetTextDef(item);
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x25fe,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_430 = param_3->parent;
-  local_418 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
-  Fade(&local_418,(param_3->window).foreColor + 3,local_430->fadeClamp,&(param_3->window).nextTime,
-       local_430->fadeCycle,1,local_430->fadeAmount,local_430->fadeInAmount,param_2);
-  Window_SetDynamicFlags(param_2->contextIndex,&param_3->window,local_418);
-  local_428 = (param_3->window).foreColor[0];
-  local_424 = (param_3->window).foreColor[1];
-  local_420 = (param_3->window).foreColor[2];
-  local_41c = (param_3->window).foreColor[3];
-  bVar2 = Window_HasFocus(param_2->contextIndex,&param_3->window);
+  parent = item->parent;
+  flags = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+  Fade(&flags,(item->window).foreColor + 3,parent->fadeClamp,&(item->window).nextTime,
+       parent->fadeCycle,1,parent->fadeAmount,parent->fadeInAmount,dc);
+  Window_SetDynamicFlags(dc->contextIndex,&item->window,flags);
+  color = (item->window).foreColor[0];
+  local_424 = (item->window).foreColor[1];
+  local_420 = (item->window).foreColor[2];
+  local_41c = (item->window).foreColor[3];
+  bVar2 = Window_HasFocus(dc->contextIndex,&item->window);
   if (bVar2) {
-    local_448 = local_430->focusColor[0] * 0.8;
-    local_444 = local_430->focusColor[1] * 0.8;
-    local_440 = local_430->focusColor[2] * 0.8;
-    local_43c = local_430->focusColor[3] * 0.8;
-    dVar5 = (double)(param_2->realTime / 0x4b);
+    lowLight = parent->focusColor[0] * 0.8;
+    local_444 = parent->focusColor[1] * 0.8;
+    local_440 = parent->focusColor[2] * 0.8;
+    local_43c = parent->focusColor[3] * 0.8;
+    dVar4 = (double)(dc->realTime / 0x4b);
     __libm_sse2_sin((double)CONCAT44(in_stack_fffffbb0,in_stack_fffffbac));
-    LerpColor(local_430->focusColor,&local_448,&local_428,(float)dVar5 * 0.5 + 0.5);
+    LerpColor(parent->focusColor,&lowLight,&color,(float)dVar4 * 0.5 + 0.5);
   }
-  else if (((local_42c != (textDef_s *)0x0) && (local_42c->textStyle == 1)) &&
-          (((int)(param_2->realTime + (param_2->realTime >> 0x1f & 0xffU)) >> 8 & 1U) == 0)) {
-    local_448 = (param_3->window).foreColor[0] * 0.8;
-    local_444 = (param_3->window).foreColor[1] * 0.8;
-    local_440 = (param_3->window).foreColor[2] * 0.8;
-    local_43c = (param_3->window).foreColor[3] * 0.8;
-    iVar3 = param_2->realTime / 0x4b;
-    dVar5 = (double)iVar3;
+  else if (((textDefPtr != (textDef_s *)0x0) && (textDefPtr->textStyle == 1)) &&
+          (((int)(dc->realTime + (dc->realTime >> 0x1f & 0xffU)) >> 8 & 1U) == 0)) {
+    lowLight = (item->window).foreColor[0] * 0.8;
+    local_444 = (item->window).foreColor[1] * 0.8;
+    local_440 = (item->window).foreColor[2] * 0.8;
+    local_43c = (item->window).foreColor[3] * 0.8;
+    iVar3 = dc->realTime / 0x4b;
+    dVar4 = (double)iVar3;
     __libm_sse2_sin((double)CONCAT44((float)iVar3,in_stack_fffffbac));
-    LerpColor((param_3->window).foreColor,&local_448,&local_428,(float)dVar5 * 0.5 + 0.5);
+    LerpColor((item->window).foreColor,&lowLight,&color,(float)dVar4 * 0.5 + 0.5);
   }
-  if (((param_3->dvarFlags & 3U) != 0) && (iVar3 = Item_EnableShowViaDvar(param_3,1), iVar3 == 0)) {
-    local_428 = local_430->disableColor[0];
-    local_424 = local_430->disableColor[1];
-    local_420 = local_430->disableColor[2];
-    local_41c = local_430->disableColor[3];
+  if (((item->dvarFlags & 3U) != 0) && (iVar3 = Item_EnableShowViaDvar(item,1), iVar3 == 0)) {
+    color = parent->disableColor[0];
+    local_424 = parent->disableColor[1];
+    local_420 = parent->disableColor[2];
+    local_41c = parent->disableColor[3];
   }
-  local_414 = Window_GetRect(&param_3->window);
-  local_438 = Item_GetFont(param_2->contextIndex,param_3);
-  local_434 = (char *)0x0;
-  if ((local_42c == (textDef_s *)0x0) || (local_42c->text == (char *)0x0)) {
-    if ((local_42c == (textDef_s *)0x0) ||
-       ((local_42c->textExpData == (textExp_s *)0x0 ||
-        ((local_42c->textExpData->textExp).filename == (char *)0x0)))) {
-      if (param_3->dvar != (char *)0x0) {
+  rect = Window_GetRect(&item->window);
+  font = Item_GetFont(dc->contextIndex,item);
+  textPtr = (char *)0x0;
+  if ((textDefPtr == (textDef_s *)0x0) || (textDefPtr->text == (char *)0x0)) {
+    if ((textDefPtr == (textDef_s *)0x0) ||
+       ((textDefPtr->textExpData == (textExp_s *)0x0 ||
+        ((textDefPtr->textExpData->textExp).filename == (char *)0x0)))) {
+      if (item->dvar != (char *)0x0) {
         iVar3 = 0x400;
-        pcVar4 = Dvar_GetVariantString(param_3->dvar);
-        I_strncpyz(local_40c,pcVar4,iVar3);
-        local_434 = local_40c;
+        src = Dvar_GetVariantString(item->dvar);
+        I_strncpyz(text,src,iVar3);
+        textPtr = text;
       }
     }
     else {
-      local_434 = GetExpressionResultString
-                            (param_2->contextIndex,param_3,&local_42c->textExpData->textExp);
+      textPtr = GetExpressionResultString(dc->contextIndex,item,&textDefPtr->textExpData->textExp);
     }
   }
   else {
-    local_434 = local_42c->text;
+    textPtr = textDefPtr->text;
   }
-  if ((local_42c == (textDef_s *)0x0) || (local_42c->text == (char *)0x0)) {
-    if ((local_434 == (char *)0x0) ||
-       ((((*local_434 == '\0' || (local_42c == (textDef_s *)0x0)) ||
-         (local_42c->textExpData == (textExp_s *)0x0)) ||
-        ((param_3->type != 0x12 && (param_3->type != 0x14)))))) {
-      if ((param_3->type == 0x12) || (param_3->type == 0x14)) {
-        UI_OwnerDrawText(param_1,param_2->contextIndex,param_3,local_414->x,local_414->y,
-                         local_414->w,local_414->h,local_414->horzAlign,local_414->vertAlign,
-                         local_42c->textalignx,local_42c->textaligny,(param_3->window).ownerDraw,
-                         (param_3->window).ownerDrawFlags,local_42c->alignment,local_438,
-                         local_42c->textscale,&local_428,(param_3->window).background,
-                         local_42c->textStyle,(param_3->parent->window).rect,
-                         local_42c->textAlignMode,local_434);
+  if ((textDefPtr == (textDef_s *)0x0) || (textDefPtr->text == (char *)0x0)) {
+    if ((textPtr == (char *)0x0) ||
+       ((((*textPtr == '\0' || (textDefPtr == (textDef_s *)0x0)) ||
+         (textDefPtr->textExpData == (textExp_s *)0x0)) ||
+        ((item->type != 0x12 && (item->type != 0x14)))))) {
+      if ((item->type == 0x12) || (item->type == 0x14)) {
+        UI_OwnerDrawText(localClientNum,dc->contextIndex,item,rect->x,rect->y,rect->w,rect->h,
+                         rect->horzAlign,rect->vertAlign,textDefPtr->textalignx,
+                         textDefPtr->textaligny,(item->window).ownerDraw,
+                         (item->window).ownerDrawFlags,textDefPtr->alignment,font,
+                         textDefPtr->textscale,&color,(item->window).background,
+                         textDefPtr->textStyle,(item->parent->window).rect,textDefPtr->textAlignMode
+                         ,textPtr);
       }
-      else if (param_3->type == 6) {
-        UI_OwnerDraw(param_1,param_3,local_414->x,local_414->y,local_414->w,local_414->h,
-                     local_414->horzAlign,local_414->vertAlign,(param_3->window).ownerDraw,
-                     (param_3->window).ownerDrawFlags,&local_428,(param_3->window).background,
-                     (param_3->parent->window).rect,param_3->dvar);
+      else if (item->type == 6) {
+        UI_OwnerDraw(localClientNum,item,rect->x,rect->y,rect->w,rect->h,rect->horzAlign,
+                     rect->vertAlign,(item->window).ownerDraw,(item->window).ownerDrawFlags,&color,
+                     (item->window).background,(item->parent->window).rect,item->dvar);
       }
     }
     else {
-      local_410 = Item_GetTextRect(param_2->contextIndex,param_3);
-      if (local_434 != (char *)0x0) {
-        Item_SetTextExtents(param_2->contextIndex,param_3,local_434);
+      textRect = Item_GetTextRect(dc->contextIndex,item);
+      if (textPtr != (char *)0x0) {
+        Item_SetTextExtents(dc->contextIndex,item,textPtr);
       }
-      UI_OwnerDrawText(param_1,param_2->contextIndex,param_3,local_410->x,local_410->y,local_414->w,
-                       local_414->h,local_414->horzAlign,local_414->vertAlign,local_42c->textalignx,
-                       local_42c->textaligny,(param_3->window).ownerDraw,
-                       (param_3->window).ownerDrawFlags,local_42c->alignment,local_438,
-                       local_42c->textscale,&local_428,(param_3->window).background,
-                       local_42c->textStyle,(param_3->parent->window).rect,local_42c->textAlignMode,
-                       local_434);
+      UI_OwnerDrawText(localClientNum,dc->contextIndex,item,textRect->x,textRect->y,rect->w,rect->h,
+                       rect->horzAlign,rect->vertAlign,textDefPtr->textalignx,textDefPtr->textaligny
+                       ,(item->window).ownerDraw,(item->window).ownerDrawFlags,textDefPtr->alignment
+                       ,font,textDefPtr->textscale,&color,(item->window).background,
+                       textDefPtr->textStyle,(item->parent->window).rect,textDefPtr->textAlignMode,
+                       textPtr);
     }
   }
   else {
-    Item_Text_Paint(param_1,param_2,param_3);
-    local_410 = Item_GetTextRect(param_2->contextIndex,param_3);
-    if (*local_42c->text == '\0') {
-      UI_OwnerDrawText(param_1,param_2->contextIndex,param_3,local_410->x + local_410->w,
-                       local_414->y,local_414->w,local_414->h,local_414->horzAlign,
-                       local_414->vertAlign,0.0,local_42c->textaligny,(param_3->window).ownerDraw,
-                       (param_3->window).ownerDrawFlags,local_42c->alignment,local_438,
-                       local_42c->textscale,&local_428,(param_3->window).background,
-                       local_42c->textStyle,(param_3->parent->window).rect,local_42c->textAlignMode,
+    Item_Text_Paint(localClientNum,dc,item);
+    textRect = Item_GetTextRect(dc->contextIndex,item);
+    if (*textDefPtr->text == '\0') {
+      UI_OwnerDrawText(localClientNum,dc->contextIndex,item,textRect->x + textRect->w,rect->y,
+                       rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,textDefPtr->textaligny,
+                       (item->window).ownerDraw,(item->window).ownerDrawFlags,textDefPtr->alignment,
+                       font,textDefPtr->textscale,&color,(item->window).background,
+                       textDefPtr->textStyle,(item->parent->window).rect,textDefPtr->textAlignMode,
                        (char *)0x0);
     }
     else {
-      UI_OwnerDrawText(param_1,param_2->contextIndex,param_3,local_410->x + local_410->w + 8.0,
-                       local_414->y,local_414->w,local_414->h,local_414->horzAlign,
-                       local_414->vertAlign,0.0,local_42c->textaligny,(param_3->window).ownerDraw,
-                       (param_3->window).ownerDrawFlags,local_42c->alignment,local_438,
-                       local_42c->textscale,&local_428,(param_3->window).background,
-                       local_42c->textStyle,(param_3->parent->window).rect,local_42c->textAlignMode,
-                       local_42c->text);
+      UI_OwnerDrawText(localClientNum,dc->contextIndex,item,textRect->x + textRect->w + 8.0,rect->y,
+                       rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,textDefPtr->textaligny,
+                       (item->window).ownerDraw,(item->window).ownerDrawFlags,textDefPtr->alignment,
+                       font,textDefPtr->textscale,&color,(item->window).background,
+                       textDefPtr->textStyle,(item->parent->window).rect,textDefPtr->textAlignMode,
+                       textDefPtr->text);
     }
   }
   return;
@@ -11352,7 +11546,7 @@ void __cdecl Item_OwnerDraw_Paint(int param_1,UiContext *param_2,itemDef_s *para
 
 // 00774D10  Item_GameMsgWindow_Paint  (ui/ui_shared.cpp:9807)
 
-void __cdecl Item_GameMsgWindow_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_GameMsgWindow_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
   code *pcVar1;
@@ -11360,30 +11554,33 @@ void __cdecl Item_GameMsgWindow_Paint(int param_1,UiContext *param_2,itemDef_s *
   textDef_s *ptVar3;
   gameMsgDef_s *pgVar4;
   char *pcVar5;
-  Font_s *pFVar6;
-  float local_18;
+  Font_s *font_00;
+  Font_s *font;
+  gameMsgDef_s *gameMsgPtr;
+  textDef_s *textDefPtr;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  rectDef_s *local_8;
+  rectDef_s *rect;
   
-  ptVar3 = Item_GetTextDef(param_3);
-  pgVar4 = Item_GetGameMsgDef(param_3);
-  if ((param_2 == (UiContext *)0x0) &&
+  ptVar3 = Item_GetTextDef(item);
+  pgVar4 = Item_GetGameMsgDef(item);
+  if ((dc == (UiContext *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2656,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2657,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar2) {
     if ((pgVar4->gameMsgWindowIndex < 0) || (2 < pgVar4->gameMsgWindowIndex)) {
       pcVar5 = va("Game message window index %d is not valid. Must be in [0, %d).");
@@ -11394,15 +11591,15 @@ void __cdecl Item_GameMsgWindow_Paint(int param_1,UiContext *param_2,itemDef_s *
       pcVar5 = va("Game message window mode %d is not valid.");
       Com_Error(ERR_DROP,pcVar5);
     }
-    local_18 = (param_3->window).foreColor[0];
-    local_14 = (param_3->window).foreColor[1];
-    local_10 = (param_3->window).foreColor[2];
-    local_c = (param_3->window).foreColor[3];
-    local_8 = Window_GetRect(&param_3->window);
-    pFVar6 = Item_GetFont(param_2->contextIndex,param_3);
+    color = (item->window).foreColor[0];
+    local_14 = (item->window).foreColor[1];
+    local_10 = (item->window).foreColor[2];
+    local_c = (item->window).foreColor[3];
+    rect = Window_GetRect(&item->window);
+    font_00 = Item_GetFont(dc->contextIndex,item);
     Con_DrawGameMessageWindow
-              (param_1,pgVar4->gameMsgWindowIndex,(int)local_8->x,(int)local_8->y,local_8->horzAlign
-               ,local_8->vertAlign,pFVar6,ptVar3->textscale,&local_18,ptVar3->textStyle,
+              (localClientNum,pgVar4->gameMsgWindowIndex,(int)rect->x,(int)rect->y,rect->horzAlign,
+               rect->vertAlign,font_00,ptVar3->textscale,&color,ptVar3->textStyle,
                ptVar3->textAlignMode,pgVar4->gameMsgWindowMode);
   }
   return;
@@ -11413,112 +11610,113 @@ void __cdecl Item_GameMsgWindow_Paint(int param_1,UiContext *param_2,itemDef_s *
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Item_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
+void __cdecl Item_Paint(int localClientNum,UiContext *dc,itemDef_s *item)
 
 {
+  menuDef_t *menu;
   menuDef_t *pmVar1;
-  menuDef_t *pmVar2;
-  bool bVar3;
-  int iVar4;
-  DWORD DVar5;
-  char *pcVar6;
-  Material *pMVar7;
-  rectDef_s *prVar8;
-  float fVar9;
-  char local_4c [68];
+  bool bVar2;
+  int iVar3;
+  DWORD DVar4;
+  char *pcVar5;
+  Material *pMVar6;
+  rectDef_s *prVar7;
+  float fVar8;
+  rectDef_s *r;
+  menuDef_t *parent;
+  char lowerCaseName [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pmVar1 = param_3->parent;
-  if (param_3 != (itemDef_s *)0x0) {
-    if ((param_3->window).ownerDrawFlags != 0) {
-      iVar4 = UI_OwnerDrawVisible((param_3->window).ownerDrawFlags);
-      if (iVar4 == 0) {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,4);
+  menu = item->parent;
+  if (item != (itemDef_s *)0x0) {
+    if ((item->window).ownerDrawFlags != 0) {
+      iVar3 = UI_OwnerDrawVisible((item->window).ownerDrawFlags);
+      if (iVar3 == 0) {
+        Window_RemoveDynamicFlags(dc->contextIndex,&item->window,4);
       }
       else {
-        Window_AddDynamicFlags(param_2->contextIndex,&param_3->window,4);
+        Window_AddDynamicFlags(dc->contextIndex,&item->window,4);
       }
     }
-    if (((param_3->dvarFlags & 0xcU) == 0) ||
-       (iVar4 = Item_EnableShowViaDvar(param_3,4), iVar4 != 0)) {
-      if ((param_3->forecolorAExp).filename != (char *)0x0) {
-        fVar9 = GetExpressionFloat(param_1,param_3,&param_3->forecolorAExp);
-        (param_3->window).foreColor[3] = fVar9;
+    if (((item->dvarFlags & 0xcU) == 0) || (iVar3 = Item_EnableShowViaDvar(item,4), iVar3 != 0)) {
+      if ((item->forecolorAExp).filename != (char *)0x0) {
+        fVar8 = GetExpressionFloat(localClientNum,item,&item->forecolorAExp);
+        (item->window).foreColor[3] = fVar8;
       }
-      if ((param_3->window).name == (char *)0x0) {
+      if ((item->window).name == (char *)0x0) {
         PIXBeginNamedEvent(-1,"Item_IsVisible");
       }
       else {
         PIXBeginNamedEvent(-1,"Item_IsVisible %s");
       }
-      iVar4 = Item_IsVisible(param_1,param_2->contextIndex,param_3);
-      if (iVar4 == 0) {
-        DVar5 = GetCurrentThreadId();
-        if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      iVar3 = Item_IsVisible(localClientNum,dc->contextIndex,item);
+      if (iVar3 == 0) {
+        DVar4 = GetCurrentThreadId();
+        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        DVar5 = GetCurrentThreadId();
-        if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        DVar4 = GetCurrentThreadId();
+        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        if ((param_3->rectExpData != (rectData_s *)0x0) &&
-           ((param_3->animInfo == (UIAnimInfo *)0x0 || (param_3->animInfo->animating == 0)))) {
-          if ((param_3->rectExpData->rectXExp).filename != (char *)0x0) {
-            pmVar2 = param_3->parent;
-            fVar9 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectXExp);
-            (param_3->window).rect.x = fVar9 + (pmVar2->window).rect.x;
+        if ((item->rectExpData != (rectData_s *)0x0) &&
+           ((item->animInfo == (UIAnimInfo *)0x0 || (item->animInfo->animating == 0)))) {
+          if ((item->rectExpData->rectXExp).filename != (char *)0x0) {
+            pmVar1 = item->parent;
+            fVar8 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectXExp);
+            (item->window).rect.x = fVar8 + (pmVar1->window).rect.x;
           }
-          if ((param_3->rectExpData->rectYExp).filename != (char *)0x0) {
-            pmVar2 = param_3->parent;
-            fVar9 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectYExp);
-            (param_3->window).rect.y = fVar9 + (pmVar2->window).rect.y;
+          if ((item->rectExpData->rectYExp).filename != (char *)0x0) {
+            pmVar1 = item->parent;
+            fVar8 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectYExp);
+            (item->window).rect.y = fVar8 + (pmVar1->window).rect.y;
           }
-          if ((param_3->rectExpData->rectWExp).filename != (char *)0x0) {
-            fVar9 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectWExp);
-            (param_3->window).rect.w = fVar9;
+          if ((item->rectExpData->rectWExp).filename != (char *)0x0) {
+            fVar8 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectWExp);
+            (item->window).rect.w = fVar8;
           }
-          if ((param_3->rectExpData->rectHExp).filename != (char *)0x0) {
-            fVar9 = GetExpressionFloat(param_1,param_3,&param_3->rectExpData->rectHExp);
-            (param_3->window).rect.h = fVar9;
+          if ((item->rectExpData->rectHExp).filename != (char *)0x0) {
+            fVar8 = GetExpressionFloat(localClientNum,item,&item->rectExpData->rectHExp);
+            (item->window).rect.h = fVar8;
           }
         }
-        if ((param_3->window).style == '\x05') {
-          iVar4 = 0x40;
-          pcVar6 = Dvar_GetString(param_3->dvar);
-          I_strncpyz(local_4c,pcVar6,iVar4);
-          I_strlwr(local_4c);
-          pMVar7 = Material_RegisterHandle(local_4c,param_3->imageTrack);
-          (param_3->window).background = pMVar7;
+        if ((item->window).style == '\x05') {
+          iVar3 = 0x40;
+          pcVar5 = Dvar_GetString(item->dvar);
+          I_strncpyz(lowerCaseName,pcVar5,iVar3);
+          I_strlwr(lowerCaseName);
+          pMVar6 = Material_RegisterHandle(lowerCaseName,item->imageTrack);
+          (item->window).background = pMVar6;
         }
-        else if ((param_3->type == 2) &&
-                ((((param_3->typeData).imageDef)->materialExp).filename != (char *)0x0)) {
-          iVar4 = 0x40;
-          pcVar6 = GetExpressionResultString
-                             (param_1,param_3,(ExpressionStatement *)(param_3->typeData).textDef);
-          I_strncpyz(local_4c,pcVar6,iVar4);
-          I_strlwr(local_4c);
-          pMVar7 = Material_RegisterHandle(local_4c,param_3->imageTrack);
-          (param_3->window).background = pMVar7;
+        else if ((item->type == 2) &&
+                ((((item->typeData).imageDef)->materialExp).filename != (char *)0x0)) {
+          iVar3 = 0x40;
+          pcVar5 = GetExpressionResultString
+                             (localClientNum,item,(ExpressionStatement *)(item->typeData).textDef);
+          I_strncpyz(lowerCaseName,pcVar5,iVar3);
+          I_strlwr(lowerCaseName);
+          pMVar6 = Material_RegisterHandle(lowerCaseName,item->imageTrack);
+          (item->window).background = pMVar6;
         }
-        Window_Paint(param_1,param_2,&param_3->window,pmVar1->fadeAmount,pmVar1->fadeInAmount,
-                     pmVar1->fadeClamp,(float)pmVar1->fadeCycle,param_3->type,param_3);
+        Window_Paint(localClientNum,dc,&item->window,menu->fadeAmount,menu->fadeInAmount,
+                     menu->fadeClamp,(float)menu->fadeCycle,item->type,item);
         if (g_debugMode != 0) {
-          prVar8 = Item_CorrectedTextRect(param_2->contextIndex,param_3);
-          UI_DrawRect((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),prVar8->x,
-                      prVar8->y,prVar8->w,prVar8->h,prVar8->horzAlign,prVar8->vertAlign,1.0,
+          prVar7 = Item_CorrectedTextRect(dc->contextIndex,item);
+          UI_DrawRect((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),prVar7->x,
+                      prVar7->y,prVar7->w,prVar7->h,prVar7->horzAlign,prVar7->vertAlign,1.0,
                       colorGreen);
         }
-        if ((param_3->window).style != '\x05') {
-          switch(param_3->type) {
+        if ((item->window).style != '\x05') {
+          switch(item->type) {
           case 1:
           case 3:
-            Item_Text_Paint(param_1,param_2,param_3);
+            Item_Text_Paint(localClientNum,dc,item);
             break;
           case 4:
-            Item_ListBox_Paint(param_1,param_2,param_3);
+            Item_ListBox_Paint(localClientNum,dc,item);
             break;
           case 5:
           case 7:
@@ -11526,40 +11724,40 @@ void __cdecl Item_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
           case 0xe:
           case 0x16:
           case 0x1e:
-            Item_TextField_Paint(param_1,param_2,param_3);
+            Item_TextField_Paint(localClientNum,dc,item);
             break;
           case 6:
           case 0x12:
           case 0x14:
-            Item_OwnerDraw_Paint(param_1,param_2,param_3);
+            Item_OwnerDraw_Paint(localClientNum,dc,item);
             break;
           case 8:
-            Item_Slider_Paint(param_2,param_3);
+            Item_Slider_Paint(dc,item);
             break;
           case 9:
-            Item_YesNo_Paint(param_1,param_2,param_3);
+            Item_YesNo_Paint(localClientNum,dc,item);
             break;
           case 10:
-            Item_Multi_Paint(param_1,param_2,param_3);
+            Item_Multi_Paint(localClientNum,dc,item);
             break;
           case 0xb:
-            Item_DvarEnum_Paint(param_1,param_2,param_3);
+            Item_DvarEnum_Paint(localClientNum,dc,item);
             break;
           case 0xc:
           case 0x10:
-            Item_Bind_Paint(param_1,param_2,param_3);
+            Item_Bind_Paint(localClientNum,dc,item);
             break;
           case 0xf:
-            Item_GameMsgWindow_Paint(param_1,param_2,param_3);
+            Item_GameMsgWindow_Paint(localClientNum,dc,item);
           }
         }
       }
     }
     else {
-      bVar3 = Window_HasFocus(param_2->contextIndex,&param_3->window);
-      if (bVar3) {
-        Menu_HandleKey(param_1,param_2,pmVar1,0x9b,1);
-        Menu_HandleKey(param_1,param_2,pmVar1,0x9b,0);
+      bVar2 = Window_HasFocus(dc->contextIndex,&item->window);
+      if (bVar2) {
+        Menu_HandleKey(localClientNum,dc,menu,0x9b,1);
+        Menu_HandleKey(localClientNum,dc,menu,0x9b,0);
       }
     }
   }
@@ -11569,25 +11767,25 @@ void __cdecl Item_Paint(int param_1,UiContext *param_2,itemDef_s *param_3)
 
 // 0076CDD0  Menu_GetFocused  (ui/ui_shared.cpp:9993)
 
-menuDef_t * __cdecl Menu_GetFocused(UiContext *param_1)
+menuDef_t * __cdecl Menu_GetFocused(UiContext *dc)
 
 {
   int iVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  local_8 = param_1->openMenuCount;
+  i = dc->openMenuCount;
   do {
-    iVar1 = local_8;
-    local_8 = iVar1 + -1;
-    if (local_8 < 0) {
+    iVar1 = i;
+    i = iVar1 + -1;
+    if (i < 0) {
       return (menuDef_t *)0x0;
     }
-    bVar2 = Window_HasFocus(param_1->contextIndex,&(param_1->menuStack[iVar1 + -1].menu)->window);
+    bVar2 = Window_HasFocus(dc->contextIndex,&(dc->menuStack[iVar1 + -1].menu)->window);
   } while ((!bVar2) ||
-          (bVar2 = Window_IsVisible(param_1->contextIndex,
-                                    &(param_1->menuStack[iVar1 + -1].menu)->window), !bVar2));
-  return param_1->menuStack[iVar1 + -1].menu;
+          (bVar2 = Window_IsVisible(dc->contextIndex,&(dc->menuStack[iVar1 + -1].menu)->window),
+          !bVar2));
+  return dc->menuStack[iVar1 + -1].menu;
 }
 
 
@@ -11595,42 +11793,46 @@ menuDef_t * __cdecl Menu_GetFocused(UiContext *param_1)
 
 void __cdecl
 Menu_SetFeederSelection
-          (int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int param_5,char *param_6)
+          (int localClientNum,UiContext *dc,menuDef_t *menu,int feeder,int index,char *name)
 
 {
-  itemDef_s *piVar1;
-  listBoxDef_s *plVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  bool bVar6;
-  int local_10;
+  itemDef_s *item_00;
+  listBoxDef_s *listPtr_00;
+  int viewmax;
+  int iVar1;
+  int newCursorPos;
+  bool autoScroll;
+  int viewMax;
+  int i;
+  itemDef_s *item;
+  listBoxDef_s *listPtr;
   
-  if (param_3 == (menuDef_t *)0x0) {
-    if (param_6 == (char *)0x0) {
-      param_3 = Menu_GetFocused(param_2);
+  if (menu == (menuDef_t *)0x0) {
+    if (name == (char *)0x0) {
+      menu = Menu_GetFocused(dc);
     }
     else {
-      param_3 = Menus_FindByName(param_2,param_6);
+      menu = Menus_FindByName(dc,name);
     }
   }
-  if (param_3 != (menuDef_t *)0x0) {
-    for (local_10 = 0; local_10 < param_3->itemCount; local_10 = local_10 + 1) {
-      piVar1 = param_3->items[local_10];
-      if ((piVar1->type == 4) &&
-         (plVar2 = Item_GetListBoxDef(piVar1), plVar2->special == (float)param_4)) {
-        iVar3 = Item_ListBox_Viewmax(param_1,param_2->contextIndex,piVar1);
-        if (param_5 < plVar2->startPos[param_2->contextIndex]) {
-          plVar2->startPos[param_2->contextIndex] = param_5;
+  if (menu != (menuDef_t *)0x0) {
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      item_00 = menu->items[i];
+      if ((item_00->type == 4) &&
+         (listPtr_00 = Item_GetListBoxDef(item_00), listPtr_00->special == (float)feeder)) {
+        viewmax = Item_ListBox_Viewmax(localClientNum,dc->contextIndex,item_00);
+        if (index < listPtr_00->startPos[dc->contextIndex]) {
+          listPtr_00->startPos[dc->contextIndex] = index;
         }
-        else if (iVar3 < param_5 - plVar2->startPos[param_2->contextIndex]) {
-          plVar2->startPos[param_2->contextIndex] = (param_5 - iVar3) + 1;
+        else if (viewmax < index - listPtr_00->startPos[dc->contextIndex]) {
+          listPtr_00->startPos[dc->contextIndex] = (index - viewmax) + 1;
         }
-        bVar6 = true;
-        iVar5 = param_5;
-        iVar4 = UI_FeederCount(param_1,param_2->contextIndex,plVar2->special,plVar2);
-        Item_ListBox_SetCursorPos(param_1,param_2->contextIndex,piVar1,iVar4 + -1,iVar3,iVar5,bVar6)
-        ;
+        autoScroll = true;
+        newCursorPos = index;
+        iVar1 = UI_FeederCount(localClientNum,dc->contextIndex,listPtr_00->special,listPtr_00);
+        Item_ListBox_SetCursorPos
+                  (localClientNum,dc->contextIndex,item_00,iVar1 + -1,viewmax,newCursorPos,
+                   autoScroll);
       }
     }
   }
@@ -11640,26 +11842,27 @@ Menu_SetFeederSelection
 
 // 0076CFC0  Menu_GetFeederSelection  (ui/ui_shared.cpp:10053)
 
-int __cdecl Menu_GetFeederSelection(UiContext *param_1,menuDef_t *param_2,int param_3,char *param_4)
+int __cdecl Menu_GetFeederSelection(UiContext *dc,menuDef_t *menu,int feeder,char *name)
 
 {
   listBoxDef_s *plVar1;
-  int local_10;
+  int i;
+  itemDef_s *item;
+  listBoxDef_s *listPtr;
   
-  if (param_2 == (menuDef_t *)0x0) {
-    if (param_4 == (char *)0x0) {
-      param_2 = Menu_GetFocused(param_1);
+  if (menu == (menuDef_t *)0x0) {
+    if (name == (char *)0x0) {
+      menu = Menu_GetFocused(dc);
     }
     else {
-      param_2 = Menus_FindByName(param_1,param_4);
+      menu = Menus_FindByName(dc,name);
     }
   }
-  if (param_2 != (menuDef_t *)0x0) {
-    for (local_10 = 0; local_10 < param_2->itemCount; local_10 = local_10 + 1) {
-      if ((param_2->items[local_10]->type == 4) &&
-         (plVar1 = Item_GetListBoxDef(param_2->items[local_10]), plVar1->special == (float)param_3))
-      {
-        return plVar1->cursorPos[param_1->contextIndex];
+  if (menu != (menuDef_t *)0x0) {
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      if ((menu->items[i]->type == 4) &&
+         (plVar1 = Item_GetListBoxDef(menu->items[i]), plVar1->special == (float)feeder)) {
+        return plVar1->cursorPos[dc->contextIndex];
       }
     }
   }
@@ -11669,34 +11872,34 @@ int __cdecl Menu_GetFeederSelection(UiContext *param_1,menuDef_t *param_2,int pa
 
 // 0076D080  Menus_AnyFullScreenVisible  (ui/ui_shared.cpp:10092)
 
-int __cdecl Menus_AnyFullScreenVisible(UiContext *param_1)
+int __cdecl Menus_AnyFullScreenVisible(UiContext *dc)
 
 {
   int iVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  local_8 = param_1->openMenuCount;
+  i = dc->openMenuCount;
   do {
-    iVar1 = local_8;
-    local_8 = iVar1 + -1;
-    if (local_8 < 0) {
+    iVar1 = i;
+    i = iVar1 + -1;
+    if (i < 0) {
       return 0;
     }
-    bVar2 = Window_IsVisible(param_1->contextIndex,&(param_1->menuStack[iVar1 + -1].menu)->window);
-  } while ((!bVar2) || ((param_1->menuStack[iVar1 + -1].menu)->fullScreen == 0));
+    bVar2 = Window_IsVisible(dc->contextIndex,&(dc->menuStack[iVar1 + -1].menu)->window);
+  } while ((!bVar2) || ((dc->menuStack[iVar1 + -1].menu)->fullScreen == 0));
   return 1;
 }
 
 
 // 0076E1F0  IsVisible  (ui/ui_shared.cpp:10106)
 
-int __cdecl IsVisible(int param_1)
+int __cdecl IsVisible(int flags)
 
 {
   undefined4 local_8;
   
-  if (((param_1 & 4U) == 0) || ((param_1 & 0x10U) != 0)) {
+  if (((flags & 4U) == 0) || ((flags & 0x10U) != 0)) {
     local_8 = 0;
   }
   else {
@@ -11708,103 +11911,105 @@ int __cdecl IsVisible(int param_1)
 
 // 0076D0F0  Menu_HandleMouseMove  (ui/ui_shared.cpp:10112)
 
-int __cdecl Menu_HandleMouseMove(int param_1,UiContext *param_2,menuDef_t *param_3)
+int __cdecl Menu_HandleMouseMove(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
-  float fVar1;
-  float fVar2;
-  itemDef_s *piVar3;
-  bool bVar4;
-  int iVar5;
-  uint uVar6;
-  rectDef_s *prVar7;
-  textDef_s *ptVar8;
-  float fVar9;
-  float fVar10;
-  int local_24;
-  itemDef_s *local_20;
-  int local_18;
-  int local_c;
+  float x_00;
+  float y_00;
+  itemDef_s *item;
+  bool bVar1;
+  int iVar2;
+  uint uVar3;
+  rectDef_s *prVar4;
+  textDef_s *ptVar5;
+  float fVar6;
+  float fVar7;
+  int pass;
+  itemDef_s *focusItem;
+  textDef_s *textDefPtr;
+  int i;
+  float x;
+  float y;
+  int focusSet;
+  itemDef_s *overItem;
   
-  local_c = 0;
-  local_20 = (itemDef_s *)0x0;
-  if (param_2->isCursorVisible == 0) {
-    iVar5 = 0;
+  focusSet = 0;
+  focusItem = (itemDef_s *)0x0;
+  if (dc->isCursorVisible == 0) {
+    iVar2 = 0;
   }
-  else if (param_3 == (menuDef_t *)0x0) {
-    iVar5 = 0;
+  else if (menu == (menuDef_t *)0x0) {
+    iVar2 = 0;
   }
-  else if (param_3->ui3dWindowId < 0) {
-    uVar6 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
-    if ((uVar6 & 0x4004) == 0) {
-      iVar5 = 0;
+  else if (menu->ui3dWindowId < 0) {
+    uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
+    if ((uVar3 & 0x4004) == 0) {
+      iVar2 = 0;
     }
     else if (itemCapture == (itemDef_s *)0x0) {
       if (g_waitingForKey == 0) {
-        bVar4 = Menu_ItemsAreAnimating(param_1,param_2,param_3);
-        if (bVar4) {
+        bVar1 = Menu_ItemsAreAnimating(localClientNum,dc,menu);
+        if (bVar1) {
           mouseLocationX = -0x80000000;
           mouseLocationY = -0x80000000;
-          iVar5 = Sys_Milliseconds();
-          mouseTimeUntilReadyToMove = iVar5 + 500;
-          iVar5 = 0;
+          iVar2 = Sys_Milliseconds();
+          mouseTimeUntilReadyToMove = iVar2 + 500;
+          iVar2 = 0;
         }
         else {
-          fVar1 = (param_2->cursor).x;
-          fVar2 = (param_2->cursor).y;
-          for (local_24 = 0; local_24 < 2; local_24 = local_24 + 1) {
-            local_18 = param_3->itemCount;
+          x_00 = (dc->cursor).x;
+          y_00 = (dc->cursor).y;
+          for (pass = 0; pass < 2; pass = pass + 1) {
+            i = menu->itemCount;
 LAB_0076d209:
-            local_18 = local_18 + -1;
-            if (-1 < local_18) {
-              uVar6 = Window_GetDynamicFlags
-                                (param_2->contextIndex,&param_3->items[local_18]->window);
-              if (((((uVar6 & 0x4004) != 0) &&
-                   (((param_3->items[local_18]->dvarFlags & 3U) == 0 ||
-                    (iVar5 = Item_EnableShowViaDvar(param_3->items[local_18],1), iVar5 != 0)))) &&
-                  (((param_3->items[local_18]->dvarFlags & 0xcU) == 0 ||
-                   (iVar5 = Item_EnableShowViaDvar(param_3->items[local_18],4), iVar5 != 0)))) &&
-                 (iVar5 = Item_IsVisible(param_1,param_2->contextIndex,param_3->items[local_18]),
-                 iVar5 != 0)) {
-                bVar4 = Window_HasFocus(param_2->contextIndex,&param_3->items[local_18]->window);
-                if ((bVar4) && (local_20 == (itemDef_s *)0x0)) {
-                  local_20 = param_3->items[local_18];
-                  bVar4 = Item_IsModal(local_20);
-                  if (bVar4) {
-                    local_c = 1;
+            i = i + -1;
+            if (-1 < i) {
+              uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->items[i]->window);
+              if (((((uVar3 & 0x4004) != 0) &&
+                   (((menu->items[i]->dvarFlags & 3U) == 0 ||
+                    (iVar2 = Item_EnableShowViaDvar(menu->items[i],1), iVar2 != 0)))) &&
+                  (((menu->items[i]->dvarFlags & 0xcU) == 0 ||
+                   (iVar2 = Item_EnableShowViaDvar(menu->items[i],4), iVar2 != 0)))) &&
+                 (iVar2 = Item_IsVisible(localClientNum,dc->contextIndex,menu->items[i]), iVar2 != 0
+                 )) {
+                bVar1 = Window_HasFocus(dc->contextIndex,&menu->items[i]->window);
+                if ((bVar1) && (focusItem == (itemDef_s *)0x0)) {
+                  focusItem = menu->items[i];
+                  bVar1 = Item_IsModal(focusItem);
+                  if (bVar1) {
+                    focusSet = 1;
                   }
                 }
-                fVar9 = fVar1;
-                fVar10 = fVar2;
-                prVar7 = Window_GetRect(&param_3->items[local_18]->window);
-                iVar5 = Rect_ContainsPoint(param_2->contextIndex,prVar7,fVar9,fVar10);
-                if (iVar5 == 0) {
-                  uVar6 = Window_GetDynamicFlags
-                                    (param_2->contextIndex,&param_3->items[local_18]->window);
-                  if ((uVar6 & 1) != 0) {
-                    Item_MouseLeave(param_1,param_2,param_3->items[local_18]);
-                    Item_SetMouseOver(param_2,param_3->items[local_18],0);
+                fVar6 = x_00;
+                fVar7 = y_00;
+                prVar4 = Window_GetRect(&menu->items[i]->window);
+                iVar2 = Rect_ContainsPoint(dc->contextIndex,prVar4,fVar6,fVar7);
+                if (iVar2 == 0) {
+                  uVar3 = Window_GetDynamicFlags(dc->contextIndex,&menu->items[i]->window);
+                  if ((uVar3 & 1) != 0) {
+                    Item_MouseLeave(localClientNum,dc,menu->items[i]);
+                    Item_SetMouseOver(dc,menu->items[i],0);
                   }
                 }
-                else if (local_24 == 1) {
-                  piVar3 = param_3->items[local_18];
-                  ptVar8 = Item_GetTextDef(piVar3);
-                  if ((piVar3->type == 1) && (ptVar8->text != (char *)0x0)) {
-                    fVar9 = fVar1;
-                    fVar10 = fVar2;
-                    prVar7 = Item_CorrectedTextRect(param_2->contextIndex,piVar3);
-                    iVar5 = Rect_ContainsPoint(param_2->contextIndex,prVar7,fVar9,fVar10);
-                    if (iVar5 == 0) goto LAB_0076d209;
+                else if (pass == 1) {
+                  item = menu->items[i];
+                  ptVar5 = Item_GetTextDef(item);
+                  if ((item->type == 1) && (ptVar5->text != (char *)0x0)) {
+                    fVar6 = x_00;
+                    fVar7 = y_00;
+                    prVar4 = Item_CorrectedTextRect(dc->contextIndex,item);
+                    iVar2 = Rect_ContainsPoint(dc->contextIndex,prVar4,fVar6,fVar7);
+                    if (iVar2 == 0) goto LAB_0076d209;
                   }
-                  iVar5 = Window_GetDynamicFlags(param_2->contextIndex,&piVar3->window);
-                  iVar5 = IsVisible(iVar5);
-                  if (iVar5 != 0) {
-                    Item_MouseEnter(param_1,param_2,piVar3,fVar1,fVar2);
-                    Item_SetMouseOver(param_2,piVar3,1);
-                    if ((local_c == 0) &&
-                       (local_c = Item_SetFocus(param_1,param_2,piVar3,fVar1,fVar2), local_c != 0))
+                  iVar2 = Window_GetDynamicFlags(dc->contextIndex,&item->window);
+                  iVar2 = IsVisible(iVar2);
+                  if (iVar2 != 0) {
+                    Item_MouseEnter(localClientNum,dc,item,x_00,y_00);
+                    Item_SetMouseOver(dc,item,1);
+                    if ((focusSet == 0) &&
+                       (focusSet = Item_SetFocus(localClientNum,dc,item,x_00,y_00), focusSet != 0))
                     {
-                      local_20 = piVar3;
+                      focusItem = item;
                     }
                   }
                 }
@@ -11812,43 +12017,48 @@ LAB_0076d209:
               goto LAB_0076d209;
             }
           }
-          if ((local_c == 0) && (local_20 != (itemDef_s *)0x0)) {
-            fVar9 = fVar1;
-            fVar10 = fVar2;
-            prVar7 = Window_GetRect(&local_20->window);
-            iVar5 = Rect_ContainsPoint(param_2->contextIndex,prVar7,fVar9,fVar10);
-            if (iVar5 == 0) {
-              Menu_ClearFocus(param_1,param_2,param_3);
+          if ((focusSet == 0) && (focusItem != (itemDef_s *)0x0)) {
+            fVar6 = x_00;
+            fVar7 = y_00;
+            prVar4 = Window_GetRect(&focusItem->window);
+            iVar2 = Rect_ContainsPoint(dc->contextIndex,prVar4,fVar6,fVar7);
+            if (iVar2 == 0) {
+              Menu_ClearFocus(localClientNum,dc,menu);
             }
           }
-          if (local_c == 0) {
-            iVar5 = 0;
+          if (focusSet == 0) {
+            iVar2 = 0;
           }
           else {
-            mouseLocationX = (int)fVar1;
-            mouseLocationY = (int)fVar2;
-            iVar5 = 1;
+            mouseLocationX = (int)x_00;
+            mouseLocationY = (int)y_00;
+            iVar2 = 1;
           }
         }
       }
       else {
-        iVar5 = 0;
+        iVar2 = 0;
       }
     }
     else {
-      iVar5 = 0;
+      iVar2 = 0;
     }
   }
   else {
-    iVar5 = 0;
+    iVar2 = 0;
   }
-  return iVar5;
+  return iVar2;
 }
 
 
 // 0076E220  Menu_IsVisible  (ui/ui_shared.cpp:10240)
 
-bool __cdecl Menu_IsVisible(int param_1,UiContext *param_2,menuDef_t *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+bool __cdecl Menu_IsVisible(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   code *pcVar1;
@@ -11858,41 +12068,43 @@ bool __cdecl Menu_IsVisible(int param_1,UiContext *param_2,menuDef_t *param_3)
   clientUIActive_t *pcVar5;
   itemDef_s local_120;
   
-  bVar2 = Window_IsVisible(param_2->contextIndex,&param_3->window);
+  bVar2 = Window_IsVisible(dc->contextIndex,&menu->window);
   if (bVar2) {
-    if (((param_3->window).ownerDrawFlags == 0) ||
-       (iVar4 = UI_OwnerDrawVisible((param_3->window).ownerDrawFlags), iVar4 != 0)) {
-      if ((param_1 == -1) &&
+    if (((menu->window).ownerDrawFlags == 0) ||
+       (iVar4 = UI_OwnerDrawVisible((menu->window).ownerDrawFlags), iVar4 != 0)) {
+      if ((localClientNum == -1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x280b,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+      bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
       if (bVar2) {
-        if ((((param_3->window).staticFlags & 0x20000000U) != 0) &&
-           (bVar2 = CG_ScopeIsOverlayed(param_1), bVar2)) {
+        if ((((menu->window).staticFlags & 0x20000000U) != 0) &&
+           (bVar2 = CG_ScopeIsOverlayed(localClientNum), bVar2)) {
           return false;
         }
-        if ((((param_3->window).staticFlags & 0x10000000U) != 0) &&
-           ((bVar2 = CG_Flashbanged(param_1), bVar2 || (bVar2 = CG_Flared(param_1), bVar2)))) {
+        if ((((menu->window).staticFlags & 0x10000000U) != 0) &&
+           ((bVar2 = CG_Flashbanged(localClientNum), bVar2 ||
+            (bVar2 = CG_Flared(localClientNum), bVar2)))) {
           return false;
         }
       }
-      if ((((param_3->window).staticFlags & 0x40000000U) == 0) ||
-         (pcVar5 = CL_GetLocalClientUIGlobals(param_1), (pcVar5->keyCatchers & 0x10U) == 0)) {
-        local_120.parent = param_3;
-        if ((((uint)param_3->showBits & *(uint *)(&DAT_098dada8 + param_1 * 8)) ==
-             (uint)param_3->showBits) &&
-           ((((*(uint *)((int)&param_3->showBits + 4) & *(uint *)(&DAT_098dadac + param_1 * 8)) ==
-              *(uint *)((int)&param_3->showBits + 4) &&
-             (((uint)param_3->hideBits | *(uint *)(&DAT_098dada8 + param_1 * 8)) ==
-              (uint)param_3->hideBits)) &&
-            ((*(uint *)((int)&param_3->hideBits + 4) | *(uint *)(&DAT_098dadac + param_1 * 8)) ==
-             *(uint *)((int)&param_3->hideBits + 4))))) {
-          if (((param_3->visibleExp).filename == (char *)0x0) ||
-             (bVar2 = IsExpressionTrue(param_1,&local_120,&param_3->visibleExp), bVar2)) {
+      if ((((menu->window).staticFlags & 0x40000000U) == 0) ||
+         (pcVar5 = CL_GetLocalClientUIGlobals(localClientNum), (pcVar5->keyCatchers & 0x10U) == 0))
+      {
+        local_120.parent = menu;
+        if ((((uint)menu->showBits & *(uint *)(&DAT_098dada8 + localClientNum * 8)) ==
+             (uint)menu->showBits) &&
+           ((((*(uint *)((int)&menu->showBits + 4) & *(uint *)(&DAT_098dadac + localClientNum * 8))
+              == *(uint *)((int)&menu->showBits + 4) &&
+             (((uint)menu->hideBits | *(uint *)(&DAT_098dada8 + localClientNum * 8)) ==
+              (uint)menu->hideBits)) &&
+            ((*(uint *)((int)&menu->hideBits + 4) | *(uint *)(&DAT_098dadac + localClientNum * 8))
+             == *(uint *)((int)&menu->hideBits + 4))))) {
+          if (((menu->visibleExp).filename == (char *)0x0) ||
+             (bVar2 = IsExpressionTrue(localClientNum,&local_120,&menu->visibleExp), bVar2)) {
             bVar2 = true;
           }
           else {
@@ -11924,7 +12136,7 @@ bool __cdecl Menu_IsVisible(int param_1,UiContext *param_2,menuDef_t *param_3)
 
 // 0076E4B0  Menu_PerformTransitionEffects  (ui/ui_shared.cpp:10291)
 
-void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDef_t *param_3)
+void __cdecl Menu_PerformTransitionEffects(int localClientNum,UiContext *dc,menuDef_t *menu)
 
 {
   uint uVar1;
@@ -11948,35 +12160,35 @@ void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDe
   local_20 = -1;
   local_24 = 0.0;
   local_28 = 0.0;
-  uVar1 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+  uVar1 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
   bVar5 = (uVar1 & 0x20000) != 0;
   if (bVar5) {
-    local_20 = param_3->openSlideDirection;
-    local_24 = (float)param_3->openSlideSpeed;
-    Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x40000);
+    local_20 = menu->openSlideDirection;
+    local_24 = (float)menu->openSlideSpeed;
+    Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x40000);
   }
-  uVar1 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+  uVar1 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
   bVar6 = (uVar1 & 0x40000) != 0;
   if (bVar6) {
-    local_20 = param_3->closeSlideDirection;
-    local_24 = (float)param_3->closeSlideSpeed;
-    Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x20000);
+    local_20 = menu->closeSlideDirection;
+    local_24 = (float)menu->closeSlideSpeed;
+    Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x20000);
   }
-  uVar1 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+  uVar1 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
   bVar7 = (uVar1 & 0x80000) != 0;
   if (bVar7) {
-    local_28 = (float)param_3->openFadingTime;
-    Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x2000);
+    local_28 = (float)menu->openFadingTime;
+    Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x2000);
   }
-  uVar1 = Window_GetDynamicFlags(param_2->contextIndex,&param_3->window);
+  uVar1 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
   bVar8 = (uVar1 & 0x2000) != 0;
   if (bVar8) {
-    local_28 = (float)param_3->closeFadingTime;
-    Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x80000);
+    local_28 = (float)menu->closeFadingTime;
+    Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x80000);
   }
   if ((bVar5) || (bVar6)) {
     iVar2 = Sys_Milliseconds();
-    iVar2 = iVar2 - param_3->slideTimeCounter;
+    iVar2 = iVar2 - menu->slideTimeCounter;
     local_24 = (1.0 / (ui_animSpeedScale->current).value) * local_24;
     local_34 = (int)local_24;
     if (iVar2 <= local_34) {
@@ -11996,45 +12208,45 @@ void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDe
     switch(local_20) {
     case 0:
       if (bVar5) {
-        (param_3->window).rect.x =
-             -(param_3->initialRectInfo).w +
-             ((param_3->initialRectInfo).w + (param_3->initialRectInfo).x) * fVar9;
-        (param_3->window).rect.y = (param_3->initialRectInfo).y;
+        (menu->window).rect.x =
+             -(menu->initialRectInfo).w +
+             ((menu->initialRectInfo).w + (menu->initialRectInfo).x) * fVar9;
+        (menu->window).rect.y = (menu->initialRectInfo).y;
       }
       else {
-        (param_3->window).rect.x =
-             (local_1c - (param_3->initialRectInfo).x) * fVar9 + (param_3->initialRectInfo).x;
+        (menu->window).rect.x =
+             (local_1c - (menu->initialRectInfo).x) * fVar9 + (menu->initialRectInfo).x;
       }
       break;
     case 1:
       if (bVar5) {
-        (param_3->window).rect.x = local_1c - (local_1c - (param_3->initialRectInfo).x) * fVar9;
-        (param_3->window).rect.y = (param_3->initialRectInfo).y;
+        (menu->window).rect.x = local_1c - (local_1c - (menu->initialRectInfo).x) * fVar9;
+        (menu->window).rect.y = (menu->initialRectInfo).y;
       }
       else {
-        (param_3->window).rect.x =
-             (param_3->initialRectInfo).x - ((param_3->initialRectInfo).x + local_1c) * fVar9;
+        (menu->window).rect.x =
+             (menu->initialRectInfo).x - ((menu->initialRectInfo).x + local_1c) * fVar9;
       }
       break;
     case 2:
       if (bVar5) {
-        (param_3->window).rect.y = -(480.0 - (param_3->initialRectInfo).y) + fVar9 * 480.0;
-        (param_3->window).rect.x = (param_3->initialRectInfo).x;
+        (menu->window).rect.y = -(480.0 - (menu->initialRectInfo).y) + fVar9 * 480.0;
+        (menu->window).rect.x = (menu->initialRectInfo).x;
       }
       else {
-        (param_3->window).rect.y =
-             (480.0 - (param_3->initialRectInfo).y) * fVar9 + (param_3->initialRectInfo).y;
+        (menu->window).rect.y =
+             (480.0 - (menu->initialRectInfo).y) * fVar9 + (menu->initialRectInfo).y;
       }
       break;
     case 3:
       if (bVar5) {
-        (param_3->window).rect.y = 480.0 - (480.0 - (param_3->initialRectInfo).y) * fVar9;
-        (param_3->window).rect.x = (param_3->initialRectInfo).x;
+        (menu->window).rect.y = 480.0 - (480.0 - (menu->initialRectInfo).y) * fVar9;
+        (menu->window).rect.x = (menu->initialRectInfo).x;
       }
       else {
-        (param_3->window).rect.y =
-             (param_3->initialRectInfo).y -
-             ((param_3->initialRectInfo).y + (param_3->window).rect.h) * fVar9;
+        (menu->window).rect.y =
+             (menu->initialRectInfo).y - ((menu->initialRectInfo).y + (menu->window).rect.h) * fVar9
+        ;
       }
       break;
     default:
@@ -12042,21 +12254,21 @@ void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDe
     }
     if (local_24 <= (float)iVar2) {
       if (bVar5) {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x20000);
-        if (param_2->menuStack[param_2->openMenuCount + -1].menu == param_3) {
-          Menu_CallOnFocusDueToOpen(param_1,param_2,param_3);
+        Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x20000);
+        if (dc->menuStack[dc->openMenuCount + -1].menu == menu) {
+          Menu_CallOnFocusDueToOpen(localClientNum,dc,menu);
         }
-        param_3->slideTimeCounter = -1;
+        menu->slideTimeCounter = -1;
       }
       else {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x40000);
-        param_3->slideTimeCounter = -3;
+        Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x40000);
+        menu->slideTimeCounter = -3;
       }
     }
   }
   if ((bVar7) || (bVar8)) {
     iVar3 = Sys_Milliseconds();
-    iVar3 = iVar3 - param_3->fadeTimeCounter;
+    iVar3 = iVar3 - menu->fadeTimeCounter;
     local_28 = (1.0 / (ui_animSpeedScale->current).value) * local_28;
     iVar4 = (int)local_28;
     iVar2 = iVar4;
@@ -12069,26 +12281,26 @@ void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDe
     __libm_sse2_sin((double)CONCAT44(iVar4,iVar2));
     fVar9 = (float)dVar10;
     if (bVar7) {
-      (param_3->window).foreColor[3] = fVar9;
-      (param_3->window).backColor[3] = fVar9;
-      (param_3->window).borderColor[3] = fVar9;
+      (menu->window).foreColor[3] = fVar9;
+      (menu->window).backColor[3] = fVar9;
+      (menu->window).borderColor[3] = fVar9;
     }
     else {
-      (param_3->window).foreColor[3] = 1.0 - fVar9;
-      (param_3->window).backColor[3] = 1.0 - fVar9;
-      (param_3->window).borderColor[3] = 1.0 - fVar9;
+      (menu->window).foreColor[3] = 1.0 - fVar9;
+      (menu->window).backColor[3] = 1.0 - fVar9;
+      (menu->window).borderColor[3] = 1.0 - fVar9;
     }
     if (local_28 <= (float)iVar3) {
       if (bVar7) {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x80000);
-        if (param_2->menuStack[param_2->openMenuCount + -1].menu == param_3) {
-          Menu_CallOnFocusDueToOpen(param_1,param_2,param_3);
+        Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x80000);
+        if (dc->menuStack[dc->openMenuCount + -1].menu == menu) {
+          Menu_CallOnFocusDueToOpen(localClientNum,dc,menu);
         }
-        param_3->fadeTimeCounter = -1;
+        menu->fadeTimeCounter = -1;
       }
       else {
-        Window_RemoveDynamicFlags(param_2->contextIndex,&param_3->window,0x2000);
-        param_3->fadeTimeCounter = -3;
+        Window_RemoveDynamicFlags(dc->contextIndex,&menu->window,0x2000);
+        menu->fadeTimeCounter = -3;
       }
     }
   }
@@ -12099,8 +12311,8 @@ void __cdecl Menu_PerformTransitionEffects(int param_1,UiContext *param_2,menuDe
 // 0076EB50  Menu_Paint  (ui/ui_shared.cpp:10463)
 
 bool __cdecl
-Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_t *param_4,
-          int param_5)
+Menu_Paint(int localClientNum,UiContext *dc,ScreenPlacementStack *scrPlaceViewStack,menuDef_t *menu,
+          int UI3DOverrideId)
 
 {
   code *pcVar1;
@@ -12109,9 +12321,9 @@ Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_
   int iVar4;
   DWORD DVar5;
   rectDef_s *prVar6;
-  char *pcVar7;
-  uint uVar8;
-  float fVar9;
+  char *Name;
+  uint uVar7;
+  float fVar8;
   int local_160;
   ScopedScrPlaceViewStack local_13c;
   GfxUI3DStack *local_138;
@@ -12122,26 +12334,26 @@ Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_
   int local_124;
   itemDef_s local_120;
   
-  local_120.parent = param_4;
-  if ((param_4 == (menuDef_t *)0x0) &&
+  local_120.parent = menu;
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x28ee,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_4->ui3dWindowId < 0) {
+  if (menu->ui3dWindowId < 0) {
     local_124 = -1;
   }
   else {
-    local_124 = param_4->ui3dWindowId;
+    local_124 = menu->ui3dWindowId;
   }
   local_128 = local_124;
-  if ((local_124 == -1) && (-1 < param_5)) {
-    local_128 = param_5;
+  if ((local_124 == -1) && (-1 < UI3DOverrideId)) {
+    local_128 = UI3DOverrideId;
   }
   if (local_128 < 0) {
-    local_12c = (ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78);
+    local_12c = (ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78);
   }
   else {
     local_12c = R_UI3D_ScrPlaceFromTextureWindow(local_128);
@@ -12150,18 +12362,19 @@ Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_
   local_138 = R_GetUI3DStack();
   local_134 = local_138;
   R_UI3DStack_Push(local_138,local_128);
-  if (((param_3 != (ScreenPlacementStack *)0x0) && (param_3->contextIndex != param_2->contextIndex))
-     && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x28fc,0,
-                                  "%s"), !bVar2)) {
+  if (((scrPlaceViewStack != (ScreenPlacementStack *)0x0) &&
+      (scrPlaceViewStack->contextIndex != dc->contextIndex)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x28fc,0,"%s")
+     , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&local_13c,param_3,local_130);
-  if (((*(ui_showMenuOnly->current).string == '\0') || ((param_4->window).name == (char *)0x0)) ||
-     (iVar4 = I_stricmp((param_4->window).name,(ui_showMenuOnly->current).string), iVar4 == 0)) {
+  ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&local_13c,scrPlaceViewStack,local_130);
+  if (((*(ui_showMenuOnly->current).string == '\0') || ((menu->window).name == (char *)0x0)) ||
+     (iVar4 = I_stricmp((menu->window).name,(ui_showMenuOnly->current).string), iVar4 == 0)) {
     PIXBeginNamedEvent(-1,"Menu_IsVisible");
-    bVar2 = Menu_IsVisible(param_1,param_2,param_4);
+    bVar2 = Menu_IsVisible(localClientNum,dc,menu);
     if (bVar2) {
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -12170,108 +12383,106 @@ Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_
       PIXBeginNamedEvent(-1,"Menu_AnyItemsVisible");
       bVar2 = false;
       local_160 = 0;
-      while ((local_160 < param_4->itemCount && (!bVar2))) {
-        if (((param_4->items[local_160]->window).staticFlags & 0x100000U) == 0) {
+      while ((local_160 < menu->itemCount && (!bVar2))) {
+        if (((menu->items[local_160]->window).staticFlags & 0x100000U) == 0) {
           bVar2 = true;
         }
-        if ((param_4->items[local_160]->animInfo != (UIAnimInfo *)0x0) &&
-           (param_4->items[local_160]->animInfo->animating != 0)) {
+        if ((menu->items[local_160]->animInfo != (UIAnimInfo *)0x0) &&
+           (menu->items[local_160]->animInfo->animating != 0)) {
           bVar2 = true;
         }
-        if (1e-06 < (param_4->items[local_160]->window).foreColor[3]) {
+        if (1e-06 < (menu->items[local_160]->window).foreColor[3]) {
           bVar2 = true;
         }
         local_160 = local_160 + 1;
       }
-      if ((param_4->itemCount < 1) || (bVar2)) {
+      if ((menu->itemCount < 1) || (bVar2)) {
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        if ((param_4->soundName != (char *)0x0) &&
-           (iVar4 = CL_LocalClientIsInGame(param_1), iVar4 == 0)) {
-          UI_PlaySound(param_2->contextIndex,param_4->soundName);
+        if ((menu->soundName != (char *)0x0) &&
+           (iVar4 = CL_LocalClientIsInGame(localClientNum), iVar4 == 0)) {
+          UI_PlaySound(dc->contextIndex,menu->soundName);
         }
-        if ((param_4->blurRadius != 0.0) && ((zombietron->current).enabled == false)) {
-          param_2->blurRadiusOut =
-               SQRT(param_4->blurRadius * param_4->blurRadius +
-                    param_2->blurRadiusOut * param_2->blurRadiusOut);
+        if ((menu->blurRadius != 0.0) && ((zombietron->current).enabled == false)) {
+          dc->blurRadiusOut =
+               SQRT(menu->blurRadius * menu->blurRadius + dc->blurRadiusOut * dc->blurRadiusOut);
         }
         PIXBeginNamedEvent(-1,"Item_UpdateAnimation");
-        for (local_160 = 0; local_160 < param_4->itemCount; local_160 = local_160 + 1) {
-          if ((param_4->items[local_160]->animInfo != (UIAnimInfo *)0x0) &&
-             (param_4->items[local_160]->animInfo->animating != 0)) {
-            Item_UpdateAnimation(param_1,param_2,param_4->items[local_160]);
+        for (local_160 = 0; local_160 < menu->itemCount; local_160 = local_160 + 1) {
+          if ((menu->items[local_160]->animInfo != (UIAnimInfo *)0x0) &&
+             (menu->items[local_160]->animInfo->animating != 0)) {
+            Item_UpdateAnimation(localClientNum,dc,menu->items[local_160]);
           }
         }
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        Menu_PerformTransitionEffects(param_1,param_2,param_4);
+        Menu_PerformTransitionEffects(localClientNum,dc,menu);
         PIXBeginNamedEvent(-1,"Menu_UpdatePosition");
-        if ((param_4->rectXExp).filename != (char *)0x0) {
-          fVar9 = GetExpressionFloat(param_1,&local_120,&param_4->rectXExp);
-          (param_4->window).rect.x = fVar9;
+        if ((menu->rectXExp).filename != (char *)0x0) {
+          fVar8 = GetExpressionFloat(localClientNum,&local_120,&menu->rectXExp);
+          (menu->window).rect.x = fVar8;
         }
-        if ((param_4->rectYExp).filename != (char *)0x0) {
-          fVar9 = GetExpressionFloat(param_1,&local_120,&param_4->rectYExp);
-          (param_4->window).rect.y = fVar9;
+        if ((menu->rectYExp).filename != (char *)0x0) {
+          fVar8 = GetExpressionFloat(localClientNum,&local_120,&menu->rectYExp);
+          (menu->window).rect.y = fVar8;
         }
-        Menu_UpdatePosition(param_2->contextIndex,param_4);
+        Menu_UpdatePosition(dc->contextIndex,menu);
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        if ((param_4->fullScreen != 0) && ((param_4->window).background != (Material *)0x0)) {
+        if ((menu->fullScreen != 0) && ((menu->window).background != (Material *)0x0)) {
           PIXBeginNamedEvent(-1,"UI_DrawHandlePic");
-          prVar6 = Window_GetRect(&param_4->window);
-          UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),0.0,0.0
-                           ,640.0,480.0,prVar6->horzAlign,prVar6->vertAlign,(float *)0x0,
-                           (param_4->window).background);
+          prVar6 = Window_GetRect(&menu->window);
+          UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),0.0,0.0,
+                           640.0,480.0,prVar6->horzAlign,prVar6->vertAlign,(float *)0x0,
+                           (menu->window).background);
           DVar5 = GetCurrentThreadId();
           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         PIXBeginNamedEvent(-1,"Window_Paint");
-        Window_Paint(param_1,param_2,&param_4->window,param_4->fadeAmount,param_4->fadeInAmount,
-                     param_4->fadeClamp,(float)param_4->fadeCycle,-1,(itemDef_s *)0x0);
+        Window_Paint(localClientNum,dc,&menu->window,menu->fadeAmount,menu->fadeInAmount,
+                     menu->fadeClamp,(float)menu->fadeCycle,-1,(itemDef_s *)0x0);
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        pcVar7 = va("Item_Paint (%d)");
-        PIXBeginNamedEvent(-1,pcVar7);
-        for (local_160 = 0; local_160 < param_4->itemCount; local_160 = local_160 + 1) {
-          uVar8 = Window_GetDynamicFlags(param_2->contextIndex,&param_4->window);
-          if (((uVar8 & 0x82000) == 0) && (param_4->fadeTimeCounter != -3)) {
-            Item_Paint(param_1,param_2,param_4->items[local_160]);
+        Name = va("Item_Paint (%d)");
+        PIXBeginNamedEvent(-1,Name);
+        for (local_160 = 0; local_160 < menu->itemCount; local_160 = local_160 + 1) {
+          uVar7 = Window_GetDynamicFlags(dc->contextIndex,&menu->window);
+          if (((uVar7 & 0x82000) == 0) && (menu->fadeTimeCounter != -3)) {
+            Item_Paint(localClientNum,dc,menu->items[local_160]);
           }
           else {
-            if (param_4->fadeTimeCounter == -3) break;
-            fVar9 = (param_4->items[local_160]->window).foreColor[3];
-            (param_4->items[local_160]->window).foreColor[3] =
-                 (param_4->items[local_160]->window).foreColor[3] * (param_4->window).foreColor[3];
-            (param_4->items[local_160]->window).borderColor[3] =
-                 (param_4->items[local_160]->window).borderColor[3] * (param_4->window).foreColor[3]
-            ;
-            (param_4->items[local_160]->window).backColor[3] =
-                 (param_4->items[local_160]->window).backColor[3] * (param_4->window).foreColor[3];
-            Item_Paint(param_1,param_2,param_4->items[local_160]);
-            (param_4->items[local_160]->window).foreColor[3] = fVar9;
+            if (menu->fadeTimeCounter == -3) break;
+            fVar8 = (menu->items[local_160]->window).foreColor[3];
+            (menu->items[local_160]->window).foreColor[3] =
+                 (menu->items[local_160]->window).foreColor[3] * (menu->window).foreColor[3];
+            (menu->items[local_160]->window).borderColor[3] =
+                 (menu->items[local_160]->window).borderColor[3] * (menu->window).foreColor[3];
+            (menu->items[local_160]->window).backColor[3] =
+                 (menu->items[local_160]->window).backColor[3] * (menu->window).foreColor[3];
+            Item_Paint(localClientNum,dc,menu->items[local_160]);
+            (menu->items[local_160]->window).foreColor[3] = fVar8;
           }
         }
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
-        (param_4->window).rect.x = (param_4->initialRectInfo).x;
-        (param_4->window).rect.y = (param_4->initialRectInfo).y;
+        (menu->window).rect.x = (menu->initialRectInfo).x;
+        (menu->window).rect.y = (menu->initialRectInfo).y;
         PIXBeginNamedEvent(-1,"g_debugMode");
         if (g_debugMode != 0) {
-          prVar6 = Window_GetRect(&param_4->window);
-          UI_DrawRect((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),prVar6->x,
+          prVar6 = Window_GetRect(&menu->window);
+          UI_DrawRect((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),prVar6->x,
                       prVar6->y,prVar6->w,prVar6->h,prVar6->horzAlign,prVar6->vertAlign,1.0,
                       colorMagenta);
         }
@@ -12314,10 +12525,10 @@ Menu_Paint(int param_1,UiContext *param_2,ScreenPlacementStack *param_3,menuDef_
 
 // 00774EE0  Menu_Count  (ui/ui_shared.cpp:10643)
 
-int __cdecl Menu_Count(UiContext *param_1)
+int __cdecl Menu_Count(UiContext *dc)
 
 {
-  return param_1->menuCount;
+  return dc->menuCount;
 }
 
 
@@ -12325,13 +12536,13 @@ int __cdecl Menu_Count(UiContext *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Menu_PaintAll_BeginVisibleList(char *param_1,uint param_2)
+void __cdecl Menu_PaintAll_BeginVisibleList(char *stringBegin,uint stringSize)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 < 0xe) {
+  if (stringSize < 0xe) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x299b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -12339,77 +12550,83 @@ void __cdecl Menu_PaintAll_BeginVisibleList(char *param_1,uint param_2)
       return;
     }
   }
-  builtin_strncpy(param_1,"ui_showlist: ",0xe);
+  builtin_strncpy(stringBegin,"ui_showlist: ",0xe);
   return;
 }
 
 
 // 00774F80  Menu_PaintAll_AppendToVisibleList  (ui/ui_shared.cpp:10657)
 
-void __cdecl Menu_PaintAll_AppendToVisibleList(char *param_1,uint param_2,char *param_3)
+void __cdecl
+Menu_PaintAll_AppendToVisibleList(char *stringBegin,uint stringSize,char *stringToAppend)
 
 {
-  reverse_iterator<char_*> rVar1;
-  reverse_iterator<char_*> local_5c;
+  char *pcVar1;
+  reverse_iterator<char_*> rVar2;
+  char *local_5c;
   undefined1 local_24 [4];
-  reverse_iterator<char_*> local_20;
+  char *local_20;
   char *local_1c;
   undefined1 local_15;
-  int local_14;
-  undefined4 local_10;
-  reverse_iterator<char_*> local_c;
-  char *local_8;
+  char *lastNewline;
+  int VISIBLE_LIST_LINE_LENGTH;
+  char *stringEnd;
+  char *terminus;
   
-  local_10 = 0x50;
-  local_5c = (reverse_iterator<char_*>)param_1;
-  rVar1 = local_5c;
+  VISIBLE_LIST_LINE_LENGTH = 0x50;
+  local_5c = stringBegin;
+  pcVar1 = local_5c;
   do {
-    local_5c = rVar1;
-    rVar1 = (reverse_iterator<char_*>)((int)local_5c + 1);
-  } while (*(char *)local_5c != '\0');
-  local_c = local_5c;
-  I_strncat(param_1,param_2,param_3);
+    local_5c = pcVar1;
+    pcVar1 = local_5c + 1;
+  } while (*local_5c != '\0');
+  stringEnd = local_5c;
+  I_strncat(stringBegin,stringSize,stringToAppend);
   local_15 = 10;
-  local_1c = param_1;
-  local_20 = local_c;
-  rVar1 = std::find<std::reverse_iterator<char_*>,char>
-                    ((reverse_iterator<char_*>)local_24,local_c,param_1);
-  local_14 = *(int *)rVar1 + -1;
-  if ((int)local_c - local_14 < 0x51) {
-    local_8 = ", ";
+  local_1c = stringBegin;
+  local_20 = stringEnd;
+  rVar2 = std::find<std::reverse_iterator<char_*>,char>
+                    ((reverse_iterator<char_*>)local_24,(reverse_iterator<char_*>)stringEnd,
+                     stringBegin);
+  lastNewline = (char *)(*(int *)rVar2 + -1);
+  if ((int)stringEnd - (int)lastNewline < 0x51) {
+    terminus = ", ";
   }
   else {
-    local_8 = ",\n  ";
+    terminus = ",\n  ";
   }
-  I_strncat(param_1,param_2,local_8);
+  I_strncat(stringBegin,stringSize,terminus);
   return;
 }
 
 
 // 00775050  Menu_PaintAll_DrawVisibleList  (ui/ui_shared.cpp:10676)
 
-void __cdecl Menu_PaintAll_DrawVisibleList(char *param_1,UiContext *param_2)
+void __cdecl Menu_PaintAll_DrawVisibleList(char *stringBegin,UiContext *dc)
 
 {
-  float local_1c;
+  float MESSAGE_Y_UI;
+  float MESSAGE_Y_MENU;
+  float MESSAGE_X;
+  float color;
   float local_18;
   undefined4 local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float y;
+  float MESSAGE_SCALE;
   
-  local_8 = 0.2;
-  local_1c = 0.75;
+  MESSAGE_SCALE = 0.2;
+  color = 0.75;
   local_18 = 1.0;
   local_14 = 0x3f000000;
   local_10 = 1.0;
-  if (param_2->FPS == 0.0) {
-    local_c = 320.0;
+  if (dc->FPS == 0.0) {
+    y = 320.0;
   }
   else {
-    local_c = 400.0;
+    y = 400.0;
   }
-  UI_DrawText(&scrPlaceFull,param_1,0x7fffffff,DAT_098b4b98,0.0,local_c,0,0,0.2,&local_1c,0);
+  UI_DrawText(&scrPlaceFull,stringBegin,0x7fffffff,DAT_098b4b98,0.0,y,0,0,0.2,&color,0);
   return;
 }
 
@@ -12418,7 +12635,7 @@ void __cdecl Menu_PaintAll_DrawVisibleList(char *param_1,UiContext *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Menu_PaintAll(int param_1,UiContext *param_2)
+void __cdecl Menu_PaintAll(int localClientNum,UiContext *dc)
 
 {
   bool bVar1;
@@ -12430,49 +12647,60 @@ void __cdecl Menu_PaintAll(int param_1,UiContext *param_2)
   char *pcVar7;
   menuDef_t *pmVar8;
   uint uVar9;
-  GfxUI3DStack *pGVar10;
-  Font_s *pFVar11;
-  Font_s *pFVar12;
-  int iVar13;
-  float fVar14;
-  float fVar15;
-  int iVar16;
-  int iVar17;
-  float fVar18;
-  float *pfVar19;
-  int iVar20;
+  GfxUI3DStack *stack;
+  Font_s *pFVar10;
+  Font_s *font_00;
+  int iVar11;
+  float fVar12;
+  float fVar13;
+  int iVar14;
+  int iVar15;
+  float fVar16;
+  float *pfVar17;
+  int style;
   int local_570;
   int local_568;
-  int local_534;
-  int local_51c;
-  ScreenPlacementStack local_50c;
-  ScreenPlacementStack *local_410;
-  char local_40c [1024];
+  Font_s *font_2;
+  Font_s *font;
+  int localClientNumForMenu_2;
+  int UI3DOverrideId;
+  ScopedUI3DStack windowIdStack;
+  int localClientNumForMenu;
+  menuDef_t *toastPopupMenu;
+  bool showVisibleList;
+  int blurFocus;
+  int menuIndex;
+  menuDef_t *menu;
+  menuDef_t *blurMenu;
+  bool drew;
+  ScreenPlacementStack scrPlaceStack;
+  ScreenPlacementStack *scrPlaceStackPtr;
+  char visibleList [1024];
   uint local_c;
-  int local_8;
+  int drawStart;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50c.contextIndex = param_2->contextIndex;
-  local_50c.size = 0;
-  local_410 = &local_50c;
+  scrPlaceStack.contextIndex = dc->contextIndex;
+  scrPlaceStack.size = 0;
+  scrPlaceStackPtr = &scrPlaceStack;
   bVar1 = (ui_showList->current).enabled;
   PIXBeginNamedEvent(-1,"menu paint all");
   PIXBeginNamedEvent(-1,"Menu_PaintAll_BeginVisibleList");
   if (bVar1 != false) {
-    Menu_PaintAll_BeginVisibleList(local_40c,0x400);
+    Menu_PaintAll_BeginVisibleList(visibleList,0x400);
   }
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  param_2->blurRadiusOut = 0.0;
+  dc->blurRadiusOut = 0.0;
   if (captureFunc != (_func___cdecl_void_int_UiContext_ptr_void_ptr *)0x0) {
-    (*captureFunc)(param_1,param_2,captureData);
+    (*captureFunc)(localClientNum,dc,captureData);
   }
-  pmVar5 = Menus_FindByName(param_2,"menu_toast_popup");
+  pmVar5 = Menus_FindByName(dc,"menu_toast_popup");
   PIXBeginNamedEvent(-1,"menu paint");
-  for (local_51c = 0; iVar6 = Menu_Count(param_2), local_51c < iVar6; local_51c = local_51c + 1) {
-    pmVar8 = param_2->Menus[local_51c];
+  for (menuIndex = 0; iVar6 = Menu_Count(dc), menuIndex < iVar6; menuIndex = menuIndex + 1) {
+    pmVar8 = dc->Menus[menuIndex];
     if ((pmVar8 == (menuDef_t *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2a03,0,
                                  "%s"), !bVar3)) {
@@ -12480,17 +12708,17 @@ void __cdecl Menu_PaintAll(int param_1,UiContext *param_2)
       (*pcVar2)();
       return;
     }
-    iVar6 = Menus_MenuIsInStack(param_2,pmVar8);
+    iVar6 = Menus_MenuIsInStack(dc,pmVar8);
     if ((iVar6 == 0) && (pmVar8 != pmVar5)) {
       pcVar7 = va("Menu_Paint %s");
       PIXBeginNamedEvent(-1,pcVar7);
-      bVar3 = Menu_Paint(param_1,param_2,local_410,pmVar8,-1);
+      bVar3 = Menu_Paint(localClientNum,dc,scrPlaceStackPtr,pmVar8,-1);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       if ((bVar3) && (bVar1 != false)) {
-        Menu_PaintAll_AppendToVisibleList(local_40c,0x400,(pmVar8->window).name);
+        Menu_PaintAll_AppendToVisibleList(visibleList,0x400,(pmVar8->window).name);
       }
     }
   }
@@ -12498,12 +12726,12 @@ void __cdecl Menu_PaintAll(int param_1,UiContext *param_2)
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  local_8 = 0;
-  iVar6 = param_2->openMenuCount;
+  drawStart = 0;
+  iVar6 = dc->openMenuCount;
   do {
-    local_51c = iVar6 + -1;
-    if (local_51c < 0) goto LAB_0077546f;
-    pmVar8 = param_2->menuStack[iVar6 + -1].menu;
+    menuIndex = iVar6 + -1;
+    if (menuIndex < 0) goto LAB_0077546f;
+    pmVar8 = dc->menuStack[iVar6 + -1].menu;
     if ((pmVar8 == (menuDef_t *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2a15,0,
                                  "%s"), !bVar3)) {
@@ -12511,153 +12739,153 @@ void __cdecl Menu_PaintAll(int param_1,UiContext *param_2)
       (*pcVar2)();
       return;
     }
-    iVar6 = local_51c;
+    iVar6 = menuIndex;
   } while (pmVar8->fullScreen == 0);
-  local_8 = local_51c;
+  drawStart = menuIndex;
 LAB_0077546f:
   PIXBeginNamedEvent(-1,"blurMenu");
-  pmVar8 = Menus_FindByName(param_2,"UIBlur");
+  pmVar8 = Menus_FindByName(dc,"UIBlur");
   if (pmVar8 != (menuDef_t *)0x0) {
-    uVar9 = Window_GetDynamicFlags(param_2->contextIndex,&pmVar8->window);
+    uVar9 = Window_GetDynamicFlags(dc->contextIndex,&pmVar8->window);
     if ((uVar9 & 4) == 0) {
-      Window_SetDynamicFlags(param_2->contextIndex,&pmVar8->window,4);
+      Window_SetDynamicFlags(dc->contextIndex,&pmVar8->window,4);
     }
-    Menu_Paint(param_1,param_2,local_410,pmVar8,-1);
+    Menu_Paint(localClientNum,dc,scrPlaceStackPtr,pmVar8,-1);
   }
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  local_51c = local_8;
+  menuIndex = drawStart;
   while( true ) {
-    if (param_2->openMenuCount <= local_51c) {
+    if (dc->openMenuCount <= menuIndex) {
       PIXBeginNamedEvent(-1,"UI3DOverride");
-      iVar6 = GetBlurFocus(param_1,param_2);
+      iVar6 = GetBlurFocus(localClientNum,dc);
       if (iVar6 != -1) {
-        pGVar10 = R_GetUI3DStack();
-        R_UI3DStack_Push(pGVar10,0);
-        UI_SetShaderTime(param_1);
-        R_UI3DStack_Pop(pGVar10);
+        stack = R_GetUI3DStack();
+        R_UI3DStack_Push(stack,0);
+        UI_SetShaderTime(localClientNum);
+        R_UI3DStack_Pop(stack);
       }
-      local_51c = local_8;
+      menuIndex = drawStart;
       while( true ) {
-        if (param_2->openMenuCount <= local_51c) {
+        if (dc->openMenuCount <= menuIndex) {
           DVar4 = GetCurrentThreadId();
           if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
           PIXBeginNamedEvent(-1,"g_debugMode");
           if (g_debugMode != 0) {
-            pFVar11 = UI_GetFontHandle((ScreenPlacement *)
-                                       (&scrPlaceView + param_2->contextIndex * 0x78),0,0.5);
-            iVar17 = 0;
-            pfVar19 = colorWhite;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 25.0;
-            fVar14 = 200.0;
+            pFVar10 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),
+                                       0,0.5);
+            iVar15 = 0;
+            pfVar17 = colorWhite;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 25.0;
+            fVar12 = 200.0;
             iVar6 = 0x7fffffff;
             pcVar7 = va("fps: %f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            pFVar12 = UI_GetFontHandle((ScreenPlacement *)
-                                       (&scrPlaceView + param_2->contextIndex * 0x78),3,0.25);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 25.0;
-            fVar14 = 5.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            font_00 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),
+                                       3,0.25);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 25.0;
+            fVar12 = 5.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 45.0;
-            fVar14 = 5.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 45.0;
+            fVar12 = 5.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 25.0;
-            fVar14 = 500.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 25.0;
+            fVar12 = 500.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 45.0;
-            fVar14 = 500.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 45.0;
+            fVar12 = 500.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 445.0;
-            fVar14 = 500.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 445.0;
+            fVar12 = 500.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 465.0;
-            fVar14 = 500.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 465.0;
+            fVar12 = 500.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 445.0;
-            fVar14 = 5.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 445.0;
+            fVar12 = 5.0;
             iVar6 = 0x7fffffff;
-            pFVar11 = pFVar12;
+            pFVar10 = font_00;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar11,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
-            iVar17 = 0;
-            pfVar19 = colorRed;
-            fVar18 = 0.5;
-            iVar16 = 0;
-            iVar13 = 0;
-            fVar15 = 465.0;
-            fVar14 = 5.0;
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        pFVar10,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
+            iVar15 = 0;
+            pfVar17 = colorRed;
+            fVar16 = 0.5;
+            iVar14 = 0;
+            iVar11 = 0;
+            fVar13 = 465.0;
+            fVar12 = 5.0;
             iVar6 = 0x7fffffff;
             pcVar7 = va("x: %.0f, y: %.0f");
-            UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                        iVar6,pFVar12,fVar14,fVar15,iVar13,iVar16,fVar18,pfVar19,iVar17);
+            UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar6,
+                        font_00,fVar12,fVar13,iVar11,iVar14,fVar16,pfVar17,iVar15);
           }
           DVar4 = GetCurrentThreadId();
           if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -12665,7 +12893,7 @@ LAB_0077546f:
           }
           PIXBeginNamedEvent(-1,"Menu_PaintAll_DrawVisibleList");
           if (bVar1 != false) {
-            Menu_PaintAll_DrawVisibleList(local_40c,param_2);
+            Menu_PaintAll_DrawVisibleList(visibleList,dc);
           }
           DVar4 = GetCurrentThreadId();
           if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -12677,60 +12905,60 @@ LAB_0077546f:
           }
           return;
         }
-        pmVar5 = param_2->menuStack[local_51c].menu;
+        pmVar5 = dc->menuStack[menuIndex].menu;
         if ((pmVar5 == (menuDef_t *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2a45,0
                                      ,"%s"), !bVar3)) break;
-        local_534 = -1;
-        if (local_51c < iVar6) {
-          local_534 = 0;
+        UI3DOverrideId = -1;
+        if (menuIndex < iVar6) {
+          UI3DOverrideId = 0;
         }
-        local_570 = param_1;
-        bVar3 = Menu_DoesMenuOrParentsHaveControlFlag(param_2,param_2->menuStack[local_51c].menu,3);
+        local_570 = localClientNum;
+        bVar3 = Menu_DoesMenuOrParentsHaveControlFlag(dc,dc->menuStack[menuIndex].menu,3);
         if (bVar3) {
-          local_570 = param_2->menuStack[local_51c].localClientNum;
+          local_570 = dc->menuStack[menuIndex].localClientNum;
         }
-        bVar3 = Menu_Paint(local_570,param_2,local_410,pmVar5,local_534);
+        bVar3 = Menu_Paint(local_570,dc,scrPlaceStackPtr,pmVar5,UI3DOverrideId);
         if ((bVar3) && (bVar1 != false)) {
-          Menu_PaintAll_AppendToVisibleList(local_40c,0x400,(pmVar5->window).name);
+          Menu_PaintAll_AppendToVisibleList(visibleList,0x400,(pmVar5->window).name);
         }
-        if (((bVar3) && (g_debugMode != 0)) && (local_51c == param_2->openMenuCount + -1)) {
-          pFVar11 = UI_GetFontHandle((ScreenPlacement *)
-                                     (&scrPlaceView + param_2->contextIndex * 0x78),0,0.5);
-          iVar20 = 0;
-          pfVar19 = colorWhite;
-          fVar18 = 0.5;
-          iVar17 = 0;
-          iVar16 = 0;
-          fVar15 = 45.0;
-          fVar14 = 200.0;
-          iVar13 = 0x7fffffff;
+        if (((bVar3) && (g_debugMode != 0)) && (menuIndex == dc->openMenuCount + -1)) {
+          pFVar10 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),0,
+                                     0.5);
+          style = 0;
+          pfVar17 = colorWhite;
+          fVar16 = 0.5;
+          iVar15 = 0;
+          iVar14 = 0;
+          fVar13 = 45.0;
+          fVar12 = 200.0;
+          iVar11 = 0x7fffffff;
           pcVar7 = va("menu: %s");
-          UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2->contextIndex * 0x78),pcVar7,
-                      iVar13,pFVar11,fVar14,fVar15,iVar16,iVar17,fVar18,pfVar19,iVar20);
+          UI_DrawText((ScreenPlacement *)(&scrPlaceView + dc->contextIndex * 0x78),pcVar7,iVar11,
+                      pFVar10,fVar12,fVar13,iVar14,iVar15,fVar16,pfVar17,style);
         }
-        local_51c = local_51c + 1;
+        menuIndex = menuIndex + 1;
       }
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pmVar8 = param_2->menuStack[local_51c].menu;
+    pmVar8 = dc->menuStack[menuIndex].menu;
     if ((pmVar8 == (menuDef_t *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2a2c,0,
                                  "%s"), !bVar3)) break;
     if ((pmVar5 != pmVar8) && ((pmVar8->slideTimeCounter == -3 || (pmVar8->fadeTimeCounter == -3))))
     {
-      local_568 = param_1;
-      bVar3 = Menu_DoesMenuOrParentsHaveControlFlag(param_2,param_2->menuStack[local_51c].menu,3);
+      local_568 = localClientNum;
+      bVar3 = Menu_DoesMenuOrParentsHaveControlFlag(dc,dc->menuStack[menuIndex].menu,3);
       if (bVar3) {
-        local_568 = param_2->menuStack[local_51c].localClientNum;
+        local_568 = dc->menuStack[menuIndex].localClientNum;
       }
-      Menus_Close(local_568,param_2,pmVar8);
+      Menus_Close(local_568,dc,pmVar8);
       pmVar8->slideTimeCounter = -1;
       pmVar8->fadeTimeCounter = -1;
     }
-    local_51c = local_51c + 1;
+    menuIndex = menuIndex + 1;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -12740,11 +12968,13 @@ LAB_0077546f:
 
 // 00776140  UI_SetSystemCursorPos  (ui/ui_shared.cpp:10891)
 
-void __cdecl UI_SetSystemCursorPos(UiContext *param_1,float param_2,float param_3)
+void __cdecl UI_SetSystemCursorPos(UiContext *dc,float x,float y)
 
 {
-  int extraout_EAX;
-  int extraout_EAX_00;
+  int x_00;
+  int y_00;
+  int realY;
+  int realX;
   
   ScrPlace_HiResGetScale();
   floor();
@@ -12752,14 +12982,14 @@ void __cdecl UI_SetSystemCursorPos(UiContext *param_1,float param_2,float param_
   ScrPlace_HiResGetScale();
   floor();
   _ftol2_sse();
-  CL_SetCursorPos(extraout_EAX,extraout_EAX_00);
+  CL_SetCursorPos(x_00,y_00);
   return;
 }
 
 
 // 00776320  UI_ResetCachedMousePosition  (ui/ui_shared.cpp:10903)
 
-int __cdecl UI_ResetCachedMousePosition(int param_1,UiContext *param_2)
+int __cdecl UI_ResetCachedMousePosition(int localClientNum,UiContext *dc)
 
 {
   int iVar1;
@@ -12769,49 +12999,54 @@ int __cdecl UI_ResetCachedMousePosition(int param_1,UiContext *param_2)
     return 0;
   }
   mouseTimeUntilReadyToMove = 0;
-  mouseLocationY = (int)(param_2->cursor).y;
-  mouseLocationX = (int)(param_2->cursor).x;
+  mouseLocationY = (int)(dc->cursor).y;
+  mouseLocationX = (int)(dc->cursor).x;
   return 1;
 }
 
 
 // 007761E0  Display_MouseMove  (ui/ui_shared.cpp:10917)
 
-int __cdecl Display_MouseMove(int param_1,UiContext *param_2)
+int __cdecl Display_MouseMove(int localClientNum,UiContext *dc)
 
 {
   int iVar1;
-  menuDef_t *pmVar2;
-  int iVar3;
-  int local_10;
+  menuDef_t *menu_00;
+  int iVar2;
+  int mouseXDelta;
+  menuDef_t *menu;
+  int mouseYDelta;
+  int i;
+  int x;
+  int y;
   
-  iVar3 = (int)(param_2->cursor).x;
-  iVar1 = (int)(param_2->cursor).y;
+  iVar2 = (int)(dc->cursor).x;
+  iVar1 = (int)(dc->cursor).y;
   if ((mouseLocationX == 0x7fffffff) && (mouseLocationY == 0x7fffffff)) {
-    mouseLocationX = iVar3;
+    mouseLocationX = iVar2;
     mouseLocationY = iVar1;
   }
-  if ((iVar3 == mouseLocationX) && (iVar1 == mouseLocationY)) {
+  if ((iVar2 == mouseLocationX) && (iVar1 == mouseLocationY)) {
     iVar1 = 0;
   }
   else {
-    pmVar2 = Menu_GetFocused(param_2);
-    if ((pmVar2 == (menuDef_t *)0x0) || (((pmVar2->window).staticFlags & 0x1000000U) == 0)) {
-      iVar1 = param_2->openMenuCount;
+    menu_00 = Menu_GetFocused(dc);
+    if ((menu_00 == (menuDef_t *)0x0) || (((menu_00->window).staticFlags & 0x1000000U) == 0)) {
+      iVar1 = dc->openMenuCount;
       do {
-        local_10 = iVar1 + -1;
-        if ((local_10 < 0) ||
-           (iVar3 = Menu_HandleMouseMove(param_1,param_2,param_2->menuStack[iVar1 + -1].menu),
-           iVar3 != 0)) break;
-        iVar3 = iVar1 + -1;
-        iVar1 = local_10;
-      } while ((param_2->menuStack[iVar3].menu)->fullScreen == 0);
-      UI_ResetCachedMousePosition(param_1,param_2);
+        i = iVar1 + -1;
+        if ((i < 0) ||
+           (iVar2 = Menu_HandleMouseMove(localClientNum,dc,dc->menuStack[iVar1 + -1].menu),
+           iVar2 != 0)) break;
+        iVar2 = iVar1 + -1;
+        iVar1 = i;
+      } while ((dc->menuStack[iVar2].menu)->fullScreen == 0);
+      UI_ResetCachedMousePosition(localClientNum,dc);
       iVar1 = 1;
     }
     else {
-      Menu_HandleMouseMove(param_1,param_2,pmVar2);
-      UI_ResetCachedMousePosition(param_1,param_2);
+      Menu_HandleMouseMove(localClientNum,dc,menu_00);
+      UI_ResetCachedMousePosition(localClientNum,dc);
       iVar1 = 1;
     }
   }
@@ -12821,53 +13056,55 @@ int __cdecl Display_MouseMove(int param_1,UiContext *param_2)
 
 // 00776370  Menu_OverActiveItem  (ui/ui_shared.cpp:10962)
 
-int __cdecl Menu_OverActiveItem(int param_1,menuDef_t *param_2,float param_3,float param_4)
+int __cdecl Menu_OverActiveItem(int contextIndex,menuDef_t *menu,float x,float y)
 
 {
-  itemDef_s *piVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  rectDef_s *prVar6;
-  textDef_s *ptVar7;
+  itemDef_s *item;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
+  rectDef_s *prVar5;
+  textDef_s *ptVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
-  int local_10;
+  itemDef_s *overItem;
+  int i;
+  textDef_s *textDefPtr;
+  int flags;
   
-  if ((param_2 == (menuDef_t *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2ad6,0,"%s")
-     , !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((menu == (menuDef_t *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2ad6,0,"%s")
+     , !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_2 != (menuDef_t *)0x0) &&
-     (uVar5 = Window_GetDynamicFlags(param_1,&param_2->window), (uVar5 & 0x4004) != 0)) {
-    fVar8 = param_3;
-    fVar9 = param_4;
-    prVar6 = Window_GetRect(&param_2->window);
-    iVar4 = Rect_ContainsPoint(param_1,prVar6,fVar8,fVar9);
-    if (iVar4 != 0) {
-      for (local_10 = 0; local_10 < param_2->itemCount; local_10 = local_10 + 1) {
-        uVar5 = Window_GetDynamicFlags(param_1,&param_2->items[local_10]->window);
-        if (((uVar5 & 0x4004) != 0) &&
-           (((param_2->items[local_10]->window).staticFlags & 0x100000U) == 0)) {
-          fVar8 = param_3;
-          fVar9 = param_4;
-          prVar6 = Window_GetRect(&param_2->items[local_10]->window);
-          iVar4 = Rect_ContainsPoint(param_1,prVar6,fVar8,fVar9);
-          if (iVar4 != 0) {
-            piVar1 = param_2->items[local_10];
-            ptVar7 = Item_GetTextDef(piVar1);
-            if ((piVar1->type != 1) || (ptVar7->text == (char *)0x0)) {
+  if ((menu != (menuDef_t *)0x0) &&
+     (uVar4 = Window_GetDynamicFlags(contextIndex,&menu->window), (uVar4 & 0x4004) != 0)) {
+    fVar7 = x;
+    fVar8 = y;
+    prVar5 = Window_GetRect(&menu->window);
+    iVar3 = Rect_ContainsPoint(contextIndex,prVar5,fVar7,fVar8);
+    if (iVar3 != 0) {
+      for (i = 0; i < menu->itemCount; i = i + 1) {
+        uVar4 = Window_GetDynamicFlags(contextIndex,&menu->items[i]->window);
+        if (((uVar4 & 0x4004) != 0) && (((menu->items[i]->window).staticFlags & 0x100000U) == 0)) {
+          fVar7 = x;
+          fVar8 = y;
+          prVar5 = Window_GetRect(&menu->items[i]->window);
+          iVar3 = Rect_ContainsPoint(contextIndex,prVar5,fVar7,fVar8);
+          if (iVar3 != 0) {
+            item = menu->items[i];
+            ptVar6 = Item_GetTextDef(item);
+            if ((item->type != 1) || (ptVar6->text == (char *)0x0)) {
               return 1;
             }
-            fVar8 = param_3;
-            fVar9 = param_4;
-            prVar6 = Item_CorrectedTextRect(param_1,piVar1);
-            iVar4 = Rect_ContainsPoint(param_1,prVar6,fVar8,fVar9);
-            if (iVar4 != 0) {
+            fVar7 = x;
+            fVar8 = y;
+            prVar5 = Item_CorrectedTextRect(contextIndex,item);
+            iVar3 = Rect_ContainsPoint(contextIndex,prVar5,fVar7,fVar8);
+            if (iVar3 != 0) {
               return 1;
             }
           }
@@ -12895,30 +13132,31 @@ void __cdecl TRACK_ui_shared(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl UI_AddMenu(int param_1,UiContext *param_2,menuDef_t *param_3,int param_4)
+void __cdecl UI_AddMenu(int localClientNum,UiContext *dc,menuDef_t *menu,int close)
 
 {
   code *pcVar1;
   bool bVar2;
   XAssetHeader XVar3;
-  int local_c;
+  int i;
+  menuDef_t *touchMenu;
   
-  for (local_c = 0; local_c < param_2->menuCount; local_c = local_c + 1) {
-    if (param_2->Menus[local_c] == param_3) {
+  for (i = 0; i < dc->menuCount; i = i + 1) {
+    if (dc->Menus[i] == menu) {
       return;
     }
   }
-  if (599 < param_2->menuCount) {
+  if (599 < dc->menuCount) {
     Com_Error(ERR_DROP,"\x15UI_AddMenu: \x14EXE_ERR_OUT_OF_MEMORY");
   }
-  if ((param_3 == (menuDef_t *)0x0) &&
+  if ((menu == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2b2b,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((599 < (uint)param_2->menuCount) &&
+  if ((599 < (uint)dc->menuCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2b2c,0,
                                "dc->menuCount doesn\'t index ARRAY_COUNT( dc->Menus )\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -12927,18 +13165,18 @@ void __cdecl UI_AddMenu(int param_1,UiContext *param_2,menuDef_t *param_3,int pa
     return;
   }
   if ((((useFastFile->current).enabled != false) &&
-      (XVar3 = DB_FindXAssetHeader(ASSET_TYPE_MENU,(param_3->window).name,true,-1),
-      (menuDef_t *)XVar3.xmodelPieces != param_3)) &&
+      (XVar3 = DB_FindXAssetHeader(ASSET_TYPE_MENU,(menu->window).name,true,-1),
+      (menuDef_t *)XVar3.xmodelPieces != menu)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2b32,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_2->Menus[param_2->menuCount] = param_3;
-  param_2->menuCount = param_2->menuCount + 1;
-  if (param_4 != 0) {
-    Menus_Close(param_1,param_2,param_3);
+  dc->Menus[dc->menuCount] = menu;
+  dc->menuCount = dc->menuCount + 1;
+  if (close != 0) {
+    Menus_Close(localClientNum,dc,menu);
   }
   return;
 }
@@ -12946,14 +13184,14 @@ void __cdecl UI_AddMenu(int param_1,UiContext *param_2,menuDef_t *param_3,int pa
 
 // 00776570  UI_AddMenuList  (ui/ui_shared.cpp:11071)
 
-void __cdecl UI_AddMenuList(int param_1,UiContext *param_2,MenuList *param_3,int param_4)
+void __cdecl UI_AddMenuList(int localClientNum,UiContext *dc,MenuList *menuList,int close)
 
 {
-  int local_8;
+  int i;
   
-  if (param_3 != (MenuList *)0x0) {
-    for (local_8 = 0; local_8 < param_3->menuCount; local_8 = local_8 + 1) {
-      UI_AddMenu(param_1,param_2,param_3->menus[local_8],param_4);
+  if (menuList != (MenuList *)0x0) {
+    for (i = 0; i < menuList->menuCount; i = i + 1) {
+      UI_AddMenu(localClientNum,dc,menuList->menus[i],close);
     }
   }
   return;
@@ -12964,32 +13202,32 @@ void __cdecl UI_AddMenuList(int param_1,UiContext *param_2,MenuList *param_3,int
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl UI_PlaySound(int param_1,char *param_2)
+void __cdecl UI_PlaySound(int context,char *aliasname)
 
 {
-  SndEntHandle SVar1;
+  SndEntHandle entHandle;
   
   SND_FadeIn();
-  SVar1 = SND_EntHandle(param_1,0xfff,0,false,true,TEAM_BAD);
-  SND_Play(param_2,0,1.0,SVar1,(float *)0x0,(float *)0x0,false);
+  entHandle = SND_EntHandle(context,0xfff,0,false,true,TEAM_BAD);
+  SND_Play(aliasname,0,1.0,entHandle,(float *)0x0,(float *)0x0,false);
   return;
 }
 
 
 // 00776780  UI_ClearLocalUIVisibilityBits  (ui/ui_shared.cpp:11090)
 
-void __cdecl UI_ClearLocalUIVisibilityBits(int param_1)
+void __cdecl UI_ClearLocalUIVisibilityBits(int localClientNum)
 
 {
-  *(undefined4 *)(&DAT_098dadb0 + param_1 * 8) = 0;
-  *(undefined4 *)(&DAT_098dadb4 + param_1 * 8) = 0;
+  *(undefined4 *)(&DAT_098dadb0 + localClientNum * 8) = 0;
+  *(undefined4 *)(&DAT_098dadb4 + localClientNum * 8) = 0;
   return;
 }
 
 
 // 007767A0  UI_SetLocalUIVisbilityBit  (ui/ui_shared.cpp:11095)
 
-void __cdecl UI_SetLocalUIVisbilityBit(int param_1,int param_2,int param_3)
+void __cdecl UI_SetLocalUIVisbilityBit(int localClientNum,int bitShift,int value)
 
 {
   uint extraout_EAX;
@@ -12997,23 +13235,23 @@ void __cdecl UI_SetLocalUIVisbilityBit(int param_1,int param_2,int param_3)
   uint extraout_EDX;
   uint extraout_EDX_00;
   
-  if (param_2 < 0) {
+  if (bitShift < 0) {
     Com_PrintError(0xd,"Negative bitShift position given for setting UI visibility bit.");
   }
-  else if (param_2 < 0x41) {
-    if (param_3 == 0) {
+  else if (bitShift < 0x41) {
+    if (value == 0) {
       _allshl();
-      *(uint *)(&DAT_098dadb0 + param_1 * 8) =
-           ~extraout_EAX_00 & *(uint *)(&DAT_098dadb0 + param_1 * 8);
-      *(uint *)(&DAT_098dadb4 + param_1 * 8) =
-           ~extraout_EDX_00 & *(uint *)(&DAT_098dadb4 + param_1 * 8);
+      *(uint *)(&DAT_098dadb0 + localClientNum * 8) =
+           ~extraout_EAX_00 & *(uint *)(&DAT_098dadb0 + localClientNum * 8);
+      *(uint *)(&DAT_098dadb4 + localClientNum * 8) =
+           ~extraout_EDX_00 & *(uint *)(&DAT_098dadb4 + localClientNum * 8);
     }
     else {
       _allshl();
-      *(uint *)(&DAT_098dadb0 + param_1 * 8) = extraout_EAX | *(uint *)(&DAT_098dadb0 + param_1 * 8)
-      ;
-      *(uint *)(&DAT_098dadb4 + param_1 * 8) = extraout_EDX | *(uint *)(&DAT_098dadb4 + param_1 * 8)
-      ;
+      *(uint *)(&DAT_098dadb0 + localClientNum * 8) =
+           extraout_EAX | *(uint *)(&DAT_098dadb0 + localClientNum * 8);
+      *(uint *)(&DAT_098dadb4 + localClientNum * 8) =
+           extraout_EDX | *(uint *)(&DAT_098dadb4 + localClientNum * 8);
     }
   }
   else {
@@ -13040,6 +13278,7 @@ int __cdecl UI_GetMenuScreen(void)
 
 {
   int iVar1;
+  int menu;
   
   iVar1 = UI_GetForcedMenuScreen();
   if (iVar1 < 0) {
@@ -13055,6 +13294,7 @@ int __cdecl UI_GetMenuScreenForError(void)
 
 {
   int iVar1;
+  int menu;
   
   iVar1 = UI_GetForcedMenuScreen();
   if (iVar1 < 0) {
@@ -13066,8 +13306,7 @@ int __cdecl UI_GetMenuScreenForError(void)
 
 // 007768A0  Menu_DoesMenuOrParentsHaveControlFlag  (ui/ui_shared.cpp:11236)
 
-bool __cdecl
-Menu_DoesMenuOrParentsHaveControlFlag(UiContext *param_1,menuDef_t *param_2,int param_3)
+bool __cdecl Menu_DoesMenuOrParentsHaveControlFlag(UiContext *dc,menuDef_t *menu,int controlFlag)
 
 {
   code *pcVar1;
@@ -13075,30 +13314,30 @@ Menu_DoesMenuOrParentsHaveControlFlag(UiContext *param_1,menuDef_t *param_2,int 
   int iVar3;
   bool bVar4;
   undefined1 uVar5;
-  int local_c;
-  int local_8;
+  int menuIndex;
+  int i;
   
-  if (param_2 != (menuDef_t *)0x0) {
-    local_c = -1;
-    iVar2 = param_1->openMenuCount;
+  if (menu != (menuDef_t *)0x0) {
+    menuIndex = -1;
+    iVar2 = dc->openMenuCount;
     do {
-      local_8 = iVar2 + -1;
-      if (local_8 < 0) goto LAB_007768f3;
+      i = iVar2 + -1;
+      if (i < 0) goto LAB_007768f3;
       iVar3 = iVar2 + -1;
-      iVar2 = local_8;
-    } while (param_2 != param_1->menuStack[iVar3].menu);
-    local_c = local_8;
+      iVar2 = i;
+    } while (menu != dc->menuStack[iVar3].menu);
+    menuIndex = i;
 LAB_007768f3:
-    if ((param_1->openMenuCount <= local_c) &&
+    if ((dc->openMenuCount <= menuIndex) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",0x2bf2,0,
                                  "%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       uVar5 = (*pcVar1)();
       return (bool)uVar5;
     }
-    if (-1 < local_c) {
-      for (local_8 = local_c; -1 < local_8; local_8 = local_8 + -1) {
-        if ((param_1->menuStack[local_8].menu)->control == param_3) {
+    if (-1 < menuIndex) {
+      for (i = menuIndex; -1 < i; i = i + -1) {
+        if ((dc->menuStack[i].menu)->control == controlFlag) {
           return true;
         }
       }
@@ -13120,9 +13359,11 @@ LAB_007768f3:
 /* WARNING: Removing unreachable block (ram,0x00776a1c) */
 /* WARNING: Removing unreachable block (ram,0x00776a10) */
 
-void __cdecl UI_SetLoadingScreenMaterial(char *param_1)
+void __cdecl UI_SetLoadingScreenMaterial(char *name)
 
 {
+  Material *mat;
+  
   return;
 }
 

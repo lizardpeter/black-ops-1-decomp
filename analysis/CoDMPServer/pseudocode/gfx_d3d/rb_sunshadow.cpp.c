@@ -12,29 +12,30 @@ void __cdecl TRACK_rb_sunshadow(void)
 
 // 00B2D8D0  RB_SunShadowMaps  (gfx_d3d/rb_sunshadow.cpp:120)
 
-void __cdecl RB_SunShadowMaps(GfxBackEndData *param_1,GfxViewInfo *param_2)
+void __cdecl RB_SunShadowMaps(GfxBackEndData *data,GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  GfxCmdBuf local_c;
-  uint local_8;
+  PIXProfile pixProfile;
+  GfxCmdBuf cmdBuf;
+  int partitionIndex;
   
   PIXBeginNamedEvent(-1,"RB_SunShadowMaps");
   if (pixelCostMode == GFX_PIXEL_COST_MODE_OFF) {
-    if ((param_1 == (GfxBackEndData *)0x0) &&
+    if ((data == (GfxBackEndData *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sunshadow.cpp",0x82
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    R_InitContext(param_1,&local_c);
+    R_InitContext(data,&cmdBuf);
     PIXBeginNamedEvent(-1,"Sun Shadow Maps");
-    for (local_8 = 0; (int)local_8 < 2; local_8 = local_8 + 1) {
+    for (partitionIndex = 0; partitionIndex < 2; partitionIndex = partitionIndex + 1) {
       PIXBeginNamedEvent(-1,"Sun Shadow Map %d");
-      R_DrawSunShadowMap(param_2,local_8,&local_c);
+      R_DrawSunShadowMap(viewInfo,partitionIndex,&cmdBuf);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -61,33 +62,31 @@ void __cdecl RB_SunShadowMaps(GfxBackEndData *param_1,GfxViewInfo *param_2)
 
 // 00B2DEE0  RB_SunShadowOverlayPoint  (gfx_d3d/rb_sunshadow.cpp:153)
 
-void __cdecl
-RB_SunShadowOverlayPoint
-          (float *param_1,float param_2,float param_3,float param_4,float param_5,float *param_6)
+void __cdecl RB_SunShadowOverlayPoint(float *xy,float x0,float y0,float w,float h,float *point)
 
 {
-  *param_6 = (*param_1 * 0.5 + 0.5) * param_4 + param_2;
-  param_6[1] = (0.5 - param_1[1] * 0.5) * param_5 + param_3;
-  param_6[2] = 0.0;
+  *point = (*xy * 0.5 + 0.5) * w + x0;
+  point[1] = (0.5 - xy[1] * 0.5) * h + y0;
+  point[2] = 0.0;
   return;
 }
 
 
 // 00B2DA40  RB_GetShadowOverlayDepthBounds  (gfx_d3d/rb_sunshadow.cpp:161)
 
-void __cdecl RB_GetShadowOverlayDepthBounds(float *param_1,float *param_2)
+void __cdecl RB_GetShadowOverlayDepthBounds(float *nearDepth,float *farDepth)
 
 {
-  *param_1 = (float)(sm_showOverlayDepthBounds->current).integer;
-  *param_2 = (sm_showOverlayDepthBounds->current).vector[1];
-  if (ABS(*param_2 - *param_1) < 0.01) {
-    if (*param_2 < *param_1 || *param_2 == *param_1) {
-      *param_2 = (*param_1 + *param_2) * 0.5 - 0.005;
-      *param_1 = *param_2 + 0.01;
+  *nearDepth = (float)(sm_showOverlayDepthBounds->current).integer;
+  *farDepth = (sm_showOverlayDepthBounds->current).vector[1];
+  if (ABS(*farDepth - *nearDepth) < 0.01) {
+    if (*farDepth < *nearDepth || *farDepth == *nearDepth) {
+      *farDepth = (*nearDepth + *farDepth) * 0.5 - 0.005;
+      *nearDepth = *farDepth + 0.01;
     }
     else {
-      *param_1 = (*param_1 + *param_2) * 0.5 - 0.005;
-      *param_2 = *param_1 + 0.01;
+      *nearDepth = (*nearDepth + *farDepth) * 0.5 - 0.005;
+      *farDepth = *nearDepth + 0.01;
     }
   }
   return;
@@ -99,15 +98,15 @@ void __cdecl RB_GetShadowOverlayDepthBounds(float *param_1,float *param_2)
 void __cdecl RB_SetSunShadowOverlayScaleAndBias(void)
 
 {
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float nearDepth;
+  float bias;
+  float scale;
+  float farDepth;
   
-  RB_GetShadowOverlayDepthBounds(&local_14,&local_8);
-  local_c = 1.0 / (local_8 - local_14);
-  local_10 = -local_c * local_14;
-  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,local_c,local_10,1.0,1.0);
+  RB_GetShadowOverlayDepthBounds(&nearDepth,&farDepth);
+  scale = 1.0 / (farDepth - nearDepth);
+  bias = -scale * nearDepth;
+  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,scale,bias,1.0,1.0);
   return;
 }
 
@@ -120,20 +119,24 @@ void __cdecl RB_DrawSunShadowOverlay(void)
   code *pcVar1;
   GfxPointVertex *pGVar2;
   bool bVar3;
-  float local_a4 [19];
-  int local_58 [9];
-  float local_34;
-  GfxViewInfo *local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  GfxSunShadow *local_10;
-  GfxSunShadowPartition *local_c;
-  float local_8;
+  float t0;
+  GfxImage *image;
+  float x0;
+  float t1;
+  float clipSpacePoints [19];
+  int pointIsNear [9];
+  float shadowSampleSize;
+  GfxViewInfo *viewInfo;
+  int pointIndexDst;
+  int pointIndexSrc;
+  int partitionIndex;
+  float y0;
+  float x;
+  float y;
+  float h;
+  GfxSunShadow *sunShadow;
+  GfxSunShadowPartition *partition;
+  float w;
   
   if ((backEndData->viewInfoCount == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sunshadow.cpp",0xcf,0
@@ -142,57 +145,58 @@ void __cdecl RB_DrawSunShadowOverlay(void)
     (*pcVar1)();
     return;
   }
-  local_30 = backEndData->viewInfo;
-  local_10 = &backEndData->sunShadow;
-  local_20 = 4.0;
-  local_14 = (float)vidConfig.displayHeight * 0.5;
-  local_8 = local_14;
+  viewInfo = backEndData->viewInfo;
+  sunShadow = &backEndData->sunShadow;
+  y0 = 4.0;
+  h = (float)vidConfig.displayHeight * 0.5;
+  w = h;
   RB_SetSunShadowOverlayScaleAndBias();
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[1]._4_1_ = 0x61;
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[0xe].image)
   ;
-  for (local_24 = 0; local_24 < 2; local_24 = local_24 + 1) {
-    RB_DrawStretchPic(rgp.shadowOverlayMaterial,(float)local_24 * local_8 + 4.0,local_20,local_8,
-                      local_14,0.0,(float)local_24 * 0.5,1.0,(float)local_24 * 0.5 + 0.5,0xffffffff,
+  for (partitionIndex = 0; partitionIndex < 2; partitionIndex = partitionIndex + 1) {
+    RB_DrawStretchPic(rgp.shadowOverlayMaterial,(float)partitionIndex * w + 4.0,y0,w,h,0.0,
+                      (float)partitionIndex * 0.5,1.0,(float)partitionIndex * 0.5 + 0.5,0xffffffff,
                       GFX_PRIM_STATS_HUD);
   }
   RB_EndTessSurface();
   gfxCmdBufSourceState.input.codeImageRenderTargetControl[1]._4_1_ = 0x62;
-  local_34 = (sm_sunSampleSizeNear->current).value;
-  local_2c = 0;
-  for (local_24 = 0; local_24 < 2; local_24 = local_24 + 1) {
-    local_1c = (float)local_24 * local_8 + 4.0;
-    local_18 = local_20;
-    local_c = local_10->partition + local_24;
+  shadowSampleSize = (sm_sunSampleSizeNear->current).value;
+  pointIndexDst = 0;
+  for (partitionIndex = 0; partitionIndex < 2; partitionIndex = partitionIndex + 1) {
+    x = (float)partitionIndex * w + 4.0;
+    y = y0;
+    partition = sunShadow->partition + partitionIndex;
     R_SunShadowMapBoundingPoly
-              (&local_c->boundingPoly,local_34,(float (*) [2])local_a4,local_58,
+              (&partition->boundingPoly,shadowSampleSize,(float (*) [2])clipSpacePoints,pointIsNear,
                dx.sunShadowPartitionRes);
-    for (local_28 = 0; local_28 < (local_c->boundingPoly).pointCount; local_28 = local_28 + 1) {
-      if ((((local_24 == 0) || (rg.sunShadowFull == 0)) || (local_58[local_28] != 0)) ||
-         (local_58[(local_28 + 1) % (local_c->boundingPoly).pointCount] != 0)) {
+    for (pointIndexSrc = 0; pointIndexSrc < (partition->boundingPoly).pointCount;
+        pointIndexSrc = pointIndexSrc + 1) {
+      if ((((partitionIndex == 0) || (rg.sunShadowFull == 0)) || (pointIsNear[pointIndexSrc] != 0))
+         || (pointIsNear[(pointIndexSrc + 1) % (partition->boundingPoly).pointCount] != 0)) {
         RB_SunShadowOverlayPoint
-                  (local_a4 + local_28 * 2,local_1c,local_18,local_8,local_14,
-                   g_overlayPoints[local_2c].xyz);
+                  (clipSpacePoints + pointIndexSrc * 2,x,y,w,h,g_overlayPoints[pointIndexDst].xyz);
         RB_SunShadowOverlayPoint
-                  (local_a4 + ((local_28 + 1) % (local_c->boundingPoly).pointCount) * 2,local_1c,
-                   local_18,local_8,local_14,g_overlayPoints[local_2c + 1].xyz);
-        pGVar2 = g_overlayPoints + local_2c;
+                  (clipSpacePoints +
+                   ((pointIndexSrc + 1) % (partition->boundingPoly).pointCount) * 2,x,y,w,h,
+                   g_overlayPoints[pointIndexDst + 1].xyz);
+        pGVar2 = g_overlayPoints + pointIndexDst;
         pGVar2->color[0] = '\0';
         pGVar2->color[1] = 0xff;
         pGVar2->color[2] = '\0';
         pGVar2->color[3] = 0xff;
-        pGVar2 = g_overlayPoints + local_2c + 1;
+        pGVar2 = g_overlayPoints + pointIndexDst + 1;
         pGVar2->color[0] = '\0';
         pGVar2->color[1] = 0xff;
         pGVar2->color[2] = '\0';
         pGVar2->color[3] = 0xff;
-        local_2c = local_2c + 2;
+        pointIndexDst = pointIndexDst + 2;
       }
     }
-    local_34 = local_34 * rg.sunShadowPartitionRatio;
+    shadowSampleSize = shadowSampleSize * rg.sunShadowPartitionRatio;
   }
-  if (local_2c != 0) {
-    RB_DrawLines2D(local_2c / 2,1,g_overlayPoints);
+  if (pointIndexDst != 0) {
+    RB_DrawLines2D(pointIndexDst / 2,1,g_overlayPoints);
     RB_EndTessSurface();
   }
   return;

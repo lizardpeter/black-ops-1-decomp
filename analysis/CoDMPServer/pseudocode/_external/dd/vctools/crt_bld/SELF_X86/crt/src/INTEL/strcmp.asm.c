@@ -2,7 +2,7 @@
 
 // 00C176A0  strcmp  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strcmp.asm:65)
 
-void __cdecl strcmp(uchar *param_1,uchar *param_2)
+void __cdecl strcmp(uchar *str1,uchar *str2)
 
 {
   undefined2 uVar1;
@@ -10,66 +10,66 @@ void __cdecl strcmp(uchar *param_1,uchar *param_2)
   uchar uVar3;
   uchar uVar4;
   
-  if (((uint)param_1 & 3) != 0) {
-    if (((uint)param_1 & 1) != 0) {
-      uVar4 = *param_1;
-      param_1 = param_1 + 1;
-      if (uVar4 != *param_2) {
+  if (((uint)str1 & 3) != 0) {
+    if (((uint)str1 & 1) != 0) {
+      uVar4 = *str1;
+      str1 = str1 + 1;
+      if (uVar4 != *str2) {
         return;
       }
-      param_2 = param_2 + 1;
+      str2 = str2 + 1;
       if (uVar4 == '\0') {
         return;
       }
-      if (((uint)param_1 & 2) == 0) goto LAB_00c176b0;
+      if (((uint)str1 & 2) == 0) goto LAB_00c176b0;
     }
-    uVar1 = *(undefined2 *)param_1;
-    param_1 = param_1 + 2;
+    uVar1 = *(undefined2 *)str1;
+    str1 = str1 + 2;
     uVar4 = (uchar)uVar1;
-    if (uVar4 != *param_2) {
+    if (uVar4 != *str2) {
       return;
     }
     uVar3 = (uchar)((ushort)uVar1 >> 8);
     if (uVar4 == '\0') {
       return;
     }
-    if (uVar3 != param_2[1]) {
+    if (uVar3 != str2[1]) {
       return;
     }
     if (uVar3 == '\0') {
       return;
     }
-    param_2 = param_2 + 2;
+    str2 = str2 + 2;
   }
 LAB_00c176b0:
   do {
-    uVar2 = *(undefined4 *)param_1;
-    if ((uchar)uVar2 != *param_2) {
+    uVar2 = *(undefined4 *)str1;
+    if ((uchar)uVar2 != *str2) {
       return;
     }
     if ((uchar)uVar2 == '\0') {
       return;
     }
     uVar4 = (uchar)((uint)uVar2 >> 8);
-    if (uVar4 != param_2[1]) {
+    if (uVar4 != str2[1]) {
       return;
     }
     if (uVar4 == '\0') {
       return;
     }
     uVar4 = (uchar)((uint)uVar2 >> 0x10);
-    if (uVar4 != param_2[2]) {
+    if (uVar4 != str2[2]) {
       return;
     }
     uVar3 = (uchar)((uint)uVar2 >> 0x18);
     if (uVar4 == '\0') {
       return;
     }
-    if (uVar3 != param_2[3]) {
+    if (uVar3 != str2[3]) {
       return;
     }
-    param_2 = param_2 + 4;
-    param_1 = param_1 + 4;
+    str2 = str2 + 4;
+    str1 = str1 + 4;
   } while (uVar3 != '\0');
   return;
 }

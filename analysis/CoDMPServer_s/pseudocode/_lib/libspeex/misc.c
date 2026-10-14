@@ -6,11 +6,11 @@ void __cdecl speex_error(char *param_1)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "Fatal error: %s\n";
+  format = "Fatal error: %s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
                     /* WARNING: Subroutine does not return */
   exit(1);
 }
@@ -22,23 +22,24 @@ void __cdecl speex_warning(char *param_1)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "warning: %s\n";
+  format = "warning: %s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
   return;
 }
 
 
 // 007CE950  speex_rand_vec  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/misc.c:234)
 
-void __cdecl speex_rand_vec(float param_1,float *param_2,int param_3)
+void __cdecl speex_rand_vec(float len,float *param_2,int param_3)
 
 {
   int iVar1;
   int iVar2;
   int unaff_EDI;
+  float std;
   
   iVar2 = 0;
   if (0 < (int)param_2) {
@@ -46,7 +47,7 @@ void __cdecl speex_rand_vec(float param_1,float *param_2,int param_3)
       iVar1 = rand();
       iVar2 = iVar2 + 1;
       *(float *)(unaff_EDI + -4 + iVar2 * 4) =
-           ((float)iVar1 / 32767.0 - 0.5) * param_1 * 3.0 + *(float *)(unaff_EDI + -4 + iVar2 * 4);
+           ((float)iVar1 / 32767.0 - 0.5) * len * 3.0 + *(float *)(unaff_EDI + -4 + iVar2 * 4);
     } while (iVar2 < (int)param_2);
   }
   return;

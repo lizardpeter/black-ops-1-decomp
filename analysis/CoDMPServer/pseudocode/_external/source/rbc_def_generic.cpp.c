@@ -4,15 +4,15 @@
 
 void __thiscall
 rigid_body_constraint_point::set
-          (rigid_body_constraint_point *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_point *this,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc)
 
 {
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
+  (this->m_b1_r_loc).x = b1_r_loc->x;
+  (this->m_b1_r_loc).y = b1_r_loc->y;
+  (this->m_b1_r_loc).z = b1_r_loc->z;
+  (this->m_b2_r_loc).x = b2_r_loc->x;
+  (this->m_b2_r_loc).y = b2_r_loc->y;
+  (this->m_b2_r_loc).z = b2_r_loc->z;
   return;
 }
 
@@ -21,20 +21,20 @@ rigid_body_constraint_point::set
 
 void __thiscall
 rigid_body_constraint_point::setup_constraint
-          (rigid_body_constraint_point *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_point *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
-  rigid_body *prVar1;
+  rigid_body *b2;
   phys_vec3 local_40;
   phys_vec3 local_30;
   rigid_body *local_14;
   
-  prVar1 = (rigid_body *)this->_padding_;
-  phys_multiply33(&local_30,&prVar1->m_mat,&this->m_b2_r_loc);
+  b2 = (rigid_body *)this->_padding_;
+  phys_multiply33(&local_30,&b2->m_mat,&this->m_b2_r_loc);
   local_14 = (rigid_body *)this->_padding_;
   phys_multiply33(&local_40,&local_14->m_mat,&this->m_b1_r_loc);
   pulse_sum_constraint_solver::create_point
-            (param_1,local_14,&local_40,prVar1,&local_30,this->m_ps_cache_list,param_2,
+            (psys,local_14,&local_40,b2,&local_30,this->m_ps_cache_list,delta_t,
              this->m_spring_enabled,this->m_spring_k,this->m_damp_k);
   return;
 }
@@ -43,12 +43,15 @@ rigid_body_constraint_point::setup_constraint
 // 00A17A10  epilog_vel_constraint  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_generic.cpp:18)
 
 void __thiscall
-rigid_body_constraint_point::epilog_vel_constraint(rigid_body_constraint_point *this,float param_1)
+rigid_body_constraint_point::epilog_vel_constraint(rigid_body_constraint_point *this,float __formal)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float c;
+  float a;
+  float b;
   
   fVar1 = this->m_ps_cache_list[0].m_pulse_sum;
   fVar2 = this->m_ps_cache_list[1].m_pulse_sum;
@@ -62,13 +65,13 @@ rigid_body_constraint_point::epilog_vel_constraint(rigid_body_constraint_point *
 
 void __thiscall
 rigid_body_constraint_hinge::set
-          (rigid_body_constraint_hinge *this,phys_vec3 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3,phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,float param_7,
-          float param_8,float param_9)
+          (rigid_body_constraint_hinge *this,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc,
+          phys_vec3 *b1_axis_loc,phys_vec3 *b2_axis_loc,phys_vec3 *b1_ref_loc,phys_vec3 *b2_ref_loc,
+          float theta_min,float theta_max,float damp_k)
 
 {
+  phys_vec3 *ud;
   phys_vec3 *ppVar1;
-  phys_vec3 *ppVar2;
   phys_mat44 local_a0;
   phys_vec3 local_60;
   phys_vec3 local_50;
@@ -81,64 +84,64 @@ rigid_body_constraint_hinge::set
   phys_vec3 *local_14;
   
   this->m_flags = 0;
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
-  ppVar2 = phys_Unitize(&local_30,param_3);
-  (this->m_b1_axis_loc).x = ppVar2->x;
-  ppVar1 = &this->m_b1_axis_loc;
-  (this->m_b1_axis_loc).y = ppVar2->y;
-  (this->m_b1_axis_loc).z = ppVar2->z;
-  ppVar2 = phys_Unitize(&local_30,param_4);
+  (this->m_b1_r_loc).x = b1_r_loc->x;
+  (this->m_b1_r_loc).y = b1_r_loc->y;
+  (this->m_b1_r_loc).z = b1_r_loc->z;
+  (this->m_b2_r_loc).x = b2_r_loc->x;
+  (this->m_b2_r_loc).y = b2_r_loc->y;
+  (this->m_b2_r_loc).z = b2_r_loc->z;
+  ppVar1 = phys_Unitize(&local_30,b1_axis_loc);
+  (this->m_b1_axis_loc).x = ppVar1->x;
+  ud = &this->m_b1_axis_loc;
+  (this->m_b1_axis_loc).y = ppVar1->y;
+  (this->m_b1_axis_loc).z = ppVar1->z;
+  ppVar1 = phys_Unitize(&local_30,b2_axis_loc);
   local_14 = &this->m_b2_axis_loc;
-  local_14->x = ppVar2->x;
-  (this->m_b2_axis_loc).y = ppVar2->y;
-  (this->m_b2_axis_loc).z = ppVar2->z;
-  ppVar2 = phys_Unitize(&local_30,param_5);
+  local_14->x = ppVar1->x;
+  (this->m_b2_axis_loc).y = ppVar1->y;
+  (this->m_b2_axis_loc).z = ppVar1->z;
+  ppVar1 = phys_Unitize(&local_30,b1_ref_loc);
   local_3c = &this->m_b1_ref_loc;
-  local_3c->x = ppVar2->x;
-  (this->m_b1_ref_loc).y = ppVar2->y;
-  (this->m_b1_ref_loc).z = ppVar2->z;
-  ppVar2 = construct_orth_ud(&local_30,ppVar1);
-  (this->m_b1_a1_loc).x = ppVar2->x;
+  local_3c->x = ppVar1->x;
+  (this->m_b1_ref_loc).y = ppVar1->y;
+  (this->m_b1_ref_loc).z = ppVar1->z;
+  ppVar1 = construct_orth_ud(&local_30,ud);
+  (this->m_b1_a1_loc).x = ppVar1->x;
   local_1c = &this->m_b1_a1_loc;
-  (this->m_b1_a1_loc).y = ppVar2->y;
-  (this->m_b1_a1_loc).z = ppVar2->z;
+  (this->m_b1_a1_loc).y = ppVar1->y;
+  (this->m_b1_a1_loc).z = ppVar1->z;
   local_30.x = (this->m_b1_axis_loc).y * (this->m_b1_a1_loc).z -
                (this->m_b1_axis_loc).z * (this->m_b1_a1_loc).y;
-  local_30.y = local_1c->x * (this->m_b1_axis_loc).z - (this->m_b1_a1_loc).z * ppVar1->x;
+  local_30.y = local_1c->x * (this->m_b1_axis_loc).z - (this->m_b1_a1_loc).z * ud->x;
   local_18 = &this->m_b1_a2_loc;
-  local_30.z = (this->m_b1_a1_loc).y * ppVar1->x - local_1c->x * (this->m_b1_axis_loc).y;
+  local_30.z = (this->m_b1_a1_loc).y * ud->x - local_1c->x * (this->m_b1_axis_loc).y;
   local_18->x = local_30.x;
   (this->m_b1_a2_loc).y = local_30.y;
   (this->m_b1_a2_loc).z = local_30.z;
-  make_rotate(&local_a0,local_14,param_7,1000.0);
-  ppVar2 = phys_multiply33(&local_30,&local_a0,param_6);
-  ppVar2 = phys_Unitize(&local_50,ppVar2);
-  (this->m_b2_ref_min_loc).x = ppVar2->x;
+  make_rotate(&local_a0,local_14,theta_min,1000.0);
+  ppVar1 = phys_multiply33(&local_30,&local_a0,b2_ref_loc);
+  ppVar1 = phys_Unitize(&local_50,ppVar1);
+  (this->m_b2_ref_min_loc).x = ppVar1->x;
   local_34 = &this->m_b2_ref_min_loc;
-  (this->m_b2_ref_min_loc).y = ppVar2->y;
-  (this->m_b2_ref_min_loc).z = ppVar2->z;
-  make_rotate(&local_a0,local_14,param_8,1000.0);
-  ppVar2 = phys_multiply33(&local_50,&local_a0,param_6);
-  ppVar2 = phys_Unitize(&local_60,ppVar2);
-  (this->m_b2_ref_max_loc).x = ppVar2->x;
+  (this->m_b2_ref_min_loc).y = ppVar1->y;
+  (this->m_b2_ref_min_loc).z = ppVar1->z;
+  make_rotate(&local_a0,local_14,theta_max,1000.0);
+  ppVar1 = phys_multiply33(&local_50,&local_a0,b2_ref_loc);
+  ppVar1 = phys_Unitize(&local_60,ppVar1);
+  (this->m_b2_ref_max_loc).x = ppVar1->x;
   local_38 = &this->m_b2_ref_max_loc;
-  (this->m_b2_ref_max_loc).y = ppVar2->y;
-  (this->m_b2_ref_max_loc).z = ppVar2->z;
-  this->m_damp_k = param_9;
-  PHYS_ASSERT_UNIT(ppVar1);
+  (this->m_b2_ref_max_loc).y = ppVar1->y;
+  (this->m_b2_ref_max_loc).z = ppVar1->z;
+  this->m_damp_k = damp_k;
+  PHYS_ASSERT_UNIT(ud);
   PHYS_ASSERT_UNIT(local_14);
-  ppVar2 = local_3c;
+  ppVar1 = local_3c;
   PHYS_ASSERT_UNIT(local_3c);
   PHYS_ASSERT_UNIT(local_1c);
   PHYS_ASSERT_UNIT(local_18);
   PHYS_ASSERT_UNIT(local_34);
   PHYS_ASSERT_UNIT(local_38);
-  PHYS_ASSERT_ORTHOGONAL(ppVar1,ppVar2);
+  PHYS_ASSERT_ORTHOGONAL(ud,ppVar1);
   PHYS_ASSERT_ORTHOGONAL(local_1c,local_18);
   return;
 }
@@ -148,14 +151,14 @@ rigid_body_constraint_hinge::set
 
 void __thiscall
 rigid_body_constraint_hinge::setup_constraint
-          (rigid_body_constraint_hinge *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_hinge *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
-  rigid_body *prVar1;
-  float fVar2;
-  pulse_sum_angular *ppVar3;
-  uint uVar4;
-  phys_mat44 *ppVar5;
+  rigid_body *b2;
+  float fVar1;
+  pulse_sum_angular *ppVar2;
+  uint uVar3;
+  phys_mat44 *ppVar4;
   phys_vec3 local_90;
   phys_vec3 local_80;
   phys_vec3 local_70;
@@ -166,48 +169,47 @@ rigid_body_constraint_hinge::setup_constraint
   float local_14;
   
   if ((this->m_flags & 0x10) == 0) {
-    prVar1 = *(rigid_body **)&this->field_0x4;
-    phys_multiply33(&local_70,&prVar1->m_mat,&this->m_b2_r_loc);
+    b2 = *(rigid_body **)&this->field_0x4;
+    phys_multiply33(&local_70,&b2->m_mat,&this->m_b2_r_loc);
     phys_multiply33(&local_80,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_r_loc);
     pulse_sum_constraint_solver::create_point
-              (param_1,*(rigid_body **)this,&local_80,prVar1,&local_70,this->m_ps_cache,param_2,
-               false,0.0,0.0);
+              (psys,*(rigid_body **)this,&local_80,b2,&local_70,this->m_ps_cache,delta_t,false,0.0,
+               0.0);
   }
-  ppVar5 = (phys_mat44 *)(*(int *)this + 0x30);
-  phys_multiply33(&local_90,ppVar5,&this->m_b1_axis_loc);
+  ppVar4 = (phys_mat44 *)(*(int *)this + 0x30);
+  phys_multiply33(&local_90,ppVar4,&this->m_b1_axis_loc);
   phys_multiply33(&local_50,(phys_mat44 *)(*(int *)&this->field_0x4 + 0x30),&this->m_b2_axis_loc);
-  phys_multiply33(&local_80,ppVar5,&this->m_b1_a2_loc);
-  phys_multiply33(&local_70,ppVar5,&this->m_b1_a1_loc);
+  phys_multiply33(&local_80,ppVar4,&this->m_b1_a2_loc);
+  phys_multiply33(&local_70,ppVar4,&this->m_b1_a1_loc);
   pulse_sum_constraint_solver::create_hinge
-            (param_1,*(rigid_body **)this,&local_90,*(rigid_body **)&this->field_0x4,&local_50,
-             &local_70,&local_80,this->m_ps_cache + 4,param_2);
+            (psys,*(rigid_body **)this,&local_90,*(rigid_body **)&this->field_0x4,&local_50,
+             &local_70,&local_80,this->m_ps_cache + 4,delta_t);
   if (1e-05 < this->m_damp_k) {
-    ppVar3 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&::PHYS_ZERO_VEC,
-                        *(rigid_body **)&this->field_0x4,&::PHYS_ZERO_VEC,&local_50,
-                        this->m_ps_cache + 3);
-    ppVar3->m_right_side = 0.0;
-    ppVar3->m_big_dirt = 0.0;
-    ppVar3->m_cfm = 0.0;
-    local_14 = param_2 * this->m_damp_k;
-    ppVar3->m_pulse_sum_min = -local_14;
-    ppVar3->m_pulse_sum_max = local_14;
+    ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&::PHYS_ZERO_VEC,*(rigid_body **)&this->field_0x4,
+                        &::PHYS_ZERO_VEC,&local_50,this->m_ps_cache + 3);
+    ppVar2->m_right_side = 0.0;
+    ppVar2->m_big_dirt = 0.0;
+    ppVar2->m_cfm = 0.0;
+    local_14 = delta_t * this->m_damp_k;
+    ppVar2->m_pulse_sum_min = -local_14;
+    ppVar2->m_pulse_sum_max = local_14;
   }
   phys_multiply33(&local_60,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_ref_loc);
-  ppVar5 = (phys_mat44 *)(*(int *)&this->field_0x4 + 0x30);
-  phys_multiply33(&local_30,ppVar5,&this->m_b2_ref_min_loc);
-  phys_multiply33(&local_40,ppVar5,&this->m_b2_ref_max_loc);
-  uVar4 = this->m_flags;
-  if ((uVar4 & 8) == 0) {
+  ppVar4 = (phys_mat44 *)(*(int *)&this->field_0x4 + 0x30);
+  phys_multiply33(&local_30,ppVar4,&this->m_b2_ref_min_loc);
+  phys_multiply33(&local_40,ppVar4,&this->m_b2_ref_max_loc);
+  uVar3 = this->m_flags;
+  if ((uVar3 & 8) == 0) {
     if (local_50.z * (local_60.x * local_30.y - local_60.y * local_30.x) +
         (local_30.z * local_60.y - local_60.z * local_30.y) * local_50.x +
         local_50.y * (local_60.z * local_30.x - local_60.x * local_30.z) < -0.043619) {
-      uVar4 = uVar4 & 0xfffffffe;
+      uVar3 = uVar3 & 0xfffffffe;
     }
     else {
-      uVar4 = uVar4 | 1;
+      uVar3 = uVar3 | 1;
     }
-    this->m_flags = uVar4;
+    this->m_flags = uVar3;
     local_70.x = local_40.z * local_60.y - local_40.y * local_60.z;
     local_70.y = local_40.x * local_60.z - local_40.z * local_60.x;
     local_70.z = local_60.x * local_40.y - local_60.y * local_40.x;
@@ -220,34 +222,34 @@ rigid_body_constraint_hinge::setup_constraint
     }
   }
   else {
-    fVar2 = local_60.z * local_30.z + local_60.y * local_30.y + local_60.x * local_30.x;
+    fVar1 = local_60.z * local_30.z + local_60.y * local_30.y + local_60.x * local_30.x;
     local_14 = local_60.z * local_40.z + local_40.y * local_60.y + local_40.x * local_60.x;
-    if (local_14 < fVar2 == (local_14 == fVar2)) {
-      this->m_flags = uVar4 & 0xfffffffe | 2;
+    if (local_14 < fVar1 == (local_14 == fVar1)) {
+      this->m_flags = uVar3 & 0xfffffffe | 2;
     }
     else {
-      this->m_flags = uVar4 | 1;
-      this->m_flags = uVar4 & 0xfffffffd | 1;
+      this->m_flags = uVar3 | 1;
+      this->m_flags = uVar3 & 0xfffffffd | 1;
     }
   }
   if ((this->m_flags & 1) != 0) {
     local_70.x = -local_50.x;
     local_70.y = -local_50.y;
     local_70.z = -local_50.z;
-    ppVar3 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&local_60,*(rigid_body **)&this->field_0x4,
+    ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&local_60,*(rigid_body **)&this->field_0x4,
                         &local_30,&local_70,this->m_ps_cache + 6);
-    ppVar3->m_pulse_sum_min = -1e+07;
-    ppVar3->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar3,param_2,5.0);
+    ppVar2->m_pulse_sum_min = -1e+07;
+    ppVar2->m_pulse_sum_max = 0.0;
+    pulse_sum_angular::setup_vel_uni_standard(ppVar2,delta_t,5.0);
   }
   if ((this->m_flags & 2) != 0) {
-    ppVar3 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&local_60,*(rigid_body **)&this->field_0x4,
+    ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&local_60,*(rigid_body **)&this->field_0x4,
                         &local_40,&local_50,this->m_ps_cache + 7);
-    ppVar3->m_pulse_sum_min = -1e+07;
-    ppVar3->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar3,param_2,5.0);
+    ppVar2->m_pulse_sum_min = -1e+07;
+    ppVar2->m_pulse_sum_max = 0.0;
+    pulse_sum_angular::setup_vel_uni_standard(ppVar2,delta_t,5.0);
   }
   return;
 }
@@ -256,22 +258,23 @@ rigid_body_constraint_hinge::setup_constraint
 // 00A18FB0  setup_vel_uni_standard  (<external>/projects_pc/cod/codsrc/tl/physics/include/constraint_solver/pulse_sum_angular.h:91)
 
 void __thiscall
-pulse_sum_angular::setup_vel_uni_standard(pulse_sum_angular *this,float param_1,float param_2)
+pulse_sum_angular::setup_vel_uni_standard
+          (pulse_sum_angular *this,float delta_t,float max_penalty_restitution_vel)
 
 {
   float fVar1;
   
-  if (param_1 <= 0.016666668) {
-    param_1 = 0.016666668;
+  if (delta_t <= 0.016666668) {
+    delta_t = 0.016666668;
   }
   fVar1 = get_pos(this);
-  fVar1 = -fVar1 / param_1;
+  fVar1 = -fVar1 / delta_t;
   this->m_big_dirt = fVar1;
   if (fVar1 < 0.0) {
     this->m_big_dirt = fVar1 * 0.3;
   }
-  if (this->m_big_dirt < -param_2) {
-    this->m_big_dirt = -param_2;
+  if (this->m_big_dirt < -max_penalty_restitution_vel) {
+    this->m_big_dirt = -max_penalty_restitution_vel;
   }
   if (0.0 < this->m_big_dirt == (this->m_big_dirt == 0.0)) {
     this->m_right_side = 0.0;
@@ -289,20 +292,20 @@ pulse_sum_angular::setup_vel_uni_standard(pulse_sum_angular *this,float param_1,
 
 void __thiscall
 rigid_body_constraint_distance::set
-          (rigid_body_constraint_distance *this,phys_vec3 *param_1,phys_vec3 *param_2,float param_3,
-          float param_4)
+          (rigid_body_constraint_distance *this,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc,
+          float min_distance,float max_distance)
 
 {
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
+  (this->m_b1_r_loc).x = b1_r_loc->x;
+  (this->m_b1_r_loc).y = b1_r_loc->y;
+  (this->m_b1_r_loc).z = b1_r_loc->z;
+  (this->m_b2_r_loc).x = b2_r_loc->x;
+  (this->m_b2_r_loc).y = b2_r_loc->y;
+  (this->m_b2_r_loc).z = b2_r_loc->z;
   this->m_flags = 1;
-  this->m_min_distance = param_3;
-  this->m_max_distance = param_4;
-  this->m_next_max_distance = param_4;
+  this->m_min_distance = min_distance;
+  this->m_max_distance = max_distance;
+  this->m_next_max_distance = max_distance;
   this->m_max_distance_vel = 0.0;
   this->m_damp_coef = 0.0;
   return;
@@ -313,22 +316,22 @@ rigid_body_constraint_distance::set
 
 void __thiscall
 pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-          (pulse_sum_normal *this,float param_1,float param_2,float param_3)
+          (pulse_sum_normal *this,float delta_t,float pos_adjust,float max_penalty_restitution_vel)
 
 {
   float fVar1;
   
-  if (param_1 <= 0.016666668) {
-    param_1 = 0.016666668;
+  if (delta_t <= 0.016666668) {
+    delta_t = 0.016666668;
   }
   fVar1 = get_pos(this);
-  fVar1 = -((fVar1 + param_2) / param_1);
+  fVar1 = -((fVar1 + pos_adjust) / delta_t);
   this->m_big_dirt = fVar1;
   if (fVar1 < 0.0) {
     this->m_big_dirt = fVar1 * 0.3;
   }
-  if (this->m_big_dirt < -param_3) {
-    this->m_big_dirt = -param_3;
+  if (this->m_big_dirt < -max_penalty_restitution_vel) {
+    this->m_big_dirt = -max_penalty_restitution_vel;
   }
   if (0.0 < this->m_big_dirt == (this->m_big_dirt == 0.0)) {
     this->m_right_side = 0.0;
@@ -346,7 +349,7 @@ pulse_sum_normal::setup_vel_uni_standard_pos_adjust
 
 void __thiscall
 rigid_body_constraint_distance::setup_constraint
-          (rigid_body_constraint_distance *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_distance *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   int iVar1;
@@ -404,7 +407,7 @@ rigid_body_constraint_distance::setup_constraint
       local_50.x = (float)local_14 * local_30.x;
       local_50.y = local_30.y * (float)local_14;
       local_50.z = (float)local_14 * local_30.z;
-      ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+      ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
       local_40.x = -local_50.x;
       local_40.y = -local_50.y;
       local_40.z = -local_50.z;
@@ -414,17 +417,17 @@ rigid_body_constraint_distance::setup_constraint
       ppVar5->m_pulse_sum_min = -1e+07;
       ppVar5->m_pulse_sum_max = 0.0;
       pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-                (ppVar5,param_2,-this->m_max_distance,1700.0);
+                (ppVar5,delta_t,-this->m_max_distance,1700.0);
       ppVar5->m_right_side = this->m_max_distance_vel + ppVar5->m_right_side;
       if (0.01 < this->m_min_distance) {
-        local_14 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+        local_14 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
         pulse_sum_normal::set
                   (local_14,*(rigid_body **)this,&local_70,*(rigid_body **)&this->field_0x4,
                    &local_60,&local_50,this->m_ps_cache_list + 1,&::PHYS_ZERO_VEC);
         local_14->m_pulse_sum_min = -1e+07;
         local_14->m_pulse_sum_max = 0.0;
         pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-                  (local_14,param_2,this->m_min_distance,1700.0);
+                  (local_14,delta_t,this->m_min_distance,1700.0);
       }
       if (((1e-05 < this->m_damp_coef) &&
           (fVar8 = this->m_max_distance - 0.1, fVar8 = fVar8 * fVar8,
@@ -451,7 +454,7 @@ rigid_body_constraint_distance::setup_constraint
         if (0.0001 < local_18) {
           local_14 = (pulse_sum_normal *)(1.0 / local_18);
           phys_vec3::operator*=(&local_30,(float)local_14);
-          ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+          ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
           if ((this->m_flags & 2) == 0) {
             local_40.x = local_70.x;
             local_40.y = local_70.y;
@@ -473,7 +476,7 @@ rigid_body_constraint_distance::setup_constraint
           pulse_sum_normal::set
                     (ppVar5,*(rigid_body **)this,&local_40,*(rigid_body **)&this->field_0x4,
                      &local_a0,&local_30,this->m_ps_cache_list + 2,&::PHYS_ZERO_VEC);
-          fVar8 = 1.0 / (this->m_damp_coef * param_2);
+          fVar8 = 1.0 / (this->m_damp_coef * delta_t);
           ppVar5->m_right_side = 0.0;
           ppVar5->m_big_dirt = 0.0;
           ppVar5->m_cfm = fVar8;
@@ -525,9 +528,9 @@ pulse_sum_constraint_solver::create_pulse_sum_normal(pulse_sum_constraint_solver
 
 void __thiscall
 pulse_sum_constraint_solver::create_point
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,pulse_sum_cache *param_5,float param_6,bool param_7
-          ,float param_8,float param_9)
+          (pulse_sum_constraint_solver *this,rigid_body *b1,phys_vec3 *b1_r,rigid_body *b2,
+          phys_vec3 *b2_r,pulse_sum_cache *ps_cache,float delta_t,bool is_spring,float spring_k,
+          float damp_k)
 
 {
   int *piVar1;
@@ -552,8 +555,7 @@ pulse_sum_constraint_solver::create_point
   *piVar1 = *piVar1 + 1;
   *(this->m_list_pulse_sum_point).m_last_next_ptr = this_00;
   (this->m_list_pulse_sum_point).m_last_next_ptr = (pulse_sum_point **)this_00;
-  pulse_sum_point::set
-            (this_00,param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
+  pulse_sum_point::set(this_00,b1,b1_r,b2,b2_r,ps_cache,delta_t,is_spring,spring_k,damp_k);
   return;
 }
 
@@ -562,8 +564,8 @@ pulse_sum_constraint_solver::create_point
 
 pulse_sum_angular * __thiscall
 pulse_sum_constraint_solver::create_pulse_sum_angular
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,phys_vec3 *param_5,pulse_sum_cache *param_6)
+          (pulse_sum_constraint_solver *this,rigid_body *b1,phys_vec3 *b1_r,rigid_body *b2,
+          phys_vec3 *b2_r,phys_vec3 *ud,pulse_sum_cache *ps_cache)
 
 {
   int *piVar1;
@@ -588,7 +590,7 @@ pulse_sum_constraint_solver::create_pulse_sum_angular
   *piVar1 = *piVar1 + 1;
   *(this->m_list_pulse_sum_angular).m_last_next_ptr = ppVar4;
   (this->m_list_pulse_sum_angular).m_last_next_ptr = (pulse_sum_angular **)ppVar4;
-  pulse_sum_angular::set(ppVar4,param_1,param_2,param_3,param_4,param_5,param_6);
+  pulse_sum_angular::set(ppVar4,b1,b1_r,b2,b2_r,ud,ps_cache);
   return ppVar4;
 }
 
@@ -597,10 +599,10 @@ pulse_sum_constraint_solver::create_pulse_sum_angular
 
 void __thiscall
 rigid_body_constraint_distance::outer_prolog_update
-          (rigid_body_constraint_distance *this,float param_1)
+          (rigid_body_constraint_distance *this,float delta_t)
 
 {
-  this->m_max_distance_vel = (this->m_next_max_distance - this->m_max_distance) / param_1;
+  this->m_max_distance_vel = (this->m_next_max_distance - this->m_max_distance) / delta_t;
   return;
 }
 
@@ -608,10 +610,10 @@ rigid_body_constraint_distance::outer_prolog_update
 // 00A17AC0  inner_update  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_generic.cpp:205)
 
 void __thiscall
-rigid_body_constraint_distance::inner_update(rigid_body_constraint_distance *this,float param_1)
+rigid_body_constraint_distance::inner_update(rigid_body_constraint_distance *this,float delta_t)
 
 {
-  this->m_max_distance = this->m_max_distance_vel * param_1 + this->m_max_distance;
+  this->m_max_distance = this->m_max_distance_vel * delta_t + this->m_max_distance;
   return;
 }
 
@@ -620,34 +622,33 @@ rigid_body_constraint_distance::inner_update(rigid_body_constraint_distance *thi
 
 void __thiscall
 pulse_sum_constraint_solver::create_hinge
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,
-          pulse_sum_cache *param_7,float param_8)
+          (pulse_sum_constraint_solver *this,rigid_body *b1,phys_vec3 *b1_axis,rigid_body *b2,
+          phys_vec3 *b2_axis,phys_vec3 *a1,phys_vec3 *a2,pulse_sum_cache *ps_cache,float delta_t)
 
 {
   pulse_sum_angular *ppVar1;
   float fVar2;
   float fVar3;
   
-  ppVar1 = create_pulse_sum_angular(this,param_1,param_2,param_3,param_4,param_5,param_7);
+  ppVar1 = create_pulse_sum_angular(this,b1,b1_axis,b2,b2_axis,a1,ps_cache);
   ppVar1->m_pulse_sum_min = -1e+07;
   ppVar1->m_pulse_sum_max = 1e+07;
-  fVar3 = param_8;
-  if (param_8 <= 0.016666668) {
+  fVar3 = delta_t;
+  if (delta_t <= 0.016666668) {
     fVar3 = 0.016666668;
   }
   fVar2 = pulse_sum_angular::get_pos(ppVar1);
   ppVar1->m_big_dirt = (-0.5 / fVar3) * fVar2;
   ppVar1->m_right_side = 0.0;
   ppVar1->m_cfm = 0.0;
-  ppVar1 = create_pulse_sum_angular(this,param_1,param_2,param_3,param_4,param_6,param_7 + 1);
+  ppVar1 = create_pulse_sum_angular(this,b1,b1_axis,b2,b2_axis,a2,ps_cache + 1);
   ppVar1->m_pulse_sum_min = -1e+07;
   ppVar1->m_pulse_sum_max = 1e+07;
-  if (param_8 <= 0.016666668) {
-    param_8 = 0.016666668;
+  if (delta_t <= 0.016666668) {
+    delta_t = 0.016666668;
   }
   fVar3 = pulse_sum_angular::get_pos(ppVar1);
-  ppVar1->m_big_dirt = (-0.5 / param_8) * fVar3;
+  ppVar1->m_big_dirt = (-0.5 / delta_t) * fVar3;
   ppVar1->m_right_side = 0.0;
   ppVar1->m_cfm = 0.0;
   return;
@@ -658,7 +659,7 @@ pulse_sum_constraint_solver::create_hinge
 
 void __thiscall
 rigid_body_constraint_distance::outer_epilog_update
-          (rigid_body_constraint_distance *this,float param_1)
+          (rigid_body_constraint_distance *this,float __formal)
 
 {
   this->m_max_distance = this->m_next_max_distance;
@@ -670,14 +671,14 @@ rigid_body_constraint_distance::outer_epilog_update
 
 void __thiscall
 rigid_body_constraint_angular_actuator::setup_constraint
-          (rigid_body_constraint_angular_actuator *this,pulse_sum_constraint_solver *param_1,
-          float param_2)
+          (rigid_body_constraint_angular_actuator *this,pulse_sum_constraint_solver *psys,
+          float delta_t)
 
 {
   phys_vec3 *ppVar1;
   pulse_sum_angular *ppVar2;
-  phys_vec3 *ppVar3;
-  float fVar4;
+  phys_vec3 *b2_r;
+  float fVar3;
   phys_mat44 local_80;
   float local_40;
   float local_3c;
@@ -689,9 +690,9 @@ rigid_body_constraint_angular_actuator::setup_constraint
   float local_14;
   
   if (this->m_enabled != false) {
-    local_18 = this->m_power * param_2 * this->m_power_scale;
-    ppVar3 = (phys_vec3 *)(*(int *)&this->field_0x4 + 0x30);
-    local_1c = ppVar3;
+    local_18 = this->m_power * delta_t * this->m_power_scale;
+    b2_r = (phys_vec3 *)(*(int *)&this->field_0x4 + 0x30);
+    local_1c = b2_r;
     phys_multiply_mat(&local_80,(phys_mat44 *)(*(int *)this + 0x30),&this->m_target_mat);
     ppVar1 = phys_multiply33((phys_vec3 *)local_30,(phys_mat44 *)(*(int *)this + 0x30),
                              &this->m_a_vel);
@@ -699,38 +700,38 @@ rigid_body_constraint_angular_actuator::setup_constraint
     local_3c = ppVar1->y;
     local_38 = ppVar1->z;
     ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&local_80.x,*(rigid_body **)&this->field_0x4,
-                        ppVar3,&local_80.y,this->m_ps_cache_list);
+                       (psys,*(rigid_body **)this,&local_80.x,*(rigid_body **)&this->field_0x4,b2_r,
+                        &local_80.y,this->m_ps_cache_list);
     local_14 = -local_18;
     ppVar2->m_pulse_sum_min = local_14;
     ppVar2->m_pulse_sum_max = local_18;
-    local_30._8_8_ = (undefined8)(-1.0 / param_2);
-    fVar4 = pulse_sum_angular::get_pos(ppVar2);
-    ppVar2->m_big_dirt = fVar4 * (float)(double)local_30._8_8_;
+    local_30._8_8_ = (undefined8)(-1.0 / delta_t);
+    fVar3 = pulse_sum_angular::get_pos(ppVar2);
+    ppVar2->m_big_dirt = fVar3 * (float)(double)local_30._8_8_;
     ppVar2->m_right_side = 0.0;
     ppVar2->m_cfm = 0.0;
     ppVar2->m_denom = ppVar2->m_denom + 0.0;
     local_20 = local_80.y.z * local_38 + local_80.y.x * local_40 + local_80.y.y * local_3c;
     ppVar2->m_right_side = -local_20 + 0.0;
     ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&local_80.y,*(rigid_body **)&this->field_0x4,
+                       (psys,*(rigid_body **)this,&local_80.y,*(rigid_body **)&this->field_0x4,
                         local_1c + 1,&local_80.z,this->m_ps_cache_list + 1);
     ppVar2->m_pulse_sum_min = local_14;
     ppVar2->m_pulse_sum_max = local_18;
-    fVar4 = pulse_sum_angular::get_pos(ppVar2);
-    ppVar2->m_big_dirt = fVar4 * (float)(double)local_30._8_8_;
+    fVar3 = pulse_sum_angular::get_pos(ppVar2);
+    ppVar2->m_big_dirt = fVar3 * (float)(double)local_30._8_8_;
     ppVar2->m_right_side = 0.0;
     ppVar2->m_cfm = 0.0;
     ppVar2->m_denom = ppVar2->m_denom + 0.0;
     local_20 = local_80.z.z * local_38 + local_80.z.y * local_3c + local_80.z.x * local_40;
     ppVar2->m_right_side = -local_20 + 0.0;
     ppVar2 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&local_80.z,*(rigid_body **)&this->field_0x4,
+                       (psys,*(rigid_body **)this,&local_80.z,*(rigid_body **)&this->field_0x4,
                         local_1c + 2,&local_80.x,this->m_ps_cache_list + 2);
     ppVar2->m_pulse_sum_min = local_14;
     ppVar2->m_pulse_sum_max = local_18;
-    fVar4 = pulse_sum_angular::get_pos(ppVar2);
-    ppVar2->m_big_dirt = fVar4 * (float)(double)local_30._8_8_;
+    fVar3 = pulse_sum_angular::get_pos(ppVar2);
+    ppVar2->m_big_dirt = fVar3 * (float)(double)local_30._8_8_;
     ppVar2->m_right_side = 0.0;
     ppVar2->m_cfm = 0.0;
     ppVar2->m_denom = ppVar2->m_denom + 0.0;
@@ -743,13 +744,12 @@ rigid_body_constraint_angular_actuator::setup_constraint
 
 // 00A179B0  sub_pos  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body_internal.h:224)
 
-phys_vec3 * __cdecl
-rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *b,phys_vec3 *p)
 
 {
-  __return_storage_ptr__->x = param_2->x - (param_1->m_mat).w.x;
-  __return_storage_ptr__->y = param_2->y - (param_1->m_mat).w.y;
-  __return_storage_ptr__->z = param_2->z - (param_1->m_mat).w.z;
+  __return_storage_ptr__->x = p->x - (b->m_mat).w.x;
+  __return_storage_ptr__->y = p->y - (b->m_mat).w.y;
+  __return_storage_ptr__->z = p->z - (b->m_mat).w.z;
   return __return_storage_ptr__;
 }
 
@@ -758,35 +758,35 @@ rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *param_1,phys_vec3 *
 
 void __thiscall
 rigid_body_constraint_angular_actuator::set
-          (rigid_body_constraint_angular_actuator *this,float param_1,phys_mat44 *param_2)
+          (rigid_body_constraint_angular_actuator *this,float power,phys_mat44 *target_mat)
 
 {
-  this->m_power = param_1;
+  this->m_power = power;
   this->m_power_scale = 1.0;
-  (this->m_target_mat).x.x = (param_2->x).x;
-  (this->m_target_mat).x.y = (param_2->x).y;
-  (this->m_target_mat).x.z = (param_2->x).z;
-  (this->m_target_mat).y.x = (param_2->y).x;
-  (this->m_target_mat).y.y = (param_2->y).y;
-  (this->m_target_mat).y.z = (param_2->y).z;
-  (this->m_target_mat).z.x = (param_2->z).x;
-  (this->m_target_mat).z.y = (param_2->z).y;
-  (this->m_target_mat).z.z = (param_2->z).z;
-  (this->m_target_mat).w.x = (param_2->w).x;
-  (this->m_target_mat).w.y = (param_2->w).y;
-  (this->m_target_mat).w.z = (param_2->w).z;
-  (this->m_next_target_mat).x.x = (param_2->x).x;
-  (this->m_next_target_mat).x.y = (param_2->x).y;
-  (this->m_next_target_mat).x.z = (param_2->x).z;
-  (this->m_next_target_mat).y.x = (param_2->y).x;
-  (this->m_next_target_mat).y.y = (param_2->y).y;
-  (this->m_next_target_mat).y.z = (param_2->y).z;
-  (this->m_next_target_mat).z.x = (param_2->z).x;
-  (this->m_next_target_mat).z.y = (param_2->z).y;
-  (this->m_next_target_mat).z.z = (param_2->z).z;
-  (this->m_next_target_mat).w.x = (param_2->w).x;
-  (this->m_next_target_mat).w.y = (param_2->w).y;
-  (this->m_next_target_mat).w.z = (param_2->w).z;
+  (this->m_target_mat).x.x = (target_mat->x).x;
+  (this->m_target_mat).x.y = (target_mat->x).y;
+  (this->m_target_mat).x.z = (target_mat->x).z;
+  (this->m_target_mat).y.x = (target_mat->y).x;
+  (this->m_target_mat).y.y = (target_mat->y).y;
+  (this->m_target_mat).y.z = (target_mat->y).z;
+  (this->m_target_mat).z.x = (target_mat->z).x;
+  (this->m_target_mat).z.y = (target_mat->z).y;
+  (this->m_target_mat).z.z = (target_mat->z).z;
+  (this->m_target_mat).w.x = (target_mat->w).x;
+  (this->m_target_mat).w.y = (target_mat->w).y;
+  (this->m_target_mat).w.z = (target_mat->w).z;
+  (this->m_next_target_mat).x.x = (target_mat->x).x;
+  (this->m_next_target_mat).x.y = (target_mat->x).y;
+  (this->m_next_target_mat).x.z = (target_mat->x).z;
+  (this->m_next_target_mat).y.x = (target_mat->y).x;
+  (this->m_next_target_mat).y.y = (target_mat->y).y;
+  (this->m_next_target_mat).y.z = (target_mat->y).z;
+  (this->m_next_target_mat).z.x = (target_mat->z).x;
+  (this->m_next_target_mat).z.y = (target_mat->z).y;
+  (this->m_next_target_mat).z.z = (target_mat->z).z;
+  (this->m_next_target_mat).w.x = (target_mat->w).x;
+  (this->m_next_target_mat).w.y = (target_mat->w).y;
+  (this->m_next_target_mat).w.z = (target_mat->w).z;
   (this->m_a_vel).x = 0.0;
   (this->m_a_vel).y = 0.0;
   (this->m_a_vel).z = 0.0;
@@ -800,7 +800,7 @@ rigid_body_constraint_angular_actuator::set
 
 void __thiscall
 rigid_body_constraint_angular_actuator::outer_prolog_update
-          (rigid_body_constraint_angular_actuator *this,float param_1)
+          (rigid_body_constraint_angular_actuator *this,float delta_t)
 
 {
   phys_vec3 local_20;
@@ -812,7 +812,7 @@ rigid_body_constraint_angular_actuator::outer_prolog_update
   (this->m_next_target_mat).w.y = 0.0;
   (this->m_next_target_mat).w.z = 0.0;
   nuge::calc_velocities
-            (&this->m_target_mat,&this->m_next_target_mat,param_1,&local_20,&this->m_a_vel);
+            (&this->m_target_mat,&this->m_next_target_mat,delta_t,&local_20,&this->m_a_vel);
   return;
 }
 
@@ -821,12 +821,12 @@ rigid_body_constraint_angular_actuator::outer_prolog_update
 
 void __thiscall
 rigid_body_constraint_angular_actuator::inner_update
-          (rigid_body_constraint_angular_actuator *this,float param_1)
+          (rigid_body_constraint_angular_actuator *this,float delta_t)
 
 {
   phys_mat44 local_50;
   
-  make_rotate(&local_50,&this->m_a_vel,param_1,1000.0);
+  make_rotate(&local_50,&this->m_a_vel,delta_t,1000.0);
   phys_multiply_mat(&this->m_target_mat,&local_50,&this->m_target_mat);
   return;
 }
@@ -836,7 +836,7 @@ rigid_body_constraint_angular_actuator::inner_update
 
 void __thiscall
 rigid_body_constraint_angular_actuator::outer_epilog_update
-          (rigid_body_constraint_angular_actuator *this,float param_1)
+          (rigid_body_constraint_angular_actuator *this,float __formal)
 
 {
   (this->m_target_mat).x.x = (this->m_next_target_mat).x.x;
@@ -869,31 +869,31 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 void __thiscall
 rigid_body_constraint_upright::setup_constraint
-          (rigid_body_constraint_upright *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_upright *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
-  rigid_body *prVar1;
+  rigid_body *b1;
   pulse_sum_angular *this_00;
-  float fVar2;
+  float fVar1;
   phys_vec3 local_40;
   phys_vec3 local_30;
   float local_14;
   
   if (this->m_enabled != false) {
-    prVar1 = *(rigid_body **)this;
-    phys_multiply33(&local_30,&prVar1->m_mat,&this->m_b1_forward_axis_loc);
-    phys_multiply33(&local_40,&prVar1->m_mat,&this->m_b1_lean_axis_loc);
+    b1 = *(rigid_body **)this;
+    phys_multiply33(&local_30,&b1->m_mat,&this->m_b1_forward_axis_loc);
+    phys_multiply33(&local_40,&b1->m_mat,&this->m_b1_lean_axis_loc);
     this_00 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                        (param_1,prVar1,&local_40,*(rigid_body **)&this->field_0x4,
-                         &this->m_b2_up_axis_loc,&local_30,this->m_ps_cache_list);
+                        (psys,b1,&local_40,*(rigid_body **)&this->field_0x4,&this->m_b2_up_axis_loc,
+                         &local_30,this->m_ps_cache_list);
     this_00->m_pulse_sum_min = -1e+07;
     this_00->m_pulse_sum_max = 1e+07;
-    if (param_2 <= 0.016666668) {
-      param_2 = 0.016666668;
+    if (delta_t <= 0.016666668) {
+      delta_t = 0.016666668;
     }
-    local_14 = param_2;
-    fVar2 = pulse_sum_angular::get_pos(this_00);
-    this_00->m_big_dirt = (-0.5 / local_14) * fVar2;
+    local_14 = delta_t;
+    fVar1 = pulse_sum_angular::get_pos(this_00);
+    this_00->m_big_dirt = (-0.5 / local_14) * fVar1;
     this_00->m_right_side = 0.0;
     this_00->m_cfm = 0.0;
   }
@@ -903,7 +903,7 @@ rigid_body_constraint_upright::setup_constraint
 
 // 00A174A0  construct_orth_ud  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:295)
 
-phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1)
+phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec3 *ud)
 
 {
   float fVar1;
@@ -927,20 +927,20 @@ phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec
     }
   }
   __return_storage_ptr__->x = 0.0;
-  __return_storage_ptr__->y = param_1->z;
-  __return_storage_ptr__->z = -param_1->y;
+  __return_storage_ptr__->y = ud->z;
+  __return_storage_ptr__->z = -ud->y;
   _CIsqrt();
   local_14 = (float)extraout_ST0_00;
   if (local_14 < 0.0001) {
-    fVar1 = param_1->x;
-    __return_storage_ptr__->x = -param_1->z;
+    fVar1 = ud->x;
+    __return_storage_ptr__->x = -ud->z;
     __return_storage_ptr__->y = 0.0;
     __return_storage_ptr__->z = fVar1;
     _CIsqrt();
     local_14 = (float)extraout_ST0_01;
     if (local_14 < 0.0001) {
-      fVar1 = param_1->x;
-      __return_storage_ptr__->x = param_1->y;
+      fVar1 = ud->x;
+      __return_storage_ptr__->x = ud->y;
       __return_storage_ptr__->y = -fVar1;
       __return_storage_ptr__->z = 0.0;
       _CIsqrt();
@@ -968,7 +968,7 @@ phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec
 
 void __thiscall
 rigid_body_constraint_upright::epilog_vel_constraint
-          (rigid_body_constraint_upright *this,float param_1)
+          (rigid_body_constraint_upright *this,float delta_t)
 
 {
   float fVar1;
@@ -976,7 +976,7 @@ rigid_body_constraint_upright::epilog_vel_constraint
   if (this->m_enabled != false) {
     fVar1 = calc_current_lean_angle(this);
     this->m_lean_angle = fVar1;
-    this->m_lean_angle_calc_delta_t = this->m_lean_angle_calc_delta_t + param_1;
+    this->m_lean_angle_calc_delta_t = this->m_lean_angle_calc_delta_t + delta_t;
   }
   return;
 }
@@ -994,6 +994,9 @@ rigid_body_constraint_upright::calc_current_lean_angle(rigid_body_constraint_upr
   float fVar4;
   float fVar5;
   float10 extraout_ST0;
+  phys_vec3 b2_up_axis;
+  float x;
+  float y;
   
   iVar1 = *(int *)this;
   fVar2 = *(float *)(iVar1 + 0x38) * (this->m_b2_up_axis_loc).z +
@@ -1021,7 +1024,7 @@ rigid_body_constraint_upright::calc_current_lean_angle(rigid_body_constraint_upr
 
 phys_vec3 * __thiscall
 rigid_body_constraint_upright::calc_b1_lean_axis_loc
-          (rigid_body_constraint_upright *this,phys_vec3 *__return_storage_ptr__,float param_1)
+          (rigid_body_constraint_upright *this,phys_vec3 *__return_storage_ptr__,float lean_angle)
 
 {
   float fVar1;
@@ -1054,12 +1057,13 @@ rigid_body_constraint_upright::calc_b1_lean_axis_loc
 
 void __thiscall
 rigid_body_constraint_upright::update_lean_axis
-          (rigid_body_constraint_upright *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_upright *this,phys_vec3 *b1_lean_center,phys_vec3 *b1_lean_axis_loc
+          )
 
 {
-  void *pvVar1;
-  float fVar2;
-  phys_vec3 *ppVar3;
+  void *data;
+  float fVar1;
+  phys_vec3 *ppVar2;
   float10 extraout_ST0;
   phys_mat44 local_80;
   phys_vec3 local_40;
@@ -1067,9 +1071,9 @@ rigid_body_constraint_upright::update_lean_axis
   phys_mat44 *local_18;
   float local_14;
   
-  (this->m_b1_lean_axis_loc).x = param_2->x;
-  (this->m_b1_lean_axis_loc).y = param_2->y;
-  (this->m_b1_lean_axis_loc).z = param_2->z;
+  (this->m_b1_lean_axis_loc).x = b1_lean_axis_loc->x;
+  (this->m_b1_lean_axis_loc).y = b1_lean_axis_loc->y;
+  (this->m_b1_lean_axis_loc).z = b1_lean_axis_loc->z;
   if (this->m_enabled != false) {
     local_18 = (phys_mat44 *)(*(int *)this + 0x30);
     phys_multiply33(&local_40,local_18,&this->m_b1_forward_axis_loc);
@@ -1077,10 +1081,10 @@ rigid_body_constraint_upright::update_lean_axis
     local_30.x = (this->m_b2_up_axis_loc).x;
     local_30.z = (this->m_b2_up_axis_loc).z;
     local_30.w = (this->m_b2_up_axis_loc).w;
-    fVar2 = local_40.z * local_30.z + local_30.y * local_40.y + local_30.x * local_40.x;
-    local_40.x = fVar2 * local_40.x;
-    local_40.y = fVar2 * local_40.y;
-    local_40.z = fVar2 * local_40.z;
+    fVar1 = local_40.z * local_30.z + local_30.y * local_40.y + local_30.x * local_40.x;
+    local_40.x = fVar1 * local_40.x;
+    local_40.y = fVar1 * local_40.y;
+    local_40.z = fVar1 * local_40.z;
     local_30.x = local_30.x - local_40.x;
     local_30.y = local_30.y - local_40.y;
     local_30.z = local_30.z - local_40.z;
@@ -1093,26 +1097,25 @@ rigid_body_constraint_upright::update_lean_axis
       local_30.z = local_14 * local_30.z;
       phys_multiply33(&local_40,local_18,&this->m_b1_lean_axis_loc);
       make_rotate(&local_80,&local_40,&local_30);
-      ppVar3 = phys_multiply33(&local_30,&local_80,param_1);
-      local_80.w.x = param_1->x - ppVar3->x;
-      local_80.w.y = param_1->y - ppVar3->y;
-      local_80.w.z = param_1->z - ppVar3->z;
+      ppVar2 = phys_multiply33(&local_30,&local_80,b1_lean_center);
+      local_80.w.x = b1_lean_center->x - ppVar2->x;
+      local_80.w.y = b1_lean_center->y - ppVar2->y;
+      local_80.w.z = b1_lean_center->z - ppVar2->z;
       local_40.x = local_80.w.x;
       local_40.y = local_80.w.y;
       local_40.z = local_80.w.z;
       phys_full_multiply_mat
                 ((phys_mat44 *)(*(int *)this + 0x30),&local_80,(phys_mat44 *)(*(int *)this + 0x30));
-      pvVar1 = *(void **)this;
-      local_18 = (phys_mat44 *)ABS(*(float *)((int)pvVar1 + 0x60));
+      data = *(void **)this;
+      local_18 = (phys_mat44 *)ABS(*(float *)((int)data + 0x60));
       if ((100000.0 < (float)local_18) ||
-         (local_18 = (phys_mat44 *)ABS(*(float *)((int)pvVar1 + 100)), 100000.0 < (float)local_18))
-      {
-        phys_exec_debug_callback(pvVar1);
+         (local_18 = (phys_mat44 *)ABS(*(float *)((int)data + 100)), 100000.0 < (float)local_18)) {
+        phys_exec_debug_callback(data);
         return;
       }
-      local_18 = (phys_mat44 *)ABS(*(float *)((int)pvVar1 + 0x68));
+      local_18 = (phys_mat44 *)ABS(*(float *)((int)data + 0x68));
       if (100000.0 < (float)local_18) {
-        phys_exec_debug_callback(pvVar1);
+        phys_exec_debug_callback(data);
         return;
       }
     }
@@ -1123,7 +1126,7 @@ rigid_body_constraint_upright::update_lean_axis
 
 // 00A17670  PHYS_ASSERT_UNIT  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_math.h:418)
 
-void __cdecl PHYS_ASSERT_UNIT(phys_vec3 *param_1)
+void __cdecl PHYS_ASSERT_UNIT(phys_vec3 *v)
 
 {
   code *pcVar1;
@@ -1146,13 +1149,13 @@ void __cdecl PHYS_ASSERT_UNIT(phys_vec3 *param_1)
 
 // 00A176F0  PHYS_ASSERT_ORTHOGONAL  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_math.h:423)
 
-void __cdecl PHYS_ASSERT_ORTHOGONAL(phys_vec3 *param_1,phys_vec3 *param_2)
+void __cdecl PHYS_ASSERT_ORTHOGONAL(phys_vec3 *v1,phys_vec3 *v2)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0.001 <= ABS(param_1->z * param_2->z + param_1->x * param_2->x + param_1->y * param_2->y)) {
+  if (0.001 <= ABS(v1->z * v2->z + v1->x * v2->x + v1->y * v2->y)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",0x1a9,
                       "fabsf(d) < 0.001f","");
     if (bVar2) {
@@ -1167,7 +1170,7 @@ void __cdecl PHYS_ASSERT_ORTHOGONAL(phys_vec3 *param_1,phys_vec3 *param_2)
 
 // 00A17750  PHYS_ASSERT_ORTHONORMAL  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_math.h:428)
 
-void __cdecl PHYS_ASSERT_ORTHONORMAL(phys_mat44 *param_1)
+void __cdecl PHYS_ASSERT_ORTHONORMAL(phys_mat44 *m)
 
 {
   float fVar1;
@@ -1193,27 +1196,32 @@ void __cdecl PHYS_ASSERT_ORTHONORMAL(phys_mat44 *param_1)
   float10 extraout_ST0;
   float10 extraout_ST0_00;
   float10 extraout_ST0_01;
+  float dyz;
+  float dxz;
+  float dxy;
+  float nz;
+  float ny;
   
   _CIsqrt();
   _CIsqrt();
-  fVar1 = (param_1->y).y;
-  fVar2 = (param_1->x).y;
-  fVar3 = (param_1->y).x;
-  fVar4 = (param_1->x).x;
-  fVar5 = (param_1->y).z;
-  fVar6 = (param_1->x).z;
-  fVar7 = (param_1->z).y;
-  fVar8 = (param_1->x).y;
-  fVar9 = (param_1->z).x;
-  fVar10 = (param_1->x).x;
-  fVar11 = (param_1->z).z;
-  fVar12 = (param_1->x).z;
-  fVar13 = (param_1->y).y;
-  fVar14 = (param_1->z).y;
-  fVar15 = (param_1->z).x;
-  fVar16 = (param_1->y).x;
-  fVar17 = (param_1->y).z;
-  fVar18 = (param_1->z).z;
+  fVar1 = (m->y).y;
+  fVar2 = (m->x).y;
+  fVar3 = (m->y).x;
+  fVar4 = (m->x).x;
+  fVar5 = (m->y).z;
+  fVar6 = (m->x).z;
+  fVar7 = (m->z).y;
+  fVar8 = (m->x).y;
+  fVar9 = (m->z).x;
+  fVar10 = (m->x).x;
+  fVar11 = (m->z).z;
+  fVar12 = (m->x).z;
+  fVar13 = (m->y).y;
+  fVar14 = (m->z).y;
+  fVar15 = (m->z).x;
+  fVar16 = (m->y).x;
+  fVar17 = (m->y).z;
+  fVar18 = (m->z).z;
   _CIsqrt();
   if (0.001 <= ABS((float)extraout_ST0_01 - 1.0)) {
     bVar20 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",0x1b3,

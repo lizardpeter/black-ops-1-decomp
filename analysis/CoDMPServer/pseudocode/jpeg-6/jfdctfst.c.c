@@ -2,7 +2,7 @@
 
 // 00B6D3D0  jpeg_fdct_ifast  (jpeg-6/jfdctfst.c:115)
 
-void __cdecl jpeg_fdct_ifast(int *param_1)
+void __cdecl jpeg_fdct_ifast(int *data)
 
 {
   int iVar1;
@@ -12,64 +12,83 @@ void __cdecl jpeg_fdct_ifast(int *param_1)
   int iVar5;
   int iVar6;
   int iVar7;
-  int local_28;
-  int *local_8;
+  int tmp0;
+  int tmp4;
+  int z1;
+  int z5;
+  int z4;
+  int tmp1;
+  int tmp5;
+  int z11;
+  int z2;
+  int tmp2;
+  int tmp6;
+  int tmp13;
+  int ctr;
+  int tmp12;
+  int z3;
+  int tmp10;
+  int tmp11;
+  int tmp3;
+  int tmp7;
+  int z13;
+  int *dataptr;
   
-  local_8 = param_1;
-  for (local_28 = 7; -1 < local_28; local_28 = local_28 + -1) {
-    iVar4 = *local_8 - local_8[7];
-    iVar3 = local_8[6];
-    iVar6 = local_8[2];
-    iVar2 = local_8[4];
-    iVar7 = *local_8 + local_8[7] + local_8[3] + local_8[4];
-    iVar1 = (*local_8 + local_8[7]) - (local_8[3] + local_8[4]);
-    iVar5 = local_8[1] + local_8[6] + local_8[2] + local_8[5];
-    *local_8 = iVar7 + iVar5;
-    local_8[4] = iVar7 - iVar5;
-    iVar5 = (((local_8[1] + local_8[6]) - (local_8[2] + local_8[5])) + iVar1) * 0xb5 >> 8;
-    local_8[2] = iVar1 + iVar5;
-    local_8[6] = iVar1 - iVar5;
-    iVar2 = (local_8[3] - iVar2) + (iVar6 - local_8[5]);
-    iVar5 = (local_8[1] - iVar3) + iVar4;
+  dataptr = data;
+  for (ctr = 7; -1 < ctr; ctr = ctr + -1) {
+    iVar4 = *dataptr - dataptr[7];
+    iVar3 = dataptr[6];
+    iVar6 = dataptr[2];
+    iVar2 = dataptr[4];
+    iVar7 = *dataptr + dataptr[7] + dataptr[3] + dataptr[4];
+    iVar1 = (*dataptr + dataptr[7]) - (dataptr[3] + dataptr[4]);
+    iVar5 = dataptr[1] + dataptr[6] + dataptr[2] + dataptr[5];
+    *dataptr = iVar7 + iVar5;
+    dataptr[4] = iVar7 - iVar5;
+    iVar5 = (((dataptr[1] + dataptr[6]) - (dataptr[2] + dataptr[5])) + iVar1) * 0xb5 >> 8;
+    dataptr[2] = iVar1 + iVar5;
+    dataptr[6] = iVar1 - iVar5;
+    iVar2 = (dataptr[3] - iVar2) + (iVar6 - dataptr[5]);
+    iVar5 = (dataptr[1] - iVar3) + iVar4;
     iVar1 = (iVar2 - iVar5) * 0x62 >> 8;
     iVar2 = (iVar2 * 0x8b >> 8) + iVar1;
     iVar1 = (iVar5 * 0x14e >> 8) + iVar1;
-    iVar3 = ((iVar6 - local_8[5]) + (local_8[1] - iVar3)) * 0xb5 >> 8;
+    iVar3 = ((iVar6 - dataptr[5]) + (dataptr[1] - iVar3)) * 0xb5 >> 8;
     iVar6 = iVar4 + iVar3;
     iVar4 = iVar4 - iVar3;
-    local_8[5] = iVar4 + iVar2;
-    local_8[3] = iVar4 - iVar2;
-    local_8[1] = iVar6 + iVar1;
-    local_8[7] = iVar6 - iVar1;
-    local_8 = local_8 + 8;
+    dataptr[5] = iVar4 + iVar2;
+    dataptr[3] = iVar4 - iVar2;
+    dataptr[1] = iVar6 + iVar1;
+    dataptr[7] = iVar6 - iVar1;
+    dataptr = dataptr + 8;
   }
-  local_8 = param_1;
-  for (local_28 = 7; -1 < local_28; local_28 = local_28 + -1) {
-    iVar4 = *local_8 - local_8[0x38];
-    iVar3 = local_8[0x30];
-    iVar6 = local_8[0x10];
-    iVar2 = local_8[0x20];
-    iVar7 = *local_8 + local_8[0x38] + local_8[0x18] + local_8[0x20];
-    iVar1 = (*local_8 + local_8[0x38]) - (local_8[0x18] + local_8[0x20]);
-    iVar5 = local_8[8] + local_8[0x30] + local_8[0x10] + local_8[0x28];
-    *local_8 = iVar7 + iVar5;
-    local_8[0x20] = iVar7 - iVar5;
-    iVar5 = (((local_8[8] + local_8[0x30]) - (local_8[0x10] + local_8[0x28])) + iVar1) * 0xb5 >> 8;
-    local_8[0x10] = iVar1 + iVar5;
-    local_8[0x30] = iVar1 - iVar5;
-    iVar2 = (local_8[0x18] - iVar2) + (iVar6 - local_8[0x28]);
-    iVar5 = (local_8[8] - iVar3) + iVar4;
+  dataptr = data;
+  for (ctr = 7; -1 < ctr; ctr = ctr + -1) {
+    iVar4 = *dataptr - dataptr[0x38];
+    iVar3 = dataptr[0x30];
+    iVar6 = dataptr[0x10];
+    iVar2 = dataptr[0x20];
+    iVar7 = *dataptr + dataptr[0x38] + dataptr[0x18] + dataptr[0x20];
+    iVar1 = (*dataptr + dataptr[0x38]) - (dataptr[0x18] + dataptr[0x20]);
+    iVar5 = dataptr[8] + dataptr[0x30] + dataptr[0x10] + dataptr[0x28];
+    *dataptr = iVar7 + iVar5;
+    dataptr[0x20] = iVar7 - iVar5;
+    iVar5 = (((dataptr[8] + dataptr[0x30]) - (dataptr[0x10] + dataptr[0x28])) + iVar1) * 0xb5 >> 8;
+    dataptr[0x10] = iVar1 + iVar5;
+    dataptr[0x30] = iVar1 - iVar5;
+    iVar2 = (dataptr[0x18] - iVar2) + (iVar6 - dataptr[0x28]);
+    iVar5 = (dataptr[8] - iVar3) + iVar4;
     iVar1 = (iVar2 - iVar5) * 0x62 >> 8;
     iVar2 = (iVar2 * 0x8b >> 8) + iVar1;
     iVar1 = (iVar5 * 0x14e >> 8) + iVar1;
-    iVar3 = ((iVar6 - local_8[0x28]) + (local_8[8] - iVar3)) * 0xb5 >> 8;
+    iVar3 = ((iVar6 - dataptr[0x28]) + (dataptr[8] - iVar3)) * 0xb5 >> 8;
     iVar6 = iVar4 + iVar3;
     iVar4 = iVar4 - iVar3;
-    local_8[0x28] = iVar4 + iVar2;
-    local_8[0x18] = iVar4 - iVar2;
-    local_8[8] = iVar6 + iVar1;
-    local_8[0x38] = iVar6 - iVar1;
-    local_8 = local_8 + 1;
+    dataptr[0x28] = iVar4 + iVar2;
+    dataptr[0x18] = iVar4 - iVar2;
+    dataptr[8] = iVar6 + iVar1;
+    dataptr[0x38] = iVar6 - iVar1;
+    dataptr = dataptr + 1;
   }
   return;
 }

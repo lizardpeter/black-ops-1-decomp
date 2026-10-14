@@ -11,14 +11,14 @@ pkcs_1_oaep_decode(char *param_1,uint param_2,byte *param_3,undefined4 param_4,u
 {
   uint uVar1;
   uint uVar2;
-  ulong uVar3;
-  byte *pbVar4;
-  uint uVar5;
-  int iVar6;
-  byte *pbVar7;
-  byte *pbVar8;
-  uint uVar9;
-  ulong uVar10;
+  ulong count;
+  byte *pbVar3;
+  uint uVar4;
+  int iVar5;
+  byte *dst;
+  byte *pbVar6;
+  uint uVar7;
+  ulong uVar8;
   uint uStack_10;
   int iStack_c;
   byte *pbStack_8;
@@ -45,109 +45,109 @@ pkcs_1_oaep_decode(char *param_1,uint param_2,byte *param_3,undefined4 param_4,u
                  ,0x2e);
   }
   *param_9 = 0;
-  iVar6 = hash_is_valid(param_6);
-  if (iVar6 != 0) {
-    return iVar6;
+  iVar5 = hash_is_valid(param_6);
+  if (iVar5 != 0) {
+    return iVar5;
   }
-  uVar3 = *(ulong *)(&DAT_00afec60 + param_6 * 0x68);
-  uVar9 = (uint)((param_5 & 7) != 0) + (param_5 >> 3);
-  if ((uVar9 - 2 <= uVar3 * 2) || (param_2 != uVar9)) {
+  count = *(ulong *)(&DAT_00afec60 + param_6 * 0x68);
+  uVar7 = (uint)((param_5 & 7) != 0) + (param_5 >> 3);
+  if ((uVar7 - 2 <= count * 2) || (param_2 != uVar7)) {
     return 0x16;
   }
-  pbVar7 = (byte *)tom_game_malloc(uVar9);
-  iStack_c = tom_game_malloc(uVar9);
-  pbVar8 = (byte *)tom_game_malloc(uVar3);
-  pbStack_8 = pbVar8;
-  if (pbVar7 == (byte *)0x0) {
+  dst = (byte *)tom_game_malloc(uVar7);
+  iStack_c = tom_game_malloc(uVar7);
+  pbVar6 = (byte *)tom_game_malloc(count);
+  pbStack_8 = pbVar6;
+  if (dst == (byte *)0x0) {
 LAB_0098e407:
     if (iStack_c != 0) {
       tom_game_free(iStack_c);
     }
-    if (pbVar8 != (byte *)0x0) {
-      tom_game_free(pbVar8);
+    if (pbVar6 != (byte *)0x0) {
+      tom_game_free(pbVar6);
     }
     return 0xd;
   }
-  if ((iStack_c == 0) || (pbVar8 == (byte *)0x0)) {
-    tom_game_free(pbVar7);
+  if ((iStack_c == 0) || (pbVar6 == (byte *)0x0)) {
+    tom_game_free(dst);
     goto LAB_0098e407;
   }
   if (*param_1 == '\0') {
     uStack_10 = 1;
-    memcpy(pbVar8,(uchar *)(param_1 + 1),uVar3);
-    uStack_10 = uStack_10 + uVar3;
-    uVar10 = (uVar9 - uVar3) - 1;
-    uStack_4 = uVar10;
-    memcpy(pbVar7,(uchar *)(param_1 + uStack_10),uVar10);
-    uStack_10 = (uStack_10 - 1) + (uVar9 - uVar3);
-    iVar6 = pkcs_1_mgf1(param_6,pbVar7,uVar10,iStack_c,uVar3);
-    if (iVar6 != 0) goto LAB_0098e3d7;
-    if (uVar3 != 0) {
-      pbVar8 = pbStack_8;
-      uVar10 = uVar3;
+    memcpy(pbVar6,(uchar *)(param_1 + 1),count);
+    uStack_10 = uStack_10 + count;
+    uVar8 = (uVar7 - count) - 1;
+    uStack_4 = uVar8;
+    memcpy(dst,(uchar *)(param_1 + uStack_10),uVar8);
+    uStack_10 = (uStack_10 - 1) + (uVar7 - count);
+    iVar5 = pkcs_1_mgf1(param_6,dst,uVar8,iStack_c,count);
+    if (iVar5 != 0) goto LAB_0098e3d7;
+    if (count != 0) {
+      pbVar6 = pbStack_8;
+      uVar8 = count;
       do {
-        *pbVar8 = *pbVar8 ^ pbVar8[iStack_c - (int)pbStack_8];
-        pbVar8 = pbVar8 + 1;
-        uVar10 = uVar10 - 1;
-      } while (uVar10 != 0);
+        *pbVar6 = *pbVar6 ^ pbVar6[iStack_c - (int)pbStack_8];
+        pbVar6 = pbVar6 + 1;
+        uVar8 = uVar8 - 1;
+      } while (uVar8 != 0);
     }
-    iVar6 = pkcs_1_mgf1(param_6,pbStack_8,uVar3,iStack_c,uStack_4);
-    if (iVar6 != 0) goto LAB_0098e3d7;
+    iVar5 = pkcs_1_mgf1(param_6,pbStack_8,count,iStack_c,uStack_4);
+    if (iVar5 != 0) goto LAB_0098e3d7;
     if (uStack_4 != 0) {
-      pbVar8 = pbVar7;
-      uVar10 = uStack_4;
+      pbVar6 = dst;
+      uVar8 = uStack_4;
       do {
-        *pbVar8 = *pbVar8 ^ pbVar8[iStack_c - (int)pbVar7];
-        pbVar8 = pbVar8 + 1;
-        uVar10 = uVar10 - 1;
-      } while (uVar10 != 0);
+        *pbVar6 = *pbVar6 ^ pbVar6[iStack_c - (int)dst];
+        pbVar6 = pbVar6 + 1;
+        uVar8 = uVar8 - 1;
+      } while (uVar8 != 0);
     }
     if (param_3 == (byte *)0x0) {
       param_4 = 0;
-      param_3 = pbVar7;
+      param_3 = dst;
     }
-    uStack_10 = uVar9;
-    iVar6 = hash_memory(param_6,param_3,param_4,pbStack_8,&uStack_10);
-    uVar1 = uVar3;
-    pbVar8 = pbVar7;
-    pbVar4 = pbStack_8;
-    if (iVar6 != 0) goto LAB_0098e3d7;
+    uStack_10 = uVar7;
+    iVar5 = hash_memory(param_6,param_3,param_4,pbStack_8,&uStack_10);
+    uVar1 = count;
+    pbVar6 = dst;
+    pbVar3 = pbStack_8;
+    if (iVar5 != 0) goto LAB_0098e3d7;
     for (; 3 < uVar1; uVar1 = uVar1 - 4) {
-      if (*(int *)pbVar4 != *(int *)pbVar8) goto LAB_0098e3ce;
-      pbVar8 = pbVar8 + 4;
-      pbVar4 = pbVar4 + 4;
+      if (*(int *)pbVar3 != *(int *)pbVar6) goto LAB_0098e3ce;
+      pbVar6 = pbVar6 + 4;
+      pbVar3 = pbVar3 + 4;
     }
-    uVar5 = uVar3;
+    uVar4 = count;
     if ((uVar1 == 0) ||
-       ((*pbVar8 == *pbVar4 &&
-        ((uVar1 < 2 || ((pbVar8[1] == pbVar4[1] && ((uVar1 < 3 || (pbVar8[2] == pbVar4[2]))))))))))
+       ((*pbVar6 == *pbVar3 &&
+        ((uVar1 < 2 || ((pbVar6[1] == pbVar3[1] && ((uVar1 < 3 || (pbVar6[2] == pbVar3[2]))))))))))
     {
-      for (; (uVar5 < uStack_4 && (pbVar7[uVar5] == 0)); uVar5 = uVar5 + 1) {
+      for (; (uVar4 < uStack_4 && (dst[uVar4] == 0)); uVar4 = uVar4 + 1) {
       }
-      if ((uVar5 == uStack_4) || (pbVar7[uVar5] != 1)) {
-        iVar6 = 7;
-        uStack_10 = uVar5;
+      if ((uVar4 == uStack_4) || (dst[uVar4] != 1)) {
+        iVar5 = 7;
+        uStack_10 = uVar4;
         goto LAB_0098e3d7;
       }
-      uStack_10 = uVar5 + 1;
-      uVar1 = ((uVar9 - uStack_10) - uVar3) - 1;
+      uStack_10 = uVar4 + 1;
+      uVar1 = ((uVar7 - uStack_10) - count) - 1;
       uVar2 = *param_8;
       *param_8 = uVar1;
       if (uVar2 < uVar1) {
-        iVar6 = 6;
+        iVar5 = 6;
         goto LAB_0098e3d7;
       }
-      memcpy(param_7,pbVar7 + uStack_10,uVar1);
-      uStack_10 = uVar5 + (uVar9 - uVar3);
+      memcpy(param_7,dst + uStack_10,uVar1);
+      uStack_10 = uVar4 + (uVar7 - count);
       *param_9 = 1;
     }
   }
 LAB_0098e3ce:
-  iVar6 = 0;
+  iVar5 = 0;
 LAB_0098e3d7:
   tom_game_free(pbStack_8);
   tom_game_free(iStack_c);
-  tom_game_free(pbVar7);
-  return iVar6;
+  tom_game_free(dst);
+  return iVar5;
 }
 

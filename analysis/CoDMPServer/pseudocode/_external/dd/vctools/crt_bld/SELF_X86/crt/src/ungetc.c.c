@@ -2,7 +2,7 @@
 
 // 00C2D4C9  _ungetc_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ungetc_nolock.inl:33)
 
-int __cdecl _ungetc_nolock(int param_1,_iobuf *param_2)
+int __cdecl _ungetc_nolock(int ch,_iobuf *str)
 
 {
   char *pcVar1;
@@ -10,37 +10,37 @@ int __cdecl _ungetc_nolock(int param_1,_iobuf *param_2)
   int *piVar3;
   ioinfo *piVar4;
   
-  if ((param_2->_flag & 0x40) != 0) {
+  if ((str->_flag & 0x40) != 0) {
 LAB_00c2d552:
-    if (param_1 != -1) {
-      uVar2 = param_2->_flag;
+    if (ch != -1) {
+      uVar2 = str->_flag;
       if (((uVar2 & 1) != 0) || (((char)uVar2 < '\0' && ((uVar2 & 2) == 0)))) {
-        if (param_2->_base == (char *)0x0) {
-          _getbuf(param_2);
+        if (str->_base == (char *)0x0) {
+          _getbuf(str);
         }
-        if (param_2->_ptr == param_2->_base) {
-          if (param_2->_cnt != 0) {
+        if (str->_ptr == str->_base) {
+          if (str->_cnt != 0) {
             return -1;
           }
-          param_2->_ptr = param_2->_ptr + 1;
+          str->_ptr = str->_ptr + 1;
         }
-        param_2->_ptr = param_2->_ptr + -1;
-        pcVar1 = param_2->_ptr;
-        if ((param_2->_flag & 0x40) == 0) {
-          *pcVar1 = (char)param_1;
+        str->_ptr = str->_ptr + -1;
+        pcVar1 = str->_ptr;
+        if ((str->_flag & 0x40) == 0) {
+          *pcVar1 = (char)ch;
         }
-        else if (*pcVar1 != (char)param_1) {
-          param_2->_ptr = pcVar1 + 1;
+        else if (*pcVar1 != (char)ch) {
+          str->_ptr = pcVar1 + 1;
           return -1;
         }
-        param_2->_cnt = param_2->_cnt + 1;
-        param_2->_flag = param_2->_flag & 0xffffffefU | 1;
-        return param_1 & 0xff;
+        str->_cnt = str->_cnt + 1;
+        str->_flag = str->_flag & 0xffffffefU | 1;
+        return ch & 0xff;
       }
     }
     return -1;
   }
-  uVar2 = _fileno(param_2);
+  uVar2 = _fileno(str);
   if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
     piVar4 = &__badioinfo;
   }

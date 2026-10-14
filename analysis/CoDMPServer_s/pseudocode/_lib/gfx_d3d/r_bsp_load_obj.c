@@ -14,7 +14,8 @@ Material * __cdecl R_GetBspMaterial(uint param_1,GfxSurface *param_2,GfxWorldVer
   char *pcVar6;
   char *pcVar7;
   bool bVar8;
-  undefined1 local_100 [256];
+  undefined1 local_100 [252];
+  GfxSurface *surface;
   
   pcVar7 = rgl.load.diskMaterials[in_EAX].material;
   pcVar6 = "$default";
@@ -57,29 +58,33 @@ LAB_0081126f:
 
 // 008112B0  R_CreateWorldVertexBuffer  (gfx_d3d/r_bsp_load_obj.cpp:371)
 
+/* WARNING: Variable defined which should be unmapped: dummyData */
+
 void __cdecl R_CreateWorldVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,uint param_3)
 
 {
   ulong in_EAX;
-  uchar *puVar1;
+  uchar *dst;
   IDirect3DVertexBuffer9 *in_ECX;
   uint unaff_EBX;
   int unaff_ESI;
   IDirect3DVertexBuffer9 **unaff_EDI;
-  IDirect3DVertexBuffer9 *pIVar2;
+  void *srcData;
+  int dummyData;
+  IDirect3DVertexBuffer9 *pIVar1;
   
   if ((r_loadForRenderer->current).enabled == false) {
     *in_ECX = (IDirect3DVertexBuffer9)0x0;
     return;
   }
-  pIVar2 = in_ECX;
+  pIVar1 = in_ECX;
   if (in_EAX == 0) {
     param_1 = (IDirect3DVertexBuffer9 **)&stack0xfffffffc;
     in_EAX = 4;
-    pIVar2 = (IDirect3DVertexBuffer9 *)0x0;
+    pIVar1 = (IDirect3DVertexBuffer9 *)0x0;
   }
-  puVar1 = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBX,(char *)pIVar2);
-  memcpy(puVar1,(uchar *)param_1,in_EAX);
+  dst = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBX,(char *)pIVar1);
+  memcpy(dst,(uchar *)param_1,in_EAX);
   (**(code **)(*(int *)*in_ECX + 0x30))(*in_ECX);
   return;
 }
@@ -90,7 +95,7 @@ void __cdecl R_CreateWorldVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *pa
 void __cdecl
 std::
 _Push_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,int param_2,int param_3,AnnotatedLightGridPoint param_4,
+          (AnnotatedLightGridPoint *_Top,int _Val,int param_3,AnnotatedLightGridPoint param_4,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_5)
 
 {
@@ -103,17 +108,18 @@ _Push_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)
   char cVar7;
   int in_EAX;
   int iVar8;
+  AnnotatedLightGridPoint *_First;
   undefined2 in_stack_0000001a;
   
-  while (param_2 < in_EAX) {
+  while (_Val < in_EAX) {
     iVar8 = (in_EAX + -1) / 2;
-    pAVar1 = param_1 + iVar8;
+    pAVar1 = _Top + iVar8;
     cVar7 = (*(code *)CONCAT22(in_stack_0000001a,param_4.entry._2_2_))(pAVar1,&param_3);
     if (cVar7 == '\0') break;
     uVar3 = pAVar1->pos[1];
     uVar4 = pAVar1->pos[2];
     uVar5 = (pAVar1->entry).colorsIndex;
-    pAVar2 = param_1 + in_EAX;
+    pAVar2 = _Top + in_EAX;
     pAVar2->pos[0] = pAVar1->pos[0];
     pAVar2->pos[1] = uVar3;
     pAVar2->pos[2] = uVar4;
@@ -123,7 +129,7 @@ _Push_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)
     (pAVar2->entry).needsTrace = uVar6;
     in_EAX = iVar8;
   }
-  pAVar1 = param_1 + in_EAX;
+  pAVar1 = _Top + in_EAX;
   pAVar1->pos[0] = (short)param_3;
   pAVar1->pos[1] = (short)((uint)param_3 >> 0x10);
   pAVar1->pos[2] = param_4.pos[0];
@@ -138,7 +144,7 @@ _Push_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)
 
 void __cdecl
 std::_Push_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,int param_2,int param_3,GfxSurface param_4,
+          (GfxSurface *_Top,int _Pred,int _Val,GfxSurface param_4,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_5)
 
 {
@@ -148,13 +154,14 @@ std::_Push_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,G
   int iVar3;
   GfxSurface *pGVar4;
   GfxSurface *pGVar5;
+  GfxSurface *_First;
   
-  while (param_2 < in_EAX) {
+  while (_Pred < in_EAX) {
     iVar3 = (in_EAX + -1) / 2;
-    cVar1 = (*(code *)param_3)(param_1 + iVar3,&param_4);
+    cVar1 = (*(code *)_Val)(_Top + iVar3,&param_4);
     if (cVar1 == '\0') break;
-    pGVar4 = param_1 + iVar3;
-    pGVar5 = param_1 + in_EAX;
+    pGVar4 = _Top + iVar3;
+    pGVar5 = _Top + in_EAX;
     for (iVar2 = 0x14; in_EAX = iVar3, iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar5->tris).mins[0] = (pGVar4->tris).mins[0];
       pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
@@ -162,7 +169,7 @@ std::_Push_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,G
     }
   }
   pGVar4 = &param_4;
-  pGVar5 = param_1 + in_EAX;
+  pGVar5 = _Top + in_EAX;
   for (iVar3 = 0x14; iVar3 != 0; iVar3 = iVar3 + -1) {
     (pGVar5->tris).mins[0] = (pGVar4->tris).mins[0];
     pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
@@ -177,8 +184,7 @@ std::_Push_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,G
 void __cdecl
 std::
 _Push_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,int param_2,int param_3,
-          GfxStaticModelCombinedInst param_4,
+          (GfxStaticModelCombinedInst *_Top,int _Val,int param_3,GfxStaticModelCombinedInst param_4,
           _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_5)
 
 {
@@ -189,13 +195,14 @@ _Push_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__c
   GfxStaticModelCombinedInst *pGVar4;
   float *pfVar5;
   GfxStaticModelCombinedInst *pGVar6;
+  GfxStaticModelCombinedInst *_First;
   
-  while (param_2 < in_EAX) {
+  while (_Val < in_EAX) {
     iVar3 = (in_EAX + -1) / 2;
-    cVar1 = (*(code *)param_4.isDynamicModel)(param_1 + iVar3,&param_3);
+    cVar1 = (*(code *)param_4.isDynamicModel)(_Top + iVar3,&param_3);
     if (cVar1 == '\0') break;
-    pGVar4 = param_1 + iVar3;
-    pGVar6 = param_1 + in_EAX;
+    pGVar4 = _Top + iVar3;
+    pGVar6 = _Top + in_EAX;
     for (iVar2 = 0x1e; in_EAX = iVar3, iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar6->smodelDrawInst).cullDist = (pGVar4->smodelDrawInst).cullDist;
       pGVar4 = (GfxStaticModelCombinedInst *)&(pGVar4->smodelDrawInst).placement;
@@ -203,7 +210,7 @@ _Push_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__c
     }
   }
   pfVar5 = (float *)&param_3;
-  pGVar4 = param_1 + in_EAX;
+  pGVar4 = _Top + in_EAX;
   for (iVar3 = 0x1e; iVar3 != 0; iVar3 = iVar3 + -1) {
     (pGVar4->smodelDrawInst).cullDist = *pfVar5;
     pfVar5 = pfVar5 + 1;
@@ -218,7 +225,7 @@ _Push_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__c
 void __cdecl
 std::
 _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,int param_2,int param_3,AnnotatedLightGridPoint param_4,
+          (AnnotatedLightGridPoint *_Bottom,int _Val,int param_3,AnnotatedLightGridPoint param_4,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_5)
 
 {
@@ -235,46 +242,47 @@ _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl
   int in_EAX;
   int iVar11;
   _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *unaff_EDI;
+  AnnotatedLightGridPoint *_First;
   undefined2 in_stack_0000001a;
   undefined2 in_stack_ffffffea;
   
   iVar5 = in_EAX;
   while( true ) {
     iVar11 = iVar5 * 2 + 2;
-    if (param_2 <= iVar11) break;
-    pAVar1 = param_1 + iVar11;
+    if (_Val <= iVar11) break;
+    pAVar1 = _Bottom + iVar11;
     in_stack_ffffffea = (undefined2)((uint)pAVar1 >> 0x10);
     cVar10 = (*(code *)CONCAT22(in_stack_0000001a,param_4.entry._2_2_))
                        ((short)pAVar1,(short)(pAVar1 + -1));
     if (cVar10 != '\0') {
       iVar11 = iVar5 * 2 + 1;
     }
-    pAVar1 = param_1 + iVar11;
+    pAVar1 = _Bottom + iVar11;
     uVar6 = pAVar1->pos[1];
     uVar7 = pAVar1->pos[2];
     uVar8 = (pAVar1->entry).colorsIndex;
-    pAVar2 = param_1 + iVar5;
+    pAVar2 = _Bottom + iVar5;
     pAVar2->pos[0] = pAVar1->pos[0];
     pAVar2->pos[1] = uVar6;
     pAVar2->pos[2] = uVar7;
     (pAVar2->entry).colorsIndex = uVar8;
-    uVar9 = param_1[iVar11].entry.needsTrace;
-    (pAVar2->entry).primaryLightIndex = param_1[iVar11].entry.primaryLightIndex;
+    uVar9 = _Bottom[iVar11].entry.needsTrace;
+    (pAVar2->entry).primaryLightIndex = _Bottom[iVar11].entry.primaryLightIndex;
     (pAVar2->entry).needsTrace = uVar9;
     iVar5 = iVar11;
   }
-  if (iVar11 == param_2) {
-    pAVar2 = param_1 + param_2 + -1;
+  if (iVar11 == _Val) {
+    pAVar2 = _Bottom + _Val + -1;
     uVar6 = pAVar2->pos[1];
     uVar7 = pAVar2->pos[2];
     uVar8 = (pAVar2->entry).colorsIndex;
-    pAVar1 = param_1 + iVar5;
+    pAVar1 = _Bottom + iVar5;
     pAVar1->pos[0] = pAVar2->pos[0];
     pAVar1->pos[1] = uVar6;
     pAVar1->pos[2] = uVar7;
     (pAVar1->entry).colorsIndex = uVar8;
-    uVar9 = param_1[param_2 + -1].entry.needsTrace;
-    (pAVar1->entry).primaryLightIndex = param_1[param_2 + -1].entry.primaryLightIndex;
+    uVar9 = _Bottom[_Val + -1].entry.needsTrace;
+    (pAVar1->entry).primaryLightIndex = _Bottom[_Val + -1].entry.primaryLightIndex;
     (pAVar1->entry).needsTrace = uVar9;
   }
   auVar4 = param_4.pos;
@@ -285,7 +293,7 @@ _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl
   AVar3.entry.primaryLightIndex = param_4.entry.primaryLightIndex;
   AVar3.entry.needsTrace = param_4.entry.needsTrace;
   _Push_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-            (param_1,in_EAX,param_3,AVar3,unaff_EDI);
+            (_Bottom,in_EAX,param_3,AVar3,unaff_EDI);
   return;
 }
 
@@ -297,7 +305,7 @@ _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl
 void __cdecl
 std::
 _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,int param_2,int param_3,GfxSurface param_4,
+          (GfxSurface *_Hole,int _Bottom,int _Pred,GfxSurface _Val,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_5)
 
 {
@@ -311,41 +319,42 @@ _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxS
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_EDI;
   GfxSurface *pGVar8;
   float *pfVar9;
+  GfxSurface *_First;
   undefined1 auVar10 [48];
   undefined1 in_stack_ffffff9c [68];
   undefined4 in_stack_ffffffe0;
   GfxSurface *in_stack_ffffffe4;
   GfxSurface *in_stack_ffffffe8;
   
-  iVar4 = param_2;
+  iVar4 = _Bottom;
   while( true ) {
     iVar5 = iVar4 * 2 + 2;
-    if (param_3 <= iVar5) break;
-    in_stack_ffffffe4 = param_1 + iVar5;
+    if (_Pred <= iVar5) break;
+    in_stack_ffffffe4 = _Hole + iVar5;
     in_stack_ffffffe8 = in_stack_ffffffe4 + -1;
     in_stack_ffffffe0 = 0x81bef5;
-    cVar2 = (*(code *)param_4.tris.mins[0])();
+    cVar2 = (*(code *)_Val.tris.mins[0])();
     if (cVar2 != '\0') {
       iVar5 = iVar4 * 2 + 1;
     }
-    pGVar6 = param_1 + iVar5;
-    pGVar8 = param_1 + iVar4;
+    pGVar6 = _Hole + iVar5;
+    pGVar8 = _Hole + iVar4;
     for (iVar3 = 0x14; iVar4 = iVar5, iVar3 != 0; iVar3 = iVar3 + -1) {
       (pGVar8->tris).mins[0] = (pGVar6->tris).mins[0];
       pGVar6 = (GfxSurface *)((pGVar6->tris).mins + 1);
       pGVar8 = (GfxSurface *)((pGVar8->tris).mins + 1);
     }
   }
-  if (iVar5 == param_3) {
-    pGVar6 = param_1 + param_3 + -1;
-    pGVar8 = param_1 + iVar4;
+  if (iVar5 == _Pred) {
+    pGVar6 = _Hole + _Pred + -1;
+    pGVar8 = _Hole + iVar4;
     for (iVar5 = 0x14; iVar5 != 0; iVar5 = iVar5 + -1) {
       (pGVar8->tris).mins[0] = (pGVar6->tris).mins[0];
       pGVar6 = (GfxSurface *)((pGVar6->tris).mins + 1);
       pGVar8 = (GfxSurface *)((pGVar8->tris).mins + 1);
     }
   }
-  pfVar7 = param_4.tris.mins;
+  pfVar7 = _Val.tris.mins;
   pfVar9 = (float *)&stack0xffffff9c;
   for (iVar4 = 0x14; pfVar7 = pfVar7 + 1, iVar4 != 0; iVar4 = iVar4 + -1) {
     *pfVar9 = *pfVar7;
@@ -377,7 +386,7 @@ _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxS
   GVar1.bounds[1][1] = (float)in_stack_ffffffe4;
   GVar1.bounds[1][2] = (float)in_stack_ffffffe8;
   _Push_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-            (param_1,param_2,(int)param_4.tris.mins[0],GVar1,unaff_EDI);
+            (_Hole,_Bottom,(int)_Val.tris.mins[0],GVar1,unaff_EDI);
   return;
 }
 
@@ -387,9 +396,9 @@ _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxS
 void __cdecl
 std::
 _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,int param_2,int param_3,
-          GfxStaticModelCombinedInst param_4,
-          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_5)
+          (GfxStaticModelCombinedInst *_Hole,int _Bottom,int _Val,GfxStaticModelCombinedInst param_4
+          ,_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_5
+          )
 
 {
   GfxStaticModelCombinedInst GVar1;
@@ -401,6 +410,7 @@ _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(_
   _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *unaff_EDI;
   GfxStaticModelCombinedInst *pGVar7;
   float *pfVar8;
+  GfxStaticModelCombinedInst *_First;
   float in_stack_ffffff74;
   undefined1 auVar9 [76];
   undefined1 in_stack_ffffff78 [108];
@@ -408,27 +418,27 @@ _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(_
   GfxStaticModelCombinedInst *in_stack_ffffffe8;
   undefined1 auVar10 [52];
   
-  iVar4 = param_2;
+  iVar4 = _Bottom;
   while( true ) {
     iVar5 = iVar4 * 2 + 2;
-    if (param_3 <= iVar5) break;
-    in_stack_ffffffe8 = param_1 + iVar5;
+    if (_Val <= iVar5) break;
+    in_stack_ffffffe8 = _Hole + iVar5;
     in_stack_ffffffe4 = 0x81c09a;
     bVar2 = (*param_5)(in_stack_ffffffe8,in_stack_ffffffe8 + -1);
     if (bVar2) {
       iVar5 = iVar4 * 2 + 1;
     }
-    pGVar6 = param_1 + iVar5;
-    pGVar7 = param_1 + iVar4;
+    pGVar6 = _Hole + iVar5;
+    pGVar7 = _Hole + iVar4;
     for (iVar3 = 0x1e; iVar4 = iVar5, iVar3 != 0; iVar3 = iVar3 + -1) {
       (pGVar7->smodelDrawInst).cullDist = (pGVar6->smodelDrawInst).cullDist;
       pGVar6 = (GfxStaticModelCombinedInst *)&(pGVar6->smodelDrawInst).placement;
       pGVar7 = (GfxStaticModelCombinedInst *)&(pGVar7->smodelDrawInst).placement;
     }
   }
-  if (iVar5 == param_3) {
-    pGVar6 = param_1 + param_3 + -1;
-    pGVar7 = param_1 + iVar4;
+  if (iVar5 == _Val) {
+    pGVar6 = _Hole + _Val + -1;
+    pGVar7 = _Hole + iVar4;
     for (iVar5 = 0x1e; iVar5 != 0; iVar5 = iVar5 + -1) {
       (pGVar7->smodelDrawInst).cullDist = (pGVar6->smodelDrawInst).cullDist;
       pGVar6 = (GfxStaticModelCombinedInst *)&(pGVar6->smodelDrawInst).placement;
@@ -479,17 +489,19 @@ _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(_
   GVar1.smodelInst.groundLighting = (GfxColor)in_stack_ffffffe8;
   GVar1.isDynamicModel = (int)param_5;
   _Push_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-            (param_1,param_2,(int)in_stack_ffffff74,GVar1,unaff_EDI);
+            (_Hole,_Bottom,(int)in_stack_ffffff74,GVar1,unaff_EDI);
   return;
 }
 
 
 // 0081B4F0  _Make_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
 
+/* WARNING: Variable defined which should be unmapped: __formal */
+
 void __cdecl
 std::
 _Make_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,
+          (AnnotatedLightGridPoint *_Pred,AnnotatedLightGridPoint *param_2,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_3,
           int *param_4,AnnotatedLightGridPoint *param_5)
 
@@ -497,37 +509,39 @@ _Make_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)
   undefined8 uVar1;
   undefined1 uVar2;
   undefined1 uVar3;
-  int iVar4;
-  AnnotatedLightGridPoint AVar5;
+  int _Val;
+  AnnotatedLightGridPoint AVar4;
   int in_EAX;
-  int iVar6;
+  int iVar5;
   _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *unaff_EDI;
-  AnnotatedLightGridPoint *pAVar7;
+  AnnotatedLightGridPoint *pAVar6;
+  AnnotatedLightGridPoint *_First;
   undefined2 in_stack_ffffffea;
+  int *__formal;
   
-  iVar4 = (in_EAX - (int)param_1) / 10;
-  iVar6 = iVar4 / 2;
-  if (0 < iVar6) {
-    pAVar7 = param_1 + iVar6;
+  _Val = (in_EAX - (int)_Pred) / 10;
+  iVar5 = _Val / 2;
+  if (0 < iVar5) {
+    pAVar6 = _Pred + iVar5;
     do {
-      uVar1._0_2_ = pAVar7[-0xffffffff00000001].pos[0];
-      uVar1._2_2_ = pAVar7[-0xffffffff00000001].pos[1];
-      uVar1._4_2_ = pAVar7[-0xffffffff00000001].pos[2];
-      uVar1._6_2_ = pAVar7[-0xffffffff00000001].entry.colorsIndex;
-      uVar2 = pAVar7[-0xffffffff00000001].entry.primaryLightIndex;
-      uVar3 = pAVar7[-0xffffffff00000001].entry.needsTrace;
-      AVar5.pos[2]._1_1_ = uVar3;
-      AVar5.pos[2]._0_1_ = uVar2;
-      pAVar7 = pAVar7 + -1;
-      iVar6 = iVar6 + -1;
-      AVar5.pos[0] = uVar1._4_2_;
-      AVar5.pos[1] = uVar1._6_2_;
-      AVar5.entry.colorsIndex = in_stack_ffffffea;
-      AVar5.entry.primaryLightIndex = (char)(short)param_2;
-      AVar5.entry.needsTrace = (char)((ushort)(short)param_2 >> 8);
+      uVar1._0_2_ = pAVar6[-0xffffffff00000001].pos[0];
+      uVar1._2_2_ = pAVar6[-0xffffffff00000001].pos[1];
+      uVar1._4_2_ = pAVar6[-0xffffffff00000001].pos[2];
+      uVar1._6_2_ = pAVar6[-0xffffffff00000001].entry.colorsIndex;
+      uVar2 = pAVar6[-0xffffffff00000001].entry.primaryLightIndex;
+      uVar3 = pAVar6[-0xffffffff00000001].entry.needsTrace;
+      AVar4.pos[2]._1_1_ = uVar3;
+      AVar4.pos[2]._0_1_ = uVar2;
+      pAVar6 = pAVar6 + -1;
+      iVar5 = iVar5 + -1;
+      AVar4.pos[0] = uVar1._4_2_;
+      AVar4.pos[1] = uVar1._6_2_;
+      AVar4.entry.colorsIndex = in_stack_ffffffea;
+      AVar4.entry.primaryLightIndex = (char)(short)param_2;
+      AVar4.entry.needsTrace = (char)((ushort)(short)param_2 >> 8);
       _Adjust_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-                (param_1,iVar4,(int)uVar1,AVar5,unaff_EDI);
-    } while (0 < iVar6);
+                (_Pred,_Val,(int)uVar1,AVar4,unaff_EDI);
+    } while (0 < iVar5);
   }
   return;
 }
@@ -535,65 +549,68 @@ _Make_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)
 
 // 0081B790  _Make_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
 
+/* WARNING: Variable defined which should be unmapped: __formal */
+
 void __cdecl
 std::_Make_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,
+          (GfxSurface *_First,GfxSurface *_Pred,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3,int *param_4,GfxSurface *param_5
           )
 
 {
-  int iVar1;
-  GfxSurface GVar2;
+  int _Pred_00;
+  GfxSurface _Val;
   int in_EAX;
-  int iVar3;
-  int iVar4;
-  GfxSurface *pGVar5;
-  GfxSurface *pGVar6;
-  float *pfVar7;
+  int iVar1;
+  int _Bottom;
+  GfxSurface *pGVar2;
+  GfxSurface *pGVar3;
+  float *pfVar4;
   undefined1 in_stack_ffffff80 [76];
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *in_stack_ffffffcc;
+  int *__formal;
   
-  iVar1 = (in_EAX - (int)param_1) / 0x50;
-  iVar4 = iVar1 / 2;
-  if (0 < iVar4) {
-    pGVar5 = param_1 + iVar4;
+  _Pred_00 = (in_EAX - (int)_First) / 0x50;
+  _Bottom = _Pred_00 / 2;
+  if (0 < _Bottom) {
+    pGVar2 = _First + _Bottom;
     do {
-      pGVar5 = pGVar5 + -1;
-      pGVar6 = pGVar5;
-      pfVar7 = (float *)&stack0xffffff80;
-      for (iVar3 = 0x14; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *pfVar7 = (pGVar6->tris).mins[0];
-        pGVar6 = (GfxSurface *)((pGVar6->tris).mins + 1);
-        pfVar7 = pfVar7 + 1;
+      pGVar2 = pGVar2 + -1;
+      pGVar3 = pGVar2;
+      pfVar4 = (float *)&stack0xffffff80;
+      for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
+        *pfVar4 = (pGVar3->tris).mins[0];
+        pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
+        pfVar4 = pfVar4 + 1;
       }
-      iVar4 = iVar4 + -1;
-      GVar2.tris.mins[1] = (float)in_stack_ffffff80._0_4_;
-      GVar2.tris.mins[2] = (float)in_stack_ffffff80._4_4_;
-      GVar2.tris.vertexLayerData = in_stack_ffffff80._8_4_;
-      GVar2.tris.maxs[0] = (float)in_stack_ffffff80._12_4_;
-      GVar2.tris.maxs[1] = (float)in_stack_ffffff80._16_4_;
-      GVar2.tris.maxs[2] = (float)in_stack_ffffff80._20_4_;
-      GVar2.tris.firstVertex = in_stack_ffffff80._24_4_;
-      GVar2.tris.vertexCount = in_stack_ffffff80._28_2_;
-      GVar2.tris.triCount = in_stack_ffffff80._30_2_;
-      GVar2.tris.baseIndex = in_stack_ffffff80._32_4_;
-      GVar2.tris.himipRadiusSq = (float)in_stack_ffffff80._36_4_;
-      GVar2.tris.stream2ByteOffset = in_stack_ffffff80._40_4_;
-      GVar2.material = (Material *)in_stack_ffffff80._44_4_;
-      GVar2.lightmapIndex = in_stack_ffffff80[0x30];
-      GVar2.reflectionProbeIndex = in_stack_ffffff80[0x31];
-      GVar2.primaryLightIndex = in_stack_ffffff80[0x32];
-      GVar2.flags = in_stack_ffffff80[0x33];
-      GVar2.bounds[0][0] = (float)in_stack_ffffff80._52_4_;
-      GVar2.bounds[0][1] = (float)in_stack_ffffff80._56_4_;
-      GVar2.bounds[0][2] = (float)in_stack_ffffff80._60_4_;
-      GVar2.bounds[1][0] = (float)in_stack_ffffff80._64_4_;
-      GVar2.bounds[1][1] = (float)in_stack_ffffff80._68_4_;
-      GVar2.bounds[1][2] = (float)in_stack_ffffff80._72_4_;
-      GVar2.tris.mins[0] = (float)param_2;
+      _Bottom = _Bottom + -1;
+      _Val.tris.mins[1] = (float)in_stack_ffffff80._0_4_;
+      _Val.tris.mins[2] = (float)in_stack_ffffff80._4_4_;
+      _Val.tris.vertexLayerData = in_stack_ffffff80._8_4_;
+      _Val.tris.maxs[0] = (float)in_stack_ffffff80._12_4_;
+      _Val.tris.maxs[1] = (float)in_stack_ffffff80._16_4_;
+      _Val.tris.maxs[2] = (float)in_stack_ffffff80._20_4_;
+      _Val.tris.firstVertex = in_stack_ffffff80._24_4_;
+      _Val.tris.vertexCount = in_stack_ffffff80._28_2_;
+      _Val.tris.triCount = in_stack_ffffff80._30_2_;
+      _Val.tris.baseIndex = in_stack_ffffff80._32_4_;
+      _Val.tris.himipRadiusSq = (float)in_stack_ffffff80._36_4_;
+      _Val.tris.stream2ByteOffset = in_stack_ffffff80._40_4_;
+      _Val.material = (Material *)in_stack_ffffff80._44_4_;
+      _Val.lightmapIndex = in_stack_ffffff80[0x30];
+      _Val.reflectionProbeIndex = in_stack_ffffff80[0x31];
+      _Val.primaryLightIndex = in_stack_ffffff80[0x32];
+      _Val.flags = in_stack_ffffff80[0x33];
+      _Val.bounds[0][0] = (float)in_stack_ffffff80._52_4_;
+      _Val.bounds[0][1] = (float)in_stack_ffffff80._56_4_;
+      _Val.bounds[0][2] = (float)in_stack_ffffff80._60_4_;
+      _Val.bounds[1][0] = (float)in_stack_ffffff80._64_4_;
+      _Val.bounds[1][1] = (float)in_stack_ffffff80._68_4_;
+      _Val.bounds[1][2] = (float)in_stack_ffffff80._72_4_;
+      _Val.tris.mins[0] = (float)_Pred;
       _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-                (param_1,iVar4,iVar1,GVar2,in_stack_ffffffcc);
-    } while (0 < iVar4);
+                (_First,_Bottom,_Pred_00,_Val,in_stack_ffffffcc);
+    } while (0 < _Bottom);
   }
   return;
 }
@@ -604,41 +621,43 @@ std::_Make_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,G
 void __cdecl
 std::
 _Make_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
+          (GfxStaticModelCombinedInst *_Pred,GfxStaticModelCombinedInst *param_2,
           _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_3,
           int *param_4,GfxStaticModelCombinedInst *param_5)
 
 {
-  int iVar1;
+  int _Val;
   int in_EAX;
-  int iVar2;
-  int iVar3;
-  GfxStaticModelCombinedInst *pGVar4;
-  GfxStaticModelCombinedInst *pGVar5;
-  float *pfVar6;
+  int iVar1;
+  int _Bottom;
+  GfxStaticModelCombinedInst *pGVar2;
+  GfxStaticModelCombinedInst *pGVar3;
+  float *pfVar4;
+  GfxStaticModelCombinedInst *_First;
   GfxStaticModelCombinedInst in_stack_ffffff70;
-  GfxStaticModelCombinedInst *pGVar7;
+  GfxStaticModelCombinedInst *pGVar5;
+  int *__formal;
   
-  iVar1 = (in_EAX - (int)param_1) / 0x78;
-  iVar3 = iVar1 / 2;
-  if (0 < iVar3) {
-    pGVar4 = param_1 + iVar3;
+  _Val = (in_EAX - (int)_Pred) / 0x78;
+  _Bottom = _Val / 2;
+  if (0 < _Bottom) {
+    pGVar2 = _Pred + _Bottom;
     do {
-      iVar3 = iVar3 + -1;
-      pGVar4 = pGVar4 + -1;
-      pGVar5 = pGVar4;
-      pfVar6 = (float *)&stack0xffffff70;
-      pGVar7 = param_2;
-      for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
-        *pfVar6 = (pGVar5->smodelDrawInst).cullDist;
-        pGVar5 = (GfxStaticModelCombinedInst *)&(pGVar5->smodelDrawInst).placement;
-        pfVar6 = pfVar6 + 1;
+      _Bottom = _Bottom + -1;
+      pGVar2 = pGVar2 + -1;
+      pGVar3 = pGVar2;
+      pfVar4 = (float *)&stack0xffffff70;
+      pGVar5 = param_2;
+      for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
+        *pfVar4 = (pGVar3->smodelDrawInst).cullDist;
+        pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
+        pfVar4 = pfVar4 + 1;
       }
       _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-                (param_1,iVar3,iVar1,in_stack_ffffff70,
+                (_Pred,_Bottom,_Val,in_stack_ffffff70,
                  (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *
-                 )pGVar7);
-    } while (0 < iVar3);
+                 )pGVar5);
+    } while (0 < _Bottom);
   }
   return;
 }
@@ -687,69 +706,69 @@ _Sort_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_con
 
 void __cdecl
 std::_Sort_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3)
+          (GfxSurface *_First,GfxSurface *_Last,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Pred)
 
 {
-  GfxSurface GVar1;
+  GfxSurface _Val;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  float *pfVar4;
-  GfxSurface *pGVar5;
+  float *pfVar3;
+  GfxSurface *pGVar4;
+  float *pfVar5;
   float *pfVar6;
-  float *pfVar7;
   undefined1 in_stack_ffffff40 [76];
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *in_stack_ffffff8c;
   float local_60 [23];
   
-  for (iVar3 = (int)param_2 - (int)param_1; 1 < iVar3 / 0x50; iVar3 = iVar3 + -0x50) {
-    pfVar6 = (float *)((int)param_1[-1].tris.mins + iVar3);
-    pfVar4 = pfVar6;
-    pfVar7 = local_60;
-    for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *pfVar7 = *pfVar4;
-      pfVar4 = pfVar4 + 1;
-      pfVar7 = pfVar7 + 1;
-    }
-    pGVar5 = param_1;
-    for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *pfVar6 = (pGVar5->tris).mins[0];
-      pGVar5 = (GfxSurface *)((pGVar5->tris).mins + 1);
-      pfVar6 = pfVar6 + 1;
-    }
+  for (iVar2 = (int)_Last - (int)_First; 1 < iVar2 / 0x50; iVar2 = iVar2 + -0x50) {
+    pfVar5 = (float *)((int)_First[-1].tris.mins + iVar2);
+    pfVar3 = pfVar5;
     pfVar6 = local_60;
-    pfVar4 = (float *)&stack0xffffff40;
-    for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *pfVar4 = *pfVar6;
+    for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *pfVar6 = *pfVar3;
+      pfVar3 = pfVar3 + 1;
       pfVar6 = pfVar6 + 1;
-      pfVar4 = pfVar4 + 1;
     }
-    GVar1.tris.mins[1] = (float)in_stack_ffffff40._0_4_;
-    GVar1.tris.mins[2] = (float)in_stack_ffffff40._4_4_;
-    GVar1.tris.vertexLayerData = in_stack_ffffff40._8_4_;
-    GVar1.tris.maxs[0] = (float)in_stack_ffffff40._12_4_;
-    GVar1.tris.maxs[1] = (float)in_stack_ffffff40._16_4_;
-    GVar1.tris.maxs[2] = (float)in_stack_ffffff40._20_4_;
-    GVar1.tris.firstVertex = in_stack_ffffff40._24_4_;
-    GVar1.tris.vertexCount = in_stack_ffffff40._28_2_;
-    GVar1.tris.triCount = in_stack_ffffff40._30_2_;
-    GVar1.tris.baseIndex = in_stack_ffffff40._32_4_;
-    GVar1.tris.himipRadiusSq = (float)in_stack_ffffff40._36_4_;
-    GVar1.tris.stream2ByteOffset = in_stack_ffffff40._40_4_;
-    GVar1.material = (Material *)in_stack_ffffff40._44_4_;
-    GVar1.lightmapIndex = in_stack_ffffff40[0x30];
-    GVar1.reflectionProbeIndex = in_stack_ffffff40[0x31];
-    GVar1.primaryLightIndex = in_stack_ffffff40[0x32];
-    GVar1.flags = in_stack_ffffff40[0x33];
-    GVar1.bounds[0][0] = (float)in_stack_ffffff40._52_4_;
-    GVar1.bounds[0][1] = (float)in_stack_ffffff40._56_4_;
-    GVar1.bounds[0][2] = (float)in_stack_ffffff40._60_4_;
-    GVar1.bounds[1][0] = (float)in_stack_ffffff40._64_4_;
-    GVar1.bounds[1][1] = (float)in_stack_ffffff40._68_4_;
-    GVar1.bounds[1][2] = (float)in_stack_ffffff40._72_4_;
-    GVar1.tris.mins[0] = (float)param_3;
+    pGVar4 = _First;
+    for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *pfVar5 = (pGVar4->tris).mins[0];
+      pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
+      pfVar5 = pfVar5 + 1;
+    }
+    pfVar5 = local_60;
+    pfVar3 = (float *)&stack0xffffff40;
+    for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *pfVar3 = *pfVar5;
+      pfVar5 = pfVar5 + 1;
+      pfVar3 = pfVar3 + 1;
+    }
+    _Val.tris.mins[1] = (float)in_stack_ffffff40._0_4_;
+    _Val.tris.mins[2] = (float)in_stack_ffffff40._4_4_;
+    _Val.tris.vertexLayerData = in_stack_ffffff40._8_4_;
+    _Val.tris.maxs[0] = (float)in_stack_ffffff40._12_4_;
+    _Val.tris.maxs[1] = (float)in_stack_ffffff40._16_4_;
+    _Val.tris.maxs[2] = (float)in_stack_ffffff40._20_4_;
+    _Val.tris.firstVertex = in_stack_ffffff40._24_4_;
+    _Val.tris.vertexCount = in_stack_ffffff40._28_2_;
+    _Val.tris.triCount = in_stack_ffffff40._30_2_;
+    _Val.tris.baseIndex = in_stack_ffffff40._32_4_;
+    _Val.tris.himipRadiusSq = (float)in_stack_ffffff40._36_4_;
+    _Val.tris.stream2ByteOffset = in_stack_ffffff40._40_4_;
+    _Val.material = (Material *)in_stack_ffffff40._44_4_;
+    _Val.lightmapIndex = in_stack_ffffff40[0x30];
+    _Val.reflectionProbeIndex = in_stack_ffffff40[0x31];
+    _Val.primaryLightIndex = in_stack_ffffff40[0x32];
+    _Val.flags = in_stack_ffffff40[0x33];
+    _Val.bounds[0][0] = (float)in_stack_ffffff40._52_4_;
+    _Val.bounds[0][1] = (float)in_stack_ffffff40._56_4_;
+    _Val.bounds[0][2] = (float)in_stack_ffffff40._60_4_;
+    _Val.bounds[1][0] = (float)in_stack_ffffff40._64_4_;
+    _Val.bounds[1][1] = (float)in_stack_ffffff40._68_4_;
+    _Val.bounds[1][2] = (float)in_stack_ffffff40._72_4_;
+    _Val.tris.mins[0] = (float)_Pred;
     _Adjust_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-              (param_1,0,(iVar3 + -0x50) / 0x50,GVar1,in_stack_ffffff8c);
+              (_First,0,(iVar2 + -0x50) / 0x50,_Val,in_stack_ffffff8c);
   }
   return;
 }
@@ -760,8 +779,8 @@ std::_Sort_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const
 void __cdecl
 std::
 _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
-          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_3)
+          (GfxStaticModelCombinedInst *_First,GfxStaticModelCombinedInst *_Last,
+          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *_Pred)
 
 {
   int iVar1;
@@ -774,8 +793,8 @@ _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedIn
   _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *p_Var7;
   float local_80 [31];
   
-  for (iVar2 = (int)param_2 - (int)param_1; 1 < iVar2 / 0x78; iVar2 = iVar2 + -0x78) {
-    pfVar5 = (float *)((int)param_1[-1].smodelDrawInst.placement.origin + iVar2 + -4);
+  for (iVar2 = (int)_Last - (int)_First; 1 < iVar2 / 0x78; iVar2 = iVar2 + -0x78) {
+    pfVar5 = (float *)((int)_First[-1].smodelDrawInst.placement.origin + iVar2 + -4);
     pfVar3 = pfVar5;
     pfVar6 = local_80;
     for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -783,7 +802,7 @@ _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedIn
       pfVar3 = pfVar3 + 1;
       pfVar6 = pfVar6 + 1;
     }
-    pGVar4 = param_1;
+    pGVar4 = _First;
     for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar5 = (pGVar4->smodelDrawInst).cullDist;
       pGVar4 = (GfxStaticModelCombinedInst *)&(pGVar4->smodelDrawInst).placement;
@@ -791,14 +810,14 @@ _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedIn
     }
     pfVar5 = local_80;
     pfVar3 = (float *)&stack0xfffffef4;
-    p_Var7 = param_3;
+    p_Var7 = _Pred;
     for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar3 = *pfVar5;
       pfVar5 = pfVar5 + 1;
       pfVar3 = pfVar3 + 1;
     }
     _Adjust_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-              (param_1,0,(iVar2 + -0x78) / 0x78,in_stack_fffffef4,p_Var7);
+              (_First,0,(iVar2 + -0x78) / 0x78,in_stack_fffffef4,p_Var7);
   }
   return;
 }
@@ -808,8 +827,8 @@ _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedIn
 
 GfxSurface * __cdecl
 std::_Copy_backward_opt<GfxSurface_*,GfxSurface_*>
-          (GfxSurface *param_1,GfxSurface *param_2,GfxSurface *param_3,
-          random_access_iterator_tag param_4,_Nonscalar_ptr_iterator_tag param_5,
+          (GfxSurface *_Dest,GfxSurface *__formal,GfxSurface *__formal_2,
+          random_access_iterator_tag __formal_3,_Nonscalar_ptr_iterator_tag param_5,
           _Range_checked_iterator_tag param_6)
 
 {
@@ -819,10 +838,11 @@ std::_Copy_backward_opt<GfxSurface_*,GfxSurface_*>
   int iVar3;
   GfxSurface *pGVar4;
   float *pfVar5;
+  GfxSurface *_First;
   
-  iVar1 = (int)in_EAX - (int)param_1;
-  if (param_1 != in_EAX) {
-    iVar3 = (int)param_2 - (int)in_EAX;
+  iVar1 = (int)in_EAX - (int)_Dest;
+  if (_Dest != in_EAX) {
+    iVar3 = (int)__formal - (int)in_EAX;
     do {
       in_EAX = in_EAX + -1;
       pGVar4 = in_EAX;
@@ -832,9 +852,9 @@ std::_Copy_backward_opt<GfxSurface_*,GfxSurface_*>
         pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
         pfVar5 = pfVar5 + 1;
       }
-    } while (in_EAX != param_1);
+    } while (in_EAX != _Dest);
   }
-  return param_2 + -(iVar1 / 0x50);
+  return __formal + -(iVar1 / 0x50);
 }
 
 
@@ -842,8 +862,8 @@ std::_Copy_backward_opt<GfxSurface_*,GfxSurface_*>
 
 GfxStaticModelCombinedInst * __cdecl
 std::_Copy_backward_opt<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
-          GfxStaticModelCombinedInst *param_3,random_access_iterator_tag param_4,
+          (GfxStaticModelCombinedInst *_Dest,GfxStaticModelCombinedInst *__formal,
+          GfxStaticModelCombinedInst *__formal_2,random_access_iterator_tag __formal_3,
           _Nonscalar_ptr_iterator_tag param_5,_Range_checked_iterator_tag param_6)
 
 {
@@ -853,10 +873,11 @@ std::_Copy_backward_opt<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_
   int iVar3;
   GfxStaticModelCombinedInst *pGVar4;
   float *pfVar5;
+  GfxStaticModelCombinedInst *_First;
   
-  iVar1 = (int)in_EAX - (int)param_1;
-  if (param_1 != in_EAX) {
-    iVar3 = (int)param_2 - (int)in_EAX;
+  iVar1 = (int)in_EAX - (int)_Dest;
+  if (_Dest != in_EAX) {
+    iVar3 = (int)__formal - (int)in_EAX;
     do {
       in_EAX = in_EAX + -1;
       pGVar4 = in_EAX;
@@ -866,96 +887,102 @@ std::_Copy_backward_opt<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_
         pGVar4 = (GfxStaticModelCombinedInst *)&(pGVar4->smodelDrawInst).placement;
         pfVar5 = pfVar5 + 1;
       }
-    } while (in_EAX != param_1);
+    } while (in_EAX != _Dest);
   }
-  return param_2 + -(iVar1 / 0x78);
+  return __formal + -(iVar1 / 0x78);
 }
 
 
 // 0081B5F0  _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&),AnnotatedLightGridPoint>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
 
+/* WARNING: Variable defined which should be unmapped: _Val */
+
 void __cdecl
 std::
 _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&),AnnotatedLightGridPoint>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,
+          (AnnotatedLightGridPoint *_Last,AnnotatedLightGridPoint *_Pred,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_3,
           AnnotatedLightGridPoint *param_4)
 
 {
-  AnnotatedLightGridPoint *pAVar1;
-  ushort uVar2;
-  ushort uVar3;
+  undefined1 uVar1;
+  undefined1 uVar2;
+  AnnotatedLightGridPoint *pAVar3;
   ushort uVar4;
-  uchar uVar5;
-  AnnotatedLightGridPoint *pAVar6;
-  bool bVar7;
+  ushort uVar5;
+  ushort uVar6;
+  uchar uVar7;
   AnnotatedLightGridPoint *pAVar8;
-  AnnotatedLightGridPoint *pAVar9;
+  bool bVar9;
   AnnotatedLightGridPoint *pAVar10;
-  AnnotatedLightGridPoint local_c;
+  AnnotatedLightGridPoint *pAVar11;
+  AnnotatedLightGridPoint *pAVar12;
+  AnnotatedLightGridPoint *_First;
+  AnnotatedLightGridPoint _Val;
+  undefined2 uStack_6;
   
-  pAVar8 = param_1;
-  pAVar1 = param_1;
-  while (pAVar1 = pAVar1 + 1, pAVar1 != param_2) {
-    local_c.entry.primaryLightIndex = (pAVar1->entry).primaryLightIndex;
-    local_c.entry.needsTrace = (pAVar1->entry).needsTrace;
-    local_c.pos[0] = pAVar1->pos[0];
-    local_c.pos[1] = pAVar1->pos[1];
-    local_c.pos[2] = pAVar1->pos[2];
-    local_c.entry.colorsIndex = (pAVar1->entry).colorsIndex;
-    bVar7 = (*param_3)(&local_c,param_1);
-    pAVar6 = pAVar1;
-    if (bVar7) {
-      for (; param_1 != pAVar6; pAVar6 = pAVar6 + -1) {
-        uVar2 = pAVar6[-0xffffffff00000001].pos[1];
-        uVar3 = pAVar6[-0xffffffff00000001].pos[2];
-        uVar4 = pAVar6[-0xffffffff00000001].entry.colorsIndex;
-        pAVar6->pos[0] = pAVar6[-0xffffffff00000001].pos[0];
-        pAVar6->pos[1] = uVar2;
-        pAVar6->pos[2] = uVar3;
-        (pAVar6->entry).colorsIndex = uVar4;
-        uVar5 = pAVar6[-0xffffffff00000001].entry.needsTrace;
-        (pAVar6->entry).primaryLightIndex = pAVar6[-0xffffffff00000001].entry.primaryLightIndex;
-        (pAVar6->entry).needsTrace = uVar5;
+  pAVar10 = _Last;
+  pAVar3 = _Last;
+  while (pAVar3 = pAVar3 + 1, pAVar3 != _Pred) {
+    uVar1 = (pAVar3->entry).primaryLightIndex;
+    uVar2 = (pAVar3->entry).needsTrace;
+    _Val.pos[2] = pAVar3->pos[0];
+    _Val.entry.colorsIndex = pAVar3->pos[1];
+    _Val.entry._2_2_ = pAVar3->pos[2];
+    uStack_6 = (pAVar3->entry).colorsIndex;
+    bVar9 = (*param_3)((AnnotatedLightGridPoint *)(_Val.pos + 2),_Last);
+    pAVar8 = pAVar3;
+    if (bVar9) {
+      for (; _Last != pAVar8; pAVar8 = pAVar8 + -1) {
+        uVar4 = pAVar8[-0xffffffff00000001].pos[1];
+        uVar5 = pAVar8[-0xffffffff00000001].pos[2];
+        uVar6 = pAVar8[-0xffffffff00000001].entry.colorsIndex;
+        pAVar8->pos[0] = pAVar8[-0xffffffff00000001].pos[0];
+        pAVar8->pos[1] = uVar4;
+        pAVar8->pos[2] = uVar5;
+        (pAVar8->entry).colorsIndex = uVar6;
+        uVar7 = pAVar8[-0xffffffff00000001].entry.needsTrace;
+        (pAVar8->entry).primaryLightIndex = pAVar8[-0xffffffff00000001].entry.primaryLightIndex;
+        (pAVar8->entry).needsTrace = uVar7;
       }
-      param_1->pos[0] = local_c.pos[0];
-      param_1->pos[1] = local_c.pos[1];
-      param_1->pos[2] = local_c.pos[2];
-      (param_1->entry).colorsIndex = local_c.entry.colorsIndex;
-      (param_1->entry).primaryLightIndex = local_c.entry.primaryLightIndex;
-      (param_1->entry).needsTrace = local_c.entry.needsTrace;
+      _Last->pos[0] = _Val.pos[2];
+      _Last->pos[1] = _Val.entry.colorsIndex;
+      _Last->pos[2] = _Val.entry._2_2_;
+      (_Last->entry).colorsIndex = uStack_6;
+      (_Last->entry).primaryLightIndex = uVar1;
+      (_Last->entry).needsTrace = uVar2;
     }
     else {
-      bVar7 = (*param_3)(&local_c,pAVar8);
-      pAVar6 = pAVar8;
-      pAVar9 = pAVar1;
-      pAVar10 = pAVar1;
-      if (bVar7) {
+      bVar9 = (*param_3)((AnnotatedLightGridPoint *)(_Val.pos + 2),pAVar10);
+      pAVar8 = pAVar10;
+      pAVar11 = pAVar3;
+      pAVar12 = pAVar3;
+      if (bVar9) {
         do {
-          pAVar10 = pAVar6;
-          uVar2 = pAVar10->pos[1];
-          uVar3 = pAVar10->pos[2];
-          uVar4 = (pAVar10->entry).colorsIndex;
-          pAVar9->pos[0] = pAVar10->pos[0];
-          pAVar9->pos[1] = uVar2;
-          pAVar9->pos[2] = uVar3;
-          (pAVar9->entry).colorsIndex = uVar4;
-          uVar5 = (pAVar10->entry).needsTrace;
-          (pAVar9->entry).primaryLightIndex = (pAVar10->entry).primaryLightIndex;
-          (pAVar9->entry).needsTrace = uVar5;
-          bVar7 = (*param_3)(&local_c,pAVar10 + -1);
-          pAVar6 = pAVar10 + -1;
-          pAVar9 = pAVar10;
-        } while (bVar7);
+          pAVar12 = pAVar8;
+          uVar4 = pAVar12->pos[1];
+          uVar5 = pAVar12->pos[2];
+          uVar6 = (pAVar12->entry).colorsIndex;
+          pAVar11->pos[0] = pAVar12->pos[0];
+          pAVar11->pos[1] = uVar4;
+          pAVar11->pos[2] = uVar5;
+          (pAVar11->entry).colorsIndex = uVar6;
+          uVar7 = (pAVar12->entry).needsTrace;
+          (pAVar11->entry).primaryLightIndex = (pAVar12->entry).primaryLightIndex;
+          (pAVar11->entry).needsTrace = uVar7;
+          bVar9 = (*param_3)((AnnotatedLightGridPoint *)(_Val.pos + 2),pAVar12 + -1);
+          pAVar8 = pAVar12 + -1;
+          pAVar11 = pAVar12;
+        } while (bVar9);
       }
-      pAVar10->pos[0] = local_c.pos[0];
-      pAVar10->pos[1] = local_c.pos[1];
-      pAVar10->pos[2] = local_c.pos[2];
-      (pAVar10->entry).colorsIndex = local_c.entry.colorsIndex;
-      (pAVar10->entry).primaryLightIndex = local_c.entry.primaryLightIndex;
-      (pAVar10->entry).needsTrace = local_c.entry.needsTrace;
+      pAVar12->pos[0] = _Val.pos[2];
+      pAVar12->pos[1] = _Val.entry.colorsIndex;
+      pAVar12->pos[2] = _Val.entry._2_2_;
+      (pAVar12->entry).colorsIndex = uStack_6;
+      (pAVar12->entry).primaryLightIndex = uVar1;
+      (pAVar12->entry).needsTrace = uVar2;
     }
-    pAVar8 = pAVar8 + 1;
+    pAVar10 = pAVar10 + 1;
   }
   return;
 }
@@ -966,8 +993,8 @@ _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoi
 void __cdecl
 std::
 _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&),GfxSurface>
-          (GfxSurface *param_1,GfxSurface *param_2,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3,GfxSurface *param_4)
+          (GfxSurface *_First,GfxSurface *_Last,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Pred,GfxSurface *param_4)
 
 {
   bool bVar1;
@@ -981,9 +1008,9 @@ _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_cons
   GfxSurface *pGStack_64;
   GfxSurface local_60;
   
-  pGVar3 = param_1 + 1;
-  if (pGVar3 != param_2) {
-    local_70 = param_1;
+  pGVar3 = _First + 1;
+  if (pGVar3 != _Last) {
+    local_70 = _First;
     do {
       pGVar4 = pGVar3;
       pGVar5 = &local_60;
@@ -992,16 +1019,16 @@ _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_cons
         pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
         pGVar5 = (GfxSurface *)((pGVar5->tris).mins + 1);
       }
-      bVar1 = (*param_3)(&local_60,param_1);
+      bVar1 = (*_Pred)(&local_60,_First);
       if (bVar1) {
         pGStack_64 = (GfxSurface *)((uint)pGStack_64 & 0xffffff00);
         _Copy_backward_opt<GfxSurface_*,GfxSurface_*>
-                  (param_1,local_70 + 2,pGStack_64,(random_access_iterator_tag)0x0,
+                  (_First,local_70 + 2,pGStack_64,(random_access_iterator_tag)0x0,
                    (_Nonscalar_ptr_iterator_tag)0x0,SUB41(unaff_EDI,0));
-        pGVar5 = param_1;
+        pGVar5 = _First;
       }
       else {
-        bVar1 = (*param_3)(&local_60,local_70);
+        bVar1 = (*_Pred)(&local_60,local_70);
         pGVar4 = local_70;
         pGVar5 = pGVar3;
         local_6c = pGVar3;
@@ -1014,7 +1041,7 @@ _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_cons
               pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
               local_6c = (GfxSurface *)((local_6c->tris).mins + 1);
             }
-            bVar1 = (*param_3)(&local_60,pGVar5 + -1);
+            bVar1 = (*_Pred)(&local_60,pGVar5 + -1);
             pGVar4 = pGVar5 + -1;
             local_6c = pGVar5;
           } while (bVar1);
@@ -1028,7 +1055,7 @@ _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_cons
         pGVar4 = (GfxSurface *)((pGVar4->tris).mins + 1);
         pGVar5 = (GfxSurface *)((pGVar5->tris).mins + 1);
       }
-    } while (pGVar3 != param_2);
+    } while (pGVar3 != _Last);
   }
   return;
 }
@@ -1039,7 +1066,7 @@ _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_cons
 void __cdecl
 std::
 _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&),GfxStaticModelCombinedInst>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
+          (GfxStaticModelCombinedInst *_Last,GfxStaticModelCombinedInst *_Pred,
           _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_3,
           GfxStaticModelCombinedInst *param_4)
 
@@ -1051,13 +1078,14 @@ _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelComb
   GfxStaticModelCombinedInst *pGVar5;
   undefined4 unaff_EDI;
   GfxStaticModelCombinedInst *pGVar6;
+  GfxStaticModelCombinedInst *_First;
   GfxStaticModelCombinedInst *local_84;
-  GfxStaticModelCombinedInst *pGStack_80;
+  GfxStaticModelCombinedInst *_Next;
   GfxStaticModelCombinedInst local_78;
   
-  pGVar3 = param_1 + 1;
-  if (pGVar3 != param_2) {
-    local_84 = param_1;
+  pGVar3 = _Last + 1;
+  if (pGVar3 != _Pred) {
+    local_84 = _Last;
     do {
       pGVar4 = pGVar3;
       pGVar5 = &local_78;
@@ -1066,13 +1094,13 @@ _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelComb
         pGVar4 = (GfxStaticModelCombinedInst *)&(pGVar4->smodelDrawInst).placement;
         pGVar5 = (GfxStaticModelCombinedInst *)&(pGVar5->smodelDrawInst).placement;
       }
-      bVar1 = (*param_3)(&local_78,param_1);
+      bVar1 = (*param_3)(&local_78,_Last);
       if (bVar1) {
-        pGStack_80 = (GfxStaticModelCombinedInst *)((uint)pGStack_80 & 0xffffff00);
+        _Next = (GfxStaticModelCombinedInst *)((uint)_Next & 0xffffff00);
         _Copy_backward_opt<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*>
-                  (param_1,local_84 + 2,pGStack_80,(random_access_iterator_tag)0x0,
+                  (_Last,local_84 + 2,_Next,(random_access_iterator_tag)0x0,
                    (_Nonscalar_ptr_iterator_tag)0x0,SUB41(unaff_EDI,0));
-        pGVar6 = param_1;
+        pGVar6 = _Last;
       }
       else {
         bVar1 = (*param_3)(&local_78,local_84);
@@ -1102,7 +1130,7 @@ _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelComb
         pGVar4 = (GfxStaticModelCombinedInst *)&(pGVar4->smodelDrawInst).placement;
         pGVar6 = (GfxStaticModelCombinedInst *)&(pGVar6->smodelDrawInst).placement;
       }
-    } while (pGVar3 != param_2);
+    } while (pGVar3 != _Pred);
   }
   return;
 }
@@ -1113,7 +1141,7 @@ _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelComb
 void __cdecl
 std::
 _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,
+          (AnnotatedLightGridPoint *_Pred,AnnotatedLightGridPoint *param_2,
           AnnotatedLightGridPoint *param_3,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_4)
 
@@ -1131,6 +1159,7 @@ _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,
   char cVar11;
   AnnotatedLightGridPoint *unaff_ESI;
   AnnotatedLightGridPoint *unaff_EDI;
+  AnnotatedLightGridPoint *_Last;
   
   cVar11 = (*(code *)param_2)();
   if ((cVar11 != '\0') && (unaff_ESI != unaff_EDI)) {
@@ -1157,24 +1186,24 @@ _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,
     (unaff_EDI->entry).primaryLightIndex = uVar9;
     (unaff_EDI->entry).needsTrace = uVar10;
   }
-  cVar11 = (*(code *)param_2)(param_1);
-  if ((cVar11 != '\0') && (param_1 != unaff_ESI)) {
-    uVar5 = param_1->pos[0];
-    uVar6 = param_1->pos[1];
-    uVar7 = param_1->pos[2];
-    uVar8 = (param_1->entry).colorsIndex;
-    uVar9 = (param_1->entry).primaryLightIndex;
-    uVar10 = (param_1->entry).needsTrace;
+  cVar11 = (*(code *)param_2)(_Pred);
+  if ((cVar11 != '\0') && (_Pred != unaff_ESI)) {
+    uVar5 = _Pred->pos[0];
+    uVar6 = _Pred->pos[1];
+    uVar7 = _Pred->pos[2];
+    uVar8 = (_Pred->entry).colorsIndex;
+    uVar9 = (_Pred->entry).primaryLightIndex;
+    uVar10 = (_Pred->entry).needsTrace;
     uVar1 = unaff_ESI->pos[1];
     uVar2 = unaff_ESI->pos[2];
     uVar3 = (unaff_ESI->entry).colorsIndex;
-    param_1->pos[0] = unaff_ESI->pos[0];
-    param_1->pos[1] = uVar1;
-    param_1->pos[2] = uVar2;
-    (param_1->entry).colorsIndex = uVar3;
+    _Pred->pos[0] = unaff_ESI->pos[0];
+    _Pred->pos[1] = uVar1;
+    _Pred->pos[2] = uVar2;
+    (_Pred->entry).colorsIndex = uVar3;
     uVar4 = (unaff_ESI->entry).needsTrace;
-    (param_1->entry).primaryLightIndex = (unaff_ESI->entry).primaryLightIndex;
-    (param_1->entry).needsTrace = uVar4;
+    (_Pred->entry).primaryLightIndex = (unaff_ESI->entry).primaryLightIndex;
+    (_Pred->entry).needsTrace = uVar4;
     unaff_ESI->pos[0] = uVar5;
     unaff_ESI->pos[1] = uVar6;
     unaff_ESI->pos[2] = uVar7;
@@ -1215,8 +1244,8 @@ _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,
 
 void __cdecl
 std::_Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,GfxSurface *param_3,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
+          (GfxSurface *_First,GfxSurface *_Mid,GfxSurface *_Last,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Pred)
 
 {
   bool bVar1;
@@ -1226,73 +1255,73 @@ std::_Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
   GfxSurface *pGVar5;
   float afStack_60 [23];
   
-  bVar1 = (*param_4)(param_2,param_1);
-  if ((bVar1) && (param_2 != param_1)) {
-    pGVar3 = param_2;
+  bVar1 = (*_Pred)(_Mid,_First);
+  if ((bVar1) && (_Mid != _First)) {
+    pGVar3 = _Mid;
     pfVar4 = afStack_60;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_1;
-    pGVar5 = param_2;
+    pGVar3 = _First;
+    pGVar5 = _Mid;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar5->tris).mins[0] = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
       pGVar5 = (GfxSurface *)((pGVar5->tris).mins + 1);
     }
     pfVar4 = afStack_60;
-    pGVar3 = param_1;
+    pGVar3 = _First;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar3->tris).mins[0] = *pfVar4;
       pfVar4 = pfVar4 + 1;
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
     }
   }
-  bVar1 = (*param_4)(param_3,param_2);
-  if ((bVar1) && (param_3 != param_2)) {
-    pGVar3 = param_3;
+  bVar1 = (*_Pred)(_Last,_Mid);
+  if ((bVar1) && (_Last != _Mid)) {
+    pGVar3 = _Last;
     pfVar4 = afStack_60;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_2;
+    pGVar3 = _Mid;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_3->tris).mins[0] = (pGVar3->tris).mins[0];
+      (_Last->tris).mins[0] = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
-      param_3 = (GfxSurface *)((param_3->tris).mins + 1);
+      _Last = (GfxSurface *)((_Last->tris).mins + 1);
     }
     pfVar4 = afStack_60;
-    pGVar3 = param_2;
+    pGVar3 = _Mid;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar3->tris).mins[0] = *pfVar4;
       pfVar4 = pfVar4 + 1;
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
     }
   }
-  bVar1 = (*param_4)(param_2,param_1);
-  if ((bVar1) && (param_2 != param_1)) {
-    pGVar3 = param_2;
+  bVar1 = (*_Pred)(_Mid,_First);
+  if ((bVar1) && (_Mid != _First)) {
+    pGVar3 = _Mid;
     pfVar4 = afStack_60;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_1;
+    pGVar3 = _First;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_2->tris).mins[0] = (pGVar3->tris).mins[0];
+      (_Mid->tris).mins[0] = (pGVar3->tris).mins[0];
       pGVar3 = (GfxSurface *)((pGVar3->tris).mins + 1);
-      param_2 = (GfxSurface *)((param_2->tris).mins + 1);
+      _Mid = (GfxSurface *)((_Mid->tris).mins + 1);
     }
     pfVar4 = afStack_60;
     for (iVar2 = 0x14; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_1->tris).mins[0] = *pfVar4;
+      (_First->tris).mins[0] = *pfVar4;
       pfVar4 = pfVar4 + 1;
-      param_1 = (GfxSurface *)((param_1->tris).mins + 1);
+      _First = (GfxSurface *)((_First->tris).mins + 1);
     }
   }
   return;
@@ -1304,9 +1333,9 @@ std::_Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
 void __cdecl
 std::
 _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
-          GfxStaticModelCombinedInst *param_3,
-          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_4)
+          (GfxStaticModelCombinedInst *_First,GfxStaticModelCombinedInst *_Mid,
+          GfxStaticModelCombinedInst *_Last,
+          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *_Pred)
 
 {
   bool bVar1;
@@ -1316,73 +1345,73 @@ _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_co
   GfxStaticModelCombinedInst *pGVar5;
   float afStack_80 [31];
   
-  bVar1 = (*param_4)(param_2,param_1);
-  if ((bVar1) && (param_2 != param_1)) {
-    pGVar3 = param_2;
+  bVar1 = (*_Pred)(_Mid,_First);
+  if ((bVar1) && (_Mid != _First)) {
+    pGVar3 = _Mid;
     pfVar4 = afStack_80;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_1;
-    pGVar5 = param_2;
+    pGVar3 = _First;
+    pGVar5 = _Mid;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar5->smodelDrawInst).cullDist = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
       pGVar5 = (GfxStaticModelCombinedInst *)&(pGVar5->smodelDrawInst).placement;
     }
     pfVar4 = afStack_80;
-    pGVar3 = param_1;
+    pGVar3 = _First;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar3->smodelDrawInst).cullDist = *pfVar4;
       pfVar4 = pfVar4 + 1;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
     }
   }
-  bVar1 = (*param_4)(param_3,param_2);
-  if ((bVar1) && (param_3 != param_2)) {
-    pGVar3 = param_3;
+  bVar1 = (*_Pred)(_Last,_Mid);
+  if ((bVar1) && (_Last != _Mid)) {
+    pGVar3 = _Last;
     pfVar4 = afStack_80;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_2;
+    pGVar3 = _Mid;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_3->smodelDrawInst).cullDist = (pGVar3->smodelDrawInst).cullDist;
+      (_Last->smodelDrawInst).cullDist = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
-      param_3 = (GfxStaticModelCombinedInst *)&(param_3->smodelDrawInst).placement;
+      _Last = (GfxStaticModelCombinedInst *)&(_Last->smodelDrawInst).placement;
     }
     pfVar4 = afStack_80;
-    pGVar3 = param_2;
+    pGVar3 = _Mid;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       (pGVar3->smodelDrawInst).cullDist = *pfVar4;
       pfVar4 = pfVar4 + 1;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
     }
   }
-  bVar1 = (*param_4)(param_2,param_1);
-  if ((bVar1) && (param_2 != param_1)) {
-    pGVar3 = param_2;
+  bVar1 = (*_Pred)(_Mid,_First);
+  if ((bVar1) && (_Mid != _First)) {
+    pGVar3 = _Mid;
     pfVar4 = afStack_80;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
       *pfVar4 = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
       pfVar4 = pfVar4 + 1;
     }
-    pGVar3 = param_1;
+    pGVar3 = _First;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_2->smodelDrawInst).cullDist = (pGVar3->smodelDrawInst).cullDist;
+      (_Mid->smodelDrawInst).cullDist = (pGVar3->smodelDrawInst).cullDist;
       pGVar3 = (GfxStaticModelCombinedInst *)&(pGVar3->smodelDrawInst).placement;
-      param_2 = (GfxStaticModelCombinedInst *)&(param_2->smodelDrawInst).placement;
+      _Mid = (GfxStaticModelCombinedInst *)&(_Mid->smodelDrawInst).placement;
     }
     pfVar4 = afStack_80;
     for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (param_1->smodelDrawInst).cullDist = *pfVar4;
+      (_First->smodelDrawInst).cullDist = *pfVar4;
       pfVar4 = pfVar4 + 1;
-      param_1 = (GfxStaticModelCombinedInst *)&(param_1->smodelDrawInst).placement;
+      _First = (GfxStaticModelCombinedInst *)&(_First->smodelDrawInst).placement;
     }
   }
   return;
@@ -1394,7 +1423,7 @@ _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_co
 void __cdecl
 std::
 _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,
+          (AnnotatedLightGridPoint *_Last,AnnotatedLightGridPoint *_Pred,
           AnnotatedLightGridPoint *param_3,
           _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_4)
 
@@ -1405,39 +1434,40 @@ _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_
   AnnotatedLightGridPoint *unaff_EBP;
   _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *unaff_ESI;
   AnnotatedLightGridPoint *unaff_EDI;
+  AnnotatedLightGridPoint *_Mid;
   AnnotatedLightGridPoint *pAVar2;
+  AnnotatedLightGridPoint *_Pred_00;
   AnnotatedLightGridPoint *pAVar3;
   AnnotatedLightGridPoint *pAVar4;
-  AnnotatedLightGridPoint *pAVar5;
   
-  iVar1 = ((int)param_2 - in_EAX) / 10;
+  iVar1 = ((int)_Pred - in_EAX) / 10;
   if (0x28 < iVar1) {
     iVar1 = iVar1 + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     pAVar2 = (AnnotatedLightGridPoint *)(in_EAX + iVar1 * 0x14);
-    pAVar5 = param_3;
-    _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-              (pAVar2,param_3,unaff_EBP,unaff_EBX);
-    pAVar3 = param_1 + iVar1;
     pAVar4 = param_3;
     _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-              (pAVar3,param_3,pAVar2,
-               (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)pAVar5)
-    ;
-    pAVar5 = param_2 + -iVar1;
-    pAVar2 = param_3;
+              (pAVar2,param_3,unaff_EBP,unaff_EBX);
+    _Pred_00 = _Last + iVar1;
+    pAVar3 = param_3;
     _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-              (param_2,param_3,pAVar3,
+              (_Pred_00,param_3,pAVar2,
                (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)pAVar4)
     ;
+    pAVar4 = _Pred + -iVar1;
+    pAVar2 = param_3;
     _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-              (pAVar5,param_3,param_2,
+              (_Pred,param_3,_Pred_00,
+               (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)pAVar3)
+    ;
+    _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
+              (pAVar4,param_3,_Pred,
                (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)pAVar2)
     ;
     return;
   }
   _Med3<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-            (param_2,param_3,unaff_EDI,unaff_ESI);
+            (_Pred,param_3,unaff_EDI,unaff_ESI);
   return;
 }
 
@@ -1446,13 +1476,14 @@ _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_
 
 void __cdecl
 std::_Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,GfxSurface *param_3,
+          (GfxSurface *_Pred,GfxSurface *param_2,GfxSurface *param_3,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
 
 {
   GfxSurface *in_EAX;
   int iVar1;
   GfxSurface *in_ECX;
+  GfxSurface *_Mid;
   
   iVar1 = ((int)in_EAX - (int)in_ECX) / 0x50;
   if (0x28 < iVar1) {
@@ -1462,18 +1493,18 @@ std::_Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)
               (in_ECX,in_ECX + iVar1,in_ECX + iVar1 * 2,
                (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
     _Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-              (param_1 + -iVar1,param_1,param_1 + iVar1,
+              (_Pred + -iVar1,_Pred,_Pred + iVar1,
                (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
     _Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
               (in_EAX + iVar1 * -2,in_EAX + -iVar1,in_EAX,
                (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
     _Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-              (in_ECX + iVar1,param_1,in_EAX + -iVar1,
+              (in_ECX + iVar1,_Pred,in_EAX + -iVar1,
                (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
     return;
   }
   _Med3<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-            (in_ECX,param_1,in_EAX,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
+            (in_ECX,_Pred,in_EAX,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
   return;
 }
 
@@ -1483,7 +1514,7 @@ std::_Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)
 void __cdecl
 std::
 _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
+          (GfxStaticModelCombinedInst *_Pred,GfxStaticModelCombinedInst *param_2,
           GfxStaticModelCombinedInst *param_3,
           _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_4)
 
@@ -1491,6 +1522,7 @@ _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_
   GfxStaticModelCombinedInst *in_EAX;
   int iVar1;
   GfxStaticModelCombinedInst *in_ECX;
+  GfxStaticModelCombinedInst *_Mid;
   
   iVar1 = ((int)in_EAX - (int)in_ECX) / 0x78;
   if (0x28 < iVar1) {
@@ -1501,7 +1533,7 @@ _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_
                (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
                param_2);
     _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-              (param_1 + -iVar1,param_1,param_1 + iVar1,
+              (_Pred + -iVar1,_Pred,_Pred + iVar1,
                (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
                param_2);
     _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
@@ -1509,13 +1541,13 @@ _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_
                (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
                param_2);
     _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-              (in_ECX + iVar1,param_1,in_EAX + -iVar1,
+              (in_ECX + iVar1,_Pred,in_EAX + -iVar1,
                (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
                param_2);
     return;
   }
   _Med3<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-            (in_ECX,param_1,in_EAX,
+            (in_ECX,_Pred,in_EAX,
              (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
              param_2);
   return;
@@ -1524,11 +1556,13 @@ _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_
 
 // 0081AB70  _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
 
+/* WARNING: Variable defined which should be unmapped: _Glast */
+
 pair<AnnotatedLightGridPoint_*,AnnotatedLightGridPoint_*> __cdecl
 std::
 _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,
-          _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_3)
+          (AnnotatedLightGridPoint *_First,AnnotatedLightGridPoint *_Last,
+          _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *_Pred)
 
 {
   undefined2 uVar1;
@@ -1567,14 +1601,15 @@ _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGri
   _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *unaff_EDI;
   pair<AnnotatedLightGridPoint_*,AnnotatedLightGridPoint_*> pVar25;
   AnnotatedLightGridPoint *in_stack_00000010;
+  AnnotatedLightGridPoint *_Glast;
   AnnotatedLightGridPoint *local_10;
   
-  pAVar22 = param_2 + ((int)param_3 - (int)param_2) / 0x14;
+  pAVar22 = _Last + ((int)_Pred - (int)_Last) / 0x14;
   _Median<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-            (pAVar22,(AnnotatedLightGridPoint *)(param_3 + -10),in_stack_00000010,unaff_EDI);
+            (pAVar22,(AnnotatedLightGridPoint *)(_Pred + -10),in_stack_00000010,unaff_EDI);
   pAVar21 = pAVar22;
   pAVar18 = extraout_EDX;
-  while (local_10 = pAVar21, param_2 < local_10) {
+  while (local_10 = pAVar21, _Last < local_10) {
     pAVar21 = local_10 + -1;
     cVar17 = (*(code *)in_stack_00000010)(pAVar21,local_10);
     pAVar18 = extraout_EDX_00;
@@ -1587,7 +1622,7 @@ _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGri
     pAVar16 = pAVar22;
     pAVar24 = local_10;
     pAVar21 = local_10;
-    if (param_3 <= pAVar22) break;
+    if (_Pred <= pAVar22) break;
     cVar17 = (*(code *)in_stack_00000010)(pAVar22,local_10);
     pAVar18 = extraout_EDX_02;
     if ((cVar17 != '\0') ||
@@ -1600,9 +1635,9 @@ joined_r0x0081ac1a:
   pAVar4 = pAVar22;
   pAVar16 = pAVar21;
   pAVar22 = pAVar4;
-  if (param_3 <= pAVar5) {
+  if (_Pred <= pAVar5) {
 joined_r0x0081ac70:
-    while (param_2 < pAVar21) {
+    while (_Last < pAVar21) {
       pAVar20 = pAVar16 + -1;
       cVar17 = (*(code *)in_stack_00000010)(pAVar20,pAVar23);
       pAVar18 = extraout_EDX_06;
@@ -1645,12 +1680,12 @@ joined_r0x0081ac70:
       local_10 = pAVar21;
     }
     uVar19 = (undefined2)((uint)pAVar18 >> 0x10);
-    if (pAVar21 == param_2) {
-      if (pAVar5 == (AnnotatedLightGridPoint *)param_3) {
-        *(AnnotatedLightGridPoint **)param_1->pos = pAVar23;
-        *(AnnotatedLightGridPoint **)(param_1->pos + 2) = pAVar4;
+    if (pAVar21 == _Last) {
+      if (pAVar5 == (AnnotatedLightGridPoint *)_Pred) {
+        *(AnnotatedLightGridPoint **)_First->pos = pAVar23;
+        *(AnnotatedLightGridPoint **)(_First->pos + 2) = pAVar4;
         pVar25.second = pAVar18;
-        pVar25.first = param_1;
+        pVar25.first = _First;
         return pVar25;
       }
       if ((pAVar4 != pAVar5) && (pAVar23 != pAVar4)) {
@@ -1711,7 +1746,7 @@ joined_r0x0081ac70:
     }
     else {
       local_10 = pAVar21 + -1;
-      if (pAVar5 == (AnnotatedLightGridPoint *)param_3) {
+      if (pAVar5 == (AnnotatedLightGridPoint *)_Pred) {
         pAVar24 = pAVar23 + -1;
         if (local_10 != pAVar24) {
           uVar9 = local_10->pos[0];
@@ -1846,8 +1881,8 @@ joined_r0x0081ac70:
 
 pair<GfxSurface_*,GfxSurface_*> __cdecl
 std::_Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3)
+          (GfxSurface *param_1,GfxSurface *_First,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Last)
 
 {
   char cVar1;
@@ -1885,12 +1920,12 @@ std::_Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSur
   float afStack_b0 [20];
   float afStack_60 [23];
   
-  pGVar12 = param_2 + ((int)param_3 - (int)param_2) / 0xa0;
+  pGVar12 = _First + ((int)_Last - (int)_First) / 0xa0;
   _Median<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
             (pGVar12,in_stack_00000010,unaff_EDI,unaff_ESI);
   pGVar5 = pGVar12;
   pGVar3 = extraout_EDX;
-  while (pGStack_248 = pGVar5, param_2 < pGStack_248) {
+  while (pGStack_248 = pGVar5, _First < pGStack_248) {
     pGVar5 = pGStack_248 + -1;
     cVar1 = (*(code *)in_stack_00000010)(pGVar5,pGStack_248);
     pGVar3 = extraout_EDX_00;
@@ -1904,7 +1939,7 @@ std::_Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSur
     local_250 = pGVar12;
     pGVar7 = pGVar12;
     pGVar10 = pGStack_248;
-    if (param_3 <= pGVar12) break;
+    if (_Last <= pGVar12) break;
     cVar1 = (*(code *)in_stack_00000010)(pGVar12,pGStack_248);
     pGVar3 = extraout_EDX_02;
     if ((cVar1 != '\0') ||
@@ -1914,7 +1949,7 @@ std::_Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSur
 joined_r0x0081aea6:
   pGVar6 = pGStack_248;
   pGVar4 = pGVar10;
-  if (pGVar5 < param_3) {
+  if (pGVar5 < _Last) {
     cVar1 = (*(code *)in_stack_00000010)(pGVar10,pGVar5);
     pGVar3 = extraout_EDX_04;
     pGVar8 = pGVar5;
@@ -1955,7 +1990,7 @@ joined_r0x0081aea6:
     goto joined_r0x0081aea6;
   }
 joined_r0x0081af15:
-  for (; param_2 < pGStack_248; pGStack_248 = pGStack_248 + -1) {
+  for (; _First < pGStack_248; pGStack_248 = pGStack_248 + -1) {
     pGVar6 = pGVar6 + -1;
     cVar1 = (*(code *)in_stack_00000010)(pGVar6,pGVar4);
     pGVar3 = extraout_EDX_06;
@@ -1991,8 +2026,8 @@ joined_r0x0081af15:
     }
     pGVar12 = local_250;
   }
-  if (pGStack_248 == param_2) {
-    if (pGVar5 == (GfxSurface *)param_3) {
+  if (pGStack_248 == _First) {
+    if (pGVar5 == (GfxSurface *)_Last) {
       (param_1->tris).mins[1] = (float)pGVar12;
       (param_1->tris).mins[0] = (float)pGVar4;
       pVar13.second = pGVar3;
@@ -2053,7 +2088,7 @@ joined_r0x0081af15:
   }
   else {
     pGStack_248 = pGStack_248 + -1;
-    if (pGVar5 == (GfxSurface *)param_3) {
+    if (pGVar5 == (GfxSurface *)_Last) {
       pGVar10 = pGVar4 + -1;
       if (pGStack_248 != pGVar10) {
         pGVar5 = pGStack_248;
@@ -2142,8 +2177,8 @@ joined_r0x0081af15:
 pair<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*> __cdecl
 std::
 _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,
-          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_3)
+          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *_First,
+          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *_Last)
 
 {
   char cVar1;
@@ -2171,7 +2206,9 @@ _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModel
   pair<GfxStaticModelCombinedInst_*,GfxStaticModelCombinedInst_*> pVar12;
   GfxStaticModelCombinedInst *in_stack_00000010;
   GfxStaticModelCombinedInst *local_360;
-  GfxStaticModelCombinedInst *pGStack_358;
+  GfxStaticModelCombinedInst *_Plast;
+  GfxStaticModelCombinedInst *_Gfirst;
+  GfxStaticModelCombinedInst *_Glast;
   float afStack_350 [30];
   float afStack_2d8 [30];
   float afStack_260 [30];
@@ -2180,17 +2217,17 @@ _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModel
   float afStack_f8 [30];
   float afStack_80 [31];
   
-  pGVar11 = param_2 + ((int)param_3 - (int)param_2) / 0xf0;
+  pGVar11 = _First + ((int)_Last - (int)_First) / 0xf0;
   _Median<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
             (pGVar11,in_stack_00000010,unaff_EDI,unaff_ESI);
   pGVar5 = pGVar11;
   pGVar3 = extraout_EDX;
-  while (pGStack_358 = pGVar5, param_2 < pGStack_358) {
-    pGVar5 = pGStack_358 + -1;
-    cVar1 = (*(code *)in_stack_00000010)(pGVar5,pGStack_358);
+  while (_Gfirst = pGVar5, _First < _Gfirst) {
+    pGVar5 = _Gfirst + -1;
+    cVar1 = (*(code *)in_stack_00000010)(pGVar5,_Gfirst);
     pGVar3 = extraout_EDX_00;
     if ((cVar1 != '\0') ||
-       (cVar1 = (*(code *)in_stack_00000010)(pGStack_358,pGVar5), pGVar3 = extraout_EDX_01,
+       (cVar1 = (*(code *)in_stack_00000010)(_Gfirst,pGVar5), pGVar3 = extraout_EDX_01,
        cVar1 != '\0')) break;
   }
   do {
@@ -2198,20 +2235,20 @@ _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModel
     pGVar5 = pGVar11;
     local_360 = pGVar11;
     pGVar7 = pGVar11;
-    pGVar10 = pGStack_358;
-    if (param_3 <= pGVar11) break;
-    cVar1 = (*(code *)in_stack_00000010)(pGVar11,pGStack_358);
+    pGVar10 = _Gfirst;
+    if (_Last <= pGVar11) break;
+    cVar1 = (*(code *)in_stack_00000010)(pGVar11,_Gfirst);
     pGVar3 = extraout_EDX_02;
     if ((cVar1 != '\0') ||
-       (cVar1 = (*(code *)in_stack_00000010)(pGStack_358,pGVar11), pGVar3 = extraout_EDX_03,
+       (cVar1 = (*(code *)in_stack_00000010)(_Gfirst,pGVar11), pGVar3 = extraout_EDX_03,
        cVar1 != '\0')) break;
   } while( true );
 joined_r0x0081b1ca:
   pGVar4 = pGVar10;
-  pGVar10 = pGStack_358;
-  if (param_3 <= pGVar5) {
+  pGVar10 = _Gfirst;
+  if (_Last <= pGVar5) {
 joined_r0x0081b23d:
-    for (; param_2 < pGStack_358; pGStack_358 = pGStack_358 + -1) {
+    for (; _First < _Gfirst; _Gfirst = _Gfirst + -1) {
       pGVar10 = pGVar10 + -1;
       cVar1 = (*(code *)in_stack_00000010)(pGVar10,pGVar4);
       pGVar3 = extraout_EDX_06;
@@ -2247,8 +2284,8 @@ joined_r0x0081b23d:
       }
       pGVar11 = local_360;
     }
-    if (pGStack_358 == param_2) {
-      if (pGVar5 == (GfxStaticModelCombinedInst *)param_3) {
+    if (_Gfirst == _First) {
+      if (pGVar5 == (GfxStaticModelCombinedInst *)_Last) {
         (param_1->smodelDrawInst).placement.origin[0] = (float)pGVar11;
         (param_1->smodelDrawInst).cullDist = (float)pGVar4;
         pVar12.second = pGVar3;
@@ -2308,11 +2345,11 @@ joined_r0x0081b23d:
       }
     }
     else {
-      pGStack_358 = pGStack_358 + -1;
-      if (pGVar5 == (GfxStaticModelCombinedInst *)param_3) {
+      _Gfirst = _Gfirst + -1;
+      if (pGVar5 == (GfxStaticModelCombinedInst *)_Last) {
         pGVar10 = pGVar4 + -1;
-        if (pGStack_358 != pGVar10) {
-          pGVar5 = pGStack_358;
+        if (_Gfirst != pGVar10) {
+          pGVar5 = _Gfirst;
           pfVar9 = afStack_260;
           for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
             *pfVar9 = (pGVar5->smodelDrawInst).cullDist;
@@ -2320,7 +2357,7 @@ joined_r0x0081b23d:
             pfVar9 = pfVar9 + 1;
           }
           pGVar5 = pGVar10;
-          pGVar11 = pGStack_358;
+          pGVar11 = _Gfirst;
           for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
             (pGVar11->smodelDrawInst).cullDist = (pGVar5->smodelDrawInst).cullDist;
             pGVar5 = (GfxStaticModelCombinedInst *)&(pGVar5->smodelDrawInst).placement;
@@ -2362,14 +2399,14 @@ joined_r0x0081b23d:
       }
       else {
         pGVar10 = pGVar5;
-        if (pGVar5 != pGStack_358) {
+        if (pGVar5 != _Gfirst) {
           pfVar9 = afStack_80;
           for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
             *pfVar9 = (pGVar5->smodelDrawInst).cullDist;
             pGVar5 = (GfxStaticModelCombinedInst *)&(pGVar5->smodelDrawInst).placement;
             pfVar9 = pfVar9 + 1;
           }
-          pGVar5 = pGStack_358;
+          pGVar5 = _Gfirst;
           pGVar11 = pGVar7;
           for (iVar2 = 0x1e; iVar2 != 0; iVar2 = iVar2 + -1) {
             (pGVar11->smodelDrawInst).cullDist = (pGVar5->smodelDrawInst).cullDist;
@@ -2377,7 +2414,7 @@ joined_r0x0081b23d:
             pGVar11 = (GfxStaticModelCombinedInst *)&(pGVar11->smodelDrawInst).placement;
           }
           pfVar9 = afStack_80;
-          pGVar5 = pGStack_358;
+          pGVar5 = _Gfirst;
           for (iVar2 = 0x1e; pGVar10 = pGVar7, pGVar11 = local_360, iVar2 != 0; iVar2 = iVar2 + -1)
           {
             (pGVar5->smodelDrawInst).cullDist = *pfVar9;
@@ -2439,8 +2476,8 @@ joined_r0x0081b23d:
 void __cdecl
 std::
 _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-          (AnnotatedLightGridPoint *param_1,AnnotatedLightGridPoint *param_2,int param_3,
-          _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *param_4)
+          (AnnotatedLightGridPoint *_First,AnnotatedLightGridPoint *_Last,int _Ideal,
+          _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *_Pred)
 
 {
   int iVar1;
@@ -2448,49 +2485,48 @@ _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_cons
   _func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *unaff_ESI;
   AnnotatedLightGridPoint *unaff_EDI;
   AnnotatedLightGridPoint *local_10;
-  AnnotatedLightGridPoint *local_c;
+  AnnotatedLightGridPoint *_Mid;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last - (int)_First;
   do {
     iVar1 = iVar1 / 10;
     if (iVar1 < 0x21) {
 LAB_0081a853:
-      if ((1 < iVar1) && (param_1 != param_2)) {
+      if ((1 < iVar1) && (_First != _Last)) {
         _Insertion_sort1<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&),AnnotatedLightGridPoint>
-                  (param_1,param_2,param_4,unaff_EDI);
+                  (_First,_Last,_Pred,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal < 1) {
       if (0x20 < iVar1) {
-        if (1 < ((int)param_2 - (int)param_1) / 10) {
+        if (1 < ((int)_Last - (int)_First) / 10) {
           _Make_heap<AnnotatedLightGridPoint_*,int,AnnotatedLightGridPoint,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-                    (param_1,(AnnotatedLightGridPoint *)param_4,
+                    (_First,(AnnotatedLightGridPoint *)_Pred,
                      (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)
                      unaff_EDI,(int *)unaff_ESI,unaff_EBX);
         }
         _Sort_heap<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-                  ((AnnotatedLightGridPoint *)param_4,unaff_EDI,unaff_ESI);
+                  ((AnnotatedLightGridPoint *)_Pred,unaff_EDI,unaff_ESI);
         return;
       }
       goto LAB_0081a853;
     }
     _Unguarded_partition<AnnotatedLightGridPoint_*,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-              ((AnnotatedLightGridPoint *)&local_10,param_1,
-               (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)param_2
-              );
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if (((int)local_10 - (int)param_1) / 10 < ((int)param_2 - (int)local_c) / 10) {
+              ((AnnotatedLightGridPoint *)&local_10,_First,
+               (_func___cdecl_bool_AnnotatedLightGridPoint_ptr_AnnotatedLightGridPoint_ptr *)_Last);
+    _Ideal = _Ideal / 2 + (_Ideal / 2) / 2;
+    if (((int)local_10 - (int)_First) / 10 < ((int)_Last - (int)_Mid) / 10) {
       _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,local_10,_Ideal,_Pred);
+      _First = _Mid;
     }
     else {
       _Sort<AnnotatedLightGridPoint_*,int,bool_(__cdecl*)(AnnotatedLightGridPoint_const_&,AnnotatedLightGridPoint_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (_Mid,_Last,_Ideal,_Pred);
+      _Last = local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last - (int)_First;
   } while( true );
 }
 
@@ -2499,8 +2535,8 @@ LAB_0081a853:
 
 void __cdecl
 std::_Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-          (GfxSurface *param_1,GfxSurface *param_2,int param_3,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
+          (GfxSurface *_First,GfxSurface *_Last,int _Ideal,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Pred)
 
 {
   int iVar1;
@@ -2508,48 +2544,48 @@ std::_Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_
   int *unaff_ESI;
   GfxSurface *unaff_EDI;
   GfxSurface *local_10;
-  GfxSurface *local_c;
+  GfxSurface *_Mid;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last - (int)_First;
   do {
     iVar1 = iVar1 / 0x50;
     if (iVar1 < 0x21) {
 LAB_0081a9a3:
-      if ((1 < iVar1) && (param_1 != param_2)) {
+      if ((1 < iVar1) && (_First != _Last)) {
         _Insertion_sort1<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&),GfxSurface>
-                  (param_1,param_2,param_4,unaff_EDI);
+                  (_First,_Last,_Pred,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal < 1) {
       if (0x20 < iVar1) {
-        if (1 < ((int)param_2 - (int)param_1) / 0x50) {
+        if (1 < ((int)_Last - (int)_First) / 0x50) {
           _Make_heap<GfxSurface_*,int,GfxSurface,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-                    (param_1,(GfxSurface *)param_4,
+                    (_First,(GfxSurface *)_Pred,
                      (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)unaff_EDI,unaff_ESI,
                      unaff_EBX);
         }
         _Sort_heap<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-                  (param_1,param_2,param_4);
+                  (_First,_Last,_Pred);
         return;
       }
       goto LAB_0081a9a3;
     }
     _Unguarded_partition<GfxSurface_*,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-              ((GfxSurface *)&local_10,param_1,
-               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if (((int)local_10 - (int)param_1) / 0x50 < ((int)param_2 - (int)local_c) / 0x50) {
+              ((GfxSurface *)&local_10,_First,
+               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)_Last);
+    _Ideal = _Ideal / 2 + (_Ideal / 2) / 2;
+    if (((int)local_10 - (int)_First) / 0x50 < ((int)_Last - (int)_Mid) / 0x50) {
       _Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,local_10,_Ideal,_Pred);
+      _First = _Mid;
     }
     else {
       _Sort<GfxSurface_*,int,bool_(__cdecl*)(GfxSurface_const_&,GfxSurface_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (_Mid,_Last,_Ideal,_Pred);
+      _Last = local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last - (int)_First;
   } while( true );
 }
 
@@ -2559,8 +2595,8 @@ LAB_0081a9a3:
 void __cdecl
 std::
 _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-          (GfxStaticModelCombinedInst *param_1,GfxStaticModelCombinedInst *param_2,int param_3,
-          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *param_4)
+          (GfxStaticModelCombinedInst *_First,GfxStaticModelCombinedInst *_Last,int _Ideal,
+          _func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *_Pred)
 
 {
   int iVar1;
@@ -2568,49 +2604,49 @@ _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedIns
   int *unaff_ESI;
   GfxStaticModelCombinedInst *unaff_EDI;
   GfxStaticModelCombinedInst *local_10;
-  GfxStaticModelCombinedInst *local_c;
+  GfxStaticModelCombinedInst *_Mid;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last - (int)_First;
   do {
     iVar1 = iVar1 / 0x78;
     if (iVar1 < 0x21) {
 LAB_0081aaff:
-      if ((1 < iVar1) && (param_1 != param_2)) {
+      if ((1 < iVar1) && (_First != _Last)) {
         _Insertion_sort1<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&),GfxStaticModelCombinedInst>
-                  (param_1,param_2,param_4,unaff_EDI);
+                  (_First,_Last,_Pred,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal < 1) {
       if (0x20 < iVar1) {
-        if (1 < ((int)param_2 - (int)param_1) / 0x78) {
+        if (1 < ((int)_Last - (int)_First) / 0x78) {
           _Make_heap<GfxStaticModelCombinedInst_*,int,GfxStaticModelCombinedInst,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-                    (param_1,(GfxStaticModelCombinedInst *)param_4,
+                    (_First,(GfxStaticModelCombinedInst *)_Pred,
                      (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr
                       *)unaff_EDI,unaff_ESI,unaff_EBX);
         }
         _Sort_heap<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-                  (param_1,param_2,param_4);
+                  (_First,_Last,_Pred);
         return;
       }
       goto LAB_0081aaff;
     }
     _Unguarded_partition<GfxStaticModelCombinedInst_*,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-              ((GfxStaticModelCombinedInst *)&local_10,param_1,
+              ((GfxStaticModelCombinedInst *)&local_10,_First,
                (_func___cdecl_bool_GfxStaticModelCombinedInst_ptr_GfxStaticModelCombinedInst_ptr *)
-               param_2);
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if (((int)local_10 - (int)param_1) / 0x78 < ((int)param_2 - (int)local_c) / 0x78) {
+               _Last);
+    _Ideal = _Ideal / 2 + (_Ideal / 2) / 2;
+    if (((int)local_10 - (int)_First) / 0x78 < ((int)_Last - (int)_Mid) / 0x78) {
       _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,local_10,_Ideal,_Pred);
+      _First = _Mid;
     }
     else {
       _Sort<GfxStaticModelCombinedInst_*,int,bool_(__cdecl*)(GfxStaticModelCombinedInst_const_&,GfxStaticModelCombinedInst_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (_Mid,_Last,_Ideal,_Pred);
+      _Last = local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last - (int)_First;
   } while( true );
 }
 
@@ -2618,6 +2654,7 @@ LAB_0081aaff:
 // 00816820  R_ParseSunLight  (gfx_d3d/r_bsp_load_obj.cpp:4797)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: newSun */
 /* WARNING: Removing unreachable block (ram,0x008170cf) */
 /* WARNING: Removing unreachable block (ram,0x00817015) */
 /* WARNING: Removing unreachable block (ram,0x00816fdc) */
@@ -2625,7 +2662,7 @@ LAB_0081aaff:
 /* WARNING: Removing unreachable block (ram,0x008170c1) */
 /* WARNING: Removing unreachable block (ram,0x008170e9) */
 
-char * __cdecl R_ParseSunLight(SunLightParseParams *param_1,char *param_2)
+char * __cdecl R_ParseSunLight(SunLightParseParams *text,char *param_2)
 
 {
   char cVar1;
@@ -2639,30 +2676,35 @@ char * __cdecl R_ParseSunLight(SunLightParseParams *param_1,char *param_2)
   float *unaff_EDI;
   float fVar8;
   double dVar9;
+  SunLightParseParams *params;
+  bool newSun;
+  bool hasSunSpec;
   float local_1058;
   float local_1054;
-  float local_1050;
-  float local_104c;
-  float local_1048;
-  float local_1020;
-  float local_101c;
-  float local_1018;
-  float local_1008;
-  float local_1004;
+  float sunlight;
+  float exposure;
+  float _ambientcolor;
+  float skyboxhdrscale;
+  float ambient;
+  float diffusefraction;
+  float angles;
+  float sunshadowintensity;
+  float ambientintensity;
+  float keyname;
   char local_1000 [2047];
   char local_801 [2045];
   uint uStack_4;
   
   uStack_4 = 0x81682a;
-  local_1048 = 8.0;
-  local_1020 = 1.0;
+  _ambientcolor = 8.0;
+  ambient = 1.0;
   bVar2 = false;
-  local_1018 = 0.0;
-  local_101c = 0.0;
-  local_1004 = 0.0;
-  local_104c = 0.0;
+  angles = 0.0;
+  diffusefraction = 0.0;
+  keyname = 0.0;
+  exposure = 0.0;
   bVar3 = false;
-  local_1008 = 0.0;
+  ambientintensity = 0.0;
 LAB_008168f0:
   do {
     do {
@@ -2700,42 +2742,42 @@ LAB_008168f0:
 LAB_00816eb5:
       if (bVar2) {
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
-        param_1->sunSettings[0].ambientColor[0] = 0.0;
-        param_1->sunSettings[0].ambientColor[1] = 0.0;
-        param_1->sunSettings[0].ambientColor[2] = 0.0;
-        param_1->sunSettings[0].ambientColor[3] = local_1004;
+        text->sunSettings[0].ambientColor[0] = 0.0;
+        text->sunSettings[0].ambientColor[1] = 0.0;
+        text->sunSettings[0].ambientColor[2] = 0.0;
+        text->sunSettings[0].ambientColor[3] = keyname;
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
-        param_1->sunSettings[0].sunDiffuseColor[0] = 0.0;
-        param_1->sunSettings[0].sunDiffuseColor[1] = 0.0;
-        param_1->sunSettings[0].sunDiffuseColor[2] = 0.0;
-        param_1->sunSettings[0].sunDiffuseColor[3] = local_104c;
+        text->sunSettings[0].sunDiffuseColor[0] = 0.0;
+        text->sunSettings[0].sunDiffuseColor[1] = 0.0;
+        text->sunSettings[0].sunDiffuseColor[2] = 0.0;
+        text->sunSettings[0].sunDiffuseColor[3] = exposure;
         if (bVar3) {
           ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
-          param_1->sunSettings[0].sunSpecularColor[0] = 0.0;
-          param_1->sunSettings[0].sunSpecularColor[1] = 0.0;
-          param_1->sunSettings[0].sunSpecularColor[2] = 0.0;
+          text->sunSettings[0].sunSpecularColor[0] = 0.0;
+          text->sunSettings[0].sunSpecularColor[1] = 0.0;
+          text->sunSettings[0].sunSpecularColor[2] = 0.0;
         }
         else {
-          param_1->sunSettings[0].sunSpecularColor[0] = 0.0;
-          param_1->sunSettings[0].sunSpecularColor[1] = 0.0;
-          param_1->sunSettings[0].sunSpecularColor[2] = 0.0;
+          text->sunSettings[0].sunSpecularColor[0] = 0.0;
+          text->sunSettings[0].sunSpecularColor[1] = 0.0;
+          text->sunSettings[0].sunSpecularColor[2] = 0.0;
         }
-        param_1->sunSettings[0].sunSpecularColor[3] = local_104c;
+        text->sunSettings[0].sunSpecularColor[3] = exposure;
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
-        param_1->sunSettings[0].groundColor[0] = 0.0;
-        param_1->sunSettings[0].groundColor[1] = 0.0;
-        param_1->sunSettings[0].groundColor[2] = 0.0;
+        text->sunSettings[0].groundColor[0] = 0.0;
+        text->sunSettings[0].groundColor[1] = 0.0;
+        text->sunSettings[0].groundColor[2] = 0.0;
       }
       else {
         fVar8 = local_1058;
         if (local_1058 < local_1054) {
           fVar8 = local_1054;
         }
-        if (fVar8 < local_1050) {
-          fVar8 = local_1050;
+        if (fVar8 < sunlight) {
+          fVar8 = sunlight;
         }
         if (fVar8 == 0.0) {
-          local_1050 = 1.0;
+          sunlight = 1.0;
           local_1054 = 1.0;
           local_1058 = 1.0;
         }
@@ -2743,36 +2785,36 @@ LAB_00816eb5:
           fVar8 = 1.0 / fVar8;
           local_1058 = fVar8 * local_1058;
           local_1054 = fVar8 * local_1054;
-          local_1050 = fVar8 * local_1050;
+          sunlight = fVar8 * sunlight;
         }
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
         ColorSRGBtoLinear(unaff_EDI,unaff_ESI);
-        param_1->sunSettings[0].ambientColor[0] = 1.0;
-        param_1->sunSettings[0].ambientColor[1] = 1.0;
-        param_1->sunSettings[0].ambientColor[3] = local_101c;
-        param_1->sunSettings[0].ambientColor[2] = 1.0;
-        fVar8 = (1.0 - local_1018) * (local_104c - local_101c);
-        param_1->sunSettings[0].sunDiffuseColor[3] = fVar8;
-        param_1->sunSettings[0].sunSpecularColor[3] = fVar8;
-        param_1->sunSettings[0].groundColor[0] = local_1058;
-        param_1->sunSettings[0].groundColor[1] = local_1054;
-        param_1->sunSettings[0].sunDiffuseColor[0] = 1.0;
-        param_1->sunSettings[0].sunDiffuseColor[1] = 1.0;
-        param_1->sunSettings[0].sunDiffuseColor[2] = 1.0;
-        param_1->sunSettings[0].sunSpecularColor[0] = 1.0;
-        param_1->sunSettings[0].sunSpecularColor[1] = 1.0;
-        param_1->sunSettings[0].sunSpecularColor[2] = 1.0;
-        param_1->sunSettings[0].groundColor[2] = local_1050;
-        local_1008 = (local_104c - local_101c) * local_1018;
+        text->sunSettings[0].ambientColor[0] = 1.0;
+        text->sunSettings[0].ambientColor[1] = 1.0;
+        text->sunSettings[0].ambientColor[3] = diffusefraction;
+        text->sunSettings[0].ambientColor[2] = 1.0;
+        fVar8 = (1.0 - angles) * (exposure - diffusefraction);
+        text->sunSettings[0].sunDiffuseColor[3] = fVar8;
+        text->sunSettings[0].sunSpecularColor[3] = fVar8;
+        text->sunSettings[0].groundColor[0] = local_1058;
+        text->sunSettings[0].groundColor[1] = local_1054;
+        text->sunSettings[0].sunDiffuseColor[0] = 1.0;
+        text->sunSettings[0].sunDiffuseColor[1] = 1.0;
+        text->sunSettings[0].sunDiffuseColor[2] = 1.0;
+        text->sunSettings[0].sunSpecularColor[0] = 1.0;
+        text->sunSettings[0].sunSpecularColor[1] = 1.0;
+        text->sunSettings[0].sunSpecularColor[2] = 1.0;
+        text->sunSettings[0].groundColor[2] = sunlight;
+        ambientintensity = (exposure - diffusefraction) * angles;
       }
-      param_1->sunSettings[0].groundColor[3] = local_1008;
-      param_1->sunSettings[0].angles[0] = 0.0;
-      param_1->sunSettings[0].angles[1] = 0.0;
-      param_1->sunSettings[0].angles[2] = 0.0;
-      param_1->sunSettings[0].exposure = local_1048;
-      param_1->sunSettings[0].sunShadowSampleSizeNear = 0.25;
-      param_1->sunSettings[0].skyboxHDRScale = local_1020;
+      text->sunSettings[0].groundColor[3] = ambientintensity;
+      text->sunSettings[0].angles[0] = 0.0;
+      text->sunSettings[0].angles[1] = 0.0;
+      text->sunSettings[0].angles[2] = 0.0;
+      text->sunSettings[0].exposure = _ambientcolor;
+      text->sunSettings[0].sunShadowSampleSizeNear = 0.25;
+      text->sunSettings[0].skyboxHDRScale = ambient;
       return param_2;
     }
     pcVar6 = local_801;
@@ -2797,12 +2839,12 @@ LAB_00816eb5:
       iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
       if (iVar4 == 0) {
         dVar9 = atof(local_801 + 1);
-        local_1020 = (float)dVar9;
+        ambient = (float)dVar9;
       }
       iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
       if (iVar4 == 0) {
         dVar9 = atof(local_801 + 1);
-        local_101c = (float)dVar9;
+        diffusefraction = (float)dVar9;
       }
       else {
         iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
@@ -2810,7 +2852,7 @@ LAB_00816eb5:
           iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
           if (iVar4 == 0) {
             dVar9 = atof(local_801 + 1);
-            local_1018 = (float)dVar9;
+            angles = (float)dVar9;
             goto LAB_008168f0;
           }
           iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
@@ -2824,7 +2866,7 @@ LAB_00816cfb:
             iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
             if (iVar4 == 0) {
               dVar9 = atof(local_801 + 1);
-              local_104c = (float)dVar9;
+              exposure = (float)dVar9;
               goto LAB_008168f0;
             }
             iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
@@ -2838,7 +2880,7 @@ LAB_00816cfb:
               iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
               if (iVar4 == 0) {
                 dVar9 = atof(local_801 + 1);
-                local_1004 = (float)dVar9;
+                keyname = (float)dVar9;
               }
               else {
                 iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
@@ -2846,7 +2888,7 @@ LAB_00816cfb:
                 iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
                 if (iVar4 == 0) {
                   dVar9 = atof(local_801 + 1);
-                  local_1008 = (float)dVar9;
+                  ambientintensity = (float)dVar9;
                 }
                 else {
                   iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
@@ -2856,17 +2898,17 @@ LAB_00816cfb:
                   else {
                     iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
                     if (iVar4 == 0) {
-                      if (param_1 != (SunLightParseParams *)0x0) {
+                      if (text != (SunLightParseParams *)0x0) {
                         iVar7 = 0x40;
                         iVar4 = -1 - (int)pcVar6;
                         do {
                           cVar1 = pcVar6[1];
                           pcVar6 = pcVar6 + 1;
-                          pcVar6[(int)param_1 + iVar4] = cVar1;
+                          pcVar6[(int)text + iVar4] = cVar1;
                           if (cVar1 == '\0') break;
                           iVar7 = iVar7 + -1;
                         } while (iVar7 != 0);
-                        param_1->name[0x3f] = '\0';
+                        text->name[0x3f] = '\0';
                       }
                     }
                     else {
@@ -2893,13 +2935,13 @@ LAB_00816cfb:
                         iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
                         if (iVar4 == 0) {
                           dVar9 = atof(local_801 + 1);
-                          param_1->treeScatterIntensity = (float)dVar9;
+                          text->treeScatterIntensity = (float)dVar9;
                         }
                         else {
                           iVar4 = I_strnicmp(local_1000,(char *)unaff_EDI,(int)unaff_ESI);
                           if (iVar4 == 0) {
                             dVar9 = atof(local_801 + 1);
-                            param_1->treeScatterAmount = (float)dVar9;
+                            text->treeScatterAmount = (float)dVar9;
                           }
                         }
                       }
@@ -2918,9 +2960,9 @@ LAB_00816cfb:
       goto LAB_008168f0;
     }
     dVar9 = atof(local_801 + 1);
-    local_1048 = (float)dVar9;
-    if (local_1048 < 0.0) {
-      local_1048 = 0.0;
+    _ambientcolor = (float)dVar9;
+    if (_ambientcolor < 0.0) {
+      _ambientcolor = 0.0;
       printf("WARNING: Negative exposure in worldspwan\n");
     }
   } while( true );
@@ -2935,102 +2977,103 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
 
 {
   char cVar1;
-  ulong uVar2;
+  ulong count;
+  char *pcVar2;
   char *pcVar3;
-  char *pcVar4;
-  uint uVar5;
-  uchar *puVar6;
-  code *pcVar7;
-  char *pcVar8;
-  GfxWorldDpvsDynamic *pGVar9;
-  uint uVar10;
+  uint uVar4;
+  uchar *puVar5;
+  code *pcVar6;
+  char *pcVar7;
+  GfxWorldDpvsDynamic *pGVar8;
+  uint uVar9;
   float *unaff_EBX;
   GfxWorld *unaff_ESI;
-  int iVar11;
+  int iVar10;
   GfxBspLoad *unaff_EDI;
-  SunLightParseParams *pSVar12;
-  GfxLight *pGVar13;
-  int iVar14;
-  uint local_44;
+  char *name;
+  SunLightParseParams *pSVar11;
+  GfxLight *pGVar12;
+  int iVar13;
+  uint baseName;
   char local_40 [63];
   undefined1 local_1;
   
   memset((uchar *)&s_world,'\0',0x43c);
   memset((uchar *)&rgl,'\0',0x2c4);
   rgl.load.bspVersion = *(uint *)(DAT_01cac278 + 4);
-  pcVar3 = param_1;
+  pcVar2 = param_1;
   do {
-    cVar1 = *pcVar3;
-    pcVar3 = pcVar3 + 1;
+    cVar1 = *pcVar2;
+    pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
-  pcVar3 = Hunk_AllocAlignInternal((int)(pcVar3 + (1 - (int)(param_1 + 1))),(int)unaff_ESI);
-  s_world.name = pcVar3;
+  pcVar2 = Hunk_AllocAlignInternal((int)(pcVar2 + (1 - (int)(param_1 + 1))),(int)unaff_ESI);
+  s_world.name = pcVar2;
   do {
     cVar1 = *param_1;
-    *pcVar3 = cVar1;
+    *pcVar2 = cVar1;
     param_1 = param_1 + 1;
-    pcVar3 = pcVar3 + 1;
+    pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
   cVar1 = *s_world.name;
-  pcVar8 = s_world.name;
-  pcVar3 = s_world.name;
+  pcVar7 = s_world.name;
+  pcVar2 = s_world.name;
   while (cVar1 != '\0') {
     if ((cVar1 == '/') || (cVar1 == '\\')) {
-      pcVar3 = pcVar8 + 1;
+      pcVar2 = pcVar7 + 1;
     }
-    pcVar4 = pcVar8 + 1;
-    pcVar8 = pcVar8 + 1;
-    cVar1 = *pcVar4;
+    pcVar3 = pcVar7 + 1;
+    pcVar7 = pcVar7 + 1;
+    cVar1 = *pcVar3;
   }
-  if (pcVar3 == (char *)0x0) {
+  if (pcVar2 == (char *)0x0) {
     local_40[0] = '\0';
   }
   else {
-    pcVar3 = pcVar3 + -1;
-    iVar11 = 0x40;
-    iVar14 = -1 - (int)pcVar3;
+    pcVar2 = pcVar2 + -1;
+    iVar10 = 0x40;
+    iVar13 = -1 - (int)pcVar2;
     do {
-      cVar1 = pcVar3[1];
-      pcVar3 = pcVar3 + 1;
-      pcVar3[(int)(local_40 + iVar14)] = cVar1;
+      cVar1 = pcVar2[1];
+      pcVar2 = pcVar2 + 1;
+      pcVar2[(int)(local_40 + iVar13)] = cVar1;
       if (cVar1 == '\0') break;
-      iVar11 = iVar11 + -1;
-    } while (iVar11 != 0);
+      iVar10 = iVar10 + -1;
+    } while (iVar10 != 0);
     local_1 = 0;
   }
-  pcVar4 = Com_GetExtensionSubString((char *)unaff_EDI);
-  pcVar3 = local_40;
-  pcVar8 = pcVar3;
-  for (; pcVar3 != pcVar4; pcVar3 = pcVar3 + 1) {
-    *pcVar8 = *pcVar3;
-    pcVar8 = pcVar8 + 1;
+  pcVar3 = Com_GetExtensionSubString((char *)unaff_EDI);
+  pcVar2 = local_40;
+  pcVar7 = pcVar2;
+  for (; pcVar2 != pcVar3; pcVar2 = pcVar2 + 1) {
+    *pcVar7 = *pcVar2;
+    pcVar7 = pcVar7 + 1;
   }
-  pcVar3 = local_40;
-  *pcVar8 = '\0';
+  pcVar2 = local_40;
+  *pcVar7 = '\0';
   do {
-    cVar1 = *pcVar3;
-    pcVar3 = pcVar3 + 1;
+    cVar1 = *pcVar2;
+    pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
-  pcVar8 = Hunk_AllocAlignInternal((int)(pcVar3 + (1 - (int)(local_40 + 1))),(int)unaff_EDI);
-  pcVar3 = local_40;
-  s_world.baseName = pcVar8;
+  pcVar7 = Hunk_AllocAlignInternal((int)(pcVar2 + (1 - (int)(local_40 + 1))),(int)unaff_EDI);
+  pcVar2 = local_40;
+  s_world.baseName = pcVar7;
   do {
-    cVar1 = *pcVar3;
-    *pcVar8 = cVar1;
-    pcVar3 = pcVar3 + 1;
-    pcVar8 = pcVar8 + 1;
+    cVar1 = *pcVar2;
+    *pcVar7 = cVar1;
+    pcVar2 = pcVar2 + 1;
+    pcVar7 = pcVar7 + 1;
   } while (cVar1 != '\0');
   s_world.planeCount = cm.planeCount;
   s_world.dpvsPlanes.planes = cm.planes;
-  pGVar9 = &s_world.dpvsDyn;
-  uVar5 = 0;
+  pGVar8 = &s_world.dpvsDyn;
+  uVar4 = 0;
   do {
-    uVar10 = (uint)*(ushort *)((int)cm.dynEntCount + uVar5);
-    pGVar9->dynEntClientCount[0] = uVar10;
-    pGVar9->dynEntClientWordCount[0] = uVar10 + 0x1f >> 5;
-    uVar5 = uVar5 + 2;
-    pGVar9 = (GfxWorldDpvsDynamic *)(pGVar9->dynEntClientWordCount + 1);
-  } while (uVar5 < 4);
+    uVar9 = (uint)*(ushort *)((int)cm.dynEntCount + uVar4);
+    pGVar8->dynEntClientCount[0] = uVar9;
+    pGVar8->dynEntClientWordCount[0] = uVar9 + 0x1f >> 5;
+    uVar4 = uVar4 + 2;
+    pGVar8 = (GfxWorldDpvsDynamic *)(pGVar8->dynEntClientWordCount + 1);
+  } while (uVar4 < 4);
   Com_Printf(8,"Loading %s...\n","materials");
   SCR_UpdateLoadScreen();
   rgl.load.diskMaterials = Com_GetBspLump(LUMP_MATERIALS,0x48,&rgl.load.materialCount);
@@ -3038,12 +3081,12 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   SCR_UpdateLoadScreen();
   s_world.sunParse.treeScatterAmount = 1.0;
   s_world.sunParse.treeScatterIntensity = 1.0;
-  pcVar3 = Com_GetBspLump(LUMP_ENTITIES,1,&local_44);
-  pGVar13 = (GfxLight *)&s_world.sunParse;
-  R_ParseSunLight(&s_world.sunParse,pcVar3);
-  pSVar12 = (SunLightParseParams *)0x170;
-  s_world.sunLight = Hunk_AllocAlignInternal(0x170,(int)pGVar13);
-  R_InterpretSunLightParseParamsIntoLights(pSVar12,pGVar13);
+  pcVar2 = Com_GetBspLump(LUMP_ENTITIES,1,&baseName);
+  pGVar12 = (GfxLight *)&s_world.sunParse;
+  R_ParseSunLight(&s_world.sunParse,pcVar2);
+  pSVar11 = (SunLightParseParams *)0x170;
+  s_world.sunLight = Hunk_AllocAlignInternal(0x170,(int)pGVar12);
+  R_InterpretSunLightParseParamsIntoLights(pSVar11,pGVar12);
   Com_Printf(8,"Loading %s...\n","primary lights");
   SCR_UpdateLoadScreen();
   if (rgl.load.bspVersion < 0xf) {
@@ -3059,11 +3102,11 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   Com_Printf(8,"Loading %s...\n","lightmaps");
   SCR_UpdateLoadScreen();
   R_LoadLightmaps(&rgl.load);
-  uVar5 = 8;
+  uVar4 = 8;
   if (rgl.load.bspVersion < 0x10) {
     Com_Printf(8,"Loading %s...\n","lightgrid colors");
     SCR_UpdateLoadScreen();
-    R_LoadLightGridColors(uVar5);
+    R_LoadLightGridColors(uVar4);
     Com_Printf(8,"Loading %s...\n","lightgrid points");
     SCR_UpdateLoadScreen();
     R_LoadLightGridPoints_Version15(rgl.load.bspVersion);
@@ -3071,17 +3114,17 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   else {
     Com_Printf(8,"Loading %s...\n","lightgrid colors");
     SCR_UpdateLoadScreen();
-    R_LoadLightGridColors(uVar5);
+    R_LoadLightGridColors(uVar4);
     Com_Printf(8,"Loading %s...\n","lightgrid row data");
     SCR_UpdateLoadScreen();
-    puVar6 = Com_GetBspLump(LUMP_LIGHTGRIDROWS,1,&s_world.lightGrid.rawRowDataSize);
+    puVar5 = Com_GetBspLump(LUMP_LIGHTGRIDROWS,1,&s_world.lightGrid.rawRowDataSize);
     if (s_world.lightGrid.rawRowDataSize == 0) {
       s_world.lightGrid.rawRowData = (uchar *)0x0;
     }
     else {
       s_world.lightGrid.rawRowData =
            Hunk_AllocAlignInternal(s_world.lightGrid.rawRowDataSize,(int)unaff_EDI);
-      memcpy(s_world.lightGrid.rawRowData,puVar6,s_world.lightGrid.rawRowDataSize);
+      memcpy(s_world.lightGrid.rawRowData,puVar5,s_world.lightGrid.rawRowDataSize);
     }
     Com_Printf(8,"Loading %s...\n","lightgrid entries");
     SCR_UpdateLoadScreen();
@@ -3102,16 +3145,16 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   R_LoadCullGroups();
   Com_Printf(8,"Loading %s...\n","cull group indices");
   SCR_UpdateLoadScreen();
-  puVar6 = Com_GetBspLump(LUMP_CULLGROUPINDICES,4,&local_44);
-  uVar2 = local_44 * 4;
-  rgl.cullGroupIndices = Hunk_AllocAlignInternal(uVar2,(int)unaff_EDI);
-  memcpy((uchar *)rgl.cullGroupIndices,puVar6,uVar2);
+  puVar5 = Com_GetBspLump(LUMP_CULLGROUPINDICES,4,&baseName);
+  count = baseName * 4;
+  rgl.cullGroupIndices = Hunk_AllocAlignInternal(count,(int)unaff_EDI);
+  memcpy((uchar *)rgl.cullGroupIndices,puVar5,count);
   Com_Printf(8,"Loading %s...\n","portal vertices");
   SCR_UpdateLoadScreen();
-  iVar14 = 0x13;
-  puVar6 = Com_GetBspLump(LUMP_PORTALVERTS,0xc,&local_44);
-  rgl.portalVerts = Hunk_AllocAlignInternal(local_44 * 0xc,iVar14);
-  memcpy((uchar *)rgl.portalVerts,puVar6,local_44 * 0xc);
+  iVar13 = 0x13;
+  puVar5 = Com_GetBspLump(LUMP_PORTALVERTS,0xc,&baseName);
+  rgl.portalVerts = Hunk_AllocAlignInternal(baseName * 0xc,iVar13);
+  memcpy((uchar *)rgl.portalVerts,puVar5,baseName * 0xc);
   Com_Printf(8,"Loading %s...\n","AABB trees");
   SCR_UpdateLoadScreen();
   R_LoadAabbTrees();
@@ -3131,25 +3174,25 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   Material_SortInternal(rgp.sortedMaterials,rgp.materialCount);
   R_SortSurfaces();
   R_CalculateVertexStream2Usage();
-  uVar5 = 8;
+  uVar4 = 8;
   Com_Printf(8,"Loading %s...\n","entities");
   SCR_UpdateLoadScreen();
-  R_LoadEntities(uVar5);
+  R_LoadEntities(uVar4);
   Com_Printf(8,"Loading %s...\n","reflection probes");
   SCR_UpdateLoadScreen();
   if (rgl.load.bspVersion < 8) {
-    iVar14 = 0x18;
+    iVar13 = 0x18;
     s_world.draw.reflectionProbeCount = 1;
     s_world.draw.reflectionProbes = Hunk_AllocAlignInternal(0x18,(int)unaff_EDI);
-    s_world.draw.reflectionProbeTextures = Hunk_AllocAlignInternal(4,iVar14);
+    s_world.draw.reflectionProbeTextures = Hunk_AllocAlignInternal(4,iVar13);
     defaultReflectionProbeRawData.origin[0] = 0.0;
     defaultReflectionProbeRawData.origin[1] = 0.0;
     defaultReflectionProbeRawData.origin[2] = 0.0;
     memset((uchar *)defaultReflectionProbeRawData.colorCorrectionFilename,'\0',0x40);
-    iVar14 = 0x2d3f1e4;
+    iVar13 = 0x2d3f1e4;
     memset(defaultReflectionProbeRawData.pixels,'\0',0x40050);
     R_GenerateReflectionImages
-              (s_world.draw.reflectionProbes,&defaultReflectionProbeRawData,1,0,iVar14);
+              (s_world.draw.reflectionProbes,&defaultReflectionProbeRawData,1,0,iVar13);
     rgl.reflectionProbesLoaded = 1;
   }
   else {
@@ -3179,18 +3222,18 @@ GfxWorld * __cdecl R_LoadWorldInternal(char *param_1)
   Outdoor_ApplyBoundingBox((float *)unaff_ESI,unaff_EBX);
   Outdoor_UpdateTransforms();
   Outdoor_SetRendererOutdoorLookupMatrix(unaff_ESI);
-  pcVar7 = Image_Register_FastFile;
+  pcVar6 = Image_Register_FastFile;
   if ((useFastFile->current).enabled == false) {
-    pcVar7 = Image_Register_LoadObj;
+    pcVar6 = Image_Register_LoadObj;
   }
-  pcVar3 = "$outdoor";
-  s_world.outdoorImage = (GfxImage *)(*pcVar7)("$outdoor",1,0);
+  pcVar2 = "$outdoor";
+  s_world.outdoorImage = (GfxImage *)(*pcVar6)("$outdoor",1,0);
   R_LoadWorldRuntime();
   s_world.skyDynIntensity.angle0 = 0.0;
   s_world.skyDynIntensity.angle1 = 0.0;
   s_world.skyDynIntensity.factor0 = 1.0;
   s_world.skyDynIntensity.factor1 = 1.0;
-  R_AssignSModelCacheResources((GfxWorld *)pcVar3);
+  R_AssignSModelCacheResources((GfxWorld *)pcVar2);
   memset((uchar *)&rgl,'\0',0x2c4);
   return &s_world;
 }
@@ -3212,10 +3255,10 @@ R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *param_1,GfxLight *
   undefined1 local_30 [4];
   float local_2c;
   undefined1 *local_20;
-  undefined1 *local_1c;
+  undefined1 *sunDirection;
   float local_18;
   float local_14;
-  float local_10;
+  float sunColor;
   float local_c;
   float local_8;
   float local_4;
@@ -3224,13 +3267,13 @@ R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *param_1,GfxLight *
   fVar1 = (float10)fcos(fVar2);
   fVar3 = (float10)fsin(fVar2);
   local_20 = local_3c;
-  local_1c = local_30;
+  sunDirection = local_30;
   local_2c = *(float *)(unaff_EDI + 0x4c) * 0.017453292;
   fVar2 = (float10)fcos((float10)local_2c);
   fVar4 = (float10)fsin((float10)local_2c);
   local_18 = (float)fVar2 * (float)fVar1;
   local_14 = (float)fVar2 * (float)fVar3;
-  local_10 = -(float)fVar4;
+  sunColor = -(float)fVar4;
   local_4 = *(float *)(unaff_EDI + 0x74);
   local_c = *(float *)(unaff_EDI + 0x68) * local_4;
   local_8 = *(float *)(unaff_EDI + 0xd4) * local_4;
@@ -3240,7 +3283,7 @@ R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *param_1,GfxLight *
     *unaff_ESI = '\x01';
     *(float *)(unaff_ESI + 0x10) = local_18;
     *(float *)(unaff_ESI + 0x14) = local_14;
-    *(float *)(unaff_ESI + 0x18) = local_10;
+    *(float *)(unaff_ESI + 0x18) = sunColor;
     *(float *)(unaff_ESI + 4) = local_c;
     *(float *)(unaff_ESI + 8) = local_8;
     *(float *)(unaff_ESI + 0xc) = local_4;
@@ -3278,6 +3321,8 @@ void __cdecl R_InitPrimaryLights(GfxLight *param_1)
   float10 fVar13;
   float fVar14;
   float fVar15;
+  GfxLight *primaryLights;
+  uint lightIndex;
   uint local_10;
   
   iVar9 = 0;
@@ -3394,14 +3439,16 @@ void __cdecl R_InitPrimaryLights(GfxLight *param_1)
 
 // 0081A590  R_AddShadowSurfaceToPrimaryLight  (gfx_d3d/r_bsp_load_obj.cpp:7345)
 
-void __cdecl R_AddShadowSurfaceToPrimaryLight(GfxWorld *param_1,uint param_2,uint param_3)
+void __cdecl
+R_AddShadowSurfaceToPrimaryLight(GfxWorld *primaryLightIndex,uint sortedSurfIndex,uint param_3)
 
 {
   GfxShadowGeometry *pGVar1;
   ushort *puVar2;
+  GfxWorld *world;
   
-  puVar2 = param_1->shadowGeom[param_2].sortedSurfIndex;
-  pGVar1 = param_1->shadowGeom + param_2;
+  puVar2 = primaryLightIndex->shadowGeom[sortedSurfIndex].sortedSurfIndex;
+  pGVar1 = primaryLightIndex->shadowGeom + sortedSurfIndex;
   if (puVar2 != (ushort *)0x0) {
     puVar2[pGVar1->surfaceCount] = (ushort)param_3;
     pGVar1->surfaceCount = pGVar1->surfaceCount + 1;
@@ -3414,7 +3461,7 @@ void __cdecl R_AddShadowSurfaceToPrimaryLight(GfxWorld *param_1,uint param_2,uin
 
 void __cdecl
 R_ForEachPrimaryLightAffectingSurface
-          (GfxWorld *param_1,GfxSurface *param_2,uint param_3,
+          (GfxWorld *sortedSurfIndex,GfxSurface *Callback,uint param_3,
           _func___cdecl_void_GfxWorld_ptr_uint_uint *param_4)
 
 {
@@ -3427,27 +3474,28 @@ R_ForEachPrimaryLightAffectingSurface
   int iVar4;
   float *unaff_ESI;
   float *unaff_EDI;
+  GfxWorld *world;
   float *local_20;
   float local_18;
   float local_14;
-  float local_10;
+  float boxMidPoint;
   float local_c;
   float local_8;
   float local_4;
   
   if (((*(byte *)(in_EAX + 0x37) & 2) == 0) && ((*(byte *)(*(int *)(in_EAX + 0x30) + 4) & 2) != 0))
   {
-    (*(code *)param_3)(param_1,*(undefined1 *)(in_EAX + 0x36),param_2);
+    (*(code *)param_3)(sortedSurfIndex,*(undefined1 *)(in_EAX + 0x36),Callback);
     return;
   }
   local_c = (*(float *)(in_EAX + 0x38) + *(float *)(in_EAX + 0x44)) * 0.5;
   local_8 = (*(float *)(in_EAX + 0x3c) + *(float *)(in_EAX + 0x48)) * 0.5;
   local_4 = (*(float *)(in_EAX + 0x40) + *(float *)(in_EAX + 0x4c)) * 0.5;
-  uVar3 = param_1->sunPrimaryLightIndex + 1;
+  uVar3 = sortedSurfIndex->sunPrimaryLightIndex + 1;
   local_18 = (local_c - *(float *)(in_EAX + 0x38)) + 1.0;
   local_14 = (local_8 - *(float *)(in_EAX + 0x3c)) + 1.0;
-  local_10 = (local_4 - *(float *)(in_EAX + 0x40)) + 1.0;
-  if (uVar3 < param_1->primaryLightCount) {
+  boxMidPoint = (local_4 - *(float *)(in_EAX + 0x40)) + 1.0;
+  if (uVar3 < sortedSurfIndex->primaryLightCount) {
     iVar4 = uVar3 * 0xdc;
     do {
       local_20 = *(float **)((int)(comWorld.primaryLights)->origin + iVar4 + 0xc);
@@ -3467,12 +3515,12 @@ LAB_0081a6ed:
       if (bVar2 == false) {
         bVar2 = R_CullBoxFromLightRegion(s_world.lightRegion + uVar3,&local_18,unaff_EDI,unaff_ESI);
         if (!bVar2) {
-          (*(code *)param_3)(param_1,uVar3,param_2);
+          (*(code *)param_3)(sortedSurfIndex,uVar3,Callback);
         }
       }
       uVar3 = uVar3 + 1;
       iVar4 = iVar4 + 0xdc;
-    } while (uVar3 < param_1->primaryLightCount);
+    } while (uVar3 < sortedSurfIndex->primaryLightCount);
   }
   return;
 }

@@ -7,14 +7,14 @@ undefined4 _HTProxyFilter(int param_1)
 {
   void *pvVar1;
   int iVar2;
-  void *pvVar3;
-  int iVar4;
+  void *pBlock;
+  int iVar3;
   
   if (param_1 == 0) {
-    iVar4 = 0;
+    iVar3 = 0;
   }
   else {
-    iVar4 = *(int *)(param_1 + 0xd0);
+    iVar3 = *(int *)(param_1 + 0xd0);
   }
   pvVar1 = (void *)_HTProxy_find();
   if (pvVar1 != (void *)0x0) {
@@ -37,13 +37,13 @@ undefined4 _HTProxyFilter(int param_1)
   }
   else {
     pvVar1 = (void *)_HTParse("",0xd);
-    pvVar3 = (void *)_HTParse(iVar2,0x1f);
-    if ((iVar4 != 0) && (pvVar3 != (void *)0x0)) {
-      _HTSACopy(pvVar3);
+    pBlock = (void *)_HTParse(iVar2,0x1f);
+    if ((iVar3 != 0) && (pBlock != (void *)0x0)) {
+      _HTSACopy(pBlock);
     }
     free(pvVar1);
-    if (pvVar3 != (void *)0x0) {
-      free(pvVar3);
+    if (pBlock != (void *)0x0) {
+      free(pBlock);
     }
     if (param_1 != 0) {
       *(undefined4 *)(param_1 + 0x98) = 0;
@@ -63,23 +63,23 @@ undefined4 _HTProxyFilter(int param_1)
 undefined4 _HTInfoFilter(int param_1,undefined4 param_2,undefined4 param_3,int param_4)
 
 {
-  void *pvVar1;
-  code *pcVar2;
-  undefined4 uVar3;
+  void *pBlock;
+  code *pcVar1;
+  undefined4 uVar2;
   
-  pvVar1 = (void *)_HTAnchor_address();
+  pBlock = (void *)_HTAnchor_address();
   if (((param_4 == -0x1f7) || (param_4 != 200)) &&
-     (pcVar2 = (code *)_HTAlert_find(), pcVar2 != (code *)0x0)) {
+     (pcVar1 = (code *)_HTAlert_find(), pcVar1 != (code *)0x0)) {
     if (param_1 == 0) {
-      uVar3 = 0;
+      uVar2 = 0;
     }
     else {
-      uVar3 = *(undefined4 *)(param_1 + 0x28);
+      uVar2 = *(undefined4 *)(param_1 + 0x28);
     }
-    (*pcVar2)(param_1,0x10000,0xffffffff,0,uVar3,0);
+    (*pcVar1)(param_1,0x10000,0xffffffff,0,uVar2,0);
   }
-  if (pvVar1 != (void *)0x0) {
-    free(pvVar1);
+  if (pBlock != (void *)0x0) {
+    free(pBlock);
   }
   return 0;
 }

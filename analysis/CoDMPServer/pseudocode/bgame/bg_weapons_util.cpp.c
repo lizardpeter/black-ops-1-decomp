@@ -5,17 +5,18 @@
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_WeaponComponentListSort(char *param_1,WeaponComponentList *param_2,char *param_3)
+void __cdecl
+BG_WeaponComponentListSort(char *originalName,WeaponComponentList *componentList,char *outputName)
 
 {
   int iVar1;
   
   std::_Sort<WeaponComponent_*,int,compare_weapon_component_sort>
-            (param_2->components,param_2->components + param_2->numComponents,
-             ((int)(param_2->components + param_2->numComponents) - (int)param_2->components) / 0x2c
-             ,(compare_weapon_component_sort)0x0);
-  BG_WeaponComponentListToName(param_2,param_3,0x40);
-  iVar1 = I_strcmp(param_1,param_3);
+            (componentList->components,componentList->components + componentList->numComponents,
+             ((int)(componentList->components + componentList->numComponents) -
+             (int)componentList->components) / 0x2c,(compare_weapon_component_sort)0x0);
+  BG_WeaponComponentListToName(componentList,outputName,0x40);
+  iVar1 = I_strcmp(originalName,outputName);
   if (iVar1 != 0) {
     Com_PrintWarning(0x11,"Weapon %s attachments in the wrong order in name. Changing to %s\n");
   }
@@ -28,22 +29,22 @@ void __cdecl BG_WeaponComponentListSort(char *param_1,WeaponComponentList *param
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_WeaponNameToComponentList(char *param_1,WeaponComponentList *param_2)
+void __cdecl BG_WeaponNameToComponentList(char *name,WeaponComponentList *componentList)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_c;
-  char *local_8;
+  int charIdx;
+  char *in;
   
-  memset((uchar *)param_2,'\0',0x138);
-  local_8 = param_1;
-  local_c = 0;
+  memset((uchar *)componentList,'\0',0x138);
+  in = name;
+  charIdx = 0;
   do {
-    if (*local_8 == '\0') {
-      param_2->components[param_2->numComponents].name[local_c] = '\0';
-      param_2->numComponents = param_2->numComponents + 1;
-      if ((7 < param_2->numComponents) &&
+    if (*in == '\0') {
+      componentList->components[componentList->numComponents].name[charIdx] = '\0';
+      componentList->numComponents = componentList->numComponents + 1;
+      if ((7 < componentList->numComponents) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_util.cpp",
                                    0x49,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -52,11 +53,11 @@ void __cdecl BG_WeaponNameToComponentList(char *param_1,WeaponComponentList *par
       }
       return;
     }
-    if (*local_8 == '_') {
-      param_2->components[param_2->numComponents].name[local_c] = '\0';
-      param_2->numComponents = param_2->numComponents + 1;
-      local_c = 0;
-      if ((6 < param_2->numComponents) &&
+    if (*in == '_') {
+      componentList->components[componentList->numComponents].name[charIdx] = '\0';
+      componentList->numComponents = componentList->numComponents + 1;
+      charIdx = 0;
+      if ((6 < componentList->numComponents) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_util.cpp",
                                    0x3b,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -65,9 +66,9 @@ void __cdecl BG_WeaponNameToComponentList(char *param_1,WeaponComponentList *par
       }
     }
     else {
-      param_2->components[param_2->numComponents].name[local_c] = *local_8;
-      local_c = local_c + 1;
-      if ((0x1f < local_c) &&
+      componentList->components[componentList->numComponents].name[charIdx] = *in;
+      charIdx = charIdx + 1;
+      if ((0x1f < charIdx) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_util.cpp",
                                    0x41,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -75,7 +76,7 @@ void __cdecl BG_WeaponNameToComponentList(char *param_1,WeaponComponentList *par
         return;
       }
     }
-    local_8 = local_8 + 1;
+    in = in + 1;
   } while( true );
 }
 
@@ -85,27 +86,29 @@ void __cdecl BG_WeaponNameToComponentList(char *param_1,WeaponComponentList *par
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_WeaponComponentListIdentify(WeaponComponentList *param_1)
+void __cdecl BG_WeaponComponentListIdentify(WeaponComponentList *componentList)
 
 {
-  eAttachment eVar1;
-  eAttachmentPoint eVar2;
-  int local_c;
+  eAttachment attachment_00;
+  eAttachmentPoint eVar1;
+  eAttachment attachment;
+  int compIdx;
+  int count;
   
-  for (local_c = 0; local_c < param_1->numComponents; local_c = local_c + 1) {
-    if (local_c == 0) {
-      param_1->components[0].type = WEAPON_COMPONENT_BASE;
+  for (compIdx = 0; compIdx < componentList->numComponents; compIdx = compIdx + 1) {
+    if (compIdx == 0) {
+      componentList->components[0].type = WEAPON_COMPONENT_BASE;
     }
     else {
-      eVar1 = BG_GetAttachmentIndex(param_1->components[local_c].name);
-      if ((eVar1 == ATTACHMENT_NONE) || (eVar1 == ATTACHMENT_COUNT)) {
-        param_1->components[local_c].type = WEAPON_COMPONENT_UNKNOWN;
+      attachment_00 = BG_GetAttachmentIndex(componentList->components[compIdx].name);
+      if ((attachment_00 == ATTACHMENT_NONE) || (attachment_00 == ATTACHMENT_COUNT)) {
+        componentList->components[compIdx].type = WEAPON_COMPONENT_UNKNOWN;
       }
       else {
-        param_1->components[local_c].type = WEAPON_COMPONENT_ATTACHMENT;
-        param_1->components[local_c].attachment = eVar1;
-        eVar2 = BG_GetAttachmentPointIndexFromAttachment(eVar1);
-        param_1->components[local_c].attachmentPoint = eVar2;
+        componentList->components[compIdx].type = WEAPON_COMPONENT_ATTACHMENT;
+        componentList->components[compIdx].attachment = attachment_00;
+        eVar1 = BG_GetAttachmentPointIndexFromAttachment(attachment_00);
+        componentList->components[compIdx].attachmentPoint = eVar1;
       }
     }
   }
@@ -118,34 +121,35 @@ void __cdecl BG_WeaponComponentListIdentify(WeaponComponentList *param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_WeaponComponentListCountAttachments(WeaponComponentList *param_1)
+int __cdecl BG_WeaponComponentListCountAttachments(WeaponComponentList *componentList)
 
 {
   int iVar1;
   AttachmentTableEntry *pAVar2;
-  int local_10;
-  int local_c;
-  int local_8;
+  AttachmentTableEntry *entry;
+  int attachIdx;
+  int compIdx;
+  int count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  compIdx = 0;
   do {
-    if (param_1->numComponents <= local_c) {
-      return local_8;
+    if (componentList->numComponents <= compIdx) {
+      return count;
     }
-    local_10 = 0;
+    attachIdx = 0;
     while( true ) {
       iVar1 = BG_GetWeaponAttachmentCount();
-      if (iVar1 <= local_10) break;
-      pAVar2 = BG_GetAttachmentTableEntry(local_10);
-      iVar1 = I_stricmp((pAVar2->values).referenceName,param_1->components[local_c].name);
+      if (iVar1 <= attachIdx) break;
+      pAVar2 = BG_GetAttachmentTableEntry(attachIdx);
+      iVar1 = I_stricmp((pAVar2->values).referenceName,componentList->components[compIdx].name);
       if (iVar1 == 0) {
-        local_8 = local_8 + 1;
+        count = count + 1;
         break;
       }
-      local_10 = local_10 + 1;
+      attachIdx = attachIdx + 1;
     }
-    local_c = local_c + 1;
+    compIdx = compIdx + 1;
   } while( true );
 }
 
@@ -156,7 +160,9 @@ int __cdecl BG_WeaponComponentListCountAttachments(WeaponComponentList *param_1)
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl
-BG_WeaponComponentListRemove(WeaponComponentList *param_1,WeaponComponentList *param_2,bool param_3)
+BG_WeaponComponentListRemove
+          (WeaponComponentList *componentListIn,WeaponComponentList *componentListOut,
+          bool lookingForAttachements)
 
 {
   char cVar1;
@@ -164,41 +170,43 @@ BG_WeaponComponentListRemove(WeaponComponentList *param_1,WeaponComponentList *p
   AttachmentTableEntry *pAVar3;
   WeaponComponent *local_20;
   WeaponComponent *local_1c;
-  int local_14;
-  int local_10;
-  bool local_5;
+  AttachmentTableEntry *entry;
+  int attachIdx;
+  int compIdx;
+  int count;
+  bool found;
   
-  memset((uchar *)param_2,'\0',0x138);
-  local_10 = 0;
+  memset((uchar *)componentListOut,'\0',0x138);
+  compIdx = 0;
   do {
-    if (param_1->numComponents <= local_10) {
+    if (componentListIn->numComponents <= compIdx) {
       return;
     }
-    local_5 = false;
-    local_14 = 0;
+    found = false;
+    attachIdx = 0;
     while( true ) {
       iVar2 = BG_GetWeaponAttachmentCount();
-      if (iVar2 <= local_14) break;
-      pAVar3 = BG_GetAttachmentTableEntry(local_14);
-      iVar2 = I_stricmp((pAVar3->values).referenceName,param_1->components[local_10].name);
+      if (iVar2 <= attachIdx) break;
+      pAVar3 = BG_GetAttachmentTableEntry(attachIdx);
+      iVar2 = I_stricmp((pAVar3->values).referenceName,componentListIn->components[compIdx].name);
       if (iVar2 == 0) {
-        local_5 = true;
+        found = true;
         break;
       }
-      local_14 = local_14 + 1;
+      attachIdx = attachIdx + 1;
     }
-    if (local_5 == param_3) {
-      local_1c = param_1->components + local_10;
-      local_20 = param_2->components + param_2->numComponents;
+    if (found == lookingForAttachements) {
+      local_1c = componentListIn->components + compIdx;
+      local_20 = componentListOut->components + componentListOut->numComponents;
       do {
         cVar1 = local_1c->name[0];
         local_20->name[0] = cVar1;
         local_1c = (WeaponComponent *)(local_1c->name + 1);
         local_20 = (WeaponComponent *)(local_20->name + 1);
       } while (cVar1 != '\0');
-      param_2->numComponents = param_2->numComponents + 1;
+      componentListOut->numComponents = componentListOut->numComponents + 1;
     }
-    local_10 = local_10 + 1;
+    compIdx = compIdx + 1;
   } while( true );
 }
 
@@ -210,10 +218,10 @@ BG_WeaponComponentListRemove(WeaponComponentList *param_1,WeaponComponentList *p
 
 void __cdecl
 BG_WeaponComponentListRemoveAllAttachments
-          (WeaponComponentList *param_1,WeaponComponentList *param_2)
+          (WeaponComponentList *componentListIn,WeaponComponentList *componentListOut)
 
 {
-  BG_WeaponComponentListRemove(param_1,param_2,false);
+  BG_WeaponComponentListRemove(componentListIn,componentListOut,false);
   return;
 }
 
@@ -225,54 +233,55 @@ BG_WeaponComponentListRemoveAllAttachments
 
 void __cdecl
 BG_WeaponComponentListNthAttachment
-          (WeaponComponentList *param_1,int param_2,WeaponComponentList *param_3)
+          (WeaponComponentList *componentListIn,int nth,WeaponComponentList *componentListOut)
 
 {
   char cVar1;
   bool bVar2;
   int iVar3;
   AttachmentTableEntry *pAVar4;
-  WeaponComponent *pWVar5;
+  WeaponComponent *s1;
   WeaponComponent *local_1c;
   WeaponComponent *local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  int attachIdx;
+  int compIdx;
+  int count;
+  bool found;
   
-  local_c = 0;
-  memset((uchar *)param_3,'\0',0x138);
-  local_10 = 0;
+  count = 0;
+  memset((uchar *)componentListOut,'\0',0x138);
+  compIdx = 0;
   do {
-    if (param_1->numComponents <= local_10) {
+    if (componentListIn->numComponents <= compIdx) {
       return;
     }
     bVar2 = false;
-    local_14 = 0;
+    attachIdx = 0;
     while( true ) {
       iVar3 = BG_GetWeaponAttachmentCount();
-      if (iVar3 <= local_14) break;
-      pWVar5 = param_1->components + local_10;
-      pAVar4 = BG_GetAttachmentTableEntry(local_14);
-      iVar3 = I_stricmp((pAVar4->values).referenceName,pWVar5->name);
+      if (iVar3 <= attachIdx) break;
+      s1 = componentListIn->components + compIdx;
+      pAVar4 = BG_GetAttachmentTableEntry(attachIdx);
+      iVar3 = I_stricmp((pAVar4->values).referenceName,s1->name);
       if (iVar3 == 0) {
         bVar2 = true;
-        local_c = local_c + 1;
+        count = count + 1;
         break;
       }
-      local_14 = local_14 + 1;
+      attachIdx = attachIdx + 1;
     }
-    if ((!bVar2) || (local_c == param_2)) {
-      local_18 = param_1->components + local_10;
-      local_1c = param_3->components + param_3->numComponents;
+    if ((!bVar2) || (count == nth)) {
+      local_18 = componentListIn->components + compIdx;
+      local_1c = componentListOut->components + componentListOut->numComponents;
       do {
         cVar1 = local_18->name[0];
         local_1c->name[0] = cVar1;
         local_18 = (WeaponComponent *)(local_18->name + 1);
         local_1c = (WeaponComponent *)(local_1c->name + 1);
       } while (cVar1 != '\0');
-      param_3->numComponents = param_3->numComponents + 1;
+      componentListOut->numComponents = componentListOut->numComponents + 1;
     }
-    local_10 = local_10 + 1;
+    compIdx = compIdx + 1;
   } while( true );
 }
 
@@ -282,17 +291,17 @@ BG_WeaponComponentListNthAttachment
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_WeaponComponentListToName(WeaponComponentList *param_1,char *param_2,int param_3)
+void __cdecl BG_WeaponComponentListToName(WeaponComponentList *componentList,char *name,int size)
 
 {
-  int local_8;
+  int compIdx;
   
-  *param_2 = '\0';
-  if (param_1->numComponents != 0) {
-    I_strncat(param_2,param_3,param_1->components[0].name);
-    for (local_8 = 1; local_8 < param_1->numComponents; local_8 = local_8 + 1) {
-      I_strncat(param_2,param_3,"_");
-      I_strncat(param_2,param_3,param_1->components[local_8].name);
+  *name = '\0';
+  if (componentList->numComponents != 0) {
+    I_strncat(name,size,componentList->components[0].name);
+    for (compIdx = 1; compIdx < componentList->numComponents; compIdx = compIdx + 1) {
+      I_strncat(name,size,"_");
+      I_strncat(name,size,componentList->components[compIdx].name);
     }
   }
   return;
@@ -306,40 +315,40 @@ void __cdecl BG_WeaponComponentListToName(WeaponComponentList *param_1,char *par
 
 void __cdecl
 std::_Push_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>
-          (WeaponComponent *param_1,int param_2,int param_3,WeaponComponent param_4,
-          compare_weapon_component_sort param_5)
+          (WeaponComponent *_First,int _Hole,int _Top,WeaponComponent _Val,
+          compare_weapon_component_sort _Pred)
 
 {
   bool bVar1;
   int iVar2;
   WeaponComponent *pWVar3;
   WeaponComponent *pWVar4;
-  int local_c;
+  int _Idx;
   
-  while (local_c = (param_2 + -1) / 2, param_3 < param_2) {
-    if (param_1[local_c].type == param_4.type) {
-      if (param_1[local_c].type == WEAPON_COMPONENT_ATTACHMENT) {
-        bVar1 = (int)param_1[local_c].attachmentPoint < (int)param_4.attachmentPoint;
+  while (_Idx = (_Hole + -1) / 2, _Top < _Hole) {
+    if (_First[_Idx].type == _Val.type) {
+      if (_First[_Idx].type == WEAPON_COMPONENT_ATTACHMENT) {
+        bVar1 = (int)_First[_Idx].attachmentPoint < (int)_Val.attachmentPoint;
       }
       else {
         bVar1 = true;
       }
     }
     else {
-      bVar1 = (int)param_4.type < (int)param_1[local_c].type;
+      bVar1 = (int)_Val.type < (int)_First[_Idx].type;
     }
     if (!bVar1) break;
-    pWVar3 = param_1 + local_c;
-    pWVar4 = param_1 + param_2;
+    pWVar3 = _First + _Idx;
+    pWVar4 = _First + _Hole;
     for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
       *(undefined4 *)pWVar4->name = *(undefined4 *)pWVar3->name;
       pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
       pWVar4 = (WeaponComponent *)(pWVar4->name + 4);
     }
-    param_2 = local_c;
+    _Hole = _Idx;
   }
-  pWVar3 = &param_4;
-  pWVar4 = param_1 + param_2;
+  pWVar3 = &_Val;
+  pWVar4 = _First + _Hole;
   for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
     *(undefined4 *)pWVar4->name = *(undefined4 *)pWVar3->name;
     pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
@@ -356,67 +365,68 @@ std::_Push_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_s
 
 void __cdecl
 std::_Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>
-          (WeaponComponent *param_1,int param_2,int param_3,WeaponComponent param_4,
-          compare_weapon_component_sort param_5)
+          (WeaponComponent *_First,int _Hole,int _Bottom,WeaponComponent _Val,
+          compare_weapon_component_sort _Pred)
 
 {
   bool bVar1;
+  int _Top_00;
   int iVar2;
   int iVar3;
-  int iVar4;
-  uint uVar5;
+  uint uVar4;
+  WeaponComponent *pWVar5;
   WeaponComponent *pWVar6;
-  WeaponComponent *pWVar7;
-  undefined4 *puVar8;
+  undefined4 *puVar7;
   WeaponComponent in_stack_ffffff9c;
-  int local_10;
+  int _Idx;
+  int _Top;
   
-  iVar2 = param_2;
-  while (iVar4 = param_2 * 2, local_10 = iVar4 + 2, local_10 < param_3) {
-    iVar3 = iVar4 + 1;
-    if (param_1[local_10].type == param_1[iVar3].type) {
-      if (param_1[local_10].type == WEAPON_COMPONENT_ATTACHMENT) {
-        bVar1 = (int)param_1[local_10].attachmentPoint < (int)param_1[iVar3].attachmentPoint;
+  _Top_00 = _Hole;
+  while (iVar3 = _Hole * 2, _Idx = iVar3 + 2, _Idx < _Bottom) {
+    iVar2 = iVar3 + 1;
+    if (_First[_Idx].type == _First[iVar2].type) {
+      if (_First[_Idx].type == WEAPON_COMPONENT_ATTACHMENT) {
+        bVar1 = (int)_First[_Idx].attachmentPoint < (int)_First[iVar2].attachmentPoint;
       }
       else {
         bVar1 = true;
       }
     }
     else {
-      bVar1 = (int)param_1[iVar3].type < (int)param_1[local_10].type;
+      bVar1 = (int)_First[iVar2].type < (int)_First[_Idx].type;
     }
     if (bVar1) {
-      local_10 = iVar4 + 1;
+      _Idx = iVar3 + 1;
     }
-    pWVar6 = param_1 + local_10;
-    pWVar7 = param_1 + param_2;
-    for (iVar4 = 0xb; iVar4 != 0; iVar4 = iVar4 + -1) {
-      *(undefined4 *)pWVar7->name = *(undefined4 *)pWVar6->name;
+    pWVar5 = _First + _Idx;
+    pWVar6 = _First + _Hole;
+    for (iVar3 = 0xb; iVar3 != 0; iVar3 = iVar3 + -1) {
+      *(undefined4 *)pWVar6->name = *(undefined4 *)pWVar5->name;
+      pWVar5 = (WeaponComponent *)(pWVar5->name + 4);
       pWVar6 = (WeaponComponent *)(pWVar6->name + 4);
-      pWVar7 = (WeaponComponent *)(pWVar7->name + 4);
     }
-    param_2 = local_10;
+    _Hole = _Idx;
   }
-  if (local_10 == param_3) {
-    pWVar6 = param_1 + param_3 + -1;
-    pWVar7 = param_1 + param_2;
-    for (iVar4 = 0xb; iVar4 != 0; iVar4 = iVar4 + -1) {
-      *(undefined4 *)pWVar7->name = *(undefined4 *)pWVar6->name;
+  if (_Idx == _Bottom) {
+    pWVar5 = _First + _Bottom + -1;
+    pWVar6 = _First + _Hole;
+    for (iVar3 = 0xb; iVar3 != 0; iVar3 = iVar3 + -1) {
+      *(undefined4 *)pWVar6->name = *(undefined4 *)pWVar5->name;
+      pWVar5 = (WeaponComponent *)(pWVar5->name + 4);
       pWVar6 = (WeaponComponent *)(pWVar6->name + 4);
-      pWVar7 = (WeaponComponent *)(pWVar7->name + 4);
     }
-    param_2 = param_3 + -1;
+    _Hole = _Bottom + -1;
   }
-  uVar5 = (uint)(byte)param_5;
-  pWVar6 = &param_4;
-  puVar8 = (undefined4 *)&stack0xffffff9c;
-  for (iVar4 = 0xb; iVar4 != 0; iVar4 = iVar4 + -1) {
-    *puVar8 = *(undefined4 *)pWVar6->name;
-    pWVar6 = (WeaponComponent *)(pWVar6->name + 4);
-    puVar8 = puVar8 + 1;
+  uVar4 = (uint)(byte)_Pred;
+  pWVar5 = &_Val;
+  puVar7 = (undefined4 *)&stack0xffffff9c;
+  for (iVar3 = 0xb; iVar3 != 0; iVar3 = iVar3 + -1) {
+    *puVar7 = *(undefined4 *)pWVar5->name;
+    pWVar5 = (WeaponComponent *)(pWVar5->name + 4);
+    puVar7 = puVar7 + 1;
   }
   _Push_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>
-            (param_1,param_2,iVar2,in_stack_ffffff9c,SUB41(uVar5,0));
+            (_First,_Hole,_Top_00,in_stack_ffffff9c,SUB41(uVar4,0));
   return;
 }
 
@@ -428,7 +438,7 @@ std::_Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component
 
 void __cdecl
 std::make_heap<WeaponComponent_*,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,compare_weapon_component_sort param_3)
+          (WeaponComponent *_First,WeaponComponent *_Last,compare_weapon_component_sort _Pred)
 
 {
   uint uVar1;
@@ -442,20 +452,20 @@ std::make_heap<WeaponComponent_*,compare_weapon_component_sort>
   int local_14;
   WeaponComponent *local_c;
   
-  if (1 < ((int)param_2 - (int)param_1) / 0x2c) {
-    local_c = param_2;
-    local_14 = ((int)param_2 - (int)param_1) / 0x2c;
+  if (1 < ((int)_Last - (int)_First) / 0x2c) {
+    local_c = _Last;
+    local_14 = ((int)_Last - (int)_First) / 0x2c;
     local_18 = local_14 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
-      pWVar3 = param_1 + local_18;
+      pWVar3 = _First + local_18;
       puVar4 = local_44;
       for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
         *puVar4 = *(undefined4 *)pWVar3->name;
         pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
         puVar4 = puVar4 + 1;
       }
-      uVar1 = (uint)(byte)param_3;
+      uVar1 = (uint)(byte)_Pred;
       puVar4 = local_44;
       puVar5 = (undefined4 *)&stack0xffffff58;
       for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
@@ -464,7 +474,7 @@ std::make_heap<WeaponComponent_*,compare_weapon_component_sort>
         puVar5 = puVar5 + 1;
       }
       _Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>
-                (param_1,local_18,local_14,in_stack_ffffff58,SUB41(uVar1,0));
+                (_First,local_18,local_14,in_stack_ffffff58,SUB41(uVar1,0));
     }
   }
   return;
@@ -478,7 +488,7 @@ std::make_heap<WeaponComponent_*,compare_weapon_component_sort>
 
 void __cdecl
 std::_Sort_heap<WeaponComponent_*,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,compare_weapon_component_sort param_3)
+          (WeaponComponent *_First,WeaponComponent *_Last,compare_weapon_component_sort _Pred)
 
 {
   int iVar1;
@@ -491,24 +501,24 @@ std::_Sort_heap<WeaponComponent_*,compare_weapon_component_sort>
   undefined4 local_3c [12];
   WeaponComponent *local_c;
   
-  for (; 1 < ((int)param_2 - (int)param_1) / 0x2c; param_2 = param_2 + -1) {
-    if (1 < ((int)param_2 - (int)param_1) / 0x2c) {
-      local_c = param_2;
-      pWVar3 = param_2 + -1;
+  for (; 1 < ((int)_Last - (int)_First) / 0x2c; _Last = _Last + -1) {
+    if (1 < ((int)_Last - (int)_First) / 0x2c) {
+      local_c = _Last;
+      pWVar3 = _Last + -1;
       puVar4 = local_3c;
       for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
         *puVar4 = *(undefined4 *)pWVar3->name;
         pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
         puVar4 = puVar4 + 1;
       }
-      pWVar3 = param_1;
+      pWVar3 = _First;
       pWVar5 = local_c + -1;
       for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
         *(undefined4 *)pWVar5->name = *(undefined4 *)pWVar3->name;
         pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
         pWVar5 = (WeaponComponent *)(pWVar5->name + 4);
       }
-      uVar2 = (uint)(byte)param_3;
+      uVar2 = (uint)(byte)_Pred;
       puVar4 = local_3c;
       puVar6 = (undefined4 *)&stack0xffffff54;
       for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -517,7 +527,7 @@ std::_Sort_heap<WeaponComponent_*,compare_weapon_component_sort>
         puVar6 = puVar6 + 1;
       }
       _Adjust_heap<WeaponComponent_*,int,WeaponComponent,compare_weapon_component_sort>
-                (param_1,0,((int)local_c + (-0x2c - (int)param_1)) / 0x2c,in_stack_ffffff54,
+                (_First,0,((int)local_c + (-0x2c - (int)_First)) / 0x2c,in_stack_ffffff54,
                  SUB41(uVar2,0));
     }
   }
@@ -533,8 +543,8 @@ std::_Sort_heap<WeaponComponent_*,compare_weapon_component_sort>
 
 void __cdecl
 std::_Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComponent>
-          (WeaponComponent *param_1,WeaponComponent *param_2,compare_weapon_component_sort param_3,
-          WeaponComponent *param_4)
+          (WeaponComponent *_First,WeaponComponent *_Last,compare_weapon_component_sort _Pred,
+          WeaponComponent *__formal)
 
 {
   bool bVar1;
@@ -542,44 +552,44 @@ std::_Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComp
   WeaponComponent *pWVar3;
   undefined4 *puVar4;
   WeaponComponent *pWVar5;
-  undefined4 local_3c [8];
+  WeaponComponent *_First1;
+  undefined4 _Val [8];
   eWeaponComponentType local_1c;
   int local_14;
   uint local_10;
-  WeaponComponent *local_c;
-  WeaponComponent *local_8;
+  WeaponComponent *_Next1;
+  WeaponComponent *_Next;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 != param_2) {
-    local_8 = param_1;
+  if (_First != _Last) {
+    _Next = _First;
     while( true ) {
-      local_8 = local_8 + 1;
-      if (local_8 == param_2) break;
-      local_c = local_8;
-      pWVar3 = local_8;
-      puVar4 = local_3c;
+      _Next = _Next + 1;
+      if (_Next == _Last) break;
+      _Next1 = _Next;
+      pWVar3 = _Next;
+      puVar4 = _Val;
       for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
         *puVar4 = *(undefined4 *)pWVar3->name;
         pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
         puVar4 = puVar4 + 1;
       }
-      if (local_1c == param_1->type) {
+      if (local_1c == _First->type) {
         if (local_1c == WEAPON_COMPONENT_ATTACHMENT) {
-          bVar1 = local_14 < (int)param_1->attachmentPoint;
+          bVar1 = local_14 < (int)_First->attachmentPoint;
         }
         else {
           bVar1 = true;
         }
       }
       else {
-        bVar1 = (int)param_1->type < (int)local_1c;
+        bVar1 = (int)_First->type < (int)local_1c;
       }
       if (bVar1) {
-        local_c = local_c + 1;
-        stdext::unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>
-                  (param_1,local_8,local_c);
-        puVar4 = local_3c;
-        pWVar3 = param_1;
+        _Next1 = _Next1 + 1;
+        stdext::unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>(_First,_Next,_Next1);
+        puVar4 = _Val;
+        pWVar3 = _First;
         for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
           *(undefined4 *)pWVar3->name = *puVar4;
           puVar4 = puVar4 + 1;
@@ -588,32 +598,32 @@ std::_Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComp
       }
       else {
         while( true ) {
-          if (local_1c == local_c[-1].type) {
+          if (local_1c == _Next1[-1].type) {
             if (local_1c == WEAPON_COMPONENT_ATTACHMENT) {
-              bVar1 = local_14 < (int)local_c[-1].attachmentPoint;
+              bVar1 = local_14 < (int)_Next1[-1].attachmentPoint;
             }
             else {
               bVar1 = true;
             }
           }
           else {
-            bVar1 = (int)local_c[-1].type < (int)local_1c;
+            bVar1 = (int)_Next1[-1].type < (int)local_1c;
           }
           if (!bVar1) break;
-          pWVar3 = local_c + -1;
-          pWVar5 = local_c;
+          pWVar3 = _Next1 + -1;
+          pWVar5 = _Next1;
           for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
             *(undefined4 *)pWVar5->name = *(undefined4 *)pWVar3->name;
             pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
             pWVar5 = (WeaponComponent *)(pWVar5->name + 4);
           }
-          local_c = local_c + -1;
+          _Next1 = _Next1 + -1;
         }
-        puVar4 = local_3c;
+        puVar4 = _Val;
         for (iVar2 = 0xb; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *(undefined4 *)local_c->name = *puVar4;
+          *(undefined4 *)_Next1->name = *puVar4;
           puVar4 = puVar4 + 1;
-          local_c = (WeaponComponent *)(local_c->name + 4);
+          _Next1 = (WeaponComponent *)(_Next1->name + 4);
         }
       }
     }
@@ -630,8 +640,8 @@ std::_Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComp
 
 void __cdecl
 std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,WeaponComponent *param_3,
-          compare_weapon_component_sort param_4)
+          (WeaponComponent *_First,WeaponComponent *_Mid,WeaponComponent *_Last,
+          compare_weapon_component_sort _Pred)
 
 {
   int iVar1;
@@ -647,9 +657,9 @@ std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
   bool local_5;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->type == param_1->type) {
-    if (param_2->type == WEAPON_COMPONENT_ATTACHMENT) {
-      local_5 = (int)param_2->attachmentPoint < (int)param_1->attachmentPoint;
+  if (_Mid->type == _First->type) {
+    if (_Mid->type == WEAPON_COMPONENT_ATTACHMENT) {
+      local_5 = (int)_Mid->attachmentPoint < (int)_First->attachmentPoint;
     }
     else {
       local_5 = true;
@@ -657,34 +667,34 @@ std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
     }
   }
   else {
-    local_5 = (int)param_1->type < (int)param_2->type;
+    local_5 = (int)_First->type < (int)_Mid->type;
   }
-  if ((local_5) && (param_2 != param_1)) {
-    pWVar2 = param_2;
+  if ((local_5) && (_Mid != _First)) {
+    pWVar2 = _Mid;
     puVar3 = local_38;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar3 = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
       puVar3 = puVar3 + 1;
     }
-    pWVar2 = param_1;
-    pWVar4 = param_2;
+    pWVar2 = _First;
+    pWVar4 = _Mid;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *(undefined4 *)pWVar4->name = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
       pWVar4 = (WeaponComponent *)(pWVar4->name + 4);
     }
     puVar3 = local_38;
-    pWVar2 = param_1;
+    pWVar2 = _First;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *(undefined4 *)pWVar2->name = *puVar3;
       puVar3 = puVar3 + 1;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
     }
   }
-  if (param_3->type == param_2->type) {
-    if (param_3->type == WEAPON_COMPONENT_ATTACHMENT) {
-      local_39 = (int)param_3->attachmentPoint < (int)param_2->attachmentPoint;
+  if (_Last->type == _Mid->type) {
+    if (_Last->type == WEAPON_COMPONENT_ATTACHMENT) {
+      local_39 = (int)_Last->attachmentPoint < (int)_Mid->attachmentPoint;
     }
     else {
       local_39 = true;
@@ -692,33 +702,33 @@ std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
     }
   }
   else {
-    local_39 = (int)param_2->type < (int)param_3->type;
+    local_39 = (int)_Mid->type < (int)_Last->type;
   }
-  if ((local_39) && (param_3 != param_2)) {
-    pWVar2 = param_3;
+  if ((local_39) && (_Last != _Mid)) {
+    pWVar2 = _Last;
     puVar3 = local_6c;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar3 = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
       puVar3 = puVar3 + 1;
     }
-    pWVar2 = param_2;
+    pWVar2 = _Mid;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)param_3->name = *(undefined4 *)pWVar2->name;
+      *(undefined4 *)_Last->name = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
-      param_3 = (WeaponComponent *)(param_3->name + 4);
+      _Last = (WeaponComponent *)(_Last->name + 4);
     }
     puVar3 = local_6c;
-    pWVar2 = param_2;
+    pWVar2 = _Mid;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *(undefined4 *)pWVar2->name = *puVar3;
       puVar3 = puVar3 + 1;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
     }
   }
-  if (param_2->type == param_1->type) {
-    if (param_2->type == WEAPON_COMPONENT_ATTACHMENT) {
-      local_6d = (int)param_2->attachmentPoint < (int)param_1->attachmentPoint;
+  if (_Mid->type == _First->type) {
+    if (_Mid->type == WEAPON_COMPONENT_ATTACHMENT) {
+      local_6d = (int)_Mid->attachmentPoint < (int)_First->attachmentPoint;
     }
     else {
       local_6d = true;
@@ -726,27 +736,27 @@ std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
     }
   }
   else {
-    local_6d = (int)param_1->type < (int)param_2->type;
+    local_6d = (int)_First->type < (int)_Mid->type;
   }
-  if ((local_6d) && (param_2 != param_1)) {
-    pWVar2 = param_2;
+  if ((local_6d) && (_Mid != _First)) {
+    pWVar2 = _Mid;
     puVar3 = local_a0;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar3 = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
       puVar3 = puVar3 + 1;
     }
-    pWVar2 = param_1;
+    pWVar2 = _First;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)param_2->name = *(undefined4 *)pWVar2->name;
+      *(undefined4 *)_Mid->name = *(undefined4 *)pWVar2->name;
       pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
-      param_2 = (WeaponComponent *)(param_2->name + 4);
+      _Mid = (WeaponComponent *)(_Mid->name + 4);
     }
     puVar3 = local_a0;
     for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined4 *)param_1->name = *puVar3;
+      *(undefined4 *)_First->name = *puVar3;
       puVar3 = puVar3 + 1;
-      param_1 = (WeaponComponent *)(param_1->name + 4);
+      _First = (WeaponComponent *)(_First->name + 4);
     }
   }
   return;
@@ -760,26 +770,26 @@ std::_Med3<WeaponComponent_*,compare_weapon_component_sort>
 
 void __cdecl
 std::_Median<WeaponComponent_*,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,WeaponComponent *param_3,
-          compare_weapon_component_sort param_4)
+          (WeaponComponent *_First,WeaponComponent *_Mid,WeaponComponent *_Last,
+          compare_weapon_component_sort _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if (((int)param_3 - (int)param_1) / 0x2c < 0x29) {
-    _Med3<WeaponComponent_*,compare_weapon_component_sort>(param_1,param_2,param_3,param_4);
+  if (((int)_Last - (int)_First) / 0x2c < 0x29) {
+    _Med3<WeaponComponent_*,compare_weapon_component_sort>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1) / 0x2c + 1;
+    iVar1 = ((int)_Last - (int)_First) / 0x2c + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     _Med3<WeaponComponent_*,compare_weapon_component_sort>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
+              (_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<WeaponComponent_*,compare_weapon_component_sort>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
     _Med3<WeaponComponent_*,compare_weapon_component_sort>
-              (param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
-    _Med3<WeaponComponent_*,compare_weapon_component_sort>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<WeaponComponent_*,compare_weapon_component_sort>
-              (param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+              (_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
+    _Med3<WeaponComponent_*,compare_weapon_component_sort>(_First + iVar1,_Mid,_Last + -iVar1,_Pred)
+    ;
   }
   return;
 }
@@ -793,7 +803,7 @@ std::_Median<WeaponComponent_*,compare_weapon_component_sort>
 
 pair<WeaponComponent_*,WeaponComponent_*> __cdecl
 std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,compare_weapon_component_sort param_3)
+          (WeaponComponent *param_1,WeaponComponent *_First,compare_weapon_component_sort _Last)
 
 {
   int iVar1;
@@ -834,22 +844,22 @@ std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
   WeaponComponent *local_28;
   bool local_21;
   WeaponComponent *local_20;
-  WeaponComponent *local_18;
-  WeaponComponent *local_14;
-  WeaponComponent *local_10;
-  WeaponComponent *local_c;
-  WeaponComponent *local_8;
+  WeaponComponent *_Plast;
+  WeaponComponent *_Glast;
+  WeaponComponent *_Pfirst;
+  WeaponComponent *_Gfirst;
+  WeaponComponent *_Mid;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = param_2 + ((int)_param_3 - (int)param_2) / 0x58;
+  _Mid = _First + ((int)__Last - (int)_First) / 0x58;
   _Median<WeaponComponent_*,compare_weapon_component_sort>
-            (param_2,local_8,_param_3 + -1,in_stack_00000010);
-  local_18 = local_8 + 1;
-  for (local_10 = local_8; param_2 < local_10; local_10 = local_10 + -1) {
-    local_20 = local_10 + -1;
-    if (local_10[-1].type == local_10->type) {
-      if (local_10[-1].type == WEAPON_COMPONENT_ATTACHMENT) {
-        local_21 = (int)local_10[-1].attachmentPoint < (int)local_10->attachmentPoint;
+            (_First,_Mid,__Last + -1,in_stack_00000010);
+  _Plast = _Mid + 1;
+  for (_Pfirst = _Mid; _First < _Pfirst; _Pfirst = _Pfirst + -1) {
+    local_20 = _Pfirst + -1;
+    if (_Pfirst[-1].type == _Pfirst->type) {
+      if (_Pfirst[-1].type == WEAPON_COMPONENT_ATTACHMENT) {
+        local_21 = (int)_Pfirst[-1].attachmentPoint < (int)_Pfirst->attachmentPoint;
       }
       else {
         local_21 = true;
@@ -857,13 +867,13 @@ std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
       }
     }
     else {
-      local_21 = (int)local_10->type < (int)local_10[-1].type;
+      local_21 = (int)_Pfirst->type < (int)_Pfirst[-1].type;
     }
     if (local_21) break;
-    local_28 = local_10 + -1;
-    if (local_10->type == local_10[-1].type) {
-      if (local_10->type == WEAPON_COMPONENT_ATTACHMENT) {
-        local_29 = (int)local_10->attachmentPoint < (int)local_10[-1].attachmentPoint;
+    local_28 = _Pfirst + -1;
+    if (_Pfirst->type == _Pfirst[-1].type) {
+      if (_Pfirst->type == WEAPON_COMPONENT_ATTACHMENT) {
+        local_29 = (int)_Pfirst->attachmentPoint < (int)_Pfirst[-1].attachmentPoint;
       }
       else {
         local_29 = true;
@@ -871,15 +881,15 @@ std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
       }
     }
     else {
-      local_29 = (int)local_10[-1].type < (int)local_10->type;
+      local_29 = (int)_Pfirst[-1].type < (int)_Pfirst->type;
     }
     if (local_29) break;
   }
   do {
-    if (_param_3 <= local_18) break;
-    if (local_18->type == local_10->type) {
-      if (local_18->type == WEAPON_COMPONENT_ATTACHMENT) {
-        local_2a = (int)local_18->attachmentPoint < (int)local_10->attachmentPoint;
+    if (__Last <= _Plast) break;
+    if (_Plast->type == _Pfirst->type) {
+      if (_Plast->type == WEAPON_COMPONENT_ATTACHMENT) {
+        local_2a = (int)_Plast->attachmentPoint < (int)_Pfirst->attachmentPoint;
       }
       else {
         local_2a = true;
@@ -887,12 +897,12 @@ std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
       }
     }
     else {
-      local_2a = (int)local_10->type < (int)local_18->type;
+      local_2a = (int)_Pfirst->type < (int)_Plast->type;
     }
     if (local_2a) break;
-    if (local_10->type == local_18->type) {
-      if (local_10->type == WEAPON_COMPONENT_ATTACHMENT) {
-        local_2b = (int)local_10->attachmentPoint < (int)local_18->attachmentPoint;
+    if (_Pfirst->type == _Plast->type) {
+      if (_Pfirst->type == WEAPON_COMPONENT_ATTACHMENT) {
+        local_2b = (int)_Pfirst->attachmentPoint < (int)_Plast->attachmentPoint;
       }
       else {
         local_2b = true;
@@ -900,22 +910,22 @@ std::_Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
       }
     }
     else {
-      local_2b = (int)local_18->type < (int)local_10->type;
+      local_2b = (int)_Plast->type < (int)_Pfirst->type;
     }
     if (local_2b) break;
-    local_18 = local_18 + 1;
+    _Plast = _Plast + 1;
   } while( true );
-  local_c = local_18;
-  local_14 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
   do {
-    while (pWVar3 = local_18, _param_3 <= local_c) {
+    while (pWVar3 = _Plast, __Last <= _Gfirst) {
 LAB_00463546:
-      for (; pWVar2 = local_c, pWVar4 = local_10, pWVar3 = local_18, param_2 < local_14;
-          local_14 = local_14 + -1) {
-        local_68 = local_14 + -1;
-        if (local_14[-1].type == local_10->type) {
-          if (local_14[-1].type == WEAPON_COMPONENT_ATTACHMENT) {
-            local_69 = (int)local_14[-1].attachmentPoint < (int)local_10->attachmentPoint;
+      for (; pWVar2 = _Gfirst, pWVar4 = _Pfirst, pWVar3 = _Plast, _First < _Glast;
+          _Glast = _Glast + -1) {
+        local_68 = _Glast + -1;
+        if (_Glast[-1].type == _Pfirst->type) {
+          if (_Glast[-1].type == WEAPON_COMPONENT_ATTACHMENT) {
+            local_69 = (int)_Glast[-1].attachmentPoint < (int)_Pfirst->attachmentPoint;
           }
           else {
             local_69 = true;
@@ -923,13 +933,13 @@ LAB_00463546:
           }
         }
         else {
-          local_69 = (int)local_10->type < (int)local_14[-1].type;
+          local_69 = (int)_Pfirst->type < (int)_Glast[-1].type;
         }
         if (!local_69) {
-          local_70 = local_14 + -1;
-          if (local_10->type == local_14[-1].type) {
-            if (local_10->type == WEAPON_COMPONENT_ATTACHMENT) {
-              local_71 = (int)local_10->attachmentPoint < (int)local_14[-1].attachmentPoint;
+          local_70 = _Glast + -1;
+          if (_Pfirst->type == _Glast[-1].type) {
+            if (_Pfirst->type == WEAPON_COMPONENT_ATTACHMENT) {
+              local_71 = (int)_Pfirst->attachmentPoint < (int)_Glast[-1].attachmentPoint;
             }
             else {
               local_71 = true;
@@ -937,12 +947,12 @@ LAB_00463546:
             }
           }
           else {
-            local_71 = (int)local_14[-1].type < (int)local_10->type;
+            local_71 = (int)_Glast[-1].type < (int)_Pfirst->type;
           }
           if (local_71) break;
-          local_a8 = local_10 + -1;
-          local_10 = local_a8;
-          local_ac = local_14 + -1;
+          local_a8 = _Pfirst + -1;
+          _Pfirst = local_a8;
+          local_ac = _Glast + -1;
           if (local_a8 != local_ac) {
             pWVar3 = local_a8;
             puVar5 = local_a4;
@@ -966,19 +976,19 @@ LAB_00463546:
           }
         }
       }
-      if ((local_14 == param_2) && (local_c == _param_3)) {
-        *(WeaponComponent **)param_1->name = local_10;
-        *(WeaponComponent **)(param_1->name + 4) = local_18;
+      if ((_Glast == _First) && (_Gfirst == __Last)) {
+        *(WeaponComponent **)param_1->name = _Pfirst;
+        *(WeaponComponent **)(param_1->name + 4) = _Plast;
         pVar6.second = param_1;
         pVar6.first = param_1;
         return pVar6;
       }
-      if (local_14 == param_2) {
-        if (local_18 != local_c) {
-          local_e4 = local_18;
-          local_e0 = local_10;
-          if (local_10 != local_18) {
-            pWVar2 = local_10;
+      if (_Glast == _First) {
+        if (_Plast != _Gfirst) {
+          local_e4 = _Plast;
+          local_e0 = _Pfirst;
+          if (_Pfirst != _Plast) {
+            pWVar2 = _Pfirst;
             puVar5 = local_dc;
             for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
               *puVar5 = *(undefined4 *)pWVar2->name;
@@ -999,13 +1009,13 @@ LAB_00463546:
             }
           }
         }
-        pWVar4 = local_c;
-        pWVar3 = local_10;
-        local_18 = local_18 + 1;
-        local_11c = local_c;
-        local_118 = local_10;
-        local_10 = local_10 + 1;
-        local_c = local_c + 1;
+        pWVar4 = _Gfirst;
+        pWVar3 = _Pfirst;
+        _Plast = _Plast + 1;
+        local_11c = _Gfirst;
+        local_118 = _Pfirst;
+        _Pfirst = _Pfirst + 1;
+        _Gfirst = _Gfirst + 1;
         if (pWVar3 != pWVar4) {
           pWVar2 = pWVar3;
           puVar5 = local_114;
@@ -1028,12 +1038,12 @@ LAB_00463546:
           }
         }
       }
-      else if (local_c == _param_3) {
-        local_14 = local_14 + -1;
-        local_150 = local_10 + -1;
-        local_10 = local_150;
-        if ((local_14 != local_150) && (local_14 != local_150)) {
-          pWVar3 = local_14;
+      else if (_Gfirst == __Last) {
+        _Glast = _Glast + -1;
+        local_150 = _Pfirst + -1;
+        _Pfirst = local_150;
+        if ((_Glast != local_150) && (_Glast != local_150)) {
+          pWVar3 = _Glast;
           puVar5 = local_14c;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *puVar5 = *(undefined4 *)pWVar3->name;
@@ -1041,7 +1051,7 @@ LAB_00463546:
             puVar5 = puVar5 + 1;
           }
           pWVar3 = local_150;
-          pWVar4 = local_14;
+          pWVar4 = _Glast;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *(undefined4 *)pWVar4->name = *(undefined4 *)pWVar3->name;
             pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
@@ -1054,12 +1064,12 @@ LAB_00463546:
             local_150 = (WeaponComponent *)(local_150->name + 4);
           }
         }
-        pWVar3 = local_10;
-        local_188 = local_18 + -1;
-        local_18 = local_188;
-        local_184 = local_10;
-        if (local_10 != local_188) {
-          pWVar4 = local_10;
+        pWVar3 = _Pfirst;
+        local_188 = _Plast + -1;
+        _Plast = local_188;
+        local_184 = _Pfirst;
+        if (_Pfirst != local_188) {
+          pWVar4 = _Pfirst;
           puVar5 = local_180;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *puVar5 = *(undefined4 *)pWVar4->name;
@@ -1081,35 +1091,35 @@ LAB_00463546:
         }
       }
       else {
-        local_14 = local_14 + -1;
-        if (local_c != local_14) {
-          pWVar3 = local_c;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pWVar3 = _Gfirst;
           puVar5 = local_1b8;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *puVar5 = *(undefined4 *)pWVar3->name;
             pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
             puVar5 = puVar5 + 1;
           }
-          pWVar3 = local_14;
+          pWVar3 = _Glast;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *(undefined4 *)pWVar2->name = *(undefined4 *)pWVar3->name;
             pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
             pWVar2 = (WeaponComponent *)(pWVar2->name + 4);
           }
           puVar5 = local_1b8;
-          pWVar3 = local_14;
+          pWVar3 = _Glast;
           for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
             *(undefined4 *)pWVar3->name = *puVar5;
             puVar5 = puVar5 + 1;
             pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
           }
         }
-        local_c = local_c + 1;
+        _Gfirst = _Gfirst + 1;
       }
     }
-    if (local_10->type == local_c->type) {
-      if (local_10->type == WEAPON_COMPONENT_ATTACHMENT) {
-        local_2c = (int)local_10->attachmentPoint < (int)local_c->attachmentPoint;
+    if (_Pfirst->type == _Gfirst->type) {
+      if (_Pfirst->type == WEAPON_COMPONENT_ATTACHMENT) {
+        local_2c = (int)_Pfirst->attachmentPoint < (int)_Gfirst->attachmentPoint;
       }
       else {
         local_2c = true;
@@ -1117,12 +1127,12 @@ LAB_00463546:
       }
     }
     else {
-      local_2c = (int)local_c->type < (int)local_10->type;
+      local_2c = (int)_Gfirst->type < (int)_Pfirst->type;
     }
     if (!local_2c) {
-      if (local_c->type == local_10->type) {
-        if (local_c->type == WEAPON_COMPONENT_ATTACHMENT) {
-          local_2d = (int)local_c->attachmentPoint < (int)local_10->attachmentPoint;
+      if (_Gfirst->type == _Pfirst->type) {
+        if (_Gfirst->type == WEAPON_COMPONENT_ATTACHMENT) {
+          local_2d = (int)_Gfirst->attachmentPoint < (int)_Pfirst->attachmentPoint;
         }
         else {
           local_2d = true;
@@ -1130,12 +1140,12 @@ LAB_00463546:
         }
       }
       else {
-        local_2d = (int)local_10->type < (int)local_c->type;
+        local_2d = (int)_Pfirst->type < (int)_Gfirst->type;
       }
       if (local_2d) goto LAB_00463546;
-      local_64 = local_18;
-      local_18 = local_18 + 1;
-      if (pWVar3 != local_c) {
+      local_64 = _Plast;
+      _Plast = _Plast + 1;
+      if (pWVar3 != _Gfirst) {
         pWVar4 = pWVar3;
         puVar5 = local_60;
         for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -1143,14 +1153,14 @@ LAB_00463546:
           pWVar4 = (WeaponComponent *)(pWVar4->name + 4);
           puVar5 = puVar5 + 1;
         }
-        pWVar4 = local_c;
+        pWVar4 = _Gfirst;
         for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
           *(undefined4 *)pWVar3->name = *(undefined4 *)pWVar4->name;
           pWVar4 = (WeaponComponent *)(pWVar4->name + 4);
           pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
         }
         puVar5 = local_60;
-        pWVar3 = local_c;
+        pWVar3 = _Gfirst;
         for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
           *(undefined4 *)pWVar3->name = *puVar5;
           puVar5 = puVar5 + 1;
@@ -1158,7 +1168,7 @@ LAB_00463546:
         }
       }
     }
-    local_c = local_c + 1;
+    _Gfirst = _Gfirst + 1;
   } while( true );
 }
 
@@ -1170,36 +1180,36 @@ LAB_00463546:
 
 void __cdecl
 std::_Sort<WeaponComponent_*,int,compare_weapon_component_sort>
-          (WeaponComponent *param_1,WeaponComponent *param_2,int param_3,
-          compare_weapon_component_sort param_4)
+          (WeaponComponent *_First,WeaponComponent *_Last,int _Ideal,
+          compare_weapon_component_sort _Pred)
 
 {
-  WeaponComponent *local_10;
+  WeaponComponent *_Mid;
   WeaponComponent *local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = ((int)param_2 - (int)param_1) / 0x2c, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = ((int)_Last - (int)_First) / 0x2c, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<WeaponComponent_*,compare_weapon_component_sort>
-              ((WeaponComponent *)&local_10,param_1,SUB41(param_2,0));
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if (((int)local_10 - (int)param_1) / 0x2c < ((int)param_2 - (int)local_c) / 0x2c) {
-      _Sort<WeaponComponent_*,int,compare_weapon_component_sort>(param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+              ((WeaponComponent *)&_Mid,_First,SUB41(_Last,0));
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if (((int)_Mid - (int)_First) / 0x2c < ((int)_Last - (int)local_c) / 0x2c) {
+      _Sort<WeaponComponent_*,int,compare_weapon_component_sort>(_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<WeaponComponent_*,int,compare_weapon_component_sort>(local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+      _Sort<WeaponComponent_*,int,compare_weapon_component_sort>(local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<WeaponComponent_*,compare_weapon_component_sort,WeaponComponent>
-                (param_1,param_2,param_4,(WeaponComponent *)0x0);
+                (_First,_Last,_Pred,(WeaponComponent *)0x0);
     }
   }
   else {
-    make_heap<WeaponComponent_*,compare_weapon_component_sort>(param_1,param_2,param_4);
-    _Sort_heap<WeaponComponent_*,compare_weapon_component_sort>(param_1,param_2,param_4);
+    make_heap<WeaponComponent_*,compare_weapon_component_sort>(_First,_Last,_Pred);
+    _Sort_heap<WeaponComponent_*,compare_weapon_component_sort>(_First,_Last,_Pred);
   }
   return;
 }
@@ -1212,7 +1222,7 @@ std::_Sort<WeaponComponent_*,int,compare_weapon_component_sort>
 
 WeaponComponent * __cdecl
 stdext::unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>
-          (WeaponComponent *param_1,WeaponComponent *param_2,WeaponComponent *param_3)
+          (WeaponComponent *_First,WeaponComponent *_Last,WeaponComponent *_Dest)
 
 {
   int iVar1;
@@ -1221,9 +1231,9 @@ stdext::unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>
   WeaponComponent *local_28;
   WeaponComponent *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest;
+  local_24 = _Last;
+  while (_First != local_24) {
     local_24 = local_24 + -1;
     local_28 = local_28 + -1;
     pWVar2 = local_24;
@@ -1234,6 +1244,6 @@ stdext::unchecked_copy_backward<WeaponComponent_*,WeaponComponent_*>
       pWVar3 = (WeaponComponent *)(pWVar3->name + 4);
     }
   }
-  return param_3 + -(((int)param_2 - (int)param_1) / 0x2c);
+  return _Dest + -(((int)_Last - (int)_First) / 0x2c);
 }
 

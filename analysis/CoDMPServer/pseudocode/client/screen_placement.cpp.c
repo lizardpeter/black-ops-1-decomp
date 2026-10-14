@@ -19,16 +19,16 @@ float __cdecl ScrPlace_HiResGetScale(void)
 
 // 00578480  ScrPlace_HiResApplyRect  (client/screen_placement.cpp:65)
 
-void __cdecl ScrPlace_HiResApplyRect(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl ScrPlace_HiResApplyRect(float *x,float *y,float *w,float *h)
 
 {
   if (rg.renderHiResShot != 0) {
-    *param_1 = (float)rg.hiResShotTiles * *param_1;
-    *param_2 = (float)rg.hiResShotTiles * *param_2;
-    *param_3 = (float)rg.hiResShotTiles * *param_3;
-    *param_4 = (float)rg.hiResShotTiles * *param_4;
-    *param_1 = *param_1 - (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
-    *param_2 = *param_2 - (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
+    *x = (float)rg.hiResShotTiles * *x;
+    *y = (float)rg.hiResShotTiles * *y;
+    *w = (float)rg.hiResShotTiles * *w;
+    *h = (float)rg.hiResShotTiles * *h;
+    *x = *x - (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
+    *y = *y - (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
   }
   return;
 }
@@ -38,9 +38,10 @@ void __cdecl ScrPlace_HiResApplyRect(float *param_1,float *param_2,float *param_
 
 void __cdecl
 ScrPlace_CalcSafeAreaOffsets
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,float *param_10,float *param_11,float *param_12
-          )
+          (float viewportX,float viewportY,float viewportWidth,float viewportHeight,
+          float horzAspectScale,float vertAspectScale,float safeAreaRatioHorz,
+          float safeAreaRatioVert,float *realViewableMin,float *realViewableMax,
+          float *virtualViewableMin,float *virtualViewableMax)
 
 {
   code *pcVar1;
@@ -52,7 +53,7 @@ ScrPlace_CalcSafeAreaOffsets
   float local_7c;
   float local_78;
   
-  if (((param_7 < 0.0) || (1.0 < param_7)) &&
+  if (((safeAreaRatioHorz < 0.0) || (1.0 < safeAreaRatioHorz)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x54,0,"safeAreaRatioHorz not in [0, 1]\n\t%g not in [%g, %g]"),
      !bVar2)) {
@@ -60,7 +61,7 @@ ScrPlace_CalcSafeAreaOffsets
     (*pcVar1)();
     return;
   }
-  if (((param_8 < 0.0) || (1.0 < param_8)) &&
+  if (((safeAreaRatioVert < 0.0) || (1.0 < safeAreaRatioVert)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x55,0,"safeAreaRatioVert not in [0, 1]\n\t%g not in [%g, %g]"),
      !bVar2)) {
@@ -82,35 +83,35 @@ ScrPlace_CalcSafeAreaOffsets
     (*pcVar1)();
     return;
   }
-  if ((param_1 < 0.0) &&
+  if ((viewportX < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x58,0,"%s\n\t(viewportX) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 0.0) &&
+  if ((viewportY < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x59,0,"%s\n\t(viewportY) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 <= 0.0) &&
+  if ((viewportWidth <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x5a,0,"%s\n\t(viewportWidth) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 <= 0.0) &&
+  if ((viewportHeight <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x5b,0,"%s\n\t(viewportHeight) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((float)cls.vidConfig.displayWidth < param_1 + param_3) {
+  if ((float)cls.vidConfig.displayWidth < viewportX + viewportWidth) {
     va("%g + %g > %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",0x5c,
                              0,"%s\n\t%s");
@@ -120,7 +121,7 @@ ScrPlace_CalcSafeAreaOffsets
       return;
     }
   }
-  if ((float)cls.vidConfig.displayHeight < param_2 + param_4) {
+  if ((float)cls.vidConfig.displayHeight < viewportY + viewportHeight) {
     va("%g + %g > %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",0x5d,
                              0,"%s\n\t%s");
@@ -136,42 +137,43 @@ ScrPlace_CalcSafeAreaOffsets
   local_7c = (float)extraout_ST0_00;
   local_80 = (float)cls.vidConfig.displayWidth - local_78;
   local_84 = (float)cls.vidConfig.displayHeight - local_7c;
-  if (0.0 <= param_1 - local_78) {
-    local_78 = param_1;
+  if (0.0 <= viewportX - local_78) {
+    local_78 = viewportX;
   }
-  if (0.0 <= param_2 - local_7c) {
-    local_7c = param_2;
+  if (0.0 <= viewportY - local_7c) {
+    local_7c = viewportY;
   }
-  if (0.0 <= local_80 - (param_1 + param_3)) {
-    local_80 = param_1 + param_3;
+  if (0.0 <= local_80 - (viewportX + viewportWidth)) {
+    local_80 = viewportX + viewportWidth;
   }
-  if (0.0 <= local_84 - (param_2 + param_4)) {
-    local_84 = param_2 + param_4;
+  if (0.0 <= local_84 - (viewportY + viewportHeight)) {
+    local_84 = viewportY + viewportHeight;
   }
-  *param_9 = local_78 - param_1;
-  param_9[1] = local_7c - param_2;
-  *param_10 = local_80 - param_1;
-  param_10[1] = local_84 - param_2;
-  *param_11 = *param_9 * param_5 * (640.0 / param_3);
-  param_11[1] = param_9[1] * param_6 * (480.0 / param_4);
-  *param_12 = *param_10 * param_5 * (640.0 / param_3);
-  param_12[1] = param_10[1] * param_6 * (480.0 / param_4);
+  *realViewableMin = local_78 - viewportX;
+  realViewableMin[1] = local_7c - viewportY;
+  *realViewableMax = local_80 - viewportX;
+  realViewableMax[1] = local_84 - viewportY;
+  *virtualViewableMin = *realViewableMin * horzAspectScale * (640.0 / viewportWidth);
+  virtualViewableMin[1] = realViewableMin[1] * vertAspectScale * (480.0 / viewportHeight);
+  *virtualViewableMax = *realViewableMax * horzAspectScale * (640.0 / viewportWidth);
+  virtualViewableMax[1] = realViewableMax[1] * vertAspectScale * (480.0 / viewportHeight);
   return;
 }
 
 
 // 00578540  ScrPlace_SetupUI3DForFullscreen  (client/screen_placement.cpp:136)
 
-void __cdecl ScrPlace_SetupUI3DForFullscreen(ScreenPlacement *param_1,ScreenPlacement *param_2)
+void __cdecl
+ScrPlace_SetupUI3DForFullscreen(ScreenPlacement *ui3DScrPlace,ScreenPlacement *fullScrPlace)
 
 {
   int iVar1;
   
-  if ((param_1 != (ScreenPlacement *)0x0) && (param_2 != (ScreenPlacement *)0x0)) {
+  if ((ui3DScrPlace != (ScreenPlacement *)0x0) && (fullScrPlace != (ScreenPlacement *)0x0)) {
     for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
-      param_1->scaleVirtualToReal[0] = param_2->scaleVirtualToReal[0];
-      param_2 = (ScreenPlacement *)(param_2->scaleVirtualToReal + 1);
-      param_1 = (ScreenPlacement *)(param_1->scaleVirtualToReal + 1);
+      ui3DScrPlace->scaleVirtualToReal[0] = fullScrPlace->scaleVirtualToReal[0];
+      fullScrPlace = (ScreenPlacement *)(fullScrPlace->scaleVirtualToReal + 1);
+      ui3DScrPlace = (ScreenPlacement *)(ui3DScrPlace->scaleVirtualToReal + 1);
     }
   }
   return;
@@ -182,37 +184,43 @@ void __cdecl ScrPlace_SetupUI3DForFullscreen(ScreenPlacement *param_1,ScreenPlac
 
 void __cdecl
 ScrPlace_SetupFloatViewport
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          float param_6)
+          (ScreenPlacement *scrPlace,float viewportX,float viewportY,float viewportWidth,
+          float viewportHeight,float aspect)
 
 {
-  float local_14;
+  float horzAspectScale;
+  float vertAspectPixelDiff;
+  float adjustedRealWidth;
+  float horzAspectPixelDiff;
+  float adjustedRealHeight;
+  float vertAspectScale;
   
-  memset((uchar *)param_1,0xb0,0x78);
-  param_1->realViewportBase[0] = 0.0;
-  param_1->realViewportBase[1] = 0.0;
-  param_1->realViewportSize[0] = param_4;
-  param_1->realViewportSize[1] = param_5;
-  local_14 = (param_5 * 1.3333334) / cls.vidConfig.aspectRatioScenePixel;
-  if (param_4 < local_14) {
-    local_14 = param_4;
+  memset((uchar *)scrPlace,0xb0,0x78);
+  scrPlace->realViewportBase[0] = 0.0;
+  scrPlace->realViewportBase[1] = 0.0;
+  scrPlace->realViewportSize[0] = viewportWidth;
+  scrPlace->realViewportSize[1] = viewportHeight;
+  adjustedRealWidth = (viewportHeight * 1.3333334) / cls.vidConfig.aspectRatioScenePixel;
+  if (viewportWidth < adjustedRealWidth) {
+    adjustedRealWidth = viewportWidth;
   }
   ScrPlace_CalcSafeAreaOffsets
-            (param_2,param_3,param_4,param_5,param_4 / local_14,param_5 / param_5,1.0,1.0,
-             param_1->realViewableMin,param_1->realViewableMax,param_1->virtualViewableMin,
-             param_1->virtualViewableMax);
+            (viewportX,viewportY,viewportWidth,viewportHeight,viewportWidth / adjustedRealWidth,
+             viewportHeight / viewportHeight,1.0,1.0,scrPlace->realViewableMin,
+             scrPlace->realViewableMax,scrPlace->virtualViewableMin,scrPlace->virtualViewableMax);
   ScrPlace_CalcSafeAreaOffsets
-            (param_2,param_3,param_4,param_5,param_4 / local_14,param_5 / param_5,1.0,1.0,
-             param_1->realTweakableMin,param_1->realTweakableMax,param_1->virtualTweakableMin,
-             param_1->virtualTweakableMax);
-  param_1->scaleVirtualToReal[0] = local_14 / 640.0;
-  param_1->scaleVirtualToReal[1] = param_5 / 480.0;
-  param_1->scaleVirtualToFull[0] = param_4 / 640.0;
-  param_1->scaleVirtualToFull[1] = param_5 / 480.0;
-  param_1->scaleRealToVirtual[0] = 640.0 / local_14;
-  param_1->scaleRealToVirtual[1] = 480.0 / param_5;
-  param_1->subScreen[0] = (param_4 - local_14) * 0.5;
-  param_1->subScreen[1] = (param_5 - param_5) * 0.5;
+            (viewportX,viewportY,viewportWidth,viewportHeight,viewportWidth / adjustedRealWidth,
+             viewportHeight / viewportHeight,1.0,1.0,scrPlace->realTweakableMin,
+             scrPlace->realTweakableMax,scrPlace->virtualTweakableMin,scrPlace->virtualTweakableMax)
+  ;
+  scrPlace->scaleVirtualToReal[0] = adjustedRealWidth / 640.0;
+  scrPlace->scaleVirtualToReal[1] = viewportHeight / 480.0;
+  scrPlace->scaleVirtualToFull[0] = viewportWidth / 640.0;
+  scrPlace->scaleVirtualToFull[1] = viewportHeight / 480.0;
+  scrPlace->scaleRealToVirtual[0] = 640.0 / adjustedRealWidth;
+  scrPlace->scaleRealToVirtual[1] = 480.0 / viewportHeight;
+  scrPlace->subScreen[0] = (viewportWidth - adjustedRealWidth) * 0.5;
+  scrPlace->subScreen[1] = (viewportHeight - viewportHeight) * 0.5;
   return;
 }
 
@@ -221,11 +229,13 @@ ScrPlace_SetupFloatViewport
 
 void __cdecl
 ScrPlace_SetupViewport
-          (ScreenPlacement *param_1,int param_2,int param_3,int param_4,int param_5,float param_6)
+          (ScreenPlacement *scrPlace,int viewportX,int viewportY,int viewportWidth,
+          int viewportHeight,float aspect)
 
 {
   ScrPlace_SetupFloatViewport
-            (param_1,(float)param_2,(float)param_3,(float)param_4,(float)param_5,param_6);
+            (scrPlace,(float)viewportX,(float)viewportY,(float)viewportWidth,(float)viewportHeight,
+             aspect);
   return;
 }
 
@@ -234,18 +244,23 @@ ScrPlace_SetupViewport
 
 void __cdecl
 ScrPlace_SetupUnsafeViewport
-          (ScreenPlacement *param_1,int param_2,int param_3,int param_4,int param_5,float param_6)
+          (ScreenPlacement *scrPlace,int viewportX,int viewportY,int viewportWidth,
+          int viewportHeight,float aspect)
 
 {
+  float safeAreaRatioHorz;
+  float safeAreaRatioVert;
+  
   ScrPlace_SetupFloatViewport
-            (param_1,(float)param_2,(float)param_3,(float)param_4,(float)param_5,param_6);
+            (scrPlace,(float)viewportX,(float)viewportY,(float)viewportWidth,(float)viewportHeight,
+             aspect);
   return;
 }
 
 
 // 00578E20  ScrPlace_ApplyXinverse  (client/screen_placement.cpp:237)
 
-float __cdecl ScrPlace_ApplyXinverse(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyXinverse(ScreenPlacement *scrPlace,float x,int horzAlign)
 
 {
   code *pcVar1;
@@ -253,32 +268,31 @@ float __cdecl ScrPlace_ApplyXinverse(ScreenPlacement *param_1,float param_2,int 
   float10 fVar3;
   
   if (rg.renderHiResShot != 0) {
-    param_2 = ((float)cls.vidConfig.displayWidth * rg.hiResShotRow + param_2) /
-              (float)rg.hiResShotTiles;
+    x = ((float)cls.vidConfig.displayWidth * rg.hiResShotRow + x) / (float)rg.hiResShotTiles;
   }
-  if (param_3 == 1) {
-    param_2 = (param_2 - param_1->realViewableMin[0]) / param_1->scaleVirtualToReal[0];
+  if (horzAlign == 1) {
+    x = (x - scrPlace->realViewableMin[0]) / scrPlace->scaleVirtualToReal[0];
   }
-  else if (param_3 == 4) {
-    param_2 = (param_2 - param_1->realViewportBase[0]) / param_1->scaleVirtualToFull[0];
+  else if (horzAlign == 4) {
+    x = (x - scrPlace->realViewportBase[0]) / scrPlace->scaleVirtualToFull[0];
   }
-  else if (param_3 != 5) {
-    if ((param_3 != 0) &&
+  else if (horzAlign != 5) {
+    if ((horzAlign != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                  0x101,0,"%s\n\t(horzAlign) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    param_2 = (param_2 - param_1->subScreen[0]) / param_1->scaleVirtualToReal[0];
+    x = (x - scrPlace->subScreen[0]) / scrPlace->scaleVirtualToReal[0];
   }
-  return param_2;
+  return x;
 }
 
 
 // 00578EF0  ScrPlace_ApplyYinverse  (client/screen_placement.cpp:274)
 
-float __cdecl ScrPlace_ApplyYinverse(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyYinverse(ScreenPlacement *scrPlace,float y,int vertAlign)
 
 {
   code *pcVar1;
@@ -286,167 +300,164 @@ float __cdecl ScrPlace_ApplyYinverse(ScreenPlacement *param_1,float param_2,int 
   float10 fVar3;
   
   if (rg.renderHiResShot != 0) {
-    param_2 = ((float)cls.vidConfig.displayWidth * rg.hiResShotCol + param_2) /
-              (float)rg.hiResShotTiles;
+    y = ((float)cls.vidConfig.displayWidth * rg.hiResShotCol + y) / (float)rg.hiResShotTiles;
   }
-  if (param_3 == 4) {
-    param_2 = (param_2 - param_1->realViewportBase[1]) / param_1->scaleVirtualToFull[1];
+  if (vertAlign == 4) {
+    y = (y - scrPlace->realViewportBase[1]) / scrPlace->scaleVirtualToFull[1];
   }
-  else if (param_3 != 5) {
-    if (param_3 == 6) {
-      param_2 = param_2 / param_1->scaleRealToVirtual[1];
+  else if (vertAlign != 5) {
+    if (vertAlign == 6) {
+      y = y / scrPlace->scaleRealToVirtual[1];
     }
     else {
-      if ((param_3 != 0) &&
+      if ((vertAlign != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp"
                                    ,0x123,0,"%s\n\t(vertAlign) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         fVar3 = (float10)(*pcVar1)();
         return (float)fVar3;
       }
-      param_2 = (param_2 - param_1->subScreen[1]) / param_1->scaleVirtualToReal[1];
+      y = (y - scrPlace->subScreen[1]) / scrPlace->scaleVirtualToReal[1];
     }
   }
-  return param_2;
+  return y;
 }
 
 
 // 00578FB0  ScrPlace_ApplyX  (client/screen_placement.cpp:307)
 
-float __cdecl ScrPlace_ApplyX(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyX(ScreenPlacement *scrPlace,float x,int horzAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_8;
+  float ret;
   
-  switch(param_3) {
+  switch(horzAlign) {
   case 1:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewableMin[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewableMin[0];
     break;
   case 2:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewportSize[0] * 0.5 +
-              param_1->realViewportBase[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewportSize[0] * 0.5 +
+          scrPlace->realViewportBase[0];
     break;
   case 3:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewableMax[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewableMax[0];
     break;
   case 4:
-    local_8 = param_2 * param_1->scaleVirtualToFull[0] + param_1->realViewportBase[0];
+    ret = x * scrPlace->scaleVirtualToFull[0] + scrPlace->realViewportBase[0];
     break;
   case 5:
-    local_8 = param_2;
+    ret = x;
     break;
   case 6:
-    local_8 = param_2 * param_1->scaleRealToVirtual[0];
+    ret = x * scrPlace->scaleRealToVirtual[0];
     break;
   case 7:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] +
-              (param_1->realViewableMin[0] + param_1->realViewableMax[0]) * 0.5;
+    ret = x * scrPlace->scaleVirtualToReal[0] +
+          (scrPlace->realViewableMin[0] + scrPlace->realViewableMax[0]) * 0.5;
     break;
   case 8:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->realTweakableMin[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->realTweakableMin[0];
     break;
   case 9:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] +
-              (param_1->realTweakableMin[0] + param_1->realTweakableMax[0]) * 0.5;
+    ret = x * scrPlace->scaleVirtualToReal[0] +
+          (scrPlace->realTweakableMin[0] + scrPlace->realTweakableMax[0]) * 0.5;
     break;
   case 10:
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->realTweakableMax[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->realTweakableMax[0];
     break;
   default:
-    if ((param_3 != 0) &&
+    if ((horzAlign != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                  0x141,0,"%s\n\t(horzAlign) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    local_8 = param_2 * param_1->scaleVirtualToReal[0] + param_1->subScreen[0];
+    ret = x * scrPlace->scaleVirtualToReal[0] + scrPlace->subScreen[0];
   }
   if (rg.renderHiResShot != 0) {
-    local_8 = (float)rg.hiResShotTiles * local_8 -
-              (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
+    ret = (float)rg.hiResShotTiles * ret - (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
   }
-  return local_8;
+  return ret;
 }
 
 
 // 005791D0  ScrPlace_ApplyY  (client/screen_placement.cpp:378)
 
-float __cdecl ScrPlace_ApplyY(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyY(ScreenPlacement *scrPlace,float y,int vertAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_8;
+  float ret;
   
-  switch(param_3) {
+  switch(vertAlign) {
   case 1:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->realViewableMin[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewableMin[1];
     break;
   case 2:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->realViewportSize[1] * 0.5 +
-              param_1->realViewportBase[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewportSize[1] * 0.5 +
+          scrPlace->realViewportBase[1];
     break;
   case 3:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->realViewableMax[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewableMax[1];
     break;
   case 4:
-    local_8 = param_2 * param_1->scaleVirtualToFull[1] + param_1->realViewportBase[1];
+    ret = y * scrPlace->scaleVirtualToFull[1] + scrPlace->realViewportBase[1];
     break;
   case 5:
-    local_8 = param_2;
+    ret = y;
     break;
   case 6:
-    local_8 = param_2 * param_1->scaleRealToVirtual[1];
+    ret = y * scrPlace->scaleRealToVirtual[1];
     break;
   case 7:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] +
-              (param_1->realViewableMin[1] + param_1->realViewableMax[1]) * 0.5;
+    ret = y * scrPlace->scaleVirtualToReal[1] +
+          (scrPlace->realViewableMin[1] + scrPlace->realViewableMax[1]) * 0.5;
     break;
   case 8:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->realTweakableMin[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->realTweakableMin[1];
     break;
   case 9:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] +
-              (param_1->realTweakableMin[1] + param_1->realTweakableMax[1]) * 0.5;
+    ret = y * scrPlace->scaleVirtualToReal[1] +
+          (scrPlace->realTweakableMin[1] + scrPlace->realTweakableMax[1]) * 0.5;
     break;
   case 10:
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->realTweakableMax[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->realTweakableMax[1];
     break;
   default:
-    if ((param_3 != 0) &&
+    if ((vertAlign != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                  0x184,0,"%s\n\t(vertAlign) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       fVar3 = (float10)(*pcVar1)();
       return (float)fVar3;
     }
-    local_8 = param_2 * param_1->scaleVirtualToReal[1] + param_1->subScreen[1];
+    ret = y * scrPlace->scaleVirtualToReal[1] + scrPlace->subScreen[1];
   }
   if (rg.renderHiResShot != 0) {
-    local_8 = (float)rg.hiResShotTiles * local_8 -
-              (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
+    ret = (float)rg.hiResShotTiles * ret - (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
   }
-  return local_8;
+  return ret;
 }
 
 
 // 00579400  ScrPlace_ApplyW  (client/screen_placement.cpp:444)
 
-float __cdecl ScrPlace_ApplyW(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyW(ScreenPlacement *scrPlace,float w,int horzAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  switch(param_3) {
+  switch(horzAlign) {
   case 4:
-    param_2 = param_2 * param_1->scaleVirtualToFull[0];
+    w = w * scrPlace->scaleVirtualToFull[0];
     break;
   case 5:
     break;
@@ -467,27 +478,27 @@ float __cdecl ScrPlace_ApplyW(ScreenPlacement *param_1,float param_2,int param_3
   case 8:
   case 9:
   case 10:
-    param_2 = param_2 * param_1->scaleVirtualToReal[0];
+    w = w * scrPlace->scaleVirtualToReal[0];
   }
   if (rg.renderHiResShot != 0) {
-    param_2 = (float)rg.hiResShotTiles * param_2;
+    w = (float)rg.hiResShotTiles * w;
   }
-  return param_2;
+  return w;
 }
 
 
 // 005794B0  ScrPlace_ApplyH  (client/screen_placement.cpp:486)
 
-float __cdecl ScrPlace_ApplyH(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl ScrPlace_ApplyH(ScreenPlacement *scrPlace,float h,int vertAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  switch(param_3) {
+  switch(vertAlign) {
   case 4:
-    param_2 = param_2 * param_1->scaleVirtualToFull[1];
+    h = h * scrPlace->scaleVirtualToFull[1];
     break;
   case 5:
     break;
@@ -508,91 +519,91 @@ float __cdecl ScrPlace_ApplyH(ScreenPlacement *param_1,float param_2,int param_3
   case 8:
   case 9:
   case 10:
-    param_2 = param_2 * param_1->scaleVirtualToReal[1];
+    h = h * scrPlace->scaleVirtualToReal[1];
   }
-  return param_2;
+  return h;
 }
 
 
 // 00579540  ScrPlace_ApplyRect  (client/screen_placement.cpp:544)
 
 void __cdecl
-ScrPlace_ApplyRect(ScreenPlacement *param_1,float *param_2,float *param_3,float *param_4,
-                  float *param_5,int param_6,int param_7)
+ScrPlace_ApplyRect(ScreenPlacement *scrPlace,float *x,float *y,float *w,float *h,int horzAlign,
+                  int vertAlign)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 == (float *)0x0) &&
+  if ((x == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x221,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((y == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x222,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((w == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x223,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((h == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",
                                0x224,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_6) {
+  switch(horzAlign) {
   case 1:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewableMin[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewableMin[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 2:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewportSize[0] * 0.5 +
-               param_1->realViewportBase[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewportSize[0] * 0.5 +
+         scrPlace->realViewportBase[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 3:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->realViewableMax[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->realViewableMax[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 4:
-    *param_2 = (param_1->scaleVirtualToFull[0] + param_1->realViewportBase[0]) * *param_2;
-    *param_4 = *param_4 * param_1->scaleVirtualToFull[0];
+    *x = (scrPlace->scaleVirtualToFull[0] + scrPlace->realViewportBase[0]) * *x;
+    *w = *w * scrPlace->scaleVirtualToFull[0];
     break;
   case 5:
     break;
   case 6:
-    *param_2 = *param_2 * param_1->scaleRealToVirtual[0];
-    *param_4 = *param_4 * param_1->scaleRealToVirtual[0];
+    *x = *x * scrPlace->scaleRealToVirtual[0];
+    *w = *w * scrPlace->scaleRealToVirtual[0];
     break;
   case 7:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] +
-               (param_1->realViewableMin[0] + param_1->realViewableMax[0]) * 0.5;
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] +
+         (scrPlace->realViewableMin[0] + scrPlace->realViewableMax[0]) * 0.5;
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 8:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->realTweakableMin[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->realTweakableMin[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 9:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] +
-               (param_1->realTweakableMin[0] + param_1->realTweakableMax[0]) * 0.5;
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] +
+         (scrPlace->realTweakableMin[0] + scrPlace->realTweakableMax[0]) * 0.5;
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   case 10:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->realTweakableMax[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->realTweakableMax[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",0x236
@@ -603,50 +614,50 @@ ScrPlace_ApplyRect(ScreenPlacement *param_1,float *param_2,float *param_3,float 
       return;
     }
   case 0:
-    *param_2 = *param_2 * param_1->scaleVirtualToReal[0] + param_1->subScreen[0];
-    *param_4 = *param_4 * param_1->scaleVirtualToReal[0];
+    *x = *x * scrPlace->scaleVirtualToReal[0] + scrPlace->subScreen[0];
+    *w = *w * scrPlace->scaleVirtualToReal[0];
   }
-  switch(param_7) {
+  switch(vertAlign) {
   case 1:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->realViewableMin[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewableMin[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 2:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->realViewportSize[1] * 0.5 +
-               param_1->realViewportBase[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewportSize[1] * 0.5 +
+         scrPlace->realViewportBase[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 3:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->realViewableMax[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->realViewableMax[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 4:
-    *param_3 = (param_1->scaleVirtualToFull[1] + param_1->realViewportBase[1]) * *param_3;
-    *param_5 = *param_5 * param_1->scaleVirtualToFull[1];
+    *y = (scrPlace->scaleVirtualToFull[1] + scrPlace->realViewportBase[1]) * *y;
+    *h = *h * scrPlace->scaleVirtualToFull[1];
     break;
   case 5:
     break;
   case 6:
-    *param_3 = *param_3 * param_1->scaleRealToVirtual[1];
-    *param_5 = *param_5 * param_1->scaleRealToVirtual[1];
+    *y = *y * scrPlace->scaleRealToVirtual[1];
+    *h = *h * scrPlace->scaleRealToVirtual[1];
     break;
   case 7:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] +
-               (param_1->realViewableMin[1] + param_1->realViewableMax[1]) * 0.5;
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] +
+         (scrPlace->realViewableMin[1] + scrPlace->realViewableMax[1]) * 0.5;
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 8:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->realTweakableMin[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->realTweakableMin[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 9:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] +
-               (param_1->realTweakableMin[1] + param_1->realTweakableMax[1]) * 0.5;
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] +
+         (scrPlace->realTweakableMin[1] + scrPlace->realTweakableMax[1]) * 0.5;
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   case 10:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->realTweakableMax[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->realTweakableMax[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\screen_placement.cpp",0x266
@@ -657,16 +668,16 @@ ScrPlace_ApplyRect(ScreenPlacement *param_1,float *param_2,float *param_3,float 
       return;
     }
   case 0:
-    *param_3 = *param_3 * param_1->scaleVirtualToReal[1] + param_1->subScreen[1];
-    *param_5 = *param_5 * param_1->scaleVirtualToReal[1];
+    *y = *y * scrPlace->scaleVirtualToReal[1] + scrPlace->subScreen[1];
+    *h = *h * scrPlace->scaleVirtualToReal[1];
   }
   if (rg.renderHiResShot != 0) {
-    *param_2 = (float)rg.hiResShotTiles * *param_2;
-    *param_3 = (float)rg.hiResShotTiles * *param_3;
-    *param_4 = (float)rg.hiResShotTiles * *param_4;
-    *param_5 = (float)rg.hiResShotTiles * *param_5;
-    *param_2 = *param_2 - (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
-    *param_3 = *param_3 - (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
+    *x = (float)rg.hiResShotTiles * *x;
+    *y = (float)rg.hiResShotTiles * *y;
+    *w = (float)rg.hiResShotTiles * *w;
+    *h = (float)rg.hiResShotTiles * *h;
+    *x = *x - (float)cls.vidConfig.displayWidth * rg.hiResShotRow;
+    *y = *y - (float)cls.vidConfig.displayHeight * rg.hiResShotCol;
   }
   return;
 }

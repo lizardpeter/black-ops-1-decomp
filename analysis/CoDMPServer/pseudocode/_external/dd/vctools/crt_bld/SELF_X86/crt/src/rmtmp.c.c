@@ -8,26 +8,27 @@
 int __cdecl _rmtmp(void)
 
 {
-  void *pvVar1;
-  _iobuf *p_Var2;
-  int iVar3;
-  int local_20;
+  void *s;
+  _iobuf *str;
+  int i_00;
+  int i;
+  int count;
   
-  local_20 = 0;
+  count = 0;
   _lock(1);
-  for (iVar3 = 0; iVar3 < _nstream; iVar3 = iVar3 + 1) {
-    if ((__piob[iVar3] != (void *)0x0) &&
-       (pvVar1 = __piob[iVar3], (*(byte *)((int)pvVar1 + 0xc) & 0x83) != 0)) {
-      _lock_file2(iVar3,pvVar1);
-      p_Var2 = __piob[iVar3];
-      if (((p_Var2->_flag & 0x83) != 0) && (p_Var2->_tmpfname != (char *)0x0)) {
-        _fclose_nolock(p_Var2);
-        local_20 = local_20 + 1;
+  for (i_00 = 0; i_00 < _nstream; i_00 = i_00 + 1) {
+    if ((__piob[i_00] != (void *)0x0) && (s = __piob[i_00], (*(byte *)((int)s + 0xc) & 0x83) != 0))
+    {
+      _lock_file2(i_00,s);
+      str = __piob[i_00];
+      if (((str->_flag & 0x83) != 0) && (str->_tmpfname != (char *)0x0)) {
+        _fclose_nolock(str);
+        count = count + 1;
       }
       FUN_00c2911c();
     }
   }
   FUN_00c29142();
-  return local_20;
+  return count;
 }
 

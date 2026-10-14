@@ -872,18 +872,18 @@ CG_CompassDrawPlayerNCoordScroll
 {
   cg_s *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *maxChars;
   int unaff_EBX;
   int unaff_EBP;
   float *unaff_ESI;
   dvar_s *unaff_EDI;
-  Material *pMVar4;
+  Material *pMVar3;
+  float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
   float fVar9;
-  float fVar10;
   float fStack_34;
   float fStack_30;
   float fStack_2c;
@@ -896,50 +896,51 @@ CG_CompassDrawPlayerNCoordScroll
   
   pcVar1 = cgArray;
   fStack_1c = (hud_fade_compass->current).value * DAT_00af3690;
-  pMVar4 = (Material *)0x0;
+  pMVar3 = (Material *)0x0;
   uStack_c = 0x3e10000000000000;
   CG_FadeHudMenu((int)hud_fade_compass,unaff_EDI,(int)unaff_ESI,unaff_EBP);
-  param_5->material = pMVar4;
-  if ((float)pMVar4 != 0.0) {
+  param_5->material = pMVar3;
+  if ((float)pMVar3 != 0.0) {
     CG_CompassCalcDimensions
               (0,pcVar1,(rectDef_s *)param_2,(rectDef_s *)&fStack_18,&fStack_20,&fStack_1c,
                (float *)unaff_EDI,unaff_ESI);
-    fVar8 = 1.0;
-    fVar6 = 1.0 / (compassCoords->current).vector[2];
-    fVar5 = ((compassCoords->current).vector[2] / (compassMaxRange->current).value) * fStack_1c;
-    fVar6 = (*(float *)(pcVar1 + 0x5eff4) * *(float *)(pcVar1 + 0x43124) +
-            *(float *)(pcVar1 + 0x5eff0) * *(float *)(pcVar1 + 0x43120)) * fVar6 +
-            (compassCoords->current).vector[1] + (compassMaxRange->current).value * fVar6 * 0.5;
-    fStack_30 = 1.0 - (fVar6 - (float)(int)fVar6);
-    fStack_34 = fStack_20 - fStack_30 * fVar5;
-    fStack_30 = fStack_30 + fVar6;
-    fVar6 = fStack_30;
-    fVar7 = fStack_34;
-    fVar9 = fStack_20;
-    fVar10 = fStack_1c;
-    fStack_10 = fVar5;
+    fVar7 = 1.0;
+    fVar5 = 1.0 / (compassCoords->current).vector[2];
+    fVar4 = ((compassCoords->current).vector[2] / (compassMaxRange->current).value) * fStack_1c;
+    fVar5 = (*(float *)(pcVar1 + 0x5eff4) * *(float *)(pcVar1 + 0x43124) +
+            *(float *)(pcVar1 + 0x5eff0) * *(float *)(pcVar1 + 0x43120)) * fVar5 +
+            (compassCoords->current).vector[1] + (compassMaxRange->current).value * fVar5 * 0.5;
+    fStack_30 = 1.0 - (fVar5 - (float)(int)fVar5);
+    fStack_34 = fStack_20 - fStack_30 * fVar4;
+    fStack_30 = fStack_30 + fVar5;
+    fVar5 = fStack_30;
+    fVar6 = fStack_34;
+    fVar8 = fStack_20;
+    fVar9 = fStack_1c;
+    fStack_10 = fVar4;
     iVar2 = R_TextWidth("99",2,(Font_s *)param_4);
-    while (fVar7 < (float)*(int *)(param_4 + 4) * (fStack_2c / (float)iVar2) + fVar9) {
-      fStack_30 = fVar6 - fVar8;
-      fStack_34 = fVar7 + fVar5;
-      fVar6 = fStack_30;
-      fVar7 = fStack_34;
+    while (fVar6 < (float)*(int *)(param_4 + 4) * (fStack_2c / (float)iVar2) + fVar8) {
+      fStack_30 = fVar5 - fVar7;
+      fStack_34 = fVar6 + fVar4;
+      fVar5 = fStack_30;
+      fVar6 = fStack_34;
     }
-    uStack_c = CONCAT44(uStack_c._4_4_,fVar9 + fVar10);
-    if (fVar7 < fVar9 + fVar10) {
+    uStack_c = CONCAT44(uStack_c._4_4_,fVar8 + fVar9);
+    if (fVar6 < fVar8 + fVar9) {
       pSStack_14 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x1e);
       do {
-        pcVar3 = va("%2i",(int)fVar6 % 100);
-        iVar2 = R_TextWidth(pcVar3,10,(Font_s *)param_4);
+        maxChars = va("%2i",(int)fVar5 % 100);
+        iVar2 = R_TextWidth(maxChars,10,(Font_s *)param_4);
         fStack_1c = fStack_18;
         fStack_20 = fStack_34;
         ScrPlace_ApplyRect(pSStack_14,*(float **)(param_3 + 0x10),*(float **)(param_3 + 0x14),
                            (float *)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-        R_AddCmdDrawText(pcVar3,0x28,(Font_s *)param_4,fStack_1c,fStack_20,fStack_2c / (float)iVar2,
-                         fStack_2c / (float)iVar2,0.0,(float *)param_5,(int)param_6);
+        R_AddCmdDrawText(maxChars,0x28,(Font_s *)param_4,fStack_1c,fStack_20,
+                         fStack_2c / (float)iVar2,fStack_2c / (float)iVar2,0.0,(float *)param_5,
+                         (int)param_6);
         fStack_34 = fStack_34 + fStack_10;
-        fVar6 = fStack_30 - 1.0;
-        fStack_30 = fVar6;
+        fVar5 = fStack_30 - 1.0;
+        fStack_30 = fVar5;
       } while (fStack_34 < (float)uStack_c);
     }
   }

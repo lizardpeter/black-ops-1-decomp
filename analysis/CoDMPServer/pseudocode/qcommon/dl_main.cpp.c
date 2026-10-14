@@ -4,19 +4,19 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DL_VPrintf(char *param_1,char *param_2)
+int __cdecl DL_VPrintf(char *fmt,char *argptr)
 
 {
   char cVar1;
   char *local_410;
-  char local_40c;
+  char msg;
   undefined1 auStack_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(&local_40c,0x400,param_1,param_2);
+  _vsnprintf(&msg,0x400,fmt,argptr);
   Com_Printf(0,"%s");
-  local_410 = &local_40c;
+  local_410 = &msg;
   do {
     cVar1 = *local_410;
     local_410 = local_410 + 1;
@@ -27,10 +27,10 @@ int __cdecl DL_VPrintf(char *param_1,char *param_2)
 
 // 006D7A60  terminate_handler  (qcommon/dl_main.cpp:88)
 
-int __cdecl terminate_handler(_HTRequest *param_1,_HTResponse *param_2,void *param_3,int param_4)
+int __cdecl terminate_handler(_HTRequest *request,_HTResponse *response,void *param,int status)
 
 {
-  terminate_status = param_4;
+  terminate_status = status;
   _HTEventList_stopLoop();
   return 0;
 }
@@ -40,23 +40,23 @@ int __cdecl terminate_handler(_HTRequest *param_1,_HTResponse *param_2,void *par
 
 int __cdecl
 HTAlertCallback_progress
-          (_HTRequest *param_1,_HTAlertOpcode param_2,int param_3,char *param_4,void *param_5,
-          _HTAlertPar *param_6)
+          (_HTRequest *request,_HTAlertOpcode op,int msgnum,char *dfault,void *input,
+          _HTAlertPar *reply)
 
 {
   int iVar1;
   
-  if (param_2 == HT_PROG_READ) {
+  if (op == HT_PROG_READ) {
     if (dl_is_ftp == 0) {
-      legacyHacks.cl_downloadCount = _HTRequest_bytesRead(param_1);
+      legacyHacks.cl_downloadCount = _HTRequest_bytesRead(request);
     }
     else {
-      iVar1 = _HTNet_rawBytesCount(param_1->net);
+      iVar1 = _HTNet_rawBytesCount(request->net);
       if (iVar1 == 0) {
         Com_DPrintf(0,"Force raw byte count on request->net %p\n");
-        _HTFTP_setRawBytesCount(param_1);
+        _HTFTP_setRawBytesCount(request);
       }
-      legacyHacks.cl_downloadCount = _HTFTP_getDNetRawBytesCount(param_1);
+      legacyHacks.cl_downloadCount = _HTFTP_getDNetRawBytesCount(request);
     }
   }
   return 1;
@@ -67,18 +67,18 @@ HTAlertCallback_progress
 
 int __cdecl
 HTAlertCallback_confirm
-          (_HTRequest *param_1,_HTAlertOpcode param_2,int param_3,char *param_4,void *param_5,
-          _HTAlertPar *param_6)
+          (_HTRequest *request,_HTAlertOpcode op,int msgnum,char *dfault,void *input,
+          _HTAlertPar *reply)
 
 {
-  if (param_3 != 9) {
+  if (msgnum != 9) {
     Com_Printf(0,"Aborting, unknown libwww confirm message id: %d\n");
     _HTEventList_stopLoop();
   }
   else {
     Com_Printf(0,"Replace existing download target file\n");
   }
-  return (uint)(param_3 == 9);
+  return (uint)(msgnum == 9);
 }
 
 
@@ -86,8 +86,8 @@ HTAlertCallback_confirm
 
 int __cdecl
 HTAlertCallback_prompt
-          (_HTRequest *param_1,_HTAlertOpcode param_2,int param_3,char *param_4,void *param_5,
-          _HTAlertPar *param_6)
+          (_HTRequest *request,_HTAlertOpcode op,int msgnum,char *dfault,void *input,
+          _HTAlertPar *reply)
 
 {
   Com_Printf(0,"Aborting, libwww prompt message id: %d (prompted for a login/password?)\n");
@@ -139,31 +139,31 @@ void __cdecl DL_InitDownload(void)
 
 // 006D7C80  DL_BeginDownload  (qcommon/dl_main.cpp:241)
 
-int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
+int __cdecl DL_BeginDownload(char *localName,char *remoteName,int debug)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  undefined1 *extraout_EAX;
-  undefined1 *extraout_EAX_00;
+  char *extraout_EAX;
+  char *extraout_EAX_00;
   int extraout_EAX_01;
   char *local_34;
   char *local_24;
-  char *local_20;
-  char *local_1c;
-  uchar *local_18;
-  char *local_14;
-  undefined1 *local_10;
-  undefined1 *local_c;
-  int local_8;
+  char *url;
+  char *path;
+  char *login;
+  char *access;
+  char *ptr;
+  char *passwd;
+  _HTBasic *basic;
   
-  local_14 = (char *)0x0;
-  local_20 = (char *)0x0;
-  local_18 = (uchar *)0x0;
-  local_1c = (char *)0x0;
-  local_10 = (undefined1 *)0x0;
+  access = (char *)0x0;
+  url = (char *)0x0;
+  login = (char *)0x0;
+  path = (char *)0x0;
+  ptr = (char *)0x0;
   if (dl_running != 0) {
     if ((!dl_isMotd) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\dl_main.cpp",0xfd,0,
@@ -175,14 +175,14 @@ int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
     DL_CancelDownload();
   }
   terminate_status = -1000;
-  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {
+  if ((localName == (char *)0x0) || (remoteName == (char *)0x0)) {
     Com_DPrintf(0,"Empty download URL or empty local file name\n");
     iVar4 = 0;
   }
   else {
     DL_InitDownload();
-    local_14 = (char *)_HTParse(param_2,"",0x10);
-    iVar4 = _stricmp(local_14,"ftp");
+    access = (char *)_HTParse(remoteName,"",0x10);
+    iVar4 = _stricmp(access,"ftp");
     if (iVar4 == 0) {
       dl_is_ftp = 1;
       _HTHost_setEventTimeout(0xffffffff);
@@ -192,78 +192,76 @@ int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
       _HTHost_setEventTimeout(30000);
     }
     dl_request = (_HTRequest *)_HTRequest_new();
-    iVar4 = _stricmp(local_14,"http");
+    iVar4 = _stricmp(access,"http");
     if (iVar4 == 0) {
-      local_18 = (uchar *)_HTParse(param_2,"",8);
-      local_1c = (char *)_HTParse(param_2,"",5);
-      strchr(local_18,'@');
-      local_10 = extraout_EAX;
-      if (extraout_EAX == (undefined1 *)0x0) {
-        _HTSACopy(&local_20,param_2);
+      login = (char *)_HTParse(remoteName,"",8);
+      path = (char *)_HTParse(remoteName,"",5);
+      strchr((uchar *)login,'@');
+      ptr = extraout_EAX;
+      if (extraout_EAX == (char *)0x0) {
+        _HTSACopy(&url,remoteName);
       }
       else {
-        *extraout_EAX = 0;
-        strchr(local_18,':');
-        local_c = extraout_EAX_00;
-        if (extraout_EAX_00 != (undefined1 *)0x0) {
-          *extraout_EAX_00 = 0;
-          local_c = extraout_EAX_00 + 1;
-          _HTUnEscape(local_c);
+        *extraout_EAX = '\0';
+        strchr((uchar *)login,':');
+        passwd = extraout_EAX_00;
+        if (extraout_EAX_00 != (char *)0x0) {
+          *extraout_EAX_00 = '\0';
+          passwd = extraout_EAX_00 + 1;
+          _HTUnEscape(passwd);
         }
-        _HTUnEscape(local_18);
-        local_8 = _HTBasic_new();
-        _HTSACopy(local_8,local_18);
-        _HTSACopy(local_8 + 4,local_c);
-        basic_credentials(dl_request,local_8);
-        _HTBasic_delete(local_8);
-        local_24 = local_10 + 1;
+        _HTUnEscape(login);
+        basic = (_HTBasic *)_HTBasic_new();
+        _HTSACopy(basic,login);
+        _HTSACopy(&basic->pw,passwd);
+        basic_credentials(dl_request,basic);
+        _HTBasic_delete(basic);
+        local_24 = ptr + 1;
         do {
           cVar1 = *local_24;
           local_24 = local_24 + 1;
         } while (cVar1 != '\0');
-        local_34 = local_1c;
+        local_34 = path;
         do {
           cVar1 = *local_34;
           local_34 = local_34 + 1;
         } while (cVar1 != '\0');
-        local_20 = (char *)_HTMemory_malloc(local_34 +
-                                            (int)(local_24 +
-                                                 ((8 - (int)(local_10 + 2)) - (int)(local_1c + 1))))
-        ;
-        sprintf(local_20,"http://%s%s");
+        url = (char *)_HTMemory_malloc(local_34 +
+                                       (int)(local_24 + ((8 - (int)(ptr + 2)) - (int)(path + 1))));
+        sprintf(url,"http://%s%s");
         Com_DPrintf(0,"HTTP Basic Auth - %s %s %s\n");
-        _HTMemory_free(local_18);
-        local_18 = (uchar *)0x0;
-        _HTMemory_free(local_1c);
-        local_1c = (char *)0x0;
+        _HTMemory_free(login);
+        login = (char *)0x0;
+        _HTMemory_free(path);
+        path = (char *)0x0;
       }
     }
     else {
-      _HTSACopy(&local_20,param_2);
+      _HTSACopy(&url,remoteName);
     }
-    _HTMemory_free(local_14);
-    local_14 = (char *)0x0;
-    FS_CreatePath(param_1);
-    iVar4 = _HTLoadToFile(local_20,dl_request,param_1);
+    _HTMemory_free(access);
+    access = (char *)0x0;
+    FS_CreatePath(localName);
+    iVar4 = _HTLoadToFile(url,dl_request,localName);
     if (iVar4 == 1) {
-      _HTMemory_free(local_20);
-      local_20 = (char *)0x0;
-      local_14 = (char *)_HTParse(param_2,"",0x10);
-      local_18 = (uchar *)_HTParse(param_2,"",8);
-      local_1c = (char *)_HTParse(param_2,"",5);
-      strchr(local_18,'@');
+      _HTMemory_free(url);
+      url = (char *)0x0;
+      access = (char *)_HTParse(remoteName,"",0x10);
+      login = (char *)_HTParse(remoteName,"",8);
+      path = (char *)_HTParse(remoteName,"",5);
+      strchr((uchar *)login,'@');
       if (extraout_EAX_01 == 0) {
-        Com_sprintf(legacyHacks.cl_downloadName,0x40,param_2);
+        Com_sprintf(legacyHacks.cl_downloadName,0x40,remoteName);
       }
       else {
         Com_sprintf(legacyHacks.cl_downloadName,0x40,"%s://*:*%s%s");
       }
-      _HTMemory_free(local_1c);
-      local_1c = (char *)0x0;
-      _HTMemory_free(local_18);
-      local_18 = (uchar *)0x0;
-      _HTMemory_free(local_14);
-      local_14 = (char *)0x0;
+      _HTMemory_free(path);
+      path = (char *)0x0;
+      _HTMemory_free(login);
+      login = (char *)0x0;
+      _HTMemory_free(access);
+      access = (char *)0x0;
       if (dl_is_ftp != 0) {
         _HTHost_setEventTimeout(30000);
       }
@@ -273,8 +271,8 @@ int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
     }
     else {
       Com_DPrintf(0,"HTLoadToFile failed\n");
-      _HTMemory_free(local_20);
-      local_20 = (char *)0x0;
+      _HTMemory_free(url);
+      url = (char *)0x0;
       _HTProfile_delete();
       iVar4 = 0;
     }

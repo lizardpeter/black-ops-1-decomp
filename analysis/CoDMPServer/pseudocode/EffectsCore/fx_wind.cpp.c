@@ -2,7 +2,7 @@
 
 // 005F2840  FX_SetGlobalWind  (EffectsCore/fx_wind.cpp:42)
 
-void __cdecl FX_SetGlobalWind(FX_WindInfo *param_1)
+void __cdecl FX_SetGlobalWind(FX_WindInfo *windInput)
 
 {
   int iVar1;
@@ -10,8 +10,8 @@ void __cdecl FX_SetGlobalWind(FX_WindInfo *param_1)
   
   pFVar2 = &_anon_F3747E97::g_fxGlobalWind;
   for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
-    pFVar2->windVector[0] = param_1->windVector[0];
-    param_1 = (FX_WindInfo *)(param_1->windVector + 1);
+    pFVar2->windVector[0] = windInput->windVector[0];
+    windInput = (FX_WindInfo *)(windInput->windVector + 1);
     pFVar2 = (FX_WindInfo *)(pFVar2->windVector + 1);
   }
   _anon_F3747E97::g_fxGlobalWind.windVectorMagnitude =

@@ -175,9 +175,9 @@ void _HTIconInit(char *param_1)
 {
   undefined4 uVar1;
   int extraout_EAX;
-  uchar *puVar2;
+  uchar *dst;
   int extraout_EAX_00;
-  undefined4 uVar3;
+  undefined4 uVar2;
   undefined4 local_10;
   undefined4 local_c;
   char *local_8;
@@ -210,21 +210,21 @@ void _HTIconInit(char *param_1)
   local_10 = _HTParse("/icons/",uVar1,0x1d);
   local_c = 0;
   _HTSACat(&local_10,"*");
-  uVar3 = 0;
+  uVar2 = 0;
   strlen((uchar *)"/usr/local/share/w3c-icons");
-  puVar2 = (uchar *)_HTMemory_malloc(extraout_EAX + 4,param_1,uVar3);
-  if (puVar2 == (uchar *)0x0) {
+  dst = (uchar *)_HTMemory_malloc(extraout_EAX + 4,param_1,uVar2);
+  if (dst == (uchar *)0x0) {
     _HTMemory_outofmem("HTIconInit",
                        "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTInit.c",0x17c);
   }
-  strcpy(puVar2,(uchar *)"/usr/local/share/w3c-icons");
-  strlen(puVar2);
-  if (puVar2[extraout_EAX_00 + -1] != '/') {
-    strcat(puVar2,(uchar *)"/");
+  strcpy(dst,(uchar *)"/usr/local/share/w3c-icons");
+  strlen(dst);
+  if (dst[extraout_EAX_00 + -1] != '/') {
+    strcat(dst,(uchar *)"/");
   }
-  strcat(puVar2,(uchar *)"*");
-  local_c = _HTParse(puVar2,uVar1,0x1d);
-  _HTMemory_free(puVar2);
+  strcat(dst,(uchar *)"*");
+  local_c = _HTParse(dst,uVar1,0x1d);
+  _HTMemory_free(dst);
   _HTRule_addGlobal(2,local_10,local_c,param_1,0);
   _HTMemory_free(local_10);
   local_10 = 0;

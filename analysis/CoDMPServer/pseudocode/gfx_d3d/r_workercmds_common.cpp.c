@@ -2,14 +2,14 @@
 
 // 00A80EB0  R_ProcessCmd_UpdateFxSpotLight  (gfx_d3d/r_workercmds_common.cpp:38)
 
-void __cdecl R_ProcessCmd_UpdateFxSpotLight(FxCmd *param_1)
+void __cdecl R_ProcessCmd_UpdateFxSpotLight(FxCmd *cmd)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"R_ProcessCmd_UpdateFxSpotLight");
-  GamerProfile_WriteSettings(param_1->localClientNum);
-  FX_UpdateSpotLight(param_1);
+  GamerProfile_WriteSettings(cmd->localClientNum);
+  FX_UpdateSpotLight(cmd);
   Sys_SetUpdateSpotLightEffectEvent();
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -21,13 +21,13 @@ void __cdecl R_ProcessCmd_UpdateFxSpotLight(FxCmd *param_1)
 
 // 00A80F20  R_ProcessCmd_UpdateFxNonDependent  (gfx_d3d/r_workercmds_common.cpp:68)
 
-void __cdecl R_ProcessCmd_UpdateFxNonDependent(FxCmd *param_1)
+void __cdecl R_ProcessCmd_UpdateFxNonDependent(FxCmd *cmd)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"R_ProcessCmd_UpdateFxNonDependent");
-  FX_UpdateNonDependent(param_1);
+  FX_UpdateNonDependent(cmd);
   Sys_SetUpdateNonDependentEffectsEvent();
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -41,24 +41,25 @@ void __cdecl R_ProcessCmd_UpdateFxNonDependent(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_DrawEffects(FxCmd *param_1)
+void __cdecl R_DrawEffects(FxCmd *cmd)
 
 {
   DWORD DVar1;
-  FxGenerateVertsCmd local_5c;
+  FxGenerateVertsCmd genVertsCmd;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"R_DrawEffects");
   PIXBeginNamedEvent(-1,"fx surfs");
-  FX_AddNonSpriteDrawSurfs(param_1);
+  FX_AddNonSpriteDrawSurfs(cmd);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  FX_FillGenerateVertsCmd(param_1->localClientNum,&local_5c);
-  local_5c.useReflection = param_1->useReflection;
-  local_5c.reflectionHeight = param_1->reflectionHeight;
-  local_5c.genVertsCameraType = param_1->updateCameraType;
-  Sys_AddWorkerCmdInternal(&fx_drawWorkerCmd,&local_5c,(WorkerCmdConditional *)0x0);
+  FX_FillGenerateVertsCmd(cmd->localClientNum,&genVertsCmd);
+  genVertsCmd.useReflection = cmd->useReflection;
+  genVertsCmd.reflectionHeight = cmd->reflectionHeight;
+  genVertsCmd.genVertsCameraType = cmd->updateCameraType;
+  Sys_AddWorkerCmdInternal(&fx_drawWorkerCmd,&genVertsCmd,(WorkerCmdConditional *)0x0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -71,11 +72,12 @@ void __cdecl R_DrawEffects(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
+void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *cmd)
 
 {
   int iVar1;
   DWORD DVar2;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"R_ProcessCmd_UpdateFxRemaining");
   iVar1 = Sys_QueryD3DDeviceOKEvent();
@@ -86,8 +88,8 @@ void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
     }
   }
   else {
-    CG_AddSceneTracerBeams(param_1->localClientNum);
-    CG_GenerateSceneVerts(param_1->localClientNum);
+    CG_AddSceneTracerBeams(cmd->localClientNum);
+    CG_GenerateSceneVerts(cmd->localClientNum);
     PIXBeginNamedEvent(-1,"wait for fx_update");
     if ((sys_smp_allowed->current).enabled != false) {
       Sys_WaitUpdateNonDependentEffectsCompleted();
@@ -102,8 +104,8 @@ void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    FX_EndUpdate(param_1->localClientNum);
-    R_DrawEffects(param_1);
+    FX_EndUpdate(cmd->localClientNum);
+    R_DrawEffects(cmd);
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -117,14 +119,14 @@ void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_UpdateSpotLightEffect(FxCmd *param_1)
+void __cdecl R_UpdateSpotLightEffect(FxCmd *cmd)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"R_UpdateSpotLightEffect");
   Sys_ResetUpdateSpotLightEffectEvent();
-  Sys_AddWorkerCmdInternal(&fx_update_spotWorkerCmd,param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&fx_update_spotWorkerCmd,cmd,(WorkerCmdConditional *)0x0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -137,14 +139,14 @@ void __cdecl R_UpdateSpotLightEffect(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_UpdateNonDependentEffects(FxCmd *param_1)
+void __cdecl R_UpdateNonDependentEffects(FxCmd *cmd)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"R_UpdateNonDependentEffects");
   Sys_ResetUpdateNonDependentEffectsEvent();
-  Sys_AddWorkerCmdInternal(&fx_updateWorkerCmd,param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&fx_updateWorkerCmd,cmd,(WorkerCmdConditional *)0x0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -157,14 +159,14 @@ void __cdecl R_UpdateNonDependentEffects(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_UpdateRemainingEffects(FxCmd *param_1)
+void __cdecl R_UpdateRemainingEffects(FxCmd *cmd)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"R_UpdateRemainingEffects");
-  Sys_AddWorkerCmdInternal(&fx_update_remainingWorkerCmd,param_1,(WorkerCmdConditional *)0x0);
-  Sys_AddWorkerCmdInternal(&fx_update_remaining_ppuWorkerCmd,param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&fx_update_remainingWorkerCmd,cmd,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&fx_update_remaining_ppuWorkerCmd,cmd,(WorkerCmdConditional *)0x0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -177,10 +179,10 @@ void __cdecl R_UpdateRemainingEffects(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_UpdateXModelBoundsDelayed(GfxSceneEntity *param_1)
+void __cdecl R_UpdateXModelBoundsDelayed(GfxSceneEntity *sceneEnt)
 
 {
-  Sys_AddWorkerCmdInternal(&dobj_skelWorkerCmd,&param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&dobj_skelWorkerCmd,&sceneEnt,(WorkerCmdConditional *)0x0);
   return;
 }
 
@@ -189,10 +191,10 @@ void __cdecl R_UpdateXModelBoundsDelayed(GfxSceneEntity *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_SkinGfxEntityDelayed(GfxSceneEntity *param_1)
+void __cdecl R_SkinGfxEntityDelayed(GfxSceneEntity *sceneEnt)
 
 {
-  Sys_AddWorkerCmdInternal(&dobj_skinWorkerCmd,&param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&dobj_skinWorkerCmd,&sceneEnt,(WorkerCmdConditional *)0x0);
   return;
 }
 

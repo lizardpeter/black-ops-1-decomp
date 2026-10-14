@@ -17,10 +17,12 @@ void __cdecl _dynamic_initializer_for__TRACKINST_g_sv_skel_memory__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-playerState_s * __cdecl SV_GameClientNum(int param_1)
+playerState_s * __cdecl SV_GameClientNum(int num)
 
 {
-  return (playerState_s *)((int)(sv.gameClients)->origin + sv.gameClientSize * param_1 + -0x24);
+  playerState_s *ps;
+  
+  return (playerState_s *)((int)(sv.gameClients)->origin + sv.gameClientSize * num + -0x24);
 }
 
 
@@ -31,13 +33,13 @@ playerState_s * __cdecl SV_GameClientNum(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-svEntity_s * __cdecl SV_SvEntityForGentity(gentity_s *param_1)
+svEntity_s * __cdecl SV_SvEntityForGentity(gentity_s *gEnt)
 
 {
-  if ((param_1 == (gentity_s *)0x0) || (0x3ff < (param_1->s).number)) {
+  if ((gEnt == (gentity_s *)0x0) || (0x3ff < (gEnt->s).number)) {
     Com_Error(ERR_DROP,"\x15SV_SvEntityForGentity: bad gEnt %d");
   }
-  return sv.svEntities + (param_1->s).number;
+  return sv.svEntities + (gEnt->s).number;
 }
 
 
@@ -49,14 +51,14 @@ svEntity_s * __cdecl SV_SvEntityForGentity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_GameSendServerCommand(int param_1,svscmd_type param_2,char *param_3)
+void __cdecl SV_GameSendServerCommand(int clientNum,svscmd_type type,char *text)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == -1) {
-    SV_SendServerCommand((client_t *)0x0,param_2,"%s");
+  if (clientNum == -1) {
+    SV_SendServerCommand((client_t *)0x0,type,"%s");
   }
   else {
     if ((((com_maxclients->current).integer < 1) || (0x20 < (com_maxclients->current).integer)) &&
@@ -66,8 +68,8 @@ void __cdecl SV_GameSendServerCommand(int param_1,svscmd_type param_2,char *para
       (*pcVar1)();
       return;
     }
-    if ((-1 < param_1) && (param_1 < (com_maxclients->current).integer)) {
-      SV_SendServerCommand((client_t *)(param_1 * 0x84d00 + (int)svs.clients),param_2,"%s");
+    if ((-1 < clientNum) && (clientNum < (com_maxclients->current).integer)) {
+      SV_SendServerCommand((client_t *)(clientNum * 0x84d00 + (int)svs.clients),type,"%s");
     }
   }
   return;
@@ -82,7 +84,7 @@ void __cdecl SV_GameSendServerCommand(int param_1,svscmd_type param_2,char *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_GameDropClient(int param_1,char *param_2)
+void __cdecl SV_GameDropClient(int clientNum,char *reason)
 
 {
   code *pcVar1;
@@ -95,8 +97,8 @@ void __cdecl SV_GameDropClient(int param_1,char *param_2)
     (*pcVar1)();
     return;
   }
-  if ((-1 < param_1) && (param_1 < (com_maxclients->current).integer)) {
-    SV_DropClient((client_t *)(param_1 * 0x84d00 + (int)svs.clients),param_2,true,true);
+  if ((-1 < clientNum) && (clientNum < (com_maxclients->current).integer)) {
+    SV_DropClient((client_t *)(clientNum * 0x84d00 + (int)svs.clients),reason,true,true);
   }
   return;
 }
@@ -110,16 +112,16 @@ void __cdecl SV_GameDropClient(int param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetMapCenter(float *param_1)
+void __cdecl SV_SetMapCenter(float *mapCenter)
 
 {
-  char *pcVar1;
+  char *val;
   
-  svs.mapCenter[0] = (float)(int)*param_1;
-  svs.mapCenter[1] = (float)(int)param_1[1];
-  svs.mapCenter[2] = (float)(int)param_1[2];
-  pcVar1 = va("%g %g %g");
-  SV_SetConfigstring(0xd,pcVar1);
+  svs.mapCenter[0] = (float)(int)*mapCenter;
+  svs.mapCenter[1] = (float)(int)mapCenter[1];
+  svs.mapCenter[2] = (float)(int)mapCenter[2];
+  val = va("%g %g %g");
+  SV_SetConfigstring(0xd,val);
   return;
 }
 
@@ -142,23 +144,28 @@ float (*) [3] __cdecl SV_GetMapCenter(void)
 // 0070DE10  SV_SetGameEndTime  (server/sv_game.cpp:186)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SetGameEndTime(int param_1)
+void __cdecl SV_SetGameEndTime(int gameEndTime)
 
 {
   int iVar1;
-  char *pcVar2;
-  uint uVar3;
-  char local_14 [12];
+  char *val;
+  uint uVar2;
+  char lastGameEndTime [12];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  SV_GetConfigstring(0xc,local_14,0xc);
-  iVar1 = atoi(local_14);
-  uVar3 = iVar1 - param_1 >> 0x1f;
-  if (500 < (int)((iVar1 - param_1 ^ uVar3) - uVar3)) {
-    pcVar2 = va("%i");
-    SV_SetConfigstring(0xc,pcVar2);
+  SV_GetConfigstring(0xc,lastGameEndTime,0xc);
+  iVar1 = atoi(lastGameEndTime);
+  uVar2 = iVar1 - gameEndTime >> 0x1f;
+  if (500 < (int)((iVar1 - gameEndTime ^ uVar2) - uVar2)) {
+    val = va("%i");
+    SV_SetConfigstring(0xc,val);
   }
   return;
 }
@@ -166,13 +173,19 @@ void __cdecl SV_SetGameEndTime(int param_1)
 
 // 0070DE80  SV_SetTimeScale  (server/sv_game.cpp:197)
 
-void __cdecl SV_SetTimeScale(float param_1,int param_2)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl SV_SetTimeScale(float endTimeScale,int endTime)
 
 {
-  char *pcVar1;
+  char *val;
   
-  pcVar1 = va("%g %d");
-  SV_SetConfigstring(0xe,pcVar1);
+  val = va("%g %d");
+  SV_SetConfigstring(0xe,val);
   return;
 }
 
@@ -184,25 +197,26 @@ void __cdecl SV_SetTimeScale(float param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_SetBrushModel(gentity_s *param_1)
+bool __cdecl SV_SetBrushModel(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  DObj *pDVar5;
-  uint uVar6;
-  float local_34;
+  DObj *dobj;
+  uint uVar5;
+  DObj *obj;
+  float mins;
   float local_30;
   float local_2c;
-  float local_28 [3];
-  float local_1c;
+  float mx [3];
+  float maxs;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float mn [3];
   
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0xd5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -210,27 +224,27 @@ bool __cdecl SV_SetBrushModel(gentity_s *param_1)
       return (bool)uVar3;
     }
   }
-  bVar2 = CM_ClipHandleIsValid((int)(param_1->s).index.brushmodel);
+  bVar2 = CM_ClipHandleIsValid((int)(ent->s).index.brushmodel);
   if (bVar2) {
-    CM_ModelBounds((int)(param_1->s).index.brushmodel,&local_34,&local_1c);
-    (param_1->r).mins[0] = local_34;
-    (param_1->r).mins[1] = local_30;
-    (param_1->r).mins[2] = local_2c;
-    (param_1->r).maxs[0] = local_1c;
-    (param_1->r).maxs[1] = local_18;
-    (param_1->r).maxs[2] = local_14;
-    (param_1->r).bmodel = '\x01';
-    iVar4 = CM_ContentsOfModel((int)(param_1->s).index.brushmodel);
-    (param_1->r).contents = iVar4;
-    pDVar5 = Com_GetServerDObj((param_1->s).number);
-    if ((pDVar5 != (DObj *)0x0) && (((param_1->r).svFlags & 4) != 0)) {
-      DObjCalcBounds(pDVar5,local_10,local_28);
-      Vec3Min((param_1->r).mins,local_10,(param_1->r).mins);
-      Vec3Max((param_1->r).maxs,local_28,(param_1->r).maxs);
-      uVar6 = DObjGetContents(pDVar5);
-      (param_1->r).contents = uVar6 | (param_1->r).contents;
+    CM_ModelBounds((int)(ent->s).index.brushmodel,&mins,&maxs);
+    (ent->r).mins[0] = mins;
+    (ent->r).mins[1] = local_30;
+    (ent->r).mins[2] = local_2c;
+    (ent->r).maxs[0] = maxs;
+    (ent->r).maxs[1] = local_18;
+    (ent->r).maxs[2] = local_14;
+    (ent->r).bmodel = '\x01';
+    iVar4 = CM_ContentsOfModel((int)(ent->s).index.brushmodel);
+    (ent->r).contents = iVar4;
+    dobj = Com_GetServerDObj((ent->s).number);
+    if ((dobj != (DObj *)0x0) && (((ent->r).svFlags & 4) != 0)) {
+      DObjCalcBounds(dobj,mn,mx);
+      Vec3Min((ent->r).mins,mn,(ent->r).mins);
+      Vec3Max((ent->r).maxs,mx,(ent->r).maxs);
+      uVar5 = DObjGetContents(dobj);
+      (ent->r).contents = uVar5 | (ent->r).contents;
     }
-    SV_LinkEntity(param_1);
+    SV_LinkEntity(ent);
     bVar2 = true;
   }
   else {
@@ -248,75 +262,82 @@ bool __cdecl SV_SetBrushModel(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_inSnapshot(float *param_1,int param_2)
+int __cdecl SV_inSnapshot(float *origin,int iEntityNum)
 
 {
-  gentity_s *pgVar1;
-  uint uVar2;
-  svEntity_s *psVar3;
-  int iVar4;
-  uchar *puVar5;
-  float fVar6;
-  int local_1c;
-  int local_10;
+  gentity_s *gEnt;
+  uint uVar1;
+  svEntity_s *psVar2;
+  int iVar3;
+  uchar *puVar4;
+  float fogOpaqueDistSqrd_00;
+  int clientcluster;
+  float fogOpaqueDistSqrd;
+  svEntity_s *svEnt;
+  int l;
+  int leafnum;
+  gentity_s *ent;
+  int i;
+  uchar *bitvector;
+  uchar *clientpvs;
   
-  pgVar1 = (gentity_s *)
-           ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * param_2 + -0x18);
-  if ((pgVar1->r).linked == '\0') {
-    uVar2 = 0;
+  gEnt = (gentity_s *)
+         ((int)((sv.gentities)->s).lerp.pos.trBase + sv.gentitySize * iEntityNum + -0x18);
+  if ((gEnt->r).linked == '\0') {
+    uVar1 = 0;
   }
-  else if ((pgVar1->r).broadcastTime == 0) {
-    if (((pgVar1->r).svFlags & 1) == 0) {
-      if (((pgVar1->r).svFlags & 0x18) == 0) {
-        psVar3 = SV_SvEntityForGentity(pgVar1);
-        iVar4 = CM_PointLeafnum(param_1);
-        if (psVar3->numClusters == 0) {
-          uVar2 = 0;
+  else if ((gEnt->r).broadcastTime == 0) {
+    if (((gEnt->r).svFlags & 1) == 0) {
+      if (((gEnt->r).svFlags & 0x18) == 0) {
+        psVar2 = SV_SvEntityForGentity(gEnt);
+        iVar3 = CM_PointLeafnum(origin);
+        if (psVar2->numClusters == 0) {
+          uVar1 = 0;
         }
         else {
-          iVar4 = CM_LeafCluster(iVar4);
-          puVar5 = CM_ClusterPVS(iVar4);
-          local_1c = 0;
-          local_10 = 0;
-          while ((local_10 < psVar3->numClusters &&
-                 (local_1c = psVar3->clusternums[local_10],
-                 ((uint)puVar5[local_1c >> 3] & 1 << ((byte)local_1c & 7)) == 0))) {
-            local_10 = local_10 + 1;
+          iVar3 = CM_LeafCluster(iVar3);
+          puVar4 = CM_ClusterPVS(iVar3);
+          l = 0;
+          i = 0;
+          while ((i < psVar2->numClusters &&
+                 (l = psVar2->clusternums[i], ((uint)puVar4[l >> 3] & 1 << ((byte)l & 7)) == 0))) {
+            i = i + 1;
           }
-          if (local_10 == psVar3->numClusters) {
-            if (psVar3->lastCluster == 0) {
+          if (i == psVar2->numClusters) {
+            if (psVar2->lastCluster == 0) {
               return 0;
             }
-            while ((local_1c <= psVar3->lastCluster &&
-                   (((uint)puVar5[local_1c >> 3] & 1 << ((byte)local_1c & 7)) == 0))) {
-              local_1c = local_1c + 1;
+            while ((l <= psVar2->lastCluster && (((uint)puVar4[l >> 3] & 1 << ((byte)l & 7)) == 0)))
+            {
+              l = l + 1;
             }
-            if (local_1c == psVar3->lastCluster) {
+            if (l == psVar2->lastCluster) {
               return 0;
             }
           }
-          fVar6 = G_GetFogOpaqueDistSqrd();
-          if (fVar6 == 3.4028235e+38) {
-            uVar2 = 1;
+          fogOpaqueDistSqrd_00 = G_GetFogOpaqueDistSqrd();
+          if (fogOpaqueDistSqrd_00 == 3.4028235e+38) {
+            uVar1 = 1;
           }
           else {
-            iVar4 = BoxDistSqrdExceeds((pgVar1->r).absmin,(pgVar1->r).absmax,param_1,fVar6);
-            uVar2 = (uint)(iVar4 == 0);
+            iVar3 = BoxDistSqrdExceeds((gEnt->r).absmin,(gEnt->r).absmax,origin,fogOpaqueDistSqrd_00
+                                      );
+            uVar1 = (uint)(iVar3 == 0);
           }
         }
       }
       else {
-        uVar2 = 1;
+        uVar1 = 1;
       }
     }
     else {
-      uVar2 = 0;
+      uVar1 = 0;
     }
   }
   else {
-    uVar2 = 1;
+    uVar1 = 1;
   }
-  return uVar2;
+  return uVar1;
 }
 
 
@@ -328,64 +349,67 @@ int __cdecl SV_inSnapshot(float *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_EntityContact(float *param_1,float *param_2,gentity_s *param_3)
+int __cdecl SV_EntityContact(float *mins,float *maxs,gentity_s *gEnt)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
+  uint model;
+  float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
   uint local_74;
   uint local_70;
-  float4 local_48 [2];
+  uint ch;
+  float dist;
+  float distSqrd;
+  float4 trace [2];
   byte local_1d;
   uint local_10;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_48[0].v[0] = 0.0;
-  local_48[0].v[1] = 0.0;
-  local_48[0].v[2] = 0.0;
-  local_48[0].v[3] = 0.0;
-  if (((param_3->r).svFlags & 0x60) == 0) {
-    uVar4 = SV_ClipHandleForEntity(param_3);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  if (((gEnt->r).svFlags & 0x60) == 0) {
+    model = SV_ClipHandleForEntity(gEnt);
     CM_TransformedBoxTraceExternal
-              ((trace_t *)local_48,vec3_origin,vec3_origin,param_1,param_2,uVar4,-1,
-               (param_3->r).currentOrigin,(param_3->r).currentAngles);
+              ((trace_t *)trace,vec3_origin,vec3_origin,mins,maxs,model,-1,(gEnt->r).currentOrigin,
+               (gEnt->r).currentAngles);
     local_70 = (uint)local_1d;
   }
-  else if (((param_3->r).svFlags & 0x20) == 0) {
-    if ((((param_3->r).svFlags & 0x40) == 0) &&
+  else if (((gEnt->r).svFlags & 0x20) == 0) {
+    if ((((gEnt->r).svFlags & 0x40) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x15d,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    fVar5 = (*param_1 + *param_2) * 0.5;
-    fVar6 = ((*param_2 - fVar5) + (param_3->r).maxs[0]) - 64.0;
-    fVar5 = fVar5 - (param_3->r).currentOrigin[0];
-    fVar7 = (param_1[1] + param_2[1]) * 0.5 - (param_3->r).currentOrigin[1];
-    local_74 = (uint)(fVar6 * fVar6 <= fVar5 * fVar5 + fVar7 * fVar7);
+    fVar4 = (*mins + *maxs) * 0.5;
+    fVar5 = ((*maxs - fVar4) + (gEnt->r).maxs[0]) - 64.0;
+    fVar4 = fVar4 - (gEnt->r).currentOrigin[0];
+    fVar6 = (mins[1] + maxs[1]) * 0.5 - (gEnt->r).currentOrigin[1];
+    local_74 = (uint)(fVar5 * fVar5 <= fVar4 * fVar4 + fVar6 * fVar6);
     local_70 = local_74;
   }
   else {
-    if (((param_3->r).mins[2] != 0.0) &&
+    if (((gEnt->r).mins[2] != 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x150,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if ((param_3->r).currentOrigin[2] < param_2[2]) {
-      if (param_1[2] < (param_3->r).currentOrigin[2] + (param_3->r).maxs[2]) {
-        fVar5 = (*param_1 + *param_2) * 0.5;
-        fVar6 = (*param_2 - fVar5) + (param_3->r).maxs[0];
-        fVar5 = fVar5 - (param_3->r).currentOrigin[0];
-        fVar7 = (param_1[1] + param_2[1]) * 0.5 - (param_3->r).currentOrigin[1];
-        local_70 = (uint)(fVar5 * fVar5 + fVar7 * fVar7 < fVar6 * fVar6);
+    if ((gEnt->r).currentOrigin[2] < maxs[2]) {
+      if (mins[2] < (gEnt->r).currentOrigin[2] + (gEnt->r).maxs[2]) {
+        fVar4 = (*mins + *maxs) * 0.5;
+        fVar5 = (*maxs - fVar4) + (gEnt->r).maxs[0];
+        fVar4 = fVar4 - (gEnt->r).currentOrigin[0];
+        fVar6 = (mins[1] + maxs[1]) * 0.5 - (gEnt->r).currentOrigin[1];
+        local_70 = (uint)(fVar4 * fVar4 + fVar6 * fVar6 < fVar5 * fVar5);
       }
       else {
         local_70 = 0;
@@ -401,16 +425,18 @@ int __cdecl SV_EntityContact(float *param_1,float *param_2,gentity_s *param_3)
 
 // 0070E590  SV_GetServerinfo  (server/sv_game.cpp:373)
 
-void __cdecl SV_GetServerinfo(char *param_1,int param_2)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+void __cdecl SV_GetServerinfo(char *buffer,int bufferSize)
 
 {
-  char *pcVar1;
+  char *src;
   
-  if (param_2 < 1) {
+  if (bufferSize < 1) {
     Com_Error(ERR_DROP,"\x15SV_GetServerinfo: bufferSize == %i");
   }
-  pcVar1 = Dvar_InfoString(0,4);
-  I_strncpyz(param_1,pcVar1,param_2);
+  src = Dvar_InfoString(0,4);
+  I_strncpyz(buffer,src,bufferSize);
   return;
 }
 
@@ -423,14 +449,15 @@ void __cdecl SV_GetServerinfo(char *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-SV_LocateGameData(gentity_s *param_1,int param_2,int param_3,playerState_s *param_4,int param_5)
+SV_LocateGameData(gentity_s *gEnts,int numGEntities,int sizeofGEntity_t,playerState_s *clients,
+                 int sizeofGameClient)
 
 {
-  sv.gentities = param_1;
-  sv.gentitySize = param_3;
-  sv.num_entities = param_2;
-  sv.gameClients = param_4;
-  sv.gameClientSize = param_5;
+  sv.gentities = gEnts;
+  sv.gentitySize = sizeofGEntity_t;
+  sv.num_entities = numGEntities;
+  sv.gameClients = clients;
+  sv.gameClientSize = sizeofGameClient;
   return;
 }
 
@@ -443,7 +470,7 @@ SV_LocateGameData(gentity_s *param_1,int param_2,int param_3,playerState_s *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_GetUsercmd(int param_1,usercmd_s *param_2)
+void __cdecl SV_GetUsercmd(int clientNum,usercmd_s *cmd)
 
 {
   code *pcVar1;
@@ -451,7 +478,7 @@ void __cdecl SV_GetUsercmd(int param_1,usercmd_s *param_2)
   int iVar3;
   int *piVar4;
   
-  if (param_1 < 0) {
+  if (clientNum < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x216,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -468,7 +495,7 @@ void __cdecl SV_GetUsercmd(int param_1,usercmd_s *param_2)
       return;
     }
   }
-  if ((com_maxclients->current).integer <= param_1) {
+  if ((com_maxclients->current).integer <= clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x218,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -476,11 +503,11 @@ void __cdecl SV_GetUsercmd(int param_1,usercmd_s *param_2)
       return;
     }
   }
-  piVar4 = (int *)((int)svs.clients + param_1 * 0x84d00 + 0x5134);
+  piVar4 = (int *)((int)svs.clients + clientNum * 0x84d00 + 0x5134);
   for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-    param_2->serverTime = *piVar4;
+    cmd->serverTime = *piVar4;
     piVar4 = piVar4 + 1;
-    param_2 = (usercmd_s *)&param_2->button_bits;
+    cmd = (usercmd_s *)&cmd->button_bits;
   }
   return;
 }
@@ -488,36 +515,36 @@ void __cdecl SV_GetUsercmd(int param_1,usercmd_s *param_2)
 
 // 0070E6F0  SV_AllocXModelPrecache  (server/sv_game.cpp:551)
 
-void * __cdecl SV_AllocXModelPrecache(int param_1)
+void * __cdecl SV_AllocXModelPrecache(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"SV_AllocXModelPrecache",0x16);
+  pvVar1 = Hunk_Alloc(size,"SV_AllocXModelPrecache",0x16);
   return pvVar1;
 }
 
 
 // 0070E710  SV_AllocXModelPrecacheColl  (server/sv_game.cpp:557)
 
-void * __cdecl SV_AllocXModelPrecacheColl(int param_1)
+void * __cdecl SV_AllocXModelPrecacheColl(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"SV_AllocXModelPrecacheColl",0x1c);
+  pvVar1 = Hunk_Alloc(size,"SV_AllocXModelPrecacheColl",0x1c);
   return pvVar1;
 }
 
 
 // 0070E6D0  SV_XModelGet  (server/sv_game.cpp:569)
 
-XModel * __cdecl SV_XModelGet(char *param_1)
+XModel * __cdecl SV_XModelGet(char *name)
 
 {
   XModel *pXVar1;
   
-  pXVar1 = XModelPrecache(param_1,SV_AllocXModelPrecache,SV_AllocXModelPrecacheColl);
+  pXVar1 = XModelPrecache(name,SV_AllocXModelPrecache,SV_AllocXModelPrecacheColl);
   return pXVar1;
 }
 
@@ -529,18 +556,19 @@ XModel * __cdecl SV_XModelGet(char *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DObjDumpInfo(gentity_s *param_1)
+void __cdecl SV_DObjDumpInfo(gentity_s *ent)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
   if ((com_developer->current).integer != 0) {
-    pDVar1 = Com_GetServerDObj((param_1->s).number);
-    if (pDVar1 == (DObj *)0x0) {
+    obj_00 = Com_GetServerDObj((ent->s).number);
+    if (obj_00 == (DObj *)0x0) {
       Com_Printf(0xf,"no model.\n");
     }
     else {
-      DObjDumpInfo(pDVar1);
+      DObjDumpInfo(obj_00);
     }
   }
   return;
@@ -577,15 +605,16 @@ void __cdecl SV_ResetSkeletonCache(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl SV_AllocSkelMemory(uint param_1)
+char * __cdecl SV_AllocSkelMemory(uint size)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint uVar4;
+  char *result;
   
-  if (param_1 == 0) {
+  if (size == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x274,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -593,7 +622,7 @@ char * __cdecl SV_AllocSkelMemory(uint param_1)
       return pcVar3;
     }
   }
-  uVar4 = param_1 + 0xf & 0xfffffff0;
+  uVar4 = size + 0xf & 0xfffffff0;
   if (0x3fff0 < uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x277,0,"%s");
     if (!bVar2) {
@@ -639,22 +668,24 @@ char * __cdecl SV_AllocSkelMemory(uint param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DObjCreateSkelForBone(DObj *param_1,int param_2)
+int __cdecl SV_DObjCreateSkelForBone(DObj *obj,int boneIndex)
 
 {
   int iVar1;
-  uint uVar2;
-  char *pcVar3;
+  uint size;
+  char *buf_00;
+  char *buf;
+  int len;
   
-  iVar1 = DObjSkelExists(param_1,sv.skelTimeStamp);
+  iVar1 = DObjSkelExists(obj,sv.skelTimeStamp);
   if (iVar1 == 0) {
-    uVar2 = DObjGetAllocSkelSize(param_1);
-    pcVar3 = SV_AllocSkelMemory(uVar2);
-    DObjCreateSkel(param_1,pcVar3,sv.skelTimeStamp);
+    size = DObjGetAllocSkelSize(obj);
+    buf_00 = SV_AllocSkelMemory(size);
+    DObjCreateSkel(obj,buf_00,sv.skelTimeStamp);
     iVar1 = 0;
   }
   else {
-    iVar1 = DObjSkelIsBoneUpToDate(param_1,param_2);
+    iVar1 = DObjSkelIsBoneUpToDate(obj,boneIndex);
   }
   return iVar1;
 }
@@ -667,22 +698,24 @@ int __cdecl SV_DObjCreateSkelForBone(DObj *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DObjCreateSkelForBones(DObj *param_1,int *param_2)
+int __cdecl SV_DObjCreateSkelForBones(DObj *obj,int *partBits)
 
 {
   int iVar1;
-  uint uVar2;
-  char *pcVar3;
+  uint size;
+  char *buf_00;
+  char *buf;
+  int len;
   
-  iVar1 = DObjSkelExists(param_1,sv.skelTimeStamp);
+  iVar1 = DObjSkelExists(obj,sv.skelTimeStamp);
   if (iVar1 == 0) {
-    uVar2 = DObjGetAllocSkelSize(param_1);
-    pcVar3 = SV_AllocSkelMemory(uVar2);
-    DObjCreateSkel(param_1,pcVar3,sv.skelTimeStamp);
+    size = DObjGetAllocSkelSize(obj);
+    buf_00 = SV_AllocSkelMemory(size);
+    DObjCreateSkel(obj,buf_00,sv.skelTimeStamp);
     iVar1 = 0;
   }
   else {
-    iVar1 = DObjSkelAreBonesUpToDate(param_1,param_2);
+    iVar1 = DObjSkelAreBonesUpToDate(obj,partBits);
   }
   return iVar1;
 }
@@ -695,14 +728,15 @@ int __cdecl SV_DObjCreateSkelForBones(DObj *param_1,int *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DObjUpdateServerTime(gentity_s *param_1,float param_2,int param_3)
+void __cdecl SV_DObjUpdateServerTime(gentity_s *ent,float dtime,int bNotify)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar1 != (DObj *)0x0) {
-    DObjUpdateServerInfo(pDVar1,param_2,param_3);
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 != (DObj *)0x0) {
+    DObjUpdateServerInfo(obj_00,dtime,bNotify);
   }
   return;
 }
@@ -715,14 +749,15 @@ void __cdecl SV_DObjUpdateServerTime(gentity_s *param_1,float param_2,int param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DObjInitServerTime(gentity_s *param_1,float param_2)
+void __cdecl SV_DObjInitServerTime(gentity_s *ent,float dtime)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar1 != (DObj *)0x0) {
-    DObjInitServerTime(pDVar1,param_2);
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 != (DObj *)0x0) {
+    DObjInitServerTime(obj_00,dtime);
   }
   return;
 }
@@ -735,29 +770,30 @@ void __cdecl SV_DObjInitServerTime(gentity_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DObjGetBoneIndex(gentity_s *param_1,uint param_2)
+int __cdecl SV_DObjGetBoneIndex(gentity_s *ent,uint boneName)
 
 {
-  DObj *pDVar1;
-  uint uVar2;
-  int iVar3;
-  byte local_5;
+  DObj *obj_00;
+  uint uVar1;
+  int iVar2;
+  DObj *obj;
+  uchar index;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar1 == (DObj *)0x0) {
-    uVar2 = 0xffffffff;
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
+    uVar1 = 0xffffffff;
   }
   else {
-    local_5 = 0xfe;
-    iVar3 = DObjGetBoneIndex(pDVar1,param_2,&local_5,-1);
-    if (iVar3 == 0) {
-      uVar2 = 0xffffffff;
+    index = 0xfe;
+    iVar2 = DObjGetBoneIndex(obj_00,boneName,&index,-1);
+    if (iVar2 == 0) {
+      uVar1 = 0xffffffff;
     }
     else {
-      uVar2 = (uint)local_5;
+      uVar1 = (uint)index;
     }
   }
-  return uVar2;
+  return uVar1;
 }
 
 
@@ -768,25 +804,26 @@ int __cdecl SV_DObjGetBoneIndex(gentity_s *param_1,uint param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObjAnimMat * __cdecl SV_DObjGetMatrixArray(gentity_s *param_1)
+DObjAnimMat * __cdecl SV_DObjGetMatrixArray(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  DObjAnimMat *pDVar4;
+  DObj *obj_00;
+  DObjAnimMat *pDVar3;
+  DObj *obj;
   
-  pDVar3 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar3 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x30f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DObjAnimMat *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DObjAnimMat *)(*pcVar1)();
+      return pDVar3;
     }
   }
-  pDVar4 = DObjGetRotTransArray(pDVar3);
-  return pDVar4;
+  pDVar3 = DObjGetRotTransArray(obj_00);
+  return pDVar3;
 }
 
 
@@ -797,14 +834,15 @@ DObjAnimMat * __cdecl SV_DObjGetMatrixArray(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DObjDisplayAnim(gentity_s *param_1,char *param_2)
+void __cdecl SV_DObjDisplayAnim(gentity_s *ent,char *header)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar1 != (DObj *)0x0) {
-    DObjDisplayAnim(pDVar1,param_2);
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 != (DObj *)0x0) {
+    DObjDisplayAnim(obj_00,header);
   }
   return;
 }
@@ -817,25 +855,26 @@ void __cdecl SV_DObjDisplayAnim(gentity_s *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObjAnimMat * __cdecl SV_DObjGetRotTransArray(gentity_s *param_1)
+DObjAnimMat * __cdecl SV_DObjGetRotTransArray(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  DObjAnimMat *pDVar4;
+  DObj *obj_00;
+  DObjAnimMat *pDVar3;
+  DObj *obj;
   
-  pDVar3 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar3 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x326,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      pDVar4 = (DObjAnimMat *)(*pcVar1)();
-      return pDVar4;
+      pDVar3 = (DObjAnimMat *)(*pcVar1)();
+      return pDVar3;
     }
   }
-  pDVar4 = DObjGetRotTransArray(pDVar3);
-  return pDVar4;
+  pDVar3 = DObjGetRotTransArray(obj_00);
+  return pDVar3;
 }
 
 
@@ -846,25 +885,26 @@ DObjAnimMat * __cdecl SV_DObjGetRotTransArray(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DObjSetRotTransIndex(gentity_s *param_1,int *param_2,int param_3)
+int __cdecl SV_DObjSetRotTransIndex(gentity_s *ent,int *partBits,int boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  int iVar4;
+  DObj *obj_00;
+  int iVar3;
+  DObj *obj;
   
-  pDVar3 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar3 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x331,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  iVar4 = DObjSetRotTransIndex(pDVar3,param_2,param_3);
-  return iVar4;
+  iVar3 = DObjSetRotTransIndex(obj_00,partBits,boneIndex);
+  return iVar3;
 }
 
 
@@ -875,15 +915,16 @@ int __cdecl SV_DObjSetRotTransIndex(gentity_s *param_1,int *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_DObjGetBounds(gentity_s *param_1,float *param_2,float *param_3)
+void __cdecl SV_DObjGetBounds(gentity_s *ent,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
+  DObj *obj_00;
+  DObj *obj;
   
-  pDVar3 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar3 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x347,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -891,7 +932,7 @@ void __cdecl SV_DObjGetBounds(gentity_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  DObjGetBounds(pDVar3,param_2,param_3);
+  DObjGetBounds(obj_00,mins,maxs);
   return;
 }
 
@@ -903,18 +944,19 @@ void __cdecl SV_DObjGetBounds(gentity_s *param_1,float *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-XAnimTree_s * __cdecl SV_DObjGetTree(gentity_s *param_1)
+XAnimTree_s * __cdecl SV_DObjGetTree(gentity_s *ent)
 
 {
-  DObj *pDVar1;
+  DObj *obj_00;
   XAnimTree_s *local_c;
+  DObj *obj;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar1 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj((ent->s).number);
+  if (obj_00 == (DObj *)0x0) {
     local_c = (XAnimTree_s *)0x0;
   }
   else {
-    local_c = DObjGetTree(pDVar1);
+    local_c = DObjGetTree(obj_00);
   }
   return local_c;
 }
@@ -927,103 +969,103 @@ XAnimTree_s * __cdecl SV_DObjGetTree(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_XModelDebugBoxes(gentity_s *param_1,float *param_2,int *param_3,int param_4)
+void __cdecl SV_XModelDebugBoxes(gentity_s *ent,float *color,int *partBits,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
-  XModel *pXVar3;
-  DObjAnimMat *local_334;
-  uint local_330;
-  XBoneInfo *local_32c [160];
-  int local_ac;
-  int local_a8;
-  DObj *local_a4;
-  float local_a0;
+  XModel *pose;
+  DObjAnimMat *boneMatrix;
+  uint j;
+  XBoneInfo *boneInfoArray [160];
+  int numBones;
+  int boneIndex;
+  DObj *obj;
+  float start;
   float local_9c;
   float local_98;
-  float local_94;
+  float end;
   float local_90;
   float local_8c;
-  int local_88;
-  float local_84 [9];
+  int size;
+  float boneAxis [9];
   float local_60;
   float local_5c;
   float local_58;
-  int local_54;
-  int (*local_50) [3];
-  float local_4c;
+  int localBoneIndex;
+  int (*tempBoxVerts) [3];
+  float org;
   float local_48;
   float local_44;
-  XBoneInfo *local_40;
-  float local_3c [9];
-  float local_18 [3];
-  int local_c;
-  int local_8;
+  XBoneInfo *boneInfo;
+  float axis [9];
+  float vec [3];
+  int modelCount;
+  int modelIndex;
   
-  local_a4 = Com_GetServerDObj((param_1->s).number);
-  if ((local_a4 == (DObj *)0x0) &&
+  obj = Com_GetServerDObj((ent->s).number);
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x377,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_ac = DObjNumBones(local_a4);
-  if ((0xa0 < local_ac) &&
+  numBones = DObjNumBones(obj);
+  if ((0xa0 < numBones) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x37a,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  DObjGetBoneInfo(local_a4,local_32c);
-  local_334 = DObjGetRotTransArray(local_a4);
-  AnglesToAxis((param_1->r).currentAngles,(float (*) [3])local_3c);
-  local_c = DObjGetNumModels(local_a4);
-  local_a8 = 0;
-  for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-    pXVar3 = DObjGetModel(local_a4,local_8);
-    local_88 = XModelNumBones(pXVar3);
-    bVar2 = DObjIgnoreCollision(local_a4,local_8);
+  DObjGetBoneInfo(obj,boneInfoArray);
+  boneMatrix = DObjGetRotTransArray(obj);
+  AnglesToAxis((ent->r).currentAngles,(float (*) [3])axis);
+  modelCount = DObjGetNumModels(obj);
+  boneIndex = 0;
+  for (modelIndex = 0; modelIndex < modelCount; modelIndex = modelIndex + 1) {
+    pose = DObjGetModel(obj,modelIndex);
+    size = XModelNumBones(pose);
+    bVar2 = DObjIgnoreCollision(obj,modelIndex);
     if (bVar2) {
-      local_a8 = local_a8 + local_88;
-      local_334 = local_334 + local_88;
+      boneIndex = boneIndex + size;
+      boneMatrix = boneMatrix + size;
     }
     else {
-      for (local_54 = 0; local_54 < local_88; local_54 = local_54 + 1) {
-        if ((param_3 == (int *)0x0) ||
-           ((0x80000000U >> ((byte)local_a8 & 0x1f) & param_3[local_a8 >> 5]) != 0)) {
-          local_40 = local_32c[local_a8];
-          local_50 = boxVerts;
-          ConvertQuatToMat(local_334,(float (*) [3])local_84);
-          local_60 = local_334->trans[0];
-          local_5c = local_334->trans[1];
-          local_58 = local_334->trans[2];
-          for (local_330 = 0; local_330 < 0xc; local_330 = local_330 + 1) {
-            local_4c = local_40->bounds[(*local_50)[0]][0];
-            local_48 = local_40->bounds[(*local_50)[1]][1];
-            local_44 = local_40->bounds[(*local_50)[2]][2];
-            MatrixTransformVector43(&local_4c,(float (*) [3])local_84,local_18);
-            MatrixTransformVector(local_18,(float (*) [3])local_3c,&local_a0);
-            local_a0 = local_a0 + (param_1->r).currentOrigin[0];
-            local_9c = local_9c + (param_1->r).currentOrigin[1];
-            local_98 = local_98 + (param_1->r).currentOrigin[2];
-            local_4c = local_40->bounds[local_50[1][0]][0];
-            local_48 = local_40->bounds[local_50[1][1]][1];
-            local_44 = local_40->bounds[local_50[1][2]][2];
-            local_50 = local_50 + 1;
-            MatrixTransformVector43(&local_4c,(float (*) [3])local_84,local_18);
-            MatrixTransformVector(local_18,(float (*) [3])local_3c,&local_94);
-            local_94 = local_94 + (param_1->r).currentOrigin[0];
-            local_90 = local_90 + (param_1->r).currentOrigin[1];
-            local_8c = local_8c + (param_1->r).currentOrigin[2];
-            local_50 = local_50 + 1;
-            CL_AddDebugLine(&local_a0,&local_94,param_2,0,param_4);
+      for (localBoneIndex = 0; localBoneIndex < size; localBoneIndex = localBoneIndex + 1) {
+        if ((partBits == (int *)0x0) ||
+           ((0x80000000U >> ((byte)boneIndex & 0x1f) & partBits[boneIndex >> 5]) != 0)) {
+          boneInfo = boneInfoArray[boneIndex];
+          tempBoxVerts = boxVerts;
+          ConvertQuatToMat(boneMatrix,(float (*) [3])boneAxis);
+          local_60 = boneMatrix->trans[0];
+          local_5c = boneMatrix->trans[1];
+          local_58 = boneMatrix->trans[2];
+          for (j = 0; j < 0xc; j = j + 1) {
+            org = boneInfo->bounds[(*tempBoxVerts)[0]][0];
+            local_48 = boneInfo->bounds[(*tempBoxVerts)[1]][1];
+            local_44 = boneInfo->bounds[(*tempBoxVerts)[2]][2];
+            MatrixTransformVector43(&org,(float (*) [3])boneAxis,vec);
+            MatrixTransformVector(vec,(float (*) [3])axis,&start);
+            start = start + (ent->r).currentOrigin[0];
+            local_9c = local_9c + (ent->r).currentOrigin[1];
+            local_98 = local_98 + (ent->r).currentOrigin[2];
+            org = boneInfo->bounds[tempBoxVerts[1][0]][0];
+            local_48 = boneInfo->bounds[tempBoxVerts[1][1]][1];
+            local_44 = boneInfo->bounds[tempBoxVerts[1][2]][2];
+            tempBoxVerts = tempBoxVerts + 1;
+            MatrixTransformVector43(&org,(float (*) [3])boneAxis,vec);
+            MatrixTransformVector(vec,(float (*) [3])axis,&end);
+            end = end + (ent->r).currentOrigin[0];
+            local_90 = local_90 + (ent->r).currentOrigin[1];
+            local_8c = local_8c + (ent->r).currentOrigin[2];
+            tempBoxVerts = tempBoxVerts + 1;
+            CL_AddDebugLine(&start,&end,color,0,duration);
           }
         }
-        local_334 = local_334 + 1;
-        local_a8 = local_a8 + 1;
+        boneMatrix = boneMatrix + 1;
+        boneIndex = boneIndex + 1;
       }
     }
   }
@@ -1035,18 +1077,18 @@ void __cdecl SV_XModelDebugBoxes(gentity_s *param_1,float *param_2,int *param_3,
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl SV_MapExists(char *param_1)
+int __cdecl SV_MapExists(char *name)
 
 {
   int iVar1;
-  char local_10c [256];
+  char fullpath [256];
   uint local_c;
-  char *local_8;
+  char *basename;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = SV_GetMapBaseName(param_1);
-  Com_GetBspFilename(local_10c,0x100,local_8);
-  iVar1 = FS_ReadFile(local_10c,(void **)0x0);
+  basename = SV_GetMapBaseName(name);
+  Com_GetBspFilename(fullpath,0x100,basename);
+  iVar1 = FS_ReadFile(fullpath,(void **)0x0);
   return (uint)(-1 < iVar1);
 }
 
@@ -1058,12 +1100,12 @@ int __cdecl SV_MapExists(char *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_DObjExists(gentity_s *param_1)
+int __cdecl SV_DObjExists(gentity_s *ent)
 
 {
   DObj *pDVar1;
   
-  pDVar1 = Com_GetServerDObj((param_1->s).number);
+  pDVar1 = Com_GetServerDObj((ent->s).number);
   return (uint)(pDVar1 != (DObj *)0x0);
 }
 
@@ -1085,10 +1127,10 @@ void __cdecl SV_track_shutdown(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SavePaths(uchar *param_1,int param_2)
+void __cdecl SV_SavePaths(uchar *buf,int size)
 
 {
-  Com_SaveLump(LUMP_PATHCONNECTIONS,param_1,param_2,COM_SAVE_LUMP_AND_REOPEN);
+  Com_SaveLump(LUMP_PATHCONNECTIONS,buf,size,COM_SAVE_LUMP_AND_REOPEN);
   sv.checksum = Com_GetBspChecksum();
   return;
 }
@@ -1102,7 +1144,7 @@ void __cdecl SV_SavePaths(uchar *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_GetGuid(int param_1)
+int __cdecl SV_GetGuid(int clientNum)
 
 {
   code *pcVar1;
@@ -1117,11 +1159,11 @@ int __cdecl SV_GetGuid(int param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || ((com_maxclients->current).integer <= param_1)) {
+  if ((clientNum < 0) || ((com_maxclients->current).integer <= clientNum)) {
     iVar3 = 0;
   }
   else {
-    iVar3 = *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x63904);
+    iVar3 = *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x63904);
   }
   return iVar3;
 }
@@ -1135,14 +1177,14 @@ int __cdecl SV_GetGuid(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_GetClientPing(int param_1)
+int __cdecl SV_GetClientPing(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x3f2,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -1152,7 +1194,7 @@ int __cdecl SV_GetClientPing(int param_1)
       return iVar3;
     }
   }
-  return *(int *)((int)svs.clients + param_1 * 0x84d00 + 0x530f4);
+  return *(int *)((int)svs.clients + clientNum * 0x84d00 + 0x530f4);
 }
 
 
@@ -1164,14 +1206,14 @@ int __cdecl SV_GetClientPing(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_IsLocalClient(int param_1)
+int __cdecl SV_IsLocalClient(int clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)param_1) {
+  if ((com_maxclients->current).unsignedInt <= (uint)clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server\\sv_game.cpp",0x3fa,0,
                              "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -1181,7 +1223,7 @@ int __cdecl SV_IsLocalClient(int param_1)
       return iVar3;
     }
   }
-  iVar3 = NET_IsLocalAddress(*(netadr_t *)((int)svs.clients + param_1 * 0x84d00 + 0x20));
+  iVar3 = NET_IsLocalAddress(*(netadr_t *)((int)svs.clients + clientNum * 0x84d00 + 0x20));
   return iVar3;
 }
 
@@ -1218,33 +1260,33 @@ void __cdecl SV_SetGametype(void)
 
 {
   int iVar1;
-  char local_4c [64];
+  char gametype [64];
   uint local_c;
-  char *local_8;
+  char *s;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   _Dvar_RegisterString("g_gametype","tdm",0x24,"Game Type");
   if ((com_sv_running->current).enabled != false) {
     iVar1 = G_GetSavePersist();
     if (iVar1 != 0) {
-      I_strncpyz(local_4c,sv.gametype,0x40);
+      I_strncpyz(gametype,sv.gametype,0x40);
       goto LAB_0070f3cb;
     }
   }
-  I_strncpyz(local_4c,(sv_gametype->current).string,0x40);
+  I_strncpyz(gametype,(sv_gametype->current).string,0x40);
 LAB_0070f3cb:
-  for (local_8 = local_4c; *local_8 != '\0'; local_8 = local_8 + 1) {
-    iVar1 = tolower((int)*local_8);
-    *local_8 = (char)iVar1;
+  for (s = gametype; *s != '\0'; s = s + 1) {
+    iVar1 = tolower((int)*s);
+    *s = (char)iVar1;
   }
-  iVar1 = Scr_IsValidGameType(local_4c);
+  iVar1 = Scr_IsValidGameType(gametype);
   if (iVar1 == 0) {
     Com_Printf(0xf,"g_gametype %s is not a valid gametype, defaulting to dm\n");
-    local_4c[0] = 'd';
-    local_4c[1] = 'm';
-    local_4c[2] = 0;
+    gametype[0] = 'd';
+    gametype[1] = 'm';
+    gametype[2] = 0;
   }
-  Dvar_SetString(sv_gametype,local_4c);
+  Dvar_SetString(sv_gametype,gametype);
   return;
 }
 
@@ -1257,17 +1299,18 @@ LAB_0070f3cb:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_InitGameVM(int param_1,int param_2,int param_3)
+void __cdecl SV_InitGameVM(int restart,int registerDvars,int savegame)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  char *pcVar4;
-  DWORD DVar5;
-  DvarSetSource DVar6;
-  ushort uVar7;
-  int local_8;
+  int randomSeed;
+  char *pcVar3;
+  DWORD DVar4;
+  DvarSetSource source;
+  ushort flags;
+  PIXProfile pp;
+  int i;
   
   PIXBeginNamedEvent(-1,"SV_InitGameVM");
   G_ResetEntityParsePoint();
@@ -1279,23 +1322,23 @@ void __cdecl SV_InitGameVM(int param_1,int param_2,int param_3)
     (*pcVar1)();
     return;
   }
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    *(undefined4 *)((int)svs.clients + local_8 * 0x84d00 + 0x556c) = 0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    *(undefined4 *)((int)svs.clients + i * 0x84d00 + 0x556c) = 0;
   }
   Sys_LoadingKeepAlive();
-  iVar3 = Sys_MillisecondsRaw();
-  G_InitGame(svs.time,iVar3,param_1,param_2,param_3);
-  uVar7 = 0;
-  DVar6 = DVAR_SOURCE_SCRIPT;
+  randomSeed = Sys_MillisecondsRaw();
+  G_InitGame(svs.time,randomSeed,restart,registerDvars,savegame);
+  flags = 0;
+  source = DVAR_SOURCE_SCRIPT;
   Dvar_GetFloat("scr_player_sprinttime");
-  pcVar4 = va("%f");
-  Dvar_SetFromStringByNameFromSource("player_sprintTime",pcVar4,DVar6,uVar7);
-  pcVar4 = va("%i");
-  SV_SetConfigstring(3,pcVar4);
+  pcVar3 = va("%f");
+  Dvar_SetFromStringByNameFromSource("player_sprintTime",pcVar3,source,flags);
+  pcVar3 = va("%i");
+  SV_SetConfigstring(3,pcVar3);
   Sys_LoadingKeepAlive();
   Com_DvarDump(6,(char *)0x0);
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1304,12 +1347,13 @@ void __cdecl SV_InitGameVM(int param_1,int param_2,int param_3)
 
 // 0070F460  SV_ShutdownGameVM  (server/sv_game.cpp:1294)
 
-void __cdecl SV_ShutdownGameVM(int param_1)
+void __cdecl SV_ShutdownGameVM(int clearScripts)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  PIXProfile pp;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -1320,7 +1364,7 @@ void __cdecl SV_ShutdownGameVM(int param_1)
     return;
   }
   PIXBeginNamedEvent(-1,"SV_ShutdownGameVM");
-  G_ShutdownGame(param_1);
+  G_ShutdownGame(clearScripts);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1331,24 +1375,28 @@ void __cdecl SV_ShutdownGameVM(int param_1)
 
 // 0070F4F0  SV_RestartGameProgs  (server/sv_game.cpp:1320)
 
-void __cdecl SV_RestartGameProgs(int param_1)
+void __cdecl SV_RestartGameProgs(int savepersist)
 
 {
+  int registerDvars;
+  
   Com_SyncThreads();
   SV_ShutdownGameVM(0);
   com_fixedConsolePosition = 0;
-  SV_InitGameVM(1,(uint)(param_1 == 0),0);
+  SV_InitGameVM(1,(uint)(savepersist == 0),0);
   return;
 }
 
 
 // 0070F6A0  SV_InitGameProgs  (server/sv_game.cpp:1366)
 
-void __cdecl SV_InitGameProgs(int param_1,int param_2)
+void __cdecl SV_InitGameProgs(int savepersist,int savegame)
 
 {
+  int registerDvars;
+  
   gameInitialized = 1;
-  SV_InitGameVM(0,(uint)(param_1 == 0),param_2);
+  SV_InitGameVM(0,(uint)(savepersist == 0),savegame);
   return;
 }
 
@@ -1377,24 +1425,24 @@ int __cdecl SV_GameCommand(void)
 
 // 0070F6F0  SV_Archived_Dvar_GetVariantString  (server/sv_game.cpp:1445)
 
-char * __cdecl SV_Archived_Dvar_GetVariantString(char *param_1)
+char * __cdecl SV_Archived_Dvar_GetVariantString(char *dvarName)
 
 {
   char *pcVar1;
   
-  pcVar1 = Dvar_GetVariantString(param_1);
+  pcVar1 = Dvar_GetVariantString(dvarName);
   return pcVar1;
 }
 
 
 // 0070F710  SV_Archived_Dvar_GetVariantString  (server/sv_game.cpp:1463)
 
-char * __cdecl SV_Archived_Dvar_GetVariantString(long param_1)
+char * __cdecl SV_Archived_Dvar_GetVariantString(long dvarHash)
 
 {
   char *pcVar1;
   
-  pcVar1 = Dvar_GetVariantString(param_1);
+  pcVar1 = Dvar_GetVariantString(dvarHash);
   return pcVar1;
 }
 

@@ -4,7 +4,7 @@
 
 ScopedScrPlaceViewStack * __thiscall
 ScopedScrPlaceViewStack::ScopedScrPlaceViewStack
-          (ScopedScrPlaceViewStack *this,ScreenPlacementStack *param_1,ScreenPlacement *param_2)
+          (ScopedScrPlaceViewStack *this,ScreenPlacementStack *stack,ScreenPlacement *newPlacement)
 
 {
   code *pcVar1;
@@ -14,10 +14,11 @@ ScopedScrPlaceViewStack::ScopedScrPlaceViewStack
   int iVar5;
   float *pfVar6;
   ScreenPlacement *pSVar7;
+  int size;
   
-  this->mStack = param_1;
+  this->mStack = stack;
   if (this->mStack != (ScreenPlacementStack *)0x0) {
-    iVar5 = param_1->size;
+    iVar5 = stack->size;
     if (1 < iVar5) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../ui/ui_ui3d_util.h",0x2c
                                ,0,"%s");
@@ -27,18 +28,18 @@ ScopedScrPlaceViewStack::ScopedScrPlaceViewStack
         return pSVar3;
       }
     }
-    pfVar6 = (float *)(&scrPlaceView + param_1->contextIndex * 0x78);
-    pSVar7 = param_1->stack + iVar5;
+    pfVar6 = (float *)(&scrPlaceView + stack->contextIndex * 0x78);
+    pSVar7 = stack->stack + iVar5;
     for (iVar4 = 0x1e; iVar4 != 0; iVar4 = iVar4 + -1) {
       pSVar7->scaleVirtualToReal[0] = *pfVar6;
       pfVar6 = pfVar6 + 1;
       pSVar7 = (ScreenPlacement *)(pSVar7->scaleVirtualToReal + 1);
     }
-    param_1->size = iVar5 + 1;
-    pfVar6 = (float *)(&scrPlaceView + param_1->contextIndex * 0x78);
+    stack->size = iVar5 + 1;
+    pfVar6 = (float *)(&scrPlaceView + stack->contextIndex * 0x78);
     for (iVar5 = 0x1e; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *pfVar6 = param_2->scaleVirtualToReal[0];
-      param_2 = (ScreenPlacement *)(param_2->scaleVirtualToReal + 1);
+      *pfVar6 = newPlacement->scaleVirtualToReal[0];
+      newPlacement = (ScreenPlacement *)(newPlacement->scaleVirtualToReal + 1);
       pfVar6 = pfVar6 + 1;
     }
   }
@@ -181,26 +182,31 @@ void __cdecl CG_HudElemRegisterDvars(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DirectiveFakeIntroSeconds(int param_1,char *param_2,char *param_3)
+void __cdecl DirectiveFakeIntroSeconds(int localClientNum,char *arg0,char *result)
 
 {
-  sscanf(param_2,"%d");
-  CG_GetLocalClientGlobals(param_1);
-  Com_sprintf(param_3,4,"%02d");
+  cg_s *cgameGlob;
+  int fakeSeconds;
+  
+  sscanf(arg0,"%d");
+  CG_GetLocalClientGlobals(localClientNum);
+  Com_sprintf(result,4,"%02d");
   return;
 }
 
 
 // 004B9680  ParseDirective  (cgame/cg_hudelem.cpp:192)
 
-void __cdecl ParseDirective(char *param_1,char *param_2,char *param_3)
+void __cdecl ParseDirective(char *directive,char *resultName,char *resultArg0)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
+  int len;
+  char *argpos;
   
-  if (param_1 == (char *)0x0) {
+  if (directive == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0xc3,0,"%s")
     ;
     if (!bVar2) {
@@ -209,15 +215,15 @@ void __cdecl ParseDirective(char *param_1,char *param_2,char *param_3)
       return;
     }
   }
-  strstr((uchar *)param_1,":");
+  strstr((uchar *)directive,":");
   if (extraout_EAX == 0) {
-    I_strncpyz(param_2,param_1,0x100);
-    *param_3 = '\0';
+    I_strncpyz(resultName,directive,0x100);
+    *resultArg0 = '\0';
   }
   else {
-    memcpy((uchar *)param_2,(uchar *)param_1,extraout_EAX - (int)param_1);
-    param_2[extraout_EAX - (int)param_1] = '\0';
-    I_strncpyz(param_3,(char *)(extraout_EAX + 1),0x100);
+    memcpy((uchar *)resultName,(uchar *)directive,extraout_EAX - (int)directive);
+    resultName[extraout_EAX - (int)directive] = '\0';
+    I_strncpyz(resultArg0,(char *)(extraout_EAX + 1),0x100);
   }
   return;
 }
@@ -226,46 +232,50 @@ void __cdecl ParseDirective(char *param_1,char *param_2,char *param_3)
 // 004B9490  GetHudelemDirective  (cgame/cg_hudelem.cpp:217)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetHudelemDirective(int param_1,char *param_2,char *param_3)
+void __cdecl GetHudelemDirective(int localClientNum,char *directive,char *result)
 
 {
   bool bVar1;
   int iVar2;
-  char local_20c [256];
-  char local_10c [260];
+  char arg0 [256];
+  char name [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = UI_GetSticksTranslatedString(param_1,param_2,param_3);
+  bVar1 = UI_GetSticksTranslatedString(localClientNum,directive,result);
   if (!bVar1) {
-    iVar2 = UI_GetKeyBindingLocalizedString(param_1,param_2,param_3,0);
+    iVar2 = UI_GetKeyBindingLocalizedString(localClientNum,directive,result,0);
     if (iVar2 == 0) {
-      ParseDirective(param_2,local_10c,local_20c);
-      iVar2 = I_stricmp(local_10c,"FAKE_INTRO_SECONDS");
+      ParseDirective(directive,name,arg0);
+      iVar2 = I_stricmp(name,"FAKE_INTRO_SECONDS");
       if (iVar2 == 0) {
-        DirectiveFakeIntroSeconds(param_1,local_20c,param_3);
+        DirectiveFakeIntroSeconds(localClientNum,arg0,result);
       }
       else {
-        iVar2 = I_stricmp(local_10c,"gocrouch");
+        iVar2 = I_stricmp(name,"gocrouch");
         if (iVar2 == 0) {
-          iVar2 = UI_GetKeyBindingLocalizedString(param_1,"togglecrouch",param_3,0);
+          iVar2 = UI_GetKeyBindingLocalizedString(localClientNum,"togglecrouch",result,0);
           if (iVar2 != 0) {
-            UI_FilterStringForButtonAnimation(param_3,0x100);
+            UI_FilterStringForButtonAnimation(result,0x100);
             return;
           }
-          iVar2 = UI_GetKeyBindingLocalizedString(param_1,"+movedown",param_3,0);
+          iVar2 = UI_GetKeyBindingLocalizedString(localClientNum,"+movedown",result,0);
           if (iVar2 != 0) {
-            UI_FilterStringForButtonAnimation(param_3,0x100);
+            UI_FilterStringForButtonAnimation(result,0x100);
             return;
           }
         }
         UI_SafeTranslateString("KEY_UNBOUND");
-        Com_sprintf(param_3,0x100,"\"%s\"");
+        Com_sprintf(result,0x100,"\"%s\"");
       }
     }
     else {
-      UI_FilterStringForButtonAnimation(param_3,0x100);
+      UI_FilterStringForButtonAnimation(result,0x100);
     }
   }
   return;
@@ -278,7 +288,7 @@ void __cdecl GetHudelemDirective(int param_1,char *param_2,char *param_3)
 /* WARNING: Removing unreachable block (ram,0x004b8fe7) */
 /* WARNING: Removing unreachable block (ram,0x004b9012) */
 
-bool __cdecl ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4)
+bool __cdecl ReplaceDirective(int localClientNum,uint *searchPos,uint *dstLen,char *dstString)
 
 {
   uint uVar1;
@@ -287,38 +297,43 @@ bool __cdecl ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *para
   code *pcVar4;
   bool bVar5;
   undefined1 uVar6;
-  uchar *extraout_EAX;
-  int extraout_EAX_00;
+  uchar *str1;
+  char *extraout_EAX;
   char *pcVar7;
-  ulong uVar8;
-  ulong uVar9;
-  uchar *puVar10;
+  ulong count;
+  ulong count_00;
+  uchar *dst;
   uchar *local_350;
   char *local_340;
   char *local_330;
-  uchar local_314 [256];
-  uchar local_214 [260];
-  undefined4 local_110;
-  uchar local_10c [256];
+  int directiveLen;
+  char *startTokenPos;
+  int newStringLen;
+  int bindingLen;
+  int endLen;
+  uchar keyBinding [256];
+  uchar srcString [260];
+  int beginLen;
+  uchar directive [256];
   uint local_c;
-  int local_8;
+  char *endTokenPos;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (uint *)0x0) &&
+  if ((searchPos == (uint *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x110,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((param_3 == (uint *)0x0) &&
+  if ((dstLen == (uint *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x112,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((0xff < *param_3) &&
+  if ((0xff < *dstLen) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x113,0,
                                "*dstLen doesn\'t index MAX_HUDELEM_TEXT_LEN\n\t%i not in [0, %i)"),
      !bVar5)) {
@@ -326,27 +341,27 @@ bool __cdecl ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *para
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((*param_3 < *param_2) &&
+  if ((*dstLen < *searchPos) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x114,0,
                                "*searchPos <= *dstLen\n\t%i, %i"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((param_4 == (char *)0x0) &&
+  if ((dstString == (char *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x115,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  local_330 = param_4;
+  local_330 = dstString;
   do {
     cVar2 = *local_330;
     local_330 = local_330 + 1;
   } while (cVar2 != '\0');
-  if (*param_3 != (int)local_330 - (int)(param_4 + 1)) {
-    local_340 = param_4;
+  if (*dstLen != (int)local_330 - (int)(dstString + 1)) {
+    local_340 = dstString;
     do {
       cVar2 = *local_340;
       local_340 = local_340 + 1;
@@ -359,55 +374,55 @@ bool __cdecl ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *para
       return (bool)uVar6;
     }
   }
-  memcpy(local_214,(uchar *)param_4,*param_3);
-  local_214[*param_3] = '\0';
-  strstr(local_214 + *param_2,(uchar *)"[{");
-  if (extraout_EAX == (uchar *)0x0) {
+  memcpy(srcString,(uchar *)dstString,*dstLen);
+  srcString[*dstLen] = '\0';
+  strstr(srcString + *searchPos,(uchar *)"[{");
+  if (str1 == (uchar *)0x0) {
     bVar5 = false;
   }
   else {
-    strstr(extraout_EAX,(uchar *)"}]");
-    if (extraout_EAX_00 == 0) {
+    strstr(str1,(uchar *)"}]");
+    if (extraout_EAX == (char *)0x0) {
       pcVar7 = va("No end token to match begin token in string \'%s\'");
       Com_Error(ERR_DROP,pcVar7);
       bVar5 = false;
     }
     else {
-      uVar8 = (extraout_EAX_00 - (int)extraout_EAX) - 2;
-      local_8 = extraout_EAX_00;
-      if (((int)uVar8 < 0) &&
+      pcVar7 = extraout_EAX + (-2 - (int)str1);
+      endTokenPos = extraout_EAX;
+      if (((int)pcVar7 < 0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x129,
                                    1,"%s\n\t(directiveLen) = %i"), !bVar5)) {
         pcVar4 = (code *)swi(3);
         uVar6 = (*pcVar4)();
         return (bool)uVar6;
       }
-      if (uVar8 == 0) {
+      if (pcVar7 == (char *)0x0) {
         pcVar7 = va("Directive empty in string \'%s\'");
         Com_Error(ERR_DROP,pcVar7);
         bVar5 = false;
       }
       else {
-        memcpy(local_10c,extraout_EAX + 2,uVar8);
-        local_10c[(extraout_EAX_00 - (int)extraout_EAX) + -2] = '\0';
-        GetHudelemDirective(param_1,(char *)local_10c,(char *)local_314);
-        local_350 = local_314;
+        memcpy(directive,str1 + 2,(ulong)pcVar7);
+        directive[(int)pcVar7] = '\0';
+        GetHudelemDirective(localClientNum,(char *)directive,(char *)keyBinding);
+        local_350 = keyBinding;
         do {
           uVar3 = *local_350;
           local_350 = local_350 + 1;
         } while (uVar3 != '\0');
-        uVar9 = (int)local_350 - (int)(local_314 + 1);
-        uVar1 = (*param_3 - uVar8) + -4 + uVar9;
+        count = (int)local_350 - (int)(keyBinding + 1);
+        uVar1 = (*dstLen - (int)pcVar7) + -4 + count;
         if ((int)(uVar1 + 1) < 0x101) {
-          local_110 = (int)extraout_EAX - (int)local_214;
-          puVar10 = (uchar *)(param_4 + local_110);
-          memcpy(puVar10,local_314,uVar9);
-          uVar8 = (uVar1 - local_110) - uVar9;
-          memcpy(puVar10 + uVar9,(uchar *)(local_8 + 2),uVar8);
-          (puVar10 + uVar9)[uVar8] = '\0';
-          *param_2 = local_110 + uVar9;
-          *param_3 = uVar1;
-          if ((*param_3 < *param_2) &&
+          beginLen = (int)str1 - (int)srcString;
+          dst = (uchar *)(dstString + beginLen);
+          memcpy(dst,keyBinding,count);
+          count_00 = (uVar1 - beginLen) - count;
+          memcpy(dst + count,(uchar *)(endTokenPos + 2),count_00);
+          (dst + count)[count_00] = '\0';
+          *searchPos = beginLen + count;
+          *dstLen = uVar1;
+          if ((*dstLen < *searchPos) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",
                                        0x14f,1,"*searchPos <= *dstLen\n\t%i, %i"), !bVar5)) {
             pcVar4 = (code *)swi(3);
@@ -430,50 +445,52 @@ bool __cdecl ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *para
 
 // 004B8E80  CG_TranslateHudElemMessage  (cgame/cg_hudelem.cpp:342)
 
-void __cdecl CG_TranslateHudElemMessage(int param_1,char *param_2,char *param_3,char *param_4)
+void __cdecl
+CG_TranslateHudElemMessage(int localClientNum,char *message,char *messageType,char *hudElemString)
 
 {
   uchar uVar1;
   code *pcVar2;
   bool bVar3;
-  uchar *puVar4;
-  char *pcVar5;
+  uchar *src;
+  char *fmt;
   uchar *local_14;
-  ulong local_c;
-  uint local_8;
+  char *translatedString;
+  uint stringLen;
+  uint searchPos;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((message == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x15b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4 == (char *)0x0) &&
+  if ((hudElemString == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x15c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  puVar4 = (uchar *)SEH_LocalizeTextMessage(param_2,param_3,LOCMSG_SAFE);
-  local_14 = puVar4;
+  src = (uchar *)SEH_LocalizeTextMessage(message,messageType,LOCMSG_SAFE);
+  local_14 = src;
   do {
     uVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (uVar1 != '\0');
-  local_c = (int)local_14 - (int)(puVar4 + 1);
-  if (local_c + 1 < 0x101) {
-    memcpy((uchar *)param_4,puVar4,local_c);
-    param_4[local_c] = '\0';
-    local_8 = 0;
+  stringLen = (int)local_14 - (int)(src + 1);
+  if (stringLen + 1 < 0x101) {
+    memcpy((uchar *)hudElemString,src,stringLen);
+    hudElemString[stringLen] = '\0';
+    searchPos = 0;
     do {
-      bVar3 = ReplaceDirective(param_1,&local_8,&local_c,param_4);
+      bVar3 = ReplaceDirective(localClientNum,&searchPos,&stringLen,hudElemString);
     } while (bVar3);
   }
   else {
-    pcVar5 = va("Translated message too long to process: %s\n");
-    Com_Error(ERR_DROP,pcVar5);
+    fmt = va("Translated message too long to process: %s\n");
+    Com_Error(ERR_DROP,fmt);
   }
   return;
 }
@@ -481,25 +498,25 @@ void __cdecl CG_TranslateHudElemMessage(int param_1,char *param_2,char *param_3,
 
 // 004BB380  SafeTranslateHudElemString  (cgame/cg_hudelem.cpp:373)
 
-void __cdecl SafeTranslateHudElemString(int param_1,int param_2,char *param_3)
+void __cdecl SafeTranslateHudElemString(int localClientNum,int index,char *hudElemString)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char *pcVar4;
+  char *message;
+  char *messageType;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((hudElemString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x176,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != 0) {
-    pcVar4 = "hudelem string";
-    pcVar3 = CL_GetConfigString(param_2 + 0x203);
-    CG_TranslateHudElemMessage(param_1,pcVar3,pcVar4,param_3);
+  if (index != 0) {
+    messageType = "hudelem string";
+    message = CL_GetConfigString(index + 0x203);
+    CG_TranslateHudElemMessage(localClientNum,message,messageType,hudElemString);
   }
   return;
 }
@@ -507,21 +524,21 @@ void __cdecl SafeTranslateHudElemString(int param_1,int param_2,char *param_3)
 
 // 004BB3E0  HudElemStringWidth  (cgame/cg_hudelem.cpp:384)
 
-float __cdecl HudElemStringWidth(char *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+float __cdecl HudElemStringWidth(char *string,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   float fVar1;
   int iVar2;
   float fVar3;
   
-  if (param_2->type == '\x0f') {
-    iVar2 = R_TextWidth(param_3->hudElemLabel,0,param_3->font);
-    fVar1 = param_3->fontScale;
+  if (elem->type == '\x0f') {
+    iVar2 = R_TextWidth(cghe->hudElemLabel,0,cghe->font);
+    fVar1 = cghe->fontScale;
     fVar3 = CL_GetScreenAspectRatioDisplayPixel();
     fVar3 = ((float)iVar2 * fVar1) / fVar3;
   }
   else {
-    iVar2 = UI_TextWidth(param_1,0,param_3->font,param_3->fontScale);
+    iVar2 = UI_TextWidth(string,0,cghe->font,cghe->fontScale);
     fVar3 = CL_GetScreenAspectRatioDisplayPixel();
     fVar3 = (float)iVar2 / fVar3;
   }
@@ -531,28 +548,28 @@ float __cdecl HudElemStringWidth(char *param_1,hudelem_s *param_2,cg_hudelem_t *
 
 // 004BB510  GetHudElemTime  (cgame/cg_hudelem.cpp:393)
 
-int __cdecl GetHudElemTime(hudelem_s *param_1,int param_2)
+int __cdecl GetHudElemTime(hudelem_s *elem,int timeNow)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int time;
   
-  switch(param_1->type) {
+  switch(elem->type) {
   case '\t':
-    local_8 = (param_1->time - param_2) + 999;
+    time = (elem->time - timeNow) + 999;
     break;
   case '\n':
   case '\f':
   case '\x0e':
-    local_8 = param_2 - param_1->time;
+    time = timeNow - elem->time;
     break;
   case '\v':
-    local_8 = (param_1->time - param_2) + 99;
+    time = (elem->time - timeNow) + 99;
     break;
   case '\r':
-    local_8 = param_1->time - param_2;
+    time = elem->time - timeNow;
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x1a1,0,
@@ -564,22 +581,26 @@ int __cdecl GetHudElemTime(hudelem_s *param_1,int param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (local_8 < 0) {
-    local_8 = 0;
+  if (time < 0) {
+    time = 0;
   }
-  return local_8;
+  return time;
 }
 
 
 // 004BB470  HudElemTimerString  (cgame/cg_hudelem.cpp:429)
 
-char * __cdecl HudElemTimerString(hudelem_s *param_1,int param_2)
+char * __cdecl HudElemTimerString(hudelem_s *elem,int timeNow)
 
 {
   int iVar1;
   char *pcVar2;
+  int hours;
+  int seconds;
+  int minutes;
+  int time;
   
-  iVar1 = GetHudElemTime(param_1,param_2);
+  iVar1 = GetHudElemTime(elem,timeNow);
   if (iVar1 / 3600000 == 0) {
     pcVar2 = va("%i:%02i");
   }
@@ -592,13 +613,18 @@ char * __cdecl HudElemTimerString(hudelem_s *param_1,int param_2)
 
 // 004BB5D0  HudElemTenthsTimerString  (cgame/cg_hudelem.cpp:449)
 
-char * __cdecl HudElemTenthsTimerString(hudelem_s *param_1,int param_2)
+char * __cdecl HudElemTenthsTimerString(hudelem_s *elem,int timeNow)
 
 {
   int iVar1;
   char *pcVar2;
+  int hours;
+  int seconds;
+  int minutes;
+  int time;
+  int tenths;
   
-  iVar1 = GetHudElemTime(param_1,param_2);
+  iVar1 = GetHudElemTime(elem,timeNow);
   if (iVar1 / 3600000 == 0) {
     pcVar2 = va("%i:%02i.%i");
   }
@@ -613,21 +639,21 @@ char * __cdecl HudElemTenthsTimerString(hudelem_s *param_1,int param_2)
 
 float __cdecl
 HudElemMaterialSpecifiedWidth
-          (ScreenPlacement *param_1,int param_2,int param_3,cg_hudelem_t *param_4)
+          (ScreenPlacement *scrPlace,int alignScreen,int sizeVirtual,cg_hudelem_t *cghe)
 
 {
   float fVar1;
   
-  if (param_3 == 0) {
-    fVar1 = param_4->fontHeight;
+  if (sizeVirtual == 0) {
+    fVar1 = cghe->fontHeight;
   }
-  else if ((param_2 & 0xf0U) == 0x40) {
+  else if ((alignScreen & 0xf0U) == 0x40) {
     fVar1 = ScrPlace_HiResGetScale();
-    fVar1 = (float)param_3 * param_1->scaleVirtualToFull[0] * fVar1;
+    fVar1 = (float)sizeVirtual * scrPlace->scaleVirtualToFull[0] * fVar1;
   }
   else {
     fVar1 = ScrPlace_HiResGetScale();
-    fVar1 = fVar1 * (float)param_3 * param_1->scaleVirtualToReal[0];
+    fVar1 = fVar1 * (float)sizeVirtual * scrPlace->scaleVirtualToReal[0];
   }
   return fVar1;
 }
@@ -637,21 +663,21 @@ HudElemMaterialSpecifiedWidth
 
 float __cdecl
 HudElemMaterialSpecifiedHeight
-          (ScreenPlacement *param_1,int param_2,int param_3,cg_hudelem_t *param_4)
+          (ScreenPlacement *scrPlace,int alignScreen,int sizeVirtual,cg_hudelem_t *cghe)
 
 {
   float fVar1;
   
-  if (param_3 == 0) {
-    fVar1 = param_4->fontHeight;
+  if (sizeVirtual == 0) {
+    fVar1 = cghe->fontHeight;
   }
-  else if ((param_2 & 0xfU) == 4) {
+  else if ((alignScreen & 0xfU) == 4) {
     fVar1 = ScrPlace_HiResGetScale();
-    fVar1 = (float)param_3 * param_1->scaleVirtualToFull[1] * fVar1;
+    fVar1 = (float)sizeVirtual * scrPlace->scaleVirtualToFull[1] * fVar1;
   }
   else {
     fVar1 = ScrPlace_HiResGetScale();
-    fVar1 = fVar1 * (float)param_3 * param_1->scaleVirtualToReal[1];
+    fVar1 = fVar1 * (float)sizeVirtual * scrPlace->scaleVirtualToReal[1];
   }
   return fVar1;
 }
@@ -659,8 +685,7 @@ HudElemMaterialSpecifiedHeight
 
 // 004BB770  HudElemMaterialWidth  (cgame/cg_hudelem.cpp:496)
 
-float __cdecl
-HudElemMaterialWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+float __cdecl HudElemMaterialWidth(ScreenPlacement *scrPlace,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
@@ -670,16 +695,19 @@ HudElemMaterialWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *p
   float fVar5;
   float fVar6;
   float fVar7;
+  float width;
+  float lerp;
+  int deltaTime;
+  float fromWidth;
   
-  fVar6 = HudElemMaterialSpecifiedWidth
-                    (param_1,(uint)param_2->alignScreen,(int)param_2->width,param_3);
+  fVar6 = HudElemMaterialSpecifiedWidth(scrPlace,(uint)elem->alignScreen,(int)elem->width,cghe);
   fVar7 = fVar6;
-  if (((0 < param_2->scaleTime) &&
-      (iVar3 = param_3->timeNow - param_2->scaleStartTime, iVar3 < param_2->scaleTime)) &&
+  if (((0 < elem->scaleTime) &&
+      (iVar3 = cghe->timeNow - elem->scaleStartTime, iVar3 < elem->scaleTime)) &&
      (fVar7 = HudElemMaterialSpecifiedWidth
-                        (param_1,(uint)param_2->fromAlignScreen,(int)param_2->fromWidth,param_3),
-     0 < iVar3)) {
-    fVar5 = (float)iVar3 / (float)(int)param_2->scaleTime;
+                        (scrPlace,(uint)elem->fromAlignScreen,(int)elem->fromWidth,cghe), 0 < iVar3)
+     ) {
+    fVar5 = (float)iVar3 / (float)(int)elem->scaleTime;
     if (((fVar5 < 0.0) || (1.0 < fVar5)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x203,1,
                                  "lerp not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2)) {
@@ -695,8 +723,7 @@ HudElemMaterialWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *p
 
 // 004BBA00  HudElemMaterialHeight  (cgame/cg_hudelem.cpp:521)
 
-float __cdecl
-HudElemMaterialHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+float __cdecl HudElemMaterialHeight(ScreenPlacement *scrPlace,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
@@ -706,16 +733,19 @@ HudElemMaterialHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *
   float fVar5;
   float fVar6;
   float fVar7;
+  float height;
+  float lerp;
+  int deltaTime;
+  float fromHeight;
   
-  fVar6 = HudElemMaterialSpecifiedHeight
-                    (param_1,(uint)param_2->alignScreen,(int)param_2->height,param_3);
+  fVar6 = HudElemMaterialSpecifiedHeight(scrPlace,(uint)elem->alignScreen,(int)elem->height,cghe);
   fVar7 = fVar6;
-  if (((0 < param_2->scaleTime) &&
-      (iVar3 = param_3->timeNow - param_2->scaleStartTime, iVar3 < param_2->scaleTime)) &&
+  if (((0 < elem->scaleTime) &&
+      (iVar3 = cghe->timeNow - elem->scaleStartTime, iVar3 < elem->scaleTime)) &&
      (fVar7 = HudElemMaterialSpecifiedHeight
-                        (param_1,(uint)param_2->fromAlignScreen,(int)param_2->fromHeight,param_3),
-     0 < iVar3)) {
-    fVar5 = (float)iVar3 / (float)(int)param_2->scaleTime;
+                        (scrPlace,(uint)elem->fromAlignScreen,(int)elem->fromHeight,cghe), 0 < iVar3
+     )) {
+    fVar5 = (float)iVar3 / (float)(int)elem->scaleTime;
     if (((fVar5 < 0.0) || (1.0 < fVar5)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x21c,1,
                                  "lerp not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2)) {
@@ -731,7 +761,7 @@ HudElemMaterialHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *
 
 // 004BB690  HudElemWidth  (cgame/cg_hudelem.cpp:546)
 
-float __cdecl HudElemWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+float __cdecl HudElemWidth(ScreenPlacement *scrPlace,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
@@ -739,7 +769,7 @@ float __cdecl HudElemWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
   float10 fVar3;
   float fVar4;
   
-  switch(param_2->type) {
+  switch(elem->type) {
   case '\x01':
   case '\x02':
   case '\x03':
@@ -749,22 +779,22 @@ float __cdecl HudElemWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
   case '\n':
   case '\v':
   case '\f':
-    fVar4 = param_3->labelWidth + param_3->textWidth;
+    fVar4 = cghe->labelWidth + cghe->textWidth;
     break;
   case '\x06':
     fVar4 = 0.0;
     break;
   case '\a':
-    fVar4 = param_3->labelWidth + param_3->textWidth;
+    fVar4 = cghe->labelWidth + cghe->textWidth;
     break;
   case '\b':
   case '\r':
   case '\x0e':
-    fVar4 = HudElemMaterialWidth(param_1,param_2,param_3);
-    fVar4 = fVar4 + param_3->labelWidth;
+    fVar4 = HudElemMaterialWidth(scrPlace,elem,cghe);
+    fVar4 = fVar4 + cghe->labelWidth;
     break;
   case '\x0f':
-    fVar4 = (float)(int)param_2->width;
+    fVar4 = (float)(int)elem->width;
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x240,0,
@@ -782,15 +812,15 @@ float __cdecl HudElemWidth(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
 
 // 004BB8F0  HudElemHeight  (cgame/cg_hudelem.cpp:583)
 
-float __cdecl HudElemHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+float __cdecl HudElemHeight(ScreenPlacement *scrPlace,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_8;
+  float height;
   
-  switch(param_2->type) {
+  switch(elem->type) {
   case '\x01':
   case '\x02':
   case '\x03':
@@ -800,21 +830,21 @@ float __cdecl HudElemHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudel
   case '\n':
   case '\v':
   case '\f':
-    local_8 = param_3->fontHeight;
+    height = cghe->fontHeight;
     break;
   case '\x06':
-    local_8 = 0.0;
+    height = 0.0;
     break;
   case '\a':
-    local_8 = param_3->fontHeight;
+    height = cghe->fontHeight;
     break;
   case '\b':
   case '\r':
   case '\x0e':
-    local_8 = HudElemMaterialHeight(param_1,param_2,param_3);
+    height = HudElemMaterialHeight(scrPlace,elem,cghe);
     break;
   case '\x0f':
-    local_8 = (float)(int)param_2->height;
+    height = (float)(int)elem->height;
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x26c,0,
@@ -826,24 +856,25 @@ float __cdecl HudElemHeight(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudel
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_3 != (cg_hudelem_t *)0xffffffec) && (local_8 < param_3->fontHeight)) {
-    local_8 = param_3->fontHeight;
+  if ((cghe != (cg_hudelem_t *)0xffffffec) && (height < cghe->fontHeight)) {
+    height = cghe->fontHeight;
   }
-  return local_8;
+  return height;
 }
 
 
 // 004BBE90  AlignHudElemX  (cgame/cg_hudelem.cpp:644)
 
-float __cdecl AlignHudElemX(int param_1,float param_2,float param_3)
+float __cdecl AlignHudElemX(int alignOrg,float x,float width)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   float10 fVar4;
+  int alignX;
   
-  uVar3 = param_1 >> 2 & 3;
+  uVar3 = alignOrg >> 2 & 3;
   if (((uVar3 != 0) && (uVar3 != 1)) && (uVar3 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x288,0,
                              "%s\n\t(alignOrg) = %i");
@@ -853,21 +884,22 @@ float __cdecl AlignHudElemX(int param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  return param_2 - param_3 * s_alignScale[uVar3];
+  return x - width * s_alignScale[uVar3];
 }
 
 
 // 004BBEF0  AlignHudElemY  (cgame/cg_hudelem.cpp:655)
 
-float __cdecl AlignHudElemY(int param_1,float param_2,float param_3)
+float __cdecl AlignHudElemY(int alignOrg,float y,float height)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   float10 fVar4;
+  int alignY;
   
-  uVar3 = param_1 & 3;
+  uVar3 = alignOrg & 3;
   if (((uVar3 != 0) && (uVar3 != 1)) && (uVar3 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x293,0,
                              "%s\n\t(alignOrg) = %i");
@@ -877,22 +909,26 @@ float __cdecl AlignHudElemY(int param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  return param_2 - param_3 * s_alignScale[uVar3];
+  return y - height * s_alignScale[uVar3];
 }
 
 
 // 004BBDA0  GetHudElemOrg  (cgame/cg_hudelem.cpp:666)
 
 void __cdecl
-GetHudElemOrg(ScreenPlacement *param_1,int param_2,int param_3,float param_4,float param_5,
-             float param_6,float param_7,float *param_8,float *param_9)
+GetHudElemOrg(ScreenPlacement *scrPlace,int alignOrg,int alignScreen,float xVirtual,float yVirtual,
+             float width,float height,float *orgX,float *orgY)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  int vertAlign;
+  int horzAlign;
+  float x;
+  float y;
   
-  if (param_8 == (float *)0x0) {
+  if (orgX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x2a0,0,"%s"
                             );
     if (!bVar2) {
@@ -901,7 +937,7 @@ GetHudElemOrg(ScreenPlacement *param_1,int param_2,int param_3,float param_4,flo
       return;
     }
   }
-  if (param_9 == (float *)0x0) {
+  if (orgY == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x2a1,0,"%s"
                             );
     if (!bVar2) {
@@ -910,34 +946,35 @@ GetHudElemOrg(ScreenPlacement *param_1,int param_2,int param_3,float param_4,flo
       return;
     }
   }
-  fVar3 = ScrPlace_ApplyX(param_1,param_4,param_3 >> 4 & 0xf);
-  fVar3 = AlignHudElemX(param_2,fVar3,param_6);
-  *param_8 = fVar3;
-  fVar3 = ScrPlace_ApplyY(param_1,param_5,param_3 & 0xf);
-  fVar3 = AlignHudElemY(param_2,fVar3,param_7);
-  *param_9 = fVar3;
+  fVar3 = ScrPlace_ApplyX(scrPlace,xVirtual,alignScreen >> 4 & 0xf);
+  fVar3 = AlignHudElemX(alignOrg,fVar3,width);
+  *orgX = fVar3;
+  fVar3 = ScrPlace_ApplyY(scrPlace,yVirtual,alignScreen & 0xf);
+  fVar3 = AlignHudElemY(alignOrg,fVar3,height);
+  *orgY = fVar3;
   return;
 }
 
 
 // 004BBF50  HudElemMovementFrac  (cgame/cg_hudelem.cpp:686)
 
-float __cdecl HudElemMovementFrac(hudelem_s *param_1,int param_2)
+float __cdecl HudElemMovementFrac(hudelem_s *elem,int timeNow)
 
 {
   float fVar1;
   int iVar2;
+  int time;
   
-  if (param_1->moveTime < 1) {
+  if (elem->moveTime < 1) {
     fVar1 = 1.0;
   }
   else {
-    iVar2 = param_2 - param_1->moveStartTime;
+    iVar2 = timeNow - elem->moveStartTime;
     if (iVar2 < 1) {
       fVar1 = 0.0;
     }
-    else if (iVar2 < param_1->moveTime) {
-      fVar1 = (float)iVar2 / (float)(int)param_1->moveTime;
+    else if (iVar2 < elem->moveTime) {
+      fVar1 = (float)iVar2 / (float)(int)elem->moveTime;
     }
     else {
       fVar1 = 1.0;
@@ -949,18 +986,18 @@ float __cdecl HudElemMovementFrac(hudelem_s *param_1,int param_2)
 
 // 004BBB80  SetHudElemPos  (cgame/cg_hudelem.cpp:717)
 
-void __cdecl SetHudElemPos(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+void __cdecl SetHudElemPos(ScreenPlacement *scrPlace,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_18;
+  float from;
   float local_14;
-  float local_10;
-  float local_c;
+  float lerp;
+  float to;
   float local_8;
   
-  if (param_2 == (hudelem_s *)0x0) {
+  if (elem == (hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x2d2,0,"%s"
                             );
     if (!bVar2) {
@@ -969,7 +1006,7 @@ void __cdecl SetHudElemPos(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
       return;
     }
   }
-  if (param_3 == (cg_hudelem_t *)0x0) {
+  if (cghe == (cg_hudelem_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x2d3,0,"%s"
                             );
     if (!bVar2) {
@@ -978,20 +1015,20 @@ void __cdecl SetHudElemPos(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
       return;
     }
   }
-  local_10 = HudElemMovementFrac(param_2,param_3->timeNow);
-  if (local_10 == 1.0) {
-    GetHudElemOrg(param_1,(uint)param_2->alignOrg,(uint)param_2->alignScreen,param_2->x,param_2->y,
-                  param_3->width,param_3->height,&param_3->x,&param_3->y);
-    param_3->x = (float)(int)ROUND(param_3->x + 9.313226e-10);
-    param_3->y = (float)(int)ROUND(param_3->y + 9.313226e-10);
+  lerp = HudElemMovementFrac(elem,cghe->timeNow);
+  if (lerp == 1.0) {
+    GetHudElemOrg(scrPlace,(uint)elem->alignOrg,(uint)elem->alignScreen,elem->x,elem->y,cghe->width,
+                  cghe->height,&cghe->x,&cghe->y);
+    cghe->x = (float)(int)ROUND(cghe->x + 9.313226e-10);
+    cghe->y = (float)(int)ROUND(cghe->y + 9.313226e-10);
   }
   else {
-    GetHudElemOrg(param_1,(uint)param_2->fromAlignOrg,(uint)param_2->fromAlignScreen,param_2->fromX,
-                  param_2->fromY,param_3->width,param_3->height,&local_18,&local_14);
-    GetHudElemOrg(param_1,(uint)param_2->alignOrg,(uint)param_2->alignScreen,param_2->x,param_2->y,
-                  param_3->width,param_3->height,&local_c,&local_8);
-    param_3->x = (local_c - local_18) * local_10 + local_18;
-    param_3->y = (local_8 - local_14) * local_10 + local_14;
+    GetHudElemOrg(scrPlace,(uint)elem->fromAlignOrg,(uint)elem->fromAlignScreen,elem->fromX,
+                  elem->fromY,cghe->width,cghe->height,&from,&local_14);
+    GetHudElemOrg(scrPlace,(uint)elem->alignOrg,(uint)elem->alignScreen,elem->x,elem->y,cghe->width,
+                  cghe->height,&to,&local_8);
+    cghe->x = (to - from) * lerp + from;
+    cghe->y = (local_8 - local_14) * lerp + local_14;
   }
   return;
 }
@@ -999,20 +1036,23 @@ void __cdecl SetHudElemPos(ScreenPlacement *param_1,hudelem_s *param_2,cg_hudele
 
 // 004BC910  OffsetHudElemY  (cgame/cg_hudelem.cpp:750)
 
-float __cdecl OffsetHudElemY(hudelem_s *param_1,cg_hudelem_t *param_2,float param_3)
+float __cdecl OffsetHudElemY(hudelem_s *elem,cg_hudelem_t *cghe,float offsetY)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float from;
+  float lerp;
+  float to;
   
-  fVar1 = HudElemMovementFrac(param_1,param_2->timeNow);
+  fVar1 = HudElemMovementFrac(elem,cghe->timeNow);
   if (fVar1 == 1.0) {
-    fVar2 = AlignHudElemY((uint)param_1->alignOrg,param_2->y,param_3);
+    fVar2 = AlignHudElemY((uint)elem->alignOrg,cghe->y,offsetY);
   }
   else {
-    fVar2 = AlignHudElemY((uint)param_1->fromAlignOrg,param_2->y,param_3);
-    fVar3 = AlignHudElemY((uint)param_1->alignOrg,param_2->y,param_3);
+    fVar2 = AlignHudElemY((uint)elem->fromAlignOrg,cghe->y,offsetY);
+    fVar3 = AlignHudElemY((uint)elem->alignOrg,cghe->y,offsetY);
     fVar2 = (fVar2 - fVar3) * fVar1 + fVar2;
   }
   return fVar2;
@@ -1021,66 +1061,67 @@ float __cdecl OffsetHudElemY(hudelem_s *param_1,cg_hudelem_t *param_2,float para
 
 // 004BBFA0  ConsolidateHudElemText  (cgame/cg_hudelem.cpp:766)
 
-void __cdecl ConsolidateHudElemText(hudelem_s *param_1,cg_hudelem_t *param_2,char *param_3)
+void __cdecl ConsolidateHudElemText(hudelem_s *elem,cg_hudelem_t *cghe,char *hudElemString)
 
 {
   int iVar1;
   char *pcVar2;
   float fVar3;
-  int local_10;
-  int local_c;
-  int local_8;
+  int len;
+  int textIndex;
+  int labelIndex;
   
-  local_10 = 0;
-  local_8 = 0;
+  len = 0;
+  labelIndex = 0;
   while( true ) {
-    if ((0xfe < local_10) || (param_2->hudElemLabel[local_8] == '\0')) goto LAB_004bc038;
-    if ((param_2->hudElemLabel[local_8] == '&') &&
-       ((param_2->hudElemLabel[local_8 + 1] == '&' && (param_2->hudElemLabel[local_8 + 2] == '1'))))
+    if ((0xfe < len) || (cghe->hudElemLabel[labelIndex] == '\0')) goto LAB_004bc038;
+    if ((cghe->hudElemLabel[labelIndex] == '&') &&
+       ((cghe->hudElemLabel[labelIndex + 1] == '&' && (cghe->hudElemLabel[labelIndex + 2] == '1'))))
     break;
-    param_3[local_10] = param_2->hudElemLabel[local_8];
-    local_10 = local_10 + 1;
-    local_8 = local_8 + 1;
+    hudElemString[len] = cghe->hudElemLabel[labelIndex];
+    len = len + 1;
+    labelIndex = labelIndex + 1;
   }
-  local_8 = local_8 + 3;
+  labelIndex = labelIndex + 3;
 LAB_004bc038:
-  for (local_c = 0; (local_10 < 0xff && (param_2->hudElemText[local_c] != '\0'));
-      local_c = local_c + 1) {
-    param_3[local_10] = param_2->hudElemText[local_c];
-    local_10 = local_10 + 1;
+  for (textIndex = 0; (len < 0xff && (cghe->hudElemText[textIndex] != '\0'));
+      textIndex = textIndex + 1) {
+    hudElemString[len] = cghe->hudElemText[textIndex];
+    len = len + 1;
   }
-  for (; (local_10 < 0xff && (param_2->hudElemLabel[local_8] != '\0')); local_8 = local_8 + 1) {
-    param_3[local_10] = param_2->hudElemLabel[local_8];
-    local_10 = local_10 + 1;
+  for (; (len < 0xff && (cghe->hudElemLabel[labelIndex] != '\0')); labelIndex = labelIndex + 1) {
+    hudElemString[len] = cghe->hudElemLabel[labelIndex];
+    len = len + 1;
   }
-  param_3[local_10] = '\0';
-  pcVar2 = param_2->hudElemText;
+  hudElemString[len] = '\0';
+  pcVar2 = cghe->hudElemText;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *(undefined4 *)pcVar2 = *(undefined4 *)param_3;
-    param_3 = param_3 + 4;
+    *(undefined4 *)pcVar2 = *(undefined4 *)hudElemString;
+    hudElemString = hudElemString + 4;
     pcVar2 = pcVar2 + 4;
   }
-  fVar3 = HudElemStringWidth(param_2->hudElemText,param_1,param_2);
-  param_2->textWidth = fVar3;
-  param_2->hudElemLabel[0] = '\0';
-  param_2->labelWidth = 0.0;
+  fVar3 = HudElemStringWidth(cghe->hudElemText,elem,cghe);
+  cghe->textWidth = fVar3;
+  cghe->hudElemLabel[0] = '\0';
+  cghe->labelWidth = 0.0;
   return;
 }
 
 
 // 004BC120  CopyStringToHudElemString  (cgame/cg_hudelem.cpp:805)
 
-void __cdecl CopyStringToHudElemString(char *param_1,char *param_2)
+void __cdecl CopyStringToHudElemString(char *string,char *hudElemString)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  ulong uVar5;
+  char *fmt;
+  ulong count;
   char *local_c;
+  int stringLen;
   
-  if (param_1 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x328,0,"%s"
                             );
     if (!bVar3) {
@@ -1089,7 +1130,7 @@ void __cdecl CopyStringToHudElemString(char *param_1,char *param_2)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (hudElemString == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x329,0,"%s"
                             );
     if (!bVar3) {
@@ -1098,19 +1139,19 @@ void __cdecl CopyStringToHudElemString(char *param_1,char *param_2)
       return;
     }
   }
-  local_c = param_1;
+  local_c = string;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  uVar5 = (int)local_c - (int)(param_1 + 1);
-  if ((int)uVar5 < 0x100) {
-    memcpy((uchar *)param_2,(uchar *)param_1,uVar5);
-    param_2[uVar5] = '\0';
+  count = (int)local_c - (int)(string + 1);
+  if ((int)count < 0x100) {
+    memcpy((uchar *)hudElemString,(uchar *)string,count);
+    hudElemString[count] = '\0';
   }
   else {
-    pcVar4 = va("Hud elem string too long, %s");
-    Com_Error(ERR_DROP,pcVar4);
+    fmt = va("Hud elem string too long, %s");
+    Com_Error(ERR_DROP,fmt);
   }
   return;
 }
@@ -1123,48 +1164,53 @@ void __cdecl CopyStringToHudElemString(char *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetHudElemInfo(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3,char *param_4)
+void __cdecl
+GetHudElemInfo(int localClientNum,hudelem_s *elem,cg_hudelem_t *cghe,char *hudElemString)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  ScreenPlacement *pSVar4;
-  Font_s *pFVar5;
-  int iVar6;
-  cg_s *pcVar7;
-  char *pcVar8;
+  ScreenPlacement *scrPlace_00;
+  Font_s *pFVar4;
+  int iVar5;
+  cg_s *pcVar6;
+  char *pcVar7;
+  float fVar8;
   float fVar9;
-  float fVar10;
-  char *pcVar11;
-  int local_1c;
-  float local_14;
+  char *pcVar10;
+  int fontEnum;
+  ScreenPlacement *scrPlace;
+  float baseFontScale;
+  float srcElemFontScale;
+  int namedClientIndex;
+  cg_s *clientGlob;
   
-  pSVar4 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  switch(param_2->font) {
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+  switch(elem->font) {
   case '\x01':
-    local_14 = 0.5;
-    local_1c = 4;
+    baseFontScale = 0.5;
+    fontEnum = 4;
     break;
   case '\x02':
-    local_14 = 0.33333334;
-    local_1c = 5;
+    baseFontScale = 0.33333334;
+    fontEnum = 5;
     break;
   case '\x03':
-    local_14 = 0.25;
-    local_1c = 1;
+    baseFontScale = 0.25;
+    fontEnum = 1;
     break;
   case '\x04':
-    local_14 = 0.25;
-    local_1c = 2;
+    baseFontScale = 0.25;
+    fontEnum = 2;
     break;
   case '\x05':
-    local_14 = 0.25;
-    local_1c = 3;
+    baseFontScale = 0.25;
+    fontEnum = 3;
     break;
   case '\x06':
-    local_14 = 0.25;
-    local_1c = 6;
+    baseFontScale = 0.25;
+    fontEnum = 6;
     break;
   default:
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x34a,0,
@@ -1175,34 +1221,35 @@ void __cdecl GetHudElemInfo(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3
       return;
     }
   case '\0':
-    local_14 = 0.25;
-    local_1c = 0;
+    baseFontScale = 0.25;
+    fontEnum = 0;
   }
-  fVar10 = param_2->fontScale;
-  fVar9 = ScrPlace_HiResGetScale();
-  param_3->fontScale = fVar9 * fVar10 * local_14 * *(float *)(&DAT_02d9e684 + param_1 * 0x78);
-  pFVar5 = UI_GetFontHandle(pSVar4,local_1c,param_3->fontScale);
-  param_3->font = pFVar5;
-  iVar6 = UI_TextHeight(param_3->font,param_3->fontScale);
-  param_3->fontHeight = (float)iVar6;
-  param_3->hudElemLabel[0] = '\0';
-  if (param_2->label != 0) {
-    SafeTranslateHudElemString(param_1,(int)param_2->label,param_3->hudElemLabel);
+  fVar9 = elem->fontScale;
+  fVar8 = ScrPlace_HiResGetScale();
+  cghe->fontScale =
+       fVar8 * fVar9 * baseFontScale * *(float *)(&DAT_02d9e684 + localClientNum * 0x78);
+  pFVar4 = UI_GetFontHandle(scrPlace_00,fontEnum,cghe->fontScale);
+  cghe->font = pFVar4;
+  iVar5 = UI_TextHeight(cghe->font,cghe->fontScale);
+  cghe->fontHeight = (float)iVar5;
+  cghe->hudElemLabel[0] = '\0';
+  if (elem->label != 0) {
+    SafeTranslateHudElemString(localClientNum,(int)elem->label,cghe->hudElemLabel);
   }
-  param_3->hudElemText[0] = '\0';
-  switch(param_2->type) {
+  cghe->hudElemText[0] = '\0';
+  switch(elem->type) {
   case '\x01':
-    if (param_2->text != 0) {
-      SafeTranslateHudElemString(param_1,(int)param_2->text,param_3->hudElemText);
+    if (elem->text != 0) {
+      SafeTranslateHudElemString(localClientNum,(int)elem->text,cghe->hudElemText);
     }
     break;
   case '\x02':
-    Com_sprintf(param_3->hudElemText,0x100,"%g");
+    Com_sprintf(cghe->hudElemText,0x100,"%g");
     break;
   case '\x03':
-    uVar1 = (uint)ROUND(param_2->value + 9.313226e-10);
+    uVar1 = (uint)ROUND(elem->value + 9.313226e-10);
     if ((-1 < (int)uVar1) && ((int)uVar1 < (com_maxclients->current).integer)) {
-      pcVar7 = CG_GetLocalClientGlobals(param_1);
+      pcVar6 = CG_GetLocalClientGlobals(localClientNum);
       if ((0x1f < uVar1) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x380,
                                    0,
@@ -1212,65 +1259,65 @@ void __cdecl GetHudElemInfo(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3
         (*pcVar2)();
         return;
       }
-      iVar6 = 0x100;
-      pcVar8 = BG_DisplayName((clientInfo_t *)((int)(pcVar7->bgs).clientinfo + uVar1 * 0x5c8),3);
-      I_strncpyz(param_3->hudElemText,pcVar8,iVar6);
+      iVar5 = 0x100;
+      pcVar7 = BG_DisplayName((clientInfo_t *)((int)(pcVar6->bgs).clientinfo + uVar1 * 0x5c8),3);
+      I_strncpyz(cghe->hudElemText,pcVar7,iVar5);
     }
     break;
   case '\x04':
-    iVar6 = 0x100;
-    pcVar8 = CL_GetConfigString(0x13);
-    I_strncpyz(param_3->hudElemText,pcVar8,iVar6);
+    iVar5 = 0x100;
+    pcVar7 = CL_GetConfigString(0x13);
+    I_strncpyz(cghe->hudElemText,pcVar7,iVar5);
     break;
   case '\x05':
-    iVar6 = 0x100;
-    pcVar8 = CL_GetConfigString(0x14);
-    I_strncpyz(param_3->hudElemText,pcVar8,iVar6);
+    iVar5 = 0x100;
+    pcVar7 = CL_GetConfigString(0x14);
+    I_strncpyz(cghe->hudElemText,pcVar7,iVar5);
     break;
   case '\a':
-    Com_sprintf(param_3->hudElemText,0x100,"%g");
+    Com_sprintf(cghe->hudElemText,0x100,"%g");
     break;
   case '\t':
   case '\n':
-    pcVar11 = param_3->hudElemText;
-    pcVar8 = HudElemTimerString(param_2,param_3->timeNow);
-    CopyStringToHudElemString(pcVar8,pcVar11);
+    pcVar10 = cghe->hudElemText;
+    pcVar7 = HudElemTimerString(elem,cghe->timeNow);
+    CopyStringToHudElemString(pcVar7,pcVar10);
     break;
   case '\v':
   case '\f':
-    pcVar11 = param_3->hudElemText;
-    pcVar8 = HudElemTenthsTimerString(param_2,param_3->timeNow);
-    CopyStringToHudElemString(pcVar8,pcVar11);
+    pcVar10 = cghe->hudElemText;
+    pcVar7 = HudElemTenthsTimerString(elem,cghe->timeNow);
+    CopyStringToHudElemString(pcVar7,pcVar10);
   }
-  if ((param_3->hudElemLabel[0] != '\0') && (param_3->hudElemText[0] != '\0')) {
-    ConsolidateHudElemText(param_2,param_3,param_4);
+  if ((cghe->hudElemLabel[0] != '\0') && (cghe->hudElemText[0] != '\0')) {
+    ConsolidateHudElemText(elem,cghe,hudElemString);
   }
-  if (param_3->hudElemLabel[0] == '\0') {
-    param_3->labelWidth = 0.0;
-  }
-  else {
-    fVar10 = HudElemStringWidth(param_3->hudElemLabel,param_2,param_3);
-    param_3->labelWidth = fVar10;
-  }
-  if (param_3->hudElemText[0] == '\0') {
-    param_3->textWidth = 0.0;
+  if (cghe->hudElemLabel[0] == '\0') {
+    cghe->labelWidth = 0.0;
   }
   else {
-    fVar10 = HudElemStringWidth(param_3->hudElemText,param_2,param_3);
-    param_3->textWidth = fVar10;
+    fVar9 = HudElemStringWidth(cghe->hudElemLabel,elem,cghe);
+    cghe->labelWidth = fVar9;
   }
-  fVar10 = HudElemWidth(pSVar4,param_2,param_3);
-  param_3->width = fVar10;
-  fVar10 = HudElemHeight(pSVar4,param_2,param_3);
-  param_3->height = fVar10;
-  SetHudElemPos((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,param_3);
+  if (cghe->hudElemText[0] == '\0') {
+    cghe->textWidth = 0.0;
+  }
+  else {
+    fVar9 = HudElemStringWidth(cghe->hudElemText,elem,cghe);
+    cghe->textWidth = fVar9;
+  }
+  fVar9 = HudElemWidth(scrPlace_00,elem,cghe);
+  cghe->width = fVar9;
+  fVar9 = HudElemHeight(scrPlace_00,elem,cghe);
+  cghe->height = fVar9;
+  SetHudElemPos((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),elem,cghe);
   return;
 }
 
 
 // 004BC200  HudElemColorToVec4  (cgame/cg_hudelem.cpp:950)
 
-void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
+void __cdecl HudElemColorToVec4(hudelem_color_t *hudElemColor,float *resultColor)
 
 {
   float fVar1;
@@ -1295,17 +1342,17 @@ void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = (float)(param_1->_s_0).r * 0.003921569;
-  param_2[1] = (float)(param_1->_s_0).g * 0.003921569;
-  param_2[2] = (float)(param_1->_s_0).b * 0.003921569;
-  param_2[3] = (float)(param_1->_s_0).a * 0.003921569;
+  *resultColor = (float)(hudElemColor->_s_0).r * 0.003921569;
+  resultColor[1] = (float)(hudElemColor->_s_0).g * 0.003921569;
+  resultColor[2] = (float)(hudElemColor->_s_0).b * 0.003921569;
+  resultColor[3] = (float)(hudElemColor->_s_0).a * 0.003921569;
   if ((cl_paused->current).integer != 0) {
     fVar1 = (hudElemPausedBrightness->current).value;
-    *param_2 = fVar1 * *param_2;
-    param_2[1] = fVar1 * param_2[1];
-    param_2[2] = fVar1 * param_2[2];
+    *resultColor = fVar1 * *resultColor;
+    resultColor[1] = fVar1 * resultColor[1];
+    resultColor[2] = fVar1 * resultColor[2];
   }
-  if ((*param_2 < 0.0) || (1.000001 < *param_2)) {
+  if ((*resultColor < 0.0) || (1.000001 < *resultColor)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3c2,0,
                              "resultColor[0] not in [0.0f, 1.000001f]\n\t%g not in [%g, %g]");
     if (!bVar3) {
@@ -1314,7 +1361,7 @@ void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
       return;
     }
   }
-  if ((param_2[1] < 0.0) || (1.000001 < param_2[1])) {
+  if ((resultColor[1] < 0.0) || (1.000001 < resultColor[1])) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3c3,0,
                              "resultColor[1] not in [0.0f, 1.000001f]\n\t%g not in [%g, %g]");
     if (!bVar3) {
@@ -1323,7 +1370,7 @@ void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
       return;
     }
   }
-  if ((param_2[2] < 0.0) || (1.000001 < param_2[2])) {
+  if ((resultColor[2] < 0.0) || (1.000001 < resultColor[2])) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3c4,0,
                              "resultColor[2] not in [0.0f, 1.000001f]\n\t%g not in [%g, %g]");
     if (!bVar3) {
@@ -1332,7 +1379,7 @@ void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
       return;
     }
   }
-  if ((param_2[3] < 0.0) || (1.000001 < param_2[3])) {
+  if ((resultColor[3] < 0.0) || (1.000001 < resultColor[3])) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3c5,0,
                              "resultColor[3] not in [0.0f, 1.000001f]\n\t%g not in [%g, %g]");
     if (!bVar3) {
@@ -1353,24 +1400,31 @@ void __cdecl HudElemColorToVec4(hudelem_color_t *param_1,float *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *param_4,
-                 cg_hudelem_t *param_5)
+DrawHudElemString(int localClientNum,ScreenPlacement *scrPlace,char *text,hudelem_s *elem,
+                 cg_hudelem_t *cghe)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   cg_s *pcVar4;
-  int iVar5;
+  int strLength_00;
+  float fVar5;
+  float yScale;
   float fVar6;
   float fVar7;
-  float fVar8;
-  float fVar9;
-  int local_1c;
-  int local_18;
+  cg_s *cgameGlob;
+  int strLength;
+  float textScale;
+  int textStyle;
+  int fxBirthTime;
+  float scaleY;
+  float y;
+  float scaleX;
+  float dy;
   
-  local_1c = 3;
-  if (param_3 == (char *)0x0) {
+  textStyle = 3;
+  if (text == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3d4,0,"%s"
                             );
     if (!bVar3) {
@@ -1379,7 +1433,7 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
       return;
     }
   }
-  if (*param_3 == '\0') {
+  if (*text == '\0') {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3d5,0,"%s"
                             );
     if (!bVar3) {
@@ -1388,7 +1442,7 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
       return;
     }
   }
-  if (param_4 == (hudelem_s *)0x0) {
+  if (elem == (hudelem_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3d6,0,"%s"
                             );
     if (!bVar3) {
@@ -1397,7 +1451,7 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
       return;
     }
   }
-  if (param_5 == (cg_hudelem_t *)0x0) {
+  if (cghe == (cg_hudelem_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3d7,0,"%s"
                             );
     if (!bVar3) {
@@ -1406,7 +1460,7 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
       return;
     }
   }
-  if (param_5->color[3] == 0.0) {
+  if (cghe->color[3] == 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x3d9,0,"%s"
                             );
     if (!bVar3) {
@@ -1415,52 +1469,50 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
       return;
     }
   }
-  fVar6 = OffsetHudElemY(param_4,param_5,-(param_5->height - param_5->fontHeight));
-  fVar7 = R_NormalizedTextScale(param_5->font,param_5->fontScale);
-  fVar8 = ScrPlace_HiResGetScale();
-  fVar1 = param_2->scaleRealToVirtual[1];
-  fVar9 = ScrPlace_HiResGetScale();
-  fVar8 = fVar9 * (fVar7 / fVar8) * fVar1 * param_2->scaleVirtualToReal[0];
-  fVar1 = param_5->fontHeight;
-  local_18 = param_4->fxBirthTime;
-  if ((local_18 != 0) && (param_5->timeNow < local_18)) {
-    local_18 = param_5->timeNow;
+  fVar5 = OffsetHudElemY(elem,cghe,-(cghe->height - cghe->fontHeight));
+  yScale = R_NormalizedTextScale(cghe->font,cghe->fontScale);
+  fVar6 = ScrPlace_HiResGetScale();
+  fVar1 = scrPlace->scaleRealToVirtual[1];
+  fVar7 = ScrPlace_HiResGetScale();
+  fVar6 = fVar7 * (yScale / fVar6) * fVar1 * scrPlace->scaleVirtualToReal[0];
+  fVar1 = cghe->fontHeight;
+  fxBirthTime = elem->fxBirthTime;
+  if ((fxBirthTime != 0) && (cghe->timeNow < fxBirthTime)) {
+    fxBirthTime = cghe->timeNow;
   }
-  HudElemColorToVec4(&param_4->glowColor,glowColor);
-  if (param_4->type == '\v') {
-    local_1c = 0;
+  HudElemColorToVec4(&elem->glowColor,glowColor);
+  if (elem->type == '\v') {
+    textStyle = 0;
   }
-  if (local_18 != 0) {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    iVar5 = SEH_PrintStrlen(param_3);
+  if (fxBirthTime != 0) {
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    strLength_00 = SEH_PrintStrlen(text);
     CL_PlayTextFXPulseSounds
-              (param_1,param_5->timeNow,iVar5,local_18,(uint)param_4->fxLetterTime,
-               (uint)param_4->fxDecayStartTime,
-               (int *)(pcVar4->impactEffects + param_4->soundID + 0x1e));
+              (localClientNum,cghe->timeNow,strLength_00,fxBirthTime,(uint)elem->fxLetterTime,
+               (uint)elem->fxDecayStartTime,(int *)(pcVar4->impactEffects + elem->soundID + 0x1e));
   }
-  if ((param_4->flags & 0x80) == 0) {
-    if ((param_4->flags & 0x1000) == 0) {
+  if ((elem->flags & 0x80) == 0) {
+    if ((elem->flags & 0x1000) == 0) {
       CL_DrawTextPhysicalWithEffects
-                (param_3,0x7fffffff,param_5->font,param_5->x,fVar6 + fVar1,1.0,fVar8,fVar7,
-                 param_5->color,local_1c,glowColor,cgMedia.textDecodeCharacters,
-                 cgMedia.textDecodeCharactersGlow,local_18,(uint)param_4->fxLetterTime,
-                 (uint)param_4->fxDecayStartTime,(uint)param_4->fxDecayDuration);
+                (text,0x7fffffff,cghe->font,cghe->x,fVar5 + fVar1,1.0,fVar6,yScale,cghe->color,
+                 textStyle,glowColor,cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,
+                 fxBirthTime,(uint)elem->fxLetterTime,(uint)elem->fxDecayStartTime,
+                 (uint)elem->fxDecayDuration);
     }
     else {
       CL_DrawTextPhysicalWithCOD7DecodeEffects
-                (param_3,0x7fffffff,param_5->font,param_5->x,fVar6 + fVar1,fVar8,fVar7,
-                 param_5->color,local_1c,glowColor,cgMedia.textDecodeCharacters,
-                 cgMedia.textDecodeCharactersGlow,local_18,(uint)param_4->fxLetterTime,
-                 (uint)param_4->fxDecayStartTime,(uint)param_4->fxDecayDuration);
+                (text,0x7fffffff,cghe->font,cghe->x,fVar5 + fVar1,fVar6,yScale,cghe->color,textStyle
+                 ,glowColor,cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,
+                 fxBirthTime,(uint)elem->fxLetterTime,(uint)elem->fxDecayStartTime,
+                 (uint)elem->fxDecayDuration);
     }
   }
   else {
     CL_DrawTextPhysicalWithRedactEffects
-              (param_3,0x7fffffff,param_5->font,param_5->x,fVar6 + fVar1,fVar8,fVar7,param_5->color,
-               local_1c,glowColor,cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,
-               local_18,(uint)param_4->fxLetterTime,(uint)param_4->fxDecayStartTime,
-               (uint)param_4->fxDecayDuration,(uint)param_4->fxRedactDecayStartTime,
-               (uint)param_4->fxRedactDecayDuration);
+              (text,0x7fffffff,cghe->font,cghe->x,fVar5 + fVar1,fVar6,yScale,cghe->color,textStyle,
+               glowColor,cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,fxBirthTime,
+               (uint)elem->fxLetterTime,(uint)elem->fxDecayStartTime,(uint)elem->fxDecayDuration,
+               (uint)elem->fxRedactDecayStartTime,(uint)elem->fxRedactDecayDuration);
   }
   return;
 }
@@ -1470,52 +1522,51 @@ DrawHudElemString(int param_1,ScreenPlacement *param_2,char *param_3,hudelem_s *
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DrawHudElemClock(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+void __cdecl DrawHudElemClock(int localClientNum,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float fVar4;
-  float fVar5;
-  float local_60;
-  char local_5c [68];
+  float w;
+  float h;
+  float width;
+  float height;
+  float angle;
+  char materialName [68];
   uint local_18;
-  Material *local_14;
-  int local_10;
-  Material *local_c;
-  float local_8;
+  Material *handMaterial;
+  int time;
+  Material *faceMaterial;
+  float y;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3->color[3] == 0.0) &&
+  if ((cghe->color[3] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x413,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = CG_ServerMaterialName(param_1,(uint)param_2->materialIndex,local_5c,0x3a);
+  iVar3 = CG_ServerMaterialName(localClientNum,(uint)elem->materialIndex,materialName,0x3a);
   if (iVar3 != 0) {
-    local_c = Material_RegisterHandle(local_5c,7);
-    I_strncat(local_5c,0x40,"needle");
-    local_14 = Material_RegisterHandle(local_5c,7);
-    local_10 = GetHudElemTime(param_2,param_3->timeNow);
-    if (param_2->duration == 0) {
-      local_60 = AngleNormalize360((float)local_10 * 0.006);
+    faceMaterial = Material_RegisterHandle(materialName,7);
+    I_strncat(materialName,0x40,"needle");
+    handMaterial = Material_RegisterHandle(materialName,7);
+    time = GetHudElemTime(elem,cghe->timeNow);
+    if (elem->duration == 0) {
+      angle = AngleNormalize360((float)time * 0.006);
     }
     else {
-      local_60 = AngleNormalize360(((float)local_10 * 360.0) / (float)param_2->duration);
+      angle = AngleNormalize360(((float)time * 360.0) / (float)elem->duration);
     }
-    fVar4 = HudElemMaterialWidth
-                      ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,param_3);
-    fVar5 = HudElemMaterialHeight
-                      ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,param_3);
-    local_8 = OffsetHudElemY(param_2,param_3,-(param_3->height - fVar5));
-    CL_DrawStretchPicPhysical(param_3->x,local_8,fVar4,fVar5,0.0,0.0,1.0,1.0,param_3->color,local_c)
-    ;
+    w = HudElemMaterialWidth((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),elem,cghe);
+    h = HudElemMaterialHeight((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),elem,cghe);
+    y = OffsetHudElemY(elem,cghe,-(cghe->height - h));
+    CL_DrawStretchPicPhysical(cghe->x,y,w,h,0.0,0.0,1.0,1.0,cghe->color,faceMaterial);
     CG_DrawRotatedPicPhysical
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3->x,local_8,fVar4,fVar5,
-               local_60,param_3->color,local_14);
+              ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),cghe->x,y,w,h,angle,
+               cghe->color,handMaterial);
   }
   return;
 }
@@ -1525,38 +1576,39 @@ void __cdecl DrawHudElemClock(int param_1,hudelem_s *param_2,cg_hudelem_t *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DrawHudElemMaterial(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+void __cdecl DrawHudElemMaterial(int localClientNum,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  Material *pMVar4;
-  float fVar5;
-  float fVar6;
-  char local_54 [68];
+  Material *material_00;
+  float w;
+  float h;
+  Material *material;
+  float width;
+  float height;
+  char materialName [68];
   uint local_10;
-  float local_c;
+  float screenPos;
   float local_8;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3->color[3] == 0.0) &&
+  if ((cghe->color[3] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x432,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = CG_ServerMaterialName(param_1,(uint)param_2->materialIndex,local_54,0x40);
+  iVar3 = CG_ServerMaterialName(localClientNum,(uint)elem->materialIndex,materialName,0x40);
   if (iVar3 != 0) {
-    pMVar4 = Material_RegisterHandle(local_54,7);
-    fVar5 = HudElemMaterialWidth
-                      ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,param_3);
-    fVar6 = HudElemMaterialHeight
-                      ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,param_3);
-    local_c = param_3->x;
-    local_8 = OffsetHudElemY(param_2,param_3,-(param_3->height - fVar6));
-    CL_DrawStretchPicPhysical(local_c,local_8,fVar5,fVar6,0.0,0.0,1.0,1.0,param_3->color,pMVar4);
+    material_00 = Material_RegisterHandle(materialName,7);
+    w = HudElemMaterialWidth((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),elem,cghe);
+    h = HudElemMaterialHeight((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),elem,cghe);
+    screenPos = cghe->x;
+    local_8 = OffsetHudElemY(elem,cghe,-(cghe->height - h));
+    CL_DrawStretchPicPhysical(screenPos,local_8,w,h,0.0,0.0,1.0,1.0,cghe->color,material_00);
   }
   return;
 }
@@ -1569,18 +1621,20 @@ void __cdecl DrawHudElemMaterial(int param_1,hudelem_s *param_2,cg_hudelem_t *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl UpdateHudElemWarGameData(int param_1,hudelem_s *param_2,cg_hudelem_t *param_3)
+void __cdecl UpdateHudElemWarGameData(int localClientNum,hudelem_s *elem,cg_hudelem_t *cghe)
 
 {
   cg_s *pcVar1;
   Material *pMVar2;
   Material *local_18;
+  cg_s *cgameGlob;
+  float k_momentum_progress_increment_per_frame;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar1->inKillCam == 0) {
-    pcVar1->genericMaterialMap[0xe] = (Material *)param_2->value;
-    pcVar1->genericMaterialMap[0x10] = (Material *)(uint)param_2->materialIndex;
-    pcVar1->genericMaterialMap[0x11] = (Material *)param_2->time;
+    pcVar1->genericMaterialMap[0xe] = (Material *)elem->value;
+    pcVar1->genericMaterialMap[0x10] = (Material *)(uint)elem->materialIndex;
+    pcVar1->genericMaterialMap[0x11] = (Material *)elem->time;
     if ((float)pcVar1->genericMaterialMap[0xe] < (float)pcVar1->genericMaterialMap[0xf] ||
         (float)pcVar1->genericMaterialMap[0xe] == (float)pcVar1->genericMaterialMap[0xf]) {
       pcVar1->genericMaterialMap[0xf] = pcVar1->genericMaterialMap[0xe];
@@ -1608,7 +1662,7 @@ void __cdecl UpdateHudElemWarGameData(int param_1,hudelem_s *param_2,cg_hudelem_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl HudElemWaypointHeight(int param_1,hudelem_s *param_2)
+float __cdecl HudElemWaypointHeight(int localClientNum,hudelem_s *elem)
 
 {
   code *pcVar1;
@@ -1619,14 +1673,18 @@ float __cdecl HudElemWaypointHeight(int param_1,hudelem_s *param_2)
   float fVar6;
   float fVar7;
   float fVar8;
+  float height;
+  float lerp;
+  int deltaTime;
+  float fromHeight;
   
-  fVar6 = (float)(int)param_2->height;
+  fVar6 = (float)(int)elem->height;
   fVar7 = fVar6;
-  if (0 < param_2->scaleTime) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    iVar4 = pcVar3->time - param_2->scaleStartTime;
-    if ((iVar4 < param_2->scaleTime) && (fVar7 = (float)(int)param_2->fromHeight, 0 < iVar4)) {
-      fVar8 = (float)iVar4 / (float)(int)param_2->scaleTime;
+  if (0 < elem->scaleTime) {
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+    iVar4 = pcVar3->time - elem->scaleStartTime;
+    if ((iVar4 < elem->scaleTime) && (fVar7 = (float)(int)elem->fromHeight, 0 < iVar4)) {
+      fVar8 = (float)iVar4 / (float)(int)elem->scaleTime;
       if (((fVar8 < 0.0) || (1.0 < fVar8)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x4a6,
                                    1,"lerp not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar2)) {
@@ -1644,7 +1702,7 @@ float __cdecl HudElemWaypointHeight(int param_1,hudelem_s *param_2)
 // 004B9A10  GetViewAxisProjections  (cgame/cg_hudelem.cpp:1196)
 
 void __cdecl
-GetViewAxisProjections(float *param_1,float (*param_2) [3],float *param_3,float *param_4)
+GetViewAxisProjections(float *vieworg,float (*viewaxis) [3],float *worldPoint,float *projections)
 
 {
   float fVar1;
@@ -1654,17 +1712,17 @@ GetViewAxisProjections(float *param_1,float (*param_2) [3],float *param_3,float 
   float fVar5;
   float fVar6;
   float (*pafVar7) [3];
-  int local_8;
+  int i;
   
-  fVar1 = *param_3;
-  fVar2 = *param_1;
-  fVar3 = param_3[1];
-  fVar4 = param_1[1];
-  fVar5 = param_3[2];
-  fVar6 = param_1[2];
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    pafVar7 = param_2 + local_8;
-    param_4[local_8] =
+  fVar1 = *worldPoint;
+  fVar2 = *vieworg;
+  fVar3 = worldPoint[1];
+  fVar4 = vieworg[1];
+  fVar5 = worldPoint[2];
+  fVar6 = vieworg[2];
+  for (i = 0; i < 3; i = i + 1) {
+    pafVar7 = viewaxis + i;
+    projections[i] =
          (fVar1 - fVar2) * (*pafVar7)[0] + (fVar3 - fVar4) * (*pafVar7)[1] +
          (fVar5 - fVar6) * (*pafVar7)[2];
   }
@@ -1679,56 +1737,61 @@ GetViewAxisProjections(float *param_1,float (*param_2) [3],float *param_3,float 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl WorldPosToScreenPos(int param_1,float *param_2,float *param_3)
+bool __cdecl WorldPosToScreenPos(int localClientNum,float *worldPos,float *outScreenPos)
 
 {
   float fVar1;
   bool bVar2;
   cg_s *pcVar3;
   int iVar4;
-  float local_20;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float projections;
   float local_1c;
   float local_18;
-  refdef_s *local_14;
+  refdef_s *refdef;
+  float x;
+  float y;
+  float w;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = &pcVar3->refdef;
-  iVar4 = param_1 * 0x78;
-  GetViewAxisProjections((pcVar3->refdef).vieworg,(pcVar3->refdef).viewaxis,param_2,&local_20);
-  if (0.0 <= local_20) {
-    *param_3 = *(float *)(&DAT_02d9e6c0 + iVar4) * 0.5 *
-               (1.0 - (local_1c / local_14->tanHalfFovX) / local_20) +
-               *(float *)(&DAT_02d9e6b8 + iVar4);
-    param_3[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 0.5 *
-                 (1.0 - (local_18 / local_14->tanHalfFovY) / local_20) +
-                 *(float *)(&DAT_02d9e6bc + iVar4);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  refdef = &pcVar3->refdef;
+  iVar4 = localClientNum * 0x78;
+  GetViewAxisProjections((pcVar3->refdef).vieworg,(pcVar3->refdef).viewaxis,worldPos,&projections);
+  if (0.0 <= projections) {
+    *outScreenPos =
+         *(float *)(&DAT_02d9e6c0 + iVar4) * 0.5 *
+         (1.0 - (local_1c / refdef->tanHalfFovX) / projections) + *(float *)(&DAT_02d9e6b8 + iVar4);
+    outScreenPos[1] =
+         *(float *)(&DAT_02d9e6c4 + iVar4) * 0.5 *
+         (1.0 - (local_18 / refdef->tanHalfFovY) / projections) + *(float *)(&DAT_02d9e6bc + iVar4);
     bVar2 = true;
   }
   else {
-    *param_3 = -local_1c;
-    param_3[1] = -local_18;
-    if ((0.001 <= ABS(*param_3)) || (0.001 <= ABS(param_3[1]))) {
-      if (ABS(*param_3) < 0.001) {
-        *param_3 = 0.001;
+    *outScreenPos = -local_1c;
+    outScreenPos[1] = -local_18;
+    if ((0.001 <= ABS(*outScreenPos)) || (0.001 <= ABS(outScreenPos[1]))) {
+      if (ABS(*outScreenPos) < 0.001) {
+        *outScreenPos = 0.001;
       }
-      if (ABS(param_3[1]) < 0.001) {
-        param_3[1] = 0.001;
+      if (ABS(outScreenPos[1]) < 0.001) {
+        outScreenPos[1] = 0.001;
       }
       while( true ) {
-        if (*(float *)(&DAT_02d9e6c0 + iVar4) <= ABS(*param_3)) break;
+        if (*(float *)(&DAT_02d9e6c0 + iVar4) <= ABS(*outScreenPos)) break;
         fVar1 = *(float *)(&DAT_02d9e6c0 + iVar4);
-        *param_3 = fVar1 * *param_3;
-        param_3[1] = fVar1 * param_3[1];
+        *outScreenPos = fVar1 * *outScreenPos;
+        outScreenPos[1] = fVar1 * outScreenPos[1];
       }
       while( true ) {
-        if (*(float *)(&DAT_02d9e6c4 + iVar4) <= ABS(param_3[1])) break;
+        if (*(float *)(&DAT_02d9e6c4 + iVar4) <= ABS(outScreenPos[1])) break;
         fVar1 = *(float *)(&DAT_02d9e6c4 + iVar4);
-        *param_3 = fVar1 * *param_3;
-        param_3[1] = fVar1 * param_3[1];
+        *outScreenPos = fVar1 * *outScreenPos;
+        outScreenPos[1] = fVar1 * outScreenPos[1];
       }
     }
     else {
-      param_3[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 2.0;
+      outScreenPos[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 2.0;
     }
     bVar2 = false;
   }
@@ -1743,58 +1806,65 @@ bool __cdecl WorldPosToScreenPos(int param_1,float *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl WorldPosToExtraCamScreenPos(int param_1,float *param_2,float *param_3)
+bool __cdecl WorldPosToExtraCamScreenPos(int localClientNum,float *worldPos,float *outScreenPos)
 
 {
   float fVar1;
   bool bVar2;
   cg_s *pcVar3;
   int iVar4;
-  float local_20;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float projections;
   float local_1c;
   float local_18;
-  refdef_s *local_14;
+  refdef_s *refdef;
+  float x;
+  float y;
+  float w;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = &pcVar3->refdef;
-  iVar4 = param_1 * 0x78;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  refdef = &pcVar3->refdef;
+  iVar4 = localClientNum * 0x78;
   GetViewAxisProjections
-            ((pcVar3->refdef).preExtraCamVieworg,(pcVar3->refdef).preExtraCamViewaxis,param_2,
-             &local_20);
-  if (0.0 <= local_20) {
-    *param_3 = *(float *)(&DAT_02d9e6c0 + iVar4) * 0.5 *
-               (1.0 - (local_1c / local_14->preExtraCamTanHalfFovX) / local_20) +
-               *(float *)(&DAT_02d9e6b8 + iVar4);
-    param_3[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 0.5 *
-                 (1.0 - (local_18 / local_14->preExtraCamTanHalfFovY) / local_20) +
-                 *(float *)(&DAT_02d9e6bc + iVar4);
+            ((pcVar3->refdef).preExtraCamVieworg,(pcVar3->refdef).preExtraCamViewaxis,worldPos,
+             &projections);
+  if (0.0 <= projections) {
+    *outScreenPos =
+         *(float *)(&DAT_02d9e6c0 + iVar4) * 0.5 *
+         (1.0 - (local_1c / refdef->preExtraCamTanHalfFovX) / projections) +
+         *(float *)(&DAT_02d9e6b8 + iVar4);
+    outScreenPos[1] =
+         *(float *)(&DAT_02d9e6c4 + iVar4) * 0.5 *
+         (1.0 - (local_18 / refdef->preExtraCamTanHalfFovY) / projections) +
+         *(float *)(&DAT_02d9e6bc + iVar4);
     bVar2 = true;
   }
   else {
-    *param_3 = -local_1c;
-    param_3[1] = -local_18;
-    if ((0.001 <= ABS(*param_3)) || (0.001 <= ABS(param_3[1]))) {
-      if (ABS(*param_3) < 0.001) {
-        *param_3 = 0.001;
+    *outScreenPos = -local_1c;
+    outScreenPos[1] = -local_18;
+    if ((0.001 <= ABS(*outScreenPos)) || (0.001 <= ABS(outScreenPos[1]))) {
+      if (ABS(*outScreenPos) < 0.001) {
+        *outScreenPos = 0.001;
       }
-      if (ABS(param_3[1]) < 0.001) {
-        param_3[1] = 0.001;
+      if (ABS(outScreenPos[1]) < 0.001) {
+        outScreenPos[1] = 0.001;
       }
       while( true ) {
-        if (*(float *)(&DAT_02d9e6c0 + iVar4) <= ABS(*param_3)) break;
+        if (*(float *)(&DAT_02d9e6c0 + iVar4) <= ABS(*outScreenPos)) break;
         fVar1 = *(float *)(&DAT_02d9e6c0 + iVar4);
-        *param_3 = fVar1 * *param_3;
-        param_3[1] = fVar1 * param_3[1];
+        *outScreenPos = fVar1 * *outScreenPos;
+        outScreenPos[1] = fVar1 * outScreenPos[1];
       }
       while( true ) {
-        if (*(float *)(&DAT_02d9e6c4 + iVar4) <= ABS(param_3[1])) break;
+        if (*(float *)(&DAT_02d9e6c4 + iVar4) <= ABS(outScreenPos[1])) break;
         fVar1 = *(float *)(&DAT_02d9e6c4 + iVar4);
-        *param_3 = fVar1 * *param_3;
-        param_3[1] = fVar1 * param_3[1];
+        *outScreenPos = fVar1 * *outScreenPos;
+        outScreenPos[1] = fVar1 * outScreenPos[1];
       }
     }
     else {
-      param_3[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 2.0;
+      outScreenPos[1] = *(float *)(&DAT_02d9e6c4 + iVar4) * 2.0;
     }
     bVar2 = false;
   }
@@ -1806,8 +1876,8 @@ bool __cdecl WorldPosToExtraCamScreenPos(int param_1,float *param_2,float *param
 
 bool __cdecl
 ClampScreenPosToEdges
-          (int param_1,float *param_2,float param_3,float param_4,float param_5,float param_6,
-          float *param_7,float *param_8)
+          (int localClientNum,float *point,float padLeft,float padRight,float padTop,float padBottom
+          ,float *resultNormal,float *resultDist)
 
 {
   bool bVar1;
@@ -1816,8 +1886,8 @@ ClampScreenPosToEdges
   undefined1 uVar4;
   int iVar5;
   float fVar6;
-  char local_a4;
-  char local_a0;
+  bool local_a4;
+  bool local_a0;
   float local_9c;
   float local_98;
   float local_7c;
@@ -1828,146 +1898,148 @@ ClampScreenPosToEdges
   float local_58;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48;
+  float dist;
+  float dir;
   float local_44;
-  char local_3d;
-  float local_3c;
-  char local_37;
-  char local_36;
-  char local_35;
-  float local_34;
+  bool top;
+  float radius;
+  bool left;
+  bool horzQualify;
+  bool vertQualify;
+  float focus;
   float local_30;
-  float local_2c;
-  float local_28;
-  float *local_24;
-  char local_1d;
-  float local_1c;
-  float local_18;
-  float local_14;
+  float borderTop;
+  float borderBottom;
+  ScreenPlacement *scrPlace;
+  bool clamped;
+  float halfWidth;
+  float borderRight;
+  float pointOriginal;
   float local_10;
-  float local_c;
-  float local_8;
+  float halfHeight;
+  float borderLeft;
   
-  if ((param_8 == (float *)0x0) &&
+  if ((resultDist == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x52f,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  iVar5 = param_1 * 0x78;
-  local_24 = (float *)(&scrPlaceView + iVar5);
-  local_14 = *param_2;
-  local_10 = param_2[1];
-  local_1c = *(float *)(&DAT_02d9e6c0 + iVar5) * 0.5;
-  local_c = *(float *)(&DAT_02d9e6c4 + iVar5) * 0.5;
-  local_8 = -local_1c + *(float *)(&DAT_02d9e6d0 + iVar5) + param_3;
-  local_18 = local_1c -
-             ((*(float *)(&DAT_02d9e6c0 + iVar5) - *(float *)(&DAT_02d9e6d8 + iVar5)) + param_4);
-  local_2c = -local_c + *(float *)(&DAT_02d9e6d4 + iVar5) + param_5;
-  local_28 = local_c - ((*(float *)(&DAT_02d9e6c4 + iVar5) - *(float *)(&DAT_02d9e6dc + iVar5)) +
-                       param_6);
-  *param_2 = *param_2 - local_1c;
-  param_2[1] = param_2[1] - local_c;
-  local_1d = '\0';
-  if (local_8 < *param_2 || local_8 == *param_2) {
-    if (local_18 < *param_2) {
-      local_54 = local_18 / *param_2;
-      *param_2 = local_54 * *param_2;
-      param_2[1] = local_54 * param_2[1];
-      local_1d = '\x01';
+  iVar5 = localClientNum * 0x78;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + iVar5);
+  pointOriginal = *point;
+  local_10 = point[1];
+  halfWidth = *(float *)(&DAT_02d9e6c0 + iVar5) * 0.5;
+  halfHeight = *(float *)(&DAT_02d9e6c4 + iVar5) * 0.5;
+  borderLeft = -halfWidth + *(float *)(&DAT_02d9e6d0 + iVar5) + padLeft;
+  borderRight = halfWidth -
+                ((*(float *)(&DAT_02d9e6c0 + iVar5) - *(float *)(&DAT_02d9e6d8 + iVar5)) + padRight)
+  ;
+  borderTop = -halfHeight + *(float *)(&DAT_02d9e6d4 + iVar5) + padTop;
+  borderBottom = halfHeight -
+                 ((*(float *)(&DAT_02d9e6c4 + iVar5) - *(float *)(&DAT_02d9e6dc + iVar5)) +
+                 padBottom);
+  *point = *point - halfWidth;
+  point[1] = point[1] - halfHeight;
+  clamped = false;
+  if (borderLeft < *point || borderLeft == *point) {
+    if (borderRight < *point) {
+      local_54 = borderRight / *point;
+      *point = local_54 * *point;
+      point[1] = local_54 * point[1];
+      clamped = true;
     }
   }
   else {
-    local_50 = local_8 / *param_2;
-    *param_2 = local_50 * *param_2;
-    param_2[1] = local_50 * param_2[1];
-    local_1d = '\x01';
+    local_50 = borderLeft / *point;
+    *point = local_50 * *point;
+    point[1] = local_50 * point[1];
+    clamped = true;
   }
-  if (local_2c < param_2[1] || local_2c == param_2[1]) {
-    if (local_28 < param_2[1]) {
-      local_5c = local_28 / param_2[1];
-      *param_2 = local_5c * *param_2;
-      param_2[1] = local_5c * param_2[1];
-      local_1d = '\x01';
+  if (borderTop < point[1] || borderTop == point[1]) {
+    if (borderBottom < point[1]) {
+      local_5c = borderBottom / point[1];
+      *point = local_5c * *point;
+      point[1] = local_5c * point[1];
+      clamped = true;
     }
   }
   else {
-    local_58 = local_2c / param_2[1];
-    *param_2 = local_58 * *param_2;
-    param_2[1] = local_58 * param_2[1];
-    local_1d = '\x01';
+    local_58 = borderTop / point[1];
+    *point = local_58 * *point;
+    point[1] = local_58 * point[1];
+    clamped = true;
   }
   if ((waypointOffscreenRoundedCorners->current).enabled != false) {
-    local_3c = (*local_24 + *(float *)(&DAT_02d9e684 + iVar5)) *
-               (waypointOffscreenCornerRadius->current).value * 0.5;
-    local_37 = *param_2 <= 0.0 && *param_2 != 0.0;
-    bVar3 = param_2[1] != 0.0;
-    bVar1 = param_2[1] <= 0.0;
-    local_3d = bVar1 && bVar3;
-    if (*param_2 <= 0.0 && *param_2 != 0.0) {
-      local_98 = local_8 + local_3c;
+    radius = (scrPlace->scaleVirtualToReal[0] + *(float *)(&DAT_02d9e684 + iVar5)) *
+             (waypointOffscreenCornerRadius->current).value * 0.5;
+    left = *point <= 0.0 && *point != 0.0;
+    bVar3 = point[1] != 0.0;
+    bVar1 = point[1] <= 0.0;
+    top = bVar1 && bVar3;
+    if (*point <= 0.0 && *point != 0.0) {
+      local_98 = borderLeft + radius;
     }
     else {
-      local_98 = local_18 - local_3c;
+      local_98 = borderRight - radius;
     }
-    local_34 = local_98;
+    focus = local_98;
     if (bVar1 && bVar3) {
-      local_9c = local_2c + local_3c;
+      local_9c = borderTop + radius;
     }
     else {
-      local_9c = local_28 - local_3c;
+      local_9c = borderBottom - radius;
     }
     local_30 = local_9c;
     if ((waypointDebugDraw->current).enabled != false) {
       CL_DrawStretchPicPhysical
-                ((local_98 + local_1c) - 1.0,(local_9c + local_c) - 1.0,3.0,3.0,0.0,0.0,1.0,1.0,
+                ((local_98 + halfWidth) - 1.0,(local_9c + halfHeight) - 1.0,3.0,3.0,0.0,0.0,1.0,1.0,
                  colorYellow,cgMedia.whiteMaterial);
       CL_DrawStretchPicPhysical
-                ((*param_2 + local_1c) - 1.0,(param_2[1] + local_c) - 1.0,3.0,3.0,0.0,0.0,1.0,1.0,
+                ((*point + halfWidth) - 1.0,(point[1] + halfHeight) - 1.0,3.0,3.0,0.0,0.0,1.0,1.0,
                  colorGreen,cgMedia.whiteMaterial);
     }
-    local_48 = *param_2 - local_34;
-    local_44 = param_2[1] - local_30;
-    Vec2Normalize(&local_48);
-    if (((local_37 != '\0') && (local_48 < 0.0)) || ((local_37 == '\0' && (0.0 < local_48)))) {
-      local_a0 = '\x01';
+    dir = *point - focus;
+    local_44 = point[1] - local_30;
+    Vec2Normalize(&dir);
+    if (((left != false) && (dir < 0.0)) || ((left == false && (0.0 < dir)))) {
+      local_a0 = true;
     }
     else {
-      local_a0 = '\0';
+      local_a0 = false;
     }
-    local_36 = local_a0;
-    if (((local_3d != '\0') && (local_44 < 0.0)) || ((local_3d == '\0' && (0.0 < local_44)))) {
-      local_a4 = '\x01';
+    horzQualify = local_a0;
+    if (((top != false) && (local_44 < 0.0)) || ((top == false && (0.0 < local_44)))) {
+      local_a4 = true;
     }
     else {
-      local_a4 = '\0';
+      local_a4 = false;
     }
-    local_35 = local_a4;
-    if ((local_a0 != '\0') && (local_a4 != '\0')) {
-      local_70 = *param_2 - local_34;
-      local_6c = param_2[1] - local_30;
-      local_4c = Vec2Length(&local_70);
-      if (local_3c < local_4c) {
-        *param_2 = local_3c * local_48 + local_34;
-        param_2[1] = local_3c * local_44 + local_30;
-        local_1d = '\x01';
+    vertQualify = local_a4;
+    if ((local_a0 != false) && (local_a4 != false)) {
+      local_70 = *point - focus;
+      local_6c = point[1] - local_30;
+      dist = Vec2Length(&local_70);
+      if (radius < dist) {
+        *point = radius * dir + focus;
+        point[1] = radius * local_44 + local_30;
+        clamped = true;
       }
     }
   }
-  *param_2 = *param_2 + local_1c;
-  param_2[1] = param_2[1] + local_c;
-  if (local_1d != '\0') {
-    local_7c = local_14 - *param_2;
-    local_78 = local_10 - param_2[1];
+  *point = *point + halfWidth;
+  point[1] = point[1] + halfHeight;
+  if (clamped != false) {
+    local_7c = pointOriginal - *point;
+    local_78 = local_10 - point[1];
     fVar6 = Vec2Length(&local_7c);
-    *param_8 = fVar6;
-    *param_7 = local_14 - *param_2;
-    param_7[1] = local_10 - param_2[1];
-    Vec2Normalize(param_7);
+    *resultDist = fVar6;
+    *resultNormal = pointOriginal - *point;
+    resultNormal[1] = local_10 - point[1];
+    Vec2Normalize(resultNormal);
   }
-  return local_1d != '\0';
+  return clamped != false;
 }
 
 
@@ -1978,24 +2050,26 @@ ClampScreenPosToEdges
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl GetScaleForDistance(int param_1,float *param_2)
+float __cdecl GetScaleForDistance(int localClientNum,float *worldPos)
 
 {
   cg_s *pcVar1;
   float fVar2;
-  float local_c;
+  cg_s *cgameGlob;
+  float range;
+  float dist3D;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = Vec3Distance((pcVar1->refdef).vieworg,param_2);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  fVar2 = Vec3Distance((pcVar1->refdef).vieworg,worldPos);
   if ((waypointDistScaleRangeMin->current).value < fVar2) {
     if (fVar2 < (waypointDistScaleRangeMax->current).value) {
-      local_c = (waypointDistScaleRangeMax->current).value -
-                (waypointDistScaleRangeMin->current).value;
-      if (local_c <= 0.0) {
-        local_c = 1.0;
+      range = (waypointDistScaleRangeMax->current).value -
+              (waypointDistScaleRangeMin->current).value;
+      if (range <= 0.0) {
+        range = 1.0;
       }
-      local_c = (fVar2 - (waypointDistScaleRangeMin->current).value) / local_c;
-      fVar2 = (1.0 - local_c) * 1.0 + (waypointDistScaleSmallest->current).value * local_c;
+      fVar2 = (fVar2 - (waypointDistScaleRangeMin->current).value) / range;
+      fVar2 = (1.0 - fVar2) * 1.0 + (waypointDistScaleSmallest->current).value * fVar2;
     }
     else {
       fVar2 = (waypointDistScaleSmallest->current).value;
@@ -2015,18 +2089,20 @@ float __cdecl GetScaleForDistance(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl WaypointFadeGetTimeFrac(cg_s *param_1,int param_2)
+float __cdecl WaypointFadeGetTimeFrac(cg_s *cgameGlob,int currentTime)
 
 {
   float fVar1;
   float local_14;
   float local_10;
+  int timeDiff;
+  float frac;
   
   if ((waypointTimeFade->current).integer < 1) {
     local_14 = 0.0;
   }
   else {
-    fVar1 = 1.0 - (float)(param_2 - param_1->waypointFadeTime) /
+    fVar1 = 1.0 - (float)(currentTime - cgameGlob->waypointFadeTime) /
                   (float)(waypointTimeFade->current).integer;
     local_10 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
@@ -2048,45 +2124,54 @@ float __cdecl WaypointFadeGetTimeFrac(cg_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl WaypointTargetFade(int param_1,hudelem_s *param_2,float *param_3,float *param_4)
+void __cdecl WaypointTargetFade(int localClientNum,hudelem_s *elem,float *screenPos,float *color)
 
 {
-  int iVar1;
+  int currentTime_00;
+  cg_s *cgameGlob_00;
+  playerState_s *ppVar1;
   cg_s *pcVar2;
-  playerState_s *ppVar3;
-  cg_s *pcVar4;
-  float fVar5;
-  float fVar6;
-  float local_2c;
-  float local_24;
+  float fVar3;
+  float fVar4;
+  float screenWidth;
+  float timeFrac;
+  cg_s *cgameGlob;
+  float percent;
+  int currentTime;
+  playerState_s *ps;
+  float screenHeight;
+  float distSq;
+  float alpha;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  ppVar3 = CG_GetPredictedPlayerState(param_1);
-  if (1.0 < ppVar3->fWeaponPosFrac || ppVar3->fWeaponPosFrac == 1.0) {
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  ppVar1 = CG_GetPredictedPlayerState(localClientNum);
+  if (1.0 < ppVar1->fWeaponPosFrac || ppVar1->fWeaponPosFrac == 1.0) {
     if ((0.0 < (waypointDistFade->current).value) &&
-       (fVar5 = *(float *)(&DAT_02d9e6c0 + param_1 * 0x78) * 0.5 - *param_3,
-       fVar6 = *(float *)(&DAT_02d9e6c4 + param_1 * 0x78) * 0.5 - param_3[1],
-       local_24 = fVar5 * fVar5 + fVar6 * fVar6,
-       local_24 <= (waypointDistFade->current).value * (waypointDistFade->current).value)) {
-      pcVar4 = CG_GetLocalClientGlobals(param_1);
-      iVar1 = pcVar4->time;
-      if (pcVar2->waypointFadeTime == 0) {
-        pcVar2->waypointFadeTime = iVar1;
+       (fVar3 = *(float *)(&DAT_02d9e6c0 + localClientNum * 0x78) * 0.5 - *screenPos,
+       fVar4 = *(float *)(&DAT_02d9e6c4 + localClientNum * 0x78) * 0.5 - screenPos[1],
+       fVar3 = fVar3 * fVar3 + fVar4 * fVar4,
+       fVar3 <= (waypointDistFade->current).value * (waypointDistFade->current).value)) {
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+      currentTime_00 = pcVar2->time;
+      if (cgameGlob_00->waypointFadeTime == 0) {
+        cgameGlob_00->waypointFadeTime = currentTime_00;
       }
-      local_24 = local_24 / ((waypointDistFade->current).value * (waypointDistFade->current).value);
-      local_2c = 0.0;
-      if ((iVar1 <= (int)((waypointTimeFade->current).string + pcVar2->waypointFadeTime)) &&
-         (pcVar2->waypointFadeTime < (int)((waypointTimeFade->current).string + iVar1))) {
-        local_2c = WaypointFadeGetTimeFrac(pcVar2,iVar1);
+      percent = fVar3 / ((waypointDistFade->current).value * (waypointDistFade->current).value);
+      timeFrac = 0.0;
+      if ((currentTime_00 <=
+           (int)((waypointTimeFade->current).string + cgameGlob_00->waypointFadeTime)) &&
+         (cgameGlob_00->waypointFadeTime <
+          (int)((waypointTimeFade->current).string + currentTime_00))) {
+        timeFrac = WaypointFadeGetTimeFrac(cgameGlob_00,currentTime_00);
       }
-      if (local_24 < local_2c) {
-        local_24 = local_2c;
+      if (percent < timeFrac) {
+        percent = timeFrac;
       }
-      param_4[3] = ((float)(param_2->color)._s_0.a / 255.0) * local_24;
+      color[3] = ((float)(elem->color)._s_0.a / 255.0) * percent;
     }
   }
   else {
-    pcVar2->waypointFadeTime = 0;
+    cgameGlob_00->waypointFadeTime = 0;
   }
   return;
 }
@@ -2100,7 +2185,7 @@ void __cdecl WaypointTargetFade(int param_1,hudelem_s *param_2,float *param_3,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
+void __cdecl DrawOffscreenViewableWaypoint(int localClientNum,hudelem_s *elem)
 
 {
   code *pcVar1;
@@ -2183,26 +2268,26 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if ((param_2 == (hudelem_s *)0x0) &&
+  if ((elem == (hudelem_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x61a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->type != '\x0f') &&
+  if ((elem->type != '\x0f') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x61b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_5c = CG_ServerMaterialName(param_1,(uint)param_2->offscreenMaterialIdx,local_58,0x40);
-  if (((local_5c != 0) && (bVar2 = CG_Flashbanged(param_1), !bVar2)) &&
-     (bVar2 = CG_Flared(param_1), !bVar2)) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
+  local_5c = CG_ServerMaterialName(localClientNum,(uint)elem->offscreenMaterialIdx,local_58,0x40);
+  if (((local_5c != 0) && (bVar2 = CG_Flashbanged(localClientNum), !bVar2)) &&
+     (bVar2 = CG_Flared(localClientNum), !bVar2)) {
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
     local_60 = pcVar3->time;
-    BG_LerpHudColors(param_2,local_60,&local_64);
+    BG_LerpHudColors(elem,local_60,&local_64);
     if (local_64._s_0.a != '\0') {
       if (local_5c == 0) {
         local_68 = (Material *)0x0;
@@ -2211,7 +2296,7 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
         local_68 = Material_RegisterHandle(local_58,7);
       }
       HudElemColorToVec4(&local_64,&local_78);
-      iVar4 = param_1 * 0x78;
+      iVar4 = localClientNum * 0x78;
       local_7c = (float *)(&scrPlaceView + iVar4);
       local_80 = (*local_7c + *(float *)(&DAT_02d9e684 + iVar4)) * 0.5;
       local_84 = (waypointIconWidth->current).value * *local_7c;
@@ -2232,20 +2317,20 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
       local_ac = (waypointOffscreenPadBottom->current).value * *(float *)(&DAT_02d9e684 + iVar4) +
                  local_9c;
       local_b0 = (waypointTweakY->current).value * *(float *)(&DAT_02d9e684 + iVar4);
-      if (param_2->targetEntNum == 0x3ff) {
-        local_c8 = param_2->x;
-        local_c4 = param_2->y;
-        local_c0 = param_2->z;
+      if (elem->targetEntNum == 0x3ff) {
+        local_c8 = elem->x;
+        local_c4 = elem->y;
+        local_c0 = elem->z;
         local_bc = local_c0;
         local_b8 = local_c4;
         local_b4 = local_c8;
       }
       else {
-        local_cc = CG_GetLocalClientGlobals(param_1);
-        if ((int)param_2->targetEntNum == (local_cc->predictedPlayerEntity).nextState.number) {
+        local_cc = CG_GetLocalClientGlobals(localClientNum);
+        if ((int)elem->targetEntNum == (local_cc->predictedPlayerEntity).nextState.number) {
           return;
         }
-        local_d0 = CG_GetEntity(param_1,(int)param_2->targetEntNum);
+        local_d0 = CG_GetEntity(localClientNum,(int)elem->targetEntNum);
         if (local_d0->nextValid == 0) {
           Com_PrintWarning(1,
                            "DrawOffscreenViewableWaypoint(): targetEnt %i not in snapshot, may not be a network-broadcasting entity."
@@ -2257,8 +2342,7 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
         local_c4 = (local_d0->pose).origin[1];
         local_c0 = (local_d0->pose).origin[2];
         if ((local_d0->nextState).eType == 1) {
-          if (*(int *)((int)(local_cc->bgs).clientinfo + param_2->targetEntNum * 0x5c8 + 0x4c4) == 0
-             ) {
+          if (*(int *)((int)(local_cc->bgs).clientinfo + elem->targetEntNum * 0x5c8 + 0x4c4) == 0) {
             if (((local_d0->currentState).eFlags & 8U) == 0) {
               if (((local_d0->currentState).eFlags & 4U) == 0) {
                 local_c0 = local_c0 + (waypointPlayerOffsetStand->current).value;
@@ -2276,17 +2360,17 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
           }
         }
       }
-      if (param_2->ui3dWindow < '\0') {
-        WorldPosToScreenPos(param_1,&local_c8,&local_dc);
+      if (elem->ui3dWindow < '\0') {
+        WorldPosToScreenPos(localClientNum,&local_c8,&local_dc);
       }
       else {
-        WorldPosToExtraCamScreenPos(param_1,&local_c8,&local_dc);
+        WorldPosToExtraCamScreenPos(localClientNum,&local_c8,&local_dc);
       }
       local_d8 = local_d8 + local_b0;
-      local_e0 = CG_GetLocalClientGlobals(param_1);
+      local_e0 = CG_GetLocalClientGlobals(localClientNum);
       local_e4 = Vec3Distance((local_e0->refdef).vieworg,&local_c8);
       local_f1 = ClampScreenPosToEdges
-                           (param_1,&local_dc,local_a0,local_a4,local_a8,local_ac,&local_f0,
+                           (localClientNum,&local_dc,local_a0,local_a4,local_a8,local_ac,&local_f0,
                             &local_e8);
       if ((!(bool)local_f1) || (local_e8 <= 0.0)) {
         local_f2 = '\0';
@@ -2296,8 +2380,8 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
       }
       local_f3 = local_f2;
       if (local_f2 == '\0') {
-        if ((param_2->flags & 0x100) != 0) {
-          WaypointTargetFade(param_1,param_2,&local_dc,&local_78);
+        if ((elem->flags & 0x100) != 0) {
+          WaypointTargetFade(localClientNum,elem,&local_dc,&local_78);
         }
       }
       else {
@@ -2331,7 +2415,7 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
                   (local_120 - local_8c * 0.5,local_11c - local_90 * 0.5,local_e4,local_8c,local_90,
                    0.0,0.0,1.0,1.0,local_118,&local_104,cgMedia.offscreenObjectivePointer);
       }
-      local_121 = param_2->time == 1;
+      local_121 = elem->time == 1;
       if (((bool)local_121) && (local_f3 != '\0')) {
         local_122 = '\x01';
       }
@@ -2339,7 +2423,7 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
         local_122 = '\0';
       }
       local_123 = local_122;
-      local_10c = GetScaleForDistance(param_1,&local_c8);
+      local_10c = GetScaleForDistance(localClientNum,&local_c8);
       if (local_5c != 0) {
         local_84 = local_84 * local_10c;
         local_88 = local_88 * local_10c;
@@ -2350,11 +2434,11 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
                      0.0,0.0,1.0,1.0,&local_78,local_68);
         }
       }
-      GetHudElemInfo(param_1,param_2,&local_468,local_228);
+      GetHudElemInfo(localClientNum,elem,&local_468,local_228);
       if ((local_121 != '\0') && (local_123 == '\0')) {
         local_46c = 1.5;
         local_470 = 0x421d7ae1;
-        local_474 = CG_GetLocalClientGlobals(param_1);
+        local_474 = CG_GetLocalClientGlobals(localClientNum);
         local_478 = (local_474->refdef).vieworg;
         local_484 = local_c8 - *local_478;
         local_480 = local_c4 - (local_474->refdef).vieworg[1];
@@ -2366,7 +2450,7 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
         else {
           Com_sprintf(local_468.hudElemLabel,0x100,"%s %im");
         }
-        local_468.labelWidth = HudElemStringWidth(local_468.hudElemLabel,param_2,&local_468);
+        local_468.labelWidth = HudElemStringWidth(local_468.hudElemLabel,elem,&local_468);
         local_468.labelWidth = local_468.labelWidth * local_46c;
         local_10c = local_10c * local_46c;
       }
@@ -2375,16 +2459,16 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
           local_d8 = local_d8 - 15.0;
         }
         local_48c = 0;
-        if ((param_2->flags & 8) == 0) {
-          if ((param_2->flags & 0x10) != 0) {
+        if ((elem->flags & 8) == 0) {
+          if ((elem->flags & 0x10) != 0) {
             local_48c = 6;
           }
         }
         else {
           local_48c = 3;
         }
-        if ((param_2->flags & 0x20) != 0) {
-          HudElemColorToVec4(&param_2->glowColor,&local_78);
+        if ((elem->flags & 0x20) != 0) {
+          HudElemColorToVec4(&elem->glowColor,&local_78);
         }
         fVar5 = local_10c;
         fVar7 = ScrPlace_HiResGetScale();
@@ -2409,60 +2493,61 @@ void __cdecl DrawOffscreenViewableWaypoint(int param_1,hudelem_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DrawSingleHudElem2d(int param_1,hudelem_s *param_2)
+void __cdecl DrawSingleHudElem2d(int localClientNum,hudelem_s *elem)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   ScreenPlacement *local_470;
-  char local_45c [260];
-  int local_358;
-  ScreenPlacement *local_354;
-  ScopedScrPlaceViewStack local_350;
-  cg_hudelem_t local_34c;
+  char hudElemString [260];
+  int ui3dWindow;
+  ScreenPlacement *scrPlace;
+  ScopedScrPlaceViewStack scopedScrPlaceStack;
+  cg_hudelem_t cghe;
   uint local_10c;
-  hudelem_color_t local_108;
-  ScreenPlacementStack local_104;
-  GfxUI3DStack *local_8;
+  hudelem_color_t toColor;
+  ScreenPlacementStack scrPlaceStack;
+  ScopedUI3DStack windowIdStack;
   
   local_10c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->type != '\0') {
-    local_358 = (int)param_2->ui3dWindow;
-    if (local_358 < 0) {
-      local_470 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
+  if (elem->type != '\0') {
+    ui3dWindow = (int)elem->ui3dWindow;
+    if (ui3dWindow < 0) {
+      local_470 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
     }
     else {
-      local_470 = R_UI3D_ScrPlaceFromTextureWindow(local_358);
+      local_470 = R_UI3D_ScrPlaceFromTextureWindow(ui3dWindow);
     }
-    local_354 = local_470;
-    local_8 = R_GetUI3DStack();
-    R_UI3DStack_Push(local_8,local_358);
-    local_104.size = 0;
-    local_104.contextIndex = param_1;
-    ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&local_350,&local_104,local_354);
-    if (param_2->type == '\x0f') {
-      DrawOffscreenViewableWaypoint(param_1,param_2);
-      ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&local_350);
-      R_UI3DStack_Pop(local_8);
+    scrPlace = local_470;
+    windowIdStack.mStack = R_GetUI3DStack();
+    R_UI3DStack_Push(windowIdStack.mStack,ui3dWindow);
+    scrPlaceStack.size = 0;
+    scrPlaceStack.contextIndex = localClientNum;
+    ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&scopedScrPlaceStack,&scrPlaceStack,scrPlace);
+    if (elem->type == '\x0f') {
+      DrawOffscreenViewableWaypoint(localClientNum,elem);
+      ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&scopedScrPlaceStack);
+      R_UI3DStack_Pop(windowIdStack.mStack);
     }
     else {
-      pcVar3 = CG_GetLocalClientGlobals(param_1);
-      local_34c.timeNow = pcVar3->time;
-      BG_LerpHudColors(param_2,local_34c.timeNow,&local_108);
-      if (local_108._s_0.a == '\0') {
-        ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&local_350);
-        R_UI3DStack_Pop(local_8);
+      pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+      cghe.timeNow = pcVar3->time;
+      BG_LerpHudColors(elem,cghe.timeNow,&toColor);
+      if (toColor._s_0.a == '\0') {
+        ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&scopedScrPlaceStack);
+        R_UI3DStack_Pop(windowIdStack.mStack);
       }
       else {
-        HudElemColorToVec4(&local_108,local_34c.color);
-        GetHudElemInfo(param_1,param_2,&local_34c,local_45c);
-        if (local_34c.hudElemLabel[0] != '\0') {
-          DrawHudElemString(param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                            local_34c.hudElemLabel,param_2,&local_34c);
-          local_34c.x = local_34c.x + local_34c.labelWidth;
+        HudElemColorToVec4(&toColor,cghe.color);
+        GetHudElemInfo(localClientNum,elem,&cghe,hudElemString);
+        if (cghe.hudElemLabel[0] != '\0') {
+          DrawHudElemString(localClientNum,
+                            (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                            cghe.hudElemLabel,elem,&cghe);
+          cghe.x = cghe.x + cghe.labelWidth;
         }
-        switch(param_2->type) {
+        switch(elem->type) {
         case '\x01':
         case '\x02':
         case '\x03':
@@ -2472,26 +2557,28 @@ void __cdecl DrawSingleHudElem2d(int param_1,hudelem_s *param_2)
         case '\n':
         case '\v':
         case '\f':
-          if (local_34c.hudElemText[0] != '\0') {
-            DrawHudElemString(param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                              local_34c.hudElemText,param_2,&local_34c);
+          if (cghe.hudElemText[0] != '\0') {
+            DrawHudElemString(localClientNum,
+                              (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                              cghe.hudElemText,elem,&cghe);
           }
           break;
         case '\x06':
-          UpdateHudElemWarGameData(param_1,param_2,&local_34c);
+          UpdateHudElemWarGameData(localClientNum,elem,&cghe);
           break;
         case '\a':
-          if (local_34c.hudElemText[0] != '\0') {
-            DrawHudElemString(param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                              local_34c.hudElemText,param_2,&local_34c);
+          if (cghe.hudElemText[0] != '\0') {
+            DrawHudElemString(localClientNum,
+                              (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                              cghe.hudElemText,elem,&cghe);
           }
           break;
         case '\b':
-          DrawHudElemMaterial(param_1,param_2,&local_34c);
+          DrawHudElemMaterial(localClientNum,elem,&cghe);
           break;
         case '\r':
         case '\x0e':
-          DrawHudElemClock(param_1,param_2,&local_34c);
+          DrawHudElemClock(localClientNum,elem,&cghe);
           break;
         default:
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x746,
@@ -2502,8 +2589,8 @@ void __cdecl DrawSingleHudElem2d(int param_1,hudelem_s *param_2)
             return;
           }
         }
-        ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&local_350);
-        R_UI3DStack_Pop(local_8);
+        ScopedScrPlaceViewStack::~ScopedScrPlaceViewStack(&scopedScrPlaceStack);
+        R_UI3DStack_Pop(windowIdStack.mStack);
       }
     }
   }
@@ -2513,14 +2600,15 @@ void __cdecl DrawSingleHudElem2d(int param_1,hudelem_s *param_2)
 
 // 004BA6C0  CopyInUseHudElems  (cgame/cg_hudelem.cpp:1869)
 
-void __cdecl CopyInUseHudElems(hudelem_s **param_1,int *param_2,hudelem_s *param_3,int param_4)
+void __cdecl
+CopyInUseHudElems(hudelem_s **elems,int *elemCount,hudelem_s *elemSrcArray,int elemSrcArrayCount)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; (local_8 < param_4 && (param_3[local_8].type != '\0')); local_8 = local_8 + 1) {
-    param_1[*param_2] = param_3 + local_8;
-    *param_2 = *param_2 + 1;
+  for (i = 0; (i < elemSrcArrayCount && (elemSrcArray[i].type != '\0')); i = i + 1) {
+    elems[*elemCount] = elemSrcArray + i;
+    *elemCount = *elemCount + 1;
   }
   return;
 }
@@ -2528,13 +2616,16 @@ void __cdecl CopyInUseHudElems(hudelem_s **param_1,int *param_2,hudelem_s *param
 
 // 004BA720  compare_hudelems  (cgame/cg_hudelem.cpp:1883)
 
-int __cdecl compare_hudelems(void *param_1,void *param_2)
+int __cdecl compare_hudelems(void *pe0,void *pe1)
 
 {
   int iVar1;
   float fVar2;
+  float delta;
+  hudelem_s *hud0;
+  hudelem_s *hud1;
   
-  fVar2 = *(float *)(*(int *)param_1 + 0x38) - *(float *)(*(int *)param_2 + 0x38);
+  fVar2 = *(float *)(*(int *)pe0 + 0x38) - *(float *)(*(int *)pe1 + 0x38);
   if (0.0 <= fVar2) {
     if (fVar2 <= 0.0) {
       iVar1 = 0;
@@ -2557,41 +2648,44 @@ int __cdecl compare_hudelems(void *param_1,void *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetSortedHudElems(int param_1,hudelem_s **param_2)
+int __cdecl GetSortedHudElems(int localClientNum,hudelem_s **elems)
 
 {
   snapshot_s *psVar1;
   cg_s *pcVar2;
-  uint local_8;
+  cg_s *clientGlob;
+  playerState_s *ps;
+  int elemCount;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar2->nextSnap == (snapshot_s *)0x0) {
-    local_8 = 0;
+    elemCount = 0;
   }
   else {
     psVar1 = pcVar2->nextSnap;
-    local_8 = 0;
-    CopyInUseHudElems(param_2,(int *)&local_8,(psVar1->ps).hud.current,0x1f);
-    CopyInUseHudElems(param_2,(int *)&local_8,(psVar1->ps).hud.archival,0x1f);
-    qsort(param_2,local_8,4,compare_hudelems);
+    elemCount = 0;
+    CopyInUseHudElems(elems,&elemCount,(psVar1->ps).hud.current,0x1f);
+    CopyInUseHudElems(elems,&elemCount,(psVar1->ps).hud.archival,0x1f);
+    qsort(elems,elemCount,4,compare_hudelems);
   }
-  return local_8;
+  return elemCount;
 }
 
 
 // 004BA7D0  CopyInUseDebugHudElems  (cgame/cg_hudelem.cpp:1921)
 
 void __cdecl
-CopyInUseDebugHudElems(hudelem_s **param_1,int *param_2,game_hudelem_s *param_3,int param_4)
+CopyInUseDebugHudElems
+          (hudelem_s **elems,int *elemCount,game_hudelem_s *elemSrcArray,int elemSrcArrayCount)
 
 {
-  int local_8;
+  int i;
   
-  *param_2 = 0;
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    if ((param_3[local_8].elem.type != '\0') && ((param_3[local_8].elem.flags & 0x2000) != 0)) {
-      param_1[*param_2] = &param_3[local_8].elem;
-      *param_2 = *param_2 + 1;
+  *elemCount = 0;
+  for (i = 0; i < elemSrcArrayCount; i = i + 1) {
+    if ((elemSrcArray[i].elem.type != '\0') && ((elemSrcArray[i].elem.flags & 0x2000) != 0)) {
+      elems[*elemCount] = &elemSrcArray[i].elem;
+      *elemCount = *elemCount + 1;
     }
   }
   return;
@@ -2600,15 +2694,15 @@ CopyInUseDebugHudElems(hudelem_s **param_1,int *param_2,game_hudelem_s *param_3,
 
 // 004BA780  GetSortedDebugHudElems  (cgame/cg_hudelem.cpp:1938)
 
-int __cdecl GetSortedDebugHudElems(hudelem_s **param_1)
+int __cdecl GetSortedDebugHudElems(hudelem_s **elems)
 
 {
-  uint local_8;
+  int elemCount;
   
-  local_8 = 0;
-  CopyInUseDebugHudElems(param_1,(int *)&local_8,g_hudelems,0x400);
-  qsort(param_1,local_8,4,compare_hudelems);
-  return local_8;
+  elemCount = 0;
+  CopyInUseDebugHudElems(elems,&elemCount,g_hudelems,0x400);
+  qsort(elems,elemCount,4,compare_hudelems);
+  return elemCount;
 }
 
 
@@ -2621,28 +2715,28 @@ int __cdecl GetSortedDebugHudElems(hudelem_s **param_1)
 
 void __cdecl
 CG_Draw2dHudElemList
-          (hudelem_s **param_1,int param_2,int param_3,int param_4,bool param_5,bool param_6)
+          (hudelem_s **elems,int elemCount,int localClientNum,int foreground,bool playerAlive,
+          bool inKillCam)
 
 {
   bool bVar1;
   cg_s *pcVar2;
   int iVar3;
-  int local_c;
+  int i;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_3);
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    if ((((((param_5) || ((param_1[local_c]->flags & 2) == 0)) &&
-          ((param_4 == 0 || ((param_1[local_c]->flags & 1) != 0)))) &&
-         (((param_4 != 0 || ((param_1[local_c]->flags & 1) == 0)) &&
-          (((param_1[local_c]->flags & 4) == 0 || (iVar3 = UI_AnyMenuVisible(param_3), iVar3 == 0)))
-          ))) && ((!param_6 || ((param_1[local_c]->flags & 0x40) == 0)))) &&
-       ((((bVar1 = CG_IsTvguided(param_3,false), !bVar1 &&
-          (((pcVar2->nextSnap->ps).eFlags2 & 0x10000000U) == 0)) ||
-         ((param_1[local_c]->flags & 0x800) == 0)) &&
-        ((bVar1 = Demo_IsPlaying(), !bVar1 ||
-         (((param_1[local_c]->flags & 0x200) == 0 && (bVar1 = Demo_IsGameHudHidden(), !bVar1))))))))
-    {
-      DrawSingleHudElem2d(param_3,param_1[local_c]);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  for (i = 0; i < elemCount; i = i + 1) {
+    if ((((((playerAlive) || ((elems[i]->flags & 2) == 0)) &&
+          ((foreground == 0 || ((elems[i]->flags & 1) != 0)))) &&
+         (((foreground != 0 || ((elems[i]->flags & 1) == 0)) &&
+          (((elems[i]->flags & 4) == 0 || (iVar3 = UI_AnyMenuVisible(localClientNum), iVar3 == 0))))
+         )) && ((!inKillCam || ((elems[i]->flags & 0x40) == 0)))) &&
+       ((((bVar1 = CG_IsTvguided(localClientNum,false), !bVar1 &&
+          (((pcVar2->nextSnap->ps).eFlags2 & 0x10000000U) == 0)) || ((elems[i]->flags & 0x800) == 0)
+         ) && ((bVar1 = Demo_IsPlaying(), !bVar1 ||
+               (((elems[i]->flags & 0x200) == 0 && (bVar1 = Demo_IsGameHudHidden(), !bVar1)))))))) {
+      DrawSingleHudElem2d(localClientNum,elems[i]);
     }
   }
   return;
@@ -2657,28 +2751,31 @@ CG_Draw2dHudElemList
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Draw2dHudElems(int param_1,int param_2)
+void __cdecl CG_Draw2dHudElems(int localClientNum,int foreground)
 
 {
   cg_s *pcVar1;
   DWORD DVar2;
   bool local_103c;
-  bool local_100d;
-  hudelem_s *local_100c [1025];
-  int local_8;
+  bool inKillCam;
+  PIXProfile pixProfile;
+  cg_s *cgameGlob;
+  bool playerAlive;
+  hudelem_s *elems [1025];
+  int elemCount;
   
-  local_8 = 0x4ba40d;
+  elemCount = 0x4ba40d;
   PIXBeginNamedEvent(-1,"CG_Draw2dHudElems");
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_8 = GetSortedHudElems(param_1,local_100c);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  elemCount = GetSortedHudElems(localClientNum,elems);
   if ((pcVar1->inKillCam == 0) && ((pcVar1->nextSnap->ps).pm_type != 4)) {
     local_103c = false;
   }
   else {
     local_103c = true;
   }
-  local_100d = ((pcVar1->nextSnap->ps).eFlags2 & 0x10000000U) != 0 ||
-               (pcVar1->nextSnap->ps).pm_type < 9;
+  playerAlive = ((pcVar1->nextSnap->ps).eFlags2 & 0x10000000U) != 0 ||
+                (pcVar1->nextSnap->ps).pm_type < 9;
   if (pcVar1->cameraMode == 1) {
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2686,17 +2783,17 @@ void __cdecl CG_Draw2dHudElems(int param_1,int param_2)
     }
   }
   else {
-    CG_Draw2dHudElemList(local_100c,local_8,param_1,param_2,local_100d,local_103c);
-    if (param_1 == 0) {
-      local_8 = GetSortedDebugHudElems(local_100c);
-      if (local_8 == 0) {
+    CG_Draw2dHudElemList(elems,elemCount,localClientNum,foreground,playerAlive,local_103c);
+    if (localClientNum == 0) {
+      elemCount = GetSortedDebugHudElems(elems);
+      if (elemCount == 0) {
         DVar2 = GetCurrentThreadId();
         if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        CG_Draw2dHudElemList(local_100c,local_8,0,param_2,local_100d,local_103c);
+        CG_Draw2dHudElemList(elems,elemCount,0,foreground,playerAlive,local_103c);
         DVar2 = GetCurrentThreadId();
         if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -2722,7 +2819,7 @@ void __cdecl CG_Draw2dHudElems(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AddDrawSurfForHudElemWaypoint(int param_1,hudelem_s *param_2)
+void __cdecl AddDrawSurfForHudElemWaypoint(int localClientNum,hudelem_s *elem)
 
 {
   cg_s *pcVar1;
@@ -2741,18 +2838,18 @@ void __cdecl AddDrawSurfForHudElemWaypoint(int param_1,hudelem_s *param_2)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   local_18 = pcVar1->time;
-  BG_LerpHudColors(param_2,local_18,&local_1c);
+  BG_LerpHudColors(elem,local_18,&local_1c);
   if (((local_1c._s_0.a != '\0') &&
-      (iVar2 = CG_ServerMaterialName(param_1,(uint)param_2->offscreenMaterialIdx,local_60,0x40),
+      (iVar2 = CG_ServerMaterialName(localClientNum,(uint)elem->offscreenMaterialIdx,local_60,0x40),
       iVar2 == 0)) &&
-     (iVar2 = CG_ServerMaterialName(param_1,(uint)param_2->materialIndex,local_60,0x40), iVar2 != 0)
-     ) {
+     (iVar2 = CG_ServerMaterialName(localClientNum,(uint)elem->materialIndex,local_60,0x40),
+     iVar2 != 0)) {
     local_64 = Material_RegisterHandle(local_60,7);
-    local_68 = HudElemWaypointHeight(param_1,param_2);
+    local_68 = HudElemWaypointHeight(localClientNum,elem);
     if (local_68 != 0.0) {
-      if (param_2->value <= 0.0) {
+      if (elem->value <= 0.0) {
         local_6c = 0;
         local_70 = local_68;
       }
@@ -2760,9 +2857,9 @@ void __cdecl AddDrawSurfForHudElemWaypoint(int param_1,hudelem_s *param_2)
         local_6c = 3;
         local_70 = local_68 * 0.0043;
       }
-      local_a0.pos[0] = param_2->x;
-      local_a0.pos[1] = param_2->y;
-      local_a0.pos[2] = param_2->z;
+      local_a0.pos[0] = elem->x;
+      local_a0.pos[1] = elem->y;
+      local_a0.pos[2] = elem->z;
       local_a0.rgbaColor = (uchar  [4])local_1c;
       local_a0.flags = local_6c;
       local_a0.radius = local_70;
@@ -2780,27 +2877,32 @@ void __cdecl AddDrawSurfForHudElemWaypoint(int param_1,hudelem_s *param_2)
 
 // 004BDEB0  CG_AddDrawSurfsFor3dHudElems  (cgame/cg_hudelem.cpp:2100)
 
-void __cdecl CG_AddDrawSurfsFor3dHudElems(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_AddDrawSurfsFor3dHudElems(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_108;
-  hudelem_s *local_104 [63];
-  uint local_8;
+  int i;
+  hudelem_s *elems [63];
+  int elemCount;
   
-  if ((!r_highRezWaypoints) && (bVar2 = CG_ShouldDrawHud(param_1), bVar2)) {
-    local_8 = GetSortedHudElems(param_1,local_104);
-    if ((0x3e < local_8) &&
+  if ((!r_highRezWaypoints) && (bVar2 = CG_ShouldDrawHud(localClientNum), bVar2)) {
+    elemCount = GetSortedHudElems(localClientNum,elems);
+    if ((0x3e < (uint)elemCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",0x842,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    for (local_108 = 0; local_108 < (int)local_8; local_108 = local_108 + 1) {
-      if (local_104[local_108]->type == '\x0f') {
-        AddDrawSurfForHudElemWaypoint(param_1,local_104[local_108]);
+    for (i = 0; i < elemCount; i = i + 1) {
+      if (elems[i]->type == '\x0f') {
+        AddDrawSurfForHudElemWaypoint(localClientNum,elems[i]);
       }
     }
   }
@@ -2816,76 +2918,77 @@ void __cdecl CG_AddDrawSurfsFor3dHudElems(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl RB_AddWaypoint(int param_1,hudelem_s *param_2)
+void __cdecl RB_AddWaypoint(int localClientNum,hudelem_s *elem)
 
 {
   cg_s *pcVar1;
   int iVar2;
   centity_s *pcVar3;
-  float local_7c;
+  centity_s *cent;
+  float pos;
   float local_78;
   float local_74;
-  Material *local_70;
-  hudelem_color_t local_6c;
-  cg_s *local_68;
-  float local_64;
-  float local_60;
-  char local_5c [68];
+  Material *material;
+  hudelem_color_t hudColor;
+  cg_s *cgameGlob;
+  float height;
+  float radius;
+  char materialName [68];
   uint local_18;
-  undefined1 local_12;
-  undefined1 local_11;
-  uint local_10;
-  GfxColor local_c;
-  undefined1 local_5;
+  bool fixedSize;
+  bool forceNear;
+  int renderFxFlags;
+  GfxColor color;
+  bool alignBottom;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  BG_LerpHudColors(param_2,pcVar1->time,&local_6c);
-  if (((local_6c._s_0.a != '\0') &&
-      (iVar2 = CG_ServerMaterialName(param_1,(uint)param_2->offscreenMaterialIdx,local_5c,0x40),
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  BG_LerpHudColors(elem,pcVar1->time,&hudColor);
+  if (((hudColor._s_0.a != '\0') &&
+      (iVar2 = CG_ServerMaterialName
+                         (localClientNum,(uint)elem->offscreenMaterialIdx,materialName,0x40),
       iVar2 == 0)) &&
-     (iVar2 = CG_ServerMaterialName(param_1,(uint)param_2->materialIndex,local_5c,0x40), iVar2 != 0)
-     ) {
-    local_70 = Material_RegisterHandle(local_5c,7);
-    local_64 = HudElemWaypointHeight(param_1,param_2);
-    if (local_64 != 0.0) {
-      local_68 = CG_GetLocalClientGlobals(param_1);
-      if (param_2->targetEntNum == 0x3ff) {
-        local_7c = param_2->x;
-        local_78 = param_2->y;
-        local_74 = param_2->z;
+     (iVar2 = CG_ServerMaterialName(localClientNum,(uint)elem->materialIndex,materialName,0x40),
+     iVar2 != 0)) {
+    material = Material_RegisterHandle(materialName,7);
+    height = HudElemWaypointHeight(localClientNum,elem);
+    if (height != 0.0) {
+      cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+      if (elem->targetEntNum == 0x3ff) {
+        pos = elem->x;
+        local_78 = elem->y;
+        local_74 = elem->z;
       }
       else {
-        if ((int)param_2->targetEntNum == (local_68->predictedPlayerEntity).nextState.number) {
+        if ((int)elem->targetEntNum == (cgameGlob->predictedPlayerEntity).nextState.number) {
           return;
         }
-        pcVar3 = CG_GetEntity(param_1,(int)param_2->targetEntNum);
+        pcVar3 = CG_GetEntity(localClientNum,(int)elem->targetEntNum);
         if (pcVar3->nextValid == 0) {
           Com_PrintWarning(1,
                            "RB_AddWayPoint(): targetEnt %i not in snapshot, may not be a network-broadcasting entity.\n"
                           );
           return;
         }
-        local_7c = (pcVar3->pose).origin[0] + param_2->x;
-        local_78 = (pcVar3->pose).origin[1] + param_2->y;
-        local_74 = (pcVar3->pose).origin[2] + param_2->z;
+        pos = (pcVar3->pose).origin[0] + elem->x;
+        local_78 = (pcVar3->pose).origin[1] + elem->y;
+        local_74 = (pcVar3->pose).origin[2] + elem->z;
       }
-      if (param_2->value <= 0.0) {
-        local_10 = 0;
-        local_60 = local_64;
+      if (elem->value <= 0.0) {
+        renderFxFlags = 0;
+        radius = height;
       }
       else {
-        local_10 = 3;
-        local_60 = local_64 * 0.0043;
-        local_74 = local_74 + local_64;
+        renderFxFlags = 3;
+        radius = height * 0.0043;
+        local_74 = local_74 + height;
       }
-      local_c.packed =
-           (uint)local_6c._s_0.r << 0x10 | (uint)local_6c._s_0.g << 8 | (uint)local_6c._s_0.b |
-           0xff000000;
-      local_12 = (local_10 & 2) != 0;
-      local_5 = (local_10 & 1) != 0;
-      local_11 = 0;
-      RB_DrawWaypoint(local_70,local_c,&local_7c,local_60,(bool)local_12,(bool)local_5,false);
+      color.packed = (uint)hudColor._s_0.r << 0x10 | (uint)hudColor._s_0.g << 8 |
+                     (uint)hudColor._s_0.b | 0xff000000;
+      fixedSize = (renderFxFlags & 2U) != 0;
+      alignBottom = (renderFxFlags & 1U) != 0;
+      forceNear = false;
+      RB_DrawWaypoint(material,color,&pos,radius,fixedSize,alignBottom,false);
     }
   }
   return;
@@ -2894,15 +2997,21 @@ void __cdecl RB_AddWaypoint(int param_1,hudelem_s *param_2)
 
 // 004BE260  RB_DrawWaypoints  (cgame/cg_hudelem.cpp:2207)
 
-void __cdecl RB_DrawWaypoints(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl RB_DrawWaypoints(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  int local_108;
-  hudelem_s *local_104 [63];
-  uint local_8;
+  PIXProfile pixProfile;
+  int i;
+  hudelem_s *elems [63];
+  int elemCount;
   
   PIXBeginNamedEvent(-1,"RB_DrawWaypoints");
   if (r_highRezWaypoints == false) {
@@ -2912,7 +3021,7 @@ void __cdecl RB_DrawWaypoints(int param_1)
     }
   }
   else {
-    bVar2 = CG_ShouldDrawHud(param_1);
+    bVar2 = CG_ShouldDrawHud(localClientNum);
     if (bVar2) {
       bVar2 = Demo_IsPlaying();
       if ((bVar2) &&
@@ -2923,17 +3032,17 @@ void __cdecl RB_DrawWaypoints(int param_1)
         }
       }
       else {
-        local_8 = GetSortedHudElems(param_1,local_104);
-        if ((0x3e < local_8) &&
+        elemCount = GetSortedHudElems(localClientNum,elems);
+        if ((0x3e < (uint)elemCount) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_hudelem.cpp",
                                      0x8b3,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        for (local_108 = 0; local_108 < (int)local_8; local_108 = local_108 + 1) {
-          if (local_104[local_108]->type == '\x0f') {
-            RB_AddWaypoint(param_1,local_104[local_108]);
+        for (i = 0; i < elemCount; i = i + 1) {
+          if (elems[i]->type == '\x0f') {
+            RB_AddWaypoint(localClientNum,elems[i]);
           }
         }
         DVar3 = GetCurrentThreadId();

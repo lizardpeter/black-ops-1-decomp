@@ -2,22 +2,22 @@
 
 // 00B5BD60  use_merged_upsample  (jpeg-6/jdmaster.c:45)
 
-uchar __cdecl use_merged_upsample(jpeg_decompress_struct *param_1)
+uchar __cdecl use_merged_upsample(jpeg_decompress_struct *cinfo)
 
 {
   uchar uVar1;
   
-  if ((param_1->do_fancy_upsampling == '\0') && (param_1->CCIR601_sampling == '\0')) {
-    if ((param_1->jpeg_color_space == JCS_YCbCr) &&
-       (((param_1->num_components == 3 && (param_1->out_color_space == JCS_RGB)) &&
-        (param_1->out_color_components == 3)))) {
-      if (((((param_1->comp_info->h_samp_factor == 2) && (param_1->comp_info[1].h_samp_factor == 1))
-           && (param_1->comp_info[2].h_samp_factor == 1)) &&
-          ((param_1->comp_info->v_samp_factor < 3 && (param_1->comp_info[1].v_samp_factor == 1))))
-         && (param_1->comp_info[2].v_samp_factor == 1)) {
-        if (((param_1->comp_info->DCT_scaled_size == param_1->min_DCT_scaled_size) &&
-            (param_1->comp_info[1].DCT_scaled_size == param_1->min_DCT_scaled_size)) &&
-           (param_1->comp_info[2].DCT_scaled_size == param_1->min_DCT_scaled_size)) {
+  if ((cinfo->do_fancy_upsampling == '\0') && (cinfo->CCIR601_sampling == '\0')) {
+    if ((cinfo->jpeg_color_space == JCS_YCbCr) &&
+       (((cinfo->num_components == 3 && (cinfo->out_color_space == JCS_RGB)) &&
+        (cinfo->out_color_components == 3)))) {
+      if (((((cinfo->comp_info->h_samp_factor == 2) && (cinfo->comp_info[1].h_samp_factor == 1)) &&
+           (cinfo->comp_info[2].h_samp_factor == 1)) &&
+          ((cinfo->comp_info->v_samp_factor < 3 && (cinfo->comp_info[1].v_samp_factor == 1)))) &&
+         (cinfo->comp_info[2].v_samp_factor == 1)) {
+        if (((cinfo->comp_info->DCT_scaled_size == cinfo->min_DCT_scaled_size) &&
+            (cinfo->comp_info[1].DCT_scaled_size == cinfo->min_DCT_scaled_size)) &&
+           (cinfo->comp_info[2].DCT_scaled_size == cinfo->min_DCT_scaled_size)) {
           uVar1 = '\x01';
         }
         else {
@@ -41,7 +41,7 @@ uchar __cdecl use_merged_upsample(jpeg_decompress_struct *param_1)
 
 // 00B5BA10  jpeg_calc_output_dimensions  (jpeg-6/jdmaster.c:86)
 
-void __cdecl jpeg_calc_output_dimensions(jpeg_decompress_struct *param_1)
+void __cdecl jpeg_calc_output_dimensions(jpeg_decompress_struct *cinfo)
 
 {
   uchar uVar1;
@@ -49,100 +49,100 @@ void __cdecl jpeg_calc_output_dimensions(jpeg_decompress_struct *param_1)
   int iVar3;
   int iVar4;
   int local_18;
-  int local_10;
-  int local_c;
-  jpeg_component_info *local_8;
+  int ssize;
+  int ci;
+  jpeg_component_info *compptr;
   
-  if (param_1->global_state != 0xca) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 0xca) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->scale_denom < param_1->scale_num << 3) {
-    if (param_1->scale_denom < param_1->scale_num << 2) {
-      uVar2 = param_1->scale_num * 2;
-      if (uVar2 < param_1->scale_denom || uVar2 - param_1->scale_denom == 0) {
-        uVar2 = jdiv_round_up(param_1->image_width,2);
-        param_1->output_width = uVar2;
-        uVar2 = jdiv_round_up(param_1->image_height,2);
-        param_1->output_height = uVar2;
-        param_1->min_DCT_scaled_size = 4;
+  if (cinfo->scale_denom < cinfo->scale_num << 3) {
+    if (cinfo->scale_denom < cinfo->scale_num << 2) {
+      uVar2 = cinfo->scale_num * 2;
+      if (uVar2 < cinfo->scale_denom || uVar2 - cinfo->scale_denom == 0) {
+        uVar2 = jdiv_round_up(cinfo->image_width,2);
+        cinfo->output_width = uVar2;
+        uVar2 = jdiv_round_up(cinfo->image_height,2);
+        cinfo->output_height = uVar2;
+        cinfo->min_DCT_scaled_size = 4;
       }
       else {
-        param_1->output_width = param_1->image_width;
-        param_1->output_height = param_1->image_height;
-        param_1->min_DCT_scaled_size = 8;
+        cinfo->output_width = cinfo->image_width;
+        cinfo->output_height = cinfo->image_height;
+        cinfo->min_DCT_scaled_size = 8;
       }
     }
     else {
-      uVar2 = jdiv_round_up(param_1->image_width,4);
-      param_1->output_width = uVar2;
-      uVar2 = jdiv_round_up(param_1->image_height,4);
-      param_1->output_height = uVar2;
-      param_1->min_DCT_scaled_size = 2;
+      uVar2 = jdiv_round_up(cinfo->image_width,4);
+      cinfo->output_width = uVar2;
+      uVar2 = jdiv_round_up(cinfo->image_height,4);
+      cinfo->output_height = uVar2;
+      cinfo->min_DCT_scaled_size = 2;
     }
   }
   else {
-    uVar2 = jdiv_round_up(param_1->image_width,8);
-    param_1->output_width = uVar2;
-    uVar2 = jdiv_round_up(param_1->image_height,8);
-    param_1->output_height = uVar2;
-    param_1->min_DCT_scaled_size = 1;
+    uVar2 = jdiv_round_up(cinfo->image_width,8);
+    cinfo->output_width = uVar2;
+    uVar2 = jdiv_round_up(cinfo->image_height,8);
+    cinfo->output_height = uVar2;
+    cinfo->min_DCT_scaled_size = 1;
   }
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    for (local_10 = param_1->min_DCT_scaled_size;
-        ((local_10 < 8 &&
-         (iVar3 = local_8->h_samp_factor * local_10 * 2,
-         iVar4 = param_1->max_h_samp_factor * param_1->min_DCT_scaled_size,
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    for (ssize = cinfo->min_DCT_scaled_size;
+        ((ssize < 8 &&
+         (iVar3 = compptr->h_samp_factor * ssize * 2,
+         iVar4 = cinfo->max_h_samp_factor * cinfo->min_DCT_scaled_size,
          iVar3 - iVar4 == 0 || iVar3 < iVar4)) &&
-        (iVar3 = local_8->v_samp_factor * local_10 * 2,
-        iVar4 = param_1->max_v_samp_factor * param_1->min_DCT_scaled_size,
-        iVar3 - iVar4 == 0 || iVar3 < iVar4)); local_10 = local_10 << 1) {
+        (iVar3 = compptr->v_samp_factor * ssize * 2,
+        iVar4 = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size,
+        iVar3 - iVar4 == 0 || iVar3 < iVar4)); ssize = ssize << 1) {
     }
-    local_8->DCT_scaled_size = local_10;
-    local_8 = local_8 + 1;
+    compptr->DCT_scaled_size = ssize;
+    compptr = compptr + 1;
   }
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    uVar2 = jdiv_round_up(local_8->h_samp_factor * local_8->DCT_scaled_size * param_1->image_width,
-                          param_1->max_h_samp_factor << 3);
-    local_8->downsampled_width = uVar2;
-    uVar2 = jdiv_round_up(local_8->v_samp_factor * local_8->DCT_scaled_size * param_1->image_height,
-                          param_1->max_v_samp_factor << 3);
-    local_8->downsampled_height = uVar2;
-    local_8 = local_8 + 1;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    uVar2 = jdiv_round_up(compptr->h_samp_factor * compptr->DCT_scaled_size * cinfo->image_width,
+                          cinfo->max_h_samp_factor << 3);
+    compptr->downsampled_width = uVar2;
+    uVar2 = jdiv_round_up(compptr->v_samp_factor * compptr->DCT_scaled_size * cinfo->image_height,
+                          cinfo->max_v_samp_factor << 3);
+    compptr->downsampled_height = uVar2;
+    compptr = compptr + 1;
   }
-  switch(param_1->out_color_space) {
+  switch(cinfo->out_color_space) {
   case JCS_GRAYSCALE:
-    param_1->out_color_components = 1;
+    cinfo->out_color_components = 1;
     break;
   case JCS_RGB:
   case JCS_YCbCr:
-    param_1->out_color_components = 3;
+    cinfo->out_color_components = 3;
     break;
   case JCS_CMYK:
   case JCS_YCCK:
-    param_1->out_color_components = 4;
+    cinfo->out_color_components = 4;
     break;
   default:
-    param_1->out_color_components = param_1->num_components;
+    cinfo->out_color_components = cinfo->num_components;
   }
-  if (param_1->quantize_colors == '\0') {
-    local_18 = param_1->out_color_components;
+  if (cinfo->quantize_colors == '\0') {
+    local_18 = cinfo->out_color_components;
   }
   else {
     local_18 = 1;
   }
-  param_1->output_components = local_18;
-  uVar1 = use_merged_upsample(param_1);
+  cinfo->output_components = local_18;
+  uVar1 = use_merged_upsample(cinfo);
   if (uVar1 == '\0') {
-    param_1->rec_outbuf_height = 1;
+    cinfo->rec_outbuf_height = 1;
   }
   else {
-    param_1->rec_outbuf_height = param_1->max_v_samp_factor;
+    cinfo->rec_outbuf_height = cinfo->max_v_samp_factor;
   }
   return;
 }
@@ -150,25 +150,26 @@ void __cdecl jpeg_calc_output_dimensions(jpeg_decompress_struct *param_1)
 
 // 00B5C260  prepare_range_limit_table  (jpeg-6/jdmaster.c:250)
 
-void __cdecl prepare_range_limit_table(jpeg_decompress_struct *param_1)
+void __cdecl prepare_range_limit_table(jpeg_decompress_struct *cinfo)
 
 {
   uchar *puVar1;
   int iVar2;
   uchar *puVar3;
-  int local_8;
+  uchar *table;
+  int i;
   
-  puVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x580);
-  param_1->sample_range_limit = puVar1 + 0x100;
+  puVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x580);
+  cinfo->sample_range_limit = puVar1 + 0x100;
   memset(puVar1,'\0',0x100);
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    (puVar1 + 0x100)[local_8] = (uchar)local_8;
+  for (i = 0; i < 0x100; i = i + 1) {
+    (puVar1 + 0x100)[i] = (uchar)i;
   }
-  for (local_8 = 0x80; local_8 < 0x200; local_8 = local_8 + 1) {
-    puVar1[local_8 + 0x180] = 0xff;
+  for (i = 0x80; i < 0x200; i = i + 1) {
+    puVar1[i + 0x180] = 0xff;
   }
   memset(puVar1 + 0x380,'\0',0x180);
-  puVar3 = param_1->sample_range_limit;
+  puVar3 = cinfo->sample_range_limit;
   puVar1 = puVar1 + 0x500;
   for (iVar2 = 0x20; iVar2 != 0; iVar2 = iVar2 + -1) {
     *(undefined4 *)puVar1 = *(undefined4 *)puVar3;
@@ -182,109 +183,116 @@ void __cdecl prepare_range_limit_table(jpeg_decompress_struct *param_1)
 // 00B5BED0  master_selection  (jpeg-6/jdmaster.c:289)
 
 /* WARNING: Removing unreachable block (ram,0x00b5bf18) */
+/* WARNING: Struct "phuff_entropy_decoder": ignoring multiple overlapping fields */
+/* WARNING: Struct "huff_entropy_decoder_s_0": ignoring multiple overlapping fields */
+/* WARNING: Struct "huff_entropy_decoder": ignoring multiple overlapping fields */
 
-void __cdecl master_selection(jpeg_decompress_struct *param_1)
+void __cdecl master_selection(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_decomp_master *pjVar1;
   uchar uVar2;
   uchar local_1c;
-  int local_18;
+  int nscans;
+  long samplesperrow;
+  my_decomp_master *master;
+  uchar use_c_buffer;
+  uint jd_samplesperrow;
   
-  pjVar1 = param_1->master;
-  jpeg_calc_output_dimensions(param_1);
-  prepare_range_limit_table(param_1);
+  pjVar1 = cinfo->master;
+  jpeg_calc_output_dimensions(cinfo);
+  prepare_range_limit_table(cinfo);
   pjVar1[1].prepare_for_output_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0;
-  uVar2 = use_merged_upsample(param_1);
+  uVar2 = use_merged_upsample(cinfo);
   *(uchar *)&pjVar1[1].finish_output_pass = uVar2;
   *(undefined4 *)&pjVar1[1].is_dummy_pass = 0;
   pjVar1[2].prepare_for_output_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0;
-  if ((param_1->quantize_colors == '\0') || (param_1->buffered_image == '\0')) {
-    param_1->enable_1pass_quant = '\0';
-    param_1->enable_external_quant = '\0';
-    param_1->enable_2pass_quant = '\0';
+  if ((cinfo->quantize_colors == '\0') || (cinfo->buffered_image == '\0')) {
+    cinfo->enable_1pass_quant = '\0';
+    cinfo->enable_external_quant = '\0';
+    cinfo->enable_2pass_quant = '\0';
   }
-  if (param_1->quantize_colors != '\0') {
-    if (param_1->raw_data_out != '\0') {
-      param_1->err->msg_code = 0x2f;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->quantize_colors != '\0') {
+    if (cinfo->raw_data_out != '\0') {
+      cinfo->err->msg_code = 0x2f;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->out_color_components == 3) {
-      if (param_1->colormap == (uchar **)0x0) {
-        if (param_1->two_pass_quantize == '\0') {
-          param_1->enable_1pass_quant = '\x01';
+    if (cinfo->out_color_components == 3) {
+      if (cinfo->colormap == (uchar **)0x0) {
+        if (cinfo->two_pass_quantize == '\0') {
+          cinfo->enable_1pass_quant = '\x01';
         }
         else {
-          param_1->enable_2pass_quant = '\x01';
+          cinfo->enable_2pass_quant = '\x01';
         }
       }
       else {
-        param_1->enable_external_quant = '\x01';
+        cinfo->enable_external_quant = '\x01';
       }
     }
     else {
-      param_1->enable_1pass_quant = '\x01';
-      param_1->enable_external_quant = '\0';
-      param_1->enable_2pass_quant = '\0';
-      param_1->colormap = (uchar **)0x0;
+      cinfo->enable_1pass_quant = '\x01';
+      cinfo->enable_external_quant = '\0';
+      cinfo->enable_2pass_quant = '\0';
+      cinfo->colormap = (uchar **)0x0;
     }
-    if (param_1->enable_1pass_quant != '\0') {
-      jinit_1pass_quantizer(param_1);
-      *(jpeg_color_quantizer **)&pjVar1[1].is_dummy_pass = param_1->cquantize;
+    if (cinfo->enable_1pass_quant != '\0') {
+      jinit_1pass_quantizer(cinfo);
+      *(jpeg_color_quantizer **)&pjVar1[1].is_dummy_pass = cinfo->cquantize;
     }
-    if ((param_1->enable_2pass_quant != '\0') || (param_1->enable_external_quant != '\0')) {
-      jinit_2pass_quantizer(param_1);
+    if ((cinfo->enable_2pass_quant != '\0') || (cinfo->enable_external_quant != '\0')) {
+      jinit_2pass_quantizer(cinfo);
       pjVar1[2].prepare_for_output_pass =
-           (_func___cdecl_void_jpeg_decompress_struct_ptr *)param_1->cquantize;
+           (_func___cdecl_void_jpeg_decompress_struct_ptr *)cinfo->cquantize;
     }
   }
-  if (param_1->raw_data_out == '\0') {
+  if (cinfo->raw_data_out == '\0') {
     if (*(char *)&pjVar1[1].finish_output_pass == '\0') {
-      jinit_color_deconverter(param_1);
-      jinit_upsampler(param_1);
+      jinit_color_deconverter(cinfo);
+      jinit_upsampler(cinfo);
     }
     else {
-      jinit_merged_upsampler(param_1);
+      jinit_merged_upsampler(cinfo);
     }
-    jinit_d_post_controller(param_1,param_1->enable_2pass_quant);
+    jinit_d_post_controller(cinfo,cinfo->enable_2pass_quant);
   }
-  jinit_inverse_dct(param_1);
-  if (param_1->arith_code == '\0') {
-    if (param_1->progressive_mode == '\0') {
-      jinit_huff_decoder(param_1);
+  jinit_inverse_dct(cinfo);
+  if (cinfo->arith_code == '\0') {
+    if (cinfo->progressive_mode == '\0') {
+      jinit_huff_decoder(cinfo);
     }
     else {
-      jinit_phuff_decoder(param_1);
+      jinit_phuff_decoder(cinfo);
     }
   }
   else {
-    param_1->err->msg_code = 1;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 1;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if ((param_1->inputctl->has_multiple_scans == '\0') && (param_1->buffered_image == '\0')) {
+  if ((cinfo->inputctl->has_multiple_scans == '\0') && (cinfo->buffered_image == '\0')) {
     local_1c = '\0';
   }
   else {
     local_1c = '\x01';
   }
-  jinit_d_coef_controller(param_1,local_1c);
-  if (param_1->raw_data_out == '\0') {
-    jinit_d_main_controller(param_1,'\0');
+  jinit_d_coef_controller(cinfo,local_1c);
+  if (cinfo->raw_data_out == '\0') {
+    jinit_d_main_controller(cinfo,'\0');
   }
-  (*param_1->mem->realize_virt_arrays)((jpeg_common_struct *)param_1);
-  (*param_1->inputctl->start_input_pass)(param_1);
-  if (((param_1->progress != (jpeg_progress_mgr *)0x0) && (param_1->buffered_image == '\0')) &&
-     (param_1->inputctl->has_multiple_scans != '\0')) {
-    if (param_1->progressive_mode == '\0') {
-      local_18 = param_1->num_components;
+  (*cinfo->mem->realize_virt_arrays)((jpeg_common_struct *)cinfo);
+  (*cinfo->inputctl->start_input_pass)(cinfo);
+  if (((cinfo->progress != (jpeg_progress_mgr *)0x0) && (cinfo->buffered_image == '\0')) &&
+     (cinfo->inputctl->has_multiple_scans != '\0')) {
+    if (cinfo->progressive_mode == '\0') {
+      nscans = cinfo->num_components;
     }
     else {
-      local_18 = param_1->num_components * 3 + 2;
+      nscans = cinfo->num_components * 3 + 2;
     }
-    param_1->progress->pass_counter = 0;
-    param_1->progress->pass_limit = param_1->total_iMCU_rows * local_18;
-    param_1->progress->completed_passes = 0;
-    param_1->progress->total_passes = (param_1->enable_2pass_quant != '\0') + 2;
+    cinfo->progress->pass_counter = 0;
+    cinfo->progress->pass_limit = cinfo->total_iMCU_rows * nscans;
+    cinfo->progress->completed_passes = 0;
+    cinfo->progress->total_passes = (cinfo->enable_2pass_quant != '\0') + 2;
     pjVar1[1].prepare_for_output_pass = pjVar1[1].prepare_for_output_pass + 1;
   }
   return;
@@ -293,56 +301,56 @@ void __cdecl master_selection(jpeg_decompress_struct *param_1)
 
 // 00B5C350  prepare_for_output_pass  (jpeg-6/jdmaster.c:439)
 
-void __cdecl prepare_for_output_pass(jpeg_decompress_struct *param_1)
+void __cdecl prepare_for_output_pass(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_decomp_master *pjVar1;
+  my_decomp_master *master;
   
-  pjVar1 = param_1->master;
+  pjVar1 = cinfo->master;
   if (pjVar1->is_dummy_pass == '\0') {
-    if ((param_1->quantize_colors != '\0') && (param_1->colormap == (uchar **)0x0)) {
-      if ((param_1->two_pass_quantize == '\0') || (param_1->enable_2pass_quant == '\0')) {
-        if (param_1->enable_1pass_quant == '\0') {
-          param_1->err->msg_code = 0x2e;
-          (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if ((cinfo->quantize_colors != '\0') && (cinfo->colormap == (uchar **)0x0)) {
+      if ((cinfo->two_pass_quantize == '\0') || (cinfo->enable_2pass_quant == '\0')) {
+        if (cinfo->enable_1pass_quant == '\0') {
+          cinfo->err->msg_code = 0x2e;
+          (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
         }
         else {
-          param_1->cquantize = *(jpeg_color_quantizer **)&pjVar1[1].is_dummy_pass;
+          cinfo->cquantize = *(jpeg_color_quantizer **)&pjVar1[1].is_dummy_pass;
         }
       }
       else {
-        param_1->cquantize = (jpeg_color_quantizer *)pjVar1[2].prepare_for_output_pass;
+        cinfo->cquantize = (jpeg_color_quantizer *)pjVar1[2].prepare_for_output_pass;
         pjVar1->is_dummy_pass = '\x01';
       }
     }
-    (*param_1->idct->start_pass)(param_1);
-    (*param_1->coef->start_output_pass)(param_1);
-    if (param_1->raw_data_out == '\0') {
+    (*cinfo->idct->start_pass)(cinfo);
+    (*cinfo->coef->start_output_pass)(cinfo);
+    if (cinfo->raw_data_out == '\0') {
       if (*(char *)&pjVar1[1].finish_output_pass == '\0') {
-        (*param_1->cconvert->start_pass)(param_1);
+        (*cinfo->cconvert->start_pass)(cinfo);
       }
-      (*param_1->upsample->start_pass)(param_1);
-      if (param_1->quantize_colors != '\0') {
-        (*param_1->cquantize->start_pass)(param_1,pjVar1->is_dummy_pass);
+      (*cinfo->upsample->start_pass)(cinfo);
+      if (cinfo->quantize_colors != '\0') {
+        (*cinfo->cquantize->start_pass)(cinfo,pjVar1->is_dummy_pass);
       }
-      (*param_1->post->start_pass)
-                (param_1,-(uint)(pjVar1->is_dummy_pass != '\0') & JBUF_SAVE_AND_PASS);
-      (*param_1->main->start_pass)(param_1,JBUF_PASS_THRU);
+      (*cinfo->post->start_pass)(cinfo,-(uint)(pjVar1->is_dummy_pass != '\0') & JBUF_SAVE_AND_PASS);
+      (*cinfo->main->start_pass)(cinfo,JBUF_PASS_THRU);
     }
   }
   else {
     pjVar1->is_dummy_pass = '\0';
-    (*param_1->cquantize->start_pass)(param_1,'\0');
-    (*param_1->post->start_pass)(param_1,JBUF_CRANK_DEST);
-    (*param_1->main->start_pass)(param_1,JBUF_CRANK_DEST);
+    (*cinfo->cquantize->start_pass)(cinfo,'\0');
+    (*cinfo->post->start_pass)(cinfo,JBUF_CRANK_DEST);
+    (*cinfo->main->start_pass)(cinfo,JBUF_CRANK_DEST);
   }
-  if (param_1->progress != (jpeg_progress_mgr *)0x0) {
-    param_1->progress->completed_passes = (int)pjVar1[1].prepare_for_output_pass;
-    param_1->progress->total_passes =
+  if (cinfo->progress != (jpeg_progress_mgr *)0x0) {
+    cinfo->progress->completed_passes = (int)pjVar1[1].prepare_for_output_pass;
+    cinfo->progress->total_passes =
          (int)(pjVar1[1].prepare_for_output_pass + (pjVar1->is_dummy_pass != '\0') + 1);
-    if ((param_1->buffered_image != '\0') && (param_1->inputctl->eoi_reached == '\0')) {
-      param_1->progress->total_passes =
-           (param_1->enable_2pass_quant != '\0') + 1 + param_1->progress->total_passes;
+    if ((cinfo->buffered_image != '\0') && (cinfo->inputctl->eoi_reached == '\0')) {
+      cinfo->progress->total_passes =
+           (cinfo->enable_2pass_quant != '\0') + 1 + cinfo->progress->total_passes;
     }
   }
   return;
@@ -351,14 +359,15 @@ void __cdecl prepare_for_output_pass(jpeg_decompress_struct *param_1)
 
 // 00B5C580  finish_output_pass  (jpeg-6/jdmaster.c:499)
 
-void __cdecl finish_output_pass(jpeg_decompress_struct *param_1)
+void __cdecl finish_output_pass(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_decomp_master *pjVar1;
+  my_decomp_master *master;
   
-  pjVar1 = param_1->master;
-  if (param_1->quantize_colors != '\0') {
-    (*param_1->cquantize->finish_pass)(param_1);
+  pjVar1 = cinfo->master;
+  if (cinfo->quantize_colors != '\0') {
+    (*cinfo->cquantize->finish_pass)(cinfo);
   }
   pjVar1[1].prepare_for_output_pass = pjVar1[1].prepare_for_output_pass + 1;
   return;
@@ -367,17 +376,18 @@ void __cdecl finish_output_pass(jpeg_decompress_struct *param_1)
 
 // 00B5BE70  jinit_master_decompress  (jpeg-6/jdmaster.c:544)
 
-void __cdecl jinit_master_decompress(jpeg_decompress_struct *param_1)
+void __cdecl jinit_master_decompress(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_decomp_master *pjVar1;
+  my_decomp_master *master;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x1c);
-  param_1->master = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x1c);
+  cinfo->master = pjVar1;
   pjVar1->prepare_for_output_pass = prepare_for_output_pass;
   pjVar1->finish_output_pass = finish_output_pass;
   pjVar1->is_dummy_pass = '\0';
-  master_selection(param_1);
+  master_selection(cinfo);
   return;
 }
 

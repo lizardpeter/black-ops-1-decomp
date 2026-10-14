@@ -4,7 +4,7 @@
 
 int __cdecl
 R_ChopPolyBehindPlane
-          (int param_1,FxModelMarkPoint *param_2,FxModelMarkPoint *param_3,float *param_4)
+          (int inPointCount,FxModelMarkPoint *inPoints,FxModelMarkPoint *outPoints,float *plane)
 
 {
   code *pcVar1;
@@ -12,118 +12,118 @@ R_ChopPolyBehindPlane
   int iVar3;
   FxModelMarkPoint *pFVar4;
   FxModelMarkPoint *pFVar5;
-  int local_98 [3];
-  float local_8c [15];
-  int local_50;
-  float local_4c;
-  int local_48;
-  int local_44 [15];
-  int local_8;
+  int sideCount [3];
+  float dists [15];
+  int nextIndex;
+  float lerp;
+  int pointIndex;
+  int sides [15];
+  int outPointCount;
   
-  if ((0xe < param_1) &&
+  if ((0xe < inPointCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0xad,0,
                                "%s\n\t(inPointCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_98[0] = 0;
-  local_98[1] = 0;
-  local_98[2] = 0;
-  for (local_48 = 0; local_48 < param_1; local_48 = local_48 + 1) {
-    pFVar5 = param_2 + local_48;
-    local_8c[local_48] =
-         (pFVar5->xyz[0] * *param_4 + pFVar5->xyz[1] * param_4[1] + pFVar5->xyz[2] * param_4[2]) -
-         param_4[3];
-    if (local_8c[local_48] <= 0.5) {
-      if (-0.5 < local_8c[local_48] || local_8c[local_48] == -0.5) {
-        local_44[local_48] = 2;
+  sideCount[0] = 0;
+  sideCount[1] = 0;
+  sideCount[2] = 0;
+  for (pointIndex = 0; pointIndex < inPointCount; pointIndex = pointIndex + 1) {
+    pFVar5 = inPoints + pointIndex;
+    dists[pointIndex] =
+         (pFVar5->xyz[0] * *plane + pFVar5->xyz[1] * plane[1] + pFVar5->xyz[2] * plane[2]) -
+         plane[3];
+    if (dists[pointIndex] <= 0.5) {
+      if (-0.5 < dists[pointIndex] || dists[pointIndex] == -0.5) {
+        sides[pointIndex] = 2;
       }
       else {
-        local_44[local_48] = 1;
+        sides[pointIndex] = 1;
       }
     }
     else {
-      local_44[local_48] = 0;
+      sides[pointIndex] = 0;
     }
-    local_98[local_44[local_48]] = local_98[local_44[local_48]] + 1;
+    sideCount[sides[pointIndex]] = sideCount[sides[pointIndex]] + 1;
   }
-  local_44[local_48] = local_44[0];
-  local_8c[local_48] = local_8c[0];
-  if (local_98[0] == 0) {
-    local_8 = 0;
+  sides[pointIndex] = sides[0];
+  dists[pointIndex] = dists[0];
+  if (sideCount[0] == 0) {
+    outPointCount = 0;
   }
-  else if (local_98[1] == 0) {
-    memcpy((uchar *)param_3,(uchar *)param_2,param_1 * 0x18);
-    local_8 = param_1;
+  else if (sideCount[1] == 0) {
+    memcpy((uchar *)outPoints,(uchar *)inPoints,inPointCount * 0x18);
+    outPointCount = inPointCount;
   }
   else {
-    local_8 = 0;
-    for (local_48 = 0; local_48 < param_1; local_48 = local_48 + 1) {
-      if (local_44[local_48] == 2) {
-        if ((0xd < local_8) &&
+    outPointCount = 0;
+    for (pointIndex = 0; pointIndex < inPointCount; pointIndex = pointIndex + 1) {
+      if (sides[pointIndex] == 2) {
+        if ((0xd < outPointCount) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0xd6,
                                      0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        pFVar5 = param_2 + local_48;
-        pFVar4 = param_3 + local_8;
+        pFVar5 = inPoints + pointIndex;
+        pFVar4 = outPoints + outPointCount;
         pFVar4->xyz[0] = pFVar5->xyz[0];
         pFVar4->xyz[1] = pFVar5->xyz[1];
         pFVar4->xyz[2] = pFVar5->xyz[2];
         pFVar4->vertWeights[0] = pFVar5->vertWeights[0];
         pFVar4->vertWeights[1] = pFVar5->vertWeights[1];
         pFVar4->vertWeights[2] = pFVar5->vertWeights[2];
-        local_8 = local_8 + 1;
+        outPointCount = outPointCount + 1;
       }
       else {
-        if (local_44[local_48] == 0) {
-          if ((0xd < local_8) &&
+        if (sides[pointIndex] == 0) {
+          if ((0xd < outPointCount) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0xde,0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          pFVar5 = param_2 + local_48;
-          pFVar4 = param_3 + local_8;
+          pFVar5 = inPoints + pointIndex;
+          pFVar4 = outPoints + outPointCount;
           pFVar4->xyz[0] = pFVar5->xyz[0];
           pFVar4->xyz[1] = pFVar5->xyz[1];
           pFVar4->xyz[2] = pFVar5->xyz[2];
           pFVar4->vertWeights[0] = pFVar5->vertWeights[0];
           pFVar4->vertWeights[1] = pFVar5->vertWeights[1];
           pFVar4->vertWeights[2] = pFVar5->vertWeights[2];
-          local_8 = local_8 + 1;
+          outPointCount = outPointCount + 1;
         }
-        if ((local_44[local_48 + 1] != 2) && (local_44[local_48 + 1] != local_44[local_48])) {
-          if ((0xd < local_8) &&
+        if ((sides[pointIndex + 1] != 2) && (sides[pointIndex + 1] != sides[pointIndex])) {
+          if ((0xd < outPointCount) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0xe7,0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          if ((local_8c[local_48] == local_8c[local_48 + 1]) &&
+          if ((dists[pointIndex] == dists[pointIndex + 1]) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0xe8,0,"%s\n\t(dists[pointIndex]) = %g"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          local_4c = local_8c[local_48] / (local_8c[local_48] - local_8c[local_48 + 1]);
-          local_50 = (local_48 + 1) % param_1;
+          lerp = dists[pointIndex] / (dists[pointIndex] - dists[pointIndex + 1]);
+          nextIndex = (pointIndex + 1) % inPointCount;
           R_LerpWorldMarkPoints
-                    ((FxWorldMarkPoint *)(param_2 + local_48),
-                     (FxWorldMarkPoint *)(param_2 + local_50),local_4c,
-                     (FxWorldMarkPoint *)(param_3 + local_8));
-          local_8 = local_8 + 1;
+                    ((FxWorldMarkPoint *)(inPoints + pointIndex),
+                     (FxWorldMarkPoint *)(inPoints + nextIndex),lerp,
+                     (FxWorldMarkPoint *)(outPoints + outPointCount));
+          outPointCount = outPointCount + 1;
         }
       }
     }
   }
-  return local_8;
+  return outPointCount;
 }
 
 
@@ -131,12 +131,11 @@ R_ChopPolyBehindPlane
 
 void __cdecl
 R_LerpWorldMarkPoints
-          (FxWorldMarkPoint *param_1,FxWorldMarkPoint *param_2,float param_3,
-          FxWorldMarkPoint *param_4)
+          (FxWorldMarkPoint *from_2,FxWorldMarkPoint *to_2,float lerp_2,FxWorldMarkPoint *out_2)
 
 {
-  Vec3Lerp(param_1->xyz,param_2->xyz,param_3,param_4->xyz);
-  Vec3Lerp(param_1->vertWeights,param_2->vertWeights,param_3,param_4->vertWeights);
+  Vec3Lerp(from_2->xyz,to_2->xyz,lerp_2,out_2->xyz);
+  Vec3Lerp(from_2->vertWeights,to_2->vertWeights,lerp_2,out_2->vertWeights);
   return;
 }
 
@@ -145,8 +144,8 @@ R_LerpWorldMarkPoints
 
 int __cdecl
 R_ChopWorldPolyBehindPlane
-          (int param_1,FxWorldMarkPoint *param_2,FxWorldMarkPoint *param_3,float *param_4,
-          float param_5)
+          (int inPointCount,FxWorldMarkPoint *inPoints,FxWorldMarkPoint *outPoints,float *plane,
+          float epsilon)
 
 {
   code *pcVar1;
@@ -154,146 +153,150 @@ R_ChopWorldPolyBehindPlane
   int iVar3;
   FxWorldMarkPoint *pFVar4;
   FxWorldMarkPoint *pFVar5;
-  int local_98 [3];
-  float local_8c [15];
-  int local_50;
-  float local_4c;
-  int local_48;
-  int local_44 [15];
-  int local_8;
+  int sideCount [3];
+  float dists [15];
+  int nextIndex;
+  float lerp;
+  int pointIndex;
+  int sides [15];
+  int outPointCount;
   
-  if ((0xe < param_1) &&
+  if ((0xe < inPointCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x106,0,
                                "%s\n\t(inPointCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_98[0] = 0;
-  local_98[1] = 0;
-  local_98[2] = 0;
-  for (local_48 = 0; local_48 < param_1; local_48 = local_48 + 1) {
-    pFVar5 = param_2 + local_48;
-    local_8c[local_48] =
-         (pFVar5->xyz[0] * *param_4 + pFVar5->xyz[1] * param_4[1] + pFVar5->xyz[2] * param_4[2]) -
-         param_4[3];
-    if (local_8c[local_48] <= param_5) {
-      if (-param_5 < local_8c[local_48] || -param_5 == local_8c[local_48]) {
-        local_44[local_48] = 2;
+  sideCount[0] = 0;
+  sideCount[1] = 0;
+  sideCount[2] = 0;
+  for (pointIndex = 0; pointIndex < inPointCount; pointIndex = pointIndex + 1) {
+    pFVar5 = inPoints + pointIndex;
+    dists[pointIndex] =
+         (pFVar5->xyz[0] * *plane + pFVar5->xyz[1] * plane[1] + pFVar5->xyz[2] * plane[2]) -
+         plane[3];
+    if (dists[pointIndex] <= epsilon) {
+      if (-epsilon < dists[pointIndex] || -epsilon == dists[pointIndex]) {
+        sides[pointIndex] = 2;
       }
       else {
-        local_44[local_48] = 1;
+        sides[pointIndex] = 1;
       }
     }
     else {
-      local_44[local_48] = 0;
+      sides[pointIndex] = 0;
     }
-    local_98[local_44[local_48]] = local_98[local_44[local_48]] + 1;
+    sideCount[sides[pointIndex]] = sideCount[sides[pointIndex]] + 1;
   }
-  local_44[local_48] = local_44[0];
-  local_8c[local_48] = local_8c[0];
-  if (local_98[0] == 0) {
-    local_8 = 0;
+  sides[pointIndex] = sides[0];
+  dists[pointIndex] = dists[0];
+  if (sideCount[0] == 0) {
+    outPointCount = 0;
   }
-  else if (local_98[1] == 0) {
-    memcpy((uchar *)param_3,(uchar *)param_2,param_1 * 0x18);
-    local_8 = param_1;
+  else if (sideCount[1] == 0) {
+    memcpy((uchar *)outPoints,(uchar *)inPoints,inPointCount * 0x18);
+    outPointCount = inPointCount;
   }
   else {
-    local_8 = 0;
-    for (local_48 = 0; local_48 < param_1; local_48 = local_48 + 1) {
-      if (local_44[local_48] == 2) {
-        if ((0xd < local_8) &&
+    outPointCount = 0;
+    for (pointIndex = 0; pointIndex < inPointCount; pointIndex = pointIndex + 1) {
+      if (sides[pointIndex] == 2) {
+        if ((0xd < outPointCount) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x12f
                                      ,0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        pFVar5 = param_2 + local_48;
-        pFVar4 = param_3 + local_8;
+        pFVar5 = inPoints + pointIndex;
+        pFVar4 = outPoints + outPointCount;
         pFVar4->xyz[0] = pFVar5->xyz[0];
         pFVar4->xyz[1] = pFVar5->xyz[1];
         pFVar4->xyz[2] = pFVar5->xyz[2];
         pFVar4->vertWeights[0] = pFVar5->vertWeights[0];
         pFVar4->vertWeights[1] = pFVar5->vertWeights[1];
         pFVar4->vertWeights[2] = pFVar5->vertWeights[2];
-        local_8 = local_8 + 1;
+        outPointCount = outPointCount + 1;
       }
       else {
-        if (local_44[local_48] == 0) {
-          if ((0xd < local_8) &&
+        if (sides[pointIndex] == 0) {
+          if ((0xd < outPointCount) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0x137,0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          pFVar5 = param_2 + local_48;
-          pFVar4 = param_3 + local_8;
+          pFVar5 = inPoints + pointIndex;
+          pFVar4 = outPoints + outPointCount;
           pFVar4->xyz[0] = pFVar5->xyz[0];
           pFVar4->xyz[1] = pFVar5->xyz[1];
           pFVar4->xyz[2] = pFVar5->xyz[2];
           pFVar4->vertWeights[0] = pFVar5->vertWeights[0];
           pFVar4->vertWeights[1] = pFVar5->vertWeights[1];
           pFVar4->vertWeights[2] = pFVar5->vertWeights[2];
-          local_8 = local_8 + 1;
+          outPointCount = outPointCount + 1;
         }
-        if ((local_44[local_48 + 1] != 2) && (local_44[local_48 + 1] != local_44[local_48])) {
-          if ((0xd < local_8) &&
+        if ((sides[pointIndex + 1] != 2) && (sides[pointIndex + 1] != sides[pointIndex])) {
+          if ((0xd < outPointCount) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0x140,0,"%s\n\t(outPointCount) = %i"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          if ((local_8c[local_48] == local_8c[local_48 + 1]) &&
+          if ((dists[pointIndex] == dists[pointIndex + 1]) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0x141,0,"%s\n\t(dists[pointIndex]) = %g"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          local_4c = local_8c[local_48] / (local_8c[local_48] - local_8c[local_48 + 1]);
-          local_50 = (local_48 + 1) % param_1;
-          R_LerpWorldMarkPoints(param_2 + local_48,param_2 + local_50,local_4c,param_3 + local_8);
-          local_8 = local_8 + 1;
+          lerp = dists[pointIndex] / (dists[pointIndex] - dists[pointIndex + 1]);
+          nextIndex = (pointIndex + 1) % inPointCount;
+          R_LerpWorldMarkPoints
+                    (inPoints + pointIndex,inPoints + nextIndex,lerp,outPoints + outPointCount);
+          outPointCount = outPointCount + 1;
         }
       }
     }
   }
-  return local_8;
+  return outPointCount;
 }
 
 
 // 00A56350  Vec3AddScalar  (universal/com_vector.h:272)
 
-void __cdecl Vec3AddScalar(float *param_1,float param_2,float *param_3)
+void __cdecl Vec3AddScalar(float *a,float s,float *sum)
 
 {
-  *param_3 = *param_1 + param_2;
-  param_3[1] = param_1[1] + param_2;
-  param_3[2] = param_1[2] + param_2;
+  *sum = *a + s;
+  sum[1] = a[1] + s;
+  sum[2] = a[2] + s;
   return;
 }
 
 
 // 00A540F0  R_Mark_MaterialAllowsMarks  (gfx_d3d/r_marks.cpp:333)
 
-bool __cdecl R_Mark_MaterialAllowsMarks(Material *param_1,Material *param_2)
+bool __cdecl
+R_Mark_MaterialAllowsMarks(Material *markReceiverMaterialHandle,Material *markMaterialHandle)
 
 {
   uint uVar1;
   bool bVar2;
   bool bVar3;
+  uint markReceiverMaterialSurfTypeBits;
+  uint markMaterialSurfTypeBits;
   
-  bVar2 = Material_IsForSeeThruBulletHoleDecal(param_2);
-  bVar3 = Material_CanReceiveSeeThruDecals(param_1);
+  bVar2 = Material_IsForSeeThruBulletHoleDecal(markMaterialHandle);
+  bVar3 = Material_CanReceiveSeeThruDecals(markReceiverMaterialHandle);
   if (bVar2 == bVar3) {
-    if ((param_1->stateFlags & 4) == 0) {
-      if (((param_1->info).gameFlags & 4) == 0) {
-        uVar1 = (param_2->info).surfaceTypeBits;
-        if ((uVar1 & (param_1->info).surfaceTypeBits) == uVar1) {
+    if ((markReceiverMaterialHandle->stateFlags & 4) == 0) {
+      if (((markReceiverMaterialHandle->info).gameFlags & 4) == 0) {
+        uVar1 = (markMaterialHandle->info).surfaceTypeBits;
+        if ((uVar1 & (markReceiverMaterialHandle->info).surfaceTypeBits) == uVar1) {
           bVar2 = true;
         }
         else {
@@ -317,12 +320,14 @@ bool __cdecl R_Mark_MaterialAllowsMarks(Material *param_1,Material *param_2)
 
 // 00A540B0  R_AllowMarks  (gfx_d3d/r_marks.cpp:358)
 
-int __cdecl R_AllowMarks(int param_1,void *param_2)
+int __cdecl R_AllowMarks(int surfIndex,void *markMaterialAsVoid)
 
 {
   bool bVar1;
+  Material *material;
   
-  bVar1 = R_Mark_MaterialAllowsMarks(((rgp.world)->dpvs).surfaces[param_1].material,param_2);
+  bVar1 = R_Mark_MaterialAllowsMarks
+                    (((rgp.world)->dpvs).surfaces[surfIndex].material,markMaterialAsVoid);
   return (uint)bVar1;
 }
 
@@ -331,9 +336,8 @@ int __cdecl R_AllowMarks(int param_1,void *param_2)
 
 void __cdecl
 R_AABBTreeSurfaces_r
-          (GfxAabbTree *param_1,float *param_2,float *param_3,
-          _func___cdecl_int_int_void_ptr *param_4,void *param_5,GfxSurface **param_6,uint param_7,
-          uint *param_8)
+          (GfxAabbTree *tree,float *mins,float *maxs,_func___cdecl_int_int_void_ptr *allowSurf,
+          void *callbackContext,GfxSurface **surfList,uint surfListSize,uint *surfCount)
 
 {
   float *pfVar1;
@@ -343,33 +347,36 @@ R_AABBTreeSurfaces_r
   int iVar5;
   uint uVar6;
   GfxSurface *pGVar7;
-  uint local_20;
-  uint local_18;
-  uint local_14;
-  uint local_8;
+  uint listIndex;
+  GfxAabbTree *children;
+  uint surfIndex;
+  uint childIndex;
+  uint remappedSurfIndex;
+  GfxSurface *surf;
+  uint surfNodeIndex;
   
-  if (((((*param_2 < param_1->maxs[0] || *param_2 == param_1->maxs[0]) &&
-        (param_1->mins[0] < *param_3 || param_1->mins[0] == *param_3)) &&
-       (param_2[1] < param_1->maxs[1] || param_2[1] == param_1->maxs[1])) &&
-      ((param_1->mins[1] < param_3[1] || param_1->mins[1] == param_3[1] &&
-       (param_2[2] < param_1->maxs[2] || param_2[2] == param_1->maxs[2])))) &&
-     (param_1->mins[2] < param_3[2] || param_1->mins[2] == param_3[2])) {
-    if (param_1->childCount == 0) {
-      local_8 = 0;
-      local_18 = (uint)param_1->startSurfIndex;
-      while ((local_8 < param_1->surfaceCount && (*param_8 < param_7))) {
-        uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[local_18];
-        iVar5 = (*param_4)(uVar6,param_5);
+  if (((((*mins < tree->maxs[0] || *mins == tree->maxs[0]) &&
+        (tree->mins[0] < *maxs || tree->mins[0] == *maxs)) &&
+       (mins[1] < tree->maxs[1] || mins[1] == tree->maxs[1])) &&
+      ((tree->mins[1] < maxs[1] || tree->mins[1] == maxs[1] &&
+       (mins[2] < tree->maxs[2] || mins[2] == tree->maxs[2])))) &&
+     (tree->mins[2] < maxs[2] || tree->mins[2] == maxs[2])) {
+    if (tree->childCount == 0) {
+      surfNodeIndex = 0;
+      surfIndex = (uint)tree->startSurfIndex;
+      while ((surfNodeIndex < tree->surfaceCount && (*surfCount < surfListSize))) {
+        uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[surfIndex];
+        iVar5 = (*allowSurf)(uVar6,callbackContext);
         if (((iVar5 != 0) &&
             (((pGVar7 = ((rgp.world)->dpvs).surfaces + uVar6,
-              *param_2 < pGVar7->bounds[1][0] || *param_2 == pGVar7->bounds[1][0] &&
-              (fVar2 = pGVar7->bounds[0][0], fVar2 < *param_3 || fVar2 == *param_3)) &&
-             (pfVar1 = pGVar7->bounds[1] + 1, param_2[1] < *pfVar1 || param_2[1] == *pfVar1)))) &&
-           (((fVar2 = pGVar7->bounds[0][1], fVar2 < param_3[1] || fVar2 == param_3[1] &&
-             (pfVar1 = pGVar7->bounds[1] + 2, param_2[2] < *pfVar1 || param_2[2] == *pfVar1)) &&
-            (fVar2 = pGVar7->bounds[0][2], fVar2 < param_3[2] || fVar2 == param_3[2])))) {
-          for (local_20 = 0; local_20 < *param_8; local_20 = local_20 + 1) {
-            if ((param_6[local_20] == pGVar7) &&
+              *mins < pGVar7->bounds[1][0] || *mins == pGVar7->bounds[1][0] &&
+              (fVar2 = pGVar7->bounds[0][0], fVar2 < *maxs || fVar2 == *maxs)) &&
+             (pfVar1 = pGVar7->bounds[1] + 1, mins[1] < *pfVar1 || mins[1] == *pfVar1)))) &&
+           (((fVar2 = pGVar7->bounds[0][1], fVar2 < maxs[1] || fVar2 == maxs[1] &&
+             (pfVar1 = pGVar7->bounds[1] + 2, mins[2] < *pfVar1 || mins[2] == *pfVar1)) &&
+            (fVar2 = pGVar7->bounds[0][2], fVar2 < maxs[2] || fVar2 == maxs[2])))) {
+          for (listIndex = 0; listIndex < *surfCount; listIndex = listIndex + 1) {
+            if ((surfList[listIndex] == pGVar7) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                          0x198,0,"%s"), !bVar4)) {
               pcVar3 = (code *)swi(3);
@@ -377,19 +384,19 @@ R_AABBTreeSurfaces_r
               return;
             }
           }
-          param_6[*param_8] = pGVar7;
-          *param_8 = *param_8 + 1;
+          surfList[*surfCount] = pGVar7;
+          *surfCount = *surfCount + 1;
         }
-        local_8 = local_8 + 1;
-        local_18 = local_18 + 1;
+        surfNodeIndex = surfNodeIndex + 1;
+        surfIndex = surfIndex + 1;
       }
     }
     else {
-      iVar5 = param_1->childrenOffset;
-      for (local_14 = 0; local_14 < param_1->childCount; local_14 = local_14 + 1) {
+      iVar5 = tree->childrenOffset;
+      for (childIndex = 0; childIndex < tree->childCount; childIndex = childIndex + 1) {
         R_AABBTreeSurfaces_r
-                  ((GfxAabbTree *)((int)param_1[local_14].mins + iVar5),param_2,param_3,param_4,
-                   param_5,param_6,param_7,param_8);
+                  ((GfxAabbTree *)((int)tree[childIndex].mins + iVar5),mins,maxs,allowSurf,
+                   callbackContext,surfList,surfListSize,surfCount);
       }
     }
   }
@@ -401,9 +408,8 @@ R_AABBTreeSurfaces_r
 
 void __cdecl
 R_AABBTreeSurfacesTwoLists_r
-          (GfxAabbTree *param_1,float *param_2,float *param_3,
-          _func___cdecl_int_int_void_ptr **param_4,void *param_5,GfxSurface ***param_6,uint param_7,
-          uint *param_8)
+          (GfxAabbTree *tree,float *mins,float *maxs,_func___cdecl_int_int_void_ptr **allowSurf,
+          void *callbackContext,GfxSurface ***surfLists,uint surfListSize,uint *surfCounts)
 
 {
   float *pfVar1;
@@ -413,33 +419,36 @@ R_AABBTreeSurfacesTwoLists_r
   int iVar5;
   uint uVar6;
   GfxSurface *pGVar7;
-  uint local_24;
-  uint local_20;
-  uint local_18;
-  uint local_14;
-  uint local_8;
+  uint listIndex_2;
+  uint listIndex;
+  GfxAabbTree *children;
+  uint surfIndex;
+  uint childIndex;
+  uint remappedSurfIndex;
+  GfxSurface *surf;
+  uint surfNodeIndex;
   
-  if (((((*param_2 < param_1->maxs[0] || *param_2 == param_1->maxs[0]) &&
-        (param_1->mins[0] < *param_3 || param_1->mins[0] == *param_3)) &&
-       (param_2[1] < param_1->maxs[1] || param_2[1] == param_1->maxs[1])) &&
-      ((param_1->mins[1] < param_3[1] || param_1->mins[1] == param_3[1] &&
-       (param_2[2] < param_1->maxs[2] || param_2[2] == param_1->maxs[2])))) &&
-     (param_1->mins[2] < param_3[2] || param_1->mins[2] == param_3[2])) {
-    if (param_1->childCount == 0) {
-      local_8 = 0;
-      local_18 = (uint)param_1->startSurfIndex;
-      while (((local_8 < param_1->surfaceCount && (*param_8 < param_7)) && (param_8[1] < param_7)))
-      {
-        uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[local_18];
+  if (((((*mins < tree->maxs[0] || *mins == tree->maxs[0]) &&
+        (tree->mins[0] < *maxs || tree->mins[0] == *maxs)) &&
+       (mins[1] < tree->maxs[1] || mins[1] == tree->maxs[1])) &&
+      ((tree->mins[1] < maxs[1] || tree->mins[1] == maxs[1] &&
+       (mins[2] < tree->maxs[2] || mins[2] == tree->maxs[2])))) &&
+     (tree->mins[2] < maxs[2] || tree->mins[2] == maxs[2])) {
+    if (tree->childCount == 0) {
+      surfNodeIndex = 0;
+      surfIndex = (uint)tree->startSurfIndex;
+      while (((surfNodeIndex < tree->surfaceCount && (*surfCounts < surfListSize)) &&
+             (surfCounts[1] < surfListSize))) {
+        uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[surfIndex];
         pGVar7 = ((rgp.world)->dpvs).surfaces + uVar6;
-        if (((((*param_2 < pGVar7->bounds[1][0] || *param_2 == pGVar7->bounds[1][0]) &&
-              (fVar2 = pGVar7->bounds[0][0], fVar2 < *param_3 || fVar2 == *param_3)) &&
-             (pfVar1 = pGVar7->bounds[1] + 1, param_2[1] < *pfVar1 || param_2[1] == *pfVar1)) &&
-            ((fVar2 = pGVar7->bounds[0][1], fVar2 < param_3[1] || fVar2 == param_3[1] &&
-             (pfVar1 = pGVar7->bounds[1] + 2, param_2[2] < *pfVar1 || param_2[2] == *pfVar1)))) &&
-           (fVar2 = pGVar7->bounds[0][2], fVar2 < param_3[2] || fVar2 == param_3[2])) {
-          for (local_20 = 0; local_20 < *param_8; local_20 = local_20 + 1) {
-            if (((*param_6)[local_20] == pGVar7) &&
+        if (((((*mins < pGVar7->bounds[1][0] || *mins == pGVar7->bounds[1][0]) &&
+              (fVar2 = pGVar7->bounds[0][0], fVar2 < *maxs || fVar2 == *maxs)) &&
+             (pfVar1 = pGVar7->bounds[1] + 1, mins[1] < *pfVar1 || mins[1] == *pfVar1)) &&
+            ((fVar2 = pGVar7->bounds[0][1], fVar2 < maxs[1] || fVar2 == maxs[1] &&
+             (pfVar1 = pGVar7->bounds[1] + 2, mins[2] < *pfVar1 || mins[2] == *pfVar1)))) &&
+           (fVar2 = pGVar7->bounds[0][2], fVar2 < maxs[2] || fVar2 == maxs[2])) {
+          for (listIndex = 0; listIndex < *surfCounts; listIndex = listIndex + 1) {
+            if (((*surfLists)[listIndex] == pGVar7) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                          0x1c5,0,"%s"), !bVar4)) {
               pcVar3 = (code *)swi(3);
@@ -447,8 +456,8 @@ R_AABBTreeSurfacesTwoLists_r
               return;
             }
           }
-          for (local_24 = 0; local_24 < param_8[1]; local_24 = local_24 + 1) {
-            if ((param_6[1][local_24] == pGVar7) &&
+          for (listIndex_2 = 0; listIndex_2 < surfCounts[1]; listIndex_2 = listIndex_2 + 1) {
+            if ((surfLists[1][listIndex_2] == pGVar7) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                          0x1c7,0,"%s"), !bVar4)) {
               pcVar3 = (code *)swi(3);
@@ -456,27 +465,27 @@ R_AABBTreeSurfacesTwoLists_r
               return;
             }
           }
-          iVar5 = (**param_4)(uVar6,param_5);
+          iVar5 = (**allowSurf)(uVar6,callbackContext);
           if (iVar5 != 0) {
-            (*param_6)[*param_8] = pGVar7;
-            *param_8 = *param_8 + 1;
+            (*surfLists)[*surfCounts] = pGVar7;
+            *surfCounts = *surfCounts + 1;
           }
-          iVar5 = (*param_4[1])(uVar6,param_5);
+          iVar5 = (*allowSurf[1])(uVar6,callbackContext);
           if (iVar5 != 0) {
-            param_6[1][param_8[1]] = pGVar7;
-            param_8[1] = param_8[1] + 1;
+            surfLists[1][surfCounts[1]] = pGVar7;
+            surfCounts[1] = surfCounts[1] + 1;
           }
         }
-        local_8 = local_8 + 1;
-        local_18 = local_18 + 1;
+        surfNodeIndex = surfNodeIndex + 1;
+        surfIndex = surfIndex + 1;
       }
     }
     else {
-      iVar5 = param_1->childrenOffset;
-      for (local_14 = 0; local_14 < param_1->childCount; local_14 = local_14 + 1) {
+      iVar5 = tree->childrenOffset;
+      for (childIndex = 0; childIndex < tree->childCount; childIndex = childIndex + 1) {
         R_AABBTreeSurfacesTwoLists_r
-                  ((GfxAabbTree *)((int)param_1[local_14].mins + iVar5),param_2,param_3,param_4,
-                   param_5,param_6,param_7,param_8);
+                  ((GfxAabbTree *)((int)tree[childIndex].mins + iVar5),mins,maxs,allowSurf,
+                   callbackContext,surfLists,surfListSize,surfCounts);
       }
     }
   }
@@ -486,20 +495,20 @@ R_AABBTreeSurfacesTwoLists_r
 
 // 00A53590  R_AddStaticModelToList  (gfx_d3d/r_marks.cpp:526)
 
-void __cdecl R_AddStaticModelToList(int param_1,ushort *param_2,int *param_3)
+void __cdecl R_AddStaticModelToList(int smodelIndex,ushort *smodelList,int *smodelCount)
 
 {
-  int local_8;
+  int listIndex;
   
-  local_8 = 0;
+  listIndex = 0;
   while( true ) {
-    if (*param_3 <= local_8) {
-      param_2[*param_3] = (ushort)param_1;
-      *param_3 = *param_3 + 1;
+    if (*smodelCount <= listIndex) {
+      smodelList[*smodelCount] = (ushort)smodelIndex;
+      *smodelCount = *smodelCount + 1;
       return;
     }
-    if ((uint)param_2[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if ((uint)smodelList[listIndex] == smodelIndex) break;
+    listIndex = listIndex + 1;
   }
   return;
 }
@@ -509,46 +518,50 @@ void __cdecl R_AddStaticModelToList(int param_1,ushort *param_2,int *param_3)
 
 void __cdecl
 R_AABBTreeStaticModels_r
-          (GfxAabbTree *param_1,float *param_2,float *param_3,_func___cdecl_int_int *param_4,
-          ushort *param_5,int param_6,int *param_7)
+          (GfxAabbTree *tree,float *mins,float *maxs,_func___cdecl_int_int *allowSModel,
+          ushort *smodelList,int smodelListSize,int *smodelCount)
 
 {
   int iVar1;
   GfxStaticModelInst *pGVar2;
-  uint uVar3;
-  int local_14;
-  int local_10;
+  uint smodelIndex_00;
+  GfxAabbTree *children;
+  int smodelIndexIter;
+  int childIndex;
+  GfxStaticModelInst *smodelInst;
+  int smodelIndex;
   
-  if ((((*param_2 < param_1->maxs[0] || *param_2 == param_1->maxs[0]) &&
-       (param_1->mins[0] < *param_3 || param_1->mins[0] == *param_3)) &&
-      (param_2[1] < param_1->maxs[1] || param_2[1] == param_1->maxs[1])) &&
-     (((param_1->mins[1] < param_3[1] || param_1->mins[1] == param_3[1] &&
-       (param_2[2] < param_1->maxs[2] || param_2[2] == param_1->maxs[2])) &&
-      (param_1->mins[2] < param_3[2] || param_1->mins[2] == param_3[2])))) {
-    if (param_1->childCount == 0) {
-      local_14 = 0;
-      while ((local_14 < (int)(uint)param_1->smodelIndexCount && (*param_7 < param_6))) {
-        uVar3 = (uint)param_1->smodelIndexes[local_14];
-        iVar1 = (*param_4)(uVar3);
+  if ((((*mins < tree->maxs[0] || *mins == tree->maxs[0]) &&
+       (tree->mins[0] < *maxs || tree->mins[0] == *maxs)) &&
+      (mins[1] < tree->maxs[1] || mins[1] == tree->maxs[1])) &&
+     (((tree->mins[1] < maxs[1] || tree->mins[1] == maxs[1] &&
+       (mins[2] < tree->maxs[2] || mins[2] == tree->maxs[2])) &&
+      (tree->mins[2] < maxs[2] || tree->mins[2] == maxs[2])))) {
+    if (tree->childCount == 0) {
+      smodelIndexIter = 0;
+      while ((smodelIndexIter < (int)(uint)tree->smodelIndexCount && (*smodelCount < smodelListSize)
+             )) {
+        smodelIndex_00 = (uint)tree->smodelIndexes[smodelIndexIter];
+        iVar1 = (*allowSModel)(smodelIndex_00);
         if (((iVar1 != 0) &&
-            ((((pGVar2 = ((rgp.world)->dpvs).smodelInsts + uVar3,
-               *param_2 < pGVar2->maxs[0] || *param_2 == pGVar2->maxs[0] &&
-               (pGVar2->mins[0] < *param_3 || pGVar2->mins[0] == *param_3)) &&
-              (param_2[1] < pGVar2->maxs[1] || param_2[1] == pGVar2->maxs[1])) &&
-             ((pGVar2->mins[1] < param_3[1] || pGVar2->mins[1] == param_3[1] &&
-              (param_2[2] < pGVar2->maxs[2] || param_2[2] == pGVar2->maxs[2])))))) &&
-           (pGVar2->mins[2] < param_3[2] || pGVar2->mins[2] == param_3[2])) {
-          R_AddStaticModelToList(uVar3,param_5,param_7);
+            ((((pGVar2 = ((rgp.world)->dpvs).smodelInsts + smodelIndex_00,
+               *mins < pGVar2->maxs[0] || *mins == pGVar2->maxs[0] &&
+               (pGVar2->mins[0] < *maxs || pGVar2->mins[0] == *maxs)) &&
+              (mins[1] < pGVar2->maxs[1] || mins[1] == pGVar2->maxs[1])) &&
+             ((pGVar2->mins[1] < maxs[1] || pGVar2->mins[1] == maxs[1] &&
+              (mins[2] < pGVar2->maxs[2] || mins[2] == pGVar2->maxs[2])))))) &&
+           (pGVar2->mins[2] < maxs[2] || pGVar2->mins[2] == maxs[2])) {
+          R_AddStaticModelToList(smodelIndex_00,smodelList,smodelCount);
         }
-        local_14 = local_14 + 1;
+        smodelIndexIter = smodelIndexIter + 1;
       }
     }
     else {
-      iVar1 = param_1->childrenOffset;
-      for (local_10 = 0; local_10 < (int)(uint)param_1->childCount; local_10 = local_10 + 1) {
+      iVar1 = tree->childrenOffset;
+      for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
         R_AABBTreeStaticModels_r
-                  ((GfxAabbTree *)((int)param_1[local_10].mins + iVar1),param_2,param_3,param_4,
-                   param_5,param_6,param_7);
+                  ((GfxAabbTree *)((int)tree[childIndex].mins + iVar1),mins,maxs,allowSModel,
+                   smodelList,smodelListSize,smodelCount);
       }
     }
   }
@@ -558,20 +571,20 @@ R_AABBTreeStaticModels_r
 
 // 00A52AC0  R_AddSurfaceToList  (gfx_d3d/r_marks.cpp:580)
 
-void __cdecl R_AddSurfaceToList(GfxSurface *param_1,GfxSurface **param_2,uint *param_3)
+void __cdecl R_AddSurfaceToList(GfxSurface *surf,GfxSurface **surfList,uint *surfCount)
 
 {
-  uint local_8;
+  uint listIndex;
   
-  local_8 = 0;
+  listIndex = 0;
   while( true ) {
-    if (*param_3 <= local_8) {
-      param_2[*param_3] = param_1;
-      *param_3 = *param_3 + 1;
+    if (*surfCount <= listIndex) {
+      surfList[*surfCount] = surf;
+      *surfCount = *surfCount + 1;
       return;
     }
-    if (param_2[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (surfList[listIndex] == surf) break;
+    listIndex = listIndex + 1;
   }
   return;
 }
@@ -580,8 +593,9 @@ void __cdecl R_AddSurfaceToList(GfxSurface *param_1,GfxSurface **param_2,uint *p
 // 00A52620  R_CellSurfaces  (gfx_d3d/r_marks.cpp:593)
 
 void __cdecl
-R_CellSurfaces(int param_1,float *param_2,float *param_3,_func___cdecl_int_int_void_ptr *param_4,
-              void *param_5,GfxSurface **param_6,uint param_7,uint *param_8,uchar *param_9)
+R_CellSurfaces(int cellIndex,float *mins,float *maxs,_func___cdecl_int_int_void_ptr *allowSurf,
+              void *callbackContext,GfxSurface **surfList,uint surfListSize,uint *surfCount,
+              uchar *cellBits)
 
 {
   float *pfVar1;
@@ -590,46 +604,54 @@ R_CellSurfaces(int param_1,float *param_2,float *param_3,_func___cdecl_int_int_v
   int iVar4;
   GfxCullGroup *pGVar5;
   uint uVar6;
-  GfxSurface *pGVar7;
-  int local_24;
-  int local_18;
-  int local_8;
+  GfxSurface *surf_00;
+  GfxCell *cell;
+  int surfIndex;
+  int cellIndexHigh;
+  int remappedSurfIndex;
+  int cullGroupIndex;
+  GfxCullGroup *group;
+  GfxSurface *surf;
+  int cellIndexBit;
+  int triSurfIndex;
   
-  iVar4 = param_1 >> 3;
-  uVar6 = 1 << ((byte)param_1 & 7);
-  if ((param_9[iVar4] & uVar6) == 0) {
-    param_9[iVar4] = param_9[iVar4] | (byte)uVar6;
+  iVar4 = cellIndex >> 3;
+  uVar6 = 1 << ((byte)cellIndex & 7);
+  if ((cellBits[iVar4] & uVar6) == 0) {
+    cellBits[iVar4] = cellBits[iVar4] | (byte)uVar6;
     pGVar3 = (rgp.world)->cells;
-    for (local_18 = 0; local_18 < pGVar3[param_1].cullGroupCount; local_18 = local_18 + 1) {
-      pGVar5 = ((rgp.world)->dpvs).cullGroups + pGVar3[param_1].cullGroups[local_18];
-      if ((((*param_2 < pGVar5->maxs[0] || *param_2 == pGVar5->maxs[0]) &&
-           (pGVar5->mins[0] < *param_3 || pGVar5->mins[0] == *param_3)) &&
-          (param_2[1] < pGVar5->maxs[1] || param_2[1] == pGVar5->maxs[1])) &&
-         (((pGVar5->mins[1] < param_3[1] || pGVar5->mins[1] == param_3[1] &&
-           (param_2[2] < pGVar5->maxs[2] || param_2[2] == pGVar5->maxs[2])) &&
-          (pGVar5->mins[2] < param_3[2] || pGVar5->mins[2] == param_3[2])))) {
-        local_8 = 0;
-        local_24 = pGVar5->startSurfIndex;
-        while ((local_8 < pGVar5->surfaceCount && (*param_8 < param_7))) {
-          uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[local_24];
-          iVar4 = (*param_4)(uVar6,param_5);
+    for (cullGroupIndex = 0; cullGroupIndex < pGVar3[cellIndex].cullGroupCount;
+        cullGroupIndex = cullGroupIndex + 1) {
+      pGVar5 = ((rgp.world)->dpvs).cullGroups + pGVar3[cellIndex].cullGroups[cullGroupIndex];
+      if ((((*mins < pGVar5->maxs[0] || *mins == pGVar5->maxs[0]) &&
+           (pGVar5->mins[0] < *maxs || pGVar5->mins[0] == *maxs)) &&
+          (mins[1] < pGVar5->maxs[1] || mins[1] == pGVar5->maxs[1])) &&
+         (((pGVar5->mins[1] < maxs[1] || pGVar5->mins[1] == maxs[1] &&
+           (mins[2] < pGVar5->maxs[2] || mins[2] == pGVar5->maxs[2])) &&
+          (pGVar5->mins[2] < maxs[2] || pGVar5->mins[2] == maxs[2])))) {
+        triSurfIndex = 0;
+        surfIndex = pGVar5->startSurfIndex;
+        while ((triSurfIndex < pGVar5->surfaceCount && (*surfCount < surfListSize))) {
+          uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[surfIndex];
+          iVar4 = (*allowSurf)(uVar6,callbackContext);
           if (((iVar4 != 0) &&
-              ((((pGVar7 = ((rgp.world)->dpvs).surfaces + uVar6,
-                 *param_2 < pGVar7->bounds[1][0] || *param_2 == pGVar7->bounds[1][0] &&
-                 (fVar2 = pGVar7->bounds[0][0], fVar2 < *param_3 || fVar2 == *param_3)) &&
-                (pfVar1 = pGVar7->bounds[1] + 1, param_2[1] < *pfVar1 || param_2[1] == *pfVar1)) &&
-               ((fVar2 = pGVar7->bounds[0][1], fVar2 < param_3[1] || fVar2 == param_3[1] &&
-                (pfVar1 = pGVar7->bounds[1] + 2, param_2[2] < *pfVar1 || param_2[2] == *pfVar1))))))
-             && (fVar2 = pGVar7->bounds[0][2], fVar2 < param_3[2] || fVar2 == param_3[2])) {
-            R_AddSurfaceToList(pGVar7,param_6,param_8);
+              ((((surf_00 = ((rgp.world)->dpvs).surfaces + uVar6,
+                 *mins < surf_00->bounds[1][0] || *mins == surf_00->bounds[1][0] &&
+                 (fVar2 = surf_00->bounds[0][0], fVar2 < *maxs || fVar2 == *maxs)) &&
+                (pfVar1 = surf_00->bounds[1] + 1, mins[1] < *pfVar1 || mins[1] == *pfVar1)) &&
+               ((fVar2 = surf_00->bounds[0][1], fVar2 < maxs[1] || fVar2 == maxs[1] &&
+                (pfVar1 = surf_00->bounds[1] + 2, mins[2] < *pfVar1 || mins[2] == *pfVar1)))))) &&
+             (fVar2 = surf_00->bounds[0][2], fVar2 < maxs[2] || fVar2 == maxs[2])) {
+            R_AddSurfaceToList(surf_00,surfList,surfCount);
           }
-          local_8 = local_8 + 1;
-          local_24 = local_24 + 1;
+          triSurfIndex = triSurfIndex + 1;
+          surfIndex = surfIndex + 1;
         }
       }
     }
     R_AABBTreeSurfaces_r
-              (pGVar3[param_1].aabbTree,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+              (pGVar3[cellIndex].aabbTree,mins,maxs,allowSurf,callbackContext,surfList,surfListSize,
+               surfCount);
   }
   return;
 }
@@ -639,8 +661,9 @@ R_CellSurfaces(int param_1,float *param_2,float *param_3,_func___cdecl_int_int_v
 
 void __cdecl
 R_CellSurfacesTwoLists
-          (int param_1,float *param_2,float *param_3,_func___cdecl_int_int_void_ptr **param_4,
-          void *param_5,GfxSurface ***param_6,uint param_7,uint *param_8,uchar *param_9)
+          (int cellIndex,float *mins,float *maxs,_func___cdecl_int_int_void_ptr **allowSurf,
+          void *callbackContext,GfxSurface ***surfLists,uint surfListSize,uint *surfCounts,
+          uchar *cellBits)
 
 {
   float *pfVar1;
@@ -649,52 +672,60 @@ R_CellSurfacesTwoLists
   int iVar4;
   GfxCullGroup *pGVar5;
   uint uVar6;
-  GfxSurface *pGVar7;
-  int local_24;
-  int local_18;
-  int local_8;
+  GfxSurface *surf_00;
+  GfxCell *cell;
+  int surfIndex;
+  int cellIndexHigh;
+  int remappedSurfIndex;
+  int cullGroupIndex;
+  GfxCullGroup *group;
+  GfxSurface *surf;
+  int cellIndexBit;
+  int triSurfIndex;
   
-  iVar4 = param_1 >> 3;
-  uVar6 = 1 << ((byte)param_1 & 7);
-  if ((param_9[iVar4] & uVar6) == 0) {
-    param_9[iVar4] = param_9[iVar4] | (byte)uVar6;
+  iVar4 = cellIndex >> 3;
+  uVar6 = 1 << ((byte)cellIndex & 7);
+  if ((cellBits[iVar4] & uVar6) == 0) {
+    cellBits[iVar4] = cellBits[iVar4] | (byte)uVar6;
     pGVar3 = (rgp.world)->cells;
-    for (local_18 = 0; local_18 < pGVar3[param_1].cullGroupCount; local_18 = local_18 + 1) {
-      pGVar5 = ((rgp.world)->dpvs).cullGroups + pGVar3[param_1].cullGroups[local_18];
-      if ((((*param_2 < pGVar5->maxs[0] || *param_2 == pGVar5->maxs[0]) &&
-           (pGVar5->mins[0] < *param_3 || pGVar5->mins[0] == *param_3)) &&
-          (param_2[1] < pGVar5->maxs[1] || param_2[1] == pGVar5->maxs[1])) &&
-         (((pGVar5->mins[1] < param_3[1] || pGVar5->mins[1] == param_3[1] &&
-           (param_2[2] < pGVar5->maxs[2] || param_2[2] == pGVar5->maxs[2])) &&
-          (pGVar5->mins[2] < param_3[2] || pGVar5->mins[2] == param_3[2])))) {
-        local_8 = 0;
-        local_24 = pGVar5->startSurfIndex;
-        while (((local_8 < pGVar5->surfaceCount && (*param_8 < param_7)) && (param_8[1] < param_7)))
-        {
-          uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[local_24];
-          pGVar7 = ((rgp.world)->dpvs).surfaces + uVar6;
-          if (((((*param_2 < pGVar7->bounds[1][0] || *param_2 == pGVar7->bounds[1][0]) &&
-                (fVar2 = pGVar7->bounds[0][0], fVar2 < *param_3 || fVar2 == *param_3)) &&
-               (pfVar1 = pGVar7->bounds[1] + 1, param_2[1] < *pfVar1 || param_2[1] == *pfVar1)) &&
-              ((fVar2 = pGVar7->bounds[0][1], fVar2 < param_3[1] || fVar2 == param_3[1] &&
-               (pfVar1 = pGVar7->bounds[1] + 2, param_2[2] < *pfVar1 || param_2[2] == *pfVar1)))) &&
-             (fVar2 = pGVar7->bounds[0][2], fVar2 < param_3[2] || fVar2 == param_3[2])) {
-            iVar4 = (**param_4)(uVar6,param_5);
+    for (cullGroupIndex = 0; cullGroupIndex < pGVar3[cellIndex].cullGroupCount;
+        cullGroupIndex = cullGroupIndex + 1) {
+      pGVar5 = ((rgp.world)->dpvs).cullGroups + pGVar3[cellIndex].cullGroups[cullGroupIndex];
+      if ((((*mins < pGVar5->maxs[0] || *mins == pGVar5->maxs[0]) &&
+           (pGVar5->mins[0] < *maxs || pGVar5->mins[0] == *maxs)) &&
+          (mins[1] < pGVar5->maxs[1] || mins[1] == pGVar5->maxs[1])) &&
+         (((pGVar5->mins[1] < maxs[1] || pGVar5->mins[1] == maxs[1] &&
+           (mins[2] < pGVar5->maxs[2] || mins[2] == pGVar5->maxs[2])) &&
+          (pGVar5->mins[2] < maxs[2] || pGVar5->mins[2] == maxs[2])))) {
+        triSurfIndex = 0;
+        surfIndex = pGVar5->startSurfIndex;
+        while (((triSurfIndex < pGVar5->surfaceCount && (*surfCounts < surfListSize)) &&
+               (surfCounts[1] < surfListSize))) {
+          uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[surfIndex];
+          surf_00 = ((rgp.world)->dpvs).surfaces + uVar6;
+          if (((((*mins < surf_00->bounds[1][0] || *mins == surf_00->bounds[1][0]) &&
+                (fVar2 = surf_00->bounds[0][0], fVar2 < *maxs || fVar2 == *maxs)) &&
+               (pfVar1 = surf_00->bounds[1] + 1, mins[1] < *pfVar1 || mins[1] == *pfVar1)) &&
+              ((fVar2 = surf_00->bounds[0][1], fVar2 < maxs[1] || fVar2 == maxs[1] &&
+               (pfVar1 = surf_00->bounds[1] + 2, mins[2] < *pfVar1 || mins[2] == *pfVar1)))) &&
+             (fVar2 = surf_00->bounds[0][2], fVar2 < maxs[2] || fVar2 == maxs[2])) {
+            iVar4 = (**allowSurf)(uVar6,callbackContext);
             if (iVar4 != 0) {
-              R_AddSurfaceToList(pGVar7,*param_6,param_8);
+              R_AddSurfaceToList(surf_00,*surfLists,surfCounts);
             }
-            iVar4 = (*param_4[1])(uVar6,param_5);
+            iVar4 = (*allowSurf[1])(uVar6,callbackContext);
             if (iVar4 != 0) {
-              R_AddSurfaceToList(pGVar7,param_6[1],param_8 + 1);
+              R_AddSurfaceToList(surf_00,surfLists[1],surfCounts + 1);
             }
           }
-          local_8 = local_8 + 1;
-          local_24 = local_24 + 1;
+          triSurfIndex = triSurfIndex + 1;
+          surfIndex = surfIndex + 1;
         }
       }
     }
     R_AABBTreeSurfacesTwoLists_r
-              (pGVar3[param_1].aabbTree,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+              (pGVar3[cellIndex].aabbTree,mins,maxs,allowSurf,callbackContext,surfLists,surfListSize
+               ,surfCounts);
   }
   return;
 }
@@ -703,20 +734,23 @@ R_CellSurfacesTwoLists
 // 00A53330  R_CellStaticModels  (gfx_d3d/r_marks.cpp:737)
 
 void __cdecl
-R_CellStaticModels(int param_1,float *param_2,float *param_3,_func___cdecl_int_int *param_4,
-                  ushort *param_5,int param_6,int *param_7,uchar *param_8)
+R_CellStaticModels(int cellIndex,float *mins,float *maxs,_func___cdecl_int_int *allowSModel,
+                  ushort *smodelList,int smodelListSize,int *smodelCount,uchar *cellBits)
 
 {
   int iVar1;
   uint uVar2;
+  GfxCell *cell;
+  int cellIndexHigh;
+  int cellIndexBit;
   
-  iVar1 = param_1 >> 3;
-  uVar2 = 1 << ((byte)param_1 & 7);
-  if ((param_8[iVar1] & uVar2) == 0) {
-    param_8[iVar1] = param_8[iVar1] | (byte)uVar2;
+  iVar1 = cellIndex >> 3;
+  uVar2 = 1 << ((byte)cellIndex & 7);
+  if ((cellBits[iVar1] & uVar2) == 0) {
+    cellBits[iVar1] = cellBits[iVar1] | (byte)uVar2;
     R_AABBTreeStaticModels_r
-              ((rgp.world)->cells[param_1].aabbTree,param_2,param_3,param_4,param_5,param_6,param_7)
-    ;
+              ((rgp.world)->cells[cellIndex].aabbTree,mins,maxs,allowSModel,smodelList,
+               smodelListSize,smodelCount);
   }
   return;
 }
@@ -725,9 +759,9 @@ R_CellStaticModels(int param_1,float *param_2,float *param_3,_func___cdecl_int_i
 // 00A524B0  R_BoxSurfaces_r  (gfx_d3d/r_marks.cpp:759)
 
 void __cdecl
-R_BoxSurfaces_r(mnode_t *param_1,float *param_2,float *param_3,
-               _func___cdecl_int_int_void_ptr **param_4,void *param_5,GfxSurface ***param_6,
-               uint param_7,uint *param_8,uint param_9,uchar *param_10)
+R_BoxSurfaces_r(mnode_t *node,float *mins,float *maxs,_func___cdecl_int_int_void_ptr **allowSurf,
+               void *callbackContext,GfxSurface ***surfLists,uint surfListSize,uint *surfCounts,
+               uint listCount,uchar *cellBits)
 
 {
   int iVar1;
@@ -735,31 +769,36 @@ R_BoxSurfaces_r(mnode_t *param_1,float *param_2,float *param_3,
   bool bVar3;
   uint uVar4;
   int iVar5;
+  int side;
+  int cellIndex;
+  int cellCount;
+  int planeIndex;
   
   iVar1 = ((rgp.world)->dpvsPlanes).cellCount;
   while( true ) {
-    uVar4 = (uint)param_1->cellIndex;
+    uVar4 = (uint)node->cellIndex;
     iVar5 = uVar4 - (iVar1 + 1);
     if (iVar5 < 0) break;
-    iVar5 = BoxOnPlaneSide(param_2,param_3,((rgp.world)->dpvsPlanes).planes + iVar5);
+    iVar5 = BoxOnPlaneSide(mins,maxs,((rgp.world)->dpvsPlanes).planes + iVar5);
     if (iVar5 == 1) {
-      param_1 = param_1 + 1;
+      node = node + 1;
     }
     else if (iVar5 == 2) {
-      param_1 = (mnode_t *)(&param_1->cellIndex + param_1->rightChildOffset);
+      node = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
     }
     else {
-      R_BoxSurfaces_r(param_1 + 1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,
-                      param_10);
-      param_1 = (mnode_t *)(&param_1->cellIndex + param_1->rightChildOffset);
+      R_BoxSurfaces_r(node + 1,mins,maxs,allowSurf,callbackContext,surfLists,surfListSize,surfCounts
+                      ,listCount,cellBits);
+      node = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
     }
   }
   if (uVar4 != 0) {
-    if (param_9 == 1) {
-      R_CellSurfaces(uVar4 - 1,param_2,param_3,*param_4,param_5,*param_6,param_7,param_8,param_10);
+    if (listCount == 1) {
+      R_CellSurfaces(uVar4 - 1,mins,maxs,*allowSurf,callbackContext,*surfLists,surfListSize,
+                     surfCounts,cellBits);
     }
     else {
-      if ((param_9 != 2) &&
+      if ((listCount != 2) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x322,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -767,7 +806,8 @@ R_BoxSurfaces_r(mnode_t *param_1,float *param_2,float *param_3,
         return;
       }
       R_CellSurfacesTwoLists
-                (uVar4 - 1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_10);
+                (uVar4 - 1,mins,maxs,allowSurf,callbackContext,surfLists,surfListSize,surfCounts,
+                 cellBits);
     }
   }
   return;
@@ -777,33 +817,39 @@ R_BoxSurfaces_r(mnode_t *param_1,float *param_2,float *param_3,
 // 00A53230  R_BoxStaticModels_r  (gfx_d3d/r_marks.cpp:808)
 
 void __cdecl
-R_BoxStaticModels_r(mnode_t *param_1,float *param_2,float *param_3,_func___cdecl_int_int *param_4,
-                   ushort *param_5,int param_6,int *param_7,uchar *param_8)
+R_BoxStaticModels_r(mnode_t *node,float *mins,float *maxs,_func___cdecl_int_int *allowSModel,
+                   ushort *smodelList,int smodelListSize,int *smodelCount,uchar *cellBits)
 
 {
   int iVar1;
   uint uVar2;
   int iVar3;
+  int side;
+  int cellIndex;
+  int cellCount;
+  int planeIndex;
   
   iVar1 = ((rgp.world)->dpvsPlanes).cellCount;
   while( true ) {
-    uVar2 = (uint)param_1->cellIndex;
+    uVar2 = (uint)node->cellIndex;
     iVar3 = uVar2 - (iVar1 + 1);
     if (iVar3 < 0) break;
-    iVar3 = BoxOnPlaneSide(param_2,param_3,((rgp.world)->dpvsPlanes).planes + iVar3);
+    iVar3 = BoxOnPlaneSide(mins,maxs,((rgp.world)->dpvsPlanes).planes + iVar3);
     if (iVar3 == 1) {
-      param_1 = param_1 + 1;
+      node = node + 1;
     }
     else if (iVar3 == 2) {
-      param_1 = (mnode_t *)(&param_1->cellIndex + param_1->rightChildOffset);
+      node = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
     }
     else {
-      R_BoxStaticModels_r(param_1 + 1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
-      param_1 = (mnode_t *)(&param_1->cellIndex + param_1->rightChildOffset);
+      R_BoxStaticModels_r(node + 1,mins,maxs,allowSModel,smodelList,smodelListSize,smodelCount,
+                          cellBits);
+      node = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
     }
   }
   if (uVar2 != 0) {
-    R_CellStaticModels(uVar2 - 1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+    R_CellStaticModels(uVar2 - 1,mins,maxs,allowSModel,smodelList,smodelListSize,smodelCount,
+                       cellBits);
   }
   return;
 }
@@ -814,8 +860,9 @@ R_BoxStaticModels_r(mnode_t *param_1,float *param_2,float *param_3,_func___cdecl
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_BoxSurfaces(float *param_1,float *param_2,_func___cdecl_int_int_void_ptr **param_3,void *param_4,
-             GfxSurface ***param_5,uint param_6,uint *param_7,uint param_8)
+R_BoxSurfaces(float *mins,float *maxs,_func___cdecl_int_int_void_ptr **allowSurf,
+             void *callbackContext,GfxSurface ***surfLists,uint surfListSize,uint *surfCounts,
+             uint listCount)
 
 {
   code *pcVar1;
@@ -854,17 +901,17 @@ R_BoxSurfaces(float *param_1,float *param_2,_func___cdecl_int_int_void_ptr **par
     }
   }
   Com_Memset(local_a0,0,(rgp.world)->cellBitsCount);
-  for (local_a4 = 0; local_a4 < param_8; local_a4 = local_a4 + 1) {
-    param_7[local_a4] = 0;
+  for (local_a4 = 0; local_a4 < listCount; local_a4 = local_a4 + 1) {
+    surfCounts[local_a4] = 0;
   }
-  R_BoxSurfaces_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,param_1,param_2,param_3,param_4,param_5
-                  ,param_6,param_7,param_8,local_a0);
+  R_BoxSurfaces_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,mins,maxs,allowSurf,callbackContext,
+                  surfLists,surfListSize,surfCounts,listCount,local_a0);
   local_a8 = 0;
   do {
-    if (param_8 <= local_a8) {
+    if (listCount <= local_a8) {
       return;
     }
-    if (param_6 < param_7[local_a8]) {
+    if (surfListSize < surfCounts[local_a8]) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x3ce,0,
                                "surfCounts[i] <= surfListSize\n\t%i, %i");
       if (!bVar2) {
@@ -883,8 +930,8 @@ R_BoxSurfaces(float *param_1,float *param_2,_func___cdecl_int_int_void_ptr **par
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,ushort *param_4,
-                 int param_5)
+R_BoxStaticModels(float *mins,float *maxs,_func___cdecl_int_int *allowSModel,ushort *smodelList,
+                 int smodelListSize)
 
 {
   code *pcVar1;
@@ -924,9 +971,9 @@ R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,u
   }
   Com_Memset(local_a0,0,(rgp.world)->cellBitsCount);
   local_a4 = 0;
-  R_BoxStaticModels_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,param_1,param_2,param_3,param_4,
-                      param_5,&local_a4,local_a0);
-  if (param_5 < local_a4) {
+  R_BoxStaticModels_r((mnode_t *)((rgp.world)->dpvsPlanes).nodes,mins,maxs,allowSModel,smodelList,
+                      smodelListSize,&local_a4,local_a0);
+  if (smodelListSize < local_a4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x3e0,0,
                              "smodelCount <= smodelListSize\n\t%i, %i");
     if (!bVar2) {
@@ -946,9 +993,9 @@ R_BoxStaticModels(float *param_1,float *param_2,_func___cdecl_int_int *param_3,u
 
 int __cdecl
 R_AddMarkFragment<1>
-          (FxModelMarkPoint (*param_1) [14],MarkClipPlaneSet *param_2,GfxMarkContext *param_3,
-          int param_4,int param_5,FxMarkTri *param_6,int param_7,uchar **param_8,
-          float (*param_9) [3],FxMarkPoint *param_10)
+          (FxModelMarkPoint (*clipPoints) [14],MarkClipPlaneSet *planes,GfxMarkContext *markContext,
+          int baseIndex,int maxTris,FxMarkTri *tris,int maxPoints,uchar **triNormals,
+          float (*transformNormalMatrix) [3],FxMarkPoint *points)
 
 {
   code *pcVar1;
@@ -975,10 +1022,10 @@ R_AddMarkFragment<1>
   PackedUnitVec local_58;
   PackedUnitVec local_54;
   uint local_50;
-  PackedUnitVec local_4c;
+  PackedUnitVec tempNormal;
   PackedUnitVec local_48;
   PackedUnitVec local_44;
-  float local_40;
+  float normal;
   float local_3c;
   float local_38;
   float local_34;
@@ -987,64 +1034,66 @@ R_AddMarkFragment<1>
   float local_28;
   float local_24;
   float local_20;
-  int local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
+  FxModelMarkPoint *clipPoint;
+  int pointIndex;
+  int pingPong;
+  int clipPointCount;
+  int planeIndex;
+  FxMarkPoint *point;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = 0;
-  local_10 = 3;
-  local_c = 0;
+  pingPong = 0;
+  clipPointCount = 3;
+  planeIndex = 0;
   while( true ) {
-    if (param_2->planeCount <= local_c) {
-      if ((param_7 < local_10) ||
-         (iVar7 = (local_10 + -2) * 3, iVar7 - param_5 != 0 && param_5 <= iVar7)) {
-        local_10 = -1;
+    if (planes->planeCount <= planeIndex) {
+      if ((maxPoints < clipPointCount) ||
+         (iVar7 = (clipPointCount + -2) * 3, iVar7 - maxTris != 0 && maxTris <= iVar7)) {
+        clipPointCount = -1;
       }
       else {
-        local_64.packed = *(uint *)*param_8;
+        local_64.packed = *(uint *)*triNormals;
         local_60.packed = local_64.packed;
         local_5c.packed = local_64.packed;
         local_58.packed = local_64.packed;
         local_54.packed = local_64.packed;
         Vec3UnpackUnitVec(local_64,(float *)&local_60);
         local_54 = (PackedUnitVec)0x0;
-        local_4c = local_60;
+        tempNormal = local_60;
         local_48 = local_5c;
         local_44 = local_58;
-        MatrixTransformVector((float *)&local_4c,param_9,&local_40);
-        local_7c = *(PackedUnitVec *)param_8[1];
+        MatrixTransformVector((float *)&tempNormal,transformNormalMatrix,&normal);
+        local_7c = *(PackedUnitVec *)triNormals[1];
         local_78 = local_7c;
         local_74 = local_7c;
         local_70 = local_7c;
         local_6c = local_7c;
         Vec3UnpackUnitVec(local_7c,(float *)&local_78);
         local_6c = (PackedUnitVec)0x0;
-        local_4c = local_78;
+        tempNormal = local_78;
         local_48 = local_74;
         local_44 = local_70;
-        MatrixTransformVector((float *)&local_4c,param_9,&local_34);
-        local_90 = *(PackedUnitVec *)param_8[2];
+        MatrixTransformVector((float *)&tempNormal,transformNormalMatrix,&local_34);
+        local_90 = *(PackedUnitVec *)triNormals[2];
         local_8c = local_90;
         local_88 = local_90;
         local_84 = local_90;
         Vec3UnpackUnitVec(local_90,(float *)&local_90);
         local_84 = (PackedUnitVec)0x0;
-        local_4c = local_90;
+        tempNormal = local_90;
         local_48 = local_8c;
         local_44 = local_88;
-        MatrixTransformVector((float *)&local_4c,param_9,&local_28);
-        for (local_18 = 0; local_18 < local_10; local_18 = local_18 + 1) {
-          pFVar8 = param_10 + local_18;
-          pFVar9 = param_1[local_14] + local_18;
+        MatrixTransformVector((float *)&tempNormal,transformNormalMatrix,&local_28);
+        for (pointIndex = 0; pointIndex < clipPointCount; pointIndex = pointIndex + 1) {
+          pFVar8 = points + pointIndex;
+          pFVar9 = clipPoints[pingPong] + pointIndex;
           pFVar8->xyz[0] = pFVar9->xyz[0];
           pFVar8->xyz[1] = pFVar9->xyz[1];
           pFVar8->xyz[2] = pFVar9->xyz[2];
           pFVar8->lmapCoord[0] = 0.0;
           pFVar8->lmapCoord[1] = 0.0;
           pFVar8->normal[0] =
-               pFVar9->vertWeights[0] * local_40 + pFVar9->vertWeights[1] * local_34 +
+               pFVar9->vertWeights[0] * normal + pFVar9->vertWeights[1] * local_34 +
                pFVar9->vertWeights[2] * local_28;
           pFVar8->normal[1] =
                pFVar9->vertWeights[0] * local_3c + pFVar9->vertWeights[1] * local_30 +
@@ -1053,35 +1102,36 @@ R_AddMarkFragment<1>
                pFVar9->vertWeights[0] * local_38 + pFVar9->vertWeights[1] * local_2c +
                pFVar9->vertWeights[2] * local_20;
         }
-        for (local_18 = 2; local_18 < local_10; local_18 = local_18 + 1) {
-          uVar2 = (ushort)param_4;
-          param_6->indices[0] = (uVar2 - 1) + (short)local_18;
-          param_6->indices[1] = uVar2 + (short)local_18;
-          param_6->indices[2] = uVar2;
-          uVar3 = param_3->primaryLightIndex;
-          uVar4 = param_3->reflectionProbeIndex;
-          uVar5 = param_3->modelTypeAndSurf;
-          (param_6->context).lmapIndex = param_3->lmapIndex;
-          (param_6->context).primaryLightIndex = uVar3;
-          (param_6->context).reflectionProbeIndex = uVar4;
-          (param_6->context).modelTypeAndSurf = uVar5;
-          (param_6->context).modelIndex = param_3->modelIndex;
-          param_6 = param_6 + 1;
+        for (pointIndex = 2; pointIndex < clipPointCount; pointIndex = pointIndex + 1) {
+          uVar2 = (ushort)baseIndex;
+          tris->indices[0] = (uVar2 - 1) + (short)pointIndex;
+          tris->indices[1] = uVar2 + (short)pointIndex;
+          tris->indices[2] = uVar2;
+          uVar3 = markContext->primaryLightIndex;
+          uVar4 = markContext->reflectionProbeIndex;
+          uVar5 = markContext->modelTypeAndSurf;
+          (tris->context).lmapIndex = markContext->lmapIndex;
+          (tris->context).primaryLightIndex = uVar3;
+          (tris->context).reflectionProbeIndex = uVar4;
+          (tris->context).modelTypeAndSurf = uVar5;
+          (tris->context).modelIndex = markContext->modelIndex;
+          tris = tris + 1;
         }
       }
-      return local_10;
+      return clipPointCount;
     }
-    local_10 = R_ChopPolyBehindPlane
-                         (local_10,param_1[local_14],param_1[local_14 == 0],param_2->planes[local_c]
-                         );
-    if ((0xe < local_10) &&
+    clipPointCount =
+         R_ChopPolyBehindPlane
+                   (clipPointCount,clipPoints[pingPong],clipPoints[pingPong == 0],
+                    planes->planes[planeIndex]);
+    if ((0xe < clipPointCount) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x407,0,
                                  "%s\n\t(clipPointCount) = %i"), !bVar6)) break;
-    local_14 = local_14 ^ 1;
-    if (local_10 == 0) {
+    pingPong = pingPong ^ 1;
+    if (clipPointCount == 0) {
       return 0;
     }
-    local_c = local_c + 1;
+    planeIndex = planeIndex + 1;
   }
   pcVar1 = (code *)swi(3);
   iVar7 = (*pcVar1)();
@@ -1096,9 +1146,9 @@ R_AddMarkFragment<1>
 
 int __cdecl
 R_AddMarkFragment<0>
-          (FxModelMarkPoint (*param_1) [14],MarkClipPlaneSet *param_2,GfxMarkContext *param_3,
-          int param_4,int param_5,FxMarkTri *param_6,int param_7,uchar **param_8,
-          float (*param_9) [3],FxMarkPoint *param_10)
+          (FxModelMarkPoint (*clipPoints) [14],MarkClipPlaneSet *planes,GfxMarkContext *markContext,
+          int baseIndex,int maxTris,FxMarkTri *tris,int maxPoints,uchar **triNormals,
+          float (*transformNormalMatrix) [3],FxMarkPoint *points)
 
 {
   code *pcVar1;
@@ -1126,40 +1176,42 @@ R_AddMarkFragment<0>
   PackedUnitVec local_a0;
   PackedUnitVec local_9c;
   uint local_50;
-  PackedUnitVec local_40;
+  PackedUnitVec normal;
   PackedUnitVec local_3c;
   PackedUnitVec local_38;
   PackedUnitVec local_34;
   float local_30;
   float local_2c;
-  int local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
+  FxModelMarkPoint *clipPoint;
+  int pointIndex;
+  int pingPong;
+  int clipPointCount;
+  int planeIndex;
+  FxMarkPoint *point;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = 0;
-  local_10 = 3;
-  local_c = 0;
+  pingPong = 0;
+  clipPointCount = 3;
+  planeIndex = 0;
   while( true ) {
-    if (param_2->planeCount <= local_c) {
-      if ((param_7 < local_10) ||
-         (iVar7 = (local_10 + -2) * 3, iVar7 - param_5 != 0 && param_5 <= iVar7)) {
-        local_10 = -1;
+    if (planes->planeCount <= planeIndex) {
+      if ((maxPoints < clipPointCount) ||
+         (iVar7 = (clipPointCount + -2) * 3, iVar7 - maxTris != 0 && maxTris <= iVar7)) {
+        clipPointCount = -1;
       }
       else {
-        local_ac.packed = *(uint *)*param_8;
+        local_ac.packed = *(uint *)*triNormals;
         local_a8.packed = local_ac.packed;
         local_a4.packed = local_ac.packed;
         local_a0.packed = local_ac.packed;
         local_9c.packed = local_ac.packed;
         Vec3UnpackUnitVec(local_ac,(float *)&local_a8);
         local_9c = (PackedUnitVec)0x0;
-        local_40 = local_a8;
+        normal = local_a8;
         local_3c = local_a4;
         local_38 = local_a0;
         local_c8 = &local_34;
-        local_c4 = *(PackedUnitVec *)param_8[1];
+        local_c4 = *(PackedUnitVec *)triNormals[1];
         local_c0 = local_c4;
         local_bc = local_c4;
         local_b8 = local_c4;
@@ -1170,21 +1222,21 @@ R_AddMarkFragment<0>
         local_c8[1] = local_bc;
         local_c8[2] = local_b8;
                     /* WARNING: Load size is inaccurate */
-        local_dc = *(PackedUnitVec *)((PackedUnitVec *)param_8[2])->array;
+        local_dc = *(PackedUnitVec *)((PackedUnitVec *)triNormals[2])->array;
         local_d8 = local_dc;
         local_d4 = local_dc;
         local_d0 = local_dc;
         Vec3UnpackUnitVec(local_dc,(float *)&local_dc);
-        for (local_18 = 0; local_18 < local_10; local_18 = local_18 + 1) {
-          pFVar8 = param_10 + local_18;
-          pFVar9 = param_1[local_14] + local_18;
+        for (pointIndex = 0; pointIndex < clipPointCount; pointIndex = pointIndex + 1) {
+          pFVar8 = points + pointIndex;
+          pFVar9 = clipPoints[pingPong] + pointIndex;
           pFVar8->xyz[0] = pFVar9->xyz[0];
           pFVar8->xyz[1] = pFVar9->xyz[1];
           pFVar8->xyz[2] = pFVar9->xyz[2];
           pFVar8->lmapCoord[0] = 0.0;
           pFVar8->lmapCoord[1] = 0.0;
           pFVar8->normal[0] =
-               pFVar9->vertWeights[0] * (float)local_40 + pFVar9->vertWeights[1] * (float)local_34 +
+               pFVar9->vertWeights[0] * (float)normal + pFVar9->vertWeights[1] * (float)local_34 +
                pFVar9->vertWeights[2] * (float)local_dc;
           pFVar8->normal[1] =
                pFVar9->vertWeights[0] * (float)local_3c + pFVar9->vertWeights[1] * local_30 +
@@ -1193,35 +1245,36 @@ R_AddMarkFragment<0>
                pFVar9->vertWeights[0] * (float)local_38 + pFVar9->vertWeights[1] * local_2c +
                pFVar9->vertWeights[2] * (float)local_d4;
         }
-        for (local_18 = 2; local_18 < local_10; local_18 = local_18 + 1) {
-          uVar2 = (ushort)param_4;
-          param_6->indices[0] = (uVar2 - 1) + (short)local_18;
-          param_6->indices[1] = uVar2 + (short)local_18;
-          param_6->indices[2] = uVar2;
-          uVar3 = param_3->primaryLightIndex;
-          uVar4 = param_3->reflectionProbeIndex;
-          uVar5 = param_3->modelTypeAndSurf;
-          (param_6->context).lmapIndex = param_3->lmapIndex;
-          (param_6->context).primaryLightIndex = uVar3;
-          (param_6->context).reflectionProbeIndex = uVar4;
-          (param_6->context).modelTypeAndSurf = uVar5;
-          (param_6->context).modelIndex = param_3->modelIndex;
-          param_6 = param_6 + 1;
+        for (pointIndex = 2; pointIndex < clipPointCount; pointIndex = pointIndex + 1) {
+          uVar2 = (ushort)baseIndex;
+          tris->indices[0] = (uVar2 - 1) + (short)pointIndex;
+          tris->indices[1] = uVar2 + (short)pointIndex;
+          tris->indices[2] = uVar2;
+          uVar3 = markContext->primaryLightIndex;
+          uVar4 = markContext->reflectionProbeIndex;
+          uVar5 = markContext->modelTypeAndSurf;
+          (tris->context).lmapIndex = markContext->lmapIndex;
+          (tris->context).primaryLightIndex = uVar3;
+          (tris->context).reflectionProbeIndex = uVar4;
+          (tris->context).modelTypeAndSurf = uVar5;
+          (tris->context).modelIndex = markContext->modelIndex;
+          tris = tris + 1;
         }
       }
-      return local_10;
+      return clipPointCount;
     }
-    local_10 = R_ChopPolyBehindPlane
-                         (local_10,param_1[local_14],param_1[local_14 == 0],param_2->planes[local_c]
-                         );
-    if ((0xe < local_10) &&
+    clipPointCount =
+         R_ChopPolyBehindPlane
+                   (clipPointCount,clipPoints[pingPong],clipPoints[pingPong == 0],
+                    planes->planes[planeIndex]);
+    if ((0xe < clipPointCount) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x407,0,
                                  "%s\n\t(clipPointCount) = %i"), !bVar6)) break;
-    local_14 = local_14 ^ 1;
-    if (local_10 == 0) {
+    pingPong = pingPong ^ 1;
+    if (clipPointCount == 0) {
       return 0;
     }
-    local_c = local_c + 1;
+    planeIndex = planeIndex + 1;
   }
   pcVar1 = (code *)swi(3);
   iVar7 = (*pcVar1)();
@@ -1232,18 +1285,17 @@ R_AddMarkFragment<0>
 // 00A53860  R_GetMarkFragmentBounds  (gfx_d3d/r_marks.cpp:1093)
 
 void __cdecl
-R_GetMarkFragmentBounds
-          (float *param_1,float (*param_2) [3],float param_3,float *param_4,float *param_5)
+R_GetMarkFragmentBounds(float *origin,float (*axis) [3],float radius,float *mins,float *maxs)
 
 {
   float fVar1;
-  int local_c;
+  int coord;
+  float offset;
   
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    fVar1 = (ABS((*param_2)[local_c]) + ABS(param_2[1][local_c]) + ABS(param_2[2][local_c])) *
-            param_3;
-    param_4[local_c] = param_1[local_c] - fVar1;
-    param_5[local_c] = param_1[local_c] + fVar1;
+  for (coord = 0; coord < 3; coord = coord + 1) {
+    fVar1 = (ABS((*axis)[coord]) + ABS(axis[1][coord]) + ABS(axis[2][coord])) * radius;
+    mins[coord] = origin[coord] - fVar1;
+    maxs[coord] = origin[coord] + fVar1;
   }
   return;
 }
@@ -1253,40 +1305,38 @@ R_GetMarkFragmentBounds
 
 void __cdecl
 R_GetMarkFragmentClipPlanes
-          (float *param_1,float (*param_2) [3],float param_3,MarkClipPlaneSet *param_4)
+          (float *origin,float (*axis) [3],float radius,MarkClipPlaneSet *clipPlanes)
 
 {
   code *pcVar1;
   bool bVar2;
   float (*pafVar3) [4];
   float (*pafVar4) [3];
-  int local_c;
-  int local_8;
+  int axisIndex;
+  int planeIndex;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    pafVar3 = param_4->planes + local_8;
-    pafVar4 = param_2 + local_c;
+  planeIndex = 0;
+  for (axisIndex = 0; axisIndex < 3; axisIndex = axisIndex + 1) {
+    pafVar3 = clipPlanes->planes + planeIndex;
+    pafVar4 = axis + axisIndex;
     (*pafVar3)[0] = (*pafVar4)[0];
     (*pafVar3)[1] = (*pafVar4)[1];
     (*pafVar3)[2] = (*pafVar4)[2];
-    pafVar3 = param_4->planes + local_8;
-    param_4->planes[local_8][3] =
-         ((*pafVar3)[0] * *param_1 + (*pafVar3)[1] * param_1[1] + (*pafVar3)[2] * param_1[2]) -
-         param_3;
-    pafVar3 = param_4->planes + local_8 + 1;
-    pafVar4 = param_2 + local_c;
+    pafVar3 = clipPlanes->planes + planeIndex;
+    clipPlanes->planes[planeIndex][3] =
+         ((*pafVar3)[0] * *origin + (*pafVar3)[1] * origin[1] + (*pafVar3)[2] * origin[2]) - radius;
+    pafVar3 = clipPlanes->planes + planeIndex + 1;
+    pafVar4 = axis + axisIndex;
     (*pafVar3)[0] = -(*pafVar4)[0];
     (*pafVar3)[1] = -(*pafVar4)[1];
     (*pafVar3)[2] = -(*pafVar4)[2];
-    pafVar3 = param_4->planes + local_8 + 1;
-    param_4->planes[local_8 + 1][3] =
-         ((*pafVar3)[0] * *param_1 + (*pafVar3)[1] * param_1[1] + (*pafVar3)[2] * param_1[2]) -
-         param_3;
-    local_8 = local_8 + 2;
+    pafVar3 = clipPlanes->planes + planeIndex + 1;
+    clipPlanes->planes[planeIndex + 1][3] =
+         ((*pafVar3)[0] * *origin + (*pafVar3)[1] * origin[1] + (*pafVar3)[2] * origin[2]) - radius;
+    planeIndex = planeIndex + 2;
   }
-  param_4->planeCount = local_8;
-  if (param_4->planeCount != 6) {
+  clipPlanes->planeCount = planeIndex;
+  if (clipPlanes->planeCount != 6) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x462,0,"%s")
     ;
     if (!bVar2) {
@@ -1303,31 +1353,33 @@ R_GetMarkFragmentClipPlanes
 
 bool __cdecl
 R_MarkFragment_IsTriangleRejected
-          (float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+          (float *markNormal,float *xyz0,float *xyz1,float *xyz2,float *normal)
 
 {
   bool bVar1;
   float fVar2;
-  float local_2c;
+  float edge01;
   float local_28;
   float local_24;
-  float local_1c;
+  float scaledDot;
+  float scaledNormal;
   float local_18;
   float local_14;
-  float local_10;
+  float edge21;
   float local_c;
   float local_8;
   
-  local_2c = *param_2 - *param_3;
-  local_28 = param_2[1] - param_3[1];
-  local_24 = param_2[2] - param_3[2];
-  local_10 = *param_4 - *param_3;
-  local_c = param_4[1] - param_3[1];
-  local_8 = param_4[2] - param_3[2];
-  Vec3Cross(&local_2c,&local_10,&local_1c);
-  fVar2 = local_1c * *param_1 + local_18 * param_1[1] + local_14 * param_1[2];
+  edge01 = *xyz0 - *xyz1;
+  local_28 = xyz0[1] - xyz1[1];
+  local_24 = xyz0[2] - xyz1[2];
+  edge21 = *xyz2 - *xyz1;
+  local_c = xyz2[1] - xyz1[1];
+  local_8 = xyz2[2] - xyz1[2];
+  Vec3Cross(&edge01,&edge21,&scaledNormal);
+  fVar2 = scaledNormal * *markNormal + local_18 * markNormal[1] + local_14 * markNormal[2];
   if (0.0 <= fVar2) {
-    if ((local_1c * local_1c + local_18 * local_18 + local_14 * local_14) * 0.25 <= fVar2 * fVar2) {
+    if ((scaledNormal * scaledNormal + local_18 * local_18 + local_14 * local_14) * 0.25 <=
+        fVar2 * fVar2) {
       bVar1 = false;
     }
     else {
@@ -1345,25 +1397,26 @@ R_MarkFragment_IsTriangleRejected
 
 void __cdecl
 R_MarkFragment_SetupWorldClipPoints
-          (GfxWorldVertex *param_1,ushort *param_2,FxWorldMarkPoint (*param_3) [14])
+          (GfxWorldVertex *triVerts0,ushort *indices,FxWorldMarkPoint (*clipPoints) [14])
 
 {
   float *pfVar1;
   FxWorldMarkPoint *pFVar2;
   GfxWorldVertex *pGVar3;
-  uint local_c;
+  uint pointIndex;
+  ushort index;
   
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    pFVar2 = *param_3 + local_c;
-    pGVar3 = param_1 + param_2[local_c];
+  for (pointIndex = 0; pointIndex < 3; pointIndex = pointIndex + 1) {
+    pFVar2 = *clipPoints + pointIndex;
+    pGVar3 = triVerts0 + indices[pointIndex];
     pFVar2->xyz[0] = pGVar3->xyz[0];
     pFVar2->xyz[1] = pGVar3->xyz[1];
     pFVar2->xyz[2] = pGVar3->xyz[2];
-    pfVar1 = (*param_3)[local_c].vertWeights;
+    pfVar1 = (*clipPoints)[pointIndex].vertWeights;
     *pfVar1 = 0.0;
     pfVar1[1] = 0.0;
     pfVar1[2] = 0.0;
-    *(float *)((int)*param_3 + local_c * 0x1c + 0xc) = 1.0;
+    *(float *)((int)*clipPoints + pointIndex * 0x1c + 0xc) = 1.0;
   }
   return;
 }
@@ -1373,20 +1426,22 @@ R_MarkFragment_SetupWorldClipPoints
 
 bool __cdecl
 R_MarkFragment_DoTriangle<1>
-          (MarkInfo *param_1,MarkClipPlaneSet *param_2,GfxMarkContext *param_3,uchar **param_4,
-          float (*param_5) [3],FxModelMarkPoint (*param_6) [14])
+          (MarkInfo *markInfo,MarkClipPlaneSet *clipPlanes,GfxMarkContext *markContext,
+          uchar **triNormals,float (*transformNormalMatrix) [3],FxModelMarkPoint (*clipPoints) [14])
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
+  int fragmentPointCount;
   
   iVar4 = R_AddMarkFragment<1>
-                    (param_6,param_2,param_3,param_1->usedPointCount,
-                     param_1->maxTris - param_1->usedTriCount,param_1->tris + param_1->usedTriCount,
-                     param_1->maxPoints - param_1->usedPointCount,param_4,param_5,
-                     param_1->points + param_1->usedPointCount);
+                    (clipPoints,clipPlanes,markContext,markInfo->usedPointCount,
+                     markInfo->maxTris - markInfo->usedTriCount,
+                     markInfo->tris + markInfo->usedTriCount,
+                     markInfo->maxPoints - markInfo->usedPointCount,triNormals,transformNormalMatrix
+                     ,markInfo->points + markInfo->usedPointCount);
   if (iVar4 == -1) {
     bVar2 = false;
   }
@@ -1401,8 +1456,8 @@ R_MarkFragment_DoTriangle<1>
           return (bool)uVar3;
         }
       }
-      param_1->usedPointCount = param_1->usedPointCount + iVar4;
-      param_1->usedTriCount = iVar4 + -2 + param_1->usedTriCount;
+      markInfo->usedPointCount = markInfo->usedPointCount + iVar4;
+      markInfo->usedTriCount = iVar4 + -2 + markInfo->usedTriCount;
     }
     bVar2 = true;
   }
@@ -1414,20 +1469,22 @@ R_MarkFragment_DoTriangle<1>
 
 bool __cdecl
 R_MarkFragment_DoTriangle<0>
-          (MarkInfo *param_1,MarkClipPlaneSet *param_2,GfxMarkContext *param_3,uchar **param_4,
-          float (*param_5) [3],FxModelMarkPoint (*param_6) [14])
+          (MarkInfo *markInfo,MarkClipPlaneSet *clipPlanes,GfxMarkContext *markContext,
+          uchar **triNormals,float (*transformNormalMatrix) [3],FxModelMarkPoint (*clipPoints) [14])
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
+  int fragmentPointCount;
   
   iVar4 = R_AddMarkFragment<0>
-                    (param_6,param_2,param_3,param_1->usedPointCount,
-                     param_1->maxTris - param_1->usedTriCount,param_1->tris + param_1->usedTriCount,
-                     param_1->maxPoints - param_1->usedPointCount,param_4,param_5,
-                     param_1->points + param_1->usedPointCount);
+                    (clipPoints,clipPlanes,markContext,markInfo->usedPointCount,
+                     markInfo->maxTris - markInfo->usedTriCount,
+                     markInfo->tris + markInfo->usedTriCount,
+                     markInfo->maxPoints - markInfo->usedPointCount,triNormals,transformNormalMatrix
+                     ,markInfo->points + markInfo->usedPointCount);
   if (iVar4 == -1) {
     bVar2 = false;
   }
@@ -1442,8 +1499,8 @@ R_MarkFragment_DoTriangle<0>
           return (bool)uVar3;
         }
       }
-      param_1->usedPointCount = param_1->usedPointCount + iVar4;
-      param_1->usedTriCount = iVar4 + -2 + param_1->usedTriCount;
+      markInfo->usedPointCount = markInfo->usedPointCount + iVar4;
+      markInfo->usedTriCount = iVar4 + -2 + markInfo->usedTriCount;
     }
     bVar2 = true;
   }
@@ -1457,8 +1514,8 @@ R_MarkFragment_DoTriangle<0>
 
 bool __cdecl
 R_MarkFragments_BrushSurface
-          (MarkInfo *param_1,GfxMarkContext *param_2,MarkClipPlaneSet *param_3,float *param_4,
-          GfxSurface *param_5,bool *param_6)
+          (MarkInfo *markInfo,GfxMarkContext *markContext,MarkClipPlaneSet *clipPlanes,
+          float *markDir,GfxSurface *surface,bool *anyMarks)
 
 {
   code *pcVar1;
@@ -1492,137 +1549,139 @@ R_MarkFragments_BrushSurface
   float *local_384;
   float *local_380;
   float *local_37c;
-  float local_33c [3];
-  GfxWorldVertex *local_330;
-  FxMarkPoint *local_32c;
-  float local_328;
-  FxWorldMarkPoint local_324 [28];
-  int local_80;
-  FxMarkTri *local_7c;
-  PackedUnitVec local_78;
+  float triNormal [3];
+  uchar *triVerts1;
+  FxMarkPoint *points;
+  float planeTestEpsilon;
+  FxWorldMarkPoint clipPoints [28];
+  int baseIndex;
+  FxMarkTri *tris;
+  PackedUnitVec normal;
   PackedUnitVec local_74;
   PackedUnitVec local_70;
   PackedUnitVec local_6c;
   float local_68;
   float local_64;
-  FxWorldMarkPoint *local_54;
-  int local_50;
-  ushort *local_4c;
-  int local_48;
-  int local_44;
-  float *local_40;
-  float *local_3c;
-  float *local_38;
-  GfxWorldVertex *local_34;
-  int local_30;
-  uint local_2c;
-  GfxSurface *local_28;
-  float local_24;
+  FxWorldMarkPoint *clipPoint;
+  int pointIndex;
+  ushort *indices;
+  uint triVerts1Stride;
+  int fragmentPointCount;
+  uchar *triVert1;
+  uchar *local_3c;
+  uchar *local_38;
+  GfxWorldVertex *triVerts0;
+  int triIndex;
+  int pingPong;
+  srfTriangles_t *triSurf;
+  float lmapCoord;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  FxMarkPoint *local_8;
+  int planeIndex;
+  FxMarkPoint *point;
   
   local_390 = __security_cookie ^ (uint)&stack0xfffffffc;
-  param_2->lmapIndex = param_5->lightmapIndex;
-  if ((param_1->isSeeThruDecal == false) &&
-     (param_1->markHasLightmap != (param_2->lmapIndex != '\x1f'))) {
+  markContext->lmapIndex = surface->lightmapIndex;
+  if ((markInfo->isSeeThruDecal == false) &&
+     (markInfo->markHasLightmap != (markContext->lmapIndex != '\x1f'))) {
     if ((fx_marks_debug_text->current).enabled != false) {
       R_WarnOncePerFrame(R_WARN_MARKS_ERR_LMAP_MISMATCH);
     }
   }
   else {
-    param_2->primaryLightIndex = param_5->primaryLightIndex;
-    param_2->reflectionProbeIndex = param_5->reflectionProbeIndex;
-    if (param_1->markHasReflection == (param_2->reflectionProbeIndex != '\0')) {
-      param_2->primaryLightIndex = param_5->primaryLightIndex;
-      local_28 = param_5;
-      local_330 = (g_worldDraw->vd).vertices + (param_5->tris).firstVertex;
-      local_4c = g_worldDraw->indices + (param_5->tris).baseIndex;
-      local_48 = 0x2c;
-      if (param_1->isSeeThruDecal == false) {
+    markContext->primaryLightIndex = surface->primaryLightIndex;
+    markContext->reflectionProbeIndex = surface->reflectionProbeIndex;
+    if (markInfo->markHasReflection == (markContext->reflectionProbeIndex != '\0')) {
+      markContext->primaryLightIndex = surface->primaryLightIndex;
+      triSurf = &surface->tris;
+      triVerts1 = (uchar *)((g_worldDraw->vd).vertices + (surface->tris).firstVertex);
+      indices = g_worldDraw->indices + (surface->tris).baseIndex;
+      triVerts1Stride = 0x2c;
+      if (markInfo->isSeeThruDecal == false) {
         local_3e0 = 0.5;
       }
       else {
         local_3e0 = 0.001;
       }
-      local_328 = local_3e0;
-      local_34 = local_330;
-      for (local_30 = 0; local_30 < (int)(uint)(local_28->tris).triCount; local_30 = local_30 + 1) {
+      planeTestEpsilon = local_3e0;
+      triVerts0 = (GfxWorldVertex *)triVerts1;
+      for (triIndex = 0; triIndex < (int)(uint)triSurf->triCount; triIndex = triIndex + 1) {
         bVar6 = R_MarkFragment_IsTriangleRejected
-                          (param_4,local_34[*local_4c].xyz,local_34[local_4c[1]].xyz,
-                           local_34[local_4c[2]].xyz,local_33c);
+                          (markDir,triVerts0[*indices].xyz,triVerts0[indices[1]].xyz,
+                           triVerts0[indices[2]].xyz,triNormal);
         if (!bVar6) {
           R_MarkFragment_SetupWorldClipPoints
-                    (local_34,local_4c,(FxWorldMarkPoint (*) [14])local_324);
-          local_2c = 0;
-          local_44 = 3;
-          for (local_c = 0; local_c < param_3->planeCount; local_c = local_c + 1) {
-            local_44 = R_ChopWorldPolyBehindPlane
-                                 (local_44,local_324 + local_2c * 0xe,
-                                  local_324 + (uint)(local_2c == 0) * 0xe,param_3->planes[local_c],
-                                  local_328);
-            if (local_44 == 0) goto LAB_00a5432a;
-            if ((0xe < local_44) &&
+                    (triVerts0,indices,(FxWorldMarkPoint (*) [14])clipPoints);
+          pingPong = 0;
+          fragmentPointCount = 3;
+          for (planeIndex = 0; planeIndex < clipPlanes->planeCount; planeIndex = planeIndex + 1) {
+            fragmentPointCount =
+                 R_ChopWorldPolyBehindPlane
+                           (fragmentPointCount,clipPoints + pingPong * 0xe,
+                            clipPoints + (uint)(pingPong == 0) * 0xe,clipPlanes->planes[planeIndex],
+                            planeTestEpsilon);
+            if (fragmentPointCount == 0) goto LAB_00a5432a;
+            if ((0xe < fragmentPointCount) &&
                (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                          0x5a5,0,"%s\n\t(fragmentPointCount) = %i"), !bVar6)) {
               pcVar1 = (code *)swi(3);
               uVar7 = (*pcVar1)();
               return (bool)uVar7;
             }
-            local_2c = local_2c ^ 1;
+            pingPong = pingPong ^ 1;
           }
-          if ((param_1->maxPoints - param_1->usedPointCount < local_44) ||
-             (iVar8 = (local_44 + -2) * 3, iVar9 = param_1->maxTris - param_1->usedTriCount,
+          if ((markInfo->maxPoints - markInfo->usedPointCount < fragmentPointCount) ||
+             (iVar8 = (fragmentPointCount + -2) * 3,
+             iVar9 = markInfo->maxTris - markInfo->usedTriCount,
              iVar8 - iVar9 != 0 && iVar9 <= iVar8)) {
             return false;
           }
-          local_7c = param_1->tris + param_1->usedTriCount;
-          local_80 = param_1->usedPointCount;
-          for (local_50 = 2; local_50 < local_44; local_50 = local_50 + 1) {
-            uVar2 = (ushort)local_80;
-            local_7c->indices[0] = (uVar2 - 1) + (short)local_50;
-            local_7c->indices[1] = uVar2 + (short)local_50;
-            local_7c->indices[2] = uVar2;
-            uVar3 = param_2->primaryLightIndex;
-            uVar4 = param_2->reflectionProbeIndex;
-            uVar5 = param_2->modelTypeAndSurf;
-            (local_7c->context).lmapIndex = param_2->lmapIndex;
-            (local_7c->context).primaryLightIndex = uVar3;
-            (local_7c->context).reflectionProbeIndex = uVar4;
-            (local_7c->context).modelTypeAndSurf = uVar5;
-            (local_7c->context).modelIndex = param_2->modelIndex;
-            local_7c = local_7c + 1;
+          tris = markInfo->tris + markInfo->usedTriCount;
+          baseIndex = markInfo->usedPointCount;
+          for (pointIndex = 2; pointIndex < fragmentPointCount; pointIndex = pointIndex + 1) {
+            uVar2 = (ushort)baseIndex;
+            tris->indices[0] = (uVar2 - 1) + (short)pointIndex;
+            tris->indices[1] = uVar2 + (short)pointIndex;
+            tris->indices[2] = uVar2;
+            uVar3 = markContext->primaryLightIndex;
+            uVar4 = markContext->reflectionProbeIndex;
+            uVar5 = markContext->modelTypeAndSurf;
+            (tris->context).lmapIndex = markContext->lmapIndex;
+            (tris->context).primaryLightIndex = uVar3;
+            (tris->context).reflectionProbeIndex = uVar4;
+            (tris->context).modelTypeAndSurf = uVar5;
+            (tris->context).modelIndex = markContext->modelIndex;
+            tris = tris + 1;
           }
-          local_40 = (float *)((int)local_330->xyz + (uint)*local_4c * local_48);
-          local_3c = (float *)((int)local_330->xyz + (uint)local_4c[1] * local_48);
-          local_38 = (float *)((int)local_330->xyz + (uint)local_4c[2] * local_48);
-          local_37c = local_40 + 7;
-          local_24 = *local_37c;
-          local_20 = local_40[8];
+          triVert1 = triVerts1 + *indices * triVerts1Stride;
+          local_3c = triVerts1 + indices[1] * triVerts1Stride;
+          local_38 = triVerts1 + indices[2] * triVerts1Stride;
+          local_37c = (float *)(triVert1 + 0x1c);
+          lmapCoord = *local_37c;
+          local_20 = *(float *)(triVert1 + 0x20);
           local_384 = &local_1c;
-          local_380 = local_3c + 7;
+          local_380 = (float *)(local_3c + 0x1c);
           local_1c = *local_380;
-          local_18 = local_3c[8];
+          local_18 = *(float *)(local_3c + 0x20);
           local_38c = &local_14;
-          local_388 = local_38 + 7;
+          local_388 = (float *)(local_38 + 0x1c);
           local_14 = *local_388;
-          local_10 = local_38[8];
-          local_3a4 = *(PackedUnitVec *)(local_40 + 9);
+          local_10 = *(float *)(local_38 + 0x20);
+          local_3a4 = *(PackedUnitVec *)(triVert1 + 0x24);
           local_3a0 = local_3a4;
           local_39c = local_3a4;
           local_398 = local_3a4;
           local_394 = local_3a4;
           Vec3UnpackUnitVec(local_3a4,(float *)&local_3a0);
           local_394 = (PackedUnitVec)0x0;
-          local_78 = local_3a0;
+          normal = local_3a0;
           local_74 = local_39c;
           local_70 = local_398;
           local_3c0 = &local_6c;
-          local_3bc = *(PackedUnitVec *)(local_3c + 9);
+          local_3bc = *(PackedUnitVec *)(local_3c + 0x24);
           local_3b8 = local_3bc;
           local_3b4 = local_3bc;
           local_3b0 = local_3bc;
@@ -1633,49 +1692,49 @@ R_MarkFragments_BrushSurface
           local_3c0[1] = local_3b4;
           local_3c0[2] = local_3b0;
                     /* WARNING: Load size is inaccurate */
-          local_3d4 = *(PackedUnitVec *)((PackedUnitVec *)(local_38 + 9))->array;
+          local_3d4 = *(PackedUnitVec *)((PackedUnitVec *)(local_38 + 0x24))->array;
           local_3d0 = local_3d4;
           local_3cc = local_3d4;
           local_3c8 = local_3d4;
           Vec3UnpackUnitVec(local_3d4,(float *)&local_3d4);
           local_3c8 = (PackedUnitVec)0x0;
-          local_32c = param_1->points + param_1->usedPointCount;
-          for (local_50 = 0; local_50 < local_44; local_50 = local_50 + 1) {
-            local_8 = local_32c + local_50;
-            local_54 = local_324 + local_2c * 0xe + local_50;
-            local_8->xyz[0] = local_54->xyz[0];
-            local_8->xyz[1] = local_54->xyz[1];
-            local_8->xyz[2] = local_54->xyz[2];
-            local_8->lmapCoord[0] =
-                 local_54->vertWeights[0] * local_24 + local_54->vertWeights[1] * local_1c +
-                 local_54->vertWeights[2] * local_14;
-            local_8->lmapCoord[1] =
-                 local_54->vertWeights[0] * local_20 + local_54->vertWeights[1] * local_18 +
-                 local_54->vertWeights[2] * local_10;
-            local_8->normal[0] =
-                 local_54->vertWeights[0] * (float)local_78 +
-                 local_54->vertWeights[1] * (float)local_6c +
-                 local_54->vertWeights[2] * (float)local_3d4;
-            local_8->normal[1] =
-                 local_54->vertWeights[0] * (float)local_74 + local_54->vertWeights[1] * local_68 +
-                 local_54->vertWeights[2] * (float)local_3d0;
-            local_8->normal[2] =
-                 local_54->vertWeights[0] * (float)local_70 + local_54->vertWeights[1] * local_64 +
-                 local_54->vertWeights[2] * (float)local_3cc;
+          points = markInfo->points + markInfo->usedPointCount;
+          for (pointIndex = 0; pointIndex < fragmentPointCount; pointIndex = pointIndex + 1) {
+            point = points + pointIndex;
+            clipPoint = clipPoints + pingPong * 0xe + pointIndex;
+            point->xyz[0] = clipPoint->xyz[0];
+            point->xyz[1] = clipPoint->xyz[1];
+            point->xyz[2] = clipPoint->xyz[2];
+            point->lmapCoord[0] =
+                 clipPoint->vertWeights[0] * lmapCoord + clipPoint->vertWeights[1] * local_1c +
+                 clipPoint->vertWeights[2] * local_14;
+            point->lmapCoord[1] =
+                 clipPoint->vertWeights[0] * local_20 + clipPoint->vertWeights[1] * local_18 +
+                 clipPoint->vertWeights[2] * local_10;
+            point->normal[0] =
+                 clipPoint->vertWeights[0] * (float)normal +
+                 clipPoint->vertWeights[1] * (float)local_6c +
+                 clipPoint->vertWeights[2] * (float)local_3d4;
+            point->normal[1] =
+                 clipPoint->vertWeights[0] * (float)local_74 + clipPoint->vertWeights[1] * local_68
+                 + clipPoint->vertWeights[2] * (float)local_3d0;
+            point->normal[2] =
+                 clipPoint->vertWeights[0] * (float)local_70 + clipPoint->vertWeights[1] * local_64
+                 + clipPoint->vertWeights[2] * (float)local_3cc;
           }
-          if ((local_44 < 3) &&
+          if ((fragmentPointCount < 3) &&
              (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0x5dc,0,"%s\n\t(fragmentPointCount) = %i"), !bVar6)) {
             pcVar1 = (code *)swi(3);
             uVar7 = (*pcVar1)();
             return (bool)uVar7;
           }
-          param_1->usedPointCount = param_1->usedPointCount + local_44;
-          param_1->usedTriCount = local_44 + -2 + param_1->usedTriCount;
-          *param_6 = true;
+          markInfo->usedPointCount = markInfo->usedPointCount + fragmentPointCount;
+          markInfo->usedTriCount = fragmentPointCount + -2 + markInfo->usedTriCount;
+          *anyMarks = true;
         }
 LAB_00a5432a:
-        local_4c = local_4c + 3;
+        indices = indices + 3;
       }
     }
     else if ((fx_marks_debug_text->current).enabled != false) {
@@ -1688,46 +1747,47 @@ LAB_00a5432a:
 
 // 00A53E50  R_MarkFragments_WorldBrushes  (gfx_d3d/r_marks.cpp:1639)
 
-bool __cdecl R_MarkFragments_WorldBrushes(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_WorldBrushes(MarkInfo *markInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   DWORD DVar4;
-  GfxSurface **local_420;
-  uint local_41c;
-  uint local_418;
-  GfxSurface *local_414 [257];
-  GfxMarkContext local_10;
-  bool local_5;
+  PIXProfile pixProfile;
+  GfxSurface **surfacesArray;
+  uint surfIndex;
+  uint surfCount;
+  GfxSurface *surfaces [257];
+  GfxMarkContext markContext;
+  bool anyMarks;
   
   PIXBeginNamedEvent(-1,"markfragments worldbrushes");
-  if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+  if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x671,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_10.modelTypeAndSurf = '\0';
-  local_10.modelIndex = 0;
-  local_420 = local_414;
-  R_BoxSurfaces(param_1->mins,param_1->maxs,allowSurf,param_1->material,&local_420,0x100,&local_418,
-                1);
-  local_5 = false;
-  local_41c = 0;
+  markContext.modelTypeAndSurf = '\0';
+  markContext.modelIndex = 0;
+  surfacesArray = surfaces;
+  R_BoxSurfaces(markInfo->mins,markInfo->maxs,allowSurf,markInfo->material,&surfacesArray,0x100,
+                &surfCount,1);
+  anyMarks = false;
+  surfIndex = 0;
   while( true ) {
-    if (local_418 <= local_41c) {
-      if (local_5 != false) {
-        (*param_1->callback)
-                  (param_1->callbackContext,param_1->usedTriCount,param_1->tris,
-                   param_1->usedPointCount,param_1->points,param_1->origin,param_1->axis[1],
-                   param_1->axis[0],param_1->isSeeThruDecal);
-        param_1->usedTriCount = 0;
-        param_1->usedPointCount = 0;
+    if (surfCount <= surfIndex) {
+      if (anyMarks != false) {
+        (*markInfo->callback)
+                  (markInfo->callbackContext,markInfo->usedTriCount,markInfo->tris,
+                   markInfo->usedPointCount,markInfo->points,markInfo->origin,markInfo->axis[1],
+                   markInfo->axis[0],markInfo->isSeeThruDecal);
+        markInfo->usedTriCount = 0;
+        markInfo->usedPointCount = 0;
       }
-      if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+      if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x68f,0
                                    ,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1741,10 +1801,10 @@ bool __cdecl R_MarkFragments_WorldBrushes(MarkInfo *param_1)
       return true;
     }
     bVar2 = R_MarkFragments_BrushSurface
-                      (param_1,&local_10,&param_1->clipPlanes,param_1->axis[0],local_414[local_41c],
-                       &local_5);
+                      (markInfo,&markContext,&markInfo->clipPlanes,markInfo->axis[0],
+                       surfaces[surfIndex],&anyMarks);
     if (!bVar2) break;
-    local_41c = local_41c + 1;
+    surfIndex = surfIndex + 1;
   }
   DVar4 = GetCurrentThreadId();
   if (DVar4 != (DWORD)g_DXDeviceThread) {
@@ -1761,31 +1821,29 @@ bool __cdecl R_MarkFragments_WorldBrushes(MarkInfo *param_1)
 // 00A55390  R_Mark_TransformClipPlanes  (gfx_d3d/r_marks.cpp:1684)
 
 void __cdecl
-R_Mark_TransformClipPlanes(MarkClipPlaneSet *param_1,float (*param_2) [3],MarkClipPlaneSet *param_3)
+R_Mark_TransformClipPlanes
+          (MarkClipPlaneSet *inClipPlanes,float (*matrix) [3],MarkClipPlaneSet *outClipPlanes)
 
 {
   float (*pafVar1) [4];
-  int local_8;
+  int planeIndex;
   
-  param_3->planeCount = param_1->planeCount;
-  for (local_8 = 0; local_8 != param_1->planeCount; local_8 = local_8 + 1) {
-    pafVar1 = param_1->planes + local_8;
-    param_3->planes[local_8][0] =
-         (*pafVar1)[0] * (*param_2)[0] + (*pafVar1)[1] * (*param_2)[1] +
-         (*pafVar1)[2] * (*param_2)[2];
-    pafVar1 = param_1->planes + local_8;
-    param_3->planes[local_8][1] =
-         (*pafVar1)[0] * param_2[1][0] + (*pafVar1)[1] * param_2[1][1] +
-         (*pafVar1)[2] * param_2[1][2];
-    pafVar1 = param_1->planes + local_8;
-    param_3->planes[local_8][2] =
-         (*pafVar1)[0] * param_2[2][0] + (*pafVar1)[1] * param_2[2][1] +
-         (*pafVar1)[2] * param_2[2][2];
-    pafVar1 = param_1->planes + local_8;
-    param_3->planes[local_8][3] =
-         param_1->planes[local_8][3] -
-         ((*pafVar1)[0] * param_2[3][0] + (*pafVar1)[1] * param_2[3][1] +
-         (*pafVar1)[2] * param_2[3][2]);
+  outClipPlanes->planeCount = inClipPlanes->planeCount;
+  for (planeIndex = 0; planeIndex != inClipPlanes->planeCount; planeIndex = planeIndex + 1) {
+    pafVar1 = inClipPlanes->planes + planeIndex;
+    outClipPlanes->planes[planeIndex][0] =
+         (*pafVar1)[0] * (*matrix)[0] + (*pafVar1)[1] * (*matrix)[1] + (*pafVar1)[2] * (*matrix)[2];
+    pafVar1 = inClipPlanes->planes + planeIndex;
+    outClipPlanes->planes[planeIndex][1] =
+         (*pafVar1)[0] * matrix[1][0] + (*pafVar1)[1] * matrix[1][1] + (*pafVar1)[2] * matrix[1][2];
+    pafVar1 = inClipPlanes->planes + planeIndex;
+    outClipPlanes->planes[planeIndex][2] =
+         (*pafVar1)[0] * matrix[2][0] + (*pafVar1)[1] * matrix[2][1] + (*pafVar1)[2] * matrix[2][2];
+    pafVar1 = inClipPlanes->planes + planeIndex;
+    outClipPlanes->planes[planeIndex][3] =
+         inClipPlanes->planes[planeIndex][3] -
+         ((*pafVar1)[0] * matrix[3][0] + (*pafVar1)[1] * matrix[3][1] + (*pafVar1)[2] * matrix[3][2]
+         );
   }
   return;
 }
@@ -1793,66 +1851,70 @@ R_Mark_TransformClipPlanes(MarkClipPlaneSet *param_1,float (*param_2) [3],MarkCl
 
 // 00A55020  R_MarkFragments_EntBrushes  (gfx_d3d/r_marks.cpp:1699)
 
-bool __cdecl R_MarkFragments_EntBrushes(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_EntBrushes(MarkInfo *markInfo)
 
 {
-  bool bVar1;
-  DWORD DVar2;
-  float local_188 [9];
+  MarkInfoCollidedBModel *pMVar1;
+  int iVar2;
+  bool bVar3;
+  DWORD DVar4;
+  float invPoseMatrix [9];
   float local_164 [3];
-  float local_158;
+  float negatedPoseOrigin;
   uint local_154;
   uint local_150;
-  float local_14c [3];
-  float local_140 [3];
-  uint local_134;
-  uint local_130;
-  uint local_12c;
-  int local_128;
-  MarkClipPlaneSet local_124;
-  int local_68;
-  MarkInfoCollidedBModel *local_64;
-  float local_60 [9];
+  float transformedHitNormal [3];
+  float transformedTexCoordAxis [3];
+  int surfaceBegin;
+  int surfaceIndex;
+  int surfaceEnd;
+  int brushModelCollidedIndex;
+  MarkClipPlaneSet clipPlanes;
+  PIXProfile pixProfile;
+  int brushModelCollidedCount;
+  MarkInfoCollidedBModel *brushModelCollided;
+  float poseMatrix [9];
   float local_3c;
   uint local_38;
   uint local_34;
-  GfxBrushModel *local_30;
-  GfxMarkContext local_2c;
-  GfxSurface *local_24;
-  float local_20 [3];
-  bool local_11;
-  float local_10 [3];
+  GfxBrushModel *brushModel;
+  GfxMarkContext markContext;
+  GfxSurface *surface;
+  float transformedOrigin [3];
+  bool anyMarks;
+  float markDir [3];
   
   PIXBeginNamedEvent(-1,"markfragments entbrushes");
-  local_68 = param_1->sceneBModelCollidedCount;
-  local_128 = 0;
+  iVar2 = markInfo->sceneBModelCollidedCount;
+  brushModelCollidedIndex = 0;
   do {
-    if (local_128 == local_68) {
-      DVar2 = GetCurrentThreadId();
-      if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (brushModelCollidedIndex == iVar2) {
+      DVar4 = GetCurrentThreadId();
+      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return true;
     }
-    local_64 = param_1->sceneBModelsCollided + local_128;
-    local_2c.modelTypeAndSurf = 0x80;
-    local_2c.modelIndex = local_64->entnum;
-    CG_GetPoseAxis(local_64->pose,(float (*) [3])local_60);
-    CG_GetPoseOrigin(local_64->pose,&local_3c);
-    R_Mark_TransformClipPlanes(&param_1->clipPlanes,(float (*) [3])local_60,&local_124);
-    MatrixTransposeTransformVector(param_1->axis[0],(float (*) [3])local_60,local_10);
-    local_11 = false;
-    local_30 = local_64->brushModel;
-    local_12c = local_30->startSurfIndex + local_30->surfaceCount;
-    local_134 = local_30->startSurfIndex;
-    for (local_130 = local_134; local_130 != local_12c; local_130 = local_130 + 1) {
-      local_24 = ((rgp.world)->dpvs).surfaces + local_130;
-      bVar1 = R_Mark_MaterialAllowsMarks(local_24->material,param_1->material);
-      if ((bVar1) &&
-         (bVar1 = R_MarkFragments_BrushSurface
-                            (param_1,&local_2c,&local_124,local_10,local_24,&local_11), !bVar1)) {
-        DVar2 = GetCurrentThreadId();
-        if (DVar2 != (DWORD)g_DXDeviceThread) {
+    pMVar1 = markInfo->sceneBModelsCollided + brushModelCollidedIndex;
+    markContext.modelTypeAndSurf = 0x80;
+    markContext.modelIndex = pMVar1->entnum;
+    CG_GetPoseAxis(pMVar1->pose,(float (*) [3])poseMatrix);
+    CG_GetPoseOrigin(pMVar1->pose,&local_3c);
+    R_Mark_TransformClipPlanes(&markInfo->clipPlanes,(float (*) [3])poseMatrix,&clipPlanes);
+    MatrixTransposeTransformVector(markInfo->axis[0],(float (*) [3])poseMatrix,markDir);
+    anyMarks = false;
+    brushModel = pMVar1->brushModel;
+    surfaceEnd = brushModel->startSurfIndex + brushModel->surfaceCount;
+    surfaceBegin = brushModel->startSurfIndex;
+    for (surfaceIndex = surfaceBegin; surfaceIndex != surfaceEnd; surfaceIndex = surfaceIndex + 1) {
+      surface = ((rgp.world)->dpvs).surfaces + surfaceIndex;
+      bVar3 = R_Mark_MaterialAllowsMarks(surface->material,markInfo->material);
+      if ((bVar3) &&
+         (bVar3 = R_MarkFragments_BrushSurface
+                            (markInfo,&markContext,&clipPlanes,markDir,surface,&anyMarks), !bVar3))
+      {
+        DVar4 = GetCurrentThreadId();
+        if (DVar4 != (DWORD)g_DXDeviceThread) {
           return false;
         }
         if (g_DXDeviceThread._4_4_ != 0) {
@@ -1862,30 +1924,32 @@ bool __cdecl R_MarkFragments_EntBrushes(MarkInfo *param_1)
         return false;
       }
     }
-    if (local_11 != false) {
-      MatrixTranspose((float (*) [3])local_60,(float (*) [3])local_188);
-      local_158 = -local_3c;
+    if (anyMarks != false) {
+      MatrixTranspose((float (*) [3])poseMatrix,(float (*) [3])invPoseMatrix);
+      negatedPoseOrigin = -local_3c;
       local_154 = local_38 ^ 0x80000000;
       local_150 = local_34 ^ 0x80000000;
-      MatrixTransformVector(&local_158,(float (*) [3])local_188,local_164);
-      MatrixTransformVector43(param_1->origin,(float (*) [3])local_188,local_20);
-      MatrixTransposeTransformVector(param_1->axis[1],(float (*) [3])local_60,local_140);
-      MatrixTransposeTransformVector(param_1->axis[0],(float (*) [3])local_60,local_14c);
-      (*param_1->callback)
-                (param_1->callbackContext,param_1->usedTriCount,param_1->tris,
-                 param_1->usedPointCount,param_1->points,local_20,local_140,local_14c,
-                 param_1->isSeeThruDecal);
-      param_1->usedTriCount = 0;
-      param_1->usedPointCount = 0;
+      MatrixTransformVector(&negatedPoseOrigin,(float (*) [3])invPoseMatrix,local_164);
+      MatrixTransformVector43(markInfo->origin,(float (*) [3])invPoseMatrix,transformedOrigin);
+      MatrixTransposeTransformVector
+                (markInfo->axis[1],(float (*) [3])poseMatrix,transformedTexCoordAxis);
+      MatrixTransposeTransformVector
+                (markInfo->axis[0],(float (*) [3])poseMatrix,transformedHitNormal);
+      (*markInfo->callback)
+                (markInfo->callbackContext,markInfo->usedTriCount,markInfo->tris,
+                 markInfo->usedPointCount,markInfo->points,transformedOrigin,transformedTexCoordAxis
+                 ,transformedHitNormal,markInfo->isSeeThruDecal);
+      markInfo->usedTriCount = 0;
+      markInfo->usedPointCount = 0;
     }
-    local_128 = local_128 + 1;
+    brushModelCollidedIndex = brushModelCollidedIndex + 1;
   } while( true );
 }
 
 
 // 00A55550  R_MarkFragments_Glass  (gfx_d3d/r_marks.cpp:1773)
 
-bool __cdecl R_MarkFragments_Glass(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_Glass(MarkInfo *markInfo)
 
 {
   float fVar1;
@@ -1896,14 +1960,17 @@ bool __cdecl R_MarkFragments_Glass(MarkInfo *param_1)
   Glass *pGVar6;
   bool bVar7;
   GfxBrushModel *pGVar8;
-  GfxSurface *pGVar9;
-  DWORD DVar10;
-  FxMarkPoint *pFVar11;
-  int local_140;
-  uint local_138;
-  uint local_130;
-  MarkClipPlaneSet local_12c;
-  float local_70;
+  GfxSurface *surface_00;
+  DWORD DVar9;
+  FxMarkPoint *pFVar10;
+  int p;
+  GfxSurface *surface;
+  uint s;
+  GfxBrushModel *br;
+  uint i;
+  MarkClipPlaneSet clipPlanes;
+  PIXProfile pixProfile;
+  float glassMatrix;
   float local_6c;
   float local_68;
   float local_64;
@@ -1915,42 +1982,43 @@ bool __cdecl R_MarkFragments_Glass(MarkInfo *param_1)
   float local_4c;
   float local_48;
   float local_44;
-  uint local_40;
-  GfxMarkContext local_3c;
-  Glass *local_34 [8];
-  bool local_11;
-  float local_10 [3];
+  uint num;
+  GfxMarkContext markContext;
+  Glass *glasses [8];
+  bool anyMarks;
+  float markDir [3];
   
   PIXBeginNamedEvent(-1,"markfragments glass");
-  local_40 = GlassCl_AreaGlasses(param_1->mins,param_1->maxs,local_34,8);
-  local_130 = 0;
+  num = GlassCl_AreaGlasses(markInfo->mins,markInfo->maxs,glasses,8);
+  i = 0;
   do {
-    if (local_40 <= local_130) {
-      DVar10 = GetCurrentThreadId();
-      if ((DVar10 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (num <= i) {
+      DVar9 = GetCurrentThreadId();
+      if ((DVar9 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return true;
     }
-    local_3c.modelTypeAndSurf = '\0';
-    local_3c.modelIndex = (ushort)local_34[local_130]->index;
-    AnglesToAxis(local_34[local_130]->angles,(float (*) [3])&local_70);
-    pGVar6 = local_34[local_130];
+    markContext.modelTypeAndSurf = '\0';
+    markContext.modelIndex = (ushort)glasses[i]->index;
+    AnglesToAxis(glasses[i]->angles,(float (*) [3])&glassMatrix);
+    pGVar6 = glasses[i];
     local_4c = pGVar6->origin[0];
     local_48 = pGVar6->origin[1];
     local_44 = pGVar6->origin[2];
-    R_Mark_TransformClipPlanes(&param_1->clipPlanes,(float (*) [3])&local_70,&local_12c);
-    MatrixTransposeTransformVector(param_1->axis[0],(float (*) [3])&local_70,local_10);
-    local_11 = false;
-    pGVar8 = R_GetBrushModel(local_34[local_130]->brushModel);
-    for (local_138 = 0; local_138 < pGVar8->surfaceCount; local_138 = local_138 + 1) {
-      pGVar9 = ((rgp.world)->dpvs).surfaces + pGVar8->startSurfIndex + local_138;
-      bVar7 = R_Mark_MaterialAllowsMarks(pGVar9->material,param_1->material);
+    R_Mark_TransformClipPlanes(&markInfo->clipPlanes,(float (*) [3])&glassMatrix,&clipPlanes);
+    MatrixTransposeTransformVector(markInfo->axis[0],(float (*) [3])&glassMatrix,markDir);
+    anyMarks = false;
+    pGVar8 = R_GetBrushModel(glasses[i]->brushModel);
+    for (s = 0; s < pGVar8->surfaceCount; s = s + 1) {
+      surface_00 = ((rgp.world)->dpvs).surfaces + pGVar8->startSurfIndex + s;
+      bVar7 = R_Mark_MaterialAllowsMarks(surface_00->material,markInfo->material);
       if ((bVar7) &&
          (bVar7 = R_MarkFragments_BrushSurface
-                            (param_1,&local_3c,&local_12c,local_10,pGVar9,&local_11), !bVar7)) {
-        DVar10 = GetCurrentThreadId();
-        if (DVar10 != (DWORD)g_DXDeviceThread) {
+                            (markInfo,&markContext,&clipPlanes,markDir,surface_00,&anyMarks), !bVar7
+         )) {
+        DVar9 = GetCurrentThreadId();
+        if (DVar9 != (DWORD)g_DXDeviceThread) {
           return false;
         }
         if (g_DXDeviceThread._4_4_ != 0) {
@@ -1960,44 +2028,44 @@ bool __cdecl R_MarkFragments_Glass(MarkInfo *param_1)
         return false;
       }
     }
-    if (local_11 != false) {
-      for (local_140 = 0; local_140 < param_1->usedPointCount; local_140 = local_140 + 1) {
-        fVar1 = param_1->points[local_140].xyz[0];
-        pGVar6 = local_34[local_130];
+    if (anyMarks != false) {
+      for (p = 0; p < markInfo->usedPointCount; p = p + 1) {
+        fVar1 = markInfo->points[p].xyz[0];
+        pGVar6 = glasses[i];
         fVar2 = pGVar6->origin[1];
         fVar3 = pGVar6->origin[2];
-        fVar4 = param_1->points[local_140].xyz[1];
-        pFVar11 = param_1->points + local_140;
-        fVar5 = param_1->points[local_140].xyz[2];
-        pFVar11->xyz[0] = fVar5 * local_58 + fVar4 * local_64 + fVar1 * local_70 + pGVar6->origin[0]
-        ;
-        pFVar11->xyz[1] = fVar5 * local_54 + fVar4 * local_60 + fVar1 * local_6c + fVar2;
-        pFVar11->xyz[2] = fVar5 * local_50 + fVar4 * local_5c + fVar1 * local_68 + fVar3;
+        fVar4 = markInfo->points[p].xyz[1];
+        pFVar10 = markInfo->points + p;
+        fVar5 = markInfo->points[p].xyz[2];
+        pFVar10->xyz[0] =
+             fVar5 * local_58 + fVar4 * local_64 + fVar1 * glassMatrix + pGVar6->origin[0];
+        pFVar10->xyz[1] = fVar5 * local_54 + fVar4 * local_60 + fVar1 * local_6c + fVar2;
+        pFVar10->xyz[2] = fVar5 * local_50 + fVar4 * local_5c + fVar1 * local_68 + fVar3;
       }
-      (*param_1->callback)
-                (param_1->callbackContext,param_1->usedTriCount,param_1->tris,
-                 param_1->usedPointCount,param_1->points,param_1->origin,param_1->axis[1],
-                 param_1->axis[0],param_1->isSeeThruDecal);
-      param_1->usedTriCount = 0;
-      param_1->usedPointCount = 0;
+      (*markInfo->callback)
+                (markInfo->callbackContext,markInfo->usedTriCount,markInfo->tris,
+                 markInfo->usedPointCount,markInfo->points,markInfo->origin,markInfo->axis[1],
+                 markInfo->axis[0],markInfo->isSeeThruDecal);
+      markInfo->usedTriCount = 0;
+      markInfo->usedPointCount = 0;
     }
-    local_130 = local_130 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00A53DF0  R_MarkFragments_Brushes  (gfx_d3d/r_marks.cpp:1832)
 
-bool __cdecl R_MarkFragments_Brushes(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_Brushes(MarkInfo *markInfo)
 
 {
   bool bVar1;
   
-  bVar1 = R_MarkFragments_WorldBrushes(param_1);
+  bVar1 = R_MarkFragments_WorldBrushes(markInfo);
   if (bVar1) {
-    bVar1 = R_MarkFragments_EntBrushes(param_1);
+    bVar1 = R_MarkFragments_EntBrushes(markInfo);
     if (bVar1) {
-      bVar1 = R_MarkFragments_Glass(param_1);
+      bVar1 = R_MarkFragments_Glass(markInfo);
       if (bVar1) {
         bVar1 = true;
       }
@@ -2020,38 +2088,40 @@ bool __cdecl R_MarkFragments_Brushes(MarkInfo *param_1)
 
 /* WARNING: Removing unreachable block (ram,0x00a56c6f) */
 
-bool __cdecl R_MarkModelCoreCallback<1>(void *param_1,uchar **param_2,uchar **param_3)
+bool __cdecl R_MarkModelCoreCallback<1>(void *contextAsVoid,uchar **triVerts0,uchar **triVerts1)
 
 {
   int iVar1;
   bool bVar2;
-  FxModelMarkPoint local_2ac;
+  float *pos;
+  MarkModelCoreContext *context;
+  FxModelMarkPoint clipPoints;
   float local_294 [6];
   float local_27c [157];
-  int local_8;
+  int vertIndex;
   
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
+  for (vertIndex = 0; vertIndex != 3; vertIndex = vertIndex + 1) {
     MatrixTransformVector43
-              ((float *)param_2[local_8],*(float (**) [3])((int)param_1 + 0x14),
-               (&local_2ac)[local_8].xyz);
-    iVar1 = local_8;
-    (&local_2ac)[local_8].vertWeights[0] = 0.0;
-    (&local_2ac)[iVar1].vertWeights[1] = 0.0;
-    (&local_2ac)[iVar1].vertWeights[2] = 0.0;
-    *(float *)((int)&local_2ac + local_8 * 0x1c + 0xc) = 1.0;
+              ((float *)triVerts0[vertIndex],*(float (**) [3])((int)contextAsVoid + 0x14),
+               (&clipPoints)[vertIndex].xyz);
+    iVar1 = vertIndex;
+    (&clipPoints)[vertIndex].vertWeights[0] = 0.0;
+    (&clipPoints)[iVar1].vertWeights[1] = 0.0;
+    (&clipPoints)[iVar1].vertWeights[2] = 0.0;
+    *(float *)((int)&clipPoints + vertIndex * 0x1c + 0xc) = 1.0;
   }
   bVar2 = R_MarkFragment_IsTriangleRejected
-                    (*(float **)((int)param_1 + 0xc),local_2ac.xyz,local_294,local_27c,(float *)0x0)
-  ;
+                    (*(float **)((int)contextAsVoid + 0xc),clipPoints.xyz,local_294,local_27c,
+                     (float *)0x0);
   if (bVar2) {
     bVar2 = true;
   }
   else {
     bVar2 = R_MarkFragment_DoTriangle<1>
-                      (*(MarkInfo **)param_1,*(MarkClipPlaneSet **)((int)param_1 + 0x10),
-                       *(GfxMarkContext **)((int)param_1 + 4),param_3,
-                       *(float (**) [3])((int)param_1 + 0x18),(FxModelMarkPoint (*) [14])&local_2ac)
-    ;
+                      (*(MarkInfo **)contextAsVoid,*(MarkClipPlaneSet **)((int)contextAsVoid + 0x10)
+                       ,*(GfxMarkContext **)((int)contextAsVoid + 4),triVerts1,
+                       *(float (**) [3])((int)contextAsVoid + 0x18),
+                       (FxModelMarkPoint (*) [14])&clipPoints);
     if (bVar2) {
       bVar2 = true;
     }
@@ -2067,38 +2137,40 @@ bool __cdecl R_MarkModelCoreCallback<1>(void *param_1,uchar **param_2,uchar **pa
 
 /* WARNING: Removing unreachable block (ram,0x00a56df1) */
 
-bool __cdecl R_MarkModelCoreCallback<0>(void *param_1,uchar **param_2,uchar **param_3)
+bool __cdecl R_MarkModelCoreCallback<0>(void *contextAsVoid,uchar **triVerts0,uchar **triVerts1)
 
 {
   float *pfVar1;
   bool bVar2;
-  FxModelMarkPoint local_2ac;
+  float *pos;
+  MarkModelCoreContext *context;
+  FxModelMarkPoint clipPoints;
   float local_294 [6];
   float local_27c [157];
-  int local_8;
+  int vertIndex;
   
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-    pfVar1 = (float *)param_2[local_8];
-    (&local_2ac)[local_8].xyz[0] = *pfVar1;
-    (&local_2ac)[local_8].xyz[1] = pfVar1[1];
-    (&local_2ac)[local_8].xyz[2] = pfVar1[2];
-    (&local_2ac)[local_8].vertWeights[0] = 0.0;
-    (&local_2ac)[local_8].vertWeights[1] = 0.0;
-    local_294[local_8 * 6 + -1] = 0.0;
-    *(float *)((int)&local_2ac + local_8 * 0x1c + 0xc) = 1.0;
+  for (vertIndex = 0; vertIndex != 3; vertIndex = vertIndex + 1) {
+    pfVar1 = (float *)triVerts0[vertIndex];
+    (&clipPoints)[vertIndex].xyz[0] = *pfVar1;
+    (&clipPoints)[vertIndex].xyz[1] = pfVar1[1];
+    (&clipPoints)[vertIndex].xyz[2] = pfVar1[2];
+    (&clipPoints)[vertIndex].vertWeights[0] = 0.0;
+    (&clipPoints)[vertIndex].vertWeights[1] = 0.0;
+    local_294[vertIndex * 6 + -1] = 0.0;
+    *(float *)((int)&clipPoints + vertIndex * 0x1c + 0xc) = 1.0;
   }
   bVar2 = R_MarkFragment_IsTriangleRejected
-                    (*(float **)((int)param_1 + 0xc),local_2ac.xyz,local_294,local_27c,(float *)0x0)
-  ;
+                    (*(float **)((int)contextAsVoid + 0xc),clipPoints.xyz,local_294,local_27c,
+                     (float *)0x0);
   if (bVar2) {
     bVar2 = true;
   }
   else {
     bVar2 = R_MarkFragment_DoTriangle<0>
-                      (*(MarkInfo **)param_1,*(MarkClipPlaneSet **)((int)param_1 + 0x10),
-                       *(GfxMarkContext **)((int)param_1 + 4),param_3,
-                       *(float (**) [3])((int)param_1 + 0x18),(FxModelMarkPoint (*) [14])&local_2ac)
-    ;
+                      (*(MarkInfo **)contextAsVoid,*(MarkClipPlaneSet **)((int)contextAsVoid + 0x10)
+                       ,*(GfxMarkContext **)((int)contextAsVoid + 4),triVerts1,
+                       *(float (**) [3])((int)contextAsVoid + 0x18),
+                       (FxModelMarkPoint (*) [14])&clipPoints);
     if (bVar2) {
       bVar2 = true;
     }
@@ -2114,84 +2186,87 @@ bool __cdecl R_MarkModelCoreCallback<0>(void *param_1,uchar **param_2,uchar **pa
 
 bool __cdecl
 R_MarkFragments_XModelSurface_Basic
-          (MarkInfo *param_1,XSurface *param_2,float (*param_3) [3],float *param_4,float param_5,
-          GfxMarkContext *param_6)
+          (MarkInfo *markInfo,XSurface *surface,float (*modelAxis) [3],float *modelOrigin,
+          float modelScale,GfxMarkContext *markContext)
 
 {
   bool bVar1;
   float (*pafVar2) [3];
-  MarkInfo *local_9c;
+  float localRadius;
+  MarkInfo *markModelCoreContext;
   GfxMarkContext *local_98;
   MarkInfo *local_94;
   float (*local_90) [3];
   MarkClipPlaneSet *local_8c;
   float *local_88;
   float (*local_84) [3];
-  float local_80;
-  float local_7c;
+  float invModelScale;
+  float localOrigin;
   float local_78;
   float local_74;
-  uint local_70;
-  float local_6c;
+  uint vertListIndex;
+  float localMaxs;
   float local_68;
   float local_64;
-  float local_60;
+  float localOriginRotated;
   float local_5c;
   float local_58;
-  int local_54;
-  float local_50;
+  int dim;
+  float localMins;
   float local_4c;
   float local_48;
-  _func___cdecl_bool_void_ptr_uchar_ptr_ptr_uchar_ptr_ptr *local_44;
-  float local_40 [9];
+  _func___cdecl_bool_void_ptr_uchar_ptr_ptr_uchar_ptr_ptr *visitorFunc;
+  float surfTransform [9];
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float localOriginTranslated;
   float local_c;
   float local_8;
   
-  for (local_54 = 0; local_54 != 3; local_54 = local_54 + 1) {
-    pafVar2 = param_3 + local_54;
-    local_40[local_54 * 3] = param_5 * (*pafVar2)[0];
-    local_40[local_54 * 3 + 1] = param_5 * (*pafVar2)[1];
-    local_40[local_54 * 3 + 2] = param_5 * (*pafVar2)[2];
+  for (dim = 0; dim != 3; dim = dim + 1) {
+    pafVar2 = modelAxis + dim;
+    surfTransform[dim * 3] = modelScale * (*pafVar2)[0];
+    surfTransform[dim * 3 + 1] = modelScale * (*pafVar2)[1];
+    surfTransform[dim * 3 + 2] = modelScale * (*pafVar2)[2];
   }
-  local_1c = *param_4;
-  local_18 = param_4[1];
-  local_14 = param_4[2];
-  local_80 = 1.0 / param_5;
-  local_10 = param_1->origin[0] - *param_4;
-  local_c = param_1->origin[1] - param_4[1];
-  local_8 = param_1->origin[2] - param_4[2];
-  MatrixTransposeTransformVector(&local_10,param_3,&local_60);
-  local_7c = local_80 * local_60;
-  local_78 = local_80 * local_5c;
-  local_74 = local_80 * local_58;
-  local_64 = param_1->radius * local_80;
+  local_1c = *modelOrigin;
+  local_18 = modelOrigin[1];
+  local_14 = modelOrigin[2];
+  invModelScale = 1.0 / modelScale;
+  localOriginTranslated = markInfo->origin[0] - *modelOrigin;
+  local_c = markInfo->origin[1] - modelOrigin[1];
+  local_8 = markInfo->origin[2] - modelOrigin[2];
+  MatrixTransposeTransformVector(&localOriginTranslated,modelAxis,&localOriginRotated);
+  localOrigin = invModelScale * localOriginRotated;
+  local_78 = invModelScale * local_5c;
+  local_74 = invModelScale * local_58;
+  local_64 = markInfo->radius * invModelScale;
   local_48 = -local_64;
-  local_50 = local_7c + local_48;
+  localMins = localOrigin + local_48;
   local_4c = local_78 + local_48;
   local_48 = local_74 + local_48;
-  local_6c = local_7c + local_64;
+  localMaxs = localOrigin + local_64;
   local_68 = local_78 + local_64;
   local_64 = local_74 + local_64;
-  local_9c = param_1;
-  local_98 = param_6;
-  local_94 = param_1;
-  local_90 = param_1->axis;
-  local_8c = &param_1->clipPlanes;
-  local_88 = local_40;
-  local_84 = param_3;
-  local_44 = R_MarkModelCoreCallback<1>;
-  local_70 = 0;
+  markModelCoreContext = markInfo;
+  local_98 = markContext;
+  local_94 = markInfo;
+  local_90 = markInfo->axis;
+  local_8c = &markInfo->clipPlanes;
+  local_88 = surfTransform;
+  local_84 = modelAxis;
+  visitorFunc = R_MarkModelCoreCallback<1>;
+  vertListIndex = 0;
   while( true ) {
-    if (local_70 == param_2->vertListCount) {
+    if (vertListIndex == surface->vertListCount) {
       return true;
     }
-    bVar1 = XSurfaceVisitTrianglesInAabb(param_2,local_70,&local_50,&local_6c,local_44,&local_9c);
+    bVar1 = XSurfaceVisitTrianglesInAabb
+                      (surface,vertListIndex,&localMins,&localMaxs,visitorFunc,&markModelCoreContext
+                      );
     if (!bVar1) break;
-    local_70 = local_70 + 1;
+    vertListIndex = vertListIndex + 1;
   }
   return false;
 }
@@ -2201,36 +2276,38 @@ R_MarkFragments_XModelSurface_Basic
 
 bool __cdecl
 R_MarkFragments_EntirelyRigidXModel
-          (MarkInfo *param_1,XModel *param_2,float (*param_3) [3],float *param_4,float param_5,
-          GfxMarkContext *param_6)
+          (MarkInfo *markInfo,XModel *xmodel,float (*modelAxis) [3],float *modelOrigin,
+          float modelScale,GfxMarkContext *markContext)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uint uVar4;
+  int iVar4;
   Material **ppMVar5;
-  uint local_14;
-  XSurface *local_8;
+  int LOD;
+  int surfIndex;
+  int surfCount;
+  XSurface *surfaces;
   
-  uVar4 = XModelGetSurfaces(param_2,&local_8,0);
-  ppMVar5 = XModelGetSkins(param_2,0);
-  local_14 = 0;
+  iVar4 = XModelGetSurfaces(xmodel,&surfaces,0);
+  ppMVar5 = XModelGetSkins(xmodel,0);
+  surfIndex = 0;
   do {
-    if ((local_14 == uVar4) || (0x3f < (int)local_14)) {
+    if ((surfIndex == iVar4) || (0x3f < surfIndex)) {
       return true;
     }
-    bVar2 = R_Mark_MaterialAllowsMarks(ppMVar5[local_14],param_1->material);
+    bVar2 = R_Mark_MaterialAllowsMarks(ppMVar5[surfIndex],markInfo->material);
     if (bVar2) {
-      if (((local_14 & 0x3f) != local_14) &&
+      if (((surfIndex & 0x3fU) != surfIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x808,0
                                    ,"%s\n\t(surfIndex) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      param_6->modelTypeAndSurf = (byte)local_14 | 0x40;
-      if (((uint)param_6->modelTypeAndSurf != (local_14 | 0x40)) &&
+      markContext->modelTypeAndSurf = (byte)surfIndex | 0x40;
+      if (((uint)markContext->modelTypeAndSurf != (surfIndex | 0x40U)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x80a,0
                                    ,"%s\n\t(surfIndex | MARK_MODEL_TYPE_WORLD_MODEL) = %i"), !bVar2)
          ) {
@@ -2239,12 +2316,13 @@ R_MarkFragments_EntirelyRigidXModel
         return (bool)uVar3;
       }
       bVar2 = R_MarkFragments_XModelSurface_Basic
-                        (param_1,local_8 + local_14,param_3,param_4,param_5,param_6);
+                        (markInfo,surfaces + surfIndex,modelAxis,modelOrigin,modelScale,markContext)
+      ;
       if (!bVar2) {
         return false;
       }
     }
-    local_14 = local_14 + 1;
+    surfIndex = surfIndex + 1;
   } while( true );
 }
 
@@ -2253,8 +2331,8 @@ R_MarkFragments_EntirelyRigidXModel
 
 bool __cdecl
 R_MarkFragments_AnimatedXModel_VertList
-          (MarkInfo *param_1,int param_2,DObjAnimMat *param_3,DObjAnimMat *param_4,
-          GfxMarkContext *param_5,XSurface *param_6)
+          (MarkInfo *markInfo,int vertListIndex,DObjAnimMat *poseBone,DObjAnimMat *baseBone,
+          GfxMarkContext *markContext,XSurface *surface)
 
 {
   code *pcVar1;
@@ -2286,16 +2364,16 @@ R_MarkFragments_AnimatedXModel_VertList
   
   pDVar5 = &local_30;
   for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pDVar5->quat[0] = param_3->quat[0];
-    param_3 = (DObjAnimMat *)(param_3->quat + 1);
+    pDVar5->quat[0] = poseBone->quat[0];
+    poseBone = (DObjAnimMat *)(poseBone->quat + 1);
     pDVar5 = (DObjAnimMat *)(pDVar5->quat + 1);
   }
   ConvertQuatToSkelMat(&local_30,&local_70);
-  ConvertQuatToInverseSkelMat(param_4,&local_b0);
+  ConvertQuatToInverseSkelMat(baseBone,&local_b0);
   DObjSkelMatToMatrix43(&local_70,(float (*) [3])local_e0);
   DObjSkelMatToMatrix43(&local_b0,(float (*) [3])local_110);
   MatrixMultiply43((float (*) [3])local_110,(float (*) [3])local_e0,(float (*) [3])local_140);
-  if (param_1->usedPointCount != 0) {
+  if (markInfo->usedPointCount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x833,0,"%s")
     ;
     if (!bVar2) {
@@ -2304,30 +2382,31 @@ R_MarkFragments_AnimatedXModel_VertList
       return (bool)uVar3;
     }
   }
-  R_Mark_TransformClipPlanes(&param_1->clipPlanes,(float (*) [3])local_140,&local_1f8);
-  MatrixTransposeTransformVector(param_1->axis[0],(float (*) [3])local_140,local_204);
-  ConvertQuatToSkelMat(param_4,&local_250);
+  R_Mark_TransformClipPlanes(&markInfo->clipPlanes,(float (*) [3])local_140,&local_1f8);
+  MatrixTransposeTransformVector(markInfo->axis[0],(float (*) [3])local_140,local_204);
+  ConvertQuatToSkelMat(baseBone,&local_250);
   ConvertQuatToInverseSkelMat(&local_30,&local_290);
   DObjSkelMatToMatrix43(&local_290,(float (*) [3])local_2c0);
   DObjSkelMatToMatrix43(&local_250,(float (*) [3])local_2f0);
   MatrixMultiply43((float (*) [3])local_2c0,(float (*) [3])local_2f0,(float (*) [3])local_320);
-  Vec3Copy(param_1->origin,local_32c);
-  MatrixTransformVector43(local_32c,(float (*) [3])local_320,param_1->localOrigin);
-  Vec3AddScalar(param_1->localOrigin,-param_1->radius,local_338);
-  Vec3AddScalar(param_1->localOrigin,param_1->radius,local_344);
-  local_360 = param_1;
-  local_35c = param_5;
-  local_358 = param_1->localOrigin;
+  Vec3Copy(markInfo->origin,local_32c);
+  MatrixTransformVector43(local_32c,(float (*) [3])local_320,markInfo->localOrigin);
+  Vec3AddScalar(markInfo->localOrigin,-markInfo->radius,local_338);
+  Vec3AddScalar(markInfo->localOrigin,markInfo->radius,local_344);
+  local_360 = markInfo;
+  local_35c = markContext;
+  local_358 = markInfo->localOrigin;
   local_354 = local_204;
   local_350 = &local_1f8;
   bVar2 = XSurfaceVisitTrianglesInAabb
-                    (param_6,param_2,local_338,local_344,R_MarkModelCoreCallback<0>,&local_360);
+                    (surface,vertListIndex,local_338,local_344,R_MarkModelCoreCallback<0>,&local_360
+                    );
   if (bVar2) {
-    if (param_1->usedPointCount != 0) {
+    if (markInfo->usedPointCount != 0) {
       MatrixTransposeTransformVector
-                (param_1->axis[1],(float (*) [3])local_140,param_1->localTexCoordAxis);
+                (markInfo->axis[1],(float (*) [3])local_140,markInfo->localTexCoordAxis);
       MatrixTransposeTransformVector
-                (param_1->axis[0],(float (*) [3])local_140,param_1->localHitNormal);
+                (markInfo->axis[0],(float (*) [3])local_140,markInfo->localHitNormal);
     }
     bVar2 = true;
   }
@@ -2342,8 +2421,8 @@ R_MarkFragments_AnimatedXModel_VertList
 
 bool __cdecl
 R_MarkFragments_AnimatedXModel
-          (MarkInfo *param_1,XModel *param_2,uint *param_3,int param_4,DObjAnimMat *param_5,
-          int param_6,GfxMarkContext *param_7)
+          (MarkInfo *markInfo,XModel *model,uint *hidePartBits,int boneIndex,
+          DObjAnimMat *boneMtxList,int boneCount,GfxMarkContext *markContext)
 
 {
   code *pcVar1;
@@ -2354,47 +2433,55 @@ R_MarkFragments_AnimatedXModel
   DObjAnimMat *pDVar6;
   Material **ppMVar7;
   uint uVar8;
-  uchar local_34;
-  int local_1c;
-  uint local_18;
-  XSurface *local_c;
-  XSurface *local_8;
+  DObjAnimMat *poseBone;
+  int boneOffset;
+  DObjAnimMat *baseBone;
+  int globalBone;
+  XRigidVertList *vertList;
+  int LOD;
+  DObjAnimMat *baseMatList;
+  int surfIndex;
+  uint vertListIndex;
+  int surfCount;
+  XSurface *surfaces;
+  XSurface *surface;
   
-  iVar5 = XModelGetSurfaces(param_2,&local_c,0);
-  pDVar6 = XModelGetBasePose(param_2);
-  ppMVar7 = XModelGetSkins(param_2,0);
-  if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+  iVar5 = XModelGetSurfaces(model,&surfaces,0);
+  pDVar6 = XModelGetBasePose(model);
+  ppMVar7 = XModelGetSkins(model,0);
+  if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x878,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  for (local_1c = 0; local_1c != iVar5; local_1c = local_1c + 1) {
-    bVar3 = R_Mark_MaterialAllowsMarks(ppMVar7[local_1c],param_1->material);
-    if ((bVar3) && (local_8 = local_c + local_1c, (local_8->flags & 0x80) == 0)) {
-      if ((local_8->vertListCount == '\0') &&
+  for (surfIndex = 0; surfIndex != iVar5; surfIndex = surfIndex + 1) {
+    bVar3 = R_Mark_MaterialAllowsMarks(ppMVar7[surfIndex],markInfo->material);
+    if ((bVar3) && (surface = surfaces + surfIndex, (surface->flags & 0x80) == 0)) {
+      if ((surface->vertListCount == '\0') &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x886,0
                                    ,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         uVar4 = (*pcVar1)();
         return (bool)uVar4;
       }
-      for (local_18 = 0; local_18 != local_8->vertListCount; local_18 = local_18 + 1) {
-        uVar2 = local_8->vertList[local_18].boneOffset >> 6;
+      for (vertListIndex = 0; vertListIndex != surface->vertListCount;
+          vertListIndex = vertListIndex + 1) {
+        uVar2 = surface->vertList[vertListIndex].boneOffset >> 6;
         uVar8 = (uint)uVar2;
-        if ((param_6 <= (int)(param_4 + uVar8)) &&
+        if ((boneCount <= (int)(boneIndex + uVar8)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x895
                                      ,0,"%s"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           uVar4 = (*pcVar1)();
           return (bool)uVar4;
         }
-        if ((0x80000000U >> ((byte)(param_4 + uVar8) & 0x1f) & param_3[(int)(param_4 + uVar8) >> 5])
-            == 0) {
-          local_34 = (uchar)uVar2;
-          param_7->lmapIndex = local_34;
-          if ((param_7->lmapIndex != uVar8) &&
+        if ((0x80000000U >> ((byte)(boneIndex + uVar8) & 0x1f) &
+            hidePartBits[(int)(boneIndex + uVar8) >> 5]) == 0) {
+          boneOffset._0_1_ = (uchar)uVar2;
+          markContext->lmapIndex = (uchar)boneOffset;
+          if ((markContext->lmapIndex != uVar8) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",
                                        0x8a0,0,"%s\n\t(boneOffset) = %i"), !bVar3)) {
             pcVar1 = (code *)swi(3);
@@ -2402,26 +2489,27 @@ R_MarkFragments_AnimatedXModel
             return (bool)uVar4;
           }
           bVar3 = R_MarkFragments_AnimatedXModel_VertList
-                            (param_1,local_18,param_5 + uVar8,pDVar6 + uVar8,param_7,local_8);
+                            (markInfo,vertListIndex,boneMtxList + uVar8,pDVar6 + uVar8,markContext,
+                             surface);
           if (!bVar3) {
             return false;
           }
-          if ((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) {
-            if ((param_1->usedTriCount != 0) && (param_1->usedPointCount != 0)) {
-              (*param_1->callback)
-                        (param_1->callbackContext,param_1->usedTriCount,param_1->tris,
-                         param_1->usedPointCount,param_1->points,param_1->localOrigin,
-                         param_1->localTexCoordAxis,param_1->localHitNormal,param_1->isSeeThruDecal)
-              ;
+          if ((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) {
+            if ((markInfo->usedTriCount != 0) && (markInfo->usedPointCount != 0)) {
+              (*markInfo->callback)
+                        (markInfo->callbackContext,markInfo->usedTriCount,markInfo->tris,
+                         markInfo->usedPointCount,markInfo->points,markInfo->localOrigin,
+                         markInfo->localTexCoordAxis,markInfo->localHitNormal,
+                         markInfo->isSeeThruDecal);
             }
-            param_1->usedTriCount = 0;
-            param_1->usedPointCount = 0;
+            markInfo->usedTriCount = 0;
+            markInfo->usedPointCount = 0;
           }
         }
       }
     }
   }
-  if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+  if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x8b4,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -2438,52 +2526,52 @@ R_MarkFragments_AnimatedXModel
 
 void __cdecl
 R_MarkUtil_GetDObjAnimMatAndHideParts
-          (DObj *param_1,cpose_t *param_2,DObjAnimMat **param_3,uint *param_4)
+          (DObj *dobj,cpose_t *pose,DObjAnimMat **outBoneMtxList,uint *outHidePartBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
-  char local_40 [32];
+  char zeroLods [32];
   uint local_20;
-  int local_1c;
-  int local_18 [5];
+  int surfaceCount;
+  int partBits [5];
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40[0] = '\0';
-  local_40[1] = '\0';
-  local_40[2] = '\0';
-  local_40[3] = '\0';
-  local_40[4] = '\0';
-  local_40[5] = '\0';
-  local_40[6] = '\0';
-  local_40[7] = '\0';
-  local_40[8] = '\0';
-  local_40[9] = '\0';
-  local_40[10] = '\0';
-  local_40[0xb] = '\0';
-  local_40[0xc] = '\0';
-  local_40[0xd] = '\0';
-  local_40[0xe] = '\0';
-  local_40[0xf] = '\0';
-  local_40[0x10] = '\0';
-  local_40[0x11] = '\0';
-  local_40[0x12] = '\0';
-  local_40[0x13] = '\0';
-  local_40[0x14] = '\0';
-  local_40[0x15] = '\0';
-  local_40[0x16] = '\0';
-  local_40[0x17] = '\0';
-  local_40[0x18] = '\0';
-  local_40[0x19] = '\0';
-  local_40[0x1a] = '\0';
-  local_40[0x1b] = '\0';
-  local_40[0x1c] = '\0';
-  local_40[0x1d] = '\0';
-  local_40[0x1e] = '\0';
-  local_40[0x1f] = '\0';
-  local_1c = DObjGetSurfaces(param_1,local_18,local_40);
-  if (local_1c == 0) {
+  zeroLods[0] = '\0';
+  zeroLods[1] = '\0';
+  zeroLods[2] = '\0';
+  zeroLods[3] = '\0';
+  zeroLods[4] = '\0';
+  zeroLods[5] = '\0';
+  zeroLods[6] = '\0';
+  zeroLods[7] = '\0';
+  zeroLods[8] = '\0';
+  zeroLods[9] = '\0';
+  zeroLods[10] = '\0';
+  zeroLods[0xb] = '\0';
+  zeroLods[0xc] = '\0';
+  zeroLods[0xd] = '\0';
+  zeroLods[0xe] = '\0';
+  zeroLods[0xf] = '\0';
+  zeroLods[0x10] = '\0';
+  zeroLods[0x11] = '\0';
+  zeroLods[0x12] = '\0';
+  zeroLods[0x13] = '\0';
+  zeroLods[0x14] = '\0';
+  zeroLods[0x15] = '\0';
+  zeroLods[0x16] = '\0';
+  zeroLods[0x17] = '\0';
+  zeroLods[0x18] = '\0';
+  zeroLods[0x19] = '\0';
+  zeroLods[0x1a] = '\0';
+  zeroLods[0x1b] = '\0';
+  zeroLods[0x1c] = '\0';
+  zeroLods[0x1d] = '\0';
+  zeroLods[0x1e] = '\0';
+  zeroLods[0x1f] = '\0';
+  surfaceCount = DObjGetSurfaces(dobj,partBits,zeroLods);
+  if (surfaceCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x8c2,0,"%s")
     ;
     if (!bVar2) {
@@ -2492,9 +2580,9 @@ R_MarkUtil_GetDObjAnimMatAndHideParts
       return;
     }
   }
-  pDVar3 = CG_DObjCalcPose(param_2,param_1,local_18);
-  *param_3 = pDVar3;
-  if (*param_3 == (DObjAnimMat *)0x0) {
+  pDVar3 = CG_DObjCalcPose(pose,dobj,partBits);
+  *outBoneMtxList = pDVar3;
+  if (*outBoneMtxList == (DObjAnimMat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x8c6,0,"%s")
     ;
     if (!bVar2) {
@@ -2503,70 +2591,76 @@ R_MarkUtil_GetDObjAnimMatAndHideParts
       return;
     }
   }
-  DObjGetHidePartBits(param_1,param_4);
+  DObjGetHidePartBits(dobj,outHidePartBits);
   return;
 }
 
 
 // 00A55B70  R_MarkFragments_SceneDObjs  (gfx_d3d/r_marks.cpp:2253)
 
-bool __cdecl R_MarkFragments_SceneDObjs(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_SceneDObjs(MarkInfo *markInfo)
 
 {
   MarkInfoCollidedDObj *pMVar1;
-  DObj *pDVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  uint uVar6;
-  XModel *pXVar7;
-  int iVar8;
-  DWORD DVar9;
-  GfxMarkContext *pGVar10;
-  uint local_48;
-  int local_44;
-  uint local_2c [5];
-  DObjAnimMat *local_18;
-  GfxMarkContext local_14;
-  ushort local_c;
-  int local_8;
+  DObj *dobj_00;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  int iVar5;
+  XModel *model_00;
+  int boneCount;
+  DWORD DVar6;
+  GfxMarkContext *markContext_00;
+  int submodelIndex;
+  int boneIndex;
+  PIXProfile pixProfile;
+  DObj *dobj;
+  MarkInfoCollidedDObj *collidedDObj;
+  XModel *model;
+  int submodelCount;
+  uint hidePartBits [5];
+  DObjAnimMat *boneMtxList;
+  GfxMarkContext markContext;
+  ushort entnum;
+  int sceneDObjCollidedIndex;
   
   PIXBeginNamedEvent(-1,"markfragments scenedobj");
-  local_8 = 0;
+  sceneDObjCollidedIndex = 0;
   do {
-    if (local_8 == param_1->sceneDObjCollidedCount) {
-      DVar9 = GetCurrentThreadId();
-      if ((DVar9 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (sceneDObjCollidedIndex == markInfo->sceneDObjCollidedCount) {
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return true;
     }
-    pMVar1 = param_1->sceneDObjsCollided + local_8;
-    pDVar2 = pMVar1->dObj;
-    local_c = pMVar1->entnum;
-    R_MarkUtil_GetDObjAnimMatAndHideParts(pDVar2,pMVar1->pose,&local_18,local_2c);
-    uVar6 = DObjGetNumModels(pDVar2);
-    local_44 = 0;
-    for (local_48 = 0; local_48 != uVar6; local_48 = local_48 + 1) {
-      local_14.reflectionProbeIndex = '\0';
-      local_14.primaryLightIndex = '\0';
-      local_14.modelIndex = local_c;
-      local_14.modelTypeAndSurf = (byte)local_48 | 0xc0;
-      if (((local_14.modelTypeAndSurf & 0x3f) != local_48) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x8ee,0
-                                   ,"%s\n\t(submodelIndex) = %i"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        uVar5 = (*pcVar3)();
-        return (bool)uVar5;
+    pMVar1 = markInfo->sceneDObjsCollided + sceneDObjCollidedIndex;
+    dobj_00 = pMVar1->dObj;
+    entnum = pMVar1->entnum;
+    R_MarkUtil_GetDObjAnimMatAndHideParts(dobj_00,pMVar1->pose,&boneMtxList,hidePartBits);
+    iVar5 = DObjGetNumModels(dobj_00);
+    boneIndex = 0;
+    for (submodelIndex = 0; submodelIndex != iVar5; submodelIndex = submodelIndex + 1) {
+      markContext.reflectionProbeIndex = '\0';
+      markContext.primaryLightIndex = '\0';
+      markContext.modelIndex = entnum;
+      markContext.modelTypeAndSurf = (byte)submodelIndex | 0xc0;
+      if (((markContext.modelTypeAndSurf & 0x3f) != submodelIndex) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x8ee,0
+                                   ,"%s\n\t(submodelIndex) = %i"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        uVar4 = (*pcVar2)();
+        return (bool)uVar4;
       }
-      pXVar7 = DObjGetModel(pDVar2,local_48);
-      pGVar10 = &local_14;
-      iVar8 = DObjNumBones(pDVar2);
-      bVar4 = R_MarkFragments_AnimatedXModel
-                        (param_1,pXVar7,local_2c,local_44,local_18,iVar8,pGVar10);
-      if (!bVar4) {
-        DVar9 = GetCurrentThreadId();
-        if (DVar9 != (DWORD)g_DXDeviceThread) {
+      model_00 = DObjGetModel(dobj_00,submodelIndex);
+      markContext_00 = &markContext;
+      boneCount = DObjNumBones(dobj_00);
+      bVar3 = R_MarkFragments_AnimatedXModel
+                        (markInfo,model_00,hidePartBits,boneIndex,boneMtxList,boneCount,
+                         markContext_00);
+      if (!bVar3) {
+        DVar6 = GetCurrentThreadId();
+        if (DVar6 != (DWORD)g_DXDeviceThread) {
           return false;
         }
         if (g_DXDeviceThread._4_4_ != 0) {
@@ -2575,10 +2669,10 @@ bool __cdecl R_MarkFragments_SceneDObjs(MarkInfo *param_1)
         _D3DPERF_EndEvent_0();
         return false;
       }
-      local_44 = (uint)pXVar7->numBones + local_44;
-      local_18 = local_18 + pXVar7->numBones;
+      boneIndex = (uint)model_00->numBones + boneIndex;
+      boneMtxList = boneMtxList + model_00->numBones;
     }
-    local_8 = local_8 + 1;
+    sceneDObjCollidedIndex = sceneDObjCollidedIndex + 1;
   } while( true );
 }
 
@@ -2587,7 +2681,7 @@ bool __cdecl R_MarkFragments_SceneDObjs(MarkInfo *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_StaticModels(MarkInfo *markInfo)
 
 {
   GfxStaticModelDrawInst *pGVar1;
@@ -2596,10 +2690,12 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
   undefined1 uVar4;
   uint uVar5;
   DWORD DVar6;
-  int local_40;
-  GfxMarkContext local_38;
-  XModel *local_30;
-  float local_2c;
+  PIXProfile pixProfile;
+  int smodelCollidedIndex;
+  GfxStaticModelDrawInst *smodelDraw;
+  GfxMarkContext markContext;
+  XModel *xmodel;
+  float modelAxis;
   float local_28;
   float local_24;
   float local_20;
@@ -2608,13 +2704,13 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
   float local_14;
   float local_10;
   float local_c;
-  uint local_8;
+  int smodelIndex;
   
   PIXBeginNamedEvent(-1,"markfragments smodel");
-  local_40 = 0;
+  smodelCollidedIndex = 0;
   while( true ) {
-    if (local_40 == param_1->smodelCollidedCount) {
-      if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+    if (smodelCollidedIndex == markInfo->smodelCollidedCount) {
+      if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x92a,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -2627,32 +2723,32 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
       }
       return true;
     }
-    if (((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) &&
+    if (((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x90d,0,
                                  "%s"), !bVar3)) break;
-    uVar5 = (uint)param_1->smodelsCollided[local_40];
+    uVar5 = (uint)markInfo->smodelsCollided[smodelCollidedIndex];
     pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
-    local_30 = pGVar1[uVar5].model;
-    local_38.lmapIndex = '\x1f';
-    local_38.reflectionProbeIndex = pGVar1[uVar5].reflectionProbeIndex;
-    local_8 = uVar5;
-    if ((local_38.reflectionProbeIndex != pGVar1[uVar5].reflectionProbeIndex) &&
+    xmodel = pGVar1[uVar5].model;
+    markContext.lmapIndex = '\x1f';
+    markContext.reflectionProbeIndex = pGVar1[uVar5].reflectionProbeIndex;
+    smodelIndex = uVar5;
+    if ((markContext.reflectionProbeIndex != pGVar1[uVar5].reflectionProbeIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x917,0,
                                  "%s\n\t(smodelDraw->reflectionProbeIndex) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_38.primaryLightIndex = pGVar1[uVar5].primaryLightIndex;
-    local_38.modelIndex = (ushort)local_8;
-    if (((local_8 & 0xffff) != local_8) &&
+    markContext.primaryLightIndex = pGVar1[uVar5].primaryLightIndex;
+    markContext.modelIndex = (ushort)smodelIndex;
+    if (((smodelIndex & 0xffffU) != smodelIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x91a,0,
                                  "%s\n\t(smodelIndex) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_2c = pGVar1[uVar5].placement.axis[0][0];
+    modelAxis = pGVar1[uVar5].placement.axis[0][0];
     local_28 = pGVar1[uVar5].placement.axis[0][1];
     local_24 = pGVar1[uVar5].placement.axis[0][2];
     local_20 = pGVar1[uVar5].placement.axis[1][0];
@@ -2662,8 +2758,8 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
     local_10 = pGVar1[uVar5].placement.axis[2][1];
     local_c = pGVar1[uVar5].placement.axis[2][2];
     bVar3 = R_MarkFragments_EntirelyRigidXModel
-                      (param_1,local_30,(float (*) [3])&local_2c,pGVar1[uVar5].placement.origin,
-                       pGVar1[uVar5].placement.scale,&local_38);
+                      (markInfo,xmodel,(float (*) [3])&modelAxis,pGVar1[uVar5].placement.origin,
+                       pGVar1[uVar5].placement.scale,&markContext);
     if (!bVar3) {
       DVar6 = GetCurrentThreadId();
       if (DVar6 != (DWORD)g_DXDeviceThread) {
@@ -2675,17 +2771,17 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
       _D3DPERF_EndEvent_0();
       return false;
     }
-    if ((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) {
-      if ((param_1->usedTriCount != 0) && (param_1->usedPointCount != 0)) {
-        (*param_1->callback)
-                  (param_1->callbackContext,param_1->usedTriCount,param_1->tris,
-                   param_1->usedPointCount,param_1->points,param_1->origin,param_1->axis[1],
-                   param_1->axis[0],param_1->isSeeThruDecal);
+    if ((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) {
+      if ((markInfo->usedTriCount != 0) && (markInfo->usedPointCount != 0)) {
+        (*markInfo->callback)
+                  (markInfo->callbackContext,markInfo->usedTriCount,markInfo->tris,
+                   markInfo->usedPointCount,markInfo->points,markInfo->origin,markInfo->axis[1],
+                   markInfo->axis[0],markInfo->isSeeThruDecal);
       }
-      param_1->usedTriCount = 0;
-      param_1->usedPointCount = 0;
+      markInfo->usedTriCount = 0;
+      markInfo->usedPointCount = 0;
     }
-    local_40 = local_40 + 1;
+    smodelCollidedIndex = smodelCollidedIndex + 1;
   }
   pcVar2 = (code *)swi(3);
   uVar4 = (*pcVar2)();
@@ -2695,14 +2791,14 @@ bool __cdecl R_MarkFragments_StaticModels(MarkInfo *param_1)
 
 // 00A55A40  R_MarkFragments_Models  (gfx_d3d/r_marks.cpp:2351)
 
-bool __cdecl R_MarkFragments_Models(MarkInfo *param_1)
+bool __cdecl R_MarkFragments_Models(MarkInfo *markInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1->markHasLightmap != false) {
+  if (markInfo->markHasLightmap != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x931,0,"%s")
     ;
     if (!bVar2) {
@@ -2711,7 +2807,7 @@ bool __cdecl R_MarkFragments_Models(MarkInfo *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) {
+  if ((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x932,0,"%s")
     ;
     if (!bVar2) {
@@ -2720,9 +2816,9 @@ bool __cdecl R_MarkFragments_Models(MarkInfo *param_1)
       return (bool)uVar3;
     }
   }
-  bVar2 = R_MarkFragments_StaticModels(param_1);
+  bVar2 = R_MarkFragments_StaticModels(markInfo);
   if (bVar2) {
-    if ((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) {
+    if ((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x935,0,
                                "%s");
       if (!bVar2) {
@@ -2731,9 +2827,9 @@ bool __cdecl R_MarkFragments_Models(MarkInfo *param_1)
         return (bool)uVar3;
       }
     }
-    bVar2 = R_MarkFragments_SceneDObjs(param_1);
+    bVar2 = R_MarkFragments_SceneDObjs(markInfo);
     if (bVar2) {
-      if ((param_1->usedTriCount != 0) || (param_1->usedPointCount != 0)) {
+      if ((markInfo->usedTriCount != 0) || (markInfo->usedPointCount != 0)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x938,0,
                                  "%s");
         if (!bVar2) {
@@ -2759,34 +2855,35 @@ bool __cdecl R_MarkFragments_Models(MarkInfo *param_1)
 
 void __cdecl
 R_MarkFragments_Begin
-          (MarkInfo *param_1,MarkFragmentsAgainstEnum param_2,float *param_3,float (*param_4) [3],
-          float param_5,float *param_6,Material *param_7)
+          (MarkInfo *markInfo,MarkFragmentsAgainstEnum markAgainst,float *origin,float (*axis) [3],
+          float radius,float *viewOffset,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  param_1->origin[0] = *param_3;
-  param_1->origin[1] = param_3[1];
-  param_1->origin[2] = param_3[2];
-  Vec3PackNormAxis(param_4,param_1->axis);
-  param_1->viewOffset[0] = *param_6;
-  param_1->viewOffset[1] = param_6[1];
-  param_1->viewOffset[2] = param_6[2];
-  param_1->radius = param_5;
-  param_1->material = param_7;
-  param_1->markHasLightmap = ((param_7->info).gameFlags & 2) != 0;
-  param_1->markHasReflection = ((param_7->info).gameFlags & 0x10) != 0;
-  param_1->markAgainst = param_2;
-  R_GetMarkFragmentBounds(param_1->origin,param_1->axis,param_1->radius,param_1->mins,param_1->maxs)
-  ;
-  R_GetMarkFragmentClipPlanes(param_1->origin,param_1->axis,param_1->radius,&param_1->clipPlanes);
-  if (param_2 == MARK_FRAGMENTS_AGAINST_BRUSHES) {
-    param_1->sceneBModelCollidedCount = 0;
+  markInfo->origin[0] = *origin;
+  markInfo->origin[1] = origin[1];
+  markInfo->origin[2] = origin[2];
+  Vec3PackNormAxis(axis,markInfo->axis);
+  markInfo->viewOffset[0] = *viewOffset;
+  markInfo->viewOffset[1] = viewOffset[1];
+  markInfo->viewOffset[2] = viewOffset[2];
+  markInfo->radius = radius;
+  markInfo->material = material;
+  markInfo->markHasLightmap = ((material->info).gameFlags & 2) != 0;
+  markInfo->markHasReflection = ((material->info).gameFlags & 0x10) != 0;
+  markInfo->markAgainst = markAgainst;
+  R_GetMarkFragmentBounds
+            (markInfo->origin,markInfo->axis,markInfo->radius,markInfo->mins,markInfo->maxs);
+  R_GetMarkFragmentClipPlanes
+            (markInfo->origin,markInfo->axis,markInfo->radius,&markInfo->clipPlanes);
+  if (markAgainst == MARK_FRAGMENTS_AGAINST_BRUSHES) {
+    markInfo->sceneBModelCollidedCount = 0;
   }
   else {
-    if (param_2 != MARK_FRAGMENTS_AGAINST_MODELS) {
+    if (markAgainst != MARK_FRAGMENTS_AGAINST_MODELS) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x957,0,
                                "%s");
       if (!bVar2) {
@@ -2795,10 +2892,10 @@ R_MarkFragments_Begin
         return;
       }
     }
-    iVar3 = R_BoxStaticModels(param_1->mins,param_1->maxs,CL_LocalClient_GetActiveCount,
-                              param_1->smodelsCollided,0x20);
-    param_1->smodelCollidedCount = iVar3;
-    param_1->sceneDObjCollidedCount = 0;
+    iVar3 = R_BoxStaticModels(markInfo->mins,markInfo->maxs,CL_LocalClient_GetActiveCount,
+                              markInfo->smodelsCollided,0x20);
+    markInfo->smodelCollidedCount = iVar3;
+    markInfo->sceneDObjCollidedCount = 0;
   }
   return;
 }
@@ -2806,20 +2903,20 @@ R_MarkFragments_Begin
 
 // 00A53B10  R_MarkFragments_AddDObj  (gfx_d3d/r_marks.cpp:2398)
 
-bool __cdecl
-R_MarkFragments_AddDObj(MarkInfo *param_1,DObj *param_2,cpose_t *param_3,ushort param_4)
+bool __cdecl R_MarkFragments_AddDObj(MarkInfo *markInfo,DObj *dObj,cpose_t *pose,ushort entityIndex)
 
 {
   MarkInfoCollidedDObj *pMVar1;
   bool bVar2;
+  MarkInfoCollidedDObj *collidedDObj;
   
-  bVar2 = param_1->sceneDObjCollidedCount != 0x20;
+  bVar2 = markInfo->sceneDObjCollidedCount != 0x20;
   if (bVar2) {
-    pMVar1 = param_1->sceneDObjsCollided + param_1->sceneDObjCollidedCount;
-    pMVar1->dObj = param_2;
-    pMVar1->pose = param_3;
-    pMVar1->entnum = param_4;
-    param_1->sceneDObjCollidedCount = param_1->sceneDObjCollidedCount + 1;
+    pMVar1 = markInfo->sceneDObjsCollided + markInfo->sceneDObjCollidedCount;
+    pMVar1->dObj = dObj;
+    pMVar1->pose = pose;
+    pMVar1->entnum = entityIndex;
+    markInfo->sceneDObjCollidedCount = markInfo->sceneDObjCollidedCount + 1;
   }
   return bVar2;
 }
@@ -2828,19 +2925,21 @@ R_MarkFragments_AddDObj(MarkInfo *param_1,DObj *param_2,cpose_t *param_3,ushort 
 // 00A53B80  R_MarkFragments_AddBModel  (gfx_d3d/r_marks.cpp:2413)
 
 bool __cdecl
-R_MarkFragments_AddBModel(MarkInfo *param_1,GfxBrushModel *param_2,cpose_t *param_3,ushort param_4)
+R_MarkFragments_AddBModel
+          (MarkInfo *markInfo,GfxBrushModel *brushModel,cpose_t *pose,ushort entityIndex)
 
 {
   MarkInfoCollidedBModel *pMVar1;
   bool bVar2;
+  MarkInfoCollidedBModel *collidedBModel;
   
-  bVar2 = param_1->sceneBModelCollidedCount != 0x20;
+  bVar2 = markInfo->sceneBModelCollidedCount != 0x20;
   if (bVar2) {
-    pMVar1 = param_1->sceneBModelsCollided + param_1->sceneBModelCollidedCount;
-    pMVar1->brushModel = param_2;
-    pMVar1->pose = param_3;
-    pMVar1->entnum = param_4;
-    param_1->sceneBModelCollidedCount = param_1->sceneBModelCollidedCount + 1;
+    pMVar1 = markInfo->sceneBModelsCollided + markInfo->sceneBModelCollidedCount;
+    pMVar1->brushModel = brushModel;
+    pMVar1->pose = pose;
+    pMVar1->entnum = entityIndex;
+    markInfo->sceneBModelCollidedCount = markInfo->sceneBModelCollidedCount + 1;
   }
   return bVar2;
 }
@@ -2849,54 +2948,56 @@ R_MarkFragments_AddBModel(MarkInfo *param_1,GfxBrushModel *param_2,cpose_t *para
 // 00A53BF0  R_MarkFragments_Go  (gfx_d3d/r_marks.cpp:2431)
 
 void __cdecl
-R_MarkFragments_Go(MarkInfo *param_1,
+R_MarkFragments_Go(MarkInfo *markInfo,
                   _func___cdecl_void_void_ptr_int_FxMarkTri_ptr_int_FxMarkPoint_ptr_float_ptr_float_ptr_float_ptr_bool
-                  *param_2,void *param_3,int param_4,FxMarkTri *param_5,int param_6,
-                  FxMarkPoint *param_7)
+                  *callback,void *callbackContext,int maxTris,FxMarkTri *tris,int maxPoints,
+                  FxMarkPoint *points)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   DWORD DVar4;
+  PIXProfile pixProfile;
+  bool error;
   
   PIXBeginNamedEvent(-1,"R_MarkFragments_Go");
-  if ((param_1->material == (Material *)0x0) &&
+  if ((markInfo->material == (Material *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x983,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->maxTris = param_4;
-  param_1->tris = param_5;
-  param_1->maxPoints = param_6;
-  param_1->points = param_7;
-  param_1->usedTriCount = 0;
-  param_1->usedPointCount = 0;
-  param_1->callback = param_2;
-  param_1->callbackContext = param_3;
+  markInfo->maxTris = maxTris;
+  markInfo->tris = tris;
+  markInfo->maxPoints = maxPoints;
+  markInfo->points = points;
+  markInfo->usedTriCount = 0;
+  markInfo->usedPointCount = 0;
+  markInfo->callback = callback;
+  markInfo->callbackContext = callbackContext;
   bVar2 = false;
-  if (param_1->markAgainst == MARK_FRAGMENTS_AGAINST_BRUSHES) {
-    bVar2 = R_MarkFragments_Brushes(param_1);
+  if (markInfo->markAgainst == MARK_FRAGMENTS_AGAINST_BRUSHES) {
+    bVar2 = R_MarkFragments_Brushes(markInfo);
     bVar2 = !bVar2;
   }
   else {
-    if ((param_1->markAgainst != MARK_FRAGMENTS_AGAINST_MODELS) &&
+    if ((markInfo->markAgainst != MARK_FRAGMENTS_AGAINST_MODELS) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x997,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->isSeeThruDecal != false) &&
+    if ((markInfo->isSeeThruDecal != false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_marks.cpp",0x998,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    bVar3 = R_MarkFragments_Models(param_1);
+    bVar3 = R_MarkFragments_Models(markInfo);
     if (!bVar3) {
       bVar2 = true;
     }

@@ -37,11 +37,11 @@ undefined4 * _HTSaveLocally(int param_1)
   undefined4 uVar3;
   undefined4 *puVar4;
   code *pcVar5;
-  void *pvVar6;
-  void *pvVar7;
-  int iVar8;
-  _iobuf *p_Var9;
-  char *pcVar10;
+  void *pBlock;
+  void *pBlock_00;
+  int iVar6;
+  _iobuf *p_Var7;
+  char *pcVar8;
   char *pcStack_8;
   
   iVar2 = param_1;
@@ -85,10 +85,10 @@ undefined4 * _HTSaveLocally(int param_1)
     return (undefined4 *)&DAT_034f8f2c;
   }
   puVar4 = (undefined4 *)_HTAlert_newReply();
-  pvVar6 = (void *)_HTBind_getSuffix();
-  pvVar7 = (void *)FUN_00896230(pvVar6,1);
-  iVar8 = (*pcVar5)(iVar2,0x40000,4,pvVar7,0,puVar4);
-  if (iVar8 == 0) {
+  pBlock = (void *)_HTBind_getSuffix();
+  pBlock_00 = (void *)FUN_00896230(pBlock,1);
+  iVar6 = (*pcVar5)(iVar2,0x40000,4,pBlock_00,0,puVar4);
+  if (iVar6 == 0) {
 LAB_0089648c:
     if (puVar4 != (undefined4 *)0x0) {
       free(puVar4);
@@ -101,25 +101,25 @@ LAB_0089648c:
     }
     pcStack_8 = (char *)0x0;
   }
-  if (pvVar6 != (void *)0x0) {
-    free(pvVar6);
+  if (pBlock != (void *)0x0) {
+    free(pBlock);
   }
-  if (pvVar7 != (void *)0x0) {
-    free(pvVar7);
+  if (pBlock_00 != (void *)0x0) {
+    free(pBlock_00);
   }
   if (pcStack_8 != (char *)0x0) {
-    p_Var9 = fopen(pcStack_8,"wb");
-    if (p_Var9 != (_iobuf *)0x0) {
+    p_Var7 = fopen(pcStack_8,"wb");
+    if (p_Var7 != (_iobuf *)0x0) {
       puVar4 = (undefined4 *)_HTFileSave_new(iVar2);
       puVar4[4] = pcStack_8;
       return puVar4;
     }
-    pcVar10 = pcStack_8;
+    pcVar8 = pcStack_8;
     do {
-      cVar1 = *pcVar10;
-      pcVar10 = pcVar10 + 1;
+      cVar1 = *pcVar8;
+      pcVar8 = pcVar8 + 1;
     } while (cVar1 != '\0');
-    _HTRequest_addError(2,0x35,pcStack_8,(int)pcVar10 - (int)(pcStack_8 + 1),"HTSaveLocally");
+    _HTRequest_addError(2,0x35,pcStack_8,(int)pcVar8 - (int)(pcStack_8 + 1),"HTSaveLocally");
     free(pcStack_8);
     DAT_034f8f30 = &PTR_s_ErrorStream_009d42d4;
     return &DAT_034f8f30;

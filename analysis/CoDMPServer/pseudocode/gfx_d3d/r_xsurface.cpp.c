@@ -2,14 +2,14 @@
 
 // 00AE9510  XSurfaceGetNumVerts  (gfx_d3d/r_xsurface.cpp:36)
 
-int __cdecl XSurfaceGetNumVerts(XSurface *param_1)
+int __cdecl XSurfaceGetNumVerts(XSurface *surface)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (XSurface *)0x0) {
+  if (surface == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface.cpp",0x25,0,
                              "%s");
     if (!bVar2) {
@@ -18,20 +18,20 @@ int __cdecl XSurfaceGetNumVerts(XSurface *param_1)
       return iVar3;
     }
   }
-  return (uint)param_1->vertCount;
+  return (uint)surface->vertCount;
 }
 
 
 // 00AE9550  XSurfaceGetNumTris  (gfx_d3d/r_xsurface.cpp:42)
 
-int __cdecl XSurfaceGetNumTris(XSurface *param_1)
+int __cdecl XSurfaceGetNumTris(XSurface *surface)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (XSurface *)0x0) {
+  if (surface == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface.cpp",0x2b,0,
                              "%s");
     if (!bVar2) {
@@ -40,39 +40,42 @@ int __cdecl XSurfaceGetNumTris(XSurface *param_1)
       return iVar3;
     }
   }
-  return (uint)param_1->triCount;
+  return (uint)surface->triCount;
 }
 
 
 // 00AE9590  XSurfaceGetVerts  (gfx_d3d/r_xsurface.cpp:87)
 
-void __cdecl XSurfaceGetVerts(XSurface *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl XSurfaceGetVerts(XSurface *surf,float *pVert,float *pTexCoord,float *pNormal)
 
 {
-  PackedTexCoords *local_20;
-  uint local_1c;
-  PackedUnitVec *local_18;
-  GfxPackedVertex *local_14;
+  PackedTexCoords *packedTexCoord;
+  int render_count;
+  PackedUnitVec *packedNormal;
+  GfxPackedVertex *verts0;
+  int stride0;
+  int texCoordStride;
+  int normalStride;
   
-  local_14 = param_1->verts0;
-  local_18 = &local_14->normal;
-  local_20 = &local_14->texCoord;
-  for (local_1c = (uint)param_1->vertCount; local_1c != 0; local_1c = local_1c - 1) {
-    if (param_4 != (float *)0x0) {
-      Vec3UnpackUnitVec(*local_18,param_4);
-      local_18 = local_18 + 8;
-      param_4 = param_4 + 3;
+  verts0 = surf->verts0;
+  packedNormal = &verts0->normal;
+  packedTexCoord = &verts0->texCoord;
+  for (render_count = (int)surf->vertCount; render_count != 0; render_count = render_count + -1) {
+    if (pNormal != (float *)0x0) {
+      Vec3UnpackUnitVec(*packedNormal,pNormal);
+      packedNormal = packedNormal + 8;
+      pNormal = pNormal + 3;
     }
-    if (param_3 != (float *)0x0) {
-      Vec2UnpackTexCoords(*local_20,param_3);
-      local_20 = local_20 + 8;
-      param_3 = param_3 + 2;
+    if (pTexCoord != (float *)0x0) {
+      Vec2UnpackTexCoords(*packedTexCoord,pTexCoord);
+      packedTexCoord = packedTexCoord + 8;
+      pTexCoord = pTexCoord + 2;
     }
-    *param_2 = local_14->xyz[0];
-    param_2[1] = local_14->xyz[1];
-    param_2[2] = local_14->xyz[2];
-    local_14 = local_14 + 1;
-    param_2 = param_2 + 3;
+    *pVert = verts0->xyz[0];
+    pVert[1] = verts0->xyz[1];
+    pVert[2] = verts0->xyz[2];
+    verts0 = verts0 + 1;
+    pVert = pVert + 3;
   }
   return;
 }
@@ -80,44 +83,44 @@ void __cdecl XSurfaceGetVerts(XSurface *param_1,float *param_2,float *param_3,fl
 
 // 00AE9780  XSurfaceTransferGetTexCoordRange  (gfx_d3d/r_xsurface.cpp:204)
 
-void __cdecl XSurfaceTransferGetTexCoordRange(XVertexInfo_s *param_1,int param_2,float *param_3)
+void __cdecl XSurfaceTransferGetTexCoordRange(XVertexInfo_s *v,int vertCount,float *texCoordAv)
 
 {
   bool bVar1;
   bool bVar2;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  int local_c;
+  int vertIndex;
   
-  *param_3 = 0.0;
-  param_3[1] = 0.0;
+  *texCoordAv = 0.0;
+  texCoordAv[1] = 0.0;
   bVar1 = true;
   bVar2 = true;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    *param_3 = *param_3 + param_1->texCoordX;
-    param_3[1] = param_3[1] + param_1->texCoordY;
-    if ((param_1->texCoordX <= 0.0 && param_1->texCoordX != 0.0) || (1.0 < param_1->texCoordX)) {
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+    *texCoordAv = *texCoordAv + v->texCoordX;
+    texCoordAv[1] = texCoordAv[1] + v->texCoordY;
+    if ((v->texCoordX <= 0.0 && v->texCoordX != 0.0) || (1.0 < v->texCoordX)) {
       bVar1 = false;
     }
-    if ((param_1->texCoordY <= 0.0 && param_1->texCoordY != 0.0) || (1.0 < param_1->texCoordY)) {
+    if ((v->texCoordY <= 0.0 && v->texCoordY != 0.0) || (1.0 < v->texCoordY)) {
       bVar2 = false;
     }
   }
-  *param_3 = (1.0 / (float)param_2) * *param_3;
-  param_3[1] = (1.0 / (float)param_2) * param_3[1];
+  *texCoordAv = (1.0 / (float)vertCount) * *texCoordAv;
+  texCoordAv[1] = (1.0 / (float)vertCount) * texCoordAv[1];
   if (bVar1) {
-    *param_3 = 0.0;
+    *texCoordAv = 0.0;
   }
   else {
     floor();
-    *param_3 = (float)extraout_ST0;
+    *texCoordAv = (float)extraout_ST0;
   }
   if (bVar2) {
-    param_3[1] = 0.0;
+    texCoordAv[1] = 0.0;
   }
   else {
     floor();
-    param_3[1] = (float)extraout_ST0_00;
+    texCoordAv[1] = (float)extraout_ST0_00;
   }
   return;
 }
@@ -125,53 +128,49 @@ void __cdecl XSurfaceTransferGetTexCoordRange(XVertexInfo_s *param_1,int param_2
 
 // 00AE9920  XSurfaceTransfer_Position<GfxPackedVertex>  (gfx_d3d/r_xsurface.cpp:236)
 
-void __cdecl
-XSurfaceTransfer_Position<GfxPackedVertex>(GfxPackedVertex *param_1,XVertexInfo_s *param_2)
+void __cdecl XSurfaceTransfer_Position<GfxPackedVertex>(GfxPackedVertex *out,XVertexInfo_s *v)
 
 {
-  param_1->xyz[0] = param_2->offset[0];
-  param_1->xyz[1] = param_2->offset[1];
-  param_1->xyz[2] = param_2->offset[2];
+  out->xyz[0] = v->offset[0];
+  out->xyz[1] = v->offset[1];
+  out->xyz[2] = v->offset[2];
   return;
 }
 
 
 // 00AE9960  XSurfaceTransfer_BinormalSign<GfxPackedVertex>  (gfx_d3d/r_xsurface.cpp:242)
 
-void __cdecl
-XSurfaceTransfer_BinormalSign<GfxPackedVertex>(GfxPackedVertex *param_1,XVertexInfo_s *param_2)
+void __cdecl XSurfaceTransfer_BinormalSign<GfxPackedVertex>(GfxPackedVertex *out,XVertexInfo_s *v)
 
 {
   float local_18;
-  float local_10;
+  float binormal;
   float local_c;
   float local_8;
   
-  Vec3Cross(param_2->normal,param_2->tangent,&local_10);
-  if (local_10 * param_2->binormal[0] + local_c * param_2->binormal[1] +
-      local_8 * param_2->binormal[2] < 0.0) {
+  Vec3Cross(v->normal,v->tangent,&binormal);
+  if (binormal * v->binormal[0] + local_c * v->binormal[1] + local_8 * v->binormal[2] < 0.0) {
     local_18 = -1.0;
   }
   else {
     local_18 = 1.0;
   }
-  param_1->binormalSign = local_18;
+  out->binormalSign = local_18;
   return;
 }
 
 
 // 00AE99F0  XSurfaceTransfer_NormalTangent<GfxPackedVertex>  (gfx_d3d/r_xsurface.cpp:250)
 
-void __cdecl
-XSurfaceTransfer_NormalTangent<GfxPackedVertex>(GfxPackedVertex *param_1,XVertexInfo_s *param_2)
+void __cdecl XSurfaceTransfer_NormalTangent<GfxPackedVertex>(GfxPackedVertex *out,XVertexInfo_s *v)
 
 {
   PackedUnitVec PVar1;
   
-  PVar1 = Vec3PackUnitVec(param_2->normal);
-  param_1->normal = PVar1;
-  PVar1 = Vec3PackUnitVec(param_2->tangent);
-  param_1->tangent = PVar1;
+  PVar1 = Vec3PackUnitVec(v->normal);
+  out->normal = PVar1;
+  PVar1 = Vec3PackUnitVec(v->tangent);
+  out->tangent = PVar1;
   return;
 }
 
@@ -179,29 +178,27 @@ XSurfaceTransfer_NormalTangent<GfxPackedVertex>(GfxPackedVertex *param_1,XVertex
 // 00AE9A30  XSurfaceTransfer_Texcoord<GfxPackedVertex>  (gfx_d3d/r_xsurface.cpp:257)
 
 void __cdecl
-XSurfaceTransfer_Texcoord<GfxPackedVertex>
-          (GfxPackedVertex *param_1,XVertexInfo_s *param_2,float *param_3)
+XSurfaceTransfer_Texcoord<GfxPackedVertex>(GfxPackedVertex *out,XVertexInfo_s *v,float *texCoordAv)
 
 {
   PackedTexCoords PVar1;
-  float local_c;
+  float texCoord;
   float local_8;
   
-  local_c = param_2->texCoordX - *param_3;
-  local_8 = param_2->texCoordY - param_3[1];
-  PVar1 = Vec2PackTexCoords(&local_c);
-  param_1->texCoord = PVar1;
+  texCoord = v->texCoordX - *texCoordAv;
+  local_8 = v->texCoordY - texCoordAv[1];
+  PVar1 = Vec2PackTexCoords(&texCoord);
+  out->texCoord = PVar1;
   return;
 }
 
 
 // 00AE9A80  XSurfaceTransfer_Color<GfxPackedVertex>  (gfx_d3d/r_xsurface.cpp:266)
 
-void __cdecl
-XSurfaceTransfer_Color<GfxPackedVertex>(GfxPackedVertex *param_1,XVertexInfo_s *param_2)
+void __cdecl XSurfaceTransfer_Color<GfxPackedVertex>(GfxPackedVertex *out,XVertexInfo_s *v)
 
 {
-  param_1->color = *(GfxColor *)param_2->color;
+  out->color = *(GfxColor *)v->color;
   return;
 }
 
@@ -209,17 +206,17 @@ XSurfaceTransfer_Color<GfxPackedVertex>(GfxPackedVertex *param_1,XVertexInfo_s *
 // 00AE9680  XSurfaceTransfer  (gfx_d3d/r_xsurface.cpp:272)
 
 void __cdecl
-XSurfaceTransfer(XVertexBuffer *param_1,GfxPackedVertex *param_2,GfxPackedVertex *param_3,
-                int param_4)
+XSurfaceTransfer(XVertexBuffer *surfVerts,GfxPackedVertex *verts0,GfxPackedVertex *verts1,
+                int vertCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_14 [2];
-  int local_c;
-  XVertexBuffer *local_8;
+  float texCoordAv [2];
+  int vertIndex;
+  XVertexInfo_s *v;
   
-  if (param_4 == 0) {
+  if (vertCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface.cpp",0x115,0,
                              "%s");
     if (!bVar2) {
@@ -228,15 +225,15 @@ XSurfaceTransfer(XVertexBuffer *param_1,GfxPackedVertex *param_2,GfxPackedVertex
       return;
     }
   }
-  local_8 = param_1;
-  XSurfaceTransferGetTexCoordRange(&param_1->v,param_4,local_14);
-  for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
-    XSurfaceTransfer_Position<GfxPackedVertex>(param_2 + local_c,&local_8->v);
-    XSurfaceTransfer_BinormalSign<GfxPackedVertex>(param_2 + local_c,&local_8->v);
-    XSurfaceTransfer_NormalTangent<GfxPackedVertex>(param_3 + local_c,&local_8->v);
-    XSurfaceTransfer_Texcoord<GfxPackedVertex>(param_3 + local_c,&local_8->v,local_14);
-    XSurfaceTransfer_Color<GfxPackedVertex>(param_3 + local_c,&local_8->v);
-    local_8 = (XVertexBuffer *)(local_8->w + (local_8->v).numWeights);
+  v = &surfVerts->v;
+  XSurfaceTransferGetTexCoordRange(&surfVerts->v,vertCount,texCoordAv);
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+    XSurfaceTransfer_Position<GfxPackedVertex>(verts0 + vertIndex,v);
+    XSurfaceTransfer_BinormalSign<GfxPackedVertex>(verts0 + vertIndex,v);
+    XSurfaceTransfer_NormalTangent<GfxPackedVertex>(verts1 + vertIndex,v);
+    XSurfaceTransfer_Texcoord<GfxPackedVertex>(verts1 + vertIndex,v,texCoordAv);
+    XSurfaceTransfer_Color<GfxPackedVertex>(verts1 + vertIndex,v);
+    v = (XVertexInfo_s *)(v[1].normal + v->numWeights);
   }
   return;
 }

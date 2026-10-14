@@ -3,8 +3,8 @@
 // 0080BFD0  deflateInit2_  (zlib/deflate.cpp:235)
 
 int __cdecl
-deflateInit2_(z_stream_s *param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
-             char *param_7,int param_8)
+deflateInit2_(z_stream_s *strm,int level,int method,int windowBits,int memLevel,int strategy,
+             char *version,int stream_size)
 
 {
   int iVar1;
@@ -12,79 +12,82 @@ deflateInit2_(z_stream_s *param_1,int param_2,int param_3,int param_4,int param_
   uchar *puVar3;
   ushort *puVar4;
   bool bVar5;
-  uint local_10;
+  int wrap;
+  ushort *overlay;
+  internal_state *s;
   
-  if (((param_7 == (char *)0x0) || (*param_7 != '1')) || (param_8 != 0x34)) {
+  if (((version == (char *)0x0) || (*version != '1')) || (stream_size != 0x34)) {
     iVar1 = -6;
   }
-  else if (param_1 == (z_stream_s *)0x0) {
+  else if (strm == (z_stream_s *)0x0) {
     iVar1 = -2;
   }
   else {
-    param_1->msg = (char *)0x0;
-    if (param_1->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0) {
-      param_1->zalloc = zcalloc;
-      param_1->opaque = (uchar *)0x0;
+    strm->msg = (char *)0x0;
+    if (strm->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0) {
+      strm->zalloc = zcalloc;
+      strm->opaque = (uchar *)0x0;
     }
-    if (param_1->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0) {
-      param_1->zfree = zcfree;
+    if (strm->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0) {
+      strm->zfree = zcfree;
     }
-    if (param_2 != 0) {
-      param_2 = 1;
+    if (level != 0) {
+      level = 1;
     }
-    bVar5 = param_4 < 0;
+    bVar5 = windowBits < 0;
     if (bVar5) {
-      param_4 = -param_4;
+      windowBits = -windowBits;
     }
-    local_10 = (uint)!bVar5;
-    if (((((param_5 < 1) || (9 < param_5)) || ((param_3 != 8 || ((param_4 < 8 || (0xf < param_4)))))
-         ) || (param_2 < 0)) || (((9 < param_2 || (param_6 < 0)) || (4 < param_6)))) {
+    wrap = (int)!bVar5;
+    if (((((memLevel < 1) || (9 < memLevel)) ||
+         ((method != 8 || ((windowBits < 8 || (0xf < windowBits)))))) || (level < 0)) ||
+       (((9 < level || (strategy < 0)) || (4 < strategy)))) {
       iVar1 = -2;
     }
     else {
-      if (param_4 == 8) {
-        param_4 = 9;
+      if (windowBits == 8) {
+        windowBits = 9;
       }
-      piVar2 = (internal_state *)(*param_1->zalloc)(param_1->opaque,1,0x16c0);
+      piVar2 = (internal_state *)(*strm->zalloc)(strm->opaque,1,0x16c0);
       if (piVar2 == (internal_state *)0x0) {
         iVar1 = -4;
       }
       else {
-        param_1->state = piVar2;
-        piVar2->strm = param_1;
-        piVar2->wrap = local_10;
+        strm->state = piVar2;
+        piVar2->strm = strm;
+        piVar2->wrap = wrap;
         piVar2->gzhead = (gz_header_s *)0x0;
-        piVar2->w_bits = param_4;
+        piVar2->w_bits = windowBits;
         piVar2->w_size = 1 << ((byte)piVar2->w_bits & 0x1f);
         piVar2->w_mask = piVar2->w_size - 1;
-        piVar2->hash_bits = param_5 + 7;
+        piVar2->hash_bits = memLevel + 7;
         piVar2->hash_size = 1 << ((byte)piVar2->hash_bits & 0x1f);
         piVar2->hash_mask = piVar2->hash_size - 1;
         piVar2->hash_shift = (piVar2->hash_bits + 2) / 3;
-        puVar3 = (*param_1->zalloc)(param_1->opaque,piVar2->w_size,2);
+        puVar3 = (*strm->zalloc)(strm->opaque,piVar2->w_size,2);
         piVar2->window = puVar3;
-        puVar4 = (ushort *)(*param_1->zalloc)(param_1->opaque,piVar2->w_size,2);
+        puVar4 = (ushort *)(*strm->zalloc)(strm->opaque,piVar2->w_size,2);
         piVar2->prev = puVar4;
-        puVar4 = (ushort *)(*param_1->zalloc)(param_1->opaque,piVar2->hash_size,2);
+        puVar4 = (ushort *)(*strm->zalloc)(strm->opaque,piVar2->hash_size,2);
         piVar2->head = puVar4;
-        piVar2->lit_bufsize = 1 << ((char)param_5 + 6U & 0x1f);
-        puVar3 = (*param_1->zalloc)(param_1->opaque,piVar2->lit_bufsize,4);
+        piVar2->lit_bufsize = 1 << ((char)memLevel + 6U & 0x1f);
+        puVar3 = (*strm->zalloc)(strm->opaque,piVar2->lit_bufsize,4);
         piVar2->pending_buf = puVar3;
         piVar2->pending_buf_size = piVar2->lit_bufsize << 2;
         if (((piVar2->window == (uchar *)0x0) || (piVar2->prev == (ushort *)0x0)) ||
            ((piVar2->head == (ushort *)0x0 || (piVar2->pending_buf == (uchar *)0x0)))) {
           piVar2->status = 0x29a;
-          param_1->msg = "insufficient memory";
-          deflateEnd(param_1);
+          strm->msg = "insufficient memory";
+          deflateEnd(strm);
           iVar1 = -4;
         }
         else {
           piVar2->d_buf = (ushort *)(puVar3 + (piVar2->lit_bufsize & 0xfffffffe));
           piVar2->l_buf = piVar2->pending_buf + piVar2->lit_bufsize * 3;
-          piVar2->level = param_2;
-          piVar2->strategy = param_6;
+          piVar2->level = level;
+          piVar2->strategy = strategy;
           piVar2->method = '\b';
-          iVar1 = deflateReset(param_1);
+          iVar1 = deflateReset(strm);
         }
       }
     }
@@ -95,74 +98,75 @@ deflateInit2_(z_stream_s *param_1,int param_2,int param_3,int param_4,int param_
 
 // 0080C2F0  deflateReset  (zlib/deflate.cpp:366)
 
-int __cdecl deflateReset(z_stream_s *param_1)
+int __cdecl deflateReset(z_stream_s *strm)
 
 {
-  internal_state *piVar1;
-  int iVar2;
-  ulong uVar3;
+  internal_state *s_00;
+  int iVar1;
+  ulong uVar2;
+  internal_state *s;
   
-  if ((((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) ||
-      (param_1->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0)) ||
-     (param_1->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0)) {
-    iVar2 = -2;
+  if ((((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) ||
+      (strm->zalloc == (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0)) ||
+     (strm->zfree == (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0)) {
+    iVar1 = -2;
   }
   else {
-    param_1->total_out = 0;
-    param_1->total_in = 0;
-    param_1->msg = (char *)0x0;
-    param_1->data_type = 2;
-    piVar1 = param_1->state;
-    piVar1->pending = 0;
-    piVar1->pending_out = piVar1->pending_buf;
-    if (piVar1->wrap < 0) {
-      piVar1->wrap = -piVar1->wrap;
+    strm->total_out = 0;
+    strm->total_in = 0;
+    strm->msg = (char *)0x0;
+    strm->data_type = 2;
+    s_00 = strm->state;
+    s_00->pending = 0;
+    s_00->pending_out = s_00->pending_buf;
+    if (s_00->wrap < 0) {
+      s_00->wrap = -s_00->wrap;
     }
-    piVar1->status = (-(uint)(piVar1->wrap != 0) & 0xffffffb9) + 0x71;
-    uVar3 = adler32(0,(uchar *)0x0,0);
-    param_1->adler = uVar3;
-    piVar1->last_flush = 0;
-    _tr_init(piVar1);
-    lm_init(piVar1);
-    iVar2 = 0;
+    s_00->status = (-(uint)(s_00->wrap != 0) & 0xffffffb9) + 0x71;
+    uVar2 = adler32(0,(uchar *)0x0,0);
+    strm->adler = uVar2;
+    s_00->last_flush = 0;
+    _tr_init(s_00);
+    lm_init(s_00);
+    iVar1 = 0;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 0080C7B0  putShortMSB  (zlib/deflate.cpp:513)
 
-void __cdecl putShortMSB(internal_state *param_1,uint param_2)
+void __cdecl putShortMSB(internal_state *s,uint b)
 
 {
-  param_1->pending_buf[param_1->pending] = (uchar)(param_2 >> 8);
-  param_1->pending = param_1->pending + 1;
-  param_1->pending_buf[param_1->pending] = (uchar)param_2;
-  param_1->pending = param_1->pending + 1;
+  s->pending_buf[s->pending] = (uchar)(b >> 8);
+  s->pending = s->pending + 1;
+  s->pending_buf[s->pending] = (uchar)b;
+  s->pending = s->pending + 1;
   return;
 }
 
 
 // 0080C800  flush_pending  (zlib/deflate.cpp:525)
 
-void __cdecl flush_pending(z_stream_s *param_1)
+void __cdecl flush_pending(z_stream_s *strm)
 
 {
-  ulong local_8;
+  uint len;
   
-  local_8 = param_1->state->pending;
-  if (param_1->avail_out < local_8) {
-    local_8 = param_1->avail_out;
+  len = strm->state->pending;
+  if (strm->avail_out < len) {
+    len = strm->avail_out;
   }
-  if (local_8 != 0) {
-    memcpy(param_1->next_out,param_1->state->pending_out,local_8);
-    param_1->next_out = param_1->next_out + local_8;
-    param_1->state->pending_out = param_1->state->pending_out + local_8;
-    param_1->total_out = param_1->total_out + local_8;
-    param_1->avail_out = param_1->avail_out - local_8;
-    param_1->state->pending = param_1->state->pending - local_8;
-    if (param_1->state->pending == 0) {
-      param_1->state->pending_out = param_1->state->pending_buf;
+  if (len != 0) {
+    memcpy(strm->next_out,strm->state->pending_out,len);
+    strm->next_out = strm->next_out + len;
+    strm->state->pending_out = strm->state->pending_out + len;
+    strm->total_out = strm->total_out + len;
+    strm->avail_out = strm->avail_out - len;
+    strm->state->pending = strm->state->pending - len;
+    if (strm->state->pending == 0) {
+      strm->state->pending_out = strm->state->pending_buf;
     }
   }
   return;
@@ -171,166 +175,170 @@ void __cdecl flush_pending(z_stream_s *param_1)
 
 // 0080C3D0  deflate  (zlib/deflate.cpp:544)
 
-int __cdecl deflate(z_stream_s *param_1,int param_2)
+int __cdecl deflate(z_stream_s *strm,int flush)
 
 {
-  internal_state *piVar1;
-  int iVar2;
-  uint uVar3;
-  ulong uVar4;
-  block_state bVar5;
-  uint local_14;
-  int local_10;
+  internal_state *s_00;
+  int iVar1;
+  uint uVar2;
+  ulong uVar3;
+  block_state bVar4;
+  block_state bstate;
+  uint header;
+  uint level_flags;
+  int old_flush;
+  internal_state *s;
   
-  if ((((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) ||
-      (4 < param_2)) || (param_2 < 0)) {
-    uVar3 = 0xfffffffe;
+  if ((((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) || (4 < flush)) ||
+     (flush < 0)) {
+    uVar2 = 0xfffffffe;
   }
   else {
-    piVar1 = param_1->state;
-    if (((param_1->next_out == (uchar *)0x0) ||
-        ((param_1->next_in == (uchar *)0x0 && (param_1->avail_in != 0)))) ||
-       ((piVar1->status == 0x29a && (param_2 != 4)))) {
-      param_1->msg = "stream error";
-      uVar3 = 0xfffffffe;
+    s_00 = strm->state;
+    if (((strm->next_out == (uchar *)0x0) ||
+        ((strm->next_in == (uchar *)0x0 && (strm->avail_in != 0)))) ||
+       ((s_00->status == 0x29a && (flush != 4)))) {
+      strm->msg = "stream error";
+      uVar2 = 0xfffffffe;
     }
-    else if (param_1->avail_out == 0) {
-      param_1->msg = "buffer error";
-      uVar3 = 0xfffffffb;
+    else if (strm->avail_out == 0) {
+      strm->msg = "buffer error";
+      uVar2 = 0xfffffffb;
     }
     else {
-      piVar1->strm = param_1;
-      iVar2 = piVar1->last_flush;
-      piVar1->last_flush = param_2;
-      if (piVar1->status == 0x2a) {
-        if ((piVar1->strategy < 2) && (1 < piVar1->level)) {
-          if (piVar1->level < 6) {
-            local_10 = 1;
+      s_00->strm = strm;
+      iVar1 = s_00->last_flush;
+      s_00->last_flush = flush;
+      if (s_00->status == 0x2a) {
+        if ((s_00->strategy < 2) && (1 < s_00->level)) {
+          if (s_00->level < 6) {
+            level_flags = 1;
           }
-          else if (piVar1->level == 6) {
-            local_10 = 2;
+          else if (s_00->level == 6) {
+            level_flags = 2;
           }
           else {
-            local_10 = 3;
+            level_flags = 3;
           }
         }
         else {
-          local_10 = 0;
+          level_flags = 0;
         }
-        local_14 = local_10 << 6 | ((piVar1->w_bits - 8) * 0x10 + 8) * 0x100;
-        if (piVar1->strstart != 0) {
-          local_14 = local_14 | 0x20;
+        header = level_flags << 6 | ((s_00->w_bits - 8) * 0x10 + 8) * 0x100;
+        if (s_00->strstart != 0) {
+          header = header | 0x20;
         }
-        piVar1->status = 0x71;
-        putShortMSB(piVar1,(0x1f - local_14 % 0x1f) + local_14);
-        if (piVar1->strstart != 0) {
-          putShortMSB(piVar1,param_1->adler >> 0x10);
-          putShortMSB(piVar1,param_1->adler & 0xffff);
+        s_00->status = 0x71;
+        putShortMSB(s_00,(0x1f - header % 0x1f) + header);
+        if (s_00->strstart != 0) {
+          putShortMSB(s_00,strm->adler >> 0x10);
+          putShortMSB(s_00,strm->adler & 0xffff);
         }
-        uVar4 = adler32(0,(uchar *)0x0,0);
-        param_1->adler = uVar4;
+        uVar3 = adler32(0,(uchar *)0x0,0);
+        strm->adler = uVar3;
       }
-      if (piVar1->pending == 0) {
-        if (((param_1->avail_in == 0) && (param_2 <= iVar2)) && (param_2 != 4)) {
-          param_1->msg = "buffer error";
+      if (s_00->pending == 0) {
+        if (((strm->avail_in == 0) && (flush <= iVar1)) && (flush != 4)) {
+          strm->msg = "buffer error";
           return -5;
         }
       }
       else {
-        flush_pending(param_1);
-        if (param_1->avail_out == 0) {
-          piVar1->last_flush = -1;
+        flush_pending(strm);
+        if (strm->avail_out == 0) {
+          s_00->last_flush = -1;
           return 0;
         }
       }
-      if ((piVar1->status == 0x29a) && (param_1->avail_in != 0)) {
-        param_1->msg = "buffer error";
-        uVar3 = 0xfffffffb;
+      if ((s_00->status == 0x29a) && (strm->avail_in != 0)) {
+        strm->msg = "buffer error";
+        uVar2 = 0xfffffffb;
       }
       else {
-        if (((param_1->avail_in != 0) || (piVar1->lookahead != 0)) ||
-           ((param_2 != 0 && (piVar1->status != 0x29a)))) {
-          bVar5 = (*configuration_table[piVar1->level].func)(piVar1,param_2);
-          if ((bVar5 == finish_started) || (bVar5 == finish_done)) {
-            piVar1->status = 0x29a;
+        if (((strm->avail_in != 0) || (s_00->lookahead != 0)) ||
+           ((flush != 0 && (s_00->status != 0x29a)))) {
+          bVar4 = (*configuration_table[s_00->level].func)(s_00,flush);
+          if ((bVar4 == finish_started) || (bVar4 == finish_done)) {
+            s_00->status = 0x29a;
           }
-          if ((bVar5 == need_more) || (bVar5 == finish_started)) {
-            if (param_1->avail_out == 0) {
-              piVar1->last_flush = -1;
+          if ((bVar4 == need_more) || (bVar4 == finish_started)) {
+            if (strm->avail_out == 0) {
+              s_00->last_flush = -1;
             }
             return 0;
           }
-          if (bVar5 == block_done) {
-            if (param_2 == 1) {
-              _tr_align(piVar1);
+          if (bVar4 == block_done) {
+            if (flush == 1) {
+              _tr_align(s_00);
             }
             else {
-              _tr_stored_block(piVar1,(char *)0x0,0,0);
-              if (param_2 == 3) {
-                piVar1->head[piVar1->hash_size - 1] = 0;
-                memset((uchar *)piVar1->head,'\0',piVar1->hash_size * 2 - 2);
+              _tr_stored_block(s_00,(char *)0x0,0,0);
+              if (flush == 3) {
+                s_00->head[s_00->hash_size - 1] = 0;
+                memset((uchar *)s_00->head,'\0',s_00->hash_size * 2 - 2);
               }
             }
-            flush_pending(param_1);
-            if (param_1->avail_out == 0) {
-              piVar1->last_flush = -1;
+            flush_pending(strm);
+            if (strm->avail_out == 0) {
+              s_00->last_flush = -1;
               return 0;
             }
           }
         }
-        if (param_2 == 4) {
-          if (piVar1->wrap < 1) {
-            uVar3 = 1;
+        if (flush == 4) {
+          if (s_00->wrap < 1) {
+            uVar2 = 1;
           }
           else {
-            putShortMSB(piVar1,param_1->adler >> 0x10);
-            putShortMSB(piVar1,param_1->adler & 0xffff);
-            flush_pending(param_1);
-            if (0 < piVar1->wrap) {
-              piVar1->wrap = -piVar1->wrap;
+            putShortMSB(s_00,strm->adler >> 0x10);
+            putShortMSB(s_00,strm->adler & 0xffff);
+            flush_pending(strm);
+            if (0 < s_00->wrap) {
+              s_00->wrap = -s_00->wrap;
             }
-            uVar3 = (uint)(piVar1->pending == 0);
+            uVar2 = (uint)(s_00->pending == 0);
           }
         }
         else {
-          uVar3 = 0;
+          uVar2 = 0;
         }
       }
     }
   }
-  return uVar3;
+  return uVar2;
 }
 
 
 // 0080C8D0  deflateEnd  (zlib/deflate.cpp:878)
 
-int __cdecl deflateEnd(z_stream_s *param_1)
+int __cdecl deflateEnd(z_stream_s *strm)
 
 {
   int iVar1;
   uint uVar2;
+  int status;
   
-  if ((param_1 == (z_stream_s *)0x0) || (param_1->state == (internal_state *)0x0)) {
+  if ((strm == (z_stream_s *)0x0) || (strm->state == (internal_state *)0x0)) {
     uVar2 = 0xfffffffe;
   }
   else {
-    iVar1 = param_1->state->status;
+    iVar1 = strm->state->status;
     if (((iVar1 == 0x2a) || (((iVar1 == 0x45 || (iVar1 == 0x49)) || (iVar1 == 0x5b)))) ||
        (((iVar1 == 0x67 || (iVar1 == 0x71)) || (iVar1 == 0x29a)))) {
-      if (param_1->state->pending_buf != (uchar *)0x0) {
-        (*param_1->zfree)(param_1->opaque,param_1->state->pending_buf);
+      if (strm->state->pending_buf != (uchar *)0x0) {
+        (*strm->zfree)(strm->opaque,strm->state->pending_buf);
       }
-      if (param_1->state->head != (ushort *)0x0) {
-        (*param_1->zfree)(param_1->opaque,(uchar *)param_1->state->head);
+      if (strm->state->head != (ushort *)0x0) {
+        (*strm->zfree)(strm->opaque,(uchar *)strm->state->head);
       }
-      if (param_1->state->prev != (ushort *)0x0) {
-        (*param_1->zfree)(param_1->opaque,(uchar *)param_1->state->prev);
+      if (strm->state->prev != (ushort *)0x0) {
+        (*strm->zfree)(strm->opaque,(uchar *)strm->state->prev);
       }
-      if (param_1->state->window != (uchar *)0x0) {
-        (*param_1->zfree)(param_1->opaque,param_1->state->window);
+      if (strm->state->window != (uchar *)0x0) {
+        (*strm->zfree)(strm->opaque,strm->state->window);
       }
-      (*param_1->zfree)(param_1->opaque,(uchar *)param_1->state);
-      param_1->state = (internal_state *)0x0;
+      (*strm->zfree)(strm->opaque,(uchar *)strm->state);
+      strm->state = (internal_state *)0x0;
       uVar2 = (iVar1 != 0x71) - 1 & 0xfffffffd;
     }
     else {
@@ -343,59 +351,59 @@ int __cdecl deflateEnd(z_stream_s *param_1)
 
 // 0080CFC0  read_buf  (zlib/deflate.cpp:972)
 
-int __cdecl read_buf(z_stream_s *param_1,uchar *param_2,uint param_3)
+int __cdecl read_buf(z_stream_s *strm,uchar *buf,uint size)
 
 {
   ulong uVar1;
-  uint local_8;
+  uint len;
   
-  local_8 = param_1->avail_in;
-  if (param_3 < local_8) {
-    local_8 = param_3;
+  len = strm->avail_in;
+  if (size < len) {
+    len = size;
   }
-  if (local_8 == 0) {
-    local_8 = 0;
+  if (len == 0) {
+    len = 0;
   }
   else {
-    param_1->avail_in = param_1->avail_in - local_8;
-    if (param_1->state->wrap == 1) {
-      uVar1 = adler32(param_1->adler,param_1->next_in,local_8);
-      param_1->adler = uVar1;
+    strm->avail_in = strm->avail_in - len;
+    if (strm->state->wrap == 1) {
+      uVar1 = adler32(strm->adler,strm->next_in,len);
+      strm->adler = uVar1;
     }
-    memcpy(param_2,param_1->next_in,local_8);
-    param_1->next_in = param_1->next_in + local_8;
-    param_1->total_in = param_1->total_in + local_8;
+    memcpy(buf,strm->next_in,len);
+    strm->next_in = strm->next_in + len;
+    strm->total_in = strm->total_in + len;
   }
-  return local_8;
+  return len;
 }
 
 
 // 0080CA10  lm_init  (zlib/deflate.cpp:1001)
 
-void __cdecl lm_init(internal_state *param_1)
+void __cdecl lm_init(internal_state *s)
 
 {
-  param_1->window_size = param_1->w_size << 1;
-  param_1->head[param_1->hash_size - 1] = 0;
-  memset((uchar *)param_1->head,'\0',param_1->hash_size * 2 - 2);
-  param_1->max_lazy_match = (uint)configuration_table[param_1->level].max_lazy;
-  param_1->good_match = (uint)configuration_table[param_1->level].good_length;
-  param_1->nice_match = (uint)configuration_table[param_1->level].nice_length;
-  param_1->max_chain_length = (uint)configuration_table[param_1->level].max_chain;
-  param_1->strstart = 0;
-  param_1->block_start = 0;
-  param_1->lookahead = 0;
-  param_1->prev_length = 2;
-  param_1->match_length = 2;
-  param_1->match_available = 0;
-  param_1->ins_h = 0;
+  s->window_size = s->w_size << 1;
+  s->head[s->hash_size - 1] = 0;
+  memset((uchar *)s->head,'\0',s->hash_size * 2 - 2);
+  s->max_lazy_match = (uint)configuration_table[s->level].max_lazy;
+  s->good_match = (uint)configuration_table[s->level].good_length;
+  s->nice_match = (uint)configuration_table[s->level].nice_length;
+  s->max_chain_length = (uint)configuration_table[s->level].max_chain;
+  s->strstart = 0;
+  s->block_start = 0;
+  s->lookahead = 0;
+  s->prev_length = 2;
+  s->match_length = 2;
+  s->match_available = 0;
+  s->ins_h = 0;
   return;
 }
 
 
 // 0080D4E0  longest_match_fast  (zlib/deflate.cpp:1190)
 
-uint __cdecl longest_match_fast(internal_state *param_1,uint param_2)
+uint __cdecl longest_match_fast(internal_state *s,uint cur_match)
 
 {
   uchar *puVar1;
@@ -406,38 +414,40 @@ uint __cdecl longest_match_fast(internal_state *param_1,uint param_2)
   int *piVar6;
   uchar *puVar7;
   int *piVar8;
-  int *local_14;
-  int *local_c;
+  uchar *match;
+  uchar *strend;
+  uchar *scan;
+  int len;
   
-  puVar7 = param_1->window + param_1->strstart;
-  puVar1 = param_1->window;
-  uVar5 = param_1->strstart;
-  puVar4 = param_1->window + param_2;
+  puVar7 = s->window + s->strstart;
+  puVar1 = s->window;
+  uVar5 = s->strstart;
+  puVar4 = s->window + cur_match;
   if ((*puVar4 == *puVar7) && (puVar4[1] == puVar7[1])) {
-    local_c = (int *)(puVar7 + 3);
-    local_14 = (int *)(puVar4 + 3);
+    scan = puVar7 + 3;
+    match = puVar4 + 3;
     do {
-      piVar8 = local_14;
-      piVar6 = local_c;
-      if ((*local_c != *local_14) || (local_c[1] != local_14[1])) {
+      piVar8 = (int *)match;
+      piVar6 = (int *)scan;
+      if ((*(int *)scan != *(int *)match) || (*(int *)(scan + 4) != *(int *)(match + 4))) {
 LAB_0080d66c:
-        local_c = piVar6;
-        local_14 = piVar8;
-        piVar8 = (int *)((int)local_c + 1);
-        if ((char)*local_c == (char)*local_14) {
-          piVar8 = (int *)((int)local_c + 2);
-          if (*(char *)((int)local_c + 1) == *(char *)((int)local_14 + 1)) {
-            piVar8 = (int *)((int)local_c + 3);
-            if (*(char *)((int)local_c + 2) == *(char *)((int)local_14 + 2)) {
-              piVar8 = local_c + 1;
-              if (*(char *)((int)local_c + 3) == *(char *)((int)local_14 + 3)) {
-                piVar8 = (int *)((int)local_c + 5);
-                if ((char)local_c[1] == (char)local_14[1]) {
-                  piVar8 = (int *)((int)local_c + 6);
-                  if (*(char *)((int)local_c + 5) == *(char *)((int)local_14 + 5)) {
-                    piVar8 = (int *)((int)local_c + 7);
-                    if (*(char *)((int)local_c + 6) == *(char *)((int)local_14 + 6)) {
-                      if ((*(char *)((int)local_c + 7) == *(char *)((int)local_14 + 7)) &&
+        scan = (uchar *)piVar6;
+        match = (uchar *)piVar8;
+        puVar4 = scan + 1;
+        if (*scan == *match) {
+          puVar4 = scan + 2;
+          if (scan[1] == match[1]) {
+            puVar4 = scan + 3;
+            if (scan[2] == match[2]) {
+              puVar4 = scan + 4;
+              if (scan[3] == match[3]) {
+                puVar4 = scan + 5;
+                if (scan[4] == match[4]) {
+                  puVar4 = scan + 6;
+                  if (scan[5] == match[5]) {
+                    puVar4 = scan + 7;
+                    if (scan[6] == match[6]) {
+                      if ((scan[7] == match[7]) &&
                          (bVar3 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\zlib\\deflate.cpp"
                                                   ,0x4e6,0,"%s"), !bVar3)) {
@@ -445,7 +455,7 @@ LAB_0080d66c:
                         uVar5 = (*pcVar2)();
                         return uVar5;
                       }
-                      piVar8 = local_c + 2;
+                      puVar4 = scan + 8;
                     }
                   }
                 }
@@ -455,28 +465,31 @@ LAB_0080d66c:
         }
         break;
       }
-      piVar6 = local_c + 2;
-      piVar8 = local_14 + 2;
-      if ((*piVar6 != *piVar8) || (local_c[3] != local_14[3])) goto LAB_0080d66c;
-      piVar6 = local_c + 4;
-      piVar8 = local_14 + 4;
-      if ((*piVar6 != *piVar8) || (local_c[5] != local_14[5])) goto LAB_0080d66c;
-      piVar6 = local_c + 6;
-      piVar8 = local_14 + 6;
-      if ((*piVar6 != *piVar8) || (local_c[7] != local_14[7])) goto LAB_0080d66c;
-      local_c = local_c + 8;
-      local_14 = local_14 + 8;
-      piVar8 = local_c;
-    } while (local_c < puVar1 + uVar5 + 0x102);
-    local_c = piVar8;
-    uVar5 = 0x102 - ((int)(puVar1 + uVar5 + 0x102) - (int)((int)local_c + -1));
+      piVar6 = (int *)(scan + 8);
+      piVar8 = (int *)(match + 8);
+      if ((*piVar6 != *piVar8) || (*(int *)(scan + 0xc) != *(int *)(match + 0xc)))
+      goto LAB_0080d66c;
+      piVar6 = (int *)(scan + 0x10);
+      piVar8 = (int *)(match + 0x10);
+      if ((*piVar6 != *piVar8) || (*(int *)(scan + 0x14) != *(int *)(match + 0x14)))
+      goto LAB_0080d66c;
+      piVar6 = (int *)(scan + 0x18);
+      piVar8 = (int *)(match + 0x18);
+      if ((*piVar6 != *piVar8) || (*(int *)(scan + 0x1c) != *(int *)(match + 0x1c)))
+      goto LAB_0080d66c;
+      scan = scan + 0x20;
+      match = match + 0x20;
+      puVar4 = scan;
+    } while (scan < puVar1 + uVar5 + 0x102);
+    scan = puVar4;
+    uVar5 = 0x102 - ((int)(puVar1 + uVar5 + 0x102) - (int)(scan + -1));
     if ((int)uVar5 < 3) {
       uVar5 = 2;
     }
     else {
-      param_1->match_start = param_2;
-      if (param_1->lookahead < uVar5) {
-        uVar5 = param_1->lookahead;
+      s->match_start = cur_match;
+      if (s->lookahead < uVar5) {
+        uVar5 = s->lookahead;
       }
     }
   }
@@ -489,10 +502,12 @@ LAB_0080d66c:
 
 // 0080D060  ClampShortNonNegative  (zlib/deflate.cpp:1303)
 
-short __cdecl ClampShortNonNegative(short param_1)
+short __cdecl ClampShortNonNegative(short value)
 
 {
-  return ~(param_1 >> 0xf) & param_1;
+  uint extendedValue;
+  
+  return ~(value >> 0xf) & value;
 }
 
 
@@ -500,68 +515,68 @@ short __cdecl ClampShortNonNegative(short param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl fill_window(internal_state *param_1)
+void __cdecl fill_window(internal_state *s)
 
 {
-  ulong uVar1;
-  uint uVar2;
-  code *pcVar3;
-  short sVar4;
-  bool bVar5;
+  ulong count_00;
+  uint uVar1;
+  code *pcVar2;
+  short sVar3;
+  bool bVar4;
+  ushort uVar5;
   ushort uVar6;
   ushort uVar7;
   ushort uVar8;
-  ushort uVar9;
-  int iVar10;
-  uint local_14;
-  uint local_10;
-  ushort *local_8;
+  int iVar9;
+  uint wsize;
+  uint more;
+  uint n;
+  uint count;
+  ushort *p;
   
-  uVar1 = param_1->w_size;
+  count_00 = s->w_size;
   while( true ) {
-    local_14 = (param_1->window_size - param_1->lookahead) - param_1->strstart;
-    if ((uVar1 - 0x106) + param_1->w_size <= param_1->strstart) {
-      memcpy(param_1->window,param_1->window + uVar1,uVar1);
-      param_1->match_start = param_1->match_start - uVar1;
-      param_1->strstart = param_1->strstart - uVar1;
-      param_1->block_start = param_1->block_start - uVar1;
-      local_8 = param_1->head;
-      if ((param_1->hash_size % 4 != 0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\zlib\\deflate.cpp",0x55a,0,
-                                   "%s"), !bVar5)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+    more = (s->window_size - s->lookahead) - s->strstart;
+    if ((count_00 - 0x106) + s->w_size <= s->strstart) {
+      memcpy(s->window,s->window + count_00,count_00);
+      s->match_start = s->match_start - count_00;
+      s->strstart = s->strstart - count_00;
+      s->block_start = s->block_start - count_00;
+      p = s->head;
+      if ((s->hash_size % 4 != 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\zlib\\deflate.cpp",0x55a,0,
+                                   "%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      uVar2 = param_1->hash_size;
-      for (local_10 = 0; local_10 < uVar2 >> 2; local_10 = local_10 + 1) {
-        sVar4 = (short)uVar1;
-        uVar6 = ClampShortNonNegative(*local_8 - sVar4);
-        uVar7 = ClampShortNonNegative(local_8[1] - sVar4);
-        uVar8 = ClampShortNonNegative(local_8[2] - sVar4);
-        uVar9 = ClampShortNonNegative(local_8[3] - sVar4);
-        *local_8 = uVar6;
-        local_8[1] = uVar7;
-        local_8[2] = uVar8;
-        local_8[3] = uVar9;
-        local_8 = local_8 + 4;
+      uVar1 = s->hash_size;
+      for (n = 0; n < uVar1 >> 2; n = n + 1) {
+        sVar3 = (short)count_00;
+        uVar5 = ClampShortNonNegative(*p - sVar3);
+        uVar6 = ClampShortNonNegative(p[1] - sVar3);
+        uVar7 = ClampShortNonNegative(p[2] - sVar3);
+        uVar8 = ClampShortNonNegative(p[3] - sVar3);
+        *p = uVar5;
+        p[1] = uVar6;
+        p[2] = uVar7;
+        p[3] = uVar8;
+        p = p + 4;
       }
-      local_14 = local_14 + uVar1;
+      more = more + count_00;
     }
-    if (param_1->strm->avail_in == 0) {
+    if (s->strm->avail_in == 0) {
       return;
     }
-    iVar10 = read_buf(param_1->strm,param_1->window + param_1->lookahead + param_1->strstart,
-                      local_14);
-    param_1->lookahead = param_1->lookahead + iVar10;
-    if (2 < param_1->lookahead) {
-      param_1->ins_h = (uint)param_1->window[param_1->strstart];
-      param_1->ins_h =
-           (param_1->ins_h << ((byte)param_1->hash_shift & 0x1f) ^
-           (uint)param_1->window[param_1->strstart + 1]) & param_1->hash_mask;
+    iVar9 = read_buf(s->strm,s->window + s->lookahead + s->strstart,more);
+    s->lookahead = s->lookahead + iVar9;
+    if (2 < s->lookahead) {
+      s->ins_h = (uint)s->window[s->strstart];
+      s->ins_h = (s->ins_h << ((byte)s->hash_shift & 0x1f) ^ (uint)s->window[s->strstart + 1]) &
+                 s->hash_mask;
     }
-    if (0x105 < param_1->lookahead) break;
-    if (param_1->strm->avail_in == 0) {
+    if (0x105 < s->lookahead) break;
+    if (s->strm->avail_in == 0) {
       return;
     }
   }
@@ -571,72 +586,72 @@ void __cdecl fill_window(internal_state *param_1)
 
 // 0080CB10  deflate_stored  (zlib/deflate.cpp:1463)
 
-block_state __cdecl deflate_stored(internal_state *param_1,int param_2)
+block_state __cdecl deflate_stored(internal_state *s,int flush)
 
 {
   uint uVar1;
   uchar *local_18;
   uchar *local_14;
   uchar *local_10;
-  int local_c;
+  ulong max_block_size;
+  ulong max_start;
   
-  local_c = 0xffff;
-  if (param_1->pending_buf_size - 5 < 0xffff) {
-    local_c = param_1->pending_buf_size - 5;
+  max_block_size = 0xffff;
+  if (s->pending_buf_size - 5 < 0xffff) {
+    max_block_size = s->pending_buf_size - 5;
   }
   do {
-    if (param_1->lookahead < 2) {
-      fill_window(param_1);
-      if ((param_1->lookahead == 0) && (param_2 == 0)) {
+    if (s->lookahead < 2) {
+      fill_window(s);
+      if ((s->lookahead == 0) && (flush == 0)) {
         return need_more;
       }
-      if (param_1->lookahead == 0) {
-        if (param_1->block_start < 0) {
+      if (s->lookahead == 0) {
+        if (s->block_start < 0) {
           local_18 = (uchar *)0x0;
         }
         else {
-          local_18 = param_1->window + param_1->block_start;
+          local_18 = s->window + s->block_start;
         }
-        _tr_flush_block(param_1,(char *)local_18,param_1->strstart - param_1->block_start,
-                        (uint)(param_2 == 4));
-        param_1->block_start = param_1->strstart;
-        flush_pending(param_1->strm);
-        if (param_1->strm->avail_out == 0) {
-          return (param_2 != 4) - block_done & finish_started;
+        _tr_flush_block(s,(char *)local_18,s->strstart - s->block_start,(uint)(flush == 4));
+        s->block_start = s->strstart;
+        flush_pending(s->strm);
+        if (s->strm->avail_out == 0) {
+          return (flush != 4) - block_done & finish_started;
         }
-        return (uint)(param_2 == 4) * 2 + block_done;
+        return (uint)(flush == 4) * 2 + block_done;
       }
     }
-    param_1->strstart = param_1->strstart + param_1->lookahead;
-    param_1->lookahead = 0;
-    uVar1 = param_1->block_start + local_c;
-    if ((param_1->strstart == 0) || (uVar1 <= param_1->strstart)) {
-      param_1->lookahead = param_1->strstart - uVar1;
-      param_1->strstart = uVar1;
-      if (param_1->block_start < 0) {
+    s->strstart = s->strstart + s->lookahead;
+    s->lookahead = 0;
+    uVar1 = s->block_start + max_block_size;
+    if ((s->strstart == 0) || (uVar1 <= s->strstart)) {
+      s->lookahead = s->strstart - uVar1;
+      s->strstart = uVar1;
+      if (s->block_start < 0) {
         local_10 = (uchar *)0x0;
       }
       else {
-        local_10 = param_1->window + param_1->block_start;
+        local_10 = s->window + s->block_start;
       }
-      _tr_flush_block(param_1,(char *)local_10,param_1->strstart - param_1->block_start,0);
-      param_1->block_start = param_1->strstart;
-      flush_pending(param_1->strm);
-      if (param_1->strm->avail_out == 0) {
+      _tr_flush_block(s,(char *)local_10,s->strstart - s->block_start,0);
+      s->block_start = s->strstart;
+      flush_pending(s->strm);
+      if (s->strm->avail_out == 0) {
         return need_more;
       }
     }
-    if (param_1->w_size - 0x106 <= param_1->strstart - param_1->block_start) {
-      if (param_1->block_start < 0) {
+    if (s->w_size - 0x106 <= s->strstart - s->block_start) {
+      if (s->block_start < 0) {
         local_14 = (uchar *)0x0;
       }
       else {
-        local_14 = param_1->window + param_1->block_start;
+        local_14 = s->window + s->block_start;
       }
-      _tr_flush_block(param_1,(char *)local_14,param_1->strstart - param_1->block_start,0);
-      param_1->block_start = param_1->strstart;
-      flush_pending(param_1->strm);
-      if (param_1->strm->avail_out == 0) {
+      _tr_flush_block(s,(char *)local_14,s->strstart - s->block_start,0);
+      s->block_start = s->strstart;
+      flush_pending(s->strm);
+      if (s->strm->avail_out == 0) {
         return need_more;
       }
     }
@@ -646,7 +661,7 @@ block_state __cdecl deflate_stored(internal_state *param_1,int param_2)
 
 // 0080D080  deflate_fast  (zlib/deflate.cpp:1519)
 
-block_state __cdecl deflate_fast(internal_state *param_1,int param_2)
+block_state __cdecl deflate_fast(internal_state *s,int flush)
 
 {
   uint uVar1;
@@ -656,91 +671,91 @@ block_state __cdecl deflate_fast(internal_state *param_1,int param_2)
   uchar *local_20;
   uchar *local_1c;
   byte local_16;
-  uint local_c;
+  uchar cc;
+  ushort dist;
+  uchar len;
+  uint hash_head;
+  int bflush;
   
-  local_c = 0;
+  hash_head = 0;
   do {
-    if (param_1->lookahead < 0x106) {
-      fill_window(param_1);
-      if ((param_1->lookahead < 0x106) && (param_2 == 0)) {
+    if (s->lookahead < 0x106) {
+      fill_window(s);
+      if ((s->lookahead < 0x106) && (flush == 0)) {
         return need_more;
       }
-      if (param_1->lookahead == 0) {
-        if (param_1->block_start < 0) {
+      if (s->lookahead == 0) {
+        if (s->block_start < 0) {
           local_20 = (uchar *)0x0;
         }
         else {
-          local_20 = param_1->window + param_1->block_start;
+          local_20 = s->window + s->block_start;
         }
-        _tr_flush_block(param_1,(char *)local_20,param_1->strstart - param_1->block_start,
-                        (uint)(param_2 == 4));
-        param_1->block_start = param_1->strstart;
-        flush_pending(param_1->strm);
-        if (param_1->strm->avail_out == 0) {
-          return (param_2 != 4) - block_done & finish_started;
+        _tr_flush_block(s,(char *)local_20,s->strstart - s->block_start,(uint)(flush == 4));
+        s->block_start = s->strstart;
+        flush_pending(s->strm);
+        if (s->strm->avail_out == 0) {
+          return (flush != 4) - block_done & finish_started;
         }
-        return (uint)(param_2 == 4) * 2 + block_done;
+        return (uint)(flush == 4) * 2 + block_done;
       }
     }
-    if (2 < param_1->lookahead) {
-      param_1->ins_h =
-           (param_1->ins_h << ((byte)param_1->hash_shift & 0x1f) ^
-           (uint)param_1->window[param_1->strstart + 2]) & param_1->hash_mask;
-      local_c = (uint)param_1->head[param_1->ins_h];
-      param_1->head[param_1->ins_h] = (ushort)param_1->strstart;
+    if (2 < s->lookahead) {
+      s->ins_h = (s->ins_h << ((byte)s->hash_shift & 0x1f) ^ (uint)s->window[s->strstart + 2]) &
+                 s->hash_mask;
+      hash_head = (uint)s->head[s->ins_h];
+      s->head[s->ins_h] = (ushort)s->strstart;
     }
-    if (((local_c != 0) && (param_1->strstart - local_c <= param_1->w_size - 0x106)) &&
-       (((param_1->strategy != 2 && (param_1->strategy != 3)) ||
-        ((param_1->strategy == 3 && (param_1->strstart - local_c == 1)))))) {
-      uVar1 = longest_match_fast(param_1,local_c);
-      param_1->match_length = uVar1;
+    if (((hash_head != 0) && (s->strstart - hash_head <= s->w_size - 0x106)) &&
+       (((s->strategy != 2 && (s->strategy != 3)) ||
+        ((s->strategy == 3 && (s->strstart - hash_head == 1)))))) {
+      uVar1 = longest_match_fast(s,hash_head);
+      s->match_length = uVar1;
     }
-    if (param_1->match_length < 3) {
-      bVar2 = param_1->window[param_1->strstart];
-      param_1->d_buf[param_1->last_lit] = 0;
-      param_1->l_buf[param_1->last_lit] = bVar2;
-      param_1->last_lit = param_1->last_lit + 1;
-      param_1->dyn_ltree[bVar2].fc.freq = param_1->dyn_ltree[bVar2].fc.freq + 1;
-      bVar4 = param_1->last_lit == param_1->lit_bufsize - 1;
-      param_1->lookahead = param_1->lookahead - 1;
-      param_1->strstart = param_1->strstart + 1;
+    if (s->match_length < 3) {
+      bVar2 = s->window[s->strstart];
+      s->d_buf[s->last_lit] = 0;
+      s->l_buf[s->last_lit] = bVar2;
+      s->last_lit = s->last_lit + 1;
+      s->dyn_ltree[bVar2].fc.freq = s->dyn_ltree[bVar2].fc.freq + 1;
+      bVar4 = s->last_lit == s->lit_bufsize - 1;
+      s->lookahead = s->lookahead - 1;
+      s->strstart = s->strstart + 1;
     }
     else {
-      bVar2 = (char)param_1->match_length - 3;
-      uVar3 = (short)param_1->strstart - (short)param_1->match_start;
-      param_1->d_buf[param_1->last_lit] = uVar3;
-      param_1->l_buf[param_1->last_lit] = bVar2;
-      param_1->last_lit = param_1->last_lit + 1;
+      bVar2 = (char)s->match_length - 3;
+      uVar3 = (short)s->strstart - (short)s->match_start;
+      s->d_buf[s->last_lit] = uVar3;
+      s->l_buf[s->last_lit] = bVar2;
+      s->last_lit = s->last_lit + 1;
       uVar3 = uVar3 - 1;
-      param_1->dyn_ltree[""[bVar2] + 0x101].fc.freq =
-           param_1->dyn_ltree[""[bVar2] + 0x101].fc.freq + 1;
+      s->dyn_ltree[""[bVar2] + 0x101].fc.freq = s->dyn_ltree[""[bVar2] + 0x101].fc.freq + 1;
       if (uVar3 < 0x100) {
         local_16 = ""[uVar3];
       }
       else {
         local_16 = ""[((int)(uint)uVar3 >> 7) + 0x100];
       }
-      param_1->dyn_dtree[local_16].fc.freq = param_1->dyn_dtree[local_16].fc.freq + 1;
-      bVar4 = param_1->last_lit == param_1->lit_bufsize - 1;
-      param_1->lookahead = param_1->lookahead - param_1->match_length;
-      param_1->strstart = param_1->strstart + param_1->match_length;
-      param_1->match_length = 0;
-      param_1->ins_h = (uint)param_1->window[param_1->strstart];
-      param_1->ins_h =
-           (param_1->ins_h << ((byte)param_1->hash_shift & 0x1f) ^
-           (uint)param_1->window[param_1->strstart + 1]) & param_1->hash_mask;
+      s->dyn_dtree[local_16].fc.freq = s->dyn_dtree[local_16].fc.freq + 1;
+      bVar4 = s->last_lit == s->lit_bufsize - 1;
+      s->lookahead = s->lookahead - s->match_length;
+      s->strstart = s->strstart + s->match_length;
+      s->match_length = 0;
+      s->ins_h = (uint)s->window[s->strstart];
+      s->ins_h = (s->ins_h << ((byte)s->hash_shift & 0x1f) ^ (uint)s->window[s->strstart + 1]) &
+                 s->hash_mask;
     }
     if (bVar4) {
-      if (param_1->block_start < 0) {
+      if (s->block_start < 0) {
         local_1c = (uchar *)0x0;
       }
       else {
-        local_1c = param_1->window + param_1->block_start;
+        local_1c = s->window + s->block_start;
       }
-      _tr_flush_block(param_1,(char *)local_1c,param_1->strstart - param_1->block_start,0);
-      param_1->block_start = param_1->strstart;
-      flush_pending(param_1->strm);
-      if (param_1->strm->avail_out == 0) {
+      _tr_flush_block(s,(char *)local_1c,s->strstart - s->block_start,0);
+      s->block_start = s->strstart;
+      flush_pending(s->strm);
+      if (s->strm->avail_out == 0) {
         return need_more;
       }
     }

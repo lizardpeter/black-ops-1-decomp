@@ -2,53 +2,53 @@
 
 // 0097A408  wcsncnt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/w_cmp.c:45)
 
-int __cdecl wcsncnt(wchar_t *param_1,int param_2)
+int __cdecl wcsncnt(wchar_t *cnt,int param_2)
 
 {
   short *in_EAX;
   wchar_t *pwVar1;
   
-  pwVar1 = param_1;
+  pwVar1 = cnt;
   for (; (pwVar1 != (wchar_t *)0x0 && (*in_EAX != 0)); in_EAX = in_EAX + 1) {
     pwVar1 = (wchar_t *)((int)pwVar1 + -1);
   }
-  return (int)param_1 + (-1 - ((int)pwVar1 + -1));
+  return (int)cnt + (-1 - ((int)pwVar1 + -1));
 }
 
 
 // 0097A428  __crtCompareStringW  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/w_cmp.c:122)
 
 int __cdecl
-__crtCompareStringW(localeinfo_struct *param_1,ulong param_2,ulong param_3,wchar_t *param_4,
-                   int param_5,wchar_t *param_6,int param_7,int param_8)
+__crtCompareStringW(localeinfo_struct *plocinfo,ulong Locale,ulong dwCmpFlags,wchar_t *lpString1,
+                   int cchCount1,wchar_t *lpString2,int cchCount2,int code_page)
 
 {
   int iVar1;
   wchar_t *extraout_EDX;
   int unaff_ESI;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_1);
-  if (0 < param_5) {
-    param_5 = wcsncnt((wchar_t *)param_5,unaff_ESI);
-    param_7 = (int)extraout_EDX;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (0 < cchCount1) {
+    cchCount1 = wcsncnt((wchar_t *)cchCount1,unaff_ESI);
+    cchCount2 = (int)extraout_EDX;
   }
-  if (0 < param_7) {
-    param_7 = wcsncnt((wchar_t *)param_7,unaff_ESI);
+  if (0 < cchCount2) {
+    cchCount2 = wcsncnt((wchar_t *)cchCount2,unaff_ESI);
   }
-  if (((wchar_t *)param_5 == (wchar_t *)0x0) || ((wchar_t *)param_7 == (wchar_t *)0x0)) {
-    if (param_5 == param_7) {
+  if (((wchar_t *)cchCount1 == (wchar_t *)0x0) || ((wchar_t *)cchCount2 == (wchar_t *)0x0)) {
+    if (cchCount1 == cchCount2) {
       iVar1 = 2;
     }
     else {
-      iVar1 = (uint)(-1 < param_5 - param_7) * 2 + 1;
+      iVar1 = (uint)(-1 < cchCount1 - cchCount2) * 2 + 1;
     }
   }
   else {
-    iVar1 = CompareStringW(param_2,param_3,param_4,param_5,param_6,param_7);
+    iVar1 = CompareStringW(Locale,dwCmpFlags,lpString1,cchCount1,lpString2,cchCount2);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return iVar1;
 }

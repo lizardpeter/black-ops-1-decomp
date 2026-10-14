@@ -2,10 +2,10 @@
 
 // 009AE350  Monkey_AssertCallback  (monkey/monkey.cpp:42)
 
-void __cdecl Monkey_AssertCallback(char *param_1)
+void __cdecl Monkey_AssertCallback(char *assertMsg)
 
 {
-  Monkey_Send("assert",param_1);
+  Monkey_Send("assert",assertMsg);
   Monkey_ShutdownCommunication();
   return;
 }
@@ -13,18 +13,18 @@ void __cdecl Monkey_AssertCallback(char *param_1)
 
 // 009AE080  Monkey_Error  (monkey/monkey.cpp:51)
 
-void __cdecl Monkey_Error(char *param_1)
+void __cdecl Monkey_Error(char *text)
 
 {
   bool bVar1;
   
   bVar1 = Monkey_IsRunning();
   if (bVar1) {
-    if (param_1 == (char *)0x0) {
+    if (text == (char *)0x0) {
       Monkey_Send("error",g_MonkeyPrintBuffer);
     }
     else {
-      Monkey_Send("error",param_1);
+      Monkey_Send("error",text);
     }
     Monkey_DisconnectAndExit();
   }
@@ -34,14 +34,14 @@ void __cdecl Monkey_Error(char *param_1)
 
 // 009AE0D0  Monkey_GrabComPrints  (monkey/monkey.cpp:65)
 
-void __cdecl Monkey_GrabComPrints(bool param_1)
+void __cdecl Monkey_GrabComPrints(bool enable)
 
 {
   bool bVar1;
   
   bVar1 = Monkey_IsRunning();
   if (bVar1) {
-    if (param_1) {
+    if (enable) {
       if (g_MonkeyGrabPrints == false) {
         g_MonkeyPrintBuffer[0] = '\0';
         g_MonkeyPrintBufferSize = 0;
@@ -60,7 +60,7 @@ void __cdecl Monkey_GrabComPrints(bool param_1)
 
 // 009AE130  Monkey_ComPrintHook  (monkey/monkey.cpp:89)
 
-void __cdecl Monkey_ComPrintHook(char *param_1)
+void __cdecl Monkey_ComPrintHook(char *msg)
 
 {
   char cVar1;
@@ -73,15 +73,19 @@ void __cdecl Monkey_ComPrintHook(char *param_1)
   char *local_3c;
   char *local_28;
   char *local_18;
+  int overflow_msg_len;
+  int loc;
+  char *overflow_msg;
+  int msg_len;
   
   if (g_MonkeyGrabPrints) {
-    local_18 = param_1;
+    local_18 = msg;
     do {
       cVar1 = *local_18;
       local_18 = local_18 + 1;
     } while (cVar1 != '\0');
-    if (local_18 + (g_MonkeyPrintBufferSize - (int)(param_1 + 1)) < (char *)0x1ffff) {
-      local_28 = param_1;
+    if (local_18 + (g_MonkeyPrintBufferSize - (int)(msg + 1)) < (char *)0x1ffff) {
+      local_28 = msg;
       do {
         cVar1 = *local_28;
         local_28 = local_28 + 1;
@@ -91,18 +95,18 @@ void __cdecl Monkey_ComPrintHook(char *param_1)
         pcVar3 = local_3c + 1;
         local_3c = local_3c + 1;
       } while (*pcVar3 != '\0');
-      pcVar3 = param_1;
-      for (uVar2 = (uint)((int)local_28 - (int)param_1) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+      pcVar3 = msg;
+      for (uVar2 = (uint)((int)local_28 - (int)msg) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
         *(undefined4 *)local_3c = *(undefined4 *)pcVar3;
         pcVar3 = pcVar3 + 4;
         local_3c = local_3c + 4;
       }
-      for (uVar2 = (int)local_28 - (int)param_1 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
+      for (uVar2 = (int)local_28 - (int)msg & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
         *local_3c = *pcVar3;
         pcVar3 = pcVar3 + 1;
         local_3c = local_3c + 1;
       }
-      g_MonkeyPrintBufferSize = (uint)(local_18 + (g_MonkeyPrintBufferSize - (int)(param_1 + 1)));
+      g_MonkeyPrintBufferSize = (uint)(local_18 + (g_MonkeyPrintBufferSize - (int)(msg + 1)));
     }
     else {
       local_44 = "\n(Message truncated)\n";
@@ -140,12 +144,12 @@ void __cdecl Monkey_Start(void)
   undefined4 extraout_EAX;
   undefined4 extraout_EDX;
   LARGE_INTEGER local_10;
-  char *local_8;
+  char *zookeeper;
   
   in_monkey = _Dvar_RegisterBool("in_monkey",false,0,"Randomly generate input");
-  local_8 = Dvar_GetString("zookeeper");
-  if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-    Monkey_InitCommunication(local_8);
+  zookeeper = Dvar_GetString("zookeeper");
+  if ((zookeeper != (char *)0x0) && (*zookeeper != '\0')) {
+    Monkey_InitCommunication(zookeeper);
     g_MonkeyIsRunning = true;
     QueryPerformanceCounter(&local_10);
     g_MonkeyOokTimer._0_4_ = local_10.s.LowPart;
@@ -177,25 +181,25 @@ void __cdecl Monkey_Frame(void)
 {
   bool bVar1;
   int iVar2;
-  char local_48c [1024];
-  char local_8c [132];
+  char message [1024];
+  char type [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar1 = Monkey_IsRunning();
   if (bVar1) {
-    bVar1 = Monkey_Recv(local_8c,0x80,local_48c,0x400);
+    bVar1 = Monkey_Recv(type,0x80,message,0x400);
     if (bVar1) {
-      iVar2 = I_stricmp(local_8c,"command");
+      iVar2 = I_stricmp(type,"command");
       if (iVar2 == 0) {
         Com_Printf(0x10,"Monkey: Recieved command \'%s\'\n");
-        Cbuf_AddText(0,local_48c);
+        Cbuf_AddText(0,message);
         Cbuf_AddText(0,"\n");
       }
-      iVar2 = I_stricmp(local_8c,"command_capture");
+      iVar2 = I_stricmp(type,"command_capture");
       if (iVar2 == 0) {
         Com_Printf(0x10,"Monkey: Recieved command_capture \'%s\'\n");
-        Cbuf_AddText(0,local_48c);
+        Cbuf_AddText(0,message);
         Cbuf_AddText(0,"\n");
         Sys_EnterCriticalSection(CRITSECT_CONSOLE);
         Monkey_GrabComPrints(false);
@@ -223,15 +227,15 @@ void __cdecl Monkey_KeepAlive(void)
   bool bVar1;
   uint uVar2;
   LARGE_INTEGER local_1c;
-  char *local_14;
-  char *local_10;
-  uint local_c;
+  char *ook_2;
+  char *ook;
+  uint now;
   uint local_8;
   
   bVar1 = Monkey_IsRunning();
   if (bVar1) {
     QueryPerformanceCounter(&local_1c);
-    local_c = local_1c.s.LowPart;
+    now = local_1c.s.LowPart;
     local_8 = local_1c.s.HighPart;
     if (((uint)local_1c.s.HighPart < g_MonkeyOokTimer._4_4_) ||
        (((uint)local_1c.s.HighPart <= g_MonkeyOokTimer._4_4_ &&
@@ -245,7 +249,7 @@ void __cdecl Monkey_KeepAlive(void)
         g_MonkeyOokTimer._4_4_ =
              local_1c.s.HighPart + g_MonkeyOokTimeoutTicks._4_4_ +
              (uint)CARRY4(local_1c.s.LowPart,(uint)g_MonkeyOokTimeoutTicks);
-        local_14 = "Ook, ook, eek (strange happenings)!\n";
+        ook_2 = "Ook, ook, eek (strange happenings)!\n";
         Monkey_Send("ook","Ook, ook, eek (strange happenings)!\n");
       }
     }
@@ -254,7 +258,7 @@ void __cdecl Monkey_KeepAlive(void)
       g_MonkeyOokTimer._4_4_ =
            local_1c.s.HighPart + g_MonkeyOokTimeoutTicks._4_4_ +
            (uint)CARRY4(local_1c.s.LowPart,(uint)g_MonkeyOokTimeoutTicks);
-      local_10 = "Ook, ook, eek!\n";
+      ook = "Ook, ook, eek!\n";
       Monkey_Send("ook","Ook, ook, eek!\n");
     }
   }
@@ -264,14 +268,14 @@ void __cdecl Monkey_KeepAlive(void)
 
 // 009AE5F0  Monkey_Event  (monkey/monkey.cpp:229)
 
-void __cdecl Monkey_Event(char *param_1)
+void __cdecl Monkey_Event(char *event)
 
 {
   bool bVar1;
   
   bVar1 = Monkey_IsRunning();
   if (bVar1) {
-    Monkey_Send("event",param_1);
+    Monkey_Send("event",event);
   }
   return;
 }

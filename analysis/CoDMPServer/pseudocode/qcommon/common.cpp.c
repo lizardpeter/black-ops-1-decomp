@@ -14,7 +14,8 @@ void __thiscall cdl_proftimer::reset(cdl_proftimer *this)
   ulong64 uVar7;
   undefined4 extraout_EAX;
   undefined4 extraout_EDX;
-  int local_c;
+  int i;
+  bool swap;
   
   *(undefined4 *)&this->calls = 0;
   *(undefined4 *)((int)&this->calls + 4) = 0;
@@ -32,18 +33,16 @@ void __thiscall cdl_proftimer::reset(cdl_proftimer *this)
     *(undefined4 *)((int)this->mx + 4) = *(undefined4 *)((int)&this->value + 4);
     do {
       bVar6 = false;
-      for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-        uVar4 = *(uint *)((int)this->mx + local_c * 8 + 4);
-        uVar1 = *(uint *)((int)this->mx + local_c * 8 + 0xc);
-        if ((uVar1 <= uVar4) &&
-           ((uVar4 != uVar1 || ((uint)this->mx[local_c + 1] < (uint)this->mx[local_c])))) {
-          uVar7 = this->mx[local_c];
-          uVar5 = *(undefined4 *)((int)this->mx + local_c * 8 + 4);
-          *(int *)(this->mx + local_c) = (int)this->mx[local_c + 1];
-          *(undefined4 *)((int)this->mx + local_c * 8 + 4) =
-               *(undefined4 *)((int)this->mx + local_c * 8 + 0xc);
-          *(int *)(this->mx + local_c + 1) = (int)uVar7;
-          *(undefined4 *)((int)this->mx + local_c * 8 + 0xc) = uVar5;
+      for (i = 0; i < 5; i = i + 1) {
+        uVar4 = *(uint *)((int)this->mx + i * 8 + 4);
+        uVar1 = *(uint *)((int)this->mx + i * 8 + 0xc);
+        if ((uVar1 <= uVar4) && ((uVar4 != uVar1 || ((uint)this->mx[i + 1] < (uint)this->mx[i])))) {
+          uVar7 = this->mx[i];
+          uVar5 = *(undefined4 *)((int)this->mx + i * 8 + 4);
+          *(int *)(this->mx + i) = (int)this->mx[i + 1];
+          *(undefined4 *)((int)this->mx + i * 8 + 4) = *(undefined4 *)((int)this->mx + i * 8 + 0xc);
+          *(int *)(this->mx + i + 1) = (int)uVar7;
+          *(undefined4 *)((int)this->mx + i * 8 + 0xc) = uVar5;
           bVar6 = true;
         }
       }
@@ -137,7 +136,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 006D1430  Com_LiveAllocate  (qcommon/common.cpp:397)
 
-void * __cdecl Com_LiveAllocate(uint param_1)
+void * __cdecl Com_LiveAllocate(uint size)
 
 {
   void *pvVar1;
@@ -147,7 +146,7 @@ void * __cdecl Com_LiveAllocate(uint param_1)
                             (s_liveAllocatorMem,0x40000,HU_SCHEME_FIRSTFIT,0,(void *)0x0,
                              "LiveAllocator",0);
   }
-  pvVar1 = Hunk_UserAlloc(liveMemHunk,param_1,4,(char *)0x0);
+  pvVar1 = Hunk_UserAlloc(liveMemHunk,size,4,(char *)0x0);
   return pvVar1;
 }
 
@@ -174,48 +173,49 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 006D1480  Com_LiveDeallocate  (qcommon/common.cpp:405)
 
-void __cdecl Com_LiveDeallocate(void *param_1)
+void __cdecl Com_LiveDeallocate(void *data)
 
 {
-  Hunk_UserFree(liveMemHunk,param_1);
+  Hunk_UserFree(liveMemHunk,data);
   return;
 }
 
 
 // 006D14A0  Com_LiveRealloc  (qcommon/common.cpp:412)
 
-void * __cdecl Com_LiveRealloc(void *param_1,uint param_2)
+void * __cdecl Com_LiveRealloc(void *ptr,uint size)
 
 {
-  uchar *puVar1;
+  uchar *dst;
+  void *result;
   
-  if ((param_2 == 0) && (param_1 != (void *)0x0)) {
-    Com_LiveDeallocate(param_1);
-    puVar1 = (uchar *)0x0;
+  if ((size == 0) && (ptr != (void *)0x0)) {
+    Com_LiveDeallocate(ptr);
+    dst = (uchar *)0x0;
   }
   else {
-    puVar1 = Com_LiveAllocate(param_2);
-    if ((puVar1 != (uchar *)0x0) && (param_1 != (void *)0x0)) {
-      memcpy(puVar1,param_1,param_2);
-      Com_LiveDeallocate(param_1);
+    dst = Com_LiveAllocate(size);
+    if ((dst != (uchar *)0x0) && (ptr != (void *)0x0)) {
+      memcpy(dst,ptr,size);
+      Com_LiveDeallocate(ptr);
     }
   }
-  return puVar1;
+  return dst;
 }
 
 
 // 006D1510  Com_LiveCalloc  (qcommon/common.cpp:431)
 
-void * __cdecl Com_LiveCalloc(uint param_1,uint param_2)
+void * __cdecl Com_LiveCalloc(uint num,uint size)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   
-  puVar1 = Com_LiveAllocate(param_1 * param_2);
-  if (puVar1 != (uchar *)0x0) {
-    memset(puVar1,'\0',param_1 * param_2);
+  dst = Com_LiveAllocate(num * size);
+  if (dst != (uchar *)0x0) {
+    memset(dst,'\0',num * size);
   }
-  return puVar1;
+  return dst;
 }
 
 
@@ -234,28 +234,28 @@ void __cdecl TRACK_common(void)
 
 // 006D15C0  Com_IsRunningMenuLevel  (qcommon/common.cpp:807)
 
-bool __cdecl Com_IsRunningMenuLevel(char *param_1)
+bool __cdecl Com_IsRunningMenuLevel(char *name)
 
 {
   bool bVar1;
   int iVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     if (sv_mapname == (dvar_s *)0x0) {
       return false;
     }
-    param_1 = (sv_mapname->current).string;
+    name = (sv_mapname->current).string;
   }
   if ((com_sv_running->current).enabled == false) {
     bVar1 = false;
   }
   else {
-    iVar2 = I_strnicmp(param_1,"menu_",5);
+    iVar2 = I_strnicmp(name,"menu_",5);
     if (iVar2 == 0) {
       bVar1 = true;
     }
     else {
-      iVar2 = I_strcmp(param_1,"ui");
+      iVar2 = I_strcmp(name,"ui");
       if (iVar2 == 0) {
         bVar1 = true;
       }
@@ -270,21 +270,21 @@ bool __cdecl Com_IsRunningMenuLevel(char *param_1)
 
 // 006D1630  Com_IsMenuLevel  (qcommon/common.cpp:830)
 
-bool __cdecl Com_IsMenuLevel(char *param_1)
+bool __cdecl Com_IsMenuLevel(char *name)
 
 {
   bool bVar1;
   int iVar2;
   
-  if (param_1 == (char *)0x0) {
-    param_1 = (sv_mapname->current).string;
+  if (name == (char *)0x0) {
+    name = (sv_mapname->current).string;
   }
-  iVar2 = I_strnicmp(param_1,"menu_",5);
+  iVar2 = I_strnicmp(name,"menu_",5);
   if (iVar2 == 0) {
     bVar1 = true;
   }
   else {
-    iVar2 = I_strcmp(param_1,"ui");
+    iVar2 = I_strcmp(name,"ui");
     if (iVar2 == 0) {
       bVar1 = true;
     }
@@ -298,15 +298,15 @@ bool __cdecl Com_IsMenuLevel(char *param_1)
 
 // 006D1680  Com_BeginRedirect  (qcommon/common.cpp:863)
 
-void __cdecl Com_BeginRedirect(char *param_1,uint param_2,_func___cdecl_void_char_ptr *param_3)
+void __cdecl Com_BeginRedirect(char *buffer,uint buffersize,_func___cdecl_void_char_ptr *flush)
 
 {
-  if (((param_1 != (char *)0x0) && (param_2 != 0)) &&
-     (param_3 != (_func___cdecl_void_char_ptr *)0x0)) {
-    rd_buffer = param_1;
-    rd_buffersize = param_2;
-    rd_flush = param_3;
-    *param_1 = '\0';
+  if (((buffer != (char *)0x0) && (buffersize != 0)) &&
+     (flush != (_func___cdecl_void_char_ptr *)0x0)) {
+    rd_buffer = buffer;
+    rd_buffersize = buffersize;
+    rd_flush = flush;
+    *buffer = '\0';
   }
   return;
 }
@@ -333,14 +333,14 @@ void __cdecl Com_OpenLogFile(void)
 
 {
   bool bVar1;
-  long64 local_14;
-  tm *local_8;
+  long64 aclock;
+  tm *newtime;
   
   bVar1 = Sys_IsMainThread();
   if ((bVar1) && (opening_qconsole == 0)) {
     opening_qconsole = 1;
-    _time64(&local_14);
-    local_8 = _localtime64(&local_14);
+    _time64(&aclock);
+    newtime = _localtime64(&aclock);
     if ((log_append == (dvar_s *)0x0) || ((log_append->current).enabled == false)) {
       logfile = FS_FOpenTextFileWrite("console_mp.log");
     }
@@ -348,7 +348,7 @@ void __cdecl Com_OpenLogFile(void)
       logfile = FS_FOpenFileAppend("console_mp.log");
     }
     com_consoleLogOpenFailed = (int)(logfile == 0);
-    asctime(local_8);
+    asctime(newtime);
     Com_GetBuildNumber();
     Com_Printf(0x10,"Build %d\nlogfile opened on %s\n");
     opening_qconsole = 0;
@@ -359,7 +359,7 @@ void __cdecl Com_OpenLogFile(void)
 
 // 006D1A30  Com_LogPrintMessage  (qcommon/common.cpp:947)
 
-void __cdecl Com_LogPrintMessage(int param_1,char *param_2)
+void __cdecl Com_LogPrintMessage(int channel,char *msg)
 
 {
   char cVar1;
@@ -373,12 +373,12 @@ void __cdecl Com_LogPrintMessage(int param_1,char *param_2)
       Com_OpenLogFile();
     }
     if (logfile != 0) {
-      local_8 = param_2;
+      local_8 = msg;
       do {
         cVar1 = *local_8;
         local_8 = local_8 + 1;
       } while (cVar1 != '\0');
-      FS_WriteToDemo(param_2,(int)local_8 - (int)(param_2 + 1),logfile);
+      FS_WriteToDemo(msg,(int)local_8 - (int)(msg + 1),logfile);
       if (1 < (com_logfile->current).integer) {
         FS_Flush(logfile);
       }
@@ -394,7 +394,7 @@ void __cdecl Com_LogPrintMessage(int param_1,char *param_2)
 /* WARNING: Removing unreachable block (ram,0x006d1954) */
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
+void __cdecl Com_PrintMessage(int channel,char *msg,int error)
 
 {
   char cVar1;
@@ -405,23 +405,24 @@ void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
   char *local_24;
   char *local_20;
   char *local_10;
+  int len;
   
-  if ((param_1 < 0x1f) || (bVar2 = Con_IsChannelVisible(CON_DEST_CONSOLE,param_1,0), bVar2)) {
+  if ((channel < 0x1f) || (bVar2 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,0), bVar2)) {
     bVar2 = false;
   }
   else {
     bVar2 = true;
   }
-  if (((!bVar2) || (param_3 == 2)) || (param_3 == 3)) {
-    PbCaptureConsoleOutput(param_2,0x1000);
+  if (((!bVar2) || (error == 2)) || (error == 3)) {
+    PbCaptureConsoleOutput(msg,0x1000);
     Sys_EnterCriticalSection(CRITSECT_CONSOLE);
-    local_10 = param_2;
+    local_10 = msg;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    if ((int)(local_10 + (1 - (int)(param_2 + 1))) < 0x101) {
-      local_20 = param_2;
+    if ((int)(local_10 + (1 - (int)(msg + 1))) < 0x101) {
+      local_20 = msg;
       local_24 = com_consoleBuffer[com_consoleBufferCurLine];
       do {
         cVar1 = *local_20;
@@ -431,7 +432,7 @@ void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
       } while (cVar1 != '\0');
     }
     else {
-      strncpy((uchar *)(com_consoleBuffer + com_consoleBufferCurLine),(uchar *)param_2,0xff);
+      strncpy((uchar *)(com_consoleBuffer + com_consoleBufferCurLine),(uchar *)msg,0xff);
       com_consoleBuffer[com_consoleBufferCurLine][0xff] = '\0';
     }
     com_consoleBufferCurLine = com_consoleBufferCurLine + 1;
@@ -440,34 +441,34 @@ void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
     }
     Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
     if (rd_buffer == (char *)0x0) {
-      if (((param_1 != 6) && (iVar3 = Sys_IsRemoteDebugServer(), iVar3 != 0)) &&
+      if (((channel != 6) && (iVar3 = Sys_IsRemoteDebugServer(), iVar3 != 0)) &&
          (iVar3 = Sys_DebugSocketReady(0), iVar3 != 0)) {
         Sys_WriteDebugSocketMessageType('*');
-        Sys_WriteDebugSocketString(param_2);
+        Sys_WriteDebugSocketString(msg);
         Sys_EndWriteDebugSocket();
       }
-      if ((*param_2 == '^') && (param_2[1] != '\0')) {
-        param_2 = param_2 + 2;
+      if ((*msg == '^') && (msg[1] != '\0')) {
+        msg = msg + 2;
       }
-      if ((param_1 != 6) &&
+      if ((channel != 6) &&
          (((com_filter_output == (dvar_s *)0x0 || ((com_filter_output->current).enabled == false))
-          || (bVar2 = Con_IsChannelVisible(CON_DEST_CONSOLE,param_1,3), bVar2)))) {
-        Sys_Print(param_2);
+          || (bVar2 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,3), bVar2)))) {
+        Sys_Print(msg);
       }
       bVar2 = Monkey_IsRunning();
       if (bVar2) {
         Sys_EnterCriticalSection(CRITSECT_CONSOLE);
-        Monkey_ComPrintHook(param_2);
+        Monkey_ComPrintHook(msg);
         Sys_LeaveCriticalSection(CRITSECT_CONSOLE);
       }
-      if (((param_1 != 7) && (com_logfile != (dvar_s *)0x0)) &&
+      if (((channel != 7) && (com_logfile != (dvar_s *)0x0)) &&
          ((com_logfile->current).integer != 0)) {
-        Com_LogPrintMessage(param_1,param_2);
+        Com_LogPrintMessage(channel,msg);
       }
     }
-    else if (param_1 != 6) {
+    else if (channel != 6) {
       Sys_EnterCriticalSection(CRITSECT_RD_BUFFER);
-      local_30 = param_2;
+      local_30 = msg;
       do {
         cVar1 = *local_30;
         local_30 = local_30 + 1;
@@ -478,11 +479,11 @@ void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
         local_40 = local_40 + 1;
       } while (cVar1 != '\0');
       if ((char *)(rd_buffersize - 1) <
-          local_30 + (int)(local_40 + (-(int)(rd_buffer + 1) - (int)(param_2 + 1)))) {
+          local_30 + (int)(local_40 + (-(int)(rd_buffer + 1) - (int)(msg + 1)))) {
         (*rd_flush)(rd_buffer);
         *rd_buffer = '\0';
       }
-      I_strncat(rd_buffer,rd_buffersize,param_2);
+      I_strncat(rd_buffer,rd_buffersize,msg);
       Sys_LeaveCriticalSection(CRITSECT_RD_BUFFER);
     }
   }
@@ -496,25 +497,26 @@ void __cdecl Com_PrintMessage(int param_1,char *param_2,int param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Com_Printf(int param_1,char *param_2)
+void __cdecl Com_Printf(int channel,char *fmt)
 
 {
   bool bVar1;
-  char local_100c [4095];
+  char *argptr;
+  char msg [4095];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 < 0x1f) || (bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,param_1,0), bVar1)) {
+  if ((channel < 0x1f) || (bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,0), bVar1)) {
     bVar1 = false;
   }
   else {
     bVar1 = true;
   }
   if (!bVar1) {
-    _vsnprintf(local_100c,0x1000,param_2,&stack0x0000000c);
+    _vsnprintf(msg,0x1000,fmt,&stack0x0000000c);
     local_d = 0;
-    Com_PrintMessage(param_1,local_100c,0);
+    Com_PrintMessage(channel,msg,0);
   }
   return;
 }
@@ -526,26 +528,27 @@ void __cdecl Com_Printf(int param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "print_msg_dest_t": Some values do not have unique names */
 
-void __cdecl Com_DPrintf(int param_1,char *param_2)
+void __cdecl Com_DPrintf(int channel,char *fmt)
 
 {
   bool bVar1;
-  char local_100c [4095];
+  char *argptr;
+  char msg [4095];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((com_developer != (dvar_s *)0x0) && ((com_developer->current).integer != 0)) {
-    if ((param_1 < 0x1f) || (bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,param_1,0), bVar1)) {
+    if ((channel < 0x1f) || (bVar1 = Con_IsChannelVisible(CON_DEST_CONSOLE,channel,0), bVar1)) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
     if (!bVar1) {
-      _vsnprintf(local_100c,0x1000,param_2,&stack0x0000000c);
+      _vsnprintf(msg,0x1000,fmt,&stack0x0000000c);
       local_d = 0;
-      Com_Printf(param_1,"%s");
+      Com_Printf(channel,"%s");
     }
   }
   return;
@@ -557,37 +560,38 @@ void __cdecl Com_DPrintf(int param_1,char *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_PrintError(int param_1,char *param_2)
+void __cdecl Com_PrintError(int channel,char *fmt)
 
 {
   char cVar1;
   char *pcVar2;
   char *local_1014;
-  char local_100c;
+  char *argptr;
+  char msg;
   char acStack_100b [4094];
   undefined1 local_d;
   uint local_c;
-  int local_8;
+  int offset;
   
-  local_8 = 0x6d1d2d;
+  offset = 0x6d1d2d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar2 = I_stristr(param_2,"error");
+  pcVar2 = I_stristr(fmt,"error");
   if (pcVar2 == (char *)0x0) {
-    I_strncpyz(&local_100c,"^1Error: ",0x1000);
+    I_strncpyz(&msg,"^1Error: ",0x1000);
   }
   else {
-    I_strncpyz(&local_100c,"^1",0x1000);
+    I_strncpyz(&msg,"^1",0x1000);
   }
-  local_1014 = &local_100c;
+  local_1014 = &msg;
   do {
     cVar1 = *local_1014;
     local_1014 = local_1014 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_1014 - (int)acStack_100b;
-  _vsnprintf(acStack_100b + local_8 + -1,0x1000 - local_8,param_2,&stack0x0000000c);
+  offset = (int)local_1014 - (int)acStack_100b;
+  _vsnprintf(acStack_100b + offset + -1,0x1000 - offset,fmt,&stack0x0000000c);
   local_d = 0;
   com_errorPrintsCount = com_errorPrintsCount + 1;
-  Com_PrintMessage(param_1,&local_100c,3);
+  Com_PrintMessage(channel,&msg,3);
   return;
 }
 
@@ -597,47 +601,50 @@ void __cdecl Com_PrintError(int param_1,char *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_PrintWarning(int param_1,char *param_2)
+void __cdecl Com_PrintWarning(int channel,char *fmt)
 
 {
   char cVar1;
   char *local_1014;
-  char local_100c;
+  char *argptr;
+  char msg;
   char acStack_100b [4094];
   undefined1 local_d;
   uint local_c;
-  int local_8;
+  int offset;
   
-  local_8 = 0x6d1e5d;
+  offset = 0x6d1e5d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  I_strncpyz(&local_100c,"^3",0x1000);
-  local_1014 = &local_100c;
+  I_strncpyz(&msg,"^3",0x1000);
+  local_1014 = &msg;
   do {
     cVar1 = *local_1014;
     local_1014 = local_1014 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_1014 - (int)acStack_100b;
-  _vsnprintf(acStack_100b + local_8 + -1,0x1000 - local_8,param_2,&stack0x0000000c);
+  offset = (int)local_1014 - (int)acStack_100b;
+  _vsnprintf(acStack_100b + offset + -1,0x1000 - offset,fmt,&stack0x0000000c);
   local_d = 0;
-  Com_PrintMessage(param_1,&local_100c,2);
+  Com_PrintMessage(channel,&msg,2);
   return;
 }
 
 
 // 006D1F70  Com_ShutdownInternal  (qcommon/common.cpp:1342)
 
-void __cdecl Com_ShutdownInternal(char *param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+void __cdecl Com_ShutdownInternal(char *finalmsg)
 
 {
-  undefined4 local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    CL_Disconnect(local_8,false);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    CL_Disconnect(localClientNum,false);
   }
   SV_AllowPackets(false);
   CL_ShutdownAll();
   CL_ShutdownDemo();
-  SV_Shutdown(param_1);
+  SV_Shutdown(finalmsg);
   Dvar_ResetDvars(8,DVAR_SOURCE_INTERNAL);
   Dvar_ResetDvars(0x100,DVAR_SOURCE_INTERNAL);
   Com_Restart();
@@ -651,10 +658,10 @@ void __cdecl Com_ShutdownInternal(char *param_1)
 
 /* WARNING: Removing unreachable block (ram,0x006d1f58) */
 
-void __cdecl Com_Shutdown(char *param_1)
+void __cdecl Com_Shutdown(char *finalmsg)
 
 {
-  Com_ShutdownInternal(param_1);
+  Com_ShutdownInternal(finalmsg);
   return;
 }
 
@@ -672,19 +679,21 @@ void __cdecl Com_ClearTempMemory(void)
 
 // 006D1FF0  Com_InitDynamicRender  (qcommon/common.cpp:1426)
 
+/* WARNING: Enum "eExtraCamResolution": Some values do not have unique names */
+
 void __cdecl Com_InitDynamicRender(void)
 
 {
   bool bVar1;
-  bool bVar2;
+  bool allocatePingPongBuffer;
   
   bVar1 = Com_IsMenuLevel((char *)0x0);
   R_InitWaterSimulationBuffers((uint)bVar1);
   bVar1 = Com_IsMenuLevel((char *)0x0);
   R_ExtraCam_Init((uint)bVar1);
-  bVar2 = false;
+  allocatePingPongBuffer = false;
   bVar1 = Com_IsMenuLevel((char *)0x0);
-  R_UI3D_OnetimeInit(0x80,0x80,false,(uint)bVar1,bVar2);
+  R_UI3D_OnetimeInit(0x80,0x80,false,(uint)bVar1,allocatePingPongBuffer);
   return;
 }
 
@@ -741,30 +750,30 @@ float __cdecl Com_GetTimeScale(void)
 
 // 006D2110  Com_SetTimeScale  (qcommon/common.cpp:1547)
 
-void __cdecl Com_SetTimeScale(float param_1)
+void __cdecl Com_SetTimeScale(float timescale)
 
 {
-  com_codeTimeScale = param_1;
+  com_codeTimeScale = timescale;
   return;
 }
 
 
 // 006D2260  Com_ErrorIsNotice  (qcommon/common.cpp:1586)
 
-bool __cdecl Com_ErrorIsNotice(char *param_1)
+bool __cdecl Com_ErrorIsNotice(char *errorMessage)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (*noticeErrors[local_8] == '\0') {
+    if (*noticeErrors[i] == '\0') {
       return false;
     }
-    iVar1 = I_stricmp(noticeErrors[local_8],param_1);
+    iVar1 = I_stricmp(noticeErrors[i],errorMessage);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -772,50 +781,51 @@ bool __cdecl Com_ErrorIsNotice(char *param_1)
 
 // 006D2130  Com_SetLocalizedErrorMessage  (qcommon/common.cpp:1606)
 
-void __cdecl Com_SetLocalizedErrorMessage(char *param_1,char *param_2)
+void __cdecl Com_SetLocalizedErrorMessage(char *localizedErrorMessage,char *titleToken)
 
 {
-  char *pcVar1;
+  char *value;
+  char *translation;
   
   ui_errorMessage = _Dvar_RegisterString("com_errorMessage","",0x40,"Most recent error message");
   ui_errorTitle =
        _Dvar_RegisterString("com_errorTitle","",0x40,"Title of the most recent error message");
-  pcVar1 = SEH_LocalizeTextMessage(param_2,"error message",LOCMSG_NOERR);
-  if (pcVar1 == (char *)0x0) {
+  value = SEH_LocalizeTextMessage(titleToken,"error message",LOCMSG_NOERR);
+  if (value == (char *)0x0) {
     Dvar_SetString(ui_errorTitle,"");
   }
   else {
-    Dvar_SetString(ui_errorTitle,pcVar1);
+    Dvar_SetString(ui_errorTitle,value);
   }
-  Dvar_SetString(ui_errorMessage,param_1);
-  I_strncpyz(com_errorMessage,param_1,0x1000);
+  Dvar_SetString(ui_errorMessage,localizedErrorMessage);
+  I_strncpyz(com_errorMessage,localizedErrorMessage,0x1000);
   return;
 }
 
 
 // 006D21F0  Com_SetErrorMessage  (qcommon/common.cpp:1631)
 
-void __cdecl Com_SetErrorMessage(char *param_1)
+void __cdecl Com_SetErrorMessage(char *errorMessage)
 
 {
   bool bVar1;
-  char *local_c;
-  char *local_8;
+  char *translation;
+  char *title;
   
   if (errorcode != ERR_SERVERDISCONNECT) {
-    bVar1 = Com_ErrorIsNotice(param_1);
+    bVar1 = Com_ErrorIsNotice(errorMessage);
     if (!bVar1) {
-      local_8 = "MENU_ERROR";
+      title = "MENU_ERROR";
       goto LAB_006d2222;
     }
   }
-  local_8 = "MENU_NOTICE";
+  title = "MENU_NOTICE";
 LAB_006d2222:
-  local_c = SEH_LocalizeTextMessage(param_1,"error message",LOCMSG_NOERR);
-  if (local_c == (char *)0x0) {
-    local_c = param_1;
+  translation = SEH_LocalizeTextMessage(errorMessage,"error message",LOCMSG_NOERR);
+  if (translation == (char *)0x0) {
+    translation = errorMessage;
   }
-  Com_SetLocalizedErrorMessage(local_c,local_8);
+  Com_SetLocalizedErrorMessage(translation,title);
   return;
 }
 
@@ -833,12 +843,14 @@ void __cdecl Com_ErrorCleanup(void)
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
-  char *pcVar6;
+  int localClientNum;
+  char *src;
   int in_stack_ffffefd8;
   char *local_1020;
   char *local_101c;
-  char local_100c [4100];
+  char *translation;
+  int currentTime;
+  char szUnlocedMsg [4100];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -867,7 +879,7 @@ void __cdecl Com_ErrorCleanup(void)
   FS_PureServerSetLoadedIwds("","");
   SEH_UpdateLanguageInfo();
   local_101c = com_errorMessage;
-  local_1020 = local_100c;
+  local_1020 = szUnlocedMsg;
   do {
     cVar1 = *local_101c;
     in_stack_ffffefd8 = CONCAT13(cVar1,(int3)in_stack_ffffefd8);
@@ -877,16 +889,16 @@ void __cdecl Com_ErrorCleanup(void)
   } while (cVar1 != '\0');
   if (errorcode == ERR_DISCONNECT) {
     if ((com_errorMessage[0] != '\0') &&
-       (pcVar6 = SEH_LocalizeTextMessage(com_errorMessage,"error message",LOCMSG_NOERR),
-       pcVar6 != (char *)0x0)) {
-      I_strncpyz(com_errorMessage,pcVar6,0x1000);
+       (src = SEH_LocalizeTextMessage(com_errorMessage,"error message",LOCMSG_NOERR),
+       src != (char *)0x0)) {
+      I_strncpyz(com_errorMessage,src,0x1000);
     }
   }
   else {
     if ((cls.uiStarted != 0) && (errorcode != ERR_DROP)) {
       iVar4 = UI_GetMenuScreenForError();
-      iVar5 = Com_LocalClients_GetPrimary();
-      UI_SetActiveMenu(iVar5,iVar4);
+      localClientNum = Com_LocalClients_GetPrimary();
+      UI_SetActiveMenu(localClientNum,iVar4);
     }
     Com_SetErrorMessage(com_errorMessage);
   }
@@ -943,7 +955,7 @@ void __cdecl Com_ErrorCleanup(void)
     else {
       Com_Printf(0x10,"********************\nDisconnecting: %s\n********************\n");
     }
-    Com_ShutdownInternal(local_100c);
+    Com_ShutdownInternal(szUnlocedMsg);
     if ((errorcode == ERR_DROP) && (bVar3 = QuitOnError(), bVar3)) {
       Com_Quit_f();
     }
@@ -990,15 +1002,17 @@ void __cdecl Com_ErrorAbort(void)
 /* WARNING: Removing unreachable block (ram,0x006d2502) */
 /* WARNING: Removing unreachable block (ram,0x006d251b) */
 
-void __cdecl Com_Error(errorParm_t param_1,char *param_2)
+void __cdecl Com_Error(errorParm_t code,char *fmt)
 
 {
   bool bVar1;
   _iobuf *p_Var2;
+  char *argptr;
+  int localClientNum;
   
-  if (((param_1 == ERR_DROP) || (param_1 == ERR_SCRIPT_DROP)) &&
+  if (((code == ERR_DROP) || (code == ERR_SCRIPT_DROP)) &&
      (bVar1 = G_ExitAfterToolComplete(), bVar1)) {
-    _vsnprintf(com_errorMessage,0x1000,param_2,&stack0x0000000c);
+    _vsnprintf(com_errorMessage,0x1000,fmt,&stack0x0000000c);
     com_errorMessage[0xfff] = '\0';
     printf(com_errorMessage);
     Com_Printf(0x10,com_errorMessage);
@@ -1006,48 +1020,48 @@ void __cdecl Com_Error(errorParm_t param_1,char *param_2)
   }
   else {
     Sys_EnterCriticalSection(CRITSECT_COM_ERROR);
-    if (param_1 != ERR_DISCONNECT) {
+    if (code != ERR_DISCONNECT) {
       Monkey_GrabComPrints(true);
     }
     Assert_ResetAddressInfo();
-    if ((param_1 == ERR_DROP) || (param_1 == ERR_FATAL)) {
+    if ((code == ERR_DROP) || (code == ERR_FATAL)) {
       Com_PrintStackTrace();
     }
     bVar1 = Demo_IsIdle();
-    if ((!bVar1) && (param_1 != ERR_SCRIPT)) {
+    if ((!bVar1) && (code != ERR_SCRIPT)) {
       Demo_End(true);
     }
     if (com_errorEntered != 0) {
       Sys_Error("%s");
     }
     com_errorEntered = 1;
-    _vsnprintf(com_errorMessage,0x1000,param_2,&stack0x0000000c);
+    _vsnprintf(com_errorMessage,0x1000,fmt,&stack0x0000000c);
     com_errorMessage[0xfff] = '\0';
-    if ((param_1 != ERR_DISCONNECT) && (bVar1 = Monkey_IsRunning(), bVar1)) {
+    if ((code != ERR_DISCONNECT) && (bVar1 = Monkey_IsRunning(), bVar1)) {
       Com_Printf(0x10,com_errorMessage);
       Monkey_Error((char *)0x0);
                     /* WARNING: Subroutine does not return */
       exit(-1);
     }
-    if (param_1 == ERR_SCRIPT) {
+    if (code == ERR_SCRIPT) {
       StatMon_Warning(10,3000,"code_warning_scripterrors");
     }
-    else if (param_1 != ERR_LOCALIZATION) {
-      if (param_1 == ERR_SCRIPT_DROP) {
+    else if (code != ERR_LOCALIZATION) {
+      if (code == ERR_SCRIPT_DROP) {
         com_fixedConsolePosition = 1;
         CL_ConsoleFixPosition();
-        param_1 = ERR_DROP;
+        code = ERR_DROP;
       }
       else {
         com_fixedConsolePosition = 0;
       }
-      errorcode = param_1;
+      errorcode = code;
       Sys_LeaveCriticalSection(CRITSECT_COM_ERROR);
       Com_Printf(0x10,"\n====================================================\n");
       Com_Printf(0x10,"Com_ERROR: %s");
       Com_Printf(0x10,"\n====================================================\n\n");
       R_ReleaseDXDeviceOwnership();
-      bVar1 = G_ExitOnComError(param_1);
+      bVar1 = G_ExitOnComError(code);
       if (!bVar1) {
         TaskManager2_ComErrorCleanup();
         GlassCl_BeginUpdate();
@@ -1085,6 +1099,7 @@ void __cdecl Com_CheckError(void)
 
 {
   int iVar1;
+  int errorEntered;
   
   Sys_EnterCriticalSection(CRITSECT_COM_ERROR);
   iVar1 = com_errorEntered;
@@ -1100,10 +1115,12 @@ void __cdecl Com_CheckError(void)
 
 // 006D2650  Com_Quit_f  (qcommon/common.cpp:2372)
 
+/* WARNING: Variable defined which should be unmapped: localClientNum */
+
 void __cdecl Com_Quit_f(void)
 
 {
-  int iVar1;
+  int localClientNum;
   
   Com_Printf(0,"quitting...\n");
   R_PopRemoteScreenUpdate();
@@ -1113,8 +1130,8 @@ void __cdecl Com_Quit_f(void)
   if (com_errorEntered == 0) {
     Com_ClearTempMemory();
     Sys_DestroySplashWindow();
-    for (iVar1 = 0; iVar1 < 1; iVar1 = iVar1 + 1) {
-      CL_Shutdown(iVar1);
+    for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+      CL_Shutdown(localClientNum);
     }
     SV_Shutdown("EXE_SERVERQUIT");
     Sys_SyncDatabase();
@@ -1129,7 +1146,7 @@ void __cdecl Com_Quit_f(void)
     FS_ShutdownServerIwdNames();
     FS_ShutdownServerReferencedIwds();
     FS_ShutdownServerReferencedFFs();
-    GamerProfile_WriteSettings(iVar1);
+    GamerProfile_WriteSettings(localClientNum);
   }
   Sys_Quit();
   return;
@@ -1138,24 +1155,24 @@ void __cdecl Com_Quit_f(void)
 
 // 006D4EB0  Com_ParseCommandLine  (qcommon/common.cpp:2587)
 
-void __cdecl Com_ParseCommandLine(char *param_1)
+void __cdecl Com_ParseCommandLine(char *commandLine)
 
 {
-  com_consoleLines[0] = param_1;
+  com_consoleLines[0] = commandLine;
   com_numConsoleLines = 1;
   do {
-    if (*param_1 == '\0') {
+    if (*commandLine == '\0') {
       return;
     }
-    if ((*param_1 == '+') || (*param_1 == '\n')) {
+    if ((*commandLine == '+') || (*commandLine == '\n')) {
       if (com_numConsoleLines == 0x20) {
         return;
       }
-      com_consoleLines[com_numConsoleLines] = param_1 + 1;
+      com_consoleLines[com_numConsoleLines] = commandLine + 1;
       com_numConsoleLines = com_numConsoleLines + 1;
-      *param_1 = '\0';
+      *commandLine = '\0';
     }
-    param_1 = param_1 + 1;
+    commandLine = commandLine + 1;
   } while( true );
 }
 
@@ -1169,14 +1186,15 @@ int __cdecl Com_SafeMode(void)
   char *pcVar2;
   int iVar3;
   char *pcVar4;
-  int local_8;
+  bool isSafeMode;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (com_numConsoleLines <= local_8) {
+    if (com_numConsoleLines <= i) {
       return com_safemode;
     }
-    Cmd_TokenizeString(com_consoleLines[local_8]);
+    Cmd_TokenizeString(com_consoleLines[i]);
     pcVar4 = "safe";
     pcVar2 = Cmd_Argv(0);
     iVar3 = I_stricmp(pcVar2,pcVar4);
@@ -1193,10 +1211,10 @@ LAB_006d27bb:
     }
     Cmd_EndTokenizedString();
     if (bVar1) {
-      *com_consoleLines[local_8] = '\0';
+      *com_consoleLines[i] = '\0';
       return 1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1215,7 +1233,7 @@ void __cdecl Com_ForceSafeMode(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_StartupProcessSetCommand(int param_1,char *param_2)
+bool __cdecl Com_StartupProcessSetCommand(int lineIndex,char *match)
 
 {
   byte bVar1;
@@ -1228,20 +1246,21 @@ bool __cdecl Com_StartupProcessSetCommand(int param_1,char *param_2)
   int local_168;
   byte *local_160;
   byte *local_15c;
-  char *local_124;
-  int local_120;
-  char local_11c [260];
+  int l;
+  int len;
+  int i;
+  char combined [260];
   uint local_18;
-  dvar_s *local_14;
-  int local_10;
-  char *local_c;
-  undefined1 local_5;
+  dvar_s *dvar;
+  int c;
+  char *dvarName;
+  bool result;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = 0;
-  Cmd_TokenizeString(com_consoleLines[param_1]);
-  if (param_2 != (char *)0x0) {
-    local_15c = (byte *)param_2;
+  result = false;
+  Cmd_TokenizeString(com_consoleLines[lineIndex]);
+  if (match != (char *)0x0) {
+    local_15c = (byte *)match;
     local_160 = (byte *)Cmd_Argv(1);
     do {
       bVar1 = *local_160;
@@ -1266,35 +1285,35 @@ LAB_006d29d6:
   pcVar3 = Cmd_Argv(0);
   iVar4 = I_stricmp(pcVar3,pcVar6);
   if (iVar4 == 0) {
-    local_10 = Cmd_Argc();
-    if (local_10 < 3) {
+    c = Cmd_Argc();
+    if (c < 3) {
       Com_Printf(0,"USAGE: set <variable> <value>\n");
     }
     else {
-      local_c = Cmd_Argv(1);
-      bVar5 = Dvar_IsValidName(local_c);
+      dvarName = Cmd_Argv(1);
+      bVar5 = Dvar_IsValidName(dvarName);
       if (bVar5) {
-        local_14 = Dvar_FindVar(local_c);
-        if ((local_14 != (dvar_s *)0x0) && ((*(uint *)&local_14->flags & 0x10) != 0)) {
-          local_11c[0] = '\0';
-          local_124 = (char *)0x0;
-          for (local_120 = 2; local_120 < local_10; local_120 = local_120 + 1) {
-            local_170 = Cmd_Argv(local_120);
+        dvar = Dvar_FindVar(dvarName);
+        if ((dvar != (dvar_s *)0x0) && ((*(uint *)&dvar->flags & 0x10) != 0)) {
+          combined[0] = '\0';
+          len = 0;
+          for (i = 2; i < c; i = i + 1) {
+            local_170 = Cmd_Argv(i);
             pcVar3 = local_170 + 1;
             do {
               cVar2 = *local_170;
               local_170 = local_170 + 1;
             } while (cVar2 != '\0');
-            if ((char *)0xfd < local_170 + (int)(local_124 + (1 - (int)pcVar3))) break;
-            pcVar6 = Cmd_Argv(local_120);
-            I_strncat(local_11c,0x100,pcVar6);
-            if (local_120 != local_10 + -1) {
-              I_strncat(local_11c,0x100," ");
+            if ((char *)0xfd < local_170 + len + (1 - (int)pcVar3)) break;
+            pcVar6 = Cmd_Argv(i);
+            I_strncat(combined,0x100,pcVar6);
+            if (i != c + -1) {
+              I_strncat(combined,0x100," ");
             }
-            local_124 = local_170 + (int)(local_124 + (1 - (int)pcVar3));
+            len = (int)(local_170 + len + (1 - (int)pcVar3));
           }
-          Dvar_SetFromString(local_14,local_11c);
-          local_5 = 1;
+          Dvar_SetFromString(dvar,combined);
+          result = true;
         }
       }
       else {
@@ -1304,13 +1323,13 @@ LAB_006d29d6:
   }
 LAB_006d2bbe:
   Cmd_EndTokenizedString();
-  return (bool)local_5;
+  return result;
 }
 
 
 // 006D2810  Com_StartupVariable  (qcommon/common.cpp:2709)
 
-void __cdecl Com_StartupVariable(char *param_1)
+void __cdecl Com_StartupVariable(char *match)
 
 {
   byte bVar1;
@@ -1321,17 +1340,17 @@ void __cdecl Com_StartupVariable(char *param_1)
   int local_30;
   byte *local_28;
   byte *local_24;
-  int local_8;
+  int lineIndex;
   
-  local_8 = 0;
+  lineIndex = 0;
   do {
-    if (com_numConsoleLines <= local_8) {
+    if (com_numConsoleLines <= lineIndex) {
       return;
     }
-    bVar2 = Com_StartupProcessSetCommand(local_8,param_1);
+    bVar2 = Com_StartupProcessSetCommand(lineIndex,match);
     if (!bVar2) {
-      Cmd_TokenizeString(com_consoleLines[local_8]);
-      if (param_1 == (char *)0x0) {
+      Cmd_TokenizeString(com_consoleLines[lineIndex]);
+      if (match == (char *)0x0) {
 LAB_006d28cd:
         pcVar5 = "set";
         pcVar3 = Cmd_Argv(0);
@@ -1349,7 +1368,7 @@ LAB_006d28cd:
         }
       }
       else {
-        local_24 = (byte *)param_1;
+        local_24 = (byte *)match;
         local_28 = (byte *)Cmd_Argv(1);
         do {
           bVar1 = *local_28;
@@ -1372,7 +1391,7 @@ LAB_006d28c1:
       }
       Cmd_EndTokenizedString();
     }
-    local_8 = local_8 + 1;
+    lineIndex = lineIndex + 1;
   } while( true );
 }
 
@@ -1385,20 +1404,20 @@ void __cdecl Com_AddStartupCommands(void)
 
 {
   bool bVar1;
-  int iVar2;
-  char *pcVar3;
-  int local_418;
-  char local_414 [1036];
+  int controllerIndex;
+  char *buffer;
+  int i;
+  char localBuffer [1036];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_418 = 0; local_418 < com_numConsoleLines; local_418 = local_418 + 1) {
-    if ((*com_consoleLines[local_418] != '\0') &&
-       (bVar1 = Com_StartupProcessSetCommand(local_418,(char *)0x0), !bVar1)) {
-      Com_sprintf(local_414,0x401,"%s\n");
-      pcVar3 = local_414;
-      iVar2 = Com_LocalClient_GetControllerIndex(0);
-      Cbuf_ExecuteBuffer(0,iVar2,pcVar3);
+  for (i = 0; i < com_numConsoleLines; i = i + 1) {
+    if ((*com_consoleLines[i] != '\0') &&
+       (bVar1 = Com_StartupProcessSetCommand(i,(char *)0x0), !bVar1)) {
+      Com_sprintf(localBuffer,0x401,"%s\n");
+      buffer = localBuffer;
+      controllerIndex = Com_LocalClient_GetControllerIndex(0);
+      Cbuf_ExecuteBuffer(0,controllerIndex,buffer);
     }
   }
   return;
@@ -1409,48 +1428,49 @@ void __cdecl Com_AddStartupCommands(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Info_Print(char *param_1)
+void __cdecl Info_Print(char *s)
 
 {
   char *pcVar1;
-  uchar *local_414;
-  uchar local_40c [20];
+  char *o;
+  int l;
+  char key [20];
   undefined1 local_3f8;
-  char local_20c [516];
+  char value [516];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_1 == '\\') {
-    param_1 = param_1 + 1;
+  if (*s == '\\') {
+    s = s + 1;
   }
   while( true ) {
-    if (*param_1 == '\0') {
+    if (*s == '\0') {
       return;
     }
-    local_414 = local_40c;
-    for (; (*param_1 != '\0' && (*param_1 != '\\')); param_1 = param_1 + 1) {
-      *local_414 = *param_1;
-      local_414 = local_414 + 1;
+    o = key;
+    for (; (*s != '\0' && (*s != '\\')); s = s + 1) {
+      *o = *s;
+      o = o + 1;
     }
-    if ((int)local_414 - (int)local_40c < 0x14) {
-      memset(local_414,' ',0x14 - ((int)local_414 - (int)local_40c));
+    if ((int)o - (int)key < 0x14) {
+      memset((uchar *)o,' ',0x14 - ((int)o - (int)key));
       local_3f8 = 0;
     }
     else {
-      *local_414 = '\0';
+      *o = '\0';
     }
     Com_Printf(0,"%s");
-    if (*param_1 == '\0') break;
-    local_414 = (uchar *)local_20c;
-    pcVar1 = param_1;
-    while ((param_1 = pcVar1 + 1, *param_1 != '\0' && (*param_1 != '\\'))) {
-      *local_414 = *param_1;
-      local_414 = local_414 + 1;
-      pcVar1 = param_1;
+    if (*s == '\0') break;
+    o = value;
+    pcVar1 = s;
+    while ((s = pcVar1 + 1, *s != '\0' && (*s != '\\'))) {
+      *o = *s;
+      o = o + 1;
+      pcVar1 = s;
     }
-    *local_414 = '\0';
-    if (*param_1 != '\0') {
-      param_1 = pcVar1 + 2;
+    *o = '\0';
+    if (*s != '\0') {
+      s = pcVar1 + 2;
     }
     Com_Printf(0,"%s\n");
   }
@@ -1461,12 +1481,12 @@ void __cdecl Info_Print(char *param_1)
 
 // 006D2D80  Com_AllocEvent  (qcommon/common.cpp:2835)
 
-void * __cdecl Com_AllocEvent(int param_1)
+void * __cdecl Com_AllocEvent(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Z_Malloc(param_1,"Com_AllocEvent",0xb);
+  pvVar1 = Z_Malloc(size,"Com_AllocEvent",0xb);
   return pvVar1;
 }
 
@@ -1475,37 +1495,38 @@ void * __cdecl Com_AllocEvent(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Com_PacketEventLoop(int param_1,msg_t *param_2)
+void __cdecl Com_PacketEventLoop(int localClientNum,msg_t *netmsg)
 
 {
-  netadr_t nVar1;
-  netsrc_t nVar2;
-  int iVar3;
-  bool bVar4;
-  netadr_t *pnVar5;
-  msg_t *pmVar6;
-  netadr_t local_18;
+  netadr_t from;
+  netsrc_t sock;
+  int iVar1;
+  bool connectionlesss_packets_only;
+  netadr_t *net_from;
+  msg_t *net_message;
+  netadr_t adr;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   while( true ) {
-    pnVar5 = &local_18;
-    pmVar6 = param_2;
-    nVar2 = Com_LocalClient_GetNetworkID(param_1);
-    iVar3 = NET_GetLoopPacket(nVar2,pnVar5,pmVar6);
-    if (iVar3 == 0) break;
-    bVar4 = clientConnections == (clientConnection_t *)0x0;
-    iVar3 = Sys_Milliseconds();
-    nVar1.ip[0] = local_18.ip[0];
-    nVar1.ip[1] = local_18.ip[1];
-    nVar1.ip[2] = local_18.ip[2];
-    nVar1.ip[3] = local_18.ip[3];
-    nVar1.type = local_18.type;
-    nVar1.port = local_18.port;
-    nVar1._10_2_ = local_18._10_2_;
-    nVar1.addrHandleIndex = local_18.addrHandleIndex;
-    CL_PacketEvent(param_1,nVar1,param_2,iVar3,bVar4);
+    net_from = &adr;
+    net_message = netmsg;
+    sock = Com_LocalClient_GetNetworkID(localClientNum);
+    iVar1 = NET_GetLoopPacket(sock,net_from,net_message);
+    if (iVar1 == 0) break;
+    connectionlesss_packets_only = clientConnections == (clientConnection_t *)0x0;
+    iVar1 = Sys_Milliseconds();
+    from.ip[0] = adr.ip[0];
+    from.ip[1] = adr.ip[1];
+    from.ip[2] = adr.ip[2];
+    from.ip[3] = adr.ip[3];
+    from.type = adr.type;
+    from.port = adr.port;
+    from._10_2_ = adr._10_2_;
+    from.addrHandleIndex = adr.addrHandleIndex;
+    CL_PacketEvent(localClientNum,from,netmsg,iVar1,connectionlesss_packets_only);
   }
   return;
 }
@@ -1514,16 +1535,17 @@ void __cdecl Com_PacketEventLoop(int param_1,msg_t *param_2)
 // 006D31D0  Com_DispatchClientPacketEvent  (qcommon/common.cpp:2896)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Com_DispatchClientPacketEvent(netadr_t param_1,msg_t *param_2)
+void __cdecl Com_DispatchClientPacketEvent(netadr_t adr,msg_t *netmsg)
 
 {
-  int iVar1;
-  bool bVar2;
+  int time;
+  bool connectionlesss_packets_only;
   
-  bVar2 = false;
-  iVar1 = Sys_Milliseconds();
-  CL_PacketEvent(0,param_1,param_2,iVar1,bVar2);
+  connectionlesss_packets_only = false;
+  time = Sys_Milliseconds();
+  CL_PacketEvent(0,adr,netmsg,time,connectionlesss_packets_only);
   return;
 }
 
@@ -1536,67 +1558,67 @@ void __cdecl Com_DispatchClientPacketEvent(netadr_t param_1,msg_t *param_2)
 void __cdecl Com_ClientPacketEvent(void)
 
 {
-  netadr_t nVar1;
-  netadr_t nVar2;
-  netadr_t nVar3;
-  bool bVar4;
-  int iVar5;
-  msg_t local_54;
-  uchar *local_24;
-  netadr_t local_20;
+  netadr_t adr_00;
+  netadr_t adr_01;
+  netadr_t adr_02;
+  bool bVar1;
+  int iVar2;
+  msg_t netmsg;
+  uchar *msgBuf;
+  netadr_t adr;
   uint local_10;
-  LargeLocal local_c;
+  LargeLocal msgBuf_large_local;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  LargeLocal::LargeLocal(&local_c,0x10000);
-  local_24 = LargeLocal::GetBuf(&local_c);
-  MSG_Init(&local_54,local_24,0x10000);
-  Com_PacketEventLoop(0,&local_54);
+  LargeLocal::LargeLocal(&msgBuf_large_local,0x10000);
+  msgBuf = LargeLocal::GetBuf(&msgBuf_large_local);
+  MSG_Init(&netmsg,msgBuf,0x10000);
+  Com_PacketEventLoop(0,&netmsg);
   while( true ) {
-    bVar4 = NET_GetDeferredClientPacket(&local_20,&local_54);
-    if (!bVar4) break;
-    nVar1.ip[0] = local_20.ip[0];
-    nVar1.ip[1] = local_20.ip[1];
-    nVar1.ip[2] = local_20.ip[2];
-    nVar1.ip[3] = local_20.ip[3];
-    nVar1.type = local_20.type;
-    nVar1.port = local_20.port;
-    nVar1._10_2_ = local_20._10_2_;
-    nVar1.addrHandleIndex = local_20.addrHandleIndex;
-    Com_DispatchClientPacketEvent(nVar1,&local_54);
+    bVar1 = NET_GetDeferredClientPacket(&adr,&netmsg);
+    if (!bVar1) break;
+    adr_00.ip[0] = adr.ip[0];
+    adr_00.ip[1] = adr.ip[1];
+    adr_00.ip[2] = adr.ip[2];
+    adr_00.ip[3] = adr.ip[3];
+    adr_00.type = adr.type;
+    adr_00.port = adr.port;
+    adr_00._10_2_ = adr._10_2_;
+    adr_00.addrHandleIndex = adr.addrHandleIndex;
+    Com_DispatchClientPacketEvent(adr_00,&netmsg);
   }
   if ((com_sv_running->current).enabled == false) {
     while( true ) {
-      iVar5 = NET_GetClientPacket(&local_20,&local_54);
-      if (iVar5 == 0) break;
-      nVar2.ip[0] = local_20.ip[0];
-      nVar2.ip[1] = local_20.ip[1];
-      nVar2.ip[2] = local_20.ip[2];
-      nVar2.ip[3] = local_20.ip[3];
-      nVar2.type = local_20.type;
-      nVar2.port = local_20.port;
-      nVar2._10_2_ = local_20._10_2_;
-      nVar2.addrHandleIndex = local_20.addrHandleIndex;
-      Com_DispatchClientPacketEvent(nVar2,&local_54);
+      iVar2 = NET_GetClientPacket(&adr,&netmsg);
+      if (iVar2 == 0) break;
+      adr_01.ip[0] = adr.ip[0];
+      adr_01.ip[1] = adr.ip[1];
+      adr_01.ip[2] = adr.ip[2];
+      adr_01.ip[3] = adr.ip[3];
+      adr_01.type = adr.type;
+      adr_01.port = adr.port;
+      adr_01._10_2_ = adr._10_2_;
+      adr_01.addrHandleIndex = adr.addrHandleIndex;
+      Com_DispatchClientPacketEvent(adr_01,&netmsg);
     }
     while( true ) {
-      iVar5 = Sys_SocketPool_GetPacket(&local_20,&local_54);
-      if (iVar5 == 0) break;
-      nVar3.ip[0] = local_20.ip[0];
-      nVar3.ip[1] = local_20.ip[1];
-      nVar3.ip[2] = local_20.ip[2];
-      nVar3.ip[3] = local_20.ip[3];
-      nVar3.type = local_20.type;
-      nVar3.port = local_20.port;
-      nVar3._10_2_ = local_20._10_2_;
-      nVar3.addrHandleIndex = local_20.addrHandleIndex;
-      Com_DispatchClientPacketEvent(nVar3,&local_54);
+      iVar2 = Sys_SocketPool_GetPacket(&adr,&netmsg);
+      if (iVar2 == 0) break;
+      adr_02.ip[0] = adr.ip[0];
+      adr_02.ip[1] = adr.ip[1];
+      adr_02.ip[2] = adr.ip[2];
+      adr_02.ip[3] = adr.ip[3];
+      adr_02.type = adr.type;
+      adr_02.port = adr.port;
+      adr_02._10_2_ = adr._10_2_;
+      adr_02.addrHandleIndex = adr.addrHandleIndex;
+      Com_DispatchClientPacketEvent(adr_02,&netmsg);
     }
     Sys_CheckForNATOverflow();
-    LargeLocal::~LargeLocal(&local_c);
+    LargeLocal::~LargeLocal(&msgBuf_large_local);
   }
   else {
-    LargeLocal::~LargeLocal(&local_c);
+    LargeLocal::~LargeLocal(&msgBuf_large_local);
   }
   return;
 }
@@ -1606,59 +1628,69 @@ void __cdecl Com_ClientPacketEvent(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Com_ServerPacketEvent(void)
 
 {
-  netadr_t nVar1;
-  netadr_t nVar2;
-  int iVar3;
-  msg_t local_54;
-  uchar *local_24;
-  netadr_t local_20;
+  netadr_t from;
+  netadr_t from_00;
+  int iVar1;
+  msg_t netmsg;
+  uchar *msgBuf;
+  netadr_t adr;
   uint local_10;
-  LargeLocal local_c;
+  LargeLocal msgBuf_large_local;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  LargeLocal::LargeLocal(&local_c,0x10000);
-  local_24 = LargeLocal::GetBuf(&local_c);
-  MSG_Init(&local_54,local_24,0x10000);
+  LargeLocal::LargeLocal(&msgBuf_large_local,0x10000);
+  msgBuf = LargeLocal::GetBuf(&msgBuf_large_local);
+  MSG_Init(&netmsg,msgBuf,0x10000);
   if ((com_sv_running->current).enabled != false) {
-    while (iVar3 = NET_GetClientPacket(&local_20,&local_54), iVar3 != 0) {
-      nVar1.ip[0] = local_20.ip[0];
-      nVar1.ip[1] = local_20.ip[1];
-      nVar1.ip[2] = local_20.ip[2];
-      nVar1.ip[3] = local_20.ip[3];
-      nVar1.type = local_20.type;
-      nVar1.port = local_20.port;
-      nVar1._10_2_ = local_20._10_2_;
-      nVar1.addrHandleIndex = local_20.addrHandleIndex;
-      SV_PacketEvent(nVar1,&local_54);
+    while (iVar1 = NET_GetClientPacket(&adr,&netmsg), iVar1 != 0) {
+      from.ip[0] = adr.ip[0];
+      from.ip[1] = adr.ip[1];
+      from.ip[2] = adr.ip[2];
+      from.ip[3] = adr.ip[3];
+      from.type = adr.type;
+      from.port = adr.port;
+      from._10_2_ = adr._10_2_;
+      from.addrHandleIndex = adr.addrHandleIndex;
+      SV_PacketEvent(from,&netmsg);
     }
   }
-  while (iVar3 = NET_GetLoopPacket(NS_MAXCLIENTS,&local_20,&local_54), iVar3 != 0) {
+  while (iVar1 = NET_GetLoopPacket(NS_MAXCLIENTS,&adr,&netmsg), iVar1 != 0) {
     if ((com_sv_running->current).enabled != false) {
-      nVar2.ip[0] = local_20.ip[0];
-      nVar2.ip[1] = local_20.ip[1];
-      nVar2.ip[2] = local_20.ip[2];
-      nVar2.ip[3] = local_20.ip[3];
-      nVar2.type = local_20.type;
-      nVar2.port = local_20.port;
-      nVar2._10_2_ = local_20._10_2_;
-      nVar2.addrHandleIndex = local_20.addrHandleIndex;
-      SV_PacketEvent(nVar2,&local_54);
+      from_00.ip[0] = adr.ip[0];
+      from_00.ip[1] = adr.ip[1];
+      from_00.ip[2] = adr.ip[2];
+      from_00.ip[3] = adr.ip[3];
+      from_00.type = adr.type;
+      from_00.port = adr.port;
+      from_00._10_2_ = adr._10_2_;
+      from_00.addrHandleIndex = adr.addrHandleIndex;
+      SV_PacketEvent(from_00,&netmsg);
     }
   }
-  LargeLocal::~LargeLocal(&local_c);
+  LargeLocal::~LargeLocal(&msgBuf_large_local);
   return;
 }
 
 
 // 006D2EB0  Com_EventLoop  (qcommon/common.cpp:3128)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Com_EventLoop(void)
 
 {
+  char *buf;
   sysEvent_t *psVar1;
   DWORD DVar2;
   sysEvent_t local_54;
@@ -1668,12 +1700,7 @@ void __cdecl Com_EventLoop(void)
   int local_2c;
   int local_28;
   char *local_24;
-  uint local_1c;
-  sysEventType_t local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"Com_EventLoop");
   do {
@@ -1683,13 +1710,8 @@ void __cdecl Com_EventLoop(void)
     local_30 = psVar1->evValue;
     local_2c = psVar1->evValue2;
     local_28 = psVar1->evPtrLength;
-    local_24 = psVar1->evPtr;
-    local_1c = local_38;
-    local_18 = local_34;
-    local_14 = local_30;
-    local_10 = local_2c;
-    local_c = local_28;
-    local_8 = local_24;
+    buf = psVar1->evPtr;
+    local_24 = buf;
     switch(local_34) {
     case SE_NONE:
       Com_ClientPacketEvent();
@@ -1705,8 +1727,8 @@ void __cdecl Com_EventLoop(void)
       CL_CharEvent(0,local_30);
       break;
     case SE_CONSOLE:
-      Con_Restricted_AddBuf(local_24);
-      Sys_FreeClipboardData(local_8);
+      Con_Restricted_AddBuf(buf);
+      Sys_FreeClipboardData(buf);
       break;
     default:
       Com_Error(ERR_FATAL,"\x15Com_EventLoop: bad event type %i");
@@ -1739,18 +1761,21 @@ void __cdecl Com_Freeze_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
-  double dVar4;
+  char *nptr;
+  int iVar2;
+  double dVar3;
+  int start;
+  int now;
+  float s;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    dVar4 = atof(pcVar2);
+    nptr = Cmd_Argv(1);
+    dVar3 = atof(nptr);
     iVar1 = Sys_Milliseconds();
     do {
-      iVar3 = Sys_Milliseconds();
-    } while ((float)(iVar3 - iVar1) * 0.001 <= (float)dVar4);
+      iVar2 = Sys_Milliseconds();
+    } while ((float)(iVar2 - iVar1) * 0.001 <= (float)dVar3);
   }
   else {
     Com_Printf(0,"freeze <seconds>\n");
@@ -1776,6 +1801,8 @@ void __cdecl Com_Crash_f(void)
 void __cdecl Com_Assert_f(void)
 
 {
+  int a;
+  
   return;
 }
 
@@ -1792,15 +1819,15 @@ void __cdecl Com_ClearCDKey(void)
 
 // 006D3340  CL_ConvertRegKeytoDWKey  (qcommon/common.cpp:3527)
 
-void __cdecl CL_ConvertRegKeytoDWKey(char *param_1,int param_2)
+void __cdecl CL_ConvertRegKeytoDWKey(char *key,int size)
 
 {
-  int local_8;
+  int i;
   
-  memcpy((uchar *)cl_cdkey_dw,(uchar *)param_1,param_2);
-  for (local_8 = 4; local_8 < 0x18; local_8 = local_8 + 5) {
-    memcpy((uchar *)(cl_cdkey_dw + local_8 + 1),(uchar *)(cl_cdkey_dw + local_8),0x19 - local_8);
-    cl_cdkey_dw[local_8] = '-';
+  memcpy((uchar *)cl_cdkey_dw,(uchar *)key,size);
+  for (i = 4; i < 0x18; i = i + 5) {
+    memcpy((uchar *)(cl_cdkey_dw + i + 1),(uchar *)(cl_cdkey_dw + i),0x19 - i);
+    cl_cdkey_dw[i] = '-';
   }
   return;
 }
@@ -1814,30 +1841,32 @@ void __cdecl CL_ConvertRegKeytoDWKey(char *param_1,int param_2)
 void __cdecl Com_ReadCDKey(void)
 
 {
-  _iobuf *p_Var1;
-  uint uVar2;
-  int iVar3;
-  uchar local_28 [16];
+  _iobuf *stream;
+  uint uVar1;
+  int iVar2;
+  ulong size;
+  _iobuf *f;
+  uchar regkey [16];
   char local_18 [4];
   undefined1 uStack_14;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  p_Var1 = fopen("dwclientkey.txt","rt");
-  if (p_Var1 != (_iobuf *)0x0) {
-    uVar2 = fread(local_28,1,0x14,p_Var1);
-    fclose(p_Var1);
-    if (uVar2 == 0x14) {
+  stream = fopen("dwclientkey.txt","rt");
+  if (stream != (_iobuf *)0x0) {
+    uVar1 = fread(regkey,1,0x14,stream);
+    fclose(stream);
+    if (uVar1 == 0x14) {
       uStack_14 = 0;
-      memcpy((uchar *)cl_cdkey,local_28,0x15);
+      memcpy((uchar *)cl_cdkey,regkey,0x15);
       cl_cdkey[0x16] = '\0';
       cl_cdkeychecksum[0] = local_18[0];
       cl_cdkeychecksum[1] = local_18[1];
       cl_cdkeychecksum[2] = local_18[2];
       cl_cdkeychecksum[3] = local_18[3];
       cl_cdkeychecksum[4] = '\0';
-      iVar3 = CL_LocalClient_GetActiveCount();
-      if (iVar3 == 0) {
+      iVar2 = CL_LocalClient_GetActiveCount();
+      if (iVar2 == 0) {
         Com_ClearCDKey();
       }
       else {
@@ -1854,17 +1883,17 @@ void __cdecl Com_ReadCDKey(void)
 
 // 006D3550  Com_ConfigureChecksum  (qcommon/common.cpp:3749)
 
-int __cdecl Com_ConfigureChecksum(char *param_1,int param_2)
+int __cdecl Com_ConfigureChecksum(char *csv,int filesize)
 
 {
-  uint local_c;
-  int local_8;
+  int checksum;
+  int i;
   
-  local_c = 0;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    local_c = local_c * 0x7a69 + (int)param_1[local_8];
+  checksum = 0;
+  for (i = 0; i < filesize; i = i + 1) {
+    checksum = checksum * 0x7a69 + (int)csv[i];
   }
-  return (local_c & 0xfffffff) + 1;
+  return (checksum & 0xfffffffU) + 1;
 }
 
 
@@ -1875,14 +1904,16 @@ bool __cdecl Com_HasConfigureFileChanged(void)
 {
   bool bVar1;
   int iVar2;
-  char *local_8;
+  int filesize;
+  int checksum;
+  char *csv;
   
-  iVar2 = FS_ReadFile("configure_mp.csv",&local_8);
+  iVar2 = FS_ReadFile("configure_mp.csv",&csv);
   if (iVar2 < 0) {
     Com_Error(ERR_FATAL,"EXE_ERR_NOT_FOUND\x15configure_mp.csv");
   }
-  iVar2 = Com_ConfigureChecksum(local_8,iVar2);
-  FS_FreeFile(local_8);
+  iVar2 = Com_ConfigureChecksum(csv,iVar2);
+  FS_FreeFile(csv);
   bVar1 = Sys_HasConfigureChecksumChanged(iVar2);
   return bVar1;
 }
@@ -1890,33 +1921,36 @@ bool __cdecl Com_HasConfigureFileChanged(void)
 
 // 006D3D80  Com_GpuStringCompare  (qcommon/common.cpp:3784)
 
-int __cdecl Com_GpuStringCompare(char *param_1,char *param_2)
+int __cdecl Com_GpuStringCompare(char *wild,char *s)
 
 {
   char cVar1;
   char cVar2;
   int iVar3;
   int iVar4;
+  char charWild;
+  int delta;
+  char charRef;
   
   do {
-    cVar1 = *param_1;
+    cVar1 = *wild;
     if (cVar1 == '*') {
-      if (param_1[1] == '\0') {
+      if (wild[1] == '\0') {
         return 0;
       }
-      if ((*param_2 != '\0') && (iVar3 = Com_GpuStringCompare(param_1,param_2 + 1), iVar3 == 0)) {
+      if ((*s != '\0') && (iVar3 = Com_GpuStringCompare(wild,s + 1), iVar3 == 0)) {
         return 0;
       }
     }
     else if (cVar1 == ' ') {
-      if (((*param_2 != '\0') && (iVar3 = isdigit((int)*param_2), iVar3 == 0)) &&
-         (iVar3 = Com_GpuStringCompare(param_1,param_2 + 1), iVar3 == 0)) {
+      if (((*s != '\0') && (iVar3 = isdigit((int)*s), iVar3 == 0)) &&
+         (iVar3 = Com_GpuStringCompare(wild,s + 1), iVar3 == 0)) {
         return 0;
       }
     }
     else {
-      cVar2 = *param_2;
-      param_2 = param_2 + 1;
+      cVar2 = *s;
+      s = s + 1;
       if ((cVar1 != cVar2) && (cVar1 != '?')) {
         iVar3 = tolower((int)cVar1);
         iVar4 = tolower((int)cVar2);
@@ -1925,7 +1959,7 @@ int __cdecl Com_GpuStringCompare(char *param_1,char *param_2)
         }
       }
     }
-    param_1 = param_1 + 1;
+    wild = wild + 1;
     if (cVar1 == '\0') {
       return 0;
     }
@@ -1937,107 +1971,109 @@ int __cdecl Com_GpuStringCompare(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_DoesGpuStringMatch(char *param_1,char *param_2)
+bool __cdecl Com_DoesGpuStringMatch(char *find,char *ref)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  undefined4 local_410;
-  char local_40c [1024];
+  int wildcardLen;
+  char wildcardTemplate [1024];
   uint local_c;
-  int local_8;
+  int findLen;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40c[0] = '*';
-  local_410 = 1;
-  local_8 = 0;
+  wildcardTemplate[0] = '*';
+  wildcardLen = 1;
+  findLen = 0;
   do {
-    if (param_1[local_8] == '\0') {
-      if (local_40c[local_410 + -1] != '*') {
-        local_40c[local_410] = '*';
-        local_410 = local_410 + 1;
+    if (find[findLen] == '\0') {
+      if (wildcardTemplate[wildcardLen + -1] != '*') {
+        wildcardTemplate[wildcardLen] = '*';
+        wildcardLen = wildcardLen + 1;
       }
-      local_40c[local_410] = '\0';
-      iVar4 = Com_GpuStringCompare(local_40c,param_2);
+      wildcardTemplate[wildcardLen] = '\0';
+      iVar4 = Com_GpuStringCompare(wildcardTemplate,ref);
       return (bool)('\x01' - (iVar4 != 0));
     }
-    iVar4 = isspace((int)param_1[local_8]);
+    iVar4 = isspace((int)find[findLen]);
     if (iVar4 == 0) {
-      local_40c[local_410] = param_1[local_8];
+      wildcardTemplate[wildcardLen] = find[findLen];
 LAB_006d3cdd:
-      local_410 = local_410 + 1;
-      if (local_410 == 0x3ff) {
+      wildcardLen = wildcardLen + 1;
+      if (wildcardLen == 0x3ff) {
         Com_Error(ERR_FATAL,"\x15configure_mp.csv: \"find\" string is too long\n");
       }
     }
     else {
-      if ((local_410 < 1) &&
+      if ((wildcardLen < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\common.cpp",0xf01,1,
                                    "%s\n\t(wildcardLen) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (local_40c[local_410 + -1] != ' ') {
-        local_40c[local_410] = ' ';
+      if (wildcardTemplate[wildcardLen + -1] != ' ') {
+        wildcardTemplate[wildcardLen] = ' ';
         goto LAB_006d3cdd;
       }
     }
-    local_8 = local_8 + 1;
+    findLen = findLen + 1;
   } while( true );
 }
 
 
 // 006D3880  Com_GetConfigureDvarNames  (qcommon/common.cpp:3869)
 
-int __cdecl Com_GetConfigureDvarNames(char **param_1,char (*param_2) [32])
+int __cdecl Com_GetConfigureDvarNames(char **text,char (*dvarNames) [32])
 
 {
   char cVar1;
-  char *pcVar2;
+  char *src;
   char *local_10;
-  int local_c;
+  int dvarCount;
+  char *token;
   
-  local_c = 0;
+  dvarCount = 0;
   while( true ) {
-    pcVar2 = Com_ParseOnLine(param_1);
-    if (*param_1 == (char *)0x0) {
+    src = Com_ParseOnLine(text);
+    if (*text == (char *)0x0) {
       Com_Error(ERR_FATAL,"\x15configure_mp.csv: unexpected end-of-file");
     }
-    if (*pcVar2 == '\0') break;
-    local_10 = pcVar2;
+    if (*src == '\0') break;
+    local_10 = src;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    if (0x1f < (uint)((int)local_10 - (int)(pcVar2 + 1))) {
+    if (0x1f < (uint)((int)local_10 - (int)(src + 1))) {
       Com_Error(ERR_FATAL,"\x15configure_mp.csv: dvar name \"%s\" longer than %i\n");
     }
-    if (0x3f < local_c) {
+    if (0x3f < dvarCount) {
       Com_Error(ERR_FATAL,"\x15configure_mp.csv: more than %i dvars\n");
     }
-    I_strncpyz(param_2[local_c],pcVar2,0x20);
-    local_c = local_c + 1;
+    I_strncpyz(dvarNames[dvarCount],src,0x20);
+    dvarCount = dvarCount + 1;
   }
-  return local_c;
+  return dvarCount;
 }
 
 
 // 006D3950  Com_GetConfigureDvarValues  (qcommon/common.cpp:3899)
 
-void __cdecl Com_GetConfigureDvarValues(int param_1,char **param_2,char (*param_3) [32])
+void __cdecl Com_GetConfigureDvarValues(int dvarCount,char **text,char (*dvarValues) [32])
 
 {
   char cVar1;
   char *pcVar2;
   char *local_10;
-  int local_c;
+  int dvarIndex;
+  char *token;
   
-  for (local_c = 0; local_c < param_1; local_c = local_c + 1) {
-    pcVar2 = Com_ParseOnLine(param_2);
-    if (*param_2 == (char *)0x0) {
+  for (dvarIndex = 0; dvarIndex < dvarCount; dvarIndex = dvarIndex + 1) {
+    pcVar2 = Com_ParseOnLine(text);
+    if (*text == (char *)0x0) {
       Com_Error(ERR_FATAL,"\x15configure_mp.csv: unexpected end-of-file");
     }
     if (*pcVar2 == '\0') {
@@ -2052,11 +2088,11 @@ void __cdecl Com_GetConfigureDvarValues(int param_1,char **param_2,char (*param_
       Com_Error(ERR_FATAL,
                 "\x15configure_mp.csv: entry \'%s\' in dvar value column %i is longer than %i\n");
     }
-    if (param_3 != (char (*) [32])0x0) {
-      I_strncpyz(param_3[local_c],pcVar2,0x20);
+    if (dvarValues != (char (*) [32])0x0) {
+      I_strncpyz(dvarValues[dvarIndex],pcVar2,0x20);
     }
   }
-  pcVar2 = Com_ParseOnLine(param_2);
+  pcVar2 = Com_ParseOnLine(text);
   if (*pcVar2 != '\0') {
     Com_Error(ERR_FATAL,"\x15configure_mp.csv: extra dvar value column(s): value = %s\n");
   }
@@ -2066,16 +2102,18 @@ void __cdecl Com_GetConfigureDvarValues(int param_1,char **param_2,char (*param_
 
 // 006D3A60  Com_SetConfigureDvars  (qcommon/common.cpp:3927)
 
-void __cdecl Com_SetConfigureDvars(int param_1,char (*param_2) [32],char (*param_3) [32])
+void __cdecl Com_SetConfigureDvars(int dvarCount,char (*dvarNames) [32],char (*dvarValues) [32])
 
 {
-  dvar_s *pdVar1;
-  int local_c;
+  dvar_s *dvar_00;
+  int dvarIndex;
+  dvar_s *dvar;
   
-  for (local_c = 0; local_c < param_1; local_c = local_c + 1) {
-    Dvar_SetFromStringByNameFromSource(param_2[local_c],param_3[local_c],DVAR_SOURCE_EXTERNAL,0);
-    pdVar1 = Dvar_FindVar(param_2[local_c]);
-    Dvar_AddFlags(pdVar1,1);
+  for (dvarIndex = 0; dvarIndex < dvarCount; dvarIndex = dvarIndex + 1) {
+    Dvar_SetFromStringByNameFromSource
+              (dvarNames[dvarIndex],dvarValues[dvarIndex],DVAR_SOURCE_EXTERNAL,0);
+    dvar_00 = Dvar_FindVar(dvarNames[dvarIndex]);
+    Dvar_AddFlags(dvar_00,1);
   }
   return;
 }
@@ -2086,94 +2124,92 @@ void __cdecl Com_SetConfigureDvars(int param_1,char (*param_2) [32],char (*param
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_SetRecommendedCpu(int param_1,SysInfo *param_2,char **param_3)
+bool __cdecl Com_SetRecommendedCpu(int localClientNum,SysInfo *info,char **text)
 
 {
   int iVar1;
   double *pdVar2;
   double *pdVar3;
   bool bVar4;
-  char local_14dc [2048];
-  char local_cdc [2052];
-  int local_4d8;
-  double local_4d4 [3];
+  char dvarValues [2048];
+  char dvarNames [2052];
+  int dvarCount;
+  double best [3];
   int local_4bc;
-  char local_26e;
-  char local_26d;
-  double local_26c [3];
+  bool foundMatch;
+  bool useCurRow;
+  double cur [3];
   int local_254;
   uint local_c;
-  char *local_8;
+  char *token;
   
-  local_8 = (char *)0x6d35bd;
+  token = (char *)0x6d35bd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4d8 = 0;
-  local_4d4[0] = -1.0;
+  dvarCount = 0;
+  best[0] = -1.0;
   local_4bc = 0;
-  local_26e = '\0';
+  foundMatch = false;
 LAB_006d35f4:
   do {
-    local_8 = Com_Parse(param_3);
-    if (param_3 == (char **)0x0) {
+    token = Com_Parse(text);
+    if (text == (char **)0x0) {
 LAB_006d37fa:
-      bVar4 = local_26e != '\0';
+      bVar4 = foundMatch != false;
       if (bVar4) {
         Com_Printf(0x10,"configure_mp.csv: using CPU configuration %.0f GHz %i MB\n");
-        Cbuf_AddText(param_1,"exec configure_mp.cfg");
-        Cbuf_Execute(param_1,0);
-        Com_SetConfigureDvars(local_4d8,(char (*) [32])local_cdc,(char (*) [32])local_14dc);
+        Cbuf_AddText(localClientNum,"exec configure_mp.cfg");
+        Cbuf_Execute(localClientNum,0);
+        Com_SetConfigureDvars(dvarCount,(char (*) [32])dvarNames,(char (*) [32])dvarValues);
       }
       return bVar4;
     }
-    if ((*local_8 != '\0') && (*local_8 != '#')) {
-      iVar1 = I_stricmp(local_8,"gpu");
+    if ((*token != '\0') && (*token != '#')) {
+      iVar1 = I_stricmp(token,"gpu");
       if (iVar1 == 0) {
         Com_UngetToken();
         goto LAB_006d37fa;
       }
-      if (local_4d8 == 0) {
-        iVar1 = I_stricmp(local_8,"cpu ghz");
+      if (dvarCount == 0) {
+        iVar1 = I_stricmp(token,"cpu ghz");
         if (iVar1 != 0) {
           Com_Error(ERR_FATAL,"\x15configure_mp.csv: \"cpu ghz\" should be the first column\n");
         }
-        local_8 = Com_ParseOnLine(param_3);
-        iVar1 = I_stricmp(local_8,"sys mb");
+        token = Com_ParseOnLine(text);
+        iVar1 = I_stricmp(token,"sys mb");
         if (iVar1 != 0) {
           Com_Error(ERR_FATAL,"\x15configure_mp.csv: \"sys mb\" should be the second column\n");
         }
-        local_4d8 = Com_GetConfigureDvarNames(param_3,(char (*) [32])local_cdc);
+        dvarCount = Com_GetConfigureDvarNames(text,(char (*) [32])dvarNames);
       }
       else {
-        local_26c[0] = atof(local_8);
-        if (local_26c[0] < 0.0) {
+        cur[0] = atof(token);
+        if (cur[0] < 0.0) {
           Com_Error(ERR_FATAL,"\x15configure_mp.csv: cpu ghz %g not allowed to be less than 0\n");
         }
-        local_8 = Com_ParseOnLine(param_3);
-        local_254 = atoi(local_8);
+        token = Com_ParseOnLine(text);
+        local_254 = atoi(token);
         if (local_254 < 0x80) {
           Com_Error(ERR_FATAL,"\x15configure_mp.csv: sys mb %i not allowed to be less than 128\n");
         }
-        local_26d = '\0';
-        if (((local_26c[0] <= param_2->configureGHz) && (local_254 <= param_2->sysMB)) &&
-           ((local_4d4[0] < local_26c[0] ||
-            ((local_4d4[0] == local_26c[0] && (local_4bc < local_254)))))) {
-          local_26d = '\x01';
-          pdVar2 = local_26c;
-          pdVar3 = local_4d4;
+        useCurRow = false;
+        if (((cur[0] <= info->configureGHz) && (local_254 <= info->sysMB)) &&
+           ((best[0] < cur[0] || ((best[0] == cur[0] && (local_4bc < local_254)))))) {
+          useCurRow = true;
+          pdVar2 = cur;
+          pdVar3 = best;
           for (iVar1 = 0x98; iVar1 != 0; iVar1 = iVar1 + -1) {
             *(undefined4 *)pdVar3 = *(undefined4 *)pdVar2;
             pdVar2 = (double *)((int)pdVar2 + 4);
             pdVar3 = (double *)((int)pdVar3 + 4);
           }
-          local_26e = '\x01';
+          foundMatch = true;
         }
         Com_GetConfigureDvarValues
-                  (local_4d8,param_3,(char (*) [32])(-(uint)(local_26d != '\0') & (uint)local_14dc))
-        ;
+                  (dvarCount,text,(char (*) [32])(-(uint)(useCurRow != false) & (uint)dvarValues));
       }
       goto LAB_006d35f4;
     }
-    Com_SkipRestOfLine(param_3);
+    Com_SkipRestOfLine(text);
   } while( true );
 }
 
@@ -2183,46 +2219,46 @@ LAB_006d37fa:
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_SetRecommendedGpu(SysInfo *param_1,char **param_2)
+bool __cdecl Com_SetRecommendedGpu(SysInfo *info,char **text)
 
 {
   bool bVar1;
   int iVar2;
-  char local_1014 [2048];
-  char local_814 [2048];
+  char dvarValues [2048];
+  char dvarNames [2048];
   uint local_14;
-  int local_10;
-  char local_9;
-  char *local_8;
+  int dvarCount;
+  bool foundMatch;
+  char *token;
   
-  local_8 = (char *)0x6d3add;
+  token = (char *)0x6d3add;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Com_Parse(param_2);
-  iVar2 = I_stricmp(local_8,"gpu");
+  token = Com_Parse(text);
+  iVar2 = I_stricmp(token,"gpu");
   if (iVar2 == 0) {
-    local_10 = Com_GetConfigureDvarNames(param_2,(char (*) [32])local_814);
-    local_9 = '\0';
-    while (local_8 = Com_Parse(param_2), *param_2 != (char *)0x0) {
-      if ((*local_8 == '\0') || (*local_8 == '#')) {
-        Com_SkipRestOfLine(param_2);
+    dvarCount = Com_GetConfigureDvarNames(text,(char (*) [32])dvarNames);
+    foundMatch = false;
+    while (token = Com_Parse(text), *text != (char *)0x0) {
+      if ((*token == '\0') || (*token == '#')) {
+        Com_SkipRestOfLine(text);
       }
-      else if ((local_9 == '\0') &&
-              (bVar1 = Com_DoesGpuStringMatch(local_8,param_1->gpuDescription), bVar1)) {
+      else if ((foundMatch == false) &&
+              (bVar1 = Com_DoesGpuStringMatch(token,info->gpuDescription), bVar1)) {
         Com_Printf(0x10,"configure_mp.csv: using GPU configuration \"%s\"\n");
-        Com_GetConfigureDvarValues(local_10,param_2,(char (*) [32])local_1014);
-        Com_SetConfigureDvars(local_10,(char (*) [32])local_814,(char (*) [32])local_1014);
-        local_9 = '\x01';
+        Com_GetConfigureDvarValues(dvarCount,text,(char (*) [32])dvarValues);
+        Com_SetConfigureDvars(dvarCount,(char (*) [32])dvarNames,(char (*) [32])dvarValues);
+        foundMatch = true;
       }
       else {
-        Com_GetConfigureDvarValues(local_10,param_2,(char (*) [32])0x0);
+        Com_GetConfigureDvarValues(dvarCount,text,(char (*) [32])0x0);
       }
     }
   }
   else {
     Com_UngetToken();
-    local_9 = '\0';
+    foundMatch = false;
   }
-  return (bool)local_9;
+  return foundMatch;
 }
 
 
@@ -2230,51 +2266,52 @@ bool __cdecl Com_SetRecommendedGpu(SysInfo *param_1,char **param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_SetRecommended(int param_1,int param_2)
+void __cdecl Com_SetRecommended(int localClientNum,int restart)
 
 {
   bool bVar1;
-  int iVar2;
-  SysInfo local_274;
+  int filesize_00;
+  int filesize;
+  SysInfo info;
   uint local_14;
-  int local_10;
-  char *local_c;
-  char *local_8;
+  int checksum;
+  char *csv;
+  char *text;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   Com_Printf(0x10,"========= autoconfigure\n");
-  Sys_GetInfo(&local_274);
-  local_274.configureGHz = local_274.configureGHz * 1.02;
-  if (local_274.sysMB < 0x80) {
-    local_274.sysMB = 0x80;
+  Sys_GetInfo(&info);
+  info.configureGHz = info.configureGHz * 1.02;
+  if (info.sysMB < 0x80) {
+    info.sysMB = 0x80;
   }
   else {
-    local_274.sysMB = local_274.sysMB + 8;
+    info.sysMB = info.sysMB + 8;
   }
-  iVar2 = FS_ReadFile("configure_mp.csv",&local_c);
-  if (iVar2 < 0) {
+  filesize_00 = FS_ReadFile("configure_mp.csv",&csv);
+  if (filesize_00 < 0) {
     Com_Error(ERR_FATAL,"EXE_ERR_NOT_FOUND\x15configure_mp.csv");
   }
-  local_8 = local_c;
+  text = csv;
   Com_BeginParseSession("configure_mp.csv");
   Com_SetCSV(1);
-  bVar1 = Com_SetRecommendedCpu(param_1,&local_274,&local_8);
+  bVar1 = Com_SetRecommendedCpu(localClientNum,&info,&text);
   if (!bVar1) {
-    Sys_GetInfo(&local_274);
+    Sys_GetInfo(&info);
     Com_Error(ERR_FATAL,"\x15configure_mp.csv: \x14EXE_ERR_COULDNT_CONFIGURE\x15 %.0f GHz %i MB\n");
   }
-  bVar1 = Com_SetRecommendedGpu(&local_274,&local_8);
+  bVar1 = Com_SetRecommendedGpu(&info,&text);
   if (!bVar1) {
     Com_Error(ERR_FATAL,"\x15configure_mp.csv: \x14EXE_ERR_COULDNT_CONFIGURE\x15 \"%s\"\n");
   }
   Com_EndParseSession();
-  local_10 = Com_ConfigureChecksum(local_c,iVar2);
-  FS_FreeFile(local_c);
-  Sys_ArchiveInfo(local_10);
-  if (param_2 != 0) {
+  checksum = Com_ConfigureChecksum(csv,filesize_00);
+  FS_FreeFile(csv);
+  Sys_ArchiveInfo(checksum);
+  if (restart != 0) {
     bVar1 = Dvar_AnyLatchedValues();
     if (bVar1) {
-      Cbuf_AddText(param_1,"vid_restart\n");
+      Cbuf_AddText(localClientNum,"vid_restart\n");
     }
   }
   return;
@@ -2283,7 +2320,7 @@ void __cdecl Com_SetRecommended(int param_1,int param_2)
 
 // 006D3EA0  Com_CheckSetRecommended  (qcommon/common.cpp:4135)
 
-void __cdecl Com_CheckSetRecommended(int param_1)
+void __cdecl Com_CheckSetRecommended(int localClientNum)
 
 {
   bool bVar1;
@@ -2292,12 +2329,12 @@ void __cdecl Com_CheckSetRecommended(int param_1)
     bVar1 = Com_HasConfigureFileChanged();
     if (!bVar1) goto LAB_006d3edb;
   }
-  Com_SetRecommended(param_1,0);
+  Com_SetRecommended(localClientNum,0);
   Dvar_SetBool(com_recommendedSet,true);
 LAB_006d3edb:
   bVar1 = Sys_HasInfoChanged();
   if (bVar1) {
-    Com_SetRecommended(param_1,0);
+    Com_SetRecommended(localClientNum,0);
   }
   return;
 }
@@ -2308,8 +2345,10 @@ LAB_006d3edb:
 void __cdecl Com_SetScriptSettings(void)
 
 {
-  int iVar1;
+  int abort_on_error_00;
   int local_10;
+  int abort_on_error;
+  int developer;
   
   if (((com_developer->current).integer == 0) && ((com_logfile->current).integer == 0)) {
     local_10 = 0;
@@ -2317,9 +2356,11 @@ void __cdecl Com_SetScriptSettings(void)
   else {
     local_10 = 1;
   }
-  iVar1 = (com_developer->current).integer;
-  Scr_Settings(local_10,(uint)(com_developer_script->current).color[0],iVar1,SCRIPTINSTANCE_SERVER);
-  Scr_Settings(local_10,(uint)(com_developer_script->current).color[0],iVar1,SCRIPTINSTANCE_CLIENT);
+  abort_on_error_00 = (com_developer->current).integer;
+  Scr_Settings(local_10,(uint)(com_developer_script->current).color[0],abort_on_error_00,
+               SCRIPTINSTANCE_SERVER);
+  Scr_Settings(local_10,(uint)(com_developer_script->current).color[0],abort_on_error_00,
+               SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -2345,8 +2386,8 @@ void __cdecl Com_InitDvars(void)
 
 {
   uint uVar1;
-  ushort uVar2;
-  char *pcVar3;
+  ushort flags;
+  char *description;
   
   com_maxclients =
        _Dvar_RegisterInt("com_maxclients",0x12,1,0x20,0x44,"Maximum amount of clients on the server"
@@ -2395,10 +2436,10 @@ void __cdecl Com_InitDvars(void)
        _Dvar_RegisterBool("sys_lockThreads",false,0,
                           "Prevents threads from changing CPUs; improves profiling and may fix some bugs, but can hurt performance"
                          );
-  pcVar3 = "Allow multi-threading";
-  uVar2 = 0x10;
+  description = "Allow multi-threading";
+  flags = 0x10;
   uVar1 = Sys_GetCpuCount();
-  sys_smp_allowed = _Dvar_RegisterBool("sys_smp_allowed",1 < uVar1,uVar2,pcVar3);
+  sys_smp_allowed = _Dvar_RegisterBool("sys_smp_allowed",1 < uVar1,flags,description);
   com_developer = _Dvar_RegisterInt("developer",0,0,2,0,"Enable development options");
   com_developer_script =
        _Dvar_RegisterBool("developer_script",false,0,"Enable developer script comments");
@@ -2493,12 +2534,12 @@ void __cdecl Com_InitDvars(void)
 
 // 006D3FE0  Com_RunAutoExec  (qcommon/common.cpp:4551)
 
-void __cdecl Com_RunAutoExec(int param_1,int param_2)
+void __cdecl Com_RunAutoExec(int localClientNum,int controllerIndex)
 
 {
-  if (-1 < param_1) {
+  if (-1 < localClientNum) {
     Dvar_SetInAutoExec(true);
-    Cmd_ExecuteSingleCommand(param_1,param_2,"exec autoexec_dev_mp.cfg");
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,"exec autoexec_dev_mp.cfg");
     Dvar_SetInAutoExec(false);
   }
   return;
@@ -2507,45 +2548,45 @@ void __cdecl Com_RunAutoExec(int param_1,int param_2)
 
 // 006D4020  Com_ExecStartupConfigs  (qcommon/common.cpp:4592)
 
-void __cdecl Com_ExecStartupConfigs(int param_1,char *param_2)
+void __cdecl Com_ExecStartupConfigs(int localClientNum,char *configFile)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *text;
+  int iVar1;
   
-  Cbuf_AddText(param_1,"exec default_dedicated.cfg\n");
-  Cbuf_AddText(param_1,"exec language.cfg\n");
-  if (param_2 != (char *)0x0) {
-    pcVar1 = va("exec %s\n");
-    Cbuf_AddText(param_1,pcVar1);
+  Cbuf_AddText(localClientNum,"exec default_dedicated.cfg\n");
+  Cbuf_AddText(localClientNum,"exec language.cfg\n");
+  if (configFile != (char *)0x0) {
+    text = va("exec %s\n");
+    Cbuf_AddText(localClientNum,text);
   }
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  Cbuf_Execute(param_1,iVar2);
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  Com_RunAutoExec(param_1,iVar2);
-  iVar2 = Com_SafeMode();
-  if (iVar2 != 0) {
-    Cbuf_AddText(param_1,"exec safemode_mp.cfg\n");
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  Cbuf_Execute(localClientNum,iVar1);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  Com_RunAutoExec(localClientNum,iVar1);
+  iVar1 = Com_SafeMode();
+  if (iVar1 != 0) {
+    Cbuf_AddText(localClientNum,"exec safemode_mp.cfg\n");
   }
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  Cbuf_Execute(param_1,iVar2);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  Cbuf_Execute(localClientNum,iVar1);
   return;
 }
 
 
 // 006D5870  Com_StartupConfigs  (qcommon/common.cpp:4608)
 
-void __cdecl Com_StartupConfigs(int param_1)
+void __cdecl Com_StartupConfigs(int localClientNum)
 
 {
   bool bVar1;
   
   bVar1 = Con_Restricted_ValidateConfig("config_mp.cfg");
   if (bVar1) {
-    Com_ExecStartupConfigs(param_1,"config_mp.cfg");
+    Com_ExecStartupConfigs(localClientNum,"config_mp.cfg");
   }
   else {
-    Com_ExecStartupConfigs(param_1,(char *)0x0);
+    Com_ExecStartupConfigs(localClientNum,(char *)0x0);
   }
   return;
 }
@@ -2556,17 +2597,17 @@ void __cdecl Com_StartupConfigs(int param_1)
 void __cdecl Com_InitCodeXAssets(void)
 
 {
-  XZoneInfo local_38 [4];
-  undefined4 local_8;
+  XZoneInfo zoneInfo [4];
+  uint zoneCount;
   
   DB_InitThread();
   if (g_loadedPreXAssets == 0) {
     g_loadedPreXAssets = 1;
-    local_38[0].name = "code_pre_gfx_mp";
-    local_38[0].allocFlags = 1;
-    local_38[0].freeFlags = 0;
-    local_8 = 1;
-    DB_LoadXAssets(local_38,1,0);
+    zoneInfo[0].name = "code_pre_gfx_mp";
+    zoneInfo[0].allocFlags = 1;
+    zoneInfo[0].freeFlags = 0;
+    zoneCount = 1;
+    DB_LoadXAssets(zoneInfo,1,0);
     DB_SyncXAssets();
   }
   return;
@@ -2590,6 +2631,8 @@ void __cdecl Com_InitUI3DCallback(void)
 void __cdecl Com_InitUIAndCommonXAssets(void)
 
 {
+  ScreenPlacement *scrPlace;
+  
   DB_LoadFastFilesForPC();
   return;
 }
@@ -2600,6 +2643,8 @@ void __cdecl Com_InitUIAndCommonXAssets(void)
 uint __cdecl Com_CalculateStreamBuffer(void)
 
 {
+  uint size;
+  
   return 0x18000000;
 }
 
@@ -2611,24 +2656,25 @@ uint __cdecl Com_CalculateStreamBuffer(void)
 /* WARNING: Removing unreachable block (ram,0x006d4d3f) */
 /* WARNING: Removing unreachable block (ram,0x006d4d5c) */
 /* WARNING: Removing unreachable block (ram,0x006d4d98) */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl Com_Init_Try_Block_Function(char *param_1)
+void __cdecl Com_Init_Try_Block_Function(char *commandLine)
 
 {
-  int iVar1;
-  uint uVar2;
+  int controllerIndex;
+  uint buffer_size;
   int in_stack_ffffffac;
   LARGE_INTEGER local_50 [7];
   char local_12;
   char local_11;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int localClientNum;
+  char *s;
+  int initStartTime;
   
   Com_GetBuildName();
   Com_GetBuildVersion();
   Com_Printf(0x10,"%s %s build %s %s\n");
-  Com_ParseCommandLine(param_1);
+  Com_ParseCommandLine(commandLine);
   SL_Init(SCRIPTINSTANCE_SERVER);
   SL_Init(SCRIPTINSTANCE_CLIENT);
   Swap_Init();
@@ -2637,14 +2683,14 @@ void __cdecl Com_Init_Try_Block_Function(char *param_1)
   Com_StartupVariable((char *)0x0);
   Com_InitDvars();
   IK_InitSystem();
-  local_8 = 0;
+  initStartTime = 0;
   local_11 = (useFastFile->current).enabled;
   if ((bool)local_11 != false) {
     PMem_Init();
     LiveSteam_Init();
     DB_SetInitializing(true);
     Com_Printf(7,"begin $init\n");
-    local_8 = Sys_Milliseconds();
+    initStartTime = Sys_Milliseconds();
     PMem_BeginAlloc("$init",1,TRACK_MISC);
   }
   Stream_Init();
@@ -2663,18 +2709,18 @@ void __cdecl Com_Init_Try_Block_Function(char *param_1)
   DDL_Init();
   Com_InitClientGameStates();
   Con_Restricted_SecureConfigs();
-  for (local_10 = 0; local_10 < 1; local_10 = local_10 + 1) {
-    Com_LocalClient_SetControllerIndex(local_10,local_10);
-    Com_StartupConfigs(local_10);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    Com_LocalClient_SetControllerIndex(localClientNum,localClientNum);
+    Com_StartupConfigs(localClientNum);
   }
-  iVar1 = Com_LocalClient_GetControllerIndex(0);
-  Cbuf_Execute(0,iVar1);
+  controllerIndex = Com_LocalClient_GetControllerIndex(0);
+  Cbuf_Execute(0,controllerIndex);
   Con_Restricted_InitLists();
   if ((dvar_modifiedFlags & 0x20U) != 0) {
     Com_InitDvars();
   }
-  uVar2 = Com_CalculateStreamBuffer();
-  R_StreamSetInitData(uVar2);
+  buffer_size = Com_CalculateStreamBuffer();
+  R_StreamSetInitData(buffer_size);
   com_recommendedSet = _Dvar_RegisterBool("com_recommendedSet",false,1,"Use recommended settings");
   Com_CheckSetRecommended(0);
   Com_StartupVariable((char *)0x0);
@@ -2717,9 +2763,9 @@ void __cdecl Com_Init_Try_Block_Function(char *param_1)
   Com_GetBuildVersion();
   Com_GetBuildName();
   Com_GetBuildDisplayName();
-  local_c = va("%s %s build %s %s");
+  s = va("%s %s build %s %s");
   version = _Dvar_RegisterString("version","",0x40,"Game version");
-  Dvar_SetString(version,local_c);
+  Dvar_SetString(version,s);
   shortversion = _Dvar_RegisterString("shortversion","7",0x44,"Short game version");
   Sys_Init();
   QueryPerformanceCounter(local_50);
@@ -2769,18 +2815,19 @@ void __cdecl Com_Init_Try_Block_Function(char *param_1)
 /* WARNING: Removing unreachable block (ram,0x006d4271) */
 /* WARNING: Removing unreachable block (ram,0x006d427b) */
 
-void __cdecl Com_Init(char *param_1,bool param_2)
+void __cdecl Com_Init(char *commandLine,bool isFreshBoot)
 
 {
   int extraout_EAX;
   int extraout_EAX_00;
   int iVar1;
   char *pcVar2;
+  char *errorMsg;
   
   Sys_GetValue(2);
   __setjmp3();
   if (extraout_EAX == 0) {
-    Com_Init_Try_Block_Function(param_1);
+    Com_Init_Try_Block_Function(commandLine);
   }
   else {
     pcVar2 = va("Error during initialization:\n%s\n");
@@ -2804,7 +2851,7 @@ void __cdecl Com_Init(char *param_1,bool param_2)
     if (*pcVar2 != '\0') {
       Com_LoadUiFastFile();
     }
-    GamerProfile_WriteSettings((uint)param_2);
+    GamerProfile_WriteSettings((uint)isFreshBoot);
     Com_LoadFrontEnd();
   }
   UI_LoadArenas();
@@ -2818,21 +2865,22 @@ void __cdecl Com_Init(char *param_1,bool param_2)
 
 /* WARNING: Removing unreachable block (ram,0x006d5a8e) */
 
-void __cdecl Com_WriteConfigToFile(int param_1,char *param_2)
+void __cdecl Com_WriteConfigToFile(int localClientNum,char *filename)
 
 {
-  int iVar1;
+  int h;
+  int f;
   
-  iVar1 = FS_FOpenFileWriteToDir(param_2,"players",(fs_homepath->current).string);
-  if (iVar1 == 0) {
+  h = FS_FOpenFileWriteToDir(filename,"players",(fs_homepath->current).string);
+  if (h == 0) {
     Com_Printf(0x10,"Couldn\'t write %s.\n");
   }
   else {
-    FS_Printf(iVar1,"// generated by Call of Duty, do not modify\n");
-    Gamepad_WriteBindings(param_1,iVar1);
-    Dvar_WriteVariables(iVar1);
-    Con_WriteFilterConfigString(iVar1);
-    FS_FCloseFile(iVar1);
+    FS_Printf(h,"// generated by Call of Duty, do not modify\n");
+    Gamepad_WriteBindings(localClientNum,h);
+    Dvar_WriteVariables(h);
+    Con_WriteFilterConfigString(h);
+    FS_FCloseFile(h);
   }
   return;
 }
@@ -2842,34 +2890,35 @@ void __cdecl Com_WriteConfigToFile(int param_1,char *param_2)
 
 /* WARNING: Removing unreachable block (ram,0x006d5bf1) */
 
-void __cdecl Com_WriteKeyConfigToFile(int param_1,char *param_2)
+void __cdecl Com_WriteKeyConfigToFile(int localClientNum,char *filename)
 
 {
-  int iVar1;
-  char *local_24 [6];
-  uint local_c;
-  dvar_s *local_8;
+  int h;
+  int f;
+  char *dvars [6];
+  int i;
+  dvar_s *dvar;
   
-  iVar1 = FS_FOpenFileWriteToDir(param_2,"players",(fs_homepath->current).string);
-  if (iVar1 == 0) {
+  h = FS_FOpenFileWriteToDir(filename,"players",(fs_homepath->current).string);
+  if (h == 0) {
     Com_Printf(0x10,"Couldn\'t write %s.\n");
   }
   else {
-    FS_Printf(iVar1,"// generated by Call of Duty, do not modify\n");
-    local_24[0] = "sensitivity";
-    local_24[1] = "cl_freelook";
-    local_24[2] = "ui_mousePitch";
-    local_24[3] = "m_pitch";
-    local_24[4] = "m_filter";
-    local_24[5] = "cl_mouseAccel";
-    for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-      local_8 = Dvar_FindVar(local_24[local_c]);
-      if (local_8 != (dvar_s *)0x0) {
-        Dvar_DisplayableValue(local_8);
-        FS_Printf(iVar1,"set %s \"%s\"\n");
+    FS_Printf(h,"// generated by Call of Duty, do not modify\n");
+    dvars[0] = "sensitivity";
+    dvars[1] = "cl_freelook";
+    dvars[2] = "ui_mousePitch";
+    dvars[3] = "m_pitch";
+    dvars[4] = "m_filter";
+    dvars[5] = "cl_mouseAccel";
+    for (i = 0; (uint)i < 6; i = i + 1) {
+      dvar = Dvar_FindVar(dvars[i]);
+      if (dvar != (dvar_s *)0x0) {
+        Dvar_DisplayableValue(dvar);
+        FS_Printf(h,"set %s \"%s\"\n");
       }
     }
-    FS_FCloseFile(iVar1);
+    FS_FCloseFile(h);
   }
   return;
 }
@@ -2877,19 +2926,20 @@ void __cdecl Com_WriteKeyConfigToFile(int param_1,char *param_2)
 
 // 006D5930  Com_WriteDefaultsToFile  (qcommon/common.cpp:5763)
 
-void __cdecl Com_WriteDefaultsToFile(char *param_1)
+void __cdecl Com_WriteDefaultsToFile(char *filename)
 
 {
-  int iVar1;
+  int h;
+  int f;
   
-  iVar1 = FS_FOpenFileWrite(param_1);
-  if (iVar1 == 0) {
+  h = FS_FOpenFileWrite(filename);
+  if (h == 0) {
     Com_Printf(0x10,"Couldn\'t write %s.\n");
   }
   else {
-    FS_Printf(iVar1,"// generated by Call of Duty, do not modify\n");
-    Dvar_WriteDefaults(iVar1);
-    FS_FCloseFile(iVar1);
+    FS_Printf(h,"// generated by Call of Duty, do not modify\n");
+    Dvar_WriteDefaults(h);
+    FS_FCloseFile(h);
   }
   return;
 }
@@ -2899,18 +2949,18 @@ void __cdecl Com_WriteDefaultsToFile(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_WriteConfiguration(int param_1)
+void __cdecl Com_WriteConfiguration(int localClientNum)
 
 {
-  char local_8c [132];
+  char configFile [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((com_fullyInitialized != 0) && ((dvar_modifiedFlags & 1U) != 0)) {
     dvar_modifiedFlags = dvar_modifiedFlags & 0xfffffffe;
-    I_strncpyz(local_8c,"config_mp.cfg",0x80);
-    Com_WriteConfigToFile(param_1,local_8c);
-    GamerProfile_WriteSettings((int)local_8c);
+    I_strncpyz(configFile,"config_mp.cfg",0x80);
+    Com_WriteConfigToFile(localClientNum,configFile);
+    GamerProfile_WriteSettings((int)configFile);
   }
   return;
 }
@@ -2924,19 +2974,19 @@ void __cdecl Com_WriteConfig_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_8c [132];
+  char *src;
+  char filename [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     iVar1 = 0x80;
-    pcVar2 = Cmd_Argv(1);
-    I_strncpyz(local_8c,pcVar2,iVar1);
-    Com_DefaultExtension(local_8c,0x80,".cfg");
+    src = Cmd_Argv(1);
+    I_strncpyz(filename,src,iVar1);
+    Com_DefaultExtension(filename,0x80,".cfg");
     Com_Printf(0,"Writing %s.\n");
-    Com_WriteConfigToFile(0,local_8c);
+    Com_WriteConfigToFile(0,filename);
   }
   else {
     Com_Printf(0,"Usage: writeconfig <filename>\n");
@@ -2953,19 +3003,19 @@ void __cdecl Com_WriteKeyConfig_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_8c [132];
+  char *src;
+  char filename [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     iVar1 = 0x80;
-    pcVar2 = Cmd_Argv(1);
-    I_strncpyz(local_8c,pcVar2,iVar1);
-    Com_DefaultExtension(local_8c,0x80,".cfg");
+    src = Cmd_Argv(1);
+    I_strncpyz(filename,src,iVar1);
+    Com_DefaultExtension(filename,0x80,".cfg");
     Com_Printf(0,"Writing %s.\n");
-    Com_WriteKeyConfigToFile(0,local_8c);
+    Com_WriteKeyConfigToFile(0,filename);
   }
   else {
     Com_Printf(0,"Usage: writekeyconfig <filename>\n");
@@ -3002,19 +3052,19 @@ void __cdecl Com_WriteDefaults_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char local_8c [132];
+  char *src;
+  char filename [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     iVar1 = 0x80;
-    pcVar2 = Cmd_Argv(1);
-    I_strncpyz(local_8c,pcVar2,iVar1);
-    Com_DefaultExtension(local_8c,0x80,".cfg");
+    src = Cmd_Argv(1);
+    I_strncpyz(filename,src,iVar1);
+    Com_DefaultExtension(filename,0x80,".cfg");
     Com_Printf(0,"Writing %s.\n");
-    Com_WriteDefaultsToFile(local_8c);
+    Com_WriteDefaultsToFile(filename);
   }
   else {
     Com_Printf(0,"Usage: writedefaults <filename>\n");
@@ -3046,46 +3096,49 @@ float __cdecl Com_GetTimescaleForSnd(void)
 /* WARNING: Removing unreachable block (ram,0x006d701a) */
 /* WARNING: Removing unreachable block (ram,0x006d7011) */
 
-int __cdecl Com_ModifyMsec(int param_1)
+int __cdecl Com_ModifyMsec(int msec)
 
 {
   bool bVar1;
   int iVar2;
   float local_24;
+  int clampTime;
+  int originalMsec;
+  bool useTimescale;
   
-  iVar2 = param_1;
+  iVar2 = msec;
   if ((com_fixedtime->current).integer == 0) {
     if ((((com_timescale->current).value == 1.0) && (com_codeTimeScale == 1.0)) &&
        ((dev_timescale->current).value == 1.0)) {
       bVar1 = false;
     }
     else {
-      param_1 = (int)ROUND((float)param_1 * (com_timescale->current).value * com_codeTimeScale *
-                           (dev_timescale->current).value + 9.313226e-10);
+      msec = (int)ROUND((float)msec * (com_timescale->current).value * com_codeTimeScale *
+                        (dev_timescale->current).value + 9.313226e-10);
       bVar1 = true;
     }
   }
   else {
-    param_1 = (com_fixedtime->current).integer;
+    msec = (com_fixedtime->current).integer;
     bVar1 = true;
   }
-  if (param_1 < 1) {
-    param_1 = 1;
+  if (msec < 1) {
+    msec = 1;
   }
-  if ((500 < param_1) && (param_1 < 500000)) {
+  if ((500 < msec) && (msec < 500000)) {
     Com_PrintWarning(0x10,"Hitch warning: %i msec frame time\n");
   }
-  if (5000 < param_1) {
-    param_1 = 5000;
+  if (5000 < msec) {
+    msec = 5000;
   }
   if ((bVar1) && (iVar2 != 0)) {
-    local_24 = (float)param_1 / (float)iVar2;
+    local_24 = (float)msec / (float)iVar2;
   }
   else {
     local_24 = 1.0;
   }
   com_timescaleValue = local_24;
-  return param_1;
+  return msec;
 }
 
 
@@ -3100,6 +3153,7 @@ void __cdecl Com_Statmon(void)
 
 {
   int iVar1;
+  int timePrevFrame;
   
   if ((com_statmon->current).enabled != false) {
     if (com_fileAccessed != 0) {
@@ -3123,18 +3177,18 @@ void __cdecl Com_Statmon(void)
 
 // 006D7130  Com_AdjustMaxFPS  (qcommon/common.cpp:6188)
 
-void __cdecl Com_AdjustMaxFPS(int *param_1)
+void __cdecl Com_AdjustMaxFPS(int *maxFPS)
 
 {
-  undefined4 local_8;
+  int maxUserCmdsPerSecond;
   
   if (com_timescaleValue < 1.0) {
-    local_8 = (int)(com_timescaleValue * 320.0);
-    if (local_8 < 1) {
-      local_8 = 1;
+    maxUserCmdsPerSecond = (int)(com_timescaleValue * 320.0);
+    if (maxUserCmdsPerSecond < 1) {
+      maxUserCmdsPerSecond = 1;
     }
-    if ((*param_1 == 0) || (local_8 < *param_1)) {
-      *param_1 = local_8;
+    if ((*maxFPS == 0) || (maxUserCmdsPerSecond < *maxFPS)) {
+      *maxFPS = maxUserCmdsPerSecond;
     }
   }
   return;
@@ -3149,6 +3203,8 @@ void __cdecl Com_UpdateMenu(void)
   bool bVar1;
   connstate_t cVar2;
   int iVar3;
+  int localClientNum;
+  connstate_t clcState;
   
   cVar2 = CL_GetLocalClientConnectionState(0);
   iVar3 = UI_IsFullscreen(0);
@@ -3203,8 +3259,9 @@ void __cdecl Com_UpdateMenu(void)
 /* WARNING: Removing unreachable block (ram,0x006d6dea) */
 /* WARNING: Removing unreachable block (ram,0x006d6de1) */
 /* WARNING: Removing unreachable block (ram,0x006d6e14) */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -3216,13 +3273,17 @@ void __cdecl Com_Frame_Try_Block_Function(void)
   bool bVar2;
   CmdArgs *pCVar3;
   int iVar4;
-  int iVar5;
-  DWORD DVar6;
+  int controllerIndex;
+  DWORD DVar5;
   int in_stack_ffffffa4;
-  int local_24;
-  int local_1c;
-  int local_14;
-  int local_8;
+  int i_3;
+  int i_2;
+  int i;
+  int lastFrameIndex;
+  int msec;
+  int localClientNum;
+  int minMsec;
+  int maxFPS;
   
   pCVar3 = Cmd_Args();
   if (pCVar3->nesting != -1) {
@@ -3239,8 +3300,8 @@ void __cdecl Com_Frame_Try_Block_Function(void)
   Com_WriteConfiguration(0);
   Sys_UpdateHotkeyBlock();
   SetAnimCheck((uint)(com_animCheck->current).color[0],SCRIPTINSTANCE_SERVER);
-  local_8 = (com_maxfps->current).integer;
-  Com_AdjustMaxFPS(&local_8);
+  maxFPS = (com_maxfps->current).integer;
+  Com_AdjustMaxFPS(&maxFPS);
   if (sys_lockThreads->modified != false) {
     Dvar_ClearModified(sys_lockThreads);
     if ((sys_lockThreads->current).enabled == false) {
@@ -3251,45 +3312,45 @@ void __cdecl Com_Frame_Try_Block_Function(void)
     }
   }
   com_lastFrameIndex = com_lastFrameIndex + 1;
-  for (local_1c = 0; local_1c < 0x32; local_1c = local_1c + 1) {
+  for (i = 0; i < 0x32; i = i + 1) {
     Com_EventLoop();
     com_frameTime = Sys_Milliseconds();
     if (com_frameTime - com_lastFrameTime[0] < 0) {
       com_lastFrameTime[0] = com_frameTime;
     }
-    local_14 = com_frameTime - com_lastFrameTime[0];
-    if (0 < local_14) break;
+    msec = com_frameTime - com_lastFrameTime[0];
+    if (0 < msec) break;
     NET_Sleep(1);
   }
   com_lastFrameTime[0] = com_frameTime;
-  for (local_24 = 0; local_24 < 1; local_24 = local_24 + 1) {
-    TaskManager2_ProcessTasks(local_24);
+  for (i_3 = 0; i_3 < 1; i_3 = i_3 + 1) {
+    TaskManager2_ProcessTasks(i_3);
   }
   iVar4 = Com_LocalClient_GetControllerIndex(0);
   Cbuf_Execute(0,iVar4);
   ProcessStringEdCmds();
   ProcessGDTCmds();
   bVar2 = Demo_IsPlaying();
-  if ((bVar2) && (maxDemoMsec < local_14)) {
-    local_14 = maxDemoMsec;
+  if ((bVar2) && (maxDemoMsec < msec)) {
+    msec = maxDemoMsec;
   }
-  cls.inputRealMsec = local_14;
-  Demo_Frame(local_14);
-  iVar4 = Com_ModifyMsec(local_14);
+  cls.inputRealMsec = msec;
+  Demo_Frame(msec);
+  iVar4 = Com_ModifyMsec(msec);
   LiveSteam_Frame();
   PIXBeginNamedEvent(-1,"SV frame");
-  iVar5 = Com_LocalClient_GetControllerIndex(0);
-  SV_Frame(iVar5,iVar4);
-  DVar6 = GetCurrentThreadId();
-  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  controllerIndex = Com_LocalClient_GetControllerIndex(0);
+  SV_Frame(controllerIndex,iVar4);
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   Monkey_Frame();
   GamerProfile_WriteSettings(in_stack_ffffffa4);
   Phys_RunToTime(svsHeader.time);
   DWDedicatedLobbyPump();
-  DVar6 = GetCurrentThreadId();
-  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -3301,29 +3362,29 @@ void __cdecl Com_Frame_Try_Block_Function(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl Com_GetLevelSharedFastFile(char *param_1)
+char * __cdecl Com_GetLevelSharedFastFile(char *mapName)
 
 {
   int iVar1;
-  int local_4014;
-  char *local_4010;
-  char local_400c [16384];
+  int i;
+  char *buffer;
+  char loadBuffer [16384];
   uint local_c;
-  char *local_8;
+  char *token;
   
-  local_8 = (char *)0x6d638d;
+  token = (char *)0x6d638d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (gLevelDependenciesInited == 0) {
     gLevelDependenciesInited = 1;
-    local_4010 = Com_LoadInfoString("level_dependencies.csv","level_dependency_info","",local_400c);
+    buffer = Com_LoadInfoString("level_dependencies.csv","level_dependency_info","",loadBuffer);
     Com_BeginParseSession("level_dependencies.csv");
     Com_SetCSV(1);
-    while (local_8 = Com_Parse(&local_4010), *local_8 != '\0') {
-      if (*local_8 != '/') {
+    while (token = Com_Parse(&buffer), *token != '\0') {
+      if (*token != '/') {
         if (gLevelDependenciesCount < 0x10) {
-          I_strncpyz((char *)(gLevelDependencies + gLevelDependenciesCount),local_8,0x40);
-          local_8 = Com_Parse(&local_4010);
-          I_strncpyz(gLevelDependencies[gLevelDependenciesCount][1],local_8,0x40);
+          I_strncpyz((char *)(gLevelDependencies + gLevelDependenciesCount),token,0x40);
+          token = Com_Parse(&buffer);
+          I_strncpyz(gLevelDependencies[gLevelDependenciesCount][1],token,0x40);
           gLevelDependenciesCount = gLevelDependenciesCount + 1;
         }
         else {
@@ -3333,29 +3394,32 @@ char * __cdecl Com_GetLevelSharedFastFile(char *param_1)
     }
     Com_EndParseSession();
   }
-  local_4014 = 0;
+  i = 0;
   while( true ) {
-    if (gLevelDependenciesCount <= local_4014) {
+    if (gLevelDependenciesCount <= i) {
       return (char *)0x0;
     }
-    iVar1 = I_strcmp((char *)(gLevelDependencies + local_4014),param_1);
+    iVar1 = I_strcmp((char *)(gLevelDependencies + i),mapName);
     if (iVar1 == 0) break;
-    local_4014 = local_4014 + 1;
+    i = i + 1;
   }
-  return gLevelDependencies[local_4014][1];
+  return gLevelDependencies[i][1];
 }
 
 
 // 006D6510  Com_LoadCommonFastFile  (qcommon/common.cpp:6653)
 
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Com_LoadCommonFastFile(void)
 
 {
   bool bVar1;
-  XZoneInfo local_14;
-  uint local_8;
+  XZoneInfo zoneInfo;
+  int zoneCount;
   
-  local_8 = 0;
+  zoneCount = 0;
   DB_ResetZoneSize(0);
   if ((useFastFile->current).enabled != false) {
     DB_ReleaseXAssets();
@@ -3364,39 +3428,39 @@ void __cdecl Com_LoadCommonFastFile(void)
     if ((zombiemode->current).enabled == false) {
       bVar1 = DB_IsZoneLoaded("common_mp");
       if (!bVar1) {
-        (&local_14)[local_8].name = "common_mp";
-        (&local_14)[local_8].allocFlags = 0x100;
-        (&local_14)[local_8].freeFlags = 0;
-        local_8 = local_8 + 1;
+        (&zoneInfo)[zoneCount].name = "common_mp";
+        (&zoneInfo)[zoneCount].allocFlags = 0x100;
+        (&zoneInfo)[zoneCount].freeFlags = 0;
+        zoneCount = zoneCount + 1;
       }
     }
     else if ((legacy_zombiemode->current).enabled == false) {
       bVar1 = DB_IsZoneLoaded("common_zombie");
       if (!bVar1) {
-        (&local_14)[local_8].name = "common_zombie";
-        (&local_14)[local_8].allocFlags = 0x100;
-        (&local_14)[local_8].freeFlags = 0;
-        local_8 = local_8 + 1;
+        (&zoneInfo)[zoneCount].name = "common_zombie";
+        (&zoneInfo)[zoneCount].allocFlags = 0x100;
+        (&zoneInfo)[zoneCount].freeFlags = 0;
+        zoneCount = zoneCount + 1;
       }
     }
     else {
       bVar1 = DB_IsZoneLoaded("waw_zombie");
       if (!bVar1) {
-        (&local_14)[local_8].name = "waw_zombie";
-        (&local_14)[local_8].allocFlags = 0x100;
-        (&local_14)[local_8].freeFlags = 0;
-        local_8 = local_8 + 1;
+        (&zoneInfo)[zoneCount].name = "waw_zombie";
+        (&zoneInfo)[zoneCount].allocFlags = 0x100;
+        (&zoneInfo)[zoneCount].freeFlags = 0;
+        zoneCount = zoneCount + 1;
       }
     }
   }
   else {
-    (&local_14)[local_8].name = (char *)0x0;
-    (&local_14)[local_8].allocFlags = 0;
-    (&local_14)[local_8].freeFlags = 0x100;
-    local_8 = local_8 + 1;
+    (&zoneInfo)[zoneCount].name = (char *)0x0;
+    (&zoneInfo)[zoneCount].allocFlags = 0;
+    (&zoneInfo)[zoneCount].freeFlags = 0x100;
+    zoneCount = zoneCount + 1;
   }
-  if (local_8 != 0) {
-    DB_LoadXAssets(&local_14,local_8,0);
+  if (zoneCount != 0) {
+    DB_LoadXAssets(&zoneInfo,zoneCount,0);
   }
   return;
 }
@@ -3415,6 +3479,9 @@ void __cdecl Com_LoadCommonFastFile(void)
 void __cdecl Com_LoadUiFastFile(void)
 
 {
+  ScreenPlacement *scrPlace;
+  int zoneCount;
+  
   return;
 }
 
@@ -3424,8 +3491,10 @@ void __cdecl Com_LoadUiFastFile(void)
 /* WARNING: Removing unreachable block (ram,0x006d5f0f) */
 /* WARNING: Removing unreachable block (ram,0x006d5f39) */
 /* WARNING: Removing unreachable block (ram,0x006d5f3e) */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Com_LoadMapLoadingScreenFastFile(char *param_1)
+void __cdecl Com_LoadMapLoadingScreenFastFile(char *mapName)
 
 {
   return;
@@ -3437,13 +3506,13 @@ void __cdecl Com_LoadMapLoadingScreenFastFile(char *param_1)
 void __cdecl Com_UnloadLevelFastFiles(void)
 
 {
-  XZoneInfo local_10;
+  XZoneInfo zoneInfo;
   
   if ((useFastFile->current).enabled != false) {
-    local_10.name = (char *)0x0;
-    local_10.allocFlags = 0;
-    local_10.freeFlags = 0x4000;
-    DB_LoadXAssets(&local_10,1,0);
+    zoneInfo.name = (char *)0x0;
+    zoneInfo.allocFlags = 0;
+    zoneInfo.freeFlags = 0x4000;
+    DB_LoadXAssets(&zoneInfo,1,0);
   }
   return;
 }
@@ -3453,7 +3522,7 @@ void __cdecl Com_UnloadLevelFastFiles(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_LoadLevelFastFiles(char *param_1)
+void __cdecl Com_LoadLevelFastFiles(char *mapName)
 
 {
   bool bVar1;
@@ -3462,33 +3531,33 @@ void __cdecl Com_LoadLevelFastFiles(char *param_1)
   char *local_100;
   char *local_f0;
   char *local_e0;
-  char *local_c8;
-  XZoneInfo local_c4 [4];
-  char local_94 [68];
-  char *local_50;
-  char local_4c [64];
+  char *basename;
+  XZoneInfo zoneInfo [4];
+  char specOpsZoneName [68];
+  char *levelSharedFastFile;
+  char levelPatchZoneName [64];
   uint local_c;
-  uint local_8;
+  int zoneCount;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  zoneCount = 0;
   DB_ResetZoneSize(0);
-  UI_SetLoadingScreenMaterial(param_1);
-  Com_sprintf(local_4c,0x40,"%s_patch");
+  UI_SetLoadingScreenMaterial(mapName);
+  Com_sprintf(levelPatchZoneName,0x40,"%s_patch");
   pcVar3 = "ui_animate connect * meet 500 1;\n";
   iVar2 = Com_LocalClient_GetControllerIndex(0);
   Cbuf_ExecuteBuffer(0,iVar2,pcVar3);
-  DB_AddUserMapDir(param_1);
-  local_c4[local_8].name = (char *)0x0;
-  local_c4[local_8].allocFlags = 0;
-  local_c4[local_8].freeFlags = 0x4000000;
-  local_8 = local_8 + 1;
-  pcVar3 = I_stristr(param_1,"zombietron");
+  DB_AddUserMapDir(mapName);
+  zoneInfo[zoneCount].name = (char *)0x0;
+  zoneInfo[zoneCount].allocFlags = 0;
+  zoneInfo[zoneCount].freeFlags = 0x4000000;
+  zoneCount = zoneCount + 1;
+  pcVar3 = I_stristr(mapName,"zombietron");
   if (pcVar3 != (char *)0x0) {
     Dvar_SetBool(zombiemode,true);
     Dvar_SetBool(zombietron,true);
   }
-  pcVar3 = I_stristr(param_1,"zombie_cod5_");
+  pcVar3 = I_stristr(mapName,"zombie_cod5_");
   if (pcVar3 == (char *)0x0) {
     Dvar_SetBool(legacy_zombiemode,false);
   }
@@ -3496,16 +3565,16 @@ void __cdecl Com_LoadLevelFastFiles(char *param_1)
     Dvar_SetBool(zombiemode,true);
     Dvar_SetBool(legacy_zombiemode,true);
   }
-  bVar1 = Com_IsMenuLevel(param_1);
+  bVar1 = Com_IsMenuLevel(mapName);
   if (!bVar1) {
     Com_LoadCommonFastFile();
   }
-  local_50 = Com_GetLevelSharedFastFile(param_1);
-  if (local_50 != (char *)0x0) {
-    local_c4[local_8].name = local_50;
-    local_c4[local_8].allocFlags = 0x1000;
-    local_c4[local_8].freeFlags = 0;
-    local_8 = local_8 + 1;
+  levelSharedFastFile = Com_GetLevelSharedFastFile(mapName);
+  if (levelSharedFastFile != (char *)0x0) {
+    zoneInfo[zoneCount].name = levelSharedFastFile;
+    zoneInfo[zoneCount].allocFlags = 0x1000;
+    zoneInfo[zoneCount].freeFlags = 0;
+    zoneCount = zoneCount + 1;
   }
   local_e0 = "so_";
   pcVar3 = local_e0;
@@ -3513,7 +3582,7 @@ void __cdecl Com_LoadLevelFastFiles(char *param_1)
     local_e0 = pcVar3;
     pcVar3 = local_e0 + 1;
   } while (*local_e0 != '\0');
-  iVar2 = I_strncmp("so_",param_1,(int)(local_e0 + -0xc94500));
+  iVar2 = I_strncmp("so_",mapName,(int)(local_e0 + -0xc94500));
   if (iVar2 == 0) {
     local_f0 = "so_";
     pcVar3 = local_f0;
@@ -3521,36 +3590,36 @@ void __cdecl Com_LoadLevelFastFiles(char *param_1)
       local_f0 = pcVar3;
       pcVar3 = local_f0 + 1;
     } while (*local_f0 != '\0');
-    for (local_c8 = param_1 + (int)(local_f0 + -0xc94500); (*local_c8 != '\0' && (*local_c8 != '_'))
-        ; local_c8 = local_c8 + 1) {
+    for (basename = mapName + (int)(local_f0 + -0xc94500); (*basename != '\0' && (*basename != '_'))
+        ; basename = basename + 1) {
     }
-    if (*local_c8 == '\0') {
+    if (*basename == '\0') {
       Com_PrintError(1,"Bad specop level name\n");
     }
-    Com_sprintf(local_94,0x40,"%s");
-    local_c4[local_8].name = local_94;
-    local_c4[local_8].allocFlags = 0x4000;
-    local_c4[local_8].freeFlags = 0;
-    local_8 = local_8 + 1;
+    Com_sprintf(specOpsZoneName,0x40,"%s");
+    zoneInfo[zoneCount].name = specOpsZoneName;
+    zoneInfo[zoneCount].allocFlags = 0x4000;
+    zoneInfo[zoneCount].freeFlags = 0;
+    zoneCount = zoneCount + 1;
   }
-  local_c4[local_8].name = param_1;
+  zoneInfo[zoneCount].name = mapName;
   local_100 = "so_";
   pcVar3 = local_100;
   do {
     local_100 = pcVar3;
     pcVar3 = local_100 + 1;
   } while (*local_100 != '\0');
-  iVar2 = I_strncmp("so_",param_1,(int)(local_100 + -0xc94500));
+  iVar2 = I_strncmp("so_",mapName,(int)(local_100 + -0xc94500));
   if (iVar2 == 0) {
-    local_c4[local_8].allocFlags = 0x10000;
+    zoneInfo[zoneCount].allocFlags = 0x10000;
   }
   else {
-    local_c4[local_8].allocFlags = 0x4000;
+    zoneInfo[zoneCount].allocFlags = 0x4000;
   }
-  local_c4[local_8].freeFlags = 0;
-  local_8 = local_8 + 1;
+  zoneInfo[zoneCount].freeFlags = 0;
+  zoneCount = zoneCount + 1;
   R_BeginRemoteScreenUpdate();
-  DB_LoadXAssets(local_c4,local_8,0);
+  DB_LoadXAssets(zoneInfo,zoneCount,0);
   R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
   return;
 }
@@ -3570,17 +3639,21 @@ void __cdecl Com_LoadFrontEnd(void)
 
 // 006D66D0  Com_UnloadFrontEnd  (qcommon/common.cpp:6998)
 
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Com_UnloadFrontEnd(void)
 
 {
   bool bVar1;
   bool bVar2;
-  int local_14;
-  XZoneInfo local_10;
+  bool shutdown;
+  int localClientNum;
+  XZoneInfo zoneInfo;
   
   UI_ViewerShutdown();
-  for (local_14 = 0; local_14 < 1; local_14 = local_14 + 1) {
-    UI_CloseAll(local_14);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    UI_CloseAll(localClientNum);
   }
   if ((useFastFile->current).enabled != false) {
     bVar1 = false;
@@ -3590,10 +3663,10 @@ void __cdecl Com_UnloadFrontEnd(void)
       CL_ShutdownWorld();
       bVar1 = true;
     }
-    local_10.name = (char *)0x0;
-    local_10.allocFlags = 0;
-    local_10.freeFlags = 0x4000000;
-    DB_LoadXAssets(&local_10,1,0);
+    zoneInfo.name = (char *)0x0;
+    zoneInfo.allocFlags = 0;
+    zoneInfo.freeFlags = 0x4000000;
+    DB_LoadXAssets(&zoneInfo,1,0);
     if (bVar1) {
       CL_InitRenderer();
     }
@@ -3605,7 +3678,7 @@ void __cdecl Com_UnloadFrontEnd(void)
 
 // 006D6780  Com_AssetLoadUI  (qcommon/common.cpp:7050)
 
-void __cdecl Com_AssetLoadUI(char *param_1)
+void __cdecl Com_AssetLoadUI(char *msg)
 
 {
   if ((useFastFile->current).enabled != false) {
@@ -3627,16 +3700,16 @@ void __cdecl Com_StartHunkUsers(void)
 
 {
   int extraout_EAX;
-  int iVar1;
-  int iVar2;
+  int menu;
+  int localClientNum;
   
   Sys_GetValue(2);
   __setjmp3();
   if (extraout_EAX == 0) {
     Com_AssetLoadUI((char *)0x0);
-    iVar1 = UI_GetMenuScreen();
-    iVar2 = Com_LocalClients_GetPrimary();
-    UI_SetActiveMenu(iVar2,iVar1);
+    menu = UI_GetMenuScreen();
+    localClientNum = Com_LocalClients_GetPrimary();
+    UI_SetActiveMenu(localClientNum,menu);
     IN_Frame();
     Com_EventLoop();
   }
@@ -3654,6 +3727,8 @@ void __cdecl Com_ResetFrametime(void)
 {
   bool bVar1;
   int iVar2;
+  int timeMsec;
+  uint lastFrameIndex;
   
   iVar2 = Sys_Milliseconds();
   bVar1 = false;
@@ -3758,24 +3833,27 @@ void __cdecl Com_Close(void)
 
 // 006D74B0  Field_Clear  (qcommon/common.cpp:7475)
 
-void __cdecl Field_Clear(field_t *param_1)
+void __cdecl Field_Clear(field_t *edit)
 
 {
-  memset((uchar *)param_1->buffer,'\0',0x100);
-  param_1->cursor = 0;
-  param_1->scroll = 0;
-  param_1->drawWidth = 0x100;
+  memset((uchar *)edit->buffer,'\0',0x100);
+  edit->cursor = 0;
+  edit->scroll = 0;
+  edit->drawWidth = 0x100;
   return;
 }
 
 
 // 006D74F0  Com_Restart  (qcommon/common.cpp:7494)
 
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Com_Restart(void)
 
 {
   int in_stack_ffffffec;
-  XZoneInfo local_10;
+  XZoneInfo zoneInfo;
   
   com_codeTimeScale = 1.0;
   CL_ShutdownHunkUsers();
@@ -3786,10 +3864,10 @@ void __cdecl Com_Restart(void)
   GamerProfile_WriteSettings(in_stack_ffffffec);
   Com_ShutdownDynamicMemorySystems();
   if ((useFastFile->current).enabled != false) {
-    local_10.name = (char *)0x0;
-    local_10.allocFlags = 0;
-    local_10.freeFlags = 0x400000;
-    DB_LoadXAssets(&local_10,1,0);
+    zoneInfo.name = (char *)0x0;
+    zoneInfo.allocFlags = 0;
+    zoneInfo.freeFlags = 0x400000;
+    DB_LoadXAssets(&zoneInfo,1,0);
   }
   Com_ShutdownWorld();
   CM_Shutdown();
@@ -3812,54 +3890,54 @@ void __cdecl Com_Restart(void)
 
 // 006D75F0  MT_AllocAnimTree  (qcommon/common.cpp:7580)
 
-void * __cdecl MT_AllocAnimTree(int param_1)
+void * __cdecl MT_AllocAnimTree(int size_2)
 
 {
   void *pvVar1;
   
-  pvVar1 = MT_Alloc(param_1,5,SCRIPTINSTANCE_SERVER);
+  pvVar1 = MT_Alloc(size_2,5,SCRIPTINSTANCE_SERVER);
   return pvVar1;
 }
 
 
 // 006D75D0  Com_XAnimCreateSmallTree  (qcommon/common.cpp:7592)
 
-XAnimTree_s * __cdecl Com_XAnimCreateSmallTree(XAnim_s *param_1)
+XAnimTree_s * __cdecl Com_XAnimCreateSmallTree(XAnim_s *anims)
 
 {
   XAnimTree_s *pXVar1;
   
-  pXVar1 = XAnimCreateTree(param_1,MT_AllocAnimTree);
+  pXVar1 = XAnimCreateTree(anims,MT_AllocAnimTree);
   return pXVar1;
 }
 
 
 // 006D7610  Com_XAnimFreeSmallTree  (qcommon/common.cpp:7604)
 
-void __cdecl Com_XAnimFreeSmallTree(XAnimTree_s *param_1)
+void __cdecl Com_XAnimFreeSmallTree(XAnimTree_s *animtree)
 
 {
-  XAnimFreeTree(param_1,MT_Free,SCRIPTINSTANCE_SERVER);
+  XAnimFreeTree(animtree,MT_Free,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 006D7630  Com_SetWeaponInfoMemory  (qcommon/common.cpp:7612)
 
-void __cdecl Com_SetWeaponInfoMemory(int param_1)
+void __cdecl Com_SetWeaponInfoMemory(int source)
 
 {
-  weaponInfoSource = param_1;
+  weaponInfoSource = source;
   return;
 }
 
 
 // 006D7640  Com_FreeWeaponInfoMemory  (qcommon/common.cpp:7621)
 
-void __cdecl Com_FreeWeaponInfoMemory(int param_1)
+void __cdecl Com_FreeWeaponInfoMemory(int source)
 
 {
-  if (param_1 == weaponInfoSource) {
+  if (source == weaponInfoSource) {
     weaponInfoSource = 0;
     BG_ShutdownWeaponDefFiles();
   }
@@ -3869,41 +3947,42 @@ void __cdecl Com_FreeWeaponInfoMemory(int param_1)
 
 // 006D7670  Com_AddToString  (qcommon/common.cpp:7634)
 
-int __cdecl Com_AddToString(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+int __cdecl Com_AddToString(char *add,char *msg,int len,int maxlen,int mayAddQuotes)
 
 {
   bool bVar1;
-  int local_8;
+  int addQuotes;
+  int i;
   
   bVar1 = false;
-  if (param_5 != 0) {
-    if (*param_1 == '\0') {
+  if (mayAddQuotes != 0) {
+    if (*add == '\0') {
       bVar1 = true;
     }
     else {
-      local_8 = 0;
+      i = 0;
       while( true ) {
-        if ((param_4 - param_3 <= local_8) || (param_1[local_8] == '\0')) goto LAB_006d76d9;
-        if (param_1[local_8] < '!') break;
-        local_8 = local_8 + 1;
+        if ((maxlen - len <= i) || (add[i] == '\0')) goto LAB_006d76d9;
+        if (add[i] < '!') break;
+        i = i + 1;
       }
       bVar1 = true;
     }
   }
 LAB_006d76d9:
-  if ((bVar1) && (param_3 < param_4)) {
-    param_2[param_3] = '\"';
-    param_3 = param_3 + 1;
+  if ((bVar1) && (len < maxlen)) {
+    msg[len] = '\"';
+    len = len + 1;
   }
-  for (local_8 = 0; (param_3 < param_4 && (param_1[local_8] != '\0')); local_8 = local_8 + 1) {
-    param_2[param_3] = param_1[local_8];
-    param_3 = param_3 + 1;
+  for (i = 0; (len < maxlen && (add[i] != '\0')); i = i + 1) {
+    msg[len] = add[i];
+    len = len + 1;
   }
-  if ((bVar1) && (param_3 < param_4)) {
-    param_2[param_3] = '\"';
-    param_3 = param_3 + 1;
+  if ((bVar1) && (len < maxlen)) {
+    msg[len] = '\"';
+    len = len + 1;
   }
-  return param_3;
+  return len;
 }
 
 
@@ -3914,6 +3993,7 @@ char __cdecl Com_GetDecimalDelimiter(void)
 {
   int iVar1;
   char cVar2;
+  int lang;
   
   iVar1 = (loc_language->current).integer;
   if (((((iVar1 == 1) || (iVar1 == 2)) || (iVar1 == 3)) || ((iVar1 == 5 || (iVar1 == 6)))) ||
@@ -3929,19 +4009,20 @@ char __cdecl Com_GetDecimalDelimiter(void)
 
 // 006D77C0  Com_LocalizedFloatToString  (qcommon/common.cpp:7687)
 
-void __cdecl Com_LocalizedFloatToString(float param_1,char *param_2,uint param_3,uint param_4)
+void __cdecl Com_LocalizedFloatToString(float f,char *buffer,uint maxlen,uint numDecimalPlaces)
 
 {
   char cVar1;
-  uint local_c;
+  uint charPos;
+  char delimiter;
   
-  _snprintf(param_2,param_3 - 1,"%.*f");
-  param_2[param_3 - 1] = '\0';
+  _snprintf(buffer,maxlen - 1,"%.*f");
+  buffer[maxlen - 1] = '\0';
   cVar1 = Com_GetDecimalDelimiter();
   if (cVar1 != '.') {
-    for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
-      if (param_2[local_c] == '.') {
-        param_2[local_c] = cVar1;
+    for (charPos = 0; charPos < maxlen; charPos = charPos + 1) {
+      if (buffer[charPos] == '.') {
+        buffer[charPos] = cVar1;
         return;
       }
     }
@@ -3967,24 +4048,26 @@ void __cdecl Com_SyncThreads(void)
 
 // 006D7890  Com_DisplayName  (qcommon/common.cpp:7733)
 
-char * __cdecl Com_DisplayName(char *param_1,char *param_2,int param_3)
+char * __cdecl Com_DisplayName(char *name,char *clanAbbrev,int type)
 
 {
-  if (*param_2 == '\0') {
-    param_3 = param_3 & 0xfffffffd;
+  char *tagwraps;
+  
+  if (*clanAbbrev == '\0') {
+    type = type & 0xfffffffd;
   }
-  if (param_3 == 3) {
-    param_1 = va("%c%s%c%s");
+  if (type == 3) {
+    name = va("%c%s%c%s");
   }
-  else if (param_3 != 1) {
-    if (param_3 == 2) {
-      param_1 = va("%c%s%c");
+  else if (type != 1) {
+    if (type == 2) {
+      name = va("%c%s%c");
     }
     else {
-      param_1 = "";
+      name = "";
     }
   }
-  return param_1;
+  return name;
 }
 
 
@@ -3992,12 +4075,12 @@ char * __cdecl Com_DisplayName(char *param_1,char *param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl CS_DisplayName(clientState_s *param_1,int param_2)
+char * __cdecl CS_DisplayName(clientState_s *cs,int type)
 
 {
   char *pcVar1;
   
-  pcVar1 = Com_DisplayName(param_1->name,param_1->clanAbbrev,param_2);
+  pcVar1 = Com_DisplayName(cs->name,cs->clanAbbrev,type);
   return pcVar1;
 }
 
@@ -4010,6 +4093,7 @@ int __cdecl Com_GetPrivateClients(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int privateClients;
   
   if ((com_maxclients->current).integer == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\common.cpp",0x1e76,0,

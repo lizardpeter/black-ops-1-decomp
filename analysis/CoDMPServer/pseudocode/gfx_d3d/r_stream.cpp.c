@@ -130,6 +130,7 @@ void __cdecl R_StreamPopDisable(void)
   int iVar2;
   bool bVar3;
   int iVar4;
+  int disableCount;
   
   LOCK();
   iVar2 = streamDisabledCount + -1;
@@ -151,24 +152,24 @@ void __cdecl R_StreamPopDisable(void)
 
 // 00AA1190  R_StreamSetInitData  (gfx_d3d/r_stream.cpp:283)
 
-void __cdecl R_StreamSetInitData(int param_1)
+void __cdecl R_StreamSetInitData(int buffer_size)
 
 {
-  streamFrontendGlob.mainBufferSize = param_1;
+  streamFrontendGlob.mainBufferSize = buffer_size;
   return;
 }
 
 
 // 00AA11A0  R_StreamSetDefaultConfig  (gfx_d3d/r_stream.cpp:288)
 
-void __cdecl R_StreamSetDefaultConfig(bool param_1)
+void __cdecl R_StreamSetDefaultConfig(bool clear)
 
 {
   streamFrontendGlob.forceDiskOrder = false;
   streamFrontendGlob.touchedImageImportance = 1.7014117e+38;
   streamFrontendGlob.forcedImageImportance = 1.7014117e+38;
   streamFrontendGlob.initialImageImportance = 8.5070587e+37;
-  if (param_1) {
+  if (clear) {
     memset((uchar *)streamFrontendGlob.imageInitialBits,'\0',0x210);
     memset((uchar *)streamFrontendGlob.imageForceBits,'\0',0x210);
     streamFrontendGlob.imageInitialBitsSet = false;
@@ -182,14 +183,14 @@ void __cdecl R_StreamSetDefaultConfig(bool param_1)
 
 // 00AA1230  R_StreamSetUIConfig  (gfx_d3d/r_stream.cpp:308)
 
-void __cdecl R_StreamSetUIConfig(bool param_1)
+void __cdecl R_StreamSetUIConfig(bool clear)
 
 {
   streamFrontendGlob.forceDiskOrder = true;
   streamFrontendGlob.touchedImageImportance = 1.7014117e+38;
   streamFrontendGlob.forcedImageImportance = 1e-05;
   streamFrontendGlob.initialImageImportance = 8.5070587e+37;
-  if (param_1) {
+  if (clear) {
     memset((uchar *)streamFrontendGlob.imageInitialBits,'\0',0x210);
     memset((uchar *)streamFrontendGlob.imageForceBits,'\0',0x210);
     streamFrontendGlob.imageInitialBitsSet = false;
@@ -208,31 +209,31 @@ float __cdecl R_Stream_GetProgress(void)
 {
   float fVar1;
   int iVar2;
-  uint uVar3;
-  int local_14;
-  int local_10;
-  int local_8;
+  uint num;
+  int complete;
+  int total;
+  uint bits;
+  int idx;
   
   if ((com_waitForStreamer->current).integer == 0) {
     fVar1 = 1.0;
   }
   else if (streamFrontendGlob.initialLoadAllocFailures < 1) {
     if (streamFrontendGlob.imageInitialBitsSet) {
-      local_10 = 0;
-      local_14 = 0;
-      for (local_8 = 0; local_8 < 0x84; local_8 = local_8 + 1) {
-        uVar3 = streamFrontendGlob.imageForceBits[local_8] |
-                streamFrontendGlob.imageInitialBits[local_8];
-        iVar2 = CountBitsEnabled(uVar3);
-        local_10 = iVar2 + local_10;
-        iVar2 = CountBitsEnabled(uVar3 & streamFrontendGlob.imageUseBits[local_8]);
-        local_14 = iVar2 + local_14;
+      total = 0;
+      complete = 0;
+      for (idx = 0; idx < 0x84; idx = idx + 1) {
+        num = streamFrontendGlob.imageForceBits[idx] | streamFrontendGlob.imageInitialBits[idx];
+        iVar2 = CountBitsEnabled(num);
+        total = iVar2 + total;
+        iVar2 = CountBitsEnabled(num & streamFrontendGlob.imageUseBits[idx]);
+        complete = iVar2 + complete;
       }
-      if (local_10 == 0) {
+      if (total == 0) {
         fVar1 = 1.0;
       }
       else {
-        fVar1 = (float)local_14 / (float)local_10 + 0.001;
+        fVar1 = (float)complete / (float)total + 0.001;
       }
     }
     else {
@@ -248,11 +249,11 @@ float __cdecl R_Stream_GetProgress(void)
 
 // 00AA17D0  R_Stream_InvalidateRequest  (gfx_d3d/r_stream.cpp:734)
 
-void __cdecl R_Stream_InvalidateRequest(pendingRequest *param_1)
+void __cdecl R_Stream_InvalidateRequest(pendingRequest *request)
 
 {
-  memset((uchar *)param_1,'\0',0x30);
-  param_1->status = STREAM_STATUS_INVALID;
+  memset((uchar *)request,'\0',0x30);
+  request->status = STREAM_STATUS_INVALID;
   return;
 }
 
@@ -261,78 +262,79 @@ void __cdecl R_Stream_InvalidateRequest(pendingRequest *param_1)
 
 bool __cdecl
 R_StreamRequestImageAllocation
-          (pendingRequest *param_1,GfxImage *param_2,bool param_3,int param_4,float param_5)
+          (pendingRequest *request,GfxImage *image,bool highMip,int imagePart,float importance)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  uint uVar6;
+  char *msg;
+  uint uVar5;
+  int imageIndex;
   
-  if ((param_2 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2ed,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 == (pendingRequest *)0x0) &&
+  if ((request == (pendingRequest *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2ee,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2->streaming == '\x03') &&
+  if ((image->streaming == '\x03') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2f0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2->streaming == '\0') {
+  if (image->streaming == '\0') {
     bVar2 = false;
   }
   else {
-    if ((param_2->streaming == '\0') &&
+    if ((image->streaming == '\0') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2f5,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_1->image != (GfxImage *)0x0) &&
+    if ((request->image != (GfxImage *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2f6,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_1->status != STREAM_STATUS_INVALID) &&
+    if ((request->status != STREAM_STATUS_INVALID) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x2f7,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    param_1->image = param_2;
-    param_1->imagePart = param_4;
-    param_1->importance = param_5;
+    request->image = image;
+    request->imagePart = imagePart;
+    request->importance = importance;
     iVar4 = Sys_Milliseconds();
-    param_1->startTime = iVar4;
-    param_1->bufferSize = 0;
-    param_1->buffer = (uchar *)0x0;
-    *(bool *)param_1[1].id = param_3;
+    request->startTime = iVar4;
+    request->bufferSize = 0;
+    request->buffer = (uchar *)0x0;
+    *(bool *)request[1].id = highMip;
     if ((r_streamLog != (dvar_s *)0x0) && (0.0 < (r_streamLog->current).value)) {
       iVar4 = 0;
-      pcVar5 = va("-STREAM-allocation complete. bytes=%d,image=%s,imagePart=%d,importance=%f\n");
-      Com_PrintMessage(0x10,pcVar5,iVar4);
+      msg = va("-STREAM-allocation complete. bytes=%d,image=%s,imagePart=%d,importance=%f\n");
+      Com_PrintMessage(0x10,msg,iVar4);
     }
-    uVar6 = DB_GetImageIndex(param_2);
-    iVar4 = (int)uVar6 >> 5;
-    if (((1 << ((byte)uVar6 & 0x1f) & streamFrontendGlob.imageLoading[iVar4]) != 0) &&
+    uVar5 = DB_GetImageIndex(image);
+    iVar4 = (int)uVar5 >> 5;
+    if (((1 << ((byte)uVar5 & 0x1f) & streamFrontendGlob.imageLoading[iVar4]) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x312,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -340,9 +342,9 @@ R_StreamRequestImageAllocation
       return (bool)uVar3;
     }
     streamFrontendGlob.imageLoading[iVar4] =
-         1 << ((byte)uVar6 & 0x1f) | streamFrontendGlob.imageLoading[iVar4];
-    param_1->status = STREAM_STATUS_PRE;
-    param_1->id[0] = -1;
+         1 << ((byte)uVar5 & 0x1f) | streamFrontendGlob.imageLoading[iVar4];
+    request->status = STREAM_STATUS_PRE;
+    request->id[0] = -1;
     bVar2 = true;
   }
   return bVar2;
@@ -356,37 +358,38 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
 {
   bool bVar1;
   int iVar2;
-  int local_10;
-  undefined1 *local_c;
-  int local_8;
+  int idx;
+  int i;
+  pendingRequest *request;
+  int numRequests;
   
-  local_c = (undefined1 *)0x0;
-  local_8 = 0;
+  request = (pendingRequest *)0x0;
+  numRequests = 0;
   R_StreamAlloc_Lock();
-  for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-    iVar2 = (local_10 + lastIdx) % 10;
+  for (i = 0; i < 10; i = i + 1) {
+    iVar2 = (i + lastIdx) % 10;
     if (*(int *)(s_pendingRequests + iVar2 * 0x30 + 0x1c) == 2) {
-      if (local_c == (undefined1 *)0x0) {
-        local_c = s_pendingRequests + iVar2 * 0x30;
+      if (request == (pendingRequest *)0x0) {
+        request = (pendingRequest *)(s_pendingRequests + iVar2 * 0x30);
         *(undefined4 *)(s_pendingRequests + iVar2 * 0x30 + 0x1c) = 3;
         lastIdx = (iVar2 + 1) % 10;
       }
-      local_8 = local_8 + 1;
+      numRequests = numRequests + 1;
     }
   }
   R_StreamAlloc_Unlock();
-  if (local_c != (undefined1 *)0x0) {
-    bVar1 = Image_LoadToBuffer(*(GfxImage **)(local_c + 4),(bool)local_c[0x2c],
-                               (uchar **)(local_c + 0xc),(int *)(local_c + 0x10));
+  if (request != (pendingRequest *)0x0) {
+    bVar1 = Image_LoadToBuffer(request->image,SUB41(request[1].id[0],0),&request->buffer,
+                               &request->bufferSize);
     if (bVar1) {
-      *(undefined4 *)(local_c + 0x1c) = 7;
+      request->status = STREAM_STATUS_FINISHED;
     }
     else {
-      *(undefined4 *)(local_c + 0x1c) = 4;
+      request->status = STREAM_STATUS_CANCELLED;
     }
     NET_Sleep(1);
   }
-  if (1 < local_8) {
+  if (1 < numRequests) {
     Sys_WakeStream();
   }
   return;
@@ -395,39 +398,42 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
 
 // 00AA34B0  R_StreamRequestImageRead  (gfx_d3d/r_stream.cpp:856)
 
-bool __cdecl R_StreamRequestImageRead(pendingRequest *param_1)
+bool __cdecl R_StreamRequestImageRead(pendingRequest *request)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   uint uVar4;
-  int local_18;
-  pendingRequest *local_14;
-  GfxImage *local_10;
-  GfxImage *local_c;
-  uint local_8;
+  int unloadImagePart;
+  int unloadImageIndex;
+  int unloadImagePartIndex;
+  int i;
+  pendingRequest *unloadRequest;
+  GfxImage *unloadImage;
+  GfxImage *image;
+  int imageIndex;
   
-  local_c = param_1->image;
-  local_8 = DB_GetImageIndex(local_c);
-  param_1->status = STREAM_STATUS_QUEUED;
-  if ((char)param_1[1].id[0] == '\0') {
+  image = request->image;
+  imageIndex = DB_GetImageIndex(image);
+  request->status = STREAM_STATUS_QUEUED;
+  if ((char)request[1].id[0] == '\0') {
     Sys_WakeStream();
     bVar2 = true;
   }
   else {
-    local_10 = (GfxImage *)0x0;
-    bVar2 = R_StreamAlloc_CanAllocate(local_c->baseSize,param_1->importance,&local_10);
-    if ((bVar2) && (local_10 != (GfxImage *)0x0)) {
-      local_14 = (pendingRequest *)0x0;
-      for (local_18 = 0; local_18 < 10; local_18 = local_18 + 1) {
-        if (*(int *)(s_pendingRequests + local_18 * 0x30 + 0x1c) == 0) {
-          local_14 = (pendingRequest *)(s_pendingRequests + local_18 * 0x30);
+    unloadImage = (GfxImage *)0x0;
+    bVar2 = R_StreamAlloc_CanAllocate(image->baseSize,request->importance,&unloadImage);
+    if ((bVar2) && (unloadImage != (GfxImage *)0x0)) {
+      unloadRequest = (pendingRequest *)0x0;
+      for (i = 0; i < 10; i = i + 1) {
+        if (*(int *)(s_pendingRequests + i * 0x30 + 0x1c) == 0) {
+          unloadRequest = (pendingRequest *)(s_pendingRequests + i * 0x30);
           break;
         }
       }
-      if (local_14 != (pendingRequest *)0x0) {
-        uVar4 = DB_GetImageIndex(local_10);
+      if (unloadRequest != (pendingRequest *)0x0) {
+        uVar4 = DB_GetImageIndex(unloadImage);
         if ((1 << ((byte)uVar4 & 0x1f) & streamFrontendGlob.imageUseBits[(int)uVar4 >> 5]) == 0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x37a,
                                    0,"%s");
@@ -438,23 +444,24 @@ bool __cdecl R_StreamRequestImageRead(pendingRequest *param_1)
           }
         }
         bVar2 = R_StreamRequestImageAllocation
-                          (local_14,local_10,false,0,streamFrontendGlob.imageImportance[uVar4]);
+                          (unloadRequest,unloadImage,false,0,
+                           streamFrontendGlob.imageImportance[uVar4]);
         if (bVar2) {
-          bVar2 = R_StreamRequestImageRead(local_14);
+          bVar2 = R_StreamRequestImageRead(unloadRequest);
           if (bVar2) {
-            local_10 = (GfxImage *)0x0;
+            unloadImage = (GfxImage *)0x0;
           }
         }
       }
     }
-    if (local_10 == (GfxImage *)0x0) {
+    if (unloadImage == (GfxImage *)0x0) {
       Sys_WakeStream();
       bVar2 = true;
     }
     else {
-      streamFrontendGlob.imageLoading[(int)local_8 >> 5] =
-           ~(1 << ((byte)local_8 & 0x1f)) & streamFrontendGlob.imageLoading[(int)local_8 >> 5];
-      R_Stream_InvalidateRequest(param_1);
+      streamFrontendGlob.imageLoading[imageIndex >> 5] =
+           ~(1 << ((byte)imageIndex & 0x1f)) & streamFrontendGlob.imageLoading[imageIndex >> 5];
+      R_Stream_InvalidateRequest(request);
       bVar2 = false;
     }
   }
@@ -464,7 +471,7 @@ bool __cdecl R_StreamRequestImageRead(pendingRequest *param_1)
 
 // 00AA4CD0  PointDistSqFromBounds  (universal/com_math.h:1127)
 
-float __cdecl PointDistSqFromBounds(float *param_1,float *param_2,float *param_3)
+float __cdecl PointDistSqFromBounds(float *v,float *mins,float *maxs)
 
 {
   float local_3c;
@@ -473,25 +480,30 @@ float __cdecl PointDistSqFromBounds(float *param_1,float *param_2,float *param_3
   float local_30;
   float local_2c;
   float local_28;
+  double yDist;
+  double xDist;
+  float distBelowMin;
+  float distAboveMax;
+  double zDist;
   
-  local_28 = *param_2 - *param_1;
-  local_2c = *param_1 - *param_3;
+  local_28 = *mins - *v;
+  local_2c = *v - *maxs;
   if (local_28 < 0.0) {
     local_28 = 0.0;
   }
   if (local_2c < 0.0) {
     local_2c = 0.0;
   }
-  local_30 = param_2[1] - param_1[1];
-  local_34 = param_1[1] - param_3[1];
+  local_30 = mins[1] - v[1];
+  local_34 = v[1] - maxs[1];
   if (local_30 < 0.0) {
     local_30 = 0.0;
   }
   if (local_34 < 0.0) {
     local_34 = 0.0;
   }
-  local_38 = param_2[2] - param_1[2];
-  local_3c = param_1[2] - param_3[2];
+  local_38 = mins[2] - v[2];
+  local_3c = v[2] - maxs[2];
   if (local_38 < 0.0) {
     local_38 = 0.0;
   }
@@ -509,111 +521,116 @@ float __cdecl PointDistSqFromBounds(float *param_1,float *param_2,float *param_3
 bool __cdecl R_StreamUpdate_ProcessFileCallbacks(void)
 
 {
-  GfxImage *pGVar1;
-  GfxImageFileHeader *pGVar2;
-  int iVar3;
-  code *pcVar4;
-  byte bVar5;
-  bool bVar6;
-  undefined1 uVar7;
-  uint uVar8;
-  int iVar9;
-  int iVar10;
-  int local_c;
-  bool local_5;
+  GfxImage *image_00;
+  GfxImageFileHeader *fileHeader_00;
+  int iVar1;
+  code *pcVar2;
+  byte bVar3;
+  bool bVar4;
+  undefined1 uVar5;
+  uint uVar6;
+  int iVar7;
+  int iVar8;
+  uchar *imageData;
+  GfxImageFileHeader *fileHeader;
+  GfxImage *image;
+  pendingRequest *request;
+  int imageIndex;
+  int i;
+  bool workDone;
   
-  local_5 = false;
-  local_c = 0;
+  workDone = false;
+  i = 0;
   do {
-    if (9 < local_c) {
-      return local_5;
+    if (9 < i) {
+      return workDone;
     }
-    iVar9 = local_c * 0x30;
-    if ((((*(int *)(s_pendingRequests + iVar9 + 0x1c) != 0) &&
-         (*(int *)(s_pendingRequests + iVar9 + 0x1c) != 1)) &&
-        (*(int *)(s_pendingRequests + iVar9 + 0x1c) != 2)) &&
-       (*(int *)(s_pendingRequests + iVar9 + 0x1c) != 3)) {
-      pGVar1 = *(GfxImage **)(s_pendingRequests + iVar9 + 4);
-      if ((pGVar1 == (GfxImage *)0x0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x4a5,
-                                   0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar7 = (*pcVar4)();
-        return (bool)uVar7;
+    iVar7 = i * 0x30;
+    if ((((*(int *)(s_pendingRequests + iVar7 + 0x1c) != 0) &&
+         (*(int *)(s_pendingRequests + iVar7 + 0x1c) != 1)) &&
+        (*(int *)(s_pendingRequests + iVar7 + 0x1c) != 2)) &&
+       (*(int *)(s_pendingRequests + iVar7 + 0x1c) != 3)) {
+      image_00 = *(GfxImage **)(s_pendingRequests + iVar7 + 4);
+      if ((image_00 == (GfxImage *)0x0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x4a5,
+                                   0,"%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        uVar5 = (*pcVar2)();
+        return (bool)uVar5;
       }
-      uVar8 = DB_GetImageIndex(pGVar1);
-      iVar10 = (int)uVar8 >> 5;
-      bVar5 = (byte)uVar8;
-      if (((1 << (bVar5 & 0x1f) & streamFrontendGlob.imageLoading[iVar10]) == 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x4a8,
-                                   0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar7 = (*pcVar4)();
-        return (bool)uVar7;
+      uVar6 = DB_GetImageIndex(image_00);
+      iVar8 = (int)uVar6 >> 5;
+      bVar3 = (byte)uVar6;
+      if (((1 << (bVar3 & 0x1f) & streamFrontendGlob.imageLoading[iVar8]) == 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x4a8,
+                                   0,"%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        uVar5 = (*pcVar2)();
+        return (bool)uVar5;
       }
-      if (((*(int *)(s_pendingRequests + iVar9 + 0x1c) == 4) ||
-          (*(int *)(s_pendingRequests + iVar9 + 0x1c) == 5)) ||
-         (*(int *)(s_pendingRequests + iVar9 + 0x1c) == 6)) {
-        streamFrontendGlob.imageLoading[iVar10] =
-             ~(1 << (bVar5 & 0x1f)) & streamFrontendGlob.imageLoading[iVar10];
-        Z_VirtualFree(*(void **)(s_pendingRequests + iVar9 + 0xc),0x14);
-        R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + iVar9));
+      if (((*(int *)(s_pendingRequests + iVar7 + 0x1c) == 4) ||
+          (*(int *)(s_pendingRequests + iVar7 + 0x1c) == 5)) ||
+         (*(int *)(s_pendingRequests + iVar7 + 0x1c) == 6)) {
+        streamFrontendGlob.imageLoading[iVar8] =
+             ~(1 << (bVar3 & 0x1f)) & streamFrontendGlob.imageLoading[iVar8];
+        Z_VirtualFree(*(void **)(s_pendingRequests + iVar7 + 0xc),0x14);
+        R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + iVar7));
       }
       else {
-        local_5 = true;
-        if ((*(int *)(s_pendingRequests + iVar9 + 0x1c) != 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                     0x4b7,0,"%s\n\t(request->status) = %i"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar7 = (*pcVar4)();
-          return (bool)uVar7;
+        workDone = true;
+        if ((*(int *)(s_pendingRequests + iVar7 + 0x1c) != 7) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                     0x4b7,0,"%s\n\t(request->status) = %i"), !bVar4)) {
+          pcVar2 = (code *)swi(3);
+          uVar5 = (*pcVar2)();
+          return (bool)uVar5;
         }
-        bVar6 = Sys_IsRenderThread();
-        if (bVar6) {
-          pGVar2 = *(GfxImageFileHeader **)(s_pendingRequests + iVar9 + 0xc);
-          iVar3 = *(int *)(s_pendingRequests + iVar9 + 0xc);
-          Image_Release(pGVar1);
-          if (((pGVar1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                       0x4c3,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar7 = (*pcVar4)();
-            return (bool)uVar7;
+        bVar4 = Sys_IsRenderThread();
+        if (bVar4) {
+          fileHeader_00 = *(GfxImageFileHeader **)(s_pendingRequests + iVar7 + 0xc);
+          iVar1 = *(int *)(s_pendingRequests + iVar7 + 0xc);
+          Image_Release(image_00);
+          if (((image_00->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                       0x4c3,0,"%s"), !bVar4)) {
+            pcVar2 = (code *)swi(3);
+            uVar5 = (*pcVar2)();
+            return (bool)uVar5;
           }
-          Image_LoadFromData(pGVar1,pGVar2,(uchar *)(iVar3 + 0x30),2);
-          Z_VirtualFree(*(void **)(s_pendingRequests + iVar9 + 0xc),0x14);
+          Image_LoadFromData(image_00,fileHeader_00,(uchar *)(iVar1 + 0x30),2);
+          Z_VirtualFree(*(void **)(s_pendingRequests + iVar7 + 0xc),0x14);
         }
         else {
-          RB_Resource_ReloadTexture(pGVar1,*(void **)(s_pendingRequests + iVar9 + 0xc));
+          RB_Resource_ReloadTexture(image_00,*(void **)(s_pendingRequests + iVar7 + 0xc));
         }
-        if (s_pendingRequests[iVar9 + 0x2c] == '\0') {
-          if (((1 << (bVar5 & 0x1f) & streamFrontendGlob.imageUseBits[iVar10]) == 0) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                       0x4d0,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar7 = (*pcVar4)();
-            return (bool)uVar7;
+        if (s_pendingRequests[iVar7 + 0x2c] == '\0') {
+          if (((1 << (bVar3 & 0x1f) & streamFrontendGlob.imageUseBits[iVar8]) == 0) &&
+             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                       0x4d0,0,"%s"), !bVar4)) {
+            pcVar2 = (code *)swi(3);
+            uVar5 = (*pcVar2)();
+            return (bool)uVar5;
           }
-          streamFrontendGlob.imageUseBits[iVar10] =
-               ~(1 << (bVar5 & 0x1f)) & streamFrontendGlob.imageUseBits[iVar10];
+          streamFrontendGlob.imageUseBits[iVar8] =
+               ~(1 << (bVar3 & 0x1f)) & streamFrontendGlob.imageUseBits[iVar8];
         }
         else {
-          if (((1 << (bVar5 & 0x1f) & streamFrontendGlob.imageUseBits[iVar10]) != 0) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                       0x4cb,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar7 = (*pcVar4)();
-            return (bool)uVar7;
+          if (((1 << (bVar3 & 0x1f) & streamFrontendGlob.imageUseBits[iVar8]) != 0) &&
+             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                       0x4cb,0,"%s"), !bVar4)) {
+            pcVar2 = (code *)swi(3);
+            uVar5 = (*pcVar2)();
+            return (bool)uVar5;
           }
-          streamFrontendGlob.imageUseBits[iVar10] =
-               1 << (bVar5 & 0x1f) | streamFrontendGlob.imageUseBits[iVar10];
+          streamFrontendGlob.imageUseBits[iVar8] =
+               1 << (bVar3 & 0x1f) | streamFrontendGlob.imageUseBits[iVar8];
         }
-        streamFrontendGlob.imageLoading[iVar10] =
-             ~(1 << (bVar5 & 0x1f)) & streamFrontendGlob.imageLoading[iVar10];
-        R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + iVar9));
+        streamFrontendGlob.imageLoading[iVar8] =
+             ~(1 << (bVar3 & 0x1f)) & streamFrontendGlob.imageLoading[iVar8];
+        R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + iVar7));
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -642,14 +659,15 @@ void __cdecl R_StreamUpdate_SetupInitialImageList(void)
 
 // 00AA3A10  R_StreamUpdate_AddInitialImages  (gfx_d3d/r_stream.cpp:1463)
 
-void __cdecl R_StreamUpdate_AddInitialImages(float param_1)
+void __cdecl R_StreamUpdate_AddInitialImages(float importance)
 
 {
-  int local_8;
+  int imagePartIndex;
   
-  for (local_8 = 0; local_8 < 0x1080; local_8 = local_8 + 1) {
-    if ((1 << ((byte)local_8 & 0x1f) & streamFrontendGlob.imageInitialBits[local_8 >> 5]) != 0) {
-      R_Stream_AddImagePartImportance(local_8,param_1);
+  for (imagePartIndex = 0; imagePartIndex < 0x1080; imagePartIndex = imagePartIndex + 1) {
+    if ((1 << ((byte)imagePartIndex & 0x1f) &
+        streamFrontendGlob.imageInitialBits[imagePartIndex >> 5]) != 0) {
+      R_Stream_AddImagePartImportance(imagePartIndex,importance);
     }
   }
   return;
@@ -658,7 +676,7 @@ void __cdecl R_StreamUpdate_AddInitialImages(float param_1)
 
 // 00AA3A70  R_StreamUpdate_AddForcedImages  (gfx_d3d/r_stream.cpp:1474)
 
-void __cdecl R_StreamUpdate_AddForcedImages(float param_1,float param_2)
+void __cdecl R_StreamUpdate_AddForcedImages(float forceImportance,float touchImportance)
 
 {
   code *pcVar1;
@@ -667,16 +685,19 @@ void __cdecl R_StreamUpdate_AddForcedImages(float param_1,float param_2)
   DWORD DVar4;
   uint uVar5;
   uint uVar6;
-  uint local_1c;
-  uint local_18;
-  int local_c;
-  int local_8;
+  uint mask;
+  uint useBits;
+  uint forceBits;
+  uint touchBits;
+  int part;
+  int bitIndex;
+  int index;
   
   PIXBeginNamedEvent(-1,"r_stream_add_forced_images");
   streamFrontendGlob.activeImageTouchBits = streamFrontendGlob.activeImageTouchBits ^ 1;
-  local_8 = 0;
+  index = 0;
   do {
-    if (0x83 < local_8) {
+    if (0x83 < index) {
       memset((uchar *)(streamFrontendGlob.imageTouchBits +
                       (streamFrontendGlob.activeImageTouchBits ^ 1)),'\0',0x210);
       DVar4 = GetCurrentThreadId();
@@ -685,116 +706,120 @@ void __cdecl R_StreamUpdate_AddForcedImages(float param_1,float param_2)
       }
       return;
     }
-    uVar5 = streamFrontendGlob.imageTouchBits[0][local_8] |
-            streamFrontendGlob.imageTouchBits[1][local_8];
-    local_18 = uVar5 | streamFrontendGlob.imageForceBits[local_8];
-    local_1c = ~local_18 & streamFrontendGlob.imageUseBits[local_8];
+    uVar5 = streamFrontendGlob.imageTouchBits[0][index] |
+            streamFrontendGlob.imageTouchBits[1][index];
+    forceBits = uVar5 | streamFrontendGlob.imageForceBits[index];
+    useBits = ~forceBits & streamFrontendGlob.imageUseBits[index];
     uVar3 = 0x1f;
-    if (local_18 != 0) {
-      for (; local_18 >> uVar3 == 0; uVar3 = uVar3 - 1) {
+    if (forceBits != 0) {
+      for (; forceBits >> uVar3 == 0; uVar3 = uVar3 - 1) {
       }
     }
-    if (local_18 == 0) {
+    if (forceBits == 0) {
       uVar3 = 0x3f;
     }
-    while (local_c = 0x1f - (uVar3 ^ 0x1f), -1 < local_c) {
-      uVar3 = 1 << ((byte)local_c & 0x1f);
-      if (((1 << ((byte)local_c & 0x1f) & local_18) == 0) &&
+    while (bitIndex = 0x1f - (uVar3 ^ 0x1f), -1 < bitIndex) {
+      uVar3 = 1 << ((byte)bitIndex & 0x1f);
+      if (((1 << ((byte)bitIndex & 0x1f) & forceBits) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x5da,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_18 = ~uVar3 & local_18;
-      uVar6 = local_8 * 0x20 + local_c & 0x80000000;
+      forceBits = ~uVar3 & forceBits;
+      uVar6 = index * 0x20 + bitIndex & 0x80000000;
       if ((int)uVar6 < 0) {
         uVar6 = 0;
       }
       if ((uVar5 & uVar3) == 0) {
-        R_Stream_AddImagePartImportance(local_8 * 0x20 + local_c,param_1 / (float)(int)(uVar6 + 1));
+        R_Stream_AddImagePartImportance
+                  (index * 0x20 + bitIndex,forceImportance / (float)(int)(uVar6 + 1));
       }
       else {
-        R_Stream_AddImagePartImportance(local_8 * 0x20 + local_c,param_2 / (float)(int)(uVar6 + 1));
+        R_Stream_AddImagePartImportance
+                  (index * 0x20 + bitIndex,touchImportance / (float)(int)(uVar6 + 1));
       }
       uVar3 = 0x1f;
-      if (local_18 != 0) {
-        for (; local_18 >> uVar3 == 0; uVar3 = uVar3 - 1) {
+      if (forceBits != 0) {
+        for (; forceBits >> uVar3 == 0; uVar3 = uVar3 - 1) {
         }
       }
-      if (local_18 == 0) {
+      if (forceBits == 0) {
         uVar3 = 0x3f;
       }
     }
     uVar3 = 0x1f;
-    if (local_1c != 0) {
-      for (; local_1c >> uVar3 == 0; uVar3 = uVar3 - 1) {
+    if (useBits != 0) {
+      for (; useBits >> uVar3 == 0; uVar3 = uVar3 - 1) {
       }
     }
-    if (local_1c == 0) {
+    if (useBits == 0) {
       uVar3 = 0x3f;
     }
-    while (local_c = 0x1f - (uVar3 ^ 0x1f), -1 < local_c) {
-      if (((1 << ((byte)local_c & 0x1f) & local_1c) == 0) &&
+    while (bitIndex = 0x1f - (uVar3 ^ 0x1f), -1 < bitIndex) {
+      if (((1 << ((byte)bitIndex & 0x1f) & useBits) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x5e9,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_1c = ~(1 << ((byte)local_c & 0x1f)) & local_1c;
-      R_Stream_AddImagePartImportance(local_8 * 0x20 + local_c,0.0);
+      useBits = ~(1 << ((byte)bitIndex & 0x1f)) & useBits;
+      R_Stream_AddImagePartImportance(index * 0x20 + bitIndex,0.0);
       uVar3 = 0x1f;
-      if (local_1c != 0) {
-        for (; local_1c >> uVar3 == 0; uVar3 = uVar3 - 1) {
+      if (useBits != 0) {
+        for (; useBits >> uVar3 == 0; uVar3 = uVar3 - 1) {
         }
       }
-      if (local_1c == 0) {
+      if (useBits == 0) {
         uVar3 = 0x3f;
       }
     }
-    local_8 = local_8 + 1;
+    index = index + 1;
   } while( true );
 }
 
 
 // 00AA1930  R_Stream_ForceLoadImage  (gfx_d3d/r_stream.cpp:1583)
 
-void __cdecl R_Stream_ForceLoadImage(GfxImage *param_1,int param_2)
+void __cdecl R_Stream_ForceLoadImage(GfxImage *image,int part)
 
 {
   uint uVar1;
   int iVar2;
   int local_18;
-  int local_8;
+  int partCount;
+  int imagePartIndex;
+  int partIndex;
   
-  if ((param_1 != (GfxImage *)0x0) && (param_1->streaming != '\0')) {
-    if (param_2 == 0) {
-      for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-        uVar1 = DB_GetImageIndex(param_1);
-        iVar2 = (int)(uVar1 + local_8) >> 5;
+  if ((image != (GfxImage *)0x0) && (image->streaming != '\0')) {
+    if (part == 0) {
+      for (partIndex = 0; partIndex < 1; partIndex = partIndex + 1) {
+        uVar1 = DB_GetImageIndex(image);
+        iVar2 = (int)(uVar1 + partIndex) >> 5;
         streamFrontendGlob.imageForceBits[iVar2] =
-             ~(1 << ((byte)(uVar1 + local_8) & 0x1f)) & streamFrontendGlob.imageForceBits[iVar2];
+             ~(1 << ((byte)(uVar1 + partIndex) & 0x1f)) & streamFrontendGlob.imageForceBits[iVar2];
       }
     }
-    else if (param_2 < 0) {
-      local_18 = param_2 + 1;
+    else if (part < 0) {
+      local_18 = part + 1;
       if (local_18 < 0) {
         local_18 = 0;
       }
-      for (local_8 = local_18; -1 < local_8; local_8 = local_8 + -1) {
-        uVar1 = DB_GetImageIndex(param_1);
-        iVar2 = (int)(uVar1 + local_8) >> 5;
+      for (partIndex = local_18; -1 < partIndex; partIndex = partIndex + -1) {
+        uVar1 = DB_GetImageIndex(image);
+        iVar2 = (int)(uVar1 + partIndex) >> 5;
         streamFrontendGlob.imageForceBits[iVar2] =
-             1 << ((byte)(uVar1 + local_8) & 0x1f) | streamFrontendGlob.imageForceBits[iVar2];
+             1 << ((byte)(uVar1 + partIndex) & 0x1f) | streamFrontendGlob.imageForceBits[iVar2];
       }
     }
     else {
-      for (local_8 = 0; (local_8 < param_2 && (local_8 < 1)); local_8 = local_8 + 1) {
-        uVar1 = DB_GetImageIndex(param_1);
-        iVar2 = (int)(uVar1 + local_8) >> 5;
+      for (partIndex = 0; (partIndex < part && (partIndex < 1)); partIndex = partIndex + 1) {
+        uVar1 = DB_GetImageIndex(image);
+        iVar2 = (int)(uVar1 + partIndex) >> 5;
         streamFrontendGlob.imageForceBits[iVar2] =
-             1 << ((byte)(uVar1 + local_8) & 0x1f) | streamFrontendGlob.imageForceBits[iVar2];
+             1 << ((byte)(uVar1 + partIndex) & 0x1f) | streamFrontendGlob.imageForceBits[iVar2];
       }
     }
     streamFrontendGlob.diskOrderImagesNeedSorting = true;
@@ -805,37 +830,40 @@ void __cdecl R_Stream_ForceLoadImage(GfxImage *param_1,int param_2)
 
 // 00AA1850  R_Stream_ForceLoadMaterial  (gfx_d3d/r_stream.cpp:1631)
 
-void __cdecl R_Stream_ForceLoadMaterial(Material *param_1,int param_2)
+void __cdecl R_Stream_ForceLoadMaterial(Material *material,int part)
 
 {
   byte bVar1;
-  GfxImage *pGVar2;
-  code *pcVar3;
-  bool bVar4;
-  MaterialTextureDef *pMVar5;
-  uint local_c;
+  GfxImage *image_00;
+  code *pcVar2;
+  bool bVar3;
+  MaterialTextureDef *pMVar4;
+  GfxImage *image;
+  MaterialTextureDef *texDef;
+  int textureIter;
+  int textureCount;
   
-  if (param_1 != (Material *)0x0) {
-    bVar1 = param_1->textureCount;
-    for (local_c = 0; local_c != bVar1; local_c = local_c + 1) {
-      pMVar5 = param_1->textureTable + local_c;
-      if ((pMVar5 == (MaterialTextureDef *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x66c,
-                                   0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+  if (material != (Material *)0x0) {
+    bVar1 = material->textureCount;
+    for (textureIter = 0; textureIter != (uint)bVar1; textureIter = textureIter + 1) {
+      pMVar4 = material->textureTable + textureIter;
+      if ((pMVar4 == (MaterialTextureDef *)0x0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x66c,
+                                   0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if (pMVar5->semantic != '\v') {
-        pGVar2 = (pMVar5->u).image;
-        if ((pGVar2 == (GfxImage *)0x0) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                     0x672,0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+      if (pMVar4->semantic != '\v') {
+        image_00 = (pMVar4->u).image;
+        if ((image_00 == (GfxImage *)0x0) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                     0x672,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        R_Stream_ForceLoadImage(pGVar2,param_2);
+        R_Stream_ForceLoadImage(image_00,part);
       }
     }
   }
@@ -845,22 +873,23 @@ void __cdecl R_Stream_ForceLoadMaterial(Material *param_1,int param_2)
 
 // 00AA1AA0  R_Stream_ForceLoadModel  (gfx_d3d/r_stream.cpp:1657)
 
-void __cdecl R_Stream_ForceLoadModel(XModel *param_1,int param_2)
+void __cdecl R_Stream_ForceLoadModel(XModel *model,int part)
 
 {
   int iVar1;
-  int local_18;
-  Material **local_14;
-  XSurface *local_c;
-  int local_8;
+  int lod;
+  Material **material;
+  int surfCount;
+  XSurface *surfaces;
+  int surfIter;
   
-  if (param_1 != (XModel *)0x0) {
-    for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-      iVar1 = XModelGetSurfaces(param_1,&local_c,local_18);
-      local_14 = XModelGetSkins(param_1,local_18);
-      for (local_8 = 0; local_8 != iVar1; local_8 = local_8 + 1) {
-        R_Stream_ForceLoadMaterial(*local_14,param_2);
-        local_14 = local_14 + 1;
+  if (model != (XModel *)0x0) {
+    for (lod = 0; lod < 4; lod = lod + 1) {
+      iVar1 = XModelGetSurfaces(model,&surfaces,lod);
+      material = XModelGetSkins(model,lod);
+      for (surfIter = 0; surfIter != iVar1; surfIter = surfIter + 1) {
+        R_Stream_ForceLoadMaterial(*material,part);
+        material = material + 1;
       }
     }
   }
@@ -870,40 +899,44 @@ void __cdecl R_Stream_ForceLoadModel(XModel *param_1,int param_2)
 
 // 00AA1B30  R_StreamTouchDObjAndCheck  (gfx_d3d/r_stream.cpp:1684)
 
-bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
+bool __cdecl R_StreamTouchDObjAndCheck(DObj *obj,int level)
 
 {
   code *pcVar1;
   sbyte sVar2;
   bool bVar3;
   undefined1 uVar4;
-  XModel *pXVar5;
-  Material **ppMVar6;
-  int iVar7;
-  uint uVar8;
-  byte bVar9;
+  XModel *model;
+  Material **ppMVar5;
+  int iVar6;
+  uint uVar7;
+  byte bVar8;
   int local_90;
-  uint local_88;
-  bool local_7d;
-  uint local_78;
-  XSurface *local_64;
-  uint local_60;
+  uint boneIndex;
+  bool streamed;
+  uint boneCount;
+  uint surfaceIndex;
+  uint surfaceCount;
+  int targBoneIndexLow;
+  int invTargBoneIndexLow;
+  XSurface *surfaces;
+  uint hidePartBits;
   uint local_5c;
   uint local_58;
   uint local_54;
   uint local_50;
-  uint local_4c;
-  uint local_48 [9];
-  XSurface *local_24;
-  uint local_20;
+  int targBoneIndexHigh;
+  uint surfPartBits [9];
+  XSurface *xsurf;
+  uint partBits;
   uint local_1c;
   uint local_18;
   uint local_14;
   uint local_10;
-  uint local_c;
-  uint local_8;
+  uint modelCount;
+  uint modelIndex;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6a8,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -925,89 +958,94 @@ bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  local_88 = 0;
-  local_c = DObjGetNumModels(param_1);
-  if ((0x20 < local_c) &&
+  boneIndex = 0;
+  modelCount = DObjGetNumModels(obj);
+  if ((0x20 < modelCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6ae,1,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  local_48[0] = 0;
-  local_48[1] = 0;
-  local_48[2] = 0;
-  local_48[3] = 0;
-  local_48[4] = 0;
-  local_48[5] = 0;
-  local_48[6] = 0;
-  local_48[7] = 0;
-  local_48[8] = 0;
-  local_7d = true;
-  local_8 = 0;
+  surfPartBits[0] = 0;
+  surfPartBits[1] = 0;
+  surfPartBits[2] = 0;
+  surfPartBits[3] = 0;
+  surfPartBits[4] = 0;
+  surfPartBits[5] = 0;
+  surfPartBits[6] = 0;
+  surfPartBits[7] = 0;
+  surfPartBits[8] = 0;
+  streamed = true;
+  modelIndex = 0;
   while( true ) {
-    if (local_c <= local_8) {
-      return local_7d;
+    if (modelCount <= modelIndex) {
+      return streamed;
     }
-    pXVar5 = DObjGetModel(param_1,local_8);
-    if ((pXVar5 == (XModel *)0x0) &&
+    model = DObjGetModel(obj,modelIndex);
+    if ((model == (XModel *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6b7,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    ppMVar6 = XModelGetSkins(pXVar5,0);
-    iVar7 = XModelNumBones(pXVar5);
-    uVar8 = XModelGetSurfaces(pXVar5,&local_64,0);
-    if ((local_64 == (XSurface *)0x0) &&
+    ppMVar5 = XModelGetSkins(model,0);
+    iVar6 = XModelNumBones(model);
+    uVar7 = XModelGetSurfaces(model,&surfaces,0);
+    if ((surfaces == (XSurface *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6be,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if ((uVar8 == 0) &&
+    if ((uVar7 == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6bf,0,
                                  "%s"), !bVar3)) break;
-    local_4c = local_88 >> 5;
-    sVar2 = (sbyte)(local_88 & 0x1f);
-    bVar9 = 0x20 - sVar2;
-    DObjGetHidePartBits(param_1,&local_60);
-    if ((0x80 < uVar8) &&
+    targBoneIndexHigh = boneIndex >> 5;
+    sVar2 = (sbyte)(boneIndex & 0x1f);
+    bVar8 = 0x20 - sVar2;
+    DObjGetHidePartBits(obj,&hidePartBits);
+    if ((0x80 < uVar7) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x6c7,0,
                                  "%s\n\t(surfaceCount) = %i"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    for (local_78 = 0; local_78 < uVar8; local_78 = local_78 + 1) {
-      local_24 = local_64 + local_78;
+    for (surfaceIndex = 0; surfaceIndex < uVar7; surfaceIndex = surfaceIndex + 1) {
+      xsurf = surfaces + surfaceIndex;
       for (local_90 = 0; local_90 < 5; local_90 = local_90 + 1) {
-        local_48[local_90 + 4] = local_64[local_78].partBits[local_90];
+        surfPartBits[local_90 + 4] = surfaces[surfaceIndex].partBits[local_90];
       }
-      if ((local_88 & 0x1f) == 0) {
-        local_20 = local_48[4 - local_4c];
-        local_1c = local_48[5 - local_4c];
-        local_18 = local_48[6 - local_4c];
-        local_14 = local_48[7 - local_4c];
-        local_10 = local_48[8 - local_4c];
+      if ((boneIndex & 0x1f) == 0) {
+        partBits = surfPartBits[4 - targBoneIndexHigh];
+        local_1c = surfPartBits[5 - targBoneIndexHigh];
+        local_18 = surfPartBits[6 - targBoneIndexHigh];
+        local_14 = surfPartBits[7 - targBoneIndexHigh];
+        local_10 = surfPartBits[8 - targBoneIndexHigh];
       }
       else {
-        local_20 = local_48[4 - local_4c] >> sVar2;
-        local_1c = local_48[4 - local_4c] << (bVar9 & 0x1f) | local_48[5 - local_4c] >> sVar2;
-        local_18 = local_48[5 - local_4c] << (bVar9 & 0x1f) | local_48[6 - local_4c] >> sVar2;
-        local_14 = local_48[6 - local_4c] << (bVar9 & 0x1f) | local_48[7 - local_4c] >> sVar2;
-        local_10 = local_48[7 - local_4c] << (bVar9 & 0x1f) | local_48[8 - local_4c] >> sVar2;
+        partBits = surfPartBits[4 - targBoneIndexHigh] >> sVar2;
+        local_1c = surfPartBits[4 - targBoneIndexHigh] << (bVar8 & 0x1f) |
+                   surfPartBits[5 - targBoneIndexHigh] >> sVar2;
+        local_18 = surfPartBits[5 - targBoneIndexHigh] << (bVar8 & 0x1f) |
+                   surfPartBits[6 - targBoneIndexHigh] >> sVar2;
+        local_14 = surfPartBits[6 - targBoneIndexHigh] << (bVar8 & 0x1f) |
+                   surfPartBits[7 - targBoneIndexHigh] >> sVar2;
+        local_10 = surfPartBits[7 - targBoneIndexHigh] << (bVar8 & 0x1f) |
+                   surfPartBits[8 - targBoneIndexHigh] >> sVar2;
       }
-      if (((((local_60 & local_20) == 0 && (local_5c & local_1c) == 0) && (local_58 & local_18) == 0
-           ) && (local_54 & local_14) == 0) && (local_50 & local_10) == 0) {
-        bVar3 = R_StreamTouchMaterialAndCheck(ppMVar6[local_78],param_2);
-        local_7d = (bool)(local_7d & bVar3);
+      if (((((hidePartBits & partBits) == 0 && (local_5c & local_1c) == 0) &&
+           (local_58 & local_18) == 0) && (local_54 & local_14) == 0) && (local_50 & local_10) == 0)
+      {
+        bVar3 = R_StreamTouchMaterialAndCheck(ppMVar5[surfaceIndex],level);
+        streamed = (bool)(streamed & bVar3);
       }
     }
-    local_8 = local_8 + 1;
-    local_88 = local_88 + iVar7;
+    modelIndex = modelIndex + 1;
+    boneIndex = boneIndex + iVar6;
   }
   pcVar1 = (code *)swi(3);
   uVar4 = (*pcVar1)();
@@ -1017,17 +1055,18 @@ bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
 
 // 00AA1F70  R_StreamTouchMaterial  (gfx_d3d/r_stream.cpp:1781)
 
-void __cdecl R_StreamTouchMaterial(Material *param_1)
+void __cdecl R_StreamTouchMaterial(Material *material)
 
 {
   int iVar1;
-  GfxImage *pGVar2;
-  undefined4 local_8;
+  GfxImage *image;
+  int imageCount;
+  int i;
   
-  iVar1 = Material_GetTextureCount(param_1);
-  for (local_8 = 0; local_8 < iVar1; local_8 = local_8 + 1) {
-    pGVar2 = Material_GetTexture(param_1,local_8);
-    R_StreamTouchImage(pGVar2);
+  iVar1 = Material_GetTextureCount(material);
+  for (i = 0; i < iVar1; i = i + 1) {
+    image = Material_GetTexture(material,i);
+    R_StreamTouchImage(image);
   }
   return;
 }
@@ -1035,19 +1074,20 @@ void __cdecl R_StreamTouchMaterial(Material *param_1)
 
 // 00AA1FC0  R_StreamTouchMaterialAndCheck  (gfx_d3d/r_stream.cpp:1794)
 
-bool __cdecl R_StreamTouchMaterialAndCheck(Material *param_1,int param_2)
+bool __cdecl R_StreamTouchMaterialAndCheck(Material *material,int level)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  GfxImage *pGVar5;
-  int iVar6;
-  bool local_9;
-  int local_8;
+  GfxImage *image;
+  int level_00;
+  int imageCount;
+  bool streamed;
+  int i;
   
-  if (param_2 != 0) {
+  if (level != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x707,0,
                              "level doesn\'t index MAX_IMAGE_STREAMED_PARTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1056,35 +1096,36 @@ bool __cdecl R_StreamTouchMaterialAndCheck(Material *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  local_9 = true;
-  iVar4 = Material_GetTextureCount(param_1);
-  for (local_8 = 0; local_8 < iVar4; local_8 = local_8 + 1) {
-    iVar6 = param_2;
-    pGVar5 = Material_GetTexture(param_1,local_8);
-    bVar2 = R_StreamTouchImageAndCheck(pGVar5,iVar6);
-    local_9 = (bool)(local_9 & bVar2);
+  streamed = true;
+  iVar4 = Material_GetTextureCount(material);
+  for (i = 0; i < iVar4; i = i + 1) {
+    level_00 = level;
+    image = Material_GetTexture(material,i);
+    bVar2 = R_StreamTouchImageAndCheck(image,level_00);
+    streamed = (bool)(streamed & bVar2);
   }
-  return local_9;
+  return streamed;
 }
 
 
 // 00AA2060  R_StreamTouchImage  (gfx_d3d/r_stream.cpp:1814)
 
-void __cdecl R_StreamTouchImage(GfxImage *param_1)
+void __cdecl R_StreamTouchImage(GfxImage *image)
 
 {
-  int local_10;
-  uint local_8;
+  int part;
+  int partCount;
+  int imagePartIndex;
   
-  if (param_1->streaming != '\0') {
-    local_8 = DB_GetImageIndex(param_1);
-    for (local_10 = 0; local_10 < 1; local_10 = local_10 + 1) {
+  if (image->streaming != '\0') {
+    imagePartIndex = DB_GetImageIndex(image);
+    for (part = 0; part < 1; part = part + 1) {
       *(uint *)(streamFrontendGlob.activeImageTouchBits * 0x210 + 0xadd29c4 +
-               ((int)local_8 >> 5) * 4) =
-           1 << ((byte)local_8 & 0x1f) |
+               (imagePartIndex >> 5) * 4) =
+           1 << ((byte)imagePartIndex & 0x1f) |
            *(uint *)(streamFrontendGlob.activeImageTouchBits * 0x210 + 0xadd29c4 +
-                    ((int)local_8 >> 5) * 4);
-      local_8 = local_8 + 1;
+                    (imagePartIndex >> 5) * 4);
+      imagePartIndex = imagePartIndex + 1;
     }
   }
   return;
@@ -1093,7 +1134,7 @@ void __cdecl R_StreamTouchImage(GfxImage *param_1)
 
 // 00AA2100  R_StreamTouchImageAndCheck  (gfx_d3d/r_stream.cpp:1832)
 
-bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
+bool __cdecl R_StreamTouchImageAndCheck(GfxImage *image,int level)
 
 {
   code *pcVar1;
@@ -1101,10 +1142,13 @@ bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
   undefined1 uVar3;
   int iVar4;
   int local_1c;
-  int local_18;
-  uint local_10;
+  int part;
+  int partCount;
+  int imagePartIndex;
+  bool streamed;
+  int levelPartIndex;
   
-  if (param_2 != 0) {
+  if (level != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x729,0,
                              "level doesn\'t index MAX_IMAGE_STREAMED_PARTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1113,25 +1157,25 @@ bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (param_1->streaming == '\0') {
+  if (image->streaming == '\0') {
     bVar2 = true;
   }
   else {
-    if (param_2 < 1) {
-      local_1c = param_2;
+    if (level < 1) {
+      local_1c = level;
     }
     else {
       local_1c = 0;
     }
-    local_10 = DB_GetImageIndex(param_1);
-    iVar4 = (1 - (local_1c + 1)) + local_10;
-    for (local_18 = 0; local_18 < 1; local_18 = local_18 + 1) {
+    imagePartIndex = DB_GetImageIndex(image);
+    iVar4 = (1 - (local_1c + 1)) + imagePartIndex;
+    for (part = 0; part < 1; part = part + 1) {
       *(uint *)(streamFrontendGlob.activeImageTouchBits * 0x210 + 0xadd29c4 +
-               ((int)local_10 >> 5) * 4) =
-           1 << ((byte)local_10 & 0x1f) |
+               (imagePartIndex >> 5) * 4) =
+           1 << ((byte)imagePartIndex & 0x1f) |
            *(uint *)(streamFrontendGlob.activeImageTouchBits * 0x210 + 0xadd29c4 +
-                    ((int)local_10 >> 5) * 4);
-      local_10 = local_10 + 1;
+                    (imagePartIndex >> 5) * 4);
+      imagePartIndex = imagePartIndex + 1;
     }
     bVar2 = (1 << ((byte)iVar4 & 0x1f) & streamFrontendGlob.imageUseBits[iVar4 >> 5]) != 0;
   }
@@ -1141,7 +1185,7 @@ bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
 
 // 00AA2220  R_StreamImageCheck  (gfx_d3d/r_stream.cpp:1860)
 
-bool __cdecl R_StreamImageCheck(GfxImage *param_1,int param_2)
+bool __cdecl R_StreamImageCheck(GfxImage *image,int level)
 
 {
   code *pcVar1;
@@ -1150,8 +1194,12 @@ bool __cdecl R_StreamImageCheck(GfxImage *param_1,int param_2)
   uint uVar4;
   int iVar5;
   int local_18;
+  int partCount;
+  int imagePartIndex;
+  bool streamed;
+  int levelPartIndex;
   
-  if (param_2 != 0) {
+  if (level != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x745,0,
                              "level doesn\'t index MAX_IMAGE_STREAMED_PARTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1160,17 +1208,17 @@ bool __cdecl R_StreamImageCheck(GfxImage *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (param_1->streaming == '\0') {
+  if (image->streaming == '\0') {
     bVar2 = true;
   }
   else {
-    if (param_2 < 1) {
-      local_18 = param_2;
+    if (level < 1) {
+      local_18 = level;
     }
     else {
       local_18 = 0;
     }
-    uVar4 = DB_GetImageIndex(param_1);
+    uVar4 = DB_GetImageIndex(image);
     iVar5 = (1 - (local_18 + 1)) + uVar4;
     bVar2 = (1 << ((byte)iVar5 & 0x1f) & streamFrontendGlob.imageUseBits[iVar5 >> 5]) != 0;
   }
@@ -1193,18 +1241,18 @@ void __cdecl R_Stream_ResetHintEntities(void)
 
 void __cdecl
 std::_Push_heap<int_*,int,int,importance_and_offset_pred>
-          (int *param_1,int param_2,int param_3,int param_4,importance_and_offset_pred param_5)
+          (int *_First,int _Hole,int _Top,int _Val,importance_and_offset_pred _Pred)
 
 {
-  int local_8;
+  int _Idx;
   
-  while (local_8 = (param_2 + -1) / 2, param_3 < param_2) {
-    if ((int)streamFrontendGlob.imageImportance[param_1[local_8]] -
-        (int)streamFrontendGlob.imageImportance[param_4] < 1) break;
-    param_1[param_2] = param_1[local_8];
-    param_2 = local_8;
+  while (_Idx = (_Hole + -1) / 2, _Top < _Hole) {
+    if ((int)streamFrontendGlob.imageImportance[_First[_Idx]] -
+        (int)streamFrontendGlob.imageImportance[_Val] < 1) break;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  param_1[param_2] = param_4;
+  _First[_Hole] = _Val;
   return;
 }
 
@@ -1215,12 +1263,13 @@ void __cdecl R_StreamUpdatePreventedMaterials(void)
 
 {
   uint uVar1;
-  int local_8;
+  uint materialIndex;
+  int i;
   
   memset((uchar *)streamFrontendGlob.materialPreventBits,'\0',0x200);
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if (s_preventMaterials[local_8] != (Material *)0x0) {
-      uVar1 = DB_GetMaterialIndex(s_preventMaterials[local_8]);
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (s_preventMaterials[i] != (Material *)0x0) {
+      uVar1 = DB_GetMaterialIndex(s_preventMaterials[i]);
       streamFrontendGlob.materialPreventBits[uVar1 >> 5] =
            1 << ((byte)uVar1 & 0x1f) | streamFrontendGlob.materialPreventBits[uVar1 >> 5];
     }
@@ -1234,14 +1283,14 @@ void __cdecl R_StreamUpdatePreventedMaterials(void)
 void __cdecl R_StreamInit(void)
 
 {
-  int local_8;
+  int i;
   
   R_StreamAlloc_InitTempImages();
   streamFrontendGlob.frame = 0;
   streamFrontendGlob.queryInProgress = 0;
   streamFrontendGlob.queryClient = -1;
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + local_8 * 0x30));
+  for (i = 0; i < 10; i = i + 1) {
+    R_Stream_InvalidateRequest((pendingRequest *)(s_pendingRequests + i * 0x30));
   }
   memset((uchar *)streamFrontendGlob.imageInSortedListBits,'\0',0x210);
   memset((uchar *)s_preventMaterials,'\0',0x80);
@@ -1256,27 +1305,28 @@ void __cdecl R_StreamInit(void)
 
 void __cdecl
 std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
-          (int *param_1,int param_2,int param_3,int param_4,importance_and_offset_pred param_5)
+          (int *_First,int _Hole,int _Bottom,int _Val,importance_and_offset_pred _Pred)
 
 {
   int iVar1;
-  int iVar2;
-  int local_c;
+  int _Top_00;
+  int _Idx;
+  int _Top;
   
-  iVar2 = param_2;
-  while (iVar1 = param_2 * 2, local_c = iVar1 + 2, local_c < param_3) {
-    if (0 < (int)streamFrontendGlob.imageImportance[param_1[local_c]] -
-            (int)streamFrontendGlob.imageImportance[param_1[iVar1 + 1]]) {
-      local_c = iVar1 + 1;
+  _Top_00 = _Hole;
+  while (iVar1 = _Hole * 2, _Idx = iVar1 + 2, _Idx < _Bottom) {
+    if (0 < (int)streamFrontendGlob.imageImportance[_First[_Idx]] -
+            (int)streamFrontendGlob.imageImportance[_First[iVar1 + 1]]) {
+      _Idx = iVar1 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
-  _Push_heap<int_*,int,int,importance_and_offset_pred>(param_1,param_2,iVar2,param_4,param_5);
+  _Push_heap<int_*,int,int,importance_and_offset_pred>(_First,_Hole,_Top_00,_Val,_Pred);
   return;
 }
 
@@ -1285,16 +1335,16 @@ std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
 
 void __cdecl
 std::pop_heap<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3)
+          (int *_First,int *_Last,importance_and_offset_pred _Pred)
 
 {
-  int iVar1;
+  int _Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<int_*,int,int,importance_and_offset_pred>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,iVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -1316,51 +1366,51 @@ void __cdecl R_StreamShutdown(void)
 
 // 00AA23F0  R_Stream_ReleaseImage  (gfx_d3d/r_stream.cpp:2200)
 
-void __cdecl R_Stream_ReleaseImage(GfxImage *param_1,bool param_2,bool param_3)
+void __cdecl R_Stream_ReleaseImage(GfxImage *image,bool lock,bool delayDirty)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_18;
-  int local_14;
-  uchar *local_10;
-  uint local_c;
-  uint local_8;
+  int part;
+  int freedSize;
+  uchar *memory;
+  int imagePartIndex;
+  int imageIndex;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x89c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->streaming != '\0') {
-    if (param_2) {
+  if (image->streaming != '\0') {
+    if (lock) {
       R_StreamAlloc_Lock();
     }
-    local_10 = R_StreamAlloc_FreeImage(param_1,0,param_3,&local_14);
-    if (0 < local_14) {
-      if ((local_10 == (uchar *)0x0) &&
+    memory = R_StreamAlloc_FreeImage(image,0,delayDirty,&freedSize);
+    if (0 < freedSize) {
+      if ((memory == (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x8b0,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      GamerProfile_WriteSettings((int)local_10);
+      GamerProfile_WriteSettings((int)memory);
     }
-    local_c = DB_GetImageIndex(param_1);
-    for (local_18 = 0; local_18 < 1; local_18 = local_18 + 1) {
-      streamFrontendGlob.imageInitialBits[(int)(local_18 + local_c) >> 5] =
-           ~(1 << ((char)local_18 + (char)local_c & 0x1fU)) &
-           streamFrontendGlob.imageInitialBits[(int)(local_18 + local_c) >> 5];
-      streamFrontendGlob.imageForceBits[(int)(local_18 + local_c) >> 5] =
-           ~(1 << ((char)local_18 + (char)local_c & 0x1fU)) &
-           streamFrontendGlob.imageForceBits[(int)(local_18 + local_c) >> 5];
+    imagePartIndex = DB_GetImageIndex(image);
+    for (part = 0; part < 1; part = part + 1) {
+      streamFrontendGlob.imageInitialBits[part + imagePartIndex >> 5] =
+           ~(1 << ((char)part + (char)imagePartIndex & 0x1fU)) &
+           streamFrontendGlob.imageInitialBits[part + imagePartIndex >> 5];
+      streamFrontendGlob.imageForceBits[part + imagePartIndex >> 5] =
+           ~(1 << ((char)part + (char)imagePartIndex & 0x1fU)) &
+           streamFrontendGlob.imageForceBits[part + imagePartIndex >> 5];
     }
     streamFrontendGlob.diskOrderImagesNeedSorting = true;
-    if (param_2) {
-      local_8 = local_c;
+    if (lock) {
+      imageIndex = imagePartIndex;
       R_StreamAlloc_Unlock();
     }
   }
@@ -1372,19 +1422,19 @@ void __cdecl R_Stream_ReleaseImage(GfxImage *param_1,bool param_2,bool param_3)
 
 void __cdecl
 std::make_heap<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3)
+          (int *_First,int *_Last,importance_and_offset_pred _Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<int_*,int,int,importance_and_offset_pred>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -1399,9 +1449,11 @@ void __cdecl R_Stream_Sync(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  pendingRequest *ppVar4;
-  uint uVar5;
-  int local_c;
+  pendingRequest *request_00;
+  uint uVar4;
+  pendingRequest *request;
+  int i;
+  int imageIndex;
   
   if (!streamIsInitialized) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x8e7,0,"%s"
@@ -1435,33 +1487,33 @@ void __cdecl R_Stream_Sync(void)
     }
   }
   R_StreamAlloc_Lock();
-  for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-    iVar3 = local_c * 0x30;
-    ppVar4 = (pendingRequest *)(s_pendingRequests + iVar3);
+  for (i = 0; i < 10; i = i + 1) {
+    iVar3 = i * 0x30;
+    request_00 = (pendingRequest *)(s_pendingRequests + iVar3);
     if ((*(int *)(s_pendingRequests + iVar3 + 0x1c) == 1) ||
        (*(int *)(s_pendingRequests + iVar3 + 0x1c) == 2)) {
-      uVar5 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
-      streamFrontendGlob.imageLoading[(int)uVar5 >> 5] =
-           ~(1 << ((byte)uVar5 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar5 >> 5];
-      R_Stream_InvalidateRequest(ppVar4);
+      uVar4 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
+      streamFrontendGlob.imageLoading[(int)uVar4 >> 5] =
+           ~(1 << ((byte)uVar4 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar4 >> 5];
+      R_Stream_InvalidateRequest(request_00);
     }
     else if (*(int *)(s_pendingRequests + iVar3 + 0x1c) == 7) {
-      uVar5 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
-      streamFrontendGlob.imageLoading[(int)uVar5 >> 5] =
-           ~(1 << ((byte)uVar5 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar5 >> 5];
+      uVar4 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
+      streamFrontendGlob.imageLoading[(int)uVar4 >> 5] =
+           ~(1 << ((byte)uVar4 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar4 >> 5];
       Z_VirtualFree(*(void **)(s_pendingRequests + iVar3 + 0xc),0x14);
-      R_Stream_InvalidateRequest(ppVar4);
+      R_Stream_InvalidateRequest(request_00);
     }
     else if (*(int *)(s_pendingRequests + iVar3 + 0x1c) == 3) {
-      while ((*(int *)(s_pendingRequests + local_c * 0x30 + 0x1c) < 4 ||
-             (7 < *(int *)(s_pendingRequests + local_c * 0x30 + 0x1c)))) {
+      while ((*(int *)(s_pendingRequests + i * 0x30 + 0x1c) < 4 ||
+             (7 < *(int *)(s_pendingRequests + i * 0x30 + 0x1c)))) {
         NET_Sleep(1);
       }
-      uVar5 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
-      streamFrontendGlob.imageLoading[(int)uVar5 >> 5] =
-           ~(1 << ((byte)uVar5 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar5 >> 5];
+      uVar4 = DB_GetImageIndex(*(GfxImage **)(s_pendingRequests + iVar3 + 4));
+      streamFrontendGlob.imageLoading[(int)uVar4 >> 5] =
+           ~(1 << ((byte)uVar4 & 0x1f)) & streamFrontendGlob.imageLoading[(int)uVar4 >> 5];
       Z_VirtualFree(*(void **)(s_pendingRequests + iVar3 + 0xc),0x14);
-      R_Stream_InvalidateRequest(ppVar4);
+      R_Stream_InvalidateRequest(request_00);
     }
   }
   R_StreamAlloc_Unlock();
@@ -1471,16 +1523,16 @@ void __cdecl R_Stream_Sync(void)
 
 // 00AA2550  R_StreamSyncThenFlush  (gfx_d3d/r_stream.cpp:2462)
 
-void __cdecl R_StreamSyncThenFlush(bool param_1)
+void __cdecl R_StreamSyncThenFlush(bool flushAll)
 
 {
-  int local_8;
+  int i;
   
   if (streamIsInitialized) {
     Sys_EnterCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
     R_StreamPushDisable();
     R_Stream_Sync();
-    if (param_1) {
+    if (flushAll) {
       R_StreamAlloc_Lock();
       R_StreamAlloc_Flush();
       R_StreamAlloc_Unlock();
@@ -1490,8 +1542,8 @@ void __cdecl R_StreamSyncThenFlush(bool param_1)
     streamFrontendGlob.calculateTotalBytesWanted = false;
     Sys_EnterCriticalSection(CRITSECT_STREAM_FORCE_LOAD_COMMAND);
     s_numForcedLoadEntities = 0;
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-      s_forcedLoadEntities[local_8] = (DObj *)0x0;
+    for (i = 0; i < 4; i = i + 1) {
+      s_forcedLoadEntities[i] = (DObj *)0x0;
     }
     Sys_LeaveCriticalSection(CRITSECT_STREAM_FORCE_LOAD_COMMAND);
     R_StreamPopDisable();
@@ -1552,37 +1604,40 @@ void __cdecl R_StreamPopSyncDisable(void)
 
 // 00AA3E20  R_CheckHighmipAabbs_r  (gfx_d3d/r_stream.cpp:2639)
 
-void __cdecl R_CheckHighmipAabbs_r(GfxWorld *param_1,int param_2,float *param_3,float *param_4)
+void __cdecl R_CheckHighmipAabbs_r(GfxWorld *world,int aabbTreeNode,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  GfxSurface *pGVar4;
-  GfxStreamingAabbTree *pGVar5;
-  uint local_38;
-  float local_30;
+  GfxSurface *v;
+  GfxStreamingAabbTree *pGVar4;
+  GfxSurface *surface;
+  int ref;
+  int childIter;
+  GfxStreamingAabbTree *tree;
+  float myMins;
   float local_2c;
   float local_28;
-  float local_24;
+  float myMaxs;
   float local_20;
   float local_1c;
-  uint local_18;
-  uint local_14;
-  int *local_10;
-  int *local_c;
-  int *local_8;
+  int childEnd;
+  int childBegin;
+  int *leafRefEnd;
+  int *leafRefBegin;
+  int *leafRefIter;
   
-  if (((param_2 < 0) || ((param_1->streamInfo).aabbTreeCount <= param_2)) &&
+  if (((aabbTreeNode < 0) || ((world->streamInfo).aabbTreeCount <= aabbTreeNode)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xa59,0,
                                "%s\n\t(aabbTreeNode) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pGVar5 = (param_1->streamInfo).aabbTrees + param_2;
-  iVar3 = PointInBounds(pGVar5->mins,param_3,param_4);
-  if ((iVar3 == 0) || (iVar3 = PointInBounds(pGVar5->maxs,param_3,param_4), iVar3 == 0)) {
+  pGVar4 = (world->streamInfo).aabbTrees + aabbTreeNode;
+  iVar3 = PointInBounds(pGVar4->mins,mins,maxs);
+  if ((iVar3 == 0) || (iVar3 = PointInBounds(pGVar4->maxs,mins,maxs), iVar3 == 0)) {
     bVar2 = false;
   }
   else {
@@ -1595,29 +1650,28 @@ void __cdecl R_CheckHighmipAabbs_r(GfxWorld *param_1,int param_2,float *param_3,
     (*pcVar1)();
     return;
   }
-  local_30 = pGVar5->mins[0];
-  local_2c = pGVar5->mins[1];
-  local_28 = pGVar5->mins[2];
-  local_24 = pGVar5->maxs[0];
-  local_20 = pGVar5->maxs[1];
-  local_1c = pGVar5->maxs[2];
-  if (pGVar5->childCount == 0) {
-    local_c = (param_1->streamInfo).leafRefs + pGVar5->firstItem;
-    local_10 = local_c + pGVar5->itemCount;
-    for (local_8 = local_c; local_8 != local_10; local_8 = local_8 + 1) {
-      iVar3 = *local_8;
+  myMins = pGVar4->mins[0];
+  local_2c = pGVar4->mins[1];
+  local_28 = pGVar4->mins[2];
+  myMaxs = pGVar4->maxs[0];
+  local_20 = pGVar4->maxs[1];
+  local_1c = pGVar4->maxs[2];
+  if (pGVar4->childCount == 0) {
+    leafRefBegin = (world->streamInfo).leafRefs + pGVar4->firstItem;
+    leafRefEnd = leafRefBegin + pGVar4->itemCount;
+    for (leafRefIter = leafRefBegin; leafRefIter != leafRefEnd; leafRefIter = leafRefIter + 1) {
+      iVar3 = *leafRefIter;
       if (-1 < iVar3) {
-        if (((iVar3 < 0) || (param_1->surfaceCount <= iVar3)) &&
+        if (((iVar3 < 0) || (world->surfaceCount <= iVar3)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                                      0xa75,0,"%s\n\t(ref) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        pGVar4 = (param_1->dpvs).surfaces + iVar3;
-        iVar3 = PointInBounds((float *)pGVar4,&local_30,&local_24);
-        if ((iVar3 == 0) ||
-           (iVar3 = PointInBounds((pGVar4->tris).maxs,&local_30,&local_24), iVar3 == 0)) {
+        v = (world->dpvs).surfaces + iVar3;
+        iVar3 = PointInBounds((float *)v,&myMins,&myMaxs);
+        if ((iVar3 == 0) || (iVar3 = PointInBounds((v->tris).maxs,&myMins,&myMaxs), iVar3 == 0)) {
           bVar2 = false;
         }
         else {
@@ -1634,11 +1688,11 @@ void __cdecl R_CheckHighmipAabbs_r(GfxWorld *param_1,int param_2,float *param_3,
     }
   }
   else {
-    local_18 = (uint)pGVar5->firstChild + (uint)pGVar5->childCount;
-    local_38 = (uint)pGVar5->firstChild;
-    local_14 = local_38;
-    for (; local_38 != local_18; local_38 = local_38 + 1) {
-      R_CheckHighmipAabbs_r(param_1,local_38,&local_30,&local_24);
+    childEnd = (uint)pGVar4->firstChild + (uint)pGVar4->childCount;
+    childIter = (int)pGVar4->firstChild;
+    childBegin = childIter;
+    for (; childIter != childEnd; childIter = childIter + 1) {
+      R_CheckHighmipAabbs_r(world,childIter,&myMins,&myMaxs);
     }
   }
   return;
@@ -1650,15 +1704,15 @@ void __cdecl R_CheckHighmipAabbs_r(GfxWorld *param_1,int param_2,float *param_3,
 void __cdecl R_CheckHighmipAabbs(void)
 
 {
-  float local_1c [6];
+  float mins [6];
   
-  local_1c[3] = 131072.0;
-  local_1c[4] = 131072.0;
-  local_1c[5] = 131072.0;
-  local_1c[0] = -131072.0;
-  local_1c[1] = -131072.0;
-  local_1c[2] = -131072.0;
-  R_CheckHighmipAabbs_r(rgp.world,0,local_1c,local_1c + 3);
+  mins[3] = 131072.0;
+  mins[4] = 131072.0;
+  mins[5] = 131072.0;
+  mins[0] = -131072.0;
+  mins[1] = -131072.0;
+  mins[2] = -131072.0;
+  R_CheckHighmipAabbs_r(rgp.world,0,mins,mins + 3);
   return;
 }
 
@@ -1710,12 +1764,13 @@ void __cdecl R_StreamUpdate_Idle(void)
 
 // 00AA2930  R_StreamUpdate_CompletePreload  (gfx_d3d/r_stream.cpp:2909)
 
-void __cdecl R_StreamUpdate_CompletePreload(_func___cdecl_void *param_1)
+void __cdecl R_StreamUpdate_CompletePreload(_func___cdecl_void *pumpfunc)
 
 {
   bool bVar1;
   int iVar2;
   float fVar3;
+  float progress;
   
   R_BeginRemoteScreenUpdate();
   while (((iVar2 = R_IsRemoteScreenUpdateActive(), iVar2 != 0 &&
@@ -1727,7 +1782,7 @@ void __cdecl R_StreamUpdate_CompletePreload(_func___cdecl_void *param_1)
     if ((1.0 <= fVar3) || (0 < streamFrontendGlob.initialLoadAllocFailures)) break;
     NET_Sleep(10);
   }
-  R_EndRemoteScreenUpdate(param_1);
+  R_EndRemoteScreenUpdate(pumpfunc);
   return;
 }
 
@@ -1736,36 +1791,38 @@ void __cdecl R_StreamUpdate_CompletePreload(_func___cdecl_void *param_1)
 
 void __cdecl
 std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3,int *param_4)
+          (int *_First,int *_Last,importance_and_offset_pred _Pred,int *__formal)
 
 {
   flameGeneric_s *pfVar1;
-  flameGeneric_s **ppfVar2;
-  flameGeneric_s **ppfVar3;
-  flameGeneric_s **local_c;
-  flameGeneric_s **local_8;
+  int *piVar2;
+  flameGeneric_s **_Last_10;
+  int *_First1;
+  int _Val;
+  int *_Next1;
+  int *_Next;
   
-  if (param_1 != param_2) {
-    local_8 = (flameGeneric_s **)param_1;
-    while (ppfVar3 = local_8 + 1, ppfVar3 != (flameGeneric_s **)param_2) {
-      pfVar1 = *ppfVar3;
-      local_c = ppfVar3;
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Last_10 = (flameGeneric_s **)(_Next + 1), _Last_10 != (flameGeneric_s **)_Last) {
+      pfVar1 = *_Last_10;
+      _Next1 = (int *)_Last_10;
       if ((int)streamFrontendGlob.imageImportance[(int)pfVar1] -
-          (int)streamFrontendGlob.imageImportance[*param_1] < 1) {
-        while (ppfVar2 = local_c + -1,
+          (int)streamFrontendGlob.imageImportance[*_First] < 1) {
+        while (piVar2 = _Next1 + -1,
               0 < (int)streamFrontendGlob.imageImportance[(int)pfVar1] -
-                  (int)streamFrontendGlob.imageImportance[(int)*ppfVar2]) {
-          *local_c = *ppfVar2;
-          local_c = ppfVar2;
+                  (int)streamFrontendGlob.imageImportance[*piVar2]) {
+          *_Next1 = *piVar2;
+          _Next1 = piVar2;
         }
-        *local_c = pfVar1;
-        local_8 = ppfVar3;
+        *_Next1 = (int)pfVar1;
+        _Next = (int *)_Last_10;
       }
       else {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,ppfVar3,local_8 + 2);
-        *param_1 = (int)pfVar1;
-        local_8 = ppfVar3;
+                  ((flameGeneric_s **)_First,_Last_10,(flameGeneric_s **)(_Next + 2));
+        *_First = (int)pfVar1;
+        _Next = (int *)_Last_10;
       }
     }
   }
@@ -1777,28 +1834,28 @@ std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
 
 void __cdecl
 std::_Med3<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,int *param_3,importance_and_offset_pred param_4)
+          (int *_First,int *_Mid,int *_Last,importance_and_offset_pred _Pred)
 
 {
   int iVar1;
   
-  if ((0 < (int)streamFrontendGlob.imageImportance[*param_2] -
-           (int)streamFrontendGlob.imageImportance[*param_1]) && (param_2 != param_1)) {
-    iVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = iVar1;
+  if ((0 < (int)streamFrontendGlob.imageImportance[*_Mid] -
+           (int)streamFrontendGlob.imageImportance[*_First]) && (_Mid != _First)) {
+    iVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = iVar1;
   }
-  if ((0 < (int)streamFrontendGlob.imageImportance[*param_3] -
-           (int)streamFrontendGlob.imageImportance[*param_2]) && (param_3 != param_2)) {
-    iVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = iVar1;
+  if ((0 < (int)streamFrontendGlob.imageImportance[*_Last] -
+           (int)streamFrontendGlob.imageImportance[*_Mid]) && (_Last != _Mid)) {
+    iVar1 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = iVar1;
   }
-  if ((0 < (int)streamFrontendGlob.imageImportance[*param_2] -
-           (int)streamFrontendGlob.imageImportance[*param_1]) && (param_2 != param_1)) {
-    iVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = iVar1;
+  if ((0 < (int)streamFrontendGlob.imageImportance[*_Mid] -
+           (int)streamFrontendGlob.imageImportance[*_First]) && (_Mid != _First)) {
+    iVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = iVar1;
   }
   return;
 }
@@ -1808,21 +1865,22 @@ std::_Med3<int_*,importance_and_offset_pred>
 
 void __cdecl
 std::_Median<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,int *param_3,importance_and_offset_pred param_4)
+          (int *_First,int *_Mid,int *_Last,importance_and_offset_pred _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<int_*,importance_and_offset_pred>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<int_*,importance_and_offset_pred>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
-    _Med3<int_*,importance_and_offset_pred>(param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
-    _Med3<int_*,importance_and_offset_pred>(param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
-    _Med3<int_*,importance_and_offset_pred>(param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<int_*,importance_and_offset_pred>(param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+    _Med3<int_*,importance_and_offset_pred>(_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<int_*,importance_and_offset_pred>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
+    _Med3<int_*,importance_and_offset_pred>(_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
+    _Med3<int_*,importance_and_offset_pred>(_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -1830,15 +1888,15 @@ std::_Median<int_*,importance_and_offset_pred>
 
 // 00AA29A0  R_StreamUpdate  (gfx_d3d/r_stream.cpp:3170)
 
-bool __cdecl R_StreamUpdate(float *param_1)
+bool __cdecl R_StreamUpdate(float *viewPos)
 
 {
   DWORD DVar1;
   int in_stack_ffffffe8;
-  bool local_5;
+  bool updateCalled;
   
   PIXBeginNamedEvent(-1,"stream update");
-  local_5 = false;
+  updateCalled = false;
   if (((r_streamClear->current).enabled != false) || (r_stream->modified != false)) {
     R_StreamSyncThenFlush(true);
     Dvar_ClearModified(r_streamSize);
@@ -1861,7 +1919,7 @@ bool __cdecl R_StreamUpdate(float *param_1)
   }
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     if (0 < (r_stream->current).integer) {
-      local_5 = R_StreamUpdate_FindImageAndOptimize(param_1);
+      updateCalled = R_StreamUpdate_FindImageAndOptimize(viewPos);
     }
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1874,7 +1932,7 @@ bool __cdecl R_StreamUpdate(float *param_1)
       _D3DPERF_EndEvent_0();
     }
   }
-  return local_5;
+  return updateCalled;
 }
 
 
@@ -1882,7 +1940,7 @@ bool __cdecl R_StreamUpdate(float *param_1)
 
 pair<int_*,int_*> __cdecl
 std::_Unguarded_partition<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3)
+          (int *param_1,int *_First,importance_and_offset_pred _Last)
 
 {
   int iVar1;
@@ -1891,114 +1949,114 @@ std::_Unguarded_partition<int_*,importance_and_offset_pred>
   pair<int_*,int_*> pVar4;
   undefined3 in_stack_0000000d;
   importance_and_offset_pred in_stack_00000010;
-  int *local_18;
-  int *local_14;
-  int *local_10;
-  int *local_c;
+  int *_Plast;
+  int *_Glast;
+  int *_Pfirst;
+  int *_Gfirst;
+  int *_Mid;
   
-  local_10 = param_2 + (((int)_param_3 - (int)param_2 >> 2) - ((int)_param_3 - (int)param_2 >> 0x1f)
-                       >> 1);
-  _Median<int_*,importance_and_offset_pred>(param_2,local_10,_param_3 + -1,in_stack_00000010);
-  local_18 = local_10 + 1;
-  while (((param_2 < local_10 &&
-          ((int)streamFrontendGlob.imageImportance[local_10[-1]] -
-           (int)streamFrontendGlob.imageImportance[*local_10] < 1)) &&
-         ((int)streamFrontendGlob.imageImportance[*local_10] -
-          (int)streamFrontendGlob.imageImportance[local_10[-1]] < 1))) {
-    local_10 = local_10 + -1;
+  _Pfirst = _First + (((int)__Last - (int)_First >> 2) - ((int)__Last - (int)_First >> 0x1f) >> 1);
+  _Median<int_*,importance_and_offset_pred>(_First,_Pfirst,__Last + -1,in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst &&
+          ((int)streamFrontendGlob.imageImportance[_Pfirst[-1]] -
+           (int)streamFrontendGlob.imageImportance[*_Pfirst] < 1)) &&
+         ((int)streamFrontendGlob.imageImportance[*_Pfirst] -
+          (int)streamFrontendGlob.imageImportance[_Pfirst[-1]] < 1))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < _param_3 &&
-          ((int)streamFrontendGlob.imageImportance[*local_18] -
-           (int)streamFrontendGlob.imageImportance[*local_10] < 1)) &&
-         ((int)streamFrontendGlob.imageImportance[*local_10] -
-          (int)streamFrontendGlob.imageImportance[*local_18] < 1))) {
-    local_18 = local_18 + 1;
+  while (((_Plast < __Last &&
+          ((int)streamFrontendGlob.imageImportance[*_Plast] -
+           (int)streamFrontendGlob.imageImportance[*_Pfirst] < 1)) &&
+         ((int)streamFrontendGlob.imageImportance[*_Pfirst] -
+          (int)streamFrontendGlob.imageImportance[*_Plast] < 1))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  piVar3 = local_c;
-  piVar2 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  piVar3 = _Gfirst;
+  piVar2 = _Pfirst;
   do {
-    while (local_10 = piVar2, local_c = piVar3, _param_3 <= local_c) {
+    while (_Pfirst = piVar2, _Gfirst = piVar3, __Last <= _Gfirst) {
 LAB_00aa6999:
-      for (; param_2 < local_14; local_14 = local_14 + -1) {
-        if ((int)streamFrontendGlob.imageImportance[local_14[-1]] -
-            (int)streamFrontendGlob.imageImportance[*local_10] < 1) {
-          if (0 < (int)streamFrontendGlob.imageImportance[*local_10] -
-                  (int)streamFrontendGlob.imageImportance[local_14[-1]]) break;
-          local_10 = local_10 + -1;
-          piVar3 = local_14 + -1;
-          if (local_10 != piVar3) {
-            iVar1 = *local_10;
-            *local_10 = *piVar3;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        if ((int)streamFrontendGlob.imageImportance[_Glast[-1]] -
+            (int)streamFrontendGlob.imageImportance[*_Pfirst] < 1) {
+          if (0 < (int)streamFrontendGlob.imageImportance[*_Pfirst] -
+                  (int)streamFrontendGlob.imageImportance[_Glast[-1]]) break;
+          _Pfirst = _Pfirst + -1;
+          piVar3 = _Glast + -1;
+          if (_Pfirst != piVar3) {
+            iVar1 = *_Pfirst;
+            *_Pfirst = *piVar3;
             *piVar3 = iVar1;
           }
         }
       }
-      if ((local_14 == param_2) && (local_c == _param_3)) {
-        *param_1 = (int)local_10;
-        param_1[1] = (int)local_18;
-        pVar4.second = local_18;
+      if ((_Glast == _First) && (_Gfirst == __Last)) {
+        *param_1 = (int)_Pfirst;
+        param_1[1] = (int)_Plast;
+        pVar4.second = _Plast;
         pVar4.first = param_1;
         return pVar4;
       }
-      if (local_14 == param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          iVar1 = *local_10;
-          *local_10 = *local_18;
-          *local_18 = iVar1;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          iVar1 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = iVar1;
         }
-        local_18 = local_18 + 1;
-        piVar3 = local_c + 1;
-        piVar2 = local_10 + 1;
-        if (local_10 != local_c) {
-          iVar1 = *local_10;
-          *local_10 = *local_c;
-          *local_c = iVar1;
+        _Plast = _Plast + 1;
+        piVar3 = _Gfirst + 1;
+        piVar2 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          iVar1 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = iVar1;
         }
       }
-      else if (local_c == _param_3) {
-        local_14 = local_14 + -1;
-        piVar2 = local_10 + -1;
-        if ((local_14 != piVar2) && (local_14 != piVar2)) {
-          iVar1 = *local_14;
-          *local_14 = *piVar2;
+      else if (_Gfirst == __Last) {
+        _Glast = _Glast + -1;
+        piVar2 = _Pfirst + -1;
+        if ((_Glast != piVar2) && (_Glast != piVar2)) {
+          iVar1 = *_Glast;
+          *_Glast = *piVar2;
           *piVar2 = iVar1;
         }
-        local_18 = local_18 + -1;
-        piVar3 = local_c;
-        if (piVar2 != local_18) {
+        _Plast = _Plast + -1;
+        piVar3 = _Gfirst;
+        if (piVar2 != _Plast) {
           iVar1 = *piVar2;
-          *piVar2 = *local_18;
-          *local_18 = iVar1;
+          *piVar2 = *_Plast;
+          *_Plast = iVar1;
         }
       }
       else {
-        local_14 = local_14 + -1;
-        if (local_c != local_14) {
-          iVar1 = *local_c;
-          *local_c = *local_14;
-          *local_14 = iVar1;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          iVar1 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = iVar1;
         }
-        piVar3 = local_c + 1;
-        piVar2 = local_10;
+        piVar3 = _Gfirst + 1;
+        piVar2 = _Pfirst;
       }
     }
-    piVar3 = local_18;
-    if ((int)streamFrontendGlob.imageImportance[*local_10] -
-        (int)streamFrontendGlob.imageImportance[*local_c] < 1) {
-      if (0 < (int)streamFrontendGlob.imageImportance[*local_c] -
-              (int)streamFrontendGlob.imageImportance[*local_10]) goto LAB_00aa6999;
-      piVar3 = local_18 + 1;
-      if (local_18 != local_c) {
-        iVar1 = *local_18;
-        *local_18 = *local_c;
-        *local_c = iVar1;
+    piVar3 = _Plast;
+    if ((int)streamFrontendGlob.imageImportance[*_Pfirst] -
+        (int)streamFrontendGlob.imageImportance[*_Gfirst] < 1) {
+      if (0 < (int)streamFrontendGlob.imageImportance[*_Gfirst] -
+              (int)streamFrontendGlob.imageImportance[*_Pfirst]) goto LAB_00aa6999;
+      piVar3 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        iVar1 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = iVar1;
       }
     }
-    local_18 = piVar3;
-    piVar3 = local_c + 1;
-    piVar2 = local_10;
+    _Plast = piVar3;
+    piVar3 = _Gfirst + 1;
+    piVar2 = _Pfirst;
   } while( true );
 }
 
@@ -2007,36 +2065,35 @@ LAB_00aa6999:
 
 void __cdecl
 std::_Sort<int_*,int,importance_and_offset_pred>
-          (int *param_1,int *param_2,int param_3,importance_and_offset_pred param_4)
+          (int *_First,int *_Last,int _Ideal,importance_and_offset_pred _Pred)
 
 {
   int *local_cc;
-  int *local_10;
+  int *_Mid;
   int *local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
-    _Unguarded_partition<int_*,importance_and_offset_pred>
-              ((int *)&local_10,param_1,SUB41(param_2,0));
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
-      _Sort<int_*,int,importance_and_offset_pred>(param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
+    _Unguarded_partition<int_*,importance_and_offset_pred>((int *)&_Mid,_First,SUB41(_Last,0));
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
+      _Sort<int_*,int,importance_and_offset_pred>(_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<int_*,int,importance_and_offset_pred>(local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+      _Sort<int_*,int,importance_and_offset_pred>(local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
-      _Insertion_sort1<int_*,importance_and_offset_pred,int>(param_1,param_2,param_4,(int *)0x0);
+  if (_Count < 0x21) {
+    if (1 < _Count) {
+      _Insertion_sort1<int_*,importance_and_offset_pred,int>(_First,_Last,_Pred,(int *)0x0);
     }
   }
   else {
-    make_heap<int_*,importance_and_offset_pred>(param_1,param_2,param_4);
-    for (local_cc = param_2; 1 < (int)local_cc - (int)param_1 >> 2; local_cc = local_cc + -1) {
-      pop_heap<int_*,importance_and_offset_pred>(param_1,local_cc,param_4);
+    make_heap<int_*,importance_and_offset_pred>(_First,_Last,_Pred);
+    for (local_cc = _Last; 1 < (int)local_cc - (int)_First >> 2; local_cc = local_cc + -1) {
+      pop_heap<int_*,importance_and_offset_pred>(_First,local_cc,_Pred);
     }
   }
   return;
@@ -2045,7 +2102,7 @@ std::_Sort<int_*,int,importance_and_offset_pred>
 
 // 00AA2B10  R_Stream_AddImagePartImportance  (gfx_d3d/r_stream.cpp:3344)
 
-void __cdecl R_Stream_AddImagePartImportance(int param_1,float param_2)
+void __cdecl R_Stream_AddImagePartImportance(int imagePartIndex,float importance)
 
 {
   code *pcVar1;
@@ -2054,7 +2111,7 @@ void __cdecl R_Stream_AddImagePartImportance(int param_1,float param_2)
   int iVar4;
   float local_c;
   
-  if ((0x107f < (uint)param_1) &&
+  if ((0x107f < (uint)imagePartIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xd11,0,
                                "imagePartIndex doesn\'t index TOTAL_IMAGE_PARTS\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -2062,20 +2119,21 @@ void __cdecl R_Stream_AddImagePartImportance(int param_1,float param_2)
     (*pcVar1)();
     return;
   }
-  local_c = streamFrontendGlob.imageImportance[param_1];
-  if (0.0 <= param_2 - local_c) {
-    local_c = param_2;
+  local_c = streamFrontendGlob.imageImportance[imagePartIndex];
+  if (0.0 <= importance - local_c) {
+    local_c = importance;
   }
-  streamFrontendGlob.imageImportance[param_1] = local_c;
-  iVar4 = param_1 >> 5;
-  bVar2 = (byte)param_1;
+  streamFrontendGlob.imageImportance[imagePartIndex] = local_c;
+  iVar4 = imagePartIndex >> 5;
+  bVar2 = (byte)imagePartIndex;
   if (((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageImportanceBits[iVar4]) == 0) &&
      (streamFrontendGlob.imageImportanceBits[iVar4] =
            1 << (bVar2 & 0x1f) | streamFrontendGlob.imageImportanceBits[iVar4],
      (1 << (bVar2 & 0x1f) & streamFrontendGlob.imageInSortedListBits[iVar4]) == 0)) {
     streamFrontendGlob.imageInSortedListBits[iVar4] =
          1 << (bVar2 & 0x1f) | streamFrontendGlob.imageInSortedListBits[iVar4];
-    streamFrontendGlob.sortedImages[streamFrontendGlob.sortedImageCount] = (int)(short)param_1;
+    streamFrontendGlob.sortedImages[streamFrontendGlob.sortedImageCount] =
+         (int)(short)imagePartIndex;
     streamFrontendGlob.sortedImageCount = streamFrontendGlob.sortedImageCount + 1;
   }
   return;
@@ -2084,42 +2142,49 @@ void __cdecl R_Stream_AddImagePartImportance(int param_1,float param_2)
 
 // 00AA4420  R_StreamTouchImagesFromMaterial  (gfx_d3d/r_stream.cpp:3361)
 
-void __cdecl R_StreamTouchImagesFromMaterial(Material *param_1,float param_2)
+void __cdecl R_StreamTouchImagesFromMaterial(Material *remoteMaterial,float importance)
 
 {
   byte bVar1;
   MaterialTextureDef *pMVar2;
-  GfxImage *pGVar3;
-  code *pcVar4;
-  bool bVar5;
-  uint uVar6;
-  MaterialTextureDef *pMVar7;
-  uint local_18;
+  GfxImage *image_00;
+  code *pcVar3;
+  bool bVar4;
+  uint imagePartIndex;
+  MaterialTextureDef *pMVar5;
+  GfxImage *image;
+  Material *material;
+  MaterialTextureDef *texDef;
+  int textureIter;
+  int imageIndex;
+  I_spuDmaSave dmaSave;
+  MaterialTextureDef *textureTable;
+  int textureCount;
   
-  bVar1 = param_1->textureCount;
+  bVar1 = remoteMaterial->textureCount;
   if (bVar1 != 0) {
-    pMVar2 = param_1->textureTable;
-    for (local_18 = 0; local_18 != bVar1; local_18 = local_18 + 1) {
-      pMVar7 = pMVar2 + local_18;
-      if ((pMVar7 == (MaterialTextureDef *)0x0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xd43,
-                                   0,"%s"), !bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+    pMVar2 = remoteMaterial->textureTable;
+    for (textureIter = 0; textureIter != (uint)bVar1; textureIter = textureIter + 1) {
+      pMVar5 = pMVar2 + textureIter;
+      if ((pMVar5 == (MaterialTextureDef *)0x0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xd43,
+                                   0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      if (pMVar7->semantic != '\v') {
-        pGVar3 = (pMVar7->u).image;
-        if ((pGVar3 == (GfxImage *)0x0) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
-                                     0xd49,0,"%s"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+      if (pMVar5->semantic != '\v') {
+        image_00 = (pMVar5->u).image;
+        if ((image_00 == (GfxImage *)0x0) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
+                                     0xd49,0,"%s"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        if (pGVar3->streaming != '\0') {
-          uVar6 = DB_GetImageIndex(pGVar3);
-          R_Stream_AddImagePartImportance(uVar6,param_2);
+        if (image_00->streaming != '\0') {
+          imagePartIndex = DB_GetImageIndex(image_00);
+          R_Stream_AddImagePartImportance(imagePartIndex,importance);
         }
       }
     }
@@ -2132,7 +2197,7 @@ void __cdecl R_StreamTouchImagesFromMaterial(Material *param_1,float param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float __cdecl FastPointDistSqFromBounds(float4 param_1,float4 param_2)
+float __cdecl FastPointDistSqFromBounds(float4 mins,float4 maxs)
 
 {
   float local_124;
@@ -2142,38 +2207,38 @@ float __cdecl FastPointDistSqFromBounds(float4 param_1,float4 param_2)
   float local_110;
   float local_10c;
   
-  if (s_viewPos.v[0] - param_1.v[0] < 0.0) {
-    local_10c = param_1.v[0];
+  if (s_viewPos.v[0] - mins.v[0] < 0.0) {
+    local_10c = mins.v[0];
   }
   else {
     local_10c = s_viewPos.v[0];
   }
-  if (s_viewPos.v[1] - param_1.v[1] < 0.0) {
-    local_110 = param_1.v[1];
+  if (s_viewPos.v[1] - mins.v[1] < 0.0) {
+    local_110 = mins.v[1];
   }
   else {
     local_110 = s_viewPos.v[1];
   }
-  if (s_viewPos.v[2] - param_1.v[2] < 0.0) {
-    local_114 = param_1.v[2];
+  if (s_viewPos.v[2] - mins.v[2] < 0.0) {
+    local_114 = mins.v[2];
   }
   else {
     local_114 = s_viewPos.v[2];
   }
-  if (param_2.v[0] - local_10c < 0.0) {
-    local_11c = param_2.v[0];
+  if (maxs.v[0] - local_10c < 0.0) {
+    local_11c = maxs.v[0];
   }
   else {
     local_11c = local_10c;
   }
-  if (param_2.v[1] - local_110 < 0.0) {
-    local_120 = param_2.v[1];
+  if (maxs.v[1] - local_110 < 0.0) {
+    local_120 = maxs.v[1];
   }
   else {
     local_120 = local_110;
   }
-  if (param_2.v[2] - local_114 < 0.0) {
-    local_124 = param_2.v[2];
+  if (maxs.v[2] - local_114 < 0.0) {
+    local_124 = maxs.v[2];
   }
   else {
     local_124 = local_114;
@@ -2191,110 +2256,119 @@ float __cdecl FastPointDistSqFromBounds(float4 param_1,float4 param_2)
 
 void __cdecl
 MultiplePointDistSqFromBounds
-          (distance_data *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-          float param_6)
+          (distance_data *distances,float *v,float *mip0mins,float *mip0maxs,float himipRadiusSq,
+          float distanceScale)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   
-  if ((((uint)param_3 & 0xf) != 0) &&
+  if ((((uint)mip0mins & 0xf) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xd8d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((uint)param_4 & 0xf) != 0) &&
+  if ((((uint)mip0maxs & 0xf) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xd8e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar3 = FastPointDistSqFromBounds(*(float4 *)param_3,*(float4 *)param_4);
-  param_1->distanceForHimip = fVar3 * param_6;
-  param_1->importance = param_5 / (param_1->distanceForHimip + 100.0);
+  fVar3 = FastPointDistSqFromBounds(*(float4 *)mip0mins,*(float4 *)mip0maxs);
+  distances->distanceForHimip = fVar3 * distanceScale;
+  distances->importance = himipRadiusSq / (distances->distanceForHimip + 100.0);
   return;
 }
 
 
 // 00AA5FF0  R_StreamUpdateForXModel  (gfx_d3d/r_stream.cpp:3491)
 
-void __cdecl R_StreamUpdateForXModel(XModel *param_1,float param_2)
+void __cdecl R_StreamUpdateForXModel(XModel *remoteModel,float distSq)
 
 {
   Material **ppMVar1;
   XModelHighMipBounds *pXVar2;
   code *pcVar3;
   bool bVar4;
-  phys_vec3 *ppVar5;
-  uint uVar6;
-  float fVar7;
+  phys_vec3 *v;
+  uint uVar5;
+  float fVar6;
   float local_44;
   float local_40;
-  int local_10;
+  XModel *model;
+  int materialIndex;
+  Material **materialHandles;
+  XModelHighMipBounds *highMipBounds;
+  XModelHighMipBounds *bounds;
+  float importance;
+  I_spuDmaSave dmaSave;
+  int surf;
+  float distNotSq;
+  float distanceForHimip;
   
-  ppMVar1 = param_1->materialHandles;
-  pXVar2 = (param_1->streamInfo).highMipBounds;
-  local_10 = 0;
+  ppMVar1 = remoteModel->materialHandles;
+  pXVar2 = (remoteModel->streamInfo).highMipBounds;
+  surf = 0;
   do {
-    if ((int)(uint)param_1->numsurfs <= local_10) {
+    if ((int)(uint)remoteModel->numsurfs <= surf) {
       return;
     }
-    if ((ppMVar1[local_10]->textureCount != '\0') &&
-       (ppVar5 = (phys_vec3 *)(pXVar2 + local_10), ppVar5->w != 0.0)) {
-      fVar7 = Abs(ppVar5);
-      local_40 = (SQRT(param_2) - fVar7) * (SQRT(param_2) - fVar7);
+    if ((ppMVar1[surf]->textureCount != '\0') && (v = (phys_vec3 *)(pXVar2 + surf), v->w != 0.0)) {
+      fVar6 = Abs(v);
+      local_40 = (SQRT(distSq) - fVar6) * (SQRT(distSq) - fVar6);
       if (local_40 - 0.0 < 0.0) {
         local_40 = 0.0;
       }
-      fVar7 = ppVar5->w / (local_40 + 100.0);
-      uVar6 = DB_GetMaterialIndex(ppMVar1[local_10]);
-      if (((int)uVar6 < 0) &&
+      fVar6 = v->w / (local_40 + 100.0);
+      uVar5 = DB_GetMaterialIndex(ppMVar1[surf]);
+      if (((int)uVar5 < 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xdcb,
                                    0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((0xfff < (int)uVar6) &&
+      if ((0xfff < (int)uVar5) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xdcc,
                                    0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_44 = streamFrontendGlob.materialImportance[uVar6];
-      if (0.0 <= fVar7 - local_44) {
-        local_44 = fVar7;
+      local_44 = streamFrontendGlob.materialImportance[uVar5];
+      if (0.0 <= fVar6 - local_44) {
+        local_44 = fVar6;
       }
-      streamFrontendGlob.materialImportance[uVar6] = local_44;
+      streamFrontendGlob.materialImportance[uVar5] = local_44;
     }
-    local_10 = local_10 + 1;
+    surf = surf + 1;
   } while( true );
 }
 
 
 // 00AA4230  R_StreamUpdateForXModelTouched  (gfx_d3d/r_stream.cpp:3539)
 
-void __cdecl R_StreamUpdateForXModelTouched(XModel *param_1)
+void __cdecl R_StreamUpdateForXModelTouched(XModel *model)
 
 {
   int iVar1;
-  int local_18;
-  Material **local_14;
-  XSurface *local_c;
-  int local_8;
+  int lod;
+  Material **material;
+  int surfCount;
+  XSurface *surfaces;
+  int surfIter;
   
-  if (param_1 != (XModel *)0x0) {
-    for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-      iVar1 = XModelGetSurfaces(param_1,&local_c,local_18);
-      local_14 = XModelGetSkins(param_1,local_18);
-      for (local_8 = 0; local_8 != iVar1; local_8 = local_8 + 1) {
-        R_StreamTouchMaterial(*local_14);
-        local_14 = local_14 + 1;
+  if (model != (XModel *)0x0) {
+    for (lod = 0; lod < 4; lod = lod + 1) {
+      iVar1 = XModelGetSurfaces(model,&surfaces,lod);
+      material = XModelGetSkins(model,lod);
+      for (surfIter = 0; surfIter != iVar1; surfIter = surfIter + 1) {
+        R_StreamTouchMaterial(*material);
+        material = material + 1;
       }
     }
   }
@@ -2309,17 +2383,19 @@ void __cdecl R_StreamUpdateTouchedModels(void)
 {
   code *pcVar1;
   bool bVar2;
-  XModel *pXVar3;
-  uint local_8;
+  XModel *model_00;
+  XModel *model;
+  int modelIndex;
   
-  local_8 = 0;
+  modelIndex = 0;
   do {
-    if (999 < local_8) {
+    if (999 < (uint)modelIndex) {
       return;
     }
-    if ((1 << ((byte)local_8 & 0x1f) & streamFrontendGlob.modelTouchBits[(int)local_8 >> 5]) != 0) {
-      pXVar3 = DB_GetXModelAtIndex(local_8);
-      if (pXVar3 == (XModel *)0x0) {
+    if ((1 << ((byte)modelIndex & 0x1f) & streamFrontendGlob.modelTouchBits[modelIndex >> 5]) != 0)
+    {
+      model_00 = DB_GetXModelAtIndex(modelIndex);
+      if (model_00 == (XModel *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xdf2,0,
                                  "%s");
         if (!bVar2) {
@@ -2328,9 +2404,9 @@ void __cdecl R_StreamUpdateTouchedModels(void)
           return;
         }
       }
-      R_StreamUpdateForXModelTouched(pXVar3);
+      R_StreamUpdateForXModelTouched(model_00);
     }
-    local_8 = local_8 + 1;
+    modelIndex = modelIndex + 1;
   } while( true );
 }
 
@@ -2339,39 +2415,40 @@ void __cdecl R_StreamUpdateTouchedModels(void)
 
 void __cdecl
 R_StreamUpdateForBModel
-          (float *param_1,uint param_2,uint param_3,GfxBrushModel *param_4,float *param_5,
-          float param_6,Material *param_7,bool param_8,float *param_9)
+          (float *viewPos,uint frame,uint surfId,GfxBrushModel *bmodel,float *origin,float maxDistSq
+          ,Material *altMaterial,bool isVisible,float *distanceScale)
 
 {
   float fVar1;
-  Material *pMVar2;
+  Material *remoteMaterial;
+  float fVar2;
   float fVar3;
-  float fVar4;
-  uchar *local_10;
-  uint local_8;
+  uint surfIndex;
+  uchar *modelSurf;
+  uint count;
   
-  local_10 = frontEndDataOut->surfsBuffer + param_3 * 4;
-  local_8 = 0;
+  modelSurf = frontEndDataOut->surfsBuffer + surfId * 4;
+  count = 0;
   do {
-    if (param_4->surfaceCount <= local_8) {
+    if (bmodel->surfaceCount <= count) {
       return;
     }
-    pMVar2 = *(Material **)(*(int *)(local_10 + 4) + 0x30);
-    if ((pMVar2 != (Material *)0x0) && (pMVar2->textureCount != '\0')) {
-      if ((rg.renderHiResShot != 0) && (!param_8)) {
+    remoteMaterial = *(Material **)(*(int *)(modelSurf + 4) + 0x30);
+    if ((remoteMaterial != (Material *)0x0) && (remoteMaterial->textureCount != '\0')) {
+      if ((rg.renderHiResShot != 0) && (!isVisible)) {
         return;
       }
-      fVar3 = (param_4->writable).mip1radiusSq;
-      fVar1 = param_9[param_8];
-      fVar4 = PointDistSqFromBounds(param_1,(float *)param_4,(param_4->writable).maxs);
-      fVar3 = fVar3 / (fVar4 * fVar1 + 100.0);
-      R_StreamTouchImagesFromMaterial(pMVar2,fVar3);
-      if (param_7 != (Material *)0x0) {
-        R_StreamTouchImagesFromMaterial(param_7,fVar3);
+      fVar2 = (bmodel->writable).mip1radiusSq;
+      fVar1 = distanceScale[isVisible];
+      fVar3 = PointDistSqFromBounds(viewPos,(float *)bmodel,(bmodel->writable).maxs);
+      fVar2 = fVar2 / (fVar3 * fVar1 + 100.0);
+      R_StreamTouchImagesFromMaterial(remoteMaterial,fVar2);
+      if (altMaterial != (Material *)0x0) {
+        R_StreamTouchImagesFromMaterial(altMaterial,fVar2);
       }
     }
-    local_8 = local_8 + 1;
-    local_10 = local_10 + 0x14;
+    count = count + 1;
+    modelSurf = modelSurf + 0x14;
   } while( true );
 }
 
@@ -2380,17 +2457,19 @@ R_StreamUpdateForBModel
 
 void __cdecl
 R_StreamUpdate_AddXModelDistance
-          (XModel *param_1,float *param_2,float *param_3,float param_4,bool param_5,float *param_6)
+          (XModel *model,float *viewPos,float *origin,float scale,bool visible,float *distanceScale)
 
 {
   uint uVar1;
   int iVar2;
   float fVar3;
   float local_20;
+  int modelIndex;
+  float distSq;
   
-  uVar1 = DB_GetXModelIndex(param_1);
-  fVar3 = Vec3DistanceSq(param_2,param_3);
-  local_20 = (fVar3 / param_4) * param_6[param_5];
+  uVar1 = DB_GetXModelIndex(model);
+  fVar3 = Vec3DistanceSq(viewPos,origin);
+  local_20 = (fVar3 / scale) * distanceScale[visible];
   iVar2 = (int)uVar1 >> 5;
   if ((1 << ((byte)uVar1 & 0x1f) & streamFrontendGlob.modelDistanceBits[iVar2]) == 0) {
     streamFrontendGlob.modelDistance[uVar1] = local_20;
@@ -2411,17 +2490,19 @@ R_StreamUpdate_AddXModelDistance
 
 void __cdecl
 R_StreamUpdate_AddDynamicXModelDistance
-          (XModel *param_1,float *param_2,float *param_3,float param_4,bool param_5,float *param_6)
+          (XModel *model,float *viewPos,float *origin,float scale,bool visible,float *distanceScale)
 
 {
   uint uVar1;
   int iVar2;
   float fVar3;
   float local_20;
+  int modelIndex;
+  float distSq;
   
-  uVar1 = DB_GetXModelIndex(param_1);
-  fVar3 = Vec3DistanceSq(param_2,param_3);
-  local_20 = (fVar3 / param_4) * param_6[param_5];
+  uVar1 = DB_GetXModelIndex(model);
+  fVar3 = Vec3DistanceSq(viewPos,origin);
+  local_20 = (fVar3 / scale) * distanceScale[visible];
   iVar2 = (int)uVar1 >> 5;
   if ((1 << ((byte)uVar1 & 0x1f) & streamFrontendGlob.dynamicModelDistanceBits[iVar2]) == 0) {
     streamFrontendGlob.dynamicModelDistance[uVar1] = local_20;
@@ -2440,7 +2521,8 @@ R_StreamUpdate_AddDynamicXModelDistance
 
 // 00AA4700  R_StreamUpdateDynamicModels  (gfx_d3d/r_stream.cpp:3690)
 
-void __cdecl R_StreamUpdateDynamicModels(float *param_1,float param_2,uint param_3,float *param_4)
+void __cdecl
+R_StreamUpdateDynamicModels(float *viewPos,float maxDistSq,uint frame,float *distanceScale)
 
 {
   ushort uVar1;
@@ -2451,80 +2533,97 @@ void __cdecl R_StreamUpdateDynamicModels(float *param_1,float param_2,uint param
   uint uVar6;
   bool bVar7;
   int iVar8;
-  XModel *pXVar9;
-  DynEntityDef *pDVar10;
-  GfxBrushModel *pGVar11;
-  DynEntityPose *pDVar12;
+  XModel *model_00;
+  DynEntityDef *pDVar9;
+  GfxBrushModel *bmodel_00;
+  DynEntityPose *pDVar10;
   ushort local_132;
-  int local_48;
-  int local_24;
-  int local_1c;
+  GfxSceneGlassBrush *glassBrush;
+  GfxSceneBrush *sceneBrushModel;
+  int brushModelIndex;
+  DynEntityPose *pose_2;
+  DynEntityPose *pose;
+  GfxSceneDynBrush *sceneDynBrush;
+  GfxSceneModel *sceneModel;
+  XModel *model;
+  GfxEntity *gfxEnt;
+  DynEntityDef *dynEntDef;
+  GfxSceneEntity *sceneEnt;
+  int entIndex;
+  ushort dynEntId;
+  int modelIter;
+  GfxSceneDynModel *sceneDynModel;
+  int modelCount;
+  GfxBrushModel *bmodel;
+  uchar *visData;
+  int entCount;
   
   lVar3 = scene.sceneDObjCount;
-  for (local_24 = 0; lVar4 = scene.sceneModelCount, local_24 < lVar3; local_24 = local_24 + 1) {
+  for (entIndex = 0; lVar4 = scene.sceneModelCount, entIndex < lVar3; entIndex = entIndex + 1) {
     if (((rg.enablePlayerShadowFlag == false) ||
-        (bVar7 = DObjIsPlayerShadow(scene.sceneDObj[local_24].obj), !bVar7)) &&
-       ((frontEndDataOut->gfxEnts[scene.sceneDObj[local_24].gfxEntIndex].renderFxFlags & 1) == 0)) {
-      iVar8 = DObjGetNumModels(scene.sceneDObj[local_24].obj);
-      for (local_1c = 0; local_1c != iVar8; local_1c = local_1c + 1) {
-        pXVar9 = DObjGetModel(scene.sceneDObj[local_24].obj,local_1c);
+        (bVar7 = DObjIsPlayerShadow(scene.sceneDObj[entIndex].obj), !bVar7)) &&
+       ((frontEndDataOut->gfxEnts[scene.sceneDObj[entIndex].gfxEntIndex].renderFxFlags & 1) == 0)) {
+      iVar8 = DObjGetNumModels(scene.sceneDObj[entIndex].obj);
+      for (modelIter = 0; modelIter != iVar8; modelIter = modelIter + 1) {
+        model_00 = DObjGetModel(scene.sceneDObj[entIndex].obj,modelIter);
         R_StreamUpdate_AddDynamicXModelDistance
-                  (pXVar9,param_1,scene.sceneDObj[local_24].placement.base.origin,
-                   scene.sceneDObj[local_24].placement.scale,
-                   scene.sceneDObjVisData[0][local_24] == '\x01',param_4);
+                  (model_00,viewPos,scene.sceneDObj[entIndex].placement.base.origin,
+                   scene.sceneDObj[entIndex].placement.scale,
+                   scene.sceneDObjVisData[0][entIndex] == '\x01',distanceScale);
       }
     }
   }
-  for (local_24 = 0; uVar6 = scene.sceneDynBrushCount, local_24 < lVar4; local_24 = local_24 + 1) {
+  for (entIndex = 0; uVar6 = scene.sceneDynBrushCount, entIndex < lVar4; entIndex = entIndex + 1) {
     R_StreamUpdate_AddDynamicXModelDistance
-              (scene.sceneModel[local_24].model,param_1,
-               scene.sceneModel[local_24].placement.base.origin,
-               scene.sceneModel[local_24].placement.scale,
-               scene.sceneModelVisData[0][local_24] == '\x01',param_4);
+              (scene.sceneModel[entIndex].model,viewPos,
+               scene.sceneModel[entIndex].placement.base.origin,
+               scene.sceneModel[entIndex].placement.scale,
+               scene.sceneModelVisData[0][entIndex] == '\x01',distanceScale);
   }
-  for (local_24 = 0; uVar5 = scene.sceneDynModelCount, local_24 < (int)uVar6;
-      local_24 = local_24 + 1) {
+  for (entIndex = 0; uVar5 = scene.sceneDynModelCount, entIndex < (int)uVar6;
+      entIndex = entIndex + 1) {
     pGVar2 = (rgp.world)->sceneDynBrush;
-    uVar1 = pGVar2[local_24].dynEntId;
-    pDVar10 = DynEnt_GetEntityDef(uVar1,DYNENT_DRAW_BRUSH);
-    if (pDVar10->physicsBrushModel == 0) {
-      local_132 = pDVar10->brushModel;
+    uVar1 = pGVar2[entIndex].dynEntId;
+    pDVar9 = DynEnt_GetEntityDef(uVar1,DYNENT_DRAW_BRUSH);
+    if (pDVar9->physicsBrushModel == 0) {
+      local_132 = pDVar9->brushModel;
     }
     else {
-      local_132 = pDVar10->physicsBrushModel;
+      local_132 = pDVar9->physicsBrushModel;
     }
-    pGVar11 = R_GetBrushModel((uint)local_132);
-    pDVar12 = DynEnt_GetClientPose(uVar1,DYNENT_DRAW_BRUSH);
+    bmodel_00 = R_GetBrushModel((uint)local_132);
+    pDVar10 = DynEnt_GetClientPose(uVar1,DYNENT_DRAW_BRUSH);
     R_StreamUpdateForBModel
-              (param_1,param_3,(uint)pGVar2[local_24].info.surfId,pGVar11,(pDVar12->pose).origin,
-               param_2,(Material *)0x0,true,param_4);
+              (viewPos,frame,(uint)pGVar2[entIndex].info.surfId,bmodel_00,(pDVar10->pose).origin,
+               maxDistSq,(Material *)0x0,true,distanceScale);
   }
-  for (local_24 = 0; local_24 < (int)uVar5; local_24 = local_24 + 1) {
-    uVar1 = (rgp.world)->sceneDynModel[local_24].dynEntId;
-    pDVar10 = DynEnt_GetEntityDef(uVar1,DYNENT_DRAW_MODEL);
-    pDVar12 = DynEnt_GetClientPose(uVar1,DYNENT_DRAW_MODEL);
+  for (entIndex = 0; entIndex < (int)uVar5; entIndex = entIndex + 1) {
+    uVar1 = (rgp.world)->sceneDynModel[entIndex].dynEntId;
+    pDVar9 = DynEnt_GetEntityDef(uVar1,DYNENT_DRAW_MODEL);
+    pDVar10 = DynEnt_GetClientPose(uVar1,DYNENT_DRAW_MODEL);
     R_StreamUpdate_AddDynamicXModelDistance
-              (pDVar10->xModel,param_1,(pDVar12->pose).origin,1.0,true,param_4);
-    if (pDVar10->destroyedxModel != (XModel *)0x0) {
+              (pDVar9->xModel,viewPos,(pDVar10->pose).origin,1.0,true,distanceScale);
+    if (pDVar9->destroyedxModel != (XModel *)0x0) {
       R_StreamUpdate_AddDynamicXModelDistance
-                (pDVar10->destroyedxModel,param_1,(pDVar12->pose).origin,1.0,true,param_4);
+                (pDVar9->destroyedxModel,viewPos,(pDVar10->pose).origin,1.0,true,distanceScale);
     }
   }
-  for (local_48 = 0; lVar3 = scene.glassBrushCount, local_48 < scene.sceneBrushCount;
-      local_48 = local_48 + 1) {
-    if (scene.sceneBrushVisData[0][local_48] == '\x01') {
+  for (brushModelIndex = 0; lVar3 = scene.glassBrushCount, brushModelIndex < scene.sceneBrushCount;
+      brushModelIndex = brushModelIndex + 1) {
+    if (scene.sceneBrushVisData[0][brushModelIndex] == '\x01') {
       R_StreamUpdateForBModel
-                (param_1,param_3,(uint)scene.sceneBrush[local_48].info.surfId,
-                 scene.sceneBrush[local_48].bmodel,scene.sceneBrush[local_48].placement.origin,
-                 param_2,(Material *)0x0,true,param_4);
+                (viewPos,frame,(uint)scene.sceneBrush[brushModelIndex].info.surfId,
+                 scene.sceneBrush[brushModelIndex].bmodel,
+                 scene.sceneBrush[brushModelIndex].placement.origin,maxDistSq,(Material *)0x0,true,
+                 distanceScale);
     }
   }
-  for (local_24 = 0; local_24 < lVar3; local_24 = local_24 + 1) {
-    if (scene.glassBrushVisData[local_24] == '\x01') {
+  for (entIndex = 0; entIndex < lVar3; entIndex = entIndex + 1) {
+    if (scene.glassBrushVisData[entIndex] == '\x01') {
       R_StreamUpdateForBModel
-                (param_1,param_3,(uint)scene.glassBrush[local_24].info.surfId,
-                 scene.glassBrush[local_24].bmodel,scene.glassBrush[local_24].placement.origin,
-                 param_2,scene.glassBrush[local_24].altStreamingMaterial,true,param_4);
+                (viewPos,frame,(uint)scene.glassBrush[entIndex].info.surfId,
+                 scene.glassBrush[entIndex].bmodel,scene.glassBrush[entIndex].placement.origin,
+                 maxDistSq,scene.glassBrush[entIndex].altStreamingMaterial,true,distanceScale);
     }
   }
   return;
@@ -2533,50 +2632,59 @@ void __cdecl R_StreamUpdateDynamicModels(float *param_1,float param_2,uint param
 
 // 00AA50E0  R_StreamUpdateStaticModel  (gfx_d3d/r_stream.cpp:3802)
 
-void __cdecl R_StreamUpdateStaticModel(int param_1,float *param_2,float param_3,float *param_4)
+void __cdecl
+R_StreamUpdateStaticModel(int staticModelIndex,float *viewPos,float maxDistSq,float *distanceScale)
 
 {
   GfxStaticModelDrawInst *pGVar1;
+  GfxStaticModelDrawInst *inst;
+  bool isVisible;
+  uchar *visData;
   
   pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
   R_StreamUpdate_AddXModelDistance
-            (pGVar1[param_1].model,param_2,pGVar1[param_1].placement.origin,
-             pGVar1[param_1].placement.scale,
-             ((uint)((rgp.world)->dpvs).smodelVisDataCameraSaved[param_1 >> 5] &
-             0x80000000U >> ((byte)param_1 & 0x1f)) != 0,param_4);
+            (pGVar1[staticModelIndex].model,viewPos,pGVar1[staticModelIndex].placement.origin,
+             pGVar1[staticModelIndex].placement.scale,
+             ((uint)((rgp.world)->dpvs).smodelVisDataCameraSaved[staticModelIndex >> 5] &
+             0x80000000U >> ((byte)staticModelIndex & 0x1f)) != 0,distanceScale);
   return;
 }
 
 
 // 00AA5300  R_StreamUpdateWorldSurface  (gfx_d3d/r_stream.cpp:3824)
 
-void __cdecl R_StreamUpdateWorldSurface(int param_1,float *param_2,float param_3,float *param_4)
+void __cdecl
+R_StreamUpdateWorldSurface(int surfId,float *viewPos,float maxDistSq,float *distanceScale)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  GfxSurface *pGVar4;
+  GfxSurface *mip0mins;
   float local_124;
-  distance_data local_c;
+  int materialIndex;
+  bool isVisible;
+  uchar *surfaceVisData;
+  GfxSurface *surface;
+  distance_data distSq;
   
-  if (((param_1 < 0) || ((rgp.world)->surfaceCount <= param_1)) &&
+  if (((surfId < 0) || ((rgp.world)->surfaceCount <= surfId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xef9,0,
                                "%s\n\t(surfId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pGVar4 = ((rgp.world)->dpvs).surfaces + param_1;
-  bVar2 = ((rgp.world)->dpvs).surfaceVisDataCameraSaved[param_1] != '\0';
+  mip0mins = ((rgp.world)->dpvs).surfaces + surfId;
+  bVar2 = ((rgp.world)->dpvs).surfaceVisDataCameraSaved[surfId] != '\0';
   if ((rg.renderHiResShot == 0) || (bVar2)) {
     MultiplePointDistSqFromBounds
-              (&local_c,param_2,(float *)pGVar4,(pGVar4->tris).maxs,(pGVar4->tris).himipRadiusSq,
-               param_4[bVar2]);
-    uVar3 = DB_GetMaterialIndex(pGVar4->material);
+              (&distSq,viewPos,(float *)mip0mins,(mip0mins->tris).maxs,
+               (mip0mins->tris).himipRadiusSq,distanceScale[bVar2]);
+    uVar3 = DB_GetMaterialIndex(mip0mins->material);
     local_124 = streamFrontendGlob.materialImportance[uVar3];
-    if (0.0 <= local_c.importance - local_124) {
-      local_124 = local_c.importance;
+    if (0.0 <= distSq.importance - local_124) {
+      local_124 = distSq.importance;
     }
     streamFrontendGlob.materialImportance[uVar3] = local_124;
   }
@@ -2593,22 +2701,28 @@ void __cdecl R_StreamUpdate_CombineImportance(void)
   bool bVar2;
   XModel *pXVar3;
   DWORD DVar4;
-  Material *pMVar5;
+  Material *remoteMaterial;
+  uint uVar5;
   uint uVar6;
-  uint uVar7;
   float local_108;
-  uint local_1c;
-  uint local_8;
+  Material *material;
+  XModel *model;
+  uint materialIndex;
+  uint staticBit;
+  uint dynamicBit;
+  uint index;
+  uint mask;
+  uint modelIndex;
   
   PIXBeginNamedEvent(-1,"R_Stream combine xmodels");
-  for (local_8 = 0; local_8 < 1000; local_8 = local_8 + 1) {
-    uVar6 = 1 << ((byte)local_8 & 0x1f);
-    uVar7 = streamFrontendGlob.modelDistanceBits[local_8 >> 5] & uVar6;
-    uVar6 = streamFrontendGlob.dynamicModelDistanceBits[local_8 >> 5] & uVar6;
-    if ((uVar7 & uVar6) == 0) {
-      if (uVar7 == 0) {
-        if (uVar6 != 0) {
-          pXVar3 = DB_GetXModelAtIndex(local_8);
+  for (modelIndex = 0; modelIndex < 1000; modelIndex = modelIndex + 1) {
+    uVar5 = 1 << ((byte)modelIndex & 0x1f);
+    uVar6 = streamFrontendGlob.modelDistanceBits[modelIndex >> 5] & uVar5;
+    uVar5 = streamFrontendGlob.dynamicModelDistanceBits[modelIndex >> 5] & uVar5;
+    if ((uVar6 & uVar5) == 0) {
+      if (uVar6 == 0) {
+        if (uVar5 != 0) {
+          pXVar3 = DB_GetXModelAtIndex(modelIndex);
           if ((pXVar3 == (XModel *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                                        0xf53,0,"%s"), !bVar2)) {
@@ -2616,11 +2730,11 @@ void __cdecl R_StreamUpdate_CombineImportance(void)
             (*pcVar1)();
             return;
           }
-          R_StreamUpdateForXModel(pXVar3,streamFrontendGlob.dynamicModelDistance[local_8]);
+          R_StreamUpdateForXModel(pXVar3,streamFrontendGlob.dynamicModelDistance[modelIndex]);
         }
       }
       else {
-        pXVar3 = DB_GetXModelAtIndex(local_8);
+        pXVar3 = DB_GetXModelAtIndex(modelIndex);
         if ((pXVar3 == (XModel *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                                      0xf4d,0,"%s"), !bVar2)) {
@@ -2628,11 +2742,11 @@ void __cdecl R_StreamUpdate_CombineImportance(void)
           (*pcVar1)();
           return;
         }
-        R_StreamUpdateForXModel(pXVar3,streamFrontendGlob.modelDistance[local_8]);
+        R_StreamUpdateForXModel(pXVar3,streamFrontendGlob.modelDistance[modelIndex]);
       }
     }
     else {
-      pXVar3 = DB_GetXModelAtIndex(local_8);
+      pXVar3 = DB_GetXModelAtIndex(modelIndex);
       if ((pXVar3 == (XModel *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xf47,
                                    0,"%s"), !bVar2)) {
@@ -2640,9 +2754,9 @@ void __cdecl R_StreamUpdate_CombineImportance(void)
         (*pcVar1)();
         return;
       }
-      local_108 = streamFrontendGlob.dynamicModelDistance[local_8];
-      if (0.0 <= local_108 - streamFrontendGlob.modelDistance[local_8]) {
-        local_108 = streamFrontendGlob.modelDistance[local_8];
+      local_108 = streamFrontendGlob.dynamicModelDistance[modelIndex];
+      if (0.0 <= local_108 - streamFrontendGlob.modelDistance[modelIndex]) {
+        local_108 = streamFrontendGlob.modelDistance[modelIndex];
       }
       R_StreamUpdateForXModel(pXVar3,local_108);
     }
@@ -2652,78 +2766,87 @@ void __cdecl R_StreamUpdate_CombineImportance(void)
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"R_Stream combine materials");
-  local_1c = 0;
+  materialIndex = 0;
   do {
-    if (0xfff < local_1c) {
+    if (0xfff < materialIndex) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    if ((streamFrontendGlob.materialImportance[local_1c] != 0.0) &&
-       ((1 << ((byte)local_1c & 0x1f) & streamFrontendGlob.materialPreventBits[local_1c >> 5]) == 0)
-       ) {
-      pMVar5 = DB_GetMaterialAtIndex(local_1c);
-      if ((pMVar5 == (Material *)0x0) &&
+    if ((streamFrontendGlob.materialImportance[materialIndex] != 0.0) &&
+       ((1 << ((byte)materialIndex & 0x1f) &
+        streamFrontendGlob.materialPreventBits[materialIndex >> 5]) == 0)) {
+      remoteMaterial = DB_GetMaterialAtIndex(materialIndex);
+      if ((remoteMaterial == (Material *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xf61,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      R_StreamTouchImagesFromMaterial(pMVar5,streamFrontendGlob.materialImportance[local_1c]);
+      R_StreamTouchImagesFromMaterial
+                (remoteMaterial,streamFrontendGlob.materialImportance[materialIndex]);
     }
-    local_1c = local_1c + 1;
+    materialIndex = materialIndex + 1;
   } while( true );
 }
 
 
 // 00AA64A0  R_StreamUpdateAabbNode_r<0>  (gfx_d3d/r_stream.cpp:3953)
 
-void __cdecl R_StreamUpdateAabbNode_r<0>(int param_1,float *param_2,float param_3,float *param_4)
+void __cdecl
+R_StreamUpdateAabbNode_r<0>(int aabbTreeNode,float *viewPos,float maxDistSq,float *distanceScale)
 
 {
-  uint *puVar1;
+  int *piVar1;
   ushort uVar2;
   ushort uVar3;
-  uint uVar4;
-  code *pcVar5;
-  bool bVar6;
-  GfxStreamingAabbTree *pGVar7;
-  float fVar8;
-  uint local_24;
-  uint *local_c;
+  uint surfId;
+  code *pcVar4;
+  bool bVar5;
+  GfxStreamingAabbTree *pGVar6;
+  float fVar7;
+  int ref;
+  int childIter;
+  GfxStreamingAabbTree *tree;
+  int childEnd;
+  int childBegin;
+  int *leafRefEnd;
+  int *leafRefBegin;
+  int *leafRefIter;
+  float distSq;
   
-  if (((param_1 < 0) || (((rgp.world)->streamInfo).aabbTreeCount <= param_1)) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xf7b,0,
-                               "%s\n\t(aabbTreeNode) = %i"), !bVar6)) {
-    pcVar5 = (code *)swi(3);
-    (*pcVar5)();
+  if (((aabbTreeNode < 0) || (((rgp.world)->streamInfo).aabbTreeCount <= aabbTreeNode)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xf7b,0,
+                               "%s\n\t(aabbTreeNode) = %i"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)();
     return;
   }
-  pGVar7 = ((rgp.world)->streamInfo).aabbTrees + param_1;
-  fVar8 = PointDistSqFromBounds(param_2,pGVar7->mins,pGVar7->maxs);
-  if (fVar8 <= param_3) {
-    if (pGVar7->childCount == 0) {
-      local_c = (uint *)(((rgp.world)->streamInfo).leafRefs + pGVar7->firstItem);
-      puVar1 = local_c + pGVar7->itemCount;
-      for (; local_c != puVar1; local_c = local_c + 1) {
-        uVar4 = *local_c;
-        if ((int)uVar4 < 0) {
-          R_StreamUpdateStaticModel(~uVar4,param_2,param_3,param_4);
+  pGVar6 = ((rgp.world)->streamInfo).aabbTrees + aabbTreeNode;
+  fVar7 = PointDistSqFromBounds(viewPos,pGVar6->mins,pGVar6->maxs);
+  if (fVar7 <= maxDistSq) {
+    if (pGVar6->childCount == 0) {
+      leafRefIter = ((rgp.world)->streamInfo).leafRefs + pGVar6->firstItem;
+      piVar1 = leafRefIter + pGVar6->itemCount;
+      for (; leafRefIter != piVar1; leafRefIter = leafRefIter + 1) {
+        surfId = *leafRefIter;
+        if ((int)surfId < 0) {
+          R_StreamUpdateStaticModel(~surfId,viewPos,maxDistSq,distanceScale);
         }
         else {
-          R_StreamUpdateWorldSurface(uVar4,param_2,param_3,param_4);
+          R_StreamUpdateWorldSurface(surfId,viewPos,maxDistSq,distanceScale);
         }
       }
     }
     else {
-      uVar2 = pGVar7->firstChild;
-      uVar3 = pGVar7->childCount;
-      for (local_24 = (uint)pGVar7->firstChild; local_24 != (uint)uVar2 + (uint)uVar3;
-          local_24 = local_24 + 1) {
-        R_StreamUpdateAabbNode_r<0>(local_24,param_2,param_3,param_4);
+      uVar2 = pGVar6->firstChild;
+      uVar3 = pGVar6->childCount;
+      for (childIter = (int)pGVar6->firstChild; childIter != (uint)uVar2 + (uint)uVar3;
+          childIter = childIter + 1) {
+        R_StreamUpdateAabbNode_r<0>(childIter,viewPos,maxDistSq,distanceScale);
       }
     }
   }
@@ -2733,14 +2856,14 @@ void __cdecl R_StreamUpdateAabbNode_r<0>(int param_1,float *param_2,float param_
 
 // 00AA63E0  R_StreamUpdateStatic  (gfx_d3d/r_stream.cpp:4020)
 
-void __cdecl R_StreamUpdateStatic(float *param_1,float param_2,float *param_3)
+void __cdecl R_StreamUpdateStatic(float *viewPos,float maxDistSq,float *distanceScale)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
   
-  if ((param_1 == (float *)0x0) &&
+  if ((viewPos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0xfb5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2748,12 +2871,12 @@ void __cdecl R_StreamUpdateStatic(float *param_1,float param_2,float *param_3)
     return;
   }
   PIXBeginNamedEvent(-1,"R_Stream update static");
-  s_viewPos.v[0] = *param_1;
-  s_viewPos.v[1] = param_1[1];
-  s_viewPos.v[2] = param_1[2];
-  s_viewPos.v[3] = param_1[3];
+  s_viewPos.v[0] = *viewPos;
+  s_viewPos.v[1] = viewPos[1];
+  s_viewPos.v[2] = viewPos[2];
+  s_viewPos.v[3] = viewPos[3];
   if (0 < ((rgp.world)->streamInfo).aabbTreeCount) {
-    R_StreamUpdateAabbNode_r<0>(0,param_1,param_2,param_3);
+    R_StreamUpdateAabbNode_r<0>(0,viewPos,maxDistSq,distanceScale);
   }
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2765,78 +2888,84 @@ void __cdecl R_StreamUpdateStatic(float *param_1,float param_2,float *param_3)
 
 // 00AA2C50  importance_swap_func  (gfx_d3d/r_stream.cpp:4084)
 
-void __cdecl importance_swap_func(void **param_1,void **param_2)
+void __cdecl importance_swap_func(void **a,void **b)
 
 {
   void *pvVar1;
+  void *temp;
   
-  pvVar1 = *param_1;
-  *param_1 = *param_2;
-  *param_2 = pvVar1;
+  pvVar1 = *a;
+  *a = *b;
+  *b = pvVar1;
   return;
 }
 
 
 // 00AA2C80  importance_compare_func  (gfx_d3d/r_stream.cpp:4092)
 
-bool __cdecl importance_compare_func(void *param_1,void *param_2)
+bool __cdecl importance_compare_func(void *a,void *b)
 
 {
-  return (int)streamFrontendGlob.imageImportance[(int)param_2] <
-         (int)streamFrontendGlob.imageImportance[(int)param_1];
+  int indexA;
+  int indexB;
+  
+  return (int)streamFrontendGlob.imageImportance[(int)b] <
+         (int)streamFrontendGlob.imageImportance[(int)a];
 }
 
 
 // 00AA2CC0  importance_merge_sort  (gfx_d3d/r_stream.cpp:4099)
 
-void __cdecl importance_merge_sort(void **param_1,int param_2)
+void __cdecl importance_merge_sort(void **list,int list_count)
 
 {
-  bool bVar1;
-  int iVar2;
-  void **local_18;
-  void **local_10;
-  void **local_8;
+  void **ppvVar1;
+  bool bVar2;
+  int list_count_00;
+  void **t;
+  void **list_end;
+  void **b;
+  int middle_index;
+  void **a;
   
-  if (param_2 < 3) {
-    if ((param_2 == 2) && (bVar1 = importance_compare_func(param_1[1],*param_1), bVar1)) {
-      importance_swap_func(param_1,param_1 + 1);
+  if (list_count < 3) {
+    if ((list_count == 2) && (bVar2 = importance_compare_func(list[1],*list), bVar2)) {
+      importance_swap_func(list,list + 1);
     }
   }
   else {
-    iVar2 = param_2 / 2;
-    importance_merge_sort(param_1,iVar2);
-    importance_merge_sort(param_1 + iVar2,param_2 - iVar2);
-    local_10 = param_1 + iVar2;
-    bVar1 = importance_compare_func(*local_10,local_10[-1]);
-    if (bVar1) {
-      local_18 = aux_buffer;
-      aux_buffer[0] = local_10[-1];
-      local_8 = local_10 + -2;
-      while ((param_1 <= local_8 && (bVar1 = importance_compare_func(*local_10,*local_8), bVar1))) {
-        local_18 = local_18 + 1;
-        *local_18 = *local_8;
-        local_8 = local_8 + -1;
+    list_count_00 = list_count / 2;
+    importance_merge_sort(list,list_count_00);
+    importance_merge_sort(list + list_count_00,list_count - list_count_00);
+    ppvVar1 = list + list_count_00;
+    bVar2 = importance_compare_func(*ppvVar1,ppvVar1[-1]);
+    if (bVar2) {
+      t = aux_buffer;
+      aux_buffer[0] = ppvVar1[-1];
+      a = ppvVar1 + -2;
+      while ((list <= a && (bVar2 = importance_compare_func(*ppvVar1,*a), bVar2))) {
+        t = t + 1;
+        *t = *a;
+        a = a + -1;
       }
-      local_8 = local_8 + 1;
-      *local_8 = *local_10;
-      local_10 = local_10 + 1;
-      while (((void **)((int)s_preventMaterials + 0x7f) < local_18 && (local_10 < param_1 + param_2)
-             )) {
-        local_8 = local_8 + 1;
-        bVar1 = importance_compare_func(*local_18,*local_10);
-        if (bVar1) {
-          *local_8 = *local_18;
-          local_18 = local_18 + -1;
+      a = a + 1;
+      *a = *ppvVar1;
+      b = ppvVar1 + 1;
+      while (((void **)((int)s_preventMaterials + 0x7fU) < t && (b < list + list_count))) {
+        a = a + 1;
+        bVar2 = importance_compare_func(*t,*b);
+        if (bVar2) {
+          *a = *t;
+          t = t + -1;
         }
         else {
-          *local_8 = *local_10;
-          local_10 = local_10 + 1;
+          *a = *b;
+          b = b + 1;
         }
       }
-      for (; (void **)((int)s_preventMaterials + 0x7f) < local_18; local_18 = local_18 + -1) {
-        local_8 = local_8 + 1;
-        *local_8 = *local_18;
+      for (; (void **)((int)s_preventMaterials + 0x7fU) < t; t = t + -1) {
+        a = a + 1;
+        *a = *t;
       }
     }
   }
@@ -2846,7 +2975,7 @@ void __cdecl importance_merge_sort(void **param_1,int param_2)
 
 // 00AA5AB0  R_StreamUpdate_EndQuerySort  (gfx_d3d/r_stream.cpp:4127)
 
-void __cdecl R_StreamUpdate_EndQuerySort(bool param_1)
+void __cdecl R_StreamUpdate_EndQuerySort(bool diskOrder)
 
 {
   code *pcVar1;
@@ -2855,13 +2984,14 @@ void __cdecl R_StreamUpdate_EndQuerySort(bool param_1)
   bool bVar4;
   int iVar5;
   DWORD DVar6;
-  int local_c;
+  int index;
+  int imagePartIndex;
   
   PIXBeginNamedEvent(-1,"R_Stream EndQuerySort");
-  local_c = 0;
+  index = 0;
   while( true ) {
-    if (streamFrontendGlob.sortedImageCount <= local_c) {
-      if (param_1) {
+    if (streamFrontendGlob.sortedImageCount <= index) {
+      if (diskOrder) {
         if ((streamFrontendGlob.diskOrderImagesNeedSorting != false) ||
            (streamFrontendGlob.forceDiskOrder != false)) {
           std::_Sort<int_*,int,importance_and_offset_pred>
@@ -2881,20 +3011,20 @@ void __cdecl R_StreamUpdate_EndQuerySort(bool param_1)
       }
       return;
     }
-    iVar5 = streamFrontendGlob.sortedImages[local_c] >> 5;
-    bVar2 = (byte)streamFrontendGlob.sortedImages[local_c];
+    iVar5 = streamFrontendGlob.sortedImages[index] >> 5;
+    bVar2 = (byte)streamFrontendGlob.sortedImages[index];
     if (((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageInSortedListBits[iVar5]) == 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x1052,0
                                  ,"%s"), !bVar4)) break;
     if ((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageImportanceBits[iVar5]) == 0) {
       iVar3 = streamFrontendGlob.sortedImageCount + -1;
       streamFrontendGlob.sortedImageCount = streamFrontendGlob.sortedImageCount + -1;
-      streamFrontendGlob.sortedImages[local_c] = streamFrontendGlob.sortedImages[iVar3];
+      streamFrontendGlob.sortedImages[index] = streamFrontendGlob.sortedImages[iVar3];
       streamFrontendGlob.imageInSortedListBits[iVar5] =
            ~(1 << (bVar2 & 0x1f)) & streamFrontendGlob.imageInSortedListBits[iVar5];
     }
     else {
-      local_c = local_c + 1;
+      index = index + 1;
     }
   }
   pcVar1 = (code *)swi(3);
@@ -2905,38 +3035,40 @@ void __cdecl R_StreamUpdate_EndQuerySort(bool param_1)
 
 // 00AA42C0  R_StreamUpdateForcedModels  (gfx_d3d/r_stream.cpp:4254)
 
-void __cdecl R_StreamUpdateForcedModels(uint param_1)
+void __cdecl R_StreamUpdateForcedModels(uint frame)
 
 {
-  float fVar1;
-  XModel *pXVar2;
-  int iVar3;
-  int local_34;
-  int local_28;
-  Material **local_20;
-  XSurface *local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  float importance;
+  XModel *model_00;
+  int iVar1;
+  int lod;
+  int i;
+  XModel *model;
+  Material **material;
+  int surfCount;
+  XSurface *surfaces;
+  int modelIter;
+  int surfIter;
+  int surfCountPrevLods;
+  int modelCount;
   
-  local_c = 0;
+  surfCountPrevLods = 0;
   Sys_EnterCriticalSection(CRITSECT_STREAM_FORCE_LOAD_COMMAND);
-  for (local_28 = 0; local_28 < s_numForcedLoadEntities; local_28 = local_28 + 1) {
-    local_8 = DObjGetNumModels(s_forcedLoadEntities[local_28]);
-    fVar1 = streamFrontendGlob.forcedImageImportance;
-    for (local_14 = 0; local_14 != local_8; local_14 = local_14 + 1) {
-      pXVar2 = DObjGetModel(s_forcedLoadEntities[local_28],local_14);
-      for (local_34 = 0; local_34 < 4; local_34 = local_34 + 1) {
-        iVar3 = XModelGetSurfaces(pXVar2,&local_18,local_34);
-        local_20 = XModelGetSkins(pXVar2,local_34);
-        for (local_10 = 0; local_10 != iVar3; local_10 = local_10 + 1) {
-          if ((*local_20)->textureCount != '\0') {
-            R_StreamTouchImagesFromMaterial(*local_20,fVar1);
+  for (i = 0; i < s_numForcedLoadEntities; i = i + 1) {
+    modelCount = DObjGetNumModels(s_forcedLoadEntities[i]);
+    importance = streamFrontendGlob.forcedImageImportance;
+    for (modelIter = 0; modelIter != modelCount; modelIter = modelIter + 1) {
+      model_00 = DObjGetModel(s_forcedLoadEntities[i],modelIter);
+      for (lod = 0; lod < 4; lod = lod + 1) {
+        iVar1 = XModelGetSurfaces(model_00,&surfaces,lod);
+        material = XModelGetSkins(model_00,lod);
+        for (surfIter = 0; surfIter != iVar1; surfIter = surfIter + 1) {
+          if ((*material)->textureCount != '\0') {
+            R_StreamTouchImagesFromMaterial(*material,importance);
           }
-          local_20 = local_20 + 1;
+          material = material + 1;
         }
-        local_c = local_c + iVar3;
+        surfCountPrevLods = surfCountPrevLods + iVar1;
       }
     }
   }
@@ -2953,25 +3085,32 @@ void __cdecl R_StreamUpdateForcedModels(uint param_1)
 void __cdecl R_StreamUpdate_EndQuery_Internal(void)
 
 {
-  uint uVar1;
-  bool bVar2;
-  DWORD DVar3;
-  uint uVar4;
-  GfxImage *pGVar5;
-  int local_28;
-  int local_24;
-  pendingRequest *local_14;
+  uint index;
+  bool bVar1;
+  DWORD DVar2;
+  uint imagePart_00;
+  GfxImage *image_00;
+  int imagePartIndexRequired;
+  int i;
+  int sortedIndex;
+  GfxImage *image;
+  int maxActiveReads;
+  int imagePartIndex;
+  pendingRequest *request;
+  int imageIndex;
+  bool movesPending;
+  int imagePart;
   
-  local_24 = 0;
+  sortedIndex = 0;
   PIXBeginNamedEvent(-1,"R_Stream EndQuery");
-  bVar2 = Sys_IsRenderThread();
-  if (bVar2) {
+  bVar1 = Sys_IsRenderThread();
+  if (bVar1) {
     R_StreamUpdate_ProcessFileCallbacks();
   }
   do {
-    if (local_24 == streamFrontendGlob.sortedImageCount) {
-      DVar3 = GetCurrentThreadId();
-      if (DVar3 != (DWORD)g_DXDeviceThread) {
+    if (sortedIndex == streamFrontendGlob.sortedImageCount) {
+      DVar2 = GetCurrentThreadId();
+      if (DVar2 != (DWORD)g_DXDeviceThread) {
         return;
       }
       if (g_DXDeviceThread._4_4_ != 0) {
@@ -2980,44 +3119,45 @@ void __cdecl R_StreamUpdate_EndQuery_Internal(void)
       _D3DPERF_EndEvent_0();
       return;
     }
-    bVar2 = CL_IsRenderingSplitScreen();
-    local_14 = (pendingRequest *)0x0;
-    for (local_28 = 0; local_28 < 10; local_28 = local_28 + 1) {
-      if (((local_14 == (pendingRequest *)0x0) &&
-          (*(int *)(s_pendingRequests + local_28 * 0x30 + 0x1c) == 0)) && (local_28 < 10)) {
-        local_14 = (pendingRequest *)(s_pendingRequests + local_28 * 0x30);
+    bVar1 = CL_IsRenderingSplitScreen();
+    request = (pendingRequest *)0x0;
+    for (i = 0; i < 10; i = i + 1) {
+      if (((request == (pendingRequest *)0x0) &&
+          (*(int *)(s_pendingRequests + i * 0x30 + 0x1c) == 0)) && (i < 10)) {
+        request = (pendingRequest *)(s_pendingRequests + i * 0x30);
       }
-      else if ((*(int *)(s_pendingRequests + local_28 * 0x30 + 0x1c) == 1) && (!bVar2)) {
-        R_StreamRequestImageRead((pendingRequest *)(s_pendingRequests + local_28 * 0x30));
+      else if ((*(int *)(s_pendingRequests + i * 0x30 + 0x1c) == 1) && (!bVar1)) {
+        R_StreamRequestImageRead((pendingRequest *)(s_pendingRequests + i * 0x30));
       }
     }
-    if (local_14 == (pendingRequest *)0x0) {
-      DVar3 = GetCurrentThreadId();
-      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    if (request == (pendingRequest *)0x0) {
+      DVar2 = GetCurrentThreadId();
+      if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    for (; local_24 < streamFrontendGlob.sortedImageCount; local_24 = local_24 + 1) {
-      uVar1 = streamFrontendGlob.sortedImages[local_24];
-      if ((1 << ((byte)uVar1 & 0x1f) & streamFrontendGlob.imageUseBits[(int)uVar1 >> 5]) == 0) {
-        uVar4 = uVar1 & 0x80000000;
-        if ((int)uVar4 < 0) {
-          uVar4 = 0;
+    for (; sortedIndex < streamFrontendGlob.sortedImageCount; sortedIndex = sortedIndex + 1) {
+      index = streamFrontendGlob.sortedImages[sortedIndex];
+      if ((1 << ((byte)index & 0x1f) & streamFrontendGlob.imageUseBits[(int)index >> 5]) == 0) {
+        imagePart_00 = index & 0x80000000;
+        if ((int)imagePart_00 < 0) {
+          imagePart_00 = 0;
         }
-        if ((((((1 << ((byte)uVar1 & 0x1f) & streamFrontendGlob.imageLoading[(int)uVar1 >> 5]) == 0)
-              && (pGVar5 = DB_GetImageAtIndex(uVar1), pGVar5->streaming != '\0')) &&
-             (pGVar5->streaming != '\x03')) && (pGVar5->skippedMipLevels != '\0')) &&
-           (((int)uVar4 < 1 ||
-            ((1 << ((byte)(uVar1 - 1) & 0x1f) &
-             streamFrontendGlob.imageUseBits[(int)(uVar1 - 1) >> 5]) != 0)))) {
-          bVar2 = R_StreamRequestImageAllocation
-                            (local_14,pGVar5,true,uVar4,streamFrontendGlob.imageImportance[uVar1]);
-          if (!bVar2) {
+        if ((((((1 << ((byte)index & 0x1f) & streamFrontendGlob.imageLoading[(int)index >> 5]) == 0)
+              && (image_00 = DB_GetImageAtIndex(index), image_00->streaming != '\0')) &&
+             (image_00->streaming != '\x03')) && (image_00->skippedMipLevels != '\0')) &&
+           (((int)imagePart_00 < 1 ||
+            ((1 << ((byte)(index - 1) & 0x1f) &
+             streamFrontendGlob.imageUseBits[(int)(index - 1) >> 5]) != 0)))) {
+          bVar1 = R_StreamRequestImageAllocation
+                            (request,image_00,true,imagePart_00,
+                             streamFrontendGlob.imageImportance[index]);
+          if (!bVar1) {
             streamFrontendGlob.initialLoadAllocFailures =
                  streamFrontendGlob.initialLoadAllocFailures + 1;
-            DVar3 = GetCurrentThreadId();
-            if (DVar3 != (DWORD)g_DXDeviceThread) {
+            DVar2 = GetCurrentThreadId();
+            if (DVar2 != (DWORD)g_DXDeviceThread) {
               return;
             }
             if (g_DXDeviceThread._4_4_ != 0) {
@@ -3027,10 +3167,10 @@ void __cdecl R_StreamUpdate_EndQuery_Internal(void)
             return;
           }
           streamFrontendGlob.initialLoadAllocFailures = 0;
-          bVar2 = CL_IsRenderingSplitScreen();
-          if ((!bVar2) && (bVar2 = R_StreamRequestImageRead(local_14), !bVar2)) {
-            DVar3 = GetCurrentThreadId();
-            if (DVar3 != (DWORD)g_DXDeviceThread) {
+          bVar1 = CL_IsRenderingSplitScreen();
+          if ((!bVar1) && (bVar1 = R_StreamRequestImageRead(request), !bVar1)) {
+            DVar2 = GetCurrentThreadId();
+            if (DVar2 != (DWORD)g_DXDeviceThread) {
               return;
             }
             if (g_DXDeviceThread._4_4_ != 0) {
@@ -3083,23 +3223,23 @@ void __cdecl R_StreamUpdate_EndQuery(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl R_StreamUpdate_FindImageAndOptimize(float *param_1)
+bool __cdecl R_StreamUpdate_FindImageAndOptimize(float *viewPos)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   DWORD DVar4;
-  int local_30;
-  StreamFrontendGlob_conflict *local_2c;
+  int hint;
+  StreamFrontendGlob_conflict *updateCmd;
   float local_28;
   float local_24;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
-  StreamFrontendGlob_conflict *local_c;
+  float maxDistSq;
+  StreamFrontendGlob_conflict *sortCmd;
   undefined1 local_8;
   
   if ((!streamIsInitialized) &&
@@ -3126,20 +3266,20 @@ bool __cdecl R_StreamUpdate_FindImageAndOptimize(float *param_1)
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      local_10 = (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
+      maxDistSq = (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
       PIXBeginNamedEvent(-1,"R_Stream update");
       streamFrontendGlob.queryInProgress = 1;
       streamFrontendGlob.queryClient = 0;
-      if ((rgp.world == (GfxWorld *)0x0) || (param_1 == (float *)0x0)) {
+      if ((rgp.world == (GfxWorld *)0x0) || (viewPos == (float *)0x0)) {
         streamFrontendGlob.frame = streamFrontendGlob.frame + 1;
         streamFrontendGlob.diskOrder = true;
         R_StreamUpdate_AddForcedImages
                   (streamFrontendGlob.forcedImageImportance,
                    streamFrontendGlob.touchedImageImportance);
         R_StreamUpdate_AddInitialImages(streamFrontendGlob.initialImageImportance);
-        local_c = &streamFrontendGlob;
+        sortCmd = &streamFrontendGlob;
         local_8 = 1;
-        Sys_AddWorkerCmdInternal(&r_stream_sortWorkerCmd,&local_c,(WorkerCmdConditional *)0x0);
+        Sys_AddWorkerCmdInternal(&r_stream_sortWorkerCmd,&sortCmd,(WorkerCmdConditional *)0x0);
         streamFrontendGlob.queryClient = -1;
         Sys_LeaveCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
         DVar4 = GetCurrentThreadId();
@@ -3159,30 +3299,30 @@ bool __cdecl R_StreamUpdate_FindImageAndOptimize(float *param_1)
         R_StreamUpdate_AddForcedImages
                   (streamFrontendGlob.forcedImageImportance,
                    streamFrontendGlob.touchedImageImportance);
-        if ((param_1 == (float *)0x0) &&
+        if ((viewPos == (float *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                                      0x11fe,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        local_2c = &streamFrontendGlob;
-        local_28 = *param_1;
-        local_24 = param_1[1];
-        local_20 = param_1[2];
-        local_1c = local_10;
+        updateCmd = &streamFrontendGlob;
+        local_28 = *viewPos;
+        local_24 = viewPos[1];
+        local_20 = viewPos[2];
+        local_1c = maxDistSq;
         local_14 = 1.0;
         local_18 = (float)(r_streamHiddenPush->current).integer;
-        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,&local_2c,(WorkerCmdConditional *)0x0);
-        for (local_30 = 0; local_30 < 4; local_30 = local_30 + 1) {
-          if (0.0 < s_streamHints[local_30].importance) {
-            local_18 = 1.0 / s_streamHints[local_30].importance;
-            local_28 = s_streamHints[local_30].origin[0];
-            local_24 = s_streamHints[local_30].origin[1];
-            local_20 = s_streamHints[local_30].origin[2];
+        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,&updateCmd,(WorkerCmdConditional *)0x0);
+        for (hint = 0; hint < 4; hint = hint + 1) {
+          if (0.0 < s_streamHints[hint].importance) {
+            local_18 = 1.0 / s_streamHints[hint].importance;
+            local_28 = s_streamHints[hint].origin[0];
+            local_24 = s_streamHints[hint].origin[1];
+            local_20 = s_streamHints[hint].origin[2];
             local_14 = local_18;
             Sys_AddWorkerCmdInternal
-                      (&r_stream_updateWorkerCmd,&local_2c,(WorkerCmdConditional *)0x0);
+                      (&r_stream_updateWorkerCmd,&updateCmd,(WorkerCmdConditional *)0x0);
           }
         }
         Sys_LeaveCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
@@ -3209,22 +3349,22 @@ bool __cdecl R_StreamUpdate_FindImageAndOptimize(float *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_StreamUpdatePerClient(float *param_1)
+void __cdecl R_StreamUpdatePerClient(float *viewPos)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  StreamFrontendGlob_conflict *local_2c;
+  StreamFrontendGlob_conflict *updateCmd;
   float local_28;
   float local_24;
   float local_20;
   float local_1c;
   int local_18;
   float local_14;
-  float local_10;
+  float distanceScale;
   float local_c;
-  float local_8;
+  float maxDistSq;
   
   if ((!streamIsInitialized) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",0x1229,0,
@@ -3234,34 +3374,34 @@ void __cdecl R_StreamUpdatePerClient(float *param_1)
     return;
   }
   if ((((r_streamFreezeState->current).enabled == false) && (rgp.world != (GfxWorld *)0x0)) &&
-     (param_1 != (float *)0x0)) {
+     (viewPos != (float *)0x0)) {
     Sys_EnterCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
     if ((streamFrontendGlob.queryInProgress == 0) || (streamFrontendGlob.queryClient == -1)) {
       Sys_LeaveCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
     }
     else {
       PIXBeginNamedEvent(-1,"R_Stream update per client");
-      local_8 = (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
+      maxDistSq = (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
       if (0 < streamFrontendGlob.queryClient) {
-        if ((param_1 == (float *)0x0) &&
+        if ((viewPos == (float *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                                      0x1245,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_2c = &streamFrontendGlob;
-        local_28 = *param_1;
-        local_24 = param_1[1];
-        local_20 = param_1[2];
-        local_1c = local_8;
+        updateCmd = &streamFrontendGlob;
+        local_28 = *viewPos;
+        local_24 = viewPos[1];
+        local_20 = viewPos[2];
+        local_1c = maxDistSq;
         local_14 = 1.0;
         local_18 = (r_streamHiddenPush->current).integer;
-        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,&local_2c,(WorkerCmdConditional *)0x0);
+        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,&updateCmd,(WorkerCmdConditional *)0x0);
       }
       local_c = 1.0;
-      local_10 = (float)(r_streamHiddenPush->current).integer;
-      R_StreamUpdateDynamicModels(param_1,local_8,streamFrontendGlob.frame,&local_10);
+      distanceScale = (float)(r_streamHiddenPush->current).integer;
+      R_StreamUpdateDynamicModels(viewPos,maxDistSq,streamFrontendGlob.frame,&distanceScale);
       streamFrontendGlob.queryClient = streamFrontendGlob.queryClient + 1;
       Sys_LeaveCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
       DVar3 = GetCurrentThreadId();
@@ -3283,8 +3423,8 @@ void __cdecl R_StreamUpdate_End(void)
 {
   code *pcVar1;
   bool bVar2;
-  StreamFrontendGlob_conflict *local_10;
-  StreamFrontendGlob_conflict *local_c;
+  StreamCombineCmd combineCmd;
+  StreamFrontendGlob_conflict *sortCmd;
   undefined1 local_8;
   
   if (streamFrontendGlob.queryClient < 1) {
@@ -3297,11 +3437,11 @@ void __cdecl R_StreamUpdate_End(void)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
-  local_10 = &streamFrontendGlob;
-  Sys_AddWorkerCmdInternal(&r_stream_combineWorkerCmd,&local_10,(WorkerCmdConditional *)0x0);
-  local_c = &streamFrontendGlob;
+  combineCmd.frontend = (StreamFrontendGlob *)&streamFrontendGlob;
+  Sys_AddWorkerCmdInternal(&r_stream_combineWorkerCmd,&combineCmd,(WorkerCmdConditional *)0x0);
+  sortCmd = &streamFrontendGlob;
   local_8 = streamFrontendGlob.diskOrder;
-  Sys_AddWorkerCmdInternal(&r_stream_sortWorkerCmd,&local_c,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&r_stream_sortWorkerCmd,&sortCmd,(WorkerCmdConditional *)0x0);
   streamFrontendGlob.queryClient = -1;
   Sys_LeaveCriticalSection(CRITSECT_STREAM_SYNC_COMMAND);
   return;
@@ -3310,21 +3450,22 @@ void __cdecl R_StreamUpdate_End(void)
 
 // 00AA5020  R_Stream_UpdateStaticModelsCmd  (gfx_d3d/r_stream.cpp:4729)
 
-void __cdecl R_Stream_UpdateStaticModelsCmd(void *param_1)
+void __cdecl R_Stream_UpdateStaticModelsCmd(void *data)
 
 {
   DWORD DVar1;
-  uint local_c;
+  uint instId;
+  StreamUpdateCmd *cmd;
   
   PIXBeginNamedEvent(-1,"R_Stream_UpdateStaticModelsCmd");
-  s_viewPos.v[0] = *(float *)((int)param_1 + 4);
-  s_viewPos.v[1] = *(float *)((int)param_1 + 8);
-  s_viewPos.v[2] = *(float *)((int)param_1 + 0xc);
-  s_viewPos.v[3] = *(float *)((int)param_1 + 0x10);
-  for (local_c = 0; local_c < g_worldDpvs->smodelCount; local_c = local_c + 1) {
+  s_viewPos.v[0] = *(float *)((int)data + 4);
+  s_viewPos.v[1] = *(float *)((int)data + 8);
+  s_viewPos.v[2] = *(float *)((int)data + 0xc);
+  s_viewPos.v[3] = *(float *)((int)data + 0x10);
+  for (instId = 0; instId < g_worldDpvs->smodelCount; instId = instId + 1) {
     R_StreamUpdateStaticModel
-              (local_c,(float *)((int)param_1 + 4),*(float *)((int)param_1 + 0x10),
-               (float *)((int)param_1 + 0x14));
+              (instId,(float *)((int)data + 4),*(float *)((int)data + 0x10),
+               (float *)((int)data + 0x14));
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3336,21 +3477,22 @@ void __cdecl R_Stream_UpdateStaticModelsCmd(void *param_1)
 
 // 00AA5240  R_Stream_UpdateStaticSurfacesCmd  (gfx_d3d/r_stream.cpp:4770)
 
-void __cdecl R_Stream_UpdateStaticSurfacesCmd(void *param_1)
+void __cdecl R_Stream_UpdateStaticSurfacesCmd(void *data)
 
 {
   DWORD DVar1;
-  uint local_c;
+  uint surfId;
+  StreamUpdateCmd *cmd;
   
   PIXBeginNamedEvent(-1,"R_Stream_UpdateStaticSurfacesCmd");
-  s_viewPos.v[0] = *(float *)((int)param_1 + 4);
-  s_viewPos.v[1] = *(float *)((int)param_1 + 8);
-  s_viewPos.v[2] = *(float *)((int)param_1 + 0xc);
-  s_viewPos.v[3] = *(float *)((int)param_1 + 0x10);
-  for (local_c = 0; local_c < g_worldDpvs->staticSurfaceCount; local_c = local_c + 1) {
+  s_viewPos.v[0] = *(float *)((int)data + 4);
+  s_viewPos.v[1] = *(float *)((int)data + 8);
+  s_viewPos.v[2] = *(float *)((int)data + 0xc);
+  s_viewPos.v[3] = *(float *)((int)data + 0x10);
+  for (surfId = 0; surfId < g_worldDpvs->staticSurfaceCount; surfId = surfId + 1) {
     R_StreamUpdateWorldSurface
-              (local_c,(float *)((int)param_1 + 4),*(float *)((int)param_1 + 0x10),
-               (float *)((int)param_1 + 0x14));
+              (surfId,(float *)((int)data + 4),*(float *)((int)data + 0x10),
+               (float *)((int)data + 0x14));
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3362,13 +3504,14 @@ void __cdecl R_Stream_UpdateStaticSurfacesCmd(void *param_1)
 
 // 00AA5A50  R_Stream_SortCmd  (gfx_d3d/r_stream.cpp:4808)
 
-void __cdecl R_Stream_SortCmd(void *param_1)
+void __cdecl R_Stream_SortCmd(void *data)
 
 {
   DWORD DVar1;
+  StreamSortCmd *cmd;
   
   PIXBeginNamedEvent(-1,"R_Stream_SortCmd");
-  R_StreamUpdate_EndQuerySort(*(bool *)((int)param_1 + 4));
+  R_StreamUpdate_EndQuerySort(*(bool *)((int)data + 4));
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -3379,7 +3522,7 @@ void __cdecl R_Stream_SortCmd(void *param_1)
 
 // 00AA5C80  R_Stream_CombineCmd  (gfx_d3d/r_stream.cpp:4847)
 
-void __cdecl R_Stream_CombineCmd(void *param_1)
+void __cdecl R_Stream_CombineCmd(void *data)
 
 {
   DWORD DVar1;
@@ -3398,17 +3541,18 @@ void __cdecl R_Stream_CombineCmd(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_stream_update_staticmodelsCallback(jqBatch *param_1)
+int __cdecl r_stream_update_staticmodelsCallback(jqBatch *batch)
 
 {
   int iVar1;
-  void *pvVar2;
+  void *data_00;
+  void *data;
   
-  iVar1 = (param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
+  iVar1 = (batch->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
   if (iVar1 < 2) {
-    pvVar2 = jqLockData(param_1);
-    R_Stream_UpdateStaticModelsCmd(pvVar2);
-    jqUnlockData(param_1,pvVar2);
+    data_00 = jqLockData(batch);
+    R_Stream_UpdateStaticModelsCmd(data_00);
+    jqUnlockData(batch,data_00);
   }
   return (uint)(1 < iVar1);
 }
@@ -3418,17 +3562,18 @@ int __cdecl r_stream_update_staticmodelsCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_stream_update_staticsurfacesCallback(jqBatch *param_1)
+int __cdecl r_stream_update_staticsurfacesCallback(jqBatch *batch)
 
 {
   int iVar1;
-  void *pvVar2;
+  void *data_00;
+  void *data;
   
-  iVar1 = (param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
+  iVar1 = (batch->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
   if (iVar1 < 2) {
-    pvVar2 = jqLockData(param_1);
-    R_Stream_UpdateStaticSurfacesCmd(pvVar2);
-    jqUnlockData(param_1,pvVar2);
+    data_00 = jqLockData(batch);
+    R_Stream_UpdateStaticSurfacesCmd(data_00);
+    jqUnlockData(batch,data_00);
   }
   return (uint)(1 < iVar1);
 }
@@ -3438,17 +3583,18 @@ int __cdecl r_stream_update_staticsurfacesCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_stream_sortCallback(jqBatch *param_1)
+int __cdecl r_stream_sortCallback(jqBatch *batch)
 
 {
   bool bVar1;
-  void *pvVar2;
+  void *data_00;
+  void *data;
   
   bVar1 = jqPoll(&r_stream_combineModule.Group);
   if ((!bVar1) && (bVar1 = jqPoll(&r_stream_updateModule.Group), !bVar1)) {
-    pvVar2 = jqLockData(param_1);
-    R_Stream_SortCmd(pvVar2);
-    jqUnlockData(param_1,pvVar2);
+    data_00 = jqLockData(batch);
+    R_Stream_SortCmd(data_00);
+    jqUnlockData(batch,data_00);
     return 0;
   }
   return 1;
@@ -3459,18 +3605,19 @@ int __cdecl r_stream_sortCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_stream_combineCallback(jqBatch *param_1)
+int __cdecl r_stream_combineCallback(jqBatch *batch)
 
 {
   bool bVar1;
-  void *pvVar2;
+  void *data_00;
+  void *data;
   
   bVar1 = jqPoll(&r_stream_updateModule.Group);
   if (((!bVar1) && (bVar1 = jqPoll(&r_stream_update_staticmodelsModule.Group), !bVar1)) &&
      (bVar1 = jqPoll(&r_stream_update_staticsurfacesModule.Group), !bVar1)) {
-    pvVar2 = jqLockData(param_1);
-    R_Stream_CombineCmd(pvVar2);
-    jqUnlockData(param_1,pvVar2);
+    data_00 = jqLockData(batch);
+    R_Stream_CombineCmd(data_00);
+    jqUnlockData(batch,data_00);
     return 0;
   }
   return 1;
@@ -3481,23 +3628,25 @@ int __cdecl r_stream_combineCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl r_stream_updateCallback(jqBatch *param_1)
+int __cdecl r_stream_updateCallback(jqBatch *batch)
 
 {
   int iVar1;
-  void *pvVar2;
+  void *data_00;
+  void *data;
+  StreamUpdateCmd *cmd;
   
-  iVar1 = (param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
+  iVar1 = (batch->Module->Group).field0_0x0._s_0.ExecutingBatchCount;
   if (iVar1 < 2) {
-    pvVar2 = jqLockData(param_1);
-    s_viewPos.v[0] = *(float *)((int)pvVar2 + 4);
-    s_viewPos.v[1] = *(float *)((int)pvVar2 + 8);
-    s_viewPos.v[2] = *(float *)((int)pvVar2 + 0xc);
-    s_viewPos.v[3] = *(float *)((int)pvVar2 + 0x10);
+    data_00 = jqLockData(batch);
+    s_viewPos.v[0] = *(float *)((int)data_00 + 4);
+    s_viewPos.v[1] = *(float *)((int)data_00 + 8);
+    s_viewPos.v[2] = *(float *)((int)data_00 + 0xc);
+    s_viewPos.v[3] = *(float *)((int)data_00 + 0x10);
     R_StreamUpdateStatic
-              ((float *)((int)pvVar2 + 4),*(float *)((int)pvVar2 + 0x10),
-               (float *)((int)pvVar2 + 0x14));
-    jqUnlockData(param_1,pvVar2);
+              ((float *)((int)data_00 + 4),*(float *)((int)data_00 + 0x10),
+               (float *)((int)data_00 + 0x14));
+    jqUnlockData(batch,data_00);
   }
   return (uint)(1 < iVar1);
 }

@@ -21,14 +21,14 @@ void __cdecl _dynamic_initializer_for__g_testLods__(void)
 
 // 0080ACC0  XModelGetName  (xanim/xmodel_utils.cpp:78)
 
-char * __cdecl XModelGetName(XModel *param_1)
+char * __cdecl XModelGetName(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x4f,0,
                              "%s");
     if (!bVar2) {
@@ -37,20 +37,21 @@ char * __cdecl XModelGetName(XModel *param_1)
       return pcVar3;
     }
   }
-  return param_1->name;
+  return model->name;
 }
 
 
 // 0080AD00  XModelGetSurfaces  (xanim/xmodel_utils.cpp:94)
 
-int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
+int __cdecl XModelGetSurfaces(XModel *model,XSurface **surfaces,int submodel)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  XModelLodInfo *lodInfo;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x61,0,
                              "%s");
     if (!bVar2) {
@@ -59,7 +60,7 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  if (param_2 == (XSurface **)0x0) {
+  if (surfaces == (XSurface **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x62,0,
                              "%s");
     if (!bVar2) {
@@ -68,7 +69,7 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  if (param_3 < 0) {
+  if (submodel < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",99,0,"%s")
     ;
     if (!bVar2) {
@@ -77,7 +78,7 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  if (3 < (uint)param_3) {
+  if (3 < (uint)submodel) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x68,0,
                              "submodel doesn\'t index MAX_LODS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -86,7 +87,7 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  if ((ushort)param_1->numsurfs <= param_1->lodInfo[param_3].surfIndex) {
+  if ((ushort)model->numsurfs <= model->lodInfo[submodel].surfIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x6c,0,
                              "lodInfo->surfIndex doesn\'t index model->numsurfs\n\t%i not in [0, %i)"
                             );
@@ -96,8 +97,8 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  if ((uint)param_1->numsurfs <
-      (uint)param_1->lodInfo[param_3].surfIndex + (uint)param_1->lodInfo[param_3].numsurfs) {
+  if ((uint)model->numsurfs <
+      (uint)model->lodInfo[submodel].surfIndex + (uint)model->lodInfo[submodel].numsurfs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x6d,0,
                              "%s");
     if (!bVar2) {
@@ -106,22 +107,23 @@ int __cdecl XModelGetSurfaces(XModel *param_1,XSurface **param_2,int param_3)
       return iVar3;
     }
   }
-  *param_2 = param_1->surfs + param_1->lodInfo[param_3].surfIndex;
-  return (uint)param_1->lodInfo[param_3].numsurfs;
+  *surfaces = model->surfs + model->lodInfo[submodel].surfIndex;
+  return (uint)model->lodInfo[submodel].numsurfs;
 }
 
 
 // 0080AE60  XModelGetSurface  (xanim/xmodel_utils.cpp:162)
 
-XSurface * __cdecl XModelGetSurface(XModel *param_1,int param_2,int param_3)
+XSurface * __cdecl XModelGetSurface(XModel *model,int lod,int surfIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   XSurface *pXVar3;
   uint uVar4;
+  uint modelSurfIndex;
   
-  if (param_2 < 0) {
+  if (lod < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xa5,0,
                              "%s");
     if (!bVar2) {
@@ -130,8 +132,8 @@ XSurface * __cdecl XModelGetSurface(XModel *param_1,int param_2,int param_3)
       return pXVar3;
     }
   }
-  uVar4 = (uint)param_1->lodInfo[param_2].surfIndex + param_3;
-  if (param_1->numsurfs <= uVar4) {
+  uVar4 = (uint)model->lodInfo[lod].surfIndex + surfIndex;
+  if (model->numsurfs <= uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xa8,0,
                              "modelSurfIndex doesn\'t index model->numsurfs\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -140,20 +142,20 @@ XSurface * __cdecl XModelGetSurface(XModel *param_1,int param_2,int param_3)
       return pXVar3;
     }
   }
-  return param_1->surfs + uVar4;
+  return model->surfs + uVar4;
 }
 
 
 // 0080AEF0  XModelGetLodInfo  (xanim/xmodel_utils.cpp:183)
 
-XModelLodInfo * __cdecl XModelGetLodInfo(XModel *param_1,int param_2)
+XModelLodInfo * __cdecl XModelGetLodInfo(XModel *model,int lod)
 
 {
   code *pcVar1;
   bool bVar2;
   XModelLodInfo *pXVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xb8,0,
                              "%s");
     if (!bVar2) {
@@ -162,7 +164,7 @@ XModelLodInfo * __cdecl XModelGetLodInfo(XModel *param_1,int param_2)
       return pXVar3;
     }
   }
-  if (param_2 < 0) {
+  if (lod < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xb9,0,
                              "%s");
     if (!bVar2) {
@@ -171,20 +173,20 @@ XModelLodInfo * __cdecl XModelGetLodInfo(XModel *param_1,int param_2)
       return pXVar3;
     }
   }
-  return param_1->lodInfo + param_2;
+  return model->lodInfo + lod;
 }
 
 
 // 0080AF60  XModelSetSModelCacheForLod  (xanim/xmodel_utils.cpp:202)
 
-void __cdecl XModelSetSModelCacheForLod(XModel *param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl XModelSetSModelCacheForLod(XModel *model,uint lod,uint smcIndex,uint smcAllocBits)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xcb,0,
                              "%s");
     if (!bVar2) {
@@ -193,7 +195,7 @@ void __cdecl XModelSetSModelCacheForLod(XModel *param_1,uint param_2,uint param_
       return;
     }
   }
-  if (3 < param_2) {
+  if (3 < lod) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xcc,0,
                              "lod doesn\'t index MAX_LODS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -202,7 +204,7 @@ void __cdecl XModelSetSModelCacheForLod(XModel *param_1,uint param_2,uint param_
       return;
     }
   }
-  if (param_1->lodInfo[param_2].smcIndexPlusOne != '\0') {
+  if (model->lodInfo[lod].smcIndexPlusOne != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xcd,0,
                              "%s");
     if (!bVar2) {
@@ -211,7 +213,7 @@ void __cdecl XModelSetSModelCacheForLod(XModel *param_1,uint param_2,uint param_
       return;
     }
   }
-  if (param_1->lodInfo[param_2].lod != param_2) {
+  if (model->lodInfo[lod].lod != lod) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xce,0,
                              "%s");
     if (!bVar2) {
@@ -220,24 +222,24 @@ void __cdecl XModelSetSModelCacheForLod(XModel *param_1,uint param_2,uint param_
       return;
     }
   }
-  uVar3 = truncate_cast<unsigned_char>(param_3 + 1);
-  param_1->lodInfo[param_2].smcIndexPlusOne = uVar3;
-  uVar3 = truncate_cast<unsigned_char>(param_4);
-  param_1->lodInfo[param_2].smcAllocBits = uVar3;
+  uVar3 = truncate_cast<unsigned_char>(smcIndex + 1);
+  model->lodInfo[lod].smcIndexPlusOne = uVar3;
+  uVar3 = truncate_cast<unsigned_char>(smcAllocBits);
+  model->lodInfo[lod].smcAllocBits = uVar3;
   return;
 }
 
 
 // 0080B070  XModelGetStaticModelCacheVertCount  (xanim/xmodel_utils.cpp:225)
 
-uint __cdecl XModelGetStaticModelCacheVertCount(XModel *param_1,uint param_2)
+uint __cdecl XModelGetStaticModelCacheVertCount(XModel *model,uint lod)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xe2,0,
                              "%s");
     if (!bVar2) {
@@ -246,7 +248,7 @@ uint __cdecl XModelGetStaticModelCacheVertCount(XModel *param_1,uint param_2)
       return uVar3;
     }
   }
-  if (3 < param_2) {
+  if (3 < lod) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xe3,0,
                              "lod doesn\'t index MAX_LODS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -255,7 +257,7 @@ uint __cdecl XModelGetStaticModelCacheVertCount(XModel *param_1,uint param_2)
       return uVar3;
     }
   }
-  if (param_1->lodInfo[param_2].smcIndexPlusOne == '\0') {
+  if (model->lodInfo[lod].smcIndexPlusOne == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xe4,0,
                              "%s");
     if (!bVar2) {
@@ -264,13 +266,13 @@ uint __cdecl XModelGetStaticModelCacheVertCount(XModel *param_1,uint param_2)
       return uVar3;
     }
   }
-  return 1 << (param_1->lodInfo[param_2].smcAllocBits & 0x1f);
+  return 1 << (model->lodInfo[lod].smcAllocBits & 0x1f);
 }
 
 
 // 0080B120  XModelGetSurfaceStreamBounds  (xanim/xmodel_utils.cpp:246)
 
-void __cdecl XModelGetSurfaceStreamBounds(XModel *param_1,int param_2,float *param_3,float *param_4)
+void __cdecl XModelGetSurfaceStreamBounds(XModel *model,int surfIndex,float *outMins,float *outMaxs)
 
 {
   code *pcVar1;
@@ -278,7 +280,7 @@ void __cdecl XModelGetSurfaceStreamBounds(XModel *param_1,int param_2,float *par
   XModelHighMipBounds *pXVar3;
   float fVar4;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xf7,0,
                              "%s");
     if (!bVar2) {
@@ -287,9 +289,9 @@ void __cdecl XModelGetSurfaceStreamBounds(XModel *param_1,int param_2,float *par
       return;
     }
   }
-  if ((param_2 < 0) ||
-     ((int)((uint)param_1->lodInfo[0].numsurfs + (uint)param_1->lodInfo[1].numsurfs +
-            (uint)param_1->lodInfo[2].numsurfs + (uint)param_1->lodInfo[3].numsurfs) <= param_2)) {
+  if ((surfIndex < 0) ||
+     ((int)((uint)model->lodInfo[0].numsurfs + (uint)model->lodInfo[1].numsurfs +
+            (uint)model->lodInfo[2].numsurfs + (uint)model->lodInfo[3].numsurfs) <= surfIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0xfa,0,
                              "%s\n\t(surfIndex) = %i");
     if (!bVar2) {
@@ -298,36 +300,36 @@ void __cdecl XModelGetSurfaceStreamBounds(XModel *param_1,int param_2,float *par
       return;
     }
   }
-  pXVar3 = (param_1->streamInfo).highMipBounds + param_2;
-  *param_3 = pXVar3->center[0];
-  param_3[1] = pXVar3->center[1];
-  param_3[2] = pXVar3->center[2];
-  pXVar3 = (param_1->streamInfo).highMipBounds + param_2;
-  *param_4 = pXVar3->center[0];
-  param_4[1] = pXVar3->center[1];
-  param_4[2] = pXVar3->center[2];
-  fVar4 = -SQRT((param_1->streamInfo).highMipBounds[param_2].himipRadiusSq);
-  *param_3 = *param_3 + fVar4;
-  param_3[1] = param_3[1] + fVar4;
-  param_3[2] = param_3[2] + fVar4;
-  fVar4 = SQRT((param_1->streamInfo).highMipBounds[param_2].himipRadiusSq);
-  *param_4 = *param_4 + fVar4;
-  param_4[1] = param_4[1] + fVar4;
-  param_4[2] = param_4[2] + fVar4;
+  pXVar3 = (model->streamInfo).highMipBounds + surfIndex;
+  *outMins = pXVar3->center[0];
+  outMins[1] = pXVar3->center[1];
+  outMins[2] = pXVar3->center[2];
+  pXVar3 = (model->streamInfo).highMipBounds + surfIndex;
+  *outMaxs = pXVar3->center[0];
+  outMaxs[1] = pXVar3->center[1];
+  outMaxs[2] = pXVar3->center[2];
+  fVar4 = -SQRT((model->streamInfo).highMipBounds[surfIndex].himipRadiusSq);
+  *outMins = *outMins + fVar4;
+  outMins[1] = outMins[1] + fVar4;
+  outMins[2] = outMins[2] + fVar4;
+  fVar4 = SQRT((model->streamInfo).highMipBounds[surfIndex].himipRadiusSq);
+  *outMaxs = *outMaxs + fVar4;
+  outMaxs[1] = outMaxs[1] + fVar4;
+  outMaxs[2] = outMaxs[2] + fVar4;
   return;
 }
 
 
 // 0080B2F0  XModelGetSurfCount  (xanim/xmodel_utils.cpp:273)
 
-uint __cdecl XModelGetSurfCount(XModel *param_1,int param_2)
+uint __cdecl XModelGetSurfCount(XModel *model,int lod)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x112,0,
                              "%s");
     if (!bVar2) {
@@ -336,7 +338,7 @@ uint __cdecl XModelGetSurfCount(XModel *param_1,int param_2)
       return uVar3;
     }
   }
-  if (param_2 < 0) {
+  if (lod < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x113,0,
                              "%s");
     if (!bVar2) {
@@ -345,20 +347,20 @@ uint __cdecl XModelGetSurfCount(XModel *param_1,int param_2)
       return uVar3;
     }
   }
-  return (uint)param_1->lodInfo[param_2].numsurfs;
+  return (uint)model->lodInfo[lod].numsurfs;
 }
 
 
 // 0080B360  XModelGetSkins  (xanim/xmodel_utils.cpp:292)
 
-Material ** __cdecl XModelGetSkins(XModel *param_1,int param_2)
+Material ** __cdecl XModelGetSkins(XModel *model,int lod)
 
 {
   code *pcVar1;
   bool bVar2;
   Material **ppMVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x125,0,
                              "%s");
     if (!bVar2) {
@@ -367,7 +369,7 @@ Material ** __cdecl XModelGetSkins(XModel *param_1,int param_2)
       return ppMVar3;
     }
   }
-  if (param_2 < 0) {
+  if (lod < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x126,0,
                              "%s");
     if (!bVar2) {
@@ -376,58 +378,59 @@ Material ** __cdecl XModelGetSkins(XModel *param_1,int param_2)
       return ppMVar3;
     }
   }
-  return param_1->materialHandles + param_1->lodInfo[param_2].surfIndex;
+  return model->materialHandles + model->lodInfo[lod].surfIndex;
 }
 
 
 // 0080B3E0  XModelGetLodRampType  (xanim/xmodel_utils.cpp:308)
 
-XModelLodRampType __cdecl XModelGetLodRampType(XModel *param_1)
+XModelLodRampType __cdecl XModelGetLodRampType(XModel *model)
 
 {
-  return (uint)param_1->lodRampType;
+  return (uint)model->lodRampType;
 }
 
 
 // 0080B3F0  XModelGetNumLods  (xanim/xmodel_utils.cpp:322)
 
-int __cdecl XModelGetNumLods(XModel *param_1)
+int __cdecl XModelGetNumLods(XModel *model)
 
 {
-  return (int)param_1->numLods;
+  return (int)model->numLods;
 }
 
 
 // 0080B400  XModelGetLodOutDist  (xanim/xmodel_utils.cpp:340)
 
-float __cdecl XModelGetLodOutDist(XModel *param_1)
+float __cdecl XModelGetLodOutDist(XModel *model)
 
 {
   int iVar1;
-  int local_8;
+  int numLods;
+  int lodMax;
   
-  local_8 = XModelGetNumLods(param_1);
+  lodMax = XModelGetNumLods(model);
   do {
-    iVar1 = local_8;
-    local_8 = iVar1 + -1;
-    if (local_8 < 1) break;
-  } while (param_1->lodInfo[iVar1 + -1].dist <= 0.0);
-  return param_1->lodInfo[iVar1 + -1].dist;
+    iVar1 = lodMax;
+    lodMax = iVar1 + -1;
+    if (lodMax < 1) break;
+  } while (model->lodInfo[iVar1 + -1].dist <= 0.0);
+  return model->lodInfo[iVar1 + -1].dist;
 }
 
 
 // 004B0E10  XModelNumBones  (xanim/xmodel_utils.cpp:360)
 
-int __cdecl XModelNumBones(XModel *param_1)
+int __cdecl XModelNumBones(XModel *pose)
 
 {
-  return (uint)param_1->numBones;
+  return (uint)pose->numBones;
 }
 
 
 // 0080B460  XModelGetBoneIndex  (xanim/xmodel_utils.cpp:374)
 
-int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uint param_3,uchar *param_4)
+int __cdecl XModelGetBoneIndex(XModel *model,uint name,uint offset,uchar *index)
 
 {
   byte bVar1;
@@ -435,17 +438,19 @@ int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uint param_3,uchar *
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  uint local_c;
+  uint numBones;
+  uint localBoneIndex;
+  ushort *boneNames;
   
-  if ((param_4 == (uchar *)0x0) &&
+  if ((index == (uchar *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x17b,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  puVar2 = (param_1->field5_0x8).localBoneNames;
-  bVar1 = param_1->numBones;
+  puVar2 = (model->field5_0x8).localBoneNames;
+  bVar1 = model->numBones;
   if ((0x9f < bVar1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x184,0,
                                "%s"), !bVar4)) {
@@ -453,16 +458,16 @@ int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uint param_3,uchar *
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  local_c = 0;
+  localBoneIndex = 0;
   while( true ) {
-    if (bVar1 <= local_c) {
+    if (bVar1 <= localBoneIndex) {
       return 0;
     }
-    if (param_2 == puVar2[local_c]) break;
-    local_c = local_c + 1;
+    if (name == puVar2[localBoneIndex]) break;
+    localBoneIndex = localBoneIndex + 1;
   }
-  *param_4 = (char)param_3 + (char)local_c;
-  if (((uint)*param_4 != param_3 + local_c) &&
+  *index = (char)offset + (char)localBoneIndex;
+  if (((uint)*index != offset + localBoneIndex) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x18b,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -475,7 +480,7 @@ int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uint param_3,uchar *
 
 // 0080B550  XModelGetParentBoneName  (xanim/xmodel_utils.cpp:409)
 
-int __cdecl XModelGetParentBoneName(XModel *param_1,uint param_2)
+int __cdecl XModelGetParentBoneName(XModel *model,uint name)
 
 {
   byte bVar1;
@@ -483,10 +488,13 @@ int __cdecl XModelGetParentBoneName(XModel *param_1,uint param_2)
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  uint local_10;
+  uint numBones;
+  uint boneIndex;
+  uint parentBoneIndex;
+  ushort *boneNames;
   
-  puVar2 = (param_1->field5_0x8).localBoneNames;
-  bVar1 = param_1->numBones;
+  puVar2 = (model->field5_0x8).localBoneNames;
+  bVar1 = model->numBones;
   if ((0x9f < bVar1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x1a6,0,
                                "%s"), !bVar4)) {
@@ -494,10 +502,10 @@ int __cdecl XModelGetParentBoneName(XModel *param_1,uint param_2)
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_1->field6_0xc).localParentList != (uchar *)0x0) {
-    for (local_10 = 0; local_10 < bVar1; local_10 = local_10 + 1) {
-      if (param_2 == puVar2[local_10]) {
-        return (uint)puVar2[(param_1->field6_0xc).localParentList[local_10]];
+  if ((model->field6_0xc).localParentList != (uchar *)0x0) {
+    for (boneIndex = 0; boneIndex < bVar1; boneIndex = boneIndex + 1) {
+      if (name == puVar2[boneIndex]) {
+        return (uint)puVar2[(model->field6_0xc).localParentList[boneIndex]];
       }
     }
   }
@@ -507,25 +515,25 @@ int __cdecl XModelGetParentBoneName(XModel *param_1,uint param_2)
 
 // 0080B600  XModelGetBasePose  (xanim/xmodel_utils.cpp:449)
 
-DObjAnimMat * __cdecl XModelGetBasePose(XModel *param_1)
+DObjAnimMat * __cdecl XModelGetBasePose(XModel *model)
 
 {
-  return param_1->baseMat;
+  return model->baseMat;
 }
 
 
 // 0080B610  XModelLodInfo_GetDist  (xanim/xmodel_utils.cpp:473)
 
-float __cdecl XModelLodInfo_GetDist(XModelLodInfo *param_1,int param_2)
+float __cdecl XModelLodInfo_GetDist(XModelLodInfo *lodInfo,int lodIndex)
 
 {
   float local_8;
   
-  if (g_testLods[param_2].enabled == false) {
-    local_8 = param_1->dist;
+  if (g_testLods[lodIndex].enabled == false) {
+    local_8 = lodInfo->dist;
   }
   else {
-    local_8 = g_testLods[param_2].dist;
+    local_8 = g_testLods[lodIndex].dist;
   }
   return local_8;
 }
@@ -533,29 +541,31 @@ float __cdecl XModelLodInfo_GetDist(XModelLodInfo *param_1,int param_2)
 
 // 0080B6F0  XModelGetLodForDist_Internal  (xanim/xmodel_utils.cpp:486)
 
-int __cdecl XModelGetLodForDist_Internal(XModel *param_1,float param_2)
+int __cdecl XModelGetLodForDist_Internal(XModel *model,float dist)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  int local_10;
+  int lodIndex;
+  int lodCount;
+  float lodDist;
   
-  iVar3 = XModelGetNumLods(param_1);
-  if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+  iVar3 = XModelGetNumLods(model);
+  if ((((uint)dist & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x1ee,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_10 = 0;
+  lodIndex = 0;
   while( true ) {
-    if (iVar3 <= local_10) {
+    if (iVar3 <= lodIndex) {
       return -1;
     }
-    fVar4 = XModelLodInfo_GetDist(param_1->lodInfo + local_10,local_10);
+    fVar4 = XModelLodInfo_GetDist(model->lodInfo + lodIndex,lodIndex);
     if (((uint)fVar4 & 0x7f800000) == 0x7f800000) {
       va("\'%s\' nan lod dist. %d/%d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x1f5,0,
@@ -567,31 +577,31 @@ int __cdecl XModelGetLodForDist_Internal(XModel *param_1,float param_2)
       }
     }
     if (fVar4 == 0.0) break;
-    if (param_2 < fVar4) {
-      return local_10;
+    if (dist < fVar4) {
+      return lodIndex;
     }
-    local_10 = local_10 + 1;
+    lodIndex = lodIndex + 1;
   }
-  return local_10;
+  return lodIndex;
 }
 
 
 // 0080B650  XModelGetLodForDist  (xanim/xmodel_utils.cpp:539)
 
-int __cdecl XModelGetLodForDist(XModel *param_1,float param_2,float param_3,bool param_4)
+int __cdecl XModelGetLodForDist(XModel *model,float adjustedDist,float baseDist,bool noLodCullOut)
 
 {
   int local_3c;
   int local_34;
-  int local_8;
+  int result;
   
-  local_8 = XModelGetLodForDist_Internal(param_1,param_2);
-  if (local_8 == -1) {
-    if (param_2 != param_3) {
-      local_8 = XModelGetLodForDist_Internal(param_1,param_3);
+  result = XModelGetLodForDist_Internal(model,adjustedDist);
+  if (result == -1) {
+    if (adjustedDist != baseDist) {
+      result = XModelGetLodForDist_Internal(model,baseDist);
     }
-    if ((param_4) && (local_8 == -1)) {
-      local_34 = XModelGetNumLods(param_1);
+    if ((noLodCullOut) && (result == -1)) {
+      local_34 = XModelGetNumLods(model);
       local_34 = local_34 + -2;
       if (2 < local_34) {
         local_34 = 3;
@@ -602,44 +612,44 @@ int __cdecl XModelGetLodForDist(XModel *param_1,float param_2,float param_3,bool
       else {
         local_3c = local_34;
       }
-      local_8 = local_3c;
+      result = local_3c;
     }
   }
-  return local_8;
+  return result;
 }
 
 
 // 0080B840  XModelSetTestLods  (xanim/xmodel_utils.cpp:602)
 
-void __cdecl XModelSetTestLods(int param_1,float param_2)
+void __cdecl XModelSetTestLods(int lodLevel,float dist)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((3 < (uint)param_1) &&
+  if ((3 < (uint)lodLevel) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x25c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  g_testLods[param_1].dist = param_2;
-  g_testLods[param_1].enabled = 0.0 <= param_2;
+  g_testLods[lodLevel].dist = dist;
+  g_testLods[lodLevel].enabled = 0.0 <= dist;
   return;
 }
 
 
 // 0080B8B0  XModelGetLodDist  (xanim/xmodel_utils.cpp:613)
 
-float __cdecl XModelGetLodDist(XModel *param_1,uint param_2)
+float __cdecl XModelGetLodDist(XModel *model,uint lod)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x266,0,
                              "%s");
     if (!bVar2) {
@@ -648,7 +658,7 @@ float __cdecl XModelGetLodDist(XModel *param_1,uint param_2)
       return (float)fVar3;
     }
   }
-  if ((uint)(int)param_1->numLods <= param_2) {
+  if ((uint)(int)model->numLods <= lod) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x267,0,
                              "lod doesn\'t index model->numLods\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -657,23 +667,26 @@ float __cdecl XModelGetLodDist(XModel *param_1,uint param_2)
       return (float)fVar3;
     }
   }
-  return param_1->lodInfo[param_2].dist;
+  return model->lodInfo[lod].dist;
 }
 
 
 // 0080B930  XModelGetContents  (xanim/xmodel_utils.cpp:629)
 
-int __cdecl XModelGetContents(XModel *param_1)
+int __cdecl XModelGetContents(XModel *model)
 
 {
   PhysGeomList *pPVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int local_10;
-  uint local_c;
+  PhysGeomList *geomList;
+  PhysGeomList *geomListEA;
+  int i;
+  int contents;
+  Collmap *collmaps;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x276,0,
                              "%s");
     if (!bVar3) {
@@ -682,27 +695,27 @@ int __cdecl XModelGetContents(XModel *param_1)
       return iVar4;
     }
   }
-  local_c = param_1->contents;
-  for (local_10 = 0; local_10 < (int)(uint)param_1->numCollmaps; local_10 = local_10 + 1) {
-    pPVar1 = param_1->collmaps[local_10].geomList;
+  contents = model->contents;
+  for (i = 0; i < (int)(uint)model->numCollmaps; i = i + 1) {
+    pPVar1 = model->collmaps[i].geomList;
     if (pPVar1 != (PhysGeomList *)0x0) {
-      local_c = local_c | pPVar1->contents;
+      contents = contents | pPVar1->contents;
     }
   }
-  return local_c;
+  return contents;
 }
 
 
 // 0080B9D0  XModelHasCollmap  (xanim/xmodel_utils.cpp:660)
 
-int __cdecl XModelHasCollmap(XModel *param_1)
+int __cdecl XModelHasCollmap(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x295,0,
                              "%s");
     if (!bVar2) {
@@ -711,20 +724,22 @@ int __cdecl XModelHasCollmap(XModel *param_1)
       return iVar3;
     }
   }
-  return (uint)(param_1->numCollmaps != '\0');
+  return (uint)(model->numCollmaps != '\0');
 }
 
 
 // 0080BA20  XModelGetCollmap  (xanim/xmodel_utils.cpp:669)
 
-PhysGeomList * __cdecl XModelGetCollmap(XModel *param_1,int param_2)
+PhysGeomList * __cdecl XModelGetCollmap(XModel *model,int collMapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysGeomList *pPVar3;
+  Collmap *collmaps;
+  PhysGeomList *geomListEA;
   
-  if (param_1 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x29e,0,
                              "%s");
     if (!bVar2) {
@@ -733,11 +748,11 @@ PhysGeomList * __cdecl XModelGetCollmap(XModel *param_1,int param_2)
       return pPVar3;
     }
   }
-  if ((param_2 < 0) || ((int)(uint)param_1->numCollmaps <= param_2)) {
+  if ((collMapIndex < 0) || ((int)(uint)model->numCollmaps <= collMapIndex)) {
     pPVar3 = (PhysGeomList *)0x0;
   }
   else {
-    pPVar3 = param_1->collmaps[param_2].geomList;
+    pPVar3 = model->collmaps[collMapIndex].geomList;
   }
   return pPVar3;
 }
@@ -745,31 +760,32 @@ PhysGeomList * __cdecl XModelGetCollmap(XModel *param_1,int param_2)
 
 // 0080BA90  XModelGetCollmapForBoneIndex  (xanim/xmodel_utils.cpp:686)
 
-PhysGeomList * __cdecl XModelGetCollmapForBoneIndex(XModel *param_1,int param_2)
+PhysGeomList * __cdecl XModelGetCollmapForBoneIndex(XModel *model,int boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysGeomList *pPVar3;
   uint uVar4;
+  int collmapIndex;
   
-  if ((param_1 == (XModel *)0x0) &&
+  if ((model == (XModel *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x2af,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysGeomList *)(*pcVar1)();
     return pPVar3;
   }
-  if (((param_2 < 0) || ((int)(uint)param_1->numBones <= param_2)) &&
+  if (((boneIndex < 0) || ((int)(uint)model->numBones <= boneIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp",0x2b0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysGeomList *)(*pcVar1)();
     return pPVar3;
   }
-  uVar4 = (uint)(param_1->field18_0xb8).localBoneInfo[param_2].collmap;
-  if (uVar4 < param_1->numCollmaps) {
-    pPVar3 = param_1->collmaps[uVar4].geomList;
+  uVar4 = (uint)(model->field18_0xb8).localBoneInfo[boneIndex].collmap;
+  if (uVar4 < model->numCollmaps) {
+    pPVar3 = model->collmaps[uVar4].geomList;
   }
   else {
     pPVar3 = (PhysGeomList *)0x0;

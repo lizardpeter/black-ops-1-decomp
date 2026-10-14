@@ -3,8 +3,9 @@
 // 00874910  R_DrawSunShadowMap  (gfx_d3d/r_draw_sunshadow.cpp:196)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
-void __cdecl R_DrawSunShadowMap(GfxViewInfo *param_1,uint param_2,GfxCmdBuf *param_3)
+void __cdecl R_DrawSunShadowMap(GfxViewInfo *viewInfo,uint param_2,GfxCmdBuf *param_3)
 
 {
   int in_ECX;
@@ -17,17 +18,18 @@ void __cdecl R_DrawSunShadowMap(GfxViewInfo *param_1,uint param_2,GfxCmdBuf *par
   GfxCmdBufSourceState *pGStack_1aa8;
   GfxDrawSurfListInfo *pGStack_1aa4;
   GfxCmdBufSourceState GStack_1aa0;
+  GfxCmdBuf *cmdBuf;
   
   GStack_1aa0.shadowableLightIndex = 0x874920;
-  R_InitCmdBufSourceState(&GStack_1aa0,&param_1->input,0);
+  R_InitCmdBufSourceState(&GStack_1aa0,&viewInfo->input,0);
   R_SetWindShaderConstants((GfxCmdBufSourceState *)unaff_EDI);
   g_renderTargetIsOverridden = false;
   GStack_1aa0.renderTargetWidth = (int)gfxRenderTargets[0xe].width;
   GStack_1aa0.renderTargetHeight = (int)gfxRenderTargets[0xe].height;
   GStack_1aa0.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
   UpdateVPosToWorld((GfxCmdBufSourceState *)unaff_EDI);
-  pGStack_1aa8 = (GfxCmdBufSourceState *)((((param_1->input).data)->sunShadow).partition + in_ECX);
-  pGStack_1aa4 = param_1->drawList + in_ECX + 8;
+  pGStack_1aa8 = (GfxCmdBufSourceState *)((((viewInfo->input).data)->sunShadow).partition + in_ECX);
+  pGStack_1aa4 = viewInfo->drawList + in_ECX + 8;
   fVar1 = (sm_polygonOffsetBias->current).value * (pGStack_1aa8->matrices).matrix[1].m[2][2] * 0.25;
   if ((((GStack_1aa0.input.consts[0x14][0] != fVar1) ||
        (GStack_1aa0.input.consts[0x14][1] != (sm_polygonOffsetScale->current).value)) ||

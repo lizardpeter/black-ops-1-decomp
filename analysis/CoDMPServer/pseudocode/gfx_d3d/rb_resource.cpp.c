@@ -49,13 +49,15 @@ r_resource_action * __cdecl RB_Resource_AllocEntry(void)
 
 void __cdecl
 RB_Resource_CreateTexture
-          (GfxImage *param_1,void *param_2,int param_3,int param_4,_D3DFORMAT param_5)
+          (GfxImage *image,void *imageBuffer,int mipCount,int flags,_D3DFORMAT imageFormat)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -70,11 +72,11 @@ RB_Resource_CreateTexture
     }
   }
   prVar4->action = 1;
-  prVar4->resource = param_1;
-  prVar4->data = param_2;
-  prVar4->p1 = param_3;
-  prVar4->p2 = param_5;
-  prVar4->p3 = param_4;
+  prVar4->resource = image;
+  prVar4->data = imageBuffer;
+  prVar4->p1 = mipCount;
+  prVar4->p2 = imageFormat;
+  prVar4->p3 = flags;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -85,13 +87,15 @@ RB_Resource_CreateTexture
 
 // 00ABB830  RB_Resource_Release  (gfx_d3d/rb_resource.cpp:80)
 
-void __cdecl RB_Resource_Release(IUnknown *param_1)
+void __cdecl RB_Resource_Release(IUnknown *resource)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -106,7 +110,7 @@ void __cdecl RB_Resource_Release(IUnknown *param_1)
     }
   }
   prVar4->action = 2;
-  prVar4->resource = param_1;
+  prVar4->resource = resource;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -117,13 +121,15 @@ void __cdecl RB_Resource_Release(IUnknown *param_1)
 
 // 00ABB8A0  RB_Resource_ReloadTexture  (gfx_d3d/rb_resource.cpp:115)
 
-void __cdecl RB_Resource_ReloadTexture(GfxImage *param_1,void *param_2)
+void __cdecl RB_Resource_ReloadTexture(GfxImage *image,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -138,8 +144,8 @@ void __cdecl RB_Resource_ReloadTexture(GfxImage *param_1,void *param_2)
     }
   }
   prVar4->action = 4;
-  prVar4->resource = param_1;
-  prVar4->data = param_2;
+  prVar4->resource = image;
+  prVar4->data = data;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -150,13 +156,15 @@ void __cdecl RB_Resource_ReloadTexture(GfxImage *param_1,void *param_2)
 
 // 00ABB920  RB_Resource_Callback  (gfx_d3d/rb_resource.cpp:133)
 
-void __cdecl RB_Resource_Callback(_func___cdecl_void *param_1)
+void __cdecl RB_Resource_Callback(_func___cdecl_void *callback)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -171,7 +179,7 @@ void __cdecl RB_Resource_Callback(_func___cdecl_void *param_1)
     }
   }
   prVar4->action = 5;
-  prVar4->resource = param_1;
+  prVar4->resource = callback;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -182,13 +190,15 @@ void __cdecl RB_Resource_Callback(_func___cdecl_void *param_1)
 
 // 00ABB9A0  RB_Resource_CallbackParam  (gfx_d3d/rb_resource.cpp:150)
 
-void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void *param_2)
+void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *callback,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -203,8 +213,8 @@ void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void
     }
   }
   prVar4->action = 6;
-  prVar4->resource = param_1;
-  prVar4->data = param_2;
+  prVar4->resource = callback;
+  prVar4->data = data;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -217,13 +227,15 @@ void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void
 
 void __cdecl
 RB_Resource_CreateVertexDeclaration
-          (_D3DVERTEXELEMENT9 *param_1,IDirect3DVertexDeclaration9 **param_2)
+          (_D3DVERTEXELEMENT9 *elements,IDirect3DVertexDeclaration9 **declaration)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -238,8 +250,8 @@ RB_Resource_CreateVertexDeclaration
     }
   }
   prVar4->action = 7;
-  prVar4->resource = param_2;
-  prVar4->data = param_1;
+  prVar4->resource = declaration;
+  prVar4->data = elements;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -250,13 +262,15 @@ RB_Resource_CreateVertexDeclaration
 
 // 00ABBAA0  RB_Resource_CreateVertexShader  (gfx_d3d/rb_resource.cpp:186)
 
-void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader9 **param_2)
+void __cdecl RB_Resource_CreateVertexShader(ulong *function,IDirect3DVertexShader9 **shader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -271,8 +285,8 @@ void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader
     }
   }
   prVar4->action = 8;
-  prVar4->resource = param_2;
-  prVar4->data = param_1;
+  prVar4->resource = shader;
+  prVar4->data = function;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -283,13 +297,15 @@ void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader
 
 // 00ABBB20  RB_Resource_CreatePixelShader  (gfx_d3d/rb_resource.cpp:204)
 
-void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 **param_2)
+void __cdecl RB_Resource_CreatePixelShader(ulong *function,IDirect3DPixelShader9 **shader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -304,8 +320,8 @@ void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 
     }
   }
   prVar4->action = 9;
-  prVar4->resource = param_2;
-  prVar4->data = param_1;
+  prVar4->resource = shader;
+  prVar4->data = function;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -317,13 +333,15 @@ void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 
 // 00ABBBA0  RB_Resource_LoadVertexBuffer  (gfx_d3d/rb_resource.cpp:222)
 
 void __cdecl
-RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int param_3)
+RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **vb,void *bufferData,int sizeInBytes)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   r_resource_action *prVar4;
+  r_resource_action *action;
+  int semaphore;
   
   iVar3 = R_ReleaseDXDeviceOwnership();
   RB_Resource_Lock();
@@ -338,9 +356,9 @@ RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int 
     }
   }
   prVar4->action = 10;
-  prVar4->resource = param_1;
-  prVar4->data = param_2;
-  prVar4->p1 = param_3;
+  prVar4->resource = vb;
+  prVar4->data = bufferData;
+  prVar4->p1 = sizeInBytes;
   RB_Resource_Unlock();
   if (iVar3 != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
@@ -354,175 +372,208 @@ RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int 
 void __cdecl RB_Resource_Update_Internal(void)
 
 {
-  _D3DFORMAT _Var1;
-  GfxImage *pGVar2;
-  GfxImageFileHeader *pGVar3;
-  IDirect3DIndexBuffer9 **ppIVar4;
-  void *pvVar5;
-  int iVar6;
-  code *pcVar7;
-  bool bVar8;
-  uint uVar9;
-  void *pvVar10;
-  DWORD DVar11;
-  byte bVar12;
+  _D3DFORMAT imageFormat_00;
+  GfxImage *pGVar1;
+  GfxImageFileHeader *fileHeader_00;
+  IDirect3DIndexBuffer9 **ib_00;
+  void *src;
+  int iVar2;
+  code *pcVar3;
+  bool bVar4;
+  uint uVar5;
+  void *dest;
+  DWORD DVar6;
+  byte bVar7;
   uint local_c4;
   uint local_c0;
   uint local_bc;
   _D3DCUBEMAP_FACES local_b8;
-  uchar *local_30;
-  int local_20;
-  uint local_1c;
-  uint local_14;
-  int local_8;
+  void *indexBuffer;
+  int rawIndexBytes;
+  int indexBytes;
+  IDirect3DIndexBuffer9 **ib;
+  void *bufferData_2;
+  IDirect3DVertexBuffer9 **vb;
+  void *bufferData;
+  int sizeInBytes;
+  IDirect3DPixelShader9 **shader_2;
+  ulong *function_2;
+  IDirect3DVertexShader9 **shader;
+  ulong *function;
+  _D3DVERTEXELEMENT9 *elements;
+  IDirect3DVertexDeclaration9 **declaration;
+  GfxImage *image_3;
+  uchar *imageData_2;
+  GfxImageFileHeader *fileHeader_2;
+  GfxImage *image_2;
+  uchar *imageData;
+  GfxImageFileHeader *fileHeader;
+  GfxImage *image;
+  int depth;
+  int mipCount;
+  uchar *data;
+  _D3DCUBEMAP_FACES face;
+  int width;
+  int height;
+  int faceCount;
+  int faceIndex;
+  _D3DFORMAT imageFormat;
+  int mipLevel;
+  int flags;
+  r_resource_action *action;
+  int resourceIndex;
   
   PIXBeginNamedEvent(0,"RB_Resource_Update");
   RB_Resource_Lock();
-  local_8 = 0;
+  resourceIndex = 0;
   do {
-    if (numResourceActions <= local_8) {
+    if (numResourceActions <= resourceIndex) {
       Sys_ClearResourcesQueuedEvent();
       Sys_SetResourcesFlushedEvent();
       numResourceActions = 0;
       RB_Resource_Unlock();
-      DVar11 = GetCurrentThreadId();
-      if ((DVar11 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    switch(resourceActions[local_8].action) {
+    switch(resourceActions[resourceIndex].action) {
     case 1:
-      pGVar2 = resourceActions[local_8].resource;
-      local_30 = resourceActions[local_8].data;
-      iVar6 = resourceActions[local_8].p1;
-      _Var1 = resourceActions[local_8].p2;
-      if (pGVar2->mapType == '\x03') {
+      pGVar1 = resourceActions[resourceIndex].resource;
+      data = resourceActions[resourceIndex].data;
+      iVar2 = resourceActions[resourceIndex].p1;
+      imageFormat_00 = resourceActions[resourceIndex].p2;
+      if (pGVar1->mapType == '\x03') {
         Image_Create2DTexture_PC
-                  (pGVar2,pGVar2->width,pGVar2->height,iVar6,resourceActions[local_8].p3,_Var1);
-        local_20 = 1;
+                  (pGVar1,pGVar1->width,pGVar1->height,iVar2,resourceActions[resourceIndex].p3,
+                   imageFormat_00);
+        faceCount = 1;
       }
-      else if (pGVar2->mapType == '\x04') {
+      else if (pGVar1->mapType == '\x04') {
         Image_Create3DTexture_PC
-                  (pGVar2,pGVar2->width,pGVar2->height,pGVar2->depth,iVar6,
-                   resourceActions[local_8].p3,_Var1);
-        local_20 = 1;
+                  (pGVar1,pGVar1->width,pGVar1->height,pGVar1->depth,iVar2,
+                   resourceActions[resourceIndex].p3,imageFormat_00);
+        faceCount = 1;
       }
       else {
-        if ((pGVar2->mapType != '\x05') &&
-           (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
-                                     0x129,0,"%s\n\t(image->mapType) = %i"), !bVar8)) {
-          pcVar7 = (code *)swi(3);
-          (*pcVar7)();
+        if ((pGVar1->mapType != '\x05') &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
+                                     0x129,0,"%s\n\t(image->mapType) = %i"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        Image_CreateCubeTexture_PC(pGVar2,pGVar2->width,iVar6,_Var1);
-        local_20 = 6;
+        Image_CreateCubeTexture_PC(pGVar1,pGVar1->width,iVar2,imageFormat_00);
+        faceCount = 6;
       }
-      if (local_30 != (uchar *)0x0) {
-        for (local_1c = 0; (int)local_1c < local_20; local_1c = local_1c + 1) {
-          if (local_20 == 1) {
+      if (data != (uchar *)0x0) {
+        for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+          if (faceCount == 1) {
             local_b8 = D3DCUBEMAP_FACE_POSITIVE_X;
           }
           else {
-            local_b8 = Image_CubemapFace(local_1c);
+            local_b8 = Image_CubemapFace(faceIndex);
           }
-          for (local_14 = 0; (int)local_14 < iVar6; local_14 = local_14 + 1) {
-            Image_UploadData(pGVar2,_Var1,local_b8,local_14,local_30);
-            bVar12 = (byte)local_14;
-            local_bc = (uint)(pGVar2->width >> (bVar12 & 0x1f));
+          for (mipLevel = 0; mipLevel < iVar2; mipLevel = mipLevel + 1) {
+            Image_UploadData(pGVar1,imageFormat_00,local_b8,mipLevel,data);
+            bVar7 = (byte)mipLevel;
+            local_bc = (uint)(pGVar1->width >> (bVar7 & 0x1f));
             if (local_bc < 2) {
               local_bc = 1;
             }
-            local_c0 = (uint)(pGVar2->height >> (bVar12 & 0x1f));
+            local_c0 = (uint)(pGVar1->height >> (bVar7 & 0x1f));
             if (local_c0 < 2) {
               local_c0 = 1;
             }
-            local_c4 = (uint)(pGVar2->depth >> (bVar12 & 0x1f));
+            local_c4 = (uint)(pGVar1->depth >> (bVar7 & 0x1f));
             if (local_c4 < 2) {
               local_c4 = 1;
             }
-            uVar9 = Image_GetCardMemoryAmountForMipLevel(_Var1,local_bc,local_c0,local_c4);
-            local_30 = local_30 + uVar9;
+            uVar5 = Image_GetCardMemoryAmountForMipLevel(imageFormat_00,local_bc,local_c0,local_c4);
+            data = data + uVar5;
           }
         }
-        (**(code **)((int)*(pGVar2->texture).basemap + 0x24))((pGVar2->texture).basemap);
-        Z_VirtualFree(resourceActions[local_8].data,0x14);
+        (**(code **)((int)*(pGVar1->texture).basemap + 0x24))((pGVar1->texture).basemap);
+        Z_VirtualFree(resourceActions[resourceIndex].data,0x14);
       }
       break;
     case 2:
-      (**(code **)(*(int *)resourceActions[local_8].resource + 8))
-                (resourceActions[local_8].resource);
+      (**(code **)(*(int *)resourceActions[resourceIndex].resource + 8))
+                (resourceActions[resourceIndex].resource);
       break;
     case 3:
-      Image_LoadFromData(resourceActions[local_8].resource,resourceActions[local_8].data,
-                         (uchar *)(resourceActions[local_8].data + 1),2);
-      Z_VirtualFree(resourceActions[local_8].data,0x14);
+      Image_LoadFromData(resourceActions[resourceIndex].resource,resourceActions[resourceIndex].data
+                         ,(uchar *)(resourceActions[resourceIndex].data + 1),2);
+      Z_VirtualFree(resourceActions[resourceIndex].data,0x14);
       break;
     case 4:
-      pGVar2 = resourceActions[local_8].resource;
-      pGVar3 = resourceActions[local_8].data;
-      Image_Release(pGVar2);
-      if (((pGVar2->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
-         (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
-                                   0x164,0,"%s"), !bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+      pGVar1 = resourceActions[resourceIndex].resource;
+      fileHeader_00 = resourceActions[resourceIndex].data;
+      Image_Release(pGVar1);
+      if (((pGVar1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
+                                   0x164,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      Image_LoadFromData(pGVar2,pGVar3,(uchar *)(pGVar3 + 1),2);
-      Z_VirtualFree(resourceActions[local_8].data,0x14);
+      Image_LoadFromData(pGVar1,fileHeader_00,(uchar *)(fileHeader_00 + 1),2);
+      Z_VirtualFree(resourceActions[resourceIndex].data,0x14);
       break;
     case 5:
-      (*resourceActions[local_8].resource)();
+      (*resourceActions[resourceIndex].resource)();
       break;
     case 6:
-      (*resourceActions[local_8].resource)(resourceActions[local_8].data);
+      (*resourceActions[resourceIndex].resource)(resourceActions[resourceIndex].data);
       break;
     case 7:
       (**(code **)((int)*dx.device + 0x158))
-                (dx.device,resourceActions[local_8].data,resourceActions[local_8].resource);
+                (dx.device,resourceActions[resourceIndex].data,
+                 resourceActions[resourceIndex].resource);
       break;
     case 8:
       (**(code **)((int)*dx.device + 0x16c))
-                (dx.device,resourceActions[local_8].data,resourceActions[local_8].resource);
+                (dx.device,resourceActions[resourceIndex].data,
+                 resourceActions[resourceIndex].resource);
       break;
     case 9:
       (**(code **)((int)*dx.device + 0x1a8))
-                (dx.device,resourceActions[local_8].data,resourceActions[local_8].resource);
+                (dx.device,resourceActions[resourceIndex].data,
+                 resourceActions[resourceIndex].resource);
       break;
     case 10:
-      Load_VertexBuffer(resourceActions[local_8].resource,resourceActions[local_8].data,
-                        resourceActions[local_8].p1);
+      Load_VertexBuffer(resourceActions[resourceIndex].resource,resourceActions[resourceIndex].data,
+                        resourceActions[resourceIndex].p1);
       break;
     case 0xb:
-      ppIVar4 = resourceActions[local_8].resource;
-      pvVar5 = resourceActions[local_8].data;
-      iVar6 = resourceActions[local_8].p1;
-      uVar9 = iVar6 + 0x1fU & 0xffffffe0;
-      if ((0x200000 < (int)uVar9) &&
-         (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
-                                   0x1a6,0,"%s"), !bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+      ib_00 = resourceActions[resourceIndex].resource;
+      src = resourceActions[resourceIndex].data;
+      iVar2 = resourceActions[resourceIndex].p1;
+      uVar5 = iVar2 + 0x1fU & 0xffffffe0;
+      if ((0x200000 < (int)uVar5) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_resource.cpp",
+                                   0x1a6,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
-      pvVar10 = R_AllocStaticIndexBuffer(ppIVar4,uVar9,1,"XSurfaceOptimize");
-      if (pvVar10 == (void *)0x0) {
+      dest = R_AllocStaticIndexBuffer(ib_00,uVar5,1,"XSurfaceOptimize");
+      if (dest == (void *)0x0) {
         return;
       }
-      Com_Memcpy(pvVar10,pvVar5,iVar6);
-      memset((uchar *)((int)pvVar10 + iVar6),'\0',uVar9 - iVar6);
-      R_FinishStaticIndexBuffer(*ppIVar4);
+      Com_Memcpy(dest,src,iVar2);
+      memset((uchar *)((int)dest + iVar2),'\0',uVar5 - iVar2);
+      R_FinishStaticIndexBuffer(*ib_00);
     }
-    local_8 = local_8 + 1;
+    resourceIndex = resourceIndex + 1;
   } while( true );
 }
 
 
 // 00ABBC30  RB_Resource_Update  (gfx_d3d/rb_resource.cpp:447)
 
-void __cdecl RB_Resource_Update(int param_1)
+void __cdecl RB_Resource_Update(int msec)
 
 {
   int iVar1;
@@ -532,33 +583,33 @@ void __cdecl RB_Resource_Update(int param_1)
   uint local_44;
   LARGE_INTEGER local_24;
   LARGE_INTEGER local_1c;
-  uint local_14;
+  uint endtime;
   uint local_10;
-  uint local_c;
+  uint curtime;
   uint local_8;
   
   iVar1 = Sys_IsDatabaseReady();
   if (iVar1 == 0) {
     QueryPerformanceCounter(&local_1c);
-    local_c = local_1c.s.LowPart;
+    curtime = local_1c.s.LowPart;
     local_8 = local_1c.s.HighPart;
     _ftol2();
-    local_14 = extraout_EAX + local_c;
-    local_10 = local_8 + extraout_EDX + (uint)CARRY4(extraout_EAX,local_c);
+    endtime = extraout_EAX + curtime;
+    local_10 = local_8 + extraout_EDX + (uint)CARRY4(extraout_EAX,curtime);
     do {
       do {
-        uVar2 = (local_10 - local_8) - (uint)(local_14 < local_c);
+        uVar2 = (local_10 - local_8) - (uint)(endtime < curtime);
         local_44 = (uint)(longlong)
                          ROUND((-(double)(longlong)(((ulonglong)uVar2 & 0x80000000) << 0x20) +
-                               (double)(CONCAT44(uVar2,local_14 - local_c) & 0x7fffffffffffffff)) *
+                               (double)(CONCAT44(uVar2,endtime - curtime) & 0x7fffffffffffffff)) *
                                msecPerRawTimerTick);
         Sys_WaitResourcesQueuedEvent(local_44);
         RB_Resource_Update_Internal();
         QueryPerformanceCounter(&local_24);
-        local_c = local_24.s.LowPart;
+        curtime = local_24.s.LowPart;
         local_8 = local_24.s.HighPart;
       } while ((uint)local_24.s.HighPart < local_10);
-    } while ((local_24.s.HighPart == local_10) && (local_24.s.LowPart < local_14));
+    } while ((local_24.s.HighPart == local_10) && (local_24.s.LowPart < endtime));
   }
   else {
     RB_Resource_Update_Internal();
@@ -575,6 +626,7 @@ void __cdecl RB_Resource_Flush(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int semaphore;
   
   bVar2 = Sys_IsRenderThread();
   if (bVar2) {

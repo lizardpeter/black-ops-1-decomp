@@ -649,21 +649,21 @@ void __cdecl LiveStorage_GetUserFileSuccess(TaskRecord *param_1)
 {
   undefined4 *puVar1;
   int iVar2;
-  uchar *puVar3;
+  uchar *dst;
   LargeLocal *this;
   LargeLocal *this_00;
   LargeLocal *this_01;
   int unaff_ESI;
   uchar *unaff_EDI;
-  char *pcVar4;
+  char *pcVar3;
   int iStack_c;
   
   if ((param_1 != (TaskRecord *)0x0) &&
      (puVar1 = *(undefined4 **)(param_1 + 0x28), puVar1 != (undefined4 *)0x0)) {
-    pcVar4 = (char *)puVar1[0x3d];
-    if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-      Com_ControllerIndex_GetLocalClientNum((int)pcVar4);
-      UI_CloseMenu((int)pcVar4,(char *)unaff_EDI);
+    pcVar3 = (char *)puVar1[0x3d];
+    if ((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) {
+      Com_ControllerIndex_GetLocalClientNum((int)pcVar3);
+      UI_CloseMenu((int)pcVar3,(char *)unaff_EDI);
     }
     *(undefined1 *)(puVar1 + 0x3c) = 1;
     puVar1[0x3a] = 0;
@@ -677,14 +677,14 @@ void __cdecl LiveStorage_GetUserFileSuccess(TaskRecord *param_1)
                iVar2 - *(int *)(param_1 + 0x18));
     if (*(char *)((int)puVar1 + 0xf3) != '\0') {
       LargeLocal::LargeLocal(this,0xffd8);
-      puVar3 = LargeLocalGetBuf(iStack_c,(int)unaff_EDI);
+      dst = LargeLocalGetBuf(iStack_c,(int)unaff_EDI);
       if (0xffd8 < (uint)puVar1[9]) {
         Com_PrintError(0x10,"Insufficient space to decompress file %s\n",*puVar1);
         LiveStorage_GetUserFileFailure(param_1);
         LargeLocal::~LargeLocal(this_00);
         return;
       }
-      memcpy(puVar3,(uchar *)puVar1[0x36],puVar1[8]);
+      memcpy(dst,(uchar *)puVar1[0x36],puVar1[8]);
       MSG_DecompressWithZLib((uchar *)puVar1[0x36],puVar1[9],unaff_EDI,unaff_ESI);
       LargeLocal::~LargeLocal(this_01);
     }
@@ -1385,21 +1385,21 @@ void __cdecl LiveStorage_FileShare_LoadBlockSuccessAction(dwFileShareDescriptors
   bdFileMetaData *pbVar8;
   int unaff_EDI;
   undefined4 *puVar9;
-  void *pvVar10;
-  code *pcVar11;
+  void *base;
+  code *comp;
   int iStack_18;
   int iStack_14;
   
   if (0 < (int)**(uint **)(param_1 + 0x14)) {
     if (((DAT_02532300 == 0) || (DAT_04e60538 != 2)) || (*(int *)(DAT_02532300 + 0x18) < 1)) {
-      pvVar10 = *(void **)(param_1 + 0x10);
-      pcVar11 = (code *)&LAB_00796be0;
+      base = *(void **)(param_1 + 0x10);
+      comp = (code *)&LAB_00796be0;
     }
     else {
-      pvVar10 = *(void **)(param_1 + 0x10);
-      pcVar11 = FUN_00796bf0;
+      base = *(void **)(param_1 + 0x10);
+      comp = FUN_00796bf0;
     }
-    qsort(pvVar10,**(uint **)(param_1 + 0x14),0x838,pcVar11);
+    qsort(base,**(uint **)(param_1 + 0x14),0x838,comp);
     iStack_14 = 0;
     if (0 < **(int **)(param_1 + 0x14)) {
       iStack_18 = 0;

@@ -29,15 +29,17 @@ void __cdecl phys_task_manager_shutdown(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl phys_task_manager_process(jqModule *param_1,void *param_2,int param_3)
+void __cdecl phys_task_manager_process(jqModule *input,void *input_count,int param_3)
 
 {
+  jqModule *module;
+  
   if (param_3 != 0) {
     if (6 < param_3) {
       param_3 = 6;
     }
-    g_phys_task_manager_batch.Module = param_1;
-    g_phys_task_manager_batch.Input = param_2;
+    g_phys_task_manager_batch.Module = input;
+    g_phys_task_manager_batch.Input = input_count;
     g_phys_task_manager_current_worker_count = param_3;
     if (0 < param_3) {
       do {

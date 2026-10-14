@@ -213,7 +213,7 @@ int __cdecl SEH_ReplaceDirectiveInStringWithBinding(int param_1,char *param_2,ch
 {
   char cVar1;
   char *pcVar2;
-  ulong uVar3;
+  ulong count;
   uchar *unaff_EDI;
   ulong local_8 [2];
   
@@ -222,13 +222,13 @@ int __cdecl SEH_ReplaceDirectiveInStringWithBinding(int param_1,char *param_2,ch
     cVar1 = *pcVar2;
     pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
-  uVar3 = (int)pcVar2 - (int)(param_2 + 1);
-  if (0x400 < uVar3 + 1) {
+  count = (int)pcVar2 - (int)(param_2 + 1);
+  if (0x400 < count + 1) {
     return 0;
   }
-  local_8[0] = uVar3;
-  memcpy(unaff_EDI,(uchar *)param_2,uVar3);
-  unaff_EDI[uVar3] = '\0';
+  local_8[0] = count;
+  memcpy(unaff_EDI,(uchar *)param_2,count);
+  unaff_EDI[count] = '\0';
   local_8[1] = 0;
   do {
     cVar1 = FUN_00620610(param_1,local_8 + 1,local_8);
@@ -244,17 +244,17 @@ int __cdecl SEH_ReplaceDirectiveInStringWithBinding(int param_1,char *param_2,ch
 char * __cdecl SEH_LocalizeTextMessage(char *param_1,char *param_2,msgLocErrType_t param_3)
 
 {
-  uchar *puVar1;
-  char cVar2;
-  uchar uVar3;
+  uchar *dst;
+  char cVar1;
+  uchar uVar2;
+  bool bVar3;
   bool bVar4;
-  bool bVar5;
-  char *pcVar6;
-  uchar *puVar7;
+  char *pcVar5;
+  uchar *puVar6;
+  int iVar7;
   int iVar8;
-  int iVar9;
-  char *pcVar10;
-  bool bVar11;
+  char *pcVar9;
+  bool bVar10;
   int local_820;
   int local_81c;
   char *local_818;
@@ -264,48 +264,48 @@ char * __cdecl SEH_LocalizeTextMessage(char *param_1,char *param_2,msgLocErrType
   uchar local_400 [1024];
   
   DAT_04fad6fc = (DAT_04fad6fc + 1) % 10;
-  puVar1 = &DAT_04ffa428 + DAT_04fad6fc * 0x400;
-  memset(puVar1,'\0',0x400);
+  dst = &DAT_04ffa428 + DAT_04fad6fc * 0x400;
+  memset(dst,'\0',0x400);
   local_81c = 0;
-  bVar5 = false;
+  bVar4 = false;
   local_810 = 0;
   local_820 = 0;
-  bVar4 = true;
-  bVar11 = true;
+  bVar3 = true;
+  bVar10 = true;
   local_808 = 1;
   local_818 = param_1;
-  pcVar6 = param_1;
-  pcVar10 = param_1;
+  pcVar5 = param_1;
+  pcVar9 = param_1;
   if (*param_1 != '\0') {
     do {
-      cVar2 = *pcVar10;
-      if ((((cVar2 == '\0') || (cVar2 == '\x14')) || (cVar2 == '\x15')) || (cVar2 == '\x16')) {
-        if (pcVar6 < pcVar10) {
-          local_810 = (int)pcVar10 - (int)pcVar6;
-          iVar9 = local_810 + 1;
-          pcVar6 = pcVar6 + -1;
-          if (iVar9 != 0) {
-            iVar8 = -1 - (int)pcVar6;
+      cVar1 = *pcVar9;
+      if ((((cVar1 == '\0') || (cVar1 == '\x14')) || (cVar1 == '\x15')) || (cVar1 == '\x16')) {
+        if (pcVar5 < pcVar9) {
+          local_810 = (int)pcVar9 - (int)pcVar5;
+          iVar8 = local_810 + 1;
+          pcVar5 = pcVar5 + -1;
+          if (iVar8 != 0) {
+            iVar7 = -1 - (int)pcVar5;
             do {
-              cVar2 = pcVar6[1];
-              pcVar6 = pcVar6 + 1;
-              pcVar6[(int)(local_800 + iVar8)] = cVar2;
-              if (cVar2 == '\0') break;
-              iVar9 = iVar9 + -1;
-            } while (iVar9 != 0);
+              cVar1 = pcVar5[1];
+              pcVar5 = pcVar5 + 1;
+              pcVar5[(int)(local_800 + iVar7)] = cVar1;
+              if (cVar1 == '\0') break;
+              iVar8 = iVar8 + -1;
+            } while (iVar8 != 0);
           }
           local_800[local_810] = '\0';
-          if (bVar4) {
-            iVar9 = FUN_00620390(local_800,param_3);
-            if (iVar9 == 0) {
+          if (bVar3) {
+            iVar8 = FUN_00620390(local_800,param_3);
+            if (iVar8 == 0) {
               return (char *)0x0;
             }
-            puVar7 = local_800;
+            puVar6 = local_800;
             do {
-              uVar3 = *puVar7;
-              puVar7 = puVar7 + 1;
-            } while (uVar3 != '\0');
-            local_810 = (int)puVar7 - (int)(local_800 + 1);
+              uVar2 = *puVar6;
+              puVar6 = puVar6 + 1;
+            } while (uVar2 != '\0');
+            local_810 = (int)puVar6 - (int)(local_800 + 1);
           }
           if (0x3ff < local_810 + local_820) {
             if (((loc_warnings != (dvar_s *)0x0) && ((loc_warnings->current).enabled != false)) &&
@@ -315,115 +315,115 @@ char * __cdecl SEH_LocalizeTextMessage(char *param_1,char *param_2,msgLocErrType
             }
             Com_Printf(0x10,"%s too long when translated: \"%s\"\n",param_2,param_1);
           }
-          iVar9 = 0;
+          iVar8 = 0;
           if (0 < local_810 + -2) {
             do {
-              iVar8 = strncmp((char *)(local_800 + iVar9),"&&",2);
-              if ((iVar8 == 0) && (iVar8 = isdigit((int)(char)local_800[iVar9 + 2]), iVar8 != 0)) {
-                if (bVar11) {
+              iVar7 = strncmp((char *)(local_800 + iVar8),"&&",2);
+              if ((iVar7 == 0) && (iVar7 = isdigit((int)(char)local_800[iVar8 + 2]), iVar7 != 0)) {
+                if (bVar10) {
                   local_81c = local_81c + 1;
                 }
                 else {
-                  local_800[iVar9] = '\x16';
-                  bVar5 = true;
+                  local_800[iVar8] = '\x16';
+                  bVar4 = true;
                 }
               }
-              iVar9 = iVar9 + 1;
-            } while (iVar9 < local_810 + -2);
+              iVar8 = iVar8 + 1;
+            } while (iVar8 < local_810 + -2);
           }
           if ((local_81c < 1) || (local_820 < 1)) {
-            puVar7 = local_800;
-            iVar9 = local_820 - (int)puVar7;
+            puVar6 = local_800;
+            iVar8 = local_820 - (int)puVar6;
             do {
-              uVar3 = *puVar7;
-              (puVar1 + iVar9)[(int)puVar7] = uVar3;
-              puVar7 = puVar7 + 1;
-            } while (uVar3 != '\0');
+              uVar2 = *puVar6;
+              (dst + iVar8)[(int)puVar6] = uVar2;
+              puVar6 = puVar6 + 1;
+            } while (uVar2 != '\0');
           }
           else {
-            iVar9 = 0;
+            iVar8 = 0;
             if (0 < local_820 + -2) {
 LAB_006209d7:
-              iVar8 = strncmp((char *)(puVar1 + iVar9),"&&",2);
-              if ((iVar8 != 0) || (iVar8 = isdigit((int)(char)puVar1[iVar9 + 2]), iVar8 == 0))
+              iVar7 = strncmp((char *)(dst + iVar8),"&&",2);
+              if ((iVar7 != 0) || (iVar7 = isdigit((int)(char)dst[iVar8 + 2]), iVar7 == 0))
               goto LAB_00620a33;
-              uVar3 = puVar1[iVar9 + 2];
-              if ((char)uVar3 == 0x30) {
+              uVar2 = dst[iVar8 + 2];
+              if ((char)uVar2 == 0x30) {
                 Com_Printf(0x10,"%s cannot have &&0 as conversion format: \"%s\"\n",param_2,param_1)
                 ;
               }
-              if ((char)uVar3 + -0x30 != local_808) goto LAB_00620a33;
-              puVar7 = puVar1 + iVar9 + 3;
-              iVar8 = -(int)puVar7;
+              if ((char)uVar2 + -0x30 != local_808) goto LAB_00620a33;
+              puVar6 = dst + iVar8 + 3;
+              iVar7 = -(int)puVar6;
               do {
-                uVar3 = *puVar7;
-                puVar7[(int)(local_400 + iVar8)] = uVar3;
-                puVar7 = puVar7 + 1;
-              } while (uVar3 != '\0');
+                uVar2 = *puVar6;
+                puVar6[(int)(local_400 + iVar7)] = uVar2;
+                puVar6 = puVar6 + 1;
+              } while (uVar2 != '\0');
               local_808 = local_808 + 1;
-              puVar1[iVar9] = '\0';
+              dst[iVar8] = '\0';
             }
 LAB_00620a5e:
-            puVar7 = local_800;
-            iVar8 = iVar9 - (int)puVar7;
+            puVar6 = local_800;
+            iVar7 = iVar8 - (int)puVar6;
             do {
-              uVar3 = *puVar7;
-              (puVar1 + iVar8)[(int)puVar7] = uVar3;
-              puVar7 = puVar7 + 1;
-            } while (uVar3 != '\0');
-            puVar7 = local_400;
-            iVar9 = iVar9 - (int)puVar7;
+              uVar2 = *puVar6;
+              (dst + iVar7)[(int)puVar6] = uVar2;
+              puVar6 = puVar6 + 1;
+            } while (uVar2 != '\0');
+            puVar6 = local_400;
+            iVar8 = iVar8 - (int)puVar6;
             do {
-              uVar3 = *puVar7;
-              (puVar1 + iVar9 + local_810)[(int)puVar7] = uVar3;
-              puVar7 = puVar7 + 1;
-            } while (uVar3 != '\0');
+              uVar2 = *puVar6;
+              (dst + iVar8 + local_810)[(int)puVar6] = uVar2;
+              puVar6 = puVar6 + 1;
+            } while (uVar2 != '\0');
             local_820 = local_820 + -3;
             local_81c = local_81c + -1;
           }
           local_810 = local_820 + local_810;
-          pcVar10 = local_818;
+          pcVar9 = local_818;
           local_820 = local_810;
         }
-        if (*pcVar10 == '\x14') {
-          bVar4 = true;
+        if (*pcVar9 == '\x14') {
+          bVar3 = true;
 LAB_00620afd:
-          local_818 = pcVar10 + 1;
-          pcVar6 = local_818;
+          local_818 = pcVar9 + 1;
+          pcVar5 = local_818;
         }
         else {
-          pcVar6 = pcVar10;
-          if (*pcVar10 == '\x15') {
-            bVar4 = false;
+          pcVar5 = pcVar9;
+          if (*pcVar9 == '\x15') {
+            bVar3 = false;
             goto LAB_00620afd;
           }
         }
-        bVar11 = *pcVar6 != '\x16';
-        pcVar10 = pcVar6;
-        if (!bVar11) {
-          pcVar6 = pcVar6 + 1;
-          pcVar10 = pcVar6;
-          local_818 = pcVar6;
+        bVar10 = *pcVar5 != '\x16';
+        pcVar9 = pcVar5;
+        if (!bVar10) {
+          pcVar5 = pcVar5 + 1;
+          pcVar9 = pcVar5;
+          local_818 = pcVar5;
         }
       }
       else {
-        pcVar10 = pcVar10 + 1;
-        local_818 = pcVar10;
+        pcVar9 = pcVar9 + 1;
+        local_818 = pcVar9;
       }
-    } while (*pcVar6 != '\0');
-    if ((bVar5) && (iVar9 = 0, 0 < local_810)) {
+    } while (*pcVar5 != '\0');
+    if ((bVar4) && (iVar8 = 0, 0 < local_810)) {
       do {
-        if (puVar1[iVar9] == '\x16') {
-          puVar1[iVar9] = '%';
+        if (dst[iVar8] == '\x16') {
+          dst[iVar8] = '%';
         }
-        iVar9 = iVar9 + 1;
-      } while (iVar9 < local_810);
+        iVar8 = iVar8 + 1;
+      } while (iVar8 < local_810);
     }
   }
-  return (char *)puVar1;
+  return (char *)dst;
 LAB_00620a33:
-  iVar9 = iVar9 + 1;
-  if (local_820 + -2 <= iVar9) goto LAB_00620a5e;
+  iVar8 = iVar8 + 1;
+  if (local_820 + -2 <= iVar8) goto LAB_00620a5e;
   goto LAB_006209d7;
 }
 

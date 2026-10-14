@@ -9,12 +9,12 @@
 /* WARNING: Removing unreachable block (ram,0x0042787a) */
 /* WARNING: Removing unreachable block (ram,0x0042789a) */
 
-void __cdecl Phys_Vec3ToNitrousVec(float *param_1,phys_vec3 *param_2)
+void __cdecl Phys_Vec3ToNitrousVec(float *inVector,phys_vec3 *outVector)
 
 {
-  param_2->x = *param_1;
-  param_2->y = param_1[1];
-  param_2->z = param_1[2];
+  outVector->x = *inVector;
+  outVector->y = inVector[1];
+  outVector->z = inVector[2];
   return;
 }
 
@@ -94,44 +94,45 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00424240  BG_GetHeldWeaponSlot  (bgame/bg_weapons.h:300)
 
-int __cdecl BG_GetHeldWeaponSlot(playerState_s *param_1,uint param_2)
+int __cdecl BG_GetHeldWeaponSlot(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int slot;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",
                                0x12d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  slot = 0;
   while( true ) {
-    if (0xe < local_8) {
+    if (0xe < slot) {
       return -1;
     }
-    if (param_2 == param_1->heldWeapons[local_8].weapon) break;
-    local_8 = local_8 + 1;
+    if (weaponIndex == ps->heldWeapons[slot].weapon) break;
+    slot = slot + 1;
   }
-  return local_8;
+  return slot;
 }
 
 
 // 004241D0  BG_GetHeldWeaponConst  (bgame/bg_weapons.h:314)
 
-PlayerHeldWeapon * __cdecl BG_GetHeldWeaponConst(playerState_s *param_1,uint param_2)
+PlayerHeldWeapon * __cdecl BG_GetHeldWeaponConst(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   PlayerHeldWeapon *pPVar3;
   int iVar4;
+  int slot;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",0x13b
                              ,0,"%s");
     if (!bVar2) {
@@ -140,16 +141,16 @@ PlayerHeldWeapon * __cdecl BG_GetHeldWeaponConst(playerState_s *param_1,uint par
       return pPVar3;
     }
   }
-  if (param_2 == 0) {
+  if (weaponIndex == 0) {
     pPVar3 = (PlayerHeldWeapon *)0x0;
   }
   else {
-    iVar4 = BG_GetHeldWeaponSlot(param_1,param_2);
+    iVar4 = BG_GetHeldWeaponSlot(ps,weaponIndex);
     if (iVar4 == -1) {
       pPVar3 = (PlayerHeldWeapon *)0x0;
     }
     else {
-      pPVar3 = param_1->heldWeapons + iVar4;
+      pPVar3 = ps->heldWeapons + iVar4;
     }
   }
   return pPVar3;
@@ -158,22 +159,23 @@ PlayerHeldWeapon * __cdecl BG_GetHeldWeaponConst(playerState_s *param_1,uint par
 
 // 00424170  BG_PlayerHasWeapon  (bgame/bg_weapons.h:342)
 
-int __cdecl BG_PlayerHasWeapon(playerState_s *param_1,uint param_2)
+int __cdecl BG_PlayerHasWeapon(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   PlayerHeldWeapon *pPVar4;
+  PlayerHeldWeapon *heldWeapon;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",
                                0x157,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  pPVar4 = BG_GetHeldWeaponConst(param_1,param_2);
+  pPVar4 = BG_GetHeldWeaponConst(ps,weaponIndex);
   return (uint)(pPVar4 != (PlayerHeldWeapon *)0x0);
 }
 
@@ -200,15 +202,16 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 004262C0  BG_GetPlayerWeaponModel  (bgame/bg_weapons.h:463)
 
-uchar __cdecl BG_GetPlayerWeaponModel(playerState_s *param_1,uint param_2)
+uchar __cdecl BG_GetPlayerWeaponModel(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   PlayerHeldWeapon *pPVar4;
+  PlayerHeldWeapon *heldWeapon;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",0x1d0
                              ,0,"%s");
     if (!bVar2) {
@@ -217,7 +220,7 @@ uchar __cdecl BG_GetPlayerWeaponModel(playerState_s *param_1,uint param_2)
       return uVar3;
     }
   }
-  pPVar4 = BG_GetHeldWeaponConst(param_1,param_2);
+  pPVar4 = BG_GetHeldWeaponConst(ps,weaponIndex);
   if (pPVar4 == (PlayerHeldWeapon *)0x0) {
     uVar3 = '\0';
   }
@@ -230,28 +233,31 @@ uchar __cdecl BG_GetPlayerWeaponModel(playerState_s *param_1,uint param_2)
 
 // 00424F60  Vec3NormalizeTo  (universal/com_vector.h:475)
 
-float __cdecl Vec3NormalizeTo(float *param_1,float *param_2)
+float __cdecl Vec3NormalizeTo(float *v,float *out)
 
 {
   float fVar1;
   float local_14;
+  float safeLength;
+  float ilength;
+  float length;
   
-  fVar1 = SQRT(*param_1 * *param_1 + param_1[1] * param_1[1] + param_1[2] * param_1[2]);
+  fVar1 = SQRT(*v * *v + v[1] * v[1] + v[2] * v[2]);
   local_14 = fVar1;
   if (0.0 <= -fVar1) {
     local_14 = 1.0;
   }
   local_14 = 1.0 / local_14;
-  *param_2 = *param_1 * local_14;
-  param_2[1] = param_1[1] * local_14;
-  param_2[2] = param_1[2] * local_14;
+  *out = *v * local_14;
+  out[1] = v[1] * local_14;
+  out[2] = v[2] * local_14;
   return fVar1;
 }
 
 
 // 00426320  BG_PlayerWeaponOptions  (bgame/bg_weapons.h:475)
 
-renderOptions_s __cdecl BG_PlayerWeaponOptions(playerState_s *param_1,uint param_2)
+renderOptions_s __cdecl BG_PlayerWeaponOptions(playerState_s *ps,uint weaponIndex)
 
 {
   code *pcVar1;
@@ -259,8 +265,10 @@ renderOptions_s __cdecl BG_PlayerWeaponOptions(playerState_s *param_1,uint param
   renderOptions_s rVar3;
   PlayerHeldWeapon *pPVar4;
   renderOptions_s_u_0 rVar5;
+  PlayerHeldWeapon *heldWeapon;
+  renderOptions_s wo;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",0x1dc
                              ,0,"%s");
     if (!bVar2) {
@@ -269,7 +277,7 @@ renderOptions_s __cdecl BG_PlayerWeaponOptions(playerState_s *param_1,uint param
       return (renderOptions_s)rVar3.field0_0x0;
     }
   }
-  pPVar4 = BG_GetHeldWeaponConst(param_1,param_2);
+  pPVar4 = BG_GetHeldWeaponConst(ps,weaponIndex);
   if (pPVar4 == (PlayerHeldWeapon *)0x0) {
     rVar5.i = 0;
   }
@@ -285,6 +293,9 @@ renderOptions_s __cdecl BG_PlayerWeaponOptions(playerState_s *param_1,uint param
 void __cdecl BG_RegisterDvars(void)
 
 {
+  ushort demoFlag;
+  ushort savedFlag;
+  
   bg_viewKickScale =
        _Dvar_RegisterFloat("bg_viewKickScale",0.2,0.0,10.0,0x80,
                            "The scale to apply to the damage done to caluclate damage view kick");
@@ -987,18 +998,18 @@ void __cdecl BG_RegisterDvars(void)
 
 // 00423BE0  BG_GetEntityTypeName  (bgame/bg_misc.cpp:1120)
 
-char * __cdecl BG_GetEntityTypeName(int param_1)
+char * __cdecl BG_GetEntityTypeName(int eType)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 < 0x15) {
-    pcVar3 = entityTypeNames[param_1];
+  if (eType < 0x15) {
+    pcVar3 = entityTypeNames[eType];
   }
   else {
-    if ((param_1 + -0x15 < 0) || (0xcd < param_1 + -0x15)) {
+    if ((eType + -0x15 < 0) || (0xcd < eType + -0x15)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x467,0,
                                "%s\n\t(eType) = %i");
       if (!bVar2) {
@@ -1015,7 +1026,7 @@ char * __cdecl BG_GetEntityTypeName(int param_1)
 
 // 00423C60  BG_FindItemForWeapon  (bgame/bg_misc.cpp:1139)
 
-gitem_s * __cdecl BG_FindItemForWeapon(int param_1,int param_2)
+gitem_s * __cdecl BG_FindItemForWeapon(int weapon,int model)
 
 {
   code *pcVar1;
@@ -1024,7 +1035,7 @@ gitem_s * __cdecl BG_FindItemForWeapon(int param_1,int param_2)
   gitem_s *pgVar4;
   
   uVar3 = BG_GetNumWeapons();
-  if (uVar3 <= (uint)param_1) {
+  if (uVar3 <= (uint)weapon) {
     BG_GetNumWeapons();
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x474,0,
                              "weapon doesn\'t index BG_GetNumWeapons()\n\t%i not in [0, %i)");
@@ -1034,19 +1045,20 @@ gitem_s * __cdecl BG_FindItemForWeapon(int param_1,int param_2)
       return pgVar4;
     }
   }
-  return (gitem_s *)(&bg_itemlist + param_1 * 4);
+  return (gitem_s *)(&bg_itemlist + weapon * 4);
 }
 
 
 // 00423CB0  G_FindItem  (bgame/bg_misc.cpp:1158)
 
-gitem_s * __cdecl G_FindItem(char *param_1,int param_2)
+gitem_s * __cdecl G_FindItem(char *pickupName,int model)
 
 {
   int iVar1;
   gitem_s *pgVar2;
+  int iIndex;
   
-  iVar1 = G_GetWeaponIndexForName(param_1);
+  iVar1 = G_GetWeaponIndexForName(pickupName);
   if (iVar1 == 0) {
     pgVar2 = (gitem_s *)0x0;
   }
@@ -1059,19 +1071,19 @@ gitem_s * __cdecl G_FindItem(char *param_1,int param_2)
 
 // 00423CE0  BG_PlayerTouchesItem  (bgame/bg_misc.cpp:1182)
 
-int __cdecl BG_PlayerTouchesItem(playerState_s *param_1,entityState_s *param_2,int param_3)
+int __cdecl BG_PlayerTouchesItem(playerState_s *ps,entityState_s *item,int atTime)
 
 {
   int iVar1;
-  float local_10;
+  float origin;
   float local_c;
   float local_8;
   
-  BG_EvaluateTrajectory(&(param_2->lerp).pos,param_3,&local_10);
-  if ((((36.0 < param_1->origin[0] - local_10) || (param_1->origin[0] - local_10 < -36.0)) ||
-      (36.0 < param_1->origin[1] - local_c)) ||
-     (((param_1->origin[1] - local_c < -36.0 || (18.0 < param_1->origin[2] - local_8)) ||
-      (param_1->origin[2] - local_8 < -88.0)))) {
+  BG_EvaluateTrajectory(&(item->lerp).pos,atTime,&origin);
+  if ((((36.0 < ps->origin[0] - origin) || (ps->origin[0] - origin < -36.0)) ||
+      (36.0 < ps->origin[1] - local_c)) ||
+     (((ps->origin[1] - local_c < -36.0 || (18.0 < ps->origin[2] - local_8)) ||
+      (ps->origin[2] - local_8 < -88.0)))) {
     iVar1 = 0;
   }
   else {
@@ -1083,54 +1095,58 @@ int __cdecl BG_PlayerTouchesItem(playerState_s *param_1,entityState_s *param_2,i
 
 // 004242B0  HaveRoomForAmmo  (bgame/bg_misc.cpp:1200)
 
-bool __cdecl HaveRoomForAmmo(playerState_s *param_1,uint param_2)
+bool __cdecl HaveRoomForAmmo(playerState_s *ps,uint weaponIndex)
 
 {
   int iVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  WeaponVariantDef *pWVar6;
-  int iVar7;
-  int local_14;
+  uint weaponIndex_00;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  WeaponVariantDef *pWVar5;
+  int iVar6;
+  int slot;
+  int ammoIndex;
+  WeaponVariantDef *weaponVarDef;
+  int weapIndex;
   
-  if ((param_1 == (playerState_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x4b5,0,"%s")
-     , !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    uVar5 = (*pcVar3)();
-    return (bool)uVar5;
+  if ((ps == (playerState_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x4b5,0,"%s")
+     , !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return (bool)uVar4;
   }
-  pWVar6 = BG_GetWeaponVariantDef(param_2);
-  iVar1 = pWVar6->iAmmoIndex;
-  if (*pWVar6->szAmmoName == '\0') {
-    bVar4 = true;
+  pWVar5 = BG_GetWeaponVariantDef(weaponIndex);
+  iVar1 = pWVar5->iAmmoIndex;
+  if (*pWVar5->szAmmoName == '\0') {
+    bVar3 = true;
   }
   else {
-    for (local_14 = 0; local_14 < 0xf; local_14 = local_14 + 1) {
-      uVar2 = param_1->heldWeapons[local_14].weapon;
-      if (((uVar2 != 0) && (pWVar6 = BG_GetWeaponVariantDef(uVar2), pWVar6->iAmmoIndex == iVar1)) &&
-         (iVar7 = BG_GetMaxPickupableAmmo(param_1,uVar2), 0 < iVar7)) {
+    for (slot = 0; slot < 0xf; slot = slot + 1) {
+      weaponIndex_00 = ps->heldWeapons[slot].weapon;
+      if (((weaponIndex_00 != 0) &&
+          (pWVar5 = BG_GetWeaponVariantDef(weaponIndex_00), pWVar5->iAmmoIndex == iVar1)) &&
+         (iVar6 = BG_GetMaxPickupableAmmo(ps,weaponIndex_00), 0 < iVar6)) {
         return true;
       }
     }
-    bVar4 = false;
+    bVar3 = false;
   }
-  return bVar4;
+  return bVar3;
 }
 
 
 // 00423DA0  BG_PlayerCanPickUpWeaponType  (bgame/bg_misc.cpp:1232)
 
-bool __cdecl BG_PlayerCanPickUpWeaponType(WeaponDef *param_1,playerState_s *param_2)
+bool __cdecl BG_PlayerCanPickUpWeaponType(WeaponDef *weapDef,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x4d1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1138,7 +1154,7 @@ bool __cdecl BG_PlayerCanPickUpWeaponType(WeaponDef *param_1,playerState_s *para
       return (bool)uVar3;
     }
   }
-  if (param_2 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x4d2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1146,12 +1162,12 @@ bool __cdecl BG_PlayerCanPickUpWeaponType(WeaponDef *param_1,playerState_s *para
       return (bool)uVar3;
     }
   }
-  if ((param_1->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) &&
-     (param_2->offhandSecondary != PLAYER_OFFHAND_SECONDARY_FLASH)) {
+  if ((weapDef->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) &&
+     (ps->offhandSecondary != PLAYER_OFFHAND_SECONDARY_FLASH)) {
     bVar2 = false;
   }
-  else if ((param_1->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) &&
-          (param_2->offhandSecondary != PLAYER_OFFHAND_SECONDARY_SMOKE)) {
+  else if ((weapDef->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) &&
+          (ps->offhandSecondary != PLAYER_OFFHAND_SECONDARY_SMOKE)) {
     bVar2 = false;
   }
   else {
@@ -1167,42 +1183,43 @@ bool __cdecl BG_PlayerCanPickUpWeaponType(WeaponDef *param_1,playerState_s *para
 /* WARNING: Removing unreachable block (ram,0x00424102) */
 
 bool __cdecl
-WeaponEntCanBeGrabbed(entityState_s *param_1,playerState_s *param_2,int param_3,uint param_4)
+WeaponEntCanBeGrabbed(entityState_s *weaponEntState,playerState_s *ps,int touched,uint weapIdx)
 
 {
   bool bVar1;
   bool bVar2;
-  WeaponDef *pWVar3;
-  int iVar4;
+  WeaponDef *weapDef_00;
+  int iVar3;
   uint extraout_EAX;
   uint extraout_EDX;
+  bool haveRoomForAmmo;
+  WeaponDef *weapDef;
   
-  pWVar3 = BG_GetWeaponDef(param_4);
-  bVar1 = BG_PlayerCanPickUpWeaponType(pWVar3,param_2);
+  weapDef_00 = BG_GetWeaponDef(weapIdx);
+  bVar1 = BG_PlayerCanPickUpWeaponType(weapDef_00,ps);
   if (bVar1) {
-    if ((param_1->eType == 4) && (pWVar3->bThrowBack != false)) {
+    if ((weaponEntState->eType == 4) && (weapDef_00->bThrowBack != false)) {
       bVar1 = true;
     }
     else {
-      if (param_3 == 0) {
-        iVar4 = BG_PlayerHasWeapon(param_2,param_4);
-        if (iVar4 == 0) {
+      if (touched == 0) {
+        iVar3 = BG_PlayerHasWeapon(ps,weapIdx);
+        if (iVar3 == 0) {
           return true;
         }
       }
       else {
-        bVar1 = HaveRoomForAmmo(param_2,param_4);
-        if ((pWVar3->offhandClass == OFFHAND_CLASS_FRAG_GRENADE) && (bVar1)) {
+        bVar1 = HaveRoomForAmmo(ps,weapIdx);
+        if ((weapDef_00->offhandClass == OFFHAND_CLASS_FRAG_GRENADE) && (bVar1)) {
           return true;
         }
-        iVar4 = BG_PlayerHasWeapon(param_2,param_4);
-        if (((iVar4 != 0) || (bVar2 = BG_PlayerHasCompatibleWeapon(param_2,param_4), bVar2)) &&
-           (bVar1)) {
+        iVar3 = BG_PlayerHasWeapon(ps,weapIdx);
+        if (((iVar3 != 0) || (bVar2 = BG_PlayerHasCompatibleWeapon(ps,weapIdx), bVar2)) && (bVar1))
+        {
           return true;
         }
-        if ((((param_1->lerp).eFlags2 & 0x800000U) != 0) &&
-           (_allshl(),
-           (extraout_EAX & param_2->perks[0]) != 0 || (extraout_EDX & param_2->perks[1]) != 0)) {
+        if ((((weaponEntState->lerp).eFlags2 & 0x800000U) != 0) &&
+           (_allshl(), (extraout_EAX & ps->perks[0]) != 0 || (extraout_EDX & ps->perks[1]) != 0)) {
           return true;
         }
       }
@@ -1218,62 +1235,68 @@ WeaponEntCanBeGrabbed(entityState_s *param_1,playerState_s *param_2,int param_3,
 
 // 00423E40  BG_CanItemBeGrabbed  (bgame/bg_misc.cpp:1297)
 
-int __cdecl BG_CanItemBeGrabbed(entityState_s *param_1,playerState_s *param_2,int param_3)
+/* WARNING: Variable defined which should be unmapped: weapIdx */
+/* WARNING: Variable defined which should be unmapped: weapDef */
+
+int __cdecl BG_CanItemBeGrabbed(entityState_s *ent,playerState_s *ps,int touched)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  WeaponDef *pWVar5;
-  WeaponVariantDef *pWVar6;
-  uint uVar7;
+  char *fmt;
+  WeaponDef *pWVar4;
+  WeaponVariantDef *pWVar5;
+  uint weaponIndex;
+  WeaponVariantDef *weapVariantDef;
+  uint weapIdx;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (entityState_s *)0x0) &&
+  if ((ent == (entityState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x516,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x517,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2->weapFlags & 0x80U) == 0) {
-    if (((param_1->un3).item < 1) || (0x7ff < (param_1->un3).item)) {
-      pcVar4 = va("\x15BG_CanItemBeGrabbed: index out of range (index is %i, eType is %i)");
-      Com_Error(ERR_DROP,pcVar4);
+  if ((ps->weapFlags & 0x80U) == 0) {
+    if (((ent->un3).item < 1) || (0x7ff < (ent->un3).item)) {
+      fmt = va("\x15BG_CanItemBeGrabbed: index out of range (index is %i, eType is %i)");
+      Com_Error(ERR_DROP,fmt);
     }
-    if (param_1->clientNum == param_2->clientNum) {
+    if (ent->clientNum == ps->clientNum) {
       iVar3 = 0;
     }
     else {
-      uVar7 = (param_1->un3).secondBcAlias & 0x800007ff;
-      if ((int)uVar7 < 0) {
-        uVar7 = (uVar7 - 1 | 0xfffff800) + 1;
+      weaponIndex = (ent->un3).secondBcAlias & 0x800007ff;
+      if ((int)weaponIndex < 0) {
+        weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
       }
-      pWVar5 = BG_GetWeaponDef(uVar7);
+      pWVar4 = BG_GetWeaponDef(weaponIndex);
       if ((*(int *)(&bg_itemlist +
-                   (((int)((param_1->un3).item + ((param_1->un3).item >> 0x1f & 0x7ffU)) >> 0xb) *
-                    0x800 + uVar7) * 4) != 1) &&
+                   (((int)((ent->un3).item + ((ent->un3).item >> 0x1f & 0x7ffU)) >> 0xb) * 0x800 +
+                   weaponIndex) * 4) != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x527,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        iVar3 = (*pcVar1)(uVar7,pWVar5);
+        iVar3 = (*pcVar1)(weaponIndex,pWVar4);
         return iVar3;
       }
-      bVar2 = WeaponEntCanBeGrabbed(param_1,param_2,param_3,uVar7);
+      bVar2 = WeaponEntCanBeGrabbed(ent,ps,touched,weaponIndex);
       if (bVar2) {
         iVar3 = 1;
       }
       else {
-        pWVar6 = BG_GetWeaponVariantDef(uVar7);
-        if ((pWVar6->altWeaponIndex != 0) &&
-           (bVar2 = WeaponEntCanBeGrabbed(param_1,param_2,param_3,pWVar6->altWeaponIndex), bVar2)) {
+        pWVar5 = BG_GetWeaponVariantDef(weaponIndex);
+        if ((pWVar5->altWeaponIndex != 0) &&
+           (bVar2 = WeaponEntCanBeGrabbed(ent,ps,touched,pWVar5->altWeaponIndex), bVar2)) {
           return 1;
         }
         iVar3 = 0;
@@ -1289,61 +1312,63 @@ int __cdecl BG_CanItemBeGrabbed(entityState_s *param_1,playerState_s *param_2,in
 
 // 00424380  BG_PlayerHasRoomForEntAllAmmoTypes  (bgame/bg_misc.cpp:1335)
 
-int __cdecl BG_PlayerHasRoomForEntAllAmmoTypes(entityState_s *param_1,playerState_s *param_2)
+int __cdecl BG_PlayerHasRoomForEntAllAmmoTypes(entityState_s *ent,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  WeaponVariantDef *pWVar5;
-  uint uVar6;
+  char *fmt;
+  WeaponVariantDef *pWVar4;
+  uint weaponIndex;
+  WeaponVariantDef *weapVariantDef;
+  uint weapIdx;
   
-  if ((param_1 == (entityState_s *)0x0) &&
+  if ((ent == (entityState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x53b,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x53c,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_1->un3).item < 1) || (0x7ff < (param_1->un3).item)) {
-    pcVar4 = va(
-               "\x15BG_PlayerHasRoomForAllAmmoTypesOfEnt: index out of range (index is %i, eType is %i)"
-               );
-    Com_Error(ERR_DROP,pcVar4);
+  if (((ent->un3).item < 1) || (0x7ff < (ent->un3).item)) {
+    fmt = va(
+            "\x15BG_PlayerHasRoomForAllAmmoTypesOfEnt: index out of range (index is %i, eType is %i)"
+            );
+    Com_Error(ERR_DROP,fmt);
   }
-  uVar6 = (param_1->un3).secondBcAlias & 0x800007ff;
-  if ((int)uVar6 < 0) {
-    uVar6 = (uVar6 - 1 | 0xfffff800) + 1;
+  weaponIndex = (ent->un3).secondBcAlias & 0x800007ff;
+  if ((int)weaponIndex < 0) {
+    weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
   }
-  if (uVar6 == 0) {
+  if (weaponIndex == 0) {
     iVar3 = 0;
   }
   else {
     if ((*(int *)(&bg_itemlist +
-                 (((int)((param_1->un3).item + ((param_1->un3).item >> 0x1f & 0x7ffU)) >> 0xb) *
-                  0x800 + uVar6) * 4) != 1) &&
+                 (((int)((ent->un3).item + ((ent->un3).item >> 0x1f & 0x7ffU)) >> 0xb) * 0x800 +
+                 weaponIndex) * 4) != 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x544,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    iVar3 = BG_GetMaxPickupableAmmo(param_2,uVar6);
+    iVar3 = BG_GetMaxPickupableAmmo(ps,weaponIndex);
     if (iVar3 == 0) {
       iVar3 = 0;
     }
     else {
-      pWVar5 = BG_GetWeaponVariantDef(uVar6);
-      if ((pWVar5->altWeaponIndex != 0) &&
-         (iVar3 = BG_GetMaxPickupableAmmo(param_2,pWVar5->altWeaponIndex), iVar3 == 0)) {
+      pWVar4 = BG_GetWeaponVariantDef(weaponIndex);
+      if ((pWVar4->altWeaponIndex != 0) &&
+         (iVar3 = BG_GetMaxPickupableAmmo(ps,pWVar4->altWeaponIndex), iVar3 == 0)) {
         return 0;
       }
       iVar3 = 1;
@@ -1355,7 +1380,7 @@ int __cdecl BG_PlayerHasRoomForEntAllAmmoTypes(entityState_s *param_1,playerStat
 
 // 004244F0  BG_EvaluateTrajectory  (bgame/bg_misc.cpp:1362)
 
-void __cdecl BG_EvaluateTrajectory(trajectory_t *param_1,int param_2,float *param_3)
+void __cdecl BG_EvaluateTrajectory(trajectory_t *tr,int atTime,float *result)
 
 {
   int iVar1;
@@ -1371,46 +1396,46 @@ void __cdecl BG_EvaluateTrajectory(trajectory_t *param_1,int param_2,float *para
   double in_stack_ffffff50;
   float local_34;
   
-  if ((0xe < param_1->trType) &&
+  if ((0xe < tr->trType) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x557,0,
                                "%s\n\t(tr->trType) = %i"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((param_1 == (trajectory_t *)0x0) &&
+  if ((tr == (trajectory_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x559,0,"%s")
      , !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((((((uint)param_1->trBase[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trBase[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trBase[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trBase[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trBase[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trBase[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x55a,0,"%s")
      , !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x55b,0,"%s")
      , !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  switch(param_1->trType) {
+  switch(tr->trType) {
   case '\0':
   case '\x01':
   case '\n':
   case '\x0e':
-    *param_3 = param_1->trBase[0];
-    param_3[1] = param_1->trBase[1];
-    param_3[2] = param_1->trBase[2];
+    *result = tr->trBase[0];
+    result[1] = tr->trBase[1];
+    result[2] = tr->trBase[2];
     break;
   default:
     Com_Error(ERR_DROP,"\x15BG_EvaluateTrajectory: unknown trType: %i");
@@ -1418,131 +1443,130 @@ void __cdecl BG_EvaluateTrajectory(trajectory_t *param_1,int param_2,float *para
   case '\x03':
   case '\v':
   case '\f':
-    fVar7 = (float)(param_2 - param_1->trTime) * 0.001;
-    *param_3 = fVar7 * param_1->trDelta[0] + param_1->trBase[0];
-    param_3[1] = fVar7 * param_1->trDelta[1] + param_1->trBase[1];
-    param_3[2] = fVar7 * param_1->trDelta[2] + param_1->trBase[2];
+    fVar7 = (float)(atTime - tr->trTime) * 0.001;
+    *result = fVar7 * tr->trDelta[0] + tr->trBase[0];
+    result[1] = fVar7 * tr->trDelta[1] + tr->trBase[1];
+    result[2] = fVar7 * tr->trDelta[2] + tr->trBase[2];
     break;
   case '\x04':
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      param_2 = param_1->trTime + param_1->trDuration;
+    if (tr->trTime + tr->trDuration < atTime) {
+      atTime = tr->trTime + tr->trDuration;
     }
-    local_34 = (float)(param_2 - param_1->trTime) * 0.001;
+    local_34 = (float)(atTime - tr->trTime) * 0.001;
     if (local_34 < 0.0) {
       local_34 = 0.0;
     }
-    *param_3 = local_34 * param_1->trDelta[0] + param_1->trBase[0];
-    param_3[1] = local_34 * param_1->trDelta[1] + param_1->trBase[1];
-    param_3[2] = local_34 * param_1->trDelta[2] + param_1->trBase[2];
+    *result = local_34 * tr->trDelta[0] + tr->trBase[0];
+    result[1] = local_34 * tr->trDelta[1] + tr->trBase[1];
+    result[2] = local_34 * tr->trDelta[2] + tr->trBase[2];
     break;
   case '\x05':
-    if ((param_1->trDuration == 0) &&
+    if ((tr->trDuration == 0) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x56b,0,
                                  "%s\n\t%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if (param_1->trDuration == 0) {
-      *param_3 = param_1->trBase[0];
-      param_3[1] = param_1->trBase[1];
-      param_3[2] = param_1->trBase[2];
+    if (tr->trDuration == 0) {
+      *result = tr->trBase[0];
+      result[1] = tr->trBase[1];
+      result[2] = tr->trBase[2];
     }
     else {
-      dVar8 = (double)(((float)(param_2 - param_1->trTime) / (float)param_1->trDuration) * 3.1415927
-                      * 2.0);
+      dVar8 = (double)(((float)(atTime - tr->trTime) / (float)tr->trDuration) * 3.1415927 * 2.0);
       __libm_sse2_sin(in_stack_ffffff50);
       fVar7 = (float)dVar8;
-      *param_3 = fVar7 * param_1->trDelta[0] + param_1->trBase[0];
-      param_3[1] = fVar7 * param_1->trDelta[1] + param_1->trBase[1];
-      param_3[2] = fVar7 * param_1->trDelta[2] + param_1->trBase[2];
+      *result = fVar7 * tr->trDelta[0] + tr->trBase[0];
+      result[1] = fVar7 * tr->trDelta[1] + tr->trBase[1];
+      result[2] = fVar7 * tr->trDelta[2] + tr->trBase[2];
     }
     break;
   case '\x06':
   case '\r':
-    fVar7 = (float)(param_2 - param_1->trTime) * 0.001;
-    *param_3 = fVar7 * param_1->trDelta[0] + param_1->trBase[0];
-    param_3[1] = fVar7 * param_1->trDelta[1] + param_1->trBase[1];
-    param_3[2] = fVar7 * param_1->trDelta[2] + param_1->trBase[2];
-    param_3[2] = param_3[2] - (bg_gravity->current).value * 0.5 * fVar7 * fVar7;
+    fVar7 = (float)(atTime - tr->trTime) * 0.001;
+    *result = fVar7 * tr->trDelta[0] + tr->trBase[0];
+    result[1] = fVar7 * tr->trDelta[1] + tr->trBase[1];
+    result[2] = fVar7 * tr->trDelta[2] + tr->trBase[2];
+    result[2] = result[2] - (bg_gravity->current).value * 0.5 * fVar7 * fVar7;
     break;
   case '\a':
-    fVar7 = (float)(param_2 - param_1->trTime) * 0.001;
-    *param_3 = fVar7 * param_1->trDelta[0] + param_1->trBase[0];
-    param_3[1] = fVar7 * param_1->trDelta[1] + param_1->trBase[1];
-    param_3[2] = fVar7 * param_1->trDelta[2] + param_1->trBase[2];
-    param_3[2] = param_3[2] - (bg_lowGravity->current).value * 0.5 * fVar7 * fVar7;
+    fVar7 = (float)(atTime - tr->trTime) * 0.001;
+    *result = fVar7 * tr->trDelta[0] + tr->trBase[0];
+    result[1] = fVar7 * tr->trDelta[1] + tr->trBase[1];
+    result[2] = fVar7 * tr->trDelta[2] + tr->trBase[2];
+    result[2] = result[2] - (bg_lowGravity->current).value * 0.5 * fVar7 * fVar7;
     break;
   case '\b':
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      param_2 = param_1->trTime + param_1->trDuration;
+    if (tr->trTime + tr->trDuration < atTime) {
+      atTime = tr->trTime + tr->trDuration;
     }
-    fVar7 = (float)(param_2 - param_1->trTime) * 0.001;
-    if ((param_1->trDuration == 0) &&
+    fVar7 = (float)(atTime - tr->trTime) * 0.001;
+    if ((tr->trDuration == 0) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x592,0,
                                  "%s\n\t%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if (param_1->trDuration == 0) {
-      *param_3 = param_1->trBase[0];
-      param_3[1] = param_1->trBase[1];
-      param_3[2] = param_1->trBase[2];
+    if (tr->trDuration == 0) {
+      *result = tr->trBase[0];
+      result[1] = tr->trBase[1];
+      result[2] = tr->trBase[2];
     }
     else {
-      fVar9 = Abs((phys_vec3 *)param_1->trDelta);
-      iVar1 = param_1->trDuration;
-      Vec3NormalizeTo(param_1->trDelta,param_3);
+      fVar9 = Abs((phys_vec3 *)tr->trDelta);
+      iVar1 = tr->trDuration;
+      Vec3NormalizeTo(tr->trDelta,result);
       fVar7 = (fVar9 / ((float)iVar1 * 0.001)) * 0.5 * fVar7 * fVar7;
-      *param_3 = fVar7 * *param_3 + param_1->trBase[0];
-      param_3[1] = fVar7 * param_3[1] + param_1->trBase[1];
-      param_3[2] = fVar7 * param_3[2] + param_1->trBase[2];
+      *result = fVar7 * *result + tr->trBase[0];
+      result[1] = fVar7 * result[1] + tr->trBase[1];
+      result[2] = fVar7 * result[2] + tr->trBase[2];
     }
     break;
   case '\t':
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      param_2 = param_1->trTime + param_1->trDuration;
+    if (tr->trTime + tr->trDuration < atTime) {
+      atTime = tr->trTime + tr->trDuration;
     }
-    fVar7 = (float)(param_2 - param_1->trTime) * 0.001;
-    if ((param_1->trDuration == 0) &&
+    fVar7 = (float)(atTime - tr->trTime) * 0.001;
+    if ((tr->trDuration == 0) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x5a5,0,
                                  "%s\n\t%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if (param_1->trDuration == 0) {
-      *param_3 = param_1->trBase[0];
-      param_3[1] = param_1->trBase[1];
-      param_3[2] = param_1->trBase[2];
+    if (tr->trDuration == 0) {
+      *result = tr->trBase[0];
+      result[1] = tr->trBase[1];
+      result[2] = tr->trBase[2];
     }
     else {
-      fVar10 = Abs((phys_vec3 *)param_1->trDelta);
-      iVar1 = param_1->trDuration;
-      Vec3NormalizeTo(param_1->trDelta,param_3);
-      fVar9 = param_1->trDelta[1];
-      fVar2 = param_1->trBase[1];
-      fVar3 = param_1->trDelta[2];
-      fVar4 = param_1->trBase[2];
+      fVar10 = Abs((phys_vec3 *)tr->trDelta);
+      iVar1 = tr->trDuration;
+      Vec3NormalizeTo(tr->trDelta,result);
+      fVar9 = tr->trDelta[1];
+      fVar2 = tr->trBase[1];
+      fVar3 = tr->trDelta[2];
+      fVar4 = tr->trBase[2];
       fVar10 = -(fVar10 / ((float)iVar1 * 0.001)) * 0.5 * fVar7 * fVar7;
-      *param_3 = fVar10 * *param_3 + fVar7 * param_1->trDelta[0] + param_1->trBase[0];
-      param_3[1] = fVar10 * param_3[1] + fVar7 * fVar9 + fVar2;
-      param_3[2] = fVar10 * param_3[2] + fVar7 * fVar3 + fVar4;
+      *result = fVar10 * *result + fVar7 * tr->trDelta[0] + tr->trBase[0];
+      result[1] = fVar10 * result[1] + fVar7 * fVar9 + fVar2;
+      result[2] = fVar10 * result[2] + fVar7 * fVar3 + fVar4;
     }
   }
-  if ((((((uint)param_1->trBase[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trBase[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trBase[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trBase[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trBase[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trBase[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x5b9,0,"%s")
      , !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x5ba,0,"%s")
      , !bVar6)) {
     pcVar5 = (code *)swi(3);
@@ -1555,7 +1579,7 @@ void __cdecl BG_EvaluateTrajectory(trajectory_t *param_1,int param_2,float *para
 
 // 00425040  BG_EvaluateTrajectoryDelta  (bgame/bg_misc.cpp:1478)
 
-void __cdecl BG_EvaluateTrajectoryDelta(trajectory_t *param_1,int param_2,float *param_3)
+void __cdecl BG_EvaluateTrajectoryDelta(trajectory_t *tr,int atTime,float *result)
 
 {
   int iVar1;
@@ -1564,110 +1588,111 @@ void __cdecl BG_EvaluateTrajectoryDelta(trajectory_t *param_1,int param_2,float 
   float fVar4;
   double dVar5;
   undefined4 in_stack_ffffffa4;
+  float phase;
+  float deltaTime;
   
-  if ((((((uint)param_1->trBase[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trBase[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trBase[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trBase[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trBase[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trBase[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x5ca,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x5cb,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  switch((uint)param_1->trType) {
+  switch((uint)tr->trType) {
   case 0:
   case 1:
-    *param_3 = 0.0;
-    param_3[1] = 0.0;
-    param_3[2] = 0.0;
+    *result = 0.0;
+    result[1] = 0.0;
+    result[2] = 0.0;
     break;
   default:
     Com_Error(ERR_DROP,"\x15BG_EvaluateTrajectoryDelta: unknown trType: %i");
     break;
   case 3:
-    *param_3 = param_1->trDelta[0];
-    param_3[1] = param_1->trDelta[1];
-    param_3[2] = param_1->trDelta[2];
+    *result = tr->trDelta[0];
+    result[1] = tr->trDelta[1];
+    result[2] = tr->trDelta[2];
     break;
   case 4:
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      *param_3 = 0.0;
-      param_3[1] = 0.0;
-      param_3[2] = 0.0;
+    if (tr->trTime + tr->trDuration < atTime) {
+      *result = 0.0;
+      result[1] = 0.0;
+      result[2] = 0.0;
       return;
     }
-    *param_3 = param_1->trDelta[0];
-    param_3[1] = param_1->trDelta[1];
-    param_3[2] = param_1->trDelta[2];
+    *result = tr->trDelta[0];
+    result[1] = tr->trDelta[1];
+    result[2] = tr->trDelta[2];
     break;
   case 5:
-    dVar5 = (double)(((float)(param_2 - param_1->trTime) / (float)param_1->trDuration) * 3.1415927 *
-                    2.0);
-    __libm_sse2_cos((double)CONCAT44(in_stack_ffffffa4,(uint)param_1->trType));
+    dVar5 = (double)(((float)(atTime - tr->trTime) / (float)tr->trDuration) * 3.1415927 * 2.0);
+    __libm_sse2_cos((double)CONCAT44(in_stack_ffffffa4,(uint)tr->trType));
     fVar4 = (float)dVar5 * 0.5;
-    *param_3 = fVar4 * param_1->trDelta[0];
-    param_3[1] = fVar4 * param_1->trDelta[1];
-    param_3[2] = fVar4 * param_1->trDelta[2];
+    *result = fVar4 * tr->trDelta[0];
+    result[1] = fVar4 * tr->trDelta[1];
+    result[2] = fVar4 * tr->trDelta[2];
     break;
   case 6:
-    iVar1 = param_1->trTime;
-    *param_3 = param_1->trDelta[0];
-    param_3[1] = param_1->trDelta[1];
-    param_3[2] = param_1->trDelta[2];
-    param_3[2] = param_3[2] - (bg_gravity->current).value * (float)(param_2 - iVar1) * 0.001;
+    iVar1 = tr->trTime;
+    *result = tr->trDelta[0];
+    result[1] = tr->trDelta[1];
+    result[2] = tr->trDelta[2];
+    result[2] = result[2] - (bg_gravity->current).value * (float)(atTime - iVar1) * 0.001;
     break;
   case 7:
-    iVar1 = param_1->trTime;
-    *param_3 = param_1->trDelta[0];
-    param_3[1] = param_1->trDelta[1];
-    param_3[2] = param_1->trDelta[2];
-    param_3[2] = param_3[2] - (bg_lowGravity->current).value * (float)(param_2 - iVar1) * 0.001;
+    iVar1 = tr->trTime;
+    *result = tr->trDelta[0];
+    result[1] = tr->trDelta[1];
+    result[2] = tr->trDelta[2];
+    result[2] = result[2] - (bg_lowGravity->current).value * (float)(atTime - iVar1) * 0.001;
   case 8:
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      *param_3 = 0.0;
-      param_3[1] = 0.0;
-      param_3[2] = 0.0;
+    if (tr->trTime + tr->trDuration < atTime) {
+      *result = 0.0;
+      result[1] = 0.0;
+      result[2] = 0.0;
       return;
     }
-    fVar4 = (float)(param_2 - param_1->trTime) * 0.001;
+    fVar4 = (float)(atTime - tr->trTime) * 0.001;
     fVar4 = fVar4 * fVar4;
-    *param_3 = fVar4 * param_1->trDelta[0];
-    param_3[1] = fVar4 * param_1->trDelta[1];
-    param_3[2] = fVar4 * param_1->trDelta[2];
+    *result = fVar4 * tr->trDelta[0];
+    result[1] = fVar4 * tr->trDelta[1];
+    result[2] = fVar4 * tr->trDelta[2];
     break;
   case 9:
-    if (param_1->trTime + param_1->trDuration < param_2) {
-      *param_3 = 0.0;
-      param_3[1] = 0.0;
-      param_3[2] = 0.0;
+    if (tr->trTime + tr->trDuration < atTime) {
+      *result = 0.0;
+      result[1] = 0.0;
+      result[2] = 0.0;
       return;
     }
-    fVar4 = (float)(param_2 - param_1->trTime) * 0.001;
-    *param_3 = fVar4 * param_1->trDelta[0];
-    param_3[1] = fVar4 * param_1->trDelta[1];
-    param_3[2] = fVar4 * param_1->trDelta[2];
+    fVar4 = (float)(atTime - tr->trTime) * 0.001;
+    *result = fVar4 * tr->trDelta[0];
+    result[1] = fVar4 * tr->trDelta[1];
+    result[2] = fVar4 * tr->trDelta[2];
   }
-  if ((((((uint)param_1->trBase[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trBase[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trBase[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trBase[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trBase[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trBase[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x605,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)tr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)tr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)tr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x606,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1680,21 +1705,23 @@ void __cdecl BG_EvaluateTrajectoryDelta(trajectory_t *param_1,int param_2,float 
 
 // 004256C0  BG_ValidateOrigin  (bgame/bg_misc.cpp:1618)
 
-bool __cdecl BG_ValidateOrigin(float *param_1,uint param_2,uint param_3,float *param_4)
+bool __cdecl BG_ValidateOrigin(float *pos,uint xyBits,uint zBits,float *mapCenter)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
+  int maxXY;
+  int maxZ;
   
-  iVar2 = 1 << ((char)param_2 - 1U & 0x1f);
-  iVar3 = 1 << ((char)param_3 - 1U & 0x1f);
-  if (((((int)((float)iVar3 + param_4[2]) < (int)param_1[2]) ||
-       ((int)param_1[2] < (int)(param_4[2] - (float)iVar3))) ||
-      ((int)((float)iVar2 + *param_4) < (int)*param_1)) ||
-     ((((int)*param_1 < (int)(*param_4 - (float)iVar2) ||
-       ((int)((float)iVar2 + param_4[1]) < (int)param_1[1])) ||
-      ((int)param_1[1] < (int)(param_4[1] - (float)iVar2))))) {
+  iVar2 = 1 << ((char)xyBits - 1U & 0x1f);
+  iVar3 = 1 << ((char)zBits - 1U & 0x1f);
+  if (((((int)((float)iVar3 + mapCenter[2]) < (int)pos[2]) ||
+       ((int)pos[2] < (int)(mapCenter[2] - (float)iVar3))) ||
+      ((int)((float)iVar2 + *mapCenter) < (int)*pos)) ||
+     ((((int)*pos < (int)(*mapCenter - (float)iVar2) ||
+       ((int)((float)iVar2 + mapCenter[1]) < (int)pos[1])) ||
+      ((int)pos[1] < (int)(mapCenter[1] - (float)iVar2))))) {
     bVar1 = false;
   }
   else {
@@ -1706,15 +1733,16 @@ bool __cdecl BG_ValidateOrigin(float *param_1,uint param_2,uint param_3,float *p
 
 // 004257B0  BG_ValidateOriginValue  (bgame/bg_misc.cpp:1638)
 
-bool __cdecl BG_ValidateOriginValue(float param_1,uint param_2,float param_3)
+bool __cdecl BG_ValidateOriginValue(float val,uint bits,float mapCenterValue)
 
 {
   bool bVar1;
   int iVar2;
+  int maxVal;
   
-  iVar2 = 1 << ((char)param_2 - 1U & 0x1f);
-  if (((int)((float)iVar2 + param_3) < (int)param_1) ||
-     ((int)param_1 < (int)(param_3 - (float)iVar2))) {
+  iVar2 = 1 << ((char)bits - 1U & 0x1f);
+  if (((int)((float)iVar2 + mapCenterValue) < (int)val) ||
+     ((int)val < (int)(mapCenterValue - (float)iVar2))) {
     bVar1 = false;
   }
   else {
@@ -1728,51 +1756,52 @@ bool __cdecl BG_ValidateOriginValue(float param_1,uint param_2,float param_3)
 
 void __cdecl
 BG_AddEvent<int,unsigned_int>
-          (int param_1,uint param_2,short *param_3,int *param_4,uint *param_5,uint param_6,
-          char param_7)
+          (int newEvent,uint eventParm,short *eventSequence,int *events,uint *eventParms,
+          uint eventTime,char addType)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int sequence;
   
-  if (param_1 != 0) {
-    if ((0xff < (uint)param_1) &&
+  if (newEvent != 0) {
+    if ((0xff < (uint)newEvent) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ac,0,
                                  "newEvent doesn\'t index 256\n\t%i not in [0, %i)"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((0x7ff < param_2) &&
+    if ((0x7ff < eventParm) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ad,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 != (param_2 & 0xffff)) &&
+    if ((eventParm != (eventParm & 0xffff)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ae,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_4 == (int *)0x0) &&
+    if ((events == (int *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6af,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_5 == (uint *)0x0) &&
+    if ((eventParms == (uint *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6b0,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 == (short *)0x0) &&
+    if ((eventSequence == (short *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6b1,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1783,24 +1812,24 @@ BG_AddEvent<int,unsigned_int>
     if (bVar2) {
       Com_Printf(0x11,"AddEvent [%c] | %8d | %4d | %30s | %d\n");
     }
-    uVar3 = (int)*param_3 & 3;
-    param_4[uVar3] = param_1;
-    param_5[uVar3] = param_2;
-    if ((param_1 != param_4[uVar3]) &&
+    uVar3 = (int)*eventSequence & 3;
+    events[uVar3] = newEvent;
+    eventParms[uVar3] = eventParm;
+    if ((newEvent != events[uVar3]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6bd,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 != param_5[uVar3]) &&
+    if ((eventParm != eventParms[uVar3]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6be,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *param_3 = *param_3 + 1U & 0xff;
+    *eventSequence = *eventSequence + 1U & 0xff;
   }
   return;
 }
@@ -1810,51 +1839,52 @@ BG_AddEvent<int,unsigned_int>
 
 void __cdecl
 BG_AddEvent<unsigned_char,unsigned_short>
-          (int param_1,uint param_2,short *param_3,uchar *param_4,ushort *param_5,uint param_6,
-          char param_7)
+          (int newEvent,uint eventParm,short *eventSequence,uchar *events,ushort *eventParms,
+          uint eventTime,char addType)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int sequence;
   
-  if (param_1 != 0) {
-    if ((0xff < (uint)param_1) &&
+  if (newEvent != 0) {
+    if ((0xff < (uint)newEvent) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ac,0,
                                  "newEvent doesn\'t index 256\n\t%i not in [0, %i)"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((0x7ff < param_2) &&
+    if ((0x7ff < eventParm) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ad,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 != (param_2 & 0xffff)) &&
+    if ((eventParm != (eventParm & 0xffff)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ae,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_4 == (uchar *)0x0) &&
+    if ((events == (uchar *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6af,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_5 == (ushort *)0x0) &&
+    if ((eventParms == (ushort *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6b0,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 == (short *)0x0) &&
+    if ((eventSequence == (short *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6b1,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1865,24 +1895,24 @@ BG_AddEvent<unsigned_char,unsigned_short>
     if (bVar2) {
       Com_Printf(0x11,"AddEvent [%c] | %8d | %4d | %30s | %d\n");
     }
-    uVar3 = (int)*param_3 & 3;
-    param_4[uVar3] = (uchar)param_1;
-    param_5[uVar3] = (ushort)param_2;
-    if ((param_1 != (uint)param_4[uVar3]) &&
+    uVar3 = (int)*eventSequence & 3;
+    events[uVar3] = (uchar)newEvent;
+    eventParms[uVar3] = (ushort)eventParm;
+    if ((newEvent != (uint)events[uVar3]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6bd,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 != param_5[uVar3]) &&
+    if ((eventParm != eventParms[uVar3]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6be,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *param_3 = *param_3 + 1U & 0xff;
+    *eventSequence = *eventSequence + 1U & 0xff;
   }
   return;
 }
@@ -1890,13 +1920,13 @@ BG_AddEvent<unsigned_char,unsigned_short>
 
 // 00425800  BG_AddPredictableEventToPlayerstate  (bgame/bg_misc.cpp:1737)
 
-void __cdecl BG_AddPredictableEventToPlayerstate(int param_1,uint param_2,playerState_s *param_3)
+void __cdecl BG_AddPredictableEventToPlayerstate(int newEvent,uint eventParm,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6ca,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1905,21 +1935,21 @@ void __cdecl BG_AddPredictableEventToPlayerstate(int param_1,uint param_2,player
     }
   }
   BG_AddEvent<int,unsigned_int>
-            (param_1,param_2,&param_3->predictableEventSequence,param_3->predictableEvents,
-             param_3->predictableEventParms,param_3->commandTime,'P');
+            (newEvent,eventParm,&ps->predictableEventSequence,ps->predictableEvents,
+             ps->predictableEventParms,ps->commandTime,'P');
   return;
 }
 
 
 // 00425870  BG_AddUnpredictableEventToPlayerstate  (bgame/bg_misc.cpp:1749)
 
-void __cdecl BG_AddUnpredictableEventToPlayerstate(int param_1,uint param_2,playerState_s *param_3)
+void __cdecl BG_AddUnpredictableEventToPlayerstate(int newEvent,uint eventParm,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6d6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1928,21 +1958,21 @@ void __cdecl BG_AddUnpredictableEventToPlayerstate(int param_1,uint param_2,play
     }
   }
   BG_AddEvent<int,unsigned_int>
-            (param_1,param_2,&param_3->unpredictableEventSequence,param_3->unpredictableEvents,
-             param_3->unpredictableEventParms,param_3->commandTime,'U');
+            (newEvent,eventParm,&ps->unpredictableEventSequence,ps->unpredictableEvents,
+             ps->unpredictableEventParms,ps->commandTime,'U');
   return;
 }
 
 
 // 004258E0  BG_AddEntityStateEvent  (bgame/bg_misc.cpp:1761)
 
-void __cdecl BG_AddEntityStateEvent(int param_1,uint param_2,entityState_s *param_3,int param_4)
+void __cdecl BG_AddEntityStateEvent(int newEvent,uint eventParm,entityState_s *es,int eventTime)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (entityState_s *)0x0) {
+  if (es == (entityState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x6e2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1951,31 +1981,30 @@ void __cdecl BG_AddEntityStateEvent(int param_1,uint param_2,entityState_s *para
     }
   }
   BG_AddEvent<unsigned_char,unsigned_short>
-            (param_1,param_2,&param_3->eventSequence,param_3->events,param_3->eventParms,param_4,'E'
-            );
+            (newEvent,eventParm,&es->eventSequence,es->events,es->eventParms,eventTime,'E');
   return;
 }
 
 
 // 00425EF0  BG_PlayerToEntityShouldAddEvent  (bgame/bg_misc.cpp:1767)
 
-bool __cdecl BG_PlayerToEntityShouldAddEvent(int param_1)
+bool __cdecl BG_PlayerToEntityShouldAddEvent(int event)
 
 {
-  int local_8;
+  int j;
   
-  for (local_8 = 0; 0 < serverOnlyEvents[local_8]; local_8 = local_8 + 1) {
-    if (serverOnlyEvents[local_8] == param_1) {
+  for (j = 0; 0 < serverOnlyEvents[j]; j = j + 1) {
+    if (serverOnlyEvents[j] == event) {
       return false;
     }
   }
-  local_8 = 0;
+  j = 0;
   while( true ) {
-    if (singleClientEvents[local_8] < 1) {
+    if (singleClientEvents[j] < 1) {
       return true;
     }
-    if (singleClientEvents[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (singleClientEvents[j] == event) break;
+    j = j + 1;
   }
   return false;
 }
@@ -1985,66 +2014,67 @@ bool __cdecl BG_PlayerToEntityShouldAddEvent(int param_1)
 
 void __cdecl
 BG_PlayerToEntityProcessEvents_Internal
-          (entityState_s *param_1,uchar param_2,short *param_3,short *param_4,int *param_5,
-          uint *param_6,uint param_7)
+          (entityState_s *s,uchar handler,short *eventSequence,short *oldEventSequence,int *events,
+          uint *eventParms,uint eventTime)
 
 {
-  int iVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  uint local_14;
-  short local_c;
+  int event_00;
+  uint eventParm_00;
+  code *pcVar1;
+  bool bVar2;
+  int i;
+  int event;
+  short oldSequenceNum;
+  uint eventParm;
   
-  local_c = *param_4;
-  if (*param_3 + 0x40 < (int)local_c) {
-    local_c = local_c + -0x100;
+  oldSequenceNum = *oldEventSequence;
+  if (*eventSequence + 0x40 < (int)oldSequenceNum) {
+    oldSequenceNum = oldSequenceNum + -0x100;
   }
-  if ((*param_3 < local_c) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x702,0,"%s")
-     , !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((*eventSequence < oldSequenceNum) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x702,0,"%s")
+     , !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  for (local_14 = (uint)local_c; (int)local_14 < (int)*param_3; local_14 = local_14 + 1) {
-    iVar1 = param_5[local_14 & 3];
-    uVar2 = param_6[local_14 & 3];
-    if (*(code **)(&DAT_00dff514 + (uint)param_2 * 0x20) != (code *)0x0) {
-      (**(code **)(&DAT_00dff514 + (uint)param_2 * 0x20))(param_1->number,iVar1);
+  for (i = (int)oldSequenceNum; i < *eventSequence; i = i + 1) {
+    event_00 = events[i & 3];
+    eventParm_00 = eventParms[i & 3];
+    if (*(code **)(&DAT_00dff514 + (uint)handler * 0x20) != (code *)0x0) {
+      (**(code **)(&DAT_00dff514 + (uint)handler * 0x20))(s->number,event_00);
     }
-    bVar4 = BG_PlayerToEntityShouldAddEvent(iVar1);
-    if (bVar4) {
-      BG_AddEntityStateEvent(iVar1,uVar2,param_1,param_7);
+    bVar2 = BG_PlayerToEntityShouldAddEvent(event_00);
+    if (bVar2) {
+      BG_AddEntityStateEvent(event_00,eventParm_00,s,eventTime);
     }
   }
-  *param_4 = *param_3;
+  *oldEventSequence = *eventSequence;
   return;
 }
 
 
 // 00425C60  BG_PlayerToEntityProcessEvents  (bgame/bg_misc.cpp:1826)
 
-void __cdecl
-BG_PlayerToEntityProcessEvents(playerState_s *param_1,entityState_s *param_2,uchar param_3)
+void __cdecl BG_PlayerToEntityProcessEvents(playerState_s *ps,entityState_s *s,uchar handler)
 
 {
   short local_e;
+  short eventSequenceDelta;
+  short originalEventSequence;
   
-  local_e = param_2->eventSequence;
+  local_e = s->eventSequence;
   BG_PlayerToEntityProcessEvents_Internal
-            (param_2,param_3,&param_1->predictableEventSequence,
-             &param_1->predictableEventSequenceOld,param_1->predictableEvents,
-             param_1->predictableEventParms,param_1->commandTime);
+            (s,handler,&ps->predictableEventSequence,&ps->predictableEventSequenceOld,
+             ps->predictableEvents,ps->predictableEventParms,ps->commandTime);
   BG_PlayerToEntityProcessEvents_Internal
-            (param_2,param_3,&param_1->unpredictableEventSequence,
-             &param_1->unpredictableEventSequenceOld,param_1->unpredictableEvents,
-             param_1->unpredictableEventParms,param_1->commandTime);
-  param_2->eventParm = 0;
-  if (param_2->eventSequence + 0x40 < (int)local_e) {
+            (s,handler,&ps->unpredictableEventSequence,&ps->unpredictableEventSequenceOld,
+             ps->unpredictableEvents,ps->unpredictableEventParms,ps->commandTime);
+  s->eventParm = 0;
+  if (s->eventSequence + 0x40 < (int)local_e) {
     local_e = local_e + -0x100;
   }
-  if (4 < (short)(param_2->eventSequence - local_e)) {
+  if (4 < (short)(s->eventSequence - local_e)) {
     Com_PrintWarning(0x11,"[%c|%i] Circular event buffer overflow ( Received: %i | Max: %i )\n");
     Com_PrintWarning(0x11,"Events are:\n[0] %s\n[1] %s\n[2] %s\n[3] %s\n");
   }
@@ -2054,22 +2084,22 @@ BG_PlayerToEntityProcessEvents(playerState_s *param_1,entityState_s *param_2,uch
 
 // 00425950  BG_PlayerToEntitySetFlags  (bgame/bg_misc.cpp:1855)
 
-void __cdecl BG_PlayerToEntitySetFlags(playerState_s *param_1,entityState_s *param_2)
+void __cdecl BG_PlayerToEntitySetFlags(playerState_s *ps,entityState_s *s)
 
 {
-  (param_2->lerp).eFlags = param_1->eFlags;
-  (param_2->lerp).eFlags2 = param_1->eFlags2;
-  if (param_1->pm_type < 9) {
-    (param_2->lerp).eFlags = (param_2->lerp).eFlags & 0xfffbffff;
+  (s->lerp).eFlags = ps->eFlags;
+  (s->lerp).eFlags2 = ps->eFlags2;
+  if (ps->pm_type < 9) {
+    (s->lerp).eFlags = (s->lerp).eFlags & 0xfffbffff;
   }
   else {
-    (param_2->lerp).eFlags = (param_2->lerp).eFlags | 0x40000;
+    (s->lerp).eFlags = (s->lerp).eFlags | 0x40000;
   }
-  if ((param_1->pm_flags & 0x10U) == 0) {
-    (param_2->lerp).eFlags = (param_2->lerp).eFlags & 0xfff7ffff;
+  if ((ps->pm_flags & 0x10U) == 0) {
+    (s->lerp).eFlags = (s->lerp).eFlags & 0xfff7ffff;
   }
   else {
-    (param_2->lerp).eFlags = (param_2->lerp).eFlags | 0x80000;
+    (s->lerp).eFlags = (s->lerp).eFlags | 0x80000;
   }
   return;
 }
@@ -2077,42 +2107,42 @@ void __cdecl BG_PlayerToEntitySetFlags(playerState_s *param_1,entityState_s *par
 
 // 004259E0  BG_PlayerToEntitySetPitchAngles  (bgame/bg_misc.cpp:1877)
 
-void __cdecl BG_PlayerToEntitySetPitchAngles(playerState_s *param_1,entityState_s *param_2)
+void __cdecl BG_PlayerToEntitySetPitchAngles(playerState_s *ps,entityState_s *s)
 
 {
   int iVar1;
   float fVar2;
-  float local_8;
+  int iLerpTime;
+  float fLerpFrac;
   
-  iVar1 = PM_GetEffectiveStance(param_1);
+  iVar1 = PM_GetEffectiveStance(ps);
   if (iVar1 == 1) {
-    if (param_1->viewHeightLerpTime == 0) {
-      local_8 = 1.0;
+    if (ps->viewHeightLerpTime == 0) {
+      fLerpFrac = 1.0;
     }
     else {
-      iVar1 = PM_GetViewHeightLerpTime
-                        (param_1,param_1->viewHeightLerpTarget,param_1->viewHeightLerpDown);
-      local_8 = (float)(param_1->commandTime - param_1->viewHeightLerpTime) / (float)iVar1;
-      if (0.0 <= local_8) {
-        if (1.0 < local_8) {
-          local_8 = 1.0;
+      iVar1 = PM_GetViewHeightLerpTime(ps,ps->viewHeightLerpTarget,ps->viewHeightLerpDown);
+      fLerpFrac = (float)(ps->commandTime - ps->viewHeightLerpTime) / (float)iVar1;
+      if (0.0 <= fLerpFrac) {
+        if (1.0 < fLerpFrac) {
+          fLerpFrac = 1.0;
         }
       }
       else {
-        local_8 = 0.0;
+        fLerpFrac = 0.0;
       }
-      if (param_1->viewHeightLerpDown == 0) {
-        local_8 = 1.0 - local_8;
+      if (ps->viewHeightLerpDown == 0) {
+        fLerpFrac = 1.0 - fLerpFrac;
       }
     }
-    fVar2 = AngleNormalize180(param_1->fTorsoPitch);
-    (param_2->un2).animState.fAimUpDown = fVar2 * local_8;
-    fVar2 = AngleNormalize180(param_1->fWaistPitch);
-    (param_2->un2).animState.fAimLeftRight = fVar2 * local_8;
+    fVar2 = AngleNormalize180(ps->fTorsoPitch);
+    (s->un2).animState.fAimUpDown = fVar2 * fLerpFrac;
+    fVar2 = AngleNormalize180(ps->fWaistPitch);
+    (s->un2).animState.fAimLeftRight = fVar2 * fLerpFrac;
   }
   else {
-    (param_2->un2).animState.fAimUpDown = 0.0;
-    (param_2->un2).animState.fAimLeftRight = 0.0;
+    (s->un2).animState.fAimUpDown = 0.0;
+    (s->un2).animState.fAimLeftRight = 0.0;
   }
   return;
 }
@@ -2120,7 +2150,7 @@ void __cdecl BG_PlayerToEntitySetPitchAngles(playerState_s *param_1,entityState_
 
 // 00425F70  BG_PlayerToEntitySetMisc  (bgame/bg_misc.cpp:1918)
 
-void __cdecl BG_PlayerToEntitySetMisc(playerState_s *param_1,entityState_s *param_2)
+void __cdecl BG_PlayerToEntitySetMisc(playerState_s *ps,entityState_s *s)
 
 {
   code *pcVar1;
@@ -2129,22 +2159,22 @@ void __cdecl BG_PlayerToEntitySetMisc(playerState_s *param_1,entityState_s *para
   WeaponDef *pWVar4;
   renderOptions_s_u_0 local_8;
   
-  *(int *)&param_2->un2 = (int)param_1->legsAnim;
-  *(int *)((int)&param_2->un2 + 4) = (int)param_1->torsoAnim;
-  (param_2->lerp).u.turret.gunAngles[0] = param_1->leanf;
-  if ((param_1->eFlags & 0x300U) != 0) {
-    param_2->otherEntityNum = param_1->viewlocked_entNum;
+  *(int *)&s->un2 = (int)ps->legsAnim;
+  *(int *)((int)&s->un2 + 4) = (int)ps->torsoAnim;
+  (s->lerp).u.turret.gunAngles[0] = ps->leanf;
+  if ((ps->eFlags & 0x300U) != 0) {
+    s->otherEntityNum = ps->viewlocked_entNum;
   }
-  if ((param_1->otherFlags & 6U) == 0) {
-    param_2->eType = 5;
+  if ((ps->otherFlags & 6U) == 0) {
+    s->eType = 5;
   }
   else {
-    param_2->eType = 1;
+    s->eType = 1;
   }
-  param_2->clientNum = param_1->clientNum;
-  pWVar4 = BG_GetWeaponDef((uint)param_1->weapon);
+  s->clientNum = ps->clientNum;
+  pWVar4 = BG_GetWeaponDef((uint)ps->weapon);
   if (pWVar4->inventoryType == WEAPINVENTORY_ALTMODE) {
-    if (param_1->lastWeaponAltModeSwitch == 0) {
+    if (ps->lastWeaponAltModeSwitch == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x797,0,"%s")
       ;
       if (!bVar2) {
@@ -2153,38 +2183,36 @@ void __cdecl BG_PlayerToEntitySetMisc(playerState_s *param_1,entityState_s *para
         return;
       }
     }
-    (param_2->lerp).u.player.primaryWeapon = (ushort)param_1->lastWeaponAltModeSwitch;
+    (s->lerp).u.player.primaryWeapon = (ushort)ps->lastWeaponAltModeSwitch;
   }
   else {
-    (param_2->lerp).u.player.primaryWeapon = param_1->weapon;
+    (s->lerp).u.player.primaryWeapon = ps->weapon;
   }
-  (param_2->lerp).u.turret.gunAngles[2] = (float)param_1->moveType;
-  param_2->weapon = param_1->weapon;
-  param_2->lastStandPrevWeapon = param_1->lastStandPrevWeapon;
-  uVar3 = BG_GetPlayerWeaponModel(param_1,(uint)param_1->weapon);
-  param_2->weaponModel = uVar3;
-  local_8.s = (<unnamed_type_s>)BG_PlayerWeaponOptions(param_1,(uint)param_1->weapon);
-  renderOptions_s::CopyWeaponOptions(&param_2->renderOptions,(renderOptions_s *)&local_8.s);
-  (param_2->renderOptions).field0_0x0.i =
-       (param_2->renderOptions).field0_0x0.i & 0x3ffffff |
-       (param_1->renderOptions).field0_0x0.i & 0xfc000000;
-  (param_2->lerp).u.actor.proneInfo.fBodyPitch = (short)param_1->offHandIndex;
-  uVar3 = BG_GetPlayerWeaponModel(param_1,param_1->offHandIndex);
-  (param_2->lerp).u.player.offhandWeaponModel = uVar3;
-  (param_2->lerp).u.player.meleeWeapon = (ushort)param_1->meleeWeapon;
-  uVar3 = BG_GetPlayerWeaponModel(param_1,param_1->meleeWeapon);
-  (param_2->lerp).u.player.meleeWeaponModel = uVar3;
-  param_2->groundEntityNum = (short)param_1->groundEntityNum;
-  (param_2->lerp).u.player.stowedWeapon = (ushort)param_1->stowedWeapon;
-  (param_2->lerp).u.player.stowedWeaponCamo = param_1->stowedWeaponCamo;
+  (s->lerp).u.turret.gunAngles[2] = (float)ps->moveType;
+  s->weapon = ps->weapon;
+  s->lastStandPrevWeapon = ps->lastStandPrevWeapon;
+  uVar3 = BG_GetPlayerWeaponModel(ps,(uint)ps->weapon);
+  s->weaponModel = uVar3;
+  local_8.s = (<unnamed_type_s>)BG_PlayerWeaponOptions(ps,(uint)ps->weapon);
+  renderOptions_s::CopyWeaponOptions(&s->renderOptions,(renderOptions_s *)&local_8.s);
+  (s->renderOptions).field0_0x0.i =
+       (s->renderOptions).field0_0x0.i & 0x3ffffff | (ps->renderOptions).field0_0x0.i & 0xfc000000;
+  (s->lerp).u.actor.proneInfo.fBodyPitch = (short)ps->offHandIndex;
+  uVar3 = BG_GetPlayerWeaponModel(ps,ps->offHandIndex);
+  (s->lerp).u.player.offhandWeaponModel = uVar3;
+  (s->lerp).u.player.meleeWeapon = (ushort)ps->meleeWeapon;
+  uVar3 = BG_GetPlayerWeaponModel(ps,ps->meleeWeapon);
+  (s->lerp).u.player.meleeWeaponModel = uVar3;
+  s->groundEntityNum = (short)ps->groundEntityNum;
+  (s->lerp).u.player.stowedWeapon = (ushort)ps->stowedWeapon;
+  (s->lerp).u.player.stowedWeaponCamo = ps->stowedWeaponCamo;
   return;
 }
 
 
 // 00426390  BG_PlayerToEntitySetTrajectory  (bgame/bg_misc.cpp:1973)
 
-void __cdecl
-BG_PlayerToEntitySetTrajectory(playerState_s *param_1,entityState_s *param_2,int param_3)
+void __cdecl BG_PlayerToEntitySetTrajectory(playerState_s *ps,entityState_s *s,int snap)
 
 {
   float *pfVar1;
@@ -2197,27 +2225,27 @@ BG_PlayerToEntitySetTrajectory(playerState_s *param_1,entityState_s *param_2,int
   float local_24;
   float local_20;
   
-  (param_2->lerp).pos.trType = '\x01';
-  (param_2->lerp).pos.trDuration = 0;
-  (param_2->lerp).pos.trTime = 0;
-  (param_2->lerp).pos.trDelta[0] = 0.0;
-  (param_2->lerp).pos.trDelta[1] = 0.0;
-  (param_2->lerp).pos.trDelta[2] = 0.0;
-  (param_2->lerp).pos.trBase[0] = param_1->origin[0];
-  (param_2->lerp).pos.trBase[1] = param_1->origin[1];
-  (param_2->lerp).pos.trBase[2] = param_1->origin[2];
-  (param_2->lerp).apos.trType = '\x01';
-  (param_2->lerp).apos.trDuration = 0;
-  (param_2->lerp).apos.trTime = 0;
-  (param_2->lerp).apos.trDelta[0] = 0.0;
-  (param_2->lerp).apos.trDelta[1] = 0.0;
-  (param_2->lerp).apos.trDelta[2] = 0.0;
-  if ((param_1->eFlags & 0x300U) == 0) {
-    (param_2->lerp).apos.trBase[0] = param_1->viewangles[0];
-    (param_2->lerp).apos.trBase[1] = param_1->viewangles[1];
-    (param_2->lerp).apos.trBase[2] = param_1->viewangles[2];
+  (s->lerp).pos.trType = '\x01';
+  (s->lerp).pos.trDuration = 0;
+  (s->lerp).pos.trTime = 0;
+  (s->lerp).pos.trDelta[0] = 0.0;
+  (s->lerp).pos.trDelta[1] = 0.0;
+  (s->lerp).pos.trDelta[2] = 0.0;
+  (s->lerp).pos.trBase[0] = ps->origin[0];
+  (s->lerp).pos.trBase[1] = ps->origin[1];
+  (s->lerp).pos.trBase[2] = ps->origin[2];
+  (s->lerp).apos.trType = '\x01';
+  (s->lerp).apos.trDuration = 0;
+  (s->lerp).apos.trTime = 0;
+  (s->lerp).apos.trDelta[0] = 0.0;
+  (s->lerp).apos.trDelta[1] = 0.0;
+  (s->lerp).apos.trDelta[2] = 0.0;
+  if ((ps->eFlags & 0x300U) == 0) {
+    (s->lerp).apos.trBase[0] = ps->viewangles[0];
+    (s->lerp).apos.trBase[1] = ps->viewangles[1];
+    (s->lerp).apos.trBase[2] = ps->viewangles[2];
   }
-  if ((0x7f < param_1->movementDir) || (param_1->movementDir < -0x80)) {
+  if ((0x7f < ps->movementDir) || (ps->movementDir < -0x80)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x7c7,0,
                              "%s\n\t(ps->movementDir) = %i");
     if (!bVar3) {
@@ -2226,56 +2254,56 @@ BG_PlayerToEntitySetTrajectory(playerState_s *param_1,entityState_s *param_2,int
       return;
     }
   }
-  *(int *)((int)&(param_2->lerp).u + 4) = (int)(short)param_1->movementDir;
-  if (param_3 != 0) {
-    pfVar1 = (param_2->lerp).pos.trBase;
+  *(int *)((int)&(s->lerp).u + 4) = (int)(short)ps->movementDir;
+  if (snap != 0) {
+    pfVar1 = (s->lerp).pos.trBase;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_20 = 0.5;
     }
     else {
       local_20 = -0.5;
     }
-    (param_2->lerp).pos.trBase[0] = (float)(int)((param_2->lerp).pos.trBase[0] + local_20);
-    pfVar1 = (param_2->lerp).pos.trBase + 1;
+    (s->lerp).pos.trBase[0] = (float)(int)((s->lerp).pos.trBase[0] + local_20);
+    pfVar1 = (s->lerp).pos.trBase + 1;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_24 = 0.5;
     }
     else {
       local_24 = -0.5;
     }
-    (param_2->lerp).pos.trBase[1] = (float)(int)((param_2->lerp).pos.trBase[1] + local_24);
-    pfVar1 = (param_2->lerp).pos.trBase + 2;
+    (s->lerp).pos.trBase[1] = (float)(int)((s->lerp).pos.trBase[1] + local_24);
+    pfVar1 = (s->lerp).pos.trBase + 2;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_28 = 0.5;
     }
     else {
       local_28 = -0.5;
     }
-    (param_2->lerp).pos.trBase[2] = (float)(int)((param_2->lerp).pos.trBase[2] + local_28);
-    pfVar1 = (param_2->lerp).apos.trBase;
+    (s->lerp).pos.trBase[2] = (float)(int)((s->lerp).pos.trBase[2] + local_28);
+    pfVar1 = (s->lerp).apos.trBase;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_2c = 0.5;
     }
     else {
       local_2c = -0.5;
     }
-    (param_2->lerp).apos.trBase[0] = (float)(int)((param_2->lerp).apos.trBase[0] + local_2c);
-    pfVar1 = (param_2->lerp).apos.trBase + 1;
+    (s->lerp).apos.trBase[0] = (float)(int)((s->lerp).apos.trBase[0] + local_2c);
+    pfVar1 = (s->lerp).apos.trBase + 1;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_30 = 0.5;
     }
     else {
       local_30 = -0.5;
     }
-    (param_2->lerp).apos.trBase[1] = (float)(int)((param_2->lerp).apos.trBase[1] + local_30);
-    pfVar1 = (param_2->lerp).apos.trBase + 2;
+    (s->lerp).apos.trBase[1] = (float)(int)((s->lerp).apos.trBase[1] + local_30);
+    pfVar1 = (s->lerp).apos.trBase + 2;
     if (0.0 < *pfVar1 || *pfVar1 == 0.0) {
       local_34 = 0.5;
     }
     else {
       local_34 = -0.5;
     }
-    (param_2->lerp).apos.trBase[2] = (float)(int)((param_2->lerp).apos.trBase[2] + local_34);
+    (s->lerp).apos.trBase[2] = (float)(int)((s->lerp).apos.trBase[2] + local_34);
   }
   return;
 }
@@ -2283,33 +2311,32 @@ BG_PlayerToEntitySetTrajectory(playerState_s *param_1,entityState_s *param_2,int
 
 // 00425B30  BG_PlayerStateToEntityState  (bgame/bg_misc.cpp:2013)
 
-void __cdecl
-BG_PlayerStateToEntityState(playerState_s *param_1,entityState_s *param_2,int param_3,uchar param_4)
+void __cdecl BG_PlayerStateToEntityState(playerState_s *ps,entityState_s *s,int snap,uchar handler)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
   
-  BG_PlayerToEntitySetTrajectory(param_1,param_2,param_3);
-  BG_PlayerToEntitySetFlags(param_1,param_2);
-  BG_PlayerToEntitySetMisc(param_1,param_2);
-  BG_PlayerToEntitySetPitchAngles(param_1,param_2);
-  BG_PlayerToEntityProcessEvents(param_1,param_2,param_4);
+  BG_PlayerToEntitySetTrajectory(ps,s,snap);
+  BG_PlayerToEntitySetFlags(ps,s);
+  BG_PlayerToEntitySetMisc(ps,s);
+  BG_PlayerToEntitySetPitchAngles(ps,s);
+  BG_PlayerToEntityProcessEvents(ps,s,handler);
   if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) {
-    iVar3 = (uint)param_1->clientNum * 0x5c8;
+    iVar3 = (uint)ps->clientNum * 0x5c8;
     iVar1 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8);
-    iVar2 = param_1->moveType;
+    iVar2 = ps->moveType;
     *(int *)(iVar1 + 0x588 + iVar3) = iVar2;
     *(int *)(iVar1 + 0x58c + iVar3) = iVar2 >> 0x1f;
   }
-  param_2->loopSoundId = param_1->loopSoundId;
-  AssignToSmallerType<short>(&param_2->loopSoundFade,param_1->loopSoundFade);
-  if ((param_1->eFlags & 0x4000U) != 0) {
-    param_2->otherEntityNum = param_1->viewlocked_entNum;
-    (param_2->lerp).u.player.vehicleAnimBoneIndex = (uchar)param_1->vehicleAnimBoneIndex;
-    (param_2->lerp).u.player.vehicleSeat = (uchar)param_1->vehiclePos;
-    (param_2->lerp).u.player.vehicleType = (uchar)param_1->vehicleType;
+  s->loopSoundId = ps->loopSoundId;
+  AssignToSmallerType<short>(&s->loopSoundFade,ps->loopSoundFade);
+  if ((ps->eFlags & 0x4000U) != 0) {
+    s->otherEntityNum = ps->viewlocked_entNum;
+    (s->lerp).u.player.vehicleAnimBoneIndex = (uchar)ps->vehicleAnimBoneIndex;
+    (s->lerp).u.player.vehicleSeat = (uchar)ps->vehiclePos;
+    (s->lerp).u.player.vehicleType = (uchar)ps->vehicleType;
   }
   return;
 }
@@ -2320,9 +2347,10 @@ BG_PlayerStateToEntityState(playerState_s *param_1,entityState_s *param_2,int pa
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,float param_5,
-             float param_6,float *param_7,float *param_8,bool param_9,bool param_10,bool param_11,
-             uchar param_12,proneCheckType_t param_13,float param_14)
+BG_CheckProne(playerState_s *ps,int passEntityNum,float *vPos,float fSize,float fHeight,float fYaw,
+             float *pfTorsoPitch,float *pfWaistPitch,bool isAlreadyProne,bool isOnGround,
+             bool groundIsWalkable,uchar handler,proneCheckType_t proneCheckType,
+             float prone_feet_dist)
 
 {
   code *pcVar1;
@@ -2396,8 +2424,8 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
   local_50 = 0;
   local_51 = '\x01';
   col_context_t::col_context_t(&local_7c);
-  if (((param_1 == (playerState_s *)0x0) || ((param_1->pm_flags & 0x400000U) == 0)) ||
-     (iVar4 = Dtp_IsSliding(param_1), iVar4 != 0)) {
+  if (((ps == (playerState_s *)0x0) || ((ps->pm_flags & 0x400000U) == 0)) ||
+     (iVar4 = Dtp_IsSliding(ps), iVar4 != 0)) {
     local_80 = 0;
   }
   else {
@@ -2405,12 +2433,12 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
   }
   local_84 = local_80;
   local_88 = 12.0;
-  if ((param_1 != (playerState_s *)0x0) && (param_1->pm_type == 6)) {
+  if ((ps != (playerState_s *)0x0) && (ps->pm_type == 6)) {
     local_88 = lastStandDistScale * 12.0;
-    param_14 = param_14 * lastStandDistScale;
+    prone_feet_dist = prone_feet_dist * lastStandDistScale;
   }
   local_8c = 1.0;
-  local_90 = *(code **)(&pmoveHandlers + (uint)param_12 * 0x20);
+  local_90 = *(code **)(&pmoveHandlers + (uint)handler * 0x20);
   if ((local_90 == (code *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x838,0,"%s")
      , !bVar2)) {
@@ -2418,31 +2446,31 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_13 == PCT_CLIENT) {
+  if (proneCheckType == PCT_CLIENT) {
     local_94 = 0x810011;
   }
   else {
     local_94 = 0x820011;
   }
-  if (!param_9) {
-    local_a0 = -param_4;
-    local_9c = -param_4;
+  if (!isAlreadyProne) {
+    local_a0 = -fSize;
+    local_9c = -fSize;
     local_98 = 0;
-    local_ac = param_4;
-    local_a8 = param_4;
-    local_a4 = param_5;
-    local_b8 = *param_3;
-    local_b4 = param_3[1];
-    local_b0 = param_3[2];
-    local_c4 = *param_3;
-    local_c0 = param_3[1];
-    local_bc = param_3[2] + 10.0;
-    (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+    local_ac = fSize;
+    local_a8 = fSize;
+    local_a4 = fHeight;
+    local_b8 = *vPos;
+    local_b4 = vPos[1];
+    local_b0 = vPos[2];
+    local_c4 = *vPos;
+    local_c0 = vPos[1];
+    local_bc = vPos[2] + 10.0;
+    (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c);
     if (local_22 != '\0') {
       return false;
     }
   }
-  if ((param_10) && (!param_11)) {
+  if ((isOnGround) && (!groundIsWalkable)) {
     return false;
   }
   local_a0 = -6.0;
@@ -2452,29 +2480,29 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
   local_a8 = 6.0;
   local_a4 = 6.0;
   local_c4 = 0.0;
-  local_c0 = param_6 - 180.0;
+  local_c0 = fYaw - 180.0;
   local_bc = 0.0;
   AngleVectors(&local_c4,&local_d0,(float *)0x0,(float *)0x0);
-  local_d4 = param_5 - 6.0;
+  local_d4 = fHeight - 6.0;
   local_d8 = local_d4 - 6.0;
-  local_b8 = *param_3;
-  local_b4 = param_3[1];
-  local_b0 = param_3[2] + local_d4;
-  local_dc = param_14 - 6.0;
+  local_b8 = *vPos;
+  local_b4 = vPos[1];
+  local_b0 = vPos[2] + local_d4;
+  local_dc = prone_feet_dist - 6.0;
   local_c4 = local_dc * local_d0 + local_b8;
   local_c0 = local_dc * local_cc + local_b4;
   local_bc = local_dc * local_c8 + local_b0;
-  (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+  (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c);
   if (1.0 <= local_3c) {
-    local_e0 = param_14;
+    local_e0 = prone_feet_dist;
   }
   else {
-    if (!param_10) {
+    if (!isOnGround) {
       return false;
     }
     local_50 = 1;
-    local_e0 = (param_14 - 6.0) * local_3c + 6.0;
-    if (local_e0 < param_4 + 2.0) {
+    local_e0 = (prone_feet_dist - 6.0) * local_3c + 6.0;
+    if (local_e0 < fSize + 2.0) {
       return false;
     }
     if (local_e0 < local_d4 * 0.7 + local_88) {
@@ -2484,9 +2512,10 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
       local_e8 = local_c0 - local_b4;
       local_e4 = local_bc - local_b0;
       local_f0 = Vec3NormalizeTo(&local_ec,&local_d0);
-      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c
+                 );
       if (1.0 <= local_3c) {
-        local_e0 = param_14;
+        local_e0 = prone_feet_dist;
       }
       else {
         local_50 = 1;
@@ -2498,18 +2527,18 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
     }
   }
   Vec3Lerp(&local_b8,&local_c4,local_3c,&local_fc);
-  local_c4 = local_88 * local_d0 + *param_3;
-  local_c0 = local_88 * local_cc + param_3[1];
-  local_b0 = local_88 * local_c8 + param_3[2] + local_d4;
-  local_bc = local_b0 - ((param_4 * 2.5 + local_d4) - 6.0);
+  local_c4 = local_88 * local_d0 + *vPos;
+  local_c0 = local_88 * local_cc + vPos[1];
+  local_b0 = local_88 * local_c8 + vPos[2] + local_d4;
+  local_bc = local_b0 - ((fSize * 2.5 + local_d4) - 6.0);
   local_b8 = local_c4;
   local_b4 = local_c0;
-  (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+  (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c);
   if (local_3c != 1.0) {
     if (local_20 == '\0') {
       return false;
     }
-    local_100 = ((param_4 * 2.5 + local_d4) - 6.0) * local_3c + 6.0;
+    local_100 = ((fSize * 2.5 + local_d4) - 6.0) * local_3c + 6.0;
     Vec3Lerp(&local_b8,&local_c4,local_3c,&local_10c);
     local_104 = local_104 - 6.0;
     if (local_50 != 0) {
@@ -2518,16 +2547,20 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
       local_e8 = local_cc * 6.0 + (local_f8 - local_108);
       local_e4 = local_c8 * 6.0 + (local_f4 - local_104) + 6.0;
       Vec3Normalize(&local_ec);
-      local_110 = (param_14 - 6.0) - local_88;
+      local_110 = (prone_feet_dist - 6.0) - local_88;
       local_bc = local_110 * local_e4 + local_b0;
-      local_c4 = ((param_14 - 6.0) * local_d0 + *param_3 + local_110 * local_ec + local_b8) * 0.5;
-      local_c0 = ((param_14 - 6.0) * local_cc + param_3[1] + local_110 * local_e8 + local_b4) * 0.5;
-      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+      local_c4 = ((prone_feet_dist - 6.0) * local_d0 + *vPos + local_110 * local_ec + local_b8) *
+                 0.5;
+      local_c0 = ((prone_feet_dist - 6.0) * local_cc + vPos[1] + local_110 * local_e8 + local_b4) *
+                 0.5;
+      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c
+                 );
       if (local_3c < 1.0) {
         Vec3Lerp(&local_b8,&local_c4,local_3c,&local_b8);
         local_b0 = local_b0 + 18.0;
         local_bc = local_bc + 18.0;
-        (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+        (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,
+                    &local_7c);
         if (local_3c < 1.0) goto LAB_0042778f;
       }
       Vec3Lerp(&local_b8,&local_c4,local_3c,&local_fc);
@@ -2537,17 +2570,17 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
     local_b0 = local_f4;
     local_c4 = local_fc;
     local_c0 = local_f8;
-    local_bc = local_f4 - ((local_f4 - local_104) * 2.0 + param_4 * 1.0);
-    (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+    local_bc = local_f4 - ((local_f4 - local_104) * 2.0 + fSize * 1.0);
+    (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c);
     if (local_3c != 1.0) {
       if (local_20 == '\0') {
         return false;
       }
       Vec3Lerp(&local_b8,&local_c4,local_3c,&local_fc);
       local_f4 = local_f4 - 6.0;
-      local_11c = *param_3;
-      local_118 = param_3[1];
-      local_114 = param_3[2];
+      local_11c = *vPos;
+      local_118 = vPos[1];
+      local_114 = vPos[2];
       local_ec = local_11c - local_10c;
       local_e8 = local_118 - local_108;
       local_e4 = local_114 - local_104;
@@ -2574,7 +2607,8 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
       local_c4 = local_10c;
       local_c0 = local_108;
       local_bc = local_104 + 5.0;
-      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c
+                 );
       if (local_3c < 1.0) {
         local_51 = '\0';
       }
@@ -2584,7 +2618,8 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
       local_c4 = local_fc;
       local_c0 = local_f8;
       local_bc = local_f4 + 5.0;
-      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,param_2,local_94,&local_7c);
+      (*local_90)(&local_4c,&local_b8,&local_a0,&local_ac,&local_c4,passEntityNum,local_94,&local_7c
+                 );
       if (render_waist_foot_line != false) {
         Phys_Vec3ToNitrousVec(&local_b8,&local_140);
         Phys_Vec3ToNitrousVec(&local_c4,&local_150);
@@ -2599,27 +2634,27 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
           local_124 = 0.0;
         }
       }
-      if ((param_1 != (playerState_s *)0x0) && (param_1->pm_type == 6)) {
+      if ((ps != (playerState_s *)0x0) && (ps->pm_type == 6)) {
         local_120 = -local_120;
         local_124 = -local_124;
       }
-      if (param_7 != (float *)0x0) {
+      if (pfTorsoPitch != (float *)0x0) {
         if (local_84 == 0) {
           local_154 = local_120 * local_8c;
         }
         else {
           local_154 = 0.0;
         }
-        *param_7 = local_154;
+        *pfTorsoPitch = local_154;
       }
-      if (param_8 != (float *)0x0) {
+      if (pfWaistPitch != (float *)0x0) {
         if (local_84 == 0) {
           local_158 = local_124 * local_8c;
         }
         else {
           local_158 = 0.0;
         }
-        *param_8 = local_158;
+        *pfWaistPitch = local_158;
       }
       if (local_51 != '\0') {
         return true;
@@ -2627,15 +2662,15 @@ BG_CheckProne(playerState_s *param_1,int param_2,float *param_3,float param_4,fl
     }
   }
 LAB_0042778f:
-  if (param_10) {
+  if (isOnGround) {
     bVar2 = false;
   }
   else {
-    if (param_7 != (float *)0x0) {
-      *param_7 = 0.0;
+    if (pfTorsoPitch != (float *)0x0) {
+      *pfTorsoPitch = 0.0;
     }
-    if (param_8 != (float *)0x0) {
-      *param_8 = 0.0;
+    if (pfWaistPitch != (float *)0x0) {
+      *pfWaistPitch = 0.0;
     }
     bVar2 = true;
   }
@@ -2645,42 +2680,42 @@ LAB_0042778f:
 
 // 004261C0  CopyWeaponOptions  (universal/q_shared.h:2216)
 
-void __thiscall renderOptions_s::CopyWeaponOptions(renderOptions_s *this,renderOptions_s *param_1)
+void __thiscall renderOptions_s::CopyWeaponOptions(renderOptions_s *this,renderOptions_s *o)
 
 {
-  (this->field0_0x0).i = (this->field0_0x0).i & 0xffffffc0 | (param_1->field0_0x0).i & 0x3f;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xffffffc0 | (o->field0_0x0).i & 0x3f;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xfffffc3f | ((o->field0_0x0).i >> 6 & 0xf) << 6;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xffff03ff | ((o->field0_0x0).i >> 10 & 0x3f) << 10;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xfff8ffff | ((o->field0_0x0).i >> 0x10 & 7) << 0x10
+  ;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xfff7ffff | ((o->field0_0x0).i >> 0x13 & 1) << 0x13
+  ;
+  (this->field0_0x0).i = (this->field0_0x0).i & 0xffefffff | ((o->field0_0x0).i >> 0x14 & 1) << 0x14
+  ;
   (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xfffffc3f | ((param_1->field0_0x0).i >> 6 & 0xf) << 6;
-  (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xffff03ff | ((param_1->field0_0x0).i >> 10 & 0x3f) << 10;
-  (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xfff8ffff | ((param_1->field0_0x0).i >> 0x10 & 7) << 0x10;
-  (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xfff7ffff | ((param_1->field0_0x0).i >> 0x13 & 1) << 0x13;
-  (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xffefffff | ((param_1->field0_0x0).i >> 0x14 & 1) << 0x14;
-  (this->field0_0x0).i =
-       (this->field0_0x0).i & 0xfc1fffff | ((param_1->field0_0x0).i >> 0x15 & 0x1f) << 0x15;
+       (this->field0_0x0).i & 0xfc1fffff | ((o->field0_0x0).i >> 0x15 & 0x1f) << 0x15;
   return;
 }
 
 
 // 004278C0  BG_GetPlayerViewOrigin  (bgame/bg_misc.cpp:2368)
 
-void __cdecl BG_GetPlayerViewOrigin(playerState_s *param_1,float *param_2,int param_3)
+void __cdecl BG_GetPlayerViewOrigin(playerState_s *ps,float *origin,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float fVar4;
-  float local_18;
+  float delta;
+  float fBobCycle;
+  float vRight;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float xyspeed;
+  float deltaB;
   
-  if ((param_1->eFlags & 0x300U) != 0) {
+  if ((ps->eFlags & 0x300U) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x948,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2688,33 +2723,33 @@ void __cdecl BG_GetPlayerViewOrigin(playerState_s *param_1,float *param_2,int pa
       return;
     }
   }
-  *param_2 = param_1->origin[0];
-  param_2[1] = param_1->origin[1];
-  param_2[2] = param_1->origin[2];
-  param_2[2] = param_2[2] + param_1->viewHeightCurrent;
-  fVar3 = BG_GetBobCycle(param_1);
-  if ((param_1->pm_flags & 8U) == 0) {
-    local_c = Vec2Length(param_1->velocity);
+  *origin = ps->origin[0];
+  origin[1] = ps->origin[1];
+  origin[2] = ps->origin[2];
+  origin[2] = origin[2] + ps->viewHeightCurrent;
+  fVar3 = BG_GetBobCycle(ps);
+  if ((ps->pm_flags & 8U) == 0) {
+    xyspeed = Vec2Length(ps->velocity);
   }
-  else if (param_3 - param_1->jumpTime < 500) {
-    local_c = 0.0;
+  else if (time - ps->jumpTime < 500) {
+    xyspeed = 0.0;
   }
   else {
-    local_c = param_1->velocity[2];
+    xyspeed = ps->velocity[2];
   }
-  fVar4 = BG_CalculateViewMovement_VerticalBobFactor(param_1,fVar3,local_c);
-  param_2[2] = param_2[2] + fVar4;
-  local_8 = BG_CalculateViewMovement_HorizontalBobFactor(param_1,fVar3,local_c);
-  BG_GetPlayerViewDirection(param_1,(float *)0x0,&local_18,(float *)0x0);
-  *param_2 = local_8 * local_18 + *param_2;
-  param_2[1] = local_8 * local_14 + param_2[1];
-  param_2[2] = local_8 * local_10 + param_2[2];
-  if ((param_1->eFlags & 0x4000U) == 0) {
-    AddLeanToPosition(param_2,param_1->viewangles[1],param_1->leanf,16.0,20.0);
+  fVar4 = BG_CalculateViewMovement_VerticalBobFactor(ps,fVar3,xyspeed);
+  origin[2] = origin[2] + fVar4;
+  deltaB = BG_CalculateViewMovement_HorizontalBobFactor(ps,fVar3,xyspeed);
+  BG_GetPlayerViewDirection(ps,(float *)0x0,&vRight,(float *)0x0);
+  *origin = deltaB * vRight + *origin;
+  origin[1] = deltaB * local_14 + origin[1];
+  origin[2] = deltaB * local_10 + origin[2];
+  if ((ps->eFlags & 0x4000U) == 0) {
+    AddLeanToPosition(origin,ps->viewangles[1],ps->leanf,16.0,20.0);
   }
-  fVar3 = param_1->origin[2] + 8.0;
-  if (param_2[2] <= fVar3 && fVar3 != param_2[2]) {
-    param_2[2] = param_1->origin[2] + 8.0;
+  fVar3 = ps->origin[2] + 8.0;
+  if (origin[2] <= fVar3 && fVar3 != origin[2]) {
+    origin[2] = ps->origin[2] + 8.0;
   }
   return;
 }
@@ -2722,34 +2757,34 @@ void __cdecl BG_GetPlayerViewOrigin(playerState_s *param_1,float *param_2,int pa
 
 // 00427AD0  BG_GetPlayerViewDirection  (bgame/bg_misc.cpp:2408)
 
-void __cdecl
-BG_GetPlayerViewDirection(playerState_s *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl BG_GetPlayerViewDirection(playerState_s *ps,float *forward,float *right,float *up)
 
 {
-  AngleVectors(param_1->viewangles,param_2,param_3,param_4);
+  AngleVectors(ps->viewangles,forward,right,up);
   return;
 }
 
 
 // 00427B00  BG_LerpHudColors  (bgame/bg_misc.cpp:2465)
 
-void __cdecl BG_LerpHudColors(hudelem_s *param_1,int param_2,hudelem_color_t *param_3)
+void __cdecl BG_LerpHudColors(hudelem_s *elem,int time,hudelem_color_t *toColor)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  int local_8;
+  float lerp;
+  int timeSinceFadeStarted;
   
-  local_8 = param_2 - param_1->fadeStartTime;
-  if ((param_1->fadeTime < 1) || (param_1->fadeTime <= local_8)) {
-    *param_3 = param_1->color;
+  timeSinceFadeStarted = time - elem->fadeStartTime;
+  if ((elem->fadeTime < 1) || (elem->fadeTime <= timeSinceFadeStarted)) {
+    *toColor = elem->color;
   }
   else {
-    if (local_8 < 0) {
-      local_8 = 0;
+    if (timeSinceFadeStarted < 0) {
+      timeSinceFadeStarted = 0;
     }
-    fVar3 = (float)local_8 / (float)(int)param_1->fadeTime;
+    fVar3 = (float)timeSinceFadeStarted / (float)(int)elem->fadeTime;
     if ((fVar3 < 0.0) || (1.0 < fVar3)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x9ac,0,
                                "%s\n\t(lerp) = %g");
@@ -2759,22 +2794,22 @@ void __cdecl BG_LerpHudColors(hudelem_s *param_1,int param_2,hudelem_color_t *pa
         return;
       }
     }
-    (param_3->_s_0).r =
-         (uchar)(int)((float)(param_1->fromColor)._s_0.r +
-                     (float)(int)((uint)(param_1->color)._s_0.r - (uint)(param_1->fromColor)._s_0.r)
-                     * fVar3);
-    (param_3->_s_0).g =
-         (uchar)(int)((float)(param_1->fromColor)._s_0.g +
-                     (float)(int)((uint)(param_1->color)._s_0.g - (uint)(param_1->fromColor)._s_0.g)
-                     * fVar3);
-    (param_3->_s_0).b =
-         (uchar)(int)((float)(param_1->fromColor)._s_0.b +
-                     (float)(int)((uint)(param_1->color)._s_0.b - (uint)(param_1->fromColor)._s_0.b)
-                     * fVar3);
-    (param_3->_s_0).a =
-         (uchar)(int)((float)(param_1->fromColor)._s_0.a +
-                     (float)(int)((uint)(param_1->color)._s_0.a - (uint)(param_1->fromColor)._s_0.a)
-                     * fVar3);
+    (toColor->_s_0).r =
+         (uchar)(int)((float)(elem->fromColor)._s_0.r +
+                     (float)(int)((uint)(elem->color)._s_0.r - (uint)(elem->fromColor)._s_0.r) *
+                     fVar3);
+    (toColor->_s_0).g =
+         (uchar)(int)((float)(elem->fromColor)._s_0.g +
+                     (float)(int)((uint)(elem->color)._s_0.g - (uint)(elem->fromColor)._s_0.g) *
+                     fVar3);
+    (toColor->_s_0).b =
+         (uchar)(int)((float)(elem->fromColor)._s_0.b +
+                     (float)(int)((uint)(elem->color)._s_0.b - (uint)(elem->fromColor)._s_0.b) *
+                     fVar3);
+    (toColor->_s_0).a =
+         (uchar)(int)((float)(elem->fromColor)._s_0.a +
+                     (float)(int)((uint)(elem->color)._s_0.a - (uint)(elem->fromColor)._s_0.a) *
+                     fVar3);
   }
   return;
 }
@@ -2784,188 +2819,185 @@ void __cdecl BG_LerpHudColors(hudelem_s *param_1,int param_2,hudelem_color_t *pa
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl BG_LoadShellShockDvars(char *param_1)
+int __cdecl BG_LoadShellShockDvars(char *name)
 
 {
-  char *local_f8;
-  char *local_f4 [32];
-  char local_74 [68];
-  int local_30;
-  bool local_2c [32];
+  char *filebuf;
+  char *bg_shock_dvar_names [32];
+  char fullpath [68];
+  int success;
+  bool isOptional [32];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_74,0x40,"shock/%s.shock");
-  local_f8 = Com_LoadRawTextFile(local_74);
-  if (local_f8 == (char *)0x0) {
+  Com_sprintf(fullpath,0x40,"shock/%s.shock");
+  filebuf = Com_LoadRawTextFile(fullpath);
+  if (filebuf == (char *)0x0) {
     Com_PrintError(0x11,"couldn\'t open \'%s\'.\n");
-    local_f8 = Com_LoadRawTextFile("shock/default.shock");
-    if (local_f8 == (char *)0x0) {
+    filebuf = Com_LoadRawTextFile("shock/default.shock");
+    if (filebuf == (char *)0x0) {
       Com_PrintError(0x11,
                      "couldn\'t open \'shock/default.shock\'. This is a default shock file that you should have.\n"
                     );
       return 0;
     }
   }
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    local_f4[local_8] = bgShockDvarNames[local_8];
+  for (i = 0; i < 0x20; i = i + 1) {
+    bg_shock_dvar_names[i] = bgShockDvarNames[i];
   }
-  local_30 = Com_LoadDvarsFromBufferOptional(local_f4,local_2c,0x20,local_f8,local_74);
-  Com_UnloadRawTextFile(local_f8);
-  return local_30;
+  success = Com_LoadDvarsFromBufferOptional(bg_shock_dvar_names,isOptional,0x20,filebuf,fullpath);
+  Com_UnloadRawTextFile(filebuf);
+  return success;
 }
 
 
 // 00427D80  BG_SetShellShockParmsFromDvars  (bgame/bg_misc.cpp:2526)
 
-void __cdecl BG_SetShellShockParmsFromDvars(shellshock_parms_t *param_1)
+void __cdecl BG_SetShellShockParmsFromDvars(shellshock_parms_t *parms)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_d4;
   
-  if ((param_1 == (shellshock_parms_t *)0x0) &&
+  if ((parms == (shellshock_parms_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x9df,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->screenBlend).blurredEffectTime =
+  (parms->screenBlend).blurredEffectTime =
        (int)ROUND((bg_shock_screenBlurBlendTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->screenBlend).blurredFadeTime =
+  (parms->screenBlend).blurredFadeTime =
        (int)ROUND((bg_shock_screenBlurBlendFadeTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->screenBlend).flashShotFadeTime =
+  (parms->screenBlend).flashShotFadeTime =
        (int)ROUND((bg_shock_screenFlashShotFadeTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->screenBlend).flashWhiteFadeTime =
+  (parms->screenBlend).flashWhiteFadeTime =
        (int)ROUND((bg_shock_screenFlashWhiteFadeTime->current).value * 1000.0 + 9.313226e-10);
-  if (((param_1->screenBlend).blurredFadeTime < 1) &&
+  if (((parms->screenBlend).blurredFadeTime < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x9e5,0,
                                "%s\n\t(parms->screenBlend.blurredFadeTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->screenBlend).blurredEffectTime < 1) &&
+  if (((parms->screenBlend).blurredEffectTime < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0x9e6,0,
                                "%s\n\t(parms->screenBlend.blurredEffectTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->screenBlend).type = (bg_shock_screenType->current).integer;
-  (param_1->view).fadeTime = 3000;
+  (parms->screenBlend).type = (bg_shock_screenType->current).integer;
+  (parms->view).fadeTime = 3000;
   local_d4 = (bg_shock_viewKickPeriod->current).value;
   if (0.0 <= 0.001 - local_d4) {
     local_d4 = 0.001;
   }
-  (param_1->view).kickRate = 0.001 / local_d4;
-  (param_1->view).kickRadius = (float)(bg_shock_viewKickRadius->current).integer;
-  (param_1->sound).affect = (bg_shock_sound->current).enabled;
-  strncpy((uchar *)(param_1->sound).loop,(uchar *)(bg_shock_soundLoop->current).string,0x40);
-  strncpy((uchar *)(param_1->sound).loopSilent,(uchar *)(bg_shock_soundLoopSilent->current).string,
+  (parms->view).kickRate = 0.001 / local_d4;
+  (parms->view).kickRadius = (float)(bg_shock_viewKickRadius->current).integer;
+  (parms->sound).affect = (bg_shock_sound->current).enabled;
+  strncpy((uchar *)(parms->sound).loop,(uchar *)(bg_shock_soundLoop->current).string,0x40);
+  strncpy((uchar *)(parms->sound).loopSilent,(uchar *)(bg_shock_soundLoopSilent->current).string,
           0x40);
-  strncpy((uchar *)(param_1->sound).end,(uchar *)(bg_shock_soundEnd->current).string,0x40);
-  strncpy((uchar *)(param_1->sound).endAbort,(uchar *)(bg_shock_soundEndAbort->current).string,0x40)
-  ;
-  (param_1->sound).fadeInTime =
+  strncpy((uchar *)(parms->sound).end,(uchar *)(bg_shock_soundEnd->current).string,0x40);
+  strncpy((uchar *)(parms->sound).endAbort,(uchar *)(bg_shock_soundEndAbort->current).string,0x40);
+  (parms->sound).fadeInTime =
        (int)ROUND((bg_shock_soundFadeInTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->sound).fadeOutTime =
+  (parms->sound).fadeOutTime =
        (int)ROUND((bg_shock_soundFadeOutTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->sound).loopFadeTime =
+  (parms->sound).loopFadeTime =
        (int)ROUND((bg_shock_soundLoopFadeTime->current).value * 1000.0 + 9.313226e-10);
-  (param_1->sound).loopEndDelay =
+  (parms->sound).loopEndDelay =
        (int)ROUND((bg_shock_soundLoopEndDelay->current).value * 1000.0 + 9.313226e-10);
-  strncpy((uchar *)(param_1->sound).roomtype,(uchar *)(bg_shock_soundRoomType->current).string,0x40)
-  ;
-  (param_1->sound).drylevel = (float)(bg_shock_soundDryLevel->current).integer;
-  (param_1->sound).wetlevel = (float)(bg_shock_soundWetLevel->current).integer;
-  (param_1->sound).modEndDelay =
+  strncpy((uchar *)(parms->sound).roomtype,(uchar *)(bg_shock_soundRoomType->current).string,0x40);
+  (parms->sound).drylevel = (float)(bg_shock_soundDryLevel->current).integer;
+  (parms->sound).wetlevel = (float)(bg_shock_soundWetLevel->current).integer;
+  (parms->sound).modEndDelay =
        (int)ROUND((bg_shock_soundModEndDelay->current).value * 1000.0 + 9.313226e-10);
-  if (((param_1->sound).fadeInTime < 0) &&
+  if (((parms->sound).fadeInTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa03,0,
                                "%s\n\t(parms->sound.fadeInTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->sound).fadeOutTime < 0) &&
+  if (((parms->sound).fadeOutTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa04,0,
                                "%s\n\t(parms->sound.fadeOutTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->sound).loopFadeTime < 0) &&
+  if (((parms->sound).loopFadeTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa05,0,
                                "%s\n\t(parms->sound.loopFadeTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_1->sound).drylevel < 0.0) || (1.0 < (param_1->sound).drylevel)) &&
+  if ((((parms->sound).drylevel < 0.0) || (1.0 < (parms->sound).drylevel)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa06,0,
                                "%s\n\t(parms->sound.drylevel) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_1->sound).wetlevel < 0.0) || (1.0 < (param_1->sound).wetlevel)) &&
+  if ((((parms->sound).wetlevel < 0.0) || (1.0 < (parms->sound).wetlevel)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa07,0,
                                "%s\n\t(parms->sound.wetlevel) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->lookControl).affect = (bg_shock_lookControl->current).enabled;
-  (param_1->lookControl).fadeTime =
+  (parms->lookControl).affect = (bg_shock_lookControl->current).enabled;
+  (parms->lookControl).fadeTime =
        (int)ROUND((bg_shock_lookControl_fadeTime->current).value * 1000.0 + 9.313226e-10);
-  if (((param_1->lookControl).fadeTime < 1) &&
+  if (((parms->lookControl).fadeTime < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa0b,0,
                                "%s\n\t(parms->lookControl.fadeTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->lookControl).maxPitchSpeed =
-       (float)(bg_shock_lookControl_maxpitchspeed->current).integer;
-  (param_1->lookControl).maxYawSpeed = (float)(bg_shock_lookControl_maxyawspeed->current).integer;
-  (param_1->lookControl).mouseSensitivity =
+  (parms->lookControl).maxPitchSpeed = (float)(bg_shock_lookControl_maxpitchspeed->current).integer;
+  (parms->lookControl).maxYawSpeed = (float)(bg_shock_lookControl_maxyawspeed->current).integer;
+  (parms->lookControl).mouseSensitivity =
        (float)(bg_shock_lookControl_mousesensitivityscale->current).integer;
-  (param_1->movement).scale = (float)(bg_shock_movement->current).integer;
-  (param_1->animation).affect = (bg_shock_animation->current).enabled;
-  I_strncpyz((param_1->visionSet).name,(bg_shock_visionset_name->current).string,0x20);
-  (param_1->visionSet).inTime = (int)((bg_shock_visionset_inTime->current).value * 1000.0);
-  (param_1->visionSet).outTime = (int)((bg_shock_visionset_outTime->current).value * 1000.0);
+  (parms->movement).scale = (float)(bg_shock_movement->current).integer;
+  (parms->animation).affect = (bg_shock_animation->current).enabled;
+  I_strncpyz((parms->visionSet).name,(bg_shock_visionset_name->current).string,0x20);
+  (parms->visionSet).inTime = (int)((bg_shock_visionset_inTime->current).value * 1000.0);
+  (parms->visionSet).outTime = (int)((bg_shock_visionset_outTime->current).value * 1000.0);
   return;
 }
 
 
 // 004284C0  BG_SaveShellShockDvars  (bgame/bg_misc.cpp:2587)
 
-int __cdecl BG_SaveShellShockDvars(char *param_1)
+int __cdecl BG_SaveShellShockDvars(char *name)
 
 {
   char *pcVar1;
   int iVar2;
   char *local_98;
-  char *local_94 [33];
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *bg_shock_dvar_names [33];
+  char *fullpath;
+  int fh;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    local_94[local_8] = bgShockDvarNames[local_8];
+  for (i = 0; i < 0x20; i = i + 1) {
+    bg_shock_dvar_names[i] = bgShockDvarNames[i];
   }
-  iVar2 = Com_SaveDvarsToBuffer(local_94,0x20,filebuf,0x10000);
+  iVar2 = Com_SaveDvarsToBuffer(bg_shock_dvar_names,0x20,filebuf,0x10000);
   if (iVar2 == 0) {
     iVar2 = 0;
   }
   else {
-    local_10 = va("shock/%s.shock");
-    iVar2 = FS_FOpenFileByMode(local_10,&local_c,FS_WRITE);
+    fullpath = va("shock/%s.shock");
+    iVar2 = FS_FOpenFileByMode(fullpath,&fh,FS_WRITE);
     if (iVar2 < 0) {
       iVar2 = 0;
     }
@@ -2976,8 +3008,8 @@ int __cdecl BG_SaveShellShockDvars(char *param_1)
         local_98 = pcVar1;
         pcVar1 = local_98 + 1;
       } while (*local_98 != '\0');
-      FS_Write(filebuf,(int)(local_98 + -0xe50018),local_c);
-      FS_FCloseFile(local_c);
+      FS_Write(filebuf,(int)(local_98 + -0xe50018),fh);
+      FS_FCloseFile(fh);
       iVar2 = 1;
     }
   }
@@ -2987,14 +3019,14 @@ int __cdecl BG_SaveShellShockDvars(char *param_1)
 
 // 004285D0  BG_GetShellshockParms  (bgame/bg_misc.cpp:2613)
 
-shellshock_parms_t * __cdecl BG_GetShellshockParms(int param_1)
+shellshock_parms_t * __cdecl BG_GetShellshockParms(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   shellshock_parms_t *psVar3;
   
-  if ((param_1 < 0) || (0xf < param_1)) {
+  if ((index < 0) || (0xf < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa36,0,
                              "%s\n\t(index) = %i");
     if (!bVar2) {
@@ -3003,20 +3035,19 @@ shellshock_parms_t * __cdecl BG_GetShellshockParms(int param_1)
       return psVar3;
     }
   }
-  return bg_shellshockParms + param_1;
+  return bg_shellshockParms + index;
 }
 
 
 // 00428620  BG_IsShellshockAnim  (bgame/bg_misc.cpp:2620)
 
-bool __cdecl BG_IsShellshockAnim(playerState_s *param_1)
+bool __cdecl BG_IsShellshockAnim(playerState_s *ps)
 
 {
   shellshock_parms_t *psVar1;
   
-  if (((param_1->pm_flags & 0x10000U) != 0) &&
-     (psVar1 = BG_GetShellshockParms(param_1->shellshockIndex), (psVar1->animation).affect != false)
-     ) {
+  if (((ps->pm_flags & 0x10000U) != 0) &&
+     (psVar1 = BG_GetShellshockParms(ps->shellshockIndex), (psVar1->animation).affect != false)) {
     return true;
   }
   return false;
@@ -3025,13 +3056,13 @@ bool __cdecl BG_IsShellshockAnim(playerState_s *param_1)
 
 // 00428670  BG_CreateXAnim  (bgame/bg_misc.cpp:2626)
 
-void __cdecl BG_CreateXAnim(XAnim_s *param_1,uint param_2,char *param_3)
+void __cdecl BG_CreateXAnim(XAnim_s *anims,uint animIndex,char *name)
 
 {
   if ((useFastFile->current).enabled == false) {
-    XAnimPrecache(param_3,Hunk_AllocXAnimTreePrecache);
+    XAnimPrecache(name,Hunk_AllocXAnimTreePrecache);
   }
-  XAnimCreate(param_1,param_2,param_3);
+  XAnimCreate(anims,animIndex,name);
   return;
 }
 
@@ -3066,7 +3097,7 @@ void __cdecl BG_CheckThread(void)
 /* WARNING: Removing unreachable block (ram,0x004287ae) */
 /* WARNING: Removing unreachable block (ram,0x004287d2) */
 
-int __cdecl BG_GetMaxSprintTime(playerState_s *param_1)
+int __cdecl BG_GetMaxSprintTime(playerState_s *ps)
 
 {
   int iVar1;
@@ -3074,24 +3105,25 @@ int __cdecl BG_GetMaxSprintTime(playerState_s *param_1)
   uint extraout_EAX;
   uint extraout_EDX;
   int local_28;
-  float local_8;
+  float k_milliseconds_per_second;
+  float maxSprintTime;
   
-  if ((param_1->eFlags & 0x4000U) == 0) {
-    iVar1 = (param_1->sprintState).sprintDuration;
-    pWVar2 = BG_GetWeaponDef((uint)param_1->weapon);
-    local_8 = (float)iVar1 * pWVar2->sprintDurationScale;
+  if ((ps->eFlags & 0x4000U) == 0) {
+    iVar1 = (ps->sprintState).sprintDuration;
+    pWVar2 = BG_GetWeaponDef((uint)ps->weapon);
+    maxSprintTime = (float)iVar1 * pWVar2->sprintDurationScale;
     if ((player_sprintTime->current).value == 0.0) {
-      local_8 = 0.0;
+      maxSprintTime = 0.0;
     }
   }
   else {
-    local_8 = (vehicle_perk_boost_duration_seconds->current).value * 1000.0;
+    maxSprintTime = (vehicle_perk_boost_duration_seconds->current).value * 1000.0;
   }
   _allshl();
-  if ((extraout_EAX & param_1->perks[0]) != 0 || (extraout_EDX & param_1->perks[1]) != 0) {
-    local_8 = (perk_sprintMultiplier->current).value * 1.0 * local_8;
+  if ((extraout_EAX & ps->perks[0]) != 0 || (extraout_EDX & ps->perks[1]) != 0) {
+    maxSprintTime = (perk_sprintMultiplier->current).value * 1.0 * maxSprintTime;
   }
-  local_28 = (int)local_8;
+  local_28 = (int)maxSprintTime;
   if (0x3fff < local_28) {
     local_28 = 0x3fff;
   }
@@ -3101,7 +3133,7 @@ int __cdecl BG_GetMaxSprintTime(playerState_s *param_1)
 
 // 00428860  BG_ClipMoveToDobj  (bgame/bg_misc.cpp:2687)
 
-bool __cdecl BG_ClipMoveToDobj(entityState_s *param_1)
+bool __cdecl BG_ClipMoveToDobj(entityState_s *es)
 
 {
   code *pcVar1;
@@ -3109,17 +3141,17 @@ bool __cdecl BG_ClipMoveToDobj(entityState_s *param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if ((param_1 == (entityState_s *)0x0) &&
+  if ((es == (entityState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_misc.cpp",0xa80,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1->eType == 0xe) || (param_1->eType == 0x10)) {
+  if ((es->eType == 0xe) || (es->eType == 0x10)) {
     local_8 = true;
   }
-  else if (((param_1->solid == 0xffffff) || (param_1->eType == 0x11)) || (param_1->eType == 1)) {
+  else if (((es->solid == 0xffffff) || (es->eType == 0x11)) || (es->eType == 1)) {
     local_8 = false;
   }
   else {
@@ -3142,12 +3174,12 @@ int __cdecl BG_GetFriendlyFireStatus(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_DisplayName(clientInfo_t *param_1,int param_2)
+char * __cdecl BG_DisplayName(clientInfo_t *ci,int type)
 
 {
   char *pcVar1;
   
-  pcVar1 = Com_DisplayName(param_1->name,param_1->clanAbbrev,param_2);
+  pcVar1 = Com_DisplayName(ci->name,ci->clanAbbrev,type);
   return pcVar1;
 }
 
@@ -3155,61 +3187,61 @@ char * __cdecl BG_DisplayName(clientInfo_t *param_1,int param_2)
 // 00428930  BG_ClipCameraToHeliPatch  (bgame/bg_misc.cpp:2714)
 
 void __cdecl
-BG_ClipCameraToHeliPatch(float *param_1,float *param_2,float *param_3,float (*param_4) [3])
+BG_ClipCameraToHeliPatch(float *origin,float *oldpos,float *velocity,float (*breachPos) [3])
 
 {
   bool bVar1;
-  float local_18;
-  char local_11;
-  float local_10;
+  float heliPatchZ;
+  bool oldposValid;
+  float newpos;
   float local_c;
   float local_8;
   
   if (((bg_freeCamClipToHeliPatch->current).enabled != false) && (0 < num_heli_height_lock_patches))
   {
-    local_11 = '\0';
-    bVar1 = CM_GetHeliHeight(param_2,3000.0,&local_18);
+    oldposValid = false;
+    bVar1 = CM_GetHeliHeight(oldpos,3000.0,&heliPatchZ);
     if (bVar1) {
-      local_11 = '\x01';
+      oldposValid = true;
     }
-    bVar1 = CM_GetHeliHeight(param_1,3000.0,&local_18);
+    bVar1 = CM_GetHeliHeight(origin,3000.0,&heliPatchZ);
     if (!bVar1) {
-      local_c = param_1[1];
-      local_8 = param_1[2];
-      local_10 = *param_2;
-      bVar1 = CM_GetHeliHeight(&local_10,3000.0,&local_18);
+      local_c = origin[1];
+      local_8 = origin[2];
+      newpos = *oldpos;
+      bVar1 = CM_GetHeliHeight(&newpos,3000.0,&heliPatchZ);
       if (bVar1) {
-        *param_1 = *param_2;
+        *origin = *oldpos;
       }
       else {
-        local_10 = *param_1;
-        local_8 = param_1[2];
-        local_c = param_2[1];
-        bVar1 = CM_GetHeliHeight(&local_10,3000.0,&local_18);
+        newpos = *origin;
+        local_8 = origin[2];
+        local_c = oldpos[1];
+        bVar1 = CM_GetHeliHeight(&newpos,3000.0,&heliPatchZ);
         if (bVar1) {
-          param_1[1] = param_2[1];
+          origin[1] = oldpos[1];
         }
-        else if (local_11 == '\0') {
-          if (param_4 != (float (*) [3])0x0) {
-            *param_1 = (*param_4)[0];
-            param_1[1] = (*param_4)[1];
-            param_1[2] = (*param_4)[2];
-            *param_3 = 0.0;
-            param_3[1] = 0.0;
-            param_3[2] = 0.0;
-            bVar1 = CM_GetHeliHeight(param_1,3000.0,&local_18);
+        else if (oldposValid == false) {
+          if (breachPos != (float (*) [3])0x0) {
+            *origin = (*breachPos)[0];
+            origin[1] = (*breachPos)[1];
+            origin[2] = (*breachPos)[2];
+            *velocity = 0.0;
+            velocity[1] = 0.0;
+            velocity[2] = 0.0;
+            bVar1 = CM_GetHeliHeight(origin,3000.0,&heliPatchZ);
             if (bVar1) {
-              param_1[2] = local_18 - 1.0;
+              origin[2] = heliPatchZ - 1.0;
             }
           }
         }
         else {
-          *param_1 = *param_2;
-          param_1[1] = param_2[1];
-          param_1[2] = param_2[2];
-          *param_3 = 0.0;
-          param_3[1] = 0.0;
-          param_3[2] = 0.0;
+          *origin = *oldpos;
+          origin[1] = oldpos[1];
+          origin[2] = oldpos[2];
+          *velocity = 0.0;
+          velocity[1] = 0.0;
+          velocity[2] = 0.0;
         }
       }
     }

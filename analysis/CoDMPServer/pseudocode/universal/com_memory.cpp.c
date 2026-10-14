@@ -12,15 +12,16 @@ void __cdecl TRACK_com_memory(void)
 
 // 007B2600  Z_VirtualReserve  (universal/com_memory.cpp:176)
 
-void * __cdecl Z_VirtualReserve(int param_1,char *param_2)
+void * __cdecl Z_VirtualReserve(int size,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   LPVOID pvVar4;
+  void *buf;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0xb1,0,
                              "%s\n\t(size) = %i");
     if (!bVar2) {
@@ -29,7 +30,7 @@ void * __cdecl Z_VirtualReserve(int param_1,char *param_2)
       return pvVar3;
     }
   }
-  pvVar4 = VirtualAlloc((LPVOID)0x0,param_1,(0x20000 < param_1) - 1 & 0x100000 | 0x2000,4);
+  pvVar4 = VirtualAlloc((LPVOID)0x0,size,(0x20000 < size) - 1 & 0x100000 | 0x2000,4);
   if (pvVar4 == (LPVOID)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x135,0,
                              "%s");
@@ -45,7 +46,7 @@ void * __cdecl Z_VirtualReserve(int param_1,char *param_2)
 
 // 007B2760  Z_TryVirtualCommitInternal  (universal/com_memory.cpp:317)
 
-int __cdecl Z_TryVirtualCommitInternal(void *param_1,int param_2)
+int __cdecl Z_TryVirtualCommitInternal(void *ptr,int size)
 
 {
   code *pcVar1;
@@ -53,27 +54,27 @@ int __cdecl Z_TryVirtualCommitInternal(void *param_1,int param_2)
   int iVar3;
   LPVOID pvVar4;
   
-  if ((param_2 < 0) &&
+  if ((size < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x13e,
                                0,"%s\n\t(size) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  pvVar4 = VirtualAlloc(param_1,param_2,(0x20000 < param_2) - 1 & 0x100000 | 0x1000,4);
+  pvVar4 = VirtualAlloc(ptr,size,(0x20000 < size) - 1 & 0x100000 | 0x1000,4);
   return (uint)(pvVar4 != (LPVOID)0x0);
 }
 
 
 // 007B26A0  Z_VirtualDecommitInternal  (universal/com_memory.cpp:339)
 
-void __cdecl Z_VirtualDecommitInternal(void *param_1,int param_2)
+void __cdecl Z_VirtualDecommitInternal(void *ptr,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 < 0) {
+  if (size < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x154,0,
                              "%s\n\t(size) = %i");
     if (!bVar2) {
@@ -82,36 +83,37 @@ void __cdecl Z_VirtualDecommitInternal(void *param_1,int param_2)
       return;
     }
   }
-  VirtualFree(param_1,param_2,0x4000);
+  VirtualFree(ptr,size,0x4000);
   return;
 }
 
 
 // 007B26F0  Z_VirtualFreeInternal  (universal/com_memory.cpp:351)
 
-void __cdecl Z_VirtualFreeInternal(void *param_1)
+void __cdecl Z_VirtualFreeInternal(void *ptr)
 
 {
-  VirtualFree(param_1,0,0x8000);
+  VirtualFree(ptr,0,0x8000);
   return;
 }
 
 
 // 007B2710  Z_TryVirtualAllocInternal  (universal/com_memory.cpp:400)
 
-void * __cdecl Z_TryVirtualAllocInternal(int param_1,char *param_2)
+void * __cdecl Z_TryVirtualAllocInternal(int size,char *name)
 
 {
-  void *pvVar1;
-  int iVar2;
+  void *ptr_00;
+  int iVar1;
+  void *ptr;
   
-  pvVar1 = Z_VirtualReserve(param_1,param_2);
-  if (pvVar1 != (void *)0x0) {
-    iVar2 = Z_TryVirtualCommitInternal(pvVar1,param_1);
-    if (iVar2 != 0) {
-      return pvVar1;
+  ptr_00 = Z_VirtualReserve(size,name);
+  if (ptr_00 != (void *)0x0) {
+    iVar1 = Z_TryVirtualCommitInternal(ptr_00,size);
+    if (iVar1 != 0) {
+      return ptr_00;
     }
-    Z_VirtualFree(pvVar1,0);
+    Z_VirtualFree(ptr_00,0);
   }
   return (void *)0x0;
 }
@@ -119,12 +121,12 @@ void * __cdecl Z_TryVirtualAllocInternal(int param_1,char *param_2)
 
 // 007B27D0  Z_VirtualCommitInternal  (universal/com_memory.cpp:415)
 
-void __cdecl Z_VirtualCommitInternal(void *param_1,int param_2)
+void __cdecl Z_VirtualCommitInternal(void *ptr,int size)
 
 {
   int iVar1;
   
-  iVar1 = Z_TryVirtualCommitInternal(param_1,param_2);
+  iVar1 = Z_TryVirtualCommitInternal(ptr,size);
   if (iVar1 == 0) {
     Sys_OutOfMemErrorInternal("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x1a4);
   }
@@ -134,7 +136,7 @@ void __cdecl Z_VirtualCommitInternal(void *param_1,int param_2)
 
 // 007B4A10  Z_MallocFailed  (universal/com_memory.cpp:433)
 
-void __cdecl Z_MallocFailed(int param_1)
+void __cdecl Z_MallocFailed(int size)
 
 {
   Com_PrintError(0x10,"Failed to Z_Malloc %i bytes\n");
@@ -160,7 +162,11 @@ void __cdecl Com_TouchMemory(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int j;
+  int sum;
+  int start;
+  int end;
+  int i;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -176,10 +182,9 @@ void __cdecl Com_TouchMemory(void)
     }
   }
   Sys_Milliseconds();
-  for (local_8 = 0; local_8 < hunk_low.permanent >> 2; local_8 = local_8 + 0x40) {
+  for (i = 0; i < hunk_low.permanent >> 2; i = i + 0x40) {
   }
-  for (local_8 = s_hunkTotal - hunk_high.permanent >> 2; local_8 < hunk_high.permanent >> 2;
-      local_8 = local_8 + 0x40) {
+  for (i = s_hunkTotal - hunk_high.permanent >> 2; i < hunk_high.permanent >> 2; i = i + 0x40) {
   }
   Sys_Milliseconds();
   Com_Printf(0x10,"Com_TouchMemory: %i msec. Using sum: %d\n");
@@ -331,42 +336,43 @@ void __cdecl Hunk_CheckTempMemoryHighClear(void)
 
 // 007B2C30  Hunk_FindDataForFileInternal  (universal/com_memory.cpp:817)
 
-void * __cdecl Hunk_FindDataForFileInternal(int param_1,char *param_2,int param_3)
+void * __cdecl Hunk_FindDataForFileInternal(int type,char *name,int hash)
 
 {
   int iVar1;
-  fileData_s *local_8;
+  fileData_s *searchFileData;
   
-  local_8 = com_fileDataHashTable[param_3];
+  searchFileData = com_fileDataHashTable[hash];
   while( true ) {
-    if (local_8 == (fileData_s *)0x0) {
+    if (searchFileData == (fileData_s *)0x0) {
       return (void *)0x0;
     }
-    if (((uint)local_8->type == param_1) && (iVar1 = I_stricmp(local_8->name,param_2), iVar1 == 0))
-    break;
-    local_8 = local_8->next;
+    if (((uint)searchFileData->type == type) &&
+       (iVar1 = I_stricmp(searchFileData->name,name), iVar1 == 0)) break;
+    searchFileData = searchFileData->next;
   }
-  return local_8->data;
+  return searchFileData->data;
 }
 
 
 // 007B2C00  Hunk_FindDataForFile  (universal/com_memory.cpp:832)
 
-void * __cdecl Hunk_FindDataForFile(int param_1,char *param_2)
+void * __cdecl Hunk_FindDataForFile(int type,char *name)
 
 {
-  long lVar1;
-  void *pvVar2;
+  long hash_00;
+  void *pvVar1;
+  int hash;
   
-  lVar1 = FS_HashFileName(param_2,0x400);
-  pvVar2 = Hunk_FindDataForFileInternal(param_1,param_2,lVar1);
-  return pvVar2;
+  hash_00 = FS_HashFileName(name,0x400);
+  pvVar1 = Hunk_FindDataForFileInternal(type,name,hash_00);
+  return pvVar1;
 }
 
 
 // 007B2C90  Hunk_DataOnHunk  (universal/com_memory.cpp:840)
 
-int __cdecl Hunk_DataOnHunk(void *param_1)
+int __cdecl Hunk_DataOnHunk(void *data)
 
 {
   code *pcVar1;
@@ -392,10 +398,10 @@ int __cdecl Hunk_DataOnHunk(void *param_1)
       return iVar3;
     }
   }
-  if (param_1 < s_hunkData) {
+  if (data < s_hunkData) {
     iVar3 = 0;
   }
-  else if (param_1 < s_hunkData + s_hunkTotal) {
+  else if (data < s_hunkData + s_hunkTotal) {
     iVar3 = 1;
   }
   else {
@@ -407,21 +413,22 @@ int __cdecl Hunk_DataOnHunk(void *param_1)
 
 // 007B2D20  Hunk_SetDataForFile  (universal/com_memory.cpp:852)
 
-char * __cdecl
-Hunk_SetDataForFile(int param_1,char *param_2,void *param_3,_func___cdecl_void_ptr_int *param_4)
+char * __cdecl Hunk_SetDataForFile(int type,char *name,void *data,_func___cdecl_void_ptr_int *alloc)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
-  long lVar5;
-  void *pvVar6;
-  fileData_s *pfVar7;
-  int iVar8;
+  long hash_00;
+  void *pvVar5;
+  fileData_s *data_00;
+  int iVar6;
   char *local_24;
   char *local_20;
   char *local_10;
+  int hash;
+  fileData_s *fileData;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -433,9 +440,9 @@ Hunk_SetDataForFile(int param_1,char *param_2,void *param_3,_func___cdecl_void_p
       return pcVar4;
     }
   }
-  lVar5 = FS_HashFileName(param_2,0x400);
-  pvVar6 = Hunk_FindDataForFileInternal(param_1,param_2,lVar5);
-  if (pvVar6 != (void *)0x0) {
+  hash_00 = FS_HashFileName(name,0x400);
+  pvVar5 = Hunk_FindDataForFileInternal(type,name,hash_00);
+  if (pvVar5 != (void *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x35b,0,
                              "%s");
     if (!bVar3) {
@@ -444,14 +451,14 @@ Hunk_SetDataForFile(int param_1,char *param_2,void *param_3,_func___cdecl_void_p
       return pcVar4;
     }
   }
-  local_10 = param_2;
+  local_10 = name;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  pfVar7 = (*param_4)((int)(local_10 + (10 - (int)(param_2 + 1))));
-  iVar8 = Hunk_DataOnHunk(pfVar7);
-  if (iVar8 == 0) {
+  data_00 = (*alloc)((int)(local_10 + (10 - (int)(name + 1))));
+  iVar6 = Hunk_DataOnHunk(data_00);
+  if (iVar6 == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x360,0,
                              "%s");
     if (!bVar3) {
@@ -460,9 +467,9 @@ Hunk_SetDataForFile(int param_1,char *param_2,void *param_3,_func___cdecl_void_p
       return pcVar4;
     }
   }
-  pfVar7->data = param_3;
-  pfVar7->type = (uchar)param_1;
-  if (param_1 != (uint)pfVar7->type) {
+  data_00->data = data;
+  data_00->type = (uchar)type;
+  if (type != (uint)data_00->type) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x365,0,
                              "%s");
     if (!bVar3) {
@@ -471,29 +478,30 @@ Hunk_SetDataForFile(int param_1,char *param_2,void *param_3,_func___cdecl_void_p
       return pcVar4;
     }
   }
-  local_20 = param_2;
-  local_24 = pfVar7->name;
+  local_20 = name;
+  local_24 = data_00->name;
   do {
     cVar1 = *local_20;
     *local_24 = cVar1;
     local_20 = local_20 + 1;
     local_24 = local_24 + 1;
   } while (cVar1 != '\0');
-  pfVar7->next = com_fileDataHashTable[lVar5];
-  com_fileDataHashTable[lVar5] = pfVar7;
-  return pfVar7->name;
+  data_00->next = com_fileDataHashTable[hash_00];
+  com_fileDataHashTable[hash_00] = data_00;
+  return data_00->name;
 }
 
 
 // 007B2ED0  Hunk_AddData  (universal/com_memory.cpp:877)
 
-void __cdecl Hunk_AddData(int param_1,void *param_2,_func___cdecl_void_ptr_int *param_3)
+void __cdecl Hunk_AddData(int type,void *data,_func___cdecl_void_ptr_int *alloc)
 
 {
   code *pcVar1;
   bool bVar2;
-  fileData_s *pfVar3;
-  int iVar4;
+  fileData_s *data_00;
+  int iVar3;
+  fileData_s *fileData;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -505,9 +513,9 @@ void __cdecl Hunk_AddData(int param_1,void *param_2,_func___cdecl_void_ptr_int *
       return;
     }
   }
-  pfVar3 = (*param_3)(9);
-  iVar4 = Hunk_DataOnHunk(pfVar3);
-  if (iVar4 == 0) {
+  data_00 = (*alloc)(9);
+  iVar3 = Hunk_DataOnHunk(data_00);
+  if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x375,0,
                              "%s");
     if (!bVar2) {
@@ -516,9 +524,9 @@ void __cdecl Hunk_AddData(int param_1,void *param_2,_func___cdecl_void_ptr_int *
       return;
     }
   }
-  pfVar3->data = param_2;
-  pfVar3->type = (uchar)param_1;
-  if (param_1 != (uint)pfVar3->type) {
+  data_00->data = data;
+  data_00->type = (uchar)type;
+  if (type != (uint)data_00->type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x37a,0,
                              "%s");
     if (!bVar2) {
@@ -527,48 +535,50 @@ void __cdecl Hunk_AddData(int param_1,void *param_2,_func___cdecl_void_ptr_int *
       return;
     }
   }
-  pfVar3->next = com_hunkData;
-  com_hunkData = pfVar3;
+  data_00->next = com_hunkData;
+  com_hunkData = data_00;
   return;
 }
 
 
 // 007B34D0  Hunk_ClearDataFor  (universal/com_memory.cpp:896)
 
-void __cdecl Hunk_ClearDataFor(fileData_s **param_1,uchar *param_2,uchar *param_3)
+void __cdecl Hunk_ClearDataFor(fileData_s **pFileData,uchar *low,uchar *high)
 
 {
   uchar uVar1;
   fileData_s *pfVar2;
-  XAnimParts *pXVar3;
-  code *pcVar4;
-  bool bVar5;
+  XAnimParts *parts;
+  code *pcVar3;
+  bool bVar4;
+  void *data;
+  fileData_s *fileData;
   
-  bVar5 = Sys_IsMainThread();
-  if ((!bVar5) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",900,0,
-                               "%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  bVar4 = Sys_IsMainThread();
+  if ((!bVar4) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",900,0,
+                               "%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  while (*param_1 != (fileData_s *)0x0) {
-    pfVar2 = *param_1;
-    if ((pfVar2 < param_2) || (param_3 <= pfVar2)) {
-      param_1 = &pfVar2->next;
+  while (*pFileData != (fileData_s *)0x0) {
+    pfVar2 = *pFileData;
+    if ((pfVar2 < low) || (high <= pfVar2)) {
+      pFileData = &pfVar2->next;
     }
     else {
-      *param_1 = pfVar2->next;
-      pXVar3 = pfVar2->data;
+      *pFileData = pfVar2->next;
+      parts = pfVar2->data;
       uVar1 = pfVar2->type;
       if (uVar1 == '\x02') {
-        XAnimFreeList((XAnim_s *)pXVar3);
+        XAnimFreeList((XAnim_s *)parts);
       }
       else if (uVar1 == '\x04') {
-        XModelPartsFree((XModelPartsLoad *)pXVar3);
+        XModelPartsFree((XModelPartsLoad *)parts);
       }
       else if (uVar1 == '\x06') {
-        XAnimFree(pXVar3,SCRIPTINSTANCE_SERVER);
+        XAnimFree(parts,SCRIPTINSTANCE_SERVER);
       }
     }
   }
@@ -583,9 +593,12 @@ void __cdecl Hunk_ClearData(void)
 {
   code *pcVar1;
   bool bVar2;
-  uchar *puVar3;
-  uchar *puVar4;
-  uint local_10;
+  uchar *low_00;
+  uchar *high_00;
+  uchar *low;
+  uint hash;
+  fileData_s **pFileData;
+  uchar *high;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -597,26 +610,27 @@ void __cdecl Hunk_ClearData(void)
       return;
     }
   }
-  puVar3 = s_hunkData + hunk_low.permanent;
-  puVar4 = s_hunkData + (s_hunkTotal - hunk_high.permanent);
-  for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {
-    Hunk_ClearDataFor(com_fileDataHashTable + local_10,puVar3,puVar4);
+  low_00 = s_hunkData + hunk_low.permanent;
+  high_00 = s_hunkData + (s_hunkTotal - hunk_high.permanent);
+  for (hash = 0; hash < 0x400; hash = hash + 1) {
+    Hunk_ClearDataFor(com_fileDataHashTable + hash,low_00,high_00);
   }
-  Hunk_ClearDataFor(&com_hunkData,puVar3,puVar4);
+  Hunk_ClearDataFor(&com_hunkData,low_00,high_00);
   return;
 }
 
 
 // 007B2FB0  Hunk_OverrideDataForFile  (universal/com_memory.cpp:965)
 
-void __cdecl Hunk_OverrideDataForFile(int param_1,char *param_2,void *param_3)
+void __cdecl Hunk_OverrideDataForFile(int type,char *name,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   long lVar3;
   int iVar4;
-  fileData_s *local_8;
+  int hash;
+  fileData_s *searchFileData;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -626,10 +640,10 @@ void __cdecl Hunk_OverrideDataForFile(int param_1,char *param_2,void *param_3)
     (*pcVar1)();
     return;
   }
-  lVar3 = FS_HashFileName(param_2,0x400);
-  local_8 = com_fileDataHashTable[lVar3];
+  lVar3 = FS_HashFileName(name,0x400);
+  searchFileData = com_fileDataHashTable[lVar3];
   while( true ) {
-    if (local_8 == (fileData_s *)0x0) {
+    if (searchFileData == (fileData_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x3d8,
                                0,"Hunk_OverrideDataForFile: could not find data");
       if (bVar2) {
@@ -639,11 +653,11 @@ void __cdecl Hunk_OverrideDataForFile(int param_1,char *param_2,void *param_3)
       (*pcVar1)();
       return;
     }
-    if (((uint)local_8->type == param_1) && (iVar4 = I_stricmp(local_8->name,param_2), iVar4 == 0))
-    break;
-    local_8 = local_8->next;
+    if (((uint)searchFileData->type == type) &&
+       (iVar4 = I_stricmp(searchFileData->name,name), iVar4 == 0)) break;
+    searchFileData = searchFileData->next;
   }
-  local_8->data = param_3;
+  searchFileData->data = data;
   return;
 }
 
@@ -653,13 +667,16 @@ void __cdecl Hunk_OverrideDataForFile(int param_1,char *param_2,void *param_3)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl
-DB_EnumXAssetsFor(fileData_s *param_1,int param_2,_func___cdecl_void_XAssetHeader_void_ptr *param_3,
-                 void *param_4)
+DB_EnumXAssetsFor(fileData_s *fileData,int fileDataType,
+                 _func___cdecl_void_XAssetHeader_void_ptr *func,void *inData)
 
 {
-  for (; param_1 != (fileData_s *)0x0; param_1 = param_1->next) {
-    if (((uint)param_1->type == param_2) && (param_1->type == '\x05')) {
-      (*param_3)((XAssetHeader)param_1->data,param_4);
+  XAssetHeader header;
+  void *data;
+  
+  for (; fileData != (fileData_s *)0x0; fileData = fileData->next) {
+    if (((uint)fileData->type == fileDataType) && (fileData->type == '\x05')) {
+      (*func)((XAssetHeader)fileData->data,inData);
     }
   }
   return;
@@ -673,26 +690,28 @@ DB_EnumXAssetsFor(fileData_s *param_1,int param_2,_func___cdecl_void_XAssetHeade
 
 void __cdecl
 DB_EnumXAssets_LoadObj
-          (XAssetType param_1,_func___cdecl_void_XAssetHeader_void_ptr *param_2,void *param_3,
-          bool param_4)
+          (XAssetType type,_func___cdecl_void_XAssetHeader_void_ptr *func,void *inData,
+          bool includeOverride)
 
 {
-  uint local_10;
+  int hash;
+  int fileDataType;
+  fileData_s *fileData;
   
-  switch(param_1) {
+  switch(type) {
   case ASSET_TYPE_XMODEL:
-    for (local_10 = 0; local_10 < 0x400; local_10 = local_10 + 1) {
-      DB_EnumXAssetsFor(com_fileDataHashTable[local_10],5,param_2,param_3);
+    for (hash = 0; (uint)hash < 0x400; hash = hash + 1) {
+      DB_EnumXAssetsFor(com_fileDataHashTable[hash],5,func,inData);
     }
     break;
   case ASSET_TYPE_MATERIAL:
-    R_EnumMaterials(param_2,param_3);
+    R_EnumMaterials(func,inData);
     break;
   case ASSET_TYPE_TECHNIQUE_SET:
-    R_EnumTechniqueSets(param_2,param_3);
+    R_EnumTechniqueSets(func,inData);
     break;
   case ASSET_TYPE_IMAGE:
-    R_EnumImages(param_2,param_3);
+    R_EnumImages(func,inData);
   }
   return;
 }
@@ -702,13 +721,14 @@ DB_EnumXAssets_LoadObj
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Hunk_AddAsset(XAssetHeader param_1,void *param_2)
+void __cdecl Hunk_AddAsset(XAssetHeader header,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
+  AssetList *assetList;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x42f,0,
                              "%s");
     if (!bVar2) {
@@ -717,7 +737,7 @@ void __cdecl Hunk_AddAsset(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  if (*(int *)((int)param_2 + 4) <= *(int *)param_2) {
+  if (*(int *)((int)data + 4) <= *(int *)data) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x433,0,
                              "%s");
     if (!bVar2) {
@@ -726,8 +746,8 @@ void __cdecl Hunk_AddAsset(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  *(XAssetHeader *)(*(int *)((int)param_2 + 8) + *(int *)param_2 * 4) = param_1;
-  *(int *)param_2 = *(int *)param_2 + 1;
+  *(XAssetHeader *)(*(int *)((int)data + 8) + *(int *)data * 4) = header;
+  *(int *)data = *(int *)data + 1;
   return;
 }
 
@@ -737,18 +757,18 @@ void __cdecl Hunk_AddAsset(XAssetHeader param_1,void *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl DB_GetAllXAssetOfType_LoadObj(XAssetType param_1,XAssetHeader *param_2,int param_3)
+int __cdecl DB_GetAllXAssetOfType_LoadObj(XAssetType type,XAssetHeader *assets,int maxCount)
 
 {
-  int local_10;
+  int assetList;
   int local_c;
   XAssetHeader *local_8;
   
-  local_8 = param_2;
-  local_10 = 0;
-  local_c = param_3;
-  DB_EnumXAssets(param_1,Hunk_AddAsset,&local_10,false);
-  return local_10;
+  local_8 = assets;
+  assetList = 0;
+  local_c = maxCount;
+  DB_EnumXAssets(type,Hunk_AddAsset,&assetList,false);
+  return assetList;
 }
 
 
@@ -757,7 +777,7 @@ int __cdecl DB_GetAllXAssetOfType_LoadObj(XAssetType param_1,XAssetHeader *param
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl DB_GetAllXAssetOfType(XAssetType param_1,XAssetHeader *param_2,int param_3)
+int __cdecl DB_GetAllXAssetOfType(XAssetType type,XAssetHeader *assets,int maxCount)
 
 {
   int iVar1;
@@ -769,7 +789,7 @@ int __cdecl DB_GetAllXAssetOfType(XAssetType param_1,XAssetHeader *param_2,int p
   else {
     local_c = DB_GetAllXAssetOfType_FastFile;
   }
-  iVar1 = (*local_c)(param_1,param_2,param_3);
+  iVar1 = (*local_c)(type,assets,maxCount);
   return iVar1;
 }
 
@@ -780,8 +800,8 @@ int __cdecl DB_GetAllXAssetOfType(XAssetType param_1,XAssetHeader *param_2,int p
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 void __cdecl
-DB_EnumXAssets(XAssetType param_1,_func___cdecl_void_XAssetHeader_void_ptr *param_2,void *param_3,
-              bool param_4)
+DB_EnumXAssets(XAssetType type,_func___cdecl_void_XAssetHeader_void_ptr *func,void *inData,
+              bool includeOverride)
 
 {
   code *local_c;
@@ -792,7 +812,7 @@ DB_EnumXAssets(XAssetType param_1,_func___cdecl_void_XAssetHeader_void_ptr *para
   else {
     local_c = DB_EnumXAssets_FastFile;
   }
-  (*local_c)(param_1,param_2,param_3,param_4);
+  (*local_c)(type,func,inData,includeOverride);
   return;
 }
 
@@ -823,13 +843,16 @@ int __cdecl Hunk_SetMark(void)
 
 // 007B3350  Hunk_ClearToMark  (universal/com_memory.cpp:1114)
 
-void __cdecl Hunk_ClearToMark(int param_1)
+void __cdecl Hunk_ClearToMark(int mark)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
-  int iVar4;
+  int size;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -843,28 +866,31 @@ void __cdecl Hunk_ClearToMark(int param_1)
   }
   Hunk_CheckTempMemoryHighClear();
   puVar3 = s_hunkData + (s_hunkTotal - hunk_high.temp);
-  hunk_high.temp = param_1;
-  hunk_high.permanent = param_1;
+  hunk_high.temp = mark;
+  hunk_high.permanent = mark;
   Hunk_ClearData();
-  iVar4 = ((uint)(s_hunkData + (s_hunkTotal - hunk_high.temp)) & 0xfffff000) -
-          (int)((uint)puVar3 & 0xfffff000);
-  if (iVar4 != 0) {
-    Z_VirtualDecommit((void *)((uint)puVar3 & 0xfffff000),iVar4,0xb);
+  size = ((uint)(s_hunkData + (s_hunkTotal - hunk_high.temp)) & 0xfffff000) -
+         (int)((uint)puVar3 & 0xfffff000);
+  if (size != 0) {
+    Z_VirtualDecommit((void *)((uint)puVar3 & 0xfffff000),size,0xb);
   }
-  track_hunk_ClearToMarkHigh(param_1);
+  track_hunk_ClearToMarkHigh(mark);
   return;
 }
 
 
 // 007B35A0  Hunk_ClearToMarkLow  (universal/com_memory.cpp:1155)
 
-void __cdecl Hunk_ClearToMarkLow(int param_1)
+void __cdecl Hunk_ClearToMarkLow(int mark)
 
 {
   uchar *puVar1;
   code *pcVar2;
   bool bVar3;
-  int iVar4;
+  int size;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -878,15 +904,15 @@ void __cdecl Hunk_ClearToMarkLow(int param_1)
   }
   Hunk_CheckTempMemoryClear();
   puVar1 = s_hunkData + hunk_low.temp + 0xfff;
-  hunk_low.temp = param_1;
-  hunk_low.permanent = param_1;
+  hunk_low.temp = mark;
+  hunk_low.permanent = mark;
   Hunk_ClearData();
-  iVar4 = ((uint)puVar1 & 0xfffff000) -
-          (int)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000);
-  if (iVar4 != 0) {
-    Z_VirtualDecommit((void *)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000),iVar4,0xb);
+  size = ((uint)puVar1 & 0xfffff000) -
+         (int)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000);
+  if (size != 0) {
+    Z_VirtualDecommit((void *)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000),size,0xb);
   }
-  track_hunk_ClearToMarkLow(param_1);
+  track_hunk_ClearToMarkLow(mark);
   return;
 }
 
@@ -950,7 +976,7 @@ int __cdecl Hunk_Used(void)
 
 // 007B3750  Hunk_Alloc  (universal/com_memory.cpp:1220)
 
-void * __cdecl Hunk_Alloc(int param_1,char *param_2,int param_3)
+void * __cdecl Hunk_Alloc(int size,char *name,int type)
 
 {
   code *pcVar1;
@@ -970,14 +996,14 @@ void * __cdecl Hunk_Alloc(int param_1,char *param_2,int param_3)
       }
     }
   }
-  pvVar3 = Hunk_AllocAlign(param_1,0x20,param_2,param_3);
+  pvVar3 = Hunk_AllocAlign(size,0x20,name,type);
   return pvVar3;
 }
 
 
 // 007B37B0  Hunk_AllocAlign  (universal/com_memory.cpp:1242)
 
-void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4)
+void * __cdecl Hunk_AllocAlign(int size,int alignment,char *name,int type)
 
 {
   code *pcVar1;
@@ -985,9 +1011,14 @@ void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4
   bool bVar3;
   void *pvVar4;
   uchar *puVar5;
-  int iVar6;
-  uint uVar7;
-  uchar *puVar8;
+  int size_00;
+  uint uVar6;
+  uchar *dst;
+  int old_permanent;
+  uchar *buf;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -1011,7 +1042,7 @@ void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4
       return pvVar4;
     }
   }
-  if ((param_2 - 1U & param_2) != 0) {
+  if ((alignment - 1U & alignment) != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x4f2,0,
                              "%s");
     if (!bVar3) {
@@ -1020,7 +1051,7 @@ void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4
       return pvVar4;
     }
   }
-  if (0x1000 < param_2) {
+  if (0x1000 < alignment) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x4f3,0,
                              "%s");
     if (!bVar3) {
@@ -1029,19 +1060,19 @@ void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4
       return pvVar4;
     }
   }
-  uVar7 = param_2 - 1;
+  uVar6 = alignment - 1;
   Hunk_CheckTempMemoryHighClear();
   iVar2 = hunk_high.permanent;
   puVar5 = s_hunkData + (s_hunkTotal - hunk_high.permanent);
-  hunk_high.permanent = hunk_high.permanent + param_1 + uVar7 & ~uVar7;
+  hunk_high.permanent = hunk_high.permanent + size + uVar6 & ~uVar6;
   hunk_high.temp = hunk_high.permanent;
   if (s_hunkTotal < hunk_low.temp + hunk_high.permanent) {
     track_PrintAllInfo();
     Com_Error(ERR_DROP,"\x15Hunk_AllocAlign failed on %i bytes (total %i MB, low %i MB, high %i MB)"
              );
   }
-  puVar8 = s_hunkData + (s_hunkTotal - hunk_high.permanent);
-  if (((uint)puVar8 & uVar7) != 0) {
+  dst = s_hunkData + (s_hunkTotal - hunk_high.permanent);
+  if (((uint)dst & uVar6) != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x50e,0,
                              "%s");
     if (!bVar3) {
@@ -1050,27 +1081,31 @@ void * __cdecl Hunk_AllocAlign(int param_1,int param_2,char *param_3,int param_4
       return pvVar4;
     }
   }
-  iVar6 = ((uint)puVar5 & 0xfffff000) - (int)((uint)puVar8 & 0xfffff000);
-  if (iVar6 != 0) {
-    Z_VirtualCommit((void *)((uint)puVar8 & 0xfffff000),iVar6,0xb);
+  size_00 = ((uint)puVar5 & 0xfffff000) - (int)((uint)dst & 0xfffff000);
+  if (size_00 != 0) {
+    Z_VirtualCommit((void *)((uint)dst & 0xfffff000),size_00,0xb);
   }
-  track_hunk_alloc(hunk_high.permanent - iVar2,hunk_high.temp,param_3,param_4);
-  memset(puVar8,'\0',param_1);
-  return puVar8;
+  track_hunk_alloc(hunk_high.permanent - iVar2,hunk_high.temp,name,type);
+  memset(dst,'\0',size);
+  return dst;
 }
 
 
 // 007B39F0  Hunk_AllocateTempMemoryHigh  (universal/com_memory.cpp:1320)
 
-void * __cdecl Hunk_AllocateTempMemoryHigh(int param_1,char *param_2)
+void * __cdecl Hunk_AllocateTempMemoryHigh(int size,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
-  int iVar4;
+  int size_00;
+  uchar *puVar4;
   uchar *puVar5;
-  uchar *puVar6;
+  void *buf;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -1091,16 +1126,16 @@ void * __cdecl Hunk_AllocateTempMemoryHigh(int param_1,char *param_2)
       return pvVar3;
     }
   }
-  puVar6 = s_hunkData + (s_hunkTotal - hunk_high.temp);
-  hunk_high.temp = hunk_high.temp + param_1 + 0xfU & 0xfffffff0;
+  puVar5 = s_hunkData + (s_hunkTotal - hunk_high.temp);
+  hunk_high.temp = hunk_high.temp + size + 0xfU & 0xfffffff0;
   if (s_hunkTotal < hunk_low.temp + hunk_high.temp) {
     track_PrintAllInfo();
     Com_Error(ERR_DROP,
               "\x15Hunk_AllocateTempMemoryHigh: failed on %i bytes (total %i MB, low %i MB, high %i MB)"
              );
   }
-  puVar5 = s_hunkData + (s_hunkTotal - hunk_high.temp);
-  if (((uint)puVar5 & 0xf) != 0) {
+  puVar4 = s_hunkData + (s_hunkTotal - hunk_high.temp);
+  if (((uint)puVar4 & 0xf) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x548,0,
                              "%s");
     if (!bVar2) {
@@ -1109,12 +1144,12 @@ void * __cdecl Hunk_AllocateTempMemoryHigh(int param_1,char *param_2)
       return pvVar3;
     }
   }
-  iVar4 = ((uint)puVar6 & 0xfffff000) - (int)((uint)puVar5 & 0xfffff000);
-  if (iVar4 != 0) {
-    Z_VirtualCommit((void *)((uint)puVar5 & 0xfffff000),iVar4,0xb);
+  size_00 = ((uint)puVar5 & 0xfffff000) - (int)((uint)puVar4 & 0xfffff000);
+  if (size_00 != 0) {
+    Z_VirtualCommit((void *)((uint)puVar4 & 0xfffff000),size_00,0xb);
   }
-  track_temp_high_alloc(param_1,hunk_low.temp + hunk_high.temp,hunk_high.permanent,param_2);
-  return puVar5;
+  track_temp_high_alloc(size,hunk_low.temp + hunk_high.temp,hunk_high.permanent,name);
+  return puVar4;
 }
 
 
@@ -1126,7 +1161,10 @@ void __cdecl Hunk_ClearTempMemoryHigh(void)
   code *pcVar1;
   int iVar2;
   bool bVar3;
-  int iVar4;
+  int size;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -1140,10 +1178,10 @@ void __cdecl Hunk_ClearTempMemoryHigh(void)
   }
   iVar2 = s_hunkTotal - hunk_high.temp;
   hunk_high.temp = hunk_high.permanent;
-  iVar4 = ((uint)(s_hunkData + (s_hunkTotal - hunk_high.permanent)) & 0xfffff000) -
-          (int)((uint)(s_hunkData + iVar2) & 0xfffff000);
-  if (iVar4 != 0) {
-    Z_VirtualDecommit((void *)((uint)(s_hunkData + iVar2) & 0xfffff000),iVar4,0xb);
+  size = ((uint)(s_hunkData + (s_hunkTotal - hunk_high.permanent)) & 0xfffff000) -
+         (int)((uint)(s_hunkData + iVar2) & 0xfffff000);
+  if (size != 0) {
+    Z_VirtualDecommit((void *)((uint)(s_hunkData + iVar2) & 0xfffff000),size,0xb);
   }
   track_temp_high_clear(hunk_high.permanent);
   return;
@@ -1152,7 +1190,7 @@ void __cdecl Hunk_ClearTempMemoryHigh(void)
 
 // 007B3C40  Hunk_AllocLow  (universal/com_memory.cpp:1402)
 
-void * __cdecl Hunk_AllocLow(int param_1,char *param_2,int param_3)
+void * __cdecl Hunk_AllocLow(int size,char *name,int type)
 
 {
   code *pcVar1;
@@ -1169,14 +1207,14 @@ void * __cdecl Hunk_AllocLow(int param_1,char *param_2,int param_3)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_AllocLowAlign(param_1,0x20,param_2,param_3);
+  pvVar3 = Hunk_AllocLowAlign(size,0x20,name,type);
   return pvVar3;
 }
 
 
 // 007B3C90  Hunk_AllocLowAlign  (universal/com_memory.cpp:1421)
 
-void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int param_4)
+void * __cdecl Hunk_AllocLowAlign(int size,int alignment,char *name,int type)
 
 {
   uchar *puVar1;
@@ -1185,8 +1223,13 @@ void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int para
   bool bVar4;
   void *pvVar5;
   uint uVar6;
-  int iVar7;
-  uchar *puVar8;
+  int size_00;
+  uchar *dst;
+  int old_permanent;
+  uchar *buf;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar4 = Sys_IsMainThread();
   if (!bVar4) {
@@ -1207,7 +1250,7 @@ void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int para
       return pvVar5;
     }
   }
-  if ((param_2 - 1U & param_2) != 0) {
+  if ((alignment - 1U & alignment) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x5a1,0,
                              "%s");
     if (!bVar4) {
@@ -1216,7 +1259,7 @@ void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int para
       return pvVar5;
     }
   }
-  if (0x1000 < param_2) {
+  if (0x1000 < alignment) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x5a2,0,
                              "%s");
     if (!bVar4) {
@@ -1225,13 +1268,13 @@ void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int para
       return pvVar5;
     }
   }
-  uVar6 = param_2 - 1;
+  uVar6 = alignment - 1;
   Hunk_CheckTempMemoryClear();
   iVar3 = hunk_low.permanent;
   puVar1 = s_hunkData + hunk_low.permanent + 0xfff;
   hunk_low.permanent = hunk_low.permanent + uVar6 & ~uVar6;
-  puVar8 = s_hunkData + hunk_low.permanent;
-  if (((uint)puVar8 & uVar6) != 0) {
+  dst = s_hunkData + hunk_low.permanent;
+  if (((uint)dst & uVar6) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x5b2,0,
                              "%s");
     if (!bVar4) {
@@ -1240,27 +1283,27 @@ void * __cdecl Hunk_AllocLowAlign(int param_1,int param_2,char *param_3,int para
       return pvVar5;
     }
   }
-  hunk_low.permanent = hunk_low.permanent + param_1;
+  hunk_low.permanent = hunk_low.permanent + size;
   hunk_low.temp = hunk_low.permanent;
   if (s_hunkTotal < hunk_low.permanent + hunk_high.temp) {
     track_PrintAllInfo();
     Com_Error(ERR_DROP,
               "\x15Hunk_AllocLowAlign failed on %i bytes (total %i MB, low %i MB, high %i MB)");
   }
-  iVar7 = ((uint)(s_hunkData + hunk_low.permanent + 0xfff) & 0xfffff000) -
-          (int)((uint)puVar1 & 0xfffff000);
-  if (iVar7 != 0) {
-    Z_VirtualCommit((void *)((uint)puVar1 & 0xfffff000),iVar7,0xb);
+  size_00 = ((uint)(s_hunkData + hunk_low.permanent + 0xfff) & 0xfffff000) -
+            (int)((uint)puVar1 & 0xfffff000);
+  if (size_00 != 0) {
+    Z_VirtualCommit((void *)((uint)puVar1 & 0xfffff000),size_00,0xb);
   }
-  track_hunk_allocLow(hunk_low.permanent - iVar3,hunk_low.permanent,param_3,param_4);
-  memset(puVar8,'\0',param_1);
-  return puVar8;
+  track_hunk_allocLow(hunk_low.permanent - iVar3,hunk_low.permanent,name,type);
+  memset(dst,'\0',size);
+  return dst;
 }
 
 
 // 007B3ED0  Hunk_AllocateTempMemory  (universal/com_memory.cpp:1496)
 
-void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
+void * __cdecl Hunk_AllocateTempMemory(int size,char *name)
 
 {
   uchar *puVar1;
@@ -1269,9 +1312,15 @@ void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
   bool bVar4;
   void *pvVar5;
   uchar *puVar6;
-  int iVar7;
-  uint uVar8;
-  uchar *puVar9;
+  int size_00;
+  uint uVar7;
+  uchar *puVar8;
+  hunkHeader_t *hdr;
+  void *buf;
+  int prev_temp;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar4 = Sys_IsMainThread();
   if (!bVar4) {
@@ -1287,7 +1336,7 @@ void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
     }
   }
   if (s_hunkData == (uchar *)0x0) {
-    puVar6 = Z_Malloc(param_1,param_2,0xb);
+    puVar6 = Z_Malloc(size,name,0xb);
   }
   else {
     if (s_hunkData == (uchar *)0x0) {
@@ -1301,16 +1350,16 @@ void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
     }
     iVar3 = hunk_low.temp;
     puVar1 = s_hunkData + hunk_low.temp + 0xfff;
-    uVar8 = hunk_low.temp + 0xfU & 0xfffffff0;
-    puVar9 = s_hunkData + uVar8;
-    hunk_low.temp = uVar8 + param_1 + 0x10;
+    uVar7 = hunk_low.temp + 0xfU & 0xfffffff0;
+    puVar8 = s_hunkData + uVar7;
+    hunk_low.temp = uVar7 + size + 0x10;
     if (s_hunkTotal < hunk_low.temp + hunk_high.temp) {
       track_PrintAllInfo();
       Com_Error(ERR_DROP,
                 "\x15Hunk_AllocateTempMemory: failed on %i bytes (total %i MB, low %i MB, high %i MB), needs %i more hunk bytes"
                );
     }
-    puVar6 = puVar9 + 0x10;
+    puVar6 = puVar8 + 0x10;
     if (((uint)puVar6 & 0xf) != 0) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x60e,
                                0,"%s");
@@ -1320,19 +1369,18 @@ void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
         return pvVar5;
       }
     }
-    iVar7 = ((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000) -
-            (int)((uint)puVar1 & 0xfffff000);
-    if (iVar7 != 0) {
-      Z_VirtualCommit((void *)((uint)puVar1 & 0xfffff000),iVar7,0xb);
+    size_00 = ((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000) -
+              (int)((uint)puVar1 & 0xfffff000);
+    if (size_00 != 0) {
+      Z_VirtualCommit((void *)((uint)puVar1 & 0xfffff000),size_00,0xb);
     }
-    puVar9[0] = 0x92;
-    puVar9[1] = 'x';
-    puVar9[2] = 'S';
-    puVar9[3] = 0x89;
-    *(int *)(puVar9 + 4) = hunk_low.temp - iVar3;
-    track_temp_alloc(*(int *)(puVar9 + 4),hunk_low.temp + hunk_high.temp,hunk_low.permanent,param_2)
-    ;
-    *(char **)(puVar9 + 8) = param_2;
+    puVar8[0] = 0x92;
+    puVar8[1] = 'x';
+    puVar8[2] = 'S';
+    puVar8[3] = 0x89;
+    *(int *)(puVar8 + 4) = hunk_low.temp - iVar3;
+    track_temp_alloc(*(int *)(puVar8 + 4),hunk_low.temp + hunk_high.temp,hunk_low.permanent,name);
+    *(char **)(puVar8 + 8) = name;
   }
   return puVar6;
 }
@@ -1340,14 +1388,18 @@ void * __cdecl Hunk_AllocateTempMemory(int param_1,char *param_2)
 
 // 007B4100  Hunk_FreeTempMemory  (universal/com_memory.cpp:1574)
 
-void __cdecl Hunk_FreeTempMemory(void *param_1)
+void __cdecl Hunk_FreeTempMemory(void *buf)
 
 {
   uchar *puVar1;
   code *pcVar2;
   bool bVar3;
   int *piVar4;
-  int iVar5;
+  int size;
+  hunkHeader_t *hdr;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -1363,7 +1415,7 @@ void __cdecl Hunk_FreeTempMemory(void *param_1)
     }
   }
   if (s_hunkData == (uchar *)0x0) {
-    Z_Free(param_1,0xb);
+    Z_Free(buf,0xb);
   }
   else {
     if (s_hunkData == (uchar *)0x0) {
@@ -1375,7 +1427,7 @@ void __cdecl Hunk_FreeTempMemory(void *param_1)
         return;
       }
     }
-    if (param_1 == (void *)0x0) {
+    if (buf == (void *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x640,
                                0,"%s");
       if (!bVar3) {
@@ -1384,13 +1436,13 @@ void __cdecl Hunk_FreeTempMemory(void *param_1)
         return;
       }
     }
-    piVar4 = (int *)((int)param_1 + -0x10);
+    piVar4 = (int *)((int)buf + -0x10);
     if (*piVar4 != -0x76ac876e) {
       Com_Error(ERR_FATAL,"\x15Hunk_FreeTempMemory: bad magic");
     }
     *piVar4 = -0x76ac876d;
     if (piVar4 != (int *)(s_hunkData +
-                         ((hunk_low.temp - *(int *)((int)param_1 + -0xc)) + 0xfU & 0xfffffff0))) {
+                         ((hunk_low.temp - *(int *)((int)buf + -0xc)) + 0xfU & 0xfffffff0))) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x649,
                                0,"%s");
       if (!bVar3) {
@@ -1400,13 +1452,12 @@ void __cdecl Hunk_FreeTempMemory(void *param_1)
       }
     }
     puVar1 = s_hunkData + hunk_low.temp + 0xfff;
-    hunk_low.temp = hunk_low.temp - *(int *)((int)param_1 + -0xc);
-    track_temp_free(*(int *)((int)param_1 + -0xc),hunk_low.permanent,*(char **)((int)param_1 + -8));
-    iVar5 = ((uint)puVar1 & 0xfffff000) -
-            (int)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000);
-    if (iVar5 != 0) {
-      Z_VirtualDecommit((void *)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000),iVar5,0xb)
-      ;
+    hunk_low.temp = hunk_low.temp - *(int *)((int)buf + -0xc);
+    track_temp_free(*(int *)((int)buf + -0xc),hunk_low.permanent,*(char **)((int)buf + -8));
+    size = ((uint)puVar1 & 0xfffff000) -
+           (int)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000);
+    if (size != 0) {
+      Z_VirtualDecommit((void *)((uint)(s_hunkData + hunk_low.temp + 0xfff) & 0xfffff000),size,0xb);
     }
   }
   return;
@@ -1421,6 +1472,9 @@ void __cdecl Hunk_ClearTempMemory(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  uchar *endBuf;
+  uint commitSize;
+  uchar *beginBuf;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -1483,14 +1537,15 @@ void __cdecl Com_TempMeminfo_f(void)
 
 // 007B43E0  Z_TryVirtualAlloc  (universal/com_memory.cpp:1726)
 
-void * __cdecl Z_TryVirtualAlloc(int param_1,char *param_2,int param_3)
+void * __cdecl Z_TryVirtualAlloc(int size,char *name,int type)
 
 {
   void *pvVar1;
+  char *buf;
   
-  pvVar1 = Z_TryVirtualAllocInternal(param_1,param_2);
+  pvVar1 = Z_TryVirtualAllocInternal(size,name);
   if (pvVar1 != (void *)0x0) {
-    track_z_commit(param_1 + 0xfffU & 0xfffff000,param_3);
+    track_z_commit(size + 0xfffU & 0xfffff000,type);
   }
   return pvVar1;
 }
@@ -1498,12 +1553,13 @@ void * __cdecl Z_TryVirtualAlloc(int param_1,char *param_2,int param_3)
 
 // 007B4420  Z_VirtualAlloc  (universal/com_memory.cpp:1737)
 
-void * __cdecl Z_VirtualAlloc(int param_1,char *param_2,int param_3)
+void * __cdecl Z_VirtualAlloc(int size,char *name,int type)
 
 {
   void *pvVar1;
+  void *buf;
   
-  pvVar1 = Z_TryVirtualAlloc(param_1,param_2,param_3);
+  pvVar1 = Z_TryVirtualAlloc(size,name,type);
   if (pvVar1 == (void *)0x0) {
     Sys_OutOfMemErrorInternal("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x6d1);
     pvVar1 = (void *)0x0;
@@ -1514,18 +1570,18 @@ void * __cdecl Z_VirtualAlloc(int param_1,char *param_2,int param_3)
 
 // 007B4460  Z_VirtualCommit  (universal/com_memory.cpp:1755)
 
-void __cdecl Z_VirtualCommit(void *param_1,int param_2,int param_3)
+void __cdecl Z_VirtualCommit(void *ptr,int size,int type)
 
 {
   code *pcVar1;
   bool bVar2;
-  _MEMORY_BASIC_INFORMATION local_30;
-  SIZE_T local_14;
-  int local_10;
-  PVOID local_c;
-  int local_8;
+  _MEMORY_BASIC_INFORMATION info;
+  int byteCount;
+  int allocSize;
+  char *base;
+  int i;
   
-  if (param_1 == (void *)0x0) {
+  if (ptr == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x6e3,0,
                              "%s");
     if (!bVar2) {
@@ -1534,7 +1590,7 @@ void __cdecl Z_VirtualCommit(void *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_2 == 0) {
+  if (size == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x6e4,0,
                              "%s");
     if (!bVar2) {
@@ -1543,13 +1599,13 @@ void __cdecl Z_VirtualCommit(void *param_1,int param_2,int param_3)
       return;
     }
   }
-  local_10 = 0;
-  local_14 = VirtualQuery(param_1,&local_30,0x1c);
-  if (local_14 != 0) {
-    local_c = local_30.AllocationBase;
-    for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 0x1000) {
-      local_14 = VirtualQuery((LPCVOID)((int)param_1 + local_8),&local_30,0x1c);
-      if (local_14 == 0) {
+  allocSize = 0;
+  byteCount = VirtualQuery(ptr,&info,0x1c);
+  if (byteCount != 0) {
+    base = info.AllocationBase;
+    for (i = 0; i < size; i = i + 0x1000) {
+      byteCount = VirtualQuery((LPCVOID)((int)ptr + i),&info,0x1c);
+      if (byteCount == 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                  0x6f0,0,"%s");
         if (!bVar2) {
@@ -1558,7 +1614,7 @@ void __cdecl Z_VirtualCommit(void *param_1,int param_2,int param_3)
           return;
         }
       }
-      if (local_30.AllocationBase != local_c) {
+      if (info.AllocationBase != base) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                  0x6f1,0,"%s");
         if (!bVar2) {
@@ -1567,97 +1623,97 @@ void __cdecl Z_VirtualCommit(void *param_1,int param_2,int param_3)
           return;
         }
       }
-      if (local_30.State == 0x2000) {
-        local_10 = local_10 + 0x1000;
+      if (info.State == 0x2000) {
+        allocSize = allocSize + 0x1000;
       }
     }
-    if (local_10 != 0) {
-      track_z_commit(local_10,param_3);
+    if (allocSize != 0) {
+      track_z_commit(allocSize,type);
     }
   }
-  Z_VirtualCommitInternal(param_1,param_2);
+  Z_VirtualCommitInternal(ptr,size);
   return;
 }
 
 
 // 007B45C0  Z_VirtualFree  (universal/com_memory.cpp:1792)
 
-void __cdecl Z_VirtualFree(void *param_1,int param_2)
+void __cdecl Z_VirtualFree(void *ptr,int type)
 
 {
   code *pcVar1;
   bool bVar2;
-  _MEMORY_BASIC_INFORMATION local_30;
-  SIZE_T local_14;
-  void *local_10;
-  int local_c;
-  void *local_8;
+  _MEMORY_BASIC_INFORMATION info;
+  int byteCount;
+  char *rangePtr;
+  int freeSize;
+  char *base;
   
-  if (param_1 != (void *)0x0) {
-    local_c = 0;
-    local_14 = VirtualQuery(param_1,&local_30,0x1c);
-    if (local_14 != 0) {
-      local_8 = local_30.AllocationBase;
-      if ((local_30.AllocationBase != param_1) &&
+  if (ptr != (void *)0x0) {
+    freeSize = 0;
+    byteCount = VirtualQuery(ptr,&info,0x1c);
+    if (byteCount != 0) {
+      base = info.AllocationBase;
+      if ((info.AllocationBase != ptr) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                    0x70f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_30.BaseAddress != param_1) &&
+      if ((info.BaseAddress != ptr) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                    0x710,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_10 = param_1;
-      while (local_14 = VirtualQuery(local_10,&local_30,0x1c), local_14 != 0) {
-        if ((local_30.BaseAddress != local_10) &&
+      rangePtr = ptr;
+      while (byteCount = VirtualQuery(rangePtr,&info,0x1c), byteCount != 0) {
+        if ((info.BaseAddress != rangePtr) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                      0x71a,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_30.AllocationBase != local_8) break;
-        if ((local_30.RegionSize == 0) &&
+        if (info.AllocationBase != base) break;
+        if ((info.RegionSize == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                      0x71f,0,"%s\n\t(info.RegionSize) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_30.State == 0x1000) {
-          local_c = local_c + local_30.RegionSize;
+        if (info.State == 0x1000) {
+          freeSize = freeSize + info.RegionSize;
         }
-        local_10 = (void *)((int)local_10 + local_30.RegionSize);
+        rangePtr = rangePtr + info.RegionSize;
       }
-      if (local_c != 0) {
-        track_z_decommit(local_c,param_2);
+      if (freeSize != 0) {
+        track_z_decommit(freeSize,type);
       }
     }
   }
-  Z_VirtualFreeInternal(param_1);
+  Z_VirtualFreeInternal(ptr);
   return;
 }
 
 
 // 007B4730  Z_VirtualDecommit  (universal/com_memory.cpp:1841)
 
-void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
+void __cdecl Z_VirtualDecommit(void *ptr,int size,int type)
 
 {
   code *pcVar1;
   bool bVar2;
-  _MEMORY_BASIC_INFORMATION local_30;
-  SIZE_T local_14;
-  int local_10;
-  PVOID local_c;
-  int local_8;
+  _MEMORY_BASIC_INFORMATION info;
+  int byteCount;
+  int freeSize;
+  char *base;
+  int i;
   
-  if (param_1 == (void *)0x0) {
+  if (ptr == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x739,0,
                              "%s");
     if (!bVar2) {
@@ -1666,7 +1722,7 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_2 == 0) {
+  if (size == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x73a,0,
                              "%s");
     if (!bVar2) {
@@ -1675,10 +1731,10 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
       return;
     }
   }
-  local_10 = 0;
-  local_14 = VirtualQuery(param_1,&local_30,0x1c);
-  if (local_14 != 0) {
-    if (local_30.BaseAddress != param_1) {
+  freeSize = 0;
+  byteCount = VirtualQuery(ptr,&info,0x1c);
+  if (byteCount != 0) {
+    if (info.BaseAddress != ptr) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x740,
                                0,"%s");
       if (!bVar2) {
@@ -1687,10 +1743,10 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
         return;
       }
     }
-    local_c = local_30.AllocationBase;
-    for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 0x1000) {
-      local_14 = VirtualQuery((LPCVOID)((int)param_1 + local_8),&local_30,0x1c);
-      if (local_14 == 0) {
+    base = info.AllocationBase;
+    for (i = 0; i < size; i = i + 0x1000) {
+      byteCount = VirtualQuery((LPCVOID)((int)ptr + i),&info,0x1c);
+      if (byteCount == 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                  0x748,0,"%s");
         if (!bVar2) {
@@ -1699,7 +1755,7 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
           return;
         }
       }
-      if (local_30.AllocationBase != local_c) {
+      if (info.AllocationBase != base) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                  0x749,0,"%s");
         if (!bVar2) {
@@ -1708,7 +1764,7 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
           return;
         }
       }
-      if (local_30.BaseAddress != (void *)((int)param_1 + local_8)) {
+      if (info.BaseAddress != (void *)((int)ptr + i)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",
                                  0x74a,0,"%s");
         if (!bVar2) {
@@ -1717,43 +1773,43 @@ void __cdecl Z_VirtualDecommit(void *param_1,int param_2,int param_3)
           return;
         }
       }
-      if (local_30.State == 0x1000) {
-        local_10 = local_10 + 0x1000;
+      if (info.State == 0x1000) {
+        freeSize = freeSize + 0x1000;
       }
     }
-    if (local_10 != 0) {
-      track_z_decommit(local_10,param_3);
+    if (freeSize != 0) {
+      track_z_decommit(freeSize,type);
     }
   }
-  Z_VirtualDecommitInternal(param_1,param_2);
+  Z_VirtualDecommitInternal(ptr,size);
   return;
 }
 
 
 // 007B4970  Z_TryMallocGarbage  (universal/com_memory.cpp:1881)
 
-void * __cdecl Z_TryMallocGarbage(int param_1,char *param_2,int param_3)
+void * __cdecl Z_TryMallocGarbage(int size,char *name,int type)
 
 {
-  undefined4 local_8;
+  char *buf;
   
-  local_8 = malloc(param_1 + 0xa4);
-  if (local_8 != (void *)0x0) {
-    local_8 = (void *)((int)local_8 + 0xa4);
-    track_z_alloc(param_1 + 0x48,param_2,param_3,local_8,0,0xa4);
+  buf = malloc(size + 0xa4);
+  if (buf != (char *)0x0) {
+    buf = buf + 0xa4;
+    track_z_alloc(size + 0x48,name,type,buf,0,0xa4);
   }
-  return local_8;
+  return buf;
 }
 
 
 // 007B48F0  Z_Free  (universal/com_memory.cpp:1894)
 
-void __cdecl Z_Free(void *param_1,int param_2)
+void __cdecl Z_Free(void *ptr,int type)
 
 {
-  if (param_1 != (void *)0x0) {
-    track_z_free(param_2,param_1,0xa4);
-    free((void *)((int)param_1 + -0xa4));
+  if (ptr != (void *)0x0) {
+    track_z_free(type,ptr,0xa4);
+    free((void *)((int)ptr + -0xa4));
   }
   return;
 }
@@ -1761,29 +1817,31 @@ void __cdecl Z_Free(void *param_1,int param_2)
 
 // 007B4930  Z_TryMalloc  (universal/com_memory.cpp:1903)
 
-void * __cdecl Z_TryMalloc(int param_1,char *param_2,int param_3)
+void * __cdecl Z_TryMalloc(int size,char *name,int type)
 
 {
-  void *pvVar1;
+  void *dest;
+  void *buf;
   
-  pvVar1 = Z_TryMallocGarbage(param_1,param_2,param_3);
-  if (pvVar1 != (void *)0x0) {
-    Com_Memset(pvVar1,0,param_1);
+  dest = Z_TryMallocGarbage(size,name,type);
+  if (dest != (void *)0x0) {
+    Com_Memset(dest,0,size);
   }
-  return pvVar1;
+  return dest;
 }
 
 
 // 007B49D0  Z_Malloc  (universal/com_memory.cpp:1913)
 
-void * __cdecl Z_Malloc(int param_1,char *param_2,int param_3)
+void * __cdecl Z_Malloc(int size,char *name,int type)
 
 {
   void *pvVar1;
+  void *buf;
   
-  pvVar1 = Z_TryMalloc(param_1,param_2,param_3);
+  pvVar1 = Z_TryMalloc(size,name,type);
   if (pvVar1 == (void *)0x0) {
-    Z_MallocFailed(param_1 + 0xa4);
+    Z_MallocFailed(size + 0xa4);
   }
   return pvVar1;
 }
@@ -1791,14 +1849,15 @@ void * __cdecl Z_Malloc(int param_1,char *param_2,int param_3)
 
 // 007B4A40  Z_MallocGarbage  (universal/com_memory.cpp:1947)
 
-void * __cdecl Z_MallocGarbage(int param_1,char *param_2,int param_3)
+void * __cdecl Z_MallocGarbage(int size,char *name,int type)
 
 {
   void *pvVar1;
+  void *buf;
   
-  pvVar1 = Z_TryMallocGarbage(param_1,param_2,param_3);
+  pvVar1 = Z_TryMallocGarbage(size,name,type);
   if (pvVar1 == (void *)0x0) {
-    Z_MallocFailed(param_1 + 0xa4);
+    Z_MallocFailed(size + 0xa4);
   }
   return pvVar1;
 }
@@ -1806,15 +1865,16 @@ void * __cdecl Z_MallocGarbage(int param_1,char *param_2,int param_3)
 
 // 007B4A80  CopyString  (universal/com_memory.cpp:2097)
 
-char * __cdecl CopyString(char *param_1,char *param_2,int param_3,scriptInstance_t param_4)
+char * __cdecl CopyString(char *in,char *name,int type,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
+  uint stringValue;
+  uint out;
   
-  if (param_1 == (char *)0x0) {
+  if (in == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x834,0,
                              "%s");
     if (!bVar2) {
@@ -1823,23 +1883,23 @@ char * __cdecl CopyString(char *param_1,char *param_2,int param_3,scriptInstance
       return pcVar3;
     }
   }
-  uVar4 = SL_GetString_(param_4,param_1,0,0x16);
-  pcVar3 = SL_ConvertToString(uVar4,param_4);
+  stringValue = SL_GetString_(inst,in,0,0x16);
+  pcVar3 = SL_ConvertToString(stringValue,inst);
   return pcVar3;
 }
 
 
 // 007B4AE0  ReplaceString  (universal/com_memory.cpp:2106)
 
-void __cdecl
-ReplaceString(char **param_1,char *param_2,char *param_3,int param_4,scriptInstance_t param_5)
+void __cdecl ReplaceString(char **str,char *in,char *name,int type,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  char *newStr;
   
-  if (param_1 == (char **)0x0) {
+  if (str == (char **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x83d,0,
                              "%s");
     if (!bVar2) {
@@ -1848,7 +1908,7 @@ ReplaceString(char **param_1,char *param_2,char *param_3,int param_4,scriptInsta
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (in == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x83e,0,
                              "%s");
     if (!bVar2) {
@@ -1857,25 +1917,26 @@ ReplaceString(char **param_1,char *param_2,char *param_3,int param_4,scriptInsta
       return;
     }
   }
-  pcVar3 = CopyString(param_2,param_3,param_4,param_5);
-  if (*param_1 != (char *)0x0) {
-    FreeString(*param_1,param_4,param_5);
+  pcVar3 = CopyString(in,name,type,inst);
+  if (*str != (char *)0x0) {
+    FreeString(*str,type,inst);
   }
-  *param_1 = pcVar3;
+  *str = pcVar3;
   return;
 }
 
 
 // 007B4B90  FreeString  (universal/com_memory.cpp:2118)
 
-void __cdecl FreeString(char *param_1,int param_2,scriptInstance_t param_3)
+void __cdecl FreeString(char *str,int type,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint stringValue;
+  uint out;
   
-  if (param_1 == (char *)0x0) {
+  if (str == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x849,0,
                              "%s");
     if (!bVar2) {
@@ -1884,8 +1945,8 @@ void __cdecl FreeString(char *param_1,int param_2,scriptInstance_t param_3)
       return;
     }
   }
-  uVar3 = SL_FindString(param_1,SCRIPTINSTANCE_SERVER);
-  if (uVar3 == 0) {
+  stringValue = SL_FindString(str,SCRIPTINSTANCE_SERVER);
+  if (stringValue == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x84b,0,
                              "%s");
     if (!bVar2) {
@@ -1894,7 +1955,7 @@ void __cdecl FreeString(char *param_1,int param_2,scriptInstance_t param_3)
       return;
     }
   }
-  SL_RemoveRefToString(param_3,uVar3);
+  SL_RemoveRefToString(inst,stringValue);
   return;
 }
 

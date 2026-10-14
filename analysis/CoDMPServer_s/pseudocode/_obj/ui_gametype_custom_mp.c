@@ -1218,28 +1218,28 @@ void __cdecl UI_Gametype_UpdateCustomClassDvarsForClass_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   _CustomClassData *this;
   char *unaff_ESI;
   ushort unaff_DI;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar3 = *piVar1;
-  if (piVar1[iVar3 + 0x21] != 2) {
+  iVar2 = *piVar1;
+  if (piVar1[iVar2 + 0x21] != 2) {
     Com_Printf(0,"USAGE: updateClassDataFromDvars classnum \n");
     return;
   }
-  if (piVar1[iVar3 + 0x21] < 2) {
-    pcVar2 = "";
+  if (piVar1[iVar2 + 0x21] < 2) {
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[iVar3 + 0x29] + 4);
+    nptr = *(char **)(piVar1[iVar2 + 0x29] + 4);
   }
-  atoi(pcVar2);
+  atoi(nptr);
   _CustomClassData::PopulateCustomDvarsFromClassData(this);
-  iVar3 = Com_HashString("custom_class_name",0);
-  _DAT_01eaae68 = (dvar_s *)FUN_0069fda0(iVar3);
+  iVar2 = Com_HashString("custom_class_name",0);
+  _DAT_01eaae68 = (dvar_s *)FUN_0069fda0(iVar2);
   if (_DAT_01eaae68 == (dvar_s *)0x0) {
     _DAT_01eaae68 = _Dvar_RegisterString("custom_class_name",(char *)0x0,unaff_DI,unaff_ESI);
   }
@@ -1257,81 +1257,81 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
 
 {
   char cVar1;
-  char *pcVar2;
+  char *nptr;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  _CustomClassData **pp_Var7;
-  _CustomClassDescription **pp_Var8;
-  int iVar9;
-  int *piVar10;
+  uint uVar4;
+  int iVar5;
+  _CustomClassData **pp_Var6;
+  _CustomClassDescription **pp_Var7;
+  int iVar8;
+  int *piVar9;
   int aiStack_3c8 [40];
   int aiStack_328 [201];
   
-  piVar10 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar3 = *piVar10;
-  if (piVar10[iVar3 + 0x21] != 2) {
+  piVar9 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+  iVar2 = *piVar9;
+  if (piVar9[iVar2 + 0x21] != 2) {
     Com_Printf(0,"USAGE: updateClassDataFromDvars classnum \n");
     return;
   }
-  if (piVar10[iVar3 + 0x21] < 2) {
-    pcVar2 = "";
+  if (piVar9[iVar2 + 0x21] < 2) {
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar10[iVar3 + 0x29] + 4);
+    nptr = *(char **)(piVar9[iVar2 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  pp_Var7 = &g_customGameModeClasses;
-  piVar10 = aiStack_328;
-  for (iVar6 = 200; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *piVar10 = (int)*pp_Var7;
+  iVar2 = atoi(nptr);
+  pp_Var6 = &g_customGameModeClasses;
+  piVar9 = aiStack_328;
+  for (iVar5 = 200; iVar5 != 0; iVar5 = iVar5 + -1) {
+    *piVar9 = (int)*pp_Var6;
+    pp_Var6 = pp_Var6 + 1;
+    piVar9 = piVar9 + 1;
+  }
+  pp_Var7 = &g_customGameModeClassDescriptions;
+  piVar9 = aiStack_3c8;
+  for (iVar5 = 0x28; iVar5 != 0; iVar5 = iVar5 + -1) {
+    *piVar9 = (int)*pp_Var7;
     pp_Var7 = pp_Var7 + 1;
-    piVar10 = piVar10 + 1;
-  }
-  pp_Var8 = &g_customGameModeClassDescriptions;
-  piVar10 = aiStack_3c8;
-  for (iVar6 = 0x28; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *piVar10 = (int)*pp_Var8;
-    pp_Var8 = pp_Var8 + 1;
-    piVar10 = piVar10 + 1;
+    piVar9 = piVar9 + 1;
   }
   _CustomClassData::SaveClassDataFromDvars((_CustomClassData *)0x0);
   UI_Gametype_CreateDefaultCustomClassIfNeeded_f();
-  pp_Var8 = &g_customGameModeClassDescriptions + (iVar3 + -1) * 4;
-  if (pp_Var8 != (_CustomClassDescription **)0x0) {
+  pp_Var7 = &g_customGameModeClassDescriptions + (iVar2 + -1) * 4;
+  if (pp_Var7 != (_CustomClassDescription **)0x0) {
     if (*(int *)(_DAT_01eaae68 + 0x18) == 0) {
-      *(undefined1 *)pp_Var8 = 0;
+      *(undefined1 *)pp_Var7 = 0;
     }
     else {
-      iVar4 = *(int *)(_DAT_01eaae68 + 0x18) + -1;
-      iVar9 = 0x10;
-      iVar6 = -1 - iVar4;
+      iVar3 = *(int *)(_DAT_01eaae68 + 0x18) + -1;
+      iVar8 = 0x10;
+      iVar5 = -1 - iVar3;
       do {
-        cVar1 = *(char *)(iVar4 + 1);
-        iVar4 = iVar4 + 1;
-        *(char *)((int)pp_Var8 + iVar4 + iVar6) = cVar1;
+        cVar1 = *(char *)(iVar3 + 1);
+        iVar3 = iVar3 + 1;
+        *(char *)((int)pp_Var7 + iVar3 + iVar5) = cVar1;
         if (cVar1 == '\0') break;
-        iVar9 = iVar9 + -1;
-      } while (iVar9 != 0);
-      *(undefined1 *)((iVar3 + -1) * 0x10 + 0x4a3bf1f) = 0;
+        iVar8 = iVar8 + -1;
+      } while (iVar8 != 0);
+      *(undefined1 *)((iVar2 + -1) * 0x10 + 0x4a3bf1f) = 0;
     }
   }
-  uVar5 = 800;
-  iVar3 = 0;
+  uVar4 = 800;
+  iVar2 = 0;
   do {
-    if (*(int *)((int)aiStack_328 + iVar3) != *(int *)((int)&g_customGameModeClasses + iVar3))
+    if (*(int *)((int)aiStack_328 + iVar2) != *(int *)((int)&g_customGameModeClasses + iVar2))
     goto LAB_00635574;
-    uVar5 = uVar5 - 4;
-    iVar3 = iVar3 + 4;
-  } while (3 < uVar5);
-  uVar5 = 0xa0;
-  iVar3 = 0;
-  while (*(int *)((int)aiStack_3c8 + iVar3) ==
-         *(int *)((int)&g_customGameModeClassDescriptions + iVar3)) {
-    uVar5 = uVar5 - 4;
-    iVar3 = iVar3 + 4;
-    if (uVar5 < 4) {
+    uVar4 = uVar4 - 4;
+    iVar2 = iVar2 + 4;
+  } while (3 < uVar4);
+  uVar4 = 0xa0;
+  iVar2 = 0;
+  while (*(int *)((int)aiStack_3c8 + iVar2) ==
+         *(int *)((int)&g_customGameModeClassDescriptions + iVar2)) {
+    uVar4 = uVar4 - 4;
+    iVar2 = iVar2 + 4;
+    if (uVar4 < 4) {
       CheckForMinimumTeamClasses();
       return;
     }
@@ -3193,11 +3193,11 @@ void __cdecl UI_Gametype_UploadToFileShare_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  uint uVar3;
+  char *nptr;
+  uint uVar2;
   UIGametypeFileHeader *unaff_ESI;
-  char *pcVar4;
-  MemoryFile *pMVar5;
+  char *pcVar3;
+  MemoryFile *pMVar4;
   undefined1 local_80f8 [33004];
   undefined4 uStack_c;
   
@@ -3206,15 +3206,15 @@ void __cdecl UI_Gametype_UploadToFileShare_f(void)
   UI_Gametype_WriteToMemFile((MemoryFile *)local_80f8,unaff_ESI);
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  pMVar5 = (MemoryFile *)(local_80f8 + 200);
-  pcVar4 = local_80f8 + 4;
-  uVar3 = atoi(pcVar2);
-  UI_Gametype_Custom_UploadToFileShare(0,uVar3,pcVar4,pMVar5);
+  pMVar4 = (MemoryFile *)(local_80f8 + 200);
+  pcVar3 = local_80f8 + 4;
+  uVar2 = atoi(nptr);
+  UI_Gametype_Custom_UploadToFileShare(0,uVar2,pcVar3,pMVar4);
   return;
 }
 

@@ -2,99 +2,112 @@
 
 // 0080D820  inflate_fast  (zlib/inffast.cpp:75)
 
-void __cdecl inflate_fast(z_stream_s *param_1,uint param_2)
+void __cdecl inflate_fast(z_stream_s *strm,uint start)
 
 {
-  byte *pbVar1;
+  uchar *puVar1;
   uchar *puVar2;
   internal_state *piVar3;
   uint uVar4;
   uint uVar5;
-  uchar *puVar6;
+  uint uVar6;
   uint uVar7;
-  uint uVar8;
-  uchar *puVar9;
-  byte *pbVar10;
+  uchar *puVar8;
+  byte *pbVar9;
+  byte bVar10;
   uint uVar11;
   uint uVar12;
   int iVar13;
-  uchar *puVar14;
-  int iVar15;
-  uint uVar16;
-  uint uVar17;
-  int iVar18;
+  ulong uVar14;
+  uchar *puVar15;
+  uchar *puVar16;
+  int iVar17;
+  uint uVar18;
+  uint uVar19;
+  int iVar20;
   uint local_74;
   uint local_70;
-  uint local_60;
-  uchar *local_54;
-  ushort local_50;
-  uchar *local_4c;
-  uchar *local_40;
-  byte local_31;
-  uint local_28;
-  uint local_24;
-  byte *local_20;
-  byte local_11;
+  uint index_2;
+  uint index;
+  uint op;
+  inflate_state *state;
+  uint write;
+  uchar *out;
+  ushort this_val;
+  uchar *from;
+  uint dmask;
+  uint wsize;
+  ulong hold;
+  uint dist;
+  code *lcode;
+  uchar this_op;
+  uchar *end;
+  uint lmask;
+  uint bits;
+  uint len;
+  uchar *in;
+  uint whave;
+  code *dcode;
+  uchar this_bits;
+  uchar *last;
+  uchar *window;
+  uchar *beg;
   
-  piVar3 = param_1->state;
-  local_20 = param_1->next_in;
-  pbVar1 = local_20 + (param_1->avail_in - 5);
-  local_54 = param_1->next_out;
-  iVar15 = (int)local_54 - (param_2 - param_1->avail_out);
-  puVar2 = local_54 + (param_1->avail_out - 0x101);
-  iVar18 = piVar3->last_flush;
+  piVar3 = strm->state;
+  in = strm->next_in;
+  puVar1 = in + (strm->avail_in - 5);
+  out = strm->next_out;
+  iVar17 = (int)out - (start - strm->avail_out);
+  puVar2 = out + (strm->avail_out - 0x101);
+  iVar20 = piVar3->last_flush;
   uVar4 = piVar3->w_size;
   uVar5 = piVar3->w_bits;
-  puVar6 = (uchar *)piVar3->w_mask;
-  local_40 = piVar3->window;
-  local_28 = piVar3->window_size;
-  uVar7 = piVar3->hash_size;
-  uVar8 = piVar3->hash_bits;
+  puVar16 = (uchar *)piVar3->w_mask;
+  hold = (ulong)piVar3->window;
+  bits = piVar3->window_size;
+  uVar6 = piVar3->hash_size;
+  uVar7 = piVar3->hash_bits;
   uVar11 = (1 << ((byte)piVar3->hash_mask & 0x1f)) - 1;
-  uVar16 = (1 << ((byte)piVar3->hash_shift & 0x1f)) - 1;
+  uVar18 = (1 << ((byte)piVar3->hash_shift & 0x1f)) - 1;
 LAB_0080d8ee:
-  if (local_28 < 0xf) {
-    local_40 = local_40 +
-               ((uint)local_20[1] << ((byte)local_28 + 8 & 0x1f)) +
-               ((uint)*local_20 << ((byte)local_28 & 0x1f));
-    local_20 = local_20 + 2;
-    local_28 = local_28 + 0x10;
+  if (bits < 0xf) {
+    hold = ((uint)in[1] << ((byte)bits + 8 & 0x1f)) + ((uint)*in << ((byte)bits & 0x1f)) + hold;
+    in = in + 2;
+    bits = bits + 0x10;
   }
-  local_31 = *(byte *)(uVar7 + ((uint)local_40 & uVar11) * 4);
-  local_11 = *(byte *)(uVar7 + 1 + ((uint)local_40 & uVar11) * 4);
-  local_50 = *(ushort *)(uVar7 + 2 + ((uint)local_40 & uVar11) * 4);
+  this_op = *(uchar *)(uVar6 + (hold & uVar11) * 4);
+  this_bits = *(uchar *)(uVar6 + 1 + (hold & uVar11) * 4);
+  this_val = *(ushort *)(uVar6 + 2 + (hold & uVar11) * 4);
   while( true ) {
-    local_40 = (uchar *)((uint)local_40 >> (local_11 & 0x1f));
-    local_28 = local_28 - local_11;
-    if (local_31 == 0) break;
-    if ((local_31 & 0x10) != 0) {
-      local_24 = (uint)local_50;
-      local_31 = local_31 & 0xf;
-      if (local_31 != 0) {
-        if (local_28 < local_31) {
-          local_40 = local_40 + ((uint)*local_20 << ((byte)local_28 & 0x1f));
-          local_20 = local_20 + 1;
-          local_28 = local_28 + 8;
+    hold = hold >> (this_bits & 0x1f);
+    bits = bits - this_bits;
+    if (this_op == '\0') break;
+    if ((this_op & 0x10) != 0) {
+      len = (uint)this_val;
+      bVar10 = this_op & 0xf;
+      if (bVar10 != 0) {
+        if (bits < bVar10) {
+          hold = ((uint)*in << ((byte)bits & 0x1f)) + hold;
+          in = in + 1;
+          bits = bits + 8;
         }
-        local_24 = ((1 << local_31) - 1U & (uint)local_40) + local_24;
-        local_40 = (uchar *)((uint)local_40 >> local_31);
-        local_28 = local_28 - local_31;
+        len = ((1 << bVar10) - 1U & hold) + len;
+        hold = hold >> bVar10;
+        bits = bits - bVar10;
       }
-      if (local_28 < 0xf) {
-        local_40 = local_40 +
-                   ((uint)local_20[1] << ((byte)local_28 + 8 & 0x1f)) +
-                   ((uint)*local_20 << ((byte)local_28 & 0x1f));
-        local_20 = local_20 + 2;
-        local_28 = local_28 + 0x10;
+      if (bits < 0xf) {
+        hold = ((uint)in[1] << ((byte)bits + 8 & 0x1f)) + ((uint)*in << ((byte)bits & 0x1f)) + hold;
+        in = in + 2;
+        bits = bits + 0x10;
       }
-      local_31 = *(byte *)(uVar8 + ((uint)local_40 & uVar16) * 4);
-      local_11 = *(byte *)(uVar8 + 1 + ((uint)local_40 & uVar16) * 4);
-      local_50 = *(ushort *)(uVar8 + 2 + ((uint)local_40 & uVar16) * 4);
+      this_op = *(uchar *)(uVar7 + (hold & uVar18) * 4);
+      this_bits = *(uchar *)(uVar7 + 1 + (hold & uVar18) * 4);
+      this_val = *(ushort *)(uVar7 + 2 + (hold & uVar18) * 4);
       goto LAB_0080da9f;
     }
-    if ((local_31 & 0x40) != 0) {
-      if ((local_31 & 0x20) == 0) {
-        param_1->msg = "invalid literal/length code";
+    if ((this_op & 0x40) != 0) {
+      if ((this_op & 0x20) == 0) {
+        strm->msg = "invalid literal/length code";
         piVar3->strm = (z_stream_s *)0x1b;
       }
       else {
@@ -102,170 +115,170 @@ LAB_0080d8ee:
       }
       goto LAB_0080df4a;
     }
-    iVar13 = (uint)local_50 + ((1 << (local_31 & 0x1f)) - 1U & (uint)local_40);
-    local_11 = *(byte *)(uVar7 + 1 + iVar13 * 4);
-    local_50 = *(ushort *)(uVar7 + 2 + iVar13 * 4);
-    local_31 = *(byte *)(uVar7 + iVar13 * 4);
+    iVar13 = (uint)this_val + ((1 << (this_op & 0x1f)) - 1U & hold);
+    this_bits = *(uchar *)(uVar6 + 1 + iVar13 * 4);
+    this_val = *(ushort *)(uVar6 + 2 + iVar13 * 4);
+    this_op = *(uchar *)(uVar6 + iVar13 * 4);
   }
-  *local_54 = (uchar)local_50;
-  puVar14 = local_54 + 1;
+  *out = (uchar)this_val;
+  puVar15 = out + 1;
   goto LAB_0080df36;
 LAB_0080da9f:
-  local_40 = (uchar *)((uint)local_40 >> (local_11 & 0x1f));
-  uVar17 = local_28 - local_11;
-  local_28 = uVar17;
-  if ((local_31 & 0x10) != 0) goto code_r0x0080daca;
-  if ((local_31 & 0x40) != 0) {
-    param_1->msg = "invalid distance code";
+  hold = hold >> (this_bits & 0x1f);
+  uVar19 = bits - this_bits;
+  bits = uVar19;
+  if ((this_op & 0x10) != 0) goto code_r0x0080daca;
+  if ((this_op & 0x40) != 0) {
+    strm->msg = "invalid distance code";
     piVar3->strm = (z_stream_s *)0x1b;
     goto LAB_0080df4a;
   }
-  iVar13 = (uint)local_50 + ((1 << (local_31 & 0x1f)) - 1U & (uint)local_40);
-  local_31 = *(byte *)(uVar8 + iVar13 * 4);
-  local_11 = *(byte *)(uVar8 + 1 + iVar13 * 4);
-  local_50 = *(ushort *)(uVar8 + 2 + iVar13 * 4);
+  iVar13 = (uint)this_val + ((1 << (this_op & 0x1f)) - 1U & hold);
+  this_op = *(uchar *)(uVar7 + iVar13 * 4);
+  this_bits = *(uchar *)(uVar7 + 1 + iVar13 * 4);
+  this_val = *(ushort *)(uVar7 + 2 + iVar13 * 4);
   goto LAB_0080da9f;
 code_r0x0080daca:
-  uVar12 = local_31 & 0xf;
-  pbVar10 = local_20;
-  if (uVar17 < uVar12) {
-    local_40 = local_40 + ((uint)*local_20 << ((byte)uVar17 & 0x1f));
-    local_28 = uVar17 + 8;
-    pbVar10 = local_20 + 1;
-    if (local_28 < uVar12) {
-      local_40 = local_40 + ((uint)local_20[1] << ((byte)local_28 & 0x1f));
-      local_28 = uVar17 + 0x10;
-      pbVar10 = local_20 + 2;
+  uVar12 = this_op & 0xf;
+  pbVar9 = in;
+  if (uVar19 < uVar12) {
+    hold = ((uint)*in << ((byte)uVar19 & 0x1f)) + hold;
+    bits = uVar19 + 8;
+    pbVar9 = in + 1;
+    if (bits < uVar12) {
+      hold = ((uint)in[1] << ((byte)bits & 0x1f)) + hold;
+      bits = uVar19 + 0x10;
+      pbVar9 = in + 2;
     }
   }
-  local_20 = pbVar10;
-  uVar17 = ((1 << (sbyte)uVar12) - 1U & (uint)local_40) + (uint)local_50;
-  local_40 = (uchar *)((uint)local_40 >> (sbyte)uVar12);
-  local_28 = local_28 - uVar12;
-  local_60 = (int)local_54 - iVar15;
-  if (local_60 < uVar17) {
-    local_60 = uVar17 - local_60;
-    if (uVar4 < local_60) {
-      param_1->msg = "invalid distance too far back";
+  in = pbVar9;
+  uVar19 = ((1 << (sbyte)uVar12) - 1U & hold) + (uint)this_val;
+  hold = hold >> (sbyte)uVar12;
+  bits = bits - uVar12;
+  uVar12 = (int)out - iVar17;
+  if (uVar12 < uVar19) {
+    op = uVar19 - uVar12;
+    if (uVar4 < op) {
+      strm->msg = "invalid distance too far back";
       piVar3->strm = (z_stream_s *)0x1b;
 LAB_0080df4a:
-      local_20 = local_20 + -(local_28 >> 3);
-      local_28 = local_28 + (local_28 >> 3) * -8;
-      param_1->next_in = local_20;
-      param_1->next_out = local_54;
-      if (local_20 < pbVar1) {
-        iVar18 = (int)pbVar1 - (int)local_20;
+      puVar16 = in + -(bits >> 3);
+      uVar14 = bits + (bits >> 3) * -8;
+      strm->next_in = puVar16;
+      strm->next_out = out;
+      if (puVar16 < puVar1) {
+        iVar20 = (int)puVar1 - (int)puVar16;
       }
       else {
-        iVar18 = -((int)local_20 - (int)pbVar1);
+        iVar20 = -((int)puVar16 - (int)puVar1);
       }
-      local_70 = iVar18 + 5;
-      param_1->avail_in = local_70;
-      if (local_54 < puVar2) {
-        iVar18 = (int)puVar2 - (int)local_54;
+      local_70 = iVar20 + 5;
+      strm->avail_in = local_70;
+      if (out < puVar2) {
+        iVar20 = (int)puVar2 - (int)out;
       }
       else {
-        iVar18 = -((int)local_54 - (int)puVar2);
+        iVar20 = -((int)out - (int)puVar2);
       }
-      local_74 = iVar18 + 0x101;
-      param_1->avail_out = local_74;
-      piVar3->window = (uchar *)((1 << ((byte)local_28 & 0x1f)) - 1U & (uint)local_40);
-      piVar3->window_size = local_28;
+      local_74 = iVar20 + 0x101;
+      strm->avail_out = local_74;
+      piVar3->window = (uchar *)((1 << ((byte)uVar14 & 0x1f)) - 1U & hold);
+      piVar3->window_size = uVar14;
       return;
     }
     if (uVar5 == 0) {
-      local_4c = puVar6 + (iVar18 - local_60);
-      if (local_60 < local_24) {
-        local_24 = local_24 - local_60;
+      from = puVar16 + (iVar20 - op);
+      if (op < len) {
+        len = len - op;
         do {
-          *local_54 = *local_4c;
-          local_54 = local_54 + 1;
-          local_4c = local_4c + 1;
-          local_60 = local_60 - 1;
-        } while (local_60 != 0);
-        local_4c = local_54 + -uVar17;
+          *out = *from;
+          out = out + 1;
+          from = from + 1;
+          op = op - 1;
+        } while (op != 0);
+        from = out + -uVar19;
       }
     }
-    else if (uVar5 < local_60) {
-      local_4c = puVar6 + ((iVar18 + uVar5) - local_60);
-      local_60 = local_60 - uVar5;
-      if (local_60 < local_24) {
-        local_24 = local_24 - local_60;
+    else if (uVar5 < op) {
+      from = puVar16 + ((iVar20 + uVar5) - op);
+      op = op - uVar5;
+      if (op < len) {
+        len = len - op;
         do {
-          *local_54 = *local_4c;
-          local_54 = local_54 + 1;
-          local_4c = local_4c + 1;
-          local_60 = local_60 - 1;
-        } while (local_60 != 0);
-        local_4c = puVar6;
-        if (uVar5 < local_24) {
-          local_24 = local_24 - uVar5;
-          local_60 = uVar5;
+          *out = *from;
+          out = out + 1;
+          from = from + 1;
+          op = op - 1;
+        } while (op != 0);
+        from = puVar16;
+        if (uVar5 < len) {
+          len = len - uVar5;
+          op = uVar5;
           do {
-            *local_54 = *local_4c;
-            local_54 = local_54 + 1;
-            local_4c = local_4c + 1;
-            local_60 = local_60 - 1;
-          } while (local_60 != 0);
-          local_4c = local_54 + -uVar17;
+            *out = *from;
+            out = out + 1;
+            from = from + 1;
+            op = op - 1;
+          } while (op != 0);
+          from = out + -uVar19;
         }
       }
     }
     else {
-      local_4c = puVar6 + (uVar5 - local_60);
-      if (local_60 < local_24) {
-        local_24 = local_24 - local_60;
+      from = puVar16 + (uVar5 - op);
+      if (op < len) {
+        len = len - op;
         do {
-          *local_54 = *local_4c;
-          local_54 = local_54 + 1;
-          local_4c = local_4c + 1;
-          local_60 = local_60 - 1;
-        } while (local_60 != 0);
-        local_4c = local_54 + -uVar17;
+          *out = *from;
+          out = out + 1;
+          from = from + 1;
+          op = op - 1;
+        } while (op != 0);
+        from = out + -uVar19;
       }
     }
-    for (; 2 < local_24; local_24 = local_24 - 3) {
-      *local_54 = *local_4c;
-      local_54[1] = local_4c[1];
-      local_54[2] = local_4c[2];
-      local_54 = local_54 + 3;
-      local_4c = local_4c + 3;
+    for (; 2 < len; len = len - 3) {
+      *out = *from;
+      out[1] = from[1];
+      out[2] = from[2];
+      out = out + 3;
+      from = from + 3;
     }
-    puVar14 = local_54;
-    if (local_24 != 0) {
-      *local_54 = *local_4c;
-      puVar14 = local_54 + 1;
-      if (1 < local_24) {
-        local_54[1] = local_4c[1];
-        puVar14 = local_54 + 2;
+    puVar15 = out;
+    if (len != 0) {
+      *out = *from;
+      puVar15 = out + 1;
+      if (1 < len) {
+        out[1] = from[1];
+        puVar15 = out + 2;
       }
     }
   }
   else {
-    puVar14 = local_54;
-    puVar9 = local_54 + -uVar17;
+    puVar15 = out;
+    puVar8 = out + -uVar19;
     do {
-      local_4c = puVar9;
-      local_54 = puVar14;
-      *local_54 = *local_4c;
-      local_54[1] = local_4c[1];
-      local_54[2] = local_4c[2];
-      puVar14 = local_54 + 3;
-      local_24 = local_24 - 3;
-      puVar9 = local_4c + 3;
-    } while (2 < local_24);
-    if (local_24 != 0) {
-      *puVar14 = local_4c[3];
-      puVar14 = local_54 + 4;
-      if (1 < local_24) {
-        local_54[4] = local_4c[4];
-        puVar14 = local_54 + 5;
+      from = puVar8;
+      out = puVar15;
+      *out = *from;
+      out[1] = from[1];
+      out[2] = from[2];
+      puVar15 = out + 3;
+      len = len - 3;
+      puVar8 = from + 3;
+    } while (2 < len);
+    if (len != 0) {
+      *puVar15 = from[3];
+      puVar15 = out + 4;
+      if (1 < len) {
+        out[4] = from[4];
+        puVar15 = out + 5;
       }
     }
   }
 LAB_0080df36:
-  local_54 = puVar14;
-  if ((pbVar1 <= local_20) || (puVar2 <= local_54)) goto LAB_0080df4a;
+  out = puVar15;
+  if ((puVar1 <= in) || (puVar2 <= out)) goto LAB_0080df4a;
   goto LAB_0080d8ee;
 }
 

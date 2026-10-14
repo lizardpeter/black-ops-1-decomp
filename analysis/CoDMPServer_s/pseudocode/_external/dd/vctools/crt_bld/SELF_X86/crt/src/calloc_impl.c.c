@@ -5,56 +5,57 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void * __cdecl _calloc_impl(uint param_1,uint param_2,int *param_3)
+void * __cdecl _calloc_impl(uint num,uint size,int *errno_tmp)
 
 {
   int *piVar1;
   int iVar2;
-  uint uVar3;
-  uchar *puVar4;
+  uint count;
+  uchar *dst;
   uint dwBytes;
+  void *pvReturn;
   
-  if ((param_1 == 0) || (param_2 <= 0xffffffe0 / param_1)) {
-    uVar3 = param_1 * param_2;
-    dwBytes = uVar3;
-    if (uVar3 == 0) {
+  if ((num == 0) || (size <= 0xffffffe0 / num)) {
+    count = num * size;
+    dwBytes = count;
+    if (count == 0) {
       dwBytes = 1;
     }
     do {
-      puVar4 = (uchar *)0x0;
+      dst = (uchar *)0x0;
       if (dwBytes < 0xffffffe1) {
-        if ((__active_heap == 3) && (dwBytes = dwBytes + 0xf & 0xfffffff0, uVar3 <= __sbh_threshold)
+        if ((__active_heap == 3) && (dwBytes = dwBytes + 0xf & 0xfffffff0, count <= __sbh_threshold)
            ) {
           _lock(4);
-          puVar4 = __sbh_alloc_block(uVar3);
+          dst = __sbh_alloc_block(count);
           FUN_0096eade();
-          if (puVar4 != (uchar *)0x0) {
-            memset(puVar4,'\0',uVar3);
+          if (dst != (uchar *)0x0) {
+            memset(dst,'\0',count);
             goto LAB_0096ea93;
           }
         }
         else {
 LAB_0096ea93:
-          if (puVar4 != (uchar *)0x0) {
-            return puVar4;
+          if (dst != (uchar *)0x0) {
+            return dst;
           }
         }
-        puVar4 = HeapAlloc(_crtheap,8,dwBytes);
+        dst = HeapAlloc(_crtheap,8,dwBytes);
       }
-      if (puVar4 != (uchar *)0x0) {
-        return puVar4;
+      if (dst != (uchar *)0x0) {
+        return dst;
       }
       if (_newmode == 0) {
-        if (param_3 == (int *)0x0) {
+        if (errno_tmp == (int *)0x0) {
           return (void *)0x0;
         }
-        *param_3 = 0xc;
+        *errno_tmp = 0xc;
         return (void *)0x0;
       }
       iVar2 = _callnewh(dwBytes);
     } while (iVar2 != 0);
-    if (param_3 != (int *)0x0) {
-      *param_3 = 0xc;
+    if (errno_tmp != (int *)0x0) {
+      *errno_tmp = 0xc;
     }
   }
   else {

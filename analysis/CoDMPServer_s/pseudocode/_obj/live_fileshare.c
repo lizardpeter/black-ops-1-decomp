@@ -826,7 +826,7 @@ int __cdecl Live_FileShare_GetGameTypeCount(void)
 {
   code *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
   char *unaff_ESI;
   int iStack_4;
   
@@ -842,11 +842,11 @@ int __cdecl Live_FileShare_GetGameTypeCount(void)
   }
   iVar2 = StringTable_LookupRowNumForValue((StringTable *)0x0,0xa7f6b0,unaff_ESI);
   if ((((*(int *)(iStack_4 + 4) < 2) || (*(int *)(iStack_4 + 8) <= iVar2)) || (iVar2 < 0)) ||
-     (pcVar3 = *(char **)(*(int *)(iStack_4 + 0xc) + 8 + *(int *)(iStack_4 + 4) * iVar2 * 8),
-     pcVar3 == (char *)0x0)) {
-    pcVar3 = "";
+     (nptr = *(char **)(*(int *)(iStack_4 + 0xc) + 8 + *(int *)(iStack_4 + 4) * iVar2 * 8),
+     nptr == (char *)0x0)) {
+    nptr = "";
   }
-  iVar2 = atoi(pcVar3);
+  iVar2 = atoi(nptr);
   return iVar2;
 }
 
@@ -860,7 +860,7 @@ int __cdecl Live_FileShare_GetIndexFromGameType(char *param_1)
 {
   code *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *nptr;
   char *unaff_ESI;
   int iStack_4;
   
@@ -876,11 +876,11 @@ int __cdecl Live_FileShare_GetIndexFromGameType(char *param_1)
   }
   iVar2 = StringTable_LookupRowNumForValue((StringTable *)0x0,(int)param_1,unaff_ESI);
   if ((((*(int *)(iStack_4 + 4) < 5) || (*(int *)(iStack_4 + 8) <= iVar2)) || (iVar2 < 0)) ||
-     (pcVar3 = *(char **)(*(int *)(iStack_4 + 0xc) + 0x20 + *(int *)(iStack_4 + 4) * iVar2 * 8),
-     pcVar3 == (char *)0x0)) {
-    pcVar3 = "";
+     (nptr = *(char **)(*(int *)(iStack_4 + 0xc) + 0x20 + *(int *)(iStack_4 + 4) * iVar2 * 8),
+     nptr == (char *)0x0)) {
+    nptr = "";
   }
-  iVar2 = atoi(pcVar3);
+  iVar2 = atoi(nptr);
   return iVar2;
 }
 

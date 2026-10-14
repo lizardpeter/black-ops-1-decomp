@@ -16,7 +16,7 @@ LiveSteamClient * __thiscall LiveSteamClient::LiveSteamClient(LiveSteamClient *t
 // 0097E8B0  RequestEncryptedAppTicket  (live/live_steam_client.cpp:18)
 
 void __thiscall
-LiveSteamClient::RequestEncryptedAppTicket(LiveSteamClient *this,void *param_1,uint param_2)
+LiveSteamClient::RequestEncryptedAppTicket(LiveSteamClient *this,void *data,uint size)
 
 {
   int *piVar1;
@@ -24,7 +24,7 @@ LiveSteamClient::RequestEncryptedAppTicket(LiveSteamClient *this,void *param_1,u
   
   this->resultOnRequestEncryptedAppTicket = 0;
   piVar1 = (int *)SteamUser();
-  uVar2 = (**(code **)(*piVar1 + 0x4c))(param_1,param_2);
+  uVar2 = (**(code **)(*piVar1 + 0x4c))(data,size);
   if ((int)(this->m_SteamCallResultEncryptedAppTicket).m_hAPICall != 0 ||
       *(int *)((int)&(this->m_SteamCallResultEncryptedAppTicket).m_hAPICall + 4) != 0) {
     SteamAPI_UnregisterCallResult
@@ -46,15 +46,16 @@ LiveSteamClient::RequestEncryptedAppTicket(LiveSteamClient *this,void *param_1,u
 
 bool __thiscall
 LiveSteamClient::GetRetrievedEncryptedAppTicket
-          (LiveSteamClient *this,void *param_1,uint param_2,uint *param_3)
+          (LiveSteamClient *this,void *ticketBuf,uint ticketBufSize,uint *ticketSize)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int *piVar4;
+  bool result;
   
-  if ((this->resultOnRequestEncryptedAppTicket != k_EResultOK) || (param_2 == 0)) {
+  if ((this->resultOnRequestEncryptedAppTicket != k_EResultOK) || (ticketBufSize == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_steam_client.cpp",0x1a,0
                              ,"%s");
     if (!bVar2) {
@@ -64,7 +65,7 @@ LiveSteamClient::GetRetrievedEncryptedAppTicket
     }
   }
   piVar4 = (int *)SteamUser();
-  uVar3 = (**(code **)(*piVar4 + 0x50))(param_1,param_2,param_3);
+  uVar3 = (**(code **)(*piVar4 + 0x50))(ticketBuf,ticketBufSize,ticketSize);
   Com_DPrintf(0x1e,"STEAM: Retrieved ticket from Steam, sending to DemonWare\n");
   return (bool)uVar3;
 }
@@ -74,13 +75,15 @@ LiveSteamClient::GetRetrievedEncryptedAppTicket
 
 void __thiscall
 LiveSteamClient::OnRequestEncryptedAppTicket
-          (LiveSteamClient *this,EncryptedAppTicketResponse_t *param_1,bool param_2)
+          (LiveSteamClient *this,EncryptedAppTicketResponse_t *pEncryptedAppTicketResponse,
+          bool bIOFailure)
 
 {
   EResult EVar1;
+  EResult result;
   
-  if (!param_2) {
-    EVar1 = param_1->m_eResult;
+  if (!bIOFailure) {
+    EVar1 = pEncryptedAppTicketResponse->m_eResult;
     if (EVar1 == k_EResultOK) {
       dwLogonSeAcquiredSteamTicket();
     }
@@ -130,12 +133,12 @@ CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t>
 
 void __thiscall
 CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t>::Run
-          (CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t> *this,void *param_1)
+          (CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t> *this,void *pvParam)
 
 {
   *(undefined4 *)&this->m_hAPICall = 0;
   *(undefined4 *)((int)&this->m_hAPICall + 4) = 0;
-  (*(code *)this->m_Func)(param_1,0);
+  (*(code *)this->m_Func)(pvParam,0);
   return;
 }
 
@@ -144,15 +147,15 @@ CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t>::Run
 
 void __thiscall
 CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t>::Run
-          (CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t> *this,void *param_1,
-          bool param_2,ulong64 param_3)
+          (CCallResult<LiveSteamClient,EncryptedAppTicketResponse_t> *this,void *pvParam,
+          bool bIOFailure,ulong64 hSteamAPICall)
 
 {
-  if (((int)param_3 == (int)this->m_hAPICall) &&
-     (param_3._4_4_ == *(int *)((int)&this->m_hAPICall + 4))) {
+  if (((int)hSteamAPICall == (int)this->m_hAPICall) &&
+     (hSteamAPICall._4_4_ == *(int *)((int)&this->m_hAPICall + 4))) {
     *(undefined4 *)&this->m_hAPICall = 0;
     *(undefined4 *)((int)&this->m_hAPICall + 4) = 0;
-    (*(code *)this->m_Func)(param_1,param_2);
+    (*(code *)this->m_Func)(pvParam,bIOFailure);
   }
   return;
 }

@@ -142,15 +142,15 @@ void __cdecl _dynamic_initializer_for__scoreParamValues__(void)
 // 00744350  GVAction  (ui_mp/ui_gametype_variants_mp.h:81)
 
 GVAction * __thiscall
-GVAction::GVAction(GVAction *this,char *param_1,char *param_2,uchar param_3,GVValue *param_4,
-                  int param_5)
+GVAction::GVAction(GVAction *this,char *name,char *scriptName,uchar parameterType,
+                  GVValue *parameters,int parametersSize)
 
 {
-  this->m_name = param_1;
-  this->m_scriptName = param_2;
-  this->m_parameterType = param_3;
-  this->m_parameters = param_4;
-  this->m_parametersSize = param_5;
+  this->m_name = name;
+  this->m_scriptName = scriptName;
+  this->m_parameterType = parameterType;
+  this->m_parameters = parameters;
+  this->m_parametersSize = parametersSize;
   return this;
 }
 
@@ -350,17 +350,17 @@ void __cdecl _dynamic_initializer_for__moveSpeedParamValues__(void)
 
 // 00743C40  MemFile_WriteUInt  (universal/memfile.h:182)
 
-void __cdecl MemFile_WriteUInt(MemoryFile *param_1,uint param_2)
+void __cdecl MemFile_WriteUInt(MemoryFile *memFile,uint value)
 
 {
-  if (0x7ff7 < param_1->cacheBufferUsed + 4U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 4U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = (uchar)param_2;
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 1] = (uchar)(param_2 >> 8);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 2] = (uchar)(param_2 >> 0x10);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 3] = (uchar)(param_2 >> 0x18);
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 4;
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = (uchar)value;
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 1] = (uchar)(value >> 8);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 2] = (uchar)(value >> 0x10);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 3] = (uchar)(value >> 0x18);
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 4;
   return;
 }
 
@@ -767,23 +767,23 @@ void __cdecl _dynamic_initializer_for__gvCondLhsValues__(void)
 
 // 007439A0  MemFile_ArchiveByte  (universal/memfile.h:324)
 
-void __cdecl MemFile_ArchiveByte(MemoryFile *param_1,uchar *param_2)
+void __cdecl MemFile_ArchiveByte(MemoryFile *memFile,uchar *value)
 
 {
   uchar local_6;
   uchar local_5;
   
-  if (param_1->is_writing == false) {
-    MemFile_ReadData(param_1,1,&local_6);
-    *param_2 = local_6;
+  if (memFile->is_writing == false) {
+    MemFile_ReadData(memFile,1,&local_6);
+    *value = local_6;
   }
   else {
-    local_5 = *param_2;
-    if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-      MemFile_WriteDataFlushInternal(param_1);
+    local_5 = *value;
+    if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+      MemFile_WriteDataFlushInternal(memFile);
     }
-    param_1->cacheBuffer[param_1->cacheBufferUsed] = local_5;
-    param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
+    memFile->cacheBuffer[memFile->cacheBufferUsed] = local_5;
+    memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
   }
   return;
 }
@@ -817,50 +817,50 @@ int __cdecl UI_GameVariants_GetClassParameters(void)
 {
   bool bVar1;
   int iVar2;
-  int local_10;
-  uint local_c;
-  int local_8;
+  int c_2;
+  int c;
+  int numClasses;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-    classParamValues[local_c].m_displayValue = "";
-    classParamValues[local_c].m_value = "";
+  numClasses = 0;
+  for (c = 0; (uint)c < 10; c = c + 1) {
+    classParamValues[c].m_displayValue = "";
+    classParamValues[c].m_value = "";
   }
   bVar1 = UI_Gametype_IsUsingCustom();
   if (bVar1) {
     iVar2 = Dvar_GetInt(custom_class_mode);
     if (iVar2 != 0) {
-      local_8 = 0;
-      for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-        if (g_customGameModeClasses[local_10].isActive == 1) {
-          classParamValues[local_10].m_displayValue =
-               g_customGameModeClassDescriptions[local_10].name;
-          classParamValues[local_10].m_value = CUSTOM_CLASS_VALUES[local_10];
-          local_8 = local_8 + 1;
+      numClasses = 0;
+      for (c_2 = 0; c_2 < 10; c_2 = c_2 + 1) {
+        if (g_customGameModeClasses[c_2].isActive == 1) {
+          classParamValues[c_2].m_displayValue = g_customGameModeClassDescriptions[c_2].name;
+          classParamValues[c_2].m_value = CUSTOM_CLASS_VALUES[c_2];
+          numClasses = numClasses + 1;
         }
       }
     }
   }
-  return local_8;
+  return numClasses;
 }
 
 
 // 00741900  GetRuleForFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:396)
 
-GVRule * __cdecl GetRuleForFeederIndex(int param_1)
+GVRule * __cdecl GetRuleForFeederIndex(int feederIndex)
 
 {
-  int local_c;
-  int local_8;
+  GVRule *rule;
+  int i;
+  int validIndex;
   
-  if ((-1 < param_1) && (param_1 < gvGlob.ruleCount)) {
-    local_8 = 0;
-    for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-      if (gvGlob.rules[local_c].isValid != false) {
-        if (local_8 == param_1) {
-          return gvGlob.rules + local_c;
+  if ((-1 < feederIndex) && (feederIndex < gvGlob.ruleCount)) {
+    validIndex = 0;
+    for (i = 0; i < 0x40; i = i + 1) {
+      if (gvGlob.rules[i].isValid != false) {
+        if (validIndex == feederIndex) {
+          return gvGlob.rules + i;
         }
-        local_8 = local_8 + 1;
+        validIndex = validIndex + 1;
       }
     }
   }
@@ -870,17 +870,19 @@ GVRule * __cdecl GetRuleForFeederIndex(int param_1)
 
 // 007418C0  GetSelectedRule  (ui_mp/ui_gametype_variants_mp.cpp:417)
 
-GVRule * __cdecl GetSelectedRule(int param_1)
+GVRule * __cdecl GetSelectedRule(int localClientNum)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
-  GVRule *pGVar3;
+  uiInfo_s *dc_00;
+  int feederIndex;
+  GVRule *pGVar1;
+  int ruleSelected;
+  UiContext *dc;
   
-  puVar1 = UI_GetInfo(param_1);
-  iVar2 = Menu_GetFeederSelection(&puVar1->uiDC,(menuDef_t *)0x0,0x2c,"gametype_variants");
-  pGVar3 = GetRuleForFeederIndex(iVar2);
-  return pGVar3;
+  dc_00 = UI_GetInfo(localClientNum);
+  feederIndex = Menu_GetFeederSelection(&dc_00->uiDC,(menuDef_t *)0x0,0x2c,"gametype_variants");
+  pGVar1 = GetRuleForFeederIndex(feederIndex);
+  return pGVar1;
 }
 
 
@@ -903,19 +905,19 @@ bool __cdecl AreCustomClassesAvailable(void)
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  int c;
   
   bVar1 = UI_Gametype_IsUsingCustom();
   if ((bVar1) && (iVar2 = Dvar_GetInt(custom_class_mode), iVar2 == 0)) {
     return false;
   }
-  local_8 = 0;
+  c = 0;
   while( true ) {
-    if (9 < local_8) {
+    if (9 < c) {
       return false;
     }
-    if (g_customGameModeClasses[local_8].isActive == 1) break;
-    local_8 = local_8 + 1;
+    if (g_customGameModeClasses[c].isActive == 1) break;
+    c = c + 1;
   }
   return true;
 }
@@ -923,18 +925,18 @@ bool __cdecl AreCustomClassesAvailable(void)
 
 // 00741AA0  IsEventValid  (ui_mp/ui_gametype_variants_mp.cpp:451)
 
-bool __cdecl IsEventValid(GVEvent *param_1)
+bool __cdecl IsEventValid(GVEvent *ev)
 
 {
   bool bVar1;
   int iVar2;
   
   bVar1 = IsFreeForAllMode();
-  if ((bVar1) && (iVar2 = I_stricmp(param_1->m_scriptName,"OnPlayerTeamChange"), iVar2 == 0)) {
+  if ((bVar1) && (iVar2 = I_stricmp(ev->m_scriptName,"OnPlayerTeamChange"), iVar2 == 0)) {
     return false;
   }
   bVar1 = AreCustomClassesAvailable();
-  if ((!bVar1) && (iVar2 = I_stricmp(param_1->m_scriptName,"OnPlayerClassChange"), iVar2 == 0)) {
+  if ((!bVar1) && (iVar2 = I_stricmp(ev->m_scriptName,"OnPlayerClassChange"), iVar2 == 0)) {
     return false;
   }
   return true;
@@ -947,83 +949,84 @@ int __cdecl GetValidEventCount(void)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < gvEventCount; local_c = local_c + 1) {
-    bVar1 = IsEventValid(gvEvents + local_c);
+  count = 0;
+  for (i = 0; i < gvEventCount; i = i + 1) {
+    bVar1 = IsEventValid(gvEvents + i);
     if (bVar1) {
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00741A30  GetEventIndexFromFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:480)
 
-int __cdecl GetEventIndexFromFeederIndex(int param_1)
+int __cdecl GetEventIndexFromFeederIndex(int feederIndex)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int index;
   
-  local_8 = 0;
-  local_c = 0;
+  index = 0;
+  i = 0;
   do {
-    if (gvEventCount <= local_c) {
+    if (gvEventCount <= i) {
       return 0;
     }
-    bVar1 = IsEventValid(gvEvents + local_c);
+    bVar1 = IsEventValid(gvEvents + i);
     if (bVar1) {
-      if (local_8 == param_1) {
-        return local_c;
+      if (index == feederIndex) {
+        return i;
       }
-      local_8 = local_8 + 1;
+      index = index + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00743200  GetFeederIndexFromEventIndex  (ui_mp/ui_gametype_variants_mp.cpp:498)
 
-int __cdecl GetFeederIndexFromEventIndex(int param_1)
+int __cdecl GetFeederIndexFromEventIndex(int eventIndex)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int index;
   
-  local_8 = 0;
-  local_c = 0;
+  index = 0;
+  i = 0;
   do {
-    if (gvEventCount <= local_c) {
+    if (gvEventCount <= i) {
       return 0;
     }
-    bVar1 = IsEventValid(gvEvents + local_c);
+    bVar1 = IsEventValid(gvEvents + i);
     if (bVar1) {
-      if (local_c == param_1) {
-        return local_8;
+      if (i == eventIndex) {
+        return index;
       }
-      local_8 = local_8 + 1;
+      index = index + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00741CD0  GetEventByDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:516)
 
-GVEvent * __cdecl GetEventByDvarIndex(char *param_1)
+GVEvent * __cdecl GetEventByDvarIndex(char *dvarName)
 
 {
   int iVar1;
   int iVar2;
+  int index;
   
-  iVar1 = Dvar_GetInt(param_1);
+  iVar1 = Dvar_GetInt(dvarName);
   if ((-1 < iVar1) && (iVar2 = UI_GetGVEventCount(), iVar1 < iVar2)) {
     iVar1 = GetEventIndexFromFeederIndex(iVar1);
     return gvEvents + iVar1;
@@ -1034,18 +1037,18 @@ GVEvent * __cdecl GetEventByDvarIndex(char *param_1)
 
 // 00741C00  IsActionValid  (ui_mp/ui_gametype_variants_mp.cpp:527)
 
-bool __cdecl IsActionValid(GVAction *param_1)
+bool __cdecl IsActionValid(GVAction *action)
 
 {
   bool bVar1;
   
   bVar1 = IsFreeForAllMode();
-  if ((bVar1) && (param_1->m_parameters == teamParamValues)) {
+  if ((bVar1) && (action->m_parameters == teamParamValues)) {
     bVar1 = false;
   }
   else {
     bVar1 = AreCustomClassesAvailable();
-    if ((bVar1) || (param_1->m_parameterType != '\x05')) {
+    if ((bVar1) || (action->m_parameterType != '\x05')) {
       bVar1 = true;
     }
     else {
@@ -1062,83 +1065,84 @@ int __cdecl GetValidActionCount(void)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < gvActionCount; local_c = local_c + 1) {
-    bVar1 = IsActionValid(gvActions + local_c);
+  count = 0;
+  for (i = 0; i < gvActionCount; i = i + 1) {
+    bVar1 = IsActionValid(gvActions + i);
     if (bVar1) {
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00741B90  GetActionIndexFromFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:556)
 
-int __cdecl GetActionIndexFromFeederIndex(int param_1)
+int __cdecl GetActionIndexFromFeederIndex(int feederIndex)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int index;
   
-  local_8 = 0;
-  local_c = 0;
+  index = 0;
+  i = 0;
   do {
-    if (gvActionCount <= local_c) {
+    if (gvActionCount <= i) {
       return 0;
     }
-    bVar1 = IsActionValid(gvActions + local_c);
+    bVar1 = IsActionValid(gvActions + i);
     if (bVar1) {
-      if (local_8 == param_1) {
-        return local_c;
+      if (index == feederIndex) {
+        return i;
       }
-      local_8 = local_8 + 1;
+      index = index + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00743270  GetFeederIndexFromActionIndex  (ui_mp/ui_gametype_variants_mp.cpp:574)
 
-int __cdecl GetFeederIndexFromActionIndex(int param_1)
+int __cdecl GetFeederIndexFromActionIndex(int actionIndex)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int index;
   
-  local_8 = 0;
-  local_c = 0;
+  index = 0;
+  i = 0;
   do {
-    if (gvActionCount <= local_c) {
+    if (gvActionCount <= i) {
       return 0;
     }
-    bVar1 = IsActionValid(gvActions + local_c);
+    bVar1 = IsActionValid(gvActions + i);
     if (bVar1) {
-      if (local_c == param_1) {
-        return local_8;
+      if (i == actionIndex) {
+        return index;
       }
-      local_8 = local_8 + 1;
+      index = index + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00742690  GetActionByDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:592)
 
-GVAction * __cdecl GetActionByDvarIndex(char *param_1)
+GVAction * __cdecl GetActionByDvarIndex(char *dvarName)
 
 {
   int iVar1;
   int iVar2;
+  int index;
   
-  iVar1 = Dvar_GetInt(param_1);
+  iVar1 = Dvar_GetInt(dvarName);
   if ((-1 < iVar1) && (iVar2 = UI_GetGVActionCount(), iVar1 < iVar2)) {
     iVar1 = GetActionIndexFromFeederIndex(iVar1);
     return gvActions + iVar1;
@@ -1149,17 +1153,18 @@ GVAction * __cdecl GetActionByDvarIndex(char *param_1)
 
 // 00742B10  GetParamIndexForValue  (ui_mp/ui_gametype_variants_mp.cpp:603)
 
-int __cdecl GetParamIndexForValue(int param_1,char *param_2)
+int __cdecl GetParamIndexForValue(int actionIndex,char *paramValue)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  GVAction *action;
   
-  if (gvActions[param_1].m_parameters != (GVValue *)0x0) {
-    for (local_c = 0; local_c < gvActions[param_1].m_parametersSize; local_c = local_c + 1) {
-      iVar1 = I_stricmp(gvActions[param_1].m_parameters[local_c].m_value,param_2);
+  if (gvActions[actionIndex].m_parameters != (GVValue *)0x0) {
+    for (i = 0; i < gvActions[actionIndex].m_parametersSize; i = i + 1) {
+      iVar1 = I_stricmp(gvActions[actionIndex].m_parameters[i].m_value,paramValue);
       if (iVar1 == 0) {
-        return local_c;
+        return i;
       }
     }
   }
@@ -1169,98 +1174,104 @@ int __cdecl GetParamIndexForValue(int param_1,char *param_2)
 
 // 00741F90  GetParamValueForDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:622)
 
-char * __cdecl GetParamValueForDvarIndex(int param_1,char *param_2)
+char * __cdecl GetParamValueForDvarIndex(int actionIndex,char *paramIndexDvarName)
 
 {
   int iVar1;
+  int paramIndex;
+  GVAction *action;
   
-  iVar1 = Dvar_GetInt(param_2);
-  return gvActions[param_1].m_parameters[iVar1].m_value;
+  iVar1 = Dvar_GetInt(paramIndexDvarName);
+  return gvActions[actionIndex].m_parameters[iVar1].m_value;
 }
 
 
 // 00741D10  GetValidTargetMask  (ui_mp/ui_gametype_variants_mp.cpp:631)
 
-uchar __cdecl GetValidTargetMask(uchar param_1)
+uchar __cdecl GetValidTargetMask(uchar targetMask)
 
 {
   bool bVar1;
   
   bVar1 = IsFreeForAllMode();
   if (bVar1) {
-    param_1 = param_1 & 0xe7;
+    targetMask = targetMask & 0xe7;
   }
-  return param_1;
+  return targetMask;
 }
 
 
 // 007425F0  GetValidTargetCount  (ui_mp/ui_gametype_variants_mp.cpp:643)
 
-int __cdecl GetValidTargetCount(uchar param_1)
+int __cdecl GetValidTargetCount(uchar targetMask)
 
 {
   byte bVar1;
-  int local_10;
-  int local_8;
+  int i;
+  uchar mask;
+  int count;
   
-  bVar1 = GetValidTargetMask(param_1);
-  local_8 = 0;
-  for (local_10 = 0; local_10 < gvTargetCount; local_10 = local_10 + 1) {
-    if ((gvTargets[local_10].m_targetMask & bVar1) != 0) {
-      local_8 = local_8 + 1;
+  bVar1 = GetValidTargetMask(targetMask);
+  count = 0;
+  for (i = 0; i < gvTargetCount; i = i + 1) {
+    if ((gvTargets[i].m_targetMask & bVar1) != 0) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 007432E0  GetFeederIndexFromTargetId  (ui_mp/ui_gametype_variants_mp.cpp:658)
 
-int __cdecl GetFeederIndexFromTargetId(int param_1,uchar param_2)
+int __cdecl GetFeederIndexFromTargetId(int targetId,uchar targetMask)
 
 {
   byte bVar1;
-  int local_10;
-  int local_8;
+  int i;
+  uchar mask;
+  int count;
   
-  bVar1 = GetValidTargetMask(param_2);
-  local_8 = 0;
-  local_10 = 0;
+  bVar1 = GetValidTargetMask(targetMask);
+  count = 0;
+  i = 0;
   do {
-    if (gvTargetCount <= local_10) {
+    if (gvTargetCount <= i) {
       return 0;
     }
-    if ((gvTargets[local_10].m_targetMask & bVar1) != 0) {
-      if (local_10 == param_1) {
-        return local_8;
+    if ((gvTargets[i].m_targetMask & bVar1) != 0) {
+      if (i == targetId) {
+        return count;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00741C40  GetTargetIDFromFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:677)
 
-int __cdecl GetTargetIDFromFeederIndex(int param_1)
+int __cdecl GetTargetIDFromFeederIndex(int feederIndex)
 
 {
   byte bVar1;
   GVEvent *pGVar2;
-  int local_14;
-  int local_8;
+  int i;
+  uchar mask;
+  GVEvent *ev;
+  int count;
   
   pGVar2 = GetEventByDvarIndex("ui_gv_event_index");
   if (pGVar2 != (GVEvent *)0x0) {
     bVar1 = GetValidTargetMask(pGVar2->m_targetMask);
-    local_8 = 0;
-    for (local_14 = 0; local_14 < gvTargetCount; local_14 = local_14 + 1) {
-      if ((gvTargets[local_14].m_targetMask & bVar1) != 0) {
-        if (local_8 == param_1) {
-          return local_14;
+    count = 0;
+    for (i = 0; i < gvTargetCount; i = i + 1) {
+      if ((gvTargets[i].m_targetMask & bVar1) != 0) {
+        if (count == feederIndex) {
+          return i;
         }
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
   }
@@ -1270,98 +1281,103 @@ int __cdecl GetTargetIDFromFeederIndex(int param_1)
 
 // 00742C80  GetTargetAtFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:700)
 
-GVTarget * __cdecl GetTargetAtFeederIndex(int param_1)
+GVTarget * __cdecl GetTargetAtFeederIndex(int feederIndex)
 
 {
   int iVar1;
+  int targetIndex;
   
-  iVar1 = GetTargetIDFromFeederIndex(param_1);
+  iVar1 = GetTargetIDFromFeederIndex(feederIndex);
   return gvTargets + iVar1;
 }
 
 
 // 00741E50  GetValidCondMask  (ui_mp/ui_gametype_variants_mp.cpp:708)
 
-uchar __cdecl GetValidCondMask(uchar param_1)
+uchar __cdecl GetValidCondMask(uchar condMask)
 
 {
   bool bVar1;
   
   bVar1 = AreCustomClassesAvailable();
   if (!bVar1) {
-    param_1 = param_1 & 0xcf;
+    condMask = condMask & 0xcf;
   }
-  return param_1;
+  return condMask;
 }
 
 
 // 00742710  GetValidCondLhsCount  (ui_mp/ui_gametype_variants_mp.cpp:720)
 
-int __cdecl GetValidCondLhsCount(uchar param_1)
+int __cdecl GetValidCondLhsCount(uchar condMask)
 
 {
   byte bVar1;
-  uint local_10;
-  int local_8;
+  int i;
+  uchar mask;
+  int count;
   
-  bVar1 = GetValidCondMask(param_1);
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 9; local_10 = local_10 + 1) {
-    if (((uint)bVar1 & gvCondLhsValues[local_10].m_type) != 0) {
-      local_8 = local_8 + 1;
+  bVar1 = GetValidCondMask(condMask);
+  count = 0;
+  for (i = 0; (uint)i < 9; i = i + 1) {
+    if (((uint)bVar1 & gvCondLhsValues[i].m_type) != 0) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00743350  GetFeederIndexForCondLhsIndex  (ui_mp/ui_gametype_variants_mp.cpp:735)
 
-int __cdecl GetFeederIndexForCondLhsIndex(int param_1,uchar param_2)
+int __cdecl GetFeederIndexForCondLhsIndex(int condLhsIndex,uchar condMask)
 
 {
   byte bVar1;
-  uint local_10;
-  int local_8;
+  int i;
+  uchar mask;
+  int count;
   
-  bVar1 = GetValidCondMask(param_2);
-  local_8 = 0;
-  local_10 = 0;
+  bVar1 = GetValidCondMask(condMask);
+  count = 0;
+  i = 0;
   do {
-    if (8 < local_10) {
+    if (8 < (uint)i) {
       return 0;
     }
-    if (((uint)bVar1 & gvCondLhsValues[local_10].m_type) != 0) {
-      if (local_10 == param_1) {
-        return local_8;
+    if (((uint)bVar1 & gvCondLhsValues[i].m_type) != 0) {
+      if (i == condLhsIndex) {
+        return count;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00741DC0  GetCondLhsIndexForFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:754)
 
-int __cdecl GetCondLhsIndexForFeederIndex(int param_1)
+int __cdecl GetCondLhsIndexForFeederIndex(int feederIndex)
 
 {
   byte bVar1;
   GVEvent *pGVar2;
-  uint local_14;
-  int local_8;
+  int i;
+  uchar mask;
+  GVEvent *ev;
+  int count;
   
   pGVar2 = GetEventByDvarIndex("ui_gv_event_index");
   if (pGVar2 != (GVEvent *)0x0) {
     bVar1 = GetValidCondMask(pGVar2->m_condMask);
-    local_8 = 0;
-    for (local_14 = 0; local_14 < 9; local_14 = local_14 + 1) {
-      if (((uint)bVar1 & gvCondLhsValues[local_14].m_type) != 0) {
-        if (local_8 == param_1) {
-          return local_14;
+    count = 0;
+    for (i = 0; (uint)i < 9; i = i + 1) {
+      if (((uint)bVar1 & gvCondLhsValues[i].m_type) != 0) {
+        if (count == feederIndex) {
+          return i;
         }
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
   }
@@ -1371,41 +1387,44 @@ int __cdecl GetCondLhsIndexForFeederIndex(int param_1)
 
 // 007427C0  GetCondLhsForFeederIndex  (ui_mp/ui_gametype_variants_mp.cpp:777)
 
-GVConditionalLhs * __cdecl GetCondLhsForFeederIndex(int param_1)
+GVConditionalLhs * __cdecl GetCondLhsForFeederIndex(int feederIndex)
 
 {
   int iVar1;
+  int index;
   
-  iVar1 = GetCondLhsIndexForFeederIndex(param_1);
+  iVar1 = GetCondLhsIndexForFeederIndex(feederIndex);
   return gvCondLhsValues + iVar1;
 }
 
 
 // 007427A0  GetCondLhsForDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:785)
 
-GVConditionalLhs * __cdecl GetCondLhsForDvarIndex(char *param_1)
+GVConditionalLhs * __cdecl GetCondLhsForDvarIndex(char *lhsDvarIndexName)
 
 {
-  int iVar1;
-  GVConditionalLhs *pGVar2;
+  int feederIndex;
+  GVConditionalLhs *pGVar1;
   
-  iVar1 = Dvar_GetInt(param_1);
-  pGVar2 = GetCondLhsForFeederIndex(iVar1);
-  return pGVar2;
+  feederIndex = Dvar_GetInt(lhsDvarIndexName);
+  pGVar1 = GetCondLhsForFeederIndex(feederIndex);
+  return pGVar1;
 }
 
 
 // 00741D30  GetConditionalForDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:792)
 
-GVConditional __cdecl GetConditionalForDvarIndex(char *param_1,char *param_2,char *param_3)
+GVConditional __cdecl
+GetConditionalForDvarIndex(char *param_1,char *lhsDvarIndexName,char *opDvarIndexName)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
   char *in_stack_00000010;
+  int lhsFeederIndex;
   
-  iVar1 = Dvar_GetInt(param_2);
+  iVar1 = Dvar_GetInt(lhsDvarIndexName);
   if (iVar1 < 0) {
     *param_1 = '\0';
     param_1[1] = '\0';
@@ -1414,7 +1433,7 @@ GVConditional __cdecl GetConditionalForDvarIndex(char *param_1,char *param_2,cha
   }
   else {
     iVar2 = Dvar_GetInt(in_stack_00000010);
-    iVar3 = Dvar_GetInt(param_3);
+    iVar3 = Dvar_GetInt(opDvarIndexName);
     iVar1 = GetCondLhsIndexForFeederIndex(iVar1);
     *param_1 = '\x01';
     param_1[1] = (char)iVar1;
@@ -1431,34 +1450,36 @@ void __cdecl SetNextPopupToAddOrEditConfirm(void)
 
 {
   int iVar1;
-  char *local_8;
+  char *nextPopup;
   
-  local_8 = "popup_gv_edit_selected";
+  nextPopup = "popup_gv_edit_selected";
   iVar1 = Dvar_GetInt("ui_gv_iscreatingnew");
   if (iVar1 != 0) {
-    local_8 = "popup_gv_add_new";
+    nextPopup = "popup_gv_add_new";
   }
-  Dvar_SetStringByName("ui_gv_nextpopup",local_8);
+  Dvar_SetStringByName("ui_gv_nextpopup",nextPopup);
   return;
 }
 
 
 // 007416C0  UI_GV_StartEditingFeeder  (ui_mp/ui_gametype_variants_mp.cpp:819)
 
-void __cdecl UI_GV_StartEditingFeeder(int param_1,int param_2,int param_3)
+void __cdecl UI_GV_StartEditingFeeder(int localClientNum,int feederId,int feederCount)
 
 {
-  uiInfo_s *puVar1;
-  int local_c;
+  uiInfo_s *dc_00;
+  int selection;
+  UiContext *dc;
   
   s_isFeederSelectionFromPopupStart = true;
-  puVar1 = UI_GetInfo(0);
-  local_c = Menu_GetFeederSelection(&puVar1->uiDC,(menuDef_t *)0x0,param_2,(char *)0x0);
-  if ((local_c < 0) || (param_3 <= local_c)) {
-    Menu_SetFeederSelection(param_1,&puVar1->uiDC,(menuDef_t *)0x0,param_2,0,(char *)0x0);
-    local_c = 0;
+  dc_00 = UI_GetInfo(0);
+  selection = Menu_GetFeederSelection(&dc_00->uiDC,(menuDef_t *)0x0,feederId,(char *)0x0);
+  if ((selection < 0) || (feederCount <= selection)) {
+    Menu_SetFeederSelection(localClientNum,&dc_00->uiDC,(menuDef_t *)0x0,feederId,0,(char *)0x0);
+    selection = 0;
   }
-  UI_FeederSelection_GameVariants(param_1,(puVar1->uiDC).contextIndex,(float)param_2,local_c);
+  UI_FeederSelection_GameVariants
+            (localClientNum,(dc_00->uiDC).contextIndex,(float)feederId,selection);
   s_isFeederSelectionFromPopupStart = false;
   return;
 }
@@ -1469,10 +1490,10 @@ void __cdecl UI_GV_StartEditingFeeder(int param_1,int param_2,int param_3)
 void __cdecl UI_GV_StartAddingEvent_f(void)
 
 {
-  int iVar1;
+  int feederCount;
   
-  iVar1 = UI_GetGVEventCount();
-  UI_GV_StartEditingFeeder(0,0x28,iVar1);
+  feederCount = UI_GetGVEventCount();
+  UI_GV_StartEditingFeeder(0,0x28,feederCount);
   return;
 }
 
@@ -1482,10 +1503,10 @@ void __cdecl UI_GV_StartAddingEvent_f(void)
 void __cdecl UI_GV_StartAddingAction_f(void)
 
 {
-  int iVar1;
+  int feederCount;
   
-  iVar1 = UI_GetGVActionCount();
-  UI_GV_StartEditingFeeder(0,0x29,iVar1);
+  feederCount = UI_GetGVActionCount();
+  UI_GV_StartEditingFeeder(0,0x29,feederCount);
   return;
 }
 
@@ -1495,10 +1516,10 @@ void __cdecl UI_GV_StartAddingAction_f(void)
 void __cdecl UI_GV_StartAddingParam_f(void)
 
 {
-  int iVar1;
+  int feederCount;
   
-  iVar1 = UI_GetGVParamCount();
-  UI_GV_StartEditingFeeder(0,0x2a,iVar1);
+  feederCount = UI_GetGVParamCount();
+  UI_GV_StartEditingFeeder(0,0x2a,feederCount);
   return;
 }
 
@@ -1508,10 +1529,10 @@ void __cdecl UI_GV_StartAddingParam_f(void)
 void __cdecl UI_GV_StartAddingTarget_f(void)
 
 {
-  int iVar1;
+  int feederCount;
   
-  iVar1 = UI_GetGVTargetCount();
-  UI_GV_StartEditingFeeder(0,0x2b,iVar1);
+  feederCount = UI_GetGVTargetCount();
+  UI_GV_StartEditingFeeder(0,0x2b,feederCount);
   return;
 }
 
@@ -1540,21 +1561,25 @@ void __cdecl UI_GV_ResetFeeder_f(void)
 
 {
   int iVar1;
-  itemDef_s *piVar2;
-  listBoxDef_s *plVar3;
-  char *pcVar4;
-  uiInfo_s *puVar5;
+  itemDef_s *item_00;
+  listBoxDef_s *plVar2;
+  char *nptr;
+  uiInfo_s *dc_00;
+  itemDef_s *item;
+  listBoxDef_s *listPtr;
+  int index;
+  UiContext *dc;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    piVar2 = Cmd_ItemDef();
-    if ((piVar2 != (itemDef_s *)0x0) &&
-       (plVar3 = Item_GetListBoxDef(piVar2), plVar3 != (listBoxDef_s *)0x0)) {
-      pcVar4 = Cmd_Argv(1);
-      iVar1 = atoi(pcVar4);
-      puVar5 = UI_GetInfo(0);
+    item_00 = Cmd_ItemDef();
+    if ((item_00 != (itemDef_s *)0x0) &&
+       (plVar2 = Item_GetListBoxDef(item_00), plVar2 != (listBoxDef_s *)0x0)) {
+      nptr = Cmd_Argv(1);
+      iVar1 = atoi(nptr);
+      dc_00 = UI_GetInfo(0);
       Menu_SetFeederSelection
-                (0,&puVar5->uiDC,(menuDef_t *)0x0,(int)plVar3->special,iVar1,(char *)0x0);
+                (0,&dc_00->uiDC,(menuDef_t *)0x0,(int)plVar2->special,iVar1,(char *)0x0);
     }
   }
   else {
@@ -1569,35 +1594,42 @@ void __cdecl UI_GV_ResetFeeder_f(void)
 int __cdecl UI_GV_GetFirstInvalidRuleIndex(void)
 
 {
-  int local_8;
+  GVRule *rule;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x3f < local_8) {
+    if (0x3f < i) {
       return -1;
     }
-    if (gvGlob.rules[local_8].isValid == false) break;
-    local_8 = local_8 + 1;
+    if (gvGlob.rules[i].isValid == false) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00741FD0  GetPerkParamValueFromDvarIndex  (ui_mp/ui_gametype_variants_mp.cpp:912)
 
-char * __cdecl GetPerkParamValueFromDvarIndex(GVRule *param_1,char *param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+char * __cdecl GetPerkParamValueFromDvarIndex(GVRule *rule,char *paramDvarIndexName)
 
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
+  int destsize;
+  int itemIndex;
   
-  iVar1 = Dvar_GetInt(param_2);
+  iVar1 = Dvar_GetInt(paramDvarIndexName);
   iVar1 = BG_UnlockablesGetItemIndexInSlot(iVar1);
-  (param_1->secondParameter).hasParameter = true;
-  iVar3 = 0x80;
+  (rule->secondParameter).hasParameter = true;
+  destsize = 0x80;
   pcVar2 = BG_UnlockablesGetItemImage(iVar1);
-  I_strncpyz((param_1->secondParameter).value,pcVar2,iVar3);
+  I_strncpyz((rule->secondParameter).value,pcVar2,destsize);
   pcVar2 = BG_UnlockablesGetItemRef(iVar1);
   return pcVar2;
 }
@@ -1605,37 +1637,38 @@ char * __cdecl GetPerkParamValueFromDvarIndex(GVRule *param_1,char *param_2)
 
 // 00741E70  UI_GV_SetRuleParameterFromDisplayDvars  (ui_mp/ui_gametype_variants_mp.cpp:923)
 
-void __cdecl UI_GV_SetRuleParameterFromDisplayDvars(GVRule *param_1)
+void __cdecl UI_GV_SetRuleParameterFromDisplayDvars(GVRule *rule)
 
 {
   bool local_10;
-  char *local_c;
+  char *parameter;
+  GVAction *action;
   
-  (param_1->parameter).value[0] = '\0';
-  (param_1->secondParameter).value[0] = '\0';
-  (param_1->secondParameter).hasParameter = false;
-  local_c = Dvar_GetString("ui_gv_param");
-  if ((local_c == (char *)0x0) || (*local_c == '\0')) {
+  (rule->parameter).value[0] = '\0';
+  (rule->secondParameter).value[0] = '\0';
+  (rule->secondParameter).hasParameter = false;
+  parameter = Dvar_GetString("ui_gv_param");
+  if ((parameter == (char *)0x0) || (*parameter == '\0')) {
     local_10 = false;
   }
   else {
     local_10 = true;
   }
-  (param_1->parameter).hasParameter = local_10;
-  if ((param_1->parameter).hasParameter != false) {
-    switch(gvActions[param_1->actionID].m_parameterType) {
+  (rule->parameter).hasParameter = local_10;
+  if ((rule->parameter).hasParameter != false) {
+    switch(gvActions[rule->actionID].m_parameterType) {
     case '\x01':
     case '\x02':
     case '\x03':
     case '\x05':
-      local_c = GetParamValueForDvarIndex((uint)param_1->actionID,"ui_gv_param_index");
+      parameter = GetParamValueForDvarIndex((uint)rule->actionID,"ui_gv_param_index");
       break;
     case '\x06':
     case '\a':
-      local_c = GetPerkParamValueFromDvarIndex(param_1,"ui_gv_param_index");
+      parameter = GetPerkParamValueFromDvarIndex(rule,"ui_gv_param_index");
     }
-    if ((local_c != (char *)0x0) && (*local_c != '\0')) {
-      I_strncpyz((param_1->parameter).value,local_c,0x80);
+    if ((parameter != (char *)0x0) && (*parameter != '\0')) {
+      I_strncpyz((rule->parameter).value,parameter,0x80);
     }
   }
   return;
@@ -1644,27 +1677,27 @@ void __cdecl UI_GV_SetRuleParameterFromDisplayDvars(GVRule *param_1)
 
 // 00741980  UI_GV_UpdateRuleFromDvars  (ui_mp/ui_gametype_variants_mp.cpp:963)
 
-void __cdecl UI_GV_UpdateRuleFromDvars(GVRule *param_1)
+void __cdecl UI_GV_UpdateRuleFromDvars(GVRule *rule)
 
 {
   int iVar1;
   GVConditional GVar2;
   char local_8 [4];
   
-  if (param_1 != (GVRule *)0x0) {
-    param_1->isValid = true;
+  if (rule != (GVRule *)0x0) {
+    rule->isValid = true;
     iVar1 = Dvar_GetInt("ui_gv_event_index");
     iVar1 = GetEventIndexFromFeederIndex(iVar1);
-    param_1->eventID = (uchar)iVar1;
+    rule->eventID = (uchar)iVar1;
     iVar1 = Dvar_GetInt("ui_gv_action_index");
     iVar1 = GetActionIndexFromFeederIndex(iVar1);
-    param_1->actionID = (uchar)iVar1;
+    rule->actionID = (uchar)iVar1;
     iVar1 = Dvar_GetInt("ui_gv_target_index");
     iVar1 = GetTargetIDFromFeederIndex(iVar1);
-    param_1->targetID = (uchar)iVar1;
+    rule->targetID = (uchar)iVar1;
     GVar2 = GetConditionalForDvarIndex(local_8,"ui_gv_condlhs_index","ui_gv_condop_index");
-    param_1->m_conditional = *(GVConditional *)GVar2;
-    UI_GV_SetRuleParameterFromDisplayDvars(param_1);
+    rule->m_conditional = *(GVConditional *)GVar2;
+    UI_GV_SetRuleParameterFromDisplayDvars(rule);
     s_popupStackSize = 0;
   }
   return;
@@ -1679,39 +1712,40 @@ void __cdecl UI_GV_EditSelectedRule_f(void)
 
 {
   short sVar1;
-  GVRule *pGVar2;
-  int iVar3;
-  GVRule *pGVar4;
-  short *psVar5;
-  bool bVar6;
-  short local_11c [138];
+  GVRule *rule_00;
+  int iVar2;
+  GVRule *pGVar3;
+  short *psVar4;
+  bool bVar5;
+  GVRule *rule;
+  short oldRule [138];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pGVar2 = GetSelectedRule(0);
-  if (pGVar2 != (GVRule *)0x0) {
-    pGVar4 = pGVar2;
-    psVar5 = local_11c;
-    for (iVar3 = 0x42; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *(undefined4 *)psVar5 = *(undefined4 *)pGVar4;
-      pGVar4 = (GVRule *)(pGVar4->parameter).value;
-      psVar5 = psVar5 + 2;
+  rule_00 = GetSelectedRule(0);
+  if (rule_00 != (GVRule *)0x0) {
+    pGVar3 = rule_00;
+    psVar4 = oldRule;
+    for (iVar2 = 0x42; iVar2 != 0; iVar2 = iVar2 + -1) {
+      *(undefined4 *)psVar4 = *(undefined4 *)pGVar3;
+      pGVar3 = (GVRule *)(pGVar3->parameter).value;
+      psVar4 = psVar4 + 2;
     }
-    *psVar5 = *(short *)pGVar4;
-    UI_GV_UpdateRuleFromDvars(pGVar2);
-    iVar3 = 0x85;
-    bVar6 = true;
-    psVar5 = local_11c;
+    *psVar4 = *(short *)pGVar3;
+    UI_GV_UpdateRuleFromDvars(rule_00);
+    iVar2 = 0x85;
+    bVar5 = true;
+    psVar4 = oldRule;
     do {
-      if (iVar3 == 0) break;
-      iVar3 = iVar3 + -1;
-      sVar1._0_1_ = pGVar2->isValid;
-      sVar1._1_1_ = pGVar2->eventID;
-      bVar6 = *psVar5 == sVar1;
-      psVar5 = psVar5 + 1;
-      pGVar2 = (GVRule *)&pGVar2->actionID;
-    } while (bVar6);
-    if (!bVar6) {
+      if (iVar2 == 0) break;
+      iVar2 = iVar2 + -1;
+      sVar1._0_1_ = rule_00->isValid;
+      sVar1._1_1_ = rule_00->eventID;
+      bVar5 = *psVar4 == sVar1;
+      psVar4 = psVar4 + 1;
+      rule_00 = (GVRule *)&rule_00->actionID;
+    } while (bVar5);
+    if (!bVar5) {
       UI_Gametype_MarkDirty();
     }
   }
@@ -1724,17 +1758,19 @@ void __cdecl UI_GV_EditSelectedRule_f(void)
 void __cdecl UI_GV_AddNewRule_f(void)
 
 {
-  int iVar1;
-  uiInfo_s *puVar2;
+  int index;
+  uiInfo_s *dc_00;
+  UiContext *dc;
+  int ruleIndex;
   
   if (gvGlob.ruleCount < 0x40) {
     UI_Gametype_MarkDirty();
-    iVar1 = UI_GV_GetFirstInvalidRuleIndex();
-    UI_GV_UpdateRuleFromDvars(gvGlob.rules + iVar1);
+    index = UI_GV_GetFirstInvalidRuleIndex();
+    UI_GV_UpdateRuleFromDvars(gvGlob.rules + index);
     gvGlob.ruleCount = gvGlob.ruleCount + 1;
     Dvar_SetInt(ui_gv_rulecount,gvGlob.ruleCount);
-    puVar2 = UI_GetInfo(0);
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x2c,iVar1,(char *)0x0);
+    dc_00 = UI_GetInfo(0);
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x2c,index,(char *)0x0);
   }
   else {
     UI_Gametype_ShowErrorPopup("@MENU_ERROR","@CUSTOM_MAX_RULES_REACHED");
@@ -1749,6 +1785,7 @@ void __cdecl UI_GV_DeleteSelected_f(void)
 
 {
   GVRule *pGVar1;
+  GVRule *rule;
   
   pGVar1 = GetSelectedRule(0);
   if (pGVar1 != (GVRule *)0x0) {
@@ -1766,13 +1803,14 @@ void __cdecl UI_GV_DeleteSelected_f(void)
 void __cdecl UI_GV_NavForward_f(void)
 
 {
-  uiInfo_s *puVar1;
-  menuDef_t *pmVar2;
+  uiInfo_s *dc_00;
+  menuDef_t *pmVar1;
+  UiContext *dc;
   
   if (s_popupStackSize < 0xc) {
-    puVar1 = UI_GetInfo(0);
-    pmVar2 = Menu_GetFocused(&puVar1->uiDC);
-    s_popupStack[s_popupStackSize] = pmVar2;
+    dc_00 = UI_GetInfo(0);
+    pmVar1 = Menu_GetFocused(&dc_00->uiDC);
+    s_popupStack[s_popupStackSize] = pmVar1;
     s_popupStackSize = s_popupStackSize + 1;
   }
   else {
@@ -1787,12 +1825,14 @@ void __cdecl UI_GV_NavForward_f(void)
 void __cdecl UI_GV_NavBackward_f(void)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc_00;
+  int localClientNum;
+  UiContext *dc;
   
   if (0 < s_popupStackSize) {
-    puVar1 = UI_GetInfo(0);
+    dc_00 = UI_GetInfo(0);
     s_popupStackSize = s_popupStackSize + -1;
-    Menus_Open(0,&puVar1->uiDC,s_popupStack[s_popupStackSize]);
+    Menus_Open(0,&dc_00->uiDC,s_popupStack[s_popupStackSize]);
   }
   return;
 }
@@ -1803,12 +1843,14 @@ void __cdecl UI_GV_NavBackward_f(void)
 void __cdecl UI_GV_UpdateSelectedRule_f(void)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
+  uiInfo_s *dc_00;
+  int index;
+  int ruleSelected;
+  UiContext *dc;
   
-  puVar1 = UI_GetInfo(0);
-  iVar2 = Menu_GetFeederSelection(&puVar1->uiDC,(menuDef_t *)0x0,0x2c,"gametype_variants");
-  UI_FeederSelection_GameVariants(0,(puVar1->uiDC).contextIndex,44.0,iVar2);
+  dc_00 = UI_GetInfo(0);
+  index = Menu_GetFeederSelection(&dc_00->uiDC,(menuDef_t *)0x0,0x2c,"gametype_variants");
+  UI_FeederSelection_GameVariants(0,(dc_00->uiDC).contextIndex,44.0,index);
   return;
 }
 
@@ -1904,6 +1946,7 @@ int __cdecl UI_GetGVTargetCount(void)
 {
   GVEvent *pGVar1;
   int iVar2;
+  GVEvent *ev;
   
   pGVar1 = GetEventByDvarIndex("ui_gv_event_index");
   if (pGVar1 == (GVEvent *)0x0) {
@@ -1923,6 +1966,7 @@ int __cdecl UI_GetGVParamCount(void)
 {
   GVAction *pGVar1;
   int iVar2;
+  GVAction *action;
   
   pGVar1 = GetActionByDvarIndex("ui_gv_action_index");
   if (pGVar1 == (GVAction *)0x0) {
@@ -1942,6 +1986,7 @@ int __cdecl UI_GetGVCondLhsCount(void)
 {
   GVEvent *pGVar1;
   int iVar2;
+  GVEvent *ev;
   
   pGVar1 = GetEventByDvarIndex("ui_gv_event_index");
   if (pGVar1 == (GVEvent *)0x0) {
@@ -1961,6 +2006,7 @@ int __cdecl UI_GetGVCondOpCount(void)
 {
   GVConditionalLhs *pGVar1;
   int iVar2;
+  GVConditionalLhs *lhs;
   
   pGVar1 = GetCondLhsForDvarIndex("ui_gv_condlhs_index");
   if ((int)pGVar1->m_type < 2) {
@@ -1979,6 +2025,7 @@ int __cdecl UI_GetGVCondRhsCount(void)
 
 {
   GVConditionalLhs *pGVar1;
+  GVConditionalLhs *lhs;
   
   pGVar1 = GetCondLhsForDvarIndex("ui_gv_condlhs_index");
   return (pGVar1->m_rhs).m_valuesSize;
@@ -1987,12 +2034,12 @@ int __cdecl UI_GetGVCondRhsCount(void)
 
 // 00742810  UI_FeederCount_GameVariants  (ui_mp/ui_gametype_variants_mp.cpp:1181)
 
-int __cdecl UI_FeederCount_GameVariants(int param_1,float param_2)
+int __cdecl UI_FeederCount_GameVariants(int contextIndex,float feederID)
 
 {
   int iVar1;
   
-  switch((int)param_2) {
+  switch((int)feederID) {
   case 0x23:
     iVar1 = UI_GetGVCondLhsCount();
     break;
@@ -2028,33 +2075,38 @@ int __cdecl UI_FeederCount_GameVariants(int param_1,float param_2)
 // 007428A0  GetItemGroupDisplayValue  (ui_mp/ui_gametype_variants_mp.cpp:1208)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl GetItemGroupDisplayValue(itemGroup_t param_1,char *param_2)
+char * __cdecl GetItemGroupDisplayValue(itemGroup_t itemGroup,char *value)
 
 {
   int iVar1;
+  int itemIndex_00;
+  char *s0;
   int iVar2;
   char *pcVar3;
-  int iVar4;
-  char *pcVar5;
-  int local_c;
+  int itemIndex;
+  int item;
+  int itemsInGroup;
   
-  iVar1 = BG_UnlockablesBuildItemListForGroup(param_1);
-  local_c = 0;
+  iVar1 = BG_UnlockablesBuildItemListForGroup(itemGroup);
+  item = 0;
   while( true ) {
-    if (iVar1 <= local_c) {
+    if (iVar1 <= item) {
       return "";
     }
-    iVar2 = BG_UnlockablesGetItemIndexInSlot(local_c);
-    pcVar5 = param_2;
-    pcVar3 = BG_UnlockablesGetItemRef(iVar2);
-    iVar4 = I_stricmp(pcVar3,pcVar5);
-    if (iVar4 == 0) break;
-    local_c = local_c + 1;
+    itemIndex_00 = BG_UnlockablesGetItemIndexInSlot(item);
+    pcVar3 = value;
+    s0 = BG_UnlockablesGetItemRef(itemIndex_00);
+    iVar2 = I_stricmp(s0,pcVar3);
+    if (iVar2 == 0) break;
+    item = item + 1;
   }
-  pcVar5 = BG_UnlockablesGetItemName(iVar2);
-  pcVar5 = UI_SafeTranslateString(pcVar5);
-  return pcVar5;
+  pcVar3 = BG_UnlockablesGetItemName(itemIndex_00);
+  pcVar3 = UI_SafeTranslateString(pcVar3);
+  return pcVar3;
 }
 
 
@@ -2062,14 +2114,15 @@ char * __cdecl GetItemGroupDisplayValue(itemGroup_t param_1,char *param_2)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-char * __cdecl UI_GV_GetRuleParamDisplayValue(GVRule *param_1)
+char * __cdecl UI_GV_GetRuleParamDisplayValue(GVRule *rule)
 
 {
   byte bVar1;
   int iVar2;
   char *pcVar3;
+  GVAction *action;
   
-  bVar1 = param_1->actionID;
+  bVar1 = rule->actionID;
   switch(gvActions[bVar1].m_parameterType) {
   case '\0':
     pcVar3 = "";
@@ -2078,22 +2131,22 @@ char * __cdecl UI_GV_GetRuleParamDisplayValue(GVRule *param_1)
   case '\x02':
   case '\x03':
   case '\x05':
-    if ((param_1->parameter).hasParameter == false) {
+    if ((rule->parameter).hasParameter == false) {
       pcVar3 = "";
     }
     else {
-      iVar2 = GetParamIndexForValue((uint)param_1->actionID,(param_1->parameter).value);
+      iVar2 = GetParamIndexForValue((uint)rule->actionID,(rule->parameter).value);
       pcVar3 = UI_SafeTranslateString(gvActions[bVar1].m_parameters[iVar2].m_displayValue);
     }
     break;
   case '\x04':
-    pcVar3 = (param_1->parameter).value;
+    pcVar3 = (rule->parameter).value;
     break;
   case '\x06':
-    pcVar3 = GetItemGroupDisplayValue(ITEMGROUP_SPECIALTY,(param_1->parameter).value);
+    pcVar3 = GetItemGroupDisplayValue(ITEMGROUP_SPECIALTY,(rule->parameter).value);
     break;
   case '\a':
-    pcVar3 = GetItemGroupDisplayValue(ITEMGROUP_GLOBAL_ITEMS_START,(param_1->parameter).value);
+    pcVar3 = GetItemGroupDisplayValue(ITEMGROUP_GLOBAL_ITEMS_START,(rule->parameter).value);
     break;
   default:
     pcVar3 = "";
@@ -2104,62 +2157,64 @@ char * __cdecl UI_GV_GetRuleParamDisplayValue(GVRule *param_1)
 
 // 00742920  UI_FeederItemText_GameVariantRules  (ui_mp/ui_gametype_variants_mp.cpp:1252)
 
-char * __cdecl UI_FeederItemText_GameVariantRules(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantRules(int index,int column)
 
 {
-  GVRule *pGVar1;
-  char *pcVar2;
+  GVRule *rule_00;
+  char *pcVar1;
+  char *displayValue;
+  GVRule *rule;
   
-  pGVar1 = GetRuleForFeederIndex(param_1);
-  if (pGVar1 == (GVRule *)0x0) {
-    pcVar2 = "";
+  rule_00 = GetRuleForFeederIndex(index);
+  if (rule_00 == (GVRule *)0x0) {
+    pcVar1 = "";
   }
   else {
-    switch(param_2) {
+    switch(column) {
     case 0:
-      pcVar2 = UI_SafeTranslateString(gvEvents[pGVar1->eventID].m_name);
+      pcVar1 = UI_SafeTranslateString(gvEvents[rule_00->eventID].m_name);
       break;
     case 1:
-      pcVar2 = UI_SafeTranslateString(gvActions[pGVar1->actionID].m_name);
+      pcVar1 = UI_SafeTranslateString(gvActions[rule_00->actionID].m_name);
       break;
     case 2:
-      pcVar2 = UI_GV_GetRuleParamDisplayValue(pGVar1);
-      if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0')) {
-        pcVar2 = UI_SafeTranslateString("CUSTOM_GV_PARAM_EMPTY");
+      pcVar1 = UI_GV_GetRuleParamDisplayValue(rule_00);
+      if ((pcVar1 == (char *)0x0) || (*pcVar1 == '\0')) {
+        pcVar1 = UI_SafeTranslateString("CUSTOM_GV_PARAM_EMPTY");
       }
       break;
     case 3:
-      pcVar2 = UI_SafeTranslateString(gvTargets[pGVar1->targetID].m_name);
+      pcVar1 = UI_SafeTranslateString(gvTargets[rule_00->targetID].m_name);
       break;
     case 4:
-      if ((pGVar1->m_conditional).hasConditional == false) {
-        pcVar2 = UI_SafeTranslateString("MPUI_NONE");
+      if ((rule_00->m_conditional).hasConditional == false) {
+        pcVar1 = UI_SafeTranslateString("MPUI_NONE");
       }
       else {
-        pcVar2 = UI_SafeTranslateString("MPUI_YES");
+        pcVar1 = UI_SafeTranslateString("MPUI_YES");
       }
       break;
     default:
-      pcVar2 = "";
+      pcVar1 = "";
     }
   }
-  return pcVar2;
+  return pcVar1;
 }
 
 
 // 00742B80  UI_FeederItemText_GameVariantEvents  (ui_mp/ui_gametype_variants_mp.cpp:1288)
 
-char * __cdecl UI_FeederItemText_GameVariantEvents(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantEvents(int index,int column)
 
 {
   int iVar1;
   char *pcVar2;
   
-  if ((-1 < param_1) && (iVar1 = UI_GetGVEventCount(), param_1 < iVar1)) {
-    if (param_2 != 0) {
+  if ((-1 < index) && (iVar1 = UI_GetGVEventCount(), index < iVar1)) {
+    if (column != 0) {
       return "";
     }
-    iVar1 = GetEventIndexFromFeederIndex(param_1);
+    iVar1 = GetEventIndexFromFeederIndex(index);
     pcVar2 = UI_SafeTranslateString(gvEvents[iVar1].m_name);
     return pcVar2;
   }
@@ -2169,17 +2224,17 @@ char * __cdecl UI_FeederItemText_GameVariantEvents(int param_1,int param_2)
 
 // 00742BD0  UI_FeederItemText_GameVariantActions  (ui_mp/ui_gametype_variants_mp.cpp:1301)
 
-char * __cdecl UI_FeederItemText_GameVariantActions(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantActions(int index,int column)
 
 {
   int iVar1;
   char *pcVar2;
   
-  if ((-1 < param_1) && (iVar1 = UI_GetGVActionCount(), param_1 < iVar1)) {
-    if (param_2 != 0) {
+  if ((-1 < index) && (iVar1 = UI_GetGVActionCount(), index < iVar1)) {
+    if (column != 0) {
       return "";
     }
-    iVar1 = GetActionIndexFromFeederIndex(param_1);
+    iVar1 = GetActionIndexFromFeederIndex(index);
     pcVar2 = UI_SafeTranslateString(gvActions[iVar1].m_name);
     return pcVar2;
   }
@@ -2189,20 +2244,21 @@ char * __cdecl UI_FeederItemText_GameVariantActions(int param_1,int param_2)
 
 // 00742C20  UI_FeederItemText_GameVariantTargets  (ui_mp/ui_gametype_variants_mp.cpp:1314)
 
-char * __cdecl UI_FeederItemText_GameVariantTargets(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantTargets(int index,int column)
 
 {
   int iVar1;
   GVTarget *pGVar2;
   char *pcVar3;
+  GVTarget *target;
   
-  if ((param_1 < 0) || (iVar1 = UI_GetGVTargetCount(), iVar1 <= param_1)) {
+  if ((index < 0) || (iVar1 = UI_GetGVTargetCount(), iVar1 <= index)) {
     return "";
   }
-  if (param_2 != 0) {
+  if (column != 0) {
     return "";
   }
-  pGVar2 = GetTargetAtFeederIndex(param_1);
+  pGVar2 = GetTargetAtFeederIndex(index);
   if (pGVar2 == (GVTarget *)0x0) {
     return "";
   }
@@ -2213,17 +2269,23 @@ char * __cdecl UI_FeederItemText_GameVariantTargets(int param_1,int param_2)
 
 // 00742CB0  UI_FeederItemText_GameVariantParams  (ui_mp/ui_gametype_variants_mp.cpp:1331)
 
-char * __cdecl UI_FeederItemText_GameVariantParams(int param_1,int param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+char * __cdecl UI_FeederItemText_GameVariantParams(int index,int column)
 
 {
   int iVar1;
   GVAction *pGVar2;
   char *pcVar3;
+  GVAction *action;
   
-  if ((param_1 < 0) || (iVar1 = UI_GetGVParamCount(), iVar1 <= param_1)) {
+  if ((index < 0) || (iVar1 = UI_GetGVParamCount(), iVar1 <= index)) {
     return "";
   }
-  if (param_2 != 0) {
+  if (column != 0) {
     return "";
   }
   pGVar2 = GetActionByDvarIndex("ui_gv_action_index");
@@ -2231,10 +2293,10 @@ char * __cdecl UI_FeederItemText_GameVariantParams(int param_1,int param_2)
     if (pGVar2->m_parameters == (GVValue *)0x0) {
       return "";
     }
-    pcVar3 = UI_SafeTranslateString(pGVar2->m_parameters[param_1].m_displayValue);
+    pcVar3 = UI_SafeTranslateString(pGVar2->m_parameters[index].m_displayValue);
     return pcVar3;
   }
-  iVar1 = BG_UnlockablesGetItemIndexInSlot(param_1);
+  iVar1 = BG_UnlockablesGetItemIndexInSlot(index);
   pcVar3 = BG_UnlockablesGetItemName(iVar1);
   pcVar3 = UI_SafeTranslateString(pcVar3);
   return pcVar3;
@@ -2243,18 +2305,19 @@ char * __cdecl UI_FeederItemText_GameVariantParams(int param_1,int param_2)
 
 // 00742D50  UI_FeederItemText_GameVariantCondLhs  (ui_mp/ui_gametype_variants_mp.cpp:1351)
 
-char * __cdecl UI_FeederItemText_GameVariantCondLhs(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantCondLhs(int index,int column)
 
 {
   int iVar1;
   GVConditionalLhs *pGVar2;
   char *pcVar3;
+  GVConditionalLhs *lhs;
   
-  if ((-1 < param_1) && (iVar1 = UI_GetGVCondLhsCount(), param_1 < iVar1)) {
-    if (param_2 != 0) {
+  if ((-1 < index) && (iVar1 = UI_GetGVCondLhsCount(), index < iVar1)) {
+    if (column != 0) {
       return "";
     }
-    pGVar2 = GetCondLhsForFeederIndex(param_1);
+    pGVar2 = GetCondLhsForFeederIndex(index);
     pcVar3 = UI_SafeTranslateString(pGVar2->m_displayName);
     return pcVar3;
   }
@@ -2264,17 +2327,17 @@ char * __cdecl UI_FeederItemText_GameVariantCondLhs(int param_1,int param_2)
 
 // 00742DA0  UI_FeederItemText_GameVariantCondOp  (ui_mp/ui_gametype_variants_mp.cpp:1365)
 
-char * __cdecl UI_FeederItemText_GameVariantCondOp(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantCondOp(int index,int column)
 
 {
   int iVar1;
   char *pcVar2;
   
-  if ((-1 < param_1) && (iVar1 = UI_GetGVCondOpCount(), param_1 < iVar1)) {
-    if (param_2 != 0) {
+  if ((-1 < index) && (iVar1 = UI_GetGVCondOpCount(), index < iVar1)) {
+    if (column != 0) {
       return "";
     }
-    pcVar2 = UI_SafeTranslateString(gvCondOpValues[param_1].m_displayValue);
+    pcVar2 = UI_SafeTranslateString(gvCondOpValues[index].m_displayValue);
     return pcVar2;
   }
   return "";
@@ -2283,18 +2346,19 @@ char * __cdecl UI_FeederItemText_GameVariantCondOp(int param_1,int param_2)
 
 // 00742DE0  UI_FeederItemText_GameVariantCondRhs  (ui_mp/ui_gametype_variants_mp.cpp:1378)
 
-char * __cdecl UI_FeederItemText_GameVariantCondRhs(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_GameVariantCondRhs(int index,int column)
 
 {
   GVConditionalLhs *pGVar1;
   char *pcVar2;
+  GVConditionalLhs *lhs;
   
   pGVar1 = GetCondLhsForDvarIndex("ui_gv_condlhs_index");
-  if ((param_1 < 0) || ((pGVar1->m_rhs).m_valuesSize <= param_1)) {
+  if ((index < 0) || ((pGVar1->m_rhs).m_valuesSize <= index)) {
     pcVar2 = "";
   }
-  else if (param_2 == 0) {
-    pcVar2 = UI_SafeTranslateString((pGVar1->m_rhs).m_values[param_1].m_displayValue);
+  else if (column == 0) {
+    pcVar2 = UI_SafeTranslateString((pGVar1->m_rhs).m_values[index].m_displayValue);
   }
   else {
     pcVar2 = "";
@@ -2305,41 +2369,41 @@ char * __cdecl UI_FeederItemText_GameVariantCondRhs(int param_1,int param_2)
 
 // 00742E40  UI_FeederItemText_GameVariants  (ui_mp/ui_gametype_variants_mp.cpp:1393)
 
-char * __cdecl UI_FeederItemText_GameVariants(float param_1,int param_2,int param_3)
+char * __cdecl UI_FeederItemText_GameVariants(float feederID,int index,int column)
 
 {
   char *pcVar1;
   
-  switch((int)param_1) {
+  switch((int)feederID) {
   case 0x23:
-    pcVar1 = UI_FeederItemText_GameVariantCondLhs(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantCondLhs(index,column);
     break;
   case 0x24:
-    pcVar1 = UI_FeederItemText_GameVariantCondOp(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantCondOp(index,column);
     break;
   case 0x25:
-    pcVar1 = UI_FeederItemText_GameVariantCondRhs(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantCondRhs(index,column);
     break;
   default:
     pcVar1 = "";
     break;
   case 0x27:
-    pcVar1 = UI_FeederItemText_GameVariantRules(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantRules(index,column);
     break;
   case 0x28:
-    pcVar1 = UI_FeederItemText_GameVariantEvents(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantEvents(index,column);
     break;
   case 0x29:
-    pcVar1 = UI_FeederItemText_GameVariantActions(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantActions(index,column);
     break;
   case 0x2a:
-    pcVar1 = UI_FeederItemText_GameVariantParams(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantParams(index,column);
     break;
   case 0x2b:
-    pcVar1 = UI_FeederItemText_GameVariantTargets(param_2,param_3);
+    pcVar1 = UI_FeederItemText_GameVariantTargets(index,column);
     break;
   case 0x2c:
-    pcVar1 = UI_FeederItemText_GameVariantRules(param_2,1);
+    pcVar1 = UI_FeederItemText_GameVariantRules(index,1);
   }
   return pcVar1;
 }
@@ -2347,15 +2411,17 @@ char * __cdecl UI_FeederItemText_GameVariants(float param_1,int param_2,int para
 
 // 00742F40  UI_FeederSelection_GameVariantRules  (ui_mp/ui_gametype_variants_mp.cpp:1421)
 
-void __cdecl UI_FeederSelection_GameVariantRules(int param_1,int param_2)
+void __cdecl UI_FeederSelection_GameVariantRules(int contextIndex,int index)
 
 {
   GVRule *pGVar1;
-  uiInfo_s *puVar2;
-  int iVar3;
-  char *pcVar4;
+  uiInfo_s *dc_00;
+  int iVar2;
+  char *pcVar3;
+  GVRule *rule;
+  UiContext *dc;
   
-  if ((param_2 < 0) || (gvGlob.ruleCount <= param_2)) {
+  if ((index < 0) || (gvGlob.ruleCount <= index)) {
     Dvar_SetStringByName("ui_gv_event","");
     Dvar_SetStringByName("ui_gv_action","");
     Dvar_SetStringByName("ui_gv_target","");
@@ -2372,32 +2438,32 @@ void __cdecl UI_FeederSelection_GameVariantRules(int param_1,int param_2)
     Dvar_SetIntByName("ui_gv_condrhs_index",0);
   }
   else {
-    pGVar1 = GetRuleForFeederIndex(param_2);
+    pGVar1 = GetRuleForFeederIndex(index);
     s_isFeederSelectionFromPopupStart = true;
-    puVar2 = UI_UIContext_GetInfo(param_1);
-    pcVar4 = "popup_gv_select_event";
-    iVar3 = GetFeederIndexFromEventIndex((uint)pGVar1->eventID);
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x28,iVar3,pcVar4);
-    pcVar4 = "popup_gv_select_action";
-    iVar3 = GetFeederIndexFromActionIndex((uint)pGVar1->actionID);
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x29,iVar3,pcVar4);
-    pcVar4 = "popup_gv_select_target";
-    iVar3 = GetFeederIndexFromTargetId
+    dc_00 = UI_UIContext_GetInfo(contextIndex);
+    pcVar3 = "popup_gv_select_event";
+    iVar2 = GetFeederIndexFromEventIndex((uint)pGVar1->eventID);
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x28,iVar2,pcVar3);
+    pcVar3 = "popup_gv_select_action";
+    iVar2 = GetFeederIndexFromActionIndex((uint)pGVar1->actionID);
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x29,iVar2,pcVar3);
+    pcVar3 = "popup_gv_select_target";
+    iVar2 = GetFeederIndexFromTargetId
                       ((uint)pGVar1->targetID,gvEvents[pGVar1->eventID].m_targetMask);
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x2b,iVar3,pcVar4);
-    pcVar4 = "popup_gv_select_param";
-    iVar3 = GetParamIndexForValue((uint)pGVar1->actionID,(pGVar1->parameter).value);
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x2a,iVar3,pcVar4);
-    pcVar4 = "popup_gv_select_cond";
-    iVar3 = GetFeederIndexForCondLhsIndex
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x2b,iVar2,pcVar3);
+    pcVar3 = "popup_gv_select_param";
+    iVar2 = GetParamIndexForValue((uint)pGVar1->actionID,(pGVar1->parameter).value);
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x2a,iVar2,pcVar3);
+    pcVar3 = "popup_gv_select_cond";
+    iVar2 = GetFeederIndexForCondLhsIndex
                       ((uint)(pGVar1->m_conditional).m_lhsIndex,gvEvents[pGVar1->eventID].m_condMask
                       );
-    Menu_SetFeederSelection(0,&puVar2->uiDC,(menuDef_t *)0x0,0x23,iVar3,pcVar4);
+    Menu_SetFeederSelection(0,&dc_00->uiDC,(menuDef_t *)0x0,0x23,iVar2,pcVar3);
     Menu_SetFeederSelection
-              (0,&puVar2->uiDC,(menuDef_t *)0x0,0x24,(uint)(pGVar1->m_conditional).m_operatorIndex,
+              (0,&dc_00->uiDC,(menuDef_t *)0x0,0x24,(uint)(pGVar1->m_conditional).m_operatorIndex,
                "popup_gv_select_cond");
     Menu_SetFeederSelection
-              (0,&puVar2->uiDC,(menuDef_t *)0x0,0x25,(uint)(pGVar1->m_conditional).m_rhsIndex,
+              (0,&dc_00->uiDC,(menuDef_t *)0x0,0x25,(uint)(pGVar1->m_conditional).m_rhsIndex,
                "popup_gv_select_cond");
     if ((pGVar1->m_conditional).hasConditional == false) {
       Dvar_SetStringByName("ui_gv_condlhs","");
@@ -2412,14 +2478,14 @@ void __cdecl UI_FeederSelection_GameVariantRules(int param_1,int param_2)
 
 // 007433C0  UI_FeederSelection_GameVariantEvent  (ui_mp/ui_gametype_variants_mp.cpp:1467)
 
-void __cdecl UI_FeederSelection_GameVariantEvent(int param_1,int param_2)
+void __cdecl UI_FeederSelection_GameVariantEvent(int contextIndex,int index)
 
 {
-  char *pcVar1;
+  char *value;
   
-  pcVar1 = UI_FeederItemText_GameVariantEvents(param_2,0);
-  Dvar_SetStringByName("ui_gv_event",pcVar1);
-  Dvar_SetIntByName("ui_gv_event_index",param_2);
+  value = UI_FeederItemText_GameVariantEvents(index,0);
+  Dvar_SetStringByName("ui_gv_event",value);
+  Dvar_SetIntByName("ui_gv_event_index",index);
   Dvar_SetStringByName("ui_gv_nextpopup","popup_gv_select_action");
   return;
 }
@@ -2429,65 +2495,72 @@ void __cdecl UI_FeederSelection_GameVariantEvent(int param_1,int param_2)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-void __cdecl UI_FeederSelection_GameVariantAction(int param_1,int param_2,int param_3)
+void __cdecl UI_FeederSelection_GameVariantAction(int localClientNum,int contextIndex,int index)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
-  int iVar3;
-  int iVar4;
-  char *local_c;
+  uiInfo_s *dc_00;
+  char *value;
+  int iVar1;
+  int iVar2;
+  UiContext *dc;
+  char *actionName;
+  char *nextPopup;
+  GVAction *action;
   
   if (!s_isFeederSelectionFromPopupStart) {
-    puVar1 = UI_UIContext_GetInfo(param_2);
-    Menu_SetFeederSelection(param_1,&puVar1->uiDC,(menuDef_t *)0x0,0x2a,0,"popup_gv_select_param");
+    dc_00 = UI_UIContext_GetInfo(contextIndex);
+    Menu_SetFeederSelection
+              (localClientNum,&dc_00->uiDC,(menuDef_t *)0x0,0x2a,0,"popup_gv_select_param");
     Dvar_SetStringByName("ui_gv_param","");
     Dvar_SetIntByName("ui_gv_param_index",0);
   }
-  pcVar2 = UI_FeederItemText_GameVariantActions(param_3,0);
-  Dvar_SetStringByName("ui_gv_action",pcVar2);
-  Dvar_SetIntByName("ui_gv_action_index",param_3);
-  iVar3 = GetActionIndexFromFeederIndex(param_3);
-  local_c = "popup_gv_select_param";
-  if (gvActions[iVar3].m_parameterType == '\x04') {
-    local_c = "popup_gv_enter_param";
+  value = UI_FeederItemText_GameVariantActions(index,0);
+  Dvar_SetStringByName("ui_gv_action",value);
+  Dvar_SetIntByName("ui_gv_action_index",index);
+  iVar1 = GetActionIndexFromFeederIndex(index);
+  nextPopup = "popup_gv_select_param";
+  if (gvActions[iVar1].m_parameterType == '\x04') {
+    nextPopup = "popup_gv_enter_param";
   }
-  else if (gvActions[iVar3].m_parameterType == '\x05') {
-    iVar4 = UI_GameVariants_GetClassParameters();
-    gvActions[iVar3].m_parametersSize = iVar4;
+  else if (gvActions[iVar1].m_parameterType == '\x05') {
+    iVar2 = UI_GameVariants_GetClassParameters();
+    gvActions[iVar1].m_parametersSize = iVar2;
   }
-  else if (gvActions[iVar3].m_parameterType == '\x06') {
-    iVar4 = BG_UnlockablesBuildItemListForGroup(ITEMGROUP_SPECIALTY);
-    gvActions[iVar3].m_parametersSize = iVar4;
+  else if (gvActions[iVar1].m_parameterType == '\x06') {
+    iVar2 = BG_UnlockablesBuildItemListForGroup(ITEMGROUP_SPECIALTY);
+    gvActions[iVar1].m_parametersSize = iVar2;
   }
-  else if (gvActions[iVar3].m_parameterType == '\a') {
-    iVar4 = BG_UnlockablesBuildItemListForGroup(ITEMGROUP_GLOBAL_ITEMS_START);
-    gvActions[iVar3].m_parametersSize = iVar4;
+  else if (gvActions[iVar1].m_parameterType == '\a') {
+    iVar2 = BG_UnlockablesBuildItemListForGroup(ITEMGROUP_GLOBAL_ITEMS_START);
+    gvActions[iVar1].m_parametersSize = iVar2;
   }
-  else if (gvActions[iVar3].m_parametersSize == 0) {
-    local_c = "popup_gv_select_target";
+  else if (gvActions[iVar1].m_parametersSize == 0) {
+    nextPopup = "popup_gv_select_target";
   }
-  Dvar_SetStringByName("ui_gv_nextpopup",local_c);
+  Dvar_SetStringByName("ui_gv_nextpopup",nextPopup);
   return;
 }
 
 
 // 00743720  UI_FeederSelection_GameVariantParam  (ui_mp/ui_gametype_variants_mp.cpp:1517)
 
-void __cdecl UI_FeederSelection_GameVariantParam(int param_1,int param_2,int param_3)
+void __cdecl UI_FeederSelection_GameVariantParam(int localClientNum,int contextIndex,int index)
 
 {
   bool bVar1;
   GVAction *pGVar2;
   int iVar3;
   GVRule *pGVar4;
-  char *local_8;
+  GVRule *rule;
+  bool hasEnteredParam;
+  GVAction *action;
+  char *paramText;
   
-  local_8 = UI_FeederItemText_GameVariantParams(param_3,0);
+  paramText = UI_FeederItemText_GameVariantParams(index,0);
   pGVar2 = GetActionByDvarIndex("ui_gv_action_index");
   if (pGVar2->m_parameterType == '\x04') {
-    local_8 = Dvar_GetString("ui_gv_param");
-    if ((local_8 == (char *)0x0) || (*local_8 == '\0')) {
+    paramText = Dvar_GetString("ui_gv_param");
+    if ((paramText == (char *)0x0) || (*paramText == '\0')) {
       bVar1 = false;
     }
     else {
@@ -2495,14 +2568,14 @@ void __cdecl UI_FeederSelection_GameVariantParam(int param_1,int param_2,int par
     }
     iVar3 = Dvar_GetInt("ui_gv_iscreatingnew");
     if ((iVar3 == 0) && (!bVar1)) {
-      pGVar4 = GetSelectedRule(param_1);
+      pGVar4 = GetSelectedRule(localClientNum);
       if ((pGVar4 != (GVRule *)0x0) && ((pGVar4->parameter).hasParameter != false)) {
-        local_8 = (pGVar4->parameter).value;
+        paramText = (pGVar4->parameter).value;
       }
     }
   }
-  Dvar_SetStringByName("ui_gv_param",local_8);
-  Dvar_SetIntByName("ui_gv_param_index",param_3);
+  Dvar_SetStringByName("ui_gv_param",paramText);
+  Dvar_SetIntByName("ui_gv_param_index",index);
   Dvar_SetStringByName("ui_gv_nextpopup","popup_gv_select_target");
   return;
 }
@@ -2510,14 +2583,14 @@ void __cdecl UI_FeederSelection_GameVariantParam(int param_1,int param_2,int par
 
 // 00743550  UI_FeederSelection_GameVariantTarget  (ui_mp/ui_gametype_variants_mp.cpp:1541)
 
-void __cdecl UI_FeederSelection_GameVariantTarget(int param_1,int param_2)
+void __cdecl UI_FeederSelection_GameVariantTarget(int contextIndex,int index)
 
 {
-  char *pcVar1;
+  char *value;
   
-  pcVar1 = UI_FeederItemText_GameVariantTargets(param_2,0);
-  Dvar_SetStringByName("ui_gv_target",pcVar1);
-  Dvar_SetIntByName("ui_gv_target_index",param_2);
+  value = UI_FeederItemText_GameVariantTargets(index,0);
+  Dvar_SetStringByName("ui_gv_target",value);
+  Dvar_SetIntByName("ui_gv_target_index",index);
   Dvar_SetStringByName("ui_gv_nextpopup","popup_gv_select_cond");
   return;
 }
@@ -2525,86 +2598,90 @@ void __cdecl UI_FeederSelection_GameVariantTarget(int param_1,int param_2)
 
 // 00743810  UI_FeederSelection_GameVariantCondLhs  (ui_mp/ui_gametype_variants_mp.cpp:1550)
 
-void __cdecl UI_FeederSelection_GameVariantCondLhs(int param_1,int param_2,int param_3)
+void __cdecl UI_FeederSelection_GameVariantCondLhs(int localClientNum,int contextIndex,int index)
 
 {
-  char *pcVar1;
-  GVConditionalLhs *pGVar2;
-  int iVar3;
-  uiInfo_s *puVar4;
+  char *value;
+  GVConditionalLhs *pGVar1;
+  int iVar2;
+  uiInfo_s *dc_00;
+  GVConditionalLhs *lhs;
+  UiContext *dc;
   
-  pcVar1 = UI_FeederItemText_GameVariantCondLhs(param_3,0);
-  Dvar_SetStringByName("ui_gv_condlhs",pcVar1);
-  Dvar_SetIntByName("ui_gv_condlhs_index",param_3);
-  pGVar2 = GetCondLhsForFeederIndex(param_3);
-  if ((pGVar2->m_rhs).m_values == classParamValues) {
-    iVar3 = UI_GameVariants_GetClassParameters();
-    (pGVar2->m_rhs).m_valuesSize = iVar3;
+  value = UI_FeederItemText_GameVariantCondLhs(index,0);
+  Dvar_SetStringByName("ui_gv_condlhs",value);
+  Dvar_SetIntByName("ui_gv_condlhs_index",index);
+  pGVar1 = GetCondLhsForFeederIndex(index);
+  if ((pGVar1->m_rhs).m_values == classParamValues) {
+    iVar2 = UI_GameVariants_GetClassParameters();
+    (pGVar1->m_rhs).m_valuesSize = iVar2;
   }
-  puVar4 = UI_UIContext_GetInfo(param_2);
-  Menu_SetFeederSelection(param_1,&puVar4->uiDC,(menuDef_t *)0x0,0x25,0,"popup_gv_select_cond");
+  dc_00 = UI_UIContext_GetInfo(contextIndex);
+  Menu_SetFeederSelection
+            (localClientNum,&dc_00->uiDC,(menuDef_t *)0x0,0x25,0,"popup_gv_select_cond");
   return;
 }
 
 
 // 007435A0  UI_FeederSelection_GameVariantCondOp  (ui_mp/ui_gametype_variants_mp.cpp:1566)
 
-void __cdecl UI_FeederSelection_GameVariantCondOp(int param_1,int param_2)
+void __cdecl UI_FeederSelection_GameVariantCondOp(int contextIndex,int index)
 
 {
-  char *pcVar1;
+  char *value;
   
-  pcVar1 = UI_FeederItemText_GameVariantCondOp(param_2,0);
-  Dvar_SetStringByName("ui_gv_condop",pcVar1);
-  Dvar_SetIntByName("ui_gv_condop_index",param_2);
+  value = UI_FeederItemText_GameVariantCondOp(index,0);
+  Dvar_SetStringByName("ui_gv_condop",value);
+  Dvar_SetIntByName("ui_gv_condop_index",index);
   return;
 }
 
 
 // 007435E0  UI_FeederSelection_GameVariantCondRhs  (ui_mp/ui_gametype_variants_mp.cpp:1574)
 
-void __cdecl UI_FeederSelection_GameVariantCondRhs(int param_1,int param_2)
+void __cdecl UI_FeederSelection_GameVariantCondRhs(int contextIndex,int index)
 
 {
-  char *pcVar1;
+  char *value;
   
-  pcVar1 = UI_FeederItemText_GameVariantCondRhs(param_2,0);
-  Dvar_SetStringByName("ui_gv_condrhs",pcVar1);
-  Dvar_SetIntByName("ui_gv_condrhs_index",param_2);
+  value = UI_FeederItemText_GameVariantCondRhs(index,0);
+  Dvar_SetStringByName("ui_gv_condrhs",value);
+  Dvar_SetIntByName("ui_gv_condrhs_index",index);
   return;
 }
 
 
 // 00743620  UI_FeederSelection_GameVariants  (ui_mp/ui_gametype_variants_mp.cpp:1582)
 
-void __cdecl UI_FeederSelection_GameVariants(int param_1,int param_2,float param_3,int param_4)
+void __cdecl
+UI_FeederSelection_GameVariants(int localClientNum,int contextIndex,float feederID,int index)
 
 {
-  switch((int)param_3) {
+  switch((int)feederID) {
   case 0x23:
-    UI_FeederSelection_GameVariantCondLhs(param_1,param_2,param_4);
+    UI_FeederSelection_GameVariantCondLhs(localClientNum,contextIndex,index);
     break;
   case 0x24:
-    UI_FeederSelection_GameVariantCondOp(param_2,param_4);
+    UI_FeederSelection_GameVariantCondOp(contextIndex,index);
     break;
   case 0x25:
-    UI_FeederSelection_GameVariantCondRhs(param_2,param_4);
+    UI_FeederSelection_GameVariantCondRhs(contextIndex,index);
     break;
   case 0x27:
   case 0x2c:
-    UI_FeederSelection_GameVariantRules(param_2,param_4);
+    UI_FeederSelection_GameVariantRules(contextIndex,index);
     break;
   case 0x28:
-    UI_FeederSelection_GameVariantEvent(param_2,param_4);
+    UI_FeederSelection_GameVariantEvent(contextIndex,index);
     break;
   case 0x29:
-    UI_FeederSelection_GameVariantAction(param_1,param_2,param_4);
+    UI_FeederSelection_GameVariantAction(localClientNum,contextIndex,index);
     break;
   case 0x2a:
-    UI_FeederSelection_GameVariantParam(param_1,param_2,param_4);
+    UI_FeederSelection_GameVariantParam(localClientNum,contextIndex,index);
     break;
   case 0x2b:
-    UI_FeederSelection_GameVariantTarget(param_2,param_4);
+    UI_FeederSelection_GameVariantTarget(contextIndex,index);
   }
   return;
 }
@@ -2612,31 +2689,32 @@ void __cdecl UI_FeederSelection_GameVariants(int param_1,int param_2,float param
 
 // 00743A20  UI_GameVariants_ArchiveParameter  (ui_mp/ui_gametype_variants_mp.cpp:1616)
 
-void __cdecl UI_GameVariants_ArchiveParameter(MemoryFile *param_1,GVParameter *param_2)
+void __cdecl UI_GameVariants_ArchiveParameter(MemoryFile *memFile,GVParameter *param)
 
 {
   char cVar1;
-  char *pcVar2;
+  char *src;
   char *local_18;
-  uchar local_5;
+  char *paramValue;
+  uchar hasParameter;
   
-  local_5 = param_2->hasParameter != false;
-  MemFile_ArchiveByte(param_1,&local_5);
-  param_2->hasParameter = local_5 != '\0';
-  if (param_2->hasParameter == false) {
-    param_2->value[0] = '\0';
+  hasParameter = param->hasParameter != false;
+  MemFile_ArchiveByte(memFile,&hasParameter);
+  param->hasParameter = hasParameter != '\0';
+  if (param->hasParameter == false) {
+    param->value[0] = '\0';
   }
-  else if (param_1->is_writing == false) {
-    pcVar2 = MemFile_ReadCString(param_1);
-    local_18 = pcVar2;
+  else if (memFile->is_writing == false) {
+    src = MemFile_ReadCString(memFile);
+    local_18 = src;
     do {
       cVar1 = *local_18;
       local_18 = local_18 + 1;
     } while (cVar1 != '\0');
-    I_strncpyz(param_2->value,pcVar2,(int)(local_18 + (1 - (int)(pcVar2 + 1))));
+    I_strncpyz(param->value,src,(int)(local_18 + (1 - (int)(src + 1))));
   }
   else {
-    MemFile_WriteCString(param_1,param_2->value);
+    MemFile_WriteCString(memFile,param->value);
   }
   return;
 }
@@ -2644,23 +2722,23 @@ void __cdecl UI_GameVariants_ArchiveParameter(MemoryFile *param_1,GVParameter *p
 
 // 007438A0  UI_GameVariants_ArchiveRule  (ui_mp/ui_gametype_variants_mp.cpp:1640)
 
-void __cdecl UI_GameVariants_ArchiveRule(MemoryFile *param_1,GVRule *param_2)
+void __cdecl UI_GameVariants_ArchiveRule(MemoryFile *memFile,GVRule *rule)
 
 {
-  uchar local_5;
+  uchar hasConditional;
   
-  MemFile_ArchiveByte(param_1,&param_2->actionID);
-  MemFile_ArchiveByte(param_1,&param_2->eventID);
-  MemFile_ArchiveByte(param_1,&param_2->targetID);
-  UI_GameVariants_ArchiveParameter(param_1,&param_2->parameter);
-  UI_GameVariants_ArchiveParameter(param_1,&param_2->secondParameter);
-  local_5 = (param_2->m_conditional).hasConditional != false;
-  MemFile_ArchiveByte(param_1,&local_5);
-  (param_2->m_conditional).hasConditional = local_5 != '\0';
-  if ((param_2->m_conditional).hasConditional != false) {
-    MemFile_ArchiveByte(param_1,&(param_2->m_conditional).m_lhsIndex);
-    MemFile_ArchiveByte(param_1,&(param_2->m_conditional).m_operatorIndex);
-    MemFile_ArchiveByte(param_1,&(param_2->m_conditional).m_rhsIndex);
+  MemFile_ArchiveByte(memFile,&rule->actionID);
+  MemFile_ArchiveByte(memFile,&rule->eventID);
+  MemFile_ArchiveByte(memFile,&rule->targetID);
+  UI_GameVariants_ArchiveParameter(memFile,&rule->parameter);
+  UI_GameVariants_ArchiveParameter(memFile,&rule->secondParameter);
+  hasConditional = (rule->m_conditional).hasConditional != false;
+  MemFile_ArchiveByte(memFile,&hasConditional);
+  (rule->m_conditional).hasConditional = hasConditional != '\0';
+  if ((rule->m_conditional).hasConditional != false) {
+    MemFile_ArchiveByte(memFile,&(rule->m_conditional).m_lhsIndex);
+    MemFile_ArchiveByte(memFile,&(rule->m_conditional).m_operatorIndex);
+    MemFile_ArchiveByte(memFile,&(rule->m_conditional).m_rhsIndex);
   }
   return;
 }
@@ -2668,79 +2746,80 @@ void __cdecl UI_GameVariants_ArchiveRule(MemoryFile *param_1,GVRule *param_2)
 
 // 00743AE0  UI_GameVariants_GetRuleSize  (ui_mp/ui_gametype_variants_mp.cpp:1662)
 
-uint __cdecl UI_GameVariants_GetRuleSize(GVRule *param_1)
+uint __cdecl UI_GameVariants_GetRuleSize(GVRule *rule)
 
 {
   char cVar1;
   char *pcVar2;
+  uint uVar3;
   char *local_1c;
   char *local_c;
-  char *local_8;
+  uint size;
   
-  local_8 = (char *)0x4;
-  if ((param_1->parameter).hasParameter != false) {
-    local_c = (param_1->parameter).value;
+  size = 4;
+  if ((rule->parameter).hasParameter != false) {
+    local_c = (rule->parameter).value;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    local_8 = local_c + (5 - (int)((param_1->parameter).value + 1));
+    size = (uint)(local_c + (5 - (int)((rule->parameter).value + 1)));
   }
-  pcVar2 = local_8 + 1;
-  if ((param_1->secondParameter).hasParameter != false) {
-    local_1c = (param_1->secondParameter).value;
+  pcVar2 = (char *)(size + 1);
+  if ((rule->secondParameter).hasParameter != false) {
+    local_1c = (rule->secondParameter).value;
     do {
       cVar1 = *local_1c;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    pcVar2 = local_1c + (int)(local_8 + (2 - (int)((param_1->secondParameter).value + 1)));
+    pcVar2 = local_1c + ((size + 2) - (int)((rule->secondParameter).value + 1));
   }
-  local_8 = pcVar2;
-  pcVar2 = local_8 + 1;
-  if ((param_1->m_conditional).hasConditional != false) {
-    pcVar2 = local_8 + 4;
+  size = (uint)pcVar2;
+  uVar3 = size + 1;
+  if ((rule->m_conditional).hasConditional != false) {
+    uVar3 = size + 4;
   }
-  local_8 = pcVar2;
-  return (uint)local_8;
+  size = uVar3;
+  return size;
 }
 
 
 // 00743BC0  UI_GameVariants_WriteRuleToMemoryFile  (ui_mp/ui_gametype_variants_mp.cpp:1688)
 
-void __cdecl UI_GameVariants_WriteRuleToMemoryFile(MemoryFile *param_1,GVRule *param_2)
+void __cdecl UI_GameVariants_WriteRuleToMemoryFile(MemoryFile *memFile,GVRule *rule)
 
 {
-  uint uVar1;
+  uint value;
   
-  if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = '\x02';
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
-  MemFile_WriteShort(param_1,2);
-  uVar1 = UI_GameVariants_GetRuleSize(param_2);
-  MemFile_WriteUInt(param_1,uVar1);
-  UI_GameVariants_ArchiveRule(param_1,param_2);
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = '\x02';
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
+  MemFile_WriteShort(memFile,2);
+  value = UI_GameVariants_GetRuleSize(rule);
+  MemFile_WriteUInt(memFile,value);
+  UI_GameVariants_ArchiveRule(memFile,rule);
   return;
 }
 
 
 // 00743CC0  UI_GameVariants_WriteToMemoryFile  (ui_mp/ui_gametype_variants_mp.cpp:1700)
 
-void __cdecl UI_GameVariants_WriteToMemoryFile(MemoryFile *param_1)
+void __cdecl UI_GameVariants_WriteToMemoryFile(MemoryFile *memFile)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
     iVar1 = UI_GetGVRulesCount();
-    if (iVar1 <= local_8) break;
-    if (gvGlob.rules[local_8].isValid != false) {
-      UI_GameVariants_WriteRuleToMemoryFile(param_1,gvGlob.rules + local_8);
+    if (iVar1 <= i) break;
+    if (gvGlob.rules[i].isValid != false) {
+      UI_GameVariants_WriteRuleToMemoryFile(memFile,gvGlob.rules + i);
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return;
 }
@@ -2751,11 +2830,11 @@ void __cdecl UI_GameVariants_WriteToMemoryFile(MemoryFile *param_1)
 void __cdecl UI_GameVariants_Reset(void)
 
 {
-  int local_8;
+  int i;
   
   gvGlob.ruleCount = 0;
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    gvGlob.rules[local_8].isValid = false;
+  for (i = 0; i < 0x40; i = i + 1) {
+    gvGlob.rules[i].isValid = false;
   }
   Dvar_SetInt(ui_gv_rulecount,gvGlob.ruleCount);
   return;
@@ -2764,37 +2843,37 @@ void __cdecl UI_GameVariants_Reset(void)
 
 // 00743D80  UI_GameVariants_ReadGameVariantRuleChunk  (ui_mp/ui_gametype_variants_mp.cpp:1726)
 
-bool __cdecl UI_GameVariants_ReadGameVariantRuleChunk(MemoryFile *param_1)
+bool __cdecl UI_GameVariants_ReadGameVariantRuleChunk(MemoryFile *memFile)
 
 {
   uint uVar1;
   uint local_1c;
   short local_18 [2];
-  void *local_14;
-  GVRule *local_10;
-  int local_c;
-  uint local_8;
+  void *dataBuffer;
+  GVRule *rule;
+  int version;
+  uint size;
   
-  MemFile_ReadData(param_1,2,local_18);
-  local_c = (int)local_18[0];
-  MemFile_ReadData(param_1,4,&local_1c);
-  local_8 = local_1c;
-  if (local_c == 2) {
-    local_10 = gvGlob.rules + gvGlob.ruleCount;
+  MemFile_ReadData(memFile,2,local_18);
+  version = (int)local_18[0];
+  MemFile_ReadData(memFile,4,&local_1c);
+  size = local_1c;
+  if (version == 2) {
+    rule = gvGlob.rules + gvGlob.ruleCount;
     gvGlob.ruleCount = gvGlob.ruleCount + 1;
     Dvar_SetInt(ui_gv_rulecount,gvGlob.ruleCount);
-    local_10->isValid = true;
-    UI_GameVariants_ArchiveRule(param_1,local_10);
-    uVar1 = UI_GameVariants_GetRuleSize(local_10);
-    if (local_8 != uVar1) {
+    rule->isValid = true;
+    UI_GameVariants_ArchiveRule(memFile,rule);
+    uVar1 = UI_GameVariants_GetRuleSize(rule);
+    if (size != uVar1) {
       Com_Error(ERR_DROP,"PLATFORM_ERR_SAVEGAME_BAD");
     }
   }
   else {
     Com_PrintWarning(0xe,"Invalid custom game mode rule chunk version.  Expected: %i Got: %i\n");
-    local_14 = Z_VirtualAlloc(local_8,"gv_rules",0);
-    MemFile_ReadData(param_1,local_8,local_14);
-    Z_VirtualFree(local_14,0);
+    dataBuffer = Z_VirtualAlloc(size,"gv_rules",0);
+    MemFile_ReadData(memFile,size,dataBuffer);
+    Z_VirtualFree(dataBuffer,0);
   }
   return true;
 }
@@ -2802,47 +2881,50 @@ bool __cdecl UI_GameVariants_ReadGameVariantRuleChunk(MemoryFile *param_1)
 
 // 00743E90  Scr_GameVariants_AddConditional  (ui_mp/ui_gametype_variants_mp.cpp:1755)
 
-void __cdecl Scr_GameVariants_AddConditional(GVRule *param_1)
+void __cdecl Scr_GameVariants_AddConditional(GVRule *rule)
 
 {
   byte bVar1;
-  char *pcVar2;
-  bool bVar3;
-  int iVar4;
-  double dVar5;
-  scriptInstance_t sVar6;
+  char *value;
+  bool bVar2;
+  int iVar3;
+  double dVar4;
+  scriptInstance_t sVar5;
+  bool isFalse;
+  GVConditionalLhs *lhs;
+  char *rhsValue;
   
-  if ((param_1->m_conditional).hasConditional != false) {
-    bVar1 = (param_1->m_conditional).m_lhsIndex;
+  if ((rule->m_conditional).hasConditional != false) {
+    bVar1 = (rule->m_conditional).m_lhsIndex;
     Scr_AddString(gvCondLhsValues[bVar1].m_scriptName,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.gv_condlhs,SCRIPTINSTANCE_SERVER);
-    Scr_AddString(gvCondOpValues[(param_1->m_conditional).m_operatorIndex].m_value,
+    Scr_AddString(gvCondOpValues[(rule->m_conditional).m_operatorIndex].m_value,
                   SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.gv_condop,SCRIPTINSTANCE_SERVER);
-    pcVar2 = gvCondLhsValues[bVar1].m_rhs.m_values[(param_1->m_conditional).m_rhsIndex].m_value;
+    value = gvCondLhsValues[bVar1].m_rhs.m_values[(rule->m_conditional).m_rhsIndex].m_value;
     switch(gvCondLhsValues[bVar1].m_rhs.m_type) {
     case GVTYPE_BOOL:
-      iVar4 = I_stricmp(pcVar2,"false");
-      if ((iVar4 == 0) || (iVar4 = I_stricmp(pcVar2,"0"), iVar4 == 0)) {
-        bVar3 = true;
+      iVar3 = I_stricmp(value,"false");
+      if ((iVar3 == 0) || (iVar3 = I_stricmp(value,"0"), iVar3 == 0)) {
+        bVar2 = true;
       }
       else {
-        bVar3 = false;
+        bVar2 = false;
       }
-      Scr_AddBool((uint)!bVar3,SCRIPTINSTANCE_SERVER);
+      Scr_AddBool((uint)!bVar2,SCRIPTINSTANCE_SERVER);
       break;
     case GVTYPE_INT:
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      iVar4 = atoi(pcVar2);
-      Scr_AddInt(iVar4,sVar6);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      iVar3 = atoi(value);
+      Scr_AddInt(iVar3,sVar5);
       break;
     case GVTYPE_FLOAT:
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      dVar5 = atof(pcVar2);
-      Scr_AddFloat((float)dVar5,sVar6);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      dVar4 = atof(value);
+      Scr_AddFloat((float)dVar4,sVar5);
       break;
     case GVTYPE_STRING:
-      Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
+      Scr_AddString(value,SCRIPTINSTANCE_SERVER);
     }
     Scr_AddArrayStringIndexed((uint)scr_const.gv_condrhs,SCRIPTINSTANCE_SERVER);
   }
@@ -2854,69 +2936,69 @@ void __cdecl Scr_GameVariants_AddConditional(GVRule *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Scr_GameVariants_AddPerkString(char *param_1)
+void __cdecl Scr_GameVariants_AddPerkString(char *paramValue)
 
 {
-  int extraout_EAX;
-  int extraout_EAX_00;
-  char local_94 [132];
+  char *extraout_EAX;
+  char *extraout_EAX_00;
+  char specialty [132];
   uint local_10;
-  uchar *local_c;
-  int local_8;
+  char *cursor;
+  char *pipeDelim;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (uchar *)param_1;
-  strstr((uchar *)param_1,(uchar *)"|");
-  local_8 = extraout_EAX;
-  while (local_8 != 0) {
-    I_strncpyz(local_94,(char *)local_c,(local_8 - (int)local_c) + 1);
-    Scr_AddString(local_94,SCRIPTINSTANCE_SERVER);
+  cursor = paramValue;
+  strstr((uchar *)paramValue,(uchar *)"|");
+  pipeDelim = extraout_EAX;
+  while (pipeDelim != (char *)0x0) {
+    I_strncpyz(specialty,cursor,(int)(pipeDelim + (1 - (int)cursor)));
+    Scr_AddString(specialty,SCRIPTINSTANCE_SERVER);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
-    local_c = (uchar *)(local_8 + 1);
-    strstr(local_c,(uchar *)"|");
-    local_8 = extraout_EAX_00;
+    cursor = pipeDelim + 1;
+    strstr((uchar *)cursor,(uchar *)"|");
+    pipeDelim = extraout_EAX_00;
   }
-  Scr_AddString((char *)local_c,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(cursor,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00744010  Scr_GameVariants_AddParams  (ui_mp/ui_gametype_variants_mp.cpp:1813)
 
-void __cdecl Scr_GameVariants_AddParams(GVRule *param_1)
+void __cdecl Scr_GameVariants_AddParams(GVRule *rule)
 
 {
   byte bVar1;
-  int iVar2;
-  double dVar3;
-  scriptInstance_t sVar4;
+  int value;
+  double dVar2;
+  scriptInstance_t sVar3;
   
-  bVar1 = param_1->actionID;
+  bVar1 = rule->actionID;
   if (gvActions[bVar1].m_parameterType != '\0') {
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
     switch(gvActions[bVar1].m_parameterType) {
     case '\x01':
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      iVar2 = atoi((param_1->parameter).value);
-      Scr_AddInt(iVar2,sVar4);
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      value = atoi((rule->parameter).value);
+      Scr_AddInt(value,sVar3);
       break;
     case '\x02':
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      dVar3 = atof((param_1->parameter).value);
-      Scr_AddFloat((float)dVar3,sVar4);
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      dVar2 = atof((rule->parameter).value);
+      Scr_AddFloat((float)dVar2,sVar3);
       break;
     case '\x03':
     case '\x04':
     case '\x05':
     case '\a':
-      Scr_AddString((param_1->parameter).value,SCRIPTINSTANCE_SERVER);
+      Scr_AddString((rule->parameter).value,SCRIPTINSTANCE_SERVER);
       break;
     case '\x06':
-      Scr_GameVariants_AddPerkString((param_1->parameter).value);
+      Scr_GameVariants_AddPerkString((rule->parameter).value);
     }
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
-    if ((param_1->secondParameter).hasParameter != false) {
-      Scr_AddString((param_1->secondParameter).value,SCRIPTINSTANCE_SERVER);
+    if ((rule->secondParameter).hasParameter != false) {
+      Scr_AddString((rule->secondParameter).value,SCRIPTINSTANCE_SERVER);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
     Scr_AddArrayStringIndexed((uint)scr_const.gv_parameter,SCRIPTINSTANCE_SERVER);
@@ -2931,6 +3013,7 @@ void __cdecl Scr_GameVariants_GetRule(void)
 
 {
   int iVar1;
+  int ruleNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (gvGlob.ruleCount < iVar1)) {

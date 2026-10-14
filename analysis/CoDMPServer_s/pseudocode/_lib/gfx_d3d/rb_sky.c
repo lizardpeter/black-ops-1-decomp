@@ -55,41 +55,41 @@ void __cdecl RB_DrawSunPostEffects(int param_1,float param_2)
 void __cdecl RB_AllocSunSpriteQueries(void)
 
 {
-  int iVar1;
-  char *pcVar2;
-  undefined4 uVar3;
+  int hr;
+  char *pcVar1;
+  undefined4 uVar2;
   undefined4 in_ECX;
-  int iVar4;
+  int iVar3;
+  uint uVar4;
   uint uVar5;
-  uint uVar6;
-  undefined4 *puVar7;
-  int iVar8;
+  undefined4 *puVar6;
+  int iVar7;
   undefined4 uStack_4;
   
-  uVar5 = 0;
+  uVar4 = 0;
   if (gfxCfg.maxClientViews != 0) {
-    iVar4 = 0x34bc87d;
+    iVar3 = 0x34bc87d;
     uStack_4 = in_ECX;
     do {
-      uVar6 = 0;
-      puVar7 = (undefined4 *)(iVar4 + 3);
+      uVar5 = 0;
+      puVar6 = (undefined4 *)(iVar3 + 3);
       do {
-        iVar1 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&uStack_4);
-        uVar3 = uStack_4;
-        if (iVar1 < 0) {
-          iVar8 = iVar1;
-          pcVar2 = DXGetErrorDescriptionA(iVar1);
-          Com_Printf(8,"Occlusion query creation failed: %s (0x%08x)\n",pcVar2,iVar1,iVar8);
-          uVar3 = 0;
+        hr = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&uStack_4);
+        uVar2 = uStack_4;
+        if (hr < 0) {
+          iVar7 = hr;
+          pcVar1 = DXGetErrorDescriptionA(hr);
+          Com_Printf(8,"Occlusion query creation failed: %s (0x%08x)\n",pcVar1,hr,iVar7);
+          uVar2 = 0;
         }
-        *puVar7 = uVar3;
-        *(undefined1 *)(iVar4 + uVar6) = 0;
-        uVar6 = uVar6 + 1;
-        puVar7 = puVar7 + 1;
-      } while (uVar6 < 2);
-      uVar5 = uVar5 + 1;
-      iVar4 = iVar4 + 0x2c;
-    } while (uVar5 < gfxCfg.maxClientViews);
+        *puVar6 = uVar2;
+        *(undefined1 *)(iVar3 + uVar5) = 0;
+        uVar5 = uVar5 + 1;
+        puVar6 = puVar6 + 1;
+      } while (uVar5 < 2);
+      uVar4 = uVar4 + 1;
+      iVar3 = iVar3 + 0x2c;
+    } while (uVar4 < gfxCfg.maxClientViews);
   }
   return;
 }

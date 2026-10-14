@@ -17,28 +17,28 @@ void __cdecl TRACK_g_mover(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall mover_info_t::init(mover_info_t *this,float *param_1,float *param_2,bool param_3)
+void __thiscall mover_info_t::init(mover_info_t *this,float *origin,float *angles,bool do_collision)
 
 {
   float local_28 [9];
   
-  AnglesToAxis(param_2,(float (*) [3])local_28);
+  AnglesToAxis(angles,(float (*) [3])local_28);
   Phys_AxisToNitrousMat((float (*) [3])local_28,&this->m_mat);
-  Phys_Vec3ToNitrousVec(param_1,&(this->m_mat).w);
+  Phys_Vec3ToNitrousVec(origin,&(this->m_mat).w);
   phys_mat44::operator=(&this->m_prev_mat,&this->m_mat);
-  this->m_origin[0] = *param_1;
-  this->m_origin[1] = param_1[1];
-  this->m_origin[2] = param_1[2];
-  this->m_prev_origin[0] = *param_1;
-  this->m_prev_origin[1] = param_1[1];
-  this->m_prev_origin[2] = param_1[2];
-  this->m_angles[0] = *param_2;
-  this->m_angles[1] = param_2[1];
-  this->m_angles[2] = param_2[2];
-  this->m_prev_angles[0] = *param_2;
-  this->m_prev_angles[1] = param_2[1];
-  this->m_prev_angles[2] = param_2[2];
-  this->m_do_collision = param_3;
+  this->m_origin[0] = *origin;
+  this->m_origin[1] = origin[1];
+  this->m_origin[2] = origin[2];
+  this->m_prev_origin[0] = *origin;
+  this->m_prev_origin[1] = origin[1];
+  this->m_prev_origin[2] = origin[2];
+  this->m_angles[0] = *angles;
+  this->m_angles[1] = angles[1];
+  this->m_angles[2] = angles[2];
+  this->m_prev_angles[0] = *angles;
+  this->m_prev_angles[1] = angles[1];
+  this->m_prev_angles[2] = angles[2];
+  this->m_do_collision = do_collision;
   return;
 }
 
@@ -51,32 +51,32 @@ void __thiscall mover_info_t::init(mover_info_t *this,float *param_1,float *para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-mover_info_t::init(mover_info_t *this,float *param_1,float *param_2,float *param_3,float *param_4,
-                  bool param_5)
+mover_info_t::init(mover_info_t *this,float *origin,float *angles,float *prev_origin,
+                  float *prev_angles,bool do_collision)
 
 {
   float local_4c [9];
   float local_28 [9];
   
-  AnglesToAxis(param_2,(float (*) [3])local_28);
+  AnglesToAxis(angles,(float (*) [3])local_28);
   Phys_AxisToNitrousMat((float (*) [3])local_28,&this->m_mat);
-  Phys_Vec3ToNitrousVec(param_1,&(this->m_mat).w);
-  AnglesToAxis(param_4,(float (*) [3])local_4c);
+  Phys_Vec3ToNitrousVec(origin,&(this->m_mat).w);
+  AnglesToAxis(prev_angles,(float (*) [3])local_4c);
   Phys_AxisToNitrousMat((float (*) [3])local_4c,&this->m_prev_mat);
-  Phys_Vec3ToNitrousVec(param_3,&(this->m_prev_mat).w);
-  this->m_origin[0] = *param_1;
-  this->m_origin[1] = param_1[1];
-  this->m_origin[2] = param_1[2];
-  this->m_prev_origin[0] = *param_3;
-  this->m_prev_origin[1] = param_3[1];
-  this->m_prev_origin[2] = param_3[2];
-  this->m_angles[0] = *param_2;
-  this->m_angles[1] = param_2[1];
-  this->m_angles[2] = param_2[2];
-  this->m_prev_angles[0] = *param_4;
-  this->m_prev_angles[1] = param_4[1];
-  this->m_prev_angles[2] = param_4[2];
-  this->m_do_collision = param_5;
+  Phys_Vec3ToNitrousVec(prev_origin,&(this->m_prev_mat).w);
+  this->m_origin[0] = *origin;
+  this->m_origin[1] = origin[1];
+  this->m_origin[2] = origin[2];
+  this->m_prev_origin[0] = *prev_origin;
+  this->m_prev_origin[1] = prev_origin[1];
+  this->m_prev_origin[2] = prev_origin[2];
+  this->m_angles[0] = *angles;
+  this->m_angles[1] = angles[1];
+  this->m_angles[2] = angles[2];
+  this->m_prev_angles[0] = *prev_angles;
+  this->m_prev_angles[1] = prev_angles[1];
+  this->m_prev_angles[2] = prev_angles[2];
+  this->m_do_collision = do_collision;
   return;
 }
 
@@ -88,27 +88,27 @@ mover_info_t::init(mover_info_t *this,float *param_1,float *param_2,float *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall mover_info_t::update(mover_info_t *this,float *param_1,float *param_2)
+void __thiscall mover_info_t::update(mover_info_t *this,float *origin,float *angles)
 
 {
   float local_38 [13];
   
   phys_mat44::operator=(&this->m_prev_mat,&this->m_mat);
-  AnglesToAxis(param_2,(float (*) [3])local_38);
+  AnglesToAxis(angles,(float (*) [3])local_38);
   Phys_AxisToNitrousMat((float (*) [3])local_38,&this->m_mat);
-  Phys_Vec3ToNitrousVec(param_1,&(this->m_mat).w);
+  Phys_Vec3ToNitrousVec(origin,&(this->m_mat).w);
   this->m_prev_origin[0] = this->m_origin[0];
   this->m_prev_origin[1] = this->m_origin[1];
   this->m_prev_origin[2] = this->m_origin[2];
-  this->m_origin[0] = *param_1;
-  this->m_origin[1] = param_1[1];
-  this->m_origin[2] = param_1[2];
+  this->m_origin[0] = *origin;
+  this->m_origin[1] = origin[1];
+  this->m_origin[2] = origin[2];
   this->m_prev_angles[0] = this->m_angles[0];
   this->m_prev_angles[1] = this->m_angles[1];
   this->m_prev_angles[2] = this->m_angles[2];
-  this->m_angles[0] = *param_2;
-  this->m_angles[1] = param_2[1];
-  this->m_angles[2] = param_2[2];
+  this->m_angles[0] = *angles;
+  this->m_angles[1] = angles[1];
+  this->m_angles[2] = angles[2];
   return;
 }
 
@@ -120,7 +120,7 @@ void __thiscall mover_info_t::update(mover_info_t *this,float *param_1,float *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall mover_info_t::apply_rotation(mover_info_t *this,float *param_1)
+void __thiscall mover_info_t::apply_rotation(mover_info_t *this,float *v)
 
 {
   phys_vec3 *ppVar1;
@@ -130,13 +130,13 @@ void __thiscall mover_info_t::apply_rotation(mover_info_t *this,float *param_1)
   mover_info_t *local_14;
   
   local_14 = this;
-  Phys_Vec3ToNitrousVec(param_1,&local_30);
+  Phys_Vec3ToNitrousVec(v,&local_30);
   ppVar1 = phys_inv_multiply(&local_40,&local_14->m_prev_mat,&local_30);
   ppVar1 = phys_multiply33(&local_50,&local_14->m_mat,ppVar1);
   local_30.x = ppVar1->x;
   local_30.y = ppVar1->y;
   local_30.z = ppVar1->z;
-  Phys_NitrousVecToVec3(&local_30,param_1);
+  Phys_NitrousVecToVec3(&local_30,v);
   return;
 }
 
@@ -148,7 +148,7 @@ void __thiscall mover_info_t::apply_rotation(mover_info_t *this,float *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall mover_info_t::apply_rotation_translation(mover_info_t *this,float *param_1)
+void __thiscall mover_info_t::apply_rotation_translation(mover_info_t *this,float *v)
 
 {
   phys_vec3 *ppVar1;
@@ -158,13 +158,13 @@ void __thiscall mover_info_t::apply_rotation_translation(mover_info_t *this,floa
   mover_info_t *local_14;
   
   local_14 = this;
-  Phys_Vec3ToNitrousVec(param_1,&local_30);
+  Phys_Vec3ToNitrousVec(v,&local_30);
   ppVar1 = phys_full_inv_multiply(&local_40,&local_14->m_prev_mat,&local_30);
   ppVar1 = phys_full_multiply(&local_50,&local_14->m_mat,ppVar1);
   local_30.x = ppVar1->x;
   local_30.y = ppVar1->y;
   local_30.z = ppVar1->z;
-  Phys_NitrousVecToVec3(&local_30,param_1);
+  Phys_NitrousVecToVec3(&local_30,v);
   return;
 }
 
@@ -196,16 +196,17 @@ void __cdecl _dynamic_initializer_for__g_mover_info_allocator__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-mover_info_t * __cdecl get_mover_info(gentity_s *param_1)
+mover_info_t * __cdecl get_mover_info(gentity_s *ent)
 
 {
   mover_info_t *pmVar1;
   generic_avl_map_node_t *local_10;
+  generic_avl_map_node_t *gamn;
+  uint avl_key;
   
   local_10 = g_mover_info_map.m_tree_root;
-  while ((local_10 != (generic_avl_map_node_t *)0x0 && (param_1 != (gentity_s *)local_10->m_avl_key)
-         )) {
-    if (param_1 < (gentity_s *)local_10->m_avl_key) {
+  while ((local_10 != (generic_avl_map_node_t *)0x0 && (ent != (gentity_s *)local_10->m_avl_key))) {
+    if (ent < (gentity_s *)local_10->m_avl_key) {
       local_10 = (local_10->m_avl_node_info).m_left;
     }
     else {
@@ -229,14 +230,16 @@ mover_info_t * __cdecl get_mover_info(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-mover_info_t * __cdecl create_mover_info(gentity_s *param_1)
+mover_info_t * __cdecl create_mover_info(gentity_s *ent)
 
 {
-  mover_info_t *pmVar1;
+  mover_info_t *data;
+  mover_info_t *mi;
+  uint avl_key;
   
-  pmVar1 = phys_simple_allocator<mover_info_t>::allocate(&g_mover_info_allocator);
-  generic_avl_map_add(&g_mover_info_map,pmVar1,(uint)param_1);
-  return pmVar1;
+  data = phys_simple_allocator<mover_info_t>::allocate(&g_mover_info_allocator);
+  generic_avl_map_add(&g_mover_info_map,data,(uint)ent);
+  return data;
 }
 
 
@@ -247,17 +250,18 @@ mover_info_t * __cdecl create_mover_info(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl entity_is_a_mover(int param_1)
+bool __cdecl entity_is_a_mover(int entnum)
 
 {
   mover_info_t *pmVar1;
   bool bVar2;
+  gentity_s *gent;
   
-  if ((param_1 < 0) || (level.num_entities <= param_1)) {
+  if ((entnum < 0) || (level.num_entities <= entnum)) {
     bVar2 = false;
   }
   else {
-    pmVar1 = get_mover_info(level.gentities + param_1);
+    pmVar1 = get_mover_info(level.gentities + entnum);
     bVar2 = pmVar1 != (mover_info_t *)0x0;
   }
   return bVar2;
@@ -272,40 +276,39 @@ bool __cdecl entity_is_a_mover(int param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_PushEntity(gentity_s *param_1,gentity_s *param_2,float *param_3,float *param_4,
-            mover_info_t *param_5)
+G_PushEntity(gentity_s *check,gentity_s *pusher,float *move,float *amove,mover_info_t *mi)
 
 {
   gclient_s *pgVar1;
-  float local_10;
+  float vOrigin;
   float local_c;
   float local_8;
   
-  local_10 = (param_1->r).currentOrigin[0];
-  local_c = (param_1->r).currentOrigin[1];
-  local_8 = (param_1->r).currentOrigin[2];
-  mover_info_t::apply_rotation_translation(param_5,&local_10);
-  (param_1->r).currentOrigin[0] = local_10;
-  (param_1->r).currentOrigin[1] = local_c;
-  (param_1->r).currentOrigin[2] = local_8;
-  (param_1->s).lerp.pos.trBase[0] = local_10;
-  (param_1->s).lerp.pos.trBase[1] = local_c;
-  (param_1->s).lerp.pos.trBase[2] = local_8;
-  if (param_1->client != (gclient_s *)0x0) {
-    (param_1->client->ps).delta_angles[1] = (param_1->client->ps).delta_angles[1] + param_4[1];
-    pgVar1 = param_1->client;
-    (pgVar1->ps).origin[0] = local_10;
+  vOrigin = (check->r).currentOrigin[0];
+  local_c = (check->r).currentOrigin[1];
+  local_8 = (check->r).currentOrigin[2];
+  mover_info_t::apply_rotation_translation(mi,&vOrigin);
+  (check->r).currentOrigin[0] = vOrigin;
+  (check->r).currentOrigin[1] = local_c;
+  (check->r).currentOrigin[2] = local_8;
+  (check->s).lerp.pos.trBase[0] = vOrigin;
+  (check->s).lerp.pos.trBase[1] = local_c;
+  (check->s).lerp.pos.trBase[2] = local_8;
+  if (check->client != (gclient_s *)0x0) {
+    (check->client->ps).delta_angles[1] = (check->client->ps).delta_angles[1] + amove[1];
+    pgVar1 = check->client;
+    (pgVar1->ps).origin[0] = vOrigin;
     (pgVar1->ps).origin[1] = local_c;
     (pgVar1->ps).origin[2] = local_8;
   }
-  if ((param_1->s).eType == 4) {
-    (param_1->r).currentAngles[0] = (param_1->r).currentAngles[0] + *param_4;
-    (param_1->r).currentAngles[1] = (param_1->r).currentAngles[1] + param_4[1];
-    (param_1->r).currentAngles[2] = (param_1->r).currentAngles[2] + param_4[2];
-    (param_1->s).lerp.apos.trBase[0] = (param_1->s).lerp.apos.trBase[0] + *param_4;
-    (param_1->s).lerp.apos.trBase[1] = (param_1->s).lerp.apos.trBase[1] + param_4[1];
-    (param_1->s).lerp.apos.trBase[2] = (param_1->s).lerp.apos.trBase[2] + param_4[2];
-    mover_info_t::apply_rotation(param_5,&(param_1->field36_0x21c).mover.midTime);
+  if ((check->s).eType == 4) {
+    (check->r).currentAngles[0] = (check->r).currentAngles[0] + *amove;
+    (check->r).currentAngles[1] = (check->r).currentAngles[1] + amove[1];
+    (check->r).currentAngles[2] = (check->r).currentAngles[2] + amove[2];
+    (check->s).lerp.apos.trBase[0] = (check->s).lerp.apos.trBase[0] + *amove;
+    (check->s).lerp.apos.trBase[1] = (check->s).lerp.apos.trBase[1] + amove[1];
+    (check->s).lerp.apos.trBase[2] = (check->s).lerp.apos.trBase[2] + amove[2];
+    mover_info_t::apply_rotation(mi,&(check->field36_0x21c).mover.midTime);
   }
   return;
 }
@@ -391,35 +394,35 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl IsEntityLinkedToMe(gentity_s *param_1,gentity_s *param_2)
+bool __cdecl IsEntityLinkedToMe(gentity_s *self,gentity_s *other)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  tagInfo_s *local_8;
+  tagInfo_s *tagInfo;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x12e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((other == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x12f,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = param_2->tagInfo;
+  tagInfo = other->tagInfo;
   while( true ) {
-    if (local_8 == (tagInfo_s *)0x0) {
+    if (tagInfo == (tagInfo_s *)0x0) {
       return false;
     }
-    if (local_8->parent == param_1) break;
-    local_8 = local_8->parent->tagInfo;
+    if (tagInfo->parent == self) break;
+    tagInfo = tagInfo->parent->tagInfo;
   }
   return true;
 }
@@ -433,97 +436,95 @@ bool __cdecl IsEntityLinkedToMe(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_MoverPush(gentity_s *param_1,mover_info_t *param_2)
+void __cdecl G_MoverPush(gentity_s *pusher,mover_info_t *mi)
 
 {
   int iVar1;
   bool bVar2;
-  float local_1090 [6];
-  int local_1078;
-  int local_1074;
-  float local_1070 [6];
-  float local_1058 [3];
-  float local_104c [3];
+  float modelMaxs [6];
+  int listedEntities;
+  int e;
+  float initialMaxs [6];
+  float totalMins [3];
+  float move [3];
   float afStack_1040 [3];
-  float local_1034;
+  float amove;
   float local_1030;
   float local_102c;
-  float local_1028 [4];
+  float initialMins [3];
+  float radius;
   float afStack_1018 [3];
-  int local_100c [1024];
-  int local_c;
-  gentity_s *local_8;
+  int entityList [1024];
+  int i;
+  gentity_s *check;
   
-  local_8 = (gentity_s *)0x63d80d;
-  local_104c[0] = param_2->m_origin[0] - param_2->m_prev_origin[0];
-  local_104c[1] = param_2->m_origin[1] - param_2->m_prev_origin[1];
-  local_104c[2] = param_2->m_origin[2] - param_2->m_prev_origin[2];
-  local_1034 = param_2->m_angles[0] - param_2->m_prev_angles[0];
-  local_1030 = param_2->m_angles[1] - param_2->m_prev_angles[1];
-  local_102c = param_2->m_angles[2] - param_2->m_prev_angles[2];
-  local_1028[0] = (param_1->r).mins[0];
-  local_1028[1] = (param_1->r).mins[1];
-  local_1028[2] = (param_1->r).mins[2];
-  local_1070[0] = (param_1->r).maxs[0];
-  local_1070[1] = (param_1->r).maxs[1];
-  local_1070[2] = (param_1->r).maxs[2];
-  parented_pathnode_list_update(param_1,&param_2->m_mat,local_1070 + 0xf);
-  if ((((param_1->s).eType == 6) && (param_1->model != 0)) &&
-     (bVar2 = G_GetModelBounds((uint)param_1->model,local_1090 + 3,local_1090), bVar2)) {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      if (local_1090[local_c + 3] <= local_1028[local_c] &&
-          local_1028[local_c] != local_1090[local_c + 3]) {
-        local_1028[local_c] = local_1090[local_c + 3];
+  check = (gentity_s *)0x63d80d;
+  move[0] = mi->m_origin[0] - mi->m_prev_origin[0];
+  move[1] = mi->m_origin[1] - mi->m_prev_origin[1];
+  move[2] = mi->m_origin[2] - mi->m_prev_origin[2];
+  amove = mi->m_angles[0] - mi->m_prev_angles[0];
+  local_1030 = mi->m_angles[1] - mi->m_prev_angles[1];
+  local_102c = mi->m_angles[2] - mi->m_prev_angles[2];
+  initialMins[0] = (pusher->r).mins[0];
+  initialMins[1] = (pusher->r).mins[1];
+  initialMins[2] = (pusher->r).mins[2];
+  initialMaxs[0] = (pusher->r).maxs[0];
+  initialMaxs[1] = (pusher->r).maxs[1];
+  initialMaxs[2] = (pusher->r).maxs[2];
+  parented_pathnode_list_update(pusher,&mi->m_mat,initialMaxs + 0xf);
+  if ((((pusher->s).eType == 6) && (pusher->model != 0)) &&
+     (bVar2 = G_GetModelBounds((uint)pusher->model,modelMaxs + 3,modelMaxs), bVar2)) {
+    for (i = 0; i < 3; i = i + 1) {
+      if (modelMaxs[i + 3] <= initialMins[i] && initialMins[i] != modelMaxs[i + 3]) {
+        initialMins[i] = modelMaxs[i + 3];
       }
-      if (local_1070[local_c] <= local_1090[local_c] && local_1090[local_c] != local_1070[local_c])
-      {
-        local_1070[local_c] = local_1090[local_c];
+      if (initialMaxs[i] <= modelMaxs[i] && modelMaxs[i] != initialMaxs[i]) {
+        initialMaxs[i] = modelMaxs[i];
       }
     }
   }
-  if (((((param_1->r).currentAngles[0] == 0.0) && ((param_1->r).currentAngles[1] == 0.0)) &&
-      (((param_1->r).currentAngles[2] == 0.0 && ((local_1034 == 0.0 && (local_1030 == 0.0)))))) &&
+  if (((((pusher->r).currentAngles[0] == 0.0) && ((pusher->r).currentAngles[1] == 0.0)) &&
+      (((pusher->r).currentAngles[2] == 0.0 && ((amove == 0.0 && (local_1030 == 0.0)))))) &&
      (local_102c == 0.0)) {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      local_1070[local_c + 6] = ((param_1->r).currentOrigin[local_c] + local_1028[local_c]) - 1.0;
-      local_1070[local_c + 3] = (param_1->r).currentOrigin[local_c] + local_1070[local_c] + 1.0;
+    for (i = 0; i < 3; i = i + 1) {
+      initialMaxs[i + 6] = ((pusher->r).currentOrigin[i] + initialMins[i]) - 1.0;
+      initialMaxs[i + 3] = (pusher->r).currentOrigin[i] + initialMaxs[i] + 1.0;
     }
   }
   else {
-    local_1028[3] = RadiusFromBounds(local_1028,local_1070);
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      local_1070[local_c + 6] = (param_1->r).currentOrigin[local_c] - local_1028[3];
-      local_1070[local_c + 3] = (param_1->r).currentOrigin[local_c] + local_1028[3];
+    radius = RadiusFromBounds(initialMins,initialMaxs);
+    for (i = 0; i < 3; i = i + 1) {
+      initialMaxs[i + 6] = (pusher->r).currentOrigin[i] - radius;
+      initialMaxs[i + 3] = (pusher->r).currentOrigin[i] + radius;
     }
   }
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    local_1070[local_c + 0xc] = local_1070[local_c + 6] + local_1070[local_c + 9];
-    afStack_1018[local_c] = local_1070[local_c + 3] + local_1070[local_c + 9];
-    if (local_1070[local_c + 9] <= 0.0) {
-      local_1070[local_c + 6] = local_1070[local_c + 6] + local_1070[local_c + 9];
+  for (i = 0; i < 3; i = i + 1) {
+    initialMaxs[i + 0xc] = initialMaxs[i + 6] + initialMaxs[i + 9];
+    afStack_1018[i] = initialMaxs[i + 3] + initialMaxs[i + 9];
+    if (initialMaxs[i + 9] <= 0.0) {
+      initialMaxs[i + 6] = initialMaxs[i + 6] + initialMaxs[i + 9];
     }
     else {
-      local_1070[local_c + 3] = local_1070[local_c + 3] + local_1070[local_c + 9];
+      initialMaxs[i + 3] = initialMaxs[i + 3] + initialMaxs[i + 9];
     }
   }
-  SV_UnlinkEntity(param_1);
-  local_1078 = CM_AreaEntities(local_1070 + 6,local_1070 + 3,local_100c,0x400,0x6008180);
-  (param_1->r).currentOrigin[0] = (param_1->r).currentOrigin[0] + local_104c[0];
-  (param_1->r).currentOrigin[1] = (param_1->r).currentOrigin[1] + local_104c[1];
-  (param_1->r).currentOrigin[2] = (param_1->r).currentOrigin[2] + local_104c[2];
-  (param_1->r).currentAngles[0] = (param_1->r).currentAngles[0] + local_1034;
-  (param_1->r).currentAngles[1] = (param_1->r).currentAngles[1] + local_1030;
-  (param_1->r).currentAngles[2] = (param_1->r).currentAngles[2] + local_102c;
-  SV_LinkEntity(param_1);
-  for (local_1074 = 0; local_1074 < local_1078; local_1074 = local_1074 + 1) {
-    iVar1 = local_100c[local_1074];
-    local_8 = g_entities + iVar1;
+  SV_UnlinkEntity(pusher);
+  listedEntities = CM_AreaEntities(initialMaxs + 6,initialMaxs + 3,entityList,0x400,0x6008180);
+  (pusher->r).currentOrigin[0] = (pusher->r).currentOrigin[0] + move[0];
+  (pusher->r).currentOrigin[1] = (pusher->r).currentOrigin[1] + move[1];
+  (pusher->r).currentOrigin[2] = (pusher->r).currentOrigin[2] + move[2];
+  (pusher->r).currentAngles[0] = (pusher->r).currentAngles[0] + amove;
+  (pusher->r).currentAngles[1] = (pusher->r).currentAngles[1] + local_1030;
+  (pusher->r).currentAngles[2] = (pusher->r).currentAngles[2] + local_102c;
+  SV_LinkEntity(pusher);
+  for (e = 0; e < listedEntities; e = e + 1) {
+    iVar1 = entityList[e];
+    check = g_entities + iVar1;
     if ((((((g_entities[iVar1].s.eType == 4) || (g_entities[iVar1].s.eType == 3)) ||
           (g_entities[iVar1].s.eType == 1)) || (g_entities[iVar1].physicsObject != '\0')) &&
-        ((bVar2 = IsEntityLinkedToMe(param_1,local_8), !bVar2 &&
-         (local_8->tagInfo == (tagInfo_s *)0x0)))) &&
-       ((int)(local_8->s).groundEntityNum == (param_1->s).number)) {
-      G_PushEntity(local_8,param_1,local_1070 + 9,local_1070 + 0xf,param_2);
+        ((bVar2 = IsEntityLinkedToMe(pusher,check), !bVar2 && (check->tagInfo == (tagInfo_s *)0x0)))
+        ) && ((int)(check->s).groundEntityNum == (pusher->s).number)) {
+      G_PushEntity(check,pusher,initialMaxs + 9,initialMaxs + 0xf,mi);
     }
   }
   return;
@@ -557,20 +558,20 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl GetEntity(ushort *param_1)
+gentity_s * __cdecl GetEntity(ushort *targetname)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (level.num_entities <= local_8) {
+    if (level.num_entities <= i) {
       return (gentity_s *)0x0;
     }
-    if (g_entities[local_8].targetname == *param_1) break;
-    local_8 = local_8 + 1;
+    if (g_entities[i].targetname == *targetname) break;
+    i = i + 1;
   }
-  return g_entities + local_8;
+  return g_entities + i;
 }
 
 
@@ -581,147 +582,149 @@ gentity_s * __cdecl GetEntity(ushort *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_CreatePhysicsObject(gentity_s *param_1)
+void __cdecl G_CreatePhysicsObject(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   XModel *pXVar3;
-  PhysConstraint *pPVar4;
+  PhysConstraint *constraint;
   char *local_120;
-  int local_100;
-  float local_f4;
+  int i;
+  int surfaceType_2;
+  XModel *model;
+  float dims_2;
   float local_f0;
   float local_ec;
-  uint local_e8;
-  float local_e4;
+  int surfaceFlags;
+  float dims;
   float local_e0;
   float local_dc;
-  int local_d8;
-  PhysPreset local_d4;
-  float local_78;
+  int surfaceType;
+  PhysPreset defaultPreset;
+  float velocity;
   float local_74;
   float local_70;
-  int local_6c;
-  DObj *local_68;
-  PhysPreset *local_64;
-  float local_60;
+  int physObjId;
+  DObj *obj;
+  PhysPreset *physPreset;
+  float mins;
   float local_5c;
   float local_58;
-  int local_54;
-  float local_50 [4];
-  uint local_40;
-  float local_3c;
+  PhysObjUserData *userData;
+  float quat [4];
+  int brushModel;
+  float maxs;
   float local_38;
   float local_34;
-  gjk_collision_visitor local_30;
+  gjk_collision_visitor collision_visitor;
   gjk_geom_list_t *local_2c;
-  float local_28;
-  gjk_geom_list_t local_24;
-  float local_1c;
+  float speed;
+  gjk_geom_list_t gjk_geom_list;
+  float direction;
   float local_18;
   float local_14;
-  float local_10;
+  float position;
   float local_c;
   float local_8;
   
   Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
-  local_68 = (DObj *)0x0;
-  local_64 = (PhysPreset *)0x0;
-  local_40 = 0;
-  local_10 = (param_1->s).lerp.pos.trBase[0];
-  local_c = (param_1->s).lerp.pos.trBase[1];
-  local_8 = (param_1->s).lerp.pos.trBase[2];
-  local_78 = (param_1->s).lerp.apos.trDelta[0];
-  local_74 = (param_1->s).lerp.apos.trDelta[1];
-  local_70 = (param_1->s).lerp.apos.trDelta[2];
-  AnglesToQuat((param_1->s).lerp.apos.trBase,local_50);
-  memset((uchar *)&local_d4,'\0',0x54);
-  if (param_1->classname == scr_const.script_brushmodel) {
-    local_40 = (uint)(param_1->s).index.brushmodel;
-    local_64 = &local_d4;
-    CM_ModelBounds(local_40,&local_60,&local_3c);
-    local_e4 = local_3c - local_60;
+  obj = (DObj *)0x0;
+  physPreset = (PhysPreset *)0x0;
+  brushModel = 0;
+  position = (ent->s).lerp.pos.trBase[0];
+  local_c = (ent->s).lerp.pos.trBase[1];
+  local_8 = (ent->s).lerp.pos.trBase[2];
+  velocity = (ent->s).lerp.apos.trDelta[0];
+  local_74 = (ent->s).lerp.apos.trDelta[1];
+  local_70 = (ent->s).lerp.apos.trDelta[2];
+  AnglesToQuat((ent->s).lerp.apos.trBase,quat);
+  memset((uchar *)&defaultPreset,'\0',0x54);
+  if (ent->classname == scr_const.script_brushmodel) {
+    brushModel = (int)(ent->s).index.brushmodel;
+    physPreset = &defaultPreset;
+    CM_ModelBounds(brushModel,&mins,&maxs);
+    dims = maxs - mins;
     local_e0 = local_38 - local_5c;
     local_dc = local_34 - local_58;
-    local_e8 = CM_ModelSurfaceFlags(local_40);
-    local_d8 = (int)(local_e8 & 0x3f00000) >> 0x14;
-    Phys_CalcPreset(&local_d4,&local_e4,local_d8);
+    surfaceFlags = CM_ModelSurfaceFlags(brushModel);
+    surfaceType = (int)(surfaceFlags & 0x3f00000U) >> 0x14;
+    Phys_CalcPreset(&defaultPreset,&dims,surfaceType);
   }
   else {
-    local_68 = Com_GetServerDObj((param_1->s).number);
-    if ((local_68 == (DObj *)0x0) &&
+    obj = Com_GetServerDObj((ent->s).number);
+    if ((obj == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x203,0,
                                  "%s\n\t%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_68 == (DObj *)0x0) {
-      param_1->physObjId = -1;
+    if (obj == (DObj *)0x0) {
+      ent->physObjId = -1;
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
       return;
     }
-    DObjPhysicsGetBounds(local_68,&local_60,&local_3c);
-    local_f4 = local_3c - local_60;
+    DObjPhysicsGetBounds(obj,&mins,&maxs);
+    dims_2 = maxs - mins;
     local_f0 = local_38 - local_5c;
     local_ec = local_34 - local_58;
-    local_64 = DObjGetPhysPreset(local_68);
-    if ((local_64 == (PhysPreset *)0x0) &&
-       (pXVar3 = DObjGetModel(local_68,0), pXVar3 != (XModel *)0x0)) {
+    physPreset = DObjGetPhysPreset(obj);
+    if ((physPreset == (PhysPreset *)0x0) && (pXVar3 = DObjGetModel(obj,0), pXVar3 != (XModel *)0x0)
+       ) {
       if (pXVar3->collSurfs == (XModelCollSurf_s *)0x0) {
         local_120 = "t";
       }
       else {
         local_120 = (char *)pXVar3->collSurfs->surfFlags;
       }
-      Phys_CalcPreset(&local_d4,&local_f4,(int)((uint)local_120 & 0x3f00000) >> 0x14);
-      local_64 = &local_d4;
+      Phys_CalcPreset(&defaultPreset,&dims_2,(int)((uint)local_120 & 0x3f00000) >> 0x14);
+      physPreset = &defaultPreset;
     }
   }
-  if (local_64 == (PhysPreset *)0x0) {
-    param_1->physObjId = -1;
-    if (local_68 != (DObj *)0x0) {
-      DObjGetName(local_68);
+  if (physPreset == (PhysPreset *)0x0) {
+    ent->physObjId = -1;
+    if (obj != (DObj *)0x0) {
+      DObjGetName(obj);
     }
     Com_PrintWarning(1,"Failed to create physics object for \'%s\'.  No physics preset.\n");
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
   }
   else {
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    local_24.m_first_geom = (gjk_base_t *)0x0;
-    local_24.m_geom_count = 0;
-    local_30 = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
-    local_2c = &local_24;
-    create_gjk_geom(param_1,&local_30,false,0x280ec93,true);
-    local_6c = Phys_ObjCreate(0,&local_10,local_50,&local_78,local_64,&local_24,true,
-                              (param_1->s).number);
-    param_1->physObjId = local_6c;
-    if (local_6c == 0) {
-      DObjGetName(local_68);
+    gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+    gjk_geom_list.m_geom_count = 0;
+    collision_visitor = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
+    local_2c = &gjk_geom_list;
+    create_gjk_geom(ent,&collision_visitor,false,0x280ec93,true);
+    physObjId = Phys_ObjCreate(0,&position,quat,&velocity,physPreset,&gjk_geom_list,true,
+                               (ent->s).number);
+    ent->physObjId = physObjId;
+    if ((PhysObjUserData *)physObjId == (PhysObjUserData *)0x0) {
+      DObjGetName(obj);
       Com_PrintWarning(1,"Failed to create physics object for \'%s\'.\n");
-      param_1->physObjId = -1;
+      ent->physObjId = -1;
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
     }
     else {
-      local_54 = local_6c;
-      if (*(int *)(local_6c + 0xe0) == 1) {
-        local_1c = (param_1->s).lerp.apos.trDelta[0];
-        local_18 = (param_1->s).lerp.apos.trDelta[1];
-        local_14 = (param_1->s).lerp.apos.trDelta[2];
-        local_28 = Vec3Normalize(&local_1c);
+      userData = (PhysObjUserData *)physObjId;
+      if (((PhysObjUserData *)physObjId)->refcount == 1) {
+        direction = (ent->s).lerp.apos.trDelta[0];
+        local_18 = (ent->s).lerp.apos.trDelta[1];
+        local_14 = (ent->s).lerp.apos.trDelta[2];
+        speed = Vec3Normalize(&direction);
         Phys_ObjBulletImpact
-                  (local_6c,(param_1->s).lerp.pos.trDelta,&local_1c,local_28,
-                   local_64->bulletForceScale);
+                  (physObjId,(ent->s).lerp.pos.trDelta,&direction,speed,physPreset->bulletForceScale
+                  );
       }
-      for (local_100 = 0; local_100 < cm.num_constraints; local_100 = local_100 + 1) {
-        pPVar4 = cm.constraints + local_100;
-        if (((pPVar4->attach_point_type1 == ATTACH_POINT_ENT) &&
-            (pPVar4->target_ent1 == param_1->targetname)) ||
-           ((pPVar4->attach_point_type2 == ATTACH_POINT_ENT &&
-            (pPVar4->target_ent2 == param_1->targetname)))) {
-          CreateConstraint(pPVar4);
+      for (i = 0; i < cm.num_constraints; i = i + 1) {
+        constraint = cm.constraints + i;
+        if (((constraint->attach_point_type1 == ATTACH_POINT_ENT) &&
+            (constraint->target_ent1 == ent->targetname)) ||
+           ((constraint->attach_point_type2 == ATTACH_POINT_ENT &&
+            (constraint->target_ent2 == ent->targetname)))) {
+          CreateConstraint(constraint);
         }
       }
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
@@ -745,6 +748,7 @@ phys_simple_allocator<mover_info_t>::allocate(phys_simple_allocator<mover_info_t
 
 {
   mover_info_t *local_20;
+  void *slot;
   
   local_20 = PMM_ALLOC(0xc0,0x10);
   if (local_20 == (mover_info_t *)0x0) {
@@ -767,7 +771,7 @@ phys_simple_allocator<mover_info_t>::allocate(phys_simple_allocator<mover_info_t
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CreateConstraint(PhysConstraint *param_1)
+void __cdecl CreateConstraint(PhysConstraint *constraint)
 
 {
   code *pcVar1;
@@ -775,10 +779,10 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
   float fVar3;
   float fVar4;
   bool bVar5;
-  phys_vec3 *ppVar6;
-  rigid_body *prVar7;
+  phys_vec3 *a;
+  rigid_body *prVar6;
   rigid_body_constraint_distance *this;
-  phys_vec3 *ppVar8;
+  phys_vec3 *b;
   float local_10c;
   float local_108;
   float local_104;
@@ -814,10 +818,10 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
   local_18 = 0;
   local_1c = (rigid_body *)phys_sys::get_environment_rigid_body();
   local_20 = (rigid_body *)phys_sys::get_environment_rigid_body();
-  if (param_1->type == CONSTRAINT_ROPE) {
-    if (param_1->attach_point_type1 == ATTACH_POINT_ENT) {
-      local_24 = GetEntity(&param_1->target_ent1);
-      param_1->target_index1 = (local_24->s).number;
+  if (constraint->type == CONSTRAINT_ROPE) {
+    if (constraint->attach_point_type1 == ATTACH_POINT_ENT) {
+      local_24 = GetEntity(&constraint->target_ent1);
+      constraint->target_index1 = (local_24->s).number;
       if ((local_24->physObjId == 0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x270,0,
                                    "%s"), !bVar5)) {
@@ -827,36 +831,36 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
       }
       local_14 = (undefined4 *)local_24->physObjId;
       local_1c = (rigid_body *)*local_14;
-      local_28 = param_1->pos;
+      local_28 = constraint->pos;
       local_34 = *local_28;
-      local_30 = param_1->pos[1];
-      local_2c = param_1->pos[2];
+      local_30 = constraint->pos[1];
+      local_2c = constraint->pos[2];
       Phys_Vec3ToNitrousVec(&local_34,&local_50);
       local_54 = (phys_mat44 *)(local_14 + 8);
-      ppVar8 = (phys_vec3 *)(local_14 + 0x14);
-      ppVar6 = phys_multiply33(&local_70,local_54,&local_50);
-      operator+(&local_80,ppVar6,ppVar8);
+      b = (phys_vec3 *)(local_14 + 0x14);
+      a = phys_multiply33(&local_70,local_54,&local_50);
+      operator+(&local_80,a,b);
       local_90.x = local_80.x;
       local_90.y = local_80.y;
       local_90.z = local_80.z;
       Phys_NitrousVecToVec3(&local_90,&local_9c);
     }
     else {
-      local_a0 = param_1->pos;
+      local_a0 = constraint->pos;
       local_9c = *local_a0;
-      local_98 = param_1->pos[1];
-      local_94 = param_1->pos[2];
+      local_98 = constraint->pos[1];
+      local_94 = constraint->pos[2];
       Phys_Vec3ToNitrousVec(&local_9c,&local_90);
     }
-    if (param_1->attach_point_type2 == ATTACH_POINT_ENT) {
-      local_a4 = GetEntity(&param_1->target_ent2);
-      param_1->target_index2 = (local_a4->s).number;
+    if (constraint->attach_point_type2 == ATTACH_POINT_ENT) {
+      local_a4 = GetEntity(&constraint->target_ent2);
+      constraint->target_index2 = (local_a4->s).number;
       local_18 = local_a4->physObjId;
       local_20 = (rigid_body *)*local_14;
-      local_a8 = param_1->pos2;
+      local_a8 = constraint->pos2;
       local_b4 = *local_a8;
-      local_b0 = param_1->pos2[1];
-      local_ac = param_1->pos2[2];
+      local_b0 = constraint->pos2[1];
+      local_ac = constraint->pos2[2];
       Phys_Vec3ToNitrousVec(&local_b4,&local_d0);
       local_e4 = phys_full_multiply(&local_e0,(phys_mat44 *)(local_18 + 0x20),&local_d0);
       local_100.x = local_e4->x;
@@ -865,13 +869,13 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
       Phys_NitrousVecToVec3(&local_100,&local_10c);
     }
     else {
-      local_10c = param_1->pos2[0];
-      local_108 = param_1->pos2[1];
-      local_104 = param_1->pos2[2];
+      local_10c = constraint->pos2[0];
+      local_108 = constraint->pos2[1];
+      local_104 = constraint->pos2[2];
       Phys_Vec3ToNitrousVec(&local_10c,&local_100);
     }
-    prVar7 = (rigid_body *)phys_sys::get_environment_rigid_body();
-    if (local_1c == prVar7) {
+    prVar6 = (rigid_body *)phys_sys::get_environment_rigid_body();
+    if (local_1c == prVar6) {
       local_1c = local_20;
       local_20 = (rigid_body *)phys_sys::get_environment_rigid_body();
       fVar4 = local_104;
@@ -886,8 +890,8 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
     }
     this = phys_sys::create_rbc_dist(local_1c,local_20,0);
     if (this != (rigid_body_constraint_distance *)0x0) {
-      rigid_body_constraint_distance::set(this,&local_90,&local_100,0.0,param_1->distance);
-      param_1->constraintHandle = (int)this;
+      rigid_body_constraint_distance::set(this,&local_90,&local_100,0.0,constraint->distance);
+      constraint->constraintHandle = (int)this;
     }
   }
   return;
@@ -896,28 +900,28 @@ void __cdecl CreateConstraint(PhysConstraint *param_1)
 
 // 0063D620  DeleteConstraint  (game/g_mover.cpp:680)
 
-void __cdecl DeleteConstraint(int param_1)
+void __cdecl DeleteConstraint(int rope_index)
 
 {
   PhysConstraint *pPVar1;
-  int local_8;
+  rigid_body_constraint_distance *phys_constraint;
+  int i;
   
   pPVar1 = cm.constraints;
-  local_8 = 0;
+  i = 0;
   do {
-    if (cm.num_constraints <= local_8) {
+    if (cm.num_constraints <= i) {
 LAB_0063d6a1:
-      Ragdoll_RemoveConstraintsForRope(param_1);
+      Ragdoll_RemoveConstraintsForRope(rope_index);
       return;
     }
-    if (((cm.constraints[local_8].type == CONSTRAINT_ROPE) &&
-        (cm.constraints[local_8].rope_index == param_1)) &&
-       (cm.constraints[local_8].constraintHandle != 0)) {
-      phys_sys::destroy((rigid_body_constraint_distance *)cm.constraints[local_8].constraintHandle);
-      pPVar1[local_8].constraintHandle = 0;
+    if (((cm.constraints[i].type == CONSTRAINT_ROPE) && (cm.constraints[i].rope_index == rope_index)
+        ) && (cm.constraints[i].constraintHandle != 0)) {
+      phys_sys::destroy((rigid_body_constraint_distance *)cm.constraints[i].constraintHandle);
+      pPVar1[i].constraintHandle = 0;
       goto LAB_0063d6a1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -929,14 +933,14 @@ LAB_0063d6a1:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_UpdatePhysicsPose(gentity_s *param_1)
+void __cdecl G_UpdatePhysicsPose(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_14 [4];
+  float quat [4];
   
-  if ((param_1->physObjId == 0) || (param_1->physObjId == -1)) {
+  if ((ent->physObjId == 0) || (ent->physObjId == -1)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x2c4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -945,9 +949,9 @@ void __cdecl G_UpdatePhysicsPose(gentity_s *param_1)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  Phys_ObjGetInterpolatedState(param_1->physObjId,(param_1->r).currentOrigin,local_14);
+  Phys_ObjGetInterpolatedState(ent->physObjId,(ent->r).currentOrigin,quat);
   Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
-  UnitQuatToAngles(local_14,(param_1->r).currentAngles);
+  UnitQuatToAngles(quat,(ent->r).currentAngles);
   return;
 }
 
@@ -959,13 +963,14 @@ void __cdecl G_UpdatePhysicsPose(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_CalcEntityPhysicsPositions(gentity_s *param_1)
+void __cdecl G_CalcEntityPhysicsPositions(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
+  PhysObjUserData *userData;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x2cf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -973,7 +978,7 @@ void __cdecl G_CalcEntityPhysicsPositions(gentity_s *param_1)
       return;
     }
   }
-  if (((param_1->s).lerp.pos.trType != '\n') || ((param_1->s).lerp.apos.trType != '\n')) {
+  if (((ent->s).lerp.pos.trType != '\n') || ((ent->s).lerp.apos.trType != '\n')) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x2d0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -981,48 +986,48 @@ void __cdecl G_CalcEntityPhysicsPositions(gentity_s *param_1)
       return;
     }
   }
-  if (param_1->physObjId == 0) {
-    G_CreatePhysicsObject(param_1);
-    if (param_1->physObjId != -1) {
-      *(undefined2 *)(param_1->physObjId + 0xf4) = 0;
-      (param_1->s).lerp.pos.trDuration = 0;
+  if (ent->physObjId == 0) {
+    G_CreatePhysicsObject(ent);
+    if (ent->physObjId != -1) {
+      *(undefined2 *)(ent->physObjId + 0xf4) = 0;
+      (ent->s).lerp.pos.trDuration = 0;
     }
   }
-  if (param_1->physObjId == -1) {
-    (param_1->s).lerp.pos.trType = '\0';
-    (param_1->s).lerp.apos.trType = '\0';
-    Scr_Notify(param_1,scr_const.stationary,0);
+  if (ent->physObjId == -1) {
+    (ent->s).lerp.pos.trType = '\0';
+    (ent->s).lerp.apos.trType = '\0';
+    Scr_Notify(ent,scr_const.stationary,0);
   }
   else {
-    G_UpdatePhysicsPose(param_1);
-    (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-    (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-    (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-    (param_1->s).lerp.apos.trBase[0] = (param_1->r).currentAngles[0];
-    (param_1->s).lerp.apos.trBase[1] = (param_1->r).currentAngles[1];
-    (param_1->s).lerp.apos.trBase[2] = (param_1->r).currentAngles[2];
-    if (param_1->physObjId != 0) {
-      bVar2 = Phys_ObjIsAsleep(param_1->physObjId);
+    G_UpdatePhysicsPose(ent);
+    (ent->s).lerp.pos.trBase[0] = (ent->r).currentOrigin[0];
+    (ent->s).lerp.pos.trBase[1] = (ent->r).currentOrigin[1];
+    (ent->s).lerp.pos.trBase[2] = (ent->r).currentOrigin[2];
+    (ent->s).lerp.apos.trBase[0] = (ent->r).currentAngles[0];
+    (ent->s).lerp.apos.trBase[1] = (ent->r).currentAngles[1];
+    (ent->s).lerp.apos.trBase[2] = (ent->r).currentAngles[2];
+    if (ent->physObjId != 0) {
+      bVar2 = Phys_ObjIsAsleep(ent->physObjId);
       if (bVar2) {
         Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
-        Phys_ObjDestroy(0,param_1->physObjId);
-        param_1->physObjId = 0;
+        Phys_ObjDestroy(0,ent->physObjId);
+        ent->physObjId = 0;
         Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
-        (param_1->s).lerp.pos.trType = '\0';
-        (param_1->s).lerp.apos.trType = '\0';
-        (param_1->s).groundEntityNum = 0x3fe;
-        (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-        (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-        (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-        (param_1->s).lerp.apos.trBase[0] = (param_1->r).currentAngles[0];
-        (param_1->s).lerp.apos.trBase[1] = (param_1->r).currentAngles[1];
-        (param_1->s).lerp.apos.trBase[2] = (param_1->r).currentAngles[2];
-        Scr_Notify(param_1,scr_const.stationary,0);
+        (ent->s).lerp.pos.trType = '\0';
+        (ent->s).lerp.apos.trType = '\0';
+        (ent->s).groundEntityNum = 0x3fe;
+        (ent->s).lerp.pos.trBase[0] = (ent->r).currentOrigin[0];
+        (ent->s).lerp.pos.trBase[1] = (ent->r).currentOrigin[1];
+        (ent->s).lerp.pos.trBase[2] = (ent->r).currentOrigin[2];
+        (ent->s).lerp.apos.trBase[0] = (ent->r).currentAngles[0];
+        (ent->s).lerp.apos.trBase[1] = (ent->r).currentAngles[1];
+        (ent->s).lerp.apos.trBase[2] = (ent->r).currentAngles[2];
+        Scr_Notify(ent,scr_const.stationary,0);
       }
     }
-    (param_1->s).lerp.pos.trBase[0] = (float)(int)(param_1->s).lerp.pos.trBase[0];
-    (param_1->s).lerp.pos.trBase[1] = (float)(int)(param_1->s).lerp.pos.trBase[1];
-    (param_1->s).lerp.pos.trBase[2] = (float)(int)(param_1->s).lerp.pos.trBase[2];
+    (ent->s).lerp.pos.trBase[0] = (float)(int)(ent->s).lerp.pos.trBase[0];
+    (ent->s).lerp.pos.trBase[1] = (float)(int)(ent->s).lerp.pos.trBase[1];
+    (ent->s).lerp.pos.trBase[2] = (float)(int)(ent->s).lerp.pos.trBase[2];
   }
   return;
 }
@@ -1030,7 +1035,7 @@ void __cdecl G_CalcEntityPhysicsPositions(gentity_s *param_1)
 
 // 00546E80  GamerProfile_WriteSettings  (win32/win_gamerprofile.cpp:753)
 
-void __cdecl GamerProfile_WriteSettings(int param_1)
+void __cdecl GamerProfile_WriteSettings(int cinfo_8)
 
 {
   return;
@@ -1044,31 +1049,31 @@ void __cdecl GamerProfile_WriteSettings(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_MoverTeam(gentity_s *param_1,mover_info_t *param_2)
+void __cdecl G_MoverTeam(gentity_s *ent,mover_info_t *mi)
 
 {
   bool bVar1;
   
-  if ((param_1->s).lerp.pos.trType == '\n') {
-    GlassSv_PredictTouch(param_1);
-    G_CalcEntityPhysicsPositions(param_1);
-    SV_LinkEntity(param_1);
+  if ((ent->s).lerp.pos.trType == '\n') {
+    GlassSv_PredictTouch(ent);
+    G_CalcEntityPhysicsPositions(ent);
+    SV_LinkEntity(ent);
   }
   else {
-    bVar1 = Com_IsRagdollTrajectory(&(param_1->s).lerp.pos);
-    if ((!bVar1) && ((param_1->s).lerp.pos.trType != '\v')) {
-      G_MoverPush(param_1,param_2);
-      if (((param_1->s).lerp.pos.trType != '\0') &&
-         (((((param_1->s).lerp.pos.trType != '\n' && ((param_1->s).lerp.pos.trType != '\x02')) &&
-           ((param_1->s).lerp.pos.trTime + (param_1->s).lerp.pos.trDuration <= level.time)) &&
-          (*(code **)(&DAT_00e07cd4 + (uint)param_1->handler * 0x30) != (code *)0x0)))) {
-        (**(code **)(&DAT_00e07cd4 + (uint)param_1->handler * 0x30))(param_1);
+    bVar1 = Com_IsRagdollTrajectory(&(ent->s).lerp.pos);
+    if ((!bVar1) && ((ent->s).lerp.pos.trType != '\v')) {
+      G_MoverPush(ent,mi);
+      if (((ent->s).lerp.pos.trType != '\0') &&
+         (((((ent->s).lerp.pos.trType != '\n' && ((ent->s).lerp.pos.trType != '\x02')) &&
+           ((ent->s).lerp.pos.trTime + (ent->s).lerp.pos.trDuration <= level.time)) &&
+          (*(code **)(&DAT_00e07cd4 + (uint)ent->handler * 0x30) != (code *)0x0)))) {
+        (**(code **)(&DAT_00e07cd4 + (uint)ent->handler * 0x30))(ent);
       }
-      if ((((param_1->s).lerp.apos.trType != '\0') && ((param_1->s).lerp.pos.trType != '\n')) &&
-         (((param_1->s).lerp.apos.trType != '\x02' &&
-          (((param_1->s).lerp.apos.trTime + (param_1->s).lerp.apos.trDuration <= level.time &&
-           (*(code **)(&DAT_00e07cd4 + (uint)param_1->handler * 0x30) != (code *)0x0)))))) {
-        (**(code **)(&DAT_00e07cd4 + (uint)param_1->handler * 0x30))(param_1);
+      if ((((ent->s).lerp.apos.trType != '\0') && ((ent->s).lerp.pos.trType != '\n')) &&
+         (((ent->s).lerp.apos.trType != '\x02' &&
+          (((ent->s).lerp.apos.trTime + (ent->s).lerp.apos.trDuration <= level.time &&
+           (*(code **)(&DAT_00e07cd4 + (uint)ent->handler * 0x30) != (code *)0x0)))))) {
+        (**(code **)(&DAT_00e07cd4 + (uint)ent->handler * 0x30))(ent);
       }
     }
   }
@@ -1083,80 +1088,79 @@ void __cdecl G_MoverTeam(gentity_s *param_1,mover_info_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_MoverTeam_New(gentity_s *param_1)
+void __cdecl G_MoverTeam_New(gentity_s *ent)
 
 {
-  mover_info_t *local_40;
-  float local_3c [3];
-  float local_30 [3];
-  mover_info_t *local_24;
-  float local_20;
+  mover_info_t *mi_2;
+  float origin [3];
+  float angles [3];
+  mover_info_t *mi;
+  float save_pos_delta;
   float local_1c;
   float local_18;
-  float local_14;
+  float save_apos_delta;
   float local_10;
   float local_c;
-  uchar local_6;
-  uchar local_5;
+  uchar save_apos_tr_type;
+  uchar save_pos_tr_type;
   
-  if (((param_1->s).lerp.pos.trType != '\0') || ((param_1->s).lerp.apos.trType != '\0')) {
-    if (((param_1->s).lerp.pos.trType == '\x01') && ((param_1->s).lerp.apos.trType == '\x01')) {
-      local_24 = get_mover_info(param_1);
-      if (local_24 == (mover_info_t *)0x0) {
-        local_24 = create_mover_info(param_1);
-        mover_info_t::init(local_24,(param_1->r).currentOrigin,(param_1->r).currentAngles,false);
+  if (((ent->s).lerp.pos.trType != '\0') || ((ent->s).lerp.apos.trType != '\0')) {
+    if (((ent->s).lerp.pos.trType == '\x01') && ((ent->s).lerp.apos.trType == '\x01')) {
+      mi = get_mover_info(ent);
+      if (mi == (mover_info_t *)0x0) {
+        mi = create_mover_info(ent);
+        mover_info_t::init(mi,(ent->r).currentOrigin,(ent->r).currentAngles,false);
       }
       else {
-        mover_info_t::update(local_24,(param_1->r).currentOrigin,(param_1->r).currentAngles);
+        mover_info_t::update(mi,(ent->r).currentOrigin,(ent->r).currentAngles);
       }
-      local_20 = (param_1->s).lerp.pos.trDelta[0];
-      local_1c = (param_1->s).lerp.pos.trDelta[1];
-      local_18 = (param_1->s).lerp.pos.trDelta[2];
-      local_14 = (param_1->s).lerp.apos.trDelta[0];
-      local_10 = (param_1->s).lerp.apos.trDelta[1];
-      local_c = (param_1->s).lerp.apos.trDelta[2];
-      (param_1->s).lerp.pos.trDelta[0] = local_24->m_origin[0] - local_24->m_prev_origin[0];
-      (param_1->s).lerp.pos.trDelta[1] = local_24->m_origin[1] - local_24->m_prev_origin[1];
-      (param_1->s).lerp.pos.trDelta[2] = local_24->m_origin[2] - local_24->m_prev_origin[2];
-      (param_1->s).lerp.apos.trDelta[0] = local_24->m_angles[0] - local_24->m_prev_angles[0];
-      (param_1->s).lerp.apos.trDelta[1] = local_24->m_angles[1] - local_24->m_prev_angles[1];
-      (param_1->s).lerp.apos.trDelta[2] = local_24->m_angles[2] - local_24->m_prev_angles[2];
-      (param_1->r).currentOrigin[0] = local_24->m_prev_origin[0];
-      (param_1->r).currentOrigin[1] = local_24->m_prev_origin[1];
-      (param_1->r).currentOrigin[2] = local_24->m_prev_origin[2];
-      (param_1->r).currentAngles[0] = local_24->m_prev_angles[0];
-      (param_1->r).currentAngles[1] = local_24->m_prev_angles[1];
-      (param_1->r).currentAngles[2] = local_24->m_prev_angles[2];
-      local_5 = (param_1->s).lerp.pos.trType;
-      local_6 = (param_1->s).lerp.apos.trType;
-      (param_1->s).lerp.pos.trType = '\x02';
-      (param_1->s).lerp.apos.trType = '\x02';
-      G_MoverTeam(param_1,local_24);
-      (param_1->s).lerp.pos.trType = local_5;
-      (param_1->s).lerp.apos.trType = local_6;
-      (param_1->r).currentOrigin[0] = local_24->m_origin[0];
-      (param_1->r).currentOrigin[1] = local_24->m_origin[1];
-      (param_1->r).currentOrigin[2] = local_24->m_origin[2];
-      (param_1->r).currentAngles[0] = local_24->m_angles[0];
-      (param_1->r).currentAngles[1] = local_24->m_angles[1];
-      (param_1->r).currentAngles[2] = local_24->m_angles[2];
-      (param_1->s).lerp.pos.trDelta[0] = local_20;
-      (param_1->s).lerp.pos.trDelta[1] = local_1c;
-      (param_1->s).lerp.pos.trDelta[2] = local_18;
-      (param_1->s).lerp.apos.trDelta[0] = local_14;
-      (param_1->s).lerp.apos.trDelta[1] = local_10;
-      (param_1->s).lerp.apos.trDelta[2] = local_c;
+      save_pos_delta = (ent->s).lerp.pos.trDelta[0];
+      local_1c = (ent->s).lerp.pos.trDelta[1];
+      local_18 = (ent->s).lerp.pos.trDelta[2];
+      save_apos_delta = (ent->s).lerp.apos.trDelta[0];
+      local_10 = (ent->s).lerp.apos.trDelta[1];
+      local_c = (ent->s).lerp.apos.trDelta[2];
+      (ent->s).lerp.pos.trDelta[0] = mi->m_origin[0] - mi->m_prev_origin[0];
+      (ent->s).lerp.pos.trDelta[1] = mi->m_origin[1] - mi->m_prev_origin[1];
+      (ent->s).lerp.pos.trDelta[2] = mi->m_origin[2] - mi->m_prev_origin[2];
+      (ent->s).lerp.apos.trDelta[0] = mi->m_angles[0] - mi->m_prev_angles[0];
+      (ent->s).lerp.apos.trDelta[1] = mi->m_angles[1] - mi->m_prev_angles[1];
+      (ent->s).lerp.apos.trDelta[2] = mi->m_angles[2] - mi->m_prev_angles[2];
+      (ent->r).currentOrigin[0] = mi->m_prev_origin[0];
+      (ent->r).currentOrigin[1] = mi->m_prev_origin[1];
+      (ent->r).currentOrigin[2] = mi->m_prev_origin[2];
+      (ent->r).currentAngles[0] = mi->m_prev_angles[0];
+      (ent->r).currentAngles[1] = mi->m_prev_angles[1];
+      (ent->r).currentAngles[2] = mi->m_prev_angles[2];
+      save_pos_tr_type = (ent->s).lerp.pos.trType;
+      save_apos_tr_type = (ent->s).lerp.apos.trType;
+      (ent->s).lerp.pos.trType = '\x02';
+      (ent->s).lerp.apos.trType = '\x02';
+      G_MoverTeam(ent,mi);
+      (ent->s).lerp.pos.trType = save_pos_tr_type;
+      (ent->s).lerp.apos.trType = save_apos_tr_type;
+      (ent->r).currentOrigin[0] = mi->m_origin[0];
+      (ent->r).currentOrigin[1] = mi->m_origin[1];
+      (ent->r).currentOrigin[2] = mi->m_origin[2];
+      (ent->r).currentAngles[0] = mi->m_angles[0];
+      (ent->r).currentAngles[1] = mi->m_angles[1];
+      (ent->r).currentAngles[2] = mi->m_angles[2];
+      (ent->s).lerp.pos.trDelta[0] = save_pos_delta;
+      (ent->s).lerp.pos.trDelta[1] = local_1c;
+      (ent->s).lerp.pos.trDelta[2] = local_18;
+      (ent->s).lerp.apos.trDelta[0] = save_apos_delta;
+      (ent->s).lerp.apos.trDelta[1] = local_10;
+      (ent->s).lerp.apos.trDelta[2] = local_c;
     }
     else {
-      local_40 = get_mover_info(param_1);
-      if (local_40 == (mover_info_t *)0x0) {
-        local_40 = create_mover_info(param_1);
+      mi_2 = get_mover_info(ent);
+      if (mi_2 == (mover_info_t *)0x0) {
+        mi_2 = create_mover_info(ent);
       }
-      BG_EvaluateTrajectory(&(param_1->s).lerp.pos,level.time,local_3c);
-      BG_EvaluateTrajectory(&(param_1->s).lerp.apos,level.time,local_30);
-      mover_info_t::init(local_40,local_3c,local_30,(param_1->r).currentOrigin,
-                         (param_1->r).currentAngles,true);
-      G_MoverTeam(param_1,local_40);
+      BG_EvaluateTrajectory(&(ent->s).lerp.pos,level.time,origin);
+      BG_EvaluateTrajectory(&(ent->s).lerp.apos,level.time,angles);
+      mover_info_t::init(mi_2,origin,angles,(ent->r).currentOrigin,(ent->r).currentAngles,true);
+      G_MoverTeam(ent,mi_2);
     }
   }
   return;
@@ -1170,28 +1174,28 @@ void __cdecl G_MoverTeam_New(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RunMover(gentity_s *param_1)
+void __cdecl G_RunMover(gentity_s *ent)
 
 {
   tagInfo_s *ptVar1;
   
-  if (param_1->tagInfo != (tagInfo_s *)0x0) {
-    if (((zombietron->current).enabled == false) || ((param_1->s).lerp.apos.trType == '\x01')) {
-      G_GeneralLink(param_1);
+  if (ent->tagInfo != (tagInfo_s *)0x0) {
+    if (((zombietron->current).enabled == false) || ((ent->s).lerp.apos.trType == '\x01')) {
+      G_GeneralLink(ent);
     }
     else {
-      G_SetFixedLink(param_1,2);
-      G_SetOrigin(param_1,(param_1->r).currentOrigin);
-      (param_1->s).lerp.pos.trType = '\x01';
-      SV_LinkEntity(param_1);
-      ptVar1 = param_1->tagInfo;
-      (param_1->s).lerp.pos.trDelta[0] = ptVar1->axis[3][0];
-      (param_1->s).lerp.pos.trDelta[1] = ptVar1->axis[3][1];
-      (param_1->s).lerp.pos.trDelta[2] = ptVar1->axis[3][2];
+      G_SetFixedLink(ent,2);
+      G_SetOrigin(ent,(ent->r).currentOrigin);
+      (ent->s).lerp.pos.trType = '\x01';
+      SV_LinkEntity(ent);
+      ptVar1 = ent->tagInfo;
+      (ent->s).lerp.pos.trDelta[0] = ptVar1->axis[3][0];
+      (ent->s).lerp.pos.trDelta[1] = ptVar1->axis[3][1];
+      (ent->s).lerp.pos.trDelta[2] = ptVar1->axis[3][2];
     }
   }
-  G_MoverTeam_New(param_1);
-  G_RunThink(param_1);
+  G_MoverTeam_New(ent);
+  G_RunThink(ent);
   return;
 }
 
@@ -1203,8 +1207,9 @@ void __cdecl G_RunMover(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl trigger_use_shared(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl trigger_use_shared(gentity_s *self,SpawnVar *spawnVar)
 
 {
   byte bVar1;
@@ -1216,14 +1221,14 @@ void __cdecl trigger_use_shared(gentity_s *param_1,SpawnVar *param_2)
   byte *local_830;
   byte *local_824;
   byte *local_820;
-  byte local_814 [1024];
-  byte local_414 [1028];
+  byte cursorHintStr [1024];
+  byte szConfigString [1028];
   uint local_10;
-  byte *local_c;
-  uint local_8;
+  char *cursorhint;
+  uint i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1->s).eType == 4) {
+  if ((self->s).eType == 4) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_mover.cpp",0x429,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -1231,60 +1236,60 @@ void __cdecl trigger_use_shared(gentity_s *param_1,SpawnVar *param_2)
       return;
     }
   }
-  bVar3 = SV_SetBrushModel(param_1);
+  bVar3 = SV_SetBrushModel(self);
   if (bVar3) {
-    (param_1->r).contents = 0x200000;
-    (param_1->field36_0x21c).trigger.perk = '4';
-    (param_1->s).otherEntityNum = 0x3ff;
-    SV_LinkEntity(param_1);
-    (param_1->field36_0x21c).item[1].ammoCount = 0x3ff;
-    (param_1->s).lerp.pos.trType = '\0';
-    (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-    (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-    (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-    (param_1->r).svFlags = '\x01';
-    (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 1;
-    if (param_1->model == 0) {
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x20;
+    (self->r).contents = 0x200000;
+    (self->field36_0x21c).trigger.perk = '4';
+    (self->s).otherEntityNum = 0x3ff;
+    SV_LinkEntity(self);
+    (self->field36_0x21c).item[1].ammoCount = 0x3ff;
+    (self->s).lerp.pos.trType = '\0';
+    (self->s).lerp.pos.trBase[0] = (self->r).currentOrigin[0];
+    (self->s).lerp.pos.trBase[1] = (self->r).currentOrigin[1];
+    (self->s).lerp.pos.trBase[2] = (self->r).currentOrigin[2];
+    (self->r).svFlags = '\x01';
+    (self->s).lerp.eFlags = (self->s).lerp.eFlags | 1;
+    if (self->model == 0) {
+      (self->s).lerp.eFlags = (self->s).lerp.eFlags | 0x20;
     }
-    param_1->handler = '\x16';
-    (param_1->s).un3.item = 3;
-    iVar4 = G_SpawnString(param_2,"cursorhint","",(char **)&local_c);
+    self->handler = '\x16';
+    (self->s).un3.item = 3;
+    iVar4 = G_SpawnString(spawnVar,"cursorhint","",&cursorhint);
     if (iVar4 != 0) {
-      iVar4 = I_stricmp((char *)local_c,"HINT_INHERIT");
+      iVar4 = I_stricmp(cursorhint,"HINT_INHERIT");
       if (iVar4 == 0) {
-        (param_1->s).un3.item = -1;
+        (self->s).un3.item = -1;
       }
       else {
-        for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
-          iVar4 = I_stricmp((char *)local_c,*(char **)(&hintStrings + local_8 * 4));
+        for (i = 1; i < 8; i = i + 1) {
+          iVar4 = I_stricmp(cursorhint,*(char **)(&hintStrings + i * 4));
           if (iVar4 == 0) {
-            (param_1->s).un3.secondBcAlias = local_8;
+            (self->s).un3.secondBcAlias = i;
             break;
           }
         }
       }
     }
-    (param_1->s).un1.scale = 0xff;
-    iVar4 = G_SpawnString(param_2,"hintstring","",(char **)&local_c);
+    (self->s).un1.scale = 0xff;
+    iVar4 = G_SpawnString(spawnVar,"hintstring","",&cursorhint);
     if (iVar4 != 0) {
-      local_820 = local_c;
-      local_824 = local_814;
+      local_820 = (byte *)cursorhint;
+      local_824 = cursorHintStr;
       do {
         bVar1 = *local_820;
         *local_824 = bVar1;
         local_820 = local_820 + 1;
         local_824 = local_824 + 1;
       } while (bVar1 != 0);
-      for (local_8 = 0; local_8 < 0x60; local_8 = local_8 + 1) {
-        SV_GetConfigstring(local_8 + 0x1a3,(char *)local_414,0x400);
-        if (local_414[0] == 0) {
-          SV_SetConfigstring(local_8 + 0x1a3,(char *)local_814);
-          (param_1->s).un1.scale = (uchar)local_8;
+      for (i = 0; i < 0x60; i = i + 1) {
+        SV_GetConfigstring(i + 0x1a3,(char *)szConfigString,0x400);
+        if (szConfigString[0] == 0) {
+          SV_SetConfigstring(i + 0x1a3,(char *)cursorHintStr);
+          (self->s).un1.scale = (uchar)i;
           break;
         }
-        local_830 = local_414;
-        local_834 = local_814;
+        local_830 = szConfigString;
+        local_834 = cursorHintStr;
         do {
           bVar1 = *local_834;
           bVar3 = bVar1 < *local_830;
@@ -1303,11 +1308,11 @@ LAB_0063f3c9:
         local_83c = 0;
 LAB_0063f3d4:
         if (local_83c == 0) {
-          (param_1->s).un1.scale = (uchar)local_8;
+          (self->s).un1.scale = (uchar)i;
           break;
         }
       }
-      if (local_8 == 0x60) {
+      if (i == 0x60) {
         Com_Error(ERR_DROP,
                   "\x15Too many different hintstring key values on trigger_use entities. Max allowed is %i different strings"
                  );
@@ -1318,7 +1323,7 @@ LAB_0063f3d4:
     Com_PrintError(1,
                    "Killing trigger_use_shared at (%f %f %f) because the brush model is invalid.\n")
     ;
-    G_FreeEntity(param_1);
+    G_FreeEntity(self);
   }
   return;
 }
@@ -1331,10 +1336,10 @@ LAB_0063f3d4:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl trigger_use(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl trigger_use(gentity_s *ent_2,SpawnVar *spawnVar_2)
 
 {
-  trigger_use_shared(param_1,param_2);
+  trigger_use_shared(ent_2,spawnVar_2);
   return;
 }
 

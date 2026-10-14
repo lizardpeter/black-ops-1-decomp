@@ -241,24 +241,24 @@ bool __cdecl SV_DedicatedReadCDKey(char *param_1,int param_2)
 
 {
   int iVar1;
-  char *pcVar2;
-  _iobuf *p_Var3;
+  char *file;
+  _iobuf *stream;
   char *unaff_EDI;
   
   iVar1 = Dvar_GetInt(unaff_EDI);
-  pcVar2 = Dvar_GetString(unaff_EDI);
-  p_Var3 = fopen(pcVar2,"r");
-  if (p_Var3 == (_iobuf *)0x0) {
+  file = Dvar_GetString(unaff_EDI);
+  stream = fopen(file,"r");
+  if (stream == (_iobuf *)0x0) {
     Com_Error(ERR_FATAL,"ERROR: cannot read license key file");
     return false;
   }
   if (iVar1 != 0) {
-    fseek(p_Var3,iVar1 * 0x1a,0);
+    fseek(stream,iVar1 * 0x1a,0);
   }
-  fread(&g_svcdkey,1,0x19,p_Var3);
+  fread(&g_svcdkey,1,0x19,stream);
   DAT_03500fcc = 0;
   Com_DPrintf(0xa32710,(char *)&g_svcdkey);
-  fclose(p_Var3);
+  fclose(stream);
   return true;
 }
 

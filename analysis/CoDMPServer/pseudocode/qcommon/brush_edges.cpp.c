@@ -2,22 +2,19 @@
 
 // 007E1C20  ReverseAdjacencyWinding  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:69)
 
-/* WARNING: Type propagation algorithm not settling */
-
-void __cdecl ReverseAdjacencyWinding(adjacencyWinding_t *param_1)
+void __cdecl ReverseAdjacencyWinding(adjacencyWinding_t *w)
 
 {
   int iVar1;
-  int *local_c;
-  adjacencyWinding_t *local_8;
+  int swapTemp;
+  int *start;
+  int *end;
   
-  for (local_8 = (adjacencyWinding_t *)(param_1->sides + param_1->numsides + -1);
-      local_c = param_1->sides, local_c < local_8;
-      local_8 = (adjacencyWinding_t *)((int)(local_8 + 0xffffffff) + 0x30)) {
-    iVar1 = *local_c;
-    *local_c = local_8->numsides;
-    local_8->numsides = iVar1;
-    param_1 = (adjacencyWinding_t *)local_c;
+  for (end = w->sides + w->numsides + -1; start = w->sides, start < end; end = end + -1) {
+    iVar1 = *start;
+    *start = *end;
+    *end = iVar1;
+    w = (adjacencyWinding_t *)start;
   }
   return;
 }
@@ -27,72 +24,73 @@ void __cdecl ReverseAdjacencyWinding(adjacencyWinding_t *param_1)
 
 float __cdecl
 RepresentativeTriangleFromWinding
-          (float (*param_1) [3],int param_2,float *param_3,int *param_4,int *param_5,int *param_6)
+          (float (*xyz) [3],int pointCount,float *normal,int *i0,int *i1,int *i2)
 
 {
   float (*pafVar1) [3];
   float (*pafVar2) [3];
   float fVar3;
-  int local_3c;
-  float local_38;
-  float local_30;
+  int j;
+  float areaBest;
+  float area;
+  float vb;
   float local_2c;
   float local_28;
-  int local_24;
-  float local_20;
+  int k;
+  float vc;
   float local_1c;
   float local_18;
-  float local_14;
+  float va;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
-  *param_4 = 0;
-  *param_5 = 1;
-  *param_6 = 2;
-  local_38 = 0.0;
-  for (local_24 = 2; local_24 < param_2; local_24 = local_24 + 1) {
-    for (local_3c = 1; local_3c < local_24; local_3c = local_3c + 1) {
-      pafVar1 = param_1 + local_3c;
-      pafVar2 = param_1 + local_24;
-      local_30 = (*pafVar2)[0] - (*pafVar1)[0];
+  *i0 = 0;
+  *i1 = 1;
+  *i2 = 2;
+  areaBest = 0.0;
+  for (k = 2; k < pointCount; k = k + 1) {
+    for (j = 1; j < k; j = j + 1) {
+      pafVar1 = xyz + j;
+      pafVar2 = xyz + k;
+      vb = (*pafVar2)[0] - (*pafVar1)[0];
       local_2c = (*pafVar2)[1] - (*pafVar1)[1];
       local_28 = (*pafVar2)[2] - (*pafVar1)[2];
-      for (local_8 = 0; local_8 < local_3c; local_8 = local_8 + 1) {
-        pafVar2 = param_1 + local_3c;
-        pafVar1 = param_1 + local_8;
-        local_14 = (*pafVar1)[0] - (*pafVar2)[0];
+      for (i = 0; i < j; i = i + 1) {
+        pafVar2 = xyz + j;
+        pafVar1 = xyz + i;
+        va = (*pafVar1)[0] - (*pafVar2)[0];
         local_10 = (*pafVar1)[1] - (*pafVar2)[1];
         local_c = (*pafVar1)[2] - (*pafVar2)[2];
-        Vec3Cross(&local_14,&local_30,&local_20);
-        fVar3 = ABS(local_20 * *param_3 + local_1c * param_3[1] + local_18 * param_3[2]);
-        if (local_38 < fVar3) {
-          *param_4 = local_8;
-          *param_5 = local_3c;
-          *param_6 = local_24;
-          local_38 = fVar3;
+        Vec3Cross(&va,&vb,&vc);
+        fVar3 = ABS(vc * *normal + local_1c * normal[1] + local_18 * normal[2]);
+        if (areaBest < fVar3) {
+          *i0 = i;
+          *i1 = j;
+          *i2 = k;
+          areaBest = fVar3;
         }
       }
     }
   }
-  return local_38;
+  return areaBest;
 }
 
 
 // 007E2DD0  IntAlreadyInList  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:132)
 
-bool __cdecl IntAlreadyInList(int *param_1,int param_2,int param_3)
+bool __cdecl IntAlreadyInList(int *list,int listCount,int value)
 
 {
-  int local_8;
+  int listIndex;
   
-  local_8 = 0;
+  listIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (listCount <= listIndex) {
       return false;
     }
-    if (param_1[local_8] == param_3) break;
-    local_8 = local_8 + 1;
+    if (list[listIndex] == value) break;
+    listIndex = listIndex + 1;
   }
   return true;
 }
@@ -102,46 +100,46 @@ bool __cdecl IntAlreadyInList(int *param_1,int param_2,int param_3)
 
 int __cdecl
 GetPointListAllowDupes
-          (int param_1,SimplePlaneIntersection *param_2,int param_3,
-          SimplePlaneIntersection **param_4,int param_5)
+          (int planeIndex,SimplePlaneIntersection *pts,int ptCount,SimplePlaneIntersection **xyz,
+          int xyzLimit)
 
 {
-  int local_c;
-  int local_8;
+  int xyzCount;
+  int ptIndex;
   
-  local_c = 0;
-  local_8 = 0;
+  xyzCount = 0;
+  ptIndex = 0;
   do {
-    if (param_3 <= local_8) {
-      return local_c;
+    if (ptCount <= ptIndex) {
+      return xyzCount;
     }
-    if (((param_1 == param_2[local_8].planeIndex[0]) || (param_1 == param_2[local_8].planeIndex[1]))
-       || (param_1 == param_2[local_8].planeIndex[2])) {
-      if (local_c == param_5) {
+    if (((planeIndex == pts[ptIndex].planeIndex[0]) || (planeIndex == pts[ptIndex].planeIndex[1]))
+       || (planeIndex == pts[ptIndex].planeIndex[2])) {
+      if (xyzCount == xyzLimit) {
         return 0;
       }
-      param_4[local_c] = param_2 + local_8;
-      local_c = local_c + 1;
+      xyz[xyzCount] = pts + ptIndex;
+      xyzCount = xyzCount + 1;
     }
-    local_8 = local_8 + 1;
+    ptIndex = ptIndex + 1;
   } while( true );
 }
 
 
 // 007E1EE0  IsPtFormedByThisPlane  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:164)
 
-bool __cdecl IsPtFormedByThisPlane(int param_1,SimplePlaneIntersection *param_2)
+bool __cdecl IsPtFormedByThisPlane(int plane,SimplePlaneIntersection *pt)
 
 {
   bool bVar1;
   
-  if (param_2->planeIndex[0] == param_1) {
+  if (pt->planeIndex[0] == plane) {
     bVar1 = true;
   }
-  else if (param_2->planeIndex[1] == param_1) {
+  else if (pt->planeIndex[1] == plane) {
     bVar1 = true;
   }
-  else if (param_2->planeIndex[2] == param_1) {
+  else if (pt->planeIndex[2] == plane) {
     bVar1 = true;
   }
   else {
@@ -155,43 +153,41 @@ bool __cdecl IsPtFormedByThisPlane(int param_1,SimplePlaneIntersection *param_2)
 
 bool __cdecl
 PlaneInCommonExcluding
-          (SimplePlaneIntersection *param_1,SimplePlaneIntersection *param_2,int param_3,
-          int *param_4)
+          (SimplePlaneIntersection *pt1,SimplePlaneIntersection *pt2,int excludePlane,int *result)
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (2 < local_8) {
+    if (2 < i) {
       return false;
     }
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      if ((param_1->planeIndex[local_8] == param_2->planeIndex[local_c]) &&
-         (param_1->planeIndex[local_8] != param_3)) {
-        *param_4 = param_1->planeIndex[local_8];
+    for (j = 0; j < 3; j = j + 1) {
+      if ((pt1->planeIndex[i] == pt2->planeIndex[j]) && (pt1->planeIndex[i] != excludePlane)) {
+        *result = pt1->planeIndex[i];
         return true;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 007E1FA0  SecondPlane  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:191)
 
-int __cdecl SecondPlane(SimplePlaneIntersection *param_1,int param_2)
+int __cdecl SecondPlane(SimplePlaneIntersection *point,int plane)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int planeIndex;
   
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < planeIndex) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0xc6,0,"all planes identical");
       if (bVar2) {
@@ -201,26 +197,26 @@ int __cdecl SecondPlane(SimplePlaneIntersection *param_1,int param_2)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (param_1->planeIndex[local_8] != param_2) break;
-    local_8 = local_8 + 1;
+    if (point->planeIndex[planeIndex] != plane) break;
+    planeIndex = planeIndex + 1;
   }
-  return param_1->planeIndex[local_8];
+  return point->planeIndex[planeIndex];
 }
 
 
 // 007E2010  ThirdPlane  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:204)
 
-int __cdecl ThirdPlane(SimplePlaneIntersection *param_1,int param_2,int param_3)
+int __cdecl ThirdPlane(SimplePlaneIntersection *point,int plane1,int plane2)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int planeIndex;
   
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < planeIndex) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0xd3,0,"no third plane");
       if (bVar2) {
@@ -230,11 +226,11 @@ int __cdecl ThirdPlane(SimplePlaneIntersection *param_1,int param_2,int param_3)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if ((param_1->planeIndex[local_8] != param_2) && (param_1->planeIndex[local_8] != param_3))
+    if ((point->planeIndex[planeIndex] != plane1) && (point->planeIndex[planeIndex] != plane2))
     break;
-    local_8 = local_8 + 1;
+    planeIndex = planeIndex + 1;
   }
-  return param_1->planeIndex[local_8];
+  return point->planeIndex[planeIndex];
 }
 
 
@@ -242,202 +238,196 @@ int __cdecl ThirdPlane(SimplePlaneIntersection *param_1,int param_2,int param_3)
 
 SimplePlaneIntersection ** __cdecl
 NextPointFormedByThisPlane
-          (int param_1,SimplePlaneIntersection **param_2,SimplePlaneIntersection **param_3)
+          (int planeIndex,SimplePlaneIntersection **begin,SimplePlaneIntersection **end)
 
 {
   bool bVar1;
   
-  while ((param_2 != param_3 && (bVar1 = IsPtFormedByThisPlane(param_1,*param_2), !bVar1))) {
-    param_2 = param_2 + 1;
+  while ((begin != end && (bVar1 = IsPtFormedByThisPlane(planeIndex,*begin), !bVar1))) {
+    begin = begin + 1;
   }
-  return param_2;
+  return begin;
 }
 
 
 // 007E3250  NumberOfOccurancesOfPlane  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:225)
 
-int __cdecl NumberOfOccurancesOfPlane(int param_1,SimplePlaneIntersection **param_2,int param_3)
+int __cdecl NumberOfOccurancesOfPlane(int planeIndex,SimplePlaneIntersection **pts,int ptCount)
 
 {
-  SimplePlaneIntersection **ppSVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_8;
+  SimplePlaneIntersection **end_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  SimplePlaneIntersection **end;
+  int occurances;
   
-  if ((param_2 == (SimplePlaneIntersection **)0x0) &&
-     (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                               ,0xe5,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((pts == (SimplePlaneIntersection **)0x0) &&
+     (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                               ,0xe5,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if (param_3 == 0) {
-    local_8 = 0;
+  if (ptCount == 0) {
+    occurances = 0;
   }
   else {
-    ppSVar1 = param_2 + param_3;
-    local_8 = 0;
-    for (param_2 = NextPointFormedByThisPlane(param_1,param_2,ppSVar1); param_2 != ppSVar1;
-        param_2 = NextPointFormedByThisPlane(param_1,param_2 + 1,ppSVar1)) {
-      local_8 = local_8 + 1;
+    end_00 = pts + ptCount;
+    occurances = 0;
+    for (pts = NextPointFormedByThisPlane(planeIndex,pts,end_00); pts != end_00;
+        pts = NextPointFormedByThisPlane(planeIndex,pts + 1,end_00)) {
+      occurances = occurances + 1;
     }
   }
-  return local_8;
+  return occurances;
 }
 
 
 // 007E2E10  FindCycleBFS  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:250)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
-/* WARNING: Type propagation algorithm not settling */
 
 bool __cdecl
-FindCycleBFS(int param_1,SimplePlaneIntersection **param_2,int param_3,
-            SimplePlaneIntersection *param_4,SimplePlaneIntersection *param_5,int param_6,
-            SimplePlaneIntersection **param_7,int *param_8)
+FindCycleBFS(int basePlane,SimplePlaneIntersection **pts,int ptsCount,SimplePlaneIntersection *start
+            ,SimplePlaneIntersection *end,int connectingPlane,SimplePlaneIntersection **resultCycle,
+            int *resultCycleCount)
 
 {
-  SimplePlaneIntersection **ppSVar1;
-  code *pcVar2;
-  undefined4 uVar3;
-  uint uVar4;
-  bool bVar5;
-  undefined1 uVar6;
-  uint uVar7;
-  SimplePlaneIntersection *local_402c;
-  SimplePlaneIntersection local_4024 [682];
-  int local_20;
-  int local_1c;
-  SimplePlaneIntersection **local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  SimplePlaneIntersection **end_00;
+  code *pcVar1;
+  search_node_s *psVar2;
+  int iVar3;
+  bool bVar4;
+  undefined1 uVar5;
+  int iVar6;
+  search_node_s *node;
+  SimplePlaneIntersection **endIter;
+  search_node_s queue [1024];
+  int neighbor;
+  int cycleIndex;
+  SimplePlaneIntersection **ptsIter;
+  int dupCheckIndex;
+  int goalPlane;
+  int queueTail;
+  int queueHead;
   
-  local_8 = 0x7e2e1d;
-  bVar5 = IsPtFormedByThisPlane(param_6,param_4);
-  if ((!bVar5) &&
-     (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                               ,0x106,0,"%s"), !bVar5)) {
-    pcVar2 = (code *)swi(3);
-    uVar6 = (*pcVar2)();
-    return (bool)uVar6;
+  queueHead = 0x7e2e1d;
+  bVar4 = IsPtFormedByThisPlane(connectingPlane,start);
+  if ((!bVar4) &&
+     (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                               ,0x106,0,"%s"), !bVar4)) {
+    pcVar1 = (code *)swi(3);
+    uVar5 = (*pcVar1)();
+    return (bool)uVar5;
   }
-  bVar5 = IsPtFormedByThisPlane(param_6,param_5);
-  if ((!bVar5) &&
-     (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                               ,0x107,0,"%s"), !bVar5)) {
-    pcVar2 = (code *)swi(3);
-    uVar6 = (*pcVar2)();
-    return (bool)uVar6;
+  bVar4 = IsPtFormedByThisPlane(connectingPlane,end);
+  if ((!bVar4) &&
+     (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                               ,0x107,0,"%s"), !bVar4)) {
+    pcVar1 = (code *)swi(3);
+    uVar5 = (*pcVar1)();
+    return (bool)uVar5;
   }
-  local_4024[0].xyz[0] = (float)param_4;
-  local_4024[0].xyz[1] = (float)ThirdPlane(param_4,param_1,param_6);
-  local_4024[0].xyz[2] = 1.4013e-45;
-  local_4024[0].planeIndex[0] = 0;
-  local_c = 0;
-  local_8 = 1;
-  local_10 = ThirdPlane(param_5,param_1,param_6);
+  queue[0].edge = start;
+  queue[0].plane = ThirdPlane(start,basePlane,connectingPlane);
+  queue[0].depth = 1;
+  queue[0].prevNode = (search_node_s *)0x0;
+  queueTail = 0;
+  queueHead = 1;
+  goalPlane = ThirdPlane(end,basePlane,connectingPlane);
   do {
-    if ((int)local_8 <= local_c) {
-      *param_8 = 0;
+    if (queueHead <= queueTail) {
+      *resultCycleCount = 0;
       return false;
     }
-    ppSVar1 = param_2 + param_3;
-    for (local_18 = NextPointFormedByThisPlane
-                              ((int)local_4024[0].xyz[local_c * 4U + 1],param_2,ppSVar1);
-        local_18 != ppSVar1;
-        local_18 = NextPointFormedByThisPlane
-                             ((int)local_4024[0].xyz[local_c * 4U + 1],local_18 + 1,ppSVar1)) {
-      local_20 = ThirdPlane(*local_18,param_1,(int)local_4024[0].xyz[local_c * 4U + 1]);
-      uVar7 = local_8;
-      if (local_20 != param_6) {
-        local_14 = 0;
-        while ((local_14 < (int)local_8 && (local_4024[0].xyz[local_14 * 4U + 1] != (float)local_20)
-               )) {
-          local_14 = local_14 + 1;
+    end_00 = pts + ptsCount;
+    for (ptsIter = NextPointFormedByThisPlane(queue[queueTail].plane,pts,end_00); ptsIter != end_00;
+        ptsIter = NextPointFormedByThisPlane(queue[queueTail].plane,ptsIter + 1,end_00)) {
+      neighbor = ThirdPlane(*ptsIter,basePlane,queue[queueTail].plane);
+      iVar6 = queueHead;
+      if (neighbor != connectingPlane) {
+        for (dupCheckIndex = 0;
+            (dupCheckIndex < queueHead && (queue[dupCheckIndex].plane != neighbor));
+            dupCheckIndex = dupCheckIndex + 1) {
         }
-        if ((int)local_8 <= local_14) {
-          if ((0x3ff < local_8) &&
-             (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+        if (queueHead <= dupCheckIndex) {
+          if ((0x3ff < (uint)queueHead) &&
+             (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x127,0,
                                        "queueHead doesn\'t index ARRAY_COUNT( queue )\n\t%i not in [0, %i)"
-                                      ), !bVar5)) {
-            pcVar2 = (code *)swi(3);
-            uVar6 = (*pcVar2)();
-            return (bool)uVar6;
+                                      ), !bVar4)) {
+            pcVar1 = (code *)swi(3);
+            uVar5 = (*pcVar1)();
+            return (bool)uVar5;
           }
-          uVar4 = local_8;
-          *(SimplePlaneIntersection **)((int)local_4024 + local_8 * 4 * 4) = *local_18;
-          local_4024[0].xyz[local_8 * 4 + 1] = (float)local_20;
-          local_4024[0].xyz[local_8 * 4 + 2] = (float)((int)local_4024[0].xyz[local_c * 4U + 2] + 1)
-          ;
-          local_4024[0].planeIndex[local_8 * 4] = (int)((int)local_4024 + local_c * 4 * 4);
-          uVar7 = local_8 + 1;
-          if (local_20 == local_10) {
-            local_402c = (SimplePlaneIntersection *)((int)local_4024 + local_8 * 4 * 4);
-            uVar3 = local_8 * 4;
-            local_8 = uVar7;
-            if ((local_4024[0].xyz[uVar3 + 1] != (float)local_10) &&
-               (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                                         ,0x13a,1,"%s"), !bVar5)) {
-              pcVar2 = (code *)swi(3);
-              uVar6 = (*pcVar2)();
-              return (bool)uVar6;
+          iVar3 = queueHead;
+          queue[queueHead].edge = *ptsIter;
+          queue[queueHead].plane = neighbor;
+          queue[queueHead].depth = queue[queueTail].depth + 1;
+          queue[queueHead].prevNode = queue + queueTail;
+          iVar6 = queueHead + 1;
+          if (neighbor == goalPlane) {
+            node = queue + queueHead;
+            psVar2 = queue + queueHead;
+            queueHead = iVar6;
+            if ((psVar2->plane != goalPlane) &&
+               (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                                         ,0x13a,1,"%s"), !bVar4)) {
+              pcVar1 = (code *)swi(3);
+              uVar5 = (*pcVar1)();
+              return (bool)uVar5;
             }
-            *param_8 = (int)local_4024[0].xyz[uVar4 * 4 + 2] + 1;
-            local_1c = (int)local_4024[0].xyz[uVar4 * 4 + 2];
-            for (; local_402c != (SimplePlaneIntersection *)0x0;
-                local_402c = (SimplePlaneIntersection *)local_402c->planeIndex[0]) {
-              param_7[local_1c] = (SimplePlaneIntersection *)local_402c->xyz[0];
-              local_1c = local_1c + -1;
+            *resultCycleCount = queue[iVar3].depth + 1;
+            cycleIndex = queue[iVar3].depth;
+            for (; node != (search_node_s *)0x0; node = node->prevNode) {
+              resultCycle[cycleIndex] = node->edge;
+              cycleIndex = cycleIndex + -1;
             }
-            if ((local_1c != 0) &&
-               (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                                         ,0x142,1,"%s"), !bVar5)) {
-              pcVar2 = (code *)swi(3);
-              uVar6 = (*pcVar2)();
-              return (bool)uVar6;
+            if ((cycleIndex != 0) &&
+               (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                                         ,0x142,1,"%s"), !bVar4)) {
+              pcVar1 = (code *)swi(3);
+              uVar5 = (*pcVar1)();
+              return (bool)uVar5;
             }
-            *param_7 = param_5;
+            *resultCycle = end;
             return true;
           }
         }
       }
-      local_8 = uVar7;
+      queueHead = iVar6;
     }
-    local_c = local_c + 1;
+    queueTail = queueTail + 1;
   } while( true );
 }
 
 
 // 007E3180  RemovePtsWithPlanesThatOccurLessThanTwice  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:328)
 
-int __cdecl RemovePtsWithPlanesThatOccurLessThanTwice(SimplePlaneIntersection **param_1,int param_2)
+int __cdecl RemovePtsWithPlanesThatOccurLessThanTwice(SimplePlaneIntersection **pts,int ptsCount)
 
 {
   int iVar1;
-  int local_8;
+  int ptsIndex;
   
-  local_8 = 0;
-  while (local_8 < param_2) {
-    iVar1 = NumberOfOccurancesOfPlane(param_1[local_8]->planeIndex[0],param_1,param_2);
+  ptsIndex = 0;
+  while (ptsIndex < ptsCount) {
+    iVar1 = NumberOfOccurancesOfPlane(pts[ptsIndex]->planeIndex[0],pts,ptsCount);
     if (((iVar1 < 2) ||
-        (iVar1 = NumberOfOccurancesOfPlane(param_1[local_8]->planeIndex[1],param_1,param_2),
-        iVar1 < 2)) ||
-       (iVar1 = NumberOfOccurancesOfPlane(param_1[local_8]->planeIndex[2],param_1,param_2),
-       iVar1 < 2)) {
-      memmove((uchar *)(param_1 + local_8),(uchar *)(param_1 + local_8 + 1),
-              (param_2 - local_8) * 4 - 4);
-      param_2 = param_2 + -1;
-      local_8 = 0;
+        (iVar1 = NumberOfOccurancesOfPlane(pts[ptsIndex]->planeIndex[1],pts,ptsCount), iVar1 < 2))
+       || (iVar1 = NumberOfOccurancesOfPlane(pts[ptsIndex]->planeIndex[2],pts,ptsCount), iVar1 < 2))
+    {
+      memmove((uchar *)(pts + ptsIndex),(uchar *)(pts + ptsIndex + 1),(ptsCount - ptsIndex) * 4 - 4)
+      ;
+      ptsCount = ptsCount + -1;
+      ptsIndex = 0;
     }
     else {
-      local_8 = local_8 + 1;
+      ptsIndex = ptsIndex + 1;
     }
   }
-  return local_8;
+  return ptsIndex;
 }
 
 
@@ -445,87 +435,89 @@ int __cdecl RemovePtsWithPlanesThatOccurLessThanTwice(SimplePlaneIntersection **
 
 SimplePlaneIntersection * __cdecl
 RemoveNextPointFormedByThisPlane
-          (int param_1,SimplePlaneIntersection **param_2,SimplePlaneIntersection **param_3)
+          (int planeIndex,SimplePlaneIntersection **begin,SimplePlaneIntersection **end)
 
 {
-  SimplePlaneIntersection **ppSVar1;
-  SimplePlaneIntersection *pSVar2;
+  SimplePlaneIntersection **dst;
+  SimplePlaneIntersection *pSVar1;
+  SimplePlaneIntersection *returnVal;
   
-  ppSVar1 = NextPointFormedByThisPlane(param_1,param_2,param_3);
-  if (ppSVar1 == param_3) {
-    pSVar2 = (SimplePlaneIntersection *)0x0;
+  dst = NextPointFormedByThisPlane(planeIndex,begin,end);
+  if (dst == end) {
+    pSVar1 = (SimplePlaneIntersection *)0x0;
   }
   else {
-    pSVar2 = *ppSVar1;
-    memmove((uchar *)ppSVar1,(uchar *)(ppSVar1 + 1),((int)param_3 - (int)(ppSVar1 + 1) >> 2) << 2);
+    pSVar1 = *dst;
+    memmove((uchar *)dst,(uchar *)(dst + 1),((int)end - (int)(dst + 1) >> 2) << 2);
   }
-  return pSVar2;
+  return pSVar1;
 }
 
 
 // 007E32F0  GetPtsFormedByPlane  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:364)
 
 int __cdecl
-GetPtsFormedByPlane(int param_1,SimplePlaneIntersection **param_2,int param_3,
-                   SimplePlaneIntersection **param_4,int param_5)
+GetPtsFormedByPlane(int planeIndex,SimplePlaneIntersection **pts,int ptCount,
+                   SimplePlaneIntersection **result,int maxResults)
 
 {
-  SimplePlaneIntersection **ppSVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_8;
+  SimplePlaneIntersection **end_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  SimplePlaneIntersection **end;
+  int occurances;
   
-  if ((param_2 == (SimplePlaneIntersection **)0x0) &&
-     (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                               ,0x170,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((pts == (SimplePlaneIntersection **)0x0) &&
+     (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                               ,0x170,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_4 == (SimplePlaneIntersection **)0x0) &&
-     (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                               ,0x171,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((result == (SimplePlaneIntersection **)0x0) &&
+     (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                               ,0x171,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if (param_3 == 0) {
-    local_8 = 0;
+  if (ptCount == 0) {
+    occurances = 0;
   }
   else {
-    ppSVar1 = param_2 + param_3;
-    local_8 = 0;
-    for (param_2 = NextPointFormedByThisPlane(param_1,param_2,ppSVar1); param_2 != ppSVar1;
-        param_2 = NextPointFormedByThisPlane(param_1,param_2 + 1,ppSVar1)) {
-      if ((param_5 <= local_8) &&
-         (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                                   ,0x17c,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+    end_00 = pts + ptCount;
+    occurances = 0;
+    for (pts = NextPointFormedByThisPlane(planeIndex,pts,end_00); pts != end_00;
+        pts = NextPointFormedByThisPlane(planeIndex,pts + 1,end_00)) {
+      if ((maxResults <= occurances) &&
+         (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                                   ,0x17c,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      param_4[local_8] = *param_2;
-      local_8 = local_8 + 1;
+      result[occurances] = *pts;
+      occurances = occurances + 1;
     }
   }
-  return local_8;
+  return occurances;
 }
 
 
 // 007E2120  CyclePerimiter  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:391)
 
-float __cdecl CyclePerimiter(SimplePlaneIntersection **param_1,int param_2)
+float __cdecl CyclePerimiter(SimplePlaneIntersection **pts,int ptsCount)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  float local_c;
-  int local_8;
+  float perimiter;
+  int ptsIndex;
   
-  if (param_2 < 3) {
+  if (ptsCount < 3) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                              ,0x18b,0,"%s");
     if (!bVar2) {
@@ -534,18 +526,18 @@ float __cdecl CyclePerimiter(SimplePlaneIntersection **param_1,int param_2)
       return (float)fVar3;
     }
   }
-  local_c = Vec3Distance((*param_1)->xyz,param_1[param_2 + -1]->xyz);
-  for (local_8 = 1; local_8 < param_2; local_8 = local_8 + 1) {
-    fVar4 = Vec3Distance(param_1[local_8]->xyz,param_1[local_8 + -1]->xyz);
-    local_c = fVar4 + local_c;
+  perimiter = Vec3Distance((*pts)->xyz,pts[ptsCount + -1]->xyz);
+  for (ptsIndex = 1; ptsIndex < ptsCount; ptsIndex = ptsIndex + 1) {
+    fVar4 = Vec3Distance(pts[ptsIndex]->xyz,pts[ptsIndex + -1]->xyz);
+    perimiter = fVar4 + perimiter;
   }
-  return local_c;
+  return perimiter;
 }
 
 
 // 007E2320  IsConvex  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:405)
 
-bool __cdecl IsConvex(float (*param_1) [3],uint param_2)
+bool __cdecl IsConvex(float (*pts) [3],uint ptCount)
 
 {
   code *pcVar1;
@@ -554,102 +546,102 @@ bool __cdecl IsConvex(float (*param_1) [3],uint param_2)
   float (*pafVar4) [3];
   float (*pafVar5) [3];
   float fVar6;
-  uint local_44;
-  float local_40;
+  uint ptIndex3;
+  float edge1;
   float local_3c;
   float local_38;
-  float local_34;
+  float edge2;
   float local_30;
   float local_2c;
-  float local_28 [3];
-  uint local_1c;
-  uint local_18;
-  float local_14 [3];
-  float local_8;
+  float normal [3];
+  uint ptIndex2;
+  uint ptIndex1;
+  float normal2 [3];
+  float normalMag;
   
-  if ((param_2 < 3) &&
+  if ((ptCount < 3) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0x19f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_1c = param_2 - 1;
-  local_18 = param_2 - 2;
-  for (local_44 = 0; local_44 < param_2; local_44 = local_44 + 1) {
-    pafVar5 = param_1 + local_18;
-    pafVar4 = param_1 + local_1c;
-    local_40 = (*pafVar4)[0] - (*pafVar5)[0];
+  ptIndex2 = ptCount - 1;
+  ptIndex1 = ptCount - 2;
+  for (ptIndex3 = 0; ptIndex3 < ptCount; ptIndex3 = ptIndex3 + 1) {
+    pafVar5 = pts + ptIndex1;
+    pafVar4 = pts + ptIndex2;
+    edge1 = (*pafVar4)[0] - (*pafVar5)[0];
     local_3c = (*pafVar4)[1] - (*pafVar5)[1];
     local_38 = (*pafVar4)[2] - (*pafVar5)[2];
-    pafVar4 = param_1 + local_1c;
-    pafVar5 = param_1 + local_44;
-    local_34 = (*pafVar5)[0] - (*pafVar4)[0];
+    pafVar4 = pts + ptIndex2;
+    pafVar5 = pts + ptIndex3;
+    edge2 = (*pafVar5)[0] - (*pafVar4)[0];
     local_30 = (*pafVar5)[1] - (*pafVar4)[1];
     local_2c = (*pafVar5)[2] - (*pafVar4)[2];
-    if ((local_40 * local_40 + local_3c * local_3c + local_38 * local_38 <= 0.0) &&
+    if ((edge1 * edge1 + local_3c * local_3c + local_38 * local_38 <= 0.0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                  ,0x1a9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((local_34 * local_34 + local_30 * local_30 + local_2c * local_2c <= 0.0) &&
+    if ((edge2 * edge2 + local_30 * local_30 + local_2c * local_2c <= 0.0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                  ,0x1aa,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    Vec3Cross(&local_40,&local_34,local_28);
-    local_8 = Vec3Normalize(local_28);
-    if (0.01 <= local_8) break;
-    if (local_40 * local_34 + local_3c * local_30 + local_38 * local_2c < 0.0) {
+    Vec3Cross(&edge1,&edge2,normal);
+    normalMag = Vec3Normalize(normal);
+    if (0.01 <= normalMag) break;
+    if (edge1 * edge2 + local_3c * local_30 + local_38 * local_2c < 0.0) {
       return false;
     }
-    local_18 = local_1c;
-    local_1c = local_44;
+    ptIndex1 = ptIndex2;
+    ptIndex2 = ptIndex3;
   }
-  local_18 = local_1c;
-  local_1c = local_44;
+  ptIndex1 = ptIndex2;
+  ptIndex2 = ptIndex3;
   while( true ) {
-    local_44 = local_1c + 1;
-    if (param_2 <= local_44) {
+    ptIndex3 = ptIndex2 + 1;
+    if (ptCount <= ptIndex3) {
       return true;
     }
-    pafVar4 = param_1 + local_18;
-    pafVar5 = param_1 + local_1c;
-    local_40 = (*pafVar5)[0] - (*pafVar4)[0];
+    pafVar4 = pts + ptIndex1;
+    pafVar5 = pts + ptIndex2;
+    edge1 = (*pafVar5)[0] - (*pafVar4)[0];
     local_3c = (*pafVar5)[1] - (*pafVar4)[1];
     local_38 = (*pafVar5)[2] - (*pafVar4)[2];
-    pafVar5 = param_1 + local_1c;
-    pafVar4 = param_1 + local_44;
-    local_34 = (*pafVar4)[0] - (*pafVar5)[0];
+    pafVar5 = pts + ptIndex2;
+    pafVar4 = pts + ptIndex3;
+    edge2 = (*pafVar4)[0] - (*pafVar5)[0];
     local_30 = (*pafVar4)[1] - (*pafVar5)[1];
     local_2c = (*pafVar4)[2] - (*pafVar5)[2];
-    if ((local_40 * local_40 + local_3c * local_3c + local_38 * local_38 <= 0.0) &&
+    if ((edge1 * edge1 + local_3c * local_3c + local_38 * local_38 <= 0.0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                  ,0x1c1,0,"%s"), !bVar2)) break;
-    if ((local_34 * local_34 + local_30 * local_30 + local_2c * local_2c <= 0.0) &&
+    if ((edge2 * edge2 + local_30 * local_30 + local_2c * local_2c <= 0.0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                  ,0x1c2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    Vec3Cross(&local_40,&local_34,local_14);
-    local_8 = Vec3Normalize(local_14);
-    if (0.01 <= local_8) {
-      fVar6 = Vec3Dot(local_28,local_14);
+    Vec3Cross(&edge1,&edge2,normal2);
+    normalMag = Vec3Normalize(normal2);
+    if (0.01 <= normalMag) {
+      fVar6 = Vec3Dot(normal,normal2);
       if (fVar6 < 0.5) {
         return false;
       }
     }
-    else if (local_40 * local_34 + local_3c * local_30 + local_38 * local_2c < 0.0) {
+    else if (edge1 * edge2 + local_3c * local_30 + local_38 * local_2c < 0.0) {
       return false;
     }
-    local_18 = local_1c;
-    local_1c = local_44;
+    ptIndex1 = ptIndex2;
+    ptIndex2 = ptIndex3;
   }
   pcVar1 = (code *)swi(3);
   uVar3 = (*pcVar1)();
@@ -661,42 +653,42 @@ bool __cdecl IsConvex(float (*param_1) [3],uint param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-bool __cdecl TestConvexWithoutNearPoints(SimplePlaneIntersection **param_1,uint param_2)
+bool __cdecl TestConvexWithoutNearPoints(SimplePlaneIntersection **pts,uint ptCount)
 
 {
   SimplePlaneIntersection *pSVar1;
   bool bVar2;
   float fVar3;
-  float local_300c [3073];
-  uint local_8;
+  float ptsCopy [3073];
+  uint ptIndex;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pSVar1 = param_1[local_8];
-    local_300c[local_8 * 3] = pSVar1->xyz[0];
-    local_300c[local_8 * 3 + 1] = pSVar1->xyz[1];
-    local_300c[local_8 * 3 + 2] = pSVar1->xyz[2];
+  for (ptIndex = 0; ptIndex < ptCount; ptIndex = ptIndex + 1) {
+    pSVar1 = pts[ptIndex];
+    ptsCopy[ptIndex * 3] = pSVar1->xyz[0];
+    ptsCopy[ptIndex * 3 + 1] = pSVar1->xyz[1];
+    ptsCopy[ptIndex * 3 + 2] = pSVar1->xyz[2];
   }
-  local_8 = 1;
-  while (local_8 < param_2) {
-    fVar3 = Vec3DistanceSq(local_300c + local_8 * 3,local_300c + (local_8 - 1) * 3);
+  ptIndex = 1;
+  while (ptIndex < ptCount) {
+    fVar3 = Vec3DistanceSq(ptsCopy + ptIndex * 3,ptsCopy + (ptIndex - 1) * 3);
     if (1.0 <= fVar3) {
-      local_8 = local_8 + 1;
+      ptIndex = ptIndex + 1;
     }
     else {
-      memmove((uchar *)(local_300c + local_8 * 3),(uchar *)(local_300c + (local_8 + 1) * 3),
-              ((param_2 - local_8) + -1) * 0xc);
-      param_2 = param_2 - 1;
+      memmove((uchar *)(ptsCopy + ptIndex * 3),(uchar *)(ptsCopy + (ptIndex + 1) * 3),
+              ((ptCount - ptIndex) + -1) * 0xc);
+      ptCount = ptCount - 1;
     }
   }
-  fVar3 = Vec3DistanceSq(local_300c,local_300c + (param_2 - 1) * 3);
+  fVar3 = Vec3DistanceSq(ptsCopy,ptsCopy + (ptCount - 1) * 3);
   if (fVar3 < 1.0) {
-    param_2 = param_2 - 1;
+    ptCount = ptCount - 1;
   }
-  if (param_2 < 3) {
+  if (ptCount < 3) {
     bVar2 = false;
   }
   else {
-    bVar2 = IsConvex((float (*) [3])local_300c,param_2);
+    bVar2 = IsConvex((float (*) [3])ptsCopy,ptCount);
   }
   return bVar2;
 }
@@ -705,22 +697,23 @@ bool __cdecl TestConvexWithoutNearPoints(SimplePlaneIntersection **param_1,uint 
 // 007E2790  CycleLess  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:501)
 
 bool __cdecl
-CycleLess(bool param_1,bool param_2,float param_3,float param_4,int param_5,int param_6)
+CycleLess(bool isConvex1,bool isConvex2,float perimiter1,float perimiter2,int nodeCount1,
+         int nodeCount2)
 
 {
   bool bVar1;
   
-  if (param_1) {
-    if (!param_2) {
+  if (isConvex1) {
+    if (!isConvex2) {
       return false;
     }
   }
-  else if (param_2) {
+  else if (isConvex2) {
     return true;
   }
-  if (param_4 - 1.0 <= param_3) {
-    if (param_3 - 1.0 <= param_4) {
-      if (param_6 < param_5) {
+  if (perimiter2 - 1.0 <= perimiter1) {
+    if (perimiter1 - 1.0 <= perimiter2) {
+      if (nodeCount2 < nodeCount1) {
         bVar1 = true;
       }
       else {
@@ -743,8 +736,8 @@ CycleLess(bool param_1,bool param_2,float param_3,float param_4,int param_5,int 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 int __cdecl
-ChooseEdgeToRemove(int param_1,int param_2,SimplePlaneIntersection **param_3,int param_4,
-                  SimplePlaneIntersection **param_5)
+ChooseEdgeToRemove(int basePlane,int connectingPlane,SimplePlaneIntersection **pts,int ptsCount,
+                  SimplePlaneIntersection **edges)
 
 {
   code *pcVar1;
@@ -752,21 +745,22 @@ ChooseEdgeToRemove(int param_1,int param_2,SimplePlaneIntersection **param_3,int
   bool bVar3;
   bool bVar4;
   int iVar5;
-  uint local_302c;
-  SimplePlaneIntersection *local_3024 [1024];
+  int bestCycleIndex;
+  int removePoint;
+  SimplePlaneIntersection *cycle [1024];
   SimplePlaneIntersection *local_2024 [1024];
   SimplePlaneIntersection *local_1024 [1025];
-  bool local_20 [4];
-  uint local_1c [3];
-  float local_10 [3];
+  bool isConvex [4];
+  uint cycleCount [3];
+  float perimiter [3];
   
-  local_10[2] = 1.1589945e-38;
-  bVar2 = FindCycleBFS(param_1,param_3,param_4,*param_5,param_5[1],param_2,local_3024,
-                       (int *)local_1c);
-  bVar3 = FindCycleBFS(param_1,param_3,param_4,*param_5,param_5[2],param_2,local_2024,
-                       (int *)(local_1c + 1));
-  bVar4 = FindCycleBFS(param_1,param_3,param_4,param_5[1],param_5[2],param_2,local_1024,
-                       (int *)(local_1c + 2));
+  perimiter[2] = 1.1589945e-38;
+  bVar2 = FindCycleBFS(basePlane,pts,ptsCount,*edges,edges[1],connectingPlane,cycle,
+                       (int *)cycleCount);
+  bVar3 = FindCycleBFS(basePlane,pts,ptsCount,*edges,edges[2],connectingPlane,local_2024,
+                       (int *)(cycleCount + 1));
+  bVar4 = FindCycleBFS(basePlane,pts,ptsCount,edges[1],edges[2],connectingPlane,local_1024,
+                       (int *)(cycleCount + 2));
   if ((((!bVar2) || (!bVar3)) || (!bVar4)) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0x219,0,"%s"), !bVar2)) {
@@ -774,20 +768,20 @@ ChooseEdgeToRemove(int param_1,int param_2,SimplePlaneIntersection **param_3,int
     iVar5 = (*pcVar1)();
     return iVar5;
   }
-  local_10[0] = CyclePerimiter(local_3024,local_1c[0]);
-  local_10[1] = CyclePerimiter(local_2024,local_1c[1]);
-  local_10[2] = CyclePerimiter(local_1024,local_1c[2]);
-  local_20[0] = TestConvexWithoutNearPoints(local_3024,local_1c[0]);
-  local_20[1] = TestConvexWithoutNearPoints(local_2024,local_1c[1]);
-  local_20[2] = TestConvexWithoutNearPoints(local_1024,local_1c[2]);
-  bVar2 = CycleLess(local_20[0],local_20[1],local_10[0],local_10[1],local_1c[0],local_1c[1]);
-  local_302c = (uint)bVar2;
-  bVar2 = CycleLess(local_20[local_302c],local_20[2],local_10[local_302c],local_10[2],
-                    local_1c[local_302c],local_1c[2]);
+  perimiter[0] = CyclePerimiter(cycle,cycleCount[0]);
+  perimiter[1] = CyclePerimiter(local_2024,cycleCount[1]);
+  perimiter[2] = CyclePerimiter(local_1024,cycleCount[2]);
+  isConvex[0] = TestConvexWithoutNearPoints(cycle,cycleCount[0]);
+  isConvex[1] = TestConvexWithoutNearPoints(local_2024,cycleCount[1]);
+  isConvex[2] = TestConvexWithoutNearPoints(local_1024,cycleCount[2]);
+  bVar2 = CycleLess(isConvex[0],isConvex[1],perimiter[0],perimiter[1],cycleCount[0],cycleCount[1]);
+  bestCycleIndex = (int)bVar2;
+  bVar2 = CycleLess(isConvex[bestCycleIndex],isConvex[2],perimiter[bestCycleIndex],perimiter[2],
+                    cycleCount[bestCycleIndex],cycleCount[2]);
   if (bVar2) {
-    local_302c = 2;
+    bestCycleIndex = 2;
   }
-  return 2 - local_302c;
+  return 2 - bestCycleIndex;
 }
 
 
@@ -796,47 +790,51 @@ ChooseEdgeToRemove(int param_1,int param_2,SimplePlaneIntersection **param_3,int
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 int __cdecl
-PartitionEdges(int param_1,int param_2,SimplePlaneIntersection **param_3,int param_4,
-              SimplePlaneIntersection **param_5,int param_6,int *param_7)
+PartitionEdges(int basePlane,int connectingPlane,SimplePlaneIntersection **pts,int ptsCount,
+              SimplePlaneIntersection **edges,int edgeCount,int *partition)
 
 {
   SimplePlaneIntersection *pSVar1;
   bool bVar2;
-  SimplePlaneIntersection *local_101c [1025];
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  SimplePlaneIntersection *tempEdge;
+  bool isCycle;
+  SimplePlaneIntersection *cycle [1025];
+  int partitionCount;
+  int partitionIndex;
+  int cycleCount;
+  int partitionIndex2;
+  int nextEdgeIndex;
   
-  local_18 = 1;
-  *param_7 = 1;
+  partitionCount = 1;
+  *partition = 1;
   do {
-    if (param_6 <= param_7[local_18 + -1]) {
-      return local_18;
+    if (edgeCount <= partition[partitionCount + -1]) {
+      return partitionCount;
     }
-    local_8 = param_7[local_18 + -1];
-    local_14 = 0;
+    nextEdgeIndex = partition[partitionCount + -1];
+    partitionIndex = 0;
     while( true ) {
-      if (local_18 <= local_14) goto LAB_007e378d;
-      bVar2 = FindCycleBFS(param_1,param_3,param_4,param_5[param_7[local_14] + -1],param_5[local_8],
-                           param_2,local_101c,&local_10);
+      if (partitionCount <= partitionIndex) goto LAB_007e378d;
+      bVar2 = FindCycleBFS(basePlane,pts,ptsCount,edges[partition[partitionIndex] + -1],
+                           edges[nextEdgeIndex],connectingPlane,cycle,&cycleCount);
       if (bVar2) break;
-      local_14 = local_14 + 1;
+      partitionIndex = partitionIndex + 1;
     }
-    if (local_14 < local_18 + -1) {
-      pSVar1 = param_5[local_8];
-      memmove((uchar *)(param_5 + param_7[local_14] + 1),(uchar *)(param_5 + param_7[local_14]),
-              (local_8 - param_7[local_14]) * 4);
-      param_5[param_7[local_14]] = pSVar1;
+    if (partitionIndex < partitionCount + -1) {
+      pSVar1 = edges[nextEdgeIndex];
+      memmove((uchar *)(edges + partition[partitionIndex] + 1),
+              (uchar *)(edges + partition[partitionIndex]),
+              (nextEdgeIndex - partition[partitionIndex]) * 4);
+      edges[partition[partitionIndex]] = pSVar1;
     }
-    for (local_c = local_14; local_c < local_18; local_c = local_c + 1) {
-      param_7[local_c] = param_7[local_c] + 1;
+    for (partitionIndex2 = partitionIndex; partitionIndex2 < partitionCount;
+        partitionIndex2 = partitionIndex2 + 1) {
+      partition[partitionIndex2] = partition[partitionIndex2] + 1;
     }
 LAB_007e378d:
-    if (local_14 == local_18) {
-      param_7[local_18] = local_8 + 1;
-      local_18 = local_18 + 1;
+    if (partitionIndex == partitionCount) {
+      partition[partitionCount] = nextEdgeIndex + 1;
+      partitionCount = partitionCount + 1;
     }
   } while( true );
 }
@@ -844,22 +842,22 @@ LAB_007e378d:
 
 // 007E37C0  Remove  (<external>/projects_pc/cod/codsrc/common/brush_edges.cpp:612)
 
-int __cdecl Remove(SimplePlaneIntersection **param_1,int param_2,SimplePlaneIntersection *param_3)
+int __cdecl Remove(SimplePlaneIntersection **pts,int ptsCount,SimplePlaneIntersection *removePoint)
 
 {
-  int local_8;
+  int ptsIndex;
   
-  for (local_8 = 0; (local_8 < param_2 && (param_1[local_8] != param_3)); local_8 = local_8 + 1) {
+  for (ptsIndex = 0; (ptsIndex < ptsCount && (pts[ptsIndex] != removePoint));
+      ptsIndex = ptsIndex + 1) {
   }
-  if (local_8 != param_2) {
-    memmove((uchar *)(param_1 + local_8),(uchar *)(param_1 + local_8 + 1),
-            (param_2 - local_8) * 4 - 4);
-    param_2 = param_2 + -1;
-    if (2 < param_2) {
-      param_2 = RemovePtsWithPlanesThatOccurLessThanTwice(param_1,param_2);
+  if (ptsIndex != ptsCount) {
+    memmove((uchar *)(pts + ptsIndex),(uchar *)(pts + ptsIndex + 1),(ptsCount - ptsIndex) * 4 - 4);
+    ptsCount = ptsCount + -1;
+    if (2 < ptsCount) {
+      ptsCount = RemovePtsWithPlanesThatOccurLessThanTwice(pts,ptsCount);
     }
   }
-  return param_2;
+  return ptsCount;
 }
 
 
@@ -867,45 +865,45 @@ int __cdecl Remove(SimplePlaneIntersection **param_1,int param_2,SimplePlaneInte
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-int __cdecl ReduceToACycle(int param_1,SimplePlaneIntersection **param_2,int param_3)
+int __cdecl ReduceToACycle(int basePlane,SimplePlaneIntersection **pts,int ptsCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_5044 [1024];
-  int local_4044;
-  uint local_4040;
-  char local_403c;
+  int partitions [1024];
+  int lastPartition;
+  int planeCount;
+  char isCycle;
   undefined1 local_403b;
-  int local_4038;
-  SimplePlaneIntersection *local_4034 [1024];
+  int partitionSize;
+  SimplePlaneIntersection *cycle [1024];
   SimplePlaneIntersection *local_3034 [1024];
-  int local_2034 [1024];
-  int local_1034;
-  bool local_1030;
+  int planeList [1024];
+  int partitionCount;
+  bool isConvex;
   undefined1 local_102f;
-  int local_102c;
-  int local_1028;
-  int local_1024;
-  int local_1020;
-  uint local_101c;
+  int ptsIndex1;
+  int edgeOffset;
+  int edgeCount;
+  int partitionIndex;
+  uint cycleCount;
   uint local_1018;
-  float local_1014;
+  float perimiter;
   float local_1010;
-  SimplePlaneIntersection *local_100c [1025];
-  int local_8;
+  SimplePlaneIntersection *edges [1025];
+  int planeIndex;
   
-  local_8 = 0x7e280d;
-  param_3 = RemovePtsWithPlanesThatOccurLessThanTwice(param_2,param_3);
-  if (2 < param_3) {
-    local_4040 = 0;
-    for (local_102c = 0; local_102c < param_3; local_102c = local_102c + 1) {
-      for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-        if ((param_1 != param_2[local_102c]->planeIndex[local_8]) &&
-           (bVar2 = IntAlreadyInList(local_2034,local_4040,param_2[local_102c]->planeIndex[local_8])
-           , !bVar2)) {
-          if ((0x3ff < local_4040) &&
+  planeIndex = 0x7e280d;
+  ptsCount = RemovePtsWithPlanesThatOccurLessThanTwice(pts,ptsCount);
+  if (2 < ptsCount) {
+    planeCount = 0;
+    for (ptsIndex1 = 0; ptsIndex1 < ptsCount; ptsIndex1 = ptsIndex1 + 1) {
+      for (planeIndex = 0; planeIndex < 3; planeIndex = planeIndex + 1) {
+        if ((basePlane != pts[ptsIndex1]->planeIndex[planeIndex]) &&
+           (bVar2 = IntAlreadyInList(planeList,planeCount,pts[ptsIndex1]->planeIndex[planeIndex]),
+           !bVar2)) {
+          if ((0x3ff < (uint)planeCount) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x299,0,
                                        "planeCount doesn\'t index ARRAY_COUNT( planeList )\n\t%i not in [0, %i)"
@@ -914,96 +912,96 @@ int __cdecl ReduceToACycle(int param_1,SimplePlaneIntersection **param_2,int par
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          local_2034[local_4040] = param_2[local_102c]->planeIndex[local_8];
-          local_4040 = local_4040 + 1;
+          planeList[planeCount] = pts[ptsIndex1]->planeIndex[planeIndex];
+          planeCount = planeCount + 1;
         }
       }
     }
-    if (((int)local_4040 < 3) &&
+    if ((planeCount < 3) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                  ,0x2a0,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    for (local_8 = 0; local_8 < (int)local_4040; local_8 = local_8 + 1) {
-      local_1024 = GetPtsFormedByPlane(local_2034[local_8],param_2,param_3,local_100c,0x400);
-      while (2 < local_1024) {
-        local_1034 = PartitionEdges(param_1,local_2034[local_8],param_2,param_3,local_100c,
-                                    local_1024,local_5044);
-        local_4044 = 0;
-        local_1020 = 0;
+    for (planeIndex = 0; planeIndex < planeCount; planeIndex = planeIndex + 1) {
+      edgeCount = GetPtsFormedByPlane(planeList[planeIndex],pts,ptsCount,edges,0x400);
+      while (2 < edgeCount) {
+        partitionCount =
+             PartitionEdges(basePlane,planeList[planeIndex],pts,ptsCount,edges,edgeCount,partitions)
+        ;
+        lastPartition = 0;
+        partitionIndex = 0;
         while( true ) {
-          if ((local_1034 <= local_1020) || (1 < local_1020)) goto LAB_007e2b36;
-          local_4038 = local_5044[local_1020] - local_4044;
-          if ((local_4038 < 1) &&
+          if ((partitionCount <= partitionIndex) || (1 < partitionIndex)) goto LAB_007e2b36;
+          partitionSize = partitions[partitionIndex] - lastPartition;
+          if ((partitionSize < 1) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x2ae,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          if (local_4038 == 1) break;
-          if (2 < local_4038) {
-            local_1028 = ChooseEdgeToRemove(param_1,local_2034[local_8],param_2,param_3,
-                                            local_100c + local_4044);
-            param_3 = Remove(param_2,param_3,local_100c[local_4044 + local_1028]);
+          if (partitionSize == 1) break;
+          if (2 < partitionSize) {
+            edgeOffset = ChooseEdgeToRemove(basePlane,planeList[planeIndex],pts,ptsCount,
+                                            edges + lastPartition);
+            ptsCount = Remove(pts,ptsCount,edges[lastPartition + edgeOffset]);
             goto LAB_007e2b36;
           }
-          local_4044 = local_5044[local_1020];
-          local_1020 = local_1020 + 1;
+          lastPartition = partitions[partitionIndex];
+          partitionIndex = partitionIndex + 1;
         }
-        param_3 = Remove(param_2,param_3,local_100c[local_4044]);
+        ptsCount = Remove(pts,ptsCount,edges[lastPartition]);
 LAB_007e2b36:
-        if (local_1020 == 2) {
-          if ((local_5044[0] != 2) &&
+        if (partitionIndex == 2) {
+          if ((partitions[0] != 2) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x2c3,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          if ((local_5044[1] != 4) &&
+          if ((partitions[1] != 4) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x2c4,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          local_403c = FindCycleBFS(param_1,param_2,param_3,local_100c[0],local_100c[1],
-                                    local_2034[local_8],local_4034,(int *)&local_101c);
-          local_403b = FindCycleBFS(param_1,param_2,param_3,local_100c[2],local_100c[3],
-                                    local_2034[local_8],local_3034,(int *)&local_1018);
-          if (((local_403c == '\0') || (!(bool)local_403b)) &&
+          isCycle = FindCycleBFS(basePlane,pts,ptsCount,edges[0],edges[1],planeList[planeIndex],
+                                 cycle,(int *)&cycleCount);
+          local_403b = FindCycleBFS(basePlane,pts,ptsCount,edges[2],edges[3],planeList[planeIndex],
+                                    local_3034,(int *)&local_1018);
+          if (((isCycle == '\0') || (!(bool)local_403b)) &&
              (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x2c8,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar3 = (*pcVar1)();
             return iVar3;
           }
-          local_1014 = CyclePerimiter(local_4034,local_101c);
+          perimiter = CyclePerimiter(cycle,cycleCount);
           local_1010 = CyclePerimiter(local_3034,local_1018);
-          local_1030 = TestConvexWithoutNearPoints(local_4034,local_101c);
+          isConvex = TestConvexWithoutNearPoints(cycle,cycleCount);
           local_102f = TestConvexWithoutNearPoints(local_3034,local_1018);
-          bVar2 = CycleLess(local_1030,(bool)local_102f,local_1014,local_1010,local_101c,local_1018)
-          ;
+          bVar2 = CycleLess(isConvex,(bool)local_102f,perimiter,local_1010,cycleCount,local_1018);
           if (bVar2) {
-            iVar3 = Remove(param_2,param_3,local_100c[0]);
-            param_3 = Remove(param_2,iVar3,local_100c[1]);
+            iVar3 = Remove(pts,ptsCount,edges[0]);
+            ptsCount = Remove(pts,iVar3,edges[1]);
           }
           else {
-            iVar3 = Remove(param_2,param_3,local_100c[2]);
-            param_3 = Remove(param_2,iVar3,local_100c[3]);
+            iVar3 = Remove(pts,ptsCount,edges[2]);
+            ptsCount = Remove(pts,iVar3,edges[3]);
           }
         }
-        if (param_3 < 3) {
-          return param_3;
+        if (ptsCount < 3) {
+          return ptsCount;
         }
-        local_1024 = GetPtsFormedByPlane(local_2034[local_8],param_2,param_3,local_100c,0x400);
+        edgeCount = GetPtsFormedByPlane(planeList[planeIndex],pts,ptsCount,edges,0x400);
       }
     }
   }
-  return param_3;
+  return ptsCount;
 }
 
 
@@ -1011,47 +1009,47 @@ LAB_007e2b36:
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-int __cdecl NumberOfUniquePoints(SimplePlaneIntersection **param_1,int param_2)
+int __cdecl NumberOfUniquePoints(SimplePlaneIntersection **pts,int ptsCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   undefined4 auStack_1014 [1025];
-  int local_10;
-  int local_c;
-  int local_8;
+  int uniqueCount;
+  int ptsIndex2;
+  int ptsIndex;
   
-  local_8 = 0x7e385d;
-  if ((param_1 == (SimplePlaneIntersection **)0x0) &&
+  ptsIndex = 0x7e385d;
+  if ((pts == (SimplePlaneIntersection **)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0x2ed,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 < 3) &&
+  if ((ptsCount < 3) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                ,0x2ee,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_10 = 0;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    local_c = 0;
-    while ((local_c < local_10 &&
+  uniqueCount = 0;
+  for (ptsIndex = 0; ptsIndex < ptsCount; ptsIndex = ptsIndex + 1) {
+    ptsIndex2 = 0;
+    while ((ptsIndex2 < uniqueCount &&
            (iVar3 = VecNCompareCustomEpsilon
-                              (param_1[local_8]->xyz,(float *)auStack_1014[local_c],0.01,3),
+                              (pts[ptsIndex]->xyz,(float *)auStack_1014[ptsIndex2],0.01,3),
            iVar3 == 0))) {
-      local_c = local_c + 1;
+      ptsIndex2 = ptsIndex2 + 1;
     }
-    if (local_c == local_10) {
-      auStack_1014[local_10] = param_1[local_8];
-      local_10 = local_10 + 1;
+    if (ptsIndex2 == uniqueCount) {
+      auStack_1014[uniqueCount] = pts[ptsIndex];
+      uniqueCount = uniqueCount + 1;
     }
   }
-  return local_10;
+  return uniqueCount;
 }
 
 
@@ -1062,8 +1060,8 @@ int __cdecl NumberOfUniquePoints(SimplePlaneIntersection **param_1,int param_2)
 
 adjacencyWinding_t * __cdecl
 BuildBrushdAdjacencyWindingForSide
-          (char *param_1,float *param_2,int param_3,SimplePlaneIntersection *param_4,int param_5,
-          adjacencyWinding_t *param_6,int param_7)
+          (char *name,float *sideNormal,int basePlaneIndex,SimplePlaneIntersection *InPts,
+          int InPtCount,adjacencyWinding_t *optionalOutWinding,int optionalOutWindingCount)
 
 {
   float *pfVar1;
@@ -1073,59 +1071,61 @@ BuildBrushdAdjacencyWindingForSide
   SimplePlaneIntersection *pSVar5;
   adjacencyWinding_t *paVar6;
   float fVar7;
-  adjacencyWinding_t *local_604c;
-  int local_6048;
-  float local_6044;
-  float local_6040;
+  adjacencyWinding_t *winding;
+  int i2;
+  float perimiter0;
+  float plane;
   float local_603c;
   float local_6038;
-  int local_6030;
-  float local_602c [3073];
-  undefined1 local_3025;
-  SimplePlaneIntersection *local_3024 [1023];
+  int ptsCount;
+  float xyz [3073];
+  bool rv;
+  SimplePlaneIntersection *pts [1023];
   SimplePlaneIntersection *pSStack_2028;
-  SimplePlaneIntersection *local_2024 [1024];
+  SimplePlaneIntersection *cycle [1024];
   SimplePlaneIntersection *local_1024 [1024];
-  int local_24;
-  bool local_20;
+  int i0;
+  bool isConvex;
   undefined1 local_1f;
-  int local_1c;
-  uint local_18 [3];
-  float local_c;
-  int local_8;
+  int cycleIndex;
+  uint cycleCount [2];
+  int i1;
+  float perimiter1;
+  int planeIndex;
   
-  local_8 = 0x7e15bd;
-  local_6030 = GetPointListAllowDupes(param_3,param_4,param_5,local_3024,0x400);
-  if (local_6030 < 3) {
-    local_604c = (adjacencyWinding_t *)0x0;
+  planeIndex = 0x7e15bd;
+  ptsCount = GetPointListAllowDupes(basePlaneIndex,InPts,InPtCount,pts,0x400);
+  if (ptsCount < 3) {
+    winding = (adjacencyWinding_t *)0x0;
   }
   else {
-    iVar4 = NumberOfUniquePoints(local_3024,local_6030);
+    iVar4 = NumberOfUniquePoints(pts,ptsCount);
     if (iVar4 < 3) {
-      local_604c = (adjacencyWinding_t *)0x0;
+      winding = (adjacencyWinding_t *)0x0;
     }
     else {
-      local_6030 = ReduceToACycle(param_3,local_3024,local_6030);
-      if (local_6030 < 3) {
-        local_604c = (adjacencyWinding_t *)0x0;
+      ptsCount = ReduceToACycle(basePlaneIndex,pts,ptsCount);
+      if (ptsCount < 3) {
+        winding = (adjacencyWinding_t *)0x0;
       }
       else {
-        local_1c = 0;
-        while (local_6030 != 0) {
-          local_6030 = local_6030 + -1;
-          local_2024[local_1c * 0x400] = local_3024[local_6030];
-          local_18[local_1c] = 1;
-          local_8 = SecondPlane(local_2024[local_1c * 0x400],param_3);
-          while (local_6030 != 0) {
-            pSVar5 = RemoveNextPointFormedByThisPlane(local_8,local_3024,local_3024 + local_6030);
-            local_2024[local_1c * 0x400 + local_18[local_1c]] = pSVar5;
-            if (local_2024[local_1c * 0x400 + local_18[local_1c]] == (SimplePlaneIntersection *)0x0)
-            break;
-            local_8 = ThirdPlane(local_2024[local_1c * 0x400 + local_18[local_1c]],param_3,local_8);
-            local_6030 = local_6030 + -1;
-            local_18[local_1c] = local_18[local_1c] + 1;
+        cycleIndex = 0;
+        while (ptsCount != 0) {
+          ptsCount = ptsCount + -1;
+          cycle[cycleIndex * 0x400] = pts[ptsCount];
+          cycleCount[cycleIndex] = 1;
+          planeIndex = SecondPlane(cycle[cycleIndex * 0x400],basePlaneIndex);
+          while (ptsCount != 0) {
+            pSVar5 = RemoveNextPointFormedByThisPlane(planeIndex,pts,pts + ptsCount);
+            cycle[cycleIndex * 0x400 + cycleCount[cycleIndex]] = pSVar5;
+            if (cycle[cycleIndex * 0x400 + cycleCount[cycleIndex]] == (SimplePlaneIntersection *)0x0
+               ) break;
+            planeIndex = ThirdPlane(cycle[cycleIndex * 0x400 + cycleCount[cycleIndex]],
+                                    basePlaneIndex,planeIndex);
+            ptsCount = ptsCount + -1;
+            cycleCount[cycleIndex] = cycleCount[cycleIndex] + 1;
           }
-          bVar3 = IsPtFormedByThisPlane(local_8,local_2024[local_1c * 0x400]);
+          bVar3 = IsPtFormedByThisPlane(planeIndex,cycle[cycleIndex * 0x400]);
           if ((!bVar3) &&
              (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                        ,0x331,1,"%s"), !bVar3)) {
@@ -1133,30 +1133,31 @@ BuildBrushdAdjacencyWindingForSide
             paVar6 = (adjacencyWinding_t *)(*pcVar2)();
             return paVar6;
           }
-          if (local_1c < 1) {
-            local_1c = 1;
+          if (cycleIndex < 1) {
+            cycleIndex = 1;
           }
           else {
-            local_6044 = CyclePerimiter(local_2024,local_18[0]);
-            local_c = CyclePerimiter(local_1024,local_18[1]);
-            local_20 = TestConvexWithoutNearPoints(local_2024,local_18[0]);
-            local_1f = TestConvexWithoutNearPoints(local_1024,local_18[1]);
-            bVar3 = CycleLess(local_20,(bool)local_1f,local_6044,local_c,local_18[0],local_18[1]);
+            perimiter0 = CyclePerimiter(cycle,cycleCount[0]);
+            perimiter1 = CyclePerimiter(local_1024,cycleCount[1]);
+            isConvex = TestConvexWithoutNearPoints(cycle,cycleCount[0]);
+            local_1f = TestConvexWithoutNearPoints(local_1024,cycleCount[1]);
+            bVar3 = CycleLess(isConvex,(bool)local_1f,perimiter0,perimiter1,cycleCount[0],
+                              cycleCount[1]);
             if (bVar3) {
-              memcpy((uchar *)local_2024,(uchar *)local_1024,local_18[1] << 2);
-              local_18[0] = local_18[1];
+              memcpy((uchar *)cycle,(uchar *)local_1024,cycleCount[1] << 2);
+              cycleCount[0] = cycleCount[1];
             }
           }
         }
-        if (((int)local_18[0] < 3) &&
+        if (((int)cycleCount[0] < 3) &&
            (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                      ,0x343,1,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           paVar6 = (adjacencyWinding_t *)(*pcVar2)();
           return paVar6;
         }
-        local_604c = (adjacencyWinding_t *)0x0;
-        if (param_6 == (adjacencyWinding_t *)0x0) {
+        winding = (adjacencyWinding_t *)0x0;
+        if (optionalOutWinding == (adjacencyWinding_t *)0x0) {
           bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                    ,0x356,0,"Not supported");
           if (!bVar3) {
@@ -1166,49 +1167,47 @@ BuildBrushdAdjacencyWindingForSide
           }
         }
         else {
-          local_604c = param_6;
-          if (param_7 < (int)local_18[0]) {
+          winding = optionalOutWinding;
+          if (optionalOutWindingCount < (int)cycleCount[0]) {
             Com_PrintError(1,
                            "Brush face has too many edges. Approx pos(%7.2f,%7.2f,%7.2f). Map file %s.\n"
                           );
             return (adjacencyWinding_t *)0x0;
           }
         }
-        if ((local_604c == (adjacencyWinding_t *)0x0) &&
+        if ((winding == (adjacencyWinding_t *)0x0) &&
            (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                      ,0x35a,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           paVar6 = (adjacencyWinding_t *)(*pcVar2)();
           return paVar6;
         }
-        local_3025 = PlaneInCommonExcluding
-                               (local_2024[0],(&pSStack_2028)[local_18[0]],param_3,local_604c->sides
-                               );
-        if ((!(bool)local_3025) &&
-           (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
-                                     ,0x35c,1,"%s"), !bVar3)) {
+        rv = PlaneInCommonExcluding
+                       (cycle[0],(&pSStack_2028)[cycleCount[0]],basePlaneIndex,winding->sides);
+        if ((!rv) && (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
+                                               ,0x35c,1,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           paVar6 = (adjacencyWinding_t *)(*pcVar2)();
           return paVar6;
         }
-        local_602c[0] = local_2024[0]->xyz[0];
-        local_602c[1] = local_2024[0]->xyz[1];
-        local_602c[2] = local_2024[0]->xyz[2];
-        local_604c->numsides = 1;
-        while (local_604c->numsides < (int)local_18[0]) {
-          iVar4 = ThirdPlane((&pSStack_2028)[local_604c->numsides],param_3,
-                             local_604c->sides[local_604c->numsides + -1]);
-          local_604c->sides[local_604c->numsides] = iVar4;
-          iVar4 = local_604c->numsides;
-          pfVar1 = local_2024[local_604c->numsides]->xyz;
-          local_602c[iVar4 * 3] = *pfVar1;
-          local_602c[iVar4 * 3 + 1] = pfVar1[1];
-          local_602c[iVar4 * 3 + 2] = pfVar1[2];
-          local_604c->numsides = local_604c->numsides + 1;
+        xyz[0] = cycle[0]->xyz[0];
+        xyz[1] = cycle[0]->xyz[1];
+        xyz[2] = cycle[0]->xyz[2];
+        winding->numsides = 1;
+        while (winding->numsides < (int)cycleCount[0]) {
+          iVar4 = ThirdPlane((&pSStack_2028)[winding->numsides],basePlaneIndex,
+                             winding->sides[winding->numsides + -1]);
+          winding->sides[winding->numsides] = iVar4;
+          iVar4 = winding->numsides;
+          pfVar1 = cycle[winding->numsides]->xyz;
+          xyz[iVar4 * 3] = *pfVar1;
+          xyz[iVar4 * 3 + 1] = pfVar1[1];
+          xyz[iVar4 * 3 + 2] = pfVar1[2];
+          winding->numsides = winding->numsides + 1;
         }
-        iVar4 = ThirdPlane((&pSStack_2028)[local_18[0]],param_3,
-                           local_604c->sides[local_604c->numsides + -1]);
-        if ((local_604c->sides[0] != iVar4) &&
+        iVar4 = ThirdPlane((&pSStack_2028)[cycleCount[0]],basePlaneIndex,
+                           winding->sides[winding->numsides + -1]);
+        if ((winding->sides[0] != iVar4) &&
            (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp"
                                      ,0x365,1,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1216,21 +1215,19 @@ BuildBrushdAdjacencyWindingForSide
           return paVar6;
         }
         fVar7 = RepresentativeTriangleFromWinding
-                          ((float (*) [3])local_602c,local_604c->numsides,param_2,&local_24,
-                           (int *)(local_18 + 2),&local_6048);
+                          ((float (*) [3])xyz,winding->numsides,sideNormal,&i0,&i1,&i2);
         if (0.001 <= fVar7) {
-          PlaneFromPoints(&local_6040,local_602c + local_24 * 3,local_602c + local_18[2] * 3,
-                          local_602c + local_6048 * 3);
-          if (local_6040 * *param_2 + local_603c * param_2[1] + local_6038 * param_2[2] < 0.0) {
-            ReverseAdjacencyWinding(local_604c);
+          PlaneFromPoints(&plane,xyz + i0 * 3,xyz + i1 * 3,xyz + i2 * 3);
+          if (plane * *sideNormal + local_603c * sideNormal[1] + local_6038 * sideNormal[2] < 0.0) {
+            ReverseAdjacencyWinding(winding);
           }
         }
         else {
-          local_604c = (adjacencyWinding_t *)0x0;
+          winding = (adjacencyWinding_t *)0x0;
         }
       }
     }
   }
-  return local_604c;
+  return winding;
 }
 

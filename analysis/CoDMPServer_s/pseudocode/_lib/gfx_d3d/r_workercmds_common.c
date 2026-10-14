@@ -10,16 +10,14 @@ void __cdecl R_DrawEffects(FxCmd *param_1)
   int in_EAX;
   FxCmd *unaff_EDI;
   FxGenerateVertsCmd *in_stack_ffffffa4;
-  undefined1 local_58 [68];
-  undefined1 local_14;
-  undefined4 local_10;
-  undefined1 local_c;
+  undefined1 local_58 [4];
+  FxGenerateVertsCmd genVertsCmd;
   
   FX_AddNonSpriteDrawSurfs(unaff_EDI);
   FX_FillGenerateVertsCmd((int)unaff_EDI,in_stack_ffffffa4);
-  local_14 = *(undefined1 *)(in_EAX + 0xc);
-  local_c = *(undefined1 *)(in_EAX + 0x20);
-  local_10 = *(undefined4 *)(in_EAX + 0x10);
+  genVertsCmd.viewaxis[2][2]._0_1_ = *(undefined1 *)(in_EAX + 0xc);
+  genVertsCmd.reflectionHeight._0_1_ = *(undefined1 *)(in_EAX + 0x20);
+  genVertsCmd._68_4_ = *(undefined4 *)(in_EAX + 0x10);
   Sys_AddWorkerCmdInternal(&fx_drawWorkerCmd,local_58,(WorkerCmdConditional *)unaff_EDI);
   return;
 }
@@ -29,7 +27,7 @@ void __cdecl R_DrawEffects(FxCmd *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
+void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *cmd)
 
 {
   DWORD DVar1;
@@ -40,7 +38,7 @@ void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
   
   DVar1 = WaitForSingleObject(DAT_01da4a34,0);
   if (DVar1 == 0) {
-    CG_AddLocalEntityTracerBeams(param_1->localClientNum);
+    CG_AddLocalEntityTracerBeams(cmd->localClientNum);
     CG_AddAllPlayerSpriteDrawSurfs((int)unaff_EDI);
     FUN_00466d90();
     CG_Flame_Render((int)unaff_EDI);
@@ -67,15 +65,16 @@ void __cdecl R_ProcessCmd_UpdateFxRemaining(FxCmd *param_1)
 
 // 00808280  R_UpdateNonDependentEffects  (gfx_d3d/r_workercmds_common.cpp:179)
 
+/* WARNING: Variable defined which should be unmapped: cmd */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl R_UpdateNonDependentEffects(FxCmd *param_1)
 
 {
-  WorkerCmdConditional *unaff_retaddr;
+  FxCmd *cmd;
   
   ResetEvent(DAT_01da4984);
-  Sys_AddWorkerCmdInternal(&fx_updateWorkerCmd,param_1,unaff_retaddr);
+  Sys_AddWorkerCmdInternal(&fx_updateWorkerCmd,param_1,(WorkerCmdConditional *)cmd);
   return;
 }
 

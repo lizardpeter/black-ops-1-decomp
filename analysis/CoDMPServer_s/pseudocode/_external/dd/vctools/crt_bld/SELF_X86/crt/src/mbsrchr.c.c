@@ -2,81 +2,81 @@
 
 // 0097425B  _mbsrchr_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsrchr.c:51)
 
-uchar * __cdecl _mbsrchr_l(uchar *param_1,uint param_2,localeinfo_struct *param_3)
+uchar * __cdecl _mbsrchr_l(uchar *str,uint c,localeinfo_struct *plocinfo)
 
 {
   byte bVar1;
   ushort uVar2;
   int *piVar3;
-  byte *extraout_EAX;
+  uchar *extraout_EAX;
   byte *pbVar4;
   byte bVar5;
   bool bVar6;
-  _LocaleUpdate _Stack_18;
-  byte *pbStack_8;
+  _LocaleUpdate _loc_update;
+  char *r;
   
-  pbStack_8 = (byte *)0x0;
-  _LocaleUpdate::_LocaleUpdate(&_Stack_18,param_3);
-  if (param_1 == (uchar *)0x0) {
+  r = (char *)0x0;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (str == (uchar *)0x0) {
     piVar3 = _errno();
     *piVar3 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (_Stack_18.updated != false) {
-      (_Stack_18.ptd)->_ownlocale = (_Stack_18.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
-    pbStack_8 = (byte *)0x0;
+    r = (char *)0x0;
   }
-  else if ((_Stack_18.localeinfo.mbcinfo)->ismbcodepage == 0) {
-    strrchr(param_1,(uchar)param_2);
-    pbStack_8 = extraout_EAX;
-    if (_Stack_18.updated != false) {
-      (_Stack_18.ptd)->_ownlocale = (_Stack_18.ptd)->_ownlocale & 0xfffffffd;
+  else if ((_loc_update.localeinfo.mbcinfo)->ismbcodepage == 0) {
+    strrchr(str,(uchar)c);
+    r = (char *)extraout_EAX;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   else {
     do {
-      bVar5 = *param_1;
-      if (((_Stack_18.localeinfo.mbcinfo)->mbctype[bVar5 + 1] & 4) == 0) {
-        bVar6 = param_2 == bVar5;
+      bVar5 = *str;
+      if (((_loc_update.localeinfo.mbcinfo)->mbctype[bVar5 + 1] & 4) == 0) {
+        bVar6 = c == bVar5;
 LAB_009742f9:
-        pbVar4 = param_1;
+        pbVar4 = str;
         if (bVar6) {
-          pbStack_8 = param_1;
+          r = (char *)str;
         }
       }
       else {
-        pbVar4 = param_1 + 1;
+        pbVar4 = str + 1;
         bVar1 = *pbVar4;
         if (bVar1 == 0) {
-          bVar6 = pbStack_8 == (byte *)0x0;
-          param_1 = pbVar4;
+          bVar6 = r == (char *)0x0;
+          str = pbVar4;
           bVar5 = bVar1;
           goto LAB_009742f9;
         }
         uVar2 = CONCAT11(bVar5,bVar1);
         bVar5 = bVar1;
-        if (param_2 == uVar2) {
-          pbStack_8 = param_1;
+        if (c == uVar2) {
+          r = (char *)str;
         }
       }
-      param_1 = pbVar4 + 1;
+      str = pbVar4 + 1;
     } while (bVar5 != 0);
-    if (_Stack_18.updated != false) {
-      (_Stack_18.ptd)->_ownlocale = (_Stack_18.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
-  return pbStack_8;
+  return (uchar *)r;
 }
 
 
 // 00974317  _mbsrchr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsrchr.c:85)
 
-uchar * __cdecl _mbsrchr(uchar *param_1,uint param_2)
+uchar * __cdecl _mbsrchr(uchar *str,uint c)
 
 {
   uchar *puVar1;
   
-  puVar1 = _mbsrchr_l(param_1,param_2,(localeinfo_struct *)0x0);
+  puVar1 = _mbsrchr_l(str,c,(localeinfo_struct *)0x0);
   return puVar1;
 }
 

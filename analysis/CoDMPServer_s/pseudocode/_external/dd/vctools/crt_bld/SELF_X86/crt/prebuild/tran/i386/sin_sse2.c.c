@@ -2,7 +2,7 @@
 
 // 0098F567  __libm_sse2_sin  (line unknown)
 
-double __cdecl __libm_sse2_sin(double param_1)
+double __cdecl __libm_sse2_sin(double x)
 
 {
   ushort uVar1;

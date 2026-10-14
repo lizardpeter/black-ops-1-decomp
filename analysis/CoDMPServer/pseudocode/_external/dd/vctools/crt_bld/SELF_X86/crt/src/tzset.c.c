@@ -33,43 +33,46 @@ void __cdecl _tzset_nolock(void)
   char **ppcVar3;
   int iVar4;
   uint CodePage;
-  uchar *puVar5;
+  uchar *str1;
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  DWORD DVar6;
-  long lVar7;
-  long *plVar8;
-  int *piVar9;
-  uchar *puVar10;
-  int local_34;
-  int local_30;
-  long local_2c;
-  int local_28;
-  char **local_24;
-  long local_20 [5];
+  DWORD DVar5;
+  long lVar6;
+  long *plVar7;
+  int *piVar8;
+  uchar *puVar9;
+  char *TZ;
+  int negdiff;
+  uint lc_cp;
+  int defused;
+  int nochange;
+  long dstbias;
+  int daylight;
+  char **tzname;
+  long timezone;
   undefined4 uStack_c;
   undefined *local_8;
   
   local_8 = &DAT_00df9fa8;
   uStack_c = 0xc235a6;
-  local_30 = 0;
-  local_20[0] = 0;
-  local_28 = 0;
-  local_2c = 0;
-  local_24 = (char **)0x0;
+  nochange = 0;
+  timezone = 0;
+  daylight = 0;
+  dstbias = 0;
+  tzname = (char **)0x0;
   _lock(7);
   local_8 = (undefined *)0x0;
-  local_24 = __tzname();
-  iVar4 = _get_timezone(local_20);
+  tzname = __tzname();
+  iVar4 = _get_timezone(&timezone);
   if (iVar4 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar4 = _get_daylight(&local_28);
+  iVar4 = _get_daylight(&daylight);
   if (iVar4 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar4 = _get_dstbias(&local_2c);
+  iVar4 = _get_dstbias(&dstbias);
   if (iVar4 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
@@ -77,59 +80,59 @@ void __cdecl _tzset_nolock(void)
   tzapiused = 0;
   dstend.yr = -1;
   dststart.yr = -1;
-  puVar5 = (uchar *)_getenv_helper_nolock("TZ");
-  if ((puVar5 == (uchar *)0x0) || (*puVar5 == '\0')) {
+  str1 = (uchar *)_getenv_helper_nolock("TZ");
+  if ((str1 == (uchar *)0x0) || (*str1 == '\0')) {
     if (lastTZ != (char *)0x0) {
       free(lastTZ);
       lastTZ = (char *)0x0;
     }
-    DVar6 = GetTimeZoneInformation((LPTIME_ZONE_INFORMATION)&tzinfo);
-    if (DVar6 != 0xffffffff) {
+    DVar5 = GetTimeZoneInformation((LPTIME_ZONE_INFORMATION)&tzinfo);
+    if (DVar5 != 0xffffffff) {
       tzapiused = 1;
-      local_20[0] = tzinfo.Bias * 0x3c;
+      timezone = tzinfo.Bias * 0x3c;
       if (tzinfo.StandardDate.wMonth != 0) {
-        local_20[0] = local_20[0] + tzinfo.StandardBias * 0x3c;
+        timezone = timezone + tzinfo.StandardBias * 0x3c;
       }
       if ((tzinfo.DaylightDate.wMonth == 0) || (tzinfo.DaylightBias == 0)) {
-        local_28 = 0;
-        local_2c = 0;
+        daylight = 0;
+        dstbias = 0;
       }
       else {
-        local_28 = 1;
-        local_2c = (tzinfo.DaylightBias - tzinfo.StandardBias) * 0x3c;
+        daylight = 1;
+        dstbias = (tzinfo.DaylightBias - tzinfo.StandardBias) * 0x3c;
       }
-      iVar4 = WideCharToMultiByte(CodePage,0,tzinfo.StandardName,-1,*local_24,0x3f,(LPCSTR)0x0,
-                                  &local_34);
-      if ((iVar4 == 0) || (local_34 != 0)) {
-        **local_24 = '\0';
-      }
-      else {
-        (*local_24)[0x3f] = '\0';
-      }
-      iVar4 = WideCharToMultiByte(CodePage,0,tzinfo.DaylightName,-1,local_24[1],0x3f,(LPCSTR)0x0,
-                                  &local_34);
-      if ((iVar4 == 0) || (local_34 != 0)) {
-        *local_24[1] = '\0';
+      iVar4 = WideCharToMultiByte(CodePage,0,tzinfo.StandardName,-1,*tzname,0x3f,(LPCSTR)0x0,
+                                  &defused);
+      if ((iVar4 == 0) || (defused != 0)) {
+        **tzname = '\0';
       }
       else {
-        local_24[1][0x3f] = '\0';
+        (*tzname)[0x3f] = '\0';
+      }
+      iVar4 = WideCharToMultiByte(CodePage,0,tzinfo.DaylightName,-1,tzname[1],0x3f,(LPCSTR)0x0,
+                                  &defused);
+      if ((iVar4 == 0) || (defused != 0)) {
+        *tzname[1] = '\0';
+      }
+      else {
+        tzname[1][0x3f] = '\0';
       }
     }
   }
   else {
     if (lastTZ != (char *)0x0) {
-      strcmp(puVar5,(uchar *)lastTZ);
+      strcmp(str1,(uchar *)lastTZ);
       if (extraout_EAX == 0) goto LAB_00c237b6;
       if (lastTZ != (char *)0x0) {
         free(lastTZ);
       }
     }
-    strlen(puVar5);
+    strlen(str1);
     lastTZ = _malloc_crt(extraout_EAX_00 + 1);
     if (lastTZ != (char *)0x0) {
-      puVar10 = puVar5;
-      strlen(puVar5);
-      iVar4 = strcpy_s(lastTZ,extraout_EAX_01 + 1,(char *)puVar10);
+      puVar9 = str1;
+      strlen(str1);
+      iVar4 = strcpy_s(lastTZ,extraout_EAX_01 + 1,(char *)puVar9);
       if (iVar4 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
@@ -137,62 +140,62 @@ void __cdecl _tzset_nolock(void)
     }
   }
 LAB_00c237b6:
-  local_30 = 1;
+  nochange = 1;
 LAB_00c237bd:
-  _set_timezone(local_20[0]);
-  _set_daylight(local_28);
-  _set_dstbias(local_2c);
+  _set_timezone(timezone);
+  _set_daylight(daylight);
+  _set_dstbias(dstbias);
   local_8 = (undefined *)0xfffffffe;
   FUN_00c23846();
-  ppcVar3 = local_24;
-  if (local_30 == 0) {
-    iVar4 = strncpy_s(*local_24,0x40,(char *)puVar5,3);
+  ppcVar3 = tzname;
+  if (nochange == 0) {
+    iVar4 = strncpy_s(*tzname,0x40,(char *)str1,3);
     if (iVar4 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    puVar10 = puVar5 + 3;
-    uVar1 = *puVar10;
+    puVar9 = str1 + 3;
+    uVar1 = *puVar9;
     if (uVar1 == '-') {
-      puVar10 = puVar5 + 4;
+      puVar9 = str1 + 4;
     }
-    lVar7 = atol((char *)puVar10);
-    local_20[0] = lVar7 * 0xe10;
-    for (; (uVar2 = *puVar10, uVar2 == '+' || (('/' < (char)uVar2 && ((char)uVar2 < ':'))));
-        puVar10 = puVar10 + 1) {
+    lVar6 = atol((char *)puVar9);
+    timezone = lVar6 * 0xe10;
+    for (; (uVar2 = *puVar9, uVar2 == '+' || (('/' < (char)uVar2 && ((char)uVar2 < ':'))));
+        puVar9 = puVar9 + 1) {
     }
-    if (*puVar10 == ':') {
-      puVar10 = puVar10 + 1;
-      lVar7 = atol((char *)puVar10);
-      local_20[0] = local_20[0] + lVar7 * 0x3c;
-      for (; ('/' < (char)*puVar10 && ((char)*puVar10 < ':')); puVar10 = puVar10 + 1) {
+    if (*puVar9 == ':') {
+      puVar9 = puVar9 + 1;
+      lVar6 = atol((char *)puVar9);
+      timezone = timezone + lVar6 * 0x3c;
+      for (; ('/' < (char)*puVar9 && ((char)*puVar9 < ':')); puVar9 = puVar9 + 1) {
       }
-      if (*puVar10 == ':') {
-        puVar10 = puVar10 + 1;
-        lVar7 = atol((char *)puVar10);
-        local_20[0] = local_20[0] + lVar7;
-        for (; ('/' < (char)*puVar10 && ((char)*puVar10 < ':')); puVar10 = puVar10 + 1) {
+      if (*puVar9 == ':') {
+        puVar9 = puVar9 + 1;
+        lVar6 = atol((char *)puVar9);
+        timezone = timezone + lVar6;
+        for (; ('/' < (char)*puVar9 && ((char)*puVar9 < ':')); puVar9 = puVar9 + 1) {
         }
       }
     }
     if (uVar1 == '-') {
-      local_20[0] = -local_20[0];
+      timezone = -timezone;
     }
-    local_28 = (int)(char)*puVar10;
-    if (local_28 == 0) {
+    daylight = (int)(char)*puVar9;
+    if (daylight == 0) {
       *ppcVar3[1] = '\0';
     }
     else {
-      iVar4 = strncpy_s(ppcVar3[1],0x40,(char *)puVar10,3);
+      iVar4 = strncpy_s(ppcVar3[1],0x40,(char *)puVar9,3);
       if (iVar4 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
     }
-    lVar7 = local_20[0];
-    plVar8 = __timezone();
-    iVar4 = local_28;
-    *plVar8 = lVar7;
-    piVar9 = __daylight();
-    *piVar9 = iVar4;
+    lVar6 = timezone;
+    plVar7 = __timezone();
+    iVar4 = daylight;
+    *plVar7 = lVar6;
+    piVar8 = __daylight();
+    *piVar8 = iVar4;
   }
   return;
 }
@@ -200,39 +203,39 @@ LAB_00c237bd:
 
 // 00C23567  _set_daylight  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h:187)
 
-void __cdecl _set_daylight(int param_1)
+void __cdecl _set_daylight(int _Value)
 
 {
   int *piVar1;
   
   piVar1 = __daylight();
-  *piVar1 = param_1;
+  *piVar1 = _Value;
   return;
 }
 
 
 // 00C23578  _set_dstbias  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h:188)
 
-void __cdecl _set_dstbias(long param_1)
+void __cdecl _set_dstbias(long _Value)
 
 {
   long *plVar1;
   
   plVar1 = __dstbias();
-  *plVar1 = param_1;
+  *plVar1 = _Value;
   return;
 }
 
 
 // 00C23589  _set_timezone  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/time.h:189)
 
-void __cdecl _set_timezone(long param_1)
+void __cdecl _set_timezone(long _Value)
 
 {
   long *plVar1;
   
   plVar1 = __timezone();
-  *plVar1 = param_1;
+  *plVar1 = _Value;
   return;
 }
 
@@ -240,8 +243,8 @@ void __cdecl _set_timezone(long param_1)
 // 00C238E0  cvtdate  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tzset.c:409)
 
 void __cdecl
-cvtdate(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-       int param_8,int param_9,int param_10,int param_11)
+cvtdate(int trantype,int datetype,int year,int week,int dayofweek,int date,int min,int sec,int msec,
+       int param_10,int param_11)
 
 {
   char *pcVar1;
@@ -252,30 +255,30 @@ cvtdate(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
   char *pcVar4;
   char *pcVar5;
   bool bVar6;
-  long local_8;
+  long dstbias;
   
-  local_8 = 0;
-  if (param_2 == 1) {
-    uVar2 = param_3 & 0x80000003;
+  dstbias = 0;
+  if (datetype == 1) {
+    uVar2 = year & 0x80000003;
     if ((int)uVar2 < 0) {
       uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
     }
-    if (((uVar2 == 0) && (param_3 % 100 != 0)) || ((param_3 + 0x76c) % 400 == 0)) {
+    if (((uVar2 == 0) && (year % 100 != 0)) || ((year + 0x76c) % 400 == 0)) {
       pcVar4 = _tzname[in_EAX + 1];
     }
     else {
       pcVar4 = (char *)_lpdays[in_EAX + 0xc];
     }
     pcVar5 = pcVar4 + 1;
-    pcVar1 = pcVar5 + param_3 * 0x16d + -0x63db +
-                      ((param_3 + 299) / 400 - (param_3 + -1) / 100) +
-                      ((int)(param_3 + -1 + (param_3 + -1 >> 0x1f & 3U)) >> 2);
-    if ((int)pcVar1 % 7 <= param_5) {
+    pcVar1 = pcVar5 + year * 0x16d + -0x63db +
+                      ((year + 299) / 400 - (year + -1) / 100) +
+                      ((int)(year + -1 + (year + -1 >> 0x1f & 3U)) >> 2);
+    if ((int)pcVar1 % 7 <= dayofweek) {
       pcVar5 = pcVar4 + -6;
     }
-    pcVar5 = pcVar5 + (param_4 * 7 - (int)pcVar1 % 7) + param_5;
-    if (param_4 == 5) {
-      if (((uVar2 == 0) && (param_3 % 100 != 0)) || ((param_3 + 0x76c) % 400 == 0)) {
+    pcVar5 = pcVar5 + (week * 7 - (int)pcVar1 % 7) + dayofweek;
+    if (week == 5) {
+      if (((uVar2 == 0) && (year % 100 != 0)) || ((year + 0x76c) % 400 == 0)) {
         iVar3 = _lpdays[in_EAX];
       }
       else {
@@ -287,33 +290,33 @@ cvtdate(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
     }
   }
   else {
-    uVar2 = param_3 & 0x80000003;
+    uVar2 = year & 0x80000003;
     bVar6 = uVar2 == 0;
     if ((int)uVar2 < 0) {
       bVar6 = (uVar2 - 1 | 0xfffffffc) == 0xffffffff;
     }
-    if (((bVar6) && (param_3 % 100 != 0)) || ((param_3 + 0x76c) % 400 == 0)) {
+    if (((bVar6) && (year % 100 != 0)) || ((year + 0x76c) % 400 == 0)) {
       pcVar5 = _tzname[in_EAX + 1];
     }
     else {
       pcVar5 = (char *)_lpdays[in_EAX + 0xc];
     }
-    pcVar5 = pcVar5 + param_6;
+    pcVar5 = pcVar5 + date;
   }
-  iVar3 = ((in_ECX * 0x3c + param_7) * 0x3c + param_8) * 1000 + param_9;
-  if (param_1 == 1) {
-    dststart.yr = param_3;
+  iVar3 = ((in_ECX * 0x3c + min) * 0x3c + sec) * 1000 + msec;
+  if (trantype == 1) {
+    dststart.yr = year;
     dststart.yd = (int)pcVar5;
     dststart.ms = iVar3;
   }
   else {
     dstend.yd = (int)pcVar5;
     dstend.ms = iVar3;
-    iVar3 = _get_dstbias(&local_8);
+    iVar3 = _get_dstbias(&dstbias);
     if (iVar3 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    dstend.ms = dstend.ms + local_8 * 1000;
+    dstend.ms = dstend.ms + dstbias * 1000;
     if (dstend.ms < 0) {
       dstend.ms = dstend.ms + 86400000;
       dstend.yd = dstend.yd + -1;
@@ -322,7 +325,7 @@ cvtdate(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
       dstend.ms = dstend.ms + -86400000;
       dstend.yd = dstend.yd + 1;
     }
-    dstend.yr = param_3;
+    dstend.yr = year;
   }
   return;
 }
@@ -333,11 +336,12 @@ cvtdate(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _isindst(tm *param_1)
+int __cdecl _isindst(tm *tb)
 
 {
   int iVar1;
   tm *in_stack_ffffffd0;
+  int retval;
   
   _lock(6);
   iVar1 = _isindst_nolock(in_stack_ffffffd0);
@@ -362,30 +366,31 @@ int __cdecl _isindst_nolock(tm *param_1)
   int iVar6;
   int iVar7;
   uint uVar8;
-  int local_c;
-  int local_8;
+  int endmonth;
+  int endweek;
+  int daylight;
   
-  local_8 = 0;
-  iVar2 = _get_daylight(&local_8);
+  daylight = 0;
+  iVar2 = _get_daylight(&daylight);
   if (iVar2 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  if (local_8 == 0) {
+  if (daylight == 0) {
     return 0;
   }
   iVar2 = unaff_EDI[5];
   if ((iVar2 != dststart.yr) || (iVar2 != dstend.yr)) {
     if (tzapiused == 0) {
       iVar5 = 2;
-      local_c = 1;
+      endweek = 1;
       if (iVar2 < 0x6b) {
         iVar5 = 1;
-        local_c = 5;
+        endweek = 5;
       }
       iVar7 = 1;
       iVar6 = 1;
       cvtdate(1,1,iVar2,iVar5,0,0,0,0,0,unaff_EBX,unaff_ESI);
-      cvtdate(0,1,unaff_EDI[5],local_c,0,0,0,0,0,iVar6,iVar7);
+      cvtdate(0,1,unaff_EDI[5],endweek,0,0,0,0,0,iVar6,iVar7);
     }
     else {
       if (tzinfo.DaylightDate.wYear != 0) {

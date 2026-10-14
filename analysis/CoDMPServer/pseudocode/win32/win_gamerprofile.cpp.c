@@ -2,14 +2,14 @@
 
 // 009CE9E0  GamerProfile_GetProfileSettings  (win32/win_gamerprofile.cpp:344)
 
-GamerSettingState * __cdecl GamerProfile_GetProfileSettings(int param_1)
+GamerSettingState * __cdecl GamerProfile_GetProfileSettings(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   GamerSettingState *pGVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x159,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -18,20 +18,20 @@ GamerSettingState * __cdecl GamerProfile_GetProfileSettings(int param_1)
       return pGVar3;
     }
   }
-  return gamerSettings + param_1;
+  return gamerSettings + controllerIndex;
 }
 
 
 // 009CEA30  GamerProfile_IsProfileLoggedIn  (win32/win_gamerprofile.cpp:354)
 
-bool __cdecl GamerProfile_IsProfileLoggedIn(int param_1)
+bool __cdecl GamerProfile_IsProfileLoggedIn(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x163,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -40,20 +40,20 @@ bool __cdecl GamerProfile_IsProfileLoggedIn(int param_1)
       return (bool)uVar3;
     }
   }
-  return gamerSettings[param_1].isProfileLoggedIn;
+  return gamerSettings[controllerIndex].isProfileLoggedIn;
 }
 
 
 // 009CEA80  GamerProfile_WasErrorOnRead  (win32/win_gamerprofile.cpp:364)
 
-bool __cdecl GamerProfile_WasErrorOnRead(int param_1)
+bool __cdecl GamerProfile_WasErrorOnRead(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x16d,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -62,7 +62,7 @@ bool __cdecl GamerProfile_WasErrorOnRead(int param_1)
       return (bool)uVar3;
     }
   }
-  return gamerSettings[param_1].errorOnRead;
+  return gamerSettings[controllerIndex].errorOnRead;
 }
 
 
@@ -70,7 +70,7 @@ bool __cdecl GamerProfile_WasErrorOnRead(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GamerProfile_AppendDvarListToConfig(char *param_1,uint param_2,char **param_3)
+void __cdecl GamerProfile_AppendDvarListToConfig(char *buffer,uint size,char **dvarNameList)
 
 {
   char cVar1;
@@ -82,17 +82,18 @@ void __cdecl GamerProfile_AppendDvarListToConfig(char *param_1,uint param_2,char
   char *local_244;
   char *local_234;
   char *local_224;
-  char local_21c [260];
-  char *local_118;
-  char local_114;
+  char *stringToCopy;
+  char tempString [260];
+  char *loc;
+  char buf;
   undefined1 auStack_113 [255];
   uint local_14;
-  int local_10;
-  char **local_c;
-  dvar_s *local_8;
+  int len;
+  char **dvarName;
+  dvar_s *dvar;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",399,0,
                              "%s");
     if (!bVar3) {
@@ -101,7 +102,7 @@ void __cdecl GamerProfile_AppendDvarListToConfig(char *param_1,uint param_2,char
       return;
     }
   }
-  if (param_3 == (char **)0x0) {
+  if (dvarNameList == (char **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",400,0,
                              "%s");
     if (!bVar3) {
@@ -110,48 +111,48 @@ void __cdecl GamerProfile_AppendDvarListToConfig(char *param_1,uint param_2,char
       return;
     }
   }
-  local_224 = param_1;
+  local_224 = buffer;
   pcVar4 = local_224;
   do {
     local_224 = pcVar4;
     pcVar4 = local_224 + 1;
   } while (*local_224 != '\0');
-  local_118 = local_224;
-  for (local_c = param_3; *local_c != (char *)0x0; local_c = local_c + 1) {
-    local_8 = Dvar_FindVar(*local_c);
-    if (local_8 == (dvar_s *)0x0) {
+  loc = local_224;
+  for (dvarName = dvarNameList; *dvarName != (char *)0x0; dvarName = dvarName + 1) {
+    dvar = Dvar_FindVar(*dvarName);
+    if (dvar == (dvar_s *)0x0) {
       Com_Printf(0x10,"Couldn\'t find profile dvar: %s.\n");
     }
     else {
-      pcVar4 = Dvar_DisplayableLatchedValue(local_8);
-      if (local_8 == motd) {
+      pcVar4 = Dvar_DisplayableLatchedValue(dvar);
+      if (dvar == motd) {
         local_234 = pcVar4;
         do {
           cVar1 = *local_234;
           local_234 = local_234 + 1;
         } while (cVar1 != '\0');
         if (0x40 < (uint)((int)local_234 - (int)(pcVar4 + 1))) {
-          I_strncpyz(local_21c,pcVar4,0x40);
+          I_strncpyz(tempString,pcVar4,0x40);
         }
       }
-      sprintf(&local_114,"set %s \"%s\"\n");
-      local_244 = &local_114;
+      sprintf(&buf,"set %s \"%s\"\n");
+      local_244 = &buf;
       do {
         cVar1 = *local_244;
         local_244 = local_244 + 1;
       } while (cVar1 != '\0');
-      local_10 = (int)local_244 - (int)auStack_113;
-      I_strncat(local_118,local_10 + 1,&local_114);
-      local_118 = local_118 + local_10;
+      len = (int)local_244 - (int)auStack_113;
+      I_strncat(loc,len + 1,&buf);
+      loc = loc + len;
     }
   }
-  local_254 = param_1;
+  local_254 = buffer;
   do {
     cVar1 = *local_254;
     local_254 = local_254 + 1;
   } while (cVar1 != '\0');
-  if (param_2 <= (uint)((int)local_254 - (int)(param_1 + 1))) {
-    local_264 = param_1;
+  if (size <= (uint)((int)local_254 - (int)(buffer + 1))) {
+    local_264 = buffer;
     do {
       cVar1 = *local_264;
       local_264 = local_264 + 1;
@@ -172,7 +173,7 @@ void __cdecl GamerProfile_AppendDvarListToConfig(char *param_1,uint param_2,char
 // 009D03B0  GamerProfile_AppendByteListToConfig  (win32/win_gamerprofile.cpp:439)
 
 void __cdecl
-GamerProfile_AppendByteListToConfig(char *param_1,uint param_2,uchar *param_3,ushort param_4)
+GamerProfile_AppendByteListToConfig(char *buffer,uint bufSize,uchar *data,ushort dataSize)
 
 {
   char cVar1;
@@ -183,44 +184,46 @@ GamerProfile_AppendByteListToConfig(char *param_1,uint param_2,uchar *param_3,us
   ushort *local_30;
   ushort *local_20;
   char *local_10;
+  uint bufLen;
+  ushort existingSize;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",
                                0x1bb,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (uchar *)0x0) &&
+  if ((data == (uchar *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",
                                0x1bc,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_10 = param_1;
+  local_10 = buffer;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  if ((param_2 <= local_10 + (uint)param_4 + (2 - (int)(param_1 + 1))) &&
+  if ((bufSize <= local_10 + (uint)dataSize + (2 - (int)(buffer + 1))) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",
                                0x1bf,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_30 = (ushort *)(param_1 + (int)(local_10 + (1 - (int)(param_1 + 1))));
+  local_30 = (ushort *)(buffer + (int)(local_10 + (1 - (int)(buffer + 1))));
   uVar5 = *local_30;
-  memcpy((uchar *)((int)local_30 + uVar5 + 2),param_3,(uint)param_4);
-  uVar5 = param_4 + uVar5;
+  memcpy((uchar *)((int)local_30 + uVar5 + 2),data,(uint)dataSize);
+  uVar5 = dataSize + uVar5;
   *local_30 = uVar5;
   local_20 = local_30;
   do {
     uVar3 = *local_20;
     local_20 = (ushort *)((int)local_20 + 1);
   } while ((char)uVar3 != '\0');
-  if (param_2 <= (char *)((int)local_20 + (uint)uVar5 + (2 - (int)((int)local_30 + 1)))) {
+  if (bufSize <= (char *)((int)local_20 + (uint)uVar5 + (2 - (int)((int)local_30 + 1)))) {
     do {
       uVar5 = *local_30;
       local_30 = (ushort *)((int)local_30 + 1);
@@ -240,14 +243,14 @@ GamerProfile_AppendByteListToConfig(char *param_1,uint param_2,uchar *param_3,us
 
 // 009CF3C0  DebugReportProfileDVars  (win32/win_gamerprofile.cpp:505)
 
-void __cdecl DebugReportProfileDVars(char *param_1)
+void __cdecl DebugReportProfileDVars(char *headerMsg)
 
 {
-  char **local_8;
+  char **listDvar;
   
   Com_Printf(0x10,"--------------\n%s\n");
-  for (local_8 = dvarNameList; *local_8 != (char *)0x0; local_8 = local_8 + 1) {
-    Dvar_GetVariantString(*local_8);
+  for (listDvar = dvarNameList; *listDvar != (char *)0x0; listDvar = listDvar + 1) {
+    Dvar_GetVariantString(*listDvar);
     Com_Printf(0x10," \"%s\" = \"%s\".\n");
   }
   return;
@@ -256,15 +259,16 @@ void __cdecl DebugReportProfileDVars(char *param_1)
 
 // 009CFEA0  GamerProfile_CreateExeBindingsConfig  (win32/win_gamerprofile.cpp:535)
 
-void __cdecl GamerProfile_CreateExeBindingsConfig(int param_1)
+void __cdecl GamerProfile_CreateExeBindingsConfig(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   char *local_c;
+  uint size;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x21a,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -273,7 +277,7 @@ void __cdecl GamerProfile_CreateExeBindingsConfig(int param_1)
       return;
     }
   }
-  if (gamerSettings[param_1].isProfileLoggedIn == false) {
+  if (gamerSettings[controllerIndex].isProfileLoggedIn == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x21b,
                              0,"%s");
     if (!bVar2) {
@@ -284,18 +288,20 @@ void __cdecl GamerProfile_CreateExeBindingsConfig(int param_1)
   }
   pcVar3 = va("GamerProfile_CreateExeBindingsConfig( %i ):");
   DebugReportProfileDVars(pcVar3);
-  memset((uchar *)gamerSettings[param_1].exeSettingsBuffer,'\0',1000);
-  GamerProfile_AppendDvarListToConfig(gamerSettings[param_1].exeSettingsBuffer,1000,mpDvarList);
+  memset((uchar *)gamerSettings[controllerIndex].exeSettingsBuffer,'\0',1000);
   GamerProfile_AppendDvarListToConfig
-            (gamerSettings[param_1].exeSettingsBuffer,1000,nonResetMPDvarList);
+            (gamerSettings[controllerIndex].exeSettingsBuffer,1000,mpDvarList);
   GamerProfile_AppendDvarListToConfig
-            (gamerSettings[param_1].exeSettingsBuffer,1000,(char **)&customClassDvars);
+            (gamerSettings[controllerIndex].exeSettingsBuffer,1000,nonResetMPDvarList);
+  GamerProfile_AppendDvarListToConfig
+            (gamerSettings[controllerIndex].exeSettingsBuffer,1000,(char **)&customClassDvars);
   GamerProfile_AppendByteListToConfig
-            (gamerSettings[param_1].exeSettingsBuffer,1000,gamerSettings[param_1].classLoadouts[0],
-             0xaa);
+            (gamerSettings[controllerIndex].exeSettingsBuffer,1000,
+             gamerSettings[controllerIndex].classLoadouts[0],0xaa);
   GamerProfile_AppendByteListToConfig
-            (gamerSettings[param_1].exeSettingsBuffer,1000,gamerSettings[param_1].killstreaks,3);
-  pcVar3 = gamerSettings[param_1].exeSettingsBuffer;
+            (gamerSettings[controllerIndex].exeSettingsBuffer,1000,
+             gamerSettings[controllerIndex].killstreaks,3);
+  pcVar3 = gamerSettings[controllerIndex].exeSettingsBuffer;
   do {
     local_c = pcVar3;
     pcVar3 = local_c + 1;
@@ -307,15 +313,16 @@ void __cdecl GamerProfile_CreateExeBindingsConfig(int param_1)
 
 // 009D0570  GamerProfile_CreateCommonBindingsConfig  (win32/win_gamerprofile.cpp:570)
 
-void __cdecl GamerProfile_CreateCommonBindingsConfig(int param_1)
+void __cdecl GamerProfile_CreateCommonBindingsConfig(int controllerIndex)
 
 {
   code *pcVar1;
   char *pcVar2;
   bool bVar3;
   char *local_c;
+  uint size;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x23d,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar3) {
@@ -324,7 +331,7 @@ void __cdecl GamerProfile_CreateCommonBindingsConfig(int param_1)
       return;
     }
   }
-  if (gamerSettings[param_1].isProfileLoggedIn == false) {
+  if (gamerSettings[controllerIndex].isProfileLoggedIn == false) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x23e,
                              0,"%s");
     if (!bVar3) {
@@ -333,12 +340,12 @@ void __cdecl GamerProfile_CreateCommonBindingsConfig(int param_1)
       return;
     }
   }
-  memset((uchar *)gamerSettings[param_1].commonSettingsBuffer,'\0',1000);
+  memset((uchar *)gamerSettings[controllerIndex].commonSettingsBuffer,'\0',1000);
   GamerProfile_AppendDvarListToConfig
-            (gamerSettings[param_1].commonSettingsBuffer,1000,commonDvarList);
+            (gamerSettings[controllerIndex].commonSettingsBuffer,1000,commonDvarList);
   GamerProfile_AppendDvarListToConfig
-            (gamerSettings[param_1].commonSettingsBuffer,1000,commonXProfileDvarList);
-  pcVar2 = gamerSettings[param_1].commonSettingsBuffer;
+            (gamerSettings[controllerIndex].commonSettingsBuffer,1000,commonXProfileDvarList);
+  pcVar2 = gamerSettings[controllerIndex].commonSettingsBuffer;
   do {
     local_c = pcVar2;
     pcVar2 = local_c + 1;
@@ -350,13 +357,13 @@ void __cdecl GamerProfile_CreateCommonBindingsConfig(int param_1)
 
 // 009CFDC0  GamerProfile_SaveProfile  (win32/win_gamerprofile.cpp:824)
 
-void __cdecl GamerProfile_SaveProfile(int param_1)
+void __cdecl GamerProfile_SaveProfile(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x339,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -365,7 +372,7 @@ void __cdecl GamerProfile_SaveProfile(int param_1)
       return;
     }
   }
-  if (gamerSettings[param_1].isProfileLoggedIn == false) {
+  if (gamerSettings[controllerIndex].isProfileLoggedIn == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x33a,
                              0,"%s");
     if (!bVar2) {
@@ -374,7 +381,7 @@ void __cdecl GamerProfile_SaveProfile(int param_1)
       return;
     }
   }
-  if (gamerSettings[param_1].errorOnRead != false) {
+  if (gamerSettings[controllerIndex].errorOnRead != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x33b,
                              0,"%s");
     if (!bVar2) {
@@ -383,45 +390,46 @@ void __cdecl GamerProfile_SaveProfile(int param_1)
       return;
     }
   }
-  GamerProfile_CreateExeBindingsConfig(param_1);
-  GamerProfile_CreateCommonBindingsConfig(param_1);
-  GamerProfile_WriteSettings(param_1);
+  GamerProfile_CreateExeBindingsConfig(controllerIndex);
+  GamerProfile_CreateCommonBindingsConfig(controllerIndex);
+  GamerProfile_WriteSettings(controllerIndex);
   return;
 }
 
 
 // 009CEAD0  GamerProfile_GetPlaylistNum  (win32/win_gamerprofile.cpp:918)
 
-int __cdecl GamerProfile_GetPlaylistNum(int param_1)
+int __cdecl GamerProfile_GetPlaylistNum(int controllerIndex)
 
 {
-  return gamerSettings[param_1].playlist;
+  return gamerSettings[controllerIndex].playlist;
 }
 
 
 // 009CEAF0  GamerProfile_SetPlaylistNum  (win32/win_gamerprofile.cpp:924)
 
-void __cdecl GamerProfile_SetPlaylistNum(int param_1,int param_2)
+void __cdecl GamerProfile_SetPlaylistNum(int controllerIndex,int playlistNum)
 
 {
-  gamerSettings[param_1].playlist = param_2;
+  gamerSettings[controllerIndex].playlist = playlistNum;
   return;
 }
 
 
 // 009CEB10  GamerProfile_ExecControllerBindings  (win32/win_gamerprofile.cpp:933)
 
-void __cdecl GamerProfile_ExecControllerBindings(int param_1)
+void __cdecl GamerProfile_ExecControllerBindings(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int localClientNum_00;
   int extraout_EAX;
-  char *pcVar4;
+  char *pcVar3;
   int extraout_EAX_00;
+  int localClientNum;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x3a9,
                              0,"controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
     ;
@@ -431,23 +439,23 @@ void __cdecl GamerProfile_ExecControllerBindings(int param_1)
       return;
     }
   }
-  iVar3 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  if (gamerSettings[param_1].gpadEnabled != false) {
-    if (gamerSettings[param_1].gpadButtonsConfig[0] != '\0') {
-      strstr((uchar *)gamerSettings[param_1].gpadButtonsConfig,(uchar *)"buttons_");
-      if (extraout_EAX == param_1 * 0xcc4 + 0xa83e504) {
-        pcVar4 = va("exec %s\n");
-        Cmd_ExecuteSingleCommand(iVar3,param_1,pcVar4);
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  if (gamerSettings[controllerIndex].gpadEnabled != false) {
+    if (gamerSettings[controllerIndex].gpadButtonsConfig[0] != '\0') {
+      strstr((uchar *)gamerSettings[controllerIndex].gpadButtonsConfig,(uchar *)"buttons_");
+      if (extraout_EAX == controllerIndex * 0xcc4 + 0xa83e504) {
+        pcVar3 = va("exec %s\n");
+        Cmd_ExecuteSingleCommand(localClientNum_00,controllerIndex,pcVar3);
       }
     }
-    if (gamerSettings[param_1].gpadSticksConfig[0] != '\0') {
-      strstr((uchar *)gamerSettings[param_1].gpadSticksConfig,(uchar *)"thumbstick_");
-      if (extraout_EAX_00 == param_1 * 0xcc4 + 0xa83e604) {
-        pcVar4 = va("exec %s\n");
-        Cmd_ExecuteSingleCommand(iVar3,param_1,pcVar4);
+    if (gamerSettings[controllerIndex].gpadSticksConfig[0] != '\0') {
+      strstr((uchar *)gamerSettings[controllerIndex].gpadSticksConfig,(uchar *)"thumbstick_");
+      if (extraout_EAX_00 == controllerIndex * 0xcc4 + 0xa83e604) {
+        pcVar3 = va("exec %s\n");
+        Cmd_ExecuteSingleCommand(localClientNum_00,controllerIndex,pcVar3);
       }
     }
-    Cmd_ExecuteSingleCommand(iVar3,param_1,"updatevehiclebindings");
+    Cmd_ExecuteSingleCommand(localClientNum_00,controllerIndex,"updatevehiclebindings");
   }
   return;
 }
@@ -455,14 +463,15 @@ void __cdecl GamerProfile_ExecControllerBindings(int param_1)
 
 // 009CF510  SetDvarFromLocString  (win32/win_gamerprofile.cpp:958)
 
-void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
+void __cdecl SetDvarFromLocString(int controllerIndex,char *dvarName,char *preLocalizedText)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *string;
+  char *localizedText;
   
-  bVar2 = Dvar_IsValidName(param_2);
+  bVar2 = Dvar_IsValidName(dvarName);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x3c1,
                              0,"%s");
@@ -472,12 +481,12 @@ void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
       return;
     }
   }
-  pcVar3 = SEH_LocalizeTextMessage(param_3,"dvar string",LOCMSG_NOERR);
-  if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) {
-    Dvar_SetCommand(param_2,param_3);
+  string = SEH_LocalizeTextMessage(preLocalizedText,"dvar string",LOCMSG_NOERR);
+  if ((string == (char *)0x0) || (*string == '\0')) {
+    Dvar_SetCommand(dvarName,preLocalizedText);
   }
   else {
-    Dvar_SetCommand(param_2,pcVar3);
+    Dvar_SetCommand(dvarName,string);
   }
   return;
 }
@@ -485,35 +494,36 @@ void __cdecl SetDvarFromLocString(int param_1,char *param_2,char *param_3)
 
 // 009CF420  ResetCreateAClassNames  (win32/win_gamerprofile.cpp:971)
 
-void __cdecl ResetCreateAClassNames(int param_1)
+void __cdecl ResetCreateAClassNames(int controllerIndex)
 
 {
-  SetDvarFromLocString(param_1,"customclass1","CLASS_SLOT1_CAPS");
-  SetDvarFromLocString(param_1,"customclass2","CLASS_SLOT2_CAPS");
-  SetDvarFromLocString(param_1,"customclass3","CLASS_SLOT3_CAPS");
-  SetDvarFromLocString(param_1,"customclass4","CLASS_SLOT4_CAPS");
-  SetDvarFromLocString(param_1,"customclass5","CLASS_SLOT5_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass1","CLASS_PRESTIGE1_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass2","CLASS_PRESTIGE2_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass3","CLASS_PRESTIGE3_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass4","CLASS_PRESTIGE4_CAPS");
-  SetDvarFromLocString(param_1,"prestigeclass5","CLASS_PRESTIGE5_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass1","CLASS_SLOT1_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass2","CLASS_SLOT2_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass3","CLASS_SLOT3_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass4","CLASS_SLOT4_CAPS");
+  SetDvarFromLocString(controllerIndex,"customclass5","CLASS_SLOT5_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass1","CLASS_PRESTIGE1_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass2","CLASS_PRESTIGE2_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass3","CLASS_PRESTIGE3_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass4","CLASS_PRESTIGE4_CAPS");
+  SetDvarFromLocString(controllerIndex,"prestigeclass5","CLASS_PRESTIGE5_CAPS");
   return;
 }
 
 
 // 009CEC70  GamerProfile_UpdateDvarsFromProfile  (win32/win_gamerprofile.cpp:1082)
 
-void __cdecl GamerProfile_UpdateDvarsFromProfile(int param_1)
+void __cdecl GamerProfile_UpdateDvarsFromProfile(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  int local_8;
+  int destsize;
+  int localClientNum;
+  int i;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x440,
                              0,"controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
     ;
@@ -543,71 +553,73 @@ void __cdecl GamerProfile_UpdateDvarsFromProfile(int param_1)
   }
   va("Updating dvars from profile %i.\n");
   Com_Printf(0x10,"^3%s\n");
-  if (gamerSettings[param_1].isInitialized == false) {
+  if (gamerSettings[controllerIndex].isInitialized == false) {
     va("Profile %i not initialized yet.\n");
     Com_Printf(0x10,"^3%s\n");
   }
   else {
-    Dvar_SetInt(com_first_time,gamerSettings[param_1].firstTime);
-    Dvar_SetBool(zombietron_discovered,*(bool *)(param_1 * 0xcc4 + 0xa83e4f0));
-    Dvar_SetBool(zombiefive_discovered,*(bool *)(param_1 * 0xcc4 + 0xa83e4f1));
-    Dvar_SetBool(gpad_enabled,*(bool *)(param_1 * 0xcc4 + 0xa83e4f9));
-    Dvar_SetBool(input_invertPitch,*(bool *)(param_1 * 0xcc4 + 0xa83e4f2));
-    Dvar_SetFloat(input_viewSensitivity,gamerSettings[param_1].viewSensitivity);
-    Dvar_SetInt(team_indicator,gamerSettings[param_1].team_indicator);
-    Dvar_SetBool(cg_mature,*(bool *)(param_1 * 0xcc4 + 0xa83e500));
-    Dvar_SetBool(cg_blood,*(bool *)(param_1 * 0xcc4 + 0xa83e501));
-    Dvar_SetString(gpad_buttonsConfig,gamerSettings[param_1].gpadButtonsConfig);
-    if (gamerSettings[param_1].gpadSticksConfig[0] != '\0') {
-      Dvar_SetString(gpad_sticksConfig,gamerSettings[param_1].gpadSticksConfig);
+    Dvar_SetInt(com_first_time,gamerSettings[controllerIndex].firstTime);
+    Dvar_SetBool(zombietron_discovered,*(bool *)(controllerIndex * 0xcc4 + 0xa83e4f0));
+    Dvar_SetBool(zombiefive_discovered,*(bool *)(controllerIndex * 0xcc4 + 0xa83e4f1));
+    Dvar_SetBool(gpad_enabled,*(bool *)(controllerIndex * 0xcc4 + 0xa83e4f9));
+    Dvar_SetBool(input_invertPitch,*(bool *)(controllerIndex * 0xcc4 + 0xa83e4f2));
+    Dvar_SetFloat(input_viewSensitivity,gamerSettings[controllerIndex].viewSensitivity);
+    Dvar_SetInt(team_indicator,gamerSettings[controllerIndex].team_indicator);
+    Dvar_SetBool(cg_mature,*(bool *)(controllerIndex * 0xcc4 + 0xa83e500));
+    Dvar_SetBool(cg_blood,*(bool *)(controllerIndex * 0xcc4 + 0xa83e501));
+    Dvar_SetString(gpad_buttonsConfig,gamerSettings[controllerIndex].gpadButtonsConfig);
+    if (gamerSettings[controllerIndex].gpadSticksConfig[0] != '\0') {
+      Dvar_SetString(gpad_sticksConfig,gamerSettings[controllerIndex].gpadSticksConfig);
     }
-    Dvar_SetFloat(gpad_button_lstick_deflect_max,gamerSettings[param_1].gpadButtonLStickDeflect);
-    Dvar_SetFloat(gpad_button_rstick_deflect_max,gamerSettings[param_1].gpadButtonRStickDeflect);
-    Dvar_SetFloat(r_gamma,gamerSettings[param_1].gamma);
-    Dvar_SetFloat(snd_menu_voice,gamerSettings[param_1].snd_menu_voice);
-    Dvar_SetFloat(snd_menu_music,gamerSettings[param_1].snd_menu_music);
-    Dvar_SetFloat(snd_menu_sfx,gamerSettings[param_1].snd_menu_sfx);
-    Dvar_SetFloat(snd_menu_master,gamerSettings[param_1].snd_menu_master);
-    Dvar_SetFloat(snd_menu_cinematic,gamerSettings[param_1].snd_cinematic_volume);
-    Dvar_SetInt(snd_menu_speaker_setup,gamerSettings[param_1].snd_menu_speaker_setup);
-    Dvar_SetInt(snd_menu_listen_level,gamerSettings[param_1].snd_menu_listen_level);
-    Dvar_SetFloat(snd_menu_left_channel,gamerSettings[param_1].snd_menu_left_channel);
-    Dvar_SetFloat(snd_menu_right_channel,gamerSettings[param_1].snd_menu_right_channel);
-    Dvar_SetFloat(snd_menu_center_channel,gamerSettings[param_1].snd_menu_center_channel);
-    Dvar_SetFloat(snd_menu_left_surround,gamerSettings[param_1].snd_menu_left_surround);
-    Dvar_SetFloat(snd_menu_right_surround,gamerSettings[param_1].snd_menu_right_surround);
-    Dvar_SetFloat(snd_menu_lfe,gamerSettings[param_1].snd_menu_lfe);
-    Dvar_SetBool(xblive_basictraining_popup,*(bool *)(param_1 * 0xcc4 + 0xa83e750));
-    Dvar_SetInt(bot_friends,gamerSettings[param_1].friends);
-    Dvar_SetInt(bot_enemies,gamerSettings[param_1].enemies);
-    Dvar_SetInt(bot_difficulty,gamerSettings[param_1].difficulty);
-    Dvar_SetBool(bot_tips,*(bool *)(param_1 * 0xcc4 + 0xa83e760));
-    Dvar_SetBool(sv_botUseFriendNames,*(bool *)(param_1 * 0xcc4 + 0xa83e761));
-    Dvar_SetInt(demo_controllerConfig,gamerSettings[param_1].demoControllerConfig);
-    Com_ControllerIndex_GetLocalClientNum(param_1);
-    Dvar_SetString(motd,gamerSettings[param_1].motd);
-    Dvar_SetBool(cg_spectateThirdPerson,*(bool *)(param_1 * 0xcc4 + 0xa83e503));
-    Dvar_SetInt(playlist,gamerSettings[param_1].playlist);
-    Dvar_SetInt(category,gamerSettings[param_1].category);
-    Dvar_SetInt(categoryPlaylist,gamerSettings[param_1].categoryPlaylist);
-    Dvar_SetInt(wagerCategory,gamerSettings[param_1].wagerCategory);
-    Dvar_SetInt(wagerCategoryPlaylist,gamerSettings[param_1].wagerCategoryPlaylist);
+    Dvar_SetFloat(gpad_button_lstick_deflect_max,
+                  gamerSettings[controllerIndex].gpadButtonLStickDeflect);
+    Dvar_SetFloat(gpad_button_rstick_deflect_max,
+                  gamerSettings[controllerIndex].gpadButtonRStickDeflect);
+    Dvar_SetFloat(r_gamma,gamerSettings[controllerIndex].gamma);
+    Dvar_SetFloat(snd_menu_voice,gamerSettings[controllerIndex].snd_menu_voice);
+    Dvar_SetFloat(snd_menu_music,gamerSettings[controllerIndex].snd_menu_music);
+    Dvar_SetFloat(snd_menu_sfx,gamerSettings[controllerIndex].snd_menu_sfx);
+    Dvar_SetFloat(snd_menu_master,gamerSettings[controllerIndex].snd_menu_master);
+    Dvar_SetFloat(snd_menu_cinematic,gamerSettings[controllerIndex].snd_cinematic_volume);
+    Dvar_SetInt(snd_menu_speaker_setup,gamerSettings[controllerIndex].snd_menu_speaker_setup);
+    Dvar_SetInt(snd_menu_listen_level,gamerSettings[controllerIndex].snd_menu_listen_level);
+    Dvar_SetFloat(snd_menu_left_channel,gamerSettings[controllerIndex].snd_menu_left_channel);
+    Dvar_SetFloat(snd_menu_right_channel,gamerSettings[controllerIndex].snd_menu_right_channel);
+    Dvar_SetFloat(snd_menu_center_channel,gamerSettings[controllerIndex].snd_menu_center_channel);
+    Dvar_SetFloat(snd_menu_left_surround,gamerSettings[controllerIndex].snd_menu_left_surround);
+    Dvar_SetFloat(snd_menu_right_surround,gamerSettings[controllerIndex].snd_menu_right_surround);
+    Dvar_SetFloat(snd_menu_lfe,gamerSettings[controllerIndex].snd_menu_lfe);
+    Dvar_SetBool(xblive_basictraining_popup,*(bool *)(controllerIndex * 0xcc4 + 0xa83e750));
+    Dvar_SetInt(bot_friends,gamerSettings[controllerIndex].friends);
+    Dvar_SetInt(bot_enemies,gamerSettings[controllerIndex].enemies);
+    Dvar_SetInt(bot_difficulty,gamerSettings[controllerIndex].difficulty);
+    Dvar_SetBool(bot_tips,*(bool *)(controllerIndex * 0xcc4 + 0xa83e760));
+    Dvar_SetBool(sv_botUseFriendNames,*(bool *)(controllerIndex * 0xcc4 + 0xa83e761));
+    Dvar_SetInt(demo_controllerConfig,gamerSettings[controllerIndex].demoControllerConfig);
+    Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Dvar_SetString(motd,gamerSettings[controllerIndex].motd);
+    Dvar_SetBool(cg_spectateThirdPerson,*(bool *)(controllerIndex * 0xcc4 + 0xa83e503));
+    Dvar_SetInt(playlist,gamerSettings[controllerIndex].playlist);
+    Dvar_SetInt(category,gamerSettings[controllerIndex].category);
+    Dvar_SetInt(categoryPlaylist,gamerSettings[controllerIndex].categoryPlaylist);
+    Dvar_SetInt(wagerCategory,gamerSettings[controllerIndex].wagerCategory);
+    Dvar_SetInt(wagerCategoryPlaylist,gamerSettings[controllerIndex].wagerCategoryPlaylist);
     Playlist_SetPrevPlaylist();
-    if (gamerSettings[param_1].customClass[0][0] == '\0') {
-      ResetCreateAClassNames(param_1);
-      for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-        I_strncpyz((char *)(param_1 * 0xcc4 + 0xa83f05d + local_8 * 0x10),
-                   (customclass[local_8]->current).string,0x10);
+    if (gamerSettings[controllerIndex].customClass[0][0] == '\0') {
+      ResetCreateAClassNames(controllerIndex);
+      for (i = 0; i < 10; i = i + 1) {
+        I_strncpyz((char *)(controllerIndex * 0xcc4 + 0xa83f05d + i * 0x10),
+                   (customclass[i]->current).string,0x10);
       }
     }
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      Dvar_SetString(customclass[local_8],(char *)(param_1 * 0xcc4 + 0xa83f05d + local_8 * 0x10));
+    for (i = 0; i < 10; i = i + 1) {
+      Dvar_SetString(customclass[i],(char *)(controllerIndex * 0xcc4 + 0xa83f05d + i * 0x10));
     }
-    Dvar_SetString(clanName,gamerSettings[param_1].clanPrefix);
+    Dvar_SetString(clanName,gamerSettings[controllerIndex].clanPrefix);
     CL_SanitizeClanName();
-    iVar4 = 5;
+    destsize = 5;
     pcVar3 = Dvar_GetString("clanName");
-    I_strncpyz(gamerSettings[param_1].clanPrefix,pcVar3,iVar4);
+    I_strncpyz(gamerSettings[controllerIndex].clanPrefix,pcVar3,destsize);
     pcVar3 = va("GamerProfile_UpdateDvarsFromProfile(%i):");
     DebugReportProfileDVars(pcVar3);
   }
@@ -617,25 +629,25 @@ void __cdecl GamerProfile_UpdateDvarsFromProfile(int param_1)
 
 // 009D06A0  GamerProfile_IsNewLocalProfile  (win32/win_gamerprofile.cpp:1235)
 
-bool __cdecl GamerProfile_IsNewLocalProfile(int param_1)
+bool __cdecl GamerProfile_IsNewLocalProfile(int controllerIndex)
 
 {
   char cVar1;
   char *local_18;
   char *local_8;
   
-  local_8 = gamerSettings[param_1].exeSettingsBuffer;
+  local_8 = gamerSettings[controllerIndex].exeSettingsBuffer;
   do {
     cVar1 = *local_8;
     local_8 = local_8 + 1;
   } while (cVar1 != '\0');
-  if (local_8 != gamerSettings[param_1].exeSettingsBuffer + 1) {
-    local_18 = gamerSettings[param_1].commonSettingsBuffer;
+  if (local_8 != gamerSettings[controllerIndex].exeSettingsBuffer + 1) {
+    local_18 = gamerSettings[controllerIndex].commonSettingsBuffer;
     do {
       cVar1 = *local_18;
       local_18 = local_18 + 1;
     } while (cVar1 != '\0');
-    if (local_18 != gamerSettings[param_1].commonSettingsBuffer + 1) {
+    if (local_18 != gamerSettings[controllerIndex].commonSettingsBuffer + 1) {
       return false;
     }
   }
@@ -651,7 +663,8 @@ bool __cdecl GamerProfile_IsNewLocalProfile(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t param_2)
+void __cdecl
+GamerProfile_UpdateProfileFromDvars(int controllerIndex,profileWriteState_t profileWriteState)
 
 {
   int iVar1;
@@ -662,14 +675,17 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
   int iVar6;
   GamerSettingState *pGVar7;
   int *piVar8;
-  int local_cdc [7];
+  cg_s *cgameGlob;
+  int localClientNum_2;
+  int localClientNum;
+  int oldSettings [7];
   char local_cc0 [3248];
   uint local_10;
-  char local_9;
-  int local_8;
+  bool writeProfile;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",
                                0x4e0,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
@@ -694,8 +710,8 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
   }
   pcVar4 = va("GamerProfile_UpdateProfileFromDvars(%i):");
   DebugReportProfileDVars(pcVar4);
-  pGVar7 = gamerSettings + param_1;
-  piVar8 = local_cdc;
+  pGVar7 = gamerSettings + controllerIndex;
+  piVar8 = oldSettings;
   for (iVar6 = 0x331; iVar6 != 0; iVar6 = iVar6 + -1) {
     *piVar8 = *(int *)pGVar7;
     pGVar7 = (GamerSettingState *)&pGVar7->firstTime;
@@ -705,21 +721,22 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
   Com_Printf(0x10,"^3%s\n");
   iVar6 = I_stricmp((gpad_buttonsConfig->current).string,local_cc0);
   if (iVar6 != 0) {
-    iVar6 = Com_ControllerIndex_GetLocalClientNum(param_1);
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
     CL_ClearKeys(iVar6);
   }
-  gamerSettings[param_1].firstTime = (com_first_time->current).integer;
-  gamerSettings[param_1].zombietron_discovered = (zombietron_discovered->current).enabled;
-  gamerSettings[param_1].zombiefive_discovered = (zombiefive_discovered->current).enabled;
-  gamerSettings[param_1].gpadEnabled = (gpad_enabled->current).enabled;
-  gamerSettings[param_1].invertPitch = (input_invertPitch->current).enabled;
-  gamerSettings[param_1].viewSensitivity = (float)(input_viewSensitivity->current).integer;
-  gamerSettings[param_1].team_indicator = (team_indicator->current).integer;
-  gamerSettings[param_1].mature_content = (cg_mature->current).enabled;
-  gamerSettings[param_1].show_blood = (cg_blood->current).enabled;
+  gamerSettings[controllerIndex].firstTime = (com_first_time->current).integer;
+  gamerSettings[controllerIndex].zombietron_discovered = (zombietron_discovered->current).enabled;
+  gamerSettings[controllerIndex].zombiefive_discovered = (zombiefive_discovered->current).enabled;
+  gamerSettings[controllerIndex].gpadEnabled = (gpad_enabled->current).enabled;
+  gamerSettings[controllerIndex].invertPitch = (input_invertPitch->current).enabled;
+  gamerSettings[controllerIndex].viewSensitivity = (float)(input_viewSensitivity->current).integer;
+  gamerSettings[controllerIndex].team_indicator = (team_indicator->current).integer;
+  gamerSettings[controllerIndex].mature_content = (cg_mature->current).enabled;
+  gamerSettings[controllerIndex].show_blood = (cg_blood->current).enabled;
   iVar6 = _stricmp((gpad_buttonsConfig->current).string,"BUTTONS_ZOMBIETRON");
   if (iVar6 != 0) {
-    I_strncpyz(gamerSettings[param_1].gpadButtonsConfig,(gpad_buttonsConfig->current).string,0x100);
+    I_strncpyz(gamerSettings[controllerIndex].gpadButtonsConfig,(gpad_buttonsConfig->current).string
+               ,0x100);
   }
   if (*(gpad_buttonsConfig->current).string == '\0') {
     Dvar_SetString(gpad_buttonsConfig,"buttons_default");
@@ -731,68 +748,74 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
   if (bVar3) {
     bVar3 = Dvar_GetBool("zombietron");
     if (bVar3) {
-      Cmd_ExecuteSingleCommand(0,param_1,"exec thumbstick_default.cfg\n");
-      Cmd_ExecuteSingleCommand(0,param_1,"exec buttons_default.cfg\n");
-      Cmd_ExecuteSingleCommand(0,param_1,"exec buttons_zombietron\n");
+      Cmd_ExecuteSingleCommand(0,controllerIndex,"exec thumbstick_default.cfg\n");
+      Cmd_ExecuteSingleCommand(0,controllerIndex,"exec buttons_default.cfg\n");
+      Cmd_ExecuteSingleCommand(0,controllerIndex,"exec buttons_zombietron\n");
     }
     else {
-      I_strncpyz(gamerSettings[param_1].gpadSticksConfig,(gpad_sticksConfig->current).string,0x100);
-      GamerProfile_ExecControllerBindings(param_1);
-      gamerSettings[param_1].gpadButtonLStickDeflect =
+      I_strncpyz(gamerSettings[controllerIndex].gpadSticksConfig,(gpad_sticksConfig->current).string
+                 ,0x100);
+      GamerProfile_ExecControllerBindings(controllerIndex);
+      gamerSettings[controllerIndex].gpadButtonLStickDeflect =
            (float)(gpad_button_lstick_deflect_max->current).integer;
-      gamerSettings[param_1].gpadButtonRStickDeflect =
+      gamerSettings[controllerIndex].gpadButtonRStickDeflect =
            (float)(gpad_button_rstick_deflect_max->current).integer;
-      gamerSettings[param_1].demoControllerConfig = (demo_controllerConfig->current).integer;
+      gamerSettings[controllerIndex].demoControllerConfig = (demo_controllerConfig->current).integer
+      ;
     }
   }
-  gamerSettings[param_1].gamma = (float)(r_gamma->current).integer;
-  gamerSettings[param_1].snd_menu_voice = (float)(snd_menu_voice->current).integer;
-  gamerSettings[param_1].snd_menu_music = (float)(snd_menu_music->current).integer;
-  gamerSettings[param_1].snd_menu_sfx = (float)(snd_menu_sfx->current).integer;
-  gamerSettings[param_1].snd_menu_master = (float)(snd_menu_master->current).integer;
-  gamerSettings[param_1].snd_cinematic_volume = (float)(snd_menu_cinematic->current).integer;
-  gamerSettings[param_1].snd_menu_speaker_setup = (snd_menu_speaker_setup->current).integer;
-  gamerSettings[param_1].snd_menu_listen_level = (snd_menu_listen_level->current).integer;
-  gamerSettings[param_1].snd_menu_left_channel = (float)(snd_menu_left_channel->current).integer;
-  gamerSettings[param_1].snd_menu_right_channel = (float)(snd_menu_right_channel->current).integer;
-  gamerSettings[param_1].snd_menu_center_channel = (float)(snd_menu_center_channel->current).integer
+  gamerSettings[controllerIndex].gamma = (float)(r_gamma->current).integer;
+  gamerSettings[controllerIndex].snd_menu_voice = (float)(snd_menu_voice->current).integer;
+  gamerSettings[controllerIndex].snd_menu_music = (float)(snd_menu_music->current).integer;
+  gamerSettings[controllerIndex].snd_menu_sfx = (float)(snd_menu_sfx->current).integer;
+  gamerSettings[controllerIndex].snd_menu_master = (float)(snd_menu_master->current).integer;
+  gamerSettings[controllerIndex].snd_cinematic_volume = (float)(snd_menu_cinematic->current).integer
   ;
-  gamerSettings[param_1].snd_menu_left_surround = (float)(snd_menu_left_surround->current).integer;
-  gamerSettings[param_1].snd_menu_right_surround = (float)(snd_menu_right_surround->current).integer
-  ;
-  gamerSettings[param_1].snd_menu_lfe = (float)(snd_menu_lfe->current).integer;
-  gamerSettings[param_1].basicTrainingPopup = (xblive_basictraining_popup->current).enabled;
-  gamerSettings[param_1].friends = (bot_friends->current).integer;
-  gamerSettings[param_1].enemies = (bot_enemies->current).integer;
-  gamerSettings[param_1].difficulty = (bot_difficulty->current).integer;
-  gamerSettings[param_1].tips = (bot_tips->current).enabled;
-  gamerSettings[param_1].gamertags = (sv_botUseFriendNames->current).enabled;
-  I_strncpyz(gamerSettings[param_1].motd,(motd->current).string,0x100);
-  gamerSettings[param_1].lastSpectatorSelectedThirdPerson =
+  gamerSettings[controllerIndex].snd_menu_speaker_setup = (snd_menu_speaker_setup->current).integer;
+  gamerSettings[controllerIndex].snd_menu_listen_level = (snd_menu_listen_level->current).integer;
+  gamerSettings[controllerIndex].snd_menu_left_channel =
+       (float)(snd_menu_left_channel->current).integer;
+  gamerSettings[controllerIndex].snd_menu_right_channel =
+       (float)(snd_menu_right_channel->current).integer;
+  gamerSettings[controllerIndex].snd_menu_center_channel =
+       (float)(snd_menu_center_channel->current).integer;
+  gamerSettings[controllerIndex].snd_menu_left_surround =
+       (float)(snd_menu_left_surround->current).integer;
+  gamerSettings[controllerIndex].snd_menu_right_surround =
+       (float)(snd_menu_right_surround->current).integer;
+  gamerSettings[controllerIndex].snd_menu_lfe = (float)(snd_menu_lfe->current).integer;
+  gamerSettings[controllerIndex].basicTrainingPopup = (xblive_basictraining_popup->current).enabled;
+  gamerSettings[controllerIndex].friends = (bot_friends->current).integer;
+  gamerSettings[controllerIndex].enemies = (bot_enemies->current).integer;
+  gamerSettings[controllerIndex].difficulty = (bot_difficulty->current).integer;
+  gamerSettings[controllerIndex].tips = (bot_tips->current).enabled;
+  gamerSettings[controllerIndex].gamertags = (sv_botUseFriendNames->current).enabled;
+  I_strncpyz(gamerSettings[controllerIndex].motd,(motd->current).string,0x100);
+  gamerSettings[controllerIndex].lastSpectatorSelectedThirdPerson =
        (cg_spectateThirdPerson->current).enabled;
-  gamerSettings[param_1].playlist = (playlist->current).integer;
-  gamerSettings[param_1].category = (category->current).integer;
-  gamerSettings[param_1].categoryPlaylist = (categoryPlaylist->current).integer;
-  gamerSettings[param_1].wagerCategory = (wagerCategory->current).integer;
-  gamerSettings[param_1].wagerCategoryPlaylist = (wagerCategoryPlaylist->current).integer;
+  gamerSettings[controllerIndex].playlist = (playlist->current).integer;
+  gamerSettings[controllerIndex].category = (category->current).integer;
+  gamerSettings[controllerIndex].categoryPlaylist = (categoryPlaylist->current).integer;
+  gamerSettings[controllerIndex].wagerCategory = (wagerCategory->current).integer;
+  gamerSettings[controllerIndex].wagerCategoryPlaylist = (wagerCategoryPlaylist->current).integer;
   if (*(customclass[0]->current).string == '\0') {
-    ResetCreateAClassNames(param_1);
+    ResetCreateAClassNames(controllerIndex);
   }
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    I_strncpyz((char *)(param_1 * 0xcc4 + 0xa83f05d + local_8 * 0x10),
-               (customclass[local_8]->current).string,0x10);
+  for (i = 0; i < 10; i = i + 1) {
+    I_strncpyz((char *)(controllerIndex * 0xcc4 + 0xa83f05d + i * 0x10),
+               (customclass[i]->current).string,0x10);
   }
   CL_SanitizeClanName();
-  I_strncpyz(gamerSettings[param_1].clanPrefix,(clanName->current).string,5);
-  local_9 = gamerSettings[param_1].loadoutDirty;
-  if (param_2 == PROFILE_NO_WRITE) {
-    local_9 = '\0';
+  I_strncpyz(gamerSettings[controllerIndex].clanPrefix,(clanName->current).string,5);
+  writeProfile = gamerSettings[controllerIndex].loadoutDirty;
+  if (profileWriteState == PROFILE_NO_WRITE) {
+    writeProfile = false;
   }
-  else if (param_2 == PROFILE_WRITE_IF_CHANGED) {
+  else if (profileWriteState == PROFILE_WRITE_IF_CHANGED) {
     iVar6 = 0x331;
     bVar3 = true;
-    piVar8 = local_cdc;
-    pGVar7 = gamerSettings + param_1;
+    piVar8 = oldSettings;
+    pGVar7 = gamerSettings + controllerIndex;
     do {
       if (iVar6 == 0) break;
       iVar6 = iVar6 + -1;
@@ -805,7 +828,7 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
       pGVar7 = (GamerSettingState *)&pGVar7->firstTime;
     } while (bVar3);
     if (!bVar3) {
-      local_9 = '\x01';
+      writeProfile = true;
     }
   }
   else {
@@ -818,30 +841,36 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int param_1,profileWriteState_t
       return;
     }
   }
-  if ((gamerSettings[param_1].isProfileLoggedIn != false) &&
-     (gamerSettings[param_1].errorOnRead == false)) {
-    if ((local_9 == '\0') && (bVar3 = GamerProfile_IsNewLocalProfile(param_1), bVar3)) {
-      local_9 = '\x01';
+  if ((gamerSettings[controllerIndex].isProfileLoggedIn != false) &&
+     (gamerSettings[controllerIndex].errorOnRead == false)) {
+    if ((writeProfile == false) && (bVar3 = GamerProfile_IsNewLocalProfile(controllerIndex), bVar3))
+    {
+      writeProfile = true;
     }
-    if (local_9 != '\0') {
-      GamerProfile_SaveProfile(param_1);
-      gamerSettings[param_1].loadoutDirty = false;
+    if (writeProfile != false) {
+      GamerProfile_SaveProfile(controllerIndex);
+      gamerSettings[controllerIndex].loadoutDirty = false;
     }
   }
   if (cgArray != (cg_s *)0x0) {
-    iVar6 = Com_ControllerIndex_GetLocalClientNum(param_1);
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
     pcVar5 = CG_GetLocalClientGlobals(iVar6);
     if (((pcVar5 != (cg_s *)0x0) && (pcVar5->localClientNum == iVar6)) &&
        (((pcVar5->predictedPlayerState).eFlags & 0x4000U) != 0)) {
       pcVar5->vehicleInitView = 1;
     }
   }
-  gamerSettings[param_1].isInitialized = true;
+  gamerSettings[controllerIndex].isInitialized = true;
   return;
 }
 
 
 // 009D0730  GamerProfile_InitAllProfiles  (win32/win_gamerprofile.cpp:1820)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GamerProfile_InitAllProfiles(void)
 
@@ -859,13 +888,13 @@ void __cdecl GamerProfile_InitAllProfiles(void)
 
 // 009D0770  GamerProfile_LogInProfile  (win32/win_gamerprofile.cpp:1840)
 
-void __cdecl GamerProfile_LogInProfile(int param_1)
+void __cdecl GamerProfile_LogInProfile(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x731,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -874,21 +903,26 @@ void __cdecl GamerProfile_LogInProfile(int param_1)
       return;
     }
   }
-  gamerSettings[param_1].isProfileLoggedIn = true;
-  gamerSettings[param_1].errorOnRead = false;
+  gamerSettings[controllerIndex].isProfileLoggedIn = true;
+  gamerSettings[controllerIndex].errorOnRead = false;
   return;
 }
 
 
 // 009D07D0  GamerProfile_LogOutProfile  (win32/win_gamerprofile.cpp:1860)
 
-void __cdecl GamerProfile_LogOutProfile(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GamerProfile_LogOutProfile(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamerprofile.cpp",0x745,
                              0,"%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -898,8 +932,8 @@ void __cdecl GamerProfile_LogOutProfile(int param_1)
     }
   }
   Com_Printf(0x10,"Logging out gamerprofile on controller %i\n");
-  GamerProfile_WriteSettings(param_1);
-  GamerProfile_UpdateProfileFromDvars(param_1,PROFILE_NO_WRITE);
+  GamerProfile_WriteSettings(controllerIndex);
+  GamerProfile_UpdateProfileFromDvars(controllerIndex,PROFILE_NO_WRITE);
   return;
 }
 

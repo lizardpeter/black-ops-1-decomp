@@ -21,29 +21,31 @@ void __cdecl G_ParseHitLocDmgTable(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  int iVar3;
-  cspField_t local_40f4 [19];
-  char local_400c [16384];
+  char *pszBuffer;
+  int iVar2;
+  char *fileName;
+  char *buffer;
+  cspField_t hitLocDmgFields [19];
+  char loadBuffer [16384];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < 0x13; local_8 = local_8 + 1) {
-    g_fHitLocDamageMult[local_8] = 1.0;
-    local_40f4[local_8].szName = g_HitLocNames[local_8];
-    local_40f4[local_8].iOffset = local_8 << 2;
-    local_40f4[local_8].iFieldType = 7;
-    uVar1 = Scr_AllocString(g_HitLocNames[local_8],1,SCRIPTINSTANCE_SERVER);
-    g_HitLocConstNames[local_8] = (ushort)uVar1;
+  for (i = 0; i < 0x13; i = i + 1) {
+    g_fHitLocDamageMult[i] = 1.0;
+    hitLocDmgFields[i].szName = g_HitLocNames[i];
+    hitLocDmgFields[i].iOffset = i << 2;
+    hitLocDmgFields[i].iFieldType = 7;
+    uVar1 = Scr_AllocString(g_HitLocNames[i],1,SCRIPTINSTANCE_SERVER);
+    g_HitLocConstNames[i] = (ushort)uVar1;
   }
   g_fHitLocDamageMult[0x12] = 0.0;
-  pcVar2 = Com_LoadInfoString("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE",
-                              local_400c);
-  iVar3 = ParseConfigStringToStruct
-                    ((uchar *)g_fHitLocDamageMult,local_40f4,0x13,pcVar2,0,
+  pszBuffer = Com_LoadInfoString("info/mp_lochit_dmgtable","hitloc damage table","LOCDMGTABLE",
+                                 loadBuffer);
+  iVar2 = ParseConfigStringToStruct
+                    ((uchar *)g_fHitLocDamageMult,hitLocDmgFields,0x13,pszBuffer,0,
                      (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0,VEH_Strcpy);
-  if (iVar3 == 0) {
+  if (iVar2 == 0) {
     Com_Error(ERR_DROP,"\x15Error parsing hitloc damage table %s\n");
   }
   return;
@@ -57,69 +59,70 @@ void __cdecl G_ParseHitLocDmgTable(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl LookAtKiller(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
+void __cdecl LookAtKiller(gentity_s *self,gentity_s *inflictor,gentity_s *attacker)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
-  float local_1c;
+  float dir;
   float local_18;
   float local_14;
   
-  if ((param_3 == (gentity_s *)0x0) || (param_3 == param_1)) {
-    if ((param_2 == (gentity_s *)0x0) || (param_2 == param_1)) {
-      if ((param_1->client == (gclient_s *)0x0) &&
+  if ((attacker == (gentity_s *)0x0) || (attacker == self)) {
+    if ((inflictor == (gentity_s *)0x0) || (inflictor == self)) {
+      if ((self->client == (gclient_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",199
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      (param_1->client->ps).stats[1] = (int)(param_1->r).currentAngles[1];
+      (self->client->ps).stats[1] = (int)(self->r).currentAngles[1];
       return;
     }
-    local_1c = (param_2->r).currentOrigin[0] - (param_1->r).currentOrigin[0];
-    local_18 = (param_2->r).currentOrigin[1] - (param_1->r).currentOrigin[1];
-    local_14 = (param_2->r).currentOrigin[2] - (param_1->r).currentOrigin[2];
+    dir = (inflictor->r).currentOrigin[0] - (self->r).currentOrigin[0];
+    local_18 = (inflictor->r).currentOrigin[1] - (self->r).currentOrigin[1];
+    local_14 = (inflictor->r).currentOrigin[2] - (self->r).currentOrigin[2];
   }
   else {
-    local_1c = (param_3->r).currentOrigin[0] - (param_1->r).currentOrigin[0];
-    local_18 = (param_3->r).currentOrigin[1] - (param_1->r).currentOrigin[1];
-    local_14 = (param_3->r).currentOrigin[2] - (param_1->r).currentOrigin[2];
+    dir = (attacker->r).currentOrigin[0] - (self->r).currentOrigin[0];
+    local_18 = (attacker->r).currentOrigin[1] - (self->r).currentOrigin[1];
+    local_14 = (attacker->r).currentOrigin[2] - (self->r).currentOrigin[2];
   }
-  vectoyaw(&local_1c);
+  vectoyaw(&dir);
   _ftol2_sse();
-  (param_1->client->ps).stats[1] = extraout_EAX;
-  vectoyaw(&local_1c);
+  (self->client->ps).stats[1] = extraout_EAX;
+  vectoyaw(&dir);
   return;
 }
 
 
 // 00613610  G_MeansOfDeathFromScriptParam  (game_mp/g_combat_mp.cpp:245)
 
-meansOfDeath_t __cdecl G_MeansOfDeathFromScriptParam(int param_1)
+meansOfDeath_t __cdecl G_MeansOfDeathFromScriptParam(int scrParam)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  meansOfDeath_t local_8;
+  char *error;
+  scriptInstance_t inst;
+  ushort modName;
+  int i;
   
-  uVar1 = Scr_GetConstString(param_1,SCRIPTINSTANCE_SERVER);
-  local_8 = MOD_UNKNOWN;
+  uVar1 = Scr_GetConstString(scrParam,SCRIPTINSTANCE_SERVER);
+  i = 0;
   while( true ) {
-    if (0x14 < (int)local_8) {
-      sVar3 = SCRIPTINSTANCE_SERVER;
+    if (0x14 < i) {
+      inst = SCRIPTINSTANCE_SERVER;
       SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
-      pcVar2 = va("Unknown means of death \"%s\"\n");
-      Scr_ParamError(param_1,pcVar2,sVar3);
+      error = va("Unknown means of death \"%s\"\n");
+      Scr_ParamError(scrParam,error,inst);
       return MOD_UNKNOWN;
     }
-    if (*modNames[local_8] == (ushort)uVar1) break;
-    local_8 = local_8 + MOD_PISTOL_BULLET;
+    if (*modNames[i] == (ushort)uVar1) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -132,80 +135,80 @@ meansOfDeath_t __cdecl G_MeansOfDeathFromScriptParam(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DeathGrenadeDrop(gentity_s *param_1,int param_2)
+void __cdecl DeathGrenadeDrop(gentity_s *self,int meansOfDeath)
 
 {
   gclient_s *pgVar1;
   uchar uVar2;
   uint extraout_EAX;
-  uint uVar3;
-  WeaponDef *pWVar4;
-  gentity_s *pgVar5;
+  uint weaponIndex;
+  WeaponDef *pWVar3;
+  gentity_s *pgVar4;
   uint extraout_EDX;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  uint local_24;
-  float local_20;
+  gentity_s *grenade;
+  WeaponDef *weapDef_2;
+  int grenadeWeaponIndex;
+  float launchvel;
   float local_1c;
   float local_18;
-  float local_14;
+  float launchspot;
   float local_10;
   float local_c;
-  WeaponDef *local_8;
+  WeaponDef *weapDef;
   
-  if (((param_1->client->ps).grenadeTimeLeft != 0) &&
-     (((param_1->client->ps).eFlags & 0x4000U) == 0)) {
-    if (((param_1->client->ps).weapFlags & 2U) == 0) {
-      local_24 = (uint)(param_1->client->ps).weapon;
+  if (((self->client->ps).grenadeTimeLeft != 0) && (((self->client->ps).eFlags & 0x4000U) == 0)) {
+    if (((self->client->ps).weapFlags & 2U) == 0) {
+      grenadeWeaponIndex = (int)(self->client->ps).weapon;
     }
     else {
-      local_24 = (param_1->client->ps).offHandIndex;
+      grenadeWeaponIndex = (self->client->ps).offHandIndex;
     }
-    local_20 = G_crandom();
+    launchvel = G_crandom();
     local_1c = G_crandom();
     local_18 = G_crandom();
-    local_20 = local_20 * 160.0;
+    launchvel = launchvel * 160.0;
     local_1c = local_1c * 160.0;
     local_18 = local_18 * 160.0;
-    local_14 = (param_1->r).currentOrigin[0];
-    local_10 = (param_1->r).currentOrigin[1];
-    local_c = (param_1->r).currentOrigin[2];
-    local_8 = BG_GetWeaponDef(local_24);
-    if (local_8->stickiness != WEAPSTICKINESS_ALL) {
+    launchspot = (self->r).currentOrigin[0];
+    local_10 = (self->r).currentOrigin[1];
+    local_c = (self->r).currentOrigin[2];
+    weapDef = BG_GetWeaponDef(grenadeWeaponIndex);
+    if (weapDef->stickiness != WEAPSTICKINESS_ALL) {
       local_c = local_c + 40.0;
     }
-    if (local_8->offhandSlot != OFFHAND_SLOT_EQUIPMENT) {
-      iVar7 = (param_1->client->ps).grenadeTimeLeft;
-      iVar6 = 1;
-      uVar2 = BG_GetPlayerWeaponModel(&param_1->client->ps,local_24);
-      G_FireGrenade(param_1,&local_14,&local_20,local_24,uVar2,iVar6,iVar7);
+    if (weapDef->offhandSlot != OFFHAND_SLOT_EQUIPMENT) {
+      iVar6 = (self->client->ps).grenadeTimeLeft;
+      iVar5 = 1;
+      uVar2 = BG_GetPlayerWeaponModel(&self->client->ps,grenadeWeaponIndex);
+      G_FireGrenade(self,&launchspot,&launchvel,grenadeWeaponIndex,uVar2,iVar5,iVar6);
     }
   }
-  if (((((param_1->client->ps).weapFlags & 0x40000U) != 0) &&
-      (pgVar1 = param_1->client, _allshl(),
+  if (((((self->client->ps).weapFlags & 0x40000U) != 0) &&
+      (pgVar1 = self->client, _allshl(),
       (extraout_EAX & (pgVar1->ps).perks[0]) != 0 || (extraout_EDX & (pgVar1->ps).perks[1]) != 0))
-     && ((((param_1->client->ps).eFlags & 0x4000U) == 0 || ((param_1->client->ps).vehicleType == 6))
-        )) {
-    uVar3 = BG_FindWeaponIndexForName((perk_grenadeDeath->current).string);
-    if (uVar3 == 0) {
+     && ((((self->client->ps).eFlags & 0x4000U) == 0 || ((self->client->ps).vehicleType == 6)))) {
+    weaponIndex = BG_FindWeaponIndexForName((perk_grenadeDeath->current).string);
+    if (weaponIndex == 0) {
       Com_PrintWarning(0xe,"Unknown perk_grenadeDeath grenade: %s\n");
     }
     else {
-      pWVar4 = BG_GetWeaponDef(uVar3);
-      local_20 = G_crandom();
+      pWVar3 = BG_GetWeaponDef(weaponIndex);
+      launchvel = G_crandom();
       local_1c = G_crandom();
       local_18 = G_crandom();
-      local_20 = local_20 * 160.0;
+      launchvel = launchvel * 160.0;
       local_1c = local_1c * 160.0;
       local_18 = local_18 * 160.0;
-      local_14 = (param_1->r).currentOrigin[0];
-      local_10 = (param_1->r).currentOrigin[1];
-      local_c = (param_1->r).currentOrigin[2] + 40.0;
-      iVar7 = pWVar4->fuseTime;
-      iVar6 = 1;
-      uVar2 = BG_GetPlayerWeaponModel(&param_1->client->ps,uVar3);
-      pgVar5 = G_FireGrenade(param_1,&local_14,&local_20,uVar3,uVar2,iVar6,iVar7);
-      pgVar5->flags = pgVar5->flags | 0x8000;
+      launchspot = (self->r).currentOrigin[0];
+      local_10 = (self->r).currentOrigin[1];
+      local_c = (self->r).currentOrigin[2] + 40.0;
+      iVar6 = pWVar3->fuseTime;
+      iVar5 = 1;
+      uVar2 = BG_GetPlayerWeaponModel(&self->client->ps,weaponIndex);
+      pgVar4 = G_FireGrenade(self,&launchspot,&launchvel,weaponIndex,uVar2,iVar5,iVar6);
+      pgVar4->flags = pgVar4->flags | 0x8000;
     }
   }
   return;
@@ -220,8 +223,8 @@ void __cdecl DeathGrenadeDrop(gentity_s *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-player_die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-          int param_6,float *param_7,hitLocation_t param_8,int param_9)
+player_die(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,int meansOfDeath,
+          int iWeapon,float *vDir,hitLocation_t hitLoc,int psTimeOffset)
 
 {
   gclient_s *pgVar1;
@@ -231,37 +234,43 @@ player_die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,
   DObj *pDVar5;
   int iVar6;
   uint local_34;
-  char *local_1c;
-  int local_10;
+  gclient_s *client;
+  gentity_s *turret;
+  char *weaponName;
+  int deathAnimDuration;
+  int isPoisoned;
+  int i;
+  WeaponDef *weapDef;
+  int isFlared;
   
   SV_CheckThread();
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((self->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x15c,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->client->ps).pm_flags & 0x20000U) != 0) {
-    pgVar1 = param_1->client;
+  if (((self->client->ps).pm_flags & 0x20000U) != 0) {
+    pgVar1 = self->client;
     (pgVar1->ps).velocity[0] = 0.0;
     (pgVar1->ps).velocity[1] = 0.0;
   }
-  local_1c = "none";
-  pWVar4 = BG_GetWeaponDef(param_6);
+  weaponName = "none";
+  pWVar4 = BG_GetWeaponDef(iWeapon);
   if (pWVar4 != (WeaponDef *)0x0) {
-    local_1c = BG_WeaponName(param_6);
+    weaponName = BG_WeaponName(iWeapon);
   }
   if (((((onlinegame->current).enabled != false) && ((com_sv_running->current).enabled != false)) &&
-      (param_1 != (gentity_s *)0x0)) && (param_3 != (gentity_s *)0x0)) {
-    MatchRecordDeath(param_1->client,param_3->client,local_1c,param_8);
+      (self != (gentity_s *)0x0)) && (attacker != (gentity_s *)0x0)) {
+    MatchRecordDeath(self->client,attacker->client,weaponName,hitLoc);
   }
-  pDVar5 = Com_GetServerDObj((uint)(param_1->client->ps).clientNum);
+  pDVar5 = Com_GetServerDObj((uint)(self->client->ps).clientNum);
   if ((pDVar5 != (DObj *)0x0) &&
-     (((((param_1->client->ps).pm_type == 0 || ((param_1->client->ps).pm_type == 1)) ||
-       (((param_1->client->ps).pm_type == 6 ||
-        (((param_1->client->ps).pm_type == 7 || ((param_1->client->ps).pm_type == 8)))))) &&
-      (((param_1->client->ps).otherFlags & 2U) == 0)))) {
+     (((((self->client->ps).pm_type == 0 || ((self->client->ps).pm_type == 1)) ||
+       (((self->client->ps).pm_type == 6 ||
+        (((self->client->ps).pm_type == 7 || ((self->client->ps).pm_type == 8)))))) &&
+      (((self->client->ps).otherFlags & 2U) == 0)))) {
     if ((*(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) !=
          &level_bgs) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x182
@@ -270,107 +279,107 @@ player_die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,
       (*pcVar2)();
       return;
     }
-    if (((param_1->client->ps).eFlags & 0x300U) != 0) {
-      if (((param_1->client->ps).viewlocked_entNum == 0x3ff) &&
+    if (((self->client->ps).eFlags & 0x300U) != 0) {
+      if (((self->client->ps).viewlocked_entNum == 0x3ff) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",
                                    0x186,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((level.gentities[(param_1->client->ps).viewlocked_entNum].s.eType != 0xb) &&
+      if ((level.gentities[(self->client->ps).viewlocked_entNum].s.eType != 0xb) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",
                                    0x187,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (level.gentities[(param_1->client->ps).viewlocked_entNum].pTurretInfo != (TurretInfo *)0x0)
-      {
-        G_ClientStopUsingTurret(level.gentities + (param_1->client->ps).viewlocked_entNum);
+      if (level.gentities[(self->client->ps).viewlocked_entNum].pTurretInfo != (TurretInfo *)0x0) {
+        G_ClientStopUsingTurret(level.gentities + (self->client->ps).viewlocked_entNum);
       }
     }
-    if (((param_3->s).eType == 0xb) &&
-       (iVar6 = EntHandle::isDefined(&(param_3->r).ownerNum), iVar6 != 0)) {
-      param_3 = EntHandle::ent(&(param_3->r).ownerNum);
+    if (((attacker->s).eType == 0xb) &&
+       (iVar6 = EntHandle::isDefined(&(attacker->r).ownerNum), iVar6 != 0)) {
+      attacker = EntHandle::ent(&(attacker->r).ownerNum);
     }
-    ScrNotify_FaceEvent(param_1,scr_const.death);
-    local_34 = (uint)(0.001 < (param_1->client->ps).visionSetLerpRatio);
-    Scr_AddBool((param_1->client->ps).poisoned,SCRIPTINSTANCE_SERVER);
+    ScrNotify_FaceEvent(self,scr_const.death);
+    local_34 = (uint)(0.001 < (self->client->ps).visionSetLerpRatio);
+    Scr_AddBool((self->client->ps).poisoned,SCRIPTINSTANCE_SERVER);
     Scr_AddBool(local_34,SCRIPTINSTANCE_SERVER);
-    Scr_AddEntity(param_3,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(param_1,scr_const.flared_or_tabuned_death,3);
-    Scr_AddString(local_1c,SCRIPTINSTANCE_SERVER);
-    Scr_AddBool((uint)(param_5 == 9),SCRIPTINSTANCE_SERVER);
-    Scr_AddEntity(param_3,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(param_1,scr_const.death,3);
-    if (param_5 == 0x11) {
-      (param_1->client->ps).dmgType = 1;
+    Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(self,scr_const.flared_or_tabuned_death,3);
+    Scr_AddString(weaponName,SCRIPTINSTANCE_SERVER);
+    Scr_AddBool((uint)(meansOfDeath == 9),SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(self,scr_const.death,3);
+    if (meansOfDeath == 0x11) {
+      (self->client->ps).dmgType = 1;
     }
-    else if ((((param_5 == 3) || (param_5 == 4)) || (param_5 == 5)) ||
-            ((param_5 == 6 || (param_5 == 0xf)))) {
-      (param_1->client->ps).dmgType = 4;
+    else if ((((meansOfDeath == 3) || (meansOfDeath == 4)) || (meansOfDeath == 5)) ||
+            ((meansOfDeath == 6 || (meansOfDeath == 0xf)))) {
+      (self->client->ps).dmgType = 4;
     }
-    else if ((param_5 == 7) || (param_5 == 8)) {
-      (param_1->client->ps).dmgType = 2;
+    else if ((meansOfDeath == 7) || (meansOfDeath == 8)) {
+      (self->client->ps).dmgType = 2;
     }
-    else if (param_5 == 9) {
-      (param_1->client->ps).dmgType = 3;
+    else if (meansOfDeath == 9) {
+      (self->client->ps).dmgType = 3;
     }
-    else if (param_5 == 0xd) {
+    else if (meansOfDeath == 0xd) {
       if (pWVar4->weapType == WEAPTYPE_GRENADE) {
-        (param_1->client->ps).dmgType = 4;
+        (self->client->ps).dmgType = 4;
       }
       else {
-        (param_1->client->ps).dmgType = 5;
+        (self->client->ps).dmgType = 5;
       }
     }
     else {
-      (param_1->client->ps).dmgType = 0;
+      (self->client->ps).dmgType = 0;
     }
-    if (((((param_1->client->ps).pm_type != 1) && ((param_1->client->ps).pm_type != 0)) &&
-        ((param_1->client->ps).pm_type != 6)) &&
+    if (((((self->client->ps).pm_type != 1) && ((self->client->ps).pm_type != 0)) &&
+        ((self->client->ps).pm_type != 6)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x1c7
                                  ,1,"%s\n\t(self->client->ps.pm_type) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    iVar6 = BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(param_1->client->ps).clientNum * 0x910)
-                               ,ANIM_ET_DEATH,0,1);
-    (param_1->client->ps).pm_type = 10 - (uint)((param_1->client->ps).pm_type != 1);
-    (param_1->client->ps).stats[0] = 0;
-    Scr_PlayerKilled(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,iVar6);
-    DeathGrenadeDrop(param_1,param_5);
-    for (local_10 = 0; local_10 < level.maxclients; local_10 = local_10 + 1) {
+    iVar6 = BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(self->client->ps).clientNum * 0x910),
+                               ANIM_ET_DEATH,0,1);
+    (self->client->ps).pm_type = 10 - (uint)((self->client->ps).pm_type != 1);
+    (self->client->ps).stats[0] = 0;
+    Scr_PlayerKilled(self,inflictor,attacker,damage,meansOfDeath,iWeapon,vDir,hitLoc,psTimeOffset,
+                     iVar6);
+    DeathGrenadeDrop(self,meansOfDeath);
+    for (i = 0; i < level.maxclients; i = i + 1) {
     }
-    param_1->takedamage = '\x01';
-    (param_1->r).contents = 0x4000000;
-    if (((param_1->client->ps).eFlags2 & 0x10000000U) == 0) {
-      (param_1->r).currentAngles[2] = 0.0;
-      LookAtKiller(param_1,param_2,param_3);
-      pgVar1 = param_1->client;
-      (pgVar1->ps).viewangles[0] = (param_1->r).currentAngles[0];
-      (pgVar1->ps).viewangles[1] = (param_1->r).currentAngles[1];
-      (pgVar1->ps).viewangles[2] = (param_1->r).currentAngles[2];
-      (param_1->s).loopSoundId = 0;
-      (param_1->s).loopSoundFade = 0;
-      Sentient_Dissociate(param_1->sentient);
-      if (((param_1->client->ps).eFlags & 0x4000U) != 0) {
-        VEH_UnlinkPlayer(param_1,false,"player_die");
+    self->takedamage = '\x01';
+    (self->r).contents = 0x4000000;
+    if (((self->client->ps).eFlags2 & 0x10000000U) == 0) {
+      (self->r).currentAngles[2] = 0.0;
+      LookAtKiller(self,inflictor,attacker);
+      pgVar1 = self->client;
+      (pgVar1->ps).viewangles[0] = (self->r).currentAngles[0];
+      (pgVar1->ps).viewangles[1] = (self->r).currentAngles[1];
+      (pgVar1->ps).viewangles[2] = (self->r).currentAngles[2];
+      (self->s).loopSoundId = 0;
+      (self->s).loopSoundFade = 0;
+      Sentient_Dissociate(self->sentient);
+      if (((self->client->ps).eFlags & 0x4000U) != 0) {
+        VEH_UnlinkPlayer(self,false,"player_die");
       }
-      SV_UnlinkEntity(param_1);
-      (param_1->r).maxs[2] = 30.0;
-      if (((param_1->r).maxs[2] < (param_1->r).mins[2]) &&
+      SV_UnlinkEntity(self);
+      (self->r).maxs[2] = 30.0;
+      if (((self->r).maxs[2] < (self->r).mins[2]) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",
                                    0x1fd,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      SV_LinkEntity(param_1);
-      param_1->health = 0;
-      param_1->handler = '\x0f';
+      SV_LinkEntity(self);
+      self->health = 0;
+      self->handler = '\x0f';
       if ((*(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) !=
            &level_bgs) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",
@@ -387,7 +396,7 @@ player_die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,
 
 // 006141B0  G_GetWeaponHitLocationMultiplier  (game_mp/g_combat_mp.cpp:521)
 
-float __cdecl G_GetWeaponHitLocationMultiplier(hitLocation_t param_1,int param_2)
+float __cdecl G_GetWeaponHitLocationMultiplier(hitLocation_t hitLoc,int weapon)
 
 {
   float fVar1;
@@ -395,8 +404,9 @@ float __cdecl G_GetWeaponHitLocationMultiplier(hitLocation_t param_1,int param_2
   bool bVar3;
   WeaponDef *pWVar4;
   float10 fVar5;
+  WeaponDef *weapDef;
   
-  if (((int)param_1 < 0) || (0x12 < (int)param_1)) {
+  if (((int)hitLoc < 0) || (0x12 < (int)hitLoc)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x20c,0,
                              "%s");
     if (!bVar3) {
@@ -405,18 +415,18 @@ float __cdecl G_GetWeaponHitLocationMultiplier(hitLocation_t param_1,int param_2
       return (float)fVar5;
     }
   }
-  if (param_2 == 0) {
-    fVar1 = g_fHitLocDamageMult[param_1];
+  if (weapon == 0) {
+    fVar1 = g_fHitLocDamageMult[hitLoc];
   }
   else {
-    pWVar4 = BG_GetWeaponDef(param_2);
+    pWVar4 = BG_GetWeaponDef(weapon);
     if ((pWVar4 == (WeaponDef *)0x0) ||
        (((pWVar4->weapType != WEAPTYPE_BULLET && (pWVar4->weapType != WEAPTYPE_PROJECTILE)) &&
         (pWVar4->weapType != WEAPTYPE_GRENADE)))) {
-      fVar1 = g_fHitLocDamageMult[param_1];
+      fVar1 = g_fHitLocDamageMult[hitLoc];
     }
     else {
-      fVar1 = pWVar4->locationDamageMultipliers[param_1];
+      fVar1 = pWVar4->locationDamageMultipliers[hitLoc];
     }
   }
   return fVar1;
@@ -430,53 +440,56 @@ float __cdecl G_GetWeaponHitLocationMultiplier(hitLocation_t param_1,int param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetWeaponIndexForEntity(gentity_s *param_1)
+int __cdecl G_GetWeaponIndexForEntity(gentity_s *ent)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
+  gclient_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
+  gentity_s *turretEnt;
+  playerState_s *ps;
+  gclient_s *client;
   
-  if (param_1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x220,0,
+  if (ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x220,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  pgVar1 = param_1->client;
-  if (pgVar1 == (gclient_s *)0x0) {
-    uVar5 = (uint)(param_1->s).weapon;
+  ps_00 = ent->client;
+  if (ps_00 == (gclient_s *)0x0) {
+    uVar4 = (uint)(ent->s).weapon;
   }
-  else if (((pgVar1->ps).eFlags & 0x300U) == 0) {
-    uVar5 = BG_GetViewmodelWeaponIndex(&pgVar1->ps);
+  else if (((ps_00->ps).eFlags & 0x300U) == 0) {
+    uVar4 = BG_GetViewmodelWeaponIndex(&ps_00->ps);
   }
   else {
-    if ((pgVar1->ps).viewlocked == PLAYERVIEWLOCK_NONE) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x22e,0
+    if ((ps_00->ps).viewlocked == PLAYERVIEWLOCK_NONE) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x22e,0
                                ,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
     }
-    if ((pgVar1->ps).viewlocked_entNum == 0x3ff) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x22f,0
+    if ((ps_00->ps).viewlocked_entNum == 0x3ff) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x22f,0
                                ,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
     }
-    uVar5 = (uint)g_entities[(pgVar1->ps).viewlocked_entNum].s.weapon;
+    uVar4 = (uint)g_entities[(ps_00->ps).viewlocked_entNum].s.weapon;
   }
-  return uVar5;
+  return uVar4;
 }
 
 
@@ -488,9 +501,8 @@ int __cdecl G_GetWeaponIndexForEntity(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_DamageClient(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4,
-              float *param_5,int param_6,int param_7,int param_8,int param_9,hitLocation_t param_10,
-              int param_11)
+G_DamageClient(gentity_s *targ,gentity_s *inflictor,gentity_s *attacker,float *dir,float *point,
+              int damage,int dflags,int mod,int weapon,hitLocation_t hitLoc,int timeOffset)
 
 {
   code *pcVar1;
@@ -498,24 +510,24 @@ G_DamageClient(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *p
   uint uVar3;
   int extraout_EAX;
   
-  if ((((param_1->takedamage != '\0') && (0 < param_6)) && ((param_1->client->flags & 3U) == 0)) &&
-     ((((param_1->client->sess).connected == CON_CONNECTED && ((param_1->client->ps).pm_type != 9))
-      && (((param_1->client->ps).otherFlags & 1U) == 0)))) {
-    if (param_9 == -1) {
-      if (param_2 == (gentity_s *)0x0) {
-        if (param_3 == (gentity_s *)0x0) {
-          param_9 = 0;
+  if ((((targ->takedamage != '\0') && (0 < damage)) && ((targ->client->flags & 3U) == 0)) &&
+     ((((targ->client->sess).connected == CON_CONNECTED && ((targ->client->ps).pm_type != 9)) &&
+      (((targ->client->ps).otherFlags & 1U) == 0)))) {
+    if (weapon == -1) {
+      if (inflictor == (gentity_s *)0x0) {
+        if (attacker == (gentity_s *)0x0) {
+          weapon = 0;
         }
         else {
-          param_9 = G_GetWeaponIndexForEntity(param_3);
+          weapon = G_GetWeaponIndexForEntity(attacker);
         }
       }
       else {
-        param_9 = G_GetWeaponIndexForEntity(param_2);
+        weapon = G_GetWeaponIndexForEntity(inflictor);
       }
     }
     uVar3 = BG_GetNumWeapons();
-    if (uVar3 <= (uint)param_9) {
+    if (uVar3 <= (uint)weapon) {
       BG_GetNumWeapons();
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x26a,0
                                ,"weapon doesn\'t index BG_GetNumWeapons()\n\t%i not in [0, %i)");
@@ -525,27 +537,26 @@ G_DamageClient(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *p
         return;
       }
     }
-    if ((((int)param_10 < 0) || (0x12 < (int)param_10)) &&
+    if ((((int)hitLoc < 0) || (0x12 < (int)hitLoc)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x26d
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_8 != 7) {
-      G_GetWeaponHitLocationMultiplier(param_10,param_9);
+    if (mod != 7) {
+      G_GetWeaponHitLocationMultiplier(hitLoc,weapon);
       _ftol2_sse();
-      param_6 = extraout_EAX;
+      damage = extraout_EAX;
     }
-    if (param_6 < 1) {
-      param_6 = 1;
+    if (damage < 1) {
+      damage = 1;
     }
     if ((((onlinegame->current).enabled != false) && ((com_sv_running->current).enabled != false))
-       && (param_3 != (gentity_s *)0x0)) {
-      MatchRecordHit(param_3->client,param_10);
+       && (attacker != (gentity_s *)0x0)) {
+      MatchRecordHit(attacker->client,hitLoc);
     }
-    Scr_PlayerDamage(param_1,param_2,param_3,param_6,param_7,param_8,param_9,param_5,param_4,
-                     param_10,param_11);
+    Scr_PlayerDamage(targ,inflictor,attacker,damage,dflags,mod,weapon,point,dir,hitLoc,timeOffset);
   }
   return;
 }
@@ -559,8 +570,8 @@ G_DamageClient(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_DamageActor(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4,float *param_5
-             ,int param_6,int param_7,int param_8,int param_9,hitLocation_t param_10,int param_11)
+G_DamageActor(gentity_s *targ,gentity_s *inflictor,gentity_s *attacker,float *dir,float *point,
+             int damage,int dflags,int mod,int weapon,hitLocation_t hitLoc,int timeOffset)
 
 {
   code *pcVar1;
@@ -568,23 +579,22 @@ G_DamageActor(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *pa
   uint uVar3;
   int extraout_EAX;
   
-  if (((param_1->takedamage != '\0') && (0 < param_6)) && ((param_1->actor->Physics).bIsAlive != 0))
-  {
-    if (param_9 == -1) {
-      if (param_2 == (gentity_s *)0x0) {
-        if (param_3 == (gentity_s *)0x0) {
-          param_9 = 0;
+  if (((targ->takedamage != '\0') && (0 < damage)) && ((targ->actor->Physics).bIsAlive != 0)) {
+    if (weapon == -1) {
+      if (inflictor == (gentity_s *)0x0) {
+        if (attacker == (gentity_s *)0x0) {
+          weapon = 0;
         }
         else {
-          param_9 = G_GetWeaponIndexForEntity(param_3);
+          weapon = G_GetWeaponIndexForEntity(attacker);
         }
       }
       else {
-        param_9 = G_GetWeaponIndexForEntity(param_2);
+        weapon = G_GetWeaponIndexForEntity(inflictor);
       }
     }
     uVar3 = BG_GetNumWeapons();
-    if (uVar3 <= (uint)param_9) {
+    if (uVar3 <= (uint)weapon) {
       BG_GetNumWeapons();
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x2a6,0
                                ,"weapon doesn\'t index BG_GetNumWeapons()\n\t%i not in [0, %i)");
@@ -594,23 +604,22 @@ G_DamageActor(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *pa
         return;
       }
     }
-    if ((((int)param_10 < 0) || (0x12 < (int)param_10)) &&
+    if ((((int)hitLoc < 0) || (0x12 < (int)hitLoc)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x2a9
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_8 != 7) {
-      G_GetWeaponHitLocationMultiplier(param_10,param_9);
+    if (mod != 7) {
+      G_GetWeaponHitLocationMultiplier(hitLoc,weapon);
       _ftol2_sse();
-      param_6 = extraout_EAX;
+      damage = extraout_EAX;
     }
-    if (param_6 < 1) {
-      param_6 = 1;
+    if (damage < 1) {
+      damage = 1;
     }
-    Scr_ActorDamage(param_1,param_2,param_3,param_6,param_7,param_8,param_9,param_5,param_4,param_10
-                    ,param_11);
+    Scr_ActorDamage(targ,inflictor,attacker,damage,dflags,mod,weapon,point,dir,hitLoc,timeOffset);
   }
   return;
 }
@@ -624,33 +633,33 @@ G_DamageActor(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_DamageVehicle(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4,
-               float *param_5,int param_6,int param_7,int param_8,int param_9,hitLocation_t param_10
-               ,int param_11,uint param_12,uint param_13)
+G_DamageVehicle(gentity_s *targ,gentity_s *inflictor,gentity_s *attacker,float *dir,float *point,
+               int damage,int dflags,int mod,int weapon,hitLocation_t hitLoc,int timeOffset,
+               uint modelIndex,uint partName)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int local_8;
+  int damageFromUnderneath;
   
-  local_8 = 0;
-  if (((param_1->takedamage != '\0') && (0 < param_6)) && (0 < param_1->health)) {
-    if (param_9 == -1) {
-      if (param_2 == (gentity_s *)0x0) {
-        if (param_3 == (gentity_s *)0x0) {
-          param_9 = 0;
+  damageFromUnderneath = 0;
+  if (((targ->takedamage != '\0') && (0 < damage)) && (0 < targ->health)) {
+    if (weapon == -1) {
+      if (inflictor == (gentity_s *)0x0) {
+        if (attacker == (gentity_s *)0x0) {
+          weapon = 0;
         }
         else {
-          param_9 = G_GetWeaponIndexForEntity(param_3);
+          weapon = G_GetWeaponIndexForEntity(attacker);
         }
       }
       else {
-        param_9 = G_GetWeaponIndexForEntity(param_2);
+        weapon = G_GetWeaponIndexForEntity(inflictor);
       }
     }
     uVar3 = BG_GetNumWeapons();
-    if (uVar3 <= (uint)param_9) {
+    if (uVar3 <= (uint)weapon) {
       BG_GetNumWeapons();
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x2d5,0
                                ,"weapon doesn\'t index BG_GetNumWeapons()\n\t%i not in [0, %i)");
@@ -660,10 +669,10 @@ G_DamageVehicle(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *
         return;
       }
     }
-    Scr_Vehicle_DamageScale(param_1,param_3,param_2,param_5,param_8,param_9,&local_8);
-    if (0 < param_6) {
-      Scr_VehicleDamage(param_1,param_2,param_3,param_6,param_7,param_8,param_9,param_5,param_4,
-                        param_10,param_11,local_8,param_12,param_13);
+    Scr_Vehicle_DamageScale(targ,attacker,inflictor,point,mod,weapon,&damageFromUnderneath);
+    if (0 < damage) {
+      Scr_VehicleDamage(targ,inflictor,attacker,damage,dflags,mod,weapon,point,dir,hitLoc,timeOffset
+                        ,damageFromUnderneath,modelIndex,partName);
     }
   }
   return;
@@ -678,65 +687,66 @@ G_DamageVehicle(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_DamageNotify(ushort param_1,gentity_s *param_2,gentity_s *param_3,float *param_4,float *param_5,
-              int param_6,int param_7,int param_8,uint param_9,uint param_10,char *param_11)
+G_DamageNotify(ushort notify,gentity_s *targ,gentity_s *attacker,float *dir,float *point,int damage,
+              int mod,int dFlags,uint modelIndex,uint partName,char *weaponName)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint value;
+  uint modelName;
   
-  Scr_AddInt(param_8,SCRIPTINSTANCE_SERVER);
-  Scr_AddString(param_11,SCRIPTINSTANCE_SERVER);
-  if (param_10 == 0) {
+  Scr_AddInt(dFlags,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(weaponName,SCRIPTINSTANCE_SERVER);
+  if (partName == 0) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString(param_10,SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString(partName,SCRIPTINSTANCE_SERVER);
   }
-  if (param_9 == 0) {
+  if (modelIndex == 0) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
-  else if (param_2->destructible == (Destructible *)0x0) {
-    if ((param_2->attachModelNames[param_9 + 0x12] == 0) &&
+  else if (targ->destructible == (Destructible *)0x0) {
+    if ((targ->attachModelNames[modelIndex + 0x12] == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x2f4
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = SV_GetConfigstringConst(param_2->attachModelNames[param_9 - 1] + 0x620);
-    if ((uVar3 == 0) &&
+    value = SV_GetConfigstringConst(targ->attachModelNames[modelIndex - 1] + 0x620);
+    if ((value == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x2f7
                                  ,1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Scr_AddConstString((uint)param_2->attachModelNames[param_9 + 0x12],SCRIPTINSTANCE_SERVER);
-    Scr_AddConstString(uVar3,SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)targ->attachModelNames[modelIndex + 0x12],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString(value,SCRIPTINSTANCE_SERVER);
   }
   else {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddConstString((uint)*modNames[param_7],SCRIPTINSTANCE_SERVER);
-  if (param_5 == (float *)0x0) {
+  Scr_AddConstString((uint)*modNames[mod],SCRIPTINSTANCE_SERVER);
+  if (point == (float *)0x0) {
     Scr_AddVector(vec3_origin,SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(param_5,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(point,SCRIPTINSTANCE_SERVER);
   }
-  if (param_4 == (float *)0x0) {
+  if (dir == (float *)0x0) {
     Scr_AddVector(vec3_origin,SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(param_4,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(dir,SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddEntity(param_3,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_6,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_2,param_1,10);
+  Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(targ,notify,10);
   return;
 }
 
@@ -749,35 +759,35 @@ G_DamageNotify(ushort param_1,gentity_s *param_2,gentity_s *param_3,float *param
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_Damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4,float *param_5,
-        int param_6,int param_7,int param_8,int param_9,hitLocation_t param_10,uint param_11,
-        uint param_12,int param_13)
+G_Damage(gentity_s *targ,gentity_s *inflictor,gentity_s *attacker,float *dir,float *point,int damage
+        ,int dFlags,int mod,int weapon,hitLocation_t hitLoc,uint modelIndex,uint partName,
+        int timeOffset)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
-  float local_18 [3];
-  code *local_c;
-  code *local_8;
+  char *weaponName;
+  float localdir [3];
+  code *die;
+  code *pain;
   
-  if (param_1->client == (gclient_s *)0x0) {
-    if (param_1->actor == (actor_s *)0x0) {
-      if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
-        if (param_1->takedamage != '\0') {
-          if (param_2 == (gentity_s *)0x0) {
-            param_2 = g_entities + 0x3fe;
+  if (targ->client == (gclient_s *)0x0) {
+    if (targ->actor == (actor_s *)0x0) {
+      if (targ->scr_vehicle == (scr_vehicle_s *)0x0) {
+        if (targ->takedamage != '\0') {
+          if (inflictor == (gentity_s *)0x0) {
+            inflictor = g_entities + 0x3fe;
           }
-          if (param_3 == (gentity_s *)0x0) {
-            param_3 = g_entities + 0x3fe;
+          if (attacker == (gentity_s *)0x0) {
+            attacker = g_entities + 0x3fe;
           }
-          if (param_9 == -1) {
-            param_9 = G_GetWeaponIndexForEntity(param_2);
+          if (weapon == -1) {
+            weapon = G_GetWeaponIndexForEntity(inflictor);
           }
           uVar3 = BG_GetNumWeapons();
-          if (uVar3 <= (uint)param_9) {
+          if (uVar3 <= (uint)weapon) {
             BG_GetNumWeapons();
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",
                                      0x351,0,
@@ -789,68 +799,66 @@ G_Damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4
               return;
             }
           }
-          if ((param_1->scr_vehicle == (scr_vehicle_s *)0x0) ||
-             (iVar4 = G_IsVehicleImmune(param_1,param_8,param_7,param_9), iVar4 == 0)) {
-            if (((param_1->r).inuse == '\0') &&
+          if ((targ->scr_vehicle == (scr_vehicle_s *)0x0) ||
+             (iVar4 = G_IsVehicleImmune(targ,mod,dFlags,weapon), iVar4 == 0)) {
+            if (((targ->r).inuse == '\0') &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp"
                                          ,0x359,0,"%s\n\t(targ->s.number) = %i"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            if (((param_3->r).inuse == '\0') &&
+            if (((attacker->r).inuse == '\0') &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp"
                                          ,0x35a,0,"%s\n\t(attacker->s.number) = %i"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            Vec3NormalizeTo(param_4,local_18);
-            if ((param_1->flags & 1U) == 0) {
-              if (param_6 < 1) {
-                param_6 = 1;
+            Vec3NormalizeTo(dir,localdir);
+            if ((targ->flags & 1U) == 0) {
+              if (damage < 1) {
+                damage = 1;
               }
-              if (((param_1->flags & 2U) != 0) &&
-                 (param_1->health == param_6 || param_1->health - param_6 < 0)) {
-                param_6 = param_1->health + -1;
+              if (((targ->flags & 2U) != 0) && (targ->health == damage || targ->health - damage < 0)
+                 ) {
+                damage = targ->health + -1;
               }
               if ((g_debugDamage->current).enabled != false) {
                 Com_Printf(0xf,"target:%i health:%i damage:%i\n");
               }
-              if (((param_6 != 0) && ((param_7 & 1U) == 0)) &&
-                 (param_1->destructible != (Destructible *)0x0)) {
-                if ((param_7 & 0x10U) == 0) {
-                  param_6 = DestructibleDamage(param_1,param_3,param_4,param_5,param_6,param_8,
-                                               param_11,param_12);
+              if (((damage != 0) && ((dFlags & 1U) == 0)) &&
+                 (targ->destructible != (Destructible *)0x0)) {
+                if ((dFlags & 0x10U) == 0) {
+                  damage = DestructibleDamage(targ,attacker,dir,point,damage,mod,modelIndex,partName
+                                             );
                 }
                 else {
-                  DestructibleDamage(param_1,param_3,param_4,param_5,param_6,param_8,param_11,
-                                     param_12);
+                  DestructibleDamage(targ,attacker,dir,point,damage,mod,modelIndex,partName);
                 }
               }
-              if (param_1->classname != scr_const.trigger_damage) {
-                param_1->health = param_1->health - param_6;
+              if (targ->classname != scr_const.trigger_damage) {
+                targ->health = targ->health - damage;
               }
-              pcVar5 = BG_WeaponName(param_9);
-              G_DamageNotify(scr_const.damage,param_1,param_3,param_4,param_5,param_6,param_8,
-                             param_7,param_11,param_12,pcVar5);
-              if (param_1->health < 1) {
-                if (param_1->health < -999) {
-                  param_1->health = -999;
+              weaponName = BG_WeaponName(weapon);
+              G_DamageNotify(scr_const.damage,targ,attacker,dir,point,damage,mod,dFlags,modelIndex,
+                             partName,weaponName);
+              if (targ->health < 1) {
+                if (targ->health < -999) {
+                  targ->health = -999;
                 }
-                ScrNotify_FaceEvent(param_1,scr_const.death);
-                Scr_AddEntity(param_3,SCRIPTINSTANCE_SERVER);
-                Scr_Notify(param_1,scr_const.death,1);
-                local_c = *(code **)(&DAT_00e07cec + (uint)param_1->handler * 0x30);
-                if (local_c != (code *)0x0) {
-                  (*local_c)(param_1,param_2,param_3,param_6,param_8,param_9,local_18,param_10,
-                             param_13);
+                ScrNotify_FaceEvent(targ,scr_const.death);
+                Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+                Scr_Notify(targ,scr_const.death,1);
+                die = *(code **)(&DAT_00e07cec + (uint)targ->handler * 0x30);
+                if (die != (code *)0x0) {
+                  (*die)(targ,inflictor,attacker,damage,mod,weapon,localdir,hitLoc,timeOffset);
                 }
               }
               else {
-                local_8 = *(code **)(&DAT_00e07ce4 + (uint)param_1->handler * 0x30);
-                if (local_8 != (code *)0x0) {
-                  (*local_8)(param_1,param_3,param_6,param_5,param_8,local_18,param_10,param_9);
+                pain = *(code **)(&DAT_00e07ce4 + (uint)targ->handler * 0x30);
+                if (pain != (code *)0x0) {
+                  (*pain)(targ,attacker,damage,point,mod,localdir,hitLoc,weapon);
                 }
               }
             }
@@ -858,18 +866,16 @@ G_Damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4
         }
       }
       else {
-        G_DamageVehicle(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,
-                        param_10,param_13,param_11,param_12);
+        G_DamageVehicle(targ,inflictor,attacker,dir,point,damage,dFlags,mod,weapon,hitLoc,timeOffset
+                        ,modelIndex,partName);
       }
     }
     else {
-      G_DamageActor(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10
-                    ,param_13);
+      G_DamageActor(targ,inflictor,attacker,dir,point,damage,dFlags,mod,weapon,hitLoc,timeOffset);
     }
   }
   else {
-    G_DamageClient(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-                   param_13);
+    G_DamageClient(targ,inflictor,attacker,dir,point,damage,dFlags,mod,weapon,hitLoc,timeOffset);
   }
   return;
 }
@@ -884,65 +890,65 @@ G_Damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,float *param_4
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 float __cdecl
-CanDamage(gentity_s *param_1,gentity_s *param_2,float *param_3,float param_4,float *param_5,
-         int param_6)
+CanDamage(gentity_s *targ,gentity_s *inflictor,float *centerPos,float coneAngleCos,
+         float *coneDirection,int contentMask)
 
 {
   int iVar1;
   float fVar2;
-  float local_138;
+  float dir_4;
   float local_134;
   float local_130;
-  float local_12c;
+  float dir_3;
   float local_128;
   float local_124;
-  char local_11d;
-  float *local_11c;
-  float local_118;
+  bool success_2;
+  float *color_2;
+  float centerToCorner;
   float local_114;
   float local_110;
-  DObj *local_10c;
-  float local_108;
-  float local_104;
+  DObj *obj;
+  float radiusUp;
+  float absMaxs;
   float local_100;
   float local_fc;
-  float local_f8;
+  float right_2;
   float local_f4;
   float local_f0;
-  float local_ec;
+  float forward_2;
   float local_e8;
   float local_e4;
-  float local_e0;
+  float up;
   float local_dc;
   float local_d8;
-  float local_d4;
-  float local_d0;
+  float radiusRight;
+  float absMins;
   float local_cc;
   float local_c8;
-  float local_c4;
+  float dir_2;
   float local_c0;
   float local_bc;
-  float local_b8;
+  float dir;
   float local_b4;
   float local_b0;
-  char local_a9;
-  float *local_a8;
-  float local_a4;
-  float local_a0;
+  bool success;
+  float *color;
+  float halfWidth;
+  float right;
   float local_9c;
   float local_98;
-  float local_94;
+  float forward;
   float local_90;
   float local_8c;
-  float local_88;
+  float eyeOrigin;
   float local_84;
   float local_80;
-  float local_7c;
-  int local_78;
-  int local_74;
-  col_context_t local_70;
-  int local_48;
-  float local_44 [4];
+  float halfHeight;
+  int hits;
+  int hitnum;
+  col_context_t context;
+  int inflictorNum;
+  float dest [4];
   float local_34;
   float local_30;
   float local_2c;
@@ -954,190 +960,192 @@ CanDamage(gentity_s *param_1,gentity_s *param_2,float *param_3,float param_4,flo
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
-  if (param_2 == (gentity_s *)0x0) {
-    local_48 = 0x3ff;
+  if (inflictor == (gentity_s *)0x0) {
+    inflictorNum = 0x3ff;
   }
   else {
-    if (((((param_2->s).eType == 4) && (param_2->tagInfo != (tagInfo_s *)0x0)) &&
-        (param_2->tagInfo->parent != (gentity_s *)0x0)) && (param_2->tagInfo->parent == param_1)) {
+    if (((((inflictor->s).eType == 4) && (inflictor->tagInfo != (tagInfo_s *)0x0)) &&
+        (inflictor->tagInfo->parent != (gentity_s *)0x0)) && (inflictor->tagInfo->parent == targ)) {
       return 1.0;
     }
-    local_48 = (param_2->s).number;
+    inflictorNum = (inflictor->s).number;
   }
-  col_context_t::col_context_t(&local_70,param_6);
-  col_context_t::init_locational(&local_70,(param_1->s).number,local_48);
-  local_74 = -1;
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((param_1->classname == scr_const.script_model) && (param_1->model != 0)) {
-      local_10c = Com_GetServerDObj((param_1->s).number);
-      DObjPhysicsGetBounds(local_10c,&local_d0,&local_104);
-      local_d0 = (param_1->r).currentOrigin[0] + local_d0;
-      local_cc = (param_1->r).currentOrigin[1] + local_cc;
-      local_c8 = (param_1->r).currentOrigin[2] + local_c8;
-      local_104 = (param_1->r).currentOrigin[0] + local_104;
-      local_100 = (param_1->r).currentOrigin[1] + local_100;
-      local_fc = (param_1->r).currentOrigin[2] + local_fc;
+  col_context_t::col_context_t(&context,contentMask);
+  col_context_t::init_locational(&context,(targ->s).number,inflictorNum);
+  hitnum = -1;
+  if (targ->client == (gclient_s *)0x0) {
+    if ((targ->classname == scr_const.script_model) && (targ->model != 0)) {
+      obj = Com_GetServerDObj((targ->s).number);
+      DObjPhysicsGetBounds(obj,&absMins,&absMaxs);
+      absMins = (targ->r).currentOrigin[0] + absMins;
+      local_cc = (targ->r).currentOrigin[1] + local_cc;
+      local_c8 = (targ->r).currentOrigin[2] + local_c8;
+      absMaxs = (targ->r).currentOrigin[0] + absMaxs;
+      local_100 = (targ->r).currentOrigin[1] + local_100;
+      local_fc = (targ->r).currentOrigin[2] + local_fc;
     }
     else {
-      local_d0 = (param_1->r).absmin[0];
-      local_cc = (param_1->r).absmin[1];
-      local_c8 = (param_1->r).absmin[2];
-      local_104 = (param_1->r).absmax[0];
-      local_100 = (param_1->r).absmax[1];
-      local_fc = (param_1->r).absmax[2];
+      absMins = (targ->r).absmin[0];
+      local_cc = (targ->r).absmin[1];
+      local_c8 = (targ->r).absmin[2];
+      absMaxs = (targ->r).absmax[0];
+      local_100 = (targ->r).absmax[1];
+      local_fc = (targ->r).absmax[2];
     }
-    local_44[0] = (local_d0 + local_104) * 0.5;
-    local_44[1] = (local_cc + local_100) * 0.5;
-    local_44[2] = (local_c8 + local_fc) * 0.5;
-    local_ec = *param_3 - local_44[0];
-    local_e8 = param_3[1] - local_44[1];
-    local_e4 = param_3[2] - local_44[2];
-    Vec3Normalize(&local_ec);
-    if (local_ec * local_ec + local_e8 * local_e8 < 0.001) {
-      local_ec = 1.0;
+    dest[0] = (absMins + absMaxs) * 0.5;
+    dest[1] = (local_cc + local_100) * 0.5;
+    dest[2] = (local_c8 + local_fc) * 0.5;
+    forward_2 = *centerPos - dest[0];
+    local_e8 = centerPos[1] - dest[1];
+    local_e4 = centerPos[2] - dest[2];
+    Vec3Normalize(&forward_2);
+    if (forward_2 * forward_2 + local_e8 * local_e8 < 0.001) {
+      forward_2 = 1.0;
       local_e8 = 0.0;
       local_e4 = 0.0;
     }
-    local_f8 = -local_e8;
-    local_f4 = local_ec;
+    right_2 = -local_e8;
+    local_f4 = forward_2;
     local_f0 = 0.0;
-    Vec3Normalize(&local_f8);
-    Vec3Cross(&local_ec,&local_f8,&local_e0);
-    local_118 = local_104 - local_44[0];
-    local_114 = local_100 - local_44[1];
-    local_110 = local_fc - local_44[2];
-    local_d4 = ABS(local_f4 * local_114) + ABS(local_f8 * local_118);
-    local_108 = ABS(local_e0 * local_118) + ABS(local_dc * local_114) + ABS(local_d8 * local_110);
-    local_f8 = local_d4 * local_f8;
-    local_f4 = local_d4 * local_f4;
-    local_f0 = local_d4 * local_f0;
-    local_e0 = local_108 * local_e0;
-    local_dc = local_108 * local_dc;
-    local_d8 = local_108 * local_d8;
-    local_44[3] = local_44[0] + local_f8 + local_e0;
-    local_34 = local_44[1] + local_f4 + local_dc;
-    local_2c = local_f8 * -1.0 + local_44[0] + local_e0;
-    local_28 = local_f4 * -1.0 + local_44[1] + local_dc;
-    local_20 = local_e0 * -1.0 + local_44[0] + local_f8;
-    local_1c = local_dc * -1.0 + local_44[1] + local_f4;
-    local_14 = local_e0 * -1.0 + local_f8 * -1.0 + local_44[0];
-    local_10 = local_dc * -1.0 + local_f4 * -1.0 + local_44[1];
+    Vec3Normalize(&right_2);
+    Vec3Cross(&forward_2,&right_2,&up);
+    centerToCorner = absMaxs - dest[0];
+    local_114 = local_100 - dest[1];
+    local_110 = local_fc - dest[2];
+    radiusRight = ABS(local_f4 * local_114) + ABS(right_2 * centerToCorner);
+    radiusUp = ABS(up * centerToCorner) + ABS(local_dc * local_114) + ABS(local_d8 * local_110);
+    right_2 = radiusRight * right_2;
+    local_f4 = radiusRight * local_f4;
+    local_f0 = radiusRight * local_f0;
+    up = radiusUp * up;
+    local_dc = radiusUp * local_dc;
+    local_d8 = radiusUp * local_d8;
+    dest[3] = dest[0] + right_2 + up;
+    local_34 = dest[1] + local_f4 + local_dc;
+    local_2c = right_2 * -1.0 + dest[0] + up;
+    local_28 = local_f4 * -1.0 + dest[1] + local_dc;
+    local_20 = up * -1.0 + dest[0] + right_2;
+    local_1c = local_dc * -1.0 + dest[1] + local_f4;
+    local_14 = up * -1.0 + right_2 * -1.0 + dest[0];
+    local_10 = local_dc * -1.0 + local_f4 * -1.0 + dest[1];
     if ((radius_damage_debug->current).enabled != false) {
-      for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-        local_11d = '\x01';
-        local_11c = colorWhite;
-        if ((param_4 != -1.0) && (param_5 != (float *)0x0)) {
-          local_12c = local_44[local_8 * 3] - *param_3;
-          local_128 = local_44[local_8 * 3 + 1] - param_3[1];
-          local_124 = local_44[local_8 * 3 + 2] - param_3[2];
-          Vec3Normalize(&local_12c);
-          if (local_12c * *param_5 + local_128 * param_5[1] + local_124 * param_5[2] < param_4) {
-            local_11d = '\0';
-            local_11c = colorOrange;
+      for (i = 0; i < 5; i = i + 1) {
+        success_2 = true;
+        color_2 = colorWhite;
+        if ((coneAngleCos != -1.0) && (coneDirection != (float *)0x0)) {
+          dir_3 = dest[i * 3] - *centerPos;
+          local_128 = dest[i * 3 + 1] - centerPos[1];
+          local_124 = dest[i * 3 + 2] - centerPos[2];
+          Vec3Normalize(&dir_3);
+          if (dir_3 * *coneDirection + local_128 * coneDirection[1] + local_124 * coneDirection[2] <
+              coneAngleCos) {
+            success_2 = false;
+            color_2 = colorOrange;
           }
         }
-        if ((local_11d != '\0') &&
-           (iVar1 = SV_SightTracePoint(&local_74,param_3,local_44 + local_8 * 3,&local_70),
-           iVar1 == 0)) {
-          local_11c = colorRed;
+        if ((success_2 != false) &&
+           (iVar1 = SV_SightTracePoint(&hitnum,centerPos,dest + i * 3,&context), iVar1 == 0)) {
+          color_2 = colorRed;
         }
-        G_DebugLineWithDuration(param_3,local_44 + local_8 * 3,local_11c,1,300);
+        G_DebugLineWithDuration(centerPos,dest + i * 3,color_2,1,300);
       }
     }
-    for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if ((param_4 == -1.0) || (param_5 == (float *)0x0)) {
+    for (i = 0; i < 5; i = i + 1) {
+      if ((coneAngleCos == -1.0) || (coneDirection == (float *)0x0)) {
 LAB_00615fb3:
-        iVar1 = SV_SightTracePoint(&local_74,param_3,local_44 + local_8 * 3,&local_70);
+        iVar1 = SV_SightTracePoint(&hitnum,centerPos,dest + i * 3,&context);
         if (iVar1 != 0) {
           return 1.0;
         }
       }
       else {
-        local_138 = local_44[local_8 * 3] - *param_3;
-        local_134 = local_44[local_8 * 3 + 1] - param_3[1];
-        local_130 = local_44[local_8 * 3 + 2] - param_3[2];
-        Vec3Normalize(&local_138);
-        if (param_4 <= local_138 * *param_5 + local_134 * param_5[1] + local_130 * param_5[2])
+        dir_4 = dest[i * 3] - *centerPos;
+        local_134 = dest[i * 3 + 1] - centerPos[1];
+        local_130 = dest[i * 3 + 2] - centerPos[2];
+        Vec3Normalize(&dir_4);
+        if (coneAngleCos <=
+            dir_4 * *coneDirection + local_134 * coneDirection[1] + local_130 * coneDirection[2])
         goto LAB_00615fb3;
       }
     }
     fVar2 = 0.0;
   }
   else {
-    local_a4 = 15.0;
-    G_GetPlayerBodyViewOrigin(&param_1->client->ps,&local_88);
-    local_7c = (local_80 - (param_1->r).currentOrigin[2]) * 0.5;
-    local_94 = *param_3 - (param_1->r).currentOrigin[0];
-    local_90 = param_3[1] - (param_1->r).currentOrigin[1];
+    halfWidth = 15.0;
+    G_GetPlayerBodyViewOrigin(&targ->client->ps,&eyeOrigin);
+    halfHeight = (local_80 - (targ->r).currentOrigin[2]) * 0.5;
+    forward = *centerPos - (targ->r).currentOrigin[0];
+    local_90 = centerPos[1] - (targ->r).currentOrigin[1];
     local_8c = 0.0;
-    Vec3Normalize(&local_94);
-    local_a0 = -local_90;
-    local_9c = local_94;
+    Vec3Normalize(&forward);
+    right = -local_90;
+    local_9c = forward;
     local_98 = local_8c;
-    local_44[0] = (local_88 + (param_1->r).currentOrigin[0]) * 0.5;
-    local_44[1] = (local_84 + (param_1->r).currentOrigin[1]) * 0.5;
-    local_44[2] = (local_80 + (param_1->r).currentOrigin[2]) * 0.5;
-    local_44[3] = local_a4 * local_a0 + local_44[0];
-    local_34 = local_a4 * local_94 + local_44[1];
-    local_30 = local_a4 * local_8c + local_44[2] + local_7c;
-    local_2c = local_a4 * local_a0 + local_44[0];
-    local_28 = local_a4 * local_94 + local_44[1];
-    local_24 = (local_a4 * local_8c + local_44[2]) - local_7c;
-    fVar2 = -local_a4;
-    local_20 = fVar2 * local_a0 + local_44[0];
-    local_1c = fVar2 * local_94 + local_44[1];
-    local_18 = fVar2 * local_8c + local_44[2] + local_7c;
-    fVar2 = -local_a4;
-    local_14 = fVar2 * local_a0 + local_44[0];
-    local_10 = fVar2 * local_94 + local_44[1];
-    local_c = (fVar2 * local_8c + local_44[2]) - local_7c;
+    dest[0] = (eyeOrigin + (targ->r).currentOrigin[0]) * 0.5;
+    dest[1] = (local_84 + (targ->r).currentOrigin[1]) * 0.5;
+    dest[2] = (local_80 + (targ->r).currentOrigin[2]) * 0.5;
+    dest[3] = halfWidth * right + dest[0];
+    local_34 = halfWidth * forward + dest[1];
+    local_30 = halfWidth * local_8c + dest[2] + halfHeight;
+    local_2c = halfWidth * right + dest[0];
+    local_28 = halfWidth * forward + dest[1];
+    local_24 = (halfWidth * local_8c + dest[2]) - halfHeight;
+    fVar2 = -halfWidth;
+    local_20 = fVar2 * right + dest[0];
+    local_1c = fVar2 * forward + dest[1];
+    local_18 = fVar2 * local_8c + dest[2] + halfHeight;
+    fVar2 = -halfWidth;
+    local_14 = fVar2 * right + dest[0];
+    local_10 = fVar2 * forward + dest[1];
+    local_c = (fVar2 * local_8c + dest[2]) - halfHeight;
     if ((radius_damage_debug->current).enabled != false) {
-      for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-        local_a9 = '\x01';
-        local_a8 = colorWhite;
-        if ((param_4 != -1.0) && (param_5 != (float *)0x0)) {
-          local_b8 = local_44[local_8 * 3] - *param_3;
-          local_b4 = local_44[local_8 * 3 + 1] - param_3[1];
-          local_b0 = local_44[local_8 * 3 + 2] - param_3[2];
-          Vec3Normalize(&local_b8);
-          if (local_b8 * *param_5 + local_b4 * param_5[1] + local_b0 * param_5[2] < param_4) {
-            local_a9 = '\0';
-            local_a8 = colorOrange;
+      for (i = 0; i < 5; i = i + 1) {
+        success = true;
+        color = colorWhite;
+        if ((coneAngleCos != -1.0) && (coneDirection != (float *)0x0)) {
+          dir = dest[i * 3] - *centerPos;
+          local_b4 = dest[i * 3 + 1] - centerPos[1];
+          local_b0 = dest[i * 3 + 2] - centerPos[2];
+          Vec3Normalize(&dir);
+          if (dir * *coneDirection + local_b4 * coneDirection[1] + local_b0 * coneDirection[2] <
+              coneAngleCos) {
+            success = false;
+            color = colorOrange;
           }
         }
-        if ((local_a9 != '\0') &&
-           (iVar1 = SV_SightTracePoint(&local_74,param_3,local_44 + local_8 * 3,&local_70),
-           iVar1 == 0)) {
-          local_a8 = colorRed;
+        if ((success != false) &&
+           (iVar1 = SV_SightTracePoint(&hitnum,centerPos,dest + i * 3,&context), iVar1 == 0)) {
+          color = colorRed;
         }
-        G_DebugLineWithDuration(param_3,local_44 + local_8 * 3,local_a8,1,300);
+        G_DebugLineWithDuration(centerPos,dest + i * 3,color,1,300);
       }
     }
-    local_78 = 0;
-    for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if ((param_4 == -1.0) || (param_5 == (float *)0x0)) {
+    hits = 0;
+    for (i = 0; i < 5; i = i + 1) {
+      if ((coneAngleCos == -1.0) || (coneDirection == (float *)0x0)) {
 LAB_0061548c:
-        iVar1 = SV_SightTracePoint(&local_74,param_3,local_44 + local_8 * 3,&local_70);
+        iVar1 = SV_SightTracePoint(&hitnum,centerPos,dest + i * 3,&context);
         if (iVar1 != 0) {
-          local_78 = local_78 + 1;
+          hits = hits + 1;
         }
       }
       else {
-        local_c4 = local_44[local_8 * 3] - *param_3;
-        local_c0 = local_44[local_8 * 3 + 1] - param_3[1];
-        local_bc = local_44[local_8 * 3 + 2] - param_3[2];
-        Vec3Normalize(&local_c4);
-        if (param_4 <= local_c4 * *param_5 + local_c0 * param_5[1] + local_bc * param_5[2])
+        dir_2 = dest[i * 3] - *centerPos;
+        local_c0 = dest[i * 3 + 1] - centerPos[1];
+        local_bc = dest[i * 3 + 2] - centerPos[2];
+        Vec3Normalize(&dir_2);
+        if (coneAngleCos <=
+            dir_2 * *coneDirection + local_c0 * coneDirection[1] + local_bc * coneDirection[2])
         goto LAB_0061548c;
       }
     }
-    if (local_78 == 0) {
+    if (hits == 0) {
       fVar2 = 0.0;
     }
-    else if (local_78 < 4) {
-      fVar2 = (float)local_78 / 3.0;
+    else if (hits < 4) {
+      fVar2 = (float)hits / 3.0;
     }
     else {
       fVar2 = 1.0;
@@ -1154,37 +1162,37 @@ LAB_0061548c:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl EntDistToPoint(float *param_1,gentity_s *param_2)
+float __cdecl EntDistToPoint(float *origin,gentity_s *ent)
 
 {
   float *pfVar1;
   float fVar2;
-  uint local_14;
-  float local_10 [3];
+  uint i;
+  float v [3];
   
-  if ((param_2->r).bmodel == '\0') {
-    local_10[0] = (param_2->r).currentOrigin[0] - *param_1;
-    local_10[1] = (param_2->r).currentOrigin[1] - param_1[1];
-    local_10[2] = (param_2->r).currentOrigin[2] - param_1[2];
-    fVar2 = Abs((phys_vec3 *)local_10);
+  if ((ent->r).bmodel == '\0') {
+    v[0] = (ent->r).currentOrigin[0] - *origin;
+    v[1] = (ent->r).currentOrigin[1] - origin[1];
+    v[2] = (ent->r).currentOrigin[2] - origin[2];
+    fVar2 = Abs((phys_vec3 *)v);
   }
   else {
-    for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-      fVar2 = (param_2->r).absmin[local_14];
-      if (fVar2 < param_1[local_14] || fVar2 == param_1[local_14]) {
-        pfVar1 = (param_2->r).absmax + local_14;
-        if (param_1[local_14] < *pfVar1 || param_1[local_14] == *pfVar1) {
-          local_10[local_14] = 0.0;
+    for (i = 0; i < 3; i = i + 1) {
+      fVar2 = (ent->r).absmin[i];
+      if (fVar2 < origin[i] || fVar2 == origin[i]) {
+        pfVar1 = (ent->r).absmax + i;
+        if (origin[i] < *pfVar1 || origin[i] == *pfVar1) {
+          v[i] = 0.0;
         }
         else {
-          local_10[local_14] = param_1[local_14] - (param_2->r).absmax[local_14];
+          v[i] = origin[i] - (ent->r).absmax[i];
         }
       }
       else {
-        local_10[local_14] = (param_2->r).absmin[local_14] - param_1[local_14];
+        v[i] = (ent->r).absmin[i] - origin[i];
       }
     }
-    fVar2 = Abs((phys_vec3 *)local_10);
+    fVar2 = Abs((phys_vec3 *)v);
   }
   return fVar2;
 }
@@ -1193,21 +1201,22 @@ float __cdecl EntDistToPoint(float *param_1,gentity_s *param_2)
 // 006160F0  GetEntListForRadius  (game_mp/g_combat_mp.cpp:1190)
 
 void __cdecl
-GetEntListForRadius(float *param_1,float param_2,float param_3,int *param_4,int *param_5)
+GetEntListForRadius(float *origin,float radius_max,float radius_min,int *entList,int *entListCount)
 
 {
   int iVar1;
-  float local_24 [4];
-  float local_14 [3];
-  int local_8;
+  float mins [3];
+  float boxradius;
+  float maxs [3];
+  int i;
   
-  local_24[3] = param_2 * 1.4142135;
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    local_24[local_8] = param_1[local_8] - local_24[3];
-    local_14[local_8] = param_1[local_8] + local_24[3];
+  boxradius = radius_max * 1.4142135;
+  for (i = 0; i < 3; i = i + 1) {
+    mins[i] = origin[i] - boxradius;
+    maxs[i] = origin[i] + boxradius;
   }
-  iVar1 = CM_AreaEntities(local_24,local_14,param_4,0x400,-1);
-  *param_5 = iVar1;
+  iVar1 = CM_AreaEntities(mins,maxs,entList,0x400,-1);
+  *entListCount = iVar1;
   return;
 }
 
@@ -1216,10 +1225,10 @@ GetEntListForRadius(float *param_1,float param_2,float param_3,int *param_4,int 
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl AddScrTeamName(team_t param_1)
+void __cdecl AddScrTeamName(team_t team)
 
 {
-  switch(param_1) {
+  switch(team) {
   case TEAM_BAD:
     Scr_AddConstString((uint)scr_const.free,SCRIPTINSTANCE_SERVER);
     break;
@@ -1247,16 +1256,16 @@ void __cdecl AddScrTeamName(team_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CanEntityBeFlashbanged(gentity_s *param_1)
+bool __cdecl CanEntityBeFlashbanged(gentity_s *ent)
 
 {
   bool bVar1;
   int iVar2;
   
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((((param_1->s).eType == 0xe) && (iVar2 = G_IsVehicleOccupied(param_1), iVar2 != 0)) &&
-       (bVar1 = G_IsVehicleRemoteControl((uint)(param_1->s).un2.vehicleState.vehicleInfoIndex),
-       bVar1)) {
+  if (ent->client == (gclient_s *)0x0) {
+    if ((((ent->s).eType == 0xe) && (iVar2 = G_IsVehicleOccupied(ent), iVar2 != 0)) &&
+       (bVar1 = G_IsVehicleRemoteControl((uint)(ent->s).un2.vehicleState.vehicleInfoIndex), bVar1))
+    {
       return true;
     }
     bVar1 = false;
@@ -1275,29 +1284,29 @@ bool __cdecl CanEntityBeFlashbanged(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFlashbangViewPos(gentity_s *param_1,float *param_2)
+void __cdecl GetFlashbangViewPos(gentity_s *ent,float *origin)
 
 {
   gclient_s *pgVar1;
   
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((param_1->s).eType == 0xe) {
-      *param_2 = (param_1->r).currentOrigin[0];
-      param_2[1] = (param_1->r).currentOrigin[1];
-      param_2[2] = (param_1->r).currentOrigin[2];
+  if (ent->client == (gclient_s *)0x0) {
+    if ((ent->s).eType == 0xe) {
+      *origin = (ent->r).currentOrigin[0];
+      origin[1] = (ent->r).currentOrigin[1];
+      origin[2] = (ent->r).currentOrigin[2];
     }
     else {
-      *param_2 = (param_1->r).currentOrigin[0];
-      param_2[1] = (param_1->r).currentOrigin[1];
-      param_2[2] = (param_1->r).currentOrigin[2];
+      *origin = (ent->r).currentOrigin[0];
+      origin[1] = (ent->r).currentOrigin[1];
+      origin[2] = (ent->r).currentOrigin[2];
     }
   }
   else {
-    pgVar1 = param_1->client;
-    *param_2 = (pgVar1->ps).origin[0];
-    param_2[1] = (pgVar1->ps).origin[1];
-    param_2[2] = (pgVar1->ps).origin[2];
-    param_2[2] = param_2[2] + (param_1->client->ps).viewHeightCurrent;
+    pgVar1 = ent->client;
+    *origin = (pgVar1->ps).origin[0];
+    origin[1] = (pgVar1->ps).origin[1];
+    origin[2] = (pgVar1->ps).origin[2];
+    origin[2] = origin[2] + (ent->client->ps).viewHeightCurrent;
   }
   return;
 }
@@ -1310,22 +1319,23 @@ void __cdecl GetFlashbangViewPos(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFlashbangViewDirection(gentity_s *param_1,float *param_2)
+void __cdecl GetFlashbangViewDirection(gentity_s *ent,float *dir)
 
 {
   gentity_s *pgVar1;
+  gentity_s *driver;
   
-  if (param_1->client == (gclient_s *)0x0) {
-    if ((((param_1->s).eType == 0xe) &&
-        (pgVar1 = VEH_GetSeatOccupantEntity(param_1,0), pgVar1 != (gentity_s *)0x0)) &&
+  if (ent->client == (gclient_s *)0x0) {
+    if ((((ent->s).eType == 0xe) &&
+        (pgVar1 = VEH_GetSeatOccupantEntity(ent,0), pgVar1 != (gentity_s *)0x0)) &&
        (pgVar1->client != (gclient_s *)0x0)) {
-      AngleVectors((pgVar1->client->ps).viewangles,param_2,(float *)0x0,(float *)0x0);
+      AngleVectors((pgVar1->client->ps).viewangles,dir,(float *)0x0,(float *)0x0);
       return;
     }
-    AngleVectors((param_1->r).currentAngles,param_2,(float *)0x0,(float *)0x0);
+    AngleVectors((ent->r).currentAngles,dir,(float *)0x0,(float *)0x0);
   }
   else {
-    AngleVectors((param_1->client->ps).viewangles,param_2,(float *)0x0,(float *)0x0);
+    AngleVectors((ent->client->ps).viewangles,dir,(float *)0x0,(float *)0x0);
   }
   return;
 }
@@ -1339,61 +1349,62 @@ void __cdecl GetFlashbangViewDirection(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-FlashbangBlastEnt(gentity_s *param_1,float *param_2,float param_3,float param_4,gentity_s *param_5,
-                 team_t param_6)
+FlashbangBlastEnt(gentity_s *ent,float *blastOrigin,float radius_max,float radius_min,
+                 gentity_s *attacker,team_t team)
 
 {
   bool bVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  float local_60;
-  float local_58;
+  float percent_distance;
+  float percent_angle;
+  float forward;
   float local_54;
   float local_50;
-  float local_4c;
+  float toBlast;
   float local_48;
   float local_44;
-  col_context_t local_40;
-  float local_18;
-  int local_14;
-  float local_10;
+  col_context_t context;
+  float dist;
+  int hitNum;
+  float playerEyes;
   float local_c;
   float local_8;
   
-  local_14 = -1;
-  bVar1 = CanEntityBeFlashbanged(param_1);
-  if (((bVar1) && (param_1->takedamage != '\0')) &&
-     (local_18 = EntDistToPoint(param_2,param_1), local_18 <= param_3)) {
-    GetFlashbangViewPos(param_1,&local_10);
-    col_context_t::col_context_t(&local_40,0x807823);
-    local_40.passEntityNum0 = (param_1->s).number;
-    SV_SightTracePoint(&local_14,&local_10,param_2,&local_40);
-    if ((local_14 == -1) || (local_14 == 0)) {
-      if (param_4 < local_18) {
-        local_60 = 1.0 - (local_18 - param_4) / (param_3 - param_4);
+  hitNum = -1;
+  bVar1 = CanEntityBeFlashbanged(ent);
+  if (((bVar1) && (ent->takedamage != '\0')) &&
+     (dist = EntDistToPoint(blastOrigin,ent), dist <= radius_max)) {
+    GetFlashbangViewPos(ent,&playerEyes);
+    col_context_t::col_context_t(&context,0x807823);
+    context.passEntityNum0 = (ent->s).number;
+    SV_SightTracePoint(&hitNum,&playerEyes,blastOrigin,&context);
+    if ((hitNum == -1) || (hitNum == 0)) {
+      if (radius_min < dist) {
+        percent_distance = 1.0 - (dist - radius_min) / (radius_max - radius_min);
       }
       else {
-        local_60 = 1.0;
+        percent_distance = 1.0;
       }
-      GetFlashbangViewDirection(param_1,&local_58);
-      local_4c = *param_2 - local_10;
-      local_48 = param_2[1] - local_c;
-      local_44 = param_2[2] - local_8;
-      Vec3NormalizeFast(&local_4c);
+      GetFlashbangViewDirection(ent,&forward);
+      toBlast = *blastOrigin - playerEyes;
+      local_48 = blastOrigin[1] - local_c;
+      local_44 = blastOrigin[2] - local_8;
+      Vec3NormalizeFast(&toBlast);
       fVar2 = local_50 * local_44;
       fVar3 = local_54 * local_48;
-      fVar4 = local_58 * local_4c;
-      AddScrTeamName(param_6);
-      if (param_5 == (gentity_s *)0x0) {
+      fVar4 = forward * toBlast;
+      AddScrTeamName(team);
+      if (attacker == (gentity_s *)0x0) {
         Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
       }
       else {
-        Scr_AddEntity(param_5,SCRIPTINSTANCE_SERVER);
+        Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
       }
       Scr_AddFloat((fVar4 + fVar3 + fVar2 + 1.0) * 0.5,SCRIPTINSTANCE_SERVER);
-      Scr_AddFloat(local_60,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(param_1,scr_const.flashbang,4);
+      Scr_AddFloat(percent_distance,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(ent,scr_const.flashbang,4);
     }
   }
   return;
@@ -1409,31 +1420,31 @@ FlashbangBlastEnt(gentity_s *param_1,float *param_2,float param_3,float param_4,
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_FlashbangBlast(float *param_1,float param_2,float param_3,gentity_s *param_4,team_t param_5)
+G_FlashbangBlast(float *origin,float radius_max,float radius_min,gentity_s *attacker,team_t team)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_1010;
-  int local_100c [1024];
-  gentity_s *local_c;
-  int local_8;
+  int entIdx;
+  int entList [1024];
+  gentity_s *ent;
+  int entListCount;
   
-  local_8 = 0x615ffd;
-  if (param_3 < 1.0) {
-    param_3 = 1.0;
+  entListCount = 0x615ffd;
+  if (radius_min < 1.0) {
+    radius_min = 1.0;
   }
-  if (param_2 < param_3) {
-    param_2 = param_3;
+  if (radius_max < radius_min) {
+    radius_max = radius_min;
   }
-  GetEntListForRadius(param_1,param_2,param_3,local_100c,&local_8);
-  local_1010 = 0;
+  GetEntListForRadius(origin,radius_max,radius_min,entList,&entListCount);
+  entIdx = 0;
   do {
-    if (local_8 <= local_1010) {
+    if (entListCount <= entIdx) {
       return;
     }
-    local_c = g_entities + local_100c[local_1010];
-    if (local_c == (gentity_s *)0x0) {
+    ent = g_entities + entList[entIdx];
+    if (ent == (gentity_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x54e,0
                                ,"%s");
       if (!bVar2) {
@@ -1442,8 +1453,8 @@ G_FlashbangBlast(float *param_1,float param_2,float param_3,gentity_s *param_4,t
         return;
       }
     }
-    FlashbangBlastEnt(local_c,param_1,param_2,param_3,param_4,param_5);
-    local_1010 = local_1010 + 1;
+    FlashbangBlastEnt(ent,origin,radius_max,radius_min,attacker,team);
+    entIdx = entIdx + 1;
   } while( true );
 }
 
@@ -1455,7 +1466,7 @@ G_FlashbangBlast(float *param_1,float param_2,float param_3,gentity_s *param_4,t
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl G_GetRadiusDamageDistanceSquared(float *param_1,gentity_s *param_2)
+float __cdecl G_GetRadiusDamageDistanceSquared(float *damageOrigin,gentity_s *ent)
 
 {
   float *pfVar1;
@@ -1463,10 +1474,10 @@ float __cdecl G_GetRadiusDamageDistanceSquared(float *param_1,gentity_s *param_2
   code *pcVar3;
   bool bVar4;
   float10 fVar5;
-  int local_14;
-  float local_10 [3];
+  int i;
+  float v [3];
   
-  if (param_2 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x55d,0,
                              "%s");
     if (!bVar4) {
@@ -1475,29 +1486,29 @@ float __cdecl G_GetRadiusDamageDistanceSquared(float *param_1,gentity_s *param_2
       return (float)fVar5;
     }
   }
-  if ((param_2->r).bmodel == '\0') {
-    local_10[0] = (param_2->r).currentOrigin[0] - *param_1;
-    local_10[1] = (param_2->r).currentOrigin[1] - param_1[1];
-    local_10[2] = (param_2->r).currentOrigin[2] - param_1[2];
+  if ((ent->r).bmodel == '\0') {
+    v[0] = (ent->r).currentOrigin[0] - *damageOrigin;
+    v[1] = (ent->r).currentOrigin[1] - damageOrigin[1];
+    v[2] = (ent->r).currentOrigin[2] - damageOrigin[2];
   }
   else {
-    for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-      fVar2 = (param_2->r).absmin[local_14];
-      if (fVar2 < param_1[local_14] || fVar2 == param_1[local_14]) {
-        pfVar1 = (param_2->r).absmax + local_14;
-        if (param_1[local_14] < *pfVar1 || param_1[local_14] == *pfVar1) {
-          local_10[local_14] = 0.0;
+    for (i = 0; i < 3; i = i + 1) {
+      fVar2 = (ent->r).absmin[i];
+      if (fVar2 < damageOrigin[i] || fVar2 == damageOrigin[i]) {
+        pfVar1 = (ent->r).absmax + i;
+        if (damageOrigin[i] < *pfVar1 || damageOrigin[i] == *pfVar1) {
+          v[i] = 0.0;
         }
         else {
-          local_10[local_14] = param_1[local_14] - (param_2->r).absmax[local_14];
+          v[i] = damageOrigin[i] - (ent->r).absmax[i];
         }
       }
       else {
-        local_10[local_14] = (param_2->r).absmin[local_14] - param_1[local_14];
+        v[i] = (ent->r).absmin[i] - damageOrigin[i];
       }
     }
   }
-  return local_10[0] * local_10[0] + local_10[1] * local_10[1] + local_10[2] * local_10[2];
+  return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
 
@@ -1508,7 +1519,7 @@ float __cdecl G_GetRadiusDamageDistanceSquared(float *param_1,gentity_s *param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_WithinDamageRadius(float *param_1,float param_2,gentity_s *param_3)
+int __cdecl G_WithinDamageRadius(float *damageOrigin,float radiusSquared,gentity_s *ent)
 
 {
   code *pcVar1;
@@ -1516,16 +1527,17 @@ int __cdecl G_WithinDamageRadius(float *param_1,float param_2,gentity_s *param_3
   int iVar3;
   float fVar4;
   uint local_c;
+  float distSqrd;
   
-  if ((param_3 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x57d,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  fVar4 = G_GetRadiusDamageDistanceSquared(param_1,param_3);
-  local_c = (uint)(fVar4 < param_2);
+  fVar4 = G_GetRadiusDamageDistanceSquared(damageOrigin,ent);
+  local_c = (uint)(fVar4 < radiusSquared);
   return local_c;
 }
 
@@ -1539,96 +1551,98 @@ int __cdecl G_WithinDamageRadius(float *param_1,float param_2,gentity_s *param_3
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-G_RadiusDamage(float *param_1,gentity_s *param_2,gentity_s *param_3,float param_4,float param_5,
-              float param_6,float param_7,float *param_8,gentity_s *param_9,int param_10,
-              int param_11)
+G_RadiusDamage(float *origin,gentity_s *inflictor,gentity_s *attacker,float fInnerDamage,
+              float fOuterDamage,float radius,float coneAngleCos,float *coneDirection,
+              gentity_s *ignore,int mod,int weapon)
 
 {
   int iVar1;
-  int local_1058;
-  float local_1054;
-  float local_1050;
+  int e;
+  float points;
+  float dir;
   float local_104c;
   float local_1048;
-  float local_1044;
-  float local_1040 [4];
-  float local_1030;
-  float local_102c;
-  int local_1028;
-  float local_1024 [4];
-  int local_1014 [1024];
-  gentity_s *local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  float dist;
+  float mins [3];
+  float radiusSquared;
+  float boxradius;
+  float distSquared;
+  int numListedEntities;
+  float maxs [3];
+  float damageScale;
+  int entityList [1024];
+  gentity_s *ent;
+  int damageFlags;
+  int i;
+  int hitClient;
   
-  local_8 = 0;
-  local_10 = 5;
-  if (param_3 == (gentity_s *)0x0) {
-    local_8 = 0;
+  hitClient = 0;
+  damageFlags = 5;
+  if (attacker == (gentity_s *)0x0) {
+    hitClient = 0;
   }
   else {
-    if (param_6 < 1.0) {
-      param_6 = 1.0;
+    if (radius < 1.0) {
+      radius = 1.0;
     }
-    local_1040[3] = param_6 * param_6;
-    local_1030 = param_6 * 1.4142135;
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      local_1040[local_c] = param_1[local_c] - local_1030;
-      local_1024[local_c] = param_1[local_c] + local_1030;
+    radiusSquared = radius * radius;
+    boxradius = radius * 1.4142135;
+    for (i = 0; i < 3; i = i + 1) {
+      mins[i] = origin[i] - boxradius;
+      maxs[i] = origin[i] + boxradius;
     }
-    local_1028 = CM_AreaEntities(local_1040,local_1024,local_1014,0x400,-1);
-    for (local_1058 = 0; local_1058 < local_1028; local_1058 = local_1058 + 1) {
-      iVar1 = local_1014[local_1058];
-      local_14 = g_entities + iVar1;
-      if ((((local_14 != param_9) && (g_entities[iVar1].takedamage != '\0')) &&
+    numListedEntities = CM_AreaEntities(mins,maxs,entityList,0x400,-1);
+    for (e = 0; e < numListedEntities; e = e + 1) {
+      iVar1 = entityList[e];
+      ent = g_entities + iVar1;
+      if ((((ent != ignore) && (g_entities[iVar1].takedamage != '\0')) &&
           ((g_entities[iVar1].client == (gclient_s *)0x0 || (level.bPlayerIgnoreRadiusDamage == 0)))
-          ) && (local_102c = G_GetRadiusDamageDistanceSquared(param_1,local_14),
-               local_102c < local_1040[3])) {
-        local_1044 = SQRT(local_102c);
-        local_1054 = (param_4 - param_5) * (1.0 - local_1044 / param_6) + param_5;
-        if (local_14->scr_vehicle == (scr_vehicle_s *)0x0) {
-          local_1024[3] = CanDamage(local_14,param_2,param_1,param_7,param_8,0x802013);
-          if (0.0 < local_1024[3]) {
-            iVar1 = LogAccuracyHit(local_14,param_3);
+          ) && (distSquared = G_GetRadiusDamageDistanceSquared(origin,ent),
+               distSquared < radiusSquared)) {
+        dist = SQRT(distSquared);
+        points = (fInnerDamage - fOuterDamage) * (1.0 - dist / radius) + fOuterDamage;
+        if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
+          damageScale = CanDamage(ent,inflictor,origin,coneAngleCos,coneDirection,0x802013);
+          if (0.0 < damageScale) {
+            iVar1 = LogAccuracyHit(ent,attacker);
             if (iVar1 != 0) {
-              local_8 = 1;
+              hitClient = 1;
             }
-            local_1050 = (local_14->r).currentOrigin[0] - *param_1;
-            local_104c = (local_14->r).currentOrigin[1] - param_1[1];
-            local_1048 = ((local_14->r).currentOrigin[2] - param_1[2]) + 24.0;
-            if (local_14->destructible != (Destructible *)0x0) {
-              local_1054 = DestructibleRadiusDamage
-                                     (local_14,param_1,param_4,param_5,param_6,param_10,param_3);
+            dir = (ent->r).currentOrigin[0] - *origin;
+            local_104c = (ent->r).currentOrigin[1] - origin[1];
+            local_1048 = ((ent->r).currentOrigin[2] - origin[2]) + 24.0;
+            if (ent->destructible != (Destructible *)0x0) {
+              points = DestructibleRadiusDamage
+                                 (ent,origin,fInnerDamage,fOuterDamage,radius,mod,attacker);
             }
-            G_Damage(local_14,param_2,param_3,&local_1050,param_1,(int)(local_1054 * local_1024[3]),
-                     local_10,param_10,param_11,HITLOC_NONE,0,0,0);
+            G_Damage(ent,inflictor,attacker,&dir,origin,(int)(points * damageScale),damageFlags,mod,
+                     weapon,HITLOC_NONE,0,0,0);
           }
         }
         else {
           Scr_VehicleRadiusDamage
-                    (local_14,param_2,param_3,(int)local_1054,param_4,param_5,local_10,param_10,
-                     param_11,param_1,param_6,param_7,param_8,0);
+                    (ent,inflictor,attacker,(int)points,fInnerDamage,fOuterDamage,damageFlags,mod,
+                     weapon,origin,radius,coneAngleCos,coneDirection,0);
         }
       }
     }
-    DynEntSv_RadiusDamage(param_1,param_6,param_7,param_8,param_4,param_5);
-    GlassSv_RadiusDamage(param_1,param_6,param_7,param_8,param_4,param_5,param_10);
+    DynEntSv_RadiusDamage(origin,radius,coneAngleCos,coneDirection,fInnerDamage,fOuterDamage);
+    GlassSv_RadiusDamage(origin,radius,coneAngleCos,coneDirection,fInnerDamage,fOuterDamage,mod);
   }
-  return local_8;
+  return hitClient;
 }
 
 
 // 00616D10  G_GetHitLocationString  (game_mp/g_combat_mp.cpp:1524)
 
-ushort __cdecl G_GetHitLocationString(hitLocation_t param_1)
+ushort __cdecl G_GetHitLocationString(hitLocation_t hitLoc)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (HITLOC_GUN < param_1) {
+  if (HITLOC_GUN < hitLoc) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_combat_mp.cpp",0x5f5,0,
                              "%s");
     if (!bVar2) {
@@ -1637,25 +1651,25 @@ ushort __cdecl G_GetHitLocationString(hitLocation_t param_1)
       return uVar3;
     }
   }
-  return g_HitLocConstNames[param_1];
+  return g_HitLocConstNames[hitLoc];
 }
 
 
 // 00616D50  G_GetHitLocationIndexFromString  (game_mp/g_combat_mp.cpp:1539)
 
-hitLocation_t __cdecl G_GetHitLocationIndexFromString(ushort param_1)
+hitLocation_t __cdecl G_GetHitLocationIndexFromString(ushort sString)
 
 {
-  hitLocation_t local_8;
+  int i;
   
-  local_8 = HITLOC_NONE;
+  i = 0;
   while( true ) {
-    if (0x12 < (int)local_8) {
+    if (0x12 < i) {
       return HITLOC_NONE;
     }
-    if (g_HitLocConstNames[local_8] == param_1) break;
-    local_8 = local_8 + HITLOC_HELMET;
+    if (g_HitLocConstNames[i] == sString) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 

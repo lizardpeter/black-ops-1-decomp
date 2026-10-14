@@ -4,8 +4,8 @@
 
 void __cdecl
 R_CullDynModelInCell
-          (uint *param_1,uint param_2,DynEntityPose *param_3,DpvsPlane *param_4,int param_5,
-          uchar *param_6)
+          (uint *dynEntCellBits,uint dynEntClientWordCount,DynEntityPose *dynModelList,
+          DpvsPlane *planes,int planeCount,uchar *dynEntVisData)
 
 {
   code *pcVar1;
@@ -13,84 +13,100 @@ R_CullDynModelInCell
   uint uVar3;
   int iVar4;
   int iVar5;
-  uint local_10;
-  uint local_8;
+  DynEntityPose *dynEntPose;
+  uint bit;
+  uint dynEntIndex;
+  uint bits;
+  uint indexLow;
+  uint wordIndex;
   
-  local_8 = 0;
+  wordIndex = 0;
   do {
-    if (param_2 <= local_8) {
+    if (dynEntClientWordCount <= wordIndex) {
       return;
     }
-    local_10 = param_1[local_8];
+    bits = dynEntCellBits[wordIndex];
     while( true ) {
       uVar3 = 0x1f;
-      if (local_10 != 0) {
-        for (; local_10 >> uVar3 == 0; uVar3 = uVar3 - 1) {
+      if (bits != 0) {
+        for (; bits >> uVar3 == 0; uVar3 = uVar3 - 1) {
         }
       }
-      if (local_10 == 0) {
+      if (bits == 0) {
         uVar3 = 0x3f;
       }
       uVar3 = uVar3 ^ 0x1f;
       if (0x1f < uVar3) break;
-      iVar5 = local_8 * 0x20 + uVar3;
+      iVar5 = wordIndex * 0x20 + uVar3;
       uVar3 = 0x80000000 >> ((byte)uVar3 & 0x1f);
-      if (((local_10 & uVar3) == 0) &&
+      if (((bits & uVar3) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_dynmodel.cpp"
                                    ,0x65,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_10 = ~uVar3 & local_10;
-      if ((param_6[iVar5] == '\0') &&
-         (iVar4 = R_CullSphereDpvs(param_3[iVar5].pose.origin,param_3[iVar5].radius,param_4,param_5)
-         , iVar4 == 0)) {
-        param_6[iVar5] = '\x01';
+      bits = ~uVar3 & bits;
+      if ((dynEntVisData[iVar5] == '\0') &&
+         (iVar4 = R_CullSphereDpvs(dynModelList[iVar5].pose.origin,dynModelList[iVar5].radius,planes
+                                   ,planeCount), iVar4 == 0)) {
+        dynEntVisData[iVar5] = '\x01';
       }
     }
-    local_8 = local_8 + 1;
+    wordIndex = wordIndex + 1;
   } while( true );
 }
 
 
 // 00B529C0  R_AddCellDynModelSurfacesInFrustumCmd  (gfx_d3d/r_dpvs_dynmodel.cpp:145)
 
-void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(void *param_1)
+void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(void *data)
 
 {
   byte bVar1;
-  uint uVar2;
-  int iVar3;
-  uint *puVar4;
-  uchar *puVar5;
-  DpvsPlane *pDVar6;
-  code *pcVar7;
-  GfxWorld *pGVar8;
-  bool bVar9;
-  GfxWorldDpvsDynamic *pGVar10;
-  DynEntityPose *pDVar11;
+  uint dynEntClientWordCount_00;
+  int iVar2;
+  uint *puVar3;
+  uchar *dynEntVisData_00;
+  DpvsPlane *planes_00;
+  code *pcVar4;
+  GfxWorld *pGVar5;
+  bool bVar6;
+  GfxWorldDpvsDynamic *pGVar7;
+  DynEntityPose *dynModelList_00;
+  uint planeCount;
+  DpvsPlane *planes;
+  uint dynEntClientWordCount;
+  DpvsDynamicCellCmd *dpvsCell;
+  uchar *dynEntVisData;
+  uint *dynEntCellBits;
+  DynEntityPose *dynModelList;
+  uint dynEntClientCount;
+  uint viewIndex;
+  GfxWorldDpvsDynamic *worldDpvsDyn;
   
-  pGVar8 = rgp.world;
+  pGVar5 = rgp.world;
   if ((r_drawDynEnts->current).enabled != false) {
-    pGVar10 = &(rgp.world)->dpvsDyn;
-    if (((uint)((rgp.world)->dpvsPlanes).cellCount <= *(uint *)((int)param_1 + 4)) &&
-       (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_dynmodel.cpp",
+    pGVar7 = &(rgp.world)->dpvsDyn;
+    if (((uint)((rgp.world)->dpvsPlanes).cellCount <= *(uint *)((int)data + 4)) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_dynmodel.cpp",
                                  0xb7,0,
                                  "dpvsCell->cellIndex doesn\'t index rgp.world->dpvsPlanes.cellCount\n\t%i not in [0, %i)"
-                                ), !bVar9)) {
-      pcVar7 = (code *)swi(3);
-      (*pcVar7)();
+                                ), !bVar6)) {
+      pcVar4 = (code *)swi(3);
+      (*pcVar4)();
       return;
     }
-    uVar2 = pGVar10->dynEntClientWordCount[0];
-    bVar1 = *(byte *)((int)param_1 + 10);
-    iVar3 = *(int *)((int)param_1 + 4);
-    puVar4 = (pGVar8->dpvsDyn).dynEntCellBits[0];
-    puVar5 = (pGVar8->dpvsDyn).dynEntVisData[0][*(ushort *)((int)param_1 + 8)];
-    pDVar6 = *(DpvsPlane **)param_1;
-    pDVar11 = DynEnt_GetClientModelPoseList();
-    R_CullDynModelInCell(puVar4 + iVar3 * uVar2,uVar2,pDVar11,pDVar6,(uint)bVar1,puVar5);
+    dynEntClientWordCount_00 = pGVar7->dynEntClientWordCount[0];
+    bVar1 = *(byte *)((int)data + 10);
+    iVar2 = *(int *)((int)data + 4);
+    puVar3 = (pGVar5->dpvsDyn).dynEntCellBits[0];
+    dynEntVisData_00 = (pGVar5->dpvsDyn).dynEntVisData[0][*(ushort *)((int)data + 8)];
+    planes_00 = *(DpvsPlane **)data;
+    dynModelList_00 = DynEnt_GetClientModelPoseList();
+    R_CullDynModelInCell
+              (puVar3 + iVar2 * dynEntClientWordCount_00,dynEntClientWordCount_00,dynModelList_00,
+               planes_00,(uint)bVar1,dynEntVisData_00);
   }
   return;
 }

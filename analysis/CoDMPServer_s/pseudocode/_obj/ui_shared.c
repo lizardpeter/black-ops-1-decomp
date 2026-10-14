@@ -80,34 +80,34 @@ int __cdecl Color_Parse(char **param_1,float *param_2)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   int unaff_EDI;
-  double dVar4;
+  double dVar3;
   
-  iVar3 = 0;
+  iVar2 = 0;
   do {
     iVar1 = FUN_006a9e90();
-    pcVar2 = (char *)(*(int *)(iVar1 + 0x4280) * 0x428 + iVar1);
-    if (pcVar2[0x408] == '\0') {
+    nptr = (char *)(*(int *)(iVar1 + 0x4280) * 0x428 + iVar1);
+    if (nptr[0x408] == '\0') {
 LAB_00650b4d:
-      pcVar2 = (char *)FUN_006aa5f0(param_1,0);
+      nptr = (char *)FUN_006aa5f0(param_1,0);
     }
     else {
-      pcVar2[0x408] = '\0';
-      if (pcVar2[0x409] != '\0') {
-        *param_1 = *(char **)(pcVar2 + 0x420);
-        *(undefined4 *)(pcVar2 + 0x404) = *(undefined4 *)(pcVar2 + 0x41c);
+      nptr[0x408] = '\0';
+      if (nptr[0x409] != '\0') {
+        *param_1 = *(char **)(nptr + 0x420);
+        *(undefined4 *)(nptr + 0x404) = *(undefined4 *)(nptr + 0x41c);
         goto LAB_00650b4d;
       }
     }
-    if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0')) {
+    if ((nptr == (char *)0x0) || (*nptr == '\0')) {
       return 0;
     }
-    dVar4 = atof(pcVar2);
-    *(float *)(unaff_EDI + iVar3 * 4) = (float)dVar4;
-    iVar3 = iVar3 + 1;
-    if (3 < iVar3) {
+    dVar3 = atof(nptr);
+    *(float *)(unaff_EDI + iVar2 * 4) = (float)dVar3;
+    iVar2 = iVar2 + 1;
+    if (3 < iVar2) {
       return 1;
     }
   } while( true );

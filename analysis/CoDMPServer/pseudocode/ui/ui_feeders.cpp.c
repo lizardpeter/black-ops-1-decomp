@@ -2,7 +2,7 @@
 
 // 0072F940  Window_IsVisible  (ui/ui_utils.h:84)
 
-bool __cdecl Window_IsVisible(int param_1,windowDef_t *param_2)
+bool __cdecl Window_IsVisible(int contextIndex,windowDef_t *w)
 
 {
   code *pcVar1;
@@ -10,7 +10,7 @@ bool __cdecl Window_IsVisible(int param_1,windowDef_t *param_2)
   undefined1 uVar3;
   uint uVar4;
   
-  if (param_2 == (windowDef_t *)0x0) {
+  if (w == (windowDef_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x55,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -18,14 +18,14 @@ bool __cdecl Window_IsVisible(int param_1,windowDef_t *param_2)
       return (bool)uVar3;
     }
   }
-  uVar4 = Window_GetDynamicFlags(param_1,param_2);
+  uVar4 = Window_GetDynamicFlags(contextIndex,w);
   return (uVar4 & 4) != 0;
 }
 
 
 // 0072F8A0  Window_HasFocus  (ui/ui_utils.h:94)
 
-bool __cdecl Window_HasFocus(int param_1,windowDef_t *param_2)
+bool __cdecl Window_HasFocus(int contextIndex,windowDef_t *w)
 
 {
   code *pcVar1;
@@ -33,7 +33,7 @@ bool __cdecl Window_HasFocus(int param_1,windowDef_t *param_2)
   undefined1 uVar3;
   uint uVar4;
   
-  if (param_2 == (windowDef_t *)0x0) {
+  if (w == (windowDef_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",0x5f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -41,13 +41,13 @@ bool __cdecl Window_HasFocus(int param_1,windowDef_t *param_2)
       return (bool)uVar3;
     }
   }
-  bVar2 = Window_IsVisible(param_1,param_2);
+  bVar2 = Window_IsVisible(contextIndex,w);
   if (bVar2) {
-    uVar4 = Window_GetDynamicFlags(param_1,param_2);
+    uVar4 = Window_GetDynamicFlags(contextIndex,w);
     bVar2 = (uVar4 & 2) != 0;
   }
   else {
-    uVar4 = Window_GetDynamicFlags(param_1,param_2);
+    uVar4 = Window_GetDynamicFlags(contextIndex,w);
     if ((uVar4 & 2) != 0) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h",99,0,
                                "Hidden window has focus!");
@@ -66,30 +66,33 @@ bool __cdecl Window_HasFocus(int param_1,windowDef_t *param_2)
 // 0072E1D0  UI_BuildPlayerList  (ui/ui_feeders.cpp:147)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl UI_BuildPlayerList(int param_1)
+void __cdecl UI_BuildPlayerList(int localClientNum)
 
 {
   char *pcVar1;
   int iVar2;
-  uiClientState_s local_844;
-  char local_38 [40];
+  char *info;
+  uiClientState_s cs;
+  char szName [40];
   uint local_10;
-  int local_c;
-  int local_8;
+  int n;
+  int count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  CL_GetClientState(param_1,&local_844);
+  CL_GetClientState(localClientNum,&cs);
   pcVar1 = CL_GetConfigString(0);
   pcVar1 = Info_ValueForKey(pcVar1,"com_maxclients");
-  local_8 = atoi(pcVar1);
+  count = atoi(pcVar1);
   memset((uchar *)&DAT_098b53b4,0xff,0x80);
   DAT_098b4bb0 = 0;
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    iVar2 = CL_GetClientName(param_1,local_c,local_38,0x26,true);
+  for (n = 0; n < count; n = n + 1) {
+    iVar2 = CL_GetClientName(localClientNum,n,szName,0x26,true);
     if (iVar2 != 0) {
-      (&DAT_098b53b4)[DAT_098b4bb0] = local_c;
-      I_strncpyz(&DAT_098b4bb4 + DAT_098b4bb0 * 0x20,local_38,0x20);
+      (&DAT_098b53b4)[DAT_098b4bb0] = n;
+      I_strncpyz(&DAT_098b4bb4 + DAT_098b4bb0 * 0x20,szName,0x20);
       I_CleanStr(&DAT_098b4bb4 + DAT_098b4bb0 * 0x20);
       DAT_098b4bb0 = DAT_098b4bb0 + 1;
     }
@@ -100,23 +103,30 @@ void __cdecl UI_BuildPlayerList(int param_1)
 
 // 0072DE50  UI_FeederCount  (ui/ui_feeders.cpp:281)
 
-int __cdecl UI_FeederCount(int param_1,int param_2,float param_3,listBoxDef_s *param_4)
+/* WARNING: Enum "LbType": Some values do not have unique names */
+
+int __cdecl UI_FeederCount(int localClientNum,int contextIndex,float feederID,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uiInfo_s *puVar4;
-  int iVar5;
+  uiInfo_s *uiInfo_00;
+  int iVar4;
+  int leaderboardFeederCount;
+  int noOfMetPlayers;
+  int friendCount;
+  int controllerIndex;
+  uiInfo_s *uiInfo;
   
-  if ((param_1 == -1) &&
+  if ((localClientNum == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x11c,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if ((iVar3 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x120,0,"%s")
      , !bVar2)) {
@@ -124,320 +134,329 @@ int __cdecl UI_FeederCount(int param_1,int param_2,float param_3,listBoxDef_s *p
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  puVar4 = UI_UIContext_GetInfo(param_2);
-  switch((int)param_3) {
+  uiInfo_00 = UI_UIContext_GetInfo(contextIndex);
+  switch((int)feederID) {
   case 2:
-    UI_UpdateDisplayServers(param_1,puVar4);
-    UI_UpdateServerToolTips(param_1,param_4);
-    iVar5 = DAT_098d7618;
+    UI_UpdateDisplayServers(localClientNum,uiInfo_00);
+    UI_UpdateServerToolTips(localClientNum,listPtr);
+    iVar4 = DAT_098d7618;
     break;
   default:
-    iVar5 = UI_Project_FeederCount(param_1,param_2,param_3,param_4);
+    iVar4 = UI_Project_FeederCount(localClientNum,contextIndex,feederID,listPtr);
     break;
   case 4:
-    iVar5 = UI_MapCountByGameType();
+    iVar4 = UI_MapCountByGameType();
     break;
   case 7:
   case 0x13:
-    iVar5 = DAT_098b4bb0;
-    if (puVar4->playerRefresh < (puVar4->uiDC).realTime) {
-      puVar4->playerRefresh = (puVar4->uiDC).realTime + 3000;
-      UI_BuildPlayerList(param_1);
-      iVar5 = DAT_098b4bb0;
+    iVar4 = DAT_098b4bb0;
+    if (uiInfo_00->playerRefresh < (uiInfo_00->uiDC).realTime) {
+      uiInfo_00->playerRefresh = (uiInfo_00->uiDC).realTime + 3000;
+      UI_BuildPlayerList(localClientNum);
+      iVar4 = DAT_098b4bb0;
     }
     break;
   case 9:
-    iVar5 = DAT_098c38f0;
+    iVar4 = DAT_098c38f0;
     break;
   case 0xd:
-    iVar5 = DAT_098d9030;
+    iVar4 = DAT_098d9030;
     break;
   case 0x1a:
   case 0x4d:
     if ((xblive_wagermatch->current).enabled == false) {
       iVar3 = Playlist_GetCategoryIdForNum((category->current).integer);
-      iVar5 = Playlist_GetPlaylistCount(iVar3);
+      iVar4 = Playlist_GetPlaylistCount(iVar3);
     }
     else {
       iVar3 = Playlist_GetCategoryIdForNum((wagerCategory->current).integer);
-      iVar5 = Playlist_GetPlaylistCount(iVar3);
+      iVar4 = Playlist_GetPlaylistCount(iVar3);
     }
     break;
   case 0x1b:
-    iVar5 = Playlist_GetGametypeCount();
+    iVar4 = Playlist_GetGametypeCount();
     break;
   case 0x1c:
   case 0x4c:
-    iVar5 = Playlist_GetCategoryCount();
+    iVar4 = Playlist_GetCategoryCount();
     break;
   case 0x1d:
-    iVar5 = LB_FeederCount(param_1);
-    Dvar_SetBool(ui_leaderboardFeederCountNotZero,0 < iVar5);
+    iVar4 = LB_FeederCount(localClientNum);
+    Dvar_SetBool(ui_leaderboardFeederCountNotZero,0 < iVar4);
     break;
   case 0x20:
-    iVar5 = Friends_GetCount(iVar3,0,0);
-    Dvar_SetBoolIfChanged(ui_friendCountNotZero,0 < iVar5);
+    iVar4 = Friends_GetCount(iVar3,0,0);
+    Dvar_SetBoolIfChanged(ui_friendCountNotZero,0 < iVar4);
     break;
   case 0x2d:
   case 0x2e:
-    iVar5 = 0;
+    iVar4 = 0;
     break;
   case 0x2f:
-    iVar5 = Live_GetInvitesCount();
+    iVar4 = Live_GetInvitesCount();
     break;
   case 0x32:
-    iVar5 = LiveMeetPlayer_GetNoOfMetPlayers(iVar3);
-    LiveMeetPlayer_SortMetPlayers(iVar3,iVar5);
-    Dvar_SetBool(ui_recentPlayerCountNotZero,0 < iVar5);
+    iVar4 = LiveMeetPlayer_GetNoOfMetPlayers(iVar3);
+    LiveMeetPlayer_SortMetPlayers(iVar3,iVar4);
+    Dvar_SetBool(ui_recentPlayerCountNotZero,0 < iVar4);
     break;
   case 0x36:
-    iVar5 = param_4->rowCount;
+    iVar4 = listPtr->rowCount;
     break;
   case 0x4a:
   case 0x54:
-    iVar5 = Live_FileShare_GetSearchResultsCount(iVar3);
+    iVar4 = Live_FileShare_GetSearchResultsCount(iVar3);
     break;
   case 0x4f:
-    iVar5 = Live_FileShare_GetOtherPrivateSlotsCount(iVar3);
+    iVar4 = Live_FileShare_GetOtherPrivateSlotsCount(iVar3);
     break;
   case 0x50:
-    iVar5 = Live_FileShare_GetMyPrivateSlotsCount(iVar3);
+    iVar4 = Live_FileShare_GetMyPrivateSlotsCount(iVar3);
     break;
   case 0x56:
-    iVar5 = Live_FileShare_GetMyPrivateSlotsCount(iVar3);
-    iVar5 = iVar5 * 3;
+    iVar4 = Live_FileShare_GetMyPrivateSlotsCount(iVar3);
+    iVar4 = iVar4 * 3;
     break;
   case 0x5b:
-    iVar5 = DAT_098da4d4;
+    iVar4 = DAT_098da4d4;
   }
-  return iVar5;
+  return iVar4;
 }
 
 
 // 0072E7B0  UI_FeederItemText_Servers  (ui/ui_feeders.cpp:476)
 
 char * __cdecl
-UI_FeederItemText_Servers(int param_1,int param_2,int param_3,int param_4,Material **param_5)
+UI_FeederItemText_Servers
+          (int localClientNum,int contextIndex,int index,int column,Material **handle)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  int iVar5;
-  Material *pMVar6;
+  uiInfo_s *uiInfo_00;
+  char *pcVar1;
+  int iVar2;
+  char *pcVar3;
+  int iVar4;
+  Material *pMVar5;
   char *local_38;
   char *local_34;
-  char *local_10;
+  char *tempstr;
+  int region_2;
+  char *region;
+  char *mod;
+  int iswager;
+  int licensetype;
+  char *assetString;
+  int ping;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_UIContext_GetInfo(param_2);
-  UI_UpdateDisplayServers(param_1,puVar1);
-  if ((param_3 < 0) || (DAT_098d7618 <= param_3)) {
+  uiInfo_00 = UI_UIContext_GetInfo(contextIndex);
+  UI_UpdateDisplayServers(localClientNum,uiInfo_00);
+  if ((index < 0) || (DAT_098d7618 <= index)) {
 LAB_0072ef8e:
-    pcVar2 = "";
+    pcVar1 = "";
   }
   else {
-    if ((lastColumn != param_4) || ((puVar1->uiDC).realTime + 5000 < lastTime)) {
-      LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + param_3 * 4),info,
+    if ((lastColumn != column) || ((uiInfo_00->uiDC).realTime + 5000 < lastTime)) {
+      LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + index * 4),info,
                         0x400);
-      lastColumn = param_4;
-      lastTime = (puVar1->uiDC).realTime;
+      lastColumn = column;
+      lastTime = (uiInfo_00->uiDC).realTime;
     }
-    pcVar2 = Info_ValueForKey(info,"ping");
-    iVar3 = atoi(pcVar2);
-    switch(param_4) {
+    pcVar1 = Info_ValueForKey(info,"ping");
+    iVar2 = atoi(pcVar1);
+    switch(column) {
     case 0:
-      pcVar2 = Info_ValueForKey(info,"wager");
-      iVar3 = atoi(pcVar2);
-      pcVar2 = Info_ValueForKey(info,"licensetype");
-      iVar5 = atoi(pcVar2);
-      switch(iVar5) {
+      pcVar1 = Info_ValueForKey(info,"wager");
+      iVar2 = atoi(pcVar1);
+      pcVar1 = Info_ValueForKey(info,"licensetype");
+      iVar4 = atoi(pcVar1);
+      switch(iVar4) {
       case 2:
-        if (iVar3 == 0) {
+        if (iVar2 == 0) {
           local_38 = "os";
         }
         else {
           local_38 = "wager_green";
         }
-        pMVar6 = Material_RegisterHandle(local_38,7);
-        *param_5 = pMVar6;
+        pMVar5 = Material_RegisterHandle(local_38,7);
+        *handle = pMVar5;
         break;
       case 3:
-        pMVar6 = Material_RegisterHandle("no_ors",7);
-        *param_5 = pMVar6;
+        pMVar5 = Material_RegisterHandle("no_ors",7);
+        *handle = pMVar5;
         break;
       case 4:
-        if (iVar3 == 0) {
+        if (iVar2 == 0) {
           local_34 = "ors";
         }
         else {
           local_34 = "wager_yellow";
         }
-        pMVar6 = Material_RegisterHandle(local_34,7);
-        *param_5 = pMVar6;
+        pMVar5 = Material_RegisterHandle(local_34,7);
+        *handle = pMVar5;
         break;
       case 5:
-        pMVar6 = Material_RegisterHandle("listen_server",7);
-        *param_5 = pMVar6;
+        pMVar5 = Material_RegisterHandle("listen_server",7);
+        *handle = pMVar5;
       }
-      pcVar2 = "";
+      pcVar1 = "";
       break;
     case 1:
-      pcVar2 = Info_ValueForKey(info,"pb");
-      iVar3 = atoi(pcVar2);
-      if (iVar3 != 0) {
-        pMVar6 = Material_RegisterHandle("vac",7);
-        *param_5 = pMVar6;
+      pcVar1 = Info_ValueForKey(info,"pb");
+      iVar2 = atoi(pcVar1);
+      if (iVar2 != 0) {
+        pMVar5 = Material_RegisterHandle("vac",7);
+        *handle = pMVar5;
       }
-      pcVar2 = "";
+      pcVar1 = "";
       break;
     case 2:
-      pcVar2 = Info_ValueForKey(info,"pswrd");
-      iVar3 = atoi(pcVar2);
-      if (iVar3 != 0) {
-        pMVar6 = Material_RegisterHandle("lock",7);
-        *param_5 = pMVar6;
+      pcVar1 = Info_ValueForKey(info,"pswrd");
+      iVar2 = atoi(pcVar1);
+      if (iVar2 != 0) {
+        pMVar5 = Material_RegisterHandle("lock",7);
+        *handle = pMVar5;
       }
-      pcVar2 = "";
+      pcVar1 = "";
       break;
     case 3:
-      if (iVar3 < 1) {
-        pcVar2 = Info_ValueForKey(info,"addr");
+      if (iVar2 < 1) {
+        pcVar1 = Info_ValueForKey(info,"addr");
       }
       else {
-        iVar3 = 0x26;
-        pcVar2 = Info_ValueForKey(info,"hostname");
-        I_strncpyz(clientBuff,pcVar2,iVar3);
+        iVar2 = 0x26;
+        pcVar1 = Info_ValueForKey(info,"hostname");
+        I_strncpyz(clientBuff,pcVar1,iVar2);
         UI_UseAltColorPalette(clientBuff);
-        pcVar2 = clientBuff;
+        pcVar1 = clientBuff;
       }
       break;
     case 4:
-      pcVar2 = Info_ValueForKey(info,"mapname");
-      pcVar2 = UI_GetMapDisplayName(pcVar2);
+      pcVar1 = Info_ValueForKey(info,"mapname");
+      pcVar1 = UI_GetMapDisplayName(pcVar1);
       break;
     case 5:
       Info_ValueForKey(info,"com_maxclients");
       Info_ValueForKey(info,"clients");
       Com_sprintf(clientBuff,0x26,"%s (%s)");
-      pcVar2 = clientBuff;
+      pcVar1 = clientBuff;
       break;
     case 6:
-      pcVar2 = Info_ValueForKey(info,"gametype");
-      if ((pcVar2 == (char *)0x0) || (pcVar2 = Info_ValueForKey(info,"gametype"), *pcVar2 == '\0'))
+      pcVar1 = Info_ValueForKey(info,"gametype");
+      if ((pcVar1 == (char *)0x0) || (pcVar1 = Info_ValueForKey(info,"gametype"), *pcVar1 == '\0'))
       {
-        pcVar2 = "?";
+        pcVar1 = "?";
       }
       else {
-        pcVar2 = Info_ValueForKey(info,"gametype");
-        pcVar2 = UI_GetGameTypeDisplayShortName(pcVar2);
-        if (*pcVar2 == '\0') {
-          pcVar2 = Info_ValueForKey(info,"gametype");
-          pcVar2 = UI_GetGameTypeDisplayName(pcVar2);
+        pcVar1 = Info_ValueForKey(info,"gametype");
+        pcVar1 = UI_GetGameTypeDisplayShortName(pcVar1);
+        if (*pcVar1 == '\0') {
+          pcVar1 = Info_ValueForKey(info,"gametype");
+          pcVar1 = UI_GetGameTypeDisplayName(pcVar1);
         }
       }
       break;
     case 7:
-      pcVar2 = Info_ValueForKey(info,"licensetype");
-      iVar3 = atoi(pcVar2);
-      if (iVar3 == 5) {
-        pcVar2 = Info_ValueForKey(info,"countrycode");
-        iVar3 = I_stricmp(pcVar2,"US");
-        if (iVar3 == 0) {
-          local_10 = "flag_usa";
+      pcVar1 = Info_ValueForKey(info,"licensetype");
+      iVar2 = atoi(pcVar1);
+      if (iVar2 == 5) {
+        pcVar1 = Info_ValueForKey(info,"countrycode");
+        iVar2 = I_stricmp(pcVar1,"US");
+        if (iVar2 == 0) {
+          assetString = "flag_usa";
         }
         else {
-          iVar3 = I_stricmp(pcVar2,"CA");
-          if (iVar3 == 0) {
-            local_10 = "flag_canada";
+          iVar2 = I_stricmp(pcVar1,"CA");
+          if (iVar2 == 0) {
+            assetString = "flag_canada";
           }
           else {
-            iVar3 = I_stricmp(pcVar2,"NL");
-            if (iVar3 == 0) {
-              local_10 = "flag_neth";
+            iVar2 = I_stricmp(pcVar1,"NL");
+            if (iVar2 == 0) {
+              assetString = "flag_neth";
             }
             else {
-              iVar3 = I_stricmp(pcVar2,"GB");
-              if (iVar3 == 0) {
-                local_10 = "flag_brit";
+              iVar2 = I_stricmp(pcVar1,"GB");
+              if (iVar2 == 0) {
+                assetString = "flag_brit";
               }
               else {
-                iVar3 = I_stricmp(pcVar2,"DK");
-                if (iVar3 == 0) {
-                  local_10 = "flag_denmark";
+                iVar2 = I_stricmp(pcVar1,"DK");
+                if (iVar2 == 0) {
+                  assetString = "flag_denmark";
                 }
                 else {
-                  iVar3 = I_stricmp(pcVar2,"PL");
-                  if (iVar3 == 0) {
-                    local_10 = "flag_poland";
+                  iVar2 = I_stricmp(pcVar1,"PL");
+                  if (iVar2 == 0) {
+                    assetString = "flag_poland";
                   }
                   else {
-                    iVar3 = I_stricmp(pcVar2,"DE");
-                    if (iVar3 == 0) {
-                      local_10 = "flag_germany";
+                    iVar2 = I_stricmp(pcVar1,"DE");
+                    if (iVar2 == 0) {
+                      assetString = "flag_germany";
                     }
                     else {
-                      iVar3 = I_stricmp(pcVar2,"AU");
-                      if (iVar3 == 0) {
-                        local_10 = "flag_australia";
+                      iVar2 = I_stricmp(pcVar1,"AU");
+                      if (iVar2 == 0) {
+                        assetString = "flag_australia";
                       }
                       else {
-                        iVar3 = I_stricmp(pcVar2,"JP");
-                        if (iVar3 == 0) {
-                          local_10 = "flag_japan";
+                        iVar2 = I_stricmp(pcVar1,"JP");
+                        if (iVar2 == 0) {
+                          assetString = "flag_japan";
                         }
                         else {
-                          iVar3 = I_stricmp(pcVar2,"RU");
-                          if (iVar3 == 0) {
-                            local_10 = "flag_russia";
+                          iVar2 = I_stricmp(pcVar1,"RU");
+                          if (iVar2 == 0) {
+                            assetString = "flag_russia";
                           }
                           else {
-                            iVar3 = I_stricmp(pcVar2,"ES");
-                            if (iVar3 == 0) {
-                              local_10 = "flag_spain";
+                            iVar2 = I_stricmp(pcVar1,"ES");
+                            if (iVar2 == 0) {
+                              assetString = "flag_spain";
                             }
                             else {
-                              iVar3 = I_stricmp(pcVar2,"FR");
-                              if (iVar3 == 0) {
-                                local_10 = "flag_france";
+                              iVar2 = I_stricmp(pcVar1,"FR");
+                              if (iVar2 == 0) {
+                                assetString = "flag_france";
                               }
                               else {
-                                iVar3 = I_stricmp(pcVar2,"IT");
-                                if (iVar3 == 0) {
-                                  local_10 = "flag_italy";
+                                iVar2 = I_stricmp(pcVar1,"IT");
+                                if (iVar2 == 0) {
+                                  assetString = "flag_italy";
                                 }
                                 else {
-                                  iVar3 = I_stricmp(pcVar2,"GR");
-                                  if (iVar3 == 0) {
-                                    local_10 = "flag_greece";
+                                  iVar2 = I_stricmp(pcVar1,"GR");
+                                  if (iVar2 == 0) {
+                                    assetString = "flag_greece";
                                   }
                                   else {
-                                    iVar3 = I_stricmp(pcVar2,"IS");
-                                    if (iVar3 == 0) {
-                                      local_10 = "flag_israel";
+                                    iVar2 = I_stricmp(pcVar1,"IS");
+                                    if (iVar2 == 0) {
+                                      assetString = "flag_israel";
                                     }
                                     else {
-                                      iVar3 = I_stricmp(pcVar2,"ZA");
-                                      if (iVar3 == 0) {
-                                        local_10 = "flag_safrica";
+                                      iVar2 = I_stricmp(pcVar1,"ZA");
+                                      if (iVar2 == 0) {
+                                        assetString = "flag_safrica";
                                       }
                                       else {
-                                        iVar3 = I_stricmp(pcVar2,"SA");
-                                        if (iVar3 == 0) {
-                                          local_10 = "flag_saudi";
+                                        iVar2 = I_stricmp(pcVar1,"SA");
+                                        if (iVar2 == 0) {
+                                          assetString = "flag_saudi";
                                         }
                                         else {
-                                          iVar3 = I_stricmp(pcVar2,"KR");
-                                          if (iVar3 == 0) {
-                                            local_10 = "flag_skorea";
+                                          iVar2 = I_stricmp(pcVar1,"KR");
+                                          if (iVar2 == 0) {
+                                            assetString = "flag_skorea";
                                           }
                                           else {
-                                            iVar3 = I_stricmp(pcVar2,"AE");
-                                            if (iVar3 == 0) {
-                                              local_10 = "flag_dubai";
+                                            iVar2 = I_stricmp(pcVar1,"AE");
+                                            if (iVar2 == 0) {
+                                              assetString = "flag_dubai";
                                             }
                                             else {
-                                              local_10 = "sb_globe";
+                                              assetString = "sb_globe";
                                             }
                                           }
                                         }
@@ -459,125 +478,125 @@ LAB_0072ef8e:
         }
       }
       else {
-        pcVar2 = Info_ValueForKey(info,"region");
-        iVar3 = atoi(pcVar2);
-        switch(iVar3) {
+        pcVar1 = Info_ValueForKey(info,"region");
+        iVar2 = atoi(pcVar1);
+        switch(iVar2) {
         case 1:
-          local_10 = "flag_usa";
+          assetString = "flag_usa";
           break;
         case 2:
-          local_10 = "flag_canada";
+          assetString = "flag_canada";
           break;
         case 3:
-          local_10 = "flag_neth";
+          assetString = "flag_neth";
           break;
         case 4:
-          local_10 = "flag_brit";
+          assetString = "flag_brit";
           break;
         case 5:
-          local_10 = "flag_denmark";
+          assetString = "flag_denmark";
           break;
         case 6:
-          local_10 = "flag_poland";
+          assetString = "flag_poland";
           break;
         case 7:
-          local_10 = "flag_germany";
+          assetString = "flag_germany";
           break;
         case 8:
-          local_10 = "flag_australia";
+          assetString = "flag_australia";
           break;
         case 9:
-          local_10 = "flag_japan";
+          assetString = "flag_japan";
           break;
         case 10:
-          local_10 = "flag_russia";
+          assetString = "flag_russia";
           break;
         case 0xb:
-          local_10 = "flag_spain";
+          assetString = "flag_spain";
           break;
         case 0xc:
-          local_10 = "flag_france";
+          assetString = "flag_france";
           break;
         case 0xd:
-          local_10 = "flag_italy";
+          assetString = "flag_italy";
           break;
         case 0xe:
-          local_10 = "flag_greece";
+          assetString = "flag_greece";
           break;
         case 0xf:
-          local_10 = "flag_israel";
+          assetString = "flag_israel";
           break;
         case 0x10:
-          local_10 = "flag_safrica";
+          assetString = "flag_safrica";
           break;
         case 0x11:
-          local_10 = "flag_saudi";
+          assetString = "flag_saudi";
           break;
         case 0x12:
-          local_10 = "flag_skorea";
+          assetString = "flag_skorea";
           break;
         case 0x13:
-          local_10 = "flag_dubai";
+          assetString = "flag_dubai";
           break;
         default:
-          local_10 = "sb_globe";
+          assetString = "sb_globe";
         }
       }
-      pMVar6 = Material_RegisterHandle(local_10,7);
-      *param_5 = pMVar6;
+      pMVar5 = Material_RegisterHandle(assetString,7);
+      *handle = pMVar5;
       goto LAB_0072ef8e;
     case 8:
-      if (iVar3 < 1) {
-        pcVar2 = "...";
+      if (iVar2 < 1) {
+        pcVar1 = "...";
       }
       else {
-        pcVar2 = Info_ValueForKey(info,"ping");
+        pcVar1 = Info_ValueForKey(info,"ping");
       }
       break;
     case 9:
-      pcVar2 = Info_ValueForKey(info,"game");
-      if ((pcVar2 == (char *)0x0) || (pcVar4 = I_stristr(pcVar2,"mods/"), pcVar4 == (char *)0x0)) {
-        pcVar2 = "";
+      pcVar1 = Info_ValueForKey(info,"game");
+      if ((pcVar1 == (char *)0x0) || (pcVar3 = I_stristr(pcVar1,"mods/"), pcVar3 == (char *)0x0)) {
+        pcVar1 = "";
       }
       else {
-        pcVar2 = pcVar2 + 5;
+        pcVar1 = pcVar1 + 5;
       }
       break;
     case 10:
-      pcVar2 = Info_ValueForKey(info,"voice");
-      iVar3 = atoi(pcVar2);
-      if (iVar3 == 0) {
-        pcVar2 = "";
+      pcVar1 = Info_ValueForKey(info,"voice");
+      iVar2 = atoi(pcVar1);
+      if (iVar2 == 0) {
+        pcVar1 = "";
       }
       else {
-        pcVar2 = "X";
+        pcVar1 = "X";
       }
       break;
     default:
-      pcVar2 = "Dt";
+      pcVar1 = "Dt";
     }
   }
-  return pcVar2;
+  return pcVar1;
 }
 
 
 // 0072F020  UI_FeederItemText_ServerStatus  (ui/ui_feeders.cpp:778)
 
-char * __cdecl UI_FeederItemText_ServerStatus(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_ServerStatus(int index,int column)
 
 {
   char *pcVar1;
   
-  if ((((param_1 < 0) || (DAT_098d9030 <= param_1)) || (param_2 < 0)) || (1 < param_2)) {
+  if ((((index < 0) || (DAT_098d9030 <= index)) || (column < 0)) || (1 < column)) {
     pcVar1 = "";
   }
-  else if ((*(int *)(&DAT_098d7bd0 + param_2 * 4 + param_1 * 0x20) == 0) ||
-          (**(char **)(&DAT_098d7bd0 + param_2 * 4 + param_1 * 0x20) != '@')) {
-    pcVar1 = *(char **)(&DAT_098d7bd0 + param_2 * 4 + param_1 * 0x20);
+  else if ((*(int *)(&DAT_098d7bd0 + column * 4 + index * 0x20) == 0) ||
+          (**(char **)(&DAT_098d7bd0 + column * 4 + index * 0x20) != '@')) {
+    pcVar1 = *(char **)(&DAT_098d7bd0 + column * 4 + index * 0x20);
   }
   else {
     pcVar1 = UI_SafeTranslateString
-                       ((char *)(*(int *)(&DAT_098d7bd0 + param_2 * 4 + param_1 * 0x20) + 1));
+                       ((char *)(*(int *)(&DAT_098d7bd0 + column * 4 + index * 0x20) + 1));
   }
   return pcVar1;
 }
@@ -585,20 +604,20 @@ char * __cdecl UI_FeederItemText_ServerStatus(int param_1,int param_2)
 
 // 0072F0B0  UI_FeederItemText_ServerStatusScoreboard  (ui/ui_feeders.cpp:793)
 
-char * __cdecl UI_FeederItemText_ServerStatusScoreboard(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_ServerStatusScoreboard(int index,int column)
 
 {
   char *pcVar1;
   
-  if ((((param_1 < 0) || (DAT_098da4d4 <= param_1)) || (param_2 < 0)) || (6 < param_2)) {
+  if ((((index < 0) || (DAT_098da4d4 <= index)) || (column < 0)) || (6 < column)) {
     pcVar1 = "";
   }
-  else if (**(char **)(&DAT_098d9074 + param_2 * 4 + param_1 * 0x20) == '@') {
+  else if (**(char **)(&DAT_098d9074 + column * 4 + index * 0x20) == '@') {
     pcVar1 = UI_SafeTranslateString
-                       ((char *)(*(int *)(&DAT_098d9074 + param_2 * 4 + param_1 * 0x20) + 1));
+                       ((char *)(*(int *)(&DAT_098d9074 + column * 4 + index * 0x20) + 1));
   }
   else {
-    pcVar1 = *(char **)(&DAT_098d9074 + param_2 * 4 + param_1 * 0x20);
+    pcVar1 = *(char **)(&DAT_098d9074 + column * 4 + index * 0x20);
   }
   return pcVar1;
 }
@@ -606,19 +625,19 @@ char * __cdecl UI_FeederItemText_ServerStatusScoreboard(int param_1,int param_2)
 
 // 0072F130  UI_FeederItemText_Mods  (ui/ui_feeders.cpp:809)
 
-char * __cdecl UI_FeederItemText_Mods(int param_1)
+char * __cdecl UI_FeederItemText_Mods(int index)
 
 {
   char *pcVar1;
   
-  if ((param_1 < 0) || (DAT_098c38f0 <= param_1)) {
+  if ((index < 0) || (DAT_098c38f0 <= index)) {
     pcVar1 = "";
   }
-  else if (((&DAT_098c36f4)[param_1 * 2] == 0) || (*(char *)(&DAT_098c36f4)[param_1 * 2] == '\0')) {
-    pcVar1 = (char *)(&DAT_098c36f0)[param_1 * 2];
+  else if (((&DAT_098c36f4)[index * 2] == 0) || (*(char *)(&DAT_098c36f4)[index * 2] == '\0')) {
+    pcVar1 = (char *)(&DAT_098c36f0)[index * 2];
   }
   else {
-    pcVar1 = (char *)(&DAT_098c36f4)[param_1 * 2];
+    pcVar1 = (char *)(&DAT_098c36f4)[index * 2];
   }
   return pcVar1;
 }
@@ -626,204 +645,207 @@ char * __cdecl UI_FeederItemText_Mods(int param_1)
 
 // 0072F500  GetRecentPlayerInfoString  (ui/ui_feeders.cpp:1099)
 
-char * __cdecl GetRecentPlayerInfoString(int param_1)
+char * __cdecl GetRecentPlayerInfoString(int minutes)
 
 {
-  int iVar1;
-  int iVar2;
-  char *pcVar3;
+  int replaceInt;
+  int replaceInt_00;
+  char *pcVar1;
+  int hours;
+  int days;
+  int numMinsPerDay;
   
-  iVar1 = param_1 / 0x5a0;
-  iVar2 = param_1 / 0x3c;
-  if (iVar1 < 1) {
-    if (iVar2 < 1) {
-      if (param_1 < 1) {
-        pcVar3 = UI_SafeTranslateString("MPUI_LAST_MET_LESS_THAN_A_MIN_AGO");
+  replaceInt = minutes / 0x5a0;
+  replaceInt_00 = minutes / 0x3c;
+  if (replaceInt < 1) {
+    if (replaceInt_00 < 1) {
+      if (minutes < 1) {
+        pcVar1 = UI_SafeTranslateString("MPUI_LAST_MET_LESS_THAN_A_MIN_AGO");
       }
       else {
-        pcVar3 = UI_SafeTranslateString("MPUI_LAST_MET_N_MINS_AGO");
-        UI_ReplaceConversionInt(pcVar3,param_1);
-        pcVar3 = va("%s");
+        pcVar1 = UI_SafeTranslateString("MPUI_LAST_MET_N_MINS_AGO");
+        UI_ReplaceConversionInt(pcVar1,minutes);
+        pcVar1 = va("%s");
       }
     }
     else {
-      pcVar3 = UI_SafeTranslateString("MPUI_LAST_MET_N_HOURS_AGO");
-      UI_ReplaceConversionInt(pcVar3,iVar2);
-      pcVar3 = va("%s");
+      pcVar1 = UI_SafeTranslateString("MPUI_LAST_MET_N_HOURS_AGO");
+      UI_ReplaceConversionInt(pcVar1,replaceInt_00);
+      pcVar1 = va("%s");
     }
   }
   else {
-    pcVar3 = UI_SafeTranslateString("MPUI_LAST_MET_N_DAYS_AGO");
-    UI_ReplaceConversionInt(pcVar3,iVar1);
-    pcVar3 = va("%s");
+    pcVar1 = UI_SafeTranslateString("MPUI_LAST_MET_N_DAYS_AGO");
+    UI_ReplaceConversionInt(pcVar1,replaceInt);
+    pcVar1 = va("%s");
   }
-  return pcVar3;
+  return pcVar1;
 }
 
 
 // 0072F190  UI_FeederItemText_CommmonPlayerListHandler  (ui/ui_feeders.cpp:1116)
 
-/* WARNING: Type propagation algorithm not settling */
-
 char * __cdecl
 UI_FeederItemText_CommmonPlayerListHandler
-          (int param_1,int param_2,int param_3,int param_4,Material **param_5,bool *param_6)
+          (int controllerIndex,int feederId,int index,int column,Material **handle,
+          bool *useOwnerDraw)
 
 {
   bool bVar1;
-  short sVar2;
-  XuidInfo *pXVar3;
-  Material *pMVar4;
-  char *pcVar5;
-  ulong uVar6;
-  int iVar7;
-  undefined4 *puVar8;
+  short id;
+  XuidInfo *pXVar2;
+  Material *pMVar3;
+  char *sourceString;
+  ulong uVar4;
+  int iVar5;
+  undefined4 *puVar6;
   int *unaff_EDI;
-  XuidInfo_conflict *pXVar9;
-  undefined2 uVar10;
-  undefined2 uVar11;
+  XuidInfo_conflict *pXVar7;
+  undefined2 uVar8;
+  undefined2 uVar9;
   XuidInfo local_8c;
   undefined4 local_5c [13];
-  int local_28;
-  char *local_24;
-  int local_20 [2];
-  char *local_18;
-  Material *local_14;
-  char *local_10;
-  undefined4 local_c;
+  int prestige;
+  char *emblemBackingName;
+  int rank;
+  int codpoints;
+  char *presenceString;
+  Material *emblemBackingMaterial;
+  char *name;
+  undefined4 xuid;
   undefined4 local_8;
   
-  local_20[0] = 0;
-  local_28 = 0;
-  local_20[1] = 0;
-  local_c = 0;
+  rank = 0;
+  prestige = 0;
+  codpoints = 0;
+  xuid = 0;
   local_8 = 0;
-  local_24 = "";
-  local_10 = "";
-  local_18 = "";
-  if (param_2 == 0x20) {
-    bVar1 = Friends_GetByIndex(param_1,0,param_3,&friendInfo);
+  emblemBackingName = "";
+  name = "";
+  presenceString = "";
+  if (feederId == 0x20) {
+    bVar1 = Friends_GetByIndex(controllerIndex,0,index,&friendInfo);
     if (bVar1) {
-      local_c = (undefined4)friendInfo.dwid;
+      xuid = (undefined4)friendInfo.dwid;
       local_8 = friendInfo.dwid._4_4_;
-      local_10 = friendInfo.name;
+      name = friendInfo.name;
     }
   }
-  else if (param_2 == 0x32) {
-    pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_8c,param_1,param_3);
-    puVar8 = local_5c;
-    for (iVar7 = 0xc; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *puVar8 = (int)pXVar3->playerXuids;
-      pXVar3 = (XuidInfo *)((int)&pXVar3->playerXuids + 4);
-      puVar8 = puVar8 + 1;
+  else if (feederId == 0x32) {
+    pXVar2 = LiveMeetPlayer_GetMetFriendInfo(&local_8c,controllerIndex,index);
+    puVar6 = local_5c;
+    for (iVar5 = 0xc; iVar5 != 0; iVar5 = iVar5 + -1) {
+      *puVar6 = (int)pXVar2->playerXuids;
+      pXVar2 = (XuidInfo *)((int)&pXVar2->playerXuids + 4);
+      puVar6 = puVar6 + 1;
     }
-    puVar8 = local_5c;
-    pXVar9 = &recentPlayerInfo;
-    for (iVar7 = 0xc; iVar7 != 0; iVar7 = iVar7 + -1) {
-      *(undefined4 *)&pXVar9->playerXuids = *puVar8;
-      puVar8 = puVar8 + 1;
-      pXVar9 = (XuidInfo_conflict *)((int)&pXVar9->playerXuids + 4);
+    puVar6 = local_5c;
+    pXVar7 = &recentPlayerInfo;
+    for (iVar5 = 0xc; iVar5 != 0; iVar5 = iVar5 + -1) {
+      *(undefined4 *)&pXVar7->playerXuids = *puVar6;
+      puVar6 = puVar6 + 1;
+      pXVar7 = (XuidInfo_conflict *)((int)&pXVar7->playerXuids + 4);
     }
-    local_c = (undefined4)recentPlayerInfo.playerXuids;
+    xuid = (undefined4)recentPlayerInfo.playerXuids;
     local_8 = recentPlayerInfo.playerXuids._4_4_;
-    local_10 = recentPlayerInfo.gamertag;
+    name = recentPlayerInfo.gamertag;
   }
-  switch(param_4) {
+  switch(column) {
   case 0:
-    *param_5 = DAT_098b4b78;
-    local_10 = "";
+    *handle = DAT_098b4b78;
+    name = "";
     break;
   case 1:
-    local_24 = "emblem_bg_nocod";
-    sVar2 = PCache_GetPlayerEmblemBackgroundID(param_1,CONCAT44(unaff_EDI,local_8));
-    local_14 = BG_EmblemsGetBackgroundMaterial(sVar2);
-    if (local_14 != (Material *)0x0) {
-      local_24 = (local_14->info).name;
+    emblemBackingName = "emblem_bg_nocod";
+    id = PCache_GetPlayerEmblemBackgroundID(controllerIndex,CONCAT44(unaff_EDI,local_8));
+    emblemBackingMaterial = BG_EmblemsGetBackgroundMaterial(id);
+    if (emblemBackingMaterial != (Material *)0x0) {
+      emblemBackingName = (emblemBackingMaterial->info).name;
     }
-    pMVar4 = Material_RegisterHandle(local_24,7);
-    *param_5 = pMVar4;
-    local_10 = "";
+    pMVar3 = Material_RegisterHandle(emblemBackingName,7);
+    *handle = pMVar3;
+    name = "";
     break;
   case 2:
-    *param_6 = true;
-    local_10 = "";
+    *useOwnerDraw = true;
+    name = "";
     break;
   case 3:
-    bVar1 = PCache_GetRank(param_1,CONCAT44(local_20,local_8),&local_28,unaff_EDI);
+    bVar1 = PCache_GetRank(controllerIndex,CONCAT44(&rank,local_8),&prestige,unaff_EDI);
     if (bVar1) {
-      local_10 = CL_GetRankData(local_20[0],MP_RANKTABLE_DISPLAYLEVEL);
+      name = CL_GetRankData(rank,MP_RANKTABLE_DISPLAYLEVEL);
     }
     else {
-      local_10 = "";
+      name = "";
     }
     break;
   case 4:
-    bVar1 = PCache_GetRank(param_1,CONCAT44(local_20,local_8),&local_28,unaff_EDI);
+    bVar1 = PCache_GetRank(controllerIndex,CONCAT44(&rank,local_8),&prestige,unaff_EDI);
     if (bVar1) {
-      CL_GetRankIcon(local_20[0],local_28,param_5);
+      CL_GetRankIcon(rank,prestige,handle);
     }
-    local_10 = "";
+    name = "";
     break;
   case 5:
     break;
   case 6:
-    bVar1 = PCache_GetCodpoints(param_1,CONCAT26((short)((uint)(local_20 + 1) >> 0x10),
-                                                 CONCAT24((short)(local_20 + 1),local_8)),unaff_EDI)
-    ;
+    bVar1 = PCache_GetCodpoints(controllerIndex,
+                                CONCAT26((short)((uint)&codpoints >> 0x10),
+                                         CONCAT24((short)&codpoints,local_8)),unaff_EDI);
     if (bVar1) {
-      uVar10 = (undefined2)local_20[1];
-      uVar11 = (undefined2)((uint)local_20[1] >> 0x10);
-      pcVar5 = UI_SafeTranslateString("MENU_POINTS");
-      UI_ReplaceConversionInt(pcVar5,CONCAT22(uVar11,uVar10));
-      local_10 = va("%s");
+      uVar8 = (undefined2)codpoints;
+      uVar9 = (undefined2)((uint)codpoints >> 0x10);
+      sourceString = UI_SafeTranslateString("MENU_POINTS");
+      UI_ReplaceConversionInt(sourceString,CONCAT22(uVar9,uVar8));
+      name = va("%s");
     }
     else {
-      local_10 = "";
+      name = "";
     }
     break;
   case 7:
-    if (param_2 == 0x20) {
+    if (feederId == 0x20) {
       if (((friendInfo.status & 0x10U) == 0) && ((friendInfo.status & 0x20U) == 0)) {
         if ((friendInfo.status & 2U) == 0) {
           if ((friendInfo.status & 4U) == 0) {
             if ((friendInfo.status & 8U) != 0) {
-              local_18 = "MENU_OFFLINE";
+              presenceString = "MENU_OFFLINE";
             }
           }
           else {
-            local_18 = "MENU_ONLINE";
+            presenceString = "MENU_ONLINE";
           }
         }
         else {
-          iVar7 = CL_GetFirstActiveLocalClient();
-          if (iVar7 == 0) {
+          iVar5 = CL_GetFirstActiveLocalClient();
+          if (iVar5 == 0) {
             return friendInfo.presence;
           }
-          local_18 = "MENU_PLAYING_COD";
+          presenceString = "MENU_PLAYING_COD";
         }
       }
       else {
         if ((friendInfo.status & 0x10U) != 0) {
-          local_18 = "MENU_FRIEND_REQUEST_PENDING";
+          presenceString = "MENU_FRIEND_REQUEST_PENDING";
         }
         if ((friendInfo.status & 0x20U) != 0) {
-          local_18 = "MENU_FRIEND_REQUEST_RECEIVED";
+          presenceString = "MENU_FRIEND_REQUEST_RECEIVED";
         }
       }
-      local_10 = UI_SafeTranslateString(local_18);
+      name = UI_SafeTranslateString(presenceString);
     }
-    else if (param_2 == 0x32) {
-      uVar6 = LiveMeetPlayer_GetLastMetTime(param_1,param_3);
-      local_10 = GetRecentPlayerInfoString(uVar6 / 0x3c);
+    else if (feederId == 0x32) {
+      uVar4 = LiveMeetPlayer_GetLastMetTime(controllerIndex,index);
+      name = GetRecentPlayerInfoString(uVar4 / 0x3c);
     }
     else {
-      local_10 = "";
+      name = "";
     }
     break;
   default:
-    local_10 = "";
+    name = "";
   }
-  return local_10;
+  return name;
 }
 
 
@@ -833,7 +855,8 @@ UI_FeederItemText_CommmonPlayerListHandler
 
 char * __cdecl
 UI_FeederItemText_Invites
-          (int param_1,int param_2,int param_3,int param_4,Material **param_5,bool *param_6)
+          (int controllerIndex,int feederId,int index,int column,Material **handle,
+          bool *useOwnerDraw)
 
 {
   char *pcVar1;
@@ -843,31 +866,31 @@ UI_FeederItemText_Invites
   int *piVar5;
   XuidInfo local_16c;
   int local_13c [12];
-  int local_10c [13];
-  int local_d8;
-  FriendInfo local_d4;
+  int metinfo [13];
+  int i_2;
+  FriendInfo finfo;
   uint local_1c;
-  int local_18;
-  undefined8 local_14;
-  int local_c;
-  int local_8;
+  int i;
+  undefined8 friendInviteId;
+  int count;
+  int invitesCount;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Live_GetInvitesCount();
-  if ((-1 < param_3) && (param_3 < local_8)) {
-    local_14 = Live_GetInviteFriend(param_3);
-    local_c = Friends_GetCount(param_1,0,0);
-    for (local_18 = 0; local_18 < local_c; local_18 = local_18 + 1) {
-      Friends_GetByIndex(param_1,0,local_18,&local_d4);
-      if (((int)local_d4.dwid == (int)local_14) && (local_d4.dwid._4_4_ == local_14._4_4_)) {
+  invitesCount = Live_GetInvitesCount();
+  if ((-1 < index) && (index < invitesCount)) {
+    friendInviteId = Live_GetInviteFriend(index);
+    count = Friends_GetCount(controllerIndex,0,0);
+    for (i = 0; i < count; i = i + 1) {
+      Friends_GetByIndex(controllerIndex,0,i,&finfo);
+      if (((int)finfo.dwid == (int)friendInviteId) && (finfo.dwid._4_4_ == friendInviteId._4_4_)) {
         pcVar1 = UI_FeederItemText_CommmonPlayerListHandler
-                           (param_1,0x20,local_18,param_4,param_5,param_6);
+                           (controllerIndex,0x20,i,column,handle,useOwnerDraw);
         return pcVar1;
       }
     }
-    local_c = LiveMeetPlayer_GetNoOfMetPlayers(0);
-    for (local_d8 = 0; local_d8 < local_c; local_d8 = local_d8 + 1) {
-      pXVar2 = LiveMeetPlayer_GetMetFriendInfo(&local_16c,0,local_d8);
+    count = LiveMeetPlayer_GetNoOfMetPlayers(0);
+    for (i_2 = 0; i_2 < count; i_2 = i_2 + 1) {
+      pXVar2 = LiveMeetPlayer_GetMetFriendInfo(&local_16c,0,i_2);
       piVar4 = local_13c;
       for (iVar3 = 0xc; iVar3 != 0; iVar3 = iVar3 + -1) {
         *piVar4 = (int)pXVar2->playerXuids;
@@ -875,15 +898,15 @@ UI_FeederItemText_Invites
         piVar4 = piVar4 + 1;
       }
       piVar4 = local_13c;
-      piVar5 = local_10c;
+      piVar5 = metinfo;
       for (iVar3 = 0xc; iVar3 != 0; iVar3 = iVar3 + -1) {
         *piVar5 = *piVar4;
         piVar4 = piVar4 + 1;
         piVar5 = piVar5 + 1;
       }
-      if ((local_10c[0] == (int)local_14) && (local_10c[1] == local_14._4_4_)) {
+      if ((metinfo[0] == (int)friendInviteId) && (metinfo[1] == friendInviteId._4_4_)) {
         pcVar1 = UI_FeederItemText_CommmonPlayerListHandler
-                           (param_1,0x32,local_d8,param_4,param_5,param_6);
+                           (controllerIndex,0x32,i_2,column,handle,useOwnerDraw);
         return pcVar1;
       }
     }
@@ -894,25 +917,25 @@ UI_FeederItemText_Invites
 
 // 0072F760  UI_FeederItemText_Playlists  (ui/ui_feeders.cpp:1373)
 
-char * __cdecl UI_FeederItemText_Playlists(int param_1,int param_2)
+char * __cdecl UI_FeederItemText_Playlists(int controllerIndex,int index)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int currentCategory;
   
   if ((xblive_wagermatch->current).enabled == false) {
-    local_8 = (category->current).integer;
+    currentCategory = (category->current).integer;
   }
   else {
-    local_8 = (wagerCategory->current).integer;
+    currentCategory = (wagerCategory->current).integer;
   }
-  if (-1 < param_2) {
-    iVar1 = Playlist_GetCategoryIdForNum(local_8);
+  if (-1 < index) {
+    iVar1 = Playlist_GetCategoryIdForNum(currentCategory);
     iVar1 = Playlist_GetPlaylistCount(iVar1);
-    if (param_2 < iVar1) {
-      iVar1 = Playlist_GetPlaylistIdForNum(param_1,param_2,local_8);
-      pcVar2 = Playlist_GetPlaylistName(param_1,iVar1);
+    if (index < iVar1) {
+      iVar1 = Playlist_GetPlaylistIdForNum(controllerIndex,index,currentCategory);
+      pcVar2 = Playlist_GetPlaylistName(controllerIndex,iVar1);
       pcVar2 = UI_ToUpper(pcVar2);
       return pcVar2;
     }
@@ -925,7 +948,7 @@ char * __cdecl UI_FeederItemText_Playlists(int param_1,int param_2)
 
 char * __cdecl
 UI_FeederItemText_NewCategories
-          (int param_1,itemDef_s *param_2,int param_3,int param_4,Material **param_5)
+          (int controllerIndex,itemDef_s *item,int index,int column,Material **handle)
 
 {
   bool bVar1;
@@ -933,25 +956,27 @@ UI_FeederItemText_NewCategories
   listBoxDef_s *plVar3;
   char *pcVar4;
   char *local_10;
+  listBoxDef_s *listboxPtr;
+  int contextIndex;
   
-  iVar2 = Com_ControllerIndex_GetUIContextIndex(param_1);
-  plVar3 = Item_GetListBoxDef(param_2);
-  if (param_4 == 0) {
-    *param_5 = DAT_098b4b78;
+  iVar2 = Com_ControllerIndex_GetUIContextIndex(controllerIndex);
+  plVar3 = Item_GetListBoxDef(item);
+  if (column == 0) {
+    *handle = DAT_098b4b78;
   }
   else {
-    if (param_4 == 1) {
-      if ((-1 < param_3) && (iVar2 = Playlist_GetCategoryCount(), param_3 < iVar2)) {
-        iVar2 = Playlist_GetCategoryIdForNum(param_3);
-        pcVar4 = Playlist_GetCategoryLocalizedName(param_1,iVar2);
+    if (column == 1) {
+      if ((-1 < index) && (iVar2 = Playlist_GetCategoryCount(), index < iVar2)) {
+        iVar2 = Playlist_GetCategoryIdForNum(index);
+        pcVar4 = Playlist_GetCategoryLocalizedName(controllerIndex,iVar2);
         return pcVar4;
       }
       local_10 = "";
       return local_10;
     }
-    if (((param_4 == 2) && (plVar3->cursorPos[iVar2] == param_3)) &&
-       (bVar1 = Window_HasFocus(iVar2,&param_2->window), bVar1)) {
-      GamerProfile_WriteSettings((int)param_5);
+    if (((column == 2) && (plVar3->cursorPos[iVar2] == index)) &&
+       (bVar1 = Window_HasFocus(iVar2,&item->window), bVar1)) {
+      GamerProfile_WriteSettings((int)handle);
     }
   }
   return "";
@@ -962,27 +987,29 @@ UI_FeederItemText_NewCategories
 
 char * __cdecl
 UI_FeederItemText_NewPlaylists
-          (int param_1,itemDef_s *param_2,int param_3,int param_4,Material **param_5)
+          (int controllerIndex,itemDef_s *item,int index,int column,Material **handle)
 
 {
   bool bVar1;
-  int iVar2;
-  listBoxDef_s *plVar3;
-  char *pcVar4;
+  int contextIndex_00;
+  listBoxDef_s *plVar2;
+  char *pcVar3;
+  listBoxDef_s *listboxPtr;
+  int contextIndex;
   
-  iVar2 = Com_ControllerIndex_GetUIContextIndex(param_1);
-  plVar3 = Item_GetListBoxDef(param_2);
-  if (param_4 == 0) {
-    *param_5 = DAT_098b4b78;
+  contextIndex_00 = Com_ControllerIndex_GetUIContextIndex(controllerIndex);
+  plVar2 = Item_GetListBoxDef(item);
+  if (column == 0) {
+    *handle = DAT_098b4b78;
   }
   else {
-    if (param_4 == 1) {
-      pcVar4 = UI_FeederItemText_Playlists(param_1,param_3);
-      return pcVar4;
+    if (column == 1) {
+      pcVar3 = UI_FeederItemText_Playlists(controllerIndex,index);
+      return pcVar3;
     }
-    if (((param_4 == 2) && (plVar3->cursorPos[iVar2] == param_3)) &&
-       (bVar1 = Window_HasFocus(iVar2,&param_2->window), bVar1)) {
-      GamerProfile_WriteSettings((int)param_5);
+    if (((column == 2) && (plVar2->cursorPos[contextIndex_00] == index)) &&
+       (bVar1 = Window_HasFocus(contextIndex_00,&item->window), bVar1)) {
+      GamerProfile_WriteSettings((int)handle);
     }
   }
   return "";
@@ -991,22 +1018,22 @@ UI_FeederItemText_NewPlaylists
 
 // 0072FA30  UI_FeederItemText_MuteList  (ui/ui_feeders.cpp:1427)
 
-char * __cdecl UI_FeederItemText_MuteList(int param_1,int param_2,int param_3,int param_4)
+char * __cdecl UI_FeederItemText_MuteList(int localClientNum,int contextIndex,int index,int column)
 
 {
   bool bVar1;
-  int iVar2;
-  char *pcVar3;
+  int muteClientIndex;
+  char *pcVar2;
   
-  if ((-1 < param_3) && (param_3 < DAT_098b4bb0)) {
-    if (param_4 == 1) {
-      return &DAT_098b4bb4 + param_3 * 0x20;
+  if ((-1 < index) && (index < DAT_098b4bb0)) {
+    if (column == 1) {
+      return &DAT_098b4bb4 + index * 0x20;
     }
-    iVar2 = UI_GetClientNumForPlayerListNum(param_3);
-    bVar1 = CL_IsPlayerMuted(param_1,iVar2);
+    muteClientIndex = UI_GetClientNumForPlayerListNum(index);
+    bVar1 = CL_IsPlayerMuted(localClientNum,muteClientIndex);
     if (bVar1) {
-      pcVar3 = UI_SafeTranslateString("MP_MUTED");
-      return pcVar3;
+      pcVar2 = UI_SafeTranslateString("MP_MUTED");
+      return pcVar2;
     }
   }
   return "";
@@ -1017,55 +1044,55 @@ char * __cdecl UI_FeederItemText_MuteList(int param_1,int param_2,int param_3,in
 
 char * __cdecl
 UI_FeederItemText_DynamicMenu
-          (int param_1,int param_2,int param_3,listBoxDef_s *param_4,Material **param_5)
+          (int contextIndex,int index,int column,listBoxDef_s *listPtr,Material **handle)
 
 {
   char *pcVar1;
   Material *pMVar2;
   
-  if (param_3 == 0) {
-    *param_5 = DAT_098b4b78;
+  if (column == 0) {
+    *handle = DAT_098b4b78;
     pcVar1 = "";
   }
-  else if (param_3 == 1) {
-    if (param_4->cursorPos[param_1] == param_2) {
-      *param_5 = DAT_098b4b78;
+  else if (column == 1) {
+    if (listPtr->cursorPos[contextIndex] == index) {
+      *handle = DAT_098b4b78;
     }
     pcVar1 = "";
   }
-  else if (param_3 == 2) {
-    if (param_4->cursorPos[param_1] == param_2) {
-      GamerProfile_WriteSettings((int)param_5);
+  else if (column == 2) {
+    if (listPtr->cursorPos[contextIndex] == index) {
+      GamerProfile_WriteSettings((int)handle);
     }
     pcVar1 = "";
   }
-  else if (param_4->rows[param_2].status == 2) {
+  else if (listPtr->rows[index].status == 2) {
     pcVar1 = "";
   }
   else {
-    switch(param_4->rows[param_2].cells[param_3].type) {
+    switch(listPtr->rows[index].cells[column].type) {
     case 0:
     case 1:
-      pcVar1 = param_4->rows[param_2].cells[param_3].stringValue;
+      pcVar1 = listPtr->rows[index].cells[column].stringValue;
       break;
     case 2:
-      pMVar2 = Material_RegisterHandle(param_4->rows[param_2].cells[param_3].stringValue,7);
-      *param_5 = pMVar2;
+      pMVar2 = Material_RegisterHandle(listPtr->rows[index].cells[column].stringValue,7);
+      *handle = pMVar2;
       pcVar1 = "";
       break;
     case 3:
     case 4:
-      if (param_4->cursorPos[param_1] == param_2) {
-        pcVar1 = param_4->rows[param_2].cells[param_3].stringValue;
+      if (listPtr->cursorPos[contextIndex] == index) {
+        pcVar1 = listPtr->rows[index].cells[column].stringValue;
       }
       else {
         pcVar1 = "";
       }
       break;
     case 5:
-      if (param_4->cursorPos[param_1] == param_2) {
-        pMVar2 = Material_RegisterHandle(param_4->rows[param_2].cells[param_3].stringValue,7);
-        *param_5 = pMVar2;
+      if (listPtr->cursorPos[contextIndex] == index) {
+        pMVar2 = Material_RegisterHandle(listPtr->rows[index].cells[column].stringValue,7);
+        *handle = pMVar2;
       }
       pcVar1 = "";
       break;
@@ -1079,9 +1106,11 @@ UI_FeederItemText_DynamicMenu
 
 // 0072E2E0  UI_FeederItemText  (ui/ui_feeders.cpp:2111)
 
+/* WARNING: Enum "LbType": Some values do not have unique names */
+
 char * __cdecl
-UI_FeederItemText(int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-                 Material **param_7,float *param_8,bool *param_9)
+UI_FeederItemText(int localClientNum,int contextIndex,itemDef_s *item,float feederID,int index,
+                 int column,Material **handle,float *angle,bool *useOwnerDraw)
 
 {
   code *pcVar1;
@@ -1090,89 +1119,90 @@ UI_FeederItemText(int param_1,int param_2,itemDef_s *param_3,float param_4,int p
   int iVar4;
   char *local_208;
   char *local_204;
-  int local_10;
-  int local_c;
-  listBoxDef_s *local_8;
+  int actual;
+  int controllerIndex;
+  listBoxDef_s *listPtr;
   
-  local_8 = Item_GetListBoxDef(param_3);
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  if ((local_c == -1) &&
+  listPtr = Item_GetListBoxDef(item);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if ((controllerIndex == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x84c,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  *param_7 = (Material *)0x0;
-  switch((int)param_4) {
+  *handle = (Material *)0x0;
+  switch((int)feederID) {
   case 1:
-    local_204 = UI_FeederItemText_Maps(local_c,param_3,param_5,param_6,param_7);
+    local_204 = UI_FeederItemText_Maps(controllerIndex,item,index,column,handle);
     break;
   case 2:
-    local_204 = UI_FeederItemText_Servers(param_1,param_2,param_5,param_6,param_7);
+    local_204 = UI_FeederItemText_Servers(localClientNum,contextIndex,index,column,handle);
     break;
   default:
     local_204 = UI_Project_FeederItemText
-                          (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
+                          (localClientNum,contextIndex,item,feederID,index,column,handle,angle,
+                           useOwnerDraw);
     break;
   case 4:
-    local_204 = UI_SelectedMap(param_5,&local_10);
+    local_204 = UI_SelectedMap(index,&actual);
     break;
   case 7:
-    if ((param_5 < 0) || (DAT_098b4bb0 <= param_5)) {
+    if ((index < 0) || (DAT_098b4bb0 <= index)) {
       local_204 = "";
     }
     else {
-      if (param_6 == 0) {
-        *param_7 = DAT_098b4b78;
+      if (column == 0) {
+        *handle = DAT_098b4b78;
       }
-      else if (param_6 == 1) {
-        return &DAT_098b4bb4 + param_5 * 0x20;
+      else if (column == 1) {
+        return &DAT_098b4bb4 + index * 0x20;
       }
       local_204 = "";
     }
     break;
   case 9:
-    local_204 = UI_FeederItemText_Mods(param_5);
+    local_204 = UI_FeederItemText_Mods(index);
     break;
   case 0xd:
-    local_204 = UI_FeederItemText_ServerStatus(param_5,param_6);
+    local_204 = UI_FeederItemText_ServerStatus(index,column);
     break;
   case 0x13:
-    local_204 = UI_FeederItemText_MuteList(param_1,param_2,param_5,param_6);
+    local_204 = UI_FeederItemText_MuteList(localClientNum,contextIndex,index,column);
     break;
   case 0x1a:
-    local_204 = UI_FeederItemText_Playlists(local_c,param_5);
+    local_204 = UI_FeederItemText_Playlists(controllerIndex,index);
     break;
   case 0x1b:
-    if ((param_5 < 0) || (iVar4 = Playlist_GetGametypeCount(), iVar4 <= param_5)) {
+    if ((index < 0) || (iVar4 = Playlist_GetGametypeCount(), iVar4 <= index)) {
       local_208 = "";
       local_204 = local_208;
     }
     else {
-      local_204 = Playlist_GetGametypeLocalizedName(param_5);
+      local_204 = Playlist_GetGametypeLocalizedName(index);
     }
     break;
   case 0x1c:
-    if ((param_5 < 0) || (iVar4 = Playlist_GetCategoryCount(), iVar4 <= param_5)) {
+    if ((index < 0) || (iVar4 = Playlist_GetCategoryCount(), iVar4 <= index)) {
       local_204 = "";
     }
     else {
-      iVar4 = Playlist_GetCategoryIdForNum(param_5);
-      local_204 = Playlist_GetCategoryLocalizedName(local_c,iVar4);
+      iVar4 = Playlist_GetCategoryIdForNum(index);
+      local_204 = Playlist_GetCategoryLocalizedName(controllerIndex,iVar4);
     }
     break;
   case 0x1d:
-    local_204 = LB_FeederItemText(param_1,param_5,param_6,param_7);
+    local_204 = LB_FeederItemText(localClientNum,index,column,handle);
     break;
   case 0x20:
   case 0x32:
   case 0x65:
     local_204 = UI_FeederItemText_CommmonPlayerListHandler
-                          (local_c,(int)param_4,param_5,param_6,param_7,param_9);
+                          (controllerIndex,(int)feederID,index,column,handle,useOwnerDraw);
     break;
   case 0x26:
-    local_204 = UI_FeederItemText_CustomGametypes(param_5);
+    local_204 = UI_FeederItemText_CustomGametypes(index);
     break;
   case 0x2d:
     local_204 = "";
@@ -1181,39 +1211,40 @@ UI_FeederItemText(int param_1,int param_2,itemDef_s *param_3,float param_4,int p
     local_204 = "";
     break;
   case 0x2f:
-    local_204 = UI_FeederItemText_Invites(local_c,(int)param_4,param_5,param_6,param_7,param_9);
+    local_204 = UI_FeederItemText_Invites
+                          (controllerIndex,(int)feederID,index,column,handle,useOwnerDraw);
     break;
   case 0x36:
-    local_204 = UI_FeederItemText_DynamicMenu(param_2,param_5,param_6,local_8,param_7);
+    local_204 = UI_FeederItemText_DynamicMenu(contextIndex,index,column,listPtr,handle);
     break;
   case 0x46:
     local_204 = "";
     break;
   case 0x4a:
     local_204 = Live_FileShare_SearchResultsItemText
-                          (local_c,local_8->startPos[param_2],local_8->cursorPos[param_2],param_5,
-                           param_9);
+                          (controllerIndex,listPtr->startPos[contextIndex],
+                           listPtr->cursorPos[contextIndex],index,useOwnerDraw);
     break;
   case 0x4c:
-    local_204 = UI_FeederItemText_NewCategories(local_c,param_3,param_5,param_6,param_7);
+    local_204 = UI_FeederItemText_NewCategories(controllerIndex,item,index,column,handle);
     break;
   case 0x4d:
-    local_204 = UI_FeederItemText_NewPlaylists(local_c,param_3,param_5,param_6,param_7);
+    local_204 = UI_FeederItemText_NewPlaylists(controllerIndex,item,index,column,handle);
     break;
   case 0x4f:
-    local_204 = Live_FileShare_PrivateSlotsText(local_c,0x4f,param_5,param_6,param_7);
+    local_204 = Live_FileShare_PrivateSlotsText(controllerIndex,0x4f,index,column,handle);
     break;
   case 0x50:
-    local_204 = Live_FileShare_PrivateSlotsText(local_c,0x50,param_5,param_6,param_7);
+    local_204 = Live_FileShare_PrivateSlotsText(controllerIndex,0x50,index,column,handle);
     break;
   case 0x54:
     local_204 = "";
     break;
   case 0x56:
-    local_204 = Live_FileShare_PrivateSlotsIngameText(local_c,param_5,param_6,param_7);
+    local_204 = Live_FileShare_PrivateSlotsIngameText(controllerIndex,index,column,handle);
     break;
   case 0x5b:
-    local_204 = UI_FeederItemText_ServerStatusScoreboard(param_5,param_6);
+    local_204 = UI_FeederItemText_ServerStatusScoreboard(index,column);
   }
   return local_204;
 }
@@ -1225,41 +1256,44 @@ UI_FeederItemText(int param_1,int param_2,itemDef_s *param_3,float param_4,int p
 
 void __cdecl
 UI_FeederItemOwnerDraw_Invites
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,rectDef_s *rect,int index,int col,
+          float *color)
 
 {
   int iVar1;
-  int iVar2;
-  ulong64 uVar3;
-  int iVar4;
-  itemDef_s *piVar5;
-  rectDef_s *prVar6;
-  float *pfVar7;
-  int iVar8;
+  int localClientNum;
+  ulong64 uVar2;
+  int contextIndex_00;
+  itemDef_s *item_00;
+  rectDef_s *rect_00;
+  float *color_00;
+  int iVar3;
   int in_stack_ffffff2c;
   int local_cc;
   int local_c8;
-  int local_18;
-  int local_14;
+  int i;
+  int friendInviteId;
   int local_10;
+  int friendsCount;
+  int invitesCount;
   
   iVar1 = Live_GetInvitesCount();
-  if ((-1 < param_5) && (param_5 < iVar1)) {
-    uVar3 = Live_GetInviteFriend(param_5);
-    iVar1 = Friends_GetCount(param_1,0,0);
-    for (local_18 = 0; local_18 < iVar1; local_18 = local_18 + 1) {
-      Friends_GetByIndex(param_1,0,local_18,(FriendInfo *)&stack0xffffff2c);
-      local_14 = (int)uVar3;
-      if ((local_cc == local_14) && (local_10 = (int)(uVar3 >> 0x20), local_c8 == local_10)) {
-        iVar4 = param_2;
-        piVar5 = param_3;
-        prVar6 = param_4;
-        pfVar7 = param_7;
-        iVar8 = local_c8;
-        iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
+  if ((-1 < index) && (index < iVar1)) {
+    uVar2 = Live_GetInviteFriend(index);
+    iVar1 = Friends_GetCount(controllerIndex,0,0);
+    for (i = 0; i < iVar1; i = i + 1) {
+      Friends_GetByIndex(controllerIndex,0,i,(FriendInfo *)&stack0xffffff2c);
+      friendInviteId = (int)uVar2;
+      if ((local_cc == friendInviteId) && (local_10 = (int)(uVar2 >> 0x20), local_c8 == local_10)) {
+        contextIndex_00 = contextIndex;
+        item_00 = item;
+        rect_00 = rect;
+        color_00 = color;
+        iVar3 = local_c8;
+        localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
         UI_DrawPlayerEmblemByXuid
-                  (iVar2,iVar4,piVar5,prVar6,pfVar7,CONCAT44(in_stack_ffffff2c,iVar8));
+                  (localClientNum,contextIndex_00,item_00,rect_00,color_00,
+                   CONCAT44(in_stack_ffffff2c,iVar3));
       }
     }
   }
@@ -1271,20 +1305,21 @@ UI_FeederItemOwnerDraw_Invites
 
 void __cdecl
 UI_FeederItemOwnerDraw_OnlineFriends
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,rectDef_s *rect,int index,int col,
+          float *color)
 
 {
   bool bVar1;
-  int iVar2;
+  int localClientNum;
   undefined4 unaff_EBP;
-  undefined4 uVar3;
+  undefined4 uVar2;
   
-  bVar1 = Friends_GetByIndex(param_1,0,param_5,&info);
+  bVar1 = Friends_GetByIndex(controllerIndex,0,index,&info);
   if (bVar1) {
-    uVar3 = info.dwid._4_4_;
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    UI_DrawPlayerEmblemByXuid(iVar2,param_2,param_3,param_4,param_7,CONCAT44(unaff_EBP,uVar3));
+    uVar2 = info.dwid._4_4_;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_DrawPlayerEmblemByXuid(localClientNum,contextIndex,item,rect,color,CONCAT44(unaff_EBP,uVar2))
+    ;
   }
   return;
 }
@@ -1294,8 +1329,8 @@ UI_FeederItemOwnerDraw_OnlineFriends
 
 void __cdecl
 UI_FeederItemOwnerDraw_RecentPlayers
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,rectDef_s *rect,int index,int col,
+          float *color)
 
 {
   XuidInfo *pXVar1;
@@ -1307,7 +1342,7 @@ UI_FeederItemOwnerDraw_RecentPlayers
   XuidInfo local_64;
   undefined4 local_34 [12];
   
-  pXVar1 = LiveMeetPlayer_GetMetFriendInfo(&local_64,param_1,param_5);
+  pXVar1 = LiveMeetPlayer_GetMetFriendInfo(&local_64,controllerIndex,index);
   puVar3 = local_34;
   for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
     *puVar3 = (int)pXVar1->playerXuids;
@@ -1322,8 +1357,8 @@ UI_FeederItemOwnerDraw_RecentPlayers
     pXVar4 = (XuidInfo_conflict *)((int)&pXVar4->playerXuids + 4);
   }
   uVar5 = recentPlayerInfo.playerXuids._4_4_;
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  UI_DrawPlayerEmblemByXuid(iVar2,param_2,param_3,param_4,param_7,CONCAT44(unaff_EDI,uVar5));
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  UI_DrawPlayerEmblemByXuid(iVar2,contextIndex,item,rect,color,CONCAT44(unaff_EDI,uVar5));
   return;
 }
 
@@ -1332,13 +1367,12 @@ UI_FeederItemOwnerDraw_RecentPlayers
 
 void __cdecl
 UI_FeederItemOwnerDraw_FileShareSearchResults
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,int param_5,int param_6,
-          float *param_7)
+          (int controllerIndex,int contextIndex,itemDef_s *item,rectDef_s *rect,int index,int col,
+          float *color)
 
 {
-  CL_DrawSpinner((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4->x - 75.0,
-                 param_4->y + 6.0,param_4->w - 10.0,param_4->h - 10.0,param_4->horzAlign,
-                 param_4->vertAlign,param_7);
+  CL_DrawSpinner((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x - 75.0,
+                 rect->y + 6.0,rect->w - 10.0,rect->h - 10.0,rect->horzAlign,rect->vertAlign,color);
   return;
 }
 
@@ -1349,40 +1383,41 @@ UI_FeederItemOwnerDraw_FileShareSearchResults
 
 void __cdecl
 UI_FeederItemOwnerDraw
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,rectDef_s *param_5,int param_6,
-          int param_7,float *param_8)
+          (int localClientNum,int contextIndex,itemDef_s *item,float feederID,rectDef_s *rect,
+          int index,int col,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int controllerIndex_00;
+  int controllerIndex;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if ((iVar3 == -1) &&
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if ((controllerIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x90a,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch((int)param_4) {
+  switch((int)feederID) {
   case 0x12:
     break;
   default:
-    UI_Project_FeederItemOwnerDraw(param_1,param_2,param_4,param_5,param_6,param_7,param_8);
+    UI_Project_FeederItemOwnerDraw(localClientNum,contextIndex,feederID,rect,index,col,color);
     break;
   case 0x20:
-    UI_FeederItemOwnerDraw_OnlineFriends(iVar3,param_2,param_3,param_5,param_6,param_7,param_8);
+    UI_FeederItemOwnerDraw_OnlineFriends(controllerIndex_00,contextIndex,item,rect,index,col,color);
     break;
   case 0x2f:
-    UI_FeederItemOwnerDraw_Invites(iVar3,param_2,param_3,param_5,param_6,param_7,param_8);
+    UI_FeederItemOwnerDraw_Invites(controllerIndex_00,contextIndex,item,rect,index,col,color);
     break;
   case 0x32:
-    UI_FeederItemOwnerDraw_RecentPlayers(iVar3,param_2,param_3,param_5,param_6,param_7,param_8);
+    UI_FeederItemOwnerDraw_RecentPlayers(controllerIndex_00,contextIndex,item,rect,index,col,color);
     break;
   case 0x4a:
     UI_FeederItemOwnerDraw_FileShareSearchResults
-              (iVar3,param_2,param_3,param_5,param_6,param_7,param_8);
+              (controllerIndex_00,contextIndex,item,rect,index,col,color);
   }
   return;
 }
@@ -1391,373 +1426,381 @@ UI_FeederItemOwnerDraw
 // 00730050  UI_FeederItemColor  (ui/ui_feeders.cpp:2349)
 
 void __cdecl
-UI_FeederItemColor(int param_1,int param_2,itemDef_s *param_3,float param_4,int param_5,int param_6,
-                  float *param_7,bool param_8)
+UI_FeederItemColor(int controllerIndex,int contextIndex,itemDef_s *item,float feederID,int index,
+                  int column,float *color,bool onFocus)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   int iVar4;
-  uiInfo_s *puVar5;
-  listBoxDef_s *plVar6;
-  int iVar7;
-  int local_48;
-  float local_14;
+  uiInfo_s *dc_00;
+  listBoxDef_s *listPtr_00;
+  int iVar5;
+  bool isRowHighlighted_3;
+  bool isRowHighlighted_2;
+  bool isRowHighlighted;
+  int j;
+  uiInfo_s *uiInfo;
+  int localClientNum;
+  listBoxDef_s *listPtr;
+  UiContext *dc;
+  float newColor;
   float local_10;
   float local_c;
   float local_8;
   
-  iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-  puVar5 = UI_UIContext_GetInfo(param_2);
-  plVar6 = Item_GetListBoxDef(param_3);
-  if ((plVar6 == (listBoxDef_s *)0x0) &&
+  iVar4 = Com_LocalClient_GetControllerIndex(controllerIndex);
+  dc_00 = UI_UIContext_GetInfo(contextIndex);
+  listPtr_00 = Item_GetListBoxDef(item);
+  if ((listPtr_00 == (listBoxDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x938,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_4 == 32.0) || (param_4 == 50.0)) || (param_4 == 101.0)) || (param_4 == 47.0)) {
-    if (param_6 == 0) {
-      if (param_8) {
-        *param_7 = newUIfeederHighlight[0];
-        param_7[1] = newUIfeederHighlight[1];
-        param_7[2] = newUIfeederHighlight[2];
-        param_7[3] = newUIfeederHighlight[3];
+  if ((((feederID == 32.0) || (feederID == 50.0)) || (feederID == 101.0)) || (feederID == 47.0)) {
+    if (column == 0) {
+      if (onFocus) {
+        *color = newUIfeederHighlight[0];
+        color[1] = newUIfeederHighlight[1];
+        color[2] = newUIfeederHighlight[2];
+        color[3] = newUIfeederHighlight[3];
         return;
       }
-      *param_7 = newUIFeederBackgroundColor[0];
-      param_7[1] = newUIFeederBackgroundColor[1];
-      param_7[2] = newUIFeederBackgroundColor[2];
-      param_7[3] = newUIFeederBackgroundColor[3];
+      *color = newUIFeederBackgroundColor[0];
+      color[1] = newUIFeederBackgroundColor[1];
+      color[2] = newUIFeederBackgroundColor[2];
+      color[3] = newUIFeederBackgroundColor[3];
       return;
     }
-    if (param_6 == 1) {
-      *param_7 = 1.0;
-      param_7[1] = 1.0;
-      param_7[2] = 1.0;
-      param_7[3] = 1.0;
+    if (column == 1) {
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
       return;
     }
   }
-  else if (param_4 == 21.0) {
-    switch(param_6) {
+  else if (feederID == 21.0) {
+    switch(column) {
     case 2:
-      param_7[3] = param_7[3] * 0.5;
+      color[3] = color[3] * 0.5;
       return;
     case 3:
     case 4:
-      *param_7 = 0.0;
-      param_7[1] = 0.0;
-      param_7[2] = 0.0;
-      param_7[3] = 0.15;
+      *color = 0.0;
+      color[1] = 0.0;
+      color[2] = 0.0;
+      color[3] = 0.15;
       return;
     case 7:
     case 8:
-      iVar7 = Com_LocalClients_GetUsedControllerCount();
-      if (iVar7 <= param_5) {
-        *param_7 = 0.69;
-        param_7[1] = 0.69;
-        param_7[2] = 0.69;
-        param_7[3] = 1.0;
+      iVar5 = Com_LocalClients_GetUsedControllerCount();
+      if (iVar5 <= index) {
+        *color = 0.69;
+        color[1] = 0.69;
+        color[2] = 0.69;
+        color[3] = 1.0;
       }
     }
   }
-  else if (param_4 == 70.0) {
-    if (param_6 == 1) {
-      param_7[3] = 0.6;
+  else if (feederID == 70.0) {
+    if (column == 1) {
+      color[3] = 0.6;
       return;
     }
   }
-  else if (param_4 == 73.0) {
-    if (param_6 == 1) {
-      param_7[3] = 0.6;
+  else if (feederID == 73.0) {
+    if (column == 1) {
+      color[3] = 0.6;
       return;
     }
-    if (param_6 == 5) {
-      *param_7 = 0.15;
-      param_7[1] = 0.61;
-      param_7[2] = 0.0;
-      param_7[3] = 0.8;
+    if (column == 5) {
+      *color = 0.15;
+      color[1] = 0.61;
+      color[2] = 0.0;
+      color[3] = 0.8;
       return;
     }
   }
   else {
-    if (param_4 == 54.0) {
-      if (param_6 == 0) {
-        if (plVar6->backgroundItemListbox != (Material *)0x0) {
-          for (local_48 = 3; local_48 < plVar6->numColumns; local_48 = local_48 + 1) {
-            if ((plVar6->rows[param_5].cells[local_48].stringValue != (char *)0x0) &&
-               (*plVar6->rows[param_5].cells[local_48].stringValue != '\0')) {
-              *param_7 = newUIFeederBackgroundColor[0];
-              param_7[1] = newUIFeederBackgroundColor[1];
-              param_7[2] = newUIFeederBackgroundColor[2];
-              param_7[3] = newUIFeederBackgroundColor[3];
+    if (feederID == 54.0) {
+      if (column == 0) {
+        if (listPtr_00->backgroundItemListbox != (Material *)0x0) {
+          for (j = 3; j < listPtr_00->numColumns; j = j + 1) {
+            if ((listPtr_00->rows[index].cells[j].stringValue != (char *)0x0) &&
+               (*listPtr_00->rows[index].cells[j].stringValue != '\0')) {
+              *color = newUIFeederBackgroundColor[0];
+              color[1] = newUIFeederBackgroundColor[1];
+              color[2] = newUIFeederBackgroundColor[2];
+              color[3] = newUIFeederBackgroundColor[3];
               return;
             }
           }
         }
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 0.0;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 0.0;
         return;
       }
-      if ((0 < param_6) && (param_6 < 3)) {
-        if (param_8) {
-          *param_7 = 1.0;
-          param_7[1] = 1.0;
-          param_7[2] = 1.0;
-          param_7[3] = 1.0;
+      if ((0 < column) && (column < 3)) {
+        if (onFocus) {
+          *color = 1.0;
+          color[1] = 1.0;
+          color[2] = 1.0;
+          color[3] = 1.0;
           return;
         }
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 0.0;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 0.0;
         return;
       }
-      if (plVar6->rows[param_5].status == 1) {
-        *param_7 = newUIDisableColor[0];
-        param_7[1] = newUIDisableColor[1];
-        param_7[2] = newUIDisableColor[2];
-        param_7[3] = newUIDisableColor[3];
+      if (listPtr_00->rows[index].status == 1) {
+        *color = newUIDisableColor[0];
+        color[1] = newUIDisableColor[1];
+        color[2] = newUIDisableColor[2];
+        color[3] = newUIDisableColor[3];
         return;
       }
-      if (param_8) {
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 1.0;
+      if (onFocus) {
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 1.0;
         return;
       }
-      *param_7 = 1.0;
-      param_7[1] = 1.0;
-      param_7[2] = 1.0;
-      param_7[3] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
       return;
     }
-    if (((param_4 == 1.0) || (param_4 == 7.0)) || (param_4 == 104.0)) {
-      *param_7 = 1.0;
-      param_7[1] = 1.0;
-      param_7[2] = 1.0;
-      param_7[3] = 1.0;
-      bVar2 = plVar6->cursorPos[param_2] == param_5;
-      if (param_6 == 0) {
+    if (((feederID == 1.0) || (feederID == 7.0)) || (feederID == 104.0)) {
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
+      bVar2 = listPtr_00->cursorPos[contextIndex] == index;
+      if (column == 0) {
         if (bVar2) {
-          *param_7 = 1.0;
-          param_7[1] = 1.0;
-          param_7[2] = 1.0;
-          param_7[3] = 1.0;
+          *color = 1.0;
+          color[1] = 1.0;
+          color[2] = 1.0;
+          color[3] = 1.0;
           return;
         }
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 0.2;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 0.2;
         return;
       }
-      if (param_6 != 1) {
+      if (column != 1) {
         return;
       }
       if (!bVar2) {
         return;
       }
-      *param_7 = 0.0;
-      param_7[1] = 0.0;
-      param_7[2] = 0.0;
-      param_7[3] = 1.0;
+      *color = 0.0;
+      color[1] = 0.0;
+      color[2] = 0.0;
+      color[3] = 1.0;
       return;
     }
-    if (param_4 == 48.0) {
-      *param_7 = 1.0;
-      param_7[1] = 1.0;
-      param_7[2] = 1.0;
-      param_7[3] = 1.0;
-      bVar2 = plVar6->cursorPos[param_2] == param_5;
-      if ((param_4 == 48.0) && (bVar3 = Window_HasFocus(param_2,&param_3->parent->window), !bVar3))
-      {
+    if (feederID == 48.0) {
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
+      bVar2 = listPtr_00->cursorPos[contextIndex] == index;
+      if ((feederID == 48.0) &&
+         (bVar3 = Window_HasFocus(contextIndex,&item->parent->window), !bVar3)) {
         bVar2 = false;
       }
-      if (param_6 == 0) {
-        bVar3 = Window_HasFocus(param_2,&param_3->window);
+      if (column == 0) {
+        bVar3 = Window_HasFocus(contextIndex,&item->window);
         if (!bVar3) {
           if (bVar2) {
-            *param_7 = newUIFeederBackgroundColor[0];
-            param_7[1] = newUIFeederBackgroundColor[1];
-            param_7[2] = newUIFeederBackgroundColor[2];
-            param_7[3] = newUIFeederBackgroundColor[3];
+            *color = newUIFeederBackgroundColor[0];
+            color[1] = newUIFeederBackgroundColor[1];
+            color[2] = newUIFeederBackgroundColor[2];
+            color[3] = newUIFeederBackgroundColor[3];
             return;
           }
-          param_7[3] = 0.0;
+          color[3] = 0.0;
           return;
         }
         if (bVar2) {
           return;
         }
-        *param_7 = newUIFeederBackgroundColor[0];
-        param_7[1] = newUIFeederBackgroundColor[1];
-        param_7[2] = newUIFeederBackgroundColor[2];
-        param_7[3] = newUIFeederBackgroundColor[3];
+        *color = newUIFeederBackgroundColor[0];
+        color[1] = newUIFeederBackgroundColor[1];
+        color[2] = newUIFeederBackgroundColor[2];
+        color[3] = newUIFeederBackgroundColor[3];
         return;
       }
-      if (param_6 != 1) {
+      if (column != 1) {
         return;
       }
-      iVar4 = UI_FeederItemEnabled(iVar4,param_2,param_4,param_5);
+      iVar4 = UI_FeederItemEnabled(iVar4,contextIndex,feederID,index);
       if (iVar4 == 0) {
-        *param_7 = newUIGrey[0];
-        param_7[1] = newUIGrey[1];
-        param_7[2] = newUIGrey[2];
-        param_7[3] = newUIGrey[3];
+        *color = newUIGrey[0];
+        color[1] = newUIGrey[1];
+        color[2] = newUIGrey[2];
+        color[3] = newUIGrey[3];
         return;
       }
-      if ((bVar2) && (bVar3 = Window_HasFocus(param_2,&param_3->window), bVar3)) {
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 1.0;
+      if ((bVar2) && (bVar3 = Window_HasFocus(contextIndex,&item->window), bVar3)) {
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 1.0;
         return;
       }
       if (bVar2) {
         return;
       }
-      bVar2 = Window_HasFocus(param_2,&param_3->window);
+      bVar2 = Window_HasFocus(contextIndex,&item->window);
       if (bVar2) {
         return;
       }
-      *param_7 = newUIGrey[0];
-      param_7[1] = newUIGrey[1];
-      param_7[2] = newUIGrey[2];
-      param_7[3] = newUIGrey[3];
+      *color = newUIGrey[0];
+      color[1] = newUIGrey[1];
+      color[2] = newUIGrey[2];
+      color[3] = newUIGrey[3];
       return;
     }
-    if ((param_4 == 76.0) || (param_4 == 77.0)) {
-      *param_7 = 1.0;
-      param_7[1] = 1.0;
-      param_7[2] = 1.0;
-      param_7[3] = 1.0;
-      bVar2 = plVar6->cursorPos[param_2] == param_5;
-      if ((param_4 != 76.0) || (bVar3 = Window_HasFocus(param_2,&param_3->parent->window), bVar3)) {
-        if ((param_4 == 77.0) && (bVar3 = Window_HasFocus(param_2,&param_3->window), !bVar3)) {
+    if ((feederID == 76.0) || (feederID == 77.0)) {
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
+      bVar2 = listPtr_00->cursorPos[contextIndex] == index;
+      if ((feederID != 76.0) || (bVar3 = Window_HasFocus(contextIndex,&item->parent->window), bVar3)
+         ) {
+        if ((feederID == 77.0) && (bVar3 = Window_HasFocus(contextIndex,&item->window), !bVar3)) {
           bVar2 = false;
         }
       }
       else {
         bVar2 = false;
       }
-      if (param_6 == 0) {
-        bVar3 = Window_HasFocus(param_2,&param_3->window);
+      if (column == 0) {
+        bVar3 = Window_HasFocus(contextIndex,&item->window);
         if (!bVar3) {
           if (bVar2) {
-            *param_7 = newUIFeederBackgroundColor[0];
-            param_7[1] = newUIFeederBackgroundColor[1];
-            param_7[2] = newUIFeederBackgroundColor[2];
-            param_7[3] = newUIFeederBackgroundColor[3];
+            *color = newUIFeederBackgroundColor[0];
+            color[1] = newUIFeederBackgroundColor[1];
+            color[2] = newUIFeederBackgroundColor[2];
+            color[3] = newUIFeederBackgroundColor[3];
             return;
           }
-          param_7[3] = 0.0;
+          color[3] = 0.0;
           return;
         }
         if (bVar2) {
           return;
         }
-        *param_7 = newUIFeederBackgroundColor[0];
-        param_7[1] = newUIFeederBackgroundColor[1];
-        param_7[2] = newUIFeederBackgroundColor[2];
-        param_7[3] = newUIFeederBackgroundColor[3];
+        *color = newUIFeederBackgroundColor[0];
+        color[1] = newUIFeederBackgroundColor[1];
+        color[2] = newUIFeederBackgroundColor[2];
+        color[3] = newUIFeederBackgroundColor[3];
         return;
       }
-      if (param_6 != 1) {
+      if (column != 1) {
         return;
       }
-      bVar3 = Window_HasFocus(param_2,&param_3->window);
+      bVar3 = Window_HasFocus(contextIndex,&item->window);
       if (!bVar3) {
         if (bVar2) {
           return;
         }
-        *param_7 = 0.0;
-        param_7[1] = 0.0;
-        param_7[2] = 0.0;
-        param_7[3] = 0.45;
+        *color = 0.0;
+        color[1] = 0.0;
+        color[2] = 0.0;
+        color[3] = 0.45;
         return;
       }
-      iVar4 = UI_FeederItemEnabled(iVar4,param_2,param_4,param_5);
+      iVar4 = UI_FeederItemEnabled(iVar4,contextIndex,feederID,index);
       if (iVar4 == 0) {
-        *param_7 = newUIGrey[0];
-        param_7[1] = newUIGrey[1];
-        param_7[2] = newUIGrey[2];
-        param_7[3] = newUIGrey[3];
+        *color = newUIGrey[0];
+        color[1] = newUIGrey[1];
+        color[2] = newUIGrey[2];
+        color[3] = newUIGrey[3];
         return;
       }
       if (!bVar2) {
         return;
       }
-      *param_7 = 0.0;
-      param_7[1] = 0.0;
-      param_7[2] = 0.0;
-      param_7[3] = 1.0;
+      *color = 0.0;
+      color[1] = 0.0;
+      color[2] = 0.0;
+      color[3] = 1.0;
       return;
     }
-    if (param_4 == 80.0) {
+    if (feederID == 80.0) {
       Live_FileShare_FeederColor
-                (plVar6,param_3,param_2,param_5,param_6,FILESHARE_BUFFER_PRIMARY,param_7);
+                (listPtr_00,item,contextIndex,index,column,FILESHARE_BUFFER_PRIMARY,color);
       return;
     }
-    if (param_4 == 79.0) {
+    if (feederID == 79.0) {
       Live_FileShare_FeederColor
-                (plVar6,param_3,param_2,param_5,param_6,FILESHARE_BUFFER_SECONDARY,param_7);
+                (listPtr_00,item,contextIndex,index,column,FILESHARE_BUFFER_SECONDARY,color);
       return;
     }
     bVar2 = UI_Project_FeederItemColor
-                      (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+                      (controllerIndex,contextIndex,item,feederID,index,column,color,onFocus);
     if (bVar2) {
       return;
     }
   }
-  if (((param_3->window).dynamicFlags[param_2] & 2U) == 0) {
-    if ((param_8) && (plVar6->special == 28.0)) {
-      *param_7 = (param_3->window).foreColor[0];
-      param_7[1] = (param_3->window).foreColor[1];
-      param_7[2] = (param_3->window).foreColor[2];
-      param_7[3] = (param_3->window).foreColor[3];
+  if (((item->window).dynamicFlags[contextIndex] & 2U) == 0) {
+    if ((onFocus) && (listPtr_00->special == 28.0)) {
+      *color = (item->window).foreColor[0];
+      color[1] = (item->window).foreColor[1];
+      color[2] = (item->window).foreColor[2];
+      color[3] = (item->window).foreColor[3];
     }
     else {
-      *param_7 = plVar6->disableColor[0];
-      param_7[1] = plVar6->disableColor[1];
-      param_7[2] = plVar6->disableColor[2];
-      param_7[3] = plVar6->disableColor[3];
+      *color = listPtr_00->disableColor[0];
+      color[1] = listPtr_00->disableColor[1];
+      color[2] = listPtr_00->disableColor[2];
+      color[3] = listPtr_00->disableColor[3];
     }
   }
   else {
-    iVar4 = UI_FeederItemEnabled(iVar4,param_2,param_4,param_5);
+    iVar4 = UI_FeederItemEnabled(iVar4,contextIndex,feederID,index);
     if (iVar4 == 0) {
-      *param_7 = plVar6->disableColor[0];
-      param_7[1] = plVar6->disableColor[1];
-      param_7[2] = plVar6->disableColor[2];
-      param_7[3] = plVar6->disableColor[3];
+      *color = listPtr_00->disableColor[0];
+      color[1] = listPtr_00->disableColor[1];
+      color[2] = listPtr_00->disableColor[2];
+      color[3] = listPtr_00->disableColor[3];
     }
-    else if (param_8) {
-      local_14 = *param_7;
-      local_10 = param_7[1];
-      local_c = param_7[2];
-      local_8 = param_7[3];
-      Item_TextColor(&puVar5->uiDC,param_3,(float (*) [4])&local_14);
-      *param_7 = local_14;
-      param_7[1] = local_10;
-      param_7[2] = local_c;
-      param_7[3] = local_8;
+    else if (onFocus) {
+      newColor = *color;
+      local_10 = color[1];
+      local_c = color[2];
+      local_8 = color[3];
+      Item_TextColor(&dc_00->uiDC,item,(float (*) [4])&newColor);
+      *color = newColor;
+      color[1] = local_10;
+      color[2] = local_c;
+      color[3] = local_8;
     }
     else {
-      *param_7 = (param_3->window).foreColor[0];
-      param_7[1] = (param_3->window).foreColor[1];
-      param_7[2] = (param_3->window).foreColor[2];
-      param_7[3] = (param_3->window).foreColor[3];
+      *color = (item->window).foreColor[0];
+      color[1] = (item->window).foreColor[1];
+      color[2] = (item->window).foreColor[2];
+      color[3] = (item->window).foreColor[3];
     }
   }
-  if (param_4 == 74.0) {
-    Live_FileShareSearch_FeederColor(plVar6,param_3,param_2,param_5,param_6,param_7);
+  if (feederID == 74.0) {
+    Live_FileShareSearch_FeederColor(listPtr_00,item,contextIndex,index,column,color);
   }
   return;
 }
@@ -1768,7 +1811,8 @@ UI_FeederItemColor(int param_1,int param_2,itemDef_s *param_3,float param_4,int 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-UI_OverrideCursorPos_RecentPlayers(int param_1,int param_2,itemDef_s *param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_RecentPlayers
+          (int controllerIndex,int contextIndex,itemDef_s *item,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
@@ -1779,13 +1823,13 @@ UI_OverrideCursorPos_RecentPlayers(int param_1,int param_2,itemDef_s *param_3,li
   undefined4 *puVar6;
   XuidInfo local_a4;
   undefined4 local_74 [12];
-  undefined4 local_44 [13];
+  undefined4 info [13];
   uint local_10;
-  int local_c;
-  int local_8;
+  int currentIndex;
+  int count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == -1) {
+  if (controllerIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xae4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1793,13 +1837,13 @@ UI_OverrideCursorPos_RecentPlayers(int param_1,int param_2,itemDef_s *param_3,li
       return;
     }
   }
-  local_8 = Friends_GetCount(param_1,1,0);
-  if ((local_8 <= param_4->cursorPos[param_2]) || (param_4->cursorPos[param_2] < 0)) {
-    param_4->cursorPos[param_2] = 0;
-    param_4->startPos[param_2] = 0;
+  count = Friends_GetCount(controllerIndex,1,0);
+  if ((count <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
-  local_c = param_4->cursorPos[param_2];
-  pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_a4,param_1,local_c);
+  currentIndex = listPtr->cursorPos[contextIndex];
+  pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_a4,controllerIndex,currentIndex);
   puVar5 = local_74;
   for (iVar4 = 0xc; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar5 = (int)pXVar3->playerXuids;
@@ -1807,14 +1851,14 @@ UI_OverrideCursorPos_RecentPlayers(int param_1,int param_2,itemDef_s *param_3,li
     puVar5 = puVar5 + 1;
   }
   puVar5 = local_74;
-  puVar6 = local_44;
+  puVar6 = info;
   for (iVar4 = 0xc; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar6 = *puVar5;
     puVar5 = puVar5 + 1;
     puVar6 = puVar6 + 1;
   }
-  s_selectedMetPlayerXUID._0_4_ = local_44[0];
-  s_selectedMetPlayerXUID._4_4_ = local_44[1];
+  s_selectedMetPlayerXUID._0_4_ = info[0];
+  s_selectedMetPlayerXUID._4_4_ = info[1];
   s_selectedPlayerXUID._0_4_ = 0;
   s_selectedPlayerXUID._4_4_ = 0;
   return;
@@ -1826,18 +1870,19 @@ UI_OverrideCursorPos_RecentPlayers(int param_1,int param_2,itemDef_s *param_3,li
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-UI_OverrideCursorPos_OnlineFriends(int param_1,int param_2,itemDef_s *param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_OnlineFriends
+          (int controllerIndex,int contextIndex,itemDef_s *item,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
-  FriendInfo local_cc;
+  FriendInfo info;
   uint local_10;
-  int local_c;
-  int local_8;
+  int currentIndex;
+  int count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == -1) {
+  if (controllerIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xaf7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1845,16 +1890,16 @@ UI_OverrideCursorPos_OnlineFriends(int param_1,int param_2,itemDef_s *param_3,li
       return;
     }
   }
-  local_8 = Friends_GetCount(param_1,0,0);
-  if ((local_8 <= param_4->cursorPos[param_2]) || (param_4->cursorPos[param_2] < 0)) {
-    param_4->cursorPos[param_2] = 0;
-    param_4->startPos[param_2] = 0;
+  count = Friends_GetCount(controllerIndex,0,0);
+  if ((count <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
-  local_c = param_4->cursorPos[param_2];
-  bVar2 = Friends_GetByIndex(param_1,0,local_c,&local_cc);
+  currentIndex = listPtr->cursorPos[contextIndex];
+  bVar2 = Friends_GetByIndex(controllerIndex,0,currentIndex,&info);
   if (bVar2) {
-    s_selectedPlayerXUID._0_4_ = (undefined4)local_cc.dwid;
-    s_selectedPlayerXUID._4_4_ = local_cc.dwid._4_4_;
+    s_selectedPlayerXUID._0_4_ = (undefined4)info.dwid;
+    s_selectedPlayerXUID._4_4_ = info.dwid._4_4_;
     s_selectedMetPlayerXUID._0_4_ = 0;
     s_selectedMetPlayerXUID._4_4_ = 0;
   }
@@ -1869,25 +1914,27 @@ UI_OverrideCursorPos_OnlineFriends(int param_1,int param_2,itemDef_s *param_3,li
 // 007327E0  UI_OverrideCursorPos_FileShareSearchResults  (ui/ui_feeders.cpp:2935)
 
 void __cdecl
-UI_OverrideCursorPos_FileShareSearchResults(int param_1,int param_2,listBoxDef_s *param_3)
+UI_OverrideCursorPos_FileShareSearchResults
+          (int localClientNum,int contextIndex,listBoxDef_s *listPtr)
 
 {
   int iVar1;
+  int numResults;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
   iVar1 = Live_FileShare_GetSearchResultsCount(iVar1);
   if (iVar1 == 0) {
-    param_3->cursorPos[param_2] = 0;
-    param_3->startPos[param_2] = 0;
-    param_3->endPos[param_2] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
+    listPtr->endPos[contextIndex] = 0;
   }
-  else if (param_3->cursorPos[param_2] < iVar1) {
-    if (param_3->cursorPos[param_2] < 0) {
-      param_3->cursorPos[param_2] = 0;
+  else if (listPtr->cursorPos[contextIndex] < iVar1) {
+    if (listPtr->cursorPos[contextIndex] < 0) {
+      listPtr->cursorPos[contextIndex] = 0;
     }
   }
   else {
-    param_3->cursorPos[param_2] = iVar1 + -1;
+    listPtr->cursorPos[contextIndex] = iVar1 + -1;
   }
   return;
 }
@@ -1895,31 +1942,33 @@ UI_OverrideCursorPos_FileShareSearchResults(int param_1,int param_2,listBoxDef_s
 
 // 00732870  UI_OverrideCursorPos_FileShareMySlots  (ui/ui_feeders.cpp:2956)
 
-void __cdecl UI_OverrideCursorPos_FileShareMySlots(int param_1,int param_2,listBoxDef_s *param_3)
+void __cdecl
+UI_OverrideCursorPos_FileShareMySlots(int localClientNum,int contextIndex,listBoxDef_s *listPtr)
 
 {
   bool bVar1;
   int iVar2;
+  int numResults;
   
-  Com_LocalClient_GetControllerIndex(param_1);
+  Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = CL_IsRenderingSplitScreen();
   if (!bVar1) {
     if ((fshSelectLastSlotRow == (dvar_s *)0x0) || ((fshSelectLastSlotRow->current).integer != 1)) {
       if ((fshSelectFirstSlotRow != (dvar_s *)0x0) &&
          ((fshSelectFirstSlotRow->current).integer == 1)) {
-        param_3->cursorPos[param_2] = 0;
+        listPtr->cursorPos[contextIndex] = 0;
         Dvar_SetInt(fshSelectFirstSlotRow,0);
       }
     }
     else {
-      iVar2 = UI_FeederCount(param_1,param_2,(float)(int)param_3->special,param_3);
-      param_3->cursorPos[param_2] = iVar2 + -1;
+      iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+      listPtr->cursorPos[contextIndex] = iVar2 + -1;
       Dvar_SetInt(fshSelectLastSlotRow,0);
     }
   }
-  iVar2 = UI_FeederCount(param_1,param_2,(float)(int)param_3->special,param_3);
-  if (iVar2 <= param_3->cursorPos[param_2]) {
-    param_3->cursorPos[param_2] = iVar2 + -1;
+  iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+  if (iVar2 <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = iVar2 + -1;
   }
   return;
 }
@@ -1927,23 +1976,25 @@ void __cdecl UI_OverrideCursorPos_FileShareMySlots(int param_1,int param_2,listB
 
 // 00732970  UI_OverrideCursorPos_Invites  (ui/ui_feeders.cpp:2981)
 
-void __cdecl UI_OverrideCursorPos_Invites(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_Invites(int contextIndex,listBoxDef_s *listPtr)
 
 {
   int iVar1;
+  int inviteIndex;
+  int numInvites;
   
   iVar1 = Live_GetInvitesCount();
   if (iVar1 == 0) {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
-  else if (iVar1 <= param_2->cursorPos[param_1]) {
-    param_2->cursorPos[param_1] = iVar1 + -1;
+  else if (iVar1 <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = iVar1 + -1;
   }
   if ((ui_inviteSelectedInd->current).integer < 1) {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else {
-    param_2->cursorPos[param_1] = (ui_inviteSelectedInd->current).integer;
+    listPtr->cursorPos[contextIndex] = (ui_inviteSelectedInd->current).integer;
   }
   return;
 }
@@ -1951,26 +2002,26 @@ void __cdecl UI_OverrideCursorPos_Invites(int param_1,listBoxDef_s *param_2)
 
 // 007329F0  UI_OverrideCursorPos_Playlists  (ui/ui_feeders.cpp:3026)
 
-void __cdecl UI_OverrideCursorPos_Playlists(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_Playlists(int contextIndex,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
-  int local_8;
+  int playlistNum;
+  int playlistCount;
   
   if ((xblive_wagermatch->current).enabled == false) {
     iVar3 = Playlist_GetCategoryIdForNum((category->current).integer);
-    local_8 = Playlist_GetPlaylistCount(iVar3);
-    local_c = (categoryPlaylist->current).integer;
+    playlistCount = Playlist_GetPlaylistCount(iVar3);
+    playlistNum = (categoryPlaylist->current).integer;
   }
   else {
     iVar3 = Playlist_GetCategoryIdForNum((wagerCategory->current).integer);
-    local_8 = Playlist_GetPlaylistCount(iVar3);
-    local_c = (wagerCategoryPlaylist->current).integer;
+    playlistCount = Playlist_GetPlaylistCount(iVar3);
+    playlistNum = (wagerCategoryPlaylist->current).integer;
   }
-  if (local_8 < 0) {
+  if (playlistCount < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xbe1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1978,14 +2029,14 @@ void __cdecl UI_OverrideCursorPos_Playlists(int param_1,listBoxDef_s *param_2)
       return;
     }
   }
-  if ((local_8 == 0) || (param_2->cursorPos[param_1] < 0)) {
-    param_2->cursorPos[param_1] = 0;
+  if ((playlistCount == 0) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else {
-    param_2->cursorPos[param_1] = local_c;
+    listPtr->cursorPos[contextIndex] = playlistNum;
   }
-  if (local_8 <= param_2->cursorPos[param_1]) {
-    param_2->cursorPos[param_1] = local_8 + -1;
+  if (playlistCount <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = playlistCount + -1;
   }
   return;
 }
@@ -1993,12 +2044,13 @@ void __cdecl UI_OverrideCursorPos_Playlists(int param_1,listBoxDef_s *param_2)
 
 // 00732AE0  UI_OverrideCursorPos_Categories  (ui/ui_feeders.cpp:3061)
 
-void __cdecl UI_OverrideCursorPos_Categories(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_Categories(int contextIndex,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int categoryCount;
   
   iVar3 = Playlist_GetCategoryCount();
   if (iVar3 < 0) {
@@ -2010,16 +2062,16 @@ void __cdecl UI_OverrideCursorPos_Categories(int param_1,listBoxDef_s *param_2)
     }
   }
   if (iVar3 == 0) {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else if ((xblive_wagermatch->current).enabled == false) {
-    param_2->cursorPos[param_1] = (category->current).integer;
+    listPtr->cursorPos[contextIndex] = (category->current).integer;
   }
   else {
-    param_2->cursorPos[param_1] = (wagerCategory->current).integer;
+    listPtr->cursorPos[contextIndex] = (wagerCategory->current).integer;
   }
-  if (iVar3 <= param_2->cursorPos[param_1]) {
-    param_2->cursorPos[param_1] = iVar3 + -1;
+  if (iVar3 <= listPtr->cursorPos[contextIndex]) {
+    listPtr->cursorPos[contextIndex] = iVar3 + -1;
   }
   return;
 }
@@ -2027,7 +2079,7 @@ void __cdecl UI_OverrideCursorPos_Categories(int param_1,listBoxDef_s *param_2)
 
 // 00732B90  UI_OverrideCursorPos_Gamemodes  (ui/ui_feeders.cpp:3087)
 
-void __cdecl UI_OverrideCursorPos_Gamemodes(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_Gamemodes(int contextIndex,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
@@ -2045,13 +2097,13 @@ void __cdecl UI_OverrideCursorPos_Gamemodes(int param_1,listBoxDef_s *param_2)
   }
   iVar3 = Playlist_GetGametypeCount();
   if (iVar3 == 0) {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else {
     iVar3 = Playlist_GetGametypeCount();
-    if (iVar3 <= param_2->cursorPos[param_1]) {
+    if (iVar3 <= listPtr->cursorPos[contextIndex]) {
       iVar3 = Playlist_GetGametypeCount();
-      param_2->cursorPos[param_1] = iVar3 + -1;
+      listPtr->cursorPos[contextIndex] = iVar3 + -1;
     }
   }
   return;
@@ -2061,22 +2113,24 @@ void __cdecl UI_OverrideCursorPos_Gamemodes(int param_1,listBoxDef_s *param_2)
 // 00732C00  UI_OverrideCursorPos_Servers  (ui/ui_feeders.cpp:3099)
 
 void __cdecl
-UI_OverrideCursorPos_Servers(int param_1,int param_2,itemDef_s *param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_Servers
+          (int localClientNum,int contextIndex,itemDef_s *item,listBoxDef_s *listPtr)
 
 {
   int iVar1;
+  int maxScroll;
   
-  if (param_4->endPos[param_2] == 0) {
-    param_4->cursorPos[param_2] = 0;
+  if (listPtr->endPos[contextIndex] == 0) {
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else if (-1 < DAT_098c3d94) {
-    iVar1 = Item_ListBox_MaxScroll(param_1,param_2,param_3);
-    if (iVar1 < param_4->startPos[param_2]) {
-      param_4->startPos[param_2] = iVar1;
+    iVar1 = Item_ListBox_MaxScroll(localClientNum,contextIndex,item);
+    if (iVar1 < listPtr->startPos[contextIndex]) {
+      listPtr->startPos[contextIndex] = iVar1;
     }
-    if ((param_4->startPos[param_2] <= param_4->cursorPos[param_2]) &&
-       (param_4->cursorPos[param_2] <= param_4->endPos[param_2])) {
-      DAT_098c3d94 = param_4->cursorPos[param_2];
+    if ((listPtr->startPos[contextIndex] <= listPtr->cursorPos[contextIndex]) &&
+       (listPtr->cursorPos[contextIndex] <= listPtr->endPos[contextIndex])) {
+      DAT_098c3d94 = listPtr->cursorPos[contextIndex];
     }
   }
   return;
@@ -2085,14 +2139,19 @@ UI_OverrideCursorPos_Servers(int param_1,int param_2,itemDef_s *param_3,listBoxD
 
 // 00732CB0  UI_OverrideCursorPos_Leaderboards  (ui/ui_feeders.cpp:3135)
 
+/* WARNING: Enum "LbType": Some values do not have unique names */
+
 void __cdecl
-UI_OverrideCursorPos_Leaderboards(int param_1,int param_2,itemDef_s *param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_Leaderboards
+          (int localClientNum,int contextIndex,itemDef_s *item,listBoxDef_s *listPtr)
 
 {
-  int iVar1;
+  int viewmax_00;
+  int viewmax;
   
-  iVar1 = Item_ListBox_Viewmax(param_1,param_2,param_3);
-  LB_OverrideCursorPos(iVar1,param_4->cursorPos + param_2,param_4->startPos + param_2);
+  viewmax_00 = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+  LB_OverrideCursorPos
+            (viewmax_00,listPtr->cursorPos + contextIndex,listPtr->startPos + contextIndex);
   return;
 }
 
@@ -2100,21 +2159,22 @@ UI_OverrideCursorPos_Leaderboards(int param_1,int param_2,itemDef_s *param_3,lis
 // 00731050  UI_GetListDetails  (ui/ui_feeders.cpp:3142)
 
 void __cdecl
-UI_GetListDetails(int param_1,int param_2,itemDef_s *param_3,char *param_4,itemDef_s **param_5,
-                 int *param_6,int *param_7)
+UI_GetListDetails(int localClientNum,int contextIndex,itemDef_s *item,char *feederName,
+                 itemDef_s **itemToFocus,int *lastIndex,int *viewMax)
 
 {
   itemDef_s *piVar1;
-  listBoxDef_s *plVar2;
-  int iVar3;
+  listBoxDef_s *listPtr;
+  int iVar2;
+  listBoxDef_s *listToFocus;
   
-  piVar1 = Menu_GetMatchingItemByNumber(param_3->parent,0,param_4);
-  *param_5 = piVar1;
-  plVar2 = Item_GetListBoxDef(*param_5);
-  iVar3 = UI_FeederCount(param_1,param_2,(float)(int)plVar2->special,plVar2);
-  *param_6 = iVar3 + -1;
-  iVar3 = Item_ListBox_Viewmax(param_1,param_2,*param_5);
-  *param_7 = iVar3;
+  piVar1 = Menu_GetMatchingItemByNumber(item->parent,0,feederName);
+  *itemToFocus = piVar1;
+  listPtr = Item_GetListBoxDef(*itemToFocus);
+  iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+  *lastIndex = iVar2 + -1;
+  iVar2 = Item_ListBox_Viewmax(localClientNum,contextIndex,*itemToFocus);
+  *viewMax = iVar2;
   return;
 }
 
@@ -2123,21 +2183,21 @@ UI_GetListDetails(int param_1,int param_2,itemDef_s *param_3,char *param_4,itemD
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int param_4)
+bool __cdecl UI_OverrideKeyPress(int localClientNum,int contextIndex,itemDef_s *item,int key)
 
 {
   bool bVar1;
   int iVar2;
   uiInfo_s *puVar3;
   rectDef_s *prVar4;
-  int iVar5;
-  XuidInfo *pXVar6;
-  undefined4 *puVar7;
-  XuidInfo_conflict *pXVar8;
-  int iVar9;
-  char *pcVar10;
-  char *pcVar11;
-  FriendInfo *pFVar12;
+  int controllerIndex_00;
+  XuidInfo *pXVar5;
+  undefined4 *puVar6;
+  XuidInfo_conflict *pXVar7;
+  int filter;
+  char *pcVar8;
+  char *pcVar9;
+  FriendInfo *info_00;
   int local_198;
   int local_194;
   int local_190;
@@ -2146,67 +2206,67 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
   int local_184;
   XuidInfo local_17c;
   undefined4 local_14c [13];
-  int local_118;
-  int local_114;
-  int local_110;
-  FriendInfo local_10c;
+  int newIndex_3;
+  int newIndex_2;
+  int newIndex;
+  FriendInfo info;
   uint local_54;
-  char local_4d;
-  uiInfo_s *local_4c;
-  rectDef_s local_48;
-  int local_30;
-  int local_2c;
-  listBoxDef_s *local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  itemDef_s *local_18;
-  int local_14;
-  itemDef_s *local_10;
-  int local_c;
-  int local_8;
+  bool jumpToIndex;
+  UiContext *dc;
+  rectDef_s rect;
+  int j;
+  int controllerIndex;
+  listBoxDef_s *listPtr;
+  int lastIndex1;
+  int currIndex;
+  int viewMax;
+  itemDef_s *itemToFocus;
+  int viewMax1;
+  itemDef_s *itemToFocus1;
+  int i;
+  int lastIndex;
   
   local_54 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = (itemDef_s *)0x0;
-  local_10 = (itemDef_s *)0x0;
-  local_28 = Item_GetListBoxDef(param_3);
-  local_2c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = UI_FeederCount(param_1,param_2,(float)(int)local_28->special,local_28);
+  itemToFocus = (itemDef_s *)0x0;
+  itemToFocus1 = (itemDef_s *)0x0;
+  listPtr = Item_GetListBoxDef(item);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
   if (iVar2 != 0) {
-    switch((int)local_28->special) {
+    switch((int)listPtr->special) {
     case 0x20:
-      local_20 = local_28->cursorPos[param_2];
-      local_8 = UI_FeederCount(param_1,param_2,(float)(int)local_28->special,local_28);
-      local_8 = local_8 + -1;
-      local_1c = Item_ListBox_Viewmax(param_1,param_2,param_3);
-      if (((param_4 == 0x1c) || (param_4 == 0x14)) ||
-         ((param_4 == 0x1d || (((param_4 == 0x15 || (param_4 == 0x9a)) || (param_4 == 0x9b)))))) {
-        if (((param_4 == 0x1c) || (param_4 == 0x14)) || (param_4 == 0x9a)) {
-          if (local_20 < 1) {
-            local_184 = local_8;
+      currIndex = listPtr->cursorPos[contextIndex];
+      iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+      lastIndex = iVar2 + -1;
+      viewMax = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+      if (((key == 0x1c) || (key == 0x14)) ||
+         ((key == 0x1d || (((key == 0x15 || (key == 0x9a)) || (key == 0x9b)))))) {
+        if (((key == 0x1c) || (key == 0x14)) || (key == 0x9a)) {
+          if (currIndex < 1) {
+            local_184 = lastIndex;
           }
           else {
-            local_184 = local_20 + -1;
+            local_184 = currIndex + -1;
           }
-          local_110 = local_184;
+          newIndex = local_184;
         }
         else {
-          if (local_20 < local_8) {
-            local_188 = local_20 + 1;
+          if (currIndex < lastIndex) {
+            local_188 = currIndex + 1;
           }
           else {
             local_188 = 0;
           }
-          local_110 = local_188;
+          newIndex = local_188;
         }
-        pFVar12 = &local_10c;
-        iVar9 = 0;
-        iVar2 = local_110;
-        iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-        bVar1 = Friends_GetByIndex(iVar5,iVar9,iVar2,pFVar12);
+        info_00 = &info;
+        filter = 0;
+        iVar2 = newIndex;
+        controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+        bVar1 = Friends_GetByIndex(controllerIndex_00,filter,iVar2,info_00);
         if (bVar1) {
-          s_selectedPlayerXUID._0_4_ = (undefined4)local_10c.dwid;
-          s_selectedPlayerXUID._4_4_ = local_10c.dwid._4_4_;
+          s_selectedPlayerXUID._0_4_ = (undefined4)info.dwid;
+          s_selectedPlayerXUID._4_4_ = info.dwid._4_4_;
           s_selectedMetPlayerXUID._0_4_ = 0;
           s_selectedMetPlayerXUID._4_4_ = 0;
         }
@@ -2214,156 +2274,156 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
           s_selectedPlayerXUID._0_4_ = 0;
           s_selectedPlayerXUID._4_4_ = 0;
         }
-        Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8,local_1c,local_110,true);
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,item,lastIndex,viewMax,newIndex,true);
         return true;
       }
       break;
     case 0x2f:
-      local_20 = local_28->cursorPos[param_2];
-      local_8 = UI_FeederCount(param_1,param_2,(float)(int)local_28->special,local_28);
-      local_8 = local_8 + -1;
-      local_1c = Item_ListBox_Viewmax(param_1,param_2,param_3);
-      if (((param_4 == 0x1c) || (param_4 == 0x14)) ||
-         ((param_4 == 0x1d || (((param_4 == 0x15 || (param_4 == 0x9a)) || (param_4 == 0x9b)))))) {
-        if (((param_4 == 0x1c) || (param_4 == 0x14)) || (param_4 == 0x9a)) {
-          if (local_20 < 1) {
-            local_194 = local_8;
+      currIndex = listPtr->cursorPos[contextIndex];
+      iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+      lastIndex = iVar2 + -1;
+      viewMax = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+      if (((key == 0x1c) || (key == 0x14)) ||
+         ((key == 0x1d || (((key == 0x15 || (key == 0x9a)) || (key == 0x9b)))))) {
+        if (((key == 0x1c) || (key == 0x14)) || (key == 0x9a)) {
+          if (currIndex < 1) {
+            local_194 = lastIndex;
           }
           else {
-            local_194 = local_20 + -1;
+            local_194 = currIndex + -1;
           }
-          local_118 = local_194;
+          newIndex_3 = local_194;
         }
         else {
-          if (local_20 < local_8) {
-            local_198 = local_20 + 1;
+          if (currIndex < lastIndex) {
+            local_198 = currIndex + 1;
           }
           else {
             local_198 = 0;
           }
-          local_118 = local_198;
+          newIndex_3 = local_198;
         }
-        Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8,local_1c,local_118,true);
+        Item_ListBox_SetCursorPos
+                  (localClientNum,contextIndex,item,lastIndex,viewMax,newIndex_3,true);
         return true;
       }
       break;
     case 0x32:
-      local_20 = local_28->cursorPos[param_2];
-      local_8 = UI_FeederCount(param_1,param_2,(float)(int)local_28->special,local_28);
-      local_8 = local_8 + -1;
-      local_1c = Item_ListBox_Viewmax(param_1,param_2,param_3);
-      if (((param_4 == 0x1c) || (param_4 == 0x14)) ||
-         ((param_4 == 0x1d || (((param_4 == 0x15 || (param_4 == 0x9a)) || (param_4 == 0x9b)))))) {
-        if (((param_4 == 0x1c) || (param_4 == 0x14)) || (param_4 == 0x9a)) {
-          if (local_20 < 1) {
-            local_18c = local_8;
+      currIndex = listPtr->cursorPos[contextIndex];
+      iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+      lastIndex = iVar2 + -1;
+      viewMax = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+      if (((key == 0x1c) || (key == 0x14)) ||
+         ((key == 0x1d || (((key == 0x15 || (key == 0x9a)) || (key == 0x9b)))))) {
+        if (((key == 0x1c) || (key == 0x14)) || (key == 0x9a)) {
+          if (currIndex < 1) {
+            local_18c = lastIndex;
           }
           else {
-            local_18c = local_20 + -1;
+            local_18c = currIndex + -1;
           }
-          local_114 = local_18c;
+          newIndex_2 = local_18c;
         }
         else {
-          if (local_20 < local_8) {
-            local_190 = local_20 + 1;
+          if (currIndex < lastIndex) {
+            local_190 = currIndex + 1;
           }
           else {
             local_190 = 0;
           }
-          local_114 = local_190;
+          newIndex_2 = local_190;
         }
-        pXVar6 = LiveMeetPlayer_GetMetFriendInfo(&local_17c,local_2c,local_114);
-        puVar7 = local_14c;
+        pXVar5 = LiveMeetPlayer_GetMetFriendInfo(&local_17c,controllerIndex,newIndex_2);
+        puVar6 = local_14c;
         for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *puVar7 = (int)pXVar6->playerXuids;
-          pXVar6 = (XuidInfo *)((int)&pXVar6->playerXuids + 4);
-          puVar7 = puVar7 + 1;
+          *puVar6 = (int)pXVar5->playerXuids;
+          pXVar5 = (XuidInfo *)((int)&pXVar5->playerXuids + 4);
+          puVar6 = puVar6 + 1;
         }
-        puVar7 = local_14c;
-        pXVar8 = &recentPlayerInfo;
+        puVar6 = local_14c;
+        pXVar7 = &recentPlayerInfo;
         for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *(undefined4 *)&pXVar8->playerXuids = *puVar7;
-          puVar7 = puVar7 + 1;
-          pXVar8 = (XuidInfo_conflict *)((int)&pXVar8->playerXuids + 4);
+          *(undefined4 *)&pXVar7->playerXuids = *puVar6;
+          puVar6 = puVar6 + 1;
+          pXVar7 = (XuidInfo_conflict *)((int)&pXVar7->playerXuids + 4);
         }
         s_selectedMetPlayerXUID._0_4_ = (undefined4)recentPlayerInfo.playerXuids;
         s_selectedMetPlayerXUID._4_4_ = recentPlayerInfo.playerXuids._4_4_;
-        Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8,local_1c,local_114,true);
+        Item_ListBox_SetCursorPos
+                  (localClientNum,contextIndex,item,lastIndex,viewMax,newIndex_2,true);
         return true;
       }
       break;
     case 0x36:
-      local_4d = '\0';
-      local_c = 0;
-      local_20 = local_28->cursorPos[param_2];
-      local_8 = UI_FeederCount(param_1,param_2,54.0,local_28);
-      local_8 = local_8 + -1;
-      local_1c = Item_ListBox_Viewmax(param_1,param_2,param_3);
-      if (((param_4 == 0x15) || (param_4 == 0x1d)) || ((param_4 == 0x9b || (param_4 == 0xbd)))) {
-        iVar2 = local_20;
-        if (local_20 == local_8) {
-          Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8 + 1,local_1c,0,true);
+      jumpToIndex = false;
+      i = 0;
+      currIndex = listPtr->cursorPos[contextIndex];
+      iVar2 = UI_FeederCount(localClientNum,contextIndex,54.0,listPtr);
+      lastIndex = iVar2 + -1;
+      viewMax = Item_ListBox_Viewmax(localClientNum,contextIndex,item);
+      if (((key == 0x15) || (key == 0x1d)) || ((key == 0x9b || (key == 0xbd)))) {
+        iVar2 = currIndex;
+        if (currIndex == lastIndex) {
+          Item_ListBox_SetCursorPos(localClientNum,contextIndex,item,lastIndex + 1,viewMax,0,true);
           return true;
         }
         do {
-          local_c = iVar2 + 1;
-          if (local_8 < local_c) break;
-          for (local_30 = 3; local_30 < local_28->numColumns; local_30 = local_30 + 1) {
-            if ((local_28->rows[local_c].cells[local_30].stringValue != (char *)0x0) &&
-               (*local_28->rows[local_c].cells[local_30].stringValue != '\0')) {
-              local_4d = '\x01';
+          i = iVar2 + 1;
+          if (lastIndex < i) break;
+          for (j = 3; j < listPtr->numColumns; j = j + 1) {
+            if ((listPtr->rows[i].cells[j].stringValue != (char *)0x0) &&
+               (*listPtr->rows[i].cells[j].stringValue != '\0')) {
+              jumpToIndex = true;
               break;
             }
           }
-          iVar2 = local_c;
-        } while (local_4d == '\0');
+          iVar2 = i;
+        } while (jumpToIndex == false);
       }
-      else if ((((param_4 == 0x14) || (param_4 == 0x1c)) || (param_4 == 0x9a)) || (param_4 == 0xb7))
-      {
-        iVar2 = local_20;
-        if (local_20 == 0) {
-          Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8 + 1,local_1c,local_8,true);
+      else if ((((key == 0x14) || (key == 0x1c)) || (key == 0x9a)) || (key == 0xb7)) {
+        iVar2 = currIndex;
+        if (currIndex == 0) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,item,lastIndex + 1,viewMax,lastIndex,true);
           return true;
         }
         do {
-          local_c = iVar2 + -1;
-          if (local_c < 0) break;
-          for (local_30 = 3; local_30 < local_28->numColumns; local_30 = local_30 + 1) {
-            if ((local_28->rows[local_c].cells[local_30].stringValue != (char *)0x0) &&
-               (iVar2 = I_stricmp(local_28->rows[local_c].cells[local_30].stringValue,""),
-               iVar2 != 0)) {
-              local_4d = '\x01';
+          i = iVar2 + -1;
+          if (i < 0) break;
+          for (j = 3; j < listPtr->numColumns; j = j + 1) {
+            if ((listPtr->rows[i].cells[j].stringValue != (char *)0x0) &&
+               (iVar2 = I_stricmp(listPtr->rows[i].cells[j].stringValue,""), iVar2 != 0)) {
+              jumpToIndex = true;
               break;
             }
           }
-          iVar2 = local_c;
-        } while (local_4d == '\0');
+          iVar2 = i;
+        } while (jumpToIndex == false);
       }
-      if (local_4d == '\0') {
+      if (jumpToIndex == false) {
         return false;
       }
-      Item_ListBox_SetCursorPos(param_1,param_2,param_3,local_8 + 1,local_1c,local_c,true);
+      Item_ListBox_SetCursorPos(localClientNum,contextIndex,item,lastIndex + 1,viewMax,i,true);
       return true;
     case 0x4a:
-      local_4c = UI_UIContext_GetInfo(param_2);
-      prVar4 = Window_GetRect(&param_3->window);
-      local_48.x = prVar4->x;
-      local_48.y = prVar4->y;
-      local_48.h = prVar4->h;
-      local_48.horzAlign = prVar4->horzAlign;
-      local_48.vertAlign = prVar4->vertAlign;
-      local_48.w = prVar4->w - 14.0;
-      if ((((param_4 == 0xd) || (param_4 == 200)) || (param_4 == 1)) &&
-         ((iVar2 = Rect_ContainsPoint((local_4c->uiDC).contextIndex,&local_48,
-                                      (local_4c->uiDC).cursor.x,(local_4c->uiDC).cursor.y),
+      dc = &UI_UIContext_GetInfo(contextIndex)->uiDC;
+      prVar4 = Window_GetRect(&item->window);
+      rect.x = prVar4->x;
+      rect.y = prVar4->y;
+      rect.h = prVar4->h;
+      rect.horzAlign = prVar4->horzAlign;
+      rect.vertAlign = prVar4->vertAlign;
+      rect.w = prVar4->w - 14.0;
+      if ((((key == 0xd) || (key == 200)) || (key == 1)) &&
+         ((iVar2 = Rect_ContainsPoint(dc->contextIndex,&rect,(dc->cursor).x,(dc->cursor).y),
           iVar2 != 0 &&
-          (bVar1 = Live_FileShareSearch_FeederItemEnabled(local_28->cursorPos[param_2]), !bVar1))))
-      {
+          (bVar1 = Live_FileShareSearch_FeederItemEnabled(listPtr->cursorPos[contextIndex]), !bVar1)
+          ))) {
         return true;
       }
       break;
     case 0x4f:
-      if ((param_4 == 0x1f) || (param_4 == 0x17)) {
+      if ((key == 0x1f) || (key == 0x17)) {
         if ((fsOtherUserPrivateSlotCol->current).integer == 2) {
           Dvar_SetInt(fsOtherUserPrivateSlotCol,0);
         }
@@ -2371,7 +2431,7 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
           Dvar_SetInt(fsOtherUserPrivateSlotCol,(fsOtherUserPrivateSlotCol->current).integer + 1);
         }
       }
-      else if ((param_4 == 0x1e) || (param_4 == 0x16)) {
+      else if ((key == 0x1e) || (key == 0x16)) {
         if ((fsOtherUserPrivateSlotCol->current).integer == 0) {
           Dvar_SetInt(fsOtherUserPrivateSlotCol,2);
         }
@@ -2381,7 +2441,7 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
       }
       break;
     case 0x50:
-      if (((param_4 == 0x1f) || (param_4 == 0x17)) || (param_4 == 0x9d)) {
+      if (((key == 0x1f) || (key == 0x17)) || (key == 0x9d)) {
         if ((fsPrivateSlotCol->current).integer == 2) {
           Dvar_SetInt(fsPrivateSlotCol,0);
         }
@@ -2389,7 +2449,7 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
           Dvar_SetInt(fsPrivateSlotCol,(fsPrivateSlotCol->current).integer + 1);
         }
       }
-      else if (((param_4 == 0x1e) || (param_4 == 0x16)) || (param_4 == 0x9c)) {
+      else if (((key == 0x1e) || (key == 0x16)) || (key == 0x9c)) {
         if ((fsPrivateSlotCol->current).integer == 0) {
           Dvar_SetInt(fsPrivateSlotCol,2);
         }
@@ -2397,174 +2457,195 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
           Dvar_SetInt(fsPrivateSlotCol,(fsPrivateSlotCol->current).integer + -1);
         }
       }
-      Com_LocalClient_GetControllerIndex(param_1);
+      Com_LocalClient_GetControllerIndex(localClientNum);
       bVar1 = CL_IsRenderingSplitScreen();
       if (!bVar1) {
-        local_20 = local_28->cursorPos[param_2];
-        local_8 = UI_FeederCount(param_1,param_2,(float)(int)local_28->special,local_28);
-        local_8 = local_8 + -1;
-        if ((local_20 == local_8) && ((param_4 == 0x1d || (param_4 == 0x15)))) {
-          local_28->cursorPos[param_2] = 0;
-          pcVar11 = "new_frame_button_1";
-          pcVar10 = "menu_fileshare_myshare";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
+        currIndex = listPtr->cursorPos[contextIndex];
+        iVar2 = UI_FeederCount(localClientNum,contextIndex,(float)(int)listPtr->special,listPtr);
+        lastIndex = iVar2 + -1;
+        if ((currIndex == lastIndex) && ((key == 0x1d || (key == 0x15)))) {
+          listPtr->cursorPos[contextIndex] = 0;
+          pcVar9 = "new_frame_button_1";
+          pcVar8 = "menu_fileshare_myshare";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
         }
-        if ((local_20 == 0) && ((param_4 == 0x1c || (param_4 == 0x14)))) {
-          local_28->cursorPos[param_2] = 0;
-          pcVar11 = "new_frame_button_1";
-          pcVar10 = "menu_fileshare_myshare";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
+        if ((currIndex == 0) && ((key == 0x1c || (key == 0x14)))) {
+          listPtr->cursorPos[contextIndex] = 0;
+          pcVar9 = "new_frame_button_1";
+          pcVar8 = "menu_fileshare_myshare";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
         }
       }
       break;
     case 0x5a:
-      UI_GetListDetails(param_1,param_2,param_3,"clan_tag_list_edit",&local_18,&local_8,&local_1c);
-      UI_GetListDetails(param_1,param_2,param_3,"clan_tag_list",&local_10,&local_24,&local_14);
-      if ((local_8 != -1) && (local_24 != -1)) {
-        if ((local_28->cursorPos[param_2] == local_28->endPos[param_2] + -1) &&
-           (((param_4 == 0x1d || (param_4 == 0x15)) || (param_4 == 0x9b)))) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_10,local_24,local_14,0,true);
-          pcVar11 = "clan_tag_list_edit";
-          pcVar10 = "menu_playercards_clantag";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"clan_tag_list_edit",&itemToFocus,
+                        &lastIndex,&viewMax);
+      UI_GetListDetails(localClientNum,contextIndex,item,"clan_tag_list",&itemToFocus1,&lastIndex1,
+                        &viewMax1);
+      if ((lastIndex != -1) && (lastIndex1 != -1)) {
+        if ((listPtr->cursorPos[contextIndex] == listPtr->endPos[contextIndex] + -1) &&
+           (((key == 0x1d || (key == 0x15)) || (key == 0x9b)))) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus1,lastIndex1,viewMax1,0,true);
+          pcVar9 = "clan_tag_list_edit";
+          pcVar8 = "menu_playercards_clantag";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
           return true;
         }
-        if ((local_28->cursorPos[param_2] == 0) &&
-           (((param_4 == 0x1c || (param_4 == 0x14)) || (param_4 == 0x9a)))) {
-          pcVar11 = "clan_tag_list_edit";
-          pcVar10 = "menu_playercards_clantag";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,local_8,true);
+        if ((listPtr->cursorPos[contextIndex] == 0) &&
+           (((key == 0x1c || (key == 0x14)) || (key == 0x9a)))) {
+          pcVar9 = "clan_tag_list_edit";
+          pcVar8 = "menu_playercards_clantag";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,lastIndex,true);
           return true;
         }
-        if (param_4 == 2) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_10,local_24,local_14,0,true);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+        if (key == 2) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus1,lastIndex1,viewMax1,0,true);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
         }
       }
       break;
     case 0x5c:
-      UI_GetListDetails(param_1,param_2,param_3,"stats_milestones_weapongrouplist",&local_18,
-                        &local_8,&local_1c);
-      UI_GetListDetails(param_1,param_2,param_3,"stats_milestones_list",&local_10,&local_24,
-                        &local_14);
-      if ((local_8 != -1) && (local_24 != -1)) {
-        if ((local_28->cursorPos[param_2] == local_28->endPos[param_2] + -1) &&
-           ((param_4 == 0x1d || (param_4 == 0x15)))) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_10,local_24,local_14,0,true);
-          pcVar11 = "stats_milestones_weapongrouplist";
-          pcVar10 = "menu_stats_milestones_weapons";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"stats_milestones_weapongrouplist",
+                        &itemToFocus,&lastIndex,&viewMax);
+      UI_GetListDetails(localClientNum,contextIndex,item,"stats_milestones_list",&itemToFocus1,
+                        &lastIndex1,&viewMax1);
+      if ((lastIndex != -1) && (lastIndex1 != -1)) {
+        if ((listPtr->cursorPos[contextIndex] == listPtr->endPos[contextIndex] + -1) &&
+           ((key == 0x1d || (key == 0x15)))) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus1,lastIndex1,viewMax1,0,true);
+          pcVar9 = "stats_milestones_weapongrouplist";
+          pcVar8 = "menu_stats_milestones_weapons";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
           return true;
         }
-        if ((local_28->cursorPos[param_2] == 0) && ((param_4 == 0x1c || (param_4 == 0x14)))) {
-          pcVar11 = "stats_milestones_weapongrouplist";
-          pcVar10 = "menu_stats_milestones_weapons";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,local_8,true);
+        if ((listPtr->cursorPos[contextIndex] == 0) && ((key == 0x1c || (key == 0x14)))) {
+          pcVar9 = "stats_milestones_weapongrouplist";
+          pcVar8 = "menu_stats_milestones_weapons";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,lastIndex,true);
           return true;
         }
-        if (param_4 == 2) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_10,local_24,local_14,0,true);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+        if (key == 2) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus1,lastIndex1,viewMax1,0,true);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
         }
       }
       break;
     case 0x5e:
-      UI_GetListDetails(param_1,param_2,param_3,"stats_milestones_list",&local_18,&local_8,&local_1c
-                       );
-      if (local_8 != -1) {
-        if ((local_28->cursorPos[param_2] == local_28->endPos[param_2] + -1) &&
-           ((param_4 == 0x1d || (param_4 == 0x15)))) {
-          pcVar11 = "stats_milestones_list";
-          pcVar10 = "menu_stats_milestones_weapons";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"stats_milestones_list",&itemToFocus,
+                        &lastIndex,&viewMax);
+      if (lastIndex != -1) {
+        if ((listPtr->cursorPos[contextIndex] == listPtr->endPos[contextIndex] + -1) &&
+           ((key == 0x1d || (key == 0x15)))) {
+          pcVar9 = "stats_milestones_list";
+          pcVar8 = "menu_stats_milestones_weapons";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
           return true;
         }
-        if ((local_28->cursorPos[param_2] == 0) && ((param_4 == 0x1c || (param_4 == 0x14)))) {
-          pcVar11 = "stats_milestones_list";
-          pcVar10 = "menu_stats_milestones_weapons";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,local_8,true);
+        if ((listPtr->cursorPos[contextIndex] == 0) && ((key == 0x1c || (key == 0x14)))) {
+          pcVar9 = "stats_milestones_list";
+          pcVar8 = "menu_stats_milestones_weapons";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,lastIndex,true);
           return true;
         }
-        if (param_4 == 2) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+        if (key == 2) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
         }
       }
       break;
     case 0x5f:
-      UI_GetListDetails(param_1,param_2,param_3,"global_challenges_list",&local_18,&local_8,
-                        &local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"global_challenges_list",&itemToFocus,
+                        &lastIndex,&viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 0x60:
-      UI_GetListDetails(param_1,param_2,param_3,"stats_milestones_attachments",&local_18,&local_8,
-                        &local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"stats_milestones_attachments",&itemToFocus
+                        ,&lastIndex,&viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 0x61:
-      UI_GetListDetails(param_1,param_2,param_3,"perks_type_list",&local_18,&local_8,&local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"perks_type_list",&itemToFocus,&lastIndex,
+                        &viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 0x62:
-      UI_GetListDetails(param_1,param_2,param_3,"killstreak_challenges_list",&local_18,&local_8,
-                        &local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"killstreak_challenges_list",&itemToFocus,
+                        &lastIndex,&viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 99:
-      UI_GetListDetails(param_1,param_2,param_3,"stats_milestones_grenades",&local_18,&local_8,
-                        &local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"stats_milestones_grenades",&itemToFocus,
+                        &lastIndex,&viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 100:
-      UI_GetListDetails(param_1,param_2,param_3,"killstreaks",&local_18,&local_8,&local_1c);
-      if (param_4 == 2) {
-        Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"killstreaks",&itemToFocus,&lastIndex,
+                        &viewMax);
+      if (key == 2) {
+        Item_ListBox_SetCursorPos(localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
       }
       break;
     case 0x66:
-      UI_GetListDetails(param_1,param_2,param_3,"clan_tag_list",&local_18,&local_8,&local_1c);
-      if (local_8 != -1) {
-        if (((param_4 == 0x1d) || (param_4 == 0x15)) || (param_4 == 0x9b)) {
-          pcVar11 = "clan_tag_list";
-          pcVar10 = "menu_playercards_clantag";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+      UI_GetListDetails(localClientNum,contextIndex,item,"clan_tag_list",&itemToFocus,&lastIndex,
+                        &viewMax);
+      if (lastIndex != -1) {
+        if (((key == 0x1d) || (key == 0x15)) || (key == 0x9b)) {
+          pcVar9 = "clan_tag_list";
+          pcVar8 = "menu_playercards_clantag";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
           return true;
         }
-        if (((param_4 == 0x1c) || (param_4 == 0x14)) || (param_4 == 0x9a)) {
-          pcVar11 = "clan_tag_list";
-          pcVar10 = "menu_playercards_clantag";
-          puVar3 = UI_UIContext_GetInfo(param_2);
-          Menus_SetFocusToItem(param_1,&puVar3->uiDC,pcVar10,pcVar11);
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,local_8,true);
+        if (((key == 0x1c) || (key == 0x14)) || (key == 0x9a)) {
+          pcVar9 = "clan_tag_list";
+          pcVar8 = "menu_playercards_clantag";
+          puVar3 = UI_UIContext_GetInfo(contextIndex);
+          Menus_SetFocusToItem(localClientNum,&puVar3->uiDC,pcVar8,pcVar9);
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,lastIndex,true);
           return true;
         }
-        if (param_4 == 2) {
-          Item_ListBox_SetCursorPos(param_1,param_2,local_18,local_8,local_1c,0,true);
+        if (key == 2) {
+          Item_ListBox_SetCursorPos
+                    (localClientNum,contextIndex,itemToFocus,lastIndex,viewMax,0,true);
         }
       }
     }
@@ -2575,22 +2656,23 @@ bool __cdecl UI_OverrideKeyPress(int param_1,int param_2,itemDef_s *param_3,int 
 
 // 00732D00  UI_OverrideCursorPos_DynamicMenu  (ui/ui_feeders.cpp:3567)
 
-void __cdecl UI_OverrideCursorPos_DynamicMenu(int param_1,listBoxDef_s *param_2)
+void __cdecl UI_OverrideCursorPos_DynamicMenu(int contextIndex,listBoxDef_s *listPtr)
 
 {
-  int local_8;
+  int j;
   
-  if ((param_2->cursorPos[param_1] < param_2->rowCount) && (-1 < param_2->cursorPos[param_1])) {
-    for (local_8 = 3; local_8 < param_2->numColumns; local_8 = local_8 + 1) {
-      if ((param_2->rows[param_2->cursorPos[param_1]].cells[local_8].stringValue != (char *)0x0) &&
-         (*param_2->rows[param_2->cursorPos[param_1]].cells[local_8].stringValue != '\0')) {
+  if ((listPtr->cursorPos[contextIndex] < listPtr->rowCount) &&
+     (-1 < listPtr->cursorPos[contextIndex])) {
+    for (j = 3; j < listPtr->numColumns; j = j + 1) {
+      if ((listPtr->rows[listPtr->cursorPos[contextIndex]].cells[j].stringValue != (char *)0x0) &&
+         (*listPtr->rows[listPtr->cursorPos[contextIndex]].cells[j].stringValue != '\0')) {
         return;
       }
     }
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
   else {
-    param_2->cursorPos[param_1] = 0;
+    listPtr->cursorPos[contextIndex] = 0;
   }
   return;
 }
@@ -2599,14 +2681,16 @@ void __cdecl UI_OverrideCursorPos_DynamicMenu(int param_1,listBoxDef_s *param_2)
 // 00732DC0  UI_OverrideCursorPos_Default  (ui/ui_feeders.cpp:3584)
 
 void __cdecl
-UI_OverrideCursorPos_Default(int param_1,int param_2,float param_3,listBoxDef_s *param_4)
+UI_OverrideCursorPos_Default
+          (int localClientNum,int contextIndex,float feederID,listBoxDef_s *listPtr)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int itemCount;
   
-  iVar3 = UI_FeederCount(param_1,param_2,param_3,param_4);
+  iVar3 = UI_FeederCount(localClientNum,contextIndex,feederID,listPtr);
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xe02,0,"%s");
     if (!bVar2) {
@@ -2615,9 +2699,9 @@ UI_OverrideCursorPos_Default(int param_1,int param_2,float param_3,listBoxDef_s 
       return;
     }
   }
-  if ((iVar3 <= param_4->cursorPos[param_2]) || (param_4->cursorPos[param_2] < 0)) {
-    param_4->cursorPos[param_2] = 0;
-    param_4->startPos[param_2] = 0;
+  if ((iVar3 <= listPtr->cursorPos[contextIndex]) || (listPtr->cursorPos[contextIndex] < 0)) {
+    listPtr->cursorPos[contextIndex] = 0;
+    listPtr->startPos[contextIndex] = 0;
   }
   return;
 }
@@ -2625,74 +2709,77 @@ UI_OverrideCursorPos_Default(int param_1,int param_2,float param_3,listBoxDef_s 
 
 // 00732320  UI_OverrideCursorPos  (ui/ui_feeders.cpp:3596)
 
-void __cdecl UI_OverrideCursorPos(int param_1,int param_2,itemDef_s *param_3)
+void __cdecl UI_OverrideCursorPos(int localClientNum,int contextIndex,itemDef_s *item)
 
 {
-  float fVar1;
-  bool bVar2;
-  listBoxDef_s *plVar3;
-  int iVar4;
+  float feederID_00;
+  bool bVar1;
+  listBoxDef_s *listPtr_00;
+  int iVar2;
+  int controllerIndex;
+  float feederID;
+  listBoxDef_s *listPtr;
   
-  plVar3 = Item_GetListBoxDef(param_3);
-  iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-  fVar1 = plVar3->special;
-  switch((int)plVar3->special) {
+  listPtr_00 = Item_GetListBoxDef(item);
+  iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+  feederID_00 = listPtr_00->special;
+  switch((int)listPtr_00->special) {
   case 1:
-    UI_OverrideCursorPos_Maps(param_2,plVar3);
+    UI_OverrideCursorPos_Maps(contextIndex,listPtr_00);
     break;
   case 2:
-    UI_OverrideCursorPos_Servers(param_1,param_2,param_3,plVar3);
+    UI_OverrideCursorPos_Servers(localClientNum,contextIndex,item,listPtr_00);
     break;
   default:
-    bVar2 = UI_Project_OverrideCursorPos(param_1,param_2,param_3);
-    if (!bVar2) {
-      UI_OverrideCursorPos_Default(param_1,param_2,fVar1,plVar3);
+    bVar1 = UI_Project_OverrideCursorPos(localClientNum,contextIndex,item);
+    if (!bVar1) {
+      UI_OverrideCursorPos_Default(localClientNum,contextIndex,feederID_00,listPtr_00);
     }
     break;
   case 4:
-    iVar4 = UI_GetListIndexFromMapIndex((ui_currentNetMap->current).integer);
-    plVar3->cursorPos[param_2] = iVar4;
+    iVar2 = UI_GetListIndexFromMapIndex((ui_currentNetMap->current).integer);
+    listPtr_00->cursorPos[contextIndex] = iVar2;
     break;
   case 0x1a:
   case 0x4d:
-    UI_OverrideCursorPos_Playlists(param_2,plVar3);
+    UI_OverrideCursorPos_Playlists(contextIndex,listPtr_00);
     break;
   case 0x1b:
-    UI_OverrideCursorPos_Gamemodes(param_2,plVar3);
+    UI_OverrideCursorPos_Gamemodes(contextIndex,listPtr_00);
     break;
   case 0x1c:
   case 0x4c:
-    UI_OverrideCursorPos_Categories(param_2,plVar3);
+    UI_OverrideCursorPos_Categories(contextIndex,listPtr_00);
     break;
   case 0x1d:
-    UI_OverrideCursorPos_Leaderboards(param_1,param_2,param_3,plVar3);
+    UI_OverrideCursorPos_Leaderboards(localClientNum,contextIndex,item,listPtr_00);
     break;
   case 0x20:
-    UI_OverrideCursorPos_OnlineFriends(iVar4,param_2,param_3,plVar3);
+    UI_OverrideCursorPos_OnlineFriends(iVar2,contextIndex,item,listPtr_00);
     break;
   case 0x26:
-    UI_OverrideCursorPos_CustomGametypes(param_2,plVar3);
+    UI_OverrideCursorPos_CustomGametypes(contextIndex,listPtr_00);
     break;
   case 0x2d:
     break;
   case 0x2e:
     break;
   case 0x2f:
-    UI_OverrideCursorPos_Invites(param_2,plVar3);
+    UI_OverrideCursorPos_Invites(contextIndex,listPtr_00);
     break;
   case 0x32:
-    UI_OverrideCursorPos_RecentPlayers(iVar4,param_2,param_3,plVar3);
+    UI_OverrideCursorPos_RecentPlayers(iVar2,contextIndex,item,listPtr_00);
     break;
   case 0x36:
-    UI_OverrideCursorPos_DynamicMenu(param_2,plVar3);
+    UI_OverrideCursorPos_DynamicMenu(contextIndex,listPtr_00);
     break;
   case 0x46:
     break;
   case 0x4a:
-    UI_OverrideCursorPos_FileShareSearchResults(param_1,param_2,plVar3);
+    UI_OverrideCursorPos_FileShareSearchResults(localClientNum,contextIndex,listPtr_00);
     break;
   case 0x50:
-    UI_OverrideCursorPos_FileShareMySlots(param_1,param_2,plVar3);
+    UI_OverrideCursorPos_FileShareMySlots(localClientNum,contextIndex,listPtr_00);
   }
   return;
 }
@@ -2700,37 +2787,38 @@ void __cdecl UI_OverrideCursorPos(int param_1,int param_2,itemDef_s *param_3)
 
 // 00733170  UI_FeederSelection_AllMaps  (ui/ui_feeders.cpp:3715)
 
-void __cdecl UI_FeederSelection_AllMaps(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_AllMaps(int contextIndex,float feederID,int index)
 
 {
-  int local_8;
+  int map;
+  int actual;
   
-  UI_SelectedMap(param_3,&local_8);
-  if (param_2 == 4.0) {
-    Dvar_SetInt(ui_currentMap,local_8);
+  UI_SelectedMap(index,&actual);
+  if (feederID == 4.0) {
+    Dvar_SetInt(ui_currentMap,actual);
   }
-  Dvar_SetInt(ui_currentNetMap,local_8);
+  Dvar_SetInt(ui_currentNetMap,actual);
   return;
 }
 
 
 // 00733200  UI_FeederSelection_Servers  (ui/ui_feeders.cpp:3731)
 
-void __cdecl UI_FeederSelection_Servers(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_Servers(int contextIndex,float feederID,int index)
 
 {
   int iVar1;
-  char *local_c;
+  char *pos;
+  char *name;
   
   if (0 < DAT_098d7618) {
-    DAT_098c3d94 = param_3;
+    DAT_098c3d94 = index;
   }
-  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + param_3 * 4),info,0x400
-                   );
+  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + index * 4),info,0x400);
   Info_ValueForKey(info,"mapname");
-  for (local_c = va("levelshots/%s"); *local_c != '\0'; local_c = local_c + 1) {
-    iVar1 = tolower((int)*local_c);
-    *local_c = (char)iVar1;
+  for (pos = va("levelshots/%s"); *pos != '\0'; pos = pos + 1) {
+    iVar1 = tolower((int)*pos);
+    *pos = (char)iVar1;
   }
   return;
 }
@@ -2738,14 +2826,14 @@ void __cdecl UI_FeederSelection_Servers(int param_1,float param_2,int param_3)
 
 // 007332A0  UI_FeederSelection_Invites  (ui/ui_feeders.cpp:3818)
 
-void __cdecl UI_FeederSelection_Invites(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_Invites(int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_3 < 0) {
+  if (index < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xeec,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2754,8 +2842,8 @@ void __cdecl UI_FeederSelection_Invites(int param_1,float param_2,int param_3)
     }
   }
   iVar3 = Live_GetInvitesCount();
-  if (param_3 < iVar3) {
-    Dvar_SetInt(ui_inviteSelectedInd,param_3);
+  if (index < iVar3) {
+    Dvar_SetInt(ui_inviteSelectedInd,index);
   }
   else {
     Dvar_SetInt(ui_inviteSelectedInd,0);
@@ -2766,16 +2854,19 @@ void __cdecl UI_FeederSelection_Invites(int param_1,float param_2,int param_3)
 
 // 00733310  UI_FeederSelection_Playlists  (ui/ui_feeders.cpp:3843)
 
-void __cdecl UI_FeederSelection_Playlists(int param_1,int param_2,float param_3,int param_4)
+void __cdecl
+UI_FeederSelection_Playlists(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_8;
+  int playlistNum;
+  int controllerIndex;
+  int playlistId;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (iVar3 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xf07,0,"%s");
     if (!bVar2) {
@@ -2784,7 +2875,7 @@ void __cdecl UI_FeederSelection_Playlists(int param_1,int param_2,float param_3,
       return;
     }
   }
-  if (param_4 < 0) {
+  if (index < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xf08,0,
                              "%s\n\t(index) = %i");
     if (!bVar2) {
@@ -2796,31 +2887,31 @@ void __cdecl UI_FeederSelection_Playlists(int param_1,int param_2,float param_3,
   if ((xblive_wagermatch->current).enabled == false) {
     iVar4 = Playlist_GetCategoryIdForNum((category->current).integer);
     iVar4 = Playlist_GetPlaylistCount(iVar4);
-    if (param_4 < iVar4) {
-      Dvar_SetInt(categoryPlaylist,param_4);
+    if (index < iVar4) {
+      Dvar_SetInt(categoryPlaylist,index);
     }
     else {
       Dvar_SetInt(categoryPlaylist,0);
     }
     Playlist_SetPrevPlaylist();
-    local_8 = Playlist_GetPlaylistIdForNum
-                        (iVar3,(categoryPlaylist->current).integer,(category->current).integer);
+    playlistId = Playlist_GetPlaylistIdForNum
+                           (iVar3,(categoryPlaylist->current).integer,(category->current).integer);
   }
   else {
     iVar4 = Playlist_GetCategoryIdForNum((wagerCategory->current).integer);
     iVar4 = Playlist_GetPlaylistCount(iVar4);
-    if (param_4 < iVar4) {
-      Dvar_SetInt(wagerCategoryPlaylist,param_4);
+    if (index < iVar4) {
+      Dvar_SetInt(wagerCategoryPlaylist,index);
     }
     else {
       Dvar_SetInt(wagerCategoryPlaylist,0);
     }
     Playlist_SetPrevPlaylist();
-    local_8 = Playlist_GetPlaylistIdForNum
-                        (iVar3,(wagerCategoryPlaylist->current).integer,
-                         (wagerCategory->current).integer);
+    playlistId = Playlist_GetPlaylistIdForNum
+                           (iVar3,(wagerCategoryPlaylist->current).integer,
+                            (wagerCategory->current).integer);
   }
-  iVar3 = Playlist_GetPlaylistNumFromId(iVar3,local_8);
+  iVar3 = Playlist_GetPlaylistNumFromId(iVar3,playlistId);
   Dvar_SetInt(playlist,iVar3);
   return;
 }
@@ -2828,14 +2919,14 @@ void __cdecl UI_FeederSelection_Playlists(int param_1,int param_2,float param_3,
 
 // 007334A0  UI_FeederSelection_Categories  (ui/ui_feeders.cpp:3885)
 
-void __cdecl UI_FeederSelection_Categories(int param_1,float param_2,int param_3)
+void __cdecl UI_FeederSelection_Categories(int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_3 < 0) &&
+  if ((index < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xf2e,0,
                                "%s\n\t(index) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2844,8 +2935,8 @@ void __cdecl UI_FeederSelection_Categories(int param_1,float param_2,int param_3
   }
   if ((xblive_wagermatch->current).enabled == false) {
     iVar3 = Playlist_GetCategoryCount();
-    if (param_3 < iVar3) {
-      Dvar_SetInt(category,param_3);
+    if (index < iVar3) {
+      Dvar_SetInt(category,index);
     }
     else {
       Dvar_SetInt(category,0);
@@ -2853,8 +2944,8 @@ void __cdecl UI_FeederSelection_Categories(int param_1,float param_2,int param_3
   }
   else {
     iVar3 = Playlist_GetCategoryCount();
-    if (param_3 < iVar3) {
-      Dvar_SetInt(wagerCategory,param_3);
+    if (index < iVar3) {
+      Dvar_SetInt(wagerCategory,index);
     }
     else {
       Dvar_SetInt(wagerCategory,0);
@@ -2866,7 +2957,7 @@ void __cdecl UI_FeederSelection_Categories(int param_1,float param_2,int param_3
 
 // 00732E50  UI_FeederSelection  (ui/ui_feeders.cpp:3916)
 
-void __cdecl UI_FeederSelection(int param_1,int param_2,float param_3,int param_4)
+void __cdecl UI_FeederSelection(int localClientNum,int contextIndex,float feederID,int index)
 
 {
   code *pcVar1;
@@ -2878,72 +2969,72 @@ void __cdecl UI_FeederSelection(int param_1,int param_2,float param_3,int param_
   XuidInfo_conflict *pXVar7;
   XuidInfo local_70;
   undefined4 local_40 [14];
-  uiInfo_s *local_8;
+  uiInfo_s *uiInfo;
   
-  if ((param_4 < 0) &&
+  if ((index < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0xf50,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = UI_UIContext_GetInfo(param_2);
-  switch((int)param_3) {
+  uiInfo = UI_UIContext_GetInfo(contextIndex);
+  switch((int)feederID) {
   case 1:
-    UI_FeederSelection_Maps(param_2,param_3,param_4);
+    UI_FeederSelection_Maps(contextIndex,feederID,index);
     break;
   case 2:
-    UI_FeederSelection_Servers(param_2,param_3,param_4);
+    UI_FeederSelection_Servers(contextIndex,feederID,index);
     break;
   default:
-    UI_Project_FeederSelection(param_1,param_2,param_3,param_4);
+    UI_Project_FeederSelection(localClientNum,contextIndex,feederID,index);
     break;
   case 4:
-    UI_FeederSelection_AllMaps(param_2,param_3,param_4);
+    UI_FeederSelection_AllMaps(contextIndex,feederID,index);
     break;
   case 7:
-    local_8->playerIndex = param_4;
+    uiInfo->playerIndex = index;
     break;
   case 9:
-    DAT_098c38f4 = param_4;
+    DAT_098c38f4 = index;
     break;
   case 0x13:
-    local_8->playerIndex = param_4;
+    uiInfo->playerIndex = index;
     break;
   case 0x1a:
   case 0x4d:
-    UI_FeederSelection_Playlists(param_1,param_2,param_3,param_4);
+    UI_FeederSelection_Playlists(localClientNum,contextIndex,feederID,index);
     break;
   case 0x1b:
-    if ((-1 < param_4) && (iVar3 = Playlist_GetGametypeCount(), param_4 < iVar3)) {
-      pcVar5 = Playlist_GetGametypeInternalName(param_4);
+    if ((-1 < index) && (iVar3 = Playlist_GetGametypeCount(), index < iVar3)) {
+      pcVar5 = Playlist_GetGametypeInternalName(index);
       Dvar_SetStringByName("ui_gametype",pcVar5);
-      pcVar5 = Playlist_GetGametypeLocalizedName(param_4);
+      pcVar5 = Playlist_GetGametypeLocalizedName(index);
       Dvar_SetStringByName("ui_gametype_text",pcVar5);
     }
     break;
   case 0x1c:
   case 0x4c:
-    UI_FeederSelection_Categories(param_2,param_3,param_4);
+    UI_FeederSelection_Categories(contextIndex,feederID,index);
     break;
   case 0x1d:
-    LB_FeederSelection(param_4);
+    LB_FeederSelection(index);
     break;
   case 0x20:
     break;
   case 0x26:
-    UI_FeederSelection_CustomGametypes(param_2,param_3,param_4);
+    UI_FeederSelection_CustomGametypes(contextIndex,feederID,index);
     break;
   case 0x2d:
     break;
   case 0x2e:
     break;
   case 0x2f:
-    UI_FeederSelection_Invites(param_2,param_3,param_4);
+    UI_FeederSelection_Invites(contextIndex,feederID,index);
     break;
   case 0x32:
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-    pXVar4 = LiveMeetPlayer_GetMetFriendInfo(&local_70,iVar3,param_4);
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+    pXVar4 = LiveMeetPlayer_GetMetFriendInfo(&local_70,iVar3,index);
     puVar6 = local_40;
     for (iVar3 = 0xc; iVar3 != 0; iVar3 = iVar3 + -1) {
       *puVar6 = (int)pXVar4->playerXuids;
@@ -2959,15 +3050,15 @@ void __cdecl UI_FeederSelection(int param_1,int param_2,float param_3,int param_
     }
     break;
   case 0x36:
-    Dvar_SetInt(selectedMenuItemIndex,param_4);
+    Dvar_SetInt(selectedMenuItemIndex,index);
     break;
   case 0x3c:
-    DAT_098c391c = param_4;
+    DAT_098c391c = index;
     break;
   case 0x46:
     break;
   case 0x5a:
-    DAT_098c3928 = param_4 + 1;
+    DAT_098c3928 = index + 1;
   }
   return;
 }
@@ -2977,34 +3068,34 @@ void __cdecl UI_FeederSelection(int param_1,int param_2,float param_3,int param_
 
 bool __cdecl
 UI_FeederDataExtended_OnlineFriends
-          (int param_1,int param_2,char *param_3,char **param_4,float *param_5)
+          (int controllerIndex,int index,char *field,char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
   
-  iVar2 = I_stricmp(param_3,"xuid");
+  iVar2 = I_stricmp(field,"xuid");
   if (iVar2 == 0) {
-    bVar1 = Friends_GetByIndex(param_1,0,param_2,&info);
+    bVar1 = Friends_GetByIndex(controllerIndex,0,index,&info);
     if (bVar1) {
       pcVar3 = va("%lld");
-      *param_4 = pcVar3;
+      *stringResult = pcVar3;
     }
     else {
-      *param_4 = (char *)0x0;
+      *stringResult = (char *)0x0;
     }
     bVar1 = true;
   }
   else {
-    iVar2 = I_stricmp(param_3,"name");
+    iVar2 = I_stricmp(field,"name");
     if (iVar2 == 0) {
-      bVar1 = Friends_GetByIndex(param_1,0,param_2,&info);
+      bVar1 = Friends_GetByIndex(controllerIndex,0,index,&info);
       if (bVar1) {
-        *param_4 = info.name;
+        *stringResult = info.name;
       }
       else {
-        *param_4 = (char *)0x0;
+        *stringResult = (char *)0x0;
       }
       bVar1 = true;
     }
@@ -3020,7 +3111,7 @@ UI_FeederDataExtended_OnlineFriends
 
 bool __cdecl
 UI_FeederDataExtended_RecentPlayers
-          (int param_1,int param_2,char *param_3,char **param_4,float *param_5)
+          (int controllerIndex,int index,char *field,char **stringResult,float *floatResult)
 
 {
   bool bVar1;
@@ -3034,9 +3125,9 @@ UI_FeederDataExtended_RecentPlayers
   XuidInfo local_64;
   undefined4 local_34 [12];
   
-  iVar2 = I_stricmp(param_3,"xuid");
+  iVar2 = I_stricmp(field,"xuid");
   if (iVar2 == 0) {
-    pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_64,param_1,param_2);
+    pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_64,controllerIndex,index);
     puVar5 = local_34;
     for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
       *puVar5 = (int)pXVar3->playerXuids;
@@ -3051,18 +3142,18 @@ UI_FeederDataExtended_RecentPlayers
       pXVar6 = (XuidInfo_conflict *)((int)&pXVar6->playerXuids + 4);
     }
     if ((int)recentPlayerInfo.playerXuids == 0 && recentPlayerInfo.playerXuids._4_4_ == 0) {
-      *param_4 = (char *)0x0;
+      *stringResult = (char *)0x0;
     }
     else {
       pcVar4 = va("%lld");
-      *param_4 = pcVar4;
+      *stringResult = pcVar4;
     }
     bVar1 = true;
   }
   else {
-    iVar2 = I_stricmp(param_3,"name");
+    iVar2 = I_stricmp(field,"name");
     if (iVar2 == 0) {
-      pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_c4,param_1,param_2);
+      pXVar3 = LiveMeetPlayer_GetMetFriendInfo(&local_c4,controllerIndex,index);
       puVar5 = local_94;
       for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
         *puVar5 = (int)pXVar3->playerXuids;
@@ -3077,10 +3168,10 @@ UI_FeederDataExtended_RecentPlayers
         pXVar6 = (XuidInfo_conflict *)((int)&pXVar6->playerXuids + 4);
       }
       if ((int)recentPlayerInfo.playerXuids == 0 && recentPlayerInfo.playerXuids._4_4_ == 0) {
-        *param_4 = (char *)0x0;
+        *stringResult = (char *)0x0;
       }
       else {
-        *param_4 = recentPlayerInfo.gamertag;
+        *stringResult = recentPlayerInfo.gamertag;
       }
       bVar1 = true;
     }
@@ -3095,24 +3186,25 @@ UI_FeederDataExtended_RecentPlayers
 // 00733A30  UI_FeederDataExtended_DynamicMenu  (ui/ui_feeders.cpp:4180)
 
 bool __cdecl
-UI_FeederDataExtended_DynamicMenu(int param_1,listBoxDef_s *param_2,char *param_3,char **param_4)
+UI_FeederDataExtended_DynamicMenu(int index,listBoxDef_s *listBox,char *field,char **stringResult)
 
 {
   bool bVar1;
   int iVar2;
+  int col;
   
-  iVar2 = I_stricmp(param_3,"action");
+  iVar2 = I_stricmp(field,"action");
   if (iVar2 == 0) {
-    *param_4 = param_2->rows[param_1].eventName;
+    *stringResult = listBox->rows[index].eventName;
     bVar1 = true;
   }
   else {
-    iVar2 = atoi(param_3);
+    iVar2 = atoi(field);
     if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      *param_4 = param_2->rows[param_1].cells[iVar2 + -1].stringValue;
+      *stringResult = listBox->rows[index].cells[iVar2 + -1].stringValue;
       bVar1 = true;
     }
   }
@@ -3122,60 +3214,68 @@ UI_FeederDataExtended_DynamicMenu(int param_1,listBoxDef_s *param_2,char *param_
 
 // 00733550  UI_FeederDataExtended  (ui/ui_feeders.cpp:4245)
 
+/* WARNING: Enum "LbType": Some values do not have unique names */
+
 bool __cdecl
-UI_FeederDataExtended(int param_1,itemDef_s *param_2,char *param_3,char **param_4,float *param_5)
+UI_FeederDataExtended
+          (int localClientNum,itemDef_s *item,char *field,char **stringResult,float *floatResult)
 
 {
   float fVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  listBoxDef_s *plVar6;
-  int iVar7;
-  int iVar8;
-  char *pcVar9;
-  LBSelectedPlayerInfo *pLVar10;
+  int index_00;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  listBoxDef_s *listBox_00;
+  int iVar5;
+  int controllerIndex_00;
+  char *pcVar6;
+  LBSelectedPlayerInfo *info;
   bool local_1e;
+  int controllerIndex;
+  float feederID;
+  int index;
+  int contextIndex;
+  listBoxDef_s *listBox;
   
-  plVar6 = Item_GetListBoxDef(param_2);
-  if (plVar6 == (listBoxDef_s *)0x0) {
+  listBox_00 = Item_GetListBoxDef(item);
+  if (listBox_00 == (listBoxDef_s *)0x0) {
     local_1e = false;
   }
   else {
-    iVar7 = Com_LocalClient_GetUIContextIndex(param_1);
-    if ((iVar7 == -1) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x109e,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    iVar5 = Com_LocalClient_GetUIContextIndex(localClientNum);
+    if ((iVar5 == -1) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x109e,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return (bool)uVar4;
     }
-    iVar2 = plVar6->cursorPos[iVar7];
-    fVar1 = plVar6->special;
-    iVar8 = Com_LocalClient_GetControllerIndex(param_1);
-    if ((iVar8 == -1) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10a5,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    index_00 = listBox_00->cursorPos[iVar5];
+    fVar1 = listBox_00->special;
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    if ((controllerIndex_00 == -1) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10a5,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return (bool)uVar4;
     }
     switch((int)fVar1) {
     case 0x1d:
-      pLVar10 = &info;
-      iVar7 = Com_ControllerIndex_GetLocalClientNum(iVar8);
-      LB_GetSelectedPlayerInfo(iVar7,pLVar10);
-      iVar7 = I_stricmp(param_3,"xuid");
-      if (iVar7 == 0) {
-        pcVar9 = va("%lld");
-        *param_4 = pcVar9;
+      info = &::info;
+      iVar5 = Com_ControllerIndex_GetLocalClientNum(controllerIndex_00);
+      LB_GetSelectedPlayerInfo(iVar5,info);
+      iVar5 = I_stricmp(field,"xuid");
+      if (iVar5 == 0) {
+        pcVar6 = va("%lld");
+        *stringResult = pcVar6;
         local_1e = true;
       }
       else {
-        iVar7 = I_stricmp(param_3,"name");
-        if (iVar7 == 0) {
-          *param_4 = info.gamerTag;
+        iVar5 = I_stricmp(field,"name");
+        if (iVar5 == 0) {
+          *stringResult = ::info.gamerTag;
           local_1e = true;
         }
         else {
@@ -3185,35 +3285,42 @@ UI_FeederDataExtended(int param_1,itemDef_s *param_2,char *param_3,char **param_
       break;
     default:
       local_1e = UI_Project_FeederDataExtended
-                           (iVar8,iVar7,(int)fVar1,plVar6,param_3,param_4,param_5);
+                           (controllerIndex_00,iVar5,(int)fVar1,listBox_00,field,stringResult,
+                            floatResult);
       break;
     case 0x20:
-      local_1e = UI_FeederDataExtended_OnlineFriends(iVar8,iVar2,param_3,param_4,param_5);
+      local_1e = UI_FeederDataExtended_OnlineFriends
+                           (controllerIndex_00,index_00,field,stringResult,floatResult);
       break;
     case 0x32:
-      local_1e = UI_FeederDataExtended_RecentPlayers(iVar8,iVar2,param_3,param_4,param_5);
+      local_1e = UI_FeederDataExtended_RecentPlayers
+                           (controllerIndex_00,index_00,field,stringResult,floatResult);
       break;
     case 0x36:
-      local_1e = UI_FeederDataExtended_DynamicMenu(iVar2,plVar6,param_3,param_4);
+      local_1e = UI_FeederDataExtended_DynamicMenu(index_00,listBox_00,field,stringResult);
       break;
     case 0x4a:
-      local_1e = Live_FileShare_GetFeederData(iVar8,0x4a,iVar2,param_3,param_4,param_5);
+      local_1e = Live_FileShare_GetFeederData
+                           (controllerIndex_00,0x4a,index_00,field,stringResult,floatResult);
       break;
     case 0x4f:
-      local_1e = Live_FileShare_GetFeederData(iVar8,0x4f,iVar2,param_3,param_4,param_5);
+      local_1e = Live_FileShare_GetFeederData
+                           (controllerIndex_00,0x4f,index_00,field,stringResult,floatResult);
       break;
     case 0x50:
-      local_1e = Live_FileShare_GetFeederData(iVar8,0x50,iVar2,param_3,param_4,param_5);
+      local_1e = Live_FileShare_GetFeederData
+                           (controllerIndex_00,0x50,index_00,field,stringResult,floatResult);
       break;
     case 0x54:
-      iVar7 = I_stricmp(param_3,"index");
-      local_1e = iVar7 == 0;
+      iVar5 = I_stricmp(field,"index");
+      local_1e = iVar5 == 0;
       if (local_1e) {
-        *param_5 = (float)iVar2;
+        *floatResult = (float)index_00;
       }
       break;
     case 0x56:
-      local_1e = Live_FileShare_GetFeederData(iVar8,0x56,iVar2,param_3,param_4,param_5);
+      local_1e = Live_FileShare_GetFeederData
+                           (controllerIndex_00,0x56,index_00,field,stringResult,floatResult);
     }
   }
   return local_1e;
@@ -3222,19 +3329,21 @@ UI_FeederDataExtended(int param_1,itemDef_s *param_2,char *param_3,char **param_
 
 // 00733AB0  UI_AddToFeeder  (ui/ui_feeders.cpp:4306)
 
-void __cdecl UI_AddToFeeder(itemDef_s *param_1,char *param_2,int param_3,char **param_4)
+void __cdecl UI_AddToFeeder(itemDef_s *item,char *eventName,int argCount,char **args)
 
 {
   code *pcVar1;
   bool bVar2;
-  itemDef_s *piVar3;
-  listBoxDef_s *plVar4;
-  char *pcVar5;
-  int iVar6;
-  int local_14;
-  int local_8;
+  itemDef_s *item_00;
+  listBoxDef_s *plVar3;
+  char *src;
+  int destsize;
+  int j;
+  listBoxDef_s *listbox;
+  itemDef_s *actualItem;
+  int argStart;
   
-  if (param_1 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10d6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3242,8 +3351,8 @@ void __cdecl UI_AddToFeeder(itemDef_s *param_1,char *param_2,int param_3,char **
       return;
     }
   }
-  piVar3 = Menu_GetMatchingItemByNumber(param_1->parent,0,"dynamic_menu_feeder");
-  if (piVar3 == (itemDef_s *)0x0) {
+  item_00 = Menu_GetMatchingItemByNumber(item->parent,0,"dynamic_menu_feeder");
+  if (item_00 == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10d8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3251,31 +3360,30 @@ void __cdecl UI_AddToFeeder(itemDef_s *param_1,char *param_2,int param_3,char **
       return;
     }
   }
-  plVar4 = Item_GetListBoxDef(piVar3);
-  if (plVar4->rowCount == plVar4->maxRows) {
+  plVar3 = Item_GetListBoxDef(item_00);
+  if (plVar3->rowCount == plVar3->maxRows) {
     Com_Printf(0xd,"UI: Feeder only has %d rows - not enough for item %s\n");
   }
   else {
-    I_strncpyz(plVar4->rows[plVar4->rowCount].eventName,param_2,0x20);
-    plVar4->rows[plVar4->rowCount].name = plVar4->rowCount;
-    plVar4->rows[plVar4->rowCount].status = 0;
-    local_14 = 3;
-    for (local_8 = 0; (local_14 < plVar4->numColumns && (local_8 < param_3)); local_8 = local_8 + 1)
-    {
-      if (((plVar4->rows[plVar4->rowCount].cells[local_14].type == 1) ||
-          (plVar4->rows[plVar4->rowCount].cells[local_14].type == 4)) ||
-         (plVar4->rows[plVar4->rowCount].cells[local_14].type == 7)) {
-        iVar6 = plVar4->rows[plVar4->rowCount].cells[local_14].maxChars;
-        pcVar5 = UI_SafeTranslateString(param_4[local_8]);
-        I_strncpyz(plVar4->rows[plVar4->rowCount].cells[local_14].stringValue,pcVar5,iVar6);
+    I_strncpyz(plVar3->rows[plVar3->rowCount].eventName,eventName,0x20);
+    plVar3->rows[plVar3->rowCount].name = plVar3->rowCount;
+    plVar3->rows[plVar3->rowCount].status = 0;
+    j = 3;
+    for (argStart = 0; (j < plVar3->numColumns && (argStart < argCount)); argStart = argStart + 1) {
+      if (((plVar3->rows[plVar3->rowCount].cells[j].type == 1) ||
+          (plVar3->rows[plVar3->rowCount].cells[j].type == 4)) ||
+         (plVar3->rows[plVar3->rowCount].cells[j].type == 7)) {
+        destsize = plVar3->rows[plVar3->rowCount].cells[j].maxChars;
+        src = UI_SafeTranslateString(args[argStart]);
+        I_strncpyz(plVar3->rows[plVar3->rowCount].cells[j].stringValue,src,destsize);
       }
       else {
-        I_strncpyz(plVar4->rows[plVar4->rowCount].cells[local_14].stringValue,param_4[local_8],
-                   plVar4->rows[plVar4->rowCount].cells[local_14].maxChars);
+        I_strncpyz(plVar3->rows[plVar3->rowCount].cells[j].stringValue,args[argStart],
+                   plVar3->rows[plVar3->rowCount].cells[j].maxChars);
       }
-      local_14 = local_14 + 1;
+      j = j + 1;
     }
-    plVar4->rowCount = plVar4->rowCount + 1;
+    plVar3->rowCount = plVar3->rowCount + 1;
   }
   return;
 }
@@ -3285,19 +3393,22 @@ void __cdecl UI_AddToFeeder(itemDef_s *param_1,char *param_2,int param_3,char **
 
 void __cdecl
 UI_AddToFeederExtended
-          (itemDef_s *param_1,char *param_2,char *param_3,bool param_4,int param_5,char **param_6)
+          (itemDef_s *item,char *onActionEvent,char *onFocusEvent,bool disableCondition,int argCount
+          ,char **args)
 
 {
   code *pcVar1;
   bool bVar2;
-  itemDef_s *piVar3;
-  listBoxDef_s *plVar4;
-  char *pcVar5;
-  int iVar6;
-  int local_14;
-  int local_8;
+  itemDef_s *item_00;
+  listBoxDef_s *plVar3;
+  char *src;
+  int destsize;
+  int j;
+  listBoxDef_s *listbox;
+  itemDef_s *actualItem;
+  int argStart;
   
-  if (param_1 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10fd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3305,8 +3416,8 @@ UI_AddToFeederExtended
       return;
     }
   }
-  piVar3 = Menu_GetMatchingItemByNumber(param_1->parent,0,"dynamic_menu_feeder");
-  if (piVar3 == (itemDef_s *)0x0) {
+  item_00 = Menu_GetMatchingItemByNumber(item->parent,0,"dynamic_menu_feeder");
+  if (item_00 == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x10ff,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3314,37 +3425,36 @@ UI_AddToFeederExtended
       return;
     }
   }
-  plVar4 = Item_GetListBoxDef(piVar3);
-  if (plVar4->rowCount == plVar4->maxRows) {
+  plVar3 = Item_GetListBoxDef(item_00);
+  if (plVar3->rowCount == plVar3->maxRows) {
     Com_Printf(0xd,"UI: Feeder only has %d rows - not enough for item %s\n");
   }
   else {
-    I_strncpyz(plVar4->rows[plVar4->rowCount].eventName,param_2,0x20);
-    I_strncpyz(plVar4->rows[plVar4->rowCount].onFocusEventName,param_3,0x20);
-    plVar4->rows[plVar4->rowCount].name = plVar4->rowCount;
-    if (param_4) {
-      plVar4->rows[plVar4->rowCount].status = 1;
+    I_strncpyz(plVar3->rows[plVar3->rowCount].eventName,onActionEvent,0x20);
+    I_strncpyz(plVar3->rows[plVar3->rowCount].onFocusEventName,onFocusEvent,0x20);
+    plVar3->rows[plVar3->rowCount].name = plVar3->rowCount;
+    if (disableCondition) {
+      plVar3->rows[plVar3->rowCount].status = 1;
     }
     else {
-      plVar4->rows[plVar4->rowCount].status = 0;
+      plVar3->rows[plVar3->rowCount].status = 0;
     }
-    local_14 = 3;
-    for (local_8 = 0; (local_14 < plVar4->numColumns && (local_8 < param_5)); local_8 = local_8 + 1)
-    {
-      if (((plVar4->rows[plVar4->rowCount].cells[local_14].type == 1) ||
-          (plVar4->rows[plVar4->rowCount].cells[local_14].type == 4)) ||
-         (plVar4->rows[plVar4->rowCount].cells[local_14].type == 7)) {
-        iVar6 = plVar4->rows[plVar4->rowCount].cells[local_14].maxChars;
-        pcVar5 = UI_SafeTranslateString(param_6[local_8]);
-        I_strncpyz(plVar4->rows[plVar4->rowCount].cells[local_14].stringValue,pcVar5,iVar6);
+    j = 3;
+    for (argStart = 0; (j < plVar3->numColumns && (argStart < argCount)); argStart = argStart + 1) {
+      if (((plVar3->rows[plVar3->rowCount].cells[j].type == 1) ||
+          (plVar3->rows[plVar3->rowCount].cells[j].type == 4)) ||
+         (plVar3->rows[plVar3->rowCount].cells[j].type == 7)) {
+        destsize = plVar3->rows[plVar3->rowCount].cells[j].maxChars;
+        src = UI_SafeTranslateString(args[argStart]);
+        I_strncpyz(plVar3->rows[plVar3->rowCount].cells[j].stringValue,src,destsize);
       }
       else {
-        I_strncpyz(plVar4->rows[plVar4->rowCount].cells[local_14].stringValue,param_6[local_8],
-                   plVar4->rows[plVar4->rowCount].cells[local_14].maxChars);
+        I_strncpyz(plVar3->rows[plVar3->rowCount].cells[j].stringValue,args[argStart],
+                   plVar3->rows[plVar3->rowCount].cells[j].maxChars);
       }
-      local_14 = local_14 + 1;
+      j = j + 1;
     }
-    plVar4->rowCount = plVar4->rowCount + 1;
+    plVar3->rowCount = plVar3->rowCount + 1;
   }
   return;
 }
@@ -3352,56 +3462,60 @@ UI_AddToFeederExtended
 
 // 00734060  UI_ChangeRowStatus  (ui/ui_feeders.cpp:4388)
 
-void __cdecl UI_ChangeRowStatus(itemDef_s *param_1,int param_2,int param_3)
+void __cdecl UI_ChangeRowStatus(itemDef_s *item,int rowToChange,int newStatus)
 
 {
   code *pcVar1;
   bool bVar2;
-  itemDef_s *piVar3;
-  listBoxDef_s *plVar4;
-  int local_10;
+  itemDef_s *item_00;
+  listBoxDef_s *plVar3;
+  int i;
+  listBoxDef_s *listbox;
+  itemDef_s *actualItem;
   
-  if ((param_1 == (itemDef_s *)0x0) &&
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x1128,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  piVar3 = Menu_GetMatchingItemByNumber(param_1->parent,0,"dynamic_menu_feeder");
-  if ((piVar3 == (itemDef_s *)0x0) &&
+  item_00 = Menu_GetMatchingItemByNumber(item->parent,0,"dynamic_menu_feeder");
+  if ((item_00 == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x112a,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  plVar4 = Item_GetListBoxDef(piVar3);
-  local_10 = 0;
+  plVar3 = Item_GetListBoxDef(item_00);
+  i = 0;
   while( true ) {
-    if (plVar4->rowCount <= local_10) {
+    if (plVar3->rowCount <= i) {
       return;
     }
-    if (plVar4->rows[local_10].name == param_2) break;
-    local_10 = local_10 + 1;
+    if (plVar3->rows[i].name == rowToChange) break;
+    i = i + 1;
   }
-  plVar4->rows[local_10].status = param_3;
+  plVar3->rows[i].status = newStatus;
   return;
 }
 
 
 // 00734140  UI_ClearFeeder  (ui/ui_feeders.cpp:4410)
 
-void __cdecl UI_ClearFeeder(int param_1,itemDef_s *param_2,bool param_3)
+void __cdecl UI_ClearFeeder(int contextIndex,itemDef_s *item,bool resetCursorPos)
 
 {
   code *pcVar1;
   bool bVar2;
-  itemDef_s *piVar3;
-  listBoxDef_s *plVar4;
-  int local_10;
+  itemDef_s *item_00;
+  listBoxDef_s *plVar3;
+  int j;
+  listBoxDef_s *listbox;
+  itemDef_s *actualItem;
   
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x113e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3409,8 +3523,8 @@ void __cdecl UI_ClearFeeder(int param_1,itemDef_s *param_2,bool param_3)
       return;
     }
   }
-  piVar3 = Menu_GetMatchingItemByNumber(param_2->parent,0,"dynamic_menu_feeder");
-  if (piVar3 == (itemDef_s *)0x0) {
+  item_00 = Menu_GetMatchingItemByNumber(item->parent,0,"dynamic_menu_feeder");
+  if (item_00 == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x1140,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3418,18 +3532,18 @@ void __cdecl UI_ClearFeeder(int param_1,itemDef_s *param_2,bool param_3)
       return;
     }
   }
-  plVar4 = Item_GetListBoxDef(piVar3);
-  if (param_3) {
-    plVar4->cursorPos[param_1] = 0;
+  plVar3 = Item_GetListBoxDef(item_00);
+  if (resetCursorPos) {
+    plVar3->cursorPos[contextIndex] = 0;
   }
-  while (0 < plVar4->rowCount) {
-    for (local_10 = 0; local_10 < plVar4->numColumns; local_10 = local_10 + 1) {
-      I_strncpyz(plVar4->rows[plVar4->rowCount + -1].cells[local_10].stringValue,"",
-                 plVar4->rows[plVar4->rowCount + -1].cells[local_10].maxChars);
+  while (0 < plVar3->rowCount) {
+    for (j = 0; j < plVar3->numColumns; j = j + 1) {
+      I_strncpyz(plVar3->rows[plVar3->rowCount + -1].cells[j].stringValue,"",
+                 plVar3->rows[plVar3->rowCount + -1].cells[j].maxChars);
     }
-    plVar4->rows[plVar4->rowCount + -1].name = 0;
-    plVar4->rows[plVar4->rowCount + -1].status = 0;
-    plVar4->rowCount = plVar4->rowCount + -1;
+    plVar3->rows[plVar3->rowCount + -1].name = 0;
+    plVar3->rows[plVar3->rowCount + -1].status = 0;
+    plVar3->rowCount = plVar3->rowCount + -1;
   }
   return;
 }
@@ -3437,19 +3551,19 @@ void __cdecl UI_ClearFeeder(int param_1,itemDef_s *param_2,bool param_3)
 
 // 007342D0  UI_RaiseFeederEvent  (ui/ui_feeders.cpp:4440)
 
-void __cdecl UI_RaiseFeederEvent(int param_1,itemDef_s *param_2,char *param_3)
+void __cdecl UI_RaiseFeederEvent(int localClientNum,itemDef_s *item,char *eventName)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
   itemDef_s *piVar4;
-  char *local_14;
-  float local_10;
-  itemDef_s *local_c;
-  int local_8;
+  char *stringResult;
+  float floatResult;
+  itemDef_s *actualItem;
+  int contextIndex;
   
-  if (param_2 == (itemDef_s *)0x0) {
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x115d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3457,8 +3571,8 @@ void __cdecl UI_RaiseFeederEvent(int param_1,itemDef_s *param_2,char *param_3)
       return;
     }
   }
-  local_c = Menu_GetMatchingItemByNumber(param_2->parent,0,"dynamic_menu_feeder");
-  if (local_c == (itemDef_s *)0x0) {
+  actualItem = Menu_GetMatchingItemByNumber(item->parent,0,"dynamic_menu_feeder");
+  if (actualItem == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x115f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3466,8 +3580,8 @@ void __cdecl UI_RaiseFeederEvent(int param_1,itemDef_s *param_2,char *param_3)
       return;
     }
   }
-  local_8 = Com_LocalClient_GetUIContextIndex(param_1);
-  if (local_8 == -1) {
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  if (contextIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x1162,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3475,16 +3589,16 @@ void __cdecl UI_RaiseFeederEvent(int param_1,itemDef_s *param_2,char *param_3)
       return;
     }
   }
-  if (*param_3 == '\0') {
-    UI_FeederData(param_1,local_c,"action",&local_14,&local_10);
-    piVar4 = local_c;
-    puVar3 = UI_UIContext_GetInfo(local_8);
-    Item_RunEventScript(param_1,&puVar3->uiDC,piVar4,local_14);
+  if (*eventName == '\0') {
+    UI_FeederData(localClientNum,actualItem,"action",&stringResult,&floatResult);
+    piVar4 = actualItem;
+    puVar3 = UI_UIContext_GetInfo(contextIndex);
+    Item_RunEventScript(localClientNum,&puVar3->uiDC,piVar4,stringResult);
   }
   else {
-    piVar4 = local_c;
-    puVar3 = UI_UIContext_GetInfo(local_8);
-    Item_RunEventScript(param_1,&puVar3->uiDC,piVar4,param_3);
+    piVar4 = actualItem;
+    puVar3 = UI_UIContext_GetInfo(contextIndex);
+    Item_RunEventScript(localClientNum,&puVar3->uiDC,piVar4,eventName);
   }
   return;
 }
@@ -3493,53 +3607,58 @@ void __cdecl UI_RaiseFeederEvent(int param_1,itemDef_s *param_2,char *param_3)
 // 00734400  UI_FeederData  (ui/ui_feeders.cpp:4464)
 
 bool __cdecl
-UI_FeederData(int param_1,itemDef_s *param_2,char *param_3,char **param_4,float *param_5)
+UI_FeederData(int localClientNum,itemDef_s *item,char *field,char **stringResult,float *numberResult
+             )
 
 {
-  float fVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  listBoxDef_s *plVar6;
-  int iVar7;
-  int iVar8;
+  float feederID_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  listBoxDef_s *listPtr;
+  int iVar5;
+  int iVar6;
+  float feederID;
+  int index;
+  int contextIndex;
+  listBoxDef_s *listBox;
   
-  plVar6 = Item_GetListBoxDef(param_2);
-  if (plVar6 == (listBoxDef_s *)0x0) {
-    bVar4 = false;
+  listPtr = Item_GetListBoxDef(item);
+  if (listPtr == (listBoxDef_s *)0x0) {
+    bVar3 = false;
   }
   else {
-    iVar7 = Com_LocalClient_GetUIContextIndex(param_1);
-    if (iVar7 == -1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x1178,0,"%s"
+    iVar5 = Com_LocalClient_GetUIContextIndex(localClientNum);
+    if (iVar5 == -1) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_feeders.cpp",0x1178,0,"%s"
                               );
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        uVar5 = (*pcVar3)();
-        return (bool)uVar5;
+      if (!bVar3) {
+        pcVar2 = (code *)swi(3);
+        uVar4 = (*pcVar2)();
+        return (bool)uVar4;
       }
     }
-    iVar2 = plVar6->cursorPos[iVar7];
-    fVar1 = plVar6->special;
-    *param_4 = (char *)0x0;
-    iVar8 = I_stricmp(param_3,"count");
-    if (iVar8 == 0) {
-      iVar7 = UI_FeederCount(param_1,iVar7,fVar1,plVar6);
-      *param_5 = (float)iVar7;
-      bVar4 = true;
+    iVar1 = listPtr->cursorPos[iVar5];
+    feederID_00 = listPtr->special;
+    *stringResult = (char *)0x0;
+    iVar6 = I_stricmp(field,"count");
+    if (iVar6 == 0) {
+      iVar5 = UI_FeederCount(localClientNum,iVar5,feederID_00,listPtr);
+      *numberResult = (float)iVar5;
+      bVar3 = true;
     }
     else {
-      iVar7 = I_stricmp(param_3,"selection");
-      if (iVar7 == 0) {
-        *param_5 = (float)iVar2;
-        bVar4 = true;
+      iVar5 = I_stricmp(field,"selection");
+      if (iVar5 == 0) {
+        *numberResult = (float)iVar1;
+        bVar3 = true;
       }
       else {
-        bVar4 = UI_FeederDataExtended(param_1,param_2,param_3,param_4,param_5);
+        bVar3 = UI_FeederDataExtended(localClientNum,item,field,stringResult,numberResult);
       }
     }
   }
-  return bVar4;
+  return bVar3;
 }
 

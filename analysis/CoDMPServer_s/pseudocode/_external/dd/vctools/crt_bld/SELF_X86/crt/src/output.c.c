@@ -5,558 +5,556 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Type propagation algorithm not settling */
 
-int __cdecl _output_l(_iobuf *param_1,char *param_2,localeinfo_struct *param_3,char *param_4)
+int __cdecl _output_l(_iobuf *stream,char *format,localeinfo_struct *plocinfo,char *argptr)
 
 {
   byte bVar1;
-  wchar_t wVar2;
-  short *psVar3;
-  _iobuf *p_Var4;
-  int *piVar5;
-  uint uVar6;
-  char *extraout_EAX;
-  int iVar7;
-  code *pcVar8;
+  wchar_t wchar;
+  short *psVar2;
+  _iobuf *f_2;
+  int *piVar3;
+  uint uVar4;
+  int extraout_EAX;
+  int iVar5;
+  code *pcVar6;
   int *extraout_EAX_00;
-  ioinfo *piVar9;
+  int iVar7;
+  ioinfo *piVar8;
   int extraout_ECX;
-  char *extraout_EDX;
+  int extraout_EDX;
   int *unaff_EBX;
-  byte *pbVar10;
-  char *pcVar11;
-  int iVar12;
+  byte *pbVar9;
+  int iVar10;
   _iobuf *unaff_ESI;
-  char *pcVar13;
-  wchar_t *pwVar14;
+  wchar_t *pwVar11;
   int *unaff_EDI;
-  bool bVar15;
-  undefined4 *puVar16;
-  wchar_t *pwVar17;
-  undefined4 uVar18;
-  _LocaleUpdate *p_Var19;
-  undefined4 local_27c;
+  bool bVar12;
+  undefined4 *puVar13;
+  wchar_t *pwVar14;
+  int iVar15;
+  _LocaleUpdate *p_Var16;
+  undefined4 tmp;
   undefined4 local_278;
-  undefined4 local_274;
-  int local_270;
-  char *local_26c [2];
-  char *local_264;
-  _LocaleUpdate local_260;
+  int capexp;
+  int state;
+  int retval;
+  int buffersize;
+  _LocaleUpdate _loc_update;
   _iobuf *local_250;
-  int local_24c;
-  wchar_t *local_248;
-  int local_244;
+  int hexadd;
+  char *heapbuf;
+  int no_output;
   byte *local_240;
-  int local_23c;
-  int local_238;
-  char *local_234;
-  undefined1 local_230;
+  int bufferiswide;
+  int fldwidth;
+  int prefixlen;
+  undefined1 prefix;
   char local_22f;
-  int local_22c;
+  int charsout;
   wchar_t *local_228;
-  char *local_224;
-  wchar_t *local_220;
-  int local_21c;
-  byte local_215;
-  uint local_214;
-  wchar_t local_210 [255];
+  int textlen;
+  wchar_t *text;
+  int precision;
+  char ch;
+  int flags;
+  wchar_t buffer [255];
   undefined2 local_11;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_250 = param_1;
-  local_228 = (wchar_t *)param_4;
-  local_24c = 0;
-  local_214 = 0;
-  local_238 = 0;
-  local_21c = 0;
-  local_234 = (char *)0x0;
-  local_244 = 0;
-  local_23c = 0;
-  _LocaleUpdate::_LocaleUpdate(&local_260,param_3);
-  if (param_1 == (_iobuf *)0x0) goto LAB_00967288;
-  if ((param_1->_flag & 0x40) == 0) {
-    uVar6 = _fileno(param_1);
-    if ((uVar6 == 0xffffffff) || (uVar6 == 0xfffffffe)) {
-      piVar9 = &__badioinfo;
+  local_250 = stream;
+  local_228 = (wchar_t *)argptr;
+  hexadd = 0;
+  flags = 0;
+  fldwidth = 0;
+  precision = 0;
+  prefixlen = 0;
+  no_output = 0;
+  bufferiswide = 0;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (stream == (_iobuf *)0x0) goto LAB_00967288;
+  if ((stream->_flag & 0x40) == 0) {
+    uVar4 = _fileno(stream);
+    if ((uVar4 == 0xffffffff) || (uVar4 == 0xfffffffe)) {
+      piVar8 = &__badioinfo;
     }
     else {
-      piVar9 = (ioinfo *)((uVar6 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar6 >> 5) * 4));
+      piVar8 = (ioinfo *)((uVar4 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar4 >> 5) * 4));
     }
-    if (piVar9->textmode != '\0') goto LAB_00967288;
-    if ((uVar6 == 0xffffffff) || (uVar6 == 0xfffffffe)) {
-      piVar9 = &__badioinfo;
+    if (piVar8->textmode != '\0') goto LAB_00967288;
+    if ((uVar4 == 0xffffffff) || (uVar4 == 0xfffffffe)) {
+      piVar8 = &__badioinfo;
     }
     else {
-      piVar9 = (ioinfo *)((uVar6 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar6 >> 5) * 4));
+      piVar8 = (ioinfo *)((uVar4 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar4 >> 5) * 4));
     }
-    if (piVar9->unicode != '\0') goto LAB_00967288;
+    if (piVar8->unicode != '\0') goto LAB_00967288;
   }
-  if (param_2 != (char *)0x0) {
-    local_215 = *param_2;
-    local_22c = 0;
-    local_224 = (char *)0x0;
-    local_248 = (wchar_t *)0x0;
-    local_270 = 0;
+  if (format != (char *)0x0) {
+    ch = *format;
+    charsout = 0;
+    textlen = 0;
+    heapbuf = (char *)0x0;
+    state = 0;
     do {
-      if ((local_215 == 0) || (pbVar10 = (byte *)(param_2 + 1), local_22c < 0)) {
-        if (local_260.updated == false) {
-          return local_22c;
+      if ((ch == 0) || (pbVar9 = (byte *)(format + 1), charsout < 0)) {
+        if (_loc_update.updated == false) {
+          return charsout;
         }
-        (local_260.ptd)->_ownlocale = (local_260.ptd)->_ownlocale & 0xfffffffd;
-        return local_22c;
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
+        return charsout;
       }
-      if ((byte)(local_215 - 0x20) < 0x59) {
-        uVar6 = (int)"FlsAlloc"[(char)local_215 + 4] & 0xf;
+      if ((byte)(ch - 0x20U) < 0x59) {
+        uVar4 = (int)"FlsAlloc"[ch + 4] & 0xf;
       }
       else {
-        uVar6 = 0;
+        uVar4 = 0;
       }
-      local_270 = (int)"\x06"[uVar6 * 8 + local_270] >> 4;
-      local_240 = pbVar10;
-      switch(local_270) {
+      state = (int)"\x06"[uVar4 * 8 + state] >> 4;
+      local_240 = pbVar9;
+      switch(state) {
       case 0:
 switchD_0096739a_caseD_0:
-        local_23c = 0;
-        iVar12 = _isleadbyte_l((uint)local_215,&local_260.localeinfo);
-        if (iVar12 != 0) {
+        bufferiswide = 0;
+        iVar10 = _isleadbyte_l((uint)(byte)ch,&_loc_update.localeinfo);
+        if (iVar10 != 0) {
           write_char((char)unaff_EDI,unaff_ESI,unaff_EBX);
-          local_240 = (byte *)(param_2 + 2);
-          if (*pbVar10 == 0) goto LAB_00967288;
+          local_240 = (byte *)(format + 2);
+          if (*pbVar9 == 0) goto LAB_00967288;
         }
         write_char((char)unaff_EDI,unaff_ESI,unaff_EBX);
         break;
       case 1:
-        local_21c = -1;
-        local_274 = 0;
-        local_244 = 0;
-        local_238 = 0;
-        local_234 = (char *)0x0;
-        local_214 = 0;
-        local_23c = 0;
+        precision = -1;
+        capexp = 0;
+        no_output = 0;
+        fldwidth = 0;
+        prefixlen = 0;
+        flags = 0;
+        bufferiswide = 0;
         break;
       case 2:
-        if (local_215 == 0x20) {
-          local_214 = local_214 | 2;
+        if (ch == 0x20) {
+          flags = flags | 2;
         }
-        else if (local_215 == 0x23) {
-          local_214 = local_214 | 0x80;
+        else if (ch == 0x23) {
+          flags = flags | 0x80;
         }
-        else if (local_215 == 0x2b) {
-          local_214 = local_214 | 1;
+        else if (ch == 0x2b) {
+          flags = flags | 1;
         }
-        else if (local_215 == 0x2d) {
-          local_214 = local_214 | 4;
+        else if (ch == 0x2d) {
+          flags = flags | 4;
         }
-        else if (local_215 == 0x30) {
-          local_214 = local_214 | 8;
+        else if (ch == 0x30) {
+          flags = flags | 8;
         }
         break;
       case 3:
-        if (local_215 == 0x2a) {
-          local_228 = (wchar_t *)((int)param_4 + 4);
-          local_238 = *(int *)param_4;
-          if (local_238 < 0) {
-            local_214 = local_214 | 4;
-            local_238 = -local_238;
+        if (ch == 0x2a) {
+          local_228 = (wchar_t *)((int)argptr + 4);
+          fldwidth = *(int *)argptr;
+          if (fldwidth < 0) {
+            flags = flags | 4;
+            fldwidth = -fldwidth;
           }
         }
         else {
-          local_238 = local_238 * 10 + -0x30 + (int)(char)local_215;
+          fldwidth = fldwidth * 10 + -0x30 + (int)ch;
         }
         break;
       case 4:
-        local_21c = 0;
+        precision = 0;
         break;
       case 5:
-        if (local_215 == 0x2a) {
-          local_228 = (wchar_t *)((int)param_4 + 4);
-          local_21c = *(int *)param_4;
-          if (local_21c < 0) {
-            local_21c = -1;
+        if (ch == 0x2a) {
+          local_228 = (wchar_t *)((int)argptr + 4);
+          precision = *(int *)argptr;
+          if (precision < 0) {
+            precision = -1;
           }
         }
         else {
-          local_21c = local_21c * 10 + -0x30 + (int)(char)local_215;
+          precision = precision * 10 + -0x30 + (int)ch;
         }
         break;
       case 6:
-        if (local_215 == 0x49) {
-          bVar1 = *pbVar10;
-          if ((bVar1 == 0x36) && (param_2[2] == 0x34)) {
-            local_214 = local_214 | 0x8000;
-            local_240 = (byte *)(param_2 + 3);
+        if (ch == 0x49) {
+          bVar1 = *pbVar9;
+          if ((bVar1 == 0x36) && (format[2] == 0x34)) {
+            flags = flags | 0x8000;
+            local_240 = (byte *)(format + 3);
           }
-          else if ((bVar1 == 0x33) && (param_2[2] == 0x32)) {
-            local_214 = local_214 & 0xffff7fff;
-            local_240 = (byte *)(param_2 + 3);
+          else if ((bVar1 == 0x33) && (format[2] == 0x32)) {
+            flags = flags & 0xffff7fff;
+            local_240 = (byte *)(format + 3);
           }
           else if (((((bVar1 != 100) && (bVar1 != 0x69)) && (bVar1 != 0x6f)) &&
                    ((bVar1 != 0x75 && (bVar1 != 0x78)))) && (bVar1 != 0x58)) {
-            local_270 = 0;
+            state = 0;
             goto switchD_0096739a_caseD_0;
           }
         }
-        else if (local_215 == 0x68) {
-          local_214 = local_214 | 0x20;
+        else if (ch == 0x68) {
+          flags = flags | 0x20;
         }
-        else if (local_215 == 0x6c) {
-          if (*pbVar10 == 0x6c) {
-            local_214 = local_214 | 0x1000;
-            local_240 = (byte *)(param_2 + 2);
+        else if (ch == 0x6c) {
+          if (*pbVar9 == 0x6c) {
+            flags = flags | 0x1000;
+            local_240 = (byte *)(format + 2);
           }
           else {
-            local_214 = local_214 | 0x10;
+            flags = flags | 0x10;
           }
         }
-        else if (local_215 == 0x77) {
-          local_214 = local_214 | 0x800;
+        else if (ch == 0x77) {
+          flags = flags | 0x800;
         }
         break;
       case 7:
-        if ((char)local_215 < 'e') {
-          if (local_215 == 100) {
+        if (ch < 'e') {
+          if (ch == 100) {
 LAB_00967885:
-            local_214 = local_214 | 0x40;
+            flags = flags | 0x40;
 LAB_0096788c:
-            local_224 = (char *)0xa;
+            textlen = 10;
 LAB_00967896:
-            if (((local_214 & 0x8000) == 0) && ((local_214 & 0x1000) == 0)) {
-              local_228 = (wchar_t *)((int)param_4 + 4);
-              if ((local_214 & 0x20) == 0) {
-                piVar5 = *(int **)param_4;
-                if ((local_214 & 0x40) == 0) {
-                  pcVar13 = (char *)0x0;
+            if (((flags & 0x8000U) == 0) && ((flags & 0x1000U) == 0)) {
+              local_228 = (wchar_t *)((int)argptr + 4);
+              if ((flags & 0x20U) == 0) {
+                piVar3 = *(int **)argptr;
+                if ((flags & 0x40U) == 0) {
+                  iVar10 = 0;
                 }
                 else {
-                  pcVar13 = (char *)((int)piVar5 >> 0x1f);
+                  iVar10 = (int)piVar3 >> 0x1f;
                 }
               }
               else {
-                if ((local_214 & 0x40) == 0) {
-                  piVar5 = (int *)(uint)(ushort)*(wchar_t *)param_4;
+                if ((flags & 0x40U) == 0) {
+                  piVar3 = (int *)(uint)(ushort)*(wchar_t *)argptr;
                 }
                 else {
-                  piVar5 = (int *)(int)*(wchar_t *)param_4;
+                  piVar3 = (int *)(int)*(wchar_t *)argptr;
                 }
-                pcVar13 = (char *)((int)piVar5 >> 0x1f);
+                iVar10 = (int)piVar3 >> 0x1f;
               }
             }
             else {
-              piVar5 = *(int **)param_4;
-              pcVar13 = *(char **)((int)param_4 + 4);
-              local_228 = (wchar_t *)((int)param_4 + 8);
+              piVar3 = *(int **)argptr;
+              iVar10 = *(int *)((int)argptr + 4);
+              local_228 = (wchar_t *)((int)argptr + 8);
             }
-            if ((((local_214 & 0x40) != 0) && ((int)pcVar13 < 1)) && ((int)pcVar13 < 0)) {
-              bVar15 = piVar5 != (int *)0x0;
-              piVar5 = (int *)-(int)piVar5;
-              pcVar13 = (char *)-(int)(pcVar13 + bVar15);
-              local_214 = local_214 | 0x100;
+            if ((((flags & 0x40U) != 0) && (iVar10 < 1)) && (iVar10 < 0)) {
+              bVar12 = piVar3 != (int *)0x0;
+              piVar3 = (int *)-(int)piVar3;
+              iVar10 = -(iVar10 + (uint)bVar12);
+              flags = flags | 0x100;
             }
-            if ((local_214 & 0x9000) == 0) {
-              pcVar13 = (char *)0x0;
+            if ((flags & 0x9000U) == 0) {
+              iVar10 = 0;
             }
-            if (local_21c < 0) {
-              local_21c = 1;
+            if (precision < 0) {
+              precision = 1;
             }
             else {
-              local_214 = local_214 & 0xfffffff7;
-              if (0x200 < local_21c) {
-                local_21c = 0x200;
+              flags = flags & 0xfffffff7;
+              if (0x200 < precision) {
+                precision = 0x200;
               }
             }
-            if (piVar5 == (int *)0x0 && pcVar13 == (char *)0x0) {
-              local_234 = (char *)0x0;
+            if (piVar3 == (int *)0x0 && iVar10 == 0) {
+              prefixlen = 0;
             }
-            pwVar14 = &local_11;
-            while ((pcVar11 = pcVar13, iVar12 = local_21c + -1, 0 < local_21c ||
-                   (piVar5 != (int *)0x0 || pcVar11 != (char *)0x0))) {
-              unaff_EDI = piVar5;
-              local_21c = iVar12;
+            pwVar11 = &local_11;
+            while ((iVar7 = iVar10, iVar10 = precision + -1, 0 < precision ||
+                   (piVar3 != (int *)0x0 || iVar7 != 0))) {
+              unaff_EDI = piVar3;
+              precision = iVar10;
               _aulldvrm();
-              iVar12 = extraout_ECX + 0x30;
-              if (0x39 < iVar12) {
-                iVar12 = iVar12 + local_24c;
+              iVar10 = extraout_ECX + 0x30;
+              if (0x39 < iVar10) {
+                iVar10 = iVar10 + hexadd;
               }
-              *(char *)pwVar14 = (char)iVar12;
-              pwVar14 = (wchar_t *)((int)pwVar14 + -1);
-              pcVar13 = extraout_EDX;
-              piVar5 = extraout_EAX_00;
-              local_264 = pcVar11;
+              *(char *)pwVar11 = (char)iVar10;
+              pwVar11 = (wchar_t *)((int)pwVar11 + -1);
+              iVar10 = extraout_EDX;
+              piVar3 = extraout_EAX_00;
+              buffersize = iVar7;
             }
-            local_224 = (char *)((int)&local_11 + -(int)pwVar14);
-            local_220 = (wchar_t *)((int)pwVar14 + 1);
-            local_21c = iVar12;
-            if (((local_214 & 0x200) != 0) &&
-               ((local_224 == (char *)0x0 || (*(char *)local_220 != '0')))) {
-              *(char *)pwVar14 = '0';
-              local_224 = (char *)((int)&local_11 + -(int)pwVar14 + 1);
-              local_220 = pwVar14;
+            textlen = (int)&local_11 + -(int)pwVar11;
+            text = (wchar_t *)((int)pwVar11 + 1);
+            precision = iVar10;
+            if (((flags & 0x200U) != 0) && ((textlen == 0 || (*(char *)text != '0')))) {
+              *(char *)pwVar11 = '0';
+              textlen = (int)&local_11 + -(int)pwVar11 + 1;
+              text = pwVar11;
             }
           }
-          else if ((char)local_215 < 'T') {
-            if (local_215 == 0x53) {
-              if ((local_214 & 0x830) == 0) {
-                local_214 = local_214 | 0x800;
+          else if (ch < 'T') {
+            if (ch == 0x53) {
+              if ((flags & 0x830U) == 0) {
+                flags = flags | 0x800;
               }
               goto LAB_009676b1;
             }
-            if (local_215 == 0x41) {
+            if (ch == 0x41) {
 LAB_00967630:
-              local_215 = local_215 + 0x20;
-              local_274 = 1;
+              ch = ch + 0x20;
+              capexp = 1;
 LAB_00967643:
-              local_214 = local_214 | 0x40;
-              local_264 = (char *)0x200;
-              pwVar14 = local_210;
-              pcVar13 = local_264;
-              pwVar17 = local_210;
-              if (local_21c < 0) {
-                local_21c = 6;
+              flags = flags | 0x40;
+              buffersize = 0x200;
+              pwVar11 = buffer;
+              uVar4 = buffersize;
+              pwVar14 = buffer;
+              if (precision < 0) {
+                precision = 6;
               }
-              else if (local_21c == 0) {
-                if (local_215 == 0x67) {
-                  local_21c = 1;
+              else if (precision == 0) {
+                if (ch == 'g') {
+                  precision = 1;
                 }
               }
               else {
-                if (0x200 < local_21c) {
-                  local_21c = 0x200;
+                if (0x200 < precision) {
+                  precision = 0x200;
                 }
-                if (0xa3 < local_21c) {
-                  pcVar13 = (char *)(local_21c + 0x15d);
-                  local_220 = local_210;
-                  local_248 = _malloc_crt((uint)pcVar13);
-                  pwVar14 = local_248;
-                  pwVar17 = local_248;
-                  if (local_248 == (wchar_t *)0x0) {
-                    local_21c = 0xa3;
-                    pwVar14 = local_210;
-                    pcVar13 = local_264;
-                    pwVar17 = local_220;
+                if (0xa3 < precision) {
+                  uVar4 = precision + 0x15d;
+                  text = buffer;
+                  heapbuf = _malloc_crt(uVar4);
+                  pwVar11 = (wchar_t *)heapbuf;
+                  pwVar14 = (wchar_t *)heapbuf;
+                  if ((wchar_t *)heapbuf == (wchar_t *)0x0) {
+                    precision = 0xa3;
+                    pwVar11 = buffer;
+                    uVar4 = buffersize;
+                    pwVar14 = text;
                   }
                 }
               }
-              local_220 = pwVar17;
-              local_264 = pcVar13;
-              local_27c = *(undefined4 *)param_4;
-              local_228 = (wchar_t *)((int)param_4 + 8);
-              local_278 = *(undefined4 *)((int)param_4 + 4);
-              p_Var19 = &local_260;
-              iVar7 = (int)(char)local_215;
-              puVar16 = &local_27c;
-              pwVar17 = pwVar14;
-              pcVar13 = local_264;
-              iVar12 = local_21c;
-              uVar18 = local_274;
-              pcVar8 = _decode_pointer(_cfltcvt_tab[6]);
-              (*pcVar8)(puVar16,pwVar17,pcVar13,iVar7,iVar12,uVar18,p_Var19);
-              uVar6 = local_214 & 0x80;
-              if ((uVar6 != 0) && (local_21c == 0)) {
-                p_Var19 = &local_260;
-                pwVar17 = pwVar14;
-                pcVar8 = _decode_pointer(_cfltcvt_tab[9]);
-                (*pcVar8)(pwVar17,p_Var19);
+              text = pwVar14;
+              buffersize = uVar4;
+              tmp = *(undefined4 *)argptr;
+              local_228 = (wchar_t *)((int)argptr + 8);
+              local_278 = *(undefined4 *)((int)argptr + 4);
+              p_Var16 = &_loc_update;
+              iVar5 = (int)ch;
+              puVar13 = &tmp;
+              pwVar14 = pwVar11;
+              iVar10 = buffersize;
+              iVar7 = precision;
+              iVar15 = capexp;
+              pcVar6 = _decode_pointer(_cfltcvt_tab[6]);
+              (*pcVar6)(puVar13,pwVar14,iVar10,iVar5,iVar7,iVar15,p_Var16);
+              uVar4 = flags & 0x80;
+              if ((uVar4 != 0) && (precision == 0)) {
+                p_Var16 = &_loc_update;
+                pwVar14 = pwVar11;
+                pcVar6 = _decode_pointer(_cfltcvt_tab[9]);
+                (*pcVar6)(pwVar14,p_Var16);
               }
-              if ((local_215 == 0x67) && (uVar6 == 0)) {
-                p_Var19 = &local_260;
-                pwVar17 = pwVar14;
-                pcVar8 = _decode_pointer(_cfltcvt_tab[8]);
-                (*pcVar8)(pwVar17,p_Var19);
+              if ((ch == 'g') && (uVar4 == 0)) {
+                p_Var16 = &_loc_update;
+                pwVar14 = pwVar11;
+                pcVar6 = _decode_pointer(_cfltcvt_tab[8]);
+                (*pcVar6)(pwVar14,p_Var16);
               }
-              if ((char)*pwVar14 == '-') {
-                local_214 = local_214 | 0x100;
-                local_220 = (wchar_t *)((int)pwVar14 + 1);
-                pwVar14 = local_220;
+              if ((char)*pwVar11 == '-') {
+                flags = flags | 0x100;
+                text = (wchar_t *)((int)pwVar11 + 1);
+                pwVar11 = text;
               }
 LAB_009677e3:
-              strlen((uchar *)pwVar14);
-              local_224 = extraout_EAX;
+              strlen((uchar *)pwVar11);
+              textlen = extraout_EAX;
             }
-            else if (local_215 == 0x43) {
-              if ((local_214 & 0x830) == 0) {
-                local_214 = local_214 | 0x800;
+            else if (ch == 0x43) {
+              if ((flags & 0x830U) == 0) {
+                flags = flags | 0x800;
               }
 LAB_00967724:
-              local_228 = (wchar_t *)((int)param_4 + 4);
-              if ((local_214 & 0x810) == 0) {
-                local_210[0]._0_1_ = (char)*(wchar_t *)param_4;
-                local_224 = &DAT_00000001;
+              local_228 = (wchar_t *)((int)argptr + 4);
+              if ((flags & 0x810U) == 0) {
+                buffer[0]._0_1_ = (char)*(wchar_t *)argptr;
+                textlen = 1;
               }
               else {
-                iVar12 = wctomb_s((int *)&local_224,(char *)local_210,0x200,*(wchar_t *)param_4);
-                if (iVar12 != 0) {
-                  local_244 = 1;
+                iVar10 = wctomb_s(&textlen,(char *)buffer,0x200,*(wchar_t *)argptr);
+                if (iVar10 != 0) {
+                  no_output = 1;
                 }
               }
-              local_220 = local_210;
+              text = buffer;
             }
-            else if ((local_215 == 0x45) || (local_215 == 0x47)) goto LAB_00967630;
+            else if ((ch == 0x45) || (ch == 0x47)) goto LAB_00967630;
           }
           else {
-            if (local_215 == 0x58) goto LAB_009679ea;
-            if (local_215 == 0x5a) {
-              psVar3 = *(short **)param_4;
-              local_228 = (wchar_t *)((int)param_4 + 4);
-              pwVar14 = (wchar_t *)__nullstring;
-              local_220 = (wchar_t *)__nullstring;
-              if ((psVar3 == (short *)0x0) ||
-                 (pwVar17 = *(wchar_t **)(psVar3 + 2), pwVar17 == (wchar_t *)0x0))
+            if (ch == 0x58) goto LAB_009679ea;
+            if (ch == 0x5a) {
+              psVar2 = *(short **)argptr;
+              local_228 = (wchar_t *)((int)argptr + 4);
+              pwVar11 = (wchar_t *)__nullstring;
+              text = (wchar_t *)__nullstring;
+              if ((psVar2 == (short *)0x0) ||
+                 (pwVar14 = *(wchar_t **)(psVar2 + 2), pwVar14 == (wchar_t *)0x0))
               goto LAB_009677e3;
-              local_224 = (char *)(int)*psVar3;
-              local_220 = pwVar17;
-              if ((local_214 & 0x800) == 0) {
-                local_23c = 0;
+              textlen = (int)*psVar2;
+              text = pwVar14;
+              if ((flags & 0x800U) == 0) {
+                bufferiswide = 0;
               }
               else {
-                local_224 = (char *)((int)local_224 / 2);
-                local_23c = 1;
+                textlen = textlen / 2;
+                bufferiswide = 1;
               }
             }
             else {
-              if (local_215 == 0x61) goto LAB_00967643;
-              if (local_215 == 99) goto LAB_00967724;
+              if (ch == 0x61) goto LAB_00967643;
+              if (ch == 99) goto LAB_00967724;
             }
           }
 LAB_00967bc2:
-          if (local_244 == 0) {
-            if ((local_214 & 0x40) != 0) {
-              if ((local_214 & 0x100) == 0) {
-                if ((local_214 & 1) == 0) {
-                  if ((local_214 & 2) == 0) goto LAB_00967c0b;
-                  local_230 = 0x20;
+          if (no_output == 0) {
+            if ((flags & 0x40U) != 0) {
+              if ((flags & 0x100U) == 0) {
+                if ((flags & 1U) == 0) {
+                  if ((flags & 2U) == 0) goto LAB_00967c0b;
+                  prefix = 0x20;
                 }
                 else {
-                  local_230 = 0x2b;
+                  prefix = 0x2b;
                 }
               }
               else {
-                local_230 = 0x2d;
+                prefix = 0x2d;
               }
-              local_234 = &DAT_00000001;
+              prefixlen = 1;
             }
 LAB_00967c0b:
-            iVar12 = (local_238 - (int)local_224) - (int)local_234;
-            if ((local_214 & 0xc) == 0) {
-              write_multi_char(' ',iVar12,local_250,unaff_EDI);
+            iVar10 = (fldwidth - textlen) - prefixlen;
+            if ((flags & 0xcU) == 0) {
+              write_multi_char(' ',iVar10,local_250,unaff_EDI);
             }
-            p_Var4 = local_250;
-            write_string(local_234,(int)unaff_EDI,unaff_ESI,unaff_EBX);
-            if (((local_214 & 8) != 0) && ((local_214 & 4) == 0)) {
-              write_multi_char('0',iVar12,p_Var4,unaff_EDI);
+            f_2 = local_250;
+            write_string((char *)prefixlen,(int)unaff_EDI,unaff_ESI,unaff_EBX);
+            if (((flags & 8U) != 0) && ((flags & 4U) == 0)) {
+              write_multi_char('0',iVar10,f_2,unaff_EDI);
             }
-            if ((local_23c == 0) || ((int)local_224 < 1)) {
-              write_string(local_224,(int)unaff_EDI,unaff_ESI,unaff_EBX);
+            if ((bufferiswide == 0) || (textlen < 1)) {
+              write_string((char *)textlen,(int)unaff_EDI,unaff_ESI,unaff_EBX);
             }
             else {
-              local_264 = local_224;
-              pwVar14 = local_220;
+              buffersize = textlen;
+              pwVar11 = text;
               do {
-                wVar2 = *pwVar14;
-                local_264 = local_264 + -1;
-                pwVar14 = pwVar14 + 1;
-                iVar7 = wctomb_s((int *)local_26c,(char *)((int)&local_11 + 1),6,wVar2);
-                if ((iVar7 != 0) || (local_26c[0] == (char *)0x0)) {
-                  local_22c = -1;
+                wchar = *pwVar11;
+                buffersize = buffersize + -1;
+                pwVar11 = pwVar11 + 1;
+                iVar7 = wctomb_s(&retval,(char *)((int)&local_11 + 1),6,wchar);
+                if ((iVar7 != 0) || (retval == 0)) {
+                  charsout = -1;
                   break;
                 }
-                write_string(local_26c[0],(int)unaff_EDI,unaff_ESI,unaff_EBX);
-              } while (local_264 != (char *)0x0);
+                write_string((char *)retval,(int)unaff_EDI,unaff_ESI,unaff_EBX);
+              } while (buffersize != 0);
             }
-            if ((-1 < local_22c) && ((local_214 & 4) != 0)) {
-              write_multi_char(' ',iVar12,p_Var4,unaff_EDI);
+            if ((-1 < charsout) && ((flags & 4U) != 0)) {
+              write_multi_char(' ',iVar10,f_2,unaff_EDI);
             }
           }
         }
         else {
-          if ('p' < (char)local_215) {
-            if (local_215 == 0x73) {
+          if ('p' < ch) {
+            if (ch == 0x73) {
 LAB_009676b1:
-              iVar12 = local_21c;
-              if (local_21c == -1) {
-                iVar12 = 0x7fffffff;
+              iVar10 = precision;
+              if (precision == -1) {
+                iVar10 = 0x7fffffff;
               }
-              local_228 = (wchar_t *)((int)param_4 + 4);
-              local_220 = *(wchar_t **)param_4;
-              if ((local_214 & 0x810) == 0) {
-                pwVar14 = local_220;
-                if (local_220 == (wchar_t *)0x0) {
-                  pwVar14 = (wchar_t *)__nullstring;
-                  local_220 = (wchar_t *)__nullstring;
+              local_228 = (wchar_t *)((int)argptr + 4);
+              text = *(wchar_t **)argptr;
+              if ((flags & 0x810U) == 0) {
+                pwVar11 = text;
+                if (text == (wchar_t *)0x0) {
+                  pwVar11 = (wchar_t *)__nullstring;
+                  text = (wchar_t *)__nullstring;
                 }
-                for (; (iVar12 != 0 && (iVar12 = iVar12 + -1, (char)*pwVar14 != '\0'));
-                    pwVar14 = (wchar_t *)((int)pwVar14 + 1)) {
+                for (; (iVar10 != 0 && (iVar10 = iVar10 + -1, (char)*pwVar11 != '\0'));
+                    pwVar11 = (wchar_t *)((int)pwVar11 + 1)) {
                 }
-                local_224 = (char *)((int)pwVar14 - (int)local_220);
+                textlen = (int)pwVar11 - (int)text;
               }
               else {
-                if (local_220 == (wchar_t *)0x0) {
-                  local_220 = __wnullstring;
+                if (text == (wchar_t *)0x0) {
+                  text = __wnullstring;
                 }
-                local_23c = 1;
-                for (pwVar14 = local_220; (iVar12 != 0 && (iVar12 = iVar12 + -1, *pwVar14 != L'\0'))
-                    ; pwVar14 = pwVar14 + 1) {
+                bufferiswide = 1;
+                for (pwVar11 = text; (iVar10 != 0 && (iVar10 = iVar10 + -1, *pwVar11 != L'\0'));
+                    pwVar11 = pwVar11 + 1) {
                 }
-                local_224 = (char *)((int)pwVar14 - (int)local_220 >> 1);
+                textlen = (int)pwVar11 - (int)text >> 1;
               }
               goto LAB_00967bc2;
             }
-            if (local_215 == 0x75) goto LAB_0096788c;
-            if (local_215 != 0x78) goto LAB_00967bc2;
-            local_24c = 0x27;
+            if (ch == 0x75) goto LAB_0096788c;
+            if (ch != 0x78) goto LAB_00967bc2;
+            hexadd = 0x27;
 LAB_00967a16:
-            local_224 = (char *)0x10;
-            if ((local_214 & 0x80) != 0) {
-              local_22f = (char)local_24c + 'Q';
-              local_230 = 0x30;
-              local_234 = (char *)0x2;
+            textlen = 0x10;
+            if ((flags & 0x80U) != 0) {
+              local_22f = (char)hexadd + 'Q';
+              prefix = 0x30;
+              prefixlen = 2;
             }
             goto LAB_00967896;
           }
-          if (local_215 == 0x70) {
-            local_21c = 8;
+          if (ch == 0x70) {
+            precision = 8;
 LAB_009679ea:
-            local_24c = 7;
+            hexadd = 7;
             goto LAB_00967a16;
           }
-          if ((char)local_215 < 'e') goto LAB_00967bc2;
-          if ((char)local_215 < 'h') goto LAB_00967643;
-          if (local_215 == 0x69) goto LAB_00967885;
-          if (local_215 != 0x6e) {
-            if (local_215 != 0x6f) goto LAB_00967bc2;
-            local_224 = (char *)0x8;
-            if ((local_214 & 0x80) != 0) {
-              local_214 = local_214 | 0x200;
+          if (ch < 'e') goto LAB_00967bc2;
+          if (ch < 'h') goto LAB_00967643;
+          if (ch == 0x69) goto LAB_00967885;
+          if (ch != 0x6e) {
+            if (ch != 0x6f) goto LAB_00967bc2;
+            textlen = 8;
+            if ((flags & 0x80U) != 0) {
+              flags = flags | 0x200;
             }
             goto LAB_00967896;
           }
-          piVar5 = *(int **)param_4;
-          local_228 = (wchar_t *)((int)param_4 + 4);
-          iVar12 = _get_printf_count_output();
-          if (iVar12 == 0) goto LAB_00967288;
-          if ((local_214 & 0x20) == 0) {
-            *piVar5 = local_22c;
+          piVar3 = *(int **)argptr;
+          local_228 = (wchar_t *)((int)argptr + 4);
+          iVar10 = _get_printf_count_output();
+          if (iVar10 == 0) goto LAB_00967288;
+          if ((flags & 0x20U) == 0) {
+            *piVar3 = charsout;
           }
           else {
-            *(undefined2 *)piVar5 = (undefined2)local_22c;
+            *(undefined2 *)piVar3 = (undefined2)charsout;
           }
-          local_244 = 1;
+          no_output = 1;
         }
-        if (local_248 != (wchar_t *)0x0) {
-          free(local_248);
-          local_248 = (wchar_t *)0x0;
+        if (heapbuf != (char *)0x0) {
+          free(heapbuf);
+          heapbuf = (char *)0x0;
         }
       }
-      local_215 = *local_240;
-      param_2 = (char *)local_240;
-      param_4 = (char *)local_228;
+      ch = *local_240;
+      format = (char *)local_240;
+      argptr = (char *)local_228;
     } while( true );
   }
 LAB_00967288:
-  piVar5 = _errno();
-  *piVar5 = 0x16;
+  piVar3 = _errno();
+  *piVar3 = 0x16;
   _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-  if (local_260.updated != false) {
-    (local_260.ptd)->_ownlocale = (local_260.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return -1;
 }

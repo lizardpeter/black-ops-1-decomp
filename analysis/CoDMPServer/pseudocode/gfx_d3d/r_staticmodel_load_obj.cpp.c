@@ -2,21 +2,23 @@
 
 // 00B35120  R_AllocStaticModels  (gfx_d3d/r_staticmodel_load_obj.cpp:23)
 
-void __cdecl R_AllocStaticModels(GfxAabbTree *param_1)
+void __cdecl R_AllocStaticModels(GfxAabbTree *tree)
 
 {
   int iVar1;
-  ushort *puVar2;
-  int local_c;
+  ushort *dst;
+  GfxAabbTree *children;
+  int childIndex;
+  ushort *smodelIndexes;
   
-  if (param_1->smodelIndexCount != 0) {
-    puVar2 = Hunk_AllocAlign((uint)param_1->smodelIndexCount << 1,4,"R_AllocStaticModels",0x16);
-    memcpy((uchar *)puVar2,(uchar *)param_1->smodelIndexes,(uint)param_1->smodelIndexCount << 1);
-    param_1->smodelIndexes = puVar2;
+  if (tree->smodelIndexCount != 0) {
+    dst = Hunk_AllocAlign((uint)tree->smodelIndexCount << 1,4,"R_AllocStaticModels",0x16);
+    memcpy((uchar *)dst,(uchar *)tree->smodelIndexes,(uint)tree->smodelIndexCount << 1);
+    tree->smodelIndexes = dst;
   }
-  iVar1 = param_1->childrenOffset;
-  for (local_c = 0; local_c < (int)(uint)param_1->childCount; local_c = local_c + 1) {
-    R_AllocStaticModels((GfxAabbTree *)((int)param_1[local_c].mins + iVar1));
+  iVar1 = tree->childrenOffset;
+  for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
+    R_AllocStaticModels((GfxAabbTree *)((int)tree[childIndex].mins + iVar1));
   }
   return;
 }
@@ -26,7 +28,7 @@ void __cdecl R_AllocStaticModels(GfxAabbTree *param_1)
 
 int __cdecl
 R_SortGfxAabbTreeChildren
-          (GfxWorld *param_1,float *param_2,float *param_3,ushort *param_4,int param_5)
+          (GfxWorld *world,float *mins,float *maxs,ushort *staticModels,int staticModelCount)
 
 {
   ushort uVar1;
@@ -35,230 +37,235 @@ R_SortGfxAabbTreeChildren
   bool bVar4;
   int iVar5;
   GfxStaticModelInst *pGVar6;
-  uint local_10;
-  int local_c;
+  GfxStaticModelInst *smodelInst;
+  int smodelSwapIndex;
+  int childCount;
+  int smodelChildIndex;
+  int smodelIndex;
   
-  local_10 = 0;
-  local_c = 0;
+  childCount = 0;
+  smodelChildIndex = 0;
   do {
-    if (param_5 <= local_c) {
-      return ((int)local_10 < 2) - 1 & local_10;
+    if (staticModelCount <= smodelChildIndex) {
+      return (childCount < 2) - 1 & childCount;
     }
-    uVar1 = param_4[local_c];
-    pGVar6 = (param_1->dpvs).smodelInsts + uVar1;
-    if (((((*param_2 < pGVar6->mins[0] || *param_2 == pGVar6->mins[0]) &&
-          (param_2[1] < pGVar6->mins[1] || param_2[1] == pGVar6->mins[1])) &&
-         (param_2[2] < pGVar6->mins[2] || param_2[2] == pGVar6->mins[2])) &&
-        ((pGVar6->maxs[0] < *param_3 || pGVar6->maxs[0] == *param_3 &&
-         (pGVar6->maxs[1] < param_3[1] || pGVar6->maxs[1] == param_3[1])))) &&
-       (pGVar6->maxs[2] < param_3[2] || pGVar6->maxs[2] == param_3[2])) {
-      uVar2 = param_4[local_10];
-      param_4[local_10] = uVar1;
-      if (((uint)param_4[local_10] != (uint)uVar1) &&
+    uVar1 = staticModels[smodelChildIndex];
+    pGVar6 = (world->dpvs).smodelInsts + uVar1;
+    if (((((*mins < pGVar6->mins[0] || *mins == pGVar6->mins[0]) &&
+          (mins[1] < pGVar6->mins[1] || mins[1] == pGVar6->mins[1])) &&
+         (mins[2] < pGVar6->mins[2] || mins[2] == pGVar6->mins[2])) &&
+        ((pGVar6->maxs[0] < *maxs || pGVar6->maxs[0] == *maxs &&
+         (pGVar6->maxs[1] < maxs[1] || pGVar6->maxs[1] == maxs[1])))) &&
+       (pGVar6->maxs[2] < maxs[2] || pGVar6->maxs[2] == maxs[2])) {
+      uVar2 = staticModels[childCount];
+      staticModels[childCount] = uVar1;
+      if (((uint)staticModels[childCount] != (uint)uVar1) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                    ,0x4f,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         iVar5 = (*pcVar3)();
         return iVar5;
       }
-      param_4[local_c] = uVar2;
-      if ((param_4[local_c] != uVar2) &&
+      staticModels[smodelChildIndex] = uVar2;
+      if ((staticModels[smodelChildIndex] != uVar2) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                    ,0x52,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         iVar5 = (*pcVar3)();
         return iVar5;
       }
-      local_10 = local_10 + 1;
+      childCount = childCount + 1;
     }
-    local_c = local_c + 1;
+    smodelChildIndex = smodelChildIndex + 1;
   } while( true );
 }
 
 
 // 00B35A30  CompareStaticModels  (gfx_d3d/r_staticmodel_load_obj.cpp:92)
 
-int __cdecl CompareStaticModels(void *param_1,void *param_2)
+int __cdecl CompareStaticModels(void *smodel0,void *smodel1)
 
 {
-  return (uint)*(ushort *)param_1 - (uint)*(ushort *)param_2;
+  return (uint)*(ushort *)smodel0 - (uint)*(ushort *)smodel1;
 }
 
 
 // 00B351C0  R_SortGfxAabbTree  (gfx_d3d/r_staticmodel_load_obj.cpp:100)
 
-void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
+void __cdecl R_SortGfxAabbTree(GfxWorld *world,GfxAabbTree *tree)
 
 {
   int iVar1;
   code *pcVar2;
-  uint uVar3;
-  bool bVar4;
-  void *pvVar5;
-  float *pfVar6;
-  GfxAabbTree *pGVar7;
+  bool bVar3;
+  void *pvVar4;
+  float *pfVar5;
+  GfxAabbTree *pGVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
-  int local_7c;
-  int local_68;
-  float local_60 [4];
+  int j;
+  GfxAabbTree *children;
+  int smodelIndexIter;
+  GfxAabbTree *childTree;
+  float mins [4];
   float local_50;
   float local_4c;
-  ushort *local_48;
-  int local_44;
-  GfxStaticModelInst *local_40;
-  float local_3c;
+  ushort *smodelIndexes;
+  int childIndex;
+  GfxStaticModelInst *smodelInst;
+  float childMins;
   float local_38;
   float local_34;
-  float local_30 [3];
-  uint local_24;
-  int local_20;
-  uint local_1c [4];
-  uint local_c;
-  uint local_8;
+  float maxs [3];
+  int smodelIndexCount;
+  int i;
+  uint childCount [4];
+  int count;
+  int smodelIndex;
   
-  qsort(param_2->smodelIndexes,(uint)param_2->smodelIndexCount,2,CompareStaticModels);
-  if (param_2->childCount == 0) {
-    local_60[0] = 3.4028235e+38;
-    local_60[1] = 3.4028235e+38;
-    local_60[2] = 3.4028235e+38;
-    local_30[0] = -3.4028235e+38;
-    local_30[1] = -3.4028235e+38;
-    local_30[2] = -3.4028235e+38;
-    for (local_68 = 0; local_68 < (int)(uint)param_2->smodelIndexCount; local_68 = local_68 + 1) {
-      local_8 = (uint)param_2->smodelIndexes[local_68];
-      local_40 = (param_1->dpvs).smodelInsts + param_2->smodelIndexes[local_68];
-      for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-        if (local_40->mins[local_20] <= local_60[local_20] &&
-            local_60[local_20] != local_40->mins[local_20]) {
-          local_60[local_20] = local_40->mins[local_20];
+  qsort(tree->smodelIndexes,(uint)tree->smodelIndexCount,2,CompareStaticModels);
+  if (tree->childCount == 0) {
+    mins[0] = 3.4028235e+38;
+    mins[1] = 3.4028235e+38;
+    mins[2] = 3.4028235e+38;
+    maxs[0] = -3.4028235e+38;
+    maxs[1] = -3.4028235e+38;
+    maxs[2] = -3.4028235e+38;
+    for (smodelIndexIter = 0; smodelIndexIter < (int)(uint)tree->smodelIndexCount;
+        smodelIndexIter = smodelIndexIter + 1) {
+      smodelIndex = (uint)tree->smodelIndexes[smodelIndexIter];
+      smodelInst = (world->dpvs).smodelInsts + tree->smodelIndexes[smodelIndexIter];
+      for (i = 0; i < 3; i = i + 1) {
+        if (smodelInst->mins[i] <= mins[i] && mins[i] != smodelInst->mins[i]) {
+          mins[i] = smodelInst->mins[i];
         }
-        if (local_30[local_20] <= local_40->maxs[local_20] &&
-            local_40->maxs[local_20] != local_30[local_20]) {
-          local_30[local_20] = local_40->maxs[local_20];
+        if (maxs[i] <= smodelInst->maxs[i] && smodelInst->maxs[i] != maxs[i]) {
+          maxs[i] = smodelInst->maxs[i];
         }
       }
     }
-    if (param_2->surfaceCount == 0) {
-      param_2->mins[0] = local_60[0];
-      param_2->mins[1] = local_60[1];
-      param_2->mins[2] = local_60[2];
-      param_2->maxs[0] = local_30[0];
-      param_2->maxs[1] = local_30[1];
-      param_2->maxs[2] = local_30[2];
+    if (tree->surfaceCount == 0) {
+      tree->mins[0] = mins[0];
+      tree->mins[1] = mins[1];
+      tree->mins[2] = mins[2];
+      tree->maxs[0] = maxs[0];
+      tree->maxs[1] = maxs[1];
+      tree->maxs[2] = maxs[2];
     }
-    if (7 < param_2->smodelIndexCount) {
-      fVar8 = (local_60[0] + local_30[0]) * 0.5;
-      fVar9 = (local_60[1] + local_30[1]) * 0.5;
-      local_48 = param_2->smodelIndexes;
-      local_24 = (uint)param_2->smodelIndexCount;
-      local_3c = local_60[0];
-      local_38 = local_60[1];
-      local_34 = local_60[2];
-      local_50 = local_30[1];
-      local_4c = local_30[2];
-      local_60[3] = fVar8;
-      local_1c[0] = R_SortGfxAabbTreeChildren(param_1,&local_3c,local_60 + 3,local_48,local_24);
-      local_48 = local_48 + local_1c[0];
-      local_24 = local_24 - local_1c[0];
-      local_38 = local_60[1];
-      local_34 = local_60[2];
-      local_60[3] = local_30[0];
-      local_50 = local_30[1];
-      local_4c = local_30[2];
-      local_3c = fVar8;
-      local_1c[1] = R_SortGfxAabbTreeChildren(param_1,&local_3c,local_60 + 3,local_48,local_24);
-      local_48 = local_48 + local_1c[1];
-      local_24 = local_24 - local_1c[1];
-      local_3c = local_60[0];
-      local_38 = local_60[1];
-      local_34 = local_60[2];
-      local_60[3] = local_30[0];
-      local_4c = local_30[2];
-      local_50 = fVar9;
-      local_1c[2] = R_SortGfxAabbTreeChildren(param_1,&local_3c,local_60 + 3,local_48,local_24);
-      local_48 = local_48 + local_1c[2];
-      local_24 = local_24 - local_1c[2];
-      local_3c = local_60[0];
-      local_34 = local_60[2];
-      local_60[3] = local_30[0];
-      local_50 = local_30[1];
-      local_4c = local_30[2];
-      local_38 = fVar9;
-      local_1c[3] = R_SortGfxAabbTreeChildren(param_1,&local_3c,local_60 + 3,local_48,local_24);
-      local_48 = local_48 + local_1c[3];
-      local_24 = local_24 - local_1c[3];
-      local_c = 0;
-      for (local_7c = 0; local_7c < 4; local_7c = local_7c + 1) {
-        local_c = (local_1c[local_7c] != 0) + local_c;
+    if (7 < tree->smodelIndexCount) {
+      fVar7 = (mins[0] + maxs[0]) * 0.5;
+      fVar8 = (mins[1] + maxs[1]) * 0.5;
+      smodelIndexes = tree->smodelIndexes;
+      smodelIndexCount = (int)tree->smodelIndexCount;
+      childMins = mins[0];
+      local_38 = mins[1];
+      local_34 = mins[2];
+      local_50 = maxs[1];
+      local_4c = maxs[2];
+      mins[3] = fVar7;
+      childCount[0] =
+           R_SortGfxAabbTreeChildren(world,&childMins,mins + 3,smodelIndexes,smodelIndexCount);
+      smodelIndexes = smodelIndexes + childCount[0];
+      smodelIndexCount = smodelIndexCount - childCount[0];
+      local_38 = mins[1];
+      local_34 = mins[2];
+      mins[3] = maxs[0];
+      local_50 = maxs[1];
+      local_4c = maxs[2];
+      childMins = fVar7;
+      childCount[1] =
+           R_SortGfxAabbTreeChildren(world,&childMins,mins + 3,smodelIndexes,smodelIndexCount);
+      smodelIndexes = smodelIndexes + childCount[1];
+      smodelIndexCount = smodelIndexCount - childCount[1];
+      childMins = mins[0];
+      local_38 = mins[1];
+      local_34 = mins[2];
+      mins[3] = maxs[0];
+      local_4c = maxs[2];
+      local_50 = fVar8;
+      childCount[2] =
+           R_SortGfxAabbTreeChildren(world,&childMins,mins + 3,smodelIndexes,smodelIndexCount);
+      smodelIndexes = smodelIndexes + childCount[2];
+      smodelIndexCount = smodelIndexCount - childCount[2];
+      childMins = mins[0];
+      local_34 = mins[2];
+      mins[3] = maxs[0];
+      local_50 = maxs[1];
+      local_4c = maxs[2];
+      local_38 = fVar8;
+      childCount[3] =
+           R_SortGfxAabbTreeChildren(world,&childMins,mins + 3,smodelIndexes,smodelIndexCount);
+      smodelIndexes = smodelIndexes + childCount[3];
+      smodelIndexCount = smodelIndexCount - childCount[3];
+      count = 0;
+      for (j = 0; j < 4; j = j + 1) {
+        count = (uint)(childCount[j] != 0) + count;
       }
-      if (local_c != 0) {
-        if (param_2->surfaceCount != 0) {
-          local_c = local_c + 1;
+      if (count != 0) {
+        if (tree->surfaceCount != 0) {
+          count = count + 1;
         }
-        if (local_24 != 0) {
-          local_c = local_c + 1;
+        if (smodelIndexCount != 0) {
+          count = count + 1;
         }
-        pvVar5 = Hunk_AllocAlign(local_c * 0x28,4,"R_SortGfxAabbTree",0x16);
-        param_2->childrenOffset = (int)pvVar5 - (int)param_2;
-        if (param_2->surfaceCount != 0) {
-          pfVar6 = (float *)((int)param_2[param_2->childCount].mins + param_2->childrenOffset);
-          param_2->childCount = param_2->childCount + 1;
-          *pfVar6 = param_2->mins[0];
-          pfVar6[1] = param_2->mins[1];
-          pfVar6[2] = param_2->mins[2];
-          pfVar6[3] = param_2->maxs[0];
-          pfVar6[4] = param_2->maxs[1];
-          pfVar6[5] = param_2->maxs[2];
-          *(ushort *)(pfVar6 + 7) = param_2->startSurfIndex;
-          *(ushort *)((int)pfVar6 + 0x1a) = param_2->surfaceCount;
+        pvVar4 = Hunk_AllocAlign(count * 0x28,4,"R_SortGfxAabbTree",0x16);
+        tree->childrenOffset = (int)pvVar4 - (int)tree;
+        if (tree->surfaceCount != 0) {
+          pfVar5 = (float *)((int)tree[tree->childCount].mins + tree->childrenOffset);
+          tree->childCount = tree->childCount + 1;
+          *pfVar5 = tree->mins[0];
+          pfVar5[1] = tree->mins[1];
+          pfVar5[2] = tree->mins[2];
+          pfVar5[3] = tree->maxs[0];
+          pfVar5[4] = tree->maxs[1];
+          pfVar5[5] = tree->maxs[2];
+          *(ushort *)(pfVar5 + 7) = tree->startSurfIndex;
+          *(ushort *)((int)pfVar5 + 0x1a) = tree->surfaceCount;
         }
-        local_48 = param_2->smodelIndexes;
-        local_24 = (uint)param_2->smodelIndexCount;
-        for (local_7c = 0; local_7c < 4; local_7c = local_7c + 1) {
-          local_c = local_1c[local_7c];
-          uVar3 = local_c;
-          if (local_c != 0) {
-            pGVar7 = (GfxAabbTree *)
-                     ((int)param_2[param_2->childCount].mins + param_2->childrenOffset);
-            param_2->childCount = param_2->childCount + 1;
-            pGVar7->smodelIndexCount = (ushort)local_c;
-            local_c = uVar3;
-            if ((pGVar7->smodelIndexCount != local_c) &&
-               (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
-                                         ,0x10a,0,"%s"), !bVar4)) {
+        smodelIndexes = tree->smodelIndexes;
+        smodelIndexCount = (int)tree->smodelIndexCount;
+        for (j = 0; j < 4; j = j + 1) {
+          count = childCount[j];
+          iVar1 = count;
+          if (count != 0) {
+            pGVar6 = (GfxAabbTree *)((int)tree[tree->childCount].mins + tree->childrenOffset);
+            tree->childCount = tree->childCount + 1;
+            pGVar6->smodelIndexCount = (ushort)count;
+            count = iVar1;
+            if (((uint)pGVar6->smodelIndexCount != count) &&
+               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
+                                         ,0x10a,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            pGVar7->smodelIndexes = local_48;
-            R_SortGfxAabbTree(param_1,pGVar7);
-            local_48 = local_48 + local_c;
-            local_24 = local_24 - local_c;
+            pGVar6->smodelIndexes = smodelIndexes;
+            R_SortGfxAabbTree(world,pGVar6);
+            smodelIndexes = smodelIndexes + count;
+            smodelIndexCount = smodelIndexCount - count;
           }
         }
-        if (local_24 != 0) {
-          pGVar7 = (GfxAabbTree *)((int)param_2[param_2->childCount].mins + param_2->childrenOffset)
-          ;
-          param_2->childCount = param_2->childCount + 1;
-          pGVar7->smodelIndexCount = (ushort)local_24;
-          if ((pGVar7->smodelIndexCount != local_24) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
-                                       ,0x11c,0,"%s"), !bVar4)) {
+        if (smodelIndexCount != 0) {
+          pGVar6 = (GfxAabbTree *)((int)tree[tree->childCount].mins + tree->childrenOffset);
+          tree->childCount = tree->childCount + 1;
+          pGVar6->smodelIndexCount = (ushort)smodelIndexCount;
+          if (((uint)pGVar6->smodelIndexCount != smodelIndexCount) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
+                                       ,0x11c,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          pGVar7->smodelIndexes = local_48;
-          R_SortGfxAabbTree(param_1,pGVar7);
+          pGVar6->smodelIndexes = smodelIndexes;
+          R_SortGfxAabbTree(world,pGVar6);
         }
       }
     }
   }
   else {
-    iVar1 = param_2->childrenOffset;
-    for (local_44 = 0; local_44 < (int)(uint)param_2->childCount; local_44 = local_44 + 1) {
-      R_SortGfxAabbTree(param_1,(GfxAabbTree *)((int)param_2[local_44].mins + iVar1));
+    iVar1 = tree->childrenOffset;
+    for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
+      R_SortGfxAabbTree(world,(GfxAabbTree *)((int)tree[childIndex].mins + iVar1));
     }
   }
   return;
@@ -267,90 +274,93 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
 
 // 00B35E30  R_AddStaticModelToAabbTree_r  (gfx_d3d/r_staticmodel_load_obj.cpp:296)
 
-void __cdecl R_AddStaticModelToAabbTree_r(GfxWorld *param_1,GfxAabbTree *param_2,int param_3)
+void __cdecl R_AddStaticModelToAabbTree_r(GfxWorld *world,GfxAabbTree *tree,int smodelIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort *puVar3;
-  GfxAabbTree *pGVar4;
-  uchar *puVar5;
-  uchar *puVar6;
-  GfxStaticModelInst *pGVar7;
+  ushort *dst;
+  GfxAabbTree *pGVar3;
+  uchar *dst_00;
+  uchar *src;
+  GfxStaticModelInst *pGVar4;
   int local_34;
-  int local_18;
-  int local_8;
+  GfxAabbTree *children;
+  GfxAabbTree *childTree;
+  GfxAabbTree *newChildren;
+  int childIndex;
+  ushort *smodelIndexes;
+  GfxStaticModelInst *smodelInst;
+  int smodelIndexCount;
+  int i;
   
-  if ((param_2->smodelIndexCount & param_2->smodelIndexCount - 1) == 0) {
-    if (param_2->smodelIndexCount == 0) {
+  if ((tree->smodelIndexCount & tree->smodelIndexCount - 1) == 0) {
+    if (tree->smodelIndexCount == 0) {
       local_34 = 1;
     }
     else {
-      local_34 = (uint)param_2->smodelIndexCount << 1;
+      local_34 = (uint)tree->smodelIndexCount << 1;
     }
-    puVar3 = Hunk_AllocateTempMemory(local_34 << 1,"R_AddModelToCell");
-    memcpy((uchar *)puVar3,(uchar *)param_2->smodelIndexes,(uint)param_2->smodelIndexCount << 1);
-    param_2->smodelIndexes = puVar3;
+    dst = Hunk_AllocateTempMemory(local_34 << 1,"R_AddModelToCell");
+    memcpy((uchar *)dst,(uchar *)tree->smodelIndexes,(uint)tree->smodelIndexCount << 1);
+    tree->smodelIndexes = dst;
   }
-  param_2->smodelIndexes[param_2->smodelIndexCount] = (ushort)param_3;
-  if (((uint)param_2->smodelIndexes[param_2->smodelIndexCount] != param_3) &&
+  tree->smodelIndexes[tree->smodelIndexCount] = (ushort)smodelIndex;
+  if (((uint)tree->smodelIndexes[tree->smodelIndexCount] != smodelIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x13e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_2->smodelIndexCount = param_2->smodelIndexCount + 1;
-  if (param_2->childCount != 0) {
-    pGVar7 = (param_1->dpvs).smodelInsts + param_3;
-    for (local_18 = 0; local_18 < (int)(uint)param_2->childCount; local_18 = local_18 + 1) {
-      pGVar4 = (GfxAabbTree *)((int)param_2[local_18].mins + param_2->childrenOffset);
-      if ((((pGVar4->mins[0] < pGVar7->mins[0] || pGVar4->mins[0] == pGVar7->mins[0]) &&
-           (pGVar4->mins[1] < pGVar7->mins[1] || pGVar4->mins[1] == pGVar7->mins[1])) &&
-          (pGVar4->mins[2] < pGVar7->mins[2] || pGVar4->mins[2] == pGVar7->mins[2])) &&
-         (((pGVar7->maxs[0] < pGVar4->maxs[0] || pGVar7->maxs[0] == pGVar4->maxs[0] &&
-           (pGVar7->maxs[1] < pGVar4->maxs[1] || pGVar7->maxs[1] == pGVar4->maxs[1])) &&
-          (pGVar7->maxs[2] < pGVar4->maxs[2] || pGVar7->maxs[2] == pGVar4->maxs[2])))) {
-        R_AddStaticModelToAabbTree_r(param_1,pGVar4,param_3);
+  tree->smodelIndexCount = tree->smodelIndexCount + 1;
+  if (tree->childCount != 0) {
+    pGVar4 = (world->dpvs).smodelInsts + smodelIndex;
+    for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
+      pGVar3 = (GfxAabbTree *)((int)tree[childIndex].mins + tree->childrenOffset);
+      if ((((pGVar3->mins[0] < pGVar4->mins[0] || pGVar3->mins[0] == pGVar4->mins[0]) &&
+           (pGVar3->mins[1] < pGVar4->mins[1] || pGVar3->mins[1] == pGVar4->mins[1])) &&
+          (pGVar3->mins[2] < pGVar4->mins[2] || pGVar3->mins[2] == pGVar4->mins[2])) &&
+         (((pGVar4->maxs[0] < pGVar3->maxs[0] || pGVar4->maxs[0] == pGVar3->maxs[0] &&
+           (pGVar4->maxs[1] < pGVar3->maxs[1] || pGVar4->maxs[1] == pGVar3->maxs[1])) &&
+          (pGVar4->maxs[2] < pGVar3->maxs[2] || pGVar4->maxs[2] == pGVar3->maxs[2])))) {
+        R_AddStaticModelToAabbTree_r(world,pGVar3,smodelIndex);
         return;
       }
     }
-    for (local_18 = 0; local_18 < (int)(uint)param_2->childCount; local_18 = local_18 + 1) {
-      pGVar4 = (GfxAabbTree *)((int)param_2[local_18].mins + param_2->childrenOffset);
-      if (pGVar4->surfaceCount == 0) {
-        for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-          if (pGVar7->mins[local_8] <= pGVar4->mins[local_8] &&
-              pGVar4->mins[local_8] != pGVar7->mins[local_8]) {
-            pGVar4->mins[local_8] = pGVar7->mins[local_8];
+    for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
+      pGVar3 = (GfxAabbTree *)((int)tree[childIndex].mins + tree->childrenOffset);
+      if (pGVar3->surfaceCount == 0) {
+        for (i = 0; i < 3; i = i + 1) {
+          if (pGVar4->mins[i] <= pGVar3->mins[i] && pGVar3->mins[i] != pGVar4->mins[i]) {
+            pGVar3->mins[i] = pGVar4->mins[i];
           }
-          if (pGVar4->maxs[local_8] <= pGVar7->maxs[local_8] &&
-              pGVar7->maxs[local_8] != pGVar4->maxs[local_8]) {
-            pGVar4->maxs[local_8] = pGVar7->maxs[local_8];
+          if (pGVar3->maxs[i] <= pGVar4->maxs[i] && pGVar4->maxs[i] != pGVar3->maxs[i]) {
+            pGVar3->maxs[i] = pGVar4->maxs[i];
           }
         }
-        R_AddStaticModelToAabbTree_r(param_1,pGVar4,param_3);
+        R_AddStaticModelToAabbTree_r(world,pGVar3,smodelIndex);
         return;
       }
     }
-    puVar5 = Hunk_AllocAlign((param_2->childCount + 1) * 0x28,4,"R_AddStaticModelToAabbTree_r",0x16)
-    ;
-    puVar6 = (uchar *)((int)param_2->mins + param_2->childrenOffset);
-    memcpy(puVar5,puVar6,(uint)param_2->childCount * 0x28);
-    param_2->childrenOffset = (int)puVar5 - (int)param_2;
-    for (local_18 = 0; local_18 < (int)(uint)param_2->childCount; local_18 = local_18 + 1) {
-      *(uchar **)(puVar5 + local_18 * 0x28 + 0x24) =
-           puVar6 + ((*(int *)(puVar6 + local_18 * 0x28 + 0x24) + local_18 * 0x28) -
-                    (int)(puVar5 + local_18 * 0x28));
+    dst_00 = Hunk_AllocAlign((tree->childCount + 1) * 0x28,4,"R_AddStaticModelToAabbTree_r",0x16);
+    src = (uchar *)((int)tree->mins + tree->childrenOffset);
+    memcpy(dst_00,src,(uint)tree->childCount * 0x28);
+    tree->childrenOffset = (int)dst_00 - (int)tree;
+    for (childIndex = 0; childIndex < (int)(uint)tree->childCount; childIndex = childIndex + 1) {
+      *(uchar **)(dst_00 + childIndex * 0x28 + 0x24) =
+           src + ((*(int *)(src + childIndex * 0x28 + 0x24) + childIndex * 0x28) -
+                 (int)(dst_00 + childIndex * 0x28));
     }
-    pGVar4 = (GfxAabbTree *)((int)param_2[param_2->childCount].mins + param_2->childrenOffset);
-    param_2->childCount = param_2->childCount + 1;
-    pGVar4->mins[0] = pGVar7->mins[0];
-    pGVar4->mins[1] = pGVar7->mins[1];
-    pGVar4->mins[2] = pGVar7->mins[2];
-    pGVar4->maxs[0] = pGVar7->maxs[0];
-    pGVar4->maxs[1] = pGVar7->maxs[1];
-    pGVar4->maxs[2] = pGVar7->maxs[2];
-    R_AddStaticModelToAabbTree_r(param_1,pGVar4,param_3);
+    pGVar3 = (GfxAabbTree *)((int)tree[tree->childCount].mins + tree->childrenOffset);
+    tree->childCount = tree->childCount + 1;
+    pGVar3->mins[0] = pGVar4->mins[0];
+    pGVar3->mins[1] = pGVar4->mins[1];
+    pGVar3->mins[2] = pGVar4->mins[2];
+    pGVar3->maxs[0] = pGVar4->maxs[0];
+    pGVar3->maxs[1] = pGVar4->maxs[1];
+    pGVar3->maxs[2] = pGVar4->maxs[2];
+    R_AddStaticModelToAabbTree_r(world,pGVar3,smodelIndex);
   }
   return;
 }
@@ -358,32 +368,35 @@ void __cdecl R_AddStaticModelToAabbTree_r(GfxWorld *param_1,GfxAabbTree *param_2
 
 // 00B35D20  R_AddStaticModelToCell  (gfx_d3d/r_staticmodel_load_obj.cpp:411)
 
-void __cdecl R_AddStaticModelToCell(GfxWorld *param_1,GfxStaticModelInst *param_2,int param_3)
+void __cdecl R_AddStaticModelToCell(GfxWorld *world,GfxStaticModelInst *smodelInst,int cellIndex)
 
 {
   GfxCell *pGVar1;
   GfxAabbTree *pGVar2;
   code *pcVar3;
   bool bVar4;
-  uint uVar5;
+  uint smodelIndex_00;
+  GfxCell *cell;
+  GfxAabbTree *tree;
+  int smodelIndex;
   
-  if ((param_2 == (GfxStaticModelInst *)0x0) &&
+  if ((smodelInst == (GfxStaticModelInst *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x1a0,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if (((param_3 < 0) || ((param_1->dpvsPlanes).cellCount <= param_3)) &&
+  if (((cellIndex < 0) || ((world->dpvsPlanes).cellCount <= cellIndex)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x1a1,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pGVar1 = param_1->cells;
-  uVar5 = ((int)param_2 - (int)(param_1->dpvs).smodelInsts) / 0x28;
-  pGVar2 = pGVar1[param_3].aabbTree;
+  pGVar1 = world->cells;
+  smodelIndex_00 = ((int)smodelInst - (int)(world->dpvs).smodelInsts) / 0x28;
+  pGVar2 = pGVar1[cellIndex].aabbTree;
   if ((pGVar2 == (GfxAabbTree *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x1a6,0,"%s"), !bVar4)) {
@@ -392,8 +405,8 @@ void __cdecl R_AddStaticModelToCell(GfxWorld *param_1,GfxStaticModelInst *param_
     return;
   }
   if ((pGVar2->smodelIndexCount == 0) ||
-     (pGVar2->smodelIndexes[pGVar2->smodelIndexCount - 1] != uVar5)) {
-    R_AddStaticModelToAabbTree_r(param_1,pGVar1[param_3].aabbTree,uVar5);
+     (pGVar2->smodelIndexes[pGVar2->smodelIndexCount - 1] != smodelIndex_00)) {
+    R_AddStaticModelToAabbTree_r(world,pGVar1[cellIndex].aabbTree,smodelIndex_00);
   }
   return;
 }
@@ -401,13 +414,15 @@ void __cdecl R_AddStaticModelToCell(GfxWorld *param_1,GfxStaticModelInst *param_
 
 // 00B36220  GetNameFromStaticModelInst  (gfx_d3d/r_staticmodel_load_obj.cpp:433)
 
-char * __cdecl GetNameFromStaticModelInst(GfxStaticModelInst *param_1)
+char * __cdecl GetNameFromStaticModelInst(GfxStaticModelInst *smodelInst)
 
 {
   GfxStaticModelDrawInst *pGVar1;
   char *local_10;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint smodelIndex;
   
-  pGVar1 = s_world.dpvs.smodelDrawInsts + ((int)param_1 - (int)s_world.dpvs.smodelInsts) / 0x28;
+  pGVar1 = s_world.dpvs.smodelDrawInsts + ((int)smodelInst - (int)s_world.dpvs.smodelInsts) / 0x28;
   if (((pGVar1 == (GfxStaticModelDrawInst *)0x0) || (pGVar1->model == (XModel *)0x0)) ||
      (pGVar1->model->name == (char *)0x0)) {
     local_10 = "unknown";
@@ -423,49 +438,49 @@ char * __cdecl GetNameFromStaticModelInst(GfxStaticModelInst *param_1)
 
 void __cdecl
 R_FilterStaticModelIntoCells_r
-          (GfxWorld *param_1,mnode_t *param_2,GfxStaticModelInst *param_3,float *param_4,
-          float *param_5)
+          (GfxWorld *world,mnode_t *node,GfxStaticModelInst *smodelInst,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_54 [4];
-  float local_44 [3];
-  uint local_38;
-  cplane_s *local_34;
-  uint local_30;
-  int local_2c;
-  float local_28;
+  float localmaxs [3];
+  float dist;
+  float localmins [3];
+  uint type;
+  cplane_s *plane;
+  int cellIndex;
+  int boxSide;
+  float mins2;
   float local_24;
   float local_20;
-  int local_1c;
-  float local_18 [3];
-  mnode_t *local_c;
-  int local_8;
+  int cellCount;
+  float maxs2 [3];
+  mnode_t *rightNode;
+  int planeIndex;
   
-  local_1c = (param_1->dpvsPlanes).cellCount + 1;
-  local_28 = *param_4;
-  local_24 = param_4[1];
-  local_20 = param_4[2];
-  local_18[0] = *param_5;
-  local_18[1] = param_5[1];
-  local_18[2] = param_5[2];
+  cellCount = (world->dpvsPlanes).cellCount + 1;
+  mins2 = *mins;
+  local_24 = mins[1];
+  local_20 = mins[2];
+  maxs2[0] = *maxs;
+  maxs2[1] = maxs[1];
+  maxs2[2] = maxs[2];
   do {
     while( true ) {
-      local_30 = (uint)param_2->cellIndex;
-      local_8 = local_30 - ((param_1->dpvsPlanes).cellCount + 1);
-      if (local_8 < 0) {
-        if (local_30 != 0) {
-          R_AddStaticModelToCell(param_1,param_3,local_30 - 1);
+      cellIndex = (int)node->cellIndex;
+      planeIndex = cellIndex - ((world->dpvsPlanes).cellCount + 1);
+      if (planeIndex < 0) {
+        if (cellIndex != 0) {
+          R_AddStaticModelToCell(world,smodelInst,cellIndex - 1);
         }
         return;
       }
-      local_34 = (param_1->dpvsPlanes).planes + local_8;
-      local_2c = BoxOnPlaneSide(&local_28,local_18,local_34);
-      if (local_2c == 3) break;
-      if ((local_2c != 1) && (local_2c != 2)) {
-        GetNameFromStaticModelInst(param_3);
+      plane = (world->dpvsPlanes).planes + planeIndex;
+      boxSide = BoxOnPlaneSide(&mins2,maxs2,plane);
+      if (boxSide == 3) break;
+      if ((boxSide != 1) && (boxSide != 2)) {
+        GetNameFromStaticModelInst(smodelInst);
         va(
           "boxside of %d in a static model named %s, may be a bad bounding box at or around (%f,%f,%f).\n"
           );
@@ -477,22 +492,21 @@ R_FilterStaticModelIntoCells_r
           return;
         }
       }
-      param_2 = (mnode_t *)
-                (&param_2[1].cellIndex + (param_2->rightChildOffset - 2) * (local_2c + -1));
+      node = (mnode_t *)(&node[1].cellIndex + (node->rightChildOffset - 2) * (boxSide + -1));
     }
-    local_38 = (uint)local_34->type;
-    local_c = (mnode_t *)(&param_2->cellIndex + param_2->rightChildOffset);
-    if (local_38 < 3) {
-      local_54[3] = local_34->dist;
-      local_44[0] = local_28;
-      local_44[1] = local_24;
-      local_44[2] = local_20;
-      local_44[local_34->type] = local_54[3];
-      local_54[0] = local_18[0];
-      local_54[1] = local_18[1];
-      local_54[2] = local_18[2];
-      local_54[local_34->type] = local_54[3];
-      iVar3 = BoxOnPlaneSide(local_44,local_18,local_34);
+    type = (uint)plane->type;
+    rightNode = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
+    if (type < 3) {
+      dist = plane->dist;
+      localmins[0] = mins2;
+      localmins[1] = local_24;
+      localmins[2] = local_20;
+      localmins[plane->type] = dist;
+      localmaxs[0] = maxs2[0];
+      localmaxs[1] = maxs2[1];
+      localmaxs[2] = maxs2[2];
+      localmaxs[plane->type] = dist;
+      iVar3 = BoxOnPlaneSide(localmins,maxs2,plane);
       if ((iVar3 != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                    ,0x205,0,"%s"), !bVar2)) {
@@ -500,24 +514,24 @@ R_FilterStaticModelIntoCells_r
         (*pcVar1)();
         return;
       }
-      if (local_54[3] < local_18[local_34->type]) {
-        R_FilterStaticModelIntoCells_r(param_1,param_2 + 1,param_3,local_44,local_18);
+      if (dist < maxs2[plane->type]) {
+        R_FilterStaticModelIntoCells_r(world,node + 1,smodelInst,localmins,maxs2);
       }
-      local_18[0] = local_54[0];
-      local_18[1] = local_54[1];
-      local_18[2] = local_54[2];
+      maxs2[0] = localmaxs[0];
+      maxs2[1] = localmaxs[1];
+      maxs2[2] = localmaxs[2];
     }
     else {
-      R_FilterStaticModelIntoCells_r(param_1,param_2 + 1,param_3,&local_28,local_18);
+      R_FilterStaticModelIntoCells_r(world,node + 1,smodelInst,&mins2,maxs2);
     }
-    param_2 = local_c;
+    node = rightNode;
   } while( true );
 }
 
 
 // 00B363D0  R_FindNearestReflectionProbeInCell  (gfx_d3d/r_staticmodel_load_obj.cpp:556)
 
-uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *param_1,GfxCell *param_2,float *param_3)
+uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *world,GfxCell *cell,float *origin)
 
 {
   byte bVar1;
@@ -525,11 +539,13 @@ uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *param_1,GfxCell *param
   bool bVar3;
   uint uVar4;
   float fVar5;
-  float local_14;
-  byte local_e;
-  uint local_8;
+  float bestProbeDist;
+  uchar bestProbe;
+  uchar probeIndex;
+  float testProbeDist;
+  uint cellProbeIndex;
   
-  if (0xfe < (param_1->draw).reflectionProbeCount) {
+  if (0xfe < (world->draw).reflectionProbeCount) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                              ,0x233,0,"%s");
     if (!bVar3) {
@@ -538,9 +554,9 @@ uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *param_1,GfxCell *param
       return uVar4;
     }
   }
-  local_e = 0;
-  local_14 = 3.4028235e+38;
-  if (param_2->reflectionProbeCount == '\0') {
+  bestProbe = '\0';
+  bestProbeDist = 3.4028235e+38;
+  if (cell->reflectionProbeCount == '\0') {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                              ,0x239,0,"%s");
     if (!bVar3) {
@@ -549,13 +565,13 @@ uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *param_1,GfxCell *param
       return uVar4;
     }
   }
-  local_8 = 0;
+  cellProbeIndex = 0;
   do {
-    if (param_2->reflectionProbeCount <= local_8) {
-      return (uint)local_e;
+    if (cell->reflectionProbeCount <= cellProbeIndex) {
+      return (uint)bestProbe;
     }
-    bVar1 = param_2->reflectionProbes[local_8];
-    if ((param_1->draw).reflectionProbeCount <= (uint)bVar1) {
+    bVar1 = cell->reflectionProbes[cellProbeIndex];
+    if ((world->draw).reflectionProbeCount <= (uint)bVar1) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x23d,0,
                                "probeIndex doesn\'t index world->draw.reflectionProbeCount\n\t%i not in [0, %i)"
@@ -566,30 +582,31 @@ uint __cdecl R_FindNearestReflectionProbeInCell(GfxWorld *param_1,GfxCell *param
         return uVar4;
       }
     }
-    fVar5 = Vec3DistanceSq((param_1->draw).reflectionProbes[bVar1].origin,param_3);
-    if (fVar5 < local_14) {
-      local_14 = fVar5;
-      local_e = bVar1;
+    fVar5 = Vec3DistanceSq((world->draw).reflectionProbes[bVar1].origin,origin);
+    if (fVar5 < bestProbeDist) {
+      bestProbeDist = fVar5;
+      bestProbe = bVar1;
     }
-    local_8 = local_8 + 1;
+    cellProbeIndex = cellProbeIndex + 1;
   } while( true );
 }
 
 
 // 00B36520  R_FindNearestReflectionProbe  (gfx_d3d/r_staticmodel_load_obj.cpp:588)
 
-uint __cdecl R_FindNearestReflectionProbe(GfxWorld *param_1,float *param_2)
+uint __cdecl R_FindNearestReflectionProbe(GfxWorld *world,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   float fVar4;
-  float local_10;
-  byte local_a;
-  byte local_9;
+  float bestProbeDist;
+  uchar bestProbe;
+  uchar probeIndex;
+  float testProbeDist;
   
-  if (0xfe < (param_1->draw).reflectionProbeCount) {
+  if (0xfe < (world->draw).reflectionProbeCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                              ,0x252,0,"%s");
     if (!bVar2) {
@@ -598,22 +615,23 @@ uint __cdecl R_FindNearestReflectionProbe(GfxWorld *param_1,float *param_2)
       return uVar3;
     }
   }
-  local_a = 0;
-  local_10 = 3.4028235e+38;
-  for (local_9 = 1; (uint)local_9 < (param_1->draw).reflectionProbeCount; local_9 = local_9 + 1) {
-    fVar4 = Vec3DistanceSq((param_1->draw).reflectionProbes[local_9].origin,param_2);
-    if (fVar4 < local_10) {
-      local_a = local_9;
-      local_10 = fVar4;
+  bestProbe = '\0';
+  bestProbeDist = 3.4028235e+38;
+  for (probeIndex = '\x01'; (uint)probeIndex < (world->draw).reflectionProbeCount;
+      probeIndex = probeIndex + '\x01') {
+    fVar4 = Vec3DistanceSq((world->draw).reflectionProbes[probeIndex].origin,origin);
+    if (fVar4 < bestProbeDist) {
+      bestProbe = probeIndex;
+      bestProbeDist = fVar4;
     }
   }
-  return (uint)local_a;
+  return (uint)bestProbe;
 }
 
 
 // 00B365E0  R_CellForPoint  (gfx_d3d/r_staticmodel_load_obj.cpp:617)
 
-int __cdecl R_CellForPoint(GfxWorld *param_1,float *param_2)
+int __cdecl R_CellForPoint(GfxWorld *world,float *origin)
 
 {
   code *pcVar1;
@@ -621,43 +639,50 @@ int __cdecl R_CellForPoint(GfxWorld *param_1,float *param_2)
   int iVar3;
   cplane_s *pcVar4;
   uint local_24;
-  ushort *local_20;
+  mnode_t *node;
+  uint side;
+  cplane_s *plane;
+  float d;
+  int cellIndex;
+  int cellCount;
+  int planeIndex;
   
-  if ((param_1 == (GfxWorld *)0x0) &&
+  if ((world == (GfxWorld *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x272,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_20 = (param_1->dpvsPlanes).nodes;
+  node = (mnode_t *)(world->dpvsPlanes).nodes;
   while( true ) {
-    iVar3 = (uint)*local_20 - ((param_1->dpvsPlanes).cellCount + 1);
+    iVar3 = (uint)node->cellIndex - ((world->dpvsPlanes).cellCount + 1);
     if (iVar3 < 0) break;
-    pcVar4 = (param_1->dpvsPlanes).planes + iVar3;
-    local_24 = (uint)((*param_2 * pcVar4->normal[0] + param_2[1] * pcVar4->normal[1] +
-                      param_2[2] * pcVar4->normal[2]) - pcVar4->dist <= 0.0);
-    local_20 = local_20 + (local_20[1] - 2) * local_24 + 2;
+    pcVar4 = (world->dpvsPlanes).planes + iVar3;
+    local_24 = (uint)((*origin * pcVar4->normal[0] + origin[1] * pcVar4->normal[1] +
+                      origin[2] * pcVar4->normal[2]) - pcVar4->dist <= 0.0);
+    node = (mnode_t *)(&node[1].cellIndex + (node->rightChildOffset - 2) * local_24);
   }
-  return *local_20 - 1;
+  return node->cellIndex - 1;
 }
 
 
 // 00B36340  R_CalcReflectionProbeIndex  (gfx_d3d/r_staticmodel_load_obj.cpp:650)
 
-uint __cdecl R_CalcReflectionProbeIndex(GfxWorld *param_1,float *param_2)
+uint __cdecl R_CalcReflectionProbeIndex(GfxWorld *world,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int cellIndex;
   
-  uVar3 = R_CellForPoint(param_1,param_2);
+  uVar3 = R_CellForPoint(world,origin);
   if (uVar3 == 0xffffffff) {
-    uVar3 = R_FindNearestReflectionProbe(param_1,param_2);
+    uVar3 = R_FindNearestReflectionProbe(world,origin);
   }
   else {
-    if ((uint)(param_1->dpvsPlanes).cellCount <= uVar3) {
+    if ((uint)(world->dpvsPlanes).cellCount <= uVar3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                                ,0x292,0,
                                "cellIndex doesn\'t index world->dpvsPlanes.cellCount\n\t%i not in [0, %i)"
@@ -668,7 +693,7 @@ uint __cdecl R_CalcReflectionProbeIndex(GfxWorld *param_1,float *param_2)
         return uVar3;
       }
     }
-    uVar3 = R_FindNearestReflectionProbeInCell(param_1,param_1->cells + uVar3,param_2);
+    uVar3 = R_FindNearestReflectionProbeInCell(world,world->cells + uVar3,origin);
   }
   return uVar3;
 }
@@ -678,24 +703,24 @@ uint __cdecl R_CalcReflectionProbeIndex(GfxWorld *param_1,float *param_2)
 
 void __cdecl
 R_SetStaticModelReflectionProbe
-          (GfxWorld *param_1,GfxStaticModelInst *param_2,GfxStaticModelDrawInst *param_3)
+          (GfxWorld *world,GfxStaticModelInst *smodelInst,GfxStaticModelDrawInst *smodelDrawInst)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uchar local_14;
-  float local_10;
+  uint reflectionProbeIndex;
+  float center;
   float local_c;
   float local_8;
   
-  local_10 = (param_2->mins[0] + param_2->maxs[0]) * 0.5;
-  local_c = (param_2->mins[1] + param_2->maxs[1]) * 0.5;
-  local_8 = (param_2->mins[2] + param_2->maxs[2]) * 0.5;
-  uVar3 = R_CalcReflectionProbeIndex(param_1,&local_10);
-  local_14 = (uchar)uVar3;
-  param_3->reflectionProbeIndex = local_14;
-  if (param_3->reflectionProbeIndex != uVar3) {
+  center = (smodelInst->mins[0] + smodelInst->maxs[0]) * 0.5;
+  local_c = (smodelInst->mins[1] + smodelInst->maxs[1]) * 0.5;
+  local_8 = (smodelInst->mins[2] + smodelInst->maxs[2]) * 0.5;
+  uVar3 = R_CalcReflectionProbeIndex(world,&center);
+  reflectionProbeIndex._0_1_ = (uchar)uVar3;
+  smodelDrawInst->reflectionProbeIndex = (uchar)reflectionProbeIndex;
+  if (smodelDrawInst->reflectionProbeIndex != uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                              ,0x29f,0,"%s");
     if (!bVar2) {
@@ -711,28 +736,29 @@ R_SetStaticModelReflectionProbe
 // 00B366F0  R_CreateStaticModel  (gfx_d3d/r_staticmodel_load_obj.cpp:675)
 
 void __cdecl
-R_CreateStaticModel(XModel *param_1,float *param_2,float (*param_3) [3],float param_4,
-                   GfxStaticModelDrawInst *param_5,GfxStaticModelInst *param_6,uint param_7)
+R_CreateStaticModel(XModel *model,float *origin,float (*axis) [3],float scale,
+                   GfxStaticModelDrawInst *smodelDrawInst,GfxStaticModelInst *smodelInst,
+                   uint staticModelFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   
-  param_5->model = param_1;
-  (param_5->placement).origin[0] = *param_2;
-  (param_5->placement).origin[1] = param_2[1];
-  (param_5->placement).origin[2] = param_2[2];
-  Vec3PackNormAxis(param_3,(param_5->placement).axis);
-  (param_5->placement).scale = param_4;
-  R_GetXModelBounds(param_1,param_3,param_6->mins,param_6->maxs);
-  param_6->mins[0] = param_4 * param_6->mins[0] + *param_2;
-  param_6->mins[1] = param_4 * param_6->mins[1] + param_2[1];
-  param_6->mins[2] = param_4 * param_6->mins[2] + param_2[2];
-  param_6->maxs[0] = param_4 * param_6->maxs[0] + *param_2;
-  param_6->maxs[1] = param_4 * param_6->maxs[1] + param_2[1];
-  param_6->maxs[2] = param_4 * param_6->maxs[2] + param_2[2];
-  if (param_4 == 0.0) {
+  smodelDrawInst->model = model;
+  (smodelDrawInst->placement).origin[0] = *origin;
+  (smodelDrawInst->placement).origin[1] = origin[1];
+  (smodelDrawInst->placement).origin[2] = origin[2];
+  Vec3PackNormAxis(axis,(smodelDrawInst->placement).axis);
+  (smodelDrawInst->placement).scale = scale;
+  R_GetXModelBounds(model,axis,smodelInst->mins,smodelInst->maxs);
+  smodelInst->mins[0] = scale * smodelInst->mins[0] + *origin;
+  smodelInst->mins[1] = scale * smodelInst->mins[1] + origin[1];
+  smodelInst->mins[2] = scale * smodelInst->mins[2] + origin[2];
+  smodelInst->maxs[0] = scale * smodelInst->maxs[0] + *origin;
+  smodelInst->maxs[1] = scale * smodelInst->maxs[1] + origin[1];
+  smodelInst->maxs[2] = scale * smodelInst->maxs[2] + origin[2];
+  if (scale == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodel_load_obj.cpp"
                              ,0x2ae,0,"%s");
     if (!bVar2) {
@@ -741,10 +767,10 @@ R_CreateStaticModel(XModel *param_1,float *param_2,float (*param_3) [3],float pa
       return;
     }
   }
-  fVar3 = XModelGetLodOutDist(param_1);
-  param_5->cullDist = fVar3 * param_4;
-  param_5->reflectionProbeIndex = '\0';
-  param_5->flags = param_7;
+  fVar3 = XModelGetLodOutDist(model);
+  smodelDrawInst->cullDist = fVar3 * scale;
+  smodelDrawInst->reflectionProbeIndex = '\0';
+  smodelDrawInst->flags = staticModelFlags;
   return;
 }
 

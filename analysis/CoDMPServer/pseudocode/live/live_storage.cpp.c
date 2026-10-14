@@ -129,12 +129,12 @@ void __cdecl _dynamic_initializer_for__controllerFileOps__(void)
 
 uint __thiscall
 fileShareDownloadInterceptor::handleDownload
-          (fileShareDownloadInterceptor *this,void *param_1,uint param_2)
+          (fileShareDownloadInterceptor *this,void *data,uint dataSize)
 
 {
   uint uVar1;
   
-  uVar1 = (*this->callback)(param_1,param_2,this->task);
+  uVar1 = (*this->callback)(data,dataSize,this->task);
   return uVar1;
 }
 
@@ -143,26 +143,26 @@ fileShareDownloadInterceptor::handleDownload
 
 uint __thiscall
 fileShareUploadInterceptor::handleUpload
-          (fileShareUploadInterceptor *this,void *param_1,uint param_2,uint param_3)
+          (fileShareUploadInterceptor *this,void *data,uint dataSize,uint bytesUploaded)
 
 {
   uint uVar1;
   
-  uVar1 = (*this->callback)(param_1,param_2,param_3,this->task);
+  uVar1 = (*this->callback)(data,dataSize,bytesUploaded,this->task);
   return uVar1;
 }
 
 
 // 00980170  LiveStorage_CorrectStatsError  (live/live_storage.cpp:234)
 
-void __cdecl LiveStorage_CorrectStatsError(char *param_1)
+void __cdecl LiveStorage_CorrectStatsError(char *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   
   if ((basicTrainingFatal->current).enabled == false) {
-    Com_PrintError(0x10,param_1);
+    Com_PrintError(0x10,msg);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf1,0,
@@ -172,7 +172,7 @@ void __cdecl LiveStorage_CorrectStatsError(char *param_1)
       (*pcVar1)();
       return;
     }
-    Com_Error(ERR_DROP,param_1);
+    Com_Error(ERR_DROP,msg);
   }
   return;
 }
@@ -180,24 +180,26 @@ void __cdecl LiveStorage_CorrectStatsError(char *param_1)
 
 // 00980080  LiveStorage_VerifyCorrectStats  (live/live_storage.cpp:260)
 
-void __cdecl LiveStorage_VerifyCorrectStats(persistentStats *param_1,statsLocation param_2)
+void __cdecl LiveStorage_VerifyCorrectStats(persistentStats *stats,statsLocation location)
 
 {
   bool bVar1;
   bool bVar2;
   char *pcVar3;
   undefined3 in_stack_00000009;
+  bool onlineRanked;
+  bool basicTraining;
   
-  bVar1 = LiveStats_GetBasicTrainingState(param_1->statsBuffer);
-  bVar2 = LiveStats_GetOnlineRankedState(param_1->statsBuffer);
-  if (((_param_2 != 3) && (_param_2 != 2)) && (_param_2 != 4)) {
-    if (_param_2 == 1) {
+  bVar1 = LiveStats_GetBasicTrainingState(stats->statsBuffer);
+  bVar2 = LiveStats_GetOnlineRankedState(stats->statsBuffer);
+  if (((_location != 3) && (_location != 2)) && (_location != 4)) {
+    if (_location == 1) {
       if (bVar1) {
         LiveStorage_CorrectStatsError
                   ("Basic Training Stats found, expecting Online Ranked stats.\n");
       }
     }
-    else if (_param_2 == 5) {
+    else if (_location == 5) {
       if (bVar2) {
         LiveStorage_CorrectStatsError
                   ("Online Ranked Stats found, expecting Basic Training stats.\n");
@@ -223,16 +225,17 @@ void __cdecl LiveStorage_VerifyCorrectStats(persistentStats *param_1,statsLocati
 // 0097FF20  LiveStorage_GetPersStatsBuffer  (live/live_storage.cpp:314)
 
 persistentStats * __cdecl
-LiveStorage_GetPersStatsBuffer(int param_1,statsLocation param_2,bool param_3)
+LiveStorage_GetPersStatsBuffer
+          (int controllerIndex,statsLocation playerStatsLocation,bool verifyLocation)
 
 {
   code *pcVar1;
   bool bVar2;
   persistentStats *ppVar3;
   int3 in_stack_00000009;
-  persistentStats_conflict *local_8;
+  persistentStats *stats;
   
-  if ((7 < _param_2) &&
+  if ((7 < _playerStatsLocation) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x13d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -246,54 +249,59 @@ LiveStorage_GetPersStatsBuffer(int param_1,statsLocation param_2,bool param_3)
     ppVar3 = (persistentStats *)(*pcVar1)();
     return ppVar3;
   }
-  switch(_param_2) {
+  switch(_playerStatsLocation) {
   case 0:
   case 1:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90);
     break;
   case 2:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x9cec);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x9cec);
     break;
   case 3:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x139d8);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x139d8);
     break;
   case 4:
-    local_8 = &s_otherPlayerStats;
+    stats = (persistentStats *)&s_otherPlayerStats;
     break;
   case 5:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x1d6c4);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x1d6c4);
     break;
   case 6:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x273b0);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x273b0);
     break;
   case 7:
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3109c);
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3109c);
   }
-  if (((_param_2 == 0) || (_param_2 == 6)) && ((xblive_basictraining->current).enabled != false)) {
-    local_8 = (persistentStats_conflict *)(controllerNetworkData + param_1 * 0x3ad90 + 0x1d6c4);
+  if (((_playerStatsLocation == 0) || (_playerStatsLocation == 6)) &&
+     ((xblive_basictraining->current).enabled != false)) {
+    stats = (persistentStats *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x1d6c4);
   }
-  if (param_3) {
-    LiveStorage_VerifyCorrectStats((persistentStats *)local_8,param_2);
+  if (verifyLocation) {
+    LiveStorage_VerifyCorrectStats(stats,playerStatsLocation);
   }
-  return (persistentStats *)local_8;
+  return stats;
 }
 
 
 // 0097FF00  LiveStorage_GetStatsBuffer  (live/live_storage.cpp:369)
 
-uchar * __cdecl LiveStorage_GetStatsBuffer(int param_1,statsLocation param_2,bool param_3)
+uchar * __cdecl
+LiveStorage_GetStatsBuffer
+          (int controllerIndex,statsLocation playerStatsLocation,bool verifyLocation)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,param_3);
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,verifyLocation);
   return ppVar1->statsBuffer;
 }
 
 
 // 009801D0  LiveStorage_GetStatsBufferSize  (live/live_storage.cpp:374)
 
-int __cdecl LiveStorage_GetStatsBufferSize(int param_1,statsLocation param_2,bool param_3)
+int __cdecl
+LiveStorage_GetStatsBufferSize
+          (int controllerIndex,statsLocation playerStatsLocation,bool verifyLocation)
 
 {
   return 0x9ce8;
@@ -302,56 +310,60 @@ int __cdecl LiveStorage_GetStatsBufferSize(int param_1,statsLocation param_2,boo
 
 // 009801E0  LiveStorage_GetStatsChecksumValid  (live/live_storage.cpp:379)
 
-bool __cdecl LiveStorage_GetStatsChecksumValid(int param_1,statsLocation param_2)
+bool __cdecl
+LiveStorage_GetStatsChecksumValid(int controllerIndex,statsLocation playerStatsLocation)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,true);
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,true);
   return (bool)ppVar1[1].statsBuffer[0x37c];
 }
 
 
 // 00980200  LiveStorage_SetStatsChecksumValid  (live/live_storage.cpp:384)
 
-void __cdecl LiveStorage_SetStatsChecksumValid(int param_1,statsLocation param_2,bool param_3)
+void __cdecl
+LiveStorage_SetStatsChecksumValid
+          (int controllerIndex,statsLocation playerStatsLocation,bool isValid)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,true);
-  ppVar1[1].statsBuffer[0x37c] = param_3;
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,true);
+  ppVar1[1].statsBuffer[0x37c] = isValid;
   return;
 }
 
 
 // 00980220  LiveStorage_GetStatsWriteNeeded  (live/live_storage.cpp:389)
 
-bool __cdecl LiveStorage_GetStatsWriteNeeded(int param_1,statsLocation param_2)
+bool __cdecl LiveStorage_GetStatsWriteNeeded(int controllerIndex,statsLocation location)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  int iVar3;
+  uchar *buffer;
+  int flagIndex;
   
-  iVar3 = 0;
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,param_2,true);
-  bVar1 = DDL_GetUserFlag((char *)puVar2,iVar3);
+  flagIndex = 0;
+  buffer = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+  bVar1 = DDL_GetUserFlag((char *)buffer,flagIndex);
   return bVar1;
 }
 
 
 // 00980250  LiveStorage_SetStatsWriteNeeded  (live/live_storage.cpp:394)
 
-void __cdecl LiveStorage_SetStatsWriteNeeded(int param_1,bool param_2,statsLocation param_3)
+void __cdecl
+LiveStorage_SetStatsWriteNeeded(int controllerIndex,bool isWriteNeeded,statsLocation location)
 
 {
-  uchar *puVar1;
-  int iVar2;
+  uchar *buffer;
+  int flagIndex;
   
-  iVar2 = 0;
-  puVar1 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
-  DDL_SetUserFlag((char *)puVar1,iVar2,param_2);
+  flagIndex = 0;
+  buffer = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+  DDL_SetUserFlag((char *)buffer,flagIndex,isWriteNeeded);
   return;
 }
 
@@ -361,18 +373,18 @@ void __cdecl LiveStorage_SetStatsWriteNeeded(int param_1,bool param_2,statsLocat
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LiveStorage_ValidateWithDDL(int param_1,statsLocation param_2)
+int __cdecl LiveStorage_ValidateWithDDL(int controllerIndex,statsLocation location)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_9cfc [40172];
+  char backupBuffer [40172];
   uint local_10;
-  uchar *local_c;
-  int local_8;
+  char *buffer;
+  int bufferSize;
   
-  local_8 = 0x98028d;
+  bufferSize = 0x98028d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (g_statsDDL == (ddlDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x193,0,
@@ -383,32 +395,32 @@ int __cdecl LiveStorage_ValidateWithDDL(int param_1,statsLocation param_2)
       return iVar3;
     }
   }
-  local_c = LiveStorage_GetStatsBuffer(param_1,param_2,true);
-  local_8 = LiveStorage_GetStatsBufferSize(param_1,param_2,true);
-  iVar3 = DDL_AssociateBuffer((char *)local_c,local_8,g_statsDDL);
+  buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+  bufferSize = LiveStorage_GetStatsBufferSize(controllerIndex,location,true);
+  iVar3 = DDL_AssociateBuffer(buffer,bufferSize,g_statsDDL);
   if (iVar3 == 0) {
-    iVar3 = DDL_FixBufferVersion((char *)local_c,g_statsDDL,"ddl_mp/stats.ddl",local_9cfc,0x9ce8);
+    iVar3 = DDL_FixBufferVersion(buffer,g_statsDDL,"ddl_mp/stats.ddl",backupBuffer,0x9ce8);
     if (iVar3 == 0) {
-      iVar3 = DDL_FixBufferVersion
-                        ((char *)local_c,g_statsDDL,"ddl_mp/stats_archive.ddl",local_9cfc,0x9ce8);
+      iVar3 = DDL_FixBufferVersion(buffer,g_statsDDL,"ddl_mp/stats_archive.ddl",backupBuffer,0x9ce8)
+      ;
       if (iVar3 == 0) {
         iVar3 = 0;
       }
       else {
         DDL_NoCheckPrintWarning
                   ("DDL: Stats buffer updated to version %d for controller index %d.\n");
-        LiveStorage_SetStatsDDLValidated(param_1,param_2,true);
+        LiveStorage_SetStatsDDLValidated(controllerIndex,location,true);
         iVar3 = 1;
       }
     }
     else {
       DDL_NoCheckPrintWarning("DDL: Stats buffer updated to version %d for controller index %d.\n");
-      LiveStorage_SetStatsDDLValidated(param_1,param_2,true);
+      LiveStorage_SetStatsDDLValidated(controllerIndex,location,true);
       iVar3 = 1;
     }
   }
   else {
-    LiveStorage_SetStatsDDLValidated(param_1,param_2,true);
+    LiveStorage_SetStatsDDLValidated(controllerIndex,location,true);
     iVar3 = 1;
   }
   return iVar3;
@@ -417,38 +429,40 @@ int __cdecl LiveStorage_ValidateWithDDL(int param_1,statsLocation param_2)
 
 // 00980400  LiveStorage_AreStatsDDLValidated  (live/live_storage.cpp:436)
 
-bool __cdecl LiveStorage_AreStatsDDLValidated(int param_1,statsLocation param_2)
+bool __cdecl LiveStorage_AreStatsDDLValidated(int controllerIndex,statsLocation playerStatsLocation)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,true);
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,true);
   return (bool)ppVar1[1].statsBuffer[0x37e];
 }
 
 
 // 00980420  LiveStorage_SetStatsDDLValidated  (live/live_storage.cpp:441)
 
-void __cdecl LiveStorage_SetStatsDDLValidated(int param_1,statsLocation param_2,bool param_3)
+void __cdecl
+LiveStorage_SetStatsDDLValidated
+          (int controllerIndex,statsLocation playerStatsLocation,bool statsValidatedWithDDL)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,true);
-  ppVar1[1].statsBuffer[0x37e] = param_3;
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,true);
+  ppVar1[1].statsBuffer[0x37e] = statsValidatedWithDDL;
   return;
 }
 
 
 // 00980440  LiveStorage_StatsBackupFetchCompleted  (live/live_storage.cpp:446)
 
-void __cdecl LiveStorage_StatsBackupFetchCompleted(int param_1)
+void __cdecl LiveStorage_StatsBackupFetchCompleted(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x1bf,0,
                              "%s");
     if (!bVar2) {
@@ -457,46 +471,48 @@ void __cdecl LiveStorage_StatsBackupFetchCompleted(int param_1)
       return;
     }
   }
-  *(undefined1 *)(*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0xf0) = 1;
+  *(undefined1 *)(*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0xf0) = 1;
   return;
 }
 
 
 // 009804A0  LiveStorage_DoWeHaveStats  (live/live_storage.cpp:453)
 
-bool __cdecl LiveStorage_DoWeHaveStats(int param_1,statsLocation param_2)
+bool __cdecl LiveStorage_DoWeHaveStats(int controllerIndex,statsLocation playerStatsLocation)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,false);
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,playerStatsLocation,false);
   return (bool)ppVar1[1].statsBuffer[0x37f];
 }
 
 
 // 009804C0  LiveStorage_DoWeHaveCurrentStats  (live/live_storage.cpp:458)
 
-bool __cdecl LiveStorage_DoWeHaveCurrentStats(int param_1)
+bool __cdecl LiveStorage_DoWeHaveCurrentStats(int controllerIndex)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,STATS_LOCATION_NORMAL,false);
+  ppVar1 = LiveStorage_GetPersStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,false);
   return (bool)ppVar1[1].statsBuffer[0x37f];
 }
 
 
 // 009804E0  LiveStorage_DoWeHaveAllStats  (live/live_storage.cpp:463)
 
-bool __cdecl LiveStorage_DoWeHaveAllStats(int param_1)
+bool __cdecl LiveStorage_DoWeHaveAllStats(int controllerIndex)
 
 {
   bool bVar1;
   bool bVar2;
   undefined1 local_c;
+  bool playerStatsFetched;
+  bool basicTrainingStatsFetched;
   
-  bVar1 = LiveStorage_DoWeHaveStats(param_1,STATS_LOCATION_FORCE_NORMAL);
-  bVar2 = LiveStorage_DoWeHaveStats(param_1,STATS_LOCATION_BASICTRAINING);
+  bVar1 = LiveStorage_DoWeHaveStats(controllerIndex,STATS_LOCATION_FORCE_NORMAL);
+  bVar2 = LiveStorage_DoWeHaveStats(controllerIndex,STATS_LOCATION_BASICTRAINING);
   if ((bVar1) && (bVar2)) {
     local_c = true;
   }
@@ -509,13 +525,15 @@ bool __cdecl LiveStorage_DoWeHaveAllStats(int param_1)
 
 // 00980540  LiveStorage_SetStatsFetched  (live/live_storage.cpp:479)
 
-void __cdecl LiveStorage_SetStatsFetched(int param_1,statsLocation param_2,bool param_3)
+void __cdecl
+LiveStorage_SetStatsFetched
+          (int localControllerIndex,statsLocation playerStatsLocation,bool isFetched)
 
 {
   persistentStats *ppVar1;
   
-  ppVar1 = LiveStorage_GetPersStatsBuffer(param_1,param_2,false);
-  ppVar1[1].statsBuffer[0x37f] = param_3;
+  ppVar1 = LiveStorage_GetPersStatsBuffer(localControllerIndex,playerStatsLocation,false);
+  ppVar1[1].statsBuffer[0x37f] = isFetched;
   return;
 }
 
@@ -523,32 +541,32 @@ void __cdecl LiveStorage_SetStatsFetched(int param_1,statsLocation param_2,bool 
 // 00980560  LiveStorage_FileShare_GetFileShareData  (live/live_storage.cpp:495)
 
 fileSharePrivateData * __cdecl
-LiveStorage_FileShare_GetFileShareData(fileShareBufferLocation param_1)
+LiveStorage_FileShare_GetFileShareData(fileShareBufferLocation bufferLocation)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  fileSharePrivateData *pfVar4;
+  char *fmt;
+  fileSharePrivateData *pfVar3;
   
-  if (param_1 == FILESHARE_BUFFER_PRIMARY) {
-    pfVar4 = &s_fileSharePrimary;
+  if (bufferLocation == FILESHARE_BUFFER_PRIMARY) {
+    pfVar3 = &s_fileSharePrimary;
   }
-  else if (param_1 == FILESHARE_BUFFER_SECONDARY) {
-    pfVar4 = &s_fileShareSecondary;
+  else if (bufferLocation == FILESHARE_BUFFER_SECONDARY) {
+    pfVar3 = &s_fileShareSecondary;
   }
   else {
-    pcVar3 = va("Invalid file share location %d\n");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x1f9,0,
-                             pcVar3);
+    fmt = va("Invalid file share location %d\n");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x1f9,0,fmt
+                            );
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      pfVar4 = (fileSharePrivateData *)(*pcVar1)();
-      return pfVar4;
+      pfVar3 = (fileSharePrivateData *)(*pcVar1)();
+      return pfVar3;
     }
-    pfVar4 = (fileSharePrivateData *)0x0;
+    pfVar3 = (fileSharePrivateData *)0x0;
   }
-  return pfVar4;
+  return pfVar3;
 }
 
 
@@ -556,14 +574,14 @@ LiveStorage_FileShare_GetFileShareData(fileShareBufferLocation param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FetchRequiredFiles(int param_1)
+void __cdecl LiveStorage_FetchRequiredFiles(int controllerIndex)
 
 {
   bool bVar1;
   
   bVar1 = LiveStorage_DoWeHaveOnlineWAD();
   if (!bVar1) {
-    LiveStorage_FetchOnlineWAD(param_1);
+    LiveStorage_FetchOnlineWAD(controllerIndex);
   }
   return;
 }
@@ -574,19 +592,21 @@ void __cdecl LiveStorage_FetchRequiredFiles(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_SetupNestedTask(TaskDefinition *param_1,int param_2,TaskRecord *param_3,void *param_4)
+LiveStorage_SetupNestedTask
+          (TaskDefinition *taskdef,int controllerIndex,TaskRecord *nestedTask,void *payload)
 
 {
-  TaskRecord *pTVar1;
+  TaskRecord *task_00;
+  TaskRecord *task;
   
-  pTVar1 = TaskManager2_CreateTask(param_1,param_2,param_3,0);
-  if (pTVar1 != (TaskRecord *)0x0) {
-    TaskManager2_StartTask(pTVar1);
-    if (param_4 != (void *)0x0) {
-      pTVar1->payload = param_4;
+  task_00 = TaskManager2_CreateTask(taskdef,controllerIndex,nestedTask,0);
+  if (task_00 != (TaskRecord *)0x0) {
+    TaskManager2_StartTask(task_00);
+    if (payload != (void *)0x0) {
+      task_00->payload = payload;
     }
   }
-  return pTVar1;
+  return task_00;
 }
 
 
@@ -594,46 +614,46 @@ LiveStorage_SetupNestedTask(TaskDefinition *param_1,int param_2,TaskRecord *para
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_ResetFileInfo(dwFileOperationInfo *param_1)
+void __cdecl LiveStorage_ResetFileInfo(dwFileOperationInfo *fileInfo)
 
 {
-  param_1->taskType = 0;
-  param_1->bufferSize = 0;
-  param_1->writeCompleted = false;
-  param_1->isCompressedFile = false;
-  param_1->fileBuffer = (uchar *)0x0;
-  param_1->fileNotFoundFunction = (_func___cdecl_taskCompleteResults_int_void_ptr *)0x0;
-  param_1->fileOperationSucessFunction = (_func___cdecl_void_int_void_ptr *)0x0;
-  param_1->alreadyUploaded = (bool *)0x0;
-  (param_1->fileTask).m_buffer = (void *)0x0;
-  (param_1->fileTask).m_bufferSize = 0;
-  (param_1->fileTask).m_fileData.m_fileData = (void *)0x0;
-  (param_1->fileTask).m_fileData.m_fileSize = 0;
-  *(undefined4 *)&(param_1->fileTask).m_fileID = 0;
-  *(undefined4 *)((int)&(param_1->fileTask).m_fileID + 4) = 0;
-  *(undefined4 *)&(param_1->fileTask).m_fileInfo.m_ownerID = 0;
-  *(undefined4 *)((int)&(param_1->fileTask).m_fileInfo.m_ownerID + 4) = 0;
-  (param_1->fileTask).m_fileInfo.m_fileSize = 0;
-  if ((param_1->menuDef != (char *)0x0) && (*param_1->menuDef != '\0')) {
-    param_1->menuDef = "";
+  fileInfo->taskType = 0;
+  fileInfo->bufferSize = 0;
+  fileInfo->writeCompleted = false;
+  fileInfo->isCompressedFile = false;
+  fileInfo->fileBuffer = (uchar *)0x0;
+  fileInfo->fileNotFoundFunction = (_func___cdecl_taskCompleteResults_int_void_ptr *)0x0;
+  fileInfo->fileOperationSucessFunction = (_func___cdecl_void_int_void_ptr *)0x0;
+  fileInfo->alreadyUploaded = (bool *)0x0;
+  (fileInfo->fileTask).m_buffer = (void *)0x0;
+  (fileInfo->fileTask).m_bufferSize = 0;
+  (fileInfo->fileTask).m_fileData.m_fileData = (void *)0x0;
+  (fileInfo->fileTask).m_fileData.m_fileSize = 0;
+  *(undefined4 *)&(fileInfo->fileTask).m_fileID = 0;
+  *(undefined4 *)((int)&(fileInfo->fileTask).m_fileID + 4) = 0;
+  *(undefined4 *)&(fileInfo->fileTask).m_fileInfo.m_ownerID = 0;
+  *(undefined4 *)((int)&(fileInfo->fileTask).m_fileInfo.m_ownerID + 4) = 0;
+  (fileInfo->fileTask).m_fileInfo.m_fileSize = 0;
+  if ((fileInfo->menuDef != (char *)0x0) && (*fileInfo->menuDef != '\0')) {
+    fileInfo->menuDef = "";
   }
-  param_1->fileOperationFailureFunction = (_func___cdecl_void_int_void_ptr *)0x0;
-  *(undefined4 *)&param_1->ownerID = 0;
-  *(undefined4 *)((int)&param_1->ownerID + 4) = 0;
+  fileInfo->fileOperationFailureFunction = (_func___cdecl_void_int_void_ptr *)0x0;
+  *(undefined4 *)&fileInfo->ownerID = 0;
+  *(undefined4 *)((int)&fileInfo->ownerID + 4) = 0;
   return;
 }
 
 
 // 009812B0  LiveStorage_UpdateFileTryData  (live/live_storage.cpp:662)
 
-void __cdecl LiveStorage_UpdateFileTryData(fileRetryInfo *param_1)
+void __cdecl LiveStorage_UpdateFileTryData(fileRetryInfo *retryInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (fileRetryInfo *)0x0) {
+  if (retryInfo == (fileRetryInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x297,0,
                              "%s");
     if (!bVar2) {
@@ -643,24 +663,24 @@ void __cdecl LiveStorage_UpdateFileTryData(fileRetryInfo *param_1)
     }
   }
   iVar3 = Sys_Milliseconds();
-  param_1->lastAttemptTime = iVar3;
-  if (param_1->lastAttemptInterval == 0) {
-    param_1->lastAttemptInterval = (dwFileFetchTryIntervalBase->current).integer * 1000;
+  retryInfo->lastAttemptTime = iVar3;
+  if (retryInfo->lastAttemptInterval == 0) {
+    retryInfo->lastAttemptInterval = (dwFileFetchTryIntervalBase->current).integer * 1000;
   }
   else {
-    param_1->lastAttemptInterval = param_1->lastAttemptInterval << 1;
+    retryInfo->lastAttemptInterval = retryInfo->lastAttemptInterval << 1;
   }
-  if ((dwFileFetchTryIntervalMax->current).integer * 1000 < param_1->lastAttemptInterval) {
-    param_1->lastAttemptInterval = (dwFileFetchTryIntervalMax->current).integer * 1000;
+  if ((dwFileFetchTryIntervalMax->current).integer * 1000 < retryInfo->lastAttemptInterval) {
+    retryInfo->lastAttemptInterval = (dwFileFetchTryIntervalMax->current).integer * 1000;
   }
-  param_1->retryCount = param_1->retryCount + 1;
+  retryInfo->retryCount = retryInfo->retryCount + 1;
   return;
 }
 
 
 // 00981240  LiveStorage_TryFile  (live/live_storage.cpp:685)
 
-bool __cdecl LiveStorage_TryFile(fileRetryInfo *param_1)
+bool __cdecl LiveStorage_TryFile(fileRetryInfo *retryInfo)
 
 {
   int iVar1;
@@ -670,17 +690,17 @@ bool __cdecl LiveStorage_TryFile(fileRetryInfo *param_1)
   undefined1 uVar5;
   int iVar6;
   
-  if ((param_1 == (fileRetryInfo *)0x0) &&
+  if ((retryInfo == (fileRetryInfo *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2ae,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     uVar5 = (*pcVar3)();
     return (bool)uVar5;
   }
-  if ((param_1->retryCount <= (dwFileFetchTryMaxAttempts->current).integer) &&
-     (iVar1 = param_1->lastAttemptTime, iVar2 = param_1->lastAttemptInterval,
+  if ((retryInfo->retryCount <= (dwFileFetchTryMaxAttempts->current).integer) &&
+     (iVar1 = retryInfo->lastAttemptTime, iVar2 = retryInfo->lastAttemptInterval,
      iVar6 = Sys_Milliseconds(), iVar1 + iVar2 <= iVar6)) {
-    LiveStorage_UpdateFileTryData(param_1);
+    LiveStorage_UpdateFileTryData(retryInfo);
     return true;
   }
   return false;
@@ -691,14 +711,15 @@ bool __cdecl LiveStorage_TryFile(fileRetryInfo *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_DeleteUserFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_DeleteUserFileFailure(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) {
+  if ((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",700,0,"%s")
     ;
     if (!bVar3) {
@@ -707,12 +728,12 @@ void __cdecl LiveStorage_DeleteUserFileFailure(TaskRecord *param_1)
       return;
     }
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    pvVar1 = param_1->payload;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
     Sys_Milliseconds();
     Com_Printf(0x10,"Failed to remove %s from dw. (%dms)\n");
     if (*(int *)((int)pvVar1 + 0x108) != 0) {
-      (**(code **)((int)pvVar1 + 0x108))(param_1->controllerIndex,param_1->payload);
+      (**(code **)((int)pvVar1 + 0x108))(task->controllerIndex,task->payload);
     }
   }
   return;
@@ -723,14 +744,15 @@ void __cdecl LiveStorage_DeleteUserFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_DeleteUserFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_DeleteUserFileSuccess(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) {
+  if ((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2cc,0,
                              "%s");
     if (!bVar3) {
@@ -739,14 +761,14 @@ void __cdecl LiveStorage_DeleteUserFileSuccess(TaskRecord *param_1)
       return;
     }
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    pvVar1 = param_1->payload;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
     *(undefined1 *)((int)pvVar1 + 0xf1) = 1;
     *(undefined4 *)((int)pvVar1 + 0xe8) = 0;
     Sys_Milliseconds();
     Com_Printf(0x10,"Successfully removed %s from dw. (%dms)\n");
     if (*(int *)((int)pvVar1 + 0x100) != 0) {
-      (**(code **)((int)pvVar1 + 0x100))(param_1->controllerIndex,pvVar1);
+      (**(code **)((int)pvVar1 + 0x100))(task->controllerIndex,pvVar1);
     }
   }
   return;
@@ -757,14 +779,17 @@ void __cdecl LiveStorage_DeleteUserFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int param_1,dwFileOperationInfo *param_2)
+TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int controllerIndex,dwFileOperationInfo *fileInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
+  dwFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if (param_2 == (dwFileOperationInfo *)0x0) {
+  if (fileInfo == (dwFileOperationInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2df,0,
                              "%s");
     if (!bVar2) {
@@ -773,7 +798,7 @@ TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int param_1,dwFileOperationInf
       return pTVar3;
     }
   }
-  if ((param_2->fileTask).m_filename == (char *)0x0) {
+  if ((fileInfo->fileTask).m_filename == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2e0,0,
                              "%s");
     if (!bVar2) {
@@ -782,7 +807,7 @@ TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int param_1,dwFileOperationInf
       return pTVar3;
     }
   }
-  if (param_2->isUserFile == false) {
+  if (fileInfo->isUserFile == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2e1,0,
                              "%s");
     if (!bVar2) {
@@ -797,8 +822,8 @@ TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int param_1,dwFileOperationInf
     pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    pTVar3 = dwDeleteFile(param_1,(param_2->fileTask).m_filename);
-    pTVar3 = LiveStorage_SetupNestedTask(task_LiveDeleteUserFile,param_1,pTVar3,param_2);
+    pTVar3 = dwDeleteFile(controllerIndex,(fileInfo->fileTask).m_filename);
+    pTVar3 = LiveStorage_SetupNestedTask(task_LiveDeleteUserFile,controllerIndex,pTVar3,fileInfo);
   }
   return pTVar3;
 }
@@ -808,16 +833,17 @@ TaskRecord * __cdecl LiveStorage_DeleteDWUserFile(int param_1,dwFileOperationInf
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_WriteUserFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_WriteUserFileFailure(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
-  int iVar4;
-  char *pcVar5;
+  int localClientNum;
+  char *menuName;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) {
+  if ((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x2f9,0,
                              "%s");
     if (!bVar3) {
@@ -826,15 +852,15 @@ void __cdecl LiveStorage_WriteUserFileFailure(TaskRecord *param_1)
       return;
     }
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    pvVar1 = param_1->payload;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
     Sys_Milliseconds();
     Com_PrintError(0x10,"Unable to write %s to dw. (%dms)\n");
-    pcVar5 = "popup_uploadingfile";
-    iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-    UI_CloseMenu(iVar4,pcVar5);
+    menuName = "popup_uploadingfile";
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+    UI_CloseMenu(localClientNum,menuName);
     if (*(int *)((int)pvVar1 + 0x108) != 0) {
-      (**(code **)((int)pvVar1 + 0x108))(param_1->controllerIndex,pvVar1);
+      (**(code **)((int)pvVar1 + 0x108))(task->controllerIndex,pvVar1);
     }
   }
   return;
@@ -845,14 +871,15 @@ void __cdecl LiveStorage_WriteUserFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_WriteUserFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_WriteUserFileSuccess(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) {
+  if ((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x30a,0,
                              "%s");
     if (!bVar3) {
@@ -861,14 +888,14 @@ void __cdecl LiveStorage_WriteUserFileSuccess(TaskRecord *param_1)
       return;
     }
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    pvVar1 = param_1->payload;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
     *(undefined1 *)((int)pvVar1 + 0xf1) = 1;
     *(undefined4 *)((int)pvVar1 + 0xe8) = 0;
     Sys_Milliseconds();
     Com_Printf(0x10,"Successfully wrote %s to dw. (%dms)\n");
     if (*(int *)((int)pvVar1 + 0x100) != 0) {
-      (**(code **)((int)pvVar1 + 0x100))(param_1->controllerIndex,pvVar1);
+      (**(code **)((int)pvVar1 + 0x100))(task->controllerIndex,pvVar1);
     }
   }
   return;
@@ -880,134 +907,134 @@ void __cdecl LiveStorage_WriteUserFileSuccess(TaskRecord *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_WriteDWUserFile(int param_1,dwFileOperationInfo *param_2,ulong64 param_3)
+LiveStorage_WriteDWUserFile(int controllerIndex,dwFileOperationInfo *fileInfo,ulong64 uid)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  uchar *puVar4;
-  int iVar5;
-  char *pcVar6;
+  uchar *to;
+  int localClientNum;
+  char *menuName;
   undefined4 in_stack_ffffffd8;
-  LargeLocal local_20;
-  dwFileOperationInfo *local_18;
-  TaskRecord *local_14;
-  undefined4 local_10;
-  uint local_c;
-  uchar *local_8;
+  LargeLocal tempCompressedFileBuffer_large_local;
+  dwFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int fileSize;
+  uchar *fileBuffer;
   
-  if ((param_2 == (dwFileOperationInfo *)0x0) &&
+  if ((fileInfo == (dwFileOperationInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x31d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->isUserFile == false) &&
+  if ((fileInfo->isUserFile == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x31e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->bufferSize == 0) &&
+  if ((fileInfo->bufferSize == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",799,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->fileBuffer == (uchar *)0x0) &&
+  if ((fileInfo->fileBuffer == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",800,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  local_c = param_2->bufferSize;
-  local_8 = param_2->fileBuffer;
-  if (param_2->isCompressedFile != false) {
-    LargeLocal::LargeLocal(&local_20,0x10400);
-    puVar4 = LargeLocal::GetBuf(&local_20);
-    if ((0x10400 < (uint)param_2->bufferSize) &&
+  fileSize = fileInfo->bufferSize;
+  fileBuffer = fileInfo->fileBuffer;
+  if (fileInfo->isCompressedFile != false) {
+    LargeLocal::LargeLocal(&tempCompressedFileBuffer_large_local,0x10400);
+    to = LargeLocal::GetBuf(&tempCompressedFileBuffer_large_local);
+    if ((0x10400 < (uint)fileInfo->bufferSize) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x328,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pTVar3 = (TaskRecord *)(*pcVar1)();
       return pTVar3;
     }
-    local_8 = puVar4;
-    local_c = MSG_CompressWithZLib(param_2->fileBuffer,param_2->bufferSize,puVar4,0x10400);
-    if (((int)local_c < 1) &&
+    fileBuffer = to;
+    fileSize = MSG_CompressWithZLib(fileInfo->fileBuffer,fileInfo->bufferSize,to,0x10400);
+    if ((fileSize < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x32d,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pTVar3 = (TaskRecord *)(*pcVar1)();
       return pTVar3;
     }
-    if (((int)local_c < 1) || (param_2->bufferSize < (int)local_c)) {
+    if ((fileSize < 1) || (fileInfo->bufferSize < fileSize)) {
       pTVar3 = (TaskRecord *)0x0;
-      LargeLocal::~LargeLocal(&local_20);
+      LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
       return pTVar3;
     }
-    LargeLocal::~LargeLocal(&local_20);
+    LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
   }
-  local_18 = param_2;
-  local_10 = 0;
-  local_14 = (TaskRecord *)0x0;
-  if ((param_2->menuDef != (char *)0x0) && (*param_2->menuDef != '\0')) {
-    pcVar6 = param_2->menuDef;
-    iVar5 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    UI_OpenMenu(iVar5,pcVar6);
+  fileTask = &fileInfo->fileTask;
+  task = (TaskRecord *)0x0;
+  nestedTask = (TaskRecord *)0x0;
+  if ((fileInfo->menuDef != (char *)0x0) && (*fileInfo->menuDef != '\0')) {
+    menuName = fileInfo->menuDef;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_OpenMenu(localClientNum,menuName);
   }
-  local_14 = dwWriteFile(param_1,(local_18->fileTask).m_filename,local_8,local_c,
-                         &(local_18->fileTask).m_fileInfo,CONCAT44(in_stack_ffffffd8,param_3._4_4_))
-  ;
-  pTVar3 = LiveStorage_SetupNestedTask(task_LiveWriteUserFile,param_1,local_14,param_2);
+  nestedTask = dwWriteFile(controllerIndex,fileTask->m_filename,fileBuffer,fileSize,
+                           &fileTask->m_fileInfo,CONCAT44(in_stack_ffffffd8,uid._4_4_));
+  pTVar3 = LiveStorage_SetupNestedTask(task_LiveWriteUserFile,controllerIndex,nestedTask,fileInfo);
   return pTVar3;
 }
 
 
 // 00980DB0  LiveStorage_GetUserFileFailure  (live/live_storage.cpp:840)
 
+/* WARNING: Variable defined which should be unmapped: result */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_GetUserFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_GetUserFileFailure(TaskRecord *task)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
-  int iVar4;
-  char *pcVar5;
-  void *pvVar6;
-  undefined4 uVar7;
+  int localClientNum;
+  char *menuName;
+  void *pvVar4;
+  taskCompleteResults result;
+  dwFileOperationInfo *fileInfo;
   
-  if (((param_1 == (TaskRecord *)0x0) || (param_1->payload == (void *)0x0)) &&
+  if (((task == (TaskRecord *)0x0) || (task->payload == (void *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x349,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    uVar7 = 2;
-    pvVar1 = param_1->payload;
-    pvVar6 = pvVar1;
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    pvVar1 = task->payload;
+    pvVar4 = pvVar1;
     if ((*(int *)((int)pvVar1 + 0xf4) != 0) && (**(char **)((int)pvVar1 + 0xf4) != '\0')) {
-      pcVar5 = *(char **)((int)pvVar1 + 0xf4);
-      iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar4,pcVar5);
+      menuName = *(char **)((int)pvVar1 + 0xf4);
+      localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(localClientNum,menuName);
     }
-    if (*(int *)((int)pvVar6 + 0x10) == 1000) {
+    if (*(int *)((int)pvVar4 + 0x10) == 1000) {
       *(undefined1 *)((int)pvVar1 + 0xf0) = 1;
       if (*(int *)((int)pvVar1 + 0x104) == 0) {
         Sys_Milliseconds();
         Com_Printf(0x10,"No %s file found. (%dms)\n");
       }
       else {
-        (**(code **)((int)pvVar1 + 0x104))(param_1->controllerIndex,pvVar1,pvVar6,uVar7);
+        (**(code **)((int)pvVar1 + 0x104))(task->controllerIndex,pvVar1,pvVar4,2);
       }
     }
     else {
@@ -1023,50 +1050,50 @@ void __cdecl LiveStorage_GetUserFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_GetUserFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_GetUserFileSuccess(TaskRecord *task)
 
 {
-  int iVar1;
-  uchar *puVar2;
-  char *pcVar3;
-  LargeLocal local_14;
-  void *local_c;
-  void *local_8;
+  int localClientNum;
+  uchar *dst;
+  char *menuName;
+  LargeLocal tempCompressedFileBuffer_large_local;
+  dwFileOperationInfo *fileTask;
+  dwFileOperationInfo *fileInfo;
   
-  if ((param_1 != (TaskRecord *)0x0) && (param_1->payload != (void *)0x0)) {
-    local_c = param_1->payload;
-    local_8 = local_c;
-    if ((*(int *)((int)local_c + 0xf4) != 0) && (**(char **)((int)local_c + 0xf4) != '\0')) {
-      pcVar3 = *(char **)((int)local_c + 0xf4);
-      iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar1,pcVar3);
+  if ((task != (TaskRecord *)0x0) && (task->payload != (void *)0x0)) {
+    fileTask = task->payload;
+    fileInfo = fileTask;
+    if ((fileTask->menuDef != (char *)0x0) && (*fileTask->menuDef != '\0')) {
+      menuName = fileTask->menuDef;
+      localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(localClientNum,menuName);
     }
-    *(undefined1 *)((int)local_8 + 0xf0) = 1;
-    *(undefined4 *)((int)local_8 + 0xe8) = 0;
-    if (*(uint *)((int)local_c + 0x24) < *(uint *)((int)local_c + 0x20)) {
+    fileInfo->fetchCompleted = true;
+    (fileInfo->retryInfo).retryCount = 0;
+    if ((fileTask->fileTask).m_bufferSize < (fileTask->fileTask).m_fileSize) {
       Com_PrintError(0x10,"Insufficient space to fetch file %s\n");
-      LiveStorage_GetUserFileFailure(param_1);
+      LiveStorage_GetUserFileFailure(task);
     }
     else {
       Sys_Milliseconds();
       Com_Printf(0x10,"Read %i bytes of file %s. (%dms)\n");
-      if (*(char *)((int)local_8 + 0xf3) != '\0') {
-        LargeLocal::LargeLocal(&local_14,0x10400);
-        puVar2 = LargeLocal::GetBuf(&local_14);
-        if (0x10400 < *(uint *)((int)local_c + 0x24)) {
+      if (fileInfo->isCompressedFile != false) {
+        LargeLocal::LargeLocal(&tempCompressedFileBuffer_large_local,0x10400);
+        dst = LargeLocal::GetBuf(&tempCompressedFileBuffer_large_local);
+        if (0x10400 < (fileTask->fileTask).m_bufferSize) {
           Com_PrintError(0x10,"Insufficient space to decompress file %s\n");
-          LiveStorage_GetUserFileFailure(param_1);
-          LargeLocal::~LargeLocal(&local_14);
+          LiveStorage_GetUserFileFailure(task);
+          LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
           return;
         }
-        memcpy(puVar2,*(uchar **)((int)local_c + 0xd8),*(ulong *)((int)local_c + 0x20));
+        memcpy(dst,(fileTask->fileTask).m_buffer,(fileTask->fileTask).m_fileSize);
         MSG_DecompressWithZLib
-                  (puVar2,*(int *)((int)local_c + 0x20),*(uchar **)((int)local_c + 0xd8),
-                   *(int *)((int)local_c + 0x24));
-        LargeLocal::~LargeLocal(&local_14);
+                  (dst,(fileTask->fileTask).m_fileSize,(fileTask->fileTask).m_buffer,
+                   (fileTask->fileTask).m_bufferSize);
+        LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
       }
-      if (*(int *)((int)local_8 + 0x100) != 0) {
-        (**(code **)((int)local_8 + 0x100))(param_1->controllerIndex,local_8);
+      if (fileInfo->fileOperationSucessFunction != (_func___cdecl_void_int_void_ptr *)0x0) {
+        (*fileInfo->fileOperationSucessFunction)(task->controllerIndex,fileInfo);
       }
     }
   }
@@ -1078,7 +1105,7 @@ void __cdecl LiveStorage_GetUserFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *param_2)
+TaskRecord * __cdecl LiveStorage_ReadDWFile(int controllerIndex,dwFileOperationInfo *fileInfo)
 
 {
   code *pcVar1;
@@ -1086,9 +1113,11 @@ TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *par
   TaskRecord *pTVar3;
   int iVar4;
   char *pcVar5;
-  TaskRecord *local_c;
+  dwFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if (param_2 == (dwFileOperationInfo *)0x0) {
+  if (fileInfo == (dwFileOperationInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x39d,0,
                              "%s");
     if (!bVar2) {
@@ -1097,7 +1126,7 @@ TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *par
       return pTVar3;
     }
   }
-  if (param_2->bufferSize == 0) {
+  if (fileInfo->bufferSize == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x39e,0,
                              "%s");
     if (!bVar2) {
@@ -1106,7 +1135,7 @@ TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *par
       return pTVar3;
     }
   }
-  if (param_2->fileBuffer == (uchar *)0x0) {
+  if (fileInfo->fileBuffer == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x39f,0,
                              "%s");
     if (!bVar2) {
@@ -1115,28 +1144,28 @@ TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *par
       return pTVar3;
     }
   }
-  bVar2 = LiveStorage_TryFile(&param_2->retryInfo);
+  bVar2 = LiveStorage_TryFile(&fileInfo->retryInfo);
   if (bVar2) {
-    param_2->fetchCompleted = false;
-    (param_2->fileTask).m_buffer = param_2->fileBuffer;
-    (param_2->fileTask).m_bufferSize = param_2->bufferSize;
-    if ((param_2->menuDef != (char *)0x0) && (*param_2->menuDef != '\0')) {
-      pcVar5 = param_2->menuDef;
-      iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1);
+    fileInfo->fetchCompleted = false;
+    (fileInfo->fileTask).m_buffer = fileInfo->fileBuffer;
+    (fileInfo->fileTask).m_bufferSize = fileInfo->bufferSize;
+    if ((fileInfo->menuDef != (char *)0x0) && (*fileInfo->menuDef != '\0')) {
+      pcVar5 = fileInfo->menuDef;
+      iVar4 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
       bVar2 = Menu_IsMenuOpenAndVisible(iVar4,pcVar5);
       if (!bVar2) {
-        pcVar5 = param_2->menuDef;
-        iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1);
+        pcVar5 = fileInfo->menuDef;
+        iVar4 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
         UI_OpenMenu(iVar4,pcVar5);
       }
     }
-    if (param_2->isUserFile == false) {
-      local_c = dwReadFile(param_1,&param_2->fileTask);
+    if (fileInfo->isUserFile == false) {
+      nestedTask = dwReadFile(controllerIndex,&fileInfo->fileTask);
     }
     else {
-      local_c = dwReadUserFile(param_1,&param_2->fileTask);
+      nestedTask = dwReadUserFile(controllerIndex,&fileInfo->fileTask);
     }
-    pTVar3 = LiveStorage_SetupNestedTask(task_LiveGetUserFile,param_1,local_c,param_2);
+    pTVar3 = LiveStorage_SetupNestedTask(task_LiveGetUserFile,controllerIndex,nestedTask,fileInfo);
   }
   else {
     pTVar3 = (TaskRecord *)0x0;
@@ -1152,125 +1181,132 @@ TaskRecord * __cdecl LiveStorage_ReadDWFile(int param_1,dwFileOperationInfo *par
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_ReadDWFileByUserID(int param_1,dwFileOperationInfo *param_2,ulong64 param_3)
+LiveStorage_ReadDWFileByUserID(int controllerIndex,dwFileOperationInfo *fileInfo,ulong64 xuidLocal)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  int iVar4;
-  char *pcVar5;
+  int localClientNum;
+  char *menuName;
+  dwFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if ((param_2 == (dwFileOperationInfo *)0x0) &&
+  if ((fileInfo == (dwFileOperationInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x3c7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->bufferSize == 0) &&
+  if ((fileInfo->bufferSize == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x3c8,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->fileBuffer == (uchar *)0x0) &&
+  if ((fileInfo->fileBuffer == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x3c9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  if ((param_2->isUserFile == false) &&
+  if ((fileInfo->isUserFile == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x3ca,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  param_2->fetchCompleted = false;
-  s_tempXuid = param_3;
-  (param_2->fileTask).m_buffer = param_2->fileBuffer;
-  (param_2->fileTask).m_bufferSize = param_2->bufferSize;
-  if ((param_2->menuDef != (char *)0x0) && (*param_2->menuDef != '\0')) {
-    pcVar5 = param_2->menuDef;
-    iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    UI_OpenMenu(iVar4,pcVar5);
+  fileInfo->fetchCompleted = false;
+  s_tempXuid = xuidLocal;
+  (fileInfo->fileTask).m_buffer = fileInfo->fileBuffer;
+  (fileInfo->fileTask).m_bufferSize = fileInfo->bufferSize;
+  if ((fileInfo->menuDef != (char *)0x0) && (*fileInfo->menuDef != '\0')) {
+    menuName = fileInfo->menuDef;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_OpenMenu(localClientNum,menuName);
   }
-  pTVar3 = dwReadUserFileByUserID(param_1,&param_2->fileTask,param_3);
-  pTVar3 = LiveStorage_SetupNestedTask(task_LiveGetUserFile,param_1,pTVar3,param_2);
+  pTVar3 = dwReadUserFileByUserID(controllerIndex,&fileInfo->fileTask,xuidLocal);
+  pTVar3 = LiveStorage_SetupNestedTask(task_LiveGetUserFile,controllerIndex,pTVar3,fileInfo);
   return pTVar3;
 }
 
 
 // 00981520  LiveStorage_RestoreStatsFromBackup  (live/live_storage.cpp:999)
 
-void __cdecl LiveStorage_RestoreStatsFromBackup(int param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveStorage_RestoreStatsFromBackup(int localControllerIndex)
 
 {
-  ulong uVar1;
-  uchar *puVar2;
-  uchar *puVar3;
+  ulong count;
+  uchar *src;
+  uchar *dst;
   
-  LiveStorage_BackupCorruptedStats(param_1,"badmpdata");
-  uVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_FORCE_NORMAL,false);
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BACKUP,true);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_FORCE_NORMAL,false);
-  memcpy(puVar3,puVar2,uVar1);
+  LiveStorage_BackupCorruptedStats(localControllerIndex,"badmpdata");
+  count = LiveStorage_GetStatsBufferSize(localControllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
+  src = LiveStorage_GetStatsBuffer(localControllerIndex,STATS_LOCATION_BACKUP,true);
+  dst = LiveStorage_GetStatsBuffer(localControllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
+  memcpy(dst,src,count);
   return;
 }
 
 
 // 009816A0  LiveStorage_StatsBackupReadSuccessful  (live/live_storage.cpp:1008)
 
-void __cdecl LiveStorage_StatsBackupReadSuccessful(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveStorage_StatsBackupReadSuccessful(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar *puVar3;
-  int iVar4;
+  uchar *statsBuffer;
+  int iVar3;
   
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BACKUP,true);
-  iVar4 = LiveStats_GetDDLHeaderVersion(puVar3);
-  if (((iVar4 != 0) &&
-      (iVar4 = LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_BACKUP), iVar4 != 0)) &&
-     (bVar2 = LiveStats_ValidateStatsBackup(param_1), bVar2)) {
-    LiveStats_ValidateStats(param_1);
+  statsBuffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BACKUP,true);
+  iVar3 = LiveStats_GetDDLHeaderVersion(statsBuffer);
+  if (((iVar3 != 0) &&
+      (iVar3 = LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_BACKUP), iVar3 != 0)) &&
+     (bVar2 = LiveStats_ValidateStatsBackup(controllerIndex), bVar2)) {
+    LiveStats_ValidateStats(controllerIndex);
     return;
   }
-  if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+  if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x3f9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  *(undefined1 *)(*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0xf0) = 1;
+  *(undefined1 *)(*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0xf0) = 1;
   Com_Printf(0x10,"Stats backup didn\'t pass validation - making a new copy\n");
-  LiveStorage_WriteBackupStats(param_1);
+  LiveStorage_WriteBackupStats(controllerIndex);
   return;
 }
 
 
 // 00981B60  LiveStorage_SetLastMetPlayerListDownload  (live/live_storage.cpp:1025)
 
-void __cdecl LiveStorage_SetLastMetPlayerListDownload(int param_1)
+void __cdecl LiveStorage_SetLastMetPlayerListDownload(int controllerIndex)
 
 {
   ulong64 uVar1;
   
-  uVar1 = Live_GetXuid(param_1);
-  *(int *)(s_lastMetPlayerListDownload + param_1) = (int)uVar1;
-  *(int *)((int)s_lastMetPlayerListDownload + param_1 * 8 + 4) = (int)(uVar1 >> 0x20);
+  uVar1 = Live_GetXuid(controllerIndex);
+  *(int *)(s_lastMetPlayerListDownload + controllerIndex) = (int)uVar1;
+  *(int *)((int)s_lastMetPlayerListDownload + controllerIndex * 8 + 4) = (int)(uVar1 >> 0x20);
   return;
 }
 
 
 // 00981AD0  LiveStorage_NeedToDownloadMetPlayerList  (live/live_storage.cpp:1030)
 
-bool __cdecl LiveStorage_NeedToDownloadMetPlayerList(int param_1)
+bool __cdecl LiveStorage_NeedToDownloadMetPlayerList(int controllerIndex)
 
 {
   ulong64 uVar1;
@@ -1278,11 +1314,11 @@ bool __cdecl LiveStorage_NeedToDownloadMetPlayerList(int param_1)
   int local_10;
   int local_c;
   
-  uVar1 = Live_GetXuid(param_1);
+  uVar1 = Live_GetXuid(controllerIndex);
   local_10 = (int)uVar1;
-  if (((int)s_lastMetPlayerListDownload[param_1] == local_10) &&
+  if (((int)s_lastMetPlayerListDownload[controllerIndex] == local_10) &&
      (local_c = (int)(uVar1 >> 0x20),
-     *(int *)((int)s_lastMetPlayerListDownload + param_1 * 8 + 4) == local_c)) {
+     *(int *)((int)s_lastMetPlayerListDownload + controllerIndex * 8 + 4) == local_c)) {
     local_14 = false;
   }
   else {
@@ -1294,22 +1330,23 @@ bool __cdecl LiveStorage_NeedToDownloadMetPlayerList(int param_1)
 
 // 00981B30  LiveStorage_ReadMetPlayerListFileNotFound  (live/live_storage.cpp:1035)
 
-taskCompleteResults __cdecl LiveStorage_ReadMetPlayerListFileNotFound(int param_1,void *param_2)
+taskCompleteResults __cdecl
+LiveStorage_ReadMetPlayerListFileNotFound(int controllerIndex,void *data)
 
 {
-  LiveStorage_SetLastMetPlayerListDownload(param_1);
-  LiveMeetPlayer_ResetData(param_1);
+  LiveStorage_SetLastMetPlayerListDownload(controllerIndex);
+  LiveMeetPlayer_ResetData(controllerIndex);
   return TASK_COMPLETE;
 }
 
 
 // 00981B90  LiveStorage_ReadMetPlayerListSuccessful  (live/live_storage.cpp:1042)
 
-void __cdecl LiveStorage_ReadMetPlayerListSuccessful(int param_1,void *param_2)
+void __cdecl LiveStorage_ReadMetPlayerListSuccessful(int controllerIndex,void *data)
 
 {
-  LiveStorage_SetLastMetPlayerListDownload(param_1);
-  LiveMeetPlayer_CheckDownloadedVersionAndResetData(param_1);
+  LiveStorage_SetLastMetPlayerListDownload(controllerIndex);
+  LiveMeetPlayer_CheckDownloadedVersionAndResetData(controllerIndex);
   Live_RequestSessionsFromRecentPlayers();
   return;
 }
@@ -1317,14 +1354,17 @@ void __cdecl LiveStorage_ReadMetPlayerListSuccessful(int param_1,void *param_2)
 
 // 00981760  LiveStorage_StatsBackupFileNotFound  (live/live_storage.cpp:1051)
 
-taskCompleteResults __cdecl LiveStorage_StatsBackupFileNotFound(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl LiveStorage_StatsBackupFileNotFound(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x41c,0,
                              "%s");
     if (!bVar2) {
@@ -1333,7 +1373,7 @@ taskCompleteResults __cdecl LiveStorage_StatsBackupFileNotFound(int param_1,void
       return tVar3;
     }
   }
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x41f,0,
                              "%s");
     if (!bVar2) {
@@ -1342,16 +1382,16 @@ taskCompleteResults __cdecl LiveStorage_StatsBackupFileNotFound(int param_1,void
       return tVar3;
     }
   }
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     Com_Printf(0x10,"%s is not a user file - cannot create new file\n");
     tVar3 = TASK_ERROR;
   }
   else {
-    *(undefined4 *)((int)param_2 + 0xe0) = 0;
-    *(undefined4 *)((int)param_2 + 0xe4) = 0;
-    *(undefined4 *)((int)param_2 + 0xe8) = 0;
+    *(undefined4 *)((int)data + 0xe0) = 0;
+    *(undefined4 *)((int)data + 0xe4) = 0;
+    *(undefined4 *)((int)data + 0xe8) = 0;
     Com_Printf(0x10,"No %s file found, creating a new one\n");
-    LiveStorage_WriteBackupStats(param_1);
+    LiveStorage_WriteBackupStats(controllerIndex);
     tVar3 = TASK_COMPLETE;
   }
   return tVar3;
@@ -1360,14 +1400,17 @@ taskCompleteResults __cdecl LiveStorage_StatsBackupFileNotFound(int param_1,void
 
 // 00982080  LiveStorage_PlayerStatsFileNotFound  (live/live_storage.cpp:1070)
 
-taskCompleteResults __cdecl LiveStorage_PlayerStatsFileNotFound(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl LiveStorage_PlayerStatsFileNotFound(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x430,0,
                              "%s");
     if (!bVar2) {
@@ -1376,12 +1419,12 @@ taskCompleteResults __cdecl LiveStorage_PlayerStatsFileNotFound(int param_1,void
       return tVar3;
     }
   }
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_FORCE_NORMAL,true);
-  controllerNetworkData[param_1 * 0x3ad90 + 0x3ad88] = 0;
-  LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_FORCE_NORMAL,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_FORCE_NORMAL,true);
+  controllerNetworkData[controllerIndex * 0x3ad90 + 0x3ad88] = 0;
+  LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
   UI_CloseMenu(0,"popup_gettingdata");
   UI_CloseMenu(0,"popup_connectingtodw");
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x43e,0,
                              "%s");
     if (!bVar2) {
@@ -1390,14 +1433,14 @@ taskCompleteResults __cdecl LiveStorage_PlayerStatsFileNotFound(int param_1,void
       return tVar3;
     }
   }
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     Com_Printf(0x10,"%s is not a user file - cannot create new file\n");
     tVar3 = TASK_ERROR;
   }
   else {
-    *(undefined4 *)((int)param_2 + 0xe0) = 0;
-    *(undefined4 *)((int)param_2 + 0xe4) = 0;
-    *(undefined4 *)((int)param_2 + 0xe8) = 0;
+    *(undefined4 *)((int)data + 0xe0) = 0;
+    *(undefined4 *)((int)data + 0xe4) = 0;
+    *(undefined4 *)((int)data + 0xe8) = 0;
     Com_Printf(0x10,"No %s file found, creating a new one\n");
     LiveStats_ResetStats(0,false,STATSRESET_FILE_NOT_FOUND);
     CL_CACValidateRequest_f();
@@ -1409,14 +1452,18 @@ taskCompleteResults __cdecl LiveStorage_PlayerStatsFileNotFound(int param_1,void
 
 // 009825F0  LiveStorage_BasicTrainingStatsFileNotFound  (live/live_storage.cpp:1108)
 
-taskCompleteResults __cdecl LiveStorage_BasicTrainingStatsFileNotFound(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl
+LiveStorage_BasicTrainingStatsFileNotFound(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x455,0,
                              "%s");
     if (!bVar2) {
@@ -1425,12 +1472,12 @@ taskCompleteResults __cdecl LiveStorage_BasicTrainingStatsFileNotFound(int param
       return tVar3;
     }
   }
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_BASICTRAINING,true);
-  controllerNetworkData[param_1 * 0x3ad90 + 0x3ad88] = 0;
-  LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_BASICTRAINING,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
+  controllerNetworkData[controllerIndex * 0x3ad90 + 0x3ad88] = 0;
+  LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_BASICTRAINING,false);
   UI_CloseMenu(0,"popup_gettingdata");
   UI_CloseMenu(0,"popup_connectingtodw");
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x462,0,
                              "%s");
     if (!bVar2) {
@@ -1439,16 +1486,16 @@ taskCompleteResults __cdecl LiveStorage_BasicTrainingStatsFileNotFound(int param
       return tVar3;
     }
   }
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     Com_Printf(0x10,"%s is not a user file - cannot create new file\n");
     tVar3 = TASK_ERROR;
   }
   else {
-    *(undefined4 *)((int)param_2 + 0xe0) = 0;
-    *(undefined4 *)((int)param_2 + 0xe4) = 0;
-    *(undefined4 *)((int)param_2 + 0xe8) = 0;
+    *(undefined4 *)((int)data + 0xe0) = 0;
+    *(undefined4 *)((int)data + 0xe4) = 0;
+    *(undefined4 *)((int)data + 0xe8) = 0;
     Com_Printf(0x10,"No %s file found, creating a new one\n");
-    LiveStats_ResetBasicTrainingStats(param_1,STATSRESET_FILE_NOT_FOUND);
+    LiveStats_ResetBasicTrainingStats(controllerIndex,STATSRESET_FILE_NOT_FOUND);
     tVar3 = TASK_COMPLETE;
   }
   return tVar3;
@@ -1457,13 +1504,13 @@ taskCompleteResults __cdecl LiveStorage_BasicTrainingStatsFileNotFound(int param
 
 // 00981EF0  LiveStorage_ReadOtherPlayerStatsSuccessful  (live/live_storage.cpp:1191)
 
-void __cdecl LiveStorage_ReadOtherPlayerStatsSuccessful(int param_1,void *param_2)
+void __cdecl LiveStorage_ReadOtherPlayerStatsSuccessful(int controllerIndex,void *data)
 
 {
-  int iVar1;
+  int localClientNum;
   
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  LiveCombatRecord_OpenFriendsCombatRecord(iVar1);
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  LiveCombatRecord_OpenFriendsCombatRecord(localClientNum);
   s_XuidOfOtherPlayer._0_4_ = (undefined4)s_tempXuid;
   s_XuidOfOtherPlayer._4_4_ = s_tempXuid._4_4_;
   return;
@@ -1472,45 +1519,47 @@ void __cdecl LiveStorage_ReadOtherPlayerStatsSuccessful(int param_1,void *param_
 
 // 00982720  LiveStorage_ReadBasicTrainingStatsSuccessful  (live/live_storage.cpp:1200)
 
-void __cdecl LiveStorage_ReadBasicTrainingStatsSuccessful(int param_1,void *param_2)
+void __cdecl LiveStorage_ReadBasicTrainingStatsSuccessful(int controllerIndex,void *data)
 
 {
   int iVar1;
   uchar *puVar2;
-  int local_c;
-  char local_5;
+  int checksum;
+  uchar *buffer;
+  int currentStatsVersion;
+  bool isCheckSumValid;
   
   Com_Printf(0x10,"Basic Training Stats blob received from Demonware for controller %d.\n");
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_BASICTRAINING,true);
-  LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_BASICTRAINING,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
+  LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_BASICTRAINING,false);
   UI_CloseMenu(0,"popup_gettingdata");
-  iVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_BASICTRAINING,true);
+  iVar1 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
   iVar1 = iVar1 + -4;
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BASICTRAINING,true);
-  local_5 = LiveStats_ValidateChecksum(puVar2,iVar1);
-  LiveStorage_SetStatsChecksumValid(param_1,STATS_LOCATION_BASICTRAINING,(bool)local_5);
-  if (local_5 == '\0') {
-    iVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_BASICTRAINING,true);
+  puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
+  isCheckSumValid = LiveStats_ValidateChecksum(puVar2,iVar1);
+  LiveStorage_SetStatsChecksumValid(controllerIndex,STATS_LOCATION_BASICTRAINING,isCheckSumValid);
+  if (isCheckSumValid == false) {
+    iVar1 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
     iVar1 = iVar1 + -4;
-    puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BASICTRAINING,true);
+    puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
     LiveStats_ChecksumGamerStats(puVar2 + 4,iVar1);
     Com_PrintError(0x10,"Basic Training Stats had the wrong checksum (%u)\n");
   }
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BASICTRAINING,true);
+  puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
   iVar1 = LiveStats_GetDDLHeaderVersion(puVar2);
   if (iVar1 != 0) {
-    iVar1 = LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_BASICTRAINING);
+    iVar1 = LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_BASICTRAINING);
     if (iVar1 != 0) goto LAB_0098284b;
   }
   Com_PrintError(0x10,"Basic Training Stats could not be validated vs the DDL\n");
-  LiveStats_ResetBasicTrainingStats(param_1,STATSRESET_DDL_CONVERSION_FAILED);
+  LiveStats_ResetBasicTrainingStats(controllerIndex,STATSRESET_DDL_CONVERSION_FAILED);
 LAB_0098284b:
-  LiveStats_GetIntPlayerStatFromBase(&local_c,"STATS_VERSION",(char *)puVar2);
-  if (local_c != (stat_version->current).integer) {
+  LiveStats_GetIntPlayerStatFromBase(&currentStatsVersion,"STATS_VERSION",(char *)puVar2);
+  if (currentStatsVersion != (stat_version->current).integer) {
     Com_PrintError(0x10,"Basic Training Stats had a version of %d but we expected a version of %d\n"
                   );
     if ((stats_version_check->current).enabled != false) {
-      LiveStats_ResetBasicTrainingStats(param_1,STATSRESET_CFG_VERSION_MISMATCH);
+      LiveStats_ResetBasicTrainingStats(controllerIndex,STATSRESET_CFG_VERSION_MISMATCH);
     }
   }
   return;
@@ -1519,60 +1568,68 @@ LAB_0098284b:
 
 // 009821B0  LiveStorage_ReadPlayerStatsSuccessful  (live/live_storage.cpp:1254)
 
-void __cdecl LiveStorage_ReadPlayerStatsSuccessful(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveStorage_ReadPlayerStatsSuccessful(int controllerIndex,void *data)
 
 {
-  bool bVar1;
-  bool bVar2;
-  uchar *puVar3;
-  int iVar4;
-  ulong64 uVar5;
-  ulong64 uVar6;
-  uchar *puVar7;
-  ulong uVar8;
-  int local_14;
+  bool value;
+  bool isValid;
+  uchar *puVar1;
+  int iVar2;
+  ulong64 uVar3;
+  ulong64 uVar4;
+  uchar *puVar5;
+  ulong count;
+  int checksum;
+  uchar *buffer;
+  int currentStatsVersion;
+  bool wasBasicTraining;
+  bool isCheckSumValid;
+  int statsXuid;
   int local_10;
-  int local_c;
+  int myXuid;
   int local_8;
   
   Com_Printf(0x10,"Stats blob received from Demonware for controller %d.\n");
-  bVar1 = (xblive_basictraining->current).enabled;
+  value = (xblive_basictraining->current).enabled;
   Dvar_SetBool(xblive_basictraining,false);
-  uVar8 = 0x9ce8;
-  puVar7 = s_tempStatsBuffer;
-  puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-  memcpy(puVar3,puVar7,uVar8);
+  count = 0x9ce8;
+  puVar5 = s_tempStatsBuffer;
+  puVar1 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+  memcpy(puVar1,puVar5,count);
   LiveStorage_SetFirstTimeRunning(false);
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_FORCE_NORMAL,true);
-  controllerNetworkData[param_1 * 0x3ad90 + 0x3ad88] = 0;
-  LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_FORCE_NORMAL,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_FORCE_NORMAL,true);
+  controllerNetworkData[controllerIndex * 0x3ad90 + 0x3ad88] = 0;
+  LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
   UI_CloseMenu(0,"popup_gettingdata");
-  iVar4 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-  iVar4 = iVar4 + -4;
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  bVar2 = LiveStats_ValidateChecksum(puVar3,iVar4);
-  LiveStorage_SetStatsChecksumValid(param_1,STATS_LOCATION_FORCE_NORMAL,bVar2);
-  if (!bVar2) {
-    iVar4 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-    iVar4 = iVar4 + -4;
-    puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    LiveStats_ChecksumGamerStats(puVar3 + 4,iVar4);
+  iVar2 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+  iVar2 = iVar2 + -4;
+  puVar1 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  isValid = LiveStats_ValidateChecksum(puVar1,iVar2);
+  LiveStorage_SetStatsChecksumValid(controllerIndex,STATS_LOCATION_FORCE_NORMAL,isValid);
+  if (!isValid) {
+    iVar2 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+    iVar2 = iVar2 + -4;
+    puVar1 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    LiveStats_ChecksumGamerStats(puVar1 + 4,iVar2);
     Com_PrintError(0x10,"Stats had the wrong checksum (%u)\n");
   }
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_FORCE_NORMAL,true);
-  iVar4 = LiveStats_GetDDLHeaderVersion(puVar3);
-  if ((iVar4 == 0) ||
-     (iVar4 = LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_FORCE_NORMAL), iVar4 == 0)) {
+  puVar1 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_FORCE_NORMAL,true);
+  iVar2 = LiveStats_GetDDLHeaderVersion(puVar1);
+  if ((iVar2 == 0) ||
+     (iVar2 = LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_FORCE_NORMAL), iVar2 == 0))
+  {
     Com_PrintError(0x10,"Stats could not be validated vs the DDL\n");
-    LiveStorage_BackupCorruptedStats(param_1,"badmpdataddl");
-    LiveStats_ResetStats(param_1,true,STATSRESET_DDL_CONVERSION_FAILED);
+    LiveStorage_BackupCorruptedStats(controllerIndex,"badmpdataddl");
+    LiveStats_ResetStats(controllerIndex,true,STATSRESET_DDL_CONVERSION_FAILED);
   }
-  puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-  iVar4 = LiveStats_ReadVersionFromBuffer((char *)puVar3);
-  if (iVar4 == (stat_version->current).integer) {
-    puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
-    puVar7 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-    LiveContracts_CLMergeBuffers(puVar7,puVar3);
+  puVar1 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+  iVar2 = LiveStats_ReadVersionFromBuffer((char *)puVar1);
+  if (iVar2 == (stat_version->current).integer) {
+    puVar1 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    puVar5 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+    LiveContracts_CLMergeBuffers(puVar5,puVar1);
   }
   else {
     Com_PrintError(0x10,"Stats had a version of %d but we expected a version of %d\n");
@@ -1580,18 +1637,18 @@ void __cdecl LiveStorage_ReadPlayerStatsSuccessful(int param_1,void *param_2)
       LiveStorage_DeleteGlobalStats(0);
     }
   }
-  uVar5 = Live_GetXuid(param_1);
-  uVar6 = LiveStats_ReadXUIDFromStats(param_1);
-  local_14 = (int)uVar6;
-  local_c = (int)uVar5;
-  local_10 = (int)(uVar6 >> 0x20);
-  local_8 = (int)(uVar5 >> 0x20);
-  if ((local_14 != local_c) || (local_10 != local_8)) {
+  uVar3 = Live_GetXuid(controllerIndex);
+  uVar4 = LiveStats_ReadXUIDFromStats(controllerIndex);
+  statsXuid = (int)uVar4;
+  myXuid = (int)uVar3;
+  local_10 = (int)(uVar4 >> 0x20);
+  local_8 = (int)(uVar3 >> 0x20);
+  if ((statsXuid != myXuid) || (local_10 != local_8)) {
     Com_PrintError(0x10,
                    "Stats were saved with an XUID of 0x%llx and the current user has XUID of 0x%llx\n"
                   );
   }
-  Dvar_SetBool(xblive_basictraining,bVar1);
+  Dvar_SetBool(xblive_basictraining,value);
   return;
 }
 
@@ -1600,43 +1657,48 @@ void __cdecl LiveStorage_ReadPlayerStatsSuccessful(int param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadStatsBackup(int param_1)
+TaskRecord * __cdecl LiveStorage_ReadStatsBackup(int controllerIndex)
 
 {
-  dwFileOperationInfo *pdVar1;
-  code *pcVar2;
-  bool bVar3;
-  TaskRecord *pTVar4;
-  uchar *puVar5;
+  dwFileOperationInfo *fileInfo_00;
+  code *pcVar1;
+  bool bVar2;
+  TaskRecord *pTVar3;
+  uchar *puVar4;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileOperationInfo *fileInfo;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x55e,0,
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x55e,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      pTVar4 = (TaskRecord *)(*pcVar2)();
-      return pTVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      pTVar3 = (TaskRecord *)(*pcVar1)();
+      return pTVar3;
     }
   }
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveBackupStats,param_1);
-  if (bVar3) {
-    pTVar4 = (TaskRecord *)0x0;
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveBackupStats,controllerIndex);
+  if (bVar2) {
+    pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    pdVar1 = *(dwFileOperationInfo **)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar1->isUserFile = true;
-    pdVar1->isCompressedFile = true;
-    (pdVar1->fileTask).m_filename = "mpdatabk0000";
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BACKUP,true);
-    pdVar1->fileBuffer = puVar5;
-    pdVar1->bufferSize = 0x9cec;
-    pdVar1->fileOperationSucessFunction = LiveStorage_StatsBackupReadSuccessful;
-    pdVar1->fileNotFoundFunction = LiveStorage_StatsBackupFileNotFound;
-    (pdVar1->fileTask).m_optional = true;
-    pTVar4 = LiveStorage_ReadDWFile(param_1,pdVar1);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveReadStatsBackup,param_1,pTVar4,pdVar1);
+    fileInfo_00 = *(dwFileOperationInfo **)
+                   (controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fileInfo_00->isUserFile = true;
+    fileInfo_00->isCompressedFile = true;
+    (fileInfo_00->fileTask).m_filename = "mpdatabk0000";
+    puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BACKUP,true);
+    fileInfo_00->fileBuffer = puVar4;
+    fileInfo_00->bufferSize = 0x9cec;
+    fileInfo_00->fileOperationSucessFunction = LiveStorage_StatsBackupReadSuccessful;
+    fileInfo_00->fileNotFoundFunction = LiveStorage_StatsBackupFileNotFound;
+    (fileInfo_00->fileTask).m_optional = true;
+    pTVar3 = LiveStorage_ReadDWFile(controllerIndex,fileInfo_00);
+    pTVar3 = LiveStorage_SetupNestedTask
+                       (task_LiveReadStatsBackup,controllerIndex,pTVar3,fileInfo_00);
   }
-  return pTVar4;
+  return pTVar3;
 }
 
 
@@ -1644,35 +1706,35 @@ TaskRecord * __cdecl LiveStorage_ReadStatsBackup(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_SyncTime(int param_1)
+TaskRecord * __cdecl LiveStorage_SyncTime(int controllerIndex)
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdTimeStamp local_10;
-  bdTitleUtilities *local_8;
+  bdReference<bdRemoteTask> other_3;
+  TaskRecord *task;
+  bdTitleUtilities *titleUtilities;
   
-  local_8 = dwGetTitleUtilities(param_1);
+  titleUtilities = dwGetTitleUtilities(controllerIndex);
   bVar1 = LiveStorage_TryFile(&s_UTCRetryInfo);
   if (bVar1) {
-    if (local_8 == (bdTitleUtilities *)0x0) {
-      local_10.m_timeStamp = 0;
+    if (titleUtilities == (bdTitleUtilities *)0x0) {
+      task = (TaskRecord *)0x0;
     }
     else {
-      local_10.m_timeStamp =
-           (uint)TaskManager2_CreateTask(task_LiveGetServerTime,param_1,(TaskRecord *)0x0,0);
-      bVar2 = bdTitleUtilities::getServerTime(local_8,&local_10);
+      task = TaskManager2_CreateTask(task_LiveGetServerTime,controllerIndex,(TaskRecord *)0x0,0);
+      other_3 = bdTitleUtilities::getServerTime(titleUtilities,(bdTimeStamp *)&stack0xfffffff0);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)(local_10.m_timeStamp + 0x20),
-                 (bdReference<bdAddrHandle> *)bVar2.m_ptr);
-      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_10);
-      TaskManager2_StartTask((TaskRecord *)local_10.m_timeStamp);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
+      bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+                ((bdReference<bdByteBuffer> *)&stack0xfffffff0);
+      TaskManager2_StartTask(task);
     }
   }
   else {
-    local_10.m_timeStamp = 0;
+    task = (TaskRecord *)0x0;
   }
-  return (TaskRecord *)local_10.m_timeStamp;
+  return task;
 }
 
 
@@ -1680,7 +1742,7 @@ TaskRecord * __cdecl LiveStorage_SyncTime(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_GetServerTimeComplete(TaskRecord *param_1)
+void __cdecl LiveStorage_GetServerTimeComplete(TaskRecord *task)
 
 {
   long64 lVar1;
@@ -1699,7 +1761,7 @@ void __cdecl LiveStorage_GetServerTimeComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_GetServerTimeFailed(TaskRecord *param_1)
+void __cdecl LiveStorage_GetServerTimeFailed(TaskRecord *task)
 
 {
   Com_PrintWarning(0x10,"DW GetServerTime() failed!\n");
@@ -1744,18 +1806,21 @@ bool __cdecl LiveStorage_IsTimeSynced(void)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_ReadMetPlayerList(int param_1,char *param_2,uchar *param_3,int param_4)
+LiveStorage_ReadMetPlayerList(int controllerIndex,char *fileName,uchar *buffer,int sizeOfBuffer)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileOperationInfo *pdVar5;
+  dwFileOperationInfo *fileInfo_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileOperationInfo *fileInfo;
   
-  bVar3 = LiveStorage_NeedToDownloadMetPlayerList(param_1);
+  bVar3 = LiveStorage_NeedToDownloadMetPlayerList(controllerIndex);
   if (bVar3) {
-    if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+    if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x62c,0,
                                "%s");
       if (!bVar3) {
@@ -1764,24 +1829,25 @@ LiveStorage_ReadMetPlayerList(int param_1,char *param_2,uchar *param_3,int param
         return pTVar4;
       }
     }
-    bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFetchMetPlayerList,param_1);
+    bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFetchMetPlayerList,controllerIndex);
     if (bVar3) {
       pTVar4 = (TaskRecord *)0x0;
     }
     else {
-      iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-      pdVar5 = (dwFileOperationInfo *)(iVar1 + 0xb40);
+      iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+      fileInfo_00 = (dwFileOperationInfo *)(iVar1 + 0xb40);
       *(undefined1 *)(iVar1 + 0xc32) = 1;
       *(undefined1 *)(iVar1 + 0xc33) = 1;
       *(undefined1 *)(iVar1 + 0xc1c) = 1;
-      (pdVar5->fileTask).m_filename = param_2;
+      (fileInfo_00->fileTask).m_filename = fileName;
       *(undefined1 *)(iVar1 + 0xc1c) = 1;
-      *(uchar **)(iVar1 + 0xc38) = param_3;
-      *(int *)(iVar1 + 0xc3c) = param_4;
+      *(uchar **)(iVar1 + 0xc38) = buffer;
+      *(int *)(iVar1 + 0xc3c) = sizeOfBuffer;
       *(code **)(iVar1 + 0xc40) = LiveStorage_ReadMetPlayerListSuccessful;
       *(code **)(iVar1 + 0xc44) = LiveStorage_ReadMetPlayerListFileNotFound;
-      pTVar4 = LiveStorage_ReadDWFile(param_1,pdVar5);
-      pTVar4 = LiveStorage_SetupNestedTask(task_LiveFetchMetPlayerList,param_1,pTVar4,pdVar5);
+      pTVar4 = LiveStorage_ReadDWFile(controllerIndex,fileInfo_00);
+      pTVar4 = LiveStorage_SetupNestedTask
+                         (task_LiveFetchMetPlayerList,controllerIndex,pTVar4,fileInfo_00);
     }
   }
   else {
@@ -1793,10 +1859,10 @@ LiveStorage_ReadMetPlayerList(int param_1,char *param_2,uchar *param_3,int param
 
 // 00981CE0  LiveStorage_WriteMetPlayerListSuccessful  (live/live_storage.cpp:1609)
 
-void __cdecl LiveStorage_WriteMetPlayerListSuccessful(int param_1,void *param_2)
+void __cdecl LiveStorage_WriteMetPlayerListSuccessful(int controllerIndex,void *data)
 
 {
-  LiveMeetPlayer_ClearUploadFlags(param_1);
+  LiveMeetPlayer_ClearUploadFlags(controllerIndex);
   return;
 }
 
@@ -1806,16 +1872,19 @@ void __cdecl LiveStorage_WriteMetPlayerListSuccessful(int param_1,void *param_2)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_WriteMetPlayerList(int param_1,char *param_2,uchar *param_3,int param_4)
+LiveStorage_WriteMetPlayerList(int controllerIndex,char *fileName,uchar *buffer,int sizeOfBuffer)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileOperationInfo *pdVar5;
+  dwFileOperationInfo *fileInfo_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileOperationInfo *fileInfo;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x650,0,
                              "%s");
     if (!bVar3) {
@@ -1824,20 +1893,21 @@ LiveStorage_WriteMetPlayerList(int param_1,char *param_2,uchar *param_3,int para
       return pTVar4;
     }
   }
-  pTVar4 = TaskManager2_TaskGetInProgressForController(task_LiveSaveMetPLayerList,param_1);
+  pTVar4 = TaskManager2_TaskGetInProgressForController(task_LiveSaveMetPLayerList,controllerIndex);
   if (pTVar4 == (TaskRecord *)0x0) {
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileOperationInfo *)(iVar1 + 0xc60);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fileInfo_00 = (dwFileOperationInfo *)(iVar1 + 0xc60);
     bVar3 = LiveStorage_TryFile((fileRetryInfo *)(iVar1 + 0xd40));
     if (bVar3) {
       *(undefined1 *)(iVar1 + 0xd52) = 1;
       *(undefined1 *)(iVar1 + 0xd53) = 1;
-      (pdVar5->fileTask).m_filename = param_2;
-      *(uchar **)(iVar1 + 0xd58) = param_3;
-      *(int *)(iVar1 + 0xd5c) = param_4;
+      (fileInfo_00->fileTask).m_filename = fileName;
+      *(uchar **)(iVar1 + 0xd58) = buffer;
+      *(int *)(iVar1 + 0xd5c) = sizeOfBuffer;
       *(code **)(iVar1 + 0xd60) = LiveStorage_WriteMetPlayerListSuccessful;
-      pTVar4 = LiveStorage_WriteDWUserFile(param_1,pdVar5,0);
-      pTVar4 = LiveStorage_SetupNestedTask(task_LiveSaveMetPLayerList,param_1,pTVar4,pdVar5);
+      pTVar4 = LiveStorage_WriteDWUserFile(controllerIndex,fileInfo_00,0);
+      pTVar4 = LiveStorage_SetupNestedTask
+                         (task_LiveSaveMetPLayerList,controllerIndex,pTVar4,fileInfo_00);
     }
     else {
       pTVar4 = (TaskRecord *)0x0;
@@ -1852,14 +1922,17 @@ LiveStorage_WriteMetPlayerList(int param_1,char *param_2,uchar *param_3,int para
 
 // 00981F30  LiveStorage_OtherPlayerStatsFileNotFound  (live/live_storage.cpp:1648)
 
-taskCompleteResults __cdecl LiveStorage_OtherPlayerStatsFileNotFound(int param_1,void *param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl LiveStorage_OtherPlayerStatsFileNotFound(int controllerIndex,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  dwFileOperationInfo *fileInfo;
   
-  if (param_2 == (void *)0x0) {
+  if (data == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x671,0,
                              "%s");
     if (!bVar2) {
@@ -1868,7 +1941,7 @@ taskCompleteResults __cdecl LiveStorage_OtherPlayerStatsFileNotFound(int param_1
       return tVar3;
     }
   }
-  if (*(char *)((int)param_2 + 0xf2) == '\0') {
+  if (*(char *)((int)data + 0xf2) == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x674,0,
                              "%s");
     if (!bVar2) {
@@ -1877,7 +1950,7 @@ taskCompleteResults __cdecl LiveStorage_OtherPlayerStatsFileNotFound(int param_1
       return tVar3;
     }
   }
-  if ((param_2 == (void *)0x0) || (*(char *)((int)param_2 + 0xf2) == '\0')) {
+  if ((data == (void *)0x0) || (*(char *)((int)data + 0xf2) == '\0')) {
     Com_Printf(0x10,"%s is not a user file\n");
     tVar3 = TASK_ERROR;
   }
@@ -1894,7 +1967,7 @@ taskCompleteResults __cdecl LiveStorage_OtherPlayerStatsFileNotFound(int param_1
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int param_1,ulong64 param_2)
+TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
@@ -1904,20 +1977,24 @@ TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int param_1,ulong64 param_
   TaskRecord *pTVar5;
   int iVar6;
   uchar *puVar7;
-  dwFileOperationInfo *pdVar8;
-  int iVar9;
+  dwFileOperationInfo *fileInfo_00;
+  int iVar8;
   int in_stack_00000008;
-  TaskRecord *local_14;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int currTime;
+  dwFileOperationInfo *fileInfo;
   
   iVar4 = Sys_Milliseconds();
-  if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+  if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x68a,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     pTVar5 = (TaskRecord *)(*pcVar1)();
     return pTVar5;
   }
-  pTVar5 = TaskManager2_TaskGetInProgressForController(task_LiveGetOtherPlayerStatsData,param_1);
+  pTVar5 = TaskManager2_TaskGetInProgressForController
+                     (task_LiveGetOtherPlayerStatsData,controllerIndex);
   if (pTVar5 == (TaskRecord *)0x0) {
     iVar2 = s_lastStatsUpdateTimeForOtherPlayer;
     if ((((in_stack_00000008 != 0 || (int)param_2 != 0) &&
@@ -1926,24 +2003,24 @@ TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int param_1,ulong64 param_
        ((int)param_2 == s_XuidOfOtherPlayer._4_4_)) {
       s_tempXuid._0_4_ = (int)s_XuidOfOtherPlayer;
       s_tempXuid._4_4_ = s_XuidOfOtherPlayer._4_4_;
-      iVar9 = iVar4 - s_lastStatsUpdateTimeForOtherPlayer;
+      iVar8 = iVar4 - s_lastStatsUpdateTimeForOtherPlayer;
       iVar6 = Dvar_GetInt("minDelayForOtherPlayerStatsFetch");
       iVar2 = iVar4;
-      if (iVar9 < iVar6) {
-        LiveStorage_ReadOtherPlayerStatsSuccessful(param_1,(void *)0x0);
+      if (iVar8 < iVar6) {
+        LiveStorage_ReadOtherPlayerStatsSuccessful(controllerIndex,(void *)0x0);
         return (TaskRecord *)0x0;
       }
     }
     s_lastStatsUpdateTimeForOtherPlayer = iVar2;
-    iVar4 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar8 = (dwFileOperationInfo *)(iVar4 + 0xd80);
+    iVar4 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fileInfo_00 = (dwFileOperationInfo *)(iVar4 + 0xd80);
     *(undefined4 *)(iVar4 + 0xe60) = 0;
     *(undefined4 *)(iVar4 + 0xe64) = 0;
     *(undefined4 *)(iVar4 + 0xe68) = 0;
     *(undefined1 *)(iVar4 + 0xe72) = 1;
     *(undefined1 *)(iVar4 + 0xe73) = 1;
-    (pdVar8->fileTask).m_filename = "globalstatsCompressed";
-    puVar7 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_OTHERPLAYER,true);
+    (fileInfo_00->fileTask).m_filename = "globalstatsCompressed";
+    puVar7 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
     *(uchar **)(iVar4 + 0xe78) = puVar7;
     *(undefined4 *)(iVar4 + 0xe7c) = 0x9cec;
     *(code **)(iVar4 + 0xe80) = LiveStorage_ReadOtherPlayerStatsSuccessful;
@@ -1951,13 +2028,14 @@ TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int param_1,ulong64 param_
     *(char **)(iVar4 + 0xe74) = "popup_fetchstats";
     *(undefined1 *)(iVar4 + 0xe5c) = 1;
     if (in_stack_00000008 == 0 && (int)param_2 == 0) {
-      local_14 = LiveStorage_ReadDWFile(param_1,pdVar8);
+      nestedTask = LiveStorage_ReadDWFile(controllerIndex,fileInfo_00);
     }
     else {
-      local_14 = LiveStorage_ReadDWFileByUserID
-                           (param_1,pdVar8,CONCAT44((int)param_2,in_stack_00000008));
+      nestedTask = LiveStorage_ReadDWFileByUserID
+                             (controllerIndex,fileInfo_00,CONCAT44((int)param_2,in_stack_00000008));
     }
-    pTVar5 = LiveStorage_SetupNestedTask(task_LiveGetOtherPlayerStatsData,param_1,local_14,pdVar8);
+    pTVar5 = LiveStorage_SetupNestedTask
+                       (task_LiveGetOtherPlayerStatsData,controllerIndex,nestedTask,fileInfo_00);
   }
   else {
     pTVar5 = (TaskRecord *)0x0;
@@ -1972,8 +2050,8 @@ TaskRecord * __cdecl LiveStorage_ReadOtherPlayerStats(int param_1,ulong64 param_
 
 TaskRecord * __cdecl
 LiveStorage_ReadCommonStats
-          (int param_1,bool param_2,statsLocation param_3,TaskDefinition *param_4,
-          dwFileOperationInfo *param_5)
+          (int controllerIndex,bool silent,statsLocation location,TaskDefinition *taskDef,
+          dwFileOperationInfo *fileInfo)
 
 {
   code *pcVar1;
@@ -1982,8 +2060,10 @@ LiveStorage_ReadCommonStats
   uchar *puVar4;
   int iVar5;
   undefined3 in_stack_0000000d;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x6d3,0,
                              "%s");
     if (!bVar2) {
@@ -1992,24 +2072,24 @@ LiveStorage_ReadCommonStats
       return pTVar3;
     }
   }
-  (param_5->retryInfo).lastAttemptTime = 0;
-  (param_5->retryInfo).lastAttemptInterval = 0;
-  (param_5->retryInfo).retryCount = 0;
-  param_5->isUserFile = true;
-  param_5->isCompressedFile = true;
-  (param_5->fileTask).m_optional = true;
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
-  param_5->fileBuffer = puVar4;
-  iVar5 = LiveStorage_GetStatsBufferSize(param_1,param_3,true);
-  param_5->bufferSize = iVar5;
-  param_5->menuDef = "popup_fetchstats";
-  if (_param_3 != 5) {
+  (fileInfo->retryInfo).lastAttemptTime = 0;
+  (fileInfo->retryInfo).lastAttemptInterval = 0;
+  (fileInfo->retryInfo).retryCount = 0;
+  fileInfo->isUserFile = true;
+  fileInfo->isCompressedFile = true;
+  (fileInfo->fileTask).m_optional = true;
+  puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+  fileInfo->fileBuffer = puVar4;
+  iVar5 = LiveStorage_GetStatsBufferSize(controllerIndex,location,true);
+  fileInfo->bufferSize = iVar5;
+  fileInfo->menuDef = "popup_fetchstats";
+  if (_location != 5) {
     memset(s_tempStatsBuffer,'\0',0x9ce8);
-    param_5->fileBuffer = s_tempStatsBuffer;
-    param_5->bufferSize = 0x9ce8;
+    fileInfo->fileBuffer = s_tempStatsBuffer;
+    fileInfo->bufferSize = 0x9ce8;
   }
-  pTVar3 = LiveStorage_ReadDWFile(param_1,param_5);
-  pTVar3 = LiveStorage_SetupNestedTask(param_4,param_1,pTVar3,param_5);
+  pTVar3 = LiveStorage_ReadDWFile(controllerIndex,fileInfo);
+  pTVar3 = LiveStorage_SetupNestedTask(taskDef,controllerIndex,pTVar3,fileInfo);
   return pTVar3;
 }
 
@@ -2018,25 +2098,26 @@ LiveStorage_ReadCommonStats
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadPlayerStats(int param_1,bool param_2,bool param_3)
+TaskRecord * __cdecl LiveStorage_ReadPlayerStats(int controllerIndex,bool validate,bool silent)
 
 {
   int iVar1;
   bool bVar2;
   TaskRecord *pTVar3;
+  dwFileOperationInfo *fileInfo;
   
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveGetPlayerStatsData,param_1);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveGetPlayerStatsData,controllerIndex);
   if (bVar2) {
     pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
     (((dwFileOperationInfo *)(iVar1 + 0xea0))->fileTask).m_filename = "mpstatsCompressed";
     *(code **)(iVar1 + 4000) = LiveStorage_ReadPlayerStatsSuccessful;
     *(code **)(iVar1 + 0xfa4) = LiveStorage_PlayerStatsFileNotFound;
     pTVar3 = LiveStorage_ReadCommonStats
-                       (param_1,param_3,STATS_LOCATION_FORCE_NORMAL,task_LiveGetPlayerStatsData,
-                        (dwFileOperationInfo *)(iVar1 + 0xea0));
+                       (controllerIndex,silent,STATS_LOCATION_FORCE_NORMAL,
+                        task_LiveGetPlayerStatsData,(dwFileOperationInfo *)(iVar1 + 0xea0));
   }
   return pTVar3;
 }
@@ -2046,24 +2127,27 @@ TaskRecord * __cdecl LiveStorage_ReadPlayerStats(int param_1,bool param_2,bool p
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_ReadBasicTrainingStats(int param_1,bool param_2,bool param_3)
+TaskRecord * __cdecl
+LiveStorage_ReadBasicTrainingStats(int controllerIndex,bool validate,bool silent)
 
 {
   int iVar1;
   bool bVar2;
   TaskRecord *pTVar3;
+  dwFileOperationInfo *fileInfo;
   
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveGetBasicTrainingStatsData,param_1);
+  bVar2 = TaskManager2_TaskIsInProgressForController
+                    (task_LiveGetBasicTrainingStatsData,controllerIndex);
   if (bVar2) {
     pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
     (((dwFileOperationInfo *)(iVar1 + 0xfc0))->fileTask).m_filename = "mpstatsBasicTraining";
     *(code **)(iVar1 + 0x10c0) = LiveStorage_ReadBasicTrainingStatsSuccessful;
     *(code **)(iVar1 + 0x10c4) = LiveStorage_BasicTrainingStatsFileNotFound;
     pTVar3 = LiveStorage_ReadCommonStats
-                       (param_1,param_3,STATS_LOCATION_BASICTRAINING,
+                       (controllerIndex,silent,STATS_LOCATION_BASICTRAINING,
                         task_LiveGetBasicTrainingStatsData,(dwFileOperationInfo *)(iVar1 + 0xfc0));
   }
   return pTVar3;
@@ -2076,8 +2160,8 @@ TaskRecord * __cdecl LiveStorage_ReadBasicTrainingStats(int param_1,bool param_2
 
 TaskRecord * __cdecl
 LiveStorage_WriteStats
-          (int param_1,bool param_2,statsLocation param_3,TaskDefinition *param_4,
-          dwFileOperationInfo *param_5)
+          (int controllerIndex,bool backup,statsLocation location,TaskDefinition *taskDef,
+          dwFileOperationInfo *fileInfo)
 
 {
   code *pcVar1;
@@ -2088,38 +2172,41 @@ LiveStorage_WriteStats
   uint uVar6;
   uint *puVar7;
   undefined3 in_stack_0000000d;
+  int checksum;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if (_param_3 == 5) {
-    puVar4 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
+  if (_location == 5) {
+    puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
     bVar2 = LiveStats_GetBasicTrainingState(puVar4);
     if (bVar2) {
-      if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+      if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x733
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pTVar3 = (TaskRecord *)(*pcVar1)();
         return pTVar3;
       }
-      param_5->isUserFile = true;
-      param_5->isCompressedFile = true;
-      puVar4 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
-      param_5->fileBuffer = puVar4;
-      iVar5 = LiveStorage_GetStatsBufferSize(param_1,param_3,true);
-      param_5->bufferSize = iVar5;
-      if (param_2) {
-        LiveStats_SetStatByKey(param_1,MP_PLAYERSTATSKEY_STATSBACKUPVERSION,0x9cad);
+      fileInfo->isUserFile = true;
+      fileInfo->isCompressedFile = true;
+      puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+      fileInfo->fileBuffer = puVar4;
+      iVar5 = LiveStorage_GetStatsBufferSize(controllerIndex,location,true);
+      fileInfo->bufferSize = iVar5;
+      if (backup) {
+        LiveStats_SetStatByKey(controllerIndex,MP_PLAYERSTATSKEY_STATSBACKUPVERSION,0x9cad);
       }
-      LiveStorage_SetStatsWriteNeeded(param_1,false,param_3);
-      iVar5 = LiveStorage_GetStatsBufferSize(param_1,param_3,true);
+      LiveStorage_SetStatsWriteNeeded(controllerIndex,false,location);
+      iVar5 = LiveStorage_GetStatsBufferSize(controllerIndex,location,true);
       iVar5 = iVar5 + -4;
-      puVar4 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
+      puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
       uVar6 = LiveStats_ChecksumGamerStats(puVar4 + 4,iVar5);
-      puVar7 = (uint *)LiveStorage_GetStatsBuffer(param_1,param_3,true);
+      puVar7 = (uint *)LiveStorage_GetStatsBuffer(controllerIndex,location,true);
       *puVar7 = uVar6;
-      pTVar3 = LiveStorage_WriteDWUserFile(param_1,param_5,0);
-      pTVar3 = LiveStorage_SetupNestedTask(param_4,param_1,pTVar3,param_5);
+      pTVar3 = LiveStorage_WriteDWUserFile(controllerIndex,fileInfo,0);
+      pTVar3 = LiveStorage_SetupNestedTask(taskDef,controllerIndex,pTVar3,fileInfo);
       if (pTVar3 == (TaskRecord *)0x0) {
-        LiveStorage_SetStatsWriteNeeded(param_1,true,param_3);
+        LiveStorage_SetStatsWriteNeeded(controllerIndex,true,location);
       }
     }
     else {
@@ -2138,13 +2225,13 @@ LiveStorage_WriteStats
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_WritePlayerStatsFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_WritePlayerStatsFailure(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (TaskRecord *)0x0) {
+  if (task == (TaskRecord *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x757,0,
                              "%s");
     if (!bVar2) {
@@ -2153,8 +2240,8 @@ void __cdecl LiveStorage_WritePlayerStatsFailure(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1 != (TaskRecord *)0x0) {
-    LiveStorage_SetStatsWriteNeeded(param_1->controllerIndex,true,STATS_LOCATION_FORCE_NORMAL);
+  if (task != (TaskRecord *)0x0) {
+    LiveStorage_SetStatsWriteNeeded(task->controllerIndex,true,STATS_LOCATION_FORCE_NORMAL);
   }
   return;
 }
@@ -2164,13 +2251,13 @@ void __cdecl LiveStorage_WritePlayerStatsFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_WriteBasicTrainingStatsFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_WriteBasicTrainingStatsFailure(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (TaskRecord *)0x0) {
+  if (task == (TaskRecord *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x762,0,
                              "%s");
     if (!bVar2) {
@@ -2179,8 +2266,8 @@ void __cdecl LiveStorage_WriteBasicTrainingStatsFailure(TaskRecord *param_1)
       return;
     }
   }
-  if (param_1 != (TaskRecord *)0x0) {
-    LiveStorage_SetStatsWriteNeeded(param_1->controllerIndex,true,STATS_LOCATION_BASICTRAINING);
+  if (task != (TaskRecord *)0x0) {
+    LiveStorage_SetStatsWriteNeeded(task->controllerIndex,true,STATS_LOCATION_BASICTRAINING);
   }
   return;
 }
@@ -2190,15 +2277,16 @@ void __cdecl LiveStorage_WriteBasicTrainingStatsFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_WriteBasicTrainingStats(int param_1)
+TaskRecord * __cdecl LiveStorage_WriteBasicTrainingStats(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  dwFileOperationInfo *pdVar4;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x796,0,
                              "%s");
     if (!bVar2) {
@@ -2207,32 +2295,34 @@ TaskRecord * __cdecl LiveStorage_WriteBasicTrainingStats(int param_1)
       return pTVar3;
     }
   }
-  bVar2 = LiveStorage_DoWeHaveStats(param_1,STATS_LOCATION_BASICTRAINING);
+  bVar2 = LiveStorage_DoWeHaveStats(controllerIndex,STATS_LOCATION_BASICTRAINING);
   if (bVar2) {
-    if (controllerNetworkData[param_1 * 0x3ad90 + 0x273ac] == '\0') {
+    if (controllerNetworkData[controllerIndex * 0x3ad90 + 0x273ac] == '\0') {
       pTVar3 = (TaskRecord *)0x0;
     }
-    else if (controllerNetworkData[param_1 * 0x3ad90 + 0x273ae] == '\0') {
+    else if (controllerNetworkData[controllerIndex * 0x3ad90 + 0x273ae] == '\0') {
       pTVar3 = (TaskRecord *)0x0;
     }
     else {
-      bVar2 = LiveStorage_GetStatsWriteNeeded(param_1,STATS_LOCATION_BASICTRAINING);
+      bVar2 = LiveStorage_GetStatsWriteNeeded(controllerIndex,STATS_LOCATION_BASICTRAINING);
       if (bVar2) {
-        bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveSaveBasicTrainingStats,param_1);
+        bVar2 = TaskManager2_TaskIsInProgressForController
+                          (task_LiveSaveBasicTrainingStats,controllerIndex);
         if (bVar2) {
           pTVar3 = (TaskRecord *)0x0;
         }
         else {
-          pdVar4 = (dwFileOperationInfo *)
-                   (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x1200);
+          fileInfo_00 = (dwFileOperationInfo *)
+                        (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) +
+                        0x1200);
           bVar2 = LiveStorage_TryFile((fileRetryInfo *)
-                                      (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c)
-                                      + 0x12e0));
+                                      (*(int *)(controllerNetworkData +
+                                               controllerIndex * 0x3ad90 + 0x3ad8c) + 0x12e0));
           if (bVar2) {
-            (pdVar4->fileTask).m_filename = "mpstatsBasicTraining";
+            (fileInfo_00->fileTask).m_filename = "mpstatsBasicTraining";
             pTVar3 = LiveStorage_WriteStats
-                               (param_1,false,STATS_LOCATION_BASICTRAINING,
-                                task_LiveSaveBasicTrainingStats,pdVar4);
+                               (controllerIndex,false,STATS_LOCATION_BASICTRAINING,
+                                task_LiveSaveBasicTrainingStats,fileInfo_00);
           }
           else {
             pTVar3 = (TaskRecord *)0x0;
@@ -2257,14 +2347,16 @@ TaskRecord * __cdecl LiveStorage_WriteBasicTrainingStats(int param_1)
 
 TaskRecord * __cdecl
 LiveStorage_WriteBackupStatsInternal
-          (int param_1,dwFileOperationInfo *param_2,TaskDefinition *param_3)
+          (int controllerIndex,dwFileOperationInfo *fileInfo,TaskDefinition *taskdef)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if (param_2 == (dwFileOperationInfo *)0x0) {
+  if (fileInfo == (dwFileOperationInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x7c1,0,
                              "%s");
     if (!bVar2) {
@@ -2273,7 +2365,7 @@ LiveStorage_WriteBackupStatsInternal
       return pTVar3;
     }
   }
-  if (param_2->fileBuffer == (uchar *)0x0) {
+  if (fileInfo->fileBuffer == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x7c3,0,
                              "%s");
     if (!bVar2) {
@@ -2282,7 +2374,7 @@ LiveStorage_WriteBackupStatsInternal
       return pTVar3;
     }
   }
-  if (param_2->bufferSize == 0) {
+  if (fileInfo->bufferSize == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x7c4,0,
                              "%s");
     if (!bVar2) {
@@ -2292,16 +2384,16 @@ LiveStorage_WriteBackupStatsInternal
     }
   }
   if ((maxStatsBackupInterval->current).integer < 1) {
-    param_2->writeCompleted = true;
+    fileInfo->writeCompleted = true;
     pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    bVar2 = LiveStorage_TryFile(&param_2->retryInfo);
+    bVar2 = LiveStorage_TryFile(&fileInfo->retryInfo);
     if (bVar2) {
-      param_2->isUserFile = true;
-      param_2->isCompressedFile = true;
-      pTVar3 = LiveStorage_WriteDWUserFile(param_1,param_2,0);
-      pTVar3 = LiveStorage_SetupNestedTask(param_3,param_1,pTVar3,param_2);
+      fileInfo->isUserFile = true;
+      fileInfo->isCompressedFile = true;
+      pTVar3 = LiveStorage_WriteDWUserFile(controllerIndex,fileInfo,0);
+      pTVar3 = LiveStorage_SetupNestedTask(taskdef,controllerIndex,pTVar3,fileInfo);
     }
     else {
       pTVar3 = (TaskRecord *)0x0;
@@ -2315,38 +2407,42 @@ LiveStorage_WriteBackupStatsInternal
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_WriteBackupStats(int param_1)
+void __cdecl LiveStorage_WriteBackupStats(int controllerIndex)
 
 {
-  dwFileOperationInfo *pdVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uchar *puVar5;
-  uint uVar6;
+  dwFileOperationInfo *fileInfo_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uchar *puVar4;
+  uint uVar5;
+  uint checksum;
+  dwFileOperationInfo *fileInfo;
   
-  bVar3 = LiveStorage_DoWeHaveStats(param_1,STATS_LOCATION_FORCE_NORMAL);
-  if ((bVar3) &&
-     (bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveBackupStats,param_1), !bVar3)) {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x7ea,0
-                                 ,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  bVar2 = LiveStorage_DoWeHaveStats(controllerIndex,STATS_LOCATION_FORCE_NORMAL);
+  if ((bVar2) &&
+     (bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveBackupStats,controllerIndex),
+     !bVar2)) {
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x7ea,0
+                                 ,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    pdVar1 = *(dwFileOperationInfo **)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    LiveStorage_ResetFileInfo(pdVar1);
-    iVar4 = SystemTimeToInt();
-    LiveStats_SetStatByKey(param_1,MP_PLAYERSTATSKEY_LASTSTATSBACKUP,iVar4);
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_FORCE_NORMAL,true);
-    pdVar1->fileBuffer = puVar5;
-    iVar4 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_FORCE_NORMAL,true);
-    pdVar1->bufferSize = iVar4;
-    (pdVar1->fileTask).m_filename = "mpdatabk0000";
-    uVar6 = LiveStats_ChecksumGamerStats(pdVar1->fileBuffer + 4,pdVar1->bufferSize + -4);
-    *(uint *)pdVar1->fileBuffer = uVar6;
-    LiveStorage_WriteBackupStatsInternal(param_1,pdVar1,task_LiveBackupStats);
+    fileInfo_00 = *(dwFileOperationInfo **)
+                   (controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    LiveStorage_ResetFileInfo(fileInfo_00);
+    iVar3 = SystemTimeToInt();
+    LiveStats_SetStatByKey(controllerIndex,MP_PLAYERSTATSKEY_LASTSTATSBACKUP,iVar3);
+    puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_FORCE_NORMAL,true);
+    fileInfo_00->fileBuffer = puVar4;
+    iVar3 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_FORCE_NORMAL,true);
+    fileInfo_00->bufferSize = iVar3;
+    (fileInfo_00->fileTask).m_filename = "mpdatabk0000";
+    uVar5 = LiveStats_ChecksumGamerStats(fileInfo_00->fileBuffer + 4,fileInfo_00->bufferSize + -4);
+    *(uint *)fileInfo_00->fileBuffer = uVar5;
+    LiveStorage_WriteBackupStatsInternal(controllerIndex,fileInfo_00,task_LiveBackupStats);
   }
   return;
 }
@@ -2356,7 +2452,7 @@ void __cdecl LiveStorage_WriteBackupStats(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_BackupCorruptedStats(int param_1,char *param_2)
+void __cdecl LiveStorage_BackupCorruptedStats(int controllerIndex,char *filename)
 
 {
   int iVar1;
@@ -2364,9 +2460,10 @@ void __cdecl LiveStorage_BackupCorruptedStats(int param_1,char *param_2)
   bool bVar3;
   uchar *puVar4;
   int iVar5;
-  dwFileOperationInfo *pdVar6;
+  dwFileOperationInfo *fileInfo_00;
+  dwFileOperationInfo *fileInfo;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x801,0,
                              "%s");
     if (!bVar3) {
@@ -2375,61 +2472,61 @@ void __cdecl LiveStorage_BackupCorruptedStats(int param_1,char *param_2)
       return;
     }
   }
-  iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-  pdVar6 = (dwFileOperationInfo *)(iVar1 + 0xa20);
-  LiveStorage_ResetFileInfo(pdVar6);
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_FORCE_NORMAL,false);
+  iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+  fileInfo_00 = (dwFileOperationInfo *)(iVar1 + 0xa20);
+  LiveStorage_ResetFileInfo(fileInfo_00);
+  puVar4 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
   *(uchar **)(iVar1 + 0xb18) = puVar4;
-  iVar5 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_FORCE_NORMAL,false);
+  iVar5 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
   *(int *)(iVar1 + 0xb1c) = iVar5;
-  (pdVar6->fileTask).m_filename = param_2;
-  LiveStorage_WriteBackupStatsInternal(param_1,pdVar6,task_LiveBackupCorruptedStats);
+  (fileInfo_00->fileTask).m_filename = filename;
+  LiveStorage_WriteBackupStatsInternal(controllerIndex,fileInfo_00,task_LiveBackupCorruptedStats);
   return;
 }
 
 
 // 00982F40  LiveStorage_SetAllStatsNotFetched  (live/live_storage.cpp:2063)
 
-void __cdecl LiveStorage_SetAllStatsNotFetched(int param_1)
+void __cdecl LiveStorage_SetAllStatsNotFetched(int controllerIndex)
 
 {
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_FORCE_NORMAL,false);
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_BACKUP,false);
-  LiveStats_SetBufferInitialised(param_1,false);
-  LiveStorage_SetStatsFetched(param_1,STATS_LOCATION_BASICTRAINING,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_FORCE_NORMAL,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_BACKUP,false);
+  LiveStats_SetBufferInitialised(controllerIndex,false);
+  LiveStorage_SetStatsFetched(controllerIndex,STATS_LOCATION_BASICTRAINING,false);
   return;
 }
 
 
 // 00982F90  LiveStorage_FileShare_UpdateMetaData  (live/live_storage.cpp:2353)
 
-void __cdecl LiveStorage_FileShare_UpdateMetaData(char *param_1)
+void __cdecl LiveStorage_FileShare_UpdateMetaData(char *metaData)
 
 {
   int iVar1;
-  ddlState_t local_14;
+  ddlState_t state;
   
-  iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_14,"name");
+  iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
   if ((iVar1 == 0) ||
-     (iVar1 = DDL_SetString(&local_14,(fsSelectedFileName->current).string,param_1), iVar1 == 0)) {
+     (iVar1 = DDL_SetString(&state,(fsSelectedFileName->current).string,metaData), iVar1 == 0)) {
     Com_PrintError(0x10,"Unable to update file share meta data.\n");
   }
-  iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_14,"isModifiedName");
+  iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
   if ((iVar1 == 0) ||
-     (iVar1 = DDL_SetInt(&local_14,(uint)(fsIsSelectedFileNameModified->current).color[0],param_1),
+     (iVar1 = DDL_SetInt(&state,(uint)(fsIsSelectedFileNameModified->current).color[0],metaData),
      iVar1 == 0)) {
     Com_PrintError(0x10,"Unable to update file share meta data.\n");
   }
-  iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_14,"description");
+  iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
   if ((iVar1 == 0) ||
-     (iVar1 = DDL_SetString(&local_14,(fsSelectedFileDescription->current).string,param_1),
-     iVar1 == 0)) {
+     (iVar1 = DDL_SetString(&state,(fsSelectedFileDescription->current).string,metaData), iVar1 == 0
+     )) {
     Com_PrintError(0x10,"Unable to update file share meta data.\n");
   }
-  iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_14,"isModifiedDescription");
+  iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedDescription");
   if ((iVar1 != 0) &&
-     (iVar1 = DDL_SetInt(&local_14,(uint)(fsIsSelectedFileDescriptionModified->current).color[0],
-                         param_1), iVar1 != 0)) {
+     (iVar1 = DDL_SetInt(&state,(uint)(fsIsSelectedFileDescriptionModified->current).color[0],
+                         metaData), iVar1 != 0)) {
     return;
   }
   Com_PrintError(0x10,"Unable to update file share meta data.\n");
@@ -2439,12 +2536,12 @@ void __cdecl LiveStorage_FileShare_UpdateMetaData(char *param_1)
 
 // 009830C0  LiveStorage_FileShare_IsValidHTTPCode  (live/live_storage.cpp:2382)
 
-bool __cdecl LiveStorage_FileShare_IsValidHTTPCode(int param_1)
+bool __cdecl LiveStorage_FileShare_IsValidHTTPCode(int httpCode)
 
 {
   bool bVar1;
   
-  if ((param_1 == 0) || ((199 < param_1 && (param_1 < 300)))) {
+  if ((httpCode == 0) || ((199 < httpCode && (httpCode < 300)))) {
     bVar1 = true;
   }
   else {
@@ -2458,15 +2555,17 @@ bool __cdecl LiveStorage_FileShare_IsValidHTTPCode(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int param_1)
+fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   fileShareLocation fVar4;
+  bool isReadingFile;
+  bool isWritingFile;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x958,0,
                              "%s");
     if (!bVar2) {
@@ -2475,8 +2574,8 @@ fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int param
       return fVar4;
     }
   }
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,param_1);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,controllerIndex);
   if (bVar2) {
     if (bVar3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x95f,0,
@@ -2488,7 +2587,7 @@ fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int param
       }
     }
     fVar4 = *(fileShareLocation *)
-             (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x15e8);
+             (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x15e8);
   }
   else if (bVar3) {
     if (bVar2) {
@@ -2501,7 +2600,7 @@ fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int param
       }
     }
     fVar4 = *(fileShareLocation *)
-             (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x1e60);
+             (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x1e60);
   }
   else {
     fVar4 = FILESHARE_LOCATION_INVALID;
@@ -2512,17 +2611,19 @@ fileShareLocation __cdecl LiveStorage_FileShare_GetCurrentHTTPLocation(int param
 
 // 00983200  LiveStorage_FileShare_GetDownloadProgress  (live/live_storage.cpp:2412)
 
-void __cdecl LiveStorage_FileShare_GetDownloadProgress(int param_1,uint *param_2,float *param_3)
+void __cdecl
+LiveStorage_FileShare_GetDownloadProgress(int controllerIndex,uint *bytes,float *dataRate)
 
 {
   int iVar1;
+  dwFileShareReadFileTask *fileTask;
   
-  iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
+  iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
   if (*(char *)(iVar1 + 0x1e50) == '\0') {
-    dwFileShareGetProgress(param_1,param_2,param_3,*(fileShareLocation *)(iVar1 + 0x15e8));
+    dwFileShareGetProgress(controllerIndex,bytes,dataRate,*(fileShareLocation *)(iVar1 + 0x15e8));
   }
   else {
-    *param_2 = *(uint *)(iVar1 + 0x15f8);
+    *bytes = *(uint *)(iVar1 + 0x15f8);
   }
   return;
 }
@@ -2530,13 +2631,16 @@ void __cdecl LiveStorage_FileShare_GetDownloadProgress(int param_1,uint *param_2
 
 // 00983260  LiveStorage_FileShare_GetUploadProgress  (live/live_storage.cpp:2426)
 
-void __cdecl LiveStorage_FileShare_GetUploadProgress(int param_1,uint *param_2,float *param_3)
+void __cdecl
+LiveStorage_FileShare_GetUploadProgress(int controllerIndex,uint *bytes,float *dataRate)
 
 {
+  dwFileShareWriteFileTask *fileTask;
+  
   dwFileShareGetProgress
-            (param_1,param_2,param_3,
+            (controllerIndex,bytes,dataRate,
              *(fileShareLocation *)
-              (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x1e60));
+              (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x1e60));
   return;
 }
 
@@ -2545,18 +2649,18 @@ void __cdecl LiveStorage_FileShare_GetUploadProgress(int param_1,uint *param_2,f
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_AbortOperation(int param_1,fileShareLocation param_2)
+void __cdecl LiveStorage_FileShare_AbortOperation(int controllerIndex,fileShareLocation location)
 
 {
   bool bVar1;
   
-  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,param_1);
+  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,controllerIndex);
   if ((!bVar1) &&
-     (bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,param_1),
-     !bVar1)) {
+     (bVar1 = TaskManager2_TaskIsInProgressForController
+                        (task_LiveFileShareWriteFile,controllerIndex), !bVar1)) {
     return;
   }
-  dwFileShareAbortOperation(param_1,param_2);
+  dwFileShareAbortOperation(controllerIndex,location);
   return;
 }
 
@@ -2566,18 +2670,23 @@ void __cdecl LiveStorage_FileShare_AbortOperation(int param_1,fileShareLocation 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_FileShare_ReadListing(int param_1,ulong64 param_2,fileShareBufferLocation param_3)
+LiveStorage_FileShare_ReadListing
+          (int controllerIndex,ulong64 param_2,fileShareBufferLocation param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  dwFileShareListTask *pdVar4;
-  fileSharePrivateData *pfVar5;
+  dwFileShareListTask *fsTask;
+  fileSharePrivateData *pfVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
   int in_stack_00000008;
-  char *pcVar8;
+  char *menuName;
+  TaskRecord *nestedTask;
+  fileSharePrivateData *fileShareData;
+  TaskRecord *task;
+  dwFileShareListTask *fileShareListTask;
   
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
     va("Trying to get File Share listing for invalid XUID %lld\n");
@@ -2593,28 +2702,29 @@ LiveStorage_FileShare_ReadListing(int param_1,ulong64 param_2,fileShareBufferLoc
     pTVar3 = (TaskRecord *)0x0;
   }
   else {
-    bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetListing,param_1);
+    bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetListing,controllerIndex)
+    ;
     if (bVar2) {
       pTVar3 = (TaskRecord *)0x0;
     }
     else {
-      if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+      if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x99e
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pTVar3 = (TaskRecord *)(*pcVar1)();
         return pTVar3;
       }
-      iVar7 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-      pdVar4 = (dwFileShareListTask *)(iVar7 + 0x1560);
-      pfVar5 = LiveStorage_FileShare_GetFileShareData(param_2._4_4_);
-      if (pfVar5 == (fileSharePrivateData *)0x0) {
+      iVar6 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+      fsTask = (dwFileShareListTask *)(iVar6 + 0x1560);
+      pfVar4 = LiveStorage_FileShare_GetFileShareData(param_2._4_4_);
+      if (pfVar4 == (fileSharePrivateData *)0x0) {
         pTVar3 = (TaskRecord *)0x0;
       }
       else {
-        if ((pfVar5->valid != false) &&
-           (iVar6 = Sys_Milliseconds(), iVar6 - pfVar5->lastRead < 60000)) {
-          if ((int)pfVar5->playerXuid == 0 && *(int *)((int)&pfVar5->playerXuid + 4) == 0) {
+        if ((pfVar4->valid != false) &&
+           (iVar5 = Sys_Milliseconds(), iVar5 - pfVar4->lastRead < 60000)) {
+          if ((int)pfVar4->playerXuid == 0 && *(int *)((int)&pfVar4->playerXuid + 4) == 0) {
             va("Invalid file share XUID %lld\n");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",
                                      0x9ab,0,"%s\n\t%s");
@@ -2624,28 +2734,29 @@ LiveStorage_FileShare_ReadListing(int param_1,ulong64 param_2,fileShareBufferLoc
               return pTVar3;
             }
           }
-          if (((int)pfVar5->playerXuid == in_stack_00000008) &&
-             (*(int *)((int)&pfVar5->playerXuid + 4) == (int)param_2)) {
+          if (((int)pfVar4->playerXuid == in_stack_00000008) &&
+             (*(int *)((int)&pfVar4->playerXuid + 4) == (int)param_2)) {
             Com_Printf(0x10,"File share is up to date for %lld.\n");
             return (TaskRecord *)0x0;
           }
         }
-        pfVar5->valid = false;
-        *(undefined2 *)(iVar7 + 0x1572) = 0x14;
-        *(int *)&pdVar4->ownerID = in_stack_00000008;
-        *(int *)(iVar7 + 0x1564) = (int)param_2;
-        *(undefined2 *)(iVar7 + 0x1570) = 0;
-        *(undefined4 *)(iVar7 + 0x1578) = 0;
-        *(undefined4 *)(iVar7 + 0x1568) = 0;
-        *(bdFileMetaData **)(iVar7 + 0x157c) = pfVar5->descriptors;
-        *(fileShareBufferLocation *)(iVar7 + 0x156c) = param_2._4_4_;
-        if ((*(int *)(iVar7 + 0x1580) != 0) && (**(char **)(iVar7 + 0x1580) != '\0')) {
-          pcVar8 = *(char **)(iVar7 + 0x1580);
-          iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-          UI_OpenMenu(iVar7,pcVar8);
+        pfVar4->valid = false;
+        *(undefined2 *)(iVar6 + 0x1572) = 0x14;
+        *(int *)&fsTask->ownerID = in_stack_00000008;
+        *(int *)(iVar6 + 0x1564) = (int)param_2;
+        *(undefined2 *)(iVar6 + 0x1570) = 0;
+        *(undefined4 *)(iVar6 + 0x1578) = 0;
+        *(undefined4 *)(iVar6 + 0x1568) = 0;
+        *(bdFileMetaData **)(iVar6 + 0x157c) = pfVar4->descriptors;
+        *(fileShareBufferLocation *)(iVar6 + 0x156c) = param_2._4_4_;
+        if ((*(int *)(iVar6 + 0x1580) != 0) && (**(char **)(iVar6 + 0x1580) != '\0')) {
+          menuName = *(char **)(iVar6 + 0x1580);
+          iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+          UI_OpenMenu(iVar6,menuName);
         }
-        pTVar3 = dwFileShareGetListing(param_1,pdVar4);
-        pTVar3 = LiveStorage_SetupNestedTask(task_LiveFileShareGetListing,param_1,pTVar3,pdVar4);
+        pTVar3 = dwFileShareGetListing(controllerIndex,fsTask);
+        pTVar3 = LiveStorage_SetupNestedTask
+                           (task_LiveFileShareGetListing,controllerIndex,pTVar3,fsTask);
       }
     }
   }
@@ -2657,22 +2768,24 @@ LiveStorage_FileShare_ReadListing(int param_1,ulong64 param_2,fileShareBufferLoc
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadListingFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadListingFailure(TaskRecord *task)
 
 {
   void *pvVar1;
   fileSharePrivateData *pfVar2;
-  int iVar3;
-  char *pcVar4;
+  int localClientNum;
+  char *menuName;
+  fileSharePrivateData *fileShareData;
+  dwFileShareListTask *fileShareListTask;
   
-  pvVar1 = param_1->payload;
+  pvVar1 = task->payload;
   pfVar2 = LiveStorage_FileShare_GetFileShareData(*(fileShareBufferLocation *)((int)pvVar1 + 0xc));
   if (pfVar2 != (fileSharePrivateData *)0x0) {
     pfVar2->valid = false;
     if ((*(int *)((int)pvVar1 + 0x20) != 0) && (**(char **)((int)pvVar1 + 0x20) != '\0')) {
-      pcVar4 = *(char **)((int)pvVar1 + 0x20);
-      iVar3 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar3,pcVar4);
+      menuName = *(char **)((int)pvVar1 + 0x20);
+      localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(localClientNum,menuName);
     }
     Com_PrintError(0x10,"Error reading user file share.\n");
   }
@@ -2686,30 +2799,30 @@ void __cdecl LiveStorage_FileShare_ReadListingFailure(TaskRecord *param_1)
 
 void __cdecl
 LiveStorage_FileShare_KickOffRatingsTask
-          (int param_1,fileSharePrivateData *param_2,int param_3,dwFileShareGetRatingTask *param_4,
-          TaskDefinition *param_5,int *param_6)
+          (int controllerIndex,fileSharePrivateData *fileShareData,int category,
+          dwFileShareGetRatingTask *ratingTask,TaskDefinition *sym,int *resultOffset)
 
 {
-  int local_ac;
-  int local_a8;
-  undefined4 local_a4 [40];
+  int i;
+  int numFileIDs;
+  undefined4 fileIDs [40];
   
-  local_a8 = 0;
-  for (local_ac = 0; local_ac < param_2->descriptorCount; local_ac = local_ac + 1) {
-    if ((uint)param_2->descriptors[local_ac].m_category == param_3) {
-      local_a4[local_a8 * 2] = (int)param_2->descriptors[local_ac].m_fileID;
-      local_a4[local_a8 * 2 + 1] =
-           *(undefined4 *)((int)&param_2->descriptors[local_ac].m_fileID + 4);
-      local_a8 = local_a8 + 1;
+  numFileIDs = 0;
+  for (i = 0; i < fileShareData->descriptorCount; i = i + 1) {
+    if ((uint)fileShareData->descriptors[i].m_category == category) {
+      fileIDs[numFileIDs * 2] = (int)fileShareData->descriptors[i].m_fileID;
+      fileIDs[numFileIDs * 2 + 1] =
+           *(undefined4 *)((int)&fileShareData->descriptors[i].m_fileID + 4);
+      numFileIDs = numFileIDs + 1;
     }
   }
-  if (0 < local_a8) {
-    param_4->maxFilesToFetch = (int)local_a4;
-    param_4->leaderboardID = local_a8;
-    param_4->outStatsInfo = (bdVoteRankStatsInfo *)param_3;
-    param_4[1].fileIDs = (ulong64 *)(param_2->fileRatings + *param_6);
-    LiveStorage_FileShare_ReadRating(param_1,param_4,param_5);
-    *param_6 = *param_6 + local_a8;
+  if (0 < numFileIDs) {
+    ratingTask->maxFilesToFetch = (int)fileIDs;
+    ratingTask->leaderboardID = numFileIDs;
+    ratingTask->outStatsInfo = (bdVoteRankStatsInfo *)category;
+    ratingTask[1].fileIDs = (ulong64 *)(fileShareData->fileRatings + *resultOffset);
+    LiveStorage_FileShare_ReadRating(controllerIndex,ratingTask,sym);
+    *resultOffset = *resultOffset + numFileIDs;
   }
   return;
 }
@@ -2723,47 +2836,51 @@ LiveStorage_FileShare_KickOffRatingsTask
 /* WARNING: Removing unreachable block (ram,0x009838a1) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadListingSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadListingSuccess(TaskRecord *task)
 
 {
   undefined4 *puVar1;
   fileSharePrivateData *pfVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
+  char *menuName;
   uint local_2c;
   uint local_28;
-  int local_20;
-  uint local_1c;
-  uint local_14;
+  int i;
+  int maxRows;
+  dwFileShareGetRatingTask *ratingTask;
+  int maxSlot;
+  fileSharePrivateData *fileShareData;
+  dwFileShareListTask *fileShareListTask;
+  int resultOffset;
   
-  puVar1 = param_1->payload;
+  puVar1 = task->payload;
   pfVar2 = LiveStorage_FileShare_GetFileShareData(puVar1[3]);
   if (pfVar2 != (fileSharePrivateData *)0x0) {
     pfVar2->valid = true;
-    uVar3 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+    uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
     pfVar2->descriptorCount = uVar3;
     *(undefined4 *)&pfVar2->playerXuid = *puVar1;
     *(undefined4 *)((int)&pfVar2->playerXuid + 4) = puVar1[1];
     iVar4 = Sys_Milliseconds();
     pfVar2->lastRead = iVar4;
-    local_14 = 0;
+    maxSlot = 0;
     if (puVar1[3] == 1) {
-      for (local_20 = 0; local_20 < pfVar2->descriptorCount; local_20 = local_20 + 1) {
-        if ((pfVar2->descriptors[local_20].m_fileSlot < 0x13) &&
-           (local_14 < pfVar2->descriptors[local_20].m_fileSlot)) {
-          local_14 = (uint)pfVar2->descriptors[local_20].m_fileSlot;
+      for (i = 0; i < pfVar2->descriptorCount; i = i + 1) {
+        if ((pfVar2->descriptors[i].m_fileSlot < 0x13) &&
+           ((uint)maxSlot < (uint)pfVar2->descriptors[i].m_fileSlot)) {
+          maxSlot = (int)pfVar2->descriptors[i].m_fileSlot;
         }
       }
-      local_1c = local_14 / 3;
-      if (local_14 % 3 != 0) {
-        local_1c = local_1c + 1;
+      maxRows = (uint)maxSlot / 3;
+      if ((uint)maxSlot % 3 != 0) {
+        maxRows = maxRows + 1;
       }
-      if (local_1c < 3) {
+      if ((uint)maxRows < 3) {
         local_28 = 2;
       }
       else {
-        local_28 = local_1c;
+        local_28 = maxRows;
       }
       if (local_28 < 7) {
         local_2c = local_28;
@@ -2774,9 +2891,9 @@ void __cdecl LiveStorage_FileShare_ReadListingSuccess(TaskRecord *param_1)
       Dvar_SetInt(fsMaxPrivateSlotRowsOther,local_2c);
     }
     if ((puVar1[8] != 0) && (*(char *)puVar1[8] != '\0')) {
-      pcVar5 = (char *)puVar1[8];
-      iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar4,pcVar5);
+      menuName = (char *)puVar1[8];
+      iVar4 = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(iVar4,menuName);
     }
   }
   return;
@@ -2787,26 +2904,28 @@ void __cdecl LiveStorage_FileShare_ReadListingSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LiveStorage_FileShare_IsPageLoading(int param_1)
+bool __cdecl LiveStorage_FileShare_IsPageLoading(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareLoadBlock,param_1);
+  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareLoadBlock,controllerIndex);
   return bVar1;
 }
 
 
 // 00983B20  LiveStorage_FileShareSortComparator_MostRecent  (live/live_storage.cpp:2643)
 
-int __cdecl LiveStorage_FileShareSortComparator_MostRecent(void *param_1,void *param_2)
+int __cdecl LiveStorage_FileShareSortComparator_MostRecent(void *arg0,void *arg1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bdFileMetaData *fileMetaData1;
+  bdFileMetaData *fileMetaData2;
   
-  if (param_1 == (void *)0x0) {
+  if (arg0 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xa54,0,
                              "%s");
     if (!bVar2) {
@@ -2815,7 +2934,7 @@ int __cdecl LiveStorage_FileShareSortComparator_MostRecent(void *param_1,void *p
       return iVar3;
     }
   }
-  if (param_2 == (void *)0x0) {
+  if (arg1 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xa55,0,
                              "%s");
     if (!bVar2) {
@@ -2824,26 +2943,26 @@ int __cdecl LiveStorage_FileShareSortComparator_MostRecent(void *param_1,void *p
       return iVar3;
     }
   }
-  return *(int *)((int)param_2 + 0x10) - *(int *)((int)param_1 + 0x10);
+  return *(int *)((int)arg1 + 0x10) - *(int *)((int)arg0 + 0x10);
 }
 
 
 // 00983BA0  LiveStorage_FileShareSortComparator_MostPopular  (live/live_storage.cpp:2654)
 
-int __cdecl LiveStorage_FileShareSortComparator_MostPopular(void *param_1,void *param_2)
+int __cdecl LiveStorage_FileShareSortComparator_MostPopular(void *arg0,void *arg1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_1c;
-  int local_18;
-  void *local_14;
-  void *local_10;
-  int local_c;
-  bdVoteRankStatsInfo *local_8;
+  int numRatings;
+  int rank2;
+  bdFileMetaData *fileMetaData1;
+  bdFileMetaData *fileMetaData2;
+  int rank1;
+  bdVoteRankStatsInfo *ratings;
   
-  if (param_1 == (void *)0x0) {
+  if (arg0 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xa5f,0,
                              "%s");
     if (!bVar2) {
@@ -2852,7 +2971,7 @@ int __cdecl LiveStorage_FileShareSortComparator_MostPopular(void *param_1,void *
       return iVar3;
     }
   }
-  if (param_2 == (void *)0x0) {
+  if (arg1 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xa60,0,
                              "%s");
     if (!bVar2) {
@@ -2861,24 +2980,24 @@ int __cdecl LiveStorage_FileShareSortComparator_MostPopular(void *param_1,void *
       return iVar3;
     }
   }
-  local_14 = param_1;
-  local_10 = param_2;
-  Live_FileShareSearch_GetRatings(&local_8,&local_1c);
-  Live_FileShare_LookupRank(*(ulong64 *)((int)local_14 + 8),local_8,local_1c,&local_c);
-  Live_FileShare_LookupRank(*(ulong64 *)((int)local_10 + 8),local_8,local_1c,&local_18);
-  return local_c - local_18;
+  fileMetaData1 = arg0;
+  fileMetaData2 = arg1;
+  Live_FileShareSearch_GetRatings(&ratings,&numRatings);
+  Live_FileShare_LookupRank(fileMetaData1->m_fileID,ratings,numRatings,&rank1);
+  Live_FileShare_LookupRank(fileMetaData2->m_fileID,ratings,numRatings,&rank2);
+  return rank1 - rank2;
 }
 
 
 // 009839F0  LiveStorage_FileShare_PublicMetaToTags  (live/live_storage.cpp:2675)
 
-void __cdecl LiveStorage_FileShare_PublicMetaToTags(bdFileMetaData *param_1,int param_2)
+void __cdecl LiveStorage_FileShare_PublicMetaToTags(bdFileMetaData *descriptors,int descriptorCount)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    Live_FileShare_PublicMetaDataToTags(param_1 + local_8,0x28);
+  for (i = 0; i < descriptorCount; i = i + 1) {
+    Live_FileShare_PublicMetaDataToTags(descriptors + i,0x28);
   }
   return;
 }
@@ -2886,36 +3005,35 @@ void __cdecl LiveStorage_FileShare_PublicMetaToTags(bdFileMetaData *param_1,int 
 
 // 00983A30  LiveStorage_FileShare_LoadBlockSuccessAction  (live/live_storage.cpp:2683)
 
-void __cdecl LiveStorage_FileShare_LoadBlockSuccessAction(dwFileShareDescriptorsTask *param_1)
+void __cdecl LiveStorage_FileShare_LoadBlockSuccessAction(dwFileShareDescriptorsTask *fsTask)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  if (0 < *(int *)param_1[1].location) {
+  if (0 < *(int *)fsTask[1].location) {
     iVar1 = Live_FileShare_GetSortBy();
     if (iVar1 < 1) {
-      qsort(*(void **)&param_1->getFirstSummary,*(uint *)param_1[1].location,0x838,
+      qsort(*(void **)&fsTask->getFirstSummary,*(uint *)fsTask[1].location,0x838,
             LiveStorage_FileShareSortComparator_MostRecent);
     }
     else {
-      qsort(*(void **)&param_1->getFirstSummary,*(uint *)param_1[1].location,0x838,
+      qsort(*(void **)&fsTask->getFirstSummary,*(uint *)fsTask[1].location,0x838,
             LiveStorage_FileShareSortComparator_MostPopular);
     }
-    for (local_8 = 0; local_8 < *(int *)param_1[1].location; local_8 = local_8 + 1) {
+    for (i = 0; i < *(int *)fsTask[1].location; i = i + 1) {
       Live_FileShareCache_AddDescriptor
-                (CONCAT44(*(undefined4 *)(*(int *)&param_1->getFirstSummary + 0xc + local_8 * 0x838)
-                          ,*(undefined4 *)(*(int *)&param_1->getFirstSummary + 8 + local_8 * 0x838))
-                 ,param_1->location,
-                 (bdFileMetaData *)(local_8 * 0x838 + *(int *)&param_1->getFirstSummary));
+                (CONCAT44(*(undefined4 *)(*(int *)&fsTask->getFirstSummary + 0xc + i * 0x838),
+                          *(undefined4 *)(*(int *)&fsTask->getFirstSummary + 8 + i * 0x838)),
+                 fsTask->location,(bdFileMetaData *)(i * 0x838 + *(int *)&fsTask->getFirstSummary));
     }
-    if (param_1->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
+    if (fsTask->location == FILESHARE_LOCATION_POOLEDSTORAGE) {
       LiveStorage_FileShare_PublicMetaToTags
-                (*(bdFileMetaData **)&param_1->getFirstSummary,*(int *)param_1[1].location);
+                (*(bdFileMetaData **)&fsTask->getFirstSummary,*(int *)fsTask[1].location);
     }
   }
-  if (param_1[1].fileIDs != (bdFileID *)0x0) {
-    (*(code *)param_1[1].fileIDs)();
+  if (fsTask[1].fileIDs != (bdFileID *)0x0) {
+    (*(code *)fsTask[1].fileIDs)();
   }
   return;
 }
@@ -2927,38 +3045,40 @@ void __cdecl LiveStorage_FileShare_LoadBlockSuccessAction(dwFileShareDescriptors
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_LoadPage
-          (int param_1,int param_2,bdFileID *param_3,fileShareLocation param_4,
-          bdFileMetaData *param_5,int *param_6,_func___cdecl_void *param_7,
-          _func___cdecl_void *param_8)
+          (int controllerIndex,int numFiles,bdFileID *fileIDs,fileShareLocation location,
+          bdFileMetaData *outDescriptors,int *outDescriptorCount,_func___cdecl_void *successCallback
+          ,_func___cdecl_void *failureCallback)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareDescriptorsTask *pdVar5;
+  dwFileShareDescriptorsTask *fsTask_00;
   int local_24;
   bdFileID *local_20;
-  int local_1c;
-  int local_18;
-  int local_10;
-  TaskRecord *local_c;
+  int i;
+  int searchFileCount;
+  TaskRecord *nestedTask;
+  int descriptorIndex;
+  TaskRecord *task;
+  dwFileShareDescriptorsTask *fsTask;
   
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareLoadBlock,param_1);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareLoadBlock,controllerIndex);
   if (bVar3) {
-    local_c = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xaa3,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareDescriptorsTask *)(iVar1 + 0x15c0);
-    local_c = (TaskRecord *)0x0;
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask_00 = (dwFileShareDescriptorsTask *)(iVar1 + 0x15c0);
+    task = (TaskRecord *)0x0;
     if ((_S1 & 1) == 0) {
       _S1 = _S1 | 1;
       local_24 = 10;
@@ -2970,43 +3090,45 @@ LiveStorage_FileShare_LoadPage
       atexit(`LiveStorage_FileShare_LoadPage'::__l5::_dynamic_atexit_destructor_for__searchFileIDs__
             );
     }
-    local_18 = 0;
-    local_10 = 0;
-    for (local_1c = 0; local_1c < param_2; local_1c = local_1c + 1) {
+    searchFileCount = 0;
+    descriptorIndex = 0;
+    for (i = 0; i < numFiles; i = i + 1) {
       bVar3 = Live_FileShareCache_GetDescriptor
-                        (CONCAT44(*(undefined4 *)((int)&param_3[local_1c].m_fileID + 4),
-                                  (int)param_3[local_1c].m_fileID),param_4,param_5 + local_10);
+                        (CONCAT44(*(undefined4 *)((int)&fileIDs[i].m_fileID + 4),
+                                  (int)fileIDs[i].m_fileID),location,
+                         outDescriptors + descriptorIndex);
       if (bVar3) {
-        local_10 = local_10 + 1;
+        descriptorIndex = descriptorIndex + 1;
       }
       else {
-        *(int *)&searchFileIDs[local_18].m_fileID = (int)param_3[local_1c].m_fileID;
-        *(undefined4 *)((int)&searchFileIDs[local_18].m_fileID + 4) =
-             *(undefined4 *)((int)&param_3[local_1c].m_fileID + 4);
-        local_18 = local_18 + 1;
+        *(int *)&searchFileIDs[searchFileCount].m_fileID = (int)fileIDs[i].m_fileID;
+        *(undefined4 *)((int)&searchFileIDs[searchFileCount].m_fileID + 4) =
+             *(undefined4 *)((int)&fileIDs[i].m_fileID + 4);
+        searchFileCount = searchFileCount + 1;
       }
     }
     Com_Printf(0x10,"\tSearch: %d file summaries loaded from the file share cache.\n");
-    *(int *)(iVar1 + 0x15c4) = local_18;
+    *(int *)(iVar1 + 0x15c4) = searchFileCount;
     *(bdFileID **)(iVar1 + 0x15c8) = searchFileIDs;
-    pdVar5->location = param_4;
-    *(bdFileMetaData **)(iVar1 + 0x15d0) = param_5 + local_10;
-    *(int **)(iVar1 + 0x15d4) = param_6;
-    *(_func___cdecl_void **)(iVar1 + 0x15dc) = param_7;
-    *(_func___cdecl_void **)(iVar1 + 0x15e0) = param_8;
-    *(int *)(iVar1 + 0x15cc) = local_10;
-    if (local_18 < 1) {
-      *(bdFileMetaData **)(iVar1 + 0x15d0) = param_5;
+    fsTask_00->location = location;
+    *(bdFileMetaData **)(iVar1 + 0x15d0) = outDescriptors + descriptorIndex;
+    *(int **)(iVar1 + 0x15d4) = outDescriptorCount;
+    *(_func___cdecl_void **)(iVar1 + 0x15dc) = successCallback;
+    *(_func___cdecl_void **)(iVar1 + 0x15e0) = failureCallback;
+    *(int *)(iVar1 + 0x15cc) = descriptorIndex;
+    if (searchFileCount < 1) {
+      *(bdFileMetaData **)(iVar1 + 0x15d0) = outDescriptors;
       **(undefined4 **)(iVar1 + 0x15d4) = *(undefined4 *)(iVar1 + 0x15cc);
-      LiveStorage_FileShare_LoadBlockSuccessAction(pdVar5);
+      LiveStorage_FileShare_LoadBlockSuccessAction(fsTask_00);
     }
     else {
       Com_Printf(0x10,"\tSearch: Fetching %d file summaries from DW.\n");
-      pTVar4 = dwFileShareGetDescriptors(param_1,pdVar5);
-      local_c = LiveStorage_SetupNestedTask(task_LiveFileShareLoadBlock,param_1,pTVar4,pdVar5);
+      pTVar4 = dwFileShareGetDescriptors(controllerIndex,fsTask_00);
+      task = LiveStorage_SetupNestedTask
+                       (task_LiveFileShareLoadBlock,controllerIndex,pTVar4,fsTask_00);
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -3014,12 +3136,14 @@ LiveStorage_FileShare_LoadPage
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_LoadBlockFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_LoadBlockFailure(TaskRecord *task)
 
 {
+  dwFileShareDescriptorsTask *fsTask;
+  
   Com_PrintError(0x10,"\tSearch: Could not get descriptors for file share search results.\n");
-  if (*(int *)((int)param_1->payload + 0x20) != 0) {
-    (**(code **)((int)param_1->payload + 0x20))();
+  if (*(int *)((int)task->payload + 0x20) != 0) {
+    (**(code **)((int)task->payload + 0x20))();
   }
   return;
 }
@@ -3029,18 +3153,19 @@ void __cdecl LiveStorage_FileShare_LoadBlockFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_LoadBlockSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_LoadBlockSuccess(TaskRecord *task)
 
 {
-  dwFileShareDescriptorsTask *pdVar1;
-  uint uVar2;
+  dwFileShareDescriptorsTask *fsTask_00;
+  uint uVar1;
+  dwFileShareDescriptorsTask *fsTask;
   
-  pdVar1 = param_1->payload;
-  *(int *)&pdVar1->getFirstSummary =
-       *(int *)&pdVar1->getFirstSummary + (int)pdVar1->descriptors * -0x838;
-  uVar2 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
-  *(char **)pdVar1[1].location = pdVar1->descriptors->m_ownerName + (uVar2 - 0x28);
-  LiveStorage_FileShare_LoadBlockSuccessAction(pdVar1);
+  fsTask_00 = task->payload;
+  *(int *)&fsTask_00->getFirstSummary =
+       *(int *)&fsTask_00->getFirstSummary + (int)fsTask_00->descriptors * -0x838;
+  uVar1 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
+  *(char **)fsTask_00[1].location = fsTask_00->descriptors->m_ownerName + (uVar1 - 0x28);
+  LiveStorage_FileShare_LoadBlockSuccessAction(fsTask_00);
   return;
 }
 
@@ -3057,29 +3182,29 @@ void __cdecl LiveStorage_FileShare_DownloadFile_f(void)
   int iVar3;
   char *pcVar4;
   char *local_16c;
-  int local_12c;
-  int local_128;
-  undefined4 local_124;
-  char *local_120;
-  int local_11c;
-  bool local_115;
-  char local_114 [256];
+  int intResult;
+  int controllerIndex;
+  int localClientNum;
+  char *stringResult;
+  int fileSize;
+  bool isUserFile;
+  char filmName [256];
   uint local_14;
-  bool local_d;
-  ulong64 local_c;
+  bool renderIt;
+  ulong64 fileId;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar3 = Cmd_Argc();
   if (iVar3 == 6) {
-    local_124 = 0;
-    local_128 = 0;
+    localClientNum = 0;
+    controllerIndex = 0;
     pcVar4 = Cmd_Argv(1);
     iVar3 = atoi(pcVar4);
-    local_115 = iVar3 != 0;
+    isUserFile = iVar3 != 0;
     pcVar4 = Cmd_Argv(2);
-    local_c = I_atoi64(pcVar4);
+    fileId = I_atoi64(pcVar4);
     pcVar4 = Cmd_Argv(3);
-    local_11c = atoi(pcVar4);
+    fileSize = atoi(pcVar4);
     local_16c = Cmd_Argv(4);
     pcVar4 = local_16c + 1;
     do {
@@ -3088,42 +3213,42 @@ void __cdecl LiveStorage_FileShare_DownloadFile_f(void)
     } while (cVar1 != '\0');
     local_16c = local_16c + (1 - (int)pcVar4);
     pcVar4 = Cmd_Argv(4);
-    I_strncpyz(local_114,pcVar4,(int)local_16c);
+    I_strncpyz(filmName,pcVar4,(int)local_16c);
     pcVar4 = Cmd_Argv(5);
     iVar3 = atoi(pcVar4);
-    local_d = iVar3 != 0;
-    Dvar_SetStringByName("ui_demoname",local_114);
-    Live_FileShare_Theater_SetFile(local_c,local_115);
+    renderIt = iVar3 != 0;
+    Dvar_SetStringByName("ui_demoname",filmName);
+    Live_FileShare_Theater_SetFile(fileId,isUserFile);
     Com_Printf(0x10,"Loaded file meta data for theater lobby.\n");
-    bVar2 = Live_FileShare_Theater_GetName(&local_120);
-    if (((bVar2) && (local_120 != (char *)0x0)) && (*local_120 != '\0')) {
+    bVar2 = Live_FileShare_Theater_GetName(&stringResult);
+    if (((bVar2) && (stringResult != (char *)0x0)) && (*stringResult != '\0')) {
       Com_Printf(0x10,"\tName: %s\n");
     }
-    bVar2 = Live_FileShare_Theater_GetDescription(&local_120);
-    if (((bVar2) && (local_120 != (char *)0x0)) && (*local_120 != '\0')) {
+    bVar2 = Live_FileShare_Theater_GetDescription(&stringResult);
+    if (((bVar2) && (stringResult != (char *)0x0)) && (*stringResult != '\0')) {
       Com_Printf(0x10,"\tDescription: %s\n");
     }
-    bVar2 = Live_FileShare_Theater_GetSize(&local_12c);
+    bVar2 = Live_FileShare_Theater_GetSize(&intResult);
     if (bVar2) {
       Com_Printf(0x10,"\tSize: %d\n");
     }
-    bVar2 = Live_FileShare_Theater_GetLength(&local_12c);
+    bVar2 = Live_FileShare_Theater_GetLength(&intResult);
     if (bVar2) {
       Com_Printf(0x10,"\tLength: %d\n");
     }
-    bVar2 = Live_FileShare_Theater_GetType(&local_12c);
+    bVar2 = Live_FileShare_Theater_GetType(&intResult);
     if (bVar2) {
       Com_Printf(0x10,"\tType: %d\n");
     }
-    bVar2 = Live_FileShare_Theater_GetMap(&local_120);
-    if (((bVar2) && (local_120 != (char *)0x0)) && (*local_120 != '\0')) {
+    bVar2 = Live_FileShare_Theater_GetMap(&stringResult);
+    if (((bVar2) && (stringResult != (char *)0x0)) && (*stringResult != '\0')) {
       Com_Printf(0x10,"\tMap: %s\n");
     }
-    bVar2 = Live_FileShare_Theater_GetGameType(&local_120);
-    if (((bVar2) && (local_120 != (char *)0x0)) && (*local_120 != '\0')) {
+    bVar2 = Live_FileShare_Theater_GetGameType(&stringResult);
+    if (((bVar2) && (stringResult != (char *)0x0)) && (*stringResult != '\0')) {
       Com_Printf(0x10,"\tGameType: %s\n");
     }
-    Demo_DownloadFile(local_128,local_114,local_c,local_11c,local_115,local_d);
+    Demo_DownloadFile(controllerIndex,filmName,fileId,fileSize,isUserFile,renderIt);
   }
   else {
     Com_PrintError(0x10,"Error: Cannot call downloaddemofile when argc is not 6.\n");
@@ -3136,12 +3261,12 @@ void __cdecl LiveStorage_FileShare_DownloadFile_f(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LiveStorage_FileShare_IsPerformingSearch(int param_1)
+bool __cdecl LiveStorage_FileShare_IsPerformingSearch(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSearch,param_1);
+  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSearch,controllerIndex);
   return bVar1;
 }
 
@@ -3150,22 +3275,26 @@ bool __cdecl LiveStorage_FileShare_IsPerformingSearch(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_PerformSearch(int param_1,fileShareSearchInfo_t *param_2)
+TaskRecord * __cdecl
+LiveStorage_FileShare_PerformSearch(int controllerIndex,fileShareSearchInfo_t *taskInfo)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareSearchTask *pdVar5;
+  dwFileShareSearchTask *fsTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileShareSearchTask *fileShareSearchTask;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSearch,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSearch,controllerIndex);
   if (bVar3) {
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
-    if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+    if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xb68,0,
                                "%s");
       if (!bVar3) {
@@ -3174,23 +3303,23 @@ TaskRecord * __cdecl LiveStorage_FileShare_PerformSearch(int param_1,fileShareSe
         return pTVar4;
       }
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareSearchTask *)(iVar1 + 0x1588);
-    pdVar5->location = param_2->location;
-    *(int *)(iVar1 + 0x1590) = param_2->maxFileIDs;
-    *(int *)(iVar1 + 0x158c) = param_2->startIndex;
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareSearchTask *)(iVar1 + 0x1588);
+    fsTask->location = taskInfo->location;
+    *(int *)(iVar1 + 0x1590) = taskInfo->maxFileIDs;
+    *(int *)(iVar1 + 0x158c) = taskInfo->startIndex;
     *(undefined1 *)(iVar1 + 0x159c) = 1;
-    *(int *)(iVar1 + 0x1594) = param_2->numTags;
-    *(bdTag **)(iVar1 + 0x15a0) = param_2->tags;
-    *(bdFileID **)(iVar1 + 0x15a8) = param_2->outFileIDs;
-    *(int **)(iVar1 + 0x15a4) = param_2->outFileCount;
-    *(bdVoteRankStatsInfo **)(iVar1 + 0x15b0) = param_2->outRatings;
-    *(int **)(iVar1 + 0x15ac) = param_2->outRatingCount;
-    *(int **)(iVar1 + 0x15b4) = param_2->outTotalFileCount;
-    *(_func___cdecl_void **)(iVar1 + 0x15b8) = param_2->successCallback;
-    *(_func___cdecl_void **)(iVar1 + 0x15bc) = param_2->failureCallback;
-    pTVar4 = dwFileShareSearch(param_1,pdVar5);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareSearch,param_1,pTVar4,pdVar5);
+    *(int *)(iVar1 + 0x1594) = taskInfo->numTags;
+    *(bdTag **)(iVar1 + 0x15a0) = taskInfo->tags;
+    *(bdFileID **)(iVar1 + 0x15a8) = taskInfo->outFileIDs;
+    *(int **)(iVar1 + 0x15a4) = taskInfo->outFileCount;
+    *(bdVoteRankStatsInfo **)(iVar1 + 0x15b0) = taskInfo->outRatings;
+    *(int **)(iVar1 + 0x15ac) = taskInfo->outRatingCount;
+    *(int **)(iVar1 + 0x15b4) = taskInfo->outTotalFileCount;
+    *(_func___cdecl_void **)(iVar1 + 0x15b8) = taskInfo->successCallback;
+    *(_func___cdecl_void **)(iVar1 + 0x15bc) = taskInfo->failureCallback;
+    pTVar4 = dwFileShareSearch(controllerIndex,fsTask);
+    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareSearch,controllerIndex,pTVar4,fsTask);
   }
   return pTVar4;
 }
@@ -3200,12 +3329,14 @@ TaskRecord * __cdecl LiveStorage_FileShare_PerformSearch(int param_1,fileShareSe
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_SearchFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_SearchFailure(TaskRecord *task)
 
 {
+  dwFileShareSearchTask *fileShareSearchTask;
+  
   Com_PrintError(0x10,"Could not search file share by tag.\n");
-  if (*(int *)((int)param_1->payload + 0x34) != 0) {
-    (**(code **)((int)param_1->payload + 0x34))();
+  if (*(int *)((int)task->payload + 0x34) != 0) {
+    (**(code **)((int)task->payload + 0x34))();
   }
   return;
 }
@@ -3215,16 +3346,17 @@ void __cdecl LiveStorage_FileShare_SearchFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_SearchSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_SearchSuccess(TaskRecord *task)
 
 {
   void *pvVar1;
   uint uVar2;
+  dwFileShareSearchTask *fileShareSearchTask;
   
-  pvVar1 = param_1->payload;
-  uVar2 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  pvVar1 = task->payload;
+  uVar2 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
   **(uint **)((int)pvVar1 + 0x1c) = uVar2;
-  uVar2 = bdRemoteTask::getTotalNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  uVar2 = bdRemoteTask::getTotalNumResults((task->nestedTask->remoteTask).m_ptr);
   **(uint **)((int)pvVar1 + 0x2c) = uVar2;
   if (*(int *)((int)pvVar1 + 0x30) != 0) {
     (**(code **)((int)pvVar1 + 0x30))();
@@ -3236,25 +3368,26 @@ void __cdecl LiveStorage_FileShare_SearchSuccess(TaskRecord *param_1)
 // 009844D0  LiveStorage_FileShare_ReadFileData  (live/live_storage.cpp:2988)
 
 uint __cdecl
-LiveStorage_FileShare_ReadFileData(void *param_1,uint param_2,dwFileShareReadFileTask *param_3)
+LiveStorage_FileShare_ReadFileData(void *data,uint dataSize,dwFileShareReadFileTask *fileTask)
 
 {
-  param_3->bytesDownloaded = param_3->bytesDownloaded + param_2;
-  (*param_3->dataCallback)(param_1,param_2,param_3->bytesDownloaded,param_3->fileSize);
-  return param_2;
+  fileTask->bytesDownloaded = fileTask->bytesDownloaded + dataSize;
+  (*fileTask->dataCallback)(data,dataSize,fileTask->bytesDownloaded,fileTask->fileSize);
+  return dataSize;
 }
 
 
 // 00984520  LiveStorage_FileShare_GetDownloadingFileTotalSize  (live/live_storage.cpp:2996)
 
-uint __cdecl LiveStorage_FileShare_GetDownloadingFileTotalSize(int param_1)
+uint __cdecl LiveStorage_FileShare_GetDownloadingFileTotalSize(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  dwFileShareReadFileTask *fileTask;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xbb5,0,
                              "%s");
     if (!bVar2) {
@@ -3263,20 +3396,21 @@ uint __cdecl LiveStorage_FileShare_GetDownloadingFileTotalSize(int param_1)
       return uVar3;
     }
   }
-  return *(uint *)(*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x15f8);
+  return *(uint *)(*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x15f8);
 }
 
 
 // 00984580  LiveStorage_FileShare_GetUploadingFileTotalSize  (live/live_storage.cpp:3004)
 
-uint __cdecl LiveStorage_FileShare_GetUploadingFileTotalSize(int param_1)
+uint __cdecl LiveStorage_FileShare_GetUploadingFileTotalSize(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  dwFileShareWriteFileTask *fileTask;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xbbd,0,
                              "%s");
     if (!bVar2) {
@@ -3285,7 +3419,7 @@ uint __cdecl LiveStorage_FileShare_GetUploadingFileTotalSize(int param_1)
       return uVar3;
     }
   }
-  return *(uint *)(*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x1e74);
+  return *(uint *)(*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x1e74);
 }
 
 
@@ -3293,16 +3427,20 @@ uint __cdecl LiveStorage_FileShare_GetUploadingFileTotalSize(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_ReadFile(int param_1,fileShareReadFileInfo *param_2)
+TaskRecord * __cdecl
+LiveStorage_FileShare_ReadFile(int controllerIndex,fileShareReadFileInfo *fileInfo)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareReadFileTask *pdVar5;
-  int iVar6;
-  char *pcVar7;
+  dwFileShareReadFileTask *fsTask;
+  int localClientNum;
+  char *menuName;
+  dwFileShareReadFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
   if ((_S2 & 1) == 0) {
     _S2 = _S2 | 1;
@@ -3311,8 +3449,8 @@ TaskRecord * __cdecl LiveStorage_FileShare_ReadFile(int param_1,fileShareReadFil
     atexit(`LiveStorage_FileShare_ReadFile'::__l2::
            _dynamic_atexit_destructor_for__downloadInterceptor__);
   }
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,controllerIndex);
   if ((bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xbc9,0,
                                "%s"), !bVar3)) {
@@ -3320,53 +3458,55 @@ TaskRecord * __cdecl LiveStorage_FileShare_ReadFile(int param_1,fileShareReadFil
     pTVar4 = (TaskRecord *)(*pcVar2)();
     return pTVar4;
   }
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,param_1);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,controllerIndex);
   if ((bVar3) ||
-     (bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,param_1), bVar3
-     )) {
+     (bVar3 = TaskManager2_TaskIsInProgressForController
+                        (task_LiveFileShareWriteFile,controllerIndex), bVar3)) {
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xbd1,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareReadFileTask *)(iVar1 + 0x15e8);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareReadFileTask *)(iVar1 + 0x15e8);
     *(undefined1 *)(iVar1 + 0x1e50) = 0;
-    pdVar5->location = param_2->location;
-    *(_func___cdecl_void_dwFileShareReadFileTask_ptr **)(iVar1 + 0x1e58) = param_2->successCallback;
-    *(_func___cdecl_void_dwFileShareReadFileTask_ptr **)(iVar1 + 0x1e5c) = param_2->failureCallback;
-    *(_func___cdecl_void_void_ptr_uint_uint_uint **)(iVar1 + 0x1e54) = param_2->dataCallback;
-    if (param_2->isStreamed == false) {
-      *(char **)(iVar1 + 0x1e3c) = param_2->buffer;
-      *(uint *)(iVar1 + 0x1e44) = param_2->bufferSize;
+    fsTask->location = fileInfo->location;
+    *(_func___cdecl_void_dwFileShareReadFileTask_ptr **)(iVar1 + 0x1e58) = fileInfo->successCallback
+    ;
+    *(_func___cdecl_void_dwFileShareReadFileTask_ptr **)(iVar1 + 0x1e5c) = fileInfo->failureCallback
+    ;
+    *(_func___cdecl_void_void_ptr_uint_uint_uint **)(iVar1 + 0x1e54) = fileInfo->dataCallback;
+    if (fileInfo->isStreamed == false) {
+      *(char **)(iVar1 + 0x1e3c) = fileInfo->buffer;
+      *(uint *)(iVar1 + 0x1e44) = fileInfo->bufferSize;
       *(undefined4 *)(iVar1 + 0x1e4c) = 0;
     }
     else {
       *(uchar **)(iVar1 + 0x1e3c) = s_contentServerFileBuffer;
       *(undefined4 *)(iVar1 + 0x1e44) = 0x400;
       downloadInterceptor.callback = LiveStorage_FileShare_ReadFileData;
-      downloadInterceptor.task = pdVar5;
+      downloadInterceptor.task = fsTask;
       *(fileShareDownloadInterceptor **)(iVar1 + 0x1e4c) = &downloadInterceptor;
     }
     *(undefined4 *)(iVar1 + 0x1e48) = 0;
-    *(uint *)(iVar1 + 0x15f8) = param_2->fileSize;
-    *(int *)(iVar1 + 0x15f0) = (int)param_2->fileID;
-    *(undefined4 *)(iVar1 + 0x15f4) = *(undefined4 *)((int)&param_2->fileID + 4);
-    *(void **)(iVar1 + 0x1e40) = param_2->cacheBuffer;
+    *(uint *)(iVar1 + 0x15f8) = fileInfo->fileSize;
+    *(int *)(iVar1 + 0x15f0) = (int)fileInfo->fileID;
+    *(undefined4 *)(iVar1 + 0x15f4) = *(undefined4 *)((int)&fileInfo->fileID + 4);
+    *(void **)(iVar1 + 0x1e40) = fileInfo->cacheBuffer;
     if ((*(int *)(iVar1 + 0x1e38) != 0) && (**(char **)(iVar1 + 0x1e38) != '\0')) {
-      pcVar7 = *(char **)(iVar1 + 0x1e38);
-      iVar6 = Com_ControllerIndex_GetLocalClientNum(param_1);
-      UI_OpenMenu(iVar6,pcVar7);
+      menuName = *(char **)(iVar1 + 0x1e38);
+      localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+      UI_OpenMenu(localClientNum,menuName);
     }
     *(undefined1 *)(iVar1 + 0x1e50) = 0;
     Com_Printf(0x10,"Starting download of file %llu, size %d from %s storage.\n");
-    pTVar4 = dwFileShareReadFile(param_1,pdVar5);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareReadFile,param_1,pTVar4,pdVar5);
+    pTVar4 = dwFileShareReadFile(controllerIndex,fsTask);
+    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareReadFile,controllerIndex,pTVar4,fsTask);
   }
   return pTVar4;
 }
@@ -3374,25 +3514,29 @@ TaskRecord * __cdecl LiveStorage_FileShare_ReadFile(int param_1,fileShareReadFil
 
 // 00984910  LiveStorage_FileShare_ReadFileFailure  (live/live_storage.cpp:3091)
 
+/* WARNING: Variable defined which should be unmapped: fileTask */
+/* WARNING: Variable defined which should be unmapped: httpError */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadFileFailure(TaskRecord *task)
 
 {
-  int iVar1;
-  char *pcVar2;
-  fileShareLocation *pfVar3;
+  fileShareLocation *pfVar1;
+  int iVar2;
+  char *menuName;
+  dwFileShareReadFileTask *fileTask;
+  int httpError;
   
-  pfVar3 = param_1->payload;
-  iVar1 = dwFileShareGetLastHTTPError(param_1->controllerIndex,*pfVar3);
+  pfVar1 = task->payload;
+  iVar2 = dwFileShareGetLastHTTPError(task->controllerIndex,*pfVar1);
   Com_PrintError(0x10,"Read file failed with HTTP code: %d\n");
-  if (pfVar3[0x21d] != FILESHARE_LOCATION_INVALID) {
-    (*(code *)pfVar3[0x21d])(pfVar3,pfVar3,iVar1);
+  if (pfVar1[0x21d] != FILESHARE_LOCATION_INVALID) {
+    (*(code *)pfVar1[0x21d])(pfVar1,pfVar1,iVar2);
   }
-  if ((pfVar3[0x214] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar3[0x214] != '\0')) {
-    pcVar2 = (char *)pfVar3[0x214];
-    iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-    UI_CloseMenu(iVar1,pcVar2);
+  if ((pfVar1[0x214] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar1[0x214] != '\0')) {
+    menuName = (char *)pfVar1[0x214];
+    iVar2 = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+    UI_CloseMenu(iVar2,menuName);
   }
   return;
 }
@@ -3402,16 +3546,18 @@ void __cdecl LiveStorage_FileShare_ReadFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadFileSuccess(TaskRecord *task)
 
 {
   fileShareLocation *pfVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *menuName;
+  dwFileShareReadFileTask *fileTask;
+  int httpError;
   
-  pfVar1 = param_1->payload;
-  iVar3 = dwFileShareGetLastHTTPError(param_1->controllerIndex,*pfVar1);
+  pfVar1 = task->payload;
+  iVar3 = dwFileShareGetLastHTTPError(task->controllerIndex,*pfVar1);
   Com_Printf(0x10,"Reply received with HTTP code: %d\n");
   bVar2 = LiveStorage_FileShare_IsValidHTTPCode(iVar3);
   if ((bVar2) &&
@@ -3421,13 +3567,13 @@ void __cdecl LiveStorage_FileShare_ReadFileSuccess(TaskRecord *param_1)
       (*(code *)pfVar1[0x21c])(pfVar1);
     }
     if ((pfVar1[0x214] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar1[0x214] != '\0')) {
-      pcVar4 = (char *)pfVar1[0x214];
-      iVar3 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar3,pcVar4);
+      menuName = (char *)pfVar1[0x214];
+      iVar3 = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(iVar3,menuName);
     }
   }
   else {
-    LiveStorage_FileShare_ReadFileFailure(param_1);
+    LiveStorage_FileShare_ReadFileFailure(task);
   }
   return;
 }
@@ -3455,14 +3601,14 @@ int __cdecl LiveStorage_GetMatchRecordBufferSize(void)
 
 uint __cdecl
 LiveStorage_FileShare_WriteFileData
-          (void *param_1,uint param_2,uint param_3,dwFileShareWriteFileTask *param_4)
+          (void *data,uint dataSize,uint bytesUploaded,dwFileShareWriteFileTask *fileTask)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_4->dataCallback == (_func___cdecl_uint_void_ptr_uint_uint *)0x0) {
+  if (fileTask->dataCallback == (_func___cdecl_uint_void_ptr_uint_uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xc5b,0,
                              "%s");
     if (!bVar2) {
@@ -3471,7 +3617,7 @@ LiveStorage_FileShare_WriteFileData
       return uVar3;
     }
   }
-  uVar3 = (*param_4->dataCallback)(param_1,param_2,param_3);
+  uVar3 = (*fileTask->dataCallback)(data,dataSize,bytesUploaded);
   return uVar3;
 }
 
@@ -3480,15 +3626,19 @@ LiveStorage_FileShare_WriteFileData
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_WriteFile(int param_1,fileShareWriteFileInfo *param_2)
+TaskRecord * __cdecl
+LiveStorage_FileShare_WriteFile(int controllerIndex,fileShareWriteFileInfo *writeFileInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
   int iVar4;
-  dwFileShareWriteFileTask *pdVar5;
-  char *pcVar6;
+  dwFileShareWriteFileTask *fsTask;
+  char *menuName;
+  dwFileShareWriteFileTask *fileTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
   if ((_S3 & 1) == 0) {
     _S3 = _S3 | 1;
@@ -3497,7 +3647,7 @@ TaskRecord * __cdecl LiveStorage_FileShare_WriteFile(int param_1,fileShareWriteF
     atexit(`LiveStorage_FileShare_WriteFile'::__l2::
            _dynamic_atexit_destructor_for__uploadInterceptor__);
   }
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,param_1);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,controllerIndex);
   if ((bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xc63,0,
                                "%s"), !bVar2)) {
@@ -3505,76 +3655,80 @@ TaskRecord * __cdecl LiveStorage_FileShare_WriteFile(int param_1,fileShareWriteF
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,param_1);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareReadFile,controllerIndex);
   if ((bVar2) ||
-     (bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareWriteFile,param_1), bVar2
-     )) {
+     (bVar2 = TaskManager2_TaskIsInProgressForController
+                        (task_LiveFileShareWriteFile,controllerIndex), bVar2)) {
     return (TaskRecord *)0x0;
   }
-  if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+  if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xc6b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pTVar3 = (TaskRecord *)(*pcVar1)();
     return pTVar3;
   }
-  iVar4 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-  pdVar5 = (dwFileShareWriteFileTask *)(iVar4 + 0x1e60);
+  iVar4 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+  fsTask = (dwFileShareWriteFileTask *)(iVar4 + 0x1e60);
   uploadInterceptor.callback = LiveStorage_FileShare_WriteFileData;
-  uploadInterceptor.task = pdVar5;
-  *(ushort *)(iVar4 + 0x1e64) = param_2->fileSlot;
-  *(void **)(iVar4 + 0x1e6c) = param_2->fileData;
-  *(uint *)(iVar4 + 0x1e74) = param_2->fileSize;
-  *(char **)(iVar4 + 0x1e78) = param_2->fileName;
-  *(ushort *)(iVar4 + 0x1e7c) = param_2->category;
-  *(void **)(iVar4 + 0x1e80) = param_2->thumbData;
-  *(uint *)(iVar4 + 0x1e84) = param_2->thumbDataSize;
-  *(uint *)(iVar4 + 0x1e88) = param_2->numTags;
-  *(bdTag **)(iVar4 + 0x1e8c) = param_2->tags;
-  pdVar5->location = param_2->location;
-  if (param_2->dataCallback == (_func___cdecl_uint_void_ptr_uint_uint *)0x0) {
+  uploadInterceptor.task = fsTask;
+  *(ushort *)(iVar4 + 0x1e64) = writeFileInfo->fileSlot;
+  *(void **)(iVar4 + 0x1e6c) = writeFileInfo->fileData;
+  *(uint *)(iVar4 + 0x1e74) = writeFileInfo->fileSize;
+  *(char **)(iVar4 + 0x1e78) = writeFileInfo->fileName;
+  *(ushort *)(iVar4 + 0x1e7c) = writeFileInfo->category;
+  *(void **)(iVar4 + 0x1e80) = writeFileInfo->thumbData;
+  *(uint *)(iVar4 + 0x1e84) = writeFileInfo->thumbDataSize;
+  *(uint *)(iVar4 + 0x1e88) = writeFileInfo->numTags;
+  *(bdTag **)(iVar4 + 0x1e8c) = writeFileInfo->tags;
+  fsTask->location = writeFileInfo->location;
+  if (writeFileInfo->dataCallback == (_func___cdecl_uint_void_ptr_uint_uint *)0x0) {
     *(undefined4 *)(iVar4 + 0x1e70) = 0;
     *(undefined4 *)(iVar4 + 0x1ea0) = 0;
   }
   else {
     *(fileShareUploadInterceptor **)(iVar4 + 0x1e70) = &uploadInterceptor;
-    *(_func___cdecl_uint_void_ptr_uint_uint **)(iVar4 + 0x1ea0) = param_2->dataCallback;
+    *(_func___cdecl_uint_void_ptr_uint_uint **)(iVar4 + 0x1ea0) = writeFileInfo->dataCallback;
   }
-  *(_func___cdecl_void_int_ulong64 **)(iVar4 + 0x1ea4) = param_2->successCallback;
-  *(_func___cdecl_void_int **)(iVar4 + 0x1ea8) = param_2->failureCallback;
+  *(_func___cdecl_void_int_ulong64 **)(iVar4 + 0x1ea4) = writeFileInfo->successCallback;
+  *(_func___cdecl_void_int **)(iVar4 + 0x1ea8) = writeFileInfo->failureCallback;
   if ((*(int *)(iVar4 + 0x1e68) != 0) && (**(char **)(iVar4 + 0x1e68) != '\0')) {
-    pcVar6 = *(char **)(iVar4 + 0x1e68);
-    iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    UI_OpenMenu(iVar4,pcVar6);
+    menuName = *(char **)(iVar4 + 0x1e68);
+    iVar4 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    UI_OpenMenu(iVar4,menuName);
   }
-  pTVar3 = dwFileShareWriteFile(param_1,pdVar5);
-  pTVar3 = LiveStorage_SetupNestedTask(task_LiveFileShareWriteFile,param_1,pTVar3,pdVar5);
+  pTVar3 = dwFileShareWriteFile(controllerIndex,fsTask);
+  pTVar3 = LiveStorage_SetupNestedTask(task_LiveFileShareWriteFile,controllerIndex,pTVar3,fsTask);
   return pTVar3;
 }
 
 
 // 00984DC0  LiveStorage_FileShare_WriteFileFailure  (live/live_storage.cpp:3226)
 
+/* WARNING: Variable defined which should be unmapped: fileTask */
+/* WARNING: Variable defined which should be unmapped: httpError */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteFileFailure(TaskRecord *task)
 
 {
-  int iVar1;
+  fileShareLocation *pfVar1;
   int iVar2;
-  char *pcVar3;
-  fileShareLocation *pfVar4;
+  int localClientNum;
+  char *menuName;
+  dwFileShareWriteFileTask *fileTask;
+  int httpError;
   
-  pfVar4 = param_1->payload;
-  iVar1 = dwFileShareGetLastHTTPError(param_1->controllerIndex,*pfVar4);
+  pfVar1 = task->payload;
+  iVar2 = dwFileShareGetLastHTTPError(task->controllerIndex,*pfVar1);
   Com_PrintError(0x10,"Upload failed with HTTP code: %d\n");
-  if ((pfVar4[2] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar4[2] != '\0')) {
-    pcVar3 = (char *)pfVar4[2];
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-    UI_CloseMenu(iVar2,pcVar3);
+  if ((pfVar1[2] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar1[2] != '\0')) {
+    menuName = (char *)pfVar1[2];
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+    UI_CloseMenu(localClientNum,menuName);
   }
-  if (pfVar4[0x12] != FILESHARE_LOCATION_INVALID) {
-    (*(code *)pfVar4[0x12])(param_1->controllerIndex,pfVar4,iVar1);
+  if (pfVar1[0x12] != FILESHARE_LOCATION_INVALID) {
+    (*(code *)pfVar1[0x12])(task->controllerIndex,pfVar1,iVar2);
   }
   return;
 }
@@ -3584,30 +3738,32 @@ void __cdecl LiveStorage_FileShare_WriteFileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteFileSuccess(TaskRecord *task)
 
 {
   fileShareLocation *pfVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *menuName;
+  dwFileShareWriteFileTask *fileTask;
+  int httpError;
   
-  pfVar1 = param_1->payload;
-  iVar3 = dwFileShareGetLastHTTPError(param_1->controllerIndex,*pfVar1);
+  pfVar1 = task->payload;
+  iVar3 = dwFileShareGetLastHTTPError(task->controllerIndex,*pfVar1);
   Com_Printf(0x10,"Reply received with HTTP code: %d. File ID %lld created.\n");
   bVar2 = LiveStorage_FileShare_IsValidHTTPCode(iVar3);
   if (bVar2) {
     if ((pfVar1[2] != FILESHARE_LOCATION_INVALID) && (*(char *)pfVar1[2] != '\0')) {
-      pcVar4 = (char *)pfVar1[2];
-      iVar3 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-      UI_CloseMenu(iVar3,pcVar4);
+      menuName = (char *)pfVar1[2];
+      iVar3 = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+      UI_CloseMenu(iVar3,menuName);
     }
     if (pfVar1[0x11] != FILESHARE_LOCATION_INVALID) {
-      (*(code *)pfVar1[0x11])(param_1->controllerIndex,pfVar1[0xe],pfVar1[0xf]);
+      (*(code *)pfVar1[0x11])(task->controllerIndex,pfVar1[0xe],pfVar1[0xf]);
     }
   }
   else {
-    LiveStorage_FileShare_WriteFileFailure(param_1);
+    LiveStorage_FileShare_WriteFileFailure(task);
   }
   return;
 }
@@ -3616,27 +3772,28 @@ void __cdecl LiveStorage_FileShare_WriteFileSuccess(TaskRecord *param_1)
 // 00984F20  LiveStorage_FileShare_GenerateHeatmap  (live/live_storage.cpp:3295)
 
 void __cdecl
-LiveStorage_FileShare_GenerateHeatmap(int param_1,ulong64 param_2,uchar *param_3,int param_4)
+LiveStorage_FileShare_GenerateHeatmap
+          (int controllerIndex,ulong64 param_2,uchar *bufferSize,int param_4)
 
 {
-  uchar *puVar1;
-  int iVar2;
-  LargeLocal local_10;
-  int local_8;
+  uchar *to;
+  int iVar1;
+  LargeLocal tempCompressedFileBuffer_large_local;
+  int decompressedBuffSize;
   
-  LargeLocal::LargeLocal(&local_10,0x10400);
-  puVar1 = LargeLocal::GetBuf(&local_10);
-  if (param_3 < (uchar *)0x10401) {
-    local_8 = MSG_DecompressWithZLib(param_2._4_4_,(int)param_3,puVar1,0x10400);
-    iVar2 = MatchRecord_ParseDownloadedMatchData(param_1,(char *)puVar1,local_8);
-    if (iVar2 != 0) {
-      UI_GenerateHeatMapTexture(param_1);
+  LargeLocal::LargeLocal(&tempCompressedFileBuffer_large_local,0x10400);
+  to = LargeLocal::GetBuf(&tempCompressedFileBuffer_large_local);
+  if (bufferSize < (uchar *)0x10401) {
+    decompressedBuffSize = MSG_DecompressWithZLib(param_2._4_4_,(int)bufferSize,to,0x10400);
+    iVar1 = MatchRecord_ParseDownloadedMatchData(controllerIndex,(char *)to,decompressedBuffSize);
+    if (iVar1 != 0) {
+      UI_GenerateHeatMapTexture(controllerIndex);
     }
-    LargeLocal::~LargeLocal(&local_10);
+    LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
   }
   else {
     Com_PrintError(0x10,"Insufficient space to decompress fileID %lld");
-    LargeLocal::~LargeLocal(&local_10);
+    LargeLocal::~LargeLocal(&tempCompressedFileBuffer_large_local);
   }
   return;
 }
@@ -3648,52 +3805,55 @@ LiveStorage_FileShare_GenerateHeatmap(int param_1,ulong64 param_2,uchar *param_3
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_WriteSummary
-          (int param_1,ulong64 param_2,fileShareLocation param_3,void *param_4,uint param_5,
-          void *param_6,uint param_7,bdTag *param_8,uint param_9,bool param_10)
+          (int controllerIndex,ulong64 param_2,fileShareLocation summaryData,void *summaryDataSize,
+          uint metaData,void *metaDataSize,uint tags,bdTag *numTags,uint showSuccess,bool param_10)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareSummaryTask *pdVar5;
+  dwFileShareSummaryTask *fsTask;
   undefined4 in_stack_00000008;
-  TaskRecord *local_c;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileShareSummaryTask *summaryTask;
   
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSetSummary,param_1);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSetSummary,controllerIndex);
   if (bVar3) {
-    local_c = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xcf6,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareSummaryTask *)(iVar1 + 0x2008);
-    local_c = (TaskRecord *)0x0;
-    if (pdVar5 != (dwFileShareSummaryTask *)0x0) {
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareSummaryTask *)(iVar1 + 0x2008);
+    task = (TaskRecord *)0x0;
+    if (fsTask != (dwFileShareSummaryTask *)0x0) {
       *(undefined4 *)(iVar1 + 0x2028) = param_2._4_4_;
-      *(undefined4 *)&pdVar5->fileID = in_stack_00000008;
+      *(undefined4 *)&fsTask->fileID = in_stack_00000008;
       *(undefined4 *)(iVar1 + 0x200c) = (undefined4)param_2;
-      *(uint *)(iVar1 + 0x2018) = param_5;
-      *(void **)(iVar1 + 0x201c) = param_6;
-      *(bdTag **)(iVar1 + 0x2020) = param_8;
-      *(fileShareLocation *)(iVar1 + 0x2010) = param_3;
-      *(void **)(iVar1 + 0x2014) = param_4;
-      *(uint *)(iVar1 + 0x2024) = param_7;
-      *(undefined1 *)(iVar1 + 0x202c) = (undefined1)param_9;
+      *(uint *)(iVar1 + 0x2018) = metaData;
+      *(void **)(iVar1 + 0x201c) = metaDataSize;
+      *(bdTag **)(iVar1 + 0x2020) = numTags;
+      *(fileShareLocation *)(iVar1 + 0x2010) = summaryData;
+      *(void **)(iVar1 + 0x2014) = summaryDataSize;
+      *(uint *)(iVar1 + 0x2024) = tags;
+      *(undefined1 *)(iVar1 + 0x202c) = (undefined1)showSuccess;
       Com_Printf(0x10,
                  "Writing file summary: %d bytes summary, %d bytes meta data and %d tags for file %llu.\n"
                 );
-      pTVar4 = dwFileShareSetSummary(param_1,pdVar5);
-      local_c = LiveStorage_SetupNestedTask(task_LiveFileShareSetSummary,param_1,pTVar4,pdVar5);
+      pTVar4 = dwFileShareSetSummary(controllerIndex,fsTask);
+      task = LiveStorage_SetupNestedTask(task_LiveFileShareSetSummary,controllerIndex,pTVar4,fsTask)
+      ;
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -3701,7 +3861,7 @@ LiveStorage_FileShare_WriteSummary
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteSummaryFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteSummaryFailure(TaskRecord *task)
 
 {
   Com_PrintError(0x10,"Failed to write summary data.\n");
@@ -3714,23 +3874,25 @@ void __cdecl LiveStorage_FileShare_WriteSummaryFailure(TaskRecord *param_1)
 /* WARNING: Removing unreachable block (ram,0x00985185) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteSummarySuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteSummarySuccess(TaskRecord *task)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char *pcVar3;
-  char *pcVar4;
-  int iVar5;
+  char *toastPopupDesc;
+  int localClientNum;
+  char *toastPopupIconName;
+  char *toastPopupTitle;
+  int toastPopupDuration;
+  dwFileShareSummaryTask *summaryTask;
   
   Com_Printf(0x10,"Summary data written successfully.\n");
-  if (*(char *)((int)param_1->payload + 0x24) != '\0') {
-    iVar5 = 0xa8c;
-    pcVar1 = UI_SafeTranslateString("MENU_FILESHARE_UPDATED_CAPS");
-    pcVar4 = "";
-    pcVar3 = "menu_mp_killstreak_select";
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-    UI_OpenToastPopup(iVar2,pcVar3,pcVar4,pcVar1,iVar5);
+  if (*(char *)((int)task->payload + 0x24) != '\0') {
+    toastPopupDuration = 0xa8c;
+    toastPopupDesc = UI_SafeTranslateString("MENU_FILESHARE_UPDATED_CAPS");
+    toastPopupTitle = "";
+    toastPopupIconName = "menu_mp_killstreak_select";
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+    UI_OpenToastPopup(localClientNum,toastPopupIconName,toastPopupTitle,toastPopupDesc,
+                      toastPopupDuration);
   }
   return;
 }
@@ -3742,47 +3904,50 @@ void __cdecl LiveStorage_FileShare_WriteSummarySuccess(TaskRecord *param_1)
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_ReadSummary
-          (int param_1,bdFileMetaData *param_2,_func___cdecl_void *param_3,
-          _func___cdecl_void *param_4)
+          (int controllerIndex,bdFileMetaData *descriptor,_func___cdecl_void *successCallback,
+          _func___cdecl_void *failureCallback)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareSummaryTask *pdVar5;
-  TaskRecord *local_c;
+  dwFileShareSummaryTask *fsTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileShareSummaryTask *summaryTask;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetSummary,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetSummary,controllerIndex);
   if (bVar3) {
-    local_c = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xd39,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareSummaryTask *)(iVar1 + 0x2008);
-    local_c = (TaskRecord *)0x0;
-    if (pdVar5 != (dwFileShareSummaryTask *)0x0) {
-      *(int *)&pdVar5->fileID = (int)param_2->m_fileID;
-      *(undefined4 *)(iVar1 + 0x200c) = *(undefined4 *)((int)&param_2->m_fileID + 4);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareSummaryTask *)(iVar1 + 0x2008);
+    task = (TaskRecord *)0x0;
+    if (fsTask != (dwFileShareSummaryTask *)0x0) {
+      *(int *)&fsTask->fileID = (int)descriptor->m_fileID;
+      *(undefined4 *)(iVar1 + 0x200c) = *(undefined4 *)((int)&descriptor->m_fileID + 4);
       *(char **)(iVar1 + 0x2010) = s_matchRecordBinaryData;
-      *(uint *)(iVar1 + 0x2014) = param_2->m_summaryFileSize;
-      *(_func___cdecl_void **)(iVar1 + 0x2030) = param_3;
-      *(_func___cdecl_void **)(iVar1 + 0x2034) = param_4;
+      *(uint *)(iVar1 + 0x2014) = descriptor->m_summaryFileSize;
+      *(_func___cdecl_void **)(iVar1 + 0x2030) = successCallback;
+      *(_func___cdecl_void **)(iVar1 + 0x2034) = failureCallback;
       if (*(int *)(iVar1 + 0x2014) != 0) {
-        pTVar4 = dwFileShareGetSummary(param_1,pdVar5);
-        local_c = LiveStorage_SetupNestedTask(task_LiveFileShareGetSummary,param_1,pTVar4,pdVar5);
+        pTVar4 = dwFileShareGetSummary(controllerIndex,fsTask);
+        task = LiveStorage_SetupNestedTask
+                         (task_LiveFileShareGetSummary,controllerIndex,pTVar4,fsTask);
       }
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -3790,12 +3955,14 @@ LiveStorage_FileShare_ReadSummary
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadSummaryFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadSummaryFailure(TaskRecord *task)
 
 {
+  dwFileShareSummaryTask *summaryTask;
+  
   Com_PrintError(0x10,"Failed to get summary data.\n");
-  if (*(int *)((int)param_1->payload + 0x2c) != 0) {
-    (**(code **)((int)param_1->payload + 0x2c))();
+  if (*(int *)((int)task->payload + 0x2c) != 0) {
+    (**(code **)((int)task->payload + 0x2c))();
   }
   return;
 }
@@ -3803,16 +3970,18 @@ void __cdecl LiveStorage_FileShare_ReadSummaryFailure(TaskRecord *param_1)
 
 // 00985310  LiveStorage_FileShare_ReadSummarySuccess  (live/live_storage.cpp:3436)
 
+/* WARNING: Variable defined which should be unmapped: summaryTask */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadSummarySuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadSummarySuccess(TaskRecord *task)
 
 {
   void *pvVar1;
+  dwFileShareSummaryTask *summaryTask;
   
-  pvVar1 = param_1->payload;
+  pvVar1 = task->payload;
   LiveStorage_FileShare_GenerateHeatmap
-            (param_1->controllerIndex,*(ulong64 *)((int)pvVar1 + 4),*(uchar **)((int)pvVar1 + 0xc),
+            (task->controllerIndex,*(ulong64 *)((int)pvVar1 + 4),*(uchar **)((int)pvVar1 + 0xc),
              (int)pvVar1);
   if (*(int *)((int)pvVar1 + 0x28) != 0) {
     (**(code **)((int)pvVar1 + 0x28))();
@@ -3827,23 +3996,26 @@ void __cdecl LiveStorage_FileShare_ReadSummarySuccess(TaskRecord *param_1)
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_ReadMetaDataByID
-          (int param_1,bdFileID *param_2,int param_3,bdFileMetaData *param_4,
-          fileShareLocation param_5)
+          (int controllerIndex,bdFileID *fileIDs,int numFiles,bdFileMetaData *outDescriptors,
+          fileShareLocation location)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareDescriptorsTask *pdVar5;
+  dwFileShareDescriptorsTask *fsTask_00;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  dwFileShareDescriptorsTask *fsTask;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetMetaByID,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetMetaByID,controllerIndex);
   if (bVar3) {
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
-    if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+    if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xd87,0,
                                "%s");
       if (!bVar3) {
@@ -3852,16 +4024,17 @@ LiveStorage_FileShare_ReadMetaDataByID
         return pTVar4;
       }
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareDescriptorsTask *)(iVar1 + 0x15c0);
-    *(int *)(iVar1 + 0x15c4) = param_3;
-    *(bdFileID **)(iVar1 + 0x15c8) = param_2;
-    *(bdFileMetaData **)(iVar1 + 0x15d0) = param_4;
-    pdVar5->location = param_5;
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask_00 = (dwFileShareDescriptorsTask *)(iVar1 + 0x15c0);
+    *(int *)(iVar1 + 0x15c4) = numFiles;
+    *(bdFileID **)(iVar1 + 0x15c8) = fileIDs;
+    *(bdFileMetaData **)(iVar1 + 0x15d0) = outDescriptors;
+    fsTask_00->location = location;
     *(undefined1 *)(iVar1 + 0x15d8) = 0;
     *(undefined1 *)(iVar1 + 0x15d9) = 0;
-    pTVar4 = dwFileShareGetDescriptors(param_1,pdVar5);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareGetMetaByID,param_1,pTVar4,pdVar5);
+    pTVar4 = dwFileShareGetDescriptors(controllerIndex,fsTask_00);
+    pTVar4 = LiveStorage_SetupNestedTask
+                       (task_LiveFileShareGetMetaByID,controllerIndex,pTVar4,fsTask_00);
   }
   return pTVar4;
 }
@@ -3871,20 +4044,20 @@ LiveStorage_FileShare_ReadMetaDataByID
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadMetaDataByIDFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadMetaDataByIDFailure(TaskRecord *task)
 
 {
-  ddlState_t *pdVar1;
-  ddlState_t *pdVar2;
-  int iVar3;
-  ddlState_t local_14;
+  ddlState_t *searchState;
+  ddlState_t *resultState;
+  int argNum;
+  ddlState_t localState;
   
   Com_PrintError(0x10,"Failed to get last played game summary data.\n");
-  iVar3 = 2;
-  pdVar2 = &local_14;
-  pdVar1 = LiveStats_GetRootDDLState();
-  DDL_MoveTo(pdVar1,pdVar2,iVar3);
-  LiveStats_SetDInt64Stat(param_1->controllerIndex,&local_14,0);
+  argNum = 2;
+  resultState = &localState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveTo(searchState,resultState,argNum);
+  LiveStats_SetDInt64Stat(task->controllerIndex,&localState,0);
   return;
 }
 
@@ -3893,13 +4066,14 @@ void __cdecl LiveStorage_FileShare_ReadMetaDataByIDFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadMetaDataByIDSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadMetaDataByIDSuccess(TaskRecord *task)
 
 {
+  dwFileShareDescriptorsTask *fsTask;
+  
   Com_Printf(0x10,"Got last played game summary.\n");
   LiveStorage_FileShare_PublicMetaToTags
-            (*(bdFileMetaData **)((int)param_1->payload + 0x10),*(int *)((int)param_1->payload + 4))
-  ;
+            (*(bdFileMetaData **)((int)task->payload + 0x10),*(int *)((int)task->payload + 4));
   Live_FileShare_PopulateLastPlayedGameDvars();
   return;
 }
@@ -3909,38 +4083,41 @@ void __cdecl LiveStorage_FileShare_ReadMetaDataByIDSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_RemoveFile(int param_1,uint param_2)
+TaskRecord * __cdecl LiveStorage_FileShare_RemoveFile(int controllerIndex,uint fileSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  dwFileShareRemoveTask *pdVar4;
-  TaskRecord *local_8;
+  dwFileShareRemoveTask *fsTask;
+  dwFileShareRemoveTask *removeTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareRemoveFile,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareRemoveFile,controllerIndex);
   if (bVar2) {
-    local_8 = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xdbd,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pTVar3 = (TaskRecord *)(*pcVar1)();
       return pTVar3;
     }
-    pdVar4 = (dwFileShareRemoveTask *)
-             (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) + 0x2000);
-    local_8 = (TaskRecord *)0x0;
-    if (pdVar4 != (dwFileShareRemoveTask *)0x0) {
-      pdVar4->fileSlot = param_2;
-      pTVar3 = dwFileShareRemoveFile(param_1,pdVar4);
-      local_8 = LiveStorage_SetupNestedTask(task_LiveFileShareRemoveFile,param_1,pTVar3,pdVar4);
+    fsTask = (dwFileShareRemoveTask *)
+             (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) + 0x2000);
+    task = (TaskRecord *)0x0;
+    if (fsTask != (dwFileShareRemoveTask *)0x0) {
+      fsTask->fileSlot = fileSlot;
+      pTVar3 = dwFileShareRemoveFile(controllerIndex,fsTask);
+      task = LiveStorage_SetupNestedTask(task_LiveFileShareRemoveFile,controllerIndex,pTVar3,fsTask)
+      ;
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -3948,7 +4125,7 @@ TaskRecord * __cdecl LiveStorage_FileShare_RemoveFile(int param_1,uint param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_RemoveFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_RemoveFileFailure(TaskRecord *task)
 
 {
   Com_PrintError(0x10,"Failed to removes file from the content server.\n");
@@ -3958,25 +4135,27 @@ void __cdecl LiveStorage_FileShare_RemoveFileFailure(TaskRecord *param_1)
 
 // 009855F0  LiveStorage_FileShare_RemoveFileSuccess  (live/live_storage.cpp:3539)
 
+/* WARNING: Variable defined which should be unmapped: fileTask */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_RemoveFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_RemoveFileSuccess(TaskRecord *task)
 
 {
-  fileSharePrivateData *pfVar1;
-  ulong64 uVar2;
-  undefined4 uVar3;
-  void *pvVar4;
+  void *pvVar1;
+  fileSharePrivateData *pfVar2;
+  ulong64 uVar3;
+  undefined4 uVar4;
+  dwFileShareRemoveTask *fileTask;
   
-  pvVar4 = param_1->payload;
+  pvVar1 = task->payload;
   Com_Printf(0x10,"Successfully removed file from slot %d\n");
-  pfVar1 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-  pfVar1->valid = false;
-  uVar3 = 0;
-  uVar2 = Live_GetXuid(param_1->controllerIndex);
+  pfVar2 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+  pfVar2->valid = false;
+  uVar4 = 0;
+  uVar3 = Live_GetXuid(task->controllerIndex);
   LiveStorage_FileShare_ReadListing
-            (param_1->controllerIndex,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),
-             (fileShareBufferLocation)pvVar4);
+            (task->controllerIndex,CONCAT44(uVar4,(int)(uVar3 >> 0x20)),
+             (fileShareBufferLocation)pvVar1);
   return;
 }
 
@@ -3985,7 +4164,7 @@ void __cdecl LiveStorage_FileShare_RemoveFileSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_TransferLastUploaded(int param_1,uint param_2)
+TaskRecord * __cdecl LiveStorage_FileShare_TransferLastUploaded(int controllerIndex,uint userSlot)
 
 {
   int iVar1;
@@ -3993,23 +4172,27 @@ TaskRecord * __cdecl LiveStorage_FileShare_TransferLastUploaded(int param_1,uint
   bool bVar3;
   TaskRecord *pTVar4;
   fileShareLastPlayedGame_t *pfVar5;
-  dwFileShareTransferTask *pdVar6;
-  int iVar7;
-  uchar *puVar8;
-  undefined4 *puVar9;
+  dwFileShareTransferTask *fsTask;
+  int iVar6;
+  uchar *puVar7;
+  undefined4 *puVar8;
+  dwFileShareTransferTask *transferTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  fileShareLastPlayedGame_t *lastPlayed;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareTransfer,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareTransfer,controllerIndex);
   if (!bVar3) {
-    if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+    if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xdef,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar6 = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
     pfVar5 = Live_FileShare_GetLastPlayedGame();
     if ((((int)(pfVar5->dwFileID).m_fileID != 0 ||
           *(int *)((int)&(pfVar5->dwFileID).m_fileID + 4) != 0) &&
@@ -4017,27 +4200,28 @@ TaskRecord * __cdecl LiveStorage_FileShare_TransferLastUploaded(int param_1,uint
        (*(int *)((int)&(pfVar5->dwFileID).m_fileID + 4) ==
         *(int *)((int)&(pfVar5->descriptor).m_fileID + 4))) {
       *(undefined4 *)(iVar1 + 0x1ed0) = 3;
-      *(int *)&pdVar6->fileID = (int)(pfVar5->dwFileID).m_fileID;
+      *(int *)&fsTask->fileID = (int)(pfVar5->dwFileID).m_fileID;
       *(undefined4 *)(iVar1 + 0x1ecc) = *(undefined4 *)((int)&(pfVar5->dwFileID).m_fileID + 4);
       *(undefined2 *)(iVar1 + 0x1edc) = 1;
       *(char **)(iVar1 + 0x1ed8) = "Film.demo";
-      *(undefined2 *)(iVar1 + 0x1ed4) = (undefined2)param_2;
+      *(undefined2 *)(iVar1 + 0x1ed4) = (undefined2)userSlot;
       Com_Printf(0x10,"Transferring file %llu from pooled storage to slot %u.\n");
-      puVar8 = (pfVar5->descriptor).m_metaData;
-      puVar9 = (undefined4 *)(iVar1 + 0x1ede);
-      for (iVar7 = 0x3f; iVar7 != 0; iVar7 = iVar7 + -1) {
-        *puVar9 = *(undefined4 *)puVar8;
-        puVar8 = puVar8 + 4;
-        puVar9 = puVar9 + 1;
+      puVar7 = (pfVar5->descriptor).m_metaData;
+      puVar8 = (undefined4 *)(iVar1 + 0x1ede);
+      for (iVar6 = 0x3f; iVar6 != 0; iVar6 = iVar6 + -1) {
+        *puVar8 = *(undefined4 *)puVar7;
+        puVar7 = puVar7 + 4;
+        puVar8 = puVar8 + 1;
       }
-      *(undefined2 *)puVar9 = *(undefined2 *)puVar8;
-      *(uchar *)((int)puVar9 + 2) = puVar8[2];
+      *(undefined2 *)puVar8 = *(undefined2 *)puVar7;
+      *(uchar *)((int)puVar8 + 2) = puVar7[2];
       LiveStorage_FileShare_UpdateMetaData((char *)(pfVar5->descriptor).m_metaData);
       *(undefined4 *)(iVar1 + 0x1fe0) = 0xff;
       *(uint *)(iVar1 + 0x1fe4) = (pfVar5->descriptor).m_numTags;
       *(bdTag **)(iVar1 + 0x1fe8) = (pfVar5->descriptor).m_tags;
-      pTVar4 = dwFileShareTransferFile(param_1,pdVar6);
-      pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,param_1,pTVar4,pdVar6);
+      pTVar4 = dwFileShareTransferFile(controllerIndex,fsTask);
+      pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,controllerIndex,pTVar4,fsTask)
+      ;
       return pTVar4;
     }
   }
@@ -4050,22 +4234,24 @@ TaskRecord * __cdecl LiveStorage_FileShare_TransferLastUploaded(int param_1,uint
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_FileShare_TransferFromPooled(int param_1,ulong64 param_2,uint param_3)
+LiveStorage_FileShare_TransferFromPooled(int controllerIndex,ulong64 param_2,uint param_3)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareTransferTask *pdVar5;
-  int iVar6;
-  uchar *puVar7;
+  dwFileShareTransferTask *fsTask;
+  int iVar5;
+  uchar *puVar6;
   bdFileMetaData *unaff_EDI;
-  undefined4 *puVar8;
+  undefined4 *puVar7;
   int in_stack_00000008;
-  TaskRecord *local_8;
+  dwFileShareTransferTask *transferTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+  if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xe13,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -4074,13 +4260,13 @@ LiveStorage_FileShare_TransferFromPooled(int param_1,ulong64 param_2,uint param_
   }
   if (in_stack_00000008 == 0 && (int)param_2 == 0) {
     Com_PrintError(0x10,"Invalid file ID %llu\n");
-    local_8 = (TaskRecord *)0x0;
+    task = (TaskRecord *)0x0;
   }
   else {
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
-    local_8 = (TaskRecord *)0x0;
-    *(int *)&pdVar5->fileID = in_stack_00000008;
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
+    task = (TaskRecord *)0x0;
+    *(int *)&fsTask->fileID = in_stack_00000008;
     *(int *)(iVar1 + 0x1ecc) = (int)param_2;
     *(undefined4 *)(iVar1 + 0x1ed0) = 3;
     Com_Printf(0x10,"Transferring file %llu from pooled storage to slot %u.\n");
@@ -4091,7 +4277,7 @@ LiveStorage_FileShare_TransferFromPooled(int param_1,ulong64 param_2,uint param_
              _dynamic_atexit_destructor_for__pooledDescriptor__);
     }
     bVar3 = Live_FileShareSearch_GetDesriptorByID
-                      (param_1,CONCAT44(3,(int)param_2),0xa5cfd40,unaff_EDI);
+                      (controllerIndex,CONCAT44(3,(int)param_2),0xa5cfd40,unaff_EDI);
     if (bVar3) {
       if ((((pooledDescriptor.m_fileID._4_4_ == 0) && ((int)pooledDescriptor.m_fileID == 0)) ||
           (pooledDescriptor.m_fileSize == 0)) &&
@@ -4106,25 +4292,26 @@ LiveStorage_FileShare_TransferFromPooled(int param_1,ulong64 param_2,uint param_
         *(ushort *)(iVar1 + 0x1edc) = pooledDescriptor.m_category;
         *(undefined4 *)(iVar1 + 0x1ed8) = 0xa5cfdaa;
         *(undefined2 *)(iVar1 + 0x1ed4) = param_2._4_2_;
-        puVar7 = pooledDescriptor.m_metaData;
-        puVar8 = (undefined4 *)(iVar1 + 0x1ede);
-        for (iVar6 = 0x3f; iVar6 != 0; iVar6 = iVar6 + -1) {
-          *puVar8 = *(undefined4 *)puVar7;
-          puVar7 = puVar7 + 4;
-          puVar8 = puVar8 + 1;
+        puVar6 = pooledDescriptor.m_metaData;
+        puVar7 = (undefined4 *)(iVar1 + 0x1ede);
+        for (iVar5 = 0x3f; iVar5 != 0; iVar5 = iVar5 + -1) {
+          *puVar7 = *(undefined4 *)puVar6;
+          puVar6 = puVar6 + 4;
+          puVar7 = puVar7 + 1;
         }
-        *(undefined2 *)puVar8 = *(undefined2 *)puVar7;
-        *(uchar *)((int)puVar8 + 2) = puVar7[2];
+        *(undefined2 *)puVar7 = *(undefined2 *)puVar6;
+        *(uchar *)((int)puVar7 + 2) = puVar6[2];
         LiveStorage_FileShare_UpdateMetaData((char *)(iVar1 + 0x1ede));
         *(undefined4 *)(iVar1 + 0x1fe0) = 0xff;
         *(uint *)(iVar1 + 0x1fe4) = pooledDescriptor.m_numTags;
         *(undefined4 *)(iVar1 + 0x1fe8) = 0xa5d01b8;
-        pTVar4 = dwFileShareTransferFile(param_1,pdVar5);
-        local_8 = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,param_1,pTVar4,pdVar5);
+        pTVar4 = dwFileShareTransferFile(controllerIndex,fsTask);
+        task = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,controllerIndex,pTVar4,fsTask)
+        ;
       }
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -4133,7 +4320,8 @@ LiveStorage_FileShare_TransferFromPooled(int param_1,ulong64 param_2,uint param_
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 TaskRecord * __cdecl
-LiveStorage_FileShare_TransferFromUser(int param_1,ulong64 param_2,uint param_3,bool param_4)
+LiveStorage_FileShare_TransferFromUser
+          (int controllerIndex,ulong64 param_2,uint isCommunity,bool param_4)
 
 {
   int iVar1;
@@ -4141,39 +4329,42 @@ LiveStorage_FileShare_TransferFromUser(int param_1,ulong64 param_2,uint param_3,
   bool bVar3;
   TaskRecord *pTVar4;
   fileSharePrivateData *pfVar5;
-  dwFileShareTransferTask *pdVar6;
-  int iVar7;
-  uchar *puVar8;
+  dwFileShareTransferTask *fsTask;
+  int iVar6;
+  uchar *puVar7;
   bdFileMetaData *unaff_EDI;
-  undefined4 *puVar9;
+  undefined4 *puVar8;
   int in_stack_00000008;
-  TaskRecord *local_14;
-  int local_10;
-  bdFileMetaData *local_c;
-  uint local_8;
+  fileSharePrivateData *fsData;
+  dwFileShareTransferTask *transferTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
+  int userIndex;
+  bdFileMetaData *descriptors;
+  int descriptorCount;
   
-  if ((*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) &&
+  if ((*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xe41,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pTVar4 = (TaskRecord *)(*pcVar2)();
     return pTVar4;
   }
-  iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-  pdVar6 = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
-  local_14 = (TaskRecord *)0x0;
-  local_c = (bdFileMetaData *)0x0;
-  *(int *)&pdVar6->fileID = in_stack_00000008;
+  iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+  fsTask = (dwFileShareTransferTask *)(iVar1 + 0x1ec8);
+  task = (TaskRecord *)0x0;
+  descriptors = (bdFileMetaData *)0x0;
+  *(int *)&fsTask->fileID = in_stack_00000008;
   *(int *)(iVar1 + 0x1ecc) = (int)param_2;
   *(undefined4 *)(iVar1 + 0x1ed0) = 2;
   Com_Printf(0x10,"Transferring file %llu from user storage to slot %u.\n");
-  if ((char)param_3 == '\0') {
+  if ((char)isCommunity == '\0') {
     pfVar5 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
     if ((pfVar5 == (fileSharePrivateData *)0x0) || (pfVar5->descriptorCount == 0)) {
       return (TaskRecord *)0x0;
     }
-    local_c = pfVar5->descriptors;
-    local_8 = pfVar5->descriptorCount;
+    descriptors = pfVar5->descriptors;
+    descriptorCount = pfVar5->descriptorCount;
   }
   else {
     if ((_S5 & 1) == 0) {
@@ -4183,55 +4374,55 @@ LiveStorage_FileShare_TransferFromUser(int param_1,ulong64 param_2,uint param_3,
              _dynamic_atexit_destructor_for__communityDescriptor__);
     }
     bVar3 = Live_FileShareSearch_GetDesriptorByID
-                      (param_1,CONCAT44(2,(int)param_2),0xa5d0580,unaff_EDI);
+                      (controllerIndex,CONCAT44(2,(int)param_2),0xa5d0580,unaff_EDI);
     if (bVar3) {
-      local_c = &communityDescriptor;
+      descriptors = &communityDescriptor;
     }
-    local_8 = (uint)bVar3;
+    descriptorCount = (int)bVar3;
   }
-  if ((local_c != (bdFileMetaData *)0x0) && (0 < (int)local_8)) {
-    local_10 = 0;
-    while ((local_10 < (int)local_8 &&
-           (((int)local_c[local_10].m_fileID != in_stack_00000008 ||
-            (*(int *)((int)&local_c[local_10].m_fileID + 4) != (int)param_2))))) {
-      local_10 = local_10 + 1;
+  if ((descriptors != (bdFileMetaData *)0x0) && (0 < descriptorCount)) {
+    userIndex = 0;
+    while ((userIndex < descriptorCount &&
+           (((int)descriptors[userIndex].m_fileID != in_stack_00000008 ||
+            (*(int *)((int)&descriptors[userIndex].m_fileID + 4) != (int)param_2))))) {
+      userIndex = userIndex + 1;
     }
-    if (((int)local_8 <= local_10) &&
+    if ((descriptorCount <= userIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xe75,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    if ((local_c[local_10].m_fileSize == 0) &&
+    if ((descriptors[userIndex].m_fileSize == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xe76,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pTVar4 = (TaskRecord *)(*pcVar2)();
       return pTVar4;
     }
-    if ((local_10 < (int)local_8) && (local_c[local_10].m_fileSize != 0)) {
-      *(ushort *)(iVar1 + 0x1edc) = local_c[local_10].m_category;
-      *(char **)(iVar1 + 0x1ed8) = local_c[local_10].m_fileName;
+    if ((userIndex < descriptorCount) && (descriptors[userIndex].m_fileSize != 0)) {
+      *(ushort *)(iVar1 + 0x1edc) = descriptors[userIndex].m_category;
+      *(char **)(iVar1 + 0x1ed8) = descriptors[userIndex].m_fileName;
       *(undefined2 *)(iVar1 + 0x1ed4) = param_2._4_2_;
-      puVar8 = local_c[local_10].m_metaData;
-      puVar9 = (undefined4 *)(iVar1 + 0x1ede);
-      for (iVar7 = 0x3f; iVar7 != 0; iVar7 = iVar7 + -1) {
-        *puVar9 = *(undefined4 *)puVar8;
-        puVar8 = puVar8 + 4;
-        puVar9 = puVar9 + 1;
+      puVar7 = descriptors[userIndex].m_metaData;
+      puVar8 = (undefined4 *)(iVar1 + 0x1ede);
+      for (iVar6 = 0x3f; iVar6 != 0; iVar6 = iVar6 + -1) {
+        *puVar8 = *(undefined4 *)puVar7;
+        puVar7 = puVar7 + 4;
+        puVar8 = puVar8 + 1;
       }
-      *(undefined2 *)puVar9 = *(undefined2 *)puVar8;
-      *(uchar *)((int)puVar9 + 2) = puVar8[2];
+      *(undefined2 *)puVar8 = *(undefined2 *)puVar7;
+      *(uchar *)((int)puVar8 + 2) = puVar7[2];
       LiveStorage_FileShare_UpdateMetaData((char *)(iVar1 + 0x1ede));
-      *(uint *)(iVar1 + 0x1fe0) = local_c[local_10].m_metaDataSize;
-      *(uint *)(iVar1 + 0x1fe4) = local_c[local_10].m_numTags;
-      *(bdTag **)(iVar1 + 0x1fe8) = local_c[local_10].m_tags;
-      pTVar4 = dwFileShareTransferFile(param_1,pdVar6);
-      local_14 = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,param_1,pTVar4,pdVar6);
+      *(uint *)(iVar1 + 0x1fe0) = descriptors[userIndex].m_metaDataSize;
+      *(uint *)(iVar1 + 0x1fe4) = descriptors[userIndex].m_numTags;
+      *(bdTag **)(iVar1 + 0x1fe8) = descriptors[userIndex].m_tags;
+      pTVar4 = dwFileShareTransferFile(controllerIndex,fsTask);
+      task = LiveStorage_SetupNestedTask(task_LiveFileShareTransfer,controllerIndex,pTVar4,fsTask);
     }
   }
-  return local_14;
+  return task;
 }
 
 
@@ -4241,23 +4432,25 @@ LiveStorage_FileShare_TransferFromUser(int param_1,ulong64 param_2,uint param_3,
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_TransferFile
-          (int param_1,ulong64 param_2,uint param_3,fileShareLocation param_4,bool param_5)
+          (int controllerIndex,ulong64 param_2,uint location,fileShareLocation isCommunityFile,
+          bool param_5)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareTransfer,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar2 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareTransfer,controllerIndex);
   if (bVar2) {
     pTVar3 = (TaskRecord *)0x0;
   }
-  else if (param_3 == 2) {
-    pTVar3 = LiveStorage_FileShare_TransferFromUser(param_1,param_2,param_4 & 0xff,true);
+  else if (location == 2) {
+    pTVar3 = LiveStorage_FileShare_TransferFromUser
+                       (controllerIndex,param_2,isCommunityFile & 0xff,true);
   }
-  else if (param_3 == 3) {
-    pTVar3 = LiveStorage_FileShare_TransferFromPooled(param_1,param_2,3);
+  else if (location == 3) {
+    pTVar3 = LiveStorage_FileShare_TransferFromPooled(controllerIndex,param_2,3);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xe9e,0,
@@ -4277,63 +4470,67 @@ LiveStorage_FileShare_TransferFile
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_TransferFileFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_TransferFileFailure(TaskRecord *task)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int localClientNum;
+  char *menuName;
+  dwFileShareTransferTask *fileTask;
+  int httpError;
   
-  dwFileShareGetLastHTTPError
-            (param_1->controllerIndex,*(fileShareLocation *)((int)param_1->payload + 8));
+  dwFileShareGetLastHTTPError(task->controllerIndex,*(fileShareLocation *)((int)task->payload + 8));
   Com_PrintError(0x10,"Failed transferring file to User storage with HTTP code: %d\n");
-  pcVar2 = "menu_fileshare_error";
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-  UI_OpenMenu(iVar1,pcVar2);
+  menuName = "menu_fileshare_error";
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+  UI_OpenMenu(localClientNum,menuName);
   return;
 }
 
 
 // 00985E80  LiveStorage_FileShare_TransferFileSuccess  (live/live_storage.cpp:3759)
 
+/* WARNING: Variable defined which should be unmapped: fileTask */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_TransferFileSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_TransferFileSuccess(TaskRecord *task)
 
 {
-  bool bVar1;
-  int iVar2;
-  char *pcVar3;
+  void *pvVar1;
+  bool bVar2;
+  int iVar3;
+  char *toastPopupDesc;
   fileSharePrivateData *pfVar4;
   ulong64 uVar5;
-  char *pcVar6;
-  char *pcVar7;
-  int iVar8;
-  undefined4 uVar9;
-  void *pvVar10;
+  char *toastPopupIconName;
+  char *toastPopupTitle;
+  int toastPopupDuration;
+  undefined4 uVar6;
+  dwFileShareTransferTask *fileTask;
+  int httpError;
   
-  pvVar10 = param_1->payload;
-  iVar2 = dwFileShareGetLastHTTPError
-                    (param_1->controllerIndex,*(fileShareLocation *)((int)pvVar10 + 8));
+  pvVar1 = task->payload;
+  iVar3 = dwFileShareGetLastHTTPError(task->controllerIndex,*(fileShareLocation *)((int)pvVar1 + 8))
+  ;
   Com_Printf(0x10,"Reply received with HTTP code: %d. File ID %lld created.\n");
-  bVar1 = LiveStorage_FileShare_IsValidHTTPCode(iVar2);
-  if (bVar1) {
-    LiveCounter_IncrementCounterValueByName("global_fileshare_shared",ZEXT48(pvVar10) << 0x20);
-    iVar8 = 0xa8c;
-    pcVar3 = UI_SafeTranslateString("MENU_FILESHARE_TRANSFERCOMPLETE_CAPS");
-    pcVar7 = "";
-    pcVar6 = "menu_mp_killstreak_select";
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1->controllerIndex);
-    UI_OpenToastPopup(iVar2,pcVar6,pcVar7,pcVar3,iVar8);
+  bVar2 = LiveStorage_FileShare_IsValidHTTPCode(iVar3);
+  if (bVar2) {
+    LiveCounter_IncrementCounterValueByName("global_fileshare_shared",ZEXT48(pvVar1) << 0x20);
+    toastPopupDuration = 0xa8c;
+    toastPopupDesc = UI_SafeTranslateString("MENU_FILESHARE_TRANSFERCOMPLETE_CAPS");
+    toastPopupTitle = "";
+    toastPopupIconName = "menu_mp_killstreak_select";
+    iVar3 = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
+    UI_OpenToastPopup(iVar3,toastPopupIconName,toastPopupTitle,toastPopupDesc,toastPopupDuration);
     pfVar4 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
     pfVar4->valid = false;
-    uVar9 = 0;
-    uVar5 = Live_GetXuid(param_1->controllerIndex);
+    uVar6 = 0;
+    uVar5 = Live_GetXuid(task->controllerIndex);
     LiveStorage_FileShare_ReadListing
-              (param_1->controllerIndex,CONCAT44(uVar9,(int)(uVar5 >> 0x20)),
-               (fileShareBufferLocation)pvVar10);
+              (task->controllerIndex,CONCAT44(uVar6,(int)(uVar5 >> 0x20)),
+               (fileShareBufferLocation)pvVar1);
   }
   else {
-    LiveStorage_FileShare_TransferFileFailure(param_1);
+    LiveStorage_FileShare_TransferFileFailure(task);
   }
   return;
 }
@@ -4341,25 +4538,31 @@ void __cdecl LiveStorage_FileShare_TransferFileSuccess(TaskRecord *param_1)
 
 // 00985F70  LiveStorage_FileShare_WriteRating  (live/live_storage.cpp:3791)
 
+/* WARNING: Variable defined which should be unmapped: ratingTask */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FileShare_WriteRating(int param_1,ulong64 param_2,uint param_3)
+TaskRecord * __cdecl
+LiveStorage_FileShare_WriteRating(int controllerIndex,ulong64 param_2,uint param_3)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareSubmitRatingTask *pdVar5;
+  dwFileShareSubmitRatingTask *fsTask;
   undefined4 in_stack_00000008;
+  dwFileShareSubmitRatingTask *ratingTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSubmitRating,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareSubmitRating,controllerIndex)
+  ;
   if (bVar3) {
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
-    if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+    if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xed7,0,
                                "%s");
       if (!bVar3) {
@@ -4368,15 +4571,17 @@ TaskRecord * __cdecl LiveStorage_FileShare_WriteRating(int param_1,ulong64 param
         return pTVar4;
       }
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareSubmitRatingTask *)(iVar1 + 0x2038);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareSubmitRatingTask *)(iVar1 + 0x2038);
     *(undefined4 *)(iVar1 + 0x2040) = in_stack_00000008;
     *(undefined4 *)(iVar1 + 0x2044) = (undefined4)param_2;
     *(undefined1 *)(iVar1 + 0x2048) = param_2._4_1_;
     *(undefined4 *)(iVar1 + 0x2050) = 1;
-    Live_FileShare_SaveRating(param_1,param_2 & 0xffffffffff,(uchar)pdVar5);
-    pTVar4 = dwFileShareSubmitRating(param_1,pdVar5);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareSubmitRating,param_1,pTVar4,pdVar5);
+    ratingTask._0_1_ = (uchar)fsTask;
+    Live_FileShare_SaveRating(controllerIndex,param_2 & 0xffffffffff,(uchar)ratingTask);
+    pTVar4 = dwFileShareSubmitRating(controllerIndex,fsTask);
+    pTVar4 = LiveStorage_SetupNestedTask
+                       (task_LiveFileShareSubmitRating,controllerIndex,pTVar4,fsTask);
   }
   return pTVar4;
 }
@@ -4386,7 +4591,7 @@ TaskRecord * __cdecl LiveStorage_FileShare_WriteRating(int param_1,ulong64 param
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteRatingFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteRatingFailure(TaskRecord *task)
 
 {
   Com_PrintError(0x10,"Could not submit rating.\n");
@@ -4398,7 +4603,7 @@ void __cdecl LiveStorage_FileShare_WriteRatingFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteRatingSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteRatingSuccess(TaskRecord *task)
 
 {
   Com_Printf(0x10,"Rating successfully submitted.\n");
@@ -4410,12 +4615,13 @@ void __cdecl LiveStorage_FileShare_WriteRatingSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LiveStorage_FileShare_IsReadingTopRated(int param_1)
+bool __cdecl LiveStorage_FileShare_IsReadingTopRated(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetTopRating,param_1);
+  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetTopRating,controllerIndex)
+  ;
   return bVar1;
 }
 
@@ -4426,23 +4632,28 @@ bool __cdecl LiveStorage_FileShare_IsReadingTopRated(int param_1)
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_ReadTopRated
-          (int param_1,int param_2,int param_3,int param_4,bdFileID *param_5,int *param_6,
-          int *param_7,_func___cdecl_void *param_8,_func___cdecl_void *param_9)
+          (int controllerIndex,int fileType,int startIndex,int maxFiles,bdFileID *fileIDs,
+          int *numFiles,int *totalNumFiles,_func___cdecl_void *successCallback,
+          _func___cdecl_void *failureCallback)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareGetTopRatedTask *pdVar5;
+  dwFileShareGetTopRatedTask *fsTask;
+  dwFileShareGetTopRatedTask *ratingTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetTopRating,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar3 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetTopRating,controllerIndex)
+  ;
   if (bVar3) {
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
-    if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+    if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf05,0,
                                "%s");
       if (!bVar3) {
@@ -4451,19 +4662,20 @@ LiveStorage_FileShare_ReadTopRated
         return pTVar4;
       }
     }
-    iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-    pdVar5 = (dwFileShareGetTopRatedTask *)(iVar1 + 0x2080);
-    *(int *)(iVar1 + 0x208c) = param_2 + -0x1194d800;
-    *(int *)&pdVar5->startRank = param_3;
-    *(int *)(iVar1 + 0x2084) = param_3 >> 0x1f;
-    *(int *)(iVar1 + 0x2088) = param_4;
-    *(bdFileID **)(iVar1 + 0x6eb8) = param_5;
-    *(int **)(iVar1 + 0x6eb0) = param_6;
-    *(int **)(iVar1 + 0x6eb4) = param_7;
-    *(_func___cdecl_void **)(iVar1 + 0x6ebc) = param_8;
-    *(_func___cdecl_void **)(iVar1 + 0x6ec0) = param_9;
-    pTVar4 = dwFileShareGetTopRated(param_1,pdVar5);
-    pTVar4 = LiveStorage_SetupNestedTask(task_LiveFileShareGetTopRating,param_1,pTVar4,pdVar5);
+    iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+    fsTask = (dwFileShareGetTopRatedTask *)(iVar1 + 0x2080);
+    *(int *)(iVar1 + 0x208c) = fileType + -0x1194d800;
+    *(int *)&fsTask->startRank = startIndex;
+    *(int *)(iVar1 + 0x2084) = startIndex >> 0x1f;
+    *(int *)(iVar1 + 0x2088) = maxFiles;
+    *(bdFileID **)(iVar1 + 0x6eb8) = fileIDs;
+    *(int **)(iVar1 + 0x6eb0) = numFiles;
+    *(int **)(iVar1 + 0x6eb4) = totalNumFiles;
+    *(_func___cdecl_void **)(iVar1 + 0x6ebc) = successCallback;
+    *(_func___cdecl_void **)(iVar1 + 0x6ec0) = failureCallback;
+    pTVar4 = dwFileShareGetTopRated(controllerIndex,fsTask);
+    pTVar4 = LiveStorage_SetupNestedTask
+                       (task_LiveFileShareGetTopRating,controllerIndex,pTVar4,fsTask);
   }
   return pTVar4;
 }
@@ -4473,12 +4685,14 @@ LiveStorage_FileShare_ReadTopRated
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadTopRatedFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadTopRatedFailure(TaskRecord *task)
 
 {
+  dwFileShareGetTopRatedTask *fsTask;
+  
   Com_PrintError(0x10,"Could not get file rating.\n");
-  if (*(int *)((int)param_1->payload + 0x4e40) != 0) {
-    (**(code **)((int)param_1->payload + 0x4e40))();
+  if (*(int *)((int)task->payload + 0x4e40) != 0) {
+    (**(code **)((int)task->payload + 0x4e40))();
   }
   return;
 }
@@ -4488,7 +4702,7 @@ void __cdecl LiveStorage_FileShare_ReadTopRatedFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadTopRatedSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadTopRatedSuccess(TaskRecord *task)
 
 {
   void *pvVar1;
@@ -4496,10 +4710,11 @@ void __cdecl LiveStorage_FileShare_ReadTopRatedSuccess(TaskRecord *param_1)
   code *pcVar3;
   bool bVar4;
   uint uVar5;
-  int local_c;
+  int i;
+  dwFileShareGetTopRatedTask *fsTask;
   
-  if (((param_1 == (TaskRecord *)0x0) || (param_1->nestedTask == (TaskRecord *)0x0)) ||
-     ((param_1->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0)) {
+  if (((task == (TaskRecord *)0x0) || (task->nestedTask == (TaskRecord *)0x0)) ||
+     ((task->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf2a,0,
                              "%s");
     if (!bVar4) {
@@ -4509,17 +4724,15 @@ void __cdecl LiveStorage_FileShare_ReadTopRatedSuccess(TaskRecord *param_1)
     }
   }
   Com_Printf(0x10,"Received top rated files.\n");
-  pvVar1 = param_1->payload;
-  uVar5 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  pvVar1 = task->payload;
+  uVar5 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
   **(uint **)((int)pvVar1 + 0x4e30) = uVar5;
-  uVar5 = bdRemoteTask::getTotalNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  uVar5 = bdRemoteTask::getTotalNumResults((task->nestedTask->remoteTask).m_ptr);
   **(uint **)((int)pvVar1 + 0x4e34) = uVar5;
-  for (local_c = 0; local_c < **(int **)((int)pvVar1 + 0x4e30); local_c = local_c + 1) {
+  for (i = 0; i < **(int **)((int)pvVar1 + 0x4e30); i = i + 1) {
     iVar2 = *(int *)((int)pvVar1 + 0x4e38);
-    *(undefined4 *)(iVar2 + 8 + local_c * 0x10) =
-         *(undefined4 *)((int)pvVar1 + local_c * 200 + 0x18);
-    *(undefined4 *)(iVar2 + 0xc + local_c * 0x10) =
-         *(undefined4 *)((int)pvVar1 + local_c * 200 + 0x1c);
+    *(undefined4 *)(iVar2 + 8 + i * 0x10) = *(undefined4 *)((int)pvVar1 + i * 200 + 0x18);
+    *(undefined4 *)(iVar2 + 0xc + i * 0x10) = *(undefined4 *)((int)pvVar1 + i * 200 + 0x1c);
   }
   if (*(int *)((int)pvVar1 + 0x4e3c) != 0) {
     (**(code **)((int)pvVar1 + 0x4e3c))();
@@ -4532,26 +4745,28 @@ void __cdecl LiveStorage_FileShare_ReadTopRatedSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl LiveStorage_FileShare_IsReadingRatings(int param_1)
+bool __cdecl LiveStorage_FileShare_IsReadingRatings(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetRating,param_1);
+  bVar1 = TaskManager2_TaskIsInProgressForController(task_LiveFileShareGetRating,controllerIndex);
   return bVar1;
 }
 
 
 // 00986380  LiveStorage_FileShare_VoteRankComparator  (live/live_storage.cpp:3913)
 
-int __cdecl LiveStorage_FileShare_VoteRankComparator(void *param_1,void *param_2)
+int __cdecl LiveStorage_FileShare_VoteRankComparator(void *arg0,void *arg1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bdVoteRankStatsInfo *voteRank2;
+  bdVoteRankStatsInfo *voteRank1;
   
-  if (param_1 == (void *)0x0) {
+  if (arg0 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf4a,0,
                              "%s");
     if (!bVar2) {
@@ -4560,7 +4775,7 @@ int __cdecl LiveStorage_FileShare_VoteRankComparator(void *param_1,void *param_2
       return iVar3;
     }
   }
-  if (param_2 == (void *)0x0) {
+  if (arg1 == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf4b,0,
                              "%s");
     if (!bVar2) {
@@ -4569,28 +4784,28 @@ int __cdecl LiveStorage_FileShare_VoteRankComparator(void *param_1,void *param_2
       return iVar3;
     }
   }
-  return *(int *)((int)param_2 + 8) - *(int *)((int)param_1 + 8);
+  return *(int *)((int)arg1 + 8) - *(int *)((int)arg0 + 8);
 }
 
 
 // 00986410  LiveStorage_FileShare_ReadRatingSuccessAction  (live/live_storage.cpp:3924)
 
-void __cdecl LiveStorage_FileShare_ReadRatingSuccessAction(dwFileShareGetRatingTask *param_1)
+void __cdecl LiveStorage_FileShare_ReadRatingSuccessAction(dwFileShareGetRatingTask *ratingTask)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < *(int *)param_1[1].maxFilesToFetch; local_8 = local_8 + 1) {
+  for (i = 0; i < *(int *)ratingTask[1].maxFilesToFetch; i = i + 1) {
     Live_FileShareCache_AddRating
-              (CONCAT44(*(undefined4 *)((int)param_1[1].fileIDs + local_8 * 200 + 0xc),
-                        (int)param_1[1].fileIDs[local_8 * 0x19 + 1]),
-               (fileShareLocation)param_1->fileIDs,
-               (bdVoteRankStatsInfo *)(param_1[1].fileIDs + local_8 * 0x19));
+              (CONCAT44(*(undefined4 *)((int)ratingTask[1].fileIDs + i * 200 + 0xc),
+                        (int)ratingTask[1].fileIDs[i * 0x19 + 1]),
+               (fileShareLocation)ratingTask->fileIDs,
+               (bdVoteRankStatsInfo *)(ratingTask[1].fileIDs + i * 0x19));
   }
-  qsort(param_1[1].fileIDs,*(uint *)param_1[1].maxFilesToFetch,200,
+  qsort(ratingTask[1].fileIDs,*(uint *)ratingTask[1].maxFilesToFetch,200,
         LiveStorage_FileShare_VoteRankComparator);
-  if (param_1[1].outStatsInfo != (bdVoteRankStatsInfo *)0x0) {
-    (*(code *)param_1[1].outStatsInfo)();
+  if (ratingTask[1].outStatsInfo != (bdVoteRankStatsInfo *)0x0) {
+    (*(code *)ratingTask[1].outStatsInfo)();
   }
   return;
 }
@@ -4602,21 +4817,22 @@ void __cdecl LiveStorage_FileShare_ReadRatingSuccessAction(dwFileShareGetRatingT
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_ReadRatingsCommunity
-          (int param_1,bdFileID *param_2,int param_3,fileShareLocation param_4,
-          bdVoteRankStatsInfo *param_5,int *param_6,_func___cdecl_void *param_7,
-          _func___cdecl_void *param_8)
+          (int controllerIndex,bdFileID *fileIDs,int numFileIDs,fileShareLocation location,
+          bdVoteRankStatsInfo *outRatings,int *outNumRatings,_func___cdecl_void *successCallback,
+          _func___cdecl_void *failureCallback)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   TaskRecord *pTVar4;
-  dwFileShareGetRatingTask *pdVar5;
-  int local_14;
-  int local_c;
-  int local_8;
+  dwFileShareGetRatingTask *ratingTask_00;
+  int i;
+  dwFileShareGetRatingTask *ratingTask;
+  int ratingIndex;
+  int fileIDsToFetch;
   
-  if (*(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) == 0) {
+  if (*(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0xf65,0,
                              "%s");
     if (!bVar3) {
@@ -4625,43 +4841,44 @@ LiveStorage_FileShare_ReadRatingsCommunity
       return pTVar4;
     }
   }
-  iVar1 = *(int *)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c);
-  pdVar5 = (dwFileShareGetRatingTask *)(iVar1 + 0x2058);
-  local_8 = 0;
-  local_c = 0;
-  for (local_14 = 0; local_14 < param_3; local_14 = local_14 + 1) {
+  iVar1 = *(int *)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c);
+  ratingTask_00 = (dwFileShareGetRatingTask *)(iVar1 + 0x2058);
+  fileIDsToFetch = 0;
+  ratingIndex = 0;
+  for (i = 0; i < numFileIDs; i = i + 1) {
     bVar3 = Live_FileShareCache_GetRating
-                      (CONCAT44(*(undefined4 *)((int)&param_2[local_14].m_fileID + 4),
-                                (int)param_2[local_14].m_fileID),param_4,param_5 + local_c);
+                      (CONCAT44(*(undefined4 *)((int)&fileIDs[i].m_fileID + 4),
+                                (int)fileIDs[i].m_fileID),location,outRatings + ratingIndex);
     if (bVar3) {
-      local_c = local_c + 1;
+      ratingIndex = ratingIndex + 1;
     }
     else {
-      *(int *)(dwFileIDs + local_8) = (int)param_2[local_14].m_fileID;
-      *(undefined4 *)((int)dwFileIDs + local_8 * 8 + 4) =
-           *(undefined4 *)((int)&param_2[local_14].m_fileID + 4);
-      local_8 = local_8 + 1;
+      *(int *)(dwFileIDs + fileIDsToFetch) = (int)fileIDs[i].m_fileID;
+      *(undefined4 *)((int)dwFileIDs + fileIDsToFetch * 8 + 4) =
+           *(undefined4 *)((int)&fileIDs[i].m_fileID + 4);
+      fileIDsToFetch = fileIDsToFetch + 1;
     }
   }
   Com_Printf(0x10,"\tSearch: %d ratings read from the file share cache.\n");
-  pdVar5->fileIDs = (ulong64 *)param_4;
+  ratingTask_00->fileIDs = (ulong64 *)location;
   *(ulong64 **)(iVar1 + 0x205c) = dwFileIDs;
-  *(int *)(iVar1 + 0x2060) = local_8;
+  *(int *)(iVar1 + 0x2060) = fileIDsToFetch;
   *(int *)(iVar1 + 0x2064) = (fsSearchFileType->current).integer;
-  *(bdVoteRankStatsInfo **)(iVar1 + 0x2068) = param_5 + local_c;
-  *(int **)(iVar1 + 0x206c) = param_6;
-  *(int *)(iVar1 + 0x2070) = local_c;
-  *(_func___cdecl_void **)(iVar1 + 0x2074) = param_7;
-  *(_func___cdecl_void **)(iVar1 + 0x2078) = param_8;
-  if (local_8 < 1) {
-    *(int *)(iVar1 + 0x2068) = *(int *)(iVar1 + 0x2068) + local_c * -200;
-    **(int **)(iVar1 + 0x206c) = local_c;
-    LiveStorage_FileShare_ReadRatingSuccessAction(pdVar5);
+  *(bdVoteRankStatsInfo **)(iVar1 + 0x2068) = outRatings + ratingIndex;
+  *(int **)(iVar1 + 0x206c) = outNumRatings;
+  *(int *)(iVar1 + 0x2070) = ratingIndex;
+  *(_func___cdecl_void **)(iVar1 + 0x2074) = successCallback;
+  *(_func___cdecl_void **)(iVar1 + 0x2078) = failureCallback;
+  if (fileIDsToFetch < 1) {
+    *(int *)(iVar1 + 0x2068) = *(int *)(iVar1 + 0x2068) + ratingIndex * -200;
+    **(int **)(iVar1 + 0x206c) = ratingIndex;
+    LiveStorage_FileShare_ReadRatingSuccessAction(ratingTask_00);
     pTVar4 = (TaskRecord *)0x0;
   }
   else {
     Com_Printf(0x10,"\tSearch: Reading %d ratings from DW.\n");
-    pTVar4 = LiveStorage_FileShare_ReadRating(param_1,pdVar5,task_LiveFileShareGetRating);
+    pTVar4 = LiveStorage_FileShare_ReadRating
+                       (controllerIndex,ratingTask_00,task_LiveFileShareGetRating);
   }
   return pTVar4;
 }
@@ -4673,20 +4890,22 @@ LiveStorage_FileShare_ReadRatingsCommunity
 
 TaskRecord * __cdecl
 LiveStorage_FileShare_ReadRating
-          (int param_1,dwFileShareGetRatingTask *param_2,TaskDefinition *param_3)
+          (int controllerIndex,dwFileShareGetRatingTask *ratingTask,TaskDefinition *sym)
 
 {
   bool bVar1;
   TaskRecord *pTVar2;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  GamerProfile_WriteSettings(param_1);
-  bVar1 = TaskManager2_TaskIsInProgressForController(param_3,param_1);
+  GamerProfile_WriteSettings(controllerIndex);
+  bVar1 = TaskManager2_TaskIsInProgressForController(sym,controllerIndex);
   if (bVar1) {
     pTVar2 = (TaskRecord *)0x0;
   }
   else {
-    pTVar2 = dwFileShareGetRating(param_1,param_2);
-    pTVar2 = LiveStorage_SetupNestedTask(param_3,param_1,pTVar2,param_2);
+    pTVar2 = dwFileShareGetRating(controllerIndex,ratingTask);
+    pTVar2 = LiveStorage_SetupNestedTask(sym,controllerIndex,pTVar2,ratingTask);
   }
   return pTVar2;
 }
@@ -4696,12 +4915,14 @@ LiveStorage_FileShare_ReadRating
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadRatingFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadRatingFailure(TaskRecord *task)
 
 {
+  dwFileShareGetRatingTask *ratingTask;
+  
   Com_PrintError(0x10,"\tSearch: Could not get file ratings.\n");
-  if (*(int *)((int)param_1->payload + 0x20) != 0) {
-    (**(code **)((int)param_1->payload + 0x20))();
+  if (*(int *)((int)task->payload + 0x20) != 0) {
+    (**(code **)((int)task->payload + 0x20))();
   }
   return;
 }
@@ -4711,17 +4932,18 @@ void __cdecl LiveStorage_FileShare_ReadRatingFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadRatingSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadRatingSuccess(TaskRecord *task)
 
 {
-  dwFileShareGetRatingTask *pdVar1;
-  uint uVar2;
+  dwFileShareGetRatingTask *ratingTask;
+  uint uVar1;
+  dwFileShareGetRatingTask *fsTask;
   
-  pdVar1 = param_1->payload;
-  pdVar1[1].fileIDs = pdVar1[1].fileIDs + pdVar1[1].leaderboardID * -0x19;
-  uVar2 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
-  *(uint *)pdVar1[1].maxFilesToFetch = uVar2 + pdVar1[1].leaderboardID;
-  LiveStorage_FileShare_ReadRatingSuccessAction(pdVar1);
+  ratingTask = task->payload;
+  ratingTask[1].fileIDs = ratingTask[1].fileIDs + ratingTask[1].leaderboardID * -0x19;
+  uVar1 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
+  *(uint *)ratingTask[1].maxFilesToFetch = uVar1 + ratingTask[1].leaderboardID;
+  LiveStorage_FileShare_ReadRatingSuccessAction(ratingTask);
   return;
 }
 
@@ -4730,10 +4952,10 @@ void __cdecl LiveStorage_FileShare_ReadRatingSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_ReadFileRatingSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_ReadFileRatingSuccess(TaskRecord *task)
 
 {
-  bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
   Com_Printf(0x10,"%d file ratings retrieved successfully.\n");
   return;
 }
@@ -4743,7 +4965,7 @@ void __cdecl LiveStorage_FileShare_ReadFileRatingSuccess(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteTagsFailure(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteTagsFailure(TaskRecord *task)
 
 {
   fileSharePrivateData *pfVar1;
@@ -4755,9 +4977,9 @@ void __cdecl LiveStorage_FileShare_WriteTagsFailure(TaskRecord *param_1)
   pfVar1 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
   pfVar1->valid = false;
   uVar3 = 0;
-  uVar2 = Live_GetXuid(param_1->controllerIndex);
+  uVar2 = Live_GetXuid(task->controllerIndex);
   LiveStorage_FileShare_ReadListing
-            (param_1->controllerIndex,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),unaff_EBP);
+            (task->controllerIndex,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),unaff_EBP);
   return;
 }
 
@@ -4766,7 +4988,7 @@ void __cdecl LiveStorage_FileShare_WriteTagsFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStorage_FileShare_WriteTagsSuccess(TaskRecord *param_1)
+void __cdecl LiveStorage_FileShare_WriteTagsSuccess(TaskRecord *task)
 
 {
   fileSharePrivateData *pfVar1;
@@ -4778,9 +5000,9 @@ void __cdecl LiveStorage_FileShare_WriteTagsSuccess(TaskRecord *param_1)
   pfVar1 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
   pfVar1->valid = false;
   uVar3 = 0;
-  uVar2 = Live_GetXuid(param_1->controllerIndex);
+  uVar2 = Live_GetXuid(task->controllerIndex);
   LiveStorage_FileShare_ReadListing
-            (param_1->controllerIndex,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),unaff_EBP);
+            (task->controllerIndex,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),unaff_EBP);
   return;
 }
 
@@ -4791,12 +5013,14 @@ void __cdecl LiveStorage_ListCustomGameTypesForUser_f(void)
 
 {
   fileSharePrivateData *pfVar1;
-  int local_10;
+  int i;
+  int customgametypecount;
+  fileSharePrivateData *fileShareData;
   
   pfVar1 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
   if (pfVar1->valid != false) {
-    for (local_10 = 0; local_10 < pfVar1->descriptorCount; local_10 = local_10 + 1) {
-      if (pfVar1->descriptors[local_10].m_category == 4) {
+    for (i = 0; i < pfVar1->descriptorCount; i = i + 1) {
+      if (pfVar1->descriptors[i].m_category == 4) {
         Com_Printf(0xf,"%i\t\t%s\n");
       }
     }
@@ -4806,6 +5030,8 @@ void __cdecl LiveStorage_ListCustomGameTypesForUser_f(void)
 
 
 // 00986E10  LiveStorage_WriteBackupStatsCmd  (live/live_storage.cpp:4143)
+
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl LiveStorage_WriteBackupStatsCmd(void)
 
@@ -4837,8 +5063,8 @@ void __cdecl LiveStorage_GetFriendStatsCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  long64 lVar5;
+  char *str;
+  long64 lVar4;
   undefined4 in_stack_ffffffdc;
   undefined4 local_8;
   
@@ -4854,9 +5080,9 @@ void __cdecl LiveStorage_GetFriendStatsCmd(void)
   }
   iVar3 = Cmd_Argc();
   if (iVar3 == 2) {
-    pcVar4 = Cmd_Argv(1);
-    lVar5 = I_atoi64(pcVar4);
-    local_8 = (undefined4)((ulonglong)lVar5 >> 0x20);
+    str = Cmd_Argv(1);
+    lVar4 = I_atoi64(str);
+    local_8 = (undefined4)((ulonglong)lVar4 >> 0x20);
     LiveStorage_ReadOtherPlayerStats(0,CONCAT44(in_stack_ffffffdc,local_8));
   }
   return;
@@ -4875,13 +5101,13 @@ void __cdecl LiveStorage_RestoreStatsFromBackupCmd(void)
 
 // 00986950  LiveStorage_ClearPlayerStats  (live/live_storage.cpp:4211)
 
-void __cdecl LiveStorage_ClearPlayerStats(int param_1)
+void __cdecl LiveStorage_ClearPlayerStats(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp",0x1074,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -4890,9 +5116,9 @@ void __cdecl LiveStorage_ClearPlayerStats(int param_1)
       return;
     }
   }
-  memset(controllerNetworkData + param_1 * 0x3ad90,'\0',0x3ad90);
-  *(undefined1 **)(controllerNetworkData + param_1 * 0x3ad90 + 0x3ad8c) =
-       controllerFileOps + param_1 * 0x6f58;
+  memset(controllerNetworkData + controllerIndex * 0x3ad90,'\0',0x3ad90);
+  *(undefined1 **)(controllerNetworkData + controllerIndex * 0x3ad90 + 0x3ad8c) =
+       controllerFileOps + controllerIndex * 0x6f58;
   return;
 }
 
@@ -4904,24 +5130,17 @@ void __cdecl LiveStorage_ClearPlayerStats(int param_1)
 void __cdecl LiveStorage_ResetAllFileOps(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xa20))
-    ;
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xb40))
-    ;
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xd80))
-    ;
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xea0))
-    ;
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xfc0))
-    ;
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0xc60))
-    ;
-    LiveStorage_ResetFileInfo
-              ((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58 + 0x10e0));
-    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + local_8 * 0x6f58));
+  for (i = 0; i < 1; i = i + 1) {
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xa20));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xb40));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xd80));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xea0));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xfc0));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0xc60));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58 + 0x10e0));
+    LiveStorage_ResetFileInfo((dwFileOperationInfo *)(controllerFileOps + i * 0x6f58));
   }
   return;
 }
@@ -4929,12 +5148,12 @@ void __cdecl LiveStorage_ResetAllFileOps(void)
 
 // 00986920  LiveStorage_NewUser  (live/live_storage.cpp:4247)
 
-void __cdecl LiveStorage_NewUser(int param_1)
+void __cdecl LiveStorage_NewUser(int controllerIndex)
 
 {
-  LiveStorage_ClearPlayerStats(param_1);
+  LiveStorage_ClearPlayerStats(controllerIndex);
   LiveStorage_ResetAllFileOps();
-  LiveStorage_SetAllStatsNotFetched(param_1);
+  LiveStorage_SetAllStatsNotFetched(controllerIndex);
   return;
 }
 
@@ -4965,8 +5184,8 @@ bool __cdecl LiveStorage_Init(void)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int controllerIndex_2;
+  int controllerIndex;
   
   if ((live_service->current).enabled == false) {
     bVar1 = false;
@@ -4974,11 +5193,11 @@ bool __cdecl LiveStorage_Init(void)
   else {
     LiveStats_Init();
     LiveCombatRecord_Init();
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      LiveMeetPlayer_Init(local_8);
+    for (controllerIndex = 0; controllerIndex < 1; controllerIndex = controllerIndex + 1) {
+      LiveMeetPlayer_Init(controllerIndex);
     }
-    for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-      LiveStorage_ClearPlayerStats(local_c);
+    for (controllerIndex_2 = 0; controllerIndex_2 < 1; controllerIndex_2 = controllerIndex_2 + 1) {
+      LiveStorage_ClearPlayerStats(controllerIndex_2);
     }
     Cmd_AddCommandInternal
               ("fakeComError",LiveStorage_FakeComErrorCmd,

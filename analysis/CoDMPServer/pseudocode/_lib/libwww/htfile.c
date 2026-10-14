@@ -33,9 +33,9 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
 
 {
   uint uVar1;
-  char *pcVar2;
-  int iVar3;
-  undefined4 uVar4;
+  char *first;
+  int iVar2;
+  undefined4 uVar3;
   undefined4 local_38;
   undefined4 local_34;
   undefined4 local_30;
@@ -69,12 +69,12 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
         *local_10 = -3;
       }
       else {
-        iVar3 = _HTLib_secure();
-        if (iVar3 == 0) {
-          uVar4 = _HTRequest_userProfile(local_14);
-          uVar4 = _HTAnchor_physical(local_8,"",uVar4);
-          iVar3 = _HTWWWToLocal(uVar4);
-          local_10[1] = iVar3;
+        iVar2 = _HTLib_secure();
+        if (iVar2 == 0) {
+          uVar3 = _HTRequest_userProfile(local_14);
+          uVar3 = _HTAnchor_physical(local_8,"",uVar3);
+          iVar2 = _HTWWWToLocal(uVar3);
+          local_10[1] = iVar2;
           if (local_10[1] == 0) {
             *local_10 = 6;
           }
@@ -85,8 +85,8 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
               return 0xffffffff;
             }
             _HTNet_setHost(local_c,local_1c);
-            iVar3 = _HTHost_addNet(local_1c,local_c);
-            if (iVar3 == 0x386) {
+            iVar2 = _HTHost_addNet(local_1c,local_c);
+            if (iVar2 == 0x386) {
               *local_10 = 1;
               return 0;
             }
@@ -105,18 +105,18 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
         return 0xffffffff;
       }
       _HTNet_setHost(local_c,local_20);
-      iVar3 = _HTHost_addNet(local_20,local_c);
-      if (iVar3 == 0x386) {
+      iVar2 = _HTHost_addNet(local_20,local_c);
+      if (iVar2 == 0x386) {
         *local_10 = 1;
         return 0;
       }
       *local_10 = 2;
       break;
     case 2:
-      iVar3 = _HTRequest_negotiation(local_14);
-      if ((iVar3 == 0) || (uVar1 = _HTUserProfile_tmp(local_14), (uVar1 & 3) == 0)) {
-        iVar3 = _stat64i32((char *)local_10[1],(_stat64i32 *)(local_10 + 2));
-        if (iVar3 == -1) {
+      iVar2 = _HTRequest_negotiation(local_14);
+      if ((iVar2 == 0) || (uVar1 = _HTUserProfile_tmp(local_14), (uVar1 & 3) == 0)) {
+        iVar2 = _stat64i32((char *)local_10[1],(_stat64i32 *)(local_10 + 2));
+        if (iVar2 == -1) {
           _HTRequest_addError(local_14,1,0,0x16,0,0,"HTLoadFile");
           *local_10 = -3;
           break;
@@ -135,8 +135,8 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
         _HTAnchor_setPhysical(local_8,local_24);
       }
       if ((*(ushort *)((int)local_10 + 0xe) & 0xf000) == 0x4000) {
-        iVar3 = _HTUserProfile_tmp(local_14);
-        if (iVar3 == 1) {
+        iVar2 = _HTUserProfile_tmp(local_14);
+        if (iVar2 == 1) {
           *local_10 = 5;
         }
         else {
@@ -163,39 +163,39 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
           *local_10 = -2;
         }
         else {
-          iVar3 = _HTUserProfile_tmp(local_14);
-          *local_10 = (-(uint)(iVar3 != 1) & 0xfffffffc) + 3;
+          iVar2 = _HTUserProfile_tmp(local_14);
+          *local_10 = (-(uint)(iVar2 != 1) & 0xfffffffc) + 3;
         }
       }
       break;
     case 3:
       local_18 = _HTFileOpen(local_c,local_10[1],"rb");
       if (local_18 == 0) {
-        uVar4 = _HTRequest_outputStream(local_14,local_14,1);
-        uVar4 = _HTRequest_outputFormat(local_14,uVar4);
-        uVar4 = _HTAnchor_format(local_8,uVar4);
-        local_2c = _HTStreamStack(uVar4);
+        uVar3 = _HTRequest_outputStream(local_14,local_14,1);
+        uVar3 = _HTRequest_outputFormat(local_14,uVar3);
+        uVar3 = _HTAnchor_format(local_8,uVar3);
+        local_2c = _HTStreamStack(uVar3);
         _HTNet_setReadStream(local_c,local_2c);
         _HTRequest_setOutputConnected(local_14,1);
         local_30 = _HTNet_getOutput(local_c,0,0);
         _HTRequest_setInputStream(local_14,local_30);
         if ((((local_14 != 0) && (*(int *)(local_14 + 0x10c) != 0)) &&
             (local_14 == *(int *)(local_14 + 0x10c))) &&
-           (iVar3 = _HTRequest_destinationsReady(local_14), iVar3 == 0)) {
+           (iVar2 = _HTRequest_destinationsReady(local_14), iVar2 == 0)) {
           return 0;
         }
         _HTRequest_addError(local_14,8,0,2,0,0,"HTLoadFile");
         *local_10 = 4;
-        iVar3 = _HTEvent_isCallbacksRegistered();
-        if ((iVar3 != 0) && (iVar3 = _HTNet_preemptive(local_14), iVar3 == 0)) {
-          iVar3 = _HTNet_preemptive(local_c);
-          if (iVar3 == 0) {
-            uVar4 = _HTLink_method(local_c,local_c,1);
-            _HTHost_register(uVar4);
+        iVar2 = _HTEvent_isCallbacksRegistered();
+        if ((iVar2 != 0) && (iVar2 = _HTNet_preemptive(local_14), iVar2 == 0)) {
+          iVar2 = _HTNet_preemptive(local_c);
+          if (iVar2 == 0) {
+            uVar3 = _HTLink_method(local_c,local_c,1);
+            _HTHost_register(uVar3);
           }
           else if (local_10[0xf] == 0) {
-            iVar3 = _HTTimer_new(0,FUN_00bdba90,local_10,1,1,0);
-            local_10[0xf] = iVar3;
+            iVar2 = _HTTimer_new(0,FUN_00bdba90,local_10,1,1,0);
+            local_10[0xf] = iVar2;
           }
           return 0;
         }
@@ -209,8 +209,8 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
       }
       break;
     case 4:
-      uVar4 = _HTLink_method(local_c,local_c);
-      local_18 = _HTHost_read(uVar4);
+      uVar3 = _HTLink_method(local_c,local_c);
+      local_18 = _HTHost_read(uVar3);
       if (local_18 == -0x385) {
         return 0;
       }
@@ -232,23 +232,23 @@ undefined4 FUN_00bdb1b0(undefined4 param_1,int *param_2,int param_3)
       }
       break;
     case 6:
-      pcVar2 = (char *)_HTAnchor_physical(local_8);
+      first = (char *)_HTAnchor_physical(local_8);
       local_38 = 0;
       _HTSACopy(&local_38,"ftp:");
-      iVar3 = strncmp(pcVar2,"file:",5);
-      if (iVar3 == 0) {
-        _HTSACat(&local_38,pcVar2 + 5);
+      iVar2 = strncmp(first,"file:",5);
+      if (iVar2 == 0) {
+        _HTSACat(&local_38,first + 5);
       }
       else {
-        _HTSACat(&local_38,pcVar2);
+        _HTSACat(&local_38,first);
       }
       local_34 = _HTAnchor_findAddress(local_38);
       _HTRequest_setAnchor(local_14,local_34);
       _HTMemory_free(local_38);
       local_38 = 0;
       FUN_00bdb9a0(local_14,900);
-      uVar4 = _HTLoad(local_14,1);
-      return uVar4;
+      uVar3 = _HTLoad(local_14,1);
+      return uVar3;
     case -4:
       FUN_00bdb9a0(local_14,0xfffffe09);
       return 0;

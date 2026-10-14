@@ -2,7 +2,7 @@
 
 // 00964353  _mktime64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c:57)
 
-long64 __cdecl _mktime64(tm *param_1)
+long64 __cdecl _mktime64(tm *tb)
 
 {
   int unaff_EBP;
@@ -15,7 +15,7 @@ long64 __cdecl _mktime64(tm *param_1)
 
 // 0096409E  _make__time64_t  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mktime64.c:123)
 
-long64 __cdecl _make__time64_t(tm *param_1,int param_2)
+long64 __cdecl _make__time64_t(tm *ultflag,int param_2)
 
 {
   uint *in_EAX;
@@ -23,11 +23,10 @@ long64 __cdecl _make__time64_t(tm *param_1,int param_2)
   uint uVar2;
   int extraout_EAX;
   int extraout_EAX_00;
-  int extraout_EAX_01;
+  uint extraout_EAX_01;
   uint extraout_EAX_02;
   uint extraout_EAX_03;
   uint extraout_EAX_04;
-  uint extraout_EAX_05;
   int iVar3;
   uint uVar4;
   int extraout_EDX;
@@ -36,107 +35,94 @@ long64 __cdecl _make__time64_t(tm *param_1,int param_2)
   int extraout_EDX_02;
   int extraout_EDX_03;
   int extraout_EDX_04;
-  int extraout_EDX_05;
   tm *ptVar5;
   bool bVar6;
-  tm tStack_4c;
-  int iStack_28;
-  int iStack_24;
-  uint uStack_20;
-  int iStack_1c;
-  uint uStack_18;
-  int iStack_14;
+  tm tbtemp;
+  __int64 tmptm2;
+  __int64 tmptm1;
   int iStack_10;
-  uint uStack_c;
-  uint uStack_8;
+  long dstbias;
+  long timezone;
   
-  uStack_c = 0;
-  uStack_8 = 0;
+  dstbias = 0;
+  timezone = 0;
   if (in_EAX == (uint *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    iStack_14 = -1;
-    uStack_18 = 0xffffffff;
+    tmptm1._4_4_ = -1;
+    tmptm1._0_4_ = 0xffffffff;
     goto LAB_0096434f;
   }
-  uStack_18 = in_EAX[5];
-  iStack_14 = (int)uStack_18 >> 0x1f;
-  if ((iStack_14 + -1 + (uint)(0x44 < uStack_18) == 0) && (uStack_18 - 0x45 < 0x409)) {
+  tmptm1._0_4_ = in_EAX[5];
+  tmptm1._4_4_ = (int)(uint)tmptm1 >> 0x1f;
+  if ((tmptm1._4_4_ + -1 + (uint)(0x44 < (uint)tmptm1) == 0) && ((uint)tmptm1 - 0x45 < 0x409)) {
     uVar4 = in_EAX[4];
     if (((int)uVar4 < 0) || (0xb < (int)uVar4)) {
       uVar2 = (int)uVar4 / 0xc;
       uVar4 = (int)uVar4 % 0xc;
-      bVar6 = CARRY4(uStack_18,uVar2);
-      uStack_18 = uStack_18 + uVar2;
+      bVar6 = CARRY4((uint)tmptm1,uVar2);
+      tmptm1._0_4_ = (uint)tmptm1 + uVar2;
       in_EAX[4] = uVar4;
-      iStack_14 = iStack_14 + ((int)uVar2 >> 0x1f) + (uint)bVar6;
+      tmptm1._4_4_ = tmptm1._4_4_ + ((int)uVar2 >> 0x1f) + (uint)bVar6;
       if ((int)uVar4 < 0) {
-        bVar6 = uStack_18 != 0;
-        uStack_18 = uStack_18 - 1;
+        bVar6 = (uint)tmptm1 != 0;
+        tmptm1._0_4_ = (uint)tmptm1 - 1;
         in_EAX[4] = uVar4 + 0xc;
-        iStack_14 = iStack_14 + -1 + (uint)bVar6;
+        tmptm1._4_4_ = tmptm1._4_4_ + -1 + (uint)bVar6;
       }
-      if ((iStack_14 + -1 + (uint)(0x44 < uStack_18) != 0) || (0x408 < uStack_18 - 0x45))
+      if ((tmptm1._4_4_ + -1 + (uint)(0x44 < (uint)tmptm1) != 0) || (0x408 < (uint)tmptm1 - 0x45))
       goto LAB_0096433e;
     }
-    uVar4 = in_EAX[4];
-    uStack_20 = *(uint *)(&_days + uVar4 * 4);
-    iStack_1c = (int)uStack_20 >> 0x1f;
     _allrem();
-    if ((((extraout_EAX == 0 && extraout_EDX == 0) &&
-         (_allrem(), extraout_EAX_00 != 0 || extraout_EDX_00 != 0)) ||
-        (_allrem(), extraout_EAX_01 == 0 && extraout_EDX_01 == 0)) && (1 < (int)uVar4)) {
-      bVar6 = 0xfffffffe < uStack_20;
-      uStack_20 = uStack_20 + 1;
-      iStack_1c = iStack_1c + (uint)bVar6;
+    if ((extraout_EAX != 0 || extraout_EDX != 0) ||
+       (_allrem(), extraout_EAX_00 == 0 && extraout_EDX_00 == 0)) {
+      _allrem();
     }
-    iStack_28 = uStack_18 - 1;
-    iStack_24 = iStack_14 - (uint)(uStack_18 == 0);
     _alldiv();
     uVar4 = in_EAX[3];
-    iStack_10 = extraout_EDX_02 + ((int)uVar4 >> 0x1f) + (uint)CARRY4(extraout_EAX_02,uVar4);
+    iStack_10 = extraout_EDX_01 + ((int)uVar4 >> 0x1f) + (uint)CARRY4(extraout_EAX_01,uVar4);
     _alldiv();
-    iStack_10 = (iStack_10 - extraout_EDX_03) - (uint)(extraout_EAX_02 + uVar4 < extraout_EAX_03);
+    iStack_10 = (iStack_10 - extraout_EDX_02) - (uint)(extraout_EAX_01 + uVar4 < extraout_EAX_02);
     _alldiv();
-    iStack_10 = iStack_10 + extraout_EDX_04 +
-                (uint)CARRY4((extraout_EAX_02 + uVar4) - extraout_EAX_03,extraout_EAX_04);
+    iStack_10 = iStack_10 + extraout_EDX_03 +
+                (uint)CARRY4((extraout_EAX_01 + uVar4) - extraout_EAX_02,extraout_EAX_03);
     _allmul();
     _allmul();
     _allmul();
     _allmul();
     uVar4 = *in_EAX;
-    uStack_18 = uVar4 + extraout_EAX_05;
-    iStack_14 = ((int)uVar4 >> 0x1f) + extraout_EDX_05 + (uint)CARRY4(uVar4,extraout_EAX_05);
-    if (param_1 == (tm *)0x0) {
-      iVar3 = _gmtime64_s(&tStack_4c,(long64 *)&uStack_18);
+    tmptm1._0_4_ = uVar4 + extraout_EAX_04;
+    tmptm1._4_4_ = ((int)uVar4 >> 0x1f) + extraout_EDX_04 + (uint)CARRY4(uVar4,extraout_EAX_04);
+    if (ultflag == (tm *)0x0) {
+      iVar3 = _gmtime64_s(&tbtemp,&tmptm1);
 LAB_00964328:
       if (iVar3 != 0) goto LAB_0096433e;
     }
     else {
       __tzset();
-      iVar3 = _get_dstbias((long *)&uStack_c);
+      iVar3 = _get_dstbias(&dstbias);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      iVar3 = _get_timezone((long *)&uStack_8);
+      iVar3 = _get_timezone(&timezone);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      bVar6 = CARRY4(uStack_18,uStack_8);
-      uStack_18 = uStack_18 + uStack_8;
-      iStack_14 = iStack_14 + ((int)uStack_8 >> 0x1f) + (uint)bVar6;
-      iVar3 = _localtime64_s(&tStack_4c,(long64 *)&uStack_18);
+      bVar6 = CARRY4((uint)tmptm1,timezone);
+      tmptm1._0_4_ = (uint)tmptm1 + timezone;
+      tmptm1._4_4_ = tmptm1._4_4_ + (timezone >> 0x1f) + (uint)bVar6;
+      iVar3 = _localtime64_s(&tbtemp,&tmptm1);
       if (iVar3 != 0) goto LAB_0096433e;
-      if ((0 < (int)in_EAX[8]) || (((int)in_EAX[8] < 0 && (0 < tStack_4c.tm_isdst)))) {
-        bVar6 = CARRY4(uStack_18,uStack_c);
-        uStack_18 = uStack_18 + uStack_c;
-        iStack_14 = iStack_14 + ((int)uStack_c >> 0x1f) + (uint)bVar6;
-        iVar3 = _localtime64_s(&tStack_4c,(long64 *)&uStack_18);
+      if ((0 < (int)in_EAX[8]) || (((int)in_EAX[8] < 0 && (0 < tbtemp.tm_isdst)))) {
+        bVar6 = CARRY4((uint)tmptm1,dstbias);
+        tmptm1._0_4_ = (uint)tmptm1 + dstbias;
+        tmptm1._4_4_ = tmptm1._4_4_ + (dstbias >> 0x1f) + (uint)bVar6;
+        iVar3 = _localtime64_s(&tbtemp,&tmptm1);
         goto LAB_00964328;
       }
     }
-    ptVar5 = &tStack_4c;
+    ptVar5 = &tbtemp;
     for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
       *in_EAX = ptVar5->tm_sec;
       ptVar5 = (tm *)&ptVar5->tm_min;
@@ -146,11 +132,11 @@ LAB_00964328:
   else {
 LAB_0096433e:
     piVar1 = _errno();
-    iStack_14 = -1;
+    tmptm1._4_4_ = -1;
     *piVar1 = 0x16;
-    uStack_18 = 0xffffffff;
+    tmptm1._0_4_ = 0xffffffff;
   }
 LAB_0096434f:
-  return CONCAT44(iStack_14,uStack_18);
+  return CONCAT44(tmptm1._4_4_,(uint)tmptm1);
 }
 

@@ -2,20 +2,20 @@
 
 // 00B13A60  R_InitDrawSurfListInfo  (gfx_d3d/r_pretess.cpp:229)
 
-void __cdecl R_InitDrawSurfListInfo(GfxDrawSurfListInfo *param_1)
+void __cdecl R_InitDrawSurfListInfo(GfxDrawSurfListInfo *info)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int n;
   
-  local_8 = 0;
+  n = 0;
   do {
-    if (2 < local_8) {
-      memset((uchar *)param_1,'\0',0x50);
+    if (2 < n) {
+      memset((uchar *)info,'\0',0x50);
       return;
     }
-    if (param_1->group[local_8].field0_0x0._s_0.QueuedBatchCount != 0) {
+    if (info->group[n].field0_0x0._s_0.QueuedBatchCount != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",0xe8,0,
                                "%s");
       if (!bVar2) {
@@ -24,32 +24,33 @@ void __cdecl R_InitDrawSurfListInfo(GfxDrawSurfListInfo *param_1)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    n = n + 1;
   } while( true );
 }
 
 
 // 00B13AD0  R_EmitDrawSurfList  (gfx_d3d/r_pretess.cpp:269)
 
-void __cdecl R_EmitDrawSurfList(GfxDrawSurf *param_1,uint param_2,GfxBackEndData *param_3)
+void __cdecl R_EmitDrawSurfList(GfxDrawSurf *drawSurfs,uint drawSurfCount,GfxBackEndData *data)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int newDrawSurfCount;
   
-  if ((param_1 == (GfxDrawSurf *)0x0) &&
+  if ((drawSurfs == (GfxDrawSurf *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",0x112,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != 0) {
-    iVar3 = param_3->drawSurfCount + param_2;
+  if (drawSurfCount != 0) {
+    iVar3 = data->drawSurfCount + drawSurfCount;
     if (iVar3 < 0x8001) {
-      Com_Memcpy(param_3->drawSurfs + param_3->drawSurfCount,param_1,param_2 << 3);
-      param_3->drawSurfCount = iVar3;
+      Com_Memcpy(data->drawSurfs + data->drawSurfCount,drawSurfs,drawSurfCount << 3);
+      data->drawSurfCount = iVar3;
     }
     else {
       R_WarnOncePerFrame(R_WARN_MAX_DRAWSURFS);
@@ -61,44 +62,44 @@ void __cdecl R_EmitDrawSurfList(GfxDrawSurf *param_1,uint param_2,GfxBackEndData
 
 // 00B13F40  R_GetKeyCount  (gfx_d3d/r_pretess.cpp:298)
 
-uint __cdecl R_GetKeyCount(GfxDrawSurf *param_1,uint param_2,uint param_3)
+uint __cdecl R_GetKeyCount(GfxDrawSurf *drawSurfs,uint drawSurfCount,uint primarySortKey)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   uint extraout_EAX;
-  uint local_8;
+  uint usedCount;
   
-  if ((param_1 == (GfxDrawSurf *)0x0) &&
+  if ((drawSurfs == (GfxDrawSurf *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",299,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_2 == 0) &&
+  if ((drawSurfCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",300,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_8 = 0;
+  usedCount = 0;
   do {
     _aullshr();
-    if ((extraout_EAX & 0x3f) != param_3) {
-      return local_8;
+    if ((extraout_EAX & 0x3f) != primarySortKey) {
+      return usedCount;
     }
-    local_8 = local_8 + 1;
-  } while (local_8 < param_2);
-  return local_8;
+    usedCount = usedCount + 1;
+  } while (usedCount < drawSurfCount);
+  return usedCount;
 }
 
 
 // 00B13B70  R_MergeAndEmitDrawSurfLists  (gfx_d3d/r_pretess.cpp:319)
 
-void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndData *param_3)
+void __cdecl R_MergeAndEmitDrawSurfLists(uint firstStage,uint stageCount,GfxBackEndData *data)
 
 {
   code *pcVar1;
@@ -107,19 +108,21 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
   DWORD DVar4;
   uint extraout_EAX;
   uint extraout_EAX_00;
-  uint uVar5;
-  int iVar6;
+  uint drawSurfCount_00;
+  int iVar5;
   uint local_184;
-  uint local_160;
-  int local_15c;
-  uint local_154;
-  uint local_150;
-  GfxDrawSurf *local_14c [41];
-  uint local_a8;
-  uint local_a4 [40];
+  uint usedCount;
+  uint srcStageIndex;
+  int freeDrawSurfCount;
+  PIXProfile pixProfile;
+  uint stageIndex;
+  uint primarySortKey;
+  GfxDrawSurf *drawSurfs [41];
+  uint dstStageIndex;
+  uint drawSurfCount [40];
   
   PIXBeginNamedEvent(-1,"R_MergeAndEmitDrawSurfLists");
-  if (((param_2 == 0) || (0x27 < param_2)) &&
+  if (((stageCount == 0) || (0x27 < stageCount)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",0x149,0,
                                "stageCount not in [1, DRAW_SURF_TYPE_COUNT]\n\t%i not in [%i, %i]"),
      !bVar3)) {
@@ -127,31 +130,31 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
     (*pcVar1)();
     return;
   }
-  local_15c = 0x8000 - param_3->drawSurfCount;
-  if (local_15c < 1) {
+  freeDrawSurfCount = 0x8000 - data->drawSurfCount;
+  if (freeDrawSurfCount < 1) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    local_a8 = 0;
-    for (local_160 = 0; local_160 < param_2; local_160 = local_160 + 1) {
-      iVar6 = param_1 + local_160;
-      if (local_15c < scene.drawSurfCount[iVar6]) {
-        scene.drawSurfCount[iVar6] = local_15c;
+    dstStageIndex = 0;
+    for (srcStageIndex = 0; srcStageIndex < stageCount; srcStageIndex = srcStageIndex + 1) {
+      iVar5 = firstStage + srcStageIndex;
+      if (freeDrawSurfCount < scene.drawSurfCount[iVar5]) {
+        scene.drawSurfCount[iVar5] = freeDrawSurfCount;
         R_WarnOncePerFrame(R_WARN_MAX_DRAWSURFS);
       }
-      if (scene.drawSurfCount[iVar6] != 0) {
-        local_15c = local_15c - scene.drawSurfCount[iVar6];
-        local_a4[local_a8] = scene.drawSurfCount[iVar6];
-        local_14c[local_a8] = scene.drawSurfs[iVar6];
-        local_a8 = local_a8 + 1;
+      if (scene.drawSurfCount[iVar5] != 0) {
+        freeDrawSurfCount = freeDrawSurfCount - scene.drawSurfCount[iVar5];
+        drawSurfCount[dstStageIndex] = scene.drawSurfCount[iVar5];
+        drawSurfs[dstStageIndex] = scene.drawSurfs[iVar5];
+        dstStageIndex = dstStageIndex + 1;
       }
     }
-    while (uVar2 = local_a8, local_a8 != 0) {
-      if (local_a8 == 1) {
-        R_EmitDrawSurfList(local_14c[0],local_a4[0],param_3);
+    while (uVar2 = dstStageIndex, dstStageIndex != 0) {
+      if (dstStageIndex == 1) {
+        R_EmitDrawSurfList(drawSurfs[0],drawSurfCount[0],data);
         DVar4 = GetCurrentThreadId();
         if (DVar4 != (DWORD)g_DXDeviceThread) {
           return;
@@ -163,22 +166,23 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
         return;
       }
       _aullshr();
-      local_150 = extraout_EAX & 0x3f;
-      for (local_154 = 1; local_154 < uVar2; local_154 = local_154 + 1) {
+      primarySortKey = extraout_EAX & 0x3f;
+      for (stageIndex = 1; stageIndex < uVar2; stageIndex = stageIndex + 1) {
         _aullshr();
         local_184 = extraout_EAX_00 & 0x3f;
-        if (local_150 <= local_184) {
-          local_184 = local_150;
+        if (primarySortKey <= local_184) {
+          local_184 = primarySortKey;
         }
-        local_150 = local_184;
+        primarySortKey = local_184;
       }
-      local_a8 = 0;
-      for (local_160 = 0; local_160 < uVar2; local_160 = local_160 + 1) {
-        uVar5 = R_GetKeyCount(local_14c[local_160],local_a4[local_160],local_150);
-        R_EmitDrawSurfList(local_14c[local_160],uVar5,param_3);
-        local_14c[local_a8] = local_14c[local_160] + uVar5;
-        local_a4[local_a8] = local_a4[local_160] - uVar5;
-        local_a8 = (local_a4[local_a8] != 0) + local_a8;
+      dstStageIndex = 0;
+      for (srcStageIndex = 0; srcStageIndex < uVar2; srcStageIndex = srcStageIndex + 1) {
+        drawSurfCount_00 =
+             R_GetKeyCount(drawSurfs[srcStageIndex],drawSurfCount[srcStageIndex],primarySortKey);
+        R_EmitDrawSurfList(drawSurfs[srcStageIndex],drawSurfCount_00,data);
+        drawSurfs[dstStageIndex] = drawSurfs[srcStageIndex] + drawSurfCount_00;
+        drawSurfCount[dstStageIndex] = drawSurfCount[srcStageIndex] - drawSurfCount_00;
+        dstStageIndex = (drawSurfCount[dstStageIndex] != 0) + dstStageIndex;
       }
     }
     DVar4 = GetCurrentThreadId();
@@ -192,12 +196,13 @@ void __cdecl R_MergeAndEmitDrawSurfLists(uint param_1,uint param_2,GfxBackEndDat
 
 // 00B14010  R_BeginPreTess  (gfx_d3d/r_pretess.cpp:394)
 
-void __cdecl R_BeginPreTess(bool param_1)
+void __cdecl R_BeginPreTess(bool lockBuffer)
 
 {
   int iVar1;
+  int semaphore;
   
-  if (param_1) {
+  if (lockBuffer) {
     while ((*frontEndDataOut->dynamicBufferCurrentFrame != 0 &&
            (*frontEndDataOut->dynamicBufferCurrentFrame < frontEndDataOut->frameCount))) {
       iVar1 = R_ReleaseDXDeviceOwnership();
@@ -214,18 +219,19 @@ void __cdecl R_BeginPreTess(bool param_1)
 
 // 00B14090  R_AllocPreTessIndices  (gfx_d3d/r_pretess.cpp:461)
 
-ushort * __cdecl R_AllocPreTessIndices(int param_1)
+ushort * __cdecl R_AllocPreTessIndices(int count)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort *puVar3;
+  ushort *indices;
   
   if ((gfxBuf.preTessIndexBuffer)->indices == (ushort *)0x0) {
     puVar3 = (ushort *)0x0;
   }
   else {
-    if (param_1 == 0) {
+    if (count == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_pretess.cpp",0x1d6,0,
                                "%s");
       if (!bVar2) {
@@ -234,12 +240,12 @@ ushort * __cdecl R_AllocPreTessIndices(int param_1)
         return puVar3;
       }
     }
-    if ((gfxBuf.preTessIndexBuffer)->total < (gfxBuf.preTessIndexBuffer)->used + param_1) {
+    if ((gfxBuf.preTessIndexBuffer)->total < (gfxBuf.preTessIndexBuffer)->used + count) {
       puVar3 = (ushort *)0x0;
     }
     else {
       puVar3 = (gfxBuf.preTessIndexBuffer)->indices + (gfxBuf.preTessIndexBuffer)->used;
-      (gfxBuf.preTessIndexBuffer)->used = (gfxBuf.preTessIndexBuffer)->used + param_1;
+      (gfxBuf.preTessIndexBuffer)->used = (gfxBuf.preTessIndexBuffer)->used + count;
     }
   }
   return puVar3;

@@ -6,34 +6,35 @@ void __cdecl CGScr_LoadAnimTrees(void)
 
 {
   byte bVar1;
-  byte *pbVar2;
-  bool bVar3;
+  byte *filename;
+  bool bVar2;
   int local_1c;
   byte *local_14;
   byte *local_10;
-  int local_c;
+  int i;
+  char *string;
   
   Scr_BeginLoadAnimTrees(SCRIPTINSTANCE_SERVER,0);
-  local_c = 0xcac;
+  i = 0xcac;
   do {
-    if (0xcbb < local_c) {
+    if (0xcbb < i) {
       return;
     }
-    pbVar2 = (byte *)CL_GetConfigString(local_c);
-    if (*pbVar2 != 0) {
+    filename = (byte *)CL_GetConfigString(i);
+    if (*filename != 0) {
       local_14 = (byte *)0xc5db58;
-      local_10 = pbVar2;
+      local_10 = filename;
       do {
         bVar1 = *local_14;
-        bVar3 = bVar1 < *local_10;
+        bVar2 = bVar1 < *local_10;
         if (bVar1 != *local_10) {
 LAB_004770e4:
-          local_1c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+          local_1c = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
           goto LAB_004770ec;
         }
         if (bVar1 == 0) break;
         bVar1 = local_14[1];
-        bVar3 = bVar1 < local_10[1];
+        bVar2 = bVar1 < local_10[1];
         if (bVar1 != local_10[1]) goto LAB_004770e4;
         local_14 = local_14 + 2;
         local_10 = local_10 + 2;
@@ -41,24 +42,29 @@ LAB_004770e4:
       local_1c = 0;
 LAB_004770ec:
       if (local_1c != 0) {
-        Scr_ClientUsingTree(SCRIPTINSTANCE_SERVER,(char *)pbVar2);
+        Scr_ClientUsingTree(SCRIPTINSTANCE_SERVER,(char *)filename);
         Scr_PrecacheAnimTrees(SCRIPTINSTANCE_SERVER,Hunk_AllocXAnimCreate,0,true);
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00477150  CG_FreeClientDObjInfo  (cgame_mp/cg_animtree_mp.cpp:56)
 
-void __cdecl CG_FreeClientDObjInfo(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_FreeClientDObjInfo(int localClientNum)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    CG_SafeDObjFree(param_1,local_8);
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    CG_SafeDObjFree(localClientNum,i);
   }
   return;
 }
@@ -71,14 +77,15 @@ void __cdecl CG_FreeClientDObjInfo(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetDObjInfo(int param_1,int param_2,int param_3,XModel *param_4)
+void __cdecl CG_SetDObjInfo(int localClientNum,int iEntNum,int iEntType,XModel *pXModel)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  pcVar1->iEntityLastType[param_2] = param_3;
-  pcVar1->pEntityLastXModel[param_2] = param_4;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar1->iEntityLastType[iEntNum] = iEntType;
+  pcVar1->pEntityLastXModel[iEntNum] = pXModel;
   return;
 }
 
@@ -90,15 +97,16 @@ void __cdecl CG_SetDObjInfo(int param_1,int param_2,int param_3,XModel *param_4)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_CheckDObjInfoMatches(int param_1,int param_2,int param_3,XModel *param_4)
+int __cdecl CG_CheckDObjInfoMatches(int localClientNum,int iEntNum,int iEntType,XModel *pXModel)
 
 {
   cg_s *pcVar1;
   int iVar2;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  if ((pcVar1->iEntityLastType[param_2] == param_3) &&
-     (pcVar1->pEntityLastXModel[param_2] == param_4)) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if ((pcVar1->iEntityLastType[iEntNum] == iEntType) &&
+     (pcVar1->pEntityLastXModel[iEntNum] == pXModel)) {
     iVar2 = 1;
   }
   else {
@@ -115,15 +123,16 @@ int __cdecl CG_CheckDObjInfoMatches(int param_1,int param_2,int param_3,XModel *
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SafeDObjFree(int param_1,int param_2)
+void __cdecl CG_SafeDObjFree(int localClientNum,int entIndex)
 
 {
   centity_s *pcVar1;
+  centity_s *cent;
   
-  Com_SafeClientDObjFree(param_2,param_1);
-  CG_SetDObjInfo(param_1,param_2,0,(XModel *)0x0);
-  pcVar1 = CG_GetEntity(param_1,param_2);
-  if ((pcVar1->tree != (XAnimTree_s *)0x0) && (0x1f < param_2)) {
+  Com_SafeClientDObjFree(entIndex,localClientNum);
+  CG_SetDObjInfo(localClientNum,entIndex,0,(XModel *)0x0);
+  pcVar1 = CG_GetEntity(localClientNum,entIndex);
+  if ((pcVar1->tree != (XAnimTree_s *)0x0) && (0x1f < entIndex)) {
     XAnimFreeTree(pcVar1->tree,MT_Free,SCRIPTINSTANCE_SERVER);
     pcVar1->tree = (XAnimTree_s *)0x0;
   }
@@ -133,13 +142,18 @@ void __cdecl CG_SafeDObjFree(int param_1,int param_2)
 
 // 004772A0  CG_FreeEntityDObjInfo  (cgame_mp/cg_animtree_mp.cpp:134)
 
-void __cdecl CG_FreeEntityDObjInfo(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_FreeEntityDObjInfo(int localClientNum)
 
 {
-  undefined4 local_8;
+  int i;
   
-  for (local_8 = 0x20; local_8 < 0x400; local_8 = local_8 + 1) {
-    CG_SafeDObjFree(param_1,local_8);
+  for (i = 0x20; i < 0x400; i = i + 1) {
+    CG_SafeDObjFree(localClientNum,i);
   }
   return;
 }
@@ -147,12 +161,12 @@ void __cdecl CG_FreeEntityDObjInfo(int param_1)
 
 // 00477130  Hunk_AllocXAnimCreate  (cgame_mp/cg_main_mp.cpp:2344)
 
-void * __cdecl Hunk_AllocXAnimCreate(int param_1)
+void * __cdecl Hunk_AllocXAnimCreate(int size_2)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocLow(param_1,"XAnimCreateAnims",0xd);
+  pvVar1 = Hunk_AllocLow(size_2,"XAnimCreateAnims",0xd);
   return pvVar1;
 }
 

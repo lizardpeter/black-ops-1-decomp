@@ -2,77 +2,78 @@
 
 // 0088E3C0  Flame_Cull_Stream_Chunk  (flame/flame_cull.cpp:7)
 
-void __cdecl Flame_Cull_Stream_Chunk(bool param_1,flameChunk_s *param_2,flameChunk_s *param_3)
+void __cdecl Flame_Cull_Stream_Chunk(bool is_server,flameChunk_s *cull,flameChunk_s *keep)
 
 {
-  if ((param_2->spawnSmokeInterval != 0) && (param_3->spawnSmokeInterval == 0)) {
-    param_3->spawnSmokeInterval = param_2->spawnSmokeInterval;
+  if ((cull->spawnSmokeInterval != 0) && (keep->spawnSmokeInterval == 0)) {
+    keep->spawnSmokeInterval = cull->spawnSmokeInterval;
   }
-  if ((param_2->spawnDripsInterval != 0) && (param_3->spawnDripsInterval == 0)) {
-    param_3->spawnDripsInterval = param_2->spawnDripsInterval;
+  if ((cull->spawnDripsInterval != 0) && (keep->spawnDripsInterval == 0)) {
+    keep->spawnDripsInterval = cull->spawnDripsInterval;
   }
-  Flame_Class_Chunk_Free(param_1,param_2);
+  Flame_Class_Chunk_Free(is_server,cull);
   return;
 }
 
 
 // 0088E420  Flame_Cull_Stream_Chunks  (flame/flame_cull.cpp:22)
 
-void __cdecl Flame_Cull_Stream_Chunks(bool param_1,flameStream_s *param_2)
+void __cdecl Flame_Cull_Stream_Chunks(bool is_server,flameStream_s *stream)
 
 {
   flameSize_t *pfVar1;
   float fVar2;
-  float local_2c;
+  float thisEndOrg;
   float local_28;
   float local_24;
-  float local_20;
+  float nextEndOrg;
   float local_1c;
   float local_18;
-  flameChunk_s *local_14;
-  int local_10;
-  flameChunk_s *local_c;
-  float local_8;
+  flameChunk_s *thisChunk;
+  int lifeFrac;
+  flameChunk_s *nextChunk;
+  float cullDist;
   
-  local_c = param_2->chunkList;
+  nextChunk = stream->chunkList;
 LAB_0088e42f:
-  local_14 = local_c;
-  if (local_14 == (flameChunk_s *)0x0) {
+  thisChunk = nextChunk;
+  if (thisChunk == (flameChunk_s *)0x0) {
     return;
   }
-  local_c = (flameChunk_s *)(local_14->gen).listLocal.next;
-  local_10 = (local_14->gen).age.lastUpdateTime - (local_14->gen).age.startTime;
-  if (local_c != (flameChunk_s *)0x0) goto code_r0x0088e45b;
+  nextChunk = (flameChunk_s *)(thisChunk->gen).listLocal.next;
+  lifeFrac = (thisChunk->gen).age.lastUpdateTime - (thisChunk->gen).age.startTime;
+  if (nextChunk != (flameChunk_s *)0x0) goto code_r0x0088e45b;
   goto LAB_0088e610;
 code_r0x0088e45b:
-  if ((param_2->flameVars->flameVar_streamChunkCullMinLife * 1000.0 <= (float)local_10) &&
-     ((float)local_10 <= param_2->flameVars->flameVar_streamChunkCullMaxLife * 1000.0)) {
-    local_8 = (local_14->gen).size.current *
-              param_2->flameVars->flameVar_streamChunkCullDistSizeFrac;
-    fVar2 = (float)((local_14->gen).age.endTime - (local_14->gen).age.lastUpdateTime);
-    local_2c = fVar2 * (local_14->gen).phys.velocity[0] + (local_14->gen).phys.origin[0];
-    local_28 = fVar2 * (local_14->gen).phys.velocity[1] + (local_14->gen).phys.origin[1];
-    local_24 = fVar2 * (local_14->gen).phys.velocity[2] + (local_14->gen).phys.origin[2];
-    fVar2 = (float)((local_c->gen).age.endTime - (local_c->gen).age.lastUpdateTime);
-    local_20 = fVar2 * (local_c->gen).phys.velocity[0] + (local_c->gen).phys.origin[0];
-    local_1c = fVar2 * (local_c->gen).phys.velocity[1] + (local_c->gen).phys.origin[1];
-    local_18 = fVar2 * (local_c->gen).phys.velocity[2] + (local_c->gen).phys.origin[2];
-    fVar2 = Vec3DistanceSq(&local_20,&local_2c);
-    if ((fVar2 < local_8 * local_8) &&
-       (fVar2 = Vec3DistanceSq((float *)local_c,(float *)local_14), fVar2 < local_8 * local_8)) {
-      fVar2 = (local_c->gen).size.current;
-      pfVar1 = &(local_14->gen).size;
+  if ((stream->flameVars->flameVar_streamChunkCullMinLife * 1000.0 <= (float)lifeFrac) &&
+     ((float)lifeFrac <= stream->flameVars->flameVar_streamChunkCullMaxLife * 1000.0)) {
+    cullDist = (thisChunk->gen).size.current *
+               stream->flameVars->flameVar_streamChunkCullDistSizeFrac;
+    fVar2 = (float)((thisChunk->gen).age.endTime - (thisChunk->gen).age.lastUpdateTime);
+    thisEndOrg = fVar2 * (thisChunk->gen).phys.velocity[0] + (thisChunk->gen).phys.origin[0];
+    local_28 = fVar2 * (thisChunk->gen).phys.velocity[1] + (thisChunk->gen).phys.origin[1];
+    local_24 = fVar2 * (thisChunk->gen).phys.velocity[2] + (thisChunk->gen).phys.origin[2];
+    fVar2 = (float)((nextChunk->gen).age.endTime - (nextChunk->gen).age.lastUpdateTime);
+    nextEndOrg = fVar2 * (nextChunk->gen).phys.velocity[0] + (nextChunk->gen).phys.origin[0];
+    local_1c = fVar2 * (nextChunk->gen).phys.velocity[1] + (nextChunk->gen).phys.origin[1];
+    local_18 = fVar2 * (nextChunk->gen).phys.velocity[2] + (nextChunk->gen).phys.origin[2];
+    fVar2 = Vec3DistanceSq(&nextEndOrg,&thisEndOrg);
+    if ((fVar2 < cullDist * cullDist) &&
+       (fVar2 = Vec3DistanceSq((float *)nextChunk,(float *)thisChunk), fVar2 < cullDist * cullDist))
+    {
+      fVar2 = (nextChunk->gen).size.current;
+      pfVar1 = &(thisChunk->gen).size;
       if (fVar2 < pfVar1->current || fVar2 == pfVar1->current) {
-        Flame_Cull_Stream_Chunk(param_1,local_c,local_14);
-        local_c = (flameChunk_s *)(local_14->gen).listLocal.next;
+        Flame_Cull_Stream_Chunk(is_server,nextChunk,thisChunk);
+        nextChunk = (flameChunk_s *)(thisChunk->gen).listLocal.next;
       }
       else {
-        Flame_Cull_Stream_Chunk(param_1,local_14,local_c);
+        Flame_Cull_Stream_Chunk(is_server,thisChunk,nextChunk);
       }
     }
 LAB_0088e610:
-    local_14 = local_c;
-    local_c = local_14;
+    thisChunk = nextChunk;
+    nextChunk = thisChunk;
   }
   goto LAB_0088e42f;
 }

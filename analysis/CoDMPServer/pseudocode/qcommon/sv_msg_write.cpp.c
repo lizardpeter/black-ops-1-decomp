@@ -35,23 +35,27 @@ void __cdecl TRACK_msg(void)
 
 // 006EE1A0  MSG_LoopThroughFields  (qcommon/sv_msg_write.cpp:190)
 
-void __cdecl MSG_LoopThroughFields(NetFieldList *param_1)
+void __cdecl MSG_LoopThroughFields(NetFieldList *fieldToCheck)
 
 {
   int iVar1;
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_20;
-  uint local_c;
-  uint local_8;
+  uint i;
+  int jend;
+  int kend;
+  int kstart;
+  int jstart;
+  uint k;
+  uint j;
   
-  for (local_8 = 0; local_c = local_8, local_8 < param_1->count - 1; local_8 = local_8 + 1) {
-    while (local_c = local_c + 1, local_c < param_1->count) {
-      iVar1 = param_1->array[local_8].offset;
-      iVar2 = param_1->array[local_c].offset;
-      if (((iVar2 <= iVar1) || (iVar2 < iVar1 + param_1->array[local_8].size)) &&
-         ((iVar1 <= iVar2 || (iVar1 < iVar2 + param_1->array[local_c].size)))) {
+  for (j = 0; k = j, j < fieldToCheck->count - 1; j = j + 1) {
+    while (k = k + 1, k < fieldToCheck->count) {
+      iVar1 = fieldToCheck->array[j].offset;
+      iVar2 = fieldToCheck->array[k].offset;
+      if (((iVar2 <= iVar1) || (iVar2 < iVar1 + fieldToCheck->array[j].size)) &&
+         ((iVar1 <= iVar2 || (iVar1 < iVar2 + fieldToCheck->array[k].size)))) {
         Com_Printf(0xf,
                    " Overlapping netfields - EntityField %s : NetField ID#%d - %s (%d:%d)  overlaps to NetField ID#%d - %s (%d:%d)\n"
                   );
@@ -65,23 +69,23 @@ void __cdecl MSG_LoopThroughFields(NetFieldList *param_1)
       }
     }
   }
-  local_20 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->count <= local_20) {
+    if (fieldToCheck->count <= i) {
       return;
     }
-    if (((0 < param_1->array[local_20].bits) &&
-        (param_1->array[local_20].size * 8 < param_1->array[local_20].bits)) &&
+    if (((0 < fieldToCheck->array[i].bits) &&
+        (fieldToCheck->array[i].size * 8 < fieldToCheck->array[i].bits)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xd9
                                  ,0,"%s"), !bVar4)) break;
-    if (((param_1->array[local_20].size < 1) || (4 < param_1->array[local_20].size)) &&
+    if (((fieldToCheck->array[i].size < 1) || (4 < fieldToCheck->array[i].size)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xda
                                  ,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -94,14 +98,14 @@ void __cdecl MSG_LoopThroughFields(NetFieldList *param_1)
 void __cdecl MSG_CheckForDuplicateOffsets(void)
 
 {
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x16; local_8 = local_8 + 1) {
-    MSG_LoopThroughFields(s_entityNetFieldList + local_8);
+  for (i = 0; i < 0x16; i = i + 1) {
+    MSG_LoopThroughFields(s_entityNetFieldList + i);
   }
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    MSG_LoopThroughFields(s_otherNetFieldList + local_c);
+  for (i_2 = 0; i_2 < 6; i_2 = i_2 + 1) {
+    MSG_LoopThroughFields(s_otherNetFieldList + i_2);
   }
   return;
 }
@@ -109,7 +113,7 @@ void __cdecl MSG_CheckForDuplicateOffsets(void)
 
 // 006EE0D0  MSG_GetStateFieldListForEntityType  (qcommon/sv_msg_write.cpp:236)
 
-NetFieldList * __cdecl MSG_GetStateFieldListForEntityType(int param_1,bool param_2)
+NetFieldList * __cdecl MSG_GetStateFieldListForEntityType(int eType,bool isDemoSnapshot)
 
 {
   NetFieldList *pNVar1;
@@ -119,12 +123,12 @@ NetFieldList * __cdecl MSG_GetStateFieldListForEntityType(int param_1,bool param
     MSG_CheckForDuplicateOffsets();
     offsetsTested = true;
   }
-  if (param_2) {
-    pNVar1 = Demo_GetStateFieldListForEntityType(param_1);
+  if (isDemoSnapshot) {
+    pNVar1 = Demo_GetStateFieldListForEntityType(eType);
   }
   else {
-    if (param_1 < 0x16) {
-      local_8 = param_1;
+    if (eType < 0x16) {
+      local_8 = eType;
     }
     else {
       local_8 = 0x15;
@@ -137,14 +141,14 @@ NetFieldList * __cdecl MSG_GetStateFieldListForEntityType(int param_1,bool param
 
 // 006EE3B0  MSG_GetNetFieldList  (qcommon/sv_msg_write.cpp:259)
 
-NetFieldList * __cdecl MSG_GetNetFieldList(netFieldTypes_t param_1,bool param_2)
+NetFieldList * __cdecl MSG_GetNetFieldList(netFieldTypes_t fieldType,bool isDemoSnapshot)
 
 {
   code *pcVar1;
   bool bVar2;
   NetFieldList *pNVar3;
   
-  if (((int)param_1 < 0) || (5 < (int)param_1)) {
+  if (((int)fieldType < 0) || (5 < (int)fieldType)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x104,0,
                              "%s");
     if (!bVar2) {
@@ -157,11 +161,11 @@ NetFieldList * __cdecl MSG_GetNetFieldList(netFieldTypes_t param_1,bool param_2)
     MSG_CheckForDuplicateOffsets();
     offsetsTested = true;
   }
-  if (param_2) {
-    pNVar3 = Demo_GetNetFieldListForType(param_1);
+  if (isDemoSnapshot) {
+    pNVar3 = Demo_GetNetFieldListForType(fieldType);
   }
   else {
-    pNVar3 = s_otherNetFieldList + param_1;
+    pNVar3 = s_otherNetFieldList + fieldType;
   }
   return pNVar3;
 }
@@ -171,43 +175,45 @@ NetFieldList * __cdecl MSG_GetNetFieldList(netFieldTypes_t param_1,bool param_2)
 
 void __cdecl
 MSG_WriteReliableCommandToBuffer
-          (char *param_1,char **param_2,char *param_3,int param_4,int *param_5)
+          (char *pszCommand,char **pszBuffer,char *allocBufferBase,int allocBufferLength,
+          int *allocBufferPos)
 
 {
   char cVar1;
   int iVar2;
   int local_24;
   char *local_14;
-  char *local_10;
-  int local_8;
+  char *ch;
+  int iCommandLength;
+  int i;
   
-  local_14 = param_1;
+  local_14 = pszCommand;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  iVar2 = (int)local_14 - (int)(param_1 + 1);
+  iVar2 = (int)local_14 - (int)(pszCommand + 1);
   if (iVar2 == 0) {
     Com_PrintWarning(0x10,"WARNING: Empty reliable command\n");
   }
-  if (*param_5 + iVar2 < param_4) {
-    local_24 = *param_5;
+  if (*allocBufferPos + iVar2 < allocBufferLength) {
+    local_24 = *allocBufferPos;
   }
   else {
     local_24 = 0;
   }
-  *param_2 = param_3 + local_24;
-  *param_5 = (int)(*param_2 + ((iVar2 + 1) - (int)param_3));
-  local_10 = *param_2;
-  for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-    cVar1 = I_CleanChar(param_1[local_8]);
-    *local_10 = cVar1;
-    if (*local_10 == '%') {
-      *local_10 = '.';
+  *pszBuffer = allocBufferBase + local_24;
+  *allocBufferPos = (int)(*pszBuffer + ((iVar2 + 1) - (int)allocBufferBase));
+  ch = *pszBuffer;
+  for (i = 0; pszCommand[i] != '\0'; i = i + 1) {
+    cVar1 = I_CleanChar(pszCommand[i]);
+    *ch = cVar1;
+    if (*ch == '%') {
+      *ch = '.';
     }
-    local_10 = local_10 + 1;
+    ch = ch + 1;
   }
-  (*param_2)[local_8] = '\0';
+  (*pszBuffer)[i] = '\0';
   return;
 }
 
@@ -222,26 +228,28 @@ MSG_WriteReliableCommandToBuffer
 
 void __cdecl
 MSG_PacketAnalyze_WriteOriginFloat_Delta
-          (int param_1,msg_t *param_2,int param_3,float param_4,int param_5,int param_6)
+          (int clientNum,msg_t *msg,int bits,float value,int roundedValue,int roundedOldValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
+  int bitsNeeded;
+  int roundedCenter;
+  int index;
   
-  if ((param_3 == -0x5c) || (param_3 == -0x42)) {
-    local_c = 0;
+  if ((bits == -0x5c) || (bits == -0x42)) {
+    index = 0;
   }
   else {
-    if (((param_3 != -0x5b) && (param_3 != -0x41)) &&
+    if (((bits != -0x5b) && (bits != -0x41)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x17c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = 1;
+    index = 1;
   }
   if ((svsHeaderValid == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x180,
@@ -250,8 +258,9 @@ MSG_PacketAnalyze_WriteOriginFloat_Delta
     (*pcVar1)();
     return;
   }
-  iVar3 = (int)(svsHeader.mapCenter[local_c] + 0.5);
-  iVar3 = GetMinBitCountForNum((param_5 - iVar3) + 0x8000U ^ (0x8000 - iVar3) + param_6);
+  iVar3 = (int)(svsHeader.mapCenter[index] + 0.5);
+  iVar3 = GetMinBitCountForNum
+                    ((roundedValue - iVar3) + 0x8000U ^ (0x8000 - iVar3) + roundedOldValue);
   if (0x10 < iVar3) {
     Com_Error(ERR_DROP,
               "Entity with %s coordinate of %f is too far outside the playable area of the map.  The playable area goes from ( %f, %f, %f ) to ( %f, %f, %f )\n"
@@ -271,72 +280,77 @@ MSG_PacketAnalyze_WriteOriginFloat_Delta
 
 void __cdecl
 MSG_WriteOriginFloat
-          (SnapshotInfo_s *param_1,int param_2,msg_t *param_3,int param_4,float param_5,
-          float param_6)
+          (SnapshotInfo_s *snapInfo,int clientNum,msg_t *msg,int bits,float value,float oldValue)
 
 {
-  int iVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  int local_c;
+  int roundedValue_00;
+  int roundedOldValue_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int roundedValue;
+  int truncDelta;
+  int roundedOldValue;
+  int roundedCenter;
+  int index;
   
-  if (param_3->readOnly != 0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1b2,0,
+  if (msg->readOnly != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1b2,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  iVar1 = (int)ROUND(param_5 + 9.313226e-10);
-  iVar2 = (int)ROUND(param_6 + 9.313226e-10);
-  iVar5 = iVar1 - iVar2;
-  if (iVar2 + iVar5 != iVar1) {
+  roundedValue_00 = (int)ROUND(value + 9.313226e-10);
+  roundedOldValue_00 = (int)ROUND(oldValue + 9.313226e-10);
+  iVar3 = roundedValue_00 - roundedOldValue_00;
+  if (roundedOldValue_00 + iVar3 != roundedValue_00) {
     va("oldValue is %f, truncDelta is %i, value is %f");
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1b7,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1b7,0,
                              "%s\n\t%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((iVar5 + 0x40 < 0) || (0x7f < iVar5 + 0x40)) {
-    MSG_WriteBit1(param_3);
-    if ((param_4 == -0x5c) || (param_4 == -0x42)) {
-      local_c = 0;
+  if ((iVar3 + 0x40 < 0) || (0x7f < iVar3 + 0x40)) {
+    MSG_WriteBit1(msg);
+    if ((bits == -0x5c) || (bits == -0x42)) {
+      index = 0;
     }
     else {
-      if ((param_4 != -0x5b) && (param_4 != -0x41)) {
-        bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
+      if ((bits != -0x5b) && (bits != -0x41)) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x1d2,0,"%s");
-        if (!bVar4) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      local_c = 1;
+      index = 1;
     }
     if (svsHeaderValid == 0) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1d6,
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1d6,
                                0,"%s");
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    iVar5 = (int)ROUND(svsHeader.mapCenter[local_c] + 9.313226e-10);
-    MSG_WriteBits(param_3,(iVar1 - iVar5) + 0x8000U ^ (0x8000 - iVar5) + iVar2,0x10);
+    iVar3 = (int)ROUND(svsHeader.mapCenter[index] + 9.313226e-10);
+    MSG_WriteBits(msg,(roundedValue_00 - iVar3) + 0x8000U ^ (0x8000 - iVar3) + roundedOldValue_00,
+                  0x10);
   }
   else {
-    MSG_WriteBit0(param_3);
-    MSG_WriteBits(param_3,iVar5 + 0x40,7);
-    MSG_PacketAnalyze_WriteOriginFloat_Delta(param_2,param_3,param_4,param_5,iVar1,iVar2);
+    MSG_WriteBit0(msg);
+    MSG_WriteBits(msg,iVar3 + 0x40,7);
+    MSG_PacketAnalyze_WriteOriginFloat_Delta
+              (clientNum,msg,bits,value,roundedValue_00,roundedOldValue_00);
   }
   return;
 }
@@ -352,13 +366,15 @@ MSG_WriteOriginFloat
 
 void __cdecl
 MSG_PacketAnalyze_WriteOriginZFloat_Delta
-          (SnapshotInfo_s *param_1,int param_2,msg_t *param_3,float param_4,int param_5,int param_6,
-          int param_7)
+          (SnapshotInfo_s *snapInfo,int clientNum,msg_t *msg,float value,int roundedValue,
+          int roundedOldValue,int truncDelta)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int bitsNeeded;
+  int roundedCenter;
   
   if (svsHeaderValid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x1ee,0,
@@ -370,8 +386,8 @@ MSG_PacketAnalyze_WriteOriginZFloat_Delta
     }
   }
   iVar3 = GetMinBitCountForNum
-                    ((param_5 - (int)(svsHeader.mapCenter[2] + 0.5)) + 0x10000U ^
-                     (0x10000 - (int)(svsHeader.mapCenter[2] + 0.5)) + param_6);
+                    ((roundedValue - (int)(svsHeader.mapCenter[2] + 0.5)) + 0x10000U ^
+                     (0x10000 - (int)(svsHeader.mapCenter[2] + 0.5)) + roundedOldValue);
   if (0x11 < iVar3) {
     Com_Error(ERR_DROP,
               "Entity with Z coordinate of %f is too far outside the playable area of the map.  The playable area goes from ( %f, %f, %f ) to ( %f, %f, %f )\n"
@@ -390,57 +406,62 @@ MSG_PacketAnalyze_WriteOriginZFloat_Delta
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteOriginZFloat
-          (SnapshotInfo_s *param_1,int param_2,msg_t *param_3,float param_4,float param_5)
+MSG_WriteOriginZFloat(SnapshotInfo_s *snapInfo,int clientNum,msg_t *msg,float value,float oldValue)
 
 {
-  int iVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
+  int roundedValue_00;
+  int roundedOldValue_00;
+  code *pcVar1;
+  bool bVar2;
+  int truncDelta_00;
+  int roundedValue;
+  int truncDelta;
+  int roundedOldValue;
+  int roundedCenter;
   
-  if (param_3->readOnly != 0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x21f,0,
+  if (msg->readOnly != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x21f,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  iVar1 = (int)ROUND(param_4 + 9.313226e-10);
-  iVar2 = (int)ROUND(param_5 + 9.313226e-10);
-  iVar5 = iVar1 - iVar2;
-  if (iVar2 + iVar5 != iVar1) {
+  roundedValue_00 = (int)ROUND(value + 9.313226e-10);
+  roundedOldValue_00 = (int)ROUND(oldValue + 9.313226e-10);
+  truncDelta_00 = roundedValue_00 - roundedOldValue_00;
+  if (roundedOldValue_00 + truncDelta_00 != roundedValue_00) {
     va("oldValue is %f, truncDelta is %i, value is %f");
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x224,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x224,0,
                              "%s\n\t%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if ((iVar5 + 0x40 < 0) || (0x7f < iVar5 + 0x40)) {
-    MSG_WriteBit1(param_3);
+  if ((truncDelta_00 + 0x40 < 0) || (0x7f < truncDelta_00 + 0x40)) {
+    MSG_WriteBit1(msg);
     if (svsHeaderValid == 0) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x237,
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x237,
                                0,"%s");
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    MSG_WriteBits(param_3,(iVar1 - (int)ROUND(svsHeader.mapCenter[2] + 9.313226e-10)) + 0x10000U ^
-                          (0x10000 - (int)ROUND(svsHeader.mapCenter[2] + 9.313226e-10)) + iVar2,0x11
-                 );
+    MSG_WriteBits(msg,(roundedValue_00 - (int)ROUND(svsHeader.mapCenter[2] + 9.313226e-10)) +
+                      0x10000U ^
+                      (0x10000 - (int)ROUND(svsHeader.mapCenter[2] + 9.313226e-10)) +
+                      roundedOldValue_00,0x11);
   }
   else {
-    MSG_WriteBit0(param_3);
-    MSG_PacketAnalyze_WriteOriginZFloat_Delta(param_1,param_2,param_3,param_4,iVar1,iVar2,iVar5);
-    MSG_WriteBits(param_3,iVar5 + 0x40,7);
+    MSG_WriteBit0(msg);
+    MSG_PacketAnalyze_WriteOriginZFloat_Delta
+              (snapInfo,clientNum,msg,value,roundedValue_00,roundedOldValue_00,truncDelta_00);
+    MSG_WriteBits(msg,truncDelta_00 + 0x40,7);
   }
   return;
 }
@@ -455,8 +476,7 @@ MSG_WriteOriginZFloat
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteDemoRoundedFloat
-          (msg_t *param_1,int param_2,float param_3,float param_4,int param_5,int param_6)
+MSG_WriteDemoRoundedFloat(msg_t *msg,int bits,float value,float oldValue,int diffBits,int fullBits)
 
 {
   int iVar1;
@@ -466,10 +486,16 @@ MSG_WriteDemoRoundedFloat
   int iVar5;
   int iVar6;
   int iVar7;
-  uint local_24;
-  int local_10;
+  int bitsNeeded;
+  int roundedValue;
+  int fullBias;
+  int truncDelta;
+  int roundedOldValue;
+  int roundedCenter;
+  int index;
+  int diffBias;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x253,0,
                              "%s");
     if (!bVar3) {
@@ -478,10 +504,10 @@ MSG_WriteDemoRoundedFloat
       return;
     }
   }
-  iVar4 = 1 << ((byte)param_5 - 1 & 0x1f);
-  iVar6 = 1 << ((char)param_6 - 1U & 0x1f);
-  iVar5 = (int)ROUND(param_3 + 9.313226e-10);
-  iVar1 = (int)ROUND(param_4 + 9.313226e-10);
+  iVar4 = 1 << ((byte)diffBits - 1 & 0x1f);
+  iVar6 = 1 << ((char)fullBits - 1U & 0x1f);
+  iVar5 = (int)ROUND(value + 9.313226e-10);
+  iVar1 = (int)ROUND(oldValue + 9.313226e-10);
   iVar7 = iVar5 - iVar1;
   if (iVar1 + iVar7 != iVar5) {
     va("oldValue is %f, truncDelta is %i, value is %f");
@@ -493,17 +519,17 @@ MSG_WriteDemoRoundedFloat
       return;
     }
   }
-  if ((iVar7 + iVar4 < 0) || (1 << ((byte)param_5 & 0x1f) <= iVar7 + iVar4)) {
-    MSG_WriteBit1(param_1);
-    if ((param_2 == -0x67) || ((param_2 == -0x66 || (param_2 == -0x65)))) {
-      if (param_2 == -0x67) {
-        local_10 = 0;
+  if ((iVar7 + iVar4 < 0) || (1 << ((byte)diffBits & 0x1f) <= iVar7 + iVar4)) {
+    MSG_WriteBit1(msg);
+    if ((bits == -0x67) || ((bits == -0x66 || (bits == -0x65)))) {
+      if (bits == -0x67) {
+        index = 0;
       }
-      else if (param_2 == -0x66) {
-        local_10 = 1;
+      else if (bits == -0x66) {
+        index = 1;
       }
       else {
-        local_10 = 2;
+        index = 2;
       }
       if (svsHeaderValid == 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
@@ -514,23 +540,23 @@ MSG_WriteDemoRoundedFloat
           return;
         }
       }
-      iVar4 = (int)(svsHeader.mapCenter[local_10] + 0.5);
-      local_24 = (iVar5 - iVar4) + iVar6 ^ (iVar6 - iVar4) + iVar1;
+      iVar4 = (int)(svsHeader.mapCenter[index] + 0.5);
+      roundedValue = (iVar5 - iVar4) + iVar6 ^ (iVar6 - iVar4) + iVar1;
     }
     else {
-      local_24 = iVar5 + iVar6 ^ iVar1 + iVar6;
+      roundedValue = iVar5 + iVar6 ^ iVar1 + iVar6;
     }
-    iVar5 = GetMinBitCountForNum(local_24);
-    if (param_6 < iVar5) {
+    iVar5 = GetMinBitCountForNum(roundedValue);
+    if (fullBits < iVar5) {
       Com_PrintError(0xe,
                      "Demo Error: Bits needed to transmit %d in field %d is %d but fullBits is only %d\n"
                     );
     }
-    MSG_WriteBits(param_1,local_24,param_6);
+    MSG_WriteBits(msg,roundedValue,fullBits);
   }
   else {
-    MSG_WriteBit0(param_1);
-    MSG_WriteBits(param_1,iVar7 + iVar4,param_5);
+    MSG_WriteBit0(msg);
+    MSG_WriteBits(msg,iVar7 + iVar4,diffBits);
   }
   return;
 }
@@ -540,39 +566,47 @@ MSG_WriteDemoRoundedFloat
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl MSG_ValuesAreEqual(int param_1,int param_2,int param_3,int *param_4,int *param_5)
+bool __cdecl MSG_ValuesAreEqual(int clientNum,int bits,int size,int *fromF,int *toF)
 
 {
   uint uVar1;
   char local_78;
+  int newOrigin;
+  uchar *toB;
+  float fval1;
+  uchar *fromB;
+  int oldOrigin;
+  int fromI;
+  int toI;
+  float fval2;
   
-  if (param_3 == 1) {
-    if ((char)*param_4 == (char)*param_5) {
+  if (size == 1) {
+    if ((char)*fromF == (char)*toF) {
       return true;
     }
   }
-  else if (param_3 == 2) {
-    if ((short)*param_4 == (short)*param_5) {
+  else if (size == 2) {
+    if ((short)*fromF == (short)*toF) {
       return true;
     }
   }
-  else if ((param_3 == 4) && (*param_4 == *param_5)) {
+  else if ((size == 4) && (*fromF == *toF)) {
     return true;
   }
-  switch(param_2) {
+  switch(bits) {
   case -0x6b:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,60.0,100,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,60.0,100,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x6a:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,255.0,100,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,255.0,100,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x69:
-    local_78 = ((int)(((float)*param_4 * 1024.0) / 360.0) & 0x3ffU) ==
-               ((int)(((float)*param_5 * 1024.0) / 360.0) & 0x3ffU);
+    local_78 = ((int)(((float)*fromF * 1024.0) / 360.0) & 0x3ffU) ==
+               ((int)(((float)*toF * 1024.0) / 360.0) & 0x3ffU);
     break;
   case -0x68:
   case -0x67:
@@ -584,34 +618,31 @@ bool __cdecl MSG_ValuesAreEqual(int param_1,int param_2,int param_3,int *param_4
   case -0x42:
   case -0x41:
   case -0x40:
-    local_78 = (int)ROUND((float)*param_4 + 9.313226e-10) ==
-               (int)ROUND((float)*param_5 + 9.313226e-10);
+    local_78 = (int)ROUND((float)*fromF + 9.313226e-10) == (int)ROUND((float)*toF + 9.313226e-10);
     break;
   case -100:
   case -0x57:
   case -0x3e:
-    local_78 = ((int)((float)*param_4 * 182.04445) & 0xffffU) ==
-               ((int)((float)*param_5 * 182.04445) & 0xffffU);
+    local_78 = ((int)((float)*fromF * 182.04445) & 0xffffU) ==
+               ((int)((float)*toF * 182.04445) & 0xffffU);
     break;
   default:
     local_78 = '\0';
     break;
   case -0x62:
-    local_78 = '\x01' - (((*param_4 ^ *param_5) & 0xffffffU) != 0);
+    local_78 = '\x01' - (((*fromF ^ *toF) & 0xffffffU) != 0);
     break;
   case -0x5f:
-    local_78 = *param_4 / 100 == *param_5 / 100;
+    local_78 = *fromF / 100 == *toF / 100;
     break;
   case -0x56:
-    local_78 = (int)ROUND(((float)*param_4 - 1.0) * 10.0 + 9.313226e-10) ==
-               (int)ROUND(((float)*param_5 - 1.0) * 10.0 + 9.313226e-10);
+    local_78 = (int)ROUND(((float)*fromF - 1.0) * 10.0 + 9.313226e-10) ==
+               (int)ROUND(((float)*toF - 1.0) * 10.0 + 9.313226e-10);
     break;
   case -0x55:
-    if (((((char)*param_4 == (char)*param_5) &&
-         (*(char *)((int)param_4 + 1) == *(char *)((int)param_5 + 1))) &&
-        (*(char *)((int)param_4 + 2) == *(char *)((int)param_5 + 2))) &&
-       ((int)(uint)*(byte *)((int)param_4 + 3) >> 3 == (int)(uint)*(byte *)((int)param_5 + 3) >> 3))
-    {
+    if (((((char)*fromF == (char)*toF) && (*(char *)((int)fromF + 1) == *(char *)((int)toF + 1))) &&
+        (*(char *)((int)fromF + 2) == *(char *)((int)toF + 2))) &&
+       ((int)(uint)*(byte *)((int)fromF + 3) >> 3 == (int)(uint)*(byte *)((int)toF + 3) >> 3)) {
       local_78 = '\x01';
     }
     else {
@@ -620,61 +651,60 @@ bool __cdecl MSG_ValuesAreEqual(int param_1,int param_2,int param_3,int *param_4
     break;
   case -0x54:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,1.0,1000,true,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,1.0,1000,true,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x53:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,1.5,10,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,1.5,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x52:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,3.0,100,true,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,3.0,100,true,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x51:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,1.0,100,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,1.0,100,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x50:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,0.0,1.0,1000,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,0.0,1.0,1000,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x4d:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,-1.0,1.0,100,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,-1.0,1.0,100,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x4c:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)(int)(short)*param_4 * 3.0517578e-05,
-                       (float)(int)(short)*param_5 * 3.0517578e-05,-1.0,1.0,10,false,"");
+                      (clientNum,(msg_t *)0x0,(float)(int)(short)*fromF * 3.0517578e-05,
+                       (float)(int)(short)*toF * 3.0517578e-05,-1.0,1.0,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x4b:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)(int)(short)*param_4 * 0.005493164,
-                       (float)(int)(short)*param_5 * 0.005493164,-90.0,90.0,10,false,"");
+                      (clientNum,(msg_t *)0x0,(float)(int)(short)*fromF * 0.005493164,
+                       (float)(int)(short)*toF * 0.005493164,-90.0,90.0,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x4a:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)(int)(short)*param_4 * 0.005493164,
-                       (float)(int)(short)*param_5 * 0.005493164,-180.0,180.0,10,false,"");
+                      (clientNum,(msg_t *)0x0,(float)(int)(short)*fromF * 0.005493164,
+                       (float)(int)(short)*toF * 0.005493164,-180.0,180.0,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x49:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,-12.0,12.0,10,false,"");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,-12.0,12.0,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
     break;
   case -0x48:
     uVar1 = MSG_WriteRangedFloat
-                      (param_1,(msg_t *)0x0,(float)*param_4,(float)*param_5,-6000.0,6000.0,10,false,
-                       "");
+                      (clientNum,(msg_t *)0x0,(float)*fromF,(float)*toF,-6000.0,6000.0,10,false,"");
     local_78 = '\x01' - (uVar1 != 0);
   }
   return (bool)local_78;
@@ -687,80 +717,79 @@ bool __cdecl MSG_ValuesAreEqual(int param_1,int param_2,int param_3,int *param_4
 
 bool __cdecl
 MSG_ShouldSendPSField
-          (SnapshotInfo_s *param_1,bool param_2,playerState_s *param_3,playerState_s *param_4,
-          NetField *param_5)
+          (SnapshotInfo_s *snapInfo,bool sendOriginAndVel,playerState_s *ps,playerState_s *oldPs,
+          NetField *field)
 
 {
   bool bVar1;
   
-  if (param_1->demoSnapshot == false) {
-    if (param_5->bits == -0x57) {
-      if (param_1->archived == false) {
-        if ((((param_3->otherFlags & 2U) == 0) || ((param_4->otherFlags & 2U) != 0)) ||
-           (param_4->clientNum != param_3->clientNum)) {
-          if ((param_3->otherFlags & 2U) == 0) {
-            if (((param_3->eFlags ^ param_4->eFlags) & 2U) == 0) {
-              if (param_3->viewlocked_entNum == 0x3ff) {
-                if (param_3->pm_type == 5) {
-                  bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                             (int *)((int)param_4->origin + param_5->offset + -0x24)
-                                             ,(int *)((int)param_3->origin + param_5->offset + -0x24
-                                                     ));
-                  param_2 = (bool)('\x01' - bVar1);
+  if (snapInfo->demoSnapshot == false) {
+    if (field->bits == -0x57) {
+      if (snapInfo->archived == false) {
+        if ((((ps->otherFlags & 2U) == 0) || ((oldPs->otherFlags & 2U) != 0)) ||
+           (oldPs->clientNum != ps->clientNum)) {
+          if ((ps->otherFlags & 2U) == 0) {
+            if (((ps->eFlags ^ oldPs->eFlags) & 2U) == 0) {
+              if (ps->viewlocked_entNum == 0x3ff) {
+                if (ps->pm_type == 5) {
+                  bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                             (int *)((int)oldPs->origin + field->offset + -0x24),
+                                             (int *)((int)ps->origin + field->offset + -0x24));
+                  sendOriginAndVel = (bool)('\x01' - bVar1);
                 }
                 else {
-                  param_2 = false;
+                  sendOriginAndVel = false;
                 }
               }
               else {
-                bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                           (int *)((int)param_4->origin + param_5->offset + -0x24),
-                                           (int *)((int)param_3->origin + param_5->offset + -0x24));
-                param_2 = (bool)('\x01' - bVar1);
+                bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                           (int *)((int)oldPs->origin + field->offset + -0x24),
+                                           (int *)((int)ps->origin + field->offset + -0x24));
+                sendOriginAndVel = (bool)('\x01' - bVar1);
               }
             }
             else {
-              bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                         (int *)((int)param_4->origin + param_5->offset + -0x24),
-                                         (int *)((int)param_3->origin + param_5->offset + -0x24));
-              param_2 = (bool)('\x01' - bVar1);
+              bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                         (int *)((int)oldPs->origin + field->offset + -0x24),
+                                         (int *)((int)ps->origin + field->offset + -0x24));
+              sendOriginAndVel = (bool)('\x01' - bVar1);
             }
           }
           else {
-            bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                       (int *)((int)param_4->origin + param_5->offset + -0x24),
-                                       (int *)((int)param_3->origin + param_5->offset + -0x24));
-            param_2 = (bool)('\x01' - bVar1);
+            bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                       (int *)((int)oldPs->origin + field->offset + -0x24),
+                                       (int *)((int)ps->origin + field->offset + -0x24));
+            sendOriginAndVel = (bool)('\x01' - bVar1);
           }
         }
         else {
-          param_2 = true;
+          sendOriginAndVel = true;
         }
       }
       else {
-        bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                   (int *)((int)param_4->origin + param_5->offset + -0x24),
-                                   (int *)((int)param_3->origin + param_5->offset + -0x24));
-        param_2 = (bool)('\x01' - bVar1);
+        bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                   (int *)((int)oldPs->origin + field->offset + -0x24),
+                                   (int *)((int)ps->origin + field->offset + -0x24));
+        sendOriginAndVel = (bool)('\x01' - bVar1);
       }
     }
-    else if ((param_5->bits == -0x47) && (param_3->fWeaponPosFrac != 0.0)) {
-      param_2 = true;
+    else if ((field->bits == -0x47) && (ps->fWeaponPosFrac != 0.0)) {
+      sendOriginAndVel = true;
     }
-    else if ((param_5->changeHints != '\x03') || (param_1->archived != false)) {
-      bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                                 (int *)((int)param_4->origin + param_5->offset + -0x24),
-                                 (int *)((int)param_3->origin + param_5->offset + -0x24));
-      param_2 = (bool)('\x01' - bVar1);
+    else if ((field->changeHints != '\x03') || (snapInfo->archived != false)) {
+      bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                 (int *)((int)oldPs->origin + field->offset + -0x24),
+                                 (int *)((int)ps->origin + field->offset + -0x24));
+      sendOriginAndVel = (bool)('\x01' - bVar1);
     }
   }
   else {
-    bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_5->bits,param_5->size,
-                               (int *)((int)param_4->origin + param_5->offset + -0x24),
-                               (int *)((int)param_3->origin + param_5->offset + -0x24));
-    param_2 = (bool)('\x01' - bVar1);
+    bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                               (int *)((int)oldPs->origin + field->offset + -0x24),
+                               (int *)((int)ps->origin + field->offset + -0x24));
+    sendOriginAndVel = (bool)('\x01' - bVar1);
   }
-  return param_2;
+  return sendOriginAndVel;
 }
 
 
@@ -768,13 +797,13 @@ MSG_ShouldSendPSField
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *snapInfo,msg_t *msg,int index,int indexBits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x358,0,
                              "%s");
     if (!bVar2) {
@@ -784,7 +813,7 @@ void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *param_1,msg_t *param_2,int par
     }
   }
   GamerProfile_WriteSettings(0xce667c);
-  if (param_3 == param_2->lastEntityRef || param_3 - param_2->lastEntityRef < 0) {
+  if (index == msg->lastEntityRef || index - msg->lastEntityRef < 0) {
     va("lastEntityReferenced is %i, index is %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x360,0,
                              "%s\n\t%s");
@@ -794,15 +823,15 @@ void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *param_1,msg_t *param_2,int par
       return;
     }
   }
-  if (param_3 - param_2->lastEntityRef == 1) {
+  if (index - msg->lastEntityRef == 1) {
     GamerProfile_WriteSettings(0xce6614);
-    MSG_WriteBit1(param_2);
+    MSG_WriteBit1(msg);
   }
   else {
-    MSG_WriteBit0(param_2);
-    if ((param_4 == 10) && (param_3 - param_2->lastEntityRef < 0x10)) {
+    MSG_WriteBit0(msg);
+    if ((indexBits == 10) && (index - msg->lastEntityRef < 0x10)) {
       GamerProfile_WriteSettings(0xce65f0);
-      if (param_3 == param_2->lastEntityRef || param_3 - param_2->lastEntityRef < 0) {
+      if (index == msg->lastEntityRef || index - msg->lastEntityRef < 0) {
         va("index was %i, lastEntityRef is %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x36e,0,
@@ -814,18 +843,18 @@ void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *param_1,msg_t *param_2,int par
           return;
         }
       }
-      MSG_WriteBit0(param_2);
-      MSG_WriteBits(param_2,param_3 - param_2->lastEntityRef,4);
+      MSG_WriteBit0(msg);
+      MSG_WriteBits(msg,index - msg->lastEntityRef,4);
     }
     else {
       GamerProfile_WriteSettings(0xce6534);
-      if (param_4 == 10) {
-        MSG_WriteBit1(param_2);
+      if (indexBits == 10) {
+        MSG_WriteBit1(msg);
       }
-      MSG_WriteBits(param_2,param_3,param_4);
+      MSG_WriteBits(msg,index,indexBits);
     }
   }
-  param_2->lastEntityRef = param_3;
+  msg->lastEntityRef = index;
   return;
 }
 
@@ -834,14 +863,15 @@ void __cdecl MSG_WriteEntityIndex(SnapshotInfo_s *param_1,msg_t *param_2,int par
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteLastChangedField(msg_t *param_1,int param_2,int param_3)
+void __cdecl MSG_WriteLastChangedField(msg_t *msg,int lastChangedFieldNum,int numFields)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int bits;
+  int idealBits;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x388,0,
                              "%s");
     if (!bVar2) {
@@ -850,7 +880,7 @@ void __cdecl MSG_WriteLastChangedField(msg_t *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_3 < param_2) {
+  if (numFields < lastChangedFieldNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x389,0,
                              "%s");
     if (!bVar2) {
@@ -859,8 +889,8 @@ void __cdecl MSG_WriteLastChangedField(msg_t *param_1,int param_2,int param_3)
       return;
     }
   }
-  iVar3 = GetMinBitCountForNum(param_3);
-  MSG_WriteBits(param_1,param_2,iVar3);
+  bits = GetMinBitCountForNum(numFields);
+  MSG_WriteBits(msg,lastChangedFieldNum,bits);
   return;
 }
 
@@ -869,14 +899,15 @@ void __cdecl MSG_WriteLastChangedField(msg_t *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaTime(int param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl MSG_WriteDeltaTime(int clientNum,msg_t *msg,int timeBase,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int delta;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x39b,0,
                              "%s");
     if (!bVar2) {
@@ -885,14 +916,14 @@ void __cdecl MSG_WriteDeltaTime(int param_1,msg_t *param_2,int param_3,int param
       return;
     }
   }
-  iVar3 = param_4 - param_3;
+  iVar3 = time - timeBase;
   if ((iVar3 < 1) && (-0x100 < iVar3)) {
-    MSG_WriteBit0(param_2);
-    MSG_WriteBits(param_2,-iVar3,8);
+    MSG_WriteBit0(msg);
+    MSG_WriteBits(msg,-iVar3,8);
   }
   else {
-    MSG_WriteBit1(param_2);
-    MSG_WriteLong(param_2,param_4);
+    MSG_WriteBit1(msg);
+    MSG_WriteLong(msg,time);
   }
   return;
 }
@@ -902,14 +933,15 @@ void __cdecl MSG_WriteDeltaTime(int param_1,msg_t *param_2,int param_3,int param
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaFrameTime(int param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl MSG_WriteDeltaFrameTime(int clientNum,msg_t *msg,int timeBase,int time)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int delta;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3b6,0,
                              "%s");
     if (!bVar2) {
@@ -918,7 +950,7 @@ void __cdecl MSG_WriteDeltaFrameTime(int param_1,msg_t *param_2,int param_3,int 
       return;
     }
   }
-  if (param_4 % 0x32 != 0) {
+  if (time % 0x32 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3b7,0,
                              "%s");
     if (!bVar2) {
@@ -927,7 +959,7 @@ void __cdecl MSG_WriteDeltaFrameTime(int param_1,msg_t *param_2,int param_3,int 
       return;
     }
   }
-  if (param_3 % 0x32 != 0) {
+  if (timeBase % 0x32 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3b8,0,
                              "%s");
     if (!bVar2) {
@@ -936,21 +968,21 @@ void __cdecl MSG_WriteDeltaFrameTime(int param_1,msg_t *param_2,int param_3,int 
       return;
     }
   }
-  iVar3 = (param_4 - param_3) / 0x32;
+  iVar3 = (time - timeBase) / 0x32;
   if (iVar3 == 0) {
-    MSG_WriteBit0(param_2);
+    MSG_WriteBit0(msg);
   }
   else if ((iVar3 < 1) && (-8 < iVar3)) {
-    MSG_WriteBits(param_2,1,2);
-    MSG_WriteBits(param_2,-iVar3,3);
+    MSG_WriteBits(msg,1,2);
+    MSG_WriteBits(msg,-iVar3,3);
   }
   else if ((iVar3 < 1) && (-0x100 < iVar3)) {
-    MSG_WriteBits(param_2,3,3);
-    MSG_WriteBits(param_2,-iVar3,8);
+    MSG_WriteBits(msg,3,3);
+    MSG_WriteBits(msg,-iVar3,8);
   }
   else {
-    MSG_WriteBits(param_2,7,3);
-    MSG_WriteLong(param_2,param_4);
+    MSG_WriteBits(msg,7,3);
+    MSG_WriteLong(msg,time);
   }
   return;
 }
@@ -960,15 +992,16 @@ void __cdecl MSG_WriteDeltaFrameTime(int param_1,msg_t *param_2,int param_3,int 
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteEFlags(int param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl MSG_WriteEFlags(int clientNum,msg_t *msg,int oldFlags,int newFlags)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_10;
-  uint local_c;
+  int changedBitIndex;
+  int flagDiff;
+  int value;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3e1,0,
                              "%s");
     if (!bVar2) {
@@ -977,17 +1010,17 @@ void __cdecl MSG_WriteEFlags(int param_1,msg_t *param_2,int param_3,int param_4)
       return;
     }
   }
-  local_c = (param_3 ^ param_4) & 0xffffff;
-  if ((local_c == 0) || ((local_c - 1 & local_c) != 0)) {
-    MSG_WriteBit1(param_2);
-    MSG_WriteBits(param_2,param_4,0x18);
+  flagDiff = (oldFlags ^ newFlags) & 0xffffff;
+  if ((flagDiff == 0) || ((flagDiff - 1U & flagDiff) != 0)) {
+    MSG_WriteBit1(msg);
+    MSG_WriteBits(msg,newFlags,0x18);
   }
   else {
-    local_10 = 0;
-    for (; (local_c & 1) == 0; local_c = (int)local_c >> 1) {
-      local_10 = local_10 + 1;
+    changedBitIndex = 0;
+    for (; (flagDiff & 1U) == 0; flagDiff = flagDiff >> 1) {
+      changedBitIndex = changedBitIndex + 1;
     }
-    if ((local_10 < 0) || (0x17 < local_10)) {
+    if ((changedBitIndex < 0) || (0x17 < changedBitIndex)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3fb,
                                0,"%s\n\t(changedBitIndex) = %i");
       if (!bVar2) {
@@ -996,7 +1029,7 @@ void __cdecl MSG_WriteEFlags(int param_1,msg_t *param_2,int param_3,int param_4)
         return;
       }
     }
-    if (((param_3 ^ param_4) & 0xffffffU) != 1 << ((byte)local_10 & 0x1f)) {
+    if (((oldFlags ^ newFlags) & 0xffffffU) != 1 << ((byte)changedBitIndex & 0x1f)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x3fc,
                                0,"%s");
       if (!bVar2) {
@@ -1005,9 +1038,9 @@ void __cdecl MSG_WriteEFlags(int param_1,msg_t *param_2,int param_3,int param_4)
         return;
       }
     }
-    MSG_WriteBit0(param_2);
-    MSG_WriteBits(param_2,local_10,5);
-    if (param_2->overflowed != 0) {
+    MSG_WriteBit0(msg);
+    MSG_WriteBits(msg,changedBitIndex,5);
+    if (msg->overflowed != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x405,
                                0,"%s");
       if (!bVar2) {
@@ -1025,13 +1058,13 @@ void __cdecl MSG_WriteEFlags(int param_1,msg_t *param_2,int param_3,int param_4)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteEventNum(int param_1,msg_t *param_2,int param_3)
+void __cdecl MSG_WriteEventNum(int clientNum,msg_t *msg,int eventNum)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x40b,0,
                              "%s");
     if (!bVar2) {
@@ -1040,7 +1073,7 @@ void __cdecl MSG_WriteEventNum(int param_1,msg_t *param_2,int param_3)
       return;
     }
   }
-  MSG_WriteByte(param_2,param_3);
+  MSG_WriteByte(msg,eventNum);
   return;
 }
 
@@ -1049,13 +1082,13 @@ void __cdecl MSG_WriteEventNum(int param_1,msg_t *param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteEventParam(int param_1,msg_t *param_2,int param_3)
+void __cdecl MSG_WriteEventParam(int clientNum,msg_t *msg,int eventParam)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x415,0,
                              "%s");
     if (!bVar2) {
@@ -1064,22 +1097,22 @@ void __cdecl MSG_WriteEventParam(int param_1,msg_t *param_2,int param_3)
       return;
     }
   }
-  MSG_WriteBits(param_2,param_3,0xb);
+  MSG_WriteBits(msg,eventParam,0xb);
   return;
 }
 
 
 // 006EFA80  MSG_HighBitNumber  (qcommon/sv_msg_write.cpp:1055)
 
-uint __cdecl MSG_HighBitNumber(uint param_1)
+uint __cdecl MSG_HighBitNumber(uint v)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_8;
+  uint i;
   
-  if (param_1 == 0) {
+  if (v == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x420,0,
                              "%s\n\t%s");
     if (!bVar2) {
@@ -1088,21 +1121,21 @@ uint __cdecl MSG_HighBitNumber(uint param_1)
       return uVar3;
     }
   }
-  local_8 = -(uint)((param_1 & 0xffff0000) != 0) & 0x10;
-  param_1 = param_1 >> (sbyte)local_8;
-  if ((param_1 & 0xff00) != 0) {
-    local_8 = local_8 | 8;
-    param_1 = param_1 >> 8;
+  i = -(uint)((v & 0xffff0000) != 0) & 0x10;
+  v = v >> (sbyte)i;
+  if ((v & 0xff00) != 0) {
+    i = i | 8;
+    v = v >> 8;
   }
-  if ((param_1 & 0xf0) != 0) {
-    local_8 = local_8 | 4;
-    param_1 = param_1 >> 4;
+  if ((v & 0xf0) != 0) {
+    i = i | 4;
+    v = v >> 4;
   }
-  if ((param_1 & 0xc) != 0) {
-    local_8 = local_8 | 2;
-    param_1 = param_1 >> 2;
+  if ((v & 0xc) != 0) {
+    i = i | 2;
+    v = v >> 2;
   }
-  return param_1 >> 1 | local_8;
+  return v >> 1 | i;
 }
 
 
@@ -1112,8 +1145,8 @@ uint __cdecl MSG_HighBitNumber(uint param_1)
 
 uint __cdecl
 MSG_WriteRangedFloat
-          (int param_1,msg_t *param_2,float param_3,float param_4,float param_5,float param_6,
-          int param_7,bool param_8,char *param_9)
+          (int clientNum,msg_t *msg,float oldValue,float value,float begin,float end,int precision,
+          bool oftenZeroOrOne,char *fieldName)
 
 {
   code *pcVar1;
@@ -1135,39 +1168,50 @@ MSG_WriteRangedFloat
   float local_48;
   float local_44;
   float local_40;
-  float local_24;
-  int local_1c;
-  float local_10;
+  float fOne;
+  uint zero;
+  uint one;
+  float fZero;
+  uint rangeSize;
+  float oldV;
+  float newVal;
+  uint iNewValue;
+  uint rangeBits;
+  uint xorValue;
+  float v_2;
+  float oldVal;
+  int v;
+  float range;
   
-  if (((param_2 != (msg_t *)0x0) && (param_2->readOnly != 0)) &&
+  if (((msg != (msg_t *)0x0) && (msg->readOnly != 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x43d,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_6 < param_5) &&
+  if ((end < begin) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x43e,
                                0,"%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_7 < 1) &&
+  if ((precision < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x43f,
                                0,"%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  fVar4 = (param_6 - param_5) * (float)param_7;
+  fVar4 = (end - begin) * (float)precision;
   if (fVar4 <= 4.2949673e+09) {
     local_5c = (uint)(longlong)ROUND(fVar4);
-    local_1c = 0;
+    rangeBits = 0;
     if (local_5c != 0) {
-      local_1c = GetMinBitCountForNum(local_5c);
+      rangeBits = GetMinBitCountForNum(local_5c);
       uVar3 = MSG_HighBitNumber(local_5c);
-      if ((uVar3 + 1 != local_1c) &&
+      if ((uVar3 + 1 != rangeBits) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                    0x463,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1175,93 +1219,93 @@ MSG_WriteRangedFloat
         return uVar3;
       }
     }
-    if (param_4 - param_6 < 0.0) {
-      local_40 = param_4;
+    if (value - end < 0.0) {
+      local_40 = value;
     }
     else {
-      local_40 = param_6;
+      local_40 = end;
     }
-    if (param_5 - param_4 < 0.0) {
+    if (begin - value < 0.0) {
       local_60 = local_40;
     }
     else {
-      local_60 = param_5;
+      local_60 = begin;
     }
-    local_24 = (local_60 - param_5) * (float)param_7 + 0.5;
-    if (fVar4 < local_24) {
-      local_24 = fVar4;
+    newVal = (local_60 - begin) * (float)precision + 0.5;
+    if (fVar4 < newVal) {
+      newVal = fVar4;
     }
-    if (param_3 - param_6 < 0.0) {
-      local_44 = param_3;
+    if (oldValue - end < 0.0) {
+      local_44 = oldValue;
     }
     else {
-      local_44 = param_6;
+      local_44 = end;
     }
-    if (param_5 - param_3 < 0.0) {
+    if (begin - oldValue < 0.0) {
       local_64 = local_44;
     }
     else {
-      local_64 = param_5;
+      local_64 = begin;
     }
-    local_10 = (local_64 - param_5) * (float)param_7 + 0.5;
-    if (fVar4 < local_10) {
-      local_10 = fVar4;
+    oldVal = (local_64 - begin) * (float)precision + 0.5;
+    if (fVar4 < oldVal) {
+      oldVal = fVar4;
     }
-    local_74 = (uint)(longlong)ROUND(local_24);
-    local_84 = (uint)(longlong)ROUND(local_10);
+    local_74 = (uint)(longlong)ROUND(newVal);
+    local_84 = (uint)(longlong)ROUND(oldVal);
     local_84 = local_84 ^ local_74;
-    if (param_2 != (msg_t *)0x0) {
+    if (msg != (msg_t *)0x0) {
       if (local_84 == 0) {
         Com_PrintWarning(0xf,"MSG_WriteRangedFloat writing %d bits of 0.\n");
       }
-      if (param_8) {
-        if (0.0 - param_6 < 0.0) {
+      if (oftenZeroOrOne) {
+        if (0.0 - end < 0.0) {
           local_48 = 0.0;
         }
         else {
-          local_48 = param_6;
+          local_48 = end;
         }
-        if (param_5 - 0.0 < 0.0) {
+        if (begin - 0.0 < 0.0) {
           local_88 = local_48;
         }
         else {
-          local_88 = param_5;
+          local_88 = begin;
         }
-        local_8c = (local_88 - param_5) / (float)param_7 + 0.5;
+        local_8c = (local_88 - begin) / (float)precision + 0.5;
         if (fVar4 < local_8c) {
           local_8c = fVar4;
         }
         local_9c = (uint)(longlong)ROUND(local_8c);
-        if (1.0 - param_6 < 0.0) {
+        if (1.0 - end < 0.0) {
           local_4c = 1.0;
         }
         else {
-          local_4c = param_6;
+          local_4c = end;
         }
-        if (param_5 - 1.0 < 0.0) {
+        if (begin - 1.0 < 0.0) {
           local_a0 = local_4c;
         }
         else {
-          local_a0 = param_5;
+          local_a0 = begin;
         }
-        local_a4 = (local_a0 - param_5) / (float)param_7 + 0.5;
+        local_a4 = (local_a0 - begin) / (float)precision + 0.5;
         if (fVar4 < local_a4) {
           local_a4 = fVar4;
         }
         local_b4 = (uint)(longlong)ROUND(local_a4);
         if (local_74 == local_9c) {
-          MSG_WriteBits(param_2,1,2);
+          MSG_WriteBits(msg,1,2);
         }
         else if (local_74 == local_b4) {
-          MSG_WriteBits(param_2,3,2);
+          MSG_WriteBits(msg,3,2);
         }
         else {
-          MSG_WriteBit0(param_2);
-          MSG_WriteBits(param_2,local_84,local_1c);
+          MSG_WriteBit0(msg);
+          MSG_WriteBits(msg,local_84,rangeBits);
         }
       }
       else {
-        MSG_WriteBits(param_2,local_84,local_1c);
+        MSG_WriteBits(msg,local_84,rangeBits);
       }
     }
   }
@@ -1269,12 +1313,12 @@ MSG_WriteRangedFloat
     Com_PrintWarning(0xf,
                      "The numerical space defined by range/precision combination is too large. No compression performed.\n"
                     );
-    local_84 = (uint)param_4 ^ (uint)param_3;
-    if (param_2 != (msg_t *)0x0) {
+    local_84 = (uint)value ^ (uint)oldValue;
+    if (msg != (msg_t *)0x0) {
       if (local_84 == 0) {
         Com_PrintWarning(0xf,"MSG_WriteRangedFloat writing 0.\n");
       }
-      MSG_WriteLong(param_2,local_84);
+      MSG_WriteLong(msg,local_84);
     }
   }
   return local_84;
@@ -1283,12 +1327,12 @@ MSG_WriteRangedFloat
 
 // 006F00D0  MSG_GetPacketEntityTypeForEType  (qcommon/sv_msg_write.cpp:1201)
 
-PacketEntityType __cdecl MSG_GetPacketEntityTypeForEType(int param_1)
+PacketEntityType __cdecl MSG_GetPacketEntityTypeForEType(int eType)
 
 {
   PacketEntityType PVar1;
   
-  switch(param_1) {
+  switch(eType) {
   case 0:
     PVar1 = ANALYZE_DATATYPE_ENTITYTYPE_GENERALENTITY;
     break;
@@ -1348,13 +1392,15 @@ PacketEntityType __cdecl MSG_GetPacketEntityTypeForEType(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_EncodeSkippedFields(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl
+MSG_EncodeSkippedFields
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int numFieldsSkipped,int skippedFieldBits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 < 1) {
+  if (numFieldsSkipped < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x5d6,0,
                              "%s\n\t(numFieldsSkipped) = %i");
     if (!bVar2) {
@@ -1363,22 +1409,23 @@ void __cdecl MSG_EncodeSkippedFields(SnapshotInfo_s *param_1,msg_t *param_2,int 
       return;
     }
   }
-  if (param_4 == 1) {
-    for (; 1 < param_3; param_3 = param_3 + -1) {
-      MSG_WriteBit0(param_2);
+  if (skippedFieldBits == 1) {
+    for (; 1 < numFieldsSkipped; numFieldsSkipped = numFieldsSkipped + -1) {
+      MSG_WriteBit0(msg);
     }
-    MSG_WriteBit1(param_2);
+    MSG_WriteBit1(msg);
   }
-  else if (param_3 == 1) {
-    MSG_WriteBit1(param_2);
+  else if (numFieldsSkipped == 1) {
+    MSG_WriteBit1(msg);
   }
   else {
-    MSG_WriteBit0(param_2);
-    for (param_3 = param_3 + -1; (1 << ((byte)param_4 & 0x1f)) + -1 <= param_3;
-        param_3 = param_3 - ((1 << ((byte)param_4 & 0x1f)) + -1)) {
-      MSG_WriteBits(param_2,-1,param_4);
+    MSG_WriteBit0(msg);
+    for (numFieldsSkipped = numFieldsSkipped + -1;
+        (1 << ((byte)skippedFieldBits & 0x1f)) + -1 <= numFieldsSkipped;
+        numFieldsSkipped = numFieldsSkipped - ((1 << ((byte)skippedFieldBits & 0x1f)) + -1)) {
+      MSG_WriteBits(msg,-1,skippedFieldBits);
     }
-    MSG_WriteBits(param_2,param_3,param_4);
+    MSG_WriteBits(msg,numFieldsSkipped,skippedFieldBits);
   }
   return;
 }
@@ -1389,22 +1436,23 @@ void __cdecl MSG_EncodeSkippedFields(SnapshotInfo_s *param_1,msg_t *param_2,int 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteValueNoXor(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,int param_4,char *param_5)
+MSG_WriteValueNoXor(SnapshotInfo_s *snapInfo,msg_t *msg,int value,int bits,char *fieldName)
 
 {
-  uint uVar1;
-  undefined4 local_c;
+  uint bits_00;
+  int absbits;
+  int partialBits;
   
-  local_c = (param_4 ^ param_4 >> 0x1f) - (param_4 >> 0x1f);
-  uVar1 = local_c & 7;
-  if (uVar1 != 0) {
-    MSG_WriteBits(param_2,param_3,uVar1);
-    local_c = local_c - uVar1;
-    param_3 = param_3 >> (sbyte)uVar1;
+  absbits = (bits ^ bits >> 0x1f) - (bits >> 0x1f);
+  bits_00 = absbits & 7;
+  if (bits_00 != 0) {
+    MSG_WriteBits(msg,value,bits_00);
+    absbits = absbits - bits_00;
+    value = value >> (sbyte)bits_00;
   }
-  for (; local_c != 0; local_c = local_c - 8) {
-    MSG_WriteByte(param_2,param_3);
-    param_3 = param_3 >> 8;
+  for (; absbits != 0; absbits = absbits + -8) {
+    MSG_WriteByte(msg,value);
+    value = value >> 8;
   }
   return;
 }
@@ -1415,20 +1463,22 @@ MSG_WriteValueNoXor(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,int param
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteValue(SnapshotInfo_s *param_1,msg_t *param_2,int *param_3,int *param_4,int param_5,
-              int param_6,char *param_7)
+MSG_WriteValue(SnapshotInfo_s *snapInfo,msg_t *msg,int *fromF,int *toF,int bits,int size,
+              char *fieldName)
 
 {
   uint uVar1;
-  undefined4 local_8;
+  uint uVar2;
+  int fromVal;
+  int value;
   
-  uVar1 = MSG_GetField(param_3,param_6);
-  local_8 = MSG_GetField(param_4,param_6);
-  local_8 = local_8 ^ uVar1;
-  if (param_5 != 0x20) {
-    local_8 = (1 << ((byte)param_5 & 0x1f)) - 1U & local_8;
+  uVar1 = MSG_GetField(fromF,size);
+  uVar2 = MSG_GetField(toF,size);
+  value = uVar2 ^ uVar1;
+  if (bits != 0x20) {
+    value = (1 << ((byte)bits & 0x1f)) - 1U & value;
   }
-  MSG_WriteValueNoXor(param_1,param_2,local_8,param_5,param_7);
+  MSG_WriteValueNoXor(snapInfo,msg,value,bits,fieldName);
   return;
 }
 
@@ -1437,48 +1487,53 @@ MSG_WriteValue(SnapshotInfo_s *param_1,msg_t *param_2,int *param_3,int *param_4,
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaAngle(SnapshotInfo_s *param_1,msg_t *param_2,float param_3,float param_4)
+void __cdecl MSG_WriteDeltaAngle(SnapshotInfo_s *snapInfo,msg_t *msg,float oldFloat,float fullFloat)
 
 {
   code *pcVar1;
   short sVar2;
   short sVar3;
   bool bVar4;
-  int iVar5;
-  int iVar6;
-  uint uVar7;
-  int local_20;
-  int local_c;
+  int value;
+  int bits;
+  uint uVar5;
+  int sign;
+  int diff;
+  short newValAsShort;
+  int absdiff;
+  short oldValAsShort;
+  int index;
+  bool sent;
   
-  sVar2 = (short)(int)(param_3 * 182.04445);
-  sVar3 = (short)(int)(param_4 * 182.04445);
-  uVar7 = (int)sVar3 - (int)sVar2;
-  iVar5 = (uVar7 ^ (int)uVar7 >> 0x1f) - ((int)uVar7 >> 0x1f);
+  sVar2 = (short)(int)(oldFloat * 182.04445);
+  sVar3 = (short)(int)(fullFloat * 182.04445);
+  uVar5 = (int)sVar3 - (int)sVar2;
+  value = (uVar5 ^ (int)uVar5 >> 0x1f) - ((int)uVar5 >> 0x1f);
   bVar4 = false;
-  local_c = 0;
+  index = 0;
   do {
-    if (6 < local_c) {
+    if (6 < index) {
 LAB_006f177e:
       if (!bVar4) {
-        MSG_WriteBit0(param_2);
-        if ((iVar5 == 0) || (0xfff < iVar5)) {
-          MSG_WriteBit0(param_2);
-          MSG_WriteAngle16(param_2,param_4);
+        MSG_WriteBit0(msg);
+        if ((value == 0) || (0xfff < value)) {
+          MSG_WriteBit0(msg);
+          MSG_WriteAngle16(msg,fullFloat);
         }
         else {
-          local_20 = 1;
-          MSG_WriteBit1(param_2);
-          if ((int)uVar7 < 0) {
-            local_20 = -1;
+          sign = 1;
+          MSG_WriteBit1(msg);
+          if ((int)uVar5 < 0) {
+            sign = -1;
           }
-          if (local_20 == -1) {
-            MSG_WriteBit1(param_2);
+          if (sign == -1) {
+            MSG_WriteBit1(msg);
           }
           else {
-            MSG_WriteBit0(param_2);
+            MSG_WriteBit0(msg);
           }
-          MSG_WriteBits(param_2,iVar5,0xc);
-          if ((int)sVar2 + uVar7 != (int)sVar3) {
+          MSG_WriteBits(msg,value,0xc);
+          if ((int)sVar2 + uVar5 != (int)sVar3) {
             va("%i + %i != %i");
             bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                      0x680,0,"%s\n\t%s");
@@ -1489,7 +1544,7 @@ LAB_006f177e:
             }
           }
           if ((float)(int)sVar3 * 0.005493164 !=
-              (float)(int)(short)(int)(param_4 * 182.04445) * 0.005493164) {
+              (float)(int)(short)(int)(fullFloat * 182.04445) * 0.005493164) {
             va("%f != %f");
             bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                      0x681,0,"%s\n\t%s");
@@ -1503,20 +1558,20 @@ LAB_006f177e:
       }
       return;
     }
-    if (g_commonAngleDeltas[local_c] == iVar5) {
+    if (g_commonAngleDeltas[index] == value) {
       bVar4 = true;
-      MSG_WriteBit1(param_2);
-      if ((int)uVar7 < 0) {
-        MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
+      if ((int)uVar5 < 0) {
+        MSG_WriteBit1(msg);
       }
       else {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
       }
-      iVar6 = GetMinBitCountForNum(7);
-      MSG_WriteBits(param_2,local_c,iVar6);
+      bits = GetMinBitCountForNum(7);
+      MSG_WriteBits(msg,index,bits);
       goto LAB_006f177e;
     }
-    local_c = local_c + 1;
+    index = index + 1;
   } while( true );
 }
 
@@ -1527,8 +1582,8 @@ LAB_006f177e:
 
 bool __cdecl
 MSG_WriteDeltaField_Internal
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *param_4,uchar *param_5,
-          NetField *param_6,int param_7,int *param_8,int *param_9)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,uchar *from,uchar *to,NetField *field,
+          int fieldNum,int *fromF,int *toF)
 
 {
   float fVar1;
@@ -1541,32 +1596,42 @@ MSG_WriteDeltaField_Internal
   int iVar8;
   int *piVar9;
   int *piVar10;
-  char *pcVar11;
+  char *fieldName;
   uint local_64;
+  int delta;
+  int diff;
+  hudelem_color_t *fromColor;
+  hudelem_color_t *toColor;
+  int trunc;
+  int oldTrunc;
+  float oldFloat;
+  float fullFloat;
+  float oldValue;
+  int value;
   
-  switch(param_6->bits) {
+  switch(field->bits) {
   case 0:
-    fVar1 = (float)*param_9;
+    fVar1 = (float)*toF;
     iVar6 = (int)fVar1;
-    iVar8 = (int)(float)*param_8;
+    iVar8 = (int)(float)*fromF;
     if (fVar1 == 0.0) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
       if (fVar1 == -0.0) {
-        MSG_WriteBit1(param_2);
+        MSG_WriteBit1(msg);
       }
       else {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
       }
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
       if ((((fVar1 == -0.0) || ((float)iVar6 != fVar1)) || (iVar6 + 0x1000 < 0)) ||
          (((0x1fff < iVar6 + 0x1000 || (iVar8 + 0x1000 < 0)) || (0x1fff < iVar8 + 0x1000)))) {
-        MSG_WriteBit1(param_2);
-        MSG_WriteLong(param_2,*param_9 ^ *param_8);
+        MSG_WriteBit1(msg);
+        MSG_WriteLong(msg,*toF ^ *fromF);
       }
       else {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
         uVar7 = iVar8 + 0x1000U ^ iVar6 + 0x1000U;
         if ((((int)uVar7 < 0) || (0x1fff < (int)uVar7)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
@@ -1577,58 +1642,56 @@ MSG_WriteDeltaField_Internal
           uVar5 = (*pcVar3)();
           return (bool)uVar5;
         }
-        MSG_WriteBits(param_2,uVar7,5);
-        MSG_WriteByte(param_2,(int)uVar7 >> 5);
+        MSG_WriteBits(msg,uVar7,5);
+        MSG_WriteByte(msg,(int)uVar7 >> 5);
       }
     }
     break;
   case -0x6b:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,60.0,100,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,60.0,100,false,field->name);
     break;
   case -0x6a:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,255.0,100,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,255.0,100,false,field->name);
     break;
   case -0x69:
-    MSG_WriteAngle(param_2,10,(float)*param_9);
+    MSG_WriteAngle(msg,10,(float)*toF);
     break;
   case -0x68:
-    MSG_WriteDemoRoundedFloat(param_2,param_6->bits,(float)*param_9,(float)*param_8,7,0xc);
+    MSG_WriteDemoRoundedFloat(msg,field->bits,(float)*toF,(float)*fromF,7,0xc);
     break;
   case -0x67:
   case -0x66:
   case -0x65:
-    MSG_WriteDemoRoundedFloat(param_2,param_6->bits,(float)*param_9,(float)*param_8,5,0x10);
+    MSG_WriteDemoRoundedFloat(msg,field->bits,(float)*toF,(float)*fromF,5,0x10);
     break;
   case -100:
   case -0x3e:
-    MSG_WriteDeltaAngle(param_1,param_2,(float)*param_8,(float)*param_9);
+    MSG_WriteDeltaAngle(snapInfo,msg,(float)*fromF,(float)*toF);
     break;
   case -99:
-    fVar1 = (float)*param_9;
+    fVar1 = (float)*toF;
     iVar6 = (int)fVar1;
-    fVar2 = (float)*param_8;
+    fVar2 = (float)*fromF;
     if ((fVar1 == 0.0) && (fVar1 != -0.0)) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
       if ((fVar1 == -0.0) ||
          ((((float)iVar6 != fVar1 || (iVar6 + 0x800 < 0)) || (0xfff < iVar6 + 0x800)))) {
-        MSG_WriteBit1(param_2);
-        MSG_WriteLong(param_2,*param_9 ^ *param_8);
+        MSG_WriteBit1(msg);
+        MSG_WriteLong(msg,*toF ^ *fromF);
       }
       else {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
         uVar7 = (int)fVar2 + 0x800U ^ iVar6 + 0x800U;
-        MSG_WriteBits(param_2,uVar7,4);
-        MSG_WriteByte(param_2,(int)uVar7 >> 4);
+        MSG_WriteBits(msg,uVar7,4);
+        MSG_WriteByte(msg,(int)uVar7 >> 4);
       }
     }
-    local_64 = (uint)(longlong)ROUND((float)*param_9 + 2048.0);
+    local_64 = (uint)(longlong)ROUND((float)*toF + 2048.0);
     if ((0xfff < local_64) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x731,0,
@@ -1640,72 +1703,71 @@ MSG_WriteDeltaField_Internal
     }
     break;
   case -0x62:
-    MSG_WriteEFlags(param_1->clientNum,param_2,*param_8,*param_9);
+    MSG_WriteEFlags(snapInfo->clientNum,msg,*fromF,*toF);
     break;
   case -0x61:
   case -0x47:
   case -0x46:
   case -0x44:
-    MSG_WriteDeltaTime(param_1->clientNum,param_2,param_3,*param_9);
+    MSG_WriteDeltaTime(snapInfo->clientNum,msg,time,*toF);
     break;
   case -0x60:
-    iVar6 = MSG_GetField(param_9,param_6->size);
-    MSG_WriteGroundEntityNum(param_1->clientNum,param_2,iVar6);
+    iVar6 = MSG_GetField(toF,field->size);
+    MSG_WriteGroundEntityNum(snapInfo->clientNum,msg,iVar6);
     break;
   case -0x5f:
-    MSG_WriteBits(param_2,*param_9 / 100,7);
+    MSG_WriteBits(msg,*toF / 100,7);
     break;
   case -0x5e:
-    iVar6 = MSG_GetField(param_9,param_6->size);
-    MSG_WriteEventNum(param_1->clientNum,param_2,iVar6);
+    iVar6 = MSG_GetField(toF,field->size);
+    MSG_WriteEventNum(snapInfo->clientNum,msg,iVar6);
     break;
   case -0x5d:
-    iVar6 = MSG_GetField(param_9,param_6->size);
-    MSG_WriteEventParam(param_1->clientNum,param_2,iVar6);
+    iVar6 = MSG_GetField(toF,field->size);
+    MSG_WriteEventParam(snapInfo->clientNum,msg,iVar6);
     break;
   case -0x5c:
   case -0x5b:
   case -0x42:
   case -0x41:
-    MSG_WriteOriginFloat
-              (param_1,param_1->clientNum,param_2,param_6->bits,(float)*param_9,(float)*param_8);
+    MSG_WriteOriginFloat(snapInfo,snapInfo->clientNum,msg,field->bits,(float)*toF,(float)*fromF);
     break;
   case -0x5a:
   case -0x40:
-    MSG_WriteOriginZFloat(param_1,param_1->clientNum,param_2,(float)*param_9,(float)*param_8);
+    MSG_WriteOriginZFloat(snapInfo,snapInfo->clientNum,msg,(float)*toF,(float)*fromF);
     break;
   case -0x59:
-    fVar1 = (float)*param_9;
+    fVar1 = (float)*toF;
     iVar6 = (int)fVar1;
-    fVar2 = (float)*param_8;
+    fVar2 = (float)*fromF;
     if ((((float)iVar6 == fVar1) && (fVar1 != -0.0)) &&
        ((-1 < iVar6 + 0x1000 && (iVar6 + 0x1000 < 0x2000)))) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
       uVar7 = (int)fVar2 + 0x1000U ^ iVar6 + 0x1000U;
-      MSG_WriteBits(param_2,uVar7,5);
-      MSG_WriteByte(param_2,(int)uVar7 >> 5);
+      MSG_WriteBits(msg,uVar7,5);
+      MSG_WriteByte(msg,(int)uVar7 >> 5);
     }
     else {
-      MSG_WriteBit1(param_2);
-      MSG_WriteLong(param_2,*param_9 ^ *param_8);
+      MSG_WriteBit1(msg);
+      MSG_WriteLong(msg,*toF ^ *fromF);
     }
     break;
   case -0x58:
-    MSG_WriteLong(param_2,*param_9 ^ *param_8);
+    MSG_WriteLong(msg,*toF ^ *fromF);
     break;
   case -0x57:
-    MSG_WriteAngle16(param_2,(float)*param_9);
+    MSG_WriteAngle16(msg,(float)*toF);
     break;
   case -0x56:
-    MSG_WriteBits(param_2,(int)ROUND(((float)*param_9 - 1.0) * 10.0 + 9.313226e-10),6);
+    MSG_WriteBits(msg,(int)ROUND(((float)*toF - 1.0) * 10.0 + 9.313226e-10),6);
     break;
   case -0x55:
-    if (((*(char *)((int)param_8 + 3) == -1) && (*(char *)((int)param_9 + 3) == '\0')) ||
-       ((*(char *)((int)param_8 + 3) == '\0' && (*(char *)((int)param_9 + 3) == -1)))) {
+    if (((*(char *)((int)fromF + 3) == -1) && (*(char *)((int)toF + 3) == '\0')) ||
+       ((*(char *)((int)fromF + 3) == '\0' && (*(char *)((int)toF + 3) == -1)))) {
       iVar6 = 3;
       bVar4 = true;
-      piVar9 = param_8;
-      piVar10 = param_9;
+      piVar9 = fromF;
+      piVar10 = toF;
       do {
         if (iVar6 == 0) break;
         iVar6 = iVar6 + -1;
@@ -1714,143 +1776,135 @@ MSG_WriteDeltaField_Internal
         piVar10 = (int *)((int)piVar10 + 1);
       } while (bVar4);
       if (bVar4) {
-        MSG_WriteBit1(param_2);
+        MSG_WriteBit1(msg);
         return true;
       }
     }
-    MSG_WriteBit0(param_2);
-    if ((((char)*param_8 == (char)*param_9) &&
-        (*(char *)((int)param_8 + 1) == *(char *)((int)param_9 + 1))) &&
-       (*(char *)((int)param_8 + 2) == *(char *)((int)param_9 + 2))) {
-      MSG_WriteBit1(param_2);
+    MSG_WriteBit0(msg);
+    if ((((char)*fromF == (char)*toF) && (*(char *)((int)fromF + 1) == *(char *)((int)toF + 1))) &&
+       (*(char *)((int)fromF + 2) == *(char *)((int)toF + 2))) {
+      MSG_WriteBit1(msg);
     }
     else {
-      MSG_WriteBit0(param_2);
-      MSG_WriteByte(param_2,(uint)(byte)*param_9);
-      MSG_WriteByte(param_2,(uint)*(byte *)((int)param_9 + 1));
-      MSG_WriteByte(param_2,(uint)*(byte *)((int)param_9 + 2));
+      MSG_WriteBit0(msg);
+      MSG_WriteByte(msg,(uint)(byte)*toF);
+      MSG_WriteByte(msg,(uint)*(byte *)((int)toF + 1));
+      MSG_WriteByte(msg,(uint)*(byte *)((int)toF + 2));
     }
-    MSG_WriteBits(param_2,(int)(uint)*(byte *)((int)param_9 + 3) >> 3,5);
+    MSG_WriteBits(msg,(int)(uint)*(byte *)((int)toF + 3) >> 3,5);
     break;
   case -0x54:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,1.0,1000,true,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,1.0,1000,true,field->name);
     break;
   case -0x53:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,1.5,10,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,1.5,10,false,field->name);
     break;
   case -0x52:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,3.0,100,true,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,3.0,100,true,field->name);
     break;
   case -0x51:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,1.0,100,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,1.0,100,false,field->name);
     break;
   case -0x50:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,0.0,1.0,1000,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,0.0,1.0,1000,false,field->name);
     break;
   case -0x4f:
-    iVar6 = *param_9 - *param_8;
+    iVar6 = *toF - *fromF;
     if ((iVar6 < 0x40) && (-0x41 < iVar6)) {
-      MSG_WriteBits(param_2,0,2);
-      MSG_WriteBits(param_2,iVar6,7);
+      MSG_WriteBits(msg,0,2);
+      MSG_WriteBits(msg,iVar6,7);
     }
     else if ((iVar6 < 0x1000) && (-0x1001 < iVar6)) {
-      MSG_WriteBits(param_2,1,2);
-      MSG_WriteBits(param_2,iVar6,0xd);
+      MSG_WriteBits(msg,1,2);
+      MSG_WriteBits(msg,iVar6,0xd);
     }
     else if ((iVar6 < 0x800000) && (-0x800001 < iVar6)) {
-      MSG_WriteBits(param_2,2,2);
-      MSG_WriteByte(param_2,iVar6);
-      MSG_WriteShort(param_2,iVar6 >> 8);
+      MSG_WriteBits(msg,2,2);
+      MSG_WriteByte(msg,iVar6);
+      MSG_WriteShort(msg,iVar6 >> 8);
     }
     else {
-      MSG_WriteBits(param_2,3,2);
-      MSG_WriteLong(param_2,iVar6);
+      MSG_WriteBits(msg,3,2);
+      MSG_WriteLong(msg,iVar6);
     }
     break;
   case -0x4e:
-    MSG_WriteDeltaFrameTime(param_1->clientNum,param_2,param_3,*param_9);
+    MSG_WriteDeltaFrameTime(snapInfo->clientNum,msg,time,*toF);
     break;
   case -0x4d:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,-1.0,1.0,100,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,-1.0,1.0,100,false,field->name);
     break;
   case -0x4c:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)(int)(short)*param_8 * 3.0517578e-05,
-               (float)(int)(short)*param_9 * 3.0517578e-05,-1.0,1.0,10,false,param_6->name);
+              (snapInfo->clientNum,msg,(float)(int)(short)*fromF * 3.0517578e-05,
+               (float)(int)(short)*toF * 3.0517578e-05,-1.0,1.0,10,false,field->name);
     break;
   case -0x4b:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)(int)(short)*param_8 * 0.005493164,
-               (float)(int)(short)*param_9 * 0.005493164,-90.0,90.0,10,false,param_6->name);
+              (snapInfo->clientNum,msg,(float)(int)(short)*fromF * 0.005493164,
+               (float)(int)(short)*toF * 0.005493164,-90.0,90.0,10,false,field->name);
     break;
   case -0x4a:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)(int)(short)*param_8 * 0.005493164,
-               (float)(int)(short)*param_9 * 0.005493164,-180.0,180.0,10,false,param_6->name);
+              (snapInfo->clientNum,msg,(float)(int)(short)*fromF * 0.005493164,
+               (float)(int)(short)*toF * 0.005493164,-180.0,180.0,10,false,field->name);
     break;
   case -0x49:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,-12.0,12.0,10,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,-12.0,12.0,10,false,field->name);
     break;
   case -0x48:
     MSG_WriteRangedFloat
-              (param_1->clientNum,param_2,(float)*param_8,(float)*param_9,-6000.0,6000.0,10,false,
-               param_6->name);
+              (snapInfo->clientNum,msg,(float)*fromF,(float)*toF,-6000.0,6000.0,10,false,field->name
+              );
     break;
   case -0x45:
   case -0x43:
-    MSG_WriteLong(param_2,*param_9);
+    MSG_WriteLong(msg,*toF);
     break;
   case -0x3f:
   case -0x3d:
-    MSG_WriteLong(param_2,*param_9);
+    MSG_WriteLong(msg,*toF);
     break;
   case -0x3c:
-    uVar7 = *param_9 - *param_8;
+    uVar7 = *toF - *fromF;
     if ((int)((uVar7 ^ (int)uVar7 >> 0x1f) - ((int)uVar7 >> 0x1f)) < 0x10) {
-      MSG_WriteBit1(param_2);
-      MSG_WriteBits(param_2,uVar7 + 0x10,5);
+      MSG_WriteBit1(msg);
+      MSG_WriteBits(msg,uVar7 + 0x10,5);
     }
     else {
-      MSG_WriteBit0(param_2);
-      MSG_WriteValue(param_1,param_2,param_8,param_9,-8,param_6->size,param_6->name);
+      MSG_WriteBit0(msg);
+      MSG_WriteValue(snapInfo,msg,fromF,toF,-8,field->size,field->name);
     }
     break;
   case -0x3b:
-    iVar6 = MSG_GetField(param_9,param_6->size);
-    iVar8 = MSG_GetField(param_8,param_6->size);
+    iVar6 = MSG_GetField(toF,field->size);
+    iVar8 = MSG_GetField(fromF,field->size);
     iVar6 = iVar6 - iVar8;
     if ((iVar6 < 1) || (0x10 < iVar6)) {
-      MSG_WriteBit0(param_2);
-      MSG_WriteValue(param_1,param_2,param_8,param_9,8,param_6->size,param_6->name);
+      MSG_WriteBit0(msg);
+      MSG_WriteValue(snapInfo,msg,fromF,toF,8,field->size,field->name);
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
       iVar8 = GetMinBitCountForNum(0x10);
-      MSG_WriteBits(param_2,iVar6 + -1,iVar8);
+      MSG_WriteBits(msg,iVar6 + -1,iVar8);
     }
     break;
   case -0x3a:
-    pcVar11 = param_6->name;
+    fieldName = field->name;
     iVar8 = 8;
-    iVar6 = MSG_GetField(param_9,param_6->size);
-    MSG_WriteValueNoXor(param_1,param_2,iVar6,iVar8,pcVar11);
+    iVar6 = MSG_GetField(toF,field->size);
+    MSG_WriteValueNoXor(snapInfo,msg,iVar6,iVar8,fieldName);
     break;
   default:
-    MSG_WriteDeltaField_Default(param_1,param_2,param_6,param_8,param_9);
+    MSG_WriteDeltaField_Default(snapInfo,msg,field,fromF,toF);
   }
   return true;
 }
@@ -1861,61 +1915,60 @@ MSG_WriteDeltaField_Internal
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 bool __cdecl
-MSG_WriteDeltaField(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *param_4,uchar *param_5
-                   ,NetField *param_6,int param_7,bool param_8,bool param_9,int param_10,
-                   int param_11,bool param_12)
+MSG_WriteDeltaField(SnapshotInfo_s *snapInfo,msg_t *msg,int time,uchar *from,uchar *to,
+                   NetField *field,int fieldNum,bool forceSend,bool xorValue,int lastChangedField,
+                   int skippedFieldBits,bool sendSkippedFields)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_14;
-  int *local_10;
-  int *local_c;
-  int *local_8;
+  int zeroVal;
+  int *realFromF;
+  int *toF;
+  int *fromF;
   
-  if ((param_2->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x89d,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_c = (int *)(param_5 + param_6->offset);
-  if ((param_4 == (uchar *)0x0) &&
+  toF = (int *)(to + field->offset);
+  if ((from == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x8a5,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_10 = (int *)(param_4 + param_6->offset);
-  local_8 = local_10;
-  if (!param_9) {
-    local_14 = 0;
-    local_8 = &local_14;
+  realFromF = (int *)(from + field->offset);
+  fromF = realFromF;
+  if (!xorValue) {
+    zeroVal = 0;
+    fromF = &zeroVal;
   }
-  if (param_12) {
-    if ((!param_8) &&
-       (bVar2 = MSG_ValuesAreEqual(param_1->clientNum,param_6->bits,param_6->size,local_10,local_c),
-       bVar2)) {
+  if (sendSkippedFields) {
+    if ((!forceSend) &&
+       (bVar2 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,realFromF,toF), bVar2
+       )) {
       return false;
     }
-    if (((!param_8) && (*local_10 == *local_c)) &&
+    if (((!forceSend) && (*realFromF == *toF)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x8b8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_6->changeHints == '\x01') && ((param_1->fromBaseline == false || (param_7 != 0)))) {
-      SV_GetEntityTypeString(param_1->packetEntityType);
+    if ((field->changeHints == '\x01') && ((snapInfo->fromBaseline == false || (fieldNum != 0)))) {
+      SV_GetEntityTypeString(snapInfo->packetEntityType);
       Com_PrintError(0xf,"Field %s changed for %s eType %s when we thought it never would\n");
     }
-    MSG_EncodeSkippedFields(param_1,param_2,param_7 - param_10,param_11);
+    MSG_EncodeSkippedFields(snapInfo,msg,fieldNum - lastChangedField,skippedFieldBits);
   }
-  bVar2 = MSG_WriteDeltaField_Internal
-                    (param_1,param_2,param_3,param_4,param_5,param_6,param_7,local_8,local_c);
+  bVar2 = MSG_WriteDeltaField_Internal(snapInfo,msg,time,from,to,field,fieldNum,fromF,toF);
   return bVar2;
 }
 
@@ -1926,9 +1979,9 @@ MSG_WriteDeltaField(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *pa
 
 void __cdecl
 MSG_WriteDeltaFields
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,uchar *param_4,uchar *param_5,
-          int param_6,int param_7,int param_8,NetField *param_9,int param_10,bool param_11,
-          bool param_12)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,uchar *from,uchar *to,int force,
+          int lastChanged,int numFields,NetField *stateFields,int skippedFieldBits,
+          bool writeEntUnlinkBit,bool isEntity)
 
 {
   code *pcVar1;
@@ -1936,44 +1989,51 @@ MSG_WriteDeltaFields
   int iVar3;
   bool bVar4;
   NetField *pNVar5;
-  char *pcVar6;
+  char *fmt;
   bool local_28;
-  int local_10;
+  bool forceThisField_2;
+  bool forceThisField;
+  bool xorValueAgainstOldValue;
+  NetField *field;
+  archivedEntity_s *fromEnt;
+  int i;
+  bool eTypeChanged;
+  archivedEntity_s *toEnt;
   
-  iVar3 = param_7;
-  if ((param_2->readOnly != 0) &&
+  iVar3 = lastChanged;
+  if ((msg->readOnly != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x8de,
                                0,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 == 0) && (param_7 < 0)) {
-    MSG_WriteBit0(param_2);
+  if ((force == 0) && (lastChanged < 0)) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    if ((param_7 < 0) &&
+    MSG_WriteBit1(msg);
+    if ((lastChanged < 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x8f8,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_11) {
-      if (param_1->entJustUnlinked == false) {
-        MSG_WriteBit0(param_2);
+    if (writeEntUnlinkBit) {
+      if (snapInfo->entJustUnlinked == false) {
+        MSG_WriteBit0(msg);
       }
       else {
-        MSG_WriteBit1(param_2);
+        MSG_WriteBit1(msg);
       }
     }
-    MSG_WriteLastChangedField(param_2,param_7,param_8);
-    param_7 = -1;
-    for (local_10 = 0; local_10 <= iVar3; local_10 = local_10 + 1) {
-      pNVar5 = param_9 + local_10;
-      if ((pNVar5->changeHints != '\x02') || (local_10 == iVar3)) {
-        if (param_1->entJustUnlinked == false) {
+    MSG_WriteLastChangedField(msg,lastChanged,numFields);
+    lastChanged = -1;
+    for (i = 0; i <= iVar3; i = i + 1) {
+      pNVar5 = stateFields + i;
+      if ((pNVar5->changeHints != '\x02') || (i == iVar3)) {
+        if (snapInfo->entJustUnlinked == false) {
 LAB_006f1d6b:
           local_28 = false;
         }
@@ -1987,25 +2047,25 @@ LAB_006f1d6b:
           if (!bVar4) goto LAB_006f1d6b;
           local_28 = true;
         }
-        bVar4 = MSG_WriteDeltaField(param_1,param_2,param_3,param_4,param_5,pNVar5,local_10,local_28
-                                    ,local_28 == false,param_7,param_10,true);
+        bVar4 = MSG_WriteDeltaField(snapInfo,msg,time,from,to,pNVar5,i,local_28,local_28 == false,
+                                    lastChanged,skippedFieldBits,true);
         if (bVar4) {
-          param_7 = local_10;
+          lastChanged = i;
         }
       }
     }
-    if ((param_7 != iVar3) &&
+    if ((lastChanged != iVar3) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0x91e,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_7 = -1;
-    for (local_10 = 0; local_10 < iVar3; local_10 = local_10 + 1) {
-      pNVar5 = param_9 + local_10;
+    lastChanged = -1;
+    for (i = 0; i < iVar3; i = i + 1) {
+      pNVar5 = stateFields + i;
       if (pNVar5->changeHints == '\x02') {
-        if (param_1->entJustUnlinked == false) {
+        if (snapInfo->entJustUnlinked == false) {
 LAB_006f1e98:
           cVar2 = '\0';
         }
@@ -2019,15 +2079,15 @@ LAB_006f1e98:
           if (!bVar4) goto LAB_006f1e98;
           cVar2 = '\x01';
         }
-        bVar4 = MSG_WriteDeltaField(param_1,param_2,param_3,param_4,param_5,pNVar5,local_10,true,
-                                    (bool)('\x01' - cVar2),param_7,param_10,false);
+        bVar4 = MSG_WriteDeltaField(snapInfo,msg,time,from,to,pNVar5,i,true,(bool)('\x01' - cVar2),
+                                    lastChanged,skippedFieldBits,false);
         if (bVar4) {
-          param_7 = local_10;
+          lastChanged = i;
         }
         else {
-          pcVar6 = va("An ALWAYS_CHANGES field (%s) didn\'t have its delta written?");
+          fmt = va("An ALWAYS_CHANGES field (%s) didn\'t have its delta written?");
           bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
-                                   0x933,0,pcVar6);
+                                   0x933,0,fmt);
           if (!bVar4) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
@@ -2046,14 +2106,13 @@ LAB_006f1e98:
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteEntityRemoval
-          (SnapshotInfo_s *param_1,msg_t *param_2,uchar *param_3,int param_4,bool param_5)
+MSG_WriteEntityRemoval(SnapshotInfo_s *snapInfo,msg_t *msg,uchar *from,int indexBits,bool changeBit)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (uchar *)0x0) {
+  if (from == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x93f,0,
                              "%s");
     if (!bVar2) {
@@ -2062,7 +2121,7 @@ MSG_WriteEntityRemoval
       return;
     }
   }
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x940,0,
                              "%s");
     if (!bVar2) {
@@ -2075,11 +2134,11 @@ MSG_WriteEntityRemoval
      ((1 < (cl_shownet->current).integer || ((cl_shownet->current).integer == -1)))) {
     Com_Printf(0xf,"W|%3i: #%-3i remove\n");
   }
-  if (param_5) {
-    MSG_WriteBit1(param_2);
+  if (changeBit) {
+    MSG_WriteBit1(msg);
   }
-  MSG_WriteEntityIndex(param_1,param_2,*(int *)param_3,param_4);
-  MSG_WriteBit1(param_2);
+  MSG_WriteEntityIndex(snapInfo,msg,*(int *)from,indexBits);
+  MSG_WriteBit1(msg);
   return;
 }
 
@@ -2090,16 +2149,18 @@ MSG_WriteEntityRemoval
 
 int __cdecl
 MSG_WriteEntityDeltaForEType
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,int param_4,entityState_s *param_5,
-          entityState_s *param_6,DeltaFlags param_7)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,int eType,entityState_s *from,
+          entityState_s *to,DeltaFlags flags)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  NetFieldList *pNVar4;
+  NetFieldList *fieldList_00;
+  int bits;
+  NetFieldList *fieldList;
   
-  if (param_2->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x967,0,
                              "%s");
     if (!bVar2) {
@@ -2108,23 +2169,22 @@ MSG_WriteEntityDeltaForEType
       return iVar3;
     }
   }
-  pNVar4 = MSG_GetStateFieldListForEntityType(param_4,param_1->demoSnapshot);
+  fieldList_00 = MSG_GetStateFieldListForEntityType(eType,snapInfo->demoSnapshot);
   iVar3 = MSG_WriteEntityDelta
-                    (param_1,param_2,param_3,param_5,param_6,param_7,pNVar4->count,10,pNVar4->array)
-  ;
-  SV_PacketAnalyze_TrackETypeBytes(param_4,param_6->number,iVar3,param_1->archived,pNVar4);
+                    (snapInfo,msg,time,from,to,flags,fieldList_00->count,10,fieldList_00->array);
+  SV_PacketAnalyze_TrackETypeBytes(eType,to->number,iVar3,snapInfo->archived,fieldList_00);
   return iVar3;
 }
 
 
 // 006F20C0  MSG_TrTypeUsesTrDuration  (qcommon/sv_msg_write.cpp:2438)
 
-bool __cdecl MSG_TrTypeUsesTrDuration(int param_1)
+bool __cdecl MSG_TrTypeUsesTrDuration(int trType)
 
 {
   bool bVar1;
   
-  switch(param_1) {
+  switch(trType) {
   case 0:
   case 1:
   case 3:
@@ -2148,7 +2208,7 @@ bool __cdecl MSG_TrTypeUsesTrDuration(int param_1)
 
 bool __cdecl
 MSG_ShouldEntityFieldBeForcedSent
-          (SnapshotInfo_s *param_1,entityState_s *param_2,entityState_s *param_3,NetField *param_4)
+          (SnapshotInfo_s *snapInfo,entityState_s *from,entityState_s *to,NetField *field)
 
 {
   bool bVar1;
@@ -2157,11 +2217,11 @@ MSG_ShouldEntityFieldBeForcedSent
   undefined1 local_10;
   undefined1 local_c;
   
-  switch(param_4->bits) {
+  switch(field->bits) {
   case -0x45:
-    if (((param_1->fromBaseline != false) ||
-        (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_2->lerp).apos.trType), bVar1)) ||
-       (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_3->lerp).apos.trType), !bVar1)) {
+    if (((snapInfo->fromBaseline != false) ||
+        (bVar1 = MSG_TrTypeUsesTrDuration((uint)(from->lerp).apos.trType), bVar1)) ||
+       (bVar1 = MSG_TrTypeUsesTrDuration((uint)(to->lerp).apos.trType), !bVar1)) {
       local_18 = 0;
       local_10 = local_18;
     }
@@ -2174,9 +2234,9 @@ MSG_ShouldEntityFieldBeForcedSent
     local_10 = 0;
     break;
   case -0x43:
-    if (((param_1->fromBaseline != false) ||
-        (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_2->lerp).pos.trType), bVar1)) ||
-       (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_3->lerp).pos.trType), !bVar1)) {
+    if (((snapInfo->fromBaseline != false) ||
+        (bVar1 = MSG_TrTypeUsesTrDuration((uint)(from->lerp).pos.trType), bVar1)) ||
+       (bVar1 = MSG_TrTypeUsesTrDuration((uint)(to->lerp).pos.trType), !bVar1)) {
       local_14 = 0;
       local_10 = local_14;
     }
@@ -2189,11 +2249,11 @@ MSG_ShouldEntityFieldBeForcedSent
   case -0x41:
   case -0x40:
   case -0x3e:
-    local_10 = param_1->entJustUnlinked;
+    local_10 = snapInfo->entJustUnlinked;
     break;
   case -0x3f:
-    if ((param_1->entJustUnlinked == false) ||
-       (bVar1 = CL_IsLastActiveLocalClient((uint)(param_3->lerp).pos.trType), !bVar1)) {
+    if ((snapInfo->entJustUnlinked == false) ||
+       (bVar1 = CL_IsLastActiveLocalClient((uint)(to->lerp).pos.trType), !bVar1)) {
       local_c = 0;
       local_10 = local_c;
     }
@@ -2203,8 +2263,8 @@ MSG_ShouldEntityFieldBeForcedSent
     }
     break;
   case -0x3d:
-    if ((param_1->entJustUnlinked == false) ||
-       (bVar1 = CL_IsLastActiveLocalClient((uint)(param_3->lerp).apos.trType), !bVar1)) {
+    if ((snapInfo->entJustUnlinked == false) ||
+       (bVar1 = CL_IsLastActiveLocalClient((uint)(to->lerp).apos.trType), !bVar1)) {
       local_10 = 0;
     }
     else {
@@ -2221,7 +2281,7 @@ MSG_ShouldEntityFieldBeForcedSent
 
 bool __cdecl
 MSG_ShouldEntityFieldBeForcedHidden
-          (SnapshotInfo_s *param_1,entityState_s *param_2,entityState_s *param_3,NetField *param_4)
+          (SnapshotInfo_s *snapInfo,entityState_s *from,entityState_s *to,NetField *field)
 
 {
   bool bVar1;
@@ -2230,10 +2290,10 @@ MSG_ShouldEntityFieldBeForcedHidden
   bool local_10;
   bool local_c;
   
-  switch(param_4->bits) {
+  switch(field->bits) {
   case -0x45:
-    bVar1 = MSG_EntityIsLinked(param_3);
-    if ((bVar1) || (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_3->lerp).apos.trType), bVar1)) {
+    bVar1 = MSG_EntityIsLinked(to);
+    if ((bVar1) || (bVar1 = MSG_TrTypeUsesTrDuration((uint)(to->lerp).apos.trType), bVar1)) {
       local_18 = false;
       local_10 = local_18;
     }
@@ -2246,8 +2306,8 @@ MSG_ShouldEntityFieldBeForcedHidden
     local_10 = false;
     break;
   case -0x43:
-    bVar1 = MSG_EntityIsLinked(param_3);
-    if ((bVar1) || (bVar1 = MSG_TrTypeUsesTrDuration((uint)(param_3->lerp).pos.trType), bVar1)) {
+    bVar1 = MSG_EntityIsLinked(to);
+    if ((bVar1) || (bVar1 = MSG_TrTypeUsesTrDuration((uint)(to->lerp).pos.trType), bVar1)) {
       local_14 = false;
       local_10 = local_14;
     }
@@ -2260,11 +2320,11 @@ MSG_ShouldEntityFieldBeForcedHidden
   case -0x41:
   case -0x40:
   case -0x3e:
-    local_10 = MSG_EntityIsLinked(param_3);
+    local_10 = MSG_EntityIsLinked(to);
     break;
   case -0x3f:
-    bVar1 = MSG_EntityIsLinked(param_3);
-    if ((bVar1) || (bVar1 = CL_IsLastActiveLocalClient((uint)(param_3->lerp).pos.trType), bVar1)) {
+    bVar1 = MSG_EntityIsLinked(to);
+    if ((bVar1) || (bVar1 = CL_IsLastActiveLocalClient((uint)(to->lerp).pos.trType), bVar1)) {
       local_c = false;
       local_10 = local_c;
     }
@@ -2274,8 +2334,8 @@ MSG_ShouldEntityFieldBeForcedHidden
     }
     break;
   case -0x3d:
-    bVar1 = MSG_EntityIsLinked(param_3);
-    if ((bVar1) || (bVar1 = CL_IsLastActiveLocalClient((uint)(param_3->lerp).apos.trType), bVar1)) {
+    bVar1 = MSG_EntityIsLinked(to);
+    if ((bVar1) || (bVar1 = CL_IsLastActiveLocalClient((uint)(to->lerp).apos.trType), bVar1)) {
       local_10 = false;
     }
     else {
@@ -2292,26 +2352,27 @@ MSG_ShouldEntityFieldBeForcedHidden
 
 bool __cdecl
 MSG_ShouldSendEntityField
-          (SnapshotInfo_s *param_1,entityState_s *param_2,entityState_s *param_3,NetField *param_4)
+          (SnapshotInfo_s *snapInfo,entityState_s *from,entityState_s *to,NetField *field)
 
 {
   bool bVar1;
   char cVar2;
+  int *toF;
+  int *fromF;
   
-  bVar1 = MSG_ShouldEntityFieldBeForcedSent(param_1,param_2,param_3,param_4);
+  bVar1 = MSG_ShouldEntityFieldBeForcedSent(snapInfo,from,to,field);
   if (bVar1) {
     cVar2 = '\x01';
   }
   else {
-    bVar1 = MSG_ShouldEntityFieldBeForcedHidden(param_1,param_2,param_3,param_4);
+    bVar1 = MSG_ShouldEntityFieldBeForcedHidden(snapInfo,from,to,field);
     if (bVar1) {
       cVar2 = '\0';
     }
     else {
-      bVar1 = MSG_ValuesAreEqual(param_1->clientNum,param_4->bits,param_4->size,
-                                 (int *)((int)(param_2->lerp).pos.trBase + param_4->offset + -0x18),
-                                 (int *)((int)(param_3->lerp).pos.trBase + param_4->offset + -0x18))
-      ;
+      bVar1 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                 (int *)((int)(from->lerp).pos.trBase + field->offset + -0x18),
+                                 (int *)((int)(to->lerp).pos.trBase + field->offset + -0x18));
       cVar2 = '\x01' - bVar1;
     }
   }
@@ -2324,8 +2385,8 @@ MSG_ShouldSendEntityField
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 int __cdecl
-MSG_WriteEntity(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s *param_4,
-               entityState_s *param_5,DeltaFlags param_6)
+MSG_WriteEntity(SnapshotInfo_s *snapInfo,msg_t *msg,int time,entityState_s *from,entityState_s *to,
+               DeltaFlags flags)
 
 {
   code *pcVar1;
@@ -2334,32 +2395,32 @@ MSG_WriteEntity(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s
   PacketEntityType PVar4;
   int iVar5;
   bool local_10;
+  int bits_2;
+  int bits;
   
-  if ((param_2->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x9e9,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_5 != (entityState_s *)0x0) {
+  if (to != (entityState_s *)0x0) {
     bVar2 = false;
-    PVar4 = MSG_GetPacketEntityTypeForEType((int)param_5->eType);
-    MSG_PacketAnalyze_SetPacketEntityType(param_1,PVar4,bVar2);
-    if ((((param_5 == (entityState_s *)0x0) || (param_4 == (entityState_s *)0x0)) ||
-        (bVar2 = MSG_EntityIsLinked(param_5), bVar2)) ||
-       (bVar2 = MSG_EntityIsLinked(param_4), !bVar2)) {
+    PVar4 = MSG_GetPacketEntityTypeForEType((int)to->eType);
+    MSG_PacketAnalyze_SetPacketEntityType(snapInfo,PVar4,bVar2);
+    if ((((to == (entityState_s *)0x0) || (from == (entityState_s *)0x0)) ||
+        (bVar2 = MSG_EntityIsLinked(to), bVar2)) || (bVar2 = MSG_EntityIsLinked(from), !bVar2)) {
       local_10 = false;
     }
     else {
       local_10 = true;
     }
-    param_1->entJustUnlinked = local_10;
-    iVar3 = MSG_WriteEntityDeltaForEType
-                      (param_1,param_2,param_3,(int)param_5->eType,param_4,param_5,param_6);
+    snapInfo->entJustUnlinked = local_10;
+    iVar3 = MSG_WriteEntityDeltaForEType(snapInfo,msg,time,(int)to->eType,from,to,flags);
     return iVar3;
   }
-  if ((param_4 == (entityState_s *)0x0) &&
+  if ((from == (entityState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0x9ee,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2367,11 +2428,11 @@ MSG_WriteEntity(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s
     return iVar3;
   }
   bVar2 = false;
-  PVar4 = MSG_GetPacketEntityTypeForEType((int)param_4->eType);
-  MSG_PacketAnalyze_SetPacketEntityType(param_1,PVar4,bVar2);
-  iVar3 = MSG_GetUsedBitCount(param_2);
-  MSG_WriteEntityRemoval(param_1,param_2,(uchar *)param_4,10,false);
-  iVar5 = MSG_GetUsedBitCount(param_2);
+  PVar4 = MSG_GetPacketEntityTypeForEType((int)from->eType);
+  MSG_PacketAnalyze_SetPacketEntityType(snapInfo,PVar4,bVar2);
+  iVar3 = MSG_GetUsedBitCount(msg);
+  MSG_WriteEntityRemoval(snapInfo,msg,(uchar *)from,10,false);
+  iVar5 = MSG_GetUsedBitCount(msg);
   return iVar5 - iVar3;
 }
 
@@ -2384,49 +2445,50 @@ MSG_WriteEntity(SnapshotInfo_s *param_1,msg_t *param_2,int param_3,entityState_s
 
 void __cdecl
 MSG_WriteDeltaClient
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,clientState_s *param_4,
-          clientState_s *param_5,int param_6)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,clientState_s *from,clientState_s *to,
+          int force)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  NetFieldList *pNVar4;
-  clientState_s local_e4;
+  uint numFields_00;
+  code *pcVar1;
+  bool bVar2;
+  NetFieldList *pNVar3;
+  int numFields;
+  clientState_s dummy;
   uint local_10;
-  int local_c;
-  NetField *local_8;
+  int bits;
+  NetField *fields;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->readOnly != 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xa1a,0,
+  if (msg->readOnly != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xa1a,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,param_1->demoSnapshot);
-  local_8 = pNVar4->array;
-  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,param_1->demoSnapshot);
-  uVar1 = pNVar4->count;
-  if (param_4 == (clientState_s *)0x0) {
-    param_4 = &local_e4;
-    memset((uchar *)&local_e4,'\0',0xd0);
+  pNVar3 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,snapInfo->demoSnapshot);
+  fields = pNVar3->array;
+  pNVar3 = MSG_GetNetFieldList(NET_FIELD_TYPE_CLIENT_STATE,snapInfo->demoSnapshot);
+  numFields_00 = pNVar3->count;
+  if (from == (clientState_s *)0x0) {
+    from = &dummy;
+    memset((uchar *)&dummy,'\0',0xd0);
   }
-  MSG_PacketAnalyze_SetPacketEntityType(param_1,ANALYZE_DATATYPE_ENTITYTYPE_CLIENTSTATE,false);
-  if (param_5 == (clientState_s *)0x0) {
-    MSG_WriteEntityRemoval(param_1,param_2,(uchar *)param_4,5,true);
+  MSG_PacketAnalyze_SetPacketEntityType(snapInfo,ANALYZE_DATATYPE_ENTITYTYPE_CLIENTSTATE,false);
+  if (to == (clientState_s *)0x0) {
+    MSG_WriteEntityRemoval(snapInfo,msg,(uchar *)from,5,true);
   }
   else {
-    local_c = MSG_WriteDeltaStruct
-                        (param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,param_6,uVar1,5,
-                         local_8,1,1,false);
-    if (((local_c != 0) && (0 < (sv_debugPacketContentsQuick->current).integer)) &&
-       (param_1->archived == false)) {
+    bits = MSG_WriteDeltaStruct
+                     (snapInfo,msg,time,(uchar *)from,(uchar *)to,force,numFields_00,5,fields,1,1,
+                      false);
+    if (((bits != 0) && (0 < (sv_debugPacketContentsQuick->current).integer)) &&
+       (snapInfo->archived == false)) {
       CG_QuickPrint("Client %i delta %i bits\n");
-      sv_quickBitsTotal = sv_quickBitsTotal + local_c;
+      sv_quickBitsTotal = sv_quickBitsTotal + bits;
     }
   }
   return;
@@ -2435,16 +2497,16 @@ MSG_WriteDeltaClient
 
 // 006F2750  MSG_WithinAllowedPredictionError  (qcommon/sv_msg_write.cpp:2629)
 
-bool __cdecl MSG_WithinAllowedPredictionError(float param_1,playerState_s *param_2)
+bool __cdecl MSG_WithinAllowedPredictionError(float dist,playerState_s *to)
 
 {
   bool bVar1;
   
-  if (((param_2->eFlags & 0x4000U) == 0) || (!do_it)) {
-    bVar1 = 0.01 < param_1;
+  if (((to->eFlags & 0x4000U) == 0) || (!do_it)) {
+    bVar1 = 0.01 < dist;
   }
   else {
-    bVar1 = 100.0 < param_1;
+    bVar1 = 100.0 < dist;
   }
   return !bVar1;
 }
@@ -2456,36 +2518,38 @@ bool __cdecl MSG_WithinAllowedPredictionError(float param_1,playerState_s *param
 
 int __cdecl
 MSG_GetLastChangedField
-          (SnapshotInfo_s *param_1,uchar *param_2,uchar *param_3,int param_4,NetField *param_5)
+          (SnapshotInfo_s *snapInfo,uchar *from,uchar *to,int numFields,NetField *stateFields)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
-  NetField *local_18;
-  int local_14;
-  int local_8;
+  NetField *field;
+  int lc;
+  int *toF;
+  int *fromF;
+  int i;
   
-  local_14 = 0;
-  local_18 = param_5 + param_4 + -1;
-  iVar4 = param_4;
-  while ((local_8 = iVar4 + -1, iVar2 = local_14, -1 < local_8 &&
-         (bVar3 = MSG_ValuesAreEqual(param_1->clientNum,local_18->bits,local_18->size,
-                                     (int *)(param_2 + local_18->offset),
-                                     (int *)(param_3 + local_18->offset)), iVar2 = iVar4, bVar3))) {
-    local_18 = local_18 + -1;
-    iVar4 = local_8;
+  lc = 0;
+  field = stateFields + numFields + -1;
+  iVar4 = numFields;
+  while ((i = iVar4 + -1, iVar2 = lc, -1 < i &&
+         (bVar3 = MSG_ValuesAreEqual(snapInfo->clientNum,field->bits,field->size,
+                                     (int *)(from + field->offset),(int *)(to + field->offset)),
+         iVar2 = iVar4, bVar3))) {
+    field = field + -1;
+    iVar4 = i;
   }
-  local_14 = iVar2;
-  if (((local_14 < 0) || (param_4 < local_14)) &&
+  lc = iVar2;
+  if (((lc < 0) || (numFields < lc)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xa70,
                                0,"%s\n\t(lc) = %i"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  return local_14;
+  return lc;
 }
 
 
@@ -2500,439 +2564,439 @@ MSG_GetLastChangedField
 
 void __cdecl
 MSG_WriteDeltaPlayerstate
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,playerState_s *param_4,
-          playerState_s *param_5)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,playerState_s *from,playerState_s *to)
 
 {
   uint uVar1;
-  NetField *pNVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  NetFieldList *pNVar6;
-  PlayerHeldWeapon *pPVar7;
-  AmmoPool *pAVar8;
-  AmmoClip *pAVar9;
-  objective_t *poVar10;
-  <unnamed_type_hud> *p<Var11;
-  PlayerHeldWeapon *pPVar12;
-  AmmoPool *pAVar13;
-  AmmoClip *pAVar14;
-  objective_t *poVar15;
-  <unnamed_type_hud> *p<Var16;
-  float fVar17;
-  char local_a8;
-  char local_a4;
-  int local_88;
-  int local_84;
-  int local_80;
-  NetField *local_74;
-  int local_6c;
-  int local_68;
-  char local_60 [16];
+  NetField *stateFields;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  NetFieldList *pNVar5;
+  PlayerHeldWeapon *pPVar6;
+  AmmoPool *pAVar7;
+  AmmoClip *pAVar8;
+  objective_t *poVar9;
+  <unnamed_type_hud> *p<Var10;
+  PlayerHeldWeapon *pPVar11;
+  AmmoPool *pAVar12;
+  AmmoClip *pAVar13;
+  objective_t *poVar14;
+  <unnamed_type_hud> *p<Var15;
+  float dist_00;
+  bool local_a8;
+  bool local_a4;
+  int j;
+  int ammoCount;
+  int lastChanged;
+  int numObjFields;
+  int numFields;
+  NetField *field;
+  float dist;
+  int clipCount;
+  int lc;
+  NetField *objFields;
+  char needToSendWeapon [16];
   uint local_50;
-  uint local_4c;
-  char local_47;
-  bool local_46;
-  char local_45;
-  NetField *local_44;
-  uint local_40 [12];
-  int local_10;
-  int local_c;
-  bool local_5;
+  int statsbits;
+  bool forceSend;
+  bool sent;
+  bool anyWeaponChanged;
+  NetField *psFields;
+  uint fieldsChanged [12];
+  int i;
+  int lastAlwaysChangesField;
+  bool sendOriginAndVel;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 0;
-  local_68 = -1;
-  if ((param_2->readOnly != 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xa91,
-                               0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  i = 0;
+  lc = -1;
+  if ((msg->readOnly != 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xa91,
+                               0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  memset((uchar *)local_40,'\0',0x30);
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_ClearBits(iVar5);
-  MSG_PacketAnalyze_SetPacketEntityType(param_1,ANALYZE_DATATYPE_ENTITYTYPE_PLAYERSTATE,false);
-  if (param_4 == (playerState_s *)0x0) {
-    param_4 = &dummy;
+  memset((uchar *)fieldsChanged,'\0',0x30);
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_ClearBits(iVar4);
+  MSG_PacketAnalyze_SetPacketEntityType(snapInfo,ANALYZE_DATATYPE_ENTITYTYPE_PLAYERSTATE,false);
+  if (from == (playerState_s *)0x0) {
+    from = &dummy;
     memset((uchar *)&dummy,'\0',0x26a4);
   }
-  if (param_1->demoSnapshot == false) {
-    if (param_1->archived == false) {
-      fVar17 = Vec3DistanceSq(param_1->client->predictedOrigin,param_5->origin);
+  if (snapInfo->demoSnapshot == false) {
+    if (snapInfo->archived == false) {
+      dist_00 = Vec3DistanceSq(snapInfo->client->predictedOrigin,to->origin);
       if ((svsHeaderValid == 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
-                                   0xab0,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
+                                   0xab0,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if ((((param_4 == (playerState_s *)0x0) || (svsHeader.clientArchive == 0)) ||
-          (bVar4 = MSG_WithinAllowedPredictionError(fVar17,param_5), !bVar4)) ||
-         (param_1->client->predictedOriginServerTime != param_5->commandTime)) {
-        local_5 = true;
-        MSG_WriteBit1(param_2);
+      if ((((from == (playerState_s *)0x0) || (svsHeader.clientArchive == 0)) ||
+          (bVar3 = MSG_WithinAllowedPredictionError(dist_00,to), !bVar3)) ||
+         (snapInfo->client->predictedOriginServerTime != to->commandTime)) {
+        sendOriginAndVel = true;
+        MSG_WriteBit1(msg);
       }
       else {
-        local_5 = false;
-        MSG_WriteBit0(param_2);
+        sendOriginAndVel = false;
+        MSG_WriteBit0(msg);
       }
     }
     else {
-      local_5 = true;
-      MSG_WriteBit1(param_2);
+      sendOriginAndVel = true;
+      MSG_WriteBit1(msg);
     }
   }
   else {
-    local_5 = true;
-    MSG_WriteBit1(param_2);
+    sendOriginAndVel = true;
+    MSG_WriteBit1(msg);
   }
-  pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,param_1->demoSnapshot);
-  local_44 = pNVar6->array;
-  pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,param_1->demoSnapshot);
-  uVar1 = pNVar6->count;
-  local_74 = local_44;
-  for (local_10 = 0; local_10 < (int)uVar1; local_10 = local_10 + 1) {
-    bVar4 = MSG_ShouldSendPSField(param_1,local_5,param_5,param_4,local_74);
-    if (bVar4) {
-      local_40[local_10 >> 5] = 1 << ((byte)local_10 & 0x1f) | local_40[local_10 >> 5];
-      local_68 = local_10;
+  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,snapInfo->demoSnapshot);
+  psFields = pNVar5->array;
+  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,snapInfo->demoSnapshot);
+  uVar1 = pNVar5->count;
+  field = psFields;
+  for (i = 0; i < (int)uVar1; i = i + 1) {
+    bVar3 = MSG_ShouldSendPSField(snapInfo,sendOriginAndVel,to,from,field);
+    if (bVar3) {
+      fieldsChanged[i >> 5] = 1 << ((byte)i & 0x1f) | fieldsChanged[i >> 5];
+      lc = i;
     }
-    local_74 = local_74 + 1;
+    field = field + 1;
   }
-  if ((local_68 < -1) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xadc,
-                               0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((lc < -1) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xadc,
+                               0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  MSG_WriteLastChangedField(param_2,local_68 + 1,uVar1 + 1);
-  local_80 = -1;
-  local_c = -1;
-  local_74 = local_44;
-  for (local_10 = 0; local_10 <= local_68; local_10 = local_10 + 1) {
-    if ((local_74->changeHints == '\x02') && (local_10 != local_68)) {
-      local_c = local_10;
+  MSG_WriteLastChangedField(msg,lc + 1,uVar1 + 1);
+  lastChanged = -1;
+  lastAlwaysChangesField = -1;
+  field = psFields;
+  for (i = 0; i <= lc; i = i + 1) {
+    if ((field->changeHints == '\x02') && (i != lc)) {
+      lastAlwaysChangesField = i;
     }
-    else if ((1 << ((byte)local_10 & 0x1f) & local_40[local_10 >> 5]) != 0) {
-      if (((param_1->archived == false) && (param_1->demoSnapshot == false)) &&
-         (local_74->changeHints == '\x03')) {
-        local_a4 = '\x01';
+    else if ((1 << ((byte)i & 0x1f) & fieldsChanged[i >> 5]) != 0) {
+      if (((snapInfo->archived == false) && (snapInfo->demoSnapshot == false)) &&
+         (field->changeHints == '\x03')) {
+        local_a4 = true;
       }
       else {
-        local_a4 = '\0';
+        local_a4 = false;
       }
-      local_47 = local_a4;
-      local_46 = MSG_WriteDeltaField(param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,
-                                     local_74,local_10,true,local_a4 == '\0',local_80,4,true);
-      if (!local_46) {
+      forceSend = local_a4;
+      sent = MSG_WriteDeltaField(snapInfo,msg,time,(uchar *)from,(uchar *)to,field,i,true,
+                                 local_a4 == false,lastChanged,4,true);
+      if (!sent) {
         va("field %s changed but wasn\'t sent to the client\n");
-        bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
+        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                  0xaed,0,"%s\n\t%s");
-        if (!bVar4) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+        if (!bVar3) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
       }
-      local_80 = local_10;
+      lastChanged = i;
     }
-    local_74 = local_74 + 1;
+    field = field + 1;
   }
-  if (((-1 < local_68) && (local_68 < local_80)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xaf3,
-                               0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if (((-1 < lc) && (lc < lastChanged)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xaf3,
+                               0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  local_80 = -1;
-  local_74 = local_44;
-  for (local_10 = 0; local_10 <= local_c; local_10 = local_10 + 1) {
-    if (local_74->changeHints == '\x02') {
-      if (((param_1->archived == false) && (param_1->demoSnapshot == false)) &&
-         (local_74->changeHints == '\x03')) {
-        local_a8 = '\x01';
+  lastChanged = -1;
+  field = psFields;
+  for (i = 0; i <= lastAlwaysChangesField; i = i + 1) {
+    if (field->changeHints == '\x02') {
+      if (((snapInfo->archived == false) && (snapInfo->demoSnapshot == false)) &&
+         (field->changeHints == '\x03')) {
+        local_a8 = true;
       }
       else {
-        local_a8 = '\0';
+        local_a8 = false;
       }
-      local_47 = local_a8;
-      bVar4 = MSG_WriteDeltaField(param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,local_74
-                                  ,local_10,true,local_a8 == '\0',local_80,4,false);
-      if (bVar4) {
-        local_80 = local_10;
+      forceSend = local_a8;
+      bVar3 = MSG_WriteDeltaField(snapInfo,msg,time,(uchar *)from,(uchar *)to,field,i,true,
+                                  local_a8 == false,lastChanged,4,false);
+      if (bVar3) {
+        lastChanged = i;
       }
     }
-    local_74 = local_74 + 1;
+    field = field + 1;
   }
-  if ((local_68 < local_80) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xb07,
-                               0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((lc < lastChanged) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xb07,
+                               0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_FieldDeltasBits(iVar5,bVar4);
-  local_4c = 0;
-  for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {
-    if (param_5->stats[local_10] != param_4->stats[local_10]) {
-      local_4c = 1 << ((byte)local_10 & 0x1f) | local_4c;
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_FieldDeltasBits(iVar4,bVar3);
+  statsbits = 0;
+  for (i = 0; i < 5; i = i + 1) {
+    if (to->stats[i] != from->stats[i]) {
+      statsbits = 1 << ((byte)i & 0x1f) | statsbits;
     }
   }
-  if (local_4c == 0) {
-    MSG_WriteBit0(param_2);
+  if (statsbits == 0) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    MSG_WriteBits(param_2,local_4c,5);
-    if ((local_4c & 1) != 0) {
-      MSG_WriteShort(param_2,param_5->stats[0]);
+    MSG_WriteBit1(msg);
+    MSG_WriteBits(msg,statsbits,5);
+    if ((statsbits & 1U) != 0) {
+      MSG_WriteShort(msg,to->stats[0]);
     }
-    if ((local_4c & 2) != 0) {
-      MSG_WriteShort(param_2,param_5->stats[1]);
+    if ((statsbits & 2U) != 0) {
+      MSG_WriteShort(msg,to->stats[1]);
     }
-    if ((local_4c & 4) != 0) {
-      MSG_WriteShort(param_2,param_5->stats[2]);
+    if ((statsbits & 4U) != 0) {
+      MSG_WriteShort(msg,to->stats[2]);
     }
-    if ((local_4c & 8) != 0) {
-      MSG_WriteBits(param_2,param_5->stats[3],5);
+    if ((statsbits & 8U) != 0) {
+      MSG_WriteBits(msg,to->stats[3],5);
     }
-    if ((local_4c & 0x10) != 0) {
-      MSG_WriteByte(param_2,param_5->stats[4]);
+    if ((statsbits & 0x10U) != 0) {
+      MSG_WriteByte(msg,to->stats[4]);
     }
   }
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_StatsBits(iVar5,bVar4);
-  local_60[0] = '\0';
-  local_60[1] = '\0';
-  local_60[2] = '\0';
-  local_60[3] = '\0';
-  local_60[4] = '\0';
-  local_60[5] = '\0';
-  local_60[6] = '\0';
-  local_60[7] = '\0';
-  local_60[8] = '\0';
-  local_60[9] = '\0';
-  local_60[10] = '\0';
-  local_60[0xb] = '\0';
-  local_60[0xc] = '\0';
-  local_60[0xd] = '\0';
-  local_60[0xe] = 0;
-  local_45 = '\0';
-  for (local_88 = 0; local_88 < 0xf; local_88 = local_88 + 1) {
-    if (param_4->heldWeapons[local_88].weapon == param_5->heldWeapons[local_88].weapon) {
-      iVar5 = 6;
-      bVar4 = true;
-      pPVar7 = param_5->heldWeapons + local_88;
-      pPVar12 = param_4->heldWeapons + local_88;
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_StatsBits(iVar4,bVar3);
+  needToSendWeapon[0] = '\0';
+  needToSendWeapon[1] = '\0';
+  needToSendWeapon[2] = '\0';
+  needToSendWeapon[3] = '\0';
+  needToSendWeapon[4] = '\0';
+  needToSendWeapon[5] = '\0';
+  needToSendWeapon[6] = '\0';
+  needToSendWeapon[7] = '\0';
+  needToSendWeapon[8] = '\0';
+  needToSendWeapon[9] = '\0';
+  needToSendWeapon[10] = '\0';
+  needToSendWeapon[0xb] = '\0';
+  needToSendWeapon[0xc] = '\0';
+  needToSendWeapon[0xd] = '\0';
+  needToSendWeapon[0xe] = 0;
+  anyWeaponChanged = false;
+  for (j = 0; j < 0xf; j = j + 1) {
+    if (from->heldWeapons[j].weapon == to->heldWeapons[j].weapon) {
+      iVar4 = 6;
+      bVar3 = true;
+      pPVar6 = to->heldWeapons + j;
+      pPVar11 = from->heldWeapons + j;
       do {
-        if (iVar5 == 0) break;
-        iVar5 = iVar5 + -1;
-        bVar4 = pPVar7->weapon == pPVar12->weapon;
-        pPVar7 = (PlayerHeldWeapon *)&pPVar7->model;
-        pPVar12 = (PlayerHeldWeapon *)&pPVar12->model;
-      } while (bVar4);
-      if (!bVar4) {
-        local_45 = '\x01';
-        local_60[local_88] = '\x01';
+        if (iVar4 == 0) break;
+        iVar4 = iVar4 + -1;
+        bVar3 = pPVar6->weapon == pPVar11->weapon;
+        pPVar6 = (PlayerHeldWeapon *)&pPVar6->model;
+        pPVar11 = (PlayerHeldWeapon *)&pPVar11->model;
+      } while (bVar3);
+      if (!bVar3) {
+        anyWeaponChanged = true;
+        needToSendWeapon[j] = '\x01';
       }
     }
     else {
-      local_45 = '\x01';
-      local_60[local_88] = '\x01';
+      anyWeaponChanged = true;
+      needToSendWeapon[j] = '\x01';
     }
   }
-  if (local_45 == '\0') {
-    MSG_WriteBit0(param_2);
+  if (anyWeaponChanged == false) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    for (local_88 = 0; local_88 < 0xf; local_88 = local_88 + 1) {
-      if (local_60[local_88] == '\0') {
-        MSG_WriteBit0(param_2);
+    MSG_WriteBit1(msg);
+    for (j = 0; j < 0xf; j = j + 1) {
+      if (needToSendWeapon[j] == '\0') {
+        MSG_WriteBit0(msg);
       }
       else {
-        MSG_WriteBit1(param_2);
-        if (param_4->heldWeapons[local_88].weapon == param_5->heldWeapons[local_88].weapon) {
-          MSG_WriteBit0(param_2);
+        MSG_WriteBit1(msg);
+        if (from->heldWeapons[j].weapon == to->heldWeapons[j].weapon) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          MSG_WriteBits(param_2,param_5->heldWeapons[local_88].weapon,0xb);
+          MSG_WriteBit1(msg);
+          MSG_WriteBits(msg,to->heldWeapons[j].weapon,0xb);
         }
-        if (param_4->heldWeapons[local_88].model == param_5->heldWeapons[local_88].model) {
-          MSG_WriteBit0(param_2);
-        }
-        else {
-          MSG_WriteBit1(param_2);
-          MSG_WriteBits(param_2,(uint)param_5->heldWeapons[local_88].model,4);
-        }
-        if (param_4->heldWeapons[local_88].options.field0_0x0.i ==
-            param_5->heldWeapons[local_88].options.field0_0x0.i) {
-          MSG_WriteBit0(param_2);
+        if (from->heldWeapons[j].model == to->heldWeapons[j].model) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          MSG_WriteBits(param_2,param_5->heldWeapons[local_88].options.field0_0x0.i,0x20);
+          MSG_WriteBit1(msg);
+          MSG_WriteBits(msg,(uint)to->heldWeapons[j].model,4);
         }
-        if (param_4->heldWeapons[local_88].field3_0xc.fuelTankTime ==
-            param_5->heldWeapons[local_88].field3_0xc.fuelTankTime) {
-          MSG_WriteBit0(param_2);
-        }
-        else {
-          MSG_WriteBit1(param_2);
-          MSG_WriteBits(param_2,param_5->heldWeapons[local_88].field3_0xc.fuelTankTime,0x20);
-        }
-        if (param_5->heldWeapons[local_88].overHeating == false) {
-          MSG_WriteBit0(param_2);
+        if (from->heldWeapons[j].options.field0_0x0.i == to->heldWeapons[j].options.field0_0x0.i) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
+          MSG_WriteBit1(msg);
+          MSG_WriteBits(msg,to->heldWeapons[j].options.field0_0x0.i,0x20);
         }
-        if (param_5->heldWeapons[local_88].needsRechamber == false) {
-          MSG_WriteBit0(param_2);
-        }
-        else {
-          MSG_WriteBit1(param_2);
-        }
-        if (param_5->heldWeapons[local_88].heldBefore == false) {
-          MSG_WriteBit0(param_2);
+        if (from->heldWeapons[j].field3_0xc.fuelTankTime ==
+            to->heldWeapons[j].field3_0xc.fuelTankTime) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
+          MSG_WriteBit1(msg);
+          MSG_WriteBits(msg,to->heldWeapons[j].field3_0xc.fuelTankTime,0x20);
         }
-        if (param_5->heldWeapons[local_88].quickReload == false) {
-          MSG_WriteBit0(param_2);
+        if (to->heldWeapons[j].overHeating == false) {
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
+          MSG_WriteBit1(msg);
+        }
+        if (to->heldWeapons[j].needsRechamber == false) {
+          MSG_WriteBit0(msg);
+        }
+        else {
+          MSG_WriteBit1(msg);
+        }
+        if (to->heldWeapons[j].heldBefore == false) {
+          MSG_WriteBit0(msg);
+        }
+        else {
+          MSG_WriteBit1(msg);
+        }
+        if (to->heldWeapons[j].quickReload == false) {
+          MSG_WriteBit0(msg);
+        }
+        else {
+          MSG_WriteBit1(msg);
         }
       }
     }
   }
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_WeaponBits(iVar5,bVar4);
-  for (local_88 = 0; local_88 < 0xf; local_88 = local_88 + 1) {
-    iVar5 = 2;
-    bVar4 = true;
-    pAVar8 = param_5->ammoNotInClip + local_88;
-    pAVar13 = param_4->ammoNotInClip + local_88;
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_WeaponBits(iVar4,bVar3);
+  for (j = 0; j < 0xf; j = j + 1) {
+    iVar4 = 2;
+    bVar3 = true;
+    pAVar7 = to->ammoNotInClip + j;
+    pAVar12 = from->ammoNotInClip + j;
     do {
-      if (iVar5 == 0) break;
-      iVar5 = iVar5 + -1;
-      bVar4 = pAVar8->ammoIndex == pAVar13->ammoIndex;
-      pAVar8 = (AmmoPool *)&pAVar8->count;
-      pAVar13 = (AmmoPool *)&pAVar13->count;
-    } while (bVar4);
-    if (!bVar4) {
-      MSG_WriteBit1(param_2);
-      MSG_WriteBits(param_2,local_88,4);
-      MSG_WriteBits(param_2,param_5->ammoNotInClip[local_88].ammoIndex,0xb);
-      local_84 = param_5->ammoNotInClip[local_88].count;
-      if (((0x3ff < local_84) && (local_84 = 0x3ff, param_1->archived == false)) &&
+      if (iVar4 == 0) break;
+      iVar4 = iVar4 + -1;
+      bVar3 = pAVar7->ammoIndex == pAVar12->ammoIndex;
+      pAVar7 = (AmmoPool *)&pAVar7->count;
+      pAVar12 = (AmmoPool *)&pAVar12->count;
+    } while (bVar3);
+    if (!bVar3) {
+      MSG_WriteBit1(msg);
+      MSG_WriteBits(msg,j,4);
+      MSG_WriteBits(msg,to->ammoNotInClip[j].ammoIndex,0xb);
+      ammoCount = to->ammoNotInClip[j].count;
+      if (((0x3ff < ammoCount) && (ammoCount = 0x3ff, snapInfo->archived == false)) &&
          (0 < (sv_debugPacketContentsQuick->current).integer)) {
         Com_Printf(0xf,"Pool ammo clamped to %i when packed into message.\n");
       }
-      MSG_WriteBits(param_2,local_84,10);
+      MSG_WriteBits(msg,ammoCount,10);
     }
   }
-  MSG_WriteBit0(param_2);
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_AmmoPoolBits(iVar5,bVar4);
-  for (local_88 = 0; local_88 < 0xf; local_88 = local_88 + 1) {
-    iVar5 = 2;
-    bVar4 = true;
-    pAVar9 = param_5->ammoInClip + local_88;
-    pAVar14 = param_4->ammoInClip + local_88;
+  MSG_WriteBit0(msg);
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_AmmoPoolBits(iVar4,bVar3);
+  for (j = 0; j < 0xf; j = j + 1) {
+    iVar4 = 2;
+    bVar3 = true;
+    pAVar8 = to->ammoInClip + j;
+    pAVar13 = from->ammoInClip + j;
     do {
-      if (iVar5 == 0) break;
-      iVar5 = iVar5 + -1;
-      bVar4 = pAVar9->clipIndex == pAVar14->clipIndex;
-      pAVar9 = (AmmoClip *)&pAVar9->count;
-      pAVar14 = (AmmoClip *)&pAVar14->count;
-    } while (bVar4);
-    if (!bVar4) {
-      MSG_WriteBit1(param_2);
-      MSG_WriteBits(param_2,local_88,4);
-      MSG_WriteBits(param_2,param_5->ammoInClip[local_88].clipIndex,0xb);
-      local_6c = param_5->ammoInClip[local_88].count;
-      if (((0x3ff < local_6c) && (local_6c = 0x3ff, param_1->archived == false)) &&
+      if (iVar4 == 0) break;
+      iVar4 = iVar4 + -1;
+      bVar3 = pAVar8->clipIndex == pAVar13->clipIndex;
+      pAVar8 = (AmmoClip *)&pAVar8->count;
+      pAVar13 = (AmmoClip *)&pAVar13->count;
+    } while (bVar3);
+    if (!bVar3) {
+      MSG_WriteBit1(msg);
+      MSG_WriteBits(msg,j,4);
+      MSG_WriteBits(msg,to->ammoInClip[j].clipIndex,0xb);
+      clipCount = to->ammoInClip[j].count;
+      if (((0x3ff < clipCount) && (clipCount = 0x3ff, snapInfo->archived == false)) &&
          (0 < (sv_debugPacketContentsQuick->current).integer)) {
         Com_Printf(0xf,"Clip ammo clamped to %i when packed into message.\n");
       }
-      MSG_WriteBits(param_2,local_6c,10);
+      MSG_WriteBits(msg,clipCount,10);
     }
   }
-  MSG_WriteBit0(param_2);
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_AmmoClipBits(iVar5,bVar4);
-  iVar5 = 0x180;
-  bVar4 = true;
-  poVar10 = param_4->objective;
-  poVar15 = param_5->objective;
+  MSG_WriteBit0(msg);
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_AmmoClipBits(iVar4,bVar3);
+  iVar4 = 0x180;
+  bVar3 = true;
+  poVar9 = from->objective;
+  poVar14 = to->objective;
   do {
-    if (iVar5 == 0) break;
-    iVar5 = iVar5 + -1;
-    bVar4 = poVar10->state == poVar15->state;
-    poVar10 = (objective_t *)poVar10->origin;
-    poVar15 = (objective_t *)poVar15->origin;
-  } while (bVar4);
-  if (bVar4) {
-    MSG_WriteBit0(param_2);
+    if (iVar4 == 0) break;
+    iVar4 = iVar4 + -1;
+    bVar3 = poVar9->state == poVar14->state;
+    poVar9 = (objective_t *)poVar9->origin;
+    poVar14 = (objective_t *)poVar14->origin;
+  } while (bVar3);
+  if (bVar3) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {
-      MSG_WriteBits(param_2,param_5->objective[local_10].state,3);
-      pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,param_1->demoSnapshot);
-      pNVar2 = pNVar6->array;
-      pNVar6 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,param_1->demoSnapshot);
-      uVar1 = pNVar6->count;
-      iVar5 = MSG_GetLastChangedField
-                        (param_1,(uchar *)(param_4->objective + local_10),
-                         (uchar *)(param_5->objective + local_10),uVar1,pNVar2);
+    MSG_WriteBit1(msg);
+    for (i = 0; i < 0x20; i = i + 1) {
+      MSG_WriteBits(msg,to->objective[i].state,3);
+      pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,snapInfo->demoSnapshot);
+      stateFields = pNVar5->array;
+      pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,snapInfo->demoSnapshot);
+      uVar1 = pNVar5->count;
+      iVar4 = MSG_GetLastChangedField
+                        (snapInfo,(uchar *)(from->objective + i),(uchar *)(to->objective + i),uVar1,
+                         stateFields);
       MSG_WriteDeltaFields
-                (param_1,param_2,param_3,(uchar *)(param_4->objective + local_10),
-                 (uchar *)(param_5->objective + local_10),0,iVar5 + -1,uVar1,pNVar2,1,false,false);
+                (snapInfo,msg,time,(uchar *)(from->objective + i),(uchar *)(to->objective + i),0,
+                 iVar4 + -1,uVar1,stateFields,1,false,false);
     }
   }
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_ObjectivesBits(iVar5,bVar4);
-  iVar5 = 0x6c8;
-  bVar4 = true;
-  p<Var11 = &param_4->hud;
-  p<Var16 = &param_5->hud;
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_ObjectivesBits(iVar4,bVar3);
+  iVar4 = 0x6c8;
+  bVar3 = true;
+  p<Var10 = &from->hud;
+  p<Var15 = &to->hud;
   do {
-    if (iVar5 == 0) break;
-    iVar5 = iVar5 + -1;
-    bVar4 = p<Var11->current[0].x == p<Var16->current[0].x;
-    p<Var11 = (<unnamed_type_hud> *)&p<Var11->current[0].y;
-    p<Var16 = (<unnamed_type_hud> *)&p<Var16->current[0].y;
-  } while (bVar4);
-  if (bVar4) {
-    MSG_WriteBit0(param_2);
+    if (iVar4 == 0) break;
+    iVar4 = iVar4 + -1;
+    bVar3 = p<Var10->current[0].x == p<Var15->current[0].x;
+    p<Var10 = (<unnamed_type_hud> *)&p<Var10->current[0].y;
+    p<Var15 = (<unnamed_type_hud> *)&p<Var15->current[0].y;
+  } while (bVar3);
+  if (bVar3) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_2);
-    MSG_WriteDeltaHudElems
-              (param_1,param_2,param_3,(param_4->hud).archival,(param_5->hud).archival,0x1f);
-    MSG_WriteDeltaHudElems
-              (param_1,param_2,param_3,(param_4->hud).current,(param_5->hud).current,0x1f);
+    MSG_WriteBit1(msg);
+    MSG_WriteDeltaHudElems(snapInfo,msg,time,(from->hud).archival,(to->hud).archival,0x1f);
+    MSG_WriteDeltaHudElems(snapInfo,msg,time,(from->hud).current,(to->hud).current,0x1f);
   }
-  bVar4 = param_1->demoSnapshot;
-  iVar5 = MSG_GetUsedBitCount(param_2);
-  SV_PacketAnalyze_TrackPS_HudelemBits(iVar5,bVar4);
+  bVar3 = snapInfo->demoSnapshot;
+  iVar4 = MSG_GetUsedBitCount(msg);
+  SV_PacketAnalyze_TrackPS_HudelemBits(iVar4,bVar3);
   return;
 }
 
@@ -2943,8 +3007,7 @@ MSG_WriteDeltaPlayerstate
 
 void __cdecl
 MSG_WriteDeltaMatchState
-          (SnapshotInfo_s *param_1,msg_t *param_2,int param_3,MatchState *param_4,
-          MatchState *param_5)
+          (SnapshotInfo_s *snapInfo,msg_t *msg,int time,MatchState *from,MatchState *to)
 
 {
   NetFieldList *pNVar1;
@@ -2952,20 +3015,18 @@ MSG_WriteDeltaMatchState
   uint local_88;
   NetField *local_84;
   
-  MSG_PacketAnalyze_SetPacketEntityType(param_1,ANALYZE_DATATYPE_ENTITYTYPE_MATCHSTATE,false);
-  pNVar1 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,param_1->demoSnapshot);
+  MSG_PacketAnalyze_SetPacketEntityType(snapInfo,ANALYZE_DATATYPE_ENTITYTYPE_MATCHSTATE,false);
+  pNVar1 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,snapInfo->demoSnapshot);
   local_84 = pNVar1->array;
-  pNVar1 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,param_1->demoSnapshot);
+  pNVar1 = MSG_GetNetFieldList(NET_FIELD_TYPE_MATCHSTATE,snapInfo->demoSnapshot);
   local_88 = pNVar1->count;
-  if (param_4 == (MatchState *)0x0) {
+  if (from == (MatchState *)0x0) {
     memset(local_180,'\0',0x80);
-    MSG_WriteDeltaStruct
-              (param_1,param_2,param_3,local_180,(uchar *)param_5,1,local_88,1,local_84,0,1,false);
+    MSG_WriteDeltaStruct(snapInfo,msg,time,local_180,(uchar *)to,1,local_88,1,local_84,0,1,false);
   }
   else {
     MSG_WriteDeltaStruct
-              (param_1,param_2,param_3,(uchar *)param_4,(uchar *)param_5,1,local_88,1,local_84,0,1,
-               false);
+              (snapInfo,msg,time,(uchar *)from,(uchar *)to,1,local_88,1,local_84,0,1,false);
   }
   return;
 }
@@ -2977,7 +3038,7 @@ MSG_WriteDeltaMatchState
 
 int __cdecl
 MSG_WriteDeltaHudElems_LastChangedField
-          (SnapshotInfo_s *param_1,int param_2,hudelem_s *param_3,hudelem_s *param_4)
+          (SnapshotInfo_s *snapInfo,int i,hudelem_s *from,hudelem_s *to)
 
 {
   NetField *pNVar1;
@@ -2986,46 +3047,52 @@ MSG_WriteDeltaHudElems_LastChangedField
   bool bVar4;
   NetFieldList *pNVar5;
   int iVar6;
-  uint local_1c;
-  uint local_14;
+  int j;
+  int numFields;
+  int lc;
+  int *toF;
+  int *fromF;
+  NetField *fields;
   
-  local_14 = 0xffffffff;
-  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,param_1->demoSnapshot);
+  lc = -1;
+  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,snapInfo->demoSnapshot);
   pNVar1 = pNVar5->array;
-  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,param_1->demoSnapshot);
+  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,snapInfo->demoSnapshot);
   uVar2 = pNVar5->count;
-  local_1c = uVar2;
+  j = uVar2;
   do {
-    local_1c = local_1c - 1;
-    if ((int)local_1c < 0) goto LAB_006f3bc5;
-    bVar4 = MSG_ValuesAreEqual(param_1->clientNum,pNVar1[local_1c].bits,pNVar1[local_1c].size,
-                               (int *)((int)&param_3[param_2].x + pNVar1[local_1c].offset),
-                               (int *)((int)&param_4[param_2].x + pNVar1[local_1c].offset));
+    j = j - 1;
+    if (j < 0) goto LAB_006f3bc5;
+    bVar4 = MSG_ValuesAreEqual(snapInfo->clientNum,pNVar1[j].bits,pNVar1[j].size,
+                               (int *)((int)&from[i].x + pNVar1[j].offset),
+                               (int *)((int)&to[i].x + pNVar1[j].offset));
   } while (bVar4);
-  local_14 = local_1c;
+  lc = j;
 LAB_006f3bc5:
-  if ((((int)(local_14 + 1) < 0) || ((int)uVar2 <= (int)(local_14 + 1))) &&
+  if (((lc + 1 < 0) || ((int)uVar2 <= lc + 1)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xca0,
                                0,"%s\n\t(lc) = %i"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar6 = (*pcVar3)();
     return iVar6;
   }
-  return local_14;
+  return lc;
 }
 
 
 // 006F3C10  MSG_WriteDeltaHudElems_ValidateHudElem  (qcommon/sv_msg_write.cpp:3240)
 
-void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s *param_2)
+void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *from,hudelem_s *to)
 
 {
   code *pcVar1;
   bool bVar2;
   byte bVar3;
   uint uVar4;
+  int alignY;
+  int alignX;
   
-  if ((param_1->alignOrg & 0xf0) != 0) {
+  if ((from->alignOrg & 0xf0) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcac,0,
                              "%s\n\t(from->alignOrg) = %i");
     if (!bVar2) {
@@ -3034,7 +3101,7 @@ void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s
       return;
     }
   }
-  if ((param_2->alignOrg & 0xf0) != 0) {
+  if ((to->alignOrg & 0xf0) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcad,0,
                              "%s\n\t(from->alignOrg) = %i");
     if (!bVar2) {
@@ -3043,7 +3110,7 @@ void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s
       return;
     }
   }
-  uVar4 = (int)(uint)param_1->alignOrg >> 2 & 3;
+  uVar4 = (int)(uint)from->alignOrg >> 2 & 3;
   if (((uVar4 != 0) && (uVar4 != 1)) && (uVar4 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcb0,0,
                              "%s\n\t(from->alignOrg) = %i");
@@ -3053,8 +3120,8 @@ void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s
       return;
     }
   }
-  bVar3 = param_1->alignOrg & 3;
-  if ((((param_1->alignOrg & 3) != 0) && (bVar3 != 1)) && (bVar3 != 2)) {
+  bVar3 = from->alignOrg & 3;
+  if ((((from->alignOrg & 3) != 0) && (bVar3 != 1)) && (bVar3 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcb3,0,
                              "%s\n\t(from->alignOrg) = %i");
     if (!bVar2) {
@@ -3063,7 +3130,7 @@ void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s
       return;
     }
   }
-  uVar4 = (int)(uint)param_2->alignOrg >> 2 & 3;
+  uVar4 = (int)(uint)to->alignOrg >> 2 & 3;
   if (((uVar4 != 0) && (uVar4 != 1)) && (uVar4 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcb6,0,
                              "%s\n\t(to->alignOrg) = %i");
@@ -3073,8 +3140,8 @@ void __cdecl MSG_WriteDeltaHudElems_ValidateHudElem(hudelem_s *param_1,hudelem_s
       return;
     }
   }
-  bVar3 = param_2->alignOrg & 3;
-  if ((((param_2->alignOrg & 3) != 0) && (bVar3 != 1)) && (bVar3 != 2)) {
+  bVar3 = to->alignOrg & 3;
+  if ((((to->alignOrg & 3) != 0) && (bVar3 != 1)) && (bVar3 != 2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",0xcb9,0,
                              "%s\n\t(to->alignOrg) = %i");
     if (!bVar2) {

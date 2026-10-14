@@ -9,6 +9,7 @@ void __cdecl R_UpdateLightsFromDvars(void)
   GfxWorld *pGVar2;
   GfxLight *unaff_ESI;
   SunLightParseParams *unaff_EDI;
+  SunLightParseParams sunParse;
   
   if (((sm_enable->current).enabled == false) &&
      ((((r_lightTweakSunDirection->current).value != (r_lightTweakSunDirection->reset).value ||
@@ -30,7 +31,9 @@ void __cdecl R_UpdateLightsFromDvars(void)
 
 // 0082A1E0  R_LoadWorld  (gfx_d3d/r_bsp.cpp:346)
 
-void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
+/* WARNING: Variable defined which should be unmapped: savegame */
+
+void __cdecl R_LoadWorld(char *location,int *param_2,int param_3,int param_4)
 
 {
   char *pcVar1;
@@ -44,6 +47,8 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
   float (*pafVar8) [4];
   GfxWorld *unaff_EDI;
   GfxDrawConsts *pGVar9;
+  int *checksum;
+  int savegame;
   
   R_InitLightVisHistory(in_EAX);
   pcVar4 = R_SetWorldPtr_FastFile;
@@ -64,8 +69,8 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
     pafVar8 = (float (*) [4])(*pafVar8 + 1);
     pGVar9 = (GfxDrawConsts *)(pGVar9->outdoorLookupMatrix[0] + 1);
   }
-  if (param_1 != (char *)0x0) {
-    *(uint *)param_1 = pGVar2->checksum;
+  if (location != (char *)0x0) {
+    *(uint *)location = pGVar2->checksum;
   }
   R_CopyParseParamsToDvars((SunLightParseParams *)0x0,(int)unaff_EDI);
   R_UpdateLightsFromDvars();
@@ -115,7 +120,7 @@ void __cdecl R_LoadWorld(char *param_1,int *param_2,int param_3,int param_4)
     } while (iVar5 < pGVar3->lightmapCount);
   }
   g_pmemLocation = (int)param_2;
-  R_VertexStream2_Init((uint)param_1,(int)param_2);
+  R_VertexStream2_Init((uint)location,(int)param_2);
   return;
 }
 

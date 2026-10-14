@@ -2,27 +2,29 @@
 
 // 005A8FC0  bdStrlcpy  (<external>/projects_pc/cod/codsrc/DemonWare/bdplatform/bdplatformstring/bdplatformstring.inl:149)
 
-uint __cdecl bdStrlcpy(char *param_1,char *param_2,uint param_3)
+uint __cdecl bdStrlcpy(char *dst,char *src,uint size)
 
 {
   char cVar1;
   uint uVar2;
   ulong local_20;
   char *local_10;
+  uint n;
+  uint slen;
   
-  local_10 = param_2;
+  local_10 = src;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  uVar2 = (int)local_10 - (int)(param_2 + 1);
-  if ((param_3 != 0) && (param_1 != (char *)0x0)) {
+  uVar2 = (int)local_10 - (int)(src + 1);
+  if ((size != 0) && (dst != (char *)0x0)) {
     local_20 = uVar2;
-    if (param_3 - 1 <= uVar2) {
-      local_20 = param_3 - 1;
+    if (size - 1 <= uVar2) {
+      local_20 = size - 1;
     }
-    memcpy((uchar *)param_1,(uchar *)param_2,local_20);
-    param_1[local_20] = '\0';
+    memcpy((uchar *)dst,(uchar *)src,local_20);
+    dst[local_20] = '\0';
   }
   return uVar2;
 }
@@ -30,13 +32,13 @@ uint __cdecl bdStrlcpy(char *param_1,char *param_2,uint param_3)
 
 // 005A87E0  dwGetLobby  (DW/dwUtils.cpp:194)
 
-bdLobbyService * __cdecl dwGetLobby(int param_1)
+bdLobbyService * __cdecl dwGetLobby(int controllerIndex)
 
 {
   bdLobbyService *this;
   bdLobbyService *local_c;
   
-  if (g_dwControllerData[param_1].lobby == (bdLobbyService *)0x0) {
+  if (g_dwControllerData[controllerIndex].lobby == (bdLobbyService *)0x0) {
     this = bdMemory::allocate(0x118);
     if (this == (bdLobbyService *)0x0) {
       local_c = (bdLobbyService *)0x0;
@@ -44,23 +46,24 @@ bdLobbyService * __cdecl dwGetLobby(int param_1)
     else {
       local_c = (bdLobbyService *)bdLobbyService::bdLobbyService(this);
     }
-    g_dwControllerData[param_1].lobby = local_c;
-    dwInitMessaging(param_1);
+    g_dwControllerData[controllerIndex].lobby = local_c;
+    dwInitMessaging(controllerIndex);
   }
-  return g_dwControllerData[param_1].lobby;
+  return g_dwControllerData[controllerIndex].lobby;
 }
 
 
 // 005A8850  dwGetMatchmaking  (DW/dwUtils.cpp:214)
 
-bdMatchMaking * __cdecl dwGetMatchmaking(int param_1)
+bdMatchMaking * __cdecl dwGetMatchmaking(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   bdMatchMaking *pbVar3;
+  bdMatchMaking *matchmaking;
   
-  if (g_dwControllerData[param_1].lobby == (bdLobbyService *)0x0) {
+  if (g_dwControllerData[controllerIndex].lobby == (bdLobbyService *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils.cpp",0xd7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -68,113 +71,118 @@ bdMatchMaking * __cdecl dwGetMatchmaking(int param_1)
       return pbVar3;
     }
   }
-  pbVar3 = bdLobbyService::getMatchMaking(g_dwControllerData[param_1].lobby);
+  pbVar3 = bdLobbyService::getMatchMaking(g_dwControllerData[controllerIndex].lobby);
   return pbVar3;
 }
 
 
 // 005A88B0  dwGetGroup  (DW/dwUtils.cpp:223)
 
-bdGroup * __cdecl dwGetGroup(int param_1)
+bdGroup * __cdecl dwGetGroup(int controllerIndex)
 
 {
   bdLobbyService *this;
   Status SVar1;
-  undefined4 local_8;
+  bdLobbyService *lobbyService;
+  bdGroup *group;
   
-  local_8 = (bdGroup *)0x0;
-  this = dwGetLobby(param_1);
+  group = (bdGroup *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
     SVar1 = bdLobbyService::getStatus(this);
     if (SVar1 == BD_CONNECTED) {
-      local_8 = bdLobbyService::getGroup(this);
+      group = bdLobbyService::getGroup(this);
     }
   }
-  return local_8;
+  return group;
 }
 
 
 // 005A8900  dwGetCounter  (DW/dwUtils.cpp:234)
 
-bdCounter * __cdecl dwGetCounter(int param_1)
+bdCounter * __cdecl dwGetCounter(int controllerIndex)
 
 {
   bdLobbyService *this;
   Status SVar1;
-  undefined4 local_8;
+  bdLobbyService *lobbyService;
+  bdCounter *counter;
   
-  local_8 = (bdCounter *)0x0;
-  this = dwGetLobby(param_1);
+  counter = (bdCounter *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
     SVar1 = bdLobbyService::getStatus(this);
     if (SVar1 == BD_CONNECTED) {
-      local_8 = bdLobbyService::getCounter(this);
+      counter = bdLobbyService::getCounter(this);
     }
   }
-  return local_8;
+  return counter;
 }
 
 
 // 005A8950  dwGetContentStreaming  (DW/dwUtils.cpp:247)
 
-bdContentStreaming * __cdecl dwGetContentStreaming(int param_1)
+bdContentStreaming * __cdecl dwGetContentStreaming(int controllerIndex)
 
 {
   bdLobbyService *this;
   Status SVar1;
-  bdContentStreaming *local_8;
+  bdLobbyService *lobbyService;
+  bdContentStreaming *contentStreaming;
   
-  local_8 = (bdContentStreaming *)0x0;
-  this = dwGetLobby(param_1);
+  contentStreaming = (bdContentStreaming *)0x0;
+  this = dwGetLobby(controllerIndex);
   if ((this == (bdLobbyService *)0x0) ||
      (SVar1 = bdLobbyService::getStatus(this), SVar1 != BD_CONNECTED)) {
     Com_PrintError(0x10,"Error retrieving the Demonware lobby.\n");
   }
   else {
-    local_8 = bdLobbyService::getContentStreaming(this);
-    if (local_8 == (bdContentStreaming *)0x0) {
+    contentStreaming = bdLobbyService::getContentStreaming(this);
+    if (contentStreaming == (bdContentStreaming *)0x0) {
       Com_PrintError(0x10,"Could not get a handle to the Content Streaming service.\n");
     }
   }
-  return local_8;
+  return contentStreaming;
 }
 
 
 // 005A89C0  dwGetPooledStorage  (DW/dwUtils.cpp:269)
 
-bdPooledStorage * __cdecl dwGetPooledStorage(int param_1)
+bdPooledStorage * __cdecl dwGetPooledStorage(int controllerIndex)
 
 {
   bdLobbyService *this;
   Status SVar1;
-  bdPooledStorage *local_8;
+  bdLobbyService *lobbyService;
+  bdPooledStorage *pooledStorage;
   
-  local_8 = (bdPooledStorage *)0x0;
-  this = dwGetLobby(param_1);
+  pooledStorage = (bdPooledStorage *)0x0;
+  this = dwGetLobby(controllerIndex);
   if ((this == (bdLobbyService *)0x0) ||
      (SVar1 = bdLobbyService::getStatus(this), SVar1 != BD_CONNECTED)) {
     Com_PrintError(0x10,"Error retrieving the Demonware lobby.\n");
   }
   else {
-    local_8 = bdLobbyService::getPooledStorage(this);
-    if (local_8 == (bdPooledStorage *)0x0) {
+    pooledStorage = bdLobbyService::getPooledStorage(this);
+    if (pooledStorage == (bdPooledStorage *)0x0) {
       Com_PrintError(0x10,"Could not get a handle to the Pooled Storage service.\n");
     }
   }
-  return local_8;
+  return pooledStorage;
 }
 
 
 // 005A8A30  dwGetTagService  (DW/dwUtils.cpp:292)
 
-bdTags * __cdecl dwGetTagService(int param_1)
+bdTags * __cdecl dwGetTagService(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   bdTags *pbVar3;
+  bdTags *tagService;
   
-  if (g_dwControllerData[param_1].lobby == (bdLobbyService *)0x0) {
+  if (g_dwControllerData[controllerIndex].lobby == (bdLobbyService *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils.cpp",0x125,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -182,21 +190,22 @@ bdTags * __cdecl dwGetTagService(int param_1)
       return pbVar3;
     }
   }
-  pbVar3 = bdLobbyService::getTags(g_dwControllerData[param_1].lobby);
+  pbVar3 = bdLobbyService::getTags(g_dwControllerData[controllerIndex].lobby);
   return pbVar3;
 }
 
 
 // 005A8A90  dwGetVoteRankService  (DW/dwUtils.cpp:300)
 
-bdVoteRank * __cdecl dwGetVoteRankService(int param_1)
+bdVoteRank * __cdecl dwGetVoteRankService(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   bdVoteRank *pbVar3;
+  bdVoteRank *voteRankService;
   
-  if (g_dwControllerData[param_1].lobby == (bdLobbyService *)0x0) {
+  if (g_dwControllerData[controllerIndex].lobby == (bdLobbyService *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils.cpp",0x12d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -204,46 +213,48 @@ bdVoteRank * __cdecl dwGetVoteRankService(int param_1)
       return pbVar3;
     }
   }
-  pbVar3 = bdLobbyService::getVoteRank(g_dwControllerData[param_1].lobby);
+  pbVar3 = bdLobbyService::getVoteRank(g_dwControllerData[controllerIndex].lobby);
   return pbVar3;
 }
 
 
 // 005A8AF0  dwGetStorage  (DW/dwUtils.cpp:308)
 
-bdStorage * __cdecl dwGetStorage(int param_1)
+bdStorage * __cdecl dwGetStorage(int controllerIndex)
 
 {
   bdLobbyService *this;
   Status SVar1;
-  undefined4 local_8;
+  bdLobbyService *lobbyService;
+  bdStorage *storage;
   
-  local_8 = (bdStorage *)0x0;
-  this = dwGetLobby(param_1);
+  storage = (bdStorage *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
     SVar1 = bdLobbyService::getStatus(this);
     if (SVar1 == BD_CONNECTED) {
-      local_8 = bdLobbyService::getStorage(this);
+      storage = bdLobbyService::getStorage(this);
     }
   }
-  return local_8;
+  return storage;
 }
 
 
 // 005A8B40  dwGetStats  (DW/dwUtils.cpp:341)
 
-bdStats * __cdecl dwGetStats(int param_1)
+bdStats * __cdecl dwGetStats(int controllerIndex)
 
 {
   bdLobbyService *this;
-  undefined4 local_8;
+  bdLobbyService *lobbyService;
+  bdStats *stats;
   
-  local_8 = (bdStats *)0x0;
-  this = dwGetLobby(param_1);
+  stats = (bdStats *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
-    local_8 = bdLobbyService::getStats(this);
+    stats = bdLobbyService::getStats(this);
   }
-  return local_8;
+  return stats;
 }
 
 
@@ -254,15 +265,15 @@ bdSecurityKeyMap * __cdecl dwGetSecurityKeyMap(void)
 {
   bdNetImpl *this;
   bdSocketRouter *this_00;
-  undefined4 local_c;
+  bdSecurityKeyMap *secKeyMap;
   
-  local_c = (bdSecurityKeyMap *)0x0;
+  secKeyMap = (bdSecurityKeyMap *)0x0;
   this = bdSingleton<bdNetImpl>::getInstance();
   if (this != (bdNetImpl *)0x0) {
     this_00 = bdNetImpl::getSocketRouter(this);
-    local_c = bdSocketRouter::getKeyMap(this_00);
+    secKeyMap = bdSocketRouter::getKeyMap(this_00);
   }
-  return local_c;
+  return secKeyMap;
 }
 
 
@@ -272,14 +283,14 @@ bdSocketRouter * __cdecl dwGetSocketRouter(void)
 
 {
   bdNetImpl *this;
-  undefined4 local_8;
+  bdSocketRouter *socketRouter;
   
-  local_8 = (bdSocketRouter *)0x0;
+  socketRouter = (bdSocketRouter *)0x0;
   this = bdSingleton<bdNetImpl>::getInstance();
   if (this != (bdNetImpl *)0x0) {
-    local_8 = bdNetImpl::getSocketRouter(this);
+    socketRouter = bdNetImpl::getSocketRouter(this);
   }
-  return local_8;
+  return socketRouter;
 }
 
 
@@ -290,6 +301,7 @@ bdAddressMap * __cdecl dwGetAddressMap(void)
 {
   bdSocketRouter *this;
   bdAddressMap *pbVar1;
+  bdSocketRouter *socketRouter;
   
   this = dwGetSocketRouter();
   if (this == (bdSocketRouter *)0x0) {
@@ -311,14 +323,14 @@ bdQoSProbe * __cdecl dwGetQoSProbe(void)
   bool bVar2;
   bdSocketRouter *this;
   bdQoSProbe *pbVar3;
-  bdQoSProbe *local_c;
+  bdQoSProbe *qosProbe;
   
-  local_c = (bdQoSProbe *)0x0;
+  qosProbe = (bdQoSProbe *)0x0;
   this = dwGetSocketRouter();
   if (this != (bdSocketRouter *)0x0) {
-    local_c = bdSocketRouter::getQoSProber(this);
+    qosProbe = bdSocketRouter::getQoSProber(this);
   }
-  if (local_c == (bdQoSProbe *)0x0) {
+  if (qosProbe == (bdQoSProbe *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils.cpp",0x198,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -326,7 +338,7 @@ bdQoSProbe * __cdecl dwGetQoSProbe(void)
       return pbVar3;
     }
   }
-  return local_c;
+  return qosProbe;
 }
 
 
@@ -336,33 +348,36 @@ bdReference<bdCommonAddr> __cdecl dwGetLocalCommonAddr(void)
 
 {
   bdNetStatus bVar1;
-  bdReference<bdCommonAddr> bVar2;
+  bdReference<bdCommonAddr> other_3;
   bdCommonAddr *in_stack_00000004;
   bdReference<bdByteBuffer> local_10;
-  bdNetImpl *local_c;
-  bdReference<bdAddrHandle> local_8;
+  bdNetImpl *net;
+  bdReference<bdCommonAddr> localCommonAddr;
   
-  local_8.m_ptr = (bdAddrHandle *)0x0;
-  local_c = bdSingleton<bdNetImpl>::getInstance();
-  if (local_c != (bdNetImpl *)0x0) {
+  localCommonAddr.m_ptr = (bdCommonAddr *)0x0;
+  net = bdSingleton<bdNetImpl>::getInstance();
+  if (net != (bdNetImpl *)0x0) {
     while( true ) {
-      bVar1 = bdNetImpl::getStatus(local_c);
+      bVar1 = bdNetImpl::getStatus(net);
       if (bVar1 != BD_NET_PENDING) break;
-      bdNetImpl::pump(local_c);
+      bdNetImpl::pump(net);
       NET_Sleep(10);
     }
-    bVar1 = bdNetImpl::getStatus(local_c);
+    bVar1 = bdNetImpl::getStatus(net);
     if (bVar1 == BD_NET_DONE) {
-      bVar2 = bdNetImpl::getLocalCommonAddr(local_c);
-      bdReference<bdAddrHandle>::operator=(&local_8,(bdReference<bdAddrHandle> *)bVar2.m_ptr);
+      other_3 = bdNetImpl::getLocalCommonAddr(net);
+      bdReference<bdAddrHandle>::operator=
+                ((bdReference<bdAddrHandle> *)&localCommonAddr,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
     }
   }
-  in_stack_00000004->_padding_ = (int)local_8.m_ptr;
+  in_stack_00000004->_padding_ = (int)localCommonAddr.m_ptr;
   if (in_stack_00000004->_padding_ != 0) {
     InterlockedIncrement((LONG *)(in_stack_00000004->_padding_ + 4));
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_8);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>
+            ((bdReference<bdByteBuffer> *)&localCommonAddr);
   return (bdReference<bdCommonAddr>)in_stack_00000004;
 }
 
@@ -371,27 +386,27 @@ bdReference<bdCommonAddr> __cdecl dwGetLocalCommonAddr(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bdAuthService * __cdecl dwGetAuthService(bdInetAddr param_1,ushort param_2,uint param_3)
+bdAuthService * __cdecl dwGetAuthService(bdInetAddr authAddr,ushort authPort,uint titleID)
 
 {
   bdAuthService *pbVar1;
   bdAuthService *local_18;
-  bdAddr local_c;
+  bdAddr addr;
   
   if (g_authService == (bdAuthService *)0x0) {
-    bdAddr::bdAddr(&local_c,&param_1,param_2);
+    bdAddr::bdAddr(&addr,&authAddr,authPort);
     pbVar1 = bdMemory::allocate(0x268);
     if (pbVar1 == (bdAuthService *)0x0) {
       local_18 = (bdAuthService *)0x0;
     }
     else {
-      local_18 = (bdAuthService *)bdAuthService::bdAuthService(pbVar1,param_3,&local_c);
+      local_18 = (bdAuthService *)bdAuthService::bdAuthService(pbVar1,titleID,&addr);
     }
     g_authService = local_18;
-    bdInetAddr::~bdInetAddr(&local_c.m_address);
+    bdInetAddr::~bdInetAddr(&addr.m_address);
   }
   pbVar1 = g_authService;
-  bdInetAddr::~bdInetAddr(&param_1);
+  bdInetAddr::~bdInetAddr(&authAddr);
   return pbVar1;
 }
 
@@ -415,35 +430,37 @@ void __cdecl dwAuthServiceCleanup(void)
 
 // 005A8E00  dwGetTitleUtilities  (DW/dwUtils.cpp:496)
 
-bdTitleUtilities * __cdecl dwGetTitleUtilities(int param_1)
+bdTitleUtilities * __cdecl dwGetTitleUtilities(int controllerIndex)
 
 {
   bdLobbyService *this;
-  undefined4 local_c;
+  bdTitleUtilities *obj;
+  bdLobbyService *lobbyService;
   
-  local_c = (bdTitleUtilities *)0x0;
-  this = dwGetLobby(param_1);
+  obj = (bdTitleUtilities *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
-    local_c = bdLobbyService::getTitleUtilities(this);
+    obj = bdLobbyService::getTitleUtilities(this);
   }
-  return local_c;
+  return obj;
 }
 
 
 // 005A8E40  dwGetMessaging  (DW/dwUtils.cpp:508)
 
-bdMessaging * __cdecl dwGetMessaging(int param_1)
+bdMessaging * __cdecl dwGetMessaging(int controllerIndex)
 
 {
   bdLobbyService *this;
-  undefined4 local_8;
+  bdLobbyService *lobbyService;
+  bdMessaging *messaging;
   
-  local_8 = (bdMessaging *)0x0;
-  this = dwGetLobby(param_1);
+  messaging = (bdMessaging *)0x0;
+  this = dwGetLobby(controllerIndex);
   if (this != (bdLobbyService *)0x0) {
-    local_8 = bdLobbyService::getMessaging(this);
+    messaging = bdLobbyService::getMessaging(this);
   }
-  return local_8;
+  return messaging;
 }
 
 
@@ -451,19 +468,19 @@ bdMessaging * __cdecl dwGetMessaging(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwCloseRemoteTask(overlappedTask *param_1)
+void __cdecl dwCloseRemoteTask(overlappedTask *task)
 
 {
   bdLobbyErrorCode bVar1;
   bdStatus bVar2;
   undefined3 extraout_var;
   
-  if ((param_1->overlappedIO).m_ptr != (bdRemoteTask *)0x0) {
-    bVar2 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    param_1->finalStatus = bVar2;
-    bVar1 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-    *(uint *)&param_1->errorCode = CONCAT31(extraout_var,bVar1);
-    bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,(bdCommonAddr *)0x0);
+  if ((task->overlappedIO).m_ptr != (bdRemoteTask *)0x0) {
+    bVar2 = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    task->finalStatus = bVar2;
+    bVar1 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+    *(uint *)&task->errorCode = CONCAT31(extraout_var,bVar1);
+    bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,(bdCommonAddr *)0x0);
   }
   return;
 }
@@ -473,11 +490,13 @@ void __cdecl dwCloseRemoteTask(overlappedTask *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwCloseRemoteTask(bdReference<bdRemoteTask> *param_1)
+void __cdecl dwCloseRemoteTask(bdReference<bdRemoteTask> *remoteTask)
 
 {
-  if ((param_1 != (bdReference<bdRemoteTask> *)0x0) && (param_1->m_ptr != (bdRemoteTask *)0x0)) {
-    bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,(bdCommonAddr *)0x0);
+  if ((remoteTask != (bdReference<bdRemoteTask> *)0x0) && (remoteTask->m_ptr != (bdRemoteTask *)0x0)
+     ) {
+    bdReference<bdCommonAddr>::operator=
+              ((bdReference<bdCommonAddr> *)remoteTask,(bdCommonAddr *)0x0);
   }
   return;
 }
@@ -487,20 +506,20 @@ void __cdecl dwCloseRemoteTask(bdReference<bdRemoteTask> *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwTaskStatusConvert(bdStatus param_1,bdLobbyErrorCode param_2)
+taskCompleteResults __cdecl dwTaskStatusConvert(bdStatus taskStatus,bdLobbyErrorCode lobbyError)
 
 {
   undefined3 in_stack_00000009;
-  undefined4 local_8;
+  taskCompleteResults status;
   
-  local_8 = TASK_ERROR;
-  if ((param_1 == BD_DONE) && (_param_2 == 0)) {
-    local_8 = TASK_COMPLETE;
+  status = TASK_ERROR;
+  if ((taskStatus == BD_DONE) && (_lobbyError == 0)) {
+    status = TASK_COMPLETE;
   }
-  else if (param_1 == BD_PENDING) {
-    local_8 = TASK_NOTCOMPLETE;
+  else if (taskStatus == BD_PENDING) {
+    status = TASK_NOTCOMPLETE;
   }
-  return local_8;
+  return status;
 }
 
 
@@ -508,21 +527,22 @@ taskCompleteResults __cdecl dwTaskStatusConvert(bdStatus param_1,bdLobbyErrorCod
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-char * __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode param_1)
+char * __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode code)
 
 {
   undefined3 in_stack_00000005;
-  uint local_c;
+  uint i;
+  uint numCodes;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xa3 < local_c) {
+    if (0xa3 < i) {
       return "Unknown bdLobbyErrorCode";
     }
-    if (*(undefined4 *)(lobbyErrorCodeLookup + local_c * 4) == _param_1) break;
-    local_c = local_c + 1;
+    if (*(undefined4 *)(lobbyErrorCodeLookup + i * 4) == _code) break;
+    i = i + 1;
   }
-  return lobbyErrorCodeDescs[local_c];
+  return lobbyErrorCodeDescs[i];
 }
 
 
@@ -530,13 +550,13 @@ char * __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode param_1,char *param_2,uint param_3)
+void __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode code,char *buffer,uint bufferSize)
 
 {
-  char *pcVar1;
+  char *src;
   
-  pcVar1 = dwLobbyErrorCodeToString(param_1);
-  bdStrlcpy(param_2,pcVar1,param_3);
+  src = dwLobbyErrorCodeToString(code);
+  bdStrlcpy(buffer,src,bufferSize);
   return;
 }
 
@@ -545,17 +565,17 @@ void __cdecl dwLobbyErrorCodeToString(bdLobbyErrorCode param_1,char *param_2,uin
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl dwConnectionErrorHandler(int param_1)
+void __cdecl dwConnectionErrorHandler(int error_context)
 
 {
-  char local_20c [512];
+  char errorString [512];
   uint local_c;
-  char *local_8;
+  char *error;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = UI_SafeTranslateString("XBOXLIVE_LOBBY_CONNECTION_ERR");
-  local_8 = UI_ReplaceConversionInt(local_8,param_1);
-  I_strncpyz(local_20c,local_8,0x200);
+  error = UI_SafeTranslateString("XBOXLIVE_LOBBY_CONNECTION_ERR");
+  error = UI_ReplaceConversionInt(error,error_context);
+  I_strncpyz(errorString,error,0x200);
   Com_Error(ERR_DROP,"%s");
   return;
 }

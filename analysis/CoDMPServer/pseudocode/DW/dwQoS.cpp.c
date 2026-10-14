@@ -44,7 +44,7 @@ dwQoSMultiProbeListener::dwQoSMultiProbeListener(dwQoSMultiProbeListener *this)
 // 005A5780  addProbe  (DW/dwQoS.cpp:32)
 
 void __thiscall
-dwQoSMultiProbeListener::addProbe(dwQoSMultiProbeListener *this,bdQoSRemoteAddr param_1)
+dwQoSMultiProbeListener::addProbe(dwQoSMultiProbeListener *this,bdQoSRemoteAddr addr)
 
 {
   bdQoSRemoteAddr *this_00;
@@ -62,17 +62,17 @@ dwQoSMultiProbeListener::addProbe(dwQoSMultiProbeListener *this,bdQoSRemoteAddr 
   if (this->m_numProbes < 500) {
     this_00 = this->m_probeAddrs + this->m_numProbes;
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)this_00,(bdReference<bdAddrHandle> *)&param_1);
-    *(undefined4 *)(this_00->m_id).ab = param_1.m_id.ab._0_4_;
-    *(undefined4 *)((this_00->m_id).ab + 4) = param_1.m_id.ab._4_4_;
-    *(undefined4 *)(this_00->m_key).ab = param_1.m_key.ab._0_4_;
-    *(undefined4 *)((this_00->m_key).ab + 4) = param_1.m_key.ab._4_4_;
-    *(undefined4 *)((this_00->m_key).ab + 8) = param_1.m_key.ab._8_4_;
-    *(undefined4 *)((this_00->m_key).ab + 0xc) = param_1.m_key.ab._12_4_;
+              ((bdReference<bdAddrHandle> *)this_00,(bdReference<bdAddrHandle> *)&addr);
+    *(undefined4 *)(this_00->m_id).ab = addr.m_id.ab._0_4_;
+    *(undefined4 *)((this_00->m_id).ab + 4) = addr.m_id.ab._4_4_;
+    *(undefined4 *)(this_00->m_key).ab = addr.m_key.ab._0_4_;
+    *(undefined4 *)((this_00->m_key).ab + 4) = addr.m_key.ab._4_4_;
+    *(undefined4 *)((this_00->m_key).ab + 8) = addr.m_key.ab._8_4_;
+    *(undefined4 *)((this_00->m_key).ab + 0xc) = addr.m_key.ab._12_4_;
     this->m_probeSucceeded[this->m_numProbes] = false;
     this->m_numProbes = this->m_numProbes + 1;
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&param_1);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addr);
   return;
 }
 
@@ -80,15 +80,16 @@ dwQoSMultiProbeListener::addProbe(dwQoSMultiProbeListener *this,bdQoSRemoteAddr 
 // 005A5860  onQoSProbeSuccess  (DW/dwQoS.cpp:67)
 
 void __thiscall
-dwQoSMultiProbeListener::onQoSProbeSuccess(dwQoSMultiProbeListener *this,bdQoSProbeInfo *param_1)
+dwQoSMultiProbeListener::onQoSProbeSuccess(dwQoSMultiProbeListener *this,bdQoSProbeInfo *info)
 
 {
   undefined4 uVar1;
   uint uVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_c;
-  bool local_5;
+  int ping;
+  uint i;
+  bool found;
   
   if ((499 < this->m_numSuccesses) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwQoS.cpp",0x44,0,"%s"),
@@ -97,23 +98,21 @@ dwQoSMultiProbeListener::onQoSProbeSuccess(dwQoSMultiProbeListener *this,bdQoSPr
     (*pcVar3)();
     return;
   }
-  local_5 = false;
-  for (local_c = 0; (local_5 == false && (local_c < 500)); local_c = local_c + 1) {
-    if ((this->m_probeAddrs[local_c].m_addr.m_ptr != (bdCommonAddr *)0x0) &&
-       ((local_5 = bdCommonAddr::operator==
-                             (this->m_probeAddrs[local_c].m_addr.m_ptr,(param_1->m_addr).m_ptr),
-        local_5 && (this->m_probeSucceeded[local_c] == false)))) {
-      this->m_probeSucceeded[local_c] = true;
-      bdQoSProbeInfo::operator=(this->m_successes + this->m_numSuccesses,param_1);
-      qos_data[local_c] = *(uchar (*) [4])param_1->m_data;
-      this->m_successes[this->m_numSuccesses].m_data = qos_data[local_c];
-      uVar1 = *(undefined4 *)(this->m_probeAddrs[local_c].m_id.ab + 4);
+  found = false;
+  for (i = 0; (found == false && (i < 500)); i = i + 1) {
+    if ((this->m_probeAddrs[i].m_addr.m_ptr != (bdCommonAddr *)0x0) &&
+       ((found = bdCommonAddr::operator==(this->m_probeAddrs[i].m_addr.m_ptr,(info->m_addr).m_ptr),
+        found && (this->m_probeSucceeded[i] == false)))) {
+      this->m_probeSucceeded[i] = true;
+      bdQoSProbeInfo::operator=(this->m_successes + this->m_numSuccesses,info);
+      qos_data[i] = *(uchar (*) [4])info->m_data;
+      this->m_successes[this->m_numSuccesses].m_data = qos_data[i];
+      uVar1 = *(undefined4 *)(this->m_probeAddrs[i].m_id.ab + 4);
       uVar2 = this->m_numSuccesses;
-      *(undefined4 *)this->m_successIDs[uVar2].ab =
-           *(undefined4 *)this->m_probeAddrs[local_c].m_id.ab;
+      *(undefined4 *)this->m_successIDs[uVar2].ab = *(undefined4 *)this->m_probeAddrs[i].m_id.ab;
       *(undefined4 *)(this->m_successIDs[uVar2].ab + 4) = uVar1;
       this->m_numSuccesses = this->m_numSuccesses + 1;
-      CL_SetPingFromQOS((int)(param_1->m_latency * 1000.0),&this->m_probeAddrs[local_c].m_id);
+      CL_SetPingFromQOS((int)(info->m_latency * 1000.0),&this->m_probeAddrs[i].m_id);
       UI_RefreshServers();
     }
   }
@@ -125,7 +124,7 @@ dwQoSMultiProbeListener::onQoSProbeSuccess(dwQoSMultiProbeListener *this,bdQoSPr
 
 void __thiscall
 dwQoSMultiProbeListener::onQoSProbeFail
-          (dwQoSMultiProbeListener *this,bdReference<bdCommonAddr> param_1)
+          (dwQoSMultiProbeListener *this,bdReference<bdCommonAddr> addr)
 
 {
   code *pcVar1;
@@ -140,7 +139,7 @@ dwQoSMultiProbeListener::onQoSProbeFail
     }
   }
   this->m_numFailures = this->m_numFailures + 1;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&param_1);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&addr);
   return;
 }
 
@@ -150,14 +149,14 @@ dwQoSMultiProbeListener::onQoSProbeFail
 void __thiscall dwQoSMultiProbeListener::clean(dwQoSMultiProbeListener *this)
 
 {
-  uint local_8;
+  uint i;
   
   this->m_numProbes = 0;
   this->m_numSuccesses = 0;
   this->m_numFailures = 0;
-  for (local_8 = 0; local_8 < 500; local_8 = local_8 + 1) {
-    bdReference<bdCommonAddr>::operator=(&this->m_probeAddrs[local_8].m_addr,(bdCommonAddr *)0x0);
-    bdReference<bdCommonAddr>::operator=(&this->m_successes[local_8].m_addr,(bdCommonAddr *)0x0);
+  for (i = 0; i < 500; i = i + 1) {
+    bdReference<bdCommonAddr>::operator=(&this->m_probeAddrs[i].m_addr,(bdCommonAddr *)0x0);
+    bdReference<bdCommonAddr>::operator=(&this->m_successes[i].m_addr,(bdCommonAddr *)0x0);
   }
   memset((uchar *)this->m_probeAddrs,'\0',14000);
   memset((uchar *)this->m_successes,'\0',18000);
@@ -172,79 +171,79 @@ void __thiscall dwQoSMultiProbeListener::clean(dwQoSMultiProbeListener *this)
 taskCompleteResults __thiscall dwQoSMultiProbeListener::complete(dwQoSMultiProbeListener *this)
 
 {
-  taskCompleteResults local_8;
+  taskCompleteResults complete;
   
-  local_8 = TASK_ERROR;
+  complete = TASK_ERROR;
   if (this->m_numSuccesses + this->m_numFailures < this->m_numProbes) {
-    local_8 = TASK_NOTCOMPLETE;
+    complete = TASK_NOTCOMPLETE;
   }
   else if (this->m_numSuccesses + this->m_numFailures == this->m_numProbes) {
-    local_8 = TASK_COMPLETE;
+    complete = TASK_COMPLETE;
   }
-  return local_8;
+  return complete;
 }
 
 
 // 005A5CC0  dwStartQoSProbes  (DW/dwQoS.cpp:185)
 
 void __cdecl
-dwStartQoSProbes(dwQoSMultiProbeListener *param_1,uint param_2,bdQoSRemoteAddr *param_3)
+dwStartQoSProbes(dwQoSMultiProbeListener *listener,uint numProbes,bdQoSRemoteAddr *serverAddrs)
 
 {
-  bdQoSRemoteAddr bVar1;
-  bool bVar2;
-  undefined8 uVar3;
+  bdQoSRemoteAddr addr;
+  bool bVar1;
+  bdQoSProbe *this;
+  undefined8 uVar2;
   undefined1 in_stack_ffffffc0 [16];
-  undefined4 uVar4;
-  bdQoSRemoteAddr *pbVar5;
-  dwQoSMultiProbeListener *pdVar6;
-  uint local_10;
-  bdReference<bdByteBuffer> local_c;
-  bdQoSProbe *local_8;
+  undefined4 uVar3;
+  bdQoSRemoteAddr *pbVar4;
+  dwQoSMultiProbeListener *pdVar5;
+  uint i;
+  bdReference<bdCommonAddr> localAddr;
   
-  local_8 = dwGetQoSProbe();
+  this = dwGetQoSProbe();
   dwGetLocalCommonAddr();
-  if (((local_8 != (bdQoSProbe *)0x0) && (local_c.m_ptr != (bdByteBuffer *)0x0)) &&
-     (param_1 != (dwQoSMultiProbeListener *)0x0)) {
-    dwQoSMultiProbeListener::clean(param_1);
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      pbVar5 = param_3 + local_10;
-      uVar4._0_1_ = '2';
-      uVar4._1_1_ = ']';
-      uVar4._2_1_ = 'Z';
-      uVar4._3_1_ = '\0';
-      pdVar6 = param_1;
-      bVar2 = bdQoSProbe::probe(local_8,pbVar5,(bdQoSProbeListener *)param_1);
-      if (bVar2) {
-        bdQoSRemoteAddr::bdQoSRemoteAddr((bdQoSRemoteAddr *)&stack0xffffffc0,param_3 + local_10);
-        bVar1.m_key.ab[4] = (uchar)uVar4;
-        bVar1.m_key.ab[5] = SUB41(uVar4,1);
-        bVar1.m_key.ab[6] = SUB41(uVar4,2);
-        bVar1.m_key.ab[7] = SUB41(uVar4,3);
-        uVar3 = in_stack_ffffffc0._4_8_;
-        bVar1.m_addr.m_ptr = (bdCommonAddr *)in_stack_ffffffc0._0_4_;
-        bVar1.m_id.ab[0] = (char)uVar3;
-        bVar1.m_id.ab[1] = (char)((ulonglong)uVar3 >> 8);
-        bVar1.m_id.ab[2] = (char)((ulonglong)uVar3 >> 0x10);
-        bVar1.m_id.ab[3] = (char)((ulonglong)uVar3 >> 0x18);
-        bVar1.m_id.ab[4] = (char)((ulonglong)uVar3 >> 0x20);
-        bVar1.m_id.ab[5] = (char)((ulonglong)uVar3 >> 0x28);
-        bVar1.m_id.ab[6] = (char)((ulonglong)uVar3 >> 0x30);
-        bVar1.m_id.ab[7] = (char)((ulonglong)uVar3 >> 0x38);
-        bVar1.m_key.ab[0] = in_stack_ffffffc0[0xc];
-        bVar1.m_key.ab[1] = in_stack_ffffffc0[0xd];
-        bVar1.m_key.ab[2] = in_stack_ffffffc0[0xe];
-        bVar1.m_key.ab[3] = in_stack_ffffffc0[0xf];
-        bVar1.m_key.ab._8_4_ = pbVar5;
-        bVar1.m_key.ab._12_4_ = pdVar6;
-        dwQoSMultiProbeListener::addProbe(param_1,bVar1);
+  if (((this != (bdQoSProbe *)0x0) && (localAddr.m_ptr != (bdCommonAddr *)0x0)) &&
+     (listener != (dwQoSMultiProbeListener *)0x0)) {
+    dwQoSMultiProbeListener::clean(listener);
+    for (i = 0; i < numProbes; i = i + 1) {
+      pbVar4 = serverAddrs + i;
+      uVar3._0_1_ = '2';
+      uVar3._1_1_ = ']';
+      uVar3._2_1_ = 'Z';
+      uVar3._3_1_ = '\0';
+      pdVar5 = listener;
+      bVar1 = bdQoSProbe::probe(this,pbVar4,(bdQoSProbeListener *)listener);
+      if (bVar1) {
+        bdQoSRemoteAddr::bdQoSRemoteAddr((bdQoSRemoteAddr *)&stack0xffffffc0,serverAddrs + i);
+        addr.m_key.ab[4] = (uchar)uVar3;
+        addr.m_key.ab[5] = SUB41(uVar3,1);
+        addr.m_key.ab[6] = SUB41(uVar3,2);
+        addr.m_key.ab[7] = SUB41(uVar3,3);
+        uVar2 = in_stack_ffffffc0._4_8_;
+        addr.m_addr.m_ptr = (bdCommonAddr *)in_stack_ffffffc0._0_4_;
+        addr.m_id.ab[0] = (char)uVar2;
+        addr.m_id.ab[1] = (char)((ulonglong)uVar2 >> 8);
+        addr.m_id.ab[2] = (char)((ulonglong)uVar2 >> 0x10);
+        addr.m_id.ab[3] = (char)((ulonglong)uVar2 >> 0x18);
+        addr.m_id.ab[4] = (char)((ulonglong)uVar2 >> 0x20);
+        addr.m_id.ab[5] = (char)((ulonglong)uVar2 >> 0x28);
+        addr.m_id.ab[6] = (char)((ulonglong)uVar2 >> 0x30);
+        addr.m_id.ab[7] = (char)((ulonglong)uVar2 >> 0x38);
+        addr.m_key.ab[0] = in_stack_ffffffc0[0xc];
+        addr.m_key.ab[1] = in_stack_ffffffc0[0xd];
+        addr.m_key.ab[2] = in_stack_ffffffc0[0xe];
+        addr.m_key.ab[3] = in_stack_ffffffc0[0xf];
+        addr.m_key.ab._8_4_ = pbVar4;
+        addr.m_key.ab._12_4_ = pdVar5;
+        dwQoSMultiProbeListener::addProbe(listener,addr);
       }
       else {
         Com_Printf(0x10,"Failed to start QoS probe.\n");
       }
     }
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&localAddr);
   return;
 }
 
@@ -280,25 +279,25 @@ dwQoSMultiProbeListener::_scalar_deleting_destructor_(dwQoSMultiProbeListener *t
 
 // 005A5A20  operator=  (line unknown)
 
-bdQoSProbeInfo * __thiscall bdQoSProbeInfo::operator=(bdQoSProbeInfo *this,bdQoSProbeInfo *param_1)
+bdQoSProbeInfo * __thiscall bdQoSProbeInfo::operator=(bdQoSProbeInfo *this,bdQoSProbeInfo *__that)
 
 {
   ushort uVar1;
   undefined2 uVar2;
   
   bdReference<bdAddrHandle>::operator=
-            ((bdReference<bdAddrHandle> *)this,(bdReference<bdAddrHandle> *)param_1);
-  uVar1 = (param_1->m_realAddr).m_port;
-  uVar2 = *(undefined2 *)&(param_1->m_realAddr).field_0x6;
-  (this->m_realAddr).m_address.m_addr.inUn = (param_1->m_realAddr).m_address.m_addr.inUn;
+            ((bdReference<bdAddrHandle> *)this,(bdReference<bdAddrHandle> *)__that);
+  uVar1 = (__that->m_realAddr).m_port;
+  uVar2 = *(undefined2 *)&(__that->m_realAddr).field_0x6;
+  (this->m_realAddr).m_address.m_addr.inUn = (__that->m_realAddr).m_address.m_addr.inUn;
   (this->m_realAddr).m_port = uVar1;
   *(undefined2 *)&(this->m_realAddr).field_0x6 = uVar2;
-  this->m_latency = param_1->m_latency;
-  this->m_data = param_1->m_data;
-  this->m_dataSize = param_1->m_dataSize;
-  this->m_disabled = param_1->m_disabled;
-  this->m_bandwidthDown = param_1->m_bandwidthDown;
-  this->m_bandwidthUp = param_1->m_bandwidthUp;
+  this->m_latency = __that->m_latency;
+  this->m_data = __that->m_data;
+  this->m_dataSize = __that->m_dataSize;
+  this->m_disabled = __that->m_disabled;
+  this->m_bandwidthDown = __that->m_bandwidthDown;
+  this->m_bandwidthUp = __that->m_bandwidthUp;
   return this;
 }
 
@@ -306,15 +305,15 @@ bdQoSProbeInfo * __thiscall bdQoSProbeInfo::operator=(bdQoSProbeInfo *this,bdQoS
 // 005A5C50  bdQoSRemoteAddr  (line unknown)
 
 bdQoSRemoteAddr * __thiscall
-bdQoSRemoteAddr::bdQoSRemoteAddr(bdQoSRemoteAddr *this,bdQoSRemoteAddr *param_1)
+bdQoSRemoteAddr::bdQoSRemoteAddr(bdQoSRemoteAddr *this,bdQoSRemoteAddr *__that)
 
 {
-  (this->m_addr).m_ptr = (param_1->m_addr).m_ptr;
+  (this->m_addr).m_ptr = (__that->m_addr).m_ptr;
   if ((this->m_addr).m_ptr != (bdCommonAddr *)0x0) {
     InterlockedIncrement(&((this->m_addr).m_ptr)->_padding_);
   }
-  bdSecurityID::bdSecurityID(&this->m_id,&param_1->m_id);
-  bdSecurityKey::bdSecurityKey(&this->m_key,&param_1->m_key);
+  bdSecurityID::bdSecurityID(&this->m_id,&__that->m_id);
+  bdSecurityKey::bdSecurityKey(&this->m_key,&__that->m_key);
   return this;
 }
 

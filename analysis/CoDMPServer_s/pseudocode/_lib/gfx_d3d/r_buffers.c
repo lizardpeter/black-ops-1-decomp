@@ -11,6 +11,8 @@ R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint para
   undefined4 *unaff_ESI;
   int *piVar3;
   IDirect3DDevice9 *pIStack_20;
+  void *vertexBufferData;
+  uint __formal;
   
   pIStack_20 = dx.device;
   iVar1 = (**(code **)((int)*dx.device + 0x68))();
@@ -34,6 +36,8 @@ R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint para
 
 // 0082EF40  R_AllocStaticIndexBuffer  (gfx_d3d/r_buffers.cpp:262)
 
+/* WARNING: Variable defined which should be unmapped: indexBufferData */
+
 void * __cdecl
 R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **param_1,int param_2,uint param_3,char *param_4)
 
@@ -46,6 +50,8 @@ R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **param_1,int param_2,uint param_
   undefined4 uStack_18;
   undefined4 uStack_14;
   undefined4 uStack_c;
+  void *indexBufferData;
+  uint __formal;
   
   uStack_c = 0;
   uStack_14 = 0;
@@ -66,17 +72,19 @@ R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **param_1,int param_2,uint param_
 
 // 0082EF90  Load_VertexBuffer  (gfx_d3d/r_buffers.cpp:324)
 
+/* WARNING: Variable defined which should be unmapped: bufferData */
+
 void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int param_3)
 
 {
   bool bVar1;
   ulong in_EAX;
-  uchar *puVar2;
+  uchar *dst;
   IDirect3DVertexBuffer9 **in_ECX;
   uint unaff_EBX;
   int unaff_ESI;
   IDirect3DVertexBuffer9 **unaff_EDI;
-  char *unaff_retaddr;
+  void *bufferData;
   
   if (((r_loadForRenderer->current).enabled != false) && (param_1 != (IDirect3DVertexBuffer9 **)0x0)
      ) {
@@ -86,8 +94,8 @@ void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,in
       RB_Resource_Flush();
       return;
     }
-    puVar2 = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBX,unaff_retaddr);
-    memcpy(puVar2,(uchar *)param_1,in_EAX);
+    dst = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBX,bufferData);
+    memcpy(dst,(uchar *)param_1,in_EAX);
     (**(code **)((int)**in_ECX + 0x30))(*in_ECX);
     return;
   }
@@ -251,35 +259,37 @@ void __cdecl R_CreateParticleCloudBuffer(void)
 
 {
   short sVar1;
-  short sVar2;
-  undefined2 uVar3;
-  void *pvVar4;
-  int iVar5;
-  float *pfVar6;
-  undefined2 *puVar7;
-  int iVar8;
+  undefined2 uVar2;
+  void *pvVar3;
+  int iVar4;
+  float *pfVar5;
+  undefined2 *puVar6;
+  int iVar7;
   char *unaff_EBX;
-  uint uVar9;
+  ushort *puVar8;
   uint unaff_EBP;
   int unaff_ESI;
-  undefined2 *puVar10;
+  undefined2 *puVar9;
   IDirect3DVertexBuffer9 **unaff_EDI;
-  undefined2 *puVar11;
-  float fVar12;
-  uint local_68;
-  short *local_64;
-  short *local_60;
-  int local_5c;
-  int local_58;
-  int local_54;
+  undefined2 *puVar10;
+  float fVar11;
+  ushort lfsr;
+  int particleId;
+  int vertexIndex;
+  ushort *gaussParticleIndicesIter;
+  ushort *particleIndicesIter;
+  int zIter;
+  int yIter;
+  int xIter;
+  GfxParticleCloudVertex *particleVerts;
   float local_4c;
-  float local_48;
-  float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
+  float rand0;
+  float rand1;
+  float rand2;
+  float rand3;
+  float xyz;
   undefined2 local_34 [4];
-  undefined2 local_2c;
+  undefined2 quadIndices;
   undefined2 local_2a;
   short local_28 [6];
   float local_1c [4];
@@ -292,114 +302,115 @@ void __cdecl R_CreateParticleCloudBuffer(void)
   local_28[3] = 2;
   local_28[4] = 1;
   local_28[5] = 3;
-  uVar9 = 0x1ff;
-  pvVar4 = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-  puVar11 = (undefined2 *)((int)pvVar4 + 0x8000);
-  local_60 = R_AllocStaticIndexBuffer
-                       ((IDirect3DIndexBuffer9 **)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-  local_64 = local_60 + 0x1800;
+  puVar8 = (ushort *)0x1ff;
+  pvVar3 = R_AllocStaticVertexBuffer(unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
+  puVar10 = (undefined2 *)((int)pvVar3 + 0x8000);
+  zIter = (int)R_AllocStaticIndexBuffer
+                         ((IDirect3DIndexBuffer9 **)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
+  particleIndicesIter = (ushort *)(zIter + 0x3000);
   local_4c = 0.0;
-  sVar2 = 0;
-  local_68 = 0;
-  local_54 = 0;
-  local_58 = 0;
-  local_5c = 0;
-  local_48 = 0.0;
+  vertexIndex = 0;
+  gaussParticleIndicesIter = (ushort *)0x0;
+  particleVerts = (GfxParticleCloudVertex *)0x0;
+  xIter = 0;
+  yIter = 0;
+  rand0 = 0.0;
   while( true ) {
     while( true ) {
       do {
-        uVar9 = (uint)(ushort)(-((ushort)uVar9 & 1) & 0x240 ^ (ushort)(uVar9 >> 1));
-        puVar10 = (undefined2 *)(local_68 * 0x20 + (int)pvVar4);
-        iVar5 = rand();
-        local_1c[0] = ((float)iVar5 * 3.051851e-05 + local_4c) * 0.25 - 1.0;
-        iVar5 = rand();
-        local_1c[1] = ((float)iVar5 * 3.051851e-05 + local_48) * 0.25 - 1.0;
-        iVar5 = rand();
-        local_1c[2] = ((float)iVar5 * 3.051851e-05 + (float)local_5c) * 0.125 - 1.0;
-        GaussianRandom(&local_44,&local_40);
-        GaussianRandom(&local_3c,&local_38);
-        fVar12 = local_44 * 0.25;
-        local_1c[3] = fVar12;
-        if (0.0 <= fVar12 - 1.0) {
+        puVar8 = (ushort *)
+                 (uint)(ushort)(-((ushort)puVar8 & 1) & 0x240 ^ (ushort)((uint)puVar8 >> 1));
+        puVar9 = (undefined2 *)((int)gaussParticleIndicesIter * 0x20 + (int)pvVar3);
+        iVar4 = rand();
+        local_1c[0] = ((float)iVar4 * 3.051851e-05 + local_4c) * 0.25 - 1.0;
+        iVar4 = rand();
+        local_1c[1] = ((float)iVar4 * 3.051851e-05 + rand0) * 0.25 - 1.0;
+        iVar4 = rand();
+        local_1c[2] = ((float)iVar4 * 3.051851e-05 + (float)yIter) * 0.125 - 1.0;
+        GaussianRandom(&rand1,&rand2);
+        GaussianRandom(&rand3,&xyz);
+        fVar11 = rand1 * 0.25;
+        local_1c[3] = fVar11;
+        if (0.0 <= fVar11 - 1.0) {
           local_1c[3] = 1.0;
         }
-        if (DAT_00af36d8 - fVar12 < 0.0) {
+        if (DAT_00af36d8 - fVar11 < 0.0) {
         }
         else {
           local_1c[3] = DAT_00af36d8;
         }
-        fVar12 = local_40 * 0.25;
-        local_c = fVar12;
-        if (0.0 <= fVar12 - 1.0) {
+        fVar11 = rand2 * 0.25;
+        local_c = fVar11;
+        if (0.0 <= fVar11 - 1.0) {
           local_c = 1.0;
         }
-        if (DAT_00af36d8 - fVar12 < 0.0) {
+        if (DAT_00af36d8 - fVar11 < 0.0) {
         }
         else {
           local_c = DAT_00af36d8;
         }
-        fVar12 = local_3c * 0.25;
+        fVar11 = rand3 * 0.25;
         local_8 = 1.0;
-        if (fVar12 - 1.0 < 0.0) {
-          local_8 = fVar12;
+        if (fVar11 - 1.0 < 0.0) {
+          local_8 = fVar11;
         }
-        if (DAT_00af36d8 - fVar12 < 0.0) {
+        if (DAT_00af36d8 - fVar11 < 0.0) {
         }
         else {
           local_8 = DAT_00af36d8;
         }
-        pfVar6 = local_1c;
-        puVar7 = local_34;
-        iVar5 = 2;
+        pfVar5 = local_1c;
+        puVar6 = local_34;
+        iVar4 = 2;
         do {
-          iVar8 = 3;
+          iVar7 = 3;
           do {
-            *puVar7 = (short)(int)(*pfVar6 * 32767.0);
-            pfVar6 = pfVar6 + 1;
-            puVar7 = puVar7 + 1;
-            iVar8 = iVar8 + -1;
-          } while (iVar8 != 0);
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
-        iVar5 = 0;
+            *puVar6 = (short)(int)(*pfVar5 * 32767.0);
+            pfVar5 = pfVar5 + 1;
+            puVar6 = puVar6 + 1;
+            iVar7 = iVar7 + -1;
+          } while (iVar7 != 0);
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
+        iVar4 = 0;
         do {
-          *puVar10 = local_34[0];
-          puVar10[1] = local_34[1];
-          puVar10[2] = local_34[2];
-          uVar3 = (undefined2)(iVar5 << 0xd);
-          puVar10[3] = uVar3;
-          *puVar11 = local_34[3];
-          puVar11[1] = local_2c;
-          puVar11[2] = local_2a;
-          puVar11[3] = uVar3;
-          iVar5 = iVar5 + 1;
+          *puVar9 = local_34[0];
+          puVar9[1] = local_34[1];
+          puVar9[2] = local_34[2];
+          uVar2 = (undefined2)(iVar4 << 0xd);
+          puVar9[3] = uVar2;
+          *puVar10 = local_34[3];
+          puVar10[1] = quadIndices;
+          puVar10[2] = local_2a;
+          puVar10[3] = uVar2;
+          iVar4 = iVar4 + 1;
+          puVar9 = puVar9 + 4;
           puVar10 = puVar10 + 4;
-          puVar11 = puVar11 + 4;
-        } while (iVar5 != 4);
-        iVar5 = 0;
+        } while (iVar4 != 4);
+        iVar4 = 0;
         do {
-          sVar1 = local_28[iVar5];
-          *local_60 = sVar1 + sVar2 * 4;
-          *local_64 = sVar1 + 0x1000 + sVar2 * 4;
-          iVar5 = iVar5 + 1;
-          local_60 = local_60 + 1;
-          local_64 = local_64 + 1;
-        } while (iVar5 != 6);
-        sVar2 = sVar2 + 1;
-        local_5c = local_5c + 1;
-        local_68 = uVar9;
-      } while (local_5c != 0x10);
-      local_58 = local_58 + 1;
-      if (local_58 == 8) break;
-      local_48 = (float)local_58;
-      local_5c = 0;
+          sVar1 = local_28[iVar4];
+          *(short *)zIter = sVar1 + (short)vertexIndex * 4;
+          *particleIndicesIter = sVar1 + 0x1000 + (short)vertexIndex * 4;
+          iVar4 = iVar4 + 1;
+          zIter = zIter + 2;
+          particleIndicesIter = particleIndicesIter + 1;
+        } while (iVar4 != 6);
+        vertexIndex = vertexIndex + 1;
+        yIter = yIter + 1;
+        gaussParticleIndicesIter = puVar8;
+      } while (yIter != 0x10);
+      xIter = xIter + 1;
+      if (xIter == 8) break;
+      rand0 = (float)xIter;
+      yIter = 0;
     }
-    local_54 = local_54 + 1;
-    if (local_54 == 8) break;
-    local_4c = (float)local_54;
-    local_58 = 0;
-    local_5c = 0;
-    local_48 = 0.0;
+    particleVerts = (GfxParticleCloudVertex *)((int)particleVerts->xyz + 1);
+    if (particleVerts == (GfxParticleCloudVertex *)&DAT_00000008) break;
+    local_4c = (float)(int)particleVerts;
+    xIter = 0;
+    yIter = 0;
+    rand0 = 0.0;
   }
   (**(code **)((int)*gfxBuf.particleCloudIndexBuffer + 0x30))(gfxBuf.particleCloudIndexBuffer);
   (**(code **)((int)*gfxBuf.particleCloudVertexBuffer + 0x30))(gfxBuf.particleCloudVertexBuffer);

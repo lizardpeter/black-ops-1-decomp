@@ -2,21 +2,22 @@
 
 // 006C4430  CM_CalcTraceExtents  (qcommon/cm_tracebox.cpp:4)
 
-void __cdecl CM_CalcTraceExtents(TraceExtents *param_1)
+void __cdecl CM_CalcTraceExtents(TraceExtents *extents)
 
 {
   float local_10;
-  int local_8;
+  float diff;
+  int i;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    local_10 = (param_1->start).vec.v[local_8] - (param_1->end).vec.v[local_8];
+  for (i = 0; i < 3; i = i + 1) {
+    local_10 = (extents->start).vec.v[i] - (extents->end).vec.v[i];
     if (local_10 == 0.0) {
       local_10 = 0.0;
     }
     else {
       local_10 = 1.0 / local_10;
     }
-    (param_1->invDelta).vec.v[local_8] = local_10;
+    (extents->invDelta).vec.v[i] = local_10;
   }
   return;
 }
@@ -24,8 +25,7 @@ void __cdecl CM_CalcTraceExtents(TraceExtents *param_1)
 
 // 006C44C0  intersect_extents_aabb  (qcommon/cm_tracebox.cpp:14)
 
-int __cdecl
-intersect_extents_aabb(TraceExtents *param_1,float *param_2,float *param_3,float param_4)
+int __cdecl intersect_extents_aabb(TraceExtents *extents,float *mins,float *maxs,float fraction)
 
 {
   code *pcVar1;
@@ -35,60 +35,63 @@ intersect_extents_aabb(TraceExtents *param_1,float *param_2,float *param_3,float
   float fVar5;
   float local_48;
   float local_44;
-  int local_24;
-  float local_20;
-  float local_14;
-  float *local_10;
-  float local_8;
+  int t;
+  float enterFrac;
+  float dist1;
+  float frac;
+  float sign;
+  float *bounds;
+  float dist2;
+  float leaveFrac;
   
-  local_20 = 0.0;
-  local_8 = param_4;
-  local_14 = -1.0;
-  local_10 = param_2;
+  enterFrac = 0.0;
+  leaveFrac = fraction;
+  sign = -1.0;
+  bounds = mins;
   do {
-    if ((((((uint)*local_10 & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_10[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_10[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_tracebox.cpp",0x34,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    for (local_24 = 0; local_24 < 3; local_24 = local_24 + 1) {
-      fVar4 = ((param_1->start).vec.v[local_24] - local_10[local_24]) * local_14;
-      fVar5 = ((param_1->end).vec.v[local_24] - local_10[local_24]) * local_14;
+    for (t = 0; t < 3; t = t + 1) {
+      fVar4 = ((extents->start).vec.v[t] - bounds[t]) * sign;
+      fVar5 = ((extents->end).vec.v[t] - bounds[t]) * sign;
       if (fVar4 <= 0.0) {
         if (0.0 < fVar5) {
-          local_48 = fVar4 * (param_1->invDelta).vec.v[local_24] * local_14;
-          if (local_48 <= local_20) {
+          local_48 = fVar4 * (extents->invDelta).vec.v[t] * sign;
+          if (local_48 <= enterFrac) {
             return 0;
           }
-          if (0.0 <= local_48 - local_8) {
-            local_48 = local_8;
+          if (0.0 <= local_48 - leaveFrac) {
+            local_48 = leaveFrac;
           }
-          local_8 = local_48;
+          leaveFrac = local_48;
         }
       }
       else {
         if (0.0 < fVar5) {
           return 0;
         }
-        local_44 = fVar4 * (param_1->invDelta).vec.v[local_24] * local_14;
-        if (local_8 <= local_44) {
+        local_44 = fVar4 * (extents->invDelta).vec.v[t] * sign;
+        if (leaveFrac <= local_44) {
           return 0;
         }
-        if (0.0 <= local_20 - local_44) {
-          local_44 = local_20;
+        if (0.0 <= enterFrac - local_44) {
+          local_44 = enterFrac;
         }
-        local_20 = local_44;
+        enterFrac = local_44;
       }
     }
-    if (local_14 == 1.0) {
+    if (sign == 1.0) {
       return 1;
     }
-    local_14 = 1.0;
-    local_10 = param_3;
+    sign = 1.0;
+    bounds = maxs;
   } while( true );
 }
 
@@ -97,7 +100,7 @@ intersect_extents_aabb(TraceExtents *param_1,float *param_2,float *param_3,float
 
 int __cdecl
 intersect_extents_aabb
-          (TraceExtents *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+          (TraceExtents *extents,float *mins,float *maxs,float *enterFrac,float *leaveFrac)
 
 {
   code *pcVar1;
@@ -107,56 +110,59 @@ intersect_extents_aabb
   float fVar5;
   float local_48;
   float local_44;
-  int local_1c;
-  float local_10;
-  float *local_c;
+  int t;
+  float dist1;
+  float frac;
+  float sign;
+  float *bounds;
+  float dist2;
   
-  local_10 = -1.0;
-  local_c = param_2;
+  sign = -1.0;
+  bounds = mins;
   do {
-    if ((((((uint)*local_c & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_c[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_c[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_tracebox.cpp",0x67,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-      fVar4 = ((param_1->start).vec.v[local_1c] - local_c[local_1c]) * local_10;
-      fVar5 = ((param_1->end).vec.v[local_1c] - local_c[local_1c]) * local_10;
+    for (t = 0; t < 3; t = t + 1) {
+      fVar4 = ((extents->start).vec.v[t] - bounds[t]) * sign;
+      fVar5 = ((extents->end).vec.v[t] - bounds[t]) * sign;
       if (fVar4 <= 0.0) {
         if (0.0 < fVar5) {
-          local_48 = fVar4 * (param_1->invDelta).vec.v[local_1c] * local_10;
-          if (local_48 <= *param_4) {
+          local_48 = fVar4 * (extents->invDelta).vec.v[t] * sign;
+          if (local_48 <= *enterFrac) {
             return 0;
           }
-          if (0.0 <= local_48 - *param_5) {
-            local_48 = *param_5;
+          if (0.0 <= local_48 - *leaveFrac) {
+            local_48 = *leaveFrac;
           }
-          *param_5 = local_48;
+          *leaveFrac = local_48;
         }
       }
       else {
         if (0.0 < fVar5) {
           return 0;
         }
-        local_44 = fVar4 * (param_1->invDelta).vec.v[local_1c] * local_10;
-        if (*param_5 <= local_44) {
+        local_44 = fVar4 * (extents->invDelta).vec.v[t] * sign;
+        if (*leaveFrac <= local_44) {
           return 0;
         }
-        if (0.0 <= *param_4 - local_44) {
-          local_44 = *param_4;
+        if (0.0 <= *enterFrac - local_44) {
+          local_44 = *enterFrac;
         }
-        *param_4 = local_44;
+        *enterFrac = local_44;
       }
     }
-    if (local_10 == 1.0) {
+    if (sign == 1.0) {
       return 1;
     }
-    local_10 = 1.0;
-    local_c = param_3;
+    sign = 1.0;
+    bounds = maxs;
   } while( true );
 }
 
@@ -164,7 +170,7 @@ intersect_extents_aabb
 // 006C49C0  intersect_extents_sphere  (qcommon/cm_tracebox.cpp:139)
 
 int __cdecl
-intersect_extents_sphere(TraceExtents *param_1,float *param_2,float param_3,float param_4)
+intersect_extents_sphere(TraceExtents *extents,float *origin,float radius,float fraction)
 
 {
   code *pcVar1;
@@ -180,13 +186,16 @@ intersect_extents_sphere(TraceExtents *param_1,float *param_2,float param_3,floa
   float local_48;
   float local_44;
   float local_3c;
+  float sphereFraction;
+  float cappedSphereFraction;
+  float lengthSq;
   
-  fVar4 = *param_2 - (param_1->start).vec.v[0];
-  fVar5 = param_2[1] - (param_1->start).vec.v[1];
-  fVar6 = param_2[2] - (param_1->start).vec.v[2];
-  fVar7 = (param_1->end).vec.v[0] - (param_1->start).vec.v[0];
-  fVar8 = (param_1->end).vec.v[1] - (param_1->start).vec.v[1];
-  fVar9 = (param_1->end).vec.v[2] - (param_1->start).vec.v[2];
+  fVar4 = *origin - (extents->start).vec.v[0];
+  fVar5 = origin[1] - (extents->start).vec.v[1];
+  fVar6 = origin[2] - (extents->start).vec.v[2];
+  fVar7 = (extents->end).vec.v[0] - (extents->start).vec.v[0];
+  fVar8 = (extents->end).vec.v[1] - (extents->start).vec.v[1];
+  fVar9 = (extents->end).vec.v[2] - (extents->start).vec.v[2];
   local_44 = fVar7 * fVar7 + fVar8 * fVar8 + fVar9 * fVar9;
   if (0.0 <= -local_44) {
     local_44 = 1.0;
@@ -200,8 +209,8 @@ intersect_extents_sphere(TraceExtents *param_1,float *param_2,float param_3,floa
   }
   local_44 = (fVar4 * fVar7 + fVar5 * fVar8 + fVar6 * fVar9) / local_44;
   local_3c = local_44;
-  if (0.0 <= local_44 - param_4) {
-    local_3c = param_4;
+  if (0.0 <= local_44 - fraction) {
+    local_3c = fraction;
   }
   if (0.0 - local_44 < 0.0) {
     local_48 = local_3c;
@@ -213,7 +222,7 @@ intersect_extents_sphere(TraceExtents *param_1,float *param_2,float param_3,floa
   fVar4 = local_48 * fVar7 + fVar4;
   fVar5 = local_48 * fVar8 + fVar5;
   fVar6 = local_48 * fVar9 + fVar6;
-  local_4c = (uint)(fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6 < param_3 * param_3);
+  local_4c = (uint)(fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6 < radius * radius);
   return local_4c;
 }
 

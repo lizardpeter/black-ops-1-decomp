@@ -2,21 +2,21 @@
 
 // 0045F860  BG_GetPlayerAnimTypeName  (bgame/bg_weapons_load_obj.cpp:177)
 
-char * __cdecl BG_GetPlayerAnimTypeName(int param_1)
+char * __cdecl BG_GetPlayerAnimTypeName(int index)
 
 {
-  return g_playerAnimTypeNames[param_1];
+  return g_playerAnimTypeNames[index];
 }
 
 
 // 0045F870  BG_GetPlayerAnimTypeIndex  (bgame/bg_weapons_load_obj.cpp:183)
 
-int __cdecl BG_GetPlayerAnimTypeIndex(int param_1)
+int __cdecl BG_GetPlayerAnimTypeIndex(int typeEnum)
 
 {
   int iVar1;
   
-  switch(param_1) {
+  switch(typeEnum) {
   case 0:
     iVar1 = g_playerAnimTypeIndex_revivee;
     break;
@@ -149,14 +149,14 @@ void __cdecl TRACK_bg_weapons_load_obj(void)
 
 // 0045F9A0  BG_GetWeaponTypeName  (bgame/bg_weapons_load_obj.cpp:1464)
 
-char * __cdecl BG_GetWeaponTypeName(weapType_t param_1)
+char * __cdecl BG_GetWeaponTypeName(weapType_t type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (WEAPTYPE_MELEE < param_1) {
+  if (WEAPTYPE_MELEE < type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                              0x5b9,0,
                              "type doesn\'t index ARRAY_COUNT( szWeapTypeNames )\n\t%i not in [0, %i)"
@@ -167,20 +167,20 @@ char * __cdecl BG_GetWeaponTypeName(weapType_t param_1)
       return pcVar3;
     }
   }
-  return szWeapTypeNames[param_1];
+  return szWeapTypeNames[type];
 }
 
 
 // 0045F9E0  BG_GetWeaponClassName  (bgame/bg_weapons_load_obj.cpp:1472)
 
-char * __cdecl BG_GetWeaponClassName(weapClass_t param_1)
+char * __cdecl BG_GetWeaponClassName(weapClass_t type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON < param_1) {
+  if (WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON < type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                              0x5c1,0,
                              "type doesn\'t index ARRAY_COUNT( szWeapClassNames )\n\t%i not in [0, %i)"
@@ -191,20 +191,20 @@ char * __cdecl BG_GetWeaponClassName(weapClass_t param_1)
       return pcVar3;
     }
   }
-  return szWeapClassNames[param_1];
+  return szWeapClassNames[type];
 }
 
 
 // 0045FA20  BG_GetWeaponInventoryTypeName  (bgame/bg_weapons_load_obj.cpp:1480)
 
-char * __cdecl BG_GetWeaponInventoryTypeName(weapInventoryType_t param_1)
+char * __cdecl BG_GetWeaponInventoryTypeName(weapInventoryType_t type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (WEAPINVENTORY_MELEE < param_1) {
+  if (WEAPINVENTORY_MELEE < type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                              0x5c9,0,
                              "type doesn\'t index ARRAY_COUNT( szWeapInventoryTypeNames )\n\t%i not in [0, %i)"
@@ -215,7 +215,7 @@ char * __cdecl BG_GetWeaponInventoryTypeName(weapInventoryType_t param_1)
       return pcVar3;
     }
   }
-  return szWeapInventoryTypeNames[param_1];
+  return szWeapInventoryTypeNames[type];
 }
 
 
@@ -224,10 +224,10 @@ char * __cdecl BG_GetWeaponInventoryTypeName(weapInventoryType_t param_1)
 void __cdecl BG_LoadWeaponStrings(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < g_playerAnimTypeNamesCount; local_8 = local_8 + 1) {
-    BG_InitWeaponString(local_8,g_playerAnimTypeNames[local_8]);
+  for (i = 0; i < g_playerAnimTypeNamesCount; i = i + 1) {
+    BG_InitWeaponString(i,g_playerAnimTypeNames[i]);
   }
   return;
 }
@@ -238,8 +238,9 @@ void __cdecl BG_LoadWeaponStrings(void)
 void __cdecl BG_LoadPlayerAnimTypes(void)
 
 {
-  byte bVar1;
-  char *pcVar2;
+  char cVar1;
+  byte bVar2;
+  char *filebuf;
   char *pcVar3;
   bool bVar4;
   int local_7c;
@@ -254,62 +255,63 @@ void __cdecl BG_LoadPlayerAnimTypes(void)
   int local_40;
   byte *local_38;
   byte *local_34;
-  byte *local_28;
-  byte *local_24;
-  byte *local_14;
-  char *local_c;
-  byte *local_8;
+  char *local_28;
+  char *local_24;
+  char *local_14;
+  char *buf;
+  char *text_p;
+  char *token;
   
   g_playerAnimTypeNamesCount = 0;
   g_playerAnimTypeIndex_revivee = -1;
-  pcVar2 = Com_LoadRawTextFile("mp/playeranimtypes.txt");
-  if (pcVar2 == (char *)0x0) {
+  filebuf = Com_LoadRawTextFile("mp/playeranimtypes.txt");
+  if (filebuf == (char *)0x0) {
     Com_Error(ERR_DROP,"\x15Couldn\'t load file \'%s\'");
   }
-  local_c = pcVar2;
+  text_p = filebuf;
   Com_BeginParseSession("BG_AnimParseAnimScript");
   do {
-    local_8 = (byte *)Com_Parse(&local_c);
-    if ((local_8 == (byte *)0x0) || (*local_8 == 0)) {
+    token = Com_Parse(&text_p);
+    if ((token == (char *)0x0) || (*token == '\0')) {
       Com_EndParseSession();
-      Com_UnloadRawTextFile(pcVar2);
+      Com_UnloadRawTextFile(filebuf);
       return;
     }
     if (0x1f < g_playerAnimTypeNamesCount) {
       Com_Error(ERR_DROP,"\x15Player anim type array size exceeded");
     }
-    local_14 = local_8;
+    local_14 = token;
     do {
-      bVar1 = *local_14;
+      cVar1 = *local_14;
       local_14 = local_14 + 1;
-    } while (bVar1 != 0);
-    pcVar3 = Hunk_Alloc((int)(local_14 + (1 - (int)(local_8 + 1))),"BG_LoadPlayerAnimTypes",10);
+    } while (cVar1 != '\0');
+    pcVar3 = Hunk_Alloc((int)(local_14 + (1 - (int)(token + 1))),"BG_LoadPlayerAnimTypes",10);
     g_playerAnimTypeNames[g_playerAnimTypeNamesCount] = pcVar3;
-    local_24 = local_8;
-    local_28 = (byte *)g_playerAnimTypeNames[g_playerAnimTypeNamesCount];
+    local_24 = token;
+    local_28 = g_playerAnimTypeNames[g_playerAnimTypeNamesCount];
     do {
-      bVar1 = *local_24;
-      *local_28 = bVar1;
+      cVar1 = *local_24;
+      *local_28 = cVar1;
       local_24 = local_24 + 1;
       local_28 = local_28 + 1;
-    } while (bVar1 != 0);
+    } while (cVar1 != '\0');
     local_34 = (byte *)0xc7549c;
-    local_38 = local_8;
+    local_38 = (byte *)token;
     do {
-      bVar1 = *local_38;
-      bVar4 = bVar1 < *local_34;
-      if (bVar1 != *local_34) {
+      bVar2 = *local_38;
+      bVar4 = bVar2 < *local_34;
+      if (bVar2 != *local_34) {
 LAB_0045fc0d:
         local_40 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
         goto LAB_0045fc15;
       }
-      if (bVar1 == 0) break;
-      bVar1 = local_38[1];
-      bVar4 = bVar1 < local_34[1];
-      if (bVar1 != local_34[1]) goto LAB_0045fc0d;
+      if (bVar2 == 0) break;
+      bVar2 = local_38[1];
+      bVar4 = bVar2 < local_34[1];
+      if (bVar2 != local_34[1]) goto LAB_0045fc0d;
       local_38 = local_38 + 2;
       local_34 = local_34 + 2;
-    } while (bVar1 != 0);
+    } while (bVar2 != 0);
     local_40 = 0;
 LAB_0045fc15:
     if (local_40 == 0) {
@@ -317,22 +319,22 @@ LAB_0045fc15:
     }
     else {
       local_48 = (byte *)0xc75494;
-      local_4c = local_8;
+      local_4c = (byte *)token;
       do {
-        bVar1 = *local_4c;
-        bVar4 = bVar1 < *local_48;
-        if (bVar1 != *local_48) {
+        bVar2 = *local_4c;
+        bVar4 = bVar2 < *local_48;
+        if (bVar2 != *local_48) {
 LAB_0045fc7a:
           local_54 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
           goto LAB_0045fc82;
         }
-        if (bVar1 == 0) break;
-        bVar1 = local_4c[1];
-        bVar4 = bVar1 < local_48[1];
-        if (bVar1 != local_48[1]) goto LAB_0045fc7a;
+        if (bVar2 == 0) break;
+        bVar2 = local_4c[1];
+        bVar4 = bVar2 < local_48[1];
+        if (bVar2 != local_48[1]) goto LAB_0045fc7a;
         local_4c = local_4c + 2;
         local_48 = local_48 + 2;
-      } while (bVar1 != 0);
+      } while (bVar2 != 0);
       local_54 = 0;
 LAB_0045fc82:
       if (local_54 == 0) {
@@ -340,22 +342,22 @@ LAB_0045fc82:
       }
       else {
         local_5c = (byte *)0xc75488;
-        local_60 = local_8;
+        local_60 = (byte *)token;
         do {
-          bVar1 = *local_60;
-          bVar4 = bVar1 < *local_5c;
-          if (bVar1 != *local_5c) {
+          bVar2 = *local_60;
+          bVar4 = bVar2 < *local_5c;
+          if (bVar2 != *local_5c) {
 LAB_0045fce9:
             local_68 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
             goto LAB_0045fcf1;
           }
-          if (bVar1 == 0) break;
-          bVar1 = local_60[1];
-          bVar4 = bVar1 < local_5c[1];
-          if (bVar1 != local_5c[1]) goto LAB_0045fce9;
+          if (bVar2 == 0) break;
+          bVar2 = local_60[1];
+          bVar4 = bVar2 < local_5c[1];
+          if (bVar2 != local_5c[1]) goto LAB_0045fce9;
           local_60 = local_60 + 2;
           local_5c = local_5c + 2;
-        } while (bVar1 != 0);
+        } while (bVar2 != 0);
         local_68 = 0;
 LAB_0045fcf1:
         if (local_68 == 0) {
@@ -363,22 +365,22 @@ LAB_0045fcf1:
         }
         else {
           local_70 = (byte *)0xc75478;
-          local_74 = local_8;
+          local_74 = (byte *)token;
           do {
-            bVar1 = *local_74;
-            bVar4 = bVar1 < *local_70;
-            if (bVar1 != *local_70) {
+            bVar2 = *local_74;
+            bVar4 = bVar2 < *local_70;
+            if (bVar2 != *local_70) {
 LAB_0045fd55:
               local_7c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
               goto LAB_0045fd5d;
             }
-            if (bVar1 == 0) break;
-            bVar1 = local_74[1];
-            bVar4 = bVar1 < local_70[1];
-            if (bVar1 != local_70[1]) goto LAB_0045fd55;
+            if (bVar2 == 0) break;
+            bVar2 = local_74[1];
+            bVar4 = bVar2 < local_70[1];
+            if (bVar2 != local_70[1]) goto LAB_0045fd55;
             local_74 = local_74 + 2;
             local_70 = local_70 + 2;
-          } while (bVar1 != 0);
+          } while (bVar2 != 0);
           local_7c = 0;
 LAB_0045fd5d:
           if (local_7c == 0) {
@@ -394,38 +396,38 @@ LAB_0045fd5d:
 
 // 00461F40  Weapon_GetStringArrayIndex  (bgame/bg_weapons_load_obj.cpp:1558)
 
-int __cdecl Weapon_GetStringArrayIndex(char *param_1,char **param_2,int param_3)
+int __cdecl Weapon_GetStringArrayIndex(char *value,char **stringArray,int arraySize)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int arrayIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((value == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                                0x619,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (char **)0x0) &&
+  if ((stringArray == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                                0x61a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  arrayIndex = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (arraySize <= arrayIndex) {
       return -1;
     }
-    iVar3 = I_stricmp(param_1,param_2[local_8]);
+    iVar3 = I_stricmp(value,stringArray[arrayIndex]);
     if (iVar3 == 0) break;
-    local_8 = local_8 + 1;
+    arrayIndex = arrayIndex + 1;
   }
-  return local_8;
+  return arrayIndex;
 }
 
 
@@ -443,7 +445,7 @@ void __cdecl BG_ClearWeaponDefInternal(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char ** __cdecl BG_RegisterSurfaceTypeSounds(char *param_1)
+char ** __cdecl BG_RegisterSurfaceTypeSounds(char *surfaceSoundBase)
 
 {
   char cVar1;
@@ -458,45 +460,46 @@ char ** __cdecl BG_RegisterSurfaceTypeSounds(char *param_1)
   char *local_128;
   char *local_124;
   char *local_114;
-  char local_10c [256];
+  char **result;
+  char aliasName [256];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((surfaceSoundBase == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                                0x630,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     ppcVar4 = (char **)(*pcVar2)();
     return ppcVar4;
   }
-  if (*param_1 == '\0') {
+  if (*surfaceSoundBase == '\0') {
     ppcVar4 = (char **)0x0;
   }
   else {
-    for (local_8 = 0; local_8 < surfaceTypeSoundListCount; local_8 = local_8 + 1) {
-      iVar5 = I_strcmp(surfaceTypeSoundLists[local_8].surfaceSoundBase,param_1);
+    for (i = 0; i < surfaceTypeSoundListCount; i = i + 1) {
+      iVar5 = I_strcmp(surfaceTypeSoundLists[i].surfaceSoundBase,surfaceSoundBase);
       if (iVar5 == 0) {
-        return surfaceTypeSoundLists[local_8].soundAliasList;
+        return surfaceTypeSoundLists[i].soundAliasList;
       }
     }
     if (surfaceTypeSoundListCount == 0x10) {
       Com_Error(ERR_DROP,"\x15Exceeded MAX_SURFACE_TYPE_SOUND_LISTS (%d)");
     }
     ppcVar4 = Hunk_AllocLow(0x7c,"BG_RegisterSurfaceTypeSounds",0x11);
-    for (local_8 = 0; local_8 < 0x1f; local_8 = local_8 + 1) {
-      Com_SurfaceTypeToName(local_8);
-      Com_sprintf(local_10c,0x100,"%s_%s");
-      local_114 = local_10c;
+    for (i = 0; i < 0x1f; i = i + 1) {
+      Com_SurfaceTypeToName(i);
+      Com_sprintf(aliasName,0x100,"%s_%s");
+      local_114 = aliasName;
       do {
         cVar1 = *local_114;
         local_114 = local_114 + 1;
       } while (cVar1 != '\0');
-      pcVar6 = Hunk_AllocLow((int)(local_114 + (1 - (int)(local_10c + 1))),
+      pcVar6 = Hunk_AllocLow((int)(local_114 + (1 - (int)(aliasName + 1))),
                              "BG_RegisterSurfaceTypeSounds",0x11);
-      ppcVar4[local_8] = pcVar6;
-      local_124 = local_10c;
-      local_128 = ppcVar4[local_8];
+      ppcVar4[i] = pcVar6;
+      local_124 = aliasName;
+      local_128 = ppcVar4[i];
       do {
         cVar1 = *local_124;
         *local_128 = cVar1;
@@ -504,15 +507,15 @@ char ** __cdecl BG_RegisterSurfaceTypeSounds(char *param_1)
         local_128 = local_128 + 1;
       } while (cVar1 != '\0');
     }
-    local_134 = param_1;
+    local_134 = surfaceSoundBase;
     do {
       cVar1 = *local_134;
       local_134 = local_134 + 1;
     } while (cVar1 != '\0');
-    pcVar6 = Hunk_AllocLow((int)(local_134 + (1 - (int)(param_1 + 1))),
+    pcVar6 = Hunk_AllocLow((int)(local_134 + (1 - (int)(surfaceSoundBase + 1))),
                            "BG_RegisterSurfaceTypeSounds",0x11);
     surfaceTypeSoundLists[surfaceTypeSoundListCount].surfaceSoundBase = pcVar6;
-    local_144 = param_1;
+    local_144 = surfaceSoundBase;
     local_148 = surfaceTypeSoundLists[surfaceTypeSoundListCount].surfaceSoundBase;
     do {
       cVar1 = *local_144;
@@ -531,7 +534,8 @@ char ** __cdecl BG_RegisterSurfaceTypeSounds(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl BG_ParseWeaponDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,int param_4)
+int __cdecl
+BG_ParseWeaponDefSpecificFieldType(uchar *pStruct,char *pValue,int iFieldType,int iFieldOffset)
 
 {
   char cVar1;
@@ -545,267 +549,268 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(uchar *param_1,char *param_2,int 
   char *local_94;
   char *local_84;
   char *local_74;
-  char *local_68;
-  int local_64;
-  uchar *local_60;
-  int local_5c;
-  uchar *local_58;
-  char local_54 [64];
+  int len;
+  char *pos;
+  int numHideTags;
+  WeaponFullDef *weapFullDef;
+  int numNoteTrackMappings;
+  WeaponVariantDef *weapVariantDef;
+  char keyName [64];
   uint local_14;
-  int local_10;
-  char *local_c;
-  uchar *local_8;
+  int arrayIndex;
+  char *token;
+  WeaponDef *weapDef;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (uchar *)0x0) &&
+  if ((pStruct == (uchar *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                                0x66b,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((pValue == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                                0x66c,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_60 = param_1;
-  local_58 = param_1;
-  local_8 = param_1 + 0xe4;
-  switch(param_3) {
+  weapFullDef = (WeaponFullDef *)pStruct;
+  weapVariantDef = (WeaponVariantDef *)pStruct;
+  weapDef = (WeaponDef *)(pStruct + 0xe4);
+  switch(iFieldType) {
   case 0xf:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapTypeNames,8);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapTypeNames,8);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x1c) = local_10;
+    weapDef->weapType = arrayIndex;
     break;
   case 0x10:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapClassNames,0xd);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapClassNames,0xd);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon class \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x20) = local_10;
+    weapDef->weapClass = arrayIndex;
     break;
   case 0x11:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapOverlayReticleNames,2);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapOverlayReticleNames,2);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon overlay reticle \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x4b4) = local_10;
+    weapDef->overlayReticle = arrayIndex;
     break;
   case 0x12:
-    local_10 = Weapon_GetStringArrayIndex(param_2,penetrateTypeNames,4);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,penetrateTypeNames,4);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown penetration type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x24) = local_10;
+    weapDef->penetrateType = arrayIndex;
     break;
   case 0x13:
-    local_10 = Weapon_GetStringArrayIndex(param_2,impactTypeNames,0x10);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,impactTypeNames,0x10);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown impact type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x28) = local_10;
+    weapDef->impactType = arrayIndex;
     break;
   case 0x14:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapStanceNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapStanceNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon stance \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x70) = local_10;
+    weapDef->stance = arrayIndex;
     break;
   case 0x15:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szProjectileExplosionNames,10);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szProjectileExplosionNames,10);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown projectile explosion \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x5ec) = local_10;
+    weapDef->projExplosion = arrayIndex;
     break;
   case 0x16:
-    local_10 = Weapon_GetStringArrayIndex(param_2,offhandClassNames,5);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,offhandClassNames,5);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown offhand class \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x68) = local_10;
+    weapDef->offhandClass = arrayIndex;
     break;
   case 0x17:
-    local_10 = Weapon_GetStringArrayIndex(param_2,offhandSlotNames,5);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,offhandSlotNames,5);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown offhand slot \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x6c) = local_10;
+    weapDef->offhandSlot = arrayIndex;
     break;
   case 0x18:
-    local_10 = Weapon_GetStringArrayIndex(param_2,g_playerAnimTypeNames,g_playerAnimTypeNamesCount);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,g_playerAnimTypeNames,g_playerAnimTypeNamesCount)
+    ;
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown playerAnimType \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x18) = local_10;
+    weapDef->playerAnimType = arrayIndex;
     break;
   case 0x19:
-    local_10 = Weapon_GetStringArrayIndex(param_2,activeReticleNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,activeReticleNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown activeReticleType \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x1b4) = local_10;
+    weapDef->activeReticleType = arrayIndex;
     break;
   case 0x1a:
-    local_10 = Weapon_GetStringArrayIndex(param_2,guidedMissileNames,7);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,guidedMissileNames,7);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown guided missile type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x668) = local_10;
+    weapDef->guidedMissileType = arrayIndex;
     break;
   case 0x1b:
-    ppcVar5 = BG_RegisterSurfaceTypeSounds(param_2);
-    *(char ***)(local_8 + 0x174) = ppcVar5;
+    ppcVar5 = BG_RegisterSurfaceTypeSounds(pValue);
+    weapDef->bounceSound = ppcVar5;
     break;
   case 0x1c:
-    local_10 = Weapon_GetStringArrayIndex(param_2,stickinessNames,6);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,stickinessNames,6);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon stickiness \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x630) = local_10;
+    weapDef->stickiness = arrayIndex;
     break;
   case 0x1d:
-    local_10 = Weapon_GetStringArrayIndex(param_2,rotateTypeNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,rotateTypeNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon rotate type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x634) = local_10;
+    weapDef->rotateType = arrayIndex;
     break;
   case 0x1e:
-    local_10 = Weapon_GetStringArrayIndex(param_2,overlayInterfaceNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,overlayInterfaceNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon ads overlay interface \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x4b8) = local_10;
+    weapDef->overlayInterface = arrayIndex;
     break;
   case 0x1f:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapInventoryTypeNames,5);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapInventoryTypeNames,5);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon inventory type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x2c) = local_10;
+    weapDef->inventoryType = arrayIndex;
     break;
   case 0x20:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapFireTypeNames,7);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapFireTypeNames,7);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon fire type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x30) = local_10;
+    weapDef->fireType = arrayIndex;
     break;
   case 0x21:
-    local_10 = Weapon_GetStringArrayIndex(param_2,szWeapClipTypeNames,6);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,szWeapClipTypeNames,6);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown weapon clip type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x34) = local_10;
+    weapDef->clipType = arrayIndex;
     break;
   case 0x22:
-    local_10 = Weapon_GetStringArrayIndex(param_2,ammoCounterClipNames,7);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,ammoCounterClipNames,7);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown ammoCounter clip type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x338) = local_10;
+    weapDef->ammoCounterClip = arrayIndex;
     break;
   case 0x23:
-    local_10 = Weapon_GetStringArrayIndex(param_2,weapIconRatioNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,weapIconRatioNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown icon ratio type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x324) = local_10;
+    weapDef->hudIconRatio = arrayIndex;
     break;
   case 0x24:
-    local_10 = Weapon_GetStringArrayIndex(param_2,weapIconRatioNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,weapIconRatioNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown icon ratio type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x334) = local_10;
+    weapDef->ammoCounterIconRatio = arrayIndex;
     break;
   case 0x25:
-    local_10 = Weapon_GetStringArrayIndex(param_2,weapIconRatioNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,weapIconRatioNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown icon ratio type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x57c) = local_10;
+    weapDef->killIconRatio = arrayIndex;
     break;
   case 0x26:
-    local_10 = Weapon_GetStringArrayIndex(param_2,weapIconRatioNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,weapIconRatioNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown icon ratio type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_58 + 0x98) = local_10;
+    weapVariantDef->dpadIconRatio = arrayIndex;
     break;
   case 0x27:
-    local_10 = Weapon_GetStringArrayIndex(param_2,weapIconRatioNames,3);
-    if (local_10 < 0) {
+    arrayIndex = Weapon_GetStringArrayIndex(pValue,weapIconRatioNames,3);
+    if (arrayIndex < 0) {
       Com_Error(ERR_DROP,"\x15Unknown icon ratio type \"%s\" in \"%s\"\n");
     }
-    *(int *)(local_8 + 0x32c) = local_10;
+    weapDef->indicatorIconRatio = arrayIndex;
     break;
   case 0x28:
-    local_64 = 0;
-    local_68 = param_2;
-    while (local_c = Com_Parse(&local_68), local_68 != (char *)0x0) {
-      if (0x1f < local_64) {
+    numHideTags = 0;
+    pos = pValue;
+    while (token = Com_Parse(&pos), pos != (char *)0x0) {
+      if (0x1f < numHideTags) {
         Com_Error(ERR_DROP,"\x15maximum hide tags (%s) exceeded: %i > %i");
       }
-      local_74 = local_c;
+      local_74 = token;
       do {
         cVar1 = *local_74;
         local_74 = local_74 + 1;
       } while (cVar1 != '\0');
-      uVar6 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,local_c,0,
-                                 (uint)(local_74 + (1 - (int)(local_c + 1))),10);
-      *(short *)(*(int *)(local_58 + 0x18) + local_64 * 2) = (short)uVar6;
+      uVar6 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,token,0,
+                                 (uint)(local_74 + (1 - (int)(token + 1))),10);
+      weapVariantDef->hideTags[numHideTags] = (ushort)uVar6;
       uVar6 = SL_ConvertToLowercase
-                        (SCRIPTINSTANCE_SERVER,
-                         (uint)*(ushort *)(*(int *)(local_58 + 0x18) + local_64 * 2),0,10);
-      *(short *)(*(int *)(local_58 + 0x18) + local_64 * 2) = (short)uVar6;
-      local_64 = local_64 + 1;
+                        (SCRIPTINSTANCE_SERVER,(uint)weapVariantDef->hideTags[numHideTags],0,10);
+      weapVariantDef->hideTags[numHideTags] = (ushort)uVar6;
+      numHideTags = numHideTags + 1;
     }
     break;
   case 0x29:
-    local_68 = param_2;
-    local_c = Com_Parse(&local_68);
-    if (local_68 != (char *)0x0) {
-      local_84 = local_c;
+    pos = pValue;
+    token = Com_Parse(&pos);
+    if (pos != (char *)0x0) {
+      local_84 = token;
       do {
         cVar1 = *local_84;
         local_84 = local_84 + 1;
       } while (cVar1 != '\0');
-      uVar6 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,local_c,0,
-                                 (uint)(local_84 + (1 - (int)(local_c + 1))),10);
-      *(short *)(local_8 + 0x374) = (short)uVar6;
-      uVar6 = SL_ConvertToLowercase(SCRIPTINSTANCE_SERVER,(uint)*(ushort *)(local_8 + 0x374),0,10);
-      *(short *)(local_8 + 0x374) = (short)uVar6;
+      uVar6 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,token,0,
+                                 (uint)(local_84 + (1 - (int)(token + 1))),10);
+      weapDef->explosionTag = (ushort)uVar6;
+      uVar6 = SL_ConvertToLowercase(SCRIPTINSTANCE_SERVER,(uint)weapDef->explosionTag,0,10);
+      weapDef->explosionTag = (ushort)uVar6;
     }
     break;
   case 0x2a:
-    local_5c = 0;
-    local_68 = param_2;
-    local_54[0] = '\0';
-    while (local_c = Com_Parse(&local_68), local_68 != (char *)0x0) {
-      if (0x13 < local_5c) {
+    numNoteTrackMappings = 0;
+    pos = pValue;
+    keyName[0] = '\0';
+    while (token = Com_Parse(&pos), pos != (char *)0x0) {
+      if (0x13 < numNoteTrackMappings) {
         Com_Error(ERR_DROP,"\x15Max notetrack-to-sound mappings (%i) exceeded with entry \"%s\".\n")
         ;
       }
-      if (local_54[0] == '\0') {
-        local_94 = local_c;
+      if (keyName[0] == '\0') {
+        local_94 = token;
         do {
           cVar1 = *local_94;
           local_94 = local_94 + 1;
         } while (cVar1 != '\0');
-        if (0x3e < (int)local_94 - (int)(local_c + 1)) {
+        if (0x3e < (int)local_94 - (int)(token + 1)) {
           Com_Error(ERR_DROP,"\x15Notetrack-to-sound: keyname \"%s\" is too long (length %i/%i).\n")
           ;
         }
-        local_a4 = local_c;
-        local_a8 = local_54;
+        local_a4 = token;
+        local_a8 = keyName;
         do {
           cVar1 = *local_a4;
           *local_a8 = cVar1;
@@ -814,15 +819,15 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(uchar *param_1,char *param_2,int 
         } while (cVar1 != '\0');
       }
       else {
-        uVar6 = SL_GetLowercaseString(local_54,0,SCRIPTINSTANCE_SERVER);
-        *(short *)(local_60 + local_5c * 2 + 0xa74) = (short)uVar6;
-        uVar6 = SL_GetLowercaseString(local_c,0,SCRIPTINSTANCE_SERVER);
-        *(short *)(local_60 + local_5c * 2 + 0xa9c) = (short)uVar6;
-        local_5c = local_5c + 1;
-        local_54[0] = '\0';
+        uVar6 = SL_GetLowercaseString(keyName,0,SCRIPTINSTANCE_SERVER);
+        weapFullDef->notetrackSoundMapKeys[numNoteTrackMappings] = (ushort)uVar6;
+        uVar6 = SL_GetLowercaseString(token,0,SCRIPTINSTANCE_SERVER);
+        weapFullDef->notetrackSoundMapValues[numNoteTrackMappings] = (ushort)uVar6;
+        numNoteTrackMappings = numNoteTrackMappings + 1;
+        keyName[0] = '\0';
       }
     }
-    if (local_54[0] != '\0') {
+    if (keyName[0] != '\0') {
       Com_PrintWarning(0,
                        "Notetrack-to-Sound: Weapon \'%s\' has bad entry; notetrack \'%s\' doesn\'t have a corresponding sound.\n"
                       );
@@ -838,20 +843,23 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(uchar *param_1,char *param_2,int 
 
 // 00462570  BG_SetupTransitionTimes  (bgame/bg_weapons_load_obj.cpp:1907)
 
-void __cdecl BG_SetupTransitionTimes(WeaponVariantDef *param_1)
+void __cdecl BG_SetupTransitionTimes(WeaponVariantDef *weapVariantDef)
 
 {
-  if (param_1->iAdsTransInTime < 1) {
-    param_1->fOOPosAnimLength[0] = 0.0033333334;
+  float fDefaultTransInTime;
+  float fDefaultTransOutTime;
+  
+  if (weapVariantDef->iAdsTransInTime < 1) {
+    weapVariantDef->fOOPosAnimLength[0] = 0.0033333334;
   }
   else {
-    param_1->fOOPosAnimLength[0] = 1.0 / (float)param_1->iAdsTransInTime;
+    weapVariantDef->fOOPosAnimLength[0] = 1.0 / (float)weapVariantDef->iAdsTransInTime;
   }
-  if (param_1->iAdsTransOutTime < 1) {
-    param_1->fOOPosAnimLength[1] = 0.002;
+  if (weapVariantDef->iAdsTransOutTime < 1) {
+    weapVariantDef->fOOPosAnimLength[1] = 0.002;
   }
   else {
-    param_1->fOOPosAnimLength[1] = 1.0 / (float)param_1->iAdsTransOutTime;
+    weapVariantDef->fOOPosAnimLength[1] = 1.0 / (float)weapVariantDef->iAdsTransOutTime;
   }
   return;
 }
@@ -859,14 +867,16 @@ void __cdecl BG_SetupTransitionTimes(WeaponVariantDef *param_1)
 
 // 00462620  BG_CheckWeaponDamageRanges  (bgame/bg_weapons_load_obj.cpp:1924)
 
-void __cdecl BG_CheckWeaponDamageRanges(WeaponDef *param_1)
+void __cdecl BG_CheckWeaponDamageRanges(WeaponDef *weapDef)
 
 {
-  if (param_1->fMaxDamageRange <= 0.0) {
-    param_1->fMaxDamageRange = 999999.0;
+  int far_away;
+  
+  if (weapDef->fMaxDamageRange <= 0.0) {
+    weapDef->fMaxDamageRange = 999999.0;
   }
-  if (param_1->fMinDamageRange <= 0.0) {
-    param_1->fMinDamageRange = 999999.1;
+  if (weapDef->fMinDamageRange <= 0.0) {
+    weapDef->fMinDamageRange = 999999.1;
   }
   return;
 }
@@ -874,14 +884,16 @@ void __cdecl BG_CheckWeaponDamageRanges(WeaponDef *param_1)
 
 // 00462680  BG_CheckProjectileValues  (bgame/bg_weapons_load_obj.cpp:1937)
 
-void __cdecl BG_CheckProjectileValues(WeaponFullDef *param_1)
+void __cdecl BG_CheckProjectileValues(WeaponFullDef *weaponFullDef)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
+  WeaponDef *weaponDef;
+  WeaponVariantDef *weaponVariantDef;
   
-  if ((param_1->weapDef).weapType != WEAPTYPE_PROJECTILE) {
+  if ((weaponFullDef->weapDef).weapType != WEAPTYPE_PROJECTILE) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp",
                              0x795,0,"%s");
     if (!bVar3) {
@@ -890,15 +902,16 @@ void __cdecl BG_CheckProjectileValues(WeaponFullDef *param_1)
       return;
     }
   }
-  if ((float)(param_1->weapDef).iProjectileSpeed <= 0.0) {
+  if ((float)(weaponFullDef->weapDef).iProjectileSpeed <= 0.0) {
     Com_Error(ERR_DROP,"Projectile speed for WeapType %s must be greater than 0.0");
   }
-  if ((1e+09 <= (param_1->weapDef).destabilizationCurvatureMax) ||
-     (pfVar1 = &(param_1->weapDef).destabilizationCurvatureMax, *pfVar1 <= 0.0 && *pfVar1 != 0.0)) {
+  if ((1e+09 <= (weaponFullDef->weapDef).destabilizationCurvatureMax) ||
+     (pfVar1 = &(weaponFullDef->weapDef).destabilizationCurvatureMax,
+     *pfVar1 <= 0.0 && *pfVar1 != 0.0)) {
     Com_Error(ERR_DROP,"Destabilization angle for for WeapType %s must be between 0 and 45 degrees")
     ;
   }
-  pfVar1 = &(param_1->weapDef).destabilizationRateTime;
+  pfVar1 = &(weaponFullDef->weapDef).destabilizationRateTime;
   if (*pfVar1 <= 0.0 && *pfVar1 != 0.0) {
     Com_Error(ERR_DROP,"Destabilization rate time for for WeapType %s must be non-negative");
   }
@@ -908,7 +921,7 @@ void __cdecl BG_CheckProjectileValues(WeaponFullDef *param_1)
 
 // 0045FDB0  SetConfigString  (bgame/bg_weapons_load_obj.cpp:1954)
 
-void __cdecl SetConfigString(char **param_1,char *param_2)
+void __cdecl SetConfigString(char **ppszConfigString,char *pszKeyValue)
 
 {
   char cVar1;
@@ -916,18 +929,20 @@ void __cdecl SetConfigString(char **param_1,char *param_2)
   char *local_20;
   char *local_1c;
   char *local_c;
+  char *buf;
   
-  if (*param_2 == '\0') {
-    *param_1 = "";
+  if (*pszKeyValue == '\0') {
+    *ppszConfigString = "";
   }
   else {
-    local_c = param_2;
+    local_c = pszKeyValue;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    pcVar2 = Hunk_AllocLowAlign((int)(local_c + (1 - (int)(param_2 + 1))),1,"SetConfigString",10);
-    local_1c = param_2;
+    pcVar2 = Hunk_AllocLowAlign((int)(local_c + (1 - (int)(pszKeyValue + 1))),1,"SetConfigString",10
+                               );
+    local_1c = pszKeyValue;
     local_20 = pcVar2;
     do {
       cVar1 = *local_1c;
@@ -935,7 +950,7 @@ void __cdecl SetConfigString(char **param_1,char *param_2)
       local_1c = local_1c + 1;
       local_20 = local_20 + 1;
     } while (cVar1 != '\0');
-    *param_1 = pcVar2;
+    *ppszConfigString = pcVar2;
   }
   return;
 }
@@ -943,39 +958,42 @@ void __cdecl SetConfigString(char **param_1,char *param_2)
 
 // 00460110  SetConfigString2  (bgame/bg_weapons_load_obj.cpp:1971)
 
-void __cdecl SetConfigString2(uchar *param_1,char *param_2)
+void __cdecl SetConfigString2(uchar *pMember,char *pszKeyValue)
 
 {
-  SetConfigString((char **)param_1,param_2);
+  SetConfigString((char **)pMember,pszKeyValue);
   return;
 }
 
 
 // 00462770  InitWeaponDef  (bgame/bg_weapons_load_obj.cpp:1979)
 
-void __cdecl InitWeaponDef(WeaponFullDef *param_1)
+void __cdecl InitWeaponDef(WeaponFullDef *weapFullDef)
 
 {
-  cspField_t *local_10;
-  int local_c;
+  WeaponVariantDef *weapVariantDef;
+  cspField_t *pField;
+  int iField;
+  WeaponDef *weapDef;
   
-  (param_1->weapVariantDef).weapDef = &param_1->weapDef;
-  (param_1->weapVariantDef).szInternalName = "";
-  (param_1->weapVariantDef).szXAnims = param_1->szXAnims;
-  (param_1->weapVariantDef).hideTags = param_1->hideTags;
-  (param_1->weapDef).gunXModel = param_1->gunXModel;
-  (param_1->weapDef).notetrackSoundMapKeys = param_1->notetrackSoundMapKeys;
-  (param_1->weapDef).notetrackSoundMapValues = param_1->notetrackSoundMapValues;
-  (param_1->weapDef).worldModel = param_1->worldModel;
-  (param_1->weapDef).parallelBounce = param_1->parallelBounce;
-  (param_1->weapDef).perpendicularBounce = param_1->perpendicularBounce;
-  (param_1->weapDef).locationDamageMultipliers = param_1->locationDamageMultipliers;
-  local_10 = weaponDefFields;
-  for (local_c = 0; local_c < 0x2ec; local_c = local_c + 1) {
-    if (local_10->iFieldType == 0) {
-      *(char **)((int)(param_1->weapVariantDef).fOOPosAnimLength + local_10->iOffset + -0x7c) = "";
+  (weapFullDef->weapVariantDef).weapDef = &weapFullDef->weapDef;
+  (weapFullDef->weapVariantDef).szInternalName = "";
+  (weapFullDef->weapVariantDef).szXAnims = weapFullDef->szXAnims;
+  (weapFullDef->weapVariantDef).hideTags = weapFullDef->hideTags;
+  (weapFullDef->weapDef).gunXModel = weapFullDef->gunXModel;
+  (weapFullDef->weapDef).notetrackSoundMapKeys = weapFullDef->notetrackSoundMapKeys;
+  (weapFullDef->weapDef).notetrackSoundMapValues = weapFullDef->notetrackSoundMapValues;
+  (weapFullDef->weapDef).worldModel = weapFullDef->worldModel;
+  (weapFullDef->weapDef).parallelBounce = weapFullDef->parallelBounce;
+  (weapFullDef->weapDef).perpendicularBounce = weapFullDef->perpendicularBounce;
+  (weapFullDef->weapDef).locationDamageMultipliers = weapFullDef->locationDamageMultipliers;
+  pField = weaponDefFields;
+  for (iField = 0; iField < 0x2ec; iField = iField + 1) {
+    if (pField->iFieldType == 0) {
+      *(char **)((int)(weapFullDef->weapVariantDef).fOOPosAnimLength + pField->iOffset + -0x7c) = ""
+      ;
     }
-    local_10 = local_10 + 1;
+    pField = pField + 1;
   }
   return;
 }
@@ -983,18 +1001,18 @@ void __cdecl InitWeaponDef(WeaponFullDef *param_1)
 
 // 00460130  InitFlameTable  (bgame/bg_weapons_load_obj.cpp:2050)
 
-void __cdecl InitFlameTable(flameTable *param_1)
+void __cdecl InitFlameTable(flameTable *fTable)
 
 {
-  cspField_t_0_ *local_c;
-  int local_8;
+  cspField_t *pField;
+  int iField;
   
-  local_c = &flameTableFields;
-  for (local_8 = 0; local_8 < 0x77; local_8 = local_8 + 1) {
-    if (*(int *)(local_c + 8) == 0) {
-      *(char **)((int)&param_1->flameVar_streamChunkGravityStart + *(int *)(local_c + 4)) = "";
+  pField = (cspField_t *)&flameTableFields;
+  for (iField = 0; iField < 0x77; iField = iField + 1) {
+    if (pField->iFieldType == 0) {
+      *(char **)((int)&fTable->flameVar_streamChunkGravityStart + pField->iOffset) = "";
     }
-    local_c = local_c + 0xc;
+    pField = pField + 1;
   }
   return;
 }
@@ -1005,7 +1023,7 @@ void __cdecl InitFlameTable(flameTable *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-flameTable * __cdecl BG_LoadFlameTableInternal(char *param_1,char *param_2)
+flameTable * __cdecl BG_LoadFlameTableInternal(char *folder,char *name)
 
 {
   code *pcVar1;
@@ -1014,15 +1032,16 @@ flameTable * __cdecl BG_LoadFlameTableInternal(char *param_1,char *param_2)
   int iVar4;
   flameTable *pfVar5;
   char *local_2864;
-  uchar local_285c [10244];
-  int local_58;
-  char *local_54;
-  int local_50;
-  char local_4c [64];
+  char *pszIdentifier;
+  uchar szBuffer [10244];
+  int hFile;
+  int iIdentifierLen;
+  int iFileLength;
+  char szFileName [64];
   uint local_c;
-  flameTable *local_8;
+  flameTable *fTable;
   
-  local_8 = (flameTable *)0x45fe6d;
+  fTable = (flameTable *)0x45fe6d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_2864 = "FLAMETABLEFILE";
   pcVar2 = local_2864;
@@ -1030,38 +1049,37 @@ flameTable * __cdecl BG_LoadFlameTableInternal(char *param_1,char *param_2)
     local_2864 = pcVar2;
     pcVar2 = local_2864 + 1;
   } while (*local_2864 != '\0');
-  local_54 = local_2864 + -0xc756b0;
-  local_8 = Hunk_AllocLow(0x1dc,"BG_LoadFlameTableInternal",10);
-  InitFlameTable(local_8);
-  Com_sprintf(local_4c,0x40,"weapons/%s/%s");
-  local_50 = FS_FOpenFileByMode(local_4c,&local_58,FS_READ);
-  if (local_50 < 0) {
+  iIdentifierLen = (int)(local_2864 + -0xc756b0);
+  fTable = Hunk_AllocLow(0x1dc,"BG_LoadFlameTableInternal",10);
+  InitFlameTable(fTable);
+  Com_sprintf(szFileName,0x40,"weapons/%s/%s");
+  iFileLength = FS_FOpenFileByMode(szFileName,&hFile,FS_READ);
+  if (iFileLength < 0) {
     Com_PrintWarning(0x11,"WARNING: Could not load flametable file \'%s\'\n");
-    local_8 = (flameTable *)0x0;
+    fTable = (flameTable *)0x0;
   }
   else {
-    FS_Read(local_285c,(int)local_54,local_58);
-    local_285c[(int)local_54] = '\0';
-    iVar4 = strncmp((char *)local_285c,"FLAMETABLEFILE",(uint)local_54);
+    FS_Read(szBuffer,iIdentifierLen,hFile);
+    szBuffer[iIdentifierLen] = '\0';
+    iVar4 = strncmp((char *)szBuffer,"FLAMETABLEFILE",iIdentifierLen);
     if (iVar4 == 0) {
-      if ((uint)(local_50 - (int)local_54) < 0x2800) {
-        memset(local_285c,'\0',0x2800);
-        FS_Read(local_285c,local_50 - (int)local_54,local_58);
-        local_285c[local_50 - (int)local_54] = '\0';
-        FS_FCloseFile(local_58);
-        iVar4 = Info_Validate((char *)local_285c);
+      if ((uint)(iFileLength - iIdentifierLen) < 0x2800) {
+        memset(szBuffer,'\0',0x2800);
+        FS_Read(szBuffer,iFileLength - iIdentifierLen,hFile);
+        szBuffer[iFileLength - iIdentifierLen] = '\0';
+        FS_FCloseFile(hFile);
+        iVar4 = Info_Validate((char *)szBuffer);
         if (iVar4 == 0) {
           Com_PrintWarning(0x11,"WARNING: \"%s\" is not a valid flametable file\n");
-          local_8 = (flameTable *)0x0;
+          fTable = (flameTable *)0x0;
         }
         else {
-          SetConfigString(&local_8->name,param_2);
+          SetConfigString(&fTable->name,name);
           iVar4 = ParseConfigStringToStruct
-                            ((uchar *)local_8,(cspField_t *)&flameTableFields,0x77,
-                             (char *)local_285c,0,
-                             (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0,SetConfigString2);
+                            ((uchar *)fTable,(cspField_t *)&flameTableFields,0x77,(char *)szBuffer,0
+                             ,(_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0,SetConfigString2);
           if (iVar4 == 0) {
-            local_8 = (flameTable *)0x0;
+            fTable = (flameTable *)0x0;
           }
           else {
             if (7 < bg_nextParseFlameTableIndex) {
@@ -1075,7 +1093,7 @@ flameTable * __cdecl BG_LoadFlameTableInternal(char *param_1,char *param_2)
                 return pfVar5;
               }
             }
-            bg_flameTables[bg_nextParseFlameTableIndex] = local_8;
+            bg_flameTables[bg_nextParseFlameTableIndex] = fTable;
             bg_nextParseFlameTableIndex = bg_nextParseFlameTableIndex + 1;
           }
         }
@@ -1084,55 +1102,56 @@ flameTable * __cdecl BG_LoadFlameTableInternal(char *param_1,char *param_2)
         Com_PrintWarning(0x11,
                          "WARNING: \"%s\" Is too long of a flametable file to parse (fileLength = %d identifierLength = %d)\n"
                         );
-        FS_FCloseFile(local_58);
-        local_8 = (flameTable *)0x0;
+        FS_FCloseFile(hFile);
+        fTable = (flameTable *)0x0;
       }
     }
     else {
       Com_PrintWarning(0x11,"WARNING: \"%s\" does not appear to be a flametable file\n");
-      FS_FCloseFile(local_58);
-      local_8 = (flameTable *)0x0;
+      FS_FCloseFile(hFile);
+      fTable = (flameTable *)0x0;
     }
   }
-  return local_8;
+  return fTable;
 }
 
 
 // 00460190  BG_GetFlameTable  (bgame/bg_weapons_load_obj.cpp:2131)
 
-flameTable * __cdecl BG_GetFlameTable(char *param_1,char *param_2)
+flameTable * __cdecl BG_GetFlameTable(char *folder,char *name)
 
 {
   int iVar1;
   flameTable *pfVar2;
-  uint local_8;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (bg_nextParseFlameTableIndex <= local_8) {
-      pfVar2 = BG_LoadFlameTableInternal(param_1,param_2);
+    if (bg_nextParseFlameTableIndex <= i) {
+      pfVar2 = BG_LoadFlameTableInternal(folder,name);
       return pfVar2;
     }
-    iVar1 = I_stricmp(bg_flameTables[local_8]->name,param_2);
+    iVar1 = I_stricmp(bg_flameTables[i]->name,name);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return bg_flameTables[local_8];
+  return bg_flameTables[i];
 }
 
 
 // 00460200  BG_LoadWeaponFile  (bgame/bg_weapons_load_obj.cpp:2141)
 
-bool __cdecl BG_LoadWeaponFile(char *param_1,char *param_2,int param_3)
+bool __cdecl BG_LoadWeaponFile(char *szFileName,char *szBuffer,int iBufferSize)
 
 {
   char *pcVar1;
   bool bVar2;
   int iVar3;
   char *local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  char *pszIdentifier;
+  int hFile;
+  int iIdentifierLen;
+  int iFileLength;
   
   local_18 = "WEAPONFILE";
   pcVar1 = local_18;
@@ -1140,23 +1159,23 @@ bool __cdecl BG_LoadWeaponFile(char *param_1,char *param_2,int param_3)
     local_18 = pcVar1;
     pcVar1 = local_18 + 1;
   } while (*local_18 != '\0');
-  local_c = local_18 + -0xc757b0;
-  local_8 = FS_FOpenFileByMode(param_1,&local_10,FS_READ);
-  if (local_8 < 0) {
+  iIdentifierLen = (int)(local_18 + -0xc757b0);
+  iFileLength = FS_FOpenFileByMode(szFileName,&hFile,FS_READ);
+  if (iFileLength < 0) {
     Com_PrintWarning(0x11,"WARNING: Could not load weapon file \'%s\'\n");
     bVar2 = false;
   }
   else {
-    FS_Read(param_2,(int)local_c,local_10);
-    param_2[(int)local_c] = '\0';
-    iVar3 = strncmp(param_2,"WEAPONFILE",(uint)local_c);
+    FS_Read(szBuffer,iIdentifierLen,hFile);
+    szBuffer[iIdentifierLen] = '\0';
+    iVar3 = strncmp(szBuffer,"WEAPONFILE",iIdentifierLen);
     if (iVar3 == 0) {
-      if (local_8 - (int)local_c < param_3) {
-        memset((uchar *)param_2,'\0',param_3);
-        FS_Read(param_2,local_8 - (int)local_c,local_10);
-        param_2[local_8 - (int)local_c] = '\0';
-        FS_FCloseFile(local_10);
-        iVar3 = Info_Validate(param_2);
+      if (iFileLength - iIdentifierLen < iBufferSize) {
+        memset((uchar *)szBuffer,'\0',iBufferSize);
+        FS_Read(szBuffer,iFileLength - iIdentifierLen,hFile);
+        szBuffer[iFileLength - iIdentifierLen] = '\0';
+        FS_FCloseFile(hFile);
+        iVar3 = Info_Validate(szBuffer);
         if (iVar3 == 0) {
           Com_PrintWarning(0x11,"WARNING: \"%s\" is not a valid weapon file\n");
           bVar2 = false;
@@ -1169,13 +1188,13 @@ bool __cdecl BG_LoadWeaponFile(char *param_1,char *param_2,int param_3)
         Com_PrintWarning(0x11,
                          "WARNING: \"%s\" Is too long of a weapon file to parse (fileLength = %d identifierLength = %d)\n"
                         );
-        FS_FCloseFile(local_10);
+        FS_FCloseFile(hFile);
         bVar2 = false;
       }
     }
     else {
       Com_PrintWarning(0x11,"WARNING: \"%s\" does not appear to be a weapon file\n");
-      FS_FCloseFile(local_10);
+      FS_FCloseFile(hFile);
       bVar2 = false;
     }
   }
@@ -1189,36 +1208,36 @@ void __cdecl BG_LoadWeaponMergeSupport(void)
 
 {
   char cVar1;
+  char *filebuf;
   char *pcVar2;
-  char *pcVar3;
   char *local_2c;
   char *local_28;
   char *local_18;
-  char *local_c;
-  char *local_8;
+  char *buf;
+  char *text_p;
+  char *token;
   
   s_numWeaponGripAnimSubstrings = 0;
   if ((useFastFile->current).enabled == false) {
     BG_LoadWeaponAttachmentTable();
-    pcVar2 = Com_LoadRawTextFile("weapon_gripanims.csv");
-    if (pcVar2 == (char *)0x0) {
+    filebuf = Com_LoadRawTextFile("weapon_gripanims.csv");
+    if (filebuf == (char *)0x0) {
       Com_Error(ERR_DROP,"\x15Couldn\'t load file \'%s\'");
     }
-    local_c = pcVar2;
+    text_p = filebuf;
     Com_BeginParseSession("BG_LoadWeaponMergeSupport");
-    while ((local_8 = Com_Parse(&local_c), local_8 != (char *)0x0 && (*local_8 != '\0'))) {
+    while ((token = Com_Parse(&text_p), token != (char *)0x0 && (*token != '\0'))) {
       if (0x3f < (uint)s_numWeaponGripAnimSubstrings) {
         Com_Error(ERR_DROP,"\x15Weapon grip anim substrings table size exceeded");
       }
-      local_18 = local_8;
+      local_18 = token;
       do {
         cVar1 = *local_18;
         local_18 = local_18 + 1;
       } while (cVar1 != '\0');
-      pcVar3 = Hunk_Alloc((int)(local_18 + (1 - (int)(local_8 + 1))),"BG_LoadWeaponMergeSupport",10)
-      ;
-      s_weaponGripAnimSubstrings[s_numWeaponGripAnimSubstrings] = pcVar3;
-      local_28 = local_8;
+      pcVar2 = Hunk_Alloc((int)(local_18 + (1 - (int)(token + 1))),"BG_LoadWeaponMergeSupport",10);
+      s_weaponGripAnimSubstrings[s_numWeaponGripAnimSubstrings] = pcVar2;
+      local_28 = token;
       local_2c = s_weaponGripAnimSubstrings[s_numWeaponGripAnimSubstrings];
       do {
         cVar1 = *local_28;
@@ -1229,7 +1248,7 @@ void __cdecl BG_LoadWeaponMergeSupport(void)
       s_numWeaponGripAnimSubstrings = s_numWeaponGripAnimSubstrings + 1;
     }
     Com_EndParseSession();
-    Com_UnloadRawTextFile(pcVar2);
+    Com_UnloadRawTextFile(filebuf);
   }
   return;
 }
@@ -1242,35 +1261,35 @@ void __cdecl BG_LoadWeaponMergeSupport(void)
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 bool __cdecl
-BG_SplitWeaponDefNames(char *param_1,char **param_2,WeaponComponentList *param_3,char *param_4)
+BG_SplitWeaponDefNames(char *name,char **sources,WeaponComponentList *componentAll,char *outputName)
 
 {
   bool bVar1;
-  int local_280;
-  WeaponComponentList local_27c;
-  WeaponComponentList local_144;
+  int slot;
+  WeaponComponentList componentBase;
+  WeaponComponentList componentBaseAttachment;
   uint local_c;
-  int local_8;
+  int count;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  BG_WeaponNameToComponentList(param_1,param_3);
-  BG_WeaponComponentListIdentify(param_3);
-  BG_WeaponComponentListSort(param_1,param_3,param_4);
-  local_8 = BG_WeaponComponentListCountAttachments(param_3);
-  if (local_8 < 6) {
-    if (local_8 < 2) {
+  BG_WeaponNameToComponentList(name,componentAll);
+  BG_WeaponComponentListIdentify(componentAll);
+  BG_WeaponComponentListSort(name,componentAll,outputName);
+  count = BG_WeaponComponentListCountAttachments(componentAll);
+  if (count < 6) {
+    if (count < 2) {
       Com_PrintError(1,
                      "Can not create merged weapon %s.  Too few attachments, must have at least two.\n"
                     );
       bVar1 = false;
     }
     else {
-      for (local_280 = 1; local_280 < local_8 + 1; local_280 = local_280 + 1) {
-        BG_WeaponComponentListNthAttachment(param_3,local_280,&local_144);
-        BG_WeaponComponentListToName(&local_144,param_2[local_280],0x40);
+      for (slot = 1; slot < count + 1; slot = slot + 1) {
+        BG_WeaponComponentListNthAttachment(componentAll,slot,&componentBaseAttachment);
+        BG_WeaponComponentListToName(&componentBaseAttachment,sources[slot],0x40);
       }
-      BG_WeaponComponentListRemoveAllAttachments(param_3,&local_27c);
-      BG_WeaponComponentListToName(&local_27c,*param_2,0x40);
+      BG_WeaponComponentListRemoveAllAttachments(componentAll,&componentBase);
+      BG_WeaponComponentListToName(&componentBase,*sources,0x40);
       bVar1 = true;
     }
   }
@@ -1289,7 +1308,7 @@ BG_SplitWeaponDefNames(char *param_1,char **param_2,WeaponComponentList *param_3
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_MergeWeaponDefClipName(char **param_1,char *param_2,int param_3)
+int __cdecl BG_MergeWeaponDefClipName(char **value,char *mergedValue,int size)
 
 {
   char cVar1;
@@ -1300,12 +1319,12 @@ int __cdecl BG_MergeWeaponDefClipName(char **param_1,char *param_2,int param_3)
   char *local_514;
   WeaponComponent *local_508;
   char *local_504;
-  int local_500;
-  WeaponComponentList local_4fc;
-  int local_3c0;
+  int m;
+  WeaponComponentList merged;
+  int comp;
   int local_3bc;
   int local_3b8;
-  WeaponComponentList local_3b4;
+  WeaponComponentList componentList;
   int local_27c;
   char acStack_278 [308];
   int local_144;
@@ -1313,66 +1332,69 @@ int __cdecl BG_MergeWeaponDefClipName(char **param_1,char *param_2,int param_3)
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)&local_4fc,'\0',0x138);
-  for (local_500 = 0; local_500 < 3; local_500 = local_500 + 1) {
-    BG_WeaponNameToComponentList(param_1[local_500],&local_3b4 + local_500);
+  memset((uchar *)&merged,'\0',0x138);
+  for (m = 0; m < 3; m = m + 1) {
+    BG_WeaponNameToComponentList(value[m],&componentList + m);
   }
   local_3bc = 0;
   local_3b8 = 0;
-  for (local_3c0 = 0; local_3c0 < local_3b4.numComponents; local_3c0 = local_3c0 + 1) {
+  for (comp = 0; comp < componentList.numComponents; comp = comp + 1) {
     if (local_3bc < local_27c) {
-      iVar2 = I_stricmp(acStack_278 + local_3bc * 0x2c,local_3b4.components[local_3c0].name);
+      iVar2 = I_stricmp(acStack_278 + local_3bc * 0x2c,componentList.components[comp].name);
       if (iVar2 != 0) {
         local_504 = acStack_278 + local_3bc * 0x2c;
-        local_508 = local_4fc.components + local_4fc.numComponents;
+        local_508 = merged.components + merged.numComponents;
         do {
           cVar1 = *local_504;
           local_508->name[0] = cVar1;
           local_504 = local_504 + 1;
           local_508 = (WeaponComponent *)(local_508->name + 1);
         } while (cVar1 != '\0');
-        local_4fc.numComponents = local_4fc.numComponents + 1;
+        merged.numComponents = merged.numComponents + 1;
       }
     }
     local_3bc = local_3bc + 1;
     if (local_3b8 < local_144) {
-      iVar2 = I_stricmp(acStack_140 + local_3b8 * 0x2c,local_3b4.components[local_3c0].name);
+      iVar2 = I_stricmp(acStack_140 + local_3b8 * 0x2c,componentList.components[comp].name);
       if (iVar2 != 0) {
         local_514 = acStack_140 + local_3b8 * 0x2c;
-        local_518 = local_4fc.components + local_4fc.numComponents;
+        local_518 = merged.components + merged.numComponents;
         do {
           cVar1 = *local_514;
           local_518->name[0] = cVar1;
           local_514 = local_514 + 1;
           local_518 = (WeaponComponent *)(local_518->name + 1);
         } while (cVar1 != '\0');
-        local_4fc.numComponents = local_4fc.numComponents + 1;
+        merged.numComponents = merged.numComponents + 1;
       }
     }
     local_3b8 = local_3b8 + 1;
-    local_524 = local_3b4.components + local_3c0;
-    local_528 = local_4fc.components + local_4fc.numComponents;
+    local_524 = componentList.components + comp;
+    local_528 = merged.components + merged.numComponents;
     do {
       cVar1 = local_524->name[0];
       local_528->name[0] = cVar1;
       local_524 = (WeaponComponent *)(local_524->name + 1);
       local_528 = (WeaponComponent *)(local_528->name + 1);
     } while (cVar1 != '\0');
-    local_4fc.numComponents = local_4fc.numComponents + 1;
+    merged.numComponents = merged.numComponents + 1;
   }
-  BG_WeaponComponentListToName(&local_4fc,param_2,param_3);
+  BG_WeaponComponentListToName(&merged,mergedValue,size);
   return 1;
 }
 
 
 // 00460950  BG_MergeWeaponDefFloatValue  (bgame/bg_weapons_load_obj.cpp:2447)
 
-int __cdecl BG_MergeWeaponDefFloatValue(char **param_1,char *param_2,int param_3)
+int __cdecl BG_MergeWeaponDefFloatValue(char **value,char *mergedValue,int size)
 
 {
-  atof(param_1[1]);
-  atof(param_1[2]);
-  Com_sprintf(param_2,4,"%.2f");
+  float valueRight;
+  float valueLeft;
+  
+  atof(value[1]);
+  atof(value[2]);
+  Com_sprintf(mergedValue,4,"%.2f");
   return 1;
 }
 
@@ -1382,107 +1404,108 @@ int __cdecl BG_MergeWeaponDefFloatValue(char **param_1,char *param_2,int param_3
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl BG_MergeWeaponDefHidetags(char **param_1,char *param_2,int param_3)
+int __cdecl BG_MergeWeaponDefHidetags(char **value,char *mergedValue,int size)
 
 {
-  uchar uVar1;
+  char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uchar *local_10e8;
-  int local_10e4;
-  int local_10e0;
+  char *local_10e8;
+  int tagsCount;
+  int src;
   char acStack_10dc [196];
-  uchar *local_1018;
+  char *token;
   uchar auStack_1014 [4100];
   uint local_10;
-  int local_c;
-  char *local_8;
+  int tag;
+  char *p;
   
-  local_8 = (char *)0x4609cd;
+  p = (char *)0x4609cd;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10e4 = 0;
-  local_10e0 = 0;
+  tagsCount = 0;
+  src = 0;
   do {
-    if (2 < local_10e0) {
-      *param_2 = '\0';
-      local_c = 0;
+    if (2 < src) {
+      *mergedValue = '\0';
+      tag = 0;
       do {
-        if (local_10e4 <= local_c) {
+        if (tagsCount <= tag) {
           return 1;
         }
-        if ((acStack_10dc[local_c * 3] == '\0') ||
-           ((acStack_10dc[local_c * 3 + 1] != '\0' && (acStack_10dc[local_c * 3 + 2] != '\0')))) {
-          if ((acStack_10dc[local_c * 3 + 1] == '\0') &&
-             ((acStack_10dc[local_c * 3 + 2] == '\0' &&
+        if ((acStack_10dc[tag * 3] == '\0') ||
+           ((acStack_10dc[tag * 3 + 1] != '\0' && (acStack_10dc[tag * 3 + 2] != '\0')))) {
+          if ((acStack_10dc[tag * 3 + 1] == '\0') &&
+             ((acStack_10dc[tag * 3 + 2] == '\0' &&
               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp"
                                         ,0x9c9,0,"%s"), !bVar3)))) {
             pcVar2 = (code *)swi(3);
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          I_strncat(param_2,param_3,(char *)(auStack_1014 + local_c * 0x40));
-          I_strncat(param_2,param_3,"\n");
+          I_strncat(mergedValue,size,(char *)(auStack_1014 + tag * 0x40));
+          I_strncat(mergedValue,size,"\n");
         }
-        local_c = local_c + 1;
+        tag = tag + 1;
       } while( true );
     }
-    local_8 = param_1[local_10e0];
-    local_1018 = (uchar *)Com_Parse(&local_8);
-    while ((local_1018 != (uchar *)0x0 && (*local_1018 != '\0'))) {
-      local_10e8 = local_1018;
+    p = value[src];
+    token = Com_Parse(&p);
+    while ((token != (char *)0x0 && (*token != '\0'))) {
+      local_10e8 = token;
       do {
-        uVar1 = *local_10e8;
+        cVar1 = *local_10e8;
         local_10e8 = local_10e8 + 1;
-      } while (uVar1 != '\0');
-      if ((0x3f < (uint)((int)local_10e8 - (int)(local_1018 + 1))) &&
+      } while (cVar1 != '\0');
+      if ((0x3f < (uint)((int)local_10e8 - (int)(token + 1))) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp"
                                    ,0x9aa,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-      for (local_c = 0; local_c < local_10e4; local_c = local_c + 1) {
-        iVar4 = I_stricmp((char *)(auStack_1014 + local_c * 0x40),(char *)local_1018);
+      for (tag = 0; tag < tagsCount; tag = tag + 1) {
+        iVar4 = I_stricmp((char *)(auStack_1014 + tag * 0x40),token);
         if (iVar4 == 0) {
-          acStack_10dc[local_10e0 + local_c * 3] = '\x01';
+          acStack_10dc[src + tag * 3] = '\x01';
           break;
         }
       }
-      if (local_c == local_10e4) {
-        strncpy(auStack_1014 + local_10e4 * 0x40,local_1018,0x40);
-        acStack_10dc[local_10e4 * 3] = '\0';
-        acStack_10dc[local_10e4 * 3 + 1] = '\0';
-        acStack_10dc[local_10e4 * 3 + 2] = '\0';
-        acStack_10dc[local_10e0 + local_10e4 * 3] = '\x01';
-        local_10e4 = local_10e4 + 1;
+      if (tag == tagsCount) {
+        strncpy(auStack_1014 + tagsCount * 0x40,(uchar *)token,0x40);
+        acStack_10dc[tagsCount * 3] = '\0';
+        acStack_10dc[tagsCount * 3 + 1] = '\0';
+        acStack_10dc[tagsCount * 3 + 2] = '\0';
+        acStack_10dc[src + tagsCount * 3] = '\x01';
+        tagsCount = tagsCount + 1;
       }
-      local_1018 = (uchar *)Com_Parse(&local_8);
+      token = Com_Parse(&p);
     }
-    local_10e0 = local_10e0 + 1;
+    src = src + 1;
   } while( true );
 }
 
 
 // 00460CC0  BG_IsAnimationField  (bgame/bg_weapons_load_obj.cpp:2515)
 
-bool __cdecl BG_IsAnimationField(char *param_1)
+bool __cdecl BG_IsAnimationField(char *fieldName)
 
 {
   char cVar1;
   int iVar2;
   char *local_c;
+  int len;
   
-  local_c = param_1;
+  local_c = fieldName;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  if ((int)local_c - (int)(param_1 + 1) < 4) {
+  if ((int)local_c - (int)(fieldName + 1) < 4) {
     cVar1 = '\0';
   }
   else {
-    iVar2 = I_stricmp(param_1 + ((int)local_c - (int)(param_1 + 1)) + -4,"anim");
+    iVar2 = I_stricmp(fieldName + ((int)local_c - (int)(fieldName + 1)) + -4,"anim");
     cVar1 = '\x01' - (iVar2 != 0);
   }
   return (bool)cVar1;
@@ -1491,32 +1514,32 @@ bool __cdecl BG_IsAnimationField(char *param_1)
 
 // 00460D30  BG_IsADSField  (bgame/bg_weapons_load_obj.cpp:2525)
 
-bool __cdecl BG_IsADSField(char *param_1)
+bool __cdecl BG_IsADSField(char *fieldName)
 
 {
   int iVar1;
   
-  iVar1 = I_strnicmp(param_1,"ads",3);
+  iVar1 = I_strnicmp(fieldName,"ads",3);
   return (bool)('\x01' - (iVar1 != 0));
 }
 
 
 // 00460D50  BG_IsGripAnimationName  (bgame/bg_weapons_load_obj.cpp:2530)
 
-bool __cdecl BG_IsGripAnimationName(char *param_1)
+bool __cdecl BG_IsGripAnimationName(char *name)
 
 {
   char *pcVar1;
-  int local_8;
+  int idx;
   
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (s_numWeaponGripAnimSubstrings <= local_8) {
+    if (s_numWeaponGripAnimSubstrings <= idx) {
       return false;
     }
-    pcVar1 = I_stristr(param_1,s_weaponGripAnimSubstrings[local_8]);
+    pcVar1 = I_stristr(name,s_weaponGripAnimSubstrings[idx]);
     if (pcVar1 != (char *)0x0) break;
-    local_8 = local_8 + 1;
+    idx = idx + 1;
   }
   return true;
 }
@@ -1524,7 +1547,7 @@ bool __cdecl BG_IsGripAnimationName(char *param_1)
 
 // 00460DA0  BG_MergeWeaponDefAnimations  (bgame/bg_weapons_load_obj.cpp:2542)
 
-int __cdecl BG_MergeWeaponDefAnimations(char *param_1,char **param_2,char *param_3,int param_4)
+int __cdecl BG_MergeWeaponDefAnimations(char *fieldName,char **value,char *mergedValue,int size)
 
 {
   code *pcVar1;
@@ -1532,10 +1555,13 @@ int __cdecl BG_MergeWeaponDefAnimations(char *param_1,char **param_2,char *param
   bool bVar3;
   bool bVar4;
   int iVar5;
+  bool rightGrip;
+  bool leftGrip;
+  bool isADS;
   
-  bVar2 = BG_IsGripAnimationName(param_2[1]);
-  bVar3 = BG_IsGripAnimationName(param_2[2]);
-  bVar4 = BG_IsADSField(param_1);
+  bVar2 = BG_IsGripAnimationName(value[1]);
+  bVar3 = BG_IsGripAnimationName(value[2]);
+  bVar4 = BG_IsADSField(fieldName);
   if ((bVar2) && (bVar3)) {
     Com_PrintError(1,
                    "Can\'t merge anim field \'%s\', both \'%s\' and \'%s\' are bottom attachment point animations"
@@ -1552,17 +1578,17 @@ int __cdecl BG_MergeWeaponDefAnimations(char *param_1,char **param_2,char *param
     }
     if (bVar4) {
       if (bVar2) {
-        strncpy((uchar *)param_3,(uchar *)param_2[2],param_4);
+        strncpy((uchar *)mergedValue,(uchar *)value[2],size);
       }
       else {
-        strncpy((uchar *)param_3,(uchar *)param_2[1],param_4);
+        strncpy((uchar *)mergedValue,(uchar *)value[1],size);
       }
     }
     else if (bVar2) {
-      strncpy((uchar *)param_3,(uchar *)param_2[1],param_4);
+      strncpy((uchar *)mergedValue,(uchar *)value[1],size);
     }
     else {
-      strncpy((uchar *)param_3,(uchar *)param_2[2],param_4);
+      strncpy((uchar *)mergedValue,(uchar *)value[2],size);
     }
     iVar5 = 1;
   }
@@ -1578,46 +1604,46 @@ int __cdecl BG_MergeWeaponDefAnimations(char *param_1,char **param_2,char *param
 
 // 00460F00  BG_MergeWeaponDefSpecialCases  (bgame/bg_weapons_load_obj.cpp:2585)
 
-int __cdecl BG_MergeWeaponDefSpecialCases(char *param_1,char **param_2,char *param_3,int param_4)
+int __cdecl BG_MergeWeaponDefSpecialCases(char *fieldName,char **value,char *mergedValue,int size)
 
 {
   bool bVar1;
   int iVar2;
   
-  iVar2 = I_stricmp(param_1,"displayName");
+  iVar2 = I_stricmp(fieldName,"displayName");
   if (iVar2 == 0) {
-    _snprintf(param_3,param_4,"%s_DUAL_ATTACH");
+    _snprintf(mergedValue,size,"%s_DUAL_ATTACH");
     iVar2 = 1;
   }
   else {
-    iVar2 = I_stricmp(param_1,"clipName");
+    iVar2 = I_stricmp(fieldName,"clipName");
     if (iVar2 == 0) {
-      iVar2 = BG_MergeWeaponDefClipName(param_2,param_3,param_4);
+      iVar2 = BG_MergeWeaponDefClipName(value,mergedValue,size);
     }
     else {
-      iVar2 = I_stricmp(param_1,"hideTags");
+      iVar2 = I_stricmp(fieldName,"hideTags");
       if (iVar2 == 0) {
-        iVar2 = BG_MergeWeaponDefHidetags(param_2,param_3,param_4);
+        iVar2 = BG_MergeWeaponDefHidetags(value,mergedValue,size);
       }
       else {
-        iVar2 = I_stricmp(param_1,"adsViewKickCenterSpeed");
+        iVar2 = I_stricmp(fieldName,"adsViewKickCenterSpeed");
         if (iVar2 == 0) {
-          iVar2 = BG_MergeWeaponDefFloatValue(param_2,param_3,param_4);
+          iVar2 = BG_MergeWeaponDefFloatValue(value,mergedValue,size);
         }
         else {
-          iVar2 = I_stricmp(param_1,"hipViewKickCenterSpeed");
+          iVar2 = I_stricmp(fieldName,"hipViewKickCenterSpeed");
           if (iVar2 == 0) {
-            iVar2 = BG_MergeWeaponDefFloatValue(param_2,param_3,param_4);
+            iVar2 = BG_MergeWeaponDefFloatValue(value,mergedValue,size);
           }
           else {
-            iVar2 = I_stricmp(param_1,"hipViewKickYawMax");
+            iVar2 = I_stricmp(fieldName,"hipViewKickYawMax");
             if (iVar2 == 0) {
-              iVar2 = BG_MergeWeaponDefFloatValue(param_2,param_3,param_4);
+              iVar2 = BG_MergeWeaponDefFloatValue(value,mergedValue,size);
             }
             else {
-              bVar1 = BG_IsAnimationField(param_1);
+              bVar1 = BG_IsAnimationField(fieldName);
               if (bVar1) {
-                iVar2 = BG_MergeWeaponDefAnimations(param_1,param_2,param_3,param_4);
+                iVar2 = BG_MergeWeaponDefAnimations(fieldName,value,mergedValue,size);
               }
               else {
                 iVar2 = 0;
@@ -1639,7 +1665,7 @@ int __cdecl BG_MergeWeaponDefSpecialCases(char *param_1,char **param_2,char *par
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-bool __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *param_1,char *param_2,char *param_3)
+bool __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *weapFullDef,char *folder,char *name)
 
 {
   char *pcVar1;
@@ -1648,54 +1674,55 @@ bool __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *param_1,char *param_2,ch
   undefined1 uVar4;
   int iVar5;
   char *pcStack_28488;
+  char *mergedBuffer;
   char *pcStack_28480;
   char *pcStack_2847c;
   char *pcStack_28478;
   char *pcStack_28474;
   char *pcStack_28470;
   char *pcStack_2846c;
-  int iStack_28468;
+  int count;
   char *apcStack_28464 [6];
-  WeaponComponentList WStack_2844c;
+  WeaponComponentList componentAll;
   char acStack_28314 [16384];
   char acStack_24314 [81920];
   char acStack_10314 [64];
   char acStack_102d4 [320];
   char acStack_10194 [65535];
   char acStack_195 [261];
-  WeaponFullDef *local_90;
-  char local_8c [64];
-  char local_4c [64];
+  WeaponVariantDef *weapVariantDef;
+  char szFullWeaponName [64];
+  char szFileName [64];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_90 = param_1;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    acStack_10194[local_8 * 0x4000] = '\0';
-    acStack_195[local_8 * 0x40 + 1] = '\0';
+  weapVariantDef = &weapFullDef->weapVariantDef;
+  for (i = 0; i < 4; i = i + 1) {
+    acStack_10194[i * 0x4000] = '\0';
+    acStack_195[i * 0x40 + 1] = '\0';
   }
-  local_8c[0] = '\0';
-  Com_sprintf(local_4c,0x40,"weapons/%s/%s");
-  iVar5 = FS_FOpenFileByMode(local_4c,(int *)0x0,FS_READ);
+  szFullWeaponName[0] = '\0';
+  Com_sprintf(szFileName,0x40,"weapons/%s/%s");
+  iVar5 = FS_FOpenFileByMode(szFileName,(int *)0x0,FS_READ);
   if (iVar5 < 1) {
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-      apcStack_28464[local_8] = acStack_10314 + local_8 * 0x40;
+    for (i = 0; i < 6; i = i + 1) {
+      apcStack_28464[i] = acStack_10314 + i * 0x40;
     }
-    bVar3 = BG_SplitWeaponDefNames(param_3,apcStack_28464,&WStack_2844c,local_8c);
+    bVar3 = BG_SplitWeaponDefNames(name,apcStack_28464,&componentAll,szFullWeaponName);
     if (!bVar3) {
       return false;
     }
-    if ((6 < WStack_2844c.numComponents + -1) &&
+    if ((6 < componentAll.numComponents + -1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_load_obj.cpp"
                                  ,0xa67,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    for (local_8 = 0; local_8 < WStack_2844c.numComponents + -1; local_8 = local_8 + 1) {
-      Com_sprintf(local_4c,0x40,"weapons/%s/%s");
-      bVar3 = BG_LoadWeaponFile(local_4c,acStack_28314 + local_8 * 0x4000,0x4000);
+    for (i = 0; i < componentAll.numComponents + -1; i = i + 1) {
+      Com_sprintf(szFileName,0x40,"weapons/%s/%s");
+      bVar3 = BG_LoadWeaponFile(szFileName,acStack_28314 + i * 0x4000,0x4000);
       if (!bVar3) {
         Com_PrintError(1,
                        "Can not create merged weapon %s.  Could not load base or attachment file %s"
@@ -1703,43 +1730,43 @@ bool __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *param_1,char *param_2,ch
         return false;
       }
     }
-    SetConfigString((char **)local_90,local_8c);
+    SetConfigString(&weapVariantDef->szInternalName,szFullWeaponName);
     pcStack_28480 = acStack_10314;
     pcStack_28474 = acStack_28314;
     pcStack_2847c = acStack_102d4;
     pcStack_28470 = acStack_24314;
-    iStack_28468 = BG_WeaponComponentListCountAttachments(&WStack_2844c);
-    for (local_8 = 0; local_8 < iStack_28468 + -1; local_8 = local_8 + 1) {
-      pcStack_28478 = acStack_10314 + (local_8 + 2) * 0x40;
-      pcStack_2846c = acStack_28314 + (local_8 + 2) * 0x4000;
+    count = BG_WeaponComponentListCountAttachments(&componentAll);
+    for (i = 0; i < count + -1; i = i + 1) {
+      pcStack_28478 = acStack_10314 + (i + 2) * 0x40;
+      pcStack_2846c = acStack_28314 + (i + 2) * 0x4000;
       iVar5 = ParseConfigStringToStructMerged
-                        ((uchar *)param_1,weaponDefFields,0x2ec,param_3,&pcStack_28474,
-                         &pcStack_28480,acStack_10194 + local_8 * 0x4000,0x2b,
+                        ((uchar *)weapFullDef,weaponDefFields,0x2ec,name,&pcStack_28474,
+                         &pcStack_28480,acStack_10194 + i * 0x4000,0x2b,
                          BG_ParseWeaponDefSpecificFieldType,SetConfigString2,
                          BG_MergeWeaponDefSpecialCases);
       if (iVar5 == 0) {
         return false;
       }
-      WStack_2844c.numComponents = local_8 + 3;
-      BG_WeaponComponentListToName(&WStack_2844c,acStack_195 + local_8 * 0x40 + 1,0x40);
-      pcStack_28488 = acStack_195 + local_8 * 0x40;
+      componentAll.numComponents = i + 3;
+      BG_WeaponComponentListToName(&componentAll,acStack_195 + i * 0x40 + 1,0x40);
+      pcStack_28488 = acStack_195 + i * 0x40;
       do {
         pcVar1 = pcStack_28488 + 1;
         pcStack_28488 = pcStack_28488 + 1;
       } while (*pcVar1 != '\0');
       *(char (*) [4])pcStack_28488 = (char  [4])0x706d5f;
-      pcStack_2847c = acStack_195 + local_8 * 0x40 + 1;
-      pcStack_28470 = acStack_10194 + local_8 * 0x4000;
+      pcStack_2847c = acStack_195 + i * 0x40 + 1;
+      pcStack_28470 = acStack_10194 + i * 0x4000;
     }
   }
   else {
-    bVar3 = BG_LoadWeaponFile(local_4c,acStack_28314,0x4000);
+    bVar3 = BG_LoadWeaponFile(szFileName,acStack_28314,0x4000);
     if (!bVar3) {
       return false;
     }
-    SetConfigString((char **)local_90,param_3);
+    SetConfigString(&weapVariantDef->szInternalName,name);
     iVar5 = ParseConfigStringToStruct
-                      ((uchar *)param_1,weaponDefFields,0x2ec,acStack_28314,0x2b,
+                      ((uchar *)weapFullDef,weaponDefFields,0x2ec,acStack_28314,0x2b,
                        BG_ParseWeaponDefSpecificFieldType,SetConfigString2);
     if (iVar5 == 0) {
       return false;
@@ -1751,81 +1778,89 @@ bool __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *param_1,char *param_2,ch
 
 // 004622F0  BG_LoadWeaponVariantDefInternal  (bgame/bg_weapons_load_obj.cpp:2716)
 
-WeaponVariantDef * __cdecl BG_LoadWeaponVariantDefInternal(char *param_1,char *param_2)
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+
+WeaponVariantDef * __cdecl BG_LoadWeaponVariantDefInternal(char *folder,char *name)
 
 {
   bool bVar1;
-  WeaponFullDef *pWVar2;
-  flameTable *pfVar3;
-  int iVar4;
+  WeaponFullDef *weapFullDef_00;
+  flameTable *pfVar2;
+  int iVar3;
+  WeaponFullDef *weapFullDef;
+  WeaponVariantDef *weapVariantDef;
+  WeaponDef *weapDef;
   
-  pWVar2 = Hunk_AllocLow(0xc48,"BG_LoadWeaponVariantDefInternal",10);
-  InitWeaponDef(pWVar2);
-  bVar1 = BG_LoadWeaponVariantDefFile(pWVar2,param_1,param_2);
+  weapFullDef_00 = Hunk_AllocLow(0xc48,"BG_LoadWeaponVariantDefInternal",10);
+  InitWeaponDef(weapFullDef_00);
+  bVar1 = BG_LoadWeaponVariantDefFile(weapFullDef_00,folder,name);
   if (bVar1) {
-    (pWVar2->weapDef).flameTableFirstPersonPtr = (flameTable *)0x0;
-    (pWVar2->weapDef).flameTableThirdPersonPtr = (flameTable *)0x0;
+    (weapFullDef_00->weapDef).flameTableFirstPersonPtr = (flameTable *)0x0;
+    (weapFullDef_00->weapDef).flameTableThirdPersonPtr = (flameTable *)0x0;
     bg_nextParseFlameTableIndex = 0;
-    if (*(pWVar2->weapDef).flameTableFirstPerson != '\0') {
-      pfVar3 = BG_GetFlameTable(param_1,(pWVar2->weapDef).flameTableFirstPerson);
-      (pWVar2->weapDef).flameTableFirstPersonPtr = pfVar3;
+    if (*(weapFullDef_00->weapDef).flameTableFirstPerson != '\0') {
+      pfVar2 = BG_GetFlameTable(folder,(weapFullDef_00->weapDef).flameTableFirstPerson);
+      (weapFullDef_00->weapDef).flameTableFirstPersonPtr = pfVar2;
     }
-    if (*(pWVar2->weapDef).flameTableThirdPerson != '\0') {
-      pfVar3 = BG_GetFlameTable(param_1,(pWVar2->weapDef).flameTableThirdPerson);
-      (pWVar2->weapDef).flameTableThirdPersonPtr = pfVar3;
+    if (*(weapFullDef_00->weapDef).flameTableThirdPerson != '\0') {
+      pfVar2 = BG_GetFlameTable(folder,(weapFullDef_00->weapDef).flameTableThirdPerson);
+      (weapFullDef_00->weapDef).flameTableThirdPersonPtr = pfVar2;
     }
-    iVar4 = I_stricmp(param_2,"defaultweapon_mp");
-    if (iVar4 != 0) {
-      if ((pWVar2->weapDef).viewLastShotEjectEffect == (FxEffectDef *)0x0) {
-        (pWVar2->weapDef).viewLastShotEjectEffect = (pWVar2->weapDef).viewShellEjectEffect;
+    iVar3 = I_stricmp(name,"defaultweapon_mp");
+    if (iVar3 != 0) {
+      if ((weapFullDef_00->weapDef).viewLastShotEjectEffect == (FxEffectDef *)0x0) {
+        (weapFullDef_00->weapDef).viewLastShotEjectEffect =
+             (weapFullDef_00->weapDef).viewShellEjectEffect;
       }
-      if ((pWVar2->weapDef).worldLastShotEjectEffect == (FxEffectDef *)0x0) {
-        (pWVar2->weapDef).worldLastShotEjectEffect = (pWVar2->weapDef).worldShellEjectEffect;
+      if ((weapFullDef_00->weapDef).worldLastShotEjectEffect == (FxEffectDef *)0x0) {
+        (weapFullDef_00->weapDef).worldLastShotEjectEffect =
+             (weapFullDef_00->weapDef).worldShellEjectEffect;
       }
-      if ((pWVar2->weapDef).raiseSound == (char *)0x0) {
-        (pWVar2->weapDef).raiseSound = "wpn_default_raise";
+      if ((weapFullDef_00->weapDef).raiseSound == (char *)0x0) {
+        (weapFullDef_00->weapDef).raiseSound = "wpn_default_raise";
       }
-      if ((pWVar2->weapDef).putawaySound == (char *)0x0) {
-        (pWVar2->weapDef).putawaySound = "wpn_default_putaway";
+      if ((weapFullDef_00->weapDef).putawaySound == (char *)0x0) {
+        (weapFullDef_00->weapDef).putawaySound = "wpn_default_putaway";
       }
-      if ((pWVar2->weapDef).pickupSound == (char *)0x0) {
-        (pWVar2->weapDef).pickupSound = "wpn_default_pickup";
+      if ((weapFullDef_00->weapDef).pickupSound == (char *)0x0) {
+        (weapFullDef_00->weapDef).pickupSound = "wpn_default_pickup";
       }
-      if ((pWVar2->weapDef).ammoPickupSound == (char *)0x0) {
-        (pWVar2->weapDef).ammoPickupSound = "wpn_default_ammo_pickup";
+      if ((weapFullDef_00->weapDef).ammoPickupSound == (char *)0x0) {
+        (weapFullDef_00->weapDef).ammoPickupSound = "wpn_default_ammo_pickup";
       }
-      if ((pWVar2->weapDef).emptyFireSound == (char *)0x0) {
-        (pWVar2->weapDef).emptyFireSound = "wpn_default_no_ammo";
+      if ((weapFullDef_00->weapDef).emptyFireSound == (char *)0x0) {
+        (weapFullDef_00->weapDef).emptyFireSound = "wpn_default_no_ammo";
       }
     }
-    BG_SetupTransitionTimes(&pWVar2->weapVariantDef);
-    BG_CheckWeaponDamageRanges(&pWVar2->weapDef);
-    if (15000.0 < (pWVar2->weapDef).enemyCrosshairRange) {
+    BG_SetupTransitionTimes(&weapFullDef_00->weapVariantDef);
+    BG_CheckWeaponDamageRanges(&weapFullDef_00->weapDef);
+    if (15000.0 < (weapFullDef_00->weapDef).enemyCrosshairRange) {
       Com_Error(ERR_DROP,"Enemy crosshair ranges should be less than %f ");
     }
-    if ((pWVar2->weapDef).weapType == WEAPTYPE_PROJECTILE) {
-      BG_CheckProjectileValues(pWVar2);
+    if ((weapFullDef_00->weapDef).weapType == WEAPTYPE_PROJECTILE) {
+      BG_CheckProjectileValues(weapFullDef_00);
     }
-    bVar1 = G_ParseWeaponAccurayGraphs(&pWVar2->weapDef);
+    bVar1 = G_ParseWeaponAccurayGraphs(&weapFullDef_00->weapDef);
     if (bVar1) {
-      if ((pWVar2->weapDef).sharedAmmo == false) {
-        (pWVar2->weapVariantDef).szAmmoName = "";
-        (pWVar2->weapVariantDef).szClipName = "";
+      if ((weapFullDef_00->weapDef).sharedAmmo == false) {
+        (weapFullDef_00->weapVariantDef).szAmmoName = "";
+        (weapFullDef_00->weapVariantDef).szClipName = "";
       }
       else {
-        I_strlwr((pWVar2->weapVariantDef).szAmmoName);
-        I_strlwr((pWVar2->weapVariantDef).szClipName);
+        I_strlwr((weapFullDef_00->weapVariantDef).szAmmoName);
+        I_strlwr((weapFullDef_00->weapVariantDef).szClipName);
       }
-      GamerProfile_WriteSettings((int)pWVar2);
+      GamerProfile_WriteSettings((int)weapFullDef_00);
     }
     else {
-      pWVar2 = (WeaponFullDef *)0x0;
+      weapFullDef_00 = (WeaponFullDef *)0x0;
     }
   }
   else {
-    pWVar2 = (WeaponFullDef *)0x0;
+    weapFullDef_00 = (WeaponFullDef *)0x0;
   }
-  return &pWVar2->weapVariantDef;
+  return &weapFullDef_00->weapVariantDef;
 }
 
 
@@ -1833,7 +1868,7 @@ WeaponVariantDef * __cdecl BG_LoadWeaponVariantDefInternal(char *param_1,char *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl BG_WeaponUpdateField(char *param_1,char *param_2)
+bool __cdecl BG_WeaponUpdateField(char *weaponName,char *keyValue)
 
 {
   int iVar1;
@@ -1841,24 +1876,24 @@ bool __cdecl BG_WeaponUpdateField(char *param_1,char *param_2)
   WeaponDef *pWVar3;
   uchar *puVar4;
   undefined4 *puVar5;
-  uchar local_c5c [228];
+  uchar weapFullDef [228];
   undefined4 local_b78 [730];
   uint local_10;
-  WeaponVariantDef *local_c;
-  uint local_8;
+  WeaponVariantDef *weapVariantDef;
+  int w;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = BG_FindWeaponIndexForName(param_1);
-  if (local_8 != 0) {
-    local_c = BG_GetWeaponVariantDef(local_8);
-    pWVar2 = local_c;
-    puVar4 = local_c5c;
+  w = BG_FindWeaponIndexForName(weaponName);
+  if (w != 0) {
+    weapVariantDef = BG_GetWeaponVariantDef(w);
+    pWVar2 = weapVariantDef;
+    puVar4 = weapFullDef;
     for (iVar1 = 0x39; iVar1 != 0; iVar1 = iVar1 + -1) {
       *(char **)puVar4 = pWVar2->szInternalName;
       pWVar2 = (WeaponVariantDef *)&pWVar2->iVariantCount;
       puVar4 = puVar4 + 4;
     }
-    pWVar3 = local_c->weapDef;
+    pWVar3 = weapVariantDef->weapDef;
     puVar5 = local_b78;
     for (iVar1 = 0x202; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar5 = pWVar3->szOverlayName;
@@ -1866,27 +1901,27 @@ bool __cdecl BG_WeaponUpdateField(char *param_1,char *param_2)
       puVar5 = puVar5 + 1;
     }
     iVar1 = ParseConfigStringToStruct
-                      (local_c5c,weaponDefFields,0x2ec,param_2,0x2b,
+                      (weapFullDef,weaponDefFields,0x2ec,keyValue,0x2b,
                        BG_ParseWeaponDefSpecificFieldType,SetConfigString2);
     if (iVar1 == 0) {
       return false;
     }
-    puVar4 = local_c5c;
-    pWVar2 = local_c;
+    puVar4 = weapFullDef;
+    pWVar2 = weapVariantDef;
     for (iVar1 = 0x39; iVar1 != 0; iVar1 = iVar1 + -1) {
       pWVar2->szInternalName = *(char **)puVar4;
       puVar4 = puVar4 + 4;
       pWVar2 = (WeaponVariantDef *)&pWVar2->iVariantCount;
     }
     puVar5 = local_b78;
-    pWVar3 = local_c->weapDef;
+    pWVar3 = weapVariantDef->weapDef;
     for (iVar1 = 0x202; iVar1 != 0; iVar1 = iVar1 + -1) {
       pWVar3->szOverlayName = (char *)*puVar5;
       puVar5 = puVar5 + 1;
       pWVar3 = (WeaponDef *)&pWVar3->gunXModel;
     }
-    BG_SetupTransitionTimes(local_c);
-    BG_CheckWeaponDamageRanges(local_c->weapDef);
+    BG_SetupTransitionTimes(weapVariantDef);
+    BG_CheckWeaponDamageRanges(weapVariantDef->weapDef);
   }
   return true;
 }
@@ -1894,18 +1929,19 @@ bool __cdecl BG_WeaponUpdateField(char *param_1,char *param_2)
 
 // 00462970  BG_FlameTableUpdateField  (bgame/bg_weapons_load_obj.cpp:2827)
 
-bool __cdecl BG_FlameTableUpdateField(char *param_1,char *param_2)
+bool __cdecl BG_FlameTableUpdateField(char *flameTableName,char *keyValue)
 
 {
-  flameTable *pfVar1;
-  int iVar2;
+  flameTable *pStruct;
+  int iVar1;
+  flameTable *ft;
   
-  pfVar1 = Flame_FindFlameTable(param_1);
-  if ((pfVar1 != (flameTable *)0x0) &&
-     (iVar2 = ParseConfigStringToStruct
-                        ((uchar *)pfVar1,(cspField_t *)&flameTableFields,0x77,param_2,0,
+  pStruct = Flame_FindFlameTable(flameTableName);
+  if ((pStruct != (flameTable *)0x0) &&
+     (iVar1 = ParseConfigStringToStruct
+                        ((uchar *)pStruct,(cspField_t *)&flameTableFields,0x77,keyValue,0,
                          (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0,SetConfigString2),
-     iVar2 == 0)) {
+     iVar1 == 0)) {
     return false;
   }
   return true;
@@ -1918,6 +1954,9 @@ WeaponVariantDef * __cdecl BG_LoadDefaultWeaponVariantDef_LoadObj(void)
 
 {
   int iVar1;
+  WeaponFullDef *weapFullDef;
+  WeaponVariantDef *weapVariantDef;
+  WeaponDef *weapDef;
   
   InitWeaponDef(&bg_defaultWeaponFullDefs);
   bg_defaultWeaponFullDefs.weapVariantDef.weapDef = &bg_defaultWeaponFullDefs.weapDef;

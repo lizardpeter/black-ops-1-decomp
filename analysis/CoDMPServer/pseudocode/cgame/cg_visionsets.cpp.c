@@ -26,56 +26,57 @@ void __cdecl CG_RegisterVisionSetsDvars(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl CG_AddVisionSetMenuItem(XAssetHeader param_1,void *param_2)
+void __cdecl CG_AddVisionSetMenuItem(XAssetHeader header,void *__formal)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_314 [260];
-  char *local_210;
-  uchar local_20c [256];
-  char local_10c [256];
+  char devguiPath [260];
+  char *visionSetNameEnd;
+  uchar visionSetName [256];
+  char command [256];
   uint local_c;
-  uchar *local_8;
+  char *visionSetNameBegin;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1.xmodelPieces == (XModelPieces *)0x0) &&
+  if ((header.xmodelPieces == (XModelPieces *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x33,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1.xmodelPieces)->name == (char *)0x0) &&
+  if (((header.xmodelPieces)->name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x34,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_210 = I_stristr((param_1.xmodelPieces)->name,".vision");
-  if (local_210 != (char *)0x0) {
-    local_8 = (uchar *)I_stristr((param_1.xmodelPieces)->name,"/");
-    if ((local_8 == (uchar *)0x0) &&
+  visionSetNameEnd = I_stristr((header.xmodelPieces)->name,".vision");
+  if (visionSetNameEnd != (char *)0x0) {
+    visionSetNameBegin = I_stristr((header.xmodelPieces)->name,"/");
+    if ((visionSetNameBegin == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x3c,
                                  1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = local_8 + 1;
-    if ((0xff < (int)local_210 - (int)local_8) &&
+    visionSetNameBegin = visionSetNameBegin + 1;
+    if ((0xff < (int)visionSetNameEnd - (int)visionSetNameBegin) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x40,
                                  1,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    strncpy(local_20c,local_8,(int)local_210 - (int)local_8);
-    local_210[(int)(local_20c + -(int)local_8)] = '\0';
-    _snprintf(local_314,0x100,"Art/Post FX/Vision Sets/%s");
-    _snprintf(local_10c,0x100,"VisionSetNaked %s");
-    DevGui_AddCommand(local_314,local_10c);
+    strncpy(visionSetName,(uchar *)visionSetNameBegin,
+            (int)visionSetNameEnd - (int)visionSetNameBegin);
+    visionSetNameEnd[(int)(visionSetName + -(int)visionSetNameBegin)] = '\0';
+    _snprintf(devguiPath,0x100,"Art/Post FX/Vision Sets/%s");
+    _snprintf(command,0x100,"VisionSetNaked %s");
+    DevGui_AddCommand(devguiPath,command);
   }
   return;
 }
@@ -98,20 +99,21 @@ void __cdecl CG_InitVisionSetsMenu(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl RawBufferOpen(char *param_1,char *param_2)
+char * __cdecl RawBufferOpen(char *name,char *formatFullPath)
 
 {
   char *pcVar1;
-  char local_4c [68];
+  char *filebuf;
+  char fullpath [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,param_2);
-  pcVar1 = Com_LoadRawTextFile(local_4c);
+  Com_sprintf(fullpath,0x40,formatFullPath);
+  pcVar1 = Com_LoadRawTextFile(fullpath);
   if (pcVar1 == (char *)0x0) {
     Com_PrintError(0x11,"couldn\'t open \'%s\'.\n");
-    Com_sprintf(local_4c,0x40,param_2);
-    pcVar1 = Com_LoadRawTextFile(local_4c);
+    Com_sprintf(fullpath,0x40,formatFullPath);
+    pcVar1 = Com_LoadRawTextFile(fullpath);
     if (pcVar1 == (char *)0x0) {
       Com_PrintError(0x11,"couldn\'t open \'%s\'. This is a default file that you should have.\n");
       pcVar1 = (char *)0x0;
@@ -123,26 +125,35 @@ char * __cdecl RawBufferOpen(char *param_1,char *param_2)
 
 // 00522C70  ApplyTokenToField  (cgame/cg_visionsets.cpp:222)
 
-bool __cdecl ApplyTokenToField(int param_1,char *param_2,visionSetVars_t *param_3)
+bool __cdecl ApplyTokenToField(int fieldNum,char *token,visionSetVars_t *settings)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int *piVar4;
+  float *pfVar4;
   Material *pMVar5;
   int iVar6;
-  int local_40;
-  int local_3c;
-  int local_38;
-  int local_34;
-  int local_30;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  visField_t *fieldDef;
+  float *floatField;
+  float *vec4Field;
+  int tempInt;
+  float tempVec4;
+  float local_38;
+  float local_34;
+  float local_30;
+  float *vec3Field;
+  void *voidField;
+  Material **matField;
+  int scanResult;
+  int *intField;
+  float tempFloat;
+  float tempVec3;
+  float local_10;
+  float local_c;
+  bool *boolField;
   
-  if (((param_1 < 0) || (0x44 < param_1)) &&
+  if (((fieldNum < 0) || (0x44 < fieldNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0xed,0,
                                "fieldNum not in [0, numVisionDefFields]\n\t%i not in [%i, %i]"),
      !bVar2)) {
@@ -150,74 +161,74 @@ bool __cdecl ApplyTokenToField(int param_1,char *param_2,visionSetVars_t *param_
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((token == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0xee,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (visionSetVars_t *)0x0) &&
+  if ((settings == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0xef,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  piVar4 = (int *)((int)param_3->filmHue + visionDefFields[param_1].offset + -0x14);
-  switch(visionDefFields[param_1].fieldType) {
+  pfVar4 = (float *)((int)settings->filmHue + visionDefFields[fieldNum].offset + -0x14);
+  switch(visionDefFields[fieldNum].fieldType) {
   case 0:
-    iVar6 = sscanf(param_2,"%i");
+    iVar6 = sscanf(token,"%i");
     if (iVar6 != 1) {
       return false;
     }
-    *(bool *)piVar4 = local_40 != 0;
+    *(bool *)pfVar4 = tempInt != 0;
     break;
   case 1:
   case 4:
-    iVar6 = sscanf(param_2,"%f");
+    iVar6 = sscanf(token,"%f");
     if (iVar6 != 1) {
       return false;
     }
-    *piVar4 = local_18;
+    *pfVar4 = tempFloat;
     break;
   default:
-    if ((visionDefFields[param_1].fieldType != 2) &&
+    if ((visionDefFields[fieldNum].fieldType != 2) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x120
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    iVar6 = sscanf(param_2,"%f %f %f");
+    iVar6 = sscanf(token,"%f %f %f");
     if (iVar6 != 3) {
       return false;
     }
-    *piVar4 = local_14;
-    piVar4[1] = local_10;
-    piVar4[2] = local_c;
+    *pfVar4 = tempVec3;
+    pfVar4[1] = local_10;
+    pfVar4[2] = local_c;
     break;
   case 3:
-    iVar6 = sscanf(param_2,"%f %f %f %f");
+    iVar6 = sscanf(token,"%f %f %f %f");
     if (iVar6 != 4) {
       return false;
     }
-    *piVar4 = local_3c;
-    piVar4[1] = local_38;
-    piVar4[2] = local_34;
-    piVar4[3] = local_30;
+    *pfVar4 = tempVec4;
+    pfVar4[1] = local_38;
+    pfVar4[2] = local_34;
+    pfVar4[3] = local_30;
     break;
   case 5:
-    iVar6 = sscanf(param_2,"%i");
+    iVar6 = sscanf(token,"%i");
     if (iVar6 != 1) {
       return false;
     }
-    *piVar4 = local_40;
+    *pfVar4 = (float)tempInt;
     break;
   case 6:
-    pMVar5 = Material_Register(param_2,6);
-    *piVar4 = (int)pMVar5;
-    if (*piVar4 == 0) {
+    pMVar5 = Material_Register(token,6);
+    *pfVar4 = (float)pMVar5;
+    if (*pfVar4 == 0.0) {
       return false;
     }
   }
@@ -229,42 +240,42 @@ bool __cdecl ApplyTokenToField(int param_1,char *param_2,visionSetVars_t *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl LoadVisionSettingsFromBuffer(char *param_1,char *param_2,visionSetVars_t *param_3)
+bool __cdecl LoadVisionSettingsFromBuffer(char *buffer,char *filename,visionSetVars_t *settings)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  int local_60;
-  uchar local_5c [76];
+  int fieldNum;
+  uchar wasRead [76];
   uint local_10;
-  undefined1 local_9;
-  char *local_8;
+  bool success;
+  char *token;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (visionSetVars_t *)0x0) &&
+  if ((settings == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x133,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  memset(local_5c,'\0',0x44);
-  Com_BeginParseSession(param_2);
+  memset(wasRead,'\0',0x44);
+  Com_BeginParseSession(filename);
   do {
-    local_8 = Com_Parse(&param_1);
-    if (*local_8 == '\0') {
+    token = Com_Parse(&buffer);
+    if (*token == '\0') {
       Com_EndParseSession();
       return true;
     }
-    for (local_60 = 0; local_60 < 0x44; local_60 = local_60 + 1) {
-      if ((local_5c[local_60] == '\0') &&
-         (iVar4 = I_stricmp(local_8,visionDefFields[local_60].name), iVar4 == 0)) {
-        local_8 = Com_ParseOnLine(&param_1);
-        local_9 = ApplyTokenToField(local_60,local_8,param_3);
-        if ((bool)local_9) {
-          local_5c[local_60] = '\x01';
+    for (fieldNum = 0; fieldNum < 0x44; fieldNum = fieldNum + 1) {
+      if ((wasRead[fieldNum] == '\0') &&
+         (iVar4 = I_stricmp(token,visionDefFields[fieldNum].name), iVar4 == 0)) {
+        token = Com_ParseOnLine(&buffer);
+        success = ApplyTokenToField(fieldNum,token,settings);
+        if (success) {
+          wasRead[fieldNum] = '\x01';
         }
         else {
           Com_PrintWarning(0x10,"WARNING: malformed dvar \'%s\' in file \'%s\'\n");
@@ -274,7 +285,7 @@ bool __cdecl LoadVisionSettingsFromBuffer(char *param_1,char *param_2,visionSetV
     }
     Com_PrintWarning(0x10,"WARNING: unknown dvar \'%s\' in file \'%s\'\n");
 LAB_00522c40:
-    Com_SkipRestOfLine(&param_1);
+    Com_SkipRestOfLine(&buffer);
   } while( true );
 }
 
@@ -283,18 +294,20 @@ LAB_00522c40:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl LoadVisionFile(char *param_1,visionSetVars_t *param_2)
+bool __cdecl LoadVisionFile(char *name,visionSetVars_t *resultSettings)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  char local_4c [68];
+  char *buffer;
+  char *fileBuf;
+  bool success;
+  char fullPath [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x160,0,
                              "%s");
     if (!bVar2) {
@@ -303,7 +316,7 @@ bool __cdecl LoadVisionFile(char *param_1,visionSetVars_t *param_2)
       return (bool)uVar3;
     }
   }
-  if (param_2 == (visionSetVars_t *)0x0) {
+  if (resultSettings == (visionSetVars_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x161,0,
                              "%s");
     if (!bVar2) {
@@ -312,18 +325,18 @@ bool __cdecl LoadVisionFile(char *param_1,visionSetVars_t *param_2)
       return (bool)uVar3;
     }
   }
-  pcVar4 = RawBufferOpen(param_1,"vision/%s.vision");
-  if (pcVar4 == (char *)0x0) {
+  buffer = RawBufferOpen(name,"vision/%s.vision");
+  if (buffer == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    Com_sprintf(local_4c,0x40,"vision/%s.vision");
-    bVar2 = LoadVisionSettingsFromBuffer(pcVar4,local_4c,param_2);
-    param_2->name[0] = '\0';
+    Com_sprintf(fullPath,0x40,"vision/%s.vision");
+    bVar2 = LoadVisionSettingsFromBuffer(buffer,fullPath,resultSettings);
+    resultSettings->name[0] = '\0';
     if (bVar2) {
-      I_strncpyz(param_2->name,param_1,0x40);
+      I_strncpyz(resultSettings->name,name,0x40);
     }
-    Com_UnloadRawTextFile(pcVar4);
+    Com_UnloadRawTextFile(buffer);
   }
   return bVar2;
 }
@@ -336,7 +349,7 @@ bool __cdecl LoadVisionFile(char *param_1,visionSetVars_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl GetVisionSet(int param_1,char *param_2,visionSetVars_t *param_3)
+bool __cdecl GetVisionSet(int localClientNum,char *name,visionSetVars_t *resultSettings)
 
 {
   code *pcVar1;
@@ -345,50 +358,52 @@ bool __cdecl GetVisionSet(int param_1,char *param_2,visionSetVars_t *param_3)
   cg_s *pcVar4;
   int iVar5;
   float *pfVar6;
-  int local_8;
+  cg_s *cgameGlob;
+  bool passed;
+  int idx;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x17b,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (visionSetVars_t *)0x0) &&
+  if ((resultSettings == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x17c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (*param_2 == '\0') {
+  if (*name == '\0') {
     bVar2 = false;
   }
   else {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    local_8 = 0;
-    while ((local_8 < 8 &&
-           (iVar5 = I_stricmp(param_2,pcVar4->visionSetPreLoadedName[local_8 + 4]), iVar5 != 0))) {
-      local_8 = local_8 + 1;
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    idx = 0;
+    while ((idx < 8 && (iVar5 = I_stricmp(name,pcVar4->visionSetPreLoadedName[idx + 4]), iVar5 != 0)
+           )) {
+      idx = idx + 1;
     }
-    if (local_8 == 8) {
-      local_8 = 0;
-      while ((local_8 < 8 && (pcVar4->visionSetPreLoadedName[local_8 + 4][0] != '\0'))) {
-        local_8 = local_8 + 1;
+    if (idx == 8) {
+      idx = 0;
+      while ((idx < 8 && (pcVar4->visionSetPreLoadedName[idx + 4][0] != '\0'))) {
+        idx = idx + 1;
       }
-      if (local_8 == 8) {
-        local_8 = 0;
+      if (idx == 8) {
+        idx = 0;
       }
-      bVar2 = LoadVisionFile(param_2,(visionSetVars_t *)
-                                     pcVar4->visionSetPreLoaded[local_8].bloomColorScale);
+      bVar2 = LoadVisionFile(name,(visionSetVars_t *)pcVar4->visionSetPreLoaded[idx].bloomColorScale
+                            );
       if (bVar2) {
-        pfVar6 = pcVar4->visionSetPreLoaded[local_8].bloomColorScale;
+        pfVar6 = pcVar4->visionSetPreLoaded[idx].bloomColorScale;
         for (iVar5 = 0xb8; iVar5 != 0; iVar5 = iVar5 + -1) {
-          *(float *)param_3 = *pfVar6;
+          *(float *)resultSettings = *pfVar6;
           pfVar6 = pfVar6 + 1;
-          param_3 = (visionSetVars_t *)&param_3->filmMidStart;
+          resultSettings = (visionSetVars_t *)&resultSettings->filmMidStart;
         }
-        I_strncpyz(pcVar4->visionSetPreLoadedName[local_8 + 4],param_2,0x40);
+        I_strncpyz(pcVar4->visionSetPreLoadedName[idx + 4],name,0x40);
         bVar2 = true;
       }
       else {
@@ -396,11 +411,11 @@ bool __cdecl GetVisionSet(int param_1,char *param_2,visionSetVars_t *param_3)
       }
     }
     else {
-      pfVar6 = pcVar4->visionSetPreLoaded[local_8].bloomColorScale;
+      pfVar6 = pcVar4->visionSetPreLoaded[idx].bloomColorScale;
       for (iVar5 = 0xb8; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *(float *)param_3 = *pfVar6;
+        *(float *)resultSettings = *pfVar6;
         pfVar6 = pfVar6 + 1;
-        param_3 = (visionSetVars_t *)&param_3->filmMidStart;
+        resultSettings = (visionSetVars_t *)&resultSettings->filmMidStart;
       }
       bVar2 = true;
     }
@@ -411,37 +426,37 @@ bool __cdecl GetVisionSet(int param_1,char *param_2,visionSetVars_t *param_3)
 
 // 00522000  LerpBool  (cgame/cg_visionsets.cpp:419)
 
-bool __cdecl LerpBool(bool param_1,bool param_2,float param_3,visionSetLerpStyle_t param_4)
+bool __cdecl LerpBool(bool from,bool to,float fraction,visionSetLerpStyle_t style)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_4 == VISIONSETLERP_NONE) &&
+  if ((style == VISIONSETLERP_NONE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x1a4,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((int)param_4 < 4) || (5 < (int)param_4)) || (param_3 < 0.5)) {
-    param_1 = param_2;
+  if ((((int)style < 4) || (5 < (int)style)) || (fraction < 0.5)) {
+    from = to;
   }
-  return param_1;
+  return from;
 }
 
 
 // 00522060  LerpInteger  (cgame/cg_visionsets.cpp:437)
 
-int __cdecl LerpInteger(int param_1,int param_2,float param_3,visionSetLerpStyle_t param_4)
+int __cdecl LerpInteger(int from,int to,float fraction,visionSetLerpStyle_t style)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_4 == VISIONSETLERP_NONE) {
+  if (style == VISIONSETLERP_NONE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x1b6,0,
                              "%s");
     if (!bVar2) {
@@ -450,36 +465,36 @@ int __cdecl LerpInteger(int param_1,int param_2,float param_3,visionSetLerpStyle
       return iVar3;
     }
   }
-  return param_2;
+  return to;
 }
 
 
 // 005220A0  LerpStepFloat  (cgame/cg_visionsets.cpp:453)
 
-float __cdecl LerpStepFloat(float param_1,float param_2,float param_3,visionSetLerpStyle_t param_4)
+float __cdecl LerpStepFloat(float from,float to,float fraction,visionSetLerpStyle_t style)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if ((param_4 == VISIONSETLERP_NONE) &&
+  if ((style == VISIONSETLERP_NONE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x1c6,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((((int)param_4 < 4) || (5 < (int)param_4)) || (param_3 < 0.5)) {
-    param_1 = param_2;
+  if ((((int)style < 4) || (5 < (int)style)) || (fraction < 0.5)) {
+    from = to;
   }
-  return param_1;
+  return from;
 }
 
 
 // 00522100  LerpFloat  (cgame/cg_visionsets.cpp:471)
 
-float __cdecl LerpFloat(float param_1,float param_2,float param_3,visionSetLerpStyle_t param_4)
+float __cdecl LerpFloat(float from,float to,float fraction,visionSetLerpStyle_t style)
 
 {
   code *pcVar1;
@@ -490,45 +505,45 @@ float __cdecl LerpFloat(float param_1,float param_2,float param_3,visionSetLerpS
   float10 fVar5;
   double dVar6;
   
-  if ((param_4 == VISIONSETLERP_NONE) &&
+  if ((style == VISIONSETLERP_NONE) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x1d8,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     fVar5 = (float10)(*pcVar1)();
     return (float)fVar5;
   }
-  iVar4 = param_4 - VISIONSETLERP_TO_LINEAR;
+  iVar4 = style - VISIONSETLERP_TO_LINEAR;
   switch(iVar4) {
   case 1:
-    dVar6 = (double)(param_3 * 3.1415927 * 0.5);
+    dVar6 = (double)(fraction * 3.1415927 * 0.5);
     __libm_sse2_sin((double)CONCAT44(unaff_EBP,iVar4));
-    param_3 = (float)dVar6;
+    fraction = (float)dVar6;
   case 0:
-    fVar2 = (param_2 - param_1) * param_3 + param_1;
+    fVar2 = (to - from) * fraction + from;
     break;
   case 3:
-    dVar6 = (double)(param_3 * 3.1415927 * 0.5);
+    dVar6 = (double)(fraction * 3.1415927 * 0.5);
     __libm_sse2_sin((double)CONCAT44(unaff_EBP,iVar4));
-    param_3 = (float)dVar6;
+    fraction = (float)dVar6;
   default:
-    if (((param_4 != VISIONSETLERP_BACKFORTH_SMOOTH) && (param_4 != VISIONSETLERP_BACKFORTH_LINEAR))
-       && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",
-                                    0x1e9,0,"%s"), !bVar3)) {
+    if (((style != VISIONSETLERP_BACKFORTH_SMOOTH) && (style != VISIONSETLERP_BACKFORTH_LINEAR)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x1e9
+                                 ,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       fVar5 = (float10)(*pcVar1)();
       return (float)fVar5;
     }
-    if (0.5 <= param_3) {
-      fVar2 = (param_3 - 0.5) * (param_1 - param_2);
-      fVar2 = fVar2 + fVar2 + param_2;
+    if (0.5 <= fraction) {
+      fVar2 = (fraction - 0.5) * (from - to);
+      fVar2 = fVar2 + fVar2 + to;
     }
     else {
-      fVar2 = (param_2 - param_1) * param_3;
-      fVar2 = fVar2 + fVar2 + param_1;
+      fVar2 = (to - from) * fraction;
+      fVar2 = fVar2 + fVar2 + from;
     }
     break;
   case 4:
-    fVar2 = (param_2 - param_1) * param_3 + param_1;
+    fVar2 = (to - from) * fraction + from;
   }
   return fVar2;
 }
@@ -536,38 +551,36 @@ float __cdecl LerpFloat(float param_1,float param_2,float param_3,visionSetLerpS
 
 // 00522250  LerpVec3  (cgame/cg_visionsets.cpp:499)
 
-void __cdecl
-LerpVec3(float *param_1,float *param_2,float param_3,visionSetLerpStyle_t param_4,float *param_5)
+void __cdecl LerpVec3(float *from,float *to,float fraction,visionSetLerpStyle_t style,float *result)
 
 {
   float fVar1;
   
-  fVar1 = LerpFloat(*param_1,*param_2,param_3,param_4);
-  *param_5 = fVar1;
-  fVar1 = LerpFloat(param_1[1],param_2[1],param_3,param_4);
-  param_5[1] = fVar1;
-  fVar1 = LerpFloat(param_1[2],param_2[2],param_3,param_4);
-  param_5[2] = fVar1;
+  fVar1 = LerpFloat(*from,*to,fraction,style);
+  *result = fVar1;
+  fVar1 = LerpFloat(from[1],to[1],fraction,style);
+  result[1] = fVar1;
+  fVar1 = LerpFloat(from[2],to[2],fraction,style);
+  result[2] = fVar1;
   return;
 }
 
 
 // 005222E0  LerpVec4  (cgame/cg_visionsets.cpp:507)
 
-void __cdecl
-LerpVec4(float *param_1,float *param_2,float param_3,visionSetLerpStyle_t param_4,float *param_5)
+void __cdecl LerpVec4(float *from,float *to,float fraction,visionSetLerpStyle_t style,float *result)
 
 {
   float fVar1;
   
-  fVar1 = LerpFloat(*param_1,*param_2,param_3,param_4);
-  *param_5 = fVar1;
-  fVar1 = LerpFloat(param_1[1],param_2[1],param_3,param_4);
-  param_5[1] = fVar1;
-  fVar1 = LerpFloat(param_1[2],param_2[2],param_3,param_4);
-  param_5[2] = fVar1;
-  fVar1 = LerpFloat(param_1[3],param_2[3],param_3,param_4);
-  param_5[3] = fVar1;
+  fVar1 = LerpFloat(*from,*to,fraction,style);
+  *result = fVar1;
+  fVar1 = LerpFloat(from[1],to[1],fraction,style);
+  result[1] = fVar1;
+  fVar1 = LerpFloat(from[2],to[2],fraction,style);
+  result[2] = fVar1;
+  fVar1 = LerpFloat(from[3],to[3],fraction,style);
+  result[3] = fVar1;
   return;
 }
 
@@ -576,95 +589,99 @@ LerpVec4(float *param_1,float *param_2,float param_3,visionSetLerpStyle_t param_
 
 void __cdecl
 UpdateVarsLerpCustom
-          (float param_1,visionSetVars_t *param_2,visionSetVars_t *param_3,
-          visionSetLerpData_t *param_4,visionSetVars_t *param_5)
+          (float flareRatio,visionSetVars_t *from,visionSetVars_t *to,visionSetLerpData_t *lerpData,
+          visionSetVars_t *result)
 
 {
   code *pcVar1;
   bool bVar2;
-  float *pfVar3;
-  float fVar4;
-  float *pfVar5;
-  float *pfVar6;
-  int local_8;
+  float *result_00;
+  float fVar3;
+  float *to_00;
+  float *from_00;
+  visField_t *fieldDef;
+  void *voidFrom;
+  void *voidTo;
+  void *voidResult;
+  int fieldNum;
   
-  if ((param_4->style != VISIONSETLERP_CUSTOM_VALUE) &&
+  if ((lerpData->style != VISIONSETLERP_CUSTOM_VALUE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x20a,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (visionSetVars_t *)0x0) &&
+  if ((from == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x20b,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (visionSetVars_t *)0x0) &&
+  if ((to == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x20c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (visionSetLerpData_t *)0x0) &&
+  if ((lerpData == (visionSetLerpData_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x20d,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (visionSetVars_t *)0x0) &&
+  if ((result == (visionSetVars_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x20e,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  fieldNum = 0;
   do {
-    if (0x43 < local_8) {
+    if (0x43 < fieldNum) {
       return;
     }
-    pfVar6 = (float *)((int)param_2->filmHue + visionDefFields[local_8].offset + -0x14);
-    pfVar5 = (float *)((int)param_3->filmHue + visionDefFields[local_8].offset + -0x14);
-    pfVar3 = (float *)((int)param_5->filmHue + visionDefFields[local_8].offset + -0x14);
-    switch(visionDefFields[local_8].fieldType) {
+    from_00 = (float *)((int)from->filmHue + visionDefFields[fieldNum].offset + -0x14);
+    to_00 = (float *)((int)to->filmHue + visionDefFields[fieldNum].offset + -0x14);
+    result_00 = (float *)((int)result->filmHue + visionDefFields[fieldNum].offset + -0x14);
+    switch(visionDefFields[fieldNum].fieldType) {
     case 0:
-      bVar2 = LerpBool(*(bool *)pfVar6,*(bool *)pfVar5,param_1,param_4->style);
-      *(bool *)pfVar3 = bVar2;
+      bVar2 = LerpBool(*(bool *)from_00,*(bool *)to_00,flareRatio,lerpData->style);
+      *(bool *)result_00 = bVar2;
       break;
     case 1:
-      fVar4 = LerpFloat(*pfVar6,*pfVar5,param_1,param_4->style);
-      *pfVar3 = fVar4;
+      fVar3 = LerpFloat(*from_00,*to_00,flareRatio,lerpData->style);
+      *result_00 = fVar3;
       break;
     default:
-      if ((visionDefFields[local_8].fieldType != 2) &&
+      if ((visionDefFields[fieldNum].fieldType != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",
                                    0x232,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      LerpVec3(pfVar6,pfVar5,param_1,param_4->style,pfVar3);
+      LerpVec3(from_00,to_00,flareRatio,lerpData->style,result_00);
       break;
     case 3:
-      LerpVec4(pfVar6,pfVar5,param_1,param_4->style,pfVar3);
+      LerpVec4(from_00,to_00,flareRatio,lerpData->style,result_00);
       break;
     case 4:
-      fVar4 = LerpStepFloat(*pfVar6,*pfVar5,param_1,param_4->style);
-      *pfVar3 = fVar4;
+      fVar3 = LerpStepFloat(*from_00,*to_00,flareRatio,lerpData->style);
+      *result_00 = fVar3;
       break;
     case 5:
-      fVar4 = (float)LerpInteger((int)*pfVar6,(int)*pfVar5,param_1,param_4->style);
-      *pfVar3 = fVar4;
+      fVar3 = (float)LerpInteger((int)*from_00,(int)*to_00,flareRatio,lerpData->style);
+      *result_00 = fVar3;
       break;
     case 6:
-      *pfVar3 = 0.0;
+      *result_00 = 0.0;
     }
-    local_8 = local_8 + 1;
+    fieldNum = fieldNum + 1;
   } while( true );
 }
 
@@ -672,128 +689,133 @@ UpdateVarsLerpCustom
 // 005223A0  UpdateVarsLerp  (cgame/cg_visionsets.cpp:571)
 
 void __cdecl
-UpdateVarsLerp(int param_1,visionSetVars_t *param_2,visionSetVars_t *param_3,
-              visionSetLerpData_t *param_4,visionSetVars_t *param_5)
+UpdateVarsLerp(int time,visionSetVars_t *from,visionSetVars_t *to,visionSetLerpData_t *lerpData,
+              visionSetVars_t *result)
 
 {
   code *pcVar1;
   undefined3 uVar2;
   bool bVar3;
-  float *pfVar4;
-  int iVar5;
-  float *pfVar6;
-  float *pfVar7;
-  float fVar8;
+  float *result_00;
+  int iVar4;
+  float *to_00;
+  float *from_00;
+  float fVar5;
   float local_28;
   float local_20;
-  int local_8;
+  visField_t *fieldDef;
+  void *voidFrom;
+  void *voidTo;
+  void *voidResult;
+  float fraction;
+  int fieldNum;
   
-  if ((param_2 == (visionSetVars_t *)0x0) &&
+  if ((from == (visionSetVars_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x23f,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (visionSetVars_t *)0x0) &&
+  if ((to == (visionSetVars_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x240,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (visionSetLerpData_t *)0x0) &&
+  if ((lerpData == (visionSetLerpData_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x241,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (visionSetVars_t *)0x0) &&
+  if ((result == (visionSetVars_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x242,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4->style != VISIONSETLERP_UNDEFINED) && (param_4->style != VISIONSETLERP_NONE)) {
-    if (param_4->timeStart + param_4->timeDuration < param_1) {
-      if (((int)param_4->style < 2) || (3 < (int)param_4->style)) {
-        if ((param_4->style != VISIONSETLERP_BACKFORTH_LINEAR) &&
-           ((param_4->style != VISIONSETLERP_BACKFORTH_SMOOTH &&
+  if ((lerpData->style != VISIONSETLERP_UNDEFINED) && (lerpData->style != VISIONSETLERP_NONE)) {
+    if (lerpData->timeStart + lerpData->timeDuration < time) {
+      if (((int)lerpData->style < 2) || (3 < (int)lerpData->style)) {
+        if ((lerpData->style != VISIONSETLERP_BACKFORTH_LINEAR) &&
+           ((lerpData->style != VISIONSETLERP_BACKFORTH_SMOOTH &&
             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",
                                       0x251,0,"%s"), !bVar3)))) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        for (iVar5 = 0xb8; iVar5 != 0; iVar5 = iVar5 + -1) {
-          uVar2 = *(undefined3 *)&param_2->field_0x1;
-          param_5->filmEnable = param_2->filmEnable;
-          *(undefined3 *)&param_5->field_0x1 = uVar2;
-          param_2 = (visionSetVars_t *)&param_2->filmMidStart;
-          param_5 = (visionSetVars_t *)&param_5->filmMidStart;
+        for (iVar4 = 0xb8; iVar4 != 0; iVar4 = iVar4 + -1) {
+          uVar2 = *(undefined3 *)&from->field_0x1;
+          result->filmEnable = from->filmEnable;
+          *(undefined3 *)&result->field_0x1 = uVar2;
+          from = (visionSetVars_t *)&from->filmMidStart;
+          result = (visionSetVars_t *)&result->filmMidStart;
         }
       }
       else {
-        for (iVar5 = 0xb8; iVar5 != 0; iVar5 = iVar5 + -1) {
-          uVar2 = *(undefined3 *)&param_3->field_0x1;
-          param_5->filmEnable = param_3->filmEnable;
-          *(undefined3 *)&param_5->field_0x1 = uVar2;
-          param_3 = (visionSetVars_t *)&param_3->filmMidStart;
-          param_5 = (visionSetVars_t *)&param_5->filmMidStart;
+        for (iVar4 = 0xb8; iVar4 != 0; iVar4 = iVar4 + -1) {
+          uVar2 = *(undefined3 *)&to->field_0x1;
+          result->filmEnable = to->filmEnable;
+          *(undefined3 *)&result->field_0x1 = uVar2;
+          to = (visionSetVars_t *)&to->filmMidStart;
+          result = (visionSetVars_t *)&result->filmMidStart;
         }
       }
-      param_4->style = VISIONSETLERP_NONE;
+      lerpData->style = VISIONSETLERP_NONE;
     }
     else {
-      fVar8 = (float)(param_1 - param_4->timeStart) / (float)param_4->timeDuration;
-      local_20 = fVar8;
-      if (0.0 <= fVar8 - 1.0) {
+      fVar5 = (float)(time - lerpData->timeStart) / (float)lerpData->timeDuration;
+      local_20 = fVar5;
+      if (0.0 <= fVar5 - 1.0) {
         local_20 = 1.0;
       }
-      if (0.0 - fVar8 < 0.0) {
+      if (0.0 - fVar5 < 0.0) {
         local_28 = local_20;
       }
       else {
         local_28 = 0.0;
       }
-      for (local_8 = 0; local_8 < 0x44; local_8 = local_8 + 1) {
-        pfVar7 = (float *)((int)param_2->filmHue + visionDefFields[local_8].offset + -0x14);
-        pfVar6 = (float *)((int)param_3->filmHue + visionDefFields[local_8].offset + -0x14);
-        pfVar4 = (float *)((int)param_5->filmHue + visionDefFields[local_8].offset + -0x14);
-        switch(visionDefFields[local_8].fieldType) {
+      for (fieldNum = 0; fieldNum < 0x44; fieldNum = fieldNum + 1) {
+        from_00 = (float *)((int)from->filmHue + visionDefFields[fieldNum].offset + -0x14);
+        to_00 = (float *)((int)to->filmHue + visionDefFields[fieldNum].offset + -0x14);
+        result_00 = (float *)((int)result->filmHue + visionDefFields[fieldNum].offset + -0x14);
+        switch(visionDefFields[fieldNum].fieldType) {
         case 0:
-          bVar3 = LerpBool(*(bool *)pfVar7,*(bool *)pfVar6,local_28,param_4->style);
-          *(bool *)pfVar4 = bVar3;
+          bVar3 = LerpBool(*(bool *)from_00,*(bool *)to_00,local_28,lerpData->style);
+          *(bool *)result_00 = bVar3;
           break;
         case 1:
-          fVar8 = LerpFloat(*pfVar7,*pfVar6,local_28,param_4->style);
-          *pfVar4 = fVar8;
+          fVar5 = LerpFloat(*from_00,*to_00,local_28,lerpData->style);
+          *result_00 = fVar5;
           break;
         default:
-          if ((visionDefFields[local_8].fieldType != 2) &&
+          if ((visionDefFields[fieldNum].fieldType != 2) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp"
                                        ,0x27e,0,"%s"), !bVar3)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          LerpVec3(pfVar7,pfVar6,local_28,param_4->style,pfVar4);
+          LerpVec3(from_00,to_00,local_28,lerpData->style,result_00);
           break;
         case 3:
-          LerpVec4(pfVar7,pfVar6,local_28,param_4->style,pfVar4);
+          LerpVec4(from_00,to_00,local_28,lerpData->style,result_00);
           break;
         case 4:
-          fVar8 = LerpStepFloat(*pfVar7,*pfVar6,local_28,param_4->style);
-          *pfVar4 = fVar8;
+          fVar5 = LerpStepFloat(*from_00,*to_00,local_28,lerpData->style);
+          *result_00 = fVar5;
           break;
         case 5:
-          fVar8 = (float)LerpInteger((int)*pfVar7,(int)*pfVar6,local_28,param_4->style);
-          *pfVar4 = fVar8;
+          fVar5 = (float)LerpInteger((int)*from_00,(int)*to_00,local_28,lerpData->style);
+          *result_00 = fVar5;
           break;
         case 6:
-          *pfVar4 = 0.0;
+          *result_00 = 0.0;
         }
       }
     }
@@ -809,17 +831,18 @@ UpdateVarsLerp(int param_1,visionSetVars_t *param_2,visionSetVars_t *param_3,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InitVisionSets(int param_1)
+void __cdecl CG_InitVisionSets(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   (pcVar1->oldTransPlayerState).damageEvent = 0x72666e69;
   *(undefined4 *)&(pcVar1->oldTransPlayerState).predictableEventSequence = 0x64657261;
   *(undefined1 *)(pcVar1->oldTransPlayerState).predictableEvents = 0;
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_INFRARED,VISIONSETLERP_CUSTOM_VALUE,
+            (localClientNum,VISIONSETMODE_INFRARED,VISIONSETLERP_CUSTOM_VALUE,
              (char *)&(pcVar1->oldTransPlayerState).damageEvent,0);
   pcVar1->hudElemSound[5].lastPlayedTime = 0x75677674;
   pcVar1->hudElemSound[6].lastPlayedTime = 0x64656469;
@@ -829,15 +852,15 @@ void __cdecl CG_InitVisionSets(int param_1)
   pcVar1->hudElemSound[0x17].lastPlayedTime = 0x656b6970;
   pcVar1->hudElemSound[0x18].lastPlayedTime = 0x706d5f;
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_TVGUIDED,VISIONSETLERP_CUSTOM_VALUE,
+            (localClientNum,VISIONSETMODE_TVGUIDED,VISIONSETLERP_CUSTOM_VALUE,
              (char *)(pcVar1->hudElemSound + 5),0);
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_EXTRACAM,VISIONSETLERP_CUSTOM_VALUE,
+            (localClientNum,VISIONSETMODE_EXTRACAM,VISIONSETLERP_CUSTOM_VALUE,
              (char *)(pcVar1->hudElemSound + 0x15),0);
   (pcVar1->extraButton_bits).array[0] = 0x72616c66;
   *(undefined2 *)((pcVar1->extraButton_bits).array + 1) = 0x65;
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_FLARE,VISIONSETLERP_CUSTOM_VALUE,
+            (localClientNum,VISIONSETMODE_FLARE,VISIONSETLERP_CUSTOM_VALUE,
              (char *)&pcVar1->extraButton_bits,0);
   return;
 }
@@ -845,27 +868,27 @@ void __cdecl CG_InitVisionSets(int param_1)
 
 // 00521A70  CalculateFlareRatio  (cgame/cg_visionsets.cpp:679)
 
-float __cdecl CalculateFlareRatio(float param_1,float param_2)
+float __cdecl CalculateFlareRatio(float flareRatio,float flareRatioLastFrame)
 
 {
   float local_c;
   float local_8;
   
-  if ((cg_visionSetLerpMaxIncreasePerFrame->current).value <= param_1 - param_2 &&
-      param_1 - param_2 != (cg_visionSetLerpMaxIncreasePerFrame->current).value) {
-    param_1 = param_2 + (cg_visionSetLerpMaxIncreasePerFrame->current).value;
+  if ((cg_visionSetLerpMaxIncreasePerFrame->current).value <= flareRatio - flareRatioLastFrame &&
+      flareRatio - flareRatioLastFrame != (cg_visionSetLerpMaxIncreasePerFrame->current).value) {
+    flareRatio = flareRatioLastFrame + (cg_visionSetLerpMaxIncreasePerFrame->current).value;
   }
-  if ((cg_visionSetLerpMaxDecreasePerFrame->current).value <= param_2 - param_1 &&
-      param_2 - param_1 != (cg_visionSetLerpMaxDecreasePerFrame->current).value) {
-    param_1 = param_2 - (cg_visionSetLerpMaxDecreasePerFrame->current).value;
+  if ((cg_visionSetLerpMaxDecreasePerFrame->current).value <= flareRatioLastFrame - flareRatio &&
+      flareRatioLastFrame - flareRatio != (cg_visionSetLerpMaxDecreasePerFrame->current).value) {
+    flareRatio = flareRatioLastFrame - (cg_visionSetLerpMaxDecreasePerFrame->current).value;
   }
-  if (param_1 - 1.0 < 0.0) {
-    local_8 = param_1;
+  if (flareRatio - 1.0 < 0.0) {
+    local_8 = flareRatio;
   }
   else {
     local_8 = 1.0;
   }
-  if (0.0 - param_1 < 0.0) {
+  if (0.0 - flareRatio < 0.0) {
     local_c = local_8;
   }
   else {
@@ -884,46 +907,47 @@ float __cdecl CalculateFlareRatio(float param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_VisionSetsUpdate(int param_1)
+void __cdecl CG_VisionSetsUpdate(int localClientNum)
 
 {
   snapshot_s *psVar1;
   cg_s *pcVar2;
   uint extraout_EAX;
   uint extraout_EDX;
-  float fVar3;
-  float local_10;
-  int local_8;
+  float flareRatio_00;
+  float flareRatio;
+  cg_s *cgameGlob;
+  int idx;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar2->visionNameTvguided[0] == '\0') {
-    SetDefaultVision(param_1);
+    SetDefaultVision(localClientNum);
   }
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    if (local_8 == 2) {
-      local_10 = 0.0;
+  for (idx = 0; idx < 6; idx = idx + 1) {
+    if (idx == 2) {
+      flareRatio = 0.0;
       psVar1 = pcVar2->snap;
       _allshl();
       if ((extraout_EAX & (psVar1->ps).perks[0]) == 0 && (extraout_EDX & (psVar1->ps).perks[1]) == 0
          ) {
-        local_10 = (pcVar2->snap->ps).visionSetLerpRatio;
+        flareRatio = (pcVar2->snap->ps).visionSetLerpRatio;
       }
       CG_VisionSetStartLerp_To
-                (param_1,VISIONSETMODE_FLARE,VISIONSETLERP_CUSTOM_VALUE,
+                (localClientNum,VISIONSETMODE_FLARE,VISIONSETLERP_CUSTOM_VALUE,
                  (char *)&pcVar2->extraButton_bits,2000);
-      fVar3 = CalculateFlareRatio(local_10,(float)pcVar2->impactEffects[7]);
+      flareRatio_00 = CalculateFlareRatio(flareRatio,(float)pcVar2->impactEffects[7]);
       UpdateVarsLerpCustom
-                (fVar3,(visionSetVars_t *)pcVar2->visionSetCurrent[0].bloomColorScale,
+                (flareRatio_00,(visionSetVars_t *)pcVar2->visionSetCurrent[0].bloomColorScale,
                  (visionSetVars_t *)pcVar2->visionSetTo[2].bloomColorScale,
                  (visionSetLerpData_t *)(pcVar2->visionNameInfrared + 0x10),
                  (visionSetVars_t *)pcVar2->visionSetCurrent[2].bloomColorScale);
-      pcVar2->impactEffects[7] = (uint)fVar3;
+      pcVar2->impactEffects[7] = (uint)flareRatio_00;
     }
     else {
-      UpdateVarsLerp(pcVar2->time,(visionSetVars_t *)pcVar2->visionSetFrom[local_8].bloomColorScale,
-                     (visionSetVars_t *)pcVar2->visionSetTo[local_8].bloomColorScale,
-                     (visionSetLerpData_t *)(pcVar2->visionNameFlare + local_8 * 0xc + 0x38),
-                     (visionSetVars_t *)pcVar2->visionSetCurrent[local_8].bloomColorScale);
+      UpdateVarsLerp(pcVar2->time,(visionSetVars_t *)pcVar2->visionSetFrom[idx].bloomColorScale,
+                     (visionSetVars_t *)pcVar2->visionSetTo[idx].bloomColorScale,
+                     (visionSetLerpData_t *)(pcVar2->visionNameFlare + idx * 0xc + 0x38),
+                     (visionSetVars_t *)pcVar2->visionSetCurrent[idx].bloomColorScale);
     }
   }
   return;
@@ -937,18 +961,20 @@ void __cdecl CG_VisionSetsUpdate(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl VisionSetCurrent(int param_1,visionSetMode_t param_2,char *param_3)
+bool __cdecl VisionSetCurrent(int localClientNum,visionSetMode_t mode,char *name)
 
 {
   char *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
+  bool setResult;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  bVar2 = GetVisionSet(param_1,param_3,
-                       (visionSetVars_t *)pcVar3->visionSetCurrent[param_2].bloomColorScale);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  bVar2 = GetVisionSet(localClientNum,name,
+                       (visionSetVars_t *)pcVar3->visionSetCurrent[mode].bloomColorScale);
   if (bVar2) {
-    pcVar1 = pcVar3->visionNameInfrared + param_2 * 0xc;
+    pcVar1 = pcVar3->visionNameInfrared + mode * 0xc;
     pcVar1[0] = '\x01';
     pcVar1[1] = '\0';
     pcVar1[2] = '\0';
@@ -967,8 +993,8 @@ bool __cdecl VisionSetCurrent(int param_1,visionSetMode_t param_2,char *param_3)
 
 bool __cdecl
 CG_VisionSetStartLerp_To
-          (int param_1,visionSetMode_t param_2,visionSetLerpStyle_t param_3,char *param_4,
-          int param_5)
+          (int localClientNum,visionSetMode_t mode,visionSetLerpStyle_t style,char *nameTo,
+          int duration)
 
 {
   code *pcVar1;
@@ -978,8 +1004,10 @@ CG_VisionSetStartLerp_To
   int iVar5;
   float *pfVar6;
   float *pfVar7;
+  cg_s *cgameGlob;
+  bool setResultTo;
   
-  if (((int)param_2 < 0) || (6 < (int)param_2)) {
+  if (((int)mode < 0) || (6 < (int)mode)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_visionsets.cpp",0x2ee,0,
                              "mode not in [0, VISIONSETMODECOUNT]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -988,24 +1016,24 @@ CG_VisionSetStartLerp_To
       return (bool)uVar3;
     }
   }
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  if ((param_5 < 1) || (*(int *)(pcVar4->visionNameInfrared + param_2 * 0xc) == 0)) {
-    bVar2 = VisionSetCurrent(param_1,param_2,param_4);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  if ((duration < 1) || (*(int *)(pcVar4->visionNameInfrared + mode * 0xc) == 0)) {
+    bVar2 = VisionSetCurrent(localClientNum,mode,nameTo);
   }
   else {
-    bVar2 = GetVisionSet(param_1,param_4,
-                         (visionSetVars_t *)pcVar4->visionSetTo[param_2].bloomColorScale);
+    bVar2 = GetVisionSet(localClientNum,nameTo,
+                         (visionSetVars_t *)pcVar4->visionSetTo[mode].bloomColorScale);
     if (bVar2) {
-      pfVar6 = pcVar4->visionSetCurrent[param_2].bloomColorScale;
-      pfVar7 = pcVar4->visionSetFrom[param_2].bloomColorScale;
+      pfVar6 = pcVar4->visionSetCurrent[mode].bloomColorScale;
+      pfVar7 = pcVar4->visionSetFrom[mode].bloomColorScale;
       for (iVar5 = 0xb8; iVar5 != 0; iVar5 = iVar5 + -1) {
         *pfVar7 = *pfVar6;
         pfVar6 = pfVar6 + 1;
         pfVar7 = pfVar7 + 1;
       }
-      *(visionSetLerpStyle_t *)(pcVar4->visionNameInfrared + param_2 * 0xc) = param_3;
-      *(int *)(pcVar4->visionNameFlare + param_2 * 0xc + 0x3c) = param_5;
-      *(int *)(pcVar4->visionNameFlare + param_2 * 0xc + 0x38) = pcVar4->time;
+      *(visionSetLerpStyle_t *)(pcVar4->visionNameInfrared + mode * 0xc) = style;
+      *(int *)(pcVar4->visionNameFlare + mode * 0xc + 0x3c) = duration;
+      *(int *)(pcVar4->visionNameFlare + mode * 0xc + 0x38) = pcVar4->time;
       bVar2 = true;
     }
     else {
@@ -1023,15 +1051,17 @@ CG_VisionSetStartLerp_To
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SetDefaultVision(int param_1)
+void __cdecl SetDefaultVision(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   I_strncpyz(pcVar1->visionNameTvguided,MYDEFAULTVISIONNAME,0x40);
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameTvguided,0);
+            (localClientNum,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameTvguided,0
+            );
   return;
 }
 
@@ -1043,23 +1073,26 @@ void __cdecl SetDefaultVision(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_VisionSetConfigString_Naked(int param_1)
+void __cdecl CG_VisionSetConfigString_Naked(int localClientNum)
 
 {
   cg_s *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *local_c;
-  char *local_8;
+  char *nptr;
+  int duration_00;
+  int duration;
+  cg_s *cgameGlob;
+  char *configString;
+  char *token;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_c = CL_GetConfigString(0x60e);
-  local_8 = Com_Parse(&local_c);
-  I_strncpyz(pcVar1->visionNameTvguided,local_8,0x40);
-  pcVar2 = Com_Parse(&local_c);
-  iVar3 = atoi(pcVar2);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  configString = CL_GetConfigString(0x60e);
+  token = Com_Parse(&configString);
+  I_strncpyz(pcVar1->visionNameTvguided,token,0x40);
+  nptr = Com_Parse(&configString);
+  duration_00 = atoi(nptr);
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameTvguided,iVar3);
+            (localClientNum,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameTvguided,
+             duration_00);
   return;
 }
 
@@ -1071,23 +1104,26 @@ void __cdecl CG_VisionSetConfigString_Naked(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_VisionSetConfigString_Night(int param_1)
+void __cdecl CG_VisionSetConfigString_Night(int localClientNum)
 
 {
   cg_s *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *local_c;
-  char *local_8;
+  char *nptr;
+  int duration_00;
+  int duration;
+  cg_s *cgameGlob;
+  char *configString;
+  char *token;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_c = CL_GetConfigString(0x60f);
-  local_8 = Com_Parse(&local_c);
-  I_strncpyz(pcVar1->visionNameExtraCam,local_8,0x40);
-  pcVar2 = Com_Parse(&local_c);
-  iVar3 = atoi(pcVar2);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  configString = CL_GetConfigString(0x60f);
+  token = Com_Parse(&configString);
+  I_strncpyz(pcVar1->visionNameExtraCam,token,0x40);
+  nptr = Com_Parse(&configString);
+  duration_00 = atoi(nptr);
   CG_VisionSetStartLerp_To
-            (param_1,VISIONSETMODE_NIGHT,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameExtraCam,iVar3);
+            (localClientNum,VISIONSETMODE_NIGHT,VISIONSETLERP_TO_SMOOTH,pcVar1->visionNameExtraCam,
+             duration_00);
   return;
 }
 
@@ -1104,40 +1140,41 @@ void __cdecl CG_VisionSetMyChanges(void)
 {
   bool bVar1;
   cg_s *pcVar2;
-  uint local_c;
-  int local_8;
+  cg_s *cgameGlob;
+  uint visSetIdx;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    bVar1 = CL_LocalClient_IsCUIFlagSet(local_8,0x20);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
     if (bVar1) {
-      pcVar2 = CG_GetLocalClientGlobals(local_8);
-      for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-        pcVar2->visionSetPreLoadedName[local_c + 4][0] = '\0';
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+      for (visSetIdx = 0; visSetIdx < 8; visSetIdx = visSetIdx + 1) {
+        pcVar2->visionSetPreLoadedName[visSetIdx + 4][0] = '\0';
       }
       memset((uchar *)pcVar2->visionSetPreLoaded[0].bloomColorScale,'\0',0x1700);
       if (pcVar2->visionNameTvguided[0] != '\0') {
         CG_VisionSetStartLerp_To
-                  (local_8,VISIONSETMODE_NAKED,VISIONSETLERP_TO_LINEAR,pcVar2->visionNameTvguided,0)
-        ;
+                  (localClientNum,VISIONSETMODE_NAKED,VISIONSETLERP_TO_LINEAR,
+                   pcVar2->visionNameTvguided,0);
       }
       if (pcVar2->visionNameExtraCam[0] != '\0') {
         CG_VisionSetStartLerp_To
-                  (local_8,VISIONSETMODE_NIGHT,VISIONSETLERP_TO_LINEAR,pcVar2->visionNameExtraCam,0)
-        ;
+                  (localClientNum,VISIONSETMODE_NIGHT,VISIONSETLERP_TO_LINEAR,
+                   pcVar2->visionNameExtraCam,0);
       }
       if ((char)(pcVar2->oldTransPlayerState).damageEvent != '\0') {
         CG_VisionSetStartLerp_To
-                  (local_8,VISIONSETMODE_INFRARED,VISIONSETLERP_CUSTOM_VALUE,
+                  (localClientNum,VISIONSETMODE_INFRARED,VISIONSETLERP_CUSTOM_VALUE,
                    (char *)&(pcVar2->oldTransPlayerState).damageEvent,0);
       }
       if ((char)pcVar2->hudElemSound[5].lastPlayedTime != '\0') {
         CG_VisionSetStartLerp_To
-                  (local_8,VISIONSETMODE_TVGUIDED,VISIONSETLERP_CUSTOM_VALUE,
+                  (localClientNum,VISIONSETMODE_TVGUIDED,VISIONSETLERP_CUSTOM_VALUE,
                    (char *)(pcVar2->hudElemSound + 5),0);
       }
       if ((char)pcVar2->hudElemSound[0x15].lastPlayedTime != '\0') {
         CG_VisionSetStartLerp_To
-                  (local_8,VISIONSETMODE_EXTRACAM,VISIONSETLERP_CUSTOM_VALUE,
+                  (localClientNum,VISIONSETMODE_EXTRACAM,VISIONSETLERP_CUSTOM_VALUE,
                    (char *)(pcVar2->hudElemSound + 0x15),0);
       }
     }
@@ -1153,44 +1190,47 @@ void __cdecl CG_VisionSetMyChanges(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl LoadVisionFileForTweaks(visionSetVars_t *param_1)
+bool __cdecl LoadVisionFileForTweaks(visionSetVars_t *setVars)
 
 {
   bool bVar1;
   cg_s *pcVar2;
-  bitarray<51> *local_8;
+  cg_s *cgameGlob;
+  int localClientNum;
+  bool setResultTo;
+  char *setName;
   
   pcVar2 = CG_GetLocalClientGlobals(0);
   bVar1 = CG_InFlareVision(0);
   if (bVar1) {
-    local_8 = &pcVar2->extraButton_bits;
+    setName = (char *)&pcVar2->extraButton_bits;
   }
   else {
     bVar1 = CG_IsInfrared(0);
     if (bVar1) {
-      local_8 = (bitarray<51> *)&(pcVar2->oldTransPlayerState).damageEvent;
+      setName = (char *)&(pcVar2->oldTransPlayerState).damageEvent;
     }
     else {
       bVar1 = CG_IsTvguided(0,false);
       if (bVar1) {
-        local_8 = (bitarray<51> *)(pcVar2->hudElemSound + 5);
+        setName = (char *)(pcVar2->hudElemSound + 5);
       }
       else {
         bVar1 = CG_LookingThroughNightVision(0);
         if (bVar1) {
-          local_8 = (bitarray<51> *)pcVar2->visionNameExtraCam;
+          setName = pcVar2->visionNameExtraCam;
         }
         else {
-          local_8 = (bitarray<51> *)pcVar2->visionNameTvguided;
+          setName = pcVar2->visionNameTvguided;
         }
       }
     }
   }
-  if ((char)local_8->array[0] == '\0') {
+  if (*setName == '\0') {
     bVar1 = false;
   }
   else {
-    bVar1 = GetVisionSet(0,(char *)local_8,param_1);
+    bVar1 = GetVisionSet(0,setName,setVars);
     if (bVar1) {
       bVar1 = true;
     }
@@ -1205,46 +1245,50 @@ bool __cdecl LoadVisionFileForTweaks(visionSetVars_t *param_1)
 // 00523340  CG_VisionSetUpdateTweaksFromFile_Film  (cgame/cg_visionsets.cpp:1033)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_VisionSetUpdateTweaksFromFile_Film(void)
 
 {
   bool bVar1;
-  visionSetVars_t local_2ec;
+  bool result;
+  visionSetVars_t setVars;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = LoadVisionFileForTweaks(&local_2ec);
+  bVar1 = LoadVisionFileForTweaks(&setVars);
   if (bVar1) {
-    Dvar_SetFloatByName("r_filmLut",local_2ec.filmLut);
-    Dvar_SetBoolByName("r_filmTweakEnable",local_2ec.filmEnable);
-    Dvar_SetFloatByName("r_filmTweakMidStart",local_2ec.filmMidStart);
-    Dvar_SetFloatByName("r_filmTweakMidEnd",local_2ec.filmMidEnd);
-    Dvar_SetFloatByName("r_filmTweakDarkFeather",local_2ec.filmDarkFeather);
-    Dvar_SetFloatByName("r_filmTweakLightFeather",local_2ec.filmLightFeather);
-    Dvar_SetVec3ByName("r_filmTweakBleach",local_2ec.filmBleach[0],local_2ec.filmBleach[1],
-                       local_2ec.filmBleach[2]);
-    Dvar_SetVec3ByName("r_filmTweakHue",local_2ec.filmHue[0],local_2ec.filmHue[1],
-                       local_2ec.filmHue[2]);
-    Dvar_SetVec3ByName("r_filmTweakSaturation",local_2ec.filmSaturation[0],
-                       local_2ec.filmSaturation[1],local_2ec.filmSaturation[2]);
-    Dvar_SetVec3ByName("r_filmTweakColorTemp",local_2ec.filmColorTemp[0],local_2ec.filmColorTemp[1],
-                       local_2ec.filmColorTemp[2]);
-    Dvar_SetVec3ByName("r_filmTweakDarkTint",local_2ec.filmDarkTint[0],local_2ec.filmDarkTint[1],
-                       local_2ec.filmDarkTint[2]);
-    Dvar_SetVec3ByName("r_filmTweakMidTint",local_2ec.filmMidTint[0],local_2ec.filmMidTint[1],
-                       local_2ec.filmMidTint[2]);
-    Dvar_SetVec3ByName("r_filmTweakLightTint",local_2ec.filmLightTint[0],local_2ec.filmLightTint[1],
-                       local_2ec.filmLightTint[2]);
-    Dvar_SetVec3ByName("r_filmTweakContrast",local_2ec.filmContrast[0],local_2ec.filmContrast[1],
-                       local_2ec.filmContrast[2]);
-    Dvar_SetIntByName("r_sCurveEnable",local_2ec.sCurveEnable);
-    Dvar_SetFloatByName("r_sCurveShoulderStrength",local_2ec.sCurveShoulderStrength);
-    Dvar_SetFloatByName("r_sCurveLinearStrength",local_2ec.sCurveLinearStrength);
-    Dvar_SetFloatByName("r_sCurveLinearAngle",local_2ec.sCurveLinearAngle);
-    Dvar_SetFloatByName("r_sCurveToeStrength",local_2ec.sCurveToeStrength);
-    Dvar_SetFloatByName("r_sCurveToeNumerator",local_2ec.sCurveToeNumerator);
-    Dvar_SetFloatByName("r_sCurveToeDenominator",local_2ec.sCurveToeDenominator);
+    Dvar_SetFloatByName("r_filmLut",setVars.filmLut);
+    Dvar_SetBoolByName("r_filmTweakEnable",setVars.filmEnable);
+    Dvar_SetFloatByName("r_filmTweakMidStart",setVars.filmMidStart);
+    Dvar_SetFloatByName("r_filmTweakMidEnd",setVars.filmMidEnd);
+    Dvar_SetFloatByName("r_filmTweakDarkFeather",setVars.filmDarkFeather);
+    Dvar_SetFloatByName("r_filmTweakLightFeather",setVars.filmLightFeather);
+    Dvar_SetVec3ByName("r_filmTweakBleach",setVars.filmBleach[0],setVars.filmBleach[1],
+                       setVars.filmBleach[2]);
+    Dvar_SetVec3ByName("r_filmTweakHue",setVars.filmHue[0],setVars.filmHue[1],setVars.filmHue[2]);
+    Dvar_SetVec3ByName("r_filmTweakSaturation",setVars.filmSaturation[0],setVars.filmSaturation[1],
+                       setVars.filmSaturation[2]);
+    Dvar_SetVec3ByName("r_filmTweakColorTemp",setVars.filmColorTemp[0],setVars.filmColorTemp[1],
+                       setVars.filmColorTemp[2]);
+    Dvar_SetVec3ByName("r_filmTweakDarkTint",setVars.filmDarkTint[0],setVars.filmDarkTint[1],
+                       setVars.filmDarkTint[2]);
+    Dvar_SetVec3ByName("r_filmTweakMidTint",setVars.filmMidTint[0],setVars.filmMidTint[1],
+                       setVars.filmMidTint[2]);
+    Dvar_SetVec3ByName("r_filmTweakLightTint",setVars.filmLightTint[0],setVars.filmLightTint[1],
+                       setVars.filmLightTint[2]);
+    Dvar_SetVec3ByName("r_filmTweakContrast",setVars.filmContrast[0],setVars.filmContrast[1],
+                       setVars.filmContrast[2]);
+    Dvar_SetIntByName("r_sCurveEnable",setVars.sCurveEnable);
+    Dvar_SetFloatByName("r_sCurveShoulderStrength",setVars.sCurveShoulderStrength);
+    Dvar_SetFloatByName("r_sCurveLinearStrength",setVars.sCurveLinearStrength);
+    Dvar_SetFloatByName("r_sCurveLinearAngle",setVars.sCurveLinearAngle);
+    Dvar_SetFloatByName("r_sCurveToeStrength",setVars.sCurveToeStrength);
+    Dvar_SetFloatByName("r_sCurveToeNumerator",setVars.sCurveToeNumerator);
+    Dvar_SetFloatByName("r_sCurveToeDenominator",setVars.sCurveToeDenominator);
   }
   else {
     Com_PrintWarning(0x10,
@@ -1258,20 +1302,25 @@ void __cdecl CG_VisionSetUpdateTweaksFromFile_Film(void)
 // 00523700  CG_VisionSetUpdateTweaksFromFile_CharPrimary  (cgame/cg_visionsets.cpp:1078)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_VisionSetUpdateTweaksFromFile_CharPrimary(void)
 
 {
   bool bVar1;
-  visionSetVars_t local_2ec;
+  bool result;
+  visionSetVars_t setVars;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = LoadVisionFileForTweaks(&local_2ec);
+  bVar1 = LoadVisionFileForTweaks(&setVars);
   if (bVar1) {
-    Dvar_SetBoolByName("r_primaryLightUseTweaks",local_2ec.charPrimaryUseTweaks);
-    Dvar_SetFloatByName("r_primaryLightTweakDiffuseStrength",local_2ec.charPrimaryDiffuseScale);
-    Dvar_SetFloatByName("r_primaryLightTweakSpecularStrength",local_2ec.charPrimarySpecularScale);
+    Dvar_SetBoolByName("r_primaryLightUseTweaks",setVars.charPrimaryUseTweaks);
+    Dvar_SetFloatByName("r_primaryLightTweakDiffuseStrength",setVars.charPrimaryDiffuseScale);
+    Dvar_SetFloatByName("r_primaryLightTweakSpecularStrength",setVars.charPrimarySpecularScale);
   }
   else {
     Com_PrintWarning(0x10,
@@ -1285,96 +1334,100 @@ void __cdecl CG_VisionSetUpdateTweaksFromFile_CharPrimary(void)
 // 005237A0  CG_VisionSetUpdateTweaksFromFile_Bloom  (cgame/cg_visionsets.cpp:1097)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CG_VisionSetUpdateTweaksFromFile_Bloom(void)
 
 {
   bool bVar1;
-  visionSetVars_t local_2ec;
+  bool result;
+  visionSetVars_t setVars;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = LoadVisionFileForTweaks(&local_2ec);
+  bVar1 = LoadVisionFileForTweaks(&setVars);
   if (bVar1) {
-    Dvar_SetFloatByName("r_bloomBlurRadius",local_2ec.bloomBlurRadius);
-    Dvar_SetVec4ByName("r_bloomTintWeights",local_2ec.bloomTintWeights[0],
-                       local_2ec.bloomTintWeights[1],local_2ec.bloomTintWeights[2],
-                       local_2ec.bloomTintWeights[3]);
-    Dvar_SetVec4ByName("r_bloomColorScale",local_2ec.bloomColorScale[0],local_2ec.bloomColorScale[1]
-                       ,local_2ec.bloomColorScale[2],local_2ec.bloomColorScale[3]);
-    Dvar_SetVec4ByName("r_bloomTintScale",local_2ec.bloomTintScale[0],local_2ec.bloomTintScale[1],
-                       local_2ec.bloomTintScale[2],local_2ec.bloomTintScale[3]);
-    Dvar_SetVec4ByName("r_bloomCurveBreakpoint",local_2ec.bloomCurveBreakpoint[0],
-                       local_2ec.bloomCurveBreakpoint[1],local_2ec.bloomCurveBreakpoint[2],
-                       local_2ec.bloomCurveBreakpoint[3]);
-    Dvar_SetVec4ByName("r_bloomCurveLoBlack",local_2ec.bloomCurveLoBlack[0],
-                       local_2ec.bloomCurveLoBlack[1],local_2ec.bloomCurveLoBlack[2],
-                       local_2ec.bloomCurveLoBlack[3]);
-    Dvar_SetVec4ByName("r_bloomCurveLoGamma",local_2ec.bloomCurveLoGamma[0],
-                       local_2ec.bloomCurveLoGamma[1],local_2ec.bloomCurveLoGamma[2],
-                       local_2ec.bloomCurveLoGamma[3]);
-    Dvar_SetVec4ByName("r_bloomCurveLoWhite",local_2ec.bloomCurveLoWhite[0],
-                       local_2ec.bloomCurveLoWhite[1],local_2ec.bloomCurveLoWhite[2],
-                       local_2ec.bloomCurveLoWhite[3]);
-    Dvar_SetVec4ByName("r_bloomCurveLoRemapBlack",local_2ec.bloomCurveLoRemapBlack[0],
-                       local_2ec.bloomCurveLoRemapBlack[1],local_2ec.bloomCurveLoRemapBlack[2],
-                       local_2ec.bloomCurveLoRemapBlack[3]);
-    Dvar_SetVec4ByName("r_bloomCurveLoRemapWhite",local_2ec.bloomCurveLoRemapWhite[0],
-                       local_2ec.bloomCurveLoRemapWhite[1],local_2ec.bloomCurveLoRemapWhite[2],
-                       local_2ec.bloomCurveLoRemapWhite[3]);
-    Dvar_SetVec4ByName("r_bloomCurveHiBlack",local_2ec.bloomCurveHiBlack[0],
-                       local_2ec.bloomCurveHiBlack[1],local_2ec.bloomCurveHiBlack[2],
-                       local_2ec.bloomCurveHiBlack[3]);
-    Dvar_SetVec4ByName("r_bloomCurveHiGamma",local_2ec.bloomCurveHiGamma[0],
-                       local_2ec.bloomCurveHiGamma[1],local_2ec.bloomCurveHiGamma[2],
-                       local_2ec.bloomCurveHiGamma[3]);
-    Dvar_SetVec4ByName("r_bloomCurveHiWhite",local_2ec.bloomCurveHiWhite[0],
-                       local_2ec.bloomCurveHiWhite[1],local_2ec.bloomCurveHiWhite[2],
-                       local_2ec.bloomCurveHiWhite[3]);
-    Dvar_SetVec4ByName("r_bloomCurveHiRemapBlack",local_2ec.bloomCurveHiRemapBlack[0],
-                       local_2ec.bloomCurveHiRemapBlack[1],local_2ec.bloomCurveHiRemapBlack[2],
-                       local_2ec.bloomCurveHiRemapBlack[3]);
-    Dvar_SetVec4ByName("r_bloomCurveHiRemapWhite",local_2ec.bloomCurveHiRemapWhite[0],
-                       local_2ec.bloomCurveHiRemapWhite[1],local_2ec.bloomCurveHiRemapWhite[2],
-                       local_2ec.bloomCurveHiRemapWhite[3]);
-    Dvar_SetVec4ByName("r_bloomExpansionControl",local_2ec.bloomExpansionControl[0],
-                       local_2ec.bloomExpansionControl[1],local_2ec.bloomExpansionControl[2],
-                       local_2ec.bloomExpansionControl[3]);
-    Dvar_SetVec4ByName("r_bloomExpansionWeights",local_2ec.bloomExpansionWeights[0],
-                       local_2ec.bloomExpansionWeights[1],local_2ec.bloomExpansionWeights[2],
-                       local_2ec.bloomExpansionWeights[3]);
-    Dvar_SetIntByName("r_bloomExpansionSource",local_2ec.bloomExpansionSource);
-    Dvar_SetFloatByName("r_bloomPersistence",local_2ec.bloomPersistence);
-    Dvar_SetVec4ByName("r_bloomStreakXLevels0",local_2ec.bloomStreakXLevels0[0],
-                       local_2ec.bloomStreakXLevels0[1],local_2ec.bloomStreakXLevels0[2],
-                       local_2ec.bloomStreakXLevels0[3]);
-    Dvar_SetVec4ByName("r_bloomStreakXLevels1",local_2ec.bloomStreakXLevels1[0],
-                       local_2ec.bloomStreakXLevels1[1],local_2ec.bloomStreakXLevels1[2],
-                       local_2ec.bloomStreakXLevels1[3]);
-    Dvar_SetVec3ByName("r_bloomStreakXInnerTint",local_2ec.bloomStreakXInnerTint[0],
-                       local_2ec.bloomStreakXInnerTint[1],local_2ec.bloomStreakXInnerTint[2]);
-    Dvar_SetVec3ByName("r_bloomStreakXOuterTint",local_2ec.bloomStreakXOuterTint[0],
-                       local_2ec.bloomStreakXOuterTint[1],local_2ec.bloomStreakXOuterTint[2]);
-    Dvar_SetVec4ByName("r_bloomStreakXTintControl",local_2ec.bloomStreakXTintControl[0],
-                       local_2ec.bloomStreakXTintControl[1],local_2ec.bloomStreakXTintControl[2],
-                       local_2ec.bloomStreakXTintControl[3]);
-    Dvar_SetVec3ByName("r_bloomStreakXTint",local_2ec.bloomStreakXTint[0],
-                       local_2ec.bloomStreakXTint[1],local_2ec.bloomStreakXTint[2]);
-    Dvar_SetVec4ByName("r_bloomStreakYLevels0",local_2ec.bloomStreakYLevels0[0],
-                       local_2ec.bloomStreakYLevels0[1],local_2ec.bloomStreakYLevels0[2],
-                       local_2ec.bloomStreakYLevels0[3]);
-    Dvar_SetVec4ByName("r_bloomStreakYLevels1",local_2ec.bloomStreakYLevels1[0],
-                       local_2ec.bloomStreakYLevels1[1],local_2ec.bloomStreakYLevels1[2],
-                       local_2ec.bloomStreakYLevels1[3]);
-    Dvar_SetVec3ByName("r_bloomStreakYInnerTint",local_2ec.bloomStreakYInnerTint[0],
-                       local_2ec.bloomStreakYInnerTint[1],local_2ec.bloomStreakYInnerTint[2]);
-    Dvar_SetVec3ByName("r_bloomStreakYOuterTint",local_2ec.bloomStreakYOuterTint[0],
-                       local_2ec.bloomStreakYOuterTint[1],local_2ec.bloomStreakYOuterTint[2]);
-    Dvar_SetVec4ByName("r_bloomStreakYTintControl",local_2ec.bloomStreakYTintControl[0],
-                       local_2ec.bloomStreakYTintControl[1],local_2ec.bloomStreakYTintControl[2],
-                       local_2ec.bloomStreakYTintControl[3]);
-    Dvar_SetVec3ByName("r_bloomStreakYTint",local_2ec.bloomStreakYTint[0],
-                       local_2ec.bloomStreakYTint[1],local_2ec.bloomStreakYTint[2]);
+    Dvar_SetFloatByName("r_bloomBlurRadius",setVars.bloomBlurRadius);
+    Dvar_SetVec4ByName("r_bloomTintWeights",setVars.bloomTintWeights[0],setVars.bloomTintWeights[1],
+                       setVars.bloomTintWeights[2],setVars.bloomTintWeights[3]);
+    Dvar_SetVec4ByName("r_bloomColorScale",setVars.bloomColorScale[0],setVars.bloomColorScale[1],
+                       setVars.bloomColorScale[2],setVars.bloomColorScale[3]);
+    Dvar_SetVec4ByName("r_bloomTintScale",setVars.bloomTintScale[0],setVars.bloomTintScale[1],
+                       setVars.bloomTintScale[2],setVars.bloomTintScale[3]);
+    Dvar_SetVec4ByName("r_bloomCurveBreakpoint",setVars.bloomCurveBreakpoint[0],
+                       setVars.bloomCurveBreakpoint[1],setVars.bloomCurveBreakpoint[2],
+                       setVars.bloomCurveBreakpoint[3]);
+    Dvar_SetVec4ByName("r_bloomCurveLoBlack",setVars.bloomCurveLoBlack[0],
+                       setVars.bloomCurveLoBlack[1],setVars.bloomCurveLoBlack[2],
+                       setVars.bloomCurveLoBlack[3]);
+    Dvar_SetVec4ByName("r_bloomCurveLoGamma",setVars.bloomCurveLoGamma[0],
+                       setVars.bloomCurveLoGamma[1],setVars.bloomCurveLoGamma[2],
+                       setVars.bloomCurveLoGamma[3]);
+    Dvar_SetVec4ByName("r_bloomCurveLoWhite",setVars.bloomCurveLoWhite[0],
+                       setVars.bloomCurveLoWhite[1],setVars.bloomCurveLoWhite[2],
+                       setVars.bloomCurveLoWhite[3]);
+    Dvar_SetVec4ByName("r_bloomCurveLoRemapBlack",setVars.bloomCurveLoRemapBlack[0],
+                       setVars.bloomCurveLoRemapBlack[1],setVars.bloomCurveLoRemapBlack[2],
+                       setVars.bloomCurveLoRemapBlack[3]);
+    Dvar_SetVec4ByName("r_bloomCurveLoRemapWhite",setVars.bloomCurveLoRemapWhite[0],
+                       setVars.bloomCurveLoRemapWhite[1],setVars.bloomCurveLoRemapWhite[2],
+                       setVars.bloomCurveLoRemapWhite[3]);
+    Dvar_SetVec4ByName("r_bloomCurveHiBlack",setVars.bloomCurveHiBlack[0],
+                       setVars.bloomCurveHiBlack[1],setVars.bloomCurveHiBlack[2],
+                       setVars.bloomCurveHiBlack[3]);
+    Dvar_SetVec4ByName("r_bloomCurveHiGamma",setVars.bloomCurveHiGamma[0],
+                       setVars.bloomCurveHiGamma[1],setVars.bloomCurveHiGamma[2],
+                       setVars.bloomCurveHiGamma[3]);
+    Dvar_SetVec4ByName("r_bloomCurveHiWhite",setVars.bloomCurveHiWhite[0],
+                       setVars.bloomCurveHiWhite[1],setVars.bloomCurveHiWhite[2],
+                       setVars.bloomCurveHiWhite[3]);
+    Dvar_SetVec4ByName("r_bloomCurveHiRemapBlack",setVars.bloomCurveHiRemapBlack[0],
+                       setVars.bloomCurveHiRemapBlack[1],setVars.bloomCurveHiRemapBlack[2],
+                       setVars.bloomCurveHiRemapBlack[3]);
+    Dvar_SetVec4ByName("r_bloomCurveHiRemapWhite",setVars.bloomCurveHiRemapWhite[0],
+                       setVars.bloomCurveHiRemapWhite[1],setVars.bloomCurveHiRemapWhite[2],
+                       setVars.bloomCurveHiRemapWhite[3]);
+    Dvar_SetVec4ByName("r_bloomExpansionControl",setVars.bloomExpansionControl[0],
+                       setVars.bloomExpansionControl[1],setVars.bloomExpansionControl[2],
+                       setVars.bloomExpansionControl[3]);
+    Dvar_SetVec4ByName("r_bloomExpansionWeights",setVars.bloomExpansionWeights[0],
+                       setVars.bloomExpansionWeights[1],setVars.bloomExpansionWeights[2],
+                       setVars.bloomExpansionWeights[3]);
+    Dvar_SetIntByName("r_bloomExpansionSource",setVars.bloomExpansionSource);
+    Dvar_SetFloatByName("r_bloomPersistence",setVars.bloomPersistence);
+    Dvar_SetVec4ByName("r_bloomStreakXLevels0",setVars.bloomStreakXLevels0[0],
+                       setVars.bloomStreakXLevels0[1],setVars.bloomStreakXLevels0[2],
+                       setVars.bloomStreakXLevels0[3]);
+    Dvar_SetVec4ByName("r_bloomStreakXLevels1",setVars.bloomStreakXLevels1[0],
+                       setVars.bloomStreakXLevels1[1],setVars.bloomStreakXLevels1[2],
+                       setVars.bloomStreakXLevels1[3]);
+    Dvar_SetVec3ByName("r_bloomStreakXInnerTint",setVars.bloomStreakXInnerTint[0],
+                       setVars.bloomStreakXInnerTint[1],setVars.bloomStreakXInnerTint[2]);
+    Dvar_SetVec3ByName("r_bloomStreakXOuterTint",setVars.bloomStreakXOuterTint[0],
+                       setVars.bloomStreakXOuterTint[1],setVars.bloomStreakXOuterTint[2]);
+    Dvar_SetVec4ByName("r_bloomStreakXTintControl",setVars.bloomStreakXTintControl[0],
+                       setVars.bloomStreakXTintControl[1],setVars.bloomStreakXTintControl[2],
+                       setVars.bloomStreakXTintControl[3]);
+    Dvar_SetVec3ByName("r_bloomStreakXTint",setVars.bloomStreakXTint[0],setVars.bloomStreakXTint[1],
+                       setVars.bloomStreakXTint[2]);
+    Dvar_SetVec4ByName("r_bloomStreakYLevels0",setVars.bloomStreakYLevels0[0],
+                       setVars.bloomStreakYLevels0[1],setVars.bloomStreakYLevels0[2],
+                       setVars.bloomStreakYLevels0[3]);
+    Dvar_SetVec4ByName("r_bloomStreakYLevels1",setVars.bloomStreakYLevels1[0],
+                       setVars.bloomStreakYLevels1[1],setVars.bloomStreakYLevels1[2],
+                       setVars.bloomStreakYLevels1[3]);
+    Dvar_SetVec3ByName("r_bloomStreakYInnerTint",setVars.bloomStreakYInnerTint[0],
+                       setVars.bloomStreakYInnerTint[1],setVars.bloomStreakYInnerTint[2]);
+    Dvar_SetVec3ByName("r_bloomStreakYOuterTint",setVars.bloomStreakYOuterTint[0],
+                       setVars.bloomStreakYOuterTint[1],setVars.bloomStreakYOuterTint[2]);
+    Dvar_SetVec4ByName("r_bloomStreakYTintControl",setVars.bloomStreakYTintControl[0],
+                       setVars.bloomStreakYTintControl[1],setVars.bloomStreakYTintControl[2],
+                       setVars.bloomStreakYTintControl[3]);
+    Dvar_SetVec3ByName("r_bloomStreakYTint",setVars.bloomStreakYTint[0],setVars.bloomStreakYTint[1],
+                       setVars.bloomStreakYTint[2]);
   }
   else {
     Com_PrintWarning(0x10,
@@ -1392,19 +1445,20 @@ void __cdecl CG_VisionSetUpdateTweaksFromFile_Bloom(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_InFlareVision(int param_1)
+bool __cdecl CG_InFlareVision(int localClientNum)
 
 {
   bool bVar1;
   connstate_t cVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
   
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 10) {
     bVar1 = false;
   }
   else if ((flareDisableEffects->current).enabled == false) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
     if (((pcVar3->predictedPlayerState).visionSetLerpRatio != 0.0) ||
        (0.001 < (float)pcVar3->impactEffects[7] || (float)pcVar3->impactEffects[7] == 0.001)) {
       bVar1 = true;
@@ -1427,29 +1481,34 @@ bool __cdecl CG_InFlareVision(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_LookingThroughNightVision(int param_1)
+bool __cdecl CG_LookingThroughNightVision(int localClientNum)
 
 {
   connstate_t cVar1;
   cg_s *pcVar2;
-  uint uVar3;
-  WeaponDef *pWVar4;
+  uint weaponIndex;
+  WeaponDef *pWVar3;
+  cg_s *cgameGlob;
+  int weapIndex;
+  int timePassed;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if (((9 < (int)cVar1) && ((nightVisionDisableEffects->current).enabled == false)) &&
      ((zombiemode->current).enabled == false)) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
-    uVar3 = BG_GetViewmodelWeaponIndex(&pcVar2->predictedPlayerState);
-    pWVar4 = BG_GetWeaponDef(uVar3);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+    weaponIndex = BG_GetViewmodelWeaponIndex(&pcVar2->predictedPlayerState);
+    pWVar3 = BG_GetWeaponDef(weaponIndex);
     if ((pcVar2->predictedPlayerState).weaponstate == 0x21) {
-      if (pWVar4->nightVisionWearTimePowerUp <=
-          pWVar4->nightVisionWearTime - (pcVar2->predictedPlayerState).weaponTime) {
+      if (pWVar3->nightVisionWearTimePowerUp <=
+          pWVar3->nightVisionWearTime - (pcVar2->predictedPlayerState).weaponTime) {
         return true;
       }
     }
     else if ((pcVar2->predictedPlayerState).weaponstate == 0x22) {
-      if (pWVar4->nightVisionRemoveTime - (pcVar2->predictedPlayerState).weaponTime <=
-          pWVar4->nightVisionRemoveTimePowerDown) {
+      if (pWVar3->nightVisionRemoveTime - (pcVar2->predictedPlayerState).weaponTime <=
+          pWVar3->nightVisionRemoveTimePowerDown) {
         return true;
       }
     }
@@ -1469,28 +1528,31 @@ bool __cdecl CG_LookingThroughNightVision(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DrawVisionSetDebug(int param_1,visionSetMode_t param_2)
+void __cdecl DrawVisionSetDebug(int localClientNum,visionSetMode_t curChannel)
 
 {
-  Font_s *pFVar1;
+  Font_s *font_00;
   float local_144;
   float *local_140;
-  visionSetMode_t local_134;
-  float local_130;
-  char local_10c [260];
+  float *color;
+  float scaleMult;
+  int modeIndex;
+  float textY;
+  Font_s *font;
+  cg_s *cgameGlob;
+  char text [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((showVisionSetDebugInfo != (dvar_s *)0x0) &&
-     ((showVisionSetDebugInfo->current).integer == param_1)) {
-    pFVar1 = R_RegisterFont("fonts/consoleFont",1);
-    local_130 = textStartY;
-    CG_GetLocalClientGlobals(param_1);
+     ((showVisionSetDebugInfo->current).integer == localClientNum)) {
+    font_00 = R_RegisterFont("fonts/consoleFont",1);
+    textY = textStartY;
+    CG_GetLocalClientGlobals(localClientNum);
     R_AddCmdProjectionSet2D();
-    for (local_134 = VISIONSETMODE_NAKED; (int)local_134 < 6;
-        local_134 = local_134 + VISIONSETMODE_NIGHT) {
-      _snprintf(local_10c,0x100,"%s c:%s f:%s t:%s");
-      if (local_134 == param_2) {
+    for (modeIndex = 0; modeIndex < 6; modeIndex = modeIndex + 1) {
+      _snprintf(text,0x100,"%s c:%s f:%s t:%s");
+      if (modeIndex == curChannel) {
         local_140 = colorRed;
         local_144 = curChannelScaleMult;
       }
@@ -1498,9 +1560,9 @@ void __cdecl DrawVisionSetDebug(int param_1,visionSetMode_t param_2)
         local_140 = colorWhite;
         local_144 = 1.0;
       }
-      R_AddCmdDrawText(local_10c,0x100,pFVar1,textX,local_130,textScaleX * local_144,
-                       textScaleY * local_144,0.0,local_140,0);
-      local_130 = local_130 + textVertSpacing;
+      R_AddCmdDrawText(text,0x100,font_00,textX,textY,textScaleX * local_144,textScaleY * local_144,
+                       0.0,local_140,0);
+      textY = textY + textVertSpacing;
     }
   }
   return;
@@ -1514,7 +1576,7 @@ void __cdecl DrawVisionSetDebug(int param_1,visionSetMode_t param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_VisionSetApplyToRefdef(int param_1,bool param_2)
+void __cdecl CG_VisionSetApplyToRefdef(int localClientNum,bool isExtracam)
 
 {
   float *pfVar1;
@@ -1522,47 +1584,54 @@ void __cdecl CG_VisionSetApplyToRefdef(int param_1,bool param_2)
   cg_s *pcVar3;
   GfxReviveFx *pGVar4;
   GfxLightScale *pGVar5;
-  visionSetMode_t local_8;
+  GfxReviveFx *reviveFx;
+  cg_s *cgameGlob;
+  GfxFilm *film;
+  GfxBloom *bloom;
+  GfxLightScale *charLightScale;
+  visionSetVars_t *set;
+  playerState_s *ps;
+  visionSetMode_t visionChannel;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   pGVar4 = &(pcVar3->refdef).visionset.reviveFx;
   pGVar5 = &(pcVar3->refdef).visionset.charPrimaryLightScale;
-  bVar2 = CG_InFlareVision(param_1);
+  bVar2 = CG_InFlareVision(localClientNum);
   if (bVar2) {
-    local_8 = VISIONSETMODE_FLARE;
+    visionChannel = VISIONSETMODE_FLARE;
   }
   else {
-    bVar2 = CG_IsInfrared(param_1);
+    bVar2 = CG_IsInfrared(localClientNum);
     if (bVar2) {
-      local_8 = VISIONSETMODE_INFRARED;
+      visionChannel = VISIONSETMODE_INFRARED;
     }
-    else if (param_2) {
-      local_8 = VISIONSETMODE_EXTRACAM;
+    else if (isExtracam) {
+      visionChannel = VISIONSETMODE_EXTRACAM;
     }
     else {
-      bVar2 = CG_IsTvguided(param_1,false);
+      bVar2 = CG_IsTvguided(localClientNum,false);
       if (bVar2) {
-        local_8 = VISIONSETMODE_TVGUIDED;
+        visionChannel = VISIONSETMODE_TVGUIDED;
       }
       else {
-        bVar2 = CG_LookingThroughNightVision(param_1);
+        bVar2 = CG_LookingThroughNightVision(localClientNum);
         if (bVar2) {
-          local_8 = VISIONSETMODE_NIGHT;
+          visionChannel = VISIONSETMODE_NIGHT;
         }
         else {
-          local_8 = VISIONSETMODE_NAKED;
+          visionChannel = VISIONSETMODE_NAKED;
         }
       }
     }
   }
-  DrawVisionSetDebug(param_1,local_8);
-  if (*(int *)(pcVar3->visionNameInfrared + local_8 * 0xc) == 0) {
+  DrawVisionSetDebug(localClientNum,visionChannel);
+  if (*(int *)(pcVar3->visionNameInfrared + visionChannel * 0xc) == 0) {
     (pcVar3->refdef).visionset.film.enabled = false;
     pGVar4->enabled = false;
     (pcVar3->refdef).postEmissiveBrightening = 0.0;
   }
   else {
-    pfVar1 = pcVar3->visionSetCurrent[local_8].bloomColorScale;
+    pfVar1 = pcVar3->visionSetCurrent[visionChannel].bloomColorScale;
     (pcVar3->refdef).visionset.film.enabled = *(bool *)pfVar1;
     (pcVar3->refdef).visionset.film.filmHue[0] = pfVar1[5];
     (pcVar3->refdef).visionset.film.filmHue[1] = pfVar1[6];
@@ -1741,7 +1810,7 @@ void __cdecl CG_VisionSetApplyToRefdef(int param_1,bool param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CG_InitExposure(int param_1,char *param_2)
+void __cdecl CG_InitExposure(int localClientNum,char *mapname)
 
 {
   uchar uVar1;
@@ -1753,43 +1822,43 @@ void __cdecl CG_InitExposure(int param_1,char *param_2)
   char *local_12c;
   uchar *local_120;
   uchar *local_11c;
-  char *local_118;
-  uchar *local_114;
-  char *local_110;
-  uchar local_10c [260];
+  char *basename;
+  char *r;
+  char *fileBuf;
+  uchar temp [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  strrchr((uchar *)param_2,'/');
+  strrchr((uchar *)mapname,'/');
   if (extraout_EAX == 0) {
-    local_114 = (uchar *)param_2;
+    r = mapname;
   }
   else {
-    local_114 = (uchar *)(extraout_EAX + 1);
+    r = (char *)(extraout_EAX + 1);
   }
-  local_114[0xff] = '\0';
-  local_11c = local_114;
-  local_120 = local_10c;
+  r[0xff] = '\0';
+  local_11c = (uchar *)r;
+  local_120 = temp;
   do {
     uVar1 = *local_11c;
     *local_120 = uVar1;
     local_11c = local_11c + 1;
     local_120 = local_120 + 1;
   } while (uVar1 != '\0');
-  strstr(local_10c,(uchar *)"_geo");
+  strstr(temp,(uchar *)"_geo");
   if (extraout_EAX_00 != (undefined1 *)0x0) {
     *extraout_EAX_00 = 0;
   }
   R_SetExposureToDefault();
-  local_110 = RawBufferOpen((char *)local_10c,"exposure/%s.xpo");
-  if (local_110 == (char *)0x0) {
+  fileBuf = RawBufferOpen((char *)temp,"exposure/%s.xpo");
+  if (fileBuf == (char *)0x0) {
     local_12c = "so_";
     pcVar2 = local_12c;
     do {
       local_12c = pcVar2;
       pcVar2 = local_12c + 1;
     } while (*local_12c != '\0');
-    iVar3 = I_strncmp("so_",param_2,(int)(local_12c + -0xc94500));
+    iVar3 = I_strncmp("so_",mapname,(int)(local_12c + -0xc94500));
     if (iVar3 == 0) {
       local_13c = "so_";
       pcVar2 = local_13c;
@@ -1797,19 +1866,19 @@ void __cdecl CG_InitExposure(int param_1,char *param_2)
         local_13c = pcVar2;
         pcVar2 = local_13c + 1;
       } while (*local_13c != '\0');
-      for (local_118 = param_2 + (int)(local_13c + -0xc94500);
-          (*local_118 != '\0' && (*local_118 != '_')); local_118 = local_118 + 1) {
+      for (basename = mapname + (int)(local_13c + -0xc94500);
+          (*basename != '\0' && (*basename != '_')); basename = basename + 1) {
       }
-      if (*local_118 == '\0') {
+      if (*basename == '\0') {
         Com_PrintError(1,"Bad specop level name\n");
       }
-      Com_sprintf((char *)local_10c,0x100,"%s");
-      local_110 = RawBufferOpen((char *)local_10c,"exposure/%s.xpo");
+      Com_sprintf((char *)temp,0x100,"%s");
+      fileBuf = RawBufferOpen((char *)temp,"exposure/%s.xpo");
     }
   }
-  if (local_110 != (char *)0x0) {
-    R_LoadExposureData(local_110);
-    Com_UnloadRawTextFile(local_110);
+  if (fileBuf != (char *)0x0) {
+    R_LoadExposureData(fileBuf);
+    Com_UnloadRawTextFile(fileBuf);
   }
   return;
 }

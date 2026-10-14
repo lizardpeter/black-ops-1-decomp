@@ -738,7 +738,7 @@ int __thiscall
 bdHTTPClient::writePayloadData(bdHTTPClient *this,bdStreamSocket *param_1,uint *param_2)
 
 {
-  uint uVar1;
+  uint maxlen;
   uint local_3c;
   uint local_38;
   uint local_2c;
@@ -760,22 +760,22 @@ bdHTTPClient::writePayloadData(bdHTTPClient *this,bdStreamSocket *param_1,uint *
     local_c = local_38;
   }
   else {
-    uVar1 = -(uint)(this->m_chunked != false) & 10;
-    local_10 = uVar1 + (-(uint)(this->m_chunked != false) & 2);
+    maxlen = -(uint)(this->m_chunked != false) & 10;
+    local_10 = maxlen + (-(uint)(this->m_chunked != false) & 2);
     local_c = (**(code **)((int)*this->m_uploadHandler + 4))
-                        ((this->m_buffer).m_httpCommonBuffer + uVar1,0x400 - local_10,*param_2);
+                        ((this->m_buffer).m_httpCommonBuffer + maxlen,0x400 - local_10,*param_2);
     if (0x400 - local_10 < local_c) {
       return -1;
     }
     if (this->m_chunked != false) {
-      local_2c = bdSnprintf((this->m_buffer).m_httpCommonBuffer,uVar1,"%x");
-      (this->m_buffer).m_httpCommonBuffer[uVar1 - 1] = '\n';
-      (this->m_buffer).m_httpCommonBuffer[uVar1 - 2] = '\r';
-      for (; local_2c < uVar1 - 2; local_2c = local_2c + 1) {
+      local_2c = bdSnprintf((this->m_buffer).m_httpCommonBuffer,maxlen,"%x");
+      (this->m_buffer).m_httpCommonBuffer[maxlen - 1] = '\n';
+      (this->m_buffer).m_httpCommonBuffer[maxlen - 2] = '\r';
+      for (; local_2c < maxlen - 2; local_2c = local_2c + 1) {
         (this->m_buffer).m_httpCommonBuffer[local_2c] = ' ';
       }
-      (this->m_buffer).m_httpCommonBuffer[uVar1 + local_c] = '\r';
-      this->m_serverName[uVar1 + local_c + 0xa5] = '\n';
+      (this->m_buffer).m_httpCommonBuffer[maxlen + local_c] = '\r';
+      this->m_serverName[maxlen + local_c + 0xa5] = '\n';
     }
     local_8 = (this->m_buffer).m_httpCommonBuffer;
     local_c = local_c + local_10;

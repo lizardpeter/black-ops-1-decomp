@@ -26,66 +26,66 @@ void __cdecl Outdoor_TempHunkFreePic(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float __cdecl Outdoor_TraceHeightInWorld(float param_1,float param_2)
+float __cdecl Outdoor_TraceHeightInWorld(float worldX,float worldY)
 
 {
-  col_context_t local_88;
-  float local_60;
-  float local_5c;
-  float4 local_58;
+  col_context_t context;
+  float traceEndHeight;
+  float traceStartHeight;
+  float4 results;
   float local_48;
   uint local_20;
-  float local_1c;
+  float traceStart;
   float local_18;
   float local_14;
-  float local_10;
+  float traceEnd;
   float local_c;
   float local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58.v[0] = 0.0;
-  local_58.v[1] = 0.0;
-  local_58.v[2] = 0.0;
-  local_58.v[3] = 0.0;
-  col_context_t::col_context_t(&local_88,0x2031);
-  local_5c = outdoorGlob.bbox[1][2] + 1.0;
-  local_60 = outdoorGlob.bbox[0][2] - 1.0;
-  local_1c = param_1;
-  local_18 = param_2;
-  local_10 = param_1;
-  local_c = param_2;
-  local_14 = local_5c;
-  local_8 = local_60;
-  memset((uchar *)local_58.u,'\0',0x38);
+  results.v[0] = 0.0;
+  results.v[1] = 0.0;
+  results.v[2] = 0.0;
+  results.v[3] = 0.0;
+  col_context_t::col_context_t(&context,0x2031);
+  traceStartHeight = outdoorGlob.bbox[1][2] + 1.0;
+  traceEndHeight = outdoorGlob.bbox[0][2] - 1.0;
+  traceStart = worldX;
+  local_18 = worldY;
+  traceEnd = worldX;
+  local_c = worldY;
+  local_14 = traceStartHeight;
+  local_8 = traceEndHeight;
+  memset((uchar *)results.u,'\0',0x38);
   local_48 = 1.0;
-  CM_BoxTrace((trace_t *)&local_58,&local_1c,&local_10,vec3_origin,vec3_origin,0x2031,&local_88);
-  return (local_60 - local_5c) * local_48 + local_5c;
+  CM_BoxTrace((trace_t *)&results,&traceStart,&traceEnd,vec3_origin,vec3_origin,0x2031,&context);
+  return (traceEndHeight - traceStartHeight) * local_48 + traceStartHeight;
 }
 
 
 // 00B34870  Outdoor_ApplyBoundingBox  (gfx_d3d/r_outdoor.cpp:86)
 
-void __cdecl Outdoor_ApplyBoundingBox(float *param_1,float *param_2)
+void __cdecl Outdoor_ApplyBoundingBox(float *outdoorMin,float *outdoorMax)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
-  int local_8;
+  int dimIter;
   
-  outdoorGlob.bbox[0][0] = *param_1;
-  outdoorGlob.bbox[0][1] = param_1[1];
-  outdoorGlob.bbox[0][2] = param_1[2];
-  outdoorGlob.bbox[1][0] = *param_2;
-  outdoorGlob.bbox[1][1] = param_2[1];
-  outdoorGlob.bbox[1][2] = param_2[2];
-  local_8 = 0;
+  outdoorGlob.bbox[0][0] = *outdoorMin;
+  outdoorGlob.bbox[0][1] = outdoorMin[1];
+  outdoorGlob.bbox[0][2] = outdoorMin[2];
+  outdoorGlob.bbox[1][0] = *outdoorMax;
+  outdoorGlob.bbox[1][1] = outdoorMax[1];
+  outdoorGlob.bbox[1][2] = outdoorMax[2];
+  dimIter = 0;
   do {
-    if (local_8 == 3) {
+    if (dimIter == 3) {
       return;
     }
-    if (outdoorGlob.bbox[0][local_8] == 131072.0) {
-      if (outdoorGlob.scale[local_8 + -3] != -131072.0) {
+    if (outdoorGlob.bbox[0][dimIter] == 131072.0) {
+      if (outdoorGlob.scale[dimIter + -3] != -131072.0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0x60,1,
                                  "%s");
         if (!bVar3) {
@@ -94,10 +94,10 @@ void __cdecl Outdoor_ApplyBoundingBox(float *param_1,float *param_2)
           return;
         }
       }
-      outdoorGlob.bbox[0][local_8] = 0.0;
-      outdoorGlob.scale[local_8 + -3] = 0.0;
+      outdoorGlob.bbox[0][dimIter] = 0.0;
+      outdoorGlob.scale[dimIter + -3] = 0.0;
     }
-    if (outdoorGlob.scale[local_8 + -3] < outdoorGlob.bbox[0][local_8]) {
+    if (outdoorGlob.scale[dimIter + -3] < outdoorGlob.bbox[0][dimIter]) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",100,1,
                                "%s");
       if (!bVar3) {
@@ -106,12 +106,12 @@ void __cdecl Outdoor_ApplyBoundingBox(float *param_1,float *param_2)
         return;
       }
     }
-    if (outdoorGlob.scale[local_8 + -3] - outdoorGlob.bbox[0][local_8] < 1.0) {
-      outdoorGlob.bbox[0][local_8] = outdoorGlob.bbox[0][local_8] - 0.5;
-      outdoorGlob.scale[local_8 + -3] = outdoorGlob.scale[local_8 + -3] + 0.5;
+    if (outdoorGlob.scale[dimIter + -3] - outdoorGlob.bbox[0][dimIter] < 1.0) {
+      outdoorGlob.bbox[0][dimIter] = outdoorGlob.bbox[0][dimIter] - 0.5;
+      outdoorGlob.scale[dimIter + -3] = outdoorGlob.scale[dimIter + -3] + 0.5;
     }
-    pfVar1 = outdoorGlob.bbox[0] + local_8;
-    if (outdoorGlob.scale[local_8 + -3] < *pfVar1 || outdoorGlob.scale[local_8 + -3] == *pfVar1) {
+    pfVar1 = outdoorGlob.bbox[0] + dimIter;
+    if (outdoorGlob.scale[dimIter + -3] < *pfVar1 || outdoorGlob.scale[dimIter + -3] == *pfVar1) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0x6a,1,
                                "%s");
       if (!bVar3) {
@@ -120,7 +120,7 @@ void __cdecl Outdoor_ApplyBoundingBox(float *param_1,float *param_2)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    dimIter = dimIter + 1;
   } while( true );
 }
 
@@ -130,14 +130,14 @@ void __cdecl Outdoor_ApplyBoundingBox(float *param_1,float *param_2)
 void __cdecl Outdoor_UpdateTransforms(void)
 
 {
-  int local_8;
+  int dimension;
   
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-    outdoorGlob.scale[local_8] =
-         (float)(outdoorMapSize[local_8] + -1) /
-         (outdoorGlob.scale[local_8 + -3] - outdoorGlob.bbox[0][local_8]);
-    outdoorGlob.invScale[local_8] = 1.0 / outdoorGlob.scale[local_8];
-    outdoorGlob.add[local_8] = -outdoorGlob.bbox[0][local_8] * outdoorGlob.scale[local_8];
+  for (dimension = 0; dimension != 3; dimension = dimension + 1) {
+    outdoorGlob.scale[dimension] =
+         (float)(outdoorMapSize[dimension] + -1) /
+         (outdoorGlob.scale[dimension + -3] - outdoorGlob.bbox[0][dimension]);
+    outdoorGlob.invScale[dimension] = 1.0 / outdoorGlob.scale[dimension];
+    outdoorGlob.add[dimension] = -outdoorGlob.bbox[0][dimension] * outdoorGlob.scale[dimension];
   }
   return;
 }
@@ -145,39 +145,42 @@ void __cdecl Outdoor_UpdateTransforms(void)
 
 // 00B34B00  Outdoor_SetRendererOutdoorLookupMatrix  (gfx_d3d/r_outdoor.cpp:123)
 
-void __cdecl Outdoor_SetRendererOutdoorLookupMatrix(GfxWorld *param_1)
+void __cdecl Outdoor_SetRendererOutdoorLookupMatrix(GfxWorld *world)
 
 {
-  float local_20 [6];
-  int local_8;
+  float outdoorScale [6];
+  int dimIter;
   
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-    local_20[local_8] = 1.0 / (outdoorGlob.scale[local_8 + -3] - outdoorGlob.bbox[0][local_8]);
-    local_20[local_8 + 3] = -outdoorGlob.bbox[0][local_8] * local_20[local_8];
+  for (dimIter = 0; dimIter != 3; dimIter = dimIter + 1) {
+    outdoorScale[dimIter] = 1.0 / (outdoorGlob.scale[dimIter + -3] - outdoorGlob.bbox[0][dimIter]);
+    outdoorScale[dimIter + 3] = -outdoorGlob.bbox[0][dimIter] * outdoorScale[dimIter];
   }
-  MatrixIdentity44(param_1->outdoorLookupMatrix);
-  param_1->outdoorLookupMatrix[0][0] = local_20[0];
-  param_1->outdoorLookupMatrix[1][1] = local_20[1];
-  param_1->outdoorLookupMatrix[2][2] = local_20[2];
-  param_1->outdoorLookupMatrix[3][0] = local_20[3];
-  param_1->outdoorLookupMatrix[3][1] = local_20[4];
-  param_1->outdoorLookupMatrix[3][2] = local_20[5];
+  MatrixIdentity44(world->outdoorLookupMatrix);
+  world->outdoorLookupMatrix[0][0] = outdoorScale[0];
+  world->outdoorLookupMatrix[1][1] = outdoorScale[1];
+  world->outdoorLookupMatrix[2][2] = outdoorScale[2];
+  world->outdoorLookupMatrix[3][0] = outdoorScale[3];
+  world->outdoorLookupMatrix[3][1] = outdoorScale[4];
+  world->outdoorLookupMatrix[3][2] = outdoorScale[5];
   return;
 }
 
 
 // 00B34F60  Outdoor_TransformToTextureClamped  (gfx_d3d/r_outdoor.cpp:149)
 
-int __cdecl Outdoor_TransformToTextureClamped(int param_1,float param_2)
+int __cdecl Outdoor_TransformToTextureClamped(int dimension,float inWorld)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int local_20;
+  int unclamped;
+  float transformed;
   
-  local_20 = (int)ROUND((param_2 * outdoorGlob.scale[param_1] + outdoorGlob.add[param_1]) - 0.5);
-  iVar3 = outdoorMapSize[param_1] + -1;
+  local_20 = (int)ROUND((inWorld * outdoorGlob.scale[dimension] + outdoorGlob.add[dimension]) - 0.5)
+  ;
+  iVar3 = outdoorMapSize[dimension] + -1;
   if ((iVar3 < 1) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x2cf,0,
                                "%s"), !bVar2)) {
@@ -197,18 +200,18 @@ int __cdecl Outdoor_TransformToTextureClamped(int param_1,float param_2)
 
 // 00B34F00  Outdoor_WriteToPic  (gfx_d3d/r_outdoor.cpp:159)
 
-void __cdecl Outdoor_WriteToPic(float param_1,uchar *param_2)
+void __cdecl Outdoor_WriteToPic(float zWorld,uchar *outByte)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uchar local_8;
+  int zTexture;
   
-  uVar3 = Outdoor_TransformToTextureClamped(2,param_1);
-  local_8 = (uchar)uVar3;
-  *param_2 = local_8;
-  if (uVar3 != *param_2) {
+  uVar3 = Outdoor_TransformToTextureClamped(2,zWorld);
+  zTexture._0_1_ = (uchar)uVar3;
+  *outByte = (uchar)zTexture;
+  if (uVar3 != *outByte) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0xa4,0,"%s"
                             );
     if (!bVar2) {
@@ -228,11 +231,14 @@ void __cdecl Outdoor_ComputeTexels(void)
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
-  float fVar4;
-  uchar *local_14;
-  int local_10;
-  int local_c;
+  float worldY;
+  float zWorld_00;
+  float zWorld;
+  float yWorld;
+  uchar *texelPtr;
+  int x;
+  int y;
+  float xWorld;
   
   if (outdoorGlob.pic == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0xad,0,"%s"
@@ -243,15 +249,15 @@ void __cdecl Outdoor_ComputeTexels(void)
       return;
     }
   }
-  local_14 = outdoorGlob.pic;
-  for (local_c = 0; local_c != 0x200; local_c = local_c + 1) {
-    fVar3 = (((float)local_c + 0.5) - outdoorGlob.add[1]) * outdoorGlob.invScale[1];
-    for (local_10 = 0; local_10 != 0x200; local_10 = local_10 + 1) {
-      fVar4 = Outdoor_TraceHeightInWorld
-                        ((((float)local_10 + 0.5) - outdoorGlob.add[0]) * outdoorGlob.invScale[0],
-                         fVar3);
-      Outdoor_WriteToPic(fVar4,local_14);
-      local_14 = local_14 + 1;
+  texelPtr = outdoorGlob.pic;
+  for (y = 0; y != 0x200; y = y + 1) {
+    worldY = (((float)y + 0.5) - outdoorGlob.add[1]) * outdoorGlob.invScale[1];
+    for (x = 0; x != 0x200; x = x + 1) {
+      zWorld_00 = Outdoor_TraceHeightInWorld
+                            ((((float)x + 0.5) - outdoorGlob.add[0]) * outdoorGlob.invScale[0],
+                             worldY);
+      Outdoor_WriteToPic(zWorld_00,texelPtr);
+      texelPtr = texelPtr + 1;
     }
   }
   return;
@@ -260,14 +266,14 @@ void __cdecl Outdoor_ComputeTexels(void)
 
 // 00B347A0  R_RegisterOutdoorImage  (gfx_d3d/r_outdoor.cpp:190)
 
-void __cdecl R_RegisterOutdoorImage(GfxWorld *param_1,float *param_2,float *param_3)
+void __cdecl R_RegisterOutdoorImage(GfxWorld *world,float *outdoorMin,float *outdoorMax)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
   
-  if (param_1 == (GfxWorld *)0x0) {
+  if (world == (GfxWorld *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0xbf,0,"%s"
                             );
     if (!bVar2) {
@@ -276,17 +282,17 @@ void __cdecl R_RegisterOutdoorImage(GfxWorld *param_1,float *param_2,float *para
       return;
     }
   }
-  if (param_1->numOutdoorBounds == 0) {
-    Outdoor_ApplyBoundingBox(param_2,param_3);
+  if (world->numOutdoorBounds == 0) {
+    Outdoor_ApplyBoundingBox(outdoorMin,outdoorMax);
   }
   else {
-    Outdoor_ApplyBoundingBox((float *)param_1->outdoorBounds,param_1->outdoorBounds->bounds[1]);
+    Outdoor_ApplyBoundingBox((float *)world->outdoorBounds,world->outdoorBounds->bounds[1]);
   }
   Outdoor_UpdateTransforms();
-  Outdoor_SetRendererOutdoorLookupMatrix(param_1);
+  Outdoor_SetRendererOutdoorLookupMatrix(world);
   pGVar3 = Image_Register("$outdoor",'\x01',0);
-  param_1->outdoorImage = pGVar3;
-  if (param_1->outdoorImage == (GfxImage *)0x0) {
+  world->outdoorImage = pGVar3;
+  if (world->outdoorImage == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_outdoor.cpp",0xca,0,"%s"
                             );
     if (!bVar2) {
@@ -301,12 +307,15 @@ void __cdecl R_RegisterOutdoorImage(GfxWorld *param_1,float *param_2,float *para
 
 // 00B34BF0  R_GenerateOutdoorImage  (gfx_d3d/r_outdoor.cpp:206)
 
-void __cdecl R_GenerateOutdoorImage(GfxImage *param_1)
+void __cdecl R_GenerateOutdoorImage(GfxImage *outdoorImage)
 
 {
+  int width;
+  int height;
+  
   outdoorGlob.pic = Hunk_AllocateTempMemory(0x40000,"Outdoor_TempHunkAllocatePic");
   Outdoor_ComputeTexels();
-  Image_Generate2D(param_1,outdoorGlob.pic,0x200,0x200,D3DFMT_L8);
+  Image_Generate2D(outdoorImage,outdoorGlob.pic,0x200,0x200,D3DFMT_L8);
   Outdoor_TempHunkFreePic();
   return;
 }

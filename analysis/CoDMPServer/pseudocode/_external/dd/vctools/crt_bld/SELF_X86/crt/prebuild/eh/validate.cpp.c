@@ -2,9 +2,9 @@
 
 // 00C2DF8F  _ValidateRead  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/validate.cpp:63)
 
-int __cdecl _ValidateRead(void *param_1,uint param_2)
+int __cdecl _ValidateRead(void *code,uint size_2)
 
 {
-  return (uint)(param_1 != (void *)0x0);
+  return (uint)(code != (void *)0x0);
 }
 

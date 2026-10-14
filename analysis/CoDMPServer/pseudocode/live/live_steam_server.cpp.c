@@ -2,6 +2,12 @@
 
 // 0097EB70  LiveSteamServer  (live/live_steam_server.cpp:85)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 LiveSteamServer * __thiscall LiveSteamServer::LiveSteamServer(LiveSteamServer *this)
 
 {
@@ -135,36 +141,36 @@ void __thiscall LiveSteamServer::RunFrame(LiveSteamServer *this)
   int *piVar2;
   ulong64 *puVar3;
   undefined1 local_20 [8];
-  int *local_18;
-  undefined4 local_14;
-  uint local_10;
-  int local_c;
-  undefined4 local_8;
+  client_t *client;
+  uint RUN_INTERVAL;
+  uint currentTime;
+  int i;
+  int MAX_STEAM_AUTH_FAIL_COUNT;
   
-  local_8 = 4;
-  local_14 = 10000;
+  MAX_STEAM_AUTH_FAIL_COUNT = 4;
+  RUN_INTERVAL = 10000;
   if ((this->serverActive != false) &&
-     (local_10 = Sys_Milliseconds(), 9999 < local_10 - this->lastRunTime)) {
-    this->lastRunTime = local_10;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      local_18 = (int *)(local_c * 0x84d00 + (int)svs.clients);
-      if ((((4 < *local_18) && (local_18[0x18e44] == 0)) && (local_18[0x18e45] == 0)) &&
-         (*(char *)((int)local_18 + 0x84cd6) == '\0')) {
-        *(char *)((int)local_18 + 0x84cd7) = *(char *)((int)local_18 + 0x84cd7) + '\x01';
-        if (*(char *)((int)local_18 + 0x84cd7) == '\x04') {
+     (currentTime = Sys_Milliseconds(), 9999 < currentTime - this->lastRunTime)) {
+    this->lastRunTime = currentTime;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      client = (client_t *)(i * 0x84d00 + (int)svs.clients);
+      if ((((4 < (client->header).state) && (client->bIsTestClient == 0)) &&
+          (client->bIsDemoClient == 0)) && (client[1].userinfo[0x3ae] == '\0')) {
+        client[1].userinfo[0x3af] = client[1].userinfo[0x3af] + '\x01';
+        if (client[1].userinfo[0x3af] == '\x04') {
           pcVar1 = va("Kicking \'%s\' <%llx> in runframe, unable to Steam authorize\n");
           Com_PrintError(0xf,pcVar1);
           pcVar1 = va("Kicking \'%s\' <%llx> in runframe, unable to Steam authorize\n");
           SV_SysLog_LogMessage(0,pcVar1);
           pcVar1 = va("clientkick %d PLATFORM_STEAM_CONNECT_FAIL\n");
           Cbuf_AddText(0,pcVar1);
-          *(undefined1 *)((int)local_18 + 0x84cd7) = 0;
+          client[1].userinfo[0x3af] = '\0';
         }
         else {
           Com_DPrintf(0,"Sending steam auth request to client <%llx>, fail count is now %i\n");
           piVar2 = (int *)SteamGameServer();
           puVar3 = (ulong64 *)(**(code **)(*piVar2 + 0x10))(local_20);
-          SV_SteamAuthClientRequest(*(netadr_t *)(local_18 + 8),*puVar3);
+          SV_SteamAuthClientRequest((client->header).netchan.remoteAddress,*puVar3);
         }
       }
     }
@@ -176,7 +182,8 @@ void __thiscall LiveSteamServer::RunFrame(LiveSteamServer *this)
 // 0097F100  OnSteamServersConnected  (live/live_steam_server.cpp:158)
 
 void __thiscall
-LiveSteamServer::OnSteamServersConnected(LiveSteamServer *this,SteamServersConnected_t *param_1)
+LiveSteamServer::OnSteamServersConnected
+          (LiveSteamServer *this,SteamServersConnected_t *pLogonSuccess)
 
 {
   bdAddr *pbVar1;
@@ -185,21 +192,22 @@ LiveSteamServer::OnSteamServersConnected(LiveSteamServer *this,SteamServersConne
   uint uVar3;
   uint uVar4;
   uint *puVar5;
-  bdReference<bdByteBuffer> local_c;
-  uint local_8;
+  ushort serverPort;
+  bdReference<bdCommonAddr> localAddr;
+  uint n;
   
   Com_Printf(0x17,"STEAM: SteamServer connected to Steam successfully\n");
   dwGetLocalCommonAddr();
-  puVar5 = &local_8;
+  puVar5 = &n;
   uVar4 = 0;
   uVar3 = 4;
   puVar2 = &this->serverIP;
-  pbVar1 = bdCommonAddr::getPublicAddr((bdCommonAddr *)local_c.m_ptr);
+  pbVar1 = bdCommonAddr::getPublicAddr(localAddr.m_ptr);
   this_00 = bdAddr::getAddress(pbVar1);
   bdInetAddr::serialize(this_00,puVar2,uVar3,uVar4,puVar5);
-  pbVar1 = bdCommonAddr::getPublicAddr((bdCommonAddr *)local_c.m_ptr);
+  pbVar1 = bdCommonAddr::getPublicAddr(localAddr.m_ptr);
   bdAddr::getPort(pbVar1);
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_c);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&localAddr);
   return;
 }
 
@@ -214,17 +222,18 @@ LiveSteamServer::OnSteamServersConnected(LiveSteamServer *this,SteamServersConne
 
 void __thiscall
 LiveSteamServer::OnSteamServersDisconnected
-          (LiveSteamServer *this,SteamServersDisconnected_t *param_1)
+          (LiveSteamServer *this,SteamServersDisconnected_t *pLoggedOff)
 
 {
   int *piVar1;
-  int local_c;
+  int i;
+  client_t *client;
   
   this->serverActive = false;
   Com_PrintError(0xf,"STEAM: SteamServer got logged out of Steam\n");
   SV_SysLog_LogMessage(0,"STEAM: SteamServer got logged out of Steam\n");
-  for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-    piVar1 = (int *)(local_c * 0x84d00 + (int)svs.clients);
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    piVar1 = (int *)(i * 0x84d00 + (int)svs.clients);
     if ((((4 < *piVar1) && (piVar1[0x18e44] == 0)) && (piVar1[0x18e45] == 0)) &&
        (*(char *)((int)piVar1 + 0x84cd6) == '\0')) {
       *(undefined1 *)((int)piVar1 + 0x84cd7) = 0;
@@ -236,7 +245,8 @@ LiveSteamServer::OnSteamServersDisconnected
 
 // 0097F230  OnPolicyResponse  (live/live_steam_server.cpp:208)
 
-void __thiscall LiveSteamServer::OnPolicyResponse(LiveSteamServer *this,GSPolicyResponse_t *param_1)
+void __thiscall
+LiveSteamServer::OnPolicyResponse(LiveSteamServer *this,GSPolicyResponse_t *pPolicyResponse)
 
 {
   char cVar1;
@@ -264,28 +274,29 @@ void __thiscall LiveSteamServer::OnPolicyResponse(LiveSteamServer *this,GSPolicy
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl KickClientFromSteamGameServer(CSteamID param_1,EDenyReason param_2)
+void __cdecl KickClientFromSteamGameServer(CSteamID clientID,EDenyReason reason)
 
 {
   int *piVar1;
   char *pcVar2;
-  int local_8;
+  client_t *client;
+  int i;
   
-  if (param_2 != k_EDenySteamValidationStalled) {
-    for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-      piVar1 = (int *)(local_8 * 0x84d00 + (int)svs.clients);
-      if (((2 < *piVar1) && (piVar1[0x21336] == param_1.m_steamid.m_comp.m_unAccountID)) &&
-         (piVar1[0x21337] == param_1.m_steamid.m_unAll64Bits._4_4_)) {
+  if (reason != k_EDenySteamValidationStalled) {
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      piVar1 = (int *)(i * 0x84d00 + (int)svs.clients);
+      if (((2 < *piVar1) && (piVar1[0x21336] == clientID.m_steamid.m_comp.m_unAccountID)) &&
+         (piVar1[0x21337] == clientID.m_steamid.m_unAll64Bits._4_4_)) {
         piVar1 = (int *)SteamGameServer();
         (**(code **)(*piVar1 + 0x1c))
-                  (param_1.m_steamid.m_comp.m_unAccountID,param_1.m_steamid.m_unAll64Bits._4_4_);
+                  (clientID.m_steamid.m_comp.m_unAccountID,clientID.m_steamid.m_unAll64Bits._4_4_);
         pcVar2 = va("STEAM: kicking \'%s\' <%llx> for reason: %d in KickClientFromSteamGameServer\n"
                    );
         Com_PrintError(0xf,pcVar2);
         pcVar2 = va("STEAM: kicking \'%s\' <%llx> for reason: %d in KickClientFromSteamGameServer\n"
                    );
         SV_SysLog_LogMessage(0,pcVar2);
-        switch(param_2) {
+        switch(reason) {
         case k_EDenyNotLoggedOn:
         case k_EDenyNoLicense:
         case k_EDenyLoggedInElseWhere:
@@ -316,14 +327,16 @@ void __cdecl KickClientFromSteamGameServer(CSteamID param_1,EDenyReason param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClientApprove_t *param_1)
+void __thiscall
+LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClientApprove_t *pGSClientApprove)
 
 {
   int iVar1;
   int *piVar2;
   int *piVar3;
   char *pcVar4;
-  int local_8;
+  client_t *client;
+  int i;
   
   iVar1 = SteamFriends();
   if (iVar1 == 0) {
@@ -332,22 +345,22 @@ void __thiscall LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClien
   else {
     piVar2 = (int *)SteamFriends();
     (**(code **)(*piVar2 + 0x1c))
-              ((param_1->m_SteamID).m_steamid.m_comp.m_unAccountID,
-               *(undefined4 *)((int)&(param_1->m_SteamID).m_steamid + 4));
+              ((pGSClientApprove->m_SteamID).m_steamid.m_comp.m_unAccountID,
+               *(undefined4 *)((int)&(pGSClientApprove->m_SteamID).m_steamid + 4));
     Com_PrintWarning(0xf,"STEAM: Approved client with SteamPersonaName: %s\n");
   }
-  local_8 = 0;
+  i = 0;
   do {
-    if ((com_maxclients->current).integer <= local_8) {
+    if ((com_maxclients->current).integer <= i) {
       return;
     }
-    piVar2 = (int *)(local_8 * 0x84d00 + (int)svs.clients);
+    piVar2 = (int *)(i * 0x84d00 + (int)svs.clients);
     if (2 < *piVar2) {
       if (this->currentMapDlcAppID != 0) {
         piVar3 = (int *)SteamGameServer();
         iVar1 = (**(code **)(*piVar3 + 0x48))
-                          ((param_1->m_SteamID).m_steamid.m_comp.m_unAccountID,
-                           *(undefined4 *)((int)&(param_1->m_SteamID).m_steamid + 4),
+                          ((pGSClientApprove->m_SteamID).m_steamid.m_comp.m_unAccountID,
+                           *(undefined4 *)((int)&(pGSClientApprove->m_SteamID).m_steamid + 4),
                            this->currentMapDlcAppID);
         if (iVar1 != 0) {
           pcVar4 = va("kicking client %s, no license\n");
@@ -355,7 +368,7 @@ void __thiscall LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClien
           pcVar4 = va("kicking client %s, no license\n");
           SV_SysLog_LogMessage(0,pcVar4);
           KickClientFromSteamGameServer
-                    ((CSteamID)(param_1->m_SteamID).m_steamid.m_comp,k_EDenyNoLicense);
+                    ((CSteamID)(pGSClientApprove->m_SteamID).m_steamid.m_comp,k_EDenyNoLicense);
           return;
         }
         iVar1 = SteamFriends();
@@ -365,18 +378,18 @@ void __thiscall LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClien
         else {
           piVar3 = (int *)SteamFriends();
           (**(code **)(*piVar3 + 0x1c))
-                    ((param_1->m_SteamID).m_steamid.m_comp.m_unAccountID,
-                     *(undefined4 *)((int)&(param_1->m_SteamID).m_steamid + 4));
+                    ((pGSClientApprove->m_SteamID).m_steamid.m_comp.m_unAccountID,
+                     *(undefined4 *)((int)&(pGSClientApprove->m_SteamID).m_steamid + 4));
           Com_PrintWarning(0xf,"STEAM: Approved client for DLC, SteamPersonaName: %s\n");
         }
       }
-      if ((piVar2[0x21336] == (param_1->m_SteamID).m_steamid.m_comp.m_unAccountID) &&
-         (piVar2[0x21337] == *(int *)((int)&(param_1->m_SteamID).m_steamid + 4))) {
+      if ((piVar2[0x21336] == (pGSClientApprove->m_SteamID).m_steamid.m_comp.m_unAccountID) &&
+         (piVar2[0x21337] == *(int *)((int)&(pGSClientApprove->m_SteamID).m_steamid + 4))) {
         *(undefined1 *)((int)piVar2 + 0x84cd6) = 1;
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -385,17 +398,17 @@ void __thiscall LiveSteamServer::OnGSClientApprove(LiveSteamServer *this,GSClien
 
 void __thiscall
 CCallback<LiveSteamServer,SteamServersConnected_t,1>::Register
-          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,LiveSteamServer *param_1,
-          pmf_e06501ed param_2)
+          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,LiveSteamServer *pObj,
+          pmf_e06501ed func)
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_e06501ed)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_e06501ed)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x65);
   }
   return;
@@ -406,17 +419,17 @@ CCallback<LiveSteamServer,SteamServersConnected_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,SteamServersDisconnected_t,1>::Register
-          (CCallback<LiveSteamServer,SteamServersDisconnected_t,1> *this,LiveSteamServer *param_1,
-          pmf_2aa51f51 param_2)
+          (CCallback<LiveSteamServer,SteamServersDisconnected_t,1> *this,LiveSteamServer *pObj,
+          pmf_2aa51f51 func)
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_2aa51f51)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_2aa51f51)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x67);
   }
   return;
@@ -427,17 +440,17 @@ CCallback<LiveSteamServer,SteamServersDisconnected_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,GSPolicyResponse_t,1>::Register
-          (CCallback<LiveSteamServer,GSPolicyResponse_t,1> *this,LiveSteamServer *param_1,
-          pmf_14fe05cd param_2)
+          (CCallback<LiveSteamServer,GSPolicyResponse_t,1> *this,LiveSteamServer *pObj,
+          pmf_14fe05cd func)
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_14fe05cd)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_14fe05cd)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x73);
   }
   return;
@@ -448,17 +461,17 @@ CCallback<LiveSteamServer,GSPolicyResponse_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,GSClientApprove_t,1>::Register
-          (CCallback<LiveSteamServer,GSClientApprove_t,1> *this,LiveSteamServer *param_1,
-          pmf_a2c2a300 param_2)
+          (CCallback<LiveSteamServer,GSClientApprove_t,1> *this,LiveSteamServer *pObj,
+          pmf_a2c2a300 func)
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_a2c2a300)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_a2c2a300)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0xc9);
   }
   return;
@@ -469,17 +482,17 @@ CCallback<LiveSteamServer,GSClientApprove_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,GSClientDeny_t,1>::Register
-          (CCallback<LiveSteamServer,GSClientDeny_t,1> *this,LiveSteamServer *param_1,
-          pmf_2f0ef6e9 param_2)
+          (CCallback<LiveSteamServer,GSClientDeny_t,1> *this,LiveSteamServer *pObj,pmf_2f0ef6e9 func
+          )
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_2f0ef6e9)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_2f0ef6e9)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0xca);
   }
   return;
@@ -490,17 +503,17 @@ CCallback<LiveSteamServer,GSClientDeny_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,GSClientKick_t,1>::Register
-          (CCallback<LiveSteamServer,GSClientKick_t,1> *this,LiveSteamServer *param_1,
-          pmf_12d586ef param_2)
+          (CCallback<LiveSteamServer,GSClientKick_t,1> *this,LiveSteamServer *pObj,pmf_12d586ef func
+          )
 
 {
-  if ((param_1 != (LiveSteamServer *)0x0) && (param_2 != (pmf_12d586ef)0x0)) {
+  if ((pObj != (LiveSteamServer *)0x0) && (func != (pmf_12d586ef)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
     *(byte *)&this->_padding_ = (byte)this->_padding_ | 2;
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0xcb);
   }
   return;
@@ -511,10 +524,10 @@ CCallback<LiveSteamServer,GSClientKick_t,1>::Register
 
 void __thiscall
 CCallback<LiveSteamServer,SteamServersConnected_t,1>::Run
-          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,void *param_1)
+          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,void *pvParam_10)
 
 {
-  (*(code *)this->m_Func)(param_1);
+  (*(code *)this->m_Func)(pvParam_10);
   return;
 }
 
@@ -523,11 +536,11 @@ CCallback<LiveSteamServer,SteamServersConnected_t,1>::Run
 
 void __thiscall
 CCallback<LiveSteamServer,SteamServersConnected_t,1>::Run
-          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,void *param_1,bool param_2,
-          ulong64 param_3)
+          (CCallback<LiveSteamServer,SteamServersConnected_t,1> *this,void *pvParam_10,
+          bool __formal_10,ulong64 __formal_20)
 
 {
-  (*(code *)this->m_Func)(param_1);
+  (*(code *)this->m_Func)(pvParam_10);
   return;
 }
 
@@ -567,7 +580,13 @@ CCallback<LiveSteamServer,GSClientKick_t,1>::GetCallbackSizeBytes
 
 // 0097F620  OnGSClientDeny  (live/live_steam_server.cpp:318)
 
-void __thiscall LiveSteamServer::OnGSClientDeny(LiveSteamServer *this,GSClientDeny_t *param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __thiscall LiveSteamServer::OnGSClientDeny(LiveSteamServer *this,GSClientDeny_t *pGSClientDeny)
 
 {
   char *pcVar1;
@@ -577,19 +596,25 @@ void __thiscall LiveSteamServer::OnGSClientDeny(LiveSteamServer *this,GSClientDe
   pcVar1 = va("STEAM: Denying <%llx> for reason: %d\n");
   SV_SysLog_LogMessage(0,pcVar1);
   KickClientFromSteamGameServer
-            ((CSteamID)(param_1->m_SteamID).m_steamid.m_comp,param_1->m_eDenyReason);
+            ((CSteamID)(pGSClientDeny->m_SteamID).m_steamid.m_comp,pGSClientDeny->m_eDenyReason);
   return;
 }
 
 
 // 0097F6A0  OnGSClientKick  (live/live_steam_server.cpp:328)
 
-void __thiscall LiveSteamServer::OnGSClientKick(LiveSteamServer *this,GSClientKick_t *param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __thiscall LiveSteamServer::OnGSClientKick(LiveSteamServer *this,GSClientKick_t *pGSClientKick)
 
 {
   Com_PrintError(0,"Steam kicking <%llx> for reason: %d\n");
   KickClientFromSteamGameServer
-            ((CSteamID)(param_1->m_SteamID).m_steamid.m_comp,param_1->m_eDenyReason);
+            ((CSteamID)(pGSClientKick->m_SteamID).m_steamid.m_comp,pGSClientKick->m_eDenyReason);
   return;
 }
 
@@ -605,6 +630,9 @@ void __cdecl LiveSteam_Server_Init(void)
   undefined4 *puVar4;
   LiveSteamServer *this;
   LiveSteamServer *local_1c;
+  uint serverIP;
+  EServerMode mode;
+  ushort usSpectatorPort;
   
   bVar1 = LiveSteam_IsInitialized();
   if ((bVar1) && (g_liveSteamServer == (LiveSteamServer *)0x0)) {
@@ -635,20 +663,20 @@ void __cdecl LiveSteam_Server_Init(void)
 void __cdecl LiveSteam_Server_Shutdown(void)
 
 {
-  LiveSteamServer *pLVar1;
-  undefined4 *puVar2;
-  int *piVar3;
+  LiveSteamServer *p;
+  undefined4 *puVar1;
+  int *piVar2;
   
   if (g_liveSteamServer != (LiveSteamServer *)0x0) {
-    puVar2 = (undefined4 *)SteamMasterServerUpdater();
-    (**(code **)*puVar2)(0);
-    piVar3 = (int *)SteamGameServer();
-    (**(code **)(*piVar3 + 4))();
+    puVar1 = (undefined4 *)SteamMasterServerUpdater();
+    (**(code **)*puVar1)(0);
+    piVar2 = (int *)SteamGameServer();
+    (**(code **)(*piVar2 + 4))();
     SteamGameServer_Shutdown();
-    pLVar1 = g_liveSteamServer;
+    p = g_liveSteamServer;
     if (g_liveSteamServer != (LiveSteamServer *)0x0) {
       LiveSteamServer::~LiveSteamServer(g_liveSteamServer);
-      operator_delete(pLVar1);
+      operator_delete(p);
     }
     g_liveSteamServer = (LiveSteamServer *)0x0;
   }
@@ -657,6 +685,12 @@ void __cdecl LiveSteam_Server_Shutdown(void)
 
 
 // 0097F870  LiveSteam_Server_Frame  (live/live_steam_server.cpp:386)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl LiveSteam_Server_Frame(void)
 
@@ -682,38 +716,38 @@ void __cdecl LiveSteam_Server_RunCallbacks(void)
 
 void __cdecl
 LiveSteam_Server_ClientSteamAuthentication
-          (ulong64 param_1,netadr_t param_2,void *param_3,uint param_4)
+          (ulong64 clientSteamID,netadr_t netAddr,void *authBlob,uint authBlobSize)
 
 {
   code *pcVar1;
   char cVar2;
   bool bVar3;
   int *piVar4;
-  uint local_14;
-  SteamID_t local_10;
+  uint clientIP;
+  SteamID_t steamID;
   
-  CSteamID::CSteamID((CSteamID *)&local_10.m_comp);
+  CSteamID::CSteamID((CSteamID *)&steamID.m_comp);
   if (g_liveSteamServer != (LiveSteamServer *)0x0) {
-    if (param_2.type == NA_LOOPBACK) {
-      local_14 = g_liveSteamServer->serverIP;
+    if (netAddr.type == NA_LOOPBACK) {
+      clientIP = g_liveSteamServer->serverIP;
     }
     else {
-      if (param_2.type != NA_IP) {
+      if (netAddr.type != NA_IP) {
         return;
       }
-      local_14 = (uint)param_2.ip[0] << 0x18 | (uint)param_2.ip[1] << 0x10 |
-                 (uint)param_2.ip[2] << 8 | (uint)param_2.ip[3];
+      clientIP = (uint)netAddr.ip[0] << 0x18 | (uint)netAddr.ip[1] << 0x10 |
+                 (uint)netAddr.ip[2] << 8 | (uint)netAddr.ip[3];
     }
     piVar4 = (int *)SteamGameServer();
-    cVar2 = (**(code **)(*piVar4 + 0x14))(local_14,param_3,param_4,&local_10);
+    cVar2 = (**(code **)(*piVar4 + 0x14))(clientIP,authBlob,authBlobSize,&steamID);
     if (cVar2 == '\0') {
       Com_PrintError(0xf,
                      "ERROR: STEAM: Dev print - Unable to connect user %llu from IP: %u.%u.%u.%u:%u to steam server\n"
                     );
     }
-    else if ((param_1 != CONCAT44(local_10.m_unAll64Bits._4_4_,local_10.m_comp.m_unAccountID)) &&
-            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_steam_server.cpp"
-                                      ,0x1af,0,"%s"), !bVar3)) {
+    else if ((clientSteamID != CONCAT44(steamID.m_unAll64Bits._4_4_,steamID.m_comp.m_unAccountID))
+            && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_steam_server.cpp"
+                                         ,0x1af,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
@@ -725,19 +759,19 @@ LiveSteam_Server_ClientSteamAuthentication
 
 // 0097F9A0  LiveSteam_Server_ClientSteamDisconnect  (live/live_steam_server.cpp:443)
 
-void __cdecl LiveSteam_Server_ClientSteamDisconnect(ulong64 param_1)
+void __cdecl LiveSteam_Server_ClientSteamDisconnect(ulong64 clientSteamID)
 
 {
   bool bVar1;
   int *piVar2;
-  SteamID_t local_c;
+  SteamID_t clientID;
   
   if (g_liveSteamServer != (LiveSteamServer *)0x0) {
-    local_c.m_unAll64Bits = param_1;
-    bVar1 = CSteamID::IsValid((CSteamID *)&local_c.m_comp);
+    clientID.m_unAll64Bits = clientSteamID;
+    bVar1 = CSteamID::IsValid((CSteamID *)&clientID.m_comp);
     if (bVar1) {
       piVar2 = (int *)SteamGameServer();
-      (**(code **)(*piVar2 + 0x1c))(local_c.m_unAll64Bits);
+      (**(code **)(*piVar2 + 0x1c))(clientID.m_unAll64Bits);
     }
   }
   return;

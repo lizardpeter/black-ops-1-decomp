@@ -2,39 +2,41 @@
 
 // 006B4640  CM_PointLeafnum_r  (qcommon/cm_test.cpp:11)
 
-int __cdecl CM_PointLeafnum_r(float *param_1,int param_2)
+int __cdecl CM_PointLeafnum_r(float *p,int num)
 
 {
   cNode_t *pcVar1;
   short sVar2;
   cplane_s *pcVar3;
-  float local_8;
+  cNode_t *node;
+  cplane_s *plane;
+  float d;
   
-  while (-1 < param_2) {
-    pcVar1 = cm.nodes + param_2;
+  while (-1 < num) {
+    pcVar1 = cm.nodes + num;
     pcVar3 = pcVar1->plane;
     if (pcVar3->type < 3) {
-      local_8 = param_1[pcVar3->type] - pcVar3->dist;
+      d = p[pcVar3->type] - pcVar3->dist;
     }
     else {
-      local_8 = (pcVar3->normal[0] * *param_1 + pcVar3->normal[1] * param_1[1] +
-                pcVar3->normal[2] * param_1[2]) - pcVar3->dist;
+      d = (pcVar3->normal[0] * *p + pcVar3->normal[1] * p[1] + pcVar3->normal[2] * p[2]) -
+          pcVar3->dist;
     }
-    if (0.0 <= local_8) {
+    if (0.0 <= d) {
       sVar2 = pcVar1->children[0];
     }
     else {
       sVar2 = pcVar1->children[1];
     }
-    param_2 = (int)sVar2;
+    num = (int)sVar2;
   }
-  return -1 - param_2;
+  return -1 - num;
 }
 
 
 // 006B4710  CM_PointLeafnum  (qcommon/cm_test.cpp:37)
 
-int __cdecl CM_PointLeafnum(float *param_1)
+int __cdecl CM_PointLeafnum(float *p)
 
 {
   code *pcVar1;
@@ -49,26 +51,26 @@ int __cdecl CM_PointLeafnum(float *param_1)
       return iVar3;
     }
   }
-  iVar3 = CM_PointLeafnum_r(param_1,0);
+  iVar3 = CM_PointLeafnum_r(p,0);
   return iVar3;
 }
 
 
 // 006B4850  CM_StoreLeafs  (qcommon/cm_test.cpp:53)
 
-void __cdecl CM_StoreLeafs(leafList_s *param_1,int param_2)
+void __cdecl CM_StoreLeafs(leafList_s *ll,int nodenum)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  ushort local_8;
+  int leafNum;
   
-  uVar3 = -param_2 - 1;
+  uVar3 = -nodenum - 1;
   if (*(int *)&cm.leafs[uVar3].cluster != -1) {
-    param_1->lastLeaf = uVar3;
+    ll->lastLeaf = uVar3;
   }
-  if (param_1->count < param_1->maxcount) {
+  if (ll->count < ll->maxcount) {
     if ((uVar3 & 0xffff) != uVar3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x45,0,"%s"
                               );
@@ -78,12 +80,12 @@ void __cdecl CM_StoreLeafs(leafList_s *param_1,int param_2)
         return;
       }
     }
-    local_8 = (ushort)uVar3;
-    param_1->list[param_1->count] = local_8;
-    param_1->count = param_1->count + 1;
+    leafNum._0_2_ = (ushort)uVar3;
+    ll->list[ll->count] = (ushort)leafNum;
+    ll->count = ll->count + 1;
   }
   else {
-    param_1->overflowed = 1;
+    ll->overflowed = 1;
   }
   return;
 }
@@ -91,13 +93,17 @@ void __cdecl CM_StoreLeafs(leafList_s *param_1,int param_2)
 
 // 006B4750  CM_BoxLeafnums_r  (qcommon/cm_test.cpp:82)
 
-void __cdecl CM_BoxLeafnums_r(leafList_s *param_1,int param_2)
+void __cdecl CM_BoxLeafnums_r(leafList_s *ll,int nodenum)
 
 {
   cNode_t *pcVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  I_spuDmaSave save;
+  cNode_t *node;
+  cplane_s *plane;
+  int s;
   
   if ((cm.nodes == (cNode_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x57,0,"%s"
@@ -106,59 +112,59 @@ void __cdecl CM_BoxLeafnums_r(leafList_s *param_1,int param_2)
     (*pcVar2)();
     return;
   }
-  if ((param_1 == (leafList_s *)0x0) &&
+  if ((ll == (leafList_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x58,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  while (-1 < param_2) {
-    pcVar1 = cm.nodes + param_2;
-    iVar4 = BoxOnPlaneSide(param_1->bounds[0],param_1->bounds[1],pcVar1->plane);
+  while (-1 < nodenum) {
+    pcVar1 = cm.nodes + nodenum;
+    iVar4 = BoxOnPlaneSide(ll->bounds[0],ll->bounds[1],pcVar1->plane);
     if (iVar4 == 1) {
-      param_2 = (int)pcVar1->children[0];
+      nodenum = (int)pcVar1->children[0];
     }
     else if (iVar4 == 2) {
-      param_2 = (int)pcVar1->children[1];
+      nodenum = (int)pcVar1->children[1];
     }
     else {
-      CM_BoxLeafnums_r(param_1,(int)pcVar1->children[0]);
-      param_2 = (int)pcVar1->children[1];
+      CM_BoxLeafnums_r(ll,(int)pcVar1->children[0]);
+      nodenum = (int)pcVar1->children[1];
     }
   }
-  CM_StoreLeafs(param_1,param_2);
+  CM_StoreLeafs(ll,nodenum);
   return;
 }
 
 
 // 006B48F0  CM_BoxLeafnums  (qcommon/cm_test.cpp:187)
 
-int __cdecl CM_BoxLeafnums(float *param_1,float *param_2,ushort *param_3,int param_4,int *param_5)
+int __cdecl CM_BoxLeafnums(float *mins,float *maxs,ushort *list,int listsize,int *lastLeaf)
 
 {
-  leafList_s local_30;
+  leafList_s ll;
   
-  local_30.bounds[0][0] = *param_1;
-  local_30.bounds[0][1] = param_1[1];
-  local_30.bounds[0][2] = param_1[2];
-  local_30.bounds[1][0] = *param_2;
-  local_30.bounds[1][1] = param_2[1];
-  local_30.bounds[1][2] = param_2[2];
-  local_30.count = 0;
-  local_30.maxcount = param_4;
-  local_30.list = param_3;
-  local_30.lastLeaf = 0;
-  local_30.overflowed = 0;
-  CM_BoxLeafnums_r(&local_30,0);
-  *param_5 = local_30.lastLeaf;
-  return local_30.count;
+  ll.bounds[0][0] = *mins;
+  ll.bounds[0][1] = mins[1];
+  ll.bounds[0][2] = mins[2];
+  ll.bounds[1][0] = *maxs;
+  ll.bounds[1][1] = maxs[1];
+  ll.bounds[1][2] = maxs[2];
+  ll.count = 0;
+  ll.maxcount = listsize;
+  ll.list = list;
+  ll.lastLeaf = 0;
+  ll.overflowed = 0;
+  CM_BoxLeafnums_r(&ll,0);
+  *lastLeaf = ll.lastLeaf;
+  return ll.count;
 }
 
 
 // 006B4A90  CM_PointContentsLeafBrushNode_r  (qcommon/cm_test.cpp:307)
 
-int __cdecl CM_PointContentsLeafBrushNode_r(float *param_1,cLeafBrushNode_s *param_2)
+int __cdecl CM_PointContentsLeafBrushNode_r(float *p,cLeafBrushNode_s *node)
 
 {
   float *pfVar1;
@@ -171,77 +177,79 @@ int __cdecl CM_PointContentsLeafBrushNode_r(float *param_1,cLeafBrushNode_s *par
   uint uVar8;
   float fVar9;
   uint local_24;
-  cbrushside_t *local_1c;
-  uint local_18;
-  int local_14;
-  uint local_c;
+  cbrushside_t *side;
+  int contents;
+  int k;
+  cbrush_t *b;
+  int i;
+  int brushnum;
   
-  if ((param_2 == (cLeafBrushNode_s *)0x0) &&
+  if ((node == (cLeafBrushNode_s *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x13b,0,
                                "%s"), !bVar6)) {
     pcVar4 = (code *)swi(3);
     iVar7 = (*pcVar4)();
     return iVar7;
   }
-  local_18 = 0;
+  contents = 0;
   do {
-    if (param_2->leafBrushCount != 0) {
-      if (0 < param_2->leafBrushCount) {
-        local_14 = 0;
+    if (node->leafBrushCount != 0) {
+      if (0 < node->leafBrushCount) {
+        k = 0;
         do {
           pcVar5 = cm.brushes;
-          if (param_2->leafBrushCount <= local_14) {
-            return local_18;
+          if (node->leafBrushCount <= k) {
+            return contents;
           }
-          uVar2 = (param_2->data).leaf.brushes[local_14];
-          for (local_c = 0; (int)local_c < 3; local_c = local_c + 1) {
-            if ((param_1[local_c] <= cm.brushes[uVar2].mins[local_c] &&
-                 cm.brushes[uVar2].mins[local_c] != param_1[local_c]) ||
-               (cm.brushes[uVar2].maxs[local_c] <= param_1[local_c] &&
-                param_1[local_c] != cm.brushes[uVar2].maxs[local_c])) goto LAB_006b4af1;
+          uVar2 = (node->data).leaf.brushes[k];
+          for (i = 0; i < 3; i = i + 1) {
+            if ((p[i] <= cm.brushes[uVar2].mins[i] && cm.brushes[uVar2].mins[i] != p[i]) ||
+               (cm.brushes[uVar2].maxs[i] <= p[i] && p[i] != cm.brushes[uVar2].maxs[i]))
+            goto LAB_006b4af1;
           }
-          local_1c = cm.brushes[uVar2].sides;
-          local_c = cm.brushes[uVar2].numsides;
-          if (((int)local_c < 0) &&
+          side = cm.brushes[uVar2].sides;
+          i = cm.brushes[uVar2].numsides;
+          if ((i < 0) &&
              (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",
                                        0x153,0,"%s"), !bVar6)) {
             pcVar4 = (code *)swi(3);
             iVar7 = (*pcVar4)();
             return iVar7;
           }
-          for (; local_c != 0; local_c = local_c - 1) {
-            pcVar3 = local_1c->plane;
-            fVar9 = *param_1 * pcVar3->normal[0] + param_1[1] * pcVar3->normal[1] +
-                    param_1[2] * pcVar3->normal[2];
-            pfVar1 = &local_1c->plane->dist;
+          for (; i != 0; i = i + -1) {
+            pcVar3 = side->plane;
+            fVar9 = *p * pcVar3->normal[0] + p[1] * pcVar3->normal[1] + p[2] * pcVar3->normal[2];
+            pfVar1 = &side->plane->dist;
             if (*pfVar1 <= fVar9 && fVar9 != *pfVar1) goto LAB_006b4af1;
-            local_1c = local_1c + 1;
+            side = side + 1;
           }
-          local_18 = local_18 | pcVar5[uVar2].contents;
+          contents = contents | pcVar5[uVar2].contents;
 LAB_006b4af1:
-          local_14 = local_14 + 1;
+          k = k + 1;
         } while( true );
       }
-      uVar8 = CM_PointContentsLeafBrushNode_r(param_1,param_2 + 1);
-      local_18 = uVar8 | local_18;
+      uVar8 = CM_PointContentsLeafBrushNode_r(p,node + 1);
+      contents = uVar8 | contents;
     }
-    local_24 = (uint)(param_1[param_2->axis] <= (param_2->data).children.dist);
-    param_2 = param_2 + *(ushort *)((int)&param_2->data + local_24 * 2 + 8);
+    local_24 = (uint)(p[node->axis] <= (node->data).children.dist);
+    node = node + *(ushort *)((int)&node->data + local_24 * 2 + 8);
   } while( true );
 }
 
 
 // 006B4990  CM_PointContents  (qcommon/cm_test.cpp:370)
 
-int __cdecl CM_PointContents(float *param_1,uint param_2)
+int __cdecl CM_PointContents(float *p,uint model)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   cmodel_t *pcVar4;
-  cLeaf_s *local_14;
-  int local_8;
+  cLeaf_s *leaf;
+  cmodel_t *clipm;
+  int leafnum;
+  int i;
   
   if ((cm.numNodes == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x178,0,
@@ -250,27 +258,27 @@ int __cdecl CM_PointContents(float *param_1,uint param_2)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_2 == 0) {
-    iVar3 = CM_PointLeafnum_r(param_1,0);
-    local_14 = cm.leafs + iVar3;
+  if (model == 0) {
+    iVar3 = CM_PointLeafnum_r(p,0);
+    leaf = cm.leafs + iVar3;
   }
   else {
-    pcVar4 = CM_ClipHandleToModel(param_2);
-    local_14 = &pcVar4->leaf;
+    pcVar4 = CM_ClipHandleToModel(model);
+    leaf = &pcVar4->leaf;
   }
-  if (local_14->leafBrushNode == 0) {
+  if (leaf->leafBrushNode == 0) {
     iVar3 = 0;
   }
   else {
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      if (param_1[local_8] <= local_14->mins[local_8]) {
+    for (i = 0; i < 3; i = i + 1) {
+      if (p[i] <= leaf->mins[i]) {
         return 0;
       }
-      if (local_14->maxs[local_8] <= param_1[local_8]) {
+      if (leaf->maxs[i] <= p[i]) {
         return 0;
       }
     }
-    iVar3 = CM_PointContentsLeafBrushNode_r(param_1,cm.leafbrushNodes + local_14->leafBrushNode);
+    iVar3 = CM_PointContentsLeafBrushNode_r(p,cm.leafbrushNodes + leaf->leafBrushNode);
   }
   return iVar3;
 }
@@ -278,11 +286,11 @@ int __cdecl CM_PointContents(float *param_1,uint param_2)
 
 // 006B4CB0  CM_TransformedPointContents  (qcommon/cm_test.cpp:413)
 
-int __cdecl CM_TransformedPointContents(float *param_1,uint param_2,float *param_3,float *param_4)
+int __cdecl CM_TransformedPointContents(float *p,uint model,float *origin,float *angles)
 
 {
   int iVar1;
-  float local_34;
+  float axis;
   float local_30;
   float local_2c;
   float local_28;
@@ -291,30 +299,30 @@ int __cdecl CM_TransformedPointContents(float *param_1,uint param_2,float *param
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float p_l;
   float local_c;
   float local_8;
   
-  local_10 = *param_1 - *param_3;
-  local_c = param_1[1] - param_3[1];
-  local_8 = param_1[2] - param_3[2];
-  if (((*param_4 != 0.0) || (param_4[1] != 0.0)) || (param_4[2] != 0.0)) {
-    AnglesToAxis(param_4,(float (*) [3])&local_34);
+  p_l = *p - *origin;
+  local_c = p[1] - origin[1];
+  local_8 = p[2] - origin[2];
+  if (((*angles != 0.0) || (angles[1] != 0.0)) || (angles[2] != 0.0)) {
+    AnglesToAxis(angles,(float (*) [3])&axis);
     local_2c = local_8 * local_2c;
     local_20 = local_8 * local_20;
-    local_28 = local_10 * local_28;
-    local_8 = local_10 * local_1c + local_c * local_18 + local_8 * local_14;
-    local_10 = local_10 * local_34 + local_c * local_30 + local_2c;
+    local_28 = p_l * local_28;
+    local_8 = p_l * local_1c + local_c * local_18 + local_8 * local_14;
+    p_l = p_l * axis + local_c * local_30 + local_2c;
     local_c = local_28 + local_c * local_24 + local_20;
   }
-  iVar1 = CM_PointContents(&local_10,param_2);
+  iVar1 = CM_PointContents(&p_l,model);
   return iVar1;
 }
 
 
 // 006B4E20  CM_ClusterPVS  (qcommon/cm_test.cpp:446)
 
-uchar * __cdecl CM_ClusterPVS(int param_1)
+uchar * __cdecl CM_ClusterPVS(int cluster)
 
 {
   code *pcVar1;
@@ -323,14 +331,14 @@ uchar * __cdecl CM_ClusterPVS(int param_1)
   
   puVar3 = cm.visibility;
   if (cm.vised != 0) {
-    if (((param_1 < 0) || (cm.numClusters <= param_1)) &&
+    if (((cluster < 0) || (cm.numClusters <= cluster)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_test.cpp",0x1c2,0,
                                  "%s\n\t(cluster) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       puVar3 = (uchar *)(*pcVar1)();
       return puVar3;
     }
-    puVar3 = cm.visibility + param_1 * cm.clusterBytes;
+    puVar3 = cm.visibility + cluster * cm.clusterBytes;
   }
   return puVar3;
 }

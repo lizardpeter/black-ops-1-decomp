@@ -74,7 +74,7 @@ void __cdecl R_RegisterSunDvars(void)
 
 // 00B28ED0  R_SetSunFromDvars  (gfx_d3d/r_sky.cpp:101)
 
-void __cdecl R_SetSunFromDvars(sunflare_t *param_1)
+void __cdecl R_SetSunFromDvars(sunflare_t *sun)
 
 {
   code *pcVar1;
@@ -84,7 +84,7 @@ void __cdecl R_SetSunFromDvars(sunflare_t *param_1)
   undefined4 in_stack_ffffff6c;
   undefined4 in_stack_ffffff70;
   
-  if (param_1 == (sunflare_t *)0x0) {
+  if (sun == (sunflare_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sky.cpp",0x66,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -93,45 +93,41 @@ void __cdecl R_SetSunFromDvars(sunflare_t *param_1)
     }
   }
   pMVar3 = Material_RegisterHandle((r_sunsprite_shader->current).string,6);
-  param_1->spriteMaterial = pMVar3;
-  param_1->spriteSize = (float)(r_sunsprite_size->current).integer;
+  sun->spriteMaterial = pMVar3;
+  sun->spriteSize = (float)(r_sunsprite_size->current).integer;
   pMVar3 = Material_RegisterHandle((r_sunflare_shader->current).string,6);
-  param_1->flareMaterial = pMVar3;
-  param_1->flareMinSize = (r_sunflare_min_size->current).value * 0.5;
+  sun->flareMaterial = pMVar3;
+  sun->flareMinSize = (r_sunflare_min_size->current).value * 0.5;
   dVar4 = (double)((r_sunflare_min_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->flareMinDot = (float)dVar4;
-  param_1->flareMaxSize = (r_sunflare_max_size->current).value * 0.5;
+  sun->flareMinDot = (float)dVar4;
+  sun->flareMaxSize = (r_sunflare_max_size->current).value * 0.5;
   dVar4 = (double)((r_sunflare_max_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->flareMaxDot = (float)dVar4;
-  param_1->flareMaxAlpha = (float)(r_sunflare_max_alpha->current).integer;
-  param_1->flareFadeInTime = (int)ROUND((r_sunflare_fadein->current).value * 1000.0 + 9.313226e-10);
-  param_1->flareFadeOutTime =
-       (int)ROUND((r_sunflare_fadeout->current).value * 1000.0 + 9.313226e-10);
+  sun->flareMaxDot = (float)dVar4;
+  sun->flareMaxAlpha = (float)(r_sunflare_max_alpha->current).integer;
+  sun->flareFadeInTime = (int)ROUND((r_sunflare_fadein->current).value * 1000.0 + 9.313226e-10);
+  sun->flareFadeOutTime = (int)ROUND((r_sunflare_fadeout->current).value * 1000.0 + 9.313226e-10);
   dVar4 = (double)((r_sunblind_min_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->blindMinDot = (float)dVar4;
+  sun->blindMinDot = (float)dVar4;
   dVar4 = (double)((r_sunblind_max_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->blindMaxDot = (float)dVar4;
-  param_1->blindMaxDarken = (float)(r_sunblind_max_darken->current).integer;
-  param_1->blindFadeInTime = (int)ROUND((r_sunblind_fadein->current).value * 1000.0 + 9.313226e-10);
-  param_1->blindFadeOutTime =
-       (int)ROUND((r_sunblind_fadeout->current).value * 1000.0 + 9.313226e-10);
+  sun->blindMaxDot = (float)dVar4;
+  sun->blindMaxDarken = (float)(r_sunblind_max_darken->current).integer;
+  sun->blindFadeInTime = (int)ROUND((r_sunblind_fadein->current).value * 1000.0 + 9.313226e-10);
+  sun->blindFadeOutTime = (int)ROUND((r_sunblind_fadeout->current).value * 1000.0 + 9.313226e-10);
   dVar4 = (double)((r_sunglare_min_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->glareMinDot = (float)dVar4;
+  sun->glareMinDot = (float)dVar4;
   dVar4 = (double)((r_sunglare_max_angle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff70,in_stack_ffffff6c));
-  param_1->glareMaxDot = (float)dVar4;
-  param_1->glareMaxLighten = (float)(r_sunglare_max_lighten->current).integer;
-  param_1->glareFadeInTime = (int)ROUND((r_sunglare_fadein->current).value * 1000.0 + 9.313226e-10);
-  param_1->glareFadeOutTime =
-       (int)ROUND((r_sunglare_fadeout->current).value * 1000.0 + 9.313226e-10);
-  AngleVectors(&(r_sun_fx_position->current).value,param_1->sunFxPosition,(float *)0x0,(float *)0x0)
-  ;
-  param_1->hasValidData = true;
+  sun->glareMaxDot = (float)dVar4;
+  sun->glareMaxLighten = (float)(r_sunglare_max_lighten->current).integer;
+  sun->glareFadeInTime = (int)ROUND((r_sunglare_fadein->current).value * 1000.0 + 9.313226e-10);
+  sun->glareFadeOutTime = (int)ROUND((r_sunglare_fadeout->current).value * 1000.0 + 9.313226e-10);
+  AngleVectors(&(r_sun_fx_position->current).value,sun->sunFxPosition,(float *)0x0,(float *)0x0);
+  sun->hasValidData = true;
   return;
 }
 
@@ -147,18 +143,20 @@ uint __cdecl R_GetSunDvarCount(void)
 
 // 00B29270  R_LoadSunThroughDvars  (gfx_d3d/r_sky.cpp:143)
 
-void __cdecl R_LoadSunThroughDvars(char *param_1,sunflare_t *param_2)
+void __cdecl R_LoadSunThroughDvars(char *sunName,sunflare_t *sun)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  uint uVar5;
-  char *pcVar6;
-  char *local_8;
+  char *qpath;
+  int iVar3;
+  uint numDvars;
+  char *buffer;
+  char *fullpath;
+  int fileSize;
+  char *sunFile;
   
-  if (param_1 == (char *)0x0) {
+  if (sunName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sky.cpp",0x94,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -166,7 +164,7 @@ void __cdecl R_LoadSunThroughDvars(char *param_1,sunflare_t *param_2)
       return;
     }
   }
-  if (param_2 == (sunflare_t *)0x0) {
+  if (sun == (sunflare_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sky.cpp",0x95,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -174,19 +172,19 @@ void __cdecl R_LoadSunThroughDvars(char *param_1,sunflare_t *param_2)
       return;
     }
   }
-  pcVar3 = va("sun/%s.sun");
-  iVar4 = FS_ReadFile(pcVar3,&local_8);
-  if (iVar4 < 0) {
+  qpath = va("sun/%s.sun");
+  iVar3 = FS_ReadFile(qpath,&sunFile);
+  if (iVar3 < 0) {
     Com_Printf(8,"WARNING: couldn\'t load sun file \'%s\'\n");
   }
   else {
-    pcVar6 = local_8;
-    uVar5 = R_GetSunDvarCount();
-    iVar4 = Com_LoadDvarsFromBuffer(sunDvarNames,uVar5,pcVar6,pcVar3);
-    if (iVar4 != 0) {
-      R_SetSunFromDvars(param_2);
+    buffer = sunFile;
+    numDvars = R_GetSunDvarCount();
+    iVar3 = Com_LoadDvarsFromBuffer(sunDvarNames,numDvars,buffer,qpath);
+    if (iVar3 != 0) {
+      R_SetSunFromDvars(sun);
     }
-    FS_FreeFile(local_8);
+    FS_FreeFile(sunFile);
   }
   return;
 }
@@ -200,8 +198,8 @@ void __cdecl R_Cmd_LoadSun(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  sunflare_t *psVar5;
+  char *sunName;
+  sunflare_t *sun;
   
   iVar3 = Cmd_Argc();
   if (iVar3 == 2) {
@@ -221,9 +219,9 @@ void __cdecl R_Cmd_LoadSun(void)
           return;
         }
       }
-      psVar5 = &(rgp.world)->sun;
-      pcVar4 = Cmd_Argv(1);
-      R_LoadSunThroughDvars(pcVar4,psVar5);
+      sun = &(rgp.world)->sun;
+      sunName = Cmd_Argv(1);
+      R_LoadSunThroughDvars(sunName,sun);
     }
   }
   else {
@@ -238,30 +236,30 @@ void __cdecl R_Cmd_LoadSun(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_SaveSunFromDvars(char *param_1)
+void __cdecl R_SaveSunFromDvars(char *sunName)
 
 {
   char cVar1;
   int iVar2;
-  char *pcVar3;
-  char *pcVar4;
+  char *filename;
+  char *buffer;
   char *local_2010;
-  char local_200c;
+  char fileBuffer;
   undefined1 auStack_200b [8195];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = Com_SaveDvarsToBuffer(sunDvarNames,0x15,&local_200c,0x2000);
+  iVar2 = Com_SaveDvarsToBuffer(sunDvarNames,0x15,&fileBuffer,0x2000);
   if (iVar2 != 0) {
-    local_2010 = &local_200c;
+    local_2010 = &fileBuffer;
     do {
       cVar1 = *local_2010;
       local_2010 = local_2010 + 1;
     } while (cVar1 != '\0');
     iVar2 = (int)local_2010 - (int)auStack_200b;
-    pcVar4 = &local_200c;
-    pcVar3 = va("sun/%s.sun");
-    FS_WriteFile(pcVar3,pcVar4,iVar2);
+    buffer = &fileBuffer;
+    filename = va("sun/%s.sun");
+    FS_WriteFile(filename,buffer,iVar2);
   }
   return;
 }
@@ -273,12 +271,12 @@ void __cdecl R_Cmd_SaveSun(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *sunName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    R_SaveSunFromDvars(pcVar2);
+    sunName = Cmd_Argv(1);
+    R_SaveSunFromDvars(sunName);
   }
   else {
     Com_Printf(8,"USAGE: r_savesun <sunname>\n  sunname must not have an extension\n");
@@ -292,16 +290,17 @@ void __cdecl R_Cmd_SaveSun(void)
 void __cdecl R_FlushSun(void)
 
 {
-  uint local_8;
+  SunFlareDynamic *sunFlare;
+  uint viewIndex;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    sunFlareArray[local_8].currentBlind = 0.0;
-    sunFlareArray[local_8].currentGlare = 0.0;
-    sunFlareArray[local_8].flareIntensity = 0.0;
-    sunFlareArray[local_8].hitNum = 0;
-    sunFlareArray[local_8].lastDot = 0.0;
-    sunFlareArray[local_8].lastTime = 0;
-    sunFlareArray[local_8].lastVisibility = 0.0;
+  for (viewIndex = 0; viewIndex < 4; viewIndex = viewIndex + 1) {
+    sunFlareArray[viewIndex].currentBlind = 0.0;
+    sunFlareArray[viewIndex].currentGlare = 0.0;
+    sunFlareArray[viewIndex].flareIntensity = 0.0;
+    sunFlareArray[viewIndex].hitNum = 0;
+    sunFlareArray[viewIndex].lastDot = 0.0;
+    sunFlareArray[viewIndex].lastTime = 0;
+    sunFlareArray[viewIndex].lastVisibility = 0.0;
   }
   return;
 }

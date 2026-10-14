@@ -301,14 +301,14 @@ TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(undefined4 param_1,unde
   uchar uVar1;
   TaskRecord *pTVar2;
   int iVar3;
-  uchar *puVar4;
-  bdReference<class_bdCommonAddr> *pbVar5;
-  LONG LVar6;
-  uchar *puVar7;
-  ulong uVar8;
-  undefined4 uVar9;
+  uchar *src;
+  bdReference<class_bdCommonAddr> *pbVar4;
+  LONG LVar5;
+  uchar *puVar6;
+  ulong count;
+  undefined4 uVar7;
   TaskRecord *unaff_EDI;
-  int iVar10;
+  int iVar8;
   bdMatchMaking *pbStack_34;
   undefined4 uStack_30;
   undefined4 uStack_2c;
@@ -324,50 +324,50 @@ TaskRecord * __cdecl dwMatchMaking_InviteDWUserToSession(undefined4 param_1,unde
   pbStack_34 = bdLobbyService::getMatchMaking((bdLobbyService *)g_dwControllerData);
   if (pbStack_34 != (bdMatchMaking *)0x0) {
     if ((com_sv_running == (dvar_s *)0x0) || ((com_sv_running->current).enabled == false)) {
-      iVar10 = (ui_mapname->current).integer;
+      iVar8 = (ui_mapname->current).integer;
     }
     else {
-      iVar10 = (sv_mapname->current).integer;
+      iVar8 = (sv_mapname->current).integer;
     }
     pTVar2 = TaskManager2_CreateTask((TaskDefinition *)0x0,0,(TaskRecord *)0x0,(int)unaff_EDI);
     uStack_30 = param_1;
     uStack_2c = param_2;
     iVar3 = Live_GetMapIndex((char *)unaff_EDI);
     if (iVar3 < 0) {
-      uVar9 = 1;
+      uVar7 = 1;
     }
     else {
-      uVar9 = *(undefined4 *)(&DAT_009ebe10 + iVar3 * 0x10);
+      uVar7 = *(undefined4 *)(&DAT_009ebe10 + iVar3 * 0x10);
     }
-    Com_DPrintf(0xa32af4,(char *)0x845,uVar9,iVar10);
+    Com_DPrintf(0xa32af4,(char *)0x845,uVar7,iVar8);
     memset((uchar *)((int)&uStack_28 + 1),'\0',0x27);
     uStack_28 = 0x845;
-    uStack_24 = uVar9;
+    uStack_24 = uVar7;
     if (DAT_00c78f44 == 10) {
-      puVar4 = (uchar *)Dvar_GetString((char *)unaff_EDI);
-      puVar7 = puVar4;
+      src = (uchar *)Dvar_GetString((char *)unaff_EDI);
+      puVar6 = src;
       do {
-        uVar1 = *puVar7;
-        puVar7 = puVar7 + 1;
+        uVar1 = *puVar6;
+        puVar6 = puVar6 + 1;
       } while (uVar1 != '\0');
-      uVar8 = (int)puVar7 - (int)(puVar4 + 1);
-      if ((int)uVar8 < 0x1f) {
-        if ((int)uVar8 < 1) {
-          uVar8 = 0;
+      count = (int)puVar6 - (int)(src + 1);
+      if ((int)count < 0x1f) {
+        if ((int)count < 1) {
+          count = 0;
         }
       }
       else {
-        uVar8 = 0x1f;
+        count = 0x1f;
       }
-      memcpy(auStack_20,puVar4,uVar8);
+      memcpy(auStack_20,src,count);
     }
-    pbVar5 = (bdReference<class_bdCommonAddr> *)
+    pbVar4 = (bdReference<class_bdCommonAddr> *)
              bdMatchMaking::inviteToSession
                        (pbStack_34,(bdSessionID *)&pbStack_34,(__uint64 *)&stack0x0000000c,
                         (uint)&uStack_30,&DAT_00000001,(uint)&uStack_28);
-    bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)(pTVar2 + 0x20),pbVar5);
+    bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)(pTVar2 + 0x20),pbVar4);
     if (((pbStack_34 != (bdMatchMaking *)0x0) &&
-        (LVar6 = InterlockedDecrement((LONG *)(pbStack_34 + 4)), LVar6 == 0)) &&
+        (LVar5 = InterlockedDecrement((LONG *)(pbStack_34 + 4)), LVar5 == 0)) &&
        (pbStack_34 != (bdMatchMaking *)0x0)) {
       (*(code *)**(undefined4 **)pbStack_34)(1);
     }

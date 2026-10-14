@@ -2,6 +2,8 @@
 
 // 00829DA0  R_GetBaseLodDist  (gfx_d3d/r_model_lod.cpp:21)
 
+/* WARNING: Variable defined which should be unmapped: distToLodOrigin */
+
 float __cdecl R_GetBaseLodDist(float *param_1)
 
 {
@@ -17,6 +19,8 @@ float __cdecl R_GetBaseLodDist(float *param_1)
   float fVar7;
   float fVar8;
   float fVar9;
+  float distToLodOrigin;
+  float distToExtraCamOrigin;
   
   fVar5 = *in_EAX;
   fVar7 = in_EAX[1];

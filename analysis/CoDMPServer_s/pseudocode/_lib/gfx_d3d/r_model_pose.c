@@ -3,7 +3,8 @@
 // 008605E0  R_UpdateSceneEntBounds  (gfx_d3d/r_model_pose.cpp:168)
 
 DObjAnimMat * __cdecl
-R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **param_3,int param_4)
+R_UpdateSceneEntBounds
+          (GfxSceneEntity *sceneEnt,GfxSceneEntity **pObj,DObj **waitForCullState,int param_4)
 
 {
   GfxSceneEntityCull *pGVar1;
@@ -88,7 +89,7 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
   undefined4 local_2d4;
   undefined4 local_290 [163];
   
-  pGVar1 = &param_1->cull;
+  pGVar1 = &sceneEnt->cull;
   LOCK();
   uVar9 = pGVar1->state;
   if (uVar9 == 0) {
@@ -97,26 +98,26 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
   }
   UNLOCK();
   if (uVar9 == 0) {
-    pGVar3 = (GfxSceneEntity *)param_1->obj;
-    *in_EDX = param_1;
+    pGVar3 = (GfxSceneEntity *)sceneEnt->obj;
+    *in_EDX = sceneEnt;
     fVar24 = (r_offscreenCasterLodScale->current).value;
-    *param_2 = pGVar3;
+    *pObj = pGVar3;
     uVar9 = (uint)local_4c4 >> 8;
     local_4c4 = (float *)((uint)local_4c4 & 0xffffff00);
     if (((1.0 < fVar24) && (1 < pGVar1->state)) &&
        (iVar5 = R_CullBoxDpvs((float *)unaff_EDI,(DpvsPlane *)unaff_ESI,unaff_EBX), iVar5 != 0)) {
       local_4c4 = (float *)CONCAT31((int3)uVar9,1);
     }
-    pcVar2 = (param_1->cull).lods;
-    DObjGetSurfaceData((DObj *)(param_1->placement).scale,local_4c4,(float)pcVar2,SUB41(unaff_EDI,0)
-                       ,(char *)unaff_ESI);
+    pcVar2 = (sceneEnt->cull).lods;
+    DObjGetSurfaceData((DObj *)(sceneEnt->placement).scale,local_4c4,(float)pcVar2,
+                       SUB41(unaff_EDI,0),(char *)unaff_ESI);
     if (((useFastFile->current).enabled != false) || (iVar5 = DObjBad((DObj *)pGVar3), iVar5 == 0))
     {
       if ((((DObj_u_120 *)&pGVar3->lightingOriginToleranceSq)->localModels != (XModel **)0x0) &&
          (iVar5 = DObjGetSurfaces((DObj *)pcVar2,(int *)unaff_EDI,(char *)unaff_ESI), iVar5 != 0)) {
         if ((((uint)pGVar3->obj & 0x400) == 0) ||
            (pDVar6 = *(DObjAnimMat **)((pGVar3->cull).lods + 0xc), pDVar6 == (DObjAnimMat *)0x0)) {
-          pDVar6 = R_DObjCalcPose(param_1,(DObj *)pGVar3,(int *)unaff_EDI);
+          pDVar6 = R_DObjCalcPose(sceneEnt,(DObj *)pGVar3,(int *)unaff_EDI);
         }
         else {
           local_324 = (((DSkel *)((pGVar3->placement).base.quat + 2))->partBits).anim[0];
@@ -313,33 +314,33 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
               local_4c0 = local_4c0 >> 1 | (uint)((local_4c0 & 1) != 0) << 0x1f;
             } while (local_444 < (int)uVar9);
           }
-          (param_1->cull).mins[0] = local_4b8;
-          (param_1->cull).mins[1] = local_4b4;
-          (param_1->cull).mins[2] = local_4b0;
-          (param_1->cull).maxs[0] = local_4a8;
-          (param_1->cull).maxs[1] = local_4a4;
-          (param_1->cull).maxs[2] = local_4a0;
+          (sceneEnt->cull).mins[0] = local_4b8;
+          (sceneEnt->cull).mins[1] = local_4b4;
+          (sceneEnt->cull).mins[2] = local_4b0;
+          (sceneEnt->cull).maxs[0] = local_4a8;
+          (sceneEnt->cull).maxs[1] = local_4a4;
+          (sceneEnt->cull).maxs[2] = local_4a0;
           fVar20 = *(float *)((pGVar3->cull).lods + 0x10);
           fVar22 = fVar20 - 16.0;
           fVar21 = fVar24;
           if (fVar24 <= fVar22) {
             fVar21 = fVar22;
           }
-          fVar23 = (param_1->cull).mins[0] - (param_1->placement).base.origin[0];
+          fVar23 = (sceneEnt->cull).mins[0] - (sceneEnt->placement).base.origin[0];
           fVar20 = fVar20 + 16.0;
-          fVar26 = (param_1->cull).mins[1] - (param_1->placement).base.origin[1];
-          fVar22 = (param_1->cull).mins[2] - (param_1->placement).base.origin[2];
-          fVar25 = (param_1->cull).maxs[2] - (param_1->placement).base.origin[2];
-          fVar27 = (param_1->cull).maxs[1] - (param_1->placement).base.origin[1];
+          fVar26 = (sceneEnt->cull).mins[1] - (sceneEnt->placement).base.origin[1];
+          fVar22 = (sceneEnt->cull).mins[2] - (sceneEnt->placement).base.origin[2];
+          fVar25 = (sceneEnt->cull).maxs[2] - (sceneEnt->placement).base.origin[2];
+          fVar27 = (sceneEnt->cull).maxs[1] - (sceneEnt->placement).base.origin[1];
           fVar22 = fVar22 * fVar22 + fVar26 * fVar26 + fVar23 * fVar23;
-          fVar23 = (param_1->cull).maxs[0] - (param_1->placement).base.origin[0];
+          fVar23 = (sceneEnt->cull).maxs[0] - (sceneEnt->placement).base.origin[0];
           fVar23 = fVar25 * fVar25 + fVar27 * fVar27 + fVar23 * fVar23;
           if (fVar22 - fVar23 < fVar24) {
             fVar22 = fVar23;
           }
           if ((fVar22 < fVar21 * fVar21) || (fVar20 * fVar20 < fVar22)) {
             fVar19 = (float10)sqrtf(fVar22);
-            param_1->obj->radius = (float)fVar19;
+            sceneEnt->obj->radius = (float)fVar19;
           }
           pGVar1->state = 2;
           return pDVar6;
@@ -352,13 +353,13 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
   }
   else {
     *in_EDX = 0;
-    if (param_3 != (DObj **)0x0) {
+    if (waitForCullState != (DObj **)0x0) {
       do {
       } while (pGVar1->state == 1);
       if (pGVar1->state != 4) {
-        *in_EDX = param_1;
-        pGVar3 = (GfxSceneEntity *)param_1->obj;
-        *param_2 = pGVar3;
+        *in_EDX = sceneEnt;
+        pGVar3 = (GfxSceneEntity *)sceneEnt->obj;
+        *pObj = pGVar3;
         return *(DObjAnimMat **)((pGVar3->cull).lods + 0xc);
       }
     }

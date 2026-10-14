@@ -7,61 +7,60 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InitBolt(int param_1)
+void __cdecl CG_InitBolt(int localClientNum)
 
 {
   centity_s *pcVar1;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    pcVar1 = CG_Spawn(param_1);
-    g_BoltEnt[param_1][local_8] = pcVar1;
-    if (g_BoltEnt[param_1][local_8] != (centity_s *)0x0) {
-      (g_BoltEnt[param_1][local_8]->nextState).eType = 6;
-      (g_BoltEnt[param_1][local_8]->nextState).lerp.u.player.meleeWeapon = 0x3ff;
-      (g_BoltEnt[param_1][local_8]->currentState).eFlags =
-           (g_BoltEnt[param_1][local_8]->currentState).eFlags | 0x20;
-      (g_BoltEnt[param_1][local_8]->nextState).lerp.eFlags =
-           (g_BoltEnt[param_1][local_8]->nextState).lerp.eFlags | 0x20;
+  for (i = 0; i < 10; i = i + 1) {
+    pcVar1 = CG_Spawn(localClientNum);
+    g_BoltEnt[localClientNum][i] = pcVar1;
+    if (g_BoltEnt[localClientNum][i] != (centity_s *)0x0) {
+      (g_BoltEnt[localClientNum][i]->nextState).eType = 6;
+      (g_BoltEnt[localClientNum][i]->nextState).lerp.u.player.meleeWeapon = 0x3ff;
+      (g_BoltEnt[localClientNum][i]->currentState).eFlags =
+           (g_BoltEnt[localClientNum][i]->currentState).eFlags | 0x20;
+      (g_BoltEnt[localClientNum][i]->nextState).lerp.eFlags =
+           (g_BoltEnt[localClientNum][i]->nextState).lerp.eFlags | 0x20;
     }
   }
-  g_BoltIndex[param_1] = 0;
+  g_BoltIndex[localClientNum] = 0;
   return;
 }
 
 
 // 004773E0  CG_AddBolt  (cgame/cg_bolt.cpp:94)
 
-/* WARNING: Type propagation algorithm not settling */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 uint __cdecl
-CG_AddBolt(int param_1,int param_2,int param_3,float *param_4,float *param_5,uchar param_6,
-          int param_7)
+CG_AddBolt(int localClientNum,int targetEntityNum,int weapon,float *position,float *normal,
+          uchar tagIndex,int physUserBody)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  int iVar5;
-  float local_44;
+  char *name;
+  int iVar4;
+  float wallPos;
   float local_40;
   float local_3c;
-  float local_38;
+  float axis;
   float local_34;
   float local_30;
-  cg_s *local_14;
-  centity_s *local_10;
-  centity_s *local_c;
-  WeaponDef *local_8;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  centity_s *other;
+  WeaponDef *weapDef;
   
-  local_10 = g_BoltEnt[param_1][g_BoltIndex[param_1] % 10];
-  local_8 = BG_GetWeaponDef(param_3);
-  if (local_8 == (WeaponDef *)0x0) {
+  cent = g_BoltEnt[localClientNum][g_BoltIndex[localClientNum] % 10];
+  weapDef = BG_GetWeaponDef(weapon);
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_bolt.cpp",0x65,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -69,46 +68,47 @@ CG_AddBolt(int param_1,int param_2,int param_3,float *param_4,float *param_5,uch
       return uVar3;
     }
   }
-  if (local_10 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     uVar3 = 0xffffffff;
   }
   else {
-    local_14 = CG_GetLocalClientGlobals(param_1);
-    if ((uint)(local_14->predictedPlayerState).clientNum == param_2) {
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    if ((uint)(cgameGlob->predictedPlayerState).clientNum == targetEntityNum) {
       uVar3 = 0xffffffff;
     }
     else {
-      local_c = CG_GetEntity(param_1,param_2);
-      (local_10->currentState).eFlags = (local_10->currentState).eFlags & 0xffffffdf;
-      (local_10->nextState).lerp.eFlags = (local_10->nextState).lerp.eFlags & 0xffffffdf;
-      iVar5 = param_1;
-      pcVar4 = XModelGetName(local_8->projectileModel);
-      iVar5 = CG_GetModelIndex(pcVar4,iVar5);
-      AssignToSmallerType<short>(&(local_10->nextState).index.brushmodel,iVar5);
-      AssignToSmallerType<short>(&(local_10->nextState).lerp.u.scriptMover.attachedEntNum,param_2);
-      AssignToSmallerType<int>(&(local_10->nextState).lerp.u.loopFx.period,(uint)param_6);
-      (local_10->nextState).lerp.eFlags2 = (local_10->nextState).lerp.eFlags2 | 0x80000;
-      (local_10->pose).origin[0] = *param_4;
-      (local_10->pose).origin[1] = param_4[1];
-      (local_10->pose).origin[2] = param_4[2];
-      (local_10->nextState).lerp.pos.trBase[0] = *param_4;
-      (local_10->nextState).lerp.pos.trBase[1] = param_4[1];
-      (local_10->nextState).lerp.pos.trBase[2] = param_4[2];
-      (local_10->pose).angles[0] = *param_5;
-      (local_10->pose).angles[1] = param_5[1];
-      (local_10->pose).angles[2] = param_5[2];
-      (local_10->nextState).lerp.apos.trBase[0] = *param_5;
-      (local_10->nextState).lerp.apos.trBase[1] = param_5[1];
-      (local_10->nextState).lerp.apos.trBase[2] = param_5[2];
-      if (param_7 != 0) {
-        AnglesToAxis(param_5,(float (*) [3])&local_38);
-        local_44 = *param_4 - local_38;
-        local_40 = param_4[1] - local_34;
-        local_3c = param_4[2] - local_30;
-        Phys_SetUserBody(param_7,&local_44);
+      other = CG_GetEntity(localClientNum,targetEntityNum);
+      (cent->currentState).eFlags = (cent->currentState).eFlags & 0xffffffdf;
+      (cent->nextState).lerp.eFlags = (cent->nextState).lerp.eFlags & 0xffffffdf;
+      iVar4 = localClientNum;
+      name = XModelGetName(weapDef->projectileModel);
+      iVar4 = CG_GetModelIndex(name,iVar4);
+      AssignToSmallerType<short>(&(cent->nextState).index.brushmodel,iVar4);
+      AssignToSmallerType<short>
+                (&(cent->nextState).lerp.u.scriptMover.attachedEntNum,targetEntityNum);
+      AssignToSmallerType<int>(&(cent->nextState).lerp.u.loopFx.period,(uint)tagIndex);
+      (cent->nextState).lerp.eFlags2 = (cent->nextState).lerp.eFlags2 | 0x80000;
+      (cent->pose).origin[0] = *position;
+      (cent->pose).origin[1] = position[1];
+      (cent->pose).origin[2] = position[2];
+      (cent->nextState).lerp.pos.trBase[0] = *position;
+      (cent->nextState).lerp.pos.trBase[1] = position[1];
+      (cent->nextState).lerp.pos.trBase[2] = position[2];
+      (cent->pose).angles[0] = *normal;
+      (cent->pose).angles[1] = normal[1];
+      (cent->pose).angles[2] = normal[2];
+      (cent->nextState).lerp.apos.trBase[0] = *normal;
+      (cent->nextState).lerp.apos.trBase[1] = normal[1];
+      (cent->nextState).lerp.apos.trBase[2] = normal[2];
+      if (physUserBody != 0) {
+        AnglesToAxis(normal,(float (*) [3])&axis);
+        wallPos = *position - axis;
+        local_40 = position[1] - local_34;
+        local_3c = position[2] - local_30;
+        Phys_SetUserBody(physUserBody,&wallPos);
       }
-      g_BoltIndex[param_1] = g_BoltIndex[param_1] + 1;
-      uVar3 = g_BoltIndex[param_1];
+      g_BoltIndex[localClientNum] = g_BoltIndex[localClientNum] + 1;
+      uVar3 = g_BoltIndex[localClientNum];
     }
   }
   return uVar3;
@@ -122,18 +122,20 @@ CG_AddBolt(int param_1,int param_2,int param_3,float *param_4,float *param_5,uch
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateBolt(int param_1)
+void __cdecl CG_UpdateBolt(int localClientNum)
 
 {
   centity_s *pcVar1;
   centity_s *pcVar2;
-  int local_c;
+  centity_s *cent;
+  int i;
+  centity_s *bolt;
   
-  for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-    pcVar1 = g_BoltEnt[param_1][local_c];
+  for (i = 0; i < 10; i = i + 1) {
+    pcVar1 = g_BoltEnt[localClientNum][i];
     if ((((pcVar1 != (centity_s *)0x0) && ((pcVar1->nextState).lerp.u.player.meleeWeapon != 0x3fe))
         && (pcVar1->linkInfo != (cLinkInfo_s *)0x0)) &&
-       (pcVar2 = CG_GetEntity(param_1,pcVar1->linkInfo->linkEnt), pcVar2->nextValid == 0)) {
+       (pcVar2 = CG_GetEntity(localClientNum,pcVar1->linkInfo->linkEnt), pcVar2->nextValid == 0)) {
       (pcVar1->nextState).lerp.u.player.meleeWeapon = 0x3ff;
       (pcVar1->nextState).lerp.eFlags = (pcVar1->nextState).lerp.eFlags | 0x20;
     }
@@ -217,14 +219,14 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00477720  AssignToSmallerType<int>  (universal/q_shared.h:283)
 
-void __cdecl AssignToSmallerType<int>(int *param_1,int param_2)
+void __cdecl AssignToSmallerType<int>(int *dest,int src)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  *param_1 = param_2;
-  if (*param_1 != param_2) {
+  *dest = src;
+  if (*dest != src) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../universal/q_shared.h",
                              0x11d,0,"%s");
     if (!bVar2) {

@@ -191,10 +191,10 @@ bdHTTPWrapperBase::parseURL
   int iVar2;
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar3;
+  uchar *string;
   char *extraout_EAX_01;
   int extraout_EAX_02;
-  uint uVar4;
+  uint uVar3;
   uchar *local_c;
   
   iVar2 = strncmp(param_1,"http",4);
@@ -210,8 +210,8 @@ bdHTTPWrapperBase::parseURL
     }
     else {
       strlen((uchar *)"://");
-      puVar3 = (uchar *)(extraout_EAX_00 + extraout_EAX);
-      strchr(puVar3,'/');
+      string = (uchar *)(extraout_EAX_00 + extraout_EAX);
+      strchr(string,'/');
       *param_3 = extraout_EAX_01;
       if (*param_3 == (char *)0x0) {
         bdLogMessage(BD_LOG_ERROR,"err/","http",
@@ -222,16 +222,16 @@ bdHTTPWrapperBase::parseURL
         bVar1 = false;
       }
       else {
-        strchr(puVar3,':');
+        strchr(string,':');
         if (extraout_EAX_02 == 0) {
           *param_4 = 0x50;
           local_c = (uchar *)(*param_3 + -1);
         }
         else {
-          uVar4 = atoi((char *)(extraout_EAX_02 + 1));
-          *param_4 = uVar4;
+          uVar3 = atoi((char *)(extraout_EAX_02 + 1));
+          *param_4 = uVar3;
           local_c = (uchar *)(extraout_EAX_02 + -1);
-          if ((local_c < puVar3) || (*param_3 < local_c)) {
+          if ((local_c < string) || (*param_3 < local_c)) {
             bdLogMessage(BD_LOG_ERROR,"err/","http",
                          "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdLobby\\bdHTTPWrapper\\bdHTTPWrapperBase.cpp"
                          ,"bdHTTPWrapperBase::parseURL",0xaa,
@@ -248,7 +248,7 @@ bdHTTPWrapperBase::parseURL
             return false;
           }
         }
-        local_c = local_c + (2 - (int)puVar3);
+        local_c = local_c + (2 - (int)string);
         if (((int)local_c < 0) || ((uchar *)0x180 < local_c)) {
           bdLogMessage(BD_LOG_ERROR,"err/","http",
                        "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdLobby\\bdHTTPWrapper\\bdHTTPWrapperBase.cpp"
@@ -257,7 +257,7 @@ bdHTTPWrapperBase::parseURL
           bVar1 = false;
         }
         else {
-          bdStrlcpy(param_2,(char *)puVar3,(uint)local_c);
+          bdStrlcpy(param_2,(char *)string,(uint)local_c);
           bVar1 = true;
         }
       }

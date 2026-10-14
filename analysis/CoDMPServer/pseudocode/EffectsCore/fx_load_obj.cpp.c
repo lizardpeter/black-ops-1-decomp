@@ -12,50 +12,52 @@ void __cdecl FX_UnregisterAll(void)
 
 // 005D30C0  FX_ParseSingleFlag  (EffectsCore/fx_load_obj.cpp:142)
 
-bool __cdecl FX_ParseSingleFlag(char *param_1,FxFlagOutputSet *param_2)
+bool __cdecl FX_ParseSingleFlag(char *token,FxFlagOutputSet *flagOutputSet)
 
 {
   uint *puVar1;
   int iVar2;
-  FxFlagDef *local_8;
+  int *outputFlag;
+  FxFlagDef *flagDef;
   
-  local_8 = s_allFlagDefs;
+  flagDef = s_allFlagDefs;
   while( true ) {
-    if (local_8->name == (char *)0x0) {
+    if (flagDef->name == (char *)0x0) {
       Com_Printf(0x15,"Valid flags:\n");
-      for (local_8 = s_allFlagDefs; local_8->name != (char *)0x0; local_8 = local_8 + 1) {
-        if (param_2->flags[local_8->flagType] != (int *)0x0) {
+      for (flagDef = s_allFlagDefs; flagDef->name != (char *)0x0; flagDef = flagDef + 1) {
+        if (flagOutputSet->flags[flagDef->flagType] != (int *)0x0) {
           Com_Printf(0x15,"  %s\n");
         }
       }
       Com_ScriptError("Unknown flag \'%s\'\n");
       return false;
     }
-    puVar1 = (uint *)param_2->flags[local_8->flagType];
-    if ((puVar1 != (uint *)0x0) && (iVar2 = I_strcmp(param_1,local_8->name), iVar2 == 0)) break;
-    local_8 = local_8 + 1;
+    puVar1 = (uint *)flagOutputSet->flags[flagDef->flagType];
+    if ((puVar1 != (uint *)0x0) && (iVar2 = I_strcmp(token,flagDef->name), iVar2 == 0)) break;
+    flagDef = flagDef + 1;
   }
-  *puVar1 = ~local_8->mask & *puVar1;
-  *puVar1 = *puVar1 | local_8->value;
+  *puVar1 = ~flagDef->mask & *puVar1;
+  *puVar1 = *puVar1 | flagDef->value;
   return true;
 }
 
 
 // 005D3070  FX_ParseFlagsField  (EffectsCore/fx_load_obj.cpp:169)
 
-bool __cdecl FX_ParseFlagsField(char **param_1,FxFlagOutputSet *param_2)
+bool __cdecl FX_ParseFlagsField(char **parse,FxFlagOutputSet *flagOutputSet)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *token_00;
+  char *token;
   
   do {
-    pcVar2 = Com_Parse(param_1);
-    if (*pcVar2 == ';') {
+    token_00 = Com_Parse(parse);
+    if (*token_00 == ';') {
       Com_UngetToken();
       return true;
     }
-    bVar1 = FX_ParseSingleFlag(pcVar2,param_2);
+    bVar1 = FX_ParseSingleFlag(token_00,flagOutputSet);
   } while (bVar1);
   return false;
 }
@@ -63,27 +65,27 @@ bool __cdecl FX_ParseFlagsField(char **param_1,FxFlagOutputSet *param_2)
 
 // 005D32D0  FX_ParseInt  (EffectsCore/fx_load_obj.cpp:188)
 
-bool __cdecl FX_ParseInt(char **param_1,int *param_2)
+bool __cdecl FX_ParseInt(char **parse,int *value)
 
 {
   int iVar1;
   
-  iVar1 = Com_ParseInt(param_1);
-  *param_2 = iVar1;
+  iVar1 = Com_ParseInt(parse);
+  *value = iVar1;
   return true;
 }
 
 
 // 005D3310  FX_ParseIntRange  (EffectsCore/fx_load_obj.cpp:195)
 
-bool __cdecl FX_ParseIntRange(char **param_1,FxIntRange *param_2)
+bool __cdecl FX_ParseIntRange(char **parse,FxIntRange *range)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->base);
+  bVar1 = FX_ParseInt(parse,&range->base);
   if (bVar1) {
-    bVar1 = FX_ParseInt(param_1,&param_2->amplitude);
+    bVar1 = FX_ParseInt(parse,&range->amplitude);
     if (bVar1) {
       bVar1 = true;
     }
@@ -100,27 +102,27 @@ bool __cdecl FX_ParseIntRange(char **param_1,FxIntRange *param_2)
 
 // 005D3200  FX_ParseFloat  (EffectsCore/fx_load_obj.cpp:205)
 
-bool __cdecl FX_ParseFloat(char **param_1,float *param_2)
+bool __cdecl FX_ParseFloat(char **parse,float *value)
 
 {
   float fVar1;
   
-  fVar1 = Com_ParseFloat(param_1);
-  *param_2 = fVar1;
+  fVar1 = Com_ParseFloat(parse);
+  *value = fVar1;
   return true;
 }
 
 
 // 005D31C0  FX_ParseFloatRange  (EffectsCore/fx_load_obj.cpp:212)
 
-bool __cdecl FX_ParseFloatRange(char **param_1,FxFloatRange *param_2)
+bool __cdecl FX_ParseFloatRange(char **parse_2,FxFloatRange *value)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->base);
+  bVar1 = FX_ParseFloat(parse_2,&value->base);
   if (bVar1) {
-    bVar1 = FX_ParseFloat(param_1,&param_2->amplitude);
+    bVar1 = FX_ParseFloat(parse_2,&value->amplitude);
     if (bVar1) {
       bVar1 = true;
     }
@@ -137,16 +139,16 @@ bool __cdecl FX_ParseFloatRange(char **param_1,FxFloatRange *param_2)
 
 // 005D3D10  FX_ParseVector  (EffectsCore/fx_load_obj.cpp:222)
 
-bool __cdecl FX_ParseVector(char **param_1,float *param_2)
+bool __cdecl FX_ParseVector(char **parse,float *value)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,param_2);
+  bVar1 = FX_ParseFloat(parse,value);
   if (bVar1) {
-    bVar1 = FX_ParseFloat(param_1,param_2 + 1);
+    bVar1 = FX_ParseFloat(parse,value + 1);
     if (bVar1) {
-      bVar1 = FX_ParseFloat(param_1,param_2 + 2);
+      bVar1 = FX_ParseFloat(parse,value + 2);
       if (bVar1) {
         bVar1 = true;
       }
@@ -167,18 +169,18 @@ bool __cdecl FX_ParseVector(char **param_1,float *param_2)
 
 // 005D46B0  FX_ParseVector4  (EffectsCore/fx_load_obj.cpp:242)
 
-bool __cdecl FX_ParseVector4(char **param_1,float *param_2)
+bool __cdecl FX_ParseVector4(char **parse,float *value)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,param_2);
+  bVar1 = FX_ParseFloat(parse,value);
   if (bVar1) {
-    bVar1 = FX_ParseFloat(param_1,param_2 + 1);
+    bVar1 = FX_ParseFloat(parse,value + 1);
     if (bVar1) {
-      bVar1 = FX_ParseFloat(param_1,param_2 + 2);
+      bVar1 = FX_ParseFloat(parse,value + 2);
       if (bVar1) {
-        bVar1 = FX_ParseFloat(param_1,param_2 + 3);
+        bVar1 = FX_ParseFloat(parse,value + 3);
         if (bVar1) {
           bVar1 = true;
         }
@@ -203,14 +205,14 @@ bool __cdecl FX_ParseVector4(char **param_1,float *param_2)
 
 // 005D4450  FX_SetEditorElemType  (EffectsCore/fx_load_obj.cpp:256)
 
-bool __cdecl FX_SetEditorElemType(FxEditorElemDef *param_1,uchar param_2)
+bool __cdecl FX_SetEditorElemType(FxEditorElemDef *edElemDef,uchar type)
 
 {
   bool bVar1;
   
-  bVar1 = param_1->elemType == '\r';
+  bVar1 = edElemDef->elemType == '\r';
   if (bVar1) {
-    param_1->elemType = param_2;
+    edElemDef->elemType = type;
   }
   else {
     Com_ScriptError("More than one type of visuals present in effect element\n");
@@ -221,26 +223,26 @@ bool __cdecl FX_SetEditorElemType(FxEditorElemDef *param_1,uchar param_2)
 
 // 005D2D60  FX_AllocMem  (EffectsCore/fx_load_obj.cpp:269)
 
-void * __cdecl FX_AllocMem(int param_1)
+void * __cdecl FX_AllocMem(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocAlign(param_1,4,"FX_Alloc",8);
+  pvVar1 = Hunk_AllocAlign(size,4,"FX_Alloc",8);
   return pvVar1;
 }
 
 
 // 005D2DD0  Hunk_AllocPhysPresetPrecache  (EffectsCore/fx_load_obj.cpp:291)
 
-void * __cdecl Hunk_AllocPhysPresetPrecache(int param_1)
+void * __cdecl Hunk_AllocPhysPresetPrecache(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",0x124
                              ,0,"%s");
     if (!bVar2) {
@@ -249,21 +251,21 @@ void * __cdecl Hunk_AllocPhysPresetPrecache(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_Alloc(param_1,"Hunk_AllocPhysPresetPrecache",0x16);
+  pvVar3 = Hunk_Alloc(size,"Hunk_AllocPhysPresetPrecache",0x16);
   return pvVar3;
 }
 
 
 // 005D2D80  FX_RegisterPhysPreset  (EffectsCore/fx_load_obj.cpp:300)
 
-PhysPreset * __cdecl FX_RegisterPhysPreset(char *param_1)
+PhysPreset * __cdecl FX_RegisterPhysPreset(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysPreset *pPVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",0x12d
                              ,0,"%s");
     if (!bVar2) {
@@ -272,19 +274,19 @@ PhysPreset * __cdecl FX_RegisterPhysPreset(char *param_1)
       return pPVar3;
     }
   }
-  pPVar3 = PhysPresetPrecache(param_1,Hunk_AllocPhysPresetPrecache);
+  pPVar3 = PhysPresetPrecache(name,Hunk_AllocPhysPresetPrecache);
   return pPVar3;
 }
 
 
 // 005D2E20  FX_RegisterModel  (EffectsCore/fx_load_obj.cpp:308)
 
-XModel * __cdecl FX_RegisterModel(char *param_1)
+XModel * __cdecl FX_RegisterModel(char *modelName)
 
 {
   XModel *pXVar1;
   
-  pXVar1 = R_RegisterModel(param_1);
+  pXVar1 = R_RegisterModel(modelName);
   return pXVar1;
 }
 
@@ -293,47 +295,47 @@ XModel * __cdecl FX_RegisterModel(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl FX_RegisterMarkMaterials(char *param_1,Material **param_2)
+bool __cdecl FX_RegisterMarkMaterials(char *materialName,Material **materials)
 
 {
   char *pcVar1;
   Material *pMVar2;
   char *local_124;
   char *local_120;
-  char local_11c [260];
+  char materialNameWithPrefix [260];
   uint local_18;
-  undefined1 local_11;
-  char *local_10;
+  bool success;
+  char *typePrefixes;
   char *local_c;
-  int local_8;
+  int typeIndex;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = "mc";
+  typePrefixes = "mc";
   local_c = "wc";
   local_120 = "$default";
-  local_124 = param_1;
+  local_124 = materialName;
   do {
     if (((*local_124 != *local_120) || (*local_124 == '\0')) ||
        (pcVar1 = local_124 + 1, *pcVar1 != local_120[1])) break;
     local_124 = local_124 + 2;
     local_120 = local_120 + 2;
   } while (*pcVar1 != '\0');
-  local_11 = 1;
-  for (local_8 = 0; local_8 != 2; local_8 = local_8 + 1) {
-    Com_sprintf(local_11c,0x100,"%s/%s");
-    pMVar2 = FX_RegisterMaterial(local_11c);
-    param_2[local_8] = pMVar2;
-    if (param_2[local_8] == (Material *)0x0) {
-      local_11 = 0;
+  success = true;
+  for (typeIndex = 0; typeIndex != 2; typeIndex = typeIndex + 1) {
+    Com_sprintf(materialNameWithPrefix,0x100,"%s/%s");
+    pMVar2 = FX_RegisterMaterial(materialNameWithPrefix);
+    materials[typeIndex] = pMVar2;
+    if (materials[typeIndex] == (Material *)0x0) {
+      success = false;
     }
   }
-  return (bool)local_11;
+  return success;
 }
 
 
 // 005D2F80  FX_RegisterMaterial  (EffectsCore/fx_load_obj.cpp:344)
 
-Material * __cdecl FX_RegisterMaterial(char *param_1)
+Material * __cdecl FX_RegisterMaterial(char *material)
 
 {
   byte bVar1;
@@ -344,7 +346,7 @@ Material * __cdecl FX_RegisterMaterial(char *param_1)
   byte *local_8;
   
   local_8 = (byte *)0xca2068;
-  local_c = (byte *)param_1;
+  local_c = (byte *)material;
   do {
     bVar1 = *local_c;
     bVar3 = bVar1 < *local_8;
@@ -363,71 +365,71 @@ LAB_005d2fd0:
   local_14 = 0;
 LAB_005d2fd8:
   if (local_14 == 0) {
-    param_1 = "$default3d";
+    material = "$default3d";
   }
-  pMVar2 = Material_RegisterHandle(param_1,6);
+  pMVar2 = Material_RegisterHandle(material,6);
   return pMVar2;
 }
 
 
 // 005D4020  FX_RegisterAsset_Material  (EffectsCore/fx_load_obj.cpp:353)
 
-bool __cdecl FX_RegisterAsset_Material(char *param_1,FxElemVisuals *param_2)
+bool __cdecl FX_RegisterAsset_Material(char *name,FxElemVisuals *visuals)
 
 {
   Material *pMVar1;
   
-  pMVar1 = FX_RegisterMaterial(param_1);
-  param_2->material = pMVar1;
-  return param_2->anonymous != (void *)0x0;
+  pMVar1 = FX_RegisterMaterial(name);
+  visuals->material = pMVar1;
+  return visuals->anonymous != (void *)0x0;
 }
 
 
 // 005D43B0  FX_RegisterAsset_DecalMaterials  (EffectsCore/fx_load_obj.cpp:360)
 
-bool __cdecl FX_RegisterAsset_DecalMaterials(char *param_1,FxElemMarkVisuals *param_2)
+bool __cdecl FX_RegisterAsset_DecalMaterials(char *name,FxElemMarkVisuals *visuals)
 
 {
   bool bVar1;
   
-  bVar1 = FX_RegisterMarkMaterials(param_1,param_2->materials);
+  bVar1 = FX_RegisterMarkMaterials(name,visuals->materials);
   return bVar1;
 }
 
 
 // 005D4400  FX_RegisterAsset_Model  (EffectsCore/fx_load_obj.cpp:366)
 
-bool __cdecl FX_RegisterAsset_Model(char *param_1,FxElemVisuals *param_2)
+bool __cdecl FX_RegisterAsset_Model(char *name,FxElemVisuals *visuals)
 
 {
   XModel *pXVar1;
   
-  pXVar1 = FX_RegisterModel(param_1);
-  param_2->model = pXVar1;
-  return param_2->anonymous != (void *)0x0;
+  pXVar1 = FX_RegisterModel(name);
+  visuals->model = pXVar1;
+  return visuals->anonymous != (void *)0x0;
 }
 
 
 // 005D44E0  FX_RegisterAsset_EffectDef  (EffectsCore/fx_load_obj.cpp:373)
 
-bool __cdecl FX_RegisterAsset_EffectDef(char *param_1,FxElemVisuals *param_2)
+bool __cdecl FX_RegisterAsset_EffectDef(char *name,FxElemVisuals *visuals)
 
 {
   Material *pMVar1;
   
-  pMVar1 = (Material *)FX_Register(param_1);
-  param_2->material = pMVar1;
-  return param_2->anonymous != (void *)0x0;
+  pMVar1 = (Material *)FX_Register(name);
+  visuals->material = pMVar1;
+  return visuals->anonymous != (void *)0x0;
 }
 
 
 // 005D4540  FX_RegisterAsset_SoundAliasName  (EffectsCore/fx_load_obj.cpp:380)
 
-bool __cdecl FX_RegisterAsset_SoundAliasName(char *param_1,FxElemVisuals *param_2)
+bool __cdecl FX_RegisterAsset_SoundAliasName(char *name,FxElemVisuals *visuals)
 
 {
-  ReplaceString(&param_2->soundName,param_1,"FX_RegisterAsset_SoundAliasName",0xb,
-                SCRIPTINSTANCE_SERVER);
+  ReplaceString(&visuals->soundName,name,"FX_RegisterAsset_SoundAliasName",0xb,SCRIPTINSTANCE_SERVER
+               );
   return true;
 }
 
@@ -438,36 +440,36 @@ bool __cdecl FX_RegisterAsset_SoundAliasName(char *param_1,FxElemVisuals *param_
 
 bool __cdecl
 FX_ParseAssetArray<FxElemVisuals,32>
-          (char **param_1,uchar param_2,FxEditorElemDef *param_3,FxElemVisuals (*param_4) [32],
-          _func___cdecl_bool_char_ptr_FxElemVisuals_ptr *param_5)
+          (char **parse,uchar elemType,FxEditorElemDef *edElemDef,FxElemVisuals (*visualsArray) [32]
+          ,_func___cdecl_bool_char_ptr_FxElemVisuals_ptr *RegisterAsset)
 
 {
   bool bVar1;
   int iVar2;
-  char local_114 [264];
+  char name [264];
   uint local_c;
-  char *local_8;
+  char *token;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = FX_SetEditorElemType(param_3,param_2);
+  bVar1 = FX_SetEditorElemType(edElemDef,elemType);
   if (bVar1) {
-    iVar2 = Com_MatchToken(param_1,"{",1);
+    iVar2 = Com_MatchToken(parse,"{",1);
     if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      param_3->visualCount = 0;
-      while (local_8 = Com_Parse(param_1), *local_8 != '}') {
-        if (param_3->visualCount == 0x20) {
+      edElemDef->visualCount = 0;
+      while (token = Com_Parse(parse), *token != '}') {
+        if (edElemDef->visualCount == 0x20) {
           Com_ScriptError("More than %i visuals in array\n");
           return false;
         }
-        I_strncpyz(local_114,local_8,0x104);
-        bVar1 = (*param_5)(local_114,*param_4 + param_3->visualCount);
+        I_strncpyz(name,token,0x104);
+        bVar1 = (*RegisterAsset)(name,*visualsArray + edElemDef->visualCount);
         if (!bVar1) {
           return false;
         }
-        param_3->visualCount = param_3->visualCount + 1;
+        edElemDef->visualCount = edElemDef->visualCount + 1;
       }
       bVar1 = true;
     }
@@ -485,36 +487,37 @@ FX_ParseAssetArray<FxElemVisuals,32>
 
 bool __cdecl
 FX_ParseAssetArray<FxElemMarkVisuals,16>
-          (char **param_1,uchar param_2,FxEditorElemDef *param_3,FxElemMarkVisuals (*param_4) [16],
-          _func___cdecl_bool_char_ptr_FxElemMarkVisuals_ptr *param_5)
+          (char **parse,uchar elemType,FxEditorElemDef *edElemDef,
+          FxElemMarkVisuals (*visualsArray) [16],
+          _func___cdecl_bool_char_ptr_FxElemMarkVisuals_ptr *RegisterAsset)
 
 {
   bool bVar1;
   int iVar2;
-  char local_114 [264];
+  char name [264];
   uint local_c;
-  char *local_8;
+  char *token;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar1 = FX_SetEditorElemType(param_3,param_2);
+  bVar1 = FX_SetEditorElemType(edElemDef,elemType);
   if (bVar1) {
-    iVar2 = Com_MatchToken(param_1,"{",1);
+    iVar2 = Com_MatchToken(parse,"{",1);
     if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      param_3->visualCount = 0;
-      while (local_8 = Com_Parse(param_1), *local_8 != '}') {
-        if (param_3->visualCount == 0x10) {
+      edElemDef->visualCount = 0;
+      while (token = Com_Parse(parse), *token != '}') {
+        if (edElemDef->visualCount == 0x10) {
           Com_ScriptError("More than %i visuals in array\n");
           return false;
         }
-        I_strncpyz(local_114,local_8,0x104);
-        bVar1 = (*param_5)(local_114,*param_4 + param_3->visualCount);
+        I_strncpyz(name,token,0x104);
+        bVar1 = (*RegisterAsset)(name,*visualsArray + edElemDef->visualCount);
         if (!bVar1) {
           return false;
         }
-        param_3->visualCount = param_3->visualCount + 1;
+        edElemDef->visualCount = edElemDef->visualCount + 1;
       }
       bVar1 = true;
     }
@@ -530,29 +533,29 @@ FX_ParseAssetArray<FxElemMarkVisuals,16>
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl FX_ParseElemSpawnSoundAsset(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseElemSpawnSoundAsset(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   int iVar2;
-  char local_114 [264];
+  char name [264];
   uint local_c;
-  char *local_8;
+  char *token;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = Com_MatchToken(param_1,"{",1);
+  iVar2 = Com_MatchToken(parse,"{",1);
   if (iVar2 == 0) {
     bVar1 = false;
   }
   else {
-    while (local_8 = Com_Parse(param_1), *local_8 != '}') {
-      if ((param_2->spawnSound).spawnSound != (char *)0x0) {
+    while (token = Com_Parse(parse), *token != '}') {
+      if ((edElemDef->spawnSound).spawnSound != (char *)0x0) {
         Com_ScriptError("Only 1 element spawn sound allowed\n");
         return false;
       }
-      if (*local_8 != '\0') {
-        I_strncpyz(local_114,local_8,0x104);
-        ReplaceString(&(param_2->spawnSound).spawnSound,local_114,"FX_ParseElemSpawnSoundAsset",0xb,
+      if (*token != '\0') {
+        I_strncpyz(name,token,0x104);
+        ReplaceString(&(edElemDef->spawnSound).spawnSound,name,"FX_ParseElemSpawnSoundAsset",0xb,
                       SCRIPTINSTANCE_SERVER);
       }
     }
@@ -564,7 +567,7 @@ bool __cdecl FX_ParseElemSpawnSoundAsset(char **param_1,FxEditorElemDef *param_2
 
 // 005D3790  FX_ParseCurve  (EffectsCore/fx_load_obj.cpp:452)
 
-bool __cdecl FX_ParseCurve(char **param_1,int param_2,float param_3,float param_4,FxCurve **param_5)
+bool __cdecl FX_ParseCurve(char **parse,int dimCount,float minValue,float maxValue,FxCurve **shape)
 
 {
   float fVar1;
@@ -574,59 +577,60 @@ bool __cdecl FX_ParseCurve(char **param_1,int param_2,float param_3,float param_
   double dVar5;
   float local_824;
   float local_81c;
-  float local_814 [513];
-  int local_10;
-  char *local_c;
-  int local_8;
+  int keyCount;
+  float keys [513];
+  int keyIndex;
+  char *token;
+  int valCount;
   
-  iVar3 = Com_MatchToken(param_1,"{",1);
+  iVar3 = Com_MatchToken(parse,"{",1);
   if (iVar3 == 0) {
     bVar2 = false;
   }
   else {
-    local_8 = 0;
+    valCount = 0;
     while( true ) {
-      local_c = Com_Parse(param_1);
-      if (*local_c == '}') break;
-      if (local_8 == 0x200) {
+      token = Com_Parse(parse);
+      if (*token == '}') break;
+      if (valCount == 0x200) {
         Com_ScriptError("%i-dimensional values cannot have more than %i keys.\n");
         return false;
       }
-      dVar5 = atof(local_c);
-      local_814[local_8] = (float)dVar5;
-      if (local_8 % (param_2 + 1) != 0) {
-        fVar1 = local_814[local_8];
+      dVar5 = atof(token);
+      keys[valCount] = (float)dVar5;
+      if (valCount % (dimCount + 1) != 0) {
+        fVar1 = keys[valCount];
         local_81c = fVar1;
-        if (0.0 <= fVar1 - param_4) {
-          local_81c = param_4;
+        if (0.0 <= fVar1 - maxValue) {
+          local_81c = maxValue;
         }
-        if (param_3 - fVar1 < 0.0) {
+        if (minValue - fVar1 < 0.0) {
           local_824 = local_81c;
         }
         else {
-          local_824 = param_3;
+          local_824 = minValue;
         }
-        local_814[local_8] = local_824;
+        keys[valCount] = local_824;
       }
-      local_8 = local_8 + 1;
+      valCount = valCount + 1;
     }
-    if (local_8 % (param_2 + 1) == 0) {
-      iVar3 = local_8 / (param_2 + 1);
+    if (valCount % (dimCount + 1) == 0) {
+      iVar3 = valCount / (dimCount + 1);
       if (iVar3 < 2) {
         Com_ScriptError("Curves must always have at least 2 keys.\n");
         bVar2 = false;
       }
-      else if ((local_814[0] == 0.0) && (local_814[(iVar3 + -1) * (param_2 + 1)] == 1.0)) {
-        for (local_10 = 1; local_10 < iVar3; local_10 = local_10 + 1) {
-          if (local_814[(param_2 + 1) * local_10] <= local_814[(local_10 + -1) * (param_2 + 1)]) {
+      else if ((keys[0] == 0.0) && (keys[(iVar3 + -1) * (dimCount + 1)] == 1.0)) {
+        for (keyIndex = 1; keyIndex < iVar3; keyIndex = keyIndex + 1) {
+          if (keys[(dimCount + 1) * keyIndex] <= keys[(keyIndex + -1) * (dimCount + 1)]) {
             Com_ScriptError(
                            "Curves times must be monotonically increasing (key %i is at %g <= %g).\n"
                            );
             return false;
           }
         }
-        pFVar4 = FxCurve_AllocAndCreateWithKeys(local_814,param_2,iVar3);
-        *param_5 = pFVar4;
+        pFVar4 = FxCurve_AllocAndCreateWithKeys(keys,dimCount,iVar3);
+        *shape = pFVar4;
         bVar2 = true;
       }
       else {
@@ -646,25 +650,25 @@ bool __cdecl FX_ParseCurve(char **param_1,int param_2,float param_3,float param_
 // 005D36D0  FX_ParseGraphRange  (EffectsCore/fx_load_obj.cpp:513)
 
 bool __cdecl
-FX_ParseGraphRange(char **param_1,int param_2,float param_3,float param_4,float *param_5,
-                  FxCurve **param_6)
+FX_ParseGraphRange(char **parse,int dimCount,float minValue,float maxValue,float *scale,
+                  FxCurve **shape)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = FX_ParseFloat(param_1,param_5);
+  bVar1 = FX_ParseFloat(parse,scale);
   if (bVar1) {
-    iVar2 = Com_MatchToken(param_1,"{",1);
+    iVar2 = Com_MatchToken(parse,"{",1);
     if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      bVar1 = FX_ParseCurve(param_1,param_2,param_3,param_4,param_6);
+      bVar1 = FX_ParseCurve(parse,dimCount,minValue,maxValue,shape);
       if (bVar1) {
-        bVar1 = FX_ParseCurve(param_1,param_2,param_3,param_4,param_6 + 1);
+        bVar1 = FX_ParseCurve(parse,dimCount,minValue,maxValue,shape + 1);
         if (bVar1) {
-          iVar2 = Com_MatchToken(param_1,"}",1);
+          iVar2 = Com_MatchToken(parse,"}",1);
           if (iVar2 == 0) {
             bVar1 = false;
           }
@@ -690,19 +694,20 @@ FX_ParseGraphRange(char **param_1,int param_2,float param_3,float param_4,float 
 
 // 005D3DD0  FX_ParseEffectRef  (EffectsCore/fx_load_obj.cpp:531)
 
-bool __cdecl FX_ParseEffectRef(char **param_1,FxEffectDef **param_2)
+bool __cdecl FX_ParseEffectRef(char **parse,FxEffectDef **fx)
 
 {
-  char *pcVar1;
-  FxEffectDef *pFVar2;
+  char *name;
+  FxEffectDef *pFVar1;
+  char *token;
   
-  pcVar1 = Com_Parse(param_1);
-  if (*pcVar1 == '\0') {
-    *param_2 = (FxEffectDef *)0x0;
+  name = Com_Parse(parse);
+  if (*name == '\0') {
+    *fx = (FxEffectDef *)0x0;
   }
   else {
-    pFVar2 = FX_Register(pcVar1);
-    *param_2 = pFVar2;
+    pFVar1 = FX_Register(name);
+    *fx = pFVar1;
   }
   return true;
 }
@@ -710,92 +715,93 @@ bool __cdecl FX_ParseEffectRef(char **param_1,FxEffectDef **param_2)
 
 // 005D3000  FX_ParseName  (EffectsCore/fx_load_obj.cpp:553)
 
-bool __cdecl FX_ParseName(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseName(char **parse,FxEditorElemDef *edElemDef)
 
 {
-  char *pcVar1;
+  char *src;
+  char *token;
   
-  pcVar1 = Com_Parse(param_1);
-  I_strncpyz(param_2->name,pcVar1,0x100);
+  src = Com_Parse(parse);
+  I_strncpyz(edElemDef->name,src,0x100);
   return true;
 }
 
 
 // 005D3030  FX_ParseNonAtlasFlags  (EffectsCore/fx_load_obj.cpp:563)
 
-bool __cdecl FX_ParseNonAtlasFlags(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseNonAtlasFlags(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
-  FxFlagOutputSet local_14;
+  FxFlagOutputSet flagOutputSet;
   
-  local_14.flags[2] = (int *)0x0;
-  local_14.flags[0] = &param_2->editorFlags;
-  local_14.flags[1] = &param_2->flags;
-  local_14.flags[3] = (int *)0x0;
-  bVar1 = FX_ParseFlagsField(param_1,&local_14);
+  flagOutputSet.flags[2] = (int *)0x0;
+  flagOutputSet.flags[0] = &edElemDef->editorFlags;
+  flagOutputSet.flags[1] = &edElemDef->flags;
+  flagOutputSet.flags[3] = (int *)0x0;
+  bVar1 = FX_ParseFlagsField(parse,&flagOutputSet);
   return bVar1;
 }
 
 
 // 005D31A0  FX_ParseSpawnRange  (EffectsCore/fx_load_obj.cpp:576)
 
-bool __cdecl FX_ParseSpawnRange(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnRange(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->spawnRange);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->spawnRange);
   return bVar1;
 }
 
 
 // 005D3220  FX_ParseFadeInRange  (EffectsCore/fx_load_obj.cpp:582)
 
-bool __cdecl FX_ParseFadeInRange(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseFadeInRange(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->fadeInRange);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->fadeInRange);
   return bVar1;
 }
 
 
 // 005D3240  FX_ParseFadeOutRange  (EffectsCore/fx_load_obj.cpp:588)
 
-bool __cdecl FX_ParseFadeOutRange(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseFadeOutRange(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->fadeOutRange);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->fadeOutRange);
   return bVar1;
 }
 
 
 // 005D3260  FX_ParseSpawnFrustumCullRadius  (EffectsCore/fx_load_obj.cpp:594)
 
-bool __cdecl FX_ParseSpawnFrustumCullRadius(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnFrustumCullRadius(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->spawnFrustumCullRadius);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->spawnFrustumCullRadius);
   return bVar1;
 }
 
 
 // 005D3280  FX_ParseSpawnDefLooping  (EffectsCore/fx_load_obj.cpp:600)
 
-bool __cdecl FX_ParseSpawnDefLooping(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnDefLooping(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->spawnLooping).intervalMsec);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->spawnLooping).intervalMsec);
   if (bVar1) {
-    bVar1 = FX_ParseInt(param_1,&(param_2->spawnLooping).count);
+    bVar1 = FX_ParseInt(parse,&(edElemDef->spawnLooping).count);
     if (bVar1) {
       bVar1 = true;
     }
@@ -812,705 +818,706 @@ bool __cdecl FX_ParseSpawnDefLooping(char **param_1,FxEditorElemDef *param_2)
 
 // 005D32F0  FX_ParseSpawnDefOneShot  (EffectsCore/fx_load_obj.cpp:611)
 
-bool __cdecl FX_ParseSpawnDefOneShot(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnDefOneShot(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseIntRange(param_1,&(param_2->spawnOneShot).count);
+  bVar1 = FX_ParseIntRange(parse,&(edElemDef->spawnOneShot).count);
   return bVar1;
 }
 
 
 // 005D3350  FX_ParseSpawnDelayMsec  (EffectsCore/fx_load_obj.cpp:618)
 
-bool __cdecl FX_ParseSpawnDelayMsec(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnDelayMsec(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseIntRange(param_1,&param_2->spawnDelayMsec);
+  bVar1 = FX_ParseIntRange(parse,&edElemDef->spawnDelayMsec);
   return bVar1;
 }
 
 
 // 005D3370  FX_ParseLifeSpanMsec  (EffectsCore/fx_load_obj.cpp:624)
 
-bool __cdecl FX_ParseLifeSpanMsec(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseLifeSpanMsec(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseIntRange(param_1,&param_2->lifeSpanMsec);
+  bVar1 = FX_ParseIntRange(parse,&edElemDef->lifeSpanMsec);
   return bVar1;
 }
 
 
 // 005D3390  FX_ParseSpawnOrgX  (EffectsCore/fx_load_obj.cpp:630)
 
-bool __cdecl FX_ParseSpawnOrgX(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnOrgX(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnOrigin);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnOrigin);
   return bVar1;
 }
 
 
 // 005D33B0  FX_ParseSpawnOrgY  (EffectsCore/fx_load_obj.cpp:636)
 
-bool __cdecl FX_ParseSpawnOrgY(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnOrgY(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnOrigin + 1);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnOrigin + 1);
   return bVar1;
 }
 
 
 // 005D33D0  FX_ParseSpawnOrgZ  (EffectsCore/fx_load_obj.cpp:642)
 
-bool __cdecl FX_ParseSpawnOrgZ(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnOrgZ(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnOrigin + 2);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnOrigin + 2);
   return bVar1;
 }
 
 
 // 005D33F0  FX_ParseSpawnOffsetRadius  (EffectsCore/fx_load_obj.cpp:648)
 
-bool __cdecl FX_ParseSpawnOffsetRadius(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnOffsetRadius(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->spawnOffsetRadius);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->spawnOffsetRadius);
   return bVar1;
 }
 
 
 // 005D3410  FX_ParseSpawnOffsetHeight  (EffectsCore/fx_load_obj.cpp:654)
 
-bool __cdecl FX_ParseSpawnOffsetHeight(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnOffsetHeight(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->spawnOffsetHeight);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->spawnOffsetHeight);
   return bVar1;
 }
 
 
 // 005D3430  FX_ParseSpawnAnglePitch  (EffectsCore/fx_load_obj.cpp:660)
 
-bool __cdecl FX_ParseSpawnAnglePitch(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnAnglePitch(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnAngles);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnAngles);
   return bVar1;
 }
 
 
 // 005D3450  FX_ParseSpawnAngleYaw  (EffectsCore/fx_load_obj.cpp:666)
 
-bool __cdecl FX_ParseSpawnAngleYaw(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnAngleYaw(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnAngles + 1);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnAngles + 1);
   return bVar1;
 }
 
 
 // 005D3470  FX_ParseSpawnAngleRoll  (EffectsCore/fx_load_obj.cpp:672)
 
-bool __cdecl FX_ParseSpawnAngleRoll(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpawnAngleRoll(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->spawnAngles + 2);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->spawnAngles + 2);
   return bVar1;
 }
 
 
 // 005D3490  FX_ParseAngleVelPitch  (EffectsCore/fx_load_obj.cpp:678)
 
-bool __cdecl FX_ParseAngleVelPitch(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAngleVelPitch(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->angularVelocity);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->angularVelocity);
   return bVar1;
 }
 
 
 // 005D34B0  FX_ParseAngleVelYaw  (EffectsCore/fx_load_obj.cpp:684)
 
-bool __cdecl FX_ParseAngleVelYaw(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAngleVelYaw(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->angularVelocity + 1);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->angularVelocity + 1);
   return bVar1;
 }
 
 
 // 005D34D0  FX_ParseAngleVelRoll  (EffectsCore/fx_load_obj.cpp:690)
 
-bool __cdecl FX_ParseAngleVelRoll(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAngleVelRoll(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,param_2->angularVelocity + 2);
+  bVar1 = FX_ParseFloatRange(parse,edElemDef->angularVelocity + 2);
   return bVar1;
 }
 
 
 // 005D34F0  FX_ParseInitialRot  (EffectsCore/fx_load_obj.cpp:696)
 
-bool __cdecl FX_ParseInitialRot(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseInitialRot(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->initialRotation);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->initialRotation);
   return bVar1;
 }
 
 
 // 005D3510  FX_ParseGravity  (EffectsCore/fx_load_obj.cpp:702)
 
-bool __cdecl FX_ParseGravity(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseGravity(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->gravity);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->gravity);
   return bVar1;
 }
 
 
 // 005D3530  FX_ParseElasticity  (EffectsCore/fx_load_obj.cpp:708)
 
-bool __cdecl FX_ParseElasticity(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseElasticity(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->elasticity);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->elasticity);
   return bVar1;
 }
 
 
 // 005D3550  FX_ParseWindinfluence  (EffectsCore/fx_load_obj.cpp:713)
 
-bool __cdecl FX_ParseWindinfluence(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseWindinfluence(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->windInfluence);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->windInfluence);
   return bVar1;
 }
 
 
 // 005D3570  FX_ParseAtlasBehavior  (EffectsCore/fx_load_obj.cpp:719)
 
-bool __cdecl FX_ParseAtlasBehavior(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasBehavior(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
-  FxFlagOutputSet local_14;
+  FxFlagOutputSet flagOutputSet;
   
-  local_14.flags[2] = &(param_2->atlas).behavior;
-  local_14.flags[0] = (int *)0x0;
-  local_14.flags[1] = (int *)0x0;
-  bVar1 = FX_ParseFlagsField(param_1,&local_14);
+  flagOutputSet.flags[2] = &(edElemDef->atlas).behavior;
+  flagOutputSet.flags[0] = (int *)0x0;
+  flagOutputSet.flags[1] = (int *)0x0;
+  bVar1 = FX_ParseFlagsField(parse,&flagOutputSet);
   return bVar1;
 }
 
 
 // 005D35B0  FX_ParseAtlasIndex  (EffectsCore/fx_load_obj.cpp:732)
 
-bool __cdecl FX_ParseAtlasIndex(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasIndex(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).index);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).index);
   return bVar1;
 }
 
 
 // 005D35D0  FX_ParseAtlasIndexRange  (EffectsCore/fx_load_obj.cpp:738)
 
-bool __cdecl FX_ParseAtlasIndexRange(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasIndexRange(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).indexRange);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).indexRange);
   return bVar1;
 }
 
 
 // 005D35F0  FX_ParseAtlasFps  (EffectsCore/fx_load_obj.cpp:744)
 
-bool __cdecl FX_ParseAtlasFps(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasFps(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).fps);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).fps);
   return bVar1;
 }
 
 
 // 005D3610  FX_ParseAtlasLoopCount  (EffectsCore/fx_load_obj.cpp:750)
 
-bool __cdecl FX_ParseAtlasLoopCount(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasLoopCount(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).loopCount);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).loopCount);
   return bVar1;
 }
 
 
 // 005D3630  FX_ParseAtlasColIndexBits  (EffectsCore/fx_load_obj.cpp:756)
 
-bool __cdecl FX_ParseAtlasColIndexBits(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasColIndexBits(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).colIndexBits);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).colIndexBits);
   return bVar1;
 }
 
 
 // 005D3650  FX_ParseAtlasRowIndexBits  (EffectsCore/fx_load_obj.cpp:762)
 
-bool __cdecl FX_ParseAtlasRowIndexBits(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasRowIndexBits(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).rowIndexBits);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).rowIndexBits);
   return bVar1;
 }
 
 
 // 005D3670  FX_ParseAtlasEntryCount  (EffectsCore/fx_load_obj.cpp:768)
 
-bool __cdecl FX_ParseAtlasEntryCount(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAtlasEntryCount(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&(param_2->atlas).entryCount);
+  bVar1 = FX_ParseInt(parse,&(edElemDef->atlas).entryCount);
   return bVar1;
 }
 
 
 // 005D3690  FX_ParseVelGraph0X  (EffectsCore/fx_load_obj.cpp:774)
 
-bool __cdecl FX_ParseVelGraph0X(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph0X(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[0],(FxCurve **)param_2->velShape);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[0],(FxCurve **)edElemDef->velShape
+                            );
   return bVar1;
 }
 
 
 // 005D3A50  FX_ParseVelGraph0Y  (EffectsCore/fx_load_obj.cpp:780)
 
-bool __cdecl FX_ParseVelGraph0Y(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph0Y(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[0] + 1,param_2->velShape[0][1]);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[0] + 1,edElemDef->velShape[0][1]);
   return bVar1;
 }
 
 
 // 005D3A90  FX_ParseVelGraph0Z  (EffectsCore/fx_load_obj.cpp:786)
 
-bool __cdecl FX_ParseVelGraph0Z(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph0Z(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[0] + 2,param_2->velShape[0][2]);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[0] + 2,edElemDef->velShape[0][2]);
   return bVar1;
 }
 
 
 // 005D3AD0  FX_ParseVelGraph1X  (EffectsCore/fx_load_obj.cpp:792)
 
-bool __cdecl FX_ParseVelGraph1X(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph1X(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[1],
-                             (FxCurve **)(param_2->velShape + 1));
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[1],
+                             (FxCurve **)(edElemDef->velShape + 1));
   return bVar1;
 }
 
 
 // 005D3B10  FX_ParseVelGraph1Y  (EffectsCore/fx_load_obj.cpp:798)
 
-bool __cdecl FX_ParseVelGraph1Y(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph1Y(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[1] + 1,param_2->velShape[1][1]);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[1] + 1,edElemDef->velShape[1][1]);
   return bVar1;
 }
 
 
 // 005D3B50  FX_ParseVelGraph1Z  (EffectsCore/fx_load_obj.cpp:804)
 
-bool __cdecl FX_ParseVelGraph1Z(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseVelGraph1Z(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,param_2->velScale[1] + 2,param_2->velShape[1][2]);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,edElemDef->velScale[1] + 2,edElemDef->velShape[1][2]);
   return bVar1;
 }
 
 
 // 005D3B90  FX_ParseRotGraph  (EffectsCore/fx_load_obj.cpp:810)
 
-bool __cdecl FX_ParseRotGraph(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseRotGraph(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,-0.5,0.5,&param_2->rotationScale,param_2->rotationShape);
+  bVar1 = FX_ParseGraphRange(parse,1,-0.5,0.5,&edElemDef->rotationScale,edElemDef->rotationShape);
   return bVar1;
 }
 
 
 // 005D3BD0  FX_ParseSizeGraph0  (EffectsCore/fx_load_obj.cpp:816)
 
-bool __cdecl FX_ParseSizeGraph0(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSizeGraph0(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,0.0,1.0,param_2->sizeScale,param_2->sizeShape[0]);
+  bVar1 = FX_ParseGraphRange(parse,1,0.0,1.0,edElemDef->sizeScale,edElemDef->sizeShape[0]);
   return bVar1;
 }
 
 
 // 005D3C10  FX_ParseSizeGraph1  (EffectsCore/fx_load_obj.cpp:822)
 
-bool __cdecl FX_ParseSizeGraph1(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSizeGraph1(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,0.0,1.0,param_2->sizeScale + 1,param_2->sizeShape[1]);
+  bVar1 = FX_ParseGraphRange(parse,1,0.0,1.0,edElemDef->sizeScale + 1,edElemDef->sizeShape[1]);
   return bVar1;
 }
 
 
 // 005D3C50  FX_ParseScaleGraph  (EffectsCore/fx_load_obj.cpp:828)
 
-bool __cdecl FX_ParseScaleGraph(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseScaleGraph(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,0.0,1.0,&param_2->scaleScale,param_2->scaleShape);
+  bVar1 = FX_ParseGraphRange(parse,1,0.0,1.0,&edElemDef->scaleScale,edElemDef->scaleShape);
   return bVar1;
 }
 
 
 // 005D3C90  FX_ParseColorGraph  (EffectsCore/fx_load_obj.cpp:834)
 
-bool __cdecl FX_ParseColorGraph(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseColorGraph(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
-  float local_8;
+  float scale;
   
-  bVar1 = FX_ParseGraphRange(param_1,3,0.0,1.0,&local_8,param_2->color);
+  bVar1 = FX_ParseGraphRange(parse,3,0.0,1.0,&scale,edElemDef->color);
   return bVar1;
 }
 
 
 // 005D3CC0  FX_ParseAlphaGraph  (EffectsCore/fx_load_obj.cpp:842)
 
-bool __cdecl FX_ParseAlphaGraph(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAlphaGraph(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
-  float local_8;
+  float scale;
   
-  bVar1 = FX_ParseGraphRange(param_1,1,0.0,1.0,&local_8,param_2->alpha);
+  bVar1 = FX_ParseGraphRange(parse,1,0.0,1.0,&scale,edElemDef->alpha);
   return bVar1;
 }
 
 
 // 005D3CF0  FX_ParseCollOffset  (EffectsCore/fx_load_obj.cpp:850)
 
-bool __cdecl FX_ParseCollOffset(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseCollOffset(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseVector(param_1,param_2->collOffset);
+  bVar1 = FX_ParseVector(parse,edElemDef->collOffset);
   return bVar1;
 }
 
 
 // 005D3D70  FX_ParseLightingFrac  (EffectsCore/fx_load_obj.cpp:856)
 
-bool __cdecl FX_ParseLightingFrac(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseLightingFrac(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->lightingFrac);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->lightingFrac);
   return bVar1;
 }
 
 
 // 005D3D90  FX_ParseCollRadius  (EffectsCore/fx_load_obj.cpp:862)
 
-bool __cdecl FX_ParseCollRadius(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseCollRadius(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->collRadius);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->collRadius);
   return bVar1;
 }
 
 
 // 005D3DB0  FX_ParseFxOnImpact  (EffectsCore/fx_load_obj.cpp:868)
 
-bool __cdecl FX_ParseFxOnImpact(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseFxOnImpact(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseEffectRef(param_1,&param_2->effectOnImpact);
+  bVar1 = FX_ParseEffectRef(parse,&edElemDef->effectOnImpact);
   return bVar1;
 }
 
 
 // 005D3E10  FX_ParseFxOnDeath  (EffectsCore/fx_load_obj.cpp:874)
 
-bool __cdecl FX_ParseFxOnDeath(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseFxOnDeath(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseEffectRef(param_1,&param_2->effectOnDeath);
+  bVar1 = FX_ParseEffectRef(parse,&edElemDef->effectOnDeath);
   return bVar1;
 }
 
 
 // 005D3E30  FX_ParseSortOrder  (EffectsCore/fx_load_obj.cpp:880)
 
-bool __cdecl FX_ParseSortOrder(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSortOrder(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->sortOrder);
+  bVar1 = FX_ParseInt(parse,&edElemDef->sortOrder);
   return bVar1;
 }
 
 
 // 005D3E50  FX_ParsePriority  (EffectsCore/fx_load_obj.cpp:885)
 
-bool __cdecl FX_ParsePriority(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParsePriority(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&curPriority);
+  bVar1 = FX_ParseInt(parse,&curPriority);
   return bVar1;
 }
 
 
 // 005D3E70  FX_ParseAlphaFadeTimeMsec  (EffectsCore/fx_load_obj.cpp:905)
 
-bool __cdecl FX_ParseAlphaFadeTimeMsec(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAlphaFadeTimeMsec(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->alphaFadeTimeMsec);
+  bVar1 = FX_ParseInt(parse,&edElemDef->alphaFadeTimeMsec);
   return bVar1;
 }
 
 
 // 005D3E90  FX_ParseMaxWindMagnitude  (EffectsCore/fx_load_obj.cpp:911)
 
-bool __cdecl FX_ParseMaxWindMagnitude(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseMaxWindMagnitude(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->maxWindMagnitude);
+  bVar1 = FX_ParseInt(parse,&edElemDef->maxWindMagnitude);
   return bVar1;
 }
 
 
 // 005D3EB0  FX_ParseMaxWindLife  (EffectsCore/fx_load_obj.cpp:917)
 
-bool __cdecl FX_ParseMaxWindLife(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseMaxWindLife(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->lifespanAtMaxWind);
+  bVar1 = FX_ParseInt(parse,&edElemDef->lifespanAtMaxWind);
   return bVar1;
 }
 
 
 // 005D3ED0  FX_ParseMaxWindInterval  (EffectsCore/fx_load_obj.cpp:923)
 
-bool __cdecl FX_ParseMaxWindInterval(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseMaxWindInterval(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->spawnIntervalAtMaxWind);
+  bVar1 = FX_ParseInt(parse,&edElemDef->spawnIntervalAtMaxWind);
   return bVar1;
 }
 
 
 // 005D3EF0  FX_ParseEmission  (EffectsCore/fx_load_obj.cpp:928)
 
-bool __cdecl FX_ParseEmission(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseEmission(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseEffectRef(param_1,&param_2->emission);
+  bVar1 = FX_ParseEffectRef(parse,&edElemDef->emission);
   return bVar1;
 }
 
 
 // 005D3F10  FX_ParseEmitDist  (EffectsCore/fx_load_obj.cpp:934)
 
-bool __cdecl FX_ParseEmitDist(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseEmitDist(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->emitDist);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->emitDist);
   return bVar1;
 }
 
 
 // 005D3F30  FX_ParseEmitDistVariance  (EffectsCore/fx_load_obj.cpp:940)
 
-bool __cdecl FX_ParseEmitDistVariance(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseEmitDistVariance(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,&param_2->emitDistVariance);
+  bVar1 = FX_ParseFloatRange(parse,&edElemDef->emitDistVariance);
   return bVar1;
 }
 
 
 // 005D3F50  FX_ParseAttachment  (EffectsCore/fx_load_obj.cpp:946)
 
-bool __cdecl FX_ParseAttachment(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseAttachment(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseEffectRef(param_1,&param_2->attachment);
+  bVar1 = FX_ParseEffectRef(parse,&edElemDef->attachment);
   return bVar1;
 }
 
 
 // 005D3F70  FX_ParseTrailRepeatTime  (EffectsCore/fx_load_obj.cpp:952)
 
-bool __cdecl FX_ParseTrailRepeatTime(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrailRepeatTime(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
-  float local_8;
+  float deprecated;
   
-  bVar1 = FX_ParseFloat(param_1,&local_8);
+  bVar1 = FX_ParseFloat(parse,&deprecated);
   return bVar1;
 }
 
 
 // 005D3F90  FX_ParseTrailSplitDist  (EffectsCore/fx_load_obj.cpp:959)
 
-bool __cdecl FX_ParseTrailSplitDist(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrailSplitDist(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->trailSplitDist);
+  bVar1 = FX_ParseInt(parse,&edElemDef->trailSplitDist);
   return bVar1;
 }
 
 
 // 005D3FB0  FX_ParseTrailScrollTime  (EffectsCore/fx_load_obj.cpp:965)
 
-bool __cdecl FX_ParseTrailScrollTime(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrailScrollTime(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->trailScrollTime);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->trailScrollTime);
   return bVar1;
 }
 
 
 // 005D3FD0  FX_ParseTrailRepeatDist  (EffectsCore/fx_load_obj.cpp:971)
 
-bool __cdecl FX_ParseTrailRepeatDist(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrailRepeatDist(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseInt(param_1,&param_2->trailRepeatDist);
+  bVar1 = FX_ParseInt(parse,&edElemDef->trailRepeatDist);
   return bVar1;
 }
 
 
 // 005D3FF0  FX_ParseBillboardSprite  (EffectsCore/fx_load_obj.cpp:977)
 
-bool __cdecl FX_ParseBillboardSprite(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseBillboardSprite(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\0',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\0',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1518,13 +1525,13 @@ bool __cdecl FX_ParseBillboardSprite(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4050  FX_ParseOrientedSprite  (EffectsCore/fx_load_obj.cpp:983)
 
-bool __cdecl FX_ParseOrientedSprite(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseOrientedSprite(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x01',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x01',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1532,13 +1539,13 @@ bool __cdecl FX_ParseOrientedSprite(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4080  FX_ParseRotatedSprite  (EffectsCore/fx_load_obj.cpp:989)
 
-bool __cdecl FX_ParseRotatedSprite(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseRotatedSprite(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x02',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x02',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1546,13 +1553,13 @@ bool __cdecl FX_ParseRotatedSprite(char **param_1,FxEditorElemDef *param_2)
 
 // 005D40B0  FX_ParseCloud  (EffectsCore/fx_load_obj.cpp:995)
 
-bool __cdecl FX_ParseCloud(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseCloud(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x06',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x06',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1560,13 +1567,13 @@ bool __cdecl FX_ParseCloud(char **param_1,FxEditorElemDef *param_2)
 
 // 005D40E0  FX_ParseTail  (EffectsCore/fx_load_obj.cpp:1001)
 
-bool __cdecl FX_ParseTail(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTail(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x03',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x03',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1574,13 +1581,13 @@ bool __cdecl FX_ParseTail(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4110  FX_ParseLine  (EffectsCore/fx_load_obj.cpp:1007)
 
-bool __cdecl FX_ParseLine(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseLine(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x04',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x04',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1588,13 +1595,13 @@ bool __cdecl FX_ParseLine(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4140  FX_ParseTrail  (EffectsCore/fx_load_obj.cpp:1012)
 
-bool __cdecl FX_ParseTrail(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrail(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\x05',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\x05',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Material);
   return bVar1;
 }
@@ -1602,63 +1609,63 @@ bool __cdecl FX_ParseTrail(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4170  FX_ParseTrailDef  (EffectsCore/fx_load_obj.cpp:1018)
 
-bool __cdecl FX_ParseTrailDef(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseTrailDef(char **parse,FxEditorElemDef *edElemDef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  uint local_10;
-  FxTrailVertex *local_c;
-  char *local_8;
+  int index;
+  FxTrailVertex *trailVertex;
+  char *token;
   
-  iVar4 = Com_MatchToken(param_1,"{",1);
+  iVar4 = Com_MatchToken(parse,"{",1);
   if (iVar4 != 0) {
-    (param_2->trailDef).vertCount = 0;
-    while (local_8 = Com_Parse(param_1), *local_8 != '}') {
+    (edElemDef->trailDef).vertCount = 0;
+    while (token = Com_Parse(parse), *token != '}') {
       Com_UngetToken();
-      if ((param_2->trailDef).vertCount == 0x40) {
+      if ((edElemDef->trailDef).vertCount == 0x40) {
         Com_ScriptError("ran out of trail verts in edElemDef->trailDef\n");
         return false;
       }
-      local_c = (param_2->trailDef).verts + (param_2->trailDef).vertCount;
-      bVar2 = FX_ParseFloat(param_1,local_c->pos);
+      trailVertex = (edElemDef->trailDef).verts + (edElemDef->trailDef).vertCount;
+      bVar2 = FX_ParseFloat(parse,trailVertex->pos);
       if (!bVar2) {
         return false;
       }
-      bVar2 = FX_ParseFloat(param_1,local_c->pos + 1);
+      bVar2 = FX_ParseFloat(parse,trailVertex->pos + 1);
       if (!bVar2) {
         return false;
       }
-      bVar2 = FX_ParseFloat(param_1,&local_c->texCoord);
+      bVar2 = FX_ParseFloat(parse,&trailVertex->texCoord);
       if (!bVar2) {
         return false;
       }
-      (param_2->trailDef).vertCount = (param_2->trailDef).vertCount + 1;
+      (edElemDef->trailDef).vertCount = (edElemDef->trailDef).vertCount + 1;
     }
-    iVar4 = Com_MatchToken(param_1,"{",1);
+    iVar4 = Com_MatchToken(parse,"{",1);
     if (iVar4 != 0) {
-      (param_2->trailDef).indCount = 0;
-      while ((param_2->trailDef).indCount != 0x80) {
-        local_8 = Com_Parse(param_1);
-        if (*local_8 == '}') {
+      (edElemDef->trailDef).indCount = 0;
+      while ((edElemDef->trailDef).indCount != 0x80) {
+        token = Com_Parse(parse);
+        if (*token == '}') {
           return true;
         }
         Com_UngetToken();
-        bVar2 = FX_ParseInt(param_1,(int *)&local_10);
+        bVar2 = FX_ParseInt(parse,&index);
         if (!bVar2) {
           return false;
         }
-        (param_2->trailDef).inds[(param_2->trailDef).indCount] = (ushort)local_10;
-        if ((local_10 != (param_2->trailDef).inds[(param_2->trailDef).indCount]) &&
+        (edElemDef->trailDef).inds[(edElemDef->trailDef).indCount] = (ushort)index;
+        if ((index != (uint)(edElemDef->trailDef).inds[(edElemDef->trailDef).indCount]) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp"
                                      ,0x433,0,"%s\n\t(index) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        (param_2->trailDef).indCount = (param_2->trailDef).indCount + 1;
+        (edElemDef->trailDef).indCount = (edElemDef->trailDef).indCount + 1;
       }
       Com_ScriptError("ran out of trail inds in edElemDef->trailDef\n");
     }
@@ -1669,13 +1676,13 @@ bool __cdecl FX_ParseTrailDef(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4380  FX_ParseDecal  (EffectsCore/fx_load_obj.cpp:1084)
 
-bool __cdecl FX_ParseDecal(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseDecal(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemMarkVisuals,16>
-                    (param_1,'\v',param_2,(FxElemMarkVisuals (*) [16])&param_2->field45_0x2b4,
+                    (parse,'\v',edElemDef,(FxElemMarkVisuals (*) [16])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_DecalMaterials);
   return bVar1;
 }
@@ -1683,13 +1690,13 @@ bool __cdecl FX_ParseDecal(char **param_1,FxEditorElemDef *param_2)
 
 // 005D43D0  FX_ParseModel  (EffectsCore/fx_load_obj.cpp:1090)
 
-bool __cdecl FX_ParseModel(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseModel(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\a',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\a',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_Model);
   return bVar1;
 }
@@ -1697,37 +1704,37 @@ bool __cdecl FX_ParseModel(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4430  FX_ParseLight  (EffectsCore/fx_load_obj.cpp:1096)
 
-bool __cdecl FX_ParseLight(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseLight(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_SetEditorElemType(param_2,'\b');
+  bVar1 = FX_SetEditorElemType(edElemDef,'\b');
   return bVar1;
 }
 
 
 // 005D4490  FX_ParseSpotLight  (EffectsCore/fx_load_obj.cpp:1102)
 
-bool __cdecl FX_ParseSpotLight(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSpotLight(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_SetEditorElemType(param_2,'\t');
+  bVar1 = FX_SetEditorElemType(edElemDef,'\t');
   return bVar1;
 }
 
 
 // 005D44B0  FX_ParseRunner  (EffectsCore/fx_load_obj.cpp:1108)
 
-bool __cdecl FX_ParseRunner(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseRunner(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\f',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\f',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_EffectDef);
   return bVar1;
 }
@@ -1735,13 +1742,13 @@ bool __cdecl FX_ParseRunner(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4510  FX_ParseSound  (EffectsCore/fx_load_obj.cpp:1114)
 
-bool __cdecl FX_ParseSound(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseSound(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
   bVar1 = FX_ParseAssetArray<FxElemVisuals,32>
-                    (param_1,'\n',param_2,(FxElemVisuals (*) [32])&param_2->field45_0x2b4,
+                    (parse,'\n',edElemDef,(FxElemVisuals (*) [32])&edElemDef->field45_0x2b4,
                      FX_RegisterAsset_SoundAliasName);
   return bVar1;
 }
@@ -1749,136 +1756,138 @@ bool __cdecl FX_ParseSound(char **param_1,FxEditorElemDef *param_2)
 
 // 005D4560  FX_ParseElemSpawnSound  (EffectsCore/fx_load_obj.cpp:1119)
 
-bool __cdecl FX_ParseElemSpawnSound(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseElemSpawnSound(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseElemSpawnSoundAsset(param_1,param_2);
+  bVar1 = FX_ParseElemSpawnSoundAsset(parse,edElemDef);
   return bVar1;
 }
 
 
 // 005D4650  FX_ParseBillboardTopWidth  (EffectsCore/fx_load_obj.cpp:1125)
 
-bool __cdecl FX_ParseBillboardTopWidth(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseBillboardTopWidth(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->billboardTopWidth);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->billboardTopWidth);
   return bVar1;
 }
 
 
 // 005D4670  FX_ParseBillboardBottomWidth  (EffectsCore/fx_load_obj.cpp:1131)
 
-bool __cdecl FX_ParseBillboardBottomWidth(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseBillboardBottomWidth(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloat(param_1,&param_2->billboardBottomWidth);
+  bVar1 = FX_ParseFloat(parse,&edElemDef->billboardBottomWidth);
   return bVar1;
 }
 
 
 // 005D4690  FX_ParseRotationAxis  (EffectsCore/fx_load_obj.cpp:1136)
 
-bool __cdecl FX_ParseRotationAxis(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseRotationAxis(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseVector4(param_1,param_2->rotationAxis);
+  bVar1 = FX_ParseVector4(parse,edElemDef->rotationAxis);
   return bVar1;
 }
 
 
 // 005D4730  FX_ParseCloudDensityRange  (EffectsCore/fx_load_obj.cpp:1141)
 
-bool __cdecl FX_ParseCloudDensityRange(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseCloudDensityRange(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseIntRange(param_1,&param_2->cloudDensityRange);
+  bVar1 = FX_ParseIntRange(parse,&edElemDef->cloudDensityRange);
   return bVar1;
 }
 
 
 // 005D4750  FX_ParseEffectBoundingBoxDim  (EffectsCore/fx_load_obj.cpp:1146)
 
-bool __cdecl FX_ParseEffectBoundingBoxDim(char **param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_ParseEffectBoundingBoxDim(char **parse,FxEditorEffectDef *edEffectDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseVector(param_1,param_2->boundingBoxDim);
+  bVar1 = FX_ParseVector(parse,edEffectDef->boundingBoxDim);
   return bVar1;
 }
 
 
 // 005D4770  FX_ParseEffectBoundingBoxCentre  (EffectsCore/fx_load_obj.cpp:1151)
 
-bool __cdecl FX_ParseEffectBoundingBoxCentre(char **param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_ParseEffectBoundingBoxCentre(char **parse,FxEditorEffectDef *edEffectDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseVector(param_1,param_2->boundingBoxCentre);
+  bVar1 = FX_ParseVector(parse,edEffectDef->boundingBoxCentre);
   return bVar1;
 }
 
 
 // 005D4790  FX_ParseEffectFlags  (EffectsCore/fx_load_obj.cpp:1156)
 
-bool __cdecl FX_ParseEffectFlags(char **param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_ParseEffectFlags(char **parse,FxEditorEffectDef *edEffectDef)
 
 {
   bool bVar1;
-  FxFlagOutputSet local_18;
-  int local_8;
+  bool ret;
+  FxFlagOutputSet flagOutputSet;
+  int flags;
   
-  local_8 = 0;
-  local_18.flags[2] = (int *)0x0;
-  local_18.flags[0] = (int *)0x0;
-  local_18.flags[1] = (int *)0x0;
-  local_18.flags[3] = &local_8;
-  bVar1 = FX_ParseFlagsField(param_1,&local_18);
-  param_2->flags = (uchar)local_8;
+  flags = 0;
+  flagOutputSet.flags[2] = (int *)0x0;
+  flagOutputSet.flags[0] = (int *)0x0;
+  flagOutputSet.flags[1] = (int *)0x0;
+  flagOutputSet.flags[3] = &flags;
+  bVar1 = FX_ParseFlagsField(parse,&flagOutputSet);
+  edEffectDef->flags = (uchar)flags;
   return bVar1;
 }
 
 
 // 005D47E0  FX_ParseEffectPriority  (EffectsCore/fx_load_obj.cpp:1172)
 
-bool __cdecl FX_ParseEffectPriority(char **param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_ParseEffectPriority(char **parse,FxEditorEffectDef *edEffectDef)
 
 {
   bool bVar1;
+  bool ret;
   
-  bVar1 = FX_ParseInt(param_1,&curPriority);
-  param_2->edPriority = (uchar)curPriority;
+  bVar1 = FX_ParseInt(parse,&curPriority);
+  edEffectDef->edPriority = (uchar)curPriority;
   return bVar1;
 }
 
 
 // 005D4810  FX_ParseBillboardPivot  (EffectsCore/fx_load_obj.cpp:1196)
 
-bool __cdecl FX_ParseBillboardPivot(char **param_1,FxEditorElemDef *param_2)
+bool __cdecl FX_ParseBillboardPivot(char **parse,FxEditorElemDef *edElemDef)
 
 {
   bool bVar1;
   
-  bVar1 = FX_ParseFloatRange(param_1,(FxFloatRange *)param_2->billboardPivot);
+  bVar1 = FX_ParseFloatRange(parse,(FxFloatRange *)edElemDef->billboardPivot);
   return bVar1;
 }
 
 
 // 005D4A80  FX_ParseEditorElemField  (EffectsCore/fx_load_obj.cpp:1318)
 
-bool __cdecl FX_ParseEditorElemField(char **param_1,FxEditorElemDef *param_2,char *param_3)
+bool __cdecl FX_ParseEditorElemField(char **parse,FxEditorElemDef *edElemDef,char *token)
 
 {
   byte bVar1;
@@ -1887,20 +1896,20 @@ bool __cdecl FX_ParseEditorElemField(char **param_1,FxEditorElemDef *param_2,cha
   int local_18;
   byte *local_10;
   byte *local_c;
-  uint local_8;
+  uint fieldIndex;
   
-  local_8 = 0;
+  fieldIndex = 0;
   do {
-    if (0x54 < local_8) {
+    if (0x54 < fieldIndex) {
       Com_Printf(0x15,"Valid effects element fields:\n");
-      for (local_8 = 0; local_8 < 0x55; local_8 = local_8 + 1) {
+      for (fieldIndex = 0; fieldIndex < 0x55; fieldIndex = fieldIndex + 1) {
         Com_Printf(0x15,"  %s\n");
       }
       Com_ScriptError("unkown field \'%s\'\n");
       return false;
     }
-    local_c = (byte *)s_elemFields[local_8].keyName;
-    local_10 = (byte *)param_3;
+    local_c = (byte *)s_elemFields[fieldIndex].keyName;
+    local_10 = (byte *)token;
     do {
       bVar1 = *local_10;
       bVar3 = bVar1 < *local_c;
@@ -1919,24 +1928,24 @@ LAB_005d4af2:
     local_18 = 0;
 LAB_005d4afa:
     if (local_18 == 0) {
-      bVar3 = (*s_elemFields[local_8].handler)(param_1,param_2);
+      bVar3 = (*s_elemFields[fieldIndex].handler)(parse,edElemDef);
       if (!bVar3) {
         return false;
       }
-      iVar2 = Com_MatchToken(param_1,";",1);
+      iVar2 = Com_MatchToken(parse,";",1);
       if (iVar2 == 0) {
         return false;
       }
       return true;
     }
-    local_8 = local_8 + 1;
+    fieldIndex = fieldIndex + 1;
   } while( true );
 }
 
 
 // 005D4E00  FX_ParseEditorEffectField  (EffectsCore/fx_load_obj.cpp:1341)
 
-bool __cdecl FX_ParseEditorEffectField(char **param_1,FxEditorEffectDef *param_2,char *param_3)
+bool __cdecl FX_ParseEditorEffectField(char **parse,FxEditorEffectDef *edEffectDef,char *token)
 
 {
   byte bVar1;
@@ -1945,20 +1954,20 @@ bool __cdecl FX_ParseEditorEffectField(char **param_1,FxEditorEffectDef *param_2
   int local_18;
   byte *local_10;
   byte *local_c;
-  uint local_8;
+  uint fieldIndex;
   
-  local_8 = 0;
+  fieldIndex = 0;
   do {
-    if (3 < local_8) {
+    if (3 < fieldIndex) {
       Com_Printf(0x15,"Valid effect fields:\n");
-      for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
+      for (fieldIndex = 0; fieldIndex < 4; fieldIndex = fieldIndex + 1) {
         Com_Printf(0x15,"  %s\n");
       }
       Com_ScriptError("unkown field \'%s\'\n");
       return false;
     }
-    local_c = (byte *)s_effectFields[local_8].keyName;
-    local_10 = (byte *)param_3;
+    local_c = (byte *)s_effectFields[fieldIndex].keyName;
+    local_10 = (byte *)token;
     do {
       bVar1 = *local_10;
       bVar3 = bVar1 < *local_c;
@@ -1977,85 +1986,86 @@ LAB_005d4e72:
     local_18 = 0;
 LAB_005d4e7a:
     if (local_18 == 0) {
-      bVar3 = (*s_effectFields[local_8].handler)(param_1,param_2);
+      bVar3 = (*s_effectFields[fieldIndex].handler)(parse,edEffectDef);
       if (!bVar3) {
         return false;
       }
-      iVar2 = Com_MatchToken(param_1,";",1);
+      iVar2 = Com_MatchToken(parse,";",1);
       if (iVar2 == 0) {
         return false;
       }
       return true;
     }
-    local_8 = local_8 + 1;
+    fieldIndex = fieldIndex + 1;
   } while( true );
 }
 
 
 // 005D4830  FX_ParseEditorElem  (EffectsCore/fx_load_obj.cpp:1365)
 
-bool __cdecl FX_ParseEditorElem(int param_1,char **param_2,FxEditorElemDef *param_3)
+bool __cdecl FX_ParseEditorElem(int version,char **parse,FxEditorElemDef *edElemDef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
+  char *token_00;
+  char *token;
   
-  memset((uchar *)param_3,'\0',0x974);
-  if ((param_3->flags != 0) &&
+  memset((uchar *)edElemDef,'\0',0x974);
+  if ((edElemDef->flags != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x559,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3->editorFlags != 0) &&
+  if ((edElemDef->editorFlags != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x55a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3->lightingFrac != 0.0) &&
+  if ((edElemDef->lightingFrac != 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x55b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 < 2) {
-    param_3->editorFlags = 0x400;
+  if (version < 2) {
+    edElemDef->editorFlags = 0x400;
   }
-  if (((param_3->atlas).behavior != 0) &&
+  if (((edElemDef->atlas).behavior != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x560,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  param_3->elemType = '\r';
-  param_3->sortOrder = 5;
-  param_3->timeScale = 1.0;
-  param_3->billboardTopWidth = 1.0;
-  param_3->billboardBottomWidth = 1.0;
-  param_3->rotationAxis[0] = 0.0;
-  param_3->rotationAxis[1] = 0.0;
-  param_3->rotationAxis[2] = 0.0;
-  param_3->rotationAxis[3] = 1.0;
-  (param_3->cloudDensityRange).base = 0x400;
-  (param_3->cloudDensityRange).amplitude = 0;
-  while (pcVar4 = Com_Parse(param_2), *pcVar4 != '}') {
-    bVar2 = FX_ParseEditorElemField(param_2,param_3,pcVar4);
+  edElemDef->elemType = '\r';
+  edElemDef->sortOrder = 5;
+  edElemDef->timeScale = 1.0;
+  edElemDef->billboardTopWidth = 1.0;
+  edElemDef->billboardBottomWidth = 1.0;
+  edElemDef->rotationAxis[0] = 0.0;
+  edElemDef->rotationAxis[1] = 0.0;
+  edElemDef->rotationAxis[2] = 0.0;
+  edElemDef->rotationAxis[3] = 1.0;
+  (edElemDef->cloudDensityRange).base = 0x400;
+  (edElemDef->cloudDensityRange).amplitude = 0;
+  while (token_00 = Com_Parse(parse), *token_00 != '}') {
+    bVar2 = FX_ParseEditorElemField(parse,edElemDef,token_00);
     if (!bVar2) {
       return false;
     }
   }
-  if (param_3->elemType == '\x05') {
-    param_3->flags = param_3->flags & 0xffffff3f;
-    param_3->flags = param_3->flags;
+  if (edElemDef->elemType == '\x05') {
+    edElemDef->flags = edElemDef->flags & 0xffffff3f;
+    edElemDef->flags = edElemDef->flags;
   }
-  if (param_3->elemType == '\r') {
+  if (edElemDef->elemType == '\r') {
     Com_ScriptError("no visual type specified\n");
     return false;
   }
@@ -2065,51 +2075,52 @@ bool __cdecl FX_ParseEditorElem(int param_1,char **param_2,FxEditorElemDef *para
 
 // 005D4C40  FX_ParseEditorEffect  (EffectsCore/fx_load_obj.cpp:1415)
 
-bool __cdecl FX_ParseEditorEffect(char **param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_ParseEditorEffect(char **parse,FxEditorEffectDef *edEffectDef)
 
 {
   bool bVar1;
-  int iVar2;
-  char *local_8;
+  int version_00;
+  int version;
+  char *token;
   
-  iVar2 = Com_ParseInt(param_1);
-  if (iVar2 < 4) {
-    param_2->elemCount = 0;
-    param_2->edPriority = '\0';
-    param_2->editorFlags = '\0';
-    param_2->flags = '\0';
-    param_2->boundingBoxCentre[0] = 0.0;
-    param_2->boundingBoxCentre[1] = 0.0;
-    param_2->boundingBoxCentre[2] = 0.0;
-    param_2->boundingBoxDim[0] = 0.0;
-    param_2->boundingBoxDim[1] = 0.0;
-    param_2->boundingBoxDim[2] = 0.0;
+  version_00 = Com_ParseInt(parse);
+  if (version_00 < 4) {
+    edEffectDef->elemCount = 0;
+    edEffectDef->edPriority = '\0';
+    edEffectDef->editorFlags = '\0';
+    edEffectDef->flags = '\0';
+    edEffectDef->boundingBoxCentre[0] = 0.0;
+    edEffectDef->boundingBoxCentre[1] = 0.0;
+    edEffectDef->boundingBoxCentre[2] = 0.0;
+    edEffectDef->boundingBoxDim[0] = 0.0;
+    edEffectDef->boundingBoxDim[1] = 0.0;
+    edEffectDef->boundingBoxDim[2] = 0.0;
     do {
-      local_8 = Com_Parse(param_1);
-      if (*local_8 == '{') {
+      token = Com_Parse(parse);
+      if (*token == '{') {
         while( true ) {
-          if (*param_1 == (char *)0x0) {
-            if (iVar2 < 3) {
-              param_2->edPriority = (uchar)curPriority;
+          if (*parse == (char *)0x0) {
+            if (version_00 < 3) {
+              edEffectDef->edPriority = (uchar)curPriority;
             }
             return true;
           }
-          if (*local_8 != '{') {
+          if (*token != '{') {
             Com_ScriptError("Expected \'{\' to start a new segment, found \'%s\' instead.\n");
             return false;
           }
-          if (param_2->elemCount == 0x20) {
+          if (edEffectDef->elemCount == 0x20) {
             Com_ScriptError("Cannot have more than %i segments.\n");
             return false;
           }
-          bVar1 = FX_ParseEditorElem(iVar2,param_1,param_2->elems + param_2->elemCount);
+          bVar1 = FX_ParseEditorElem(version_00,parse,edEffectDef->elems + edEffectDef->elemCount);
           if (!bVar1) break;
-          param_2->elemCount = param_2->elemCount + 1;
-          local_8 = Com_Parse(param_1);
+          edEffectDef->elemCount = edEffectDef->elemCount + 1;
+          token = Com_Parse(parse);
         }
         return false;
       }
-      bVar1 = FX_ParseEditorEffectField(param_1,param_2,local_8);
+      bVar1 = FX_ParseEditorEffectField(parse,edEffectDef,token);
     } while (bVar1);
   }
   else {
@@ -2121,29 +2132,30 @@ bool __cdecl FX_ParseEditorEffect(char **param_1,FxEditorEffectDef *param_2)
 
 // 005D4BB0  FX_LoadEditorEffectFromBuffer  (EffectsCore/fx_load_obj.cpp:1474)
 
-bool __cdecl FX_LoadEditorEffectFromBuffer(char *param_1,char *param_2,FxEditorEffectDef *param_3)
+bool __cdecl
+FX_LoadEditorEffectFromBuffer(char *buffer,char *parseSessionName,FxEditorEffectDef *edEffectDef)
 
 {
   int iVar1;
-  bool local_d;
-  char *local_c;
-  char *local_8;
+  bool success;
+  char *parse;
+  char *token;
   
-  Com_BeginParseSession(param_2);
+  Com_BeginParseSession(parseSessionName);
   Com_SetSpaceDelimited(0);
   Com_SetParseNegativeNumbers(1);
-  local_c = param_1;
-  local_8 = Com_Parse(&local_c);
-  iVar1 = I_stricmp(local_8,"iwfx");
+  parse = buffer;
+  token = Com_Parse(&parse);
+  iVar1 = I_stricmp(token,"iwfx");
   if (iVar1 == 0) {
-    local_d = FX_ParseEditorEffect(&local_c,param_3);
+    success = FX_ParseEditorEffect(&parse,edEffectDef);
   }
   else {
     Com_ScriptError("Effect needs to be updated from the legacy format.\n");
-    local_d = false;
+    success = false;
   }
   Com_EndParseSession();
-  return local_d;
+  return success;
 }
 
 
@@ -2151,7 +2163,7 @@ bool __cdecl FX_LoadEditorEffectFromBuffer(char *param_1,char *param_2,FxEditorE
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl FX_LoadEditorEffect(char *param_1,FxEditorEffectDef *param_2)
+bool __cdecl FX_LoadEditorEffect(char *name,FxEditorEffectDef *edEffectDef)
 
 {
   char cVar1;
@@ -2160,14 +2172,14 @@ bool __cdecl FX_LoadEditorEffect(char *param_1,FxEditorEffectDef *param_2)
   undefined1 uVar4;
   FxEditorEffectDef *local_5c;
   char *local_58;
-  char local_54 [64];
+  char filename [64];
   uint local_14;
-  int local_10;
-  undefined1 local_9;
-  char *local_8;
+  int fileSize;
+  bool success;
+  void *fileData;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",0x5e7
                              ,0,"%s");
     if (!bVar3) {
@@ -2176,7 +2188,7 @@ bool __cdecl FX_LoadEditorEffect(char *param_1,FxEditorEffectDef *param_2)
       return (bool)uVar4;
     }
   }
-  if (param_2 == (FxEditorEffectDef *)0x0) {
+  if (edEffectDef == (FxEditorEffectDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",0x5e8
                              ,0,"%s");
     if (!bVar3) {
@@ -2185,31 +2197,31 @@ bool __cdecl FX_LoadEditorEffect(char *param_1,FxEditorEffectDef *param_2)
       return (bool)uVar4;
     }
   }
-  Com_sprintf(local_54,0x40,"fx/%s.efx");
-  local_10 = FS_ReadFile(local_54,&local_8);
-  if (local_10 < 0) {
+  Com_sprintf(filename,0x40,"fx/%s.efx");
+  fileSize = FS_ReadFile(filename,&fileData);
+  if (fileSize < 0) {
     Com_PrintError(0x15,"ERROR: effect \'%s\' not found\n");
-    local_9 = 0;
+    success = false;
   }
   else {
-    local_58 = param_1;
-    local_5c = param_2;
+    local_58 = name;
+    local_5c = edEffectDef;
     do {
       cVar1 = *local_58;
       local_5c->name[0] = cVar1;
       local_58 = local_58 + 1;
       local_5c = (FxEditorEffectDef *)(local_5c->name + 1);
     } while (cVar1 != '\0');
-    local_9 = FX_LoadEditorEffectFromBuffer(local_8,local_54,param_2);
-    FS_FreeFile(local_8);
+    success = FX_LoadEditorEffectFromBuffer(fileData,filename,edEffectDef);
+    FS_FreeFile(fileData);
   }
-  return (bool)local_9;
+  return success;
 }
 
 
 // 005D5120  FX_LoadFailed  (EffectsCore/fx_load_obj.cpp:1540)
 
-FxEffectDef * __cdecl FX_LoadFailed(char *param_1)
+FxEffectDef * __cdecl FX_LoadFailed(char *name)
 
 {
   FxElemVelStateSample **ppFVar1;
@@ -2220,15 +2232,20 @@ FxEffectDef * __cdecl FX_LoadFailed(char *param_1)
   int iVar6;
   FxEffectDef *pFVar7;
   char *pcVar8;
-  ulong uVar9;
+  ulong count;
   char *local_54;
   char *local_50;
   char *local_40;
   char *local_30;
-  int local_8;
+  int baseBytesNeeded;
+  FxEffectDef *effectDefHandle;
+  FxEffectDef *effectDef;
+  int relocationDistance;
+  int totalBytesNeeded;
+  int elemIndex;
   
   if (fx_load.defaultEffect == (FxEffectDef *)0x0) {
-    iVar6 = I_stricmp(param_1,"misc/missing_fx");
+    iVar6 = I_stricmp(name,"misc/missing_fx");
     if (iVar6 == 0) {
       Com_Error(ERR_FATAL,"Couldn\'t load default effect");
     }
@@ -2268,16 +2285,16 @@ FxEffectDef * __cdecl FX_LoadFailed(char *param_1)
     cVar3 = *local_30;
     local_30 = local_30 + 1;
   } while (cVar3 != '\0');
-  uVar9 = (fx_load.defaultEffect)->totalSize - (int)(local_30 + (1 - (int)pcVar8));
-  local_40 = param_1;
+  count = (fx_load.defaultEffect)->totalSize - (int)(local_30 + (1 - (int)pcVar8));
+  local_40 = name;
   do {
     cVar3 = *local_40;
     local_40 = local_40 + 1;
   } while (cVar3 != '\0');
-  pFVar7 = FX_AllocMem((int)(local_40 + ((uVar9 + 1) - (int)(param_1 + 1))));
-  memcpy((uchar *)pFVar7,(uchar *)fx_load.defaultEffect,uVar9);
-  pFVar7->name = (char *)((int)pFVar7 + uVar9);
-  local_50 = param_1;
+  pFVar7 = FX_AllocMem((int)(local_40 + ((count + 1) - (int)(name + 1))));
+  memcpy((uchar *)pFVar7,(uchar *)fx_load.defaultEffect,count);
+  pFVar7->name = (char *)((int)pFVar7 + count);
+  local_50 = name;
   local_54 = pFVar7->name;
   do {
     cVar3 = *local_50;
@@ -2287,11 +2304,11 @@ FxEffectDef * __cdecl FX_LoadFailed(char *param_1)
   } while (cVar3 != '\0');
   iVar6 = (int)pFVar7 - (int)fx_load.defaultEffect;
   (pFVar7->field9_0x1c).elemDefsEA = (FxElemDef *)((int)(pFVar7->field9_0x1c).elemDefsEA + iVar6);
-  for (local_8 = 0; local_8 < pFVar7->elemDefCountLooping + pFVar7->elemDefCountOneShot;
-      local_8 = local_8 + 1) {
-    ppFVar1 = &(pFVar7->field9_0x1c).elemDefsEA[local_8].velSamples;
+  for (elemIndex = 0; elemIndex < pFVar7->elemDefCountLooping + pFVar7->elemDefCountOneShot;
+      elemIndex = elemIndex + 1) {
+    ppFVar1 = &(pFVar7->field9_0x1c).elemDefsEA[elemIndex].velSamples;
     *ppFVar1 = (FxElemVelStateSample *)((int)*ppFVar1 + iVar6);
-    ppFVar2 = &(pFVar7->field9_0x1c).elemDefsEA[local_8].visSamples;
+    ppFVar2 = &(pFVar7->field9_0x1c).elemDefsEA[elemIndex].visSamples;
     *ppFVar2 = (FxElemVisStateSample *)((int)*ppFVar2 + iVar6);
   }
   return pFVar7;
@@ -2300,105 +2317,107 @@ FxEffectDef * __cdecl FX_LoadFailed(char *param_1)
 
 // 005D5050  FX_Load  (EffectsCore/fx_load_obj.cpp:1580)
 
-FxEffectDef * __cdecl FX_Load(char *param_1)
+FxEffectDef * __cdecl FX_Load(char *name)
 
 {
   char cVar1;
   bool bVar2;
-  FxEditorEffectDef *pFVar3;
-  FxEffectDef *pFVar4;
+  FxEditorEffectDef *edEffectDef_00;
+  FxEffectDef *pFVar3;
   FxEditorEffectDef *local_20;
   char *local_1c;
+  FxEffectDef *effectDef;
+  FxEditorEffectDef *edEffectDef;
   
-  pFVar3 = operator_new(0x12ee0);
-  local_1c = param_1;
-  local_20 = pFVar3;
+  edEffectDef_00 = operator_new(0x12ee0);
+  local_1c = name;
+  local_20 = edEffectDef_00;
   do {
     cVar1 = *local_1c;
     local_20->name[0] = cVar1;
     local_1c = local_1c + 1;
     local_20 = (FxEditorEffectDef *)(local_20->name + 1);
   } while (cVar1 != '\0');
-  bVar2 = FX_LoadEditorEffect(param_1,pFVar3);
+  bVar2 = FX_LoadEditorEffect(name,edEffectDef_00);
   if (bVar2) {
-    pFVar4 = FX_Convert(pFVar3,FX_AllocMem);
-    operator_delete(pFVar3);
-    if (pFVar4 != (FxEffectDef *)0x0) {
-      return pFVar4;
+    pFVar3 = FX_Convert(edEffectDef_00,FX_AllocMem);
+    operator_delete(edEffectDef_00);
+    if (pFVar3 != (FxEffectDef *)0x0) {
+      return pFVar3;
     }
   }
   else {
-    operator_delete(pFVar3);
+    operator_delete(edEffectDef_00);
   }
-  pFVar4 = FX_LoadFailed(param_1);
-  return pFVar4;
+  pFVar3 = FX_LoadFailed(name);
+  return pFVar3;
 }
 
 
 // 005D5600  FX_HashName  (EffectsCore/fx_load_obj.cpp:1605)
 
-int __cdecl FX_HashName(char *param_1)
+int __cdecl FX_HashName(char *name)
 
 {
-  char *local_14;
-  uint local_10;
-  char local_9;
-  int local_8;
+  char *pos;
+  int hash;
+  char letter;
+  int scale;
   
-  local_10 = 0;
-  local_8 = 0x77;
-  for (local_14 = param_1; *local_14 != '\0'; local_14 = local_14 + 1) {
-    local_9 = *local_14;
-    if (local_9 == '\\') {
-      local_9 = '/';
+  hash = 0;
+  scale = 0x77;
+  for (pos = name; *pos != '\0'; pos = pos + 1) {
+    letter = *pos;
+    if (letter == '\\') {
+      letter = '/';
     }
-    else if (('@' < local_9) && (local_9 < '[')) {
-      local_9 = local_9 + ' ';
+    else if (('@' < letter) && (letter < '[')) {
+      letter = letter + ' ';
     }
-    local_10 = local_9 * local_8 + local_10;
-    local_8 = local_8 + 1;
+    hash = letter * scale + hash;
+    scale = scale + 1;
   }
-  return local_10 & 0x1ff;
+  return hash & 0x1ff;
 }
 
 
 // 005D5520  FX_GetHashIndex  (EffectsCore/fx_load_obj.cpp:1635)
 
-int __cdecl FX_GetHashIndex(char *param_1,bool *param_2)
+int __cdecl FX_GetHashIndex(char *name,bool *exists)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  int hashIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x666,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (bool *)0x0) &&
+  if ((exists == (bool *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
                                0x667,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = FX_HashName(param_1);
+  hashIndex = FX_HashName(name);
   while( true ) {
-    if ((fx_load.effectDefs[local_8] == (FxEffectDef *)0x0) &&
-       (fx_load.effectStatus[local_8] != '\x01')) {
-      *param_2 = false;
-      return local_8;
+    if ((fx_load.effectDefs[hashIndex] == (FxEffectDef *)0x0) &&
+       (fx_load.effectStatus[hashIndex] != '\x01')) {
+      *exists = false;
+      return hashIndex;
     }
-    if ((fx_load.effectStatus[local_8] != '\x01') &&
-       (iVar3 = I_stricmp(param_1,fx_load.effectDefs[local_8]->name), iVar3 == 0)) break;
-    local_8 = local_8 + 1 & 0x1ff;
+    if ((fx_load.effectStatus[hashIndex] != '\x01') &&
+       (iVar3 = I_stricmp(name,fx_load.effectDefs[hashIndex]->name), iVar3 == 0)) break;
+    hashIndex = hashIndex + 1U & 0x1ff;
   }
-  *param_2 = true;
-  return local_8;
+  *exists = true;
+  return hashIndex;
 }
 
 
@@ -2407,7 +2426,7 @@ int __cdecl FX_GetHashIndex(char *param_1,bool *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-FxEffectDef * __cdecl FX_Register_FastFile(char *param_1)
+FxEffectDef * __cdecl FX_Register_FastFile(char *name)
 
 {
   code *pcVar1;
@@ -2416,7 +2435,7 @@ FxEffectDef * __cdecl FX_Register_FastFile(char *param_1)
   FxEffectDef *pFVar4;
   XAssetHeader XVar5;
   
-  iVar3 = I_strncmp(param_1,"fx/",3);
+  iVar3 = I_strncmp(name,"fx/",3);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",0x682
                              ,0,"%s\n\t(name) = %s");
@@ -2426,35 +2445,36 @@ FxEffectDef * __cdecl FX_Register_FastFile(char *param_1)
       return pFVar4;
     }
   }
-  XVar5 = DB_FindXAssetHeader(ASSET_TYPE_FX,param_1,true,-1);
+  XVar5 = DB_FindXAssetHeader(ASSET_TYPE_FX,name,true,-1);
   return (FxEffectDef *)XVar5.xmodelPieces;
 }
 
 
 // 005D5440  FX_Register_LoadObj  (EffectsCore/fx_load_obj.cpp:1674)
 
-FxEffectDef * __cdecl FX_Register_LoadObj(char *param_1)
+FxEffectDef * __cdecl FX_Register_LoadObj(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   FxEffectDef *pFVar4;
-  char *pcVar5;
-  bool local_5;
+  char *fmt;
+  int hashIndex;
+  bool exists;
   
-  iVar3 = FX_GetHashIndex(param_1,&local_5);
-  if (local_5 == false) {
+  iVar3 = FX_GetHashIndex(name,&exists);
+  if (exists == false) {
     if (fx_load.effectStatus[iVar3] == '\0') {
       fx_load.effectStatus[iVar3] = '\x01';
-      pFVar4 = FX_Load(param_1);
+      pFVar4 = FX_Load(name);
       fx_load.effectDefs[iVar3] = pFVar4;
       fx_load.effectStatus[iVar3] = '\x02';
     }
     else if (fx_load.effectStatus[iVar3] == '\x01') {
-      pcVar5 = va("fx_load recursive ( %s )");
+      fmt = va("fx_load recursive ( %s )");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_load_obj.cpp",
-                               0x699,0,pcVar5);
+                               0x699,0,fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         pFVar4 = (FxEffectDef *)(*pcVar1)();
@@ -2477,7 +2497,7 @@ FxEffectDef * __cdecl FX_Register_LoadObj(char *param_1)
 
 // 005D5390  FX_Register  (EffectsCore/fx_load_obj.cpp:1700)
 
-FxEffectDef * __cdecl FX_Register(char *param_1)
+FxEffectDef * __cdecl FX_Register(char *name)
 
 {
   FxEffectDef *pFVar1;
@@ -2489,7 +2509,7 @@ FxEffectDef * __cdecl FX_Register(char *param_1)
   else {
     local_c = FX_Register_FastFile;
   }
-  pFVar1 = (FxEffectDef *)(*local_c)(param_1);
+  pFVar1 = (FxEffectDef *)(*local_c)(name);
   return pFVar1;
 }
 

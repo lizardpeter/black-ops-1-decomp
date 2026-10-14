@@ -4,10 +4,10 @@
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_XModelPiecesGetName(XAssetHeader *param_1)
+char * __cdecl DB_XModelPiecesGetName(XAssetHeader *header_30)
 
 {
-  return param_1->xmodelPieces->name;
+  return header_30->xmodelPieces->name;
 }
 
 
@@ -15,10 +15,10 @@ char * __cdecl DB_XModelPiecesGetName(XAssetHeader *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_XModelPiecesSetName(XAssetHeader *param_1,char *param_2)
+void __cdecl DB_XModelPiecesSetName(XAssetHeader *header_28,char *name_28)
 
 {
-  param_1->xmodelPieces->name = param_2;
+  header_28->xmodelPieces->name = name_28;
   return;
 }
 
@@ -27,10 +27,10 @@ void __cdecl DB_XModelPiecesSetName(XAssetHeader *param_1,char *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_ImageGetName(XAssetHeader *param_1)
+char * __cdecl DB_ImageGetName(XAssetHeader *header)
 
 {
-  return (char *)param_1->physPreset->gravityScale;
+  return (char *)header->physPreset->gravityScale;
 }
 
 
@@ -38,10 +38,10 @@ char * __cdecl DB_ImageGetName(XAssetHeader *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_ImageSetName(XAssetHeader *param_1,char *param_2)
+void __cdecl DB_ImageSetName(XAssetHeader *header,char *name)
 
 {
-  param_1->image->name = param_2;
+  header->image->name = name;
   return;
 }
 
@@ -50,10 +50,10 @@ void __cdecl DB_ImageSetName(XAssetHeader *param_1,char *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_LocalizeEntryGetName(XAssetHeader *param_1)
+char * __cdecl DB_LocalizeEntryGetName(XAssetHeader *header)
 
 {
-  return (char *)param_1->xmodelPieces->numpieces;
+  return (char *)header->xmodelPieces->numpieces;
 }
 
 
@@ -61,10 +61,10 @@ char * __cdecl DB_LocalizeEntryGetName(XAssetHeader *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_LocalizeEntrySetName(XAssetHeader *param_1,char *param_2)
+void __cdecl DB_LocalizeEntrySetName(XAssetHeader *header,char *name)
 
 {
-  (param_1->material->info).gameFlags = (uint)param_2;
+  (header->material->info).gameFlags = (uint)name;
   return;
 }
 
@@ -73,7 +73,7 @@ void __cdecl DB_LocalizeEntrySetName(XAssetHeader *param_1,char *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_GetEmblemSetName(XAssetHeader *param_1)
+char * __cdecl DB_GetEmblemSetName(XAssetHeader *header)
 
 {
   return "emblemset";
@@ -255,14 +255,15 @@ int __cdecl DB_SizeofXAsset<Glasses>(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_GetXAssetHeaderName(int param_1,XAssetHeader *param_2)
+char * __cdecl DB_GetXAssetHeaderName(int type,XAssetHeader *header)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  char *name;
   
-  if (param_2 == (XAssetHeader *)0x0) {
+  if (header == (XAssetHeader *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2af,
                              0,"%s");
     if (!bVar2) {
@@ -271,7 +272,7 @@ char * __cdecl DB_GetXAssetHeaderName(int param_1,XAssetHeader *param_2)
       return pcVar3;
     }
   }
-  if (DB_XAssetGetNameHandler[param_1] == (_func___cdecl_char_ptr_XAssetHeader_ptr *)0x0) {
+  if (DB_XAssetGetNameHandler[type] == (_func___cdecl_char_ptr_XAssetHeader_ptr *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2b0,
                              0,"%s");
     if (!bVar2) {
@@ -280,7 +281,7 @@ char * __cdecl DB_GetXAssetHeaderName(int param_1,XAssetHeader *param_2)
       return pcVar3;
     }
   }
-  if (param_2->xmodelPieces == (XModelPieces *)0x0) {
+  if (header->xmodelPieces == (XModelPieces *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2b1,
                              0,"%s");
     if (!bVar2) {
@@ -289,7 +290,7 @@ char * __cdecl DB_GetXAssetHeaderName(int param_1,XAssetHeader *param_2)
       return pcVar3;
     }
   }
-  pcVar3 = (*DB_XAssetGetNameHandler[param_1])(param_2);
+  pcVar3 = (*DB_XAssetGetNameHandler[type])(header);
   if (pcVar3 == (char *)0x0) {
     va("Name \"%s\" not found for asset type %s\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2b3,
@@ -309,14 +310,14 @@ char * __cdecl DB_GetXAssetHeaderName(int param_1,XAssetHeader *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_GetXAssetName(XAsset *param_1)
+char * __cdecl DB_GetXAssetName(XAsset *asset)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (XAsset *)0x0) {
+  if (asset == (XAsset *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2ba,
                              0,"%s");
     if (!bVar2) {
@@ -325,7 +326,7 @@ char * __cdecl DB_GetXAssetName(XAsset *param_1)
       return pcVar3;
     }
   }
-  pcVar3 = DB_GetXAssetHeaderName(param_1->type,&param_1->header);
+  pcVar3 = DB_GetXAssetHeaderName(asset->type,&asset->header);
   return pcVar3;
 }
 
@@ -335,14 +336,13 @@ char * __cdecl DB_GetXAssetName(XAsset *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_SetXAssetName(XAsset *param_1,char *param_2)
+void __cdecl DB_SetXAssetName(XAsset *asset,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (DB_XAssetSetNameHandler[param_1->type] == (_func___cdecl_void_XAssetHeader_ptr_char_ptr *)0x0)
-  {
+  if (DB_XAssetSetNameHandler[asset->type] == (_func___cdecl_void_XAssetHeader_ptr_char_ptr *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2c1,
                              0,"%s");
     if (!bVar2) {
@@ -351,21 +351,21 @@ void __cdecl DB_SetXAssetName(XAsset *param_1,char *param_2)
       return;
     }
   }
-  (*DB_XAssetSetNameHandler[param_1->type])(&param_1->header,param_2);
+  (*DB_XAssetSetNameHandler[asset->type])(&asset->header,name);
   return;
 }
 
 
 // 00579E50  DB_GetXAssetTypeSize  (database/db_assetnames.cpp:711)
 
-int __cdecl DB_GetXAssetTypeSize(int param_1)
+int __cdecl DB_GetXAssetTypeSize(int type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (DB_GetXAssetSizeHandler[param_1] == (_func___cdecl_int *)0x0) {
+  if (DB_GetXAssetSizeHandler[type] == (_func___cdecl_int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2c8,
                              0,"%s");
     if (!bVar2) {
@@ -374,21 +374,21 @@ int __cdecl DB_GetXAssetTypeSize(int param_1)
       return iVar3;
     }
   }
-  iVar3 = (*DB_GetXAssetSizeHandler[param_1])();
+  iVar3 = (*DB_GetXAssetSizeHandler[type])();
   return iVar3;
 }
 
 
 // 00579EA0  DB_GetXAssetTypeName  (database/db_assetnames.cpp:717)
 
-char * __cdecl DB_GetXAssetTypeName(int param_1)
+char * __cdecl DB_GetXAssetTypeName(int type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 0) || (0x2a < param_1)) {
+  if ((type < 0) || (0x2a < type)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",0x2ce,
                              0,"%s");
     if (!bVar2) {
@@ -397,6 +397,6 @@ char * __cdecl DB_GetXAssetTypeName(int param_1)
       return pcVar3;
     }
   }
-  return *(char **)(&g_assetNames + param_1 * 4);
+  return *(char **)(&g_assetNames + type * 4);
 }
 

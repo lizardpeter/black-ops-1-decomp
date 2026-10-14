@@ -2,7 +2,7 @@
 
 // 00848E60  TestOccluders  (gfx_d3d/r_dpvs_static.cpp:242)
 
-bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4])
+bool __cdecl TestOccluders(float (*plane) [3],int param_2,float (*param_3) [4])
 
 {
   undefined8 *puVar1;
@@ -11,26 +11,31 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
   undefined8 *puVar4;
   undefined8 *puVar5;
   undefined8 *puVar6;
-  undefined8 uVar7;
-  undefined8 *in_EAX;
+  uint uVar7;
   uint uVar8;
-  undefined8 *puVar9;
-  undefined8 *puVar10;
-  undefined8 *puVar11;
+  uint uVar9;
+  uint uVar10;
+  uint uVar11;
   uint uVar12;
-  uint uVar13;
+  undefined8 uVar13;
+  undefined8 *in_EAX;
   uint uVar14;
-  float fVar15;
-  float fVar16;
-  float fVar17;
-  uint local_108;
-  uint uStack_104;
-  uint local_100;
-  uint uStack_fc;
-  uint local_f8;
-  uint uStack_f4;
-  uint local_f0;
-  uint uStack_ec;
+  undefined8 *puVar15;
+  undefined8 *puVar16;
+  undefined8 *puVar17;
+  uint uVar18;
+  uint uVar19;
+  uint uVar20;
+  uint uVar21;
+  uint uVar22;
+  float fVar23;
+  float fVar24;
+  float fVar25;
+  float fVar26;
+  int numOccluders;
+  float4 max;
+  float4 min;
+  int i;
   int local_e8;
   float local_e0;
   float local_dc;
@@ -40,171 +45,160 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
   float local_c8;
   float local_74;
   float fStack_70;
-  float local_6c;
-  float fStack_68;
-  float local_64;
-  float fStack_60;
-  float local_5c;
-  float fStack_58;
-  float local_54;
-  float fStack_50;
-  float local_4c;
-  float fStack_48;
-  float local_44;
-  float fStack_40;
-  float local_3c;
+  float fStack_6c;
+  float4 p2;
+  float4 p1;
+  float4 p3;
   float fStack_38;
   float local_30;
   float local_2c;
-  float local_24;
-  float fStack_20;
-  float local_1c;
+  float4 p5;
   float fStack_18;
   
-  if (param_1 != (float (*) [3])0x0) {
-    local_f8 = (uint)*in_EAX;
-    uStack_f4 = (uint)((ulonglong)*in_EAX >> 0x20);
-    uStack_f4 = uStack_f4 & g_keepXYZ.u[1];
-    uStack_ec = (uint)((ulonglong)in_EAX[1] >> 0x20);
-    uStack_ec = uStack_ec & g_keepXYZ.u[3];
-    local_f0 = (uint)in_EAX[1];
-    local_f0 = local_f0 & g_keepXYZ.u[2];
-    local_108 = (uint)*(undefined8 *)((int)in_EAX + 0xc);
-    uStack_104 = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0xc) >> 0x20);
-    uStack_104 = uStack_104 & g_keepXYZ.u[1];
-    local_f8 = local_f8 & g_keepXYZ.u[0];
-    local_108 = local_108 & g_keepXYZ.u[0];
-    local_100 = (uint)*(undefined8 *)((int)in_EAX + 0x14);
-    local_100 = local_100 & g_keepXYZ.u[2];
-    uStack_fc = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0x14) >> 0x20);
-    uStack_fc = uStack_fc & g_keepXYZ.u[3];
+  if (plane != (float (*) [3])0x0) {
+    min.u[1] = (uint)*in_EAX;
+    min.u[2] = (uint)((ulonglong)*in_EAX >> 0x20);
+    uVar7 = min.u[2] & g_keepXYZ.u[1];
+    i = (int)((ulonglong)in_EAX[1] >> 0x20);
+    uVar8 = i & g_keepXYZ.u[3];
+    min.u[3] = (uint)in_EAX[1];
+    uVar9 = min.u[3] & g_keepXYZ.u[2];
+    max.u[1] = (uint)*(undefined8 *)((int)in_EAX + 0xc);
+    max.u[2] = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0xc) >> 0x20);
+    uVar10 = max.u[2] & g_keepXYZ.u[1];
+    uVar22 = min.u[1] & g_keepXYZ.u[0];
+    uVar20 = max.u[1] & g_keepXYZ.u[0];
+    max.u[3] = (uint)*(undefined8 *)((int)in_EAX + 0x14);
+    uVar11 = max.u[3] & g_keepXYZ.u[2];
+    min.u[0] = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0x14) >> 0x20);
+    uVar12 = min.u[0] & g_keepXYZ.u[3];
     local_e8 = 0;
-    if (0 < (int)param_1) {
+    if (0 < (int)plane) {
       do {
-        uVar7 = *(undefined8 *)param_2;
+        uVar13 = *(undefined8 *)param_2;
         puVar1 = (undefined8 *)(param_2 + 8);
         puVar2 = (undefined8 *)(param_2 + 0x10);
         puVar3 = (undefined8 *)(param_2 + 0x18);
-        puVar9 = (undefined8 *)(param_2 + 0x20);
+        puVar15 = (undefined8 *)(param_2 + 0x20);
         puVar4 = (undefined8 *)(param_2 + 0x28);
-        puVar10 = (undefined8 *)(param_2 + 0x30);
+        puVar16 = (undefined8 *)(param_2 + 0x30);
         puVar5 = (undefined8 *)(param_2 + 0x38);
-        puVar11 = (undefined8 *)(param_2 + 0x40);
+        puVar17 = (undefined8 *)(param_2 + 0x40);
         puVar6 = (undefined8 *)(param_2 + 0x48);
-        local_24 = (float)*puVar11;
+        p5.u[1] = (uint)*puVar17;
         param_2 = param_2 + 0x50;
-        if (local_24 <= 0.0) {
-          uVar14 = 0;
+        if (p5.v[1] <= 0.0) {
+          uVar21 = 0;
         }
         else {
-          uVar14 = 0xffffffff;
+          uVar21 = 0xffffffff;
         }
-        fStack_20 = (float)((ulonglong)*puVar11 >> 0x20);
-        if (fStack_20 <= 0.0) {
-          uVar13 = 0;
-        }
-        else {
-          uVar13 = 0xffffffff;
-        }
-        local_1c = (float)*puVar6;
-        if (local_1c <= 0.0) {
-          uVar12 = 0;
+        p5.u[2] = (uint)((ulonglong)*puVar17 >> 0x20);
+        if (p5.v[2] <= 0.0) {
+          uVar19 = 0;
         }
         else {
-          uVar12 = 0xffffffff;
+          uVar19 = 0xffffffff;
+        }
+        p5.u[3] = (uint)*puVar6;
+        if (p5.v[3] <= 0.0) {
+          uVar18 = 0;
+        }
+        else {
+          uVar18 = 0xffffffff;
         }
         fStack_18 = (float)((ulonglong)*puVar6 >> 0x20);
         if (fStack_18 <= 0.0) {
-          uVar8 = 0;
-        }
-        else {
-          uVar8 = 0xffffffff;
-        }
-        local_74 = (float)*puVar10;
-        local_d8 = ((float)(~uVar14 & local_f8 | uVar14 & local_108) * local_24 +
-                    (float)(~uVar12 & local_f0 | uVar12 & local_100) * local_1c +
-                    (float)(~uVar13 & uStack_f4 | uVar13 & uStack_104) * fStack_20 +
-                   (float)(~uVar8 & uStack_ec | uVar8 & uStack_fc) * fStack_18) - fStack_18;
-        if (local_74 <= 0.0) {
           uVar14 = 0;
         }
         else {
           uVar14 = 0xffffffff;
         }
-        fStack_70 = (float)((ulonglong)*puVar10 >> 0x20);
+        local_74 = (float)*puVar16;
+        local_d8 = ((float)(~uVar21 & uVar22 | uVar21 & uVar20) * p5.v[1] +
+                    (float)(~uVar18 & uVar9 | uVar18 & uVar11) * p5.v[3] +
+                    (float)(~uVar19 & uVar7 | uVar19 & uVar10) * p5.v[2] +
+                   (float)(~uVar14 & uVar8 | uVar14 & uVar12) * fStack_18) - fStack_18;
+        if (local_74 <= 0.0) {
+          uVar21 = 0;
+        }
+        else {
+          uVar21 = 0xffffffff;
+        }
+        fStack_70 = (float)((ulonglong)*puVar16 >> 0x20);
         if (fStack_70 <= 0.0) {
-          uVar13 = 0;
+          uVar19 = 0;
         }
         else {
-          uVar13 = 0xffffffff;
+          uVar19 = 0xffffffff;
         }
-        local_6c = (float)*puVar5;
-        if (local_6c <= 0.0) {
-          uVar12 = 0;
-        }
-        else {
-          uVar12 = 0xffffffff;
-        }
-        fStack_68 = (float)((ulonglong)*puVar5 >> 0x20);
-        if (fStack_68 <= 0.0) {
-          uVar8 = 0;
+        fStack_6c = (float)*puVar5;
+        if (fStack_6c <= 0.0) {
+          uVar18 = 0;
         }
         else {
-          uVar8 = 0xffffffff;
+          uVar18 = 0xffffffff;
         }
-        fStack_68 = ((float)(~uVar12 & local_f0 | uVar12 & local_100) * local_6c +
-                     (float)(~uVar13 & uStack_f4 | uVar13 & uStack_104) * fStack_70 +
-                     (float)(~uVar8 & uStack_ec | uVar8 & uStack_fc) * fStack_68 +
-                    (float)(~uVar14 & local_f8 | uVar14 & local_108) * local_74) - fStack_68;
-        fVar16 = local_d8;
-        if (0.0 <= fStack_68 - local_d8) {
-          fVar16 = fStack_68;
+        p2.u[0] = (uint)((ulonglong)*puVar5 >> 0x20);
+        if (p2.v[0] <= 0.0) {
+          uVar14 = 0;
+        }
+        else {
+          uVar14 = 0xffffffff;
+        }
+        fVar23 = ((float)(~uVar18 & uVar9 | uVar18 & uVar11) * fStack_6c +
+                  (float)(~uVar19 & uVar7 | uVar19 & uVar10) * fStack_70 +
+                  (float)(~uVar14 & uVar8 | uVar14 & uVar12) * p2.v[0] +
+                 (float)(~uVar21 & uVar22 | uVar21 & uVar20) * local_74) - p2.v[0];
+        fVar25 = local_d8;
+        if (0.0 <= fVar23 - local_d8) {
+          fVar25 = fVar23;
         }
         local_e0 = local_d8;
-        if (0.0 <= fStack_68 - local_d8) {
-          local_e0 = fStack_68;
+        if (0.0 <= fVar23 - local_d8) {
+          local_e0 = fVar23;
         }
         local_dc = local_d8;
-        if (0.0 <= fStack_68 - local_d8) {
-          local_dc = fStack_68;
+        if (0.0 <= fVar23 - local_d8) {
+          local_dc = fVar23;
         }
-        if (0.0 <= fStack_68 - local_d8) {
-          local_d8 = fStack_68;
+        if (0.0 <= fVar23 - local_d8) {
+          local_d8 = fVar23;
         }
-        local_44 = (float)*puVar9;
-        if (local_44 <= 0.0) {
-          uVar14 = 0;
-        }
-        else {
-          uVar14 = 0xffffffff;
-        }
-        fStack_40 = (float)((ulonglong)*puVar9 >> 0x20);
-        if (fStack_40 <= 0.0) {
-          uVar13 = 0;
+        p3.u[1] = (uint)*puVar15;
+        if (p3.v[1] <= 0.0) {
+          uVar21 = 0;
         }
         else {
-          uVar13 = 0xffffffff;
+          uVar21 = 0xffffffff;
         }
-        local_3c = (float)*puVar4;
-        if (local_3c <= 0.0) {
-          uVar12 = 0;
+        p3.u[2] = (uint)((ulonglong)*puVar15 >> 0x20);
+        if (p3.v[2] <= 0.0) {
+          uVar19 = 0;
         }
         else {
-          uVar12 = 0xffffffff;
+          uVar19 = 0xffffffff;
+        }
+        p3.u[3] = (uint)*puVar4;
+        if (p3.v[3] <= 0.0) {
+          uVar18 = 0;
+        }
+        else {
+          uVar18 = 0xffffffff;
         }
         fStack_38 = (float)((ulonglong)*puVar4 >> 0x20);
         if (fStack_38 <= 0.0) {
-          uVar8 = 0;
+          uVar14 = 0;
         }
         else {
-          uVar8 = 0xffffffff;
+          uVar14 = 0xffffffff;
         }
-        local_c8 = ((float)(~uVar12 & local_f0 | uVar12 & local_100) * local_3c +
-                    (float)(~uVar13 & uStack_f4 | uVar13 & uStack_104) * fStack_40 +
-                    (float)(~uVar8 & uStack_ec | uVar8 & uStack_fc) * fStack_38 +
-                   (float)(~uVar14 & local_f8 | uVar14 & local_108) * local_44) - fStack_38;
-        if (0.0 <= local_c8 - fVar16) {
-          fVar16 = local_c8;
+        local_c8 = ((float)(~uVar18 & uVar9 | uVar18 & uVar11) * p3.v[3] +
+                    (float)(~uVar19 & uVar7 | uVar19 & uVar10) * p3.v[2] +
+                    (float)(~uVar14 & uVar8 | uVar14 & uVar12) * fStack_38 +
+                   (float)(~uVar21 & uVar22 | uVar21 & uVar20) * p3.v[1]) - fStack_38;
+        if (0.0 <= local_c8 - fVar25) {
+          fVar25 = local_c8;
         }
         local_d0 = local_c8;
         if (local_c8 - local_e0 < 0.0) {
@@ -217,104 +211,104 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
         if (local_c8 - local_d8 < 0.0) {
           local_c8 = local_d8;
         }
-        local_64 = (float)*puVar2;
-        if (local_64 <= 0.0) {
+        p2.u[1] = (uint)*puVar2;
+        if (p2.v[1] <= 0.0) {
+          uVar21 = 0;
+        }
+        else {
+          uVar21 = 0xffffffff;
+        }
+        p2.u[2] = (uint)((ulonglong)*puVar2 >> 0x20);
+        if (p2.v[2] <= 0.0) {
+          uVar19 = 0;
+        }
+        else {
+          uVar19 = 0xffffffff;
+        }
+        p2.u[3] = (uint)*puVar3;
+        if (p2.v[3] <= 0.0) {
+          uVar18 = 0;
+        }
+        else {
+          uVar18 = 0xffffffff;
+        }
+        p1.u[0] = (uint)((ulonglong)*puVar3 >> 0x20);
+        if (p1.v[0] <= 0.0) {
           uVar14 = 0;
         }
         else {
           uVar14 = 0xffffffff;
         }
-        fStack_60 = (float)((ulonglong)*puVar2 >> 0x20);
-        if (fStack_60 <= 0.0) {
-          uVar13 = 0;
+        fVar23 = (p1.v[0] * (float)(~uVar14 & uVar8 | uVar14 & uVar12) +
+                  (float)(~uVar18 & uVar9 | uVar18 & uVar11) * p2.v[3] +
+                  (float)(~uVar19 & uVar7 | uVar19 & uVar10) * p2.v[2] +
+                 p2.v[1] * (float)(~uVar21 & uVar22 | uVar21 & uVar20)) - p1.v[0];
+        if (0.0 <= fVar23 - fVar25) {
+          fVar25 = fVar23;
         }
-        else {
-          uVar13 = 0xffffffff;
-        }
-        local_5c = (float)*puVar3;
-        if (local_5c <= 0.0) {
-          uVar12 = 0;
-        }
-        else {
-          uVar12 = 0xffffffff;
-        }
-        fStack_58 = (float)((ulonglong)*puVar3 >> 0x20);
-        if (fStack_58 <= 0.0) {
-          uVar8 = 0;
-        }
-        else {
-          uVar8 = 0xffffffff;
-        }
-        fStack_58 = (fStack_58 * (float)(~uVar8 & uStack_ec | uVar8 & uStack_fc) +
-                     (float)(~uVar12 & local_f0 | uVar12 & local_100) * local_5c +
-                     (float)(~uVar13 & uStack_f4 | uVar13 & uStack_104) * fStack_60 +
-                    local_64 * (float)(~uVar14 & local_f8 | uVar14 & local_108)) - fStack_58;
-        if (0.0 <= fStack_58 - fVar16) {
-          fVar16 = fStack_58;
-        }
-        local_30 = fStack_58;
-        if (fStack_58 - local_d0 < 0.0) {
+        local_30 = fVar23;
+        if (fVar23 - local_d0 < 0.0) {
           local_30 = local_d0;
         }
-        local_2c = fStack_58;
-        if (fStack_58 - local_cc < 0.0) {
+        local_2c = fVar23;
+        if (fVar23 - local_cc < 0.0) {
           local_2c = local_cc;
         }
-        if (0.0 <= fStack_58 - local_c8) {
-          local_c8 = fStack_58;
+        if (0.0 <= fVar23 - local_c8) {
+          local_c8 = fVar23;
         }
-        local_54 = (float)uVar7;
-        if (local_54 <= 0.0) {
+        p1.u[1] = (uint)uVar13;
+        if (p1.v[1] <= 0.0) {
+          uVar21 = 0;
+        }
+        else {
+          uVar21 = 0xffffffff;
+        }
+        p1.u[2] = (uint)((ulonglong)uVar13 >> 0x20);
+        if (p1.v[2] <= 0.0) {
+          uVar19 = 0;
+        }
+        else {
+          uVar19 = 0xffffffff;
+        }
+        p1.u[3] = (uint)*puVar1;
+        if (p1.v[3] <= 0.0) {
+          uVar18 = 0;
+        }
+        else {
+          uVar18 = 0xffffffff;
+        }
+        p3.u[0] = (uint)((ulonglong)*puVar1 >> 0x20);
+        if (p3.v[0] <= 0.0) {
           uVar14 = 0;
         }
         else {
           uVar14 = 0xffffffff;
         }
-        fStack_50 = (float)((ulonglong)uVar7 >> 0x20);
-        if (fStack_50 <= 0.0) {
-          uVar13 = 0;
+        fVar23 = (p1.v[3] * (float)(~uVar18 & uVar9 | uVar18 & uVar11) +
+                  p1.v[2] * (float)(~uVar19 & uVar7 | uVar19 & uVar10) +
+                  p3.v[0] * (float)(~uVar14 & uVar8 | uVar14 & uVar12) +
+                 p1.v[1] * (float)(~uVar21 & uVar22 | uVar21 & uVar20)) - p3.v[0];
+        fVar24 = fVar23;
+        if (fVar23 - fVar25 < 0.0) {
+          fVar24 = fVar25;
         }
-        else {
-          uVar13 = 0xffffffff;
+        fVar25 = fVar23;
+        if (fVar23 - local_30 < 0.0) {
+          fVar25 = local_30;
         }
-        local_4c = (float)*puVar1;
-        if (local_4c <= 0.0) {
-          uVar12 = 0;
+        fVar26 = fVar23;
+        if (fVar23 - local_2c < 0.0) {
+          fVar26 = local_2c;
         }
-        else {
-          uVar12 = 0xffffffff;
+        if (fVar23 - local_c8 < 0.0) {
+          fVar23 = local_c8;
         }
-        fStack_48 = (float)((ulonglong)*puVar1 >> 0x20);
-        if (fStack_48 <= 0.0) {
-          uVar8 = 0;
-        }
-        else {
-          uVar8 = 0xffffffff;
-        }
-        fStack_48 = (local_4c * (float)(~uVar12 & local_f0 | uVar12 & local_100) +
-                     fStack_50 * (float)(~uVar13 & uStack_f4 | uVar13 & uStack_104) +
-                     fStack_48 * (float)(~uVar8 & uStack_ec | uVar8 & uStack_fc) +
-                    local_54 * (float)(~uVar14 & local_f8 | uVar14 & local_108)) - fStack_48;
-        fVar15 = fStack_48;
-        if (fStack_48 - fVar16 < 0.0) {
-          fVar15 = fVar16;
-        }
-        fVar16 = fStack_48;
-        if (fStack_48 - local_30 < 0.0) {
-          fVar16 = local_30;
-        }
-        fVar17 = fStack_48;
-        if (fStack_48 - local_2c < 0.0) {
-          fVar17 = local_2c;
-        }
-        if (fStack_48 - local_c8 < 0.0) {
-          fStack_48 = local_c8;
-        }
-        if ((((fVar15 < 0.0) || (fVar16 < 0.0)) || (fVar17 < 0.0)) || (fStack_48 < 0.0)) {
+        if ((((fVar24 < 0.0) || (fVar25 < 0.0)) || (fVar26 < 0.0)) || (fVar23 < 0.0)) {
           return true;
         }
         local_e8 = local_e8 + 1;
-      } while (local_e8 < (int)param_1);
+      } while (local_e8 < (int)plane);
     }
   }
   return false;
@@ -323,13 +317,15 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
 
 // 00849610  TestOccludersPartial  (gfx_d3d/r_dpvs_static.cpp:287)
 
-float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,float (*param_3) [4])
+/* WARNING: Variable defined which should be unmapped: max */
+
+float (*) [4] __cdecl TestOccludersPartial(float (*plane) [3],int *param_2,float (*param_3) [4])
 
 {
-  undefined8 uVar1;
-  undefined8 uVar2;
-  undefined8 uVar3;
-  undefined8 uVar4;
+  uint uVar1;
+  uint uVar2;
+  uint uVar3;
+  uint uVar4;
   undefined8 uVar5;
   undefined8 uVar6;
   undefined8 uVar7;
@@ -346,26 +342,24 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
   undefined8 uVar18;
   undefined8 uVar19;
   undefined8 uVar20;
-  float fVar21;
-  undefined8 *in_EAX;
-  int *piVar22;
-  int *piVar23;
-  uint uVar24;
+  undefined8 uVar21;
+  undefined8 uVar22;
+  undefined8 uVar23;
+  undefined8 uVar24;
   float fVar25;
-  float fVar26;
-  float fVar27;
-  float fVar28;
-  uint local_28c;
-  uint uStack_288;
-  uint local_284;
-  uint uStack_280;
-  float local_27c;
-  float fStack_278;
-  float local_274;
-  float fStack_270;
-  float local_26c;
-  float fStack_268;
-  float local_264;
+  undefined8 *in_EAX;
+  int *piVar26;
+  int *piVar27;
+  uint uVar28;
+  uint uVar29;
+  float fVar30;
+  float fVar31;
+  float fVar32;
+  float fVar33;
+  int *numOccludersPtr;
+  float4 max;
+  float4 p1;
+  float4 p2;
   float fStack_260;
   uint local_25c;
   uint local_258;
@@ -389,16 +383,13 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
   float fStack_208;
   uint local_200;
   uint local_1fc;
-  uint local_1f8;
+  uint min;
   uint local_1f4;
   uint uStack_1f0;
-  uint local_1ec;
-  uint uStack_1e8;
-  float local_1e4;
-  float fStack_1e0;
-  float local_1dc;
-  float fStack_1d8;
-  int local_1d4;
+  uint uStack_1ec;
+  float4 p4;
+  int planeIdx;
+  int p5;
   float local_1d0;
   float fStack_1cc;
   float local_1c8;
@@ -415,255 +406,254 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
   float local_7c;
   float local_70;
   float local_6c;
+  float4 t4;
+  float4 t5;
   
   local_1f4 = (uint)*in_EAX;
   uStack_1f0 = (uint)((ulonglong)*in_EAX >> 0x20);
-  local_28c = (uint)*(undefined8 *)((int)in_EAX + 0xc);
-  local_28c = local_28c & g_keepXYZ.u[0];
-  uStack_288 = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0xc) >> 0x20);
-  uStack_288 = uStack_288 & g_keepXYZ.u[1];
+  max.u[1] = (uint)*(undefined8 *)((int)in_EAX + 0xc);
+  uVar1 = max.u[1] & g_keepXYZ.u[0];
+  max.u[2] = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0xc) >> 0x20);
+  uVar2 = max.u[2] & g_keepXYZ.u[1];
   local_1f4 = local_1f4 & g_keepXYZ.u[0];
-  local_1ec = (uint)in_EAX[1];
-  local_1ec = local_1ec & g_keepXYZ.u[2];
-  local_284 = (uint)*(undefined8 *)((int)in_EAX + 0x14);
-  local_284 = local_284 & g_keepXYZ.u[2];
-  uStack_280 = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0x14) >> 0x20);
-  uStack_280 = uStack_280 & g_keepXYZ.u[3];
-  uStack_1e8 = (uint)((ulonglong)in_EAX[1] >> 0x20);
-  uStack_1e8 = uStack_1e8 & g_keepXYZ.u[3];
+  uStack_1ec = (uint)in_EAX[1];
+  uStack_1ec = uStack_1ec & g_keepXYZ.u[2];
+  max.u[3] = (uint)*(undefined8 *)((int)in_EAX + 0x14);
+  uVar3 = max.u[3] & g_keepXYZ.u[2];
+  p1.u[0] = (uint)((ulonglong)*(undefined8 *)((int)in_EAX + 0x14) >> 0x20);
+  uVar4 = p1.u[0] & g_keepXYZ.u[3];
+  p4.u[0] = (uint)((ulonglong)in_EAX[1] >> 0x20);
+  uVar29 = p4.u[0] & g_keepXYZ.u[3];
   uStack_1f0 = uStack_1f0 & g_keepXYZ.u[1];
-  local_1d4 = 0;
-  if (0 < (int)(*param_1)[0]) {
+  p5 = 0;
+  if (0 < (int)(*plane)[0]) {
     do {
-      uVar1 = *(undefined8 *)(param_2 + local_1d4 * 0x14);
-      piVar22 = param_2 + local_1d4 * 0x14;
-      uVar2 = *(undefined8 *)(piVar22 + 2);
-      uVar3 = *(undefined8 *)(piVar22 + 4);
-      uVar4 = *(undefined8 *)(piVar22 + 6);
-      uVar5 = *(undefined8 *)(piVar22 + 8);
-      uVar6 = *(undefined8 *)(piVar22 + 10);
-      uVar7 = *(undefined8 *)(piVar22 + 0xc);
-      uVar8 = *(undefined8 *)(piVar22 + 0xe);
-      uVar9 = *(undefined8 *)(piVar22 + 0x10);
-      uVar10 = *(undefined8 *)(piVar22 + 0x12);
-      local_27c = (float)uVar1;
+      uVar5 = *(undefined8 *)(param_2 + p5 * 0x14);
+      piVar26 = param_2 + p5 * 0x14;
+      uVar6 = *(undefined8 *)(piVar26 + 2);
+      uVar7 = *(undefined8 *)(piVar26 + 4);
+      uVar8 = *(undefined8 *)(piVar26 + 6);
+      uVar9 = *(undefined8 *)(piVar26 + 8);
+      uVar10 = *(undefined8 *)(piVar26 + 10);
+      uVar11 = *(undefined8 *)(piVar26 + 0xc);
+      uVar12 = *(undefined8 *)(piVar26 + 0xe);
+      uVar13 = *(undefined8 *)(piVar26 + 0x10);
+      uVar14 = *(undefined8 *)(piVar26 + 0x12);
+      p1.u[1] = (uint)uVar5;
       local_25c = 0xffffffff;
-      if (local_27c <= 0.0) {
+      if (p1.v[1] <= 0.0) {
         local_25c = 0;
       }
-      fStack_278 = (float)((ulonglong)uVar1 >> 0x20);
+      p1.u[2] = (uint)((ulonglong)uVar5 >> 0x20);
       local_258 = 0xffffffff;
-      if (fStack_278 <= 0.0) {
+      if (p1.v[2] <= 0.0) {
         local_258 = 0;
       }
-      local_274 = (float)uVar2;
+      p1.u[3] = (uint)uVar6;
       local_254 = 0xffffffff;
-      if (local_274 <= 0.0) {
+      if (p1.v[3] <= 0.0) {
         local_254 = 0;
       }
-      fStack_270 = (float)((ulonglong)uVar2 >> 0x20);
+      p2.u[0] = (uint)((ulonglong)uVar6 >> 0x20);
       local_250 = 0xffffffff;
-      if (fStack_270 <= 0.0) {
+      if (p2.v[0] <= 0.0) {
         local_250 = 0;
       }
-      local_26c = (float)uVar3;
+      p2.u[1] = (uint)uVar7;
       local_23c = 0xffffffff;
-      if (local_26c <= 0.0) {
+      if (p2.v[1] <= 0.0) {
         local_23c = 0;
       }
-      fStack_268 = (float)((ulonglong)uVar3 >> 0x20);
+      p2.u[2] = (uint)((ulonglong)uVar7 >> 0x20);
       local_238 = 0xffffffff;
-      if (fStack_268 <= 0.0) {
+      if (p2.v[2] <= 0.0) {
         local_238 = 0;
       }
-      local_264 = (float)uVar4;
+      p2.u[3] = (uint)uVar8;
       local_234 = 0xffffffff;
-      if (local_264 <= 0.0) {
+      if (p2.v[3] <= 0.0) {
         local_234 = 0;
       }
-      fStack_260 = (float)((ulonglong)uVar4 >> 0x20);
+      fStack_260 = (float)((ulonglong)uVar8 >> 0x20);
       local_230 = 0xffffffff;
       if (fStack_260 <= 0.0) {
         local_230 = 0;
       }
-      local_214 = (float)uVar5;
+      local_214 = (float)uVar9;
       local_24c = 0xffffffff;
       if (local_214 <= 0.0) {
         local_24c = 0;
       }
-      fStack_210 = (float)((ulonglong)uVar5 >> 0x20);
+      fStack_210 = (float)((ulonglong)uVar9 >> 0x20);
       local_248 = 0xffffffff;
       if (fStack_210 <= 0.0) {
         local_248 = 0;
       }
-      local_20c = (float)uVar6;
+      local_20c = (float)uVar10;
       local_244 = 0xffffffff;
       if (local_20c <= 0.0) {
         local_244 = 0;
       }
-      fStack_208 = (float)((ulonglong)uVar6 >> 0x20);
+      fStack_208 = (float)((ulonglong)uVar10 >> 0x20);
       local_240 = 0xffffffff;
       if (fStack_208 <= 0.0) {
         local_240 = 0;
       }
-      local_1e4 = (float)uVar7;
+      p4.u[1] = (uint)uVar11;
       local_22c = 0xffffffff;
-      if (local_1e4 <= 0.0) {
+      if (p4.v[1] <= 0.0) {
         local_22c = 0;
       }
-      fStack_1e0 = (float)((ulonglong)uVar7 >> 0x20);
+      p4.u[2] = (uint)((ulonglong)uVar11 >> 0x20);
       local_228 = 0xffffffff;
-      if (fStack_1e0 <= 0.0) {
+      if (p4.v[2] <= 0.0) {
         local_228 = 0;
       }
-      local_1dc = (float)uVar8;
+      p4.u[3] = (uint)uVar12;
       local_224 = 0xffffffff;
-      if (local_1dc <= 0.0) {
+      if (p4.v[3] <= 0.0) {
         local_224 = 0;
       }
-      fStack_1d8 = (float)((ulonglong)uVar8 >> 0x20);
+      planeIdx = (int)((ulonglong)uVar12 >> 0x20);
       local_220 = 0xffffffff;
-      if (fStack_1d8 <= 0.0) {
+      if ((float)planeIdx <= 0.0) {
         local_220 = 0;
       }
-      local_1d0 = (float)uVar9;
+      local_1d0 = (float)uVar13;
       if (local_1d0 <= 0.0) {
-        uVar24 = 0;
+        uVar28 = 0;
       }
       else {
-        uVar24 = 0xffffffff;
+        uVar28 = 0xffffffff;
       }
-      fStack_1cc = (float)((ulonglong)uVar9 >> 0x20);
+      fStack_1cc = (float)((ulonglong)uVar13 >> 0x20);
       local_200 = 0xffffffff;
       if (fStack_1cc <= 0.0) {
         local_200 = 0;
       }
-      local_1c8 = (float)uVar10;
+      local_1c8 = (float)uVar14;
       local_1fc = 0xffffffff;
       if (local_1c8 <= 0.0) {
         local_1fc = 0;
       }
-      fStack_1c4 = (float)((ulonglong)uVar10 >> 0x20);
-      local_1f8 = 0xffffffff;
+      fStack_1c4 = (float)((ulonglong)uVar14 >> 0x20);
+      min = 0xffffffff;
       if (fStack_1c4 <= 0.0) {
-        local_1f8 = 0;
+        min = 0;
       }
-      fVar25 = (fStack_1c4 * (float)(local_1f8 & uStack_280 | uStack_1e8 & ~local_1f8) +
-                local_1c8 * (float)(local_1fc & local_284 | local_1ec & ~local_1fc) +
-                fStack_1cc * (float)(local_200 & uStack_288 | uStack_1f0 & ~local_200) +
-               local_1d0 * (float)(uVar24 & local_28c | local_1f4 & ~uVar24)) - fStack_1c4;
-      fVar26 = (fStack_1d8 * (float)(local_220 & uStack_280 | uStack_1e8 & ~local_220) +
-                local_1dc * (float)(local_224 & local_284 | local_1ec & ~local_224) +
-                fStack_1e0 * (float)(local_228 & uStack_288 | uStack_1f0 & ~local_228) +
-               local_1e4 * (float)(local_22c & local_28c | local_1f4 & ~local_22c)) - fStack_1d8;
-      fVar27 = fVar25;
-      if (0.0 <= fVar26 - fVar25) {
-        fVar27 = fVar26;
+      fVar30 = (fStack_1c4 * (float)(min & uVar4 | uVar29 & ~min) +
+                local_1c8 * (float)(local_1fc & uVar3 | uStack_1ec & ~local_1fc) +
+                fStack_1cc * (float)(local_200 & uVar2 | uStack_1f0 & ~local_200) +
+               local_1d0 * (float)(uVar28 & uVar1 | local_1f4 & ~uVar28)) - fStack_1c4;
+      fVar31 = ((float)planeIdx * (float)(local_220 & uVar4 | uVar29 & ~local_220) +
+                p4.v[3] * (float)(local_224 & uVar3 | uStack_1ec & ~local_224) +
+                p4.v[2] * (float)(local_228 & uVar2 | uStack_1f0 & ~local_228) +
+               p4.v[1] * (float)(local_22c & uVar1 | local_1f4 & ~local_22c)) - (float)planeIdx;
+      fVar33 = fVar30;
+      if (0.0 <= fVar31 - fVar30) {
+        fVar33 = fVar31;
       }
-      local_c0 = fVar25;
-      if (0.0 <= fVar26 - fVar25) {
-        local_c0 = fVar26;
+      local_c0 = fVar30;
+      if (0.0 <= fVar31 - fVar30) {
+        local_c0 = fVar31;
       }
-      local_bc = fVar25;
-      if (0.0 <= fVar26 - fVar25) {
-        local_bc = fVar26;
+      local_bc = fVar30;
+      if (0.0 <= fVar31 - fVar30) {
+        local_bc = fVar31;
       }
-      if (fVar26 - fVar25 < 0.0) {
-        fVar26 = fVar25;
+      if (fVar31 - fVar30 < 0.0) {
+        fVar31 = fVar30;
       }
-      fVar25 = (fStack_208 * (float)(local_240 & uStack_280 | uStack_1e8 & ~local_240) +
-                local_20c * (float)(local_244 & local_284 | local_1ec & ~local_244) +
-                fStack_210 * (float)(local_248 & uStack_288 | uStack_1f0 & ~local_248) +
-               local_214 * (float)(local_24c & local_28c | local_1f4 & ~local_24c)) - fStack_208;
-      fVar28 = fVar25;
-      if (fVar25 - fVar27 < 0.0) {
-        fVar28 = fVar27;
+      fVar30 = (fStack_208 * (float)(local_240 & uVar4 | uVar29 & ~local_240) +
+                local_20c * (float)(local_244 & uVar3 | uStack_1ec & ~local_244) +
+                fStack_210 * (float)(local_248 & uVar2 | uStack_1f0 & ~local_248) +
+               local_214 * (float)(local_24c & uVar1 | local_1f4 & ~local_24c)) - fStack_208;
+      fVar32 = fVar30;
+      if (fVar30 - fVar33 < 0.0) {
+        fVar32 = fVar33;
       }
-      local_a0 = fVar25;
-      if (fVar25 - local_c0 < 0.0) {
+      local_a0 = fVar30;
+      if (fVar30 - local_c0 < 0.0) {
         local_a0 = local_c0;
       }
-      local_9c = fVar25;
-      if (fVar25 - local_bc < 0.0) {
+      local_9c = fVar30;
+      if (fVar30 - local_bc < 0.0) {
         local_9c = local_bc;
       }
-      if (fVar25 - fVar26 < 0.0) {
-        fVar25 = fVar26;
+      if (fVar30 - fVar31 < 0.0) {
+        fVar30 = fVar31;
       }
-      fVar26 = ((float)(~local_23c & local_1f4 | local_23c & local_28c) * local_26c +
-                fStack_260 * (float)(uStack_1e8 & ~local_230 | local_230 & uStack_280) +
-                local_264 * (float)(local_1ec & ~local_234 | local_234 & local_284) +
-               fStack_268 * (float)(uStack_1f0 & ~local_238 | local_238 & uStack_288)) - fStack_260;
-      if (0.0 <= fVar26 - fVar28) {
-        fVar28 = fVar26;
+      fVar31 = ((float)(~local_23c & local_1f4 | local_23c & uVar1) * p2.v[1] +
+                fStack_260 * (float)(uVar29 & ~local_230 | local_230 & uVar4) +
+                p2.v[3] * (float)(uStack_1ec & ~local_234 | local_234 & uVar3) +
+               p2.v[2] * (float)(uStack_1f0 & ~local_238 | local_238 & uVar2)) - fStack_260;
+      if (0.0 <= fVar31 - fVar32) {
+        fVar32 = fVar31;
       }
-      local_80 = fVar26;
-      if (fVar26 - local_a0 < 0.0) {
+      local_80 = fVar31;
+      if (fVar31 - local_a0 < 0.0) {
         local_80 = local_a0;
       }
-      local_7c = fVar26;
-      if (fVar26 - local_9c < 0.0) {
+      local_7c = fVar31;
+      if (fVar31 - local_9c < 0.0) {
         local_7c = local_9c;
       }
-      if (0.0 <= fVar26 - fVar25) {
-        fVar25 = fVar26;
+      if (0.0 <= fVar31 - fVar30) {
+        fVar30 = fVar31;
       }
-      fVar26 = ((float)(local_25c & local_28c | ~local_25c & local_1f4) * local_27c +
-                fStack_270 * (float)(uStack_1e8 & ~local_250 | local_250 & uStack_280) +
-                local_274 * (float)(local_1ec & ~local_254 | local_254 & local_284) +
-               fStack_278 * (float)(uStack_1f0 & ~local_258 | local_258 & uStack_288)) - fStack_270;
-      fVar27 = fVar26;
-      if (fVar26 - fVar28 < 0.0) {
-        fVar27 = fVar28;
+      fVar31 = ((float)(local_25c & uVar1 | ~local_25c & local_1f4) * p1.v[1] +
+                p2.v[0] * (float)(uVar29 & ~local_250 | local_250 & uVar4) +
+                p1.v[3] * (float)(uStack_1ec & ~local_254 | local_254 & uVar3) +
+               p1.v[2] * (float)(uStack_1f0 & ~local_258 | local_258 & uVar2)) - p2.v[0];
+      fVar33 = fVar31;
+      if (fVar31 - fVar32 < 0.0) {
+        fVar33 = fVar32;
       }
-      fVar28 = fVar26;
-      if (fVar26 - local_80 < 0.0) {
-        fVar28 = local_80;
+      fVar32 = fVar31;
+      if (fVar31 - local_80 < 0.0) {
+        fVar32 = local_80;
       }
-      fVar21 = fVar26;
-      if (fVar26 - local_7c < 0.0) {
-        fVar21 = local_7c;
+      fVar25 = fVar31;
+      if (fVar31 - local_7c < 0.0) {
+        fVar25 = local_7c;
       }
-      if (fVar26 - fVar25 < 0.0) {
-        fVar26 = fVar25;
+      if (fVar31 - fVar30 < 0.0) {
+        fVar31 = fVar30;
       }
-      if ((((fVar27 < 0.0) || (fVar28 < 0.0)) || (fVar21 < 0.0)) || (fVar26 < 0.0)) {
-        (*param_1)[0] = 0.0;
+      if ((((fVar33 < 0.0) || (fVar32 < 0.0)) || (fVar25 < 0.0)) || (fVar31 < 0.0)) {
+        (*plane)[0] = 0.0;
         return (float (*) [4])0x0;
       }
-      fStack_1c4 = ((float)(uVar24 & local_1f4 | local_28c & ~uVar24) * local_1d0 +
-                    fStack_1c4 * (float)(local_1f8 & uStack_1e8 | uStack_280 & ~local_1f8) +
-                    local_1c8 * (float)(local_1fc & local_1ec | local_284 & ~local_1fc) +
-                   fStack_1cc * (float)(local_200 & uStack_1f0 | uStack_288 & ~local_200)) -
-                   fStack_1c4;
-      fStack_1d8 = ((float)(local_22c & local_1f4 | local_28c & ~local_22c) * local_1e4 +
-                    fStack_1d8 * (float)(local_220 & uStack_1e8 | uStack_280 & ~local_220) +
-                    local_1dc * (float)(local_224 & local_1ec | local_284 & ~local_224) +
-                   fStack_1e0 * (float)(local_228 & uStack_1f0 | uStack_288 & ~local_228)) -
-                   fStack_1d8;
-      fVar26 = fStack_1d8;
-      if (fStack_1d8 - fStack_1c4 < 0.0) {
-        fVar26 = fStack_1c4;
+      fStack_1c4 = ((float)(uVar28 & local_1f4 | uVar1 & ~uVar28) * local_1d0 +
+                    fStack_1c4 * (float)(min & uVar29 | uVar4 & ~min) +
+                    local_1c8 * (float)(local_1fc & uStack_1ec | uVar3 & ~local_1fc) +
+                   fStack_1cc * (float)(local_200 & uStack_1f0 | uVar2 & ~local_200)) - fStack_1c4;
+      fVar33 = ((float)(local_22c & local_1f4 | uVar1 & ~local_22c) * p4.v[1] +
+                (float)planeIdx * (float)(local_220 & uVar29 | uVar4 & ~local_220) +
+                p4.v[3] * (float)(local_224 & uStack_1ec | uVar3 & ~local_224) +
+               p4.v[2] * (float)(local_228 & uStack_1f0 | uVar2 & ~local_228)) - (float)planeIdx;
+      fVar31 = fVar33;
+      if (fVar33 - fStack_1c4 < 0.0) {
+        fVar31 = fStack_1c4;
       }
       local_b0 = fStack_1c4;
-      if (0.0 <= fStack_1d8 - fStack_1c4) {
-        local_b0 = fStack_1d8;
+      if (0.0 <= fVar33 - fStack_1c4) {
+        local_b0 = fVar33;
       }
       local_ac = fStack_1c4;
-      if (0.0 <= fStack_1d8 - fStack_1c4) {
-        local_ac = fStack_1d8;
+      if (0.0 <= fVar33 - fStack_1c4) {
+        local_ac = fVar33;
       }
-      if (0.0 <= fStack_1d8 - fStack_1c4) {
-        fStack_1c4 = fStack_1d8;
+      if (0.0 <= fVar33 - fStack_1c4) {
+        fStack_1c4 = fVar33;
       }
-      fStack_208 = ((float)(local_24c & local_1f4 | local_28c & ~local_24c) * local_214 +
-                    fStack_208 * (float)(local_240 & uStack_1e8 | uStack_280 & ~local_240) +
-                    local_20c * (float)(local_244 & local_1ec | local_284 & ~local_244) +
-                   fStack_210 * (float)(local_248 & uStack_1f0 | uStack_288 & ~local_248)) -
-                   fStack_208;
-      fVar27 = fStack_208;
-      if (fStack_208 - fVar26 < 0.0) {
-        fVar27 = fVar26;
+      fStack_208 = ((float)(local_24c & local_1f4 | uVar1 & ~local_24c) * local_214 +
+                    fStack_208 * (float)(local_240 & uVar29 | uVar4 & ~local_240) +
+                    local_20c * (float)(local_244 & uStack_1ec | uVar3 & ~local_244) +
+                   fStack_210 * (float)(local_248 & uStack_1f0 | uVar2 & ~local_248)) - fStack_208;
+      fVar33 = fStack_208;
+      if (fStack_208 - fVar31 < 0.0) {
+        fVar33 = fVar31;
       }
       local_90 = fStack_208;
       if (fStack_208 - local_b0 < 0.0) {
@@ -676,13 +666,12 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
       if (0.0 <= fStack_208 - fStack_1c4) {
         fStack_1c4 = fStack_208;
       }
-      fStack_260 = ((float)(~local_23c & local_28c | local_23c & local_1f4) * local_26c +
-                    fStack_260 * (float)(uStack_280 & ~local_230 | local_230 & uStack_1e8) +
-                    local_264 * (float)(local_284 & ~local_234 | local_234 & local_1ec) +
-                   fStack_268 * (float)(uStack_288 & ~local_238 | local_238 & uStack_1f0)) -
-                   fStack_260;
-      if (0.0 <= fStack_260 - fVar27) {
-        fVar27 = fStack_260;
+      fStack_260 = ((float)(~local_23c & uVar1 | local_23c & local_1f4) * p2.v[1] +
+                    fStack_260 * (float)(uVar4 & ~local_230 | local_230 & uVar29) +
+                    p2.v[3] * (float)(uVar3 & ~local_234 | local_234 & uStack_1ec) +
+                   p2.v[2] * (float)(uVar2 & ~local_238 | local_238 & uStack_1f0)) - fStack_260;
+      if (0.0 <= fStack_260 - fVar33) {
+        fVar33 = fStack_260;
       }
       local_70 = fStack_260;
       if (fStack_260 - local_90 < 0.0) {
@@ -695,63 +684,62 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
       if (0.0 <= fStack_260 - fStack_1c4) {
         fStack_1c4 = fStack_260;
       }
-      fStack_270 = ((float)(local_25c & local_1f4 | ~local_25c & local_28c) * local_27c +
-                    fStack_270 * (float)(uStack_280 & ~local_250 | local_250 & uStack_1e8) +
-                    local_274 * (float)(local_284 & ~local_254 | local_254 & local_1ec) +
-                   fStack_278 * (float)(uStack_288 & ~local_258 | local_258 & uStack_1f0)) -
-                   fStack_270;
-      fVar26 = fStack_270;
-      if (fStack_270 - fVar27 < 0.0) {
-        fVar26 = fVar27;
+      fVar31 = ((float)(local_25c & local_1f4 | ~local_25c & uVar1) * p1.v[1] +
+                p2.v[0] * (float)(uVar4 & ~local_250 | local_250 & uVar29) +
+                p1.v[3] * (float)(uVar3 & ~local_254 | local_254 & uStack_1ec) +
+               p1.v[2] * (float)(uVar2 & ~local_258 | local_258 & uStack_1f0)) - p2.v[0];
+      fVar30 = fVar31;
+      if (fVar31 - fVar33 < 0.0) {
+        fVar30 = fVar33;
       }
-      fVar27 = fStack_270;
-      if (fStack_270 - local_70 < 0.0) {
-        fVar27 = local_70;
+      fVar33 = fVar31;
+      if (fVar31 - local_70 < 0.0) {
+        fVar33 = local_70;
       }
-      fVar25 = fStack_270;
-      if (fStack_270 - local_6c < 0.0) {
-        fVar25 = local_6c;
+      fVar32 = fVar31;
+      if (fVar31 - local_6c < 0.0) {
+        fVar32 = local_6c;
       }
-      if (fStack_270 - fStack_1c4 < 0.0) {
-        fStack_270 = fStack_1c4;
+      if (fVar31 - fStack_1c4 < 0.0) {
+        fVar31 = fStack_1c4;
       }
-      if (((0.0 <= fVar26) && (0.0 <= fVar27)) && ((0.0 <= fVar25 && (0.0 <= fStack_270)))) {
-        (*param_1)[0] = (float)((int)(*param_1)[0] + -1);
-        fVar26 = (*param_1)[0];
-        uVar11 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 0xc);
-        uVar12 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14);
-        uVar13 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 2);
-        uVar14 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 4);
-        uVar15 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 6);
-        uVar16 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 8);
-        uVar17 = *(undefined8 *)(param_2 + (int)fVar26 * 0x14 + 10);
-        piVar23 = param_2 + (int)fVar26 * 0x14;
-        uVar18 = *(undefined8 *)(piVar23 + 0xe);
-        uVar19 = *(undefined8 *)(piVar23 + 0x10);
-        uVar20 = *(undefined8 *)(piVar23 + 0x12);
-        *(undefined8 *)piVar23 = uVar1;
-        *(undefined8 *)(piVar23 + 2) = uVar2;
-        *(undefined8 *)(piVar23 + 4) = uVar3;
-        *(undefined8 *)(piVar23 + 6) = uVar4;
-        *(undefined8 *)(piVar23 + 8) = uVar5;
-        *(undefined8 *)(piVar23 + 10) = uVar6;
-        *(undefined8 *)(piVar23 + 0xc) = uVar7;
-        *(undefined8 *)(piVar23 + 0xe) = uVar8;
-        *(undefined8 *)(piVar23 + 0x10) = uVar9;
-        *(undefined8 *)(piVar23 + 0x12) = uVar10;
-        *(undefined8 *)piVar22 = uVar12;
-        *(undefined8 *)(piVar22 + 0xc) = uVar11;
-        *(undefined8 *)(piVar22 + 0xe) = uVar18;
-        *(undefined8 *)(piVar22 + 0x10) = uVar19;
-        *(undefined8 *)(piVar22 + 4) = uVar14;
-        *(undefined8 *)(piVar22 + 8) = uVar16;
-        *(undefined8 *)(piVar22 + 2) = uVar13;
-        *(undefined8 *)(piVar22 + 6) = uVar15;
-        *(undefined8 *)(piVar22 + 10) = uVar17;
-        *(undefined8 *)(piVar22 + 0x12) = uVar20;
+      if (((0.0 <= fVar30) && (0.0 <= fVar33)) && ((0.0 <= fVar32 && (0.0 <= fVar31)))) {
+        (*plane)[0] = (float)((int)(*plane)[0] + -1);
+        fVar31 = (*plane)[0];
+        uVar15 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 0xc);
+        uVar16 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14);
+        uVar17 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 2);
+        uVar18 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 4);
+        uVar19 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 6);
+        uVar20 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 8);
+        uVar21 = *(undefined8 *)(param_2 + (int)fVar31 * 0x14 + 10);
+        piVar27 = param_2 + (int)fVar31 * 0x14;
+        uVar22 = *(undefined8 *)(piVar27 + 0xe);
+        uVar23 = *(undefined8 *)(piVar27 + 0x10);
+        uVar24 = *(undefined8 *)(piVar27 + 0x12);
+        *(undefined8 *)piVar27 = uVar5;
+        *(undefined8 *)(piVar27 + 2) = uVar6;
+        *(undefined8 *)(piVar27 + 4) = uVar7;
+        *(undefined8 *)(piVar27 + 6) = uVar8;
+        *(undefined8 *)(piVar27 + 8) = uVar9;
+        *(undefined8 *)(piVar27 + 10) = uVar10;
+        *(undefined8 *)(piVar27 + 0xc) = uVar11;
+        *(undefined8 *)(piVar27 + 0xe) = uVar12;
+        *(undefined8 *)(piVar27 + 0x10) = uVar13;
+        *(undefined8 *)(piVar27 + 0x12) = uVar14;
+        *(undefined8 *)piVar26 = uVar16;
+        *(undefined8 *)(piVar26 + 0xc) = uVar15;
+        *(undefined8 *)(piVar26 + 0xe) = uVar22;
+        *(undefined8 *)(piVar26 + 0x10) = uVar23;
+        *(undefined8 *)(piVar26 + 4) = uVar18;
+        *(undefined8 *)(piVar26 + 8) = uVar20;
+        *(undefined8 *)(piVar26 + 2) = uVar17;
+        *(undefined8 *)(piVar26 + 6) = uVar19;
+        *(undefined8 *)(piVar26 + 10) = uVar21;
+        *(undefined8 *)(piVar26 + 0x12) = uVar24;
       }
-      local_1d4 = local_1d4 + 1;
-    } while (local_1d4 < (int)(*param_1)[0]);
+      p5 = p5 + 1;
+    } while (p5 < (int)(*plane)[0]);
   }
   return (float (*) [4])param_2;
 }
@@ -759,7 +747,8 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
 
 // 0084A9C0  R_CalcSurfaceNoDynamicShadow  (gfx_d3d/r_dpvs_static.cpp:1043)
 
-bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDrawSurf *param_3)
+bool __cdecl
+R_CalcSurfaceNoDynamicShadow(uint localSurfaces,GfxSurface *localDrawSurfaces,GfxDrawSurf *param_3)
 
 {
   float fVar1;
@@ -773,27 +762,28 @@ bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDr
   uint uVar9;
   GfxDrawSurf *pGVar10;
   float fVar11;
+  uint bits;
   
   fVar6 = dpvsGlob.sunShadow.sunShadowDrawDist;
   fVar5 = dpvsGlob.sunShadow.viewDirDist;
   fVar4 = dpvsGlob.sunShadow.viewDir[2];
   fVar3 = dpvsGlob.sunShadow.viewDir[1];
   uVar7 = 0x1f;
-  if (param_1 != 0) {
-    for (; param_1 >> uVar7 == 0; uVar7 = uVar7 - 1) {
+  if (localSurfaces != 0) {
+    for (; localSurfaces >> uVar7 == 0; uVar7 = uVar7 - 1) {
     }
   }
-  if (param_1 == 0) {
+  if (localSurfaces == 0) {
     uVar7 = 0x3f;
   }
   uVar7 = uVar7 ^ 0x1f;
   uVar9 = 0x80000000 >> ((byte)uVar7 & 0x1f);
-  if (param_1 != 0) {
+  if (localSurfaces != 0) {
     pGVar10 = param_3 + uVar7;
-    pafVar8 = param_2[uVar7].bounds;
+    pafVar8 = localDrawSurfaces[uVar7].bounds;
     do {
-      if ((param_1 & uVar9) != 0) {
-        param_1 = param_1 & ~uVar9;
+      if ((localSurfaces & uVar9) != 0) {
+        localSurfaces = localSurfaces & ~uVar9;
         fVar1 = pafVar8[dpvsGlob.sunShadow.viewDirSign[1]][1];
         fVar2 = pafVar8[dpvsGlob.sunShadow.viewDirSign[2]][2];
         fVar11 = dpvsGlob.sunShadow.viewDir[0] * pafVar8[dpvsGlob.sunShadow.viewDirSign[0]][0];
@@ -805,7 +795,7 @@ bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDr
       pafVar8 = (float (*) [3])((int)(pafVar8 + 6) + 8);
       pGVar10 = pGVar10 + 1;
       uVar9 = uVar9 >> 1;
-    } while (param_1 != 0);
+    } while (localSurfaces != 0);
   }
   return false;
 }
@@ -813,7 +803,9 @@ bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDr
 
 // 0084AF20  R_AddSkySurfacesDpvs  (gfx_d3d/r_dpvs_static.cpp:1624)
 
-void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: surfIndex */
+
+void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *planeCount,int param_2)
 
 {
   int iVar1;
@@ -824,6 +816,8 @@ void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *param_1,int param_2)
   float *pfVar6;
   GfxWorld *pGVar7;
   float (*unaff_EDI) [4];
+  DpvsPlane *planes;
+  int surfIndex;
   int local_154;
   float local_14c [80];
   int local_c;
@@ -836,8 +830,8 @@ void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *param_1,int param_2)
   if (0 < param_2) {
     pfVar6 = local_14c;
     for (uVar5 = (uint)(param_2 * 0x14) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *pfVar6 = param_1->coeffs[0];
-      param_1 = (DpvsPlane *)(param_1->coeffs + 1);
+      *pfVar6 = planeCount->coeffs[0];
+      planeCount = (DpvsPlane *)(planeCount->coeffs + 1);
       pfVar6 = pfVar6 + 1;
     }
   }

@@ -2,7 +2,7 @@
 
 // 00C0E867  __libm_sse2_pow  (line unknown)
 
-double __cdecl __libm_sse2_pow(double param_1,double param_2)
+double __cdecl __libm_sse2_pow(double x,double y)
 
 {
   byte bVar1;

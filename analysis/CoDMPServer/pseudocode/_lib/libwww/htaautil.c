@@ -89,10 +89,10 @@ int _HTAA_updateNode(int param_1,int param_2,undefined4 param_3,int param_4,unde
 
 {
   int iVar1;
-  uchar *puVar2;
+  uchar *string;
   undefined1 *extraout_EAX;
-  undefined4 uVar3;
-  int iVar4;
+  undefined4 uVar2;
+  int iVar3;
   int local_2c;
   char *local_28;
   int local_20;
@@ -108,8 +108,8 @@ int _HTAA_updateNode(int param_1,int param_2,undefined4 param_3,int param_4,unde
       local_2c = 0;
     }
     else {
-      puVar2 = (uchar *)_HTParse(param_4,"",8);
-      strchr(puVar2,':');
+      string = (uchar *)_HTParse(param_4,"",8);
+      strchr(string,':');
       local_10 = 0x50;
       if (extraout_EAX != (undefined1 *)0x0) {
         *extraout_EAX = 0;
@@ -121,23 +121,23 @@ int _HTAA_updateNode(int param_1,int param_2,undefined4 param_3,int param_4,unde
       else {
         local_28 = "w3c-proxy-AA";
       }
-      iVar1 = _HTUTree_new(local_28,puVar2,local_10,FUN_00bd8790);
-      _HTMemory_free(puVar2);
+      iVar1 = _HTUTree_new(local_28,string,local_10,FUN_00bd8790);
+      _HTMemory_free(string);
       if (iVar1 == 0) {
         local_2c = 0;
       }
       else {
-        uVar3 = _HTParse(param_4,"",5);
-        local_1c = (int *)_HTUTree_findNode(iVar1,param_3,uVar3);
+        uVar2 = _HTParse(param_4,"",5);
+        local_1c = (int *)_HTUTree_findNode(iVar1,param_3,uVar2);
         if (((local_1c == (int *)0x0) || (*local_1c == 0)) ||
-           (iVar4 = strcasecomp(*local_1c,param_2), iVar4 != 0)) {
+           (iVar3 = strcasecomp(*local_1c,param_2), iVar3 != 0)) {
           local_1c = (int *)FUN_00bd86a0(param_2,param_5);
-          local_20 = _HTUTree_addNode(iVar1,param_3,uVar3,local_1c);
+          local_20 = _HTUTree_addNode(iVar1,param_3,uVar2,local_1c);
         }
         else {
           local_20 = FUN_00bd8700(local_1c,param_2,param_5);
         }
-        _HTMemory_free(uVar3);
+        _HTMemory_free(uVar2);
         if (local_20 == 1) {
           local_2c = local_1c[1];
         }
@@ -233,9 +233,9 @@ undefined4 _HTAA_deleteNode(int param_1,int param_2,undefined4 param_3,int param
 {
   undefined4 uVar1;
   int iVar2;
-  uchar *puVar3;
+  uchar *string;
   undefined1 *extraout_EAX;
-  undefined4 uVar4;
+  undefined4 uVar3;
   char *local_24;
   int local_10;
   
@@ -248,8 +248,8 @@ undefined4 _HTAA_deleteNode(int param_1,int param_2,undefined4 param_3,int param
       uVar1 = 0;
     }
     else {
-      puVar3 = (uchar *)_HTParse(param_4,"",8);
-      strchr(puVar3,':');
+      string = (uchar *)_HTParse(param_4,"",8);
+      strchr(string,':');
       local_10 = 0x50;
       if (extraout_EAX != (undefined1 *)0x0) {
         *extraout_EAX = 0;
@@ -261,15 +261,15 @@ undefined4 _HTAA_deleteNode(int param_1,int param_2,undefined4 param_3,int param
       else {
         local_24 = "w3c-proxy-AA";
       }
-      iVar2 = _HTUTree_new(local_24,puVar3,local_10,FUN_00bd8790);
-      _HTMemory_free(puVar3);
+      iVar2 = _HTUTree_new(local_24,string,local_10,FUN_00bd8790);
+      _HTMemory_free(string);
       if (iVar2 == 0) {
         uVar1 = 0;
       }
       else {
-        uVar4 = _HTParse(param_4,"",5);
-        uVar1 = _HTUTree_deleteNode(iVar2,param_3,uVar4);
-        _HTMemory_free(uVar4);
+        uVar3 = _HTParse(param_4,"",5);
+        uVar1 = _HTUTree_deleteNode(iVar2,param_3,uVar3);
+        _HTMemory_free(uVar3);
       }
     }
   }
@@ -307,10 +307,10 @@ undefined4 FUN_00bd89f0(int param_1,undefined4 param_2,int param_3)
 
 {
   undefined4 uVar1;
-  uchar *puVar2;
+  uchar *string;
   undefined1 *extraout_EAX;
-  int iVar3;
-  undefined4 uVar4;
+  int iVar2;
+  undefined4 uVar3;
   char *local_20;
   int local_c;
   
@@ -318,8 +318,8 @@ undefined4 FUN_00bd89f0(int param_1,undefined4 param_2,int param_3)
     uVar1 = 0;
   }
   else {
-    puVar2 = (uchar *)_HTParse(param_3,"",8);
-    strchr(puVar2,':');
+    string = (uchar *)_HTParse(param_3,"",8);
+    strchr(string,':');
     local_c = 0x50;
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
@@ -331,15 +331,15 @@ undefined4 FUN_00bd89f0(int param_1,undefined4 param_2,int param_3)
     else {
       local_20 = "w3c-proxy-AA";
     }
-    iVar3 = _HTUTree_find(local_20,puVar2,local_c);
-    _HTMemory_free(puVar2);
-    if (iVar3 == 0) {
+    iVar2 = _HTUTree_find(local_20,string,local_c);
+    _HTMemory_free(string);
+    if (iVar2 == 0) {
       uVar1 = 0;
     }
     else {
-      uVar4 = _HTParse(param_3,"",5);
-      uVar1 = _HTUTree_findNode(iVar3,param_2,uVar4);
-      _HTMemory_free(uVar4);
+      uVar3 = _HTParse(param_3,"",5);
+      uVar1 = _HTUTree_findNode(iVar2,param_2,uVar3);
+      _HTMemory_free(uVar3);
     }
   }
   return uVar1;

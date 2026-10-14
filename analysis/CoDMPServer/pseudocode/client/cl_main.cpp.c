@@ -2,37 +2,38 @@
 
 // 0055CA20  CL_RunNetworkFrame  (client/cl_main.cpp:38)
 
-void __cdecl CL_RunNetworkFrame(int param_1,int param_2)
+void __cdecl CL_RunNetworkFrame(int localClientNum,int msec)
 
 {
   bool bVar1;
   int iVar2;
-  undefined4 local_10;
-  undefined4 local_c;
+  int i;
+  int firstSignedInController;
+  int controllerIndex;
   
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (g_doLiveFrameHack == 0) {
     g_doLiveFrameHack = 1;
   }
   else {
-    local_c = -1;
-    for (local_10 = 0; local_10 < 1; local_10 = local_10 + 1) {
-      GamerProfile_WriteSettings(local_10);
-      bVar1 = Live_IsSignedIn(local_10);
+    firstSignedInController = -1;
+    for (i = 0; i < 1; i = i + 1) {
+      GamerProfile_WriteSettings(i);
+      bVar1 = Live_IsSignedIn(i);
       if (bVar1) {
         bVar1 = CL_IsRenderingSplitScreen();
         if (!bVar1) {
-          bVar1 = CL_IsLastActiveLocalClient(local_10);
-          if ((bVar1) && (local_c == -1)) {
-            local_c = local_10;
+          bVar1 = CL_IsLastActiveLocalClient(i);
+          if ((bVar1) && (firstSignedInController == -1)) {
+            firstSignedInController = i;
           }
         }
       }
     }
-    if (local_c == -1) {
-      local_c = iVar2;
+    if (firstSignedInController == -1) {
+      firstSignedInController = iVar2;
     }
-    Live_Frame(local_c,param_2);
+    Live_Frame(firstSignedInController,msec);
     dwUpdateLanSession();
   }
   Live_CheckOngoingTasks();
@@ -46,16 +47,16 @@ bool __cdecl CL_AnyLocalClientsRunning(void)
 
 {
   bool bVar1;
-  int local_8;
+  int localClientNum;
   
-  local_8 = 0;
+  localClientNum = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < localClientNum) {
       return false;
     }
-    bVar1 = CL_LocalClient_IsCUIFlagSet(local_8,2);
+    bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,2);
     if (bVar1) break;
-    local_8 = local_8 + 1;
+    localClientNum = localClientNum + 1;
   }
   return true;
 }
@@ -63,10 +64,10 @@ bool __cdecl CL_AnyLocalClientsRunning(void)
 
 // 0055CB30  CL_DontUnlockControllers  (client/cl_main.cpp:128)
 
-void __cdecl CL_DontUnlockControllers(bool param_1)
+void __cdecl CL_DontUnlockControllers(bool flag)
 
 {
-  s_dontUnlockControllers = param_1;
+  s_dontUnlockControllers = flag;
   return;
 }
 
@@ -76,12 +77,12 @@ void __cdecl CL_DontUnlockControllers(bool param_1)
 void __cdecl CL_Command_ProvisionallyDisableAllClients(void)
 
 {
-  undefined4 local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    GamerProfile_WriteSettings(local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    GamerProfile_WriteSettings(localClientNum);
     if (s_dontUnlockControllers == false) {
-      Com_LocalClient_SetBeingUsed(local_8,false);
+      Com_LocalClient_SetBeingUsed(localClientNum,false);
     }
   }
   CL_DontUnlockControllers(false);
@@ -95,13 +96,13 @@ void __cdecl CL_Command_DisableAllButPrimaryClients(void)
 
 {
   bool bVar1;
-  undefined4 local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    bVar1 = Com_LocalClient_IsPrimary(local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar1 = Com_LocalClient_IsPrimary(localClientNum);
     if (!bVar1) {
-      GamerProfile_WriteSettings(local_8);
-      Com_LocalClient_SetBeingUsed(local_8,false);
+      GamerProfile_WriteSettings(localClientNum);
+      Com_LocalClient_SetBeingUsed(localClientNum,false);
     }
   }
   return;
@@ -113,11 +114,11 @@ void __cdecl CL_Command_DisableAllButPrimaryClients(void)
 void __cdecl CL_Command_DisableAllClients(void)
 
 {
-  undefined4 local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    GamerProfile_WriteSettings(local_8);
-    Com_LocalClient_SetBeingUsed(local_8,false);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    GamerProfile_WriteSettings(localClientNum);
+    Com_LocalClient_SetBeingUsed(localClientNum,false);
   }
   return;
 }
@@ -128,6 +129,8 @@ void __cdecl CL_Command_DisableAllClients(void)
 void __cdecl CL_Command_SetClientBeingUsedAndPrimary(void)
 
 {
+  int localClientNum;
+  
   Com_LocalClient_SetBeingUsed(0,true);
   Com_LocalClient_SetPrimary(0,true);
   return;
@@ -139,6 +142,8 @@ void __cdecl CL_Command_SetClientBeingUsedAndPrimary(void)
 void __cdecl CL_Command_SetClientBeingUsedAndPrimaryAndActive(void)
 
 {
+  int localClientNum;
+  
   Com_LocalClient_SetBeingUsed(0,true);
   Com_LocalClient_SetPrimary(0,true);
   GamerProfile_WriteSettings(0);
@@ -151,6 +156,8 @@ void __cdecl CL_Command_SetClientBeingUsedAndPrimaryAndActive(void)
 void __cdecl CL_Command_SetClientPrimary(void)
 
 {
+  int localClientNum;
+  
   Com_LocalClient_SetPrimary(0,true);
   return;
 }
@@ -161,6 +168,8 @@ void __cdecl CL_Command_SetClientPrimary(void)
 void __cdecl CL_Command_SetClientBeingUsed(void)
 
 {
+  int localClientNum;
+  
   Com_LocalClient_SetBeingUsed(0,true);
   return;
 }
@@ -171,6 +180,8 @@ void __cdecl CL_Command_SetClientBeingUsed(void)
 void __cdecl CL_Command_SetClientBeingUsedAndActive(void)
 
 {
+  int localClientNum;
+  
   Com_LocalClient_SetBeingUsed(0,true);
   GamerProfile_WriteSettings(0);
   return;
@@ -182,6 +193,8 @@ void __cdecl CL_Command_SetClientBeingUsedAndActive(void)
 void __cdecl CL_Command_SetClientNotBeingUsed(void)
 
 {
+  int localClientNum;
+  
   GamerProfile_WriteSettings(0);
   Com_LocalClient_SetBeingUsed(0,false);
   return;
@@ -190,7 +203,7 @@ void __cdecl CL_Command_SetClientNotBeingUsed(void)
 
 // 0055CD60  CL_SetupClientsForIngame  (client/cl_main.cpp:253)
 
-void __cdecl CL_SetupClientsForIngame(char *param_1)
+void __cdecl CL_SetupClientsForIngame(char *mapname)
 
 {
   Com_LocalClients_CompressClients();
@@ -214,12 +227,11 @@ void __cdecl CL_SetupClientsForFrontend(void)
 
 void __cdecl
 CL_DrawFramedPicPhysical
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,int param_8,float *param_9,Material *param_10)
+          (float x,float y,float w,float h,float thicknessW,float thicknessH,float thicknessTex,
+          int sides,float *color,Material *material)
 
 {
-  R_AddCmdDrawFramed(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,
-                     param_10);
+  R_AddCmdDrawFramed(x,y,w,h,thicknessW,thicknessH,thicknessTex,sides,color,material);
   return;
 }
 
@@ -236,6 +248,11 @@ void __cdecl CL_UpdateDvarsFromProfile(void)
 
 // 0055CE60  CL_UpdateGamerProfile  (client/cl_main.cpp:566)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CL_UpdateGamerProfile(void)
 
 {
@@ -247,6 +264,10 @@ void __cdecl CL_UpdateGamerProfile(void)
 // 0055CE80  CL_CommitDvarToProfiles  (client/cl_main.cpp:571)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl CL_CommitDvarToProfiles(void)
 
@@ -255,49 +276,49 @@ void __cdecl CL_CommitDvarToProfiles(void)
   bool bVar2;
   int iVar3;
   DvarSetSource in_stack_fffffbc8;
-  int local_428;
-  char local_424 [1024];
-  char *local_24;
-  dvar_s *local_20;
-  int local_1c;
+  int controllerIndex;
+  char dvarStringCopy [1024];
+  char *dvarName;
+  dvar_s *dvar;
+  int dvarValue;
   float local_18;
   float local_14;
   float local_10;
   uint local_c;
-  int local_8;
+  int originalControllerIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar3 = Cmd_Argc();
   if (iVar3 == 2) {
-    local_8 = 0;
-    local_24 = Cmd_Argv(1);
-    local_20 = Dvar_FindVar(local_24);
-    if (local_20 != (dvar_s *)0x0) {
-      local_1c = (local_20->current).integer;
-      local_18 = (local_20->current).vector[1];
-      local_14 = (local_20->current).vector[2];
-      local_10 = (local_20->current).vector[3];
-      if (local_20->type == DVAR_TYPE_STRING) {
-        I_strncpyz(local_424,(local_20->current).string,0x400);
+    originalControllerIndex = 0;
+    dvarName = Cmd_Argv(1);
+    dvar = Dvar_FindVar(dvarName);
+    if (dvar != (dvar_s *)0x0) {
+      dvarValue = (dvar->current).integer;
+      local_18 = (dvar->current).vector[1];
+      local_14 = (dvar->current).vector[2];
+      local_10 = (dvar->current).vector[3];
+      if (dvar->type == DVAR_TYPE_STRING) {
+        I_strncpyz(dvarStringCopy,(dvar->current).string,0x400);
       }
-      GamerProfile_UpdateProfileFromDvars(local_8,PROFILE_WRITE_IF_CHANGED);
-      for (local_428 = 0; local_428 < 1; local_428 = local_428 + 1) {
-        iVar3 = Com_ControllerIndex_GetLocalClientNum(local_428);
+      GamerProfile_UpdateProfileFromDvars(originalControllerIndex,PROFILE_WRITE_IF_CHANGED);
+      for (controllerIndex = 0; controllerIndex < 1; controllerIndex = controllerIndex + 1) {
+        iVar3 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
         bVar2 = Com_LocalClient_IsBeingUsed(iVar3);
         if (bVar2) {
-          GamerProfile_UpdateDvarsFromProfile(local_428);
+          GamerProfile_UpdateDvarsFromProfile(controllerIndex);
           DVar1.vector[1] = local_14;
           DVar1.value = local_18;
           DVar1.vector[2] = local_10;
           DVar1.vector[3] = 0.0;
-          Dvar_SetDvarValueFromSource(local_20,DVar1,in_stack_fffffbc8);
-          if (local_20->type == DVAR_TYPE_STRING) {
-            Dvar_SetFromString(local_20,local_424);
+          Dvar_SetDvarValueFromSource(dvar,DVar1,in_stack_fffffbc8);
+          if (dvar->type == DVAR_TYPE_STRING) {
+            Dvar_SetFromString(dvar,dvarStringCopy);
           }
-          GamerProfile_UpdateProfileFromDvars(local_428,PROFILE_WRITE_IF_CHANGED);
+          GamerProfile_UpdateProfileFromDvars(controllerIndex,PROFILE_WRITE_IF_CHANGED);
         }
       }
-      GamerProfile_UpdateDvarsFromProfile(local_8);
+      GamerProfile_UpdateDvarsFromProfile(originalControllerIndex);
     }
   }
   return;
@@ -310,12 +331,13 @@ void __cdecl CL_UpdateProfileFromStats(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    atoi(nptr);
   }
   return;
 }
@@ -345,61 +367,60 @@ void __cdecl CL_RegisterCommands(void)
 
 // 0055D030  CL_DrawSpinnerPhysical  (client/cl_main.cpp:702)
 
-void __cdecl
-CL_DrawSpinnerPhysical(float param_1,float param_2,float param_3,float param_4,float *param_5)
+void __cdecl CL_DrawSpinnerPhysical(float x,float y,float w,float h,float *color)
 
 {
   int iVar1;
   float local_34;
   float local_30;
-  int local_28;
-  float local_20;
-  float local_18;
+  int wedge;
+  float wedgeAngleStep;
+  float angle;
+  int ms;
+  float fadedColor;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float maxSize;
   
-  local_8 = 64.0;
-  if (param_5 == (float *)0x0) {
-    local_18 = 1.0;
+  maxSize = 64.0;
+  if (color == (float *)0x0) {
+    fadedColor = 1.0;
     local_14 = 1.0;
     local_10 = 1.0;
     local_c = 1.0;
   }
   else {
-    local_18 = *param_5;
-    local_14 = param_5[1];
-    local_10 = param_5[2];
-    local_c = param_5[3];
+    fadedColor = *color;
+    local_14 = color[1];
+    local_10 = color[2];
+    local_c = color[3];
   }
   iVar1 = Sys_Milliseconds();
-  if (param_3 - local_8 < 0.0) {
-    local_30 = param_3;
+  if (w - maxSize < 0.0) {
+    local_30 = w;
   }
   else {
-    local_30 = local_8;
+    local_30 = maxSize;
   }
-  local_34 = param_4 / cls.vidConfig.aspectRatioDisplayPixel;
+  local_34 = h / cls.vidConfig.aspectRatioDisplayPixel;
   if (0.0 <= local_34 - local_30) {
     local_34 = local_30;
   }
-  if (local_34 < param_3) {
-    param_1 = (param_3 - local_34) * 0.5 + param_1;
-    param_3 = local_34;
+  if (local_34 < w) {
+    x = (w - local_34) * 0.5 + x;
+    w = local_34;
   }
-  local_8 = local_34 * cls.vidConfig.aspectRatioDisplayPixel;
-  if (local_8 < param_4) {
-    param_2 = (param_4 - local_8) * 0.5 + param_2;
-    param_4 = local_8;
+  maxSize = local_34 * cls.vidConfig.aspectRatioDisplayPixel;
+  if (maxSize < h) {
+    y = (h - maxSize) * 0.5 + y;
+    h = maxSize;
   }
-  local_20 = ((float)(iVar1 % 60000) / 857.1429) * 360.0;
-  for (local_28 = 0; local_28 < 8; local_28 = local_28 + 1) {
-    R_AddCmdDrawStretchPicRotateXY
-              (param_1,param_2,param_3,param_4,0.0,0.0,1.0,1.0,local_20,&local_18,
-               cls.spinnerMaterial);
+  angle = ((float)(iVar1 % 60000) / 857.1429) * 360.0;
+  for (wedge = 0; wedge < 8; wedge = wedge + 1) {
+    R_AddCmdDrawStretchPicRotateXY(x,y,w,h,0.0,0.0,1.0,1.0,angle,&fadedColor,cls.spinnerMaterial);
     local_c = local_c * 0.6;
-    local_20 = local_20 - 45.0;
+    angle = angle - 45.0;
   }
   return;
 }
@@ -408,12 +429,12 @@ CL_DrawSpinnerPhysical(float param_1,float param_2,float param_3,float param_4,f
 // 0055D270  CL_DrawSpinner  (client/cl_main.cpp:743)
 
 void __cdecl
-CL_DrawSpinner(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-              int param_6,int param_7,float *param_8)
+CL_DrawSpinner(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign
+              ,float *color)
 
 {
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  CL_DrawSpinnerPhysical(param_2,param_3,param_4,param_5,param_8);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  CL_DrawSpinnerPhysical(x,y,w,h,color);
   return;
 }
 
@@ -421,8 +442,7 @@ CL_DrawSpinner(ScreenPlacement *param_1,float param_2,float param_3,float param_
 // 0055D2D0  CL_DrawSpinnerLoadbarPhysical  (client/cl_main.cpp:749)
 
 void __cdecl
-CL_DrawSpinnerLoadbarPhysical
-          (float param_1,float param_2,float param_3,float param_4,float *param_5,float param_6)
+CL_DrawSpinnerLoadbarPhysical(float x,float y,float w,float h,float *color,float percentDone)
 
 {
   int iVar1;
@@ -431,43 +451,45 @@ CL_DrawSpinnerLoadbarPhysical
   float local_3c;
   float local_38;
   float local_34;
-  int local_2c;
-  float local_24;
-  float local_1c;
+  int wedge;
+  float wedgeAngleStep;
+  float angle;
+  int ms;
+  float fadedColor;
   float local_18;
   undefined4 local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float done_angle;
+  float maxSize;
   
-  local_8 = 64.0;
+  maxSize = 64.0;
   iVar1 = Sys_Milliseconds();
-  if (param_3 - local_8 < 0.0) {
-    local_3c = param_3;
+  if (w - maxSize < 0.0) {
+    local_3c = w;
   }
   else {
-    local_3c = local_8;
+    local_3c = maxSize;
   }
-  if (param_4 - local_3c < 0.0) {
-    local_40 = param_4;
+  if (h - local_3c < 0.0) {
+    local_40 = h;
   }
   else {
     local_40 = local_3c;
   }
-  local_8 = local_40;
-  if (local_40 < param_3) {
-    param_1 = (param_3 - local_40) * 0.5 + param_1;
-    param_3 = local_40;
+  maxSize = local_40;
+  if (local_40 < w) {
+    x = (w - local_40) * 0.5 + x;
+    w = local_40;
   }
-  if (local_40 < param_4) {
-    param_2 = (param_4 - local_40) * 0.5 + param_2;
-    param_4 = local_40;
+  if (local_40 < h) {
+    y = (h - local_40) * 0.5 + y;
+    h = local_40;
   }
-  local_24 = ((float)(iVar1 % 60000) / 857.1429) * 360.0;
-  local_c = 0.0;
-  fVar2 = param_6 * 360.0;
-  for (local_2c = 0; local_2c < 8; local_2c = local_2c + 1) {
-    local_34 = (fVar2 - local_c) / 45.0;
+  angle = ((float)(iVar1 % 60000) / 857.1429) * 360.0;
+  done_angle = 0.0;
+  fVar2 = percentDone * 360.0;
+  for (wedge = 0; wedge < 8; wedge = wedge + 1) {
+    local_34 = (fVar2 - done_angle) / 45.0;
     if (0.0 <= 0.0 - local_34) {
       local_34 = 0.0;
     }
@@ -480,10 +502,10 @@ CL_DrawSpinnerLoadbarPhysical
     local_14 = 0;
     local_10 = local_38;
     if (180.0 <= fVar2) {
-      local_1c = 1.0 - (fVar2 - 180.0) / 180.0;
+      fadedColor = 1.0 - (fVar2 - 180.0) / 180.0;
     }
     else {
-      local_1c = 1.0;
+      fadedColor = 1.0;
     }
     if (fVar2 < 240.0) {
       local_18 = fVar2 / 240.0;
@@ -491,11 +513,9 @@ CL_DrawSpinnerLoadbarPhysical
     else {
       local_18 = 1.0;
     }
-    R_AddCmdDrawStretchPicRotateXY
-              (param_1,param_2,param_3,param_4,0.0,0.0,1.0,1.0,local_24,&local_1c,
-               cls.spinnerMaterial);
-    local_c = local_c + 45.0;
-    local_24 = local_24 + 45.0;
+    R_AddCmdDrawStretchPicRotateXY(x,y,w,h,0.0,0.0,1.0,1.0,angle,&fadedColor,cls.spinnerMaterial);
+    done_angle = done_angle + 45.0;
+    angle = angle + 45.0;
   }
   return;
 }
@@ -505,12 +525,12 @@ CL_DrawSpinnerLoadbarPhysical
 
 void __cdecl
 CL_DrawSpinnerLoadbar
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float *param_8,float param_9)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float *color,float percentDone)
 
 {
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  CL_DrawSpinnerLoadbarPhysical(param_2,param_3,param_4,param_5,param_8,param_9);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  CL_DrawSpinnerLoadbarPhysical(x,y,w,h,color,percentDone);
   return;
 }
 

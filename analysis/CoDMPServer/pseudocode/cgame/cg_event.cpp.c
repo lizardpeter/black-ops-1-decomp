@@ -8,186 +8,190 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Obituary(int param_1,entityState_s *param_2)
+void __cdecl CG_Obituary(int localClientNum,entityState_s *ent)
 
 {
   byte bVar1;
-  ushort uVar2;
-  code *pcVar3;
+  code *pcVar2;
+  float fVar3;
   cg_s *pcVar4;
-  uint uVar5;
-  bool bVar6;
+  uint index;
+  bool bVar5;
   int local_b8;
   byte *local_b0;
   byte *local_ac;
-  uint local_9c;
-  bool local_95;
-  uint local_94;
-  float local_90;
-  float local_84;
-  char local_80 [40];
-  char local_58 [40];
+  int mod;
+  int attacker;
+  bool iconHorzFlip;
+  int weaponNum;
+  float iconWidth;
+  cg_s *cgameGlob;
+  int target;
+  float iconHeight;
+  char targetName [40];
+  char attackerName [40];
   uint local_30;
-  clientInfo_t *local_2c;
-  clientInfo_t *local_28;
-  char local_21;
-  float local_20;
-  char *local_1c;
-  char local_15;
-  int *local_14;
-  WeaponDef *local_10;
-  playerState_s *local_c;
-  Material *local_8;
+  clientInfo_t *attackerCI;
+  clientInfo_t *victimCI;
+  char attackerColor;
+  float baseIconSize;
+  char *s;
+  char victimColor;
+  clientInfo_t *playerCI;
+  WeaponDef *weapDef;
+  playerState_s *ps;
+  Material *iconShader;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_28 = (clientInfo_t *)0x0;
-  local_15 = '7';
-  local_20 = 1.4;
-  uVar5 = (uint)param_2->otherEntityNum;
-  local_9c = (uint)param_2->attackerEntityNum;
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  local_84 = local_20;
-  local_90 = local_20;
-  local_95 = false;
-  if (param_2->weaponModel == '\0') {
-    uVar2 = param_2->eventParm;
-    local_94 = 0;
-    local_10 = (WeaponDef *)0x0;
-    local_8 = Material_RegisterHandle("killicondied",7);
+  victimCI = (clientInfo_t *)0x0;
+  victimColor = '7';
+  baseIconSize = 1.4;
+  index = (uint)ent->otherEntityNum;
+  attacker = (int)ent->attackerEntityNum;
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  fVar3 = baseIconSize;
+  iconWidth = baseIconSize;
+  iconHeight = baseIconSize;
+  iconHorzFlip = false;
+  if (ent->weaponModel == '\0') {
+    mod = (int)ent->eventParm;
+    weaponNum = 0;
+    weapDef = (WeaponDef *)0x0;
+    iconShader = Material_RegisterHandle("killicondied",7);
   }
   else {
-    uVar2 = 0;
-    local_94 = (uint)param_2->eventParm;
-    local_10 = BG_GetWeaponDef(local_94);
-    if (local_10->killIcon == (Material *)0x0) {
-      local_8 = Material_RegisterHandle("hud_obit_death_suicide",7);
+    mod = 0;
+    weaponNum = (int)ent->eventParm;
+    weapDef = BG_GetWeaponDef(weaponNum);
+    if (weapDef->killIcon == (Material *)0x0) {
+      iconShader = Material_RegisterHandle("hud_obit_death_suicide",7);
     }
     else {
-      local_8 = local_10->killIcon;
-      local_95 = local_10->flipKillIcon != false;
-      if (local_10->killIconRatio != WEAPON_ICON_RATIO_1TO1) {
-        if (local_10->killIconRatio == WEAPON_ICON_RATIO_2TO1) {
-          local_90 = local_84 * 2.0;
+      iconShader = weapDef->killIcon;
+      iconHorzFlip = weapDef->flipKillIcon != false;
+      if (weapDef->killIconRatio != WEAPON_ICON_RATIO_1TO1) {
+        if (weapDef->killIconRatio == WEAPON_ICON_RATIO_2TO1) {
+          iconWidth = fVar3 * 2.0;
         }
         else {
-          if (local_10->killIconRatio != WEAPON_ICON_RATIO_4TO1) {
-            BG_WeaponName(local_94);
+          if (weapDef->killIconRatio != WEAPON_ICON_RATIO_4TO1) {
+            BG_WeaponName(weaponNum);
             va("killIconRatio %d, weapon %s");
-            bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x80,0
+            bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x80,0
                                      ,"%s\n\t%s");
-            if (!bVar6) {
-              pcVar3 = (code *)swi(3);
-              (*pcVar3)();
+            if (!bVar5) {
+              pcVar2 = (code *)swi(3);
+              (*pcVar2)();
               return;
             }
           }
-          local_90 = local_84 * 2.0;
-          local_84 = local_84 * 0.5;
+          iconWidth = fVar3 * 2.0;
+          iconHeight = fVar3 * 0.5;
         }
       }
     }
   }
-  switch(uVar2) {
+  switch(mod) {
   case 7:
-    local_8 = Material_RegisterHandle("hud_obit_knife",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_knife",7);
+    iconWidth = baseIconSize;
     break;
   case 9:
-    local_8 = Material_RegisterHandle("killiconheadshot",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("killiconheadshot",7);
+    iconWidth = baseIconSize;
     break;
   case 10:
-    local_8 = Material_RegisterHandle("hud_obit_death_crush",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_death_crush",7);
+    iconWidth = baseIconSize;
     break;
   case 0xc:
-    local_8 = Material_RegisterHandle("hud_obit_death_falling",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_death_falling",7);
+    iconWidth = baseIconSize;
     break;
   case 0xd:
-    local_8 = Material_RegisterHandle("hud_obit_death_suicide",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_death_suicide",7);
+    iconWidth = baseIconSize;
     break;
   case 0xe:
-    local_8 = Material_RegisterHandle("hud_obit_death_suicide",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_death_suicide",7);
+    iconWidth = baseIconSize;
     break;
   case 0x10:
-    local_8 = Material_RegisterHandle("hud_obit_death_grenade_round",7);
-    local_90 = local_20;
+    iconShader = Material_RegisterHandle("hud_obit_death_grenade_round",7);
+    iconWidth = baseIconSize;
   }
-  if (((int)uVar5 < 0) || ((com_maxclients->current).integer <= (int)uVar5)) {
+  if (((int)index < 0) || ((com_maxclients->current).integer <= (int)index)) {
     Com_Error(ERR_DROP,"\x15CG_Obituary: target out of range");
   }
   else {
-    if ((0x1f < uVar5) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xbd,0,
-                                 "target doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar6))
+    if ((0x1f < index) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xbd,0,
+                                 "target doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar5))
     {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_28 = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + uVar5 * 0x5c8);
-    if (local_28->infoValid == 0) {
+    victimCI = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + index * 0x5c8);
+    if (victimCI->infoValid == 0) {
       return;
     }
-    CL_GetClientName(param_1,uVar5,local_80,0x26,true);
-    local_15 = CG_DrawScoreboard_GetTeamColorIndex(local_28->oldteam,param_1);
+    CL_GetClientName(localClientNum,index,targetName,0x26,true);
+    victimColor = CG_DrawScoreboard_GetTeamColorIndex(victimCI->oldteam,localClientNum);
     if ((0x1f < (uint)pcVar4->clientNum) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xc5,0,
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xc5,0,
                                  "cgameGlob->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
-                                ), !bVar6)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+                                ), !bVar5)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_14 = (int *)((int)(pcVar4->bgs).clientinfo + pcVar4->clientNum * 0x5c8);
-    if (*local_14 == 0) {
+    playerCI = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + pcVar4->clientNum * 0x5c8);
+    if (playerCI->infoValid == 0) {
       return;
     }
   }
-  if (((int)local_9c < 0) || ((com_maxclients->current).integer <= (int)local_9c)) {
-    local_9c = 0x3fe;
-    local_2c = (clientInfo_t *)0x0;
-    local_58[0] = '\0';
-    local_21 = '7';
+  if ((attacker < 0) || ((com_maxclients->current).integer <= attacker)) {
+    attacker = 0x3fe;
+    attackerCI = (clientInfo_t *)0x0;
+    attackerName[0] = '\0';
+    attackerColor = '7';
   }
   else {
-    if ((0x1f < local_9c) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xd7,0,
-                                 "attacker doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar6
+    if ((0x1f < (uint)attacker) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0xd7,0,
+                                 "attacker doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar5
        )) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_2c = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + local_9c * 0x5c8);
-    if (local_2c->infoValid == 0) {
+    attackerCI = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + attacker * 0x5c8);
+    if (attackerCI->infoValid == 0) {
       return;
     }
-    CL_GetClientName(param_1,local_9c,local_58,0x26,true);
-    local_21 = CG_DrawScoreboard_GetTeamColorIndex(local_2c->oldteam,param_1);
+    CL_GetClientName(localClientNum,attacker,attackerName,0x26,true);
+    attackerColor = CG_DrawScoreboard_GetTeamColorIndex(attackerCI->oldteam,localClientNum);
   }
-  local_c = &pcVar4->nextSnap->ps;
-  if (local_9c == uVar5) {
-    local_58[0] = '\0';
+  ps = &pcVar4->nextSnap->ps;
+  if (attacker == index) {
+    attackerName[0] = '\0';
   }
   else {
-    if (local_10 != (WeaponDef *)0x0) {
+    if (weapDef != (WeaponDef *)0x0) {
       local_ac = (byte *)0xc6fe48;
-      local_b0 = (byte *)BG_WeaponName(local_94);
+      local_b0 = (byte *)BG_WeaponName(weaponNum);
       do {
         bVar1 = *local_b0;
-        bVar6 = bVar1 < *local_ac;
+        bVar5 = bVar1 < *local_ac;
         if (bVar1 != *local_ac) {
 LAB_004b740d:
-          local_b8 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
+          local_b8 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
           goto LAB_004b7418;
         }
         if (bVar1 == 0) break;
         bVar1 = local_b0[1];
-        bVar6 = bVar1 < local_ac[1];
+        bVar5 = bVar1 < local_ac[1];
         if (bVar1 != local_ac[1]) goto LAB_004b740d;
         local_b0 = local_b0 + 2;
         local_ac = local_ac + 2;
@@ -195,33 +199,34 @@ LAB_004b740d:
       local_b8 = 0;
 LAB_004b7418:
       if (local_b8 == 0) {
-        if (local_9c == local_c->clientNum) {
+        if (attacker == (uint)ps->clientNum) {
           if (pcVar4->inKillCam == 0) {
-            local_1c = va("CGAME_YOUREVIVED\x15%s");
-            CG_PriorityCenterPrint(param_1,local_1c,0);
+            s = va("CGAME_YOUREVIVED\x15%s");
+            CG_PriorityCenterPrint(localClientNum,s,0);
           }
         }
-        else if ((uVar5 == local_c->clientNum) && (local_2c != (clientInfo_t *)0x0)) {
-          local_1c = va("CGAME_YOUWEREREVIVED\x15%s");
-          CG_PriorityCenterPrint(param_1,local_1c,0);
+        else if ((index == ps->clientNum) && (attackerCI != (clientInfo_t *)0x0)) {
+          s = va("CGAME_YOUWEREREVIVED\x15%s");
+          CG_PriorityCenterPrint(localClientNum,s,0);
         }
         goto LAB_004b7530;
       }
     }
-    if (local_9c == local_c->clientNum) {
+    if (attacker == (uint)ps->clientNum) {
       if (pcVar4->inKillCam == 0) {
-        CG_DisplayPlayerCard(param_1,local_2c,local_28,false);
+        CG_DisplayPlayerCard(localClientNum,attackerCI,victimCI,false);
       }
     }
-    else if (((uVar5 == local_c->clientNum) && (local_2c != (clientInfo_t *)0x0)) &&
+    else if (((index == ps->clientNum) && (attackerCI != (clientInfo_t *)0x0)) &&
             (pcVar4->inKillCam == 0)) {
-      CG_DisplayPlayerCard(param_1,local_2c,local_28,true);
+      CG_DisplayPlayerCard(localClientNum,attackerCI,victimCI,true);
     }
   }
 LAB_004b7530:
   if (pcVar4->inKillCam == 0) {
     CL_DeathMessagePrint
-              (param_1,local_58,local_21,local_80,local_15,local_8,local_90,local_84,local_95);
+              (localClientNum,attackerName,attackerColor,targetName,victimColor,iconShader,iconWidth
+               ,iconHeight,iconHorzFlip);
   }
   return;
 }
@@ -308,36 +313,40 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ObituaryRevive(int param_1,entityState_s *param_2)
+void __cdecl CG_ObituaryRevive(int localClientNum,entityState_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   int iVar4;
-  char local_44 [40];
+  bool iconHorzFlip;
+  float iconWidth;
+  cg_s *cgameGlob;
+  float iconHeight;
+  char textBuffer [40];
   uint local_1c;
-  char *local_18;
-  undefined4 local_14;
-  char *local_10;
-  uint local_c;
-  Material *local_8;
+  char *gamerTag;
+  float baseIconSize;
+  char *s;
+  int clientNum;
+  Material *iconShader;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = 0x3fb33333;
-  local_10 = (char *)0x0;
-  local_18 = (char *)0x0;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_c = (uint)param_2->eventParms[0];
-  if (local_c == 0xffffffff) {
-    local_c = pcVar3->clientNum;
+  baseIconSize = 1.4;
+  s = (char *)0x0;
+  gamerTag = (char *)0x0;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  clientNum = (int)ent->eventParms[0];
+  if (clientNum == 0xffffffff) {
+    clientNum = pcVar3->clientNum;
   }
-  iVar4 = CL_GetClientName(param_1,local_c,local_44,0x26,true);
+  iVar4 = CL_GetClientName(localClientNum,clientNum,textBuffer,0x26,true);
   if (iVar4 == 0) {
     Com_PrintError(0xe,"Unable to get name for client num: %i\n");
   }
   else {
-    local_18 = local_44;
+    gamerTag = textBuffer;
     if (cg_gameMessageWidth == (dvar_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x14c,0,"%s"
                               );
@@ -348,10 +357,10 @@ void __cdecl CG_ObituaryRevive(int param_1,entityState_s *param_2)
       }
     }
     UI_SafeTranslateString("CGAME_NEEDS_REVIVE");
-    local_10 = va("%s %s");
-    local_8 = Material_RegisterHandle("hud_icon_syrette",7);
+    s = va("%s %s");
+    iconShader = Material_RegisterHandle("hud_icon_syrette",7);
     if (pcVar3->inKillCam == 0) {
-      CL_ReviveMessagePrint(param_1,local_10,local_8,1.4,1.4,false);
+      CL_ReviveMessagePrint(localClientNum,s,iconShader,1.4,1.4,false);
     }
   }
   return;
@@ -365,7 +374,7 @@ void __cdecl CG_ObituaryRevive(int param_1,entityState_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DirectionalHitIndicator(int param_1,entityState_s *param_2)
+void __cdecl CG_DirectionalHitIndicator(int localClientNum,entityState_s *ent)
 
 {
   float *pfVar1;
@@ -378,28 +387,31 @@ void __cdecl CG_DirectionalHitIndicator(int param_1,entityState_s *param_2)
   uint extraout_EAX_00;
   int extraout_EDX;
   int extraout_EDX_00;
-  int local_28;
-  uint local_24;
+  int i;
+  uint fullVictimEntBitArray;
   int local_20;
-  int local_14;
-  int local_c;
+  uint victimEntBitArray1;
+  cg_s *cgameGlob;
+  int slot;
+  centity_s *cent;
+  int victimEntNum;
+  uint victimEntBitArray0;
   
-  uVar2 = param_2->eventParms[0];
+  uVar2 = ent->eventParms[0];
   _allshl();
-  local_24 = uVar2 + extraout_EAX;
+  fullVictimEntBitArray = uVar2 + extraout_EAX;
   local_20 = extraout_EDX + (uint)CARRY4((uint)uVar2,extraout_EAX);
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  local_c = 0;
-  while ((local_c < 0x20 && ((local_20 != 0 || (local_24 != 0))))) {
-    if ((local_24 & 1) != 0) {
-      local_14 = 0;
-      for (local_28 = 0; local_28 < 4; local_28 = local_28 + 1) {
-        if (pcVar5->directionalHitIndicator[local_28].time <
-            pcVar5->directionalHitIndicator[local_14].time) {
-          local_14 = local_28;
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  victimEntNum = 0;
+  while ((victimEntNum < 0x20 && ((local_20 != 0 || (fullVictimEntBitArray != 0))))) {
+    if ((fullVictimEntBitArray & 1) != 0) {
+      slot = 0;
+      for (i = 0; i < 4; i = i + 1) {
+        if (pcVar5->directionalHitIndicator[i].time < pcVar5->directionalHitIndicator[slot].time) {
+          slot = i;
         }
       }
-      pcVar6 = CG_GetEntity(param_1,local_c);
+      pcVar6 = CG_GetEntity(localClientNum,victimEntNum);
       if (pcVar6 == (centity_s *)0x0) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x174,0,
                                  "%s");
@@ -410,17 +422,17 @@ void __cdecl CG_DirectionalHitIndicator(int param_1,entityState_s *param_2)
         }
       }
       if (pcVar6 != (centity_s *)0x0) {
-        pcVar5->directionalHitIndicator[local_14].time = pcVar5->snap->serverTime;
-        pfVar1 = pcVar5->directionalHitIndicator[local_14].entOrigin;
+        pcVar5->directionalHitIndicator[slot].time = pcVar5->snap->serverTime;
+        pfVar1 = pcVar5->directionalHitIndicator[slot].entOrigin;
         *pfVar1 = (pcVar6->pose).origin[0];
         pfVar1[1] = (pcVar6->pose).origin[1];
         pfVar1[2] = (pcVar6->pose).origin[2];
-        pcVar5->directionalHitIndicator[local_14].entOrigin[2] = 0.0;
+        pcVar5->directionalHitIndicator[slot].entOrigin[2] = 0.0;
       }
     }
     _aullshr();
-    local_c = local_c + 1;
-    local_24 = extraout_EAX_00;
+    victimEntNum = victimEntNum + 1;
+    fullVictimEntBitArray = extraout_EAX_00;
     local_20 = extraout_EDX_00;
   }
   return;
@@ -434,23 +446,25 @@ void __cdecl CG_DirectionalHitIndicator(int param_1,entityState_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ItemPickup(int param_1,int param_2)
+void __cdecl CG_ItemPickup(int localClientNum,int weapIndex)
 
 {
   WeaponDef *pWVar1;
   cg_s *pcVar2;
+  cg_s *cgameGlob;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef(param_2);
+  pWVar1 = BG_GetWeaponDef(weapIndex);
   if (pWVar1->weapClass != WEAPCLASS_ITEM) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
     if (pWVar1->offhandClass == OFFHAND_CLASS_NONE) {
       if (pcVar2->weaponSelect == 0) {
-        CG_SelectWeaponIndex(param_1,param_2);
+        CG_SelectWeaponIndex(localClientNum,weapIndex);
       }
     }
     else if ((pcVar2->equippedOffHand == 0) ||
             ((pcVar2->predictedPlayerState).offhandPrimary == PLAYER_OFFHAND_PRIMARY_GEAR)) {
-      CG_SetEquippedOffHand(param_1,param_2);
+      CG_SetEquippedOffHand(localClientNum,weapIndex);
     }
   }
   return;
@@ -484,13 +498,14 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetWetness(int param_1,int param_2,float param_3,int param_4)
+void __cdecl CG_SetWetness(int localClientNum,int entNum,float wetness,int invert)
 
 {
   centity_s *pcVar1;
+  centity_s *ent;
   
-  pcVar1 = CG_GetEntity(param_1,param_2);
-  if ((pcVar1 != (centity_s *)0x0) && ((pcVar1->pose).wetness = param_3, param_4 != 0)) {
+  pcVar1 = CG_GetEntity(localClientNum,entNum);
+  if ((pcVar1 != (centity_s *)0x0) && ((pcVar1->pose).wetness = wetness, invert != 0)) {
     (pcVar1->pose).wetness = -(pcVar1->pose).wetness;
   }
   return;
@@ -505,81 +520,83 @@ void __cdecl CG_SetWetness(int param_1,int param_2,float param_3,int param_4)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,float param_5,int param_6)
+CG_ExplosionEvent(int localClientNum,float *origin,float damageInner,float damageOuter,float radius,
+                 int mod)
 
 {
   ushort uVar1;
   float fVar2;
   float fVar3;
-  float local_1c8;
+  float force;
   float local_1c4;
   float local_1c0;
-  int local_1bc;
-  int local_1b8;
-  int local_1b4 [100];
-  float local_24;
+  int i_2;
+  int i;
+  int entitylist [100];
+  float mins;
   float local_20;
   float local_1c;
-  centity_s *local_18;
-  int local_14;
-  float local_10;
+  centity_s *cent;
+  int numEnts;
+  float maxs;
   float local_c;
   float local_8;
   
-  local_24 = *param_2 - param_5;
-  local_20 = param_2[1] - param_5;
-  local_1c = param_2[2] - param_5;
-  local_10 = *param_2 + param_5;
-  local_c = param_2[1] + param_5;
-  local_8 = param_2[2] + param_5;
-  for (local_1b8 = 0; local_1b8 < 0x20; local_1b8 = local_1b8 + 1) {
-    local_18 = CG_GetEntity(param_1,local_1b8);
-    if (local_18->nextValid != 0) {
-      uVar1 = CScr_GetMeansOfDeathConstString(param_6);
+  mins = *origin - radius;
+  local_20 = origin[1] - radius;
+  local_1c = origin[2] - radius;
+  maxs = *origin + radius;
+  local_c = origin[1] + radius;
+  local_8 = origin[2] + radius;
+  for (i = 0; i < 0x20; i = i + 1) {
+    cent = CG_GetEntity(localClientNum,i);
+    if (cent->nextValid != 0) {
+      uVar1 = CScr_GetMeansOfDeathConstString(mod);
       Scr_AddConstString((uint)uVar1,SCRIPTINSTANCE_CLIENT);
-      Scr_AddVector(param_2,SCRIPTINSTANCE_CLIENT);
-      Scr_AddInt(param_1,SCRIPTINSTANCE_CLIENT);
-      CScr_Notify(param_1,local_18,cscr_const.explode,3);
+      Scr_AddVector(origin,SCRIPTINSTANCE_CLIENT);
+      Scr_AddInt(localClientNum,SCRIPTINSTANCE_CLIENT);
+      CScr_Notify(localClientNum,cent,cscr_const.explode,3);
     }
   }
-  local_14 = CG_AreaEntities(&local_24,&local_10,local_1b4,100,-1);
-  for (local_1bc = 0; local_1bc < local_14; local_1bc = local_1bc + 1) {
-    local_18 = CG_GetEntity(param_1,local_1b4[local_1bc]);
-    if (local_18->destructible == (Destructible *)0x0) {
-      if ((local_18->pose).physObjId != 0) {
+  numEnts = CG_AreaEntities(&mins,&maxs,entitylist,100,-1);
+  for (i_2 = 0; i_2 < numEnts; i_2 = i_2 + 1) {
+    cent = CG_GetEntity(localClientNum,entitylist[i_2]);
+    if (cent->destructible == (Destructible *)0x0) {
+      if ((cent->pose).physObjId != 0) {
         fVar2 = flrand(-1.0,1.0);
         fVar3 = flrand(-1.0,1.0);
         local_1c0 = flrand(-1.0,1.0);
-        local_1c8 = fVar2;
+        force = fVar2;
         local_1c4 = fVar3;
-        Vec3Normalize(&local_1c8);
+        Vec3Normalize(&force);
         fVar2 = scale * (dynEnt_explodeForce->current).value;
-        local_1c8 = fVar2 * local_1c8;
+        force = fVar2 * force;
         local_1c4 = fVar2 * local_1c4;
         local_1c0 = fVar2 * local_1c0;
-        Phys_ObjAddForce((local_18->pose).physObjId,param_2,&local_1c8,false);
+        Phys_ObjAddForce((cent->pose).physObjId,origin,&force,false);
       }
     }
     else {
-      CG_DestructibleRadiusDamage(local_18,param_2,param_3,param_4,param_5,param_6,1);
+      CG_DestructibleRadiusDamage(cent,origin,damageInner,damageOuter,radius,mod,1);
     }
   }
-  GlassCl_ExplosionEvent(param_1,param_2,param_3,param_4,param_5,param_6);
+  GlassCl_ExplosionEvent(localClientNum,origin,damageInner,damageOuter,radius,mod);
   return;
 }
 
 
 // 004B1820  CG_GetBoneIndex  (cgame/cg_event.cpp:513)
 
-int __cdecl CG_GetBoneIndex(int param_1,int param_2,uint param_3,uchar *param_4)
+int __cdecl CG_GetBoneIndex(int localClientNum,int dobjHandle,uint boneName,uchar *boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  DObj *pDVar4;
+  DObj *obj_00;
+  DObj *obj;
   
-  if (0x600 < (uint)param_2) {
+  if (0x600 < (uint)dobjHandle) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x204,0,
                              "dobjHandle doesn\'t index CLIENT_DOBJ_HANDLE_MAX\n\t%i not in [0, %i)"
                             );
@@ -589,12 +606,12 @@ int __cdecl CG_GetBoneIndex(int param_1,int param_2,uint param_3,uchar *param_4)
       return iVar3;
     }
   }
-  pDVar4 = Com_GetClientDObj(param_2,param_1);
-  if (pDVar4 == (DObj *)0x0) {
+  obj_00 = Com_GetClientDObj(dobjHandle,localClientNum);
+  if (obj_00 == (DObj *)0x0) {
     iVar3 = 0;
   }
   else {
-    iVar3 = DObjGetBoneIndex(pDVar4,param_3,param_4,-1);
+    iVar3 = DObjGetBoneIndex(obj_00,boneName,boneIndex,-1);
   }
   return iVar3;
 }
@@ -607,25 +624,26 @@ int __cdecl CG_GetBoneIndex(int param_1,int param_2,uint param_3,uchar *param_4)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl CG_PlayBoltedEffect(int param_1,FxEffectDef *param_2,int param_3,uint param_4)
+uint __cdecl CG_PlayBoltedEffect(int localClientNum,FxEffectDef *fxDef,int dobjHandle,uint boneName)
 
 {
   int iVar1;
   cg_s *pcVar2;
   uint uVar3;
-  byte local_9;
-  int local_8;
+  uchar boneIndex;
+  int time;
   
-  local_9 = 0xfe;
-  if ((param_4 != 0) && (iVar1 = CG_GetBoneIndex(param_1,param_3,param_4,&local_9), iVar1 != 0)) {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
-    local_8 = pcVar2->time;
-    uVar3 = FX_PlayBoltedEffect(param_1,param_2,local_8,param_3,(uint)local_9);
+  boneIndex = 0xfe;
+  if ((boneName != 0) &&
+     (iVar1 = CG_GetBoneIndex(localClientNum,dobjHandle,boneName,&boneIndex), iVar1 != 0)) {
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+    time = pcVar2->time;
+    uVar3 = FX_PlayBoltedEffect(localClientNum,fxDef,time,dobjHandle,(uint)boneIndex);
     return uVar3;
   }
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  local_8 = pcVar2->time;
-  uVar3 = FX_PlayBoltedEffect(param_1,param_2,local_8,param_3,0x1ff);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  time = pcVar2->time;
+  uVar3 = FX_PlayBoltedEffect(localClientNum,fxDef,time,dobjHandle,0x1ff);
   return uVar3;
 }
 
@@ -637,37 +655,39 @@ uint __cdecl CG_PlayBoltedEffect(int param_1,FxEffectDef *param_2,int param_3,ui
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PlayFx(int param_1,centity_s *param_2,float *param_3)
+void __cdecl CG_PlayFx(int localClientNum,centity_s *cent,float *angles)
 
 {
-  FxEffectDef *pFVar1;
-  code *pcVar2;
-  bool bVar3;
-  cgs_t *pcVar4;
-  cg_s *pcVar5;
-  uint uVar6;
-  float local_28 [9];
+  FxEffectDef *def;
+  code *pcVar1;
+  bool bVar2;
+  cgs_t *pcVar3;
+  cg_s *pcVar4;
+  uint uVar5;
+  FxEffectDef *fxDef;
+  cgs_t *cgs;
+  int fxId;
+  float axis [9];
   
-  uVar6 = (uint)(param_2->nextState).eventParm;
-  if ((uVar6 == 0) || (0xc3 < uVar6)) {
+  uVar5 = (uint)(cent->nextState).eventParm;
+  if ((uVar5 == 0) || (0xc3 < uVar5)) {
     Com_PrintError(0x15,"ERROR: CG_PlayFx called with invalid effect id %i\n");
   }
   else {
-    pcVar4 = CG_GetLocalClientStaticGlobals(param_1);
-    pFVar1 = pcVar4->fxs[uVar6];
-    if (pFVar1 == (FxEffectDef *)0x0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x23e,0,"%s"
+    pcVar3 = CG_GetLocalClientStaticGlobals(localClientNum);
+    def = pcVar3->fxs[uVar5];
+    if (def == (FxEffectDef *)0x0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x23e,0,"%s"
                               );
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    AnglesToAxis(param_3,(float (*) [3])local_28);
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
-    FX_PlayOrientedEffect
-              (param_1,pFVar1,pcVar5->time,(param_2->pose).origin,(float (*) [3])local_28);
+    AnglesToAxis(angles,(float (*) [3])axis);
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    FX_PlayOrientedEffect(localClientNum,def,pcVar4->time,(cent->pose).origin,(float (*) [3])axis);
   }
   return;
 }
@@ -680,7 +700,7 @@ void __cdecl CG_PlayFx(int param_1,centity_s *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PlayFxOnTag(int param_1,centity_s *param_2,int param_3)
+void __cdecl CG_PlayFxOnTag(int localClientNum,centity_s *cent,int eventParm)
 
 {
   code *pcVar1;
@@ -688,30 +708,30 @@ void __cdecl CG_PlayFxOnTag(int param_1,centity_s *param_2,int param_3)
   int iVar3;
   uint uVar4;
   scriptInstance_t sVar5;
-  ushort local_20 [2];
-  int local_1c;
-  char *local_18;
-  FxEffectDef *local_14;
-  cgs_t *local_10;
-  int local_c;
-  int local_8;
+  ushort tagName;
+  int dobjHandle;
+  char *tagAndEffect;
+  FxEffectDef *fxDef;
+  cgs_t *cgs;
+  int fxId;
+  int csIndex;
   
-  local_8 = param_3 + 0x8e4;
-  local_18 = CL_GetConfigString(local_8);
+  csIndex = eventParm + 0x8e4;
+  tagAndEffect = CL_GetConfigString(csIndex);
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
-    iVar3 = I_strcmp(local_18,"");
+    iVar3 = I_strcmp(tagAndEffect,"");
     if (iVar3 != 0) {
-      iVar3 = I_strcmp(local_18 + 1,"");
+      iVar3 = I_strcmp(tagAndEffect + 1,"");
       if (iVar3 != 0) goto LAB_004b19a1;
     }
     Com_PrintWarning(0xe,"Didnt play fx for configStringIndex %d. Since the tag wasnt found.\n");
   }
   else {
 LAB_004b19a1:
-    if (*local_18 == '\0') {
+    if (*tagAndEffect == '\0') {
       sVar5 = SCRIPTINSTANCE_SERVER;
-      uVar4 = SV_GetConfigstringConst(local_8);
+      uVar4 = SV_GetConfigstringConst(csIndex);
       SL_ConvertToString(uVar4,sVar5);
       va("tagAndEffect: \'%s\', server: \'%s\'");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x25f,0,
@@ -722,9 +742,9 @@ LAB_004b19a1:
         return;
       }
     }
-    if (local_18[1] == '\0') {
+    if (tagAndEffect[1] == '\0') {
       sVar5 = SCRIPTINSTANCE_SERVER;
-      uVar4 = SV_GetConfigstringConst(local_8);
+      uVar4 = SV_GetConfigstringConst(csIndex);
       SL_ConvertToString(uVar4,sVar5);
       va("tagAndEffect: \'%s\', server: \'%s\'");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x260,0,
@@ -735,13 +755,14 @@ LAB_004b19a1:
         return;
       }
     }
-    local_c = (*local_18 + -0x30) * 100 + (local_18[1] + -0x30) * 10 + -0x30 + (int)local_18[2];
+    fxId = (*tagAndEffect + -0x30) * 100 + (tagAndEffect[1] + -0x30) * 10 + -0x30 +
+           (int)tagAndEffect[2];
     bVar2 = Demo_IsPlaying();
-    if ((bVar2) && ((local_c < 1 || (0xc4 < local_c)))) {
+    if ((bVar2) && ((fxId < 1 || (0xc4 < fxId)))) {
       Com_PrintWarning(0xe,"FX id went beyond limit. TagAndEffect is %s\n");
     }
     else {
-      if ((local_c < 1) || (0xc3 < local_c)) {
+      if ((fxId < 1) || (0xc3 < fxId)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x269,0,
                                  "%s");
         if (!bVar2) {
@@ -750,9 +771,9 @@ LAB_004b19a1:
           return;
         }
       }
-      local_10 = CG_GetLocalClientStaticGlobals(param_1);
-      local_14 = local_10->fxs[local_c];
-      if (local_14 == (FxEffectDef *)0x0) {
+      cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+      fxDef = cgs->fxs[fxId];
+      if (fxDef == (FxEffectDef *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x26e,0,
                                  "%s");
         if (!bVar2) {
@@ -761,11 +782,11 @@ LAB_004b19a1:
           return;
         }
       }
-      local_1c = (param_2->nextState).number;
-      uVar4 = SL_GetString(local_18 + 3,0,SCRIPTINSTANCE_SERVER);
-      local_20[0] = (ushort)uVar4;
-      CG_PlayBoltedEffect(param_1,local_14,local_1c,uVar4 & 0xffff);
-      Scr_SetString(local_20,0,SCRIPTINSTANCE_SERVER);
+      dobjHandle = (cent->nextState).number;
+      uVar4 = SL_GetString(tagAndEffect + 3,0,SCRIPTINSTANCE_SERVER);
+      tagName = (ushort)uVar4;
+      CG_PlayBoltedEffect(localClientNum,fxDef,dobjHandle,uVar4 & 0xffff);
+      Scr_SetString(&tagName,0,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -779,12 +800,12 @@ LAB_004b19a1:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetInvalidCmdHint(cg_s *param_1,InvalidCmdHintType_conflict param_2)
+void __cdecl CG_SetInvalidCmdHint(cg_s *cgameGlob,InvalidCmdHintType_conflict hintType)
 
 {
-  if (param_1->invalidCmdHintType != param_2) {
-    param_1->invalidCmdHintType = param_2;
-    param_1->invalidCmdHintTime = param_1->time;
+  if (cgameGlob->invalidCmdHintType != hintType) {
+    cgameGlob->invalidCmdHintType = hintType;
+    cgameGlob->invalidCmdHintTime = cgameGlob->time;
   }
   return;
 }
@@ -797,22 +818,22 @@ void __cdecl CG_SetInvalidCmdHint(cg_s *param_1,InvalidCmdHintType_conflict para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetInvalidStanceHint(cg_s *param_1,invalid_cmd_hint_t_conflict param_2)
+void __cdecl CG_SetInvalidStanceHint(cg_s *cgameGlob,invalid_cmd_hint_t_conflict type)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == INVALID_CMD_STAND_HINT) {
-    CG_SetInvalidCmdHint(param_1,INVALID_CMD_STAND_BLOCKED);
+  if (type == INVALID_CMD_STAND_HINT) {
+    CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_STAND_BLOCKED);
   }
-  else if (param_2 == INVALID_CMD_CROUCH_HINT) {
-    CG_SetInvalidCmdHint(param_1,INVALID_CMD_CROUCH_BLOCKED);
+  else if (type == INVALID_CMD_CROUCH_HINT) {
+    CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_CROUCH_BLOCKED);
   }
-  else if (param_2 == INVALID_CMD_PRONE_HINT) {
-    CG_SetInvalidCmdHint(param_1,INVALID_CMD_PRONE_BLOCKED);
+  else if (type == INVALID_CMD_PRONE_HINT) {
+    CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_PRONE_BLOCKED);
   }
-  else if (param_2 != INVALID_CMD_NO_HINT) {
+  else if (type != INVALID_CMD_NO_HINT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x2c6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -827,7 +848,8 @@ void __cdecl CG_SetInvalidStanceHint(cg_s *param_1,invalid_cmd_hint_t_conflict p
 // 004B7AE0  CG_StopWeaponSound  (cgame/cg_event.cpp:714)
 
 void __cdecl
-CG_StopWeaponSound(int param_1,bool param_2,WeaponDef *param_3,int param_4,weaponstate_t param_5)
+CG_StopWeaponSound(int localClientNum,bool isPlayerView,WeaponDef *weaponDef,int entitynum,
+                  weaponstate_t weaponstate)
 
 {
   uint uVar1;
@@ -835,50 +857,50 @@ CG_StopWeaponSound(int param_1,bool param_2,WeaponDef *param_3,int param_4,weapo
   char *local_10;
   char *local_c;
   
-  switch(_param_5) {
+  switch(_weaponstate) {
   case 10:
   case 0xb:
-    if (param_2) {
-      if (param_3->reloadEmptySoundPlayer != (char *)0x0) {
-        uVar1 = SND_FindAliasId(param_3->reloadEmptySoundPlayer);
-        CG_StopSoundAlias(param_1,param_4,uVar1);
+    if (isPlayerView) {
+      if (weaponDef->reloadEmptySoundPlayer != (char *)0x0) {
+        uVar1 = SND_FindAliasId(weaponDef->reloadEmptySoundPlayer);
+        CG_StopSoundAlias(localClientNum,entitynum,uVar1);
       }
-      if (param_3->reloadSoundPlayer != (char *)0x0) {
-        uVar1 = SND_FindAliasId(param_3->reloadSoundPlayer);
-        CG_StopSoundAlias(param_1,param_4,uVar1);
+      if (weaponDef->reloadSoundPlayer != (char *)0x0) {
+        uVar1 = SND_FindAliasId(weaponDef->reloadSoundPlayer);
+        CG_StopSoundAlias(localClientNum,entitynum,uVar1);
       }
     }
     else {
-      if (param_3->reloadEmptySound != (char *)0x0) {
-        uVar1 = SND_FindAliasId(param_3->reloadEmptySound);
-        CG_StopSoundAlias(param_1,param_4,uVar1);
+      if (weaponDef->reloadEmptySound != (char *)0x0) {
+        uVar1 = SND_FindAliasId(weaponDef->reloadEmptySound);
+        CG_StopSoundAlias(localClientNum,entitynum,uVar1);
       }
-      if (param_3->reloadSound != (char *)0x0) {
-        uVar1 = SND_FindAliasId(param_3->reloadSound);
-        CG_StopSoundAlias(param_1,param_4,uVar1);
+      if (weaponDef->reloadSound != (char *)0x0) {
+        uVar1 = SND_FindAliasId(weaponDef->reloadSound);
+        CG_StopSoundAlias(localClientNum,entitynum,uVar1);
       }
     }
     break;
   case 0xc:
   case 0xd:
-    if (param_2) {
-      local_c = param_3->reloadStartSoundPlayer;
+    if (isPlayerView) {
+      local_c = weaponDef->reloadStartSoundPlayer;
     }
     else {
-      local_c = param_3->reloadStartSound;
+      local_c = weaponDef->reloadStartSound;
     }
     uVar1 = SND_FindAliasId(local_c);
-    CG_StopSoundAlias(param_1,param_4,uVar1);
+    CG_StopSoundAlias(localClientNum,entitynum,uVar1);
     break;
   case 0xe:
-    if (param_2) {
-      local_10 = param_3->reloadEndSoundPlayer;
+    if (isPlayerView) {
+      local_10 = weaponDef->reloadEndSoundPlayer;
     }
     else {
-      local_10 = param_3->reloadEndSound;
+      local_10 = weaponDef->reloadEndSound;
     }
     uVar1 = SND_FindAliasId(local_10);
-    CG_StopSoundAlias(param_1,param_4,uVar1);
+    CG_StopSoundAlias(localClientNum,entitynum,uVar1);
   }
   return;
 }
@@ -892,19 +914,21 @@ CG_StopWeaponSound(int param_1,bool param_2,WeaponDef *param_3,int param_4,weapo
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DoFootstepEvent(int param_1,centity_s *param_2,bool param_3,int param_4,int param_5,bool param_6,
-                  bool param_7)
+CG_DoFootstepEvent(int localClientNum,centity_s *cent,bool isPlayerView,int event,int surfaceType,
+                  bool quiet,bool do_footprint_effect)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
+  playerState_s *ps;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar1->nextSnap->ps).bobCycle & 0x7fU) < 0x40) {
     if ((cg_footsteps->current).enabled != false) {
-      CScr_PlayerFootstepEvent(param_1,param_2,param_3,param_4,param_5,param_6);
+      CScr_PlayerFootstepEvent(localClientNum,cent,isPlayerView,event,surfaceType,quiet);
     }
-    GamerProfile_WriteSettings(param_1);
-    GamerProfile_WriteSettings(param_1);
+    GamerProfile_WriteSettings(localClientNum);
+    GamerProfile_WriteSettings(localClientNum);
   }
   return;
 }
@@ -917,11 +941,12 @@ CG_DoFootstepEvent(int param_1,centity_s *param_2,bool param_3,int param_4,int p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DoJumpEvent(int param_1,centity_s *param_2,bool param_3,int param_4,bool param_5)
+void __cdecl
+CG_DoJumpEvent(int localClientNum,centity_s *cent,bool isPlayerView,int surfaceType,bool quiet)
 
 {
-  CScr_PlayerJumpEvent(param_1,param_2,param_3,param_4,param_5);
-  GamerProfile_WriteSettings(param_1);
+  CScr_PlayerJumpEvent(localClientNum,cent,isPlayerView,surfaceType,quiet);
+  GamerProfile_WriteSettings(localClientNum);
   return;
 }
 
@@ -934,11 +959,12 @@ void __cdecl CG_DoJumpEvent(int param_1,centity_s *param_2,bool param_3,int para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DoLandEvent(int param_1,centity_s *param_2,bool param_3,int param_4,bool param_5,bool param_6)
+CG_DoLandEvent(int localClientNum,centity_s *cent,bool isPlayerView,int surfaceType,bool quiet,
+              bool damagePlayer)
 
 {
-  CScr_PlayerLandEvent(param_1,param_2,param_3,param_4,param_5,param_6);
-  GamerProfile_WriteSettings(param_1);
+  CScr_PlayerLandEvent(localClientNum,cent,isPlayerView,surfaceType,quiet,damagePlayer);
+  GamerProfile_WriteSettings(localClientNum);
   return;
 }
 
@@ -950,10 +976,10 @@ CG_DoLandEvent(int param_1,centity_s *param_2,bool param_3,int param_4,bool para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DoFoliageEvent(int param_1,centity_s *param_2,bool param_3,bool param_4)
+void __cdecl CG_DoFoliageEvent(int localClientNum,centity_s *cent,bool isPlayerView,bool quiet)
 
 {
-  CScr_PlayerFoliageEvent(param_1,param_2,param_3,param_4);
+  CScr_PlayerFoliageEvent(localClientNum,cent,isPlayerView,quiet);
   return;
 }
 
@@ -967,31 +993,32 @@ void __cdecl CG_DoFoliageEvent(int param_1,centity_s *param_2,bool param_3,bool 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
+void __cdecl CG_EntityEvent(int localClientNum,centity_s *cent,int event)
 
 {
   uint *puVar1;
   char cVar2;
-  FxEffectDef *pFVar3;
-  Material *pMVar4;
-  code *pcVar5;
-  fake_centity_s *pfVar6;
-  bool bVar7;
+  FxEffectDef *fx_00;
+  Material *pMVar3;
+  code *pcVar4;
+  fake_centity_s *pfVar5;
+  bool bVar6;
   uint extraout_EAX;
-  cg_s *pcVar8;
-  uint uVar9;
-  centity_s *pcVar10;
-  WeaponDef *pWVar11;
-  SndEntHandle SVar12;
-  int iVar13;
-  char *pcVar14;
+  cg_s *pcVar7;
+  uint uVar8;
+  centity_s *pcVar9;
+  WeaponDef *pWVar10;
+  SndEntHandle ent;
+  int iVar11;
+  char *pcVar12;
   uint extraout_EDX;
-  float fVar15;
-  DObj *pDVar16;
-  float (*pafVar17) [3];
-  undefined8 uVar18;
-  float *pfVar19;
+  float fVar13;
+  DObj *obj_00;
+  float (*tagMat) [3];
+  undefined8 uVar14;
+  float *origin_00;
   int local_3fc;
   char *local_3f4;
   uint local_3f0;
@@ -1026,251 +1053,262 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
   char *local_350;
   char *local_34c;
   uint local_348;
-  char local_334;
-  float local_194;
+  bool local_334;
+  fake_centity_s *fent_2;
+  fake_centity_s *fent;
+  char *sndName;
+  centity_s *cent_7;
+  int entity_index;
+  FxEffectDef *fxDef;
+  float origin_2;
   float local_190;
   float local_18c;
-  XModel *local_188;
-  float local_184 [4];
-  float local_174;
+  XModel *model;
+  float quat [4];
+  float force;
   float local_170;
   float local_16c;
-  cgs_t *local_168;
-  uint local_164;
-  float local_160;
+  cgs_t *cgs;
+  int fxId;
+  float hitpos;
   float local_15c;
   float local_158;
-  ushort local_154;
-  centity_s *local_150;
-  SndEntHandle local_14c;
-  float local_148;
+  ushort id;
+  centity_s *cent_6;
+  SndEntHandle sndEnt;
+  float origin;
   float local_144;
   float local_140;
-  float local_13c [9];
-  char *local_118;
-  DObj *local_114;
-  float local_110;
+  float orientation [9];
+  char *tagName;
+  DObj *obj;
+  float soundPosition;
   float local_10c;
   float local_108;
-  centity_s *local_104;
-  FxEffectDef *local_100;
-  float local_fc;
-  uint local_f8;
-  FxEffectDef *local_f4;
-  int local_f0;
-  uint local_ec;
-  FxEffectDef *local_e8;
-  float local_e4;
-  uint local_e0;
-  float local_dc;
-  byte local_d5;
-  FxEffectDef *local_d4;
-  char local_cd;
-  PhysObjUserData *local_cc;
-  PhysObjUserData *local_c0;
-  uint local_b0;
-  vehicle_info_t *local_ac;
-  uint local_a8;
-  uint local_a4;
-  centity_s *local_a0;
-  int local_9c;
-  undefined4 local_98;
-  centity_s *local_94;
-  int local_90;
-  WeaponDef *local_8c;
-  WeaponDef *local_88;
-  uint local_84;
-  WeaponDef *local_80;
-  uint local_7c;
-  FxEffectDef *local_78 [2];
-  float local_70 [3];
-  bool local_61;
-  cg_s *local_60;
-  int local_5c;
-  WeaponDef *local_58;
-  uint local_54;
-  bool local_4d;
-  entityState_s *local_4c;
-  invalid_cmd_hint_t_conflict local_48;
-  WeaponDef *local_44;
-  uint local_40;
-  float local_3c [3];
+  centity_s *attachedCorpse;
+  FxEffectDef *expFx;
+  float innerRadius;
+  uint snd_4;
+  FxEffectDef *fx_4;
+  int mod;
+  uint snd_3;
+  FxEffectDef *fx_3;
+  float explosionRadius;
+  uint snd_2;
+  float waterZ;
+  uchar surfType;
+  FxEffectDef *fx_2;
+  bool waterSimEnabled;
+  PhysObjUserData *userData_2;
+  centity_s *cent_5;
+  float buoyancy_scale;
+  PhysObjUserData *userData;
+  centity_s *cent_4;
+  centity_s *cent_3;
+  centity_s *cent_2;
+  int flashIndex;
+  vehicle_info_t *info;
+  int weapon;
+  int gunnerIndex;
+  centity_s *attackerCent_2;
+  entityType_t eType_3;
+  entityType_t eType_2;
+  centity_s *attackerCent;
+  entityType_t eType;
+  WeaponDef *weapDefDW;
+  WeaponDef *itemWeapDef;
+  int index;
+  WeaponDef *WeapDef;
+  uint snd;
+  FxEffectDef *fx;
+  float fallHeight;
+  float dir [3];
+  bool isPlayerView;
+  cg_s *cgameGlob;
+  int viewDip;
+  WeaponDef *weaponDef;
+  int offset;
+  bool quiet;
+  entityState_s *es;
+  int eventParm;
+  WeaponDef *meleeWeaponDef;
+  uint meleeWeapon;
+  float axis [3];
   float local_30 [3];
   float local_24 [3];
-  uint local_18;
-  float *local_14;
-  WeaponVariantDef *local_10;
-  playerState_s *local_c;
-  uint local_8;
+  int clientNum;
+  float *position;
+  WeaponVariantDef *weaponVariantDef;
+  playerState_s *ps;
+  uint weaponIdx;
   
-  if (param_3 == 0) {
+  if (event == 0) {
     if ((cg_debugEvents->current).enabled != false) {
       Com_Printf(0x15,"CG_EntityEvent:ZERO EVENT\n");
     }
   }
   else {
-    local_60 = CG_GetLocalClientGlobals(param_1);
-    local_14 = (param_2->pose).origin;
-    local_c = &local_60->nextSnap->ps;
-    local_4c = &param_2->nextState;
-    local_48 = (invalid_cmd_hint_t_conflict)(param_2->nextState).eventParm;
-    if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-       (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-      local_334 = '\0';
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    position = (cent->pose).origin;
+    ps = &cgameGlob->nextSnap->ps;
+    es = &cent->nextState;
+    eventParm = (int)(cent->nextState).eventParm;
+    if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+       (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+      local_334 = false;
     }
     else {
-      local_334 = '\x01';
+      local_334 = true;
     }
-    local_61 = (bool)local_334;
+    isPlayerView = local_334;
     if ((cg_debugEvents->current).enabled != false) {
       Com_Printf(0x15,"ent:%3i  event:%3i ");
     }
-    if ((param_3 < 1) &&
-       (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x371,0,
-                                 "%s\n\t(event) = %i"), !bVar7)) {
-      pcVar5 = (code *)swi(3);
-      (*pcVar5)();
+    if ((event < 1) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x371,0,
+                                 "%s\n\t(event) = %i"), !bVar6)) {
+      pcVar4 = (code *)swi(3);
+      (*pcVar4)();
       return;
     }
-    if ((0xcd < param_3) &&
-       (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x372,0,
-                                 "%s\n\t(event) = %i"), !bVar7)) {
-      pcVar5 = (code *)swi(3);
-      (*pcVar5)();
+    if ((0xcd < event) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x372,0,
+                                 "%s\n\t(event) = %i"), !bVar6)) {
+      pcVar4 = (code *)swi(3);
+      (*pcVar4)();
       return;
     }
     if ((cg_debugEvents->current).enabled != false) {
       Com_Printf(0x15,"CG_EntityEvent:%s\n");
     }
-    if (local_61 == false) {
-      local_8 = (uint)local_4c->weapon;
-      if ((local_4c->eType != 1) || (bVar7 = BG_IsUseAsMeleeWeapon((uint)local_4c->weapon), bVar7))
-      {
-        local_40 = (uint)local_4c->weapon;
+    if (isPlayerView == false) {
+      weaponIdx = (uint)es->weapon;
+      if ((es->eType != 1) || (bVar6 = BG_IsUseAsMeleeWeapon((uint)es->weapon), bVar6)) {
+        meleeWeapon = (uint)es->weapon;
       }
       else {
-        local_40 = (uint)(local_4c->lerp).u.player.meleeWeapon;
+        meleeWeapon = (uint)(es->lerp).u.player.meleeWeapon;
       }
     }
     else {
-      local_8 = (uint)(local_60->predictedPlayerState).weapon;
-      bVar7 = BG_IsUseAsMeleeWeapon(local_8);
-      if (bVar7) {
-        local_40 = (uint)local_4c->weapon;
+      weaponIdx = (uint)(cgameGlob->predictedPlayerState).weapon;
+      bVar6 = BG_IsUseAsMeleeWeapon(weaponIdx);
+      if (bVar6) {
+        meleeWeapon = (uint)es->weapon;
       }
       else {
-        local_40 = (local_60->predictedPlayerState).meleeWeapon;
+        meleeWeapon = (cgameGlob->predictedPlayerState).meleeWeapon;
       }
     }
-    bVar7 = Demo_IsMovieCamera();
-    if (bVar7) {
-      local_61 = false;
+    bVar6 = Demo_IsMovieCamera();
+    if (bVar6) {
+      isPlayerView = false;
     }
-    local_18 = (uint)local_4c->clientNum;
-    if ((com_maxclients->current).integer <= (int)local_18) {
-      local_18 = 0;
+    clientNum = (int)es->clientNum;
+    if ((com_maxclients->current).integer <= clientNum) {
+      clientNum = 0;
     }
-    local_10 = BG_GetWeaponVariantDef(local_8);
-    local_58 = BG_GetWeaponDef(local_8);
-    local_44 = BG_GetWeaponDef(local_40);
-    local_4d = false;
-    puVar1 = (uint *)((int)(local_60->bgs).clientinfo + local_18 * 0x5c8 + 0x44);
+    weaponVariantDef = BG_GetWeaponVariantDef(weaponIdx);
+    weaponDef = BG_GetWeaponDef(weaponIdx);
+    meleeWeaponDef = BG_GetWeaponDef(meleeWeapon);
+    quiet = false;
+    puVar1 = (uint *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8 + 0x44);
     _allshl();
-    pfVar6 = cg_fakeEntitiesArray;
+    pfVar5 = cg_fakeEntitiesArray;
     if ((extraout_EAX & *puVar1) != 0 || (extraout_EDX & puVar1[1]) != 0) {
-      local_4d = true;
+      quiet = true;
     }
-    local_54 = -(uint)(local_4d != false) & 0x1f;
-    if ((param_3 < 0x6f) || (0x8d < param_3)) {
-      if ((param_3 < 0x8e) || (0xac < param_3)) {
-        switch(param_3) {
+    offset = -(uint)(quiet != false) & 0x1f;
+    if ((event < 0x6f) || (0x8d < event)) {
+      if ((event < 0x8e) || (0xac < event)) {
+        switch(event) {
         case 1:
-          CG_DoFoliageEvent(param_1,param_2,local_61,local_4d);
+          CG_DoFoliageEvent(localClientNum,cent,isPlayerView,quiet);
           break;
         case 2:
-          CG_StopWeaponSound(param_1,local_61,local_58,local_4c->number,(weaponstate_t)local_48);
+          CG_StopWeaponSound(localClientNum,isPlayerView,weaponDef,es->number,
+                             (weaponstate_t)eventParm);
           break;
         case 3:
-          SVar12 = CG_SndEntHandle(param_1,(int)local_4c->otherEntityNum);
-          SND_StopSoundAliasOnEnt(SVar12,local_4c->loopSoundId);
+          ent = CG_SndEntHandle(localClientNum,(int)es->otherEntityNum);
+          SND_StopSoundAliasOnEnt(ent,es->loopSoundId);
           break;
         case 4:
         case 5:
-          if ((((((uint)(local_4c->lerp).pos.trBase[0] & 0x7f800000) == 0x7f800000) ||
-               (((uint)(local_4c->lerp).pos.trBase[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)(local_4c->lerp).pos.trBase[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x77d,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          if ((((((uint)(es->lerp).pos.trBase[0] & 0x7f800000) == 0x7f800000) ||
+               (((uint)(es->lerp).pos.trBase[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)(es->lerp).pos.trBase[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x77d,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          local_110 = (local_4c->lerp).pos.trBase[0];
-          local_10c = (local_4c->lerp).pos.trBase[1];
-          local_108 = (local_4c->lerp).pos.trBase[2];
-          if ((local_4c->un3).item != 0) {
-            local_114 = Com_GetClientDObj((int)local_4c->otherEntityNum,param_1);
-            local_118 = CL_GetConfigString((local_4c->un3).item + 0xc2b);
-            if (local_114 == (DObj *)0x0) {
+          soundPosition = (es->lerp).pos.trBase[0];
+          local_10c = (es->lerp).pos.trBase[1];
+          local_108 = (es->lerp).pos.trBase[2];
+          if ((es->un3).item != 0) {
+            obj = Com_GetClientDObj((int)es->otherEntityNum,localClientNum);
+            tagName = CL_GetConfigString((es->un3).item + 0xc2b);
+            if (obj == (DObj *)0x0) {
               Com_Printf(9,"playsoundontag could not find dobj for ent %d\n");
             }
             else {
-              pfVar19 = &local_148;
-              pafVar17 = (float (*) [3])local_13c;
-              uVar9 = SL_FindString(local_118,SCRIPTINSTANCE_SERVER);
-              pDVar16 = local_114;
-              pcVar10 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-              iVar13 = CG_DObjGetWorldTagMatrix(&pcVar10->pose,pDVar16,uVar9,pafVar17,pfVar19);
-              if (iVar13 == 0) {
+              origin_00 = &origin;
+              tagMat = (float (*) [3])orientation;
+              uVar8 = SL_FindString(tagName,SCRIPTINSTANCE_SERVER);
+              obj_00 = obj;
+              pcVar9 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+              iVar11 = CG_DObjGetWorldTagMatrix(&pcVar9->pose,obj_00,uVar8,tagMat,origin_00);
+              if (iVar11 == 0) {
                 Com_Printf(9,"playsoundontag could not find tag %s on ent %d\n");
               }
               else {
-                local_110 = local_148;
+                soundPosition = origin;
                 local_10c = local_144;
                 local_108 = local_140;
               }
             }
           }
-          CG_PlaySound(param_1,(int)local_4c->otherEntityNum,&local_110,0,param_3 == 5,1.0,
-                       local_4c->loopSoundId);
+          CG_PlaySound(localClientNum,(int)es->otherEntityNum,&soundPosition,0,event == 5,1.0,
+                       es->loopSoundId);
           break;
         case 6:
           CG_PlayBattleChatter
-                    (param_1,local_4c->number,(local_4c->lerp).pos.trBase,local_4c->loopSoundId,
-                     (local_4c->un3).item);
+                    (localClientNum,es->number,(es->lerp).pos.trBase,es->loopSoundId,(es->un3).item)
+          ;
           break;
         case 7:
-          local_14c = CG_SndEntHandle(param_1,local_4c->number);
-          SND_StopSoundsOnEnt(local_14c);
-          CG_SndKillAutoSimEnt(local_14c);
+          sndEnt = CG_SndEntHandle(localClientNum,es->number);
+          SND_StopSoundsOnEnt(sndEnt);
+          CG_SndKillAutoSimEnt(sndEnt);
           break;
         case 8:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            CL_SetStance(param_1,CL_STANCE_STAND);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            CL_SetStance(localClientNum,CL_STANCE_STAND);
           }
           else {
             Com_DPrintf(0x15,"Event %s just for client %i was sent to other clients\n");
           }
           break;
         case 9:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            CL_SetStance(param_1,CL_STANCE_CROUCH);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            CL_SetStance(localClientNum,CL_STANCE_CROUCH);
           }
           else {
             Com_DPrintf(0x15,"Event %s just for client %i was sent to other clients\n");
           }
           break;
         case 10:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            CL_SetStance(param_1,CL_STANCE_PRONE);
-            local_80 = BG_GetWeaponDef((uint)local_c->weapon);
-            if ((local_80->blocksProne != false) && (local_80->bIsCarriedKillstreakWeapon != false))
-            {
-              if (local_60->weaponLatestPrimaryIdx == 0) {
-                CycleWeapPrimary(param_1,1,1);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            CL_SetStance(localClientNum,CL_STANCE_PRONE);
+            WeapDef = BG_GetWeaponDef((uint)ps->weapon);
+            if ((WeapDef->blocksProne != false) && (WeapDef->bIsCarriedKillstreakWeapon != false)) {
+              if (cgameGlob->weaponLatestPrimaryIdx == 0) {
+                CycleWeapPrimary(localClientNum,1,1);
               }
               else {
-                CG_SelectWeaponIndex(param_1,local_60->weaponLatestPrimaryIdx);
+                CG_SelectWeaponIndex(localClientNum,cgameGlob->weaponLatestPrimaryIdx);
               }
             }
           }
@@ -1280,96 +1318,96 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           break;
         case 0xb:
         case 0xc:
-          local_84 = (uint)local_4c->eventParm;
-          if ((local_84 != 0) && (local_84 < 0x800)) {
-            local_88 = BG_GetWeaponDef(local_84);
-            if (param_3 == 0xb) {
-              local_60->recoilAngles[0] = 0.0;
-              local_60->recoilAngles[1] = 0.0;
-              local_60->recoilAngles[2] = 0.0;
-              local_60->recoilSpeed[0] = 0.0;
-              local_60->recoilSpeed[1] = 0.0;
-              local_60->recoilSpeed[2] = 0.0;
-              if (local_61 == false) {
-                local_34c = local_88->pickupSound;
+          index = (int)es->eventParm;
+          if ((index != 0) && ((uint)index < 0x800)) {
+            itemWeapDef = BG_GetWeaponDef(index);
+            if (event == 0xb) {
+              cgameGlob->recoilAngles[0] = 0.0;
+              cgameGlob->recoilAngles[1] = 0.0;
+              cgameGlob->recoilAngles[2] = 0.0;
+              cgameGlob->recoilSpeed[0] = 0.0;
+              cgameGlob->recoilSpeed[1] = 0.0;
+              cgameGlob->recoilSpeed[2] = 0.0;
+              if (isPlayerView == false) {
+                local_34c = itemWeapDef->pickupSound;
               }
               else {
-                local_34c = local_88->pickupSoundPlayer;
+                local_34c = itemWeapDef->pickupSoundPlayer;
               }
-              uVar9 = SND_FindAliasId(local_34c);
-              CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+              uVar8 = SND_FindAliasId(local_34c);
+              CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
             }
-            else if (param_3 == 0xc) {
-              if (local_61 == false) {
-                local_350 = local_88->ammoPickupSound;
+            else if (event == 0xc) {
+              if (isPlayerView == false) {
+                local_350 = itemWeapDef->ammoPickupSound;
               }
               else {
-                local_350 = local_88->ammoPickupSoundPlayer;
+                local_350 = itemWeapDef->ammoPickupSoundPlayer;
               }
-              uVar9 = SND_FindAliasId(local_350);
-              CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+              uVar8 = SND_FindAliasId(local_350);
+              CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
             }
-            if (local_61 != false) {
-              CG_ItemPickup(param_1,local_84);
+            if (isPlayerView != false) {
+              CG_ItemPickup(localClientNum,index);
             }
           }
           break;
         case 0xd:
-          iVar13 = BG_WeaponIsClipOnly(local_8);
-          if ((iVar13 == 0) && (local_58->cancelAutoHolsterWhenEmpty == false)) {
-            if (local_61 == false) {
-              local_36c = local_58->emptyFireSound;
+          iVar11 = BG_WeaponIsClipOnly(weaponIdx);
+          if ((iVar11 == 0) && (weaponDef->cancelAutoHolsterWhenEmpty == false)) {
+            if (isPlayerView == false) {
+              local_36c = weaponDef->emptyFireSound;
             }
             else {
-              local_36c = local_58->emptyFireSoundPlayer;
+              local_36c = weaponDef->emptyFireSoundPlayer;
             }
-            uVar9 = SND_FindAliasId(local_36c);
-            CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+            uVar8 = SND_FindAliasId(local_36c);
+            CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           }
-          if (local_61 != false) {
-            if (local_58->bDualWield != false) {
-              iVar13 = 0;
-              pcVar8 = CG_GetLocalClientGlobals(param_1);
-              bVar7 = CG_CheckIfDualWieldEmpty(&pcVar8->predictedPlayerState,iVar13);
-              if (!bVar7) {
-                CG_OutOfAmmoChange(param_1);
+          if (isPlayerView != false) {
+            if (weaponDef->bDualWield != false) {
+              iVar11 = 0;
+              pcVar7 = CG_GetLocalClientGlobals(localClientNum);
+              bVar6 = CG_CheckIfDualWieldEmpty(&pcVar7->predictedPlayerState,iVar11);
+              if (!bVar6) {
+                CG_OutOfAmmoChange(localClientNum);
                 return;
               }
             }
-            if (local_58->bDualWield == false) {
-              CG_OutOfAmmoChange(param_1);
+            if (weaponDef->bDualWield == false) {
+              CG_OutOfAmmoChange(localClientNum);
             }
           }
           break;
         case 0xe:
-          iVar13 = BG_WeaponIsClipOnly(local_8);
-          if ((iVar13 == 0) && (local_58->cancelAutoHolsterWhenEmpty == false)) {
-            local_8c = BG_GetWeaponDef(local_58->dualWieldWeaponIndex);
-            if (local_61 == false) {
-              local_370 = local_8c->emptyFireSound;
+          iVar11 = BG_WeaponIsClipOnly(weaponIdx);
+          if ((iVar11 == 0) && (weaponDef->cancelAutoHolsterWhenEmpty == false)) {
+            weapDefDW = BG_GetWeaponDef(weaponDef->dualWieldWeaponIndex);
+            if (isPlayerView == false) {
+              local_370 = weapDefDW->emptyFireSound;
             }
             else {
-              local_370 = local_8c->emptyFireSoundPlayer;
+              local_370 = weapDefDW->emptyFireSoundPlayer;
             }
-            uVar9 = SND_FindAliasId(local_370);
-            CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+            uVar8 = SND_FindAliasId(local_370);
+            CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           }
-          if (local_61 != false) {
-            iVar13 = 0;
-            pcVar8 = CG_GetLocalClientGlobals(param_1);
-            bVar7 = CG_CheckIfDualWieldEmpty(&pcVar8->predictedPlayerState,iVar13);
-            if (!bVar7) {
-              CG_OutOfAmmoChange(param_1);
+          if (isPlayerView != false) {
+            iVar11 = 0;
+            pcVar7 = CG_GetLocalClientGlobals(localClientNum);
+            bVar6 = CG_CheckIfDualWieldEmpty(&pcVar7->predictedPlayerState,iVar11);
+            if (!bVar6) {
+              CG_OutOfAmmoChange(localClientNum);
             }
           }
           break;
         case 0xf:
           break;
         case 0x10:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            if (local_61 != false) {
-              CG_MenuShowNotify(param_1,5);
-              CG_SwitchOffHandCmd(param_1);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            if (isPlayerView != false) {
+              CG_MenuShowNotify(localClientNum,5);
+              CG_SwitchOffHandCmd(localClientNum);
             }
           }
           else {
@@ -1377,9 +1415,9 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           }
           break;
         case 0x11:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            if (local_61 != false) {
-              CL_SetADS(param_1,false);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            if (isPlayerView != false) {
+              CL_SetADS(localClientNum,false);
             }
           }
           else {
@@ -1387,44 +1425,44 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           }
           break;
         case 0x12:
-          if (local_61 == false) {
-            local_354 = local_58->reloadSound;
+          if (isPlayerView == false) {
+            local_354 = weaponDef->reloadSound;
           }
           else {
-            local_354 = local_58->reloadSoundPlayer;
+            local_354 = weaponDef->reloadSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_354);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_354);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x13:
-          if (local_61 == false) {
-            local_358 = local_58->reloadEmptySound;
+          if (isPlayerView == false) {
+            local_358 = weaponDef->reloadEmptySound;
           }
           else {
-            local_358 = local_58->reloadEmptySoundPlayer;
+            local_358 = weaponDef->reloadEmptySoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_358);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_358);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x14:
-          if (local_61 == false) {
-            local_35c = local_58->reloadStartSound;
+          if (isPlayerView == false) {
+            local_35c = weaponDef->reloadStartSound;
           }
           else {
-            local_35c = local_58->reloadStartSoundPlayer;
+            local_35c = weaponDef->reloadStartSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_35c);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_35c);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x15:
-          if (local_61 == false) {
-            local_360 = local_58->reloadEndSound;
+          if (isPlayerView == false) {
+            local_360 = weaponDef->reloadEndSound;
           }
           else {
-            local_360 = local_58->reloadEndSoundPlayer;
+            local_360 = weaponDef->reloadEndSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_360);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_360);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x16:
         case 0x17:
@@ -1432,182 +1470,182 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
         case 0x5a:
           break;
         case 0x18:
-          local_60->recoilAngles[0] = 0.0;
-          local_60->recoilAngles[1] = 0.0;
-          local_60->recoilAngles[2] = 0.0;
-          local_60->recoilSpeed[0] = 0.0;
-          local_60->recoilSpeed[1] = 0.0;
-          local_60->recoilSpeed[2] = 0.0;
-          if (local_61 == false) {
-            local_38c = local_58->raiseSound;
+          cgameGlob->recoilAngles[0] = 0.0;
+          cgameGlob->recoilAngles[1] = 0.0;
+          cgameGlob->recoilAngles[2] = 0.0;
+          cgameGlob->recoilSpeed[0] = 0.0;
+          cgameGlob->recoilSpeed[1] = 0.0;
+          cgameGlob->recoilSpeed[2] = 0.0;
+          if (isPlayerView == false) {
+            local_38c = weaponDef->raiseSound;
           }
           else {
-            local_38c = local_58->raiseSoundPlayer;
+            local_38c = weaponDef->raiseSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_38c);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
-          local_60->weaponForcedSelect = false;
+          uVar8 = SND_FindAliasId(local_38c);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
+          cgameGlob->weaponForcedSelect = false;
           break;
         case 0x19:
-          local_60->recoilAngles[0] = 0.0;
-          local_60->recoilAngles[1] = 0.0;
-          local_60->recoilAngles[2] = 0.0;
-          local_60->recoilSpeed[0] = 0.0;
-          local_60->recoilSpeed[1] = 0.0;
-          local_60->recoilSpeed[2] = 0.0;
-          if (local_61 == false) {
-            local_388 = local_58->firstRaiseSound;
+          cgameGlob->recoilAngles[0] = 0.0;
+          cgameGlob->recoilAngles[1] = 0.0;
+          cgameGlob->recoilAngles[2] = 0.0;
+          cgameGlob->recoilSpeed[0] = 0.0;
+          cgameGlob->recoilSpeed[1] = 0.0;
+          cgameGlob->recoilSpeed[2] = 0.0;
+          if (isPlayerView == false) {
+            local_388 = weaponDef->firstRaiseSound;
           }
           else {
-            local_388 = local_58->firstRaiseSoundPlayer;
+            local_388 = weaponDef->firstRaiseSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_388);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
-          local_60->weaponForcedSelect = false;
+          uVar8 = SND_FindAliasId(local_388);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
+          cgameGlob->weaponForcedSelect = false;
           break;
         case 0x1a:
-          if (local_61 == false) {
-            local_390 = local_58->putawaySound;
+          if (isPlayerView == false) {
+            local_390 = weaponDef->putawaySound;
           }
           else {
-            local_390 = local_58->putawaySoundPlayer;
+            local_390 = weaponDef->putawaySoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_390);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_390);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x1b:
-          if (local_61 == false) {
-            local_394 = local_58->altSwitchSound;
+          if (isPlayerView == false) {
+            local_394 = weaponDef->altSwitchSound;
           }
           else {
-            local_394 = local_58->altSwitchSoundPlayer;
+            local_394 = weaponDef->altSwitchSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_394);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_394);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x1c:
-          if (local_61 == false) {
-            local_398 = local_58->pullbackSound;
+          if (isPlayerView == false) {
+            local_398 = weaponDef->pullbackSound;
           }
           else {
-            local_398 = local_58->pullbackSoundPlayer;
+            local_398 = weaponDef->pullbackSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_398);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_398);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x1d:
         case 0x1e:
-          if (((param_2->nextValid != 0) && ((param_2->nextState).eType == 0x11)) ||
-             ((param_2->nextState).eType == 1)) {
+          if (((cent->nextValid != 0) && ((cent->nextState).eType == 0x11)) ||
+             ((cent->nextState).eType == 1)) {
             Scr_AddConstString((uint)cscr_const.face_shoot_single,SCRIPTINSTANCE_CLIENT);
-            CScr_Notify(param_1,param_2,cscr_const.face,1);
+            CScr_Notify(localClientNum,cent,cscr_const.face,1);
           }
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.face_shoot_single,0);
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash,0,
-                        &local_60->predictedPlayerState,false);
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.face_shoot_single,0);
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash,0,
+                        &cgameGlob->predictedPlayerState,false);
           break;
         case 0x1f:
         case 0x20:
-          if (((param_2->nextValid != 0) && ((param_2->nextState).eType == 0x11)) ||
-             ((param_2->nextState).eType == 1)) {
+          if (((cent->nextValid != 0) && ((cent->nextState).eType == 0x11)) ||
+             ((cent->nextState).eType == 1)) {
             Scr_AddConstString((uint)cscr_const.face_shoot_single,SCRIPTINSTANCE_CLIENT);
-            CScr_Notify(param_1,param_2,cscr_const.face,1);
+            CScr_Notify(localClientNum,cent,cscr_const.face,1);
           }
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.face_shoot_single,0);
-          uVar18 = CONCAT44(1,&local_60->predictedPlayerState);
-          pWVar11 = BG_GetWeaponDef((uint)(local_60->predictedPlayerState).weapon);
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash1,pWVar11->dualWieldWeaponIndex,
-                        (playerState_s *)uVar18,SUB81((ulonglong)uVar18 >> 0x20,0));
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.face_shoot_single,0);
+          uVar14 = CONCAT44(1,&cgameGlob->predictedPlayerState);
+          pWVar10 = BG_GetWeaponDef((uint)(cgameGlob->predictedPlayerState).weapon);
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash1,pWVar10->dualWieldWeaponIndex
+                        ,(playerState_s *)uVar14,SUB81((ulonglong)uVar14 >> 0x20,0));
           break;
         case 0x21:
-          if (local_61 == false) {
-            local_39c = local_58->rechamberSound;
+          if (isPlayerView == false) {
+            local_39c = weaponDef->rechamberSound;
           }
           else {
-            local_39c = local_58->rechamberSoundPlayer;
+            local_39c = weaponDef->rechamberSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_39c);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_39c);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x22:
-          CG_EjectWeaponBrass(param_1,local_4c,param_3,(uint)local_4c->weapon);
+          CG_EjectWeaponBrass(localClientNum,es,event,(uint)es->weapon);
           break;
         case 0x23:
-          if (((param_2->nextValid != 0) && ((param_2->nextState).eType == 0x11)) ||
-             ((param_2->nextState).eType == 1)) {
+          if (((cent->nextValid != 0) && ((cent->nextState).eType == 0x11)) ||
+             ((cent->nextState).eType == 1)) {
             Scr_AddConstString((uint)cscr_const.face_melee,SCRIPTINSTANCE_CLIENT);
-            CScr_Notify(param_1,param_2,cscr_const.face,1);
+            CScr_Notify(localClientNum,cent,cscr_const.face,1);
           }
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.face_melee,0);
-          if (local_61 == false) {
-            local_3a0 = local_44->meleeSwipeSound;
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.face_melee,0);
+          if (isPlayerView == false) {
+            local_3a0 = meleeWeaponDef->meleeSwipeSound;
           }
           else {
-            local_3a0 = local_44->meleeSwipeSoundPlayer;
+            local_3a0 = meleeWeaponDef->meleeSwipeSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3a0);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3a0);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x24:
-          if (((param_2->nextValid != 0) && ((param_2->nextState).eType == 0x11)) ||
-             ((param_2->nextState).eType == 1)) {
+          if (((cent->nextValid != 0) && ((cent->nextState).eType == 0x11)) ||
+             ((cent->nextState).eType == 1)) {
             Scr_AddConstString((uint)cscr_const.face_melee,SCRIPTINSTANCE_CLIENT);
-            CScr_Notify(param_1,param_2,cscr_const.face,1);
+            CScr_Notify(localClientNum,cent,cscr_const.face,1);
           }
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.face_melee,0);
-          DynEntCl_MeleeEvent(param_1,local_4c->number);
-          GlassCl_MeleeEvent(param_1,local_4c->number);
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.face_melee,0);
+          DynEntCl_MeleeEvent(localClientNum,es->number);
+          GlassCl_MeleeEvent(localClientNum,es->number);
           break;
         case 0x25:
-          if (local_61 == false) {
-            local_3a4 = local_58->deploySound;
+          if (isPlayerView == false) {
+            local_3a4 = weaponDef->deploySound;
           }
           else {
-            local_3a4 = local_58->deploySoundPlayer;
+            local_3a4 = weaponDef->deploySoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3a4);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3a4);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x26:
-          if (local_61 == false) {
-            local_3a8 = local_58->finishDeploySound;
+          if (isPlayerView == false) {
+            local_3a8 = weaponDef->finishDeploySound;
           }
           else {
-            local_3a8 = local_58->finishDeploySoundPlayer;
+            local_3a8 = weaponDef->finishDeploySoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3a8);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3a8);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x27:
-          if (local_61 == false) {
-            local_3ac = local_58->breakdownSound;
+          if (isPlayerView == false) {
+            local_3ac = weaponDef->breakdownSound;
           }
           else {
-            local_3ac = local_58->breakdownSoundPlayer;
+            local_3ac = weaponDef->breakdownSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3ac);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3ac);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x28:
-          if (local_61 == false) {
-            local_3b0 = local_58->finishBreakdownSound;
+          if (isPlayerView == false) {
+            local_3b0 = weaponDef->finishBreakdownSound;
           }
           else {
-            local_3b0 = local_58->finishBreakdownSoundPlayer;
+            local_3b0 = weaponDef->finishBreakdownSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3b0);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3b0);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x29:
-          CG_PrepOffHand(param_1,local_4c,(uint)local_4c->eventParm,local_61);
+          CG_PrepOffHand(localClientNum,es,(uint)es->eventParm,isPlayerView);
           break;
         case 0x2a:
-          CG_UseOffHand(param_1,param_2,(uint)local_4c->eventParm,local_61);
+          CG_UseOffHand(localClientNum,cent,(uint)es->eventParm,isPlayerView);
           break;
         case 0x2b:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            if (local_61 != false) {
-              CG_SetEquippedOffHand(param_1,(uint)local_4c->eventParm);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            if (isPlayerView != false) {
+              CG_SetEquippedOffHand(localClientNum,(uint)es->eventParm);
             }
           }
           else {
@@ -1615,71 +1653,70 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           }
           break;
         case 0x2c:
-          if (local_4c->eventParm == 3) {
-            CG_PlaySound(param_1,(int)local_4c->otherEntityNum,(float *)0x0,0,false,1.0,
+          if (es->eventParm == 3) {
+            CG_PlaySound(localClientNum,(int)es->otherEntityNum,(float *)0x0,0,false,1.0,
                          cgMedia.meleeDogHit);
-            CG_DogBloodEvent(param_1,(int)local_4c->otherEntityNum,local_14,
-                             (uint)(local_4c->un1).scale);
+            CG_DogBloodEvent(localClientNum,(int)es->otherEntityNum,position,(uint)(es->un1).scale);
           }
-          else if (local_44->meleeHitSound == (char *)0x0) {
-            if (local_4c->eventParm == 1) {
-              CG_PlaySound(param_1,(int)local_4c->otherEntityNum,(float *)0x0,0,false,1.0,
+          else if (meleeWeaponDef->meleeHitSound == (char *)0x0) {
+            if (es->eventParm == 1) {
+              CG_PlaySound(localClientNum,(int)es->otherEntityNum,(float *)0x0,0,false,1.0,
                            cgMedia.meleeKnifeHit);
             }
             else {
-              CG_PlaySound(param_1,(int)local_4c->otherEntityNum,(float *)0x0,0,false,1.0,
+              CG_PlaySound(localClientNum,(int)es->otherEntityNum,(float *)0x0,0,false,1.0,
                            cgMedia.meleeHit);
             }
           }
           else {
-            uVar9 = SND_FindAliasId(local_44->meleeHitSound);
-            CG_PlaySound(param_1,(int)local_4c->otherEntityNum,(float *)0x0,0,false,1.0,uVar9);
+            uVar8 = SND_FindAliasId(meleeWeaponDef->meleeHitSound);
+            CG_PlaySound(localClientNum,(int)es->otherEntityNum,(float *)0x0,0,false,1.0,uVar8);
           }
           break;
         case 0x2d:
-          if (local_4c->eventParm == 2) {
-            if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-                 (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-                (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-               (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                         0x5a3,0,"%s"), !bVar7)) {
-              pcVar5 = (code *)swi(3);
-              (*pcVar5)();
+          if (es->eventParm == 2) {
+            if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+                 (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+                (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                         0x5a3,0,"%s"), !bVar6)) {
+              pcVar4 = (code *)swi(3);
+              (*pcVar4)();
               return;
             }
-            CG_PlaySound(param_1,(int)local_4c->otherEntityNum,local_14,0,false,1.0,
+            CG_PlaySound(localClientNum,(int)es->otherEntityNum,position,0,false,1.0,
                          cgMedia.meleeDogHitOther);
           }
           else {
-            if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-                 (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-                (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-               (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                         0x5a9,0,"%s"), !bVar7)) {
-              pcVar5 = (code *)swi(3);
-              (*pcVar5)();
+            if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+                 (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+                (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                         0x5a9,0,"%s"), !bVar6)) {
+              pcVar4 = (code *)swi(3);
+              (*pcVar4)();
               return;
             }
-            if (local_44->meleeMissSound == (char *)0x0) {
-              if (local_4c->eventParm == 1) {
-                CG_PlaySound(param_1,(int)local_4c->otherEntityNum,local_14,0,false,1.0,
+            if (meleeWeaponDef->meleeMissSound == (char *)0x0) {
+              if (es->eventParm == 1) {
+                CG_PlaySound(localClientNum,(int)es->otherEntityNum,position,0,false,1.0,
                              cgMedia.meleeKnifeHitOther);
               }
               else {
-                CG_PlaySound(param_1,(int)local_4c->otherEntityNum,local_14,0,false,1.0,
+                CG_PlaySound(localClientNum,(int)es->otherEntityNum,position,0,false,1.0,
                              cgMedia.meleeHitOther);
               }
             }
             else {
-              uVar9 = SND_FindAliasId(local_44->meleeMissSound);
-              CG_PlaySound(param_1,(int)local_4c->otherEntityNum,local_14,0,false,1.0,uVar9);
+              uVar8 = SND_FindAliasId(meleeWeaponDef->meleeMissSound);
+              CG_PlaySound(localClientNum,(int)es->otherEntityNum,position,0,false,1.0,uVar8);
             }
           }
           break;
         case 0x2e:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            if (local_61 != false) {
-              CG_MeleeBloodEvent(param_1,param_2,(uint)local_4c->eventParm);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            if (isPlayerView != false) {
+              CG_MeleeBloodEvent(localClientNum,cent,(uint)es->eventParm);
             }
           }
           else {
@@ -1688,513 +1725,517 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           break;
         case 0x2f:
         case 0x30:
-          local_90 = 1;
-          CG_StartShakeCamera(param_1,0.05,100,(param_2->pose).origin,100.0);
-          if (param_3 == 0x2f) {
-            CG_FireWeapon(param_1,param_2,0x2f,scr_const.tag_flash,0,&local_60->nextSnap->ps,false);
-          }
-          else {
-            CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash_2,0,&local_60->nextSnap->ps,
+          eType = ET_PLAYER;
+          CG_StartShakeCamera(localClientNum,0.05,100,(cent->pose).origin,100.0);
+          if (event == 0x2f) {
+            CG_FireWeapon(localClientNum,cent,0x2f,scr_const.tag_flash,0,&cgameGlob->nextSnap->ps,
                           false);
           }
-          local_94 = CG_GetEntity(param_1,local_48);
-          if (((local_94->nextValid != 0) && ((local_94->nextState).eType == local_90)) &&
-             ((int)local_c->viewlocked_entNum != (param_2->nextState).number)) {
-            CG_CompassAddWeaponPingInfo(param_1,local_94,(param_2->pose).origin,0x32);
-            GamerProfile_WriteSettings(param_1);
+          else {
+            CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash_2,0,&cgameGlob->nextSnap->ps
+                          ,false);
           }
-          if ((local_94->nextValid != 0) && ((local_94->nextState).eType == 0xb)) {
-            CG_AddTurretWeaponPingInfo(param_1,local_94,(param_2->pose).origin,0x32);
+          attackerCent = CG_GetEntity(localClientNum,eventParm);
+          if (((attackerCent->nextValid != 0) && ((int)(attackerCent->nextState).eType == eType)) &&
+             ((int)ps->viewlocked_entNum != (cent->nextState).number)) {
+            CG_CompassAddWeaponPingInfo(localClientNum,attackerCent,(cent->pose).origin,0x32);
+            GamerProfile_WriteSettings(localClientNum);
+          }
+          if ((attackerCent->nextValid != 0) && ((attackerCent->nextState).eType == 0xb)) {
+            CG_AddTurretWeaponPingInfo(localClientNum,attackerCent,(cent->pose).origin,0x32);
           }
           break;
         case 0x31:
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash,0,&local_60->nextSnap->ps,false)
-          ;
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash_11,0,&local_60->nextSnap->ps,
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash,0,&cgameGlob->nextSnap->ps,
+                        false);
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash_11,0,&cgameGlob->nextSnap->ps,
                         false);
           break;
         case 0x32:
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash_2,0,&local_60->nextSnap->ps,
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash_2,0,&cgameGlob->nextSnap->ps,
                         false);
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash_22,0,&local_60->nextSnap->ps,
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash_22,0,&cgameGlob->nextSnap->ps,
                         false);
           break;
         case 0x33:
-          ByteToDir((uint)local_4c->eventParm,local_70);
-          if ((0xff < (local_4c->index).bone) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x604,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,dir);
+          if ((0xff < (es->index).bone) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x604,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_BulletHitEvent(param_1,(int)local_4c->otherEntityNum,(int)local_4c->groundEntityNum,
-                            (uint)local_4c->weapon,&(local_4c->lerp).u.streamerHint.factor,
-                            (param_2->pose).origin,local_70,local_70,(uint)local_4c->surfType,
-                            param_3,(local_4c->un1).scale,local_58->damage,0,
-                            *(uchar *)&local_4c->index);
+          CG_BulletHitEvent(localClientNum,(int)es->otherEntityNum,(int)es->groundEntityNum,
+                            (uint)es->weapon,&(es->lerp).u.streamerHint.factor,(cent->pose).origin,
+                            dir,dir,(uint)es->surfType,event,(es->un1).scale,weaponDef->damage,0,
+                            *(uchar *)&es->index);
           break;
         case 0x34:
         case 0x35:
           CG_BulletHitClientEvent
-                    (param_1,(int)local_4c->otherEntityNum,(uint)local_4c->weapon,
-                     (int)local_4c->groundEntityNum,&(local_4c->lerp).u.streamerHint.factor,
-                     (param_2->pose).origin,(uint)local_4c->surfType,param_3,local_58->damage);
+                    (localClientNum,(int)es->otherEntityNum,(uint)es->weapon,
+                     (int)es->groundEntityNum,&(es->lerp).u.streamerHint.factor,(cent->pose).origin,
+                     (uint)es->surfType,event,weaponDef->damage);
           break;
         case 0x36:
         case 0x37:
-          CG_DestructibleHitEvent(param_1,param_3,local_4c,1);
+          CG_DestructibleHitEvent(localClientNum,event,es,1);
           break;
         case 0x38:
-          if ((0x1e < local_4c->surfType) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+          if ((0x1e < es->surfType) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
                                        0x615,0,
                                        "es->surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x616,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x616,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          if (local_58->bounceSound != (char **)0x0) {
-            uVar9 = SND_FindAliasId(local_58->bounceSound[local_4c->surfType]);
-            CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          if (weaponDef->bounceSound != (char **)0x0) {
+            uVar8 = SND_FindAliasId(weaponDef->bounceSound[es->surfType]);
+            CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           }
-          if ((cgMedia.fx)->table[0xb].nonflesh[local_4c->surfType] != (FxEffectDef *)0x0) {
-            ByteToDir((uint)local_4c->eventParm,local_3c);
-            Vec3Basis_RightHanded(local_3c,local_30,local_24);
+          if ((cgMedia.fx)->table[0xb].nonflesh[es->surfType] != (FxEffectDef *)0x0) {
+            ByteToDir((uint)es->eventParm,axis);
+            Vec3Basis_RightHanded(axis,local_30,local_24);
             FX_PlayOrientedEffect
-                      (param_1,(cgMedia.fx)->table[0xb].nonflesh[local_4c->surfType],local_60->time,
-                       local_14,&local_3c);
+                      (localClientNum,(cgMedia.fx)->table[0xb].nonflesh[es->surfType],
+                       cgameGlob->time,position,&axis);
           }
           break;
         case 0x39:
-          local_cd = (r_watersim_enabled->current).enabled;
-          if ((bool)local_cd == true) {
-            local_3c4 = R_WaterSimulationGetHeight(local_14);
+          waterSimEnabled = (r_watersim_enabled->current).enabled;
+          if (waterSimEnabled == true) {
+            local_3c4 = R_WaterSimulationGetHeight(position);
           }
           else {
             local_3c4 = 0.0;
           }
-          local_dc = local_3c4;
-          local_e4 = (float)local_58->iExplosionRadius;
-          Ragdoll_ExplosionEvent(param_1,false,local_14,0.0,local_e4,vec3_origin,1.0);
+          waterZ = local_3c4;
+          explosionRadius = (float)weaponDef->iExplosionRadius;
+          Ragdoll_ExplosionEvent(localClientNum,false,position,0.0,explosionRadius,vec3_origin,1.0);
           DynEntCl_ExplosionEvent
-                    (param_1,false,local_14,0.0,local_e4,vec3_origin,1.0,
-                     local_58->iExplosionInnerDamage,local_58->iExplosionOuterDamage);
-          CG_ExplosionEvent(param_1,local_14,(float)local_58->iExplosionInnerDamage,
-                            (float)local_58->iExplosionOuterDamage,local_e4,4);
-          if ((local_cd != '\0') && (local_14[2] <= local_dc && local_dc != local_14[2])) {
-            R_WaterSimulationNotifyExplosion(local_14);
+                    (localClientNum,false,position,0.0,explosionRadius,vec3_origin,1.0,
+                     weaponDef->iExplosionInnerDamage,weaponDef->iExplosionOuterDamage);
+          CG_ExplosionEvent(localClientNum,position,(float)weaponDef->iExplosionInnerDamage,
+                            (float)weaponDef->iExplosionOuterDamage,explosionRadius,4);
+          if ((waterSimEnabled != false) && (position[2] <= waterZ && waterZ != position[2])) {
+            R_WaterSimulationNotifyExplosion(position);
           }
-          R_FoliageNotifyGrenadeExplosion(param_1,local_14);
-          if ((0x1e < local_4c->surfType) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+          R_FoliageNotifyGrenadeExplosion(localClientNum,position);
+          if ((0x1e < es->surfType) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
                                        0x63b,0,
                                        "es->surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          local_d5 = local_4c->surfType;
-          if ((local_cd != '\0') && (local_14[2] <= local_dc && local_dc != local_14[2])) {
-            local_d5 = 0x14;
-            local_14[2] = local_dc - 36.0;
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          surfType = es->surfType;
+          if ((waterSimEnabled != false) && (position[2] <= waterZ && waterZ != position[2])) {
+            surfType = '\x14';
+            position[2] = waterZ - 36.0;
           }
-          CG_ImpactEffectForWeapon(local_8,(uint)local_d5,0,&local_d4,&local_e0);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x648,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          CG_ImpactEffectForWeapon(weaponIdx,(uint)surfType,0,&fx_2,&snd_2);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x648,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          if (local_d4 != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_d4,local_60->time,local_14,&local_3c);
+          if (fx_2 != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect(localClientNum,fx_2,cgameGlob->time,position,&axis);
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,local_e0);
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,snd_2);
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
+            ;
           }
-          uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           break;
         case 0x3b:
-          local_60->nomarks = 1;
+          cgameGlob->nomarks = 1;
         case 0x3a:
           Ragdoll_ExplosionEvent
-                    (param_1,false,local_14,(float)local_58->iExplosionRadius,
-                     (float)local_58->iExplosionRadius,vec3_origin,1.0);
+                    (localClientNum,false,position,(float)weaponDef->iExplosionRadius,
+                     (float)weaponDef->iExplosionRadius,vec3_origin,1.0);
           DynEntCl_ExplosionEvent
-                    (param_1,false,local_14,(float)local_58->iExplosionRadius,
-                     (float)local_58->iExplosionRadius,vec3_origin,1.0,
-                     local_58->iExplosionInnerDamage,local_58->iExplosionOuterDamage);
-          local_f0 = 6;
-          if (local_60->nomarks != 0) {
-            local_f0 = 5;
+                    (localClientNum,false,position,(float)weaponDef->iExplosionRadius,
+                     (float)weaponDef->iExplosionRadius,vec3_origin,1.0,
+                     weaponDef->iExplosionInnerDamage,weaponDef->iExplosionOuterDamage);
+          mod = 6;
+          if (cgameGlob->nomarks != 0) {
+            mod = 5;
           }
-          CG_ExplosionEvent(param_1,local_14,(float)local_58->iExplosionInnerDamage,
-                            (float)local_58->iExplosionOuterDamage,(float)local_58->iExplosionRadius
-                            ,local_f0);
-          if ((0x1e < local_4c->surfType) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+          CG_ExplosionEvent(localClientNum,position,(float)weaponDef->iExplosionInnerDamage,
+                            (float)weaponDef->iExplosionOuterDamage,
+                            (float)weaponDef->iExplosionRadius,mod);
+          if ((0x1e < es->surfType) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
                                        0x66d,0,
                                        "es->surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x671,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x671,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_ImpactEffectForWeapon(local_8,(uint)local_4c->surfType,0,&local_e8,&local_ec);
-          if (local_e8 != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_e8,local_60->time,local_14,&local_3c);
+          CG_ImpactEffectForWeapon(weaponIdx,(uint)es->surfType,0,&fx_3,&snd_3);
+          if (fx_3 != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect(localClientNum,fx_3,cgameGlob->time,position,&axis);
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,local_ec);
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,snd_3);
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
+            ;
           }
-          uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
-          local_60->nomarks = 0;
+          uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
+          cgameGlob->nomarks = 0;
           break;
         case 0x3c:
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x684,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x684,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
+            ;
           }
-          uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           break;
         case 0x3e:
-          local_60->nomarks = 1;
+          cgameGlob->nomarks = 1;
         case 0x3d:
-          local_fc = 0.0;
+          innerRadius = 0.0;
           Ragdoll_ExplosionEvent
-                    (param_1,false,local_14,0.0,(float)local_58->iExplosionRadius,vec3_origin,1.0);
+                    (localClientNum,false,position,0.0,(float)weaponDef->iExplosionRadius,
+                     vec3_origin,1.0);
           DynEntCl_ExplosionEvent
-                    (param_1,false,local_14,local_fc,(float)local_58->iExplosionRadius,vec3_origin,
-                     1.0,local_58->iExplosionInnerDamage,local_58->iExplosionOuterDamage);
-          CG_ExplosionEvent(param_1,local_14,(float)local_58->iExplosionInnerDamage,
-                            (float)local_58->iExplosionOuterDamage,(float)local_58->iExplosionRadius
-                            ,0xf);
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x6a2,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                    (localClientNum,false,position,innerRadius,(float)weaponDef->iExplosionRadius,
+                     vec3_origin,1.0,weaponDef->iExplosionInnerDamage,
+                     weaponDef->iExplosionOuterDamage);
+          CG_ExplosionEvent(localClientNum,position,(float)weaponDef->iExplosionInnerDamage,
+                            (float)weaponDef->iExplosionOuterDamage,
+                            (float)weaponDef->iExplosionRadius,0xf);
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x6a2,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_ImpactEffectForWeapon(local_8,(uint)local_4c->surfType,0,&local_f4,&local_f8);
-          if (local_f4 != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_f4,local_60->time,local_14,&local_3c);
+          CG_ImpactEffectForWeapon(weaponIdx,(uint)es->surfType,0,&fx_4,&snd_4);
+          if (fx_4 != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect(localClientNum,fx_4,cgameGlob->time,position,&axis);
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,local_f8);
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,snd_4);
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             Com_Printf(0xe,"Playing smoke grenade at %i at ( %f, %f, %f )\n");
-            switch((local_4c->lerp).u.loopFx.period) {
+            switch((es->lerp).u.loopFx.period) {
             case 0x31:
-              local_100 = local_58->projExplosionEffect2;
+              expFx = weaponDef->projExplosionEffect2;
               break;
             case 0x32:
-              local_100 = local_58->projExplosionEffect3;
+              expFx = weaponDef->projExplosionEffect3;
               break;
             case 0x33:
-              local_100 = local_58->projExplosionEffect5;
+              expFx = weaponDef->projExplosionEffect5;
               break;
             case 0x34:
-              local_100 = local_58->projExplosionEffect4;
+              expFx = weaponDef->projExplosionEffect4;
               break;
             default:
-              local_100 = local_58->projExplosionEffect;
+              expFx = weaponDef->projExplosionEffect;
             }
             FX_PlayOrientedEffect
-                      (param_1,local_100,(local_4c->lerp).u.missile.launchTime,
-                       (local_4c->lerp).pos.trBase,&local_3c);
+                      (localClientNum,expFx,(es->lerp).u.missile.launchTime,(es->lerp).pos.trBase,
+                       &axis);
           }
-          if (local_58->projExplosionSound != (char *)0x0) {
-            if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-                 (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-                (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-               (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                         0x6cf,0,"%s"), !bVar7)) {
-              pcVar5 = (code *)swi(3);
-              (*pcVar5)();
+          if (weaponDef->projExplosionSound != (char *)0x0) {
+            if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+                 (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+                (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                         0x6cf,0,"%s"), !bVar6)) {
+              pcVar4 = (code *)swi(3);
+              (*pcVar4)();
               return;
             }
-            if ((((local_4c->lerp).eFlags & 0x4000U) == 0) ||
-               (local_60->time - (local_4c->lerp).u.missile.launchTime < 200)) {
-              uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-              CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+            if ((((es->lerp).eFlags & 0x4000U) == 0) ||
+               (cgameGlob->time - (es->lerp).u.missile.launchTime < 200)) {
+              uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+              CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
             }
           }
-          local_60->nomarks = 0;
+          cgameGlob->nomarks = 0;
           break;
         case 0x3f:
-          local_60->nomarks = 1;
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
+          cgameGlob->nomarks = 1;
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
           if ((cgMedia.fx)->table[0xf].nonflesh[0] != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,(cgMedia.fx)->table[0xf].nonflesh[0],local_60->time,local_14,
-                       &local_3c);
+                      (localClientNum,(cgMedia.fx)->table[0xf].nonflesh[0],cgameGlob->time,position,
+                       &axis);
           }
-          local_60->nomarks = 0;
+          cgameGlob->nomarks = 0;
           break;
         case 0x40:
-          if ((0x1e < local_4c->surfType) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+          if ((0x1e < es->surfType) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
                                        0x6e3,0,
                                        "es->surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x6e6,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x6e6,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,
-                       cgMedia.bulletHitLargeSound[local_4c->surfType]);
-          if ((cgMedia.fx)->table[0xf].nonflesh[local_4c->surfType] != (FxEffectDef *)0x0) {
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,
+                       cgMedia.bulletHitLargeSound[es->surfType]);
+          if ((cgMedia.fx)->table[0xf].nonflesh[es->surfType] != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,(cgMedia.fx)->table[0xf].nonflesh[local_4c->surfType],local_60->time,
-                       local_14,&local_3c);
+                      (localClientNum,(cgMedia.fx)->table[0xf].nonflesh[es->surfType],
+                       cgameGlob->time,position,&axis);
           }
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
-          }
-          uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
-          if (local_58->projDudEffect != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_58->projDudEffect,local_60->time,local_14,&local_3c)
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
             ;
           }
-          uVar9 = SND_FindAliasId(local_58->projDudSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
+          if (weaponDef->projDudEffect != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect
+                      (localClientNum,weaponDef->projDudEffect,cgameGlob->time,position,&axis);
+          }
+          uVar8 = SND_FindAliasId(weaponDef->projDudSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           break;
         case 0x41:
-          if ((0x1e < local_4c->surfType) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+          if ((0x1e < es->surfType) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
                                        0x6f8,0,
                                        "es->surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
-                                      ), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                                      ), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x6fb,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x6fb,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,
-                       cgMedia.bulletHitLargeSound[local_4c->surfType]);
-          if ((cgMedia.fx)->table[0xf].nonflesh[local_4c->surfType] != (FxEffectDef *)0x0) {
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,
+                       cgMedia.bulletHitLargeSound[es->surfType]);
+          if ((cgMedia.fx)->table[0xf].nonflesh[es->surfType] != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,(cgMedia.fx)->table[0xf].nonflesh[local_4c->surfType],local_60->time,
-                       local_14,&local_3c);
+                      (localClientNum,(cgMedia.fx)->table[0xf].nonflesh[es->surfType],
+                       cgameGlob->time,position,&axis);
           }
-          if (local_58->projDudEffect != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_58->projDudEffect,local_60->time,local_14,&local_3c)
-            ;
+          if (weaponDef->projDudEffect != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect
+                      (localClientNum,weaponDef->projDudEffect,cgameGlob->time,position,&axis);
           }
-          uVar9 = SND_FindAliasId(local_58->projDudSound);
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(weaponDef->projDudSound);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           break;
         case 0x42:
-          CG_SetFireToTerrain(local_14,10.0,(int)local_4c->attackerEntityNum,(uint)local_4c->weapon,
-                              1.0,(int *)0x0,0,TFS_DEFAULT);
-          if (((local_4c->lerp).eFlags2 & 1U) == 0) {
-            ByteToDir((uint)local_4c->eventParm,local_3c);
-            Vec3Basis_RightHanded(local_3c,local_30,local_24);
+          CG_SetFireToTerrain(position,10.0,(int)es->attackerEntityNum,(uint)es->weapon,1.0,
+                              (int *)0x0,0,TFS_DEFAULT);
+          if (((es->lerp).eFlags2 & 1U) == 0) {
+            ByteToDir((uint)es->eventParm,axis);
+            Vec3Basis_RightHanded(axis,local_30,local_24);
           }
           else {
-            AnglesToAxis((param_2->pose).angles,&local_3c);
+            AnglesToAxis((cent->pose).angles,&axis);
           }
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
+            ;
           }
           Ragdoll_ExplosionEvent
-                    (param_1,false,local_14,(float)local_58->iExplosionRadius,
-                     (float)local_58->iExplosionRadius,vec3_origin,1.0);
+                    (localClientNum,false,position,(float)weaponDef->iExplosionRadius,
+                     (float)weaponDef->iExplosionRadius,vec3_origin,1.0);
           DynEntCl_ExplosionEvent
-                    (param_1,false,local_14,(float)local_58->iExplosionRadius,
-                     (float)local_58->iExplosionRadius,vec3_origin,1.0,
-                     local_58->iExplosionInnerDamage,local_58->iExplosionOuterDamage);
-          CG_ExplosionEvent(param_1,local_14,(float)local_58->iExplosionInnerDamage,
-                            (float)local_58->iExplosionOuterDamage,(float)local_58->iExplosionRadius
-                            ,0xf);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x75b,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+                    (localClientNum,false,position,(float)weaponDef->iExplosionRadius,
+                     (float)weaponDef->iExplosionRadius,vec3_origin,1.0,
+                     weaponDef->iExplosionInnerDamage,weaponDef->iExplosionOuterDamage);
+          CG_ExplosionEvent(localClientNum,position,(float)weaponDef->iExplosionInnerDamage,
+                            (float)weaponDef->iExplosionOuterDamage,
+                            (float)weaponDef->iExplosionRadius,0xf);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x75b,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          if (local_58->weapType == WEAPTYPE_PROJECTILE) {
-            uVar9 = SND_FindAliasId(local_58->projExplosionSound);
-            CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+          if (weaponDef->weapType == WEAPTYPE_PROJECTILE) {
+            uVar8 = SND_FindAliasId(weaponDef->projExplosionSound);
+            CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           }
           else {
-            uVar9 = SND_FindAliasId(local_58->detonateSound);
-            CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,uVar9);
+            uVar8 = SND_FindAliasId(weaponDef->detonateSound);
+            CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,uVar8);
           }
           break;
         case 0x43:
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if (local_58->projExplosionEffect != (FxEffectDef *)0x0) {
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if (weaponDef->projExplosionEffect != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_58->projExplosionEffect,local_60->time,local_14,&local_3c);
+                      (localClientNum,weaponDef->projExplosionEffect,cgameGlob->time,position,&axis)
+            ;
           }
           break;
         case 0x44:
-          CG_MolotovFloat(param_1,param_2,local_4c);
+          CG_MolotovFloat(localClientNum,cent,es);
           break;
         case 0x45:
-          CG_FakeFireWeapon(param_1,param_2,(uint)local_4c->eventParm,local_14,
-                            (uint)(local_4c->un1).scale);
+          CG_FakeFireWeapon(localClientNum,cent,(uint)es->eventParm,position,(uint)(es->un1).scale);
           break;
         case 0x46:
-          CG_PlayFx(param_1,param_2,(local_4c->lerp).apos.trBase);
+          CG_PlayFx(localClientNum,cent,(es->lerp).apos.trBase);
           break;
         case 0x47:
-          CG_PlayFxOnTag(param_1,param_2,(uint)local_4c->eventParm);
+          CG_PlayFxOnTag(localClientNum,cent,(uint)es->eventParm);
           break;
         case 0x48:
           Ragdoll_ExplosionEvent
-                    (param_1,false,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,vec3_origin,(local_4c->lerp).u.turret.gunAngles[1]);
+                    (localClientNum,false,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,vec3_origin,(es->lerp).u.turret.gunAngles[1]);
           DynEntCl_ExplosionEvent
-                    (param_1,false,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,vec3_origin,(local_4c->lerp).u.turret.gunAngles[1],
-                     (int)(local_4c->lerp).u.turret.gunAngles[2],
-                     (int)(local_4c->lerp).u.turret.heatVal);
+                    (localClientNum,false,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,vec3_origin,(es->lerp).u.turret.gunAngles[1],
+                     (int)(es->lerp).u.turret.gunAngles[2],(int)(es->lerp).u.turret.heatVal);
           R_WaterSimulationNotifyExplosionEx
-                    (local_14,(int)((local_4c->lerp).u.turret.gunAngles[1] * 4.0),
-                     (local_4c->lerp).u.turret.gunAngles[1] * 4.0);
-          CG_ExplosionEvent(param_1,local_14,(local_4c->lerp).u.turret.gunAngles[2],
-                            (local_4c->lerp).u.turret.heatVal,(float)local_4c->eventParm,0xf);
+                    (position,(int)((es->lerp).u.turret.gunAngles[1] * 4.0),
+                     (es->lerp).u.turret.gunAngles[1] * 4.0);
+          CG_ExplosionEvent(localClientNum,position,(es->lerp).u.turret.gunAngles[2],
+                            (es->lerp).u.turret.heatVal,(float)es->eventParm,0xf);
           break;
         case 0x49:
           Ragdoll_ExplosionEvent
-                    (param_1,true,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,vec3_origin,(local_4c->lerp).u.turret.gunAngles[1]);
+                    (localClientNum,true,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,vec3_origin,(es->lerp).u.turret.gunAngles[1]);
           DynEntCl_ExplosionEvent
-                    (param_1,true,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,vec3_origin,(local_4c->lerp).u.turret.gunAngles[1],0
-                     ,0);
+                    (localClientNum,true,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,vec3_origin,(es->lerp).u.turret.gunAngles[1],0,0);
           R_WaterSimulationNotifyExplosionEx
-                    (local_14,(int)((local_4c->lerp).u.turret.gunAngles[1] * 4.0),
-                     (local_4c->lerp).u.turret.gunAngles[1] * 4.0);
+                    (position,(int)((es->lerp).u.turret.gunAngles[1] * 4.0),
+                     (es->lerp).u.turret.gunAngles[1] * 4.0);
           break;
         case 0x4a:
           Ragdoll_ExplosionEvent
-                    (param_1,true,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,(local_4c->lerp).u.turret.gunAngles + 1,1.0);
+                    (localClientNum,true,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,(es->lerp).u.turret.gunAngles + 1,1.0);
           DynEntCl_ExplosionEvent
-                    (param_1,true,local_14,(local_4c->lerp).u.turret.gunAngles[0],
-                     (float)local_4c->eventParm,(local_4c->lerp).u.turret.gunAngles + 1,1.0,0,0);
+                    (localClientNum,true,position,(es->lerp).u.turret.gunAngles[0],
+                     (float)es->eventParm,(es->lerp).u.turret.gunAngles + 1,1.0,0,0);
           break;
         case 0x4b:
-          bVar7 = CL_LocalClient_IsFirstActive(param_1);
-          if (bVar7) {
-            local_150 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-            CG_PhysLaunch(param_1,local_150,local_4c);
+          bVar6 = CL_LocalClient_IsFirstActive(localClientNum);
+          if (bVar6) {
+            cent_6 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+            CG_PhysLaunch(localClientNum,cent_6,es);
           }
           break;
         case 0x4c:
           if ((loc_language->current).integer != 3) {
-            local_168 = CG_GetLocalClientStaticGlobals(param_1);
-            local_188 = local_168->gameModels[(local_4c->index).brushmodel];
-            if (local_188->physPreset == (PhysPreset *)0x0) {
+            cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+            model = cgs->gameModels[(es->index).brushmodel];
+            if (model->physPreset == (PhysPreset *)0x0) {
               Com_Printf(0x19,"Script spawning dyn ent with model with no physPreset %s\n");
             }
             else {
-              AnglesToQuat((local_4c->lerp).apos.trBase,local_184);
-              local_194 = (local_4c->lerp).pos.trBase[0];
-              local_190 = (local_4c->lerp).pos.trBase[1];
-              local_18c = (local_4c->lerp).pos.trBase[2];
-              local_160 = (local_4c->lerp).pos.trDelta[0];
-              local_15c = (local_4c->lerp).pos.trDelta[1];
-              local_158 = (local_4c->lerp).pos.trDelta[2];
-              local_174 = (local_4c->lerp).apos.trDelta[0];
-              local_170 = (local_4c->lerp).apos.trDelta[1];
-              local_16c = (local_4c->lerp).apos.trDelta[2];
-              local_154 = DynEntCl_CreateEntityModel
-                                    (local_188,local_184,&local_194,&local_160,&local_174,0,
-                                     (PhysPreset *)0x0);
-              DynEntCl_SetFadeOut(local_154,DYNENT_DRAW_MODEL);
-              local_164 = (uint)(local_4c->un1).scale;
-              if (local_164 != 0) {
-                pFVar3 = local_168->fxs[local_164];
-                if ((pFVar3 == (FxEffectDef *)0x0) &&
-                   (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp"
-                                             ,0x828,0,"%s"), !bVar7)) {
-                  pcVar5 = (code *)swi(3);
-                  (*pcVar5)();
+              AnglesToQuat((es->lerp).apos.trBase,quat);
+              origin_2 = (es->lerp).pos.trBase[0];
+              local_190 = (es->lerp).pos.trBase[1];
+              local_18c = (es->lerp).pos.trBase[2];
+              hitpos = (es->lerp).pos.trDelta[0];
+              local_15c = (es->lerp).pos.trDelta[1];
+              local_158 = (es->lerp).pos.trDelta[2];
+              force = (es->lerp).apos.trDelta[0];
+              local_170 = (es->lerp).apos.trDelta[1];
+              local_16c = (es->lerp).apos.trDelta[2];
+              id = DynEntCl_CreateEntityModel
+                             (model,quat,&origin_2,&hitpos,&force,0,(PhysPreset *)0x0);
+              DynEntCl_SetFadeOut(id,DYNENT_DRAW_MODEL);
+              fxId = (int)(es->un1).scale;
+              if (fxId != 0) {
+                fx_00 = cgs->fxs[fxId];
+                if ((fx_00 == (FxEffectDef *)0x0) &&
+                   (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp"
+                                             ,0x828,0,"%s"), !bVar6)) {
+                  pcVar4 = (code *)swi(3);
+                  (*pcVar4)();
                   return;
                 }
-                DynEntCl_PlayBoltedFX(pFVar3,local_154);
+                DynEntCl_PlayBoltedFX(fx_00,id);
               }
             }
           }
@@ -2203,125 +2244,124 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           Com_Error(ERR_DROP,"\x15Unknown event: \'%s\'");
           break;
         case 0x4e:
-          pcVar10 = CG_GetEntity(param_1,(local_4c->lerp).pos.trTime);
-          pcVar10->skipBloodImpacts = local_4c->eventParm == 0;
-          pcVar10->heroBloodImpact = local_4c->eventParm == 2;
+          pcVar9 = CG_GetEntity(localClientNum,(es->lerp).pos.trTime);
+          pcVar9->skipBloodImpacts = es->eventParm == 0;
+          pcVar9->heroBloodImpact = es->eventParm == 2;
           break;
         case 0x57:
-          CG_SetWetness(param_1,(int)local_4c->otherEntityNum,
-                        (float)(local_4c->eventParm & 0x7f) / 127.0,
-                        (uint)((local_4c->eventParm & 0x80) != 0));
+          CG_SetWetness(localClientNum,(int)es->otherEntityNum,(float)(es->eventParm & 0x7f) / 127.0
+                        ,(uint)((es->eventParm & 0x80) != 0));
           break;
         case 0x58:
-          CG_StartShakeCamera(param_1,(local_4c->lerp).u.turret.gunAngles[0],
-                              (local_4c->lerp).u.actor.team,(param_2->pose).origin,
-                              (local_4c->lerp).u.turret.gunAngles[1]);
+          CG_StartShakeCamera(localClientNum,(es->lerp).u.turret.gunAngles[0],
+                              (es->lerp).u.actor.team,(cent->pose).origin,
+                              (es->lerp).u.turret.gunAngles[1]);
           break;
         case 0x5b:
-          if (local_61 == false) {
-            local_3b4 = local_58->detonateSound;
+          if (isPlayerView == false) {
+            local_3b4 = weaponDef->detonateSound;
           }
           else {
-            local_3b4 = local_58->detonateSoundPlayer;
+            local_3b4 = weaponDef->detonateSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3b4);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3b4);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x5c:
-          if ((local_61 != false) &&
-             (((local_c->eFlags & 0x300U) != 0 || (*local_10->szXAnims[0x28] == '\0')))) {
-            CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,cgMedia.nightVisionOn);
+          if ((isPlayerView != false) &&
+             (((ps->eFlags & 0x300U) != 0 || (*weaponVariantDef->szXAnims[0x28] == '\0')))) {
+            CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,cgMedia.nightVisionOn);
           }
-          if (local_61 == false) {
-            local_3b8 = local_58->nightVisionWearSound;
+          if (isPlayerView == false) {
+            local_3b8 = weaponDef->nightVisionWearSound;
           }
           else {
-            local_3b8 = local_58->nightVisionWearSoundPlayer;
+            local_3b8 = weaponDef->nightVisionWearSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3b8);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3b8);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x5d:
-          if ((local_61 != false) &&
-             (((local_c->eFlags & 0x300U) != 0 || (*local_10->szXAnims[0x29] == '\0')))) {
-            CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,cgMedia.nightVisionOff);
+          if ((isPlayerView != false) &&
+             (((ps->eFlags & 0x300U) != 0 || (*weaponVariantDef->szXAnims[0x29] == '\0')))) {
+            CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,cgMedia.nightVisionOff);
           }
-          if (local_61 == false) {
-            local_3bc = local_58->nightVisionRemoveSound;
+          if (isPlayerView == false) {
+            local_3bc = weaponDef->nightVisionRemoveSound;
           }
           else {
-            local_3bc = local_58->nightVisionRemoveSoundPlayer;
+            local_3bc = weaponDef->nightVisionRemoveSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_3bc);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3bc);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0x5e:
-          CG_Obituary(param_1,local_4c);
+          CG_Obituary(localClientNum,es);
           break;
         case 0x5f:
-          CG_ObituaryRevive(param_1,local_4c);
+          CG_ObituaryRevive(localClientNum,es);
           break;
         case 0x60:
-          CG_DirectionalHitIndicator(param_1,local_4c);
+          CG_DirectionalHitIndicator(localClientNum,es);
           break;
         case 0x62:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_NO_AMMO_FRAG_GRENADE);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_NO_AMMO_FRAG_GRENADE);
           }
           break;
         case 99:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_NO_AMMO_SPECIAL_GRENADE);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_NO_AMMO_SPECIAL_GRENADE);
           }
           break;
         case 100:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_TARGET_TOO_CLOSE);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_TARGET_TOO_CLOSE);
           }
           break;
         case 0x65:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_NOT_ENOUGH_CLEARANCE);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_NOT_ENOUGH_CLEARANCE);
           }
           break;
         case 0x66:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_LOCKON_REQUIRED);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_LOCKON_REQUIRED);
           }
           break;
         case 0x67:
@@ -2330,27 +2370,27 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
         case 0x6a:
         case 0x6b:
         case 0x6c:
-          CG_DoFootstepEvent(param_1,param_2,local_61,param_3,local_48,local_4d,true);
+          CG_DoFootstepEvent(localClientNum,cent,isPlayerView,event,eventParm,quiet,true);
           break;
         case 0x6d:
-          if (local_61 == false) {
+          if (isPlayerView == false) {
             local_348 = cgMedia.mantleSound;
           }
           else {
             local_348 = cgMedia.mantleSoundPlayer;
           }
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,local_348);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,local_348);
           break;
         case 0x6e:
-          CG_DoJumpEvent(param_1,param_2,local_61,local_48,local_4d);
+          CG_DoJumpEvent(localClientNum,cent,isPlayerView,eventParm,quiet);
           break;
         case 0xad:
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.face_shoot_single,0);
-          local_98 = 1;
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash,0,&local_60->nextSnap->ps,false)
-          ;
-          CG_StartShakeCamera(param_1,0.05,100,(param_2->pose).origin,100.0);
-          CG_CompassAddVehicleWeaponPingInfo(param_1,param_2,(param_2->pose).origin,0x32);
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.face_shoot_single,0);
+          eType_2 = ET_PLAYER;
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash,0,&cgameGlob->nextSnap->ps,
+                        false);
+          CG_StartShakeCamera(localClientNum,0.05,100,(cent->pose).origin,100.0);
+          CG_CompassAddVehicleWeaponPingInfo(localClientNum,cent,(cent->pose).origin,0x32);
           break;
         case 0xae:
         case 0xaf:
@@ -2360,252 +2400,252 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
         case 0xb3:
         case 0xb4:
         case 0xb5:
-          local_9c = 1;
-          local_b0 = param_3 - 0xae;
-          local_a4 = local_b0 & 0x80000003;
-          if ((int)local_a4 < 0) {
-            local_a4 = (local_a4 - 1 | 0xfffffffc) + 1;
+          eType_3 = ET_PLAYER;
+          flashIndex = event - 0xae;
+          gunnerIndex = flashIndex & 0x80000003;
+          if (gunnerIndex < 0) {
+            gunnerIndex = (gunnerIndex - 1U | 0xfffffffc) + 1;
           }
-          local_ac = CG_GetVehicleInfo((uint)(param_2->nextState).un2.vehicleState.vehicleInfoIndex)
-          ;
-          local_a8 = (uint)local_ac->gunnerWeaponIndex[local_a4];
-          if (local_a8 == 0) {
-            uVar9 = CG_GetWeaponIndexForName(local_ac->gunnerWeapon[local_a4]);
-            AssignToSmallerType<unsigned_short>(local_ac->gunnerWeaponIndex + local_a4,uVar9);
-            local_a8 = (uint)local_ac->gunnerWeaponIndex[local_a4];
+          info = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
+          weapon = (int)info->gunnerWeaponIndex[gunnerIndex];
+          if (weapon == 0) {
+            uVar8 = CG_GetWeaponIndexForName(info->gunnerWeapon[gunnerIndex]);
+            AssignToSmallerType<unsigned_short>(info->gunnerWeaponIndex + gunnerIndex,uVar8);
+            weapon = (int)info->gunnerWeaponIndex[gunnerIndex];
           }
-          CG_FireWeapon(param_1,param_2,param_3,scr_const.tag_flash_gunner[local_b0],local_a8,
-                        &local_60->nextSnap->ps,false);
-          if (param_2->vehicle != (cgVehicle_s *)0x0) {
-            param_2->vehicle->lastGunnerFire[local_a4] = local_60->time;
+          CG_FireWeapon(localClientNum,cent,event,scr_const.tag_flash_gunner[flashIndex],weapon,
+                        &cgameGlob->nextSnap->ps,false);
+          if (cent->vehicle != (cgVehicle_s *)0x0) {
+            cent->vehicle->lastGunnerFire[gunnerIndex] = cgameGlob->time;
           }
-          CG_StartShakeCamera(param_1,0.05,100,(param_2->pose).origin,100.0);
-          local_a0 = CG_GetEntity(param_1,local_48);
-          if (((local_a0 != (centity_s *)0x0) && (local_a0->nextValid != 0)) &&
-             (((local_a0->nextState).eType == local_9c &&
-              ((int)local_c->viewlocked_entNum != (param_2->nextState).number)))) {
-            CG_CompassAddWeaponPingInfo(param_1,local_a0,(param_2->pose).origin,0x32);
-            GamerProfile_WriteSettings(param_1);
+          CG_StartShakeCamera(localClientNum,0.05,100,(cent->pose).origin,100.0);
+          attackerCent_2 = CG_GetEntity(localClientNum,eventParm);
+          if (((attackerCent_2 != (centity_s *)0x0) && (attackerCent_2->nextValid != 0)) &&
+             (((int)(attackerCent_2->nextState).eType == eType_3 &&
+              ((int)ps->viewlocked_entNum != (cent->nextState).number)))) {
+            CG_CompassAddWeaponPingInfo(localClientNum,attackerCent_2,(cent->pose).origin,0x32);
+            GamerProfile_WriteSettings(localClientNum);
           }
-          CG_CompassAddVehicleWeaponPingInfo(param_1,param_2,(param_2->pose).origin,0x32);
+          CG_CompassAddVehicleWeaponPingInfo(localClientNum,cent,(cent->pose).origin,0x32);
           break;
         case 0xb6:
-          CG_StartCameraTween(param_1,(float)local_4c->eventParm * 0.001);
+          CG_StartCameraTween(localClientNum,(float)es->eventParm * 0.001);
           break;
         case 0xb7:
-          if (local_4c->eventParm == 0) {
+          if (es->eventParm == 0) {
             CG_EnableAllDestructiblePieces();
           }
           else {
-            CG_DisableDestructiblePiece(param_1,(uint)local_4c->eventParm);
+            CG_DisableDestructiblePiece(localClientNum,(uint)es->eventParm);
           }
           break;
         case 0xb9:
-          if ((((local_60->nextSnap->ps).otherFlags & 6U) == 0) ||
-             (local_4c->number != (uint)(local_60->nextSnap->ps).clientNum)) {
-            bVar7 = false;
+          if ((((cgameGlob->nextSnap->ps).otherFlags & 6U) == 0) ||
+             (es->number != (uint)(cgameGlob->nextSnap->ps).clientNum)) {
+            bVar6 = false;
           }
           else {
-            bVar7 = true;
+            bVar6 = true;
           }
-          if (bVar7) {
-            CG_SetInvalidCmdHint(local_60,INVALID_CMD_CANT_PLANT_EQUIPMENT);
+          if (bVar6) {
+            CG_SetInvalidCmdHint(cgameGlob,INVALID_CMD_CANT_PLANT_EQUIPMENT);
           }
-          if (local_61 == false) {
-            local_368 = local_58->emptyFireSound;
+          if (isPlayerView == false) {
+            local_368 = weaponDef->emptyFireSound;
           }
           else {
-            local_368 = local_58->emptyFireSoundPlayer;
+            local_368 = weaponDef->emptyFireSoundPlayer;
           }
-          uVar9 = SND_FindAliasId(local_368);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_368);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0xba:
-          if (local_61 == false) {
+          if (isPlayerView == false) {
             local_3dc = cgMedia.dtpLaunchSound;
           }
           else {
             local_3dc = cgMedia.dtpLaunchSoundPlayer;
           }
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,local_3dc);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,local_3dc);
           break;
         case 0xbb:
-          if (local_61 == false) {
-            local_3e0 = cgMedia.dtpLandSound[local_48];
+          if (isPlayerView == false) {
+            local_3e0 = cgMedia.dtpLandSound[eventParm];
           }
           else {
-            local_3e0 = cgMedia.dtpLandSoundPlayer[local_48];
+            local_3e0 = cgMedia.dtpLandSoundPlayer[eventParm];
           }
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,local_3e0);
-          if (local_61 == false) {
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,local_3e0);
+          if (isPlayerView == false) {
             local_3e4 = cgMedia.dtpSlideLoopSound;
           }
           else {
             local_3e4 = cgMedia.dtpSlideLoopSoundPlayer;
           }
-          local_3e4 = local_3e4 + local_48;
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,*local_3e4);
-          if (local_61 == false) {
-            CG_PlayBoltedEffect(param_1,cgMedia.fxPuff,local_4c->number,(uint)scr_const.j_elbow_le);
+          local_3e4 = local_3e4 + eventParm;
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,*local_3e4);
+          if (isPlayerView == false) {
+            CG_PlayBoltedEffect(localClientNum,cgMedia.fxPuff,es->number,(uint)scr_const.j_elbow_le)
+            ;
           }
           else {
-            uVar9 = (uint)scr_const.j_elbow_le;
-            iVar13 = CG_WeaponDObjHandle(param_1);
-            CG_PlayBoltedEffect(param_1,cgMedia.fxDtpArmSlide1,iVar13,uVar9);
-            uVar9 = (uint)scr_const.j_wrist_le;
-            iVar13 = CG_WeaponDObjHandle(param_1);
-            CG_PlayBoltedEffect(param_1,cgMedia.fxDtpArmSlide2,iVar13,uVar9);
+            uVar8 = (uint)scr_const.j_elbow_le;
+            iVar11 = CG_WeaponDObjHandle(localClientNum);
+            CG_PlayBoltedEffect(localClientNum,cgMedia.fxDtpArmSlide1,iVar11,uVar8);
+            uVar8 = (uint)scr_const.j_wrist_le;
+            iVar11 = CG_WeaponDObjHandle(localClientNum);
+            CG_PlayBoltedEffect(localClientNum,cgMedia.fxDtpArmSlide2,iVar11,uVar8);
           }
-          Scr_AddInt(param_1,SCRIPTINSTANCE_CLIENT);
-          CScr_NotifyNum(param_1,local_4c->number,0,(uint)cscr_const.dtp_land,1);
+          Scr_AddInt(localClientNum,SCRIPTINSTANCE_CLIENT);
+          CScr_NotifyNum(localClientNum,es->number,0,(uint)cscr_const.dtp_land,1);
           break;
         case 0xbc:
-          if (local_60->genericMaterialMap[0x34] == (Material *)0x0) {
-            pcVar10 = CG_Spawn(param_1);
-            local_60->genericMaterialMap[0x34] = (Material *)pcVar10;
+          if (cgameGlob->genericMaterialMap[0x34] == (Material *)0x0) {
+            pcVar9 = CG_Spawn(localClientNum);
+            cgameGlob->genericMaterialMap[0x34] = (Material *)pcVar9;
           }
-          pMVar4 = local_60->genericMaterialMap[0x34];
-          *(float *)(pMVar4->stateBitsEntry + 8) = (param_2->pose).origin[0];
-          *(float *)(pMVar4->stateBitsEntry + 0xc) = (param_2->pose).origin[1];
-          *(float *)(pMVar4->stateBitsEntry + 0x10) = (param_2->pose).origin[2];
-          pfVar6 = cg_fakeEntitiesArray;
-          iVar13 = param_1 * 0x200 + -0x400 +
-                   *(int *)(local_60->genericMaterialMap[0x34][2].stateBitsEntry + 0x40);
-          if (local_61 == false) {
+          pMVar3 = cgameGlob->genericMaterialMap[0x34];
+          *(float *)(pMVar3->stateBitsEntry + 8) = (cent->pose).origin[0];
+          *(float *)(pMVar3->stateBitsEntry + 0xc) = (cent->pose).origin[1];
+          *(float *)(pMVar3->stateBitsEntry + 0x10) = (cent->pose).origin[2];
+          pfVar5 = cg_fakeEntitiesArray;
+          iVar11 = localClientNum * 0x200 + -0x400 +
+                   *(int *)(cgameGlob->genericMaterialMap[0x34][2].stateBitsEntry + 0x40);
+          if (isPlayerView == false) {
             local_3e8 = cgMedia.dtpSlideLoopSound;
           }
           else {
             local_3e8 = cgMedia.dtpSlideLoopSoundPlayer;
           }
-          local_3e8 = local_3e8 + local_48;
-          uVar9 = SND_FindAliasId(*local_3e8);
-          pfVar6[iVar13].cent.nextState.loopSoundId = uVar9;
-          pfVar6[iVar13].cent.nextState.loopSoundFade = 0;
-          CG_PumpEntityLoopSound(0,&pfVar6[iVar13].cent);
-          if (local_61 == false) {
-            local_3ec = cgMedia.playerSlidingStart_3p[local_48];
+          local_3e8 = local_3e8 + eventParm;
+          uVar8 = SND_FindAliasId(*local_3e8);
+          pfVar5[iVar11].cent.nextState.loopSoundId = uVar8;
+          pfVar5[iVar11].cent.nextState.loopSoundFade = 0;
+          CG_PumpEntityLoopSound(0,&pfVar5[iVar11].cent);
+          if (isPlayerView == false) {
+            local_3ec = cgMedia.playerSlidingStart_3p[eventParm];
           }
           else {
-            local_3ec = cgMedia.playerSlidingStart_1p[local_48];
+            local_3ec = cgMedia.playerSlidingStart_1p[eventParm];
           }
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,local_3ec);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,local_3ec);
           break;
         case 0xbd:
-          if (local_60->genericMaterialMap[0x34] != (Material *)0x0) {
-            iVar13 = param_1 * 0x200 + -0x400 +
-                     *(int *)(local_60->genericMaterialMap[0x34][2].stateBitsEntry + 0x40);
-            cg_fakeEntitiesArray[iVar13].cent.nextState.loopSoundId = 0;
-            CG_Free(param_1,pfVar6[iVar13].cent.nextState.number);
-            local_60->genericMaterialMap[0x34] = (Material *)0x0;
+          if (cgameGlob->genericMaterialMap[0x34] != (Material *)0x0) {
+            iVar11 = localClientNum * 0x200 + -0x400 +
+                     *(int *)(cgameGlob->genericMaterialMap[0x34][2].stateBitsEntry + 0x40);
+            cg_fakeEntitiesArray[iVar11].cent.nextState.loopSoundId = 0;
+            CG_Free(localClientNum,pfVar5[iVar11].cent.nextState.number);
+            cgameGlob->genericMaterialMap[0x34] = (Material *)0x0;
           }
-          if (local_61 == false) {
-            local_3f0 = cgMedia.playerSlidingStop_3p[local_48];
+          if (isPlayerView == false) {
+            local_3f0 = cgMedia.playerSlidingStop_3p[eventParm];
           }
           else {
-            local_3f0 = cgMedia.playerSlidingStop_1p[local_48];
+            local_3f0 = cgMedia.playerSlidingStop_1p[eventParm];
           }
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,local_3f0);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,local_3f0);
         case 0xbe:
-          if (local_61 == false) {
+          if (isPlayerView == false) {
             local_3f4 = (char *)0x0;
           }
           else {
-            local_3f4 = local_58->adsZoomSound;
+            local_3f4 = weaponDef->adsZoomSound;
           }
-          uVar9 = SND_FindAliasId(local_3f4);
-          CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          uVar8 = SND_FindAliasId(local_3f4);
+          CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           break;
         case 0xbf:
           break;
         case 0xc0:
-          if (local_61 != false) {
-            uVar9 = SND_FindAliasId(local_58->stackSound);
-            CG_PlaySound(param_1,local_4c->number,(float *)0x0,0,false,1.0,uVar9);
+          if (isPlayerView != false) {
+            uVar8 = SND_FindAliasId(weaponDef->stackSound);
+            CG_PlaySound(localClientNum,es->number,(float *)0x0,0,false,1.0,uVar8);
           }
           break;
         case 0xc1:
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x70d,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x70d,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_ImpactEffectForWeapon(local_8,(uint)local_4c->surfType,0,local_78,&local_7c);
-          if (local_78[0] != (FxEffectDef *)0x0) {
+          CG_ImpactEffectForWeapon(weaponIdx,(uint)es->surfType,0,&fx,&snd);
+          if (fx != (FxEffectDef *)0x0) {
             FX_PlayOrientedEffect
-                      (param_1,local_78[0],local_60->time,(param_2->nextState).lerp.pos.trBase,
-                       &local_3c);
+                      (localClientNum,fx,cgameGlob->time,(cent->nextState).lerp.pos.trBase,&axis);
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,local_7c);
-          pWVar11 = BG_GetWeaponDef((uint)local_4c->weapon);
-          local_3cc = pWVar11->szSpawnedGrenadeWeaponName;
-          pcVar14 = local_3cc + 1;
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,snd);
+          pWVar10 = BG_GetWeaponDef((uint)es->weapon);
+          local_3cc = pWVar10->szSpawnedGrenadeWeaponName;
+          pcVar12 = local_3cc + 1;
           do {
             cVar2 = *local_3cc;
             local_3cc = local_3cc + 1;
           } while (cVar2 != '\0');
-          if (local_3cc == pcVar14) {
-            CG_AddBolt(param_1,(int)local_4c->groundEntityNum,(uint)local_4c->weapon,
-                       (param_2->nextState).lerp.pos.trBase,(param_2->pose).angles,
-                       *(uchar *)&local_4c->index,(param_2->pose).physUserBody);
+          if (local_3cc == pcVar12) {
+            CG_AddBolt(localClientNum,(int)es->groundEntityNum,(uint)es->weapon,
+                       (cent->nextState).lerp.pos.trBase,(cent->pose).angles,*(uchar *)&es->index,
+                       (cent->pose).physUserBody);
           }
           break;
         case 0xc2:
-          ByteToDir((uint)local_4c->eventParm,local_3c);
-          Vec3Basis_RightHanded(local_3c,local_30,local_24);
-          if ((((((uint)*local_14 & 0x7f800000) == 0x7f800000) ||
-               (((uint)local_14[1] & 0x7f800000) == 0x7f800000)) ||
-              (((uint)local_14[2] & 0x7f800000) == 0x7f800000)) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x724,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          ByteToDir((uint)es->eventParm,axis);
+          Vec3Basis_RightHanded(axis,local_30,local_24);
+          if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+               (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+              (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x724,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          CG_ImpactEffectForWeapon(local_8,7,0,local_78,&local_7c);
-          if (local_78[0] != (FxEffectDef *)0x0) {
-            FX_PlayOrientedEffect(param_1,local_78[0],local_60->time,local_14,&local_3c);
+          CG_ImpactEffectForWeapon(weaponIdx,7,0,&fx,&snd);
+          if (fx != (FxEffectDef *)0x0) {
+            FX_PlayOrientedEffect(localClientNum,fx,cgameGlob->time,position,&axis);
           }
-          CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,local_7c);
-          bVar7 = CL_LocalClient_IsFirstActive(param_1);
-          if (((bVar7) &&
-              (local_104 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum),
-              local_104 != (centity_s *)0x0)) && ((local_104->pose).eType == '\x11')) {
-            if ((((local_104->pose).isRagdoll == '\0') &&
-                (bVar7 = Com_IsRagdollTrajectory(&(local_104->nextState).lerp.pos), bVar7)) &&
-               ((local_104->pose).ragdollHandle == 0)) {
-              CG_CreateRagdollObject(param_1,local_104);
+          CG_PlaySound(localClientNum,0x3fe,position,0,false,1.0,snd);
+          bVar6 = CL_LocalClient_IsFirstActive(localClientNum);
+          if (((bVar6) &&
+              (attachedCorpse = CG_GetEntity(localClientNum,(int)es->otherEntityNum),
+              attachedCorpse != (centity_s *)0x0)) && ((attachedCorpse->pose).eType == '\x11')) {
+            if ((((attachedCorpse->pose).isRagdoll == '\0') &&
+                (bVar6 = Com_IsRagdollTrajectory(&(attachedCorpse->nextState).lerp.pos), bVar6)) &&
+               ((attachedCorpse->pose).ragdollHandle == 0)) {
+              CG_CreateRagdollObject(localClientNum,attachedCorpse);
             }
-            if (((local_104->pose).isRagdoll != '\0') && (0 < (local_104->pose).ragdollHandle)) {
-              Ragdoll_Attach(param_1,(local_104->pose).ragdollHandle,local_4c->number,
-                             (uint)(local_4c->index).bone);
+            if (((attachedCorpse->pose).isRagdoll != '\0') &&
+               (0 < (attachedCorpse->pose).ragdollHandle)) {
+              Ragdoll_Attach(localClientNum,(attachedCorpse->pose).ragdollHandle,es->number,
+                             (uint)(es->index).bone);
             }
           }
           break;
         case 0xc5:
-          if ((0xb < (int)local_48) &&
-             (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
-                                       0x8bc,0,"%s"), !bVar7)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          if ((0xb < eventParm) &&
+             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",
+                                       0x8bc,0,"%s"), !bVar6)) {
+            pcVar4 = (code *)swi(3);
+            (*pcVar4)();
             return;
           }
-          switch(local_48) {
-          case INVALID_CMD_NO_HINT:
+          switch(eventParm) {
+          case 0:
             Scr_AddConstString((uint)cscr_const.face_casual,SCRIPTINSTANCE_CLIENT);
             break;
-          case INVALID_CMD_STAND_HINT:
+          case 1:
             Scr_AddConstString((uint)cscr_const.face_alert,SCRIPTINSTANCE_CLIENT);
             break;
-          case INVALID_CMD_CROUCH_HINT:
+          case 2:
             Scr_AddConstString((uint)cscr_const.face_cqb,SCRIPTINSTANCE_CLIENT);
             break;
-          case INVALID_CMD_PRONE_HINT:
+          case 3:
             Scr_AddConstString((uint)cscr_const.face_running,SCRIPTINSTANCE_CLIENT);
             break;
           case 4:
@@ -2635,65 +2675,65 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
           default:
             Scr_AddConstString((uint)cscr_const.none,SCRIPTINSTANCE_CLIENT);
           }
-          pcVar10 = CG_GetEntity(param_1,local_4c->number);
-          if (pcVar10->nextValid != 0) {
-            CScr_Notify(param_1,pcVar10,cscr_const.face,1);
+          pcVar9 = CG_GetEntity(localClientNum,es->number);
+          if (pcVar9->nextValid != 0) {
+            CScr_Notify(localClientNum,pcVar9,cscr_const.face,1);
           }
           break;
         case 0xc6:
-          if (local_48 == INVALID_CMD_NO_HINT) {
+          if (eventParm == 0) {
             local_3fc = 0x3ff;
           }
           else {
-            local_3fc = local_4c->number;
+            local_3fc = es->number;
           }
           CG_EnableLocalWindSource(local_3fc);
           break;
         case 199:
-          pcVar10 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-          pcVar10->bFloatLonger = 1;
+          pcVar9 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+          pcVar9->bFloatLonger = 1;
           break;
         case 200:
-          pcVar10 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-          pcVar10->bForceBuoyancy = 1;
+          pcVar9 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+          pcVar9->bForceBuoyancy = 1;
           break;
         case 0xc9:
-          pcVar10 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-          local_c0 = (PhysObjUserData *)0x0;
-          if (pcVar10->nitrousVeh == (NitrousVehicle *)0x0) {
-            if (((pcVar10->pose).physObjId != 0) && ((pcVar10->pose).physObjId != -1)) {
-              local_c0 = (PhysObjUserData *)(pcVar10->pose).physObjId;
+          pcVar9 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+          userData = (PhysObjUserData *)0x0;
+          if (pcVar9->nitrousVeh == (NitrousVehicle *)0x0) {
+            if (((pcVar9->pose).physObjId != 0) && ((pcVar9->pose).physObjId != -1)) {
+              userData = (PhysObjUserData *)(pcVar9->pose).physObjId;
             }
           }
           else {
-            local_c0 = pcVar10->nitrousVeh->m_phys_user_data;
+            userData = pcVar9->nitrousVeh->m_phys_user_data;
           }
-          if (local_c0 != (PhysObjUserData *)0x0) {
-            local_c0->m_flags = local_c0->m_flags | 8;
+          if (userData != (PhysObjUserData *)0x0) {
+            userData->m_flags = userData->m_flags | 8;
           }
           break;
         case 0xca:
-          pcVar10 = CG_GetEntity(param_1,(int)local_4c->otherEntityNum);
-          local_cc = (PhysObjUserData *)0x0;
-          if (pcVar10->nitrousVeh == (NitrousVehicle *)0x0) {
-            if (((pcVar10->pose).physObjId != 0) && ((pcVar10->pose).physObjId != -1)) {
-              local_cc = (PhysObjUserData *)(pcVar10->pose).physObjId;
+          pcVar9 = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+          userData_2 = (PhysObjUserData *)0x0;
+          if (pcVar9->nitrousVeh == (NitrousVehicle *)0x0) {
+            if (((pcVar9->pose).physObjId != 0) && ((pcVar9->pose).physObjId != -1)) {
+              userData_2 = (PhysObjUserData *)(pcVar9->pose).physObjId;
             }
           }
           else {
-            local_cc = pcVar10->nitrousVeh->m_phys_user_data;
+            userData_2 = pcVar9->nitrousVeh->m_phys_user_data;
           }
-          if (local_cc != (PhysObjUserData *)0x0) {
-            local_cc->buoyancy =
-                 (int)((float)local_cc->buoyancy * (float)local_4c->eventParm * 0.001);
+          if (userData_2 != (PhysObjUserData *)0x0) {
+            userData_2->buoyancy = (int)((float)userData_2->buoyancy * (float)es->eventParm * 0.001)
+            ;
           }
           break;
         case 0xcb:
           break;
         case 0xcd:
-          if (local_18 == (local_60->predictedPlayerState).clientNum) {
-            if ((local_61 != false) && ((local_c->pm_flags & 4U) == 0)) {
-              CG_SetInvalidStanceHint(local_60,local_48);
+          if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+            if ((isPlayerView != false) && ((ps->pm_flags & 4U) == 0)) {
+              CG_SetInvalidStanceHint(cgameGlob,eventParm);
             }
           }
           else {
@@ -2702,33 +2742,33 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
         }
       }
       else {
-        CG_DoLandEvent(param_1,param_2,local_61,param_3 + -0x8e,local_4d,true);
-        if (local_18 == (local_60->predictedPlayerState).clientNum) {
-          fVar15 = (float)(int)local_48 * 0.01 *
+        CG_DoLandEvent(localClientNum,cent,isPlayerView,event + -0x8e,quiet,true);
+        if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+          fVar13 = (float)eventParm * 0.01 *
                    ((bg_fallDamageMaxHeight->current).value -
                    (bg_fallDamageMinHeight->current).value) +
                    (bg_fallDamageMinHeight->current).value;
-          if (12.0 < fVar15) {
-            local_5c = (int)(((fVar15 - 12.0) / 26.0) * 4.0 + 4.0);
+          if (12.0 < fVar13) {
+            viewDip = (int)(((fVar13 - 12.0) / 26.0) * 4.0 + 4.0);
           }
           else {
-            local_5c = 0;
+            viewDip = 0;
           }
-          if (0x18 < local_5c) {
-            local_5c = 0x18;
+          if (0x18 < viewDip) {
+            viewDip = 0x18;
           }
-          if (0 < local_5c) {
-            local_60->landChange = 0.0 - (float)local_5c;
-            local_60->landTime = local_60->time;
+          if (0 < viewDip) {
+            cgameGlob->landChange = 0.0 - (float)viewDip;
+            cgameGlob->landTime = cgameGlob->time;
           }
         }
       }
     }
     else {
-      CG_DoLandEvent(param_1,param_2,local_61,param_3 + -0x6f,local_4d,false);
-      if (local_18 == (local_60->predictedPlayerState).clientNum) {
-        local_60->landChange = 0.0 - (float)(int)local_48;
-        local_60->landTime = local_60->time;
+      CG_DoLandEvent(localClientNum,cent,isPlayerView,event + -0x6f,quiet,false);
+      if (clientNum == (uint)(cgameGlob->predictedPlayerState).clientNum) {
+        cgameGlob->landChange = 0.0 - (float)eventParm;
+        cgameGlob->landTime = cgameGlob->time;
       }
     }
   }
@@ -2744,54 +2784,54 @@ void __cdecl CG_EntityEvent(int param_1,centity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PhysLaunch(int param_1,centity_s *param_2,entityState_s *param_3)
+void __cdecl CG_PhysLaunch(int localClientNum,centity_s *cent,entityState_s *es)
 
 {
   bool bVar1;
   float *pfVar2;
-  float local_14;
+  float hitp;
   float local_10;
   float local_c;
-  undefined1 local_5;
+  bool relativeHitP;
   
-  bVar1 = CL_LocalClient_IsFirstActive(param_1);
+  bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
   if (bVar1) {
-    if (param_2->nitrousVeh == (NitrousVehicle *)0x0) {
-      if ((((param_2->pose).isRagdoll == '\0') &&
-          (bVar1 = Com_IsRagdollTrajectory(&(param_2->nextState).lerp.pos), bVar1)) &&
-         ((param_2->pose).ragdollHandle == 0)) {
-        CG_CreateRagdollObject(param_1,param_2);
+    if (cent->nitrousVeh == (NitrousVehicle *)0x0) {
+      if ((((cent->pose).isRagdoll == '\0') &&
+          (bVar1 = Com_IsRagdollTrajectory(&(cent->nextState).lerp.pos), bVar1)) &&
+         ((cent->pose).ragdollHandle == 0)) {
+        CG_CreateRagdollObject(localClientNum,cent);
       }
-      if (((param_2->pose).isRagdoll != '\0') && (0 < (param_2->pose).ragdollHandle)) {
-        Ragdoll_Launch(param_1,(param_2->pose).ragdollHandle,(param_3->lerp).pos.trBase,
-                       (uint)param_3->eventParm);
+      if (((cent->pose).isRagdoll != '\0') && (0 < (cent->pose).ragdollHandle)) {
+        Ragdoll_Launch(localClientNum,(cent->pose).ragdollHandle,(es->lerp).pos.trBase,
+                       (uint)es->eventParm);
       }
     }
     else {
-      local_5 = param_3->eventParm != 0;
-      if ((bool)local_5) {
-        local_14 = (param_3->lerp).pos.trDelta[0];
-        local_10 = (param_3->lerp).pos.trDelta[1];
-        local_c = (param_3->lerp).pos.trDelta[2];
+      relativeHitP = es->eventParm != 0;
+      if (relativeHitP) {
+        hitp = (es->lerp).pos.trDelta[0];
+        local_10 = (es->lerp).pos.trDelta[1];
+        local_c = (es->lerp).pos.trDelta[2];
       }
       else {
-        pfVar2 = (param_3->lerp).pos.trDelta;
-        if (*pfVar2 * *pfVar2 + (param_3->lerp).pos.trDelta[1] * (param_3->lerp).pos.trDelta[1] +
-            (param_3->lerp).pos.trDelta[2] * (param_3->lerp).pos.trDelta[2] <= 0.0) {
-          local_14 = 0.0;
+        pfVar2 = (es->lerp).pos.trDelta;
+        if (*pfVar2 * *pfVar2 + (es->lerp).pos.trDelta[1] * (es->lerp).pos.trDelta[1] +
+            (es->lerp).pos.trDelta[2] * (es->lerp).pos.trDelta[2] <= 0.0) {
+          hitp = 0.0;
           local_10 = 0.0;
           local_c = 0.0;
         }
         else {
-          local_14 = (param_3->lerp).pos.trDelta[0] + (param_2->pose).origin[0];
-          local_10 = (param_3->lerp).pos.trDelta[1] + (param_2->pose).origin[1];
-          local_c = (param_3->lerp).pos.trDelta[2] + (param_2->pose).origin[2];
+          hitp = (es->lerp).pos.trDelta[0] + (cent->pose).origin[0];
+          local_10 = (es->lerp).pos.trDelta[1] + (cent->pose).origin[1];
+          local_c = (es->lerp).pos.trDelta[2] + (cent->pose).origin[2];
         }
       }
-      if ((param_3->un1).scale != '\0') {
-        param_2->nitrousVeh->m_flags = param_2->nitrousVeh->m_flags | 0x1000;
+      if ((es->un1).scale != '\0') {
+        cent->nitrousVeh->m_flags = cent->nitrousVeh->m_flags | 0x1000;
       }
-      Vehicle_Launch(param_1,param_2,&local_14,(param_3->lerp).pos.trBase,(bool)local_5);
+      Vehicle_Launch(localClientNum,cent,&hitp,(es->lerp).pos.trBase,relativeHitP);
     }
   }
   return;
@@ -2805,29 +2845,29 @@ void __cdecl CG_PhysLaunch(int param_1,centity_s *param_2,entityState_s *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CheckEvents(int param_1,centity_s *param_2)
+void __cdecl CG_CheckEvents(int localClientNum,centity_s *cent)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  DWORD DVar4;
+  char *Name;
+  DWORD DVar3;
   
-  if (((param_2->nextState).eventSequence != 0) &&
+  if (((cent->nextState).eventSequence != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_event.cpp",0x933,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->previousEventSequence == 0) {
-    param_2->previousEventSequence = 1;
-    pcVar3 = BG_GetEntityTypeName((int)(param_2->nextState).eType);
-    PIXBeginNamedEvent(-1,pcVar3);
-    CG_CalcEntityLerpPositions(param_1,param_2);
-    CG_EntityEvent(param_1,param_2,(param_2->nextState).eType + -0x15);
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  if (cent->previousEventSequence == 0) {
+    cent->previousEventSequence = 1;
+    Name = BG_GetEntityTypeName((int)(cent->nextState).eType);
+    PIXBeginNamedEvent(-1,Name);
+    CG_CalcEntityLerpPositions(localClientNum,cent);
+    CG_EntityEvent(localClientNum,cent,(cent->nextState).eType + -0x15);
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -2842,55 +2882,56 @@ void __cdecl CG_CheckEvents(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CheckEntEvents(int param_1,centity_s *param_2)
+void __cdecl CG_CheckEntEvents(int localClientNum,centity_s *cent)
 
 {
   ushort uVar1;
   bool bVar2;
-  char *pcVar3;
-  DWORD DVar4;
-  uint uVar5;
+  char *Name;
+  DWORD DVar3;
+  uint event_00;
   short local_14;
-  uint local_8;
+  int event;
+  ushort oldEventParm;
+  int i;
   
-  if ((param_2->nextState).eventSequence == 0) {
-    param_2->previousEventSequence = 0;
+  if ((cent->nextState).eventSequence == 0) {
+    cent->previousEventSequence = 0;
   }
   else {
-    local_14 = param_2->previousEventSequence;
-    if ((param_2->nextState).eventSequence + 0x40 < (int)local_14) {
+    local_14 = cent->previousEventSequence;
+    if ((cent->nextState).eventSequence + 0x40 < (int)local_14) {
       local_14 = local_14 + -0x100;
     }
-    param_2->previousEventSequence = local_14;
-    if (4 < (int)(param_2->nextState).eventSequence - (int)param_2->previousEventSequence) {
-      param_2->previousEventSequence = (param_2->nextState).eventSequence + -4;
+    cent->previousEventSequence = local_14;
+    if (4 < (int)(cent->nextState).eventSequence - (int)cent->previousEventSequence) {
+      cent->previousEventSequence = (cent->nextState).eventSequence + -4;
     }
-    if (param_2->previousEventSequence < (param_2->nextState).eventSequence) {
-      if ((param_2->nextState).eType != 0x11) {
-        CG_CalcEntityLerpPositions(param_1,param_2);
-        bVar2 = CG_EntityLinked(param_1,param_2);
+    if (cent->previousEventSequence < (cent->nextState).eventSequence) {
+      if ((cent->nextState).eType != 0x11) {
+        CG_CalcEntityLerpPositions(localClientNum,cent);
+        bVar2 = CG_EntityLinked(localClientNum,cent);
         if (bVar2) {
-          CG_LinkTransformForEntity(param_1,param_2,(param_2->pose).origin,(param_2->pose).angles);
+          CG_LinkTransformForEntity(localClientNum,cent,(cent->pose).origin,(cent->pose).angles);
         }
       }
-      uVar1 = (param_2->nextState).eventParm;
-      for (local_8 = (uint)param_2->previousEventSequence;
-          local_8 != (int)(param_2->nextState).eventSequence; local_8 = local_8 + 1) {
-        uVar5 = (uint)(param_2->nextState).events[local_8 & 3];
-        (param_2->nextState).eventParm = (param_2->nextState).eventParms[local_8 & 3];
-        pcVar3 = BG_GetEntityTypeName(uVar5 + 0x15);
-        PIXBeginNamedEvent(-1,pcVar3);
-        CG_EntityEvent(param_1,param_2,uVar5);
-        DVar4 = GetCurrentThreadId();
-        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      uVar1 = (cent->nextState).eventParm;
+      for (i = (int)cent->previousEventSequence; i != (cent->nextState).eventSequence; i = i + 1) {
+        event_00 = (uint)(cent->nextState).events[i & 3];
+        (cent->nextState).eventParm = (cent->nextState).eventParms[i & 3];
+        Name = BG_GetEntityTypeName(event_00 + 0x15);
+        PIXBeginNamedEvent(-1,Name);
+        CG_EntityEvent(localClientNum,cent,event_00);
+        DVar3 = GetCurrentThreadId();
+        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
-      (param_2->nextState).eventParm = uVar1;
-      param_2->previousEventSequence = (param_2->nextState).eventSequence;
+      (cent->nextState).eventParm = uVar1;
+      cent->previousEventSequence = (cent->nextState).eventSequence;
     }
     else {
-      param_2->previousEventSequence = (param_2->nextState).eventSequence;
+      cent->previousEventSequence = (cent->nextState).eventSequence;
     }
   }
   return;
@@ -2899,19 +2940,19 @@ void __cdecl CG_CheckEntEvents(int param_1,centity_s *param_2)
 
 // 004B81B0  CG_CheckIfDualWieldEmpty  (cgame/cg_event.cpp:2427)
 
-bool __cdecl CG_CheckIfDualWieldEmpty(playerState_s *param_1,int param_2)
+bool __cdecl CG_CheckIfDualWieldEmpty(playerState_s *ps,int weapIndex)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
+  WeaponDef *weapDef;
   
-  if (param_2 == 0) {
-    param_2 = (int)param_1->weapon;
+  if (weapIndex == 0) {
+    weapIndex = (int)ps->weapon;
   }
-  pWVar1 = BG_GetWeaponDef(param_2);
-  iVar2 = BG_GetAmmoInClip(param_1,param_2);
-  if ((iVar2 == 0) && (iVar2 = BG_GetAmmoInClip(param_1,pWVar1->dualWieldWeaponIndex), iVar2 == 0))
-  {
+  pWVar1 = BG_GetWeaponDef(weapIndex);
+  iVar2 = BG_GetAmmoInClip(ps,weapIndex);
+  if ((iVar2 == 0) && (iVar2 = BG_GetAmmoInClip(ps,pWVar1->dualWieldWeaponIndex), iVar2 == 0)) {
     return false;
   }
   return true;
@@ -2920,7 +2961,7 @@ bool __cdecl CG_CheckIfDualWieldEmpty(playerState_s *param_1,int param_2)
 
 // 004B6E00  Com_IsRagdollTrajectory  (universal/q_shared.h:2754)
 
-bool __cdecl Com_IsRagdollTrajectory(trajectory_t *param_1)
+bool __cdecl Com_IsRagdollTrajectory(trajectory_t *trajectory)
 
 {
   code *pcVar1;
@@ -2928,7 +2969,7 @@ bool __cdecl Com_IsRagdollTrajectory(trajectory_t *param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if (param_1 == (trajectory_t *)0x0) {
+  if (trajectory == (trajectory_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0xac3,0,"%s");
     if (!bVar2) {
@@ -2937,7 +2978,7 @@ bool __cdecl Com_IsRagdollTrajectory(trajectory_t *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->trType < 0xc) || (0xe < param_1->trType)) {
+  if ((trajectory->trType < 0xc) || (0xe < trajectory->trType)) {
     local_8 = false;
   }
   else {

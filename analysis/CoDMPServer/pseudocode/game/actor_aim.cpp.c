@@ -7,17 +7,17 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
+void __cdecl Actor_FillWeaponParms(actor_s *self,weaponParms *wp)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  actor_s *paVar4;
+  actor_s *vForward;
   float *in_stack_ffffffa4;
   float *in_stack_ffffffa8;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1b5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -25,7 +25,7 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  if (param_2 == (weaponParms *)0x0) {
+  if (wp == (weaponParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1b6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -33,9 +33,9 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  if (((((uint)param_1->vLookForward[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1->vLookForward[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->vLookForward[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)self->vLookForward[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)self->vLookForward[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)self->vLookForward[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1b8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -43,9 +43,9 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  if (((((uint)param_1->vLookRight[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1->vLookRight[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->vLookRight[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)self->vLookRight[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)self->vLookRight[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)self->vLookRight[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1b9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -53,9 +53,9 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  if (((((uint)param_1->vLookUp[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1->vLookUp[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->vLookUp[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)self->vLookUp[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)self->vLookUp[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)self->vLookUp[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1ba,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -63,31 +63,31 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  param_2->forward[0] = param_1->vLookForward[0];
-  param_2->forward[1] = param_1->vLookForward[1];
-  param_2->forward[2] = param_1->vLookForward[2];
-  param_2->right[0] = param_1->vLookRight[0];
-  param_2->right[1] = param_1->vLookRight[1];
-  param_2->right[2] = param_1->vLookRight[2];
-  param_2->up[0] = param_1->vLookUp[0];
-  param_2->up[1] = param_1->vLookUp[1];
-  param_2->up[2] = param_1->vLookUp[2];
-  paVar4 = (actor_s *)param_2->gunForward;
-  iVar3 = Actor_GetMuzzleInfo(paVar4,in_stack_ffffffa4,in_stack_ffffffa8);
+  wp->forward[0] = self->vLookForward[0];
+  wp->forward[1] = self->vLookForward[1];
+  wp->forward[2] = self->vLookForward[2];
+  wp->right[0] = self->vLookRight[0];
+  wp->right[1] = self->vLookRight[1];
+  wp->right[2] = self->vLookRight[2];
+  wp->up[0] = self->vLookUp[0];
+  wp->up[1] = self->vLookUp[1];
+  wp->up[2] = self->vLookUp[2];
+  vForward = (actor_s *)wp->gunForward;
+  iVar3 = Actor_GetMuzzleInfo(vForward,in_stack_ffffffa4,in_stack_ffffffa8);
   if (iVar3 == 0) {
-    Actor_GetEyePosition(paVar4,in_stack_ffffffa4);
-    param_2->gunForward[0] = param_2->forward[0];
-    param_2->gunForward[1] = param_2->forward[1];
-    param_2->gunForward[2] = param_2->forward[2];
+    Actor_GetEyePosition(vForward,in_stack_ffffffa4);
+    wp->gunForward[0] = wp->forward[0];
+    wp->gunForward[1] = wp->forward[1];
+    wp->gunForward[2] = wp->forward[2];
   }
   else {
-    param_2->forward[0] = param_2->gunForward[0];
-    param_2->forward[1] = param_2->gunForward[1];
-    param_2->forward[2] = param_2->gunForward[2];
+    wp->forward[0] = wp->gunForward[0];
+    wp->forward[1] = wp->gunForward[1];
+    wp->forward[2] = wp->gunForward[2];
   }
-  if (((((uint)param_2->muzzleTrace[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2->muzzleTrace[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2->muzzleTrace[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->muzzleTrace[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->muzzleTrace[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->muzzleTrace[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1ca,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -95,9 +95,9 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
       return;
     }
   }
-  if (((((uint)param_2->gunForward[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2->gunForward[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2->gunForward[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)wp->gunForward[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)wp->gunForward[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)wp->gunForward[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x1cb,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -116,11 +116,11 @@ void __cdecl Actor_FillWeaponParms(actor_s *param_1,weaponParms *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_InitWeaponParms(actor_s *param_1,uint param_2,weaponParms *param_3)
+void __cdecl Actor_InitWeaponParms(actor_s *self,uint weapon,weaponParms *wp)
 
 {
-  Actor_FillWeaponParms(param_1,param_3);
-  Weapon_SetWeaponParamsWeapon(param_3,param_2);
+  Actor_FillWeaponParms(self,wp);
+  Weapon_SetWeaponParamsWeapon(wp,weapon);
   return;
 }
 
@@ -132,27 +132,28 @@ void __cdecl Actor_InitWeaponParms(actor_s *param_1,uint param_2,weaponParms *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Actor_Melee(actor_s *param_1,float *param_2)
+gentity_s * __cdecl Actor_Melee(actor_s *self,float *direction)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  uint uVar5;
-  sentient_s *psVar6;
-  float fVar7;
-  float fVar8;
+  char *name;
+  uint weapon_00;
+  sentient_s *psVar4;
+  float fVar5;
+  float fVar6;
   actor_s *in_stack_ffffff70;
   float *in_stack_ffffff74;
-  float local_68;
+  float enemyEye;
   float local_64;
   float local_60;
-  ushort local_5c;
-  weaponParms local_54;
-  gentity_s *local_8;
+  int weapon;
+  sentient_s *enemy;
+  weaponParms wp;
+  gentity_s *ent;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x3bb,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -160,7 +161,7 @@ gentity_s * __cdecl Actor_Melee(actor_s *param_1,float *param_2)
       return pgVar3;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x3c1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -168,44 +169,44 @@ gentity_s * __cdecl Actor_Melee(actor_s *param_1,float *param_2)
       return pgVar3;
     }
   }
-  local_8 = param_1->ent;
-  pcVar4 = SL_ConvertToString((uint)param_1->weaponName,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  if (param_1->lastShotTime == level.time) {
+  ent = self->ent;
+  name = SL_ConvertToString((uint)self->weaponName,SCRIPTINSTANCE_SERVER);
+  weapon_00 = G_GetWeaponIndexForName(name);
+  if (self->lastShotTime == level.time) {
     Com_PrintError(0x12,
                    "ERROR: Attempt for same actor (entnum %d) to shoot/melee more than once in a frame.\n"
                   );
     pgVar3 = (gentity_s *)0x0;
   }
   else {
-    param_1->lastShotTime = level.time;
-    psVar6 = Actor_GetTargetSentient(in_stack_ffffff70);
-    Actor_InitWeaponParms(param_1,uVar5,&local_54);
+    self->lastShotTime = level.time;
+    psVar4 = Actor_GetTargetSentient(in_stack_ffffff70);
+    Actor_InitWeaponParms(self,weapon_00,&wp);
     Actor_GetEyePosition(in_stack_ffffff70,in_stack_ffffff74);
-    if (psVar6 == (sentient_s *)0x0) {
-      if (param_2 != (float *)0x0) {
-        local_54.forward[0] = *param_2;
-        local_54.forward[1] = param_2[1];
-        local_54.forward[2] = param_2[2];
-        Vec3Normalize(local_54.forward);
+    if (psVar4 == (sentient_s *)0x0) {
+      if (direction != (float *)0x0) {
+        wp.forward[0] = *direction;
+        wp.forward[1] = direction[1];
+        wp.forward[2] = direction[2];
+        Vec3Normalize(wp.forward);
       }
     }
     else {
       Sentient_GetThirdPersonEyePosition((sentient_s *)in_stack_ffffff70,in_stack_ffffff74);
-      local_54.forward[0] = local_68 - local_54.muzzleTrace[0];
-      local_54.forward[1] = local_64 - local_54.muzzleTrace[1];
-      local_54.forward[2] = local_60 - local_54.muzzleTrace[2];
-      if (param_2 != (float *)0x0) {
-        fVar7 = Vec2Length(param_2);
-        fVar8 = Vec2Length(local_54.forward);
-        local_54.forward[0] = (fVar8 / fVar7) * *param_2;
-        local_54.forward[1] = (fVar8 / fVar7) * param_2[1];
+      wp.forward[0] = enemyEye - wp.muzzleTrace[0];
+      wp.forward[1] = local_64 - wp.muzzleTrace[1];
+      wp.forward[2] = local_60 - wp.muzzleTrace[2];
+      if (direction != (float *)0x0) {
+        fVar5 = Vec2Length(direction);
+        fVar6 = Vec2Length(wp.forward);
+        wp.forward[0] = (fVar6 / fVar5) * *direction;
+        wp.forward[1] = (fVar6 / fVar5) * direction[1];
       }
-      Vec3Normalize(local_54.forward);
+      Vec3Normalize(wp.forward);
     }
-    local_5c = (ushort)uVar5;
-    (local_8->s).weapon = local_5c;
-    if ((local_8->s).weapon != uVar5) {
+    weapon._0_2_ = (ushort)weapon_00;
+    (ent->s).weapon = (ushort)weapon;
+    if ((ent->s).weapon != weapon_00) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_aim.cpp",0x3f6,0,"%s"
                               );
       if (!bVar2) {
@@ -214,7 +215,7 @@ gentity_s * __cdecl Actor_Melee(actor_s *param_1,float *param_2)
         return pgVar3;
       }
     }
-    pgVar3 = Weapon_Melee(param_1->ent,&local_54,(ai_meleeRange->current).value,
+    pgVar3 = Weapon_Melee(self->ent,&wp,(ai_meleeRange->current).value,
                           (ai_meleeWidth->current).value,(ai_meleeHeight->current).value,level.time)
     ;
   }

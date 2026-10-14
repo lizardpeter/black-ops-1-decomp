@@ -2,7 +2,7 @@
 
 // 00965906  fastcopy_I  (line unknown)
 
-void __cdecl fastcopy_I(void *param_1,void *param_2,int param_3)
+void __cdecl fastcopy_I(void *dst,void *src,int len)
 
 {
   undefined4 uVar1;
@@ -22,72 +22,72 @@ void __cdecl fastcopy_I(void *param_1,void *param_2,int param_3)
   undefined4 uVar15;
   uint uVar16;
   
-  uVar16 = (uint)param_3 >> 7;
+  uVar16 = (uint)len >> 7;
   do {
-    uVar1 = *(undefined4 *)((int)param_2 + 4);
-    uVar2 = *(undefined4 *)((int)param_2 + 8);
-    uVar3 = *(undefined4 *)((int)param_2 + 0xc);
-    uVar4 = *(undefined4 *)((int)param_2 + 0x10);
-    uVar5 = *(undefined4 *)((int)param_2 + 0x14);
-    uVar6 = *(undefined4 *)((int)param_2 + 0x18);
-    uVar7 = *(undefined4 *)((int)param_2 + 0x1c);
-    uVar8 = *(undefined4 *)((int)param_2 + 0x20);
-    uVar9 = *(undefined4 *)((int)param_2 + 0x24);
-    uVar10 = *(undefined4 *)((int)param_2 + 0x28);
-    uVar11 = *(undefined4 *)((int)param_2 + 0x2c);
-    uVar12 = *(undefined4 *)((int)param_2 + 0x30);
-    uVar13 = *(undefined4 *)((int)param_2 + 0x34);
-    uVar14 = *(undefined4 *)((int)param_2 + 0x38);
-    uVar15 = *(undefined4 *)((int)param_2 + 0x3c);
-    *(undefined4 *)param_1 = *(undefined4 *)param_2;
-    *(undefined4 *)((int)param_1 + 4) = uVar1;
-    *(undefined4 *)((int)param_1 + 8) = uVar2;
-    *(undefined4 *)((int)param_1 + 0xc) = uVar3;
-    *(undefined4 *)((int)param_1 + 0x10) = uVar4;
-    *(undefined4 *)((int)param_1 + 0x14) = uVar5;
-    *(undefined4 *)((int)param_1 + 0x18) = uVar6;
-    *(undefined4 *)((int)param_1 + 0x1c) = uVar7;
-    *(undefined4 *)((int)param_1 + 0x20) = uVar8;
-    *(undefined4 *)((int)param_1 + 0x24) = uVar9;
-    *(undefined4 *)((int)param_1 + 0x28) = uVar10;
-    *(undefined4 *)((int)param_1 + 0x2c) = uVar11;
-    *(undefined4 *)((int)param_1 + 0x30) = uVar12;
-    *(undefined4 *)((int)param_1 + 0x34) = uVar13;
-    *(undefined4 *)((int)param_1 + 0x38) = uVar14;
-    *(undefined4 *)((int)param_1 + 0x3c) = uVar15;
-    uVar1 = *(undefined4 *)((int)param_2 + 0x44);
-    uVar2 = *(undefined4 *)((int)param_2 + 0x48);
-    uVar3 = *(undefined4 *)((int)param_2 + 0x4c);
-    uVar4 = *(undefined4 *)((int)param_2 + 0x50);
-    uVar5 = *(undefined4 *)((int)param_2 + 0x54);
-    uVar6 = *(undefined4 *)((int)param_2 + 0x58);
-    uVar7 = *(undefined4 *)((int)param_2 + 0x5c);
-    uVar8 = *(undefined4 *)((int)param_2 + 0x60);
-    uVar9 = *(undefined4 *)((int)param_2 + 100);
-    uVar10 = *(undefined4 *)((int)param_2 + 0x68);
-    uVar11 = *(undefined4 *)((int)param_2 + 0x6c);
-    uVar12 = *(undefined4 *)((int)param_2 + 0x70);
-    uVar13 = *(undefined4 *)((int)param_2 + 0x74);
-    uVar14 = *(undefined4 *)((int)param_2 + 0x78);
-    uVar15 = *(undefined4 *)((int)param_2 + 0x7c);
-    *(undefined4 *)((int)param_1 + 0x40) = *(undefined4 *)((int)param_2 + 0x40);
-    *(undefined4 *)((int)param_1 + 0x44) = uVar1;
-    *(undefined4 *)((int)param_1 + 0x48) = uVar2;
-    *(undefined4 *)((int)param_1 + 0x4c) = uVar3;
-    *(undefined4 *)((int)param_1 + 0x50) = uVar4;
-    *(undefined4 *)((int)param_1 + 0x54) = uVar5;
-    *(undefined4 *)((int)param_1 + 0x58) = uVar6;
-    *(undefined4 *)((int)param_1 + 0x5c) = uVar7;
-    *(undefined4 *)((int)param_1 + 0x60) = uVar8;
-    *(undefined4 *)((int)param_1 + 100) = uVar9;
-    *(undefined4 *)((int)param_1 + 0x68) = uVar10;
-    *(undefined4 *)((int)param_1 + 0x6c) = uVar11;
-    *(undefined4 *)((int)param_1 + 0x70) = uVar12;
-    *(undefined4 *)((int)param_1 + 0x74) = uVar13;
-    *(undefined4 *)((int)param_1 + 0x78) = uVar14;
-    *(undefined4 *)((int)param_1 + 0x7c) = uVar15;
-    param_2 = (void *)((int)param_2 + 0x80);
-    param_1 = (void *)((int)param_1 + 0x80);
+    uVar1 = *(undefined4 *)((int)src + 4);
+    uVar2 = *(undefined4 *)((int)src + 8);
+    uVar3 = *(undefined4 *)((int)src + 0xc);
+    uVar4 = *(undefined4 *)((int)src + 0x10);
+    uVar5 = *(undefined4 *)((int)src + 0x14);
+    uVar6 = *(undefined4 *)((int)src + 0x18);
+    uVar7 = *(undefined4 *)((int)src + 0x1c);
+    uVar8 = *(undefined4 *)((int)src + 0x20);
+    uVar9 = *(undefined4 *)((int)src + 0x24);
+    uVar10 = *(undefined4 *)((int)src + 0x28);
+    uVar11 = *(undefined4 *)((int)src + 0x2c);
+    uVar12 = *(undefined4 *)((int)src + 0x30);
+    uVar13 = *(undefined4 *)((int)src + 0x34);
+    uVar14 = *(undefined4 *)((int)src + 0x38);
+    uVar15 = *(undefined4 *)((int)src + 0x3c);
+    *(undefined4 *)dst = *(undefined4 *)src;
+    *(undefined4 *)((int)dst + 4) = uVar1;
+    *(undefined4 *)((int)dst + 8) = uVar2;
+    *(undefined4 *)((int)dst + 0xc) = uVar3;
+    *(undefined4 *)((int)dst + 0x10) = uVar4;
+    *(undefined4 *)((int)dst + 0x14) = uVar5;
+    *(undefined4 *)((int)dst + 0x18) = uVar6;
+    *(undefined4 *)((int)dst + 0x1c) = uVar7;
+    *(undefined4 *)((int)dst + 0x20) = uVar8;
+    *(undefined4 *)((int)dst + 0x24) = uVar9;
+    *(undefined4 *)((int)dst + 0x28) = uVar10;
+    *(undefined4 *)((int)dst + 0x2c) = uVar11;
+    *(undefined4 *)((int)dst + 0x30) = uVar12;
+    *(undefined4 *)((int)dst + 0x34) = uVar13;
+    *(undefined4 *)((int)dst + 0x38) = uVar14;
+    *(undefined4 *)((int)dst + 0x3c) = uVar15;
+    uVar1 = *(undefined4 *)((int)src + 0x44);
+    uVar2 = *(undefined4 *)((int)src + 0x48);
+    uVar3 = *(undefined4 *)((int)src + 0x4c);
+    uVar4 = *(undefined4 *)((int)src + 0x50);
+    uVar5 = *(undefined4 *)((int)src + 0x54);
+    uVar6 = *(undefined4 *)((int)src + 0x58);
+    uVar7 = *(undefined4 *)((int)src + 0x5c);
+    uVar8 = *(undefined4 *)((int)src + 0x60);
+    uVar9 = *(undefined4 *)((int)src + 100);
+    uVar10 = *(undefined4 *)((int)src + 0x68);
+    uVar11 = *(undefined4 *)((int)src + 0x6c);
+    uVar12 = *(undefined4 *)((int)src + 0x70);
+    uVar13 = *(undefined4 *)((int)src + 0x74);
+    uVar14 = *(undefined4 *)((int)src + 0x78);
+    uVar15 = *(undefined4 *)((int)src + 0x7c);
+    *(undefined4 *)((int)dst + 0x40) = *(undefined4 *)((int)src + 0x40);
+    *(undefined4 *)((int)dst + 0x44) = uVar1;
+    *(undefined4 *)((int)dst + 0x48) = uVar2;
+    *(undefined4 *)((int)dst + 0x4c) = uVar3;
+    *(undefined4 *)((int)dst + 0x50) = uVar4;
+    *(undefined4 *)((int)dst + 0x54) = uVar5;
+    *(undefined4 *)((int)dst + 0x58) = uVar6;
+    *(undefined4 *)((int)dst + 0x5c) = uVar7;
+    *(undefined4 *)((int)dst + 0x60) = uVar8;
+    *(undefined4 *)((int)dst + 100) = uVar9;
+    *(undefined4 *)((int)dst + 0x68) = uVar10;
+    *(undefined4 *)((int)dst + 0x6c) = uVar11;
+    *(undefined4 *)((int)dst + 0x70) = uVar12;
+    *(undefined4 *)((int)dst + 0x74) = uVar13;
+    *(undefined4 *)((int)dst + 0x78) = uVar14;
+    *(undefined4 *)((int)dst + 0x7c) = uVar15;
+    src = (void *)((int)src + 0x80);
+    dst = (void *)((int)dst + 0x80);
     uVar16 = uVar16 - 1;
   } while (uVar16 != 0);
   return;
@@ -96,7 +96,7 @@ void __cdecl fastcopy_I(void *param_1,void *param_2,int param_3)
 
 // 0096598D  _VEC_memcpy  (line unknown)
 
-void * __cdecl _VEC_memcpy(void *param_1,void *param_2,int param_3)
+void * __cdecl _VEC_memcpy(void *dst,void *src,int len)
 
 {
   int iVar1;
@@ -107,18 +107,18 @@ void * __cdecl _VEC_memcpy(void *param_1,void *param_2,int param_3)
   undefined1 *puVar6;
   undefined4 *puVar7;
   
-  uVar3 = (int)param_2 >> 0x1f;
-  iVar1 = (((uint)param_2 ^ uVar3) - uVar3 & 0xf ^ uVar3) - uVar3;
-  uVar3 = (int)param_1 >> 0x1f;
-  uVar5 = ((uint)param_1 ^ uVar3) - uVar3 & 0xf ^ uVar3;
+  uVar3 = (int)src >> 0x1f;
+  iVar1 = (((uint)src ^ uVar3) - uVar3 & 0xf ^ uVar3) - uVar3;
+  uVar3 = (int)dst >> 0x1f;
+  uVar5 = ((uint)dst ^ uVar3) - uVar3 & 0xf ^ uVar3;
   if (iVar1 == 0 && uVar5 == uVar3) {
-    uVar3 = param_3 & 0x7f;
-    if (param_3 != uVar3) {
-      fastcopy_I(param_1,param_2,param_3 - uVar3);
+    uVar3 = len & 0x7f;
+    if (len != uVar3) {
+      fastcopy_I(dst,src,len - uVar3);
     }
     if (uVar3 != 0) {
-      puVar4 = (undefined1 *)((int)param_2 + (param_3 - uVar3));
-      puVar6 = (undefined1 *)((int)param_1 + (param_3 - uVar3));
+      puVar4 = (undefined1 *)((int)src + (len - uVar3));
+      puVar6 = (undefined1 *)((int)dst + (len - uVar3));
       for (; uVar3 != 0; uVar3 = uVar3 - 1) {
         *puVar6 = *puVar4;
         puVar4 = puVar4 + 1;
@@ -128,28 +128,28 @@ void * __cdecl _VEC_memcpy(void *param_1,void *param_2,int param_3)
   }
   else if (iVar1 == uVar5 - uVar3) {
     iVar1 = 0x10 - iVar1;
-    puVar4 = param_2;
-    puVar6 = param_1;
+    puVar4 = src;
+    puVar6 = dst;
     for (iVar2 = iVar1; iVar2 != 0; iVar2 = iVar2 + -1) {
       *puVar6 = *puVar4;
       puVar4 = puVar4 + 1;
       puVar6 = puVar6 + 1;
     }
-    _VEC_memcpy((void *)((int)param_1 + iVar1),(void *)((int)param_2 + iVar1),param_3 - iVar1);
+    _VEC_memcpy((void *)((int)dst + iVar1),(void *)((int)src + iVar1),len - iVar1);
   }
   else {
-    puVar7 = param_1;
-    for (uVar3 = (uint)param_3 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
-      *puVar7 = *(undefined4 *)param_2;
-      param_2 = (undefined4 *)((int)param_2 + 4);
+    puVar7 = dst;
+    for (uVar3 = (uint)len >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
+      *puVar7 = *(undefined4 *)src;
+      src = (undefined4 *)((int)src + 4);
       puVar7 = puVar7 + 1;
     }
-    for (uVar3 = param_3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-      *(undefined1 *)puVar7 = *(undefined1 *)param_2;
-      param_2 = (undefined4 *)((int)param_2 + 1);
+    for (uVar3 = len & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+      *(undefined1 *)puVar7 = *(undefined1 *)src;
+      src = (undefined4 *)((int)src + 1);
       puVar7 = (undefined4 *)((int)puVar7 + 1);
     }
   }
-  return param_1;
+  return dst;
 }
 

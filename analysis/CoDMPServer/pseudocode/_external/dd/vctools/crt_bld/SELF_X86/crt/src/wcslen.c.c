@@ -2,17 +2,17 @@
 
 // 00C22166  wcslen  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcslen.c:41)
 
-uint __cdecl wcslen(wchar_t *param_1)
+uint __cdecl wcslen(wchar_t *wcs)
 
 {
   wchar_t wVar1;
   wchar_t *pwVar2;
   
-  pwVar2 = param_1;
+  pwVar2 = wcs;
   do {
     wVar1 = *pwVar2;
     pwVar2 = pwVar2 + 1;
   } while (wVar1 != L'\0');
-  return ((int)pwVar2 - (int)param_1 >> 1) - 1;
+  return ((int)pwVar2 - (int)wcs >> 1) - 1;
 }
 

@@ -13,16 +13,17 @@ phys_transient_allocator * __cdecl contact_point_info::get_cpi_allocator(void)
 
 pulse_sum_contact * __thiscall
 pulse_sum_constraint_solver::create_pulse_sum_contact
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,rigid_body *param_2,
-          contact_point_info *param_3,float param_4)
+          (pulse_sum_constraint_solver *this,rigid_body *b2,rigid_body *cpi,
+          contact_point_info *delta_t,float param_4)
 
 {
   int *piVar1;
   char *pcVar2;
   pulse_sum_contact *this_00;
   int iVar3;
+  rigid_body *b1;
   
-  iVar3 = param_3->m_point_pair_count * 0xd0 + 0x60;
+  iVar3 = delta_t->m_point_pair_count * 0xd0 + 0x60;
   this_00 = (pulse_sum_contact *)
             ((uint)((this->m_solver_memory_allocator).m_cur + 0xf) & 0xfffffff0);
   pcVar2 = (char *)((int)this_00 + iVar3);
@@ -46,8 +47,8 @@ pulse_sum_constraint_solver::create_pulse_sum_contact
   *(this->m_list_pulse_sum_contact).m_last_next_ptr = this_00;
   (this->m_list_pulse_sum_contact).m_last_next_ptr = (pulse_sum_contact **)this_00;
   this_00->m_list_pscp = (pulse_sum_contact_point *)(this_00 + 1);
-  this_00->m_list_pscp_count = param_3->m_point_pair_count;
-  pulse_sum_contact::set(this_00,param_1,param_2,param_3,param_4);
+  this_00->m_list_pscp_count = delta_t->m_point_pair_count;
+  pulse_sum_contact::set(this_00,b2,cpi,delta_t,param_4);
   return this_00;
 }
 
@@ -56,16 +57,18 @@ pulse_sum_constraint_solver::create_pulse_sum_contact
 
 void __thiscall
 rigid_body_constraint_contact::setup_constraint
-          (rigid_body_constraint_contact *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_contact *this,pulse_sum_constraint_solver *delta_t,float param_2)
 
 {
-  contact_point_info *pcVar1;
+  contact_point_info *delta_t_00;
+  pulse_sum_constraint_solver *psys;
   
-  pcVar1 = (this->m_list_contact_point_info_buffer_1).m_first;
+  delta_t_00 = (this->m_list_contact_point_info_buffer_1).m_first;
   (this->m_list_contact_point_info_buffer_2).m_first = (contact_point_info *)0x0;
-  for (; pcVar1 != (contact_point_info *)0x0; pcVar1 = pcVar1->m_next_link) {
+  for (; delta_t_00 != (contact_point_info *)0x0; delta_t_00 = delta_t_00->m_next_link) {
     pulse_sum_constraint_solver::create_pulse_sum_contact
-              (param_1,(rigid_body *)this->_padding_,(rigid_body *)this->_padding_,pcVar1,param_2);
+              (delta_t,(rigid_body *)this->_padding_,(rigid_body *)this->_padding_,delta_t_00,
+               param_2);
   }
   return;
 }

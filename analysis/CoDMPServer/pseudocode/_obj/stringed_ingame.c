@@ -38,18 +38,18 @@ void Catch_007296b0(void)
 void Catch_007298a2(void)
 
 {
-  int iVar1;
-  char *pcVar2;
-  void *pvVar3;
+  int type;
+  char *name;
+  void *pvVar1;
   int unaff_EBP;
   
   *(BADSPACEBASE **)(unaff_EBP + -0x10) = register0x00000010;
   *(undefined4 *)(unaff_EBP + -0x18) = *(undefined4 *)(unaff_EBP + 8);
   *(undefined1 *)(unaff_EBP + -4) = 2;
-  iVar1 = LocalizeName::GetType();
-  pcVar2 = LocalizeStringName::GetName();
-  pvVar3 = Z_Malloc(*(int *)(unaff_EBP + -0x18) + 1,pcVar2,iVar1);
-  *(void **)(unaff_EBP + -0x14) = pvVar3;
+  type = LocalizeName::GetType();
+  name = LocalizeStringName::GetName();
+  pvVar1 = Z_Malloc(*(int *)(unaff_EBP + -0x18) + 1,name,type);
+  *(void **)(unaff_EBP + -0x14) = pvVar1;
   FUN_007298f1();
   return;
 }
@@ -75,11 +75,11 @@ void Catch_007298cf(void)
 void Catch_0072a36c(void)
 
 {
-  int iVar1;
+  int type;
   int unaff_EBP;
   
-  iVar1 = LocalizeName::GetType();
-  Z_Free(*(void **)(unaff_EBP + -0x18),iVar1);
+  type = LocalizeName::GetType();
+  Z_Free(*(void **)(unaff_EBP + -0x18),type);
                     /* WARNING: Subroutine does not return */
   _CxxThrowException((void *)0x0,(_s__ThrowInfo *)0x0);
 }
@@ -90,11 +90,11 @@ void Catch_0072a36c(void)
 void Catch_0072a46b(void)
 
 {
-  int iVar1;
+  int type;
   int unaff_EBP;
   
-  iVar1 = LocalizeName::GetType();
-  Z_Free(*(void **)(unaff_EBP + -0x14),iVar1);
+  type = LocalizeName::GetType();
+  Z_Free(*(void **)(unaff_EBP + -0x14),type);
                     /* WARNING: Subroutine does not return */
   _CxxThrowException((void *)0x0,(_s__ThrowInfo *)0x0);
 }

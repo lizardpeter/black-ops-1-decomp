@@ -2,8 +2,7 @@
 
 // 00C13302  strtoxq  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c:80)
 
-ulong64 __cdecl
-strtoxq(localeinfo_struct *param_1,char *param_2,char **param_3,int param_4,int param_5)
+ulong64 __cdecl strtoxq(localeinfo_struct *plocinfo,char *nptr,char **endptr,int ibase,int flags)
 
 {
   ushort *puVar1;
@@ -19,187 +18,187 @@ strtoxq(localeinfo_struct *param_1,char *param_2,char **param_3,int param_4,int 
   byte *pbVar6;
   byte *pbVar7;
   bool bVar8;
-  _LocaleUpdate local_3c;
+  _LocaleUpdate _loc_update;
   int local_28;
   uint local_24;
   int local_20;
-  uint local_1c;
+  uint maxval;
   uint local_18;
-  uint local_14;
+  uint number;
   uint local_10;
-  byte *local_c;
-  byte local_5;
+  char *p;
+  char c;
   
-  _LocaleUpdate::_LocaleUpdate(&local_3c,param_1);
-  if (param_3 != (char **)0x0) {
-    *param_3 = param_2;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (endptr != (char **)0x0) {
+    *endptr = nptr;
   }
-  if ((param_2 == (char *)0x0) || ((param_4 != 0 && ((param_4 < 2 || (0x24 < param_4)))))) {
+  if ((nptr == (char *)0x0) || ((ibase != 0 && ((ibase < 2 || (0x24 < ibase)))))) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_3c.updated != false) {
-      (local_3c.ptd)->_ownlocale = (local_3c.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
-    local_14 = 0;
+    number = 0;
     local_10 = 0;
     goto LAB_00c13595;
   }
-  local_14 = 0;
+  number = 0;
   local_10 = 0;
-  ptVar5 = local_3c.localeinfo.locinfo;
-  pbVar7 = (byte *)param_2;
+  ptVar5 = _loc_update.localeinfo.locinfo;
+  pbVar7 = (byte *)nptr;
   do {
     pbVar6 = pbVar7;
-    local_5 = *pbVar6;
+    c = *pbVar6;
     pbVar7 = pbVar6 + 1;
     if (ptVar5->mb_cur_max < 2) {
-      uVar3 = ptVar5->pctype[local_5] & 8;
+      uVar3 = ptVar5->pctype[(byte)c] & 8;
     }
     else {
-      uVar3 = _isctype_l((uint)local_5,8,&local_3c.localeinfo);
-      ptVar5 = local_3c.localeinfo.locinfo;
+      uVar3 = _isctype_l((uint)(byte)c,8,&_loc_update.localeinfo);
+      ptVar5 = _loc_update.localeinfo.locinfo;
     }
   } while (uVar3 != 0);
-  if (local_5 == 0x2d) {
-    param_5 = param_5 | 2;
+  if (c == '-') {
+    flags = flags | 2;
 LAB_00c133c2:
-    local_5 = *pbVar7;
+    c = *pbVar7;
     pbVar7 = pbVar6 + 2;
   }
-  else if (local_5 == 0x2b) goto LAB_00c133c2;
-  local_c = pbVar7;
-  if (param_4 == 0) {
-    if (local_5 != 0x30) {
-      param_4 = 10;
+  else if (c == '+') goto LAB_00c133c2;
+  p = (char *)pbVar7;
+  if (ibase == 0) {
+    if (c != '0') {
+      ibase = 10;
       goto LAB_00c13417;
     }
     if ((*pbVar7 != 0x78) && (*pbVar7 != 0x58)) {
-      param_4 = 8;
+      ibase = 8;
       goto LAB_00c13417;
     }
-    param_4 = 0x10;
+    ibase = 0x10;
   }
-  if (((param_4 == 0x10) && (local_5 == 0x30)) && ((*pbVar7 == 0x78 || (*pbVar7 == 0x58)))) {
-    local_5 = pbVar7[1];
-    local_c = pbVar7 + 2;
+  if (((ibase == 0x10) && (c == '0')) && ((*pbVar7 == 0x78 || (*pbVar7 == 0x58)))) {
+    c = pbVar7[1];
+    p = (char *)(pbVar7 + 2);
   }
 LAB_00c13417:
-  local_28 = param_4 >> 0x1f;
+  local_28 = ibase >> 0x1f;
   _aulldvrm();
   local_20 = 0;
   puVar1 = ptVar5->pctype;
   local_24 = extraout_ECX;
-  local_1c = extraout_EAX;
+  maxval = extraout_EAX;
   local_18 = extraout_EDX;
   do {
-    if ((puVar1[local_5] & 4) == 0) {
-      if ((puVar1[local_5] & 0x103) == 0) break;
-      iVar4 = (int)(char)local_5;
-      if ((byte)(local_5 + 0x9f) < 0x1a) {
+    if ((puVar1[(byte)c] & 4) == 0) {
+      if ((puVar1[(byte)c] & 0x103) == 0) break;
+      iVar4 = (int)c;
+      if ((byte)(c + 0x9fU) < 0x1a) {
         iVar4 = iVar4 + -0x20;
       }
       uVar3 = iVar4 - 0x37;
     }
     else {
-      uVar3 = (int)(char)local_5 - 0x30;
+      uVar3 = (int)c - 0x30;
     }
-    if ((uint)param_4 <= uVar3) break;
-    if (((local_10 < local_18) || ((local_10 == local_18 && (local_14 < local_1c)))) ||
-       ((local_14 == local_1c &&
-        ((local_10 == local_18 && ((local_20 != 0 || (uVar3 <= local_24)))))))) {
+    if ((uint)ibase <= uVar3) break;
+    if (((local_10 < local_18) || ((local_10 == local_18 && (number < maxval)))) ||
+       ((number == maxval && ((local_10 == local_18 && ((local_20 != 0 || (uVar3 <= local_24))))))))
+    {
       _allmul();
-      local_14 = extraout_EAX_00 + uVar3;
+      number = extraout_EAX_00 + uVar3;
       local_10 = extraout_EDX_00 + (uint)CARRY4(extraout_EAX_00,uVar3);
-      param_5 = param_5 | 8;
+      flags = flags | 8;
     }
     else {
-      param_5 = param_5 | 0xc;
-      if (param_3 == (char **)0x0) break;
+      flags = flags | 0xc;
+      if (endptr == (char **)0x0) break;
     }
-    local_5 = *local_c;
-    local_c = local_c + 1;
+    c = *p;
+    p = p + 1;
   } while( true );
-  local_c = local_c + -1;
-  if ((param_5 & 8U) == 0) {
-    if (param_3 != (char **)0x0) {
-      local_c = (byte *)param_2;
+  p = p + -1;
+  if ((flags & 8U) == 0) {
+    if (endptr != (char **)0x0) {
+      p = nptr;
     }
-    local_14 = 0;
+    number = 0;
     local_10 = 0;
   }
-  else if (((param_5 & 4U) != 0) ||
-          (((param_5 & 1U) == 0 &&
-           ((((param_5 & 2U) != 0 &&
-             ((0x80000000 < local_10 || ((0x7fffffff < local_10 && (local_14 != 0)))))) ||
-            (((param_5 & 2U) == 0 && ((0x7ffffffe < local_10 && (0x7fffffff < local_10)))))))))) {
+  else if (((flags & 4U) != 0) ||
+          (((flags & 1U) == 0 &&
+           ((((flags & 2U) != 0 &&
+             ((0x80000000 < local_10 || ((0x7fffffff < local_10 && (number != 0)))))) ||
+            (((flags & 2U) == 0 && ((0x7ffffffe < local_10 && (0x7fffffff < local_10)))))))))) {
     piVar2 = _errno();
     *piVar2 = 0x22;
-    if ((param_5 & 1U) == 0) {
-      if ((param_5 & 2U) == 0) {
-        local_14 = 0xffffffff;
+    if ((flags & 1U) == 0) {
+      if ((flags & 2U) == 0) {
+        number = 0xffffffff;
         local_10 = 0x7fffffff;
       }
       else {
-        local_14 = 0;
+        number = 0;
         local_10 = 0x80000000;
       }
     }
     else {
-      local_14 = 0xffffffff;
+      number = 0xffffffff;
       local_10 = 0xffffffff;
     }
   }
-  if (param_3 != (char **)0x0) {
-    *param_3 = (char *)local_c;
+  if (endptr != (char **)0x0) {
+    *endptr = p;
   }
-  if ((param_5 & 2U) != 0) {
-    bVar8 = local_14 != 0;
-    local_14 = -local_14;
+  if ((flags & 2U) != 0) {
+    bVar8 = number != 0;
+    number = -number;
     local_10 = -(local_10 + bVar8);
   }
-  if (local_3c.updated != false) {
-    (local_3c.ptd)->_ownlocale = (local_3c.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
 LAB_00c13595:
-  return CONCAT44(local_10,local_14);
+  return CONCAT44(local_10,number);
 }
 
 
 // 00C13599  _strtoi64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c:211)
 
-long64 __cdecl _strtoi64(char *param_1,char **param_2,int param_3)
+long64 __cdecl _strtoi64(char *nptr,char **endptr,int ibase)
 
 {
   ulong64 uVar1;
-  localeinfo_struct *plVar2;
+  localeinfo_struct *plocinfo;
   
   if (__locale_changed == 0) {
-    plVar2 = &__initiallocalestructinfo;
+    plocinfo = &__initiallocalestructinfo;
   }
   else {
-    plVar2 = (localeinfo_struct *)0x0;
+    plocinfo = (localeinfo_struct *)0x0;
   }
-  uVar1 = strtoxq(plVar2,param_1,param_2,param_3,0);
+  uVar1 = strtoxq(plocinfo,nptr,endptr,ibase,0);
   return uVar1;
 }
 
 
 // 00C135C4  _strtoui64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtoq.c:236)
 
-ulong64 __cdecl _strtoui64(char *param_1,char **param_2,int param_3)
+ulong64 __cdecl _strtoui64(char *nptr,char **endptr,int ibase)
 
 {
   ulong64 uVar1;
-  localeinfo_struct *plVar2;
+  localeinfo_struct *plocinfo;
   
   if (__locale_changed == 0) {
-    plVar2 = &__initiallocalestructinfo;
+    plocinfo = &__initiallocalestructinfo;
   }
   else {
-    plVar2 = (localeinfo_struct *)0x0;
+    plocinfo = (localeinfo_struct *)0x0;
   }
-  uVar1 = strtoxq(plVar2,param_1,param_2,param_3,1);
+  uVar1 = strtoxq(plocinfo,nptr,endptr,ibase,1);
   return uVar1;
 }
 

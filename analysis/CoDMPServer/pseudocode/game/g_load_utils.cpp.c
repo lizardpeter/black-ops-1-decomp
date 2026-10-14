@@ -2,11 +2,11 @@
 
 // 00625920  G_SetEntityParsePoint  (game/g_load_utils.cpp:23)
 
-void __cdecl G_SetEntityParsePoint(char *param_1)
+void __cdecl G_SetEntityParsePoint(char *beginParsePoint)
 
 {
-  g_entityBeginParsePoint = param_1;
-  g_entityEndParsePoint = param_1;
+  g_entityBeginParsePoint = beginParsePoint;
+  g_entityEndParsePoint = beginParsePoint;
   return;
 }
 
@@ -33,13 +33,14 @@ char * __cdecl G_GetEntityParsePoint(void)
 
 // 00625970  G_GetEntityToken  (game/g_load_utils.cpp:54)
 
-int __cdecl G_GetEntityToken(char *param_1,int param_2)
+int __cdecl G_GetEntityToken(char *buffer,int bufferSize)
 
 {
-  char *pcVar1;
+  char *src;
+  char *s;
   
-  pcVar1 = Com_Parse(&g_entityBeginParsePoint);
-  I_strncpyz(param_1,pcVar1,param_2);
+  src = Com_Parse(&g_entityBeginParsePoint);
+  I_strncpyz(buffer,src,bufferSize);
   if (g_entityBeginParsePoint != (char *)0x0) {
     g_entityEndParsePoint = g_entityBeginParsePoint;
   }
@@ -49,28 +50,30 @@ int __cdecl G_GetEntityToken(char *param_1,int param_2)
 
 // 00625B30  G_AddSpawnVarToken  (game/g_load_utils.cpp:74)
 
-char * __cdecl G_AddSpawnVarToken(char *param_1,SpawnVar *param_2)
+char * __cdecl G_AddSpawnVarToken(char *string,SpawnVar *spawnVar)
 
 {
   char cVar1;
   int iVar2;
   char *pcVar3;
   char *local_10;
+  int l;
+  char *dest;
   
-  local_10 = param_1;
-  pcVar3 = param_1 + 1;
+  local_10 = string;
+  pcVar3 = string + 1;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  if (0x800 < (int)(local_10 + ((param_2->numSpawnVarChars + 1) - (int)pcVar3))) {
+  if (0x800 < (int)(local_10 + ((spawnVar->numSpawnVarChars + 1) - (int)pcVar3))) {
     Com_Error(ERR_DROP,"\x15G_AddSpawnVarToken: MAX_SPAWN_VARS");
   }
-  iVar2 = param_2->numSpawnVarChars;
-  memcpy((uchar *)(param_2->spawnVarChars + iVar2),(uchar *)param_1,
+  iVar2 = spawnVar->numSpawnVarChars;
+  memcpy((uchar *)(spawnVar->spawnVarChars + iVar2),(uchar *)string,
          (ulong)(local_10 + (1 - (int)pcVar3)));
-  param_2->numSpawnVarChars = (int)(local_10 + param_2->numSpawnVarChars + (1 - (int)pcVar3));
-  return param_2->spawnVarChars + iVar2;
+  spawnVar->numSpawnVarChars = (int)(local_10 + spawnVar->numSpawnVarChars + (1 - (int)pcVar3));
+  return spawnVar->spawnVarChars + iVar2;
 }
 
 
@@ -78,50 +81,50 @@ char * __cdecl G_AddSpawnVarToken(char *param_1,SpawnVar *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl G_ParseSpawnVars(SpawnVar *param_1)
+int __cdecl G_ParseSpawnVars(SpawnVar *spawnVar)
 
 {
   int iVar1;
   char *pcVar2;
-  char local_80c [1024];
-  char local_40c [1028];
+  char com_token [1024];
+  char keyname [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  param_1->spawnVarsValid = false;
-  param_1->numSpawnVars = 0;
-  param_1->numSpawnVarChars = 0;
-  iVar1 = G_GetEntityToken(local_80c,0x400);
+  spawnVar->spawnVarsValid = false;
+  spawnVar->numSpawnVars = 0;
+  spawnVar->numSpawnVarChars = 0;
+  iVar1 = G_GetEntityToken(com_token,0x400);
   if (iVar1 == 0) {
     iVar1 = 0;
   }
   else {
-    if (local_80c[0] != '{') {
+    if (com_token[0] != '{') {
       Com_Error(ERR_DROP,"\x15G_ParseSpawnVars: found %s when expecting {");
     }
     while( true ) {
-      iVar1 = G_GetEntityToken(local_40c,0x400);
+      iVar1 = G_GetEntityToken(keyname,0x400);
       if (iVar1 == 0) {
         Com_Error(ERR_DROP,"\x15G_ParseSpawnVars: EOF without closing brace");
       }
-      if (local_40c[0] == '}') break;
-      iVar1 = G_GetEntityToken(local_80c,0x400);
+      if (keyname[0] == '}') break;
+      iVar1 = G_GetEntityToken(com_token,0x400);
       if (iVar1 == 0) {
         Com_Error(ERR_DROP,"\x15G_ParseSpawnVars: EOF without closing brace");
       }
-      if (local_80c[0] == '}') {
+      if (com_token[0] == '}') {
         Com_Error(ERR_DROP,"\x15G_ParseSpawnVars: closing brace without data");
       }
-      if (param_1->numSpawnVars == 0x40) {
+      if (spawnVar->numSpawnVars == 0x40) {
         Com_Error(ERR_DROP,"\x15G_ParseSpawnVars: MAX_SPAWN_VARS");
       }
-      pcVar2 = G_AddSpawnVarToken(local_40c,param_1);
-      param_1->spawnVars[param_1->numSpawnVars][0] = pcVar2;
-      pcVar2 = G_AddSpawnVarToken(local_80c,param_1);
-      param_1->spawnVars[param_1->numSpawnVars][1] = pcVar2;
-      param_1->numSpawnVars = param_1->numSpawnVars + 1;
+      pcVar2 = G_AddSpawnVarToken(keyname,spawnVar);
+      spawnVar->spawnVars[spawnVar->numSpawnVars][0] = pcVar2;
+      pcVar2 = G_AddSpawnVarToken(com_token,spawnVar);
+      spawnVar->spawnVars[spawnVar->numSpawnVars][1] = pcVar2;
+      spawnVar->numSpawnVars = spawnVar->numSpawnVars + 1;
     }
-    param_1->spawnVarsValid = true;
+    spawnVar->spawnVarsValid = true;
     iVar1 = 1;
   }
   return iVar1;
@@ -130,32 +133,32 @@ int __cdecl G_ParseSpawnVars(SpawnVar *param_1)
 
 // 00625BE0  G_SpawnString  (game/g_load_utils.cpp:153)
 
-int __cdecl G_SpawnString(SpawnVar *param_1,char *param_2,char *param_3,char **param_4)
+int __cdecl G_SpawnString(SpawnVar *spawnVar,char *key,char *defaultString,char **out)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  if ((param_1->spawnVarsValid == false) &&
+  if ((spawnVar->spawnVarsValid == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_load_utils.cpp",0x9c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->numSpawnVars <= local_8) {
-      *param_4 = param_3;
+    if (spawnVar->numSpawnVars <= i) {
+      *out = defaultString;
       return 0;
     }
-    iVar3 = I_stricmp(param_2,param_1->spawnVars[local_8][0]);
+    iVar3 = I_stricmp(key,spawnVar->spawnVars[i][0]);
     if (iVar3 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  *param_4 = param_1->spawnVars[local_8][1];
+  *out = spawnVar->spawnVars[i][1];
   return 1;
 }
 
@@ -165,60 +168,61 @@ int __cdecl G_SpawnString(SpawnVar *param_1,char *param_2,char *param_3,char **p
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl G_NewString(char *param_1)
+uint __cdecl G_NewString(char *string)
 
 {
   char cVar1;
   uint uVar2;
   char *local_4018;
-  char local_4014 [16384];
+  char strbuf [16384];
   uint local_14;
-  char *local_10;
-  char *local_c;
-  char *local_8;
+  uint len;
+  char *new_p;
+  uint i;
   
-  local_8 = (char *)0x625c8d;
+  i = 0x625c8d;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4018 = param_1;
+  local_4018 = string;
   do {
     cVar1 = *local_4018;
     local_4018 = local_4018 + 1;
   } while (cVar1 != '\0');
-  local_10 = local_4018 + (1 - (int)(param_1 + 1));
-  if ((char *)0x4000 < local_10) {
+  len = (uint)(local_4018 + (1 - (int)(string + 1)));
+  if ((char *)0x4000 < len) {
     Com_Error(ERR_DROP,"\x15G_NewString: len = %i > %i\n");
   }
-  local_c = local_4014;
-  for (local_8 = (char *)0x0; local_8 < local_10; local_8 = local_8 + 1) {
-    if ((param_1[(int)local_8] == '\\') && (local_8 < local_10 + -1)) {
-      local_8 = local_8 + 1;
-      if (param_1[(int)local_8] == 'n') {
-        *local_c = '\n';
+  new_p = strbuf;
+  for (i = 0; i < len; i = i + 1) {
+    if ((string[i] == '\\') && (i < len - 1)) {
+      i = i + 1;
+      if (string[i] == 'n') {
+        *new_p = '\n';
       }
       else {
-        *local_c = '\\';
+        *new_p = '\\';
       }
     }
     else {
-      *local_c = param_1[(int)local_8];
+      *new_p = string[i];
     }
-    local_c = local_c + 1;
+    new_p = new_p + 1;
   }
-  uVar2 = SL_GetString(local_4014,0,SCRIPTINSTANCE_SERVER);
+  uVar2 = SL_GetString(strbuf,0,SCRIPTINSTANCE_SERVER);
   return uVar2;
 }
 
 
 // 00625DC0  vtos  (game/g_load_utils.cpp:226)
 
-char * __cdecl vtos(float *param_1)
+char * __cdecl vtos(float *v)
 
 {
-  char (*pacVar1) [32];
+  char (*dest) [32];
+  char *s;
   
-  pacVar1 = str + index;
+  dest = str + index;
   index = index + 1U & 7;
-  Com_sprintf(*pacVar1,0x20,"(%i %i %i)");
-  return *pacVar1;
+  Com_sprintf(*dest,0x20,"(%i %i %i)");
+  return *dest;
 }
 

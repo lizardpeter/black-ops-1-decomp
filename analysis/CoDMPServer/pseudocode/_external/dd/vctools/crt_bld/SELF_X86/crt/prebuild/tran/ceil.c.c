@@ -2,40 +2,40 @@
 
 // 00C21A5A  _ceil_default  (line unknown)
 
-double __cdecl _ceil_default(double param_1)
+double __cdecl _ceil_default(double x)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint newctrl;
+  int iVar1;
   uint unaff_ESI;
-  double dVar3;
+  double dVar2;
+  double result;
   
-  uVar1 = _ctrlfp(newcw,0xffff);
-  if ((param_1._6_2_ & 0x7ff0) == 0x7ff0) {
-    iVar2 = _sptype(param_1);
-    if (0 < iVar2) {
-      if (iVar2 < 3) {
-        _ctrlfp(uVar1,0xffff);
-        return param_1;
+  newctrl = _ctrlfp(newcw,0xffff);
+  if ((x._6_2_ & 0x7ff0) == 0x7ff0) {
+    iVar1 = _sptype(x);
+    if (0 < iVar1) {
+      if (iVar1 < 3) {
+        _ctrlfp(newctrl,0xffff);
+        return x;
       }
-      if (iVar2 == 3) {
-        dVar3 = _handle_qnan1(0xc,(double)CONCAT44(uVar1,(int)((ulonglong)param_1 >> 0x20)),
-                              unaff_ESI);
-        return dVar3;
+      if (iVar1 == 3) {
+        dVar2 = _handle_qnan1(0xc,(double)CONCAT44(newctrl,(int)((ulonglong)x >> 0x20)),unaff_ESI);
+        return dVar2;
       }
     }
-    dVar3 = param_1 + 1.0;
-    iVar2 = 8;
+    dVar2 = x + 1.0;
+    iVar1 = 8;
   }
   else {
-    dVar3 = _frnd(param_1);
-    if ((param_1 == dVar3) || ((uVar1 & 0x20) != 0)) {
-      _ctrlfp(uVar1,0xffff);
-      return dVar3;
+    dVar2 = _frnd(x);
+    if ((x == dVar2) || ((newctrl & 0x20) != 0)) {
+      _ctrlfp(newctrl,0xffff);
+      return dVar2;
     }
-    iVar2 = 0x10;
+    iVar1 = 0x10;
   }
-  dVar3 = _except1(iVar2,0xc,param_1,dVar3,uVar1);
-  return dVar3;
+  dVar2 = _except1(iVar1,0xc,x,dVar2,newctrl);
+  return dVar2;
 }
 

@@ -724,11 +724,11 @@ int __thiscall CStringEdPackage::ReadLine(CStringEdPackage *this,char **param_1,
   char *pcVar2;
   int *in_EAX;
   int extraout_EAX;
-  ulong uVar3;
+  ulong count;
   int extraout_EAX_00;
-  char *pcVar4;
-  char **ppcVar5;
-  int iVar6;
+  char *pcVar3;
+  char **ppcVar4;
+  int iVar5;
   CStringEdPackage *extraout_ECX;
   CStringEdPackage *extraout_ECX_00;
   CStringEdPackage *extraout_ECX_01;
@@ -740,27 +740,27 @@ int __thiscall CStringEdPackage::ReadLine(CStringEdPackage *this,char **param_1,
     strchr((uchar *)*in_EAX,'\n');
     if (extraout_EAX == 0) {
       pcVar2 = (char *)*in_EAX;
-      pcVar4 = pcVar2;
+      pcVar3 = pcVar2;
       this_00 = extraout_ECX;
       do {
-        cVar1 = *pcVar4;
+        cVar1 = *pcVar3;
         this_00 = (CStringEdPackage *)CONCAT31((int3)((uint)this_00 >> 8),cVar1);
-        pcVar4[(int)param_1 - (int)pcVar2] = cVar1;
-        pcVar4 = pcVar4 + 1;
+        pcVar3[(int)param_1 - (int)pcVar2] = cVar1;
+        pcVar3 = pcVar3 + 1;
       } while (cVar1 != '\0');
       do {
-        pcVar4 = pcVar2;
-        this_00 = (CStringEdPackage *)CONCAT31((int3)((uint)this_00 >> 8),*pcVar4);
-        pcVar2 = pcVar4 + 1;
-      } while (*pcVar4 != '\0');
-      *in_EAX = (int)pcVar4;
+        pcVar3 = pcVar2;
+        this_00 = (CStringEdPackage *)CONCAT31((int3)((uint)this_00 >> 8),*pcVar3);
+        pcVar2 = pcVar3 + 1;
+      } while (*pcVar3 != '\0');
+      *in_EAX = (int)pcVar3;
     }
     else {
-      uVar3 = extraout_EAX - *in_EAX;
-      strncpy((uchar *)param_1,(uchar *)*in_EAX,uVar3);
-      *in_EAX = *in_EAX + uVar3;
+      count = extraout_EAX - *in_EAX;
+      strncpy((uchar *)param_1,(uchar *)*in_EAX,count);
+      *in_EAX = *in_EAX + count;
       pcVar2 = (char *)*in_EAX;
-      *(undefined1 *)(uVar3 + (int)param_1) = 0;
+      *(undefined1 *)(count + (int)param_1) = 0;
       cVar1 = *pcVar2;
       this_00 = extraout_ECX_00;
       while ((cVar1 != '\0' &&
@@ -771,15 +771,15 @@ int __thiscall CStringEdPackage::ReadLine(CStringEdPackage *this,char **param_1,
       }
     }
     if (*(char *)param_1 != '\0') {
-      ppcVar5 = param_1;
+      ppcVar4 = param_1;
       do {
-        cVar1 = *(char *)ppcVar5;
+        cVar1 = *(char *)ppcVar4;
         this_00 = (CStringEdPackage *)CONCAT31((int3)((uint)this_00 >> 8),cVar1);
-        ppcVar5 = (char **)((int)ppcVar5 + 1);
+        ppcVar4 = (char **)((int)ppcVar4 + 1);
       } while (cVar1 != '\0');
-      pcVar2 = (char *)((int)ppcVar5 + (-1 - ((int)param_1 + 1)));
+      pcVar2 = (char *)((int)ppcVar4 + (-1 - ((int)param_1 + 1)));
       while ((-1 < (int)pcVar2 &&
-             (iVar6 = isspace((int)pcVar2[(int)param_1]), this_00 = extraout_ECX_02, iVar6 != 0))) {
+             (iVar5 = isspace((int)pcVar2[(int)param_1]), this_00 = extraout_ECX_02, iVar5 != 0))) {
         pcVar2[(int)param_1] = '\0';
         pcVar2 = pcVar2 + -1;
       }
@@ -939,7 +939,7 @@ char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param
   CStringEdPackage *pCVar4;
   bool bVar5;
   int iVar6;
-  char *****pppppcVar7;
+  char *****nptr;
   CStringEdPackage *this_00;
   CStringEdPackage *this_01;
   CStringEdPackage *this_02;
@@ -954,10 +954,10 @@ char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this_09;
   CStringEdPackage *this_10;
   int unaff_ESI;
-  uchar *puVar8;
-  ulong uVar9;
+  uchar *puVar7;
+  ulong count;
   char **unaff_EDI;
-  uchar *puVar10;
+  uchar *source;
   char *in_stack_fffffbb0;
   char *local_424;
   CStringEdPackage local_420 [4];
@@ -996,25 +996,25 @@ char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param
             this_10 = *(CStringEdPackage **)(pCVar4 + 8);
           }
           if (*this_10 != (CStringEdPackage)0x0) {
-            puVar10 = (uchar *)(param_1 + 5);
+            source = (uchar *)(param_1 + 5);
             uVar2 = param_1[5];
-            puVar8 = puVar10;
+            puVar7 = source;
             while (((uVar2 != '\0' && (uVar2 != ' ')) && (uVar2 != '\t'))) {
-              puVar1 = puVar8 + 1;
-              puVar8 = puVar8 + 1;
+              puVar1 = puVar7 + 1;
+              puVar7 = puVar7 + 1;
               uVar2 = *puVar1;
             }
             local_404[0] = '\0';
             memset(local_404 + 1,'\0',0x3ff);
-            uVar9 = (int)puVar8 - (int)puVar10;
-            if (0x3ff < uVar9) {
-              uVar9 = 0x3ff;
+            count = (int)puVar7 - (int)source;
+            if (0x3ff < count) {
+              count = 0x3ff;
             }
-            strncpy(local_404,puVar10,uVar9);
-            puVar8 = local_404;
+            strncpy(local_404,source,count);
+            puVar7 = local_404;
             do {
-              uVar2 = *puVar8;
-              puVar8 = puVar8 + 1;
+              uVar2 = *puVar7;
+              puVar7 = puVar7 + 1;
             } while (uVar2 != '\0');
             InsideQuotes((CStringEdPackage *)&stack0xfffffbb0,in_stack_fffffbb0);
             ConvertCRLiterals_Read();
@@ -1041,11 +1041,11 @@ char * __thiscall CStringEdPackage::ParseLine(CStringEdPackage *this,char *param
     }
     else {
       InsideQuotes(local_420,(char *)unaff_EDI);
-      pppppcVar7 = (char *****)local_41c[0];
+      nptr = (char *****)local_41c[0];
       if (local_408 < 0x10) {
-        pppppcVar7 = local_41c;
+        nptr = local_41c;
       }
-      iVar6 = atoi((char *)pppppcVar7);
+      iVar6 = atoi((char *)nptr);
       if (iVar6 != 1) {
         local_424 = va("Unexpected version number %d, expecting %d!");
       }
@@ -1954,28 +1954,28 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
           uint param_2,uint param_3)
 
 {
-  _Bxty *p_Var1;
-  basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> *pbVar2;
-  _Bxty *p_Var3;
-  uint uVar4;
+  _Bxty *dst;
+  basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> *pbVar1;
+  _Bxty *p_Var2;
+  uint count;
   
   if (*(uint *)(param_1 + 0x14) < param_2) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  uVar4 = *(int *)(param_1 + 0x14) - param_2;
+  count = *(int *)(param_1 + 0x14) - param_2;
   if (param_3 < *(int *)(param_1 + 0x14) - param_2) {
-    uVar4 = param_3;
+    count = param_3;
   }
   if (this != (basic_string<char,std::char_traits<char>,std::allocator<char>_> *)param_1) {
-    if (uVar4 == 0xffffffff) {
+    if (count == 0xffffffff) {
                     /* WARNING: Subroutine does not return */
       _String_base::_Xlen();
     }
-    if (this->_Myres < uVar4) {
-      _Copy(this,uVar4,this->_Mysize);
+    if (this->_Myres < count) {
+      _Copy(this,count,this->_Mysize);
     }
-    else if (uVar4 == 0) {
+    else if (count == 0) {
       this->_Mysize = 0;
       if (this->_Myres < 0x10) {
         (this->_Bx)._Buf[0] = '\0';
@@ -1984,29 +1984,29 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
       *(this->_Bx)._Ptr = '\0';
       return (basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> *)this;
     }
-    if (uVar4 != 0) {
+    if (count != 0) {
       if (*(uint *)(param_1 + 0x18) < 0x10) {
-        pbVar2 = param_1 + 4;
+        pbVar1 = param_1 + 4;
       }
       else {
-        pbVar2 = *(basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> **)
+        pbVar1 = *(basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> **)
                   (param_1 + 4);
       }
-      p_Var3 = &this->_Bx;
-      p_Var1 = p_Var3;
+      p_Var2 = &this->_Bx;
+      dst = p_Var2;
       if (0xf < this->_Myres) {
-        p_Var1 = (_Bxty *)p_Var3->_Ptr;
+        dst = (_Bxty *)p_Var2->_Ptr;
       }
-      memcpy_s(p_Var1,this->_Myres,pbVar2 + param_2,uVar4);
-      this->_Mysize = uVar4;
+      memcpy_s(dst,this->_Myres,pbVar1 + param_2,count);
+      this->_Mysize = count;
       if (0xf < this->_Myres) {
-        p_Var3 = (_Bxty *)p_Var3->_Ptr;
+        p_Var2 = (_Bxty *)p_Var2->_Ptr;
       }
-      p_Var3->_Buf[uVar4] = '\0';
+      p_Var2->_Buf[count] = '\0';
     }
     return (basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> *)this;
   }
-  erase(this,uVar4 + param_2,0xffffffff);
+  erase(this,count + param_2,0xffffffff);
   erase(this,0,param_2);
   return (basic_string<char,struct_std::char_traits<char>,class_std::allocator<char>_> *)this;
 }
@@ -2032,53 +2032,53 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
   *in_EAX;
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-  *pbVar2;
+  *dst;
   basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>_> *this_00;
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-  *pbVar3;
+  *pbVar2;
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-  *pbVar4;
+  *pbVar3;
   bool unaff_SI;
   uint unaff_EDI;
-  uint uVar5;
+  uint count;
   
   if (*(uint *)(param_1 + 0x14) < param_2) {
                     /* WARNING: Subroutine does not return */
     _String_base::_Xran();
   }
-  uVar5 = *(int *)(param_1 + 0x14) - param_2;
+  count = *(int *)(param_1 + 0x14) - param_2;
   if (param_3 < *(int *)(param_1 + 0x14) - param_2) {
-    uVar5 = param_3;
+    count = param_3;
   }
   if (in_EAX != param_1) {
     bVar1 = _Grow(this,unaff_EDI,unaff_SI);
     if (bVar1) {
       if (*(uint *)(param_1 + 0x18) < 0x10) {
-        pbVar3 = param_1 + 4;
+        pbVar2 = param_1 + 4;
       }
       else {
-        pbVar3 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
+        pbVar2 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
                    **)(param_1 + 4);
       }
-      pbVar4 = in_EAX + 4;
-      pbVar2 = pbVar4;
+      pbVar3 = in_EAX + 4;
+      dst = pbVar3;
       if (0xf < *(uint *)(in_EAX + 0x18)) {
-        pbVar2 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-                   **)pbVar4;
+        dst = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
+                **)pbVar3;
       }
-      memcpy_s(pbVar2,*(uint *)(in_EAX + 0x18),pbVar3 + param_2,uVar5);
-      *(uint *)(in_EAX + 0x14) = uVar5;
+      memcpy_s(dst,*(uint *)(in_EAX + 0x18),pbVar2 + param_2,count);
+      *(uint *)(in_EAX + 0x14) = count;
       if (0xf < *(uint *)(in_EAX + 0x18)) {
-        pbVar4 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-                   **)pbVar4;
+        pbVar3 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
+                   **)pbVar3;
       }
-      pbVar4[uVar5] =
+      pbVar3[count] =
            (basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
             )0x0;
     }
     return in_EAX;
   }
-  erase(this,uVar5 + param_2,unaff_EDI);
+  erase(this,count + param_2,unaff_EDI);
   erase(this_00,0,unaff_EDI);
   return in_EAX;
 }
@@ -2101,10 +2101,10 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   int extraout_EAX;
   int iVar4;
   int extraout_EAX_00;
-  uchar *puVar5;
+  uchar *buf;
   uint unaff_ESI;
   char *unaff_EDI;
-  uchar *puVar6;
+  uchar *cnt;
   
   uVar3 = param_2;
   if (param_3 == 0) {
@@ -2112,15 +2112,15 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   }
   uVar1 = *(uint *)(param_1 + 0x14);
   if ((uVar1 != 0) && (param_3 <= uVar1)) {
-    puVar6 = (uchar *)(uVar1 + (1 - param_3));
+    cnt = (uchar *)(uVar1 + (1 - param_3));
     if (*(uint *)(param_1 + 0x18) < 0x10) {
-      puVar5 = (uchar *)(param_1 + 4);
+      buf = (uchar *)(param_1 + 4);
     }
     else {
-      puVar5 = *(uchar **)(param_1 + 4);
+      buf = *(uchar **)(param_1 + 4);
     }
     param_2 = (int)param_1 + 4;
-    memchr(puVar5,*(uchar *)uVar3,(ulong)puVar6);
+    memchr(buf,*(uchar *)uVar3,(ulong)cnt);
     iVar2 = extraout_EAX;
     while (iVar2 != 0) {
       iVar4 = char_traits<char>::compare((char *)param_3,unaff_EDI,unaff_ESI);
@@ -2130,9 +2130,9 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
         }
         return iVar2 - param_2;
       }
-      puVar6 = puVar5 + (int)(puVar6 + (-1 - iVar2));
-      puVar5 = (uchar *)(iVar2 + 1);
-      memchr(puVar5,*(uchar *)uVar3,(ulong)puVar6);
+      cnt = buf + (int)(cnt + (-1 - iVar2));
+      buf = (uchar *)(iVar2 + 1);
+      memchr(buf,*(uchar *)uVar3,(ulong)cnt);
       iVar2 = extraout_EAX_00;
     }
   }
@@ -2522,7 +2522,7 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
   *pbVar4;
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-  *pbVar5;
+  *dst;
   bool unaff_BP;
   basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
   *unaff_ESI;
@@ -2556,12 +2556,12 @@ std::basic_string<char,std::char_traits<char>,Allocator<char,LocalizeStringName>
   bVar2 = _Grow(this,unaff_EDI,unaff_BP);
   if (bVar2) {
     pbVar4 = unaff_ESI + 4;
-    pbVar5 = pbVar4;
+    dst = pbVar4;
     if (0xf < *(uint *)(unaff_ESI + 0x18)) {
-      pbVar5 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
-                 **)pbVar4;
+      dst = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
+              **)pbVar4;
     }
-    memcpy_s(pbVar5,*(uint *)(unaff_ESI + 0x18),param_1,in_EAX);
+    memcpy_s(dst,*(uint *)(unaff_ESI + 0x18),param_1,in_EAX);
     *(uint *)(unaff_ESI + 0x14) = in_EAX;
     if (0xf < *(uint *)(unaff_ESI + 0x18)) {
       pbVar4 = *(basic_string<char,struct_std::char_traits<char>,class_Allocator<char,class_LocalizeStringName>_>
@@ -3956,14 +3956,14 @@ char * __cdecl std::_Allocate<char>(uint param_1,char *param_2)
 
 {
   char *pcVar1;
-  uint uVar2;
+  uint size;
   exception local_c;
   
   if (param_1 == 0) {
-    uVar2 = 0;
+    size = 0;
   }
   else {
-    uVar2 = param_1;
+    size = param_1;
     if ((int)(0xffffffff / (ulonglong)param_1) == 0) {
       param_1 = 0;
       exception::exception(&local_c,(char **)&param_1);
@@ -3972,7 +3972,7 @@ char * __cdecl std::_Allocate<char>(uint param_1,char *param_2)
       _CxxThrowException(&local_c,(_s__ThrowInfo *)&__TI2_AVbad_alloc_std__);
     }
   }
-  pcVar1 = operator_new(uVar2);
+  pcVar1 = operator_new(size);
   return pcVar1;
 }
 

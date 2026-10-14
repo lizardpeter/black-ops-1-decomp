@@ -170,8 +170,8 @@ undefined4 FUN_00bc9ca0(undefined4 param_1,uchar *param_2)
   int extraout_EAX_00;
   int extraout_EAX_01;
   undefined1 *extraout_EAX_02;
-  char *pcVar3;
-  long lVar4;
+  char *nptr;
+  long lVar3;
   undefined1 *extraout_EAX_03;
   uchar *local_28;
   uchar local_1c [12];
@@ -205,13 +205,13 @@ undefined4 FUN_00bc9ca0(undefined4 param_1,uchar *param_2)
         *extraout_EAX_02 = 0;
       }
       local_8 = (uint)(extraout_EAX_02 != (undefined1 *)0x0);
-      pcVar3 = (char *)_HTNextField(&local_c);
-      if (pcVar3 == (char *)0x0) {
+      nptr = (char *)_HTNextField(&local_c);
+      if (nptr == (char *)0x0) {
         local_1c[0] = '\0';
       }
       else if (local_8 == 0) {
-        lVar4 = atol(pcVar3);
-        _HTNumToStr(lVar4 << 9,local_1c,10);
+        lVar3 = atol(nptr);
+        _HTNumToStr(lVar3 << 9,local_1c,10);
       }
       else {
         strcpy(local_1c,(uchar *)"-");

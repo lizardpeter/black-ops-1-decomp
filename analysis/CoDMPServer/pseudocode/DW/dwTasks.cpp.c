@@ -4,7 +4,7 @@
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwClearTask(overlappedTask *param_1)
+void __cdecl dwClearTask(overlappedTask *task)
 
 {
   return;
@@ -15,17 +15,17 @@ void __cdecl dwClearTask(overlappedTask *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwGetTaskStatus(overlappedTask *param_1)
+taskCompleteResults __cdecl dwGetTaskStatus(overlappedTask *task)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
-  bdStatus bVar4;
-  taskCompleteResults local_8;
+  bdStatus taskStatus;
+  taskCompleteResults status;
   
-  local_8 = TASK_ERROR;
-  if (param_1 == (overlappedTask *)0x0) {
+  status = TASK_ERROR;
+  if (task == (overlappedTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwTasks.cpp",0x15,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -33,11 +33,10 @@ taskCompleteResults __cdecl dwGetTaskStatus(overlappedTask *param_1)
       return tVar3;
     }
   }
-  if ((param_1 != (overlappedTask *)0x0) && ((param_1->overlappedIO).m_ptr != (bdRemoteTask *)0x0))
-  {
-    bVar4 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    local_8 = dwTaskStatusConvert(bVar4,BD_NO_ERROR);
+  if ((task != (overlappedTask *)0x0) && ((task->overlappedIO).m_ptr != (bdRemoteTask *)0x0)) {
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    status = dwTaskStatusConvert(taskStatus,BD_NO_ERROR);
   }
-  return local_8;
+  return status;
 }
 

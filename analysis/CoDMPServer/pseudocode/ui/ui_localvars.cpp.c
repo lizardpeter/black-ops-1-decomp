@@ -2,13 +2,13 @@
 
 // 00744710  UILocalVar_Init  (ui/ui_localvars.cpp:18)
 
-void __cdecl UILocalVar_Init(UILocalVarContext *param_1)
+void __cdecl UILocalVar_Init(UILocalVarContext *context)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (UILocalVarContext *)0x0) {
+  if (context == (UILocalVarContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x13,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -22,14 +22,14 @@ void __cdecl UILocalVar_Init(UILocalVarContext *param_1)
 
 // 00744740  UILocalVar_Shutdown  (ui/ui_localvars.cpp:24)
 
-void __cdecl UILocalVar_Shutdown(UILocalVarContext *param_1)
+void __cdecl UILocalVar_Shutdown(UILocalVarContext *context)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint hash;
   
-  if (param_1 == (UILocalVarContext *)0x0) {
+  if (context == (UILocalVarContext *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x1b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -37,38 +37,38 @@ void __cdecl UILocalVar_Shutdown(UILocalVarContext *param_1)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if (param_1->table[local_8].name != (char *)0x0) {
-      if (param_1->table[local_8].type == UILOCALVAR_STRING) {
-        FreeString(param_1->table[local_8].u.string,0x24,SCRIPTINSTANCE_SERVER);
+  for (hash = 0; hash < 0x100; hash = hash + 1) {
+    if (context->table[hash].name != (char *)0x0) {
+      if (context->table[hash].type == UILOCALVAR_STRING) {
+        FreeString(context->table[hash].u.string,0x24,SCRIPTINSTANCE_SERVER);
       }
-      FreeString(param_1->table[local_8].name,0x24,SCRIPTINSTANCE_SERVER);
+      FreeString(context->table[hash].name,0x24,SCRIPTINSTANCE_SERVER);
     }
   }
-  memset((uchar *)param_1,'\0',0xc00);
+  memset((uchar *)context,'\0',0xc00);
   return;
 }
 
 
 // 00744900  UILocalVar_HashName  (ui/ui_localvars.cpp:43)
 
-uint __cdecl UILocalVar_HashName(char *param_1)
+uint __cdecl UILocalVar_HashName(char *name)
 
 {
-  uint local_c;
-  int local_8;
+  uint hash;
+  uint i;
   
-  local_c = 0;
-  for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-    local_c = (int)param_1[local_8] * (local_8 + 0x77) + local_c;
+  hash = 0;
+  for (i = 0; name[i] != '\0'; i = i + 1) {
+    hash = (int)name[i] * (i + 0x77) + hash;
   }
-  return (local_c >> 8) + local_c & 0xff;
+  return (hash >> 8) + hash & 0xff;
 }
 
 
 // 00744830  UILocalVar_FindLocation  (ui/ui_localvars.cpp:57)
 
-bool __cdecl UILocalVar_FindLocation(UILocalVarContext *param_1,char *param_2,uint *param_3)
+bool __cdecl UILocalVar_FindLocation(UILocalVarContext *context,char *name,uint *hashForName)
 
 {
   byte bVar1;
@@ -77,14 +77,15 @@ bool __cdecl UILocalVar_FindLocation(UILocalVarContext *param_1,char *param_2,ui
   int local_24;
   byte *local_1c;
   byte *local_18;
-  uint local_c;
+  uint hash;
+  uint initialHash;
   
-  uVar2 = UILocalVar_HashName(param_2);
-  local_c = uVar2;
+  uVar2 = UILocalVar_HashName(name);
+  hash = uVar2;
   do {
-    if (param_1->table[local_c].name == (char *)0x0) break;
-    local_18 = (byte *)param_2;
-    local_1c = (byte *)param_1->table[local_c].name;
+    if (context->table[hash].name == (char *)0x0) break;
+    local_18 = (byte *)name;
+    local_1c = (byte *)context->table[hash].name;
     do {
       bVar1 = *local_1c;
       bVar3 = bVar1 < *local_18;
@@ -103,28 +104,28 @@ LAB_007448b3:
     local_24 = 0;
 LAB_007448bb:
     if (local_24 == 0) {
-      *param_3 = local_c;
+      *hashForName = hash;
       return true;
     }
-    local_c = local_c + 1 & 0xff;
-  } while (local_c != uVar2);
-  *param_3 = local_c;
+    hash = hash + 1 & 0xff;
+  } while (hash != uVar2);
+  *hashForName = hash;
   return false;
 }
 
 
 // 00744800  UILocalVar_Find  (ui/ui_localvars.cpp:83)
 
-UILocalVar * __cdecl UILocalVar_Find(UILocalVarContext *param_1,char *param_2)
+UILocalVar * __cdecl UILocalVar_Find(UILocalVarContext *context,char *name)
 
 {
   bool bVar1;
   UILocalVar *pUVar2;
-  uint local_8;
+  uint hash;
   
-  bVar1 = UILocalVar_FindLocation(param_1,param_2,&local_8);
+  bVar1 = UILocalVar_FindLocation(context,name,&hash);
   if (bVar1) {
-    pUVar2 = param_1->table + local_8;
+    pUVar2 = context->table + hash;
   }
   else {
     pUVar2 = (UILocalVar *)0x0;
@@ -135,21 +136,22 @@ UILocalVar * __cdecl UILocalVar_Find(UILocalVarContext *param_1,char *param_2)
 
 // 00744960  UILocalVar_FindOrCreate  (ui/ui_localvars.cpp:93)
 
-UILocalVar * __cdecl UILocalVar_FindOrCreate(UILocalVarContext *param_1,char *param_2)
+UILocalVar * __cdecl UILocalVar_FindOrCreate(UILocalVarContext *context,char *name)
 
 {
   bool bVar1;
   char *pcVar2;
   UILocalVar *pUVar3;
-  uint local_8;
+  UILocalVar *var;
+  uint hash;
   
-  bVar1 = UILocalVar_FindLocation(param_1,param_2,&local_8);
+  bVar1 = UILocalVar_FindLocation(context,name,&hash);
   if (bVar1) {
-    pUVar3 = param_1->table + local_8;
+    pUVar3 = context->table + hash;
   }
   else {
-    pUVar3 = param_1->table + local_8;
-    pcVar2 = CopyString(param_2,"UILocalVar_FindOrCreate",0x24,SCRIPTINSTANCE_SERVER);
+    pUVar3 = context->table + hash;
+    pcVar2 = CopyString(name,"UILocalVar_FindOrCreate",0x24,SCRIPTINSTANCE_SERVER);
     pUVar3->name = pcVar2;
     pUVar3->type = UILOCALVAR_INT;
     (pUVar3->u).integer = 0;
@@ -160,7 +162,7 @@ UILocalVar * __cdecl UILocalVar_FindOrCreate(UILocalVarContext *param_1,char *pa
 
 // 007449D0  UILocalVar_GetBool  (ui/ui_localvars.cpp:109)
 
-bool __cdecl UILocalVar_GetBool(UILocalVar *param_1)
+bool __cdecl UILocalVar_GetBool(UILocalVar *var)
 
 {
   code *pcVar1;
@@ -168,28 +170,28 @@ bool __cdecl UILocalVar_GetBool(UILocalVar *param_1)
   undefined1 uVar3;
   int iVar4;
   
-  if ((param_1 == (UILocalVar *)0x0) &&
+  if ((var == (UILocalVar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x6e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1->type == UILOCALVAR_INT) {
-    bVar2 = (param_1->u).integer != 0;
+  if (var->type == UILOCALVAR_INT) {
+    bVar2 = (var->u).integer != 0;
   }
-  else if (param_1->type == UILOCALVAR_FLOAT) {
-    bVar2 = (param_1->u).value != 0.0;
+  else if (var->type == UILOCALVAR_FLOAT) {
+    bVar2 = (var->u).value != 0.0;
   }
   else {
-    if ((param_1->type != UILOCALVAR_STRING) &&
+    if ((var->type != UILOCALVAR_STRING) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x79,0,
                                  "var->type == UILOCALVAR_STRING\n\t%i, %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    iVar4 = atoi((param_1->u).string);
+    iVar4 = atoi((var->u).string);
     bVar2 = iVar4 != 0;
   }
   return bVar2;
@@ -198,14 +200,14 @@ bool __cdecl UILocalVar_GetBool(UILocalVar *param_1)
 
 // 00744AA0  UILocalVar_GetInt  (ui/ui_localvars.cpp:128)
 
-int __cdecl UILocalVar_GetInt(UILocalVar *param_1)
+int __cdecl UILocalVar_GetInt(UILocalVar *var)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (UILocalVar *)0x0) {
+  if (var == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x81,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -213,14 +215,14 @@ int __cdecl UILocalVar_GetInt(UILocalVar *param_1)
       return iVar3;
     }
   }
-  if (param_1->type == UILOCALVAR_INT) {
-    iVar3 = (param_1->u).integer;
+  if (var->type == UILOCALVAR_INT) {
+    iVar3 = (var->u).integer;
   }
-  else if (param_1->type == UILOCALVAR_FLOAT) {
-    iVar3 = (int)(param_1->u).value;
+  else if (var->type == UILOCALVAR_FLOAT) {
+    iVar3 = (int)(var->u).value;
   }
   else {
-    if (param_1->type != UILOCALVAR_STRING) {
+    if (var->type != UILOCALVAR_STRING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x8c,0,
                                "var->type == UILOCALVAR_STRING\n\t%i, %i");
       if (!bVar2) {
@@ -229,7 +231,7 @@ int __cdecl UILocalVar_GetInt(UILocalVar *param_1)
         return iVar3;
       }
     }
-    iVar3 = atoi((param_1->u).string);
+    iVar3 = atoi((var->u).string);
   }
   return iVar3;
 }
@@ -237,7 +239,7 @@ int __cdecl UILocalVar_GetInt(UILocalVar *param_1)
 
 // 00744B40  UILocalVar_GetFloat  (ui/ui_localvars.cpp:147)
 
-float __cdecl UILocalVar_GetFloat(UILocalVar *param_1)
+float __cdecl UILocalVar_GetFloat(UILocalVar *var)
 
 {
   float fVar1;
@@ -246,7 +248,7 @@ float __cdecl UILocalVar_GetFloat(UILocalVar *param_1)
   float10 fVar4;
   double dVar5;
   
-  if (param_1 == (UILocalVar *)0x0) {
+  if (var == (UILocalVar *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x94,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -254,14 +256,14 @@ float __cdecl UILocalVar_GetFloat(UILocalVar *param_1)
       return (float)fVar4;
     }
   }
-  if (param_1->type == UILOCALVAR_INT) {
-    fVar1 = (float)(param_1->u).integer;
+  if (var->type == UILOCALVAR_INT) {
+    fVar1 = (float)(var->u).integer;
   }
-  else if (param_1->type == UILOCALVAR_FLOAT) {
-    fVar1 = (param_1->u).value;
+  else if (var->type == UILOCALVAR_FLOAT) {
+    fVar1 = (var->u).value;
   }
   else {
-    if (param_1->type != UILOCALVAR_STRING) {
+    if (var->type != UILOCALVAR_STRING) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0x9f,0,
                                "var->type == UILOCALVAR_STRING\n\t%i, %i");
       if (!bVar3) {
@@ -270,7 +272,7 @@ float __cdecl UILocalVar_GetFloat(UILocalVar *param_1)
         return (float)fVar4;
       }
     }
-    dVar5 = atof((param_1->u).string);
+    dVar5 = atof((var->u).string);
     fVar1 = (float)dVar5;
   }
   return fVar1;
@@ -279,14 +281,14 @@ float __cdecl UILocalVar_GetFloat(UILocalVar *param_1)
 
 // 00744BF0  UILocalVar_GetString  (ui/ui_localvars.cpp:166)
 
-char * __cdecl UILocalVar_GetString(UILocalVar *param_1,char *param_2,int param_3)
+char * __cdecl UILocalVar_GetString(UILocalVar *var,char *stringBuf,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (UILocalVar *)0x0) {
+  if (var == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0xa7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -294,14 +296,14 @@ char * __cdecl UILocalVar_GetString(UILocalVar *param_1,char *param_2,int param_
       return pcVar3;
     }
   }
-  if (param_1->type == UILOCALVAR_INT) {
-    Com_sprintf(param_2,param_3,"%i");
+  if (var->type == UILOCALVAR_INT) {
+    Com_sprintf(stringBuf,size,"%i");
   }
-  else if (param_1->type == UILOCALVAR_FLOAT) {
-    Com_sprintf(param_2,param_3,"%g");
+  else if (var->type == UILOCALVAR_FLOAT) {
+    Com_sprintf(stringBuf,size,"%g");
   }
   else {
-    if (param_1->type != UILOCALVAR_STRING) {
+    if (var->type != UILOCALVAR_STRING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_localvars.cpp",0xb4,0,
                                "var->type == UILOCALVAR_STRING\n\t%i, %i");
       if (!bVar2) {
@@ -310,71 +312,77 @@ char * __cdecl UILocalVar_GetString(UILocalVar *param_1,char *param_2,int param_
         return pcVar3;
       }
     }
-    param_2 = (char *)(param_1->u).integer;
+    stringBuf = (char *)(var->u).integer;
   }
-  return param_2;
+  return stringBuf;
 }
 
 
 // 00744CC0  UILocalVar_SetBool  (ui/ui_localvars.cpp:187)
 
-void __cdecl UILocalVar_SetBool(UILocalVar *param_1,bool param_2)
+void __cdecl UILocalVar_SetBool(UILocalVar *var,bool b)
 
 {
   <unnamed_type_u> <Var1;
+  UILocalVar *editVar;
   
-  if (param_1->type == UILOCALVAR_STRING) {
-    FreeString((param_1->u).string,0x24,SCRIPTINSTANCE_SERVER);
+  if (var->type == UILOCALVAR_STRING) {
+    FreeString((var->u).string,0x24,SCRIPTINSTANCE_SERVER);
   }
-  param_1->type = UILOCALVAR_INT;
+  var->type = UILOCALVAR_INT;
   <Var1.integer._1_3_ = 0;
-  <Var1.integer._0_1_ = param_2;
-  param_1->u = <Var1;
+  <Var1.integer._0_1_ = b;
+  var->u = <Var1;
   return;
 }
 
 
 // 00744D00  UILocalVar_SetInt  (ui/ui_localvars.cpp:199)
 
-void __cdecl UILocalVar_SetInt(UILocalVar *param_1,int param_2)
+void __cdecl UILocalVar_SetInt(UILocalVar *var,int i)
 
 {
-  if (param_1->type == UILOCALVAR_STRING) {
-    FreeString((param_1->u).string,0x24,SCRIPTINSTANCE_SERVER);
+  UILocalVar *editVar;
+  
+  if (var->type == UILOCALVAR_STRING) {
+    FreeString((var->u).string,0x24,SCRIPTINSTANCE_SERVER);
   }
-  param_1->type = UILOCALVAR_INT;
-  (param_1->u).integer = param_2;
+  var->type = UILOCALVAR_INT;
+  (var->u).integer = i;
   return;
 }
 
 
 // 00744D40  UILocalVar_SetFloat  (ui/ui_localvars.cpp:211)
 
-void __cdecl UILocalVar_SetFloat(UILocalVar *param_1,float param_2)
+void __cdecl UILocalVar_SetFloat(UILocalVar *var,float f)
 
 {
-  if (param_1->type == UILOCALVAR_STRING) {
-    FreeString((param_1->u).string,0x24,SCRIPTINSTANCE_SERVER);
+  UILocalVar *editVar;
+  
+  if (var->type == UILOCALVAR_STRING) {
+    FreeString((var->u).string,0x24,SCRIPTINSTANCE_SERVER);
   }
-  param_1->type = UILOCALVAR_FLOAT;
-  (param_1->u).value = param_2;
+  var->type = UILOCALVAR_FLOAT;
+  (var->u).value = f;
   return;
 }
 
 
 // 00744D80  UILocalVar_SetString  (ui/ui_localvars.cpp:223)
 
-void __cdecl UILocalVar_SetString(UILocalVar *param_1,char *param_2)
+void __cdecl UILocalVar_SetString(UILocalVar *var,char *s)
 
 {
   char *pcVar1;
+  UILocalVar *editVar;
   
-  if (param_1->type == UILOCALVAR_STRING) {
-    FreeString((param_1->u).string,0x24,SCRIPTINSTANCE_SERVER);
+  if (var->type == UILOCALVAR_STRING) {
+    FreeString((var->u).string,0x24,SCRIPTINSTANCE_SERVER);
   }
-  param_1->type = UILOCALVAR_STRING;
-  pcVar1 = CopyString(param_2,"UILocalVar_SetString",0x24,SCRIPTINSTANCE_SERVER);
-  (param_1->u).string = pcVar1;
+  var->type = UILOCALVAR_STRING;
+  pcVar1 = CopyString(s,"UILocalVar_SetString",0x24,SCRIPTINSTANCE_SERVER);
+  (var->u).string = pcVar1;
   return;
 }
 

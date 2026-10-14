@@ -8,27 +8,27 @@ water_t * __cdecl R_LoadWaterSetup(water_t *param_1)
   int iVar1;
   water_t *in_EAX;
   int iVar2;
-  int iVar3;
+  int destination;
   water_t *unaff_ESI;
   water_t *unaff_EDI;
   
   iVar1 = sceneWaterMapSetupsCount;
-  iVar3 = 0;
+  destination = 0;
   if (0 < sceneWaterMapSetupsCount) {
     do {
       iVar2 = R_WatersEquivalent(unaff_EDI,unaff_ESI);
       if (iVar2 != 0) {
-        return sceneWaterMapSetups + iVar3;
+        return sceneWaterMapSetups + destination;
       }
-      iVar3 = iVar3 + 1;
-    } while (iVar3 < iVar1);
-    if (iVar3 == 0x10) {
+      destination = destination + 1;
+    } while (destination < iVar1);
+    if (destination == 0x10) {
       Com_PrintError(8,"ERROR: map uses more than %i waterMap textures\n",0x10);
       return (water_t *)0x0;
     }
   }
-  R_CreateWaterSetup(in_EAX,iVar3,sceneWaterMapSetups + iVar3);
+  R_CreateWaterSetup(in_EAX,destination,sceneWaterMapSetups + destination);
   sceneWaterMapSetupsCount = sceneWaterMapSetupsCount + 1;
-  return sceneWaterMapSetups + iVar3;
+  return sceneWaterMapSetups + destination;
 }
 

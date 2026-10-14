@@ -116,8 +116,8 @@ void __cdecl PlayerCmd_giveWeapon(uint param_1)
   gentity_s **ppgVar7;
   uint unaff_ESI;
   playerState_s *unaff_EDI;
+  char *string;
   char *pcVar8;
-  char *pcVar9;
   renderOptions_s_u_0 rStack_48;
   char acStack_40 [63];
   undefined1 uStack_1;
@@ -171,11 +171,11 @@ void __cdecl PlayerCmd_giveWeapon(uint param_1)
   iVar6 = G_GivePlayerWeapon((playerState_s *)ppgVar7[0x51],uVar2,(uchar)uVar5,
                              (renderOptions_s)rStack_48);
   if (iVar6 != 0) {
-    pcVar8 = acStack_40;
-    pcVar9 = (char *)0x40;
-    _snprintf(pcVar8,0x40,"%c \"%i\"");
+    string = acStack_40;
+    pcVar8 = (char *)0x40;
+    _snprintf(string,0x40,"%c \"%i\"");
     uStack_1 = 0;
-    SV_GameSendServerCommand((int)(ppgVar7 + -0x6be594) / 0x2f8,(svscmd_type)pcVar8,pcVar9);
+    SV_GameSendServerCommand((int)(ppgVar7 + -0x6be594) / 0x2f8,(svscmd_type)string,pcVar8);
     FUN_00555d20(uVar5,pPVar4 != (PlayerHeldWeapon *)0x0);
   }
   return;

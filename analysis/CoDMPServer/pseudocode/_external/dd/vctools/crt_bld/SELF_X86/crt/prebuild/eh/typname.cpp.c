@@ -5,27 +5,28 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl type_info::_Type_info_dtor(type_info *param_1)
+void __cdecl type_info::_Type_info_dtor(type_info *_This)
 
 {
+  __type_info_node *pBlock;
   __type_info_node *p_Var1;
   __type_info_node *p_Var2;
-  __type_info_node *p_Var3;
+  __type_info_node *pNode;
   
   _lock(0xe);
-  p_Var1 = __type_info_root_node.next;
-  if (param_1->_m_data != (void *)0x0) {
-    p_Var2 = &__type_info_root_node;
+  pBlock = __type_info_root_node.next;
+  if (_This->_m_data != (void *)0x0) {
+    p_Var1 = &__type_info_root_node;
     do {
-      p_Var3 = p_Var2;
+      p_Var2 = p_Var1;
       if (__type_info_root_node.next == (__type_info_node *)0x0) goto LAB_00c1d96c;
-      p_Var2 = __type_info_root_node.next;
-    } while ((__type_info_root_node.next)->memPtr != param_1->_m_data);
-    p_Var3->next = (__type_info_root_node.next)->next;
-    free(p_Var1);
+      p_Var1 = __type_info_root_node.next;
+    } while ((__type_info_root_node.next)->memPtr != _This->_m_data);
+    p_Var2->next = (__type_info_root_node.next)->next;
+    ::free(pBlock);
 LAB_00c1d96c:
-    free(param_1->_m_data);
-    param_1->_m_data = (void *)0x0;
+    ::free(_This->_m_data);
+    _This->_m_data = (void *)0x0;
   }
   FUN_00c1d98f();
   return;

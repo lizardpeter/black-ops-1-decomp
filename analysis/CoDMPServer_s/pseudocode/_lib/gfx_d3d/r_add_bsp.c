@@ -3,38 +3,34 @@
 // 008571B0  R_AddBspDrawSurfs  (gfx_d3d/r_add_bsp.cpp:336)
 
 void __cdecl
-R_AddBspDrawSurfs(GfxDrawSurf param_1,ushort *param_2,uint param_3,GfxBspDrawSurfData *param_4)
+R_AddBspDrawSurfs(GfxDrawSurf count,ushort *param_2,uint param_3,GfxBspDrawSurfData *param_4)
 
 {
-  GfxDrawSurf GVar1;
-  GfxBackEndData *pGVar2;
-  bool bVar3;
-  DWORD DVar4;
-  int iVar5;
-  uint unaff_EBP;
+  GfxBackEndData *pGVar1;
+  bool bVar2;
+  DWORD DVar3;
+  int iVar4;
   ushort *unaff_ESI;
-  GfxDrawSurfList *unaff_EDI;
-  uint uVar6;
+  uint uVar5;
+  ushort *list;
   
-  DVar4 = WaitForSingleObject(DAT_01da4a34,0);
-  if (((DVar4 == 0) && ((r_pretess->current).enabled != false)) &&
-     (bVar3 = R_PreTessBspDrawSurfs(param_1,unaff_ESI,(uint)param_2,(GfxBspDrawSurfData *)param_3),
-     bVar3)) {
+  DVar3 = WaitForSingleObject(DAT_01da4a34,0);
+  if (((DVar3 == 0) && ((r_pretess->current).enabled != false)) &&
+     (bVar2 = R_PreTessBspDrawSurfs(count,unaff_ESI,(uint)param_2,(GfxBspDrawSurfData *)param_3),
+     bVar2)) {
     return;
   }
-  uVar6 = param_1.packed._4_4_ + 1 >> 1;
-  GVar1.packed._4_4_ = uVar6 + 1;
-  GVar1.packed._0_4_ = unaff_ESI + 8;
-  iVar5 = R_AllocDrawSurf((GfxDelayedCmdBuf *)param_2,GVar1,unaff_EDI,unaff_EBP);
-  if (iVar5 != 0) {
+  uVar5 = count.packed._4_4_ + 1 >> 1;
+  iVar4 = R_AllocDrawSurf();
+  if (iVar4 != 0) {
     *(int *)(unaff_ESI + 2) = *(int *)(unaff_ESI + 2) + -1;
-    pGVar2 = frontEndDataOut;
-    frontEndDataOut->primDrawSurfsBuf[*(int *)unaff_ESI] = param_1.packed._4_4_;
+    pGVar1 = frontEndDataOut;
+    frontEndDataOut->primDrawSurfsBuf[*(int *)unaff_ESI] = count.packed._4_4_;
     *(int *)unaff_ESI = *(int *)unaff_ESI + 1;
-    *(uint *)(unaff_ESI + 2) = *(int *)(unaff_ESI + 2) - uVar6;
-    memcpy((uchar *)(pGVar2->primDrawSurfsBuf + *(int *)unaff_ESI),(uchar *)param_1.packed._0_4_,
-           uVar6 * 4);
-    *(uint *)unaff_ESI = *(int *)unaff_ESI + uVar6;
+    *(uint *)(unaff_ESI + 2) = *(int *)(unaff_ESI + 2) - uVar5;
+    memcpy((uchar *)(pGVar1->primDrawSurfsBuf + *(int *)unaff_ESI),(uchar *)count.packed._0_4_,
+           uVar5 * 4);
+    *(uint *)unaff_ESI = *(int *)unaff_ESI + uVar5;
   }
   return;
 }
@@ -42,67 +38,70 @@ R_AddBspDrawSurfs(GfxDrawSurf param_1,ushort *param_2,uint param_3,GfxBspDrawSur
 
 // 00857650  R_AddAllBspDrawSurfacesCameraNonlit  (gfx_d3d/r_add_bsp.cpp:632)
 
+/* WARNING: Variable defined which should be unmapped: prevDrawSurf */
 /* WARNING: Removing unreachable block (ram,0x00857778) */
 
-void __cdecl R_AddAllBspDrawSurfacesCameraNonlit(uint param_1,uint param_2,uint param_3)
+void __cdecl R_AddAllBspDrawSurfacesCameraNonlit(uint stage,uint param_2,uint param_3)
 
 {
   uchar *puVar1;
   GfxDrawSurf *pGVar2;
   ushort *puVar3;
   uint uVar4;
-  GfxDrawSurf GVar5;
-  GfxDrawSurf GVar6;
-  GfxDrawSurf GVar7;
-  uint uVar8;
+  GfxDrawSurf count;
+  GfxDrawSurf count_00;
+  GfxDrawSurf count_01;
+  uint uVar5;
   uint in_ECX;
-  GfxDrawSurf *pGVar9;
-  ushort *puVar10;
+  GfxDrawSurf *pGVar6;
+  undefined4 uVar7;
   GfxBspDrawSurfData *unaff_EDI;
-  ushort *local_12c;
-  uint local_128;
+  uint endSurface;
+  GfxDrawSurf prevDrawSurf;
+  uint surfData;
+  uchar *surfaceVisData;
   undefined2 local_104 [130];
   
   puVar1 = ((rgp.world)->dpvs).surfaceVisData[0];
   pGVar2 = scene.drawSurfs[param_2];
-  puVar10 = (ushort *)0xffffffff;
-  uVar8 = 0;
-  local_12c = (ushort *)0xffffffff;
-  local_128 = 0xffffffff;
-  if (in_ECX < param_1) {
-    pGVar9 = ((rgp.world)->dpvs).surfaceMaterials + in_ECX;
+  uVar7 = (ushort *)0xffffffff;
+  uVar5 = 0;
+  prevDrawSurf.packed._4_4_ = 0xffffffff;
+  surfData = 0xffffffff;
+  if (in_ECX < stage) {
+    pGVar6 = ((rgp.world)->dpvs).surfaceMaterials + in_ECX;
     do {
       if (puVar1[in_ECX] != '\0') {
-        puVar3 = *(ushort **)pGVar9;
-        uVar4 = *(uint *)((int)pGVar9 + 4);
-        if ((puVar3 != puVar10) || (uVar4 != local_128)) {
-          if (uVar8 != 0) {
-            GVar5.packed._4_4_ = uVar8;
-            GVar5.packed._0_4_ = local_104;
-            R_AddBspDrawSurfs(GVar5,puVar10,local_128,unaff_EDI);
+        puVar3 = *(ushort **)pGVar6;
+        uVar4 = *(uint *)((int)pGVar6 + 4);
+        if ((puVar3 != (ushort *)uVar7) || (uVar4 != surfData)) {
+          if (uVar5 != 0) {
+            count.packed._4_4_ = uVar5;
+            count.packed._0_4_ = local_104;
+            R_AddBspDrawSurfs(count,(ushort *)uVar7,surfData,unaff_EDI);
           }
-          uVar8 = 0;
-          puVar10 = puVar3;
-          local_12c = puVar3;
-          local_128 = uVar4;
+          uVar5 = 0;
+          uVar7 = puVar3;
+          prevDrawSurf.packed._4_4_ = puVar3;
+          surfData = uVar4;
         }
-        local_104[uVar8] = (short)in_ECX;
-        uVar8 = uVar8 + 1;
-        if (0x7f < uVar8) {
-          GVar6.packed._4_4_ = uVar8;
-          GVar6.packed._0_4_ = local_104;
-          R_AddBspDrawSurfs(GVar6,puVar3,uVar4,unaff_EDI);
-          uVar8 = 0;
-          puVar10 = local_12c;
+        local_104[uVar5] = (short)in_ECX;
+        uVar5 = uVar5 + 1;
+        if (0x7f < uVar5) {
+          count_00.packed._4_4_ = uVar5;
+          count_00.packed._0_4_ = local_104;
+          R_AddBspDrawSurfs(count_00,puVar3,uVar4,unaff_EDI);
+          uVar5 = 0;
+          uVar7 = prevDrawSurf.packed._4_4_;
         }
       }
       in_ECX = in_ECX + 1;
-      pGVar9 = pGVar9 + 1;
-    } while (in_ECX < param_1);
-    if (uVar8 != 0) {
-      GVar7.packed._4_4_ = uVar8;
-      GVar7.packed._0_4_ = local_104;
-      R_AddBspDrawSurfs(GVar7,puVar10,local_128,unaff_EDI);
+      pGVar6 = pGVar6 + 1;
+    } while (in_ECX < stage);
+    if (uVar5 != 0) {
+      count_01.packed._4_4_ = uVar5;
+      count_01.packed._0_4_ = local_104;
+      R_AddBspDrawSurfs(count_01,(ushort *)uVar7,surfData,unaff_EDI);
     }
   }
   scene.drawSurfCount[param_2] = (int)pGVar2 - (int)scene.drawSurfs[param_2] >> 3;
@@ -139,57 +138,61 @@ void __cdecl R_AddAllBspDrawSurfacesSpotShadow(uint param_1,uint param_2)
   GfxDrawSurf *pGVar3;
   ushort *puVar4;
   uint uVar5;
-  GfxDrawSurf GVar6;
-  GfxDrawSurf GVar7;
-  GfxDrawSurf GVar8;
+  GfxDrawSurf count;
+  GfxDrawSurf count_00;
+  GfxDrawSurf count_01;
   int in_EAX;
-  uint uVar9;
+  uint uVar6;
   int in_EDX;
-  ushort *puVar10;
-  uint uVar11;
+  ushort *puVar7;
+  uint uVar8;
   GfxBspDrawSurfData *unaff_EDI;
-  uint local_140;
-  uint local_110;
+  uint surfIter;
+  uint surfData;
+  GfxShadowGeometry *shadowGeom;
+  GfxDrawSurf *surfaceMaterials;
+  GfxDrawSurf *drawSurfs;
+  uint drawSurf;
   ushort local_104 [130];
   
   pGVar3 = ((rgp.world)->dpvs).surfaceMaterials;
-  uVar11 = 0xffffffff;
+  uVar8 = 0xffffffff;
   pGVar1 = (rgp.world)->shadowGeom + in_EDX;
-  uVar9 = 0;
-  puVar10 = (ushort *)0xffffffff;
-  local_110 = 0xffffffff;
-  local_140 = 0;
+  uVar6 = 0;
+  puVar7 = (ushort *)0xffffffff;
+  drawSurf = 0xffffffff;
+  surfData = 0;
   if (pGVar1->surfaceCount != 0) {
     do {
-      uVar2 = pGVar1->sortedSurfIndex[local_140];
+      uVar2 = pGVar1->sortedSurfIndex[surfData];
       puVar4 = *(ushort **)(pGVar3 + uVar2);
       uVar5 = *(uint *)((int)pGVar3 + (uint)uVar2 * 8 + 4);
-      if ((puVar4 != puVar10) || (uVar5 != uVar11)) {
-        if (uVar9 != 0) {
-          GVar6.packed._4_4_ = uVar9;
-          GVar6.packed._0_4_ = local_104;
-          R_AddBspDrawSurfs(GVar6,puVar10,uVar11,unaff_EDI);
+      if ((puVar4 != puVar7) || (uVar5 != uVar8)) {
+        if (uVar6 != 0) {
+          count.packed._4_4_ = uVar6;
+          count.packed._0_4_ = local_104;
+          R_AddBspDrawSurfs(count,puVar7,uVar8,unaff_EDI);
         }
-        uVar9 = 0;
-        puVar10 = puVar4;
-        uVar11 = uVar5;
-        local_110 = uVar5;
+        uVar6 = 0;
+        puVar7 = puVar4;
+        uVar8 = uVar5;
+        drawSurf = uVar5;
       }
-      local_104[uVar9] = uVar2;
-      uVar9 = uVar9 + 1;
-      if (0x7f < uVar9) {
-        GVar7.packed._4_4_ = uVar9;
-        GVar7.packed._0_4_ = local_104;
-        R_AddBspDrawSurfs(GVar7,puVar4,uVar5,unaff_EDI);
-        uVar9 = 0;
-        uVar11 = local_110;
+      local_104[uVar6] = uVar2;
+      uVar6 = uVar6 + 1;
+      if (0x7f < uVar6) {
+        count_00.packed._4_4_ = uVar6;
+        count_00.packed._0_4_ = local_104;
+        R_AddBspDrawSurfs(count_00,puVar4,uVar5,unaff_EDI);
+        uVar6 = 0;
+        uVar8 = drawSurf;
       }
-      local_140 = local_140 + 1;
-    } while (local_140 < pGVar1->surfaceCount);
-    if (uVar9 != 0) {
-      GVar8.packed._4_4_ = uVar9;
-      GVar8.packed._0_4_ = local_104;
-      R_AddBspDrawSurfs(GVar8,puVar10,uVar11,unaff_EDI);
+      surfData = surfData + 1;
+    } while (surfData < pGVar1->surfaceCount);
+    if (uVar6 != 0) {
+      count_01.packed._4_4_ = uVar6;
+      count_01.packed._0_4_ = local_104;
+      R_AddBspDrawSurfs(count_01,puVar7,uVar8,unaff_EDI);
     }
   }
   scene.drawSurfCount[in_EAX * 3 + 0x1b] = scene.drawSurfCount[in_EAX * 3 + 0x1b];

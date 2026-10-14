@@ -4,10 +4,10 @@
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_AllocateLocalClientMemory(void *param_1,int param_2)
+void __cdecl IK_AllocateLocalClientMemory(void *ikStatesBuf,int localClientIndex)
 
 {
-  ikStates[param_2 + 1] = param_1;
+  ikStates[localClientIndex + 1] = ikStatesBuf;
   return;
 }
 
@@ -19,12 +19,13 @@ void __cdecl IK_AllocateLocalClientMemory(void *param_1,int param_2)
 void __cdecl IK_InitSystem(void)
 
 {
-  int local_8;
+  IKJointBones *joint;
+  int i;
   
   IKImport_InitVars(&ikSystem);
   IKImport_GetBoneStrings(ikSystem.boneStrings);
-  for (local_8 = 0; local_8 < 0x17; local_8 = local_8 + 1) {
-    ikSystem.ikBoneParents[local_8] = *(IKBoneNames *)(&IKBoneParents + local_8 * 4);
+  for (i = 0; i < 0x17; i = i + 1) {
+    ikSystem.ikBoneParents[i] = *(IKBoneNames *)(&IKBoneParents + i * 4);
   }
   ikSystem.joints[0].childBone = IKBONE_LHAND;
   ikSystem.joints[0].jointBone = IKBONE_LFOREARM;
@@ -52,15 +53,17 @@ void __cdecl IK_InitSystem(void)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-IKState * __cdecl IK_FindFreeIKState(int param_1,uchar *param_2)
+IKState * __cdecl IK_FindFreeIKState(int entityNum,uchar *model)
 
 {
   int iVar1;
   IKState *pIVar2;
+  int modelLocalClientIndex;
+  int listNum;
   
-  iVar1 = IKImport_GetLocalClientIndexForModel(param_2);
-  if (param_1 < 0x20) {
-    pIVar2 = ikStates[iVar1 + 1] + param_1;
+  iVar1 = IKImport_GetLocalClientIndexForModel(model);
+  if (entityNum < 0x20) {
+    pIVar2 = ikStates[iVar1 + 1] + entityNum;
   }
   else {
     Com_Error(ERR_DROP,"IK_FindFreeIKState() - entityNum is not a client: %i");
@@ -73,8 +76,12 @@ IKState * __cdecl IK_FindFreeIKState(int param_1,uchar *param_2)
 // 0086CFA0  IK_GetIKStateForEntity  (ik/ik.cpp:382)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-IKState * __cdecl IK_GetIKStateForEntity(int param_1,uchar *param_2,bool param_3)
+IKState * __cdecl IK_GetIKStateForEntity(int entityNum,uchar *model,bool bScanAll)
 
 {
   code *pcVar1;
@@ -82,49 +89,51 @@ IKState * __cdecl IK_GetIKStateForEntity(int param_1,uchar *param_2,bool param_3
   IKState *pIVar3;
   int iVar4;
   int iVar5;
-  IKState *local_8;
+  int actorNum;
+  int modelLocalClientIndex;
+  IKState *ikState;
   
-  if (((param_1 < 0) || (0x3ff < param_1)) &&
+  if (((entityNum < 0) || (0x3ff < entityNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",0x185,0,"%s"), !bVar2
      )) {
     pcVar1 = (code *)swi(3);
     pIVar3 = (IKState *)(*pcVar1)();
     return pIVar3;
   }
-  if (param_2 == (uchar *)0x0) {
-    local_8 = (IKState *)0x0;
+  if (model == (uchar *)0x0) {
+    ikState = (IKState *)0x0;
   }
-  else if (param_1 == 0x3ff) {
-    local_8 = (IKState *)0x0;
+  else if (entityNum == 0x3ff) {
+    ikState = (IKState *)0x0;
   }
   else {
-    pIVar3 = IKImport_FetchDObjIKState(param_2);
+    pIVar3 = IKImport_FetchDObjIKState(model);
     if (pIVar3 != (IKState *)0x0) {
-      iVar4 = IKImport_GetLocalClientIndexForModel(param_2);
+      iVar4 = IKImport_GetLocalClientIndexForModel(model);
       if (pIVar3->inUse == 0) {
         bVar2 = IKImport_IsMainThread();
         if (bVar2) {
-          pIVar3 = IK_CreateIKForEntity(param_1,param_2);
+          pIVar3 = IK_CreateIKForEntity(entityNum,model);
           return pIVar3;
         }
         return (IKState *)0x0;
       }
-      if ((pIVar3->entityNum == param_1) && (pIVar3->localClientIndex == iVar4)) {
+      if ((pIVar3->entityNum == entityNum) && (pIVar3->localClientIndex == iVar4)) {
         return pIVar3;
       }
       pIVar3->inUse = 0;
-      IKImport_SetDObjIKState(param_2,(IKState *)0x0);
+      IKImport_SetDObjIKState(model,(IKState *)0x0);
     }
-    iVar4 = IKImport_GetLocalClientIndexForModel(param_2);
+    iVar4 = IKImport_GetLocalClientIndexForModel(model);
     if (ikStates[iVar4 + 1] == (IKState *)0x0) {
-      local_8 = (IKState *)0x0;
+      ikState = (IKState *)0x0;
     }
     else {
-      if (param_1 < 0x20) {
-        local_8 = ikStates[iVar4 + 1] + param_1;
+      if (entityNum < 0x20) {
+        ikState = ikStates[iVar4 + 1] + entityNum;
       }
       else {
-        iVar5 = IKImport_GetActorNum(param_2);
+        iVar5 = IKImport_GetActorNum(model);
         if (((iVar5 < 0) || (0xf < iVar5)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",0x1ba,0,"%s"),
            !bVar2)) {
@@ -132,24 +141,24 @@ IKState * __cdecl IK_GetIKStateForEntity(int param_1,uchar *param_2,bool param_3
           pIVar3 = (IKState *)(*pcVar1)();
           return pIVar3;
         }
-        local_8 = ikStates[iVar4 + 1] + iVar5 + 0x20;
+        ikState = ikStates[iVar4 + 1] + iVar5 + 0x20;
       }
-      if (local_8->inUse == 0) {
-        if (param_3) {
-          local_8 = IK_CreateIKForEntity(param_1,param_2);
+      if (ikState->inUse == 0) {
+        if (bScanAll) {
+          ikState = IK_CreateIKForEntity(entityNum,model);
         }
         else {
-          local_8 = (IKState *)0x0;
+          ikState = (IKState *)0x0;
         }
       }
       else {
-        (local_8->field7_0x10).model = param_2;
-        IK_InitializeIKState(local_8);
-        IKImport_SetDObjIKState(param_2,local_8);
+        (ikState->field7_0x10).model = model;
+        IK_InitializeIKState(ikState);
+        IKImport_SetDObjIKState(model,ikState);
       }
     }
   }
-  return local_8;
+  return ikState;
 }
 
 
@@ -157,44 +166,42 @@ IKState * __cdecl IK_GetIKStateForEntity(int param_1,uchar *param_2,bool param_3
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_InitializeIKState(IKState *param_1)
+void __cdecl IK_InitializeIKState(IKState *ikState)
 
 {
   code *pcVar1;
   bool bVar2;
-  IKBoneNames local_8;
+  int i;
   
-  memset(param_1->objBoneToIKBone,'\0',0xa4);
-  local_8 = IKBONE_FIRST;
+  memset(ikState->objBoneToIKBone,'\0',0xa4);
+  i = 0;
   do {
-    if (0x16 < (int)local_8) {
-      param_1->isIKModel = 1;
-      param_1->lastFootTraceNormals[0][0] = 0.0;
-      param_1->lastFootTraceNormals[0][1] = 0.0;
-      param_1->lastFootTraceNormals[0][2] = 1.0;
-      param_1->lastFootTraceNormals[1][0] = 0.0;
-      param_1->lastFootTraceNormals[1][1] = 0.0;
-      param_1->lastFootTraceNormals[1][2] = 1.0;
-      param_1->lastFootTraceGoalNormals[0][0] = 0.0;
-      param_1->lastFootTraceGoalNormals[0][1] = 0.0;
-      param_1->lastFootTraceGoalNormals[0][2] = 1.0;
-      param_1->lastFootTraceGoalNormals[1][0] = 0.0;
-      param_1->lastFootTraceGoalNormals[1][1] = 0.0;
-      param_1->lastFootTraceGoalNormals[1][2] = 1.0;
-      param_1->leftHandLastProximityLerp = 0.0;
-      IKImport_InitCollisionCache(param_1);
+    if (0x16 < i) {
+      ikState->isIKModel = 1;
+      ikState->lastFootTraceNormals[0][0] = 0.0;
+      ikState->lastFootTraceNormals[0][1] = 0.0;
+      ikState->lastFootTraceNormals[0][2] = 1.0;
+      ikState->lastFootTraceNormals[1][0] = 0.0;
+      ikState->lastFootTraceNormals[1][1] = 0.0;
+      ikState->lastFootTraceNormals[1][2] = 1.0;
+      ikState->lastFootTraceGoalNormals[0][0] = 0.0;
+      ikState->lastFootTraceGoalNormals[0][1] = 0.0;
+      ikState->lastFootTraceGoalNormals[0][2] = 1.0;
+      ikState->lastFootTraceGoalNormals[1][0] = 0.0;
+      ikState->lastFootTraceGoalNormals[1][1] = 0.0;
+      ikState->lastFootTraceGoalNormals[1][2] = 1.0;
+      ikState->leftHandLastProximityLerp = 0.0;
+      IKImport_InitCollisionCache(ikState);
       return;
     }
-    bVar2 = IKImport_GetBoneLookups(param_1,local_8);
+    bVar2 = IKImport_GetBoneLookups(ikState,i);
     if (bVar2) {
-      if ((uint)param_1->objBoneToIKBone[param_1->ikBoneToObjBone[local_8]] !=
-          (local_8 + IKBONE_PELVIS & 0xff)) {
+      if ((uint)ikState->objBoneToIKBone[ikState->ikBoneToObjBone[i]] != (i + 1U & 0xff)) {
         IKImport_DebugPrint(
                            "IK_InitializeIKState() - IK bones don\'t match.\ni = %i\nikState->ikBoneToObjBone[i] = %i\nikState->objBoneToIKBone[ikState->ikBoneToObjBone[i]] = %i (should be %i)\n"
                            );
       }
-      if (((uint)param_1->objBoneToIKBone[param_1->ikBoneToObjBone[local_8]] !=
-           (local_8 + IKBONE_PELVIS & 0xff)) &&
+      if (((uint)ikState->objBoneToIKBone[ikState->ikBoneToObjBone[i]] != (i + 1U & 0xff)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",0x241,0,"%s"),
          !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -203,13 +210,13 @@ void __cdecl IK_InitializeIKState(IKState *param_1)
       }
     }
     else {
-      if ((&ikEssentialBones)[local_8] != '\0') {
-        param_1->isIKModel = 0;
+      if ((&ikEssentialBones)[i] != '\0') {
+        ikState->isIKModel = 0;
         return;
       }
-      param_1->ikBoneToObjBone[local_8] = 0xa1;
+      ikState->ikBoneToObjBone[i] = 0xa1;
     }
-    local_8 = local_8 + IKBONE_PELVIS;
+    i = i + 1;
   } while( true );
 }
 
@@ -218,16 +225,17 @@ void __cdecl IK_InitializeIKState(IKState *param_1)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-IKState * __cdecl IK_CreateIKForEntity(int param_1,uchar *param_2)
+IKState * __cdecl IK_CreateIKForEntity(int entityNum,uchar *model)
 
 {
   code *pcVar1;
   bool bVar2;
   IKState *pIVar3;
   int iVar4;
+  IKState *ikState;
   
   Sys_EnterCriticalSection(CRITSECT_IK);
-  pIVar3 = IK_FindFreeIKState(param_1,param_2);
+  pIVar3 = IK_FindFreeIKState(entityNum,model);
   if (pIVar3 == (IKState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",0x260,0,"%s\n\t%s");
     if (!bVar2) {
@@ -237,18 +245,18 @@ IKState * __cdecl IK_CreateIKForEntity(int param_1,uchar *param_2)
     }
   }
   pIVar3->inUse = 1;
-  pIVar3->entityNum = param_1;
-  (pIVar3->field7_0x10).model = param_2;
+  pIVar3->entityNum = entityNum;
+  (pIVar3->field7_0x10).model = model;
   pIVar3->bJointVarsValid = 0;
   memset((uchar *)pIVar3->lastFrameMS,'\0',0x54);
-  bVar2 = IKImport_IsServerModel(param_2);
+  bVar2 = IKImport_IsServerModel(model);
   pIVar3->isServer = bVar2;
-  iVar4 = IKImport_GetLocalClientIndexForModel(param_2);
+  iVar4 = IKImport_GetLocalClientIndexForModel(model);
   pIVar3->localClientIndex = iVar4;
   (pIVar3->field9_0x18).localIkSystem = &ikSystem;
   IK_InitializeIKState(pIVar3);
   pIVar3->timeMS = 1000;
-  IKImport_SetDObjIKState(param_2,pIVar3);
+  IKImport_SetDObjIKState(model,pIVar3);
   Sys_LeaveCriticalSection(CRITSECT_IK);
   return pIVar3;
 }
@@ -258,7 +266,7 @@ IKState * __cdecl IK_CreateIKForEntity(int param_1,uchar *param_2)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_GetJointVars(IKState *param_1)
+void __cdecl IK_GetJointVars(IKState *ikState)
 
 {
   float fVar1;
@@ -291,28 +299,28 @@ void __cdecl IK_GetJointVars(IKState *param_1)
   
   local_11 = '\x01';
   local_18 = 0;
-  local_1c = ((param_1->field9_0x18).localIkSystem)->joints;
-  local_20 = param_1->jointVars;
+  local_1c = ((ikState->field9_0x18).localIkSystem)->joints;
+  local_20 = ikState->jointVars;
   for (; local_18 < 4; local_18 = local_18 + 1) {
     if ((local_20->bValid == false) && (local_1c->childBone != IKBONE_FIRST)) {
-      local_21 = param_1->ikBoneToObjBone[local_1c->childBone] != 0xa1;
+      local_21 = ikState->ikBoneToObjBone[local_1c->childBone] != 0xa1;
       if ((bool)local_21) {
         ikCalcBoneModelMatrix
-                  (param_1,local_1c->childBone,(float *)param_1->matArrayPostIK,
+                  (ikState,local_1c->childBone,(float *)ikState->matArrayPostIK,
                    (float (*) [4])local_70);
         local_74 = &local_40;
         local_80 = local_40;
         local_7c = local_3c;
         local_78 = local_38;
         ikCalcBoneModelMatrix
-                  (param_1,local_1c->jointBone,(float *)param_1->matArrayPostIK,
+                  (ikState,local_1c->jointBone,(float *)ikState->matArrayPostIK,
                    (float (*) [4])local_c0);
         local_c4 = &local_90;
         local_d0 = local_90;
         local_cc = local_8c;
         local_c8 = local_88;
         ikCalcBoneModelMatrix
-                  (param_1,local_1c->parentBone,(float *)param_1->matArrayPostIK,
+                  (ikState,local_1c->parentBone,(float *)ikState->matArrayPostIK,
                    (float (*) [4])local_110);
         fVar1 = SQRT((local_80 - local_d0) * (local_80 - local_d0) +
                      (local_7c - local_cc) * (local_7c - local_cc) +
@@ -328,7 +336,7 @@ void __cdecl IK_GetJointVars(IKState *param_1)
           local_20->LowerIKc = 1.0 / (fVar1 * 2.0);
           local_20->LowerIKInvc = (fVar1 * fVar1 - fVar2 * fVar2) / (fVar1 * 2.0);
           if (1 < local_18) {
-            param_1->footHeightFromGround = 5.8;
+            ikState->footHeightFromGround = 5.8;
           }
           local_20->bValid = true;
         }
@@ -344,7 +352,7 @@ void __cdecl IK_GetJointVars(IKState *param_1)
     local_20 = local_20 + 1;
   }
   if (local_11 != '\0') {
-    param_1->bJointVarsValid = 1;
+    ikState->bJointVarsValid = 1;
   }
   return;
 }
@@ -356,11 +364,13 @@ void __cdecl IK_GetJointVars(IKState *param_1)
 /* WARNING: Removing unreachable block (ram,0x0086d9dc) */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-bool __cdecl IK_IsCalcBone(IKState *param_1,int param_2)
+bool __cdecl IK_IsCalcBone(IKState *ikState,int ikBoneIndex)
 
 {
-  return (0x80000000U >> (param_1->ikBoneToObjBone[param_2] & 0x1f) &
-         param_1->objBoneCalcBits[(int)(uint)param_1->ikBoneToObjBone[param_2] >> 5]) != 0;
+  int objBoneIndex;
+  
+  return (0x80000000U >> (ikState->ikBoneToObjBone[ikBoneIndex] & 0x1f) &
+         ikState->objBoneCalcBits[(int)(uint)ikState->ikBoneToObjBone[ikBoneIndex] >> 5]) != 0;
 }
 
 
@@ -368,33 +378,33 @@ bool __cdecl IK_IsCalcBone(IKState *param_1,int param_2)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_UpdateTimeAll(int param_1,int param_2,bool param_3)
+void __cdecl IK_UpdateTimeAll(int time,int localClientIndex,bool inViewer)
 
 {
   code *pcVar1;
   bool bVar2;
-  IKState *local_c;
-  int local_8;
+  IKState *ikState;
+  int i;
   
   bVar2 = IKImport_GetVar_IK_Enable();
-  if ((bVar2) && (ikStates[param_2 + 1] != (IKState *)0x0)) {
-    local_8 = 0;
-    local_c = ikStates[param_2 + 1];
-    for (; local_8 < 0x20; local_8 = local_8 + 1) {
-      if (local_c->inUse != 0) {
-        if ((local_c->localClientIndex != param_2) &&
+  if ((bVar2) && (ikStates[localClientIndex + 1] != (IKState *)0x0)) {
+    i = 0;
+    ikState = ikStates[localClientIndex + 1];
+    for (; i < 0x20; i = i + 1) {
+      if (ikState->inUse != 0) {
+        if ((ikState->localClientIndex != localClientIndex) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",0x304,0,"%s"),
            !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_c->timeMS = param_1;
+        ikState->timeMS = time;
       }
-      local_c = local_c + 1;
+      ikState = ikState + 1;
     }
     ikSystem.systemFrameNumber = IKImport_GetFrameNum();
-    ikSystem.inViewer = param_3;
+    ikSystem.inViewer = inViewer;
   }
   return;
 }
@@ -408,27 +418,28 @@ void __cdecl IK_ResetTime(void)
 
 {
   bool bVar1;
-  int local_18;
-  int local_14;
-  IKState *local_10;
-  int local_8;
+  int j;
+  int k;
+  IKState *ikState;
+  IKState *ikStateList;
+  int i;
   
   bVar1 = IKImport_GetVar_IK_Enable();
   if (bVar1) {
-    for (local_18 = 0; local_18 < 2; local_18 = local_18 + 1) {
-      local_10 = ikStates[local_18];
-      if (local_10 != (IKState *)0x0) {
-        for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-          if ((local_10 != (IKState *)0x0) && (local_10->inUse != 0)) {
-            local_10->timeMS = -9999;
-            local_10->lastUpdateLayerLerpsTime = local_10->timeMS;
-            local_10->leftHandChangeTime = 0;
-            for (local_14 = 0; local_14 < 0x15; local_14 = local_14 + 1) {
-              local_10->lerpInfo[local_14].lastUpdateTime = local_10->timeMS;
-              local_10->lastFrameMS[local_14] = local_10->timeMS;
+    for (j = 0; j < 2; j = j + 1) {
+      ikState = ikStates[j];
+      if (ikState != (IKState *)0x0) {
+        for (i = 0; i < 0x20; i = i + 1) {
+          if ((ikState != (IKState *)0x0) && (ikState->inUse != 0)) {
+            ikState->timeMS = -9999;
+            ikState->lastUpdateLayerLerpsTime = ikState->timeMS;
+            ikState->leftHandChangeTime = 0;
+            for (k = 0; k < 0x15; k = k + 1) {
+              ikState->lerpInfo[k].lastUpdateTime = ikState->timeMS;
+              ikState->lastFrameMS[k] = ikState->timeMS;
             }
           }
-          local_10 = local_10 + 1;
+          ikState = ikState + 1;
         }
       }
     }
@@ -442,20 +453,20 @@ void __cdecl IK_ResetTime(void)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_UpdateDvarValues(IKState *param_1)
+void __cdecl IK_UpdateDvarValues(IKState *ikState)
 
 {
   DvarValue *pDVar1;
   dvar_s *pdVar2;
-  int local_8;
+  int i;
   
   if (ikSystem.dvars[0] == (dvar_s *)0x0) {
-    memset(param_1->dvarValues[0].color,'\0',0x170);
+    memset(ikState->dvarValues[0].color,'\0',0x170);
   }
   else {
-    for (local_8 = 0; local_8 < 0x17; local_8 = local_8 + 1) {
-      pdVar2 = ikSystem.dvars[local_8];
-      pDVar1 = param_1->dvarValues + local_8;
+    for (i = 0; i < 0x17; i = i + 1) {
+      pdVar2 = ikSystem.dvars[i];
+      pDVar1 = ikState->dvarValues + i;
       pDVar1->integer = (pdVar2->current).integer;
       pDVar1->vector[1] = (pdVar2->current).vector[1];
       pDVar1->vector[2] = (pdVar2->current).vector[2];
@@ -469,27 +480,30 @@ void __cdecl IK_UpdateDvarValues(IKState *param_1)
 // 0086DC60  IK_UpdateLayerLerps  (ik/ik.cpp:841)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IK_UpdateLayerLerps(IKState *param_1)
+void __cdecl IK_UpdateLayerLerps(IKState *ikState)
 
 {
   float fVar1;
-  IKLayerNames local_8;
+  int i;
   
-  if (param_1->lastUpdateLayerLerpsTime != param_1->timeMS) {
-    IKImport_GetVelocity(param_1,param_1->velocity);
-    IKImport_SetWeaponOffsetType(param_1);
-    IKImport_UpdateWeaponClass(param_1);
-    IK_UpdateDvarValues(param_1);
-    param_1->bHasActiveLayers = false;
-    for (local_8 = IKLAYER_CROUCH_ACTIVE; (int)local_8 < 0x15;
-        local_8 = local_8 + IKLAYER_PRONE_ACTIVE) {
-      fVar1 = IKImport_GetLayerLerp(param_1,local_8,*(float *)(&ikLayerLerpTimes + local_8 * 4));
-      if ((0.0 < fVar1) && (*(int *)(&ikLayerRealLayers + local_8 * 4) != 0)) {
-        param_1->bHasActiveLayers = true;
+  if (ikState->lastUpdateLayerLerpsTime != ikState->timeMS) {
+    IKImport_GetVelocity(ikState,ikState->velocity);
+    IKImport_SetWeaponOffsetType(ikState);
+    IKImport_UpdateWeaponClass(ikState);
+    IK_UpdateDvarValues(ikState);
+    ikState->bHasActiveLayers = false;
+    for (i = 0; i < 0x15; i = i + 1) {
+      fVar1 = IKImport_GetLayerLerp(ikState,i,*(float *)(&ikLayerLerpTimes + i * 4));
+      if ((0.0 < fVar1) && (*(int *)(&ikLayerRealLayers + i * 4) != 0)) {
+        ikState->bHasActiveLayers = true;
       }
     }
-    param_1->lastUpdateLayerLerpsTime = param_1->timeMS;
+    ikState->lastUpdateLayerLerpsTime = ikState->timeMS;
   }
   return;
 }
@@ -499,10 +513,10 @@ void __cdecl IK_UpdateLayerLerps(IKState *param_1)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-bool __cdecl IK_GetStatus(IKState *param_1,IKEntityStatusFunctions param_2)
+bool __cdecl IK_GetStatus(IKState *ikState,IKEntityStatusFunctions statusFunc)
 
 {
-  return (1 << ((byte)param_2 & 0x1f) & param_1->statusFlags) != 0;
+  return (1 << ((byte)statusFunc & 0x1f) & ikState->statusFlags) != 0;
 }
 
 
@@ -510,23 +524,22 @@ bool __cdecl IK_GetStatus(IKState *param_1,IKEntityStatusFunctions param_2)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_CheckSolverLayers(IKState *param_1)
+void __cdecl IK_CheckSolverLayers(IKState *ikState)
 
 {
   float fVar1;
-  IKLayerNames local_8;
+  int i;
   
-  param_1->bHasLegSolverLayer = false;
-  param_1->bHasArmSolverLayer = false;
-  for (local_8 = IKLAYER_CROUCH_ACTIVE; (int)local_8 < 0x15;
-      local_8 = local_8 + IKLAYER_PRONE_ACTIVE) {
-    fVar1 = IKImport_GetLayerLerp(param_1,local_8,*(float *)(&ikLayerLerpTimes + local_8 * 4));
+  ikState->bHasLegSolverLayer = false;
+  ikState->bHasArmSolverLayer = false;
+  for (i = 0; i < 0x15; i = i + 1) {
+    fVar1 = IKImport_GetLayerLerp(ikState,i,*(float *)(&ikLayerLerpTimes + i * 4));
     if (fVar1 != 0.0) {
-      if (ikLegSolverLayers[local_8] != 0) {
-        param_1->bHasLegSolverLayer = true;
+      if (ikLegSolverLayers[i] != 0) {
+        ikState->bHasLegSolverLayer = true;
       }
-      if (ikArmSolverLayers[local_8] != 0) {
-        param_1->bHasArmSolverLayer = true;
+      if (ikArmSolverLayers[i] != 0) {
+        ikState->bHasArmSolverLayer = true;
       }
     }
   }
@@ -538,34 +551,38 @@ void __cdecl IK_CheckSolverLayers(IKState *param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IK_UpdateStatusFunctions(IKState *param_1)
+void __cdecl IK_UpdateStatusFunctions(IKState *ikState)
 
 {
   bool bVar1;
   float fVar2;
-  int local_8;
+  int i;
   
-  bVar1 = IKImport_GetBoneControllers(param_1,param_1->controllers[0]);
-  param_1->hasControllers = bVar1;
-  if (param_1->lastUpdateStatusFlags != param_1->timeMS) {
-    param_1->statusFlags = 0;
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      bVar1 = (*ikStatusFunctions[local_8])(param_1);
+  bVar1 = IKImport_GetBoneControllers(ikState,ikState->controllers[0]);
+  ikState->hasControllers = bVar1;
+  if (ikState->lastUpdateStatusFlags != ikState->timeMS) {
+    ikState->statusFlags = 0;
+    for (i = 0; i < 10; i = i + 1) {
+      bVar1 = (*ikStatusFunctions[i])(ikState);
       if (bVar1) {
-        param_1->statusFlags = 1 << ((byte)local_8 & 0x1f) | param_1->statusFlags;
+        ikState->statusFlags = 1 << ((byte)i & 0x1f) | ikState->statusFlags;
       }
     }
-    fVar2 = IKImport_GetGunnerCrouch(param_1);
-    param_1->gunnerCrouch = fVar2;
-    fVar2 = IKImport_GetLayerLerp(param_1,IKLAYER_TERRAIN_MAPPING,_DAT_00e12704);
+    fVar2 = IKImport_GetGunnerCrouch(ikState);
+    ikState->gunnerCrouch = fVar2;
+    fVar2 = IKImport_GetLayerLerp(ikState,IKLAYER_TERRAIN_MAPPING,_DAT_00e12704);
     if (0.0 < fVar2) {
-      IKImport_UpdateCollisionCache(param_1);
+      IKImport_UpdateCollisionCache(ikState);
     }
-    GamerProfile_WriteSettings((int)param_1);
-    IKImport_GetEntityXform(param_1);
-    IK_CheckSolverLayers(param_1);
-    param_1->lastUpdateStatusFlags = param_1->timeMS;
+    GamerProfile_WriteSettings((int)ikState);
+    IKImport_GetEntityXform(ikState);
+    IK_CheckSolverLayers(ikState);
+    ikState->lastUpdateStatusFlags = ikState->timeMS;
   }
   return;
 }
@@ -575,58 +592,60 @@ void __cdecl IK_UpdateStatusFunctions(IKState *param_1)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_UpdateEntity(int param_1,uchar *param_2,bool param_3,int *param_4)
+void __cdecl IK_UpdateEntity(int entityNum,uchar *model,bool isLocalBones,int *calcBoneBits)
 
 {
   code *pcVar1;
   bool bVar2;
-  IKState *pIVar3;
-  DWORD DVar4;
+  IKState *ikState_00;
+  DWORD DVar3;
+  IKState *ikState;
   
-  if (param_3) {
+  if (isLocalBones) {
     PIXBeginNamedEvent(-1,"IK - update bones");
-    pIVar3 = IK_GetIKStateForEntity(param_1,param_2,false);
-    if (pIVar3 == (IKState *)0x0) {
-      DVar4 = GetCurrentThreadId();
-      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    ikState_00 = IK_GetIKStateForEntity(entityNum,model,false);
+    if (ikState_00 == (IKState *)0x0) {
+      DVar3 = GetCurrentThreadId();
+      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      if ((((pIVar3->field9_0x18).localIkSystem == (IKSystem *)0x0) ||
-          (((pIVar3->field9_0x18).localIkSystem)->bInitialized == false)) &&
+      if ((((ikState_00->field9_0x18).localIkSystem == (IKSystem *)0x0) ||
+          (((ikState_00->field9_0x18).localIkSystem)->bInitialized == false)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik.cpp",999,0,"%s"),
          !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((pIVar3 != (IKState *)0x0) && (pIVar3->isIKModel != 0)) {
-        if ((pIVar3->frameUsed < ((pIVar3->field9_0x18).localIkSystem)->systemFrameNumber) ||
-           (((pIVar3->field9_0x18).localIkSystem)->systemFrameNumber + 5 < pIVar3->frameUsed)) {
-          pIVar3->frameUsed = ((pIVar3->field9_0x18).localIkSystem)->systemFrameNumber;
+      if ((ikState_00 != (IKState *)0x0) && (ikState_00->isIKModel != 0)) {
+        if ((ikState_00->frameUsed < ((ikState_00->field9_0x18).localIkSystem)->systemFrameNumber)
+           || (((ikState_00->field9_0x18).localIkSystem)->systemFrameNumber + 5 <
+               ikState_00->frameUsed)) {
+          ikState_00->frameUsed = ((ikState_00->field9_0x18).localIkSystem)->systemFrameNumber;
         }
-        pIVar3->objBoneCalcBits[0] = *param_4;
-        pIVar3->objBoneCalcBits[1] = param_4[1];
-        pIVar3->objBoneCalcBits[2] = param_4[2];
-        pIVar3->objBoneCalcBits[3] = param_4[3];
-        bVar2 = IK_IsCalcBone(pIVar3,1);
+        ikState_00->objBoneCalcBits[0] = *calcBoneBits;
+        ikState_00->objBoneCalcBits[1] = calcBoneBits[1];
+        ikState_00->objBoneCalcBits[2] = calcBoneBits[2];
+        ikState_00->objBoneCalcBits[3] = calcBoneBits[3];
+        bVar2 = IK_IsCalcBone(ikState_00,1);
         if (bVar2) {
-          IKImport_CalcAnimatedIKBonesBits(pIVar3,param_2);
-          IK_UpdateLayerLerps(pIVar3);
-          IK_UpdateStatusFunctions(pIVar3);
-          bVar2 = IKImport_CheckIKPartBits(pIVar3);
+          IKImport_CalcAnimatedIKBonesBits(ikState_00,model);
+          IK_UpdateLayerLerps(ikState_00);
+          IK_UpdateStatusFunctions(ikState_00);
+          bVar2 = IKImport_CheckIKPartBits(ikState_00);
           if (bVar2) {
-            if (pIVar3->timeMS == 0) {
-              pIVar3->timeMS = 10000;
+            if (ikState_00->timeMS == 0) {
+              ikState_00->timeMS = 10000;
             }
-            IKImport_GetEntityXform(pIVar3);
-            IK_Process(pIVar3,true);
+            IKImport_GetEntityXform(ikState_00);
+            IK_Process(ikState_00,true);
           }
         }
       }
-      DVar4 = GetCurrentThreadId();
-      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar3 = GetCurrentThreadId();
+      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }

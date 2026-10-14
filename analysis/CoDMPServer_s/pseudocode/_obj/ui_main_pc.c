@@ -433,17 +433,17 @@ int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
 
 {
   char cVar1;
-  char *pcVar2;
-  bool bVar3;
+  char *dst;
+  bool bVar2;
   int in_EAX;
-  int iVar4;
+  int iVar3;
   undefined1 *extraout_EAX;
-  uchar *puVar5;
+  uchar *puVar4;
   undefined1 *extraout_EAX_00;
-  int iVar6;
+  int iVar5;
   char *unaff_ESI;
   char *unaff_EDI;
-  int iVar7;
+  int iVar6;
   char *local_1c;
   char *local_18;
   char *local_14;
@@ -451,19 +451,19 @@ int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
   undefined4 uStack_c;
   undefined8 local_8;
   
-  pcVar2 = param_1;
+  dst = param_1;
   local_1c = (char *)0x0;
   param_1 = (char *)0x0;
   local_18 = (char *)0x0;
   local_14 = (char *)0x0;
-  if (pcVar2 == (char *)0x0) {
+  if (dst == (char *)0x0) {
     CL_ServerStatus((char *)0x0,(char *)0x0,(int)unaff_EDI);
   }
   else {
-    memset((uchar *)pcVar2,'\0',0x14a4);
-    puVar5 = (uchar *)(pcVar2 + 0x1040);
-    iVar4 = CL_ServerStatus((char *)puVar5,(char *)0x400,(int)unaff_EDI);
-    if (iVar4 != 0) {
+    memset((uchar *)dst,'\0',0x14a4);
+    puVar4 = (uchar *)(dst + 0x1040);
+    iVar3 = CL_ServerStatus((char *)puVar4,(char *)0x400,(int)unaff_EDI);
+    if (iVar3 != 0) {
       if ((ui_browserShowInfo != (dvar_s *)0x0) && (ui_browserShowInfo->name != (char *)0x0)) {
         if (ui_browserShowInfo->type == DVAR_TYPE_BOOL) {
           local_10 = (char *)CONCAT31(local_10._1_3_,1);
@@ -473,60 +473,60 @@ int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
         }
         FUN_0069f980(ui_browserShowInfo,CONCAT44(uStack_c,local_10),local_8,0);
       }
-      UI_UseAltColorPalette((char *)puVar5);
+      UI_UseAltColorPalette((char *)puVar4);
       if (in_EAX == 0) {
-        *pcVar2 = '\0';
+        *dst = '\0';
       }
       else {
-        iVar4 = in_EAX + -1;
-        iVar7 = 0x40;
-        iVar6 = -1 - iVar4;
+        iVar3 = in_EAX + -1;
+        iVar6 = 0x40;
+        iVar5 = -1 - iVar3;
         do {
-          cVar1 = *(char *)(iVar4 + 1);
-          iVar4 = iVar4 + 1;
-          pcVar2[iVar4 + iVar6] = cVar1;
+          cVar1 = *(char *)(iVar3 + 1);
+          iVar3 = iVar3 + 1;
+          dst[iVar3 + iVar5] = cVar1;
           if (cVar1 == '\0') break;
-          iVar7 = iVar7 + -1;
-        } while (iVar7 != 0);
-        pcVar2[0x3f] = '\0';
+          iVar6 = iVar6 + -1;
+        } while (iVar6 != 0);
+        dst[0x3f] = '\0';
       }
-      pcVar2[0x14a0] = '\0';
-      pcVar2[0x14a1] = '\0';
-      pcVar2[0x14a2] = '\0';
-      pcVar2[0x14a3] = '\0';
-      if (puVar5 != (uchar *)0x0) {
-        while ((*puVar5 != '\0' && (strchr(puVar5,'\\'), extraout_EAX != (undefined1 *)0x0))) {
+      dst[0x14a0] = '\0';
+      dst[0x14a1] = '\0';
+      dst[0x14a2] = '\0';
+      dst[0x14a3] = '\0';
+      if (puVar4 != (uchar *)0x0) {
+        while ((*puVar4 != '\0' && (strchr(puVar4,'\\'), extraout_EAX != (undefined1 *)0x0))) {
           *extraout_EAX = 0;
-          puVar5 = extraout_EAX + 1;
-          if (*puVar5 == '\\') break;
-          *(uchar **)(pcVar2 + (*(int *)(pcVar2 + 0x14a0) + 2) * 0x20) = puVar5;
-          strchr(puVar5,'\\');
+          puVar4 = extraout_EAX + 1;
+          if (*puVar4 == '\\') break;
+          *(uchar **)(dst + (*(int *)(dst + 0x14a0) + 2) * 0x20) = puVar4;
+          strchr(puVar4,'\\');
           if (extraout_EAX_00 == (undefined1 *)0x0) break;
           *extraout_EAX_00 = 0;
-          puVar5 = extraout_EAX_00 + 1;
-          *(uchar **)(pcVar2 + *(int *)(pcVar2 + 0x14a0) * 0x20 + 0x44) = puVar5;
-          iVar4 = *(int *)(pcVar2 + 0x14a0);
-          iVar6 = I_strcmp(unaff_EDI,unaff_ESI);
-          if (iVar6 == 0) {
-            param_1 = *(char **)(pcVar2 + iVar4 * 0x20 + 0x44);
+          puVar4 = extraout_EAX_00 + 1;
+          *(uchar **)(dst + *(int *)(dst + 0x14a0) * 0x20 + 0x44) = puVar4;
+          iVar3 = *(int *)(dst + 0x14a0);
+          iVar5 = I_strcmp(unaff_EDI,unaff_ESI);
+          if (iVar5 == 0) {
+            param_1 = *(char **)(dst + iVar3 * 0x20 + 0x44);
           }
-          iVar6 = I_strcmp(unaff_EDI,unaff_ESI);
-          if (iVar6 == 0) {
-            local_1c = *(char **)(pcVar2 + iVar4 * 0x20 + 0x44);
+          iVar5 = I_strcmp(unaff_EDI,unaff_ESI);
+          if (iVar5 == 0) {
+            local_1c = *(char **)(dst + iVar3 * 0x20 + 0x44);
           }
-          iVar6 = I_strcmp(unaff_EDI,unaff_ESI);
-          if (iVar6 == 0) {
-            local_18 = *(char **)(pcVar2 + iVar4 * 0x20 + 0x44);
+          iVar5 = I_strcmp(unaff_EDI,unaff_ESI);
+          if (iVar5 == 0) {
+            local_18 = *(char **)(dst + iVar3 * 0x20 + 0x44);
           }
-          iVar6 = I_strcmp(unaff_EDI,unaff_ESI);
-          if (iVar6 == 0) {
-            local_14 = *(char **)(pcVar2 + iVar4 * 0x20 + 0x44);
+          iVar5 = I_strcmp(unaff_EDI,unaff_ESI);
+          if (iVar5 == 0) {
+            local_14 = *(char **)(dst + iVar3 * 0x20 + 0x44);
           }
-          bVar3 = UI_IsServerStatusDvar(unaff_EDI);
-          if (bVar3) {
-            *(int *)(pcVar2 + 0x14a0) = iVar4 + 1;
+          bVar2 = UI_IsServerStatusDvar(unaff_EDI);
+          if (bVar2) {
+            *(int *)(dst + 0x14a0) = iVar3 + 1;
           }
-          if ((0x7f < *(int *)(pcVar2 + 0x14a0)) || (puVar5 == (uchar *)0x0)) break;
+          if ((0x7f < *(int *)(dst + 0x14a0)) || (puVar4 == (uchar *)0x0)) break;
         }
         if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
           Dvar_SetStringByName(param_1,unaff_EDI);
@@ -541,7 +541,7 @@ int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
           Dvar_SetStringByName(local_14,unaff_EDI);
         }
       }
-      FUN_00648ea0(pcVar2);
+      FUN_00648ea0(dst);
       return 1;
     }
   }
@@ -560,7 +560,7 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
   int iVar2;
   uchar *in_EAX;
   int iVar3;
-  uchar *puVar4;
+  uchar *string;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
   undefined1 *extraout_EAX_01;
@@ -571,30 +571,30 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
   undefined1 *extraout_EAX_06;
   int in_ECX;
   int unaff_EDI;
-  int iVar5;
+  int iVar4;
   
   if (in_EAX == (uchar *)0x0) {
     CL_ServerStatusScoreBoard((char *)0x0,(char *)0x0,unaff_EDI);
   }
   else {
     memset(in_EAX,'\0',0x14a4);
-    puVar4 = in_EAX + 0x1040;
-    iVar3 = CL_ServerStatusScoreBoard((char *)puVar4,(char *)0x400,unaff_EDI);
+    string = in_EAX + 0x1040;
+    iVar3 = CL_ServerStatusScoreBoard((char *)string,(char *)0x400,unaff_EDI);
     if (iVar3 != 0) {
       if (in_ECX == 0) {
         *in_EAX = '\0';
       }
       else {
         iVar3 = in_ECX + -1;
-        iVar5 = 0x40;
+        iVar4 = 0x40;
         iVar2 = -1 - iVar3;
         do {
           uVar1 = *(uchar *)(iVar3 + 1);
           iVar3 = iVar3 + 1;
           in_EAX[iVar3 + iVar2] = uVar1;
           if (uVar1 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         in_EAX[0x3f] = '\0';
       }
       in_EAX[0x14a0] = '\0';
@@ -609,12 +609,12 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
       *(char **)(in_EAX + *(int *)(in_EAX + 0x14a0) * 0x20 + 0x54) = "@EXE_SV_INFO_DEATHS";
       *(char **)(in_EAX + *(int *)(in_EAX + 0x14a0) * 0x20 + 0x58) = "@EXE_SV_INFO_PING";
       *(int *)(in_EAX + 0x14a0) = *(int *)(in_EAX + 0x14a0) + 1;
-      while ((puVar4 != (uchar *)0x0 && (*puVar4 != '\0'))) {
-        if (*puVar4 == '\\') {
-          *puVar4 = '\0';
-          puVar4 = puVar4 + 1;
+      while ((string != (uchar *)0x0 && (*string != '\0'))) {
+        if (*string == '\\') {
+          *string = '\0';
+          string = string + 1;
         }
-        if ((puVar4 == (uchar *)0x0) || (strchr(puVar4,' '), extraout_EAX == (undefined1 *)0x0))
+        if ((string == (uchar *)0x0) || (strchr(string,' '), extraout_EAX == (undefined1 *)0x0))
         break;
         *extraout_EAX = 0;
         strchr(extraout_EAX + 1,' ');
@@ -646,7 +646,7 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
         if ((0x7f < *(int *)(in_EAX + 0x14a0)) ||
            (strchr(extraout_EAX_05 + 1,'\\'), extraout_EAX_06 == (undefined1 *)0x0)) break;
         *extraout_EAX_06 = 0;
-        puVar4 = extraout_EAX_06 + 1;
+        string = extraout_EAX_06 + 1;
       }
       qsort(in_EAX + 0x60,*(int *)(in_EAX + 0x14a0) - 1,0x20,FUN_00649050);
       return 1;

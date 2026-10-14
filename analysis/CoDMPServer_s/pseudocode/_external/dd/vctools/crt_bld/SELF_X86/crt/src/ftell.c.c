@@ -5,21 +5,22 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-long __cdecl ftell(_iobuf *param_1)
+long __cdecl ftell(_iobuf *stream)
 
 {
   int *piVar1;
   long lVar2;
+  long retval;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (stream == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     lVar2 = -1;
   }
   else {
-    _lock_file(param_1);
-    lVar2 = _ftell_nolock(param_1);
+    _lock_file(stream);
+    lVar2 = _ftell_nolock(stream);
     FUN_0095e226();
   }
   return lVar2;
@@ -28,45 +29,46 @@ long __cdecl ftell(_iobuf *param_1)
 
 // 0095E025  _ftell_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/ftell.c:85)
 
-long __cdecl _ftell_nolock(_iobuf *param_1)
+long __cdecl _ftell_nolock(_iobuf *str)
 
 {
   uint uVar1;
   char *pcVar2;
   int *piVar3;
-  uint uVar4;
-  _iobuf *p_Var5;
-  long lVar6;
-  char *pcVar7;
-  _iobuf *p_Var8;
-  char *pcVar9;
-  int iVar10;
-  bool bVar11;
-  int iStack_10;
-  int iStack_c;
+  uint fh;
+  _iobuf *p_Var4;
+  long lVar5;
+  char *pcVar6;
+  _iobuf *p_Var7;
+  char *pcVar8;
+  int iVar9;
+  bool bVar10;
+  uint offset;
+  long filepos;
+  int fd;
   
-  p_Var8 = param_1;
-  if (param_1 == (_iobuf *)0x0) {
+  p_Var7 = str;
+  if (str == (_iobuf *)0x0) {
     piVar3 = _errno();
     *piVar3 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  uVar4 = _fileno(param_1);
-  if (param_1->_cnt < 0) {
-    param_1->_cnt = 0;
+  fh = _fileno(str);
+  if (str->_cnt < 0) {
+    str->_cnt = 0;
   }
-  iStack_c = _lseek(uVar4,0,1);
-  if (iStack_c < 0) {
+  filepos = _lseek(fh,0,1);
+  if (filepos < 0) {
     return -1;
   }
-  uVar1 = param_1->_flag;
+  uVar1 = str->_flag;
   if ((uVar1 & 0x108) == 0) {
-    return iStack_c - param_1->_cnt;
+    return filepos - str->_cnt;
   }
-  pcVar7 = param_1->_ptr;
-  pcVar9 = param_1->_base;
-  iStack_10 = (int)pcVar7 - (int)pcVar9;
+  pcVar6 = str->_ptr;
+  pcVar8 = str->_base;
+  offset = (int)pcVar6 - (int)pcVar8;
   if ((uVar1 & 3) == 0) {
     if (-1 < (char)uVar1) {
       piVar3 = _errno();
@@ -75,62 +77,61 @@ long __cdecl _ftell_nolock(_iobuf *param_1)
     }
   }
   else {
-    pcVar2 = pcVar9;
-    if ((*(byte *)(*(int *)(&__pioinfo + ((int)uVar4 >> 5) * 4) + 4 + (uVar4 & 0x1f) * 0x40) & 0x80)
-        != 0) {
-      for (; pcVar2 < pcVar7; pcVar2 = pcVar2 + 1) {
+    pcVar2 = pcVar8;
+    if ((*(byte *)(*(int *)(&__pioinfo + ((int)fh >> 5) * 4) + 4 + (fh & 0x1f) * 0x40) & 0x80) != 0)
+    {
+      for (; pcVar2 < pcVar6; pcVar2 = pcVar2 + 1) {
         if (*pcVar2 == '\n') {
-          iStack_10 = iStack_10 + 1;
+          offset = offset + 1;
         }
       }
     }
   }
-  if (iStack_c != 0) {
-    if ((param_1->_flag & 1) != 0) {
-      if (param_1->_cnt == 0) {
-        iStack_10 = 0;
+  if (filepos != 0) {
+    if ((str->_flag & 1) != 0) {
+      if (str->_cnt == 0) {
+        offset = 0;
       }
       else {
-        p_Var5 = (_iobuf *)(pcVar7 + (param_1->_cnt - (int)pcVar9));
-        iVar10 = (uVar4 & 0x1f) * 0x40;
-        if ((*(byte *)(*(int *)(&__pioinfo + ((int)uVar4 >> 5) * 4) + 4 + iVar10) & 0x80) != 0) {
-          lVar6 = _lseek(uVar4,0,2);
-          if (lVar6 == iStack_c) {
-            pcVar7 = param_1->_base;
-            pcVar9 = pcVar7 + (int)&p_Var5->_ptr;
-            param_1 = p_Var5;
-            for (; pcVar7 < pcVar9; pcVar7 = pcVar7 + 1) {
-              if (*pcVar7 == '\n') {
-                param_1 = (_iobuf *)((int)&param_1->_ptr + 1);
+        p_Var4 = (_iobuf *)(pcVar6 + (str->_cnt - (int)pcVar8));
+        iVar9 = (fh & 0x1f) * 0x40;
+        if ((*(byte *)(*(int *)(&__pioinfo + ((int)fh >> 5) * 4) + 4 + iVar9) & 0x80) != 0) {
+          lVar5 = _lseek(fh,0,2);
+          if (lVar5 == filepos) {
+            pcVar6 = str->_base;
+            pcVar8 = pcVar6 + (int)&p_Var4->_ptr;
+            str = p_Var4;
+            for (; pcVar6 < pcVar8; pcVar6 = pcVar6 + 1) {
+              if (*pcVar6 == '\n') {
+                str = (_iobuf *)((int)&str->_ptr + 1);
               }
             }
-            bVar11 = (p_Var8->_flag & 0x2000U) == 0;
+            bVar10 = (p_Var7->_flag & 0x2000U) == 0;
           }
           else {
-            lVar6 = _lseek(uVar4,iStack_c,0);
-            if (lVar6 < 0) {
+            lVar5 = _lseek(fh,filepos,0);
+            if (lVar5 < 0) {
               return -1;
             }
-            p_Var8 = (_iobuf *)0x200;
-            if ((((_iobuf *)0x200 < p_Var5) || ((param_1->_flag & 8U) == 0)) ||
-               ((param_1->_flag & 0x400U) != 0)) {
-              p_Var8 = (_iobuf *)param_1->_bufsiz;
+            p_Var7 = (_iobuf *)0x200;
+            if ((((_iobuf *)0x200 < p_Var4) || ((str->_flag & 8U) == 0)) ||
+               ((str->_flag & 0x400U) != 0)) {
+              p_Var7 = (_iobuf *)str->_bufsiz;
             }
-            bVar11 = (*(byte *)(*(int *)(&__pioinfo + ((int)uVar4 >> 5) * 4) + 4 + iVar10) & 4) == 0
-            ;
-            param_1 = p_Var8;
+            bVar10 = (*(byte *)(*(int *)(&__pioinfo + ((int)fh >> 5) * 4) + 4 + iVar9) & 4) == 0;
+            str = p_Var7;
           }
-          p_Var5 = param_1;
-          if (!bVar11) {
-            p_Var5 = (_iobuf *)((int)&param_1->_ptr + 1);
+          p_Var4 = str;
+          if (!bVar10) {
+            p_Var4 = (_iobuf *)((int)&str->_ptr + 1);
           }
         }
-        param_1 = p_Var5;
-        iStack_c = iStack_c - (int)param_1;
+        str = p_Var4;
+        filepos = filepos - (int)str;
       }
     }
-    return iStack_10 + iStack_c;
+    return offset + filepos;
   }
-  return iStack_10;
+  return offset;
 }
 

@@ -13,13 +13,13 @@ void __cdecl TRACK_cl_cgame(void)
 
 // 00540B50  CL_GetScreenDimensions  (client_mp/cl_cgame_mp.cpp:120)
 
-void __cdecl CL_GetScreenDimensions(int *param_1,int *param_2,float *param_3)
+void __cdecl CL_GetScreenDimensions(int *width,int *height,float *aspect)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (int *)0x0) {
+  if (width == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x79,0,
                              "%s");
     if (!bVar2) {
@@ -28,7 +28,7 @@ void __cdecl CL_GetScreenDimensions(int *param_1,int *param_2,float *param_3)
       return;
     }
   }
-  if (param_2 == (int *)0x0) {
+  if (height == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x7a,0,
                              "%s");
     if (!bVar2) {
@@ -37,7 +37,7 @@ void __cdecl CL_GetScreenDimensions(int *param_1,int *param_2,float *param_3)
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (aspect == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x7b,0,
                              "%s");
     if (!bVar2) {
@@ -46,9 +46,9 @@ void __cdecl CL_GetScreenDimensions(int *param_1,int *param_2,float *param_3)
       return;
     }
   }
-  *param_1 = cls.vidConfig.displayWidth;
-  *param_2 = cls.vidConfig.displayHeight;
-  *param_3 = cls.vidConfig.aspectRatioWindow;
+  *width = cls.vidConfig.displayWidth;
+  *height = cls.vidConfig.displayHeight;
+  *aspect = cls.vidConfig.aspectRatioWindow;
   return;
 }
 
@@ -66,23 +66,24 @@ float __cdecl CL_GetScreenAspectRatioDisplayPixel(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_GetUserCmd(int param_1,int param_2,usercmd_s *param_3)
+int __cdecl CL_GetUserCmd(int localClientNum,int cmdNumber,usercmd_s *ucmd)
 
 {
   clientActive_t *pcVar1;
   int iVar2;
   usercmd_s *puVar3;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  if (pcVar1->cmdNumber < param_2) {
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  if (pcVar1->cmdNumber < cmdNumber) {
     Com_Error(ERR_DROP,"\x15CL_GetUserCmd: %i >= %i");
   }
-  if (pcVar1->cmdNumber + -0x80 < param_2) {
-    puVar3 = pcVar1->cmds + (param_2 & 0x7f);
+  if (pcVar1->cmdNumber + -0x80 < cmdNumber) {
+    puVar3 = pcVar1->cmds + (cmdNumber & 0x7f);
     for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
-      param_3->serverTime = puVar3->serverTime;
+      ucmd->serverTime = puVar3->serverTime;
       puVar3 = (usercmd_s *)&puVar3->button_bits;
-      param_3 = (usercmd_s *)&param_3->button_bits;
+      ucmd = (usercmd_s *)&ucmd->button_bits;
     }
     iVar2 = 1;
   }
@@ -97,22 +98,24 @@ int __cdecl CL_GetUserCmd(int param_1,int param_2,usercmd_s *param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_AdjustUserCmdAngles(int param_1,int param_2,float *param_3)
+void __cdecl CL_AdjustUserCmdAngles(int localClientNum,int cmdNumber,float *adjust)
 
 {
   clientActive_t *pcVar1;
-  float afStack_18 [4];
-  int local_8;
+  clientActive_t *cl;
+  float afStack_18 [3];
+  usercmd_s *ucmd;
+  int i;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  if (pcVar1->cmdNumber < param_2) {
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  if (pcVar1->cmdNumber < cmdNumber) {
     Com_Error(ERR_DROP,"\x15CL_AdjustUserCmdAngles: %i >= %i");
   }
-  if (pcVar1->cmdNumber + -0x80 < param_2) {
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      afStack_18[local_8] = (float)pcVar1->cmds[param_2 & 0x7fU].angles[local_8] * 0.005493164;
-      pcVar1->cmds[param_2 & 0x7fU].angles[local_8] =
-           (int)((afStack_18[local_8] + param_3[local_8]) * 182.04445) & 0xffff;
+  if (pcVar1->cmdNumber + -0x80 < cmdNumber) {
+    for (i = 0; i < 3; i = i + 1) {
+      afStack_18[i] = (float)pcVar1->cmds[cmdNumber & 0x7fU].angles[i] * 0.005493164;
+      pcVar1->cmds[cmdNumber & 0x7fU].angles[i] =
+           (int)((afStack_18[i] + adjust[i]) * 182.04445) & 0xffff;
     }
   }
   return;
@@ -123,12 +126,12 @@ void __cdecl CL_AdjustUserCmdAngles(int param_1,int param_2,float *param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_GetCurrentCmdNumber(int param_1)
+int __cdecl CL_GetCurrentCmdNumber(int localClientNum)
 
 {
   clientActive_t *pcVar1;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   return pcVar1->cmdNumber;
 }
 
@@ -137,14 +140,15 @@ int __cdecl CL_GetCurrentCmdNumber(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_GetCurrentSnapshotNumber(int param_1,int *param_2,int *param_3)
+void __cdecl CL_GetCurrentSnapshotNumber(int localClientNum,int *snapshotNumber,int *serverTime)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  *param_2 = (pcVar1->snap).messageNum;
-  *param_3 = (pcVar1->snap).serverTime;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  *snapshotNumber = (pcVar1->snap).messageNum;
+  *serverTime = (pcVar1->snap).serverTime;
   return;
 }
 
@@ -154,7 +158,7 @@ void __cdecl CL_GetCurrentSnapshotNumber(int param_1,int *param_2,int *param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_GetSnapshot(int param_1,int param_2,snapshot_s *param_3)
+int __cdecl CL_GetSnapshot(int localClientNum,int snapshotNumber,snapshot_s *snapshot)
 
 {
   code *pcVar1;
@@ -167,70 +171,71 @@ int __cdecl CL_GetSnapshot(int param_1,int param_2,snapshot_s *param_3)
   MatchState *pMVar8;
   entityState_s *peVar9;
   clientState_s *pcVar10;
-  int local_418;
-  uchar local_414 [1024];
+  int number;
+  clientActive_t *cl;
+  int snapshotEntityIndex;
+  uchar entityFound [1024];
   uint local_14;
-  clSnapshot_t *local_10;
-  int local_c;
-  int local_8;
+  clSnapshot_t *clSnap;
+  int i;
+  int count;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
-  if ((pcVar3->snap).messageNum < param_2) {
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
+  if ((pcVar3->snap).messageNum < snapshotNumber) {
     Com_Error(ERR_DROP,"\x15CL_GetSnapshot: snapshotNumber > cl->snapshot.messageNum");
   }
-  if ((pcVar3->snap).messageNum - param_2 < 0x20) {
-    local_10 = pcVar3->snapshots + (param_2 & 0x1f);
-    if (local_10->valid == 0) {
+  if ((pcVar3->snap).messageNum - snapshotNumber < 0x20) {
+    clSnap = pcVar3->snapshots + (snapshotNumber & 0x1f);
+    if (clSnap->valid == 0) {
       iVar4 = 0;
     }
-    else if (pcVar3->parseEntitiesNum - local_10->parseEntitiesNum < 0x800) {
-      if (pcVar3->parseClientsNum - local_10->parseClientsNum < 0x800) {
-        param_3->snapFlags = local_10->snapFlags;
-        param_3->serverCommandSequence = local_10->serverCommandNum;
-        param_3->ping = local_10->ping;
-        param_3->serverTime = local_10->serverTime;
-        param_3->physicsTime = local_10->physicsTime;
-        memcpy((uchar *)&param_3->ps,(uchar *)&local_10->ps,0x26a4);
-        pMVar5 = pcVar3->parseMatchStates + (local_10->parseMatchStateNum & 0x1f);
-        pMVar8 = &param_3->matchState;
+    else if (pcVar3->parseEntitiesNum - clSnap->parseEntitiesNum < 0x800) {
+      if (pcVar3->parseClientsNum - clSnap->parseClientsNum < 0x800) {
+        snapshot->snapFlags = clSnap->snapFlags;
+        snapshot->serverCommandSequence = clSnap->serverCommandNum;
+        snapshot->ping = clSnap->ping;
+        snapshot->serverTime = clSnap->serverTime;
+        snapshot->physicsTime = clSnap->physicsTime;
+        memcpy((uchar *)&snapshot->ps,(uchar *)&clSnap->ps,0x26a4);
+        pMVar5 = pcVar3->parseMatchStates + (clSnap->parseMatchStateNum & 0x1f);
+        pMVar8 = &snapshot->matchState;
         for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
           pMVar8->index = pMVar5->index;
           pMVar5 = (MatchState *)&pMVar5->archivedState;
           pMVar8 = (MatchState *)&pMVar8->archivedState;
         }
-        local_8 = local_10->numEntities;
-        if (0x200 < local_8) {
+        count = clSnap->numEntities;
+        if (0x200 < count) {
           if ((com_statmon->current).enabled == false) {
             Com_DPrintf(0xe,"CL_GetSnapshot: truncated %i entities to %i\n");
           }
           else {
             StatMon_Warning(4,3000,"code_warning_snapshotents");
           }
-          local_8 = 0x200;
+          count = 0x200;
         }
-        param_3->numEntities = local_8;
-        memset(local_414,'\0',0x400);
-        local_418 = 0;
-        for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
+        snapshot->numEntities = count;
+        memset(entityFound,'\0',0x400);
+        snapshotEntityIndex = 0;
+        for (i = 0; i < count; i = i + 1) {
           bVar2 = Demo_IsPlaying();
           if (bVar2) {
             bVar2 = Demo_ShouldEntityBeVisibleToClient
-                              (pcVar3->parseEntities[local_10->parseEntitiesNum + local_c & 0x7ff].
-                               number);
+                              (pcVar3->parseEntities[clSnap->parseEntitiesNum + i & 0x7ff].number);
             if (bVar2) goto LAB_00541011;
-            param_3->numEntities = param_3->numEntities + -1;
+            snapshot->numEntities = snapshot->numEntities + -1;
           }
           else {
 LAB_00541011:
-            peVar6 = pcVar3->parseEntities + (local_10->parseEntitiesNum + local_c & 0x7ff);
-            peVar9 = param_3->entities + local_418;
+            peVar6 = pcVar3->parseEntities + (clSnap->parseEntitiesNum + i & 0x7ff);
+            peVar9 = snapshot->entities + snapshotEntityIndex;
             for (iVar4 = 0x38; iVar4 != 0; iVar4 = iVar4 + -1) {
               peVar9->number = peVar6->number;
               peVar6 = (entityState_s *)&peVar6->lerp;
               peVar9 = (entityState_s *)&peVar9->lerp;
             }
-            iVar4 = param_3->entities[local_418].number;
+            iVar4 = snapshot->entities[snapshotEntityIndex].number;
             if ((iVar4 < 0) || (0x3ff < iVar4)) {
               bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp"
                                        ,0x121,0,"%s\n\t(number) = %i");
@@ -240,7 +245,7 @@ LAB_00541011:
                 return iVar4;
               }
             }
-            if (local_414[iVar4] != '\0') {
+            if (entityFound[iVar4] != '\0') {
               va("EntityNum %i was found twice in this snapshot");
               bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp"
                                        ,0x122,0,"%s\n\t%s");
@@ -250,19 +255,19 @@ LAB_00541011:
                 return iVar4;
               }
             }
-            local_414[iVar4] = '\x01';
-            local_418 = local_418 + 1;
+            entityFound[iVar4] = '\x01';
+            snapshotEntityIndex = snapshotEntityIndex + 1;
           }
         }
-        local_8 = local_10->numClients;
-        if (0x20 < local_8) {
-          local_8 = 0x20;
+        count = clSnap->numClients;
+        if (0x20 < count) {
+          count = 0x20;
         }
-        memset((uchar *)param_3->clients,0xaa,0x1a00);
-        param_3->numClients = local_8;
-        for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-          pcVar7 = pcVar3->parseClients + (local_10->parseClientsNum + local_c & 0x7ff);
-          pcVar10 = param_3->clients + local_c;
+        memset((uchar *)snapshot->clients,0xaa,0x1a00);
+        snapshot->numClients = count;
+        for (i = 0; i < count; i = i + 1) {
+          pcVar7 = pcVar3->parseClients + (clSnap->parseClientsNum + i & 0x7ff);
+          pcVar10 = snapshot->clients + i;
           for (iVar4 = 0x34; iVar4 != 0; iVar4 = iVar4 + -1) {
             pcVar10->clientIndex = pcVar7->clientIndex;
             pcVar7 = (clientState_s *)&pcVar7->team;
@@ -288,13 +293,13 @@ LAB_00541011:
 
 // 005431C0  CL_SetLocalClientConnectionState  (client/client.h:241)
 
-void __cdecl CL_SetLocalClientConnectionState(int param_1,connstate_t param_2)
+void __cdecl CL_SetLocalClientConnectionState(int client,connstate_t state)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (client != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\client_mp\\../client/client.h",0xf2
                              ,0,"client doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -303,7 +308,7 @@ void __cdecl CL_SetLocalClientConnectionState(int param_1,connstate_t param_2)
       return;
     }
   }
-  clientUIActives[param_1].connectionState = param_2;
+  clientUIActives[client].connectionState = state;
   Sys_Milliseconds();
   Com_DPrintf(0xe,"[%08d] %d: %s\n");
   return;
@@ -312,13 +317,13 @@ void __cdecl CL_SetLocalClientConnectionState(int param_1,connstate_t param_2)
 
 // 00543230  CL_LocalClient_SetCUIFlag  (client/client.h:293)
 
-void __cdecl CL_LocalClient_SetCUIFlag(int param_1,int param_2)
+void __cdecl CL_LocalClient_SetCUIFlag(int localClientNum,int flag)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\client_mp\\../client/client.h",
                              0x126,0,"%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -327,20 +332,20 @@ void __cdecl CL_LocalClient_SetCUIFlag(int param_1,int param_2)
       return;
     }
   }
-  clientUIActives[param_1].flags = clientUIActives[param_1].flags | param_2;
+  clientUIActives[localClientNum].flags = clientUIActives[localClientNum].flags | flag;
   return;
 }
 
 
 // 00541F70  CL_LocalClient_ClearCUIFlag  (client/client.h:299)
 
-void __cdecl CL_LocalClient_ClearCUIFlag(int param_1,int param_2)
+void __cdecl CL_LocalClient_ClearCUIFlag(int localClientNum,int flag)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\client_mp\\../client/client.h",300,
                              0,"%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -349,7 +354,7 @@ void __cdecl CL_LocalClient_ClearCUIFlag(int param_1,int param_2)
       return;
     }
   }
-  clientUIActives[param_1].flags = ~param_2 & clientUIActives[param_1].flags;
+  clientUIActives[localClientNum].flags = ~flag & clientUIActives[localClientNum].flags;
   return;
 }
 
@@ -358,15 +363,17 @@ void __cdecl CL_LocalClient_ClearCUIFlag(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetUserCmdWeapons(int param_1,int param_2,int param_3,int param_4)
+void __cdecl
+CL_SetUserCmdWeapons(int localClientNum,int weapon,int offHandIndex,int lastWeaponForAlt)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->cgameUserCmdWeapon = param_2;
-  pcVar1->cgameUserCmdOffHandIndex = param_3;
-  pcVar1->cgameUserCmdLastWeaponForAlt = param_4;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->cgameUserCmdWeapon = weapon;
+  pcVar1->cgameUserCmdOffHandIndex = offHandIndex;
+  pcVar1->cgameUserCmdLastWeaponForAlt = lastWeaponForAlt;
   return;
 }
 
@@ -375,15 +382,16 @@ void __cdecl CL_SetUserCmdWeapons(int param_1,int param_2,int param_3,int param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetUserCmdAimValues(int param_1,float *param_2)
+void __cdecl CL_SetUserCmdAimValues(int localClientNum,float *kickAngles)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->cgameKickAngles[0] = *param_2;
-  pcVar1->cgameKickAngles[1] = param_2[1];
-  pcVar1->cgameKickAngles[2] = param_2[2];
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->cgameKickAngles[0] = *kickAngles;
+  pcVar1->cgameKickAngles[1] = kickAngles[1];
+  pcVar1->cgameKickAngles[2] = kickAngles[2];
   return;
 }
 
@@ -393,25 +401,26 @@ void __cdecl CL_SetUserCmdAimValues(int param_1,float *param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-CL_SetUserCmdOrigin(int param_1,float *param_2,float *param_3,float *param_4,int param_5,int param_6
-                   )
+CL_SetUserCmdOrigin(int localClientNum,float *origin,float *velocity,float *viewangles,int bobCycle,
+                   int movementDir)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   pcVar1->cgamePredictedDataServerTime = pcVar1->serverTime;
-  pcVar1->cgameOrigin[0] = *param_2;
-  pcVar1->cgameOrigin[1] = param_2[1];
-  pcVar1->cgameOrigin[2] = param_2[2];
-  pcVar1->cgameVelocity[0] = *param_3;
-  pcVar1->cgameVelocity[1] = param_3[1];
-  pcVar1->cgameVelocity[2] = param_3[2];
-  pcVar1->cgameBobCycle = param_5;
-  pcVar1->cgameMovementDir = param_6;
-  pcVar1->cgameViewangles[0] = *param_4;
-  pcVar1->cgameViewangles[1] = param_4[1];
-  pcVar1->cgameViewangles[2] = param_4[2];
+  pcVar1->cgameOrigin[0] = *origin;
+  pcVar1->cgameOrigin[1] = origin[1];
+  pcVar1->cgameOrigin[2] = origin[2];
+  pcVar1->cgameVelocity[0] = *velocity;
+  pcVar1->cgameVelocity[1] = velocity[1];
+  pcVar1->cgameVelocity[2] = velocity[2];
+  pcVar1->cgameBobCycle = bobCycle;
+  pcVar1->cgameMovementDir = movementDir;
+  pcVar1->cgameViewangles[0] = *viewangles;
+  pcVar1->cgameViewangles[1] = viewangles[1];
+  pcVar1->cgameViewangles[2] = viewangles[2];
   return;
 }
 
@@ -422,25 +431,27 @@ CL_SetUserCmdOrigin(int param_1,float *param_2,float *param_3,float *param_4,int
 
 void __cdecl
 CL_SetUserCmdVehicle
-          (int param_1,bool param_2,float *param_3,float *param_4,float *param_5,float *param_6)
+          (int localClientNum,bool inVehicle,float *origin,float *angles,float *tVelocity,
+          float *aVelocity)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  (pcVar1->cgameVehicle).inVehicle = param_2;
-  (pcVar1->cgameVehicle).origin[0] = *param_3;
-  (pcVar1->cgameVehicle).origin[1] = param_3[1];
-  (pcVar1->cgameVehicle).origin[2] = param_3[2];
-  (pcVar1->cgameVehicle).angles[0] = *param_4;
-  (pcVar1->cgameVehicle).angles[1] = param_4[1];
-  (pcVar1->cgameVehicle).angles[2] = param_4[2];
-  (pcVar1->cgameVehicle).tVel[0] = *param_5;
-  (pcVar1->cgameVehicle).tVel[1] = param_5[1];
-  (pcVar1->cgameVehicle).tVel[2] = param_5[2];
-  (pcVar1->cgameVehicle).aVel[0] = *param_6;
-  (pcVar1->cgameVehicle).aVel[1] = param_6[1];
-  (pcVar1->cgameVehicle).aVel[2] = param_6[2];
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  (pcVar1->cgameVehicle).inVehicle = inVehicle;
+  (pcVar1->cgameVehicle).origin[0] = *origin;
+  (pcVar1->cgameVehicle).origin[1] = origin[1];
+  (pcVar1->cgameVehicle).origin[2] = origin[2];
+  (pcVar1->cgameVehicle).angles[0] = *angles;
+  (pcVar1->cgameVehicle).angles[1] = angles[1];
+  (pcVar1->cgameVehicle).angles[2] = angles[2];
+  (pcVar1->cgameVehicle).tVel[0] = *tVelocity;
+  (pcVar1->cgameVehicle).tVel[1] = tVelocity[1];
+  (pcVar1->cgameVehicle).tVel[2] = tVelocity[2];
+  (pcVar1->cgameVehicle).aVel[0] = *aVelocity;
+  (pcVar1->cgameVehicle).aVel[1] = aVelocity[1];
+  (pcVar1->cgameVehicle).aVel[2] = aVelocity[2];
   return;
 }
 
@@ -449,13 +460,14 @@ CL_SetUserCmdVehicle
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetFOVSensitivityScale(int param_1,float param_2)
+void __cdecl CL_SetFOVSensitivityScale(int localClientNum,float scale)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->cgameFOVSensitivityScale = param_2;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->cgameFOVSensitivityScale = scale;
   return;
 }
 
@@ -464,16 +476,17 @@ void __cdecl CL_SetFOVSensitivityScale(int param_1,float param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetExtraButtons(int param_1,bitarray<51> *param_2)
+void __cdecl CL_SetExtraButtons(int localClientNum,bitarray<51> *button_bits)
 
 {
   clientActive_t *pcVar1;
   int local_c;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   for (local_c = 0; local_c < 2; local_c = local_c + 1) {
     (pcVar1->cgameExtraButton_bits).array[local_c] =
-         (pcVar1->cgameExtraButton_bits).array[local_c] | param_2->array[local_c];
+         (pcVar1->cgameExtraButton_bits).array[local_c] | button_bits->array[local_c];
   }
   return;
 }
@@ -483,50 +496,52 @@ void __cdecl CL_SetExtraButtons(int param_1,bitarray<51> *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ConfigstringModified(int param_1)
+void __cdecl CL_ConfigstringModified(int localClientNum)
 
 {
   byte bVar1;
-  code *pcVar2;
-  uchar *puVar3;
+  char cVar2;
+  code *pcVar3;
+  uchar *dst;
   char *pcVar4;
   clientActive_t *pcVar5;
-  byte *pbVar6;
-  bool bVar7;
-  byte *local_54;
+  bool bVar6;
+  char *local_54;
   int local_4c;
   byte *local_44;
   byte *local_40;
-  byte *local_24;
-  LargeLocal local_1c;
-  int local_14;
-  byte *local_10;
-  int local_c;
-  byte *local_8;
+  clientActive_t *cl;
+  char *dup;
+  int len;
+  LargeLocal oldGs_large_local;
+  int index;
+  char *s;
+  int i;
+  char *old;
   
-  LargeLocal::LargeLocal(&local_1c,0x132f8);
-  puVar3 = LargeLocal::GetBuf(&local_1c);
+  LargeLocal::LargeLocal(&oldGs_large_local,0x132f8);
+  dst = LargeLocal::GetBuf(&oldGs_large_local);
   pcVar4 = Cmd_Argv(1);
-  local_14 = atoi(pcVar4);
-  if ((local_14 < 0) || (0xcbb < local_14)) {
+  index = atoi(pcVar4);
+  if ((index < 0) || (0xcbb < index)) {
     Com_Error(ERR_DROP,"\x15configstring > MAX_CONFIGSTRINGS");
   }
-  local_10 = (byte *)Cmd_Argv(2);
-  pcVar5 = CL_GetLocalClientGlobals(param_1);
-  local_8 = (byte *)CL_GetConfigString(local_14);
-  local_40 = local_10;
-  local_44 = local_8;
+  s = Cmd_Argv(2);
+  pcVar5 = CL_GetLocalClientGlobals(localClientNum);
+  old = CL_GetConfigString(index);
+  local_40 = (byte *)s;
+  local_44 = (byte *)old;
   do {
     bVar1 = *local_44;
-    bVar7 = bVar1 < *local_40;
+    bVar6 = bVar1 < *local_40;
     if (bVar1 != *local_40) {
 LAB_00541b76:
-      local_4c = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+      local_4c = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
       goto LAB_00541b7e;
     }
     if (bVar1 == 0) break;
     bVar1 = local_44[1];
-    bVar7 = bVar1 < local_40[1];
+    bVar6 = bVar1 < local_40[1];
     if (bVar1 != local_40[1]) goto LAB_00541b76;
     local_44 = local_44 + 2;
     local_40 = local_40 + 2;
@@ -534,50 +549,50 @@ LAB_00541b76:
   local_4c = 0;
 LAB_00541b7e:
   if (local_4c == 0) {
-    if ((pcVar5->serverId != cls.serverId) && (local_14 == 3)) {
-      CL_ServerIdChanged(param_1);
+    if ((pcVar5->serverId != cls.serverId) && (index == 3)) {
+      CL_ServerIdChanged(localClientNum);
     }
-    LargeLocal::~LargeLocal(&local_1c);
+    LargeLocal::~LargeLocal(&oldGs_large_local);
   }
   else {
-    memcpy(puVar3,(uchar *)&cls.gameState,0x132f8);
+    memcpy(dst,(uchar *)&cls.gameState,0x132f8);
     memset((uchar *)&cls.gameState,'\0',0x32f0);
     memset((uchar *)(cls.gameState.stringData + 0x80),'\0',0x10000);
     cls._30353396_4_ = 1;
-    for (local_c = 0; local_c < 0xcbc; local_c = local_c + 1) {
-      if (local_c == local_14) {
-        local_24 = local_10;
+    for (i = 0; i < 0xcbc; i = i + 1) {
+      if (i == index) {
+        dup = s;
       }
       else {
-        local_24 = puVar3 + *(int *)(puVar3 + local_c * 4) + 0x32f0;
+        dup = (char *)(dst + *(int *)(dst + i * 4) + 0x32f0);
       }
-      if (*local_24 != 0) {
-        local_54 = local_24;
-        pbVar6 = local_24 + 1;
+      if (*dup != '\0') {
+        local_54 = dup;
+        pcVar4 = dup + 1;
         do {
-          bVar1 = *local_54;
+          cVar2 = *local_54;
           local_54 = local_54 + 1;
-        } while (bVar1 != 0);
-        if (0x10000 < (int)(local_54 + cls._30353396_4_ + (1 - (int)pbVar6))) {
+        } while (cVar2 != '\0');
+        if (0x10000 < (int)(local_54 + cls._30353396_4_ + (1 - (int)pcVar4))) {
           Com_Error(ERR_DROP,"\x15MAX_GAMESTATE_CHARS exceeded");
         }
-        cls.gameState.stringOffsets[local_c] = cls._30353396_4_;
-        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),local_24,
-               (ulong)(local_54 + (1 - (int)pbVar6)));
-        cls._30353396_4_ = local_54 + ((cls._30353396_4_ + 1) - (int)pbVar6);
+        cls.gameState.stringOffsets[i] = cls._30353396_4_;
+        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),(uchar *)dup,
+               (ulong)(local_54 + (1 - (int)pcVar4)));
+        cls._30353396_4_ = local_54 + ((cls._30353396_4_ + 1) - (int)pcVar4);
       }
     }
-    if ((local_14 == 1) &&
-       (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",
-                                 0x1d2,0,"%s"), !bVar7)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((index == 1) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",
+                                 0x1d2,0,"%s"), !bVar6)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    if (local_14 == 3) {
-      CL_ServerIdChanged(param_1);
+    if (index == 3) {
+      CL_ServerIdChanged(localClientNum);
     }
-    LargeLocal::~LargeLocal(&local_1c);
+    LargeLocal::~LargeLocal(&oldGs_large_local);
   }
   return;
 }
@@ -587,13 +602,14 @@ LAB_00541b7e:
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_DumpReliableCommands(int param_1)
+void __cdecl CL_DumpReliableCommands(int localClientNum)
 
 {
-  int local_8;
+  clientConnection_t *clc;
+  int i;
   
-  CL_GetLocalClientConnection(param_1);
-  for (local_8 = 0; local_8 < 0x80; local_8 = local_8 + 1) {
+  CL_GetLocalClientConnection(localClientNum);
+  for (i = 0; i < 0x80; i = i + 1) {
     Com_PrintError(1,"cmd %5d: \'%s\'\n");
   }
   return;
@@ -605,7 +621,7 @@ void __cdecl CL_DumpReliableCommands(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CL_CGameNeedsServerCommand(int param_1,int param_2)
+int __cdecl CL_CGameNeedsServerCommand(int localClientNum,int serverCommandNumber)
 
 {
   char cVar1;
@@ -626,43 +642,47 @@ int __cdecl CL_CGameNeedsServerCommand(int param_1,int param_2)
   char *local_80;
   char *local_70;
   char *local_60;
-  char (*local_10) [1024];
+  clientActive_t *cl;
+  clientConnection_t *clc;
+  char *s;
+  char *cmd;
+  int argc;
   
-  pcVar3 = CL_GetLocalClientConnection(param_1);
-  if (param_2 <= pcVar3->serverCommandSequence + -0x80) {
+  pcVar3 = CL_GetLocalClientConnection(localClientNum);
+  if (serverCommandNumber <= pcVar3->serverCommandSequence + -0x80) {
     if ((pcVar3->demoplaying != 0) || (bVar2 = Demo_IsPlaying(), bVar2)) {
       return 0;
     }
     Com_Printf(0xe,"===== CL_CGameNeedsServerCommand =====\n");
     Com_Printf(0xe,"serverCommandNumber: %d\n");
-    CL_DumpReliableCommands(param_1);
+    CL_DumpReliableCommands(localClientNum);
     Com_Error(ERR_DROP,"\x15CL_CGameNeedsServerCommand: \x14EXE_ERR_RELIABLE_CYCLED_OUT");
   }
-  if ((pcVar3->serverCommandSequence < param_2) && (bVar2 = Demo_IsPlaying(), !bVar2)) {
+  if ((pcVar3->serverCommandSequence < serverCommandNumber) && (bVar2 = Demo_IsPlaying(), !bVar2)) {
     Com_Error(ERR_DROP,"\x15CL_CGameNeedsServerCommand: \x14EXE_ERR_NOT_RECEIVED");
   }
-  local_10 = pcVar3->serverCommands + (param_2 & 0x7f);
-  pcVar3->lastExecutedServerCommand = param_2;
+  s = pcVar3->serverCommands[serverCommandNumber & 0x7f];
+  pcVar3->lastExecutedServerCommand = serverCommandNumber;
   if ((cl_showServerCommands->current).enabled != false) {
     Com_DPrintf(0xe,"serverCommand: %i : %s\n");
   }
   do {
-    Cmd_TokenizeStringNoEval(*local_10);
+    Cmd_TokenizeStringNoEval(s);
     pcVar4 = Cmd_Argv(0);
     iVar5 = Cmd_Argc();
     switch(*pcVar4) {
     case 'B':
     case 'n':
-      Con_ClearNotify(param_1);
-      pcVar7 = CL_GetLocalClientGlobals(param_1);
+      Con_ClearNotify(localClientNum);
+      pcVar7 = CL_GetLocalClientGlobals(localClientNum);
       memset((uchar *)pcVar7->cmds,'\0',0x1a00);
       return 1;
     default:
       return 1;
     case 'd':
       Cmd_EndTokenizedString();
-      Cmd_TokenizeStringWithLimit(*local_10,3);
-      CL_ConfigstringModified(param_1);
+      Cmd_TokenizeStringWithLimit(s,3);
+      CL_ConfigstringModified(localClientNum);
       return 1;
     case 'w':
       if (2 < iVar5) {
@@ -688,7 +708,7 @@ int __cdecl CL_CGameNeedsServerCommand(int param_1,int param_2)
     case 'x':
 switchD_0054165a_caseD_78:
       Cmd_EndTokenizedString();
-      Cmd_TokenizeStringWithLimit(*local_10,3);
+      Cmd_TokenizeStringWithLimit(s,3);
       Cmd_Argv(2);
       Cmd_Argv(1);
       Com_sprintf(bigConfigString,0x4000,"%c %s %s");
@@ -696,7 +716,7 @@ switchD_0054165a_caseD_78:
       return 0;
     case 'y':
       Cmd_EndTokenizedString();
-      Cmd_TokenizeStringWithLimit(*local_10,3);
+      Cmd_TokenizeStringWithLimit(s,3);
       pcVar4 = Cmd_Argv(2);
       local_60 = bigConfigString;
       pcVar10 = local_60;
@@ -737,7 +757,7 @@ switchD_0054165a_caseD_78:
       return 0;
     case 'z':
       Cmd_EndTokenizedString();
-      Cmd_TokenizeStringWithLimit(*local_10,3);
+      Cmd_TokenizeStringWithLimit(s,3);
       pcVar4 = Cmd_Argv(2);
       local_9c = bigConfigString;
       pcVar10 = local_9c;
@@ -774,7 +794,7 @@ switchD_0054165a_caseD_78:
         pcVar4 = pcVar4 + 1;
         local_d0 = local_d0 + 1;
       }
-      local_10 = (char (*) [1024])bigConfigString;
+      s = bigConfigString;
       Cmd_EndTokenizedString();
     }
   } while( true );
@@ -783,49 +803,49 @@ switchD_0054165a_caseD_78:
 
 // 00541D40  CL_SetExpectedHunkUsage  (client_mp/cl_cgame_mp.cpp:620)
 
-void __cdecl CL_SetExpectedHunkUsage(char *param_1)
+void __cdecl CL_SetExpectedHunkUsage(char *mapname)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_1c;
-  char *local_18;
-  uchar *local_14;
-  int local_10;
-  char *local_c;
-  uchar *local_8;
+  int handle;
+  char *memlistfile;
+  char *buf;
+  int len;
+  char *token;
+  char *buftrav;
   
-  local_18 = "hunkusage.dat";
-  local_10 = FS_FOpenFileByMode("hunkusage.dat",&local_1c,FS_READ);
-  if (local_10 < 0) {
+  memlistfile = "hunkusage.dat";
+  len = FS_FOpenFileByMode("hunkusage.dat",&handle,FS_READ);
+  if (len < 0) {
 LAB_00541e6e:
     com_expectedHunkUsage = 0;
   }
   else {
-    local_14 = Z_Malloc(local_10 + 1,"CL_SetExpectedHunkUsage",0xb);
-    memset(local_14,'\0',local_10 + 1);
-    FS_Read(local_14,local_10,local_1c);
-    FS_FCloseFile(local_1c);
-    local_8 = local_14;
+    buf = Z_Malloc(len + 1,"CL_SetExpectedHunkUsage",0xb);
+    memset((uchar *)buf,'\0',len + 1);
+    FS_Read(buf,len,handle);
+    FS_FCloseFile(handle);
+    buftrav = buf;
     do {
-      local_c = Com_Parse((char **)&local_8);
-      if ((local_c == (char *)0x0) &&
+      token = Com_Parse(&buftrav);
+      if ((token == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",
                                    0x283,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (*local_c == '\0') {
-        Z_Free(local_14,0xb);
+      if (*token == '\0') {
+        Z_Free(buf,0xb);
         goto LAB_00541e6e;
       }
-      iVar3 = I_stricmp(local_c,param_1);
-    } while (((iVar3 != 0) || (local_c = Com_Parse((char **)&local_8), local_c == (char *)0x0)) ||
-            (*local_c == '\0'));
-    com_expectedHunkUsage = atoi(local_c);
-    Z_Free(local_14,0xb);
+      iVar3 = I_stricmp(token,mapname);
+    } while (((iVar3 != 0) || (token = Com_Parse(&buftrav), token == (char *)0x0)) ||
+            (*token == '\0'));
+    com_expectedHunkUsage = atoi(token);
+    Z_Free(buf,0xb);
   }
   return;
 }
@@ -833,18 +853,18 @@ LAB_00541e6e:
 
 // 00541E80  CL_CM_LoadMap  (client_mp/cl_cgame_mp.cpp:677)
 
-void __cdecl CL_CM_LoadMap(char *param_1)
+void __cdecl CL_CM_LoadMap(char *mapname)
 
 {
-  int local_8;
+  int checksum;
   
   if ((useFastFile->current).enabled == false) {
-    Com_LoadBsp(param_1);
+    Com_LoadBsp(mapname);
   }
-  CM_LoadMap(param_1,&local_8);
+  CM_LoadMap(mapname,&checksum);
   if ((com_sv_running->current).enabled == false) {
     CM_LinkWorld();
-    Com_LoadWorld(param_1);
+    Com_LoadWorld(mapname);
   }
   return;
 }
@@ -852,21 +872,26 @@ void __cdecl CL_CM_LoadMap(char *param_1)
 
 // 00541EE0  CL_ShutdownCGame  (client_mp/cl_cgame_mp.cpp:696)
 
-void __cdecl CL_ShutdownCGame(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CL_ShutdownCGame(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x10);
+  bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x10);
   if (bVar2) {
-    CG_Shutdown(param_1);
-    CL_LocalClient_ClearCUIFlag(param_1,0x10);
-    CL_LocalClient_ClearCUIFlag(param_1,0x20);
+    CG_Shutdown(localClientNum);
+    CL_LocalClient_ClearCUIFlag(localClientNum,0x10);
+    CL_LocalClient_ClearCUIFlag(localClientNum,0x20);
     track_shutdown(1);
   }
   else {
-    bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+    bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
     if ((bVar2) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",699
                                  ,0,"%s"), !bVar2)) {
@@ -884,10 +909,10 @@ void __cdecl CL_ShutdownCGame(int param_1)
 void __cdecl CL_ShutdownAllClientsCGame(void)
 
 {
-  undefined4 local_8;
+  int client;
   
-  for (local_8 = 0; -1 < local_8; local_8 = local_8 + -1) {
-    CL_ShutdownCGame(local_8);
+  for (client = 0; -1 < client; client = client + -1) {
+    CL_ShutdownCGame(client);
   }
   CG_ShutdownOnceForAllClients();
   return;
@@ -896,7 +921,7 @@ void __cdecl CL_ShutdownAllClientsCGame(void)
 
 // 00542010  CL_DObjCreateSkelForBone  (client_mp/cl_cgame_mp.cpp:736)
 
-int __cdecl CL_DObjCreateSkelForBone(DObj *param_1,int param_2,DObjAnimMat **param_3)
+int __cdecl CL_DObjCreateSkelForBone(DObj *obj,int boneIndex,DObjAnimMat **pMatOut)
 
 {
   code *pcVar1;
@@ -904,9 +929,12 @@ int __cdecl CL_DObjCreateSkelForBone(DObj *param_1,int param_2,DObjAnimMat **par
   int iVar3;
   int iVar4;
   DObjAnimMat *pDVar5;
-  uint uVar6;
+  uint size;
+  char *buf;
+  int len;
+  int timeStamp;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x2e5,0
                              ,"%s");
     if (!bVar2) {
@@ -916,12 +944,12 @@ int __cdecl CL_DObjCreateSkelForBone(DObj *param_1,int param_2,DObjAnimMat **par
     }
   }
   iVar3 = CL_GetSkelTimeStamp();
-  iVar4 = DObjSkelExists(param_1,iVar3);
+  iVar4 = DObjSkelExists(obj,iVar3);
   if (iVar4 == 0) {
-    uVar6 = DObjGetAllocSkelSize(param_1);
-    pDVar5 = (DObjAnimMat *)CL_AllocSkelMemory(uVar6);
+    size = DObjGetAllocSkelSize(obj);
+    pDVar5 = (DObjAnimMat *)CL_AllocSkelMemory(size);
     if (pDVar5 == (DObjAnimMat *)0x0) {
-      *param_3 = (DObjAnimMat *)0x0;
+      *pMatOut = (DObjAnimMat *)0x0;
       if (warnCount != iVar3) {
         warnCount = iVar3;
         Com_PrintWarning(0xe,"WARNING: CL_SKEL_MEMORY_SIZE exceeded - not calculating skeleton\n");
@@ -929,15 +957,15 @@ int __cdecl CL_DObjCreateSkelForBone(DObj *param_1,int param_2,DObjAnimMat **par
       iVar3 = 1;
     }
     else {
-      *param_3 = pDVar5;
-      DObjCreateSkel(param_1,(char *)pDVar5,iVar3);
+      *pMatOut = pDVar5;
+      DObjCreateSkel(obj,(char *)pDVar5,iVar3);
       iVar3 = 0;
     }
   }
   else {
-    pDVar5 = I_dmaGetDObjSkel(param_1);
-    *param_3 = pDVar5;
-    iVar3 = DObjSkelIsBoneUpToDate(param_1,param_2);
+    pDVar5 = I_dmaGetDObjSkel(obj);
+    *pMatOut = pDVar5;
+    iVar3 = DObjSkelIsBoneUpToDate(obj,boneIndex);
   }
   return iVar3;
 }
@@ -945,15 +973,15 @@ int __cdecl CL_DObjCreateSkelForBone(DObj *param_1,int param_2,DObjAnimMat **par
 
 // 00542100  CL_SubtitlePrint  (client_mp/cl_cgame_mp.cpp:823)
 
-void __cdecl CL_SubtitlePrint(int param_1,char *param_2,int param_3,int param_4)
+void __cdecl CL_SubtitlePrint(int localClientNum,char *text,int duration,int lineWidth)
 
 {
-  char *local_8;
+  char *translation;
   
-  local_8 = SEH_StringEd_GetString(param_2);
-  if (local_8 == (char *)0x0) {
+  translation = SEH_StringEd_GetString(text);
+  if (translation == (char *)0x0) {
     if ((loc_warnings->current).enabled == false) {
-      local_8 = param_2;
+      translation = text;
     }
     else {
       if ((loc_warningsAsErrors->current).enabled == false) {
@@ -962,24 +990,24 @@ void __cdecl CL_SubtitlePrint(int param_1,char *param_2,int param_3,int param_4)
       else {
         Com_Error(ERR_LOCALIZATION,"Could not translate subtitle text: \"%s\"");
       }
-      local_8 = va("^1UNLOCALIZED(^7%s^1)^7");
+      translation = va("^1UNLOCALIZED(^7%s^1)^7");
     }
   }
-  CL_ConsolePrint(param_1,4,local_8,param_3,param_4,0);
+  CL_ConsolePrint(localClientNum,4,translation,duration,lineWidth,0);
   return;
 }
 
 
 // 005421A0  CL_GetConfigString  (client_mp/cl_cgame_mp.cpp:847)
 
-char * __cdecl CL_GetConfigString(int param_1)
+char * __cdecl CL_GetConfigString(int configStringIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0xcbb < (uint)param_1) {
+  if (0xcbb < (uint)configStringIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x350,0
                              ,
                              "configStringIndex doesn\'t index MAX_CONFIGSTRINGS\n\t%i not in [0, %i)"
@@ -999,7 +1027,7 @@ char * __cdecl CL_GetConfigString(int param_1)
       return pcVar3;
     }
   }
-  return cls.gameState.stringData + cls.gameState.stringOffsets[param_1] + 0x80;
+  return cls.gameState.stringData + cls.gameState.stringOffsets[configStringIndex] + 0x80;
 }
 
 
@@ -1015,66 +1043,66 @@ void __cdecl CL_FinishLoadingModels(void)
 
 // 00542230  CL_GetDebugViewForward  (client_mp/cl_cgame_mp.cpp:864)
 
-void __cdecl CL_GetDebugViewForward(float *param_1)
+void __cdecl CL_GetDebugViewForward(float *forward)
 
 {
-  *param_1 = cls.debugRenderForward[0];
-  param_1[1] = cls.debugRenderForward[1];
-  param_1[2] = cls.debugRenderForward[2];
+  *forward = cls.debugRenderForward[0];
+  forward[1] = cls.debugRenderForward[1];
+  forward[2] = cls.debugRenderForward[2];
   return;
 }
 
 
 // 00542270  CL_GetDebugViewPos  (client_mp/cl_cgame_mp.cpp:870)
 
-void __cdecl CL_GetDebugViewPos(float *param_1)
+void __cdecl CL_GetDebugViewPos(float *pos)
 
 {
-  *param_1 = cls.debugRenderPos[0];
-  param_1[1] = cls.debugRenderPos[1];
-  param_1[2] = cls.debugRenderPos[2];
+  *pos = cls.debugRenderPos[0];
+  pos[1] = cls.debugRenderPos[1];
+  pos[2] = cls.debugRenderPos[2];
   return;
 }
 
 
 // 005422B0  CL_RenderScene  (client_mp/cl_cgame_mp.cpp:876)
 
-void __cdecl CL_RenderScene(refdef_s *param_1,int param_2)
+void __cdecl CL_RenderScene(refdef_s *fd,int frameTime)
 
 {
-  cls.debugRenderPos[0] = param_1->vieworg[0];
-  cls.debugRenderPos[1] = param_1->vieworg[1];
-  cls.debugRenderPos[2] = param_1->vieworg[2];
-  cls.debugRenderForward[0] = param_1->viewaxis[0][0];
-  cls.debugRenderForward[1] = param_1->viewaxis[0][1];
-  cls.debugRenderForward[2] = param_1->viewaxis[0][2];
-  R_RenderScene(param_1,param_2);
+  cls.debugRenderPos[0] = fd->vieworg[0];
+  cls.debugRenderPos[1] = fd->vieworg[1];
+  cls.debugRenderPos[2] = fd->vieworg[2];
+  cls.debugRenderForward[0] = fd->viewaxis[0][0];
+  cls.debugRenderForward[1] = fd->viewaxis[0][1];
+  cls.debugRenderForward[2] = fd->viewaxis[0][2];
+  R_RenderScene(fd,frameTime);
   return;
 }
 
 
 // 00542340  CL_RenderMissileCam  (client_mp/cl_cgame_mp.cpp:885)
 
-void __cdecl CL_RenderMissileCam(refdef_s *param_1,int param_2)
+void __cdecl CL_RenderMissileCam(refdef_s *fd,int frameTime)
 
 {
-  cls.debugRenderPos[0] = param_1->vieworg[0];
-  cls.debugRenderPos[1] = param_1->vieworg[1];
-  cls.debugRenderPos[2] = param_1->vieworg[2];
-  cls.debugRenderForward[0] = param_1->viewaxis[0][0];
-  cls.debugRenderForward[1] = param_1->viewaxis[0][1];
-  cls.debugRenderForward[2] = param_1->viewaxis[0][2];
-  R_RenderMissileCam(param_1,param_2);
+  cls.debugRenderPos[0] = fd->vieworg[0];
+  cls.debugRenderPos[1] = fd->vieworg[1];
+  cls.debugRenderPos[2] = fd->vieworg[2];
+  cls.debugRenderForward[0] = fd->viewaxis[0][0];
+  cls.debugRenderForward[1] = fd->viewaxis[0][1];
+  cls.debugRenderForward[2] = fd->viewaxis[0][2];
+  R_RenderMissileCam(fd,frameTime);
   return;
 }
 
 
 // 005423D0  CL_SetCustomConstant  (client_mp/cl_cgame_mp.cpp:905)
 
-void __cdecl CL_SetCustomConstant(uint param_1,float *param_2)
+void __cdecl CL_SetCustomConstant(uint type,float *vec)
 
 {
-  R_AddCmdSetCustomConstant(param_1,param_2);
+  R_AddCmdSetCustomConstant(type,vec);
   return;
 }
 
@@ -1083,13 +1111,12 @@ void __cdecl CL_SetCustomConstant(uint param_1,float *param_2)
 
 void __cdecl
 CL_DrawStretchPicPhysical
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,Material *param_10)
+          (float x,float y,float w,float h,float s1,float t1,float s2,float t2,float *color,
+          Material *material)
 
 {
-  if ((param_9 == (float *)0x0) || (param_9[3] != 0.0)) {
-    R_AddCmdDrawStretchPic
-              (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    R_AddCmdDrawStretchPic(x,y,w,h,s1,t1,s2,t2,color,material);
   }
   return;
 }
@@ -1099,13 +1126,11 @@ CL_DrawStretchPicPhysical
 
 void __cdecl
 CL_DrawStretchPicPhysicalW
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,Material *param_11)
+          (float x,float y,float w0,float w,float h,float s1,float t1,float s2,float t2,float *color
+          ,Material *material)
 
 {
-  R_AddCmdDrawStretchPicW
-            (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-             param_11);
+  R_AddCmdDrawStretchPicW(x,y,w0,w,h,s1,t1,s2,t2,color,material);
   return;
 }
 
@@ -1114,14 +1139,12 @@ CL_DrawStretchPicPhysicalW
 
 void __cdecl
 CL_DrawStretchPicPhysicalRotateXY
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,Material *param_11)
+          (float x,float y,float w,float h,float s1,float t1,float s2,float t2,float angle,
+          float *color,Material *material)
 
 {
-  if ((param_10 == (float *)0x0) || (param_10[3] != 0.0)) {
-    R_AddCmdDrawStretchPicRotateXY
-              (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-               param_11);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    R_AddCmdDrawStretchPicRotateXY(x,y,w,h,s1,t1,s2,t2,angle,color,material);
   }
   return;
 }
@@ -1131,15 +1154,12 @@ CL_DrawStretchPicPhysicalRotateXY
 
 void __cdecl
 CL_DrawStretchPicPhysicalRotateXYW
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float param_10,float *param_11,
-          Material *param_12)
+          (float x,float y,float w0,float w,float h,float s1,float t1,float s2,float t2,float angle,
+          float *color,Material *material)
 
 {
-  if ((param_11 == (float *)0x0) || (param_11[3] != 0.0)) {
-    R_AddCmdDrawStretchPicRotateXYW
-              (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-               param_11,param_12);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    R_AddCmdDrawStretchPicRotateXYW(x,y,w0,w,h,s1,t1,s2,t2,angle,color,material);
   }
   return;
 }
@@ -1148,16 +1168,13 @@ CL_DrawStretchPicPhysicalRotateXYW
 // 005425C0  CL_DrawStretchPicW  (client_mp/cl_cgame_mp.cpp:946)
 
 void __cdecl
-CL_DrawStretchPicW(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,int param_7,int param_8,float param_9,float param_10,float param_11,
-                  float param_12,float *param_13,Material *param_14)
+CL_DrawStretchPicW(ScreenPlacement *scrPlace,float x,float y,float w0,float w,float h,int horzAlign,
+                  int vertAlign,float s1,float t1,float s2,float t2,float *color,Material *material)
 
 {
-  if ((param_13 == (float *)0x0) || (param_13[3] != 0.0)) {
-    ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_5,&param_6,param_7,param_8);
-    CL_DrawStretchPicPhysicalW
-              (param_2,param_3,param_4,param_5,param_6,param_9,param_10,param_11,param_12,param_13,
-               param_14);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+    CL_DrawStretchPicPhysicalW(x,y,w0,w,h,s1,t1,s2,t2,color,material);
   }
   return;
 }
@@ -1166,15 +1183,13 @@ CL_DrawStretchPicW(ScreenPlacement *param_1,float param_2,float param_3,float pa
 // 00542660  CL_DrawStretchPic  (client_mp/cl_cgame_mp.cpp:954)
 
 void __cdecl
-CL_DrawStretchPic(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                 int param_6,int param_7,float param_8,float param_9,float param_10,float param_11,
-                 float *param_12,Material *param_13)
+CL_DrawStretchPic(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,
+                 int vertAlign,float s1,float t1,float s2,float t2,float *color,Material *material)
 
 {
-  if ((param_12 == (float *)0x0) || (param_12[3] != 0.0)) {
-    ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-    CL_DrawStretchPicPhysical
-              (param_2,param_3,param_4,param_5,param_8,param_9,param_10,param_11,param_12,param_13);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+    CL_DrawStretchPicPhysical(x,y,w,h,s1,t1,s2,t2,color,material);
   }
   return;
 }
@@ -1184,16 +1199,15 @@ CL_DrawStretchPic(ScreenPlacement *param_1,float param_2,float param_3,float par
 
 void __cdecl
 CL_DrawStretchPicRotatedST
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float param_8,float param_9,float param_10,float param_11,
-          float param_12,float param_13,float *param_14,Material *param_15)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float centerS,float centerT,float radiusST,float scaleFinalS,float scaleFinalT,float angle
+          ,float *color,Material *material)
 
 {
-  if ((param_14 == (float *)0x0) || (param_14[3] != 0.0)) {
-    ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
     R_AddCmdDrawStretchPicRotateST
-              (param_2,param_3,param_4,param_5,param_8,param_9,param_10,param_11,param_12,param_13,
-               param_14,param_15);
+              (x,y,w,h,centerS,centerT,radiusST,scaleFinalS,scaleFinalT,angle,color,material);
   }
   return;
 }
@@ -1203,14 +1217,13 @@ CL_DrawStretchPicRotatedST
 
 void __cdecl
 CL_DrawStretchPicRotatedXY
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          float param_6,float *param_7,Material *param_8)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,float angle,float *color,
+          Material *material)
 
 {
-  if ((param_7 == (float *)0x0) || (param_7[3] != 0.0)) {
-    ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,9,8);
-    R_AddCmdDrawStretchPicRotateXY
-              (param_2,param_3,param_4,param_5,0.0,0.0,1.0,1.0,param_6,param_7,param_8);
+  if ((color == (float *)0x0) || (color[3] != 0.0)) {
+    ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,9,8);
+    R_AddCmdDrawStretchPicRotateXY(x,y,w,h,0.0,0.0,1.0,1.0,angle,color,material);
   }
   return;
 }
@@ -1220,14 +1233,15 @@ CL_DrawStretchPicRotatedXY
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_CapTurnRate(int param_1,float param_2,float param_3)
+void __cdecl CL_CapTurnRate(int localClientNum,float maxPitchSpeed,float maxYawSpeed)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->cgameMaxPitchSpeed = param_2;
-  pcVar1->cgameMaxYawSpeed = param_3;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->cgameMaxPitchSpeed = maxPitchSpeed;
+  pcVar1->cgameMaxYawSpeed = maxYawSpeed;
   return;
 }
 
@@ -1236,15 +1250,16 @@ void __cdecl CL_CapTurnRate(int param_1,float param_2,float param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetViewAngles(int param_1,float *param_2)
+void __cdecl CL_SetViewAngles(int localClientNum,float *angles)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->viewangles[0] = *param_2;
-  pcVar1->viewangles[1] = param_2[1];
-  pcVar1->viewangles[2] = param_2[2];
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->viewangles[0] = *angles;
+  pcVar1->viewangles[1] = angles[1];
+  pcVar1->viewangles[2] = angles[2];
   return;
 }
 
@@ -1253,15 +1268,16 @@ void __cdecl CL_SetViewAngles(int param_1,float *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_AdjustViewAngles(int param_1,float *param_2)
+void __cdecl CL_AdjustViewAngles(int localClientNum,float *adjust)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->viewangles[0] = pcVar1->viewangles[0] + *param_2;
-  pcVar1->viewangles[1] = pcVar1->viewangles[1] + param_2[1];
-  pcVar1->viewangles[2] = pcVar1->viewangles[2] + param_2[2];
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->viewangles[0] = pcVar1->viewangles[0] + *adjust;
+  pcVar1->viewangles[1] = pcVar1->viewangles[1] + adjust[1];
+  pcVar1->viewangles[2] = pcVar1->viewangles[2] + adjust[2];
   return;
 }
 
@@ -1270,7 +1286,7 @@ void __cdecl CL_AdjustViewAngles(int param_1,float *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ClampViewAngle(int param_1,int param_2,float param_3,float param_4)
+void __cdecl CL_ClampViewAngle(int localClientNum,int angle,float min,float max)
 
 {
   float fVar1;
@@ -1279,15 +1295,16 @@ void __cdecl CL_ClampViewAngle(int param_1,int param_2,float param_3,float param
   clientActive_t *pcVar4;
   float local_14;
   float local_c;
+  clientActive_t *cl;
   
-  if ((param_4 < param_3) &&
+  if ((max < min) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x423
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((2 < (uint)param_2) &&
+  if ((2 < (uint)angle) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_cgame_mp.cpp",0x424
                                ,0,
                                "angle doesn\'t index ARRAY_COUNT(cl->viewangles)\n\t%i not in [0, %i)"
@@ -1296,33 +1313,36 @@ void __cdecl CL_ClampViewAngle(int param_1,int param_2,float param_3,float param
     (*pcVar2)();
     return;
   }
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
-  fVar1 = pcVar4->viewangles[param_2];
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
+  fVar1 = pcVar4->viewangles[angle];
   local_c = fVar1;
-  if (0.0 <= fVar1 - param_4) {
-    local_c = param_4;
+  if (0.0 <= fVar1 - max) {
+    local_c = max;
   }
-  if (param_3 - fVar1 < 0.0) {
+  if (min - fVar1 < 0.0) {
     local_14 = local_c;
   }
   else {
-    local_14 = param_3;
+    local_14 = min;
   }
-  pcVar4->viewangles[param_2] = local_14;
+  pcVar4->viewangles[angle] = local_14;
   return;
 }
 
 
 // 00542A30  CL_SyncTimes  (client_mp/cl_cgame_mp.cpp:1068)
 
-void __cdecl CL_SyncTimes(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+void __cdecl CL_SyncTimes(int localClientNum)
 
 {
   connstate_t cVar1;
   
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if (cVar1 == CA_ACTIVE) {
-    CL_FirstSnapshot(param_1);
+    CL_FirstSnapshot(localClientNum);
   }
   return;
 }
@@ -1330,18 +1350,18 @@ void __cdecl CL_SyncTimes(int param_1)
 
 // 00542A60  LoadWorld  (client_mp/cl_cgame_mp.cpp:1075)
 
-int __cdecl LoadWorld(char *param_1)
+int __cdecl LoadWorld(char *mapname)
 
 {
   bool bVar1;
-  int local_8;
+  int checksum;
   
   bVar1 = Com_IsMenuLevel((char *)0x0);
-  R_LoadWorld(param_1,&local_8,0,(uint)bVar1);
+  R_LoadWorld(mapname,&checksum,0,(uint)bVar1);
   if ((useFastFile->current).enabled == false) {
     Com_UnloadBsp();
   }
-  return local_8;
+  return checksum;
 }
 
 
@@ -1353,101 +1373,99 @@ int __cdecl LoadWorld(char *param_1)
 void __cdecl CL_UpdateLevelHunkUsage(void)
 
 {
-  uchar uVar1;
-  char cVar2;
-  int iVar3;
-  char *pcVar4;
+  char cVar1;
+  int iVar2;
+  char *fmt;
   char *local_148;
-  uchar *local_138;
-  int local_134;
-  clientActive_t *local_130;
-  char *local_12c;
-  uchar *local_128;
-  undefined4 local_124;
-  int local_120;
-  uchar *local_11c;
-  int local_118;
-  char local_114 [256];
+  char *local_138;
+  int handle;
+  clientActive_t *cl;
+  char *memlistfile;
+  char *buf;
+  int localClientNum;
+  int len;
+  char *outbuftrav;
+  int memusage;
+  char outstr [256];
   uint local_14;
-  char *local_10;
-  uchar *local_c;
-  uchar *local_8;
+  char *token;
+  char *outbuf;
+  char *buftrav;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_12c = "hunkusage.dat";
-  local_118 = Hunk_Used();
-  local_124 = 0;
-  local_130 = CL_GetLocalClientGlobals(0);
-  local_120 = FS_FOpenFileByMode(local_12c,&local_134,FS_READ);
-  if (-1 < local_120) {
-    local_128 = Z_Malloc(local_120 + 1,"CL_UpdateLevelHunkUsage",0xb);
-    memset(local_128,'\0',local_120 + 1);
-    local_c = Z_Malloc(local_120 + 1,"CL_UpdateLevelHunkUsage",0xb);
-    memset(local_c,'\0',local_120 + 1);
-    FS_Read(local_128,local_120,local_134);
-    FS_FCloseFile(local_134);
-    local_8 = local_128;
-    local_11c = local_c;
-    *local_c = '\0';
-    while ((local_10 = Com_Parse((char **)&local_8), local_10 != (char *)0x0 && (*local_10 != '\0'))
-          ) {
-      iVar3 = I_stricmp(local_10,local_130->mapname);
-      if (iVar3 == 0) {
-        local_10 = Com_Parse((char **)&local_8);
-        if (((local_10 != (char *)0x0) && (*local_10 != '\0')) &&
-           (iVar3 = atoi(local_10), iVar3 == local_118)) {
-          Z_Free(local_128,0xb);
-          Z_Free(local_c,0xb);
+  memlistfile = "hunkusage.dat";
+  memusage = Hunk_Used();
+  localClientNum = 0;
+  cl = CL_GetLocalClientGlobals(0);
+  len = FS_FOpenFileByMode(memlistfile,&handle,FS_READ);
+  if (-1 < len) {
+    buf = Z_Malloc(len + 1,"CL_UpdateLevelHunkUsage",0xb);
+    memset((uchar *)buf,'\0',len + 1);
+    outbuf = Z_Malloc(len + 1,"CL_UpdateLevelHunkUsage",0xb);
+    memset((uchar *)outbuf,'\0',len + 1);
+    FS_Read(buf,len,handle);
+    FS_FCloseFile(handle);
+    buftrav = buf;
+    outbuftrav = outbuf;
+    *outbuf = '\0';
+    while ((token = Com_Parse(&buftrav), token != (char *)0x0 && (*token != '\0'))) {
+      iVar2 = I_stricmp(token,cl->mapname);
+      if (iVar2 == 0) {
+        token = Com_Parse(&buftrav);
+        if (((token != (char *)0x0) && (*token != '\0')) && (iVar2 = atoi(token), iVar2 == memusage)
+           ) {
+          Z_Free(buf,0xb);
+          Z_Free(outbuf,0xb);
           return;
         }
       }
       else {
-        I_strncat((char *)local_11c,local_120 + 1,local_10);
-        I_strncat((char *)local_11c,local_120 + 1," ");
-        local_10 = Com_Parse((char **)&local_8);
-        if ((local_10 == (char *)0x0) || (*local_10 == '\0')) {
+        I_strncat(outbuftrav,len + 1,token);
+        I_strncat(outbuftrav,len + 1," ");
+        token = Com_Parse(&buftrav);
+        if ((token == (char *)0x0) || (*token == '\0')) {
           Com_Error(ERR_DROP,"EXE_ERR_HUNGUSAGE_CORRUPT");
         }
         else {
-          I_strncat((char *)local_11c,local_120 + 1,local_10);
-          I_strncat((char *)local_11c,local_120 + 1,"\n");
+          I_strncat(outbuftrav,len + 1,token);
+          I_strncat(outbuftrav,len + 1,"\n");
         }
       }
     }
-    local_134 = FS_FOpenFileWrite(local_12c);
-    if (local_134 == 0) {
-      pcVar4 = va("EXE_ERR_CANT_CREATE\x15%s");
-      Com_Error(ERR_DROP,pcVar4);
+    handle = FS_FOpenFileWrite(memlistfile);
+    if (handle == 0) {
+      fmt = va("EXE_ERR_CANT_CREATE\x15%s");
+      Com_Error(ERR_DROP,fmt);
     }
-    local_138 = local_c;
+    local_138 = outbuf;
     do {
-      uVar1 = *local_138;
+      cVar1 = *local_138;
       local_138 = local_138 + 1;
-    } while (uVar1 != '\0');
-    local_120 = (int)local_138 - (int)(local_c + 1);
-    iVar3 = FS_Write(local_c,local_120,local_134);
-    if (iVar3 != local_120) {
+    } while (cVar1 != '\0');
+    len = (int)local_138 - (int)(outbuf + 1);
+    iVar2 = FS_Write(outbuf,len,handle);
+    if (iVar2 != len) {
       Com_Error(ERR_DROP,"EXE_ERR_CANT_WRITE\x15%s");
     }
-    FS_FCloseFile(local_134);
-    Z_Free(local_128,0xb);
-    Z_Free(local_c,0xb);
+    FS_FCloseFile(handle);
+    Z_Free(buf,0xb);
+    Z_Free(outbuf,0xb);
   }
-  FS_FOpenFileByMode(local_12c,&local_134,FS_APPEND);
-  if (local_134 == 0) {
+  FS_FOpenFileByMode(memlistfile,&handle,FS_APPEND);
+  if (handle == 0) {
     Com_Error(ERR_DROP,"EXE_ERR_HUNKUSAGE_CANT_WRITE");
   }
-  Com_sprintf(local_114,0x100,"%s %i\n");
-  local_148 = local_114;
+  Com_sprintf(outstr,0x100,"%s %i\n");
+  local_148 = outstr;
   do {
-    cVar2 = *local_148;
+    cVar1 = *local_148;
     local_148 = local_148 + 1;
-  } while (cVar2 != '\0');
-  FS_Write(local_114,(int)local_148 - (int)(local_114 + 1),local_134);
-  FS_FCloseFile(local_134);
-  local_120 = FS_FOpenFileByMode(local_12c,&local_134,FS_READ);
-  if (-1 < local_120) {
-    FS_FCloseFile(local_134);
+  } while (cVar1 != '\0');
+  FS_Write(outstr,(int)local_148 - (int)(outstr + 1),handle);
+  FS_FCloseFile(handle);
+  len = FS_FOpenFileByMode(memlistfile,&handle,FS_READ);
+  if (-1 < len) {
+    FS_FCloseFile(handle);
   }
   return;
 }
@@ -1455,7 +1473,7 @@ void __cdecl CL_UpdateLevelHunkUsage(void)
 
 // 00542F40  CL_StartLoading  (client_mp/cl_cgame_mp.cpp:1243)
 
-void __cdecl CL_StartLoading(char *param_1,char *param_2)
+void __cdecl CL_StartLoading(char *mapname,char *gametype)
 
 {
   bool bVar1;
@@ -1475,8 +1493,11 @@ void __cdecl CL_StartLoading(char *param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CL_InitCGame(int param_1)
+void __cdecl CL_InitCGame(int localClientNum)
 
 {
   bool bVar1;
@@ -1484,53 +1505,58 @@ void __cdecl CL_InitCGame(int param_1)
   char *pcVar3;
   clientConnection_t *pcVar4;
   int iVar5;
-  char local_4c [68];
+  clientActive_t *cl;
+  char *info;
+  int t1;
+  clientConnection_t *clc;
+  int t2;
+  char mapname [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   Sys_Milliseconds();
-  Con_Close(param_1);
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
+  Con_Close(localClientNum);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
   pcVar3 = CL_GetConfigString(0);
   iVar5 = 0x40;
   pcVar3 = Info_ValueForKey(pcVar3,"mapname");
-  I_strncpyz(local_4c,pcVar3,iVar5);
+  I_strncpyz(mapname,pcVar3,iVar5);
   LiveSteam_CheckAccess();
-  Dvar_SetStringByName("mapname",local_4c);
-  Com_GetBspFilename(pcVar2->mapname,0x40,local_4c);
-  bVar1 = CL_WasMapAlreadyLoaded(param_1);
+  Dvar_SetStringByName("mapname",mapname);
+  Com_GetBspFilename(pcVar2->mapname,0x40,mapname);
+  bVar1 = CL_WasMapAlreadyLoaded(localClientNum);
   if (!bVar1) {
     Com_InitDObj();
     if ((useFastFile->current).enabled == false) {
       CL_SetExpectedHunkUsage(pcVar2->mapname);
     }
     else {
-      Com_LoadLevelFastFiles(local_4c);
+      Com_LoadLevelFastFiles(mapname);
     }
   }
-  CL_SetLocalClientConnectionState(param_1,CA_LOADING);
+  CL_SetLocalClientConnectionState(localClientNum,CA_LOADING);
   Com_Printf(0xe,"Setting state to CA_LOADING in CL_InitCGame\n");
   bVar1 = Demo_IsPlaying();
   CL_AllocatePerLocalClientMemory((char *)0x0,(uint)bVar1);
-  CL_LocalClient_SetCUIFlag(param_1,0x10);
+  CL_LocalClient_SetCUIFlag(localClientNum,0x10);
   cl_serverLoadingMap = false;
-  pcVar4 = CL_GetLocalClientConnection(param_1);
-  CG_Init(param_1,pcVar4->serverMessageSequence,pcVar4->lastExecutedServerCommand,pcVar4->clientNum)
-  ;
-  CL_LocalClient_SetCUIFlag(param_1,0x20);
+  pcVar4 = CL_GetLocalClientConnection(localClientNum);
+  CG_Init(localClientNum,pcVar4->serverMessageSequence,pcVar4->lastExecutedServerCommand,
+          pcVar4->clientNum);
+  CL_LocalClient_SetCUIFlag(localClientNum,0x20);
   R_BeginRemoteScreenUpdate();
-  CL_SetLocalClientConnectionState(param_1,CA_PRIMED);
+  CL_SetLocalClientConnectionState(localClientNum,CA_PRIMED);
   Sys_Milliseconds();
   Com_Printf(0xe,"CL_InitCGame: %5.2f seconds\n");
   R_EndRegistration();
   Com_TouchMemory();
-  Con_ClearNotify(param_1);
+  Con_ClearNotify(localClientNum);
   Con_InitMessageBuffer();
   Con_InitGameMsgChannels();
   if ((useFastFile->current).enabled == false) {
     pcVar3 = "updatehunkusage";
-    iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-    Cmd_ExecuteSingleCommand(param_1,iVar5,pcVar3);
+    iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+    Cmd_ExecuteSingleCommand(localClientNum,iVar5,pcVar3);
   }
   R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
   if ((useFastFile->current).enabled != false) {
@@ -1548,24 +1574,28 @@ void __cdecl CL_InitCGame(int param_1)
 
 // 00543290  CL_RestartCGame  (client_mp/cl_cgame_mp.cpp:1427)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_RestartCGame(int param_1)
+void __cdecl CL_RestartCGame(int localClientNum)
 
 {
   clientConnection_t *pcVar1;
   cgs_t *pcVar2;
   cg_s *pcVar3;
-  centity_s *pcVar4;
-  int local_8;
+  centity_s *cent_00;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  clientConnection_t *clc;
+  cgs_t *cgs;
+  int entnum;
   
-  pcVar1 = CL_GetLocalClientConnection(param_1);
-  pcVar2 = CG_GetLocalClientStaticGlobals(param_1);
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CL_GetLocalClientConnection(localClientNum);
+  pcVar2 = CG_GetLocalClientStaticGlobals(localClientNum);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   pcVar3->newPlayerViewmodel = 1;
   pcVar2->processedSnapshotNum = pcVar1->serverMessageSequence;
   pcVar2->serverCommandSequence = pcVar1->lastExecutedServerCommand;
@@ -1573,20 +1603,20 @@ void __cdecl CL_RestartCGame(int param_1)
   pcVar3->latestSnapshotNum = 0;
   pcVar3->snap = (snapshot_s *)0x0;
   pcVar3->nextSnap = (snapshot_s *)0x0;
-  for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-    pcVar4 = CG_GetEntity(param_1,local_8);
-    pcVar4->nextValid = 0;
-    CG_ShutdownEntity(param_1,pcVar4,true);
+  for (entnum = 0; entnum < 0x400; entnum = entnum + 1) {
+    cent_00 = CG_GetEntity(localClientNum,entnum);
+    cent_00->nextValid = 0;
+    CG_ShutdownEntity(localClientNum,cent_00,true);
   }
-  CG_ShutdownEntity(param_1,&pcVar3->predictedPlayerEntity,true);
-  CG_SetConfigValues(param_1);
-  CG_ParseServerInfo(param_1);
-  CG_ParseCodInfo(param_1);
-  CG_ParseFog(param_1);
-  CG_ParsePlayerInfos(param_1);
-  CG_Veh_RegisterMaterials(param_1);
-  FX_KillAllEffects(param_1);
-  CL_SetLocalClientConnectionState(param_1,CA_PRIMED);
+  CG_ShutdownEntity(localClientNum,&pcVar3->predictedPlayerEntity,true);
+  CG_SetConfigValues(localClientNum);
+  CG_ParseServerInfo(localClientNum);
+  CG_ParseCodInfo(localClientNum);
+  CG_ParseFog(localClientNum);
+  CG_ParsePlayerInfos(localClientNum);
+  CG_Veh_RegisterMaterials(localClientNum);
+  FX_KillAllEffects(localClientNum);
+  CL_SetLocalClientConnectionState(localClientNum,CA_PRIMED);
   Com_Printf(0xe,"Setting state to CA_PRIMED in CL_RestartCGame\n");
   return;
 }
@@ -1597,7 +1627,7 @@ void __cdecl CL_RestartCGame(int param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_AdjustTimeDelta(int param_1)
+void __cdecl CL_AdjustTimeDelta(int localClientNum)
 
 {
   int iVar1;
@@ -1606,24 +1636,30 @@ void __cdecl CL_AdjustTimeDelta(int param_1)
   clientConnection_t *pcVar4;
   uint uVar5;
   int iVar6;
-  int local_c;
+  clientActive_t *cl;
+  int idealDelta;
+  int snapInterval;
+  int deltaCorrectionMagnitude;
+  int oldDelta;
   
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
   pcVar3->newSnapshots = 0;
-  pcVar4 = CL_GetLocalClientConnection(param_1);
+  pcVar4 = CL_GetLocalClientConnection(localClientNum);
   if ((pcVar4->demoplaying == 0) && (bVar2 = Demo_IsPlaying(), !bVar2)) {
     uVar5 = (pcVar3->snap).serverTime - pcVar3->oldSnapServerTime;
     iVar1 = pcVar3->serverTimeDelta;
     iVar6 = (((pcVar3->snap).serverTime - cls.realtime) - uVar5) + -5;
-    local_c = iVar6 - iVar1;
-    if (local_c < 1) {
-      local_c = -local_c;
+    deltaCorrectionMagnitude = iVar6 - iVar1;
+    if (deltaCorrectionMagnitude < 1) {
+      deltaCorrectionMagnitude = -deltaCorrectionMagnitude;
     }
-    else if ((uVar5 < 0x3e9) && (local_c = local_c - uVar5, local_c < 0)) {
-      local_c = 0;
+    else if ((uVar5 < 0x3e9) &&
+            (deltaCorrectionMagnitude = deltaCorrectionMagnitude - uVar5,
+            deltaCorrectionMagnitude < 0)) {
+      deltaCorrectionMagnitude = 0;
     }
-    if (local_c < 0x3e9) {
-      if (local_c < 0x65) {
+    if (deltaCorrectionMagnitude < 0x3e9) {
+      if (deltaCorrectionMagnitude < 0x65) {
         if (com_timescaleValue == 1.0) {
           if (pcVar3->extrapolatedSnapshot == 0) {
             if (pcVar3->serverTimeDelta < iVar6) {
@@ -1658,7 +1694,7 @@ void __cdecl CL_AdjustTimeDelta(int param_1)
       }
     }
     if (pcVar3->serverTimeDelta != iVar1) {
-      Con_TimeNudged(param_1,pcVar3->serverTimeDelta - iVar1);
+      Con_TimeNudged(localClientNum,pcVar3->serverTimeDelta - iVar1);
     }
     if ((cl_showTimeDelta->current).enabled != false) {
       Com_Printf(0xe,"client time: %i, server time: %i\n");
@@ -1674,27 +1710,29 @@ void __cdecl CL_AdjustTimeDelta(int param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_FirstSnapshot(int param_1)
+void __cdecl CL_FirstSnapshot(int localClientNum)
 
 {
   clientActive_t *pcVar1;
   clientConnection_t *pcVar2;
+  clientActive_t *cl;
+  clientConnection_t *clc;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
   if (((pcVar1->snap).snapFlags & 2U) == 0) {
     CG_RegisterSounds();
-    pcVar2 = CL_GetLocalClientConnection(param_1);
-    CL_SetLocalClientConnectionState(param_1,CA_ACTIVE);
+    pcVar2 = CL_GetLocalClientConnection(localClientNum);
+    CL_SetLocalClientConnectionState(localClientNum,CA_ACTIVE);
     pcVar2->isServerRestarting = false;
-    UI_CloseAll(param_1);
+    UI_CloseAll(localClientNum);
     pcVar1->serverTimeDelta = (pcVar1->snap).serverTime - cls.realtime;
     pcVar1->oldServerTime = (pcVar1->snap).serverTime;
     pcVar1->serverTime = (pcVar1->snap).serverTime;
     pcVar2->timeDemoBaseTime = (pcVar1->snap).serverTime;
-    Con_TimeJumped(param_1,pcVar1->serverTime);
+    Con_TimeJumped(localClientNum,pcVar1->serverTime);
     if (*(cl_activeAction->current).string != '\0') {
-      Cbuf_AddText(param_1,(cl_activeAction->current).string);
-      Cbuf_AddText(param_1,"\n");
+      Cbuf_AddText(localClientNum,(cl_activeAction->current).string);
+      Cbuf_AddText(localClientNum,"\n");
       Dvar_SetString(cl_activeAction,"");
     }
   }
@@ -1704,31 +1742,32 @@ void __cdecl CL_FirstSnapshot(int param_1)
 
 // 00543CF0  CL_TimeDemoLogBaseName  (client_mp/cl_cgame_mp.cpp:1677)
 
-char * __cdecl CL_TimeDemoLogBaseName(char *param_1)
+char * __cdecl CL_TimeDemoLogBaseName(char *mapname)
 
 {
   char *pcVar1;
-  char *local_14;
-  char *local_10;
-  char *local_c;
+  char *pos;
+  char *start;
+  char *end;
+  char *name;
   
-  local_c = (char *)0x0;
-  local_10 = param_1;
-  for (local_14 = param_1; *local_14 != '\0'; local_14 = local_14 + 1) {
-    if ((*local_14 == '/') || (*local_14 == '\\')) {
-      local_10 = local_14 + 1;
-      local_c = (char *)0x0;
+  end = (char *)0x0;
+  start = mapname;
+  for (pos = mapname; *pos != '\0'; pos = pos + 1) {
+    if ((*pos == '/') || (*pos == '\\')) {
+      start = pos + 1;
+      end = (char *)0x0;
     }
-    else if (*local_14 == '.') {
-      local_c = local_14;
+    else if (*pos == '.') {
+      end = pos;
     }
   }
-  if (local_c != (char *)0x0) {
+  if (end != (char *)0x0) {
     pcVar1 = va("%s");
-    pcVar1[(int)local_c - (int)local_10] = '\0';
-    local_10 = pcVar1;
+    pcVar1[(int)end - (int)start] = '\0';
+    start = pcVar1;
   }
-  return local_10;
+  return start;
 }
 
 
@@ -1737,24 +1776,27 @@ char * __cdecl CL_TimeDemoLogBaseName(char *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_UpdateTimeDemo(int param_1)
+void __cdecl CL_UpdateTimeDemo(int localClientNum)
 
 {
   clientActive_t *pcVar1;
   clientConnection_t *pcVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
+  char *filename;
+  int iVar4;
+  clientActive_t *cl;
+  clientConnection_t *clc;
+  int currentTime;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar2 = CL_GetLocalClientConnection(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar2 = CL_GetLocalClientConnection(localClientNum);
   iVar3 = Sys_Milliseconds();
   if (pcVar2->timeDemoLog == 0) {
     Dvar_GetInt("r_mode");
     CL_TimeDemoLogBaseName(pcVar1->mapname);
-    pcVar4 = va("demos/timedemo_%s_mode_%i.csv");
-    iVar5 = FS_FOpenFileWrite(pcVar4);
-    pcVar2->timeDemoLog = iVar5;
+    filename = va("demos/timedemo_%s_mode_%i.csv");
+    iVar4 = FS_FOpenFileWrite(filename);
+    pcVar2->timeDemoLog = iVar4;
   }
   if (pcVar2->timeDemoStart == 0) {
     pcVar2->timeDemoStart = iVar3;
@@ -1771,36 +1813,38 @@ void __cdecl CL_UpdateTimeDemo(int param_1)
 
 // 00543D90  CL_UpdateDemoPlaybackSpeed  (client_mp/cl_cgame_mp.cpp:1738)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_UpdateDemoPlaybackSpeed(int param_1)
+void __cdecl CL_UpdateDemoPlaybackSpeed(int localClientNum)
 
 {
   clientActive_t *pcVar1;
   clientConnection_t *pcVar2;
-  int local_8;
+  clientActive_t *cl;
+  clientConnection_t *clc;
+  int demoSpeed;
   
   if ((cl_demoLiveStreaming->current).integer != 0) {
-    pcVar1 = CL_GetLocalClientGlobals(param_1);
-    pcVar2 = CL_GetLocalClientConnection(param_1);
+    pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+    pcVar2 = CL_GetLocalClientConnection(localClientNum);
     if ((pcVar1->snap).serverTime < (cl_demoSkipToTime->current).integer) {
-      local_8 = 500;
+      demoSpeed = 500;
     }
     else if ((cl_demoFFSpeed->current).integer == 0) {
-      local_8 = 0;
+      demoSpeed = 0;
     }
     else {
-      local_8 = (cl_demoFFSpeed->current).integer;
+      demoSpeed = (cl_demoFFSpeed->current).integer;
     }
-    if (local_8 == 0) {
+    if (demoSpeed == 0) {
       pcVar1->serverTime = (pcVar1->snap).serverTime;
     }
     else if (pcVar2->demoPrevServerTime == 0) {
       pcVar1->serverTime = pcVar2->timeDemoBaseTime + 0x32;
     }
     else {
-      pcVar1->serverTime = local_8 * 0x32 + pcVar2->demoPrevServerTime;
+      pcVar1->serverTime = demoSpeed * 0x32 + pcVar2->demoPrevServerTime;
     }
     pcVar2->demoPrevServerTime = pcVar1->serverTime;
   }
@@ -1814,137 +1858,138 @@ void __cdecl CL_UpdateDemoPlaybackSpeed(int param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_SetCGameTime(int param_1)
+void __cdecl CL_SetCGameTime(int localClientNum)
 
 {
   bool bVar1;
   connstate_t cVar2;
   int iVar3;
-  clientActive_t *local_14;
-  bool local_9;
-  clientConnection_t *local_8;
+  clientActive_t *cl;
+  connstate_t connstate;
+  bool demoReadResult;
+  clientConnection_t *clc;
   
-  local_9 = true;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  demoReadResult = true;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if (cVar2 == CA_ACTIVE) {
-    local_14 = CL_GetLocalClientGlobals(param_1);
-    local_8 = CL_GetLocalClientConnection(param_1);
+    cl = CL_GetLocalClientGlobals(localClientNum);
+    clc = CL_GetLocalClientConnection(localClientNum);
   }
   else {
     if (cVar2 != CA_PRIMED) {
       return;
     }
-    local_14 = CL_GetLocalClientGlobals(param_1);
-    local_8 = CL_GetLocalClientConnection(param_1);
-    if (local_8->demoplaying != 0) {
-      if (local_8->firstDemoFrameSkipped == 0) {
-        local_8->firstDemoFrameSkipped = 1;
+    cl = CL_GetLocalClientGlobals(localClientNum);
+    clc = CL_GetLocalClientConnection(localClientNum);
+    if (clc->demoplaying != 0) {
+      if (clc->firstDemoFrameSkipped == 0) {
+        clc->firstDemoFrameSkipped = 1;
         return;
       }
-      CL_ReadDemoMessage(param_1);
+      CL_ReadDemoMessage(localClientNum);
     }
     bVar1 = Demo_IsPlaying();
     if ((bVar1) && (bVar1 = Demo_IsCompleted(), !bVar1)) {
       bVar1 = Demo_IsPlaybackInited();
       if (!bVar1) {
-        Demo_InitPlaybackData(param_1);
+        Demo_InitPlaybackData(localClientNum);
         Com_ResetFrametime();
         return;
       }
-      Demo_ReadDemoMessage(param_1);
+      Demo_ReadDemoMessage(localClientNum);
     }
-    if (local_14->newSnapshots != 0) {
-      local_14->newSnapshots = 0;
-      CL_FirstSnapshot(param_1);
+    if (cl->newSnapshots != 0) {
+      cl->newSnapshots = 0;
+      CL_FirstSnapshot(localClientNum);
     }
-    cVar2 = CL_GetLocalClientConnectionState(param_1);
+    cVar2 = CL_GetLocalClientConnectionState(localClientNum);
     if (cVar2 != CA_ACTIVE) {
       return;
     }
   }
-  if ((local_14->snap).valid == 0) {
+  if ((cl->snap).valid == 0) {
     Com_Error(ERR_DROP,"\x15CL_SetCGameTime: !cl->snap.valid");
   }
   if ((((sv_paused->current).integer != 0) && ((cl_paused->current).integer != 0)) &&
      ((com_sv_running->current).enabled != false)) {
     return;
   }
-  if ((local_14->snap).serverTime < local_14->oldFrameServerTime) {
+  if ((cl->snap).serverTime < cl->oldFrameServerTime) {
     iVar3 = I_stricmp(cls.servername,"localhost");
     if (iVar3 == 0) {
-      CL_FirstSnapshot(param_1);
+      CL_FirstSnapshot(localClientNum);
     }
     else {
       Com_Error(ERR_DROP,"\x15cl->snap.serverTime < cl->oldFrameServerTime");
     }
   }
-  local_14->oldFrameServerTime = (local_14->snap).serverTime;
+  cl->oldFrameServerTime = (cl->snap).serverTime;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
     bVar1 = Demo_IsPaused();
     if ((bVar1) || (bVar1 = Demo_IsCompleted(), bVar1)) {
       bVar1 = Demo_IsClipRecording();
       if (bVar1) {
-        Demo_WriteClipCommandsWhenPaused(param_1);
+        Demo_WriteClipCommandsWhenPaused(localClientNum);
       }
-      cls.realtime = (local_14->serverTime - local_14->serverTimeDelta) + -5;
+      cls.realtime = (cl->serverTime - cl->serverTimeDelta) + -5;
       return;
     }
     bVar1 = Demo_IsClipPlaying();
     if (((bVar1) || (bVar1 = Demo_IsClipPreviewRunning(), bVar1)) &&
        (bVar1 = Demo_GetClipPausedState(), bVar1)) {
-      Demo_ReadDemoMessage(param_1);
-      cls.realtime = (local_14->serverTime - local_14->serverTimeDelta) + -5;
+      Demo_ReadDemoMessage(localClientNum);
+      cls.realtime = (cl->serverTime - cl->serverTimeDelta) + -5;
       return;
     }
   }
-  if ((local_8->demoplaying == 0) || ((cl_freezeDemo->current).enabled == false)) {
-    local_14->serverTime = cls.realtime + local_14->serverTimeDelta;
+  if ((clc->demoplaying == 0) || ((cl_freezeDemo->current).enabled == false)) {
+    cl->serverTime = cls.realtime + cl->serverTimeDelta;
     bVar1 = Demo_IsPlaying();
-    if ((!bVar1) && (local_14->serverTime < local_14->oldServerTime)) {
-      local_14->serverTime = local_14->oldServerTime;
+    if ((!bVar1) && (cl->serverTime < cl->oldServerTime)) {
+      cl->serverTime = cl->oldServerTime;
     }
-    local_14->oldServerTime = local_14->serverTime;
-    if (((local_14->snap).serverTime + -5 <= cls.realtime + local_14->serverTimeDelta) &&
-       (local_14->extrapolatedSnapshot = 1, (cl_showTimeDelta->current).enabled != false)) {
+    cl->oldServerTime = cl->serverTime;
+    if (((cl->snap).serverTime + -5 <= cls.realtime + cl->serverTimeDelta) &&
+       (cl->extrapolatedSnapshot = 1, (cl_showTimeDelta->current).enabled != false)) {
       Com_Printf(0xe,"Extrapolating snapshot!\n");
     }
   }
-  if (local_14->newSnapshots != 0) {
-    CL_AdjustTimeDelta(param_1);
+  if (cl->newSnapshots != 0) {
+    CL_AdjustTimeDelta(localClientNum);
   }
-  if (local_8->demoplaying == 0) {
+  if (clc->demoplaying == 0) {
 LAB_005438cd:
     do {
       bVar1 = Demo_IsPlaying();
       if (!bVar1) {
         return;
       }
-      if (local_9 == false) {
+      if (demoReadResult == false) {
         return;
       }
       bVar1 = Demo_IsCompleted();
       if (bVar1) {
         return;
       }
-      if (local_14->serverTime < (local_14->snap).serverTime) {
+      if (cl->serverTime < (cl->snap).serverTime) {
         return;
       }
-      local_9 = Demo_ReadDemoMessage(param_1);
-      cVar2 = CL_GetLocalClientConnectionState(param_1);
+      demoReadResult = Demo_ReadDemoMessage(localClientNum);
+      cVar2 = CL_GetLocalClientConnectionState(localClientNum);
     } while (cVar2 == CA_ACTIVE);
   }
   else {
-    if (local_8->isTimeDemo == 0) {
-      CL_UpdateDemoPlaybackSpeed(param_1);
+    if (clc->isTimeDemo == 0) {
+      CL_UpdateDemoPlaybackSpeed(localClientNum);
     }
     else {
-      CL_UpdateTimeDemo(param_1);
+      CL_UpdateTimeDemo(localClientNum);
     }
     do {
-      if (local_14->serverTime < (local_14->snap).serverTime) goto LAB_005438cd;
-      CL_ReadDemoMessage(param_1);
-      cVar2 = CL_GetLocalClientConnectionState(param_1);
+      if (cl->serverTime < (cl->snap).serverTime) goto LAB_005438cd;
+      CL_ReadDemoMessage(localClientNum);
+      cVar2 = CL_GetLocalClientConnectionState(localClientNum);
     } while (cVar2 == CA_ACTIVE);
   }
   return;
@@ -1955,62 +2000,64 @@ LAB_005438cd:
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_SetADS(int param_1,bool param_2)
+void __cdecl CL_SetADS(int localClientNum,bool ads)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar1->usingAds = param_2;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar1->usingAds = ads;
   return;
 }
 
 
 // 00543E90  CL_DrawString  (client_mp/cl_cgame_mp.cpp:2029)
 
-void __cdecl CL_DrawString(int param_1,int param_2,char *param_3,int param_4,int param_5)
+void __cdecl CL_DrawString(int x,int y,char *pszString,int bShadow,int iCharHeight)
 
 {
-  CG_DrawStringExt(&scrPlaceFull,(float)param_1,(float)param_2,param_3,(float *)0x0,0,param_4,
-                   (float)param_5,1);
+  CG_DrawStringExt(&scrPlaceFull,(float)x,(float)y,pszString,(float *)0x0,0,bShadow,
+                   (float)iCharHeight,1);
   return;
 }
 
 
 // 00543EE0  CL_LookupColor  (client_mp/cl_cgame_mp.cpp:2049)
 
-void __cdecl CL_LookupColor(uchar param_1,float *param_2)
+void __cdecl CL_LookupColor(uchar c,float *color)
 
 {
   byte bVar1;
   uint uVar2;
+  uint index;
   
-  if (param_1 == '8') {
-    *param_2 = color_allies[0];
-    param_2[1] = color_allies[1];
-    param_2[2] = color_allies[2];
-    param_2[3] = color_allies[3];
+  if (c == '8') {
+    *color = color_allies[0];
+    color[1] = color_allies[1];
+    color[2] = color_allies[2];
+    color[3] = color_allies[3];
   }
-  else if (param_1 == '9') {
-    *param_2 = color_axis[0];
-    param_2[1] = color_axis[1];
-    param_2[2] = color_axis[2];
-    param_2[3] = color_axis[3];
+  else if (c == '9') {
+    *color = color_axis[0];
+    color[1] = color_axis[1];
+    color[2] = color_axis[2];
+    color[3] = color_axis[3];
   }
   else {
-    bVar1 = ColorIndex(param_1);
+    bVar1 = ColorIndex(c);
     uVar2 = (uint)bVar1;
     if (uVar2 < 0x11) {
-      *param_2 = g_color_table[uVar2][0];
-      param_2[1] = g_color_table[uVar2][1];
-      param_2[2] = g_color_table[uVar2][2];
-      param_2[3] = g_color_table[uVar2][3];
+      *color = g_color_table[uVar2][0];
+      color[1] = g_color_table[uVar2][1];
+      color[2] = g_color_table[uVar2][2];
+      color[3] = g_color_table[uVar2][3];
     }
     else {
-      *param_2 = 1.0;
-      param_2[1] = 1.0;
-      param_2[2] = 1.0;
-      param_2[3] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
     }
   }
   return;
@@ -2035,12 +2082,12 @@ void __cdecl CL_UpdateColor(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl CL_IsServerRestarting(int param_1)
+bool __cdecl CL_IsServerRestarting(int localClientNum)
 
 {
   clientConnection_t *pcVar1;
   
-  pcVar1 = CL_GetLocalClientConnection(param_1);
+  pcVar1 = CL_GetLocalClientConnection(localClientNum);
   return pcVar1->isServerRestarting;
 }
 

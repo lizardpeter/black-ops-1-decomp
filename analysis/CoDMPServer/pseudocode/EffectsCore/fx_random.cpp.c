@@ -12,7 +12,7 @@ void __cdecl TRACK_fx_random(void)
 
 // 005DFA30  FX_RandomDir  (EffectsCore/fx_random.cpp:181)
 
-void __cdecl FX_RandomDir(int param_1,float *param_2)
+void __cdecl FX_RandomDir(int seed,float *dir)
 
 {
   code *pcVar1;
@@ -22,8 +22,13 @@ void __cdecl FX_RandomDir(int param_1,float *param_2)
   float10 fVar5;
   float fVar6;
   float fVar7;
+  float height;
+  float yaw;
+  float sinYaw;
+  float cosYaw;
+  float radiusAtHeight;
   
-  fVar6 = *(float *)(&DAT_00caeb08 + param_1 * 4) * 2.0 - 1.0;
+  fVar6 = *(float *)(&DAT_00caeb08 + seed * 4) * 2.0 - 1.0;
   if ((fVar6 < -1.0) || (1.0 < fVar6)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_random.cpp",0xbd,0,
                              "%s\n\t(height) = %g");
@@ -34,14 +39,14 @@ void __cdecl FX_RandomDir(int param_1,float *param_2)
     }
   }
   fVar7 = SQRT(1.0 - fVar6 * fVar6);
-  fVar2 = (float10)fcos((float10)(*(float *)(&DAT_00caeb04 + param_1 * 4) * 6.2831855));
-  fVar5 = (float10)fsin((float10)(*(float *)(&DAT_00caeb04 + param_1 * 4) * 6.2831855));
-  *param_2 = fVar7 * (float)fVar2;
-  param_2[1] = fVar7 * (float)fVar5;
-  param_2[2] = fVar6;
-  iVar4 = Vec3IsNormalized(param_2);
+  fVar2 = (float10)fcos((float10)(*(float *)(&DAT_00caeb04 + seed * 4) * 6.2831855));
+  fVar5 = (float10)fsin((float10)(*(float *)(&DAT_00caeb04 + seed * 4) * 6.2831855));
+  *dir = fVar7 * (float)fVar2;
+  dir[1] = fVar7 * (float)fVar5;
+  dir[2] = fVar6;
+  iVar4 = Vec3IsNormalized(dir);
   if (iVar4 == 0) {
-    Abs((phys_vec3 *)param_2);
+    Abs((phys_vec3 *)dir);
     va("(%g %g %g) len %g");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_random.cpp",199,0,
                              "%s\n\t%s");

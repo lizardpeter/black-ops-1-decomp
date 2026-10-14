@@ -2,6 +2,8 @@
 
 // 0087F010  jpeg_fdct_islow  (jpeg-6/jfdctint.c:141)
 
+/* WARNING: Variable defined which should be unmapped: z3 */
+
 void __cdecl jpeg_fdct_islow(int *param_1)
 
 {
@@ -15,9 +17,15 @@ void __cdecl jpeg_fdct_islow(int *param_1)
   int iVar8;
   int iVar9;
   int iVar10;
-  int local_10;
+  int *data;
+  long z3;
+  long z5;
+  int ctr;
+  long tmp1;
+  long z1;
+  long z4;
   
-  local_10 = 7;
+  tmp1 = 7;
   piVar1 = param_1 + 2;
   do {
     iVar2 = piVar1[-2] + piVar1[5];
@@ -47,9 +55,9 @@ void __cdecl jpeg_fdct_islow(int *param_1)
     piVar1[1] = iVar9 * 0x6254 + iVar4 + 0x400 + iVar3 >> 0xb;
     piVar1[-1] = iVar5 * 0x300b + iVar7 + 0x400 + iVar2 >> 0xb;
     piVar1 = piVar1 + 8;
-    local_10 = local_10 + -1;
-  } while (-1 < local_10);
-  local_10 = 7;
+    tmp1 = tmp1 + -1;
+  } while (-1 < tmp1);
+  tmp1 = 7;
   piVar1 = param_1 + 0x10;
   do {
     iVar2 = piVar1[-0x10] + piVar1[0x28];
@@ -79,8 +87,8 @@ void __cdecl jpeg_fdct_islow(int *param_1)
     piVar1[8] = iVar9 * 0x6254 + iVar7 + 0x4000 + iVar4 >> 0xf;
     piVar1[-8] = iVar5 * 0x300b + iVar2 + 0x4000 + iVar3 >> 0xf;
     piVar1 = piVar1 + 1;
-    local_10 = local_10 + -1;
-  } while (-1 < local_10);
+    tmp1 = tmp1 + -1;
+  } while (-1 < tmp1);
   return;
 }
 

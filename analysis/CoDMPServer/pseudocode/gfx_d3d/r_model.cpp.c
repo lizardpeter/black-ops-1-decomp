@@ -12,38 +12,38 @@ void __cdecl TRACK_r_model(void)
 
 // 00A77620  Hunk_AllocXModelPrecache  (gfx_d3d/r_model.cpp:66)
 
-void * __cdecl Hunk_AllocXModelPrecache(int param_1)
+void * __cdecl Hunk_AllocXModelPrecache(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"Hunk_AllocXModelPrecache",0x16);
+  pvVar1 = Hunk_Alloc(size,"Hunk_AllocXModelPrecache",0x16);
   return pvVar1;
 }
 
 
 // 00A77640  Hunk_AllocXModelPrecacheColl  (gfx_d3d/r_model.cpp:71)
 
-void * __cdecl Hunk_AllocXModelPrecacheColl(int param_1)
+void * __cdecl Hunk_AllocXModelPrecacheColl(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"Hunk_AllocXModelPrecacheColl",0x1c);
+  pvVar1 = Hunk_Alloc(size,"Hunk_AllocXModelPrecacheColl",0x1c);
   return pvVar1;
 }
 
 
 // 00A77570  R_ModelSort  (gfx_d3d/r_model.cpp:79)
 
-bool __cdecl R_ModelSort(XModel **param_1,XModel **param_2)
+bool __cdecl R_ModelSort(XModel **model1,XModel **model2)
 
 {
   int iVar1;
   int iVar2;
   
-  iVar1 = XModelGetMemUsage(*param_1);
-  iVar2 = XModelGetMemUsage(*param_2);
+  iVar1 = XModelGetMemUsage(*model1);
+  iVar2 = XModelGetMemUsage(*model2);
   return iVar1 < iVar2;
 }
 
@@ -52,13 +52,14 @@ bool __cdecl R_ModelSort(XModel **param_1,XModel **param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_GetModelList(XAssetHeader param_1,void *param_2)
+void __cdecl R_GetModelList(XAssetHeader header,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
+  ModelList *modelList;
   
-  if (0x7ff < *(uint *)param_2) {
+  if (0x7ff < *(uint *)data) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x60,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -66,8 +67,8 @@ void __cdecl R_GetModelList(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  *(XAssetHeader *)((int)param_2 + *(int *)param_2 * 4 + 4) = param_1;
-  *(int *)param_2 = *(int *)param_2 + 1;
+  *(XAssetHeader *)((int)data + *(int *)data * 4 + 4) = header;
+  *(int *)data = *(int *)data + 1;
   return;
 }
 
@@ -83,44 +84,44 @@ void __cdecl R_ModelList_f(void)
 {
   char *local_2130;
   char *local_212c;
-  int local_2034;
+  int modelList;
   XModel *local_2030 [2050];
-  XModel *local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  float local_c;
-  int local_8;
+  XModel *model;
+  int totalInstMemUsage;
+  int totalMemUsage;
+  int dynEntCount;
+  int usage;
+  int memUsage;
+  int i;
+  float value;
+  int modelCount;
   
-  local_8 = 0xa7726d;
-  local_20 = 0;
-  local_24 = 0;
-  local_2034 = 0;
-  DB_EnumXAssets(ASSET_TYPE_XMODEL,R_GetModelList,&local_2034,true);
+  modelCount = 0xa7726d;
+  totalMemUsage = 0;
+  totalInstMemUsage = 0;
+  modelList = 0;
+  DB_EnumXAssets(ASSET_TYPE_XMODEL,R_GetModelList,&modelList,true);
   std::_Sort<XModel_*_*,int,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-            (local_2030,local_2030 + local_2034,
-             (int)(local_2030 + local_2034) - (int)local_2030 >> 2,R_ModelSort);
+            (local_2030,local_2030 + modelList,(int)(local_2030 + modelList) - (int)local_2030 >> 2,
+             R_ModelSort);
   Com_Printf(8,"---------------------------\n");
   Com_Printf(8,"SM# is the number of static model instances\n");
   Com_Printf(8,"instKB is static model instance usage\n");
   Com_Printf(8,"DE# is the number of dyn entity instances\n");
   Com_Printf(8,"   SM#  instKB   DE#   geoKB  name\n");
-  for (local_10 = 0; local_10 < local_2034; local_10 = local_10 + 1) {
-    local_28 = local_2030[local_10];
-    local_14 = XModelGetMemUsage(local_28);
-    local_20 = local_20 + local_14;
-    local_18 = R_StaticModelGetMemoryUsage(local_28,&local_8);
-    if (local_18 == 0) {
+  for (i = 0; i < modelList; i = i + 1) {
+    model = local_2030[i];
+    memUsage = XModelGetMemUsage(model);
+    totalMemUsage = totalMemUsage + memUsage;
+    usage = R_StaticModelGetMemoryUsage(model,&modelCount);
+    if (usage == 0) {
       Com_Printf(8,"              ");
     }
     else {
-      local_24 = local_24 + local_18;
-      local_c = (float)local_18 / 1024.0;
+      totalInstMemUsage = totalInstMemUsage + usage;
+      value = (float)usage / 1024.0;
       Com_Printf(8,"  %4i  ");
-      if (10.0 <= local_c) {
+      if (10.0 <= value) {
         local_212c = "%6.0f";
       }
       else {
@@ -128,22 +129,22 @@ void __cdecl R_ModelList_f(void)
       }
       Com_Printf(8,local_212c);
     }
-    local_1c = DynEnt_GetXModelUsageCount(local_28);
-    if (local_1c == 0) {
+    dynEntCount = DynEnt_GetXModelUsageCount(model);
+    if (dynEntCount == 0) {
       Com_Printf(8,"        ");
     }
     else {
       Com_Printf(8,"  %4i  ");
     }
-    local_c = (float)local_14 / 1024.0;
-    if (10.0 <= local_c) {
+    value = (float)memUsage / 1024.0;
+    if (10.0 <= value) {
       local_2130 = "%6.0f";
     }
     else {
       local_2130 = "%6.1f";
     }
     Com_Printf(8,local_2130);
-    XModelGetName(local_28);
+    XModelGetName(model);
     Com_Printf(8,"  %s\n");
   }
   Com_Printf(8,"---------------------------\n");
@@ -159,12 +160,12 @@ void __cdecl R_ModelList_f(void)
 
 // 00A77600  R_RegisterModel  (gfx_d3d/r_model.cpp:178)
 
-XModel * __cdecl R_RegisterModel(char *param_1)
+XModel * __cdecl R_RegisterModel(char *name)
 
 {
   XModel *pXVar1;
   
-  pXVar1 = XModelPrecache(param_1,Hunk_AllocXModelPrecache,Hunk_AllocXModelPrecacheColl);
+  pXVar1 = XModelPrecache(name,Hunk_AllocXModelPrecache,Hunk_AllocXModelPrecacheColl);
   return pXVar1;
 }
 
@@ -181,75 +182,76 @@ void __cdecl R_FinishLoadingModels(void)
 
 // 00A776B0  R_XModelDebugBoxes  (gfx_d3d/r_model.cpp:212)
 
-void __cdecl R_XModelDebugBoxes(DObj *param_1,int *param_2)
+void __cdecl R_XModelDebugBoxes(DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
-  uint local_2d0;
-  XBoneInfo *local_2cc [160];
-  int local_4c;
-  int local_48;
-  float local_44 [3];
-  float local_38 [3];
-  int (*local_2c) [3];
-  float local_28;
+  DObjAnimMat *boneMatrix;
+  uint boxEdge;
+  XBoneInfo *boneInfoArray [160];
+  int boneIndex;
+  int boneCount;
+  float start [3];
+  float end [3];
+  int (*tempBoxVerts) [3];
+  float org;
   float local_24;
   float local_20;
-  XBoneInfo *local_1c;
-  float local_18;
+  XBoneInfo *boneInfo;
+  float color;
   float local_14;
   float local_10;
   undefined4 local_c;
-  uint local_8;
+  uint animPartBit;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0xe2,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pDVar3 = DObjGetRotTransArray(param_1);
+  pDVar3 = DObjGetRotTransArray(obj);
   if (pDVar3 != (DObjAnimMat *)0x0) {
-    local_48 = DObjNumBones(param_1);
-    if ((0xa0 < local_48) &&
+    boneCount = DObjNumBones(obj);
+    if ((0xa0 < boneCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0xe8,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    DObjGetBoneInfo(param_1,local_2cc);
-    local_18 = 1.0;
+    DObjGetBoneInfo(obj,boneInfoArray);
+    color = 1.0;
     local_14 = 1.0;
     local_10 = 1.0;
     local_c = 0;
-    local_8 = 0x80000000;
-    for (local_4c = 0; local_4c < local_48; local_4c = local_4c + 1) {
-      if ((param_2[local_4c >> 5] & local_8) != 0) {
-        local_1c = local_2cc[local_4c];
-        local_2c = boxVerts;
-        if ((0.001 < local_1c->radiusSquared || local_1c->radiusSquared == 0.001) &&
-           (cutOffLimit * cutOffLimit < local_1c->radiusSquared ||
-            cutOffLimit * cutOffLimit == local_1c->radiusSquared)) {
-          for (local_2d0 = 0; local_2d0 < 0xc; local_2d0 = local_2d0 + 1) {
-            local_28 = local_1c->bounds[(*local_2c)[0]][0];
-            local_24 = local_1c->bounds[(*local_2c)[1]][1];
-            local_20 = local_1c->bounds[(*local_2c)[2]][2];
-            MatrixTransformVectorQuatTrans(&local_28,pDVar3 + local_4c,local_44);
-            local_28 = local_1c->bounds[local_2c[1][0]][0];
-            local_24 = local_1c->bounds[local_2c[1][1]][1];
-            local_20 = local_1c->bounds[local_2c[1][2]][2];
-            local_2c = local_2c + 1;
-            MatrixTransformVectorQuatTrans(&local_28,pDVar3 + local_4c,local_38);
-            local_2c = local_2c + 1;
-            R_AddDebugLine(&frontEndDataOut->debugGlobals,local_44,local_38,&local_18,0);
+    animPartBit = 0x80000000;
+    for (boneIndex = 0; boneIndex < boneCount; boneIndex = boneIndex + 1) {
+      if ((partBits[boneIndex >> 5] & animPartBit) != 0) {
+        boneInfo = boneInfoArray[boneIndex];
+        tempBoxVerts = boxVerts;
+        if ((0.001 < boneInfo->radiusSquared || boneInfo->radiusSquared == 0.001) &&
+           (cutOffLimit * cutOffLimit < boneInfo->radiusSquared ||
+            cutOffLimit * cutOffLimit == boneInfo->radiusSquared)) {
+          for (boxEdge = 0; boxEdge < 0xc; boxEdge = boxEdge + 1) {
+            org = boneInfo->bounds[(*tempBoxVerts)[0]][0];
+            local_24 = boneInfo->bounds[(*tempBoxVerts)[1]][1];
+            local_20 = boneInfo->bounds[(*tempBoxVerts)[2]][2];
+            MatrixTransformVectorQuatTrans(&org,pDVar3 + boneIndex,start);
+            org = boneInfo->bounds[tempBoxVerts[1][0]][0];
+            local_24 = boneInfo->bounds[tempBoxVerts[1][1]][1];
+            local_20 = boneInfo->bounds[tempBoxVerts[1][2]][2];
+            tempBoxVerts = tempBoxVerts + 1;
+            MatrixTransformVectorQuatTrans(&org,pDVar3 + boneIndex,end);
+            tempBoxVerts = tempBoxVerts + 1;
+            R_AddDebugLine(&frontEndDataOut->debugGlobals,start,end,&color,0);
           }
         }
       }
-      local_8 = local_8 >> 1 | local_8 << 0x1f;
+      animPartBit = animPartBit >> 1 | animPartBit << 0x1f;
     }
   }
   return;
@@ -258,55 +260,56 @@ void __cdecl R_XModelDebugBoxes(DObj *param_1,int *param_2)
 
 // 00A77940  R_XModelDebugAxes  (gfx_d3d/r_model.cpp:347)
 
-void __cdecl R_XModelDebugAxes(DObj *param_1,int *param_2)
+void __cdecl R_XModelDebugAxes(DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
-  int local_60;
-  float local_5c [9];
-  int local_38;
-  float local_34 [3];
-  float local_28 [3];
-  int local_1c;
-  float local_18 [4];
-  uint local_8;
+  DObjAnimMat *boneMatrix;
+  int boneIndex;
+  float translation [9];
+  int boneCount;
+  float start [3];
+  float end [3];
+  int axis;
+  float color [4];
+  uint animPartBit;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x166,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pDVar3 = DObjGetRotTransArray(param_1);
+  pDVar3 = DObjGetRotTransArray(obj);
   if (pDVar3 != (DObjAnimMat *)0x0) {
-    local_5c[0] = 6.0;
-    local_5c[1] = 0.0;
-    local_5c[2] = 0.0;
-    local_5c[3] = 0.0;
-    local_5c[4] = 6.0;
-    local_5c[5] = 0.0;
-    local_5c[6] = 0.0;
-    local_5c[7] = 0.0;
-    local_5c[8] = 6.0;
-    local_38 = DObjNumBones(param_1);
-    local_8 = 0x80000000;
-    for (local_60 = 0; local_60 < local_38; local_60 = local_60 + 1) {
-      if ((param_2[local_60 >> 5] & local_8) != 0) {
-        for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-          local_18[0] = 0.0;
-          local_18[1] = 0.0;
-          local_18[2] = 0.0;
-          local_18[3] = 0.0;
-          local_18[local_1c] = 1.0;
-          MatrixTransformVectorQuatTrans(vec3_origin,pDVar3 + local_60,local_34);
-          MatrixTransformVectorQuatTrans(local_5c + local_1c * 3,pDVar3 + local_60,local_28);
-          R_AddDebugLine(&frontEndDataOut->debugGlobals,local_34,local_28,local_18,0);
+    translation[0] = 6.0;
+    translation[1] = 0.0;
+    translation[2] = 0.0;
+    translation[3] = 0.0;
+    translation[4] = 6.0;
+    translation[5] = 0.0;
+    translation[6] = 0.0;
+    translation[7] = 0.0;
+    translation[8] = 6.0;
+    boneCount = DObjNumBones(obj);
+    animPartBit = 0x80000000;
+    for (boneIndex = 0; boneIndex < boneCount; boneIndex = boneIndex + 1) {
+      if ((partBits[boneIndex >> 5] & animPartBit) != 0) {
+        for (axis = 0; axis < 3; axis = axis + 1) {
+          color[0] = 0.0;
+          color[1] = 0.0;
+          color[2] = 0.0;
+          color[3] = 0.0;
+          color[axis] = 1.0;
+          MatrixTransformVectorQuatTrans(vec3_origin,pDVar3 + boneIndex,start);
+          MatrixTransformVectorQuatTrans(translation + axis * 3,pDVar3 + boneIndex,end);
+          R_AddDebugLine(&frontEndDataOut->debugGlobals,start,end,color,0);
         }
       }
-      local_8 = local_8 >> 1 | local_8 << 0x1f;
+      animPartBit = animPartBit >> 1 | animPartBit << 0x1f;
     }
   }
   return;
@@ -315,14 +318,14 @@ void __cdecl R_XModelDebugAxes(DObj *param_1,int *param_2)
 
 // 00A77670  R_XModelDebug  (gfx_d3d/r_model.cpp:397)
 
-void __cdecl R_XModelDebug(DObj *param_1,int *param_2)
+void __cdecl R_XModelDebug(DObj *obj,int *partBits)
 
 {
   if ((r_xdebug->current).integer == 1) {
-    R_XModelDebugBoxes(param_1,param_2);
+    R_XModelDebugBoxes(obj,partBits);
   }
   if ((r_xdebug->current).integer == 2) {
-    R_XModelDebugAxes(param_1,param_2);
+    R_XModelDebugAxes(obj,partBits);
   }
   return;
 }
@@ -337,6 +340,8 @@ void __cdecl R_LockSkinnedCache(void)
   bool bVar2;
   int iVar3;
   int iVar4;
+  int semaphore_2;
+  int semaphore;
   
   if ((gfxBuf.skinnedCacheLockAddr != (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x1a6,0,
@@ -389,8 +394,8 @@ void __cdecl R_UnlockSkinnedCache(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement *param_4,
-            float param_5,uint param_6,bool param_7)
+R_SkinXModel(XModelDrawInfo *modelInfo,XModel *model,DObj *obj,GfxPlacement *placement,float scale,
+            uint gfxEntIndex,bool offscreen)
 
 {
   uint uVar1;
@@ -398,10 +403,10 @@ R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement 
   bool bVar3;
   int iVar4;
   long *plVar5;
-  ulong uVar6;
-  XSurface *pXVar7;
-  GfxPlacement *pGVar8;
-  float *pfVar9;
+  ulong count;
+  XSurface *pXVar6;
+  GfxPlacement *pGVar7;
+  float *pfVar8;
   undefined4 local_1c74;
   uint local_1c68;
   uint local_1c64;
@@ -419,30 +424,30 @@ R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement 
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if ((param_2 == (XModel *)0x0) &&
+  if ((model == (XModel *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x203,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if (((useFastFile->current).enabled == false) && (iVar4 = XModelBad(param_2), iVar4 != 0)) {
+  if (((useFastFile->current).enabled == false) && (iVar4 = XModelBad(model), iVar4 != 0)) {
     return 0;
   }
-  local_18 = R_GetBaseLodDist(param_4->origin);
-  local_1c = I_fres(param_5);
+  local_18 = R_GetBaseLodDist(placement->origin);
+  local_1c = I_fres(scale);
   local_1c = local_1c * local_18;
-  local_20 = XModelGetLodRampType(param_2);
+  local_20 = XModelGetLodRampType(model);
   local_24 = R_GetAdjustedLodDist(local_1c,local_20);
-  if (param_7) {
+  if (offscreen) {
     local_24 = local_24 * (r_offscreenCasterLodScale->current).value;
   }
-  local_28 = XModelGetLodForDist(param_2,local_24,local_1c,false);
+  local_28 = XModelGetLodForDist(model,local_24,local_1c,false);
   if (local_28 < 0) {
     iVar4 = 0;
   }
   else {
-    local_30 = XModelGetSurfaces(param_2,&local_2c,local_28);
+    local_30 = XModelGetSurfaces(model,&local_2c,local_28);
     if ((local_30 == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x220,0,
                                  "%s"), !bVar3)) {
@@ -450,15 +455,15 @@ R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement 
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    if (param_3 != (DObj *)0x0) {
-      DObjGetHidePartBits(param_3,local_44);
+    if (obj != (DObj *)0x0) {
+      DObjGetHidePartBits(obj,local_44);
     }
     local_1c54 = local_1c50;
     for (local_1c58 = 0; local_1c58 < local_30; local_1c58 = local_1c58 + 1) {
-      pXVar7 = local_2c + local_1c58;
-      if ((param_3 == (DObj *)0x0) || ((r_useHidePartbits->current).enabled == false)) {
+      pXVar6 = local_2c + local_1c58;
+      if ((obj == (DObj *)0x0) || ((r_useHidePartbits->current).enabled == false)) {
 LAB_00a77ecb:
-        if (((pXVar7->flags & 0x80) == 0) && ((useFastFile->current).enabled != false)) {
+        if (((pXVar6->flags & 0x80) == 0) && ((useFastFile->current).enabled != false)) {
           bVar3 = true;
         }
         else {
@@ -471,24 +476,24 @@ LAB_00a77ecb:
           local_1c74 = 0xffffffff;
         }
         *(undefined4 *)local_1c54 = local_1c74;
-        *(XSurface **)(local_1c54 + 4) = pXVar7;
-        *(undefined2 *)(local_1c54 + 0xe) = (undefined2)param_6;
+        *(XSurface **)(local_1c54 + 4) = pXVar6;
+        *(undefined2 *)(local_1c54 + 0xe) = (undefined2)gfxEntIndex;
         local_1c54[0x10] = '\0';
         local_1c54[0x11] = '\0';
-        pGVar8 = param_4;
-        pfVar9 = (float *)(local_1c54 + 0x18);
+        pGVar7 = placement;
+        pfVar8 = (float *)(local_1c54 + 0x18);
         for (iVar4 = 7; iVar4 != 0; iVar4 = iVar4 + -1) {
-          *pfVar9 = pGVar8->quat[0];
-          pGVar8 = (GfxPlacement *)(pGVar8->quat + 1);
-          pfVar9 = pfVar9 + 1;
+          *pfVar8 = pGVar7->quat[0];
+          pGVar7 = (GfxPlacement *)(pGVar7->quat + 1);
+          pfVar8 = pfVar8 + 1;
         }
-        *(float *)(local_1c54 + 0x34) = param_5;
+        *(float *)(local_1c54 + 0x34) = scale;
         local_1c54 = local_1c54 + 0x38;
       }
       else {
         local_1c64 = 0;
         for (local_1c68 = 0; local_1c68 < 5; local_1c68 = local_1c68 + 1) {
-          local_1c64 = local_44[local_1c68] & pXVar7->partBits[local_1c68] | local_1c64;
+          local_1c64 = local_44[local_1c68] & pXVar6->partBits[local_1c68] | local_1c64;
         }
         if (local_1c64 == 0) goto LAB_00a77ecb;
         local_1c54[0] = 0xfd;
@@ -498,13 +503,13 @@ LAB_00a77ecb:
         local_1c54 = local_1c54 + 4;
       }
     }
-    uVar6 = (int)local_1c54 - (int)local_1c50;
+    count = (int)local_1c54 - (int)local_1c50;
     plVar5 = &frontEndDataOut->surfPos;
     LOCK();
     uVar1 = *plVar5;
-    *plVar5 = *plVar5 + uVar6;
+    *plVar5 = *plVar5 + count;
     UNLOCK();
-    if (uVar1 + uVar6 < 0x40001) {
+    if (uVar1 + count < 0x40001) {
       if (((uVar1 & 3) != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x26b,0
                                    ,"%s"), !bVar3)) {
@@ -512,9 +517,9 @@ LAB_00a77ecb:
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-      param_1->surfId = (ushort)(uVar1 >> 2);
-      memcpy(frontEndDataOut->surfsBuffer + uVar1,local_1c50,uVar6);
-      param_1->lod = (ushort)local_28;
+      modelInfo->surfId = (ushort)(uVar1 >> 2);
+      memcpy(frontEndDataOut->surfsBuffer + uVar1,local_1c50,count);
+      modelInfo->lod = (ushort)local_28;
       iVar4 = 1;
     }
     else {
@@ -528,38 +533,39 @@ LAB_00a77ecb:
 
 // 00A78090  R_SkinAndBoundSceneEnt  (gfx_d3d/r_model.cpp:666)
 
-int __cdecl R_SkinAndBoundSceneEnt(GfxSceneEntity *param_1)
+int __cdecl R_SkinAndBoundSceneEnt(GfxSceneEntity *sceneEnt)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObjAnimMat *pDVar3;
-  int iVar4;
-  DObj *local_c;
-  GfxSceneEntity *local_8;
+  DObjAnimMat *boneMatrix_00;
+  int iVar3;
+  DObjAnimMat *boneMatrix;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
   
-  pDVar3 = R_UpdateSceneEntBounds(param_1,&local_8,&local_c,1);
-  if (pDVar3 == (DObjAnimMat *)0x0) {
-    if (local_8 != (GfxSceneEntity *)0x0) {
-      CG_UsedDObjCalcPose((local_8->info).pose);
+  boneMatrix_00 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,1);
+  if (boneMatrix_00 == (DObjAnimMat *)0x0) {
+    if (localSceneEnt != (GfxSceneEntity *)0x0) {
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
-    iVar4 = 0;
+    iVar3 = 0;
   }
   else {
-    if (local_8 == (GfxSceneEntity *)0x0) {
+    if (localSceneEnt == (GfxSceneEntity *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x2b3,0,
                                "%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
-        iVar4 = (*pcVar1)();
-        return iVar4;
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
     }
-    CG_CullIn((local_8->info).pose);
-    R_SkinSceneDObj(param_1,local_8,local_c,pDVar3,0);
-    iVar4 = 1;
+    CG_CullIn((localSceneEnt->info).pose);
+    R_SkinSceneDObj(sceneEnt,localSceneEnt,obj,boneMatrix_00,0);
+    iVar3 = 1;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
@@ -577,14 +583,14 @@ void __cdecl R_ShutdownModels(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_ReleaseModel(XAssetHeader param_1,void *param_2)
+void __cdecl R_ReleaseModel(XAssetHeader header,void *data)
 
 {
   int iVar1;
   
-  iVar1 = XModelBad(param_1.model);
+  iVar1 = XModelBad(header.model);
   if (iVar1 == 0) {
-    XModelUnoptimize(param_1.model);
+    XModelUnoptimize(header.model);
   }
   return;
 }
@@ -607,14 +613,14 @@ void __cdecl R_ReleaseAllModels(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_OptimizeModel(XAssetHeader param_1,void *param_2)
+void __cdecl R_OptimizeModel(XAssetHeader header,void *data)
 
 {
   int iVar1;
   
-  iVar1 = XModelBad(param_1.model);
+  iVar1 = XModelBad(header.model);
   if (iVar1 == 0) {
-    XModelOptimize(param_1.model);
+    XModelOptimize(header.model);
   }
   return;
 }
@@ -637,13 +643,13 @@ void __cdecl R_OptimizeAllModels(void)
 
 // 00A781F0  XSurfaceReleaseResources  (gfx_d3d/r_model.cpp:831)
 
-void __cdecl XSurfaceReleaseResources(XSurface *param_1)
+void __cdecl XSurfaceReleaseResources(XSurface *surf)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (XSurface *)0x0) {
+  if (surf == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",0x340,0,"%s")
     ;
     if (!bVar2) {
@@ -652,13 +658,13 @@ void __cdecl XSurfaceReleaseResources(XSurface *param_1)
       return;
     }
   }
-  if (param_1->vb0 != (IDirect3DVertexBuffer9 *)0x0) {
-    R_FreeStaticVertexBuffer(param_1->vb0);
-    param_1->vb0 = (IDirect3DVertexBuffer9 *)0x0;
+  if (surf->vb0 != (IDirect3DVertexBuffer9 *)0x0) {
+    R_FreeStaticVertexBuffer(surf->vb0);
+    surf->vb0 = (IDirect3DVertexBuffer9 *)0x0;
   }
-  if (param_1->indexBuffer != (IDirect3DIndexBuffer9 *)0x0) {
-    R_FreeStaticIndexBuffer(param_1->indexBuffer);
-    param_1->indexBuffer = (IDirect3DIndexBuffer9 *)0x0;
+  if (surf->indexBuffer != (IDirect3DIndexBuffer9 *)0x0) {
+    R_FreeStaticIndexBuffer(surf->indexBuffer);
+    surf->indexBuffer = (IDirect3DIndexBuffer9 *)0x0;
   }
   return;
 }
@@ -666,19 +672,19 @@ void __cdecl XSurfaceReleaseResources(XSurface *param_1)
 
 // 00A78270  XSurfaceRenderString  (gfx_d3d/r_model.cpp:855)
 
-void __cdecl XSurfaceRenderString(float *param_1,char *param_2)
+void __cdecl XSurfaceRenderString(float *pos,char *string)
 
 {
-  float local_14;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = 1.0;
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
   local_8 = 1.0;
-  R_AddDebugString(&frontEndDataOut->debugGlobals,param_1,&local_14,0.5,param_2);
+  R_AddDebugString(&frontEndDataOut->debugGlobals,pos,&color,0.5,string);
   return;
 }
 
@@ -687,39 +693,39 @@ void __cdecl XSurfaceRenderString(float *param_1,char *param_2)
 
 void __cdecl
 std::_Adjust_heap<XModel_*_*,int,XModel_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,int param_2,int param_3,XModel *param_4,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_5)
+          (XModel **_First,int _Hole,int _Bottom,XModel *_Val,
+          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
   bool bVar1;
   XModel *local_18;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int _Idx;
+  int _Top;
   
-  local_8 = param_2;
-  while (local_c = param_2 * 2 + 2, local_c < param_3) {
-    bVar1 = (*param_5)(param_1 + local_c,param_1 + param_2 * 2 + 1);
+  _Top = _Hole;
+  while (_Idx = _Hole * 2 + 2, _Idx < _Bottom) {
+    bVar1 = (*_Pred)(_First + _Idx,_First + _Hole * 2 + 1);
     if (bVar1) {
-      local_c = local_c + -1;
+      _Idx = _Idx + -1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
-  local_18 = param_4;
-  local_14 = param_2;
-  while (local_10 = (local_14 + -1) / 2, local_8 < local_14) {
-    bVar1 = (*param_5)(param_1 + local_10,&local_18);
+  local_18 = _Val;
+  local_14 = _Hole;
+  while (local_10 = (local_14 + -1) / 2, _Top < local_14) {
+    bVar1 = (*_Pred)(_First + local_10,&local_18);
     if (!bVar1) break;
-    param_1[local_14] = param_1[local_10];
+    _First[local_14] = _First[local_10];
     local_14 = local_10;
   }
-  param_1[local_14] = local_18;
+  _First[local_14] = local_18;
   return;
 }
 
@@ -728,17 +734,16 @@ std::_Adjust_heap<XModel_*_*,int,XModel_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)
 
 void __cdecl
 std::pop_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_3)
+          (XModel **_First,XModel **_Last,_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
-  XModel *pXVar1;
+  XModel *_Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    pXVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<XModel_*_*,int,XModel_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,pXVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -748,20 +753,19 @@ std::pop_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
 
 void __cdecl
 std::make_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_3)
+          (XModel **_First,XModel **_Last,_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<XModel_*_*,int,XModel_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -772,38 +776,38 @@ std::make_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
 
 void __cdecl
 std::_Insertion_sort1<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&),XModel_*>
-          (XModel **param_1,XModel **param_2,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_3,XModel **param_4)
+          (XModel **_First,XModel **_Last,_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred,
+          XModel **__formal)
 
 {
   bool bVar1;
   XModel **ppXVar2;
-  XModel *local_10;
-  XModel **local_c;
-  XModel **local_8;
+  XModel **_First1;
+  XModel *_Val;
+  XModel **_Next1;
+  XModel **_Next;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (local_c = local_8 + 1, local_c != param_2) {
-      local_10 = *local_c;
-      local_8 = local_c;
-      bVar1 = (*param_3)(&local_10,param_1);
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Next1 = _Next + 1, _Next1 != _Last) {
+      _Val = *_Next1;
+      _Next = _Next1;
+      bVar1 = (*_Pred)(&_Val,_First);
       if (bVar1) {
-        local_c = local_c + 1;
+        _Next1 = _Next1 + 1;
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,(flameGeneric_s **)local_8,(flameGeneric_s **)local_c)
-        ;
-        *param_1 = local_10;
+                  ((flameGeneric_s **)_First,(flameGeneric_s **)_Next,(flameGeneric_s **)_Next1);
+        *_First = _Val;
       }
       else {
         while( true ) {
-          ppXVar2 = local_c + -1;
-          bVar1 = (*param_3)(&local_10,ppXVar2);
+          ppXVar2 = _Next1 + -1;
+          bVar1 = (*_Pred)(&_Val,ppXVar2);
           if (!bVar1) break;
-          *local_c = *ppXVar2;
-          local_c = ppXVar2;
+          *_Next1 = *ppXVar2;
+          _Next1 = ppXVar2;
         }
-        *local_c = local_10;
+        *_Next1 = _Val;
       }
     }
   }
@@ -815,30 +819,30 @@ std::_Insertion_sort1<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&),XModel_*
 
 void __cdecl
 std::_Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,XModel **param_3,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_4)
+          (XModel **_First,XModel **_Mid,XModel **_Last,
+          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
   XModel *pXVar1;
   bool bVar2;
   
-  bVar2 = (*param_4)(param_2,param_1);
-  if ((bVar2) && (param_2 != param_1)) {
-    pXVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pXVar1;
+  bVar2 = (*_Pred)(_Mid,_First);
+  if ((bVar2) && (_Mid != _First)) {
+    pXVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pXVar1;
   }
-  bVar2 = (*param_4)(param_3,param_2);
-  if ((bVar2) && (param_3 != param_2)) {
-    pXVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = pXVar1;
+  bVar2 = (*_Pred)(_Last,_Mid);
+  if ((bVar2) && (_Last != _Mid)) {
+    pXVar1 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = pXVar1;
   }
-  bVar2 = (*param_4)(param_2,param_1);
-  if ((bVar2) && (param_2 != param_1)) {
-    pXVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pXVar1;
+  bVar2 = (*_Pred)(_Mid,_First);
+  if ((bVar2) && (_Mid != _First)) {
+    pXVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pXVar1;
   }
   return;
 }
@@ -848,26 +852,26 @@ std::_Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
 
 void __cdecl
 std::_Median<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,XModel **param_3,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_4)
+          (XModel **_First,XModel **_Mid,XModel **_Last,
+          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
+              (_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
     _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
+              (_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
     _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+              (_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -877,128 +881,118 @@ std::_Median<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
 
 pair<XModel_*_*,XModel_*_*> __cdecl
 std::_Unguarded_partition<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_3)
+          (XModel **param_1,XModel **_First,_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Last)
 
 {
-  char *pcVar1;
-  PhysConstraints *pPVar2;
-  XModel *pXVar3;
-  bool bVar4;
-  PhysConstraints **ppPVar5;
-  XModel *pXVar6;
-  pair<XModel_*_*,XModel_*_*> pVar7;
+  XModel *pXVar1;
+  bool bVar2;
+  XModel **ppXVar3;
+  XModel **ppXVar4;
+  pair<XModel_*_*,XModel_*_*> pVar5;
   _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *in_stack_00000010;
-  XModel *local_18;
-  XModel *local_14;
-  XModel *local_10;
-  XModel *local_c;
+  XModel **_Plast;
+  XModel **_Glast;
+  XModel **_Pfirst;
+  XModel **_Gfirst;
+  XModel **_Mid;
   
-  local_10 = (XModel *)
-             (param_2 +
-             (((int)param_3 - (int)param_2 >> 2) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Pfirst = _First + (((int)_Last - (int)_First >> 2) - ((int)_Last - (int)_First >> 0x1f) >> 1);
   _Median<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-            (param_2,(XModel **)local_10,(XModel **)(param_3 + -4),in_stack_00000010);
-  local_18 = (XModel *)&local_10->numBones;
-  while (((param_2 < local_10 &&
-          (bVar4 = (*in_stack_00000010)
-                             ((XModel **)&local_10[-1].physConstraints,(XModel **)local_10), !bVar4)
-          ) && (bVar4 = (*in_stack_00000010)
-                                  ((XModel **)local_10,(XModel **)&local_10[-1].physConstraints),
-               !bVar4))) {
-    local_10 = (XModel *)&local_10[-1].physConstraints;
+            (_First,_Pfirst,(XModel **)(_Last + -4),in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst && (bVar2 = (*in_stack_00000010)(_Pfirst + -1,_Pfirst), !bVar2)) &&
+         (bVar2 = (*in_stack_00000010)(_Pfirst,_Pfirst + -1), !bVar2))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < param_3 &&
-          (bVar4 = (*in_stack_00000010)((XModel **)local_18,(XModel **)local_10), !bVar4)) &&
-         (bVar4 = (*in_stack_00000010)((XModel **)local_10,(XModel **)local_18), !bVar4))) {
-    local_18 = (XModel *)&local_18->numBones;
+  while (((_Plast < _Last && (bVar2 = (*in_stack_00000010)(_Plast,_Pfirst), !bVar2)) &&
+         (bVar2 = (*in_stack_00000010)(_Pfirst,_Plast), !bVar2))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pXVar3 = local_c;
-  pXVar6 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  ppXVar3 = _Gfirst;
+  ppXVar4 = _Pfirst;
   do {
-    while (local_10 = pXVar6, local_c = pXVar3, param_3 <= local_c) {
+    while (_Pfirst = ppXVar4, _Gfirst = ppXVar3, _Last <= _Gfirst) {
 LAB_00a785a4:
-      for (; param_2 < local_14; local_14 = (XModel *)&local_14[-1].physConstraints) {
-        bVar4 = (*in_stack_00000010)((XModel **)&local_14[-1].physConstraints,(XModel **)local_10);
-        if (!bVar4) {
-          bVar4 = (*in_stack_00000010)((XModel **)local_10,(XModel **)&local_14[-1].physConstraints)
-          ;
-          if (bVar4) break;
-          local_10 = (XModel *)&local_10[-1].physConstraints;
-          ppPVar5 = &local_14[-1].physConstraints;
-          if (local_10 != (XModel *)ppPVar5) {
-            pPVar2 = *(PhysConstraints **)local_10;
-            *(PhysConstraints **)local_10 = *ppPVar5;
-            *ppPVar5 = pPVar2;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        bVar2 = (*in_stack_00000010)(_Glast + -1,_Pfirst);
+        if (!bVar2) {
+          bVar2 = (*in_stack_00000010)(_Pfirst,_Glast + -1);
+          if (bVar2) break;
+          _Pfirst = _Pfirst + -1;
+          ppXVar3 = _Glast + -1;
+          if (_Pfirst != ppXVar3) {
+            pXVar1 = *_Pfirst;
+            *_Pfirst = *ppXVar3;
+            *ppXVar3 = pXVar1;
           }
         }
       }
-      if ((local_14 == (XModel *)param_2) && (local_c == (XModel *)param_3)) {
-        *param_1 = local_10;
-        param_1[1] = local_18;
-        pVar7.second = param_1;
-        pVar7.first = param_1;
-        return pVar7;
+      if ((_Glast == _First) && (_Gfirst == (XModel **)_Last)) {
+        *param_1 = (XModel *)_Pfirst;
+        param_1[1] = (XModel *)_Plast;
+        pVar5.second = param_1;
+        pVar5.first = param_1;
+        return pVar5;
       }
-      if (local_14 == (XModel *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          pcVar1 = local_10->name;
-          local_10->name = local_18->name;
-          local_18->name = pcVar1;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          pXVar1 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = pXVar1;
         }
-        local_18 = (XModel *)&local_18->numBones;
-        pXVar3 = (XModel *)&local_c->numBones;
-        pXVar6 = (XModel *)&local_10->numBones;
-        if (local_10 != local_c) {
-          pcVar1 = local_10->name;
-          local_10->name = local_c->name;
-          local_c->name = pcVar1;
+        _Plast = _Plast + 1;
+        ppXVar3 = _Gfirst + 1;
+        ppXVar4 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          pXVar1 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = pXVar1;
         }
       }
-      else if (local_c == (XModel *)param_3) {
-        local_14 = (XModel *)&local_14[-1].physConstraints;
-        pXVar6 = (XModel *)&local_10[-1].physConstraints;
-        if ((local_14 != pXVar6) && (local_14 != pXVar6)) {
-          pPVar2 = *(PhysConstraints **)local_14;
-          *(PhysConstraints **)local_14 = *(PhysConstraints **)pXVar6;
-          *(PhysConstraints **)pXVar6 = pPVar2;
+      else if (_Gfirst == (XModel **)_Last) {
+        _Glast = _Glast + -1;
+        ppXVar4 = _Pfirst + -1;
+        if ((_Glast != ppXVar4) && (_Glast != ppXVar4)) {
+          pXVar1 = *_Glast;
+          *_Glast = *ppXVar4;
+          *ppXVar4 = pXVar1;
         }
-        local_18 = (XModel *)&local_18[-1].physConstraints;
-        pXVar3 = local_c;
-        if (pXVar6 != local_18) {
-          pPVar2 = *(PhysConstraints **)pXVar6;
-          *(PhysConstraints **)pXVar6 = *(PhysConstraints **)local_18;
-          *(PhysConstraints **)local_18 = pPVar2;
+        _Plast = _Plast + -1;
+        ppXVar3 = _Gfirst;
+        if (ppXVar4 != _Plast) {
+          pXVar1 = *ppXVar4;
+          *ppXVar4 = *_Plast;
+          *_Plast = pXVar1;
         }
       }
       else {
-        local_14 = (XModel *)&local_14[-1].physConstraints;
-        if (local_c != local_14) {
-          pPVar2 = (PhysConstraints *)local_c->name;
-          local_c->name = (char *)*(PhysConstraints **)local_14;
-          *(PhysConstraints **)local_14 = pPVar2;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pXVar1 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = pXVar1;
         }
-        pXVar3 = (XModel *)&local_c->numBones;
-        pXVar6 = local_10;
+        ppXVar3 = _Gfirst + 1;
+        ppXVar4 = _Pfirst;
       }
     }
-    bVar4 = (*in_stack_00000010)((XModel **)local_10,(XModel **)local_c);
-    pXVar3 = local_18;
-    if (!bVar4) {
-      bVar4 = (*in_stack_00000010)((XModel **)local_c,(XModel **)local_10);
-      if (bVar4) goto LAB_00a785a4;
-      pXVar3 = (XModel *)&local_18->numBones;
-      if (local_18 != local_c) {
-        pcVar1 = local_18->name;
-        local_18->name = local_c->name;
-        local_c->name = pcVar1;
+    bVar2 = (*in_stack_00000010)(_Pfirst,_Gfirst);
+    ppXVar3 = _Plast;
+    if (!bVar2) {
+      bVar2 = (*in_stack_00000010)(_Gfirst,_Pfirst);
+      if (bVar2) goto LAB_00a785a4;
+      ppXVar3 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        pXVar1 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = pXVar1;
       }
     }
-    local_18 = pXVar3;
-    pXVar3 = (XModel *)&local_c->numBones;
-    pXVar6 = local_10;
+    _Plast = ppXVar3;
+    ppXVar3 = _Gfirst + 1;
+    ppXVar4 = _Pfirst;
   } while( true );
 }
 
@@ -1007,39 +1001,39 @@ LAB_00a785a4:
 
 void __cdecl
 std::_Sort<XModel_*_*,int,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-          (XModel **param_1,XModel **param_2,int param_3,
-          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *param_4)
+          (XModel **_First,XModel **_Last,int _Ideal,
+          _func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *_Pred)
 
 {
   XModel **local_ac;
-  XModel *local_10;
+  XModel *_Mid;
   XModel **local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-              (&local_10,param_1,(_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
+              (&_Mid,_First,(_func___cdecl_bool_XModel_ptr_ptr_XModel_ptr_ptr *)_Last);
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
       _Sort<XModel_*_*,int,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>
-                (param_1,(XModel **)local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,(XModel **)_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<XModel_*_*,int,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(local_c,param_2,param_3,param_4);
-      param_2 = (XModel **)local_10;
+      _Sort<XModel_*_*,int,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(local_c,_Last,_Ideal,_Pred);
+      _Last = (XModel **)_Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&),XModel_*>
-                (param_1,param_2,param_4,(XModel **)0x0);
+                (_First,_Last,_Pred,(XModel **)0x0);
     }
   }
   else {
-    make_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
-      pop_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(param_1,local_ac,param_4);
+    make_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(_First,_Last,_Pred);
+    for (local_ac = _Last; 1 < (int)local_ac - (int)_First >> 2; local_ac = local_ac + -1) {
+      pop_heap<XModel_*_*,bool_(__cdecl*)(XModel_*_&,XModel_*_&)>(_First,local_ac,_Pred);
     }
   }
   return;

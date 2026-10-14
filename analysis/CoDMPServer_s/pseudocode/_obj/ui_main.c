@@ -105,34 +105,34 @@ void __cdecl UI_DrawBuildNumber(int param_1)
   dvar_s *pdVar2;
   int in_EAX;
   Font_s *pFVar3;
-  char *pcVar4;
-  int iVar5;
+  char *maxChars;
+  int iVar4;
   int extraout_EAX;
   int unaff_ESI;
   float *unaff_EDI;
+  float fVar5;
   float fVar6;
-  float fVar7;
-  int iVar8;
-  float **ppfVar9;
-  float fVar10;
+  int iVar7;
+  float **ppfVar8;
+  float fVar9;
   
   ScrPlace_RealFromVirtual_Height
             ((ScreenPlacement *)(ui_buildSize->current).string,(float)unaff_EDI);
   pFVar3 = UI_GetFontHandleDefault((float)unaff_EDI);
-  pcVar4 = va("%s","");
+  maxChars = va("%s","");
   pdVar1 = ui_buildSize;
-  fVar6 = ((ui_buildSize->current).value * 48.0) / (float)pFVar3->pixelHeight;
-  iVar5 = R_TextWidth(pcVar4,0x40,pFVar3);
+  fVar5 = ((ui_buildSize->current).value * 48.0) / (float)pFVar3->pixelHeight;
+  iVar4 = R_TextWidth(maxChars,0x40,pFVar3);
   pdVar2 = ui_buildLocation;
-  iVar8 = (pdVar1->current).integer;
-  fVar10 = 0.0;
-  ppfVar9 = &colorWhite;
-  fVar7 = (ui_buildLocation->current).vector[1];
-  floorf((float)iVar5 * fVar6 + 0.5);
+  iVar7 = (pdVar1->current).integer;
+  fVar9 = 0.0;
+  ppfVar8 = &colorWhite;
+  fVar6 = (ui_buildLocation->current).vector[1];
+  floorf((float)iVar4 * fVar5 + 0.5);
   _ftol2_sse();
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + in_EAX * 0x1e),pcVar4,0x40,pFVar3,
-              (pdVar2->current).value - (float)extraout_EAX,fVar7,iVar8,(int)ppfVar9,fVar10,
-              unaff_EDI,unaff_ESI);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + in_EAX * 0x1e),maxChars,0x40,pFVar3,
+              (pdVar2->current).value - (float)extraout_EAX,fVar6,iVar7,(int)ppfVar8,fVar9,unaff_EDI
+              ,unaff_ESI);
   return;
 }
 
@@ -271,14 +271,14 @@ UI_DrawText(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,f
   float *unaff_EDI;
   float10 fVar1;
   float10 fVar2;
-  float fVar3;
+  float yScale;
   
-  fVar3 = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
+  yScale = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
   ScrPlace_ApplyRect(param_1,in_ECX,in_EAX,unaff_EDI,unaff_ESI,unaff_EBX,(int)in_ECX);
   fVar1 = (float10)floorf(param_5 + 0.5);
   fVar2 = (float10)floorf(param_6 + 0.5);
-  R_AddCmdDrawTextW(param_2,param_3,param_4,(float)fVar1,(float)fVar2,1.0,fVar3,fVar3,(float)param_8
-                    ,(float *)param_9,(int)unaff_EDI);
+  R_AddCmdDrawTextW(param_2,param_3,param_4,(float)fVar1,(float)fVar2,1.0,yScale,yScale,
+                    (float)param_8,(float *)param_9,(int)unaff_EDI);
   return;
 }
 
@@ -327,22 +327,22 @@ UI_DrawTextWithGlowW
   float10 fVar1;
   float10 fVar2;
   float in_XMM0_Da;
-  float fVar3;
-  undefined1 uVar4;
+  float yScale;
+  undefined1 uVar3;
   
-  fVar3 = (in_XMM0_Da * 48.0) / (float)*(int *)(param_3 + 4);
+  yScale = (in_XMM0_Da * 48.0) / (float)*(int *)(param_3 + 4);
   ScrPlace_ApplyRect(param_1,in_ECX,in_EAX,unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
-  uVar4 = SUB41(unaff_ESI,0);
+  uVar3 = SUB41(unaff_ESI,0);
   fVar1 = (float10)floorf((float)param_4 + 0.5);
   fVar2 = (float10)floorf(param_5 + 0.5);
   if ((char)param_9 != '\0') {
     R_AddCmdDrawTextSubtitle
-              (param_2,param_3,(Font_s *)(float)fVar1,(float)fVar2,fVar3,fVar3,param_6,param_7,
-               (float *)param_8,(int)param_10,unaff_EDI,(bool)uVar4);
+              (param_2,param_3,(Font_s *)(float)fVar1,(float)fVar2,yScale,yScale,param_6,param_7,
+               (float *)param_8,(int)param_10,unaff_EDI,(bool)uVar3);
     return;
   }
   CL_DrawTextPhysicalWithEffects
-            (param_2,0x7fffffff,(Font_s *)param_3,(float)fVar1,(float)fVar2,1.0,fVar3,fVar3,
+            (param_2,0x7fffffff,(Font_s *)param_3,(float)fVar1,(float)fVar2,1.0,yScale,yScale,
              (float *)param_6,(int)param_7,(float *)param_8,(Material *)0x0,(Material *)0x0,0,0,0,0)
   ;
   return;
@@ -386,11 +386,11 @@ UI_DrawTextNoSnap(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *par
   int unaff_EBX;
   float *unaff_ESI;
   float *unaff_EDI;
-  float fVar1;
+  float yScale;
   
-  fVar1 = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
+  yScale = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
   ScrPlace_ApplyRect(param_1,in_ECX,in_EAX,unaff_EDI,unaff_ESI,unaff_EBX,(int)in_ECX);
-  R_AddCmdDrawTextW(param_2,param_3,param_4,param_5,param_6,1.0,fVar1,fVar1,(float)param_8,
+  R_AddCmdDrawTextW(param_2,param_3,param_4,param_5,param_6,1.0,yScale,yScale,(float)param_8,
                     (float *)param_9,(int)unaff_EDI);
   return;
 }
@@ -415,16 +415,16 @@ UI_DrawTextWithCursor
   float *unaff_EDI;
   float10 fVar1;
   float10 fVar2;
-  float fVar3;
-  char cVar4;
+  float yScale;
+  char cVar3;
   
-  fVar3 = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
+  yScale = ((float)param_7 * 48.0) / (float)param_4->pixelHeight;
   ScrPlace_ApplyRect(param_1,in_ECX,in_EAX,unaff_EDI,unaff_ESI,unaff_EBX,(int)in_ECX);
-  cVar4 = (char)unaff_EDI;
+  cVar3 = (char)unaff_EDI;
   fVar1 = (float10)floorf(param_5 + 0.5);
   fVar2 = (float10)floorf(param_6 + 0.5);
-  AddBaseDrawTextCmd(param_2,param_3,param_4,(float)fVar1,(float)fVar2,1.0,fVar3,fVar3,0.0,
-                     (float *)param_9,(int)param_10,param_11,cVar4);
+  AddBaseDrawTextCmd(param_2,param_3,param_4,(float)fVar1,(float)fVar2,1.0,yScale,yScale,0.0,
+                     (float *)param_9,(int)param_10,param_11,cVar3);
   return;
 }
 

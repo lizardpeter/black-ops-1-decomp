@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall jpeg_encode::dct(jpeg_encode *this,short *param_1,uchar *param_2,int param_3)
+void __thiscall jpeg_encode::dct(jpeg_encode *this,short *out,uchar *in,int pitch)
 
 {
   short sVar1;
@@ -17,67 +17,83 @@ void __thiscall jpeg_encode::dct(jpeg_encode *this,short *param_1,uchar *param_2
   int iVar8;
   int iVar9;
   int iVar10;
-  int local_c0;
-  int local_98;
-  short *local_94;
-  short *local_90;
-  short local_8c [16];
+  int x3_2;
+  int x0_2;
+  int x1_2;
+  int x6_2;
+  int x4_2;
+  int x7_2;
+  int x5_2;
+  int x2_2;
+  int x8_2;
+  int i_2;
+  int x3;
+  int x0;
+  int x1;
+  int x6;
+  int x4;
+  int x7;
+  int x5;
+  int x2;
+  int x8;
+  int i;
+  short *outNow;
+  short *now;
+  short temp [16];
   short local_6c [8];
   short local_5c [8];
   short local_4c [8];
   short local_3c [8];
   short local_2c [8];
   short local_1c [10];
-  short *local_8;
+  short *inNow;
   
-  local_90 = local_8c;
-  for (local_98 = 0; local_98 < 8; local_98 = local_98 + 1) {
-    iVar3 = (*param_2 - 0x100) + (uint)param_2[7];
-    iVar6 = (*param_2 - 0x80) - (param_2[7] - 0x80);
-    iVar10 = (param_2[1] - 0x100) + (uint)param_2[6];
-    iVar7 = (param_2[1] - 0x80) - (param_2[6] - 0x80);
-    iVar4 = (param_2[2] - 0x100) + (uint)param_2[5];
-    iVar8 = (param_2[2] - 0x80) - (param_2[5] - 0x80);
-    iVar5 = (param_2[3] - 0x100) + (uint)param_2[4];
-    iVar9 = (param_2[3] - 0x80) - (param_2[4] - 0x80);
+  now = temp;
+  for (i = 0; i < 8; i = i + 1) {
+    iVar3 = (*in - 0x100) + (uint)in[7];
+    iVar6 = (*in - 0x80) - (in[7] - 0x80);
+    iVar10 = (in[1] - 0x100) + (uint)in[6];
+    iVar7 = (in[1] - 0x80) - (in[6] - 0x80);
+    iVar4 = (in[2] - 0x100) + (uint)in[5];
+    iVar8 = (in[2] - 0x80) - (in[5] - 0x80);
+    iVar5 = (in[3] - 0x100) + (uint)in[4];
+    iVar9 = (in[3] - 0x80) - (in[4] - 0x80);
     sVar1 = (short)iVar3 + (short)iVar5;
     iVar3 = iVar3 - iVar5;
     sVar2 = (short)iVar10 + (short)iVar4;
     iVar10 = iVar10 - iVar4;
-    *local_90 = sVar1 + sVar2;
-    local_90[4] = sVar1 - sVar2;
-    local_90[2] = (short)(iVar3 * 0x53a + iVar10 * 0x22a >> 10);
-    local_90[6] = (short)(iVar3 * 0x22a + iVar10 * -0x53a >> 10);
-    local_90[7] = (short)(iVar6 * 0x11b + iVar7 * -0x325 + iVar8 * 0x4b4 + iVar9 * -0x58c >> 10);
-    local_90[5] = (short)(iVar6 * 0x325 + iVar7 * -0x58c + iVar8 * 0x11b + iVar9 * 0x4b4 >> 10);
-    local_90[3] = (short)(iVar6 * 0x4b4 + iVar7 * -0x11b + iVar8 * -0x58c + iVar9 * -0x325 >> 10);
-    local_90[1] = (short)(iVar6 * 0x58c + iVar7 * 0x4b4 + iVar8 * 0x325 + iVar9 * 0x11b >> 10);
-    param_2 = param_2 + param_3;
-    local_90 = local_90 + 8;
+    *now = sVar1 + sVar2;
+    now[4] = sVar1 - sVar2;
+    now[2] = (short)(iVar3 * 0x53a + iVar10 * 0x22a >> 10);
+    now[6] = (short)(iVar3 * 0x22a + iVar10 * -0x53a >> 10);
+    now[7] = (short)(iVar6 * 0x11b + iVar7 * -0x325 + iVar8 * 0x4b4 + iVar9 * -0x58c >> 10);
+    now[5] = (short)(iVar6 * 0x325 + iVar7 * -0x58c + iVar8 * 0x11b + iVar9 * 0x4b4 >> 10);
+    now[3] = (short)(iVar6 * 0x4b4 + iVar7 * -0x11b + iVar8 * -0x58c + iVar9 * -0x325 >> 10);
+    now[1] = (short)(iVar6 * 0x58c + iVar7 * 0x4b4 + iVar8 * 0x325 + iVar9 * 0x11b >> 10);
+    in = in + pitch;
+    now = now + 8;
   }
-  local_94 = param_1;
-  local_8 = local_8c;
-  for (local_c0 = 0; local_c0 < 8; local_c0 = local_c0 + 1) {
-    iVar6 = (int)*local_8 - (int)local_8[0x38];
-    iVar4 = (int)local_8[8] - (int)local_8[0x30];
-    iVar3 = (int)local_8[0x10] - (int)local_8[0x28];
-    iVar7 = (int)local_8[0x18] - (int)local_8[0x20];
-    iVar8 = (int)*local_8 + (int)local_8[0x38] + (int)local_8[0x18] + (int)local_8[0x20];
-    iVar10 = ((int)*local_8 + (int)local_8[0x38]) - ((int)local_8[0x18] + (int)local_8[0x20]);
-    iVar5 = (int)local_8[8] + (int)local_8[0x30] + (int)local_8[0x10] + (int)local_8[0x28];
-    iVar9 = ((int)local_8[8] + (int)local_8[0x30]) - ((int)local_8[0x10] + (int)local_8[0x28]);
-    *local_94 = (short)(iVar8 + iVar5 >> 3);
-    local_94[0x20] = (short)(iVar8 - iVar5 >> 3);
-    local_94[0x10] = (short)(iVar10 * 0x53a + iVar9 * 0x22a >> 0xd);
-    local_94[0x30] = (short)(iVar10 * 0x22a + iVar9 * -0x53a >> 0xd);
-    local_94[0x38] = (short)(iVar6 * 0x11b + iVar4 * -0x325 + iVar3 * 0x4b4 + iVar7 * -0x58c >> 0xd)
-    ;
-    local_94[0x28] = (short)(iVar6 * 0x325 + iVar4 * -0x58c + iVar3 * 0x11b + iVar7 * 0x4b4 >> 0xd);
-    local_94[0x18] =
-         (short)(iVar6 * 0x4b4 + iVar4 * -0x11b + iVar3 * -0x58c + iVar7 * -0x325 >> 0xd);
-    local_94[8] = (short)(iVar6 * 0x58c + iVar4 * 0x4b4 + iVar3 * 0x325 + iVar7 * 0x11b >> 0xd);
-    local_8 = local_8 + 1;
-    local_94 = local_94 + 1;
+  outNow = out;
+  inNow = temp;
+  for (i_2 = 0; i_2 < 8; i_2 = i_2 + 1) {
+    iVar6 = (int)*inNow - (int)inNow[0x38];
+    iVar4 = (int)inNow[8] - (int)inNow[0x30];
+    iVar3 = (int)inNow[0x10] - (int)inNow[0x28];
+    iVar7 = (int)inNow[0x18] - (int)inNow[0x20];
+    iVar8 = (int)*inNow + (int)inNow[0x38] + (int)inNow[0x18] + (int)inNow[0x20];
+    iVar10 = ((int)*inNow + (int)inNow[0x38]) - ((int)inNow[0x18] + (int)inNow[0x20]);
+    iVar5 = (int)inNow[8] + (int)inNow[0x30] + (int)inNow[0x10] + (int)inNow[0x28];
+    iVar9 = ((int)inNow[8] + (int)inNow[0x30]) - ((int)inNow[0x10] + (int)inNow[0x28]);
+    *outNow = (short)(iVar8 + iVar5 >> 3);
+    outNow[0x20] = (short)(iVar8 - iVar5 >> 3);
+    outNow[0x10] = (short)(iVar10 * 0x53a + iVar9 * 0x22a >> 0xd);
+    outNow[0x30] = (short)(iVar10 * 0x22a + iVar9 * -0x53a >> 0xd);
+    outNow[0x38] = (short)(iVar6 * 0x11b + iVar4 * -0x325 + iVar3 * 0x4b4 + iVar7 * -0x58c >> 0xd);
+    outNow[0x28] = (short)(iVar6 * 0x325 + iVar4 * -0x58c + iVar3 * 0x11b + iVar7 * 0x4b4 >> 0xd);
+    outNow[0x18] = (short)(iVar6 * 0x4b4 + iVar4 * -0x11b + iVar3 * -0x58c + iVar7 * -0x325 >> 0xd);
+    outNow[8] = (short)(iVar6 * 0x58c + iVar4 * 0x4b4 + iVar3 * 0x325 + iVar7 * 0x11b >> 0xd);
+    inNow = inNow + 1;
+    outNow = outNow + 1;
   }
   return;
 }
@@ -85,33 +101,34 @@ void __thiscall jpeg_encode::dct(jpeg_encode *this,short *param_1,uchar *param_2
 
 // 009B13C0  init_quant  (mjpeg/jpeg.cpp:519)
 
-void __thiscall jpeg_encode::init_quant(jpeg_encode *this,int param_1)
+void __thiscall jpeg_encode::init_quant(jpeg_encode *this,int quality_factor)
 
 {
   byte bVar1;
-  uint local_c;
-  int local_8;
+  int index;
+  uint value;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    bVar1 = jpeg_zigzag_table[local_8];
-    local_c = (uint)luminance_quant_table[local_8] * param_1 + 0x200 >> 10;
-    if (local_c == 0) {
-      local_c = 1;
+  for (i = 0; i < 0x40; i = i + 1) {
+    bVar1 = jpeg_zigzag_table[i];
+    value = (uint)luminance_quant_table[i] * quality_factor + 0x200 >> 10;
+    if (value == 0) {
+      value = 1;
     }
-    else if (0xff < local_c) {
-      local_c = 0xff;
+    else if (0xff < value) {
+      value = 0xff;
     }
-    this->jpeg_Lqt[bVar1] = (uchar)local_c;
-    this->jpeg_ILqt[local_8] = (ushort)(0x8000 / (ulonglong)local_c);
-    local_c = (uint)chrominance_quant_table[local_8] * param_1 + 0x200 >> 10;
-    if (local_c == 0) {
-      local_c = 1;
+    this->jpeg_Lqt[bVar1] = (uchar)value;
+    this->jpeg_ILqt[i] = (ushort)(0x8000 / (ulonglong)value);
+    value = (uint)chrominance_quant_table[i] * quality_factor + 0x200 >> 10;
+    if (value == 0) {
+      value = 1;
     }
-    else if (0xff < local_c) {
-      local_c = 0xff;
+    else if (0xff < value) {
+      value = 0xff;
     }
-    this->jpeg_Cqt[bVar1] = (uchar)local_c;
-    this->jpeg_ICqt[local_8] = (ushort)(0x8000 / (ulonglong)local_c);
+    this->jpeg_Cqt[bVar1] = (uchar)value;
+    this->jpeg_ICqt[i] = (ushort)(0x8000 / (ulonglong)value);
   }
   return;
 }
@@ -119,15 +136,15 @@ void __thiscall jpeg_encode::init_quant(jpeg_encode *this,int param_1)
 
 // 009B14D0  quant  (mjpeg/jpeg.cpp:583)
 
-void __thiscall jpeg_encode::quant(jpeg_encode *this,short *param_1,short *param_2,ushort *param_3)
+void __thiscall jpeg_encode::quant(jpeg_encode *this,short *out,short *in,ushort *quant_table_ptr)
 
 {
-  short local_c;
-  int local_8;
+  int value;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    local_c = (short)((int)((int)param_2[local_8] * (uint)param_3[local_8] + 0x4000) >> 0xf);
-    param_1[jpeg_zigzag_table[local_8]] = local_c;
+  for (i = 0; i < 0x40; i = i + 1) {
+    value._0_2_ = (short)((int)((int)in[i] * (uint)quant_table_ptr[i] + 0x4000) >> 0xf);
+    out[jpeg_zigzag_table[i]] = (short)value;
   }
   return;
 }
@@ -136,7 +153,7 @@ void __thiscall jpeg_encode::quant(jpeg_encode *this,short *param_1,short *param
 // 009B1540  huffman  (mjpeg/jpeg.cpp:618)
 
 uchar * __thiscall
-jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode_state *param_3)
+jpeg_encode::huffman(jpeg_encode *this,uchar *out,short *in,jpeg_encode_state *channel)
 
 {
   short sVar1;
@@ -148,29 +165,39 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
   uint uVar7;
   ushort local_4c;
   ushort local_48;
-  int local_30;
-  ushort local_1c;
-  ushort local_14;
-  ushort local_10;
-  ushort local_8;
+  short bits_in_next_word_4;
+  short bits_in_next_word_3;
+  short bits_in_next_word_2;
+  ushort index;
+  int i;
+  short bits_in_next_word;
+  ushort HuffSize;
+  uint data;
+  ushort HuffCode;
+  ushort RunLength;
+  ushort numbits;
+  ushort DataSize;
+  ushort AbsCoeff;
+  short LastCoeff;
+  short Coeff;
   
-  sVar6 = *param_2;
-  sVar1 = param_3->ldc;
-  param_3->ldc = sVar6;
-  local_8 = sVar6 - sVar1;
-  local_14 = 0;
-  local_48 = local_8;
-  if ((short)local_8 < 0) {
-    local_48 = -local_8;
-    local_8 = local_8 - 1;
+  sVar6 = *in;
+  sVar1 = channel->ldc;
+  channel->ldc = sVar6;
+  Coeff = sVar6 - sVar1;
+  DataSize = 0;
+  local_48 = Coeff;
+  if (Coeff < 0) {
+    local_48 = -Coeff;
+    Coeff = Coeff - 1;
   }
-  for (local_10 = local_48; local_10 != 0; local_10 = local_10 >> 1) {
-    local_14 = local_14 + 1;
+  for (AbsCoeff = local_48; AbsCoeff != 0; AbsCoeff = AbsCoeff >> 1) {
+    DataSize = DataSize + 1;
   }
-  uVar7 = (uint)param_3->DcCode[local_14] << ((byte)local_14 & 0x1f) |
-          (int)(short)(local_8 & (short)(1 << ((byte)local_14 & 0x1f)) - 1U);
-  sVar6 = param_3->DcSize[local_14] + local_14;
-  local_1c = 0;
+  uVar7 = (uint)channel->DcCode[DataSize] << ((byte)DataSize & 0x1f) |
+          (int)(short)(Coeff & (short)(1 << ((byte)DataSize & 0x1f)) - 1U);
+  sVar6 = channel->DcSize[DataSize] + DataSize;
+  RunLength = 0;
   uVar5 = (this->jpeg_bitindex - 0x20) + sVar6;
   if ((short)uVar5 < 0) {
     this->jpeg_lcode = this->jpeg_lcode << ((byte)sVar6 & 0x1f) | uVar7;
@@ -180,47 +207,47 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
     this->jpeg_lcode =
          this->jpeg_lcode << (0x20U - (char)this->jpeg_bitindex & 0x1f) |
          uVar7 >> ((byte)uVar5 & 0x1f);
-    *param_1 = (uchar)(this->jpeg_lcode >> 0x18);
-    puVar4 = param_1 + 1;
-    if (*param_1 == 0xff) {
-      param_1[1] = '\0';
-      puVar4 = param_1 + 2;
+    *out = (uchar)(this->jpeg_lcode >> 0x18);
+    puVar4 = out + 1;
+    if (*out == 0xff) {
+      out[1] = '\0';
+      puVar4 = out + 2;
     }
-    param_1 = puVar4;
-    *param_1 = (uchar)(this->jpeg_lcode >> 0x10);
-    puVar4 = param_1 + 1;
-    if (*param_1 == 0xff) {
-      param_1[1] = '\0';
-      puVar4 = param_1 + 2;
+    out = puVar4;
+    *out = (uchar)(this->jpeg_lcode >> 0x10);
+    puVar4 = out + 1;
+    if (*out == 0xff) {
+      out[1] = '\0';
+      puVar4 = out + 2;
     }
-    param_1 = puVar4;
-    *param_1 = (uchar)(this->jpeg_lcode >> 8);
-    puVar4 = param_1 + 1;
-    if (*param_1 == 0xff) {
-      param_1[1] = '\0';
-      puVar4 = param_1 + 2;
+    out = puVar4;
+    *out = (uchar)(this->jpeg_lcode >> 8);
+    puVar4 = out + 1;
+    if (*out == 0xff) {
+      out[1] = '\0';
+      puVar4 = out + 2;
     }
-    param_1 = puVar4;
-    *param_1 = (uchar)this->jpeg_lcode;
-    puVar4 = param_1 + 1;
-    if (*param_1 == 0xff) {
-      param_1[1] = '\0';
-      puVar4 = param_1 + 2;
+    out = puVar4;
+    *out = (uchar)this->jpeg_lcode;
+    puVar4 = out + 1;
+    if (*out == 0xff) {
+      out[1] = '\0';
+      puVar4 = out + 2;
     }
-    param_1 = puVar4;
+    out = puVar4;
     this->jpeg_lcode = uVar7;
     this->jpeg_bitindex = uVar5;
   }
-  for (local_30 = 1; param_2 = param_2 + 1, local_30 < 0x40; local_30 = local_30 + 1) {
-    local_8 = *param_2;
-    if (local_8 == 0) {
-      local_1c = local_1c + 1;
+  for (i = 1; in = in + 1, i < 0x40; i = i + 1) {
+    Coeff = *in;
+    if (Coeff == 0) {
+      RunLength = RunLength + 1;
     }
     else {
-      while (0xf < local_1c) {
-        local_1c = local_1c - 0x10;
-        uVar2 = param_3->AcCode[0xa1];
-        uVar3 = param_3->AcSize[0xa1];
+      while (0xf < RunLength) {
+        RunLength = RunLength - 0x10;
+        uVar2 = channel->AcCode[0xa1];
+        uVar3 = channel->AcSize[0xa1];
         uVar5 = (this->jpeg_bitindex - 0x20) + uVar3;
         if ((short)uVar5 < 0) {
           this->jpeg_lcode = this->jpeg_lcode << ((byte)uVar3 & 0x1f) | (uint)uVar2;
@@ -230,53 +257,53 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
           this->jpeg_lcode =
                this->jpeg_lcode << (0x20U - (char)this->jpeg_bitindex & 0x1f) |
                (uint)(uVar2 >> ((byte)uVar5 & 0x1f));
-          *param_1 = (uchar)(this->jpeg_lcode >> 0x18);
-          puVar4 = param_1 + 1;
-          if (*param_1 == 0xff) {
-            param_1[1] = '\0';
-            puVar4 = param_1 + 2;
+          *out = (uchar)(this->jpeg_lcode >> 0x18);
+          puVar4 = out + 1;
+          if (*out == 0xff) {
+            out[1] = '\0';
+            puVar4 = out + 2;
           }
-          param_1 = puVar4;
-          *param_1 = (uchar)(this->jpeg_lcode >> 0x10);
-          puVar4 = param_1 + 1;
-          if (*param_1 == 0xff) {
-            param_1[1] = '\0';
-            puVar4 = param_1 + 2;
+          out = puVar4;
+          *out = (uchar)(this->jpeg_lcode >> 0x10);
+          puVar4 = out + 1;
+          if (*out == 0xff) {
+            out[1] = '\0';
+            puVar4 = out + 2;
           }
-          param_1 = puVar4;
-          *param_1 = (uchar)(this->jpeg_lcode >> 8);
-          puVar4 = param_1 + 1;
-          if (*param_1 == 0xff) {
-            param_1[1] = '\0';
-            puVar4 = param_1 + 2;
+          out = puVar4;
+          *out = (uchar)(this->jpeg_lcode >> 8);
+          puVar4 = out + 1;
+          if (*out == 0xff) {
+            out[1] = '\0';
+            puVar4 = out + 2;
           }
-          param_1 = puVar4;
-          *param_1 = (uchar)this->jpeg_lcode;
-          puVar4 = param_1 + 1;
-          if (*param_1 == 0xff) {
-            param_1[1] = '\0';
-            puVar4 = param_1 + 2;
+          out = puVar4;
+          *out = (uchar)this->jpeg_lcode;
+          puVar4 = out + 1;
+          if (*out == 0xff) {
+            out[1] = '\0';
+            puVar4 = out + 2;
           }
-          param_1 = puVar4;
+          out = puVar4;
           this->jpeg_lcode = (uint)uVar2;
           this->jpeg_bitindex = uVar5;
         }
       }
-      local_4c = local_8;
-      if ((short)local_8 < 0) {
-        local_4c = -local_8;
-        local_8 = local_8 - 1;
+      local_4c = Coeff;
+      if (Coeff < 0) {
+        local_4c = -Coeff;
+        Coeff = Coeff - 1;
       }
       if ((int)(uint)local_4c >> 8 == 0) {
-        local_14 = (ushort)jpeg_bitsize[local_4c];
+        DataSize = (ushort)jpeg_bitsize[local_4c];
       }
       else {
-        local_14 = jpeg_bitsize[(int)(uint)local_4c >> 8] + 8;
+        DataSize = jpeg_bitsize[(int)(uint)local_4c >> 8] + 8;
       }
-      uVar5 = local_1c * 10 + local_14;
-      uVar7 = (uint)param_3->AcCode[uVar5] << ((byte)local_14 & 0x1f) |
-              (int)(short)(local_8 & (short)(1 << ((byte)local_14 & 0x1f)) - 1U);
-      sVar6 = param_3->AcSize[uVar5] + local_14;
+      uVar5 = RunLength * 10 + DataSize;
+      uVar7 = (uint)channel->AcCode[uVar5] << ((byte)DataSize & 0x1f) |
+              (int)(short)(Coeff & (short)(1 << ((byte)DataSize & 0x1f)) - 1U);
+      sVar6 = channel->AcSize[uVar5] + DataSize;
       uVar5 = (this->jpeg_bitindex - 0x20) + sVar6;
       if ((short)uVar5 < 0) {
         this->jpeg_lcode = this->jpeg_lcode << ((byte)sVar6 & 0x1f) | uVar7;
@@ -286,43 +313,43 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
         this->jpeg_lcode =
              this->jpeg_lcode << (0x20U - (char)this->jpeg_bitindex & 0x1f) |
              uVar7 >> ((byte)uVar5 & 0x1f);
-        *param_1 = (uchar)(this->jpeg_lcode >> 0x18);
-        puVar4 = param_1 + 1;
-        if (*param_1 == 0xff) {
-          param_1[1] = '\0';
-          puVar4 = param_1 + 2;
+        *out = (uchar)(this->jpeg_lcode >> 0x18);
+        puVar4 = out + 1;
+        if (*out == 0xff) {
+          out[1] = '\0';
+          puVar4 = out + 2;
         }
-        param_1 = puVar4;
-        *param_1 = (uchar)(this->jpeg_lcode >> 0x10);
-        puVar4 = param_1 + 1;
-        if (*param_1 == 0xff) {
-          param_1[1] = '\0';
-          puVar4 = param_1 + 2;
+        out = puVar4;
+        *out = (uchar)(this->jpeg_lcode >> 0x10);
+        puVar4 = out + 1;
+        if (*out == 0xff) {
+          out[1] = '\0';
+          puVar4 = out + 2;
         }
-        param_1 = puVar4;
-        *param_1 = (uchar)(this->jpeg_lcode >> 8);
-        puVar4 = param_1 + 1;
-        if (*param_1 == 0xff) {
-          param_1[1] = '\0';
-          puVar4 = param_1 + 2;
+        out = puVar4;
+        *out = (uchar)(this->jpeg_lcode >> 8);
+        puVar4 = out + 1;
+        if (*out == 0xff) {
+          out[1] = '\0';
+          puVar4 = out + 2;
         }
-        param_1 = puVar4;
-        *param_1 = (uchar)this->jpeg_lcode;
-        puVar4 = param_1 + 1;
-        if (*param_1 == 0xff) {
-          param_1[1] = '\0';
-          puVar4 = param_1 + 2;
+        out = puVar4;
+        *out = (uchar)this->jpeg_lcode;
+        puVar4 = out + 1;
+        if (*out == 0xff) {
+          out[1] = '\0';
+          puVar4 = out + 2;
         }
-        param_1 = puVar4;
+        out = puVar4;
         this->jpeg_lcode = uVar7;
         this->jpeg_bitindex = uVar5;
       }
-      local_1c = 0;
+      RunLength = 0;
     }
   }
-  if (local_1c != 0) {
-    uVar2 = *param_3->AcCode;
-    uVar3 = *param_3->AcSize;
+  if (RunLength != 0) {
+    uVar2 = *channel->AcCode;
+    uVar3 = *channel->AcSize;
     uVar5 = (this->jpeg_bitindex - 0x20) + uVar3;
     if ((short)uVar5 < 0) {
       this->jpeg_lcode = this->jpeg_lcode << ((byte)uVar3 & 0x1f) | (uint)uVar2;
@@ -332,39 +359,39 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
       this->jpeg_lcode =
            this->jpeg_lcode << (0x20U - (char)this->jpeg_bitindex & 0x1f) |
            (uint)(uVar2 >> ((byte)uVar5 & 0x1f));
-      *param_1 = (uchar)(this->jpeg_lcode >> 0x18);
-      puVar4 = param_1 + 1;
-      if (*param_1 == 0xff) {
-        param_1[1] = '\0';
-        puVar4 = param_1 + 2;
+      *out = (uchar)(this->jpeg_lcode >> 0x18);
+      puVar4 = out + 1;
+      if (*out == 0xff) {
+        out[1] = '\0';
+        puVar4 = out + 2;
       }
-      param_1 = puVar4;
-      *param_1 = (uchar)(this->jpeg_lcode >> 0x10);
-      puVar4 = param_1 + 1;
-      if (*param_1 == 0xff) {
-        param_1[1] = '\0';
-        puVar4 = param_1 + 2;
+      out = puVar4;
+      *out = (uchar)(this->jpeg_lcode >> 0x10);
+      puVar4 = out + 1;
+      if (*out == 0xff) {
+        out[1] = '\0';
+        puVar4 = out + 2;
       }
-      param_1 = puVar4;
-      *param_1 = (uchar)(this->jpeg_lcode >> 8);
-      puVar4 = param_1 + 1;
-      if (*param_1 == 0xff) {
-        param_1[1] = '\0';
-        puVar4 = param_1 + 2;
+      out = puVar4;
+      *out = (uchar)(this->jpeg_lcode >> 8);
+      puVar4 = out + 1;
+      if (*out == 0xff) {
+        out[1] = '\0';
+        puVar4 = out + 2;
       }
-      param_1 = puVar4;
-      *param_1 = (uchar)this->jpeg_lcode;
-      puVar4 = param_1 + 1;
-      if (*param_1 == 0xff) {
-        param_1[1] = '\0';
-        puVar4 = param_1 + 2;
+      out = puVar4;
+      *out = (uchar)this->jpeg_lcode;
+      puVar4 = out + 1;
+      if (*out == 0xff) {
+        out[1] = '\0';
+        puVar4 = out + 2;
       }
-      param_1 = puVar4;
+      out = puVar4;
       this->jpeg_lcode = (uint)uVar2;
       this->jpeg_bitindex = uVar5;
     }
   }
-  return param_1;
+  return out;
 }
 
 
@@ -373,64 +400,63 @@ jpeg_encode::huffman(jpeg_encode *this,uchar *param_1,short *param_2,jpeg_encode
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uchar * __thiscall
-jpeg_encode::do_block
-          (jpeg_encode *this,uchar *param_1,uchar *param_2,int param_3,jpeg_encode_state *param_4)
+jpeg_encode::do_block(jpeg_encode *this,uchar *out,uchar *in,int pitch,jpeg_encode_state *channel)
 
 {
   uchar *puVar1;
-  int local_15c;
-  int local_158;
-  short local_154 [64];
-  uchar local_d4 [68];
-  uchar *local_90;
-  short local_8c [64];
+  int x;
+  int y;
+  short block_quant [64];
+  uchar block [68];
+  uchar *b;
+  short block_dct [64];
   uint local_c;
-  uchar *local_8;
+  uchar *a;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = local_d4;
-  local_90 = param_2;
-  for (local_158 = 0; local_158 < 8; local_158 = local_158 + 1) {
-    for (local_15c = 0; local_15c < 8; local_15c = local_15c + 1) {
-      *local_8 = local_90[local_15c];
-      local_8 = local_8 + 1;
+  a = block;
+  b = in;
+  for (y = 0; y < 8; y = y + 1) {
+    for (x = 0; x < 8; x = x + 1) {
+      *a = b[x];
+      a = a + 1;
     }
-    local_90 = local_90 + param_3;
+    b = b + pitch;
   }
-  dct(this,local_8c,local_d4,8);
-  quant(this,local_154,local_8c,param_4->qt);
-  puVar1 = huffman(this,param_1,local_154,param_4);
+  dct(this,block_dct,block,8);
+  quant(this,block_quant,block_dct,channel->qt);
+  puVar1 = huffman(this,out,block_quant,channel);
   return puVar1;
 }
 
 
 // 009B1EC0  Out32  (mjpeg/jpeg.cpp:710)
 
-void __cdecl Out32(uchar **param_1,uint param_2)
+void __cdecl Out32(uchar **out,uint d)
 
 {
-  **param_1 = (uchar)(param_2 >> 0x18);
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(param_2 >> 0x10);
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(param_2 >> 8);
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)param_2;
-  *param_1 = *param_1 + 1;
+  **out = (uchar)(d >> 0x18);
+  *out = *out + 1;
+  **out = (uchar)(d >> 0x10);
+  *out = *out + 1;
+  **out = (uchar)(d >> 8);
+  *out = *out + 1;
+  **out = (uchar)d;
+  *out = *out + 1;
   return;
 }
 
 
 // 009B1F30  OutRational  (mjpeg/jpeg.cpp:718)
 
-void __cdecl OutRational(uchar **param_1,float param_2,int param_3)
+void __cdecl OutRational(uchar **out,float val,int div)
 
 {
   undefined4 local_14;
   
-  local_14 = (uint)(longlong)ROUND((float)param_3 * param_2);
-  Out32(param_1,local_14);
-  Out32(param_1,param_3);
+  local_14 = (uint)(longlong)ROUND((float)div * val);
+  Out32(out,local_14);
+  Out32(out,div);
   return;
 }
 
@@ -439,8 +465,8 @@ void __cdecl OutRational(uchar **param_1,float param_2,int param_3)
 
 uchar * __thiscall
 jpeg_encode::write_header
-          (jpeg_encode *this,uchar *param_1,int param_2,int param_3,bool param_4,bool param_5,
-          jpeg_exif *param_6)
+          (jpeg_encode *this,uchar *out,int width,int height,bool greyscale,bool tables,
+          jpeg_exif *exif)
 
 {
   short sVar1;
@@ -467,222 +493,222 @@ jpeg_encode::write_header
   jpeg_encode *local_14;
   
   local_14 = this;
-  if (param_6 != (jpeg_exif *)0x0) {
-    local_18 = param_6->gpsLat;
-    local_1c = param_6->gpsLon;
+  if (exif != (jpeg_exif *)0x0) {
+    local_18 = exif->gpsLat;
+    local_1c = exif->gpsLon;
     local_20 = 1.275632e+07;
     dVar3 = (double)(local_1c * 0.017453292);
     __libm_sse2_cos(in_stack_ffffffa0);
     local_24 = -360.0 / ((float)dVar3 * local_20);
     local_28 = 360.0 / local_20;
-    local_18 = param_6->gpsOffsetLat * local_24 + local_18;
-    local_1c = param_6->gpsOffsetLon * local_28 + local_1c;
-    *param_1 = 0xff;
-    param_1[1] = 0xe1;
-    local_2c = param_1 + 2;
-    param_1[4] = 'E';
-    param_1[5] = 'x';
-    param_1[6] = 'i';
-    param_1[7] = 'f';
-    param_1[8] = '\0';
-    param_1[9] = '\0';
-    local_30 = param_1 + 10;
+    local_18 = exif->gpsOffsetLat * local_24 + local_18;
+    local_1c = exif->gpsOffsetLon * local_28 + local_1c;
+    *out = 0xff;
+    out[1] = 0xe1;
+    local_2c = out + 2;
+    out[4] = 'E';
+    out[5] = 'x';
+    out[6] = 'i';
+    out[7] = 'f';
+    out[8] = '\0';
+    out[9] = '\0';
+    local_30 = out + 10;
     *local_30 = 'M';
-    param_1[0xb] = 'M';
-    param_1[0xc] = '\0';
-    param_1[0xd] = '*';
-    param_1[0xe] = '\0';
-    param_1[0xf] = '\0';
-    param_1[0x10] = '\0';
-    param_1[0x11] = '\b';
-    param_1[0x12] = '\0';
-    param_1[0x13] = '\x01';
-    param_1[0x14] = 0x88;
-    param_1[0x15] = '%';
-    param_1[0x16] = '\0';
-    param_1[0x17] = '\x04';
-    param_1[0x18] = '\0';
-    param_1[0x19] = '\0';
-    param_1[0x1a] = '\0';
-    param_1[0x1b] = '\x01';
-    local_34 = param_1 + 0x1c;
-    param_1[0x20] = '\0';
-    param_1[0x21] = '\0';
-    param_1[0x22] = '\0';
-    param_1[0x23] = '\0';
-    param_1 = param_1 + 0x24;
-    Out32(&local_34,(int)param_1 - (int)local_30);
-    *param_1 = '\0';
-    param_1[1] = '\x05';
-    param_1[2] = '\0';
-    param_1[3] = '\0';
-    param_1[4] = '\0';
-    param_1[5] = '\x01';
-    param_1[6] = '\0';
-    param_1[7] = '\0';
-    param_1[8] = '\0';
-    param_1[9] = '\x04';
-    param_1[10] = '\x02';
-    param_1[0xb] = '\x02';
-    param_1[0xc] = '\0';
-    param_1[0xd] = '\0';
-    param_1 = param_1 + 0xe;
-    Out32(&param_1,0x10002);
-    Out32(&param_1,2);
+    out[0xb] = 'M';
+    out[0xc] = '\0';
+    out[0xd] = '*';
+    out[0xe] = '\0';
+    out[0xf] = '\0';
+    out[0x10] = '\0';
+    out[0x11] = '\b';
+    out[0x12] = '\0';
+    out[0x13] = '\x01';
+    out[0x14] = 0x88;
+    out[0x15] = '%';
+    out[0x16] = '\0';
+    out[0x17] = '\x04';
+    out[0x18] = '\0';
+    out[0x19] = '\0';
+    out[0x1a] = '\0';
+    out[0x1b] = '\x01';
+    local_34 = out + 0x1c;
+    out[0x20] = '\0';
+    out[0x21] = '\0';
+    out[0x22] = '\0';
+    out[0x23] = '\0';
+    out = out + 0x24;
+    Out32(&local_34,(int)out - (int)local_30);
+    *out = '\0';
+    out[1] = '\x05';
+    out[2] = '\0';
+    out[3] = '\0';
+    out[4] = '\0';
+    out[5] = '\x01';
+    out[6] = '\0';
+    out[7] = '\0';
+    out[8] = '\0';
+    out[9] = '\x04';
+    out[10] = '\x02';
+    out[0xb] = '\x02';
+    out[0xc] = '\0';
+    out[0xd] = '\0';
+    out = out + 0xe;
+    Out32(&out,0x10002);
+    Out32(&out,2);
     if (local_18 <= 0.0) {
       local_35 = 'S';
     }
     else {
       local_35 = 'N';
     }
-    *param_1 = local_35;
-    param_1[1] = '\0';
-    param_1[2] = '\0';
-    param_1[3] = '\0';
-    param_1[4] = '\0';
-    param_1[5] = '\x02';
-    param_1[6] = '\0';
-    param_1[7] = '\x05';
-    param_1 = param_1 + 8;
-    Out32(&param_1,3);
-    local_3c = param_1;
-    param_1 = param_1 + 4;
-    Out32(&param_1,0x30002);
-    Out32(&param_1,2);
+    *out = local_35;
+    out[1] = '\0';
+    out[2] = '\0';
+    out[3] = '\0';
+    out[4] = '\0';
+    out[5] = '\x02';
+    out[6] = '\0';
+    out[7] = '\x05';
+    out = out + 8;
+    Out32(&out,3);
+    local_3c = out;
+    out = out + 4;
+    Out32(&out,0x30002);
+    Out32(&out,2);
     if (local_1c <= 0.0) {
       local_3d = 'W';
     }
     else {
       local_3d = 'E';
     }
-    *param_1 = local_3d;
-    param_1[1] = '\0';
-    param_1[2] = '\0';
-    param_1[3] = '\0';
-    param_1[4] = '\0';
-    param_1[5] = '\x04';
-    param_1[6] = '\0';
-    param_1[7] = '\x05';
-    param_1 = param_1 + 8;
-    Out32(&param_1,3);
-    local_44 = param_1;
-    param_1 = param_1 + 4;
+    *out = local_3d;
+    out[1] = '\0';
+    out[2] = '\0';
+    out[3] = '\0';
+    out[4] = '\0';
+    out[5] = '\x04';
+    out[6] = '\0';
+    out[7] = '\x05';
+    out = out + 8;
+    Out32(&out,3);
+    local_44 = out;
+    out = out + 4;
     if (local_18 < 0.0) {
       local_18 = -local_18;
     }
-    Out32(&local_3c,(int)param_1 - (int)local_30);
-    OutRational(&param_1,local_18,1);
+    Out32(&local_3c,(int)out - (int)local_30);
+    OutRational(&out,local_18,1);
     local_18 = (local_18 - (float)(int)local_18) * 60.0;
-    OutRational(&param_1,local_18,1);
+    OutRational(&out,local_18,1);
     local_18 = (local_18 - (float)(int)local_18) * 60.0;
-    OutRational(&param_1,local_18,1000);
+    OutRational(&out,local_18,1000);
     if (local_1c < 0.0) {
       local_1c = -local_1c;
     }
-    Out32(&local_44,(int)param_1 - (int)local_30);
-    OutRational(&param_1,local_1c,1);
+    Out32(&local_44,(int)out - (int)local_30);
+    OutRational(&out,local_1c,1);
     local_1c = (local_1c - (float)(int)local_1c) * 60.0;
-    OutRational(&param_1,local_1c,1);
+    OutRational(&out,local_1c,1);
     local_1c = (local_1c - (float)(int)local_1c) * 60.0;
-    OutRational(&param_1,local_1c,1000);
-    *local_2c = (uchar)((uint)((int)param_1 - (int)local_2c) >> 0x10);
-    local_2c[1] = (char)param_1 - (char)local_2c;
+    OutRational(&out,local_1c,1000);
+    *local_2c = (uchar)((uint)((int)out - (int)local_2c) >> 0x10);
+    local_2c[1] = (char)out - (char)local_2c;
   }
-  sVar2 = (-(ushort)(param_4 != false) & 0xfffe) + 3;
-  if (param_5 != false) {
-    *param_1 = 0xff;
-    param_1[1] = 0xdb;
-    param_1[2] = '\0';
-    param_1[3] = 0x84;
-    param_1[4] = '\0';
-    param_1 = param_1 + 5;
+  sVar2 = (-(ushort)(greyscale != false) & 0xfffe) + 3;
+  if (tables != false) {
+    *out = 0xff;
+    out[1] = 0xdb;
+    out[2] = '\0';
+    out[3] = 0x84;
+    out[4] = '\0';
+    out = out + 5;
     for (local_4c = 0; local_4c < 0x40; local_4c = local_4c + 1) {
-      *param_1 = local_14->jpeg_Lqt[local_4c];
-      param_1 = param_1 + 1;
+      *out = local_14->jpeg_Lqt[local_4c];
+      out = out + 1;
     }
-    *param_1 = '\x01';
-    for (local_50 = 0; param_1 = param_1 + 1, local_50 < 0x40; local_50 = local_50 + 1) {
-      *param_1 = local_14->jpeg_Cqt[local_50];
+    *out = '\x01';
+    for (local_50 = 0; out = out + 1, local_50 < 0x40; local_50 = local_50 + 1) {
+      *out = local_14->jpeg_Cqt[local_50];
     }
     for (local_54 = 0; local_54 < 0x1b0; local_54 = local_54 + 1) {
-      *param_1 = jpeg_markerdata[local_54];
-      param_1 = param_1 + 1;
+      *out = jpeg_markerdata[local_54];
+      out = out + 1;
     }
   }
-  *param_1 = 0xff;
-  param_1[1] = 0xc0;
+  *out = 0xff;
+  out[1] = 0xc0;
   sVar1 = sVar2 * 3 + 8;
-  param_1[2] = (uchar)((ushort)sVar1 >> 8);
+  out[2] = (uchar)((ushort)sVar1 >> 8);
   local_58 = (uchar)sVar1;
-  param_1[3] = local_58;
-  param_1[4] = '\b';
-  param_1[5] = (uchar)((uint)param_3 >> 8);
-  param_1[6] = (uchar)param_3;
-  param_1[7] = (uchar)((uint)param_2 >> 8);
-  param_1[8] = (uchar)param_2;
+  out[3] = local_58;
+  out[4] = '\b';
+  out[5] = (uchar)((uint)height >> 8);
+  out[6] = (uchar)height;
+  out[7] = (uchar)((uint)width >> 8);
+  out[8] = (uchar)width;
   local_48 = (uchar)sVar2;
-  param_1[9] = local_48;
-  if (param_4 == false) {
-    param_1[10] = '\x01';
-    param_1[0xb] = '\"';
-    param_1[0xc] = '\0';
-    param_1[0xd] = '\x02';
-    param_1[0xe] = '\x11';
-    param_1[0xf] = '\x01';
-    param_1[0x10] = '\x03';
-    param_1[0x11] = '\x11';
-    param_1[0x12] = '\x01';
-    param_1 = param_1 + 0x13;
+  out[9] = local_48;
+  if (greyscale == false) {
+    out[10] = '\x01';
+    out[0xb] = '\"';
+    out[0xc] = '\0';
+    out[0xd] = '\x02';
+    out[0xe] = '\x11';
+    out[0xf] = '\x01';
+    out[0x10] = '\x03';
+    out[0x11] = '\x11';
+    out[0x12] = '\x01';
+    out = out + 0x13;
   }
   else {
-    param_1[10] = '\x01';
-    param_1[0xb] = '\x11';
-    param_1[0xc] = '\0';
-    param_1 = param_1 + 0xd;
+    out[10] = '\x01';
+    out[0xb] = '\x11';
+    out[0xc] = '\0';
+    out = out + 0xd;
   }
-  *param_1 = 0xff;
-  param_1[1] = 0xda;
+  *out = 0xff;
+  out[1] = 0xda;
   sVar2 = sVar2 * 2 + 6;
-  param_1[2] = (uchar)((ushort)sVar2 >> 8);
+  out[2] = (uchar)((ushort)sVar2 >> 8);
   local_58 = (uchar)sVar2;
-  param_1[3] = local_58;
-  param_1[4] = local_48;
-  if (param_4 == false) {
-    param_1[5] = '\x01';
-    param_1[6] = '\0';
-    param_1[7] = '\x02';
-    param_1[8] = '\x11';
-    param_1[9] = '\x03';
-    param_1[10] = '\x11';
-    param_1 = param_1 + 0xb;
+  out[3] = local_58;
+  out[4] = local_48;
+  if (greyscale == false) {
+    out[5] = '\x01';
+    out[6] = '\0';
+    out[7] = '\x02';
+    out[8] = '\x11';
+    out[9] = '\x03';
+    out[10] = '\x11';
+    out = out + 0xb;
   }
   else {
-    param_1[5] = '\x01';
-    param_1[6] = '\0';
-    param_1 = param_1 + 7;
+    out[5] = '\x01';
+    out[6] = '\0';
+    out = out + 7;
   }
-  *param_1 = '\0';
-  param_1[1] = '?';
-  param_1[2] = '\0';
-  return param_1 + 3;
+  *out = '\0';
+  out[1] = '?';
+  out[2] = '\0';
+  return out + 3;
 }
 
 
 // 009B29F0  begin  (mjpeg/jpeg.cpp:938)
 
 uchar * __thiscall
-jpeg_encode::begin(jpeg_encode *this,uchar *param_1,int param_2,int param_3,int param_4,bool param_5
-                  ,jpeg_exif *param_6)
+jpeg_encode::begin(jpeg_encode *this,uchar *out,int width,int height,int quality,bool tables,
+                  jpeg_exif *exif)
 
 {
   uchar *puVar1;
   
   this->jpeg_lcode = 0;
   this->jpeg_bitindex = 0;
-  init_quant(this,param_4);
-  *param_1 = 0xff;
-  param_1[1] = 0xd8;
-  puVar1 = write_header(this,param_1 + 2,param_2,param_3,false,param_5,param_6);
+  init_quant(this,quality);
+  *out = 0xff;
+  out[1] = 0xd8;
+  puVar1 = write_header(this,out + 2,width,height,false,tables,exif);
   (this->jpeg_encode_block_state_y).qt = this->jpeg_ILqt;
   (this->jpeg_encode_block_state_y).DcCode = jpeg_luminance_dc_code_table;
   (this->jpeg_encode_block_state_y).DcSize = jpeg_luminance_dc_size_table;
@@ -707,69 +733,69 @@ jpeg_encode::begin(jpeg_encode *this,uchar *param_1,int param_2,int param_3,int 
 
 // 009B2B60  end  (mjpeg/jpeg.cpp:974)
 
-uchar * __thiscall jpeg_encode::end(jpeg_encode *this,uchar *param_1)
+uchar * __thiscall jpeg_encode::end(jpeg_encode *this,uchar *out)
 
 {
   ushort uVar1;
   uchar *puVar2;
-  int local_c;
+  int i;
+  int count;
   
   if (this->jpeg_bitindex != 0) {
     this->jpeg_lcode = this->jpeg_lcode << (0x20U - (char)this->jpeg_bitindex & 0x1f);
     uVar1 = this->jpeg_bitindex;
-    for (local_c = 0; local_c < (int)(uVar1 + 7) >> 3; local_c = local_c + 1) {
-      *param_1 = (uchar)(this->jpeg_lcode >> 0x18);
-      puVar2 = param_1 + 1;
-      if (*param_1 == 0xff) {
-        param_1[1] = '\0';
-        puVar2 = param_1 + 2;
+    for (i = 0; i < (int)(uVar1 + 7) >> 3; i = i + 1) {
+      *out = (uchar)(this->jpeg_lcode >> 0x18);
+      puVar2 = out + 1;
+      if (*out == 0xff) {
+        out[1] = '\0';
+        puVar2 = out + 2;
       }
-      param_1 = puVar2;
+      out = puVar2;
       this->jpeg_lcode = this->jpeg_lcode << 8;
     }
   }
-  *param_1 = 0xff;
-  param_1[1] = 0xd9;
-  return param_1 + 2;
+  *out = 0xff;
+  out[1] = 0xd9;
+  return out + 2;
 }
 
 
 // 009B2C50  encode  (mjpeg/jpeg.cpp:995)
 
 uchar * __thiscall
-jpeg_encode::encode(jpeg_encode *this,uchar *param_1,int param_2,int param_3,int param_4,int param_5
-                   ,uchar *param_6,uchar *param_7,uchar *param_8,bool param_9,jpeg_exif *param_10)
+jpeg_encode::encode(jpeg_encode *this,uchar *out,int width,int height,int pitch,int quality,uchar *y
+                   ,uchar *u,uchar *v,bool tables,jpeg_exif *exif)
 
 {
   uchar *puVar1;
-  int local_18;
-  uchar *local_14;
-  uchar *local_10;
-  uchar *local_c;
-  int local_8;
+  int x;
+  uchar *u_y;
+  uchar *v_y;
+  uchar *y_y;
+  int i;
   
-  param_1 = begin(this,param_1,param_2,param_3,param_5,param_9,param_10);
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 0x10) {
-    local_c = param_6;
-    local_14 = param_7;
-    local_10 = param_8;
-    for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 0x10) {
-      puVar1 = do_block(this,param_1,local_c,param_4,&this->jpeg_encode_block_state_y);
-      puVar1 = do_block(this,puVar1,local_c + 8,param_4,&this->jpeg_encode_block_state_y);
-      puVar1 = do_block(this,puVar1,local_c + param_4 * 8,param_4,&this->jpeg_encode_block_state_y);
-      puVar1 = do_block(this,puVar1,local_c + param_4 * 8 + 8,param_4,
-                        &this->jpeg_encode_block_state_y);
-      puVar1 = do_block(this,puVar1,local_14,param_4 / 2,&this->jpeg_encode_block_state_u);
-      param_1 = do_block(this,puVar1,local_10,param_4 / 2,&this->jpeg_encode_block_state_v);
-      local_14 = local_14 + 8;
-      local_10 = local_10 + 8;
-      local_c = local_c + 0x10;
+  out = begin(this,out,width,height,quality,tables,exif);
+  for (i = 0; i < height; i = i + 0x10) {
+    y_y = y;
+    u_y = u;
+    v_y = v;
+    for (x = 0; x < width; x = x + 0x10) {
+      puVar1 = do_block(this,out,y_y,pitch,&this->jpeg_encode_block_state_y);
+      puVar1 = do_block(this,puVar1,y_y + 8,pitch,&this->jpeg_encode_block_state_y);
+      puVar1 = do_block(this,puVar1,y_y + pitch * 8,pitch,&this->jpeg_encode_block_state_y);
+      puVar1 = do_block(this,puVar1,y_y + pitch * 8 + 8,pitch,&this->jpeg_encode_block_state_y);
+      puVar1 = do_block(this,puVar1,u_y,pitch / 2,&this->jpeg_encode_block_state_u);
+      out = do_block(this,puVar1,v_y,pitch / 2,&this->jpeg_encode_block_state_v);
+      u_y = u_y + 8;
+      v_y = v_y + 8;
+      y_y = y_y + 0x10;
     }
-    param_7 = param_7 + (param_4 / 2) * 8;
-    param_8 = param_8 + (param_4 / 2) * 8;
-    param_6 = param_6 + param_4 * 0x10;
+    u = u + (pitch / 2) * 8;
+    v = v + (pitch / 2) * 8;
+    y = y + pitch * 0x10;
   }
-  puVar1 = end(this,param_1);
+  puVar1 = end(this,out);
   return puVar1;
 }
 

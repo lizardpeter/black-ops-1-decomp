@@ -23,25 +23,25 @@ void __cdecl _dynamic_initializer_for__s_performanceValue__(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwWriteStats(overlappedTask *param_1,bdStatsInfo **param_2,uint param_3)
+void __cdecl dwWriteStats(overlappedTask *task,bdStatsInfo **statsInfo,uint numStats)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_10;
-  bdCommonAddr *local_c;
-  bdStats *local_8;
+  bdCommonAddr *remoteTask;
+  bdStats *stats;
   
-  local_8 = dwGetStats(param_1->controllerIndex);
-  if ((local_8 != (bdStats *)0x0) && (param_1 != (overlappedTask *)0x0)) {
-    bVar1 = bdStats::writeStats(local_8,(bdStatsInfo **)&local_10,(uint)param_2);
-    local_c = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+  stats = dwGetStats(task->controllerIndex);
+  if ((stats != (bdStats *)0x0) && (task != (overlappedTask *)0x0)) {
+    bVar1 = bdStats::writeStats(stats,(bdStatsInfo **)&local_10,(uint)statsInfo);
+    remoteTask = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    if (local_c == (bdCommonAddr *)0x0) {
-      TaskManager_ClearTask(param_1);
+    if (remoteTask == (bdCommonAddr *)0x0) {
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(6);
     }
     else {
-      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_c);
+      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,remoteTask);
     }
   }
   return;
@@ -53,46 +53,46 @@ void __cdecl dwWriteStats(overlappedTask *param_1,bdStatsInfo **param_2,uint par
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwWriteStatsComplete(overlappedTask *param_1)
+taskCompleteResults __cdecl dwWriteStatsComplete(overlappedTask *task)
 
 {
   bdLobbyErrorCode bVar1;
   undefined3 extraout_var;
-  char local_5c [64];
+  char errorStr [64];
   uint local_1c;
-  int local_18;
-  bdStatus local_14;
-  taskCompleteResults local_10;
-  bdStats *local_c;
-  int local_8;
+  bdLobbyErrorCode errorCode;
+  bdStatus taskStatus;
+  taskCompleteResults status;
+  bdStats *stats;
+  int localControllerIndex;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = TASK_ERROR;
-  local_8 = param_1->controllerIndex;
-  local_c = dwGetStats(local_8);
-  if (((local_c == (bdStats *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-     ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  status = TASK_ERROR;
+  localControllerIndex = task->controllerIndex;
+  stats = dwGetStats(localControllerIndex);
+  if (((stats == (bdStats *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retreive stats write status\n");
   }
   else {
-    dwLobbyPump(local_8);
-    local_14 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    local_18 = 0;
-    if (local_14 == BD_DONE) {
-      bVar1 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-      local_18 = CONCAT31(extraout_var,bVar1);
-      if (local_18 != 0) {
-        TaskManager_ClearTask(param_1);
-        dwLobbyErrorCodeToString((bdLobbyErrorCode)local_18,local_5c,0x40);
+    dwLobbyPump(localControllerIndex);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    _errorCode = 0;
+    if (taskStatus == BD_DONE) {
+      bVar1 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+      _errorCode = CONCAT31(extraout_var,bVar1);
+      if (_errorCode != 0) {
+        TaskManager_ClearTask(task);
+        dwLobbyErrorCodeToString((bdLobbyErrorCode)_errorCode,errorStr,0x40);
         Com_PrintError(0x10,"DW write stats error %i - \'%s\'\n");
       }
     }
-    local_10 = dwTaskStatusConvert(local_14,(bdLobbyErrorCode)local_18);
-    if (local_14 != BD_PENDING) {
-      dwCloseRemoteTask(&param_1->overlappedIO);
+    status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
+    if (taskStatus != BD_PENDING) {
+      dwCloseRemoteTask(&task->overlappedIO);
     }
   }
-  return local_10;
+  return status;
 }
 
 
@@ -101,10 +101,10 @@ taskCompleteResults __cdecl dwWriteStatsComplete(overlappedTask *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-dwReadStatsByUser(overlappedTask *param_1,uint param_2,ulong64 param_3,bdStatsInfo *param_4)
+dwReadStatsByUser(overlappedTask *task,uint leaderBoardID,ulong64 entityID,bdStatsInfo *statsInfo)
 
 {
-  dwReadStatsForUsers(param_1,param_2,&param_3,1,param_4);
+  dwReadStatsForUsers(task,leaderBoardID,&entityID,1,statsInfo);
   return;
 }
 
@@ -114,22 +114,22 @@ dwReadStatsByUser(overlappedTask *param_1,uint param_2,ulong64 param_3,bdStatsIn
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-dwReadStatsByRank(overlappedTask *param_1,uint param_2,uint param_3,uint param_4,
-                 bdStatsInfo *param_5)
+dwReadStatsByRank(overlappedTask *task,uint leaderBoardID,uint topRank,uint maxResults,
+                 bdStatsInfo *statsInfo)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_10;
-  bdCommonAddr *local_c;
-  bdStats *local_8;
+  bdCommonAddr *remoteTask;
+  bdStats *stats;
   
-  local_8 = dwGetStats(param_1->controllerIndex);
-  if ((local_8 != (bdStats *)0x0) && (param_1 != (overlappedTask *)0x0)) {
-    bVar1 = bdStats::readStatsByRank(local_8,(uint)&local_10,(ulonglong)param_3,param_5,param_4);
-    local_c = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+  stats = dwGetStats(task->controllerIndex);
+  if ((stats != (bdStats *)0x0) && (task != (overlappedTask *)0x0)) {
+    bVar1 = bdStats::readStatsByRank(stats,(uint)&local_10,(ulonglong)topRank,statsInfo,maxResults);
+    remoteTask = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    if (local_c != (bdCommonAddr *)0x0) {
-      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_c);
+    if (remoteTask != (bdCommonAddr *)0x0) {
+      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,remoteTask);
     }
   }
   return;
@@ -141,22 +141,22 @@ dwReadStatsByRank(overlappedTask *param_1,uint param_2,uint param_3,uint param_4
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-dwReadStatsByPivot(overlappedTask *param_1,uint param_2,ulong64 param_3,uint param_4,
-                  bdStatsInfo *param_5)
+dwReadStatsByPivot(overlappedTask *task,uint leaderBoardID,ulong64 entityID,uint maxResults,
+                  bdStatsInfo *statsInfo)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_10;
-  bdCommonAddr *local_c;
-  bdStats *local_8;
+  bdCommonAddr *remoteTask;
+  bdStats *stats;
   
-  local_8 = dwGetStats(param_1->controllerIndex);
-  if ((local_8 != (bdStats *)0x0) && (param_1 != (overlappedTask *)0x0)) {
-    bVar1 = bdStats::readStatsByPivot(local_8,(uint)&local_10,param_3,param_5,param_4);
-    local_c = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+  stats = dwGetStats(task->controllerIndex);
+  if ((stats != (bdStats *)0x0) && (task != (overlappedTask *)0x0)) {
+    bVar1 = bdStats::readStatsByPivot(stats,(uint)&local_10,entityID,statsInfo,maxResults);
+    remoteTask = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    if (local_c != (bdCommonAddr *)0x0) {
-      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_c);
+    if (remoteTask != (bdCommonAddr *)0x0) {
+      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,remoteTask);
     }
   }
   return;
@@ -168,28 +168,28 @@ dwReadStatsByPivot(overlappedTask *param_1,uint param_2,ulong64 param_3,uint par
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-dwReadStatsForUsers(overlappedTask *param_1,uint param_2,ulong64 *param_3,uint param_4,
-                   bdStatsInfo *param_5)
+dwReadStatsForUsers(overlappedTask *task,uint leaderBoardID,ulong64 *entityIDs,uint numEntityIDs,
+                   bdStatsInfo *statsInfo)
 
 {
   bdReference<bdRemoteTask> bVar1;
   bdReference<bdByteBuffer> local_10;
-  bdCommonAddr *local_c;
-  bdStats *local_8;
+  bdCommonAddr *remoteTask;
+  bdStats *stats;
   
-  local_8 = dwGetStats(param_1->controllerIndex);
-  if ((local_8 != (bdStats *)0x0) && (param_1 != (overlappedTask *)0x0)) {
+  stats = dwGetStats(task->controllerIndex);
+  if ((stats != (bdStats *)0x0) && (task != (overlappedTask *)0x0)) {
     bVar1 = bdStats::readStatsByEntityID
-                      (local_8,(uint)&local_10,(__uint64 *)param_2,(uint)param_3,
-                       (bdStatsInfo *)param_4);
-    local_c = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
+                      (stats,(uint)&local_10,(__uint64 *)leaderBoardID,(uint)entityIDs,
+                       (bdStatsInfo *)numEntityIDs);
+    remoteTask = (bdCommonAddr *)(bVar1.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-    if (local_c == (bdCommonAddr *)0x0) {
-      TaskManager_ClearTask(param_1);
+    if (remoteTask == (bdCommonAddr *)0x0) {
+      TaskManager_ClearTask(task);
       dwConnectionErrorHandler(8);
     }
     else {
-      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_c);
+      bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)task,remoteTask);
     }
   }
   return;
@@ -201,7 +201,8 @@ dwReadStatsForUsers(overlappedTask *param_1,uint param_2,ulong64 *param_3,uint p
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwReadStatsComplete(overlappedTask *param_1,int *param_2,int *param_3)
+taskCompleteResults __cdecl
+dwReadStatsComplete(overlappedTask *task,int *numResults,int *totalResults)
 
 {
   code *pcVar1;
@@ -210,58 +211,58 @@ taskCompleteResults __cdecl dwReadStatsComplete(overlappedTask *param_1,int *par
   taskCompleteResults tVar4;
   undefined3 extraout_var;
   uint uVar5;
-  char local_5c [68];
+  char errorStr [68];
   uint local_18;
-  int local_14;
-  bdStatus local_10;
-  taskCompleteResults local_c;
-  bdStats *local_8;
+  bdLobbyErrorCode errorCode;
+  bdStatus taskStatus;
+  taskCompleteResults status;
+  bdStats *stats;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (int *)0x0) &&
+  if ((numResults == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStats.cpp",0xeb,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     tVar4 = (*pcVar1)();
     return tVar4;
   }
-  if ((param_3 == (int *)0x0) &&
+  if ((totalResults == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStats.cpp",0xec,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     tVar4 = (*pcVar1)();
     return tVar4;
   }
-  local_c = TASK_ERROR;
-  local_8 = dwGetStats(param_1->controllerIndex);
-  if ((((local_8 == (bdStats *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-      ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) ||
-     ((param_2 == (int *)0x0 || (param_3 == (int *)0x0)))) {
+  status = TASK_ERROR;
+  stats = dwGetStats(task->controllerIndex);
+  if ((((stats == (bdStats *)0x0) || (task == (overlappedTask *)0x0)) ||
+      ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) ||
+     ((numResults == (int *)0x0 || (totalResults == (int *)0x0)))) {
     Com_Printf(0x10,"Failed to retreive stats read status\n");
   }
   else {
-    dwLobbyPump(param_1->controllerIndex);
-    local_10 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    local_14 = 0;
-    if (local_10 == BD_DONE) {
-      bVar3 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-      local_14 = CONCAT31(extraout_var,bVar3);
-      if (local_14 != 0) {
-        TaskManager_ClearTask(param_1);
-        dwLobbyErrorCodeToString((bdLobbyErrorCode)local_14,local_5c,0x40);
+    dwLobbyPump(task->controllerIndex);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    _errorCode = 0;
+    if (taskStatus == BD_DONE) {
+      bVar3 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+      _errorCode = CONCAT31(extraout_var,bVar3);
+      if (_errorCode != 0) {
+        TaskManager_ClearTask(task);
+        dwLobbyErrorCodeToString((bdLobbyErrorCode)_errorCode,errorStr,0x40);
         Com_Error(ERR_DROP,"DW read stats error %i - \'%s\'\n");
       }
-      uVar5 = bdRemoteTask::getNumResults((param_1->overlappedIO).m_ptr);
-      *param_2 = uVar5;
-      uVar5 = bdRemoteTask::getTotalNumResults((param_1->overlappedIO).m_ptr);
-      *param_3 = uVar5;
+      uVar5 = bdRemoteTask::getNumResults((task->overlappedIO).m_ptr);
+      *numResults = uVar5;
+      uVar5 = bdRemoteTask::getTotalNumResults((task->overlappedIO).m_ptr);
+      *totalResults = uVar5;
     }
-    local_c = dwTaskStatusConvert(local_10,(bdLobbyErrorCode)local_14);
-    if (local_10 != BD_PENDING) {
-      dwCloseRemoteTask(param_1);
+    status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
+    if (taskStatus != BD_PENDING) {
+      dwCloseRemoteTask(task);
     }
   }
-  return local_c;
+  return status;
 }
 
 
@@ -271,7 +272,7 @@ taskCompleteResults __cdecl dwReadStatsComplete(overlappedTask *param_1,int *par
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 taskCompleteResults __cdecl
-dwFetchPerformanceValuesComplete(overlappedTask *param_1,PlayerRank *param_2,int *param_3)
+dwFetchPerformanceValuesComplete(overlappedTask *task,PlayerRank *playerRanks,int *numPlayerRanks)
 
 {
   undefined4 *puVar1;
@@ -280,60 +281,60 @@ dwFetchPerformanceValuesComplete(overlappedTask *param_1,PlayerRank *param_2,int
   bdLobbyErrorCode bVar4;
   taskCompleteResults tVar5;
   undefined3 extraout_var;
-  char local_64 [64];
+  char errorStr [64];
   uint local_24;
-  int local_20;
-  uint local_1c;
-  int local_18;
-  int local_14;
-  bdStatus local_10;
-  taskCompleteResults local_c;
-  bdMatchMaking *local_8;
+  int i;
+  int numResults;
+  int numRankSlots;
+  bdLobbyErrorCode errorCode;
+  bdStatus taskStatus;
+  taskCompleteResults status;
+  bdMatchMaking *matchmaking;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = TASK_ERROR;
-  local_8 = dwGetMatchmaking(param_1->controllerIndex);
-  if (((local_8 == (bdMatchMaking *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-     ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  status = TASK_ERROR;
+  matchmaking = dwGetMatchmaking(task->controllerIndex);
+  if (((matchmaking == (bdMatchMaking *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retrieve performance values fetch status\n");
   }
   else {
-    dwLobbyPump(param_1->controllerIndex);
-    local_10 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    local_14 = 0;
-    if (local_10 == BD_DONE) {
-      local_18 = *param_3;
-      local_1c = bdRemoteTask::getNumResults((param_1->overlappedIO).m_ptr);
-      if ((local_18 < (int)local_1c) &&
+    dwLobbyPump(task->controllerIndex);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    _errorCode = 0;
+    if (taskStatus == BD_DONE) {
+      numRankSlots = *numPlayerRanks;
+      numResults = bdRemoteTask::getNumResults((task->overlappedIO).m_ptr);
+      if ((numRankSlots < numResults) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwStats.cpp",0x17e,0,"%s"
                                   ), !bVar3)) {
         pcVar2 = (code *)swi(3);
         tVar5 = (*pcVar2)();
         return tVar5;
       }
-      memset((uchar *)param_2,'\0',local_18 << 4);
-      *param_3 = 0;
-      for (local_20 = 0; local_20 < (int)local_1c; local_20 = local_20 + 1) {
-        if (local_20 < local_18) {
-          param_2[local_20].rank = (int)s_performanceValue[local_20].m_performanceValue;
-          *(int *)&param_2[local_20].xuid = (int)s_performanceValue[local_20].m_entityID;
-          *(undefined4 *)((int)&param_2[local_20].xuid + 4) =
-               *(undefined4 *)((int)&s_performanceValue[local_20].m_entityID + 4);
-          *param_3 = *param_3 + 1;
+      memset((uchar *)playerRanks,'\0',numRankSlots << 4);
+      *numPlayerRanks = 0;
+      for (i = 0; i < numResults; i = i + 1) {
+        if (i < numRankSlots) {
+          playerRanks[i].rank = (int)s_performanceValue[i].m_performanceValue;
+          *(int *)&playerRanks[i].xuid = (int)s_performanceValue[i].m_entityID;
+          *(undefined4 *)((int)&playerRanks[i].xuid + 4) =
+               *(undefined4 *)((int)&s_performanceValue[i].m_entityID + 4);
+          *numPlayerRanks = *numPlayerRanks + 1;
         }
         Com_Printf(0x10,"Fetched performance value %llx for %llx \n");
       }
-      bVar4 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-      local_14 = CONCAT31(extraout_var,bVar4);
-      if (local_14 != 0) {
-        TaskManager_ClearTask(param_1);
-        dwLobbyErrorCodeToString((bdLobbyErrorCode)local_14,local_64,0x40);
+      bVar4 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+      _errorCode = CONCAT31(extraout_var,bVar4);
+      if (_errorCode != 0) {
+        TaskManager_ClearTask(task);
+        dwLobbyErrorCodeToString((bdLobbyErrorCode)_errorCode,errorStr,0x40);
         Com_Error(ERR_DROP,"DW fetch matchmaking values error %i - \'%s\'\n");
       }
     }
-    local_c = dwTaskStatusConvert(local_10,(bdLobbyErrorCode)local_14);
-    if (local_10 != BD_PENDING) {
-      puVar1 = param_1->data;
+    status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
+    if (taskStatus != BD_PENDING) {
+      puVar1 = task->data;
       if (puVar1 != (undefined4 *)0x0) {
         if (puVar1[-1] == 0) {
           operator_delete__(puVar1 + -1);
@@ -342,10 +343,10 @@ dwFetchPerformanceValuesComplete(overlappedTask *param_1,PlayerRank *param_2,int
           (**(code **)*puVar1)(3);
         }
       }
-      dwCloseRemoteTask(&param_1->overlappedIO);
+      dwCloseRemoteTask(&task->overlappedIO);
     }
   }
-  return local_c;
+  return status;
 }
 
 
@@ -354,43 +355,44 @@ dwFetchPerformanceValuesComplete(overlappedTask *param_1,PlayerRank *param_2,int
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwWritePerformanceStatsComplete(int param_1,overlappedTask *param_2)
+taskCompleteResults __cdecl
+dwWritePerformanceStatsComplete(int controllerIndex,overlappedTask *task)
 
 {
   bdLobbyErrorCode bVar1;
   undefined3 extraout_var;
-  char local_5c [68];
+  char errorStr [68];
   uint local_18;
-  int local_14;
-  bdStatus local_10;
-  taskCompleteResults local_c;
-  bdMatchMaking *local_8;
+  bdLobbyErrorCode errorCode;
+  bdStatus taskStatus;
+  taskCompleteResults status;
+  bdMatchMaking *performance;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = TASK_ERROR;
-  local_8 = dwGetMatchmaking(param_1);
-  if (((local_8 == (bdMatchMaking *)0x0) || (param_2 == (overlappedTask *)0x0)) ||
-     ((param_2->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  status = TASK_ERROR;
+  performance = dwGetMatchmaking(controllerIndex);
+  if (((performance == (bdMatchMaking *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retreive performance value write status\n");
   }
   else {
-    local_10 = bdRemoteTask::getStatus((param_2->overlappedIO).m_ptr);
-    local_14 = 0;
-    if (local_10 == BD_DONE) {
-      bVar1 = bdRemoteTask::getErrorCode((param_2->overlappedIO).m_ptr);
-      local_14 = CONCAT31(extraout_var,bVar1);
-      if (local_14 != 0) {
-        TaskManager_ClearTask(param_2);
-        dwLobbyErrorCodeToString((bdLobbyErrorCode)local_14,local_5c,0x40);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    _errorCode = 0;
+    if (taskStatus == BD_DONE) {
+      bVar1 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+      _errorCode = CONCAT31(extraout_var,bVar1);
+      if (_errorCode != 0) {
+        TaskManager_ClearTask(task);
+        dwLobbyErrorCodeToString((bdLobbyErrorCode)_errorCode,errorStr,0x40);
         Com_Error(ERR_DROP,"DW write performance values error %i - \'%s\'\n");
       }
     }
-    local_c = dwTaskStatusConvert(local_10,(bdLobbyErrorCode)local_14);
-    if (local_10 != BD_PENDING) {
-      dwCloseRemoteTask(&param_2->overlappedIO);
+    status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
+    if (taskStatus != BD_PENDING) {
+      dwCloseRemoteTask(&task->overlappedIO);
     }
   }
-  return local_c;
+  return status;
 }
 
 

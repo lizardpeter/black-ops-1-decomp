@@ -2,85 +2,84 @@
 
 // 00C1C1B9  _flsbuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_flsbuf.c:93)
 
-int __cdecl _flsbuf(int param_1,_iobuf *param_2)
+int __cdecl _flsbuf(int ch,_iobuf *str)
 
 {
+  char *buf;
   char *pcVar1;
-  char *pcVar2;
+  _iobuf *str_00;
+  int *piVar2;
   _iobuf *p_Var3;
-  int *piVar4;
-  _iobuf *p_Var5;
-  int iVar6;
-  ioinfo *piVar7;
+  int iVar4;
+  ioinfo *piVar5;
   int unaff_EDI;
-  uint uVar8;
-  long64 lVar9;
-  uint local_8;
+  uint uVar6;
+  long64 lVar7;
+  int written;
   
-  p_Var3 = param_2;
-  param_2 = (_iobuf *)_fileno(param_2);
-  uVar8 = p_Var3->_flag;
-  if ((uVar8 & 0x82) == 0) {
-    piVar4 = _errno();
-    *piVar4 = 9;
+  str_00 = str;
+  str = (_iobuf *)_fileno(str);
+  uVar6 = str_00->_flag;
+  if ((uVar6 & 0x82) == 0) {
+    piVar2 = _errno();
+    *piVar2 = 9;
 LAB_00c1c1df:
-    p_Var3->_flag = p_Var3->_flag | 0x20;
+    str_00->_flag = str_00->_flag | 0x20;
     return -1;
   }
-  if ((uVar8 & 0x40) != 0) {
-    piVar4 = _errno();
-    *piVar4 = 0x22;
+  if ((uVar6 & 0x40) != 0) {
+    piVar2 = _errno();
+    *piVar2 = 0x22;
     goto LAB_00c1c1df;
   }
-  if ((uVar8 & 1) != 0) {
-    p_Var3->_cnt = 0;
-    if ((uVar8 & 0x10) == 0) {
-      p_Var3->_flag = uVar8 | 0x20;
+  if ((uVar6 & 1) != 0) {
+    str_00->_cnt = 0;
+    if ((uVar6 & 0x10) == 0) {
+      str_00->_flag = uVar6 | 0x20;
       return -1;
     }
-    p_Var3->_ptr = p_Var3->_base;
-    p_Var3->_flag = uVar8 & 0xfffffffe;
+    str_00->_ptr = str_00->_base;
+    str_00->_flag = uVar6 & 0xfffffffe;
   }
-  uVar8 = p_Var3->_flag;
-  p_Var3->_flag = uVar8 & 0xffffffef | 2;
-  p_Var3->_cnt = 0;
-  local_8 = 0;
-  if (((uVar8 & 0x10c) == 0) &&
-     (((p_Var5 = __iob_func(), p_Var3 != p_Var5 + 1 && (p_Var5 = __iob_func(), p_Var3 != p_Var5 + 2)
-       ) || (iVar6 = _isatty((int)param_2), iVar6 == 0)))) {
-    _getbuf(p_Var3);
+  uVar6 = str_00->_flag;
+  str_00->_flag = uVar6 & 0xffffffef | 2;
+  str_00->_cnt = 0;
+  written = 0;
+  if (((uVar6 & 0x10c) == 0) &&
+     (((p_Var3 = __iob_func(), str_00 != p_Var3 + 1 && (p_Var3 = __iob_func(), str_00 != p_Var3 + 2)
+       ) || (iVar4 = _isatty((int)str), iVar4 == 0)))) {
+    _getbuf(str_00);
   }
-  if ((p_Var3->_flag & 0x108U) == 0) {
-    uVar8 = 1;
-    local_8 = _write((int)param_2,&param_1,1);
+  if ((str_00->_flag & 0x108U) == 0) {
+    uVar6 = 1;
+    written = _write((int)str,&ch,1);
   }
   else {
-    pcVar1 = p_Var3->_base;
-    pcVar2 = p_Var3->_ptr;
-    p_Var3->_ptr = pcVar1 + 1;
-    uVar8 = (int)pcVar2 - (int)pcVar1;
-    p_Var3->_cnt = p_Var3->_bufsiz + -1;
-    if ((int)uVar8 < 1) {
-      if ((param_2 == (_iobuf *)0xffffffff) || (param_2 == (_iobuf *)0xfffffffe)) {
-        piVar7 = &__badioinfo;
+    buf = str_00->_base;
+    pcVar1 = str_00->_ptr;
+    str_00->_ptr = buf + 1;
+    uVar6 = (int)pcVar1 - (int)buf;
+    str_00->_cnt = str_00->_bufsiz + -1;
+    if ((int)uVar6 < 1) {
+      if ((str == (_iobuf *)0xffffffff) || (str == (_iobuf *)0xfffffffe)) {
+        piVar5 = &__badioinfo;
       }
       else {
-        piVar7 = (ioinfo *)
-                 (((uint)param_2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)param_2 >> 5) * 4));
+        piVar5 = (ioinfo *)(((uint)str & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)str >> 5) * 4));
       }
-      if (((piVar7->osfile & 0x20U) != 0) &&
-         (lVar9 = _lseeki64((int)param_2,0x200000000,unaff_EDI), lVar9 == -1)) goto LAB_00c1c307;
+      if (((piVar5->osfile & 0x20U) != 0) &&
+         (lVar7 = _lseeki64((int)str,0x200000000,unaff_EDI), lVar7 == -1)) goto LAB_00c1c307;
     }
     else {
-      local_8 = _write((int)param_2,pcVar1,uVar8);
+      written = _write((int)str,buf,uVar6);
     }
-    *p_Var3->_base = (char)param_1;
+    *str_00->_base = (char)ch;
   }
-  if (local_8 == uVar8) {
-    return param_1 & 0xff;
+  if (written == uVar6) {
+    return ch & 0xff;
   }
 LAB_00c1c307:
-  p_Var3->_flag = p_Var3->_flag | 0x20;
+  str_00->_flag = str_00->_flag | 0x20;
   return -1;
 }
 
